@@ -126,7 +126,7 @@ ipa_pop_func_from_list (struct ipa_func_list **wl)
 /* Return index of the formal whose tree is PTREE in function which corresponds
    to INFO.  */
 
-static int
+int
 ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
 {
   int i, count;
@@ -2985,4 +2985,67 @@ ipa_update_after_lto_read (void)
 	      != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
 	    ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
 	}
+}
+
+/* Given the jump function JFUNC, compute the lattice LAT that describes the
+   value coming down the callsite. INFO describes the caller node so that
+   pass-through jump functions can be evaluated.  */
+void
+ipa_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
+			 struct ipa_jump_func *jfunc)
+{
+  if (jfunc->type == IPA_JF_CONST)
+    {
+      lat->type = IPA_CONST_VALUE;
+      lat->constant = jfunc->value.constant;
+    }
+  else if (jfunc->type == IPA_JF_PASS_THROUGH)
+    {
+      struct ipcp_lattice *caller_lat;
+      tree cst;
+
+      caller_lat = ipa_get_lattice (info, jfunc->value.pass_through.formal_id);
+      lat->type = caller_lat->type;
+      if (caller_lat->type != IPA_CONST_VALUE)
+	return;
+      cst = caller_lat->constant;
+
+      if (jfunc->value.pass_through.operation != NOP_EXPR)
+	{
+	  tree restype;
+	  if (TREE_CODE_CLASS (jfunc->value.pass_through.operation)
+	      == tcc_comparison)
+	    restype = boolean_type_node;
+	  else
+	    restype = TREE_TYPE (cst);
+	  cst = fold_binary (jfunc->value.pass_through.operation,
+			     restype, cst, jfunc->value.pass_through.operand);
+	}
+      if (!cst || !is_gimple_ip_invariant (cst))
+	lat->type = IPA_BOTTOM;
+      lat->constant = cst;
+    }
+  else if (jfunc->type == IPA_JF_ANCESTOR)
+    {
+      struct ipcp_lattice *caller_lat;
+      tree t;
+
+      caller_lat = ipa_get_lattice (info, jfunc->value.ancestor.formal_id);
+      lat->type = caller_lat->type;
+      if (caller_lat->type != IPA_CONST_VALUE)
+	return;
+      if (TREE_CODE (caller_lat->constant) != ADDR_EXPR)
+	{
+	  /* This can happen when the constant is a NULL pointer.  */
+	  lat->type = IPA_BOTTOM;
+	  return;
+	}
+      t = TREE_OPERAND (caller_lat->constant, 0);
+      t = build_ref_for_offset (EXPR_LOCATION (t), t,
+				jfunc->value.ancestor.offset,
+				jfunc->value.ancestor.type, NULL, false);
+      lat->constant = build_fold_addr_expr (t);
+    }
+  else
+    lat->type = IPA_BOTTOM;
 }

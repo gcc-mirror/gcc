@@ -1,3 +1,75 @@
+2011-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* gengtype.c (open_base_files): Add ipa-inline.h include.
+	* ipa-cp.c (ipcp_get_lattice, ipcp_lattice_from_jfunc): Move to ipa-prop.c
+	update all uses.
+	* ipa-prop.c: (ipa_get_lattice, ipa_lattice_from_jfunc): ... here.
+	* ipa-inline-transform.c (inline_call): Use inline_merge_summary to merge
+	summary of inlined function into former caller.
+	* ipa-inline.c (max_benefit): Remove.
+	(edge_badness): Compensate for removal of benefits.
+	(update_caller_keys): Use reset_node_growth_cache/reset_edge_growth_cache.
+	(update_callee_keys): Likewise.
+	(update_all_callee_keys): Likewise.
+	(inline_small_functions): Do not collect max_benefit; do not
+	reset stimated_growth; call free_growth_caches and initialize_growth_caches.
+	* ipa-inline.h (struct condition, type clause_t, struct predicate, struct
+	size_time_entry): New structures.
+	(INLINE_SIZE_SCALE, INLINE_TIME_SCALE, MAX_CLAUSES): New constants.
+	(inline_summary): Remove size_inlining_benefit, time_inlining_benefit and
+	estimated_growth.
+	(edge_growth_cache_entry): New structure.
+	(node_growth_cache, edge_growth_cache): New global vars.
+	(estimate_growth): Turn into inline.
+	(inline_merge_summary, do_estimate_edge_growth, do_estimate_edge_time,
+	initialize_growth_caches, free_growth_caches): Declare.
+	(estimate_edge_growth): Rewrite.
+	(estimate_edge_time): Implement as inline cache lookup.
+	(reset_node_growth_cache, reset_edge_growth_cache): New inline functions.
+	(MAX_TIME): Reduce to allow multiplicatoin by INLINE_SIZE_SCALE.
+	(NUM_CONDITIONS): New constant.
+	(predicate_conditions): New enum.
+	(IS_NOT_CONSTANT): New constant.
+	(edge_removal_hook_holder): New var.
+	(node_growth_cache, edge_growth_cache): New global vars.
+	(true_predicate, single_cond_predicate, false_predicate, not_inlined_predicate,
+	add_condition, add_clause, and_predicates, or_predicates, predicates_equal_p,
+	evaulate_predicate, dump_condition, dump_clause, dump_predicate, account_size_time,
+	evaulate_conditions_for_edge): New functions.
+	(inline_summary_alloc): Move to heap.
+	(inline_node_removal_hook): Clear condition and entry vectors.
+	(inline_edge_removal_hook): New function.
+	(initialize_growth_caches, free_growth_caches): New function.
+	(dump_inline_summary): Update.
+	(edge_execution_predicate): New function.
+	(will_be_nonconstant_predicate): New function.
+	(estimate_function_body_sizes): Compute BB and constantness predicates.
+	(compute_inline_parameters): Do not clear estimated_growth.
+	(estimate_edge_size_and_time): New function.
+	(estimate_calls_size_and_time): New function.
+	(estimate_callee_size_and_time): New function.
+	(remap_predicate): New function.
+	(inline_merge_summary): New function.
+	(do_estimate_edge_time): New function based on...
+	(estimate_edge_time): ... this one.
+	(do_estimate_edge_growth): New function.
+	(do_estimate_growth): New function based on....
+	(estimate_growth): ... this one.
+	(inline_analyze_function): Analyze after deciding on jump functions.
+	(inline_read_section): New function.
+	(inline_read_summary): Use it.
+	(inline_write_summary): Write all the new data.
+	* ipa-prop.c (ipa_get_param_decl_index): Export.
+	(ipa_lattice_from_jfunc): Move here from ipa-cp.c
+	* ipa-prop.h (ipa_get_param_decl_index, ipa_lattice_from_jfunc): Declare.
+	(ipa_get_lattice): Move hre from ipa-cp.c
+	* Makefile.in (GTFILES): Add ipa-inline.h and ipa-inline-analysis.c
+	* params.def (PARAM_EARLY_INLINING_INSNS): Set to 11.
+	* cgraph.h (cgraph_clone_inlined_nodes, compute_inline_parameters,
+	cgraph_edge_inlinable_p): Remove.
+	* cgraphunit.c: Include ipainline.h
+	(cgraph_process_new_functions): Update call of compute_inline_parameters.
+
 2011-04-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (build_int_cst): Properly create canonicalized integer

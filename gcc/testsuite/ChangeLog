@@ -1,3 +1,7 @@
+2011-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/pr38699.c: Fix testcase.
+
 2011-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48717

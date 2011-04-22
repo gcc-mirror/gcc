@@ -278,77 +278,6 @@ ipa_lattice_meet (struct ipcp_lattice *res, struct ipcp_lattice *lat1,
   res->constant = lat1->constant;
 }
 
-/* Return the lattice corresponding to the Ith formal parameter of the function
-   described by INFO.  */
-static inline struct ipcp_lattice *
-ipcp_get_lattice (struct ipa_node_params *info, int i)
-{
-  return &(info->params[i].ipcp_lattice);
-}
-
-/* Given the jump function JFUNC, compute the lattice LAT that describes the
-   value coming down the callsite. INFO describes the caller node so that
-   pass-through jump functions can be evaluated.  */
-static void
-ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
-			 struct ipa_jump_func *jfunc)
-{
-  if (jfunc->type == IPA_JF_CONST)
-    {
-      lat->type = IPA_CONST_VALUE;
-      lat->constant = jfunc->value.constant;
-    }
-  else if (jfunc->type == IPA_JF_PASS_THROUGH)
-    {
-      struct ipcp_lattice *caller_lat;
-      tree cst;
-
-      caller_lat = ipcp_get_lattice (info, jfunc->value.pass_through.formal_id);
-      lat->type = caller_lat->type;
-      if (caller_lat->type != IPA_CONST_VALUE)
-	return;
-      cst = caller_lat->constant;
-
-      if (jfunc->value.pass_through.operation != NOP_EXPR)
-	{
-	  tree restype;
-	  if (TREE_CODE_CLASS (jfunc->value.pass_through.operation)
-	      == tcc_comparison)
-	    restype = boolean_type_node;
-	  else
-	    restype = TREE_TYPE (cst);
-	  cst = fold_binary (jfunc->value.pass_through.operation,
-			     restype, cst, jfunc->value.pass_through.operand);
-	}
-      if (!cst || !is_gimple_ip_invariant (cst))
-	lat->type = IPA_BOTTOM;
-      lat->constant = cst;
-    }
-  else if (jfunc->type == IPA_JF_ANCESTOR)
-    {
-      struct ipcp_lattice *caller_lat;
-      tree t;
-
-      caller_lat = ipcp_get_lattice (info, jfunc->value.ancestor.formal_id);
-      lat->type = caller_lat->type;
-      if (caller_lat->type != IPA_CONST_VALUE)
-	return;
-      if (TREE_CODE (caller_lat->constant) != ADDR_EXPR)
-	{
-	  /* This can happen when the constant is a NULL pointer.  */
-	  lat->type = IPA_BOTTOM;
-	  return;
-	}
-      t = TREE_OPERAND (caller_lat->constant, 0);
-      t = build_ref_for_offset (EXPR_LOCATION (t), t,
-				jfunc->value.ancestor.offset,
-				jfunc->value.ancestor.type, NULL, false);
-      lat->constant = build_fold_addr_expr (t);
-    }
-  else
-    lat->type = IPA_BOTTOM;
-}
-
 /* True when OLD_LAT and NEW_LAT values are not the same.  */
 
 static bool
@@ -384,7 +313,7 @@ ipcp_print_all_lattices (FILE * f)
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
 	{
-	  struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+	  struct ipcp_lattice *lat = ipa_get_lattice (info, i);
 
 	  fprintf (f, "    param [%d]: ", i);
 	  if (lat->type == IPA_CONST_VALUE)
@@ -582,7 +511,7 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
 
   for (i = 0; i < ipa_get_param_count (info) ; i++)
     {
-      ipcp_get_lattice (info, i)->type = type;
+      ipa_get_lattice (info, i)->type = type;
       if (type == IPA_BOTTOM)
 	ipa_set_param_cannot_devirtualize (info, i);
     }
@@ -659,7 +588,7 @@ ipcp_change_tops_to_bottom (void)
       count = ipa_get_param_count (info);
       for (i = 0; i < count; i++)
 	{
-	  struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+	  struct ipcp_lattice *lat = ipa_get_lattice (info, i);
 	  if (lat->type == IPA_TOP)
 	    {
 	      prop_again = true;
@@ -842,8 +771,8 @@ ipcp_propagate_stage (void)
 	  for (i = 0; i < count; i++)
 	    {
 	      jump_func = ipa_get_ith_jump_func (args, i);
-	      ipcp_lattice_from_jfunc (info, &inc_lat, jump_func);
-	      dest_lat = ipcp_get_lattice (callee_info, i);
+	      ipa_lattice_from_jfunc (info, &inc_lat, jump_func);
+	      dest_lat = ipa_get_lattice (callee_info, i);
 	      ipa_lattice_meet (&new_lat, &inc_lat, dest_lat);
 	      if (ipcp_lattice_changed (&new_lat, dest_lat))
 		{
@@ -1031,7 +960,7 @@ ipcp_need_redirect_p (struct cgraph_edge *cs)
   count = ipa_get_param_count (orig_callee_info);
   for (i = 0; i < count; i++)
     {
-      struct ipcp_lattice *lat = ipcp_get_lattice (orig_callee_info, i);
+      struct ipcp_lattice *lat = ipa_get_lattice (orig_callee_info, i);
       struct ipa_jump_func *jump_func;
 
       jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
@@ -1067,7 +996,7 @@ ipcp_update_callgraph (void)
 	    args_to_skip = BITMAP_ALLOC (NULL);
 	    for (i = 0; i < count; i++)
 	      {
-		struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+		struct ipcp_lattice *lat = ipa_get_lattice (info, i);
 
 		/* We can proactively remove obviously unused arguments.  */
 		if (!ipa_is_param_used (info, i))
@@ -1155,7 +1084,7 @@ ipcp_estimate_growth (struct cgraph_node *node)
   if (node->local.can_change_signature)
     for (i = 0; i < count; i++)
       {
-	struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+	struct ipcp_lattice *lat = ipa_get_lattice (info, i);
 
 	/* We can proactively remove obviously unused arguments.  */
 	if (!ipa_is_param_used (info, i))
@@ -1237,7 +1166,7 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
       if (param_index == -1)
 	continue;
 
-      lat = ipcp_get_lattice (info, param_index);
+      lat = ipa_get_lattice (info, param_index);
       token = ie->indirect_info->otr_token;
       anc_offset = ie->indirect_info->anc_offset;
       otr_type = ie->indirect_info->otr_type;
@@ -1309,7 +1238,7 @@ ipcp_const_param_count (struct cgraph_node *node)
 
   for (i = 0; i < count; i++)
     {
-      struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+      struct ipcp_lattice *lat = ipa_get_lattice (info, i);
       if ((ipcp_lat_is_insertable (lat)
 	  /* Do not count obviously unused arguments.  */
 	   && ipa_is_param_used (info, i))
@@ -1436,7 +1365,7 @@ ipcp_insert_stage (void)
 	args_to_skip = NULL;
       for (i = 0; i < count; i++)
 	{
-	  struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+	  struct ipcp_lattice *lat = ipa_get_lattice (info, i);
 	  parm_tree = ipa_get_param (info, i);
 
 	  /* We can proactively remove obviously unused arguments.  */
@@ -1504,7 +1433,7 @@ ipcp_insert_stage (void)
       info = IPA_NODE_REF (node);
       for (i = 0; i < count; i++)
 	{
-	  struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+	  struct ipcp_lattice *lat = ipa_get_lattice (info, i);
 	  if (lat->type == IPA_CONST_VALUE)
 	    ipcp_discover_new_direct_edges (node1, i, lat->constant);
         }

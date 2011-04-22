@@ -175,7 +175,6 @@ inline_call (struct cgraph_edge *e, bool update_original,
   int old_size = 0, new_size = 0;
   struct cgraph_node *to = NULL;
   struct cgraph_edge *curr = e;
-  struct inline_summary *info;
 
   /* Don't inline inlined edges.  */
   gcc_assert (e->inline_failed);
@@ -185,18 +184,15 @@ inline_call (struct cgraph_edge *e, bool update_original,
   e->inline_failed = CIF_OK;
   DECL_POSSIBLY_INLINED (e->callee->decl) = true;
 
+  to = e->caller;
+  if (to->global.inlined_to)
+    to = to->global.inlined_to;
+  old_size = inline_summary (to)->size;
+  inline_merge_summary (e);
+  new_size = inline_summary (to)->size;
+
   clone_inlined_nodes (e, true, update_original, overall_size);
 
-  /* Now update size of caller and all functions caller is inlined into.  */
-  for (;e && !e->inline_failed; e = e->caller->callers)
-    {
-      to = e->caller;
-      info = inline_summary (to);
-      old_size = info->size;
-      new_size = estimate_size_after_inlining (to, curr);
-      info->size = new_size;
-      info->time = estimate_time_after_inlining (to, curr);
-    }
   gcc_assert (curr->callee->global.inlined_to == to);
   if (overall_size && new_size > old_size)
     *overall_size += new_size - old_size;
