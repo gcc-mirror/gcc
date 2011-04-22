@@ -1,3 +1,9 @@
+2011-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48716
+	* gcc.dg/gomp/pr48716.c: New test.
+	* g++.dg/gomp/pr48716.C: New test.
+
 2011-04-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/48708

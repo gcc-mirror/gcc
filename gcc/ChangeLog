@@ -1,3 +1,9 @@
+2011-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48716
+	* gimplify.c (gimplify_bind_expr): Mark as GOVD_LOCAL also
+	TREE_STATIC variables declared inside of some OpenMP construct.
+
 2011-04-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/48708
