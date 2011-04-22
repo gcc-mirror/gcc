@@ -1,5 +1,10 @@
 2011-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (make_packable_type): Copy DECL_PARALLEL_TYPE
+	onto the new type.
+
+2011-04-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (create_subprog_decl): Add ARTIFICIAL_FLAG
 	parameter.
 	* gcc-interface/utils.c (create_subprog_decl): Likewise.  Set
