@@ -371,26 +371,26 @@ initialize_tree_contains_struct (void)
 	  break;
 
 	case TS_COMMON:
-	  MARK_TS_TYPED (code);
-	  break;
-
 	case TS_INT_CST:
 	case TS_REAL_CST:
 	case TS_FIXED_CST:
 	case TS_VECTOR:
 	case TS_STRING:
 	case TS_COMPLEX:
+	case TS_SSA_NAME:
+	case TS_CONSTRUCTOR:
+	  MARK_TS_TYPED (code);
+	  break;
+
 	case TS_IDENTIFIER:
 	case TS_DECL_MINIMAL:
 	case TS_TYPE:
 	case TS_LIST:
 	case TS_VEC:
 	case TS_EXP:
-	case TS_SSA_NAME:
 	case TS_BLOCK:
 	case TS_BINFO:
 	case TS_STATEMENT_LIST:
-	case TS_CONSTRUCTOR:
 	case TS_OMP_CLAUSE:
 	case TS_OPTIMIZATION:
 	case TS_TARGET_OPTION:
@@ -1004,7 +1004,7 @@ copy_list (tree list)
 }
 
 
-/* Create an INT_CST node with a LOW value sign extended.  */
+/* Create an INT_CST node with a LOW value sign extended to TYPE.  */
 
 tree
 build_int_cst (tree type, HOST_WIDE_INT low)
@@ -1013,17 +1013,10 @@ build_int_cst (tree type, HOST_WIDE_INT low)
   if (!type)
     type = integer_type_node;
 
-  return build_int_cst_wide (type, low, low < 0 ? -1 : 0);
+  return double_int_to_tree (type, shwi_to_double_int (low));
 }
 
-/* Create an INT_CST node with a LOW value in TYPE.  The value is sign extended
-   if it is negative.  This function is similar to build_int_cst, but
-   the extra bits outside of the type precision are cleared.  Constants
-   with these extra bits may confuse the fold so that it detects overflows
-   even in cases when they do not occur, and in general should be avoided.
-   We cannot however make this a default behavior of build_int_cst without
-   more intrusive changes, since there are parts of gcc that rely on the extra
-   precision of the integer constants.  */
+/* Create an INT_CST node with a LOW value sign extended to TYPE.  */
 
 tree
 build_int_cst_type (tree type, HOST_WIDE_INT low)
@@ -1521,7 +1514,7 @@ build_string (int len, const char *str)
 
   s = ggc_alloc_tree_node (length);
 
-  memset (s, 0, sizeof (struct tree_common));
+  memset (s, 0, sizeof (struct tree_typed));
   TREE_SET_CODE (s, STRING_CST);
   TREE_CONSTANT (s) = 1;
   TREE_STRING_LENGTH (s) = len;
@@ -4574,10 +4567,6 @@ free_lang_data_in_decl (tree decl)
   TREE_LANG_FLAG_5 (decl) = 0;
   TREE_LANG_FLAG_6 (decl) = 0;
 
-  /* Identifiers need not have a type.  */
-  if (DECL_NAME (decl))
-    TREE_TYPE (DECL_NAME (decl)) = NULL_TREE;
-
   free_lang_data_in_one_sizepos (&DECL_SIZE (decl));
   free_lang_data_in_one_sizepos (&DECL_SIZE_UNIT (decl));
   if (TREE_CODE (decl) == FIELD_DECL)
@@ -5189,7 +5178,12 @@ free_lang_data (void)
   lang_hooks.callgraph.analyze_expr = NULL;
   lang_hooks.dwarf_name = lhd_dwarf_name;
   lang_hooks.decl_printable_name = gimple_decl_printable_name;
-  lang_hooks.set_decl_assembler_name = lhd_set_decl_assembler_name;
+  /* We do not want the default decl_assembler_name implementation,
+     rather if we have fixed everything we want a wrapper around it
+     asserting that all non-local symbols already got their assembler
+     name and only produce assembler names for local symbols.  Or rather
+     make sure we never call decl_assembler_name on local symbols and
+     devise a separate, middle-end private scheme for it.  */
 
   /* Reset diagnostic machinery.  */
   diagnostic_starter (global_dc) = default_tree_diagnostic_starter;
@@ -9985,7 +9979,7 @@ signed_type_for (tree type)
 tree
 upper_bound_in_type (tree outer, tree inner)
 {
-  unsigned HOST_WIDE_INT lo, hi;
+  double_int high;
   unsigned int det = 0;
   unsigned oprec = TYPE_PRECISION (outer);
   unsigned iprec = TYPE_PRECISION (inner);
@@ -10032,18 +10026,18 @@ upper_bound_in_type (tree outer, tree inner)
   /* Compute 2^^prec - 1.  */
   if (prec <= HOST_BITS_PER_WIDE_INT)
     {
-      hi = 0;
-      lo = ((~(unsigned HOST_WIDE_INT) 0)
+      high.high = 0;
+      high.low = ((~(unsigned HOST_WIDE_INT) 0)
 	    >> (HOST_BITS_PER_WIDE_INT - prec));
     }
   else
     {
-      hi = ((~(unsigned HOST_WIDE_INT) 0)
+      high.high = ((~(unsigned HOST_WIDE_INT) 0)
 	    >> (2 * HOST_BITS_PER_WIDE_INT - prec));
-      lo = ~(unsigned HOST_WIDE_INT) 0;
+      high.low = ~(unsigned HOST_WIDE_INT) 0;
     }
 
-  return build_int_cst_wide (outer, lo, hi);
+  return double_int_to_tree (outer, high);
 }
 
 /* Returns the smallest value obtainable by casting something in INNER type to
@@ -10052,7 +10046,7 @@ upper_bound_in_type (tree outer, tree inner)
 tree
 lower_bound_in_type (tree outer, tree inner)
 {
-  unsigned HOST_WIDE_INT lo, hi;
+  double_int low;
   unsigned oprec = TYPE_PRECISION (outer);
   unsigned iprec = TYPE_PRECISION (inner);
 
@@ -10063,7 +10057,7 @@ lower_bound_in_type (tree outer, tree inner)
 	 contains all values of INNER type.  In particular, both INNER
 	 and OUTER types have zero in common.  */
       || (oprec > iprec && TYPE_UNSIGNED (inner)))
-    lo = hi = 0;
+    low.low = low.high = 0;
   else
     {
       /* If we are widening a signed type to another signed type, we
@@ -10074,18 +10068,18 @@ lower_bound_in_type (tree outer, tree inner)
 
       if (prec <= HOST_BITS_PER_WIDE_INT)
 	{
-	  hi = ~(unsigned HOST_WIDE_INT) 0;
-	  lo = (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
+	  low.high = ~(unsigned HOST_WIDE_INT) 0;
+	  low.low = (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
 	}
       else
 	{
-	  hi = ((~(unsigned HOST_WIDE_INT) 0)
+	  low.high = ((~(unsigned HOST_WIDE_INT) 0)
 		<< (prec - HOST_BITS_PER_WIDE_INT - 1));
-	  lo = 0;
+	  low.low = 0;
 	}
     }
 
-  return build_int_cst_wide (outer, lo, hi);
+  return double_int_to_tree (outer, low);
 }
 
 /* Return nonzero if two operands that are suitable for PHI nodes are

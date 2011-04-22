@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "value-prof.h"
 #include "cgraph.h"
+#include "profile.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree gcov_type_tmp_var;
@@ -369,7 +370,7 @@ gimple_gen_ic_func_profiler (void)
   ptr_var = force_gimple_operand_gsi (&gsi, ic_void_ptr_var,
 				      true, NULL_TREE, true,
 				      GSI_SAME_STMT);
-  tree_uid = build_int_cst (gcov_type_node, c_node->pid);
+  tree_uid = build_int_cst (gcov_type_node, current_function_funcdef_no);
   stmt1 = gimple_build_call (tree_indirect_call_profiler_fn, 4,
 			     counter_ptr, tree_uid, cur_func, ptr_var);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
@@ -453,6 +454,8 @@ tree_profiling (void)
      child function from already instrumented body).  */
   if (cgraph_state == CGRAPH_STATE_FINISHED)
     return 0;
+
+  init_node_map();
 
   for (node = cgraph_nodes; node; node = node->next)
     {
@@ -548,6 +551,7 @@ tree_profiling (void)
       pop_cfun ();
     }
 
+  del_node_map();
   return 0;
 }
 

@@ -3667,6 +3667,8 @@ gfc_check_stat_sub (gfc_expr *name, gfc_expr *array, gfc_expr *status)
 gfc_try
 gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
 {
+  mpz_t nelems;
+
   if (gfc_option.coarray == GFC_FCOARRAY_NONE)
     {
       gfc_fatal_error ("Coarrays disabled at %C, use -fcoarray= to enable");
@@ -3681,6 +3683,21 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
       gfc_error ("%s argument to IMAGE_INDEX must be a rank one array at %L",
                 gfc_current_intrinsic_arg[1]->name, &sub->where);
       return FAILURE;
+    }
+
+  if (gfc_array_size (sub, &nelems) == SUCCESS)
+    {
+      int corank = gfc_get_corank (coarray);
+
+      if (mpz_cmp_ui (nelems, corank) != 0)
+	{
+	  gfc_error ("The number of array elements of the SUB argument to "
+		     "IMAGE_INDEX at %L shall be %d (corank) not %d",
+		     &sub->where, corank, (int) mpz_get_si (nelems));
+	  mpz_clear (nelems);
+	  return FAILURE;
+	}
+      mpz_clear (nelems);
     }
 
   return SUCCESS;

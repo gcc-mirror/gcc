@@ -253,13 +253,7 @@ build_tarfile() {
 maybe_build_tarfile() {
   dest=$1
   shift
-  dir_exists=0
-  for maybe_dir in "$@"; do
-    if [ -d "$maybe_dir" ]; then
-      dir_exists=1
-    fi
-  done
-  if [ $dir_exists = 1 ]; then
+  if [ $# != 0 -a -d "$1" ]; then
     build_tarfile "$dest" "$@"
   else
     echo "Not building $dest tarfile"

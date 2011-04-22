@@ -183,7 +183,7 @@ class Token
   Keyword
   keyword() const
   {
-    gcc_assert(this->classification_ == TOKEN_KEYWORD);
+    go_assert(this->classification_ == TOKEN_KEYWORD);
     return this->u_.keyword;
   }
 
@@ -196,7 +196,7 @@ class Token
   const std::string&
   identifier() const
   {
-    gcc_assert(this->classification_ == TOKEN_IDENTIFIER);
+    go_assert(this->classification_ == TOKEN_IDENTIFIER);
     return *this->u_.identifier_value.name;
   }
 
@@ -204,7 +204,7 @@ class Token
   bool
   is_identifier_exported() const
   {
-    gcc_assert(this->classification_ == TOKEN_IDENTIFIER);
+    go_assert(this->classification_ == TOKEN_IDENTIFIER);
     return this->u_.identifier_value.is_exported;
   }
 
@@ -220,7 +220,7 @@ class Token
   std::string
   string_value() const
   {
-    gcc_assert(this->classification_ == TOKEN_STRING);
+    go_assert(this->classification_ == TOKEN_STRING);
     return *this->u_.string_value;
   }
 
@@ -228,7 +228,7 @@ class Token
   const mpz_t*
   integer_value() const
   {
-    gcc_assert(this->classification_ == TOKEN_INTEGER);
+    go_assert(this->classification_ == TOKEN_INTEGER);
     return &this->u_.integer_value;
   }
 
@@ -236,7 +236,7 @@ class Token
   const mpfr_t*
   float_value() const
   {
-    gcc_assert(this->classification_ == TOKEN_FLOAT);
+    go_assert(this->classification_ == TOKEN_FLOAT);
     return &this->u_.float_value;
   }
 
@@ -244,7 +244,7 @@ class Token
   const mpfr_t*
   imaginary_value() const
   {
-    gcc_assert(this->classification_ == TOKEN_IMAGINARY);
+    go_assert(this->classification_ == TOKEN_IMAGINARY);
     return &this->u_.float_value;
   }
 
@@ -252,7 +252,7 @@ class Token
   Operator
   op() const
   {
-    gcc_assert(this->classification_ == TOKEN_OPERATOR);
+    go_assert(this->classification_ == TOKEN_OPERATOR);
     return this->u_.op;
   }
 

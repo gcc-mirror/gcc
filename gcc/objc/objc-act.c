@@ -2953,7 +2953,7 @@ synth_module_prologue (void)
 
   /* Forward-declare '@interface Protocol'.  */
   type = get_identifier (PROTOCOL_OBJECT_CLASS_NAME);
-  objc_declare_class (tree_cons (NULL_TREE, type, NULL_TREE));
+  objc_declare_class (type);
   objc_protocol_type = build_pointer_type (xref_tag (RECORD_TYPE, type));
 
   /* Declare receiver type used for dispatching messages to 'super'.  */
@@ -2985,7 +2985,7 @@ synth_module_prologue (void)
   if (!constant_string_class_name)
     constant_string_class_name = runtime.default_constant_string_class_name;
   constant_string_id = get_identifier (constant_string_class_name);
-  objc_declare_class (tree_cons (NULL_TREE, constant_string_id, NULL_TREE));
+  objc_declare_class (constant_string_id);
 
   /* Pre-build the following entities - for speed/convenience.  */
   self_id = get_identifier ("self");
@@ -2995,8 +2995,8 @@ synth_module_prologue (void)
   build_fast_enumeration_state_template ();
   
   /* void objc_enumeration_mutation (id) */
-  type = build_function_type (void_type_node,
-			      tree_cons (NULL_TREE, objc_object_type, NULL_TREE));
+  type = build_function_type_list (void_type_node,
+				   objc_object_type, NULL_TREE);
   objc_enumeration_mutation_decl 
     = add_builtin_function (TAG_ENUMERATION_MUTATION, type, 0, NOT_BUILT_IN, 
 			    NULL, NULL_TREE);
@@ -3360,48 +3360,42 @@ objc_declare_alias (tree alias_ident, tree class_ident)
 }
 
 void
-objc_declare_class (tree ident_list)
+objc_declare_class (tree identifier)
 {
-  tree list;
 #ifdef OBJCPLUS
   if (current_namespace != global_namespace) {
     error ("Objective-C declarations may only appear in global scope");
   }
 #endif /* OBJCPLUS */
 
-  for (list = ident_list; list; list = TREE_CHAIN (list))
+  if (! objc_is_class_name (identifier))
     {
-      tree ident = TREE_VALUE (list);
-
-      if (! objc_is_class_name (ident))
+      tree record = lookup_name (identifier), type = record;
+      
+      if (record)
 	{
-	  tree record = lookup_name (ident), type = record;
-
-	  if (record)
+	  if (TREE_CODE (record) == TYPE_DECL)
+	    type = DECL_ORIGINAL_TYPE (record)
+	      ? DECL_ORIGINAL_TYPE (record)
+	      : TREE_TYPE (record);
+	  
+	  if (!TYPE_HAS_OBJC_INFO (type)
+	      || !TYPE_OBJC_INTERFACE (type))
 	    {
-	      if (TREE_CODE (record) == TYPE_DECL)
-		type = DECL_ORIGINAL_TYPE (record)
-					? DECL_ORIGINAL_TYPE (record)
-					: TREE_TYPE (record);
-
-	      if (!TYPE_HAS_OBJC_INFO (type)
-		  || !TYPE_OBJC_INTERFACE (type))
-		{
-		  error ("%qE redeclared as different kind of symbol",
-			 ident);
-		  error ("previous declaration of %q+D",
-			 record);
-		}
+	      error ("%qE redeclared as different kind of symbol",
+		     identifier);
+	      error ("previous declaration of %q+D",
+		     record);
 	    }
-
-	  record = xref_tag (RECORD_TYPE, ident);
-	  INIT_TYPE_OBJC_INFO (record);
-	  /* In the case of a @class declaration, we store the ident
-	     in the TYPE_OBJC_INTERFACE.  If later an @interface is
-	     found, we'll replace the ident with the interface.  */
-	  TYPE_OBJC_INTERFACE (record) = ident;
-	  hash_class_name_enter (cls_name_hash_list, ident, NULL_TREE);
 	}
+      
+      record = xref_tag (RECORD_TYPE, identifier);
+      INIT_TYPE_OBJC_INFO (record);
+      /* In the case of a @class declaration, we store the ident in
+	 the TYPE_OBJC_INTERFACE.  If later an @interface is found,
+	 we'll replace the ident with the interface.  */
+      TYPE_OBJC_INTERFACE (record) = identifier;
+      hash_class_name_enter (cls_name_hash_list, identifier, NULL_TREE);
     }
 }
 
@@ -3819,6 +3813,8 @@ lookup_interface (tree ident)
   }
 }
 
+
+
 /* Implement @defs (<classname>) within struct bodies.  */
 
 tree
@@ -3835,19 +3831,242 @@ objc_get_class_ivars (tree class_name)
   return error_mark_node;
 }
 
+
+/* Functions used by the hashtable for field duplicates in
+   objc_detect_field_duplicates().  Ideally, we'd use a standard
+   key-value dictionary hashtable , and store as keys the field names,
+   and as values the actual declarations (used to print nice error
+   messages with the locations).  But, the hashtable we are using only
+   allows us to store keys in the hashtable, without values (it looks
+   more like a set).  So, we store the DECLs, but define equality as
+   DECLs having the same name, and hash as the hash of the name.  */
+static hashval_t
+hash_instance_variable (const PTR p)
+{
+  const_tree q = (const_tree)p;
+  return (hashval_t) ((intptr_t)(DECL_NAME (q)) >> 3);
+}
+
+static int
+eq_instance_variable (const PTR p1, const PTR p2)
+{
+  const_tree a = (const_tree)p1;
+  const_tree b = (const_tree)p2;
+  return DECL_NAME (a) == DECL_NAME (b);
+}
+
 /* Called when checking the variables in a struct.  If we are not
-   doing the ivars list inside an @interface context, then returns
-   fieldlist unchanged.  Else, returns the list of class ivars.
-*/
-tree
-objc_get_interface_ivars (tree fieldlist)
+   doing the ivars list inside an @interface context, then return
+   false.  Else, perform the check for duplicate ivars, then return
+   true.  The check for duplicates checks if an instance variable with
+   the same name exists in the class or in a superclass.  If
+   'check_superclasses_only' is set to true, then it is assumed that
+   checks for instance variables in the same class has already been
+   performed (this is the case for ObjC++) and only the instance
+   variables of superclasses are checked.  */
+bool
+objc_detect_field_duplicates (bool check_superclasses_only)
 {
   if (!objc_collecting_ivars || !objc_interface_context 
-      || TREE_CODE (objc_interface_context) != CLASS_INTERFACE_TYPE
-      || CLASS_SUPER_NAME (objc_interface_context) == NULL_TREE)
-    return fieldlist;
+      || TREE_CODE (objc_interface_context) != CLASS_INTERFACE_TYPE)
+    return false;
 
-  return get_class_ivars (objc_interface_context, true);
+  /* We have two ways of doing this check:
+     
+  "direct comparison": we iterate over the instance variables and
+  compare them directly.  This works great for small numbers of
+  instance variables (such as 10 or 20), which are extremely common.
+  But it will potentially take forever for the pathological case with
+  a huge number (eg, 10k) of instance variables.
+  
+  "hashtable": we use a hashtable, which requires a single sweep
+  through the list of instances variables.  This is much slower for a
+  small number of variables, and we only use it for large numbers.
+
+  To decide which one to use, we need to get an idea of how many
+  instance variables we have to compare.  */
+  {
+    unsigned int number_of_ivars_to_check = 0;
+    {
+      tree ivar;
+      for (ivar = CLASS_RAW_IVARS (objc_interface_context);
+	   ivar; ivar = DECL_CHAIN (ivar))
+	{
+	  /* Ignore anonymous ivars.  */
+	  if (DECL_NAME (ivar))
+	    number_of_ivars_to_check++;
+	}
+    }
+
+    /* Exit if there is nothing to do.  */
+    if (number_of_ivars_to_check == 0)
+      return true;
+    
+    /* In case that there are only 1 or 2 instance variables to check,
+       we always use direct comparison.  If there are more, it is
+       worth iterating over the instance variables in the superclass
+       to count how many there are (note that this has the same cost
+       as checking 1 instance variable by direct comparison, which is
+       why we skip this check in the case of 1 or 2 ivars and just do
+       the direct comparison) and then decide if it worth using a
+       hashtable.  */
+    if (number_of_ivars_to_check > 2)
+      {
+	unsigned int number_of_superclass_ivars = 0;
+	{
+	  tree interface;
+	  for (interface = lookup_interface (CLASS_SUPER_NAME (objc_interface_context));
+	       interface; interface = lookup_interface (CLASS_SUPER_NAME (interface)))
+	    {
+	      tree ivar;
+	      for (ivar = CLASS_RAW_IVARS (interface);
+		   ivar; ivar = DECL_CHAIN (ivar))
+		number_of_superclass_ivars++;
+	    }
+	}
+
+	/* We use a hashtable if we have over 10k comparisons.  */
+	if (number_of_ivars_to_check * (number_of_superclass_ivars 
+					+ (number_of_ivars_to_check / 2))
+	    > 10000)
+	  {
+	    /* First, build the hashtable by putting all the instance
+	       variables of superclasses in it.  */
+	    htab_t htab = htab_create (37, hash_instance_variable,
+				       eq_instance_variable, NULL);
+	    tree interface;
+	    for (interface = lookup_interface (CLASS_SUPER_NAME
+					       (objc_interface_context));
+		 interface; interface = lookup_interface
+		   (CLASS_SUPER_NAME (interface)))
+	      {
+		tree ivar;
+		for (ivar = CLASS_RAW_IVARS (interface); ivar;
+		     ivar = DECL_CHAIN (ivar))
+		  {
+		    if (DECL_NAME (ivar) != NULL_TREE)
+		      {
+			void **slot = htab_find_slot (htab, ivar, INSERT);
+			/* Do not check for duplicate instance
+			   variables in superclasses.  Errors have
+			   already been generated.  */
+			*slot = ivar;
+		      }
+		  }
+	      }
+	    
+	    /* Now, we go through all the instance variables in the
+	       class, and check that they are not in the
+	       hashtable.  */
+	    if (check_superclasses_only)
+	      {
+		tree ivar;
+		for (ivar = CLASS_RAW_IVARS (objc_interface_context); ivar;
+		     ivar = DECL_CHAIN (ivar))
+		  {
+		    if (DECL_NAME (ivar) != NULL_TREE)
+		      {
+			tree duplicate_ivar = (tree)(htab_find (htab, ivar));
+			if (duplicate_ivar != HTAB_EMPTY_ENTRY)
+			  {
+			    error_at (DECL_SOURCE_LOCATION (ivar),
+				      "duplicate instance variable %q+D",
+				      ivar);
+			    inform (DECL_SOURCE_LOCATION (duplicate_ivar),
+				    "previous declaration of %q+D",
+				    duplicate_ivar);
+			    /* FIXME: Do we need the following ?  */
+			    /* DECL_NAME (ivar) = NULL_TREE; */
+			  }
+		      }
+		  }
+	      }
+	    else
+	      {
+		/* If we're checking for duplicates in the class as
+		   well, we insert variables in the hashtable as we
+		   check them, so if a duplicate follows, it will be
+		   caught.  */
+		tree ivar;
+		for (ivar = CLASS_RAW_IVARS (objc_interface_context); ivar;
+		     ivar = DECL_CHAIN (ivar))
+		  {
+		    if (DECL_NAME (ivar) != NULL_TREE)
+		      {
+			void **slot = htab_find_slot (htab, ivar, INSERT);
+			if (*slot)
+			  {
+			    tree duplicate_ivar = (tree)(*slot);
+			    error_at (DECL_SOURCE_LOCATION (ivar),
+				      "duplicate instance variable %q+D",
+				      ivar);
+			    inform (DECL_SOURCE_LOCATION (duplicate_ivar),
+				    "previous declaration of %q+D",
+				    duplicate_ivar);
+			    /* FIXME: Do we need the following ?  */
+			    /* DECL_NAME (ivar) = NULL_TREE; */
+			  }
+			*slot = ivar;
+		      }
+		  }
+	      }
+	    htab_delete (htab);
+	    return true;
+	  }
+      }
+  }
+  
+  /* This is the "direct comparison" approach, which is used in most
+     non-pathological cases.  */
+  {
+    /* Walk up to class hierarchy, starting with this class (this is
+       the external loop, because lookup_interface() is expensive, and
+       we want to do it few times).  */
+    tree interface = objc_interface_context;
+
+    if (check_superclasses_only)
+      interface = lookup_interface (CLASS_SUPER_NAME (interface));
+    
+    for ( ; interface; interface = lookup_interface
+	    (CLASS_SUPER_NAME (interface)))
+      {
+	tree ivar_being_checked;
+
+	for (ivar_being_checked = CLASS_RAW_IVARS (objc_interface_context);
+	     ivar_being_checked;
+	     ivar_being_checked = DECL_CHAIN (ivar_being_checked))
+	  {
+	    tree decl;
+	    
+	    /* Ignore anonymous ivars.  */
+	    if (DECL_NAME (ivar_being_checked) == NULL_TREE)
+	      continue;
+
+	    /* Note how we stop when we find the ivar we are checking
+	       (this can only happen in the main class, not
+	       superclasses), to avoid comparing things twice
+	       (otherwise, for each ivar, you'd compare A to B then B
+	       to A, and get duplicated error messages).  */
+	    for (decl = CLASS_RAW_IVARS (interface);
+		 decl && decl != ivar_being_checked;
+		 decl = DECL_CHAIN (decl))
+	      {
+		if (DECL_NAME (ivar_being_checked) == DECL_NAME (decl))
+		  {
+		    error_at (DECL_SOURCE_LOCATION (ivar_being_checked),
+			      "duplicate instance variable %q+D",
+			      ivar_being_checked);
+		    inform (DECL_SOURCE_LOCATION (decl),
+			    "previous declaration of %q+D",
+			    decl);
+		    /* FIXME: Do we need the following ?  */
+		    /* DECL_NAME (ivar_being_checked) = NULL_TREE; */
+		  }
+	      }
+	  }
+      }
+  }
+  return true;
 }
 
 /* Used by: build_private_template, continue_class,
@@ -4668,7 +4887,7 @@ build_keyword_selector (tree selector)
       strcat (buf, ":");
     }
 
-  return get_identifier (buf);
+  return get_identifier_with_length (buf, len);
 }
 
 /* Used for declarations and definitions.  */
@@ -6148,6 +6367,35 @@ is_private (tree decl)
 			DECL_NAME (decl)));
 }
 
+/* Searches all the instance variables of 'klass' and of its
+   superclasses for an instance variable whose name (identifier) is
+   'ivar_name_ident'.  Return the declaration (DECL) of the instance
+   variable, if found, or NULL_TREE, if not found.  */
+static inline tree
+ivar_of_class (tree klass, tree ivar_name_ident)
+{
+  /* First, look up the ivar in CLASS_RAW_IVARS.  */
+  tree decl_chain = CLASS_RAW_IVARS (klass);
+
+  for ( ; decl_chain; decl_chain = DECL_CHAIN (decl_chain))
+    if (DECL_NAME (decl_chain) == ivar_name_ident)
+      return decl_chain;
+
+  /* If not found, search up the class hierarchy.  */
+  while (CLASS_SUPER_NAME (klass))
+    {
+      klass = lookup_interface (CLASS_SUPER_NAME (klass));
+      
+      decl_chain = CLASS_RAW_IVARS (klass);
+  
+      for ( ; decl_chain; decl_chain = DECL_CHAIN (decl_chain))
+	if (DECL_NAME (decl_chain) == ivar_name_ident)
+	  return decl_chain;
+    }
+
+  return NULL_TREE;
+}
+
 /* We have an instance variable reference;, check to see if it is public.  */
 
 int
@@ -6178,7 +6426,7 @@ objc_is_public (tree expr, tree identifier)
 	      return 0;
 	    }
 
-	  if ((decl = is_ivar (get_class_ivars (klass, true), identifier)))
+	  if ((decl = ivar_of_class (klass, identifier)))
 	    {
 	      if (TREE_PUBLIC (decl))
 		return 1;
@@ -7869,9 +8117,8 @@ lookup_protocol (tree ident, bool warn_if_deprecated, bool definition_required)
    they are already declared or defined, the function has no effect.  */
 
 void
-objc_declare_protocols (tree names, tree attributes)
+objc_declare_protocol (tree name, tree attributes)
 {
-  tree list;
   bool deprecated = false;
 
 #ifdef OBJCPLUS
@@ -7896,29 +8143,25 @@ objc_declare_protocols (tree names, tree attributes)
 	}
     }
 
-  for (list = names; list; list = TREE_CHAIN (list))
+  if (lookup_protocol (name, /* warn if deprecated */ false,
+		       /* definition_required */ false) == NULL_TREE)
     {
-      tree name = TREE_VALUE (list);
-
-      if (lookup_protocol (name, /* warn if deprecated */ false,
-			   /* definition_required */ false) == NULL_TREE)
+      tree protocol = make_node (PROTOCOL_INTERFACE_TYPE);
+      
+      TYPE_LANG_SLOT_1 (protocol)
+	= make_tree_vec (PROTOCOL_LANG_SLOT_ELTS);
+      PROTOCOL_NAME (protocol) = name;
+      PROTOCOL_LIST (protocol) = NULL_TREE;
+      add_protocol (protocol);
+      PROTOCOL_DEFINED (protocol) = 0;
+      PROTOCOL_FORWARD_DECL (protocol) = NULL_TREE;
+      
+      if (attributes)
 	{
-	  tree protocol = make_node (PROTOCOL_INTERFACE_TYPE);
-
-	  TYPE_LANG_SLOT_1 (protocol)
-	    = make_tree_vec (PROTOCOL_LANG_SLOT_ELTS);
-	  PROTOCOL_NAME (protocol) = name;
-	  PROTOCOL_LIST (protocol) = NULL_TREE;
-	  add_protocol (protocol);
-	  PROTOCOL_DEFINED (protocol) = 0;
-	  PROTOCOL_FORWARD_DECL (protocol) = NULL_TREE;
-	  
-	  if (attributes)
-	    {
-	      TYPE_ATTRIBUTES (protocol) = attributes;
-	      if (deprecated)
-		TREE_DEPRECATED (protocol) = 1;
-	    }
+	  /* TODO: Do we need to store the attributes here ? */
+	  TYPE_ATTRIBUTES (protocol) = attributes;
+	  if (deprecated)
+	    TREE_DEPRECATED (protocol) = 1;
 	}
     }
 }

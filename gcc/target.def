@@ -1291,12 +1291,19 @@ DEFHOOK
  unsigned, (unsigned nunroll, struct loop *loop),
  NULL)
 
+/* True if X is a legitimate MODE-mode immediate operand.  */
+DEFHOOK
+(legitimate_constant_p,
+ "",
+ bool, (enum machine_mode mode, rtx x),
+ hook_bool_mode_rtx_true)
+
 /* True if the constant X cannot be placed in the constant pool.  */
 DEFHOOK
 (cannot_force_const_mem,
  "",
- bool, (rtx x),
- hook_bool_rtx_false)
+ bool, (enum machine_mode mode, rtx x),
+ hook_bool_mode_rtx_false)
 
 DEFHOOK_UNDOC
 (cannot_copy_insn_p,

@@ -211,8 +211,7 @@ free_after_compilation (struct function *f)
   prologue_insn_hash = NULL;
   epilogue_insn_hash = NULL;
 
-  if (crtl->emit.regno_pointer_align)
-    free (crtl->emit.regno_pointer_align);
+  free (crtl->emit.regno_pointer_align);
 
   memset (crtl, 0, sizeof (struct rtl_data));
   f->eh = NULL;
@@ -3663,7 +3662,7 @@ gimplify_parameters (void)
 		  t = built_in_decls[BUILT_IN_ALLOCA];
 		  t = build_call_expr (t, 1, DECL_SIZE_UNIT (parm));
 		  /* The call has been built for a variable-sized object.  */
-		  ALLOCA_FOR_VAR_P (t) = 1;
+		  CALL_ALLOCA_FOR_VAR_P (t) = 1;
 		  t = fold_convert (ptr_type, t);
 		  t = build2 (MODIFY_EXPR, TREE_TYPE (addr), addr, t);
 		  gimplify_and_add (t, &stmts);
@@ -4190,6 +4189,34 @@ blocks_nreverse (tree t)
   return prev;
 }
 
+/* Concatenate two chains of blocks (chained through BLOCK_CHAIN)
+   by modifying the last node in chain 1 to point to chain 2.  */
+
+tree
+block_chainon (tree op1, tree op2)
+{
+  tree t1;
+
+  if (!op1)
+    return op2;
+  if (!op2)
+    return op1;
+
+  for (t1 = op1; BLOCK_CHAIN (t1); t1 = BLOCK_CHAIN (t1))
+    continue;
+  BLOCK_CHAIN (t1) = op2;
+
+#ifdef ENABLE_TREE_CHECKING
+  {
+    tree t2;
+    for (t2 = op2; t2; t2 = BLOCK_CHAIN (t2))
+      gcc_assert (t2 != t1);
+  }
+#endif
+
+  return op1;
+}
+
 /* Count the subblocks of the list starting with BLOCK.  If VECTOR is
    non-NULL, list them all into VECTOR, in a depth-first preorder
    traversal of the block tree.  Also clear TREE_ASM_WRITTEN in all
@@ -4360,6 +4387,13 @@ int
 get_next_funcdef_no (void)
 {
   return funcdef_no++;
+}
+
+/* Return value of funcdef.  */
+int
+get_last_funcdef_no (void)
+{
+  return funcdef_no;
 }
 
 /* Allocate a function structure for FNDECL and set its contents

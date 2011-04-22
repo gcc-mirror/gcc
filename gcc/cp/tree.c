@@ -605,6 +605,8 @@ get_target_expr (tree init)
 {
   if (TREE_CODE (init) == AGGR_INIT_EXPR)
     return build_target_expr (AGGR_INIT_EXPR_SLOT (init), init);
+  else if (TREE_CODE (init) == VEC_INIT_EXPR)
+    return build_target_expr (VEC_INIT_EXPR_SLOT (init), init);
   else
     return build_target_expr_with_type (init, TREE_TYPE (init));
 }
@@ -1507,8 +1509,7 @@ cxx_printable_name_internal (tree decl, int v, bool translate)
       gcc_assert (uid_ring[ring_counter] != DECL_UID (current_function_decl));
     }
 
-  if (print_ring[ring_counter])
-    free (print_ring[ring_counter]);
+  free (print_ring[ring_counter]);
 
   print_ring[ring_counter] = xstrdup (lang_decl_name (decl, v, translate));
   uid_ring[ring_counter] = DECL_UID (decl);

@@ -91,6 +91,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-inline.h"
 #include "gimple-pretty-print.h"
+#include "ipa-inline.h"
 
 /* Enumeration of all aggregate reductions we can do.  */
 enum sra_mode { SRA_MODE_EARLY_IPA,   /* early call regularization */
@@ -4366,7 +4367,7 @@ convert_callers (struct cgraph_node *node, tree old_decl,
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (bitmap_set_bit (recomputed_callers, cs->caller->uid)
 	&& gimple_in_ssa_p (DECL_STRUCT_FUNCTION (cs->caller->decl)))
-      compute_inline_parameters (cs->caller);
+      compute_inline_parameters (cs->caller, true);
   BITMAP_FREE (recomputed_callers);
 
   current_function_decl = old_cur_fndecl;
@@ -4470,7 +4471,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
     }
 
   if ((DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))
-      && node->global.size >= MAX_INLINE_INSNS_AUTO)
+      && inline_summary(node)->size >= MAX_INLINE_INSNS_AUTO)
     {
       if (dump_file)
 	fprintf (dump_file, "Function too big to be made truly local.\n");

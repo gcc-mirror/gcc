@@ -1,3 +1,21 @@
+2011-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto.c (lto_balanced_map): Fix typos in head comment.
+	(lto_promote_cross_file_statics): Fix long lines and remove redundant
+	test.
+
+2011-04-16  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_balanced_map): Update.
+
+2011-04-14  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c: Include ipa-inline.h
+	(add_cgraph_node_to_partition, undo_partition): Use inline_summary
+	accessor.
+	(ipa_node_duplication_hook): Fix declaration.
+	* Make-lang.in (lto.o): Update dependencies.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-tree.h (union lang_tree_node): Check for TS_COMMON before
@@ -66,8 +84,8 @@
 
 	PR lto/45721
 	PR lto/45375
-	* lto.c (partition_cgraph_node_p, partition_varpool_node_p): Weakrefs are
-	not partitioned.
+	* lto.c (partition_cgraph_node_p, partition_varpool_node_p): Weakrefs
+	are not partitioned.
 
 2010-12-22  Nathan Froyd  <froydnj@codesourcery.com>
 
@@ -365,11 +383,12 @@
 	* lto.c (add_cgraph_node_to_partition): Forward declare; walk also
 	nodes from same comdat group as well as all comdat functions referenced
 	here.
-	(add_varpool_node_to_partition, add_references_to_partition): New function.
-	(lto_1_1_map): Skip COMDAT fnctions/variables; use add_varpool_node_to_partition;
-	clear aux flags when done.
-	(lto_promote_cross_file_statics): Do not promote stuff that gets duplicated to
-	each ltrans.
+	(add_varpool_node_to_partition, add_references_to_partition): New
+	function.
+	(lto_1_1_map): Skip COMDAT fnctions/variables; use
+	add_varpool_node_to_partition; clear aux flags when done.
+	(lto_promote_cross_file_statics): Do not promote stuff that gets
+	duplicated to each ltrans.
 
 2010-07-04  Jan Hubicka  <jh@suse.cz>
 
@@ -577,8 +596,8 @@
 
 2010-04-30  Jan Hubicka  <jh@suse.cz>
 
-	* lto.c (get_filename_for_set): Look for cgraph node and if none found, use
-	default name.
+	* lto.c (get_filename_for_set): Look for cgraph node and if none found,
+	use default name.
 	(lto_wpa_write_files): Write any non-empty partition.
 
 2010-04-30  Jan Hubicka  <jh@suse.cz>

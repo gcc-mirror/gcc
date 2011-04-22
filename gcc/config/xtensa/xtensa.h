@@ -671,10 +671,6 @@ typedef struct xtensa_args
     || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
     || (GET_CODE (X) == CONST)))
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-#define LEGITIMATE_CONSTANT_P(X) (! xtensa_tls_referenced_p (X))
-
 /* A C expression that is nonzero if X is a legitimate immediate
    operand on the target machine when generating position independent
    code.  */

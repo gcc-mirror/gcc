@@ -1,3 +1,29 @@
+2011-04-21  Jie Zhang  <jzhang918@gmail.com>
+
+	* MAINTAINERS: Update my email address.
+
+2011-04-20  Easwaran Raman  <eraman@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2011-04-18  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR lto/48086
+	* configure.ac: Re-enable LTO on *-apple-darwin9*.
+	* configure: Regenerate.
+
+2011-04-16  Jim Meyering  <meyering@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2011-04-15  Dodji Seketeli  <dodji@redhat.com>
+
+	* MAINTAINERS: Update my email address.
+
+2011-04-13  Georg-Johann Lay  <avr@gjlay.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2011-04-12  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

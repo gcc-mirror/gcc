@@ -1011,6 +1011,7 @@ free_ddg_all_sccs (ddg_all_sccs_ptr all_sccs)
   for (i = 0; i < all_sccs->num_sccs; i++)
     free_scc (all_sccs->sccs[i]);
 
+  free (all_sccs->sccs);
   free (all_sccs);
 }
 

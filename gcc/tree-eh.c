@@ -849,6 +849,8 @@ note_eh_region_may_contain_throw (eh_region region)
 {
   while (bitmap_set_bit (eh_region_may_contain_throw_map, region->index))
     {
+      if (region->type == ERT_MUST_NOT_THROW)
+	break;
       region = region->outer;
       if (region == NULL)
 	break;
@@ -1617,8 +1619,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
     }
 
   VEC_free (tree, heap, this_tf.dest_array);
-  if (this_tf.goto_queue)
-    free (this_tf.goto_queue);
+  free (this_tf.goto_queue);
   if (this_tf.goto_queue_map)
     pointer_map_destroy (this_tf.goto_queue_map);
 
@@ -2743,7 +2744,7 @@ same_handler_p (gimple_seq oneh, gimple_seq twoh)
       || gimple_call_lhs (twos)
       || gimple_call_chain (ones)
       || gimple_call_chain (twos)
-      || !operand_equal_p (gimple_call_fn (ones), gimple_call_fn (twos), 0)
+      || !gimple_call_same_target_p (ones, twos)
       || gimple_call_num_args (ones) != gimple_call_num_args (twos))
     return false;
 

@@ -342,8 +342,6 @@ enum reg_class
 
 #define MAX_REGS_PER_ADDRESS 1
 
-#define LEGITIMATE_CONSTANT_P(X) 1
-
 
 /* Describing Relative Costs of Operations.  */
 

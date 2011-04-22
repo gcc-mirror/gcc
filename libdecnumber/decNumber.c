@@ -711,7 +711,7 @@ decNumber * decNumberFromString(decNumber *dn, const char chars[],
     /* decNumberShow(dn); */
     } while(0); 			/* [for break] */
 
-  if (allocres!=NULL) free(allocres);	/* drop any storage used */
+  free(allocres);	/* drop any storage used */
   if (status!=0) decStatus(dn, status, set);
   return dn;
   } /* decNumberFromString */
@@ -970,8 +970,8 @@ decNumber * decNumberCompareTotalMag(decNumber *res, const decNumber *lhs,
     decCompareOp(res, lhs, rhs, set, COMPTOTAL, &status);
     } while(0); 			/* end protected */
 
-  if (allocbufa!=NULL) free(allocbufa); /* drop any storage used */
-  if (allocbufb!=NULL) free(allocbufb); /* .. */
+  free(allocbufa); /* drop any storage used */
+  free(allocbufb); /* .. */
   if (status!=0) decStatus(res, status, set);
   return res;
   } /* decNumberCompareTotalMag */
@@ -1074,7 +1074,7 @@ decNumber * decNumberExp(decNumber *res, const decNumber *rhs,
     } while(0); 			/* end protected */
 
   #if DECSUBSET
-  if (allocrhs !=NULL) free(allocrhs);	/* drop any storage used */
+  free(allocrhs);	/* drop any storage used */
   #endif
   /* apply significant status */
   if (status!=0) decStatus(res, status, set);
@@ -1169,7 +1169,7 @@ decNumber * decNumberFMA(decNumber *res, const decNumber *lhs,
     decAddOp(res, acc, fhs, set, 0, &status);
     } while(0); 			/* end protected */
 
-  if (allocbufa!=NULL) free(allocbufa); /* drop any storage used */
+  free(allocbufa); /* drop any storage used */
   if (status!=0) decStatus(res, status, set);
   #if DECCHECK
   decCheckInexact(res, set);
@@ -1296,7 +1296,7 @@ decNumber * decNumberLn(decNumber *res, const decNumber *rhs,
     } while(0); 			/* end protected */
 
   #if DECSUBSET
-  if (allocrhs !=NULL) free(allocrhs);	/* drop any storage used */
+  free(allocrhs);	/* drop any storage used */
   #endif
   /* apply significant status */
   if (status!=0) decStatus(res, status, set);
@@ -1509,10 +1509,10 @@ decNumber * decNumberLog10(decNumber *res, const decNumber *rhs,
     decDivideOp(res, a, b, &aset, DIVIDE, &status); /* into result */
     } while(0); 			/* [for break] */
 
-  if (allocbufa!=NULL) free(allocbufa); /* drop any storage used */
-  if (allocbufb!=NULL) free(allocbufb); /* .. */
+  free(allocbufa); /* drop any storage used */
+  free(allocbufb); /* .. */
   #if DECSUBSET
-  if (allocrhs !=NULL) free(allocrhs);	/* .. */
+  free(allocrhs);	/* .. */
   #endif
   /* apply significant status */
   if (status!=0) decStatus(res, status, set);
@@ -2253,11 +2253,11 @@ decNumber * decNumberPower(decNumber *res, const decNumber *lhs,
     #endif
     } while(0); 			/* end protected */
 
-  if (allocdac!=NULL) free(allocdac);	/* drop any storage used */
-  if (allocinv!=NULL) free(allocinv);	/* .. */
+  free(allocdac);	/* drop any storage used */
+  free(allocinv);	/* .. */
   #if DECSUBSET
-  if (alloclhs!=NULL) free(alloclhs);	/* .. */
-  if (allocrhs!=NULL) free(allocrhs);	/* .. */
+  free(alloclhs);	/* .. */
+  free(allocrhs);	/* .. */
   #endif
   if (status!=0) decStatus(res, status, set);
   #if DECCHECK
@@ -2349,7 +2349,7 @@ decNumber * decNumberReduce(decNumber *res, const decNumber *rhs,
     } while(0); 			     /* end protected */
 
   #if DECSUBSET
-  if (allocrhs !=NULL) free(allocrhs);	     /* .. */
+  free(allocrhs);	     /* .. */
   #endif
   if (status!=0) decStatus(res, status, set);/* then report status */
   return res;
@@ -3111,11 +3111,11 @@ decNumber * decNumberSquareRoot(decNumber *res, const decNumber *rhs,
     decNumberCopy(res, a);		     /* a is now the result */
     } while(0); 			     /* end protected */
 
-  if (allocbuff!=NULL) free(allocbuff);      /* drop any storage used */
-  if (allocbufa!=NULL) free(allocbufa);      /* .. */
-  if (allocbufb!=NULL) free(allocbufb);      /* .. */
+  free(allocbuff);      /* drop any storage used */
+  free(allocbufa);      /* .. */
+  free(allocbufb);      /* .. */
   #if DECSUBSET
-  if (allocrhs !=NULL) free(allocrhs);	     /* .. */
+  free(allocrhs);	     /* .. */
   #endif
   if (status!=0) decStatus(res, status, set);/* then report status */
   #if DECCHECK
@@ -4130,10 +4130,10 @@ static decNumber * decAddOp(decNumber *res, const decNumber *lhs,
       }
     } while(0); 			     /* end protected */
 
-  if (allocacc!=NULL) free(allocacc);	     /* drop any storage used */
+  free(allocacc);	     /* drop any storage used */
   #if DECSUBSET
-  if (allocrhs!=NULL) free(allocrhs);	     /* .. */
-  if (alloclhs!=NULL) free(alloclhs);	     /* .. */
+  free(allocrhs);	     /* .. */
+  free(alloclhs);	     /* .. */
   #endif
   return res;
   } /* decAddOp */
@@ -4782,11 +4782,11 @@ static decNumber * decDivideOp(decNumber *res,
     #endif
     } while(0); 			     /* end protected */
 
-  if (varalloc!=NULL) free(varalloc);	/* drop any storage used */
-  if (allocacc!=NULL) free(allocacc);	/* .. */
+  free(varalloc);	/* drop any storage used */
+  free(allocacc);	/* .. */
   #if DECSUBSET
-  if (allocrhs!=NULL) free(allocrhs);	/* .. */
-  if (alloclhs!=NULL) free(alloclhs);	/* .. */
+  free(allocrhs);	/* .. */
+  free(alloclhs);	/* .. */
   #endif
   return res;
   } /* decDivideOp */
@@ -5127,14 +5127,14 @@ static decNumber * decMultiplyOp(decNumber *res, const decNumber *lhs,
     decFinish(res, set, &residue, status);   /* final cleanup */
     } while(0); 			/* end protected */
 
-  if (allocacc!=NULL) free(allocacc);	/* drop any storage used */
+  free(allocacc);	/* drop any storage used */
   #if DECSUBSET
-  if (allocrhs!=NULL) free(allocrhs);	/* .. */
-  if (alloclhs!=NULL) free(alloclhs);	/* .. */
+  free(allocrhs);	/* .. */
+  free(alloclhs);	/* .. */
   #endif
   #if FASTMUL
-  if (allocrhi!=NULL) free(allocrhi);	/* .. */
-  if (alloclhi!=NULL) free(alloclhi);	/* .. */
+  free(allocrhi);	/* .. */
+  free(alloclhi);	/* .. */
   #endif
   return res;
   } /* decMultiplyOp */
@@ -5483,9 +5483,9 @@ decNumber * decExpOp(decNumber *res, const decNumber *rhs,
     decFinish(res, set, &residue, status);	 /* cleanup/set flags */
     } while(0); 			/* end protected */
 
-  if (allocrhs !=NULL) free(allocrhs);	/* drop any storage used */
-  if (allocbufa!=NULL) free(allocbufa); /* .. */
-  if (allocbuft!=NULL) free(allocbuft); /* .. */
+  free(allocrhs);	/* drop any storage used */
+  free(allocbufa); /* .. */
+  free(allocbuft); /* .. */
   /* [status is handled by caller] */
   return res;
   } /* decExpOp */
@@ -5794,8 +5794,8 @@ decNumber * decLnOp(decNumber *res, const decNumber *rhs,
     decFinish(res, set, &residue, status);	 /* cleanup/set flags */
     } while(0); 			/* end protected */
 
-  if (allocbufa!=NULL) free(allocbufa); /* drop any storage used */
-  if (allocbufb!=NULL) free(allocbufb); /* .. */
+  free(allocbufa); /* drop any storage used */
+  free(allocbufb); /* .. */
   /* [status is handled by caller] */
   return res;
   } /* decLnOp */
@@ -5959,8 +5959,8 @@ static decNumber * decQuantizeOp(decNumber *res, const decNumber *lhs,
     } while(0); 			/* end protected */
 
   #if DECSUBSET
-  if (allocrhs!=NULL) free(allocrhs);	/* drop any storage used */
-  if (alloclhs!=NULL) free(alloclhs);	/* .. */
+  free(allocrhs);	/* drop any storage used */
+  free(alloclhs);	/* .. */
   #endif
   return res;
   } /* decQuantizeOp */
@@ -6142,8 +6142,8 @@ decNumber * decCompareOp(decNumber *res, const decNumber *lhs,
       }
     }
   #if DECSUBSET
-  if (allocrhs!=NULL) free(allocrhs);	/* free any storage used */
-  if (alloclhs!=NULL) free(alloclhs);	/* .. */
+  free(allocrhs);	/* free any storage used */
+  free(alloclhs);	/* .. */
   #endif
   return res;
   } /* decCompareOp */
@@ -6277,7 +6277,7 @@ static Int decUnitCompare(const Unit *a, Int alength,
     result=(*u==0 ? 0 : +1);
     }
   /* clean up and return the result */
-  if (allocacc!=NULL) free(allocacc);	/* drop any storage used */
+  free(allocacc);	/* drop any storage used */
   return result;
   } /* decUnitCompare */
 

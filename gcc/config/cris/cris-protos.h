@@ -1,5 +1,6 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2006, 2007, 2009, 2010
+   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2006, 2007, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Axis Communications.
 
@@ -20,10 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Prototypes for the CRIS port.  */
-
-#if defined(FILE) || defined(stdin) || defined(stdout) || defined(getc) || defined(putc)
-#define STDIO_INCLUDED
-#endif
 
 extern bool cris_simple_epilogue (void);
 #ifdef RTX_CODE

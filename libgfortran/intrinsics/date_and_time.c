@@ -168,7 +168,6 @@ date_and_time (char *__date, char *__time, char *__zone,
       values[5] = local_time.tm_min;
       values[6] = local_time.tm_sec;
 
-#if HAVE_SNPRINTF
       if (__date)
 	snprintf (date, DATE_LEN + 1, "%04d%02d%02d",
 		  values[0], values[1], values[2]);
@@ -179,18 +178,6 @@ date_and_time (char *__date, char *__time, char *__zone,
       if (__zone)
 	snprintf (zone, ZONE_LEN + 1, "%+03d%02d",
 		  values[3] / 60, abs (values[3] % 60));
-#else
-      if (__date)
-	sprintf (date, "%04d%02d%02d", values[0], values[1], values[2]);
-
-      if (__time)
-	sprintf (timec, "%02d%02d%02d.%03d",
-		 values[4], values[5], values[6], values[7]);
-
-      if (__zone)
-	sprintf (zone, "%+03d%02d",
-		 values[3] / 60, abs (values[3] % 60));
-#endif
     }
   else
     {

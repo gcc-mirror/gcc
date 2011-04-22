@@ -492,9 +492,8 @@ static void next_runtime_02_initialize (void)
   build_v2_ehtype_template ();
 
   /* void * objc_begin_catch (void *) */
-  type = build_function_type (ptr_type_node,
-			      tree_cons (NULL_TREE, ptr_type_node,
-			      OBJC_VOID_AT_END));
+  type = build_function_type_list (ptr_type_node,
+				   ptr_type_node, NULL_TREE);
 
   objc2_begin_catch_decl = add_builtin_function ("objc_begin_catch",
 						 type, 0, NOT_BUILT_IN,
@@ -502,14 +501,13 @@ static void next_runtime_02_initialize (void)
   TREE_NOTHROW (objc2_begin_catch_decl) = 0;
 
   /* void objc_end_catch () */
-  type = build_function_type (void_type_node, OBJC_VOID_AT_END);
+  type = build_function_type_list (void_type_node, NULL_TREE);
   objc2_end_catch_decl = add_builtin_function ("objc_end_catch",
 						type, 0, NOT_BUILT_IN,
 						NULL, NULL_TREE);
   TREE_NOTHROW (objc2_end_catch_decl) = 0;
 
   /* void objc_exception_rethrow (void) */
-  type = build_function_type (void_type_node, OBJC_VOID_AT_END);
   objc_rethrow_exception_decl = 
 			add_builtin_function ("objc_exception_rethrow",
 					      type, 0, NOT_BUILT_IN,

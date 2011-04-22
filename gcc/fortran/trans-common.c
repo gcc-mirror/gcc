@@ -133,7 +133,7 @@ get_segment_info (gfc_symbol * sym, HOST_WIDE_INT offset)
     gfc_conv_const_charlen (sym->ts.u.cl);
 
   /* Create the segment_info and fill it in.  */
-  s = (segment_info *) gfc_getmem (sizeof (segment_info));
+  s = XCNEW (segment_info);
   s->sym = sym;
   /* We will use this type when building the segment aggregate type.  */
   s->field = gfc_sym_type (sym);
@@ -155,14 +155,14 @@ copy_equiv_list_to_ns (segment_info *c)
   gfc_equiv_info *s;
   gfc_equiv_list *l;
 
-  l = (gfc_equiv_list *) gfc_getmem (sizeof (gfc_equiv_list));
+  l = XCNEW (gfc_equiv_list);
 
   l->next = c->sym->ns->equiv_lists;
   c->sym->ns->equiv_lists = l;
 
   for (f = c; f; f = f->next)
     {
-      s = (gfc_equiv_info *) gfc_getmem (sizeof (gfc_equiv_info));
+      s = XCNEW (gfc_equiv_info);
       s->next = l->equiv;
       l->equiv = s;
       s->sym = f->sym;
@@ -505,8 +505,8 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
 
   /* Now absorb all the initializer data into a single vector,
      whilst checking for overlapping, unequal values.  */
-  data = (unsigned char*)gfc_getmem ((size_t)length);
-  chk = (unsigned char*)gfc_getmem ((size_t)length);
+  data = XCNEWVEC (unsigned char, (size_t)length);
+  chk = XCNEWVEC (unsigned char, (size_t)length);
 
   /* TODO - change this when default initialization is implemented.  */
   memset (data, '\0', (size_t)length);
@@ -521,8 +521,8 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
   for (i = 0; i < length; i++)
     CONSTRUCTOR_APPEND_ELT (v, NULL, build_int_cst (type, data[i]));
 
-  gfc_free (data);
-  gfc_free (chk);
+  free (data);
+  free (chk);
 
   /* Build a char[length] array to hold the initializers.  Much of what
      follows is borrowed from build_field, above.  */
@@ -720,7 +720,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       s->sym->backend_decl = var_decl;
 
       next_s = s->next;
-      gfc_free (s);
+      free (s);
     }
 }
 

@@ -219,6 +219,10 @@ gimple_check_call_args (gimple stmt, tree fndecl)
   tree parms, p;
   unsigned int i, nargs;
 
+  /* Calls to internal functions always match their signature.  */
+  if (gimple_call_internal_p (stmt))
+    return true;
+
   nargs = gimple_call_num_args (stmt);
 
   /* Get argument types for verification.  */

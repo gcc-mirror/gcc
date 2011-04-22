@@ -5127,11 +5127,9 @@ free_rdg (struct graph *rdg)
       struct graph_edge *e;
 
       for (e = v->succ; e; e = e->succ_next)
-	if (e->data)
-	  free (e->data);
+	free (e->data);
 
-      if (v->data)
-	free (v->data);
+      free (v->data);
     }
 
   htab_delete (rdg->indices);

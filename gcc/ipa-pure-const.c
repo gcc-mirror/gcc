@@ -639,7 +639,6 @@ static void
 check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 {
   gimple stmt = gsi_stmt (*gsip);
-  unsigned int i = 0;
 
   if (is_gimple_debug (stmt))
     return;
@@ -693,16 +692,12 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 	}
       break;
     case GIMPLE_ASM:
-      for (i = 0; i < gimple_asm_nclobbers (stmt); i++)
+      if (gimple_asm_clobbers_memory_p (stmt))
 	{
-	  tree op = gimple_asm_clobber_op (stmt, i);
-	  if (strcmp (TREE_STRING_POINTER (TREE_VALUE (op)), "memory") == 0)
-	    {
-              if (dump_file)
-                fprintf (dump_file, "    memory asm clobber is not const/pure");
-	      /* Abandon all hope, ye who enter here. */
-	      local->pure_const_state = IPA_NEITHER;
-	    }
+	  if (dump_file)
+	    fprintf (dump_file, "    memory asm clobber is not const/pure");
+	  /* Abandon all hope, ye who enter here. */
+	  local->pure_const_state = IPA_NEITHER;
 	}
       if (gimple_asm_volatile_p (stmt))
 	{
@@ -1667,8 +1662,7 @@ local_pure_const (void)
 		 lang_hooks.decl_printable_name (current_function_decl,
 						 2));
     }
-  if (l)
-    free (l);
+  free (l);
   if (changed)
     return execute_fixup_cfg ();
   else

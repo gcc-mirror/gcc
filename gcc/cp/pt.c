@@ -12938,7 +12938,8 @@ tsubst_copy_and_build (tree t,
 	    && !any_type_dependent_arguments_p (call_args))
 	  function = perform_koenig_lookup (function, call_args, false);
 
-	if (TREE_CODE (function) == IDENTIFIER_NODE)
+	if (TREE_CODE (function) == IDENTIFIER_NODE
+	    && !processing_template_decl)
 	  {
 	    unqualified_name_lookup_error (function);
 	    release_tree_vector (call_args);
@@ -13979,7 +13980,7 @@ type_unification_real (tree tparms,
   gcc_assert (ntparms > 0);
 
   /* Reset the number of non-defaulted template arguments contained
-     in in TARGS.  */
+     in TARGS.  */
   NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs) = NULL_TREE;
 
   switch (strict)

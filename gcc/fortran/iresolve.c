@@ -2547,9 +2547,10 @@ void
 gfc_resolve_image_index (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
 			 gfc_expr *sub ATTRIBUTE_UNUSED)
 {
-  static char this_image[] = "__image_index";
+  static char image_index[] = "__image_index";
+  f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind;
-  f->value.function.name = this_image;
+  f->value.function.name = image_index;
 }
 
 

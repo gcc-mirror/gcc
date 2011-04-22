@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-pass.h"
 #include "pointer-set.h"
+#include "profile.h"
 
 /* In this file value profile based optimizations are placed.  Currently the
    following optimizations are implemented (for more detailed descriptions
@@ -1059,35 +1060,56 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   return true;
 }
 
-static struct cgraph_node** pid_map = NULL;
+static VEC(cgraph_node_ptr, heap) *cgraph_node_map = NULL;
 
-/* Initialize map of pids (pid -> cgraph node) */
+/* Initialize map from FUNCDEF_NO to CGRAPH_NODE.  */
 
-static void
-init_pid_map (void)
+void
+init_node_map (void)
 {
   struct cgraph_node *n;
 
-  if (pid_map != NULL)
-    return;
-
-  pid_map = XCNEWVEC (struct cgraph_node*, cgraph_max_pid);
+  if (get_last_funcdef_no ())
+    VEC_safe_grow_cleared (cgraph_node_ptr, heap,
+                           cgraph_node_map, get_last_funcdef_no ());
 
   for (n = cgraph_nodes; n; n = n->next)
     {
-      if (n->pid != -1)
-	pid_map [n->pid] = n;
+      if (DECL_STRUCT_FUNCTION (n->decl))
+        VEC_replace (cgraph_node_ptr, cgraph_node_map,
+                     DECL_STRUCT_FUNCTION (n->decl)->funcdef_no, n);
     }
+}
+
+/* Delete the CGRAPH_NODE_MAP.  */
+
+void
+del_node_map (void)
+{
+   VEC_free (cgraph_node_ptr, heap, cgraph_node_map);
+   cgraph_node_map = NULL;
 }
 
 /* Return cgraph node for function with pid */
 
 static inline struct cgraph_node*
-find_func_by_pid (int	pid)
+find_func_by_funcdef_no (int func_id)
 {
-  init_pid_map ();
+  int max_id = get_last_funcdef_no ();
+  if (func_id >= max_id || VEC_index (cgraph_node_ptr,
+                                      cgraph_node_map,
+                                      func_id) == NULL)
+    {
+      if (flag_profile_correction)
+        inform (DECL_SOURCE_LOCATION (current_function_decl),
+                "Inconsistent profile: indirect call target (%d) does not exist", func_id);
+      else
+        error ("Inconsistent profile: indirect call target (%d) does not exist", func_id);
 
-  return pid_map [pid];
+      return NULL;
+    }
+
+  return VEC_index (cgraph_node_ptr, cgraph_node_map, func_id);
 }
 
 /* Perform sanity check on the indirect call target. Due to race conditions,
@@ -1258,6 +1280,9 @@ gimple_ic_transform (gimple stmt)
   if (gimple_call_fndecl (stmt) != NULL_TREE)
     return false;
 
+  if (gimple_call_internal_p (stmt))
+    return false;
+
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_INDIR_CALL);
   if (!histogram)
     return false;
@@ -1282,7 +1307,7 @@ gimple_ic_transform (gimple stmt)
     prob = (count * REG_BR_PROB_BASE + all / 2) / all;
   else
     prob = 0;
-  direct_call = find_func_by_pid ((int)val);
+  direct_call = find_func_by_funcdef_no ((int)val);
 
   if (direct_call == NULL)
     return false;
@@ -1649,6 +1674,7 @@ gimple_indirect_call_to_profile (gimple stmt, histogram_values *values)
   tree callee;
 
   if (gimple_code (stmt) != GIMPLE_CALL
+      || gimple_call_internal_p (stmt)
       || gimple_call_fndecl (stmt) != NULL_TREE)
     return;
 

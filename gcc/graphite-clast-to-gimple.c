@@ -114,8 +114,7 @@ save_clast_name_index (htab_t index_table, const char *name, int index)
 
   if (slot)
     {
-      if (*slot)
-	free (*slot);
+      free (*slot);
 
       *slot = new_clast_name_index (name, index);
     }

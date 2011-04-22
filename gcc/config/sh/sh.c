@@ -305,6 +305,7 @@ static int sh2a_function_vector_p (tree);
 static void sh_trampoline_init (rtx, tree, rtx);
 static rtx sh_trampoline_adjust_address (rtx);
 static void sh_conditional_register_usage (void);
+static bool sh_legitimate_constant_p (enum machine_mode, rtx);
 
 static const struct attribute_spec sh_attribute_table[] =
 {
@@ -597,6 +598,9 @@ static const struct default_options sh_option_optimization_table[] =
 #define TARGET_TRAMPOLINE_INIT		sh_trampoline_init
 #undef TARGET_TRAMPOLINE_ADJUST_ADDRESS
 #define TARGET_TRAMPOLINE_ADJUST_ADDRESS sh_trampoline_adjust_address
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P	sh_legitimate_constant_p
 
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION    (SYMBOL_FLAG_MACH_DEP << 0)
@@ -12625,6 +12629,22 @@ sh_conditional_register_usage (void)
 	SET_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
 }
 
+/* Implement TARGET_LEGITIMATE_CONSTANT_P
+
+   can_store_by_pieces constructs VOIDmode CONST_DOUBLEs.  */
+
+static bool
+sh_legitimate_constant_p (enum machine_mode mode, rtx x)
+{
+  return (TARGET_SHMEDIA
+	  ? ((mode != DFmode && GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT)
+	     || x == CONST0_RTX (mode)
+	     || !TARGET_SHMEDIA_FPU
+	     || TARGET_SHMEDIA64)
+	  : (GET_CODE (x) != CONST_DOUBLE
+	     || mode == DFmode || mode == SFmode
+	     || mode == DImode || GET_MODE (x) == VOIDmode));
+}
 
 enum sh_divide_strategy_e sh_div_strategy = SH_DIV_STRATEGY_DEFAULT;
 

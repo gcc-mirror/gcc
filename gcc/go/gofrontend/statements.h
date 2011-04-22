@@ -41,6 +41,7 @@ class Select_clauses;
 class Typed_identifier_list;
 class Bexpression;
 class Bstatement;
+class Bvariable;
 
 // This class is used to traverse assignments made by a statement
 // which makes assignments.
@@ -366,9 +367,9 @@ class Statement
   may_fall_through() const
   { return this->do_may_fall_through(); }
 
-  // Return the tree for a statement.  BLOCK is the enclosing block.
-  tree
-  get_tree(Translate_context*);
+  // Convert the statement to the backend representation.
+  Bstatement*
+  get_backend(Translate_context*);
 
  protected:
   // Implemented by child class: traverse the tree.
@@ -406,9 +407,9 @@ class Statement
   do_may_fall_through() const
   { return true; }
 
-  // Implemented by child class: return a tree.
-  virtual tree
-  do_get_tree(Translate_context*) = 0;
+  // Implemented by child class: convert to backend representation.
+  virtual Bstatement*
+  do_get_backend(Translate_context*) = 0;
 
   // Traverse an expression in a statement.
   int
@@ -422,12 +423,6 @@ class Statement
   // Traverse a type in a statement.
   int
   traverse_type(Traverse*, Type*);
-
-  // Build a tree node with one operand, setting the location.  The
-  // first operand really has type "enum tree_code", but that enum is
-  // not defined here.
-  tree
-  build_stmt_1(int tree_code_value, tree);
 
   // For children to call when they detect that they are in error.
   void
@@ -475,17 +470,12 @@ class Temporary_statement : public Statement
  public:
   Temporary_statement(Type* type, Expression* init, source_location location)
     : Statement(STATEMENT_TEMPORARY, location),
-      type_(type), init_(init), decl_(NULL), is_address_taken_(false)
+      type_(type), init_(init), bvariable_(NULL), is_address_taken_(false)
   { }
 
   // Return the type of the temporary variable.
   Type*
   type() const;
-
-  // Return the initialization expression.
-  Expression*
-  init() const
-  { return this->init_; }
 
   // Record that something takes the address of this temporary
   // variable.
@@ -493,10 +483,10 @@ class Temporary_statement : public Statement
   set_is_address_taken()
   { this->is_address_taken_ = true; }
 
-  // Return the tree for the temporary variable itself.  This should
-  // not be called until after the statement itself has been expanded.
-  tree
-  get_decl() const;
+  // Return the temporary variable.  This should not be called until
+  // after the statement itself has been converted.
+  Bvariable*
+  get_backend_variable(Translate_context*) const;
 
  protected:
   int
@@ -511,16 +501,16 @@ class Temporary_statement : public Statement
   void
   do_check_types(Gogo*);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // The type of the temporary variable.
   Type* type_;
   // The initial value of the temporary variable.  This may be NULL.
   Expression* init_;
-  // The DECL for the temporary variable.
-  tree decl_;
+  // The backend representation of the temporary variable.
+  Bvariable* bvariable_;
   // True if something takes the address of this temporary variable.
   bool is_address_taken_;
 };
@@ -545,8 +535,8 @@ class Variable_declaration_statement : public Statement
   bool
   do_traverse_assignments(Traverse_assignments*);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   Named_object* var_;
@@ -582,8 +572,8 @@ class Return_statement : public Statement
   do_may_fall_through() const
   { return false; }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // Return values.  This may be NULL.
@@ -618,8 +608,8 @@ class Send_statement : public Statement
   void
   do_check_types(Gogo*);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // The channel on which to send the value.
@@ -678,9 +668,9 @@ class Select_clauses
   bool
   may_fall_through() const;
 
-  // Return a tree implementing the select statement.
-  tree
-  get_tree(Translate_context*, Unnamed_label* break_label, source_location);
+  // Convert to the backend representation.
+  Bstatement*
+  get_backend(Translate_context*, Unnamed_label* break_label, source_location);
 
  private:
   // A single clause.
@@ -700,7 +690,7 @@ class Select_clauses
       : channel_(channel), val_(val), closed_(closed), var_(var),
 	closedvar_(closedvar), statements_(statements), location_(location),
 	is_send_(is_send), is_default_(is_default), is_lowered_(false)
-    { gcc_assert(is_default ? channel == NULL : channel != NULL); }
+    { go_assert(is_default ? channel == NULL : channel != NULL); }
 
     // Traverse the select clause.
     int
@@ -729,7 +719,7 @@ class Select_clauses
     bool
     is_send() const
     {
-      gcc_assert(!this->is_default_);
+      go_assert(!this->is_default_);
       return this->is_send_;
     }
 
@@ -748,9 +738,9 @@ class Select_clauses
     bool
     may_fall_through() const;
 
-    // Return a tree for the statements to execute.
-    tree
-    get_statements_tree(Translate_context*);
+    // Convert the statements to the backend representation.
+    Bstatement*
+    get_statements_backend(Translate_context*);
 
    private:
     // The channel.
@@ -778,8 +768,10 @@ class Select_clauses
   };
 
   void
-  add_clause_tree(Translate_context*, int, Select_clause*, Unnamed_label*,
-		  tree*);
+  add_clause_backend(Translate_context*, source_location, int index,
+		     int case_value, Select_clause*, Unnamed_label*,
+		     std::vector<std::vector<Bexpression*> >* cases,
+		     std::vector<Bstatement*>* clauses);
 
   typedef std::vector<Select_clause> Clauses;
 
@@ -800,7 +792,7 @@ class Select_statement : public Statement
   void
   add_clauses(Select_clauses* clauses)
   {
-    gcc_assert(this->clauses_ == NULL);
+    go_assert(this->clauses_ == NULL);
     this->clauses_ = clauses;
   }
 
@@ -824,8 +816,8 @@ class Select_statement : public Statement
   do_may_fall_through() const
   { return this->clauses_->may_fall_through(); }
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // The select clauses.
@@ -852,7 +844,7 @@ class Thunk_statement : public Statement
   // Simplify a go or defer statement so that it only uses a single
   // parameter.
   bool
-  simplify_statement(Gogo*, Block*);
+  simplify_statement(Gogo*, Named_object*, Block*);
 
  protected:
   int
@@ -867,9 +859,9 @@ class Thunk_statement : public Statement
   void
   do_check_types(Gogo*);
 
-  // Return the function and argument trees for the call.
-  void
-  get_fn_and_arg(Translate_context*, tree* pfn, tree* parg);
+  // Return the function and argument for the call.
+  bool
+  get_fn_and_arg(Expression** pfn, Expression** parg);
 
  private:
   // Return whether this is a simple go statement.
@@ -914,8 +906,8 @@ class Go_statement : public Thunk_statement
   { }
 
  protected:
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 };
 
 // A defer statement.
@@ -928,8 +920,8 @@ class Defer_statement : public Thunk_statement
   { }
 
  protected:
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 };
 
 // A label statement.
@@ -951,8 +943,8 @@ class Label_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  tree
-  do_get_tree(Translate_context*);
+  Bstatement*
+  do_get_backend(Translate_context*);
 
  private:
   // The label.
@@ -975,7 +967,7 @@ class For_statement : public Statement
   void
   add_statements(Block* statements)
   {
-    gcc_assert(this->statements_ == NULL);
+    go_assert(this->statements_ == NULL);
     this->statements_ = statements;
   }
 
@@ -1003,8 +995,8 @@ class For_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1038,7 +1030,7 @@ class For_range_statement : public Statement
   void
   add_statements(Block* statements)
   {
-    gcc_assert(this->statements_ == NULL);
+    go_assert(this->statements_ == NULL);
     this->statements_ = statements;
   }
 
@@ -1061,8 +1053,8 @@ class For_range_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1170,8 +1162,8 @@ class Case_clauses
 	      std::vector<Bstatement*>* all_statements) const;
 
  private:
-  // For a constant tree we need to keep a record of constants we have
-  // already seen.  Note that INTEGER_CST trees are interned.
+  // For a constant switch we need to keep a record of constants we
+  // have already seen.
   class Hash_integer_value;
   class Eq_integer_value;
   typedef Unordered_set_hash(Expression*, Hash_integer_value,
@@ -1275,7 +1267,7 @@ class Switch_statement : public Statement
   void
   add_clauses(Case_clauses* clauses)
   {
-    gcc_assert(this->clauses_ == NULL);
+    go_assert(this->clauses_ == NULL);
     this->clauses_ = clauses;
   }
 
@@ -1290,8 +1282,8 @@ class Switch_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
@@ -1415,13 +1407,13 @@ class Type_switch_statement : public Statement
 			source_location location)
     : Statement(STATEMENT_TYPE_SWITCH, location),
       var_(var), expr_(expr), clauses_(NULL), break_label_(NULL)
-  { gcc_assert(var == NULL || expr == NULL); }
+  { go_assert(var == NULL || expr == NULL); }
 
   // Add the clauses.
   void
   add_clauses(Type_case_clauses* clauses)
   {
-    gcc_assert(this->clauses_ == NULL);
+    go_assert(this->clauses_ == NULL);
     this->clauses_ = clauses;
   }
 
@@ -1436,15 +1428,11 @@ class Type_switch_statement : public Statement
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
-  tree
-  do_get_tree(Translate_context*)
+  Bstatement*
+  do_get_backend(Translate_context*)
   { gcc_unreachable(); }
 
  private:
-  // Get the type descriptor.
-  tree
-  get_type_descriptor(Translate_context*, Type*, tree);
-
   // The variable holding the value we are switching on.
   Named_object* var_;
   // The expression we are switching on if there is no variable.

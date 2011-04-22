@@ -832,15 +832,8 @@ get_asm_expr_operands (gimple stmt)
     }
 
   /* Clobber all memory and addressable symbols for asm ("" : : : "memory");  */
-  for (i = 0; i < gimple_asm_nclobbers (stmt); i++)
-    {
-      tree link = gimple_asm_clobber_op (stmt, i);
-      if (strcmp (TREE_STRING_POINTER (TREE_VALUE (link)), "memory") == 0)
-	{
-	  add_virtual_operand (stmt, opf_def);
-	  break;
-	}
-    }
+  if (gimple_asm_clobbers_memory_p (stmt))
+    add_virtual_operand (stmt, opf_def);
 }
 
 

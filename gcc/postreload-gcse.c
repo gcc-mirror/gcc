@@ -1294,6 +1294,13 @@ gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
 	  fprintf (dump_file, "insns deleted:   %d\n", stats.insns_deleted);
 	  fprintf (dump_file, "\n\n");
 	}
+
+      statistics_counter_event (cfun, "copies inserted",
+				stats.copies_inserted);
+      statistics_counter_event (cfun, "moves inserted",
+				stats.moves_inserted);
+      statistics_counter_event (cfun, "insns deleted",
+				stats.insns_deleted);
     }
 
   /* We are finished with alias.  */

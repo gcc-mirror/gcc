@@ -34,7 +34,7 @@ extern void alpha_output_filename (FILE *, const char *);
 extern rtx alpha_tablejump_addr_vec (rtx);
 extern rtx alpha_tablejump_best_label (rtx);
 
-extern bool alpha_legitimate_constant_p (rtx);
+extern bool alpha_legitimate_constant_p (enum machine_mode, rtx);
 extern rtx alpha_legitimize_reload_address (rtx, enum machine_mode,
 					    int, int, int);
 

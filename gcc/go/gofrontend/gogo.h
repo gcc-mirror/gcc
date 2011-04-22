@@ -17,6 +17,7 @@ class Typed_identifier_list;
 class Function_type;
 class Expression;
 class Statement;
+class Temporary_statement;
 class Block;
 class Function;
 class Bindings;
@@ -42,6 +43,8 @@ class Export;
 class Import;
 class Bexpression;
 class Bstatement;
+class Bblock;
+class Bvariable;
 class Blabel;
 
 // This file declares the basic classes used to hold the internal
@@ -153,7 +156,7 @@ class Gogo
   static std::string
   hidden_name_prefix(const std::string& name)
   {
-    gcc_assert(Gogo::is_hidden_name(name));
+    go_assert(Gogo::is_hidden_name(name));
     return name.substr(1, name.rfind('.') - 1);
   }
 
@@ -525,11 +528,6 @@ class Gogo
   tree
   go_string_constant_tree(const std::string&);
 
-  // Send a value on a channel.
-  static tree
-  send_on_channel(tree channel, tree val, bool blocking, bool for_select,
-		  source_location);
-
   // Receive a value from a channel.
   static tree
   receive_from_channel(tree type_tree, tree channel, bool for_select,
@@ -770,9 +768,9 @@ class Block
   bool
   may_fall_through() const;
 
-  // Return a tree of the code in this block.
-  tree
-  get_tree(Translate_context*);
+  // Convert the block to the backend representation.
+  Bblock*
+  get_backend(Translate_context*);
 
   // Iterate over statements.
 
@@ -821,7 +819,7 @@ class Function
   void
   set_enclosing(Function* enclosing)
   {
-    gcc_assert(this->enclosing_ == NULL);
+    go_assert(this->enclosing_ == NULL);
     this->enclosing_ = enclosing;
   }
 
@@ -867,7 +865,7 @@ class Function
   void
   set_closure_var(Named_object* v)
   {
-    gcc_assert(this->closure_var_ == NULL);
+    go_assert(this->closure_var_ == NULL);
     this->closure_var_ = v;
   }
 
@@ -876,7 +874,7 @@ class Function
   Named_object*
   enclosing_var(unsigned int index)
   {
-    gcc_assert(index < this->closure_fields_.size());
+    go_assert(index < this->closure_fields_.size());
     return closure_fields_[index].first;
   }
 
@@ -963,7 +961,7 @@ class Function
   tree
   get_decl() const
   {
-    gcc_assert(this->fndecl_ != NULL);
+    go_assert(this->fndecl_ != NULL);
     return this->fndecl_;
   }
 
@@ -977,7 +975,7 @@ class Function
   return_value(Gogo*, Named_object*, source_location, tree* stmt_list) const;
 
   // Get a tree for the variable holding the defer stack.
-  tree
+  Expression*
   defer_stack(source_location);
 
   // Export the function.
@@ -1033,9 +1031,10 @@ class Function
   Labels labels_;
   // The function decl.
   tree fndecl_;
-  // A variable holding the defer stack variable.  This is NULL unless
-  // we actually need a defer stack.
-  tree defer_stack_;
+  // The defer stack variable.  A pointer to this variable is used to
+  // distinguish the defer stack for one function from another.  This
+  // is NULL unless we actually need a defer stack.
+  Temporary_statement* defer_stack_;
   // True if the result variables are named.
   bool results_are_named_;
   // True if this function calls the predeclared recover function.
@@ -1148,7 +1147,7 @@ class Variable
   void
   set_is_receiver()
   {
-    gcc_assert(this->is_parameter_);
+    go_assert(this->is_parameter_);
     this->is_receiver_ = true;
   }
 
@@ -1157,7 +1156,7 @@ class Variable
   void
   set_is_not_receiver()
   {
-    gcc_assert(this->is_parameter_);
+    go_assert(this->is_parameter_);
     this->is_receiver_ = false;
   }
 
@@ -1185,7 +1184,7 @@ class Variable
   void
   set_is_varargs_parameter()
   {
-    gcc_assert(this->is_parameter_);
+    go_assert(this->is_parameter_);
     this->is_varargs_parameter_ = true;
   }
 
@@ -1251,7 +1250,7 @@ class Variable
   void
   clear_type_from_chan_element()
   {
-    gcc_assert(this->type_from_chan_element_);
+    go_assert(this->type_from_chan_element_);
     this->type_from_chan_element_ = false;
   }
 
@@ -1272,6 +1271,11 @@ class Variable
   void
   set_address_taken()
   { this->is_address_taken_ = true; }
+
+  // Get the backend representation of the variable.
+  Bvariable*
+  get_backend_variable(Gogo*, Named_object*, const Package*,
+		       const std::string&);
 
   // Get the initial value of the variable as a tree.  This may only
   // be called if has_pre_init() returns false.
@@ -1315,6 +1319,8 @@ class Variable
   Block* preinit_;
   // Location of variable definition.
   source_location location_;
+  // Backend representation.
+  Bvariable* backend_;
   // Whether this is a global variable.
   bool is_global_ : 1;
   // Whether this is a function parameter.
@@ -1349,9 +1355,10 @@ class Variable
 class Result_variable
 {
  public:
-  Result_variable(Type* type, Function* function, int index)
-    : type_(type), function_(function), index_(index),
-      is_address_taken_(false)
+  Result_variable(Type* type, Function* function, int index,
+		  source_location location)
+    : type_(type), function_(function), index_(index), location_(location),
+      backend_(NULL), is_address_taken_(false)
   { }
 
   // Get the type of the result variable.
@@ -1368,6 +1375,11 @@ class Result_variable
   int
   index() const
   { return this->index_; }
+
+  // The location of the variable definition.
+  source_location
+  location() const
+  { return this->location_; }
 
   // Whether this variable's address is taken.
   bool
@@ -1390,6 +1402,10 @@ class Result_variable
   set_function(Function* function)
   { this->function_ = function; }
 
+  // Get the backend representation of the variable.
+  Bvariable*
+  get_backend_variable(Gogo*, Named_object*, const std::string&);
+
  private:
   // Type of result variable.
   Type* type_;
@@ -1397,6 +1413,10 @@ class Result_variable
   Function* function_;
   // Index in list of results.
   int index_;
+  // Where the result variable is defined.
+  source_location location_;
+  // Backend representation.
+  Bvariable* backend_;
   // Whether something takes the address of this variable.
   bool is_address_taken_;
 };
@@ -1702,126 +1722,126 @@ class Named_object
   Unknown_name*
   unknown_value()
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_UNKNOWN);
+    go_assert(this->classification_ == NAMED_OBJECT_UNKNOWN);
     return this->u_.unknown_value;
   }
 
   const Unknown_name*
   unknown_value() const
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_UNKNOWN);
+    go_assert(this->classification_ == NAMED_OBJECT_UNKNOWN);
     return this->u_.unknown_value;
   }
 
   Named_constant*
   const_value()
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_CONST);
+    go_assert(this->classification_ == NAMED_OBJECT_CONST);
     return this->u_.const_value;
   }
 
   const Named_constant*
   const_value() const
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_CONST);
+    go_assert(this->classification_ == NAMED_OBJECT_CONST);
     return this->u_.const_value;
   }
 
   Named_type*
   type_value()
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_TYPE);
+    go_assert(this->classification_ == NAMED_OBJECT_TYPE);
     return this->u_.type_value;
   }
 
   const Named_type*
   type_value() const
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_TYPE);
+    go_assert(this->classification_ == NAMED_OBJECT_TYPE);
     return this->u_.type_value;
   }
 
   Type_declaration*
   type_declaration_value()
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_TYPE_DECLARATION);
+    go_assert(this->classification_ == NAMED_OBJECT_TYPE_DECLARATION);
     return this->u_.type_declaration;
   }
 
   const Type_declaration*
   type_declaration_value() const
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_TYPE_DECLARATION);
+    go_assert(this->classification_ == NAMED_OBJECT_TYPE_DECLARATION);
     return this->u_.type_declaration;
   }
 
   Variable*
   var_value()
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_VAR);
+    go_assert(this->classification_ == NAMED_OBJECT_VAR);
     return this->u_.var_value;
   }
 
   const Variable*
   var_value() const
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_VAR);
+    go_assert(this->classification_ == NAMED_OBJECT_VAR);
     return this->u_.var_value;
   }
 
   Result_variable*
   result_var_value()
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_RESULT_VAR);
+    go_assert(this->classification_ == NAMED_OBJECT_RESULT_VAR);
     return this->u_.result_var_value;
   }
 
   const Result_variable*
   result_var_value() const
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_RESULT_VAR);
+    go_assert(this->classification_ == NAMED_OBJECT_RESULT_VAR);
     return this->u_.result_var_value;
   }
 
   Function*
   func_value()
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_FUNC);
+    go_assert(this->classification_ == NAMED_OBJECT_FUNC);
     return this->u_.func_value;
   }
 
   const Function*
   func_value() const
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_FUNC);
+    go_assert(this->classification_ == NAMED_OBJECT_FUNC);
     return this->u_.func_value;
   }
 
   Function_declaration*
   func_declaration_value()
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_FUNC_DECLARATION);
+    go_assert(this->classification_ == NAMED_OBJECT_FUNC_DECLARATION);
     return this->u_.func_declaration_value;
   }
 
   const Function_declaration*
   func_declaration_value() const
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_FUNC_DECLARATION);
+    go_assert(this->classification_ == NAMED_OBJECT_FUNC_DECLARATION);
     return this->u_.func_declaration_value;
   }
 
   Package*
   package_value()
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_PACKAGE);
+    go_assert(this->classification_ == NAMED_OBJECT_PACKAGE);
     return this->u_.package_value;
   }
 
   const Package*
   package_value() const
   {
-    gcc_assert(this->classification_ == NAMED_OBJECT_PACKAGE);
+    go_assert(this->classification_ == NAMED_OBJECT_PACKAGE);
     return this->u_.package_value;
   }
 
@@ -1870,6 +1890,10 @@ class Named_object
   // The location where this object was defined or referenced.
   source_location
   location() const;
+
+  // Convert a variable to the backend representation.
+  Bvariable*
+  get_backend_variable(Gogo*, Named_object* function);
 
   // Return a tree for the external identifier for this object.
   tree
@@ -2150,7 +2174,7 @@ class Label
   void
   define(source_location location)
   {
-    gcc_assert(this->location_ == 0);
+    go_assert(this->location_ == 0);
     this->location_ = location;
   }
 
@@ -2239,7 +2263,7 @@ class Package
   const std::string&
   unique_prefix() const
   {
-    gcc_assert(!this->unique_prefix_.empty());
+    go_assert(!this->unique_prefix_.empty());
     return this->unique_prefix_;
   }
 
@@ -2484,9 +2508,9 @@ class Translate_context
 {
  public:
   Translate_context(Gogo* gogo, Named_object* function, Block* block,
-		    tree block_tree)
+		    Bblock* bblock)
     : gogo_(gogo), backend_(gogo->backend()), function_(function),
-      block_(block), block_tree_(block_tree), is_const_(false)
+      block_(block), bblock_(bblock), is_const_(false)
   { }
 
   // Accessors.
@@ -2507,9 +2531,9 @@ class Translate_context
   block()
   { return this->block_; }
 
-  tree
-  block_tree()
-  { return this->block_tree_; }
+  Bblock*
+  bblock()
+  { return this->bblock_; }
 
   bool
   is_const()
@@ -2525,12 +2549,15 @@ class Translate_context
   Gogo* gogo_;
   // The generator for the backend data structures.
   Backend* backend_;
-  // The function we are currently translating.
+  // The function we are currently translating.  NULL if not in a
+  // function, e.g., the initializer of a global variable.
   Named_object* function_;
-  // The block we are currently translating.
+  // The block we are currently translating.  NULL if not in a
+  // function.
   Block *block_;
-  // The BLOCK node for the current block.
-  tree block_tree_;
+  // The backend representation of the current block.  NULL if block_
+  // is NULL.
+  Bblock* bblock_;
   // Whether this is being evaluated in a constant context.  This is
   // used for type descriptor initializers.
   bool is_const_;

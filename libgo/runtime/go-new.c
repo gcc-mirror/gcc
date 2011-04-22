@@ -9,13 +9,13 @@
 #include "malloc.h"
 
 void *
-__go_new (size_t size)
+__go_new (uintptr_t size)
 {
   return runtime_mallocgc (size, 0, 1, 1);
 }
 
 void *
-__go_new_nopointers (size_t size)
+__go_new_nopointers (uintptr_t size)
 {
   return runtime_mallocgc (size, FlagNoPointers, 1, 1);
 }

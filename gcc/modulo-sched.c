@@ -1162,9 +1162,10 @@ sms_schedule (void)
         gcc_assert(stage_count >= 1);
       }
 
-      /* Stage count of 1 means that there is no interleaving between
-         iterations, let the scheduling passes do the job.  */
-      if (stage_count <= 1
+      /* The default value of PARAM_SMS_MIN_SC is 2 as stage count of
+	 1 means that there is no interleaving between iterations thus
+	 we let the scheduling passes do the job in this case.  */
+      if (stage_count < (unsigned) PARAM_VALUE (PARAM_SMS_MIN_SC)
 	  || (count_init && (loop_count <= stage_count))
 	  || (flag_branch_probabilities && (trip_count <= stage_count)))
 	{
@@ -1177,7 +1178,6 @@ sms_schedule (void)
 	      fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, trip_count);
 	      fprintf (dump_file, ")\n");
 	    }
-	  continue;
 	}
       else
 	{

@@ -5517,7 +5517,7 @@ fill_insns (fence_t fence, int seqno, ilist_t **scheduled_insns_tailpp)
     {
       blist_t *bnds_tailp1, *bndsp;
       expr_t expr_vliw;
-      int need_stall;
+      int need_stall = false;
       int was_stall = 0, scheduled_insns = 0;
       int max_insns = pipelining_p ? issue_rate : 2 * issue_rate;
       int max_stall = pipelining_p ? 1 : 3;

@@ -13,11 +13,11 @@
    buffer.  This could be done inline but I'm doing it as a function
    for now to make it easy to change the channel structure.  */
 
-size_t
+int
 __go_chan_cap (struct __go_channel *channel)
 {
   int i;
-  size_t ret;
+  int ret;
 
   if (channel == NULL)
     return 0;

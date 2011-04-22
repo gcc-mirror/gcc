@@ -1109,8 +1109,8 @@ dump_queued_macros (cpp_reader *pfile ATTRIBUTE_UNUSED)
       print.src_line++;
       oq = q;
       q = q->next;
-      gfc_free (oq->macro);
-      gfc_free (oq);
+      free (oq->macro);
+      free (oq);
     }
   cpp_define_queue = NULL;
   for (q = cpp_undefine_queue; q;)
@@ -1120,8 +1120,8 @@ dump_queued_macros (cpp_reader *pfile ATTRIBUTE_UNUSED)
       print.src_line++;
       oq = q;
       q = q->next;
-      gfc_free (oq->macro);
-      gfc_free (oq);
+      free (oq->macro);
+      free (oq);
     }
   cpp_undefine_queue = NULL;
 }

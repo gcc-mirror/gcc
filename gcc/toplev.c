@@ -1600,6 +1600,15 @@ process_options (void)
       flag_omit_frame_pointer = 0;
     }
 
+  /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
+     have not been set.  */
+  if (!global_options_set.x_warnings_are_errors
+      && warn_coverage_mismatch
+      && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==
+          DK_UNSPECIFIED))
+    diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_mismatch,
+                                    DK_ERROR, UNKNOWN_LOCATION);
+
   /* Save the current optimization options.  */
   optimization_default_node = build_optimization_node ();
   optimization_current_node = optimization_default_node;

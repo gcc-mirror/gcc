@@ -1,3 +1,235 @@
+2011-04-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48405
+	* frontend_passes (cfe_register_funcs): Remove workaround for DO
+	loops.
+	(gfc_code_walker):  Make sure the pointer to the current
+	statement doen't change when other statements are inserted.
+
+2011-04-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* array.c (gfc_match_array_spec): Fix maximal rank(+corank) check.
+
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* expr.c (free_expr0): Remove useless if-before-free.
+	* gfortranspec.c (lang_specific_pre_link): Likewise.
+	* interface.c (gfc_extend_expr): Likewise.
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Likewise.
+
+2011-04-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48588
+	PR fortran/48692
+
+	* module.c (fix_mio_expr): Commit created symbol.
+
+2011-04-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* scanner.c (load_file): Use XCNEWVAR instead of xcalloc.
+
+2011-04-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* frontend-passes.c (gfc_run_passes): Use XDELETEVEC instead of
+	free.
+
+2011-04-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* misc.c (gfc_getmem): Remove function.
+	* gfortran.h: Remove gfc_getmem prototype. Replace gfc_getmem
+	usage with XCNEW or XCNEWVEC.
+	* expr.c (gfc_check_assign_symbol): Replace gfc_getmem usage with
+	XCNEW or XCNEWVEC.
+	* options.c (gfc_handle_module_path_options)
+	(gfc_get_option_string): Likewise.
+	* resolve.c (gfc_resolve_forall): Likewise.
+	* simplify.c (simplify_transformation_to_array): Likewise.
+	* target-memory.c (gfc_target_interpret_expr): Likewise.
+	* trans-common.c (get_segment_info, copy_equiv_list_to_ns)
+	(get_init_field): Likewise.
+	* trans-expr.c (gfc_conv_statement_function): Likewise.
+	* trans-io.c (nml_full_name): Likewise.
+	* trans-stmt.c (gfc_trans_forall_1): Likewise.
+	* scanner.c (load_file): Replace gfc_getmem usage with xcalloc.
+
+2011-04-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48588
+	* parse.c (resolve_all_program_units): Skip modules.
+	(translate_all_program_units): Handle modules.
+	(gfc_parse_file): Defer code generation for modules.
+
+2011-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	* trans-decl.c (gfc_generate_function_code): Call cgraph_create_node
+	instead of cgraph_get_create_node.
+
+2011-04-18  Jim Meyering  <meyering@redhat.com>
+
+	remove now-unused definition of gfc_free
+	* misc.c (gfc_free): Remove function.
+	* gfortran.h (gfc_free): Remove its prototype.
+
+2011-04-18  Jim Meyering  <meyering@redhat.com>
+
+	convert each use of gfc_free (p) to free (p)
+	Do that by running this command:
+	  perl -pi -e    's/\bgfc_free ?\(/free (/' \
+	    $(git grep -El '\bgfc_free ?\(')
+	which also corrects the few uses that lacked a space between
+	the function name and the open parenthesis.
+	Manually undo the change to the function definition itself
+	and its prototype.  They'll be removed next.
+	* array.c (gfc_free_array_spec, gfc_set_array_spec): s/gfc_free/free/
+	* constructor.c (node_free): Likewise.
+	* cpp.c (dump_queued_macros): Likewise.
+	* data.c (gfc_assign_data_value): Likewise.
+	* decl.c (free_variable, free_value, gfc_free_data): Likewise.
+	(gfc_free_data_all, match_old_style_init): Likewise.
+	(gfc_set_constant_character_len, gfc_free_enum_history, NUM_DECL):
+	Likewise.
+	(gfc_match_modproc): Likewise.
+	* dependency.c (check_section_vs_section): Likewise.
+	* error.c (gfc_pop_error, gfc_free_error): Likewise.
+	* expr.c (free_expr0, gfc_free_expr, gfc_free_actual_arglist): Likewise.
+	(gfc_free_ref_list, gfc_replace_expr, gfc_copy_ref): Likewise.
+	(find_substring_ref, gfc_simplify_expr, gfc_check_assign_symbol):
+	Likewise.
+	* frontend-passes.c (gfc_run_passes, cfe_expr_0): Likewise.
+	(strip_function_call, optimize_comparison): Likewise.
+	* interface.c (gfc_free_interface, arginfo, check_interface0): Likewise.
+	(CHECK_OS_COMPARISON, gfc_extend_assign, gfc_free_formal_arglist):
+	Likewise.
+	* intrinsic.c (gfc_intrinsic_done_1, gfc_convert_type_warn): Likewise.
+	(gfc_convert_chartype): Likewise.
+	* io.c (gfc_free_open, compare_to_allowed_values, gfc_free_close):
+	Likewise.
+	(gfc_free_filepos, gfc_free_dt, gfc_free_inquire): Likewise.
+	* match.c (gfc_free_iterator, gfc_match_associate): Likewise.
+	(gfc_free_alloc_list, gfc_free_namelist, gfc_free_equiv_until):
+	Likewise.
+	(free_case, gfc_free_forall_iterator): Likewise.
+	* misc.c: Likewise.
+	* module.c (free_pi_tree, resolve_fixups, free_rename): Likewise.
+	(free_true_name, peek_atom, mio_allocated_wide_string): Likewise.
+	(mio_pool_string, mio_internal_string, mio_gmp_integer): Likewise.
+	(mio_gmp_real, mio_expr, mio_typebound_proc): Likewise.
+	(mio_full_typebound_tree, skip_list, load_equiv): Likewise.
+	(free_written_common, gfc_use_module, gfc_free_use_stmts): Likewise.
+	* openmp.c (gfc_free_omp_clauses): Likewise.
+	* options.c (gfc_post_options): Likewise.
+	* parse.c (select_type_pop, parse_omp_structured_block): Likewise.
+	* primary.c (gfc_free_structure_ctor_component): Likewise.
+	* resolve.c (resolve_structure_cons, check_host_association): Likewise.
+	(gfc_resolve_forall, resolve_equivalence): Likewise.
+	* scanner.c (gfc_scanner_done_1, gfc_release_include_path): Likewise.
+	(gfc_define_undef_line, preprocessor_line, include_line): Likewise.
+	(load_file, gfc_read_orig_filename): Likewise.
+	* simplify.c (simplify_transformation_to_array): Likewise.
+	(gfc_simplify_ibits, simplify_shift, gfc_simplify_ishftc, STRING):
+	Likewise.
+	(gfc_simplify_compiler_options): Likewise.
+	* st.c (gfc_free_statement, gfc_free_statements): Likewise.
+	(gfc_free_association_list): Likewise.
+	* symbol.c (free_components, gfc_free_st_label, free_st_labels):
+	Likewise.
+	(gfc_delete_symtree, gfc_free_symbol, gfc_undo_symbols): Likewise.
+	(free_old_symbol, gfc_commit_symbols, free_tb_tree): Likewise.
+	(free_common_tree, free_uop_tree, free_sym_tree): Likewise.
+	(gfc_free_dt_list, gfc_free_equiv_infos, gfc_free_equiv_lists):
+	Likewise.
+	(gfc_free_finalizer, gfc_free_charlen, free_entry_list): Likewise.
+	(gfc_free_namespace): Likewise.
+	* trans-array.c (gfc_free_ss, gfc_trans_array_bound_check): Likewise.
+	(gfc_conv_array_ref, gfc_conv_ss_startstride): Likewise.
+	(gfc_trans_dummy_array_bias, gfc_conv_array_parameter): Likewise.
+	* trans-common.c (get_init_field, create_common): Likewise.
+	* trans-const.c (gfc_build_wide_string_const): Likewise.
+	(gfc_conv_string_init): Likewise.
+	* trans-decl.c (gfc_generate_function_code): Likewise.
+	* trans-expr.c (gfc_conv_substring, gfc_free_interface_mapping):
+	Likewise.
+	(SCALAR_POINTER, gfc_conv_statement_function): Likewise.
+	(gfc_trans_subarray_assign): Likewise.
+	* trans-intrinsic.c (conv_generic_with_optional_char_arg): Likewise.
+	* trans-io.c (gfc_trans_io_runtime_check, set_string): Likewise.
+	(transfer_namelist_element, transfer_array_component): Likewise.
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Likewise.
+	* trans-stmt.c (cleanup_forall_symtrees, gfc_trans_forall_1): Likewise.
+	* trans.c (trans_runtime_error_vararg, gfc_restore_backend_locus):
+	Likewise.
+
+2011-04-15  Jim Meyering  <meyering@redhat.com>
+
+	gfortran: remove cpp definition of free, ...
+	in preparation for the s/gfc_free/free/ transformation.
+	* gfortran.h (free): Remove macro definition that would otherwise
+	prevent direct use of the function.
+
+2011-04-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* array.c (gfc_match_array_ref): Check for too many codimensions.
+	* check.c (gfc_check_image_index): Check number of elements
+	in SUB argument.
+	* simplify.c (gfc_simplify_image_index): Remove unreachable checks.
+
+2011-04-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* iresolve.c (gfc_resolve_image_index): Set ts.type.
+	* simplify.c (gfc_simplify_image_index): Don't abort if the bounds
+	are not known at compile time and handle -fcoarray=lib.
+	* trans-intrinsics.c (gfc_conv_intrinsic_function): Handle
+	IMAGE_INDEX.
+	(conv_intrinsic_cobound): Fix comment typo.
+	(trans_this_image): New function.
+	* trans-array.c (gfc_unlikely): Move to trans.c.
+	* trans.c (gfc_unlikely): Function moved from trans-array.c.
+	(gfc_trans_runtime_check): Use it.
+	* trans-io.c (gfc_trans_io_runtime_check): Ditto.
+	* trans.h (gfc_unlikely): Add prototype.
+
+2011-04-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48462
+	* trans-expr.c (fcncall_realloc_result): Renamed version of
+	realloc_lhs_bounds_for_intrinsic_call that does not touch the
+	descriptor bounds anymore but makes a temporary descriptor to
+	hold the result.
+	(gfc_trans_arrayfunc_assign): Modify the reference to above
+	renamed function.
+
+2011-05-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48624
+	* trans-decl.c (gfc_get_extern_function_decl): Fix decl
+	for external procedures with proc arguments.
+
+2011-04-15  Michael Matz  <matz@suse.de>
+
+	* trans-array.c (toplevel): Include gimple.h.
+	(gfc_trans_allocate_array_storage): Check flag_stack_arrays,
+	properly expand variable length arrays.
+	(gfc_trans_auto_array_allocation): If flag_stack_arrays create
+	variable length decls and associate them with their scope.
+	* gfortran.h (gfc_option_t): Add flag_stack_arrays member.
+	* options.c (gfc_init_options): Handle -fstack_arrays option.
+	* lang.opt (fstack-arrays): Add option.
+	* invoke.texi (Code Gen Options): Document it.
+	* Make-lang.in (trans-array.o): Depend on GIMPLE_H.
+
+2011-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-intrinsic.c (conv_intrinsic_cobound): Remove unused
+	code which is also causing an ICE.
+
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* f95-lang.c (poplevel): Use BLOCK_CHAIN and block_chainon.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* f95-lang.c (union lang_tree_node): Check for TS_COMMON before

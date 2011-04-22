@@ -2777,15 +2777,15 @@ legitimate_pic_operand_p (rtx op)
 /* Returns true if the constant value OP is a legitimate general operand.
    It is given that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-int
-legitimate_constant_p (rtx op)
+static bool
+s390_legitimate_constant_p (enum machine_mode mode, rtx op)
 {
   /* Accept all non-symbolic constants.  */
   if (!SYMBOLIC_CONST (op))
     return 1;
 
   /* Accept immediate LARL operands.  */
-  if (TARGET_CPU_ZARCH && larl_operand (op, VOIDmode))
+  if (TARGET_CPU_ZARCH && larl_operand (op, mode))
     return 1;
 
   /* Thread-local symbols are never legal constants.  This is
@@ -2810,7 +2810,7 @@ legitimate_constant_p (rtx op)
    not constant (TLS) or not known at final link time (PIC).  */
 
 static bool
-s390_cannot_force_const_mem (rtx x)
+s390_cannot_force_const_mem (enum machine_mode mode, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -2832,11 +2832,11 @@ s390_cannot_force_const_mem (rtx x)
 	return flag_pic != 0;
 
     case CONST:
-      return s390_cannot_force_const_mem (XEXP (x, 0));
+      return s390_cannot_force_const_mem (mode, XEXP (x, 0));
     case PLUS:
     case MINUS:
-      return s390_cannot_force_const_mem (XEXP (x, 0))
-	     || s390_cannot_force_const_mem (XEXP (x, 1));
+      return s390_cannot_force_const_mem (mode, XEXP (x, 0))
+	     || s390_cannot_force_const_mem (mode, XEXP (x, 1));
 
     case UNSPEC:
       switch (XINT (x, 1))
@@ -9172,7 +9172,7 @@ s390_init_builtins (void)
 {
   tree ftype;
 
-  ftype = build_function_type (ptr_type_node, void_list_node);
+  ftype = build_function_type_list (ptr_type_node, NULL_TREE);
   add_builtin_function ("__builtin_thread_pointer", ftype,
 			S390_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
 			NULL, NULL_TREE);
@@ -10828,6 +10828,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P s390_legitimate_address_p
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P s390_legitimate_constant_p
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE s390_can_eliminate

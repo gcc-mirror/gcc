@@ -79,6 +79,8 @@ DEFCIFCODE(OPTIMIZING_FOR_SIZE,
 
 /* Inlining failed because of mismatched options or arguments.  */
 DEFCIFCODE(TARGET_OPTION_MISMATCH, N_("target specific option mismatch"))
+DEFCIFCODE(TARGET_OPTIMIZATION_MISMATCH,
+	   N_("optimization level attribute mismatch"))
 DEFCIFCODE(MISMATCHED_ARGUMENTS, N_("mismatched arguments"))
 
 /* Call was originally indirect.  */
@@ -88,5 +90,19 @@ DEFCIFCODE(ORIGINALLY_INDIRECT_CALL,
 /* Ths edge represents an indirect edge with a yet-undetermined callee .  */
 DEFCIFCODE(INDIRECT_UNKNOWN_CALL,
 	   N_("indirect function call with a yet undetermined callee"))
+
+/* We can't inline different EH personalities together.  */
+DEFCIFCODE(EH_PERSONALITY,
+	   N_("excepion handling personality mismatch"))
+
+/* Don't inline if the callee can throw non-call exceptions but the
+   caller cannot.  */
+DEFCIFCODE(NON_CALL_EXCEPTIONS,
+	   N_("excepion handling personality mismatch"))
+
+/* Don't inline if the callee can throw non-call exceptions but the
+   caller cannot.  */
+DEFCIFCODE(OPTIMIZATION_MISMATCH,
+	   N_("optimization mode mismatch"))
 
 DEFCIFCODE(OVERWRITABLE, N_("function body can be overwriten at linktime"))

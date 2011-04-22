@@ -1347,7 +1347,7 @@ gen_safe_add (rtx dest, rtx src, rtx val, bool is_frame_related)
     insn = emit_insn (gen_addsi3 (dest, src, val));
   else
     {
-      /* Wrap VAL in an UNSPEC so that rx_is_legitimate_constant
+      /* Wrap VAL in an UNSPEC so that rx_legitimate_constant_p
 	 will not reject it.  */
       val = gen_rtx_CONST (SImode, gen_rtx_UNSPEC (SImode, gen_rtvec (1, val), UNSPEC_CONST));
       insn = emit_insn (gen_addsi3 (dest, src, val));
@@ -2446,7 +2446,7 @@ rx_is_ms_bitfield_layout (const_tree record_type ATTRIBUTE_UNUSED)
    operand on the RX.  X is already known to satisfy CONSTANT_P.  */
 
 bool
-rx_is_legitimate_constant (rtx x)
+rx_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -3051,6 +3051,9 @@ rx_adjust_insn_length (rtx insn, int current_length)
 
 #undef  TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM			CC_REG
+
+#undef  TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P		rx_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

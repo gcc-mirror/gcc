@@ -160,7 +160,7 @@ class Method
   Named_object*
   stub_object() const
   {
-    gcc_assert(this->stub_ != NULL);
+    go_assert(this->stub_ != NULL);
     return this->stub_;
   }
 
@@ -168,7 +168,7 @@ class Method
   void
   set_stub_object(Named_object* no)
   {
-    gcc_assert(this->stub_ == NULL);
+    go_assert(this->stub_ == NULL);
     this->stub_ = no;
   }
 
@@ -1167,7 +1167,7 @@ class Typed_identifier
   void
   set_type(Type* type)
   {
-    gcc_assert(this->type_ == NULL || type->is_error_type());
+    go_assert(this->type_ == NULL || type->is_error_type());
     this->type_ = type;
   }
 
@@ -1213,7 +1213,7 @@ class Typed_identifier_list
   void
   set_type(size_t i, Type* type)
   {
-    gcc_assert(i < this->entries_.size());
+    go_assert(i < this->entries_.size());
     this->entries_[i].set_type(type);
   }
 
@@ -1253,7 +1253,7 @@ class Typed_identifier_list
   void
   resize(size_t c)
   {
-    gcc_assert(c <= this->entries_.size());
+    go_assert(c <= this->entries_.size());
     this->entries_.resize(c, Typed_identifier("", NULL, UNKNOWN_LOCATION));
   }
 
@@ -1777,7 +1777,7 @@ class Struct_field
   const std::string&
   tag() const
   {
-    gcc_assert(this->tag_ != NULL);
+    go_assert(this->tag_ != NULL);
     return *this->tag_;
   }
 
@@ -2228,7 +2228,7 @@ class Channel_type : public Type
     : Type(TYPE_CHANNEL),
       may_send_(may_send), may_receive_(may_receive),
       element_type_(element_type)
-  { gcc_assert(may_send || may_receive); }
+  { go_assert(may_send || may_receive); }
 
   // Whether this channel can send data.
   bool
@@ -2312,7 +2312,7 @@ class Interface_type : public Type
   Interface_type(Typed_identifier_list* methods, source_location location)
     : Type(TYPE_INTERFACE),
       methods_(methods), location_(location)
-  { gcc_assert(methods == NULL || !methods->empty()); }
+  { go_assert(methods == NULL || !methods->empty()); }
 
   // The location where the interface type was defined.
   source_location

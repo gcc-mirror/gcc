@@ -138,6 +138,7 @@ static unsigned int mcore_function_arg_boundary (enum machine_mode,
 static void       mcore_asm_trampoline_template (FILE *);
 static void       mcore_trampoline_init		(rtx, tree, rtx);
 static void       mcore_option_override		(void);
+static bool       mcore_legitimate_constant_p   (enum machine_mode, rtx);
 
 /* MCore specific attributes.  */
 
@@ -246,6 +247,9 @@ static const struct default_options mcore_option_optimization_table[] =
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P mcore_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1980,8 +1984,7 @@ mcore_expand_prolog (void)
       
       gcc_assert (GET_CODE (x) == SYMBOL_REF);
       
-      if (mcore_current_function_name)
-	free (mcore_current_function_name);
+      free (mcore_current_function_name);
       
       mcore_current_function_name = xstrdup (XSTR (x, 0));
       
@@ -3205,4 +3208,14 @@ mcore_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   emit_move_insn (mem, chain_value);
   mem = adjust_address (m_tramp, SImode, 12);
   emit_move_insn (mem, fnaddr);
+}
+
+/* Implement TARGET_LEGITIMATE_CONSTANT_P
+
+   On the MCore, allow anything but a double.  */
+
+static bool
+mcore_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return GET_CODE (x) != CONST_DOUBLE;
 }

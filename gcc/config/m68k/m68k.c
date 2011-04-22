@@ -163,6 +163,7 @@ static void m68k_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static rtx m68k_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			      const_tree, bool);
+static bool m68k_cannot_force_const_mem (enum machine_mode mode, rtx x);
 
 
 /* Specify the identification number of the library being built */
@@ -256,7 +257,7 @@ const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
 #define TARGET_STRUCT_VALUE_RTX m68k_struct_value_rtx
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM m68k_illegitimate_symbolic_constant_p
+#define TARGET_CANNOT_FORCE_CONST_MEM m68k_cannot_force_const_mem
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL m68k_ok_for_sibcall_p
@@ -297,6 +298,9 @@ const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
 
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE m68k_function_arg_advance
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P m68k_legitimate_constant_p
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -1033,7 +1037,7 @@ m68k_expand_prologue (void)
       && GET_CODE (stack_limit_rtx) == SYMBOL_REF)
     {
       limit = plus_constant (stack_limit_rtx, current_frame.size + 4);
-      if (!LEGITIMATE_CONSTANT_P (limit))
+      if (!m68k_legitimate_constant_p (Pmode, limit))
 	{
 	  emit_move_insn (gen_rtx_REG (Pmode, D0_REG), limit);
 	  limit = gen_rtx_REG (Pmode, D0_REG);
@@ -1937,6 +1941,14 @@ m68k_illegitimate_symbolic_constant_p (rtx x)
   return m68k_tls_reference_p (x, false);
 }
 
+/* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
+
+static bool
+m68k_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return m68k_illegitimate_symbolic_constant_p (x);
+}
+
 /* Return true if X is a legitimate constant address that can reach
    bytes in the range [X, X + REACH).  STRICT_P says whether we need
    strict checking.  */
@@ -2152,6 +2164,14 @@ m68k_legitimate_mem_p (rtx x, struct m68k_address *address)
 	  && m68k_decompose_address (GET_MODE (x), XEXP (x, 0),
 				     reload_in_progress || reload_completed,
 				     address));
+}
+
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
+
+bool
+m68k_legitimate_constant_p (enum machine_mode mode, rtx x)
+{
+  return mode != XFmode && !m68k_illegitimate_symbolic_constant_p (x);
 }
 
 /* Return true if X matches the 'Q' constraint.  It must be a memory
@@ -6128,7 +6148,14 @@ m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
 	  gcc_unreachable ();
 	}
 
-      gcc_assert (insn_size <= sched_ib.filled);
+      if (insn_size > sched_ib.filled)
+	/* Scheduling for register pressure does not always take DFA into
+	   account.  Workaround instruction buffer not being filled enough.  */
+	{
+	  gcc_assert (sched_pressure_p);
+	  insn_size = sched_ib.filled;
+	}
+
       --can_issue_more;
     }
   else if (GET_CODE (PATTERN (insn)) == ASM_INPUT

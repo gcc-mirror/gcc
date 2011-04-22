@@ -81,6 +81,7 @@ static rtx lm32_function_arg (CUMULATIVE_ARGS * cum,
 static void lm32_function_arg_advance (CUMULATIVE_ARGS * cum,
 				       enum machine_mode mode,
 				       const_tree type, bool named);
+static bool lm32_legitimate_constant_p (enum machine_mode, rtx);
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options lm32_option_optimization_table[] =
@@ -119,6 +120,8 @@ static const struct default_options lm32_option_optimization_table[] =
 #define TARGET_LEGITIMATE_ADDRESS_P lm32_legitimate_address_p
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P lm32_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1235,13 +1238,13 @@ lm32_move_ok (enum machine_mode mode, rtx operands[2]) {
   return true;
 }
 
-/* Implement LEGITIMATE_CONSTANT_P.  */
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
 
-bool
-lm32_legitimate_constant_p (rtx x)
+static bool
+lm32_legitimate_constant_p (enum machine_mode mode, rtx x)
 {
   /* 32-bit addresses require multiple instructions.  */  
-  if (!flag_pic && reloc_operand (x, GET_MODE (x)))
+  if (!flag_pic && reloc_operand (x, mode))
     return false; 
   
   return true;

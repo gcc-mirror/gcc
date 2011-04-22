@@ -221,6 +221,8 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       internal_error (&dtp->common, "Unexpected format token");
     }
 
+  if (zero_flag)
+    goto skip;
   /* Round the value.  The value being rounded is an unsigned magnitude.
      The ROUND_COMPATIBLE is rounding away from zero when there is a tie.  */
   switch (dtp->u.p.current_unit->round_status)
@@ -524,11 +526,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	      *(out4++) = expchar;
 	      edigits--;
 	    }
-#if HAVE_SNPRINTF
 	  snprintf (buffer, size, "%+0*d", edigits, e);
-#else
-	  sprintf (buffer, "%+0*d", edigits, e);
-#endif
 	  memcpy4 (out4, buffer, edigits);
 	}
 
@@ -616,11 +614,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  *(out++) = expchar;
 	  edigits--;
 	}
-#if HAVE_SNPRINTF
       snprintf (buffer, size, "%+0*d", edigits, e);
-#else
-      sprintf (buffer, "%+0*d", edigits, e);
-#endif
       memcpy (out, buffer, edigits);
     }
 
@@ -654,11 +648,11 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
       mark = (sign == S_PLUS || sign == S_MINUS) ? 8 : 7;
 
       nb =  f->u.real.w;
-  
+
       /* If the field width is zero, the processor must select a width 
 	 not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
      
-      if (nb == 0)
+      if ((nb == 0) || dtp->u.p.g0_no_blanks)
 	{
 	  if (isnan_flag)
 	    nb = 3;
@@ -810,7 +804,9 @@ CALCULATE_EXP(16)
    m >= 10**d-0.5                              Ew.d[Ee]
 
    notes: for Gw.d ,  n' ' means 4 blanks
-          for Gw.dEe, n' ' means e+2 blanks  */
+	  for Gw.dEe, n' ' means e+2 blanks
+	  for rounding modes adjustment, r, See Fortran F2008 10.7.5.2.2
+	  the asm volatile is required for 32-bit x86 platforms.  */
 
 #define OUTPUT_FLOAT_FMT_G(x) \
 static void \
@@ -822,7 +818,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   int d = f->u.real.d;\
   int w = f->u.real.w;\
   fnode *newf;\
-  GFC_REAL_ ## x rexp_d;\
+  GFC_REAL_ ## x rexp_d, r = 0.5;\
   int low, high, mid;\
   int ubound, lbound;\
   char *p, pad = ' ';\
@@ -832,9 +828,25 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   save_scale_factor = dtp->u.p.scale_factor;\
   newf = (fnode *) get_mem (sizeof (fnode));\
 \
+  switch (dtp->u.p.current_unit->round_status)\
+    {\
+      case ROUND_ZERO:\
+	r = sign_bit ? 1.0 : 0.0;\
+	break;\
+      case ROUND_UP:\
+	r = 1.0;\
+	break;\
+      case ROUND_DOWN:\
+	r = 0.0;\
+	break;\
+      default:\
+	break;\
+    }\
+\
   rexp_d = calculate_exp_ ## x (-d);\
-  if ((m > 0.0 && m < 0.1 - 0.05 * rexp_d) || (rexp_d * (m + 0.5) >= 1.0) ||\
-      ((m == 0.0) && !(compile_options.allow_std & GFC_STD_F2003)))\
+  if ((m > 0.0 && ((m < 0.1 - 0.1 * r * rexp_d) || (rexp_d * (m + r) >= 1.0)))\
+      || ((m == 0.0) && !(compile_options.allow_std\
+			  & (GFC_STD_F2003 | GFC_STD_F2008))))\
     { \
       newf->format = FMT_E;\
       newf->u.real.w = w;\
@@ -855,7 +867,8 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
       GFC_REAL_ ## x temp;\
       mid = (low + high) / 2;\
 \
-      temp = (calculate_exp_ ## x (mid - 1) * (1 - 0.5 * rexp_d));\
+      temp = (calculate_exp_ ## x (mid - 1) * (1 - r * rexp_d));\
+      asm volatile ("" : "+m" (temp));\
 \
       if (m < temp)\
         { \
@@ -940,7 +953,7 @@ OUTPUT_FLOAT_FMT_G(16)
 
 /* Define a macro to build code for write_float.  */
 
-  /* Note: Before output_float is called, sprintf is used to print to buffer the
+  /* Note: Before output_float is called, snprintf is used to print to buffer the
      number in the format +D.DDDDe+ddd. For an N digit exponent, this gives us
      (MIN_FIELD_WIDTH-5)-N digits after the decimal point, plus another one
      before the decimal point.
@@ -961,8 +974,6 @@ OUTPUT_FLOAT_FMT_G(16)
        equal to the precision. The exponent always contains at least two
        digits; if the value is zero, the exponent is 00.  */
 
-#ifdef HAVE_SNPRINTF
-
 #define DTOA \
 snprintf (buffer, size, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 	  "e", ndigits - 1, tmp);
@@ -971,17 +982,6 @@ snprintf (buffer, size, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 snprintf (buffer, size, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 	  "Le", ndigits - 1, tmp);
 
-#else
-
-#define DTOA \
-sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
-	 "e", ndigits - 1, tmp);
-
-#define DTOAL \
-sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
-	 "Le", ndigits - 1, tmp);
-
-#endif
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
 #define DTOAQ \

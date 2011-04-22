@@ -222,6 +222,13 @@ the option name with the leading ``-'' removed.  This chain action will
 propagate through the @code{Negative} property of the option to be
 turned off.
 
+As a consequence, if you have a group of mutually-exclusive
+options, their @code{Negative} properties should form a circular chain.
+For example, if options @option{-@var{a}}, @option{-@var{b}} and
+@option{-@var{c}} are mutually exclusive, their respective @code{Negative}
+properties should be @samp{Negative(@var{b})}, @samp{Negative(@var{c})}
+and @samp{Negative(@var{a})}.
+
 @item Joined
 @itemx Separate
 The option takes a mandatory argument.  @code{Joined} indicates

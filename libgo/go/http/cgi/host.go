@@ -25,20 +25,30 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 )
 
 var trailingPort = regexp.MustCompile(`:([0-9]+)$`)
 
+var osDefaultInheritEnv = map[string][]string{
+	"darwin":  []string{"DYLD_LIBRARY_PATH"},
+	"freebsd": []string{"LD_LIBRARY_PATH"},
+	"hpux":    []string{"LD_LIBRARY_PATH", "SHLIB_PATH"},
+	"linux":   []string{"LD_LIBRARY_PATH"},
+	"windows": []string{"SystemRoot", "COMSPEC", "PATHEXT", "WINDIR"},
+}
+
 // Handler runs an executable in a subprocess with a CGI environment.
 type Handler struct {
 	Path string // path to the CGI executable
 	Root string // root URI prefix of handler or empty for "/"
 
-	Env    []string    // extra environment variables to set, if any
-	Logger *log.Logger // optional log for errors or nil to use log.Print
-	Args   []string    // optional arguments to pass to child process
+	Env        []string    // extra environment variables to set, if any, as "key=value"
+	InheritEnv []string    // environment variables to inherit from host, as "key"
+	Logger     *log.Logger // optional log for errors or nil to use log.Print
+	Args       []string    // optional arguments to pass to child process
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -108,6 +118,24 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	if h.Env != nil {
 		env = append(env, h.Env...)
+	}
+
+	path := os.Getenv("PATH")
+	if path == "" {
+		path = "/bin:/usr/bin:/usr/ucb:/usr/bsd:/usr/local/bin"
+	}
+	env = append(env, "PATH="+path)
+
+	for _, e := range h.InheritEnv {
+		if v := os.Getenv(e); v != "" {
+			env = append(env, e+"="+v)
+		}
+	}
+
+	for _, e := range osDefaultInheritEnv[runtime.GOOS] {
+		if v := os.Getenv(e); v != "" {
+			env = append(env, e+"="+v)
+		}
 	}
 
 	cwd, pathBase := filepath.Split(h.Path)

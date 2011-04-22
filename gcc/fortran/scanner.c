@@ -288,15 +288,15 @@ gfc_scanner_done_1 (void)
   while(line_head != NULL) 
     {
       lb = line_head->next;
-      gfc_free(line_head);
+      free (line_head);
       line_head = lb;
     }
      
   while(file_head != NULL) 
     {
       f = file_head->next;
-      gfc_free(file_head->filename);
-      gfc_free(file_head);
+      free (file_head->filename);
+      free (file_head);
       file_head = f;    
     }
 }
@@ -371,19 +371,19 @@ gfc_release_include_path (void)
     {
       p = include_dirs;
       include_dirs = include_dirs->next;
-      gfc_free (p->path);
-      gfc_free (p);
+      free (p->path);
+      free (p);
     }
 
   while (intrinsic_modules_dirs != NULL)
     {
       p = intrinsic_modules_dirs;
       intrinsic_modules_dirs = intrinsic_modules_dirs->next;
-      gfc_free (p->path);
-      gfc_free (p);
+      free (p->path);
+      free (p);
     }
 
-  gfc_free (gfc_option.module_dir);
+  free (gfc_option.module_dir);
 }
 
 
@@ -659,7 +659,7 @@ gfc_define_undef_line (void)
       tmp = gfc_widechar_to_char (&gfc_current_locus.nextc[8], -1);
       (*debug_hooks->define) (gfc_linebuf_linenum (gfc_current_locus.lb),
 			      tmp);
-      gfc_free (tmp);
+      free (tmp);
     }
 
   if (wide_strncmp (gfc_current_locus.nextc, "#undef ", 7) == 0)
@@ -667,7 +667,7 @@ gfc_define_undef_line (void)
       tmp = gfc_widechar_to_char (&gfc_current_locus.nextc[7], -1);
       (*debug_hooks->undef) (gfc_linebuf_linenum (gfc_current_locus.lb),
 			     tmp);
-      gfc_free (tmp);
+      free (tmp);
     }
 
   /* Skip the rest of the line.  */
@@ -1760,8 +1760,8 @@ preprocessor_line (gfc_char_t *c)
 			   current_file->filename, current_file->line,
 			   filename);
 	  if (unescape)
-	    gfc_free (wide_filename);
-	  gfc_free (filename);
+	    free (wide_filename);
+	  free (filename);
 	  return;
 	}
 
@@ -1785,8 +1785,8 @@ preprocessor_line (gfc_char_t *c)
   /* Set new line number.  */
   current_file->line = line;
   if (unescape)
-    gfc_free (wide_filename);
-  gfc_free (filename);
+    free (wide_filename);
+  free (filename);
   return;
 
  bad_cpp_line:
@@ -1870,7 +1870,7 @@ include_line (gfc_char_t *line)
   if (load_file (filename, NULL, false) == FAILURE)
     exit (FATAL_EXIT_CODE);
 
-  gfc_free (filename);
+  free (filename);
   return true;
 }
 
@@ -1939,12 +1939,12 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
   if (initial && gfc_src_preprocessor_lines[0])
     {
       preprocessor_line (gfc_src_preprocessor_lines[0]);
-      gfc_free (gfc_src_preprocessor_lines[0]);
+      free (gfc_src_preprocessor_lines[0]);
       gfc_src_preprocessor_lines[0] = NULL;
       if (gfc_src_preprocessor_lines[1])
 	{
 	  preprocessor_line (gfc_src_preprocessor_lines[1]);
-	  gfc_free (gfc_src_preprocessor_lines[1]);
+	  free (gfc_src_preprocessor_lines[1]);
 	  gfc_src_preprocessor_lines[1] = NULL;
 	}
     }
@@ -1975,7 +1975,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	  gfc_char_t *new_char = gfc_get_wide_string (line_len);
 
 	  wide_strcpy (new_char, &line[n]);
-	  gfc_free (line);
+	  free (line);
 	  line = new_char;
 	  len -= n;
 	}
@@ -2012,8 +2012,8 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 
       /* Add line.  */
 
-      b = (gfc_linebuf *) gfc_getmem (gfc_linebuf_header_size
-				      + (len + 1) * sizeof (gfc_char_t));
+      b = XCNEWVAR (gfc_linebuf, gfc_linebuf_header_size
+		    + (len + 1) * sizeof (gfc_char_t));
 
       b->location
 	= linemap_line_start (line_table, current_file->line++, 120);
@@ -2033,7 +2033,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
     }
 
   /* Release the line buffer allocated in load_line.  */
-  gfc_free (line);
+  free (line);
 
   fclose (input);
 
@@ -2145,7 +2145,7 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
 
   tmp = gfc_widechar_to_char (&gfc_src_preprocessor_lines[0][5], -1);
   filename = unescape_filename (tmp);
-  gfc_free (tmp);
+  free (tmp);
   if (filename == NULL)
     return NULL;
 
@@ -2162,14 +2162,14 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
 
   tmp = gfc_widechar_to_char (&gfc_src_preprocessor_lines[1][5], -1);
   dirname = unescape_filename (tmp);
-  gfc_free (tmp);
+  free (tmp);
   if (dirname == NULL)
     return filename;
 
   len = strlen (dirname);
   if (len < 3 || dirname[len - 1] != '/' || dirname[len - 2] != '/')
     {
-      gfc_free (dirname);
+      free (dirname);
       return filename;
     }
   dirname[len - 2] = '\0';
@@ -2185,6 +2185,6 @@ gfc_read_orig_filename (const char *filename, const char **canon_source_file)
       *canon_source_file = p;
     }
 
-  gfc_free (dirname);
+  free (dirname);
   return filename;
 }

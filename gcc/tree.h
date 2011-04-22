@@ -577,7 +577,7 @@ struct GTY(()) tree_common {
            all decls
 
        CALL_FROM_THUNK_P and
-       ALLOCA_FOR_VAR_P in
+       CALL_ALLOCA_FOR_VAR_P in
            CALL_EXPR
 
    side_effects_flag:
@@ -1399,7 +1399,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* In a CALL_EXPR, if the function being called is BUILT_IN_ALLOCA, means that
    it has been built for the declaration of a variable-sized object.  */
-#define ALLOCA_FOR_VAR_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
+#define CALL_ALLOCA_FOR_VAR_P(NODE) \
+  (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* In a type, nonzero means that all objects of the type are guaranteed by the
    language or front-end to be properly aligned, so we can indicate that a MEM
@@ -1471,7 +1472,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
        && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
 
 struct GTY(()) tree_int_cst {
-  struct tree_common common;
+  struct tree_typed typed;
   double_int int_cst;
 };
 
@@ -1484,7 +1485,7 @@ struct real_value;
 #define TREE_REAL_CST(NODE) (*TREE_REAL_CST_PTR (NODE))
 
 struct GTY(()) tree_real_cst {
-  struct tree_common common;
+  struct tree_typed typed;
   struct real_value * real_cst_ptr;
 };
 
@@ -1496,7 +1497,7 @@ struct fixed_value;
 #define TREE_FIXED_CST(NODE) (*TREE_FIXED_CST_PTR (NODE))
 
 struct GTY(()) tree_fixed_cst {
-  struct tree_common common;
+  struct tree_typed typed;
   struct fixed_value * fixed_cst_ptr;
 };
 
@@ -1506,7 +1507,7 @@ struct GTY(()) tree_fixed_cst {
   ((const char *)(STRING_CST_CHECK (NODE)->string.str))
 
 struct GTY(()) tree_string {
-  struct tree_common common;
+  struct tree_typed typed;
   int length;
   char str[1];
 };
@@ -1516,7 +1517,7 @@ struct GTY(()) tree_string {
 #define TREE_IMAGPART(NODE) (COMPLEX_CST_CHECK (NODE)->complex.imag)
 
 struct GTY(()) tree_complex {
-  struct tree_common common;
+  struct tree_typed typed;
   tree real;
   tree imag;
 };
@@ -1525,7 +1526,7 @@ struct GTY(()) tree_complex {
 #define TREE_VECTOR_CST_ELTS(NODE) (VECTOR_CST_CHECK (NODE)->vector.elements)
 
 struct GTY(()) tree_vector {
-  struct tree_common common;
+  struct tree_typed typed;
   tree elements;
 };
 
@@ -1629,7 +1630,7 @@ DEF_VEC_O(constructor_elt);
 DEF_VEC_ALLOC_O(constructor_elt,gc);
 
 struct GTY(()) tree_constructor {
-  struct tree_common common;
+  struct tree_typed typed;
   VEC(constructor_elt,gc) *elts;
 };
 
@@ -1986,7 +1987,7 @@ typedef struct GTY(()) ssa_use_operand_d {
 #define SSA_NAME_IMM_USE_NODE(NODE) SSA_NAME_CHECK (NODE)->ssa_name.imm_uses
 
 struct GTY(()) tree_ssa_name {
-  struct tree_common common;
+  struct tree_typed typed;
 
   /* _DECL wrapped by this SSA name.  */
   tree var;
@@ -5303,6 +5304,7 @@ extern bool can_trust_pointer_alignment (void);
 extern unsigned int get_pointer_alignment (tree, unsigned int);
 extern bool is_builtin_name (const char *);
 extern bool is_builtin_fn (tree);
+extern unsigned int get_object_alignment_1 (tree, unsigned HOST_WIDE_INT *);
 extern unsigned int get_object_alignment (tree, unsigned int);
 extern tree fold_call_stmt (gimple, bool);
 extern tree gimple_fold_builtin_snprintf_chk (gimple, tree, enum built_in_function);

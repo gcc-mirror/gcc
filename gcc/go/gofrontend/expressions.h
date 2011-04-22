@@ -81,6 +81,7 @@ class Expression
     EXPRESSION_MAKE,
     EXPRESSION_TYPE_GUARD,
     EXPRESSION_CONVERSION,
+    EXPRESSION_UNSAFE_CONVERSION,
     EXPRESSION_STRUCT_CONSTRUCTION,
     EXPRESSION_FIXED_ARRAY_CONSTRUCTION,
     EXPRESSION_OPEN_ARRAY_CONSTRUCTION,
@@ -246,6 +247,12 @@ class Expression
   // Make a type cast expression.
   static Expression*
   make_cast(Type*, Expression*, source_location);
+
+  // Make an unsafe type cast expression.  This is only used when
+  // passing parameter to builtin functions that are part of the Go
+  // runtime.
+  static Expression*
+  make_unsafe_cast(Type*, Expression*, source_location);
 
   // Make a composite literal.  The DEPTH parameter is how far down we
   // are in a list of composite literals with omitted types.
@@ -1634,7 +1641,7 @@ class Field_reference_expression : public Expression
   void
   set_struct_expression(Expression* expr)
   {
-    gcc_assert(this->expr_ == NULL);
+    go_assert(this->expr_ == NULL);
     this->expr_ = expr;
   }
 

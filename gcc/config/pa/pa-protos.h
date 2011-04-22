@@ -1,5 +1,5 @@
 /* Prototypes for pa.c functions used in the md file & elsewhere.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010, 2011
    Free Software Foundation,
    Inc.
 
@@ -21,14 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef RTX_CODE
 /* Prototype function used in various macros.  */
-extern int symbolic_operand (rtx, enum machine_mode);
-extern int tls_symbolic_operand (rtx);
 extern rtx pa_eh_return_handler_rtx (void);
 
 /* Used in insn-*.c.  */
 extern int following_call (rtx);
-extern int function_label_operand (rtx, enum machine_mode);
-extern int lhs_lshift_cint_operand (rtx, enum machine_mode);
 
 /* Define functions in pa.c and used in insn-output.c.  */
 
@@ -58,44 +54,11 @@ extern void output_global_address (FILE *, rtx, int);
 extern void print_operand (FILE *, rtx, int);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern void hppa_encode_label (rtx);
-extern int arith11_operand (rtx, enum machine_mode);
-extern int adddi3_operand (rtx, enum machine_mode);
-extern int indexed_memory_operand (rtx, enum machine_mode);
 extern int symbolic_expression_p (rtx);
-extern int symbolic_memory_operand (rtx, enum machine_mode);
 extern bool pa_tls_referenced_p (rtx);
 extern int pa_adjust_insn_length (rtx, int);
-extern int int11_operand (rtx, enum machine_mode);
-extern int reg_or_cint_move_operand (rtx, enum machine_mode);
-extern int arith5_operand (rtx, enum machine_mode);
-extern int uint5_operand (rtx, enum machine_mode);
-extern int pic_label_operand (rtx, enum machine_mode);
-extern int plus_xor_ior_operator (rtx, enum machine_mode);
-extern int borx_reg_operand (rtx, enum machine_mode);
-extern int shadd_operand (rtx, enum machine_mode);
-extern int arith_operand (rtx, enum machine_mode);
-extern int read_only_operand (rtx, enum machine_mode);
-extern int move_dest_operand (rtx, enum machine_mode);
-extern int move_src_operand (rtx, enum machine_mode);
-extern int prefetch_cc_operand (rtx, enum machine_mode);
-extern int prefetch_nocc_operand (rtx, enum machine_mode);
-extern int and_operand (rtx, enum machine_mode);
-extern int ior_operand (rtx, enum machine_mode);
-extern int arith32_operand (rtx, enum machine_mode);
-extern int uint32_operand (rtx, enum machine_mode);
-extern int reg_before_reload_operand (rtx, enum machine_mode);
-extern int reg_or_0_operand (rtx, enum machine_mode);
-extern int reg_or_0_or_nonsymb_mem_operand (rtx, enum machine_mode);
-extern int pre_cint_operand (rtx, enum machine_mode);
-extern int post_cint_operand (rtx, enum machine_mode);
-extern int div_operand (rtx, enum machine_mode);
-extern int int5_operand (rtx, enum machine_mode);
-extern int movb_comparison_operator (rtx, enum machine_mode);
-extern int ireg_or_int5_operand (rtx, enum machine_mode);
 extern int fmpyaddoperands (rtx *);
 extern int fmpysuboperands (rtx *);
-extern int call_operand_address (rtx, enum machine_mode);
-extern int ior_operand (rtx, enum machine_mode);
 extern void emit_bcond_fp (rtx[]);
 extern int emit_move_sequence (rtx *, enum machine_mode, rtx);
 extern int emit_hpdiv_const (rtx *, int);
@@ -109,26 +72,18 @@ extern int attr_length_save_restore_dltp (rtx);
 
 /* Declare functions defined in pa.c and used in templates.  */
 
-extern struct rtx_def *return_addr_rtx (int, rtx);
+extern rtx return_addr_rtx (int, rtx);
 
-extern int fp_reg_operand (rtx, enum machine_mode);
-extern int arith_double_operand (rtx, enum machine_mode);
-extern int ireg_operand (rtx, enum machine_mode);
-extern int lhs_lshift_operand (rtx, enum machine_mode);
-extern int pc_or_label_operand (rtx, enum machine_mode);
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
 #ifdef TREE_CODE
 extern enum direction function_arg_padding (enum machine_mode, const_tree);
 #endif
 #endif /* ARGS_SIZE_RTX */
-extern int non_hard_reg_operand (rtx, enum machine_mode);
-extern int eq_neq_comparison_operator (rtx, enum machine_mode);
 extern int insn_refs_are_delayed (rtx);
 extern rtx get_deferred_plabel (rtx);
 #endif /* RTX_CODE */
 
-extern int integer_store_memory_operand (rtx, enum machine_mode);
 extern int ldil_cint_p (HOST_WIDE_INT);
 extern int zdepi_cint_p (unsigned HOST_WIDE_INT);
 

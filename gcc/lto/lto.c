@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright 2009, 2010 Free Software Foundation, Inc.
+   Copyright 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "splay-tree.h"
 #include "params.h"
+#include "ipa-inline.h"
 
 static GTY(()) tree first_personality_decl;
 
@@ -750,7 +751,7 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
 {
   struct cgraph_edge *e;
 
-  part->insns += node->local.inline_summary.self_size;
+  part->insns += inline_summary (node)->self_size;
 
   if (node->aux)
     {
@@ -811,7 +812,7 @@ undo_partition (ltrans_partition partition, unsigned int n_cgraph_nodes,
       struct cgraph_node *node = VEC_index (cgraph_node_ptr,
 					    partition->cgraph_set->nodes,
 					    n_cgraph_nodes);
-      partition->insns -= node->local.inline_summary.self_size;
+      partition->insns -= inline_summary (node)->self_size;
       cgraph_node_set_remove (partition->cgraph_set, node);
       node->aux = (void *)((size_t)node->aux - 1);
     }
@@ -961,40 +962,43 @@ lto_1_to_1_map (void)
 }
 
 
-/* Group cgraph nodes in qually sized partitions.
+/* Group cgraph nodes into equally-sized partitions.
 
-   The algorithm deciding paritions are simple: nodes are taken in predefined
-   order.  The order correspond to order we wish to have functions in final
-   output.  In future this will be given by function reordering pass, but at
-   the moment we use topological order that serve a good approximation.
+   The partitioning algorithm is simple: nodes are taken in predefined order.
+   The order corresponds to the order we want functions to have in the final
+   output.  In the future this will be given by function reordering pass, but
+   at the moment we use the topological order, which is a good approximation.
 
-   The goal is to partition this linear order into intervals (partitions) such
-   that all partitions have approximately the same size and that the number of
-   callgraph or IPA reference edgess crossing boundaries is minimal.
+   The goal is to partition this linear order into intervals (partitions) so
+   that all the partitions have approximately the same size and the number of
+   callgraph or IPA reference edges crossing boundaries is minimal.
 
    This is a lot faster (O(n) in size of callgraph) than algorithms doing
-   priority based graph clustering that are generally O(n^2) and since WHOPR
-   is designed to make things go well across partitions, it leads to good results.
+   priority-based graph clustering that are generally O(n^2) and, since
+   WHOPR is designed to make things go well across partitions, it leads
+   to good results.
 
-   We compute the expected size of partition as
-   max (total_size / lto_partitions, min_partition_size).
-   We use dynamic expected size of partition, so small programs
-   are partitioning into enough partitions to allow use of multiple CPUs while
-   large programs are not partitioned too much. Creating too many partition
-   increase streaming overhead significandly.
+   We compute the expected size of a partition as:
 
-   In the future we would like to bound maximal size of partition to avoid
-   ltrans stage consuming too much memory.  At the moment however WPA stage is
-   most memory intensive phase at large benchmark since too many types and
-   declarations are read into memory.
+     max (total_size / lto_partitions, min_partition_size)
 
-   The function implement simple greedy algorithm.  Nodes are begin added into
-   current partition until 3/4th of expected partition size is reached.
-   After this threshold we keep track of boundary size (number of edges going to
-   other partitions) and continue adding functions until the current partition
-   grows into a double of expected partition size.  Then the process is undone
-   till the point when minimal ration of boundary size and in partition calls
-   was reached.  */
+   We use dynamic expected size of partition so small programs are partitioned
+   into enough partitions to allow use of multiple CPUs, while large programs
+   are not partitioned too much.  Creating too many partitions significantly
+   increases the streaming overhead.
+
+   In the future, we would like to bound the maximal size of partitions so as
+   to prevent the LTRANS stage from consuming too much memory.  At the moment,
+   however, the WPA stage is the most memory intensive for large benchmarks,
+   since too many types and declarations are read into memory.
+
+   The function implements a simple greedy algorithm.  Nodes are being added
+   to the current partition until after 3/4 of the expected partition size is
+   reached.  Past this threshold, we keep track of boundary size (number of
+   edges going to other partitions) and continue adding functions until after
+   the current partition has grown to twice the expected partition size.  Then
+   the process is undone to the point where the minimal ratio of boundary size
+   and in-partition calls was reached.  */
 
 static void
 lto_balanced_map (void)
@@ -1029,7 +1033,7 @@ lto_balanced_map (void)
       if (partition_cgraph_node_p (node))
 	{
 	  order[n_nodes++] = node;
-          total_size += node->global.size;
+          total_size += inline_summary (node)->size;
 	}
     }
   free (postorder);
@@ -1048,7 +1052,7 @@ lto_balanced_map (void)
     {
       if (!order[i]->aux)
         add_cgraph_node_to_partition (partition, order[i]);
-      total_size -= order[i]->global.size;
+      total_size -= inline_summary (order[i])->size;
 
       /* Once we added a new node to the partition, we also want to add
          all referenced variables unless they was already added into some
@@ -1329,7 +1333,8 @@ lto_promote_cross_file_statics (void)
   n_sets = VEC_length (ltrans_partition, ltrans_partitions);
   for (i = 0; i < n_sets; i++)
     {
-      ltrans_partition part = VEC_index (ltrans_partition, ltrans_partitions, i);
+      ltrans_partition part
+	= VEC_index (ltrans_partition, ltrans_partitions, i);
       set = part->cgraph_set;
       vset = part->varpool_set;
 
@@ -1360,16 +1365,15 @@ lto_promote_cross_file_statics (void)
 	    promote_var (vnode);
 	}
 
-      /* We export initializers of read-only var into each partition
-	 referencing it.  Folding might take declarations from the
-	 initializers and use it; so everything referenced from the
-	 initializers needs can be accessed from this partition after
-	 folding.
+      /* We export the initializer of a read-only var into each partition
+	 referencing the var.  Folding might take declarations from the
+	 initializer and use them, so everything referenced from the
+	 initializer can be accessed from this partition after folding.
 
 	 This means that we need to promote all variables and functions
-	 referenced from all initializers from readonly vars referenced
-	 from this partition that are not in this partition.
-	 This needs to be done recursively.  */
+	 referenced from all initializers of read-only vars referenced
+	 from this partition that are not in this partition.  This needs
+	 to be done recursively.  */
       for (vnode = varpool_nodes; vnode; vnode = vnode->next)
 	if (const_value_known_p (vnode->decl)
 	    && DECL_INITIAL (vnode->decl)
@@ -1377,13 +1381,16 @@ lto_promote_cross_file_statics (void)
 	    && referenced_from_this_partition_p (&vnode->ref_list, set, vset)
 	    && !pointer_set_insert (inserted, vnode))
 	VEC_safe_push (varpool_node_ptr, heap, promoted_initializers, vnode);
+
       while (!VEC_empty (varpool_node_ptr, promoted_initializers))
 	{
 	  int i;
 	  struct ipa_ref *ref;
 
 	  vnode = VEC_pop (varpool_node_ptr, promoted_initializers);
-	  for (i = 0; ipa_ref_list_reference_iterate (&vnode->ref_list, i, ref); i++)
+	  for (i = 0;
+	       ipa_ref_list_reference_iterate (&vnode->ref_list, i, ref);
+	       i++)
 	    {
 	      if (ref->refered_type == IPA_REF_CGRAPH)
 		{
@@ -1398,17 +1405,17 @@ lto_promote_cross_file_statics (void)
 		  struct varpool_node *v = ipa_ref_varpool_node (ref);
 		  if (varpool_node_in_set_p (v, vset))
 		    continue;
-		  /* Constant pool references use internal labels and thus can not
-		     be made global.  It is sensible to keep those ltrans local to
-		     allow better optimization.  */
+
+		  /* Constant pool references use internal labels and thus
+		     cannot be made global.  It is sensible to keep those
+		     ltrans local to allow better optimization.  */
 		  if (DECL_IN_CONSTANT_POOL (v->decl))
 		    {
 		      if (!pointer_set_insert (inserted, vnode))
 			VEC_safe_push (varpool_node_ptr, heap,
 				       promoted_initializers, v);
 		    }
-		  else if (!DECL_IN_CONSTANT_POOL (v->decl)
-			   && !v->externally_visible && v->analyzed)
+		  else if (!v->externally_visible && v->analyzed)
 		    {
 		      if (promote_var (v)
 			  && DECL_INITIAL (v->decl)

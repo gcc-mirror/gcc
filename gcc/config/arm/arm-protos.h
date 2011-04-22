@@ -58,6 +58,7 @@ extern bool arm_legitimize_reload_address (rtx *, enum machine_mode, int, int,
 					   int);
 extern rtx thumb_legitimize_reload_address (rtx *, enum machine_mode, int, int,
 					    int);
+extern int thumb1_legitimate_address_p (enum machine_mode, rtx, int);
 extern int arm_const_double_rtx (rtx);
 extern int neg_const_double_rtx_ok_for_fpa (rtx);
 extern int vfp3_const_double_rtx (rtx);
@@ -81,7 +82,6 @@ extern void neon_disambiguate_copy (rtx *, rtx *, rtx *, unsigned int);
 extern enum reg_class coproc_secondary_reload_class (enum machine_mode, rtx,
 						     bool);
 extern bool arm_tls_referenced_p (rtx);
-extern bool arm_cannot_force_const_mem (rtx);
 
 extern int cirrus_memory_offset (rtx);
 extern int arm_coproc_mem_operand (rtx, bool);

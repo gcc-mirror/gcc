@@ -1,4 +1,5 @@
-/* { dg-skip-if "Ints are 16 bits" { "pdp11-*-*" } { "*" } { "" } } */ 
+/* { dg-require-effective-target int32plus } */
+
 struct S0
 {
 };

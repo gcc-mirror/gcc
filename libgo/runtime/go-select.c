@@ -22,11 +22,11 @@ struct select_channel
   /* The channel being selected.  */
   struct __go_channel* channel;
   /* If this channel is selected, the value to return.  */
-  size_t retval;
+  uintptr_t retval;
   /* If this channel is a duplicate of one which appears earlier in
      the array, this is the array index of the earlier channel.  This
      is -1UL if this is not a dup.  */
-  size_t dup_index;
+  uintptr_t dup_index;
   /* An entry to put on the send or receive queue.  */
   struct __go_channel_select queue_entry;
   /* True if selected for send.  */
@@ -321,24 +321,24 @@ clear_select_waiting (struct select_channel *sc,
    Lock each channels, and set the is_ready flag.  Return the number
    of ready channels.  */
 
-static size_t
-lock_channels_find_ready (struct select_channel *channels, size_t count)
+static uintptr_t
+lock_channels_find_ready (struct select_channel *channels, uintptr_t count)
 {
-  size_t ready_count;
-  size_t i;
+  uintptr_t ready_count;
+  uintptr_t i;
 
   ready_count = 0;
   for (i = 0; i < count; ++i)
     {
       struct __go_channel *channel = channels[i].channel;
       _Bool is_send = channels[i].is_send;
-      size_t dup_index = channels[i].dup_index;
+      uintptr_t dup_index = channels[i].dup_index;
       int x;
 
       if (channel == NULL)
 	continue;
 
-      if (dup_index != (size_t) -1UL)
+      if (dup_index != (uintptr_t) -1UL)
 	{
 	  if (channels[dup_index].is_ready)
 	    {
@@ -370,13 +370,13 @@ lock_channels_find_ready (struct select_channel *channels, size_t count)
    All the channels are locked before this routine is called.  This
    returns the number of ready channels.  */
 
-size_t
-force_selected_channel_ready (struct select_channel *channels, size_t count,
+uintptr_t
+force_selected_channel_ready (struct select_channel *channels, uintptr_t count,
 			      struct __go_channel *selected_channel,
 			      _Bool selected_for_read)
 {
-  size_t ready_count;
-  size_t i;
+  uintptr_t ready_count;
+  uintptr_t i;
 
   ready_count = 0;
   for (i = 0; i < count; ++i)
@@ -403,9 +403,9 @@ force_selected_channel_ready (struct select_channel *channels, size_t count,
 /* Unlock all the channels.  */
 
 static void
-unlock_channels (struct select_channel *channels, size_t count)
+unlock_channels (struct select_channel *channels, uintptr_t count)
 {
-  size_t i;
+  uintptr_t i;
   int x;
 
   for (i = 0; i < count; ++i)
@@ -415,7 +415,7 @@ unlock_channels (struct select_channel *channels, size_t count)
       if (channel == NULL)
 	continue;
 
-      if (channels[i].dup_index != (size_t) -1UL)
+      if (channels[i].dup_index != (uintptr_t) -1UL)
 	continue;
 
       x = pthread_mutex_unlock (&channel->lock);
@@ -432,23 +432,23 @@ unlock_channels (struct select_channel *channels, size_t count)
    with some other select, and that select already synchronized with a
    different channel.  */
 
-static size_t
+static uintptr_t
 unlock_channels_and_select (struct select_channel *channels,
-			    size_t count, size_t ready_count,
+			    uintptr_t count, uintptr_t ready_count,
 			    _Bool is_selected,
 			    struct __go_channel **selected_pointer)
 {
-  size_t selected;
-  size_t ret;
+  uintptr_t selected;
+  uintptr_t ret;
   _Bool needs_broadcast;
-  size_t i;
+  uintptr_t i;
   int x;
 
   /* Pick which channel we are going to return.  */
 #if defined(HAVE_RANDOM)
-  selected = (size_t) random () % ready_count;
+  selected = (uintptr_t) random () % ready_count;
 #else
-  selected = (size_t) rand () % ready_count;
+  selected = (uintptr_t) rand () % ready_count;
 #endif
   ret = 0;
   needs_broadcast = 0;
@@ -457,7 +457,7 @@ unlock_channels_and_select (struct select_channel *channels,
      duplicated channel until we have seen all its dups.  */
   for (i = 0; i < count; ++i)
     {
-      size_t j = count - i - 1;
+      uintptr_t j = count - i - 1;
       struct __go_channel *channel = channels[j].channel;
       _Bool is_send = channels[j].is_send;
 
@@ -476,7 +476,7 @@ unlock_channels_and_select (struct select_channel *channels,
 	  --selected;
 	}
 
-      if (channels[j].dup_index == (size_t) -1UL)
+      if (channels[j].dup_index == (uintptr_t) -1UL)
 	{
 	  if (selected_pointer != NULL)
 	    clear_select_waiting (&channels[j], selected_pointer);
@@ -511,13 +511,13 @@ unlock_channels_and_select (struct select_channel *channels,
    ready.  */
 
 static _Bool
-mark_all_channels_waiting (struct select_channel* channels, size_t count,
+mark_all_channels_waiting (struct select_channel* channels, uintptr_t count,
 			   struct __go_channel **selected_pointer,
 			   _Bool *selected_for_read_pointer)
 {
   _Bool ret;
   int x;
-  size_t i;
+  uintptr_t i;
 
   ret = 0;
   for (i = 0; i < count; ++i)
@@ -528,9 +528,9 @@ mark_all_channels_waiting (struct select_channel* channels, size_t count,
       if (channel == NULL)
 	continue;
 
-      if (channels[i].dup_index != (size_t) -1UL)
+      if (channels[i].dup_index != (uintptr_t) -1UL)
 	{
-	  size_t j;
+	  uintptr_t j;
 
 	  /* A channel may be selected for both read and write.  */
 	  if (channels[channels[i].dup_index].is_send != is_send)
@@ -574,14 +574,14 @@ mark_all_channels_waiting (struct select_channel* channels, size_t count,
    with pairs of arguments: a pointer to a channel, and an int which
    is non-zero for send, zero for receive.  */
 
-size_t
-__go_select (size_t count, _Bool has_default,
+uintptr_t
+__go_select (uintptr_t count, _Bool has_default,
 	     struct __go_channel **channel_args, _Bool *is_send_args)
 {
   struct select_channel stack_buffer[16];
   struct select_channel *allocated_buffer;
   struct select_channel *channels;
-  size_t i;
+  uintptr_t i;
   int x;
   struct __go_channel *selected_channel;
   _Bool selected_for_read;
@@ -606,7 +606,7 @@ __go_select (size_t count, _Bool has_default,
 
       channels[i].channel = (struct __go_channel*) channel_arg;
       channels[i].retval = i + 1;
-      channels[i].dup_index = (size_t) -1UL;
+      channels[i].dup_index = (uintptr_t) -1UL;
       channels[i].queue_entry.next = NULL;
       channels[i].queue_entry.selected = NULL;
       channels[i].is_send = is_send;
@@ -617,7 +617,7 @@ __go_select (size_t count, _Bool has_default,
 
   for (i = 0; i < count; ++i)
     {
-      size_t j;
+      uintptr_t j;
 
       for (j = 0; j < i; ++j)
 	{
@@ -667,7 +667,7 @@ __go_select (size_t count, _Bool has_default,
 
       if (ready_count > 0)
 	{
-	  size_t ret;
+	  uintptr_t ret;
 
 	  ret = unlock_channels_and_select (channels, count, ready_count,
 					    is_selected,

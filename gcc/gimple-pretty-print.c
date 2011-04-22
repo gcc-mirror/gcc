@@ -616,8 +616,12 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
 
   if (flags & TDF_RAW)
     {
-      dump_gimple_fmt (buffer, spc, flags, "%G <%T, %T",
-                     gs, gimple_call_fn (gs), lhs);
+      if (gimple_call_internal_p (gs))
+	dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T", gs,
+			 internal_fn_name (gimple_call_internal_fn (gs)), lhs);
+      else
+	dump_gimple_fmt (buffer, spc, flags, "%G <%T, %T",
+			 gs, gimple_call_fn (gs), lhs);
       if (gimple_call_num_args (gs) > 0)
         {
           pp_string (buffer, ", ");
@@ -637,7 +641,10 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
 
 	  pp_space (buffer);
         }
-      print_call_name (buffer, gimple_call_fn (gs), flags);
+      if (gimple_call_internal_p (gs))
+	pp_string (buffer, internal_fn_name (gimple_call_internal_fn (gs)));
+      else
+	print_call_name (buffer, gimple_call_fn (gs), flags);
       pp_string (buffer, " (");
       dump_gimple_call_args (buffer, gs, flags);
       pp_character (buffer, ')');

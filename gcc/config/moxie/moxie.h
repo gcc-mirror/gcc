@@ -441,10 +441,6 @@ enum reg_class
 /* All load operations zero extend.  */
 #define LOAD_EXTEND_OP(MEM) ZERO_EXTEND
 
-/* A C expression that is nonzero if X is a legitimate constant for
-   an immediate operand on the target machine.  */
-#define LEGITIMATE_CONSTANT_P(X) 1
-
 /* A number, the maximum number of registers that can appear in a
    valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1

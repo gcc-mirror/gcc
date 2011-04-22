@@ -1,4 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* ia64-*-* i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target freorder } */
 /* { dg-options "-O -fno-guess-branch-probability -fpeel-loops -freorder-blocks-and-partition -fschedule-insns2 -fsel-sched-pipelining -fselective-scheduling2" } */
 struct intC
 {

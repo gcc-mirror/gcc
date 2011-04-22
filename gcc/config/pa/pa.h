@@ -351,7 +351,7 @@ typedef struct GTY(()) machine_function
 
 /* Function to return the rtx used to save the pic offset table register
    across function calls.  */
-extern struct rtx_def *hppa_pic_save_rtx (void);
+extern rtx hppa_pic_save_rtx (void);
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
@@ -805,37 +805,6 @@ extern int may_call_alloca;
 #define MIN_LEGIT_64BIT_CONST_INT ((HOST_WIDE_INT) -32 << 31)
 #define LEGITIMATE_64BIT_CONST_INT_P(X) \
   ((X) >= MIN_LEGIT_64BIT_CONST_INT && (X) < MAX_LEGIT_64BIT_CONST_INT)
-
-/* A C expression that is nonzero if X is a legitimate constant for an
-   immediate operand.
-
-   We include all constant integers and constant doubles, but not
-   floating-point, except for floating-point zero.  We reject LABEL_REFs
-   if we're not using gas or the new HP assembler. 
-
-   In 64-bit mode, we reject CONST_DOUBLES.  We also reject CONST_INTS
-   that need more than three instructions to load prior to reload.  This
-   limit is somewhat arbitrary.  It takes three instructions to load a
-   CONST_INT from memory but two are memory accesses.  It may be better
-   to increase the allowed range for CONST_INTS.  We may also be able
-   to handle CONST_DOUBLES.  */
-
-#define LEGITIMATE_CONSTANT_P(X)				\
-  ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT			\
-    || (X) == CONST0_RTX (GET_MODE (X)))			\
-   && (NEW_HP_ASSEMBLER						\
-       || TARGET_GAS						\
-       || GET_CODE (X) != LABEL_REF)				\
-   && (!TARGET_64BIT						\
-       || GET_CODE (X) != CONST_DOUBLE)				\
-   && (!TARGET_64BIT						\
-       || HOST_BITS_PER_WIDE_INT <= 32				\
-       || GET_CODE (X) != CONST_INT				\
-       || reload_in_progress					\
-       || reload_completed					\
-       || LEGITIMATE_64BIT_CONST_INT_P (INTVAL (X))		\
-       || cint_ok_for_move (INTVAL (X)))			\
-   && !function_label_operand (X, VOIDmode))
 
 /* Target flags set on a symbol_ref.  */
 

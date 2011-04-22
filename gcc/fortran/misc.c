@@ -1,5 +1,5 @@
 /* Miscellaneous stuff that doesn't fit anywhere else.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -22,34 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "gfortran.h"
-
-/* Get a block of memory.  Many callers assume that the memory we
-   return is zeroed.  */
-
-void *
-gfc_getmem (size_t n)
-{
-  void *p;
-
-  if (n == 0)
-    return NULL;
-
-  p = xmalloc (n);
-  if (p == NULL)
-    gfc_fatal_error ("Allocation would exceed memory limit -- malloc() failed");
-  memset (p, 0, n);
-  return p;
-}
-
-
-void
-gfc_free (void *p)
-{
-  /* The parentheses around free are needed in order to call not
-     the redefined free of gfortran.h.  */
-  if (p != NULL)
-    (free) (p);
-}
 
 
 /* Get terminal width.  */

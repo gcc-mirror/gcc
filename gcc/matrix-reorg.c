@@ -529,12 +529,9 @@ mat_free (void *e)
   if (!mat)
     return;
 
-  if (mat->free_stmts)
-    free (mat->free_stmts);
-  if (mat->dim_hot_level)
-    free (mat->dim_hot_level);
-  if (mat->malloc_for_level)
-    free (mat->malloc_for_level);
+  free (mat->free_stmts);
+  free (mat->dim_hot_level);
+  free (mat->malloc_for_level);
 }
 
 /* Find all potential matrices.

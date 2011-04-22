@@ -173,7 +173,7 @@
 (define_predicate "splittable_const_int_operand"
   (match_code "const_int")
 {
-  /* When generating mips16 code, LEGITIMATE_CONSTANT_P rejects
+  /* When generating mips16 code, TARGET_LEGITIMATE_CONSTANT_P rejects
      CONST_INTs that can't be loaded using simple insns.  */
   if (TARGET_MIPS16)
     return false;

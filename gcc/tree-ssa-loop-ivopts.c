@@ -6254,8 +6254,7 @@ free_loop_data (struct ivopts_data *data)
       struct version_info *info;
 
       info = ver_info (data, i);
-      if (info->iv)
-	free (info->iv);
+      free (info->iv);
       info->iv = NULL;
       info->has_nonlin_use = false;
       info->preserve_biv = false;
@@ -6282,8 +6281,7 @@ free_loop_data (struct ivopts_data *data)
     {
       struct iv_cand *cand = iv_cand (data, i);
 
-      if (cand->iv)
-	free (cand->iv);
+      free (cand->iv);
       if (cand->depends_on)
 	BITMAP_FREE (cand->depends_on);
       free (cand);

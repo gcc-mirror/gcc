@@ -1534,6 +1534,15 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
   else
     type = exp;
 
+  /* We need to check this explicitly, since value-initialization of
+     arrays is allowed in other situations.  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      if (complain & tf_error)
+	error ("functional cast to array type %qT", type);
+      return error_mark_node;
+    }
+
   if (processing_template_decl)
     {
       tree t;
@@ -1557,7 +1566,11 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
   if (! MAYBE_CLASS_TYPE_P (type))
     {
       if (parms == NULL_TREE)
-	return build_value_init (type, complain);
+	{
+	  if (VOID_TYPE_P (type))
+	    return void_zero_node;
+	  return build_value_init (type, complain);
+	}
 
       /* This must build a C cast.  */
       parms = build_x_compound_expr_from_list (parms, ELK_FUNC_CAST, complain);

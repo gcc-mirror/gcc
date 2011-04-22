@@ -1,3 +1,164 @@
+2011-04-20  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (finish_compound_literal): Don't put an array
+	with a dtor in a static variable.
+
+	* call.c (build_over_call): Handle trivial dtor.
+
+	* search.c (lookup_fnfields_slot): Call complete_type.
+
+	PR c++/48594
+	* decl2.c (build_offset_ref_call_from_tree): Move
+	non-dependency of object outside condition.
+
+	PR c++/48657
+	* decl.c (cp_finish_decl): Simplify template handling.
+
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* tree.c (cxx_printable_name_internal): Remove useless if-before-free.
+
+2011-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46304
+	* typeck.c (cp_build_binary_op): Fold COMPLEX_EXPR.
+
+	PR c++/45267
+	* decl.c (duplicate_decls): Keep always_inline attribute
+	in sync with DECL_DISREGARD_INLINE_LIMITS.
+
+2011-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48569
+	* typeck2.c (build_functional_cast): Handle VOID_TYPE.
+
+	PR c++/48537
+	* init.c (build_value_init): Handle UNION_TYPE the same.
+
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48632
+	* parser.c (cp_parser_omp_for_loop): Don't use cp_parser_omp_for_incr
+	for type dependent pointers.
+
+2011-04-18  Jim Meyering  <meyering@redhat.com>
+
+	* pt.c (type_unification_real): Fix typo in comment: s/in in/in/.
+
+2011-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* semantics.c (finish_goto_stmt): Do set UNINLINABLE flag on computed
+	gotos.
+
+2011-04-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48531
+	* typeck2.c (build_functional_cast): Disallow array type.
+
+	* tree.c (get_target_expr): Handle VEC_INIT_EXPR.
+
+2011-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (cp_fold_obj_type_ref): Drop vtable_method.
+
+2011-04-15  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	Implement N3271
+	* parser.c (cp_convert_range_for): Split into
+	cp_parser_perform_range_for_lookup.
+	(cp_parser_perform_range_for_lookup): New.
+	(cp_parser_range_for_member_function): New.
+	(cp_parser_for_init_statement): Correct error message.
+	* semantics.c (finish_call_expr): Accept COMPONENT_REF.
+
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_protocol_declaration): Updated for
+	change from objc_declare_protocols() to objc_declare_protocol().
+
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR objc++/48479
+	* typeck.c (cxx_mark_addressable) [CONST_DECL]: Mark addressable
+	and return immediately.
+
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-tree.def (SWITCH_STMT): Add an extra operand.
+	* cp-objcp-common.c (cp_common_init_ts): Mark it as TS_TYPED.
+	* cp-tree.h (SWITCH_STMT_SCOPE): Define.
+	* semantics.c (begin_switch__stmt): Pass scope to build_stmt.
+	(finish_switch_stmt): Use SWITCH_STMT_SCOPE instead of TREE_CHAIN.
+
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-tree.def (IF_STMT): Add an extra operand.
+	* cp-objcp-common.c (cp_common_init_ts): Mark it as TS_TYPED.
+	* cp-tree.h (IF_SCOPE): Define.
+	* semantics.c (begin_if_stmt): Pass scope to build_stmt.
+	(finish_if_stmt): Use IF_SCOPE instead of TREE_CHAIN.
+
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-tree.def (FOR_STMT, RANGE_FOR_STMT): Add an extra operand.
+	* cp-objcp-common.c (cp_common_init_ts): Mark them as TS_TYPED.
+	* cp-tree.h (FOR_SCOPE, RANGE_FOR_SCOPE): Define.
+	* semantics.c (begin_for_stmt): Pass an extra arg to build_stmt.
+	Use FOR_SCOPE instead of TREE_CHAIN.
+	(begin_range_for_stmt): Likewise, with RANGE_FOR_SCOPE.
+	(finish_for_stmt): Likewise.
+
+2011-04-14  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_postfix_expression): Fix flags passed to
+	build_new_method_call.
+	* semantics.c (finish_call_expr): Likewise.
+
+	PR c++/48531
+	* init.c (build_value_init_noctor): Check complain consistently.
+
+	PR c++/48557
+	* typeck.c (cp_build_binary_op): Don't decay void operands.
+
+	PR c++/48446
+	* decl.c (compute_array_index_type): Use get_temp_regvar instead
+	of variable_size.
+	* init.c (get_temp_regvar): No longer static.
+	* cp-tree.h: Declare it.
+
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_class_declaration): Updated for change
+	in objc_declare_class().
+
+2011-04-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (poplevel): Use block_chainon.
+
+2011-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48594
+	* decl2.c (build_offset_ref_call_from_tree): Fix calling a functor
+	or pointer to (non-member) function.
+
+2011-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48570
+	* semantics.c (cxx_eval_array_reference): Handle reading from
+	wchar_t, char16_t and char32_t STRING_CST.
+
+2011-04-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48574
+	* class.c (fixed_type_or_null): We cannot determine the dynamic
+    	type of a reference variable if its initializer is dependent.
+
+2011-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48581
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Don't complain about
+	unqualified lookup failing if we're still in a template.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* cp-lang.c (cp_init_ts): Call cp_common_init_ts.  Move

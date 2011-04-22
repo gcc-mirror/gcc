@@ -2163,7 +2163,7 @@ expand_move (rtx *operands, enum machine_mode mode)
   else if (mode == SImode && GET_CODE (op) == CONST
 	   && GET_CODE (XEXP (op, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-	   && !bfin_legitimate_constant_p (op))
+	   && !targetm.legitimate_constant_p (mode, op))
     {
       rtx dest = operands[0];
       rtx op0, op1;
@@ -3055,7 +3055,8 @@ bfin_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
    another way.  */
 
 static bool
-bfin_cannot_force_const_mem (rtx x ATTRIBUTE_UNUSED)
+bfin_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED,
+			     rtx x ATTRIBUTE_UNUSED)
 {
   /* We have only one class of non-legitimate constants, and our movsi
      expander knows how to handle them.  Dropping these constants into the
@@ -3069,8 +3070,8 @@ bfin_cannot_force_const_mem (rtx x ATTRIBUTE_UNUSED)
    This ensures that flat binaries never have to deal with relocations
    crossing section boundaries.  */
 
-bool
-bfin_legitimate_constant_p (rtx x)
+static bool
+bfin_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   rtx sym;
   HOST_WIDE_INT offset;
@@ -6680,6 +6681,9 @@ bfin_conditional_register_usage (void)
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS bfin_delegitimize_address
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P bfin_legitimate_constant_p
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM bfin_cannot_force_const_mem

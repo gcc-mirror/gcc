@@ -9256,30 +9256,10 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
   code = TREE_CODE (expr);
   if (code == ADDR_EXPR)
     {
-      expr = TREE_OPERAND (expr, 0);
-      if (handled_component_p (expr))
-	{
-	  HOST_WIDE_INT bitsize, bitpos;
-	  tree offset;
-	  enum machine_mode mode;
-	  int unsignedp, volatilep;
-
-	  expr = get_inner_reference (expr, &bitsize, &bitpos, &offset,
-				      &mode, &unsignedp, &volatilep, false);
-	  *residue = bitpos / BITS_PER_UNIT;
-	  if (offset)
-	    {
-	      if (TREE_CODE (offset) == INTEGER_CST)
-		*residue += TREE_INT_CST_LOW (offset);
-	      else
-		/* We don't handle more complicated offset expressions.  */
-		return 1;
-	    }
-	}
-
-      if (DECL_P (expr)
-	  && (allow_func_align || TREE_CODE (expr) != FUNCTION_DECL))
-	return DECL_ALIGN_UNIT (expr);
+      unsigned int bitalign;
+      bitalign = get_object_alignment_1 (TREE_OPERAND (expr, 0), residue);
+      *residue /= BITS_PER_UNIT;
+      return bitalign / BITS_PER_UNIT;
     }
   else if (code == POINTER_PLUS_EXPR)
     {
@@ -9324,9 +9304,9 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
 	}
     }
 
-    /* If we get here, we were unable to determine anything useful about the
-       expression.  */
-    return 1;
+  /* If we get here, we were unable to determine anything useful about the
+     expression.  */
+  return 1;
 }
 
 
@@ -10725,6 +10705,28 @@ fold_binary_loc (location_t loc,
 	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
 	return omit_one_operand_loc (loc, type, arg0, TREE_OPERAND (arg1, 0));
 
+      /* (X & ~Y) | (~X & Y) is X ^ Y */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (arg1) == BIT_AND_EXPR)
+        {
+	  tree a0, a1, l0, l1, n0, n1;
+
+	  a0 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 0));
+	  a1 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 1));
+
+	  l0 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
+	  l1 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
+	  
+	  n0 = fold_build1_loc (loc, BIT_NOT_EXPR, type, l0);
+	  n1 = fold_build1_loc (loc, BIT_NOT_EXPR, type, l1);
+	  
+	  if ((operand_equal_p (n0, a0, 0)
+	       && operand_equal_p (n1, a1, 0))
+	      || (operand_equal_p (n0, a1, 0)
+		  && operand_equal_p (n1, a0, 0)))
+	    return fold_build2_loc (loc, BIT_XOR_EXPR, type, l0, n1);
+	}
+
       t1 = distribute_bit_expr (loc, code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
@@ -12104,6 +12106,27 @@ fold_binary_loc (location_t loc,
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	return omit_one_operand_loc (loc, type, integer_one_node, arg0);
 
+      /* (X && !Y) || (!X && Y) is X ^ Y */
+      if (TREE_CODE (arg0) == TRUTH_AND_EXPR
+	  && TREE_CODE (arg1) == TRUTH_AND_EXPR)
+        {
+	  tree a0, a1, l0, l1, n0, n1;
+
+	  a0 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 0));
+	  a1 = fold_convert_loc (loc, type, TREE_OPERAND (arg1, 1));
+
+	  l0 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
+	  l1 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
+	  
+	  n0 = fold_build1_loc (loc, TRUTH_NOT_EXPR, type, l0);
+	  n1 = fold_build1_loc (loc, TRUTH_NOT_EXPR, type, l1);
+	  
+	  if ((operand_equal_p (n0, a0, 0)
+	       && operand_equal_p (n1, a1, 0))
+	      || (operand_equal_p (n0, a1, 0)
+		  && operand_equal_p (n1, a0, 0)))
+	    return fold_build2_loc (loc, TRUTH_XOR_EXPR, type, l0, n1);
+	}
       goto truth_andor;
 
     case TRUTH_XOR_EXPR:

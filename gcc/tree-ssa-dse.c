@@ -65,84 +65,14 @@ along with GCC; see the file COPYING3.  If not see
    the CFG.  */
 
 
-struct dse_global_data
-{
-  /* This is the global bitmap for store statements.
-
-     Each statement has a unique ID.  When we encounter a store statement
-     that we want to record, set the bit corresponding to the statement's
-     unique ID in this bitmap.  */
-  bitmap stores;
-};
-
-/* We allocate a bitmap-per-block for stores which are encountered
-   during the scan of that block.  This allows us to restore the
-   global bitmap of stores when we finish processing a block.  */
-struct dse_block_local_data
-{
-  bitmap stores;
-};
-
 /* Bitmap of blocks that have had EH statements cleaned.  We should
    remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
 
 static bool gate_dse (void);
 static unsigned int tree_ssa_dse (void);
-static void dse_initialize_block_local_data (struct dom_walk_data *,
-					     basic_block,
-					     bool);
 static void dse_enter_block (struct dom_walk_data *, basic_block);
-static void dse_leave_block (struct dom_walk_data *, basic_block);
-static void record_voperand_set (bitmap, bitmap *, unsigned int);
 
-/* Returns uid of statement STMT.  */
-
-static unsigned
-get_stmt_uid (gimple stmt)
-{
-  if (gimple_code (stmt) == GIMPLE_PHI)
-    return SSA_NAME_VERSION (gimple_phi_result (stmt))
-           + gimple_stmt_max_uid (cfun);
-
-  return gimple_uid (stmt);
-}
-
-/* Set bit UID in bitmaps GLOBAL and *LOCAL, creating *LOCAL as needed.  */
-
-static void
-record_voperand_set (bitmap global, bitmap *local, unsigned int uid)
-{
-  /* Lazily allocate the bitmap.  Note that we do not get a notification
-     when the block local data structures die, so we allocate the local
-     bitmap backed by the GC system.  */
-  if (*local == NULL)
-    *local = BITMAP_GGC_ALLOC ();
-
-  /* Set the bit in the local and global bitmaps.  */
-  bitmap_set_bit (*local, uid);
-  bitmap_set_bit (global, uid);
-}
-
-/* Initialize block local data structures.  */
-
-static void
-dse_initialize_block_local_data (struct dom_walk_data *walk_data,
-				 basic_block bb ATTRIBUTE_UNUSED,
-				 bool recycled)
-{
-  struct dse_block_local_data *bd
-    = (struct dse_block_local_data *)
-	VEC_last (void_p, walk_data->block_data_stack);
-
-  /* If we are given a recycled block local data structure, ensure any
-     bitmap associated with the block is cleared.  */
-  if (recycled)
-    {
-      if (bd->stores)
-	bitmap_clear (bd->stores);
-    }
-}
 
 /* A helper of dse_optimize_stmt.
    Given a GIMPLE_ASSIGN in STMT, find a candidate statement *USE_STMT that
@@ -251,9 +181,6 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
      continue walking until both stores have equal reference trees.  */
   while (!stmt_may_clobber_ref_p (temp, gimple_assign_lhs (stmt)));
 
-  if (!is_gimple_assign (temp))
-    return false;
-
   *use_stmt = temp;
 
   return true;
@@ -272,9 +199,7 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
    post dominates the first store, then the first store is dead.  */
 
 static void
-dse_optimize_stmt (struct dse_global_data *dse_gd,
-		   struct dse_block_local_data *bd,
-		   gimple_stmt_iterator gsi)
+dse_optimize_stmt (gimple_stmt_iterator gsi)
 {
   gimple stmt = gsi_stmt (gsi);
 
@@ -295,8 +220,6 @@ dse_optimize_stmt (struct dse_global_data *dse_gd,
     {
       gimple use_stmt;
 
-      record_voperand_set (dse_gd->stores, &bd->stores, gimple_uid (stmt));
-
       if (!dse_possible_dead_store_p (stmt, &use_stmt))
 	return;
 
@@ -304,10 +227,10 @@ dse_optimize_stmt (struct dse_global_data *dse_gd,
 	 stores are to the same memory location or there is a chain of
 	 virtual uses from stmt and the stmt which stores to that same
 	 memory location, then we may have found redundant store.  */
-      if (bitmap_bit_p (dse_gd->stores, get_stmt_uid (use_stmt))
-	  && (operand_equal_p (gimple_assign_lhs (stmt),
-			       gimple_assign_lhs (use_stmt), 0)
-	      || stmt_kills_ref_p (use_stmt, gimple_assign_lhs (stmt))))
+      if ((gimple_has_lhs (use_stmt)
+	   && (operand_equal_p (gimple_assign_lhs (stmt),
+				gimple_get_lhs (use_stmt), 0)))
+	  || stmt_kills_ref_p (use_stmt, gimple_assign_lhs (stmt)))
 	{
 	  /* If use_stmt is or might be a nop assignment, e.g. for
 	     struct { ... } S a, b, *p; ...
@@ -321,12 +244,7 @@ dse_optimize_stmt (struct dse_global_data *dse_gd,
 	     acts as a use as well as definition, so store in STMT
 	     is not dead.  */
 	  if (stmt != use_stmt
-	      && !is_gimple_reg (gimple_assign_rhs1 (use_stmt))
-	      && !is_gimple_min_invariant (gimple_assign_rhs1 (use_stmt))
-	      /* ???  Should {} be invariant?  */
-	      && gimple_assign_rhs_code (use_stmt) != CONSTRUCTOR
-	      && refs_may_alias_p (gimple_assign_lhs (use_stmt),
-				   gimple_assign_rhs1 (use_stmt)))
+	      && ref_maybe_used_by_stmt_p (use_stmt, gimple_assign_lhs (stmt)))
 	    return;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -351,52 +269,14 @@ dse_optimize_stmt (struct dse_global_data *dse_gd,
     }
 }
 
-/* Record that we have seen the PHIs at the start of BB which correspond
-   to virtual operands.  */
 static void
-dse_record_phi (struct dse_global_data *dse_gd,
-		struct dse_block_local_data *bd,
-		gimple phi)
+dse_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
+		 basic_block bb)
 {
-  if (!is_gimple_reg (gimple_phi_result (phi)))
-    record_voperand_set (dse_gd->stores, &bd->stores, get_stmt_uid (phi));
-}
-
-static void
-dse_enter_block (struct dom_walk_data *walk_data, basic_block bb)
-{
-  struct dse_block_local_data *bd
-    = (struct dse_block_local_data *)
-	VEC_last (void_p, walk_data->block_data_stack);
-  struct dse_global_data *dse_gd
-    = (struct dse_global_data *) walk_data->global_data;
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_last (bb_seq (bb)); !gsi_end_p (gsi); gsi_prev (&gsi))
-    dse_optimize_stmt (dse_gd, bd, gsi);
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    dse_record_phi (dse_gd, bd, gsi_stmt (gsi));
-}
-
-static void
-dse_leave_block (struct dom_walk_data *walk_data,
-		 basic_block bb ATTRIBUTE_UNUSED)
-{
-  struct dse_block_local_data *bd
-    = (struct dse_block_local_data *)
-	VEC_last (void_p, walk_data->block_data_stack);
-  struct dse_global_data *dse_gd
-    = (struct dse_global_data *) walk_data->global_data;
-  bitmap stores = dse_gd->stores;
-  unsigned int i;
-  bitmap_iterator bi;
-
-  /* Unwind the stores noted in this basic block.  */
-  if (bd->stores)
-    EXECUTE_IF_SET_IN_BITMAP (bd->stores, 0, i, bi)
-      {
-	bitmap_clear_bit (stores, i);
-      }
+    dse_optimize_stmt (gsi);
 }
 
 /* Main entry point.  */
@@ -405,7 +285,6 @@ static unsigned int
 tree_ssa_dse (void)
 {
   struct dom_walk_data walk_data;
-  struct dse_global_data dse_gd;
 
   need_eh_cleanup = BITMAP_ALLOC (NULL);
 
@@ -421,15 +300,12 @@ tree_ssa_dse (void)
   /* Dead store elimination is fundamentally a walk of the post-dominator
      tree and a backwards walk of statements within each block.  */
   walk_data.dom_direction = CDI_POST_DOMINATORS;
-  walk_data.initialize_block_local_data = dse_initialize_block_local_data;
+  walk_data.initialize_block_local_data = NULL;
   walk_data.before_dom_children = dse_enter_block;
-  walk_data.after_dom_children = dse_leave_block;
+  walk_data.after_dom_children = NULL;
 
-  walk_data.block_local_data_size = sizeof (struct dse_block_local_data);
-
-  /* This is the main hash table for the dead store elimination pass.  */
-  dse_gd.stores = BITMAP_ALLOC (NULL);
-  walk_data.global_data = &dse_gd;
+  walk_data.block_local_data_size = 0;
+  walk_data.global_data = NULL;
 
   /* Initialize the dominator walker.  */
   init_walk_dominator_tree (&walk_data);
@@ -439,9 +315,6 @@ tree_ssa_dse (void)
 
   /* Finalize the dominator walker.  */
   fini_walk_dominator_tree (&walk_data);
-
-  /* Release the main bitmap.  */
-  BITMAP_FREE (dse_gd.stores);
 
   /* Removal of stores may make some EH edges dead.  Purge such edges from
      the CFG as needed.  */

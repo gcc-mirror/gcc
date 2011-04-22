@@ -1,3 +1,8 @@
+2011-04-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (THREADS): Remove decosf1, irix, mach, os2.
+	* configure: Regenerate
+
 2011-04-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/48480

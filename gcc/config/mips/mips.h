@@ -1134,6 +1134,7 @@ enum mips_code_readable_setting {
 %{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
 %{mfix-vr4120} %{mfix-vr4130} \
+%{mfix-24k} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
 %{mabi=*} %{!mabi=*: %(asm_abi_default_spec)} \
@@ -2315,8 +2316,6 @@ typedef struct mips_args {
 
 #define CONSTANT_ADDRESS_P(X) \
   (CONSTANT_P (X) && memory_address_p (SImode, X))
-
-#define LEGITIMATE_CONSTANT_P(X) (mips_const_insns (X) > 0)
 
 /* This handles the magic '..CURRENT_FUNCTION' symbol, which means
    'the start of the function that this code is output in'.  */

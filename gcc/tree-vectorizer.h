@@ -823,21 +823,19 @@ extern bool vect_verify_datarefs_alignment (loop_vec_info, bb_vec_info);
 extern bool vect_analyze_data_ref_accesses (loop_vec_info, bb_vec_info);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_analyze_data_refs (loop_vec_info, bb_vec_info, int *);
-extern tree vect_create_data_ref_ptr (gimple, struct loop *, tree, tree *,
-                                      gimple_stmt_iterator *, gimple *,
-                                      bool, bool *);
+extern tree vect_create_data_ref_ptr (gimple, tree, struct loop *, tree,
+				      tree *, gimple_stmt_iterator *,
+				      gimple *, bool, bool *);
 extern tree bump_vector_ptr (tree, gimple, gimple_stmt_iterator *, gimple, tree);
 extern tree vect_create_destination_var (tree, tree);
-extern bool vect_strided_store_supported (tree);
-extern bool vect_strided_load_supported (tree);
-extern bool vect_permute_store_chain (VEC(tree,heap) *,unsigned int, gimple,
+extern bool vect_strided_store_supported (tree, unsigned HOST_WIDE_INT);
+extern bool vect_strided_load_supported (tree, unsigned HOST_WIDE_INT);
+extern void vect_permute_store_chain (VEC(tree,heap) *,unsigned int, gimple,
                                     gimple_stmt_iterator *, VEC(tree,heap) **);
 extern tree vect_setup_realignment (gimple, gimple_stmt_iterator *, tree *,
                                     enum dr_alignment_support, tree,
                                     struct loop **);
-extern bool vect_permute_load_chain (VEC(tree,heap) *,unsigned int, gimple,
-                                    gimple_stmt_iterator *, VEC(tree,heap) **);
-extern bool vect_transform_strided_load (gimple, VEC(tree,heap) *, int,
+extern void vect_transform_strided_load (gimple, VEC(tree,heap) *, int,
                                          gimple_stmt_iterator *);
 extern int vect_get_place_in_interleaving_chain (gimple, gimple);
 extern tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);

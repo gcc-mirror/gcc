@@ -1535,6 +1535,14 @@ mips_build_integer (struct mips_integer_op *codes,
     }
 }
 
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
+
+static bool
+mips_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return mips_const_insns (x) > 0;
+}
+
 /* Return true if symbols of type TYPE require a GOT access.  */
 
 static bool
@@ -1997,7 +2005,7 @@ mips_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
 /* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
 
 static bool
-mips_cannot_force_const_mem (rtx x)
+mips_cannot_force_const_mem (enum machine_mode mode, rtx x)
 {
   enum mips_symbol_type type;
   rtx base, offset;
@@ -2016,7 +2024,7 @@ mips_cannot_force_const_mem (rtx x)
      references, reload will consider forcing C into memory and using
      one of the instruction's memory alternatives.  Returning false
      here will force it to use an input reload instead.  */
-  if (CONST_INT_P (x) && LEGITIMATE_CONSTANT_P (x))
+  if (CONST_INT_P (x) && mips_legitimate_constant_p (mode, x))
     return true;
 
   split_const (x, &base, &offset);
@@ -2387,7 +2395,7 @@ mips_const_insns (rtx x)
 	    {
 	      if (SMALL_INT (offset))
 		return n + 1;
-	      else if (!targetm.cannot_force_const_mem (x))
+	      else if (!targetm.cannot_force_const_mem (GET_MODE (x), x))
 		return n + 1 + mips_build_integer (codes, INTVAL (offset));
 	    }
 	}
@@ -3090,7 +3098,7 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
      forced into memory, as it usually produces better code.  */
   split_const (src, &base, &offset);
   if (offset != const0_rtx
-      && (targetm.cannot_force_const_mem (src)
+      && (targetm.cannot_force_const_mem (mode, src)
 	  || (!TARGET_MIPS16 && can_create_pseudo_p ())))
     {
       base = mips_force_temporary (dest, base);
@@ -6075,7 +6083,7 @@ mips16_build_function_stub (void)
   /* Build a decl for the stub.  */
   stubdecl = build_decl (BUILTINS_LOCATION,
 			 FUNCTION_DECL, get_identifier (stubname),
-			 build_function_type (void_type_node, NULL_TREE));
+			 build_function_type_list (void_type_node, NULL_TREE));
   DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
   DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
 				       RESULT_DECL, NULL_TREE, void_type_node);
@@ -6321,7 +6329,8 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
       stubid = get_identifier (stubname);
       stubdecl = build_decl (BUILTINS_LOCATION,
 			     FUNCTION_DECL, stubid,
-			     build_function_type (void_type_node, NULL_TREE));
+			     build_function_type_list (void_type_node,
+						       NULL_TREE));
       DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
       DECL_RESULT (stubdecl) = build_decl (BUILTINS_LOCATION,
 					   RESULT_DECL, NULL_TREE,
@@ -9097,6 +9106,11 @@ mips_interrupt_extra_call_saved_reg_p (unsigned int regno)
 static bool
 mips_cfun_call_saved_reg_p (unsigned int regno)
 {
+  /* If the user makes an ordinarily-call-saved register global,
+     that register is no longer call-saved.  */
+  if (global_regs[regno])
+    return false;
+
   /* Interrupt handlers need to save extra registers.  */
   if (cfun->machine->interrupt_handler_p
       && mips_interrupt_extra_call_saved_reg_p (regno))
@@ -11081,7 +11095,7 @@ mips_secondary_reload_class (enum reg_class rclass,
 	/* In this case we can use mtc1, mfc1, dmtc1 or dmfc1.  */
 	return NO_REGS;
 
-      if (CONSTANT_P (x) && !targetm.cannot_force_const_mem (x))
+      if (CONSTANT_P (x) && !targetm.cannot_force_const_mem (mode, x))
 	/* We can force the constant to memory and use lwc1
 	   and ldc1.  As above, we will use pairs of lwc1s if
 	   ldc1 is not supported.  */
@@ -14881,9 +14895,9 @@ mips_reorg_process_insns (void)
   if (crtl->profile)
     cfun->machine->all_noreorder_p = false;
 
-  /* Code compiled with -mfix-vr4120 can't be all noreorder because
-     we rely on the assembler to work around some errata.  */
-  if (TARGET_FIX_VR4120)
+  /* Code compiled with -mfix-vr4120 or -mfix-24k can't be all noreorder
+     because we rely on the assembler to work around some errata.  */
+  if (TARGET_FIX_VR4120 || TARGET_FIX_24K)
     cfun->machine->all_noreorder_p = false;
 
   /* The same is true for -mfix-vr4130 if we might generate MFLO or
@@ -16565,6 +16579,9 @@ mips_shift_truncation_mask (enum machine_mode mode)
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM mips_cannot_force_const_mem
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P mips_legitimate_constant_p
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mips_encode_section_info

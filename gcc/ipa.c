@@ -78,8 +78,8 @@ cgraph_postorder (struct cgraph_node **order)
 		  /* Break possible cycles involving always-inline
 		     functions by ignoring edges from always-inline
 		     functions to non-always-inline functions.  */
-		  if (edge->caller->local.disregard_inline_limits
-		      && !edge->callee->local.disregard_inline_limits)
+		  if (DECL_DISREGARD_INLINE_LIMITS (edge->caller->decl)
+		      && !DECL_DISREGARD_INLINE_LIMITS (edge->callee->decl))
 		    continue;
 		  if (!edge->caller->aux)
 		    {
@@ -380,7 +380,6 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  cgraph_node_remove_callees (node);
 	  ipa_remove_all_references (&node->ref_list);
 	  node->analyzed = false;
-	  node->local.inlinable = false;
 	}
       if (!node->aux)
 	{
@@ -421,7 +420,6 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		  if (!clone)
 		    {
 		      cgraph_release_function_body (node);
-		      node->local.inlinable = false;
 		      if (node->prev_sibling_clone)
 			node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
 		      else if (node->clone_of)
@@ -517,6 +515,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      }
 	  }
       }
+  if (file)
+    fprintf (file, "\n");
 
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
@@ -1627,7 +1627,7 @@ record_cdtor_fn (struct cgraph_node *node)
   if (DECL_STATIC_DESTRUCTOR (node->decl))
     VEC_safe_push (tree, heap, static_dtors, node->decl);
   node = cgraph_get_node (node->decl);
-  node->local.disregard_inline_limits = 1;
+  DECL_DISREGARD_INLINE_LIMITS (node->decl) = 1;
 }
 
 /* Define global constructors/destructor functions for the CDTORS, of

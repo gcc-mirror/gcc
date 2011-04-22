@@ -138,6 +138,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "coverage.h"
 #include "plugin.h"
+#include "ipa-inline.h"
 
 static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
@@ -172,7 +173,7 @@ cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
   if (flag_keep_inline_functions
       && DECL_DECLARED_INLINE_P (decl)
       && !DECL_EXTERNAL (decl)
-      && !lookup_attribute ("always_inline", DECL_ATTRIBUTES (decl)))
+      && !DECL_DISREGARD_INLINE_LIMITS (decl))
      return true;
 
   /* If we decided it was needed before, but at the time we didn't have
@@ -191,7 +192,7 @@ cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
      to change the behavior here.  */
   if (((TREE_PUBLIC (decl)
 	|| (!optimize
-	    && !node->local.disregard_inline_limits
+	    && !DECL_DISREGARD_INLINE_LIMITS (decl)
 	    && !DECL_DECLARED_INLINE_P (decl)
 	    && !(DECL_CONTEXT (decl)
 		 && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)))
@@ -252,7 +253,7 @@ cgraph_process_new_functions (void)
 	      || !optimize)
 	    execute_pass_list (pass_early_local_passes.pass.sub);
 	  else
-	    compute_inline_parameters (node);
+	    compute_inline_parameters (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();
@@ -348,11 +349,9 @@ cgraph_finalize_function (tree decl, bool nested)
   if (node->local.finalized)
     cgraph_reset_node (node);
 
-  node->pid = cgraph_max_pid ++;
   notice_global_symbol (decl);
   node->local.finalized = true;
   node->lowered = DECL_STRUCT_FUNCTION (decl)->cfg != NULL;
-  node->finalized_by_frontend = true;
 
   if (cgraph_decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);
@@ -782,11 +781,6 @@ cgraph_analyze_function (struct cgraph_node *node)
   push_cfun (DECL_STRUCT_FUNCTION (decl));
 
   assign_assembler_name_if_neeeded (node->decl);
-
-  /* disregard_inline_limits affects topological order of the early optimization,
-     so we need to compute it ahead of rest of inline parameters.  */
-  node->local.disregard_inline_limits
-    = DECL_DISREGARD_INLINE_LIMITS (node->decl);
 
   /* Make sure to gimplify bodies only once.  During analyzing a
      function we lower it, which will require gimplified nested
@@ -1996,7 +1990,6 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
    new_version->local = old_version->local;
    new_version->local.externally_visible = false;
    new_version->local.local = true;
-   new_version->local.vtable_method = false;
    new_version->global = old_version->global;
    new_version->rtl = old_version->rtl;
    new_version->reachable = true;
@@ -2099,74 +2092,6 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
 
   cgraph_call_function_insertion_hooks (new_version_node);
   return new_version_node;
-}
-
-/* Produce separate function body for inline clones so the offline copy can be
-   modified without affecting them.  */
-struct cgraph_node *
-save_inline_function_body (struct cgraph_node *node)
-{
-  struct cgraph_node *first_clone, *n;
-
-  gcc_assert (node == cgraph_get_node (node->decl));
-
-  cgraph_lower_function (node);
-
-  first_clone = node->clones;
-
-  first_clone->decl = copy_node (node->decl);
-  cgraph_insert_node_to_hashtable (first_clone);
-  gcc_assert (first_clone == cgraph_get_node (first_clone->decl));
-  if (first_clone->next_sibling_clone)
-    {
-      for (n = first_clone->next_sibling_clone; n->next_sibling_clone; n = n->next_sibling_clone)
-        n->clone_of = first_clone;
-      n->clone_of = first_clone;
-      n->next_sibling_clone = first_clone->clones;
-      if (first_clone->clones)
-        first_clone->clones->prev_sibling_clone = n;
-      first_clone->clones = first_clone->next_sibling_clone;
-      first_clone->next_sibling_clone->prev_sibling_clone = NULL;
-      first_clone->next_sibling_clone = NULL;
-      gcc_assert (!first_clone->prev_sibling_clone);
-    }
-  first_clone->clone_of = NULL;
-  node->clones = NULL;
-
-  if (first_clone->clones)
-    for (n = first_clone->clones; n != first_clone;)
-      {
-        gcc_assert (n->decl == node->decl);
-	n->decl = first_clone->decl;
-	if (n->clones)
-	  n = n->clones;
-	else if (n->next_sibling_clone)
-	  n = n->next_sibling_clone;
-	else
-	  {
-	    while (n != first_clone && !n->next_sibling_clone)
-	      n = n->clone_of;
-	    if (n != first_clone)
-	      n = n->next_sibling_clone;
-	  }
-      }
-
-  /* Copy the OLD_VERSION_NODE function tree to the new version.  */
-  tree_function_versioning (node->decl, first_clone->decl, NULL, true, NULL,
-			    NULL, NULL);
-
-  DECL_EXTERNAL (first_clone->decl) = 0;
-  DECL_COMDAT_GROUP (first_clone->decl) = NULL_TREE;
-  TREE_PUBLIC (first_clone->decl) = 0;
-  DECL_COMDAT (first_clone->decl) = 0;
-  VEC_free (ipa_opt_pass, heap,
-            first_clone->ipa_transforms_to_apply);
-  first_clone->ipa_transforms_to_apply = NULL;
-
-#ifdef ENABLE_CHECKING
-  verify_cgraph_node (first_clone);
-#endif
-  return first_clone;
 }
 
 /* Given virtual clone, turn it into actual clone.  */

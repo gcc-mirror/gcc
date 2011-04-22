@@ -1,3 +1,411 @@
+2011-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/pr38699.c: Fix testcase.
+
+2011-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48717
+	* gcc.c-torture/execute/pr48717.c: New test.
+
+2011-04-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48723
+	* gcc.target/i386/pr48723.c: New test.
+
+2011-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48716
+	* gcc.dg/gomp/pr48716.c: New test.
+	* g++.dg/gomp/pr48716.C: New test.
+
+2011-04-22  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR c/36750
+	* gcc.dg/missing-field-init-2.c: Update testcase.
+
+2011-04-22  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/ppc-pow.c: Allow for tail calls.
+
+2011-04-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48405
+	* gfortran.dg/function_optimize_6.f90:  New test.
+
+2011-04-21  Easwaran Raman  <eraman@google.com>
+
+	* gcc.dg/stack-layout-2.c: New test.
+
+2011-04-21  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48703
+	* g++.dg/lto/pr48207-2_0.C: New testcase.
+	* g++.dg/lto/pr48207-3_0.C: Likewise.
+
+2011-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile5.adb: New test.
+	* gnat.dg/volatile5_pkg.ads: New helper.
+
+2011-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48708
+	* gcc.target/i386/pr48708.c: New test.
+
+2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-119.c: New test.
+
+2011-04-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect.exp: Run the main tests twice, one with -flto
+	and once without.
+
+2011-04-21  Richard Earnshaw  <rearnsha@arm.com>
+	    Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/46329
+	* gcc.target/arm/pr46329.c: New test.
+
+2011-04-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_18.f90: New.
+
+2011-04-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist47.C: New.
+
+	* g++.dg/init/dtor4.C: New.
+
+2011-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48678
+	* gcc.target/i386/sse2-pinsrw.c: New test.
+	* gcc.target/i386/avx-vpinsrw.c: Ditto.
+	* gcc.target/i386/sse4_1-insvqi.c: Ditto.
+	* gcc.target/i386/sse2-insvhi.c: Ditto.
+	* gcc.target/i386/sse4_1-insvsi.c: Ditto.
+	* gcc.target/i386/sse4_1-insvdi.c: Ditto.
+
+2011-04-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/const4.C: New.
+
+2011-04-20  Easwaran Raman  <eraman@google.com>
+
+	* gcc.dg/stack-layout-1.c: New test.
+
+2011-04-20  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.dg/vect/vect-shift-3.c, gcc.dg/vect/vect-shift-4.c: New.
+	* lib/target-supports.exp (check_effective_target_vect_shift_char): New
+	function.
+
+2011-04-20  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/binio-xor1.c: New test.
+	* gcc.dg/binio-xor2.c: New test.
+	* gcc.dg/binio-xor3.c: New test.
+	* gcc.dg/binio-xor4.c: New test.
+	* gcc.dg/binio-xor5.c: New test.
+
+2011-04-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47892
+	* gcc.dg/vect/fast-math-ifcvt-1.c: New testcase.
+
+2011-04-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48695
+	* g++.dg/torture/pr48695.C: New testcase.
+
+2011-04-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/pr42629.c: Add dg-require-effective-target int32plus
+	* gcc.c-torture/execute/cmpsi-2.c: Ditto
+	* gcc.c-torture/execute/pr45262.c: Ditto
+	* gcc.dg/torture/pr43165.c: Ditto.
+	* gcc.dg/torture/pr47228.c: Ditto.
+	* gcc.dg/tree-ssa/pr45144.c: Ditto.
+	* gcc.dg/ipa/pr45644.c: Ditto.
+	* gcc.c-torture/compile/pr43191.c: Ditto. Remove dg-skip-if for
+	PDP11.
+
+2011-04-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/complex7.C: New.
+
+	* g++.dg/ext/attrib41.C: New.
+
+2011-04-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR testsuite/48676
+	* gcc.dg/torture/pr37868.c: Skip on sh*-*-*.
+
+2011-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48678
+	* gcc.target/i386/pr48678.c: New test.
+
+2011-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/opt/devirt1.C: Bump to -O2, remove XFAIL.
+	* g++.dg/opt/devirt2.C: New test.
+	* g++.dg/ipa/devirt-g-1.C: Likewise.
+
+2011-04-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48588
+	* gfortran.dg/whole_file_33.f90: New.
+
+2011-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/devirt-7.C: New test.
+
+2011-04-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48207
+	* g++.dg/lto/pr48207_0.C: New testcase.
+
+2011-04-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/void1.C: New.
+
+	* g++.dg/cpp0x/union4.C: New.
+
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48661
+	* g++.dg/torture/pr48661.C: New test.
+
+	PR c++/48632
+	* g++.dg/gomp/pr48632.C: New test.
+
+2011-04-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-maskmovdqu.c: New test.
+	* gcc.target/i386/avx-vmaskmovdqu.c: Ditto.
+
+2011-04-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_17.f90: New.
+	* gfortran.dg/coarray_10.f90: Update dg-error.
+
+2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/48251
+	* gcc.dg/guality/guality.exp: Disable on alpha*-dec-osf*.
+	* gfortran.dg/guality/guality.exp: Likewise.
+
+2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gfortran.dg/fmt_g0_5.f08: Use dg-add-options ieee.
+
+2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/vect/pr48377.c: Remove dg-do run.
+
+2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/ipa/pr48195.c: Add dg-require-effective-target lto.
+
+2011-04-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/46364
+	* g++.dg/torture/pr46364.C: New testcase.
+
+2011-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* obj-c++.dg/dwarf-2.mm: Skip on alpha*-dec-osf*.
+
+2011-04-18  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc.dg/pr48235.c: Add dg-require-effective-target freorder.
+
+2011-04-18  Ulrich Weigand  <ulrich.weigand@linaro.org>
+	    Ira Rosen  <ira.rosen@linaro.org>
+
+	PR target/48252
+	* gcc.target/arm/pr48252.c: New test.
+
+2011-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48616
+	* gcc.dg/pr48616.c: New test.
+
+2011-04-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_16.f90: New.
+
+2011-04-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48462
+	* gfortran.dg/realloc_on_assign_7.f03: New test.
+
+2011-04-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48602
+	* gfortran.dg/fmt_g0_6.f08: New test.
+
+2011-04-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae16.C: New.
+
+2011-04-17  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/reg-var-1.c: New test.
+
+2011-04-17  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/winline-5.c: Update testcase.
+
+2011-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr27.ad[sb]: Move dg directive.
+	* gnat.dg/discr28.ad[sb]: New test.
+	* gnat.dg/discr28_pkg.ads: New helper.
+
+2011-04-17  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/48622
+	PR lto/48645
+	* gcc.dg/lto/pr48622_0.c: New test.
+
+2011-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx256-unaligned-load-1.c: Update scan patterns.
+	* gcc.target/i386/avx256-unaligned-load-2.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-load-3.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Ditto.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Ditto.
+
+2011-04-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/range-for17.C: New.
+
+2011-04-15  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	* g++.dg/cpp0x/range-for2.C: Correct for declaration.
+	* g++.dg/cpp0x/range-for3.C: Likewise.
+	* g++.dg/cpp0x/range-for9.C: Correct error message.
+	* g++.dg/cpp0x/range-for11.C: New.
+	* g++.dg/cpp0x/range-for12.C: New.
+	* g++.dg/cpp0x/range-for13.C: New.
+	* g++.dg/cpp0x/range-for14.C: New.
+	* g++.dg/cpp0x/range-for15.C: New.
+	* g++.dg/cpp0x/range-for16.C: New.
+
+2011-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_15.f90: Change to dg-do run.
+
+2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/naming-4.m: Updated.
+	* objc.dg/naming-5.m: Updated.
+	* objc.dg/naming-6.m: New.
+	* objc.dg/naming-7.m: New.
+	* obj-c++.dg/naming-1.mm: Updated.
+	* obj-c++.dg/naming-2.mm: Updated.
+	* obj-c++.dg/naming-3.mm: New.
+	* obj-c++.dg/naming-4.mm: New.
+
+2011-04-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48589
+	* gfortran.dg/fmt_g0_5.f08: New test.
+
+2011-04-15  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/48286
+	* gfortran.dg/cray_pointers_8.f90: Use -ffloat-store.
+
+2011-04-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr41885.c (dg-options): Change
+	-finline-limit=0 to -fno-inline
+
+2011-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48614
+	* gcc.target/i386/pr46084.c: Require avx_runtime instead of
+	just avx.
+
+2011-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48605
+	* gcc.target/i386/sse4_1-insertps-3.c: New test.
+	* gcc.target/i386/sse4_1-insertps-4.c: New test.
+	* gcc.target/i386/avx-insertps-3.c: New test.
+	* gcc.target/i386/avx-insertps-4.c: New test.
+
+2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr41885.c (dg-options): Add
+	-finline-limit=0
+
+2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/46779
+	PR target/45291
+	PR target/41894
+	* gcc.target/avr/pr46779-1.c: New test case
+	* gcc.target/avr/pr46779-2.c: New test case
+
+2011-04-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae15.C: New.
+
+	* g++.dg/cpp0x/sfinae14.C: New.
+
+	* g++.dg/ext/vla10.C: New.
+
+2011-04-14  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dse-14.c: New testcase.
+
+2011-04-14  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/fold-bitand-4.c: Move ...
+	* c-c++-common/fold-bitand-4.c: ... here.  Adjust slightly.
+
+2011-04-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/trivial.c: Fix line endings. Make PROGMEM
+	variables const.
+	* gcc.target/avr/torture/trivial.c: Ditto.
+
+2011-04-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/operator11.C: New.
+
+2011-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48591
+	* gcc.dg/gomp/pr48591.c: New test.
+
+	PR c++/48570
+	* g++.dg/cpp0x/constexpr-wstring1.C: New test.
+	* g++.dg/cpp0x/constexpr-wstring2.C: New test.
+
+2011-04-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48574
+	* g++.dg/template/dependent-expr7.C: New test case.
+
+2011-04-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae13.C: New.
+
+2011-04-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-init-v2di-2.c: Update scan pattern.
+
 2011-04-12  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr43698.c: Remove -march option.

@@ -164,6 +164,7 @@ static rtx xtensa_static_chain (const_tree, bool);
 static void xtensa_asm_trampoline_template (FILE *);
 static void xtensa_trampoline_init (rtx, tree, rtx);
 static bool xtensa_output_addr_const_extra (FILE *, rtx);
+static bool xtensa_cannot_force_const_mem (enum machine_mode, rtx);
 
 static reg_class_t xtensa_preferred_reload_class (rtx, reg_class_t);
 static reg_class_t xtensa_preferred_output_reload_class (rtx, reg_class_t);
@@ -172,6 +173,7 @@ static reg_class_t xtensa_secondary_reload (bool, rtx, reg_class_t,
 					    struct secondary_reload_info *);
 
 static bool constantpool_address_p (const_rtx addr);
+static bool xtensa_legitimate_constant_p (enum machine_mode, rtx);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
@@ -285,7 +287,7 @@ static const struct default_options xtensa_option_optimization_table[] =
 #define TARGET_HAVE_TLS (TARGET_THREADPTR && HAVE_AS_TLS)
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM xtensa_tls_referenced_p
+#define TARGET_CANNOT_FORCE_CONST_MEM xtensa_cannot_force_const_mem
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	xtensa_legitimate_address_p
@@ -307,6 +309,9 @@ static const struct default_options xtensa_option_optimization_table[] =
 
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA xtensa_output_addr_const_extra
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P xtensa_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2014,6 +2019,15 @@ xtensa_tls_referenced_p (rtx x)
 }
 
 
+/* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
+
+static bool
+xtensa_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return xtensa_tls_referenced_p (x);
+}
+
+
 /* Return the debugger register number to use for 'regno'.  */
 
 int
@@ -3709,5 +3723,12 @@ xtensa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain)
 		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 }
 
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
+
+static bool
+xtensa_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return !xtensa_tls_referenced_p (x);
+}
 
 #include "gt-xtensa.h"

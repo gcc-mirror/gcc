@@ -210,10 +210,8 @@ mingw_rootify (const char *executable)
   if (!namebuf || !foundbuf)
     {
       RegCloseKey (hKey);
-      if (namebuf)
-	free (namebuf);
-      if (foundbuf)
-	free (foundbuf);
+      free (namebuf);
+      free (foundbuf);
       return executable;
     }
 
@@ -315,8 +313,7 @@ msys_rootify (const char *executable)
     return tack_on_executable (buf, executable);
 
   /* failed */
-  if (buf)
-    free (buf);
+  free (buf);
   return executable;
 }
 #endif
@@ -607,8 +604,7 @@ win32_spawn (const char *executable,
 		      si,
 		      pi))
     {
-      if (env_block)
-        free (env_block);
+      free (env_block);
 
       free (full_executable);
 
@@ -618,18 +614,14 @@ win32_spawn (const char *executable,
   /* Clean up.  */
   CloseHandle (pi->hThread);
   free (full_executable);
-  if (env_block)
-    free (env_block);
+  free (env_block);
 
   return (pid_t) pi->hProcess;
 
  error:
-  if (env_block)
-    free (env_block);
-  if (cmdline)
-    free (cmdline);
-  if (full_executable)
-    free (full_executable);
+  free (env_block);
+  free (cmdline);
+  free (full_executable);
 
   return (pid_t) -1;
 }

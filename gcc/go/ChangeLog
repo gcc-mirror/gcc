@@ -1,3 +1,66 @@
+2011-04-21  Ian Lance Taylor  <iant@google.com>
+
+	* go-system.h (go_assert, go_unreachable): Define.
+
+2011-04-19  Ian Lance Taylor  <iant@google.com>
+
+	* go-system.h: Include "intl.h".
+	* Make-lang.in (GO_SYSTEM_H): Add intl.h.
+	(go/statements.o): Remove dependencies on intl.h $(TREE_H)
+	$(GIMPLE_H) convert.h tree-iterator.h $(TREE_FLOW_H) $(REAL_H).
+
+2011-04-19  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::temporary_variable): New function.
+
+2011-04-19  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (class Bblock): Define.
+	(Gcc_backend::if_statement): Change then_block and else_block to
+	Bblock*.
+	(Gcc_backend::block): New function.
+	(Gcc_backend::block_add_statements): New function.
+	(Gcc_backend::block_statement): New function.
+	(tree_to_block, block_to_tree): New functions.
+
+2011-04-18  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc: Include "go-c.h".
+	(class Bvariable): Define.
+	(Gcc_backend::init_statement): New function.
+	(Gcc_backend::global_variable): New function.
+	(Gcc_backend::global_variable_set_init): New function.
+	(Gcc_backend::local_variable): New function.
+	(Gcc_backend::parameter_variable): New function.
+	(tree_to_type, var_to_tree): New functions.
+	* Make-lang.in (go/go-gcc.o): Depend on $(GO_C_H).
+	* (go/gogo-tree.o): Depend on go/gofrontend/backend.h.
+
+2011-04-15  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::compound_statement): New function.
+	(Gcc_backend::assignment_statement): Use error_statement.
+	(Gcc_backend::return_statement): Likewise.
+	(Gcc_backend::if_statement): Likewise.
+	(Gcc_backend::switch_statement): Likewise.
+	(Gcc_backend::statement_list): Likewise.
+
+2011-04-14  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Backend::error_statement): New function.
+
+2011-04-13  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (go/gogo-tree.o): depend on $(GO_RUNTIME_H).
+
+2011-04-13  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (GO_OBJS): Add go/runtime.o.
+	(GO_RUNTIME_H): New variable.
+	(go/runtime.o): New target.
+	(go/gogo.o): Depend on $(GO_RUNTIME_H).
+	(go/statements.o): Likewise.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* go-lang.c (union lang_tree_node): Check for TS_COMMON before

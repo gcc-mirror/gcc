@@ -1,3 +1,78 @@
+2011-04-20  Jim Meyering  <meyering@redhat.com>
+
+	* intrinsics/move_alloc.c (move_alloc): Remove useless
+	if-before-free test.
+	* io/fbuf.c (fbuf_destroy): Likewise.
+	* io/format.c (save_parsed_format): Likewise.
+	* io/open.c (already_open): Likewise.
+	* io/unit.c (free_internal_unit, close_unit_1): Likewise.
+	* io/unix.c (mem_close): Likewise.
+
+2011-04-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48602
+	* io/write_float.def (output_float_FMT_G): Fix reversal in conditional.
+	Use asm volatile to mark temp variable, avoiding optimization errors.
+
+2011-04-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48602
+	* io/write_float.def (output_float_FMT_G): Use current rounding mode
+	to set the rounding parameters. (output_float): Skip rounding
+	if value is zero.
+	
+2011-04-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/date_and_time.c (date_and_time): Remove sprintf CPP
+	branch.
+	* io/format.c (format_error): Use snprintf instead of sprintf.
+	* io/list_read.c: Move snprintf fallback macro to libgfortran.h.
+	(convert_integer): Use snprintf instead of sprintf.
+	(parse_repeat): Likewise.
+	(read_logical): Likewise.
+	(read_integer): Likewise.
+	(read_character): Likewise.
+	(parse_real): Likewise.
+	(read_complex): Likewise.
+	(read_real): Likewise.
+	(check_type): Likewise.
+	(nml_parse_qualifier): Add string length argument, use snprintf
+	instead of sprintf.
+	(nml_get_obj_data): Use snprintf instead of sprintf.
+	* io/open.c (new_unit): Remove sprintf CPP branch, use snprintf
+	instead of sprintf.
+	* io/transfer.c (require_type): Use snprintf instead of sprintf.
+	* io/unix.c (tempfile): Likewise.
+	* io/write.c (nml_write_obj): Likewise.
+	* io/write_float.def (output_float): Remove sprintf CPP branch,
+	use snprintf instead of sprintf.
+	* libgfortran.h: Add fallback snprintf macro from io/list_read.c.
+	* runtime/backtrace.c (show_backtrace): Remove sprintf CPP branch.
+	* runtime/main.c (store_exe_path): Use snprintf instead of
+	sprintf.
+
+2011-04-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48589
+	* io/write_float.def (write_infnan): Set width properly for G0.
+
+2011-04-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* Makefile.am: Build and install caf/single.c as
+	libcaf_single.a.
+	* Makefile.in: Regenerate.
+
+2011-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47571
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* acinclude.m4: Add alpha*-dec-osf* to gthread blacklist.
+	* configure.ac: Use separate symbol for clock_gettime in librt.
+	* intrinsics/system_clock.c: Use weakrefs only when needed and
+	supported.
+
 2011-04-12  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac: Use AC_TYPE_* to make sure we have (u)intptr_t,

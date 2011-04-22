@@ -714,6 +714,7 @@ Objective-C and Objective-C++ Dialects}.
 -mdivide-traps  -mdivide-breaks @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
+-mfix-24k -mno-fix-24k @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
 -mfix-r10000 -mno-fix-r10000  -mfix-vr4120  -mno-fix-vr4120 @gol
 -mfix-vr4130  -mno-fix-vr4130  -mfix-sb1  -mno-fix-sb1 @gol
@@ -8700,6 +8701,10 @@ through which the instruction may be pipelined.  The default value is 2.
 The maximum number of best instructions in the ready list that are considered
 for renaming in the selective scheduler.  The default value is 2.
 
+@item sms-min-sc
+The minimum value of stage count that swing modulo scheduler will
+generate.  The default value is 2.
+
 @item max-last-value-rtl
 The maximum size measured as number of RTLs that can be recorded in an expression
 in combiner for a pseudo register as last known value of that register.  The default
@@ -14597,6 +14602,13 @@ circumstances.
 @opindex nocpp
 Tell the MIPS assembler to not run its preprocessor over user
 assembler files (with a @samp{.s} suffix) when assembling them.
+
+@item -mfix-24k
+@item -mno-fix-24k
+@opindex mfix-24k
+@opindex mno-fix-24k
+Work around the 24K E48 (lost data on stores during refill) errata.
+The workarounds are implemented by the assembler rather than by GCC.
 
 @item -mfix-r4000
 @itemx -mno-fix-r4000

@@ -314,7 +314,7 @@ typedef struct iq2000_args
   int fp_code;			/* Mode of FP arguments.  */
   unsigned int num_adjusts;	/* Number of adjustments made.  */
 				/* Adjustments made to args pass in regs.  */
-  struct rtx_def * adjust[MAX_ARGS_IN_REGISTERS * 2];
+  rtx adjust[MAX_ARGS_IN_REGISTERS * 2];
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -388,8 +388,6 @@ typedef struct iq2000_args
 #define MAX_REGS_PER_ADDRESS 1
 
 #define REG_OK_FOR_INDEX_P(X) 0
-
-#define LEGITIMATE_CONSTANT_P(X) (1)
 
 
 /* Describing Relative Costs of Operations.  */

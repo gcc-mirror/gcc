@@ -749,19 +749,6 @@ L2:     .word STATIC
    ||  CONST_INT_P (X)  \
    || (GET_CODE (X) == CONST      \
        && ! (flag_pic && ! m32r_legitimate_pic_operand_p (X))))
-
-/* Nonzero if the constant value X is a legitimate general operand.
-   We don't allow (plus symbol large-constant) as the relocations can't
-   describe it.  INTVAL > 32767 handles both 16-bit and 24-bit relocations.
-   We allow all CONST_DOUBLE's as the md file patterns will force the
-   constant to memory if they can't handle them.  */
-
-#define LEGITIMATE_CONSTANT_P(X)					\
-  (! (GET_CODE (X) == CONST						\
-      && GET_CODE (XEXP (X, 0)) == PLUS					\
-      && (GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF || GET_CODE (XEXP (XEXP (X, 0), 0)) == LABEL_REF) \
-      && CONST_INT_P (XEXP (XEXP (X, 0), 1))			\
-      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (X, 0), 1)) > 32767))
 
 /* Condition code usage.  */
 

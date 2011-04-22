@@ -85,7 +85,7 @@ hook_bool_mode_true (enum machine_mode mode ATTRIBUTE_UNUSED)
   return true;
 }
 
-/* Generic hook that takes (enum machine_mode, rtx) and returns false.  */
+/* Generic hook that takes (enum machine_mode, const_rtx) and returns false.  */
 bool
 hook_bool_mode_const_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,
 				const_rtx value ATTRIBUTE_UNUSED)
@@ -93,10 +93,26 @@ hook_bool_mode_const_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,
   return false;
 }
 
-/* Generic hook that takes (enum machine_mode, rtx) and returns true.  */
+/* Generic hook that takes (enum machine_mode, const_rtx) and returns true.  */
 bool
 hook_bool_mode_const_rtx_true (enum machine_mode mode ATTRIBUTE_UNUSED,
 			       const_rtx value ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+/* Generic hook that takes (enum machine_mode, rtx) and returns false.  */
+bool
+hook_bool_mode_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,
+			  rtx value ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
+/* Generic hook that takes (enum machine_mode, rtx) and returns true.  */
+bool
+hook_bool_mode_rtx_true (enum machine_mode mode ATTRIBUTE_UNUSED,
+			 rtx value ATTRIBUTE_UNUSED)
 {
   return true;
 }

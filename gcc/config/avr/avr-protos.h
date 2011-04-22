@@ -36,6 +36,7 @@ extern int avr_hard_regno_rename_ok (unsigned int, unsigned int);
 extern rtx avr_return_addr_rtx (int count, rtx tem);
 
 #ifdef TREE_CODE
+extern void avr_asm_output_aligned_decl_common (FILE*, const_tree, const char*, unsigned HOST_WIDE_INT, unsigned int, bool);
 extern void asm_output_external (FILE *file, tree decl, char *name);
 extern int avr_progmem_p (tree decl, tree attributes);
 

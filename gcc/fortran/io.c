@@ -1640,7 +1640,7 @@ gfc_free_open (gfc_open *open)
   gfc_free_expr (open->convert);
   gfc_free_expr (open->asynchronous);
   gfc_free_expr (open->newunit);
-  gfc_free (open);
+  free (open);
 }
 
 
@@ -1764,7 +1764,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
       char *s = gfc_widechar_to_char (value, -1);
       gfc_warning ("%s specifier in %s statement at %C has invalid value '%s'",
 		   specifier, statement, s);
-      gfc_free (s);
+      free (s);
       return 1;
     }
   else
@@ -1772,7 +1772,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
       char *s = gfc_widechar_to_char (value, -1);
       gfc_error ("%s specifier in %s statement at %C has invalid value '%s'",
 		 specifier, statement, s);
-      gfc_free (s);
+      free (s);
       return 0;
     }
 }
@@ -2085,7 +2085,7 @@ gfc_match_open (void)
 					  -1);
 	  warn_or_error ("The STATUS specified in OPEN statement at %C is "
 			 "'%s' and no FILE specifier is present", s);
-	  gfc_free (s);
+	  free (s);
 	}
 
       /* F2003, 9.4.5: If the STATUS= specifier has the value SCRATCH,
@@ -2162,7 +2162,7 @@ gfc_free_close (gfc_close *close)
   gfc_free_expr (close->iomsg);
   gfc_free_expr (close->iostat);
   gfc_free_expr (close->status);
-  gfc_free (close);
+  free (close);
 }
 
 
@@ -2306,7 +2306,7 @@ gfc_free_filepos (gfc_filepos *fp)
   gfc_free_expr (fp->unit);
   gfc_free_expr (fp->iomsg);
   gfc_free_expr (fp->iostat);
-  gfc_free (fp);
+  free (fp);
 }
 
 
@@ -2740,7 +2740,7 @@ gfc_free_dt (gfc_dt *dt)
   gfc_free_expr (dt->pos);
   gfc_free_expr (dt->dt_io_kind);
   /* dt->extra_comma is a link to dt_io_kind if it is set.  */
-  gfc_free (dt);
+  free (dt);
 }
 
 
@@ -3822,7 +3822,7 @@ gfc_free_inquire (gfc_inquire *inquire)
   gfc_free_expr (inquire->sign);
   gfc_free_expr (inquire->size);
   gfc_free_expr (inquire->round);
-  gfc_free (inquire);
+  free (inquire);
 }
 
 

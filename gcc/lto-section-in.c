@@ -58,7 +58,8 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "reference",
   "symtab",
   "opts",
-  "cgraphopt"
+  "cgraphopt",
+  "inline"
 };
 
 unsigned char

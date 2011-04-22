@@ -1,6 +1,6 @@
 /* Control flow functions for trees.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010  Free Software Foundation, Inc.
+   2010, 2011  Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -2989,7 +2989,7 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
       if (!TMR_BASE (expr)
 	  || !is_gimple_mem_ref_addr (TMR_BASE (expr)))
 	{
-	  error ("invalid address operand in in TARGET_MEM_REF");
+	  error ("invalid address operand in TARGET_MEM_REF");
 	  return true;
 	}
       if (!TMR_OFFSET (expr)
@@ -3046,16 +3046,35 @@ verify_gimple_call (gimple stmt)
   tree fntype, fndecl;
   unsigned i;
 
-  if (!is_gimple_call_addr (fn))
+  if (gimple_call_internal_p (stmt))
+    {
+      if (fn)
+	{
+	  error ("gimple call has two targets");
+	  debug_generic_stmt (fn);
+	  return true;
+	}
+    }
+  else
+    {
+      if (!fn)
+	{
+	  error ("gimple call has no target");
+	  return true;
+	}
+    }
+
+  if (fn && !is_gimple_call_addr (fn))
     {
       error ("invalid function in gimple call");
       debug_generic_stmt (fn);
       return true;
     }
 
-  if (!POINTER_TYPE_P (TREE_TYPE  (fn))
-      || (TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) != FUNCTION_TYPE
-	  && TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) != METHOD_TYPE))
+  if (fn
+      && (!POINTER_TYPE_P (TREE_TYPE (fn))
+	  || (TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) != FUNCTION_TYPE
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) != METHOD_TYPE)))
     {
       error ("non-function in gimple call");
       return true;
@@ -3087,7 +3106,8 @@ verify_gimple_call (gimple stmt)
     }
 
   fntype = gimple_call_fntype (stmt);
-  if (gimple_call_lhs (stmt)
+  if (fntype
+      && gimple_call_lhs (stmt)
       && !useless_type_conversion_p (TREE_TYPE (gimple_call_lhs (stmt)),
 				     TREE_TYPE (fntype))
       /* ???  At least C++ misses conversions at assignments from
@@ -7435,6 +7455,8 @@ do_warn_unused_result (gimple_seq seq)
 
 	case GIMPLE_CALL:
 	  if (gimple_call_lhs (g))
+	    break;
+	  if (gimple_call_internal_p (g))
 	    break;
 
 	  /* This is a naked call, as opposed to a GIMPLE_CALL with an

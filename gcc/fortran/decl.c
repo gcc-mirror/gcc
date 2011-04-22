@@ -119,7 +119,7 @@ free_variable (gfc_data_variable *p)
       gfc_free_expr (p->expr);
       gfc_free_iterator (&p->iter, 0);
       free_variable (p->list);
-      gfc_free (p);
+      free (p);
     }
 }
 
@@ -136,7 +136,7 @@ free_value (gfc_data_value *p)
       q = p->next;
       mpz_clear (p->repeat);
       gfc_free_expr (p->expr);
-      gfc_free (p);
+      free (p);
     }
 }
 
@@ -153,7 +153,7 @@ gfc_free_data (gfc_data *p)
       q = p->next;
       free_variable (p->var);
       free_value (p->value);
-      gfc_free (p);
+      free (p);
     }
 }
 
@@ -168,7 +168,7 @@ gfc_free_data_all (gfc_namespace *ns)
   for (;ns->data;)
     {
       d = ns->data->next;
-      gfc_free (ns->data);
+      free (ns->data);
       ns->data = d;
     }
 }
@@ -491,14 +491,14 @@ match_old_style_init (const char *name)
   m = top_val_list (newdata);
   if (m != MATCH_YES)
     {
-      gfc_free (newdata);
+      free (newdata);
       return m;
     }
 
   if (gfc_pure (NULL))
     {
       gfc_error ("Initialization at %C is not allowed in a PURE procedure");
-      gfc_free (newdata);
+      free (newdata);
       return MATCH_ERROR;
     }
 
@@ -508,7 +508,7 @@ match_old_style_init (const char *name)
   /* Mark the variable as having appeared in a data statement.  */
   if (gfc_add_data (&sym->attr, sym->name, &sym->declared_at) == FAILURE)
     {
-      gfc_free (newdata);
+      free (newdata);
       return MATCH_ERROR;
     }
 
@@ -1220,7 +1220,7 @@ gfc_set_constant_character_len (int len, gfc_expr *expr, int check_len)
 			&expr->where, slen, check_len);
 
       s[len] = '\0';
-      gfc_free (expr->value.character.string);
+      free (expr->value.character.string);
       expr->value.character.string = s;
       expr->value.character.length = len;
     }
@@ -1275,7 +1275,7 @@ gfc_free_enum_history (void)
   while (current != NULL)
     {
       next = current->next;
-      gfc_free (current);
+      free (current);
       current = next;
     }
   max_enum = NULL;
@@ -3335,7 +3335,7 @@ match_attr_spec (void)
 	  else if (m == MATCH_YES)
 	    {
 	      merge_array_spec (as, current_as, false);
-	      gfc_free (as);
+	      free (as);
 	    }
 
 	  if (m == MATCH_NO)
@@ -7080,7 +7080,7 @@ syntax:
   while (interface != old_interface_head)
   {
     gfc_interface *i = interface->next;
-    gfc_free (interface);
+    free (interface);
     interface = i;
   }
 

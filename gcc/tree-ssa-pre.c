@@ -580,8 +580,7 @@ phi_trans_add (pre_expr e, pre_expr v, basic_block pred)
 
   slot = htab_find_slot_with_hash (phi_translate_table, new_pair,
 				   new_pair->hashcode, INSERT);
-  if (*slot)
-    free (*slot);
+  free (*slot);
   *slot = (void *) new_pair;
 }
 
@@ -2657,11 +2656,13 @@ compute_antic (void)
 }
 
 /* Return true if we can value number the call in STMT.  This is true
-   if we have a pure or constant call.  */
+   if we have a pure or constant call to a real function.  */
 
 static bool
 can_value_number_call (gimple stmt)
 {
+  if (gimple_call_internal_p (stmt))
+    return false;
   if (gimple_call_flags (stmt) & (ECF_PURE | ECF_CONST))
     return true;
   return false;
@@ -4380,13 +4381,20 @@ eliminate (void)
 	    }
 	  /* Visit indirect calls and turn them into direct calls if
 	     possible.  */
-	  if (is_gimple_call (stmt)
-	      && TREE_CODE (gimple_call_fn (stmt)) == SSA_NAME)
+	  if (is_gimple_call (stmt))
 	    {
 	      tree orig_fn = gimple_call_fn (stmt);
-	      tree fn = VN_INFO (orig_fn)->valnum;
-	      if (TREE_CODE (fn) == ADDR_EXPR
-		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
+	      tree fn;
+	      if (!orig_fn)
+		continue;
+	      if (TREE_CODE (orig_fn) == SSA_NAME)
+		fn = VN_INFO (orig_fn)->valnum;
+	      else if (TREE_CODE (orig_fn) == OBJ_TYPE_REF
+		       && TREE_CODE (OBJ_TYPE_REF_EXPR (orig_fn)) == SSA_NAME)
+		fn = VN_INFO (OBJ_TYPE_REF_EXPR (orig_fn))->valnum;
+	      else
+		continue;
+	      if (gimple_call_addr_fndecl (fn) != NULL_TREE
 		  && useless_type_conversion_p (TREE_TYPE (orig_fn),
 						TREE_TYPE (fn)))
 		{

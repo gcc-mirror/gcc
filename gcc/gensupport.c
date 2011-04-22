@@ -594,8 +594,7 @@ identify_predicable_attribute (void)
   if (p_true == NULL || strchr (++p_true, ',') != NULL)
     {
       error_with_line (elem->lineno, "attribute `predicable' is not a boolean");
-      if (p_false)
-        free (p_false);
+      free (p_false);
       return;
     }
   p_true[-1] = '\0';
@@ -611,15 +610,13 @@ identify_predicable_attribute (void)
 
     case CONST:
       error_with_line (elem->lineno, "attribute `predicable' cannot be const");
-      if (p_false)
-	free (p_false);
+      free (p_false);
       return;
 
     default:
       error_with_line (elem->lineno,
 		       "attribute `predicable' must have a constant default");
-      if (p_false)
-	free (p_false);
+      free (p_false);
       return;
     }
 
@@ -631,8 +628,7 @@ identify_predicable_attribute (void)
     {
       error_with_line (elem->lineno,
 		       "unknown value `%s' for `predicable' attribute", value);
-      if (p_false)
-	free (p_false);
+      free (p_false);
     }
 }
 

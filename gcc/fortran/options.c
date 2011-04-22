@@ -124,6 +124,7 @@ gfc_init_options (unsigned int decoded_options_count,
 
   /* Default value of flag_max_stack_var_size is set in gfc_post_options.  */
   gfc_option.flag_max_stack_var_size = -2;
+  gfc_option.flag_stack_arrays = 0;
 
   gfc_option.flag_range_check = 1;
   gfc_option.flag_pack_derived = 0;
@@ -330,7 +331,7 @@ gfc_post_options (const char **pfilename)
     gfc_add_include_path (".", true, true);
 
   if (canon_source_file != gfc_source_file)
-    gfc_free (CONST_CAST (char *, canon_source_file));
+    free (CONST_CAST (char *, canon_source_file));
 
   /* Decide which form the file will be read in as.  */
 
@@ -470,7 +471,7 @@ gfc_handle_module_path_options (const char *arg)
   if (gfc_option.module_dir != NULL)
     gfc_fatal_error ("gfortran: Only one -J option allowed");
 
-  gfc_option.module_dir = (char *) gfc_getmem (strlen (arg) + 2);
+  gfc_option.module_dir = XCNEWVEC (char, strlen (arg) + 2);
   strcpy (gfc_option.module_dir, arg);
 
   gfc_add_include_path (gfc_option.module_dir, true, false);
@@ -795,6 +796,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.flag_max_stack_var_size = value;
       break;
 
+    case OPT_fstack_arrays:
+      gfc_option.flag_stack_arrays = value;
+      break;
+
     case OPT_fmodule_private:
       gfc_option.flag_module_private = value;
       break;
@@ -1051,7 +1056,7 @@ gfc_get_option_string (void)
         }
     }
 
-  result = (char *) gfc_getmem (len);
+  result = XCNEWVEC (char, len);
 
   pos = 0; 
   for (j = 1; j < save_decoded_options_count; j++)

@@ -112,11 +112,13 @@ a register with any other reload.  */
 #include "target.h"
 #include "ira.h"
 
-/* True if X is a constant that can be forced into the constant pool.  */
-#define CONST_POOL_OK_P(X)			\
-  (CONSTANT_P (X)				\
+/* True if X is a constant that can be forced into the constant pool.
+   MODE is the mode of the operand, or VOIDmode if not known.  */
+#define CONST_POOL_OK_P(MODE, X)		\
+  ((MODE) != VOIDmode				\
+   && CONSTANT_P (X)				\
    && GET_CODE (X) != HIGH			\
-   && !targetm.cannot_force_const_mem (X))
+   && !targetm.cannot_force_const_mem (MODE, X))
 
 /* True if C is a non-empty register class that has too few registers
    to be safely used as a reload target class.  */
@@ -3246,7 +3248,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			&& REGNO (operand) >= FIRST_PSEUDO_REGISTER
 			&& reg_renumber[REGNO (operand)] < 0))
 		  win = 1;
-		if (CONST_POOL_OK_P (operand))
+		if (CONST_POOL_OK_P (operand_mode[i], operand))
 		  badop = 0;
 		constmemok = 1;
 		break;
@@ -3308,7 +3310,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			     && offsettable_memref_p (reg_equiv_mem (REGNO (operand))))
 			    || (reg_equiv_address (REGNO (operand)) != 0))))
 		  win = 1;
-		if (CONST_POOL_OK_P (operand)
+		if (CONST_POOL_OK_P (operand_mode[i], operand)
 		    || MEM_P (operand))
 		  badop = 0;
 		constmemok = 1;
@@ -3424,7 +3426,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 			/* If we didn't already win, we can reload
 			   constants via force_const_mem, and other
 			   MEMs by reloading the address like for 'o'.  */
-			if (CONST_POOL_OK_P (operand)
+			if (CONST_POOL_OK_P (operand_mode[i], operand)
 			    || MEM_P (operand))
 			  badop = 0;
 			constmemok = 1;
@@ -3503,12 +3505,11 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		 an early reload pass.  Note that the test here is
 		 precisely the same as in the code below that calls
 		 force_const_mem.  */
-	      if (CONST_POOL_OK_P (operand)
+	      if (CONST_POOL_OK_P (operand_mode[i], operand)
 		  && ((targetm.preferred_reload_class (operand,
 						       this_alternative[i])
 		       == NO_REGS)
-		      || no_input_reloads)
-		  && operand_mode[i] != VOIDmode)
+		      || no_input_reloads))
 		{
 		  const_to_mem = 1;
 		  if (this_alternative[i] != NO_REGS)
@@ -3911,11 +3912,10 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	    op = XEXP (op, 1);
 	  }
 
-	if (CONST_POOL_OK_P (op)
+	if (CONST_POOL_OK_P (mode, op)
 	    && ((targetm.preferred_reload_class (op, goal_alternative[i])
 		 == NO_REGS)
-		|| no_input_reloads)
-	    && mode != VOIDmode)
+		|| no_input_reloads))
 	  {
 	    int this_address_reloaded;
 	    rtx tem = force_const_mem (mode, op);
@@ -4721,7 +4721,8 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 	    simplify_gen_subreg (GET_MODE (x), reg_equiv_constant (regno),
 				 GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
 	  gcc_assert (tem);
-	  if (CONSTANT_P (tem) && !LEGITIMATE_CONSTANT_P (tem))
+	  if (CONSTANT_P (tem)
+	      && !targetm.legitimate_constant_p (GET_MODE (x), tem))
 	    {
 	      tem = force_const_mem (GET_MODE (x), tem);
 	      i = find_reloads_address (GET_MODE (tem), &tem, XEXP (tem, 0),
@@ -6047,7 +6048,7 @@ find_reloads_address_part (rtx x, rtx *loc, enum reg_class rclass,
 			   enum reload_type type, int ind_levels)
 {
   if (CONSTANT_P (x)
-      && (! LEGITIMATE_CONSTANT_P (x)
+      && (!targetm.legitimate_constant_p (mode, x)
 	  || targetm.preferred_reload_class (x, rclass) == NO_REGS))
     {
       x = force_const_mem (mode, x);
@@ -6057,7 +6058,7 @@ find_reloads_address_part (rtx x, rtx *loc, enum reg_class rclass,
 
   else if (GET_CODE (x) == PLUS
 	   && CONSTANT_P (XEXP (x, 1))
-	   && (! LEGITIMATE_CONSTANT_P (XEXP (x, 1))
+	   && (!targetm.legitimate_constant_p (GET_MODE (x), XEXP (x, 1))
 	       || targetm.preferred_reload_class (XEXP (x, 1), rclass)
 		   == NO_REGS))
     {

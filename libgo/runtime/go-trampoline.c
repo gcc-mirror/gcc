@@ -22,7 +22,7 @@
    needs to be more system dependent.  */
 
 void *
-__go_allocate_trampoline (size_t size, void *closure)
+__go_allocate_trampoline (uintptr_t size, void *closure)
 {
   unsigned int page_size;
   void *ret;

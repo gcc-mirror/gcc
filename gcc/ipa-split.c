@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fibheap.h"
 #include "params.h"
 #include "gimple-pretty-print.h"
+#include "ipa-inline.h"
 
 /* Per basic block info.  */
 
@@ -1253,7 +1254,7 @@ split_function (struct split_point *split_point)
     }
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
-  compute_inline_parameters (node);
+  compute_inline_parameters (node, true);
 }
 
 /* Execute function splitting pass.  */
@@ -1281,13 +1282,13 @@ execute_split_functions (void)
     }
   /* This can be relaxed; function might become inlinable after splitting
      away the uninlinable part.  */
-  if (!node->local.inlinable)
+  if (!inline_summary (node)->inlinable)
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not inlinable.\n");
       return 0;
     }
-  if (node->local.disregard_inline_limits)
+  if (DECL_DISREGARD_INLINE_LIMITS (node->decl))
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: disregarding inline limits.\n");

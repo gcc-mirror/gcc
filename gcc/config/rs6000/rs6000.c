@@ -1212,6 +1212,8 @@ static enum machine_mode rs6000_eh_return_filter_mode (void);
 static bool rs6000_can_eliminate (const int, const int);
 static void rs6000_conditional_register_usage (void);
 static void rs6000_trampoline_init (rtx, tree, rtx);
+static bool rs6000_cannot_force_const_mem (enum machine_mode, rtx);
+static bool rs6000_legitimate_constant_p (enum machine_mode, rtx);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -1388,7 +1390,7 @@ static const struct default_options rs6000_option_optimization_table[] =
 #define TARGET_HAVE_TLS HAVE_AS_TLS
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM rs6000_tls_referenced_p
+#define TARGET_CANNOT_FORCE_CONST_MEM rs6000_cannot_force_const_mem
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS rs6000_delegitimize_address
@@ -1668,6 +1670,9 @@ static const struct default_options rs6000_option_optimization_table[] =
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION rs6000_set_current_function
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P rs6000_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6619,6 +6624,14 @@ rs6000_tls_referenced_p (rtx x)
   return for_each_rtx (&x, &rs6000_tls_symbol_ref_1, 0);
 }
 
+/* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
+
+static bool
+rs6000_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return rs6000_tls_referenced_p (x);
+}
+
 /* Return 1 if *X is a thread-local symbol.  This is the same as
    rs6000_tls_symbol_ref except for the type of the unused argument.  */
 
@@ -7976,7 +7989,7 @@ call_ABI_of_interest (tree fndecl)
 	return true;
 
       /* Interesting functions that we are emitting in this object file.  */
-      c_node = cgraph_get_create_node (fndecl);
+      c_node = cgraph_get_node (fndecl);
       return !cgraph_only_called_directly_p (c_node);
     }
   return false;
@@ -8994,7 +9007,7 @@ rs6000_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			       : CALL_V4_CLEAR_FP_ARGS));
 	}
 
-      return GEN_INT (cum->call_cookie);
+      return GEN_INT (cum->call_cookie & ~CALL_LIBCALL);
     }
 
   if (TARGET_MACHO && rs6000_darwin64_struct_check_p (mode, type))
@@ -19294,39 +19307,70 @@ rs6000_return_addr (int count, rtx frame)
   return get_hard_reg_initial_val (Pmode, LR_REGNO);
 }
 
-/* Say whether a function is a candidate for sibcall handling or not.
-   We do not allow indirect calls to be optimized into sibling calls.
-   Also, we can't do it if there are any vector parameters; there's
-   nowhere to put the VRsave code so it works; note that functions with
-   vector parameters are required to have a prototype, so the argument
-   type info must be available here.  (The tail recursion case can work
-   with vector parameters, but there's no way to distinguish here.) */
-static bool
-rs6000_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
-{
-  tree type;
-  if (decl)
-    {
-      if (TARGET_ALTIVEC_VRSAVE)
-	{
-	  for (type = TYPE_ARG_TYPES (TREE_TYPE (decl));
-	       type; type = TREE_CHAIN (type))
-	    {
-	      if (TREE_CODE (TREE_VALUE (type)) == VECTOR_TYPE)
-		return false;
-	    }
-	}
-      if (DEFAULT_ABI == ABI_DARWIN
-	  || ((*targetm.binds_local_p) (decl)
-	      && (DEFAULT_ABI != ABI_AIX || !DECL_EXTERNAL (decl))))
-	{
-	  tree attr_list = TYPE_ATTRIBUTES (TREE_TYPE (decl));
+/* Say whether a function is a candidate for sibcall handling or not.  */
 
-	  if (!lookup_attribute ("longcall", attr_list)
-	      || lookup_attribute ("shortcall", attr_list))
-	    return true;
-	}
+static bool
+rs6000_function_ok_for_sibcall (tree decl, tree exp)
+{
+  tree fntype;
+
+  if (decl)
+    fntype = TREE_TYPE (decl);
+  else
+    fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
+
+  /* We can't do it if the called function has more vector parameters
+     than the current function; there's nowhere to put the VRsave code.  */
+  if (TARGET_ALTIVEC_ABI
+      && TARGET_ALTIVEC_VRSAVE
+      && !(decl && decl == current_function_decl))
+    {
+      function_args_iterator args_iter;
+      tree type;
+      int nvreg = 0;
+
+      /* Functions with vector parameters are required to have a
+	 prototype, so the argument type info must be available
+	 here.  */
+      FOREACH_FUNCTION_ARGS(fntype, type, args_iter)
+	if (TREE_CODE (type) == VECTOR_TYPE
+	    && (ALTIVEC_VECTOR_MODE (TYPE_MODE (type))
+		|| VSX_VECTOR_MODE (TYPE_MODE (type))))
+	  nvreg++;
+
+      FOREACH_FUNCTION_ARGS(TREE_TYPE (current_function_decl), type, args_iter)
+	if (TREE_CODE (type) == VECTOR_TYPE
+	    && (ALTIVEC_VECTOR_MODE (TYPE_MODE (type))
+		|| VSX_VECTOR_MODE (TYPE_MODE (type))))
+	  nvreg--;
+
+      if (nvreg > 0)
+	return false;
     }
+
+  /* Under the AIX ABI we can't allow calls to non-local functions,
+     because the callee may have a different TOC pointer to the
+     caller and there's no way to ensure we restore the TOC when we
+     return.  With the secure-plt SYSV ABI we can't make non-local
+     calls when -fpic/PIC because the plt call stubs use r30.  */
+  if (DEFAULT_ABI == ABI_DARWIN
+      || (DEFAULT_ABI == ABI_AIX
+	  && decl
+	  && !DECL_EXTERNAL (decl)
+	  && (*targetm.binds_local_p) (decl))
+      || (DEFAULT_ABI == ABI_V4
+	  && (!TARGET_SECURE_PLT
+	      || !flag_pic
+	      || (decl
+		  && (*targetm.binds_local_p) (decl)))))
+    {
+      tree attr_list = TYPE_ATTRIBUTES (fntype);
+
+      if (!lookup_attribute ("longcall", attr_list)
+	  || lookup_attribute ("shortcall", attr_list))
+	return true;
+    }
+
   return false;
 }
 
@@ -28266,5 +28310,22 @@ rs6000_address_for_altivec (rtx x)
   return x;
 }
 
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.
+
+   On the RS/6000, all integer constants are acceptable, most won't be valid
+   for particular insns, though.  Only easy FP constants are acceptable.  */
+
+static bool
+rs6000_legitimate_constant_p (enum machine_mode mode, rtx x)
+{
+  if (rs6000_tls_referenced_p (x))
+    return false;
+
+  return ((GET_CODE (x) != CONST_DOUBLE && GET_CODE (x) != CONST_VECTOR)
+	  || GET_MODE (x) == VOIDmode
+	  || (TARGET_POWERPC64 && mode == DImode)
+	  || easy_fp_constant (x, mode)
+	  || easy_vector_constant (x, mode));
+}
 
 #include "gt-rs6000.h"

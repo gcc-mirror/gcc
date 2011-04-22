@@ -850,8 +850,7 @@ mem_flush (unix_stream * s __attribute__ ((unused)))
 static int
 mem_close (unix_stream * s)
 {
-  if (s != NULL)
-    free (s);
+  free (s);
 
   return 0;
 }
@@ -1068,7 +1067,8 @@ tempfile (st_parameter_open *opp)
   template = get_mem (tempdirlen + 23);
 
 #ifdef HAVE_MKSTEMP
-  sprintf (template, "%s%sgfortrantmpXXXXXX", tempdir, slash);
+  snprintf (template, tempdirlen + 23, "%s%sgfortrantmpXXXXXX", 
+	    tempdir, slash);
 
   fd = mkstemp (template);
 
@@ -1078,7 +1078,8 @@ tempfile (st_parameter_open *opp)
   slashlen = strlen (slash);
   do
     {
-      sprintf (template, "%s%sgfortrantmpaaaXXXXXX", tempdir, slash);
+      snprintf (template, tempdirlen + 23, "%s%sgfortrantmpaaaXXXXXX", 
+		tempdir, slash);
       if (count > 0)
 	{
 	  int c = count;

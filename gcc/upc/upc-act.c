@@ -1606,9 +1606,10 @@ upc_build_init_func (const tree stmt_list)
   add_stmt (t_list);
   finish_function ();
   gcc_assert (DECL_RTL (init_func));
+  mark_decl_referenced (init_func);
+  DECL_PRESERVE_P (init_func) = 1;
   upc_init_array_section = get_section (UPC_INIT_ARRAY_SECTION_NAME,
 				        0, NULL);
-  mark_decl_referenced (init_func);
   init_func_symbol = XEXP (DECL_RTL (init_func), 0);
   assemble_addr_to_section (init_func_symbol, upc_init_array_section);
 }

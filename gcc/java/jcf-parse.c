@@ -1,6 +1,6 @@
 /* Parser for Java(TM) .class files.
    Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -368,7 +368,7 @@ set_source_filename (JCF *jcf, int index)
    from the input class file into the output file.  We don't decode the
    data at all, merely rewriting constant indexes whenever we come
    across them: this is necessary because the constant pool in the
-   output file isn't the same as the constant pool in in the input.
+   output file isn't the same as the constant pool in the input.
 
    The main advantage of this technique is that the resulting
    annotation data is pointer-free, so it doesn't have to be relocated
@@ -1843,8 +1843,7 @@ java_parse_file (void)
       list = next;
     }
 
-  if (file_list != NULL)
-    free (file_list);
+  free (file_list);
 
   if (filename_count == 0)
     warning (0, "no input file specified");

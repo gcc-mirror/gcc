@@ -17,6 +17,7 @@
 #define PORTC    _SFR_IO8(0x15)
 #define PORTD    _SFR_IO8(0x12)
 
+
 static void delay_wait_us( unsigned char timeout ) {
     __asm__ __volatile__ ("wdr");
 
@@ -27,8 +28,12 @@ static void delay_wait_us( unsigned char timeout ) {
     while(!(TIFR & (1 << (TOV0))));
 }
 
+/* The original testcase was multiplying by 1000.  Gcc is now smart enough
+   to work out that actual parameter is 5000 that is not what testcase was
+   about.  Obstructate the code somewhat then.  */
+int a;
 static void delay_wait_us_ms( unsigned char timeout ) {
-    delay_wait_us( timeout * 1000 );
+    delay_wait_us( timeout * a );
 }
 
 

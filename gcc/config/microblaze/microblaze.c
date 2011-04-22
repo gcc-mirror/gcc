@@ -152,7 +152,7 @@ int microblaze_no_unsafe_delay;
 enum pipeline_type microblaze_pipe = MICROBLAZE_PIPE_5;
 
 /* High and low marks for floating point values which we will accept
-   as legitimate constants for LEGITIMATE_CONSTANT_P.  These are
+   as legitimate constants for TARGET_LEGITIMATE_CONSTANT_P.  These are
    initialized in override_options.  */
 REAL_VALUE_TYPE dfhigh, dflow, sfhigh, sflow;
 
@@ -210,7 +210,7 @@ static int microblaze_interrupt_function_p (tree);
 section *sdata2_section;
 
 /* Return truth value if a CONST_DOUBLE is ok to be a legitimate constant.  */
-int
+static bool
 microblaze_const_double_ok (rtx op, enum machine_mode mode)
 {
   REAL_VALUE_TYPE d;
@@ -218,7 +218,7 @@ microblaze_const_double_ok (rtx op, enum machine_mode mode)
   if (GET_CODE (op) != CONST_DOUBLE)
     return 0;
 
-  if (mode == VOIDmode)
+  if (GET_MODE (op) == VOIDmode)
     return 1;
 
   if (mode != SFmode && mode != DFmode)
@@ -919,7 +919,7 @@ microblaze_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *tot
 	  {
 	    /* Add 1 to make shift slightly more expensive than add.  */
 	    *total = COSTS_N_INSNS (INTVAL (XEXP (x, 1))) + 1;
-	    /* Reduce shift costs for for special circumstances.  */
+	    /* Reduce shift costs for special circumstances.  */
 	    if (optimize_size && INTVAL (XEXP (x, 1)) > 5)
 	      *total -= 2;
 	    if (!optimize_size && INTVAL (XEXP (x, 1)) > 17)
@@ -2951,6 +2951,16 @@ microblaze_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
     return 0;
   return cost;
 }
+
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.
+
+   At present, GAS doesn't understand li.[sd], so don't allow it
+   to be generated at present.  */
+static bool
+microblaze_legitimate_constant_p (enum machine_mode mode, rtx x)
+{
+  return GET_CODE (x) != CONST_DOUBLE || microblaze_const_double_ok (x, mode);
+}
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO      microblaze_encode_section_info
@@ -3039,6 +3049,9 @@ microblaze_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO  sjlj_except_unwind_info
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P microblaze_legitimate_constant_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -1,3 +1,41 @@
+2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.c (synth_module_prologue): Call build_function_type_list
+	instead of build_function_type.
+	* objc-next-runtime-abi-02.c (next_runtime_02_initialize):
+	Likewise.
+
+2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (ivar_of_class): New.
+	(objc_is_public): Use ivar_of_class.
+
+2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_get_interface_ivars): Removed.
+	(objc_detect_field_duplicates): New.
+	(hash_instance_variable): New.
+	(eq_instance_variable): New.
+	
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_declare_protocols): Renamed to
+	objc_declare_protocol.  Changed first argument to be an identifier
+	instead of a tree chain of identifiers, so that callers don't have
+	to create a temporary tree chain.
+
+2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_declare_class): Changed to take a single
+	identifier as argument instead of a tree list.  This means callers
+	don't have to build temporary tree lists to call this function.
+	(synth_module_prologue): Updated calls to objc_declare_class.
+	
+2011-04-13  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (build_keyword_selector): Use get_identifier_with_length
+	instead of get_identifier.
+
 2011-04-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-lang.c (objc_init_ts): Move code for this function...

@@ -71,9 +71,7 @@ gfc_run_passes (gfc_namespace *ns)
       if (gfc_option.dump_fortran_optimized)
 	gfc_dump_parse_tree (ns, stdout);
 
-      /* FIXME: The following should be XDELETEVEC(expr_array);
-      but we cannot do that because it depends on free.  */
-      gfc_free (expr_array);
+      XDELETEVEC (expr_array);
     }
 }
 
@@ -141,12 +139,6 @@ static int
 cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  void *data ATTRIBUTE_UNUSED)
 {
-
-  /* FIXME - there is a bug in the insertion code for DO loops.  Bail
-     out here.  */
-
-  if ((*current_code)->op == EXEC_DO)
-    return 0;
 
   if ((*e)->expr_type != EXPR_FUNCTION)
     return 0;
@@ -333,7 +325,7 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
 	      if (gfc_option.warn_function_elimination)
 		warn_function_elimination (*(expr_array[j]));
 
-	      gfc_free (*(expr_array[j]));
+	      free (*(expr_array[j]));
 	      *(expr_array[j]) = gfc_copy_expr (newvar);
 	    }
 	}
@@ -501,7 +493,7 @@ strip_function_call (gfc_expr *e)
 
   /* Graft the argument expression onto the original function.  */
   *e = *e1;
-  gfc_free (e1);
+  free (e1);
 
 }
 
@@ -656,8 +648,8 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 		    return false;
 		  else
 		    {
-		      gfc_free (op1_left);
-		      gfc_free (op2_left);
+		      free (op1_left);
+		      free (op2_left);
 		      if (firstarg)
 			{
 			  firstarg->expr = op1_right;
@@ -674,8 +666,8 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 		}
 	      if (gfc_dep_compare_expr (op1_right, op2_right) == 0)
 		{
-		  gfc_free (op1_right);
-		  gfc_free (op2_right);
+		  free (op1_right);
+		  free (op2_right);
 		  if (firstarg)
 		    {
 		      firstarg->expr = op1_left;
@@ -734,8 +726,8 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 
 	  /* Replace the expression by a constant expression.  The typespec
 	     and where remains the way it is.  */
-	  gfc_free (op1);
-	  gfc_free (op2);
+	  free (op1);
+	  free (op2);
 	  e->expr_type = EXPR_CONSTANT;
 	  e->value.logical = result;
 	  return true;
@@ -958,31 +950,37 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	{
 	  gfc_code *b;
 	  gfc_actual_arglist *a;
+	  gfc_code *co;
 
-	  switch ((*c)->op)
+	  /* There might be statement insertions before the current code,
+	     which must not affect the expression walker.  */
+
+	  co = *c;
+
+	  switch (co->op)
 	    {
 	    case EXEC_DO:
-	      WALK_SUBEXPR ((*c)->ext.iterator->var);
-	      WALK_SUBEXPR ((*c)->ext.iterator->start);
-	      WALK_SUBEXPR ((*c)->ext.iterator->end);
-	      WALK_SUBEXPR ((*c)->ext.iterator->step);
+	      WALK_SUBEXPR (co->ext.iterator->var);
+	      WALK_SUBEXPR (co->ext.iterator->start);
+	      WALK_SUBEXPR (co->ext.iterator->end);
+	      WALK_SUBEXPR (co->ext.iterator->step);
 	      break;
 
 	    case EXEC_CALL:
 	    case EXEC_ASSIGN_CALL:
-	      for (a = (*c)->ext.actual; a; a = a->next)
+	      for (a = co->ext.actual; a; a = a->next)
 		WALK_SUBEXPR (a->expr);
 	      break;
 
 	    case EXEC_CALL_PPC:
-	      WALK_SUBEXPR ((*c)->expr1);
-	      for (a = (*c)->ext.actual; a; a = a->next)
+	      WALK_SUBEXPR (co->expr1);
+	      for (a = co->ext.actual; a; a = a->next)
 		WALK_SUBEXPR (a->expr);
 	      break;
 
 	    case EXEC_SELECT:
-	      WALK_SUBEXPR ((*c)->expr1);
-	      for (b = (*c)->block; b; b = b->block)
+	      WALK_SUBEXPR (co->expr1);
+	      for (b = co->block; b; b = b->block)
 		{
 		  gfc_case *cp;
 		  for (cp = b->ext.block.case_list; cp; cp = cp->next)
@@ -998,7 +996,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_DEALLOCATE:
 	      {
 		gfc_alloc *a;
-		for (a = (*c)->ext.alloc.list; a; a = a->next)
+		for (a = co->ext.alloc.list; a; a = a->next)
 		  WALK_SUBEXPR (a->expr);
 		break;
 	      }
@@ -1006,7 +1004,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_FORALL:
 	      {
 		gfc_forall_iterator *fa;
-		for (fa = (*c)->ext.forall_iterator; fa; fa = fa->next)
+		for (fa = co->ext.forall_iterator; fa; fa = fa->next)
 		  {
 		    WALK_SUBEXPR (fa->var);
 		    WALK_SUBEXPR (fa->start);
@@ -1017,110 +1015,110 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      }
 
 	    case EXEC_OPEN:
-	      WALK_SUBEXPR ((*c)->ext.open->unit);
-	      WALK_SUBEXPR ((*c)->ext.open->file);
-	      WALK_SUBEXPR ((*c)->ext.open->status);
-	      WALK_SUBEXPR ((*c)->ext.open->access);
-	      WALK_SUBEXPR ((*c)->ext.open->form);
-	      WALK_SUBEXPR ((*c)->ext.open->recl);
-	      WALK_SUBEXPR ((*c)->ext.open->blank);
-	      WALK_SUBEXPR ((*c)->ext.open->position);
-	      WALK_SUBEXPR ((*c)->ext.open->action);
-	      WALK_SUBEXPR ((*c)->ext.open->delim);
-	      WALK_SUBEXPR ((*c)->ext.open->pad);
-	      WALK_SUBEXPR ((*c)->ext.open->iostat);
-	      WALK_SUBEXPR ((*c)->ext.open->iomsg);
-	      WALK_SUBEXPR ((*c)->ext.open->convert);
-	      WALK_SUBEXPR ((*c)->ext.open->decimal);
-	      WALK_SUBEXPR ((*c)->ext.open->encoding);
-	      WALK_SUBEXPR ((*c)->ext.open->round);
-	      WALK_SUBEXPR ((*c)->ext.open->sign);
-	      WALK_SUBEXPR ((*c)->ext.open->asynchronous);
-	      WALK_SUBEXPR ((*c)->ext.open->id);
-	      WALK_SUBEXPR ((*c)->ext.open->newunit);
+	      WALK_SUBEXPR (co->ext.open->unit);
+	      WALK_SUBEXPR (co->ext.open->file);
+	      WALK_SUBEXPR (co->ext.open->status);
+	      WALK_SUBEXPR (co->ext.open->access);
+	      WALK_SUBEXPR (co->ext.open->form);
+	      WALK_SUBEXPR (co->ext.open->recl);
+	      WALK_SUBEXPR (co->ext.open->blank);
+	      WALK_SUBEXPR (co->ext.open->position);
+	      WALK_SUBEXPR (co->ext.open->action);
+	      WALK_SUBEXPR (co->ext.open->delim);
+	      WALK_SUBEXPR (co->ext.open->pad);
+	      WALK_SUBEXPR (co->ext.open->iostat);
+	      WALK_SUBEXPR (co->ext.open->iomsg);
+	      WALK_SUBEXPR (co->ext.open->convert);
+	      WALK_SUBEXPR (co->ext.open->decimal);
+	      WALK_SUBEXPR (co->ext.open->encoding);
+	      WALK_SUBEXPR (co->ext.open->round);
+	      WALK_SUBEXPR (co->ext.open->sign);
+	      WALK_SUBEXPR (co->ext.open->asynchronous);
+	      WALK_SUBEXPR (co->ext.open->id);
+	      WALK_SUBEXPR (co->ext.open->newunit);
 	      break;
 
 	    case EXEC_CLOSE:
-	      WALK_SUBEXPR ((*c)->ext.close->unit);
-	      WALK_SUBEXPR ((*c)->ext.close->status);
-	      WALK_SUBEXPR ((*c)->ext.close->iostat);
-	      WALK_SUBEXPR ((*c)->ext.close->iomsg);
+	      WALK_SUBEXPR (co->ext.close->unit);
+	      WALK_SUBEXPR (co->ext.close->status);
+	      WALK_SUBEXPR (co->ext.close->iostat);
+	      WALK_SUBEXPR (co->ext.close->iomsg);
 	      break;
 
 	    case EXEC_BACKSPACE:
 	    case EXEC_ENDFILE:
 	    case EXEC_REWIND:
 	    case EXEC_FLUSH:
-	      WALK_SUBEXPR ((*c)->ext.filepos->unit);
-	      WALK_SUBEXPR ((*c)->ext.filepos->iostat);
-	      WALK_SUBEXPR ((*c)->ext.filepos->iomsg);
+	      WALK_SUBEXPR (co->ext.filepos->unit);
+	      WALK_SUBEXPR (co->ext.filepos->iostat);
+	      WALK_SUBEXPR (co->ext.filepos->iomsg);
 	      break;
 
 	    case EXEC_INQUIRE:
-	      WALK_SUBEXPR ((*c)->ext.inquire->unit);
-	      WALK_SUBEXPR ((*c)->ext.inquire->file);
-	      WALK_SUBEXPR ((*c)->ext.inquire->iomsg);
-	      WALK_SUBEXPR ((*c)->ext.inquire->iostat);
-	      WALK_SUBEXPR ((*c)->ext.inquire->exist);
-	      WALK_SUBEXPR ((*c)->ext.inquire->opened);
-	      WALK_SUBEXPR ((*c)->ext.inquire->number);
-	      WALK_SUBEXPR ((*c)->ext.inquire->named);
-	      WALK_SUBEXPR ((*c)->ext.inquire->name);
-	      WALK_SUBEXPR ((*c)->ext.inquire->access);
-	      WALK_SUBEXPR ((*c)->ext.inquire->sequential);
-	      WALK_SUBEXPR ((*c)->ext.inquire->direct);
-	      WALK_SUBEXPR ((*c)->ext.inquire->form);
-	      WALK_SUBEXPR ((*c)->ext.inquire->formatted);
-	      WALK_SUBEXPR ((*c)->ext.inquire->unformatted);
-	      WALK_SUBEXPR ((*c)->ext.inquire->recl);
-	      WALK_SUBEXPR ((*c)->ext.inquire->nextrec);
-	      WALK_SUBEXPR ((*c)->ext.inquire->blank);
-	      WALK_SUBEXPR ((*c)->ext.inquire->position);
-	      WALK_SUBEXPR ((*c)->ext.inquire->action);
-	      WALK_SUBEXPR ((*c)->ext.inquire->read);
-	      WALK_SUBEXPR ((*c)->ext.inquire->write);
-	      WALK_SUBEXPR ((*c)->ext.inquire->readwrite);
-	      WALK_SUBEXPR ((*c)->ext.inquire->delim);
-	      WALK_SUBEXPR ((*c)->ext.inquire->encoding);
-	      WALK_SUBEXPR ((*c)->ext.inquire->pad);
-	      WALK_SUBEXPR ((*c)->ext.inquire->iolength);
-	      WALK_SUBEXPR ((*c)->ext.inquire->convert);
-	      WALK_SUBEXPR ((*c)->ext.inquire->strm_pos);
-	      WALK_SUBEXPR ((*c)->ext.inquire->asynchronous);
-	      WALK_SUBEXPR ((*c)->ext.inquire->decimal);
-	      WALK_SUBEXPR ((*c)->ext.inquire->pending);
-	      WALK_SUBEXPR ((*c)->ext.inquire->id);
-	      WALK_SUBEXPR ((*c)->ext.inquire->sign);
-	      WALK_SUBEXPR ((*c)->ext.inquire->size);
-	      WALK_SUBEXPR ((*c)->ext.inquire->round);
+	      WALK_SUBEXPR (co->ext.inquire->unit);
+	      WALK_SUBEXPR (co->ext.inquire->file);
+	      WALK_SUBEXPR (co->ext.inquire->iomsg);
+	      WALK_SUBEXPR (co->ext.inquire->iostat);
+	      WALK_SUBEXPR (co->ext.inquire->exist);
+	      WALK_SUBEXPR (co->ext.inquire->opened);
+	      WALK_SUBEXPR (co->ext.inquire->number);
+	      WALK_SUBEXPR (co->ext.inquire->named);
+	      WALK_SUBEXPR (co->ext.inquire->name);
+	      WALK_SUBEXPR (co->ext.inquire->access);
+	      WALK_SUBEXPR (co->ext.inquire->sequential);
+	      WALK_SUBEXPR (co->ext.inquire->direct);
+	      WALK_SUBEXPR (co->ext.inquire->form);
+	      WALK_SUBEXPR (co->ext.inquire->formatted);
+	      WALK_SUBEXPR (co->ext.inquire->unformatted);
+	      WALK_SUBEXPR (co->ext.inquire->recl);
+	      WALK_SUBEXPR (co->ext.inquire->nextrec);
+	      WALK_SUBEXPR (co->ext.inquire->blank);
+	      WALK_SUBEXPR (co->ext.inquire->position);
+	      WALK_SUBEXPR (co->ext.inquire->action);
+	      WALK_SUBEXPR (co->ext.inquire->read);
+	      WALK_SUBEXPR (co->ext.inquire->write);
+	      WALK_SUBEXPR (co->ext.inquire->readwrite);
+	      WALK_SUBEXPR (co->ext.inquire->delim);
+	      WALK_SUBEXPR (co->ext.inquire->encoding);
+	      WALK_SUBEXPR (co->ext.inquire->pad);
+	      WALK_SUBEXPR (co->ext.inquire->iolength);
+	      WALK_SUBEXPR (co->ext.inquire->convert);
+	      WALK_SUBEXPR (co->ext.inquire->strm_pos);
+	      WALK_SUBEXPR (co->ext.inquire->asynchronous);
+	      WALK_SUBEXPR (co->ext.inquire->decimal);
+	      WALK_SUBEXPR (co->ext.inquire->pending);
+	      WALK_SUBEXPR (co->ext.inquire->id);
+	      WALK_SUBEXPR (co->ext.inquire->sign);
+	      WALK_SUBEXPR (co->ext.inquire->size);
+	      WALK_SUBEXPR (co->ext.inquire->round);
 	      break;
 
 	    case EXEC_WAIT:
-	      WALK_SUBEXPR ((*c)->ext.wait->unit);
-	      WALK_SUBEXPR ((*c)->ext.wait->iostat);
-	      WALK_SUBEXPR ((*c)->ext.wait->iomsg);
-	      WALK_SUBEXPR ((*c)->ext.wait->id);
+	      WALK_SUBEXPR (co->ext.wait->unit);
+	      WALK_SUBEXPR (co->ext.wait->iostat);
+	      WALK_SUBEXPR (co->ext.wait->iomsg);
+	      WALK_SUBEXPR (co->ext.wait->id);
 	      break;
 
 	    case EXEC_READ:
 	    case EXEC_WRITE:
-	      WALK_SUBEXPR ((*c)->ext.dt->io_unit);
-	      WALK_SUBEXPR ((*c)->ext.dt->format_expr);
-	      WALK_SUBEXPR ((*c)->ext.dt->rec);
-	      WALK_SUBEXPR ((*c)->ext.dt->advance);
-	      WALK_SUBEXPR ((*c)->ext.dt->iostat);
-	      WALK_SUBEXPR ((*c)->ext.dt->size);
-	      WALK_SUBEXPR ((*c)->ext.dt->iomsg);
-	      WALK_SUBEXPR ((*c)->ext.dt->id);
-	      WALK_SUBEXPR ((*c)->ext.dt->pos);
-	      WALK_SUBEXPR ((*c)->ext.dt->asynchronous);
-	      WALK_SUBEXPR ((*c)->ext.dt->blank);
-	      WALK_SUBEXPR ((*c)->ext.dt->decimal);
-	      WALK_SUBEXPR ((*c)->ext.dt->delim);
-	      WALK_SUBEXPR ((*c)->ext.dt->pad);
-	      WALK_SUBEXPR ((*c)->ext.dt->round);
-	      WALK_SUBEXPR ((*c)->ext.dt->sign);
-	      WALK_SUBEXPR ((*c)->ext.dt->extra_comma);
+	      WALK_SUBEXPR (co->ext.dt->io_unit);
+	      WALK_SUBEXPR (co->ext.dt->format_expr);
+	      WALK_SUBEXPR (co->ext.dt->rec);
+	      WALK_SUBEXPR (co->ext.dt->advance);
+	      WALK_SUBEXPR (co->ext.dt->iostat);
+	      WALK_SUBEXPR (co->ext.dt->size);
+	      WALK_SUBEXPR (co->ext.dt->iomsg);
+	      WALK_SUBEXPR (co->ext.dt->id);
+	      WALK_SUBEXPR (co->ext.dt->pos);
+	      WALK_SUBEXPR (co->ext.dt->asynchronous);
+	      WALK_SUBEXPR (co->ext.dt->blank);
+	      WALK_SUBEXPR (co->ext.dt->decimal);
+	      WALK_SUBEXPR (co->ext.dt->delim);
+	      WALK_SUBEXPR (co->ext.dt->pad);
+	      WALK_SUBEXPR (co->ext.dt->round);
+	      WALK_SUBEXPR (co->ext.dt->sign);
+	      WALK_SUBEXPR (co->ext.dt->extra_comma);
 	      break;
 
 	    case EXEC_OMP_DO:
@@ -1133,21 +1131,21 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    case EXEC_OMP_WORKSHARE:
 	    case EXEC_OMP_END_SINGLE:
 	    case EXEC_OMP_TASK:
-	      if ((*c)->ext.omp_clauses)
+	      if (co->ext.omp_clauses)
 		{
-		  WALK_SUBEXPR ((*c)->ext.omp_clauses->if_expr);
-		  WALK_SUBEXPR ((*c)->ext.omp_clauses->num_threads);
-		  WALK_SUBEXPR ((*c)->ext.omp_clauses->chunk_size);
+		  WALK_SUBEXPR (co->ext.omp_clauses->if_expr);
+		  WALK_SUBEXPR (co->ext.omp_clauses->num_threads);
+		  WALK_SUBEXPR (co->ext.omp_clauses->chunk_size);
 		}
 	      break;
 	    default:
 	      break;
 	    }
 
-	  WALK_SUBEXPR ((*c)->expr1);
-	  WALK_SUBEXPR ((*c)->expr2);
-	  WALK_SUBEXPR ((*c)->expr3);
-	  for (b = (*c)->block; b; b = b->block)
+	  WALK_SUBEXPR (co->expr1);
+	  WALK_SUBEXPR (co->expr2);
+	  WALK_SUBEXPR (co->expr3);
+	  for (b = co->block; b; b = b->block)
 	    {
 	      WALK_SUBEXPR (b->expr1);
 	      WALK_SUBEXPR (b->expr2);

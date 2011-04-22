@@ -2077,7 +2077,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
   VEC (tree, heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
   tree vop0, vop1;
   unsigned int k;
-  bool scalar_shift_arg = false;
+  bool scalar_shift_arg = true;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   int vf;
 
@@ -2159,8 +2159,34 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
   /* Determine whether the shift amount is a vector, or scalar.  If the
      shift/rotate amount is a vector, use the vector/vector shift optabs.  */
 
+  if (dt[1] == vect_internal_def && !slp_node)
+    scalar_shift_arg = false;
+  else if (dt[1] == vect_constant_def
+	   || dt[1] == vect_external_def
+	   || dt[1] == vect_internal_def)
+    {
+      /* In SLP, need to check whether the shift count is the same,
+	 in loops if it is a constant or invariant, it is always
+	 a scalar shift.  */
+      if (slp_node)
+	{
+	  VEC (gimple, heap) *stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+	  gimple slpstmt;
+
+	  FOR_EACH_VEC_ELT (gimple, stmts, k, slpstmt)
+	    if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
+	      scalar_shift_arg = false;
+	}
+    }
+  else
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "operand mode requires invariant argument.");
+      return false;
+    }
+
   /* Vector shifted by vector.  */
-  if (dt[1] == vect_internal_def)
+  if (!scalar_shift_arg)
     {
       optab = optab_for_tree_code (code, vectype, optab_vector);
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -2168,13 +2194,12 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     }
   /* See if the machine has a vector shifted by scalar insn and if not
      then see if it has a vector shifted by vector insn.  */
-  else if (dt[1] == vect_constant_def || dt[1] == vect_external_def)
+  else
     {
       optab = optab_for_tree_code (code, vectype, optab_scalar);
       if (optab
           && optab_handler (optab, TYPE_MODE (vectype)) != CODE_FOR_nothing)
         {
-          scalar_shift_arg = true;
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "vector/scalar shift/rotate found.");
         }
@@ -2185,6 +2210,8 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
                && (optab_handler (optab, TYPE_MODE (vectype))
                       != CODE_FOR_nothing))
             {
+	      scalar_shift_arg = false;
+
               if (vect_print_dump_info (REPORT_DETAILS))
                 fprintf (vect_dump, "vector/vector shift/rotate found.");
 
@@ -2196,12 +2223,6 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
                 op1 = fold_convert (TREE_TYPE (vectype), op1);
             }
         }
-    }
-  else
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "operand mode requires invariant argument.");
-      return false;
     }
 
   /* Supportable by target?  */
@@ -3410,9 +3431,12 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       strided_store = true;
       first_stmt = DR_GROUP_FIRST_DR (stmt_info);
-      if (!vect_strided_store_supported (vectype)
-	  && !PURE_SLP_STMT (stmt_info) && !slp)
-	return false;
+      if (!slp && !PURE_SLP_STMT (stmt_info))
+	{
+	  group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
+	  if (!vect_strided_store_supported (vectype, group_size))
+	    return false;
+	}
 
       if (first_stmt == stmt)
 	{
@@ -3581,9 +3605,9 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  /* We should have catched mismatched types earlier.  */
 	  gcc_assert (useless_type_conversion_p (vectype,
 						 TREE_TYPE (vec_oprnd)));
-	  dataref_ptr = vect_create_data_ref_ptr (first_stmt, NULL, NULL_TREE,
-						  &dummy, gsi, &ptr_incr, false,
-						  &inv_p);
+	  dataref_ptr = vect_create_data_ref_ptr (first_stmt, vectype, NULL,
+						  NULL_TREE, &dummy, gsi,
+						  &ptr_incr, false, &inv_p);
 	  gcc_assert (bb_vinfo || !inv_p);
 	}
       else
@@ -3608,13 +3632,13 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt, NULL_TREE);
 	}
 
+      new_stmt = NULL;
       if (strided_store)
 	{
 	  result_chain = VEC_alloc (tree, heap, group_size);
 	  /* Permute.  */
-	  if (!vect_permute_store_chain (dr_chain, group_size, stmt, gsi,
-					 &result_chain))
-	    return false;
+	  vect_permute_store_chain (dr_chain, group_size, stmt, gsi,
+				    &result_chain);
 	}
 
       next_stmt = first_stmt;
@@ -3665,15 +3689,17 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
           if (slp)
             continue;
 
-          if (j == 0)
-            STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt =  new_stmt;
-	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	  next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
 	  if (!next_stmt)
 	    break;
+	}
+      if (!slp)
+	{
+	  if (j == 0)
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	  else
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	}
     }
 
@@ -3902,10 +3928,13 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       /* FORNOW */
       gcc_assert (! nested_in_vect_loop);
 
-      /* Check if interleaving is supported.  */
-      if (!vect_strided_load_supported (vectype)
-	  && !PURE_SLP_STMT (stmt_info) && !slp)
-	return false;
+      first_stmt = DR_GROUP_FIRST_DR (stmt_info);
+      if (!slp && !PURE_SLP_STMT (stmt_info))
+	{
+	  group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
+	  if (!vect_strided_load_supported (vectype, group_size))
+	    return false;
+	}
     }
 
   if (negative)
@@ -3935,7 +3964,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     }
 
   if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "transform load.");
+    fprintf (vect_dump, "transform load. ncopies = %d", ncopies);
 
   /** Transform.  **/
 
@@ -3961,8 +3990,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     	}
       else
 	vec_num = group_size;
-
-      dr_chain = VEC_alloc (tree, heap, vec_num);
     }
   else
     {
@@ -4109,12 +4136,15 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       /* 1. Create the vector pointer update chain.  */
       if (j == 0)
-        dataref_ptr = vect_create_data_ref_ptr (first_stmt, at_loop, offset,
-						&dummy, gsi, &ptr_incr, false,
-						&inv_p);
+        dataref_ptr = vect_create_data_ref_ptr (first_stmt, vectype, at_loop,
+						offset, &dummy, gsi,
+						&ptr_incr, false, &inv_p);
       else
         dataref_ptr =
 		bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt, NULL_TREE);
+
+      if (strided_load || slp_perm)
+	dr_chain = VEC_alloc (tree, heap, vec_num);
 
       for (i = 0; i < vec_num; i++)
 	{
@@ -4321,12 +4351,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
         {
           if (strided_load)
   	    {
-	      if (!vect_transform_strided_load (stmt, dr_chain, group_size, gsi))
-	        return false;
-
+	      vect_transform_strided_load (stmt, dr_chain, group_size, gsi);
 	      *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
-              VEC_free (tree, heap, dr_chain);
-	      dr_chain = VEC_alloc (tree, heap, group_size);
 	    }
           else
 	    {
@@ -4337,10 +4363,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      prev_stmt_info = vinfo_for_stmt (new_stmt);
 	    }
         }
+      if (dr_chain)
+	VEC_free (tree, heap, dr_chain);
     }
-
-  if (dr_chain)
-    VEC_free (tree, heap, dr_chain);
 
   return true;
 }
@@ -4743,27 +4768,6 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
         }
 
        return false;
-    }
-
-  if (!PURE_SLP_STMT (stmt_info))
-    {
-      /* Groups of strided accesses whose size is not a power of 2 are not
-         vectorizable yet using loop-vectorization.  Therefore, if this stmt
-	 feeds non-SLP-able stmts (i.e., this stmt has to be both SLPed and
-	 loop-based vectorized), the loop cannot be vectorized.  */
-      if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
-          && exact_log2 (DR_GROUP_SIZE (vinfo_for_stmt (
-                                        DR_GROUP_FIRST_DR (stmt_info)))) == -1)
-        {
-          if (vect_print_dump_info (REPORT_DETAILS))
-            {
-              fprintf (vect_dump, "not vectorized: the size of group "
-                                  "of strided accesses is not a power of 2");
-              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
-            }
-
-          return false;
-        }
     }
 
   return true;

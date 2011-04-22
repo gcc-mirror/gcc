@@ -310,11 +310,6 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   set_default_handlers (&handlers);
 
-  /* Enable -Werror=coverage-mismatch by default.  */
-  control_warning_option (OPT_Wcoverage_mismatch, (int) DK_ERROR, true,
-			  loc, lang_mask,
-			  &handlers, opts, opts_set, dc);
-
   default_options_optimization (opts, opts_set,
 				decoded_options, decoded_options_count,
 				loc, lang_mask, &handlers, dc);

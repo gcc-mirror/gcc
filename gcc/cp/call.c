@@ -6411,7 +6411,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       return val;
     }
-  /* FIXME handle trivial default constructor and destructor, too.  */
+  else if (DECL_DESTRUCTOR_P (fn)
+	   && trivial_fn_p (fn)
+	   && !DECL_DELETED_FN (fn))
+    return fold_convert (void_type_node, argarray[0]);
+  /* FIXME handle trivial default constructor, too.  */
 
   if (!already_used)
     mark_used (fn);

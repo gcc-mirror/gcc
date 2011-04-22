@@ -55,7 +55,6 @@ extern bool ix86_expand_movmem (rtx, rtx, rtx, rtx, rtx, rtx);
 extern bool ix86_expand_setmem (rtx, rtx, rtx, rtx, rtx, rtx);
 extern bool ix86_expand_strlen (rtx, rtx, rtx, rtx);
 
-extern bool legitimate_constant_p (rtx);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern bool legitimate_pic_address_disp_p (rtx);
@@ -114,7 +113,6 @@ extern bool ix86_expand_fp_movcc (rtx[]);
 extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_sse_unpack (rtx[], bool, bool);
-extern void ix86_expand_sse4_unpack (rtx[], bool, bool);
 extern bool ix86_expand_int_addcc (rtx[]);
 extern rtx ix86_expand_call (rtx, rtx, rtx, rtx, rtx, int);
 extern void ix86_split_call_vzeroupper (rtx, rtx);
@@ -204,6 +202,7 @@ extern void ix86_expand_vector_extract (bool, rtx, rtx, int);
 extern void ix86_expand_reduc_v4sf (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 
 extern void ix86_expand_vec_extract_even_odd (rtx, rtx, rtx, unsigned);
+extern bool ix86_expand_pinsr (rtx *);
 
 /* In i386-c.c  */
 extern void ix86_target_macros (void);

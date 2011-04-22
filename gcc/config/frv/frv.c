@@ -372,7 +372,8 @@ static int frv_memory_move_cost			(enum machine_mode,
 static void frv_asm_out_constructor		(rtx, int);
 static void frv_asm_out_destructor		(rtx, int);
 static bool frv_function_symbol_referenced_p	(rtx);
-static bool frv_cannot_force_const_mem		(rtx);
+static bool frv_legitimate_constant_p		(enum machine_mode, rtx);
+static bool frv_cannot_force_const_mem		(enum machine_mode, rtx);
 static const char *unspec_got_name		(int);
 static void frv_output_const_unspec		(FILE *,
 						 const struct frv_unspec *);
@@ -472,6 +473,8 @@ static const struct default_options frv_option_optimization_table[] =
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL frv_function_ok_for_sibcall
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P frv_legitimate_constant_p
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM frv_cannot_force_const_mem
 
@@ -603,7 +606,7 @@ frv_const_unspec_p (rtx x, struct frv_unspec *unspec)
    We never allow constants to be forced into memory for TARGET_FDPIC.
    This is necessary for several reasons:
 
-   1. Since LEGITIMATE_CONSTANT_P rejects constant pool addresses, the
+   1. Since frv_legitimate_constant_p rejects constant pool addresses, the
       target-independent code will try to force them into the constant
       pool, thus leading to infinite recursion.
 
@@ -616,7 +619,8 @@ frv_const_unspec_p (rtx x, struct frv_unspec *unspec)
    4. In many cases, it's more efficient to calculate the constant in-line.  */
 
 static bool
-frv_cannot_force_const_mem (rtx x ATTRIBUTE_UNUSED)
+frv_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED,
+			    rtx x ATTRIBUTE_UNUSED)
 {
   return TARGET_FDPIC;
 }
@@ -6748,16 +6752,14 @@ frv_class_max_nregs (enum reg_class rclass, enum machine_mode mode)
    `CONSTANT_P', so you need not check this.  In fact, `1' is a suitable
    definition for this macro on machines where anything `CONSTANT_P' is valid.  */
 
-int
-frv_legitimate_constant_p (rtx x)
+static bool
+frv_legitimate_constant_p (enum machine_mode mode, rtx x)
 {
-  enum machine_mode mode = GET_MODE (x);
-
   /* frv_cannot_force_const_mem always returns true for FDPIC.  This
      means that the move expanders will be expected to deal with most
      kinds of constant, regardless of what we return here.
 
-     However, among its other duties, LEGITIMATE_CONSTANT_P decides whether
+     However, among its other duties, frv_legitimate_constant_p decides whether
      a constant can be entered into reg_equiv_constant[].  If we return true,
      reload can create new instances of the constant whenever it likes.
 
@@ -6774,7 +6776,7 @@ frv_legitimate_constant_p (rtx x)
     return TRUE;
 
   /* double integer constants are ok.  */
-  if (mode == VOIDmode || mode == DImode)
+  if (GET_MODE (x) == VOIDmode || mode == DImode)
     return TRUE;
 
   /* 0 is always ok.  */
@@ -8390,7 +8392,6 @@ static struct builtin_description bdesc_stores[] =
 static void
 frv_init_builtins (void)
 {
-  tree endlink = void_list_node;
   tree accumulator = integer_type_node;
   tree integer = integer_type_node;
   tree voidt = void_type_node;
@@ -8405,24 +8406,18 @@ frv_init_builtins (void)
   tree iacc   = integer_type_node;
 
 #define UNARY(RET, T1) \
-  build_function_type (RET, tree_cons (NULL_TREE, T1, endlink))
+  build_function_type_list (RET, T1, NULL_TREE)
 
 #define BINARY(RET, T1, T2) \
-  build_function_type (RET, tree_cons (NULL_TREE, T1, \
-			    tree_cons (NULL_TREE, T2, endlink)))
+  build_function_type_list (RET, T1, T2, NULL_TREE)
 
 #define TRINARY(RET, T1, T2, T3) \
-  build_function_type (RET, tree_cons (NULL_TREE, T1, \
-			    tree_cons (NULL_TREE, T2, \
-			    tree_cons (NULL_TREE, T3, endlink))))
+  build_function_type_list (RET, T1, T2, T3, NULL_TREE)
 
 #define QUAD(RET, T1, T2, T3, T4) \
-  build_function_type (RET, tree_cons (NULL_TREE, T1, \
-			    tree_cons (NULL_TREE, T2, \
-			    tree_cons (NULL_TREE, T3, \
-			    tree_cons (NULL_TREE, T4, endlink)))))
+  build_function_type_list (RET, T1, T2, T3, NULL_TREE)
 
-  tree void_ftype_void = build_function_type (voidt, endlink);
+  tree void_ftype_void = build_function_type_list (voidt, NULL_TREE);
 
   tree void_ftype_acc = UNARY (voidt, accumulator);
   tree void_ftype_uw4_uw1 = BINARY (voidt, uword4, uword1);

@@ -2510,7 +2510,7 @@ instruction for loading an immediate value into a floating-point
 register, so @code{TARGET_PREFERRED_RELOAD_CLASS} returns @code{NO_REGS} when
 @var{x} is a floating-point constant.  If the constant can't be loaded
 into any kind of register, code generation will be better if
-@code{LEGITIMATE_CONSTANT_P} makes the constant illegitimate instead
+@code{TARGET_LEGITIMATE_CONSTANT_P} makes the constant illegitimate instead
 of using @code{TARGET_PREFERRED_RELOAD_CLASS}.
 
 If an insn has pseudos in it after register allocation, reload will go
@@ -2547,8 +2547,8 @@ instruction for loading an immediate value into a floating-point
 register, so @code{PREFERRED_RELOAD_CLASS} returns @code{NO_REGS} when
 @var{x} is a floating-point constant.  If the constant can't be loaded
 into any kind of register, code generation will be better if
-@code{LEGITIMATE_CONSTANT_P} makes the constant illegitimate instead
-of using @code{PREFERRED_RELOAD_CLASS}.
+@code{TARGET_LEGITIMATE_CONSTANT_P} makes the constant illegitimate instead
+of using @code{TARGET_PREFERRED_RELOAD_CLASS}.
 
 If an insn has pseudos in it after register allocation, reload will go
 through the alternatives and call repeatedly @code{PREFERRED_RELOAD_CLASS}
@@ -5513,13 +5513,13 @@ These are obsolete macros, replaced by the
 @code{TARGET_MODE_DEPENDENT_ADDRESS_P} target hook.
 @end defmac
 
-@defmac LEGITIMATE_CONSTANT_P (@var{x})
-A C expression that is nonzero if @var{x} is a legitimate constant for
-an immediate operand on the target machine.  You can assume that
-@var{x} satisfies @code{CONSTANT_P}, so you need not check this.  In fact,
-@samp{1} is a suitable definition for this macro on machines where
-anything @code{CONSTANT_P} is valid.
-@end defmac
+@hook TARGET_LEGITIMATE_CONSTANT_P
+This hook returns true if @var{x} is a legitimate constant for a
+@var{mode}-mode immediate operand on the target machine.  You can assume that
+@var{x} satisfies @code{CONSTANT_P}, so you need not check this.
+
+The default definition returns true.
+@end deftypefn
 
 @hook TARGET_DELEGITIMIZE_ADDRESS
 This hook is used to undo the possibly obfuscating effects of the
@@ -5533,8 +5533,10 @@ into their original form.
 
 @hook TARGET_CANNOT_FORCE_CONST_MEM
 This hook should return true if @var{x} is of a form that cannot (or
-should not) be spilled to the constant pool.  The default version of
-this hook returns false.
+should not) be spilled to the constant pool.  @var{mode} is the mode
+of @var{x}.
+
+The default version of this hook returns false.
 
 The primary reason to define this hook is to prevent reload from
 deciding that a non-legitimate constant would be better reloaded

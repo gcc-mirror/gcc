@@ -3646,16 +3646,16 @@ cp_build_binary_op (location_t location,
       || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
       || code == TRUTH_XOR_EXPR)
     {
-      if (!really_overloaded_fn (op0))
+      if (!really_overloaded_fn (op0) && !VOID_TYPE_P (TREE_TYPE (op0)))
 	op0 = decay_conversion (op0);
-      if (!really_overloaded_fn (op1))
+      if (!really_overloaded_fn (op1) && !VOID_TYPE_P (TREE_TYPE (op1)))
 	op1 = decay_conversion (op1);
     }
   else
     {
-      if (!really_overloaded_fn (op0))
+      if (!really_overloaded_fn (op0) && !VOID_TYPE_P (TREE_TYPE (op0)))
 	op0 = default_conversion (op0);
-      if (!really_overloaded_fn (op1))
+      if (!really_overloaded_fn (op1) && !VOID_TYPE_P (TREE_TYPE (op1)))
 	op1 = default_conversion (op1);
     }
 
@@ -4357,7 +4357,11 @@ cp_build_binary_op (location_t location,
 		  gcc_unreachable();
 		}
 	    }
-	  return build2 (COMPLEX_EXPR, result_type, real, imag);
+	  real = fold_if_not_in_template (real);
+	  imag = fold_if_not_in_template (imag);
+	  result = build2 (COMPLEX_EXPR, result_type, real, imag);
+	  result = fold_if_not_in_template (result);
+	  return result;
 	}
 
       /* For certain operations (which identify themselves by shorten != 0)
@@ -5373,7 +5377,6 @@ cxx_mark_addressable (tree exp)
 		    || DECL_EXTERNAL (x));
 	/* Fall through.  */
 
-      case CONST_DECL:
       case RESULT_DECL:
 	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x)
 	    && !DECL_ARTIFICIAL (x))
@@ -5391,6 +5394,7 @@ cxx_mark_addressable (tree exp)
 	TREE_ADDRESSABLE (x) = 1;
 	return true;
 
+      case CONST_DECL:
       case FUNCTION_DECL:
 	TREE_ADDRESSABLE (x) = 1;
 	return true;

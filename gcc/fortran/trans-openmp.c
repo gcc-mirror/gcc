@@ -1,5 +1,5 @@
 /* OpenMP directive translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
@@ -711,11 +711,10 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
   gfc_free_expr (e2);
   gfc_free_expr (e3);
   gfc_free_expr (e4);
-  gfc_free (symtree1);
-  gfc_free (symtree2);
-  gfc_free (symtree3);
-  if (symtree4)
-    gfc_free (symtree4);
+  free (symtree1);
+  free (symtree2);
+  free (symtree3);
+  free (symtree4);
   gfc_free_array_spec (outer_sym.as);
 }
 

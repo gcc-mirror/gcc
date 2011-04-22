@@ -312,8 +312,7 @@ free_1 (void)
 	{
 	  struct ld_plugin_symbol *s = &symtab->syms[j];
 	  free (s->name);
-	  if (s->comdat_key)
-	    free (s->comdat_key);
+	  free (s->comdat_key);
 	}
       free (symtab->syms);
       symtab->syms = NULL;
@@ -342,8 +341,7 @@ free_2 (void)
   claimed_files = NULL;
   num_claimed_files = 0;
 
-  if (arguments_file_name)
-    free (arguments_file_name);
+  free (arguments_file_name);
   arguments_file_name = NULL;
 }
 

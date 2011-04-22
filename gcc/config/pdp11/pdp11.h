@@ -418,12 +418,6 @@ extern int may_call_alloca;
 
 #define MAX_REGS_PER_ADDRESS 1
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-
-#define LEGITIMATE_CONSTANT_P(X)                                        \
-  (GET_CODE (X) != CONST_DOUBLE || legitimate_const_double_p (X))
-
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.
@@ -508,7 +502,7 @@ extern int may_call_alloca;
 
 
 /* Tell emit-rtl.c how to initialize special values on a per-function base.  */
-extern struct rtx_def *cc0_reg_rtx;
+extern rtx cc0_reg_rtx;
 
 #define CC_STATUS_MDEP rtx
 

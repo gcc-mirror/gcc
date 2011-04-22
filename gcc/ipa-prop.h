@@ -515,9 +515,20 @@ void ipa_dump_param_adjustments (FILE *, ipa_parm_adjustment_vec, tree);
 void ipa_prop_write_jump_functions (cgraph_node_set set);
 void ipa_prop_read_jump_functions (void);
 void ipa_update_after_lto_read (void);
+int ipa_get_param_decl_index (struct ipa_node_params *, tree);
+void ipa_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
+			     struct ipa_jump_func *jfunc);
 
 /* From tree-sra.c:  */
 tree build_ref_for_offset (location_t, tree, HOST_WIDE_INT, tree,
 			   gimple_stmt_iterator *, bool);
+
+/* Return the lattice corresponding to the Ith formal parameter of the function
+   described by INFO.  */
+static inline struct ipcp_lattice *
+ipa_get_lattice (struct ipa_node_params *info, int i)
+{
+  return &(info->params[i].ipcp_lattice);
+}
 
 #endif /* IPA_PROP_H */

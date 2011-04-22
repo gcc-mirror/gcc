@@ -34,6 +34,8 @@ extern bool hook_bool_mode_false (enum machine_mode);
 extern bool hook_bool_mode_true (enum machine_mode);
 extern bool hook_bool_mode_const_rtx_false (enum machine_mode, const_rtx);
 extern bool hook_bool_mode_const_rtx_true (enum machine_mode, const_rtx);
+extern bool hook_bool_mode_rtx_false (enum machine_mode, rtx);
+extern bool hook_bool_mode_rtx_true (enum machine_mode, rtx);
 extern bool hook_bool_tree_false (tree);
 extern bool hook_bool_const_tree_false (const_tree);
 extern bool hook_bool_tree_true (tree);

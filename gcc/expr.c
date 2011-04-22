@@ -1485,7 +1485,7 @@ move_block_to_reg (int regno, rtx x, int nregs, enum machine_mode mode)
   if (nregs == 0)
     return;
 
-  if (CONSTANT_P (x) && ! LEGITIMATE_CONSTANT_P (x))
+  if (CONSTANT_P (x) && !targetm.legitimate_constant_p (mode, x))
     x = validize_mem (force_const_mem (mode, x));
 
   /* See if the machine can do this with a load multiple insn.  */
@@ -2296,7 +2296,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
 		    offset -= size;
 
 		  cst = (*constfun) (constfundata, offset, mode);
-		  if (!LEGITIMATE_CONSTANT_P (cst))
+		  if (!targetm.legitimate_constant_p (mode, cst))
 		    return 0;
 
 		  if (!reverse)
@@ -3329,7 +3329,7 @@ emit_move_insn (rtx x, rtx y)
 
       y_cst = y;
 
-      if (!LEGITIMATE_CONSTANT_P (y))
+      if (!targetm.legitimate_constant_p (mode, y))
 	{
 	  y = force_const_mem (mode, y);
 
@@ -3385,7 +3385,7 @@ compress_float_constant (rtx x, rtx y)
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, y);
 
-  if (LEGITIMATE_CONSTANT_P (y))
+  if (targetm.legitimate_constant_p (dstmode, y))
     oldcost = rtx_cost (y, SET, speed);
   else
     oldcost = rtx_cost (force_const_mem (dstmode, y), SET, speed);
@@ -3408,7 +3408,7 @@ compress_float_constant (rtx x, rtx y)
 
       trunc_y = CONST_DOUBLE_FROM_REAL_VALUE (r, srcmode);
 
-      if (LEGITIMATE_CONSTANT_P (trunc_y))
+      if (targetm.legitimate_constant_p (srcmode, trunc_y))
 	{
 	  /* Skip if the target needs extra instructions to perform
 	     the extension.  */
@@ -3820,7 +3820,7 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 	 by setting SKIP to 0.  */
       skip = (reg_parm_stack_space == 0) ? 0 : not_stack;
 
-      if (CONSTANT_P (x) && ! LEGITIMATE_CONSTANT_P (x))
+      if (CONSTANT_P (x) && !targetm.legitimate_constant_p (mode, x))
 	x = validize_mem (force_const_mem (mode, x));
 
       /* If X is a hard register in a non-integer mode, copy it into a pseudo;
@@ -7360,7 +7360,10 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       else if (CONSTANT_P (op0))
 	{
 	  tree inner_type = TREE_TYPE (treeop0);
-	  enum machine_mode inner_mode = TYPE_MODE (inner_type);
+	  enum machine_mode inner_mode = GET_MODE (op0);
+
+	  if (inner_mode == VOIDmode)
+	    inner_mode = TYPE_MODE (inner_type);
 
 	  if (modifier == EXPAND_INITIALIZER)
 	    op0 = simplify_gen_subreg (mode, op0, inner_mode,
@@ -8525,9 +8528,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  if (code == SSA_NAME
 	      && (g = SSA_NAME_DEF_STMT (ssa_name))
 	      && gimple_code (g) == GIMPLE_CALL)
-	    pmode = promote_function_mode (type, mode, &unsignedp,
-					   gimple_call_fntype (g),
-					   2);
+	    {
+	      gcc_assert (!gimple_call_internal_p (g));
+	      pmode = promote_function_mode (type, mode, &unsignedp,
+					     gimple_call_fntype (g),
+					     2);
+	    }
 	  else
 	    pmode = promote_decl_mode (exp, &unsignedp);
 	  gcc_assert (GET_MODE (decl_rtl) == pmode);
@@ -9087,7 +9093,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	   constant and we don't need a memory reference.  */
 	if (CONSTANT_P (op0)
 	    && mode2 != BLKmode
-	    && LEGITIMATE_CONSTANT_P (op0)
+	    && targetm.legitimate_constant_p (mode2, op0)
 	    && !must_force_mem)
 	  op0 = force_reg (mode2, op0);
 

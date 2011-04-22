@@ -5939,6 +5939,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	     itself.  */
 	  if (TREE_CODE (instance) == VAR_DECL
 	      && DECL_INITIAL (instance)
+	      && !type_dependent_expression_p (DECL_INITIAL (instance))
 	      && !htab_find (ht, instance))
 	    {
 	      tree type;
@@ -8400,8 +8401,6 @@ cp_fold_obj_type_ref (tree ref, tree known_type)
   gcc_assert (tree_int_cst_equal (OBJ_TYPE_REF_TOKEN (ref),
 				  DECL_VINDEX (fndecl)));
 #endif
-
-  cgraph_get_node (fndecl)->local.vtable_method = true;
 
   return build_address (fndecl);
 }

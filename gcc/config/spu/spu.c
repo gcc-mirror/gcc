@@ -1,4 +1,5 @@
-/* Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -476,6 +477,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P spu_legitimate_address_p
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P spu_legitimate_constant_p
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT spu_trampoline_init
@@ -3310,7 +3314,7 @@ spu_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 }
 
 /* Create a CONST_DOUBLE from a string.  */
-struct rtx_def *
+rtx
 spu_float_const (const char *string, enum machine_mode mode)
 {
   REAL_VALUE_TYPE value;
@@ -3733,8 +3737,8 @@ ea_symbol_ref (rtx *px, void *data ATTRIBUTE_UNUSED)
    - a 64-bit constant where the high and low bits are identical
      (DImode, DFmode)
    - a 128-bit constant where the four 32-bit words match.  */
-int
-spu_legitimate_constant_p (rtx x)
+bool
+spu_legitimate_constant_p (enum machine_mode mode, rtx x)
 {
   if (GET_CODE (x) == HIGH)
     x = XEXP (x, 0);
@@ -3746,7 +3750,7 @@ spu_legitimate_constant_p (rtx x)
 
   /* V4SI with all identical symbols is valid. */
   if (!flag_pic
-      && GET_MODE (x) == V4SImode
+      && mode == V4SImode
       && (GET_CODE (CONST_VECTOR_ELT (x, 0)) == SYMBOL_REF
 	  || GET_CODE (CONST_VECTOR_ELT (x, 0)) == LABEL_REF
 	  || GET_CODE (CONST_VECTOR_ELT (x, 0)) == CONST))
@@ -5439,7 +5443,7 @@ spu_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
      of a CONST_VECTOR here (or in CONST_COSTS) doesn't help though
      because this cost will only be compared against a single insn. 
      if (code == CONST_VECTOR)
-       return (LEGITIMATE_CONSTANT_P(x)) ? cost : COSTS_N_INSNS(6);
+       return spu_legitimate_constant_p (mode, x) ? cost : COSTS_N_INSNS (6);
    */
 
   /* Use defaults for float operations.  Not accurate but good enough. */

@@ -2205,8 +2205,7 @@ mark_decl_referenced (tree decl)
 	 definition.  */
       struct cgraph_node *node = cgraph_get_create_node (decl);
       if (!DECL_EXTERNAL (decl)
-	  && (!node->local.vtable_method || !cgraph_global_info_ready
-	      || !node->local.finalized))
+	  && !node->local.finalized)
 	cgraph_mark_needed_node (node);
     }
   else if (TREE_CODE (decl) == VAR_DECL)
@@ -3481,7 +3480,7 @@ force_const_mem (enum machine_mode mode, rtx x)
   void **slot;
 
   /* If we're not allowed to drop X into the constant pool, don't.  */
-  if (targetm.cannot_force_const_mem (x))
+  if (targetm.cannot_force_const_mem (mode, x))
     return NULL_RTX;
 
   /* Record that this function has used a constant pool entry.  */

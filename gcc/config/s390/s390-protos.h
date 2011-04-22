@@ -66,7 +66,6 @@ extern bool tls_symbolic_reference_mentioned_p (rtx);
 extern bool legitimate_la_operand_p (rtx);
 extern bool preferred_la_operand_p (rtx, rtx);
 extern int legitimate_pic_operand_p (rtx);
-extern int legitimate_constant_p (rtx);
 extern bool legitimate_reload_constant_p (rtx);
 extern rtx legitimize_pic_address (rtx, rtx);
 extern rtx legitimize_reload_address (rtx, enum machine_mode, int, int);

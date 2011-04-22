@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# Copyright (C) 2010 Free Software Foundation, Inc.
+# Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of the GNU ISO C++ Library.  This library is free
 # software; you can redistribute it and/or modify it under the
@@ -108,6 +108,7 @@ while (<ELFDUMP>) {
     die "unhandled symbol:\n$_" if ($bind !~ /^(GLOB|WEAK)/ or $oth !~ /[DP]/);
 
     # Adapt to readelf type naming convention.
+    $type = "NOTYPE" if ($type eq "NOTY");
     $type = "OBJECT" if ($type eq "OBJT");
 
     # Use correct symbol type.
@@ -116,7 +117,7 @@ while (<ELFDUMP>) {
 close ELFDUMP or die "elfdump error";
 
 foreach $symbol (keys %type) {
-    if ($type{$symbol} eq "FUNC") {
+    if ($type{$symbol} eq "FUNC" || $type{$symbol} eq "NOTYPE") {
 	push @lines, "$type{$symbol}:$symbol\@\@$version{$symbol}\n";
     } elsif ($type{$symbol} eq "OBJECT" and $size{$symbol} == 0) {
 	push @lines, "$type{$symbol}:$size{$symbol}:$version{$symbol}\n";

@@ -472,9 +472,8 @@ For more information about these matters, see the file named COPYING\n\n"));
 int
 lang_specific_pre_link (void)
 {
-  if (spec_file)
-    free (spec_file);
-  else if (library)
+  free (spec_file);
+  if (spec_file == NULL && library)
     do_spec ("%:include(libgfortran.spec)");
 
   return 0;

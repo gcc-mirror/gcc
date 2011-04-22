@@ -183,7 +183,6 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
    asm (SECTION_OP "\n\t.long " #FUNC"\n");
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) gcc_unreachable ()
 
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
@@ -329,11 +328,16 @@ do {                                                \
     }                                               \
 } while (0)
 
+#undef LINK_SPEC
+#if HAVE_GNU_LD
+/* GNU-ld built-in linker script already handles the dwarf2 debug sections.  */
+#define LINK_SPEC "%{shared} %{v}"
+#else
 /* Link with vms-dwarf2.o if -g (except -g0). This causes the
    VMS link to pull all the dwarf2 debug sections together.  */
-#undef LINK_SPEC
 #define LINK_SPEC "%{g:-g vms-dwarf2.o%s} %{g0} %{g1:-g1 vms-dwarf2.o%s} \
 %{g2:-g2 vms-dwarf2.o%s} %{g3:-g3 vms-dwarf2.o%s} %{shared} %{v} %{map}"
+#endif
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \

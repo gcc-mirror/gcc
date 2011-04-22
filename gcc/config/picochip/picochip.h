@@ -452,11 +452,6 @@ do {                                                                         \
     goto WIN;                                                                \
   } while(0);                                                                \
 
-/* Nonzero if the constant rtx X is a legitimate general operand.  X
-   satisfies CONSTANT_P.  */
-
-#define LEGITIMATE_CONSTANT_P(X) 1
-
 
 /* Condition Code Status  */
 

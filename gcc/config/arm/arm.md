@@ -5946,8 +5946,8 @@
 
 
 (define_insn "*arm_movqi_insn"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,m")
-	(match_operand:QI 1 "general_operand" "rI,K,m,r"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,l,Uu,r,m")
+	(match_operand:QI 1 "general_operand" "rI,K,Uu,l,m,r"))]
   "TARGET_32BIT
    && (   register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"
@@ -5955,10 +5955,14 @@
    mov%?\\t%0, %1
    mvn%?\\t%0, #%B1
    ldr%(b%)\\t%0, %1
+   str%(b%)\\t%1, %0
+   ldr%(b%)\\t%0, %1
    str%(b%)\\t%1, %0"
-  [(set_attr "type" "*,*,load1,store1")
-   (set_attr "insn" "mov,mvn,*,*")
-   (set_attr "predicable" "yes")]
+  [(set_attr "type" "*,*,load1,store1,load1,store1")
+   (set_attr "insn" "mov,mvn,*,*,*,*")
+   (set_attr "predicable" "yes")
+   (set_attr "arch" "any,any,t2,t2,any,any")
+   (set_attr "length" "4,4,2,2,4,4")]
 )
 
 (define_insn "*thumb1_movqi_insn"

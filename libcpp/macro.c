@@ -1064,8 +1064,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro, macro_arg
 
   /* Free the expanded arguments.  */
   for (i = 0; i < macro->paramc; i++)
-    if (args[i].expanded)
-      free (args[i].expanded);
+    free (args[i].expanded);
 
   push_ptoken_context (pfile, node, buff, first, dest - first);
 }

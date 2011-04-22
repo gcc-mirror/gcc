@@ -697,11 +697,6 @@ do {									\
     }									\
 } while (0)
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
-#define LEGITIMATE_CONSTANT_P(X) \
-     legitimate_constant_p (X)
-
 /* Helper macro for s390.c and s390.md to check for symbolic constants.  */
 #define SYMBOLIC_CONST(X)       \
 (GET_CODE (X) == SYMBOL_REF                                             \

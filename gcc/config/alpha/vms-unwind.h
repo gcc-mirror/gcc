@@ -1,5 +1,5 @@
 /* Fallback frame unwinding for Alpha/VMS.
-   Copyright (C) 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2009, 2010
+   Copyright (C) 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -229,7 +229,7 @@ alpha_vms_fallback_frame_state (struct _Unwind_Context *context,
 
   /* If PV designates an exception dispatcher, we have to adjust the return
      address column to get at the signal occurrence point, and account for
-     for what the CHF context contains.  */
+     what the CHF context contains.  */
 
   if (DENOTES_EXC_DISPATCHER (pv))
     {

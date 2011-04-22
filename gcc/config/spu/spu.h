@@ -393,8 +393,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define MAX_REGS_PER_ADDRESS 2
 
-#define LEGITIMATE_CONSTANT_P(X) spu_legitimate_constant_p(X)
-
 
 /* Costs */
 

@@ -1,5 +1,5 @@
 // go-system.h -- Go frontend inclusion of gcc header files   -*- C++ -*-
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -145,9 +145,16 @@ extern "C"
 
 #include "diagnostic-core.h"	/* For error_at and friends.  */
 #include "input.h"		/* For source_location.  */
+#include "intl.h"		/* For _().  */
 
 #ifndef ENABLE_BUILD_WITH_CXX
 } // End extern "C"
 #endif
+
+// When using gcc, go_assert is just gcc_assert.
+#define go_assert(EXPR) gcc_assert(EXPR)
+
+// When using gcc, go_unreachable is just gcc_unreachable.
+#define go_unreachable() gcc_unreachable()
 
 #endif // !defined(GO_SYSTEM_H)

@@ -1095,7 +1095,7 @@ alpha_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
    should never be spilling symbolic operands to the constant pool, ever.  */
 
 static bool
-alpha_cannot_force_const_mem (rtx x)
+alpha_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   return code == SYMBOL_REF || code == LABEL_REF || code == CONST;
@@ -2023,15 +2023,14 @@ alpha_extract_integer (rtx x, HOST_WIDE_INT *p0, HOST_WIDE_INT *p1)
   *p1 = i1;
 }
 
-/* Implement LEGITIMATE_CONSTANT_P.  This is all constants for which we
-   are willing to load the value into a register via a move pattern.
+/* Implement TARGET_LEGITIMATE_CONSTANT_P.  This is all constants for which
+   we are willing to load the value into a register via a move pattern.
    Normally this is all symbolic constants, integral constants that
    take three or fewer instructions, and floating-point zero.  */
 
 bool
-alpha_legitimate_constant_p (rtx x)
+alpha_legitimate_constant_p (enum machine_mode mode, rtx x)
 {
-  enum machine_mode mode = GET_MODE (x);
   HOST_WIDE_INT i0, i1;
 
   switch (GET_CODE (x))
@@ -4606,7 +4605,7 @@ struct GTY(()) machine_function
   const char *some_ld_name;
 
   /* For TARGET_LD_BUGGY_LDGP.  */
-  struct rtx_def *gp_save_rtx;
+  rtx gp_save_rtx;
 
   /* For VMS condition handlers.  */
   bool uses_condition_handler;  
@@ -9864,6 +9863,8 @@ alpha_conditional_register_usage (void)
 #define TARGET_FUNCTION_OK_FOR_SIBCALL alpha_function_ok_for_sibcall
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P alpha_cannot_copy_insn_p
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P alpha_legitimate_constant_p
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM alpha_cannot_force_const_mem
 

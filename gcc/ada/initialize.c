@@ -217,8 +217,7 @@ __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 
 		     FindClose (hDir);
 
-		     if (dir != NULL)
-		       free (dir);
+		     free (dir);
 		   }
 	       }
 	     else

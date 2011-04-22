@@ -81,5 +81,23 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 
   if (TARGET_NO_INTERRUPTS)
     cpp_define (pfile, "__NO_INTERRUPTS__");
-}
 
+  /* Define builtin macros so that the user can
+     easily query if or if not a specific builtin
+     is available. */
+
+  cpp_define (pfile, "__BUILTIN_AVR_NOP");
+  cpp_define (pfile, "__BUILTIN_AVR_SEI");
+  cpp_define (pfile, "__BUILTIN_AVR_CLI");
+  cpp_define (pfile, "__BUILTIN_AVR_WDR");
+  cpp_define (pfile, "__BUILTIN_AVR_SLEEP");
+  cpp_define (pfile, "__BUILTIN_AVR_SWAP");
+  cpp_define (pfile, "__BUILTIN_AVR_DELAY_CYCLES");
+
+  if (AVR_HAVE_MUL)
+    {
+      cpp_define (pfile, "__BUILTIN_AVR_FMUL");
+      cpp_define (pfile, "__BUILTIN_AVR_FMULS");
+      cpp_define (pfile, "__BUILTIN_AVR_FMULSU");
+    }
+}

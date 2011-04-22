@@ -5,18 +5,20 @@
    license that can be found in the LICENSE file.  */
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "map.h"
 
 struct __go_map *
 __go_construct_map (const struct __go_map_descriptor *descriptor,
-		    size_t count, size_t entry_size, size_t val_offset,
-		    size_t val_size, const void *ventries)
+		    uintptr_t count, uintptr_t entry_size,
+		    uintptr_t val_offset, uintptr_t val_size,
+		    const void *ventries)
 {
   struct __go_map *ret;
   const unsigned char *entries;
-  size_t i;
+  uintptr_t i;
 
   ret = __go_new_map (descriptor, count);
 

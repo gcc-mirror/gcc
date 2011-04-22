@@ -4820,8 +4820,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    t->filename_length = temp_filename_length;
 		  }
 
-		if (saved_suffix)
-		  free (saved_suffix);
+		free (saved_suffix);
 
 		obstack_grow (&obstack, t->filename, t->filename_length);
 		delete_this_arg = 1;
@@ -6738,12 +6737,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	    {
 	      if (compare_debug)
 		{
-		  if (debug_check_temp_file[0])
-		    free (debug_check_temp_file[0]);
+		  free (debug_check_temp_file[0]);
 		  debug_check_temp_file[0] = NULL;
 
-		  if (debug_check_temp_file[1])
-		    free (debug_check_temp_file[1]);
+		  free (debug_check_temp_file[1]);
 		  debug_check_temp_file[1] = NULL;
 		}
 
@@ -6787,12 +6784,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
 	      if (compare_debug)
 		{
-		  if (debug_check_temp_file[0])
-		    free (debug_check_temp_file[0]);
+		  free (debug_check_temp_file[0]);
 		  debug_check_temp_file[0] = NULL;
 
-		  if (debug_check_temp_file[1])
-		    free (debug_check_temp_file[1]);
+		  free (debug_check_temp_file[1]);
 		  debug_check_temp_file[1] = NULL;
 		}
 	    }

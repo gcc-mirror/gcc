@@ -2148,15 +2148,6 @@ m32c_legitimize_reload_address (rtx * x,
   return 0;
 }
 
-/* Implements LEGITIMATE_CONSTANT_P.  We split large constants anyway,
-   so we can allow anything.  */
-int
-m32c_legitimate_constant_p (rtx x ATTRIBUTE_UNUSED)
-{
-  return 1;
-}
-
-
 /* Return the appropriate mode for a named address pointer.  */
 #undef TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE m32c_addr_space_pointer_mode
@@ -4485,11 +4476,14 @@ m32c_emit_prologue (void)
 void
 m32c_emit_epilogue (void)
 {
+  int popm_count = m32c_pushm_popm (PP_justcount);
+
   /* This just emits a comment into the .s file for debugging.  */
-  if (m32c_pushm_popm (PP_justcount) > 0 || cfun->machine->is_interrupt)
+  if (popm_count > 0 || cfun->machine->is_interrupt)
     emit_insn (gen_epilogue_start ());
 
-  m32c_pushm_popm (PP_popm);
+  if (popm_count > 0)
+    m32c_pushm_popm (PP_popm);
 
   if (cfun->machine->is_interrupt)
     {
@@ -4546,7 +4540,6 @@ m32c_emit_epilogue (void)
     emit_jump_insn (gen_epilogue_exitd_16 ());
   else
     emit_jump_insn (gen_epilogue_exitd_24 ());
-  emit_barrier ();
 }
 
 void
@@ -4558,7 +4551,6 @@ m32c_emit_eh_epilogue (rtx ret_addr)
      assembler, so punt to libgcc.  */
   emit_jump_insn (gen_eh_epilogue (ret_addr, cfun->machine->eh_stack_adjust));
   /*  emit_clobber (gen_rtx_REG (HImode, R0L_REGNO)); */
-  emit_barrier ();
 }
 
 /* Indicate which flags must be properly set for a given conditional.  */

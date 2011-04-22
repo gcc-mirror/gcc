@@ -921,12 +921,140 @@ gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
   se->expr = fold_convert (type, res);
 }
 
+
 static void
 trans_this_image (gfc_se * se, gfc_expr *expr ATTRIBUTE_UNUSED)
 {
   gfc_init_coarray_decl ();
   se->expr = gfort_gvar_caf_this_image;
 }
+
+
+static void
+trans_image_index (gfc_se * se, gfc_expr *expr)
+{
+  tree num_images, cond, coindex, type, lbound, ubound, desc, subdesc,
+       tmp, invalid_bound;
+  gfc_se argse, subse;
+  gfc_ss *ss, *subss;
+  int rank, corank, codim;
+
+  type = gfc_get_int_type (gfc_default_integer_kind);
+  corank = gfc_get_corank (expr->value.function.actual->expr);
+  rank = expr->value.function.actual->expr->rank;
+
+  /* Obtain the descriptor of the COARRAY.  */
+  gfc_init_se (&argse, NULL);
+  ss = gfc_walk_expr (expr->value.function.actual->expr);
+  gcc_assert (ss != gfc_ss_terminator);
+  ss->data.info.codimen = corank;
+  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
+  gfc_add_block_to_block (&se->pre, &argse.pre);
+  gfc_add_block_to_block (&se->post, &argse.post);
+  desc = argse.expr;
+
+  /* Obtain a handle to the SUB argument.  */
+  gfc_init_se (&subse, NULL);
+  subss = gfc_walk_expr (expr->value.function.actual->next->expr);
+  gcc_assert (subss != gfc_ss_terminator);
+  gfc_conv_expr_descriptor (&subse, expr->value.function.actual->next->expr,
+			    subss);
+  gfc_add_block_to_block (&se->pre, &subse.pre);
+  gfc_add_block_to_block (&se->post, &subse.post);
+  subdesc = build_fold_indirect_ref_loc (input_location,
+			gfc_conv_descriptor_data_get (subse.expr));
+
+  /* Fortran 2008 does not require that the values remain in the cobounds,
+     thus we need explicitly check this - and return 0 if they are exceeded.  */
+
+  lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[rank+corank-1]);
+  tmp = gfc_build_array_ref (subdesc, gfc_rank_cst[corank-1], NULL);
+  invalid_bound = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
+				 fold_convert (gfc_array_index_type, tmp),
+				 lbound);
+
+  for (codim = corank + rank - 2; codim >= rank; codim--)
+    {
+      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[codim]);
+      ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[codim]);
+      tmp = gfc_build_array_ref (subdesc, gfc_rank_cst[codim-rank], NULL);
+      cond = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
+			      fold_convert (gfc_array_index_type, tmp),
+			      lbound);
+      invalid_bound = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+				       boolean_type_node, invalid_bound, cond);
+      cond = fold_build2_loc (input_location, GT_EXPR, boolean_type_node,
+			      fold_convert (gfc_array_index_type, tmp),
+			      ubound);
+      invalid_bound = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+				       boolean_type_node, invalid_bound, cond);
+    }
+
+  invalid_bound = gfc_unlikely (invalid_bound);
+
+
+  /* See Fortran 2008, C.10 for the following algorithm.  */
+
+  /* coindex = sub(corank) - lcobound(n).  */
+  coindex = fold_convert (gfc_array_index_type,
+			  gfc_build_array_ref (subdesc, gfc_rank_cst[corank-1],
+					       NULL));
+  lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[rank+corank-1]);
+  coindex = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			     fold_convert (gfc_array_index_type, coindex),
+			     lbound);
+
+  for (codim = corank + rank - 2; codim >= rank; codim--)
+    {
+      tree extent, ubound;
+
+      /* coindex = coindex*extent(codim) + sub(codim) - lcobound(codim).  */
+      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[codim]);
+      ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[codim]);
+      extent = gfc_conv_array_extent_dim (lbound, ubound, NULL);
+
+      /* coindex *= extent.  */
+      coindex = fold_build2_loc (input_location, MULT_EXPR,
+				 gfc_array_index_type, coindex, extent);
+
+      /* coindex += sub(codim).  */
+      tmp = gfc_build_array_ref (subdesc, gfc_rank_cst[codim-rank], NULL);
+      coindex = fold_build2_loc (input_location, PLUS_EXPR,
+				 gfc_array_index_type, coindex,
+				 fold_convert (gfc_array_index_type, tmp));
+
+      /* coindex -= lbound(codim).  */
+      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[codim]);
+      coindex = fold_build2_loc (input_location, MINUS_EXPR,
+				 gfc_array_index_type, coindex, lbound);
+    }
+
+  coindex = fold_build2_loc (input_location, PLUS_EXPR, type,
+			     fold_convert(type, coindex),
+			     build_int_cst (type, 1));
+
+  /* Return 0 if "coindex" exceeds num_images().  */
+
+  if (gfc_option.coarray == GFC_FCOARRAY_SINGLE)
+    num_images = build_int_cst (type, 1);
+  else
+    {
+      gfc_init_coarray_decl ();
+      num_images = gfort_gvar_caf_num_images;
+    }
+
+  tmp = gfc_create_var (type, NULL);
+  gfc_add_modify (&se->pre, tmp, coindex);
+
+  cond = fold_build2_loc (input_location, GT_EXPR, boolean_type_node, tmp,
+			  num_images);
+  cond = fold_build2_loc (input_location, TRUTH_OR_EXPR, boolean_type_node,
+			  cond,
+			  fold_convert (boolean_type_node, invalid_bound));
+  se->expr = fold_build3_loc (input_location, COND_EXPR, type, cond,
+			      build_int_cst (type, 0), tmp);
+}
+
 
 static void
 trans_num_images (gfc_se * se)
@@ -1129,7 +1257,6 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
   gfc_ss *ss;
   tree bound, resbound, resbound2, desc, cond, tmp;
   tree type;
-  gfc_array_spec * as;
   int corank;
 
   gcc_assert (expr->value.function.isym->id == GFC_ISYM_LCOBOUND
@@ -1141,9 +1268,6 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
   gcc_assert (arg->expr->expr_type == EXPR_VARIABLE);
   corank = gfc_get_corank (arg->expr);
-
-  as = gfc_get_full_arrayspec_from_expr (arg->expr);
-  gcc_assert (as);
 
   ss = gfc_walk_expr (arg->expr);
   gcc_assert (ss != gfc_ss_terminator);
@@ -1237,7 +1361,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	   ceiling (real (num_images ()) / real (size)) - 1
 	 = (num_images () + size - 1) / size - 1
 	 = (num_images - 1) / size(),
-         where size is the product of the extend of all but the last
+         where size is the product of the extent of all but the last
 	 codimension.  */
 
       if (gfc_option.coarray != GFC_FCOARRAY_SINGLE && corank > 1)
@@ -4091,7 +4215,7 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
   sym = gfc_get_symbol_for_expr (expr);
   gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
 			  append_args);
-  gfc_free (sym);
+  free (sym);
 }
 
 
@@ -6314,6 +6438,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	conv_intrinsic_cobound (se, expr);
       else
 	trans_this_image (se, expr);
+      break;
+
+    case GFC_ISYM_IMAGE_INDEX:
+      trans_image_index (se, expr);
       break;
 
     case GFC_ISYM_NUM_IMAGES:

@@ -15,5 +15,5 @@ avx_test (void)
 }
 
 /* { dg-final { scan-assembler-not "\\*avx_movups256/1" } } */
-/* { dg-final { scan-assembler "\\*avx_movups/1" } } */
+/* { dg-final { scan-assembler "\\*sse_movups/1" } } */
 /* { dg-final { scan-assembler "vinsertf128" } } */

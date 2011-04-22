@@ -569,11 +569,6 @@ finish_goto_stmt (tree destination)
 	  if (error_operand_p (destination))
 	    return NULL_TREE;
 	}
-      /* We don't inline calls to functions with computed gotos.
-	 Those functions are typically up to some funny business,
-	 and may be depending on the labels being at particular
-	 addresses, or some such.  */
-      DECL_UNINLINABLE (current_function_decl) = 1;
     }
 
   check_goto (destination);
@@ -662,8 +657,8 @@ begin_if_stmt (void)
 {
   tree r, scope;
   scope = do_pushlevel (sk_block);
-  r = build_stmt (input_location, IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
-  TREE_CHAIN (r) = scope;
+  r = build_stmt (input_location, IF_STMT, NULL_TREE,
+		  NULL_TREE, NULL_TREE, scope);
   begin_cond (&IF_COND (r));
   return r;
 }
@@ -711,8 +706,8 @@ finish_else_clause (tree if_stmt)
 void
 finish_if_stmt (tree if_stmt)
 {
-  tree scope = TREE_CHAIN (if_stmt);
-  TREE_CHAIN (if_stmt) = NULL;
+  tree scope = IF_SCOPE (if_stmt);
+  IF_SCOPE (if_stmt) = NULL;
   add_stmt (do_poplevel (scope));
   finish_stmt ();
 }
@@ -856,7 +851,7 @@ begin_for_stmt (tree scope, tree init)
   tree r;
 
   r = build_stmt (input_location, FOR_STMT, NULL_TREE, NULL_TREE,
-		  NULL_TREE, NULL_TREE);
+		  NULL_TREE, NULL_TREE, NULL_TREE);
 
   if (scope == NULL_TREE)
     {
@@ -865,7 +860,7 @@ begin_for_stmt (tree scope, tree init)
 	scope = begin_for_scope (&init);
     }
   FOR_INIT_STMT (r) = init;
-  TREE_CHAIN (r) = scope;
+  FOR_SCOPE (r) = scope;
 
   return r;
 }
@@ -940,8 +935,12 @@ finish_for_stmt (tree for_stmt)
   /* Pop the scope for the body of the loop.  */
   if (flag_new_for_scope > 0)
     {
-      tree scope = TREE_CHAIN (for_stmt);
-      TREE_CHAIN (for_stmt) = NULL;
+      tree scope;
+      tree *scope_ptr = (TREE_CODE (for_stmt) == RANGE_FOR_STMT
+			 ? &RANGE_FOR_SCOPE (for_stmt)
+			 : &FOR_SCOPE (for_stmt));
+      scope = *scope_ptr;
+      *scope_ptr = NULL;
       add_stmt (do_poplevel (scope));
     }
 
@@ -959,7 +958,7 @@ begin_range_for_stmt (tree scope, tree init)
   tree r;
 
   r = build_stmt (input_location, RANGE_FOR_STMT,
-		  NULL_TREE, NULL_TREE, NULL_TREE);
+		  NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
 
   if (scope == NULL_TREE)
     {
@@ -972,7 +971,7 @@ begin_range_for_stmt (tree scope, tree init)
      pop it now.  */
   if (init)
     pop_stmt_list (init);
-  TREE_CHAIN (r) = scope;
+  RANGE_FOR_SCOPE (r) = scope;
 
   return r;
 }
@@ -1014,10 +1013,9 @@ begin_switch_stmt (void)
 {
   tree r, scope;
 
-  r = build_stmt (input_location, SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
-
   scope = do_pushlevel (sk_block);
-  TREE_CHAIN (r) = scope;
+  r = build_stmt (input_location, SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE, scope);
+
   begin_cond (&SWITCH_STMT_COND (r));
 
   return r;
@@ -1073,8 +1071,8 @@ finish_switch_stmt (tree switch_stmt)
   pop_switch ();
   finish_stmt ();
 
-  scope = TREE_CHAIN (switch_stmt);
-  TREE_CHAIN (switch_stmt) = NULL;
+  scope = SWITCH_STMT_SCOPE (switch_stmt);
+  SWITCH_STMT_SCOPE (switch_stmt) = NULL;
   add_stmt (do_poplevel (scope));
 }
 
@@ -2071,6 +2069,22 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
       make_args_non_dependent (*args);
     }
 
+  if (TREE_CODE (fn) == COMPONENT_REF)
+    {
+      tree member = TREE_OPERAND (fn, 1);
+      if (BASELINK_P (member))
+	{
+	  tree object = TREE_OPERAND (fn, 0);
+	  return build_new_method_call (object, member,
+					args, NULL_TREE,
+                                        (disallow_virtual
+                                         ? LOOKUP_NORMAL | LOOKUP_NONVIRTUAL
+					 : LOOKUP_NORMAL),
+					/*fn_p=*/NULL,
+					complain);
+	}
+    }
+
   if (is_overloaded_fn (fn))
     fn = baselink_for_fns (fn);
 
@@ -2114,7 +2128,8 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 
       result = build_new_method_call (object, fn, args, NULL_TREE,
 				      (disallow_virtual
-				       ? LOOKUP_NONVIRTUAL : 0),
+				       ? LOOKUP_NORMAL|LOOKUP_NONVIRTUAL
+				       : LOOKUP_NORMAL),
 				      /*fn_p=*/NULL,
 				      complain);
     }
@@ -2368,6 +2383,7 @@ finish_compound_literal (tree type, tree compound_literal,
      represent class temporaries with TARGET_EXPR so we elide copies.  */
   if ((!at_function_scope_p () || CP_TYPE_CONST_P (type))
       && TREE_CODE (type) == ARRAY_TYPE
+      && !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
       && initializer_constant_valid_p (compound_literal, type))
     {
       tree decl = create_temporary_var (type);
@@ -6279,7 +6295,7 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
 					   non_constant_p);
   tree index, oldidx;
   HOST_WIDE_INT i;
-  unsigned len;
+  unsigned len, elem_nchars = 1;
   if (*non_constant_p)
     return t;
   oldidx = TREE_OPERAND (t, 1);
@@ -6291,9 +6307,14 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
     return t;
   else if (addr)
     return build4 (ARRAY_REF, TREE_TYPE (t), ary, index, NULL, NULL);
-  len = (TREE_CODE (ary) == CONSTRUCTOR
-	 ? CONSTRUCTOR_NELTS (ary)
-	 : (unsigned)TREE_STRING_LENGTH (ary));
+  if (TREE_CODE (ary) == CONSTRUCTOR)
+    len = CONSTRUCTOR_NELTS (ary);
+  else
+    {
+      elem_nchars = (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (ary)))
+		     / TYPE_PRECISION (char_type_node));
+      len = (unsigned) TREE_STRING_LENGTH (ary) / elem_nchars;
+    }
   if (compare_tree_int (index, len) >= 0)
     {
       if (!allow_non_constant)
@@ -6304,9 +6325,16 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
   i = tree_low_cst (index, 0);
   if (TREE_CODE (ary) == CONSTRUCTOR)
     return VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ary), i)->value;
-  else
+  else if (elem_nchars == 1)
     return build_int_cst (cv_unqualified (TREE_TYPE (TREE_TYPE (ary))),
 			  TREE_STRING_POINTER (ary)[i]);
+  else
+    {
+      tree type = cv_unqualified (TREE_TYPE (TREE_TYPE (ary)));
+      return native_interpret_expr (type, (const unsigned char *)
+					  TREE_STRING_POINTER (ary)
+					  + i * elem_nchars, elem_nchars);
+    }
   /* Don't VERIFY_CONSTANT here.  */
 }
 

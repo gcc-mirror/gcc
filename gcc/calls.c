@@ -274,7 +274,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   if (fndecl && TREE_CODE (fndecl) == FUNCTION_DECL)
     set_mem_expr (funmem, fndecl);
   else if (fntree)
-    set_mem_expr (funmem, build_fold_indirect_ref (CALL_EXPR_FN (fntree)));
+    set_mem_expr (funmem, build_simple_mem_ref (CALL_EXPR_FN (fntree)));
 
 #if defined (HAVE_sibcall_pop) && defined (HAVE_sibcall_value_pop)
   if ((ecf_flags & ECF_SIBCALL)
@@ -690,7 +690,7 @@ precompute_register_parameters (int num_actuals, struct arg_data *args,
 	/* If the value is a non-legitimate constant, force it into a
 	   pseudo now.  TLS symbols sometimes need a call to resolve.  */
 	if (CONSTANT_P (args[i].value)
-	    && !LEGITIMATE_CONSTANT_P (args[i].value))
+	    && !targetm.legitimate_constant_p (args[i].mode, args[i].value))
 	  args[i].value = force_reg (args[i].mode, args[i].value);
 
 	/* If we are to promote the function arg to a wider mode,
@@ -2555,8 +2555,7 @@ expand_call (tree exp, rtx target, int ignore)
 		  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
 						     needed);
 #endif
-		  if (stack_usage_map_buf)
-		    free (stack_usage_map_buf);
+		  free (stack_usage_map_buf);
 		  stack_usage_map_buf = XNEWVEC (char, highest_outgoing_arg_in_use);
 		  stack_usage_map = stack_usage_map_buf;
 
@@ -2661,8 +2660,7 @@ expand_call (tree exp, rtx target, int ignore)
 		    = stack_arg_under_construction;
 		  stack_arg_under_construction = 0;
 		  /* Make a new map for the new argument list.  */
-		  if (stack_usage_map_buf)
-		    free (stack_usage_map_buf);
+		  free (stack_usage_map_buf);
 		  stack_usage_map_buf = XCNEWVEC (char, highest_outgoing_arg_in_use);
 		  stack_usage_map = stack_usage_map_buf;
 		  highest_outgoing_arg_in_use = 0;
@@ -3152,8 +3150,7 @@ expand_call (tree exp, rtx target, int ignore)
 
       /* Free up storage we no longer need.  */
       for (i = 0; i < num_actuals; ++i)
-	if (args[i].aligned_regs)
-	  free (args[i].aligned_regs);
+	free (args[i].aligned_regs);
 
       insns = get_insns ();
       end_sequence ();
@@ -3208,8 +3205,7 @@ expand_call (tree exp, rtx target, int ignore)
 
   currently_expanding_call--;
 
-  if (stack_usage_map_buf)
-    free (stack_usage_map_buf);
+  free (stack_usage_map_buf);
 
   return target;
 }
@@ -3451,7 +3447,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
       if (!REG_P (addr) && !MEM_P (addr)
-	  && ! (CONSTANT_P (addr) && LEGITIMATE_CONSTANT_P (addr)))
+	  && !(CONSTANT_P (addr)
+	       && targetm.legitimate_constant_p (Pmode, addr)))
 	addr = force_operand (addr, NULL_RTX);
 
       argvec[count].value = addr;
@@ -3492,7 +3489,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
       if (!REG_P (val) && !MEM_P (val)
-	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
+	  && !(CONSTANT_P (val) && targetm.legitimate_constant_p (mode, val)))
 	val = force_operand (val, NULL_RTX);
 
       if (pass_by_reference (&args_so_far, mode, NULL_TREE, 1))
@@ -3966,8 +3963,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       stack_usage_map = initial_stack_usage_map;
     }
 
-  if (stack_usage_map_buf)
-    free (stack_usage_map_buf);
+  free (stack_usage_map_buf);
 
   return value;
 

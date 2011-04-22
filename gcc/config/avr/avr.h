@@ -421,8 +421,6 @@ do {									    \
     }									    \
 } while(0)
 
-#define LEGITIMATE_CONSTANT_P(X) 1
-
 #define BRANCH_COST(speed_p, predictable_p) 0
 
 #define SLOW_BYTE_ACCESS 0
@@ -460,29 +458,20 @@ do {									    \
 #define ASM_APP_OFF "/* #NOAPP */\n"
 
 /* Switch into a generic section.  */
-#define TARGET_ASM_NAMED_SECTION default_elf_asm_named_section
-#define TARGET_ASM_INIT_SECTIONS avr_asm_init_sections
+#define TARGET_ASM_NAMED_SECTION avr_asm_named_section
 
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)	 gas_output_ascii (FILE,P,SIZE)
 
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C, STR) ((C) == '\n' || ((C) == '$'))
 
-#define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)			   \
-do {									   \
-     fputs ("\t.comm ", (STREAM));					   \
-     assemble_name ((STREAM), (NAME));					   \
-     fprintf ((STREAM), ",%lu,1\n", (unsigned long)(SIZE));		   \
-} while (0)
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(STREAM, DECL, NAME, SIZE, ALIGN) \
+  avr_asm_output_aligned_decl_common (STREAM, DECL, NAME, SIZE, ALIGN, false)
 
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
-#define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)			\
-do {									\
-     fputs ("\t.lcomm ", (STREAM));					\
-     assemble_name ((STREAM), (NAME));					\
-     fprintf ((STREAM), ",%d\n", (int)(SIZE));				\
-} while (0)
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGN)  \
+  avr_asm_output_aligned_decl_common (STREAM, DECL, NAME, SIZE, ALIGN, true)
 
 #undef TYPE_ASM_OP
 #undef SIZE_ASM_OP

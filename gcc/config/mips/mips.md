@@ -479,7 +479,9 @@
 	  (eq_attr "move_type" "load,fpload")
 	  (symbol_ref "mips_load_store_insns (operands[1], insn) * 4")
 	  (eq_attr "move_type" "store,fpstore")
-	  (symbol_ref "mips_load_store_insns (operands[0], insn) * 4")
+	  (cond [(eq (symbol_ref "TARGET_FIX_24K") (const_int 0))
+	         (symbol_ref "mips_load_store_insns (operands[0], insn) * 4")]
+	         (symbol_ref "mips_load_store_insns (operands[0], insn) * 4 + 4"))
 
 	  ;; In the worst case, a call macro will take 8 instructions:
 	  ;;

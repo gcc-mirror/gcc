@@ -138,6 +138,41 @@ struct occurrence {
   bool bb_has_division;
 };
 
+static struct
+{
+  /* Number of 1.0/X ops inserted.  */
+  int rdivs_inserted;
+
+  /* Number of 1.0/FUNC ops inserted.  */
+  int rfuncs_inserted;
+} reciprocal_stats;
+
+static struct
+{
+  /* Number of cexpi calls inserted.  */
+  int inserted;
+} sincos_stats;
+
+static struct
+{
+  /* Number of hand-written 32-bit bswaps found.  */
+  int found_32bit;
+
+  /* Number of hand-written 64-bit bswaps found.  */
+  int found_64bit;
+} bswap_stats;
+
+static struct
+{
+  /* Number of widening multiplication ops inserted.  */
+  int widen_mults_inserted;
+
+  /* Number of integer multiply-and-accumulate ops inserted.  */
+  int maccs_inserted;
+
+  /* Number of fp fused multiply-add ops inserted.  */
+  int fmas_inserted;
+} widen_mul_stats;
 
 /* The instance of "struct occurrence" representing the highest
    interesting block in the dominator tree.  */
@@ -339,6 +374,8 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
           gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
         }
 
+      reciprocal_stats.rdivs_inserted++;
+
       occ->recip_def_stmt = new_stmt;
     }
 
@@ -466,6 +503,7 @@ execute_cse_reciprocals (void)
 				sizeof (struct occurrence),
 				n_basic_blocks / 3 + 1);
 
+  memset (&reciprocal_stats, 0, sizeof (reciprocal_stats));
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
 
@@ -568,6 +606,7 @@ execute_cse_reciprocals (void)
 		  gimple_replace_lhs (stmt1, arg1);
 		  gimple_call_set_fndecl (stmt1, fndecl);
 		  update_stmt (stmt1);
+		  reciprocal_stats.rfuncs_inserted++;
 
 		  FOR_EACH_IMM_USE_STMT (stmt, ui, arg1)
 		    {
@@ -579,6 +618,11 @@ execute_cse_reciprocals (void)
 	    }
 	}
     }
+
+  statistics_counter_event (cfun, "reciprocal divs inserted",
+			    reciprocal_stats.rdivs_inserted);
+  statistics_counter_event (cfun, "reciprocal functions inserted",
+			    reciprocal_stats.rfuncs_inserted);
 
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
@@ -711,6 +755,7 @@ execute_cse_sincos_1 (tree name)
       gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
     }
   update_stmt (stmt);
+  sincos_stats.inserted++;
 
   /* And adjust the recorded old call sites.  */
   for (i = 0; VEC_iterate(gimple, stmts, i, use_stmt); ++i)
@@ -760,6 +805,7 @@ execute_cse_sincos (void)
   bool cfg_changed = false;
 
   calculate_dominance_info (CDI_DOMINATORS);
+  memset (&sincos_stats, 0, sizeof (sincos_stats));
 
   FOR_EACH_BB (bb)
     {
@@ -792,6 +838,9 @@ execute_cse_sincos (void)
 	    }
 	}
     }
+
+  statistics_counter_event (cfun, "sincos statements inserted",
+			    sincos_stats.inserted);
 
   free_dominance_info (CDI_DOMINATORS);
   return cfg_changed ? TODO_cleanup_cfg : 0;
@@ -1141,6 +1190,8 @@ execute_optimize_bswap (void)
       bswap64_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
     }
 
+  memset (&bswap_stats, 0, sizeof (bswap_stats));
+
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator gsi;
@@ -1189,6 +1240,10 @@ execute_optimize_bswap (void)
 	    continue;
 
 	  changed = true;
+	  if (type_size == 32)
+	    bswap_stats.found_32bit++;
+	  else
+	    bswap_stats.found_64bit++;
 
 	  bswap_tmp = bswap_src;
 
@@ -1236,6 +1291,11 @@ execute_optimize_bswap (void)
 	  gsi_remove (&gsi, true);
 	}
     }
+
+  statistics_counter_event (cfun, "32-bit bswap implementations found",
+			    bswap_stats.found_32bit);
+  statistics_counter_event (cfun, "64-bit bswap implementations found",
+			    bswap_stats.found_64bit);
 
   return (changed ? TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
 	  | TODO_verify_stmts : 0);
@@ -1389,6 +1449,7 @@ convert_mult_to_widen (gimple stmt)
   gimple_assign_set_rhs2 (stmt, fold_convert (type2, rhs2));
   gimple_assign_set_rhs_code (stmt, WIDEN_MULT_EXPR);
   update_stmt (stmt);
+  widen_mul_stats.widen_mults_inserted++;
   return true;
 }
 
@@ -1491,6 +1552,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
 				    fold_convert (type2, mult_rhs2),
 				    add_rhs);
   update_stmt (gsi_stmt (*gsi));
+  widen_mul_stats.maccs_inserted++;
   return true;
 }
 
@@ -1666,6 +1728,7 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 						mulop1, op2,
 						addop);
       gsi_replace (&gsi, fma_stmt, true);
+      widen_mul_stats.fmas_inserted++;
     }
 
   return true;
@@ -1680,6 +1743,8 @@ execute_optimize_widening_mul (void)
 {
   basic_block bb;
   bool cfg_changed = false;
+
+  memset (&widen_mul_stats, 0, sizeof (widen_mul_stats));
 
   FOR_EACH_BB (bb)
     {
@@ -1751,6 +1816,13 @@ execute_optimize_widening_mul (void)
 	  gsi_next (&gsi);
 	}
     }
+
+  statistics_counter_event (cfun, "widening multiplications inserted",
+			    widen_mul_stats.widen_mults_inserted);
+  statistics_counter_event (cfun, "widening maccs inserted",
+			    widen_mul_stats.maccs_inserted);
+  statistics_counter_event (cfun, "fused multiply-adds inserted",
+			    widen_mul_stats.fmas_inserted);
 
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
