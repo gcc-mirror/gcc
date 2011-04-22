@@ -1,3 +1,8 @@
+2011-04-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/bfin/bfin-protos.h (Mmode): Don't define.  Expand
+	definition where used.
+
 2011-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48716
