@@ -44,4 +44,7 @@ extern void mcf_smooth_cfg (void);
 
 extern gcov_type sum_edge_counts (VEC (edge, gc) *edges);
 
+extern void init_node_map (void);
+extern void del_node_map (void);
+
 #endif /* PROFILE_H */

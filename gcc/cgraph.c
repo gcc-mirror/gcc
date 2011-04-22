@@ -142,9 +142,6 @@ int cgraph_max_uid;
 /* Maximal uid used in cgraph edges.  */
 int cgraph_edge_max_uid;
 
-/* Maximal pid used for profiling */
-int cgraph_max_pid;
-
 /* Set when whole unit has been analyzed so we can access global info.  */
 bool cgraph_global_info_ready = false;
 
@@ -472,7 +469,6 @@ cgraph_create_node_1 (void)
   struct cgraph_node *node = cgraph_allocate_node ();
 
   node->next = cgraph_nodes;
-  node->pid = -1;
   node->order = cgraph_order++;
   if (cgraph_nodes)
     cgraph_nodes->previous = node;
@@ -1827,8 +1823,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   struct cgraph_edge *edge;
   int indirect_calls_count = 0;
 
-  fprintf (f, "%s/%i(%i)", cgraph_node_name (node), node->uid,
-	   node->pid);
+  fprintf (f, "%s/%i", cgraph_node_name (node), node->uid);
   dump_addr (f, " @", (void *)node);
   if (DECL_ASSEMBLER_NAME_SET_P (node->decl))
     fprintf (f, " (asm: %s)", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));

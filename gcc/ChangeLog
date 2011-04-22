@@ -1,3 +1,18 @@
+2011-04-21  Xinliang David Li  <davidxl@google.com>
+
+	* cgraph.h: Remove pid.
+	* cgraph.c: Remove pid.
+	* value-prof.c (init_node_map): New function.
+	(del_node_map): New function.
+	(find_func_by_funcdef_no): New function.
+	(gimple_ic_transform): Call new function.
+	* cgraphunit.c (cgraph_finalize_function): Remove pid.
+	* function.c (get_last_funcdef_no): New function.
+	* function.h (get_last_funcdef_no): New function.
+	* tree-profile.c (gimple_gen_ic_func_profiler): Pass funcdef_no
+	to libgcov function.
+	(tree-profiling): Call node map init and delete function.
+
 2011-04-21  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_format_type): Use exported Go name for anonymous
