@@ -9007,7 +9007,7 @@ rs6000_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			       : CALL_V4_CLEAR_FP_ARGS));
 	}
 
-      return GEN_INT (cum->call_cookie);
+      return GEN_INT (cum->call_cookie & ~CALL_LIBCALL);
     }
 
   if (TARGET_MACHO && rs6000_darwin64_struct_check_p (mode, type))
