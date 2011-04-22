@@ -1873,12 +1873,16 @@ GOTESTFLAGS =
 
 # Check a package.
 CHECK = \
-	GC="$(GOC) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs -Wl,-R,`${PWD_COMMAND}`/.libs"; \
+	GC="$(GOC) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
 	MAKE="$(MAKE)"; \
 	export MAKE; \
+	libgccdir=`${GOC} -print-libgcc-file-name | sed -e 's|/[^/]*$$||'`; \
+	LD_LIBRARY_PATH="`${PWD_COMMAND}`/.libs:$${libgccdir}:${LD_LIBRARY_PATH}"; \
+	LD_LIBRARY_PATH=`echo $${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
+	export LD_LIBRARY_PATH; \
 	rm -f $@-testsum $@-testlog; \
 	prefix=`if test "$(@D)" = "regexp"; then echo regexp-test; else dirname $(@D); fi`; \
 	test "$${prefix}" != "." || prefix="$(@D)"; \
@@ -2069,7 +2073,7 @@ TEST_PACKAGES = \
 	testing/quick/check \
 	testing/script/check
 
-MOSTLYCLEAN_FILES = libgo.tail
+MOSTLYCLEAN_FILES = libgo.head libgo.sum.sep libgo.log.sep
 CLEANFILES = *.go *.gox goc2c *.c s-version libgo.sum libgo.log
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -5340,53 +5344,101 @@ testing/quick.gox: testing/quick.lo
 testing/script.gox: testing/script.lo
 	$(BUILDGOX)
 
+check: check-tail
+check-recursive: check-head
+
+check-head:
+	@echo "Test Run By $${USER} on `date`" > libgo.head
+	@echo "Native configuration is $(host_triplet)" >> libgo.head
+	@echo >> libgo.head
+	@echo "		=== libgo tests ===" >> libgo.head
+	@echo >> libgo.head
+
+check-tail: check-recursive check-multi
+	@lib=`${PWD_COMMAND} | sed -e 's,^.*/\([^/][^/]*\)$$,\1,'`; \
+	for dir in . $(MULTIDIRS); do \
+	  mv ../$${dir}/$${lib}/libgo.sum ../$${dir}/$${lib}/libgo.sum.sep; \
+	  mv ../$${dir}/$${lib}/libgo.log ../$${dir}/$${lib}/libgo.log.sep; \
+	done; \
+	mv libgo.head libgo.sum; \
+	cp libgo.sum libgo.log; \
+	echo "Schedule of variations:" >> libgo.sum; \
+	for dir in . $(MULTIDIRS); do \
+	  multidir=../$${dir}/$${lib}; \
+	  multivar=`cat $${multidir}/libgo.var`; \
+	  echo "    $${multivar}" >> libgo.sum; \
+	done; \
+	echo >> libgo.sum; \
+	pass=0; fail=0; untested=0; \
+	for dir in . $(MULTIDIRS); do \
+	  multidir=../$${dir}/$${lib}; \
+	  multivar=`cat $${multidir}/libgo.var`; \
+	  echo "Running target $${multivar}" >> libgo.sum; \
+	  echo "Running $(srcdir)/libgo.exp ..." >> libgo.sum; \
+	  cat $${multidir}/libgo.sum.sep >> libgo.sum; \
+	  cat $${multidir}/libgo.log.sep >> libgo.log; \
+	  if test -n "${MULTIDIRS}"; then \
+	    echo "		=== libgo Summary for $${multivar} ===" >> libgo.sum; \
+	    echo >> libgo.sum; \
+	  fi; \
+	  p=`grep -c PASS $${multidir}/libgo.sum.sep`; \
+	  pass=`expr $$pass + $$p`; \
+	  if test "$$p" -ne "0" && test -n "${MULTIDIRS}"; then \
+	    echo "# of expected passes		$$p" >> libgo.sum; \
+	  fi; \
+	  p=`grep -c FAIL $${multidir}/libgo.sum.sep`; \
+	  fail=`expr $$fail + $$p`; \
+	  if test "$$p" -ne "0" && test -n "${MULTIDIRS}"; then \
+	    echo "# of unexpected failures	$$p" >> libgo.sum; \
+	  fi; \
+	  p=`grep -c UNTESTED $${multidir}/libgo.sum.sep`; \
+	  untested=`expr $$untested + $$p`; \
+	  if test "$$p" -ne "0" && test -n "${MULTIDIRS}"; then \
+	    echo "# of untested testcases		$$p" >> libgo.sum; \
+	  fi; \
+	done; \
+	echo >> libgo.sum; \
+	echo "		=== libgo Summary ===" >> libgo.sum; \
+	echo >> libgo.sum; \
+	if test "$$pass" -ne "0"; then \
+	  echo "# of expected passes		$$pass" >> libgo.sum; \
+	fi; \
+	if test "$$fail" -ne "0"; then \
+	  echo "# of unexpected failures	$$fail" >> libgo.sum; \
+	fi; \
+	if test "$$untested" -ne "0"; then \
+	  echo "# of untested testcases		$$untested" >> libgo.sum; \
+	fi; \
+	echo `echo $(GOC) | sed -e 's/ .*//'`  `$(GOC) -v 2>&1 | grep " version" | sed -n -e 's/.* \(version.*$$\)/\1/p'` >> libgo.sum; \
+	echo >> libgo.log; \
+	echo "runtest completed at `date`" >> libgo.log; \
+	if test "$$fail" -ne "0"; then \
+	  status=1; \
+	else \
+	  status=0; \
+	fi; \
+	exit $$status
+
 check-am:
 	@rm -f libgo.sum libgo.log libgo.tail
-	@echo "Test Run By $${USER} on `date`" > libgo.sum
-	@echo "Native configuration is $(host_triplet)" >> libgo.sum
-	@echo >> libgo.sum
-	@echo "		=== libgo tests ===" >> libgo.sum
-	@echo >> libgo.sum
-	@echo "Schedule of variations:" >> libgo.sum
-	@echo "    unix" >> libgo.sum
-	@echo >> libgo.sum
-	@echo "Running target unix" >> libgo.sum
-	@echo "Running $(srcdir)/libgo.exp ..." >> libgo.sum
-	@cp libgo.sum libgo.log
-	@echo > libgo.tail
-	@echo "		=== libgo summary ===" >> libgo.tail
-	@echo >> libgo.tail
+	@multivar="unix"; \
+	[ -z "$(MULTIFLAGS)" ] || multivar="$${multivar}/$(MULTIFLAGS)"; \
+	echo "$${multivar}" > libgo.var
 	@for f in $(TEST_PACKAGES); do \
 	   rm -f $$f-testsum $$f-testlog; \
 	 done
-	@$(MAKE) -k $(TEST_PACKAGES); \
-	status=$$?; \
-	for f in $(TEST_PACKAGES); do \
+	-@$(MAKE) -k $(TEST_PACKAGES)
+	@for f in $(TEST_PACKAGES); do \
 	  if test -f $$f-testsum; then \
 	    cat $$f-testsum >> libgo.sum; \
 	  fi; \
 	  if test -f $$f-testlog; then \
 	    cat $$f-testlog >> libgo.log; \
 	  fi; \
-	done; \
-	p=`grep -c PASS libgo.sum`; \
-	if test "$$p" != "0"; then \
-	  echo "# of expected passes		$$p" >> libgo.tail; \
-	fi; \
-	p=`grep -c FAIL libgo.sum`; \
-	if test "$$p" != "0"; then \
-	  echo "# of unexpected failures	$$p" >> libgo.tail; \
-	fi; \
-	p=`grep -c UNTESTED libgo.sum`; \
-	if test "$$p" != "0"; then \
-	  echo "# of untested testcases		$$p" >> libgo.tail; \
-	fi; \
-	cat libgo.tail >> libgo.sum; \
-	cat libgo.tail >> libgo.log; \
-	echo `echo $(GOC) | sed -e 's/ .*//'`  `$(GOC) -v 2>&1 | grep " version" | sed -n -e 's/.* \(version.*$$\)/\1/p'` >> libgo.sum; \
-	echo >> libgo.log; \
-	echo "runtest completed at `date`" >> libgo.log; \
-	exit $$status
+	done
+
+check-multi:
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=check-am multi-do # $(MAKE)
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) --mode=clean rm -f
