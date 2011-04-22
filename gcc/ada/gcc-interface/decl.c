@@ -6334,6 +6334,8 @@ make_packable_type (tree type, bool in_record)
 
   finish_record_type (new_type, nreverse (field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
+  SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
+			  DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
 
   /* If this is a padding record, we never want to make the size smaller
      than what was specified.  For QUAL_UNION_TYPE, also copy the size.  */
