@@ -1,3 +1,9 @@
+2011-04-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48723
+	* config/i386/i386.c (ix86_expand_prologue): Update m->fs.sp_offset
+	after the call to ix86_adjust_stack_and_probe.
+
 2011-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48716
@@ -14,8 +20,7 @@
 
 	PR middle-end/48695
 	* tree-ssa-alias.c (aliasing_component_refs_p): Compute base
-	objects and types here.  Adjust for their offset before
-	comparing.
+	objects and types here.  Adjust for their offset before comparing.
 
 2011-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -141,8 +146,7 @@
 2011-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48591
-	* omp-low.c (expand_omp_atomic_fetch_op): Return false if decl is
-	NULL.
+	* omp-low.c (expand_omp_atomic_fetch_op): Return false if decl is NULL.
 	(expand_omp_atomic_pipeline): Return false if cmpxchg is NULL.
 
 2011-04-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
@@ -203,15 +207,14 @@
 2011-04-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR target/47829
-	gcc/config.gcc: disable unwind table generation for crtbegin/crtend
+	* config.gcc: disable unwind table generation for crtbegin/crtend
 	on i386-*-freebsd.
 
 2011-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48377
-	* tree-vect-data-refs.c (vector_alignment_reachable_p): Set
-	is_packed to true even for types with smaller TYPE_ALIGN than
-	TYPE_SIZE.
+	* tree-vect-data-refs.c (vector_alignment_reachable_p): Set is_packed
+	to true even for types with smaller TYPE_ALIGN than TYPE_SIZE.
 
 2011-04-07  Uros Bizjak  <ubizjak@gmail.com>
 
