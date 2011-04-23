@@ -1,3 +1,9 @@
+2011-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48685
+	* fold-const.c (fold_convert_loc): Add NOP_EXPR when casting
+	to VOID_TYPE even around MODIFY_EXPR.
+
 2011-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48717
