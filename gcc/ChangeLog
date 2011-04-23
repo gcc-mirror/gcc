@@ -1,5 +1,6 @@
 2011-04-22  Mike Stump  <mikestump@comcast.net>
 
+	* gensupport.c (read_md_rtx): Fix typo in comment.
 	* config/cris/cris.opt (moverride-best-lib-options): Fix typo in
 	comment.
 
