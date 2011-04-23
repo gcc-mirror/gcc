@@ -1,3 +1,10 @@
+2011-04-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* module.c (mio_array_spec): Set as->cotype on reading.
+	* resolve.c (resolve_allocate_expr): Fix allocating coarray
+	components.
+
 2011-04-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48405
