@@ -107,7 +107,6 @@ xtensa port		Sterling Augustine	augustine.sterling@gmail.com
 
 			OS Port Maintainers	(OS alphabetical order)
 
-darwin port		Dale Johannesen		dalej@apple.com
 darwin port		Mike Stump		mikestump@comcast.net
 darwin port		Eric Christopher	echristo@apple.com
 darwin port		Stan Shebs		stanshebs@earthlink.net
