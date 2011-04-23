@@ -1,3 +1,7 @@
+2011-04-23  Jim Meyering  <meyering@redhat.com>
+
+	* gnat_ugn.texi (Examples of gnatxref Usage): Fix typo: s/it it/it is/
+
 2011-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (make_packable_type): Copy DECL_PARALLEL_TYPE
