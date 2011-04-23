@@ -1304,7 +1304,7 @@ read_md_rtx (int *lineno, int *seqnr)
      their C test is provably always false).  If insn_elision is
      false, our caller needs to see all the patterns.  Note that the
      elided patterns are never counted by the sequence numbering; it
-     it is the caller's responsibility, when insn_elision is false, not
+     is the caller's responsibility, when insn_elision is false, not
      to use elided pattern numbers for anything.  */
   switch (GET_CODE (desc))
     {
