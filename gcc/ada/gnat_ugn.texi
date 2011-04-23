@@ -14362,7 +14362,7 @@ maximal loop nesting level
 
 @noindent
 The McCabe complexity metrics are defined
-in @url{http://www.mccabe.com/pdf/nist235r.pdf}
+in @url{http://www.mccabe.com/pdf/mccabe-nist235r.pdf}
 
 According to McCabe, both control statements and short-circuit control forms
 should be taken into account when computing cyclomatic complexity. For each
