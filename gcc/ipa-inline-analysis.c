@@ -1654,9 +1654,9 @@ inline_write_summary (cgraph_node_set set,
 	    {
 	      int j;
 	      lto_output_uleb128_stream (ob->main_stream,
-					 e->time);
-	      lto_output_uleb128_stream (ob->main_stream,
 					 e->size);
+	      lto_output_uleb128_stream (ob->main_stream,
+					 e->time);
 	      for (j = 0; e->predicate.clause[j]; j++)
 		lto_output_uleb128_stream (ob->main_stream,
 					   e->predicate.clause[j]);
