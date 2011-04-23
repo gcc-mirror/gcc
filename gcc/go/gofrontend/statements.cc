@@ -177,7 +177,7 @@ class Error_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 };
 
 // Make an error statement.
@@ -595,14 +595,14 @@ class Assignment_operation_statement : public Statement
 
   bool
   do_traverse_assignments(Traverse_assignments*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // The operator (OPERATOR_PLUSEQ, etc.).
@@ -677,7 +677,7 @@ Assignment_operation_statement::do_lower(Gogo*, Named_object*,
       op = OPERATOR_BITCLEAR;
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   Expression* binop = Expression::make_binary(op, lval, this->rhs_, loc);
@@ -722,14 +722,14 @@ class Tuple_assignment_statement : public Statement
 
   bool
   do_traverse_assignments(Traverse_assignments*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // Left hand side--a list of lvalues.
@@ -849,14 +849,14 @@ public:
 
   bool
   do_traverse_assignments(Traverse_assignments*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // Lvalue which receives the value from the map.
@@ -976,14 +976,14 @@ class Map_assignment_statement : public Statement
 
   bool
   do_traverse_assignments(Traverse_assignments*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // A reference to the map index which should be set or deleted.
@@ -1090,14 +1090,14 @@ class Tuple_receive_assignment_statement : public Statement
 
   bool
   do_traverse_assignments(Traverse_assignments*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // Lvalue which receives the value from the channel.
@@ -1214,14 +1214,14 @@ class Tuple_type_guard_assignment_statement : public Statement
 
   bool
   do_traverse_assignments(Traverse_assignments*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   Call_expression*
@@ -1510,14 +1510,14 @@ class Inc_dec_statement : public Statement
 
   bool
   do_traverse_assignments(Traverse_assignments*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // The l-value to increment or decrement.
@@ -1830,7 +1830,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
       vals->push_back(first_arg);
     }
   else
-    gcc_unreachable();
+    go_unreachable();
 
   if (ce->args() != NULL)
     {
@@ -1866,7 +1866,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   else if (this->classification() == STATEMENT_DEFER)
     s = Statement::make_defer_statement(call, location);
   else
-    gcc_unreachable();
+    go_unreachable();
 
   // The current block should end with the go statement.
   go_assert(block->statements()->size() >= 1);
@@ -2750,7 +2750,7 @@ Case_clauses::Hash_integer_value::operator()(Expression* pe) const
   mpz_t ival;
   mpz_init(ival);
   if (!pe->integer_constant_value(true, ival, &itype))
-    gcc_unreachable();
+    go_unreachable();
   size_t ret = mpz_get_ui(ival);
   mpz_clear(ival);
   return ret;
@@ -2776,7 +2776,7 @@ Case_clauses::Eq_integer_value::operator()(Expression* a, Expression* b) const
   mpz_init(bval);
   if (!a->integer_constant_value(true, aval, &atype)
       || !b->integer_constant_value(true, bval, &btype))
-    gcc_unreachable();
+    go_unreachable();
   bool ret = mpz_cmp(aval, bval) == 0;
   mpz_clear(aval);
   mpz_clear(bval);
@@ -4597,7 +4597,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing)
 			      index_temp, value_temp, &init, &cond, &iter_init,
 			      &post);
   else
-    gcc_unreachable();
+    go_unreachable();
 
   if (iter_init != NULL)
     body->add_statement(Statement::make_block_statement(iter_init, loc));

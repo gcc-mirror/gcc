@@ -35,7 +35,7 @@ Parse::Enclosing_var_comparison::operator()(const Enclosing_var& v1,
   // If we get here it means that a single nested function refers to
   // two different variables defined in enclosing functions, and both
   // variables have the same name.  I think this is impossible.
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Class Parse.
@@ -362,7 +362,7 @@ Parse::type_name(bool issue_error)
   else if (named_object->is_unknown() || named_object->is_type_declaration())
     return Type::make_forward_declaration(named_object);
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // ArrayType = "[" [ ArrayLength ] "]" ElementType .
@@ -2323,10 +2323,10 @@ Parse::operand(bool may_be_sink)
 	  case Named_object::NAMED_OBJECT_UNKNOWN:
 	    return Expression::make_unknown_reference(named_object, location);
 	  default:
-	    gcc_unreachable();
+	    go_unreachable();
 	  }
       }
-      gcc_unreachable();
+      go_unreachable();
 
     case Token::TOKEN_STRING:
       ret = Expression::make_string(token->string_value(), token->location());
@@ -3068,7 +3068,7 @@ Parse::expression_may_start_here()
     case Token::TOKEN_IMAGINARY:
       return true;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -3493,7 +3493,7 @@ Parse::inc_dec_stat(Expression* exp)
   else if (token->is_op(OPERATOR_MINUSMINUS))
     this->gogo_->add_statement(Statement::make_dec_statement(exp));
   else
-    gcc_unreachable();
+    go_unreachable();
   this->advance_token();
 }
 
@@ -4858,7 +4858,7 @@ Parse::break_stat()
   else if (enclosing->classification() == Statement::STATEMENT_SELECT)
     label = enclosing->select_statement()->break_label();
   else
-    gcc_unreachable();
+    go_unreachable();
 
   this->gogo_->add_statement(Statement::make_break_statement(label,
 							     location));
@@ -4907,7 +4907,7 @@ Parse::continue_stat()
   else if (enclosing->classification() == Statement::STATEMENT_FOR_RANGE)
     label = enclosing->for_range_statement()->continue_label();
   else
-    gcc_unreachable();
+    go_unreachable();
 
   this->gogo_->add_statement(Statement::make_continue_statement(label,
 								location));

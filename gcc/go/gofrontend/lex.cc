@@ -198,7 +198,7 @@ Token::Token(const Token& tok)
       mpfr_init_set(this->u_.float_value, tok.u_.float_value, GMP_RNDN);
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -237,7 +237,7 @@ Token::operator=(const Token& tok)
       mpfr_init_set(this->u_.float_value, tok.u_.float_value, GMP_RNDN);
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
   return *this;
 }
@@ -422,11 +422,11 @@ Token::print(FILE* file) const
 	  fprintf(file, "]");
 	  break;
 	default:
-	  gcc_unreachable();
+	  go_unreachable();
 	}
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 

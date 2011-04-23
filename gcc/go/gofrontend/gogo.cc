@@ -748,7 +748,7 @@ Gogo::start_function(const std::string& name, Function_type* type,
 								  function);
 	    }
 	  else
-	    gcc_unreachable();
+	    go_unreachable();
 	}
       this->package_->bindings()->add_method(ret);
     }
@@ -849,7 +849,7 @@ Gogo::declare_function(const std::string& name, Function_type* type,
 	  return ftype->add_method_declaration(name, type, location);
 	}
       else
-	gcc_unreachable();
+	go_unreachable();
     }
 }
 
@@ -3211,7 +3211,7 @@ Block::traverse(Traverse* traverse)
 	    case Named_object::NAMED_OBJECT_FUNC:
 	    case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
 	      // FIXME: Where will nested functions be found?
-	      gcc_unreachable();
+	      go_unreachable();
 
 	    case Named_object::NAMED_OBJECT_TYPE:
 	      if ((traverse_mask & Traverse::traverse_types) != 0
@@ -3229,10 +3229,10 @@ Block::traverse(Traverse* traverse)
 
 	    case Named_object::NAMED_OBJECT_PACKAGE:
 	    case Named_object::NAMED_OBJECT_SINK:
-	      gcc_unreachable();
+	      go_unreachable();
 
 	    default:
-	      gcc_unreachable();
+	      go_unreachable();
 	    }
 	}
     }
@@ -4109,7 +4109,7 @@ Named_object::location() const
     {
     default:
     case NAMED_OBJECT_UNINITIALIZED:
-      gcc_unreachable();
+      go_unreachable();
 
     case NAMED_OBJECT_UNKNOWN:
       return this->unknown_value()->location();
@@ -4130,7 +4130,7 @@ Named_object::location() const
       return this->result_var_value()->location();
 
     case NAMED_OBJECT_SINK:
-      gcc_unreachable();
+      go_unreachable();
 
     case NAMED_OBJECT_FUNC:
       return this->func_value()->location();
@@ -4153,7 +4153,7 @@ Named_object::export_named_object(Export* exp) const
     default:
     case NAMED_OBJECT_UNINITIALIZED:
     case NAMED_OBJECT_UNKNOWN:
-      gcc_unreachable();
+      go_unreachable();
 
     case NAMED_OBJECT_CONST:
       this->const_value()->export_const(exp, this->name_);
@@ -4179,7 +4179,7 @@ Named_object::export_named_object(Export* exp) const
 
     case NAMED_OBJECT_RESULT_VAR:
     case NAMED_OBJECT_SINK:
-      gcc_unreachable();
+      go_unreachable();
 
     case NAMED_OBJECT_FUNC:
       this->func_value()->export_func(exp, this->name_);
@@ -4199,7 +4199,7 @@ Named_object::get_backend_variable(Gogo* gogo, Named_object* function)
     return this->result_var_value()->get_backend_variable(gogo, function,
 							  this->name_);
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // Class Bindings.
@@ -4280,7 +4280,7 @@ Bindings::remove_binding(Named_object* no)
 	  return;
 	}
     }
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Add a method to the list of objects.  This is not added to the
@@ -4346,7 +4346,7 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
     {
     default:
     case Named_object::NAMED_OBJECT_UNINITIALIZED:
-      gcc_unreachable();
+      go_unreachable();
 
     case Named_object::NAMED_OBJECT_UNKNOWN:
       {
@@ -4386,7 +4386,7 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
       break;
 
     case Named_object::NAMED_OBJECT_SINK:
-      gcc_unreachable();
+      go_unreachable();
 
     case Named_object::NAMED_OBJECT_FUNC:
       if (new_object->is_function_declaration())
@@ -4595,7 +4595,7 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 
 	case Named_object::NAMED_OBJECT_SINK:
 	default:
-	  gcc_unreachable();
+	  go_unreachable();
 	}
     }
 
@@ -4756,41 +4756,41 @@ Traverse::remember_expression(const Expression* expression)
 int
 Traverse::variable(Named_object*)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 int
 Traverse::constant(Named_object*, bool)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 int
 Traverse::function(Named_object*)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 int
 Traverse::block(Block*)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 int
 Traverse::statement(Block*, size_t*, Statement*)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 int
 Traverse::expression(Expression**)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 int
 Traverse::type(Type*)
 {
-  gcc_unreachable();
+  go_unreachable();
 }

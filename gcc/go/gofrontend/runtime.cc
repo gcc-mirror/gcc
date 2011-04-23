@@ -86,7 +86,7 @@ runtime_function_type(Runtime_function_type bft)
 	{
 	default:
 	case RFT_VOID:
-	  gcc_unreachable();
+	  go_unreachable();
 
 	case RFT_BOOL:
 	  t = Type::lookup_bool_type();
@@ -193,7 +193,7 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
     {
     default:
     case RFT_VOID:
-      gcc_unreachable();
+      go_unreachable();
 
     case RFT_BOOL:
     case RFT_BOOLPTR:

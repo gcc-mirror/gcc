@@ -272,7 +272,7 @@ class Interface_method : public Method
   // called, as we always create a stub.
   Named_object*
   do_named_object() const
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   // The type of the method.
   Function_type*

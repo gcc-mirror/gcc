@@ -990,14 +990,14 @@ class For_statement : public Statement
 
   bool
   do_traverse_assignments(Traverse_assignments*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // The initialization statements.  This may be NULL.
@@ -1048,14 +1048,14 @@ class For_range_statement : public Statement
 
   bool
   do_traverse_assignments(Traverse_assignments*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*);
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   Expression*
@@ -1284,7 +1284,7 @@ class Switch_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // The value to switch on.  This may be NULL.
@@ -1430,7 +1430,7 @@ class Type_switch_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // The variable holding the value we are switching on.
