@@ -1,3 +1,8 @@
+2011-04-22  Mike Stump  <mikestump@comcast.net>
+
+	* config/cris/cris.opt (moverride-best-lib-options): Fix typo in
+	comment.
+
 2011-04-22  Jan Hubicka  <jh@suse.cz>
 
 	* gengtype.c (open_base_files): Add ipa-inline.h include.
