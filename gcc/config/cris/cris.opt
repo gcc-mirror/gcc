@@ -149,7 +149,7 @@ Target Report RejectNegative
 Use the most feature-enabling options allowed by other options
 
 ; FIXME: The following comment relates to gcc before cris.opt.
-; Check it it's still valid:
+; Check if it's still valid:
 ; We must call it "override-" since calling it "no-" will cause
 ; gcc.c to forget it, if there's a "later" -mbest-lib-options.
 ; Kludgy, but needed for some multilibbed files.
