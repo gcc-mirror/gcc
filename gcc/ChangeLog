@@ -4,12 +4,6 @@
 	* tree-ssa-forwprop.c (associate_plusminus): For A + ~A and
 	~A + A optimizations use build_int_cst_type instead of build_int_cst.
 
-2011-04-22  Uros Bizjak  <ubizjak@gmail.com>
-
-	PR target/48723
-	* config/i386/i386.c (ix86_expand_prologue): Update m->fs.sp_offset
-	after the call to ix86_adjust_stack_and_probe.
-
 2011-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48716

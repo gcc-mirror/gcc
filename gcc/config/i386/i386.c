@@ -10575,7 +10575,6 @@ ix86_expand_prologue (void)
       if (STACK_CHECK_MOVING_SP)
 	{
 	  ix86_adjust_stack_and_probe (allocate);
-	  m->fs.sp_offset += allocate;
 	  allocate = 0;
 	}
       else
