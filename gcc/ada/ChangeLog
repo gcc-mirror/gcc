@@ -1,3 +1,8 @@
+2011-04-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gnat_ugn.texi (Complexity Metrics Control): Update link to
+	the Watson/McCabe paper.
+
 2011-04-23  Jim Meyering  <meyering@redhat.com>
 
 	* gnat_ugn.texi (Examples of gnatxref Usage): Fix typo: s/it it/it is/
