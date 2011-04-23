@@ -1,3 +1,10 @@
+2011-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/48740
+	* lex.c (lex_raw_string): When raw string ends with
+	??) followed by raw prefix and ", ensure it is preprocessed
+	with ??) rather than ??].
+
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* files.c (destroy_cpp_file): Remove useless if-before-free.
