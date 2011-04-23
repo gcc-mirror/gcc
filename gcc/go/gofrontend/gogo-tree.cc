@@ -972,7 +972,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
     case NAMED_OBJECT_VAR:
     case NAMED_OBJECT_RESULT_VAR:
     case NAMED_OBJECT_SINK:
-      gcc_unreachable();
+      go_unreachable();
 
     case NAMED_OBJECT_FUNC:
       {
@@ -1005,7 +1005,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
       break;
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   if (TREE_TYPE(decl) == error_mark_node)
@@ -2424,7 +2424,7 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
 	fndecl = no->func_declaration_value()->get_or_make_decl(this, no,
 								fnid);
       else
-	gcc_unreachable();
+	go_unreachable();
       fndecl = build_fold_addr_expr(fndecl);
 
       elt = VEC_quick_push(constructor_elt, pointers, NULL);

@@ -157,7 +157,7 @@ Type::is_basic_type() const
       return this->base()->is_basic_type();
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -202,7 +202,7 @@ Type::make_non_abstract_type()
     case TYPE_BOOLEAN:
       return Type::lookup_bool_type();
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -407,7 +407,7 @@ Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
       return false;
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -774,7 +774,7 @@ Type::hash_string(const std::string& s, unsigned int h)
 bool
 Type::do_check_make_expression(Expression_list*, source_location)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Return whether an expression has an integer value.  Report an error
@@ -929,7 +929,7 @@ tree
 Type::do_make_expression_tree(Translate_context*, Expression_list*,
 			      source_location)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Return a pointer to the type descriptor for this type.
@@ -1194,10 +1194,10 @@ Type::type_functions(const char** hash_fn, const char** equal_fn) const
 
     case Type::TYPE_NAMED:
     case Type::TYPE_FORWARD:
-      gcc_unreachable();
+      go_unreachable();
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -1543,7 +1543,7 @@ Type::mangled_name(Gogo* gogo) const
 void
 Type::do_export(Export*) const
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Import a type.
@@ -1627,11 +1627,11 @@ class Void_type : public Type
 
   tree
   do_get_init_tree(Gogo*, tree, bool)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   void
   do_reflection(Gogo*, std::string*) const
@@ -2363,23 +2363,23 @@ class Sink_type : public Type
  protected:
   tree
   do_get_tree(Gogo*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   tree
   do_get_init_tree(Gogo*, tree, bool)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   void
   do_reflection(Gogo*, std::string*) const
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   void
   do_mangled_name(Gogo*, std::string*) const
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 };
 
 // Make the sink type.
@@ -3298,11 +3298,11 @@ class Nil_type : public Type
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   void
   do_reflection(Gogo*, std::string*) const
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   void
   do_mangled_name(Gogo*, std::string* ret) const
@@ -3434,7 +3434,7 @@ Struct_field::field_name() const
 	  else if (t->named_type() != NULL)
 	    return t->named_type()->name();
 	  else
-	    gcc_unreachable();
+	    go_unreachable();
 	}
     }
 }
@@ -5837,7 +5837,7 @@ Interface_type::method_index(const std::string& name) const
        ++p, ++ret)
     if (p->name() == name)
       return ret;
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Return whether NAME is an unexported method, for better error
@@ -6621,7 +6621,7 @@ Named_method::do_type() const
   else if (this->named_object_->is_function_declaration())
     return this->named_object_->func_declaration_value()->type();
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // Return the location of the method receiver.
@@ -7024,7 +7024,7 @@ Find_type_use::type(Type* type)
 	case Type::TYPE_NAMED:
 	case Type::TYPE_FORWARD:
 	default:
-	  gcc_unreachable();
+	  go_unreachable();
 	}
     }
 
@@ -7190,7 +7190,7 @@ Named_type::convert(Gogo* gogo)
     case TYPE_CALL_MULTIPLE_RESULT:
     case TYPE_NAMED:
     case TYPE_FORWARD:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   this->named_tree_ = t;
@@ -7294,7 +7294,7 @@ Named_type::create_placeholder(Gogo* gogo)
     case TYPE_CALL_MULTIPLE_RESULT:
     case TYPE_NAMED:
     case TYPE_FORWARD:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   // Create the named type.
@@ -7424,10 +7424,10 @@ Named_type::do_get_tree(Gogo* gogo)
     case TYPE_CALL_MULTIPLE_RESULT:
     case TYPE_NAMED:
     case TYPE_FORWARD:
-      gcc_unreachable();
+      go_unreachable();
     }
 
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Build a type descriptor for a named type.
@@ -7964,7 +7964,7 @@ Type::method_expects_pointer(const Named_object* no)
   else if (no->is_function_declaration())
     fntype = no->func_declaration_value()->type();
   else
-    gcc_unreachable();
+    go_unreachable();
   return fntype->receiver()->type()->points_to() != NULL;
 }
 
@@ -8061,7 +8061,7 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	  else if (st != NULL)
 	    m = st->method_function(name, NULL);
 	  else
-	    gcc_unreachable();
+	    go_unreachable();
 	  go_assert(m != NULL);
 	  if (!m->is_value_method() && expr->type()->points_to() == NULL)
 	    expr = Expression::make_unary(OPERATOR_AND, expr, location);
