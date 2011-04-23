@@ -1,3 +1,8 @@
+2011-04-23  John David Anglin  <dave.anglin@nrc-cnrc.ca>
+
+	* gcc.dg/pr48616.c (dg-options): Add -fno-common to options on
+	hppa*-*-hpux*.
+
 2011-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48685
