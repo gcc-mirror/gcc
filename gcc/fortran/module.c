@@ -2203,6 +2203,9 @@ mio_array_spec (gfc_array_spec **asp)
   mio_integer (&as->corank);
   as->type = MIO_NAME (array_type) (as->type, array_spec_types);
 
+  if (iomode == IO_INPUT && as->corank)
+    as->cotype = (as->type == AS_DEFERRED) ? AS_DEFERRED : AS_EXPLICIT;
+
   for (i = 0; i < as->rank + as->corank; i++)
     {
       mio_expr (&as->lower[i]);
