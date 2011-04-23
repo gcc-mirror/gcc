@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,6 +36,7 @@ struct X
   int foo_c(float x)  const          { return truncate_float(x); }
   int foo_v(float x)  volatile       { return truncate_float(x); }
   int foo_cv(float x) const volatile { return truncate_float(x); }
+  int foo_varargs(float x, ...)      { return truncate_float(x); }
 
   int operator()(float x)
   {
@@ -69,6 +70,13 @@ void test01()
 
   ::get_seventeen get_sev;
   ::X x;
+  ::X* xp = &x;
+  int (::X::* p_foo)(float) = &::X::foo;
+  int (::X::* p_foo_c)(float) const = &::X::foo_c;
+  int (::X::* p_foo_v)(float) volatile = &::X::foo_v;
+  int (::X::* p_foo_cv)(float) const volatile = &::X::foo_cv;
+  int (::X::* p_foo_varargs)(float, ...) = &::X::foo_varargs;
+  int ::X::* p_bar = &::X::bar;
 
   const float pi = 3.14;
 
@@ -77,8 +85,26 @@ void test01()
   VERIFY(ref(seventeen)() == 17);
 
   // Function pointers
-  VERIFY(cref(&truncate_float)(pi) == 3);
-  VERIFY(cref(&seventeen)() == 17);
+  VERIFY(cref(truncate_float)(pi) == 3);
+  VERIFY(cref(seventeen)() == 17);
+
+  // Member function pointers
+  VERIFY(ref(p_foo)(x, pi) == 3);
+  VERIFY(ref(p_foo)(xp, pi) == 3);
+  VERIFY(ref(p_foo_c)(x, pi) == 3);
+  VERIFY(ref(p_foo_c)(xp, pi) == 3);
+  VERIFY(ref(p_foo_v)(x, pi) == 3);
+  VERIFY(ref(p_foo_v)(xp, pi) == 3);
+  VERIFY(ref(p_foo_cv)(x, pi) == 3);
+  VERIFY(ref(p_foo_cv)(xp, pi) == 3);
+  // VERIFY(ref(p_foo_varargs)(x, pi) == 3);
+  // VERIFY(ref(p_foo_varargs)(xp, pi, 1, 1) == 3);
+  // VERIFY(ref(p_foo_varargs)(x, pi, 1, 1) == 3);
+  // VERIFY(ref(p_foo_varargs)(xp, pi) == 3);
+
+  // Member data pointers
+  VERIFY(ref(p_bar)(x) == 17);
+  VERIFY(ref(p_bar)(xp) == 17);
 
   // Function objects
   VERIFY(ref(get_sev)() == 17);

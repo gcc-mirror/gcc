@@ -1140,12 +1140,92 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Signature>
     class result_of;
 
+  template<typename _MemPtr, typename _Arg>
+    struct _Result_of_memobj;
+
+  template<typename _Res, typename _Class, typename _Arg>
+    struct _Result_of_memobj<_Res _Class::*, _Arg>
+    {
+    private:
+      typedef _Res _Class::* _Func;
+
+      template<typename _Tp>
+	static _Tp _S_get(const _Class&);
+      template<typename _Tp>
+	static decltype(*std::declval<_Tp>()) _S_get(...);
+        
+    public:
+      typedef
+        decltype(_S_get<_Arg>(std::declval<_Arg>()).*std::declval<_Func>())
+        __type;
+    };
+
+  template<typename _MemPtr, typename _Arg, typename... _ArgTypes>
+    struct _Result_of_memfun;
+
+  template<typename _Res, typename _Class, typename _Arg, typename... _Args>
+    struct _Result_of_memfun<_Res _Class::*, _Arg, _Args...>
+    {
+    private:
+      typedef _Res _Class::* _Func;
+
+      template<typename _Tp>
+	static _Tp _S_get(const _Class&);
+      template<typename _Tp>
+	static decltype(*std::declval<_Tp>()) _S_get(...);
+        
+    public:
+      typedef
+        decltype((_S_get<_Arg>(std::declval<_Arg>()).*std::declval<_Func>())
+            (std::declval<_Args>()...) )
+        __type;
+    };
+
+  template<bool, bool, typename _Functor, typename... _ArgTypes>
+    struct _Result_of_impl;
+
   template<typename _Functor, typename... _ArgTypes>
-    struct result_of<_Functor(_ArgTypes...)>
+    struct _Result_of_impl<false, false, _Functor, _ArgTypes...>
     {
       typedef
         decltype( std::declval<_Functor>()(std::declval<_ArgTypes>()...) )
-        type;
+        __type;
+    };
+
+  template<typename _MemPtr, typename _Arg>
+    struct _Result_of_impl<true, false, _MemPtr, _Arg>
+    : _Result_of_memobj<typename remove_reference<_MemPtr>::type, _Arg>
+    {
+      typedef typename _Result_of_memobj<
+	typename remove_reference<_MemPtr>::type, _Arg>::__type
+	__type;
+    };
+
+  template<typename _MemPtr, typename _Arg, typename... _ArgTypes>
+    struct _Result_of_impl<false, true, _MemPtr, _Arg, _ArgTypes...>
+    : _Result_of_memfun<typename remove_reference<_MemPtr>::type, _Arg,
+                        _ArgTypes...>
+    {
+      typedef typename _Result_of_memfun<
+	typename remove_reference<_MemPtr>::type, _Arg, _ArgTypes...>::__type
+	__type;
+    };
+
+  template<typename _Functor, typename... _ArgTypes>
+    struct result_of<_Functor(_ArgTypes...)>
+    : _Result_of_impl<is_member_object_pointer<
+                        typename remove_reference<_Functor>::type >::value,
+                      is_member_function_pointer<
+			typename remove_reference<_Functor>::type >::value,
+		      _Functor, _ArgTypes...>
+    {
+      typedef typename _Result_of_impl<
+	is_member_object_pointer<
+	  typename remove_reference<_Functor>::type >::value,
+        is_member_function_pointer<
+	  typename remove_reference<_Functor>::type >::value,
+       	_Functor, _ArgTypes...>::__type
+	type;
     };
 
   /**

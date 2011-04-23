@@ -1,3 +1,24 @@
+2011-04-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/48521
+	* include/std/type_traits (result_of): Handle pointer to member.
+	* include/std/functional (__invoke): Likewise.
+	(_Function_to_function_pointer): Remove.
+	(_Reference_wrapper_base): Provide nested types independent of
+	unary_function and binary_function.
+	(reference_wrapper::operator()): DR 2017.
+	(ref(const A&&), cref(const A&&): Define as deleted.
+	* include/std/future (async): Simplify SFINAE and use result_of to
+	support pointer to member.
+	* testsuite/20_util/reference_wrapper/invoke.cc: Test pointer to 
+	member.
+	* testsuite/20_util/reference_wrapper/24803.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs.cc: Test for types
+	instead of derivation from unary_function and binary_function.
+	* testsuite/20_util/reference_wrapper/invoke-2.cc: New.
+	* testsuite/20_util/reference_wrapper/ref_neg.c: New.
+	* testsuite/20_util/reference_wrapper/typedefs-3.c: New.
+
 2011-04-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR testsuite/48675
