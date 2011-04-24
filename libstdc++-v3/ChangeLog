@@ -1,5 +1,10 @@
 2011-04-24  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/xml/manual/parallel_mode.xml: Fix link to libgomp online
+	documentation.  Expand link text.
+
+2011-04-24  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* libsupc++/cxxabi.h: Adjust link to FAQ entry.
 
 2011-04-22  François Dumont  <francois.cppdevs@free.fr>
