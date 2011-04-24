@@ -200,7 +200,7 @@ static inline void
 add_clause (struct predicate *p, clause_t clause)
 {
   int i;
-  int insert_here = 0;
+  int insert_here = -1;
   /* True clause.  */
   if (!clause)
     return;
@@ -211,7 +211,7 @@ add_clause (struct predicate *p, clause_t clause)
       p->clause[0] = (1 << predicate_false_condition);
       p->clause[1] = 0;
     }
-  for (i = 0; i < MAX_CLAUSES; i++)
+  for (i = 0; i < MAX_CLAUSES - 1; i++)
     {
       if (p->clause[i] == clause)
         return;
@@ -225,8 +225,11 @@ add_clause (struct predicate *p, clause_t clause)
     return;
   /* Keep clauses ordered by index, so equivalence testing is easy.  */
   p->clause[i + 1] = 0;
-  for (;i > insert_here; i--)
-    p->clause[i] = p->clause[i - 1];
+  if (insert_here >= 0)
+    for (;i > insert_here; i--)
+      p->clause[i] = p->clause[i - 1];
+  else
+    insert_here = i;
   p->clause[insert_here] = clause;
 }
 
@@ -239,7 +242,10 @@ and_predicates (struct predicate *p, struct predicate *p2)
   struct predicate out = *p;
   int i;
   for (i = 0; p2->clause[i]; i++)
-    add_clause (&out, p2->clause[i]);
+    {
+      gcc_checking_assert (i < MAX_CLAUSES);
+      add_clause (&out, p2->clause[i]);
+    }
   return out;
 }
 
@@ -264,7 +270,10 @@ or_predicates (struct predicate *p, struct predicate *p2)
     }
   for (i = 0; p->clause[i]; i++)
     for (j = 0; p2->clause[j]; j++)
-      add_clause (&out, p->clause[i] | p2->clause[j]);
+      {
+        gcc_checking_assert (i < MAX_CLAUSES && j < MAX_CLAUSES);
+        add_clause (&out, p->clause[i] | p2->clause[j]);
+      }
   return out;
 }
 
@@ -276,8 +285,11 @@ predicates_equal_p (struct predicate *p, struct predicate *p2)
 {
   int i;
   for (i = 0; p->clause[i]; i++)
-    if (p->clause[i] != p2->clause[i])
-      return false;
+    {
+      gcc_checking_assert (i < MAX_CLAUSES);
+      if (p->clause[i] != p2->clause[i])
+        return false;
+    }
   return !p2->clause[i];
 }
 
@@ -296,8 +308,11 @@ evaulate_predicate (struct predicate *p, clause_t possible_truths)
 
   /* See if we can find clause we can disprove.  */
   for (i = 0; p->clause[i]; i++)
-    if (!(p->clause[i] & possible_truths))
-      return false;
+    {
+      gcc_checking_assert (i < MAX_CLAUSES);
+      if (!(p->clause[i] & possible_truths))
+        return false;
+    }
   return true;
 }
 
@@ -1166,6 +1181,8 @@ remap_predicate (struct inline_summary *info, struct inline_summary *callee_info
       int cond;
       struct predicate clause_predicate = false_predicate ();
 
+      gcc_assert (i < MAX_CLAUSES);
+
       for (cond = 0; cond < NUM_CONDITIONS; cond ++)
 	/* Do we have condition we can't disprove?   */
 	if (clause & possible_truths & (1 << cond))
@@ -1240,6 +1257,7 @@ inline_merge_summary (struct cgraph_edge *edge)
 	      && jfunc->value.pass_through.operation == NOP_EXPR)
 	    map = jfunc->value.pass_through.formal_id;
 	  VEC_replace (int, operand_map, i, map);
+	  gcc_assert (map < ipa_get_param_count (IPA_NODE_REF (to)));
 	}
     }
   for (i = 0; VEC_iterate (size_time_entry, callee_info->entry, i, e); i++)
@@ -1544,6 +1562,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  do 
 	    {
 	      clause = e.predicate.clause[k++] = lto_input_uleb128 (&ib);
+	      gcc_assert (k < MAX_CLAUSES);
 	    }
 	  while (clause);
 
@@ -1658,8 +1677,11 @@ inline_write_summary (cgraph_node_set set,
 	      lto_output_uleb128_stream (ob->main_stream,
 					 e->time);
 	      for (j = 0; e->predicate.clause[j]; j++)
-		lto_output_uleb128_stream (ob->main_stream,
-					   e->predicate.clause[j]);
+		{
+		   gcc_assert (j < MAX_CLAUSES);
+		   lto_output_uleb128_stream (ob->main_stream,
+					      e->predicate.clause[j]);
+		}
 	      lto_output_uleb128_stream (ob->main_stream, 0);
 	    }
 	}
