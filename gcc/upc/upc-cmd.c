@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
   || !strcmp (STR, "isystem") \
   || !strcmp (STR, "iwithprefix") \
   || !strcmp (STR, "iwithprefixbefore") \
+  || !strcmp (STR, "param") \
   || !strcmp (STR, "specs") \
   || !strcmp (STR, "Tbss") \
   || !strcmp (STR, "Tdata") \
@@ -352,7 +353,7 @@ main (int argc, char *argv[])
      special handling. */
   for (i = 1; i < argc; ++i)
     {
-      char *arg = argv[i];
+      const char * const arg = argv[i];
       if (arg[0] == '-')
 	{
           /* skip upc's '-debug' switch */
@@ -467,53 +468,64 @@ main (int argc, char *argv[])
   /* Copy in the arguments as passed to 'upc' */
   for (i = 1, is_x_upc_in_effect = 0; i < argc; ++i)
     {
-      int is_c_file = match_suffix (argv[i], ".c");
+      const char * const arg = argv[i];
+      const int is_c_file = match_suffix (arg, ".c")
+                            || match_suffix (arg, ".h");
+      const int is_upc_file = match_suffix (arg, ".upc")
+                              || match_suffix (arg, ".uph");
       int num;
       /* skip upc's '-debug' switch */
-      if (!strcmp(argv[i], "-debug"))
+      if (!strcmp(arg, "-debug"))
         continue;
-      if (!strcmp(argv[i], "-n") && ((i + 1) < argc))
+      if (!strcmp(arg, "-n") && ((i + 1) < argc))
         {
 	  /* rewrite "-n <num>" into "-fupc-threads-<num>" */
           exec_args[nargs++] = concat ("-fupc-threads-", argv[++i], END_ARGS);
 	}
-      else if (!strncmp(argv[i], "-n", 2)
-               && (sscanf (argv[i] + 2, "%d", &num) == 1))
+      else if (!strncmp(arg, "-n", 2)
+               && (sscanf (arg + 2, "%d", &num) == 1))
         {
 	  /* rewrite "-n<num>" into "-fupc-threads-<num>" */
-          exec_args[nargs++] = concat ("-fupc-threads-", argv[i] + 2, END_ARGS);
+          exec_args[nargs++] = concat ("-fupc-threads-", arg + 2, END_ARGS);
 	}
-      else if (!strcmp(argv[i], "-inst") || !strcmp(argv[i], "--inst"))
+      else if (!strcmp(arg, "-inst") || !strcmp(arg, "--inst"))
         {
 	  /* rewrite "-inst" or "--inst" into "-fupc-instrument" */
           exec_args[nargs++] = "-fupc-instrument";
 	}
-      else if (!strcmp(argv[i], "-inst-functions") || !strcmp(argv[i], "--inst-functions"))
+      else if (!strcmp(arg, "-inst-functions") || !strcmp(arg, "--inst-functions"))
         {
 	  /* rewrite "-inst-functions" or "--inst-functions"
 	     into "-fupc-instrument-functions" */
           exec_args[nargs++] = "-fupc-instrument-functions";
 	}
-      else if (is_c_file)
+      else if (((arg[2] == '\0') && GCC_SWITCH_TAKES_ARG (arg[1]))
+	      || GCC_WORD_SWITCH_TAKES_ARG (&arg[1])
+	      || ((arg[1] == '-') && GCC_WORD_SWITCH_TAKES_ARG (&arg[2])))
+	{
+	  /* Copy the switch and the following argument.  */
+          exec_args[nargs++] = arg;
+          exec_args[nargs++] = argv[++i];
+        }
+      else if (arg[1] == '-')
+        /* Copy the switch and continue.  */
+        exec_args[nargs++] = arg;
+      else
         {
-	  /* Assume that .c files are in fact UPC source files */
-	  if (!is_x_upc_in_effect)
+	  if (is_c_file && !is_x_upc_in_effect)
 	    {
+	      /* Assume that .c files are in fact UPC source files */
 	      is_x_upc_in_effect = 1;
 	      exec_args[nargs++] = "-x";
 	      exec_args[nargs++] = "upc";
 	    }
-          exec_args[nargs++] = argv[i];
-        }
-      else
-        {
-	  if (is_x_upc_in_effect)
+	  else if (!(is_c_file || is_upc_file) && is_x_upc_in_effect)
 	    {
 	      is_x_upc_in_effect = 0;
-              exec_args[nargs++] = "-x";
-              exec_args[nargs++] = "none";
+	      exec_args[nargs++] = "-x";
+	      exec_args[nargs++] = "none";
 	    }
-	  exec_args[nargs++] = argv[i];
+	  exec_args[nargs++] = arg;
         }
     }
 

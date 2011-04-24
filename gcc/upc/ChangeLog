@@ -1,3 +1,12 @@
+2011-04-24  Gary Funck  <gary@intrepid.com>
+
+	* upc-cmd.c (GCC_WORD_SWITCH_TAKES_ARG): Add "--param"
+	  to the list of switches that accept arguments.
+	  (main): Check for switches that have a following
+	  argument inside the loop that copies arguments and
+	  adds '-x upc' or '-x none' as necessary.
+	  (main): Misc. clean ups and simplifications.
+
 2011-04-22  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 172873 into gupc branch.
