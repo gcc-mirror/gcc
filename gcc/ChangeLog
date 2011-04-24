@@ -1,3 +1,17 @@
+2011-04-24  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-prop.c (ipa_propagate_indirect_call_infos): Remove obsolette
+	WPA hack.
+	* ipa-prop.h (ipa_get_param, ipa_is_param_used, ipa_param_cannot_devirtualize_p,
+	ipa_param_types_vec_empty, ipa_get_ith_jump_func, ipa_get_lattice):
+	Fortify array bounds.
+	* ipa-inline-analysis.c (add_clause): Fix clause ordering.
+	(and_predicates, or_predicates, predicates_equal_p, evaulate_predicate):
+	Sanity check predicate length.
+	(remap_predicate): Likewise; sanity check jump functions.
+	(inline_read_section, inline_write_summary): Sanity check
+	predicate length.
+
 2011-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR other/48748
