@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -105,8 +105,8 @@ namespace __gnu_parallel
 
       _DifferenceType* __es = new _DifferenceType[__num_samples + 2];
 
-      equally_split(__sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam], 
-		    __num_samples + 1, __es);
+      __equally_split(__sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam], 
+		      __num_samples + 1, __es);
 
       for (_DifferenceType __i = 0; __i < __num_samples; ++__i)
 	::new(&(__sd->_M_samples[__iam * __num_samples + __i]))
