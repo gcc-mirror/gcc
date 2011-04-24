@@ -6136,7 +6136,7 @@
 (define_expand "iordi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(ior:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "ior_operand" "")))]
+		(match_operand:DI 2 "reg_or_cint_ior_operand" "")))]
   ""
   "
 {
@@ -6157,7 +6157,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(ior:DI (match_operand:DI 1 "register_operand" "0,0")
-		(match_operand:DI 2 "ior_operand" "M,i")))]
+		(match_operand:DI 2 "cint_ior_operand" "M,i")))]
   "TARGET_64BIT"
   "* return output_64bit_ior (operands); "
   [(set_attr "type" "binary,shift")
@@ -6176,19 +6176,14 @@
 (define_expand "iorsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(ior:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "arith32_operand" "")))]
+		(match_operand:SI 2 "reg_or_cint_ior_operand" "")))]
   ""
-  "
-{
-  if (! (ior_operand (operands[2], SImode)
-         || register_operand (operands[2], SImode)))
-    operands[2] = force_reg (SImode, operands[2]);
-}")
+  "")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(ior:SI (match_operand:SI 1 "register_operand" "0,0")
-		(match_operand:SI 2 "ior_operand" "M,i")))]
+		(match_operand:SI 2 "cint_ior_operand" "M,i")))]
   ""
   "* return output_ior (operands); "
   [(set_attr "type" "binary,shift")
