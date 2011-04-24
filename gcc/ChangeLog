@@ -1,3 +1,10 @@
+2011-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR other/48748
+	* doc/extend.texi (Type Traits): Document __is_standard_layout,
+	__is_literal_type, and __is_trivial; update throughout about
+	possibly cv-qualified void types.
+
 2011-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48685

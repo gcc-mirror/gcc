@@ -14266,63 +14266,63 @@ If @code{type} is const qualified or is a reference type then the trait is
 false.  Otherwise if @code{__has_trivial_assign (type)} is true then the trait
 is true, else if @code{type} is a cv class or union type with copy assignment
 operators that are known not to throw an exception then the trait is true,
-else it is false.  Requires: @code{type} shall be a complete type, an array
-type of unknown bound, or is a @code{void} type.
+else it is false.  Requires: @code{type} shall be a complete type, 
+(possibly cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __has_nothrow_copy (type)
 If @code{__has_trivial_copy (type)} is true then the trait is true, else if
 @code{type} is a cv class or union type with copy constructors that
 are known not to throw an exception then the trait is true, else it is false.
-Requires: @code{type} shall be a complete type, an array type of
-unknown bound, or is a @code{void} type.
+Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __has_nothrow_constructor (type)
 If @code{__has_trivial_constructor (type)} is true then the trait is
 true, else if @code{type} is a cv class or union type (or array
 thereof) with a default constructor that is known not to throw an
-exception then the trait is true, else it is false.  Requires:
-@code{type} shall be a complete type, an array type of unknown bound,
-or is a @code{void} type.
+exception then the trait is true, else it is false.  Requires: 
+@code{type} shall be a complete type, (possibly cv-qualified) 
+@code{void}, or an array of unknown bound.
 
 @item __has_trivial_assign (type)
 If @code{type} is const qualified or is a reference type then the trait is
 false.  Otherwise if @code{__is_pod (type)} is true then the trait is
 true, else if @code{type} is a cv class or union type with a trivial
 copy assignment ([class.copy]) then the trait is true, else it is
-false.  Requires: @code{type} shall be a complete type, an array type
-of unknown bound, or is a @code{void} type.
+false.  Requires: @code{type} shall be a complete type, (possibly 
+cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __has_trivial_copy (type)
 If @code{__is_pod (type)} is true or @code{type} is a reference type 
 then the trait is true, else if @code{type} is a cv class or union type
 with a trivial copy constructor ([class.copy]) then the trait
 is true, else it is false.  Requires: @code{type} shall be a complete
-type, an array type of unknown bound, or is a @code{void} type.
+type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __has_trivial_constructor (type)
 If @code{__is_pod (type)} is true then the trait is true, else if
 @code{type} is a cv class or union type (or array thereof) with a
 trivial default constructor ([class.ctor]) then the trait is true,
-else it is false.  Requires: @code{type} shall be a complete type, an
-array type of unknown bound, or is a @code{void} type.
+else it is false.  Requires: @code{type} shall be a complete
+type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __has_trivial_destructor (type)
 If @code{__is_pod (type)} is true or @code{type} is a reference type then
 the trait is true, else if @code{type} is a cv class or union type (or
 array thereof) with a trivial destructor ([class.dtor]) then the trait
 is true, else it is false.  Requires: @code{type} shall be a complete
-type, an array type of unknown bound, or is a @code{void} type.
+type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __has_virtual_destructor (type)
 If @code{type} is a class type with a virtual destructor
 ([class.dtor]) then the trait is true, else it is false.  Requires:
-@code{type}  shall be a complete type, an array type of unknown bound,
-or is a @code{void} type.
+@code{type} shall be a complete type, (possibly cv-qualified)
+@code{void}, or an array of unknown bound.
 
 @item __is_abstract (type)
 If @code{type} is an abstract class ([class.abstract]) then the trait
 is true, else it is false.  Requires: @code{type} shall be a complete
-type, an array type of unknown bound, or is a @code{void} type.
+type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __is_base_of (base_type, derived_type)
 If @code{base_type} is a base class of @code{derived_type}
@@ -14347,22 +14347,37 @@ any, are bit-fields of length 0, and @code{type} has no virtual
 members, and @code{type} has no virtual base classes, and @code{type}
 has no base classes @code{base_type} for which 
 @code{__is_empty (base_type)} is false.  Requires: @code{type} shall
-be a complete type, an array type of unknown bound, or is a
-@code{void} type.
+be a complete type, (possibly cv-qualified) @code{void}, or an array
+of unknown bound.
 
 @item __is_enum (type)
 If @code{type} is a cv enumeration type ([basic.compound]) the trait is
 true, else it is false.
 
+@item __is_literal_type (type)
+If @code{type} is a literal type ([basic.types]) the trait is
+true, else it is false.  Requires: @code{type} shall be a complete type,
+(possibly cv-qualified) @code{void}, or an array of unknown bound.
+
 @item __is_pod (type)
 If @code{type} is a cv POD type ([basic.types]) then the trait is true,
-else it is false.  Requires: @code{type} shall be a complete type, 
-an array type of unknown bound, or is a @code{void} type.
+else it is false.  Requires: @code{type} shall be a complete type,
+(possibly cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __is_polymorphic (type)
 If @code{type} is a polymorphic class ([class.virtual]) then the trait
 is true, else it is false.  Requires: @code{type} shall be a complete
-type, an array type of unknown bound, or is a @code{void} type.
+type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
+
+@item __is_standard_layout (type)
+If @code{type} is a standard-layout type ([basic.types]) the trait is
+true, else it is false.  Requires: @code{type} shall be a complete
+type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
+
+@item __is_trivial (type)
+If @code{type} is a trivial type ([basic.types]) the trait is
+true, else it is false.  Requires: @code{type} shall be a complete
+type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __is_union (type)
 If @code{type} is a cv union type ([basic.compound]) the trait is
