@@ -1,3 +1,9 @@
+2011-04-24  Gary Funck  <gary@intrepid.com>
+
+	* c-parser.c (c_parser_upc_sync_statement): Fix ICE that
+	  occurred if there is an error in the barrier id
+	  expression.  Map error_mark_node into NULL.
+
 2011-04-19  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 172359 into gupc branch.

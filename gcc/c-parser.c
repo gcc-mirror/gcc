@@ -8466,16 +8466,19 @@ static void
 c_parser_upc_sync_statement (c_parser *parser, int sync_kind)
 {
   location_t loc;
-  tree expr, stmt, ret;
+  tree expr = NULL_TREE;
+  tree stmt, ret;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_UPC_BARRIER) ||
               c_parser_next_token_is_keyword (parser, RID_UPC_NOTIFY) ||
               c_parser_next_token_is_keyword (parser, RID_UPC_WAIT));
   loc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
   if (c_parser_peek_token (parser)->type != CPP_SEMICOLON)
-    expr = c_parser_expression (parser).value;
-  else
-    expr = NULL_TREE;
+    {
+      expr = c_parser_expression (parser).value;
+      if (expr == error_mark_node)
+        expr = NULL;
+    }
   stmt = size_int (sync_kind);
   ret = upc_build_sync_stmt (loc, stmt, expr);
 }
