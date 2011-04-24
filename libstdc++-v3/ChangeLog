@@ -1,10 +1,23 @@
+2011-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/multiway_merge.h: Uglify equally_split
+	and equally_split_point throughout.
+	* include/parallel/par_loop.h: Likewise.
+	* include/parallel/equally_split.h: Likewise.
+	* include/parallel/set_operations.h: Likewise.
+	* include/parallel/unique_copy.h: Likewise.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/search.h: Likewise.
+	* include/parallel/partial_sum.h: Likewise.
+	* include/parallel/find.h: Likewise.
+
 2011-04-24  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/parallel_mode.xml: Fix link to libgomp online
 	documentation.  Expand link text.
 
 2011-04-24  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* libsupc++/cxxabi.h: Adjust link to FAQ entry.
 
 2011-04-22  François Dumont  <francois.cppdevs@free.fr>
@@ -37,7 +50,7 @@
 	(ref(const A&&), cref(const A&&): Define as deleted.
 	* include/std/future (async): Simplify SFINAE and use result_of to
 	support pointer to member.
-	* testsuite/20_util/reference_wrapper/invoke.cc: Test pointer to 
+	* testsuite/20_util/reference_wrapper/invoke.cc: Test pointer to
 	member.
 	* testsuite/20_util/reference_wrapper/24803.cc: Likewise.
 	* testsuite/20_util/reference_wrapper/typedefs.cc: Test for types

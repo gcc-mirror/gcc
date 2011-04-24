@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -74,7 +74,7 @@ namespace __gnu_parallel
 	{
 	  __num_threads = omp_get_num_threads();
 	  __borders = new _DifferenceType[__num_threads + 2];
-	  equally_split(__size, __num_threads + 1, __borders);
+	  __equally_split(__size, __num_threads + 1, __borders);
 	  __counter = new _DifferenceType[__num_threads + 1];
 	}
 
