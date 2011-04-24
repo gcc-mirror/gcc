@@ -2113,9 +2113,9 @@ this test.
 @node Ada Tests
 @section Ada Language Testsuites
 
-The Ada testsuite includes executable tests from the ACATS 2.5
+The Ada testsuite includes executable tests from the ACATS
 testsuite, publicly available at
-@uref{http://www.adaic.org/compilers/acats/2.5}.
+@uref{http://www.ada-auth.org/acats.html}.
 
 These tests are integrated in the GCC testsuite in the
 @file{ada/acats} directory, and
