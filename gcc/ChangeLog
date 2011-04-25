@@ -1,3 +1,9 @@
+2011-04-25  Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Eric Botcazou <ebotcazou@adacore.com>
+
+	* combine.c (combine_simplify_rtx): Avoid mis-simplifying conditionals
+	for STORE_FLAG_VALUE==-1 case.
+
 2011-04-24  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR target/43804
