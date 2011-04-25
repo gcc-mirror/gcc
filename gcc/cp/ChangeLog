@@ -1,3 +1,9 @@
+2011-04-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48707
+	* pt.c (value_dependent_expression_p): Handle type-dependent
+	expression.
+
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_compound_literal): Don't put an array

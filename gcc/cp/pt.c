@@ -18068,6 +18068,11 @@ value_dependent_expression_p (tree expression)
   if (DECL_P (expression) && type_dependent_expression_p (expression))
     return true;
 
+  /* We shouldn't have gotten here for a type-dependent expression, but
+     let's handle it properly anyway.  */
+  if (TREE_TYPE (expression) == NULL_TREE)
+    return true;
+
   switch (TREE_CODE (expression))
     {
     case IDENTIFIER_NODE:
