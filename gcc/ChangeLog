@@ -1,3 +1,7 @@
+2011-04-25  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (identify_jump_threads): Handle GIMPLE_SWITCH too.
+
 2011-04-25  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* system.h (ENUM_BITFIELD): Remove.
