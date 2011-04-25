@@ -1,3 +1,7 @@
+2011-04-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/titan.md (automata_option "progress"): Remove.
+
 2011-04-25  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (identify_jump_threads): Handle GIMPLE_SWITCH too.
