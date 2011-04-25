@@ -1,3 +1,11 @@
+2011-04-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48707
+	* decl.c (type_dependent_init_p): New.
+	(cp_finish_decl): Check it.
+	* pt.c (any_type_dependent_elements_p): New.
+	* cp-tree.h: Declare it.
+
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_compound_literal): Don't put an array

@@ -18457,6 +18457,19 @@ any_type_dependent_arguments_p (const VEC(tree,gc) *args)
 }
 
 /* Returns TRUE if LIST (a TREE_LIST whose TREE_VALUEs are
+   expressions) contains any type-dependent expressions.  */
+
+bool
+any_type_dependent_elements_p (const_tree list)
+{
+  for (; list; list = TREE_CHAIN (list))
+    if (value_dependent_expression_p (TREE_VALUE (list)))
+      return true;
+
+  return false;
+}
+
+/* Returns TRUE if LIST (a TREE_LIST whose TREE_VALUEs are
    expressions) contains any value-dependent expressions.  */
 
 bool
