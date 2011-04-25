@@ -13295,7 +13295,7 @@ is_386=no
 is_alpha=no
 is_arm=no
 is_m68k=no
-mips_abi=""
+mips_abi=unknown
 is_ppc=no
 is_ppc64=no
 is_sparc=no
@@ -13466,7 +13466,7 @@ else
   LIBGO_IS_M68K_FALSE=
 fi
 
- if test $mips_abi != ""; then
+ if test $mips_abi != unknown; then
   LIBGO_IS_MIPS_TRUE=
   LIBGO_IS_MIPS_FALSE='#'
 else
@@ -13561,6 +13561,11 @@ fi
 
 
 case "$target" in
+    mips-sgi-irix6.5*)
+	# IRIX 6 needs _XOPEN_SOURCE=500 for the XPG5 version of struct
+	# msghdr in <sys/socket.h>.
+	OSCFLAGS='-D_XOPEN_SOURCE=500'
+	;;
     *-*-solaris2.[89])
 	# Solaris 8/9 need this so struct msghdr gets the msg_control
 	# etc. fields in <sys/socket.h> (_XPG4_2).

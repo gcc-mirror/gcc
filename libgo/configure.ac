@@ -140,7 +140,7 @@ is_386=no
 is_alpha=no
 is_arm=no
 is_m68k=no
-mips_abi=""
+mips_abi=unknown
 is_ppc=no
 is_ppc64=no
 is_sparc=no
@@ -233,7 +233,7 @@ AM_CONDITIONAL(LIBGO_IS_386, test $is_386 = yes)
 AM_CONDITIONAL(LIBGO_IS_ALPHA, test $is_alpha = yes)
 AM_CONDITIONAL(LIBGO_IS_ARM, test $is_arm = yes)
 AM_CONDITIONAL(LIBGO_IS_M68K, test $is_m68k = yes)
-AM_CONDITIONAL(LIBGO_IS_MIPS, test $mips_abi != "")
+AM_CONDITIONAL(LIBGO_IS_MIPS, test $mips_abi != unknown)
 AM_CONDITIONAL(LIBGO_IS_MIPSO32, test $mips_abi = o32)
 AM_CONDITIONAL(LIBGO_IS_MIPSN32, test $mips_abi = n32)
 AM_CONDITIONAL(LIBGO_IS_MIPSN64, test $mips_abi = n64)
@@ -260,6 +260,11 @@ AC_SUBST(GO_DEBUG_PROC_REGS_OS_ARCH_FILE)
 
 dnl Some targets need special flags to build sysinfo.go.
 case "$target" in
+    mips-sgi-irix6.5*)
+	# IRIX 6 needs _XOPEN_SOURCE=500 for the XPG5 version of struct
+	# msghdr in <sys/socket.h>.
+	OSCFLAGS='-D_XOPEN_SOURCE=500'
+	;;
     *-*-solaris2.[[89]])
 	# Solaris 8/9 need this so struct msghdr gets the msg_control
 	# etc. fields in <sys/socket.h> (_XPG4_2).
