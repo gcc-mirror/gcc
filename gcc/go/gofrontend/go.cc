@@ -31,6 +31,9 @@ go_create_gogo(int int_type_size, int pointer_size)
   ::gogo = new Gogo(go_get_backend(), int_type_size, pointer_size);
   if (!unique_prefix.empty())
     ::gogo->set_unique_prefix(unique_prefix);
+
+  // FIXME: This should be in the gcc dependent code.
+  ::gogo->define_builtin_function_trees();
 }
 
 // Set the unique prefix we use for exported symbols.

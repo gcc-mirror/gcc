@@ -129,7 +129,7 @@ class Gcc_backend : public Backend
 
   Btype*
   error_type()
-  { gcc_unreachable(); }
+  { return this->make_type(error_mark_node); }
 
   Btype*
   void_type()
@@ -149,41 +149,20 @@ class Gcc_backend : public Backend
   complex_type(int);
 
   Btype*
-  string_type()
-  { gcc_unreachable(); }
+  pointer_type(Btype*);
 
   Btype*
-  pointer_type(const Btype*);
+  function_type(const Btyped_identifier&,
+		const std::vector<Btyped_identifier>&,
+		const std::vector<Btyped_identifier>&,
+		source_location);
 
   Btype*
-  function_type(const Function_type*, Btype* /* receiver */,
-		const Btypes* /* parameters */,
-		const Btypes* /* results */)
-  { gcc_unreachable(); }
-
-  Btype*
-  struct_type(const Struct_type*, const Btypes* /* field_types */)
+  struct_type(const std::vector<Btyped_identifier>&)
   { gcc_unreachable(); }
 
   Btype*
   array_type(const Btype* /* element_type */, const Bexpression* /* length */)
-  { gcc_unreachable(); }
-
-  Btype*
-  slice_type(const Btype* /* element_type */)
-  { gcc_unreachable(); }
-
-  Btype*
-  map_type(const Btype* /* key_type */, const Btype* /* value_type */,
-	   source_location)
-  { gcc_unreachable(); }
-
-  Btype*
-  channel_type(const Btype* /* element_type */)
-  { gcc_unreachable(); }
-
-  Btype*
-  interface_type(const Interface_type*, const Btypes* /* method_types */)
   { gcc_unreachable(); }
 
   // Statements.
@@ -387,10 +366,87 @@ Gcc_backend::complex_type(int bits)
 // Get a pointer type.
 
 Btype*
-Gcc_backend::pointer_type(const Btype* to_type)
+Gcc_backend::pointer_type(Btype* to_type)
 {
-  tree type = build_pointer_type(to_type->get_tree());
+  tree to_type_tree = to_type->get_tree();
+  if (to_type_tree == error_mark_node)
+    return this->error_type();
+  tree type = build_pointer_type(to_type_tree);
   return this->make_type(type);
+}
+
+// Make a function type.
+
+Btype*
+Gcc_backend::function_type(const Btyped_identifier& receiver,
+			   const std::vector<Btyped_identifier>& parameters,
+			   const std::vector<Btyped_identifier>& results,
+			   source_location location)
+{
+  tree args = NULL_TREE;
+  tree* pp = &args;
+  if (receiver.btype != NULL)
+    {
+      tree t = receiver.btype->get_tree();
+      if (t == error_mark_node)
+	return this->error_type();
+      *pp = tree_cons(NULL_TREE, t, NULL_TREE);
+      pp = &TREE_CHAIN(*pp);
+    }
+
+  for (std::vector<Btyped_identifier>::const_iterator p = parameters.begin();
+       p != parameters.end();
+       ++p)
+    {
+      tree t = p->btype->get_tree();
+      if (t == error_mark_node)
+	return this->error_type();
+      *pp = tree_cons(NULL_TREE, t, NULL_TREE);
+      pp = &TREE_CHAIN(*pp);
+    }
+
+  // Varargs is handled entirely at the Go level.  When converted to
+  // GENERIC functions are not varargs.
+  *pp = void_list_node;
+
+  tree result;
+  if (results.empty())
+    result = void_type_node;
+  else if (results.size() == 1)
+    result = results.front().btype->get_tree();
+  else
+    {
+      result = make_node(RECORD_TYPE);
+      tree field_trees = NULL_TREE;
+      pp = &field_trees;
+      for (std::vector<Btyped_identifier>::const_iterator p = results.begin();
+	   p != results.end();
+	   ++p)
+	{
+	  const std::string name = (p->name.empty()
+				    ? "UNNAMED"
+				    : p->name);
+	  tree name_tree = get_identifier_from_string(name);
+	  tree field_type_tree = p->btype->get_tree();
+	  if (field_type_tree == error_mark_node)
+	    return this->error_type();
+	  tree field = build_decl(location, FIELD_DECL, name_tree,
+				  field_type_tree);
+	  DECL_CONTEXT(field) = result;
+	  *pp = field;
+	  pp = &DECL_CHAIN(field);
+	}
+      TYPE_FIELDS(result) = field_trees;
+      layout_type(result);
+    }
+  if (result == error_mark_node)
+    return this->error_type();
+
+  tree fntype = build_function_type(result, args);
+  if (fntype == error_mark_node)
+    return this->error_type();
+
+  return this->make_type(build_pointer_type(fntype));
 }
 
 // An expression as a statement.

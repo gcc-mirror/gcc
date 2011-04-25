@@ -1396,10 +1396,6 @@ class Float_type : public Type
   bool
   is_identical(const Float_type* t) const;
 
-  // Return a tree for this type without using a Gogo*.
-  tree
-  type_tree() const;
-
  protected:
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -1467,10 +1463,6 @@ class Complex_type : public Type
   // Whether this type is the same as T.
   bool
   is_identical(const Complex_type* t) const;
-
-  // Return a tree for this type without using a Gogo*.
-  tree
-  type_tree() const;
 
  protected:
   unsigned int

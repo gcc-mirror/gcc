@@ -7,10 +7,6 @@
 #ifndef GO_BACKEND_H
 #define GO_BACKEND_H
 
-class Function_type;
-class Struct_type;
-class Interface_type;
-
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
@@ -36,9 +32,6 @@ class Bvariable;
 // The backend representation of a label.
 class Blabel;
 
-// A list of backend types.
-typedef std::vector<Btype*> Btypes;
-
 // The backend interface.  This is a pure abstract class that a
 // specific backend will implement.
 
@@ -46,6 +39,24 @@ class Backend
 {
  public:
   virtual ~Backend() { }
+
+  // Name/type/location.  Used for function parameters, struct fields,
+  // interface methods.
+  struct Btyped_identifier
+  {
+    std::string name;
+    Btype* btype;
+    source_location location;
+
+    Btyped_identifier()
+      : name(), btype(NULL), location(UNKNOWN_LOCATION)
+    { }
+
+    Btyped_identifier(const std::string& a_name, Btype* a_btype,
+		     source_location a_location)
+      : name(a_name), btype(a_btype), location(a_location)
+    { }
+  };
 
   // Types.
 
@@ -69,55 +80,35 @@ class Backend
   virtual Btype*
   integer_type(bool is_unsigned, int bits) = 0;
 
-  // Get an unnamed floating point type with the given number of bits.
+  // Get an unnamed floating point type with the given number of bits
+  // (32 or 64).
   virtual Btype*
   float_type(int bits) = 0;
 
-  // Get an unnamed complex type with the given number of bits.
+  // Get an unnamed complex type with the given number of bits (64 or 128).
   virtual Btype*
   complex_type(int bits) = 0;
 
-  // Get the unnamed string type.
-  virtual Btype*
-  string_type() = 0;
-
   // Get a pointer type.
   virtual Btype*
-  pointer_type(const Btype* to_type) = 0;
+  pointer_type(Btype* to_type) = 0;
 
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
   // is provided so that the names are available.
   virtual Btype*
-  function_type(const Function_type*, Btype* receiver,
-		const Btypes* parameters,
-		const Btypes* results) = 0;
+  function_type(const Btyped_identifier& receiver,
+		const std::vector<Btyped_identifier>& parameters,
+		const std::vector<Btyped_identifier>& results,
+		source_location location) = 0;
 
-  // Get a struct type.  The Struct_type is provided to get the field
-  // names.
+  // Get a struct type.
   virtual Btype*
-  struct_type(const Struct_type*, const Btypes* field_types) = 0;
+  struct_type(const std::vector<Btyped_identifier>& fields) = 0;
 
   // Get an array type.
   virtual Btype*
   array_type(const Btype* element_type, const Bexpression* length) = 0;
-
-  // Get a slice type.
-  virtual Btype*
-  slice_type(const Btype* element_type) = 0;
-
-  // Get a map type.
-  virtual Btype*
-  map_type(const Btype* key_type, const Btype* value_type, source_location) = 0;
-
-  // Get a channel type.
-  virtual Btype*
-  channel_type(const Btype* element_type) = 0;
-
-  // Get an interface type.  The Interface_type is provided to get the
-  // method names.
-  virtual Btype*
-  interface_type(const Interface_type*, const Btypes* method_types) = 0;
 
   // Statements.
 
