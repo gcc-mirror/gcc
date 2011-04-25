@@ -1581,7 +1581,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
     };
 
-  /// underlying_type (still unimplemented)
+  /// underlying_type
+  template<typename _Tp>
+    struct underlying_type
+    {
+      typedef __underlying_type(_Tp) type;
+    };
 
   /// declval
   template<typename _Tp>
