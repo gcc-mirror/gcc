@@ -14422,6 +14422,10 @@ type, (possibly cv-qualified) @code{void}, or an array of unknown bound.
 If @code{type} is a cv union type ([basic.compound]) the trait is
 true, else it is false.
 
+@item __underlying_type (type)
+The underlying type of @code{type}.  Requires: @code{type} shall be
+an enumeration type ([dcl.enum]).
+
 @end table
 
 @node Java Exceptions

@@ -16,7 +16,6 @@
 	* pt.c (for_each_template_parm_r, tsubst, unify,
 	dependent_type_p_r): Likewise.
 	* mangle.c (write_type): Sorry for __underlying_type.
-	* doc/extend.texi: Document __underlying_type.
 
 2011-04-25  Jason Merrill  <jason@redhat.com>
 
