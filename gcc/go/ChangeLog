@@ -1,3 +1,15 @@
+2011-04-25  Evan Shaw  <edsrzf@gmail.com>
+
+	* go-gcc.c (class Gcc_tree): Make get_tree const.
+	(Gcc_backend::void_type): Implement.
+	(Gcc_backend::bool_type): Implement.
+	(Gcc_backend::integer_type): Implement.
+	(Gcc_backend::float_type): Implement.
+	(Gcc_backend::complex_type): New function.
+	(Gcc_backend::pointer_type): New function.
+	(Gcc_backend::make_type): New function.
+	(type_to_tree): New function.
+
 2011-04-21  Ian Lance Taylor  <iant@google.com>
 
 	* go-system.h (go_assert, go_unreachable): Define.

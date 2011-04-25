@@ -31,6 +31,7 @@ extern "C"
 #include "statements.h"
 #include "export.h"
 #include "import.h"
+#include "backend.h"
 #include "types.h"
 
 // Class Type.
@@ -1622,8 +1623,11 @@ class Void_type : public Type
 
  protected:
   tree
-  do_get_tree(Gogo*)
-  { return void_type_node; }
+  do_get_tree(Gogo* gogo)
+  {
+    Btype* btype = gogo->backend()->void_type();
+    return type_to_tree(btype);
+  }
 
   tree
   do_get_init_tree(Gogo*, tree, bool)
@@ -1660,8 +1664,11 @@ class Boolean_type : public Type
 
  protected:
   tree
-  do_get_tree(Gogo*)
-  { return boolean_type_node; }
+  do_get_tree(Gogo* gogo)
+  {
+    Btype* btype = gogo->backend()->bool_type();
+    return type_to_tree(btype);
+  }
 
   tree
   do_get_init_tree(Gogo*, tree type_tree, bool is_clear)
@@ -1806,36 +1813,10 @@ Integer_type::do_get_tree(Gogo*)
       return error_mark_node;
     }
 
-  if (this->is_unsigned_)
-    {
-      if (this->bits_ == INT_TYPE_SIZE)
-	return unsigned_type_node;
-      else if (this->bits_ == CHAR_TYPE_SIZE)
-	return unsigned_char_type_node;
-      else if (this->bits_ == SHORT_TYPE_SIZE)
-	return short_unsigned_type_node;
-      else if (this->bits_ == LONG_TYPE_SIZE)
-	return long_unsigned_type_node;
-      else if (this->bits_ == LONG_LONG_TYPE_SIZE)
-	return long_long_unsigned_type_node;
-      else
-	return make_unsigned_type(this->bits_);
-    }
-  else
-    {
-      if (this->bits_ == INT_TYPE_SIZE)
-	return integer_type_node;
-      else if (this->bits_ == CHAR_TYPE_SIZE)
-	return signed_char_type_node;
-      else if (this->bits_ == SHORT_TYPE_SIZE)
-	return short_integer_type_node;
-      else if (this->bits_ == LONG_TYPE_SIZE)
-	return long_integer_type_node;
-      else if (this->bits_ == LONG_LONG_TYPE_SIZE)
-	return long_long_integer_type_node;
-      else
-	return make_signed_type(this->bits_);
-    }
+  // FIXME: GOGO can be NULL when called from go_type_for_size, so call
+  // go_get_backend() instead of gogo->backend().
+  Btype* btype = go_get_backend()->integer_type(this->is_unsigned_, this->bits_);
+  return type_to_tree(btype);
 }
 
 tree
@@ -1968,19 +1949,8 @@ Float_type::do_hash_for_method(Gogo*) const
 tree
 Float_type::type_tree() const
 {
-  if (this->bits_ == FLOAT_TYPE_SIZE)
-    return float_type_node;
-  else if (this->bits_ == DOUBLE_TYPE_SIZE)
-    return double_type_node;
-  else if (this->bits_ == LONG_DOUBLE_TYPE_SIZE)
-    return long_double_type_node;
-  else
-    {
-      tree ret = make_node(REAL_TYPE);
-      TYPE_PRECISION(ret) = this->bits_;
-      layout_type(ret);
-      return ret;
-    }
+  Btype* btype = go_get_backend()->float_type(this->bits_);
+  return type_to_tree(btype);
 }
 
 // Get a tree.
@@ -2124,19 +2094,8 @@ Complex_type::do_hash_for_method(Gogo*) const
 tree
 Complex_type::type_tree() const
 {
-  if (this->bits_ == FLOAT_TYPE_SIZE * 2)
-    return complex_float_type_node;
-  else if (this->bits_ == DOUBLE_TYPE_SIZE * 2)
-    return complex_double_type_node;
-  else if (this->bits_ == LONG_DOUBLE_TYPE_SIZE * 2)
-    return complex_long_double_type_node;
-  else
-    {
-      tree ret = make_node(REAL_TYPE);
-      TYPE_PRECISION(ret) = this->bits_ / 2;
-      layout_type(ret);
-      return build_complex_type(ret);
-    }
+  Btype* btype = go_get_backend()->complex_type(this->bits_);
+  return type_to_tree(btype);
 }
 
 // Get a tree.
@@ -3136,7 +3095,9 @@ Pointer_type::do_hash_for_method(Gogo* gogo) const
 tree
 Pointer_type::do_get_tree(Gogo* gogo)
 {
-  return build_pointer_type(this->to_type_->get_tree(gogo));
+  Btype* to_btype = tree_to_type(this->to_type_->get_tree(gogo));
+  Btype* btype = gogo->backend()->pointer_type(to_btype);
+  return type_to_tree(btype);
 }
 
 // Initialize a pointer type.
