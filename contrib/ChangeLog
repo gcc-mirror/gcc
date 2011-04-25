@@ -1,3 +1,7 @@
+2011-04-25  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* paranoia.cc (ENUM_BITFIELD): Remove.
+
 2011-04-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc_update (gcc/config/arm/arm-tables.opt): New dependencies.
