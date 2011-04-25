@@ -169,7 +169,6 @@ lines
     };
 #undef DEFTREECODE
 
-#define ENUM_BITFIELD(X) enum X
 #define class klass
 
 #include "real.h"

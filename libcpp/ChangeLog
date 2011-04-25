@@ -1,3 +1,7 @@
+2011-04-25  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* system.h (ENUM_BITFIELD): Remove.
+
 2011-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/48740

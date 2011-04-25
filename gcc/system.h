@@ -598,15 +598,6 @@ extern int vsnprintf(char *, size_t, const char *, va_list);
 #define HOST_BIT_BUCKET "/dev/null"
 #endif
 
-/* Be conservative and only use enum bitfields with GCC.
-   FIXME: provide a complete autoconf test for buggy enum bitfields.  */
-
-#if (GCC_VERSION > 2000)
-#define ENUM_BITFIELD(TYPE) __extension__ enum TYPE
-#else
-#define ENUM_BITFIELD(TYPE) unsigned int
-#endif
-
 #ifndef offsetof
 #define offsetof(TYPE, MEMBER)	((size_t) &((TYPE *) 0)->MEMBER)
 #endif
