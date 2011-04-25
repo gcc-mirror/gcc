@@ -5701,6 +5701,36 @@ initialize_artificial_var (tree decl, VEC(constructor_elt,gc) *v)
 }
 
 /* INIT is the initializer for a variable, as represented by the
+   parser.  Returns true iff INIT is type-dependent.  */
+
+static bool
+type_dependent_init_p (tree init)
+{
+  if (TREE_CODE (init) == TREE_LIST)
+    /* A parenthesized initializer, e.g.: int i (3, 2); ? */
+    return any_type_dependent_elements_p (init);
+  else if (TREE_CODE (init) == CONSTRUCTOR)
+  /* A brace-enclosed initializer, e.g.: int i = { 3 }; ? */
+    {
+      VEC(constructor_elt, gc) *elts;
+      size_t nelts;
+      size_t i;
+
+      elts = CONSTRUCTOR_ELTS (init);
+      nelts = VEC_length (constructor_elt, elts);
+      for (i = 0; i < nelts; ++i)
+	if (type_dependent_init_p (VEC_index (constructor_elt,
+					      elts, i)->value))
+	  return true;
+    }
+  else
+    /* It must be a simple expression, e.g., int i = 3;  */
+    return type_dependent_expression_p (init);
+
+  return false;
+}
+
+/* INIT is the initializer for a variable, as represented by the
    parser.  Returns true iff INIT is value-dependent.  */
 
 static bool
@@ -5876,19 +5906,25 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 template is instantiated.  But, if DECL is a variable constant
 	 then it can be used in future constant expressions, so its value
 	 must be available. */
-      if (init
-	  && init_const_expr_p
-	  && !type_dependent_p
-	  && decl_maybe_constant_var_p (decl)
-	  && !value_dependent_init_p (init))
+
+      if (TREE_CODE (decl) != VAR_DECL || dependent_type_p (type))
+	/* We can't do anything if the decl has dependent type.  */;
+      else if (init
+	       && init_const_expr_p
+	       && !type_dependent_p
+	       && decl_maybe_constant_var_p (decl)
+	       && !type_dependent_init_p (init)
+	       && !value_dependent_init_p (init))
 	{
+	  /* This variable seems to be a non-dependent constant, so process
+	     its initializer.  If check_initializer returns non-null the
+	     initialization wasn't constant after all.  */
 	  tree init_code = check_initializer (decl, init, flags, &cleanup);
 	  if (init_code == NULL_TREE)
 	    init = NULL_TREE;
 	}
-      else if (TREE_CODE (decl) == VAR_DECL
-	       && !DECL_PRETTY_FUNCTION_P (decl)
-	       && !type_dependent_p)
+      else if (!DECL_PRETTY_FUNCTION_P (decl))
+	/* Deduce array size even if the initializer is dependent.  */
 	maybe_deduce_size_from_array_init (decl, init);
 
       if (init)
