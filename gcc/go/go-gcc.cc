@@ -52,7 +52,7 @@ class Gcc_tree
   { }
 
   tree
-  get_tree()
+  get_tree() const
   { return this->t_; }
 
  private:
@@ -133,23 +133,27 @@ class Gcc_backend : public Backend
 
   Btype*
   void_type()
-  { gcc_unreachable(); }
+  { return this->make_type(void_type_node); }
 
   Btype*
   bool_type()
-  { gcc_unreachable(); }
+  { return this->make_type(boolean_type_node); }
 
   Btype*
-  integer_type(bool /* is_unsigned */, int /* bits */)
-  { gcc_unreachable(); }
+  integer_type(bool, int);
 
   Btype*
-  float_type(int /* bits */)
-  { gcc_unreachable(); }
+  float_type(int);
+
+  Btype*
+  complex_type(int);
 
   Btype*
   string_type()
   { gcc_unreachable(); }
+
+  Btype*
+  pointer_type(const Btype*);
 
   Btype*
   function_type(const Function_type*, Btype* /* receiver */,
@@ -283,6 +287,11 @@ class Gcc_backend : public Backend
   Bstatement*
   make_statement(tree t)
   { return new Bstatement(t); }
+
+  // Make a Btype from a tree.
+  Btype*
+  make_type(tree t)
+  { return new Btype(t); }
 };
 
 // A helper function.
@@ -291,6 +300,97 @@ static inline tree
 get_identifier_from_string(const std::string& str)
 {
   return get_identifier_with_length(str.data(), str.length());
+}
+
+// Get an unnamed integer type.
+
+Btype*
+Gcc_backend::integer_type(bool is_unsigned, int bits)
+{
+  tree type;
+  if (is_unsigned)
+    {
+      if (bits == INT_TYPE_SIZE)
+        type = unsigned_type_node;
+      else if (bits == CHAR_TYPE_SIZE)
+        type = unsigned_char_type_node;
+      else if (bits == SHORT_TYPE_SIZE)
+        type = short_unsigned_type_node;
+      else if (bits == LONG_TYPE_SIZE)
+        type = long_unsigned_type_node;
+      else if (bits == LONG_LONG_TYPE_SIZE)
+        type = long_long_unsigned_type_node;
+      else
+        type = make_unsigned_type(bits);
+    }
+  else
+    {
+      if (bits == INT_TYPE_SIZE)
+        type = integer_type_node;
+      else if (bits == CHAR_TYPE_SIZE)
+        type = signed_char_type_node;
+      else if (bits == SHORT_TYPE_SIZE)
+        type = short_integer_type_node;
+      else if (bits == LONG_TYPE_SIZE)
+        type = long_integer_type_node;
+      else if (bits == LONG_LONG_TYPE_SIZE)
+        type = long_long_integer_type_node;
+      else
+        type = make_signed_type(bits);
+    }
+  return this->make_type(type);
+}
+
+// Get an unnamed float type.
+
+Btype*
+Gcc_backend::float_type(int bits)
+{
+  tree type;
+  if (bits == FLOAT_TYPE_SIZE)
+    type = float_type_node;
+  else if (bits == DOUBLE_TYPE_SIZE)
+    type = double_type_node;
+  else if (bits == LONG_DOUBLE_TYPE_SIZE)
+    type = long_double_type_node;
+  else
+    {
+      type = make_node(REAL_TYPE);
+      TYPE_PRECISION(type) = bits;
+      layout_type(type);
+    }
+  return this->make_type(type);
+}
+
+// Get an unnamed complex type.
+
+Btype*
+Gcc_backend::complex_type(int bits)
+{
+  tree type;
+  if (bits == FLOAT_TYPE_SIZE * 2)
+    type = complex_float_type_node;
+  else if (bits == DOUBLE_TYPE_SIZE * 2)
+    type = complex_double_type_node;
+  else if (bits == LONG_DOUBLE_TYPE_SIZE * 2)
+    type = complex_long_double_type_node;
+  else
+    {
+      type = make_node(REAL_TYPE);
+      TYPE_PRECISION(type) = bits / 2;
+      layout_type(type);
+      type = build_complex_type(type);
+    }
+  return this->make_type(type);
+}
+
+// Get a pointer type.
+
+Btype*
+Gcc_backend::pointer_type(const Btype* to_type)
+{
+  tree type = build_pointer_type(to_type->get_tree());
+  return this->make_type(type);
 }
 
 // An expression as a statement.
@@ -864,6 +964,12 @@ tree_to_block(tree t)
 {
   gcc_assert(TREE_CODE(t) == BIND_EXPR);
   return new Bblock(t);
+}
+
+tree
+type_to_tree(Btype* bt)
+{
+  return bt->get_tree();
 }
 
 tree

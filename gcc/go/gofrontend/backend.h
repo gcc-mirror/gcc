@@ -73,9 +73,17 @@ class Backend
   virtual Btype*
   float_type(int bits) = 0;
 
+  // Get an unnamed complex type with the given number of bits.
+  virtual Btype*
+  complex_type(int bits) = 0;
+
   // Get the unnamed string type.
   virtual Btype*
   string_type() = 0;
+
+  // Get a pointer type.
+  virtual Btype*
+  pointer_type(const Btype* to_type) = 0;
 
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
@@ -299,6 +307,7 @@ extern Bexpression* tree_to_expr(tree);
 extern Bstatement* tree_to_stat(tree);
 extern Bfunction* tree_to_function(tree);
 extern Bblock* tree_to_block(tree);
+extern tree type_to_tree(Btype*);
 extern tree expr_to_tree(Bexpression*);
 extern tree stat_to_tree(Bstatement*);
 extern tree block_to_tree(Bblock*);
