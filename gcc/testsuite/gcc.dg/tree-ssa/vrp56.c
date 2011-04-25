@@ -37,6 +37,6 @@ cleanup_empty_eh (basic_block bb)
 	foo ();
     }
 }
-/* { dg-final { scan-tree-dump-times "Threaded" 2 "vrp1"} } */
+/* { dg-final { scan-tree-dump-times "Threaded" 1 "vrp1"} } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
 
