@@ -5787,7 +5787,10 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 
 	  /* If STORE_FLAG_VALUE is -1, we have cases similar to
 	     those above.  */
-	  if (STORE_FLAG_VALUE == -1
+	  if (in_cond)
+	    ;
+
+	  else if (STORE_FLAG_VALUE == -1
 	      && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 	      && op1 == const0_rtx
 	      && (num_sign_bit_copies (op0, mode)
