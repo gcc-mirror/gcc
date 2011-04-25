@@ -1,5 +1,11 @@
 2011-04-24  Gary Funck  <gary@intrepid.com>
 
+	* upc-act.c (upc_handle_option): Fix incorrect error
+	  diagnostic messages when both -fupc-debug and
+	  -fupc-inline-lib are asserted.
+
+2011-04-24  Gary Funck  <gary@intrepid.com>
+
 	* upc-cmd.c (GCC_WORD_SWITCH_TAKES_ARG): Add "--param"
 	  to the list of switches that accept arguments.
 	  (main): Check for switches that have a following

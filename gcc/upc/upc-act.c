@@ -111,13 +111,12 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
       if ((value == 1) && (flag_upc_inline_lib == 1))
         error ("-fupc-debug is incompatible with -fupc-inline-lib");
       flag_upc_debug = value;
-      flag_upc_instrument = value;
       break;
     case OPT_fupc_inline_lib:
       if ((value == 1) && (flag_upc_instrument == 1))
-        error ("-fupc-instrument is incompatible with -fupc-inline-lib");
+        error ("-fupc-inline-lib is incompatible with -fupc-instrument");
       if ((value == 1) && (flag_upc_debug == 1))
-        error ("-fupc-instrument is incompatible with -fupc-debug");
+        error ("-fupc-inline-lib is incompatible with -fupc-debug");
       flag_upc_inline_lib = value;
       break;
     case OPT_fupc_instrument:
