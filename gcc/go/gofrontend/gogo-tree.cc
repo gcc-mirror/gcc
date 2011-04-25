@@ -1743,7 +1743,7 @@ go_type_for_mode(enum machine_mode mode, int unsignedp)
 	    return long_double_type_node;
 	  return NULL_TREE;
 	}
-      return type->float_type()->type_tree();
+      return type->get_tree(go_get_gogo());
     }
   else if (mc == MODE_COMPLEX_FLOAT)
     {
@@ -1763,7 +1763,7 @@ go_type_for_mode(enum machine_mode mode, int unsignedp)
 	    return complex_long_double_type_node;
 	  return NULL_TREE;
 	}
-      return type->complex_type()->type_tree();
+      return type->get_tree(go_get_gogo());
     }
   else
     return NULL_TREE;

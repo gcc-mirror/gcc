@@ -439,6 +439,10 @@ class Gogo
   void
   write_globals();
 
+  // Create trees for implicit builtin functions.
+  void
+  define_builtin_function_trees();
+
   // Build a call to a builtin function.  PDECL should point to a NULL
   // initialized static pointer which will hold the fndecl.  NAME is
   // the name of the function.  NARGS is the number of arguments.
@@ -557,10 +561,6 @@ class Gogo
 
   // The stack of functions.
   typedef std::vector<Open_function> Open_functions;
-
-  // Create trees for implicit builtin functions.
-  void
-  define_builtin_function_trees();
 
   // Set up the built-in unsafe package.
   void
