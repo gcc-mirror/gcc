@@ -1991,6 +1991,10 @@ write_type (tree type)
 	      sorry ("mangling typeof, use decltype instead");
 	      break;
 
+	    case UNDERLYING_TYPE:
+	      sorry ("mangling __underlying_type");
+	      break;
+
 	    case LANG_TYPE:
 	      /* fall through.  */
 

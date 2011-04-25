@@ -556,12 +556,13 @@ typedef enum cp_trait_kind
   CPTK_IS_CONVERTIBLE_TO,
   CPTK_IS_EMPTY,
   CPTK_IS_ENUM,
+  CPTK_IS_LITERAL_TYPE,
   CPTK_IS_POD,
   CPTK_IS_POLYMORPHIC,
   CPTK_IS_STD_LAYOUT,
   CPTK_IS_TRIVIAL,
-  CPTK_IS_LITERAL_TYPE,
-  CPTK_IS_UNION
+  CPTK_IS_UNION,
+  CPTK_UNDERLYING_TYPE
 } cp_trait_kind;
 
 /* The types that we are processing.  */
@@ -3360,6 +3361,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* The expression in question for a TYPEOF_TYPE.  */
 #define TYPEOF_TYPE_EXPR(NODE) (TYPEOF_TYPE_CHECK (NODE))->type.values
 
+/* The type in question for an UNDERLYING_TYPE.  */
+#define UNDERLYING_TYPE_TYPE(NODE) \
+  (UNDERLYING_TYPE_CHECK (NODE))->type.values
+
 /* The expression in question for a DECLTYPE_TYPE.  */
 #define DECLTYPE_TYPE_EXPR(NODE) (DECLTYPE_TYPE_CHECK (NODE))->type.values
 
@@ -5321,6 +5326,7 @@ extern tree finish_id_expression		(tree, tree, tree,
 						 const char **,
                                                  location_t);
 extern tree finish_typeof			(tree);
+extern tree finish_underlying_type	        (tree);
 extern tree finish_offsetof			(tree);
 extern void finish_decl_cleanup			(tree, tree);
 extern void finish_eh_cleanup			(tree);

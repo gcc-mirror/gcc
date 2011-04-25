@@ -450,6 +450,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_trivial",     RID_IS_TRIVIAL, D_CXXONLY },
   { "__is_union",	RID_IS_UNION,	D_CXXONLY },
   { "__is_literal_type", RID_IS_LITERAL_TYPE, D_CXXONLY },
+  { "__underlying_type", RID_UNDERLYING_TYPE, D_CXXONLY },
   { "__imag",		RID_IMAGPART,	0 },
   { "__imag__",		RID_IMAGPART,	0 },
   { "__inline",		RID_INLINE,	0 },
