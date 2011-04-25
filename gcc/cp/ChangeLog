@@ -1,3 +1,23 @@
+2011-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.def: Add a new UNDERLYING_TYPE tree code.
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_UNDERLYING_TYPE, tidy.
+	(UNDERLYING_TYPE_TYPE): Add.
+	* cp-objcp-common.c (cp_common_init_ts): Mark UNDERLYING_TYPE
+	as TS_COMMON.
+	* parser.c (cp_lexer_next_token_is_decl_specifier_keyword,
+	cp_parser_simple_type_specifier): Handle UNDERLYING_TYPE.
+	(cp_parser_trait_expr): Deal with RID_UNDERLYING_TYPE; tidy.
+	* semantics.c (finish_underlying_type): New.
+	* typeck.c (structural_comptypes): Handle UNDERLYING_TYPE.
+	* error.c (dump_type, dump_type_prefix, dump_type_suffix): Likewise.
+	* cxx-pretty-print.c (p_cxx_type_id): Likewise.
+	* tree.c (cp_walk_subtrees): Likewise.
+	* pt.c (for_each_template_parm_r, tsubst, unify,
+	dependent_type_p_r): Likewise.
+	* mangle.c (write_type): Sorry for __underlying_type.
+	* doc/extend.texi: Document __underlying_type.
+
 2011-04-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48707

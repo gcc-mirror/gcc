@@ -1,3 +1,16 @@
+2011-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/ext/underlying_type1.C: New.
+	* g++.dg/ext/underlying_type2.C: Likewise.
+	* g++.dg/ext/underlying_type3.C: Likewise.
+	* g++.dg/ext/underlying_type4.C: Likewise.
+	* g++.dg/ext/underlying_type5.C: Likewise.
+	* g++.dg/ext/underlying_type6.C: Likewise.
+	* g++.dg/ext/underlying_type7.C: Likewise.
+	* g++.dg/ext/underlying_type8.C: Likewise.
+	* g++.dg/ext/underlying_type9.C: Likewise.
+	* g++.dg/ext/underlying_type10.C: Likewise.
+
 2011-04-25  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/regress/template-const2.C: New.
