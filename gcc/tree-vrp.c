@@ -7555,25 +7555,25 @@ identify_jump_threads (void)
 	 may be some value in handling SWITCH_EXPR here, I doubt it's
 	 terribly important.  */
       last = gsi_stmt (gsi_last_bb (bb));
-      if (gimple_code (last) != GIMPLE_COND)
-	continue;
 
-      /* We're basically looking for any kind of conditional with
+      /* We're basically looking for a switch or any kind of conditional with
 	 integral or pointer type arguments.  Note the type of the second
 	 argument will be the same as the first argument, so no need to
 	 check it explicitly.  */
-      if (TREE_CODE (gimple_cond_lhs (last)) == SSA_NAME
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (last)))
-	      || POINTER_TYPE_P (TREE_TYPE (gimple_cond_lhs (last))))
-	  && (TREE_CODE (gimple_cond_rhs (last)) == SSA_NAME
-	      || is_gimple_min_invariant (gimple_cond_rhs (last))))
+      if (gimple_code (last) == GIMPLE_SWITCH
+	  || (gimple_code (last) == GIMPLE_COND
+      	      && TREE_CODE (gimple_cond_lhs (last)) == SSA_NAME
+	      && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (last)))
+		  || POINTER_TYPE_P (TREE_TYPE (gimple_cond_lhs (last))))
+	      && (TREE_CODE (gimple_cond_rhs (last)) == SSA_NAME
+		  || is_gimple_min_invariant (gimple_cond_rhs (last)))))
 	{
 	  edge_iterator ei;
 
 	  /* We've got a block with multiple predecessors and multiple
-	     successors which also ends in a suitable conditional.  For
-	     each predecessor, see if we can thread it to a specific
-	     successor.  */
+	     successors which also ends in a suitable conditional or
+	     switch statement.  For each predecessor, see if we can thread
+	     it to a specific successor.  */
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
 	      /* Do not thread across back edges or abnormal edges

@@ -1,3 +1,7 @@
+2011-04-25  Jeff Law <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp56.c: new test.
+
 2011-04-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* go.test/go-test.exp (go-set-goarch): Accept mips*-*-*.
