@@ -839,11 +839,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
    `QImode'.  */
 #define FUNCTION_MODE QImode
 
-/* If cross-compiling, don't require stdio.h etc to build libgcc.a.  */
-#if defined CROSS_DIRECTORY_STRUCTURE && ! defined inhibit_libc
-#define inhibit_libc
-#endif
-
 /*}}}*/ 
 
 /* Local Variables: */
