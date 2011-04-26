@@ -1,3 +1,8 @@
+2011-04-26  Martin Jambor  <mjambor@suse.cz>
+
+	* class.c (cp_fold_obj_type_ref): Remove.
+	* cp-tree.h (cp_fold_obj_type_ref): Remove declaration.
+
 2011-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.def: Add a new UNDERLYING_TYPE tree code.
