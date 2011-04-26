@@ -8377,32 +8377,4 @@ build_rtti_vtbl_entries (tree binfo, vtbl_init_data* vid)
   CONSTRUCTOR_APPEND_ELT (vid->inits, NULL_TREE, init);
 }
 
-/* Fold a OBJ_TYPE_REF expression to the address of a function.
-   KNOWN_TYPE carries the true type of OBJ_TYPE_REF_OBJECT(REF).  */
-
-tree
-cp_fold_obj_type_ref (tree ref, tree known_type)
-{
-  HOST_WIDE_INT index = tree_low_cst (OBJ_TYPE_REF_TOKEN (ref), 1);
-  HOST_WIDE_INT i = 0;
-  tree v = BINFO_VIRTUALS (TYPE_BINFO (known_type));
-  tree fndecl;
-
-  while (i != index)
-    {
-      i += (TARGET_VTABLE_USES_DESCRIPTORS
-	    ? TARGET_VTABLE_USES_DESCRIPTORS : 1);
-      v = TREE_CHAIN (v);
-    }
-
-  fndecl = BV_FN (v);
-
-#ifdef ENABLE_CHECKING
-  gcc_assert (tree_int_cst_equal (OBJ_TYPE_REF_TOKEN (ref),
-				  DECL_VINDEX (fndecl)));
-#endif
-
-  return build_address (fndecl);
-}
-
 #include "gt-cp-class.h"
