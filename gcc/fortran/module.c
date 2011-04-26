@@ -3011,6 +3011,7 @@ fix_mio_expr (gfc_expr *e)
       sym->attr.flavor = FL_PROCEDURE;
       sym->attr.generic = 1;
       e->symtree = gfc_find_symtree (gfc_current_ns->sym_root, fname);
+      gfc_commit_symbol (sym);
     }
 }
 

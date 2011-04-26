@@ -1,3 +1,11 @@
+2011-04-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48588
+	* parse.c (resolve_all_program_units): Skip modules.
+	(translate_all_program_units): Handle modules.
+	(gfc_parse_file): Defer code generation for modules.
+	* module.c (fix_mio_expr): Commit created symbol.
+
 2011-04-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/48360
