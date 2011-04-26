@@ -35,12 +35,12 @@
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_time): Discard
 	unused compilation result thanks to /dev/null.
-	* testsuite/lib/libstdc++.exp (check_v3_target_debug_mode
-	check_v3_target_profile_mode check_v3_target_normal_mode
-	check_v3_target_cstdint check_v3_target_cmath
-	check_v3_target_atomic_builtins check_v3_target_gthreads
-	check_v3_target_nanosleep check_v3_target_sched_yield
-	check_v3_target_string_conversions check_v3_target_swprintf
+	* testsuite/lib/libstdc++.exp (check_v3_target_debug_mode,
+	check_v3_target_profile_mode, check_v3_target_normal_mode,
+	check_v3_target_cstdint, check_v3_target_cmath,
+	check_v3_target_atomic_builtins, check_v3_target_gthreads,
+	check_v3_target_nanosleep, check_v3_target_sched_yield,
+	check_v3_target_string_conversions, check_v3_target_swprintf,
 	check_v3_target_binary_io): Use simple preprocessing rather than
 	compilation. Discard unused preprocessing result thanks to /dev/null.
 
