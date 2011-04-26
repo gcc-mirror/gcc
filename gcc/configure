@@ -23359,6 +23359,7 @@ else
   gcc_cv_as_sparc_gotdata_op=no
   if test x$gcc_cv_as != x; then
     echo '.text
+.align 4
 foo:
 	nop
 bar:

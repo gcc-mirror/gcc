@@ -1,3 +1,9 @@
+2011-04-26  David S. Miller  <davem@davemloft.net>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_sparc_gotdata_op): Specify alignment.
+	* configure: Regenerate.
+
 2011-04-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/48258
