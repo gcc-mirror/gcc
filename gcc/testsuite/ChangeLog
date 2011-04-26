@@ -1,5 +1,8 @@
 2011-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/48768
+	* gcc.dg/pr48768.c: New test.
+
 	PR tree-optimization/48734
 	* gcc.c-torture/compile/pr48734.c: New test.
 
