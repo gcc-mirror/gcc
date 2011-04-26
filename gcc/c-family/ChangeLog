@@ -1,3 +1,9 @@
+2011-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR preprocessor/48248
+	* c-ppoutput.c (maybe_print_line): Always optimize newlines
+	for output size with -P.
+
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* c-format.c (init_dollar_format_checking): Remove useless
