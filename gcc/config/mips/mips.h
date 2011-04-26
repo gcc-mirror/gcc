@@ -2555,12 +2555,6 @@ do									\
   }									\
 while (0)
 
-/* mips-tfile does not understand .stabd directives.  */
-#define DBX_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER) do {	\
-  dbxout_begin_stabn_sline (LINE);				\
-  dbxout_stab_value_internal_label ("LM", &COUNTER);		\
-} while (0)
-
 /* Use .loc directives for SDB line numbers.  */
 #define SDB_OUTPUT_SOURCE_LINE(STREAM, LINE)			\
   fprintf (STREAM, "\t.loc\t%d %d\n", num_source_filenames, LINE)

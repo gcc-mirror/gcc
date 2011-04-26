@@ -1,3 +1,15 @@
+2011-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/mips.h (DBX_OUTPUT_SOURCE_LINE): Remove.
+	* config/mips/mips.opt (mmips-tfile): Remove.
+
+	* doc/install.texi (Specific, mips-*-*): Move mips-tfile,
+	mips-tdump reference to ...
+	(Specific, alpha*-dec-osf5.1): ... here.
+	Adapt for Tru64 UNIX.
+	* doc/trouble.texi (Cross-Compiler Problems): Replace MIPS
+	reference by Tru64 UNIX.
+
 2011-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48768
