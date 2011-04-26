@@ -1,3 +1,8 @@
+2011-04-26  Jason Merrill  <jason@redhat.com>
+
+	* tree-eh.c (lower_try_finally_switch): Create the label along with
+	the CASE_LABEL_EXPR.
+
 2011-04-26  David S. Miller  <davem@davemloft.net>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
