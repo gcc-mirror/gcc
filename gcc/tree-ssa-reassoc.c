@@ -1,5 +1,6 @@
 /* Reassociation for trees.
-   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -1278,6 +1279,20 @@ eliminate_redundant_comparison (enum tree_code opcode,
 	 we need to convert.  */
       if (!useless_type_conversion_p (TREE_TYPE (curr->op), TREE_TYPE (t)))
 	t = fold_convert (TREE_TYPE (curr->op), t);
+
+      if (TREE_CODE (t) != INTEGER_CST
+	  && !operand_equal_p (t, curr->op, 0))
+	{
+	  enum tree_code subcode;
+	  tree newop1, newop2;
+	  if (!COMPARISON_CLASS_P (t))
+	    continue;
+	  extract_ops_from_tree (t, &subcode, &newop1, &newop2);
+	  STRIP_USELESS_TYPE_CONVERSION (newop1);
+	  STRIP_USELESS_TYPE_CONVERSION (newop2);
+	  if (!is_gimple_val (newop1) || !is_gimple_val (newop2))
+	    continue;
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{

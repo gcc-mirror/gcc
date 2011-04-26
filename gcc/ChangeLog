@@ -1,3 +1,10 @@
+2011-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48734
+	* tree-ssa-reassoc.c (eliminate_redundant_comparison): Give up
+	if return value from maybe_fold_*_comparsions isn't something
+	the code is prepared to handle.
+
 2011-04-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48731
