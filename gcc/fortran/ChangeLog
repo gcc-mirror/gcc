@@ -1,3 +1,11 @@
+2011-04-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (inserted_block):  New variable.
+	(changed_statement):  Likewise.
+	(create_var):  Encase statement to be operated on in a BLOCK.
+	Adjust code insertion for BLOCK.
+	(cfe_code):  Set inserted_block and changed_statement to NULL.
+
 2011-04-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
