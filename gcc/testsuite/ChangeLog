@@ -1,5 +1,10 @@
 2011-04-26  Richard Guenther  <rguenther@suse.de>
 
+	PR testsuite/48753
+	* gcc.dg/tree-prof/val-prof-2.c: Adjust.
+
+2011-04-26  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/48694
 	* gcc.dg/torture/pr48694-1.c: New testcase.
 	* gcc.dg/torture/pr48694-2.c: Likewise.
