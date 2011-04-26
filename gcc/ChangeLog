@@ -1,3 +1,10 @@
+2011-04-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/fr30/fr30.h (inhibit_libc): Don't define.
+	* config/m32r/m32r-protos.h: Correct comment.
+	* config/v850/v850.h (GHS_default_section_names,
+	GHS_current_section_names): Use tree, not union tree_node *.
+
 2011-04-26  Xinliang David Li  <davidxl@google.com>
 
 	* tree-ssa-uninit.c (warn_uninitialized_phi): Pass
