@@ -1678,7 +1678,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		      edge = cgraph_clone_edge (edge, id->dst_node, stmt,
 					        gimple_uid (stmt),
 					        REG_BR_PROB_BASE, CGRAPH_FREQ_BASE,
-					        edge->frequency, true);
+					        true);
 		      /* We could also just rescale the frequency, but
 		         doing so would introduce roundoff errors and make
 			 verifier unhappy.  */
@@ -1745,13 +1745,12 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		      (id->dst_node, dest, orig_stmt, stmt, bb->count,
 		       compute_call_stmt_bb_frequency (id->dst_node->decl,
 		       				       copy_basic_block),
-		       bb->loop_depth, CIF_ORIGINALLY_INDIRECT_CALL);
+		       CIF_ORIGINALLY_INDIRECT_CALL);
 		  else
 		    cgraph_create_edge (id->dst_node, dest, stmt,
 					bb->count,
 					compute_call_stmt_bb_frequency
-					  (id->dst_node->decl, copy_basic_block),
-					bb->loop_depth)->inline_failed
+					  (id->dst_node->decl, copy_basic_block))->inline_failed
 		      = CIF_ORIGINALLY_INDIRECT_CALL;
 		  if (dump_file)
 		    {

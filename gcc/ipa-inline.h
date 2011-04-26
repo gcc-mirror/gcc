@@ -101,6 +101,8 @@ struct GTY(()) inline_summary
   int time;
   int size;
 
+  /* Conditional size/time information.  The summaries are being
+     merged during inlining.  */
   conditions conds;
   VEC(size_time_entry,gc) *entry;
 };
@@ -109,6 +111,21 @@ typedef struct inline_summary inline_summary_t;
 DEF_VEC_O(inline_summary_t);
 DEF_VEC_ALLOC_O(inline_summary_t,gc);
 extern GTY(()) VEC(inline_summary_t,gc) *inline_summary_vec;
+
+/* Information kept about callgraph edges.  */
+struct inline_edge_summary
+{
+  /* Estimated size and time of the call statement.  */
+  int call_stmt_size;
+  int call_stmt_time;
+  /* Depth of loop nest, 0 means no nesting.  */
+  unsigned short int loop_depth;
+};
+
+typedef struct inline_edge_summary inline_edge_summary_t;
+DEF_VEC_O(inline_edge_summary_t);
+DEF_VEC_ALLOC_O(inline_edge_summary_t,heap);
+extern VEC(inline_edge_summary_t,heap) *inline_edge_summary_vec;
 
 typedef struct edge_growth_cache_entry
 {
@@ -152,6 +169,12 @@ inline_summary (struct cgraph_node *node)
   return VEC_index (inline_summary_t, inline_summary_vec, node->uid);
 }
 
+static inline struct inline_edge_summary *
+inline_edge_summary (struct cgraph_edge *edge)
+{
+  return VEC_index (inline_edge_summary_t,
+		    inline_edge_summary_vec, edge->uid);
+}
 
 /* Return estimated unit growth after inlning all calls to NODE.
    Quick accesors to the inline growth caches.  

@@ -285,9 +285,6 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp_pack_value (&bp, uid, HOST_BITS_PER_INT);
   bp_pack_value (&bp, edge->inline_failed, HOST_BITS_PER_INT);
   bp_pack_value (&bp, edge->frequency, HOST_BITS_PER_INT);
-  bp_pack_value (&bp, edge->call_stmt_size, HOST_BITS_PER_INT);
-  bp_pack_value (&bp, edge->call_stmt_time, HOST_BITS_PER_INT);
-  bp_pack_value (&bp, edge->loop_nest, 30);
   bp_pack_value (&bp, edge->indirect_inlining_edge, 1);
   bp_pack_value (&bp, edge->call_stmt_cannot_inline_p, 1);
   bp_pack_value (&bp, edge->can_throw_external, 1);
@@ -1003,7 +1000,7 @@ input_node (struct lto_file_decl_data *file_data,
   if (clone_ref != LCC_NOT_FOUND)
     {
       node = cgraph_clone_node (VEC_index (cgraph_node_ptr, nodes, clone_ref), fn_decl,
-				0, CGRAPH_FREQ_BASE, 0, false, NULL);
+				0, CGRAPH_FREQ_BASE, false, NULL);
     }
   else
     node = cgraph_get_create_node (fn_decl);
@@ -1164,11 +1161,9 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
   unsigned int stmt_id;
   gcov_type count;
   int freq;
-  unsigned int nest;
   cgraph_inline_failed_t inline_failed;
   struct bitpack_d bp;
   int ecf_flags = 0;
-  int call_stmt_time, call_stmt_size;
 
   caller = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
   if (caller == NULL || caller->decl == NULL_TREE)
@@ -1190,22 +1185,17 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
   inline_failed = (cgraph_inline_failed_t) bp_unpack_value (&bp,
 							    HOST_BITS_PER_INT);
   freq = (int) bp_unpack_value (&bp, HOST_BITS_PER_INT);
-  call_stmt_size = (int) bp_unpack_value (&bp, HOST_BITS_PER_INT);
-  call_stmt_time = (int) bp_unpack_value (&bp, HOST_BITS_PER_INT);
-  nest = (unsigned) bp_unpack_value (&bp, 30);
 
   if (indirect)
-    edge = cgraph_create_indirect_edge (caller, NULL, 0, count, freq, nest);
+    edge = cgraph_create_indirect_edge (caller, NULL, 0, count, freq);
   else
-    edge = cgraph_create_edge (caller, callee, NULL, count, freq, nest);
+    edge = cgraph_create_edge (caller, callee, NULL, count, freq);
 
   edge->indirect_inlining_edge = bp_unpack_value (&bp, 1);
   edge->lto_stmt_uid = stmt_id;
   edge->inline_failed = inline_failed;
   edge->call_stmt_cannot_inline_p = bp_unpack_value (&bp, 1);
   edge->can_throw_external = bp_unpack_value (&bp, 1);
-  edge->call_stmt_size = call_stmt_size;
-  edge->call_stmt_time = call_stmt_time;
   if (indirect)
     {
       if (bp_unpack_value (&bp, 1))

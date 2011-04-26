@@ -354,12 +354,11 @@ build_cgraph_edges (void)
 	      decl = gimple_call_fndecl (stmt);
 	      if (decl)
 		cgraph_create_edge (node, cgraph_get_create_node (decl),
-				    stmt, bb->count, freq, bb->loop_depth);
+				    stmt, bb->count, freq);
 	      else
 		cgraph_create_indirect_edge (node, stmt,
 					     gimple_call_flags (stmt),
-					     bb->count, freq,
-					     bb->loop_depth);
+					     bb->count, freq);
 	    }
 	  walk_stmt_load_store_addr_ops (stmt, node, mark_load,
 					 mark_store, mark_address);
@@ -464,12 +463,11 @@ rebuild_cgraph_edges (void)
 	      decl = gimple_call_fndecl (stmt);
 	      if (decl)
 		cgraph_create_edge (node, cgraph_get_create_node (decl), stmt,
-				    bb->count, freq, bb->loop_depth);
+				    bb->count, freq);
 	      else
 		cgraph_create_indirect_edge (node, stmt,
 					     gimple_call_flags (stmt),
-					     bb->count, freq,
-					     bb->loop_depth);
+					     bb->count, freq);
 	    }
 	  walk_stmt_load_store_addr_ops (stmt, node, mark_load,
 					 mark_store, mark_address);

@@ -921,7 +921,7 @@ cgraph_create_edge_including_clones (struct cgraph_node *orig,
 				     struct cgraph_node *callee,
 				     gimple old_stmt,
 				     gimple stmt, gcov_type count,
-				     int freq, int loop_depth,
+				     int freq,
 				     cgraph_inline_failed_t reason)
 {
   struct cgraph_node *node;
@@ -929,7 +929,7 @@ cgraph_create_edge_including_clones (struct cgraph_node *orig,
 
   if (!cgraph_edge (orig, stmt))
     {
-      edge = cgraph_create_edge (orig, callee, stmt, count, freq, loop_depth);
+      edge = cgraph_create_edge (orig, callee, stmt, count, freq);
       edge->inline_failed = reason;
     }
 
@@ -948,7 +948,7 @@ cgraph_create_edge_including_clones (struct cgraph_node *orig,
 	else if (!cgraph_edge (node, stmt))
 	  {
 	    edge = cgraph_create_edge (node, callee, stmt, count,
-				       freq, loop_depth);
+				       freq);
 	    edge->inline_failed = reason;
 	  }
 
@@ -972,7 +972,7 @@ cgraph_create_edge_including_clones (struct cgraph_node *orig,
 
 static struct cgraph_edge *
 cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
-		       gimple call_stmt, gcov_type count, int freq, int nest)
+		       gimple call_stmt, gcov_type count, int freq)
 {
   struct cgraph_edge *edge;
 
@@ -1011,11 +1011,8 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
   edge->frequency = freq;
   gcc_assert (freq >= 0);
   gcc_assert (freq <= CGRAPH_FREQ_MAX);
-  edge->loop_nest = nest;
 
   edge->call_stmt = call_stmt;
-  edge->call_stmt_size = 0;
-  edge->call_stmt_time = 0;
   push_cfun (DECL_STRUCT_FUNCTION (caller->decl));
   edge->can_throw_external
     = call_stmt ? stmt_can_throw_external (call_stmt) : false;
@@ -1035,10 +1032,10 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
 
 struct cgraph_edge *
 cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
-		    gimple call_stmt, gcov_type count, int freq, int nest)
+		    gimple call_stmt, gcov_type count, int freq)
 {
   struct cgraph_edge *edge = cgraph_create_edge_1 (caller, callee, call_stmt,
-						   count, freq, nest);
+						   count, freq);
 
   edge->indirect_unknown_callee = 0;
   initialize_inline_failed (edge);
@@ -1074,10 +1071,10 @@ cgraph_allocate_init_indirect_info (void)
 struct cgraph_edge *
 cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
 			     int ecf_flags,
-			     gcov_type count, int freq, int nest)
+			     gcov_type count, int freq)
 {
   struct cgraph_edge *edge = cgraph_create_edge_1 (caller, NULL, call_stmt,
-						   count, freq, nest);
+						   count, freq);
 
   edge->indirect_unknown_callee = 1;
   initialize_inline_failed (edge);
@@ -1244,7 +1241,6 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
       struct cgraph_edge *ne = NULL;
       gcov_type count;
       int frequency;
-      int loop_nest;
 
       if (e)
 	{
@@ -1268,7 +1264,6 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 	     attached to edge is invalid.  */
 	  count = e->count;
 	  frequency = e->frequency;
-	  loop_nest = e->loop_nest;
 	  cgraph_remove_edge (e);
 	}
       else
@@ -1278,14 +1273,12 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 	  count = bb->count;
 	  frequency = compute_call_stmt_bb_frequency (current_function_decl,
 						      bb);
-	  loop_nest = bb->loop_depth;
 	}
 
       if (new_call)
 	{
 	  ne = cgraph_create_edge (node, cgraph_get_create_node (new_call),
-				   new_stmt, count, frequency,
-				   loop_nest);
+				   new_stmt, count, frequency);
 	  gcc_assert (ne->inline_failed);
 	}
     }
@@ -1915,8 +1908,6 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
       if (edge->frequency)
 	fprintf (f, "(%.2f per call) ",
 		 edge->frequency / (double)CGRAPH_FREQ_BASE);
-      if (edge->loop_nest)
-	fprintf (f, "(nested in %i loops) ", edge->loop_nest);
       if (edge->can_throw_external)
 	fprintf(f, "(can throw external) ");
     }
@@ -2064,7 +2055,7 @@ cgraph_function_possibly_inlined_p (tree decl)
 struct cgraph_edge *
 cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 		   gimple call_stmt, unsigned stmt_uid, gcov_type count_scale,
-		   int freq_scale, int loop_nest, bool update_original)
+		   int freq_scale, bool update_original)
 {
   struct cgraph_edge *new_edge;
   gcov_type count = e->count * count_scale / REG_BR_PROB_BASE;
@@ -2085,22 +2076,19 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 	{
 	  struct cgraph_node *callee = cgraph_get_node (decl);
 	  gcc_checking_assert (callee);
-	  new_edge = cgraph_create_edge (n, callee, call_stmt, count, freq,
-					 e->loop_nest + loop_nest);
+	  new_edge = cgraph_create_edge (n, callee, call_stmt, count, freq);
 	}
       else
 	{
 	  new_edge = cgraph_create_indirect_edge (n, call_stmt,
 						  e->indirect_info->ecf_flags,
-						  count, freq,
-						  e->loop_nest + loop_nest);
+						  count, freq);
 	  *new_edge->indirect_info = *e->indirect_info;
 	}
     }
   else
     {
-      new_edge = cgraph_create_edge (n, e->callee, call_stmt, count, freq,
-				     e->loop_nest + loop_nest);
+      new_edge = cgraph_create_edge (n, e->callee, call_stmt, count, freq);
       if (e->indirect_info)
 	{
 	  new_edge->indirect_info
@@ -2109,8 +2097,6 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 	}
     }
 
-  new_edge->call_stmt_size = e->call_stmt_size;
-  new_edge->call_stmt_time = e->call_stmt_time;
   new_edge->inline_failed = e->inline_failed;
   new_edge->indirect_inlining_edge = e->indirect_inlining_edge;
   new_edge->lto_stmt_uid = stmt_uid;
@@ -2137,7 +2123,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
    by node.  */
 struct cgraph_node *
 cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
-		   int loop_nest, bool update_original,
+		   bool update_original,
 		   VEC(cgraph_edge_p,heap) *redirect_callers)
 {
   struct cgraph_node *new_node = cgraph_create_node_1 ();
@@ -2188,11 +2174,11 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
 
   for (e = n->callees;e; e=e->next_callee)
     cgraph_clone_edge (e, new_node, e->call_stmt, e->lto_stmt_uid,
-		       count_scale, freq, loop_nest, update_original);
+		       count_scale, freq, update_original);
 
   for (e = n->indirect_calls; e; e = e->next_callee)
     cgraph_clone_edge (e, new_node, e->call_stmt, e->lto_stmt_uid,
-		       count_scale, freq, loop_nest, update_original);
+		       count_scale, freq, update_original);
   ipa_clone_references (new_node, NULL, &n->ref_list);
 
   new_node->next_sibling_clone = n->clones;
@@ -2285,7 +2271,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   SET_DECL_RTL (new_decl, NULL);
 
   new_node = cgraph_clone_node (old_node, new_decl, old_node->count,
-				CGRAPH_FREQ_BASE, 0, false,
+				CGRAPH_FREQ_BASE, false,
 				redirect_callers);
   /* Update the properties.
      Make clone visible only within this translation unit.  Make sure
@@ -2700,7 +2686,7 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 	    fprintf (dump_file, "  Called by %s that is executed once\n",
 		     cgraph_node_name (edge->caller));
 	  maybe_unlikely_executed = false;
-	  if (edge->loop_nest)
+	  if (inline_edge_summary (edge)->loop_depth)
 	    {
 	      maybe_executed_once = false;
 	      if (dump_file && (dump_flags & TDF_DETAILS))

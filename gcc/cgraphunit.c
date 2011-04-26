@@ -2001,14 +2001,14 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
        cgraph_clone_edge (e, new_version, e->call_stmt,
 			  e->lto_stmt_uid, REG_BR_PROB_BASE,
 			  CGRAPH_FREQ_BASE,
-			  e->loop_nest, true);
+			  true);
    for (e = old_version->indirect_calls; e; e=e->next_callee)
      if (!bbs_to_copy
 	 || bitmap_bit_p (bbs_to_copy, gimple_bb (e->call_stmt)->index))
        cgraph_clone_edge (e, new_version, e->call_stmt,
 			  e->lto_stmt_uid, REG_BR_PROB_BASE,
 			  CGRAPH_FREQ_BASE,
-			  e->loop_nest, true);
+			  true);
    FOR_EACH_VEC_ELT (cgraph_edge_p, redirect_callers, i, e)
      {
        /* Redirect calls to the old version node to point to its new
