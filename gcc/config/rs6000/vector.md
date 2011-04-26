@@ -74,7 +74,19 @@
 			   (V2DF  "V2DI")])
 
 ;; constants for unspec
-(define_c_enum "unspec" [UNSPEC_PREDICATE])
+(define_c_enum "unspec" [UNSPEC_PREDICATE
+			 UNSPEC_REDUC])
+
+;; Vector reduction code iterators
+(define_code_iterator VEC_reduc [plus smin smax])
+
+(define_code_attr VEC_reduc_name [(plus "splus")
+				  (smin "smin")
+				  (smax "smax")])
+
+(define_code_attr VEC_reduc_rtx [(plus "add")
+				 (smin "smin")
+				 (smax "smax")])
 
 
 ;; Vector move instructions.
@@ -990,6 +1002,41 @@
 			(match_operand:VEC_I 2 "vint_operand" "")))]
   "TARGET_ALTIVEC"
   "")
+
+;; Vector reduction expanders for VSX
+
+(define_expand "reduc_<VEC_reduc_name>_v2df"
+  [(parallel [(set (match_operand:V2DF 0 "vfloat_operand" "")
+		   (VEC_reduc:V2DF
+		    (vec_concat:V2DF
+		     (vec_select:DF
+		      (match_operand:V2DF 1 "vfloat_operand" "")
+		      (parallel [(const_int 1)]))
+		     (vec_select:DF
+		      (match_dup 1)
+		      (parallel [(const_int 0)])))
+		    (match_dup 1)))
+	      (clobber (match_scratch:V2DF 2 ""))])]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "")
+
+; The (VEC_reduc:V4SF
+;	(op1)
+;	(unspec:V4SF [(const_int 0)] UNSPEC_REDUC))
+;
+; is to allow us to use a code iterator, but not completely list all of the
+; vector rotates, etc. to prevent canonicalization
+
+(define_expand "reduc_<VEC_reduc_name>_v4sf"
+  [(parallel [(set (match_operand:V4SF 0 "vfloat_operand" "")
+		   (VEC_reduc:V4SF
+		    (unspec:V4SF [(const_int 0)] UNSPEC_REDUC)
+		    (match_operand:V4SF 1 "vfloat_operand" "")))
+	      (clobber (match_scratch:V4SF 2 ""))
+	      (clobber (match_scratch:V4SF 3 ""))])]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "")
+
 
 ;;; Expanders for vector insn patterns shared between the SPE and TARGET_PAIRED systems.
 
