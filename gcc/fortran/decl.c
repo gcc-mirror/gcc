@@ -5746,7 +5746,7 @@ gfc_match_end (gfc_statement *st)
     {
     case COMP_ASSOCIATE:
     case COMP_BLOCK:
-      if (!strcmp (block_name, "block@"))
+      if (!strncmp (block_name, "block@", strlen("block@")))
 	block_name = NULL;
       break;
 
