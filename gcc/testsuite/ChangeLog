@@ -1,3 +1,9 @@
+2011-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48694
+	* gcc.dg/torture/pr48694-1.c: New testcase.
+	* gcc.dg/torture/pr48694-2.c: Likewise.
+
 2011-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/ext/underlying_type1.C: New.

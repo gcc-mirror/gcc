@@ -5118,7 +5118,8 @@ extern tree fold_fma (location_t, tree, tree, tree, tree);
 enum operand_equal_flag
 {
   OEP_ONLY_CONST = 1,
-  OEP_PURE_SAME = 2
+  OEP_PURE_SAME = 2,
+  OEP_CONSTANT_ADDRESS_OF = 4
 };
 
 extern int operand_equal_p (const_tree, const_tree, unsigned int);
