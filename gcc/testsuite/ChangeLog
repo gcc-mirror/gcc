@@ -1,5 +1,11 @@
+2011-03-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/48258
+	* gcc.target/powerpc/pr48258-1.c: New file.
+	* gcc.target/powerpc/pr48258-2.c: Ditto.
+
 2011-04-26  Xinliang David Li  <davidxl@google.com>
-	
+
 	* gcc.dg/uninit-suppress.c: New test.
 	* gcc.dg/uninit-suppress.c: New test.
 
