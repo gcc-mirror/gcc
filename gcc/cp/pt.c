@@ -12102,7 +12102,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			    init = build_value_init (TREE_TYPE (decl),
 						     complain);
 			    if (TREE_CODE (init) == AGGR_INIT_EXPR)
-			      init = get_target_expr (init);
+			      init = get_target_expr_sfinae (init, complain);
 			  }
 			else
 			  init = t;
@@ -12846,7 +12846,8 @@ tsubst_copy_and_build (tree t,
        (RECUR (TREE_OPERAND (t, 0)),
 	RECUR (TREE_OPERAND (t, 1)),
 	DELETE_EXPR_USE_VEC (t),
-	DELETE_EXPR_USE_GLOBAL (t));
+	DELETE_EXPR_USE_GLOBAL (t),
+	complain);
 
     case COMPOUND_EXPR:
       return build_x_compound_expr (RECUR (TREE_OPERAND (t, 0)),

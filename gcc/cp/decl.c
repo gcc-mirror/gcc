@@ -5640,7 +5640,7 @@ initialize_local_var (tree decl, tree init)
     DECL_READ_P (decl) = 1;
 
   /* Generate a cleanup, if necessary.  */
-  cleanup = cxx_maybe_build_cleanup (decl);
+  cleanup = cxx_maybe_build_cleanup (decl, tf_warning_or_error);
 
   /* Perform the initialization.  */
   if (init)
@@ -13309,7 +13309,7 @@ complete_vars (tree type)
    cleanup need be done.  */
 
 tree
-cxx_maybe_build_cleanup (tree decl)
+cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
 {
   tree type;
   tree attr;
@@ -13344,8 +13344,9 @@ cxx_maybe_build_cleanup (tree decl)
       fn = lookup_name (id);
       arg = build_address (decl);
       mark_used (decl);
-      cleanup = cp_build_function_call_nary (fn, tf_warning_or_error,
-					     arg, NULL_TREE);
+      cleanup = cp_build_function_call_nary (fn, complain, arg, NULL_TREE);
+      if (cleanup == error_mark_node)
+	return error_mark_node;
     }
   /* Handle ordinary C++ destructors.  */
   type = TREE_TYPE (decl);
@@ -13367,9 +13368,11 @@ cxx_maybe_build_cleanup (tree decl)
 	flags |= LOOKUP_NONVIRTUAL;
 
       call = build_delete (TREE_TYPE (addr), addr,
-			   sfk_complete_destructor, flags, 0);
-      if (cleanup)
-	cleanup = build_compound_expr (input_location, cleanup, call);
+			   sfk_complete_destructor, flags, 0, complain);
+      if (call == error_mark_node)
+	cleanup = error_mark_node;
+      else if (cleanup)
+	cleanup = cp_build_compound_expr (cleanup, call, complain);
       else
 	cleanup = call;
     }

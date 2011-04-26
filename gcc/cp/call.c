@@ -4144,7 +4144,11 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
 	  && TREE_CODE (arg3) != THROW_EXPR)
 	{
 	  if (!VOID_TYPE_P (arg3_type))
-	    arg3 = force_rvalue (arg3);
+	    {
+	      arg3 = force_rvalue (arg3, complain);
+	      if (arg3 == error_mark_node)
+		return error_mark_node;
+	    }
 	  arg3_type = TREE_TYPE (arg3);
 	  result_type = arg3_type;
 	}
@@ -4152,7 +4156,11 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
 	       && TREE_CODE (arg3) == THROW_EXPR)
 	{
 	  if (!VOID_TYPE_P (arg2_type))
-	    arg2 = force_rvalue (arg2);
+	    {
+	      arg2 = force_rvalue (arg2, complain);
+	      if (arg2 == error_mark_node)
+		return error_mark_node;
+	    }
 	  arg2_type = TREE_TYPE (arg2);
 	  result_type = arg2_type;
 	}
@@ -4359,11 +4367,11 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
      that isn't wrapped with a TARGET_EXPR plays havoc with exception
      regions.  */
 
-  arg2 = force_rvalue (arg2);
+  arg2 = force_rvalue (arg2, complain);
   if (!CLASS_TYPE_P (arg2_type))
     arg2_type = TREE_TYPE (arg2);
 
-  arg3 = force_rvalue (arg3);
+  arg3 = force_rvalue (arg3, complain);
   if (!CLASS_TYPE_P (arg3_type))
     arg3_type = TREE_TYPE (arg3);
 
@@ -5642,7 +5650,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		expr = convert_bitfield_to_declared_type (expr);
 		expr = fold_convert (type, expr);
 	      }
-	    expr = build_target_expr_with_type (expr, type);
+	    expr = build_target_expr_with_type (expr, type, complain);
 	  }
 
 	/* Take the address of the thing to which we will bind the
@@ -6341,7 +6349,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  if (TREE_CODE (arg) == TARGET_EXPR)
 	    return arg;
 	  else if (trivial)
-	    return force_target_expr (DECL_CONTEXT (fn), arg);
+	    return force_target_expr (DECL_CONTEXT (fn), arg, complain);
 	}
       else if (TREE_CODE (arg) == TARGET_EXPR || trivial)
 	{
@@ -8246,7 +8254,7 @@ set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
       if (TREE_STATIC (var))
 	init = add_stmt_to_compound (init, register_dtor_fn (var));
       else
-	*cleanup = cxx_maybe_build_cleanup (var);
+	*cleanup = cxx_maybe_build_cleanup (var, tf_warning_or_error);
 
       /* We must be careful to destroy the temporary only
 	 after its initialization has taken place.  If the

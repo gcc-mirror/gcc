@@ -1835,7 +1835,7 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
 	  /* It actually has a value we need to deal with.  First, force it
 	     to be an rvalue so that we won't need to build up a copy
 	     constructor call later when we try to assign it to something.  */
-	  expr = force_rvalue (expr);
+	  expr = force_rvalue (expr, tf_warning_or_error);
 	  if (error_operand_p (expr))
 	    return error_mark_node;
 
@@ -1892,7 +1892,7 @@ finish_stmt_expr (tree stmt_expr, bool has_no_scope)
 	 temporary object created by the final expression is destroyed at
 	 the end of the full-expression containing the
 	 statement-expression.  */
-      result = force_target_expr (type, result);
+      result = force_target_expr (type, result, tf_warning_or_error);
     }
 
   return result;
@@ -2407,7 +2407,7 @@ finish_compound_literal (tree type, tree compound_literal,
       return decl;
     }
   else
-    return get_target_expr (compound_literal);
+    return get_target_expr_sfinae (compound_literal, complain);
 }
 
 /* Return the declaration for the function-name variable indicated by
@@ -7995,7 +7995,7 @@ build_lambda_object (tree lambda_expr)
 	     There's normally no way to express direct-initialization
 	     from an element of a CONSTRUCTOR, so we build up a special
 	     TARGET_EXPR to bypass the usual copy-initialization.  */
-	  val = force_rvalue (val);
+	  val = force_rvalue (val, tf_warning_or_error);
 	  if (TREE_CODE (val) == TARGET_EXPR)
 	    TARGET_EXPR_DIRECT_INIT_P (val) = true;
 	}

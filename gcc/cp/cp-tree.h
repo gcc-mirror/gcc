@@ -4744,7 +4744,7 @@ extern void adjust_clone_args			(tree);
 /* in cvt.c */
 extern tree convert_to_reference		(tree, tree, int, int, tree);
 extern tree convert_from_reference		(tree);
-extern tree force_rvalue			(tree);
+extern tree force_rvalue			(tree, tsubst_flags_t);
 extern tree ocp_convert				(tree, tree, int, int);
 extern tree cp_convert				(tree, tree);
 extern tree cp_convert_and_check                (tree, tree);
@@ -4858,7 +4858,7 @@ extern tree next_initializable_field (tree);
 extern bool defer_mark_used_calls;
 extern GTY(()) VEC(tree, gc) *deferred_mark_used_calls;
 extern tree finish_case_label			(location_t, tree, tree);
-extern tree cxx_maybe_build_cleanup		(tree);
+extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 
 /* in decl2.c */
 extern bool check_java_method			(tree);
@@ -4870,7 +4870,7 @@ extern bool vague_linkage_p			(tree);
 extern void grokclassfn				(tree, tree,
 						 enum overload_flags);
 extern tree grok_array_decl			(tree, tree);
-extern tree delete_sanity			(tree, tree, bool, int);
+extern tree delete_sanity			(tree, tree, bool, int, tsubst_flags_t);
 extern tree check_classfn			(tree, tree, tree);
 extern void check_member_template		(tree);
 extern tree grokfield (const cp_declarator *, cp_decl_specifier_seq *,
@@ -4977,10 +4977,11 @@ extern tree build_vec_init			(tree, tree, tree, bool, int,
                                                  tsubst_flags_t);
 extern tree build_delete			(tree, tree,
 						 special_function_kind,
-						 int, int);
+						 int, int, tsubst_flags_t);
 extern void push_base_cleanups			(void);
 extern tree build_vec_delete			(tree, tree,
-						 special_function_kind, int);
+						 special_function_kind, int,
+						 tsubst_flags_t);
 extern tree create_temporary_var		(tree);
 extern void initialize_vtbl_ptrs		(tree);
 extern tree build_java_class_ref		(tree);
@@ -5379,8 +5380,8 @@ extern void maybe_add_lambda_conv_op            (tree);
 
 /* in tree.c */
 void cp_free_lang_data 				(tree t);
-extern tree force_target_expr			(tree, tree);
-extern tree build_target_expr_with_type		(tree, tree);
+extern tree force_target_expr			(tree, tree, tsubst_flags_t);
+extern tree build_target_expr_with_type		(tree, tree, tsubst_flags_t);
 extern void lang_check_failed			(const char *, int,
 						 const char *) ATTRIBUTE_NORETURN;
 extern tree stabilize_expr			(tree, tree *);
@@ -5413,6 +5414,7 @@ extern tree build_min_non_dep_call_vec		(tree, tree, VEC(tree,gc) *);
 extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
 extern tree build_aggr_init_expr		(tree, tree, tsubst_flags_t);
 extern tree get_target_expr			(tree);
+extern tree get_target_expr_sfinae		(tree, tsubst_flags_t);
 extern tree build_cplus_array_type		(tree, tree);
 extern tree build_array_of_n_type		(tree, int);
 extern tree build_array_copy			(tree);

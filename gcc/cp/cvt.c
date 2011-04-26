@@ -531,11 +531,17 @@ convert_from_reference (tree val)
    argument of class type into a temporary.  */
 
 tree
-force_rvalue (tree expr)
+force_rvalue (tree expr, tsubst_flags_t complain)
 {
-  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (expr)) && TREE_CODE (expr) != TARGET_EXPR)
-    expr = ocp_convert (TREE_TYPE (expr), expr,
-			CONV_IMPLICIT|CONV_FORCE_TEMP, LOOKUP_NORMAL);
+  tree type = TREE_TYPE (expr);
+  if (MAYBE_CLASS_TYPE_P (type) && TREE_CODE (expr) != TARGET_EXPR)
+    {
+      VEC(tree,gc) *args = make_tree_vector_single (expr);
+      expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
+					&args, type, LOOKUP_NORMAL, complain);
+      release_tree_vector (args);
+      expr = build_cplus_new (type, expr, complain);
+    }
   else
     expr = decay_conversion (expr);
 

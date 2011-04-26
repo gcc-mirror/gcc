@@ -39,7 +39,7 @@ static tree bot_replace (tree *, int *, void *);
 static int list_hash_eq (const void *, const void *);
 static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
-static tree build_target_expr (tree, tree);
+static tree build_target_expr (tree, tree, tsubst_flags_t);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
 static tree build_local_temp (tree);
@@ -281,7 +281,7 @@ builtin_valid_in_constant_expr_p (const_tree decl)
 /* Build a TARGET_EXPR, initializing the DECL with the VALUE.  */
 
 static tree
-build_target_expr (tree decl, tree value)
+build_target_expr (tree decl, tree value, tsubst_flags_t complain)
 {
   tree t;
 
@@ -292,8 +292,10 @@ build_target_expr (tree decl, tree value)
 					    TREE_TYPE (value)));
 #endif
 
-  t = build4 (TARGET_EXPR, TREE_TYPE (decl), decl, value,
-	      cxx_maybe_build_cleanup (decl), NULL_TREE);
+  t = cxx_maybe_build_cleanup (decl, complain);
+  if (t == error_mark_node)
+    return error_mark_node;
+  t = build4 (TARGET_EXPR, TREE_TYPE (decl), decl, value, t, NULL_TREE);
   /* We always set TREE_SIDE_EFFECTS so that expand_expr does not
      ignore the TARGET_EXPR.  If there really turn out to be no
      side-effects, then the optimizer should be able to get rid of
@@ -453,7 +455,7 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
   else
     return rval;
 
-  rval = build_target_expr (slot, rval);
+  rval = build_target_expr (slot, rval, complain);
   TARGET_EXPR_IMPLICIT_P (rval) = 1;
 
   return rval;
@@ -526,7 +528,7 @@ build_vec_init_expr (tree type, tree init)
     VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
 
-  init = build_target_expr (slot, init);
+  init = build_target_expr (slot, init, tf_warning_or_error);
   TARGET_EXPR_IMPLICIT_P (init) = 1;
 
   return init;
@@ -559,7 +561,7 @@ build_array_copy (tree init)
    indicated TYPE.  */
 
 tree
-build_target_expr_with_type (tree init, tree type)
+build_target_expr_with_type (tree init, tree type, tsubst_flags_t complain)
 {
   gcc_assert (!VOID_TYPE_P (type));
 
@@ -577,9 +579,9 @@ build_target_expr_with_type (tree init, tree type)
        another one here.  A CONSTRUCTOR is aggregate initialization, which
        is handled separately.  A VA_ARG_EXPR is magic creation of an
        aggregate; there's no additional work to be done.  */
-    return force_rvalue (init);
+    return force_rvalue (init, complain);
 
-  return force_target_expr (type, init);
+  return force_target_expr (type, init, complain);
 }
 
 /* Like the above function, but without the checking.  This function should
@@ -588,27 +590,33 @@ build_target_expr_with_type (tree init, tree type)
    infinite recursion.  */
 
 tree
-force_target_expr (tree type, tree init)
+force_target_expr (tree type, tree init, tsubst_flags_t complain)
 {
   tree slot;
 
   gcc_assert (!VOID_TYPE_P (type));
 
   slot = build_local_temp (type);
-  return build_target_expr (slot, init);
+  return build_target_expr (slot, init, complain);
 }
 
 /* Like build_target_expr_with_type, but use the type of INIT.  */
 
 tree
-get_target_expr (tree init)
+get_target_expr_sfinae (tree init, tsubst_flags_t complain)
 {
   if (TREE_CODE (init) == AGGR_INIT_EXPR)
-    return build_target_expr (AGGR_INIT_EXPR_SLOT (init), init);
+    return build_target_expr (AGGR_INIT_EXPR_SLOT (init), init, complain);
   else if (TREE_CODE (init) == VEC_INIT_EXPR)
-    return build_target_expr (VEC_INIT_EXPR_SLOT (init), init);
+    return build_target_expr (VEC_INIT_EXPR_SLOT (init), init, complain);
   else
-    return build_target_expr_with_type (init, TREE_TYPE (init));
+    return build_target_expr_with_type (init, TREE_TYPE (init), complain);
+}
+
+tree
+get_target_expr (tree init)
+{
+  return get_target_expr_sfinae (init, tf_warning_or_error);
 }
 
 /* If EXPR is a bitfield reference, convert it to the declared type of
@@ -1810,7 +1818,8 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
 	u = build_cplus_new (TREE_TYPE (t), TREE_OPERAND (t, 1),
 			     tf_warning_or_error);
       else
-	u = build_target_expr_with_type (TREE_OPERAND (t, 1), TREE_TYPE (t));
+	u = build_target_expr_with_type (TREE_OPERAND (t, 1), TREE_TYPE (t),
+					 tf_warning_or_error);
 
       /* Map the old variable to the new one.  */
       splay_tree_insert (target_remap,
