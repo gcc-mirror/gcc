@@ -1,3 +1,7 @@
+2011-04-26  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/arm/arm.c (arm_gen_constant): Remove can_negate_initial.
+
 2011-04-26  Richard Guenther  <rguenther@suse.de>
 
 	* c-typeck.c (build_unary_op): Do not expand array-refs via

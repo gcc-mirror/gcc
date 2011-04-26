@@ -2556,7 +2556,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
   int can_invert = 0;
   int can_negate = 0;
   int final_invert = 0;
-  int can_negate_initial = 0;
   int i;
   int num_bits_set = 0;
   int set_sign_bit_copies = 0;
@@ -2580,7 +2579,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 
     case PLUS:
       can_negate = 1;
-      can_negate_initial = 1;
       break;
 
     case IOR:
