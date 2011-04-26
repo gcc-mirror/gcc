@@ -1,3 +1,12 @@
+2011-04-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (ext_QIreg_operand): Remove extra
+	mode check.
+	(ext_QIreg_nomode_operands): Remove.
+	* config/i386/i386.md (*anddi_1): Use ext_QIreg_operand.
+	(*andsi_1): Ditto.
+	(*andhi_1): Ditto.
+
 2011-04-26  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/arm/arm.c (arm_gen_constant): Remove can_negate_initial.
@@ -12,14 +21,12 @@
 	PR middle-end/48694
 	* tree.h (OEP_CONSTANT_ADDRESS_OF): New operand_equal_flag.
 	* fold-const.c (operand_equal_p): For TREE_CONSTANT ADDR_EXPRs
-	compare the operands with OEP_CONSTANT_ADDRESS_OF.  Treat
-	trees with TREE_SIDE_EFFECTS equal when OEP_CONSTANT_ADDRESS_OF
-	is set.
+	compare the operands with OEP_CONSTANT_ADDRESS_OF.  Treat trees
+	with TREE_SIDE_EFFECTS equal when OEP_CONSTANT_ADDRESS_OF is set.
 
 2011-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	* c-family/c-common.c (struct c_common_resword): Add
-	__underlying_type.
+	* c-family/c-common.c (struct c_common_resword): Add __underlying_type.
 	* c-family/c-common.h (enum rid): Add RID_UNDERLYING_TYPE.
         * doc/extend.texi: Document __underlying_type.
 
@@ -51,9 +58,9 @@
 
 	* ipa-prop.c (ipa_propagate_indirect_call_infos): Remove obsolette
 	WPA hack.
-	* ipa-prop.h (ipa_get_param, ipa_is_param_used, ipa_param_cannot_devirtualize_p,
-	ipa_param_types_vec_empty, ipa_get_ith_jump_func, ipa_get_lattice):
-	Fortify array bounds.
+	* ipa-prop.h (ipa_get_param, ipa_is_param_used,
+	ipa_param_cannot_devirtualize_p, ipa_param_types_vec_empty,
+	ipa_get_ith_jump_func, ipa_get_lattice): Fortify array bounds.
 	* ipa-inline-analysis.c (add_clause): Fix clause ordering.
 	(and_predicates, or_predicates, predicates_equal_p, evaulate_predicate):
 	Sanity check predicate length.
@@ -92,23 +99,24 @@
 2011-04-22  Jan Hubicka  <jh@suse.cz>
 
 	* gengtype.c (open_base_files): Add ipa-inline.h include.
-	* ipa-cp.c (ipcp_get_lattice, ipcp_lattice_from_jfunc): Move to ipa-prop.c
-	update all uses.
+	* ipa-cp.c (ipcp_get_lattice, ipcp_lattice_from_jfunc): Move to
+	ipa-prop.c; update all uses.
 	* ipa-prop.c: (ipa_get_lattice, ipa_lattice_from_jfunc): ... here.
-	* ipa-inline-transform.c (inline_call): Use inline_merge_summary to merge
-	summary of inlined function into former caller.
+	* ipa-inline-transform.c (inline_call): Use inline_merge_summary to
+	merge summary of inlined function into former caller.
 	* ipa-inline.c (max_benefit): Remove.
 	(edge_badness): Compensate for removal of benefits.
-	(update_caller_keys): Use reset_node_growth_cache/reset_edge_growth_cache.
+	(update_caller_keys): Use
+	reset_node_growth_cache/reset_edge_growth_cache.
 	(update_callee_keys): Likewise.
 	(update_all_callee_keys): Likewise.
-	(inline_small_functions): Do not collect max_benefit; do not
-	reset stimated_growth; call free_growth_caches and initialize_growth_caches.
-	* ipa-inline.h (struct condition, type clause_t, struct predicate, struct
-	size_time_entry): New structures.
+	(inline_small_functions): Do not collect max_benefit; do not reset
+	estimated_growth; call free_growth_caches and initialize_growth_caches.
+	* ipa-inline.h (struct condition, type clause_t, struct predicate,
+	struct size_time_entry): New structures.
 	(INLINE_SIZE_SCALE, INLINE_TIME_SCALE, MAX_CLAUSES): New constants.
-	(inline_summary): Remove size_inlining_benefit, time_inlining_benefit and
-	estimated_growth.
+	(inline_summary): Remove size_inlining_benefit, time_inlining_benefit
+	and estimated_growth.
 	(edge_growth_cache_entry): New structure.
 	(node_growth_cache, edge_growth_cache): New global vars.
 	(estimate_growth): Turn into inline.
@@ -116,16 +124,18 @@
 	initialize_growth_caches, free_growth_caches): Declare.
 	(estimate_edge_growth): Rewrite.
 	(estimate_edge_time): Implement as inline cache lookup.
-	(reset_node_growth_cache, reset_edge_growth_cache): New inline functions.
+	(reset_node_growth_cache, reset_edge_growth_cache): New inline
+	functions.
 	(MAX_TIME): Reduce to allow multiplicatoin by INLINE_SIZE_SCALE.
 	(NUM_CONDITIONS): New constant.
 	(predicate_conditions): New enum.
 	(IS_NOT_CONSTANT): New constant.
 	(edge_removal_hook_holder): New var.
 	(node_growth_cache, edge_growth_cache): New global vars.
-	(true_predicate, single_cond_predicate, false_predicate, not_inlined_predicate,
-	add_condition, add_clause, and_predicates, or_predicates, predicates_equal_p,
-	evaulate_predicate, dump_condition, dump_clause, dump_predicate, account_size_time,
+	(true_predicate, single_cond_predicate, false_predicate,
+	not_inlined_predicate, add_condition, add_clause, and_predicates,
+	or_predicates, predicates_equal_p, evaulate_predicate, dump_condition,
+	dump_clause, dump_predicate, account_size_time,
 	evaulate_conditions_for_edge): New functions.
 	(inline_summary_alloc): Move to heap.
 	(inline_node_removal_hook): Clear condition and entry vectors.
@@ -152,14 +162,16 @@
 	(inline_write_summary): Write all the new data.
 	* ipa-prop.c (ipa_get_param_decl_index): Export.
 	(ipa_lattice_from_jfunc): Move here from ipa-cp.c
-	* ipa-prop.h (ipa_get_param_decl_index, ipa_lattice_from_jfunc): Declare.
-	(ipa_get_lattice): Move hre from ipa-cp.c
+	* ipa-prop.h (ipa_get_param_decl_index, ipa_lattice_from_jfunc):
+	Declare.
+	(ipa_get_lattice): Move here from ipa-cp.c
 	* Makefile.in (GTFILES): Add ipa-inline.h and ipa-inline-analysis.c
 	* params.def (PARAM_EARLY_INLINING_INSNS): Set to 11.
 	* cgraph.h (cgraph_clone_inlined_nodes, compute_inline_parameters,
 	cgraph_edge_inlinable_p): Remove.
 	* cgraphunit.c: Include ipainline.h
-	(cgraph_process_new_functions): Update call of compute_inline_parameters.
+	(cgraph_process_new_functions): Update call of
+	compute_inline_parameters.
 
 2011-04-22  Richard Guenther  <rguenther@suse.de>
 
@@ -276,8 +288,7 @@
 2011-04-21  Dimitrios Apostolou  <jimis@gmx.net>
 	    Jeff Law  <law@redhat.com>
 
-	* gengtype-state.c (read_a_state_token): Fix argument to
-	obstack_free.
+	* gengtype-state.c (read_a_state_token): Fix argument to obstack_free.
 	* gengtype.c (matching_file_name_substitute): Likewise.
 
 2011-04-21  Richard Guenther  <rguenther@suse.de>
