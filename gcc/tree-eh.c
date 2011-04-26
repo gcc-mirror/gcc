@@ -1419,11 +1419,9 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
           void **slot;
           case_lab = build3 (CASE_LABEL_EXPR, void_type_node,
                              build_int_cst (NULL, switch_id),
-			     NULL, NULL);
+			     NULL, create_artificial_label (tf_loc));
           /* We store the cont_stmt in the pointer map, so that we can recover
-             it in the loop below.  We don't create the new label while
-             walking the goto_queue because pointers don't offer a stable
-             order.  */
+             it in the loop below.  */
           if (!cont_map)
             cont_map = pointer_map_create ();
           slot = pointer_map_insert (cont_map, case_lab);
@@ -1433,7 +1431,6 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
     }
   for (j = last_case_index; j < last_case_index + nlabels; j++)
     {
-      tree label;
       gimple cont_stmt;
       void **slot;
 
@@ -1443,15 +1440,10 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       gcc_assert (cont_map);
 
       slot = pointer_map_contains (cont_map, last_case);
-      /* As the comment above suggests, CASE_LABEL (last_case) was just a
-         placeholder, it does not store an actual label, yet. */
       gcc_assert (slot);
       cont_stmt = *(gimple *) slot;
 
-      label = create_artificial_label (tf_loc);
-      CASE_LABEL (last_case) = label;
-
-      x = gimple_build_label (label);
+      x = gimple_build_label (CASE_LABEL (last_case));
       gimple_seq_add_stmt (&switch_body, x);
       gimple_seq_add_stmt (&switch_body, cont_stmt);
       maybe_record_in_goto_queue (state, cont_stmt);
