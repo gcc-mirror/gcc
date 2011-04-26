@@ -739,7 +739,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
      of functions fully inlined in program.  */
   else
     {
-      int nest = MIN (edge->loop_nest, 8);
+      int nest = MIN (inline_edge_summary (edge)->loop_depth, 8);
       badness = estimate_growth (edge->callee) * 256;
 
       /* Decrease badness if call is nested.  */
@@ -1027,7 +1027,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	{
 	  /* We need original clone to copy around.  */
 	  master_clone = cgraph_clone_node (node, node->decl,
-					    node->count, CGRAPH_FREQ_BASE, 1,
+					    node->count, CGRAPH_FREQ_BASE,
 					    false, NULL);
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
@@ -1555,6 +1555,8 @@ ipa_inline (void)
 	     "\nInlined %i calls, eliminated %i functions\n\n",
 	     ncalls_inlined, nfunctions_inlined);
 
+  if (dump_file)
+    dump_inline_summaries (dump_file);
   /* In WPA we use inline summaries for partitioning process.  */
   if (!flag_wpa)
     inline_free_summary ();
@@ -1709,9 +1711,10 @@ early_inliner (void)
 	     info that might be cleared out for newly discovered edges.  */
 	  for (edge = node->callees; edge; edge = edge->next_callee)
 	    {
-	      edge->call_stmt_size
+	      struct inline_edge_summary *es = inline_edge_summary (edge);
+	      es->call_stmt_size
 		= estimate_num_insns (edge->call_stmt, &eni_size_weights);
-	      edge->call_stmt_time
+	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
 	    }
 	  timevar_pop (TV_INTEGRATION);

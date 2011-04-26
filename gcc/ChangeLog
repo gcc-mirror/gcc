@@ -1,3 +1,52 @@
+2011-04-26  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c (build_cgraph_edges): Update call
+	of cgraph_create_edge and cgraph_create_indirect_edge.
+	* cgraph.c (cgraph_create_edge_including_clones,
+	cgraph_create_edge_1, cgraph_allocate_init_indirect_info,
+	cgraph_update_edges_for_call_stmt_node): Do not take nest
+	argument; do not initialize call_stmt_size/time.
+	(dump_cgraph_node): Do not dump nest.
+	(cgraph_clone_edge): Do not take loop_nest argument;
+	do not propagate it; do not clone call_stmt_size/time.
+	(cgraph_clone_node): Likewise.
+	(cgraph_create_virtual_clone): Update.
+	* cgraph.h (struct cgraph_edge): Remove
+	call_stmt_size/call_stmt_time/loop_nest.
+	(cgraph_create_edge, cgraph_create_indirect_edge,
+	cgraph_create_edge_including_clones, cgraph_clone_node): Update
+	prototype.
+	* tree-emutls.c (gen_emutls_addr): Update.
+	* ipa-inline-transform.c (update_noncloned_frequencies): Do not handle
+	loop_nest; handle indirect calls, too.
+	(clone_inlined_nodes): Do not care about updating inline summaries.
+	* cgraphunit.c (cgraph_copy_node_for_versioning): Update.
+	* lto-cgraph.c (lto_output_edge, input_node, input_edge): Do not
+	stream call_stmt_size/call_stmt_time/loop_nest.
+	* ipa-inline.c (edge_badness): Update.
+	(ipa_inline): dump summaries after inlining.
+	* ipa-inline.h (struct inline_edge_summary, inline_edge_summary_t):
+	new.
+	(inline_edge_summary): New function.
+	* ipa-inline-analysis.c (edge_duplication_hook_holder): New holder.
+	(inline_edge_removal_hook): Handle edge summaries.
+	(inline_edge_duplication_hook): New hook.
+	(inline_summary_alloc): Alloc hooks.
+	(initialize_growth_caches): Do not register removal hooks.
+	(free_growth_caches); Do not free removal hook.
+	(dump_inline_edge_summary): New function.
+	(dump_inline_summary): Use it.
+	(estimate_function_body_sizes, estimate_edge_size_and_time): Update.
+	(inline_update_callee_summaries): New function.
+	(inline_merge_summary): Use it.
+	(do_estimate_edge_time, do_estimate_edge_growth): Update.
+	(read_inline_edge_summary): New function.
+	(inline_read_section): Use it.
+	(write_inline_edge_summary): New function.
+	(inline_write_summary): Use it.
+	(inline_free_summary): Free edge new holders.
+	* tree-inline.c (copy_bb): Update.
+
 2011-04-26  Jason Merrill  <jason@redhat.com>
 
 	* tree-eh.c (lower_try_finally_switch): Create the label along with
