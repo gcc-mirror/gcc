@@ -1,5 +1,9 @@
 2011-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/48768
+	* tree-ssa.c (insert_debug_temp_for_var_def): If degenerate_phi_result
+	is error_mark_node, set value to NULL.
+
 	PR tree-optimization/48734
 	* tree-ssa-reassoc.c (eliminate_redundant_comparison): Give up
 	if return value from maybe_fold_*_comparsions isn't something
