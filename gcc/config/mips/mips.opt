@@ -226,10 +226,6 @@ mmemcpy
 Target Report Mask(MEMCPY)
 Don't optimize block moves
 
-mmips-tfile
-Target
-Use the mips-tfile postpass
-
 mmt
 Target Report Var(TARGET_MT)
 Allow the use of MT instructions

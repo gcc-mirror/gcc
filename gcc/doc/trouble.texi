@@ -55,7 +55,7 @@ for several reasons.
 @itemize @bullet
 @item
 At present, the program @file{mips-tfile} which adds debug
-support to object files on MIPS systems does not work in a cross
+support to object files on Tru64 UNIX systems does not work in a cross
 compile environment.
 @end itemize
 
