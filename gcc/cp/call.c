@@ -5481,6 +5481,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    if (!BRACE_ENCLOSED_INITIALIZER_P (val))
 	      check_narrowing (TREE_TYPE (sub), val);
 	    CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor), NULL_TREE, sub);
+	    if (!TREE_CONSTANT (sub))
+	      TREE_CONSTANT (new_ctor) = false;
 	  }
 	/* Build up the array.  */
 	elttype = cp_build_qualified_type

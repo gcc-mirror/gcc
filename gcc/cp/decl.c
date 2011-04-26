@@ -4904,6 +4904,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d)
 	return error_mark_node;
       CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init),
 			      size_int (index), elt_init);
+      if (!TREE_CONSTANT (elt_init))
+	TREE_CONSTANT (new_init) = false;
     }
 
   return new_init;
