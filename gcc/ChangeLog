@@ -1,3 +1,17 @@
+2011-04-26  Richard Guenther  <rguenther@suse.de>
+
+	* c-typeck.c (build_unary_op): Do not expand array-refs via
+	pointer arithmetic.  Only adjust qualifiers for function types.
+
+2011-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48694
+	* tree.h (OEP_CONSTANT_ADDRESS_OF): New operand_equal_flag.
+	* fold-const.c (operand_equal_p): For TREE_CONSTANT ADDR_EXPRs
+	compare the operands with OEP_CONSTANT_ADDRESS_OF.  Treat
+	trees with TREE_SIDE_EFFECTS equal when OEP_CONSTANT_ADDRESS_OF
+	is set.
+
 2011-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-family/c-common.c (struct c_common_resword): Add
