@@ -3737,12 +3737,6 @@ build_unary_op (location_t location,
 	  tree op0 = TREE_OPERAND (arg, 0);
 	  if (!c_mark_addressable (op0))
 	    return error_mark_node;
-	  return build_binary_op (location, PLUS_EXPR,
-				  (TREE_CODE (TREE_TYPE (op0)) == ARRAY_TYPE
-				   ? array_to_pointer_conversion (location,
-								  op0)
-				   : op0),
-				  TREE_OPERAND (arg, 1), 1);
 	}
 
       /* Anything not already handled and not a true memory reference
@@ -3769,10 +3763,11 @@ build_unary_op (location_t location,
       argtype = TREE_TYPE (arg);
 
       /* If the lvalue is const or volatile, merge that into the type
-	 to which the address will point.  This should only be needed
+	 to which the address will point.  This is only needed
 	 for function types.  */
       if ((DECL_P (arg) || REFERENCE_CLASS_P (arg))
-	  && (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg)))
+	  && (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg))
+	  && TREE_CODE (argtype) == FUNCTION_TYPE)
 	{
 	  int orig_quals = TYPE_QUALS (strip_array_types (argtype));
 	  int quals = orig_quals;
@@ -3781,9 +3776,6 @@ build_unary_op (location_t location,
 	    quals |= TYPE_QUAL_CONST;
 	  if (TREE_THIS_VOLATILE (arg))
 	    quals |= TYPE_QUAL_VOLATILE;
-
-	  gcc_assert (quals == orig_quals
-		      || TREE_CODE (argtype) == FUNCTION_TYPE);
 
 	  argtype = c_build_qualified_type (argtype, quals);
 	}
