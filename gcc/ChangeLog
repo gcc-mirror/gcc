@@ -1,3 +1,16 @@
+2011-04-26  Xinliang David Li  <davidxl@google.com>
+
+	* tree-ssa-uninit.c (warn_uninitialized_phi): Pass
+	 warning code.
+	* c-family/c-opts.c (c_common_handle_option): Set
+	warn_maybe_uninitialized.
+	* opts.c (common_handle_option): Ditto.
+	* common.opt:  New option.
+	* tree-ssa.c (warn_uninit): Add one more parameter.
+	(warn_uninitialized_var): Pass warning code.
+	* tree-flow.h: Interface change.
+
+
 2011-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/mips/iris6.h (LOCAL_LABEL_PREFIX): Don't test

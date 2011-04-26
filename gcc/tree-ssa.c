@@ -1617,10 +1617,11 @@ walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
    changed conditionally uninitialized to unconditionally uninitialized.  */
 
 /* Emit a warning for T, an SSA_NAME, being uninitialized.  The exact
-   warning text is in MSGID and LOCUS may contain a location or be null.  */
+   warning text is in MSGID and LOCUS may contain a location or be null.
+   WC is the warning code.  */
 
 void
-warn_uninit (tree t, const char *gmsgid, void *data)
+warn_uninit (enum opt_code wc, tree t, const char *gmsgid, void *data)
 {
   tree var = SSA_NAME_VAR (t);
   gimple context = (gimple) data;
@@ -1644,7 +1645,7 @@ warn_uninit (tree t, const char *gmsgid, void *data)
 	     : DECL_SOURCE_LOCATION (var);
   xloc = expand_location (location);
   floc = expand_location (DECL_SOURCE_LOCATION (cfun->decl));
-  if (warning_at (location, OPT_Wuninitialized, gmsgid, var))
+  if (warning_at (location, wc, gmsgid, var))
     {
       TREE_NO_WARNING (var) = 1;
 
@@ -1726,10 +1727,12 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data_)
       /* We only do data flow with SSA_NAMEs, so that's all we
 	 can warn about.  */
       if (data->always_executed)
-        warn_uninit (t, "%qD is used uninitialized in this function",
+        warn_uninit (OPT_Wuninitialized,
+	             t, "%qD is used uninitialized in this function",
 		     data->stmt);
       else if (data->warn_possibly_uninitialized)
-        warn_uninit (t, "%qD may be used uninitialized in this function",
+        warn_uninit (OPT_Wuninitialized,
+	             t, "%qD may be used uninitialized in this function",
 		     data->stmt);
       *walk_subtrees = 0;
       break;

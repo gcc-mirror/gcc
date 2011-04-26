@@ -631,6 +631,10 @@ Wuninitialized
 Common Var(warn_uninitialized) Init(-1) Warning
 Warn about uninitialized automatic variables
 
+Wmaybe-uninitialized
+Common Var(warn_maybe_uninitialized) Warning
+Warn about maybe uninitialized automatic variables
+
 Wunreachable-code
 Common Ignore
 Does nothing. Preserved for backward compatibility.

@@ -246,11 +246,11 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-y2k @gol
 -Wframe-larger-than=@var{len} -Wjump-misses-init -Wignored-qualifiers @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
--Winit-self  -Winline @gol
+-Winit-self  -Winline -Wmaybe-uninitialized @gol
 -Wno-int-to-pointer-cast -Wno-invalid-offsetof @gol
 -Winvalid-pch -Wlarger-than=@var{len}  -Wunsafe-loop-optimizations @gol
 -Wlogical-op -Wlong-long @gol
--Wmain  -Wmissing-braces  -Wmissing-field-initializers @gol
+-Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-format-attribute  -Wmissing-include-dirs @gol
 -Wno-mudflap @gol
 -Wno-multichar  -Wnonnull  -Wno-overflow @gol
@@ -2946,6 +2946,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wcomment  @gol
 -Wformat   @gol
 -Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
+-Wmaybe-uninitialized @gol
 -Wmissing-braces  @gol
 -Wnonnull  @gol
 -Wparentheses  @gol
@@ -3530,8 +3531,15 @@ to compute a value that itself is never used, because such
 computations may be deleted by data flow analysis before the warnings
 are printed.
 
-These warnings are made optional because GCC is not smart
-enough to see all the reasons why the code might be correct
+@item -Wmaybe-uninitialized
+@opindex Wmaybe-uninitialized
+@opindex Wno-maybe-uninitialized
+For an automatic variable, if there exists a path from the function
+entry to a use of the variable that is initialized, but there exist
+some other paths the variable is not initialized, the compiler will
+emit a warning if it can not prove the uninitialized paths do not
+happen at runtime. These warnings are made optional because GCC is 
+not smart enough to see all the reasons why the code might be correct
 despite appearing to have an error.  Here is one example of how
 this can happen:
 
@@ -3554,20 +3562,9 @@ this can happen:
 
 @noindent
 If the value of @code{y} is always 1, 2 or 3, then @code{x} is
-always initialized, but GCC doesn't know this.  Here is
-another common case:
-
-@smallexample
-@{
-  int save_y;
-  if (change_y) save_y = y, y = new_y;
-  @dots{}
-  if (change_y) y = save_y;
-@}
-@end smallexample
-
-@noindent
-This has no bug because @code{save_y} is used only if it is set.
+always initialized, but GCC doesn't know this. To suppress the
+warning, the user needs to provide a default case with assert(0) or
+similar code.
 
 @cindex @code{longjmp} warnings
 This option also warns when a non-volatile automatic variable might be
