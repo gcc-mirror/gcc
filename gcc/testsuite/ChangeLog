@@ -1,3 +1,8 @@
+2011-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/48753
+	* gcc.dg/tree-prof/val-prof-2.c: Adjust for 32-bit HWI.
+
 2011-04-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48731
