@@ -6295,7 +6295,8 @@ cp_parser_delete_expression (cp_parser* parser)
   if (cp_parser_non_integral_constant_expression (parser, NIC_DEL))
     return error_mark_node;
 
-  return delete_sanity (expression, NULL_TREE, array_p, global_scope_p);
+  return delete_sanity (expression, NULL_TREE, array_p, global_scope_p,
+			tf_warning_or_error);
 }
 
 /* Returns true if TOKEN may start a cast-expression and false

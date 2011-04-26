@@ -1,3 +1,26 @@
+2011-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48530
+	* decl.c (cxx_maybe_build_cleanup): Add complain parm.
+	* tree.c (force_target_expr): Add complain parm.
+	(build_target_expr_with_type): Likewise.
+	(get_target_expr_sfinae): Split out.
+	(build_vec_init_expr, bot_manip): Adjust.
+	* init.c (build_vec_delete, build_vec_delete_1): Add complain parm.
+	(build_delete, build_dtor_call): Likewise.
+	(perform_direct_initialization_if_possible): Adjust.
+	(build_vec_init): Handle error return.
+	* cvt.c (force_rvalue): Add complain parm.
+	Call build_special_member_call directly.
+	* decl2.c (delete_sanity): Add complain parm.
+	(build_cleanup): Adjust.
+	* pt.c (tsubst_copy_and_build, tsubst_expr): Adjust.
+	* semantics.c (finish_stmt_expr_expr): Adjust.
+	(finish_compound_literal): Adjust.
+	* parser.c (cp_parser_delete_expression): Adjust.
+	* typeck2.c (build_functional_cast): Adjust.
+	* cp-tree.h: Adjust.
+
 2011-04-26  Martin Jambor  <mjambor@suse.cz>
 
 	* class.c (cp_fold_obj_type_ref): Remove.
