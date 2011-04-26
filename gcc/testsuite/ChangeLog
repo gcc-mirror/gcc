@@ -1,5 +1,8 @@
 2011-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/48734
+	* gcc.c-torture/compile/pr48734.c: New test.
+
 	PR testsuite/48753
 	* gcc.dg/tree-prof/val-prof-2.c: Adjust for 32-bit HWI.
 
