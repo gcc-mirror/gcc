@@ -1,3 +1,8 @@
+2011-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48731
+	* ipa-inline.c (cgraph_flatten): Test if function is inlinable.
+
 2011-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR other/48748

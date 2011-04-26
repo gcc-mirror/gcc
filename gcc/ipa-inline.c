@@ -1337,6 +1337,9 @@ cgraph_flatten (struct cgraph_node *node)
 	  continue;
 	}
 
+      if (!e->callee->local.inlinable)
+	continue;
+
       /* We've hit cycle?  It is time to give up.  */
       if (e->callee->aux)
 	{
