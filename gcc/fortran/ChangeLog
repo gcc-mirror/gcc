@@ -1,5 +1,12 @@
 2011-04-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	* decl.c (gfc_match_end):  Check that the block name starts
+	with "block@".
+	* parse.c (gfc_build_block_ns):  Make block names unique by
+	numbering them.
+
+2011-04-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	* frontend-passes.c (inserted_block):  New variable.
 	(changed_statement):  Likewise.
 	(create_var):  Encase statement to be operated on in a BLOCK.
