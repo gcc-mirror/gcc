@@ -1,3 +1,8 @@
+2011-04-26  Jason Merrill  <jason@redhat.com>
+
+	* objc-act.c (objc_fold_objc_type_ref): Remove.
+	* objc-act.h: Remove prototype.
+
 2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-act.c (synth_module_prologue): Call build_function_type_list
