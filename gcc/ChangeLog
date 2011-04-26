@@ -1,5 +1,12 @@
 2011-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/mips/iris6.h (LOCAL_LABEL_PREFIX): Don't test
+	TARGET_NEWABI.
+	(WINT_TYPE_SIZE): Use INT_TYPE_SIZE.
+	(TARGET_OS_CPP_BUILTINS): Remove TARGET_IRIX6 guards.
+
+2011-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/mips/mips.h (DBX_OUTPUT_SOURCE_LINE): Remove.
 	* config/mips/mips.opt (mmips-tfile): Remove.
 
