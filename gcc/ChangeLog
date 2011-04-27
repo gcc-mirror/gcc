@@ -1,3 +1,10 @@
+2011-04-27  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-prop.c (function_insertion_hook_holder): New holder.
+	(ipa_add_new_function): New function.
+	(ipa_register_cgraph_hooks, ipa_unregister_cgraph_hooks): Register/deregister
+	holder.
+
 2011-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48772
