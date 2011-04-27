@@ -1,5 +1,11 @@
 2011-04-27  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/48772
+	* tree-ssa-pre.c (eliminate): Update call stmts after elimination
+	only.
+
+2011-04-27  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-alias.c (indirect_refs_may_alias_p): Fix
 	TARGET_MEM_REF handling.
 

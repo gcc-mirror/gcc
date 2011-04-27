@@ -1,3 +1,8 @@
+2011-04-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48772
+	* g++.dg/pr48772.C: New testcase.
+
 2011-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48742
