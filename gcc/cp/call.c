@@ -1023,7 +1023,7 @@ convert_class_to_reference (tree reference_type, tree s, tree expr, int flags)
   if (!expr)
     return NULL;
 
-  conversions = lookup_conversions (s, /*lookup_template_convs_p=*/true);
+  conversions = lookup_conversions (s);
   if (!conversions)
     return NULL;
 
@@ -2376,8 +2376,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	  if (i == 0 && code == MODIFY_EXPR && code2 == NOP_EXPR)
 	    return;
 
-	  convs = lookup_conversions (argtypes[i],
-				      /*lookup_template_convs_p=*/false);
+	  convs = lookup_conversions (argtypes[i]);
 
 	  if (code == COND_EXPR)
 	    {
@@ -2867,8 +2866,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 	     reference to it)...  */
 	}
       else
-	conv_fns = lookup_conversions (fromtype,
-				       /*lookup_template_convs_p=*/true);
+	conv_fns = lookup_conversions (fromtype);
     }
 
   candidates = 0;
@@ -3402,7 +3400,7 @@ build_op_call (tree obj, VEC(tree,gc) **args, tsubst_flags_t complain)
 	}
     }
 
-  convs = lookup_conversions (type, /*lookup_template_convs_p=*/true);
+  convs = lookup_conversions (type);
 
   for (; convs; convs = TREE_CHAIN (convs))
     {
