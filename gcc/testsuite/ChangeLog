@@ -1,3 +1,8 @@
+2011-04-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/48767
+	* gcc.c-torture/compile/pr48767.c: New test.
+
 2011-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48772
