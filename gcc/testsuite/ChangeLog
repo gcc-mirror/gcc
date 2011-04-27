@@ -1,3 +1,7 @@
+2011-04-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/parse/ambig6.C: New.
+
 2011-04-27  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.dg/20020312-2.c: Add definition for RX.

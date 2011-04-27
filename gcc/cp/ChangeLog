@@ -1,3 +1,9 @@
+2011-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48046
+	* parser.c (cp_parser_diagnose_invalid_type_name): Commit
+	to tentative parse sooner.
+
 2011-04-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42687
