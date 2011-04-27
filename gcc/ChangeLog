@@ -1,5 +1,14 @@
 2011-04-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/spu/divmovti4.c (union qword_UTItype): New data type.
+	(si_from_UTItype, si_to_UTItype): New functions.
+	(__udivmodti4): Use them to implement type-punning.
+	* config/spu/multi3.c (union qword_TItype): New data type.
+	(si_from_TItype, si_to_TItype): New functions.
+	(__multi3): Use them to implement type-punning.
+
+2011-04-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/spu.c (spu_expand_epilogue): Do not emit barrier.
 
 2011-04-27  Jan Hubicka  <jh@suse.cz>

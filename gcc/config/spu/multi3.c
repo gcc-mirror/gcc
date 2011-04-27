@@ -23,6 +23,28 @@
 
 typedef int TItype __attribute__ ((mode (TI)));
 
+union qword_TItype
+  {
+    qword q;
+    TItype t;
+  };
+  
+inline static qword
+si_from_TItype (TItype t)
+{ 
+  union qword_TItype u;
+  u.t = t;
+  return u.q;
+}
+
+inline static TItype
+si_to_TItype (qword q)
+{ 
+  union qword_TItype u;
+  u.q = q;
+  return u.t;
+}
+
 /* A straight forward vectorization and unrolling of
  *   short l[8], r[8];
  *   TItype total = 0;
@@ -33,8 +55,8 @@ typedef int TItype __attribute__ ((mode (TI)));
 TItype
 __multi3 (TItype l, TItype r)
 {
-  qword u = *(qword *) & l;
-  qword v = *(qword *) & r;
+  qword u = si_from_TItype (l);
+  qword v = si_from_TItype (r);
   qword splat0 = si_shufb (v, v, si_ilh (0x0001));
   qword splat1 = si_shufb (v, v, si_ilh (0x0203));
   qword splat2 = si_shufb (v, v, si_ilh (0x0405));
@@ -93,5 +115,5 @@ __multi3 (TItype l, TItype r)
   total = si_cgx (total10, carry, total);
   total = si_shlqbyi (total, 4);
   total = si_addx (total10, carry, total);
-  return *(TItype *) & total;
+  return si_to_TItype (total);
 }

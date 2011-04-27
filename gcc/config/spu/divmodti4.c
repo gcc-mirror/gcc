@@ -29,6 +29,28 @@ UTItype __udivti3 (UTItype u, UTItype v);
 UTItype __umodti3 (UTItype u, UTItype v);
 UTItype __udivmodti4 (UTItype u, UTItype v, UTItype *w);
 
+union qword_UTItype
+  {
+    qword q;
+    UTItype t;
+  };
+  
+inline static qword
+si_from_UTItype (UTItype t)
+{ 
+  union qword_UTItype u;
+  u.t = t;
+  return u.q;
+}
+
+inline static UTItype
+si_to_UTItype (qword q)
+{ 
+  union qword_UTItype u;
+  u.q = q;
+  return u.t;
+}
+
 inline static unsigned int
 count_leading_zeros (UTItype x)
 {
@@ -67,8 +89,8 @@ __udivmodti4 (UTItype num, UTItype den, UTItype * rp)
 {
   qword shift =
     si_from_uint (count_leading_zeros (den) - count_leading_zeros (num));
-  qword n0 = *(qword *) & num;
-  qword d0 = *(qword *) & den;
+  qword n0 = si_from_UTItype (num);
+  qword d0 = si_from_UTItype (den);
   qword bit = si_andi (si_fsmbi (1), 1);
   qword r0 = si_il (0);
   qword m1 = si_fsmbi (0x000f);
@@ -101,8 +123,8 @@ __udivmodti4 (UTItype num, UTItype den, UTItype * rp)
     }
   while (si_to_uint (si_orx (bit)));
   if (rp)
-    *rp = *(UTItype *) & n0;
-  return *(UTItype *) & r0;
+    *rp = si_to_UTItype (n0);
+  return si_to_UTItype (r0);
 }
 
 UTItype
