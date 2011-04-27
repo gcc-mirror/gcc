@@ -1,3 +1,13 @@
+2011-04-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (changed_count): Remove.
+	(changed): Use a bitmap.
+	(unify_nodes): Adjust.
+	(do_sd_constraint): Likewise.
+	(do_ds_constraint): Likewise.
+	(do_complex_constraint): Likewise.
+	(solve_graph): Likewise.
+
 2011-04-27  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_process_new_functions): Fix ordering issue.
