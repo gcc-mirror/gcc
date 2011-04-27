@@ -120,6 +120,7 @@ struct inline_edge_summary
   int call_stmt_time;
   /* Depth of loop nest, 0 means no nesting.  */
   unsigned short int loop_depth;
+  struct predicate *predicate;
 };
 
 typedef struct inline_edge_summary inline_edge_summary_t;
