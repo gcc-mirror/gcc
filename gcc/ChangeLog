@@ -1,3 +1,7 @@
+2011-04-27  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_process_new_functions): Fix ordering issue.
+
 2011-04-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (avx_vpermilp_*_operand): Remove.
