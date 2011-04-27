@@ -1,3 +1,7 @@
+2011-04-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (spu_expand_epilogue): Do not emit barrier.
+
 2011-04-27  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-prop.c (function_insertion_hook_holder): New holder.
