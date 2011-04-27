@@ -864,14 +864,9 @@ enum reg_class
   FDPIC_CALL_REGS,
   SPR_REGS,
   QUAD_ACC_REGS,
-  EVEN_ACC_REGS,
-  ACC_REGS,
   ACCG_REGS,
   QUAD_FPR_REGS,
-  FEVEN_REGS,
-  FPR_REGS,
   QUAD_REGS,
-  EVEN_REGS,
   GPR_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
@@ -904,14 +899,9 @@ enum reg_class
    "FDPIC_CALL_REGS",							\
    "SPR_REGS",								\
    "QUAD_ACC_REGS",							\
-   "EVEN_ACC_REGS",							\
-   "ACC_REGS",								\
    "ACCG_REGS",								\
    "QUAD_FPR_REGS",							\
-   "FEVEN_REGS",							\
-   "FPR_REGS",								\
    "QUAD_REGS",								\
-   "EVEN_REGS",								\
    "GPR_REGS",								\
    "ALL_REGS"								\
 }
@@ -945,17 +935,18 @@ enum reg_class
   { 0x0000c000,0x00000000,0x00000000,0x00000000,0x00000000,0x0}, /* FDPIC_CALL_REGS */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x1e00}, /* SPR_REGS */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0x0fff0000,0x0}, /* QUAD_ACC */\
-  { 0x00000000,0x00000000,0x00000000,0x00000000,0x0fff0000,0x0}, /* EVEN_ACC */\
-  { 0x00000000,0x00000000,0x00000000,0x00000000,0x0fff0000,0x0}, /* ACC_REGS */\
   { 0x00000000,0x00000000,0x00000000,0x00000000,0xf0000000,0xff}, /* ACCG_REGS*/\
   { 0x00000000,0x00000000,0xffffffff,0xffffffff,0x00000000,0x0}, /* QUAD_FPR */\
-  { 0x00000000,0x00000000,0xffffffff,0xffffffff,0x00000000,0x0}, /* FEVEN_REG*/\
-  { 0x00000000,0x00000000,0xffffffff,0xffffffff,0x00000000,0x0}, /* FPR_REGS */\
   { 0x0ffffffc,0xffffffff,0x00000000,0x00000000,0x00000000,0x0}, /* QUAD_REGS*/\
-  { 0xfffffffc,0xffffffff,0x00000000,0x00000000,0x00000000,0x0}, /* EVEN_REGS*/\
   { 0xffffffff,0xffffffff,0x00000000,0x00000000,0x00000000,0x100}, /* GPR_REGS */\
   { 0xffffffff,0xffffffff,0xffffffff,0xffffffff,0xffffffff,0x1fff}, /* ALL_REGS */\
 }
+
+#define EVEN_ACC_REGS   QUAD_ACC_REGS
+#define ACC_REGS        QUAD_ACC_REGS
+#define FEVEN_REGS      QUAD_FPR_REGS
+#define FPR_REGS        QUAD_FPR_REGS
+#define EVEN_REGS       QUAD_REGS
 
 /* A C expression whose value is a register class containing hard register
    REGNO.  In general there is more than one such class; choose a class which

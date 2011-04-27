@@ -1,5 +1,19 @@
 2011-04-27  Nick Clifton  <nickc@redhat.com>
 
+	* config/frv/frv.h (enum reg_class): Delete EVEN_ACC_REGS,
+	ACC_REGS, FEVEN_REGS, FPR_REGS, EVEN_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(EVEN_ACC_REGS): New macro.  Alias for QUAD_ACC_REGS.
+	(ACC_REGS): New macro.  Alias for QUAD_ACC_REGS.
+	(FEVEN_REGS): New macro.  Alias for QUAD_ACC_REGS.
+	(FPR_REGS): New macro.  Alias for QUAD_ACC_REGS.
+	(EVEN_REGS): New macro.  Alias for QUAD_REGS.
+	* config/frv/frv.c (frv_secondary_reload_class): Remove use of
+	duplicate register classes.
+	(frv_class_likely_spileld_p): Likewise.
+	(frv_register_move_cost): Likewise.
+
 	* config/mcore/mcore.h (REGNO_REG_CLASS): Do not index beyond the
 	end of the regno_reg_class array.
 
