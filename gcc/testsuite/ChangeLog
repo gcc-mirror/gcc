@@ -1,3 +1,8 @@
+2011-04-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48788
+	* gfortran.dg/whole_file_34.f90: New.
+
 2011-04-27  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/inline-9.c: New testcase.

@@ -2187,7 +2187,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
 	  /* F2003, 12.3.1.1 (3c); F2008, 12.4.2.2 (3c)  */
 	  if (sym->ts.type == BT_CHARACTER && sym->attr.if_source != IFSRC_IFBODY
-	      && def_sym->ts.u.cl->length != NULL)
+	      && def_sym->ts.type == BT_CHARACTER && def_sym->ts.u.cl->length != NULL)
 	    {
 	      gfc_charlen *cl = sym->ts.u.cl;
 
