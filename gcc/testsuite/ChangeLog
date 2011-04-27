@@ -1,3 +1,8 @@
+2011-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48742
+	* gcc.c-torture/compile/pr48742.c: New test.
+
 2011-04-26  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/lookup/koenig13.C: New.

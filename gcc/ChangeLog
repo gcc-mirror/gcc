@@ -1,3 +1,9 @@
+2011-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48742
+	* c-typeck.c (build_binary_op): Don't wrap arguments if
+	int_operands is true.
+
 2011-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48768
