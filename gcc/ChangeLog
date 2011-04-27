@@ -1,3 +1,33 @@
+2011-04-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ssemodesuffix):  Merge with ssevecsize,
+	ssemodefsuffix, ssescalarmodesuffix and avxmodesuffixp.
+	Move from sse.md.
+	(ssemodefsuffix): Remove.
+	(ssevecmodesuffix): New mode attribute.
+	(fix_trunc<mode>di_sse, fix_trunc<mode>si_sse,
+	*float<SSEMODEI24:mode><MODEF:mode>2_mixed_interunit,
+	*float<SSEMODEI24:mode><MODEF:mode>2_mixed_nointerunit,
+	*float<SSEMODEI24:mode><MODEF:mode>2_sse_interunit,
+	*float<SSEMODEI24:mode><MODEF:mode>2_sse_nointerunit, setcc_<mode>_sse,
+	*sqrt<mode>2_sse, sse4_1_round<mode>2, <smaxmin:code><mode>3,
+	*ieee_smin<mode>3, *ieee_smax<mode>3): Adjust assembler templates for
+	ssemodesuffix mode attribute.
+	(float splitters): Use ssevecmodesuffix mode attribute.
+	* config/i386/sse.md (ssescalarmode): Merge with avxscalarmode.
+	(sseinsmode): Rename from avxvecmode.
+	(avxsizesuffix): Rename from avxmodesuffix.
+	(sseintvecmode): Rename from avxpermvecmode.
+	(ssedoublevecmode): Rename from ssedoublesizemode.
+	(ssehalfvecmode): Rename from avxhalfvecmode.
+	(ssescalarmode): Rename from avxscalarmode.
+	(<sse>_comi, <sse>_ucomi, sse4a_movnt<mode>): Adjust assembler
+	templates for ssemodesuffix mode attribute.
+	(*andnot<mode>3, *<any_logic:code><mode>3): Use ssevecmodesuffix
+	mode attribute.
+
+	Adjust RTX patterns globally for renamed mode attributes.
+
 2011-04-27  Jan Hubcika  <jh@suse.cz>
 
 	* ipa-inline.h (struct inline_edge_summary): Add predicate pointer.
@@ -18,8 +48,7 @@
 	(edge_set_predicate): New function.
 	(inline_edge_duplication_hook): Duplicate edge predicates.
 	(inline_edge_removal_hook): Free edge predicates.
-	(dump_inline_edge_summary): Add INFO parameter; dump
-	edge predicates.
+	(dump_inline_edge_summary): Add INFO parameter; dump edge predicates.
 	(dump_inline_summary): Update.
 	(estimate_function_body_sizes): Set edge predicates.
 	(estimate_calls_size_and_time): Handle predicates.
