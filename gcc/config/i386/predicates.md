@@ -1179,41 +1179,6 @@
   return true;
 })
 
-;; Return true if OP is a parallel for a vpermilp[ds] permute.
-;; ??? It would be much easier if the PARALLEL for a VEC_SELECT
-;; had a mode, but it doesn't.  So we have 4 copies and install
-;; the mode by hand.
-
-(define_predicate "avx_vpermilp_v8sf_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vpermilp_parallel (op, V8SFmode)")))
-
-(define_predicate "avx_vpermilp_v4df_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vpermilp_parallel (op, V4DFmode)")))
-
-(define_predicate "avx_vpermilp_v4sf_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vpermilp_parallel (op, V4SFmode)")))
-
-(define_predicate "avx_vpermilp_v2df_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vpermilp_parallel (op, V2DFmode)")))
-
-;; Return true if OP is a parallel for a vperm2f128 permute.
-
-(define_predicate "avx_vperm2f128_v8sf_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vperm2f128_parallel (op, V8SFmode)")))
-
-(define_predicate "avx_vperm2f128_v8si_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vperm2f128_parallel (op, V8SImode)")))
-
-(define_predicate "avx_vperm2f128_v4df_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vperm2f128_parallel (op, V4DFmode)")))
-
 ;; Return true if OP is a parallel for a vbroadcast permute.
 
 (define_predicate "avx_vbroadcast_operand"
