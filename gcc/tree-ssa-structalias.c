@@ -197,8 +197,6 @@
    keep the set of called functions for indirect calls.
 
    And probably more.  */
-static GTY ((if_marked ("tree_map_marked_p"), param_is (struct heapvar_map)))
-htab_t heapvar_for_stmt;
 
 static bool use_field_sensitive = true;
 static int in_ipa_mode = 0;
@@ -332,61 +330,6 @@ get_varinfo (unsigned int n)
 enum { nothing_id = 0, anything_id = 1, readonly_id = 2,
        escaped_id = 3, nonlocal_id = 4,
        storedanything_id = 5, integer_id = 6 };
-
-struct GTY(()) heapvar_map {
-  struct tree_map map;
-  unsigned HOST_WIDE_INT offset;
-};
-
-static int
-heapvar_map_eq (const void *p1, const void *p2)
-{
-  const struct heapvar_map *h1 = (const struct heapvar_map *)p1;
-  const struct heapvar_map *h2 = (const struct heapvar_map *)p2;
-  return (h1->map.base.from == h2->map.base.from
-	  && h1->offset == h2->offset);
-}
-
-static unsigned int
-heapvar_map_hash (struct heapvar_map *h)
-{
-  return iterative_hash_host_wide_int (h->offset,
-				       htab_hash_pointer (h->map.base.from));
-}
-
-/* Lookup a heap var for FROM, and return it if we find one.  */
-
-static tree
-heapvar_lookup (tree from, unsigned HOST_WIDE_INT offset)
-{
-  struct heapvar_map *h, in;
-  in.map.base.from = from;
-  in.offset = offset;
-  h = (struct heapvar_map *) htab_find_with_hash (heapvar_for_stmt, &in,
-						  heapvar_map_hash (&in));
-  if (h)
-    return h->map.to;
-  return NULL_TREE;
-}
-
-/* Insert a mapping FROM->TO in the heap var for statement
-   hashtable.  */
-
-static void
-heapvar_insert (tree from, unsigned HOST_WIDE_INT offset, tree to)
-{
-  struct heapvar_map *h;
-  void **loc;
-
-  h = ggc_alloc_heapvar_map ();
-  h->map.base.from = from;
-  h->offset = offset;
-  h->map.hash = heapvar_map_hash (h);
-  h->map.to = to;
-  loc = htab_find_slot_with_hash (heapvar_for_stmt, h, h->map.hash, INSERT);
-  gcc_assert (*loc == NULL);
-  *(struct heapvar_map **) loc = h;
-}
 
 /* Return a new variable info structure consisting for a variable
    named NAME, and using constraint graph node NODE.  Append it
@@ -3664,31 +3607,35 @@ make_transitive_closure_constraints (varinfo_t vi)
   process_constraint (new_constraint (lhs, rhs));
 }
 
+/* Temporary storage for fake var decls.  */
+struct obstack fake_var_decl_obstack;
+
+/* Build a fake VAR_DECL acting as referrer to a DECL_UID.  */
+
+static tree
+build_fake_var_decl (tree type)
+{
+  tree decl = (tree) XOBNEW (&fake_var_decl_obstack, struct tree_var_decl);
+  memset (decl, 0, sizeof (struct tree_var_decl));
+  TREE_SET_CODE (decl, VAR_DECL);
+  TREE_TYPE (decl) = type;
+  DECL_UID (decl) = allocate_decl_uid ();
+  SET_DECL_PT_UID (decl, -1);
+  layout_decl (decl, 0);
+  return decl;
+}
+
 /* Create a new artificial heap variable with NAME.
    Return the created variable.  */
 
 static varinfo_t
-make_heapvar_for (varinfo_t lhs, const char *name)
+make_heapvar (const char *name)
 {
   varinfo_t vi;
-  tree heapvar = heapvar_lookup (lhs->decl, lhs->offset);
-
-  if (heapvar == NULL_TREE)
-    {
-      var_ann_t ann;
-      heapvar = create_tmp_var_raw (ptr_type_node, name);
-      DECL_EXTERNAL (heapvar) = 1;
-
-      heapvar_insert (lhs->decl, lhs->offset, heapvar);
-
-      ann = get_var_ann (heapvar);
-      ann->is_heapvar = 1;
-    }
-
-  /* For global vars we need to add a heapvar to the list of referenced
-     vars of a different function than it was created for originally.  */
-  if (cfun && gimple_referenced_vars (cfun))
-    add_referenced_var (heapvar);
+  tree heapvar;
+  
+  heapvar = build_fake_var_decl (ptr_type_node);
+  DECL_EXTERNAL (heapvar) = 1;
 
   vi = new_var_info (heapvar, name);
   vi->is_artificial_var = true;
@@ -3709,7 +3656,7 @@ make_heapvar_for (varinfo_t lhs, const char *name)
 static varinfo_t
 make_constraint_from_heapvar (varinfo_t lhs, const char *name)
 {
-  varinfo_t vi = make_heapvar_for (lhs, name);
+  varinfo_t vi = make_heapvar (name);
   make_constraint_from (lhs, vi->id);
 
   return vi;
@@ -3907,7 +3854,7 @@ handle_lhs_call (gimple stmt, tree lhs, int flags, VEC(ce_s, heap) *rhsc,
       varinfo_t vi;
       struct constraint_expr tmpc;
       rhsc = NULL;
-      vi = make_heapvar_for (get_vi_for_tree (lhs), "HEAP");
+      vi = make_heapvar ("HEAP");
       /* We delay marking allocated storage global until we know if
          it escapes.  */
       DECL_EXTERNAL (vi->decl) = 0;
@@ -5323,8 +5270,7 @@ create_function_info_for (tree decl, const char *name)
       free (tempname);
 
       /* We need sth that can be pointed to for va_start.  */
-      decl = create_tmp_var_raw (ptr_type_node, name);
-      get_var_ann (decl);
+      decl = build_fake_var_decl (ptr_type_node);
 
       argvi = new_var_info (decl, newname);
       argvi->offset = fi_parm_base + num_args;
@@ -5587,23 +5533,13 @@ intra_create_variable_infos (void)
 	{
 	  struct constraint_expr lhsc, rhsc;
 	  varinfo_t vi;
-	  tree heapvar = heapvar_lookup (t, 0);
-	  if (heapvar == NULL_TREE)
-	    {
-	      var_ann_t ann;
-	      heapvar = create_tmp_var_raw (TREE_TYPE (TREE_TYPE (t)),
-					    "PARM_NOALIAS");
-	      DECL_EXTERNAL (heapvar) = 1;
-	      heapvar_insert (t, 0, heapvar);
-	      ann = get_var_ann (heapvar);
-	      ann->is_heapvar = 1;
-	    }
-	  if (gimple_referenced_vars (cfun))
-	    add_referenced_var (heapvar);
+	  tree heapvar = build_fake_var_decl (TREE_TYPE (TREE_TYPE (t)));
+	  DECL_EXTERNAL (heapvar) = 1;
+	  vi = get_varinfo (create_variable_info_for (heapvar, "PARM_NOALIAS"));
 	  lhsc.var = get_vi_for_tree (t)->id;
 	  lhsc.type = SCALAR;
 	  lhsc.offset = 0;
-	  rhsc.var = (vi = get_vi_for_tree (heapvar))->id;
+	  rhsc.var = vi->id;
 	  rhsc.type = ADDRESSOF;
 	  rhsc.offset = 0;
 	  process_constraint (new_constraint (lhsc, rhsc));
@@ -6371,6 +6307,8 @@ init_alias_vars (void)
   shared_bitmap_table = htab_create (511, shared_bitmap_hash,
 				     shared_bitmap_eq, free);
   init_base_vars ();
+
+  gcc_obstack_init (&fake_var_decl_obstack);
 }
 
 /* Remove the REF and ADDRESS edges from GRAPH, as well as all the
@@ -6407,26 +6345,6 @@ remove_preds_and_fake_succs (constraint_graph_t graph)
   free (graph->preds);
   graph->preds = NULL;
   bitmap_obstack_release (&predbitmap_obstack);
-}
-
-/* Initialize the heapvar for statement mapping.  */
-
-static void
-init_alias_heapvars (void)
-{
-  if (!heapvar_for_stmt)
-    heapvar_for_stmt = htab_create_ggc (11, tree_map_hash, heapvar_map_eq,
-					NULL);
-}
-
-/* Delete the heapvar for statement mapping.  */
-
-void
-delete_alias_heapvars (void)
-{
-  if (heapvar_for_stmt)
-    htab_delete (heapvar_for_stmt);
-  heapvar_for_stmt = NULL;
 }
 
 /* Solve the constraint set.  */
@@ -6500,7 +6418,6 @@ compute_points_to_sets (void)
   timevar_push (TV_TREE_PTA);
 
   init_alias_vars ();
-  init_alias_heapvars ();
 
   intra_create_variable_infos ();
 
@@ -6651,6 +6568,8 @@ delete_points_to_sets (void)
   VEC_free (varinfo_t, heap, varmap);
   free_alloc_pool (variable_info_pool);
   free_alloc_pool (constraint_pool);
+
+  obstack_free (&fake_var_decl_obstack, NULL);
 }
 
 
@@ -6776,7 +6695,6 @@ ipa_pta_execute (void)
 
   in_ipa_mode = 1;
 
-  init_alias_heapvars ();
   init_alias_vars ();
 
   /* Build the constraints.  */
@@ -7119,6 +7037,3 @@ struct simple_ipa_opt_pass pass_ipa_pta =
   TODO_update_ssa                       /* todo_flags_finish */
  }
 };
-
-
-#include "gt-tree-ssa-structalias.h"

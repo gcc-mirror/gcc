@@ -814,6 +814,14 @@ record_node_allocation_statistics (enum tree_code code ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* Allocate and return a new UID from the DECL_UID namespace.  */
+
+int
+allocate_decl_uid (void)
+{
+  return next_decl_uid++;
+}
+
 /* Return a newly allocated node of code CODE.  For decl and type
    nodes, some other fields are initialized.  The rest of the node is
    initialized to zero.  This function cannot be used for TREE_VEC or
@@ -857,7 +865,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	DECL_UID (t) = --next_debug_decl_uid;
       else
 	{
-	  DECL_UID (t) = next_decl_uid++;
+	  DECL_UID (t) = allocate_decl_uid ();
 	  SET_DECL_PT_UID (t, -1);
 	}
       if (TREE_CODE (t) == LABEL_DECL)
@@ -942,7 +950,7 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	DECL_UID (t) = --next_debug_decl_uid;
       else
 	{
-	  DECL_UID (t) = next_decl_uid++;
+	  DECL_UID (t) = allocate_decl_uid ();
 	  if (DECL_PT_UID_SET_P (node))
 	    SET_DECL_PT_UID (t, DECL_PT_UID (node));
 	}

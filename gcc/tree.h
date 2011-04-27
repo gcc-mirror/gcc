@@ -4017,6 +4017,9 @@ extern size_t tree_size (const_tree);
    length.  */
 extern size_t tree_code_size (enum tree_code);
 
+/* Allocate and return a new UID from the DECL_UID namespace.  */
+extern int allocate_decl_uid (void);
+
 /* Lowest level primitive for allocating a node.
    The TREE_CODE is the only argument.  Contents are initialized
    to zero except for a few of the common fields.  */
