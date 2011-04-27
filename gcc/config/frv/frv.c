@@ -6371,7 +6371,6 @@ frv_secondary_reload_class (enum reg_class rclass,
       /* Accumulators/Accumulator guard registers need to go through floating
          point registers.  */
     case QUAD_REGS:
-    case EVEN_REGS:
     case GPR_REGS:
       ret = NO_REGS;
       if (x && GET_CODE (x) == REG)
@@ -6385,8 +6384,6 @@ frv_secondary_reload_class (enum reg_class rclass,
 
       /* Nonzero constants should be loaded into an FPR through a GPR.  */
     case QUAD_FPR_REGS:
-    case FEVEN_REGS:
-    case FPR_REGS:
       if (x && CONSTANT_P (x) && !ZERO_P (x))
 	ret = GPR_REGS;
       else
@@ -6406,8 +6403,6 @@ frv_secondary_reload_class (enum reg_class rclass,
       break;
 
       /* The accumulators need fpr registers.  */
-    case ACC_REGS:
-    case EVEN_ACC_REGS:
     case QUAD_ACC_REGS:
     case ACCG_REGS:
       ret = FPR_REGS;
@@ -6481,8 +6476,6 @@ frv_class_likely_spilled_p (reg_class_t rclass)
     case LR_REG:
     case SPR_REGS:
     case QUAD_ACC_REGS:
-    case EVEN_ACC_REGS:
-    case ACC_REGS:
     case ACCG_REGS:
       return true;
     }
@@ -6842,19 +6835,16 @@ frv_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
       break;
 
     case QUAD_REGS:
-    case EVEN_REGS:
     case GPR_REGS:
       switch (to)
 	{
 	default:
 	  break;
 
-	case QUAD_REGS:
-	case EVEN_REGS:
+	case QUAD_REGS:	
 	case GPR_REGS:
 	  return LOW_COST;
 
-	case FEVEN_REGS:
 	case FPR_REGS:
 	  return LOW_COST;
 
@@ -6864,24 +6854,19 @@ frv_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	  return LOW_COST;
 	}
 
-    case FEVEN_REGS:
-    case FPR_REGS:
+    case QUAD_FPR_REGS:
       switch (to)
 	{
 	default:
 	  break;
 
 	case QUAD_REGS:
-	case EVEN_REGS:
 	case GPR_REGS:
-	case ACC_REGS:
-	case EVEN_ACC_REGS:
 	case QUAD_ACC_REGS:
 	case ACCG_REGS:
 	  return MEDIUM_COST;
 
-	case FEVEN_REGS:
-	case FPR_REGS:
+	case QUAD_FPR_REGS:
 	  return LOW_COST;
 	}
 
@@ -6894,13 +6879,10 @@ frv_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	  break;
 
 	case QUAD_REGS:
-	case EVEN_REGS:
 	case GPR_REGS:
 	  return MEDIUM_COST;
 	}
 
-    case ACC_REGS:
-    case EVEN_ACC_REGS:
     case QUAD_ACC_REGS:
     case ACCG_REGS:
       switch (to)
@@ -6908,8 +6890,7 @@ frv_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	default:
 	  break;
 
-	case FEVEN_REGS:
-	case FPR_REGS:
+	case QUAD_FPR_REGS:
 	  return MEDIUM_COST;
 
 	}
