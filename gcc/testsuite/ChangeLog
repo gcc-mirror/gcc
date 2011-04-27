@@ -1,3 +1,10 @@
+2011-04-27  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/46824, c++/42260, c++/45383
+	* g++.dg/conversion/cast2.C: New test.
+	* g++.dg/conversion/cast3.C: Likewise.
+	* g++.dg/conversion/cond4.C: Likewise.
+
 2011-04-26  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/lookup/koenig13.C: New.

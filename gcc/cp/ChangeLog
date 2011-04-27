@@ -1,3 +1,10 @@
+2011-04-26  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/46824
+	* call.c (add_builtin_candidate)<case INDIRECT_REF>: The type of
+	the argument of the indirection operator should not be dependent.
+	Fix the comment.
+
 2011-04-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42687
