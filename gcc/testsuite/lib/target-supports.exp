@@ -3556,6 +3556,9 @@ proc add_options_for_ieee { flags } {
          || [istarget "sh*-*-*"] } {
        return "$flags -mieee"
     }
+    if { [istarget "rx-*-*"] } {
+       return "$flags -mnofpu"
+    }
     return $flags
 }
 

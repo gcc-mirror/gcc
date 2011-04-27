@@ -1,3 +1,13 @@
+2011-04-27  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/20020312-2.c: Add definition for RX.
+
+	* lib/target-supports.exp (add_options_for_ieee): Use -mnofpu
+	option with RX targets.
+
+	* gcc.target/rx/pack.c: Replace C++ style // comments with C style
+	/* */ comments.
+
 2011-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48742
