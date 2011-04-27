@@ -1,3 +1,7 @@
+2011-04-27  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/inline-9.c: New testcase.
+
 2011-04-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.old-deja/g++.oliva/overload1.C: Adjust.

@@ -1,3 +1,40 @@
+2011-04-27  Jan Hubcika  <jh@suse.cz>
+
+	* ipa-inline.h (struct inline_edge_summary): Add predicate pointer.
+	* ipa-inline-analysis.c: Include alloc-pool.h.
+	(edge_predicate_pool): New.
+	(trye_predicate_p): New function
+	(false_predicate_p): New function.
+	(add_clause): Sanity check that false clauses are "optimized";
+	never add clauses to predicate that is already known to be false.
+	(and_predicate): Use flase_predicate_p.
+	(evaulate_predicate): Rename to ...
+	(evaluate_predicate): ... this one; update all callers; assert
+	that false is not listed among possible truths.
+	(dump_predicate): Use true_predicate_p.
+	(account_size_time): Use false_predicate_p.
+	(evaulate_conditions_for_edge): Rename to ...
+	(evaluate_conditions_for_edge) ... this one.
+	(edge_set_predicate): New function.
+	(inline_edge_duplication_hook): Duplicate edge predicates.
+	(inline_edge_removal_hook): Free edge predicates.
+	(dump_inline_edge_summary): Add INFO parameter; dump
+	edge predicates.
+	(dump_inline_summary): Update.
+	(estimate_function_body_sizes): Set edge predicates.
+	(estimate_calls_size_and_time): Handle predicates.
+	(estimate_callee_size_and_time): Update.
+	(remap_predicate): Add toplev_predicate; update comment.
+	(remap_edge_predicates): New function.
+	(inline_merge_summary): Compute toplev predicate; update.
+	(read_predicate): New function.
+	(read_inline_edge_summary): Use it.
+	(inline_read_section): Likewise.
+	(write_predicate): New function.
+	(write_inline_edge_summary): Use it.
+	(inline_write_summary): Likewise.
+	(inline_free_summary): Free alloc pool and edge summary vec.
+
 2011-04-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (changed_count): Remove.
