@@ -1,3 +1,8 @@
+2011-04-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (indirect_refs_may_alias_p): Fix
+	TARGET_MEM_REF handling.
+
 2011-04-27  Nick Clifton  <nickc@redhat.com>
 
 	* config/frv/frv.h (enum reg_class): Delete EVEN_ACC_REGS,

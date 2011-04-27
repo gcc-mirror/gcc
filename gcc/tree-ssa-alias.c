@@ -925,12 +925,12 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   /* If both references are through the same type, they do not alias
      if the accesses do not overlap.  This does extra disambiguation
      for mixed/pointer accesses but requires strict aliasing.  */
-  if ((TREE_CODE (base1) != TARGET_MEM_REF || !TMR_INDEX (base1))
-      && (TREE_CODE (base2) != TARGET_MEM_REF || !TMR_INDEX (base2))
-      && (TREE_CODE (base1) != MEM_REF
-	  || same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1)
-      && (TREE_CODE (base2) != MEM_REF
-	  || same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1)
+  if ((TREE_CODE (base1) != TARGET_MEM_REF
+       || (!TMR_INDEX (base1) && !TMR_INDEX2 (base1)))
+      && (TREE_CODE (base2) != TARGET_MEM_REF
+	  || (!TMR_INDEX (base2) && !TMR_INDEX2 (base2)))
+      && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1
+      && same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1
       && same_type_for_tbaa (TREE_TYPE (ptrtype1),
 			     TREE_TYPE (ptrtype2)) == 1)
     return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
@@ -942,14 +942,9 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 
   /* Do access-path based disambiguation.  */
   if (ref1 && ref2
-      && handled_component_p (ref1)
-      && handled_component_p (ref2)
-      && TREE_CODE (base1) != TARGET_MEM_REF
-      && TREE_CODE (base2) != TARGET_MEM_REF
-      && (TREE_CODE (base1) != MEM_REF
-	  || same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1)
-      && (TREE_CODE (base2) != MEM_REF
-	  || same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1))
+      && (handled_component_p (ref1) || handled_component_p (ref2))
+      && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1
+      && same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1)
     return aliasing_component_refs_p (ref1,
 				      ref1_alias_set, base1_alias_set,
 				      offset1, max_size1,
