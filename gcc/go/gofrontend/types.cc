@@ -2593,7 +2593,7 @@ Function_type::do_get_tree(Gogo* gogo)
   Backend::Btyped_identifier breceiver;
   if (this->receiver_ != NULL)
     {
-      breceiver.name = this->receiver_->name();
+      breceiver.name = Gogo::unpack_hidden_name(this->receiver_->name());
 
       // We always pass the address of the receiver parameter, in
       // order to make interface calls work with unknown types.
@@ -2613,11 +2613,11 @@ Function_type::do_get_tree(Gogo* gogo)
 	   p != this->parameters_->end();
 	   ++p, ++i)
 	{
-	  bparameters[i].name = p->name();
+	  bparameters[i].name = Gogo::unpack_hidden_name(p->name());
 	  bparameters[i].btype = tree_to_type(p->type()->get_tree(gogo));
 	  bparameters[i].location = p->location();
 	}
-      gcc_assert(i == bparameters.size());
+      go_assert(i == bparameters.size());
     }
 
   std::vector<Backend::Btyped_identifier> bresults;
@@ -2629,11 +2629,11 @@ Function_type::do_get_tree(Gogo* gogo)
 	   p != this->results_->end();
 	   ++p, ++i)
 	{
-	  bresults[i].name = p->name();
+	  bresults[i].name = Gogo::unpack_hidden_name(p->name());
 	  bresults[i].btype = tree_to_type(p->type()->get_tree(gogo));
 	  bresults[i].location = p->location();
 	}
-      gcc_assert(i == bresults.size());
+      go_assert(i == bresults.size());
     }
 
   Btype* fntype = gogo->backend()->function_type(breceiver, bparameters,
@@ -3753,8 +3753,20 @@ Struct_type::method_function(const std::string& name, bool* is_ambiguous) const
 tree
 Struct_type::do_get_tree(Gogo* gogo)
 {
-  tree type = make_node(RECORD_TYPE);
-  return this->fill_in_tree(gogo, type);
+  std::vector<Backend::Btyped_identifier> fields;
+  fields.resize(this->fields_->size());
+  size_t i = 0;
+  for (Struct_field_list::const_iterator p = this->fields_->begin();
+       p != this->fields_->end();
+       ++p, ++i)
+    {
+      fields[i].name = Gogo::unpack_hidden_name(p->field_name());
+      fields[i].btype = tree_to_type(p->type()->get_tree(gogo));
+      fields[i].location = p->location();
+    }
+  go_assert(i == this->fields_->size());
+  Btype* btype = gogo->backend()->struct_type(fields);
+  return type_to_tree(btype);
 }
 
 // Fill in the fields for a struct type.

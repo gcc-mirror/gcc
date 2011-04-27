@@ -1,3 +1,7 @@
+2011-04-26  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::struct_type): Implement.
+
 2011-04-25  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::error_type): Implement.
