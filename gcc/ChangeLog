@@ -1,3 +1,35 @@
+2011-04-27  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (tree-ssa-structalias.o): Remove
+	gt-tree-ssa-structalias.h dependency.
+	(GTFILES): Remove tree-ssa-structalias.c.
+	* tree.c (allocate_decl_uid): New function.
+	(make_node_stat): Use it.
+	(copy_node_stat): Likewise.
+	* tree.h (allocate_decl_uid): Declare.
+	* tree-ssa-alias.h (delete_alias_heapvars): Remove.
+	* tree-ssa.c (delete_tree_ssa): Do not call delete_alias_heapvars.
+	* tree-flow.h (struct var_ann_d): Remove is_heapvar flag.
+	* tree-ssa-live.c (remove_unused_locals): Do not check is_heapvar
+	flag.
+	* tree-ssa-structalias.c (heapvar_for_stmt): Remove.
+	(struct heapvar_map): Likewise.
+	(heapvar_map_eq, heapvar_map_hash, heapvar_lookup,
+	heapvar_insert): Likewise.
+	(make_heapvar_for): Rename to ...
+	(make_heapvar): ... this.  Simplify.
+	(fake_var_decl_obstack): New global var.
+	(build_fake_var_decl): New function.
+	(make_constraint_from_heapvar): Adjust.
+	(handle_lhs_call): Likewise.
+	(create_function_info_for): Likewise.
+	(intra_create_variable_infos): Likewise.
+	(init_alias_vars): Allocate fake_var_decl_obstack.
+	(init_alias_heapvars, delete_alias_heapvars): Remove.
+	(compute_points_to_sets): Do not call init_alias_heapvars.
+	(ipa_pta_execute): Likewise.
+	(delete_points_to_sets): Free fake_var_decl_obstack.
+
 2011-04-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/divmovti4.c (union qword_UTItype): New data type.

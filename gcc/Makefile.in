@@ -2381,7 +2381,7 @@ tree-ssa-structalias.o: tree-ssa-structalias.c \
    $(DIAGNOSTIC_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) \
    $(GIMPLE_H) $(HASHTAB_H) $(FUNCTION_H) $(CGRAPH_H) \
    $(TREE_PASS_H) $(TIMEVAR_H) alloc-pool.h $(SPLAY_TREE_H) $(PARAMS_H) \
-   gt-tree-ssa-structalias.h $(CGRAPH_H) $(ALIAS_H) pointer-set.h
+   $(CGRAPH_H) $(ALIAS_H) pointer-set.h
 tree-ssa-uninit.o : tree-ssa-uninit.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(EXPR_H) output.h $(DIAGNOSTIC_H) \
    $(FUNCTION_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
@@ -3776,7 +3776,6 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
   $(srcdir)/tree-ssa-propagate.c \
   $(srcdir)/tree-phinodes.c \
-  $(srcdir)/tree-ssa-structalias.c \
   $(srcdir)/lto-symtab.c \
   $(srcdir)/tree-ssa-alias.h \
   $(srcdir)/ipa-prop.h \

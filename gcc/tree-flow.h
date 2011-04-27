@@ -172,10 +172,6 @@ struct GTY(()) var_ann_d {
      states.  */
   ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
 
-  /* True for HEAP artificial variables.  These variables represent
-     the memory area allocated by a call to malloc.  */
-  unsigned is_heapvar : 1;
-
   /* Used by var_map for the base index of ssa base variables.  */
   unsigned base_index;
 

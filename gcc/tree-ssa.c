@@ -1187,8 +1187,6 @@ delete_tree_ssa (void)
   if (ssa_operands_active ())
     fini_ssa_operands ();
 
-  delete_alias_heapvars ();
-
   htab_delete (cfun->gimple_df->default_defs);
   cfun->gimple_df->default_defs = NULL;
   pt_solution_reset (&cfun->gimple_df->escaped);
