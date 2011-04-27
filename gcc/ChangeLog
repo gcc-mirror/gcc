@@ -11,7 +11,7 @@
 	(EVEN_REGS): New macro.  Alias for QUAD_REGS.
 	* config/frv/frv.c (frv_secondary_reload_class): Remove use of
 	duplicate register classes.
-	(frv_class_likely_spileld_p): Likewise.
+	(frv_class_likely_spilled_p): Likewise.
 	(frv_register_move_cost): Likewise.
 
 	* config/mcore/mcore.h (REGNO_REG_CLASS): Do not index beyond the
