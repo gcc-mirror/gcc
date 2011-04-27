@@ -1,5 +1,11 @@
 2011-04-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42687
+	* parser.c (cp_parser_primary_expression): Set *idk to
+	CP_ID_KIND_NONE for a parenthesized identifier.
+
+2011-04-26  Jason Merrill  <jason@redhat.com>
+
 	PR c++/48726
 	* call.c (convert_like_real): Correct TREE_CONSTANT on CONSTRUCTOR.
 	* decl.c (reshape_init_array_1): Likewise.

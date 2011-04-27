@@ -3696,6 +3696,12 @@ cp_parser_primary_expression (cp_parser *parser,
 	       `&A::B' might be a pointer-to-member, but `&(A::B)' is
 	       not.  */
 	    finish_parenthesized_expr (expr);
+	    /* DR 705: Wrapping an unqualified name in parentheses
+	       suppresses arg-dependent lookup.  We want to pass back
+	       CP_ID_KIND_QUALIFIED for suppressing vtable lookup
+	       (c++/37862), but none of the others.  */
+	    if (*idk != CP_ID_KIND_QUALIFIED)
+	      *idk = CP_ID_KIND_NONE;
 	  }
 	/* The `>' token might be the end of a template-id or
 	   template-parameter-list now.  */
