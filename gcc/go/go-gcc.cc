@@ -158,8 +158,7 @@ class Gcc_backend : public Backend
 		source_location);
 
   Btype*
-  struct_type(const std::vector<Btyped_identifier>&)
-  { gcc_unreachable(); }
+  struct_type(const std::vector<Btyped_identifier>&);
 
   Btype*
   array_type(const Btype* /* element_type */, const Bexpression* /* length */)
@@ -447,6 +446,32 @@ Gcc_backend::function_type(const Btyped_identifier& receiver,
     return this->error_type();
 
   return this->make_type(build_pointer_type(fntype));
+}
+
+// Make a struct type.
+
+Btype*
+Gcc_backend::struct_type(const std::vector<Btyped_identifier>& fields)
+{
+  tree ret = make_node(RECORD_TYPE);
+  tree field_trees = NULL_TREE;
+  tree* pp = &field_trees;
+  for (std::vector<Btyped_identifier>::const_iterator p = fields.begin();
+       p != fields.end();
+       ++p)
+    {
+      tree name_tree = get_identifier_from_string(p->name);
+      tree type_tree = p->btype->get_tree();
+      if (type_tree == error_mark_node)
+	return this->error_type();
+      tree field = build_decl(p->location, FIELD_DECL, name_tree, type_tree);
+      DECL_CONTEXT(field) = ret;
+      *pp = field;
+      pp = &DECL_CHAIN(field);
+    }
+  TYPE_FIELDS(ret) = field_trees;
+  layout_type(ret);
+  return this->make_type(ret);
 }
 
 // An expression as a statement.
