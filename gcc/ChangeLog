@@ -1,3 +1,12 @@
+2011-04-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (avx_vpermilp_*_operand): Remove.
+	(avx_vperm2f128_*_operand): Ditto.
+	* config/i386/sse.md (*avx_vpermilp<mode>): Remove operand2 predicate.
+	Use avx_vpermilp_parallel in insn condition.
+	(*avx_vperm2f128<mode>_nozero): Remove operand3 predicate.
+	Use avx_vperm2f128_parallel in insn condition.
+
 2011-04-27  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (tree-ssa-structalias.o): Remove
@@ -10,8 +19,7 @@
 	* tree-ssa-alias.h (delete_alias_heapvars): Remove.
 	* tree-ssa.c (delete_tree_ssa): Do not call delete_alias_heapvars.
 	* tree-flow.h (struct var_ann_d): Remove is_heapvar flag.
-	* tree-ssa-live.c (remove_unused_locals): Do not check is_heapvar
-	flag.
+	* tree-ssa-live.c (remove_unused_locals): Do not check is_heapvar flag.
 	* tree-ssa-structalias.c (heapvar_for_stmt): Remove.
 	(struct heapvar_map): Likewise.
 	(heapvar_map_eq, heapvar_map_hash, heapvar_lookup,
@@ -47,14 +55,13 @@
 
 	* ipa-prop.c (function_insertion_hook_holder): New holder.
 	(ipa_add_new_function): New function.
-	(ipa_register_cgraph_hooks, ipa_unregister_cgraph_hooks): Register/deregister
-	holder.
+	(ipa_register_cgraph_hooks, ipa_unregister_cgraph_hooks):
+	Register/deregister holder.
 
 2011-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48772
-	* tree-ssa-pre.c (eliminate): Update call stmts after elimination
-	only.
+	* tree-ssa-pre.c (eliminate): Update call stmts after elimination only.
 
 2011-04-27  Richard Guenther  <rguenther@suse.de>
 
@@ -120,7 +127,7 @@
 	* ipa-inline.c (edge_badness): Update.
 	(ipa_inline): dump summaries after inlining.
 	* ipa-inline.h (struct inline_edge_summary, inline_edge_summary_t):
-	new.
+	New.
 	(inline_edge_summary): New function.
 	* ipa-inline-analysis.c (edge_duplication_hook_holder): New holder.
 	(inline_edge_removal_hook): Handle edge summaries.
@@ -185,8 +192,7 @@
 
 2011-04-26  Xinliang David Li  <davidxl@google.com>
 
-	* tree-ssa-uninit.c (warn_uninitialized_phi): Pass
-	 warning code.
+	* tree-ssa-uninit.c (warn_uninitialized_phi): Pass warning code.
 	* c-family/c-opts.c (c_common_handle_option): Set
 	warn_maybe_uninitialized.
 	* opts.c (common_handle_option): Ditto.
@@ -198,8 +204,7 @@
 
 2011-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* config/mips/iris6.h (LOCAL_LABEL_PREFIX): Don't test
-	TARGET_NEWABI.
+	* config/mips/iris6.h (LOCAL_LABEL_PREFIX): Don't test TARGET_NEWABI.
 	(WINT_TYPE_SIZE): Use INT_TYPE_SIZE.
 	(TARGET_OS_CPP_BUILTINS): Remove TARGET_IRIX6 guards.
 
@@ -210,8 +215,7 @@
 
 	* doc/install.texi (Specific, mips-*-*): Move mips-tfile,
 	mips-tdump reference to ...
-	(Specific, alpha*-dec-osf5.1): ... here.
-	Adapt for Tru64 UNIX.
+	(Specific, alpha*-dec-osf5.1): ... here.  Adapt for Tru64 UNIX.
 	* doc/trouble.texi (Cross-Compiler Problems): Replace MIPS
 	reference by Tru64 UNIX.
 

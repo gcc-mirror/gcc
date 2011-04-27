@@ -10055,9 +10055,10 @@
   [(set (match_operand:AVXMODEF2P 0 "register_operand" "=x")
 	(vec_select:AVXMODEF2P
 	  (match_operand:AVXMODEF2P 1 "nonimmediate_operand" "xm")
-	  (match_parallel 2 "avx_vpermilp_<mode>_operand"
+	  (match_parallel 2 ""
 	    [(match_operand 3 "const_int_operand" "")])))]
-  "TARGET_AVX"
+  "TARGET_AVX
+   && avx_vpermilp_parallel (operands[2], <MODE>mode)"
 {
   int mask = avx_vpermilp_parallel (operands[2], <MODE>mode) - 1;
   operands[2] = GEN_INT (mask);
@@ -10140,9 +10141,10 @@
 	  (vec_concat:<ssedoublesizemode>
 	    (match_operand:AVX256MODE2P 1 "register_operand" "x")
 	    (match_operand:AVX256MODE2P 2 "nonimmediate_operand" "xm"))
-	  (match_parallel 3 "avx_vperm2f128_<mode>_operand"
+	  (match_parallel 3 ""
 	    [(match_operand 4 "const_int_operand" "")])))]
-  "TARGET_AVX"
+  "TARGET_AVX
+   && avx_vperm2f128_parallel (operands[3], <MODE>mode)"
 {
   int mask = avx_vperm2f128_parallel (operands[3], <MODE>mode) - 1;
   operands[3] = GEN_INT (mask);
