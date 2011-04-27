@@ -233,6 +233,7 @@ cgraph_process_new_functions (void)
 	  cgraph_finalize_function (fndecl, false);
 	  cgraph_mark_reachable_node (node);
 	  output = true;
+          cgraph_call_function_insertion_hooks (node);
 	  break;
 
 	case CGRAPH_STATE_IPA:
@@ -258,12 +259,14 @@ cgraph_process_new_functions (void)
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();
 	  current_function_decl = NULL;
+          cgraph_call_function_insertion_hooks (node);
 	  break;
 
 	case CGRAPH_STATE_EXPANSION:
 	  /* Functions created during expansion shall be compiled
 	     directly.  */
 	  node->process = 0;
+          cgraph_call_function_insertion_hooks (node);
 	  cgraph_expand_function (node);
 	  break;
 
@@ -271,7 +274,6 @@ cgraph_process_new_functions (void)
 	  gcc_unreachable ();
 	  break;
 	}
-      cgraph_call_function_insertion_hooks (node);
       varpool_analyze_pending_decls ();
     }
   return output;
