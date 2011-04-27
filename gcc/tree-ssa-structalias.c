@@ -1360,8 +1360,7 @@ build_succ_graph (void)
 
 
 /* Changed variables on the last iteration.  */
-static unsigned int changed_count;
-static sbitmap changed;
+static bitmap changed;
 
 /* Strongly Connected Component visitation info.  */
 
@@ -1492,16 +1491,11 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
   /* Mark TO as changed if FROM was changed. If TO was already marked
      as changed, decrease the changed count.  */
 
-  if (update_changed && TEST_BIT (changed, from))
+  if (update_changed
+      && bitmap_bit_p (changed, from))
     {
-      RESET_BIT (changed, from);
-      if (!TEST_BIT (changed, to))
-	SET_BIT (changed, to);
-      else
-	{
-	  gcc_assert (changed_count > 0);
-	  changed_count--;
-	}
+      bitmap_clear_bit (changed, from);
+      bitmap_set_bit (changed, to);
     }
   if (get_varinfo (from)->solution)
     {
@@ -1510,11 +1504,8 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
       if (bitmap_ior_into (get_varinfo (to)->solution,
 			   get_varinfo (from)->solution))
 	{
-	  if (update_changed && !TEST_BIT (changed, to))
-	    {
-	      SET_BIT (changed, to);
-	      changed_count++;
-	    }
+	  if (update_changed)
+	    bitmap_set_bit (changed, to);
 	}
 
       BITMAP_FREE (get_varinfo (from)->solution);
@@ -1675,11 +1666,7 @@ done:
   if (flag)
     {
       get_varinfo (lhs)->solution = sol;
-      if (!TEST_BIT (changed, lhs))
-	{
-	  SET_BIT (changed, lhs);
-	  changed_count++;
-	}
+      bitmap_set_bit (changed, lhs);
     }
 }
 
@@ -1713,13 +1700,7 @@ do_ds_constraint (constraint_t c, bitmap delta)
       if (add_graph_edge (graph, t, rhs))
 	{
 	  if (bitmap_ior_into (get_varinfo (t)->solution, sol))
-	    {
-	      if (!TEST_BIT (changed, t))
-		{
-		  SET_BIT (changed, t);
-		  changed_count++;
-		}
-	    }
+	    bitmap_set_bit (changed, t);
 	}
       return;
     }
@@ -1759,12 +1740,8 @@ do_ds_constraint (constraint_t c, bitmap delta)
 		{
 		  t = find (escaped_id);
 		  if (add_graph_edge (graph, t, rhs)
-		      && bitmap_ior_into (get_varinfo (t)->solution, sol)
-		      && !TEST_BIT (changed, t))
-		    {
-		      SET_BIT (changed, t);
-		      changed_count++;
-		    }
+		      && bitmap_ior_into (get_varinfo (t)->solution, sol))
+		    bitmap_set_bit (changed, t);
 		  /* Enough to let rhs escape once.  */
 		  escaped_p = true;
 		}
@@ -1774,12 +1751,8 @@ do_ds_constraint (constraint_t c, bitmap delta)
 
 	      t = find (v->id);
 	      if (add_graph_edge (graph, t, rhs)
-		  && bitmap_ior_into (get_varinfo (t)->solution, sol)
-		  && !TEST_BIT (changed, t))
-		{
-		  SET_BIT (changed, t);
-		  changed_count++;
-		}
+		  && bitmap_ior_into (get_varinfo (t)->solution, sol))
+		bitmap_set_bit (changed, t);
 	    }
 
 	  /* If the variable is not exactly at the requested offset
@@ -1834,11 +1807,7 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
       if (flag)
 	{
 	  get_varinfo (c->lhs.var)->solution = tmp;
-	  if (!TEST_BIT (changed, c->lhs.var))
-	    {
-	      SET_BIT (changed, c->lhs.var);
-	      changed_count++;
-	    }
+	  bitmap_set_bit (changed, c->lhs.var);
 	}
     }
 }
@@ -2531,9 +2500,7 @@ solve_graph (constraint_graph_t graph)
   unsigned int i;
   bitmap pts;
 
-  changed_count = 0;
-  changed = sbitmap_alloc (size);
-  sbitmap_zero (changed);
+  changed = BITMAP_ALLOC (NULL);
 
   /* Mark all initial non-collapsed nodes as changed.  */
   for (i = 0; i < size; i++)
@@ -2542,16 +2509,13 @@ solve_graph (constraint_graph_t graph)
       if (find (i) == i && !bitmap_empty_p (ivi->solution)
 	  && ((graph->succs[i] && !bitmap_empty_p (graph->succs[i]))
 	      || VEC_length (constraint_t, graph->complex[i]) > 0))
-	{
-	  SET_BIT (changed, i);
-	  changed_count++;
-	}
+	bitmap_set_bit (changed, i);
     }
 
   /* Allocate a bitmap to be used to store the changed bits.  */
   pts = BITMAP_ALLOC (&pta_obstack);
 
-  while (changed_count > 0)
+  while (!bitmap_empty_p (changed))
     {
       unsigned int i;
       struct topo_info *ti = init_topo_info ();
@@ -2577,16 +2541,13 @@ solve_graph (constraint_graph_t graph)
 
 	  /* If the node has changed, we need to process the
 	     complex constraints and outgoing edges again.  */
-	  if (TEST_BIT (changed, i))
+	  if (bitmap_clear_bit (changed, i))
 	    {
 	      unsigned int j;
 	      constraint_t c;
 	      bitmap solution;
 	      VEC(constraint_t,heap) *complex = graph->complex[i];
 	      bool solution_empty;
-
-	      RESET_BIT (changed, i);
-	      changed_count--;
 
 	      /* Compute the changed set of solution bits.  */
 	      bitmap_and_compl (pts, get_varinfo (i)->solution,
@@ -2650,11 +2611,7 @@ solve_graph (constraint_graph_t graph)
 		      if (flag)
 			{
 			  get_varinfo (to)->solution = tmp;
-			  if (!TEST_BIT (changed, to))
-			    {
-			      SET_BIT (changed, to);
-			      changed_count++;
-			    }
+			  bitmap_set_bit (changed, to);
 			}
 		    }
 		}
@@ -2665,7 +2622,7 @@ solve_graph (constraint_graph_t graph)
     }
 
   BITMAP_FREE (pts);
-  sbitmap_free (changed);
+  BITMAP_FREE (changed);
   bitmap_obstack_release (&oldpta_obstack);
 }
 
