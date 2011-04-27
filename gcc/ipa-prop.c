@@ -63,6 +63,7 @@ static struct cgraph_edge_hook_list *edge_removal_hook_holder;
 static struct cgraph_node_hook_list *node_removal_hook_holder;
 static struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
 static struct cgraph_2node_hook_list *node_duplication_hook_holder;
+static struct cgraph_node_hook_list *function_insertion_hook_holder;
 
 /* Add cgraph NODE described by INFO to the worklist WL regardless of whether
    it is in one or not.  It should almost never be used directly, as opposed to
@@ -2058,6 +2059,15 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
   new_info->node_enqueued = old_info->node_enqueued;
 }
 
+
+/* Analyze newly added function into callgraph.  */
+
+static void
+ipa_add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  ipa_analyze_node (node);
+}
+
 /* Register our cgraph hooks if they are not already there.  */
 
 void
@@ -2075,6 +2085,8 @@ ipa_register_cgraph_hooks (void)
   if (!node_duplication_hook_holder)
     node_duplication_hook_holder =
       cgraph_add_node_duplication_hook (&ipa_node_duplication_hook, NULL);
+  function_insertion_hook_holder =
+      cgraph_add_function_insertion_hook (&ipa_add_new_function, NULL);
 }
 
 /* Unregister our cgraph hooks if they are not already there.  */
@@ -2090,6 +2102,8 @@ ipa_unregister_cgraph_hooks (void)
   edge_duplication_hook_holder = NULL;
   cgraph_remove_node_duplication_hook (node_duplication_hook_holder);
   node_duplication_hook_holder = NULL;
+  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
+  function_insertion_hook_holder = NULL;
 }
 
 /* Allocate all necessary data structures necessary for indirect inlining.  */
