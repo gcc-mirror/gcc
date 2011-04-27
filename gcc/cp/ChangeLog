@@ -1,5 +1,8 @@
 2011-04-26  Jason Merrill  <jason@redhat.com>
 
+	* ptree.c (cxx_print_type) [TYPENAME_TYPE]: Dump fullname.
+	(cxx_print_identifier): Correct indentation.
+
 	PR c++/48530
 	* decl.c (cxx_maybe_build_cleanup): Add complain parm.
 	* tree.c (force_target_expr): Add complain parm.
