@@ -1,3 +1,9 @@
+2011-04-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48788
+	* resolve.c (resolve_global_procedure): Error recovery -
+	avoid segfault for (non)character-returning functions.
+
 2011-04-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* decl.c (gfc_match_end):  Check that the block name starts
