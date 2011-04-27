@@ -1706,7 +1706,6 @@ print_candidates_1 (tree fns, bool more, const char **str)
   for (fn = fns; fn; fn = OVL_NEXT (fn))
     if (TREE_CODE (fn) == TREE_LIST)
       {
-        gcc_assert (!OVL_NEXT (fn) && !is_overloaded_fn (fn));
         for (fn2 = fn; fn2 != NULL_TREE; fn2 = TREE_CHAIN (fn2))
           print_candidates_1 (TREE_VALUE (fn2),
                               TREE_CHAIN (fn2) || more, str);
@@ -1736,7 +1735,8 @@ print_candidates_1 (tree fns, bool more, const char **str)
     }
 }
 
-/* Print the list of candidate FNS in an error message.  */
+/* Print the list of candidate FNS in an error message.  FNS can also
+   be a TREE_LIST of non-functions in the case of an ambiguous lookup.  */
 
 void
 print_candidates (tree fns)
