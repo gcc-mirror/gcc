@@ -2107,7 +2107,7 @@ spu_expand_epilogue (bool sibcall_p)
   int size = get_frame_size (), offset, regno;
   HOST_WIDE_INT saved_regs_size, total_size;
   rtx sp_reg = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
-  rtx jump, scratch_reg_0;
+  rtx scratch_reg_0;
 
   if (spu_naked_function_p (current_function_decl))
     return;
@@ -2149,10 +2149,8 @@ spu_expand_epilogue (bool sibcall_p)
   if (!sibcall_p)
     {
       emit_use (gen_rtx_REG (SImode, LINK_REGISTER_REGNUM));
-      jump = emit_jump_insn (gen__return ());
-      emit_barrier_after (jump);
+      emit_jump_insn (gen__return ());
     }
-
 }
 
 rtx
