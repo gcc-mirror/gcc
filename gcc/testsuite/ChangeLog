@@ -1,5 +1,7 @@
 2011-04-27  Jason Merrill  <jason@redhat.com>
 
+	* g++.old-deja/g++.oliva/overload1.C: Adjust.
+
 	* g++.dg/parse/ambig6.C: New.
 
 2011-04-27  Nick Clifton  <nickc@redhat.com>

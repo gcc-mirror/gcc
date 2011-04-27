@@ -1,5 +1,9 @@
 2011-04-27  Jason Merrill  <jason@redhat.com>
 
+	* class.c (resolve_address_of_overloaded_function): Don't
+	change OVERLOAD to TREE_LIST.
+	* pt.c (print_candidates_1): Remove nonsensical assert.
+
 	PR c++/48046
 	* parser.c (cp_parser_diagnose_invalid_type_name): Commit
 	to tentative parse sooner.

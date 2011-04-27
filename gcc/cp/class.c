@@ -6514,14 +6514,7 @@ resolve_address_of_overloaded_function (tree target_type,
 		 DECL_NAME (OVL_CURRENT (overload)),
 		 target_type);
 
-	  /* print_candidates expects a chain with the functions in
-	     TREE_VALUE slots, so we cons one up here (we're losing anyway,
-	     so why be clever?).  */
-	  for (; overload; overload = OVL_NEXT (overload))
-	    matches = tree_cons (NULL_TREE, OVL_CURRENT (overload),
-				 matches);
-
-	  print_candidates (matches);
+	  print_candidates (overload);
 	}
       return error_mark_node;
     }
