@@ -4,10 +4,10 @@ typedef unsigned short	INT16U;
 
 typedef struct tst_2
 {
-  INT16U	f0;	// [+0]
-  INT16U *	f1;	// [+2]
-  INT16U	f2;	// [+6]
-  INT16U *	f3;	// [+8]
+  INT16U	f0;	/* [+0] */
+  INT16U *	f1;	/* [+2] */
+  INT16U	f2;	/* [+6] */
+  INT16U *	f3;	/* [+8] */
 } __attribute__ ((__packed__)) t2;
 
 #include <stddef.h>
