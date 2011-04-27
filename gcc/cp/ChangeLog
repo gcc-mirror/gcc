@@ -1,3 +1,9 @@
+2011-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42687
+	* parser.c (cp_parser_primary_expression): Set *idk to
+	CP_ID_KIND_NONE for a parenthesized identifier.
+
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48594
