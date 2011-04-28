@@ -1747,7 +1747,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
      case of SLP.  */
-  if (slp_node)
+  if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
 
   /* Sanity check: make sure that at least one copy of the vectorized stmt
@@ -1940,7 +1940,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node. Hence, NCOPIES is always 1 in
      case of SLP.  */
-  if (slp_node)
+  if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
   else
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
@@ -2149,7 +2149,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
      case of SLP.  */
-  if (slp_node)
+  if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
   else
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
@@ -2497,7 +2497,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
      case of SLP.  */
-  if (slp_node)
+  if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
   else
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
@@ -2895,7 +2895,7 @@ vectorizable_type_demotion (gimple stmt, gimple_stmt_iterator *gsi,
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
      case of SLP.  */
-  if (slp_node)
+  if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
   else
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
@@ -3175,7 +3175,7 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
      case of SLP.  */
-  if (slp_node)
+  if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
   else
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_in;
@@ -3358,7 +3358,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node. Hence, NCOPIES is always 1 in
      case of SLP.  */
-  if (slp)
+  if (slp || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
   else
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
@@ -3851,7 +3851,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
      case of SLP.  */
-  if (slp)
+  if (slp || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
   else
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
@@ -4457,6 +4457,10 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   /* FORNOW: unsupported in basic block SLP.  */
   gcc_assert (loop_vinfo);
 
+  /* FORNOW: SLP not supported.  */
+  if (STMT_SLP_TYPE (stmt_info))
+    return false;
+
   gcc_assert (ncopies >= 1);
   if (reduc_index && ncopies > 1)
     return false; /* FORNOW */
@@ -4467,10 +4471,6 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
       && !(STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
            && reduc_def))
-    return false;
-
-  /* FORNOW: SLP not supported.  */
-  if (STMT_SLP_TYPE (stmt_info))
     return false;
 
   /* FORNOW: not yet supported.  */

@@ -870,7 +870,7 @@ extern bool vect_transform_slp_perm_load (gimple, VEC (tree, heap) *,
 extern bool vect_schedule_slp (loop_vec_info, bb_vec_info);
 extern void vect_update_slp_costs_according_to_vf (loop_vec_info);
 extern bool vect_analyze_slp (loop_vec_info, bb_vec_info);
-extern void vect_make_slp_decision (loop_vec_info);
+extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_get_slp_defs (tree, tree, slp_tree, VEC (tree,heap) **,
                                VEC (tree,heap) **, int);
