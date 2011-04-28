@@ -2793,9 +2793,8 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   loop = build_compound_expr (input_location, tbase_init, loop);
 
  no_destructor:
-  /* If the delete flag is one, or anything else with the low bit set,
-     delete the storage.  */
-  if (auto_delete_vec != sfk_base_destructor)
+  /* Delete the storage if appropriate.  */
+  if (auto_delete_vec == sfk_deleting_destructor)
     {
       tree base_tbd;
 
@@ -2824,12 +2823,11 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 	  virtual_size = size_binop (PLUS_EXPR, virtual_size, cookie_size);
 	}
 
-      if (auto_delete_vec == sfk_deleting_destructor)
-	deallocate_expr = build_op_delete_call (VEC_DELETE_EXPR,
-						base_tbd, virtual_size,
-						use_global_delete & 1,
-						/*placement=*/NULL_TREE,
-						/*alloc_fn=*/NULL_TREE);
+      deallocate_expr = build_op_delete_call (VEC_DELETE_EXPR,
+					      base_tbd, virtual_size,
+					      use_global_delete & 1,
+					      /*placement=*/NULL_TREE,
+					      /*alloc_fn=*/NULL_TREE);
     }
 
   body = loop;
@@ -3284,7 +3282,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       finish_cleanup_try_block (try_block);
       e = build_vec_delete_1 (rval, m,
-			      inner_elt_type, sfk_base_destructor,
+			      inner_elt_type, sfk_complete_destructor,
 			      /*use_global_delete=*/0, complain);
       if (e == error_mark_node)
 	errors = true;
