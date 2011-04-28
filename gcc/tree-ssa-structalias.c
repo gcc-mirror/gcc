@@ -650,7 +650,6 @@ dump_constraint (FILE *file, constraint_t c)
     fprintf (file, " + UNKNOWN");
   else if (c->rhs.offset != 0)
     fprintf (file, " + " HOST_WIDE_INT_PRINT_DEC, c->rhs.offset);
-  fprintf (file, "\n");
 }
 
 
@@ -666,6 +665,7 @@ DEBUG_FUNCTION void
 debug_constraint (constraint_t c)
 {
   dump_constraint (stderr, c);
+  fprintf (stderr, "\n");
 }
 
 /* Print out all constraints to FILE */
@@ -676,7 +676,11 @@ dump_constraints (FILE *file, int from)
   int i;
   constraint_t c;
   for (i = from; VEC_iterate (constraint_t, constraints, i, c); i++)
-    dump_constraint (file, c);
+    if (c)
+      {
+	dump_constraint (file, c);
+	fprintf (file, "\n");
+      }
 }
 
 /* Print out all constraints to stderr.  */
@@ -687,86 +691,77 @@ debug_constraints (void)
   dump_constraints (stderr, 0);
 }
 
-/* Print out to FILE the edge in the constraint graph that is created by
-   constraint c. The edge may have a label, depending on the type of
-   constraint that it represents. If complex1, e.g: a = *b, then the label
-   is "=*", if complex2, e.g: *a = b, then the label is "*=", if
-   complex with an offset, e.g: a = b + 8, then the label is "+".
-   Otherwise the edge has no label.  */
-
-static void
-dump_constraint_edge (FILE *file, constraint_t c)
-{
-  if (c->rhs.type != ADDRESSOF)
-    {
-      const char *src = get_varinfo (c->rhs.var)->name;
-      const char *dst = get_varinfo (c->lhs.var)->name;
-      fprintf (file, "  \"%s\" -> \"%s\" ", src, dst);
-      /* Due to preprocessing of constraints, instructions like *a = *b are
-         illegal; thus, we do not have to handle such cases.  */
-      if (c->lhs.type == DEREF)
-        fprintf (file, " [ label=\"*=\" ] ;\n");
-      else if (c->rhs.type == DEREF)
-        fprintf (file, " [ label=\"=*\" ] ;\n");
-      else
-        {
-          /* We must check the case where the constraint is an offset.
-             In this case, it is treated as a complex constraint.  */
-          if (c->rhs.offset != c->lhs.offset)
-            fprintf (file, " [ label=\"+\" ] ;\n");
-          else
-            fprintf (file, " ;\n");
-        }
-    }
-}
-
 /* Print the constraint graph in dot format.  */
 
 static void
 dump_constraint_graph (FILE *file)
 {
-  unsigned int i=0, size;
-  constraint_t c;
+  unsigned int i;
 
   /* Only print the graph if it has already been initialized:  */
   if (!graph)
     return;
 
-  /* Print the constraints used to produce the constraint graph. The
-     constraints will be printed as comments in the dot file:  */
-  fprintf (file, "\n\n/* Constraints used in the constraint graph:\n");
-  dump_constraints (file, 0);
-  fprintf (file, "*/\n");
-
   /* Prints the header of the dot file:  */
-  fprintf (file, "\n\n// The constraint graph in dot format:\n");
   fprintf (file, "strict digraph {\n");
   fprintf (file, "  node [\n    shape = box\n  ]\n");
   fprintf (file, "  edge [\n    fontsize = \"12\"\n  ]\n");
-  fprintf (file, "\n  // List of nodes in the constraint graph:\n");
+  fprintf (file, "\n  // List of nodes and complex constraints in "
+	   "the constraint graph:\n");
 
-  /* The next lines print the nodes in the graph. In order to get the
-     number of nodes in the graph, we must choose the minimum between the
-     vector VEC (varinfo_t, varmap) and graph->size. If the graph has not
-     yet been initialized, then graph->size == 0, otherwise we must only
-     read nodes that have an entry in VEC (varinfo_t, varmap).  */
-  size = VEC_length (varinfo_t, varmap);
-  size = size < graph->size ? size : graph->size;
-  for (i = 0; i < size; i++)
+  /* The next lines print the nodes in the graph together with the
+     complex constraints attached to them.  */
+  for (i = 0; i < graph->size; i++)
     {
-      const char *name = get_varinfo (graph->rep[i])->name;
-      fprintf (file, "  \"%s\" ;\n", name);
+      if (find (i) != i)
+	continue;
+      if (i < FIRST_REF_NODE)
+	fprintf (file, "\"%s\"", get_varinfo (i)->name);
+      else
+	fprintf (file, "\"*%s\"", get_varinfo (i - FIRST_REF_NODE)->name);
+      if (graph->complex[i])
+	{
+	  unsigned j;
+	  constraint_t c;
+	  fprintf (file, " [label=\"\\N\\n");
+	  for (j = 0; VEC_iterate (constraint_t, graph->complex[i], j, c); ++j)
+	    {
+	      dump_constraint (file, c);
+	      fprintf (file, "\\l");
+	    }
+	  fprintf (file, "\"]");
+	}
+      fprintf (file, ";\n");
     }
 
-  /* Go over the list of constraints printing the edges in the constraint
-     graph.  */
-  fprintf (file, "\n  // The constraint edges:\n");
-  FOR_EACH_VEC_ELT (constraint_t, constraints, i, c)
-    if (c)
-      dump_constraint_edge (file, c);
+  /* Go over the edges.  */
+  fprintf (file, "\n  // Edges in the constraint graph:\n");
+  for (i = 0; i < graph->size; i++)
+    {
+      unsigned j;
+      bitmap_iterator bi;
+      if (find (i) != i)
+	continue;
+      EXECUTE_IF_IN_NONNULL_BITMAP (graph->succs[i], 0, j, bi)
+	{
+	  unsigned to = find (j);
+	  if (i == to)
+	    continue;
+	  if (i < FIRST_REF_NODE)
+	    fprintf (file, "\"%s\"", get_varinfo (i)->name);
+	  else
+	    fprintf (file, "\"*%s\"", get_varinfo (i - FIRST_REF_NODE)->name);
+	  fprintf (file, " -> ");
+	  if (to < FIRST_REF_NODE)
+	    fprintf (file, "\"%s\"", get_varinfo (to)->name);
+	  else
+	    fprintf (file, "\"*%s\"", get_varinfo (to - FIRST_REF_NODE)->name);
+	  fprintf (file, ";\n");
+	}
+    }
 
-  /* Prints the tail of the dot file. By now, only the closing bracket.  */
-  fprintf (file, "}\n\n\n");
+  /* Prints the tail of the dot file.  */
+  fprintf (file, "}\n");
 }
 
 /* Print out the constraint graph to stderr.  */
@@ -2419,6 +2414,7 @@ rewrite_constraints (constraint_graph_t graph,
 		       "ignoring constraint:",
 		       get_varinfo (lhs.var)->name);
 	      dump_constraint (dump_file, c);
+	      fprintf (dump_file, "\n");
 	    }
 	  VEC_replace (constraint_t, constraints, i, NULL);
 	  continue;
@@ -2433,6 +2429,7 @@ rewrite_constraints (constraint_graph_t graph,
 		       "ignoring constraint:",
 		       get_varinfo (rhs.var)->name);
 	      dump_constraint (dump_file, c);
+	      fprintf (dump_file, "\n");
 	    }
 	  VEC_replace (constraint_t, constraints, i, NULL);
 	  continue;
@@ -6362,13 +6359,11 @@ solve_constraints (void)
     fprintf (dump_file, "Rewriting constraints and unifying "
 	     "variables\n");
   rewrite_constraints (graph, si);
-
-  build_succ_graph ();
   free_var_substitution_info (si);
 
-  if (dump_file && (dump_flags & TDF_GRAPH))
-    dump_constraint_graph (dump_file);
+  build_succ_graph ();
 
+  /* Attach complex constraints to graph nodes.  */
   move_complex_constraints (graph);
 
   if (dump_file)
@@ -6384,10 +6379,26 @@ solve_constraints (void)
      point. */
   remove_preds_and_fake_succs (graph);
 
+  if (dump_file && (dump_flags & TDF_GRAPH))
+    {
+      fprintf (dump_file, "\n\n// The constraint graph before solve-graph "
+	       "in dot format:\n");
+      dump_constraint_graph (dump_file);
+      fprintf (dump_file, "\n\n");
+    }
+
   if (dump_file)
     fprintf (dump_file, "Solving graph\n");
 
   solve_graph (graph);
+
+  if (dump_file && (dump_flags & TDF_GRAPH))
+    {
+      fprintf (dump_file, "\n\n// The constraint graph after solve-graph "
+	       "in dot format:\n");
+      dump_constraint_graph (dump_file);
+      fprintf (dump_file, "\n\n");
+    }
 
   if (dump_file)
     dump_sa_points_to_info (dump_file);
