@@ -959,6 +959,7 @@ extern void set_underlying_type (tree x);
 extern VEC(tree,gc) *make_tree_vector (void);
 extern void release_tree_vector (VEC(tree,gc) *);
 extern VEC(tree,gc) *make_tree_vector_single (tree);
+extern VEC(tree,gc) *make_tree_vector_from_list (tree);
 extern VEC(tree,gc) *make_tree_vector_copy (const VEC(tree,gc) *);
 
 /* In c-gimplify.c  */

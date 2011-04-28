@@ -9580,6 +9580,17 @@ make_tree_vector_single (tree t)
   return ret;
 }
 
+/* Get a new tree vector of the TREE_VALUEs of a TREE_LIST chain.  */
+
+VEC(tree,gc) *
+make_tree_vector_from_list (tree list)
+{
+  VEC(tree,gc) *ret = make_tree_vector ();
+  for (; list; list = TREE_CHAIN (list))
+    VEC_safe_push (tree, gc, ret, TREE_VALUE (list));
+  return ret;
+}
+
 /* Get a new tree vector which is a copy of an existing one.  */
 
 VEC(tree,gc) *

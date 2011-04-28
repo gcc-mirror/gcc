@@ -1,3 +1,8 @@
+2011-04-27  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (make_tree_vector_from_list): New.
+	* c-common.h: Declare it.
+
 2011-04-26  Richard Guenther  <rguenther@suse.de>
 
 	PR preprocessor/48248
