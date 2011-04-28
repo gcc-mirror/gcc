@@ -1,5 +1,32 @@
 2011-04-28  Joseph Myers  <joseph@codesourcery.com>
 
+	* configure.ac: Disable Java for targets not supporting libffi.
+	(*-*-chorusos, *-*-kaos*, am33_2.0-*-linux*, sh*-*-pe|mips*-*-pe):
+	Remove cases in Java-disabling statement.
+	(*arm-wince-pe): Change to arm-wince-pe.
+	(arc-*-*, arm-*-coff, arm-*-pe*, arm-*-riscix*, avr-*-*): Remove
+	cases in Java-disabling statement.
+	(bfin-*-*): Don't disable Java again.
+	(c4x-*-* | tic4x-*-*, tic54x-*-*, cr16-*-*, d10v-*-*, d30v-*-*,
+	fr30-*-elf*, moxie-*-*, h8300*-*-*, h8500-*-*, hppa1.1-*-osf* |
+	hppa1.1-*-bsd*, hppa*-*-*elf* | hppa*-*-lites* | hppa*-*-openbsd*,
+	hppa*-*-pro*, i960-*-*, i[[3456789]]86-*-coff,
+	i[[3456789]]86-*-pe, i[[3456789]]86-*-sco3.2v5*,
+	i[[3456789]]86-*-sco*, i[[3456789]]86-*-sysv4*,
+	i[[3456789]]86-*-beos*, i[[3456789]]86-*-rdos*,
+	m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*): Remove cases in
+	Java-disabling statement.
+	(mmix-*-*): Don't disable Java again.
+	(mt-*-*, powerpc*-*-winnt* | powerpc*-*-pe*, powerpcle-*-solaris*,
+	powerpc-*-beos*, rs6000-*-lynxos*, rs6000-*-*, m68k-apollo-*,
+	microblaze*, mips*-sde-elf*, mips*-*-irix5*, mips*-*-bsd*,
+	sparclet-*-aout* | sparc86x-*-*, sparclite-*-*, sparc-*-sunos4*,
+	tic6x-*-*, v810-*-*, vax-*-*): Remove cases in Java-disabling
+	statement.
+	* configure: Regenerate.
+
+2011-04-28  Joseph Myers  <joseph@codesourcery.com>
+
 	* configure.ac: Separate cases disabling Java and Java libraries
 	from general case over targets.
 	* configure: Regenerate.
