@@ -27,5 +27,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef GNU_USER_DYNAMIC_LINKER64
 #define GNU_USER_DYNAMIC_LINKER64 "/lib/ld-kfreebsd-x86-64.so.1"
-
-#undef MD_UNWIND_SUPPORT

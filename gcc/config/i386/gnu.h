@@ -36,9 +36,6 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #endif
 
-/* FIXME: Is a Hurd-specific fallback mechanism necessary?  */
-#undef MD_UNWIND_SUPPORT
-
 #ifdef TARGET_LIBC_PROVIDES_SSP
 /* Not supported yet.  */
 #undef TARGET_THREAD_SSP_OFFSET

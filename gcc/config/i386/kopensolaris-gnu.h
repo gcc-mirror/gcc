@@ -20,5 +20,3 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #define GNU_USER_LINK_EMULATION "elf_i386"
-
-#undef MD_UNWIND_SUPPORT

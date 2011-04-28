@@ -93,7 +93,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Determine whether the entire c99 runtime
    is present in the runtime library.  */
+#undef TARGET_C99_FUNCTIONS
 #define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
 /* Whether we have sincos that follows the GNU extension.  */
+#undef TARGET_HAS_SINCOS
 #define TARGET_HAS_SINCOS (OPTION_GLIBC || OPTION_BIONIC)

@@ -1,5 +1,6 @@
 /* DWARF2 EH unwinding support for AMD x86-64 and x86.
-   Copyright (C) 2004, 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -146,28 +147,28 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
   else
     return _URC_END_OF_STACK;
 
-  new_cfa = sc->REG_NAME(esp);
+  new_cfa = sc->esp;
   fs->regs.cfa_how = CFA_REG_OFFSET;
   fs->regs.cfa_reg = 4;
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
   /* The SVR4 register numbering macros aren't usable in libgcc.  */
   fs->regs.reg[0].how = REG_SAVED_OFFSET;
-  fs->regs.reg[0].loc.offset = (long)&sc->REG_NAME(eax) - new_cfa;
+  fs->regs.reg[0].loc.offset = (long)&sc->eax - new_cfa;
   fs->regs.reg[3].how = REG_SAVED_OFFSET;
-  fs->regs.reg[3].loc.offset = (long)&sc->REG_NAME(ebx) - new_cfa;
+  fs->regs.reg[3].loc.offset = (long)&sc->ebx - new_cfa;
   fs->regs.reg[1].how = REG_SAVED_OFFSET;
-  fs->regs.reg[1].loc.offset = (long)&sc->REG_NAME(ecx) - new_cfa;
+  fs->regs.reg[1].loc.offset = (long)&sc->ecx - new_cfa;
   fs->regs.reg[2].how = REG_SAVED_OFFSET;
-  fs->regs.reg[2].loc.offset = (long)&sc->REG_NAME(edx) - new_cfa;
+  fs->regs.reg[2].loc.offset = (long)&sc->edx - new_cfa;
   fs->regs.reg[6].how = REG_SAVED_OFFSET;
-  fs->regs.reg[6].loc.offset = (long)&sc->REG_NAME(esi) - new_cfa;
+  fs->regs.reg[6].loc.offset = (long)&sc->esi - new_cfa;
   fs->regs.reg[7].how = REG_SAVED_OFFSET;
-  fs->regs.reg[7].loc.offset = (long)&sc->REG_NAME(edi) - new_cfa;
+  fs->regs.reg[7].loc.offset = (long)&sc->edi - new_cfa;
   fs->regs.reg[5].how = REG_SAVED_OFFSET;
-  fs->regs.reg[5].loc.offset = (long)&sc->REG_NAME(ebp) - new_cfa;
+  fs->regs.reg[5].loc.offset = (long)&sc->ebp - new_cfa;
   fs->regs.reg[8].how = REG_SAVED_OFFSET;
-  fs->regs.reg[8].loc.offset = (long)&sc->REG_NAME(eip) - new_cfa;
+  fs->regs.reg[8].loc.offset = (long)&sc->eip - new_cfa;
   fs->retaddr_column = 8;
   fs->signal_frame = 1;
   return _URC_NO_REASON;
