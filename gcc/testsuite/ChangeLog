@@ -1,5 +1,10 @@
 2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/48530
+	* g++.dg/cpp0x/sfinae18.C: New.
+
+2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/48771
 	* g++.dg/ext/is_literal_type1.C: New.
 
