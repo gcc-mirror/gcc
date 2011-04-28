@@ -1,5 +1,18 @@
 2011-04-28  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/48112
+	* resolve.c (resolve_fl_var_and_proc): Print diagnostic of
+	function results only once.
+	(resolve_symbol): Always resolve function results.
+
+	PR fortran/48279
+	* expr.c (gfc_check_vardef_context): Fix handling of generic
+	EXPR_FUNCTION.
+	* interface.c (check_interface0): Reject internal functions
+	in generic interfaces, unless -std=gnu.
+
+2011-04-28  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/48788
 	* resolve.c (resolve_global_procedure): Error recovery -
 	avoid segfault for (non)character-returning functions.

@@ -1128,6 +1128,12 @@ check_interface0 (gfc_interface *p, const char *interface_name)
 		     " or all FUNCTIONs", interface_name, &p->sym->declared_at);
 	  return 1;
 	}
+
+      if (p->sym->attr.proc == PROC_INTERNAL
+	  && gfc_notify_std (GFC_STD_GNU, "Extension: Internal procedure '%s' "
+			     "in %s at %L", p->sym->name, interface_name,
+			     &p->sym->declared_at) == FAILURE)
+	return 1;
     }
   p = psave;
 
