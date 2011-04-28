@@ -2767,7 +2767,8 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
     {
       if (cp_type_quals (base) != 0)
 	{
-	  error ("base class %qT has cv qualifiers", base);
+	  /* DR 484: Can a base-specifier name a cv-qualified
+	     class type?  */
 	  base = TYPE_MAIN_VARIANT (base);
 	}
       result = build_tree_list (access, base);
