@@ -1,3 +1,10 @@
+2011-04-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40052
+	PR tree-optimization/15347
+	* gcc.dg/tree-ssa/vrp57.c: New testcase.
+	* gcc.dg/pr15347.c: Likewise.
+
 2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/48530
