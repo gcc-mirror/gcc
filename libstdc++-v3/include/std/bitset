@@ -80,11 +80,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       constexpr _Base_bitset(unsigned long long __val)
-      : _M_w({ _WordT(__val)
+      : _M_w{ _WordT(__val)
 #if __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
 	       , _WordT(__val >> _GLIBCXX_BITSET_BITS_PER_WORD)
 #endif
-       }) { }
+       } { }
 #else
       _Base_bitset(unsigned long __val)
       : _M_w()
