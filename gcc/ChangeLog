@@ -1,3 +1,25 @@
+2011-04-28  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/48765
+	* tree-vectorizer.h (vect_make_slp_decision): Return bool.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Add new argument
+	to indicate if loop aware SLP is being used.  Scan the statements
+	and update the vectorization factor according to the type of
+	vectorization before statement analysis.
+	(vect_analyze_loop_2): Get a return value from vect_make_slp_decision,
+	pass it to vect_analyze_loop_operations.
+	(vectorizable_reduction): Set number of copies to 1 in case of pure
+	SLP statement.
+	* tree-vect-stmts.c (vectorizable_conversion,
+	vectorizable_assignment, vectorizable_shift,
+	vectorizable_operation, vectorizable_type_demotion,
+	vectorizable_type_promotion, vectorizable_store, vectorizable_load):
+	Likewise.
+	(vectorizable_condition): Move the check that it is not SLP
+	vectorization before the number of copies check.
+	* tree-vect-slp.c (vect_make_slp_decision): Return TRUE if decided
+	to vectorize the loop using SLP.
+
 2011-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48597

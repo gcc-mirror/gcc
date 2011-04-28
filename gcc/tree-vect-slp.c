@@ -1351,9 +1351,10 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
 
 /* For each possible SLP instance decide whether to SLP it and calculate overall
-   unrolling factor needed to SLP the loop.  */
+   unrolling factor needed to SLP the loop.  Return TRUE if decided to SLP at
+   least one instance.  */
 
-void
+bool
 vect_make_slp_decision (loop_vec_info loop_vinfo)
 {
   unsigned int i, unrolling_factor = 1;
@@ -1382,6 +1383,8 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
   if (decided_to_slp && vect_print_dump_info (REPORT_SLP))
     fprintf (vect_dump, "Decided to SLP %d instances. Unrolling factor %d",
 	     decided_to_slp, unrolling_factor);
+
+  return (decided_to_slp > 0);
 }
 
 

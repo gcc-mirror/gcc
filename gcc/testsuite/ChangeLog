@@ -1,3 +1,8 @@
+2011-04-28  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/48765
+	* gcc.dg/vect/pr48765.c: New.
+
 2011-04-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR tree-optimization/48775
