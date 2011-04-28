@@ -1,5 +1,16 @@
 2011-04-28  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (dump_constraint): Don't end the line.
+	(debug_constraint): Do it here.
+	(dump_constraints): And here.
+	(rewrite_constraints): And here.
+	(dump_constraint_edge): Remove.
+	(dump_constraint_graph): Rewrite to produce DOT output.
+	(solve_constraints): Build succ graph as late as possible.
+	Dump constraint graphs before and after solving.
+
+2011-04-28  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
 	New function split out from ...
 	(find_func_aliases): ... here.  Call it.
