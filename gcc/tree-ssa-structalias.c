@@ -3959,6 +3959,354 @@ get_fi_for_callee (gimple call)
     gcc_unreachable ();
 }
 
+/* Create constraints for the builtin call T.  Return true if the call
+   was handled, otherwise false.  */
+
+static bool
+find_func_aliases_for_builtin_call (gimple t)
+{
+  tree fndecl = gimple_call_fndecl (t);
+  VEC(ce_s, heap) *lhsc = NULL;
+  VEC(ce_s, heap) *rhsc = NULL;
+  varinfo_t fi;
+
+  if (fndecl != NULL_TREE
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    /* ???  All builtins that are handled here need to be handled
+       in the alias-oracle query functions explicitly!  */
+    switch (DECL_FUNCTION_CODE (fndecl))
+      {
+      /* All the following functions return a pointer to the same object
+	 as their first argument points to.  The functions do not add
+	 to the ESCAPED solution.  The functions make the first argument
+	 pointed to memory point to what the second argument pointed to
+	 memory points to.  */
+      case BUILT_IN_STRCPY:
+      case BUILT_IN_STRNCPY:
+      case BUILT_IN_BCOPY:
+      case BUILT_IN_MEMCPY:
+      case BUILT_IN_MEMMOVE:
+      case BUILT_IN_MEMPCPY:
+      case BUILT_IN_STPCPY:
+      case BUILT_IN_STPNCPY:
+      case BUILT_IN_STRCAT:
+      case BUILT_IN_STRNCAT:
+	{
+	  tree res = gimple_call_lhs (t);
+	  tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
+					   == BUILT_IN_BCOPY ? 1 : 0));
+	  tree src = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
+					  == BUILT_IN_BCOPY ? 0 : 1));
+	  if (res != NULL_TREE)
+	    {
+	      get_constraint_for (res, &lhsc);
+	      if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMPCPY
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY)
+		get_constraint_for_ptr_offset (dest, NULL_TREE, &rhsc);
+	      else
+		get_constraint_for (dest, &rhsc);
+	      process_all_all_constraints (lhsc, rhsc);
+	      VEC_free (ce_s, heap, lhsc);
+	      VEC_free (ce_s, heap, rhsc);
+	    }
+	  get_constraint_for_ptr_offset (dest, NULL_TREE, &lhsc);
+	  get_constraint_for_ptr_offset (src, NULL_TREE, &rhsc);
+	  do_deref (&lhsc);
+	  do_deref (&rhsc);
+	  process_all_all_constraints (lhsc, rhsc);
+	  VEC_free (ce_s, heap, lhsc);
+	  VEC_free (ce_s, heap, rhsc);
+	  return true;
+	}
+      case BUILT_IN_MEMSET:
+	{
+	  tree res = gimple_call_lhs (t);
+	  tree dest = gimple_call_arg (t, 0);
+	  unsigned i;
+	  ce_s *lhsp;
+	  struct constraint_expr ac;
+	  if (res != NULL_TREE)
+	    {
+	      get_constraint_for (res, &lhsc);
+	      get_constraint_for (dest, &rhsc);
+	      process_all_all_constraints (lhsc, rhsc);
+	      VEC_free (ce_s, heap, lhsc);
+	      VEC_free (ce_s, heap, rhsc);
+	    }
+	  get_constraint_for_ptr_offset (dest, NULL_TREE, &lhsc);
+	  do_deref (&lhsc);
+	  if (flag_delete_null_pointer_checks
+	      && integer_zerop (gimple_call_arg (t, 1)))
+	    {
+	      ac.type = ADDRESSOF;
+	      ac.var = nothing_id;
+	    }
+	  else
+	    {
+	      ac.type = SCALAR;
+	      ac.var = integer_id;
+	    }
+	  ac.offset = 0;
+	  FOR_EACH_VEC_ELT (ce_s, lhsc, i, lhsp)
+	      process_constraint (new_constraint (*lhsp, ac));
+	  VEC_free (ce_s, heap, lhsc);
+	  return true;
+	}
+      /* All the following functions do not return pointers, do not
+	 modify the points-to sets of memory reachable from their
+	 arguments and do not add to the ESCAPED solution.  */
+      case BUILT_IN_SINCOS:
+      case BUILT_IN_SINCOSF:
+      case BUILT_IN_SINCOSL:
+      case BUILT_IN_FREXP:
+      case BUILT_IN_FREXPF:
+      case BUILT_IN_FREXPL:
+      case BUILT_IN_GAMMA_R:
+      case BUILT_IN_GAMMAF_R:
+      case BUILT_IN_GAMMAL_R:
+      case BUILT_IN_LGAMMA_R:
+      case BUILT_IN_LGAMMAF_R:
+      case BUILT_IN_LGAMMAL_R:
+      case BUILT_IN_MODF:
+      case BUILT_IN_MODFF:
+      case BUILT_IN_MODFL:
+      case BUILT_IN_REMQUO:
+      case BUILT_IN_REMQUOF:
+      case BUILT_IN_REMQUOL:
+      case BUILT_IN_FREE:
+	return true;
+      /* Trampolines are special - they set up passing the static
+	 frame.  */
+      case BUILT_IN_INIT_TRAMPOLINE:
+	{
+	  tree tramp = gimple_call_arg (t, 0);
+	  tree nfunc = gimple_call_arg (t, 1);
+	  tree frame = gimple_call_arg (t, 2);
+	  unsigned i;
+	  struct constraint_expr lhs, *rhsp;
+	  if (in_ipa_mode)
+	    {
+	      varinfo_t nfi = NULL;
+	      gcc_assert (TREE_CODE (nfunc) == ADDR_EXPR);
+	      nfi = lookup_vi_for_tree (TREE_OPERAND (nfunc, 0));
+	      if (nfi)
+		{
+		  lhs = get_function_part_constraint (nfi, fi_static_chain);
+		  get_constraint_for (frame, &rhsc);
+		  FOR_EACH_VEC_ELT (ce_s, rhsc, i, rhsp)
+		      process_constraint (new_constraint (lhs, *rhsp));
+		  VEC_free (ce_s, heap, rhsc);
+
+		  /* Make the frame point to the function for
+		     the trampoline adjustment call.  */
+		  get_constraint_for (tramp, &lhsc);
+		  do_deref (&lhsc);
+		  get_constraint_for (nfunc, &rhsc);
+		  process_all_all_constraints (lhsc, rhsc);
+		  VEC_free (ce_s, heap, rhsc);
+		  VEC_free (ce_s, heap, lhsc);
+
+		  return true;
+		}
+	    }
+	  /* Else fallthru to generic handling which will let
+	     the frame escape.  */
+	  break;
+	}
+      case BUILT_IN_ADJUST_TRAMPOLINE:
+	{
+	  tree tramp = gimple_call_arg (t, 0);
+	  tree res = gimple_call_lhs (t);
+	  if (in_ipa_mode && res)
+	    {
+	      get_constraint_for (res, &lhsc);
+	      get_constraint_for (tramp, &rhsc);
+	      do_deref (&rhsc);
+	      process_all_all_constraints (lhsc, rhsc);
+	      VEC_free (ce_s, heap, rhsc);
+	      VEC_free (ce_s, heap, lhsc);
+	    }
+	  return true;
+	}
+      /* Variadic argument handling needs to be handled in IPA
+	 mode as well.  */
+      case BUILT_IN_VA_START:
+	{
+	  if (in_ipa_mode)
+	    {
+	      tree valist = gimple_call_arg (t, 0);
+	      struct constraint_expr rhs, *lhsp;
+	      unsigned i;
+	      /* The va_list gets access to pointers in variadic
+		 arguments.  */
+	      fi = lookup_vi_for_tree (cfun->decl);
+	      gcc_assert (fi != NULL);
+	      get_constraint_for (valist, &lhsc);
+	      do_deref (&lhsc);
+	      rhs = get_function_part_constraint (fi, ~0);
+	      rhs.type = ADDRESSOF;
+	      FOR_EACH_VEC_ELT (ce_s, lhsc, i, lhsp)
+		  process_constraint (new_constraint (*lhsp, rhs));
+	      VEC_free (ce_s, heap, lhsc);
+	      /* va_list is clobbered.  */
+	      make_constraint_to (get_call_clobber_vi (t)->id, valist);
+	      return true;
+	    }
+	  break;
+	}
+      /* va_end doesn't have any effect that matters.  */
+      case BUILT_IN_VA_END:
+	return true;
+      /* Alternate return.  Simply give up for now.  */
+      case BUILT_IN_RETURN:
+	{
+	  fi = NULL;
+	  if (!in_ipa_mode
+	      || !(fi = get_vi_for_tree (cfun->decl)))
+	    make_constraint_from (get_varinfo (escaped_id), anything_id);
+	  else if (in_ipa_mode
+		   && fi != NULL)
+	    {
+	      struct constraint_expr lhs, rhs;
+	      lhs = get_function_part_constraint (fi, fi_result);
+	      rhs.var = anything_id;
+	      rhs.offset = 0;
+	      rhs.type = SCALAR;
+	      process_constraint (new_constraint (lhs, rhs));
+	    }
+	  return true;
+	}
+      /* printf-style functions may have hooks to set pointers to
+	 point to somewhere into the generated string.  Leave them
+	 for a later excercise...  */
+      default:
+	/* Fallthru to general call handling.  */;
+      }
+
+  return false;
+}
+
+/* Create constraints for the call T.  */
+
+static void
+find_func_aliases_for_call (gimple t)
+{
+  tree fndecl = gimple_call_fndecl (t);
+  VEC(ce_s, heap) *lhsc = NULL;
+  VEC(ce_s, heap) *rhsc = NULL;
+  varinfo_t fi;
+
+  if (fndecl != NULL_TREE
+      && DECL_BUILT_IN (fndecl)
+      && find_func_aliases_for_builtin_call (t))
+    return;
+
+  if (!in_ipa_mode
+      || gimple_call_internal_p (t)
+      || (fndecl
+	  && (!(fi = lookup_vi_for_tree (fndecl))
+	      || !fi->is_fn_info)))
+    {
+      VEC(ce_s, heap) *rhsc = NULL;
+      int flags = gimple_call_flags (t);
+
+      /* Const functions can return their arguments and addresses
+	 of global memory but not of escaped memory.  */
+      if (flags & (ECF_CONST|ECF_NOVOPS))
+	{
+	  if (gimple_call_lhs (t))
+	    handle_const_call (t, &rhsc);
+	}
+      /* Pure functions can return addresses in and of memory
+	 reachable from their arguments, but they are not an escape
+	 point for reachable memory of their arguments.  */
+      else if (flags & (ECF_PURE|ECF_LOOPING_CONST_OR_PURE))
+	handle_pure_call (t, &rhsc);
+      else
+	handle_rhs_call (t, &rhsc);
+      if (gimple_call_lhs (t))
+	handle_lhs_call (t, gimple_call_lhs (t), flags, rhsc, fndecl);
+      VEC_free (ce_s, heap, rhsc);
+    }
+  else
+    {
+      tree lhsop;
+      unsigned j;
+
+      fi = get_fi_for_callee (t);
+
+      /* Assign all the passed arguments to the appropriate incoming
+	 parameters of the function.  */
+      for (j = 0; j < gimple_call_num_args (t); j++)
+	{
+	  struct constraint_expr lhs ;
+	  struct constraint_expr *rhsp;
+	  tree arg = gimple_call_arg (t, j);
+
+	  get_constraint_for_rhs (arg, &rhsc);
+	  lhs = get_function_part_constraint (fi, fi_parm_base + j);
+	  while (VEC_length (ce_s, rhsc) != 0)
+	    {
+	      rhsp = VEC_last (ce_s, rhsc);
+	      process_constraint (new_constraint (lhs, *rhsp));
+	      VEC_pop (ce_s, rhsc);
+	    }
+	}
+
+      /* If we are returning a value, assign it to the result.  */
+      lhsop = gimple_call_lhs (t);
+      if (lhsop)
+	{
+	  struct constraint_expr rhs;
+	  struct constraint_expr *lhsp;
+
+	  get_constraint_for (lhsop, &lhsc);
+	  rhs = get_function_part_constraint (fi, fi_result);
+	  if (fndecl
+	      && DECL_RESULT (fndecl)
+	      && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
+	    {
+	      VEC(ce_s, heap) *tem = NULL;
+	      VEC_safe_push (ce_s, heap, tem, &rhs);
+	      do_deref (&tem);
+	      rhs = *VEC_index (ce_s, tem, 0);
+	      VEC_free(ce_s, heap, tem);
+	    }
+	  FOR_EACH_VEC_ELT (ce_s, lhsc, j, lhsp)
+	      process_constraint (new_constraint (*lhsp, rhs));
+	}
+
+      /* If we pass the result decl by reference, honor that.  */
+      if (lhsop
+	  && fndecl
+	  && DECL_RESULT (fndecl)
+	  && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
+	{
+	  struct constraint_expr lhs;
+	  struct constraint_expr *rhsp;
+
+	  get_constraint_for_address_of (lhsop, &rhsc);
+	  lhs = get_function_part_constraint (fi, fi_result);
+	  FOR_EACH_VEC_ELT (ce_s, rhsc, j, rhsp)
+	      process_constraint (new_constraint (lhs, *rhsp));
+	  VEC_free (ce_s, heap, rhsc);
+	}
+
+      /* If we use a static chain, pass it along.  */
+      if (gimple_call_chain (t))
+	{
+	  struct constraint_expr lhs;
+	  struct constraint_expr *rhsp;
+
+	  get_constraint_for (gimple_call_chain (t), &rhsc);
+	  lhs = get_function_part_constraint (fi, fi_static_chain);
+	  FOR_EACH_VEC_ELT (ce_s, rhsc, j, rhsp)
+	      process_constraint (new_constraint (lhs, *rhsp));
+	}
+    }
+}
+
 /* Walk statement T setting up aliasing constraints according to the
    references found in T.  This function is the main part of the
    constraint builder.  AI points to auxiliary alias information used
@@ -4009,325 +4357,8 @@ find_func_aliases (gimple origt)
      In non-ipa mode, we need to generate constraints for each
      pointer passed by address.  */
   else if (is_gimple_call (t))
-    {
-      tree fndecl = gimple_call_fndecl (t);
-      if (fndecl != NULL_TREE
-	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
-	/* ???  All builtins that are handled here need to be handled
-	   in the alias-oracle query functions explicitly!  */
-	switch (DECL_FUNCTION_CODE (fndecl))
-	  {
-	  /* All the following functions return a pointer to the same object
-	     as their first argument points to.  The functions do not add
-	     to the ESCAPED solution.  The functions make the first argument
-	     pointed to memory point to what the second argument pointed to
-	     memory points to.  */
-	  case BUILT_IN_STRCPY:
-	  case BUILT_IN_STRNCPY:
-	  case BUILT_IN_BCOPY:
-	  case BUILT_IN_MEMCPY:
-	  case BUILT_IN_MEMMOVE:
-	  case BUILT_IN_MEMPCPY:
-	  case BUILT_IN_STPCPY:
-	  case BUILT_IN_STPNCPY:
-	  case BUILT_IN_STRCAT:
-	  case BUILT_IN_STRNCAT:
-	    {
-	      tree res = gimple_call_lhs (t);
-	      tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
-					       == BUILT_IN_BCOPY ? 1 : 0));
-	      tree src = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
-					      == BUILT_IN_BCOPY ? 0 : 1));
-	      if (res != NULL_TREE)
-		{
-		  get_constraint_for (res, &lhsc);
-		  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMPCPY
-		      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY
-		      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY)
-		    get_constraint_for_ptr_offset (dest, NULL_TREE, &rhsc);
-		  else
-		    get_constraint_for (dest, &rhsc);
-		  process_all_all_constraints (lhsc, rhsc);
-		  VEC_free (ce_s, heap, lhsc);
-		  VEC_free (ce_s, heap, rhsc);
-		}
-	      get_constraint_for_ptr_offset (dest, NULL_TREE, &lhsc);
-	      get_constraint_for_ptr_offset (src, NULL_TREE, &rhsc);
-	      do_deref (&lhsc);
-	      do_deref (&rhsc);
-	      process_all_all_constraints (lhsc, rhsc);
-	      VEC_free (ce_s, heap, lhsc);
-	      VEC_free (ce_s, heap, rhsc);
-	      return;
-	    }
-	  case BUILT_IN_MEMSET:
-	    {
-	      tree res = gimple_call_lhs (t);
-	      tree dest = gimple_call_arg (t, 0);
-	      unsigned i;
-	      ce_s *lhsp;
-	      struct constraint_expr ac;
-	      if (res != NULL_TREE)
-		{
-		  get_constraint_for (res, &lhsc);
-		  get_constraint_for (dest, &rhsc);
-		  process_all_all_constraints (lhsc, rhsc);
-		  VEC_free (ce_s, heap, lhsc);
-		  VEC_free (ce_s, heap, rhsc);
-		}
-	      get_constraint_for_ptr_offset (dest, NULL_TREE, &lhsc);
-	      do_deref (&lhsc);
-	      if (flag_delete_null_pointer_checks
-		  && integer_zerop (gimple_call_arg (t, 1)))
-		{
-		  ac.type = ADDRESSOF;
-		  ac.var = nothing_id;
-		}
-	      else
-		{
-		  ac.type = SCALAR;
-		  ac.var = integer_id;
-		}
-	      ac.offset = 0;
-	      FOR_EACH_VEC_ELT (ce_s, lhsc, i, lhsp)
-		process_constraint (new_constraint (*lhsp, ac));
-	      VEC_free (ce_s, heap, lhsc);
-	      return;
-	    }
-	  /* All the following functions do not return pointers, do not
-	     modify the points-to sets of memory reachable from their
-	     arguments and do not add to the ESCAPED solution.  */
-	  case BUILT_IN_SINCOS:
-	  case BUILT_IN_SINCOSF:
-	  case BUILT_IN_SINCOSL:
-	  case BUILT_IN_FREXP:
-	  case BUILT_IN_FREXPF:
-	  case BUILT_IN_FREXPL:
-	  case BUILT_IN_GAMMA_R:
-	  case BUILT_IN_GAMMAF_R:
-	  case BUILT_IN_GAMMAL_R:
-	  case BUILT_IN_LGAMMA_R:
-	  case BUILT_IN_LGAMMAF_R:
-	  case BUILT_IN_LGAMMAL_R:
-	  case BUILT_IN_MODF:
-	  case BUILT_IN_MODFF:
-	  case BUILT_IN_MODFL:
-	  case BUILT_IN_REMQUO:
-	  case BUILT_IN_REMQUOF:
-	  case BUILT_IN_REMQUOL:
-	  case BUILT_IN_FREE:
-	    return;
-	  /* Trampolines are special - they set up passing the static
-	     frame.  */
-	  case BUILT_IN_INIT_TRAMPOLINE:
-	    {
-	      tree tramp = gimple_call_arg (t, 0);
-	      tree nfunc = gimple_call_arg (t, 1);
-	      tree frame = gimple_call_arg (t, 2);
-	      unsigned i;
-	      struct constraint_expr lhs, *rhsp;
-	      if (in_ipa_mode)
-		{
-		  varinfo_t nfi = NULL;
-		  gcc_assert (TREE_CODE (nfunc) == ADDR_EXPR);
-		  nfi = lookup_vi_for_tree (TREE_OPERAND (nfunc, 0));
-		  if (nfi)
-		    {
-		      lhs = get_function_part_constraint (nfi, fi_static_chain);
-		      get_constraint_for (frame, &rhsc);
-		      FOR_EACH_VEC_ELT (ce_s, rhsc, i, rhsp)
-			process_constraint (new_constraint (lhs, *rhsp));
-		      VEC_free (ce_s, heap, rhsc);
-
-		      /* Make the frame point to the function for
-			 the trampoline adjustment call.  */
-		      get_constraint_for (tramp, &lhsc);
-		      do_deref (&lhsc);
-		      get_constraint_for (nfunc, &rhsc);
-		      process_all_all_constraints (lhsc, rhsc);
-		      VEC_free (ce_s, heap, rhsc);
-		      VEC_free (ce_s, heap, lhsc);
-
-		      return;
-		    }
-		}
-	      /* Else fallthru to generic handling which will let
-	         the frame escape.  */
-	      break;
-	    }
-	  case BUILT_IN_ADJUST_TRAMPOLINE:
-	    {
-	      tree tramp = gimple_call_arg (t, 0);
-	      tree res = gimple_call_lhs (t);
-	      if (in_ipa_mode && res)
-		{
-		  get_constraint_for (res, &lhsc);
-		  get_constraint_for (tramp, &rhsc);
-		  do_deref (&rhsc);
-		  process_all_all_constraints (lhsc, rhsc);
-		  VEC_free (ce_s, heap, rhsc);
-		  VEC_free (ce_s, heap, lhsc);
-		}
-	      return;
-	    }
-	  /* Variadic argument handling needs to be handled in IPA
-	     mode as well.  */
-	  case BUILT_IN_VA_START:
-	    {
-	      if (in_ipa_mode)
-		{
-		  tree valist = gimple_call_arg (t, 0);
-		  struct constraint_expr rhs, *lhsp;
-		  unsigned i;
-		  /* The va_list gets access to pointers in variadic
-		     arguments.  */
-		  fi = lookup_vi_for_tree (cfun->decl);
-		  gcc_assert (fi != NULL);
-		  get_constraint_for (valist, &lhsc);
-		  do_deref (&lhsc);
-		  rhs = get_function_part_constraint (fi, ~0);
-		  rhs.type = ADDRESSOF;
-		  FOR_EACH_VEC_ELT (ce_s, lhsc, i, lhsp)
-		    process_constraint (new_constraint (*lhsp, rhs));
-		  VEC_free (ce_s, heap, lhsc);
-		  /* va_list is clobbered.  */
-		  make_constraint_to (get_call_clobber_vi (t)->id, valist);
-		  return;
-		}
-	      break;
-	    }
-	  /* va_end doesn't have any effect that matters.  */
-	  case BUILT_IN_VA_END:
-	    return;
-	  /* Alternate return.  Simply give up for now.  */
-	  case BUILT_IN_RETURN:
-	    {
-	      fi = NULL;
-	      if (!in_ipa_mode
-		  || !(fi = get_vi_for_tree (cfun->decl)))
-		make_constraint_from (get_varinfo (escaped_id), anything_id);
-	      else if (in_ipa_mode
-		       && fi != NULL)
-		{
-		  struct constraint_expr lhs, rhs;
-		  lhs = get_function_part_constraint (fi, fi_result);
-		  rhs.var = anything_id;
-		  rhs.offset = 0;
-		  rhs.type = SCALAR;
-		  process_constraint (new_constraint (lhs, rhs));
-		}
-	      return;
-	    }
-	  /* printf-style functions may have hooks to set pointers to
-	     point to somewhere into the generated string.  Leave them
-	     for a later excercise...  */
-	  default:
-	    /* Fallthru to general call handling.  */;
-	  }
-      if (!in_ipa_mode
-	  || gimple_call_internal_p (t)
-	  || (fndecl
-	      && (!(fi = lookup_vi_for_tree (fndecl))
-		  || !fi->is_fn_info)))
-	{
-	  VEC(ce_s, heap) *rhsc = NULL;
-	  int flags = gimple_call_flags (t);
-
-	  /* Const functions can return their arguments and addresses
-	     of global memory but not of escaped memory.  */
-	  if (flags & (ECF_CONST|ECF_NOVOPS))
-	    {
-	      if (gimple_call_lhs (t))
-		handle_const_call (t, &rhsc);
-	    }
-	  /* Pure functions can return addresses in and of memory
-	     reachable from their arguments, but they are not an escape
-	     point for reachable memory of their arguments.  */
-	  else if (flags & (ECF_PURE|ECF_LOOPING_CONST_OR_PURE))
-	    handle_pure_call (t, &rhsc);
-	  else
-	    handle_rhs_call (t, &rhsc);
-	  if (gimple_call_lhs (t))
-	    handle_lhs_call (t, gimple_call_lhs (t), flags, rhsc, fndecl);
-	  VEC_free (ce_s, heap, rhsc);
-	}
-      else
-	{
-	  tree lhsop;
-	  unsigned j;
-
-	  fi = get_fi_for_callee (t);
-
-	  /* Assign all the passed arguments to the appropriate incoming
-	     parameters of the function.  */
-	  for (j = 0; j < gimple_call_num_args (t); j++)
-	    {
-	      struct constraint_expr lhs ;
-	      struct constraint_expr *rhsp;
-	      tree arg = gimple_call_arg (t, j);
-
-	      get_constraint_for_rhs (arg, &rhsc);
-	      lhs = get_function_part_constraint (fi, fi_parm_base + j);
-	      while (VEC_length (ce_s, rhsc) != 0)
-		{
-		  rhsp = VEC_last (ce_s, rhsc);
-		  process_constraint (new_constraint (lhs, *rhsp));
-		  VEC_pop (ce_s, rhsc);
-		}
-	    }
-
-	  /* If we are returning a value, assign it to the result.  */
-	  lhsop = gimple_call_lhs (t);
-	  if (lhsop)
-	    {
-	      struct constraint_expr rhs;
-	      struct constraint_expr *lhsp;
-
-	      get_constraint_for (lhsop, &lhsc);
-	      rhs = get_function_part_constraint (fi, fi_result);
-	      if (fndecl
-		  && DECL_RESULT (fndecl)
-		  && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
-		{
-		  VEC(ce_s, heap) *tem = NULL;
-		  VEC_safe_push (ce_s, heap, tem, &rhs);
-		  do_deref (&tem);
-		  rhs = *VEC_index (ce_s, tem, 0);
-		  VEC_free(ce_s, heap, tem);
-		}
-	      FOR_EACH_VEC_ELT (ce_s, lhsc, j, lhsp)
-		process_constraint (new_constraint (*lhsp, rhs));
-	    }
-
-	  /* If we pass the result decl by reference, honor that.  */
-	  if (lhsop
-	      && fndecl
-	      && DECL_RESULT (fndecl)
-	      && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
-	    {
-	      struct constraint_expr lhs;
-	      struct constraint_expr *rhsp;
-
-	      get_constraint_for_address_of (lhsop, &rhsc);
-	      lhs = get_function_part_constraint (fi, fi_result);
-	      FOR_EACH_VEC_ELT (ce_s, rhsc, j, rhsp)
-		process_constraint (new_constraint (lhs, *rhsp));
-	      VEC_free (ce_s, heap, rhsc);
-	    }
-
-	  /* If we use a static chain, pass it along.  */
-	  if (gimple_call_chain (t))
-	    {
-	      struct constraint_expr lhs;
-	      struct constraint_expr *rhsp;
-
-	      get_constraint_for (gimple_call_chain (t), &rhsc);
-	      lhs = get_function_part_constraint (fi, fi_static_chain);
-	      FOR_EACH_VEC_ELT (ce_s, rhsc, j, rhsp)
-		process_constraint (new_constraint (lhs, *rhsp));
-	    }
-	}
-    }
+    find_func_aliases_for_call (t);
+    
   /* Otherwise, just a regular assignment statement.  Only care about
      operations with pointer result, others are dealt with as escape
      points if they have pointer operands.  */
