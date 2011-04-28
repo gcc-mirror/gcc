@@ -1,5 +1,15 @@
 2011-04-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/40975
+	* cp-tree.def (VEC_INIT_EXPR): Add third operand.
+	* cp-tree.h (VEC_INIT_EXPR_NELTS): New.
+	* cp-gimplify.c (cp_gimplify_expr) [VEC_INIT_EXPR]: Handle it.
+	* tree.c (build_vec_init_expr): Handle getting pointer/nelts.
+	(build_vec_init_elt): Don't expect an array type.
+	(build_array_copy): Adjust.
+	* init.c (perform_member_init): Adjust.
+	(build_new_1): Use build_vec_init_expr.
+
 	* class.c (resolve_address_of_overloaded_function): Don't
 	change OVERLOAD to TREE_LIST.
 	* pt.c (print_candidates_1): Remove nonsensical assert.

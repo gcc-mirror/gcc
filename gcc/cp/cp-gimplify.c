@@ -530,10 +530,12 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       {
 	location_t loc = input_location;
 	tree init = VEC_INIT_EXPR_INIT (*expr_p);
-	int from_array = (init && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE);
+	int from_array = (init && TREE_TYPE (init)
+			  && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE);
 	gcc_assert (EXPR_HAS_LOCATION (*expr_p));
 	input_location = EXPR_LOCATION (*expr_p);
-	*expr_p = build_vec_init (VEC_INIT_EXPR_SLOT (*expr_p), NULL_TREE,
+	*expr_p = build_vec_init (VEC_INIT_EXPR_SLOT (*expr_p),
+				  VEC_INIT_EXPR_NELTS (*expr_p),
 				  init, VEC_INIT_EXPR_VALUE_INIT (*expr_p),
 				  from_array,
 				  tf_warning_or_error);

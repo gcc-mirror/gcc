@@ -1,3 +1,8 @@
+2011-04-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist49.C: New.
+	* g++.dg/init/new30.C: New.
+
 2011-04-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48788

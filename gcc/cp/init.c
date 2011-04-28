@@ -506,7 +506,8 @@ perform_member_init (tree member, tree init)
       /* mem() means value-initialization.  */
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  init = build_vec_init_expr (type, init);
+	  init = build_vec_init_expr (type, init, NULL_TREE,
+				      tf_warning_or_error);
 	  init = build2 (INIT_EXPR, type, decl, init);
 	  finish_expr_stmt (init);
 	}
@@ -541,7 +542,8 @@ perform_member_init (tree member, tree init)
 	      || same_type_ignoring_top_level_qualifiers_p (type,
 							    TREE_TYPE (init)))
 	    {
-	      init = build_vec_init_expr (type, init);
+	      init = build_vec_init_expr (type, init, NULL_TREE,
+					  tf_warning_or_error);
 	      init = build2 (INIT_EXPR, type, decl, init);
 	      finish_expr_stmt (init);
 	    }
@@ -2384,15 +2386,14 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	      vecinit = build_tree_list_vec (*init);
             }
 	  init_expr
-	    = build_vec_init (data_addr,
-			      cp_build_binary_op (input_location,
-						  MINUS_EXPR, outer_nelts,
-						  integer_one_node,
-						  complain),
-			      vecinit,
-			      explicit_value_init_p,
-			      /*from_array=*/0,
-                              complain);
+	    = build_vec_init_expr (data_addr,
+				   (explicit_value_init_p
+				    ? void_type_node: vecinit),
+				   cp_build_binary_op (input_location,
+						       MINUS_EXPR, outer_nelts,
+						       integer_one_node,
+						       complain),
+				   complain);
 
 	  /* An array initialization is stable because the initialization
 	     of each element is a full-expression, so the temporaries don't
