@@ -1,4 +1,8 @@
 ! { dg-do run }
+!
+! { dg-options "" }
+! Do not run with -pedantic checks enabled as "check"
+! contains internal procedures which is a vendor extension
 
 program test
   implicit none
