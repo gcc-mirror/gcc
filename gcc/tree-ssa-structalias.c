@@ -6359,9 +6359,10 @@ solve_constraints (void)
     fprintf (dump_file, "Rewriting constraints and unifying "
 	     "variables\n");
   rewrite_constraints (graph, si);
-  free_var_substitution_info (si);
 
   build_succ_graph ();
+
+  free_var_substitution_info (si);
 
   /* Attach complex constraints to graph nodes.  */
   move_complex_constraints (graph);

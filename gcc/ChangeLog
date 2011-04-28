@@ -1,5 +1,14 @@
 2011-04-28  Richard Guenther  <rguenther@suse.de>
 
+	PR bootstrap/48804
+	Revert
+	2011-04-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (solve_constraints): Build succ graph
+	as late as possible.
+ 
+2011-04-28  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-structalias.c (dump_constraint): Don't end the line.
 	(debug_constraint): Do it here.
 	(dump_constraints): And here.
