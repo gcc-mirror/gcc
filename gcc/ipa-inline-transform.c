@@ -297,7 +297,7 @@ inline_transform (struct cgraph_node *node)
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */
-  if (cgraph_preserve_function_body_p (node->decl))
+  if (cgraph_preserve_function_body_p (node))
     save_inline_function_body (node);
 
   for (e = node->callees; e; e = e->next_callee)

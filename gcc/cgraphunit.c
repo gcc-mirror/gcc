@@ -1580,7 +1580,7 @@ cgraph_expand_function (struct cgraph_node *node)
   /* Make sure that BE didn't give up on compiling.  */
   gcc_assert (TREE_ASM_WRITTEN (decl));
   current_function_decl = NULL;
-  gcc_assert (!cgraph_preserve_function_body_p (decl));
+  gcc_assert (!cgraph_preserve_function_body_p (node));
   cgraph_release_function_body (node);
   /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
      points to the dead function body.  */
@@ -1758,13 +1758,12 @@ cgraph_output_in_order (void)
 /* Return true when function body of DECL still needs to be kept around
    for later re-use.  */
 bool
-cgraph_preserve_function_body_p (tree decl)
+cgraph_preserve_function_body_p (struct cgraph_node *node)
 {
-  struct cgraph_node *node;
-
   gcc_assert (cgraph_global_info_ready);
+  gcc_assert (!node->same_body_alias);
+
   /* Look if there is any clone around.  */
-  node = cgraph_get_node (decl);
   if (node->clones)
     return true;
   return false;

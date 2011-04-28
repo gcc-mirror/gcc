@@ -1,3 +1,9 @@
+2011-04-29  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphunit.c (cgraph_preserve_function_body_p): Accept a cgraph
+	node instead of a decl.  Update all callers.
+	* cgraph.h: Update declaration.
+
 2011-04-28  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/48765
