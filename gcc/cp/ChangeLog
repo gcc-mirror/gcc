@@ -1,5 +1,14 @@
 2011-04-27  Jason Merrill  <jason@redhat.com>
 
+	PR libstdc++/48760
+	Implement list-initialization of _Complex.
+	* decl.c (reshape_init_r): Allow {real,imag} for _Complex.
+	(check_initializer): Likewise.
+	* call.c (build_complex_conv): New.
+	(implicit_conversion): Call it.
+	(convert_like_real): Handle it.
+	* typeck2.c (check_narrowing): Handle it.
+
 	* init.c (build_vec_delete_1): Look for sfk_deleting_destructor to
 	decide whether to delete.
 	(build_vec_init): Pass sfk_complete_destructor.

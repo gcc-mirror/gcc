@@ -1,5 +1,7 @@
 2011-04-27  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/ext/complex8.C: New.
+
 	* g++.dg/cpp0x/initlist49.C: New.
 	* g++.dg/init/new30.C: New.
 
