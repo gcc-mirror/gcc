@@ -558,10 +558,61 @@ case "${target}" in
     ;;
 esac
 
+# Disable Java if libffi is not supported.
+case "${target}" in
+  alpha*-*-*)
+    ;;
+  arm*-*-*)
+    ;;
+  cris-*-*)
+    ;;
+  frv-*-*)
+    ;;
+  hppa*-*-linux*)
+    ;;
+  hppa*-*-hpux*)
+    ;;
+  i?86-*-*)
+    ;;
+  ia64*-*-*)
+    ;;
+  m32r*-*-*)
+    ;;
+  m68k-*-*)
+    ;;
+  mips-sgi-irix6.* | mips*-*-rtems*)
+    ;;
+  mips*-*-linux*)
+    ;;
+  powerpc*-*-linux*)
+    ;;
+  powerpc-*-darwin*)
+    ;;
+  powerpc-*-aix* | rs6000-*-aix*)
+    ;;
+  powerpc-*-freebsd*)
+    ;;
+  powerpc64-*-freebsd*)
+    ;;
+  powerpc*-*-rtems*)
+    ;;
+  s390-*-* | s390x-*-*)
+    ;;
+  sh-*-* | sh[[34]]*-*-*)
+    ;;
+  sh64-*-* | sh5*-*-*)
+    ;;
+  sparc*-*-*)
+    ;;
+  x86_64-*-*)
+    ;;
+  *-*-*)
+    unsupported_languages="$unsupported_languages java"
+    ;;
+esac
+
 # Disable Java, libgcj or related libraries for some systems.
 case "${target}" in
-  *-*-chorusos)
-    ;;
   powerpc-*-darwin*)
     ;;
   i[[3456789]]86-*-darwin*)
@@ -583,8 +634,6 @@ case "${target}" in
 	noconfigdirs="$noconfigdirs ${libgcj}"
 	;;
     esac
-    ;;
-  *-*-kaos*)
     ;;
   *-*-netbsd*)
     # Skip some stuff that's unsupported on some NetBSD configurations.
@@ -621,18 +670,11 @@ case "${target}" in
   alpha*-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  am33_2.0-*-linux*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
   sh-*-linux*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;    
-  sh*-*-pe|mips*-*-pe|*arm-wince-pe)
+  arm-wince-pe)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  arc-*-*)
-    ;;
-  arm-*-coff)
     ;;
   arm-*-elf* | arm*-*-eabi* )
     noconfigdirs="$noconfigdirs target-libffi"
@@ -642,24 +684,8 @@ case "${target}" in
   arm*-*-symbianelf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  arm-*-pe*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  arm-*-riscix*)
-    ;;
-  avr-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
   bfin-*-*)
-    unsupported_languages="$unsupported_languages java"
     noconfigdirs="$noconfigdirs target-boehm-gc"
-    ;;
-  c4x-*-* | tic4x-*-*)
-    ;;
-  tic54x-*-*)
-    ;;
-  cr16-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   cris-*-* | crisv32-*-*)
     unsupported_languages="$unsupported_languages java"
@@ -670,25 +696,8 @@ case "${target}" in
 	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
     esac
     ;;
-  d10v-*-*)
-    ;;
-  d30v-*-*)
-    ;;
-  fr30-*-elf*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
   frv-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  moxie-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  h8300*-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  h8500-*-*)
-    ;;
-  hppa1.1-*-osf* | hppa1.1-*-bsd* )
     ;;
   hppa*64*-*-linux*)
     # In this case, it's because the hppa64-linux target is for
@@ -698,22 +707,15 @@ case "${target}" in
     ;;
   hppa*-*-linux*)
     ;;
-  hppa*-*-*elf* | \
-  hppa*-*-lites* | \
-  hppa*-*-openbsd* | \
   hppa*64*-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   hppa*-hp-hpux11*)
     ;;
-  hppa*-*-pro*)
-    ;;
   hppa*-*-*)
     # According to Alexandre Oliva <aoliva@redhat.com>, libjava won't
     # build on HP-UX 10.20.
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  i960-*-*)
     ;;
   ia64*-*-elf*)
     ;;
@@ -722,7 +724,7 @@ case "${target}" in
   ia64*-*-*vms*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
+  i[[3456789]]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   i[[3456789]]86-*-linux*)
@@ -740,24 +742,10 @@ case "${target}" in
     ;;
   i[[3456789]]86-*-interix* )
     ;;
-  i[[3456789]]86-*-pe)
-    ;;
-  i[[3456789]]86-*-sco3.2v5*)
-    ;;
-  i[[3456789]]86-*-sco*)
-    ;;
   i[[3456789]]86-*-solaris2*)
-    ;;
-  i[[3456789]]86-*-sysv4*)
-    ;;
-  i[[3456789]]86-*-beos*)
-    ;;
-  i[[3456789]]86-*-rdos*)
     ;;
   m32r-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
     ;;
   m68k-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -766,43 +754,18 @@ case "${target}" in
     ;;
   mmix-*-*)
     noconfigdirs="$noconfigdirs target-libffi target-boehm-gc"
-    unsupported_languages="$unsupported_languages java"
-    ;;
-  mt-*-*)
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  powerpc*-*-winnt* | powerpc*-*-pe*)
-    ;;
-  powerpcle-*-solaris*)
-    ;;
-  powerpc-*-beos*)
     ;;
   powerpc-*-eabi)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   powerpc-*-eabi* | powerpcle-*-eabi* | powerpc-*-rtems* )
     ;;
-  rs6000-*-lynxos*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
   rs6000-*-aix*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  rs6000-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  m68k-apollo-*)
-    ;;
-  microblaze*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  mips*-sde-elf*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  mips*-*-irix5*)
     ;;
   mips*-*-irix6*)
     # Linking libjava exceeds command-line length limits on at least
@@ -810,8 +773,6 @@ case "${target}" in
     # Also, boehm-gc won't build on IRIX 6.5, according to Jeffrey Oldham
     # <oldham@codesourcery.com>
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  mips*-*-bsd*)
     ;;
   mips*-*-linux*)
     ;;
@@ -821,27 +782,13 @@ case "${target}" in
   sh-*-* | sh64-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  sparclet-*-aout* | sparc86x-*-*)
-    ;;
   sparc-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc64-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  sparclite-*-*)
-    ;;
-  sparc-*-sunos4*)
-    ;;
   sparc-*-solaris* | sparc64-*-solaris* | sparcv9-*-solaris*)
-    ;;
-  tic6x-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  v810-*-*)
-    ;;
-  vax-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
     ;;
