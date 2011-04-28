@@ -26,11 +26,11 @@ program test
   call check(bessel_yn (3,x4), bessel_yn (3,1.9_4))
 
 contains
-  subroutine check_r4 (a, b)
+  subroutine check_r4 (a, b) ! { dg-warning "Extension: Internal procedure" }
     real(kind=4), intent(in) :: a, b
     if (abs(a - b) > 1.e-5 * abs(b)) call abort
   end subroutine
-  subroutine check_r8 (a, b)
+  subroutine check_r8 (a, b) ! { dg-warning "Extension: Internal procedure" }
     real(kind=8), intent(in) :: a, b
     if (abs(a - b) > 1.e-7 * abs(b)) call abort
   end subroutine

@@ -35,12 +35,12 @@ o1%ppc => o2%ppc  ! { dg-error "Type/kind mismatch" }
 
 contains
 
-  real function f1(a,b)
+  real function f1(a,b) ! { dg-warning "Extension: Internal procedure" }
     real,intent(in) :: a,b
     f1 = a + b
   end function
 
-  integer function f2(a,b)
+  integer function f2(a,b) ! { dg-warning "Extension: Internal procedure" }
     real,intent(in) :: a,b
     f2 = a - b
   end function
