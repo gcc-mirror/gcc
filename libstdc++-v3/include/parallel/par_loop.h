@@ -91,7 +91,8 @@ namespace __gnu_parallel
 	_ThreadIndex __iam = omp_get_thread_num();
 
 	// Neutral element.
-	_Result* __reduct;
+	_Result* __reduct = static_cast<_Result*>
+	  (::operator new(sizeof(_Result)));
 
 	_DifferenceType
 	  __start = __equally_split_point(__length, __num_threads, __iam),
@@ -99,7 +100,7 @@ namespace __gnu_parallel
 
 	if (__start < __stop)
 	  {
-	    __reduct = new _Result(__f(__o, __begin + __start));
+	    new(__reduct) _Result(__f(__o, __begin + __start));
 	    ++__start;
 	    __constructed[__iam] = true;
 	  }
@@ -109,26 +110,18 @@ namespace __gnu_parallel
 	for (; __start < __stop; ++__start)
 	  *__reduct = __r(*__reduct, __f(__o, __begin + __start));
 
-	if (__constructed[__iam])
-	  {
-	    ::new(&__thread_results[__iam]) _Result(*__reduct);
-	    delete __reduct;
-	  }
+	__thread_results[__iam] = *__reduct;
       } //parallel
 
       for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
 	if (__constructed[__i])
-	  {
-	    __output = __r(__output, __thread_results[__i]);
-	    __thread_results[__i].~_Result();
-	  }
+	  __output = __r(__output, __thread_results[__i]);
 
       // Points to last element processed (needed as return value for
       // some algorithms like transform).
       __f._M_finish_iterator = __begin + __length;
 
-      ::operator delete(__thread_results);
-
+      delete[] __thread_results;
       delete[] __constructed;
 
       return __o;
