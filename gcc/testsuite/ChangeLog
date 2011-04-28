@@ -1,3 +1,8 @@
+2011-04-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48788
+	* gfortran.dg/whole_file_34.f90: New.
+
 2011-04-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/parse/ambig6.C: New.
