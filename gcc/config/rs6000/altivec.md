@@ -2430,7 +2430,7 @@
 
 (define_expand "vec_extract_evenv4si"
  [(set (match_operand:V4SI 0 "register_operand" "")
-        (unspec:V8HI [(match_operand:V4SI 1 "register_operand" "")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "")
                       (match_operand:V4SI 2 "register_operand" "")]
 		      UNSPEC_EXTEVEN_V4SI))]
   "TARGET_ALTIVEC"
@@ -2463,7 +2463,7 @@
 
 (define_expand "vec_extract_evenv4sf"
  [(set (match_operand:V4SF 0 "register_operand" "")
-        (unspec:V8HI [(match_operand:V4SF 1 "register_operand" "")
+        (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "")
                       (match_operand:V4SF 2 "register_operand" "")]
                       UNSPEC_EXTEVEN_V4SF))]
   "TARGET_ALTIVEC"
@@ -2495,7 +2495,7 @@
 }")
 
 (define_expand "vec_extract_evenv8hi"
- [(set (match_operand:V4SI 0 "register_operand" "")
+ [(set (match_operand:V8HI 0 "register_operand" "")
         (unspec:V8HI [(match_operand:V8HI 1 "register_operand" "")
                       (match_operand:V8HI 2 "register_operand" "")]
                       UNSPEC_EXTEVEN_V8HI))]
@@ -2528,9 +2528,9 @@
 }")
 
 (define_expand "vec_extract_evenv16qi"
- [(set (match_operand:V4SI 0 "register_operand" "")
-        (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "")
-                      (match_operand:V16QI 2 "register_operand" "")]
+ [(set (match_operand:V16QI 0 "register_operand" "")
+        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "")
+                       (match_operand:V16QI 2 "register_operand" "")]
                       UNSPEC_EXTEVEN_V16QI))]
   "TARGET_ALTIVEC"
   "
@@ -2562,7 +2562,7 @@
 
 (define_expand "vec_extract_oddv4si"
  [(set (match_operand:V4SI 0 "register_operand" "")
-        (unspec:V8HI [(match_operand:V4SI 1 "register_operand" "")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "")
                       (match_operand:V4SI 2 "register_operand" "")]
                       UNSPEC_EXTODD_V4SI))]
   "TARGET_ALTIVEC"
@@ -2595,7 +2595,7 @@
 
 (define_expand "vec_extract_oddv4sf"
  [(set (match_operand:V4SF 0 "register_operand" "")
-        (unspec:V8HI [(match_operand:V4SF 1 "register_operand" "")
+        (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "")
                       (match_operand:V4SF 2 "register_operand" "")]
                       UNSPEC_EXTODD_V4SF))]
   "TARGET_ALTIVEC"

@@ -872,8 +872,8 @@
 ;; Under VSX, vectors of 4/8 byte alignments do not need to be aligned
 ;; since the load already handles it.
 (define_expand "movmisalign<mode>"
- [(set (match_operand:VEC_N 0 "vfloat_operand" "")
-       (match_operand:VEC_N 1 "vfloat_operand" ""))]
+ [(set (match_operand:VEC_N 0 "nonimmediate_operand" "")
+       (match_operand:VEC_N 1 "any_operand" ""))]
  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_ALLOW_MOVMISALIGN"
  "")
 

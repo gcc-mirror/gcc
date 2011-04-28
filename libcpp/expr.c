@@ -720,10 +720,15 @@ parse_defined (cpp_reader *pfile)
 
   pfile->state.prevent_expansion--;
 
+  /* Do not treat conditional macros as being defined.  This is due to the
+     powerpc and spu ports using conditional macros for 'vector', 'bool', and
+     'pixel' to act as conditional keywords.  This messes up tests like #ifndef
+     bool.  */
   result.unsignedp = false;
   result.high = 0;
   result.overflow = false;
-  result.low = node && node->type == NT_MACRO;
+  result.low = (node && node->type == NT_MACRO
+		&& (node->flags & NODE_CONDITIONAL) == 0);
   return result;
 }
 

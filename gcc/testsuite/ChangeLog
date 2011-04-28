@@ -1,3 +1,21 @@
+2011-04-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2011-03-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.dg/torture/vector-1.c: On powerpc add -fabi=altivec to avoid
+	failure on 32-bit systems.
+	* gcc.dg/torture/vector-2.c: Ditto.
+
+	Backport from mainline
+	2011-03-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.dg/torture/va-arg-25.c: Add -mabi=altivec -maltivec for
+	powerpc.
+
+	PR target/48226
+	* gcc.target/powerpc/pr48226.c: New file.
+
 2011-04-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48656
