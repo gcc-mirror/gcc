@@ -2041,7 +2041,8 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 	     is not included in *ARGS even though it is considered to
 	     be part of the list of arguments.  Note that this is
 	     related to CWG issues 515 and 1005.  */
-	  || ((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
+	  || (((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
+	       || BASELINK_P (fn))
 	      && current_class_ref
 	      && type_dependent_expression_p (current_class_ref)))
 	{

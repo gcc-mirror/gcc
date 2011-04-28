@@ -1,3 +1,8 @@
+2011-04-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48656
+	* g++.dg/template/inherit7.C: New test case.
+
 2011-04-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48112

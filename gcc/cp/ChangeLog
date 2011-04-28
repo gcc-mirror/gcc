@@ -1,3 +1,9 @@
+2011-04-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48656
+	* semantics.c (finish_call_expr): Don't forget BASELINK nodes when
+	considering call expressions involving a member function.
+
 2011-04-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48046
