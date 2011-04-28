@@ -5331,7 +5331,8 @@ float_const_decimal64_p (void)
 bool
 literal_type_p (tree t)
 {
-  if (SCALAR_TYPE_P (t))
+  if (SCALAR_TYPE_P (t)
+      || TREE_CODE (t) == REFERENCE_TYPE)
     return true;
   if (CLASS_TYPE_P (t))
     return CLASSTYPE_LITERAL_P (t);
@@ -5406,18 +5407,6 @@ retrieve_constexpr_fundef (tree fun)
   return (constexpr_fundef *) htab_find (constexpr_fundef_table, &fundef);
 }
 
-/* Return true if type expression T is a valid parameter type, or
-   a valid return type, of a constexpr function.  */
-
-static bool
-valid_type_in_constexpr_fundecl_p (tree t)
-{
-  return (literal_type_p (t)
-	  /* FIXME we allow ref to non-literal; should change standard to
-	     match, or change back if not.  */
-	  || TREE_CODE (t) == REFERENCE_TYPE);
-}
-
 /* Check whether the parameter and return types of FUN are valid for a
    constexpr function, and complain if COMPLAIN.  */
 
@@ -5427,7 +5416,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
   tree parm = FUNCTION_FIRST_USER_PARM (fun);
   bool ret = true;
   for (; parm != NULL; parm = TREE_CHAIN (parm))
-    if (!valid_type_in_constexpr_fundecl_p (TREE_TYPE (parm)))
+    if (!literal_type_p (TREE_TYPE (parm)))
       {
 	ret = false;
 	if (complain)
@@ -5438,7 +5427,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
   if (!DECL_CONSTRUCTOR_P (fun))
     {
       tree rettype = TREE_TYPE (TREE_TYPE (fun));
-      if (!valid_type_in_constexpr_fundecl_p (rettype))
+      if (!literal_type_p (rettype))
 	{
 	  ret = false;
 	  if (complain)
