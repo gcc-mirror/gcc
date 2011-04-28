@@ -30,19 +30,21 @@ enum internal_fn {
 /* Return the name of internal function FN.  The name is only meaningful
    for dumps; it has no linkage.  */
 
+extern const char *const internal_fn_name_array[];
+
 static inline const char *
 internal_fn_name (enum internal_fn fn)
 {
-  extern const char *const internal_fn_name_array[];
   return internal_fn_name_array[(int) fn];
 }
 
 /* Return the ECF_* flags for function FN.  */
 
+extern const int internal_fn_flags_array[];
+
 static inline int
 internal_fn_flags (enum internal_fn fn)
 {
-  extern const int internal_fn_flags_array[];
   return internal_fn_flags_array[(int) fn];
 }
 
