@@ -1,3 +1,8 @@
+2011-04-29  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_delegitimize_address): Handle
+	unspec plus offset.  Tidy macho code.
+
 2011-04-29  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraphunit.c (cgraph_preserve_function_body_p): Accept a cgraph
