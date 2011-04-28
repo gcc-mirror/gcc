@@ -1,3 +1,9 @@
+2011-04-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Separate cases disabling Java and Java libraries
+	from general case over targets.
+	* configure: Regenerate.
+
 2011-04-21  Jie Zhang  <jzhang918@gmail.com>
 
 	* MAINTAINERS: Update my email address.
