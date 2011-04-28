@@ -1,3 +1,9 @@
+2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48798
+	* semantics.c (finish_base_specifier): cv-qualified base class
+	is fine, per DR 484.
+
 2011-04-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48656
