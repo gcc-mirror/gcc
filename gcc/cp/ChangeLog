@@ -1,5 +1,11 @@
 2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/48530
+	* tree.c (build_cplus_new): Check build_target_expr return
+	value for error_mark_node.
+
+2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/48771
 	* semantics.c (literal_type_p): Reference types are literal types,
 	per the FDIS.
