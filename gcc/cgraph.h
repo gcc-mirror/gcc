@@ -573,7 +573,7 @@ void cgraph_mark_needed_node (struct cgraph_node *);
 void cgraph_mark_address_taken_node (struct cgraph_node *);
 void cgraph_mark_reachable_node (struct cgraph_node *);
 bool cgraph_inline_p (struct cgraph_edge *, cgraph_inline_failed_t *reason);
-bool cgraph_preserve_function_body_p (tree);
+bool cgraph_preserve_function_body_p (struct cgraph_node *);
 void verify_cgraph (void);
 void verify_cgraph_node (struct cgraph_node *);
 void cgraph_build_static_cdtor (char which, tree body, int priority);
