@@ -1,3 +1,25 @@
+2011-04-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (*-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* |
+	*-*-kopensolaris*-gnu): Don't define SINGLE_LIBC.
+	(i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu |
+	i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu,
+	x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu): Don't use
+	linux*.h headers.
+	* config/gnu-user.h (TARGET_C99_FUNCTIONS, TARGET_HAS_SINCOS):
+	Define.
+	* config/i386/gnu.h (MD_UNWIND_SUPPORT): Don't undefine.
+	* config/i386/kfreebsd-gnu.h (MD_UNWIND_SUPPORT): Don't undefine.
+	* config/i386/knetbsd-gnu.h (MD_UNWIND_SUPPORT): Don't undefine.
+	* config/i386/kopensolaris-gnu.h (MD_UNWIND_SUPPORT): Don't
+	undefine.
+	* config/i386/linux-unwind.h (x86_fallback_frame_state): Don't use
+	REG_NAME.
+	* config/i386/linux.h (REG_NAME): Don't define.
+	* config/i386/linux64.h (REG_NAME): Don't define.
+	* config/linux.h (TARGET_C99_FUNCTIONS, TARGET_HAS_SINCOS):
+	Undefine before defining.
+
 2011-04-28  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (will_be_nonconstant_predicate): Take nonconstant_names
