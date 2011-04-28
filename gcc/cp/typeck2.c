@@ -728,6 +728,16 @@ check_narrowing (tree type, tree init)
   if (!ARITHMETIC_TYPE_P (type))
     return;
 
+  if (BRACE_ENCLOSED_INITIALIZER_P (init)
+      && TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      tree elttype = TREE_TYPE (type);
+      check_narrowing (elttype, CONSTRUCTOR_ELT (init, 0)->value);
+      if (CONSTRUCTOR_NELTS (init) > 1)
+	check_narrowing (elttype, CONSTRUCTOR_ELT (init, 1)->value);
+      return;
+    }
+
   init = maybe_constant_value (init);
 
   if (TREE_CODE (type) == INTEGER_TYPE
