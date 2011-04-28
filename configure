@@ -3175,29 +3175,6 @@ case "${target}" in
   *-*-darwin*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  *-*-dragonfly*)
-    ;;
-  *-*-freebsd*)
-    # Skip some stuff that's unsupported on some FreeBSD configurations.
-    case "${target}" in
-      i*86-*-*) ;;
-      alpha*-*-*) ;;
-      x86_64-*-*) ;;
-      *)
-	noconfigdirs="$noconfigdirs ${libgcj}"
-	;;
-    esac
-    ;;
-  *-*-netbsd*)
-    # Skip some stuff that's unsupported on some NetBSD configurations.
-    case "${target}" in
-      i*86-*-netbsdelf*) ;;
-      arm*-*-netbsdelf*) ;;
-      *)
-	noconfigdirs="$noconfigdirs ${libgcj}"
-	;;
-    esac
-    ;;
   *-*-netware*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
@@ -3213,26 +3190,11 @@ case "${target}" in
   *-*-vxworks*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  alpha*-dec-osf*)
-    ;;
   alpha*-*-*vms*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  alpha*-*-linux*)
-    ;;
-  alpha*-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  sh-*-linux*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   arm-wince-pe)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  arm-*-elf* | arm*-*-eabi* )
-    noconfigdirs="$noconfigdirs target-libffi"
-    ;;
-  arm*-*-linux-gnueabi)
     ;;
   arm*-*-symbianelf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -3249,38 +3211,24 @@ case "${target}" in
 	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
     esac
     ;;
-  frv-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
   hppa*64*-*-linux*)
     # In this case, it's because the hppa64-linux target is for
     # the kernel only at this point and has no libc, and thus no
     # headers, crt*.o, etc., all of which are needed by these.
-    noconfigdirs="$noconfigdirs target-zlib"
+    unsupported_languages="$unsupported_languages java"
     ;;
-  hppa*-*-linux*)
-    ;;
-  hppa*64*-*-*)
+  hppa*64*-*-hpux*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   hppa*-hp-hpux11*)
     ;;
-  hppa*-*-*)
+  hppa*-*-hpux*)
     # According to Alexandre Oliva <aoliva@redhat.com>, libjava won't
     # build on HP-UX 10.20.
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  ia64*-*-elf*)
-    ;;
-  ia64*-**-hpux*)
-    ;;
   ia64*-*-*vms*)
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  i[3456789]86-*-elf)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  i[3456789]86-*-linux*)
     ;;
   i[3456789]86-w64-mingw*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -3291,31 +3239,12 @@ case "${target}" in
   x86_64-*-mingw*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  *-*-cygwin*)
-    ;;
-  i[3456789]86-*-interix* )
-    ;;
-  i[3456789]86-*-solaris2*)
-    ;;
-  m32r-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  m68k-*-elf*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  m68*-*-* | fido-*-*)
-    ;;
   mmix-*-*)
     noconfigdirs="$noconfigdirs target-libffi target-boehm-gc"
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  powerpc-*-eabi)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  powerpc-*-eabi* | powerpcle-*-eabi* | powerpc-*-rtems* )
     ;;
   rs6000-*-aix*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -3327,28 +3256,7 @@ case "${target}" in
     # <oldham@codesourcery.com>
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  mips*-*-linux*)
-    ;;
-  mips*-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  sh-*-* | sh64-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  sparc-*-elf*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  sparc64-*-elf*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  sparc-*-solaris* | sparc64-*-solaris* | sparcv9-*-solaris*)
-    ;;
-  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
-    ;;
   *-*-lynxos*)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  *-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
 esac
