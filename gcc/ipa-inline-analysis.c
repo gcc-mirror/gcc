@@ -931,10 +931,23 @@ edge_execution_predicate (struct ipa_node_params *info,
 			gimple_cond_rhs (last));
 }
 
+
+/* We keep info about constantness of SSA names.  */
+
+typedef struct predicate predicate_t;
+DEF_VEC_O (predicate_t);
+DEF_VEC_ALLOC_O (predicate_t, heap);
+
+
+/* Return predicate specifying when the STMT might have result that is not a compile
+   time constant.  */
+
 static struct predicate
 will_be_nonconstant_predicate (struct ipa_node_params *info,
 			       struct inline_summary *summary,
-			       gimple stmt)
+			       gimple stmt,
+			       VEC (predicate_t, heap) *nonconstant_names)
+			      
 {
   struct predicate p = true_predicate ();
   ssa_op_iter iter;
@@ -949,7 +962,8 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
       && gimple_code (stmt) != GIMPLE_SWITCH)
     return p;
 
-  /* Stores and loads will stay anyway.  */
+  /* Stores and loads will stay anyway.
+     TODO: Constant memory accesses could be handled here, too.  */
   if (gimple_vuse (stmt))
     return p;
 
@@ -957,21 +971,36 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
      adding conditionals.  */
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      /* TODO: handle nested expressions and constant
-	 array accesses.  */
-      if (TREE_CODE (use) != SSA_NAME
-	  || !SSA_NAME_IS_DEFAULT_DEF (use)
-	  || ipa_get_param_decl_index (info, SSA_NAME_VAR (use)) < 0)
+      if (TREE_CODE (use) != SSA_NAME)
 	return p;
+      /* For arguments we can build a condition.  */
+      if (SSA_NAME_IS_DEFAULT_DEF (use)
+	  && ipa_get_param_decl_index (info, SSA_NAME_VAR (use)) >= 0)
+	continue;
+      /* If we know when operand is constant,
+	 we still can say something useful.  */
+      if (!true_predicate_p (VEC_index (predicate_t, nonconstant_names,
+					SSA_NAME_VERSION (use))))
+	continue;
+      return p;
     }
   op_non_const = false_predicate ();
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      p = add_condition (summary,
-			 ipa_get_param_decl_index (info, SSA_NAME_VAR (use)),
-			 IS_NOT_CONSTANT, NULL);
+      if (SSA_NAME_IS_DEFAULT_DEF (use)
+	  && ipa_get_param_decl_index (info, SSA_NAME_VAR (use)) >= 0)
+	p = add_condition (summary,
+			   ipa_get_param_decl_index (info, SSA_NAME_VAR (use)),
+			   IS_NOT_CONSTANT, NULL);
+      else
+	p = *VEC_index (predicate_t, nonconstant_names,
+			SSA_NAME_VERSION (use));
       op_non_const = or_predicates (&p, &op_non_const);
     }
+  if (gimple_code (stmt) == GIMPLE_ASSIGN
+      && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
+    VEC_replace (predicate_t, nonconstant_names,
+		 SSA_NAME_VERSION (gimple_assign_lhs (stmt)), &op_non_const);
   return op_non_const;
 }
 
@@ -994,9 +1023,15 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   int freq;
   struct inline_summary *info = inline_summary (node);
   struct predicate bb_predicate;
-  struct ipa_node_params *parms_info;
+  struct ipa_node_params *parms_info = NULL;
+  VEC (predicate_t, heap) *nonconstant_names = NULL;
 
-  parms_info = ipa_node_params_vector && !early ? IPA_NODE_REF (node) : NULL;
+  if (ipa_node_params_vector && !early && optimize)
+    {
+      parms_info = IPA_NODE_REF (node);
+      VEC_safe_grow_cleared (predicate_t, heap, nonconstant_names,
+			     VEC_length (tree, SSANAMES (my_function)));
+    }
 
   info->conds = 0;
   info->entry = 0;
@@ -1013,7 +1048,6 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 
   bb_predicate = not_inlined_predicate ();
   account_size_time (info, 2 * INLINE_SIZE_SCALE, 0, &bb_predicate);
-
 
   gcc_assert (my_function && my_function->cfg);
   FOR_EACH_BB_FN (bb, my_function)
@@ -1063,6 +1097,19 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      struct cgraph_edge *edge = cgraph_edge (node, stmt);
 	      struct inline_edge_summary *es = inline_edge_summary (edge);
 
+	      /* Special case: results of BUILT_IN_CONSTANT_P will be always
+		 resolved as constant.  We however don't want to optimize
+		 out the cgraph edges.  */
+	      if (nonconstant_names
+		  && gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P)
+		  && gimple_call_lhs (stmt)
+		  && TREE_CODE (gimple_call_lhs (stmt)) == SSA_NAME)
+		{
+		  struct predicate false_p = false_predicate ();
+		  VEC_replace (predicate_t, nonconstant_names,
+			       SSA_NAME_VERSION (gimple_call_lhs (stmt)), &false_p);
+		}
+
 	      es->call_stmt_size = this_size;
 	      es->call_stmt_time = this_time;
 	      es->loop_depth = bb->loop_depth;
@@ -1098,7 +1145,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      if (parms_info)
 		{
 		  will_be_nonconstant
-		     = will_be_nonconstant_predicate (parms_info, info, stmt);
+		     = will_be_nonconstant_predicate (parms_info, info,
+						      stmt, nonconstant_names);
 		  p = and_predicates (&bb_predicate, &will_be_nonconstant);
 		}
 	      else
@@ -1131,6 +1179,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
     time = MAX_TIME;
   inline_summary (node)->self_time = time;
   inline_summary (node)->self_size = size;
+  VEC_free (predicate_t, heap, nonconstant_names);
   if (dump_file)
     {
       fprintf (dump_file, "\n");
