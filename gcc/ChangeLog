@@ -1,3 +1,9 @@
+2011-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48597
+	* final.c (final_scan_insn): Call dwarf2out_frame_debug even for
+	inline asm.
+
 2011-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48742
