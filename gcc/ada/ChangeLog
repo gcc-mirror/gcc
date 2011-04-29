@@ -1,3 +1,8 @@
+2011-04-29  Michael Matz  <matz@suse.de>
+
+	* gcc-interface/misc.c (gnat_handle_option): Set
+	warn_maybe_uninitialized.
+
 2011-04-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gnat_ugn.texi (Complexity Metrics Control): Update link to

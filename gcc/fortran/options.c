@@ -461,6 +461,7 @@ set_Wall (int setting)
   warn_return_type = setting;
   warn_switch = setting;
   warn_uninitialized = setting;
+  warn_maybe_uninitialized = setting;
 }
 
 
