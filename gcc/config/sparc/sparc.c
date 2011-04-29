@@ -7836,16 +7836,14 @@ sparc32_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
   emit_move_insn
     (adjust_address (m_tramp, SImode, 0),
      expand_binop (SImode, ior_optab,
-		   expand_shift (RSHIFT_EXPR, SImode, fnaddr,
-				 size_int (10), 0, 1),
+		   expand_shift (RSHIFT_EXPR, SImode, fnaddr, 10, 0, 1),
 		   GEN_INT (trunc_int_for_mode (0x03000000, SImode)),
 		   NULL_RTX, 1, OPTAB_DIRECT));
 
   emit_move_insn
     (adjust_address (m_tramp, SImode, 4),
      expand_binop (SImode, ior_optab,
-		   expand_shift (RSHIFT_EXPR, SImode, cxt,
-				 size_int (10), 0, 1),
+		   expand_shift (RSHIFT_EXPR, SImode, cxt, 10, 0, 1),
 		   GEN_INT (trunc_int_for_mode (0x05000000, SImode)),
 		   NULL_RTX, 1, OPTAB_DIRECT));
 

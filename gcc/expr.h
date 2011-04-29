@@ -488,8 +488,10 @@ extern rtx expand_call (tree, rtx, int);
 extern void fixup_tail_calls (void);
 
 #ifdef TREE_CODE
-extern rtx expand_shift (enum tree_code, enum machine_mode, rtx, tree, rtx,
-			 int);
+extern rtx expand_variable_shift (enum tree_code, enum machine_mode,
+				  rtx, tree, rtx, int);
+extern rtx expand_shift (enum tree_code, enum machine_mode, rtx, int, rtx,
+			     int);
 extern rtx expand_divmod (int, enum tree_code, enum machine_mode, rtx, rtx,
 			  rtx, int);
 #endif

@@ -1,5 +1,30 @@
 2011-04-29  Richard Guenther  <rguenther@suse.de>
 
+	* expr.h (expand_shift): Rename to ...
+	(expand_variable_shift): ... this.
+	(expand_shift): Take a constant shift amount.
+	* expmed.c (expand_shift): Rename to ...
+	(expand_variable_shift): ... this.
+	(expand_shift): New wrapper around expand_variable_shift.
+	* expr.c (convert_move, emit_group_load_1, emit_group_store,
+	optimize_bitfield_assignment_op, store_field, expand_expr_real_2,
+	expand_expr_real_1, reduce_to_bit_field_precision): Adjust.
+	* expmed.c (store_fixed_bit_field, extract_bit_field_1,
+	extract_fixed_bit_field, extract_split_bit_field, expand_mult_const,
+	expand_mult, expand_widening_mult, expand_mult_highpart_adjust,
+	extract_high_half, expand_sdiv_pow2, expand_divmod, emit_cstore,
+	emit_store_flag_1, emit_store_flag): Likewise.
+	* builtins.c (expand_builtin_signbit): Likewise.
+	* calls.c (load_register_parameters): Likewise.
+	* function.c (assign_parm_setup_block): Likewise.
+	* lower-subreg.c (resolve_shift_zext): Likewise.
+	* optabs.c (widen_bswap, expand_abs_nojump,
+	expand_one_cmpl_abs_nojump, expand_float): Likewise.
+	* spu/spu.c (spu_expand_extv): Likewise.
+	* sparc/sparc.c (sparc32_initialize_trampoline): Likewise.
+
+2011-04-29  Richard Guenther  <rguenther@suse.de>
+
 	* tree-inline.c (remap_eh_region_tree_nr): Use integer_type_node
 	for the remapped region number.
 	* predict.c (build_predict_expr): Use integer_type_node for the
