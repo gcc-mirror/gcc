@@ -289,8 +289,9 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
     }
   else if (nbefore + nafter < ndigits)
     {
-      ndigits = nbefore + nafter;
-      i = ndigits;
+      i = ndigits = nbefore + nafter;
+      if (d == 0 && digits[1] == '0')
+	goto skip;
       if (digits[i] >= rchar)
 	{
 	  /* Propagate the carry.  */
@@ -812,7 +813,8 @@ CALCULATE_EXP(16)
 static void \
 output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 		      GFC_REAL_ ## x m, char *buffer, size_t size, \
-		      int sign_bit, bool zero_flag, int ndigits, int edigits) \
+		      int sign_bit, bool zero_flag, int ndigits, \
+                      int edigits, int comp_d) \
 { \
   int e = f->u.real.e;\
   int d = f->u.real.d;\
@@ -850,7 +852,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
     { \
       newf->format = FMT_E;\
       newf->u.real.w = w;\
-      newf->u.real.d = d;\
+      newf->u.real.d = d - comp_d;\
       newf->u.real.e = e;\
       nb = 0;\
       goto finish;\
@@ -864,11 +866,10 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 \
   while (low <= high)\
     { \
-      GFC_REAL_ ## x temp;\
+      volatile GFC_REAL_ ## x temp;\
       mid = (low + high) / 2;\
 \
       temp = (calculate_exp_ ## x (mid - 1) * (1 - r * rexp_d));\
-      asm volatile ("" : "+m" (temp));\
 \
       if (m < temp)\
         { \
@@ -894,22 +895,11 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 	}\
     }\
 \
-  if (e > 4)\
-    e = 4;\
-  if (e < 0)\
-    nb = 4;\
-  else\
-    nb = e + 2;\
-\
-  nb = nb >= w ? 0 : nb;\
+  nb = e <= 0 ? 4 : e + 2;\
+  nb = nb >= w ? w - 1 : nb;\
   newf->format = FMT_F;\
-  newf->u.real.w = f->u.real.w - nb;\
-\
-  if (m == 0.0)\
-    newf->u.real.d = d - 1;\
-  else\
-    newf->u.real.d = - (mid - d - 1);\
-\
+  newf->u.real.w = w - nb;\
+  newf->u.real.d = m == 0.0 ? d - 1 : -(mid - d - 1) ;\
   dtp->u.p.scale_factor = 0;\
 \
  finish:\
@@ -931,7 +921,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 	  gfc_char4_t *p4 = (gfc_char4_t *) p;\
 	  memset4 (p4, pad, nb);\
 	}\
-      else\
+      else \
 	memset (p, pad, nb);\
     }\
 }\
@@ -1010,19 +1000,20 @@ __qmath_(quadmath_snprintf) (buffer, sizeof buffer, \
 			edigits);\
 	else \
 	  output_float_FMT_G_ ## x (dtp, f, tmp, buffer, size, sign_bit, \
-				    zero_flag, ndigits, edigits);\
+				    zero_flag, ndigits, edigits, comp_d);\
 }\
 
 /* Output a real number according to its format.  */
 
 static void
-write_float (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
+write_float (st_parameter_dt *dtp, const fnode *f, const char *source, \
+            int len, int comp_d)
 {
 
 #if defined(HAVE_GFC_REAL_16) || __LDBL_DIG__ > 18
-# define MIN_FIELD_WIDTH 48
+# define MIN_FIELD_WIDTH 49
 #else
-# define MIN_FIELD_WIDTH 31
+# define MIN_FIELD_WIDTH 32
 #endif
 #define STR(x) STR1(x)
 #define STR1(x) #x
@@ -1039,23 +1030,8 @@ write_float (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
      to handle the largest number of exponent digits expected.  */
   edigits=4;
 
-  if (f->format == FMT_F || f->format == FMT_EN || f->format == FMT_G 
-      || ((f->format == FMT_D || f->format == FMT_E)
-      && dtp->u.p.scale_factor != 0))
-    {
-      /* Always convert at full precision to avoid double rounding.  */
-      ndigits = MIN_FIELD_WIDTH - 4 - edigits;
-    }
-  else
-    {
-      /* The number of digits is known, so let printf do the rounding.  */
-      if (f->format == FMT_ES)
-	ndigits = f->u.real.d + 1;
-      else
-	ndigits = f->u.real.d;
-      if (ndigits > MIN_FIELD_WIDTH - 4 - edigits)
-	ndigits = MIN_FIELD_WIDTH - 4 - edigits;
-    }
+  /* Always convert at full precision to avoid double rounding.  */
+    ndigits = MIN_FIELD_WIDTH - 4 - edigits;
 
   switch (len)
     {
