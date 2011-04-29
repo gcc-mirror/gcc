@@ -1,5 +1,31 @@
 2011-04-29  Richard Guenther  <rguenther@suse.de>
 
+	* builtins.c (fold_builtin_classify_type): Use integer_type_node
+	for the type of the result.
+	(fold_builtin_isascii): Likewise.
+	(fold_builtin_toascii): Use integer_type_node where appropriate.
+	(fold_builtin_logb): Likewise.
+	(fold_builtin_frexp): Likewise.
+	(fold_builtin_strstr): Likewise.
+	(fold_builtin_strpbrk): Likewise.
+	(fold_builtin_fputs): Likewise.
+	(fold_builtin_sprintf): Likewise.
+	(fold_builtin_snprintf): Likewise.
+	(fold_builtin_printf): Likewise.
+	(do_mpfr_remquo): Use a proper type for the assigned constant.
+	(do_mpfr_lgamma_r): Likewise.
+	* dwarf2out.c (resolve_one_addr): Use size_int.
+	* except.c (init_eh): Likewise.
+	(assign_filter_values): Use integer_type_node for filter values.
+	(sjlj_emit_dispatch_table): Use integer_type_node for dispatch
+	indices.
+	* tree-cfg.c (move_stmt_eh_region_tree_nr): Use integer_type_node
+	for EH region numbers.
+	* tree-vrp.c (simplify_div_or_mod_using_ranges): Use integer_type_node
+	for the shift amount.
+
+2011-04-29  Richard Guenther  <rguenther@suse.de>
+
 	* expr.h (expand_shift): Rename to ...
 	(expand_variable_shift): ... this.
 	(expand_shift): Take a constant shift amount.

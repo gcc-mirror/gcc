@@ -6909,7 +6909,7 @@ simplify_div_or_mod_using_ranges (gimple stmt)
 
       if (rhs_code == TRUNC_DIV_EXPR)
 	{
-	  t = build_int_cst (NULL_TREE, tree_log2 (op1));
+	  t = build_int_cst (integer_type_node, tree_log2 (op1));
 	  gimple_assign_set_rhs_code (stmt, RSHIFT_EXPR);
 	  gimple_assign_set_rhs1 (stmt, op0);
 	  gimple_assign_set_rhs2 (stmt, t);

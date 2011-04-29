@@ -5756,7 +5756,7 @@ move_stmt_eh_region_tree_nr (tree old_t_nr, struct move_stmt_d *p)
   old_nr = tree_low_cst (old_t_nr, 0);
   new_nr = move_stmt_eh_region_nr (old_nr, p);
 
-  return build_int_cst (NULL, new_nr);
+  return build_int_cst (integer_type_node, new_nr);
 }
 
 /* Like move_stmt_op, but for gimple statements.
