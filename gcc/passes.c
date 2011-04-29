@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "lto-streamer.h"
 #include "plugin.h"
+#include "ipa-utils.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -1124,7 +1125,7 @@ do_per_function_toporder (void (*callback) (void *data), void *data)
     {
       gcc_assert (!order);
       order = ggc_alloc_vec_cgraph_node_ptr (cgraph_n_nodes);
-      nnodes = cgraph_postorder (order);
+      nnodes = ipa_reverse_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
         order[i]->process = 1;
       for (i = nnodes - 1; i >= 0; i--)
@@ -1697,7 +1698,7 @@ ipa_write_summaries (void)
      since it causes the gimple file to be processed in the same order
      as the source code.  */
   order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
-  order_pos = cgraph_postorder (order);
+  order_pos = ipa_reverse_postorder (order);
   gcc_assert (order_pos == cgraph_n_nodes);
 
   for (i = order_pos - 1; i >= 0; i--)

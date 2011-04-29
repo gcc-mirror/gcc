@@ -1,3 +1,9 @@
+2011-04-29  Martin Jambor  <mjambor@suse.cz>
+
+	* lto.c: Include ipa-utils.h.
+	(lto_balanced_map): Update call to ipa_reverse_postorder.
+	* Make-lang.in (lto/lto.o): Add IPA_UTILS_H to dependencies.
+
 2011-04-29  Michael Matz  <matz@suse.de>
 
 	* lto.c (toplevel): Include tree-flow.h.

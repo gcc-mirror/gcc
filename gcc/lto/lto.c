@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "params.h"
 #include "ipa-inline.h"
+#include "ipa-utils.h"
 
 static GTY(()) tree first_personality_decl;
 
@@ -1458,7 +1459,7 @@ lto_balanced_map (void)
      size.  Note that since nodes that are not partitioned might be put into
      multiple partitions, this is just an estimate of real size.  This is why
      we keep partition_size updated after every partition is finalized.  */
-  postorder_len = cgraph_postorder (postorder);
+  postorder_len = ipa_reverse_postorder (postorder);
   for (i = 0; i < postorder_len; i++)
     {
       node = postorder[i];
