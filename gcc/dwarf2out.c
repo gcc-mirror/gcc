@@ -22966,7 +22966,7 @@ resolve_one_addr (rtx *addr, void *data ATTRIBUTE_UNUSED)
     {
       size_t len = strlen (XSTR (rtl, 0)) + 1;
       tree t = build_string (len, XSTR (rtl, 0));
-      tree tlen = build_int_cst (NULL_TREE, len - 1);
+      tree tlen = size_int (len - 1);
       TREE_TYPE (t)
 	= build_array_type (char_type_node, build_index_type (tlen));
       rtl = lookup_constant_def (t);
