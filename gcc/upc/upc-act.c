@@ -1349,7 +1349,7 @@ create_unshared_var (location_t loc, const tree var)
   tree u_name, u_type, u;
   gcc_assert (var && TREE_CODE (var) == VAR_DECL);
   u_name = unshared_var_name (var);
-  u_type = TYPE_MAIN_VARIANT (TREE_TYPE (var));
+  u_type = upc_get_unshared_type (TREE_TYPE (var));
   u = build_decl (loc, VAR_DECL, u_name, u_type);
   TREE_USED (u) = 1;
   TREE_ADDRESSABLE (u) = 1;
