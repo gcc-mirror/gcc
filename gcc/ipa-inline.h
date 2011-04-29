@@ -48,7 +48,7 @@ typedef VEC(condition,gc) *conditions;
    must be true in order for clause to be true.  */
 
 #define MAX_CLAUSES 8
-typedef int clause_t;
+typedef unsigned int clause_t;
 struct GTY(()) predicate
 {
   clause_t clause[MAX_CLAUSES + 1];
