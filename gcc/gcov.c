@@ -54,6 +54,13 @@ along with Gcov; see the file COPYING3.  If not see
    some places we make use of the knowledge of how profile.c works to
    select particular algorithms here.  */
 
+/* The code validates that the profile information read in corresponds
+   to the code currently being compiled.  Rather than checking for
+   identical files, the code below computes a checksum on the CFG
+   (based on the order of basic blocks and the arcs in the CFG).  If
+   the CFG checksum in the gcda file match the CFG checksum for the
+   code currently being compiled, the profile data will be used.  */
+
 /* This is the size of the buffer used to read in source file lines.  */
 
 #define STRING_SIZE 200
@@ -161,7 +168,8 @@ typedef struct function_info
   /* Name of function.  */
   char *name;
   unsigned ident;
-  unsigned checksum;
+  unsigned lineno_checksum;
+  unsigned cfg_checksum;
 
   /* Array of basic blocks.  */
   block_t *blocks;
@@ -807,12 +815,14 @@ read_graph_file (void)
       if (tag == GCOV_TAG_FUNCTION)
 	{
 	  char *function_name;
-	  unsigned ident, checksum, lineno;
+	  unsigned ident, lineno;
+	  unsigned lineno_checksum, cfg_checksum;
 	  source_t *src;
 	  function_t *probe, *prev;
 
 	  ident = gcov_read_unsigned ();
-	  checksum = gcov_read_unsigned ();
+	  lineno_checksum = gcov_read_unsigned ();
+	  cfg_checksum = gcov_read_unsigned ();
 	  function_name = xstrdup (gcov_read_string ());
 	  src = find_source (gcov_read_string ());
 	  lineno = gcov_read_unsigned ();
@@ -820,7 +830,8 @@ read_graph_file (void)
 	  fn = XCNEW (function_t);
 	  fn->name = function_name;
 	  fn->ident = ident;
-	  fn->checksum = checksum;
+	  fn->lineno_checksum = lineno_checksum;
+	  fn->cfg_checksum = cfg_checksum;
 	  fn->src = src;
 	  fn->line = lineno;
 
@@ -1107,7 +1118,8 @@ read_count_file (void)
 
 	  if (!fn)
 	    ;
-	  else if (gcov_read_unsigned () != fn->checksum)
+	  else if (gcov_read_unsigned () != fn->lineno_checksum
+		   || gcov_read_unsigned () != fn->cfg_checksum)
 	    {
 	    mismatch:;
 	      fnotice (stderr, "%s:profile mismatch for '%s'\n",

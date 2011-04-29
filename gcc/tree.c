@@ -8510,14 +8510,12 @@ dump_tree_statistics (void)
 
 #define FILE_FUNCTION_FORMAT "_GLOBAL__%s_%s"
 
-/* Generate a crc32 of a string.  */
+/* Generate a crc32 of a byte.  */
 
 unsigned
-crc32_string (unsigned chksum, const char *string)
+crc32_byte (unsigned chksum, char byte)
 {
-  do
-    {
-      unsigned value = *string << 24;
+  unsigned value = (unsigned) byte << 24;
       unsigned ix;
 
       for (ix = 8; ix--; value <<= 1)
@@ -8528,6 +8526,18 @@ crc32_string (unsigned chksum, const char *string)
  	  chksum <<= 1;
  	  chksum ^= feedback;
   	}
+  return chksum;
+}
+
+
+/* Generate a crc32 of a string.  */
+
+unsigned
+crc32_string (unsigned chksum, const char *string)
+{
+  do
+    {
+      chksum = crc32_byte (chksum, *string);
     }
   while (*string++);
   return chksum;
@@ -8551,8 +8561,10 @@ clean_symbol_name (char *p)
       *p = '_';
 }
 
-/* Generate a name for a special-purpose function function.
+/* Generate a name for a special-purpose function.
    The generated name may need to be unique across the whole link.
+   Changes to this function may also require corresponding changes to
+   xstrdup_mask_random.
    TYPE is some string to identify the purpose of this function to the
    linker or collect2; it must start with an uppercase letter,
    one of:

@@ -102,13 +102,6 @@ static int total_num_branches;
 
 /* Forward declarations.  */
 static void find_spanning_tree (struct edge_list *);
-static unsigned instrument_edges (struct edge_list *);
-static void instrument_values (histogram_values);
-static void compute_branch_probabilities (void);
-static void compute_value_histograms (histogram_values);
-static gcov_type * get_exec_counts (void);
-static basic_block find_group (basic_block);
-static void union_groups (basic_block, basic_block);
 
 /* Add edge instrumentation code to the entire insn chain.
 
@@ -233,10 +226,12 @@ instrument_values (histogram_values values)
 }
 
 
-/* Computes hybrid profile for all matching entries in da_file.  */
+/* Computes hybrid profile for all matching entries in da_file.  
+   
+   CFG_CHECKSUM is the precomputed checksum for the CFG.  */
 
 static gcov_type *
-get_exec_counts (void)
+get_exec_counts (unsigned cfg_checksum, unsigned lineno_checksum)
 {
   unsigned num_edges = 0;
   basic_block bb;
@@ -253,7 +248,8 @@ get_exec_counts (void)
 	  num_edges++;
     }
 
-  counts = get_coverage_counts (GCOV_COUNTER_ARCS, num_edges, &profile_info);
+  counts = get_coverage_counts (GCOV_COUNTER_ARCS, num_edges, cfg_checksum,
+				lineno_checksum, &profile_info);
   if (!counts)
     return NULL;
 
@@ -442,10 +438,12 @@ read_profile_edge_counts (gcov_type *exec_counts)
 }
 
 /* Compute the branch probabilities for the various branches.
-   Annotate them accordingly.  */
+   Annotate them accordingly.  
+
+   CFG_CHECKSUM is the precomputed checksum for the CFG.  */
 
 static void
-compute_branch_probabilities (void)
+compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 {
   basic_block bb;
   int i;
@@ -454,7 +452,7 @@ compute_branch_probabilities (void)
   int passes;
   int hist_br_prob[20];
   int num_branches;
-  gcov_type *exec_counts = get_exec_counts ();
+  gcov_type *exec_counts = get_exec_counts (cfg_checksum, lineno_checksum);
   int inconsistent = 0;
 
   /* Very simple sanity checks so we catch bugs in our profiling code.  */
@@ -772,10 +770,13 @@ compute_branch_probabilities (void)
 }
 
 /* Load value histograms values whose description is stored in VALUES array
-   from .gcda file.  */
+   from .gcda file.  
+
+   CFG_CHECKSUM is the precomputed checksum for the CFG.  */
 
 static void
-compute_value_histograms (histogram_values values)
+compute_value_histograms (histogram_values values, unsigned cfg_checksum,
+                          unsigned lineno_checksum)
 {
   unsigned i, j, t, any;
   unsigned n_histogram_counters[GCOV_N_VALUE_COUNTERS];
@@ -803,7 +804,8 @@ compute_value_histograms (histogram_values values)
 
       histogram_counts[t] =
 	get_coverage_counts (COUNTER_FOR_HIST_TYPE (t),
-			     n_histogram_counters[t], NULL);
+			     n_histogram_counters[t], cfg_checksum,
+			     lineno_checksum, NULL);
       if (histogram_counts[t])
 	any = 1;
       act_count[t] = histogram_counts[t];
@@ -905,6 +907,7 @@ branch_prob (void)
   unsigned num_instrumented;
   struct edge_list *el;
   histogram_values values = NULL;
+  unsigned cfg_checksum, lineno_checksum;
 
   total_num_times_called++;
 
@@ -1058,11 +1061,19 @@ branch_prob (void)
   if (dump_file)
     fprintf (dump_file, "%d ignored edges\n", ignored_edges);
 
+
+  /* Compute two different checksums. Note that we want to compute
+     the checksum in only once place, since it depends on the shape
+     of the control flow which can change during 
+     various transformations.  */
+  cfg_checksum = coverage_compute_cfg_checksum ();
+  lineno_checksum = coverage_compute_lineno_checksum ();
+
   /* Write the data from which gcov can reconstruct the basic block
      graph.  */
 
   /* Basic block flags */
-  if (coverage_begin_output ())
+  if (coverage_begin_output (lineno_checksum, cfg_checksum))
     {
       gcov_position_t offset;
 
@@ -1079,7 +1090,7 @@ branch_prob (void)
   EXIT_BLOCK_PTR->index = last_basic_block;
 
   /* Arcs */
-  if (coverage_begin_output ())
+  if (coverage_begin_output (lineno_checksum, cfg_checksum))
     {
       gcov_position_t offset;
 
@@ -1120,7 +1131,7 @@ branch_prob (void)
     }
 
   /* Line numbers.  */
-  if (coverage_begin_output ())
+  if (coverage_begin_output (lineno_checksum, cfg_checksum))
     {
       /* Initialize the output.  */
       output_location (NULL, 0, NULL, NULL);
@@ -1175,9 +1186,9 @@ branch_prob (void)
 
   if (flag_branch_probabilities)
     {
-      compute_branch_probabilities ();
+      compute_branch_probabilities (cfg_checksum, lineno_checksum);
       if (flag_profile_values)
-	compute_value_histograms (values);
+	compute_value_histograms (values, cfg_checksum, lineno_checksum);
     }
 
   remove_fake_edges ();
@@ -1205,7 +1216,7 @@ branch_prob (void)
 
   VEC_free (histogram_value, heap, values);
   free_edge_list (el);
-  coverage_end_function ();
+  coverage_end_function (lineno_checksum, cfg_checksum);
 }
 
 /* Union find algorithm implementation for the basic blocks using
@@ -1372,4 +1383,3 @@ end_branch_prob (void)
 	}
     }
 }
-
