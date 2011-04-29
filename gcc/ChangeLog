@@ -1,3 +1,9 @@
+2011-04-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (get_fi_for_callee): Restructure.
+	Handle OBJ_TYPE_REF.
+	(find_func_aliases_for_call): Use it more consistently.
+
 2011-04-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	* haifa-sched.c (last_nondebug_scheduled_insn): New.
