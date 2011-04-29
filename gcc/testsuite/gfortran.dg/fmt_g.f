@@ -31,13 +31,13 @@
        WRITE(buffer,"(G12.5E5,'<')") -10000.
        if (buffer.ne."************<") call abort
        WRITE(buffer,"(G13.5E5,'<')") -10000.
-       if (buffer.ne."-10000.      <") call abort
+       if (buffer.ne."*************<") call abort
        WRITE(buffer,"(G14.5E5,'<')") -10000.
-       if (buffer.ne." -10000.      <") call abort
+       if (buffer.ne."-10000.       <") call abort
        WRITE(buffer,"(G15.5E5,'<')") -10000.
-       if (buffer.ne."  -10000.      <") call abort
+       if (buffer.ne." -10000.       <") call abort
        WRITE(buffer,"(G16.5E5,'<')") -10000.
-       if (buffer.ne."   -10000.      <") call abort
+       if (buffer.ne."  -10000.       <") call abort
 
        STOP
        END
