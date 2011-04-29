@@ -31,7 +31,7 @@
 	(set_fnode_default): Adjust default widths to assure
 	round trip on write and read. (write_real): Adjust call to write_float.
 	(write_real_g0): Calculate compensation for extra precision and adjust
-	call to write_float. 
+	call to write_float.
 	* io/write_float.def (output_float_FMT_G_): Use volatile rather than
 	asm volatile to avoid optimization issue. Correctly calculate the
 	number of blanks (nb) to be appended and simplify calculation logic.
@@ -39,7 +39,7 @@
 	default widths. Eliminate the code that attempted to reduce the
 	the precision used in later sprintf functions.  Add call parameter to
 	compensate for extra precision.
-	
+
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* intrinsics/move_alloc.c (move_alloc): Remove useless
