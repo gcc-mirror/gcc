@@ -1,3 +1,12 @@
+2011-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48760
+	* include/std/complex (complex<float>::complex(float, float),
+	complex<double>::complex(double, double),
+	complex<long double>::complex(long double, long double)): Initialize
+	in the body in C++03 mode (no fix in C++0x mode).
+	* testsuite/26_numerics/complex/cons/48760.cc: New.
+
 2011-04-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/48521
@@ -10,7 +19,7 @@
 	(ref(const A&&), cref(const A&&): Define as deleted.
 	* include/std/future (async): Simplify SFINAE and use result_of to
 	support pointer to member.
-	* testsuite/20_util/reference_wrapper/invoke.cc: Test pointer to 
+	* testsuite/20_util/reference_wrapper/invoke.cc: Test pointer to
 	member.
 	* testsuite/20_util/reference_wrapper/24803.cc: Likewise.
 	* testsuite/20_util/reference_wrapper/typedefs.cc: Test for types

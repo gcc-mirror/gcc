@@ -1046,7 +1046,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_CONSTEXPR complex(_ComplexT __z) : _M_value(__z) { }
 
       _GLIBCXX_CONSTEXPR complex(float __r = 0.0f, float __i = 0.0f)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // The list-initialization extension to __complex__ types is
+      // not available in GCC 4.6.  Thus libstdc++/48760 cannot be
+      // fixed in C++0x mode, unfortunately.
       : _M_value(__r + __i * 1.0fi) { }
+#else
+      {
+	__real__ _M_value = __r;
+	__imag__ _M_value = __i;
+      }
+#endif
 
       explicit _GLIBCXX_CONSTEXPR complex(const complex<double>&);
       explicit _GLIBCXX_CONSTEXPR complex(const complex<long double>&);	
@@ -1186,7 +1196,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_CONSTEXPR complex(_ComplexT __z) : _M_value(__z) { }
 
       _GLIBCXX_CONSTEXPR complex(double __r = 0.0, double __i = 0.0)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // The list-initialization extension to __complex__ types is
+      // not available in GCC 4.6.  Thus libstdc++/48760 cannot be
+      // fixed in C++0x mode, unfortunately.
       : _M_value(__r + __i * 1.0i) { }
+#else
+      {
+	__real__ _M_value = __r;
+	__imag__ _M_value = __i;
+      }
+#endif
 
       _GLIBCXX_CONSTEXPR complex(const complex<float>& __z)
       : _M_value(__z.__rep()) { }
@@ -1328,7 +1348,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX_CONSTEXPR complex(long double __r = 0.0L, 
 				 long double __i = 0.0L)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // The list-initialization extension to __complex__ types is
+      // not available in GCC 4.6.  Thus libstdc++/48760 cannot be
+      // fixed in C++0x mode, unfortunately.
       : _M_value(__r + __i * 1.0Li) { }
+#else
+      {
+	__real__ _M_value = __r;
+	__imag__ _M_value = __i;
+      }
+#endif
 
       _GLIBCXX_CONSTEXPR complex(const complex<float>& __z)
       : _M_value(__z.__rep()) { }
