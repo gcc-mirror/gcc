@@ -11533,7 +11533,7 @@ fold_binary_loc (location_t loc,
 
 	    return fold_build2_loc (loc, RSHIFT_EXPR, type,
 			  TREE_OPERAND (arg0, 0),
-			  build_int_cst (NULL_TREE, pow2));
+			  build_int_cst (integer_type_node, pow2));
 	  }
 	}
 
@@ -11565,7 +11565,9 @@ fold_binary_loc (location_t loc,
 				       WARN_STRICT_OVERFLOW_MISC);
 
 	      sh_cnt = fold_build2_loc (loc, PLUS_EXPR, TREE_TYPE (sh_cnt),
-				    sh_cnt, build_int_cst (NULL_TREE, pow2));
+					sh_cnt,
+					build_int_cst (TREE_TYPE (sh_cnt),
+						       pow2));
 	      return fold_build2_loc (loc, RSHIFT_EXPR, type,
 				  fold_convert_loc (loc, type, arg0), sh_cnt);
 	    }

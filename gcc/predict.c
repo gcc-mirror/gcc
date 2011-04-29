@@ -2291,7 +2291,7 @@ tree
 build_predict_expr (enum br_predictor predictor, enum prediction taken)
 {
   tree t = build1 (PREDICT_EXPR, void_type_node,
-		   build_int_cst (NULL, predictor));
+		   build_int_cst (integer_type_node, predictor));
   SET_PREDICT_EXPR_OUTCOME (t, taken);
   return t;
 }
