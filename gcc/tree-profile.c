@@ -44,6 +44,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "cgraph.h"
 #include "profile.h"
+#include "target.h"
+#include "output.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree gcov_type_tmp_var;
@@ -80,6 +82,10 @@ init_ic_make_global_vars (void)
   TREE_PUBLIC (ic_void_ptr_var) = 0;
   DECL_ARTIFICIAL (ic_void_ptr_var) = 1;
   DECL_INITIAL (ic_void_ptr_var) = NULL;
+  if (targetm.have_tls)
+    DECL_TLS_MODEL (ic_void_ptr_var) =
+      decl_default_tls_model (ic_void_ptr_var);
+
   varpool_finalize_decl (ic_void_ptr_var);
   varpool_mark_needed_node (varpool_node (ic_void_ptr_var));
 
@@ -92,6 +98,10 @@ init_ic_make_global_vars (void)
   TREE_PUBLIC (ic_gcov_type_ptr_var) = 0;
   DECL_ARTIFICIAL (ic_gcov_type_ptr_var) = 1;
   DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
+  if (targetm.have_tls)
+    DECL_TLS_MODEL (ic_gcov_type_ptr_var) =
+      decl_default_tls_model (ic_gcov_type_ptr_var);
+
   varpool_finalize_decl (ic_gcov_type_ptr_var);
   varpool_mark_needed_node (varpool_node (ic_gcov_type_ptr_var));
 }

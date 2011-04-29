@@ -647,7 +647,7 @@ coverage_end_function (unsigned lineno_checksum, unsigned cfg_checksum)
     {
       struct function_list *item;
 
-      item = XNEW (struct function_list);
+      item = XCNEW (struct function_list);
 
       *functions_tail = item;
       functions_tail = &item->next;

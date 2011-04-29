@@ -1,3 +1,10 @@
+2011-04-27  Xinliang David Li  <davidxl@google.com>
+
+	* tree-profile.c (init_ic_make_global_vars): Set
+	tls attribute on ic vars.
+	* coverage.c (coverage_end_function): Initialize
+	function_list with zero.
+
 2011-04-29  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (fold_builtin_classify_type): Use integer_type_node
