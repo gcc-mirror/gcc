@@ -1,5 +1,20 @@
 2011-04-29  Richard Guenther  <rguenther@suse.de>
 
+	* tree-nested.c (get_trampoline_type): Use size_int.
+	(get_nl_goto_field): Likewise.
+	* tree-eh.c (lower_try_finally_switch): Use integer_type_node
+	for all indexes.
+	(lower_eh_constructs_2): Likewise.
+	(lower_resx): Likewise.
+	(lower_eh_dispatch): Likewise.
+	* tree-mudflap.c (mf_build_string): Use size_int.
+	(mudflap_register_call): Use integer_type_node for the flag.
+	(mudflap_enqueue_constant): Use size_int.
+	* tree-chrec.c (reset_evolution_in_loop): Copy CHREC_VAR
+	instead of rebuilding it.
+
+2011-04-29  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-structalias.c (get_fi_for_callee): Restructure.
 	Handle OBJ_TYPE_REF.
 	(find_func_aliases_for_call): Use it more consistently.
