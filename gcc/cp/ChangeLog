@@ -1,3 +1,9 @@
+2011-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48606
+	* init.c (perform_member_init): Check build_value_init return
+	value for error_mark_node.
+
 2011-04-29  Nicola Pero  <nicola.pero@meta-innovation.com>,
 	    Mike Stump <mikestump@comcast.net>
 
