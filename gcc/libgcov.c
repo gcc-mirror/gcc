@@ -372,9 +372,10 @@ gcov_exit (void)
 
 	      /* Check function.  */
 	      if (tag != GCOV_TAG_FUNCTION
-		  || length != GCOV_TAG_FUNCTION_LENGTH
+	          || length != GCOV_TAG_FUNCTION_LENGTH
 		  || gcov_read_unsigned () != fi_ptr->ident
-		  || gcov_read_unsigned () != fi_ptr->checksum)
+		  || gcov_read_unsigned () != fi_ptr->lineno_checksum
+		  || gcov_read_unsigned () != fi_ptr->cfg_checksum)
 		{
 		read_mismatch:;
 		  fprintf (stderr, "profiling:%s:Merge mismatch for %s\n",
@@ -517,7 +518,8 @@ gcov_exit (void)
 	  /* Announce function.  */
 	  gcov_write_tag_length (GCOV_TAG_FUNCTION, GCOV_TAG_FUNCTION_LENGTH);
 	  gcov_write_unsigned (fi_ptr->ident);
-	  gcov_write_unsigned (fi_ptr->checksum);
+	  gcov_write_unsigned (fi_ptr->lineno_checksum);
+	  gcov_write_unsigned (fi_ptr->cfg_checksum);
 
 	  c_ix = 0;
 	  for (t_ix = 0; t_ix < GCOV_COUNTERS; t_ix++)

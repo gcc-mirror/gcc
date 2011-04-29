@@ -28,11 +28,17 @@ extern void coverage_finish (void);
 
 /* Complete the coverage information for the current function. Once
    per function.  */
-extern void coverage_end_function (void);
+extern void coverage_end_function (unsigned, unsigned);
 
 /* Start outputting coverage information for the current
    function. Repeatable per function.  */
-extern int coverage_begin_output (void);
+extern int coverage_begin_output (unsigned, unsigned);
+
+/* Compute the control flow checksum for the current function.  */
+extern unsigned coverage_compute_cfg_checksum (void);
+
+/* Compute the line number checksum for the current function.  */
+extern unsigned coverage_compute_lineno_checksum (void);
 
 /* Allocate some counters. Repeatable per function.  */
 extern int coverage_counter_alloc (unsigned /*counter*/, unsigned/*num*/);
@@ -44,6 +50,8 @@ extern tree tree_coverage_counter_addr (unsigned /*counter*/, unsigned/*num*/);
 /* Get all the counters for the current function.  */
 extern gcov_type *get_coverage_counts (unsigned /*counter*/,
 				       unsigned /*expected*/,
+				       unsigned /*cfg_checksum*/,
+				       unsigned /*lineno_checksum*/,
 				       const struct gcov_ctr_summary **);
 
 extern tree get_gcov_type (void);

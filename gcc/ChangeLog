@@ -1,3 +1,29 @@
+2011-04-28  David Li  <davidxl@google.com>
+
+	* tree.c (crc32_string): Use crc32_byte.
+	(crc32_byte): New function.
+	* tree.h (crc32_byte): New function.
+	* gcov.c (read_graph_file): Handle new cfg_cksum.
+	(read_count_file): Ditto.
+	* profile.c (instrument_values): Ditto.
+	(get_exec_counts): Ditto.
+	(read_profile_edge_counts): Ditto.
+	(compute_branch_probabilities): Ditto.
+	(compute_value_histograms): Ditto.
+	(branch_prob): Ditto.
+	(end_branch_prob): Ditto.
+	* coverage.c (read_counts_file): Ditto.
+	(get_coverage_counts): Ditto.
+	(tree_coverage_counter_addr): Ditto.
+	(coverage_checksum_string): Ditto.
+	(coverage_begin_output): Ditto.
+	(coverage_end_function): Ditto.
+	(build_fn_info_type): Ditto.
+	(build_fn_info_value): Ditto.
+	* libgcov.c (gcov_exit): Ditto.
+	* gcov-dump.c (tag_function): Ditto.
+	(compute_checksum): Remove.
+
 2011-04-29  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_delegitimize_address): Handle
