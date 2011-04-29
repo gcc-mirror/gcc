@@ -1,3 +1,8 @@
+2011-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48606
+	* g++.dg/init/ctor10.C: New.
+
 2011-04-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/48462

@@ -513,8 +513,10 @@ perform_member_init (tree member, tree init)
 	}
       else
 	{
-	  init = build2 (INIT_EXPR, type, decl,
-			 build_value_init (type, tf_warning_or_error));
+	  tree value = build_value_init (type, tf_warning_or_error);
+	  if (value == error_mark_node)
+	    return;
+	  init = build2 (INIT_EXPR, type, decl, value);
 	  finish_expr_stmt (init);
 	}
     }
