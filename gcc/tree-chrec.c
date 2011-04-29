@@ -843,8 +843,7 @@ reset_evolution_in_loop (unsigned loop_num,
       tree right = reset_evolution_in_loop (loop_num, CHREC_RIGHT (chrec),
 					    new_evol);
       return build3 (POLYNOMIAL_CHREC, TREE_TYPE (left),
-		     build_int_cst (NULL_TREE, CHREC_VARIABLE (chrec)),
-		     left, right);
+		     CHREC_VAR (chrec), left, right);
     }
 
   while (TREE_CODE (chrec) == POLYNOMIAL_CHREC

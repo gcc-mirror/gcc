@@ -81,7 +81,7 @@ mf_build_string (const char *string)
   tree result = mf_mark (build_string (len + 1, string));
 
   TREE_TYPE (result) = build_array_type
-    (char_type_node, build_index_type (build_int_cst (NULL_TREE, len)));
+    (char_type_node, build_index_type (size_int (len)));
   TREE_CONSTANT (result) = 1;
   TREE_READONLY (result) = 1;
   TREE_STATIC (result) = 1;
@@ -1251,7 +1251,7 @@ mudflap_register_call (tree obj, tree object_size, tree varname)
 			       arg,
 			       convert (size_type_node, object_size),
 			       /* __MF_TYPE_STATIC */
-			       build_int_cst (NULL_TREE, 4),
+			       build_int_cst (integer_type_node, 4),
 			       varname);
 
   append_to_statement_list (call_stmt, &enqueued_call_stmt_chain);
@@ -1284,7 +1284,7 @@ mudflap_enqueue_constant (tree obj)
     return;
 
   if (TREE_CODE (obj) == STRING_CST)
-    object_size = build_int_cst (NULL_TREE, TREE_STRING_LENGTH (obj));
+    object_size = size_int (TREE_STRING_LENGTH (obj));
   else
     object_size = size_in_bytes (TREE_TYPE (obj));
 
