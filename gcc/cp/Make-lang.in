@@ -104,10 +104,20 @@ cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
-# Special build rules.
+ifeq ($(ENABLE_MAINTAINER_RULES), true)
+# Special build rule.  This is a maintainer rule, that is only
+# available when GCC is configured with --enable-maintainer-mode.  In
+# other cases, it is not available to avoid triggering rebuilds if a
+# user has the source checked out with unusual timestamps.
 $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
+else
+# We keep the rule so that you can still force a rebuild, even if you
+# didn't configure GCC with --enable-maintainer-mode, by manually
+# deleting the $(srcdir)/cp/cfns.h file.
+$(srcdir)/cp/cfns.h:
+endif
 	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' -L ANSI-C \
-		$(srcdir)/cp/cfns.gperf > $(srcdir)/cp/cfns.h
+		$(srcdir)/cp/cfns.gperf --output-file $(srcdir)/cp/cfns.h
 
 #
 # Build hooks:

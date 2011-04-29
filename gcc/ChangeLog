@@ -1,3 +1,7 @@
+2011-04-29  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (ENABLE_MAINTAINER_RULES): New.
+
 2011-04-27  Xinliang David Li  <davidxl@google.com>
 
 	* tree-profile.c (init_ic_make_global_vars): Set

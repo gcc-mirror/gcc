@@ -1,3 +1,11 @@
+2011-04-29  Nicola Pero  <nicola.pero@meta-innovation.com>,
+	    Mike Stump <mikestump@comcast.net>
+
+	* Make-lang.in ($(srcdir)/cp/cfns.h): Enable the dependency only
+	in maintainer mode.  Use the --output-file option of gperf instead
+	of > to prevent creating an empty cp/cfns.h when gperf is not
+	available.
+
 2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/48798

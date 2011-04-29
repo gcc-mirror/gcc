@@ -165,7 +165,18 @@ C_STRICT_WARN = @c_strict_warn@
 NOCOMMON_FLAG = @nocommon_flag@
 
 # This is set by --disable-maintainer-mode (default) to "#"
+# FIXME: 'MAINT' will always be set to an empty string, no matter if
+# --disable-maintainer-mode is used or not.  This is because the
+# following will expand to "MAINT := " in maintainer mode, and to
+# "MAINT := #" in non-maintainer mode, but because '#' starts a comment,
+# they mean exactly the same thing for make.
 MAINT := @MAINT@
+
+# The following provides the variable ENABLE_MAINTAINER_RULES that can
+# be used in language Make-lang.in makefile fragments to enable
+# maintainer rules.  So, ENABLE_MAINTAINER_RULES is 'true' in
+# maintainer mode, and '' otherwise.
+@MAINT@ ENABLE_MAINTAINER_RULES = true
 
 # These are set by --enable-checking=valgrind.
 RUN_GEN = @valgrind_command@
