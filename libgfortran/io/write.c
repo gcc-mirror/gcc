@@ -1155,35 +1155,35 @@ write_z (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 void
 write_d (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 {
-  write_float (dtp, f, p, len);
+  write_float (dtp, f, p, len, 0);
 }
 
 
 void
 write_e (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 {
-  write_float (dtp, f, p, len);
+  write_float (dtp, f, p, len, 0);
 }
 
 
 void
 write_f (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 {
-  write_float (dtp, f, p, len);
+  write_float (dtp, f, p, len, 0);
 }
 
 
 void
 write_en (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 {
-  write_float (dtp, f, p, len);
+  write_float (dtp, f, p, len, 0);
 }
 
 
 void
 write_es (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 {
-  write_float (dtp, f, p, len);
+  write_float (dtp, f, p, len, 0);
 }
 
 
@@ -1432,8 +1432,8 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
   switch (length)
     {
     case 4:
-      f->u.real.w = 15;
-      f->u.real.d = 8;
+      f->u.real.w = 16;
+      f->u.real.d = 9;
       f->u.real.e = 2;
       break;
     case 8:
@@ -1442,13 +1442,13 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
       f->u.real.e = 3;
       break;
     case 10:
-      f->u.real.w = 29;
-      f->u.real.d = 20;
+      f->u.real.w = 30;
+      f->u.real.d = 21;
       f->u.real.e = 4;
       break;
     case 16:
-      f->u.real.w = 44;
-      f->u.real.d = 35;
+      f->u.real.w = 45;
+      f->u.real.d = 36;
       f->u.real.e = 4;
       break;
     default:
@@ -1468,7 +1468,7 @@ write_real (st_parameter_dt *dtp, const char *source, int length)
   int org_scale = dtp->u.p.scale_factor;
   dtp->u.p.scale_factor = 1;
   set_fnode_default (dtp, &f, length);
-  write_float (dtp, &f, source , length);
+  write_float (dtp, &f, source , length, 1);
   dtp->u.p.scale_factor = org_scale;
 }
 
@@ -1476,12 +1476,20 @@ write_real (st_parameter_dt *dtp, const char *source, int length)
 void
 write_real_g0 (st_parameter_dt *dtp, const char *source, int length, int d)
 {
-  fnode f ;
+  fnode f;
+  int comp_d; 
   set_fnode_default (dtp, &f, length);
   if (d > 0)
     f.u.real.d = d;
+
+  /* Compensate for extra digits when using scale factor, d is not
+     specified, and the magnitude is such that E editing is used.  */
+  if (dtp->u.p.scale_factor > 0 && d == 0)
+    comp_d = 1;
+  else
+    comp_d = 0;
   dtp->u.p.g0_no_blanks = 1;
-  write_float (dtp, &f, source , length);
+  write_float (dtp, &f, source , length, comp_d);
   dtp->u.p.g0_no_blanks = 0;
 }
 

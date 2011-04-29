@@ -1,3 +1,25 @@
+2011-04-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libgfortran/48488
+	PR libgfortran/48602
+	PR libgfortran/48615
+	PR libgfortran/48684
+	PR libgfortran/48787
+	* io/write.c (write_d, write_e, write_f, write_en,
+	write_es): Add precision compemsation parameter to call.
+	(set_fnode_default): Adjust default widths to assure
+	round trip on write and read. (write_real): Adjust call to write_float.
+	(write_real_g0): Calculate compensation for extra precision and adjust
+	call to write_float. 
+	* io/write_float.def (output_float_FMT_G_): Use volatile rather than
+	asm volatile to avoid optimization issue. Correctly calculate the
+	number of blanks (nb) to be appended and simplify calculation logic.
+	(write_float): Increase MIN_FIELD_WIDTH by one to accomodate the new
+	default widths. Eliminate the code that attempted to reduce the
+	the precision used in later sprintf functions.  Add call parameter to
+	compensate for extra precision.
+	
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* intrinsics/move_alloc.c (move_alloc): Remove useless
