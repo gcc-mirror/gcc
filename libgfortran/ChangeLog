@@ -1,5 +1,20 @@
 2011-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* io/unix.c (min): New macro.
+	(unpack_filename): Return errno number for errors.
+	(regular_file): Use appropriately sized buffer for path.
+	(compare_file_filename): Likewise.
+	(find_file): Likewise.
+	(delete_file): Likewise.
+	(file_exists): Likewise.
+	(file_size): Likewise.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
+	(inquire_access): Likewise.
+
+2011-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR libfortran/48488
 	* io/write.c (write_real, write_real_g0): Update comments.
 
