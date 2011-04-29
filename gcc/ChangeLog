@@ -1,3 +1,12 @@
+2011-04-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (remap_eh_region_tree_nr): Use integer_type_node
+	for the remapped region number.
+	* predict.c (build_predict_expr): Use integer_type_node for the
+	predict kind.
+	* fold-const.c (fold_binary_loc): Use integer_type_node for
+	the shift amount.  Use a proper type for the PLUS_EXPR operand.
+
 2011-04-29  Michael Matz  <matz@suse.de>
 
 	* lto-streamer.c (lto_streamer_cache_insert_1): Accept to override

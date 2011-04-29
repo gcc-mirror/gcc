@@ -1204,7 +1204,7 @@ remap_eh_region_tree_nr (tree old_t_nr, copy_body_data *id)
   old_nr = tree_low_cst (old_t_nr, 0);
   new_nr = remap_eh_region_nr (old_nr, id);
 
-  return build_int_cst (NULL, new_nr);
+  return build_int_cst (integer_type_node, new_nr);
 }
 
 /* Helper for copy_bb.  Remap statement STMT using the inlining
