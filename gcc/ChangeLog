@@ -1,3 +1,35 @@
+2011-04-29  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (cgraph_postorder): Remove declaration.
+	* ipa-utils.h (ipa_free_postorder_info): Declare.
+	(ipa_reverse_postorder): Likewise.
+	* cgraphunit.c: Include ipa-utils.h.
+	(cgraph_expand_all_functions): Update call to ipa_reverse_postorder.
+	* ipa-inline.c: Include ipa-utils.h.
+	(ipa_inline): Update call to ipa_reverse_postorder.
+	* ipa-pure-const.c (propagate_pure_const): Update call to
+	ipa_reduced_postorder and ipa_print_order.  Call
+	ipa_free_postorder_info to clean up.
+	(propagate_nothrow): Likewise.
+	* ipa-reference.c (propagate): Removed a useless call to
+	ipa_utils_reduced_inorder, updated a call to ipa_reduced_postorder
+	and ipa_print_order.  Call ipa_free_postorder_info to clean up.
+	* ipa.c: Include ipa-utils.h.
+	(ipa_profile): Update call to ipa_reverse_postorder.
+	(cgraph_postorder): Moved to...
+	* ipa-utils.c (ipa_reverse_postorder): ...here and renamed.
+	(ipa_utils_print_order): Renamed to ipa_print_order.
+	(ipa_utils_reduced_inorder): Renamed to ipa_reduced_postorder. Updated
+	comments.
+	(ipa_free_postorder_info): New function.
+	* passes.c: Include ipa-utils.h.
+	(do_per_function_toporder): Update call to ipa_reverse_postorder.
+	(ipa_write_summaries): Likewise.
+	* Makefile.in (passes.o): Add IPA_UTILS_H to dependencies.
+	(cgraphunit.o): Likewise.
+	(ipa.o): Likewise.
+	(ipa-inline.o): Likewise.
+
 2011-04-29  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/inline-10.c: New testcase.

@@ -45,10 +45,10 @@ along with GCC; see the file COPYING3.  If not see
    cgraph_nodes that has COUNT useful nodes in it.  */
 
 void
-ipa_utils_print_order (FILE* out,
-		       const char * note,
-		       struct cgraph_node** order,
-		       int count)
+ipa_print_order (FILE* out,
+		 const char * note,
+		 struct cgraph_node** order,
+		 int count)
 {
   int i;
   fprintf (out, "\n\n ordered call graph: %s\n", note);
@@ -76,7 +76,7 @@ struct searchc_env {
    has been customized for cgraph_nodes.  The env parameter is because
    it is recursive and there are no nested functions here.  This
    function should only be called from itself or
-   ipa_utils_reduced_inorder.  ENV is a stack env and would be
+   ipa_reduced_postorder.  ENV is a stack env and would be
    unnecessary if C had nested functions.  V is the node to start
    searching from.  */
 
@@ -151,13 +151,15 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
 
 /* Topsort the call graph by caller relation.  Put the result in ORDER.
 
-   The REDUCE flag is true if you want the cycles reduced to single
-   nodes.  Only consider nodes that have the output bit set. */
+   The REDUCE flag is true if you want the cycles reduced to single nodes.  Set
+   ALLOW_OVERWRITABLE if nodes with such availability should be included.
+   IGNORE_EDGE, if non-NULL is a hook that may make some edges insignificant
+   for the topological sort.   */
 
 int
-ipa_utils_reduced_inorder (struct cgraph_node **order,
-			   bool reduce, bool allow_overwritable,
-			   bool (*ignore_edge) (struct cgraph_edge *))
+ipa_reduced_postorder (struct cgraph_node **order,
+		       bool reduce, bool allow_overwritable,
+		       bool (*ignore_edge) (struct cgraph_edge *))
 {
   struct cgraph_node *node;
   struct searchc_env env;
@@ -206,6 +208,101 @@ ipa_utils_reduced_inorder (struct cgraph_node **order,
 
   return env.order_pos;
 }
+
+/* Deallocate all ipa_dfs_info structures pointed to by the aux pointer of call
+   graph nodes.  */
+
+void
+ipa_free_postorder_info (void)
+{
+  struct cgraph_node *node;
+  for (node = cgraph_nodes; node; node = node->next)
+    {
+      /* Get rid of the aux information.  */
+      if (node->aux)
+	{
+	  free (node->aux);
+	  node->aux = NULL;
+	}
+    }
+}
+
+/* Fill array order with all nodes with output flag set in the reverse
+   topological order.  Return the number of elements in the array.  */
+
+int
+ipa_reverse_postorder (struct cgraph_node **order)
+{
+  struct cgraph_node *node, *node2;
+  int stack_size = 0;
+  int order_pos = 0;
+  struct cgraph_edge *edge, last;
+  int pass;
+
+  struct cgraph_node **stack =
+    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+
+  /* We have to deal with cycles nicely, so use a depth first traversal
+     output algorithm.  Ignore the fact that some functions won't need
+     to be output and put them into order as well, so we get dependencies
+     right through inline functions.  */
+  for (node = cgraph_nodes; node; node = node->next)
+    node->aux = NULL;
+  for (pass = 0; pass < 2; pass++)
+    for (node = cgraph_nodes; node; node = node->next)
+      if (!node->aux
+	  && (pass
+	      || (!node->address_taken
+		  && !node->global.inlined_to
+		  && !cgraph_only_called_directly_p (node))))
+	{
+	  node2 = node;
+	  if (!node->callers)
+	    node->aux = &last;
+	  else
+	    node->aux = node->callers;
+	  while (node2)
+	    {
+	      while (node2->aux != &last)
+		{
+		  edge = (struct cgraph_edge *) node2->aux;
+		  if (edge->next_caller)
+		    node2->aux = edge->next_caller;
+		  else
+		    node2->aux = &last;
+		  /* Break possible cycles involving always-inline
+		     functions by ignoring edges from always-inline
+		     functions to non-always-inline functions.  */
+		  if (DECL_DISREGARD_INLINE_LIMITS (edge->caller->decl)
+		      && !DECL_DISREGARD_INLINE_LIMITS (edge->callee->decl))
+		    continue;
+		  if (!edge->caller->aux)
+		    {
+		      if (!edge->caller->callers)
+			edge->caller->aux = &last;
+		      else
+			edge->caller->aux = edge->caller->callers;
+		      stack[stack_size++] = node2;
+		      node2 = edge->caller;
+		      break;
+		    }
+		}
+	      if (node2->aux == &last)
+		{
+		  order[order_pos++] = node2;
+		  if (stack_size)
+		    node2 = stack[--stack_size];
+		  else
+		    node2 = NULL;
+		}
+	    }
+	}
+  free (stack);
+  for (node = cgraph_nodes; node; node = node->next)
+    node->aux = NULL;
+  return order_pos;
+}
+
 
 
 /* Given a memory reference T, will return the variable at the bottom

@@ -139,6 +139,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coverage.h"
 #include "plugin.h"
 #include "ipa-inline.h"
+#include "ipa-utils.h"
 
 static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
@@ -1618,7 +1619,7 @@ cgraph_expand_all_functions (void)
   int order_pos, new_order_pos = 0;
   int i;
 
-  order_pos = cgraph_postorder (order);
+  order_pos = ipa_reverse_postorder (order);
   gcc_assert (order_pos == cgraph_n_nodes);
 
   /* Garbage collector may remove inline clones we eliminate during

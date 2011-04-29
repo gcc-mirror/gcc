@@ -35,9 +35,11 @@ struct ipa_dfs_info {
 
 
 /* In ipa-utils.c  */
-void ipa_utils_print_order (FILE*, const char *, struct cgraph_node**, int);
-int ipa_utils_reduced_inorder (struct cgraph_node **, bool, bool,
-			       bool (*ignore_edge) (struct cgraph_edge *));
+void ipa_print_order (FILE*, const char *, struct cgraph_node**, int);
+int ipa_reduced_postorder (struct cgraph_node **, bool, bool,
+			  bool (*ignore_edge) (struct cgraph_edge *));
+void ipa_free_postorder_info (void);
+int ipa_reverse_postorder (struct cgraph_node **);
 tree get_base_var (tree);
 
 

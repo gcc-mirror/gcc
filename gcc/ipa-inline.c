@@ -114,6 +114,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "target.h"
 #include "ipa-inline.h"
+#include "ipa-utils.h"
 
 /* Statistics we collect about inlining algorithm.  */
 static int overall_size;
@@ -1457,7 +1458,7 @@ ipa_inline (void)
   if (dump_file)
     dump_inline_summaries (dump_file);
 
-  nnodes = cgraph_postorder (order);
+  nnodes = ipa_reverse_postorder (order);
 
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = 0;

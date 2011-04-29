@@ -1089,11 +1089,11 @@ propagate_pure_const (void)
   int i;
   struct ipa_dfs_info * w_info;
 
-  order_pos = ipa_utils_reduced_inorder (order, true, false, NULL);
+  order_pos = ipa_reduced_postorder (order, true, false, NULL);
   if (dump_file)
     {
       dump_cgraph (dump_file);
-      ipa_utils_print_order(dump_file, "reduced", order, order_pos);
+      ipa_print_order(dump_file, "reduced", order, order_pos);
     }
 
   /* Propagate the local information thru the call graph to produce
@@ -1339,18 +1339,7 @@ propagate_pure_const (void)
 	}
     }
 
-  /* Cleanup. */
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      /* Get rid of the aux information.  */
-      if (node->aux)
-	{
-	  w_info = (struct ipa_dfs_info *) node->aux;
-	  free (node->aux);
-	  node->aux = NULL;
-	}
-    }
-
+  ipa_free_postorder_info ();
   free (order);
 }
 
@@ -1368,11 +1357,11 @@ propagate_nothrow (void)
   int i;
   struct ipa_dfs_info * w_info;
 
-  order_pos = ipa_utils_reduced_inorder (order, true, false, ignore_edge);
+  order_pos = ipa_reduced_postorder (order, true, false, ignore_edge);
   if (dump_file)
     {
       dump_cgraph (dump_file);
-      ipa_utils_print_order(dump_file, "reduced for nothrow", order, order_pos);
+      ipa_print_order (dump_file, "reduced for nothrow", order, order_pos);
     }
 
   /* Propagate the local information thru the call graph to produce
@@ -1445,18 +1434,7 @@ propagate_nothrow (void)
 	}
     }
 
-  /* Cleanup. */
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      /* Get rid of the aux information.  */
-      if (node->aux)
-	{
-	  w_info = (struct ipa_dfs_info *) node->aux;
-	  free (node->aux);
-	  node->aux = NULL;
-	}
-    }
-
+  ipa_free_postorder_info ();
   free (order);
 }
 
