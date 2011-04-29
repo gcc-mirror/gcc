@@ -1457,14 +1457,17 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
     }
 }
 
-/* Output a real number with default format.  This is 1PG16.9E2 for
-   REAL(4), 1PG25.17E3 for REAL(8), 1PG30.21E4 for REAL(10) and
-   1PG45.36E4 for REAL(16). The exception is that the Fortran standard
-   requires outputting an extra digit when the scale factor is 1 and
-   when the magnitude of the value is such that E editing is
-   used. However, gfortran compensates for this, and thus for list
-   formatted the same number of significant digits is generated both
-   when using F and E editing.  */
+/* Output a real number with default format.  To guarantee that a
+   binary -> decimal -> binary rountrip conversion recovers the
+   original value, IEEE 754-2008 requires 9, 17, 21 and 36 significant
+   digits for REAL kinds 4, 8, 10, and 16, respectively. Thus, we use
+   1PG16.9E2 for REAL(4), 1PG25.17E3 for REAL(8), 1PG30.21E4 for
+   REAL(10) and 1PG45.36E4 for REAL(16). The exception is that the
+   Fortran standard requires outputting an extra digit when the scale
+   factor is 1 and when the magnitude of the value is such that E
+   editing is used. However, gfortran compensates for this, and thus
+   for list formatted the same number of significant digits is
+   generated both when using F and E editing.  */
 
 void
 write_real (st_parameter_dt *dtp, const char *source, int length)
