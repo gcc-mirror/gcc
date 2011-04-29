@@ -383,19 +383,8 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
 	{
 	  /* If the caller wants to insert T at a specific slot
 	     location, and ENTRY->TO does not match *IX_P, add T to
-	     the requested location slot.  This situation arises when
-	     streaming builtin functions.
-
-	     For instance, on the writer side we could have two
-	     FUNCTION_DECLS T1 and T2 that are represented by the same
-	     builtin function.  The reader will only instantiate the
-	     canonical builtin, but since T1 and T2 had been
-	     originally stored in different cache slots (S1 and S2),
-	     the reader must be able to find the canonical builtin
-	     function at slots S1 and S2.  */
-	  gcc_assert (lto_stream_as_builtin_p (t));
+	     the requested location slot.  */
 	  ix = *ix_p;
-
 	  lto_streamer_cache_add_to_node_array (cache, ix, t);
 	}
 
@@ -513,6 +502,8 @@ lto_record_common_node (tree *nodep, VEC(tree, heap) **common_nodes,
 	TYPE_CANONICAL (node) = NULL_TREE;
       node = gimple_register_type (node);
       TYPE_CANONICAL (node) = gimple_register_canonical_type (node);
+      if (in_lto_p)
+	TYPE_CANONICAL (*nodep) = TYPE_CANONICAL (node);
       *nodep = node;
     }
 
