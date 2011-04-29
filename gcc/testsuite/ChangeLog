@@ -1,3 +1,11 @@
+2011-04-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48810
+	* gfortran.dg/typebound_proc_22.f90: New.
+
+	PR fortran/48800
+	* gfortran.dg/interface_36.f90: New.
+
 2011-04-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline

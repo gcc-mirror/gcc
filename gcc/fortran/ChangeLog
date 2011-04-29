@@ -1,3 +1,17 @@
+2011-04-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48810
+	* resolve.c (resolve_typebound_generic_call): Don't check access
+	flags of the specific function.
+
+	PR fortran/48800
+	* resolve.c (resolve_formal_arglist): Don't change AS_DEFERRED
+	to AS_ASSUMED_SHAPE for function results.
+	(resolve_fl_var_and_proc): Print also for function results with
+	AS_DEFERRED an error, if they are not a pointer or allocatable.
+	(resolve_types): Make sure arguments of procedures in interface
+	blocks are resolved.
+
 2011-04-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48112
