@@ -748,10 +748,7 @@ spu_expand_extv (rtx ops[], int unsignedp)
     emit_insn (gen_rotlti3 (s0, s0, GEN_INT (start)));
 
   if (128 - width)
-    {
-      tree c = build_int_cst (NULL_TREE, 128 - width);
-      s0 = expand_shift (RSHIFT_EXPR, TImode, s0, c, s0, unsignedp);
-    }
+    s0 = expand_shift (RSHIFT_EXPR, TImode, s0, 128 - width, s0, unsignedp);
 
   emit_move_insn (dst, s0);
 }
