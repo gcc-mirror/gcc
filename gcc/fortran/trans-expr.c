@@ -5444,9 +5444,12 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
     return true;
 
   /* If we have reached here with an intrinsic function, we do not
-     need a temporary.  */
+     need a temporary except in the particular case that reallocation
+     on assignment is active and the lhs is allocatable and a target.  */
   if (expr2->value.function.isym)
-    return false;
+    return (gfc_option.flag_realloc_lhs
+	      && sym->attr.allocatable
+	      && sym->attr.target);
 
   /* If the LHS is a dummy, we need a temporary if it is not
      INTENT(OUT).  */
@@ -5545,6 +5548,9 @@ fcncall_realloc_result (gfc_se *se)
   /* Use the allocation done by the library.  Substitute the lhs
      descriptor with a copy, whose data field is nulled.*/
   desc = build_fold_indirect_ref_loc (input_location, se->expr);
+  /* Unallocated, the descriptor does not have a dtype.  */
+  tmp = gfc_conv_descriptor_dtype (desc);
+  gfc_add_modify (&se->pre, tmp, gfc_get_dtype (TREE_TYPE (desc)));
   res_desc = gfc_evaluate_now (desc, &se->pre);
   gfc_conv_descriptor_data_set (&se->pre, res_desc, null_pointer_node);
   se->expr = gfc_build_addr_expr (TREE_TYPE (se->expr), res_desc);
@@ -5556,10 +5562,6 @@ fcncall_realloc_result (gfc_se *se)
   gfc_add_expr_to_block (&se->post, tmp);
   tmp = gfc_conv_descriptor_data_get (res_desc);
   gfc_conv_descriptor_data_set (&se->post, desc, tmp);
-
-  /* Unallocated, the descriptor does not have a dtype.  */
-  tmp = gfc_conv_descriptor_dtype (desc);
-  gfc_add_modify (&se->post, tmp, gfc_get_dtype (TREE_TYPE (desc)));
 }
 
 
