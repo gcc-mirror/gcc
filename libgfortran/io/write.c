@@ -1458,7 +1458,7 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
 }
 
 /* Output a real number with default format.  To guarantee that a
-   binary -> decimal -> binary rountrip conversion recovers the
+   binary -> decimal -> binary roundtrip conversion recovers the
    original value, IEEE 754-2008 requires 9, 17, 21 and 36 significant
    digits for REAL kinds 4, 8, 10, and 16, respectively. Thus, we use
    1PG16.9E2 for REAL(4), 1PG25.17E3 for REAL(8), 1PG30.21E4 for
