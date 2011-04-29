@@ -1,3 +1,9 @@
+2011-04-29  Michael Matz  <matz@suse.de>
+
+	* lto-streamer.c (lto_streamer_cache_insert_1): Accept to override
+	other trees that just builtins.
+	(lto_record_common_node): Don't leave NULL TYPE_CANONICAL.
+
 2011-04-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-nested.c (get_trampoline_type): Use size_int.

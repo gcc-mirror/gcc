@@ -1,3 +1,31 @@
+2011-04-29  Michael Matz  <matz@suse.de>
+
+	* lto.c (toplevel): Include tree-flow.h.
+	(lto_read_in_decl_state): Don't merge types here.
+	(tree_with_vars): New static hash table.
+	(remember_with_vars): New static functions.
+	(LTO_FIXUP_TYPE): New macro.
+	(lto_ft_common, lto_ft_decl_minimal, lto_ft_decl_common,
+	lto_ft_decl_with_vis, lto_ft_decl_non_common, lto_ft_function,
+	lto_ft_field_decl, lto_ft_type, lto_ft_binfo, lto_ft_constructor,
+	lto_ft_expr, lto_fixup_types, uniquify_nodes): New static functions.
+	(lto_read_decls): Uniquify while reading in trees.
+	(lto_fixup_data_t, LTO_FIXUP_SUBTREE,
+	LTO_REGISTER_TYPE_AND_FIXUP_SUBTREE, no_fixup_p, lto_fixup_common,
+	lto_fixup_decl_minimal, lto_fixup_decl_common, lto_fixup_decl_with_vis,
+	lto_fixup_decl_non_common, lto_fixup_function, lto_fixup_field_decl,
+	lto_fixup_type, lto_fixup_binfo, lto_fixup_constructor,
+	lto_fixup_tree): Remove.
+	(lto_fixup_state): Remove data argument.  Use
+	lto_symtab_prevailing_decl.
+	(LTO_SET_PREVAIL, LTO_NO_PREVAIL): New macros.
+	(lto_fixup_prevailing_decls): New function.
+	(lto_fixup_state_aux): Argument aux is unused.
+	(lto_fixup_decls): Don't allocate pointer sets, don't use
+	lto_fixup_tree, use lto_fixup_prevailing_decls.
+	(read_cgraph_and_symbols): Allocate and remove tree_with_vars.
+	* Make-lang.in (lto/lto.o): Depend on $(TREE_FLOW_H).
+
 2011-04-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto.c (lto_balanced_map): Fix typos in head comment.
