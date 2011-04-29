@@ -1,3 +1,25 @@
+2011-04-29  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/inline-10.c: New testcase.
+	* gcc.dg/tree-ssa/inline-9.c: Disable partial inlining.
+	* ipa-inline.h (clause_t): Turn into unsigned int.
+	* ipa-inline-analysis.c (add_clause): Do more simplification.
+	(and_predicates): Shortcut more cases.
+	(predicates_equal_p): Move forward; check that clauses are properly
+	ordered.
+	(or_predicates): Shortcut more cases.
+	(edge_execution_predicate): Rewrite as...
+	(set_cond_stmt_execution_predicate): ... this function; handle
+	__builtin_constant_p.
+	(set_switch_stmt_execution_predicate): New .
+	(compute_bb_predicates): New.
+	(will_be_nonconstant_predicate): Update TODO.
+	(estimate_function_body_sizes): Use compute_bb_predicates
+	and free them later, always try to estimate if stmt is constant.
+	(estimate_time_after_inlining, estimate_size_after_inlining):
+	Gracefully handle optimized out edges.
+	(read_predicate): Fix off by one error.
+
 2011-04-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (ENABLE_MAINTAINER_RULES): New.

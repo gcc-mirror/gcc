@@ -227,19 +227,20 @@ add_condition (struct inline_summary *summary, int operand_num,
 }
 
 
-/* Add clause CLAUSE into the predicate.  */
+/* Add clause CLAUSE into the predicate P.  */
 
 static inline void
 add_clause (struct predicate *p, clause_t clause)
 {
   int i;
+  int i2;
   int insert_here = -1;
 
   /* True clause.  */
   if (!clause)
     return;
 
-  /* Flase clause makes the whole predicate false.  Kill the other variants.  */
+  /* False clause makes the whole predicate false.  Kill the other variants.  */
   if (clause == (1 << predicate_false_condition))
     {
       p->clause[0] = (1 << predicate_false_condition);
@@ -248,26 +249,46 @@ add_clause (struct predicate *p, clause_t clause)
     }
   if (false_predicate_p (p))
     return;
-  gcc_assert (!(clause & (1 << predicate_false_condition)));
-  for (i = 0; i < MAX_CLAUSES - 1; i++)
+
+  /* No one should be sily enough to add false into nontrivial clauses.  */
+  gcc_checking_assert (!(clause & (1 << predicate_false_condition)));
+
+  /* Look where to insert the clause.  At the same time prune out
+     clauses of P that are implied by the new clause and thus
+     redundant.  */
+  for (i = 0, i2 = 0; i <= MAX_CLAUSES; i++)
     {
-      if (p->clause[i] == clause)
-        return;
+      p->clause[i2] = p->clause[i];
+
       if (!p->clause[i])
 	break;
-      if (p->clause[i] < clause && !insert_here)
-	insert_here = i;
+
+      /* If p->clause[i] implies clause, there is nothing to add.  */
+      if ((p->clause[i] & clause) == p->clause[i])
+	{
+	  /* We had nothing to add, none of clauses should've become redundant.  */
+	  gcc_checking_assert (i == i2);
+	  return;
+	}
+
+      if (p->clause[i] < clause && insert_here < 0)
+	insert_here = i2;
+
+      /* If clause implies p->clause[i], then p->clause[i] becomes redundant.
+	 Otherwise the p->clause[i] has to stay.  */
+      if ((p->clause[i] & clause) != clause)
+	i2++;
     }
-  /* We run out of variants.  Be conservative in positive direciton.  */
-  if (i == MAX_CLAUSES)
+  /* We run out of variants.  Be conservative in positive direction.  */
+  if (i2 == MAX_CLAUSES)
     return;
-  /* Keep clauses ordered by index, so equivalence testing is easy.  */
-  p->clause[i + 1] = 0;
+  /* Keep clauses in decreasing order. This makes equivalence testing easy.  */
+  p->clause[i2 + 1] = 0;
   if (insert_here >= 0)
-    for (;i > insert_here; i--)
-      p->clause[i] = p->clause[i - 1];
+    for (;i2 > insert_here; i2--)
+      p->clause[i2] = p->clause[i2 - 1];
   else
-    insert_here = i;
+    insert_here = i2;
   p->clause[insert_here] = clause;
 }
 
@@ -280,34 +301,24 @@ and_predicates (struct predicate *p, struct predicate *p2)
   struct predicate out = *p;
   int i;
 
-  for (i = 0; p2->clause[i]; i++)
+  /* Avoid busy work.  */
+  if (false_predicate_p (p2) || true_predicate_p (p))
+    return *p2;
+  if (false_predicate_p (p) || true_predicate_p (p2))
+    return *p;
+
+  /* See how far predicates match.  */
+  for (i = 0; p->clause[i] && p->clause[i] == p2->clause[i]; i++)
+    {
+      gcc_checking_assert (i < MAX_CLAUSES);
+    }
+    
+  /* Combine the predicates rest.  */
+  for (; p2->clause[i]; i++)
     {
       gcc_checking_assert (i < MAX_CLAUSES);
       add_clause (&out, p2->clause[i]);
     }
-  return out;
-}
-
-
-/* Return P | P2.  */
-
-static struct predicate
-or_predicates (struct predicate *p, struct predicate *p2)
-{
-  struct predicate out = true_predicate ();
-  int i,j;
-
-  /* If one of conditions is false, return the other.  */
-  if (false_predicate_p (p2))
-    return *p;
-  if (false_predicate_p (p))
-    return *p2;
-  for (i = 0; p->clause[i]; i++)
-    for (j = 0; p2->clause[j]; j++)
-      {
-        gcc_checking_assert (i < MAX_CLAUSES && j < MAX_CLAUSES);
-        add_clause (&out, p->clause[i] | p2->clause[j]);
-      }
   return out;
 }
 
@@ -321,10 +332,39 @@ predicates_equal_p (struct predicate *p, struct predicate *p2)
   for (i = 0; p->clause[i]; i++)
     {
       gcc_checking_assert (i < MAX_CLAUSES);
+      gcc_checking_assert (p->clause [i] > p->clause[i + 1]);
+      gcc_checking_assert (!p2->clause[i] || p2->clause [i] > p2->clause[i + 1]);
       if (p->clause[i] != p2->clause[i])
         return false;
     }
   return !p2->clause[i];
+}
+
+
+/* Return P | P2.  */
+
+static struct predicate
+or_predicates (struct predicate *p, struct predicate *p2)
+{
+  struct predicate out = true_predicate ();
+  int i,j;
+
+  /* Avoid busy work.  */
+  if (false_predicate_p (p2) || true_predicate_p (p))
+    return *p;
+  if (false_predicate_p (p) || true_predicate_p (p2))
+    return *p2;
+  if (predicates_equal_p (p, p2))
+    return *p;
+
+  /* OK, combine the predicates.  */
+  for (i = 0; p->clause[i]; i++)
+    for (j = 0; p2->clause[j]; j++)
+      {
+        gcc_checking_assert (i < MAX_CLAUSES && j < MAX_CLAUSES);
+        add_clause (&out, p->clause[i] | p2->clause[j]);
+      }
+  return out;
 }
 
 
@@ -885,50 +925,226 @@ eliminated_by_inlining_prob (gimple stmt)
 }
 
 
-/* Return predicate that must be true when is E executable.  */
+/* If BB ends by a conditional we can turn into predicates, attach corresponding
+   predicates to the CFG edges.   */
 
-static struct predicate
-edge_execution_predicate (struct ipa_node_params *info,
-			  struct inline_summary *summary,
-			  edge e)
+static void
+set_cond_stmt_execution_predicate (struct ipa_node_params *info,
+			           struct inline_summary *summary,
+			           basic_block bb)
 {
-  struct predicate p = true_predicate ();
   gimple last;
   tree op;
   int index;
-  enum tree_code code;
+  enum tree_code code, inverted_code;
+  edge e;
+  edge_iterator ei;
+  gimple set_stmt;
+  tree op2;
 
-  if (e->src == ENTRY_BLOCK_PTR)
-    return p;
-
-  last = last_stmt (e->src);
-  /* TODO: handle switch.  */
+  last = last_stmt (bb);
   if (!last
       || gimple_code (last) != GIMPLE_COND)
-    return p;
+    return;
   if (!is_gimple_ip_invariant (gimple_cond_rhs (last)))
-    return p;
+    return;
   op = gimple_cond_lhs (last);
   /* TODO: handle conditionals like
      var = op0 < 4;
-     if (var != 0)
-     and __bulitin_constant_p.  */
+     if (var != 0).  */
+  if (TREE_CODE (op) != SSA_NAME)
+    return;
+  if (SSA_NAME_IS_DEFAULT_DEF (op))
+    {
+      index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op));
+      if (index == -1)
+	return;
+      code = gimple_cond_code (last);
+      inverted_code = invert_tree_comparison (code,
+					      HONOR_NANS (TYPE_MODE (TREE_TYPE (op))));
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  struct predicate p = add_condition (summary,
+					      index,
+					      e->flags & EDGE_TRUE_VALUE
+					      ? code : inverted_code,
+					      gimple_cond_rhs (last));
+	  e->aux = pool_alloc (edge_predicate_pool);
+	  *(struct predicate *)e->aux = p;
+	}
+    }
+
+  /* Special case
+     if (builtin_constant_p (op))
+       constant_code
+     else
+       nonconstant_code.
+     Here we can predicate nonconstant_code.  We can't
+     really handle constant_code since we have no predicate
+     for this and also the constant code is not known to be
+     optimized away when inliner doen't see operand is constant.
+     Other optimizers might think otherwise.  */
+  set_stmt = SSA_NAME_DEF_STMT (op);
+  if (!gimple_call_builtin_p (set_stmt, BUILT_IN_CONSTANT_P)
+      || gimple_call_num_args (set_stmt) != 1)
+    return;
+  op2 = gimple_call_arg (set_stmt, 0);
+  if (!SSA_NAME_IS_DEFAULT_DEF (op2))
+    return;
+  index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op2));
+  if (index == -1)
+    return;
+  if (gimple_cond_code (last) != NE_EXPR
+      || !integer_zerop (gimple_cond_rhs (last)))
+    return;
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (e->flags & EDGE_FALSE_VALUE)
+      {
+	struct predicate p = add_condition (summary,
+					    index,
+					    IS_NOT_CONSTANT,
+					    NULL);
+	e->aux = pool_alloc (edge_predicate_pool);
+	*(struct predicate *)e->aux = p;
+      }
+}
+
+
+/* If BB ends by a switch we can turn into predicates, attach corresponding
+   predicates to the CFG edges.   */
+
+static void
+set_switch_stmt_execution_predicate (struct ipa_node_params *info,
+			           struct inline_summary *summary,
+			           basic_block bb)
+{
+  gimple last;
+  tree op;
+  int index;
+  edge e;
+  edge_iterator ei;
+  size_t n;
+  size_t case_idx;
+
+  last = last_stmt (bb);
+  if (!last
+      || gimple_code (last) != GIMPLE_SWITCH)
+    return;
+  op = gimple_switch_index (last);
   if (TREE_CODE (op) != SSA_NAME
       || !SSA_NAME_IS_DEFAULT_DEF (op))
-    return p;
+    return;
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op));
   if (index == -1)
-    return p;
-  code = gimple_cond_code (last);
+    return;
 
-  if (EDGE_TRUE_VALUE)
-    code = invert_tree_comparison (code,
-				   HONOR_NANS (TYPE_MODE (TREE_TYPE (op))));
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      e->aux = pool_alloc (edge_predicate_pool);
+      *(struct predicate *)e->aux = false_predicate ();
+    }
+  n = gimple_switch_num_labels(last);
+  for (case_idx = 0; case_idx < n; ++case_idx)
+    {
+      tree cl = gimple_switch_label (last, case_idx);
+      tree min, max;
+      struct predicate p;
 
-  return add_condition (summary,
-			index,
-			gimple_cond_code (last),
-			gimple_cond_rhs (last));
+      e = find_edge (bb, label_to_block (CASE_LABEL (cl)));
+      min = CASE_LOW (cl);
+      max = CASE_HIGH (cl);
+
+      /* For default we might want to construct predicate that none
+	 of cases is met, but it is bit hard to do not having negations
+	 of conditionals handy.  */
+      if (!min && !max)
+	p = true_predicate ();
+      else if (!max)
+	p = add_condition (summary, index,
+			   EQ_EXPR,
+			   min);
+      else
+	{
+	  struct predicate p1, p2;
+	  p1 = add_condition (summary, index,
+			      GE_EXPR,
+			      min);
+	  p2 = add_condition (summary, index,
+			      LE_EXPR,
+			      max);
+	  p = and_predicates (&p1, &p2);
+	}
+      *(struct predicate *)e->aux
+	= or_predicates (&p, (struct predicate *)e->aux);
+    }
+}
+
+
+/* For each BB in NODE attach to its AUX pointer predicate under
+   which it is executable.  */
+
+static void
+compute_bb_predicates (struct cgraph_node *node,
+		       struct ipa_node_params *parms_info,
+		       struct inline_summary *summary)
+{
+  struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
+  bool done = false;
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, my_function)
+    {
+      set_cond_stmt_execution_predicate (parms_info, summary, bb);
+      set_switch_stmt_execution_predicate (parms_info, summary, bb);
+    }
+
+  /* Entry block is always executable.  */
+  ENTRY_BLOCK_PTR_FOR_FUNCTION (my_function)->aux = pool_alloc (edge_predicate_pool);
+  *(struct predicate *)ENTRY_BLOCK_PTR_FOR_FUNCTION (my_function)->aux
+    = true_predicate ();
+
+  /* A simple dataflow propagation of predicates forward in the CFG.
+     TODO: work in reverse postorder.  */
+  while (!done)
+    {
+      done = true;
+      FOR_EACH_BB_FN (bb, my_function)
+	{
+          struct predicate p = false_predicate ();
+          edge e;
+          edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    {
+	      if (e->src->aux)
+		{
+		  struct predicate this_bb_predicate = *(struct predicate *)e->src->aux;
+		  if (e->aux)
+		    this_bb_predicate = and_predicates (&this_bb_predicate,
+							(struct predicate *)e->aux);
+		  p = or_predicates (&p, &this_bb_predicate);
+		  if (true_predicate_p (&p))
+		    break;
+		}
+	    }
+	  if (false_predicate_p (&p))
+	    gcc_assert (!bb->aux);
+	  else
+	    {
+	      if (!bb->aux)
+		{
+		  done = false;
+		  bb->aux = pool_alloc (edge_predicate_pool);
+		  *((struct predicate *)bb->aux) = p;
+		}
+	      else if (!predicates_equal_p (&p, (struct predicate *)bb->aux))
+		{
+		  done = false;
+		  *((struct predicate *)bb->aux) = p;
+		}
+	    }
+	}
+    }
 }
 
 
@@ -956,7 +1172,8 @@ will_be_nonconstant_predicate (struct ipa_node_params *info,
 
   /* What statments might be optimized away
      when their arguments are constant
-     TODO: also trivial builtins, especially builtin_constant_p.  */
+     TODO: also trivial builtins.
+     builtin_constant_p is already handled later.  */
   if (gimple_code (stmt) != GIMPLE_ASSIGN
       && gimple_code (stmt) != GIMPLE_COND
       && gimple_code (stmt) != GIMPLE_SWITCH)
@@ -1050,23 +1267,19 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   account_size_time (info, 2 * INLINE_SIZE_SCALE, 0, &bb_predicate);
 
   gcc_assert (my_function && my_function->cfg);
+  if (parms_info)
+    compute_bb_predicates (node, parms_info, info);
   FOR_EACH_BB_FN (bb, my_function)
     {
-      edge e;
-      edge_iterator ei;
-
       freq = compute_call_stmt_bb_frequency (node->decl, bb);
 
       /* TODO: Obviously predicates can be propagated down across CFG.  */
       if (parms_info)
 	{
-          bb_predicate = false_predicate ();
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    {
-	      struct predicate ep;
-	      ep = edge_execution_predicate (parms_info, info, e);
-	      bb_predicate = or_predicates (&ep, &bb_predicate);
-	    }
+	  if (bb->aux)
+	    bb_predicate = *(struct predicate *)bb->aux;
+	  else
+	    bb_predicate = false_predicate ();
 	}
       else
 	bb_predicate = true_predicate ();
@@ -1083,6 +1296,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  int this_size = estimate_num_insns (stmt, &eni_size_weights);
 	  int this_time = estimate_num_insns (stmt, &eni_time_weights);
 	  int prob;
+	  struct predicate will_be_nonconstant;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -1127,9 +1341,15 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		gcc_assert (!gimple_call_cannot_inline_p (stmt));
 	    }
 
+	  /* TODO: When conditional jump or swithc is known to be constant, but
+ 	     we did not translate it into the predicates, we really can account
+	     just maximum of the possible paths.  */
+	  if (parms_info)
+	    will_be_nonconstant
+	       = will_be_nonconstant_predicate (parms_info, info,
+						stmt, nonconstant_names);
 	  if (this_time || this_size)
 	    {
-	      struct predicate will_be_nonconstant;
 	      struct predicate p;
 
 	      this_time *= freq;
@@ -1143,12 +1363,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		fprintf (dump_file, "\t\twill eliminated by inlining\n");
 
 	      if (parms_info)
-		{
-		  will_be_nonconstant
-		     = will_be_nonconstant_predicate (parms_info, info,
-						      stmt, nonconstant_names);
-		  p = and_predicates (&bb_predicate, &will_be_nonconstant);
-		}
+		p = and_predicates (&bb_predicate, &will_be_nonconstant);
 	      else
 		p = true_predicate ();
 
@@ -1172,6 +1387,21 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      gcc_assert (time >= 0);
 	      gcc_assert (size >= 0);
 	    }
+	}
+    }
+  FOR_ALL_BB_FN (bb, my_function)
+    {
+      edge e;
+      edge_iterator ei;
+
+      if (bb->aux)
+	pool_free (edge_predicate_pool, bb->aux);
+      bb->aux = NULL;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  if (e->aux)
+	    pool_free (edge_predicate_pool, e->aux);
+	  e->aux = NULL;
 	}
     }
   time = (time + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
@@ -1677,12 +1907,17 @@ int
 estimate_time_after_inlining (struct cgraph_node *node,
 			      struct cgraph_edge *edge)
 {
-  gcov_type time = inline_summary (node)->time + estimate_edge_time (edge);
-  if (time < 0)
-    time = 0;
-  if (time > MAX_TIME)
-    time = MAX_TIME;
-  return time;
+  struct inline_edge_summary *es = inline_edge_summary (edge);
+  if (!es->predicate || !false_predicate_p (es->predicate))
+    {
+      gcov_type time = inline_summary (node)->time + estimate_edge_time (edge);
+      if (time < 0)
+	time = 0;
+      if (time > MAX_TIME)
+	time = MAX_TIME;
+      return time;
+    }
+  return inline_summary (node)->time;
 }
 
 
@@ -1693,9 +1928,14 @@ int
 estimate_size_after_inlining (struct cgraph_node *node,
 			      struct cgraph_edge *edge)
 {
-  int size = inline_summary (node)->size + estimate_edge_growth (edge);
-  gcc_assert (size >= 0);
-  return size;
+  struct inline_edge_summary *es = inline_edge_summary (edge);
+  if (!es->predicate || !false_predicate_p (es->predicate))
+    {
+      int size = inline_summary (node)->size + estimate_edge_growth (edge);
+      gcc_assert (size >= 0);
+      return size;
+    }
+  return inline_summary (node)->size;
 }
 
 
@@ -1826,8 +2066,8 @@ read_predicate (struct lto_input_block *ib)
 
   do 
     {
+      gcc_assert (k <= MAX_CLAUSES);
       clause = out.clause[k++] = lto_input_uleb128 (ib);
-      gcc_assert (k < MAX_CLAUSES);
     }
   while (clause);
   return out;
