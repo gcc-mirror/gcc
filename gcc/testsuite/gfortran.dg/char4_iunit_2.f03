@@ -43,5 +43,5 @@ program char4_iunit_2
   write(widestring,*)"test",i, x, str_default,&
    trim(str_char4)
   if (widestring .ne. &
-    k_" test         345   52.542999     0 hijklmnp qwertyuiopasd") call abort
+    k_" test         345   52.5429993     0 hijklmnp qwertyuiopasd") call abort
 end program char4_iunit_2
