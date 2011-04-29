@@ -1,6 +1,6 @@
 /* Handle the constant pool of the Java(TM) Virtual Machine.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
-   2007, 2008, 2010  Free Software Foundation, Inc.
+   2007, 2008, 2010, 2011  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -544,10 +544,7 @@ build_constants_constructor (void)
 	    temp <<= ((POINTER_SIZE > 32) ? POINTER_SIZE - 32 : 0);
 
           CONSTRUCTOR_PREPEND_VALUE (t, get_tag_node (outgoing_cpool->tags[i]));
-          CONSTRUCTOR_PREPEND_VALUE (d,
-                                     fold_convert (ptr_type_node, 
-                                                   (build_int_cst (NULL_TREE,
-                                                                   temp))));
+          CONSTRUCTOR_PREPEND_VALUE (d, build_int_cst (ptr_type_node, temp));
 	}
 	break;
 
