@@ -1456,10 +1456,15 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
       break;
     }
 }
-/* Output a real number with default format.
-   This is 1PG14.7E2 for REAL(4), 1PG23.15E3 for REAL(8),
-   1PG28.19E4 for REAL(10) and 1PG43.34E4 for REAL(16).  */
-// FX -- FIXME: should we change the default format for __float128-real(16)?
+
+/* Output a real number with default format.  This is 1PG16.9E2 for
+   REAL(4), 1PG25.17E3 for REAL(8), 1PG30.21E4 for REAL(10) and
+   1PG45.36E4 for REAL(16). The exception is that the Fortran standard
+   requires outputting an extra digit when the scale factor is 1 and
+   when the magnitude of the value is such that E editing is
+   used. However, gfortran compensates for this, and thus for list
+   formatted the same number of significant digits is generated both
+   when using F and E editing.  */
 
 void
 write_real (st_parameter_dt *dtp, const char *source, int length)
@@ -1472,6 +1477,8 @@ write_real (st_parameter_dt *dtp, const char *source, int length)
   dtp->u.p.scale_factor = org_scale;
 }
 
+/* Similar to list formatted REAL output, for kPG0 where k > 0 we
+   compensate for the extra digit.  */
 
 void
 write_real_g0 (st_parameter_dt *dtp, const char *source, int length, int d)
