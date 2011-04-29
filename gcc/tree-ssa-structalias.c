@@ -3925,35 +3925,29 @@ handle_pure_call (gimple stmt, VEC(ce_s, heap) **results)
 static varinfo_t
 get_fi_for_callee (gimple call)
 {
-  tree decl;
+  tree decl, fn = gimple_call_fn (call);
 
-  gcc_assert (!gimple_call_internal_p (call));
+  if (fn && TREE_CODE (fn) == OBJ_TYPE_REF)
+    fn = OBJ_TYPE_REF_EXPR (fn);
 
   /* If we can directly resolve the function being called, do so.
      Otherwise, it must be some sort of indirect expression that
      we should still be able to handle.  */
-  decl = gimple_call_fndecl (call);
+  decl = gimple_call_addr_fndecl (fn);
   if (decl)
     return get_vi_for_tree (decl);
 
-  decl = gimple_call_fn (call);
-  /* The function can be either an SSA name pointer or,
-     worse, an OBJ_TYPE_REF.  In this case we have no
+  /* If the function is anything other than a SSA name pointer we have no
      clue and should be getting ANYFN (well, ANYTHING for now).  */
-  if (TREE_CODE (decl) == SSA_NAME)
-    {
-      if (TREE_CODE (decl) == SSA_NAME
-	  && (TREE_CODE (SSA_NAME_VAR (decl)) == PARM_DECL
-	      || TREE_CODE (SSA_NAME_VAR (decl)) == RESULT_DECL)
-	  && SSA_NAME_IS_DEFAULT_DEF (decl))
-	decl = SSA_NAME_VAR (decl);
-      return get_vi_for_tree (decl);
-    }
-  else if (TREE_CODE (decl) == INTEGER_CST
-	   || TREE_CODE (decl) == OBJ_TYPE_REF)
+  if (!fn || TREE_CODE (fn) != SSA_NAME)
     return get_varinfo (anything_id);
-  else
-    gcc_unreachable ();
+
+  if ((TREE_CODE (SSA_NAME_VAR (fn)) == PARM_DECL
+       || TREE_CODE (SSA_NAME_VAR (fn)) == RESULT_DECL)
+      && SSA_NAME_IS_DEFAULT_DEF (fn))
+    fn = SSA_NAME_VAR (fn);
+
+  return get_vi_for_tree (fn);
 }
 
 /* Create constraints for the builtin call T.  Return true if the call
@@ -4199,11 +4193,9 @@ find_func_aliases_for_call (gimple t)
       && find_func_aliases_for_builtin_call (t))
     return;
 
+  fi = get_fi_for_callee (t);
   if (!in_ipa_mode
-      || gimple_call_internal_p (t)
-      || (fndecl
-	  && (!(fi = lookup_vi_for_tree (fndecl))
-	      || !fi->is_fn_info)))
+      || (fndecl && !fi->is_fn_info))
     {
       VEC(ce_s, heap) *rhsc = NULL;
       int flags = gimple_call_flags (t);
@@ -4230,8 +4222,6 @@ find_func_aliases_for_call (gimple t)
     {
       tree lhsop;
       unsigned j;
-
-      fi = get_fi_for_callee (t);
 
       /* Assign all the passed arguments to the appropriate incoming
 	 parameters of the function.  */
@@ -4271,7 +4261,7 @@ find_func_aliases_for_call (gimple t)
 	      VEC_free(ce_s, heap, tem);
 	    }
 	  FOR_EACH_VEC_ELT (ce_s, lhsc, j, lhsp)
-	      process_constraint (new_constraint (*lhsp, rhs));
+	    process_constraint (new_constraint (*lhsp, rhs));
 	}
 
       /* If we pass the result decl by reference, honor that.  */
@@ -4286,7 +4276,7 @@ find_func_aliases_for_call (gimple t)
 	  get_constraint_for_address_of (lhsop, &rhsc);
 	  lhs = get_function_part_constraint (fi, fi_result);
 	  FOR_EACH_VEC_ELT (ce_s, rhsc, j, rhsp)
-	      process_constraint (new_constraint (lhs, *rhsp));
+	    process_constraint (new_constraint (lhs, *rhsp));
 	  VEC_free (ce_s, heap, rhsc);
 	}
 
@@ -4299,7 +4289,7 @@ find_func_aliases_for_call (gimple t)
 	  get_constraint_for (gimple_call_chain (t), &rhsc);
 	  lhs = get_function_part_constraint (fi, fi_static_chain);
 	  FOR_EACH_VEC_ELT (ce_s, rhsc, j, rhsp)
-	      process_constraint (new_constraint (lhs, *rhsp));
+	    process_constraint (new_constraint (lhs, *rhsp));
 	}
     }
 }
