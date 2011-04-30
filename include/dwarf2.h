@@ -556,6 +556,13 @@ enum dwarf_location_atom
     /* The GNU entry value extension.
        See http://www.dwarfstd.org/ShowIssue.php?issue=100909.1&type=open .  */
     DW_OP_GNU_entry_value = 0xf3,
+    /* The GNU typed stack extension.
+       See http://www.dwarfstd.org/doc/040408.1.html .  */
+    DW_OP_GNU_const_type = 0xf4,
+    DW_OP_GNU_regval_type = 0xf5,
+    DW_OP_GNU_deref_type = 0xf6,
+    DW_OP_GNU_convert = 0xf7,
+    DW_OP_GNU_reinterpret = 0xf9,
     /* HP extensions.  */
     DW_OP_HP_unknown     = 0xe0, /* Ouch, the same as GNU_push_tls_address.  */
     DW_OP_HP_is_value    = 0xe1,

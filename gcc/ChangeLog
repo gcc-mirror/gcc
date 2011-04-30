@@ -1,5 +1,37 @@
 2011-04-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (get_address_mode): New inline.
+	(mem_loc_descriptor): Add MEM_MODE parameter, adjust recursive calls,
+	if not dwarf_strict emit
+	DW_OP_GNU_{{const,regval,deref}_type,convert,reinterpret} when
+	desirable.  Handle FLOAT_EXTEND, FLOAT_TRUNCATE, FLOAT,
+	UNSIGNED_FLOAT, FIX and UNSIGNED_FIX.  Just return NULL for
+	FMA, STRICT_LOW_PART, CONST_VECTOR and CONST_FIXED.
+	(dwarf2out_frame_debug_cfa_expression, reg_loc_descriptor,
+	dw_loc_list_1, cst_pool_loc_descr, loc_list_from_tree): Adjust
+	mem_loc_descriptor callers.
+	(dwarf_stack_op_name, size_of_loc_descr, output_loc_operands,
+	output_loc_operands_raw, hash_loc_operands, compare_loc_operands):
+	Handle DW_OP_GNU_const_type, DW_OP_GNU_regval_type,
+	DW_OP_GNU_deref_type, DW_OP_GNU_convert and DW_OP_GNU_reinterpret.
+	(base_types): New variable.
+	(get_base_type_offset, calc_base_type_die_sizes,
+	base_type_for_mode, mark_base_types, base_type_cmp,
+	move_marked_base_types): New functions.
+	(calc_die_sizes): Assert that die_offset is 0 or equal to
+	next_die_offset.
+	(loc_descriptor): Only handle here lowpart SUBREGs of REG, for
+	others defer to mem_loc_descriptor.  Adjust mem_loc_descriptor
+	callers.  If not dwarf_strict, call mem_loc_descriptor even for
+	non-MODE_INT modes or MODE_INT modes larger than DWARF2_ADDR_SIZE.
+	(gen_subprogram_die): Don't give up on call site parameters
+	with non-integral or large integral modes.  Adjust
+	mem_loc_descriptor callers.
+	(prune_unused_types): Call prune_unused_types_mark on base_types
+	vector entries.
+	(resolve_addr): Call mark_base_types.
+	(dwarf2out_finish): Call move_marked_base_types.
+
 	PR tree-optimization/48809
 	* tree-switch-conversion.c (build_arrays): Compute tidx in unsigned
 	type.
