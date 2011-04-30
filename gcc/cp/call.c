@@ -3734,7 +3734,16 @@ build_new_function_call (tree fn, VEC(tree,gc) **args, bool koenig_p,
       result = error_mark_node;
     }
   else
-    result = build_over_call (cand, LOOKUP_NORMAL, complain);
+    {
+      int flags = LOOKUP_NORMAL;
+      /* If fn is template_id_expr, the call has explicit template arguments
+         (e.g. func<int>(5)), communicate this info to build_over_call
+         through flags so that later we can use it to decide whether to warn
+         about peculiar null pointer conversion.  */
+      if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
+        flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
+      result = build_over_call (cand, flags, complain);
+    }
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -5369,10 +5378,16 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
     }
 
   /* Issue warnings if "false" is converted to a NULL pointer */
-  else if (expr == boolean_false_node && fn && POINTER_TYPE_P (t))
-    warning_at (input_location, OPT_Wconversion_null,
-		"converting %<false%> to pointer type for argument %P of %qD",
-		argnum, fn);
+  else if (expr == boolean_false_node && POINTER_TYPE_P (t))
+    {
+      if (fn)
+	warning_at (input_location, OPT_Wconversion_null,
+		    "converting %<false%> to pointer type for argument %P "
+		    "of %qD", argnum, fn);
+      else
+	warning_at (input_location, OPT_Wconversion_null,
+		    "converting %<false%> to pointer type %qT", t);
+    }
 }
 
 /* Perform the conversions in CONVS on the expression EXPR.  FN and
@@ -6293,8 +6308,35 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     {
       tree type = TREE_VALUE (parm);
       tree arg = VEC_index (tree, args, arg_index);
+      bool conversion_warning = true;
 
       conv = convs[i];
+
+      /* If the argument is NULL and used to (implicitly) instantiate a
+         template function (and bind one of the template arguments to
+         the type of 'long int'), we don't want to warn about passing NULL
+         to non-pointer argument.
+         For example, if we have this template function:
+
+           template<typename T> void func(T x) {}
+
+         we want to warn (when -Wconversion is enabled) in this case:
+
+           void foo() {
+             func<int>(NULL);
+           }
+
+         but not in this case:
+
+           void foo() {
+             func(NULL);
+           }
+      */
+      if (arg == null_node
+          && DECL_TEMPLATE_INFO (fn)
+          && cand->template_decl
+          && !(flags & LOOKUP_EXPLICIT_TMPL_ARGS))
+        conversion_warning = false;
 
       /* Warn about initializer_list deduction that isn't currently in the
 	 working draft.  */
@@ -6326,7 +6368,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    }
 	}
 
-      val = convert_like_with_context (conv, arg, fn, i-is_method, complain);
+      val = convert_like_with_context (conv, arg, fn, i-is_method,
+	                               conversion_warning
+				       ? complain
+				       : complain & (~tf_warning));
 
       val = convert_for_arg_passing (type, val);
       if (val == error_mark_node)
@@ -7061,6 +7106,8 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
 	      if (DECL_VINDEX (fn) && ! (flags & LOOKUP_NONVIRTUAL)
 		  && resolves_to_fixed_type_p (instance, 0))
 		flags |= LOOKUP_NONVIRTUAL;
+              if (explicit_targs)
+                flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
 	      /* Now we know what function is being called.  */
 	      if (fn_p)
 		*fn_p = fn;
