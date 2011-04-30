@@ -1,3 +1,8 @@
+2011-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Library_Version): Bump to 4.7.
+	(Current_Year): Bump to 2011.
+
 2011-04-29  Michael Matz  <matz@suse.de>
 
 	* gcc-interface/misc.c (gnat_handle_option): Set
