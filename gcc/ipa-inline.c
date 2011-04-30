@@ -272,9 +272,11 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
      FIXME: this is obviously wrong for LTO where STRUCT_FUNCTION is missing.
      Move the flag into cgraph node or mirror it in the inline summary.  */
   else if (DECL_STRUCT_FUNCTION (e->callee->decl)
-	   && DECL_STRUCT_FUNCTION (e->callee->decl)->can_throw_non_call_exceptions
+	   && DECL_STRUCT_FUNCTION
+	        (e->callee->decl)->can_throw_non_call_exceptions
 	   && !(DECL_STRUCT_FUNCTION (e->caller->decl)
-	        && DECL_STRUCT_FUNCTION (e->caller->decl)->can_throw_non_call_exceptions))
+	        && DECL_STRUCT_FUNCTION
+		     (e->caller->decl)->can_throw_non_call_exceptions))
     {
       e->inline_failed = CIF_NON_CALL_EXCEPTIONS;
       inlinable = false;
@@ -288,6 +290,11 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
     }
   /* Check if caller growth allows the inlining.  */
   else if (!DECL_DISREGARD_INLINE_LIMITS (e->callee->decl)
+	   && !lookup_attribute ("flatten",
+				 DECL_ATTRIBUTES
+				   (e->caller->global.inlined_to
+				    ? e->caller->global.inlined_to->decl
+				    : e->caller->decl))
            && !caller_growth_limits (e))
     inlinable = false;
   /* Don't inline a function with a higher optimization level than the
@@ -468,8 +475,39 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
           e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
 	  want_inline = false;
 	}
+      /* If call is cold, do not inline when function body would grow.
+	 Still inline when the overall unit size will shrink because the offline
+	 copy of function being eliminated.
+
+	 This is slightly wrong on aggressive side:  it is entirely possible
+	 that function is called many times with a context where inlining
+	 reduces code size and few times with a context where inlining increase
+	 code size.  Resoluting growth estimate will be negative even if it
+	 would make more sense to keep offline copy and do not inline into the
+	 call sites that makes the code size grow.  
+
+	 When badness orders the calls in a way that code reducing calls come
+	 first, this situation is not a problem at all: after inlining all
+	 "good" calls, we will realize that keeping the function around is
+	 better.  */
       else if (!cgraph_maybe_hot_edge_p (e)
-	       && estimate_growth (e->callee) > 0)
+	       && (DECL_EXTERNAL (e->callee->decl)
+
+		   /* Unlike for functions called once, we play unsafe with
+		      COMDATs.  We can allow that since we know functions
+		      in consideration are small (and thus risk is small) and
+		      moreover grow estimates already accounts that COMDAT
+		      functions may or may not disappear when eliminated from
+		      current unit. With good probability making aggressive
+		      choice in all units is going to make overall program
+		      smaller.
+
+		      Consequently we ask cgraph_can_remove_if_no_direct_calls_p
+		      instead of
+		      cgraph_will_be_removed_from_program_if_no_direct_calls  */
+
+		   || !cgraph_can_remove_if_no_direct_calls_p (e->callee)
+		   || estimate_growth (e->callee) > 0))
 	{
           e->inline_failed = CIF_UNLIKELY_CALL;
 	  want_inline = false;

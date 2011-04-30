@@ -1,5 +1,12 @@
 2011-04-30  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline.c (can_inline_edge_p): Disregard limits when
+	inlining into function with flatten attribute.
+	(want_inline_small_function_p): Be more realistic about inlining
+	cold calls where callee size grows.
+
+2011-04-30  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_create_virtual_clone): Clear constructor/destructor
 	flags.
 
