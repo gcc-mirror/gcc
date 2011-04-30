@@ -1,3 +1,16 @@
+2011-04-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48462
+	PR fortran/48746
+	* trans-expr.c ( arrayfunc_assign_needs_temporary): Need a temp
+	if automatic reallocation on assignement is active, the lhs is a
+	target and the rhs an intrinsic function.
+	(realloc_lhs_bounds_for_intrinsic_call): Rename as next.
+	(fcncall_realloc_result): Renamed version of above function.
+	Free the original descriptor data after the function call.Set the bounds and the
+	offset so that the lbounds are one.
+	(gfc_trans_arrayfunc_assign): Call renamed function.
+
 2011-04-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48810

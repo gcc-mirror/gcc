@@ -1,3 +1,9 @@
+2011-04-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48462
+	PR fortran/48746
+	* gfortran.dg/realloc_on_assign_7.f03: New test.
+
 2011-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48809
