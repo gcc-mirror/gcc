@@ -1,3 +1,16 @@
+2011-04-30  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/sparc/sparc.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS,
+	PRINT_OPERAND_PUNCT_VALID_P): Remove.
+	* config/sparc/sparc-protos.h (print_operand): Remove declaration.
+	* config/sparc/sparc.c (TARGET_PRINT_OPERAND_PUNCT_VALID_P,
+	TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define.
+	(print_operand): Rename to...
+	(sparc_print_operand): ...this. Make static. Adjust
+	sparc_print_operand function call.
+	(sparc_print_operand_punct_valid_p, sparc_print_operand_address): New
+	functions.
+
 2011-04-30  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/48752 
