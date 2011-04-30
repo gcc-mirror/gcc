@@ -1,6 +1,13 @@
 2011-04-30  Tobias Burnus  <burnus@net-b.de>
 
-	PR fortran/48800
+	PR fortran/48821
+	* gfortran.dg/import9.f90: New, proper test.
+	* gfortran.dg/interface_37.f90: Remove bogus
+	test (bogus copy of interface_36.f90).
+
+2011-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48821
 	* gfortran.dg/interface_37.f90: New.
 
 2011-04-30  Paul Thomas  <pault@gcc.gnu.org>
