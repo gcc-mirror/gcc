@@ -1440,6 +1440,8 @@ show_code_node (int level, gfc_code *c)
     case EXEC_BLOCK:
       {
 	const char* blocktype;
+	gfc_namespace *saved_ns;
+
 	if (c->ext.block.assoc)
 	  blocktype = "ASSOCIATE";
 	else
@@ -1448,7 +1450,10 @@ show_code_node (int level, gfc_code *c)
 	fprintf (dumpfile, "%s ", blocktype);
 	++show_level;
 	ns = c->ext.block.ns;
+	saved_ns = gfc_current_ns;
+	gfc_current_ns = ns;
 	gfc_traverse_symtree (ns->sym_root, show_symtree);
+	gfc_current_ns = saved_ns;
 	show_code (show_level, ns->code);
 	--show_level;
 	show_indent ();
