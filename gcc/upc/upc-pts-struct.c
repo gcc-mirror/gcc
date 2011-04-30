@@ -362,7 +362,7 @@ upc_pts_build_diff (location_t loc, tree exp)
       || (upc_shared_type_p (TREE_TYPE (TREE_TYPE (op1)))
 	  && !upc_shared_type_p (target_type)))
     {
-      error ("Attempt to take the difference of shared and nonshared pointers");
+      error ("attempt to take the difference of a UPC pointer-to-shared and a local pointers");
       return error_mark_node;
     }
   op0 = save_expr (op0);
@@ -474,7 +474,7 @@ upc_pts_build_cvt (location_t loc, tree exp)
           tree libfunc, lib_args, lib_call;
           libfunc = identifier_global_value (get_identifier (libfunc_name));
 	  if (!libfunc)
-	    internal_error ("library function %s not found",
+	    internal_error ("UPC runtime library function %s not found",
 	                    libfunc_name);
           lib_args = tree_cons (NULL_TREE, src, NULL_TREE);
           if (doprofcall)

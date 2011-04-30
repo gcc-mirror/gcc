@@ -1,3 +1,17 @@
+2011-04-29  Gary Funck  <gary@intrepid.com>
+
+	* c-decl.c (finish_decl): Improve error diagnostics.
+	  (grokdeclarator): Ditto.
+
+	* c-typeck.c (build_c_cast): Improve error diagnostics.
+	  (convert_for_assignment): Ditto.
+	  (build_binary_op): Ditto.
+
+	* c-parser.c (c_parser_upc_forall_statement):
+	  Improve error diagnostics.
+
+	* convert.c (convert_to_integer):  Improve error diagnostics.
+
 2011-04-24  Gary Funck  <gary@intrepid.com>
 
 	* c-parser.c (c_parser_upc_sync_statement): Fix ICE that

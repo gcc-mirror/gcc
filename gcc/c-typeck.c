@@ -4818,7 +4818,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  && POINTER_TYPE_P (otype)
 	  && !upc_shared_type_p (TREE_TYPE (otype)))
 	{
-          error ("UPC does not allow casts from a local pointer to a pointer-to-shared.");
+          error ("UPC does not allow casts from a local pointer to a pointer-to-shared");
           return error_mark_node;
 	}
 
@@ -5664,8 +5664,8 @@ convert_for_assignment (location_t location, tree type, tree rhs,
       if ((upc_shared_type_p (ttl) && !upc_shared_type_p (ttr))
            && !integer_zerop (rhs))
         {
-	  error_at (location, "UPC does not allow assignments from a local pointer"
-	                      " to pointer-to-shared.");
+	  error_at (location, "UPC does not allow assignments from a local pointer "
+	                      "to a pointer-to-shared");
 	  return error_mark_node;
 	}
       if (!upc_shared_type_p (ttl) && upc_shared_type_p (ttr))
@@ -5676,8 +5676,8 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	    }
 	  else
 	    {
-	      error_at (location, "UPC does not allow assignments"
-	                          " from shared to local pointers.");
+	      error_at (location, "UPC does not allow assignments "
+	                          "from a pointer-to-shared to a local pointer");
 	      return error_mark_node;
 	    }
         }
@@ -5691,9 +5691,9 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	     UPC dictates that their blocking factors must be equal. */
 	  if (!tree_int_cst_equal (bs_l, bs_r))
 	    {
-	      error_at (location, "UPC does not allow assignment"
-	                          " between pointers to shared with"
-				  " differing block sizes without a cast");
+	      error_at (location, "UPC does not allow assignment "
+	                          "between pointers to shared with "
+				  "differing block sizes without a cast");
 	      return error_mark_node;
 	    }
 	}
@@ -5908,12 +5908,12 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	  if (upc_shared_type_p (TREE_TYPE (type)))
 	    ERROR_FOR_ASSIGNMENT (location, 0,
 				  G_("passing argument %d of %qE attempts to make "
-				     "a pointer-to-shared from an integer"),
-				  G_("assignment attempts to make a pointer-to-shared "
-				     "from an integer"),
-				  G_("initialization attempts to make a pointer-to-shared "
-				     "from an integer without a cast"),
-				  G_("return makes a pointer-to-shared from an "
+				     "a UPC pointer-to-shared value from an integer"),
+				  G_("assignment attempts to make a UPC pointer-to-shared "
+				     "value from an integer"),
+				  G_("initialization attempts to make a UPC pointer-to-shared "
+				     "value from an integer without a cast"),
+				  G_("return makes a UPC pointer-to-shared value from an "
 				     "integer"));
 	  else
 	    WARN_FOR_ASSIGNMENT (location, 0,
@@ -10150,9 +10150,9 @@ build_binary_op (location_t location, enum tree_code code,
               || (upc_shared_type_p (tt1)
 	           && !(upc_shared_type_p (tt0) || integer_zerop(op0))))
 	    {
-	      error_at (location, "UPC does not allow comparisons"
-	                          " between pointers to shared and"
-				  " local pointers");
+	      error_at (location, "UPC does not allow comparisons "
+	                          "between pointers to shared and "
+				  "local pointers");
 	      return error_mark_node;
 	    }
 	  /* Anything compares with void *.  void * compares with anything.
@@ -10231,8 +10231,8 @@ build_binary_op (location_t location, enum tree_code code,
 
 	  if (upc_shared_type_p (tt0) != upc_shared_type_p (tt1))
 	    {
-	      error_at (location, "UPC does not allow comparisons between"
-	                          " pointers to shared and local pointers");
+	      error_at (location, "UPC does not allow comparisons between "
+	                          "pointers to shared and local pointers");
 	      return error_mark_node;
 	    }
 	  if (comp_target_types (location, type0, type1))

@@ -8426,9 +8426,9 @@ c_parser_upc_forall_statement (c_parser *parser)
       tree upc_forall_depth, depth_gt_one;
       upc_forall_depth = lookup_name (get_identifier (UPC_FORALL_DEPTH_NAME));
       if (upc_forall_depth == NULL_TREE)
-        internal_error ("Cannot locate '" UPC_FORALL_DEPTH_NAME "'."
-	                "  This identifier should be defined in a compiler-supplied"
-			" include file.");
+        internal_error ("the UPC runtime variable '" UPC_FORALL_DEPTH_NAME "' "
+	                "cannot be located; this variable should be defined "
+			"in a compiler-supplied include file");
       assemble_external (upc_forall_depth);
       TREE_USED (upc_forall_depth) = 1;
       c_finish_expr_stmt (loc,

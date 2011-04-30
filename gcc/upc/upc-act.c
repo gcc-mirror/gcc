@@ -137,7 +137,7 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
     case OPT_fupc_pthreads_per_process_:
       if (value > UPC_MAX_THREADS)
 	{
-	  error ("THREADS value exceeds implementation limit of %d",
+	  error ("THREADS value exceeds UPC implementation limit of %d",
 		 UPC_MAX_THREADS);
 	  value = 1;
 	}
@@ -146,7 +146,7 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
     case OPT_fupc_threads_:
       if (value > UPC_MAX_THREADS)
 	{
-	  error ("THREADS value exceeds implementation limit of %d",
+	  error ("THREADS value exceeds UPC implementation limit of %d",
 		 UPC_MAX_THREADS);
 	  value = 1;
 	}
@@ -164,7 +164,8 @@ upc_lang_init (void)
 {
   if (!targetm.have_named_sections)
     {
-      fatal_error ("UPC is not implemented on this target. The target linker does not support separately linked sections.");
+      fatal_error ("UPC is not implemented on this target; "
+                   "the target linker does not support separately linked sections");
     }
   /* c_obj_common_init is also called from regular 'C'
      It will return 'false' if we're pre-processing only. */
@@ -305,17 +306,17 @@ upc_sizeof_type_check (const char *op_name, tree type)
     }
   else if (code == FUNCTION_TYPE)
     {
-      error ("%s applied to a function type", op_name);
+      error ("UPC operator %s applied to a function type", op_name);
       return 0;
     }
   else if (code == VOID_TYPE)
     {
-      error ("%s applied to a void type", op_name);
+      error ("UPC operator %s applied to a void type", op_name);
       return 0;
     }
   else if (!upc_shared_type_p (type))
     {
-      error ("%s applied to a non-shared type", op_name);
+      error ("UPC operator %s applied to a non-shared type", op_name);
       return 0;
     }
   return 1;
@@ -674,7 +675,7 @@ upc_set_block_factor (const enum tree_code decl_kind,
 
   if (TREE_CODE (type) == VOID_TYPE)
     {
-      error ("layout qualifier cannot be applied to a void type");
+      error ("UPC layout qualifier cannot be applied to a void type");
       return type;
     }
 
@@ -696,12 +697,12 @@ upc_set_block_factor (const enum tree_code decl_kind,
       /* layout qualifier is [*] */
       if (!COMPLETE_TYPE_P (type))
         {
-          error ("layout qualifier of the form [*] cannot be applied to an incomplete type");
+          error ("UPC layout qualifier of the form [*] cannot be applied to an incomplete type");
           return type;
         }
       if (decl_kind == POINTER_TYPE)
         {
-          error ("[*] qualifier may not be used in declaration of pointers");
+          error ("UPC [*] qualifier may not be used in declaration of pointers");
           return type;
         }
       /* The blocking factor is given by this expression:
@@ -716,9 +717,9 @@ upc_set_block_factor (const enum tree_code decl_kind,
           n_threads = convert (bitsizetype, upc_num_threads ());
           if (TREE_CODE (n_threads) != INTEGER_CST)
 	    {
-	      error ("A layout qualifier of '[*]' requires that"
-	             " the array size is either an integral constant"
-		     " or an integral multiple of THREADS.");
+	      error ("A UPC layout qualifier of '[*]' requires that "
+	             "the array size is either an integral constant "
+		     "or an integral multiple of THREADS");
               block_factor = size_one_node;
 	    }
           else
@@ -733,7 +734,7 @@ upc_set_block_factor (const enum tree_code decl_kind,
     {
       STRIP_NOPS (layout_qualifier);
       if (TREE_CODE (layout_qualifier) != INTEGER_CST)
-        error ("layout qualifier is not an integral constant");
+        error ("UPC layout qualifier is not an integral constant");
       else
         block_factor = fold (layout_qualifier);
     }
@@ -754,13 +755,13 @@ upc_set_block_factor (const enum tree_code decl_kind,
 
   if (tree_int_cst_compare (block_factor, integer_zero_node) <  0)
     {
-      error ("layout qualifier must be a non-negative integral constant");
+      error ("UPC layout qualifier must be a non-negative integral constant");
       return type;
     }
 
   if (tree_int_cst_compare (block_factor, UPC_MAX_BLOCK_SIZE_CSTU) > 0)
     {
-      error ("Maximum block size in this implementation is %s",
+      error ("the maximum UPC block size in this implementation is %s",
 	        UPC_MAX_BLOCK_SIZE_STRING);
       return type;
     }
@@ -923,8 +924,8 @@ upc_decl_init (tree decl, tree init)
   tree cur_stmt_list_save, init_stmt;
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
     {
-      error ("initialization of UPC shared arrays"
-             " is currently not supported");
+      error ("initialization of UPC shared arrays "
+             "is currently not supported");
       return;
     }
   if (!upc_init_stmt_list)
@@ -1127,7 +1128,7 @@ upc_affinity_test (location_t loc, tree affinity)
     }
   else
     {
-      error ("Affinity expression is neither an integer nor the address of a shared object");
+      error ("UPC affinity expression is neither an integer nor the address of a shared object");
       return error_mark_node;
     }
   
@@ -1255,11 +1256,11 @@ upc_num_threads (void)
 		  : lookup_name (get_identifier ("THREADS"));
   if (!n)
     {
-      error ("THREADS is undefined."
-             " When compiling preprocessd source,"
-	     " all -fupc-* switches must be passed on the command line,"
-	     " asserting the same values as supplied when the"
-	     " original source file was preprocessed");
+      error ("the UPC-required THREADS variable is undefined; "
+             "when compiling preprocessd source, "
+	     "all -fupc-* switches must be passed on the command line, "
+	     "asserting the same values as supplied when the "
+	     "original source file was preprocessed");
       abort ();
     }
 
@@ -1286,9 +1287,9 @@ upc_diagnose_deprecated_stmt (location_t loc, tree id)
     {
       if (!strcmp (name, deprecated_stmts[i].deprecated_id))
         {
-          error_at (loc, "%qs was supported in version 1.0 of the UPC"
-	                 " specification, it has been deprecated,"
-			 " use %qs instead", name,
+          error_at (loc, "%qs was supported in version 1.0 of the UPC "
+	                 "specification, it has been deprecated, "
+			 "use %qs instead", name,
 			 deprecated_stmts[i].correct_id);
           return 1;
         }
@@ -1426,9 +1427,9 @@ upc_build_shared_var_addr (location_t loc, tree type, tree var)
       shared_vaddr_base = identifier_global_value (
                             get_identifier ("UPCRL_shared_begin"));
     if (!shared_vaddr_base)
-      fatal_error ("UPC shared section start address not found."
-                   " Cannot find a definition for either"
-		   " __upc_shared_start or UPCRL_shared_begin.");
+      fatal_error ("UPC shared section start address not found; "
+                   "cannot find a definition for either "
+		   "__upc_shared_start or UPCRL_shared_begin");
     assemble_external (shared_vaddr_base);
     TREE_USED (shared_vaddr_base) = 1;
     shared_vaddr_base = build1 (ADDR_EXPR, char_ptr_type, shared_vaddr_base);
@@ -1485,7 +1486,8 @@ upc_pts_int_sum (location_t loc,
 
 
   if (TREE_CODE (result_targ_type) == VOID_TYPE)
-    error_at (loc, "pointer of type %<shared void *%> used in arithmetic");
+    error_at (loc, "UPC does not a pointer of type %<shared void *%> "
+                   "to be used in arithmetic");
 
   /* We have a pointer to a shared object.  For pointers to
      simple objects, just build a "resultcode" tree with the intop and
@@ -1549,7 +1551,7 @@ upc_pts_diff (tree op0, tree op1)
       || (upc_shared_type_p (TREE_TYPE (TREE_TYPE (op1)))
 	  && !upc_shared_type_p (target_type)))
     {
-      error ("Attempt to take the difference of shared and nonshared pointers");
+      error ("attempt to take the difference of a UPC pointer-to-shared and a local pointers");
       return size_one_node;
     }
   result = build2 (MINUS_EXPR, ptrdiff_type_node, op0, op1);

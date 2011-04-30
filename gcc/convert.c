@@ -556,7 +556,7 @@ convert_to_integer (tree type, tree expr)
     case REFERENCE_TYPE:
       if (upc_shared_type_p (TREE_TYPE (intype)))
         {
-          error ("invalid conversion from shared pointer to integer");
+          error ("invalid conversion from a UPC pointer-to-shared to an integer");
 	  expr = integer_zero_node;
         }
       if (integer_zerop (expr))

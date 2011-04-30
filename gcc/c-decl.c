@@ -4318,15 +4318,15 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	        {
 		  gcc_assert (!flag_upc_threads);
 		  if (UPC_TYPE_HAS_THREADS_FACTOR (TREE_TYPE (decl)))
-		    error ("In the dynamic translation environment, THREADS may"
-		            " not appear in declarations of shared arrays"
-			    " with indefinite block size."
-		            "  The storage size of %q+D cannot be calculated.", decl);
+		    error ("in the UPC dynamic translation environment, THREADS may "
+		            "not appear in declarations of shared arrays "
+			    "with indefinite block size; "
+		            "the storage size of %q+D cannot be calculated", decl);
 		  else
-		    error ("In the dynamic translation environment,"
-		           " THREADS must appear exactly once in"
-		           " declarations of shared arrays."
-		           "  The storage size of %q+D cannot be calculated.", decl);
+		    error ("in the UPC dynamic translation environment, "
+		           "THREADS must appear exactly once in "
+		           "declarations of shared arrays; "
+		           "the storage size of %q+D cannot be calculated", decl);
 	        }
 	      else
 	        error ("storage size of %q+D isn%'t constant", decl);
@@ -5084,8 +5084,8 @@ grokdeclarator (const struct c_declarator *declarator,
               const tree b2 = upc_get_block_factor (t);
 	      if (!tree_int_cst_equal (b1, b2))
 	        {
-                  error_at (loc, "UPC layout qualifier is incompatible with"
-	                         " the type specified by a typedef");
+                  error_at (loc, "UPC layout qualifier is incompatible with "
+	                         "the type specified by a typedef");
 		  layout_qualifier = NULL_TREE;
 	        }
 	    }
@@ -5111,11 +5111,12 @@ grokdeclarator (const struct c_declarator *declarator,
 	pedwarn (loc, OPT_pedantic, "duplicate %<relaxed%>");
     }
   if (strictp && relaxedp)
-    error_at (loc, "%qE is declared both strict and relaxed.", name);
+    error_at (loc, "UPC shared variable %qE is declared "
+                   "both strict and relaxed", name);
   if (strictp && !sharedp)
-    error_at (loc, "%qE is declared strict but not shared.", name);
+    error_at (loc, "%qE is declared with UPC strict qualifier but not shared", name);
   if (relaxedp && !sharedp)
-    error_at (loc, "%qE is declared relaxed but not shared.", name);
+    error_at (loc, "%qE is declared with UPC relaxed qualifier but not shared", name);
 
   if (!ADDR_SPACE_GENERIC_P (as1) && !ADDR_SPACE_GENERIC_P (as2) && as1 != as2)
     error_at (loc, "conflicting named address spaces (%s vs %s)",
@@ -5418,16 +5419,16 @@ grokdeclarator (const struct c_declarator *declarator,
 		    int n_thread_refs = count_upc_threads_refs (size);
 		    if (upc_threads_ref || n_thread_refs > 1)
 		      {
-			error_at (loc, "THREADS may not be referenced more than once"
-			               " in a shared array declaration."
-			               "  The size of %qE cannot be calculated.", name);
+			error_at (loc, "UPC shared array declaration references THREADS "
+			               "more than once; the size of %qE "
+				       "cannot be calculated", name);
 			size = integer_one_node;
 		      }
 		    else if (!is_multiple_of_upc_threads (size))
 		      {
-			error_at (loc, "Array dimension is not a simple multiple"
-			               " of THREADS.",
-			               "  The size of %qE cannot be calculated.", name);
+			error_at (loc, "UPC shared array dimension is not a simple multiple "
+			               "of THREADS; the size of %qE "
+				       "cannot be calculated.", name);
 			size = integer_one_node;
 		      }
 		    else
@@ -5725,7 +5726,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			   "function definition has qualified void return type");
                 else if (type_quals & TYPE_QUAL_SHARED)
                   {
-                    error_at (loc, "function definition has shared qualified return type");
+                    error_at (loc, "function definition has UPC shared qualified return type");
                     type_quals &= ~(TYPE_QUAL_SHARED | TYPE_QUAL_STRICT
                                     | TYPE_QUAL_RELAXED);
                   }
@@ -6039,7 +6040,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
         else if (type_quals & TYPE_QUAL_SHARED)
 	  {
-	    error ("parameter declared with shared qualifier");
+	    error ("parameter declared with UPC shared qualifier");
 	    type_quals &= ~(TYPE_QUAL_SHARED | TYPE_QUAL_STRICT
 			    | TYPE_QUAL_RELAXED);
 	  }
@@ -6090,7 +6091,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  }
         else if (type_quals & TYPE_QUAL_SHARED)
 	  {
-	    error_at (loc, "field %qE declared with shared qualifier",
+	    error_at (loc, "field %qE declared with UPC shared qualifier",
 		   name);
 	    type_quals &= ~(TYPE_QUAL_SHARED | TYPE_QUAL_STRICT
 			    | TYPE_QUAL_RELAXED);
@@ -6190,7 +6191,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	     && !((current_scope == file_scope)
 	           || (storage_class == csc_static)))
           {
-	    error_at (loc, "UPC does not support shared auto variables.");
+	    error_at (loc, "UPC does not support shared auto variables");
 	  }
 
 	type = c_build_qualified_type (type, type_quals);

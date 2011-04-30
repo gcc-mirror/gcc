@@ -124,7 +124,7 @@ upc_expand_get (location_t loc, tree src_addr,
   libfunc_name = XSTR (lib_op, 0);
   libfunc = identifier_global_value (get_identifier (libfunc_name));
   if (!libfunc)
-    internal_error ("runtime function %s not found", libfunc_name);
+    internal_error ("UPC runtime function %s not found", libfunc_name);
   if (op_mode == BLKmode)
     {
       tree size = size_in_bytes (result_type);
@@ -210,7 +210,7 @@ upc_expand_put (location_t loc, tree dest_addr, tree src, gimple_seq *pre_p)
     }
   libfunc = identifier_global_value (get_identifier (libfunc_name));
   if (!libfunc)
-    internal_error ("runtime function %s not found", libfunc_name);
+    internal_error ("UPC runtime function %s not found", libfunc_name);
   if (op_mode == BLKmode)
     {
       tree size = tree_expr_size (src);
@@ -231,7 +231,7 @@ upc_expand_put (location_t loc, tree dest_addr, tree src, gimple_seq *pre_p)
       tree libfunc_arg_types = TYPE_ARG_TYPES (TREE_TYPE (libfunc));
       tree put_arg_type = TREE_VALUE (TREE_CHAIN (libfunc_arg_types));
       if (TYPE_PRECISION (put_arg_type) != TYPE_PRECISION (src_type))
-       internal_error ("%s: argument precision mismatch", libfunc_name);
+       internal_error ("%s: UPC put operation argument precision mismatch", libfunc_name);
       /* Avoid warnings about implicit conversion between
          actual parameter value's type, and the type of the
 	 runtime routine's parameter. */
@@ -490,7 +490,8 @@ upc_shared_addr (location_t loc, tree exp)
         return ref;
       if (TREE_CODE (ref) == BIT_FIELD_REF)
         {
-          error ("Unsupported access to shared bit field");
+          error ("accesses to UPC shared bit fields "
+	         "are not yet implemented");
           return error_mark_node;
         }
       /* Remove the indirection by taking the address and simplifying.  */
@@ -561,7 +562,7 @@ upc_gimplify_sync_stmt (location_t loc,
     }
   libfunc = identifier_global_value (get_identifier (libfunc_name));
   if (!libfunc)
-	internal_error ("runtime function %s not found", libfunc_name);
+	internal_error ("UPC runtime function %s not found", libfunc_name);
   if (!sync_id)
     sync_id = build_int_cst (NULL_TREE, INT_MIN);
   lib_args = tree_cons (NULL_TREE, sync_id, NULL_TREE);
@@ -691,7 +692,8 @@ upc_gimplify_field_ref (location_t loc,
   ref = upc_simplify_shared_ref (loc, ref);
   if (TREE_CODE (ref) == BIT_FIELD_REF)
     {
-      error ("Unsupported access to shared bit field");
+      error ("accesses to UPC shared bit fields "
+	     "are not yet implemented");
       ref = error_mark_node;
     }
   *expr_p =  ref;
