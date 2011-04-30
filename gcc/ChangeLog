@@ -1,3 +1,8 @@
+2011-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_create_virtual_clone): Clear constructor/destructor
+	flags.
+
 2011-04-30  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/sparc/sparc.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS,
