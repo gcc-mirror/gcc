@@ -1,3 +1,8 @@
+2011-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48800
+	* gfortran.dg/interface_37.f90: New.
+
 2011-04-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/48746
