@@ -1,3 +1,7 @@
+2011-04-29  Jeff Law <law@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: New test.
+
 2011-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/48606

@@ -1,3 +1,7 @@
+2011-04-29  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_across_edge): Add missing return.
+
 2011-04-29  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.h (cgraph_postorder): Remove declaration.
