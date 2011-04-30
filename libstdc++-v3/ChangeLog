@@ -1,3 +1,20 @@
+2011-04-30  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/std/type_traits (__is_default_constructible_atom,
+	__is_default_constructible_safe<, true>,
+	__is_direct_constructible_new_safe,
+	__is_base_to_derived_ref<,, true>, __is_lvalue_to_rvalue_ref<,, true>,
+	__is_direct_constructible_ref_cast, __is_direct_constructible,
+	__is_nary_constructible): Simplify; add comments throughout.
+
+2011-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
 2011-04-30  Doug Kwan  <dougkwan@google.com>
 
 	* include/Makefile.am (install-freestanding-headers): Also install
