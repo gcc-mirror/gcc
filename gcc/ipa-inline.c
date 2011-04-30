@@ -1664,6 +1664,15 @@ early_inliner (void)
   if (seen_error ())
     return 0;
 
+  /* Do nothing if datastructures for ipa-inliner are already computed.  This
+     happens when some pass decides to construct new function and
+     cgraph_add_new_function calls lowering passes and early optimization on
+     it.  This may confuse ourself when early inliner decide to inline call to
+     function clone, because function clones don't have parameter list in
+     ipa-prop matching their signature.  */
+  if (ipa_node_params_vector)
+    return 0;
+
 #ifdef ENABLE_CHECKING
   verify_cgraph_node (node);
 #endif

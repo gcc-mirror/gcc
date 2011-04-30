@@ -1,3 +1,9 @@
+2011-04-30  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48752 
+	* ipa-inline.c (early_inliner): Disable when doing late
+	addition of function.
+
 2011-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (get_address_mode): New inline.
