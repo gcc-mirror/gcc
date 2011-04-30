@@ -77,5 +77,8 @@ contains
     call random_number(a)
     call random_number(b)
     tmp = matmul(a,b)
+    if (any (lbound (tmp) .ne. [1,1])) call abort
+    if (any (ubound (tmp) .ne. [10,12])) call abort
   end subroutine
 end program main
+
