@@ -1,3 +1,9 @@
+2011-04-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+	PR libgfortran/48030
+	* io/read.c (read_x): Re-implement using fbuf_getc.
+
 2011-04-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47571

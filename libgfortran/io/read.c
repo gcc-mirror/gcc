@@ -1117,8 +1117,7 @@ bad_float:
 void
 read_x (st_parameter_dt *dtp, int n)
 {
-  int length;
-  char *p, q;
+  int length, q, q2;
 
   if ((dtp->u.p.current_unit->pad_status == PAD_NO || is_internal_unit (dtp))
        && dtp->u.p.current_unit->bytes_left < n)
@@ -1131,7 +1130,7 @@ read_x (st_parameter_dt *dtp, int n)
 
   if (is_internal_unit (dtp))
     {
-      p = mem_alloc_r (dtp->u.p.current_unit->s, &length);
+      mem_alloc_r (dtp->u.p.current_unit->s, &length);
       if (unlikely (length < n))
 	n = length;
       goto done;
@@ -1140,55 +1139,37 @@ read_x (st_parameter_dt *dtp, int n)
   if (dtp->u.p.sf_seen_eor)
     return;
 
-  p = fbuf_read (dtp->u.p.current_unit, &length);
-  if (p == NULL)
-    {
-      hit_eof (dtp);
-      return;
-    }
-  
-  if (length == 0 && dtp->u.p.item_count == 1)
-    {
-      if (dtp->u.p.current_unit->pad_status == PAD_NO)
-	{
-	  hit_eof (dtp);
-	  return;
-	}
-      else
-	return;
-    }
-
   n = 0;
   while (n < length)
     {
-      q = *p;
-      if (q == '\n' || q == '\r')
+      q = fbuf_getc (dtp->u.p.current_unit);
+      if (q == EOF)
+	break;
+      else if (q == '\n' || q == '\r')
 	{
 	  /* Unexpected end of line. Set the position.  */
-	  fbuf_seek (dtp->u.p.current_unit, n + 1 ,SEEK_CUR);
 	  dtp->u.p.sf_seen_eor = 1;
 
+	  /* If we see an EOR during non-advancing I/O, we need to skip
+	     the rest of the I/O statement.  Set the corresponding flag.  */
+	  if (dtp->u.p.advance_status == ADVANCE_NO || dtp->u.p.seen_dollar)
+	    dtp->u.p.eor_condition = 1;
+	    
 	  /* If we encounter a CR, it might be a CRLF.  */
 	  if (q == '\r') /* Probably a CRLF */
 	    {
-	      /* See if there is an LF. Use fbuf_read rather then fbuf_getc so
-		 the position is not advanced unless it really is an LF.  */
-	      int readlen = 1;
-	      p = fbuf_read (dtp->u.p.current_unit, &readlen);
-	      if (*p == '\n' && readlen == 1)
-	        {
-		  dtp->u.p.sf_seen_eor = 2;
-		  fbuf_seek (dtp->u.p.current_unit, 1 ,SEEK_CUR);
-		}
+	      /* See if there is an LF.  */
+	      q2 = fbuf_getc (dtp->u.p.current_unit);
+	      if (q2 == '\n')
+		dtp->u.p.sf_seen_eor = 2;
+	      else if (q2 != EOF) /* Oops, seek back.  */
+		fbuf_seek (dtp->u.p.current_unit, -1, SEEK_CUR);
 	    }
 	  goto done;
 	}
       n++;
-      p++;
     } 
 
-  fbuf_seek (dtp->u.p.current_unit, n, SEEK_CUR);
-  
  done:
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
     dtp->u.p.size_used += (GFC_IO_INT) n;
