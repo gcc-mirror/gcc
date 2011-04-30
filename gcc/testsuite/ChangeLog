@@ -1,3 +1,8 @@
+2011-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48809
+	* gcc.c-torture/execute/pr48809.c: New test.
+
 2011-04-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48810

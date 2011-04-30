@@ -1,3 +1,12 @@
+2011-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48809
+	* tree-switch-conversion.c (build_arrays): Compute tidx in unsigned
+	type.
+	(gen_inbound_check): Don't compute index_expr - range_min in utype
+	again, instead reuse SSA_NAME initialized in build_arrays.
+	Remove two useless gsi_for_stmt calls.
+
 2011-04-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
