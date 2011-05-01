@@ -141,6 +141,7 @@ extern VEC(edge_growth_cache_entry,heap) *edge_growth_cache;
 /* In ipa-inline-analysis.c  */
 void debug_inline_summary (struct cgraph_node *);
 void dump_inline_summaries (FILE *f);
+void dump_inline_summary (FILE * f, struct cgraph_node *node);
 void inline_generate_summary (void);
 void inline_read_summary (void);
 void inline_write_summary (cgraph_node_set, varpool_node_set);

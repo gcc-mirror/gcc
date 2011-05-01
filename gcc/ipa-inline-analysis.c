@@ -735,7 +735,7 @@ dump_inline_edge_summary (FILE * f, int indent, struct cgraph_node *node,
   for (edge = node->callees; edge; edge = edge->next_callee)
     {
       struct inline_edge_summary *es = inline_edge_summary (edge);
-      fprintf (f, "%*s%s/%i %s\n%*s  loop depth:%2i freq:%4i size:%2i time: %2i",
+      fprintf (f, "%*s%s/%i %s\n%*s  loop depth:%2i freq:%4i size:%2i time: %2i callee size:%2i stack:%2i",
 	       indent, "", cgraph_node_name (edge->callee),
 	       edge->callee->uid, 
 	       !edge->inline_failed ? "inlined"
@@ -744,7 +744,9 @@ dump_inline_edge_summary (FILE * f, int indent, struct cgraph_node *node,
 	       es->loop_depth,	
                edge->frequency,
 	       es->call_stmt_size,
-	       es->call_stmt_time);
+	       es->call_stmt_time,
+	       (int)inline_summary (edge->callee)->size,
+	       (int)inline_summary (edge->callee)->estimated_stack_size);
       if (es->predicate)
 	{
 	  fprintf (f, " predicate: ");
@@ -753,7 +755,14 @@ dump_inline_edge_summary (FILE * f, int indent, struct cgraph_node *node,
       else
 	  fprintf (f, "\n");
       if (!edge->inline_failed)
-	dump_inline_edge_summary (f, indent+2, edge->callee, info);
+	{
+          fprintf (f, "%*sStack frame offset %i, callee self size %i, callee size %i\n",
+		   indent+2, "",
+		   (int)inline_summary (edge->callee)->stack_frame_offset,
+		   (int)inline_summary (edge->callee)->estimated_self_stack_size,
+		   (int)inline_summary (edge->callee)->estimated_stack_size);
+	  dump_inline_edge_summary (f, indent+2, edge->callee, info);
+	}
     }
   for (edge = node->indirect_calls; edge; edge = edge->next_callee)
     {
@@ -775,7 +784,7 @@ dump_inline_edge_summary (FILE * f, int indent, struct cgraph_node *node,
 }
 
 
-static void
+void
 dump_inline_summary (FILE * f, struct cgraph_node *node)
 {
   if (node->analyzed)
@@ -816,7 +825,7 @@ dump_inline_summary (FILE * f, struct cgraph_node *node)
     }
 }
 
-void
+DEBUG_FUNCTION void
 debug_inline_summary (struct cgraph_node *node)
 {
   dump_inline_summary (stderr, node);
