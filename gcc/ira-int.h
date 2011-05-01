@@ -989,8 +989,8 @@ extern void ira_swap_allocno_copy_ends_if_necessary (ira_copy_t);
 extern ira_copy_t ira_add_allocno_copy (ira_allocno_t, ira_allocno_t, int,
 					bool, rtx, ira_loop_tree_node_t);
 
-extern int *ira_allocate_cost_vector (enum reg_class);
-extern void ira_free_cost_vector (int *, enum reg_class);
+extern int *ira_allocate_cost_vector (reg_class_t);
+extern void ira_free_cost_vector (int *, reg_class_t);
 
 extern void ira_flattening (int, int);
 extern bool ira_build (bool);
@@ -1347,7 +1347,7 @@ ira_hard_reg_not_in_set_p (int hard_regno, enum machine_mode mode,
 /* Allocate cost vector *VEC for hard registers of ACLASS and
    initialize the elements by VAL if it is necessary */
 static inline void
-ira_allocate_and_set_costs (int **vec, enum reg_class aclass, int val)
+ira_allocate_and_set_costs (int **vec, reg_class_t aclass, int val)
 {
   int i, *reg_costs;
   int len;
@@ -1355,7 +1355,7 @@ ira_allocate_and_set_costs (int **vec, enum reg_class aclass, int val)
   if (*vec != NULL)
     return;
   *vec = reg_costs = ira_allocate_cost_vector (aclass);
-  len = ira_class_hard_regs_num[aclass];
+  len = ira_class_hard_regs_num[(int) aclass];
   for (i = 0; i < len; i++)
     reg_costs[i] = val;
 }

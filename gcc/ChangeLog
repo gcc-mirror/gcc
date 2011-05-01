@@ -1,3 +1,25 @@
+2011-05-01  Anatoly Sokolov  <aesok@post.ru>
+
+	* reginfo.c (memory_move_cost): Change rclass argument type form
+	'enum reg_class' to reg_class_t.
+	* reload.h (memory_move_cost): Update prototype.
+	* postreload.c reload_cse_simplify_set): Change type dclass var to
+	reg_class_t.
+	* ira-int.h (ira_allocate_cost_vector, ira_free_cost_vector):
+	Update prototype.
+	(ira_allocate_and_set_costs): Change aclass argument type form
+	'enum reg_class' to reg_class_t.
+	* ira-build.c (ira_allocate_cost_vector, ira_free_cost_vector): 
+	Change aclass argument type to reg_class_t.
+	(update_conflict_hard_reg_costs): Change type aclass and pref vars
+	to reg_class_t.
+	* gcc/ira.c (setup_class_subset_and_memory_move_costs): Adjust
+	memory_move_cost call.
+
+	* config/ia64/ia64.c (ia64_register_move_cost): Remove 'from' and
+	'to' local var. Rename from_i and to_i arguments to 'from' and 'to'.
+	Change type tmp var to reg_class_t.
+
 2011-04-30  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (can_inline_edge_p): Disregard limits when

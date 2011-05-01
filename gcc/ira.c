@@ -583,11 +583,11 @@ setup_class_subset_and_memory_move_costs (void)
 	    ira_max_memory_move_cost[mode][cl][0]
 	      = ira_memory_move_cost[mode][cl][0]
 	      = memory_move_cost ((enum machine_mode) mode,
-				  (enum reg_class) cl, false);
+				  (reg_class_t) cl, false);
 	    ira_max_memory_move_cost[mode][cl][1]
 	      = ira_memory_move_cost[mode][cl][1]
 	      = memory_move_cost ((enum machine_mode) mode,
-				  (enum reg_class) cl, true);
+				  (reg_class_t) cl, true);
 	    /* Costs for NO_REGS are used in cost calculation on the
 	       1st pass when the preferred register classes are not
 	       known yet.  In this case we take the best scenario.  */

@@ -1402,17 +1402,17 @@ initiate_cost_vectors (void)
 
 /* Allocate and return a cost vector VEC for ACLASS.  */
 int *
-ira_allocate_cost_vector (enum reg_class aclass)
+ira_allocate_cost_vector (reg_class_t aclass)
 {
-  return (int *) pool_alloc (cost_vector_pool[aclass]);
+  return (int *) pool_alloc (cost_vector_pool[(int) aclass]);
 }
 
 /* Free a cost vector VEC for ACLASS.  */
 void
-ira_free_cost_vector (int *vec, enum reg_class aclass)
+ira_free_cost_vector (int *vec, reg_class_t aclass)
 {
   ira_assert (vec != NULL);
-  pool_free (cost_vector_pool[aclass], vec);
+  pool_free (cost_vector_pool[(int) aclass], vec);
 }
 
 /* Finish work with hard register cost vectors.  Release allocation
@@ -2969,19 +2969,20 @@ update_conflict_hard_reg_costs (void)
 
   FOR_EACH_ALLOCNO (a, ai)
     {
-      enum reg_class aclass = ALLOCNO_CLASS (a);
-      enum reg_class pref = reg_preferred_class (ALLOCNO_REGNO (a));
+      reg_class_t aclass = ALLOCNO_CLASS (a);
+      reg_class_t pref = reg_preferred_class (ALLOCNO_REGNO (a));
 
-      if (reg_class_size[pref] != 1)
+      if (reg_class_size[(int) pref] != 1)
 	continue;
-      index = ira_class_hard_reg_index[aclass][ira_class_hard_regs[pref][0]];
+      index = ira_class_hard_reg_index[(int) aclass]
+				      [ira_class_hard_regs[(int) pref][0]];
       if (index < 0)
 	continue;
       if (ALLOCNO_CONFLICT_HARD_REG_COSTS (a) == NULL
 	  || ALLOCNO_HARD_REG_COSTS (a) == NULL)
 	continue;
       min = INT_MAX;
-      for (i = ira_class_hard_regs_num[aclass] - 1; i >= 0; i--)
+      for (i = ira_class_hard_regs_num[(int) aclass] - 1; i >= 0; i--)
 	if (ALLOCNO_HARD_REG_COSTS (a)[i] > ALLOCNO_CLASS_COST (a)
 	    && min > ALLOCNO_HARD_REG_COSTS (a)[i])
 	  min = ALLOCNO_HARD_REG_COSTS (a)[i];
