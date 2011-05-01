@@ -1,3 +1,9 @@
+2011-04-30  Doug Kwan  <dougkwan@google.com>
+
+	* include/Makefile.am (install-freestanding-headers): Also install
+	cxxabi_tweaks.h.
+	* include/Makefile.in: Regenerate.
+
 2011-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/48760
