@@ -67,11 +67,9 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 {
   char *out;
   char *digits;
-  int e;
+  int e, w, d, p, i;
   char expchar, rchar;
   format_token ft;
-  int w;
-  int d;
   /* Number of digits before the decimal point.  */
   int nbefore;
   /* Number of zeros after the decimal point.  */
@@ -82,12 +80,12 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   int nzero_real;
   int leadzero;
   int nblanks;
-  int i;
   sign_t sign;
 
   ft = f->format;
   w = f->u.real.w;
   d = f->u.real.d;
+  p = dtp->u.p.scale_factor;
 
   rchar = '5';
   nzero_real = -1;
@@ -119,14 +117,14 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   switch (ft)
     {
     case FMT_F:
-      if (d == 0 && e <= 0 && dtp->u.p.scale_factor == 0)
+      if (d == 0 && e <= 0 && p == 0)
 	{
 	  memmove (digits + 1, digits, ndigits - 1);
 	  digits[0] = '0';
 	  e++;
 	}
 
-      nbefore = e + dtp->u.p.scale_factor;
+      nbefore = e + p;
       if (nbefore < 0)
 	{
 	  nzero = -nbefore;
@@ -147,13 +145,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
     case FMT_E:
     case FMT_D:
       i = dtp->u.p.scale_factor;
-      if (d <= 0 && i == 0)
+      if (d <= 0 && p == 0)
 	{
 	  generate_error (&dtp->common, LIBERROR_FORMAT, "Precision not "
 			  "greater than zero in format specifier 'E' or 'D'");
 	  return FAILURE;
 	}
-      if (i <= -d || i >= d + 2)
+      if (p <= -d || p >= d + 2)
 	{
 	  generate_error (&dtp->common, LIBERROR_FORMAT, "Scale factor "
 			  "out of range in format specifier 'E' or 'D'");
@@ -161,20 +159,20 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	}
 
       if (!zero_flag)
-	e -= i;
-      if (i < 0)
+	e -= p;
+      if (p < 0)
 	{
 	  nbefore = 0;
-	  nzero = -i;
-	  nafter = d + i;
+	  nzero = -p;
+	  nafter = d + p;
 	}
-      else if (i > 0)
+      else if (p > 0)
 	{
-	  nbefore = i;
+	  nbefore = p;
 	  nzero = 0;
-	  nafter = (d - i) + 1;
+	  nafter = (d - p) + 1;
 	}
-      else /* i == 0 */
+      else /* p == 0 */
 	{
 	  nbefore = 0;
 	  nzero = 0;
@@ -233,7 +231,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	if (sign_bit)
 	  goto skip;
 	rchar = '0';
-	break;
+	/* Scan for trailing zeros to see if we really need to round it.  */
+	for(i = nbefore + nafter; i < ndigits; i++)
+	  {
+	    if (digits[i] != '0')
+	      goto do_rnd;
+	  }
+	goto skip;
       case ROUND_DOWN:
 	if (!sign_bit)
 	  goto skip;
@@ -290,8 +294,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   else if (nbefore + nafter < ndigits)
     {
       i = ndigits = nbefore + nafter;
-      if (d == 0 && digits[1] == '0')
-	goto skip;
       if (digits[i] >= rchar)
 	{
 	  /* Propagate the carry.  */
