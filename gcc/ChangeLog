@@ -1,3 +1,13 @@
+2011-05-01  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (caller_growth_limits): Fix thinko when
+	looking for largest stack frame.
+	* ipa-inline.h (dump_inline_summary): Declare.
+	* ipa-inline-analysis.c (dump_inline_edge_summary): Dump info
+	on stack usage.
+	(dump_inline_summary): Export.
+	(debug_inline_summary): Declare as DEBUG_FUNCTION.
+
 2011-05-01  Anatoly Sokolov  <aesok@post.ru>
 
 	* reginfo.c (memory_move_cost): Change rclass argument type form

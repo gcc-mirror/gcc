@@ -151,7 +151,7 @@ caller_growth_limits (struct cgraph_edge *e)
      we immediately inline to.  This is the most relaxed
      interpretation of the rule "do not grow large functions
      too much in order to prevent compiler from exploding".  */
-  do
+  while (true)
     {
       info = inline_summary (to);
       if (limit < info->self_size)
@@ -160,8 +160,9 @@ caller_growth_limits (struct cgraph_edge *e)
 	stack_size_limit = info->estimated_self_stack_size;
       if (to->global.inlined_to)
         to = to->callers->caller;
+      else
+	break;
     }
-  while (to->global.inlined_to);
 
   what_info = inline_summary (what);
 
@@ -181,12 +182,15 @@ caller_growth_limits (struct cgraph_edge *e)
       return false;
     }
 
+  if (!what_info->estimated_stack_size)
+    return true;
+
   /* FIXME: Stack size limit often prevents inlining in Fortran programs
      due to large i/o datastructures used by the Fortran front-end.
      We ought to ignore this limit when we know that the edge is executed
      on every invocation of the caller (i.e. its call statement dominates
      exit block).  We do not track this information, yet.  */
-  stack_size_limit += (stack_size_limit
+  stack_size_limit += ((gcov_type)stack_size_limit
 		       * PARAM_VALUE (PARAM_STACK_FRAME_GROWTH) / 100);
 
   inlined_stack = (outer_info->stack_frame_offset
