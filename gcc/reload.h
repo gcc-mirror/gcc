@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 extern int register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
-extern int memory_move_cost (enum machine_mode, enum reg_class, bool);
+extern int memory_move_cost (enum machine_mode, reg_class_t, bool);
 extern int memory_move_secondary_cost (enum machine_mode, reg_class_t, bool);
 
 /* Maximum number of reloads we can need.  */
