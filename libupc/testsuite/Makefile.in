@@ -194,6 +194,7 @@ top_srcdir = @top_srcdir@
 upc_crtbegin_spec = @upc_crtbegin_spec@
 upc_crtend_spec = @upc_crtend_spec@
 upc_crtstuff_cflags = @upc_crtstuff_cflags@
+upc_crtstuff_mak = @upc_crtstuff_mak@
 upc_crtstuff_objs = @upc_crtstuff_objs@
 AUTOMAKE_OPTIONS = foreign dejagnu
 

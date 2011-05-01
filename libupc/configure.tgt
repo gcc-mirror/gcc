@@ -70,6 +70,15 @@ upc_crtend_spec=\
 "%{static:upc-crtendT%O%s; shared|pie:upc-crtendS%O%s; :upc-crtend%O%s}"
 upc_crtstuff_objs=\
 "upc-crtbeginT.o upc-crtbeginS.o upc-crtbegin.o upc-crtendT.o upc-crtendS.o upc-crtend.o"
+upc_crtstuff_mak=
+for cfg_dir in ${config_path}; do
+  cfg_mak=config/$cfg_dir/upc-crtstuff.mak
+  if test -e ${srcdir}/${cfg_mak}; then
+    upc_crtstuff_mak=${cfg_mak}
+    break
+  fi
+done
+
 # The following empty alternatives are kept as place holders
 # that will be filled in with target-specific settings as needed.
 case "${target}" in

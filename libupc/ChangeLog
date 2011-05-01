@@ -1,3 +1,13 @@
+2011-05-01  Gary Funck  <gary@intrepid.com>
+
+	* configure.ac (upc_crtstuff_mak): New AC_SUBST variable.
+	* configure.tgt (upc_crtstuff_mak): Find upc-crtstuff.mak
+	  on $config_path.
+	* Makefile.am (upc_crtstuff_mak): Set make variable to value
+	  of configured AC_SUBST value.  This eliminates an automake
+	  error caused by a nested 'if' statement.
+	* configure, Makefile.in, testsuite/Makefile.in: Regenerate.
+
 2011-04-13  Gary Funck  <gary@intrepid.com>
 
 	* testsuite/lib/libupc.exp (ALWAYS_CFLAGS):

@@ -9,6 +9,8 @@ gcc_objdir = $(MULTIBUILDTOP)../../$(host_subdir)/gcc
 
 config_path = @config_path@
 
+upc_crtstuff_mak = $(top_srcdir)/@upc_crtstuff_mak@
+
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
@@ -159,16 +161,8 @@ if LIBUPC_CRTSTUFF
 
 toolexeclib_DATA = @upc_crtstuff_objs@
 
-upc_crtstuff_dir = \
-  $(dir $(first_word $(foreach dir,$(config_path), \
-    $(wildcard $(top_srcdir)/config/$(dir)/upc-crtstuff.mak))))
-
-ifeq ($(upc_crtstuff_dir),)
-  $(error could not find upc-crtstuff.mak in config_path)
-endif
-
 include $(gcc_objdir)/libgcc.mvars
-include $(upc_crtstuff_dir)/upc-crtstuff.mak
+include $(upc_crtstuff_mak)
 
 endif
 

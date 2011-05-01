@@ -582,6 +582,7 @@ if test "$targ_runtime" = "smp"; then
   AC_SUBST(link_upc_spec)
   AC_SUBST(upc_crtbegin_spec)
   AC_SUBST(upc_crtend_spec)
+  AC_SUBST(upc_crtstuff_mak)
   AC_SUBST(upc_crtstuff_objs)
 fi
 
