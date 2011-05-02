@@ -1,3 +1,11 @@
+2011-05-02  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR testsuite/48498
+	* gcc.dg/vect/slp-3.c: Increase loop bound.  Don't expect to fail
+	on vect_no_align targets.
+	* gcc.dg/vect/no-vfa-pr29145.c: Don't expect to fail on
+	vect_no_align targets.
+
 2011-05-01  Xinliang David Li  <davidxl@google.com>
 	
 	* gcc.dg/tree-ssa/integer-addr.c: New test.
