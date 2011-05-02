@@ -7609,6 +7609,17 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	      && CLASSTYPE_LITERAL_P (type))
 	    {
 	      size = build_expr_type_conversion (WANT_INT, size, true);
+	      if (!size)
+		{
+		  if (!(complain & tf_error))
+		    return error_mark_node;
+		  if (name)
+		    error ("size of array %qD has non-integral type %qT",
+			   name, type);
+		  else
+		    error ("size of array has non-integral type %qT", type);
+		  size = integer_one_node;
+		}
 	      if (size == error_mark_node)
 		return error_mark_node;
 	      type = TREE_TYPE (size);

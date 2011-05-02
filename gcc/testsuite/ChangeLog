@@ -1,3 +1,8 @@
+2011-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47969
+	* g++.dg/cpp0x/constexpr-47969.C: New.
+
 2011-05-02  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR testsuite/48498
@@ -7,7 +12,7 @@
 	vect_no_align targets.
 
 2011-05-01  Xinliang David Li  <davidxl@google.com>
-	
+
 	* gcc.dg/tree-ssa/integer-addr.c: New test.
 	* gcc.dg/tree-ssa/alias_bug.c: New test.
 
