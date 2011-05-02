@@ -411,7 +411,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    // Allocate more space.
 		    __capacity = __len + 1;
 		    _CharT* __another = _M_create(__capacity, __len);
-		    _S_copy(__another, _M_data(), __len);
+		    this->_S_copy(__another, _M_data(), __len);
 		    _M_dispose();
 		    _M_data(__another);
 		    _M_capacity(__capacity);
@@ -451,7 +451,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// Check for out_of_range and length_error exceptions.
 	__try
-	  { _S_copy_chars(_M_data(), __beg, __end); }
+	  { this->_S_copy_chars(_M_data(), __beg, __end); }
 	__catch(...)
 	  {
 	    _M_dispose();
@@ -473,7 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       if (__n)
-	_S_assign(_M_data(), __n, __c);
+	this->_S_assign(_M_data(), __n, __c);
 
       _M_set_length(__n);
     }
@@ -498,7 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 
 	  if (__rsize)
-	    _S_copy(_M_data(), __rcs._M_data(), __rsize);
+	    this->_S_copy(_M_data(), __rcs._M_data(), __rsize);
 
 	  _M_set_length(__rsize);
 	}
@@ -520,14 +520,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      || __res > size_type(_S_local_capacity))
 	    {
 	      _CharT* __tmp = _M_create(__res, __capacity);
-	      _S_copy(__tmp, _M_data(), _M_length() + 1);
+	      this->_S_copy(__tmp, _M_data(), _M_length() + 1);
 	      _M_dispose();
 	      _M_data(__tmp);
 	      _M_capacity(__res);
 	    }
 	  else if (!_M_is_local())
 	    {
-	      _S_copy(_M_local_data, _M_data(), _M_length() + 1);
+	      this->_S_copy(_M_local_data, _M_data(), _M_length() + 1);
 	      _M_destroy(__capacity);
 	      _M_data(_M_local_data);
 	    }
@@ -546,12 +546,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _CharT* __r = _M_create(__new_capacity, _M_capacity());
 
       if (__pos)
-	_S_copy(__r, _M_data(), __pos);
+	this->_S_copy(__r, _M_data(), __pos);
       if (__s && __len2)
-	_S_copy(__r + __pos, __s, __len2);
+	this->_S_copy(__r + __pos, __s, __len2);
       if (__how_much)
-	_S_copy(__r + __pos + __len2,
-		_M_data() + __pos + __len1, __how_much);
+	this->_S_copy(__r + __pos + __len2,
+		      _M_data() + __pos + __len1, __how_much);
       
       _M_dispose();
       _M_data(__r);
@@ -566,8 +566,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const size_type __how_much = _M_length() - __pos - __n;
 
       if (__how_much && __n)
-	_S_move(_M_data() + __pos, _M_data() + __pos + __n,
-		__how_much);
+	this->_S_move(_M_data() + __pos, _M_data() + __pos + __n, __how_much);
 
       _M_set_length(_M_length() - __n);
     }
