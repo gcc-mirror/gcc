@@ -1,3 +1,10 @@
+2011-05-02   Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer.c (lto_streamer_cache_insert_1,
+	lto_streamer_cache_lookup, lto_streamer_cache_create,
+	lto_streamer_cache_delete): Use pointer map instead of hashtable.
+	* lto-streamer.h (lto_streamer_cache_d): Turn node_map into pointer_map.
+
 2011-05-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/m68k/genopt.sh, config/m68k/m68k-isas.def,
