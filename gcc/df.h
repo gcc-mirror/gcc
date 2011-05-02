@@ -978,6 +978,7 @@ extern void df_note_add_problem (void);
 extern void df_md_add_problem (void);
 extern void df_md_simulate_artificial_defs_at_top (basic_block, bitmap);
 extern void df_md_simulate_one_insn (basic_block, rtx, bitmap);
+extern void df_simulate_find_noclobber_defs (rtx, bitmap);
 extern void df_simulate_find_defs (rtx, bitmap);
 extern void df_simulate_defs (rtx, bitmap);
 extern void df_simulate_uses (rtx, bitmap);

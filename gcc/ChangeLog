@@ -1,3 +1,32 @@
+2011-05-02  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	PR middle-end/43085
+	Backport from mainline:
+
+	2010-04-29  Bernd Schmidt  <bernds@codesourcery.com>
+
+	From Dominique d'Humieres <dominiq@lps.ens.fr>
+	PR bootstrap/43858
+	* ifcvt.c (dead_or_predicable): Use df_simulate_find_defs to compute
+	test_set.
+
+	2010-04-26  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* df-problems.c (df_simulate_initialize_forwards): Set, don't clear,
+	bits for artificial defs at the top of the block.
+	* fwprop.c (single_def_use_enter_block): Don't call it.
+
+	2010-04-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* ifcvt.c (dead_or_predicable): Use df_simulate_find_defs and
+	df_simulate_find_noclobber_defs as appropriate.  Keep track of an
+	extra set merge_set_noclobber, and use it to relax the final test
+	slightly.
+	* df.h (df_simulate_find_noclobber_defs): Declare.
+	* df-problems.c (df_simulate_find_defs): Don't ignore partial or
+	conditional defs.
+	(df_simulate_find_noclobber_defs): New function.
+
 2011-04-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/48288
