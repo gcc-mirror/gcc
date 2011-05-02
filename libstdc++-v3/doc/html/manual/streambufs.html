@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Stream Buffers</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="io.html" title="Chapter 13.  Input and Output"/><link rel="prev" href="io.html" title="Chapter 13.  Input and Output"/><link rel="next" href="stringstreams.html" title="Memory Based Streams"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Stream Buffers</th></tr><tr><td align="left"><a accesskey="p" href="io.html">Prev</a> </td><th width="60%" align="center">Chapter 13. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Stream Buffers</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="io.html" title="Chapter 13.  Input and Output"/><link rel="prev" href="io.html" title="Chapter 13.  Input and Output"/><link rel="next" href="stringstreams.html" title="Memory Based Streams"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Stream Buffers</th></tr><tr><td align="left"><a accesskey="p" href="io.html">Prev</a> </td><th width="60%" align="center">Chapter 13. 
   Input and Output
   
 </th><td align="right"> <a accesskey="n" href="stringstreams.html">Next</a></td></tr></table><hr/></div><div class="section" title="Stream Buffers"><div class="titlepage"><div><div><h2 class="title"><a id="std.io.streambufs"/>Stream Buffers</h2></div></div></div><div class="section" title="Derived streambuf Classes"><div class="titlepage"><div><div><h3 class="title"><a id="io.streambuf.derived"/>Derived streambuf Classes</h3></div></div></div><p>
     </p><p>Creating your own stream buffers for I/O can be remarkably easy.
       If you are interested in doing so, we highly recommend two very
       excellent books:
-      <a class="link" href="http://www.angelikalanger.com/iostreams.html" target="">Standard C++
+      <a class="link" href="http://www.angelikalanger.com/iostreams.html">Standard C++
       IOStreams and Locales</a> by Langer and Kreft, ISBN 0-201-18395-1, and
-      <a class="link" href="http://www.josuttis.com/libbook/" target="">The C++ Standard Library</a>
+      <a class="link" href="http://www.josuttis.com/libbook/">The C++ Standard Library</a>
       by Nicolai Josuttis, ISBN 0-201-37926-0.  Both are published by
       Addison-Wesley, who isn't paying us a cent for saying that, honest.
    </p><p>Here is a simple example, io/outbuf1, from the Josuttis text.  It
@@ -55,7 +55,7 @@
     }
    </pre><p>Try it yourself!  More examples can be found in 3.1.x code, in
       <code class="code">include/ext/*_filebuf.h</code>, and in this article by James Kanze:
-      <a class="link" href="http://kanze.james.neuf.fr/articles/fltrsbf1.html" target="">Filtering
+      <a class="link" href="http://kanze.james.neuf.fr/articles/fltrsbf1.html">Filtering
       Streambufs</a>.
    </p></div><div class="section" title="Buffering"><div class="titlepage"><div><div><h3 class="title"><a id="io.streambuf.buffering"/>Buffering</h3></div></div></div><p>First, are you sure that you understand buffering?  Particularly
       the fact that C++ may not, in fact, have anything to do with it?

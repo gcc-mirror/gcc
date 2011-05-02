@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Deprecated HP/SGI</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="ext_containers.html" title="Chapter 21. Containers"/><link rel="prev" href="bk01pt03ch21s02.html" title="HP/SGI"/><link rel="next" href="ext_utilities.html" title="Chapter 22. Utilities"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Deprecated HP/SGI</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch21s02.html">Prev</a> </td><th width="60%" align="center">Chapter 21. Containers</th><td align="right"> <a accesskey="n" href="ext_utilities.html">Next</a></td></tr></table><hr/></div><div class="section" title="Deprecated HP/SGI"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.containers.deprecated_sgi"/>Deprecated HP/SGI</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Deprecated HP/SGI</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="ext_containers.html" title="Chapter 21. Containers"/><link rel="prev" href="bk01pt03ch21s02.html" title="HP/SGI"/><link rel="next" href="ext_utilities.html" title="Chapter 22. Utilities"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Deprecated HP/SGI</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch21s02.html">Prev</a> </td><th width="60%" align="center">Chapter 21. Containers</th><td align="right"> <a accesskey="n" href="ext_utilities.html">Next</a></td></tr></table><hr/></div><div class="section" title="Deprecated HP/SGI"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.containers.deprecated_sgi"/>Deprecated HP/SGI</h2></div></div></div><p>
      The SGI hashing classes <code class="classname">hash_set</code> and
      <code class="classname">hash_set</code> have been deprecated by the
      unordered_set, unordered_multiset, unordered_map,
@@ -25,12 +25,12 @@
       sets.
    </p><p>Each of the associative containers map, multimap, set, and multiset
       have a counterpart which uses a
-      <a class="link" href="http://www.sgi.com/tech/stl/HashFunction.html" target="">hashing
+      <a class="link" href="http://www.sgi.com/tech/stl/HashFunction.html">hashing
       function</a> to do the arranging, instead of a strict weak ordering
       function.  The classes take as one of their template parameters a
       function object that will return the hash value; by default, an
       instantiation of
-      <a class="link" href="http://www.sgi.com/tech/stl/hash.html" target="">hash</a>.
+      <a class="link" href="http://www.sgi.com/tech/stl/hash.html">hash</a>.
       You should specialize this functor for your class, or define your own,
       before trying to use one of the hashing classes.
    </p><p>The hashing classes support all the usual associative container

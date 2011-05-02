@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Bugs</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="status.html" title="Chapter 1. Status"/><link rel="prev" href="license.html" title="License"/><link rel="next" href="setup.html" title="Chapter 2. Setup"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bugs</th></tr><tr><td align="left"><a accesskey="p" href="license.html">Prev</a> </td><th width="60%" align="center">Chapter 1. Status</th><td align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr></table><hr/></div><div class="section" title="Bugs"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.status.bugs"/>Bugs</h2></div></div></div><div class="section" title="Implementation Bugs"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.status.bugs.impl"/>Implementation Bugs</h3></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Bugs</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="status.html" title="Chapter 1. Status"/><link rel="prev" href="license.html" title="License"/><link rel="next" href="setup.html" title="Chapter 2. Setup"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bugs</th></tr><tr><td align="left"><a accesskey="p" href="license.html">Prev</a> </td><th width="60%" align="center">Chapter 1. Status</th><td align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr></table><hr/></div><div class="section" title="Bugs"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.status.bugs"/>Bugs</h2></div></div></div><div class="section" title="Implementation Bugs"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.status.bugs.impl"/>Implementation Bugs</h3></div></div></div><p>
       Information on known bugs, details on efforts to fix them, and
-      fixed bugs are all available as part of the <a class="link" href="http://gcc.gnu.org/bugs/" target="">GCC bug tracking system</a>,
+      fixed bugs are all available as part of the <a class="link" href="http://gcc.gnu.org/bugs/">GCC bug tracking system</a>,
       with the category set to <code class="literal">libstdc++</code>.
     </p></div><div class="section" title="Standard Bugs"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.status.bugs.iso"/>Standard Bugs</h3></div></div></div><p>
 	Everybody's got issues.  Even the C++ Standard Library.
@@ -15,9 +15,9 @@
 	Here are the issues which have resulted in code changes to the library.
 	The links are to the specific defect reports from a <span class="emphasis"><em>partial
 	copy</em></span> of the Issues List.  You can read the full version online
-	at the <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/" target="">ISO C++
+	at the <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/">ISO C++
 	Committee homepage</a>, linked to on the
-	<a class="link" href="http://gcc.gnu.org/readings.html" target="">GCC "Readings"
+	<a class="link" href="http://gcc.gnu.org/readings.html">GCC "Readings"
 	page</a>.  If
 	you spend a lot of time reading the issues, we recommend downloading
 	the ZIP file and reading them locally.
@@ -34,318 +34,318 @@
 	and src directories for appearances of
 	<code class="constant">_GLIBCXX_RESOLVE_LIB_DEFECTS</code> for examples
 	of style.  Note that we usually do not make changes to the
-	code until an issue has reached <a class="link" href="../ext/lwg-active.html#DR" target="">DR</a> status.
-      </p><div class="variablelist"><dl><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#5" target="">5</a>:
+	code until an issue has reached <a class="link" href="../ext/lwg-active.html#DR">DR</a> status.
+      </p><div class="variablelist"><dl><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#5">5</a>:
 	<span class="emphasis"><em>string::compare specification questionable</em></span>
     </span></dt><dd><p>This should be two overloaded functions rather than a single function.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#17" target="">17</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#17">17</a>:
 	<span class="emphasis"><em>Bad bool parsing</em></span>
     </span></dt><dd><p>Apparently extracting Boolean values was messed up...
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#19" target="">19</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#19">19</a>:
 	<span class="emphasis"><em>"Noconv" definition too vague</em></span>
     </span></dt><dd><p>If <code class="code">codecvt::do_in</code> returns <code class="code">noconv</code> there are
 	no changes to the values in <code class="code">[to, to_limit)</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#22" target="">22</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#22">22</a>:
 	<span class="emphasis"><em>Member open vs flags</em></span>
     </span></dt><dd><p>Re-opening a file stream does <span class="emphasis"><em>not</em></span> clear the state flags.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#23" target="">23</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#23">23</a>:
 	<span class="emphasis"><em>Num_get overflow result</em></span>
     </span></dt><dd><p>Implement the proposed resolution.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#25" target="">25</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#25">25</a>:
 	<span class="emphasis"><em>String operator&lt;&lt; uses width() value wrong</em></span>
     </span></dt><dd><p>Padding issues.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#48" target="">48</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#48">48</a>:
 	<span class="emphasis"><em>Use of non-existent exception constructor</em></span>
     </span></dt><dd><p>An instance of <code class="code">ios_base::failure</code> is constructed instead.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#49" target="">49</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#49">49</a>:
 	<span class="emphasis"><em>Underspecification of ios_base::sync_with_stdio</em></span>
     </span></dt><dd><p>The return type is the <span class="emphasis"><em>previous</em></span> state of synchronization.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#50" target="">50</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#50">50</a>:
 	<span class="emphasis"><em>Copy constructor and assignment operator of ios_base</em></span>
     </span></dt><dd><p>These members functions are declared <code class="code">private</code> and are
 	thus inaccessible.  Specifying the correct semantics of
 	"copying stream state" was deemed too complicated.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#60" target="">60</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#60">60</a>:
 	<span class="emphasis"><em>What is a formatted input function?</em></span>
     </span></dt><dd><p>This DR made many widespread changes to <code class="code">basic_istream</code>
 	and <code class="code">basic_ostream</code> all of which have been implemented.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#63" target="">63</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#63">63</a>:
 	<span class="emphasis"><em>Exception-handling policy for unformatted output</em></span>
     </span></dt><dd><p>Make the policy consistent with that of formatted input, unformatted
 	input, and formatted output.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#68" target="">68</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#68">68</a>:
 	<span class="emphasis"><em>Extractors for char* should store null at end</em></span>
     </span></dt><dd><p>And they do now.  An editing glitch in the last item in the list of
 	[27.6.1.2.3]/7.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#74" target="">74</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#74">74</a>:
 	<span class="emphasis"><em>Garbled text for codecvt::do_max_length</em></span>
     </span></dt><dd><p>The text of the standard was gibberish.  Typos gone rampant.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#75" target="">75</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#75">75</a>:
 	<span class="emphasis"><em>Contradiction in codecvt::length's argument types</em></span>
     </span></dt><dd><p>Change the first parameter to <code class="code">stateT&amp;</code> and implement
 	the new effects paragraph.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#83" target="">83</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#83">83</a>:
 	<span class="emphasis"><em>string::npos vs. string::max_size()</em></span>
     </span></dt><dd><p>Safety checks on the size of the string should test against
 	<code class="code">max_size()</code> rather than <code class="code">npos</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#90" target="">90</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#90">90</a>:
 	<span class="emphasis"><em>Incorrect description of operator&gt;&gt; for strings</em></span>
     </span></dt><dd><p>The effect contain <code class="code">isspace(c,getloc())</code> which must be
 	replaced by <code class="code">isspace(c,is.getloc())</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#91" target="">91</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#91">91</a>:
 	<span class="emphasis"><em>Description of operator&gt;&gt; and getline() for string&lt;&gt;
 	    might cause endless loop</em></span>
     </span></dt><dd><p>They behave as a formatted input function and as an unformatted
 	input function, respectively (except that <code class="code">getline</code> is
 	not required to set <code class="code">gcount</code>).
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#103" target="">103</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#103">103</a>:
 	<span class="emphasis"><em>set::iterator is required to be modifiable, but this allows
 	    modification of keys.</em></span>
     </span></dt><dd><p>For associative containers where the value type is the same as
 	the key type, both <code class="code">iterator</code> and <code class="code">const_iterator
 	</code> are constant iterators.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#109" target="">109</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#109">109</a>:
 	<span class="emphasis"><em>Missing binders for non-const sequence elements</em></span>
     </span></dt><dd><p>The <code class="code">binder1st</code> and <code class="code">binder2nd</code> didn't have an
 	<code class="code">operator()</code> taking a non-const parameter.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#110" target="">110</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#110">110</a>:
 	<span class="emphasis"><em>istreambuf_iterator::equal not const</em></span>
     </span></dt><dd><p>This was not a const member function.  Note that the DR says to
 	replace the function with a const one; we have instead provided an
 	overloaded version with identical contents.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#117" target="">117</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#117">117</a>:
 	<span class="emphasis"><em>basic_ostream uses nonexistent num_put member functions</em></span>
     </span></dt><dd><p><code class="code">num_put::put()</code> was overloaded on the wrong types.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#118" target="">118</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#118">118</a>:
 	<span class="emphasis"><em>basic_istream uses nonexistent num_get member functions</em></span>
     </span></dt><dd><p>Same as 117, but for <code class="code">num_get::get()</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#129" target="">129</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#129">129</a>:
 	<span class="emphasis"><em>Need error indication from seekp() and seekg()</em></span>
     </span></dt><dd><p>These functions set <code class="code">failbit</code> on error now.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#130" target="">130</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#130">130</a>:
 	<span class="emphasis"><em>Return type of container::erase(iterator) differs for associative containers</em></span>
     </span></dt><dd><p>Make member <code class="code">erase</code> return iterator for <code class="code">set</code>, <code class="code">multiset</code>, <code class="code">map</code>, <code class="code">multimap</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#136" target="">136</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#136">136</a>:
 	<span class="emphasis"><em>seekp, seekg setting wrong streams?</em></span>
     </span></dt><dd><p><code class="code">seekp</code> should only set the output stream, and
 	<code class="code">seekg</code> should only set the input stream.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#167" target="">167</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#167">167</a>:
 	<span class="emphasis"><em>Improper use of traits_type::length()</em></span>
     </span></dt><dd><p><code class="code">op&lt;&lt;</code> with a <code class="code">const char*</code> was
 	calculating an incorrect number of characters to write.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#169" target="">169</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#169">169</a>:
 	<span class="emphasis"><em>Bad efficiency of overflow() mandated</em></span>
     </span></dt><dd><p>Grow efficiently the internal array object.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#171" target="">171</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#171">171</a>:
 	<span class="emphasis"><em>Strange seekpos() semantics due to joint position</em></span>
     </span></dt><dd><p>Quite complex to summarize...
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#181" target="">181</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#181">181</a>:
 	<span class="emphasis"><em>make_pair() unintended behavior</em></span>
     </span></dt><dd><p>This function used to take its arguments as reference-to-const, now
 	it copies them (pass by value).
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#195" target="">195</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#195">195</a>:
 	<span class="emphasis"><em>Should basic_istream::sentry's constructor ever set eofbit?</em></span>
     </span></dt><dd><p>Yes, it can, specifically if EOF is reached while skipping whitespace.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#211" target="">211</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#211">211</a>:
 	<span class="emphasis"><em>operator&gt;&gt;(istream&amp;, string&amp;) doesn't set failbit</em></span>
     </span></dt><dd><p>If nothing is extracted into the string, <code class="code">op&gt;&gt;</code> now
 	sets <code class="code">failbit</code> (which can cause an exception, etc., etc.).
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#214" target="">214</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#214">214</a>:
 	<span class="emphasis"><em>set::find() missing const overload</em></span>
     </span></dt><dd><p>Both <code class="code">set</code> and <code class="code">multiset</code> were missing
 	overloaded find, lower_bound, upper_bound, and equal_range functions
 	for const instances.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#231" target="">231</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#231">231</a>:
 	<span class="emphasis"><em>Precision in iostream?</em></span>
     </span></dt><dd><p>For conversion from a floating-point type, <code class="code">str.precision()</code>
 	is specified in the conversion specification.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#233" target="">233</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#233">233</a>:
 	<span class="emphasis"><em>Insertion hints in associative containers</em></span>
     </span></dt><dd><p>Implement N1780, first check before then check after, insert as close
 	to hint as possible.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#235" target="">235</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#235">235</a>:
 	<span class="emphasis"><em>No specification of default ctor for reverse_iterator</em></span>
     </span></dt><dd><p>The declaration of <code class="code">reverse_iterator</code> lists a default constructor.
 	However, no specification is given what this constructor should do.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#241" target="">241</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#241">241</a>:
 	<span class="emphasis"><em>Does unique_copy() require CopyConstructible and Assignable?</em></span>
     </span></dt><dd><p>Add a helper for forward_iterator/output_iterator, fix the existing
 	one for input_iterator/output_iterator to not rely on Assignability.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#243" target="">243</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#243">243</a>:
 	<span class="emphasis"><em>get and getline when sentry reports failure</em></span>
     </span></dt><dd><p>Store a null character only if the character array has a non-zero size.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#251" target="">251</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#251">251</a>:
 	<span class="emphasis"><em>basic_stringbuf missing allocator_type</em></span>
     </span></dt><dd><p>This nested typedef was originally not specified.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#253" target="">253</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#253">253</a>:
 	<span class="emphasis"><em>valarray helper functions are almost entirely useless</em></span>
     </span></dt><dd><p>Make the copy constructor and copy-assignment operator declarations
 	public in gslice_array, indirect_array, mask_array, slice_array; provide
 	definitions.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#265" target="">265</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#265">265</a>:
 	<span class="emphasis"><em>std::pair::pair() effects overly restrictive</em></span>
     </span></dt><dd><p>The default ctor would build its members from copies of temporaries;
 	now it simply uses their respective default ctors.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#266" target="">266</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#266">266</a>:
 	<span class="emphasis"><em>bad_exception::~bad_exception() missing Effects clause</em></span>
     </span></dt><dd><p>The <code class="code">bad_</code>* classes no longer have destructors (they
 	are trivial), since no description of them was ever given.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#271" target="">271</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#271">271</a>:
 	<span class="emphasis"><em>basic_iostream missing typedefs</em></span>
     </span></dt><dd><p>The typedefs it inherits from its base classes can't be used, since
 	(for example) <code class="code">basic_iostream&lt;T&gt;::traits_type</code> is ambiguous.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#275" target="">275</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#275">275</a>:
 	<span class="emphasis"><em>Wrong type in num_get::get() overloads</em></span>
     </span></dt><dd><p>Similar to 118.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#280" target="">280</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#280">280</a>:
 	<span class="emphasis"><em>Comparison of reverse_iterator to const reverse_iterator</em></span>
     </span></dt><dd><p>Add global functions with two template parameters.
 	(NB: not added for now a templated assignment operator)
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#292" target="">292</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#292">292</a>:
 	<span class="emphasis"><em>Effects of a.copyfmt (a)</em></span>
     </span></dt><dd><p>If <code class="code">(this == &amp;rhs)</code> do nothing.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#300" target="">300</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#300">300</a>:
 	<span class="emphasis"><em>List::merge() specification incomplete</em></span>
     </span></dt><dd><p>If <code class="code">(this == &amp;x)</code> do nothing.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#303" target="">303</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#303">303</a>:
 	<span class="emphasis"><em>Bitset input operator underspecified</em></span>
     </span></dt><dd><p>Basically, compare the input character to
 		    <code class="code">is.widen(0)</code> and <code class="code">is.widen(1)</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#305" target="">305</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#305">305</a>:
 	<span class="emphasis"><em>Default behavior of codecvt&lt;wchar_t, char,
 		  mbstate_t&gt;::length()</em></span>
     </span></dt><dd><p>Do not specify what <code class="code">codecvt&lt;wchar_t, char,
 		    mbstate_t&gt;::do_length</code> must return.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#328" target="">328</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#328">328</a>:
 	<span class="emphasis"><em>Bad sprintf format modifier in
 		  money_put&lt;&gt;::do_put()</em></span>
     </span></dt><dd><p>Change the format string to "%.0Lf".
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#365" target="">365</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#365">365</a>:
 	<span class="emphasis"><em>Lack of const-qualification in clause 27</em></span>
     </span></dt><dd><p>Add const overloads of <code class="code">is_open</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#387" target="">387</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#387">387</a>:
 	<span class="emphasis"><em>std::complex over-encapsulated</em></span>
     </span></dt><dd><p>Add the <code class="code">real(T)</code> and <code class="code">imag(T)</code>
 		    members;  in C++0x mode, also adjust the existing
 		    <code class="code">real()</code> and <code class="code">imag()</code> members and
 		    free functions.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#389" target="">389</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#389">389</a>:
 	<span class="emphasis"><em>Const overload of valarray::operator[] returns
 		  by value</em></span>
     </span></dt><dd><p>Change it to return a <code class="code">const T&amp;</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#396" target="">396</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#396">396</a>:
 	<span class="emphasis"><em>what are characters zero and one</em></span>
     </span></dt><dd><p>Implement the proposed resolution.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#402" target="">402</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#402">402</a>:
 	<span class="emphasis"><em>Wrong new expression in [some_]allocator::construct</em></span>
     </span></dt><dd><p>Replace "new" with "::new".
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-closed.html#408" target="">408</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-closed.html#408">408</a>:
 	<span class="emphasis"><em>
 	Is vector&lt;reverse_iterator&lt;char*&gt; &gt; forbidden?
 	</em></span>
     </span></dt><dd><p>Tweak the debug-mode checks in _Safe_iterator.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#409" target="">409</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#409">409</a>:
 	<span class="emphasis"><em>Closing an fstream should clear the error state</em></span>
     </span></dt><dd><p>Have <code class="code">open</code> clear the error flags.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-closed.html#431" target="">431</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-closed.html#431">431</a>:
 	<span class="emphasis"><em>Swapping containers with unequal allocators</em></span>
     </span></dt><dd><p>Implement Option 3, as per N1599.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#432" target="">432</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#432">432</a>:
 	<span class="emphasis"><em>stringbuf::overflow() makes only one write position
 	    available</em></span>
     </span></dt><dd><p>Implement the resolution, beyond DR 169.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#434" target="">434</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#434">434</a>:
 	<span class="emphasis"><em>bitset::to_string() hard to use</em></span>
     </span></dt><dd><p>Add three overloads, taking fewer template arguments.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#438" target="">438</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#438">438</a>:
 	<span class="emphasis"><em>Ambiguity in the "do the right thing" clause</em></span>
     </span></dt><dd><p>Implement the resolution, basically cast less.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#453" target="">453</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#453">453</a>:
 	<span class="emphasis"><em>basic_stringbuf::seekoff need not always fail for an empty stream</em></span>
     </span></dt><dd><p>Don't fail if the next pointer is null and newoff is zero.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#455" target="">455</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#455">455</a>:
 	<span class="emphasis"><em>cerr::tie() and wcerr::tie() are overspecified</em></span>
     </span></dt><dd><p>Initialize cerr tied to cout and wcerr tied to wcout.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#464" target="">464</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#464">464</a>:
 	<span class="emphasis"><em>Suggestion for new member functions in standard containers</em></span>
     </span></dt><dd><p>Add <code class="code">data()</code> to <code class="code">std::vector</code> and
 	<code class="code">at(const key_type&amp;)</code> to <code class="code">std::map</code>.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#508" target="">508</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#508">508</a>:
 	<span class="emphasis"><em>Bad parameters for ranlux64_base_01</em></span>
     </span></dt><dd><p>Fix the parameters.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-closed.html#512" target="">512</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-closed.html#512">512</a>:
 	<span class="emphasis"><em>Seeding subtract_with_carry_01 from a single unsigned long</em></span>
     </span></dt><dd><p>Construct a <code class="code">linear_congruential</code> engine and seed with it.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-closed.html#526" target="">526</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-closed.html#526">526</a>:
 	<span class="emphasis"><em>Is it undefined if a function in the standard changes in
 	    parameters?</em></span>
     </span></dt><dd><p>Use &amp;value.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#538" target="">538</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#538">538</a>:
 	<span class="emphasis"><em>241 again: Does unique_copy() require CopyConstructible
 	    and Assignable?</em></span>
     </span></dt><dd><p>In case of input_iterator/output_iterator rely on Assignability of
 	input_iterator' value_type.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#539" target="">539</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#539">539</a>:
 	<span class="emphasis"><em>partial_sum and adjacent_difference should mention
 	    requirements</em></span>
     </span></dt><dd><p>We were almost doing the right thing, just use std::move
 	in adjacent_difference.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#541" target="">541</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#541">541</a>:
 	<span class="emphasis"><em>shared_ptr template assignment and void</em></span>
     </span></dt><dd><p>Add an auto_ptr&lt;void&gt; specialization.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#543" target="">543</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#543">543</a>:
 	<span class="emphasis"><em>valarray slice default constructor</em></span>
     </span></dt><dd><p>Follow the straightforward proposed resolution.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#550" target="">550</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#550">550</a>:
 	<span class="emphasis"><em>What should the return type of pow(float,int) be?</em></span>
     </span></dt><dd><p>In C++0x mode, remove the pow(float,int), etc., signatures.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#586" target="">586</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#586">586</a>:
 	<span class="emphasis"><em>string inserter not a formatted function</em></span>
     </span></dt><dd><p>Change it to be a formatted output function (i.e. catch exceptions).
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#596" target="">596</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#596">596</a>:
 	<span class="emphasis"><em>27.8.1.3 Table 112 omits "a+" and "a+b" modes</em></span>
     </span></dt><dd><p>Add the missing modes to fopen_mode.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#630" target="">630</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#630">630</a>:
 	<span class="emphasis"><em>arrays of valarray</em></span>
     </span></dt><dd><p>Implement the simple resolution.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#660" target="">660</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#660">660</a>:
 	<span class="emphasis"><em>Missing bitwise operations</em></span>
     </span></dt><dd><p>Add the missing operations.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#691" target="">691</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#691">691</a>:
 	<span class="emphasis"><em>const_local_iterator cbegin, cend missing from TR1</em></span>
     </span></dt><dd><p>In C++0x mode add cbegin(size_type) and cend(size_type)
 		    to the unordered containers.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#693" target="">693</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#693">693</a>:
 	<span class="emphasis"><em>std::bitset::all() missing</em></span>
     </span></dt><dd><p>Add it, consistently with the discussion.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#695" target="">695</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#695">695</a>:
 	<span class="emphasis"><em>ctype&lt;char&gt;::classic_table() not accessible</em></span>
     </span></dt><dd><p>Make the member functions table and classic_table public.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#696" target="">696</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#696">696</a>:
 	<span class="emphasis"><em>istream::operator&gt;&gt;(int&amp;) broken</em></span>
     </span></dt><dd><p>Implement the straightforward resolution.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#761" target="">761</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#761">761</a>:
 	<span class="emphasis"><em>unordered_map needs an at() member function</em></span>
     </span></dt><dd><p>In C++0x mode, add at() and at() const.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#775" target="">775</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#775">775</a>:
 	<span class="emphasis"><em>Tuple indexing should be unsigned?</em></span>
     </span></dt><dd><p>Implement the int -&gt; size_t replacements.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#776" target="">776</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#776">776</a>:
 	<span class="emphasis"><em>Undescribed assign function of std::array</em></span>
     </span></dt><dd><p>In C++0x mode, remove assign, add fill.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#781" target="">781</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#781">781</a>:
 	<span class="emphasis"><em>std::complex should add missing C99 functions</em></span>
     </span></dt><dd><p>In C++0x mode, add std::proj.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#809" target="">809</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#809">809</a>:
 	<span class="emphasis"><em>std::swap should be overloaded for array types</em></span>
     </span></dt><dd><p>Add the overload.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#844" target="">844</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#844">844</a>:
 	<span class="emphasis"><em>complex pow return type is ambiguous</em></span>
     </span></dt><dd><p>In C++0x mode, remove the pow(complex&lt;T&gt;, int) signature.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#853" target="">853</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#853">853</a>:
 	<span class="emphasis"><em>to_string needs updating with zero and one</em></span>
     </span></dt><dd><p>Update / add the signatures.
-    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#865" target="">865</a>:
+    </p></dd><dt><span class="term"><a class="link" href="../ext/lwg-defects.html#865">865</a>:
 	<span class="emphasis"><em>More algorithms that throw away information</em></span>
     </span></dt><dd><p>The traditional HP / SGI return type and value is blessed
 		    by the resolution of the DR.

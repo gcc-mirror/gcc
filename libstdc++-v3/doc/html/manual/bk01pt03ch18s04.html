@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Design</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      parallel&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="parallel_mode.html" title="Chapter 18. Parallel Mode"/><link rel="prev" href="bk01pt03ch18s03.html" title="Using"/><link rel="next" href="bk01pt03ch18s05.html" title="Testing"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch18s03.html">Prev</a> </td><th width="60%" align="center">Chapter 18. Parallel Mode</th><td align="right"> <a accesskey="n" href="bk01pt03ch18s05.html">Next</a></td></tr></table><hr/></div><div class="section" title="Design"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.parallel_mode.design"/>Design</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Design</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      parallel&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="parallel_mode.html" title="Chapter 18. Parallel Mode"/><link rel="prev" href="bk01pt03ch18s03.html" title="Using"/><link rel="next" href="bk01pt03ch18s05.html" title="Testing"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch18s03.html">Prev</a> </td><th width="60%" align="center">Chapter 18. Parallel Mode</th><td align="right"> <a accesskey="n" href="bk01pt03ch18s05.html">Next</a></td></tr></table><hr/></div><div class="section" title="Design"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.parallel_mode.design"/>Design</h2></div></div></div><p>
   </p><div class="section" title="Interface Basics"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.design.intro"/>Interface Basics</h3></div></div></div><p>
 All parallel algorithms are intended to have signatures that are
 equivalent to the ISO C++ algorithms replaced. For instance, the
@@ -175,7 +175,7 @@ i. e. it is a singleton. It can be read and written by calling
 <code class="code">__gnu_parallel::_Settings::set</code>, respectively.
 Please note that the first call return a const object, so direct manipulation
 is forbidden.
-See <a class="link" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01005.html" target="">
+See <a class="link" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01005.html">
   <code class="filename">settings.h</code></a>
 for complete details.
 </p><p>
