@@ -317,6 +317,7 @@ moxie*)	cpu_type=moxie
 fido-*-*)
 	cpu_type=m68k
 	extra_headers=math-68881.h
+	extra_options="${extra_options} m68k/m68k-tables.opt"
         ;;
 i[34567]86-*-*)
 	cpu_type=i386
@@ -360,6 +361,7 @@ m32r*-*-*)
         ;;
 m68k-*-*)
 	extra_headers=math-68881.h
+	extra_options="${extra_options} m68k/m68k-tables.opt"
 	;;
 microblaze*-*-*)
         cpu_type=microblaze
@@ -3524,6 +3526,7 @@ case ${target} in
 
 	fido*-*-* | m68k*-*-*)
 		target_cpu_default2=$m68k_cpu_ident
+		tmake_file="m68k/t-opts $tmake_file"
 		if [ x"$m68k_arch_family" != x ]; then
 		        tmake_file="m68k/t-$m68k_arch_family $tmake_file"
 		fi

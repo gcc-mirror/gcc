@@ -1,0 +1,427 @@
+; -*- buffer-read-only: t -*-
+; Generated automatically by genopt.sh from m68k-devices.def,
+; m68k-isas.def and m68k-microarchs.def.
+
+; Copyright (C) 2011 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+Enum
+Name(target_device) Type(enum target_device)
+Known M68K CPUs (for use with the -mcpu= option):
+
+EnumValue
+Enum(target_device) String(68000) Value(m68000)
+
+EnumValue
+Enum(target_device) String(68010) Value(m68010)
+
+EnumValue
+Enum(target_device) String(68020) Value(m68020)
+
+EnumValue
+Enum(target_device) String(68030) Value(m68030)
+
+EnumValue
+Enum(target_device) String(68040) Value(m68040)
+
+EnumValue
+Enum(target_device) String(68060) Value(m68060)
+
+EnumValue
+Enum(target_device) String(68302) Value(m68302)
+
+EnumValue
+Enum(target_device) String(68332) Value(m68332)
+
+EnumValue
+Enum(target_device) String(cpu32) Value(cpu32)
+
+EnumValue
+Enum(target_device) String(51) Value(mcf51)
+
+EnumValue
+Enum(target_device) String(51ac) Value(mcf51ac)
+
+EnumValue
+Enum(target_device) String(51cn) Value(mcf51cn)
+
+EnumValue
+Enum(target_device) String(51em) Value(mcf51em)
+
+EnumValue
+Enum(target_device) String(51jm) Value(mcf51jm)
+
+EnumValue
+Enum(target_device) String(51qe) Value(mcf51qe)
+
+EnumValue
+Enum(target_device) String(5202) Value(mcf5202)
+
+EnumValue
+Enum(target_device) String(5204) Value(mcf5204)
+
+EnumValue
+Enum(target_device) String(5206) Value(mcf5206)
+
+EnumValue
+Enum(target_device) String(5206e) Value(mcf5206e)
+
+EnumValue
+Enum(target_device) String(5207) Value(mcf5207)
+
+EnumValue
+Enum(target_device) String(5208) Value(mcf5208)
+
+EnumValue
+Enum(target_device) String(5210a) Value(mcf5210a)
+
+EnumValue
+Enum(target_device) String(5211a) Value(mcf5211a)
+
+EnumValue
+Enum(target_device) String(5211) Value(mcf5211)
+
+EnumValue
+Enum(target_device) String(5212) Value(mcf5212)
+
+EnumValue
+Enum(target_device) String(5213) Value(mcf5213)
+
+EnumValue
+Enum(target_device) String(5214) Value(mcf5214)
+
+EnumValue
+Enum(target_device) String(5216) Value(mcf5216)
+
+EnumValue
+Enum(target_device) String(5221x) Value(mcf5221x)
+
+EnumValue
+Enum(target_device) String(52221) Value(mcf52221)
+
+EnumValue
+Enum(target_device) String(52223) Value(mcf52223)
+
+EnumValue
+Enum(target_device) String(52230) Value(mcf52230)
+
+EnumValue
+Enum(target_device) String(52231) Value(mcf52231)
+
+EnumValue
+Enum(target_device) String(52232) Value(mcf52232)
+
+EnumValue
+Enum(target_device) String(52233) Value(mcf52233)
+
+EnumValue
+Enum(target_device) String(52234) Value(mcf52234)
+
+EnumValue
+Enum(target_device) String(52235) Value(mcf52235)
+
+EnumValue
+Enum(target_device) String(5224) Value(mcf5224)
+
+EnumValue
+Enum(target_device) String(5225) Value(mcf5225)
+
+EnumValue
+Enum(target_device) String(52252) Value(mcf52252)
+
+EnumValue
+Enum(target_device) String(52254) Value(mcf52254)
+
+EnumValue
+Enum(target_device) String(52255) Value(mcf52255)
+
+EnumValue
+Enum(target_device) String(52256) Value(mcf52256)
+
+EnumValue
+Enum(target_device) String(52258) Value(mcf52258)
+
+EnumValue
+Enum(target_device) String(52259) Value(mcf52259)
+
+EnumValue
+Enum(target_device) String(52274) Value(mcf52274)
+
+EnumValue
+Enum(target_device) String(52277) Value(mcf52277)
+
+EnumValue
+Enum(target_device) String(5232) Value(mcf5232)
+
+EnumValue
+Enum(target_device) String(5233) Value(mcf5233)
+
+EnumValue
+Enum(target_device) String(5234) Value(mcf5234)
+
+EnumValue
+Enum(target_device) String(5235) Value(mcf5235)
+
+EnumValue
+Enum(target_device) String(523x) Value(mcf523x)
+
+EnumValue
+Enum(target_device) String(5249) Value(mcf5249)
+
+EnumValue
+Enum(target_device) String(5250) Value(mcf5250)
+
+EnumValue
+Enum(target_device) String(5253) Value(mcf5253)
+
+EnumValue
+Enum(target_device) String(5270) Value(mcf5270)
+
+EnumValue
+Enum(target_device) String(5271) Value(mcf5271)
+
+EnumValue
+Enum(target_device) String(5272) Value(mcf5272)
+
+EnumValue
+Enum(target_device) String(5274) Value(mcf5274)
+
+EnumValue
+Enum(target_device) String(5275) Value(mcf5275)
+
+EnumValue
+Enum(target_device) String(5280) Value(mcf5280)
+
+EnumValue
+Enum(target_device) String(5281) Value(mcf5281)
+
+EnumValue
+Enum(target_device) String(5282) Value(mcf5282)
+
+EnumValue
+Enum(target_device) String(528x) Value(mcf528x)
+
+EnumValue
+Enum(target_device) String(53011) Value(mcf53011)
+
+EnumValue
+Enum(target_device) String(53012) Value(mcf53012)
+
+EnumValue
+Enum(target_device) String(53013) Value(mcf53013)
+
+EnumValue
+Enum(target_device) String(53014) Value(mcf53014)
+
+EnumValue
+Enum(target_device) String(53015) Value(mcf53015)
+
+EnumValue
+Enum(target_device) String(53016) Value(mcf53016)
+
+EnumValue
+Enum(target_device) String(53017) Value(mcf53017)
+
+EnumValue
+Enum(target_device) String(5307) Value(mcf5307)
+
+EnumValue
+Enum(target_device) String(5327) Value(mcf5327)
+
+EnumValue
+Enum(target_device) String(5328) Value(mcf5328)
+
+EnumValue
+Enum(target_device) String(5329) Value(mcf5329)
+
+EnumValue
+Enum(target_device) String(532x) Value(mcf532x)
+
+EnumValue
+Enum(target_device) String(5372) Value(mcf5372)
+
+EnumValue
+Enum(target_device) String(5373) Value(mcf5373)
+
+EnumValue
+Enum(target_device) String(537x) Value(mcf537x)
+
+EnumValue
+Enum(target_device) String(5407) Value(mcf5407)
+
+EnumValue
+Enum(target_device) String(54410) Value(mcf54410)
+
+EnumValue
+Enum(target_device) String(54415) Value(mcf54415)
+
+EnumValue
+Enum(target_device) String(54416) Value(mcf54416)
+
+EnumValue
+Enum(target_device) String(54417) Value(mcf54417)
+
+EnumValue
+Enum(target_device) String(54418) Value(mcf54418)
+
+EnumValue
+Enum(target_device) String(54450) Value(mcf54450)
+
+EnumValue
+Enum(target_device) String(54451) Value(mcf54451)
+
+EnumValue
+Enum(target_device) String(54452) Value(mcf54452)
+
+EnumValue
+Enum(target_device) String(54453) Value(mcf54453)
+
+EnumValue
+Enum(target_device) String(54454) Value(mcf54454)
+
+EnumValue
+Enum(target_device) String(54455) Value(mcf54455)
+
+EnumValue
+Enum(target_device) String(5470) Value(mcf5470)
+
+EnumValue
+Enum(target_device) String(5471) Value(mcf5471)
+
+EnumValue
+Enum(target_device) String(5472) Value(mcf5472)
+
+EnumValue
+Enum(target_device) String(5473) Value(mcf5473)
+
+EnumValue
+Enum(target_device) String(5474) Value(mcf5474)
+
+EnumValue
+Enum(target_device) String(5475) Value(mcf5475)
+
+EnumValue
+Enum(target_device) String(547x) Value(mcf547x)
+
+EnumValue
+Enum(target_device) String(5480) Value(mcf5480)
+
+EnumValue
+Enum(target_device) String(5481) Value(mcf5481)
+
+EnumValue
+Enum(target_device) String(5482) Value(mcf5482)
+
+EnumValue
+Enum(target_device) String(5483) Value(mcf5483)
+
+EnumValue
+Enum(target_device) String(5484) Value(mcf5484)
+
+EnumValue
+Enum(target_device) String(5485) Value(mcf5485)
+
+EnumValue
+Enum(target_device) String(548x) Value(mcf548x)
+
+EnumValue
+Enum(target_device) String(fidoa) Value(fidoa)
+
+Enum
+Name(uarch_type) Type(enum uarch_type)
+Known M68K microarchitectures (for use with the -mtune= option):
+
+EnumValue
+Enum(uarch_type) String(68000) Value(u68000)
+
+EnumValue
+Enum(uarch_type) String(68010) Value(u68010)
+
+EnumValue
+Enum(uarch_type) String(68020) Value(u68020)
+
+EnumValue
+Enum(uarch_type) String(68020-40) Value(u68020_40)
+
+EnumValue
+Enum(uarch_type) String(68020-60) Value(u68020_60)
+
+EnumValue
+Enum(uarch_type) String(68030) Value(u68030)
+
+EnumValue
+Enum(uarch_type) String(68040) Value(u68040)
+
+EnumValue
+Enum(uarch_type) String(68060) Value(u68060)
+
+EnumValue
+Enum(uarch_type) String(cpu32) Value(ucpu32)
+
+EnumValue
+Enum(uarch_type) String(cfv1) Value(ucfv1)
+
+EnumValue
+Enum(uarch_type) String(cfv2) Value(ucfv2)
+
+EnumValue
+Enum(uarch_type) String(cfv3) Value(ucfv3)
+
+EnumValue
+Enum(uarch_type) String(cfv4) Value(ucfv4)
+
+EnumValue
+Enum(uarch_type) String(cfv4e) Value(ucfv4e)
+
+Enum
+Name(m68k_isa) Type(int)
+Known M68K ISAs (for use with the -march= option):
+
+EnumValue
+Enum(m68k_isa) String(68000) Value(0)
+
+EnumValue
+Enum(m68k_isa) String(68010) Value(1)
+
+EnumValue
+Enum(m68k_isa) String(68020) Value(2)
+
+EnumValue
+Enum(m68k_isa) String(68030) Value(3)
+
+EnumValue
+Enum(m68k_isa) String(68040) Value(4)
+
+EnumValue
+Enum(m68k_isa) String(68060) Value(5)
+
+EnumValue
+Enum(m68k_isa) String(cpu32) Value(6)
+
+EnumValue
+Enum(m68k_isa) String(isaa) Value(7)
+
+EnumValue
+Enum(m68k_isa) String(isaaplus) Value(8)
+
+EnumValue
+Enum(m68k_isa) String(isab) Value(9)
+
+EnumValue
+Enum(m68k_isa) String(isac) Value(10)
+

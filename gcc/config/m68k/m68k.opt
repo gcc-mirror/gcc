@@ -19,6 +19,13 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/m68k/m68k-opts.h
+
+; Specify the identification number of the library being built.
+Variable
+const char *m68k_library_id_string = "_current_shared_library_a5_offset_"
+
 m5200
 Target RejectNegative Alias(mcpu=, 5206)
 Generate code for a 520X
@@ -93,7 +100,7 @@ Target Report Mask(ALIGN_INT)
 Align variables on a 32-bit boundary
 
 march=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(m68k_isa) Var(m68k_arch_option)
 Specify the name of the target architecture
 
 mbitfield
@@ -113,7 +120,7 @@ Target RejectNegative Alias(mcpu=, 547x)
 Generate code for a ColdFire v4e
 
 mcpu=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(target_device) Var(m68k_cpu_option) Init(unk_device)
 Specify the target CPU
 
 mcpu32
@@ -177,7 +184,7 @@ Target Report Mask(STRICT_ALIGNMENT)
 Do not use unaligned memory references
 
 mtune=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(uarch_type) Var(m68k_tune_option) Init(unk_arch)
 Tune for the specified target CPU or architecture
 
 mxgot

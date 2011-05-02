@@ -1,0 +1,43 @@
+/* m68k ISA names.
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Define ISAs for the -march option, used both in m68k.c and to
+   generate m68k-tables.opt.  Before including this file, define a
+   macro:
+
+   M68K_ISA (NAME, DEVICE, MICROARCH, ISA, FLAGS)
+
+   where NAME is the name for use with -march=, DEVICE is the value in
+   the target_device enumeration of a representative device, FLAGS is
+   the set of FL_* flags that apply to this ISA and the other
+   arguments are as for M68K_DEVICE in m68k-devices.def.  */
+
+M68K_ISA ("68000",    m68000,     68000, isa_00,    FL_FOR_isa_00)
+M68K_ISA ("68010",    m68010,     68010, isa_10,    FL_FOR_isa_10)
+M68K_ISA ("68020",    m68020,     68020, isa_20,    FL_FOR_isa_20)
+M68K_ISA ("68030",    m68030,     68030, isa_20,    FL_FOR_isa_20)
+M68K_ISA ("68040",    m68040,     68040, isa_40,    FL_FOR_isa_40)
+M68K_ISA ("68060",    m68060,     68060, isa_40,    FL_FOR_isa_40)
+M68K_ISA ("cpu32",    cpu32,      cpu32, isa_20,    FL_FOR_isa_cpu32)
+M68K_ISA ("isaa",     mcf5206e,   cfv2,  isa_a,     FL_FOR_isa_a | FL_CF_HWDIV)
+M68K_ISA ("isaaplus", mcf5271,    cfv2,  isa_aplus, FL_FOR_isa_aplus | FL_CF_HWDIV)
+M68K_ISA ("isab",     mcf5407,    cfv4,  isa_b,     FL_FOR_isa_b)
+M68K_ISA ("isac",     unk_device, cfv4,  isa_c,     FL_FOR_isa_c | FL_CF_HWDIV)
