@@ -981,6 +981,10 @@ m68k_expand_prologue (void)
 
   m68k_compute_frame_layout ();
 
+  if (flag_stack_usage)
+    current_function_static_stack_size
+      = current_frame.size + current_frame.offset;
+
   /* If the stack limit is a symbol, we can check it here,
      before actually allocating the space.  */
   if (crtl->limit_stack

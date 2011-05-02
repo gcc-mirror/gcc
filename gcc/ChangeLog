@@ -1,3 +1,9 @@
+2011-05-02  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/47955
+	* config/m68k/m68k.c (m68k_expand_prologue): Set
+	current_function_static_stack_size.
+
 2011-05-02   Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer.c (lto_streamer_cache_insert_1,
