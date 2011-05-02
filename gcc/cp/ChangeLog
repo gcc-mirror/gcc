@@ -1,5 +1,9 @@
 2011-05-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48834
+	* tree.c (build_vec_init_expr): Set TREE_SIDE_EFFECTS.
+	Protect an explicit target.
+
 	PR c++/48446
 	* decl.c (stabilize_save_expr_r, stabilize_vla_size): New.
 	(compute_array_index_type): Revert earlier 48446 changes.
