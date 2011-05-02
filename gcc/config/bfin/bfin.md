@@ -1961,15 +1961,15 @@
 
 (define_insn "loop_end"
   [(set (pc)
-	(if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "+a*d,*b*v*f,m")
+	(if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,0,0")
 			  (const_int 1))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
-   (set (match_dup 0)
-	(plus (match_dup 0)
+   (set (match_operand:SI 0 "nonimmediate_operand" "=a*d,*b*v*f,m")
+	(plus (match_dup 2)
 	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
-   (clobber (match_scratch:SI 2 "=X,&r,&r"))]
+   (clobber (match_scratch:SI 3 "=X,&r,&r"))]
   ""
   "@
    /* loop end %0 %l1 */
