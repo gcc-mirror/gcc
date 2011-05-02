@@ -475,80 +475,45 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
    another array to copy.  */
 
 static tree
-build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
+build_vec_init_elt (tree type, tree init)
 {
-  tree inner_type = strip_array_types (TREE_TYPE (type));
+  tree inner_type = strip_array_types (type);
   VEC(tree,gc) *argvec;
 
-  if (!CLASS_TYPE_P (inner_type))
+  if (integer_zerop (array_type_nelts_total (type))
+      || !CLASS_TYPE_P (inner_type))
     /* No interesting initialization to do.  */
     return integer_zero_node;
   else if (init == void_type_node)
     return build_value_init (inner_type, tf_warning_or_error);
 
-  if (init == NULL_TREE)
-    argvec = make_tree_vector ();
-  else if (TREE_CODE (init) == TREE_LIST)
-    /* Array init extension, i.e. g++.robertl/eb58.C. */
-    argvec = make_tree_vector_from_list (init);
-  else if (same_type_ignoring_top_level_qualifiers_p
-	   (inner_type, strip_array_types (TREE_TYPE (init))))
+  gcc_assert (init == NULL_TREE
+	      || (same_type_ignoring_top_level_qualifiers_p
+		  (type, TREE_TYPE (init))));
+
+  argvec = make_tree_vector ();
+  if (init)
     {
-      /* Array copy or list-initialization.  */
       tree dummy = build_dummy_object (inner_type);
       if (!real_lvalue_p (init))
 	dummy = move (dummy);
-      argvec = make_tree_vector_single (dummy);
+      VEC_quick_push (tree, argvec, dummy);
     }
-  else
-    gcc_unreachable ();
-  init = build_special_member_call (NULL_TREE, complete_ctor_identifier,
+  return build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				    &argvec, inner_type, LOOKUP_NORMAL,
-				    complain);
-  release_tree_vector (argvec);
-
-  /* For array new, also mark the destructor as used.  */
-  if (TREE_CODE (type) == POINTER_TYPE
-      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (inner_type))
-    {
-      tree dtor = get_dtor_sfinae (inner_type, complain);
-      if (dtor == error_mark_node)
-	return error_mark_node;
-      else if (dtor)
-	mark_used (dtor);
-    }
-  return init;
+				    tf_warning_or_error);
 }
 
-/* Return a TARGET_EXPR which expresses the initialization of an array.  If
-   TARGET is an array type, the initialization is of an array to be named
-   later, and the initialization will be wrapped in a TARGET_EXPR.  If
-   TARGET is an expression, it is the array to be initialized.  INIT is the
-   initializer, or void_type_node for value-initialization.  If TARGET is
-   an expression, NELTS is the number of elements to initialize. */
+/* Return a TARGET_EXPR which expresses the initialization of an array to
+   be named later, either default-initialization or copy-initialization
+   from another array of the same type.  */
 
 tree
-build_vec_init_expr (tree target, tree init, tree nelts,
-		     tsubst_flags_t complain)
+build_vec_init_expr (tree type, tree init)
 {
-  tree slot, type;
+  tree slot;
   bool value_init = false;
-  tree elt_init;
-  tree real_nelts;
-
-  if (TYPE_P (target))
-    {
-      gcc_assert (TREE_CODE (target) == ARRAY_TYPE && nelts == NULL_TREE);
-      type = target;
-      slot = build_local_temp (type);
-    }
-  else
-    {
-      gcc_assert (EXPR_P (target));
-      slot = target;
-      type = TREE_TYPE (slot);
-      gcc_assert (TREE_CODE (type) == POINTER_TYPE && nelts != NULL_TREE);
-    }
+  tree elt_init = build_vec_init_elt (type, init);
 
   if (init == void_type_node)
     {
@@ -556,14 +521,8 @@ build_vec_init_expr (tree target, tree init, tree nelts,
       init = NULL_TREE;
     }
 
-  real_nelts = nelts ? nelts : array_type_nelts_total (type);
-  if (integer_zerop (real_nelts))
-    /* No elements to initialize.  */
-    elt_init = integer_zero_node;
-  else
-    elt_init = build_vec_init_elt (type, init, complain);
-
-  init = build3 (VEC_INIT_EXPR, type, slot, init, nelts);
+  slot = build_local_temp (type);
+  init = build2 (VEC_INIT_EXPR, type, slot, init);
   TREE_SIDE_EFFECTS (init) = true;
   SET_EXPR_LOCATION (init, input_location);
 
@@ -572,15 +531,8 @@ build_vec_init_expr (tree target, tree init, tree nelts,
     VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
 
-  if (slot == target)
-    /* If we specified what array we're initializing, make sure
-       we don't override that in cp_gimplify_init_expr.  */
-    init = cp_build_compound_expr (init, slot, complain);
-  else
-    {
-      init = build_target_expr (slot, init, complain);
-      TARGET_EXPR_IMPLICIT_P (init) = 1;
-    }
+  init = build_target_expr (slot, init, complain);
+  TARGET_EXPR_IMPLICIT_P (init) = 1;
 
   return init;
 }
@@ -598,15 +550,14 @@ diagnose_non_constexpr_vec_init (tree expr)
   else
     init = VEC_INIT_EXPR_INIT (expr);
 
-  elt_init = build_vec_init_elt (type, init, tf_warning_or_error);
+  elt_init = build_vec_init_elt (type, init);
   require_potential_constant_expression (elt_init);
 }
 
 tree
 build_array_copy (tree init)
 {
-  return build_vec_init_expr (TREE_TYPE (init), init, NULL_TREE,
-			      tf_warning_or_error);
+  return build_vec_init_expr (TREE_TYPE (init), init);
 }
 
 /* Build a TARGET_EXPR using INIT to initialize a new temporary of the
