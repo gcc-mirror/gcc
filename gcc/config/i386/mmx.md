@@ -173,7 +173,7 @@
     movq2dq\t{%1, %0|%0, %1}
     %vxorps\t%0, %d0
     %vmovaps\t{%1, %0|%0, %1}
-    %vmovlps\t{%1, %0|%0, %1}
+    %vmovlps\t{%1, %d0|%d0, %1}
     %vmovlps\t{%1, %0|%0, %1}
     %vmovq\t{%1, %0|%0, %1}
     %vmovq\t{%1, %0|%0, %1}"
@@ -208,7 +208,7 @@
     movq2dq\t{%1, %0|%0, %1}
     %vxorps\t%0, %d0
     %vmovaps\t{%1, %0|%0, %1}
-    %vmovlps\t{%1, %0|%0, %1}
+    %vmovlps\t{%1, %d0|%d0, %1}
     %vmovlps\t{%1, %0|%0, %1}
     #
     #"
