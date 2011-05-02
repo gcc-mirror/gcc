@@ -1,3 +1,43 @@
+2011-05-02  Lawrence Crowl  <crowl@google.com>
+
+	* timevar.h (timevar_cond_start): Remove unused POP_TIMEVAR_AND_RETURN.
+	(timevar_cond_start): New for starting a timer only when it is not
+	already running.
+	(timevar_cond_stop): New for stopping a timer when it was not already
+	running.
+
+	* timevar.c (timevar_stop): Enable start/stop timers to start again.
+	(timevar_cond_start): New as above.
+	(timevar_cond_stop): New as above.
+
+	* timevar.def: Add start/stop timers for compiler phases,
+	TV_PHASE_SETUP, TV_PHASE_PARSING, TV_PHASE_DEFERRED, TV_PHASE_CGRAPH,
+	TV_PHASE_DBGINFO (C), TV_PHASE_CHECK_DBGINFO (C++), TV_PHASE_GENERATE,
+	and TV_PHASE_FINALIZE.
+	Change push/pop timer TV_PARSE to TV_PARSE_GLOBAL.
+	Add push/pop timers TV_PARSE_STRUCT, TV_PARSE_ENUM, TV_PARSE_FUNC,
+	TV_PARSE_INLINE, TV_PARSE_INMETH, TV_TEMPLATE_INST.
+	Change push/pop timer TV_NAME_LOOKUP into a start/stop timer.
+	Make unused TV_OVERLOAD into a start/stop timer.
+
+	Remove unused timers TV_OVERLOAD, TV_TEMPLATE_INSTANTIATION.
+	Mark the strings for TV_NAME_LOOKUP and TV_OVERLOAD with a "|"
+	to indicate that they are start/stop timers.
+
+	* toplev.c (compile_file): Change TV_PARSE to TV_PARSE_GLOBAL.
+	Add start/stop timers TV_PHASE_PARSING and TV_PHASE_GENERATE.
+	Move initialization to do_compile.
+	(do_compile): Add initialization from above.
+	Add start/stop timers TV_PHASE_SETUP and TV_PHASE_FINALIZE.
+
+	* c-decl.c (c_write_global_declarations): Add start/stop of
+	TV_PHASE_DEFERRED, TV_PHASE_CGRAPH, TV_PHASE_DBGINFO.
+
+	* c-parser.c (c_parser_declaration_or_fndef): Push/pop TV_PARSE_FUNC
+	or TV_PARSE_INLINE, as appropriate.
+	(c_parser_enum_specifier): Push/pop TV_PARSE_ENUM.
+	(c_parser_struct_or_union_specifier): Push/pop TV_PARSE_STRUCT.
+
 2011-05-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40975

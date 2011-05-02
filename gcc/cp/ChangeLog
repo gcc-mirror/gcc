@@ -1,3 +1,91 @@
+2011-05-02  Lawrence Crowl  <crowl@google.com>
+
+	* decl.c: (push_local_name): Change TV_NAME_LOOKUP to start/stop.
+	(poplevel): Refactor POP_TIMEVAR_AND_RETURN to plain code.
+	Change TV_NAME_LOOKUP to start/stop.
+	(define_label): Refactor timevar calls out to a wrapper function.
+	Change TV_NAME_LOOKUP to start/stop.
+	(xref_tag): Likewise.
+	(lookup_label): Refactor timevar calls out to a wrapper function.
+	Change TV_NAME_LOOKUP to start_cond/stop_cond.
+
+        * pt.c: (instantiate_class_template): Add a wrapper to push/pop new
+	TV_TEMPLATE_INST.
+	(instantiate_template): Add a wrapper to push/pop new TV_TEMPLATE_INST.
+	(lookup_template_class): Refactor timevar calls out to a wrapper
+	function.  Change use of TV_NAME_LOOKUP to TV_TEMPLATE_INST.
+	(instantiate_decl): Change TV_PARSE to TV_TEMPLATE_INST.
+
+	* name-lookup.c: (store_bindings): Change TV_NAME_LOOKUP to start/stop.
+	(poplevel_class): Change TV_NAME_LOOKUP to start_cond/stop_cond.
+	(push_namespace): Likewise.
+	(pop_nested_namespace): Likewise.
+	(pushdecl_namespace_level): Likewise.
+	(store_class_bindings): Likewise.
+	(push_to_top_level): Likewise.
+	(identifier_type_value): Refactor timevar calls out to a wrapper
+	function.  Change TV_NAME_LOOKUP to start/stop.
+	(find_binding): Likewise.
+	(push_using_decl): Likewise.
+	(lookup_arg_dependent): Likewise.
+	(push_using_directive): Likewise.
+	(qualified_lookup_using_namespace): Refactor POP_TIMEVAR_AND_RETURN
+	to plain code.  Change TV_NAME_LOOKUP to start/stop.
+	(lookup_type_current_level): Likewise.  Refactor inner return to
+	break.
+	(pushdecl_class_level): Refactor POP_TIMEVAR_AND_RETURN to plain
+	code.  Change TV_NAME_LOOKUP to start_cond/stop_cond.
+	(pushdecl_top_level_1): Likewise.
+	(lookup_using_namespace): Likewise.
+	(pushdecl_with_scope): Refactor timevar calls out to a wrapper
+	function.  Change TV_NAME_LOOKUP to start_cond/stop_cond.
+	(push_overloaded_decl): Likewise.
+	(push_class_level_binding): Likewise.
+	(namespace_binding): Likewise.
+	(set_namespace_binding): Likewise.
+	(supplement_binding): Likewise.
+	(unqualified_namespace_lookup): Likewise.
+	(lookup_name_real): Likewise.
+	(lookup_type_scope): Likewise.
+	(namespace_ancestor): Likewise.
+	(lookup_name_innermost_nonclass_level): Likewise.
+	(pushtag): Likewise.
+	(pop_from_top_level): Likewise.
+	(pushdecl_maybe_friend): Refactor timevar calls out to a wrapper
+	function.  Change TV_NAME_LOOKUP to start_cond/stop_cond.  Wrap long
+	lines.
+	(add_using_namespace): Refactor timevar calls out to a wrapper
+	function.  Change TV_NAME_LOOKUP to start_cond/stop_cond.  Bypass
+	wrapper on call to self.
+
+	* decl2.c: (cp_write_global_declarations):  Add start/stop of
+	new TV_PHASE_DEFERRED, TV_PHASE_CGRAPH, TV_PHASE_CHECK_DBGINFO.
+	Remove push/pop calls to TV_VARCONST.
+
+	* parser.c: Add include of "timevar.h".
+	(cp_parser_explicit_instantiation): Add push/pop calls to
+	TV_TEMPLATE_INST.
+	(cp_parser_enum_specifier): Add push/pop calls to new TV_PARSE_ENUM.
+	(cp_parser_class_specifier): Add wrapper to add push/pop calls to
+	TV_PARSE_STRUCT.
+	(cp_parser_function_definition_from_specifiers_and_declarator): Add
+	push/pop calls to new TV_PARSE_FUNC or TV_PARSE_INLINE.
+	(cp_parser_late_parsing_for_member):  Add push/pop calls to
+	new TV_PARSE_INMETH.
+
+	* call.c: Add include of "timevar.h".
+        (convert_class_to_reference): Wrap and add push/pop calls to 
+	TV_OVERLOAD.
+	(build_op_call): Likewise.
+	(build_conditional_expr): Likewise.
+	(build_new_op): Likewise.
+	(build_new_method_call): Likewise.
+        (build_user_type_conversion): Reorganize to single return and add
+	push/pop calls to TV_OVERLOAD.
+        (perform_overload_resolution): Likewise.
+
+	* Make-lang.in: Add dependence of call.o and parser.o on $(TIMEVAR_H).
+
 2011-05-02  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (build_vec_init_expr): Take complain parm.
