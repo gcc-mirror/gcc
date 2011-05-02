@@ -1,3 +1,15 @@
+2011-05-02  Jan Hubicka  <jh@suse.cz>
+
+	* lto-section-in.c (lto_input_1_unsigned): Move to lto-streamer.h
+	(lto_section_overrun): New.
+	* lto-section-out.c (append_block): Rename to ...
+	(lto_append_block): ... this one; export.
+	(lto_output_1_stream): Move lto lto-streamer.h
+	(lto_output_data_stream): Update.
+	* lto-streamer.h (lto_section_overrun, lto_append_block): Declare.
+	(lto_output_1_stream, lto_input_1_unsigned): Turn into inline
+	functions.
+
 2011-05-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (tree_code_counts): New global array.
