@@ -1,3 +1,8 @@
+2011-05-01  Xinliang David Li  <davidxl@google.com>
+	
+	* gcc.dg/tree-ssa/integer-addr.c: New test.
+	* gcc.dg/tree-ssa/alias_bug.c: New test.
+
 2011-05-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/48787
