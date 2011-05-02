@@ -33,6 +33,18 @@
 
 /* The total execution time.  */
 DEFTIMEVAR (TV_TOTAL                 , "total time")
+DEFTIMEVAR (TV_PHASE_SETUP           , "phase setup")
+DEFTIMEVAR (TV_PHASE_PARSING         , "phase parsing")
+DEFTIMEVAR (TV_PHASE_DEFERRED        , "phase lang. deferred")
+DEFTIMEVAR (TV_PHASE_CGRAPH          , "phase cgraph")
+DEFTIMEVAR (TV_PHASE_DBGINFO         , "phase debug info")
+DEFTIMEVAR (TV_PHASE_CHECK_DBGINFO   , "phase check & debug info")
+DEFTIMEVAR (TV_PHASE_GENERATE        , "phase generate")
+DEFTIMEVAR (TV_PHASE_FINALIZE        , "phase finalize")
+
+/* Concurrent timers, indicated by "|".  */
+DEFTIMEVAR (TV_NAME_LOOKUP           , "|name lookup")
+DEFTIMEVAR (TV_OVERLOAD              , "|overload resolution")
 
 /* Time spent garbage-collecting.  */
 DEFTIMEVAR (TV_GC                    , "garbage collection")
@@ -102,8 +114,13 @@ DEFTIMEVAR (TV_REBUILD_JUMP	     , "rebuild jump labels")
 /* Timing in various stages of the compiler.  */
 DEFTIMEVAR (TV_CPP		     , "preprocessing")
 DEFTIMEVAR (TV_LEX		     , "lexical analysis")
-DEFTIMEVAR (TV_PARSE                 , "parser")
-DEFTIMEVAR (TV_NAME_LOOKUP           , "name lookup")
+DEFTIMEVAR (TV_PARSE_GLOBAL          , "parser (global)")
+DEFTIMEVAR (TV_PARSE_STRUCT          , "parser struct body")
+DEFTIMEVAR (TV_PARSE_ENUM            , "parser enumerator list")
+DEFTIMEVAR (TV_PARSE_FUNC            , "parser function body")
+DEFTIMEVAR (TV_PARSE_INLINE          , "parser inl. func. body")
+DEFTIMEVAR (TV_PARSE_INMETH          , "parser inl. meth. body")
+DEFTIMEVAR (TV_TEMPLATE_INST         , "template instantiation")
 DEFTIMEVAR (TV_INLINE_HEURISTICS     , "inline heuristics")
 DEFTIMEVAR (TV_INTEGRATION           , "integration")
 DEFTIMEVAR (TV_TREE_GIMPLIFY	     , "tree gimplify")
@@ -170,8 +187,6 @@ DEFTIMEVAR (TV_CGRAPH_VERIFY         , "callgraph verifier")
 DEFTIMEVAR (TV_DOM_FRONTIERS         , "dominance frontiers")
 DEFTIMEVAR (TV_DOMINANCE             , "dominance computation")
 DEFTIMEVAR (TV_CONTROL_DEPENDENCES   , "control dependences")
-DEFTIMEVAR (TV_OVERLOAD              , "overload resolution")
-DEFTIMEVAR (TV_TEMPLATE_INSTANTIATION, "template instantiation")
 DEFTIMEVAR (TV_OUT_OF_SSA	     , "out of ssa")
 DEFTIMEVAR (TV_VAR_EXPAND	     , "expand vars")
 DEFTIMEVAR (TV_EXPAND		     , "expand")
