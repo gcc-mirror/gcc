@@ -1,5 +1,13 @@
 2011-05-02  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (build_vec_init_expr): Take complain parm.
+	(build_vec_init_elt): Likewise.  Free arg vector.
+	(diagnose_non_constexpr_vec_init, build_array_copy): Adjust.
+	* cp-tree.h (VEC_INIT_EXPR_SLOT): Use VEC_INIT_EXPR_CHECK.
+	(VEC_INIT_EXPR_INIT): Likewise.
+	Adjust build_vec_init_expr declaration.
+	* init.c (perform_member_init): Adjust.
+
 	Revert:
 	PR c++/40975
 	* cp-tree.def (VEC_INIT_EXPR): Add third operand.

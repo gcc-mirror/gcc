@@ -506,7 +506,7 @@ perform_member_init (tree member, tree init)
       /* mem() means value-initialization.  */
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  init = build_vec_init_expr (type, init);
+	  init = build_vec_init_expr (type, init, tf_warning_or_error);
 	  init = build2 (INIT_EXPR, type, decl, init);
 	  finish_expr_stmt (init);
 	}
@@ -543,7 +543,7 @@ perform_member_init (tree member, tree init)
 	      || same_type_ignoring_top_level_qualifiers_p (type,
 							    TREE_TYPE (init)))
 	    {
-	      init = build_vec_init_expr (type, init);
+	      init = build_vec_init_expr (type, init, tf_warning_or_error);
 	      init = build2 (INIT_EXPR, type, decl, init);
 	      finish_expr_stmt (init);
 	    }
