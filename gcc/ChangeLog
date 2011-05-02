@@ -1,3 +1,9 @@
+2011-05-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (tree_code_counts): New global array.
+	(record_node_allocation_statistics): Count individual tree codes.
+	(dump_tree_statistics): Dump individual code stats.
+
 2011-05-01  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (caller_growth_limits): Fix thinko when

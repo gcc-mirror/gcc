@@ -124,6 +124,7 @@ extern int _obstack_allocated_p (struct obstack *h, void *obj);
 #ifdef GATHER_STATISTICS
 /* Statistics-gathering stuff.  */
 
+static int tree_code_counts[MAX_TREE_CODES];
 int tree_node_counts[(int) all_kinds];
 int tree_node_sizes[(int) all_kinds];
 
@@ -809,6 +810,7 @@ record_node_allocation_statistics (enum tree_code code ATTRIBUTE_UNUSED,
       gcc_unreachable ();
     }
 
+  tree_code_counts[(int) code]++;
   tree_node_counts[(int) kind]++;
   tree_node_sizes[(int) kind] += length;
 #endif
@@ -6188,6 +6190,7 @@ type_hash_canon (unsigned int hashcode, tree type)
   if (t1 != 0)
     {
 #ifdef GATHER_STATISTICS
+      tree_code_counts[(int) TREE_CODE (type)]--;
       tree_node_counts[(int) t_kind]--;
       tree_node_sizes[(int) t_kind] -= sizeof (struct tree_type);
 #endif
@@ -8497,6 +8500,11 @@ dump_tree_statistics (void)
   fprintf (stderr, "---------------------------------------\n");
   fprintf (stderr, "%-20s %7d %10d\n", "Total", total_nodes, total_bytes);
   fprintf (stderr, "---------------------------------------\n");
+  fprintf (stderr, "Code                   Nodes\n");
+  fprintf (stderr, "----------------------------\n");
+  for (i = 0; i < (int) MAX_TREE_CODES; i++)
+    fprintf (stderr, "%-20s %7d\n", tree_code_name[i], tree_code_counts[i]);
+  fprintf (stderr, "----------------------------\n");
   ssanames_print_statistics ();
   phinodes_print_statistics ();
 #else
