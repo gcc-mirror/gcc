@@ -1,3 +1,11 @@
+2011-05-02  Richard Guenther  <rguenther@suse.de>
+
+	* varasm.c (output_constructor_regular_field): Compute zero-based
+	index with double-ints.  Make sure to ICE instead of producing
+	wrong code.
+	* cgraph.c (cgraph_add_thunk): Do not create new tree nodes
+	in asserts.  Properly use a signed type.
+
 2011-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (V): New mode iterator.

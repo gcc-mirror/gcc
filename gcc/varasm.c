@@ -4711,9 +4711,13 @@ output_constructor_regular_field (oc_local_state *local)
   unsigned int align2;
 
   if (local->index != NULL_TREE)
-    fieldpos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (local->val)), 1)
-		* ((tree_low_cst (local->index, 0)
-		    - tree_low_cst (local->min_index, 0))));
+    {
+      double_int idx = double_int_sub (tree_to_double_int (local->index),
+				       tree_to_double_int (local->min_index));
+      gcc_assert (double_int_fits_in_shwi_p (idx));
+      fieldpos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (local->val)), 1)
+		  * idx.low);
+    }
   else if (local->field != NULL_TREE)
     fieldpos = int_byte_position (local->field);
   else
@@ -4760,13 +4764,8 @@ output_constructor_regular_field (oc_local_state *local)
 	     better be last.  */
 	  gcc_assert (!fieldsize || !DECL_CHAIN (local->field));
 	}
-      else if (DECL_SIZE_UNIT (local->field))
-	{
-	  /* ??? This can't be right.  If the decl size overflows
-	     a host integer we will silently emit no data.  */
-	  if (host_integerp (DECL_SIZE_UNIT (local->field), 1))
-	    fieldsize = tree_low_cst (DECL_SIZE_UNIT (local->field), 1);
-	}
+      else
+	fieldsize = tree_low_cst (DECL_SIZE_UNIT (local->field), 1);
     }
   else
     fieldsize = int_size_in_bytes (TREE_TYPE (local->type));
