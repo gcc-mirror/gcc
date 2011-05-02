@@ -2,8 +2,6 @@
 
 	* include/ext/sso_string_base.h (__sso_string_base<>::_M_construct):
 	Fix unqualified lookup.
-	(__sso_string_base<>::_M_construct): Likewise.
-	(__sso_string_base<>::_M_construct): Likewise.
 	(__sso_string_base<>::_M_assign): Likewise.
 	(__sso_string_base<>::_M_reserve): Likewise.
 	(__sso_string_base<>::_M_mutate): Likewise.
@@ -11,10 +9,6 @@
 	* include/ext/vstring.h (__versa_string<>::replace): Likewise.
 	(__versa_string<>::compare): Likewise.
 	* include/ext/vstring.tcc (__versa_string<>::compare): Likewise.
-	(__versa_string<>::compare): Likewise.
-	(__versa_string<>::compare): Likewise.
-	(__versa_string<>::compare): Likewise.
-	(__versa_string<>::compare): Likewise.
 
 2011-05-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
