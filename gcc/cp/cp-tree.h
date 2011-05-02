@@ -2896,8 +2896,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
        (arg) = next_aggr_init_expr_arg (&(iter)))
 
 /* VEC_INIT_EXPR accessors.  */
-#define VEC_INIT_EXPR_SLOT(NODE) TREE_OPERAND (NODE, 0)
-#define VEC_INIT_EXPR_INIT(NODE) TREE_OPERAND (NODE, 1)
+#define VEC_INIT_EXPR_SLOT(NODE) TREE_OPERAND (VEC_INIT_EXPR_CHECK (NODE), 0)
+#define VEC_INIT_EXPR_INIT(NODE) TREE_OPERAND (VEC_INIT_EXPR_CHECK (NODE), 1)
 
 /* Indicates that a VEC_INIT_EXPR is a potential constant expression.
    Only set when the current function is constexpr.  */
@@ -5420,7 +5420,7 @@ extern tree get_target_expr_sfinae		(tree, tsubst_flags_t);
 extern tree build_cplus_array_type		(tree, tree);
 extern tree build_array_of_n_type		(tree, int);
 extern tree build_array_copy			(tree);
-extern tree build_vec_init_expr			(tree, tree);
+extern tree build_vec_init_expr			(tree, tree, tsubst_flags_t);
 extern void diagnose_non_constexpr_vec_init	(tree);
 extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);

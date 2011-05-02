@@ -475,7 +475,7 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
    another array to copy.  */
 
 static tree
-build_vec_init_elt (tree type, tree init)
+build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
 {
   tree inner_type = strip_array_types (type);
   VEC(tree,gc) *argvec;
@@ -485,7 +485,7 @@ build_vec_init_elt (tree type, tree init)
     /* No interesting initialization to do.  */
     return integer_zero_node;
   else if (init == void_type_node)
-    return build_value_init (inner_type, tf_warning_or_error);
+    return build_value_init (inner_type, complain);
 
   gcc_assert (init == NULL_TREE
 	      || (same_type_ignoring_top_level_qualifiers_p
@@ -499,9 +499,12 @@ build_vec_init_elt (tree type, tree init)
 	dummy = move (dummy);
       VEC_quick_push (tree, argvec, dummy);
     }
-  return build_special_member_call (NULL_TREE, complete_ctor_identifier,
+  init = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				    &argvec, inner_type, LOOKUP_NORMAL,
-				    tf_warning_or_error);
+				    complain);
+  release_tree_vector (argvec);
+
+  return init;
 }
 
 /* Return a TARGET_EXPR which expresses the initialization of an array to
@@ -509,11 +512,11 @@ build_vec_init_elt (tree type, tree init)
    from another array of the same type.  */
 
 tree
-build_vec_init_expr (tree type, tree init)
+build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
 {
   tree slot;
   bool value_init = false;
-  tree elt_init = build_vec_init_elt (type, init);
+  tree elt_init = build_vec_init_elt (type, init, complain);
 
   if (init == void_type_node)
     {
@@ -550,14 +553,14 @@ diagnose_non_constexpr_vec_init (tree expr)
   else
     init = VEC_INIT_EXPR_INIT (expr);
 
-  elt_init = build_vec_init_elt (type, init);
+  elt_init = build_vec_init_elt (type, init, tf_warning_or_error);
   require_potential_constant_expression (elt_init);
 }
 
 tree
 build_array_copy (tree init)
 {
-  return build_vec_init_expr (TREE_TYPE (init), init);
+  return build_vec_init_expr (TREE_TYPE (init), init, tf_warning_or_error);
 }
 
 /* Build a TARGET_EXPR using INIT to initialize a new temporary of the
