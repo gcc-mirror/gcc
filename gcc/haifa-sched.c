@@ -5650,9 +5650,16 @@ sched_create_empty_bb_1 (basic_block after)
 rtx
 sched_emit_insn (rtx pat)
 {
-  rtx insn = emit_insn_after (pat, last_scheduled_insn);
-  last_scheduled_insn = insn;
+  rtx insn = emit_insn_before (pat, nonscheduled_insns_begin);
   haifa_init_insn (insn);
+
+  if (current_sched_info->add_remove_insn)
+    current_sched_info->add_remove_insn (insn, 0);
+
+  (*current_sched_info->begin_schedule_ready) (insn);
+  VEC_safe_push (rtx, heap, scheduled_insns, insn);
+
+  last_scheduled_insn = insn;
   return insn;
 }
 
