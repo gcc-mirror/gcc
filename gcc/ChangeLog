@@ -1,3 +1,9 @@
+2011-05-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* haifa-sched.c (sched_emit_insn): Emit insn before first
+	non-scheduled insn.  Inform back-end about new insn.  Add
+	new insn to scheduled_insns list.
+
 2011-05-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48822
