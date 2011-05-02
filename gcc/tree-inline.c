@@ -4271,14 +4271,26 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 					 CONSTRUCTOR_ELTS (*tp));
       *tp = new_tree;
     }
+  else if (code == STATEMENT_LIST)
+    {
+      /* We used to just abort on STATEMENT_LIST, but we can run into them
+         with statement-expressions (c++/40975).  */
+      tree new_list = alloc_stmt_list ();
+      tree_stmt_iterator i = tsi_start (*tp);
+      tree_stmt_iterator j = tsi_last (new_list);
+      for (; !tsi_end_p (i); tsi_next (&i))
+	{
+	  tree stmt = tsi_stmt (i);
+	  tsi_link_after (&j, stmt, TSI_CONTINUE_LINKING);
+	}
+      *tp = new_list;
+    }
   else if (TREE_CODE_CLASS (code) == tcc_type)
     *walk_subtrees = 0;
   else if (TREE_CODE_CLASS (code) == tcc_declaration)
     *walk_subtrees = 0;
   else if (TREE_CODE_CLASS (code) == tcc_constant)
     *walk_subtrees = 0;
-  else
-    gcc_assert (code != STATEMENT_LIST);
   return NULL_TREE;
 }
 

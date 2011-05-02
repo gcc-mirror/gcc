@@ -1,3 +1,8 @@
+2011-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40975
+	* tree-inline.c (copy_tree_r): Handle STATEMENT_LIST.
+
 2011-05-02  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c/35445
