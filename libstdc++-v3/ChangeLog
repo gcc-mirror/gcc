@@ -1,3 +1,10 @@
+2011-05-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update to reflect current status
+	and FDIS content.
+	* doc/xml/manual/documentation_hacking.xml: Fix typo.
+	* doc/html/*: Regenerate.
+
 2011-04-30  Daniel Krugler  <daniel.kruegler@googlemail.com>
 
 	* include/std/type_traits (__is_default_constructible_atom,

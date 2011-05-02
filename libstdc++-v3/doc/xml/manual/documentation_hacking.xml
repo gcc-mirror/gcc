@@ -746,7 +746,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
 
       <para>
 	Please note that individual sections and chapters of the
-	manual can be validated by substiuting the file desired for
+	manual can be validated by substituting the file desired for
 	<filename>xml/index.xml</filename> in the command
 	above. Reducing scope in this manner can be helpful when
 	validation on the entire manual fails.
