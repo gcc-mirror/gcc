@@ -1,3 +1,10 @@
+2011-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48446
+	* decl.c (stabilize_save_expr_r, stabilize_vla_size): New.
+	(compute_array_index_type): Revert earlier 48446 changes.
+	(grokdeclarator): Use stabilize_vla_size.
+
 2011-05-02  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 	    Eric Botcazou <ebotcazou@adacore.com>
 

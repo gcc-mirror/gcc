@@ -7576,6 +7576,38 @@ check_static_variable_definition (tree decl, tree type)
   return 0;
 }
 
+/* *expr_p is part of the TYPE_SIZE of a variably-sized array.  If any
+   SAVE_EXPRs in *expr_p wrap expressions with side-effects, break those
+   expressions out into temporary variables so that walk_tree doesn't
+   step into them (c++/15764).  */
+
+static tree
+stabilize_save_expr_r (tree *expr_p, int *walk_subtrees, void *data)
+{
+  struct pointer_set_t *pset = (struct pointer_set_t *)data;
+  tree expr = *expr_p;
+  if (TREE_CODE (expr) == SAVE_EXPR)
+    {
+      tree op = TREE_OPERAND (expr, 0);
+      cp_walk_tree (&op, stabilize_save_expr_r, data, pset);
+      if (TREE_SIDE_EFFECTS (op))
+	TREE_OPERAND (expr, 0) = get_temp_regvar (TREE_TYPE (op), op);
+    }
+  else if (!EXPR_P (expr))
+    *walk_subtrees = 0;
+  return NULL;
+}
+
+/* Entry point for the above.  */
+
+static void
+stabilize_vla_size (tree size)
+{
+  struct pointer_set_t *pset = pointer_set_create ();
+  /* Break out any function calls into temporary variables.  */
+  cp_walk_tree (&size, stabilize_save_expr_r, pset, pset);
+}
+
 /* Given the SIZE (i.e., number of elements) in an array, compute an
    appropriate index type for the array.  If non-NULL, NAME is the
    name of the thing being declared.  */
@@ -7769,16 +7801,8 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       processing_template_decl = saved_processing_template_decl;
 
       if (!TREE_CONSTANT (itype))
-	{
-	  /* A variable sized array.  */
-	  if (TREE_SIDE_EFFECTS (itype))
-	    /* Use get_temp_regvar rather than variable_size here so that
-	       people walking expressions that use a variable of this type
-	       don't walk into this expression.  */
-	    itype = get_temp_regvar (TREE_TYPE (itype), itype);
-	  else
-	    itype = variable_size (itype);
-	}
+	/* A variable sized array.  */
+	itype = variable_size (itype);
       /* Make sure that there was no overflow when creating to a signed
 	 index type.  (For example, on a 32-bit machine, an array with
 	 size 2^32 - 1 is too big.)  */
@@ -9051,7 +9075,12 @@ grokdeclarator (const cp_declarator *declarator,
 	      && (decl_context == NORMAL || decl_context == FIELD)
 	      && at_function_scope_p ()
 	      && variably_modified_type_p (type, NULL_TREE))
-	    finish_expr_stmt (TYPE_SIZE (type));
+	    {
+	      /* First break out any side-effects.  */
+	      stabilize_vla_size (TYPE_SIZE (type));
+	      /* And then force evaluation of the SAVE_EXPR.  */
+	      finish_expr_stmt (TYPE_SIZE (type));
+	    }
 
 	  if (declarator->kind == cdk_reference)
 	    {
@@ -9125,6 +9154,14 @@ grokdeclarator (const cp_declarator *declarator,
 	  gcc_unreachable ();
 	}
     }
+
+  /* We need to stabilize side-effects in VLA sizes for regular array
+     declarations too, not just pointers to arrays.  */
+  if (type != error_mark_node && !TYPE_NAME (type)
+      && (decl_context == NORMAL || decl_context == FIELD)
+      && at_function_scope_p ()
+      && variably_modified_type_p (type, NULL_TREE))
+    stabilize_vla_size (TYPE_SIZE (type));
 
   /* A `constexpr' specifier used in an object declaration declares
      the object as `const'.  */

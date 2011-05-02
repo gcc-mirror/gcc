@@ -1,3 +1,7 @@
+2011-05-02  Jason Merrill  <jason@redhat.com>
+
+	* c-c++-common/vla-1.c: New.
+
 2011-05-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48822
