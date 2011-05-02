@@ -1,3 +1,17 @@
+2011-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*mov<mode>_internal_rex64): Use %vmovq for
+	reg<->xmm moves.
+	(*mov<mode>_internal): Merge with *mov<mode>_internal_avx.
+	(*movv2sf_internal_rex64): Use %vmovq for reg<->xmm moves.  Merge
+	with *movv2sf_internal_rex64_avx.
+	(*movv2sf_internal): Merge with *movv2sf_internal_avx.
+	* config/i386/i386.md (*movdi_internal_rex64) <TYPE_SSEMOV>:
+	Use %v prefix in insn mnemonic to handle TARGET_AVX.
+	(*movdi_internal): Add "isa" attribute.  Use "maybe_vex" instead of
+	"vex" in "prefix" attribute calculation.
+	(*movdf_internal): Output AVX mnemonics.  Add "prefix" attribute.
+
 2011-05-02  Stuart Henderson  <shenders@gcc.gnu.org>
 
         PR target/47951
@@ -38,8 +52,7 @@
 	* config/m68k/m68k.h (enum uarch_type, enum target_device): Move
 	to m68k-opts.h.
 	(m68k_library_id_string): Remove declaration.
-	* config/m68k/m68k.opt (config/m68k/m68k-opts.h): New
-	HeaderInclude.
+	* config/m68k/m68k.opt (config/m68k/m68k-opts.h): New HeaderInclude.
 	(m68k_library_id_string): New Variable.
 	(march=, mcpu=, mtune=): Use Enum and Var.
 
