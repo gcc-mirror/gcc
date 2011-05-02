@@ -1,3 +1,18 @@
+2011-05-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/fr30/fr30-protos.h (Mmode): Don't define.
+	* config/m32r/m32r-protos.h (Mmode): Don't define.  Expand
+	definition where used.
+	* config/mn10300/mn10300-protos.h (Mmode, Cstar, Rclas): Don't
+	define.  Expand definitions where used.
+	* config/rx/rx-protos.h (Mmode, Fargs, Rcode): Don't define.
+	Expand definitions where used.
+	* config/rx/rx.c (rx_is_legitimate_address, rx_function_arg_size,
+	rx_function_arg, rx_function_arg_advance,
+	rx_function_arg_boundary): Expand definitions of those macros.
+	* config/v850/v850-protos.h (Mmode): Don't define.  Expand
+	definition where used.
+
 2011-05-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (*mov<mode>_internal_rex64): Use %vmovq for
