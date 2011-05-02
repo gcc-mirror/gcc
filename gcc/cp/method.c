@@ -843,16 +843,10 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
 /* Locate the dtor of TYPE.  */
 
 tree
-get_dtor_sfinae (tree type, tsubst_flags_t complain)
-{
-  return locate_fn_flags (type, complete_dtor_identifier, NULL_TREE,
-			  LOOKUP_NORMAL, complain);
-}
-
-tree
 get_dtor (tree type)
 {
-  tree fn = get_dtor_sfinae (type, tf_warning_or_error);
+  tree fn = locate_fn_flags (type, complete_dtor_identifier, NULL_TREE,
+			     LOOKUP_NORMAL, tf_warning_or_error);
   if (fn == error_mark_node)
     return NULL_TREE;
   return fn;
