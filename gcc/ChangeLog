@@ -1,3 +1,29 @@
+2011-05-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/m68k/genopt.sh, config/m68k/m68k-isas.def,
+	config/m68k/m68k-microarchs.def, config/m68k/m68k-opts.h,
+	config/m68k/t-opts: New files.
+	* config/m68k/m68k-tables.opt: New file (generated).
+	* config.gcc (fido-*-*, m68k-*-*): Add m68k/m68k-tables.opt to
+	extra_options and m68k/t-opts to tmake_file.
+	* config/m68k/m68k.c (m68k_library_id_string): More to m68k.opt.
+	(all_isas): Initialize using m68k-isas.def.
+	(all_microarchs): Initialize using m68k-microarchs.def.
+	(m68k_find_selection): Remove.
+	(m68k_handle_option): Don't assert that global structures are in
+	use.  Use error_at.  Access variables via opts pointer.  Don't
+	handle -march=, -mcpu= and -mtune= here.  Set gcc_options fields
+	directly for -m68020-40 and -m68020-60.
+	(m68k_option_override): Set m68k_arch_entry, m68k_cpu_entry and
+	m68k_tune_entry here.
+	* config/m68k/m68k.h (enum uarch_type, enum target_device): Move
+	to m68k-opts.h.
+	(m68k_library_id_string): Remove declaration.
+	* config/m68k/m68k.opt (config/m68k/m68k-opts.h): New
+	HeaderInclude.
+	(m68k_library_id_string): New Variable.
+	(march=, mcpu=, mtune=): Use Enum and Var.
+
 2011-05-02  Richard Guenther  <rguenther@suse.de>
 
 	* varasm.c (output_constructor_regular_field): Compute zero-based

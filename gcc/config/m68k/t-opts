@@ -1,0 +1,5 @@
+$(srcdir)/config/m68k/m68k-tables.opt: $(srcdir)/config/m68k/genopt.sh \
+  $(srcdir)/config/m68k/m68k-devices.def $(srcdir)/config/m68k/m68k-isas.def \
+  $(srcdir)/config/m68k/m68k-microarchs.def
+	$(SHELL) $(srcdir)/config/m68k/genopt.sh $(srcdir)/config/m68k > \
+		$(srcdir)/config/m68k/m68k-tables.opt
