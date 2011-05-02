@@ -1,3 +1,37 @@
+2011-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (V): New mode iterator.
+	(V_128): Rename from SSEMODE.  Make V2DF mode conditional on
+	TARGET_SSE2.
+	(V_256): Rename from AVX256MODE.
+	(VF): Make V4SF mode unconditional.  Add TARGET_SSE instruction
+	condition to all users.
+	(VF1): Ditto.
+	(VF2): Make V2DF mode unconditional.  Add TARGET_SSE2 instruction
+	condition to all users.
+	(VF_128): Make V4SF mode unconditional.
+	(VF_256): Rename from AVX256MODEF2P.
+	(VI4F_128): Rename from SSEMODE4S.
+	(VI8F_128): Rename from SSEMODE2D.
+	(VI4F_256): Rename from AVX256MODE8P.
+	(VI8F_256): Rename from AVX256MODE4P.
+	(avxsizesuffix): Add V16HI, V4DI, V8HI and V2DI modes.
+	(ssescalarmodesuffix): Remove SF and DF modes.
+	(SSEMODE124): Remove.
+	(SSEMODE1248): Ditto.
+	(SSEMODEF2P): Ditto.
+	(AVXMODEF2P): Ditto.
+	(AVXMODEFDP): Ditto.
+	(AVXMODEFSP): Ditto.
+	(VEC_EXTRACT_MODE): Make V16QI, V8HI, V4SI, V2DI, V4SF and V2DF modes
+	unconditional.
+	(VEC_EXTRACT_EVENODD_MODE): Rename from SSEMODE_EO.  Make V4SF mode
+	unconditional.
+	(xop_pcmov_<mode><avxsizesuffix>): Merge from xop_pcmov_<mode> and
+	xop_pcmov_<mode>256.  Use V mode iterator.
+
+	Adjust RTX patterns globally for renamed mode attributes.
+
 2011-05-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* haifa-sched.c (sched_emit_insn): Emit insn before first
@@ -49,7 +83,7 @@
 	Update prototype.
 	(ira_allocate_and_set_costs): Change aclass argument type form
 	'enum reg_class' to reg_class_t.
-	* ira-build.c (ira_allocate_cost_vector, ira_free_cost_vector): 
+	* ira-build.c (ira_allocate_cost_vector, ira_free_cost_vector):
 	Change aclass argument type to reg_class_t.
 	(update_conflict_hard_reg_costs): Change type aclass and pref vars
 	to reg_class_t.
@@ -87,7 +121,7 @@
 
 2011-04-30  Jan Hubicka  <jh@suse.cz>
 
-	PR middle-end/48752 
+	PR middle-end/48752
 	* ipa-inline.c (early_inliner): Disable when doing late
 	addition of function.
 
@@ -367,13 +401,11 @@
 	i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu,
 	x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu): Don't use
 	linux*.h headers.
-	* config/gnu-user.h (TARGET_C99_FUNCTIONS, TARGET_HAS_SINCOS):
-	Define.
+	* config/gnu-user.h (TARGET_C99_FUNCTIONS, TARGET_HAS_SINCOS): Define.
 	* config/i386/gnu.h (MD_UNWIND_SUPPORT): Don't undefine.
 	* config/i386/kfreebsd-gnu.h (MD_UNWIND_SUPPORT): Don't undefine.
 	* config/i386/knetbsd-gnu.h (MD_UNWIND_SUPPORT): Don't undefine.
-	* config/i386/kopensolaris-gnu.h (MD_UNWIND_SUPPORT): Don't
-	undefine.
+	* config/i386/kopensolaris-gnu.h (MD_UNWIND_SUPPORT): Don't undefine.
 	* config/i386/linux-unwind.h (x86_fallback_frame_state): Don't use
 	REG_NAME.
 	* config/i386/linux.h (REG_NAME): Don't define.
@@ -383,8 +415,8 @@
 
 2011-04-28  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-inline-analysis.c (will_be_nonconstant_predicate): Take nonconstant_names
-	array.
+	* ipa-inline-analysis.c (will_be_nonconstant_predicate): Take
+	nonconstant_names array.
 	(estimate_function_body_sizes): Build nonconstant_names array; handle
 	BUILT_IN_CONSTANT_P.
 
@@ -396,7 +428,7 @@
 
 	* tree-ssa-structalias.c (solve_constraints): Build succ graph
 	as late as possible.
- 
+
 2011-04-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (dump_constraint): Don't end the line.
@@ -762,7 +794,7 @@
 
 	* c-family/c-common.c (struct c_common_resword): Add __underlying_type.
 	* c-family/c-common.h (enum rid): Add RID_UNDERLYING_TYPE.
-        * doc/extend.texi: Document __underlying_type.
+	* doc/extend.texi: Document __underlying_type.
 
 2011-04-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
