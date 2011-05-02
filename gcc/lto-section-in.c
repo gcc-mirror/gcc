@@ -62,16 +62,6 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "inline"
 };
 
-unsigned char
-lto_input_1_unsigned (struct lto_input_block *ib)
-{
-  if (ib->p >= ib->len)
-    internal_error ("bytecode stream: trying to read %d bytes "
-		    "after the end of the input buffer", ib->p - ib->len);
-
-  return (ib->data[ib->p++]);
-}
-
 
 /* Read an ULEB128 Number of IB.  */
 
@@ -485,4 +475,14 @@ lto_get_function_in_decl_state (struct lto_file_decl_data *file_data,
   temp.fn_decl = func;
   slot = htab_find_slot (file_data->function_decl_states, &temp, NO_INSERT);
   return slot? ((struct lto_in_decl_state*) *slot) : NULL;
+}
+
+
+/* Report read pass end of the section.  */
+
+void
+lto_section_overrun (struct lto_input_block *ib)
+{
+  internal_error ("bytecode stream: trying to read %d bytes "
+	          "after the end of the input buffer", ib->p - ib->len);
 }

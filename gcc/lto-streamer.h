@@ -758,7 +758,6 @@ extern const char *lto_get_section_data (struct lto_file_decl_data *,
 extern void lto_free_section_data (struct lto_file_decl_data *,
 				   enum lto_section_type,
 				   const char *, const char *, size_t);
-extern unsigned char lto_input_1_unsigned (struct lto_input_block *);
 extern unsigned HOST_WIDE_INT lto_input_uleb128 (struct lto_input_block *);
 extern unsigned HOST_WIDEST_INT lto_input_widest_uint_uleb128 (
 						struct lto_input_block *);
@@ -774,6 +773,7 @@ extern hashval_t lto_hash_in_decl_state (const void *);
 extern int lto_eq_in_decl_state (const void *, const void *);
 extern struct lto_in_decl_state *lto_get_function_in_decl_state (
 				      struct lto_file_decl_data *, tree);
+extern void lto_section_overrun (struct lto_input_block *) ATTRIBUTE_NORETURN;
 
 /* In lto-section-out.c  */
 extern hashval_t lto_hash_decl_slot_node (const void *);
@@ -783,7 +783,6 @@ extern int lto_eq_type_slot_node (const void *, const void *);
 extern void lto_begin_section (const char *, bool);
 extern void lto_end_section (void);
 extern void lto_write_stream (struct lto_output_stream *);
-extern void lto_output_1_stream (struct lto_output_stream *, char);
 extern void lto_output_data_stream (struct lto_output_stream *, const void *,
 				    size_t);
 extern void lto_output_uleb128_stream (struct lto_output_stream *,
@@ -817,6 +816,7 @@ extern void lto_push_out_decl_state (struct lto_out_decl_state *);
 extern struct lto_out_decl_state *lto_pop_out_decl_state (void);
 extern void lto_record_function_out_decl_state (tree,
 						struct lto_out_decl_state *);
+extern void lto_append_block (struct lto_output_stream *);
 
 
 /* In lto-streamer.c.  */
@@ -1172,6 +1172,34 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
   bp->pos = pos + nbits;
 
   return val & mask;
+}
+
+
+/* Write a character to the output block.  */
+
+static inline void
+lto_output_1_stream (struct lto_output_stream *obs, char c)
+{
+  /* No space left.  */
+  if (obs->left_in_block == 0)
+    lto_append_block (obs);
+
+  /* Write the actual character.  */
+  *obs->current_pointer = c;
+  obs->current_pointer++;
+  obs->total_size++;
+  obs->left_in_block--;
+}
+
+
+/* Read byte from the input block.  */
+
+static inline unsigned char
+lto_input_1_unsigned (struct lto_input_block *ib)
+{
+  if (ib->p >= ib->len)
+    lto_section_overrun (ib);
+  return (ib->data[ib->p++]);
 }
 
 #endif /* GCC_LTO_STREAMER_H  */

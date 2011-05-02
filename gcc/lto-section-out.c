@@ -194,8 +194,8 @@ lto_write_stream (struct lto_output_stream *obs)
 
 /* Adds a new block to output stream OBS.  */
 
-static void
-append_block (struct lto_output_stream *obs)
+void
+lto_append_block (struct lto_output_stream *obs)
 {
   struct lto_char_ptr_base *new_block;
 
@@ -234,23 +234,6 @@ append_block (struct lto_output_stream *obs)
 }
 
 
-/* Write a character to the output block.  */
-
-void
-lto_output_1_stream (struct lto_output_stream *obs, char c)
-{
-  /* No space left.  */
-  if (obs->left_in_block == 0)
-    append_block (obs);
-
-  /* Write the actual character.  */
-  *obs->current_pointer = c;
-  obs->current_pointer++;
-  obs->total_size++;
-  obs->left_in_block--;
-}
-
-
 /* Write raw DATA of length LEN to the output block OB.  */
 
 void
@@ -263,7 +246,7 @@ lto_output_data_stream (struct lto_output_stream *obs, const void *data,
 
       /* No space left.  */
       if (obs->left_in_block == 0)
-	append_block (obs);
+	lto_append_block (obs);
 
       /* Determine how many bytes to copy in this loop.  */
       if (len <= obs->left_in_block)
