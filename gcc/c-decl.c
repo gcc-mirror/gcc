@@ -4246,7 +4246,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
 		b_ext = b_ext->shadowed;
 	      if (b_ext)
 		{
-		  if (b_ext->u.type)
+		  if (b_ext->u.type && comptypes (b_ext->u.type, type))
 		    b_ext->u.type = composite_type (b_ext->u.type, type);
 		  else
 		    b_ext->u.type = type;

@@ -1,3 +1,9 @@
+2011-05-02  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c/35445
+	* c-decl.c (finish_decl): Only create a composite if the types are
+	compatible.
+
 2011-05-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/fr30/fr30-protos.h (Mmode): Don't define.
