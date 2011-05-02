@@ -1,3 +1,8 @@
+2011-05-02  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c/35445
+	* gcc.dg/pr35445.c: New test.
+
 2011-05-02  Jason Merrill  <jason@redhat.com>
 
 	* c-c++-common/vla-1.c: New.
