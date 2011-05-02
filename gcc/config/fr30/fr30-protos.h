@@ -1,5 +1,5 @@
 /* Prototypes for fr30.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2002, 2004, 2007, 2010
+   Copyright (C) 1999, 2000, 2002, 2004, 2007, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -28,8 +28,6 @@ extern void  fr30_print_operand (FILE *, rtx, int);
 extern void  fr30_print_operand_address (FILE *, rtx);
 extern rtx   fr30_move_double (rtx *);
 #ifdef HAVE_MACHINE_MODES
-#define Mmode enum machine_mode
 extern int   fr30_const_double_is_zero (rtx);
-#undef Mmode
 #endif /* HAVE_MACHINE_MODES */
 #endif /* RTX_CODE */
