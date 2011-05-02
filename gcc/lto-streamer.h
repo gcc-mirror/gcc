@@ -346,10 +346,7 @@ typedef void (lto_free_section_data_f) (struct lto_file_decl_data *,
 struct lto_streamer_cache_d
 {
   /* The mapping between tree nodes and slots into the nodes array.  */
-  htab_t node_map;
-
-  /* Node map to store entries into.  */
-  alloc_pool node_map_entries;
+  struct pointer_map_t *node_map;
 
   /* The nodes pickled so far.  */
   VEC(tree,heap) *nodes;
