@@ -1,3 +1,9 @@
+2011-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47969
+	* decl.c (compute_array_index_type): Check build_expr_type_conversion
+	return value for NULL_TREE.
+
 2011-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/48606
