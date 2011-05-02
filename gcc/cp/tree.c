@@ -564,6 +564,7 @@ build_vec_init_expr (tree target, tree init, tree nelts,
     elt_init = build_vec_init_elt (type, init, complain);
 
   init = build3 (VEC_INIT_EXPR, type, slot, init, nelts);
+  TREE_SIDE_EFFECTS (init) = true;
   SET_EXPR_LOCATION (init, input_location);
 
   if (cxx_dialect >= cxx0x
@@ -571,7 +572,11 @@ build_vec_init_expr (tree target, tree init, tree nelts,
     VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
 
-  if (slot != target)
+  if (slot == target)
+    /* If we specified what array we're initializing, make sure
+       we don't override that in cp_gimplify_init_expr.  */
+    init = cp_build_compound_expr (init, slot, complain);
+  else
     {
       init = build_target_expr (slot, init, complain);
       TARGET_EXPR_IMPLICIT_P (init) = 1;

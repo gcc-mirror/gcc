@@ -1,3 +1,7 @@
+2011-05-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/new31.C: New.
+
 2011-05-02  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c/35445
