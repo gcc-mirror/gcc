@@ -1,3 +1,9 @@
+2011-05-02  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+	    Eric Botcazou <ebotcazou@adacore.com>
+
+	* parser.c (cp_parser_init_declarator): Set pushed_scope to NULL_TREE
+	instead of inappropriate zero values.
+
 2011-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/47969

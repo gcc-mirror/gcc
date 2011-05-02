@@ -14302,7 +14302,7 @@ cp_parser_init_declarator (cp_parser* parser,
   bool is_non_constant_init;
   int ctor_dtor_or_conv_p;
   bool friend_p;
-  tree pushed_scope = NULL;
+  tree pushed_scope = NULL_TREE;
   bool range_for_decl_p = false;
 
   /* Gather the attributes that were provided with the
@@ -14609,7 +14609,7 @@ cp_parser_init_declarator (cp_parser* parser,
       if (pushed_scope)
 	{
 	  pop_scope (pushed_scope);
-	  pushed_scope = false;
+	  pushed_scope = NULL_TREE;
 	}
       decl = grokfield (declarator, decl_specifiers,
 			initializer, !is_non_constant_init,
