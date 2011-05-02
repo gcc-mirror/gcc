@@ -1,3 +1,9 @@
+2011-05-02  Stuart Henderson  <shenders@gcc.gnu.org>
+
+        PR target/47951
+        * config/bfin/bfin.md (loop_end): Use matching constraints to ensure
+        inputs match the output.
+
 2011-05-02  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/47955
