@@ -1,3 +1,9 @@
+2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
+
+        From Mike Frysinger:
+        * config/bfin/bfin.c (bfin_cpus[]): Add 0.4 for
+        bf542/bf544/bf547/bf548/bf549.
+
 2011-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* expmed.c (extract_bit_field_1): Remove write-only variable "icode".
