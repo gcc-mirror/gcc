@@ -1308,7 +1308,7 @@ m68k_expand_epilogue (bool sibcall_p)
 			   EH_RETURN_STACKADJ_RTX));
 
   if (!sibcall_p)
-    emit_jump_insn (gen_rtx_RETURN (VOIDmode));
+    emit_jump_insn (ret_rtx);
 }
 
 /* Return true if X is a valid comparison operator for the dbcc 

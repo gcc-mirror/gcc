@@ -2334,7 +2334,7 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
     XVECEXP (pat, 0, n++) = gen_rtx_USE (VOIDmode, picreg);
   XVECEXP (pat, 0, n++) = gen_rtx_USE (VOIDmode, cookie);
   if (sibcall)
-    XVECEXP (pat, 0, n++) = gen_rtx_RETURN (VOIDmode);
+    XVECEXP (pat, 0, n++) = ret_rtx;
   else
     XVECEXP (pat, 0, n++) = gen_rtx_CLOBBER (VOIDmode, retsreg);
   call = emit_call_insn (pat);

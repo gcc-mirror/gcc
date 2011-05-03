@@ -1,3 +1,29 @@
+2011-05-03  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gengenrtl.c (special_rtx): PC, CC0 and RETURN are special.
+	* genemit.c (gen_exp): Handle RETURN.
+	* emit-rtl.c (verify_rtx_sharing): Likewise.
+	(init_emit_regs): Create pc_rtx, ret_rtx and cc0_rtx specially.
+	* rtl.c (copy_rtx): RETURN is shared.
+	* rtl.h (enum global_rtl_index): Add GR_RETURN.
+	(ret_rtx): New.
+	* jump.c (redirect_exp_1): Don't use gen_rtx_RETURN.
+	* config/s390/s390.c (s390_emit_epilogue): Likewise.
+	* config/rx/rx.c (gen_rx_rtsd_vector): Likewise.
+	* config/cris/cris.c (cris_expand_return): Likewise.
+	* config/m68k/m68k.c (m68k_expand_epilogue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_make_savres_rtx,
+	rs6000_emit_epilogue, rs6000_output_mi_thunk): Likewise.
+	* config/picochip/picochip.c (picochip_expand_epilogue): Likewise.
+	* config/h8300/h8300.c (h8300_push_pop, h8300_expand_epilogue):
+	Likewise.
+	* config/v850/v850.c (expand_epilogue): Likewise.
+	* config/bfin/bfin.c (bfin_expand_call): Likewise.
+	* config/arm/arm.md (epilogue): Likewise.
+	* config/mn10300/mn10300.c (mn10300_expand_epilogue): Likewise.
+	* config/sparc/sparc.c (sparc_struct_value_rtx): Rename ret_rtx
+	variable to ret_reg.
+
 2011-05-03  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48846

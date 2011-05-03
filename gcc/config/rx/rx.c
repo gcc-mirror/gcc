@@ -1567,7 +1567,7 @@ gen_rx_rtsd_vector (unsigned int adjust, unsigned int low, unsigned int high)
 				: plus_constant (stack_pointer_rtx,
 						 i * UNITS_PER_WORD)));
 
-  XVECEXP (vector, 0, count - 1) = gen_rtx_RETURN (VOIDmode);
+  XVECEXP (vector, 0, count - 1) = ret_rtx;
 
   return vector;
 }

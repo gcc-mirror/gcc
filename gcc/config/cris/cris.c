@@ -1790,7 +1790,7 @@ cris_expand_return (bool on_stack)
      we do that until they're fixed.  Currently, all return insns in a
      function must be the same (not really a limiting factor) so we need
      to check that it doesn't change half-way through.  */
-  emit_jump_insn (gen_rtx_RETURN (VOIDmode));
+  emit_jump_insn (ret_rtx);
 
   CRIS_ASSERT (cfun->machine->return_type != CRIS_RETINSN_RET || !on_stack);
   CRIS_ASSERT (cfun->machine->return_type != CRIS_RETINSN_JUMP || on_stack);

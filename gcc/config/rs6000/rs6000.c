@@ -20358,7 +20358,7 @@ rs6000_make_savres_rtx (rs6000_stack_t *info,
   p = rtvec_alloc ((lr ? 4 : 3) + n_regs);
 
   if (!savep && lr)
-    RTVEC_ELT (p, offset++) = gen_rtx_RETURN (VOIDmode);
+    RTVEC_ELT (p, offset++) = ret_rtx;
 
   RTVEC_ELT (p, offset++)
     = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 65));
@@ -21350,7 +21350,7 @@ rs6000_emit_epilogue (int sibcall)
       alloc_rname = ggc_strdup (rname);
 
       j = 0;
-      RTVEC_ELT (p, j++) = gen_rtx_RETURN (VOIDmode);
+      RTVEC_ELT (p, j++) = ret_rtx;
       RTVEC_ELT (p, j++) = gen_rtx_USE (VOIDmode,
 					gen_rtx_REG (Pmode,
 						     LR_REGNO));
@@ -21966,7 +21966,7 @@ rs6000_emit_epilogue (int sibcall)
       else
 	p = rtvec_alloc (2);
 
-      RTVEC_ELT (p, 0) = gen_rtx_RETURN (VOIDmode);
+      RTVEC_ELT (p, 0) = ret_rtx;
       RTVEC_ELT (p, 1) = ((restoring_FPRs_inline || !lr)
 			  ? gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode, 65))
 			  : gen_rtx_CLOBBER (VOIDmode,
@@ -22405,7 +22405,7 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			gen_rtx_USE (VOIDmode,
 				     gen_rtx_REG (SImode,
 						  LR_REGNO)),
-			gen_rtx_RETURN (VOIDmode))));
+			ret_rtx)));
   SIBLING_CALL_P (insn) = 1;
   emit_barrier ();
 

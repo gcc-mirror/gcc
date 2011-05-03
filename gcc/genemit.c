@@ -166,6 +166,9 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
     case PC:
       printf ("pc_rtx");
       return;
+    case RETURN:
+      printf ("ret_rtx");
+      return;
     case CLOBBER:
       if (REG_P (XEXP (x, 0)))
 	{
