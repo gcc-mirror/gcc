@@ -1,3 +1,8 @@
+2011-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48774
+	* gcc.dg/pr48774.c: New test.
+
 2011-04-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/48462

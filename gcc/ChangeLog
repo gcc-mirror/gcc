@@ -1,3 +1,10 @@
+2011-05-03  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48774
+	* config/i386/i386.c (ix86_match_ccmode): For CC{A,C,O,S}mode
+	only succeed if req_mode is the same as set_mode.
+
 2011-05-03  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48846

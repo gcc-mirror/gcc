@@ -17194,11 +17194,15 @@ ix86_match_ccmode (rtx insn, enum machine_mode req_mode)
       if (req_mode == CCZmode)
 	return false;
       /* FALLTHRU */
+    case CCZmode:
+      break;
+
     case CCAmode:
     case CCCmode:
     case CCOmode:
     case CCSmode:
-    case CCZmode:
+      if (set_mode != req_mode)
+	return false;
       break;
 
     default:
