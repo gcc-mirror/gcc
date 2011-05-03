@@ -1,5 +1,9 @@
 2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* gcc.dg/vect/vect-strided-u16-i3.c: New test.
+
+2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* lib/target-supports.exp (check_effective_target_vect_strided):
 	Replace with...
 	(check_effective_target_vect_strided2)
