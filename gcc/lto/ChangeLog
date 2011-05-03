@@ -1,3 +1,11 @@
+2011-05-03  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (ltrans_partition_def): Remove GTY annotations.
+	(ltrans_partitions): Move to heap.
+	(new_partition): Update.
+	(free_ltrans_partitions): New function.
+	(lto_wpa_write_files): Use it.
+
 2011-04-29  Martin Jambor  <mjambor@suse.cz>
 
 	* lto.c: Include ipa-utils.h.

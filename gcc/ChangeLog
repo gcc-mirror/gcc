@@ -1,3 +1,27 @@
+2011-05-03  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_node_set_def, varpool_node_set_def): Move out of GTY;
+	replace hash by pointer map.
+	(cgraph_node_set_element_def, cgraph_node_set_element,
+	const_cgraph_node_set_element, varpool_node_set_element_def,
+	varpool_node_set_element, const_varpool_node_set_element): Remove.
+	(free_cgraph_node_set, free_varpool_node_set): New function.
+	(cgraph_node_set_size, varpool_node_set_size): Use vector size.
+	* tree-emutls.c: Free varpool node set.
+	* ipa-utils.c (cgraph_node_set_new, cgraph_node_set_add,
+	cgraph_node_set_remove, cgraph_node_set_find, dump_cgraph_node_set,
+	debug_cgraph_node_set, free_cgraph_node_set, varpool_node_set_new,
+	varpool_node_set_add, varpool_node_set_remove, varpool_node_set_find,
+	dump_varpool_node_set, free_varpool_node_set, debug_varpool_node_set):
+	Move here from ipa.c; implement using pointer_map
+	* ipa.c (cgraph_node_set_new, cgraph_node_set_add,
+	cgraph_node_set_remove, cgraph_node_set_find, dump_cgraph_node_set,
+	debug_cgraph_node_set, varpool_node_set_new,
+	varpool_node_set_add, varpool_node_set_remove, varpool_node_set_find,
+	dump_varpool_node_set, debug_varpool_node_set):
+	Move to ipa-uitls.c.
+	* passes.c (ipa_write_summaries): Update.
+
 2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
 
         From Mike Frysinger:

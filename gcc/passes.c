@@ -1729,8 +1729,8 @@ ipa_write_summaries (void)
   ipa_write_summaries_1 (set, vset);
 
   free (order);
-  ggc_free (set);
-  ggc_free (vset);
+  free_cgraph_node_set (set);
+  free_varpool_node_set (vset);
 }
 
 /* Same as execute_pass_list but assume that subpasses of IPA passes

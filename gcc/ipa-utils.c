@@ -324,3 +324,260 @@ get_base_var (tree t)
   return t;
 }
 
+
+/* Create a new cgraph node set.  */
+
+cgraph_node_set
+cgraph_node_set_new (void)
+{
+  cgraph_node_set new_node_set;
+
+  new_node_set = XCNEW (struct cgraph_node_set_def);
+  new_node_set->map = pointer_map_create ();
+  new_node_set->nodes = NULL;
+  return new_node_set;
+}
+
+
+/* Add cgraph_node NODE to cgraph_node_set SET.  */
+
+void
+cgraph_node_set_add (cgraph_node_set set, struct cgraph_node *node)
+{
+  void **slot;
+
+  slot = pointer_map_insert (set->map, node);
+
+  if (*slot)
+    {
+      int index = (size_t) *slot - 1;
+      gcc_checking_assert ((VEC_index (cgraph_node_ptr, set->nodes, index)
+		           == node));
+      return;
+    }
+
+  *slot = (void *)(size_t) (VEC_length (cgraph_node_ptr, set->nodes) + 1);
+
+  /* Insert into node vector.  */
+  VEC_safe_push (cgraph_node_ptr, heap, set->nodes, node);
+}
+
+
+/* Remove cgraph_node NODE from cgraph_node_set SET.  */
+
+void
+cgraph_node_set_remove (cgraph_node_set set, struct cgraph_node *node)
+{
+  void **slot, **last_slot;
+  int index;
+  struct cgraph_node *last_node;
+
+  slot = pointer_map_contains (set->map, node);
+  if (slot == NULL || !*slot)
+    return;
+
+  index = (size_t) *slot - 1;
+  gcc_checking_assert (VEC_index (cgraph_node_ptr, set->nodes, index)
+	      	       == node);
+
+  /* Remove from vector. We do this by swapping node with the last element
+     of the vector.  */
+  last_node = VEC_pop (cgraph_node_ptr, set->nodes);
+  if (last_node != node)
+    {
+      last_slot = pointer_map_contains (set->map, last_node);
+      gcc_checking_assert (last_slot && *last_slot);
+      *last_slot = (void *)(size_t) (index + 1);
+
+      /* Move the last element to the original spot of NODE.  */
+      VEC_replace (cgraph_node_ptr, set->nodes, index, last_node);
+    }
+
+  /* Remove element from hash table.  */
+  *slot = NULL;
+}
+
+
+/* Find NODE in SET and return an iterator to it if found.  A null iterator
+   is returned if NODE is not in SET.  */
+
+cgraph_node_set_iterator
+cgraph_node_set_find (cgraph_node_set set, struct cgraph_node *node)
+{
+  void **slot;
+  cgraph_node_set_iterator csi;
+
+  slot = pointer_map_contains (set->map, node);
+  if (slot == NULL || !*slot)
+    csi.index = (unsigned) ~0;
+  else
+    csi.index = (size_t)*slot - 1;
+  csi.set = set;
+
+  return csi;
+}
+
+
+/* Dump content of SET to file F.  */
+
+void
+dump_cgraph_node_set (FILE *f, cgraph_node_set set)
+{
+  cgraph_node_set_iterator iter;
+
+  for (iter = csi_start (set); !csi_end_p (iter); csi_next (&iter))
+    {
+      struct cgraph_node *node = csi_node (iter);
+      fprintf (f, " %s/%i", cgraph_node_name (node), node->uid);
+    }
+  fprintf (f, "\n");
+}
+
+
+/* Dump content of SET to stderr.  */
+
+DEBUG_FUNCTION void
+debug_cgraph_node_set (cgraph_node_set set)
+{
+  dump_cgraph_node_set (stderr, set);
+}
+
+
+/* Free varpool node set.  */
+
+void
+free_cgraph_node_set (cgraph_node_set set)
+{
+  VEC_free (cgraph_node_ptr, heap, set->nodes);
+  pointer_map_destroy (set->map);
+  free (set);
+}
+
+
+/* Create a new varpool node set.  */
+
+varpool_node_set
+varpool_node_set_new (void)
+{
+  varpool_node_set new_node_set;
+
+  new_node_set = XCNEW (struct varpool_node_set_def);
+  new_node_set->map = pointer_map_create ();
+  new_node_set->nodes = NULL;
+  return new_node_set;
+}
+
+
+/* Add varpool_node NODE to varpool_node_set SET.  */
+
+void
+varpool_node_set_add (varpool_node_set set, struct varpool_node *node)
+{
+  void **slot;
+
+  slot = pointer_map_insert (set->map, node);
+
+  if (*slot)
+    {
+      int index = (size_t) *slot - 1;
+      gcc_checking_assert ((VEC_index (varpool_node_ptr, set->nodes, index)
+		           == node));
+      return;
+    }
+
+  *slot = (void *)(size_t) (VEC_length (varpool_node_ptr, set->nodes) + 1);
+
+  /* Insert into node vector.  */
+  VEC_safe_push (varpool_node_ptr, heap, set->nodes, node);
+}
+
+
+/* Remove varpool_node NODE from varpool_node_set SET.  */
+
+void
+varpool_node_set_remove (varpool_node_set set, struct varpool_node *node)
+{
+  void **slot, **last_slot;
+  int index;
+  struct varpool_node *last_node;
+
+  slot = pointer_map_contains (set->map, node);
+  if (slot == NULL || !*slot)
+    return;
+
+  index = (size_t) *slot - 1;
+  gcc_checking_assert (VEC_index (varpool_node_ptr, set->nodes, index)
+	      	       == node);
+
+  /* Remove from vector. We do this by swapping node with the last element
+     of the vector.  */
+  last_node = VEC_pop (varpool_node_ptr, set->nodes);
+  if (last_node != node)
+    {
+      last_slot = pointer_map_contains (set->map, last_node);
+      gcc_checking_assert (last_slot && *last_slot);
+      *last_slot = (void *)(size_t) (index + 1);
+
+      /* Move the last element to the original spot of NODE.  */
+      VEC_replace (varpool_node_ptr, set->nodes, index, last_node);
+    }
+
+  /* Remove element from hash table.  */
+  *slot = NULL;
+}
+
+
+/* Find NODE in SET and return an iterator to it if found.  A null iterator
+   is returned if NODE is not in SET.  */
+
+varpool_node_set_iterator
+varpool_node_set_find (varpool_node_set set, struct varpool_node *node)
+{
+  void **slot;
+  varpool_node_set_iterator vsi;
+
+  slot = pointer_map_contains (set->map, node);
+  if (slot == NULL || !*slot)
+    vsi.index = (unsigned) ~0;
+  else
+    vsi.index = (size_t)*slot - 1;
+  vsi.set = set;
+
+  return vsi;
+}
+
+
+/* Dump content of SET to file F.  */
+
+void
+dump_varpool_node_set (FILE *f, varpool_node_set set)
+{
+  varpool_node_set_iterator iter;
+
+  for (iter = vsi_start (set); !vsi_end_p (iter); vsi_next (&iter))
+    {
+      struct varpool_node *node = vsi_node (iter);
+      fprintf (f, " %s", varpool_node_name (node));
+    }
+  fprintf (f, "\n");
+}
+
+
+/* Free varpool node set.  */
+
+void
+free_varpool_node_set (varpool_node_set set)
+{
+  VEC_free (varpool_node_ptr, heap, set->nodes);
+  pointer_map_destroy (set->map);
+  free (set);
+}
+
+
+/* Dump content of SET to stderr.  */
+
+DEBUG_FUNCTION void
+debug_varpool_node_set (varpool_node_set set)
+{
+  dump_varpool_node_set (stderr, set);
+}

@@ -1127,19 +1127,19 @@ free_section_data (struct lto_file_decl_data *file_data ATTRIBUTE_UNUSED,
 
 /* Structure describing ltrans partitions.  */
 
-struct GTY (()) ltrans_partition_def
+struct ltrans_partition_def
 {
   cgraph_node_set cgraph_set;
   varpool_node_set varpool_set;
-  const char * GTY ((skip)) name;
+  const char * name;
   int insns;
 };
 
 typedef struct ltrans_partition_def *ltrans_partition;
 DEF_VEC_P(ltrans_partition);
-DEF_VEC_ALLOC_P(ltrans_partition,gc);
+DEF_VEC_ALLOC_P(ltrans_partition,heap);
 
-static GTY (()) VEC(ltrans_partition, gc) *ltrans_partitions;
+static VEC(ltrans_partition, heap) *ltrans_partitions;
 
 static void add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node);
 static void add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode);
@@ -1148,13 +1148,27 @@ static void add_varpool_node_to_partition (ltrans_partition part, struct varpool
 static ltrans_partition
 new_partition (const char *name)
 {
-  ltrans_partition part = ggc_alloc_ltrans_partition_def ();
+  ltrans_partition part = XCNEW (struct ltrans_partition_def);
   part->cgraph_set = cgraph_node_set_new ();
   part->varpool_set = varpool_node_set_new ();
   part->name = name;
   part->insns = 0;
-  VEC_safe_push (ltrans_partition, gc, ltrans_partitions, part);
+  VEC_safe_push (ltrans_partition, heap, ltrans_partitions, part);
   return part;
+}
+
+/* Free memory used by ltrans datastructures.  */
+static void
+free_ltrans_partitions ()
+{
+  unsigned int idx;
+  ltrans_partition part;
+  for (idx = 0; VEC_iterate (ltrans_partition, ltrans_partitions, idx, part); idx++)
+    {
+      free_cgraph_node_set (part->cgraph-set);
+      free (part);
+    }
+  VEC_free (latrans_partition, heap, ltrans_partitions);
 }
 
 /* See all references that go to comdat objects and bring them into partition too.  */
@@ -1976,6 +1990,8 @@ lto_wpa_write_files (void)
   /* Close the LTRANS output list.  */
   if (fclose (ltrans_output_list_stream))
     fatal_error ("closing LTRANS output list %s: %m", ltrans_output_list);
+
+  free_ltrans_partitions();
 
   timevar_pop (TV_WHOPR_WPA_IO);
 }
