@@ -1,5 +1,13 @@
 2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
 
+	From Bernd Schmidt:
+	* config/bfin/bfin.md (MOVCC): New mode_macro.
+	(mov<mode>cc_insn1, mov<mode>cc_insn2, mov<mode>cc): Renamed from
+	movsicc_insn1, movsicc_insn2 and movsicc and macroized.  Remove
+	comments from generated assembly.
+
+2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
+
 	From Bernd Schmidt
 	* config/bfin/t-bfin (LIB1ASMFUNCS): Add muldi3 and umulsi3_highpart.
 	* config/bfin/t-bfin-elf (LIB1ASMFUNCS): Add muldi3.

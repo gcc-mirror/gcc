@@ -415,44 +415,46 @@
 
 ;; Conditional moves
 
-(define_expand "movsicc"
-  [(set (match_operand:SI 0 "register_operand" "")
-        (if_then_else:SI (match_operand 1 "comparison_operator" "")
-                         (match_operand:SI 2 "register_operand" "")
-                         (match_operand:SI 3 "register_operand" "")))]
+(define_mode_iterator CCMOV [QI HI SI])
+
+(define_expand "mov<mode>cc"
+  [(set (match_operand:CCMOV 0 "register_operand" "")
+        (if_then_else:CCMOV (match_operand 1 "comparison_operator" "")
+			    (match_operand:CCMOV 2 "register_operand" "")
+			    (match_operand:CCMOV 3 "register_operand" "")))]
   ""
 {
-  operands[1] = bfin_gen_compare (operands[1], SImode);
+  operands[1] = bfin_gen_compare (operands[1], <MODE>mode);
 })
 
-(define_insn "*movsicc_insn1"
-  [(set (match_operand:SI 0 "register_operand" "=da,da,da")
-        (if_then_else:SI
+(define_insn "*mov<mode>cc_insn1"
+  [(set (match_operand:CCMOV 0 "register_operand" "=da,da,da")
+        (if_then_else:CCMOV
 	    (eq:BI (match_operand:BI 3 "register_operand" "C,C,C")
 		(const_int 0))
-	    (match_operand:SI 1 "register_operand" "da,0,da")
-	    (match_operand:SI 2 "register_operand" "0,da,da")))]
+	    (match_operand:CCMOV 1 "register_operand" "da,0,da")
+	    (match_operand:CCMOV 2 "register_operand" "0,da,da")))]
   ""
   "@
-    if !cc %0 =%1; /* movsicc-1a */
-    if cc %0 =%2; /* movsicc-1b */
-    if !cc %0 =%1; if cc %0=%2; /* movsicc-1 */"
+    if !cc %0 = %1;
+    if cc %0 = %2;
+    if !cc %0 = %1; if cc %0 = %2;"
   [(set_attr "length" "2,2,4")
    (set_attr "type" "movcc")
    (set_attr "seq_insns" "*,*,multi")])
 
-(define_insn "*movsicc_insn2"
-  [(set (match_operand:SI 0 "register_operand" "=da,da,da")
-        (if_then_else:SI
+(define_insn "*mov<mode>cc_insn2"
+  [(set (match_operand:CCMOV 0 "register_operand" "=da,da,da")
+        (if_then_else:CCMOV
 	    (ne:BI (match_operand:BI 3 "register_operand" "C,C,C")
 		(const_int 0))
-	    (match_operand:SI 1 "register_operand" "0,da,da")
-	    (match_operand:SI 2 "register_operand" "da,0,da")))]
+	    (match_operand:CCMOV 1 "register_operand" "0,da,da")
+	    (match_operand:CCMOV 2 "register_operand" "da,0,da")))]
   ""
   "@
-   if !cc %0 =%2; /* movsicc-2b */
-   if cc %0 =%1; /* movsicc-2a */
-   if cc %0 =%1; if !cc %0=%2; /* movsicc-1 */"
+   if !cc %0 = %2;
+   if cc %0 = %1;
+   if cc %0 = %1; if !cc %0 = %2;"
   [(set_attr "length" "2,2,4")
    (set_attr "type" "movcc")
    (set_attr "seq_insns" "*,*,multi")])
