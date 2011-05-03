@@ -1,3 +1,7 @@
+2011-05-03  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.target/arm/cold-lc.c: New test.
+
 2011-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48774

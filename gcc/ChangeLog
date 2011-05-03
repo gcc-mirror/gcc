@@ -1,3 +1,12 @@
+2011-05-03  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* function.c (init_function_start): Call decide_function_section.
+	* varasm.c (decide_function_section): New function.
+	(assemble_start_function): When not using
+	flag_reorder_blocks_and_partition, don't compute in_cold_section_p
+	or first_function_block_is_cold.
+	* rtl.h (decide_function_section): Declare.
+
 2011-05-03  Uros Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

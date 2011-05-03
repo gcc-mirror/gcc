@@ -4515,6 +4515,7 @@ init_function_start (tree subr)
   else
     allocate_struct_function (subr, false);
   prepare_function_start ();
+  decide_function_section (subr);
 
   /* Warn if this value is an aggregate type,
      regardless of which calling convention we are using for it.  */
