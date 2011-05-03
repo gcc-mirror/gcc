@@ -1,3 +1,9 @@
+2011-04-26  Mark Wielaard  <mjw@redhat.com>
+
+	PR42288
+	* dwarf2out.c (dwarf2out_finish): Always call output_aranges ()
+	when info_section_emitted.
+
 2011-05-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips-opts.h: New.
