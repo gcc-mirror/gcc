@@ -4263,6 +4263,8 @@ insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
 @end deftypefn
 
+@hook TARGET_ARRAY_MODE_SUPPORTED_P
+
 @hook TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 Define this to return nonzero for machine modes for which the port has
 small register classes.  If this target hook returns nonzero for a given

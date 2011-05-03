@@ -4277,6 +4277,34 @@ insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_ARRAY_MODE_SUPPORTED_P (enum machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
+Return true if GCC should try to use a scalar mode to store an array
+of @var{nelems} elements, given that each element has mode @var{mode}.
+Returning true here overrides the usual @code{MAX_FIXED_MODE} limit
+and allows GCC to use any defined integer mode.
+
+One use of this hook is to support vector load and store operations
+that operate on several homogeneous vectors.  For example, ARM NEON
+has operations like:
+
+@smallexample
+int8x8x3_t vld3_s8 (const int8_t *)
+@end smallexample
+
+where the return type is defined as:
+
+@smallexample
+typedef struct int8x8x3_t
+@{
+  int8x8_t val[3];
+@} int8x8x3_t;
+@end smallexample
+
+If this hook allows @code{val} to have a scalar mode, then
+@code{int8x8x3_t} can have the same mode.  GCC can then store
+@code{int8x8x3_t}s in registers rather than forcing them onto the stack.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (enum machine_mode @var{mode})
 Define this to return nonzero for machine modes for which the port has
 small register classes.  If this target hook returns nonzero for a given

@@ -1,3 +1,15 @@
+2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* hooks.h (hook_bool_mode_uhwi_false): Declare.
+	* hooks.c (hook_bool_mode_uhwi_false): New function.
+	* target.def (array_mode_supported_p): New hook.
+	* doc/tm.texi.in (TARGET_ARRAY_MODE_SUPPORTED_P): Add @hook.
+	* doc/tm.texi: Regenerate.
+	* stor-layout.c (mode_for_array): New function.
+	(layout_type): Use it.
+	* config/arm/arm.c (arm_array_mode_supported_p): New function.
+	(TARGET_ARRAY_MODE_SUPPORTED_P): Define.
+
 2011-05-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/48723
