@@ -1,3 +1,8 @@
+2011-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/28501
+	* g++.dg/ext/complex9.C: New.
+
 2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	From Mike Frysinger

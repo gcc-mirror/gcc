@@ -1,3 +1,9 @@
+2011-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/28501
+	* call.c (add_builtin_candidate): Handle REALPART_EXPR and
+	IMAGPART_EXPR.
+
 2011-05-02  Lawrence Crowl  <crowl@google.com>
 
 	* decl.c: (push_local_name): Change TV_NAME_LOOKUP to start/stop.
