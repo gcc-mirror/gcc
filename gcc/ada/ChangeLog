@@ -1,3 +1,12 @@
+2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Call build_function_type_list instead
+	of build_function_type.  Adjust calls to...
+	(build_raise_check): ...this.  Do not take a void_tree parameter.
+	Call build_function_type_list instead of build_function_type.
+	Fix head comment and swap couple of conditional blocks.
+
 2011-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Library_Version): Bump to 4.7.
