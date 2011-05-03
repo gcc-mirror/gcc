@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-options "-fcoarray=lib -lcaf_single" }
 !
 ! PR fortran/18918
 !
