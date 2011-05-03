@@ -8832,7 +8832,7 @@ ix86_code_end (void)
 
       decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
 			 get_identifier (name),
-			 build_function_type (void_type_node, void_list_node));
+			 build_function_type_list (void_type_node, NULL_TREE));
       DECL_RESULT (decl) = build_decl (BUILTINS_LOCATION, RESULT_DECL,
 				       NULL_TREE, void_type_node);
       TREE_PUBLIC (decl) = 1;
