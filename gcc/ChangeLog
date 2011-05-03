@@ -1,3 +1,7 @@
+2011-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* expmed.c (extract_bit_field_1): Remove write-only variable "icode".
+
 2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	From Bernd Schmidt:
@@ -105,12 +109,13 @@
 	* tree-ssa-threadupdate.c (THREAD_TARGET): define.
 	(remove_ctrl_stmt_and_useless_edges): Clear AUX field of outgoing edges.
 	(craete_edge_and_update_destination_phis): Use THREAD_TARGET rather
-	than accessing AUX field directly.  Free the AUX field before			clearing it.
+	than accessing AUX field directly.  Free the AUX field before
+	clearing it.
 	(thread_block, thread_through_loop_header): Likewise.
 	(thread_single_edge, mark_threaded_blocks): Likewise.
 	(redirect_edges): Delay clearing the AUX field.  Free the AUX field.
 	(register_jump_thread): Do not attempt to thread to a NULL edge.
-	
+
 2011-05-03  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* function.c (init_function_start): Call decide_function_section.
