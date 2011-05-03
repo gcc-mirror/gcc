@@ -1688,20 +1688,20 @@
 (define_expand "rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(rotate:SI (match_operand:SI 1 "register_operand" "")
-		   (match_operand:SI 2 "immediate_operand" "")))]
+		   (match_operand:SI 2 "const_int_operand" "")))]
   ""
 {
-  if (INTVAL (operands[2]) != 16)
+  if (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 16)
     FAIL;
 })
 
 (define_expand "rotrsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(rotatert:SI (match_operand:SI 1 "register_operand" "")
-		     (match_operand:SI 2 "immediate_operand" "")))]
+		     (match_operand:SI 2 "const_int_operand" "")))]
   ""
 {
-  if (INTVAL (operands[2]) != 16)
+  if (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 16)
     FAIL;
   emit_insn (gen_rotl16 (operands[0], operands[1]));
   DONE;
