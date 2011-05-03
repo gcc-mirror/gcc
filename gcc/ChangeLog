@@ -1,3 +1,12 @@
+2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
+
+	From Bernd Schmidt
+	* config/bfin/t-bfin (LIB1ASMFUNCS): Add muldi3 and umulsi3_highpart.
+	* config/bfin/t-bfin-elf (LIB1ASMFUNCS): Add muldi3.
+	* config/bfin/t-bfin-linux (LIB1ASMFUNCS): Add muldi3.
+	* config/bfin/t-bfin-uclinux (LIB1ASMFUNCS): Add muldi3.
+	* config/bfin/lib1funcs.asm (___muldi3): New function.
+
 2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/stormy16/stormy16 (xstormy16_init_builtins): Call
