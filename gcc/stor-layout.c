@@ -546,6 +546,34 @@ get_mode_alignment (enum machine_mode mode)
   return MIN (BIGGEST_ALIGNMENT, MAX (1, mode_base_align[mode]*BITS_PER_UNIT));
 }
 
+/* Return the natural mode of an array, given that it is SIZE bytes in
+   total and has elements of type ELEM_TYPE.  */
+
+static enum machine_mode
+mode_for_array (tree elem_type, tree size)
+{
+  tree elem_size;
+  unsigned HOST_WIDE_INT int_size, int_elem_size;
+  bool limit_p;
+
+  /* One-element arrays get the component type's mode.  */
+  elem_size = TYPE_SIZE (elem_type);
+  if (simple_cst_equal (size, elem_size))
+    return TYPE_MODE (elem_type);
+
+  limit_p = true;
+  if (host_integerp (size, 1) && host_integerp (elem_size, 1))
+    {
+      int_size = tree_low_cst (size, 1);
+      int_elem_size = tree_low_cst (elem_size, 1);
+      if (int_elem_size > 0
+	  && int_size % int_elem_size == 0
+	  && targetm.array_mode_supported_p (TYPE_MODE (elem_type),
+					     int_size / int_elem_size))
+	limit_p = false;
+    }
+  return mode_for_size_tree (size, MODE_INT, limit_p);
+}
 
 /* Subroutine of layout_decl: Force alignment required for the data type.
    But if the decl itself wants greater alignment, don't override that.  */
@@ -2040,14 +2068,8 @@ layout_type (tree type)
 	    && (TYPE_MODE (TREE_TYPE (type)) != BLKmode
 		|| TYPE_NO_FORCE_BLK (TREE_TYPE (type))))
 	  {
-	    /* One-element arrays get the component type's mode.  */
-	    if (simple_cst_equal (TYPE_SIZE (type),
-				  TYPE_SIZE (TREE_TYPE (type))))
-	      SET_TYPE_MODE (type, TYPE_MODE (TREE_TYPE (type)));
-	    else
-	      SET_TYPE_MODE (type, mode_for_size_tree (TYPE_SIZE (type),
-						       MODE_INT, 1));
-
+	    SET_TYPE_MODE (type, mode_for_array (TREE_TYPE (type),
+						 TYPE_SIZE (type)));
 	    if (TYPE_MODE (type) != BLKmode
 		&& STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
 		&& TYPE_ALIGN (type) < GET_MODE_ALIGNMENT (TYPE_MODE (type)))

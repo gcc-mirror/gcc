@@ -243,6 +243,8 @@ static rtx arm_pic_static_addr (rtx orig, rtx reg);
 static bool cortex_a9_sched_adjust_cost (rtx, rtx, rtx, int *);
 static bool xscale_sched_adjust_cost (rtx, rtx, rtx, int *);
 static bool fa726te_sched_adjust_cost (rtx, rtx, rtx, int *);
+static bool arm_array_mode_supported_p (enum machine_mode,
+					unsigned HOST_WIDE_INT);
 static enum machine_mode arm_preferred_simd_mode (enum machine_mode);
 static bool arm_class_likely_spilled_p (reg_class_t);
 static bool arm_vector_alignment_reachable (const_tree type, bool is_packed);
@@ -399,6 +401,8 @@ static const struct default_options arm_option_optimization_table[] =
 #define TARGET_SHIFT_TRUNCATION_MASK arm_shift_truncation_mask
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P arm_vector_mode_supported_p
+#undef TARGET_ARRAY_MODE_SUPPORTED_P
+#define TARGET_ARRAY_MODE_SUPPORTED_P arm_array_mode_supported_p
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE arm_preferred_simd_mode
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
@@ -22448,6 +22452,20 @@ arm_vector_mode_supported_p (enum machine_mode mode)
       && ((mode == V2SImode)
 	  || (mode == V4HImode)
 	  || (mode == V8QImode)))
+    return true;
+
+  return false;
+}
+
+/* Implements target hook array_mode_supported_p.  */
+
+static bool
+arm_array_mode_supported_p (enum machine_mode mode,
+			    unsigned HOST_WIDE_INT nelems)
+{
+  if (TARGET_NEON
+      && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode))
+      && (nelems >= 2 && nelems <= 4))
     return true;
 
   return false;

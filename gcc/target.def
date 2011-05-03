@@ -1565,6 +1565,38 @@ DEFHOOK
  bool, (enum machine_mode mode),
  hook_bool_mode_false)
 
+/* True if we should try to use a scalar mode to represent an array,
+   overriding the usual MAX_FIXED_MODE limit.  */
+DEFHOOK
+(array_mode_supported_p,
+ "Return true if GCC should try to use a scalar mode to store an array\n\
+of @var{nelems} elements, given that each element has mode @var{mode}.\n\
+Returning true here overrides the usual @code{MAX_FIXED_MODE} limit\n\
+and allows GCC to use any defined integer mode.\n\
+\n\
+One use of this hook is to support vector load and store operations\n\
+that operate on several homogeneous vectors.  For example, ARM NEON\n\
+has operations like:\n\
+\n\
+@smallexample\n\
+int8x8x3_t vld3_s8 (const int8_t *)\n\
+@end smallexample\n\
+\n\
+where the return type is defined as:\n\
+\n\
+@smallexample\n\
+typedef struct int8x8x3_t\n\
+@{\n\
+  int8x8_t val[3];\n\
+@} int8x8x3_t;\n\
+@end smallexample\n\
+\n\
+If this hook allows @code{val} to have a scalar mode, then\n\
+@code{int8x8x3_t} can have the same mode.  GCC can then store\n\
+@code{int8x8x3_t}s in registers rather than forcing them onto the stack.",
+ bool, (enum machine_mode mode, unsigned HOST_WIDE_INT nelems),
+ hook_bool_mode_uhwi_false)
+
 /* Compute cost of moving data from a register of class FROM to one of
    TO, using MODE.  */
 DEFHOOK
