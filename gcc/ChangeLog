@@ -1,3 +1,9 @@
+2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
+
+	From Jie Zhang:
+	* config/bfin/uclinux.h (LINK_GCC_C_SEQUENCE_SPEC): Make sure
+	libbffastfp overrides libgcc when -mfast-fp.
+
 2011-05-03  Stuart Henderson <shenders@gcc.gnu.org>
 
 	Originally from Bernd Schmidt
