@@ -1127,7 +1127,6 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   enum machine_mode int_mode;
   enum machine_mode ext_mode;
   enum machine_mode mode1;
-  enum insn_code icode;
   int byte_offset;
 
   if (tmode == VOIDmode)
@@ -1431,7 +1430,6 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* Now OFFSET is nonzero only for memory operands.  */
   ext_mode = mode_for_extraction (unsignedp ? EP_extzv : EP_extv, 0);
-  icode = unsignedp ? CODE_FOR_extzv : CODE_FOR_extv;
   if (ext_mode != MAX_MACHINE_MODE
       && bitsize > 0
       && GET_MODE_BITSIZE (ext_mode) >= bitsize
