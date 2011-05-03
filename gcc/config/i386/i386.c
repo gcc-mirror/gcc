@@ -10566,8 +10566,8 @@ ix86_expand_prologue (void)
     }
 
   /* The stack has already been decremented by the instruction calling us
-     so we need to probe unconditionally to preserve the protection area.  */
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+     so probe if the size is non-negative to preserve the protection area.  */
+  if (allocate >= 0 && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
     {
       /* We expect the registers to be saved when probes are used.  */
       gcc_assert (int_registers_saved);

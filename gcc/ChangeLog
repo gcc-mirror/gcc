@@ -1,3 +1,9 @@
+2011-05-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/48723
+	* config/i386/i386.c (ix86_expand_prologue): Do not probe the stack
+	for -fstack-check if the size to allocate is negative.
+
 2011-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48809
