@@ -24587,21 +24587,17 @@ dwarf2out_finish (const char *filename)
 	}
     }
 
-  /* Output the address range information.  We only put functions in the
-     arange table, so don't write it out if we don't have any.  */
+  /* Output the address range information if a CU (.debug_info section)
+     was emitted.  We output an empty table even if we had no functions
+     to put in it.  This because the consumer has no way to tell the
+     difference between an empty table that we omitted and failure to
+     generate a table that would have contained data.  */
   if (info_section_emitted)
     {
       unsigned long aranges_length = size_of_aranges ();
 
-      /* Empty .debug_aranges would contain just header and
-	 terminating 0,0.  */
-      if (aranges_length
-	  != (unsigned long) (DWARF_ARANGES_HEADER_SIZE
-			      + 2 * DWARF2_ADDR_SIZE))
-	{
-	  switch_to_section (debug_aranges_section);
-	  output_aranges (aranges_length);
-	}
+      switch_to_section (debug_aranges_section);
+      output_aranges (aranges_length);
     }
 
   /* Output ranges section if necessary.  */
