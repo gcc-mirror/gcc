@@ -1,5 +1,11 @@
 2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/stormy16/stormy16 (xstormy16_init_builtins): Call
+	build_function_type_list instead of build_function_type.
+	Rearrange initialization of `args' to do so.
+
+2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/i386/i386.c (ix86_code_end): Call build_function_type_list
 	instead of build_function_type.
 
