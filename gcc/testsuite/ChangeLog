@@ -1,6 +1,11 @@
 2011-05-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
+	* gfortran.dg/coarray/this_image_1.f90: Remove dg-options.
+
+2011-05-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
 	* gfortran.dg/coarray/this_image_1.f90: New.
 
 2011-05-03  Tobias Burnus  <burnus@net-b.de>
