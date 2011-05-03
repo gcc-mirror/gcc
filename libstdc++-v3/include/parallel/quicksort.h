@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -82,6 +82,8 @@ namespace __gnu_parallel
       _DifferenceType __split = __parallel_partition(__begin, __end,
 						     __pred, __num_threads);
 
+      for (_DifferenceType __s = 0; __s < __num_samples; ++__s)
+	__samples[__s].~_ValueType();
       ::operator delete(__samples);
 
       return __split;

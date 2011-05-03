@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -209,7 +209,7 @@ namespace __gnu_parallel
           _ThreadIndex __target_p = __bin_proc[__target_bin];
 
           // Last column [__d->_M_num_threads] stays unchanged.
-          ::new(&(__temporaries[__target_p][__dist[__target_bin + 1]++]))
+	  ::new(&(__temporaries[__target_p][__dist[__target_bin + 1]++]))
               _ValueType(*(__source + __i + __start));
 	}
 
@@ -227,8 +227,8 @@ namespace __gnu_parallel
 	    (__sd->_M_temporaries[__iam]
 	     + (__b == __d->_M_bins_begin
 		? 0 : __sd->_M_dist[__b][__d->_M_num_threads])),
-	  * __end = (__sd->_M_temporaries[__iam]
-		     + __sd->_M_dist[__b + 1][__d->_M_num_threads]);
+	    *__end = (__sd->_M_temporaries[__iam]
+		      + __sd->_M_dist[__b + 1][__d->_M_num_threads]);
 
           __sequential_random_shuffle(__begin, __end, __rng);
           std::copy(__begin, __end, __sd->_M_source + __global_offset
@@ -236,6 +236,8 @@ namespace __gnu_parallel
 		       ? 0 : __sd->_M_dist[__b][__d->_M_num_threads]));
 	}
 
+      for (_SequenceIndex __i = 0; __i < __offset; ++__i)
+	__sd->_M_temporaries[__iam][__i].~_ValueType();
       ::operator delete(__sd->_M_temporaries[__iam]);
     }
 
@@ -501,6 +503,9 @@ namespace __gnu_parallel
           delete[] __dist0;
           delete[] __dist1;
           delete[] __oracles;
+	  
+	  for (_DifferenceType __i = 0; __i < __n; ++__i)
+	    __target[__i].~_ValueType();
           ::operator delete(__target);
 	}
       else
