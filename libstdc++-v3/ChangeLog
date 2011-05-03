@@ -1,5 +1,11 @@
 2011-05-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/functional (bind): Remove from overload set when first
+	argument type might be a socket file descriptor.
+	* testsuite/20_util/bind/socket.cc: New.
+
+2011-05-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/48848
 	* doc/xml/manual/status_cxx200x.xml: Update valarray status.
 	* doc/html/*: Regenerate.
