@@ -1,5 +1,9 @@
 2011-05-03  Jan Hubicka  <jh@suse.cz>
 
+	* lto.c (free_ltrans_partitions): Fix accidental commit.
+
+2011-05-03  Jan Hubicka  <jh@suse.cz>
+
 	* lto.c (ltrans_partition_def): Remove GTY annotations.
 	(ltrans_partitions): Move to heap.
 	(new_partition): Update.
