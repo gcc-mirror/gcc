@@ -1,3 +1,24 @@
+2011-05-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips-opts.h: New.
+	* config/mips/mips.c (enum mips_r10k_cache_barrier_setting): Move
+	to mips-opts.h.
+	(mips_abi, mips_code_readable, mips_r10k_cache_barriee): Remove.
+	(mips_handle_option): Don't handle OPT_mabi_, OPT_mcode_readable_
+	or OPT_mr10k_cache_barrier_ here.  Access mips_cache_flush_func
+	via opts pointer.
+	* config/mips/mips.h (enum mips_code_readable_setting): Move to
+	mips-opts.h.
+	(mips_abi, mips_code_readable): Don't declare.
+	* config/mips/mips.opt (config/mips/mips-opts.h): New
+	HeaderInclude.
+	(mabi=): Use Enum and Var.
+	(mips_abi): New Enum and EnumValue entries.
+	(mcode-readable=): Use Enum and Var.
+	(mips_code_readable_setting): New Enum and EnumValue entries.
+	(mr10k-cache-barrier=): Use Enum and Var.
+	(mips_r10k_cache_barrier_setting): New Enum and EnumValue entries.
+
 2011-05-03  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (cgraph_node_set_def, varpool_node_set_def): Move out of GTY;
