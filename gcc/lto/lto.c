@@ -1159,16 +1159,16 @@ new_partition (const char *name)
 
 /* Free memory used by ltrans datastructures.  */
 static void
-free_ltrans_partitions ()
+free_ltrans_partitions (void)
 {
   unsigned int idx;
   ltrans_partition part;
   for (idx = 0; VEC_iterate (ltrans_partition, ltrans_partitions, idx, part); idx++)
     {
-      free_cgraph_node_set (part->cgraph-set);
+      free_cgraph_node_set (part->cgraph_set);
       free (part);
     }
-  VEC_free (latrans_partition, heap, ltrans_partitions);
+  VEC_free (ltrans_partition, heap, ltrans_partitions);
 }
 
 /* See all references that go to comdat objects and bring them into partition too.  */
