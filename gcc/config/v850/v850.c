@@ -1890,7 +1890,7 @@ expand_epilogue (void)
 	  int offset;
 	  restore_all = gen_rtx_PARALLEL (VOIDmode,
 					  rtvec_alloc (num_restore + 2));
-	  XVECEXP (restore_all, 0, 0) = gen_rtx_RETURN (VOIDmode);
+	  XVECEXP (restore_all, 0, 0) = ret_rtx;
 	  XVECEXP (restore_all, 0, 1)
 	    = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
 			    gen_rtx_PLUS (Pmode,

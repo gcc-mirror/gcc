@@ -2450,6 +2450,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
     case CODE_LABEL:
     case PC:
     case CC0:
+    case RETURN:
     case SCRATCH:
       return;
       /* SCRATCH must be shared because they represent distinct values.  */
@@ -5416,8 +5417,9 @@ init_emit_regs (void)
   init_reg_modes_target ();
 
   /* Assign register numbers to the globally defined register rtx.  */
-  pc_rtx = gen_rtx_PC (VOIDmode);
-  cc0_rtx = gen_rtx_CC0 (VOIDmode);
+  pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);
+  ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);
+  cc0_rtx = gen_rtx_fmt_ (CC0, VOIDmode);
   stack_pointer_rtx = gen_raw_REG (Pmode, STACK_POINTER_REGNUM);
   frame_pointer_rtx = gen_raw_REG (Pmode, FRAME_POINTER_REGNUM);
   hard_frame_pointer_rtx = gen_raw_REG (Pmode, HARD_FRAME_POINTER_REGNUM);

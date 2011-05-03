@@ -2273,7 +2273,7 @@ picochip_expand_epilogue (int is_sibling_call ATTRIBUTE_UNUSED)
     rtvec p;
     p = rtvec_alloc (2);
 
-    RTVEC_ELT (p, 0) = gen_rtx_RETURN (VOIDmode);
+    RTVEC_ELT (p, 0) = ret_rtx;
     RTVEC_ELT (p, 1) = gen_rtx_USE (VOIDmode,
 				    gen_rtx_REG (Pmode, LINK_REGNUM));
     emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));

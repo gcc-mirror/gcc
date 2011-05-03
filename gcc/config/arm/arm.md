@@ -10006,9 +10006,7 @@
       DONE;
     }
   emit_jump_insn (gen_rtx_UNSPEC_VOLATILE (VOIDmode,
-	gen_rtvec (1,
-		gen_rtx_RETURN (VOIDmode)),
-	VUNSPEC_EPILOGUE));
+	gen_rtvec (1, ret_rtx), VUNSPEC_EPILOGUE));
   DONE;
   "
 )

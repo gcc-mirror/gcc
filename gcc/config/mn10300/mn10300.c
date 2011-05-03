@@ -1255,7 +1255,7 @@ mn10300_expand_epilogue (void)
 
   /* Adjust the stack and restore callee-saved registers, if any.  */
   if (mn10300_can_use_rets_insn ())
-    emit_jump_insn (gen_rtx_RETURN (VOIDmode));
+    emit_jump_insn (ret_rtx);
   else
     emit_jump_insn (gen_return_ret (GEN_INT (size + REG_SAVE_BYTES)));
 }
