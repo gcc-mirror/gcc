@@ -1,0 +1,76 @@
+# Copyright (C) 2011 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+# Contributed by Tobias Burnus <burnus@net-b.de>
+
+
+# Test coarray support.
+#
+# For the compilation tests, all files are compiles with the
+# option -fcoarray=single and with -fcoarray=lib
+#
+# For the link and execution tests, for -fcoarray=lib the
+# libcaf_single library is linked. Additionally, with the
+# required settings another CAF library is used.
+
+# Load procedures from common libraries. 
+load_lib gfortran-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_FFLAGS
+if ![info exists DEFAULT_FFLAGS] then {
+    set DEFAULT_FFLAGS " -pedantic-errors"
+}
+
+dg-init
+
+global runtests
+global DG_TORTURE_OPTIONS torture_with_loops
+
+torture-init
+set-torture-options $DG_TORTURE_OPTIONS
+
+# Main loop.
+foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $test] then {
+	continue
+    }
+
+# Enable if you want to test several options:
+#    # look if this is dg-do-run test, in which case
+#    # we cycle through the option list, otherwise we don't
+#    if [expr [search_for $test "dg-do run"]] {
+#	set option_list $torture_with_loops
+#    } else {
+#	set option_list [list { -O } ]
+#    }
+    set option_list [list { -O2 } ]
+
+    set nshort [file tail [file dirname $test]]/[file tail $test]
+
+    foreach flags $option_list {
+	verbose "Testing $nshort (single), $flags" 1
+	dg-test $test "-fcoarray=single $flags" "" 
+    }
+
+    foreach flags $option_list {
+	verbose "Testing $nshort (libcaf_single), $flags" 1
+	dg-test $test "-fcoarray=lib $flags -lcaf_single" ""
+    }
+}
+torture-finish
+dg-finish
