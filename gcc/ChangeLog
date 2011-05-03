@@ -1,3 +1,10 @@
+2011-05-03  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48846
+	* lto-streamer-in.c (unpack_ts_decl_common_value_fields):
+	Stream decl_common.off_align instead of the derived DECL_OFFSET_ALIGN.
+	* lto-streamer-out.c (pack_ts_decl_common_value_fields): Likewise.
+
 2011-05-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/48723
