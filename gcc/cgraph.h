@@ -256,10 +256,10 @@ DEF_VEC_ALLOC_P(cgraph_node_ptr,gc);
 
 /* A cgraph node set is a collection of cgraph nodes.  A cgraph node
    can appear in multiple sets.  */
-struct GTY(()) cgraph_node_set_def
+struct cgraph_node_set_def
 {
-  htab_t GTY((param_is (struct cgraph_node_set_element_def))) hashtab;
-  VEC(cgraph_node_ptr, gc) *nodes;
+  struct pointer_map_t *map;
+  VEC(cgraph_node_ptr, heap) *nodes;
 };
 
 typedef struct varpool_node *varpool_node_ptr;
@@ -270,10 +270,10 @@ DEF_VEC_ALLOC_P(varpool_node_ptr,gc);
 
 /* A varpool node set is a collection of varpool nodes.  A varpool node
    can appear in multiple sets.  */
-struct GTY(()) varpool_node_set_def
+struct varpool_node_set_def
 {
-  htab_t GTY((param_is (struct varpool_node_set_element_def))) hashtab;
-  VEC(varpool_node_ptr, gc) *nodes;
+  struct pointer_map_t * map;
+  VEC(varpool_node_ptr, heap) *nodes;
 };
 
 typedef struct cgraph_node_set_def *cgraph_node_set;
@@ -288,34 +288,12 @@ DEF_VEC_P(varpool_node_set);
 DEF_VEC_ALLOC_P(varpool_node_set,gc);
 DEF_VEC_ALLOC_P(varpool_node_set,heap);
 
-/* A cgraph node set element contains an index in the vector of nodes in
-   the set.  */
-struct GTY(()) cgraph_node_set_element_def
-{
-  struct cgraph_node *node;
-  HOST_WIDE_INT index;
-};
-
-typedef struct cgraph_node_set_element_def *cgraph_node_set_element;
-typedef const struct cgraph_node_set_element_def *const_cgraph_node_set_element;
-
 /* Iterator structure for cgraph node sets.  */
 typedef struct
 {
   cgraph_node_set set;
   unsigned index;
 } cgraph_node_set_iterator;
-
-/* A varpool node set element contains an index in the vector of nodes in
-   the set.  */
-struct GTY(()) varpool_node_set_element_def
-{
-  struct varpool_node *node;
-  HOST_WIDE_INT index;
-};
-
-typedef struct varpool_node_set_element_def *varpool_node_set_element;
-typedef const struct varpool_node_set_element_def *const_varpool_node_set_element;
 
 /* Iterator structure for varpool node sets.  */
 typedef struct
@@ -632,6 +610,7 @@ void cgraph_node_set_add (cgraph_node_set, struct cgraph_node *);
 void cgraph_node_set_remove (cgraph_node_set, struct cgraph_node *);
 void dump_cgraph_node_set (FILE *, cgraph_node_set);
 void debug_cgraph_node_set (cgraph_node_set);
+void free_cgraph_node_set (cgraph_node_set);
 
 varpool_node_set varpool_node_set_new (void);
 varpool_node_set_iterator varpool_node_set_find (varpool_node_set,
@@ -640,6 +619,7 @@ void varpool_node_set_add (varpool_node_set, struct varpool_node *);
 void varpool_node_set_remove (varpool_node_set, struct varpool_node *);
 void dump_varpool_node_set (FILE *, varpool_node_set);
 void debug_varpool_node_set (varpool_node_set);
+void free_varpool_node_set (varpool_node_set);
 void ipa_discover_readonly_nonaddressable_vars (void);
 bool cgraph_comdat_can_be_unshared_p (struct cgraph_node *);
 
@@ -763,7 +743,7 @@ cgraph_node_in_set_p (struct cgraph_node *node, cgraph_node_set set)
 static inline size_t
 cgraph_node_set_size (cgraph_node_set set)
 {
-  return htab_elements (set->hashtab);
+  return VEC_length (cgraph_node_ptr, set->nodes);
 }
 
 /* Return true if iterator VSI points to nothing.  */
@@ -811,7 +791,7 @@ varpool_node_in_set_p (struct varpool_node *node, varpool_node_set set)
 static inline size_t
 varpool_node_set_size (varpool_node_set set)
 {
-  return htab_elements (set->hashtab);
+  return VEC_length (varpool_node_ptr, set->nodes);
 }
 
 /* Uniquize all constants that appear in memory.

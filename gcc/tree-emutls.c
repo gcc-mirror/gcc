@@ -781,7 +781,7 @@ ipa_lower_emutls (void)
 
   VEC_free (varpool_node_ptr, heap, control_vars);
   VEC_free (tree, heap, access_vars);
-  tls_vars = NULL;
+  free_varpool_node_set (tls_vars);
 
   return TODO_dump_func | TODO_ggc_collect | TODO_verify_all;
 }
