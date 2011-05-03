@@ -1,5 +1,12 @@
 2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
 
+	From Mike Frysinger
+	* gcc.target/bfin/mcpu-bf542.c: Check SILICON_REVISION is 0x0004.
+	* gcc.target/bfin/mcpu-bf544.c, gcc.target/bfin/mcpu-bf547.c,
+	gcc.target/bfin/mcpu-bf548.c, gcc.target/bfin/mcpu-bf549.c: Likewise.
+
+2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
+
 	* gcc.target/bfin/builtins: Created.
 	* gcc.target/bfin/hisilh-O0.c: Deleted.
 	* gcc.target/bfin/hisilh.c: Moved to...
