@@ -1,5 +1,16 @@
 2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* gcc.dg/vect/slp-11.c: Split into...
+	* gcc.dg/vect/slp-11a.c, gcc.dg/vect/slp-11b.c,
+	gcc.dg/vect/slp-11c.c: ...these tests.
+	* gcc.dg/vect/slp-12a.c: Split 4-stride loop into...
+	* gcc.dg/vect/slp-12c.c: ...this new test.
+	* gcc.dg/vect/slp-19.c: Split into...
+	* gcc.dg/vect/slp-19a.c, gcc.dg/vect/slp-19b.c,
+	gcc.dg/vect/slp-19c.c: ...these new tests.
+
+2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* lib/target-supports.exp
 	(check_effective_target_vect_extract_even_odd_wide): Delete.
 	(check_effective_target_vect_strided_wide): Likewise.
