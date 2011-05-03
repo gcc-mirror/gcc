@@ -1,5 +1,10 @@
 2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/i386/i386.c (ix86_code_end): Call build_function_type_list
+	instead of build_function_type.
+
+2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/rs6000/rs6000.c (spe_init_builtins): Call
 	build_function_type_list instead of build_function_type.
 	(paired_init_builtins, altivec_init_builtins): Likewise.
