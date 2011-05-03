@@ -1,3 +1,8 @@
+2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/bfin/bfin.c (bfin_init_builtins): Call
+	build_function_type_list instead of build_function_type.
+
 2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	From Bernd Schmidt

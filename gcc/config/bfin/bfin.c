@@ -5979,7 +5979,7 @@ bfin_init_builtins (void)
 {
   tree V2HI_type_node = build_vector_type_for_mode (intHI_type_node, V2HImode);
   tree void_ftype_void
-    = build_function_type (void_type_node, void_list_node);
+    = build_function_type_list (void_type_node, NULL_TREE);
   tree short_ftype_short
     = build_function_type_list (short_integer_type_node, short_integer_type_node,
 				NULL_TREE);
