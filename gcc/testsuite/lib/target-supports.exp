@@ -3163,22 +3163,30 @@ proc check_effective_target_vect_interleave { } {
     return $et_vect_interleave_saved
 }
 
-# Return 1 if the target supports vector interleaving and extract even/odd, 0 otherwise.
-proc check_effective_target_vect_strided { } {
-    global et_vect_strided_saved
+foreach N {2 3 4 8} {
+    eval [string map [list N $N] {
+	# Return 1 if the target supports 2-vector interleaving
+	proc check_effective_target_vect_stridedN { } {
+	    global et_vect_stridedN_saved
 
-    if [info exists et_vect_strided_saved] {
-        verbose "check_effective_target_vect_strided: using cached result" 2
-    } else {
-        set et_vect_strided_saved 0
-        if { [check_effective_target_vect_interleave]
-             && [check_effective_target_vect_extract_even_odd] } {
-           set et_vect_strided_saved 1
-        }
-    }
+	    if [info exists et_vect_stridedN_saved] {
+		verbose "check_effective_target_vect_stridedN: using cached result" 2
+	    } else {
+		set et_vect_stridedN_saved 0
+		if { (N & -N) == N
+		     && [check_effective_target_vect_interleave]
+		     && [check_effective_target_vect_extract_even_odd] } {
+		    set et_vect_stridedN_saved 1
+		}
+		if { [istarget arm*-*-*] && N >= 2 && N <= 4 } {
+		    set et_vect_stridedN_saved 1
+		}
+	    }
 
-    verbose "check_effective_target_vect_strided: returning $et_vect_strided_saved" 2
-    return $et_vect_strided_saved
+	    verbose "check_effective_target_vect_stridedN: returning $et_vect_stridedN_saved" 2
+	    return $et_vect_stridedN_saved
+	}
+    }]
 }
 
 # Return 1 if the target supports section-anchors

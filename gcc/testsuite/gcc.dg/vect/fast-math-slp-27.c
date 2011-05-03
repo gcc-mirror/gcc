@@ -13,5 +13,5 @@ void foo(void)
    }
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { target vect_strided } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { target vect_strided2 } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

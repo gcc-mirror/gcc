@@ -1,5 +1,74 @@
 2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* lib/target-supports.exp (check_effective_target_vect_strided):
+	Replace with...
+	(check_effective_target_vect_strided2)
+	(check_effective_target_vect_strided3)
+	(check_effective_target_vect_strided4)
+	(check_effective_target_vect_strided8): ...these new functions.
+
+	* gcc.dg/vect/O3-pr39675-2.c: Update accordingly.
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-12.c: Likewise.
+	* gcc.dg/vect/fast-math-slp-27.c: Likewise.
+	* gcc.dg/vect/if-cvt-stores-vect-ifcvt-18.c: Likewise.
+	* gcc.dg/vect/pr37539.c: Likewise.
+	* gcc.dg/vect/slp-11a.c: Likewise.
+	* gcc.dg/vect/slp-11b.c: Likewise.
+	* gcc.dg/vect/slp-11c.c: Likewise.
+	* gcc.dg/vect/slp-12a.c: Likewise.
+	* gcc.dg/vect/slp-12b.c: Likewise.
+	* gcc.dg/vect/slp-18.c: Likewise.
+	* gcc.dg/vect/slp-19a.c: Likewise.
+	* gcc.dg/vect/slp-19b.c: Likewise.
+	* gcc.dg/vect/slp-21.c: Likewise.
+	* gcc.dg/vect/slp-23.c: Likewise.
+	* gcc.dg/vect/vect-cselim-1.c: Likewise.
+
+	* gcc.dg/vect/fast-math-vect-complex-3.c: Use vect_stridedN
+	instead of vect_interleave && vect_extract_even_odd.
+	* gcc.dg/vect/no-scevccp-outer-10a.c: Likewise.
+	* gcc.dg/vect/no-scevccp-outer-10b.c: Likewise.
+	* gcc.dg/vect/no-scevccp-outer-20.c: Likewise.
+	* gcc.dg/vect/vect-1.c: Likewise.
+	* gcc.dg/vect/vect-10.c: Likewise.
+	* gcc.dg/vect/vect-98.c: Likewise.
+	* gcc.dg/vect/vect-107.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u32-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i2-gap.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap2.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u8-i8-gap7.c: Likewise.
+	* gcc.dg/vect/vect-strided-float.c: Likewise.
+	* gcc.dg/vect/vect-strided-mult-char-ls.c: Likewise.
+	* gcc.dg/vect/vect-strided-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-same-dr.c: Likewise.
+	* gcc.dg/vect/vect-strided-u16-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-u16-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-u32-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-u32-i8.c: Likewise.
+	* gcc.dg/vect/vect-strided-u32-mult.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i2-gap.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap2.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap4.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8-gap7.c: Likewise.
+	* gcc.dg/vect/vect-strided-u8-i8.c: Likewise.
+	* gcc.dg/vect/vect-vfa-03.c: Likewise.
+
+	* gcc.dg/vect/no-scevccp-outer-18.c: Add vect_stridedN to the
+	target condition.
+	* gcc.dg/vect/pr30843.c: Likewise.
+	* gcc.dg/vect/pr33866.c: Likewise.
+	* gcc.dg/vect/slp-reduc-6.c: Likewise.
+	* gcc.dg/vect/vect-strided-store-a-u8-i2.c: Likewise.
+	* gcc.dg/vect/vect-strided-store-u16-i4.c: Likewise.
+	* gcc.dg/vect/vect-strided-store-u32-i2.c: Likewise.
+
+2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gcc.dg/vect/slp-11.c: Split into...
 	* gcc.dg/vect/slp-11a.c, gcc.dg/vect/slp-11b.c,
 	gcc.dg/vect/slp-11c.c: ...these tests.
