@@ -1,3 +1,12 @@
+2011-05-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-intrinsic.c (trans_this_image): Implement version with
+	coarray argument.
+	(conv_intrinsic_cobound): Simplify code.
+	(gfc_conv_intrinsic_function): Call trans_this_image for
+	this_image(coarray) except for -fcoarray=single.
+
 2011-05-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/48720
