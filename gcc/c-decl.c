@@ -5368,15 +5368,13 @@ grokdeclarator (const struct c_declarator *declarator,
 					     convert (index_type,
 						      size_one_node));
 
-		    /* If that overflowed, the array is too big.  ???
-		       While a size of INT_MAX+1 technically shouldn't
-		       cause an overflow (because we subtract 1), the
-		       overflow is recorded during the conversion to
-		       index_type, before the subtraction.  Handling
-		       this case seems like an unnecessary
-		       complication.  */
-		    if (TREE_CODE (itype) == INTEGER_CST
-			&& TREE_OVERFLOW (itype))
+		    /* The above overflows when size does not fit
+		       in index_type.
+		       ???  While a size of INT_MAX+1 technically shouldn't
+		       cause an overflow (because we subtract 1), handling
+		       this case seems like an unnecessary complication.  */
+		    if (TREE_CODE (size) == INTEGER_CST
+			&& !int_fits_type_p (size, index_type))
 		      {
 			if (name)
 			  error_at (loc, "size of array %qE is too large",

@@ -1,3 +1,8 @@
+2011-05-03  Richard Guenther  <rguenther@suse.de>
+
+	* c-decl.c (grokdeclarator): Instead of looking at
+	TREE_OVERFLOW check if the constant fits in the index type.
+
 2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/arm/neon.md (vec_load_lanes<mode><mode>): New expanders,
