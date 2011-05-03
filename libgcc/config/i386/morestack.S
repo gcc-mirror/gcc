@@ -449,6 +449,24 @@ __morestack:
 	.size	__morestack, . - __morestack
 #endif
 
+#if !defined(__x86_64__) && defined(__PIC__)
+# Output the thunk to get PC into bx, since we use it above.
+# (__i686 was already undef'd above; don't need to worry about it here.)
+	.section	.text.__i686.get_pc_thunk.bx,"axG",@progbits,__i686.get_pc_thunk.bx,comdat
+	.globl	__i686.get_pc_thunk.bx
+	.hidden	__i686.get_pc_thunk.bx
+#ifdef __ELF__
+	.type	__i686.get_pc_thunk.bx, @function
+#endif
+__i686.get_pc_thunk.bx:
+	.cfi_startproc
+	movl	(%esp), %ebx
+	ret
+	.cfi_endproc
+#ifdef __ELF__
+	.size	__i686.get_pc_thunk.bx, . - __i686.get_pc_thunk.bx
+#endif
+#endif
 
 # The exception table.  This tells the personality routine to execute
 # the exception handler.
