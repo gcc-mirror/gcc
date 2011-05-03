@@ -578,6 +578,9 @@ enum convert_optab_index
   COI_satfract,
   COI_satfractuns,
 
+  COI_vec_load_lanes,
+  COI_vec_store_lanes,
+
   COI_MAX
 };
 
@@ -598,6 +601,8 @@ enum convert_optab_index
 #define fractuns_optab (&convert_optab_table[COI_fractuns])
 #define satfract_optab (&convert_optab_table[COI_satfract])
 #define satfractuns_optab (&convert_optab_table[COI_satfractuns])
+#define vec_load_lanes_optab (&convert_optab_table[COI_vec_load_lanes])
+#define vec_store_lanes_optab (&convert_optab_table[COI_vec_store_lanes])
 
 /* Contains the optab used for each rtx code.  */
 extern optab code_to_optab[NUM_RTX_CODE + 1];

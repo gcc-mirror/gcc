@@ -43,6 +43,45 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "optabs.h"
 
+/* Return true if load- or store-lanes optab OPTAB is implemented for
+   COUNT vectors of type VECTYPE.  NAME is the name of OPTAB.  */
+
+static bool
+vect_lanes_optab_supported_p (const char *name, convert_optab optab,
+			      tree vectype, unsigned HOST_WIDE_INT count)
+{
+  enum machine_mode mode, array_mode;
+  bool limit_p;
+
+  mode = TYPE_MODE (vectype);
+  limit_p = !targetm.array_mode_supported_p (mode, count);
+  array_mode = mode_for_size (count * GET_MODE_BITSIZE (mode),
+			      MODE_INT, limit_p);
+
+  if (array_mode == BLKmode)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "no array mode for %s[" HOST_WIDE_INT_PRINT_DEC "]",
+		 GET_MODE_NAME (mode), count);
+      return false;
+    }
+
+  if (convert_optab_handler (optab, array_mode, mode) == CODE_FOR_nothing)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "cannot use %s<%s><%s>",
+		 name, GET_MODE_NAME (array_mode), GET_MODE_NAME (mode));
+      return false;
+    }
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "can use %s<%s><%s>",
+	     name, GET_MODE_NAME (array_mode), GET_MODE_NAME (mode));
+
+  return true;
+}
+
+
 /* Return the smallest scalar part of STMT.
    This is used to determine the vectype of the stmt.  We generally set the
    vectype according to the type of the result (lhs).  For stmts whose
@@ -3368,6 +3407,18 @@ vect_strided_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 }
 
 
+/* Return TRUE if vec_store_lanes is available for COUNT vectors of
+   type VECTYPE.  */
+
+bool
+vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count)
+{
+  return vect_lanes_optab_supported_p ("vec_store_lanes",
+				       vec_store_lanes_optab,
+				       vectype, count);
+}
+
+
 /* Function vect_permute_store_chain.
 
    Given a chain of interleaved stores in DR_CHAIN of LENGTH that must be
@@ -3822,6 +3873,16 @@ vect_strided_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
   return true;
 }
 
+/* Return TRUE if vec_load_lanes is available for COUNT vectors of
+   type VECTYPE.  */
+
+bool
+vect_load_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count)
+{
+  return vect_lanes_optab_supported_p ("vec_load_lanes",
+				       vec_load_lanes_optab,
+				       vectype, count);
+}
 
 /* Function vect_permute_load_chain.
 
@@ -3969,19 +4030,28 @@ void
 vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
 			     gimple_stmt_iterator *gsi)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  gimple first_stmt = DR_GROUP_FIRST_DR (stmt_info);
-  gimple next_stmt, new_stmt;
   VEC(tree,heap) *result_chain = NULL;
-  unsigned int i, gap_count;
-  tree tmp_data_ref;
 
   /* DR_CHAIN contains input data-refs that are a part of the interleaving.
      RESULT_CHAIN is the output of vect_permute_load_chain, it contains permuted
      vectors, that are ready for vector computation.  */
   result_chain = VEC_alloc (tree, heap, size);
-  /* Permute.  */
   vect_permute_load_chain (dr_chain, size, stmt, gsi, &result_chain);
+  vect_record_strided_load_vectors (stmt, result_chain);
+  VEC_free (tree, heap, result_chain);
+}
+
+/* RESULT_CHAIN contains the output of a group of strided loads that were
+   generated as part of the vectorization of STMT.  Assign the statement
+   for each vector to the associated scalar statement.  */
+
+void
+vect_record_strided_load_vectors (gimple stmt, VEC(tree,heap) *result_chain)
+{
+  gimple first_stmt = DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt));
+  gimple next_stmt, new_stmt;
+  unsigned int i, gap_count;
+  tree tmp_data_ref;
 
   /* Put a permuted data-ref in the VECTORIZED_STMT field.
      Since we scan the chain starting from it's first node, their order
@@ -4043,8 +4113,6 @@ vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
 	    break;
         }
     }
-
-  VEC_free (tree, heap, result_chain);
 }
 
 /* Function vect_force_dr_alignment_p.
