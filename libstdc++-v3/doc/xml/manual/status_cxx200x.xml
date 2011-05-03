@@ -1960,11 +1960,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>26.6.2</entry>
       <entry>Class template <code>valarray</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing move and swap operations</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>26.6.3</entry>
