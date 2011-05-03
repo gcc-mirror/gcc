@@ -2672,6 +2672,11 @@ bfin_option_override (void)
   if (TARGET_OMIT_LEAF_FRAME_POINTER)
     flag_omit_frame_pointer = 1;
 
+#ifdef SUBTARGET_FDPIC_NOT_SUPPORTED
+  if (TARGET_FDPIC)
+    error ("-mfdpic is not supported, please use a bfin-linux-uclibc target");
+#endif
+
   /* Library identification */
   if (global_options_set.x_bfin_library_id && ! TARGET_ID_SHARED_LIBRARY)
     error ("-mshared-library-id= specified without -mid-shared-library");

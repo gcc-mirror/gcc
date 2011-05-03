@@ -39,3 +39,5 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef TARGET_SUPPORTS_SYNC_CALLS
 #define TARGET_SUPPORTS_SYNC_CALLS 1
+
+#define SUBTARGET_FDPIC_NOT_SUPPORTED
