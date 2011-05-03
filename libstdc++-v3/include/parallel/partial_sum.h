@@ -184,7 +184,10 @@ namespace __gnu_parallel
 					__bin_op, __sums[__iam]);
       } //parallel
 
+      for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
+	__sums[__i].~_ValueType();
       ::operator delete(__sums);
+
       delete[] __borders;
 
       return __result + __n;

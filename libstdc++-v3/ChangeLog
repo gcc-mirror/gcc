@@ -1,3 +1,19 @@
+2011-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48750
+	* include/parallel/multiway_merge.h: Run _ValueType destructors.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/quicksort.h: Likewise.
+	* include/parallel/random_shuffle.h: Likewise.
+	* include/parallel/partial_sum.h: Likewise.
+	* include/parallel/losertree.h: Run destructors; minor tweaks.
+	* include/parallel/par_loop.h: Run destructors, fix memory
+	allocations and deallocations.
+	* testsuite/26_numerics/accumulate/48750.cc: New.
+
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Do not run in
+	parallel-mode to avoid spurious multiple errors.
+
 2011-04-30  Doug Kwan  <dougkwan@google.com>
 
 	* include/Makefile.am (install-freestanding-headers): Also install

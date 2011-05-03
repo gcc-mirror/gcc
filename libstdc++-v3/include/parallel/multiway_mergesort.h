@@ -378,6 +378,8 @@ namespace __gnu_parallel
 
 #     pragma omp barrier
 
+      for (_DifferenceType __i = 0; __i < __length_local; ++__i)
+	__sd->_M_temporary[__iam][__i].~_ValueType();
       ::operator delete(__sd->_M_temporary[__iam]);
     }
 
@@ -413,6 +415,7 @@ namespace __gnu_parallel
       // shared variables
       _PMWMSSortingData<_RAIter> __sd;
       _DifferenceType* __starts;
+      _DifferenceType __size;
 
 #     pragma omp parallel num_threads(__num_threads)
       {
@@ -427,7 +430,7 @@ namespace __gnu_parallel
 
 	  if (!__exact)
 	    {
-	      _DifferenceType __size =
+	      __size =
 		(_Settings::get().sort_mwms_oversampling * __num_threads - 1)
 		* __num_threads;
 	      __sd._M_samples = static_cast<_ValueType*>
@@ -463,7 +466,11 @@ namespace __gnu_parallel
       delete[] __sd._M_temporary;
 
       if (!__exact)
-	::operator delete(__sd._M_samples);
+	{
+	  for (_DifferenceType __i = 0; __i < __size; ++__i)
+	    __sd._M_samples[__i].~_ValueType();
+	  ::operator delete(__sd._M_samples);
+	}
 
       delete[] __sd._M_offsets;
       delete[] __sd._M_pieces;
