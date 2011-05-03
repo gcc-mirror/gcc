@@ -1,5 +1,10 @@
 2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/arm/neon.md (vec_load_lanes<mode><mode>): New expanders,
+	(vec_store_lanes<mode><mode>): Likewise.
+
+2011-05-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* doc/md.texi (vec_load_lanes, vec_store_lanes): Document.
 	* optabs.h (COI_vec_load_lanes, COI_vec_store_lanes): New
 	convert_optab_index values.
