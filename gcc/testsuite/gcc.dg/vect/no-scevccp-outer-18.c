@@ -47,5 +47,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { target vect_interleave } } } */
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { target { vect_interleave || vect_strided2 } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
