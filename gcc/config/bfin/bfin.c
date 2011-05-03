@@ -2676,6 +2676,12 @@ bfin_option_override (void)
   if (global_options_set.x_bfin_library_id && ! TARGET_ID_SHARED_LIBRARY)
     error ("-mshared-library-id= specified without -mid-shared-library");
 
+  if (stack_limit_rtx && TARGET_FDPIC)
+    {
+      warning (0, "-fstack-limit- options are ignored with -mfdpic; use -mstack-check-l1");
+      stack_limit_rtx = NULL_RTX;
+    }
+
   if (stack_limit_rtx && TARGET_STACK_CHECK_L1)
     error ("can%'t use multiple stack checking methods together");
 

@@ -1,3 +1,9 @@
+2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
+
+	Originally From Bernd Schmidt
+	* config/bfin/bfin.c (override_options): Disable -fstack-limit for
+	FD-PIC.
+
 2011-05-03  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (THREAD_TARGET): define.
