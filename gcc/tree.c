@@ -7340,6 +7340,15 @@ build_nonshared_array_type (tree elt_type, tree index_type)
   return build_array_type_1 (elt_type, index_type, false);
 }
 
+/* Return a representation of ELT_TYPE[NELTS], using indices of type
+   sizetype.  */
+
+tree
+build_array_type_nelts (tree elt_type, unsigned HOST_WIDE_INT nelts)
+{
+  return build_array_type (elt_type, build_index_type (size_int (nelts - 1)));
+}
+
 /* Recursively examines the array elements of TYPE, until a non-array
    element type is found.  */
 
