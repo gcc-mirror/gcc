@@ -6408,7 +6408,7 @@ alpha_init_builtins (void)
   implicit_built_in_decls[(int) BUILT_IN_FWRITE_UNLOCKED] = NULL_TREE;
 #endif
 
-  ftype = build_function_type (dimode_integer_type_node, void_list_node);
+  ftype = build_function_type_list (dimode_integer_type_node, NULL_TREE);
   alpha_add_builtins (zero_arg_builtins, ARRAY_SIZE (zero_arg_builtins),
 		      ftype);
 
@@ -6423,7 +6423,7 @@ alpha_init_builtins (void)
   alpha_add_builtins (two_arg_builtins, ARRAY_SIZE (two_arg_builtins),
 		      ftype);
 
-  ftype = build_function_type (ptr_type_node, void_list_node);
+  ftype = build_function_type_list (ptr_type_node, NULL_TREE);
   alpha_builtin_function ("__builtin_thread_pointer", ftype,
 			  ALPHA_BUILTIN_THREAD_POINTER, ECF_NOTHROW);
 
