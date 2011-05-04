@@ -1,3 +1,7 @@
+2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_reorg): Run move_or_delete_vzeroupper first.
+
 2011-05-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (variable_size): Do not issue errors.
@@ -263,9 +267,9 @@
 
 2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
 
-        From Mike Frysinger:
-        * config/bfin/bfin.c (bfin_cpus[]): Add 0.4 for
-        bf542/bf544/bf547/bf548/bf549.
+	From Mike Frysinger:
+	* config/bfin/bfin.c (bfin_cpus[]): Add 0.4 for
+	bf542/bf544/bf547/bf548/bf549.
 
 2011-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -575,9 +579,9 @@
 
 2011-05-02  Stuart Henderson  <shenders@gcc.gnu.org>
 
-        PR target/47951
-        * config/bfin/bfin.md (loop_end): Use matching constraints to ensure
-        inputs match the output.
+	PR target/47951
+	* config/bfin/bfin.md (loop_end): Use matching constraints to ensure
+	inputs match the output.
 
 2011-05-02  Andreas Schwab  <schwab@linux-m68k.org>
 

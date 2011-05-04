@@ -30444,6 +30444,10 @@ ix86_reorg (void)
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn ();
 
+  /* Run the vzeroupper optimization if needed.  */
+  if (TARGET_VZEROUPPER)
+    move_or_delete_vzeroupper ();
+
   if (optimize && optimize_function_for_speed_p (cfun))
     {
       if (TARGET_PAD_SHORT_FUNCTION)
@@ -30455,10 +30459,6 @@ ix86_reorg (void)
 	ix86_avoid_jump_mispredicts ();
 #endif
     }
-
-  /* Run the vzeroupper optimization if needed.  */
-  if (TARGET_VZEROUPPER)
-    move_or_delete_vzeroupper ();
 }
 
 /* Return nonzero when QImode register that must be represented via REX prefix
