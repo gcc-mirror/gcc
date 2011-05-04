@@ -1,5 +1,10 @@
 2011-05-04  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR other/48093
+	* doc/invoke.texi: Document -mtls-dialect and GCC_COMPARE_DEBUG.
+
+2011-05-04  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/47994
 	PR debug/47919
 	* combine.c (try_combine): Skip debug insns at m_split tests.
