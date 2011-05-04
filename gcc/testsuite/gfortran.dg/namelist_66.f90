@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR46010 Failure to read these two examples of namelists
 type ptracer
    character(len = 2)  :: sname

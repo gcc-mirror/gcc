@@ -1,3 +1,10 @@
+2011-05-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/pr47878.f90, gfortran.dg/endfile_3.f90,
+	gfortran.dg/endfile_4.f90, gfortran.dg/ftell_3.f90,
+	gfortran.dg/fmt_cache_1.f, gfortran.dg/namelist_66.f90:
+	Gate test on effective_target fd_truncate.
+
 2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/recip-vec-divf.c: Decrease array sizes.
