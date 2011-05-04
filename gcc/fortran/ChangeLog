@@ -1,3 +1,8 @@
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* trans-types.c (gfc_get_array_type_bounds): Remove zero notrunc
+	argument to int_const_binop.
+
 2011-05-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

@@ -472,8 +472,8 @@ set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
   if (tree_int_cst_lt (max, min))
     {
       tree one = build_int_cst (TREE_TYPE (min), 1);
-      tree tmp = int_const_binop (PLUS_EXPR, max, one, 0);
-      max = int_const_binop (MINUS_EXPR, min, one, 0);
+      tree tmp = int_const_binop (PLUS_EXPR, max, one);
+      max = int_const_binop (MINUS_EXPR, min, one);
       min = tmp;
 
       /* There's one corner case, if we had [C+1, C] before we now have
@@ -506,14 +506,14 @@ set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
 		    && integer_zerop (max)))
         {
 	  tree one = build_int_cst (TREE_TYPE (max), 1);
-	  min = int_const_binop (PLUS_EXPR, max, one, 0);
+	  min = int_const_binop (PLUS_EXPR, max, one);
 	  max = vrp_val_max (TREE_TYPE (max));
 	  t = VR_RANGE;
         }
       else if (is_max)
         {
 	  tree one = build_int_cst (TREE_TYPE (min), 1);
-	  max = int_const_binop (MINUS_EXPR, min, one, 0);
+	  max = int_const_binop (MINUS_EXPR, min, one);
 	  min = vrp_val_min (TREE_TYPE (min));
 	  t = VR_RANGE;
         }
@@ -1526,7 +1526,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
         {
           min = fold_build1 (NEGATE_EXPR, TREE_TYPE (TREE_OPERAND (cond, 1)),
 			     TREE_OPERAND (cond, 1));
-          max = int_const_binop (PLUS_EXPR, limit, min, 0);
+          max = int_const_binop (PLUS_EXPR, limit, min);
 	  cond = TREE_OPERAND (cond, 0);
 	}
       else
@@ -1954,7 +1954,7 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
 {
   tree res;
 
-  res = int_const_binop (code, val1, val2, 0);
+  res = int_const_binop (code, val1, val2);
 
   /* If we are using unsigned arithmetic, operate symbolically
      on -INF and +INF as int_const_binop only handles signed overflow.  */
@@ -1981,7 +1981,7 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
 	{
 	  tree tmp = int_const_binop (TRUNC_DIV_EXPR,
 				      res,
-				      val1, 0);
+				      val1);
 	  int check = compare_values (tmp, val2);
 
 	  if (check != 0)
@@ -2636,7 +2636,7 @@ extract_range_from_binary_expr (value_range_t *vr,
       max = fold_unary_to_constant (ABS_EXPR, TREE_TYPE (vr1.min), vr1.min);
       if (tree_int_cst_lt (max, vr1.max))
 	max = vr1.max;
-      max = int_const_binop (MINUS_EXPR, max, integer_one_node, 0);
+      max = int_const_binop (MINUS_EXPR, max, integer_one_node);
       /* If the dividend is non-negative the modulus will be
 	 non-negative as well.  */
       if (TYPE_UNSIGNED (TREE_TYPE (max))
@@ -2681,7 +2681,7 @@ extract_range_from_binary_expr (value_range_t *vr,
 
       type = VR_RANGE;
       if (vr0_int_cst_singleton_p && vr1_int_cst_singleton_p)
-	min = max = int_const_binop (code, vr0.max, vr1.max, 0);
+	min = max = int_const_binop (code, vr0.max, vr1.max);
       else if (!int_cst_range0 && !int_cst_range1)
 	{
 	  set_value_range_to_varying (vr);
@@ -2905,8 +2905,8 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 	  && (TYPE_PRECISION (outer_type) >= TYPE_PRECISION (inner_type)
 	      || (vr0.type == VR_RANGE
 		  && integer_zerop (int_const_binop (RSHIFT_EXPR,
-		       int_const_binop (MINUS_EXPR, vr0.max, vr0.min, 0),
-		         size_int (TYPE_PRECISION (outer_type)), 0)))))
+		       int_const_binop (MINUS_EXPR, vr0.max, vr0.min),
+		         size_int (TYPE_PRECISION (outer_type)))))))
 	{
 	  tree new_min, new_max;
 	  new_min = force_fit_type_double (outer_type,
@@ -3073,7 +3073,7 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 
 		  min = (vr0.min != type_min_value
 			 ? int_const_binop (PLUS_EXPR, type_min_value,
-					    integer_one_node, 0)
+					    integer_one_node)
 			 : type_min_value);
 		}
 	      else
@@ -5248,7 +5248,7 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
     }
 
   low_bound = array_ref_low_bound (ref);
-  up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound, integer_one_node, 0);
+  up_bound_p1 = int_const_binop (PLUS_EXPR, up_bound, integer_one_node);
 
   if (TREE_CODE (low_sub) == SSA_NAME)
     {
@@ -6260,7 +6260,7 @@ find_case_label_range (gimple stmt, tree min, tree max, size_t *min_idx,
       for (k = i + 1; k <= j; ++k)
 	{
 	  low = CASE_LOW (gimple_switch_label (stmt, k));
-	  if (!integer_onep (int_const_binop (MINUS_EXPR, low, high, 0)))
+	  if (!integer_onep (int_const_binop (MINUS_EXPR, low, high)))
 	    {
 	      take_default = true;
 	      break;
@@ -6917,7 +6917,7 @@ simplify_div_or_mod_using_ranges (gimple stmt)
       else
 	{
 	  t = build_int_cst (TREE_TYPE (op1), 1);
-	  t = int_const_binop (MINUS_EXPR, op1, t, 0);
+	  t = int_const_binop (MINUS_EXPR, op1, t);
 	  t = fold_convert (TREE_TYPE (op0), t);
 
 	  gimple_assign_set_rhs_code (stmt, BIT_AND_EXPR);

@@ -194,7 +194,7 @@ check_range (gimple swtch)
   gcc_assert (info.range_min);
   gcc_assert (range_max);
 
-  info.range_size = int_const_binop (MINUS_EXPR, range_max, info.range_min, 0);
+  info.range_size = int_const_binop (MINUS_EXPR, range_max, info.range_min);
 
   gcc_assert (info.range_size);
   if (!host_integerp (info.range_size, 1))
@@ -441,11 +441,11 @@ build_constructors (gimple swtch)
 	      elt = VEC_quick_push (constructor_elt,
 				    info.constructors[k], NULL);
 	      elt->index = int_const_binop (MINUS_EXPR, pos,
-					    info.range_min, 0);
+					    info.range_min);
 	      elt->value = info.default_values[k];
 	    }
 
-	  pos = int_const_binop (PLUS_EXPR, pos, integer_one_node, 0);
+	  pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
 	}
       gcc_assert (tree_int_cst_equal (pos, CASE_LOW (cs)));
 
@@ -468,10 +468,10 @@ build_constructors (gimple swtch)
 
 	      elt = VEC_quick_push (constructor_elt,
 				    info.constructors[j], NULL);
-	      elt->index = int_const_binop (MINUS_EXPR, pos, info.range_min, 0);
+	      elt->index = int_const_binop (MINUS_EXPR, pos, info.range_min);
 	      elt->value = val;
 
-	      pos = int_const_binop (PLUS_EXPR, pos, integer_one_node, 0);
+	      pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
 	    } while (!tree_int_cst_lt (high, pos)
 		     && tree_int_cst_lt (low, pos));
 	  j++;

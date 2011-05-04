@@ -1395,7 +1395,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
     {
       off = build_int_cst (TREE_TYPE (TREE_OPERAND (base, 1)),
 			   base_offset + offset / BITS_PER_UNIT);
-      off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1), off, 0);
+      off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1), off);
       base = unshare_expr (TREE_OPERAND (base, 0));
     }
   else
@@ -1505,7 +1505,7 @@ build_user_friendly_ref_for_offset (tree *res, tree type, HOST_WIDE_INT offset,
 	    return false;
 	  index = build_int_cst (TYPE_DOMAIN (type), offset / el_size);
 	  if (!integer_zerop (minidx))
-	    index = int_const_binop (PLUS_EXPR, index, minidx, 0);
+	    index = int_const_binop (PLUS_EXPR, index, minidx);
 	  *res = build4 (ARRAY_REF, TREE_TYPE (type), *res, index,
 			 NULL_TREE, NULL_TREE);
 	  offset = offset % el_size;

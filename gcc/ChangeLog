@@ -1,3 +1,43 @@
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (int_const_binop): Remove notrunc argument.
+	* fold-const.c (int_const_binop): Remove notrunc argument.  Always
+	create integer constants that are properly truncated.
+	(extract_muldiv_1): Expand one notrunc int_const_binop caller.
+	(const_binop): Remove zero notrunc argument to int_const_binop.
+	(size_binop_loc): Likewise.
+	(fold_div_compare): Likewise.
+	(maybe_canonicalize_comparison_1): Likewise.
+	(fold_comparison): Likewise.
+	(fold_binary_loc): Likewise.
+	(multiple_of_p): Likewise.
+	* expr.c (store_constructor): Likewise.
+	* gimple-fold.c (maybe_fold_offset_to_array_ref): Likewise.
+	(maybe_fold_stmt_addition): Likewise.
+	* ipa-prop.c (ipa_modify_call_arguments): Likewise.
+	* stor-layout.c (layout_type): Likewise.
+	* tree-data-ref.c (tree_fold_divides_p): Likewise.
+	* tree-sra.c (build_ref_for_offset): Likewise.
+	(build_user_friendly_ref_for_offset): Likewise.
+	* tree-ssa-address.c (maybe_fold_tmr): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Likewise.
+	* tree-ssa-loop-niter.c (inverse): Likewise.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Likewise.
+	* tree-ssa.c (maybe_rewrite_mem_ref_base): Likewise.
+	* tree-switch-conversion.c (check_range): Likewise.
+	(build_constructors): Likewise.
+	* tree-vect-generic.c (expand_vector_piecewise): Likewise.
+	* tree-vrp.c (set_and_canonicalize_value_range): Likewise.
+	(extract_range_from_assert): Likewise.
+	(vrp_int_const_binop): Likewise.
+	(extract_range_from_binary_expr): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+	(check_array_ref): Likewise.
+	(find_case_label_range): Likewise.
+	(simplify_div_or_mod_using_ranges): Likewise.
+	* tree-cfg.c (group_case_labels_stmt): Use double-ints for
+	comparing case labels for merging.
+
 2011-05-03  Mark Wielaard  <mjw@redhat.com>
 
 	* dwarf2out.c (debug_str_hash_forced): Removed.

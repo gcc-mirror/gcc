@@ -2771,7 +2771,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	    gcc_assert (base);
 	    offset = int_const_binop (PLUS_EXPR, offset,
 				      build_int_cst (TREE_TYPE (offset),
-						     off), 0);
+						     off));
 	    baseop = build_fold_addr_expr (base);
 	  }
 	return fold_build2 (MEM_REF, currop->type, baseop, offset);

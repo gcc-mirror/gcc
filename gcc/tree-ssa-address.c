@@ -877,7 +877,7 @@ maybe_fold_tmr (tree ref)
 		      (get_addr_base_and_unit_offset
 		         (TREE_OPERAND (addr.symbol, 0), &offset));
       addr.offset = int_const_binop (PLUS_EXPR,
-				     addr.offset, size_int (offset), 0);
+				     addr.offset, size_int (offset));
       changed = true;
     }
 

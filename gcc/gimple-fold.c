@@ -230,7 +230,7 @@ maybe_fold_offset_to_array_ref (location_t loc, tree base, tree offset)
 	  || TREE_CODE (elt_offset) != INTEGER_CST)
 	return NULL_TREE;
 
-      elt_offset = int_const_binop (MINUS_EXPR, elt_offset, low_bound, 0);
+      elt_offset = int_const_binop (MINUS_EXPR, elt_offset, low_bound);
       base = TREE_OPERAND (base, 0);
     }
 
@@ -300,9 +300,9 @@ maybe_fold_offset_to_array_ref (location_t loc, tree base, tree offset)
     }
 
   if (!integer_zerop (min_idx))
-    idx = int_const_binop (PLUS_EXPR, idx, min_idx, 0);
+    idx = int_const_binop (PLUS_EXPR, idx, min_idx);
   if (!integer_zerop (elt_offset))
-    idx = int_const_binop (PLUS_EXPR, idx, elt_offset, 0);
+    idx = int_const_binop (PLUS_EXPR, idx, elt_offset);
 
   /* Make sure to possibly truncate late after offsetting.  */
   idx = fold_convert (idx_type, idx);
@@ -517,17 +517,17 @@ maybe_fold_stmt_addition (location_t loc, tree res_type, tree op0, tree op1)
 	      array_idx = fold_convert (TREE_TYPE (min_idx), array_idx);
 	      if (!integer_zerop (min_idx))
 		array_idx = int_const_binop (MINUS_EXPR, array_idx,
-					     min_idx, 0);
+					     min_idx);
 	    }
 	}
 
       /* Convert the index to a byte offset.  */
       array_idx = fold_convert (sizetype, array_idx);
-      array_idx = int_const_binop (MULT_EXPR, array_idx, elt_size, 0);
+      array_idx = int_const_binop (MULT_EXPR, array_idx, elt_size);
 
       /* Update the operands for the next round, or for folding.  */
       op1 = int_const_binop (PLUS_EXPR,
-			     array_idx, op1, 0);
+			     array_idx, op1);
       op0 = array_obj;
     }
 
