@@ -1,5 +1,9 @@
 2011-05-04  Stuart Henderson  <shenders@gcc.gnu.org>
 
+	* config/bfin/bfin.c (bfin_cpus): Update silicon revisions.
+
+2011-05-04  Stuart Henderson  <shenders@gcc.gnu.org>
+
 	From Bernd Schmidt
 	* config/bfin/bfin.md (addsi3): Add an alternative for IREGS.
 
