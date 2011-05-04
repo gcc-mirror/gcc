@@ -151,7 +151,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
   gfc_option.flag_init_character_value = (char)0;
   gfc_option.flag_align_commons = 1;
-  gfc_option.flag_protect_parens = 1;
+  gfc_option.flag_protect_parens = -1;
   gfc_option.flag_realloc_lhs = -1;
   gfc_option.flag_aggressive_function_elimination = 0;
   gfc_option.flag_frontend_optimize = -1;
@@ -271,6 +271,9 @@ gfc_post_options (const char **pfilename)
      we want traps or signed zeros. Cf. also flag_protect_parens.  */
   if (flag_associative_math == -1)
     flag_associative_math = (!flag_trapping_math && !flag_signed_zeros);
+
+  if (gfc_option.flag_protect_parens == -1)
+    gfc_option.flag_protect_parens = !optimize_fast;
 
   /* By default, disable (re)allocation during assignment for -std=f95,
      and enable it for F2003/F2008/GNU/Legacy. */
