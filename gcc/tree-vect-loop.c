@@ -4317,9 +4317,9 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (!vec_stmt) /* transformation not required.  */
     {
-      STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       if (!vect_model_reduction_cost (stmt_info, epilog_reduc_code, ncopies))
         return false;
+      STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       return true;
     }
 
