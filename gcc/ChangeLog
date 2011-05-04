@@ -1,3 +1,7 @@
+2011-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (variable_size): Do not issue errors.
+
 2011-05-04  Richard Guenther  <rguenther@suse.de>
 
 	* coverage.c (tree_coverage_counter_ref): Use integer_type_node
