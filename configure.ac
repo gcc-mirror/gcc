@@ -712,6 +712,39 @@ esac
 libgloss_dir="$target_cpu"
 
 case "${target}" in
+  sh*-*-pe|mips*-*-pe|*arm-wince-pe)
+    libgloss_dir=wince
+    ;;
+  arm*-*-*)
+    libgloss_dir=arm
+    ;;
+  cris-*-* | crisv32-*-*)
+    libgloss_dir=cris
+    ;;
+  hppa*-*-*)
+    libgloss_dir=pa
+    ;;
+  i[[3456789]]86-*-*)
+    libgloss_dir=i386
+    ;;
+  m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
+    libgloss_dir=m68hc11
+    ;;
+  m68*-*-* | fido-*-*)
+    libgloss_dir=m68k
+    ;;
+  mips*-*-*)
+    libgloss_dir=mips
+    ;;
+  powerpc*-*-*)
+    libgloss_dir=rs6000
+    ;;
+  sparc*-*-*)
+    libgloss_dir=sparc
+    ;;
+esac
+
+case "${target}" in
   *-*-chorusos)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
@@ -791,25 +824,20 @@ case "${target}" in
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs tcl tk itcl libgui sim"
     noconfigdirs="$noconfigdirs target-newlib"
-    libgloss_dir=wince
     ;;
   arc-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   arm-*-coff)
-    libgloss_dir=arm
     ;;
   arm-*-elf* | arm*-*-eabi* )
-    libgloss_dir=arm
     ;;
   arm*-*-linux-gnueabi)
     case ${with_newlib} in
       no) noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     esac
-    libgloss_dir=arm
     ;;
   arm*-*-symbianelf*)
-    libgloss_dir=arm
     ;;
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -835,7 +863,6 @@ case "${target}" in
       *-*-linux*)
 	noconfigdirs="$noconfigdirs target-newlib target-libgloss";;
     esac
-    libgloss_dir=cris
     ;;
   d10v-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -872,7 +899,6 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ld"
     ;;
   hppa*-*-pro*)
-    libgloss_dir=pa
     ;;
   hppa*-*-*)
     noconfigdirs="$noconfigdirs ld"
@@ -893,7 +919,6 @@ case "${target}" in
     noconfigdirs="$noconfigdirs readline libgui itcl gdb ld"
     ;;
   i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
-    libgloss_dir=i386
     ;;
   i[[3456789]]86-*-linux*)
     # This section makes it possible to build newlib natively on linux.
@@ -955,12 +980,10 @@ case "${target}" in
   m32r-*-*)
     ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
-    libgloss_dir=m68hc11
     ;;
   m68k-*-elf*)
     ;;
   m68*-*-* | fido-*-*)
-    libgloss_dir=m68k
     ;;
   mmix-*-*)
     noconfigdirs="$noconfigdirs gdb"
@@ -981,16 +1004,13 @@ case "${target}" in
     # This is temporary until we can link against shared libraries
   powerpcle-*-solaris*)
     noconfigdirs="$noconfigdirs gdb sim tcl tk itcl"
-    libgloss_dir=rs6000
     ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
     ;;
   powerpc-*-eabi)
-    libgloss_dir=rs6000
     ;;
   powerpc-*-eabi* | powerpcle-*-eabi* | powerpc-*-rtems* )
-    libgloss_dir=rs6000
     ;;
   rs6000-*-lynxos*)
     noconfigdirs="$noconfigdirs target-newlib gprof"
@@ -1011,7 +1031,6 @@ case "${target}" in
     if test x$with_newlib = xyes; then
       noconfigdirs="$noconfigdirs gprof"
     fi
-    libgloss_dir=mips
     ;;
   mips*-*-irix5*)
     noconfigdirs="$noconfigdirs gprof target-libgloss"
@@ -1027,7 +1046,6 @@ case "${target}" in
     ;;
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
-    libgloss_dir=mips
     ;;
   sh-*-* | sh64-*-*)
     case "${target}" in
@@ -1038,15 +1056,12 @@ case "${target}" in
     esac
     ;;
   sparclet-*-aout* | sparc86x-*-*)
-    libgloss_dir=sparc
     ;;
   sparc-*-elf*)
     ;;
   sparc64-*-elf*)
-    libgloss_dir=sparc
     ;;
   sparclite-*-*)
-    libgloss_dir=sparc
     ;;
   sparc-*-sunos4*)
     if test x${is_cross_compiler} != xno ; then
