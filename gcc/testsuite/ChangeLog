@@ -1,6 +1,14 @@
 2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
+	2011-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48708
+	* gcc.target/i386/pr48708.c: New test.
+
+2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
 	2010-12-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/sse2-init-v2di-2.c: Add "-dp" and update

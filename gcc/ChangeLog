@@ -1,5 +1,14 @@
 2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
+	Backport from mainline
+	2011-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48708
+	* config/i386/i386.c (ix86_expand_vector_set) <V2DImode>: Generate
+	vec_extract and vec_concat for non-SSE4_1 targets.
+
+2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*movdi_internal_rex64) <TYPE_SSEMOV>:
 	Use %v prefix in insn mnemonic to handle TARGET_AVX.
 	(*movdi_internal): Use "maybe_vex" instead of "vex" in "prefix"
