@@ -1663,51 +1663,52 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
 void
 check_main_parameter_types (tree decl)
 {
-  tree args;
+  function_args_iterator iter;
+  tree type;
   int argct = 0;
 
-  for (args = TYPE_ARG_TYPES (TREE_TYPE (decl)); args;
-      args = TREE_CHAIN (args))
-   {
-     tree type = args ? TREE_VALUE (args) : 0;
+  FOREACH_FUNCTION_ARGS (TREE_TYPE (decl), type, iter)
+    {
+      /* XXX void_type_node belies the abstraction.  */
+      if (type == void_type_node || type == error_mark_node )
+	break;
 
-     if (type == void_type_node || type == error_mark_node )
-       break;
+      ++argct;
+      switch (argct)
+	{
+	case 1:
+	  if (TYPE_MAIN_VARIANT (type) != integer_type_node)
+	    pedwarn (input_location, OPT_Wmain,
+		     "first argument of %q+D should be %<int%>", decl);
+	  break;
 
-     ++argct;
-     switch (argct)
-       {
-       case 1:
-         if (TYPE_MAIN_VARIANT (type) != integer_type_node)
-           pedwarn (input_location, OPT_Wmain, "first argument of %q+D should be %<int%>",
-		    decl);
-         break;
+	case 2:
+	  if (TREE_CODE (type) != POINTER_TYPE
+	      || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
+	      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
+		  != char_type_node))
+	    pedwarn (input_location, OPT_Wmain,
+		     "second argument of %q+D should be %<char **%>", decl);
+	  break;
 
-       case 2:
-         if (TREE_CODE (type) != POINTER_TYPE
-             || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
-             || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
-                 != char_type_node))
-           pedwarn (input_location, OPT_Wmain, "second argument of %q+D should be %<char **%>",
-		    decl);
-         break;
-
-       case 3:
-         if (TREE_CODE (type) != POINTER_TYPE
-             || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
-             || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
-                 != char_type_node))
-	   pedwarn (input_location, OPT_Wmain, "third argument of %q+D should probably be "
-		    "%<char **%>", decl);
-         break;
-       }
-   }
+	case 3:
+	  if (TREE_CODE (type) != POINTER_TYPE
+	      || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
+	      || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
+		  != char_type_node))
+	    pedwarn (input_location, OPT_Wmain,
+		     "third argument of %q+D should probably be "
+		     "%<char **%>", decl);
+	  break;
+	}
+    }
 
   /* It is intentional that this message does not mention the third
     argument because it's only mentioned in an appendix of the
     standard.  */
   if (argct > 0 && (argct < 2 || argct > 3))
-    pedwarn (input_location, OPT_Wmain, "%q+D takes only zero or two arguments", decl);
+    pedwarn (input_location, OPT_Wmain,
+	     "%q+D takes only zero or two arguments", decl);
 }
 
 /* True if pointers to distinct types T1 and T2 can be converted to
@@ -7395,7 +7396,6 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
      a pointer argument.  */
   for (attr_arg_num = 1; args; args = TREE_CHAIN (args))
     {
-      tree argument;
       unsigned HOST_WIDE_INT arg_num = 0, ck_num;
 
       if (!get_nonnull_operand (TREE_VALUE (args), &arg_num))
@@ -7406,18 +7406,21 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 	  return NULL_TREE;
 	}
 
-      argument = TYPE_ARG_TYPES (type);
-      if (argument)
+      if (prototype_p (type))
 	{
-	  for (ck_num = 1; ; ck_num++)
+	  function_args_iterator iter;
+	  tree argument;
+
+	  function_args_iter_init (&iter, type);
+	  for (ck_num = 1; ; ck_num++, function_args_iter_next (&iter))
 	    {
-	      if (!argument || ck_num == arg_num)
+	      argument = function_args_iter_cond (&iter);
+	      if (argument == NULL_TREE || ck_num == arg_num)
 		break;
-	      argument = TREE_CHAIN (argument);
 	    }
 
 	  if (!argument
-	      || TREE_CODE (TREE_VALUE (argument)) == VOID_TYPE)
+	      || TREE_CODE (argument) == VOID_TYPE)
 	    {
 	      error ("nonnull argument with out-of-range operand number (argument %lu, operand %lu)",
 		     (unsigned long) attr_arg_num, (unsigned long) arg_num);
@@ -7425,7 +7428,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 	      return NULL_TREE;
 	    }
 
-	  if (TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE)
+	  if (TREE_CODE (argument) != POINTER_TYPE)
 	    {
 	      error ("nonnull argument references non-pointer operand (argument %lu, operand %lu)",
 		   (unsigned long) attr_arg_num, (unsigned long) arg_num);
@@ -8922,22 +8925,28 @@ sync_resolve_size (tree function, VEC(tree,gc) *params)
 static bool
 sync_resolve_params (tree orig_function, tree function, VEC(tree, gc) *params)
 {
-  tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
+  function_args_iterator iter;
   tree ptype;
   unsigned int parmnum;
 
+  function_args_iter_init (&iter, TREE_TYPE (function));
   /* We've declared the implementation functions to use "volatile void *"
      as the pointer parameter, so we shouldn't get any complaints from the
      call to check_function_arguments what ever type the user used.  */
-  arg_types = TREE_CHAIN (arg_types);
+  function_args_iter_next (&iter);
   ptype = TREE_TYPE (TREE_TYPE (VEC_index (tree, params, 0)));
 
   /* For the rest of the values, we need to cast these to FTYPE, so that we
      don't get warnings for passing pointer types, etc.  */
   parmnum = 0;
-  while (arg_types != void_list_node)
+  while (1)
     {
-      tree val;
+      tree val, arg_type;
+
+      arg_type = function_args_iter_cond (&iter);
+      /* XXX void_type_node belies the abstraction.  */
+      if (arg_type == void_type_node)
+	break;
 
       ++parmnum;
       if (VEC_length (tree, params) <= parmnum)
@@ -8951,10 +8960,10 @@ sync_resolve_params (tree orig_function, tree function, VEC(tree, gc) *params)
 	 type.  This isn't portable across the C and C++ front ends atm.  */
       val = VEC_index (tree, params, parmnum);
       val = convert (ptype, val);
-      val = convert (TREE_VALUE (arg_types), val);
+      val = convert (arg_type, val);
       VEC_replace (tree, params, parmnum, val);
 
-      arg_types = TREE_CHAIN (arg_types);
+      function_args_iter_next (&iter);
     }
 
   /* The definition of these primitives is variadic, with the remaining
