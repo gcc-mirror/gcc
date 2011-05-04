@@ -502,8 +502,8 @@ The software decimal floating point library implements IEEE 754-2008
 decimal floating point arithmetic and is only activated on selected
 targets.
 
-The software decimal floating point library supports either DPD 
-(Densely Packed Decimal) or BID (Binary Integer Decimal) encoding 
+The software decimal floating point library supports either DPD
+(Densely Packed Decimal) or BID (Binary Integer Decimal) encoding
 as selected at configure time.
 
 

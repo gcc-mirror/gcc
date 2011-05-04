@@ -14,7 +14,7 @@ Plugins are supported on platforms that support @option{-ldl
 and invoked at pre-determined locations in the compilation
 process.
 
-Plugins are loaded with 
+Plugins are loaded with
 
 @option{-fplugin=/path/to/@var{name}.so} @option{-fplugin-arg-@var{name}-@var{key1}[=@var{value1}]}
 
@@ -264,7 +264,7 @@ plugin_init (struct plugin_name_args *plugin_info,
 @end smallexample
 
 
-@section Interacting with the GCC Garbage Collector 
+@section Interacting with the GCC Garbage Collector
 
 Some plugins may want to be informed when GGC (the GCC Garbage
 Collector) is running. They can register callbacks for the
@@ -277,7 +277,7 @@ done by registering a callback (called with a null @code{gcc_data})
 for the @code{PLUGIN_GGC_MARKING} event. Such callbacks can call the
 @code{ggc_set_mark} routine, preferably thru the @code{ggc_mark} macro
 (and conversely, these routines should usually not be used in plugins
-outside of the @code{PLUGIN_GGC_MARKING} event).  
+outside of the @code{PLUGIN_GGC_MARKING} event).
 
 Some plugins may need to add extra GGC root tables, e.g. to handle their own
 @code{GTY}-ed data. This can be done with the @code{PLUGIN_REGISTER_GGC_ROOTS}
@@ -336,7 +336,7 @@ static struct attribute_spec user_attr =
 /* Plugin callback called during attribute registration.
 Registered with register_callback (plugin_name, PLUGIN_ATTRIBUTES, register_attributes, NULL)
 */
-static void 
+static void
 register_attributes (void *event_data, void *data)
 @{
   warning (0, G_("Callback to register attributes"));
@@ -356,8 +356,8 @@ pragmas.
      register_callback (plugin_name, PLUGIN_PRAGMAS,
                         register_my_pragma, NULL);
 */
-static void 
-register_my_pragma (void *event_data, void *data) 
+static void
+register_my_pragma (void *event_data, void *data)
 @{
   warning (0, G_("Callback to register pragmas"));
   c_register_pragma ("GCCPLUGIN", "sayhello", handle_pragma_sayhello);
@@ -365,7 +365,7 @@ register_my_pragma (void *event_data, void *data)
 @end smallexample
 
 It is suggested to pass @code{"GCCPLUGIN"} (or a short name identifying
-your plugin) as the ``space'' argument of your pragma. 
+your plugin) as the ``space'' argument of your pragma.
 
 
 @section Recording information about pass execution

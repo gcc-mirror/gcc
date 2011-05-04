@@ -1394,7 +1394,7 @@ Algol or Pascal function variables including a static chain.
 @findex MODE_CC
 @item MODE_CC
 Modes representing condition code values.  These are @code{CCmode} plus
-any @code{CC_MODE} modes listed in the @file{@var{machine}-modes.def}.  
+any @code{CC_MODE} modes listed in the @file{@var{machine}-modes.def}.
 @xref{Jump Patterns},
 also see @ref{Condition Code}.
 
@@ -1755,7 +1755,7 @@ a multi-part @code{reg} that actually refers to several registers.
 
 Each pseudo register has a natural mode.  If it is necessary to
 operate on it in a different mode, the register must be
-enclosed in a @code{subreg}.  
+enclosed in a @code{subreg}.
 
 There are currently three supported types for the first operand of a
 @code{subreg}:
@@ -1812,7 +1812,7 @@ When used as an lvalue, the low-order bits of the source value
 are stored in @var{reg} and the high-order bits are discarded.
 When used as an rvalue, the low-order bits of the @code{subreg} are
 taken from @var{reg} while the high-order bits may or may not be
-defined.  
+defined.
 
 The high-order bits of rvalues are in the following circumstances:
 
@@ -1849,7 +1849,7 @@ would set the lower two bytes of @var{z} to @var{y} and set the upper
 two bytes to an unknown value assuming @code{SUBREG_PROMOTED_VAR_P} is
 false.
 
-@item Normal subregs 
+@item Normal subregs
 When @var{m1} is at least as narrow as @var{m2} the @code{subreg}
 expression is called @dfn{normal}.
 
@@ -1898,7 +1898,7 @@ values.  This works because they handle them solely as a collection of
 integer values, with no particular numerical value.  Only real.c and
 the runtime libraries care about @code{FLOAT_WORDS_BIG_ENDIAN}.
 
-Thus, 
+Thus,
 
 @smallexample
 (subreg:HI (reg:SI @var{x}) 2)
@@ -2624,9 +2624,9 @@ a set bit indicates it is taken from @var{vec1}.
 This describes an operation that selects parts of a vector.  @var{vec1} is
 the source vector, and @var{selection} is a @code{parallel} that contains a
 @code{const_int} for each of the subparts of the result vector, giving the
-number of the source subpart that should be stored into it.  
+number of the source subpart that should be stored into it.
 The result mode @var{m} is either the submode for a single element of
-@var{vec1} (if only one subpart is selected), or another vector mode 
+@var{vec1} (if only one subpart is selected), or another vector mode
 with that element submode (if multiple subparts are selected).
 
 @findex vec_concat
@@ -3697,7 +3697,7 @@ A list (chain of @code{insn_list} expressions) giving information about
 dependencies between instructions within a basic block.  Neither a jump
 nor a label may come between the related insns.  These are only used by
 the schedulers and by combine.  This is a deprecated data structure.
-Def-use and use-def chains are now preferred. 
+Def-use and use-def chains are now preferred.
 
 @findex REG_NOTES
 @item REG_NOTES (@var{i})
@@ -3808,8 +3808,8 @@ construct.  It is used when the optimization to partition basic blocks
 into hot and cold sections is turned on.
 
 @findex REG_SETJMP
-@item REG_SETJMP 
-Appears attached to each @code{CALL_INSN} to @code{setjmp} or a 
+@item REG_SETJMP
+Appears attached to each @code{CALL_INSN} to @code{setjmp} or a
 related function.
 @end table
 

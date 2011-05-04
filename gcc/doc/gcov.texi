@@ -541,19 +541,19 @@ coverage files.
 @node Cross-profiling
 @section Data file relocation to support cross-profiling
 
-Running the program will cause profile output to be generated.  For each 
-source file compiled with @option{-fprofile-arcs}, an accompanying @file{.gcda} 
-file will be placed in the object file directory. That implicitly requires 
-running the program on the same system as it was built or having the same 
+Running the program will cause profile output to be generated.  For each
+source file compiled with @option{-fprofile-arcs}, an accompanying @file{.gcda}
+file will be placed in the object file directory. That implicitly requires
+running the program on the same system as it was built or having the same
 absolute directory structure on the target system. The program will try
 to create the needed directory structure, if it is not already present.
 
 To support cross-profiling, a program compiled with @option{-fprofile-arcs}
-can relocate the data files based on two environment variables: 
+can relocate the data files based on two environment variables:
 
 @itemize @bullet
 @item
-GCOV_PREFIX contains the prefix to add to the absolute paths 
+GCOV_PREFIX contains the prefix to add to the absolute paths
 in the object file. Prefix can be absolute, or relative.  The
 default is no prefix.
 

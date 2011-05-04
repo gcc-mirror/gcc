@@ -1964,7 +1964,7 @@ generate unique identifiers.  Care must be taken to ensure that
 which use it.  Otherwise, the precompiled headers will not be used.
 
 @item __GFORTRAN__
-The GNU Fortran compiler defines this. 
+The GNU Fortran compiler defines this.
 
 @item __GNUC__
 @itemx __GNUC_MINOR__

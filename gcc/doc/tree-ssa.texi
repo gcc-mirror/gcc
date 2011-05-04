@@ -184,7 +184,7 @@ must be made to @code{update_stmt} when complete.  Calling one of the
 call to @code{update_stmt}.
 
 @subsection Operand Iterators And Access Routines
-@cindex Operand Iterators 
+@cindex Operand Iterators
 @cindex Operand Access Routines
 
 Operands are collected by @file{tree-ssa-operands.c}.  They are stored
@@ -194,9 +194,9 @@ operand iterators or an access routine.
 The following access routines are available for examining operands:
 
 @enumerate
-@item @code{SINGLE_SSA_@{USE,DEF,TREE@}_OPERAND}: These accessors will return 
-NULL unless there is exactly one operand matching the specified flags.  If 
-there is exactly one operand, the operand is returned as either a @code{tree}, 
+@item @code{SINGLE_SSA_@{USE,DEF,TREE@}_OPERAND}: These accessors will return
+NULL unless there is exactly one operand matching the specified flags.  If
+there is exactly one operand, the operand is returned as either a @code{tree},
 @code{def_operand_p}, or @code{use_operand_p}.
 
 @smallexample
@@ -205,7 +205,7 @@ use_operand_p u = SINGLE_SSA_USE_OPERAND (stmt, SSA_ALL_VIRTUAL_USES);
 def_operand_p d = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_ALL_DEFS);
 @end smallexample
 
-@item @code{ZERO_SSA_OPERANDS}: This macro returns true if there are no 
+@item @code{ZERO_SSA_OPERANDS}: This macro returns true if there are no
 operands matching the specified flags.
 
 @smallexample
@@ -213,8 +213,8 @@ if (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
   return;
 @end smallexample
 
-@item @code{NUM_SSA_OPERANDS}: This macro Returns the number of operands 
-matching 'flags'.  This actually executes a loop to perform the count, so 
+@item @code{NUM_SSA_OPERANDS}: This macro Returns the number of operands
+matching 'flags'.  This actually executes a loop to perform the count, so
 only use this if it is really needed.
 
 @smallexample
@@ -331,8 +331,8 @@ documentation in @file{tree-ssa-operands.h}.
 There are also a couple of variants on the stmt iterators regarding PHI
 nodes.
 
-@code{FOR_EACH_PHI_ARG} Works exactly like 
-@code{FOR_EACH_SSA_USE_OPERAND}, except it works over @code{PHI} arguments 
+@code{FOR_EACH_PHI_ARG} Works exactly like
+@code{FOR_EACH_SSA_USE_OPERAND}, except it works over @code{PHI} arguments
 instead of statement operands.
 
 @smallexample
@@ -351,10 +351,10 @@ FOR_EACH_PHI_ARG (use_p, phi_stmt, iter, SSA_OP_ALL_USES)
   my_code;
 @end smallexample
 
-@code{FOR_EACH_PHI_OR_STMT_@{USE,DEF@}} works exactly like 
+@code{FOR_EACH_PHI_OR_STMT_@{USE,DEF@}} works exactly like
 @code{FOR_EACH_SSA_@{USE,DEF@}_OPERAND}, except it will function on
 either a statement or a @code{PHI} node.  These should be used when it is
-appropriate but they are not quite as efficient as the individual 
+appropriate but they are not quite as efficient as the individual
 @code{FOR_EACH_PHI} and @code{FOR_EACH_SSA} routines.
 
 @smallexample
@@ -372,7 +372,7 @@ FOR_EACH_PHI_OR_STMT_DEF (def_operand_p, phi, iter, flags)
 @subsection Immediate Uses
 @cindex Immediate Uses
 
-Immediate use information is now always available.  Using the immediate use 
+Immediate use information is now always available.  Using the immediate use
 iterators, you may examine every use of any @code{SSA_NAME}. For instance,
 to change each use of @code{ssa_var} to @code{ssa_var2} and call fold_stmt on
 each stmt after that is done:
@@ -393,18 +393,18 @@ each stmt after that is done:
 
 There are 2 iterators which can be used. @code{FOR_EACH_IMM_USE_FAST} is
 used when the immediate uses are not changed, i.e., you are looking at the
-uses, but not setting them.  
+uses, but not setting them.
 
-If they do get changed, then care must be taken that things are not changed 
-under the iterators, so use the @code{FOR_EACH_IMM_USE_STMT} and 
-@code{FOR_EACH_IMM_USE_ON_STMT} iterators.  They attempt to preserve the 
-sanity of the use list by moving all the uses for a statement into 
-a controlled position, and then iterating over those uses.  Then the 
+If they do get changed, then care must be taken that things are not changed
+under the iterators, so use the @code{FOR_EACH_IMM_USE_STMT} and
+@code{FOR_EACH_IMM_USE_ON_STMT} iterators.  They attempt to preserve the
+sanity of the use list by moving all the uses for a statement into
+a controlled position, and then iterating over those uses.  Then the
 optimization can manipulate the stmt when all the uses have been
-processed.  This is a little slower than the FAST version since it adds a 
-placeholder element and must sort through the list a bit for each statement.  
-This placeholder element must be also be removed if the loop is 
-terminated early.  The macro @code{BREAK_FROM_IMM_USE_SAFE} is provided 
+processed.  This is a little slower than the FAST version since it adds a
+placeholder element and must sort through the list a bit for each statement.
+This placeholder element must be also be removed if the loop is
+terminated early.  The macro @code{BREAK_FROM_IMM_USE_SAFE} is provided
 to do this :
 
 @smallexample
@@ -420,15 +420,15 @@ to do this :
 @end smallexample
 
 There are checks in @code{verify_ssa} which verify that the immediate use list
-is up to date, as well as checking that an optimization didn't break from the 
-loop without using this macro.  It is safe to simply 'break'; from a 
+is up to date, as well as checking that an optimization didn't break from the
+loop without using this macro.  It is safe to simply 'break'; from a
 @code{FOR_EACH_IMM_USE_FAST} traverse.
 
 Some useful functions and macros:
 @enumerate
 @item  @code{has_zero_uses (ssa_var)} : Returns true if there are no uses of
 @code{ssa_var}.
-@item   @code{has_single_use (ssa_var)} : Returns true if there is only a 
+@item   @code{has_single_use (ssa_var)} : Returns true if there is only a
 single use of @code{ssa_var}.
 @item   @code{single_imm_use (ssa_var, use_operand_p *ptr, tree *stmt)} :
 Returns true if there is only a single use of @code{ssa_var}, and also returns
@@ -443,18 +443,18 @@ isn't located in a @code{PHI} node.
 @end enumerate
 
 Note that uses are not put into an immediate use list until their statement is
-actually inserted into the instruction stream via a @code{bsi_*} routine.  
+actually inserted into the instruction stream via a @code{bsi_*} routine.
 
-It is also still possible to utilize lazy updating of statements, but this 
-should be used only when absolutely required.  Both alias analysis and the 
-dominator optimizations currently do this.  
+It is also still possible to utilize lazy updating of statements, but this
+should be used only when absolutely required.  Both alias analysis and the
+dominator optimizations currently do this.
 
-When lazy updating is being used, the immediate use information is out of date 
+When lazy updating is being used, the immediate use information is out of date
 and cannot be used reliably.  Lazy updating is achieved by simply marking
-statements modified via calls to @code{mark_stmt_modified} instead of 
-@code{update_stmt}.  When lazy updating is no longer required, all the 
-modified statements must have @code{update_stmt} called in order to bring them 
-up to date.  This must be done before the optimization is finished, or 
+statements modified via calls to @code{mark_stmt_modified} instead of
+@code{update_stmt}.  When lazy updating is no longer required, all the
+modified statements must have @code{update_stmt} called in order to bring them
+up to date.  This must be done before the optimization is finished, or
 @code{verify_ssa} will trigger an abort.
 
 This is done with a simple loop over the instruction stream:
@@ -561,7 +561,7 @@ Some optimization passes make changes to the function that
 invalidate the SSA property.  This can happen when a pass has
 added new symbols or changed the program so that variables that
 were previously aliased aren't anymore.  Whenever something like this
-happens, the affected symbols must be renamed into SSA form again.  
+happens, the affected symbols must be renamed into SSA form again.
 Transformations that emit new code or replicate existing statements
 will also need to update the SSA form@.
 

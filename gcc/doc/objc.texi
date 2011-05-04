@@ -1029,7 +1029,7 @@ If you want your own collection object to be usable with fast
 enumeration, you need to have it implement the method
 
 @smallexample
-- (unsigned long) countByEnumeratingWithState: (NSFastEnumerationState *)state 
+- (unsigned long) countByEnumeratingWithState: (NSFastEnumerationState *)state
                                       objects: (id *)objects
                                         count: (unsigned long)len;
 @end smallexample
@@ -1138,7 +1138,7 @@ the method
 + (BOOL) resolveInstanceMethod: (SEL)selector;
 @end smallexample
 
-in the case of an instance method, or 
+in the case of an instance method, or
 
 @smallexample
 + (BOOL) resolveClassMethod: (SEL)selector;
