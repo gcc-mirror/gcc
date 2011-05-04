@@ -1,6 +1,13 @@
 2011-05-04  Jakub Jelinek  <jakub@redhat.com>
 
-	Backport from mainline
+	Backported from mainline
+	2011-05-03  Uros Bizjak  <ubizjak@gmail.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48774
+	* config/i386/i386.c (ix86_match_ccmode): For CC{A,C,O,S}mode
+	only succeed if req_mode is the same as set_mode.
+
 	2011-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48809

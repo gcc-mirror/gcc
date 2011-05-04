@@ -1,6 +1,11 @@
 2011-05-04  Jakub Jelinek  <jakub@redhat.com>
 
-	Backport from mainline
+	Backported from mainline
+	2011-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48774
+	* gcc.dg/pr48774.c: New test.
+
 	2011-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48809
