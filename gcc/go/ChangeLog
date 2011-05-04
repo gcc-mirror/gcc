@@ -1,3 +1,20 @@
+2011-05-04  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::struct_type): Call fill_in_struct.
+	(Gcc_backend::fill_in_struct): New function.
+	(Gcc_backend::array_type): Implement.
+	(Gcc_backend::fill_in_array): New function.
+	(Gcc_backend::placeholder_pointer_type): New function.
+	(Gcc_backend::set_placeholder_pointer_type): New function.
+	(Gcc_backend::set_placeholder_function_type): New function.
+	(Gcc_backend::placeholder_struct_type): New function.
+	(Gcc_backend::set_placeholder_struct_type): New function.
+	(Gcc_backend::placeholder_array_type): New function.
+	(Gcc_backend::set_placeholder_array_type): New function.
+	(Gcc_backend::named_type): New function.
+	(Gcc_backend::circular_pointer_type): New function.
+	(Gcc_backend::is_circular_pointer_type): New function.
+
 2011-04-26  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::struct_type): Implement.
