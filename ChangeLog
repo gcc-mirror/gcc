@@ -1,5 +1,12 @@
 2011-05-04  Joseph Myers  <joseph@codesourcery.com>
 
+	* configure.ac: Remove code setting special library locations for
+	hppa*64*-*-hpux11*.  Remove code setting compiler for
+	sparc-sun-solaris2*.
+	* configure: Regenerate.
+
+2011-05-04  Joseph Myers  <joseph@codesourcery.com>
+
 	* configure.ac: Separate libgloss_dir settings from general case
 	over targets.
 	* configure: Regenerate.
