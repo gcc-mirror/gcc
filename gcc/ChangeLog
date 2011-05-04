@@ -1,3 +1,14 @@
+2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal_rex64) <TYPE_SSEMOV>:
+	Use %v prefix in insn mnemonic to handle TARGET_AVX.
+	(*movdi_internal): Use "maybe_vex" instead of "vex" in "prefix"
+	attribute calculation.
+	(*movdf_internal): Output AVX mnemonics.  Add "prefix" attribute.
+	* config/i386/sse.md (*sse2_storeq_rex64): Do not emit %v prefix
+	for mov{q} mnemonic.
+	(*vec_extractv2di_1_rex64_avx): Ditto.
+
 2011-05-03  Uros Bizjak  <ubizjak@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

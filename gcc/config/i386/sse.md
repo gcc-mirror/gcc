@@ -7434,9 +7434,8 @@
   "@
    #
    #
-   %vmov{q}\t{%1, %0|%0, %1}"
+   mov{q}\t{%1, %0|%0, %1}"
   [(set_attr "type" "*,*,imov")
-   (set_attr "prefix" "*,*,maybe_vex")
    (set_attr "mode" "*,*,DI")])
 
 (define_insn "*sse2_storeq"
@@ -7472,11 +7471,11 @@
    vmovhps\t{%1, %0|%0, %1}
    vpsrldq\t{$8, %1, %0|%0, %1, 8}
    vmovq\t{%H1, %0|%0, %H1}
-   vmov{q}\t{%H1, %0|%0, %H1}"
+   mov{q}\t{%H1, %0|%0, %H1}"
   [(set_attr "type" "ssemov,sseishft1,ssemov,imov")
    (set_attr "length_immediate" "*,1,*,*")
    (set_attr "memory" "*,none,*,*")
-   (set_attr "prefix" "vex")
+   (set_attr "prefix" "vex,vex,vex,orig")
    (set_attr "mode" "V2SF,TI,TI,DI")])
 
 (define_insn "*vec_extractv2di_1_rex64"
@@ -7754,6 +7753,7 @@
        (const_string "vex")))
    (set_attr "mode" "TI,TI,TI,TI,TI,V2SF")])
 
+;; movd instead of movq is required to handle broken assemblers.
 (define_insn "*vec_concatv2di_rex64_sse4_1"
   [(set (match_operand:V2DI 0 "register_operand"     "=x ,x ,Yi,!x,x,x,x")
 	(vec_concat:V2DI
@@ -7774,6 +7774,7 @@
    (set_attr "length_immediate" "1,*,*,*,*,*,*")
    (set_attr "mode" "TI,TI,TI,TI,TI,V4SF,V2SF")])
 
+;; movd instead of movq is required to handle broken assemblers.
 (define_insn "*vec_concatv2di_rex64_sse"
   [(set (match_operand:V2DI 0 "register_operand"     "=Y2 ,Yi,!Y2,Y2,x,x")
 	(vec_concat:V2DI
