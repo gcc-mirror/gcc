@@ -1,3 +1,16 @@
+2011-05-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/48720
+	* gfortran.texi: Document the 'Q' exponent-letter extension.
+	* invoke.texi: Document -Wreal-q-constant.
+	* lang.opt: Add -Wreal-q-constant option.
+	* gfortran.h: Add warn_real_q_constant to option struct.
+	* primary.c (match_real_constant):  Use it.  Accept 'Q' as
+	exponent-letter for REAL(16) real-literal-constant with a
+	fallback to REAL(10) or error if REAL(10) is not available.
+	* options.c (gfc_init_options, set_Wall) Set it.
+	(gfc_handle_option): Handle new option.
+
 2011-04-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/48462

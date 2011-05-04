@@ -541,6 +541,17 @@ match_real_constant (gfc_expr **result, int signflag)
     goto done;
   exp_char = c;
 
+
+  if (c == 'q')
+    {
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: exponent-letter 'q' in "
+			 "real-literal-constant at %C") == FAILURE)
+	return MATCH_ERROR;
+      else if (gfc_option.warn_real_q_constant)
+	gfc_warning("Extension: exponent-letter 'q' in real-literal-constant "
+		    "at %C");
+    }
+
   /* Scan exponent.  */
   c = gfc_next_ascii_char ();
   count++;
@@ -614,6 +625,30 @@ done:
 	  goto cleanup;
 	}
       kind = gfc_default_double_kind;
+      break;
+
+    case 'q':
+      if (kind != -2)
+	{
+	  gfc_error ("Real number at %C has a 'q' exponent and an explicit "
+		     "kind");
+	  goto cleanup;
+	}
+
+      /* The maximum possible real kind type parameter is 16.  First, try
+	 that for the kind, then fallback to trying kind=10 (Intel 80 bit)
+	 extended precision.  If neither value works, just given up.  */
+      kind = 16;
+      if (gfc_validate_kind (BT_REAL, kind, true) < 0)
+	{
+	  kind = 10;
+          if (gfc_validate_kind (BT_REAL, kind, true) < 0)
+	    {
+	      gfc_error ("Invalid exponent-letter 'q' in "
+			 "real-literal-constant at %C");
+	      goto cleanup;
+	    }
+	}
       break;
 
     default:

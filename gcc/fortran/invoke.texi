@@ -692,7 +692,7 @@ we recommend avoiding and that we believe are easy to avoid.
 This currently includes @option{-Waliasing}, @option{-Wampersand}, 
 @option{-Wconversion}, @option{-Wsurprising}, @option{-Wintrinsics-std},
 @option{-Wno-tabs}, @option{-Wintrinsic-shadow}, @option{-Wline-truncation},
-and @option{-Wunused}.
+@option{-Wreal-q-constant} and @option{-Wunused}.
 
 @item -Waliasing
 @opindex @code{Waliasing}
@@ -779,6 +779,12 @@ available in the currently selected standard (with @option{-std}) and treats
 it as @code{EXTERNAL} procedure because of this.  @option{-fall-intrinsics} can
 be used to never trigger this behavior and always link to the intrinsic
 regardless of the selected standard.
+
+@item -Wreal-q-constant
+@opindex @code{Wreal-q-constant}
+@cindex warnings, @code{q} exponent-letter
+Produce a warning if a real-literal-constant contains a @code{q}
+exponent-letter.
 
 @item -Wsurprising
 @opindex @code{Wsurprising}
