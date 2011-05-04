@@ -513,9 +513,6 @@ upc_pts_build_cvt (location_t loc, tree exp)
     {
       /* If the target is a generic pointer-to-shared type, we can
 	 safely use the source value directly. */
-#if 0
-      result = build1 (NOP_EXPR, tt1, ptr);
-#endif
     }
   else
     gcc_assert (TREE_CODE (type) != CONVERT_EXPR);

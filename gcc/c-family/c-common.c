@@ -195,9 +195,6 @@ const char *pch_file;
    user's namespace.  */
 int flag_iso;
 
-/* FIXME: Convert the UPC switch values below to use
-   the Var() definitions in c.opts, where applicable.  */
-
 /* Nonzero whenever UPC -fupc-threads-N is asserted.
    The value N gives the number of UPC threads to be
    defined at compile-time. */
@@ -4093,9 +4090,6 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
   if (type_quals & TYPE_QUAL_SHARED)
     {
       TREE_SHARED (decl) = 1;
-      /* UPC TODO: assert TREE_THIS_VOLATILE() and TREE_SIDE_EFFECTS()
-	 for "strict" qualified types?  At the moment, this
-	 leads to ICE in gimple_has_volatile_ops(). */
       if (type_quals & TYPE_QUAL_STRICT)
 	TREE_STRICT(decl) = 1;
       else if (type_quals & TYPE_QUAL_RELAXED)

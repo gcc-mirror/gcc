@@ -766,7 +766,6 @@ upc_set_block_factor (const enum tree_code decl_kind,
       return type;
     }
 
-  /* UPC TODO: Eliminate duplicate variant type copies.  */
   block_factor = convert (sizetype, block_factor);
   type = build_variant_type_copy (type);
   if (TREE_CODE (type) == ARRAY_TYPE)

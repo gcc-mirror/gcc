@@ -1,3 +1,15 @@
+2011-05-03  Gary Funck  <gary@intrepid.com>
+
+	* c-family/c-common.c: Remove extraneous FIXME/TODO comments.
+	  (c_apply_type_quals_to_decl): Ditto.
+	* c-family/c-common.h: Ditto.
+	* dojump.c: Ditto.
+	* c-delc.c (merge_decls): Ditto.
+	* c-typeck.c (qualify_type, default_conversion,
+	  build_component_ref, build_unary_op,
+	  c_build_qualified_type): Ditto.
+	* gimplify.c (create_tmp_var_raw): Remove UPC-specific dead code.
+
 2011-04-29  Gary Funck  <gary@intrepid.com>
 
 	* c-decl.c (finish_decl): Improve error diagnostics.

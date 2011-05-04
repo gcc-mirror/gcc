@@ -560,9 +560,6 @@ extern const char *pch_file;
 
 extern int flag_iso;
 
-/* FIXME: Convert the UPC switch values below to use
-   the Var() definitions in c.opts, where applicable.  */
-
 /* Non-zero if the current compilation context is UPC */
 extern int compiling_upc;
 

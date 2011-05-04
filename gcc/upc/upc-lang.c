@@ -43,9 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 
-/* FIXME: Convert the UPC switch values below to use
-   the Var() definitions in c.opt, where applicable.  */
-
 /* Non-zero if the current compilation context is UPC */
 int compiling_upc;
 

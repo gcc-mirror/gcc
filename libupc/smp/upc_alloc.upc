@@ -272,7 +272,7 @@ __upc_global_heap_alloc (size_t alloc_size)
       __upc_heap_free (heap_p, new_alloc);
       alloc = __upc_heap_alloc (heap_p, alloc_size, 1);
       if (!alloc)
-         abort ();  /* internal error.  FIXME: add a diagnostic.  */
+        __upc_fatal ("insufficient UPC dynamic shared memory");
     }
 #ifdef DEBUG_ALLOC
   printf ("%d: <- __upc_global_heap_alloc: %s\n", MYTHREAD, __upc_alloc_sptostr (alloc));
@@ -414,7 +414,6 @@ upc_free (shared void *ptr)
       const size_t phase = upc_phaseof (ptr);
       shared upc_heap_p *heap_p;
       upc_heap_p thisp;
-      /* FIXME: add code to validate offset. */
       if (phase || thread >= THREADS)
         __upc_fatal ("upc_free() called with invalid shared pointer");
       thisp = (upc_heap_p) __upc_alloc_ptr_add (ptr, -GUPCR_HEAP_OVERHEAD);

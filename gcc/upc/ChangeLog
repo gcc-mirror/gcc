@@ -1,3 +1,9 @@
+2011-05-03  Gary Funck  <gary@intrepid.com>
+
+	* upc-lang.c: Remove extraneous FIXME/TODO comments.
+	* upc-pts-packed.c (upc_pts_build_cvt): Ditto.
+	* upc-act.c (upc_set_block_factor): Ditto.
+
 2011-04-29  Gary Funck  <gary@intrepid.com>
 
 	* upc-gimplify.c (upc_expsnd_get): Improve error diagnostics.

@@ -327,8 +327,6 @@ qualify_type (tree type, tree like)
 			   | TYPE_QUALS_NO_ADDR_SPACE (like)
 			   | ENCODE_QUAL_ADDR_SPACE (as_common));
 
-  /* UPC TODO: pass blocking factor to c_build_qualifed_type() */
-
   if (upc_shared_type_p (result_type))
     {
       tree b1 = TYPE_BLOCK_FACTOR (type);
@@ -2009,7 +2007,6 @@ default_conversion (tree exp)
   /* Functions and arrays have been converted during parsing.  */
   gcc_assert (code != FUNCTION_TYPE);
 
-  /* UPC TODO: is the call to array_to_pointer_conversion() necessary?  */
   if (code == ARRAY_TYPE && upc_shared_type_p (type))
     return array_to_pointer_conversion (input_location, exp);
 
@@ -2246,12 +2243,8 @@ build_component_ref (location_t loc, tree datum, tree component)
 		and set the field's blocking factor to 0,
 		so that references to arrays declared within a structure
 		come up with the required zero blocksize.  */
-             /* UPC TODO: "strict" special handling?  */
              TREE_SHARED (ref) = 1;
 	     gcc_assert (!TREE_SHARED (field));
-	     /* UPC TODO: call build_qualified_type
-		and add layout (blocking factor) as arg.
-		to build_qualified_type.  */
 	     ref_type = build_variant_type_copy (TREE_TYPE (ref));
 	     if (TREE_CODE (ref_type) == ARRAY_TYPE)
 	       {
@@ -3862,8 +3855,6 @@ build_unary_op (location_t location,
 	     cannot be performed as a simple addition. 
 	     Return an ADDR_EXPR node, and let upc_gimplify_expr()
 	     implement the proper semantics.  */
-          /* UPC TODO: is TREE_SHARED() safe to use here?
-	     or should it be: upc_shared_type_p (TREE_TYPE (arg))?  */
 	  if (TREE_SHARED (arg))
 	    return build1 (ADDR_EXPR, TREE_TYPE (arg), arg);
 
@@ -3944,7 +3935,6 @@ build_unary_op (location_t location,
 	}
 
       if (TREE_CODE (arg) == VAR_DECL && TREE_SHARED (arg))
-        /* UPC TODO: can &shared_var be handled in upc-gimplify? */
 	val = upc_build_shared_var_addr (location, argtype, arg);
       else
         val = build1 (ADDR_EXPR, argtype, arg);
@@ -10980,7 +10970,6 @@ c_build_qualified_type (tree type, int type_quals)
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      /* UPC TODO: add block_factor as arg to c_build_qualified_type(). */
       const tree element_type = c_build_qualified_type (TREE_TYPE (type),
 						  type_quals);
       const tree elem_block_factor = upc_get_block_factor (element_type);

@@ -436,12 +436,6 @@ create_tmp_var_raw (tree type, const char *prefix)
 
   type = build_qualified_type (type, type_quals);
 
-#if 0
-  /* UPC TODO: will build_qualified_type() above do the right thing
-     with attributes?  */
-  TYPE_ATTRIBUTES (new_type) = TYPE_ATTRIBUTES (type);
-#endif
-
   tmp_var = build_decl (input_location,
 			VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,
 			type);

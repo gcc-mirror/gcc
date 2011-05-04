@@ -25,8 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
-/* UPC TODO: c-tree.h is needed, to bring in upc_pts_cvt_op_p
-   definition.  Should make it yet another language hook?  */
 #include "c-tree.h" 
 #include "flags.h"
 #include "function.h"

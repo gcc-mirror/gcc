@@ -2225,9 +2225,6 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   if (TREE_SHARED (newdecl))
     {
       TREE_SHARED (olddecl) = 1;
-      /* UPC TODO: if "shared" implies "strict", should we
-       * TREE_STRICT(), and TREE_SIDE_EFFECTS() (which is
-       * implied by "volatile"?  */
       if (TREE_CODE (newdecl) == VAR_DECL)
 	TREE_THIS_VOLATILE (newdecl) = 1;
     }
