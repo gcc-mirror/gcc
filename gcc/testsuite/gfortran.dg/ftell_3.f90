@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR43605 FTELL intrinsic returns incorrect position
 ! Contributed by Janne Blomqvist, Manfred Schwarb
 ! and Dominique d'Humieres.
