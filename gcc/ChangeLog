@@ -1,3 +1,15 @@
+2011-05-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* calls.c (emit_library_call_value_1): Invoke
+	promote_function_mode hook on libcall arguments.
+	* explow.c (promote_function_mode, promote_mode): Handle TYPE
+	argument being NULL.
+	* targhooks.c (default_promote_function_mode): Lisewise.
+	* config/s390/s390.c (s390_promote_function_mode): Likewise.
+	* config/sparc/sparc.c (sparc_promote_function_mode): Likewise.
+
+	* doc/tm.texi: Document that TYPE argument might be NULL.
+
 2011-05-04  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	* config/bfin/bfin.c (bfin_cpus): Update silicon revisions.

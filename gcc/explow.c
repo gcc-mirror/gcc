@@ -771,6 +771,17 @@ enum machine_mode
 promote_function_mode (const_tree type, enum machine_mode mode, int *punsignedp,
 		       const_tree funtype, int for_return)
 {
+  /* Called without a type node for a libcall.  */
+  if (type == NULL_TREE)
+    {
+      if (INTEGRAL_MODE_P (mode))
+	return targetm.calls.promote_function_mode (NULL_TREE, mode,
+						    punsignedp, funtype,
+						    for_return);
+      else
+	return mode;
+    }
+
   switch (TREE_CODE (type))
     {
     case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:
@@ -791,6 +802,12 @@ enum machine_mode
 promote_mode (const_tree type ATTRIBUTE_UNUSED, enum machine_mode mode,
 	      int *punsignedp ATTRIBUTE_UNUSED)
 {
+  /* For libcalls this is invoked without TYPE from the backends
+     TARGET_PROMOTE_FUNCTION_MODE hooks.  Don't do anything in that
+     case.  */
+  if (type == NULL_TREE)
+    return mode;
+
   /* FIXME: this is the same logic that was there until GCC 4.4, but we
      probably want to test POINTERS_EXTEND_UNSIGNED even if PROMOTE_MODE
      is not defined.  The affected targets are M32C, S390, SPARC.  */

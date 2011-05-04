@@ -4983,13 +4983,13 @@ init_cumulative_args (struct sparc_args *cum, tree fntype,
 /* Handle promotion of pointer and integer arguments.  */
 
 static enum machine_mode
-sparc_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+sparc_promote_function_mode (const_tree type,
                              enum machine_mode mode,
-                             int *punsignedp ATTRIBUTE_UNUSED,
+                             int *punsignedp,
                              const_tree fntype ATTRIBUTE_UNUSED,
                              int for_return ATTRIBUTE_UNUSED)
 {
-  if (POINTER_TYPE_P (type))
+  if (type != NULL_TREE && POINTER_TYPE_P (type))
     {
       *punsignedp = POINTERS_EXTEND_UNSIGNED;
       return Pmode;

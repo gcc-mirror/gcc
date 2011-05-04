@@ -952,6 +952,8 @@ which an incoming parameter is copied, or the outgoing result is computed;
 then the hook should return the same mode as @code{promote_mode}, though
 the signedness may be different.
 
+@var{type} can be NULL when promoting function arguments of libcalls.
+
 The default is to not promote arguments and return values.  You can
 also define the hook to @code{default_promote_function_mode_always_promote}
 if you would like to apply the same rules given by @code{PROMOTE_MODE}.
