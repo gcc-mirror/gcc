@@ -1,3 +1,9 @@
+2011-05-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Separate libgloss_dir settings from general case
+	over targets.
+	* configure: Regenerate.
+
 2011-04-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (*-*-dragonfly*, *-*-freebsd*, *-*-netbsd*,
