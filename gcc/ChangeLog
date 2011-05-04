@@ -1,3 +1,7 @@
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* explow.c (promote_mode): Move variable declarations before code.
+
 2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (build_function_type_array): Declare.
