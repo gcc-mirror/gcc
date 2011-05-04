@@ -1,3 +1,9 @@
+2011-05-04  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/47612
+	* df-problems.c (can_move_insns_across): Don't pick a cc0 setter
+	as the last insn of the sequence to be moved.
+
 2011-05-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48864
