@@ -209,7 +209,7 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
 
   v = VEC_alloc(constructor_elt, gc, (nunits + delta - 1) / delta);
   for (i = 0; i < nunits;
-       i += delta, index = int_const_binop (PLUS_EXPR, index, part_width, 0))
+       i += delta, index = int_const_binop (PLUS_EXPR, index, part_width))
     {
       tree result = f (gsi, inner_type, a, b, index, part_width, code);
       constructor_elt *ce = VEC_quick_push (constructor_elt, v, NULL);

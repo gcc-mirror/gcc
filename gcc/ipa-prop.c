@@ -2465,7 +2465,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 				       base_offset
 				       + adj->offset / BITS_PER_UNIT);
 		  off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1),
-					 off, 0);
+					 off);
 		  base = TREE_OPERAND (base, 0);
 		}
 	      else

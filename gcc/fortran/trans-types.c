@@ -1745,7 +1745,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   if (stride)
     rtype = build_range_type (gfc_array_index_type, gfc_index_zero_node,
 			      int_const_binop (MINUS_EXPR, stride,
-					       integer_one_node, 0));
+					       integer_one_node));
   else
     rtype = gfc_array_range_type;
   arraytype = build_array_type (etype, rtype);

@@ -885,7 +885,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	      new_base = TREE_OPERAND (*def_rhs_basep, 0);
 	      new_offset
 		= int_const_binop (PLUS_EXPR, TREE_OPERAND (lhs, 1),
-				   TREE_OPERAND (*def_rhs_basep, 1), 0);
+				   TREE_OPERAND (*def_rhs_basep, 1));
 	    }
 	  else
 	    {
@@ -964,7 +964,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	      new_base = TREE_OPERAND (*def_rhs_basep, 0);
 	      new_offset
 		= int_const_binop (PLUS_EXPR, TREE_OPERAND (rhs, 1),
-				   TREE_OPERAND (*def_rhs_basep, 1), 0);
+				   TREE_OPERAND (*def_rhs_basep, 1));
 	    }
 	  else
 	    {

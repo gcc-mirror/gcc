@@ -1,3 +1,9 @@
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Remove zero notrunc argument to
+	int_const_binop.
+	(pos_to_constructor): Likewise.
+
 2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 

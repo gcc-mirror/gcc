@@ -1950,9 +1950,9 @@ layout_type (tree type)
         TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
 	TYPE_SIZE_UNIT (type) = int_const_binop (MULT_EXPR,
 					         TYPE_SIZE_UNIT (innertype),
-					         size_int (nunits), 0);
+					         size_int (nunits));
 	TYPE_SIZE (type) = int_const_binop (MULT_EXPR, TYPE_SIZE (innertype),
-					    bitsize_int (nunits), 0);
+					    bitsize_int (nunits));
 
 	/* Always naturally align vectors.  This prevents ABI changes
 	   depending on whether or not native vector modes are supported.  */

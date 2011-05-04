@@ -1855,7 +1855,7 @@ maybe_rewrite_mem_ref_base (tree *tp)
 			TYPE_SIZE (TREE_TYPE (*tp)),
 			int_const_binop (MULT_EXPR,
 					 bitsize_int (BITS_PER_UNIT),
-					 TREE_OPERAND (*tp, 1), 0));
+					 TREE_OPERAND (*tp, 1)));
 	}
       else if (TREE_CODE (TREE_TYPE (sym)) == COMPLEX_TYPE
 	       && useless_type_conversion_p (TREE_TYPE (*tp),

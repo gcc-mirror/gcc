@@ -525,10 +525,10 @@ inverse (tree x, tree mask)
       rslt = build_int_cst (type, 1);
       for (; ctr; ctr--)
 	{
-	  rslt = int_const_binop (MULT_EXPR, rslt, x, 0);
-	  x = int_const_binop (MULT_EXPR, x, x, 0);
+	  rslt = int_const_binop (MULT_EXPR, rslt, x);
+	  x = int_const_binop (MULT_EXPR, x, x);
 	}
-      rslt = int_const_binop (BIT_AND_EXPR, rslt, mask, 0);
+      rslt = int_const_binop (BIT_AND_EXPR, rslt, mask);
     }
 
   return rslt;

@@ -4121,8 +4121,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				      Get_String_Char (gnat_string, i + 1));
 
 	      CONSTRUCTOR_APPEND_ELT (gnu_vec, gnu_idx, t);
-	      gnu_idx = int_const_binop (PLUS_EXPR, gnu_idx, integer_one_node,
-					 0);
+	      gnu_idx = int_const_binop (PLUS_EXPR, gnu_idx, integer_one_node);
 	    }
 
 	  gnu_result = gnat_build_constructor (gnu_result_type, gnu_vec);
@@ -7601,7 +7600,7 @@ pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
       CONSTRUCTOR_APPEND_ELT (gnu_expr_vec, gnu_index,
 			      convert (TREE_TYPE (gnu_array_type), gnu_expr));
 
-      gnu_index = int_const_binop (PLUS_EXPR, gnu_index, integer_one_node, 0);
+      gnu_index = int_const_binop (PLUS_EXPR, gnu_index, integer_one_node);
     }
 
   return gnat_build_constructor (gnu_array_type, gnu_expr_vec);

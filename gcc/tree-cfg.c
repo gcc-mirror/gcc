@@ -1358,13 +1358,14 @@ group_case_labels_stmt (gimple stmt)
 	{
 	  tree merge_case = gimple_switch_label (stmt, i);
 	  tree merge_label = CASE_LABEL (merge_case);
-	  tree t = int_const_binop (PLUS_EXPR, base_high,
-				    integer_one_node, 1);
+	  double_int bhp1 = double_int_add (tree_to_double_int (base_high),
+					    double_int_one);
 
 	  /* Merge the cases if they jump to the same place,
 	     and their ranges are consecutive.  */
 	  if (merge_label == base_label
-	      && tree_int_cst_equal (CASE_LOW (merge_case), t))
+	      && double_int_equal_p (tree_to_double_int (CASE_LOW (merge_case)),
+				     bhp1))
 	    {
 	      base_high = CASE_HIGH (merge_case) ?
 		  CASE_HIGH (merge_case) : CASE_LOW (merge_case);
