@@ -2334,14 +2334,6 @@ if test x${with_stabs} = x ; then
   esac
 fi
 
-# hpux11 in 64bit mode has libraries in a weird place.  Arrange to find
-# them automatically.
-case "${host}" in
-  hppa*64*-*-hpux11*)	
-    extra_host_args="$extra_host_args -x-libraries=/usr/lib/pa20_64 -x-includes=/usr/X11R6/include"
-    ;;
-esac
-
 # Some systems (e.g., one of the i386-aix systems the gas testers are
 # using) don't handle "\$" correctly, so don't use it here.
 tooldir='${exec_prefix}'/${target_noncanonical}
@@ -2384,34 +2376,6 @@ case $we_are_ok in
     ;;
 esac
 rm -f conftest*
-
-# The Solaris /usr/ucb/cc compiler does not appear to work.
-case "${host}" in
-  sparc-sun-solaris2*)
-      CCBASE="`echo ${CC-cc} | sed 's/ .*$//'`"
-      if test "`type $CCBASE | sed 's/^[[^/]]*//'`" = "/usr/ucb/cc" ; then
-          could_use=
-          test -d /opt/SUNWspro/bin && could_use="/opt/SUNWspro/bin"
-          if test -d /opt/cygnus/bin ; then
-              if test "$could_use" = "" ; then
-                  could_use="/opt/cygnus/bin"
-              else
-                  could_use="$could_use or /opt/cygnus/bin"
-              fi
-          fi
-        if test "$could_use" = "" ; then
-            echo "Warning: compilation may fail because you're using"
-            echo "/usr/ucb/cc.  You should change your PATH or CC "
-            echo "variable and rerun configure."
-        else
-            echo "Warning: compilation may fail because you're using"
-            echo "/usr/ucb/cc, when you should use the C compiler from"
-            echo "$could_use.  You should change your"
-            echo "PATH or CC variable and rerun configure."
-        fi
-      fi
-  ;;
-esac
 
 # Decide which environment variable is used to find dynamic libraries.
 case "${host}" in
