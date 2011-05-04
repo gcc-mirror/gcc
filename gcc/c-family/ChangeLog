@@ -1,3 +1,16 @@
+2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (check_main_parameter_types): Reindent.  Don't use
+	TYPE_ARG_TYPES directly.
+	(handle_nonnull_attribute): Likewise.
+	(sync_resolve_params): Likewise.
+	* c-format.c (handle_format_arg_attribute): Likewise.  Adjust call
+	to check_format_string.
+	(handle_format_attribute): Likewise.
+	(check_format_string): Take a function type to examine instead of
+	a type list.  Use a function_arg_iterator to step through argument
+	types.
+
 2011-05-04  Richard Guenther  <rguenther@suse.de>
 
 	* c-common.c (fix_string_type): Use size_int for index type bounds.
