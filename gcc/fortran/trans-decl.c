@@ -1096,7 +1096,7 @@ gfc_add_assign_aux_vars (gfc_symbol * sym)
       target label's address. Otherwise, value is the length of a format string
       and ASSIGN_ADDR is its address.  */
   if (TREE_STATIC (length))
-    DECL_INITIAL (length) = build_int_cst (NULL_TREE, -2);
+    DECL_INITIAL (length) = build_int_cst (gfc_charlen_type_node, -2);
   else
     gfc_defer_symbol_init (sym);
 
@@ -3130,7 +3130,7 @@ gfc_trans_assign_aux_var (gfc_symbol * sym, gfc_wrapped_block * block)
   /* Set the initial value to length. See the comments in
      function gfc_add_assign_aux_vars in this file.  */
   gfc_add_modify (&init, GFC_DECL_STRING_LEN (sym->backend_decl),
-		  build_int_cst (NULL_TREE, -2));
+		  build_int_cst (gfc_charlen_type_node, -2));
 
   gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
 }
@@ -4639,7 +4639,7 @@ create_main_function (tree fndecl)
                                            gfc_option.flag_range_check));
 
     array_type = build_array_type (integer_type_node,
-		       build_index_type (build_int_cst (NULL_TREE, 7)));
+				   build_index_type (size_int (7)));
     array = build_constructor (array_type, v);
     TREE_CONSTANT (array) = 1;
     TREE_STATIC (array) = 1;

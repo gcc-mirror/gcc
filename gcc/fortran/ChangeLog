@@ -1,5 +1,38 @@
 2011-05-04  Richard Guenther  <rguenther@suse.de>
 
+	* trans-array.c (gfc_trans_array_constructor_value): Use
+	size_int for bounds of range types.
+	(gfc_trans_array_constructor_value): Use size_type_node
+	for memcpy argument.
+	* trans-common.c (build_field): Use gfc_charlen_type_node
+	for lengths.
+	* trans-openmp.c (gfc_trans_omp_clauses): Do not pass NULL
+	as type to build_int_cst.
+	* trans-const.c (gfc_build_string_const): Use size_int
+	for bounds of range types.
+	(gfc_build_wide_string_const): Likewise.
+	* trans-stmt.c (gfc_trans_label_assign): Use gfc_charlen_type_node
+	for lengths.
+	(gfc_trans_character_select): Likewise.
+	(gfc_trans_character_select): Do not pass NULL
+	as type to build_int_cst.
+	(gfc_trans_character_select): Use size_int for bounds of range types.
+	* trans-io.c (gfc_build_io_library_fndecls): Likewise.
+	(add_case): Do not pass NULL as type to build_int_cst.
+	(transfer_expr): Likewise.
+	(transfer_array_desc): Likewise.
+	* trans-decl.c (gfc_add_assign_aux_vars): Use gfc_charlen_type_node
+	for lengths.
+	(gfc_trans_assign_aux_var): Likewise.
+	(create_main_function): Use size_int for bounds of range types.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax_char): Do not pass
+	NULL as type to build_int_cst.
+	(gfc_conv_intrinsic_spacing): Likewise.
+	(gfc_conv_intrinsic_rrspacing): Likewise.
+	(gfc_conv_intrinsic_len): Use gfc_charlen_type_node for lengths.
+
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
 	* trans-types.c (gfc_get_array_type_bounds): Remove zero notrunc
 	argument to int_const_binop.
 
