@@ -802,6 +802,11 @@ enum machine_mode
 promote_mode (const_tree type ATTRIBUTE_UNUSED, enum machine_mode mode,
 	      int *punsignedp ATTRIBUTE_UNUSED)
 {
+#ifdef PROMOTE_MODE
+  enum tree_code code;
+  int unsignedp;
+#endif
+
   /* For libcalls this is invoked without TYPE from the backends
      TARGET_PROMOTE_FUNCTION_MODE hooks.  Don't do anything in that
      case.  */
@@ -812,8 +817,8 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, enum machine_mode mode,
      probably want to test POINTERS_EXTEND_UNSIGNED even if PROMOTE_MODE
      is not defined.  The affected targets are M32C, S390, SPARC.  */
 #ifdef PROMOTE_MODE
-  const enum tree_code code = TREE_CODE (type);
-  int unsignedp = *punsignedp;
+  code = TREE_CODE (type);
+  unsignedp = *punsignedp;
 
   switch (code)
     {
