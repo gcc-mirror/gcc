@@ -7289,7 +7289,7 @@ for the file format in use is appropriate.
 
 @deftypefn {Target Hook} void TARGET_ASM_OUTPUT_SOURCE_FILENAME (FILE *@var{file}, const char *@var{name})
 Output COFF information or DWARF debugging information which indicates that filename @var{name} is the current source file to the stdio stream @var{file}.
-
+ 
  This target hook need not be defined if the standard form of output for the file format in use is appropriate.
 @end deftypefn
 
