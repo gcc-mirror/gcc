@@ -1,3 +1,20 @@
+2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48860
+	* config/i386/i386.md (*movdi_internal_rex64) Use %vmovd
+	for reg<->xmm moves.
+	* config/i386/sse.md (*vec_concatv2di_rex64_sse4_1): Ditto.
+	(vec_concatv2di_rex64_sse): Ditto.
+	(*sse2_storeq_rex64): Do not emit %v prefix for mov{q} mnemonic.
+	(*vec_extractv2di_1_rex64): Ditto.
+
+	Revert:
+	2011-05-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*mov<mode>_internal_rex64): Use %vmovq for
+	reg<->xmm moves.
+	(*movv2sf_internal_rex64): Use %vmovq for reg<->xmm moves.
+
 2011-05-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (int_const_binop): Remove notrunc argument.
@@ -79,8 +96,7 @@
 	* config/mips/mips.h (enum mips_code_readable_setting): Move to
 	mips-opts.h.
 	(mips_abi, mips_code_readable): Don't declare.
-	* config/mips/mips.opt (config/mips/mips-opts.h): New
-	HeaderInclude.
+	* config/mips/mips.opt (config/mips/mips-opts.h): New HeaderInclude.
 	(mabi=): Use Enum and Var.
 	(mips_abi): New Enum and EnumValue entries.
 	(mcode-readable=): Use Enum and Var.
