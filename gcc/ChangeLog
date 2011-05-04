@@ -1,3 +1,8 @@
+2011-05-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-loop.c (vectorizable_reduction): Check reduction cost
+	before setting STMT_VINFO_TYPE.
+
 2011-05-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_gimplify_va_arg_expr): Call pass_by_reference
