@@ -850,11 +850,64 @@ update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
     }
 }
 
-/* Recompute heap nodes for each of caller edge.  */
+
+/* NODE was inlined.
+   All caller edges needs to be resetted because
+   size estimates change. Similarly callees needs reset
+   because better context may be known.  */
+
+static void
+reset_edge_caches (struct cgraph_node *node)
+{
+  struct cgraph_edge *edge;
+  struct cgraph_edge *e = node->callees;
+  struct cgraph_node *where = node;
+
+  if (where->global.inlined_to)
+    where = where->global.inlined_to;
+
+  /* WHERE body size has changed, the cached growth is invalid.  */
+  reset_node_growth_cache (where);
+
+  for (edge = where->callers; edge; edge = edge->next_caller)
+    if (edge->inline_failed)
+      reset_edge_growth_cache (edge);
+
+  if (!e)
+    return;
+
+  while (true)
+    if (!e->inline_failed && e->callee->callees)
+      e = e->callee->callees;
+    else
+      {
+	if (e->inline_failed)
+	  reset_edge_growth_cache (e);
+	if (e->next_callee)
+	  e = e->next_callee;
+	else
+	  {
+	    do
+	      {
+		if (e->caller == node)
+		  return;
+		e = e->caller->callers;
+	      }
+	    while (!e->next_callee);
+	    e = e->next_callee;
+	  }
+      }
+}
+
+/* Recompute HEAP nodes for each of caller of NODE.
+   UPDATED_NODES track nodes we already visited, to avoid redundant work.
+   When CHECK_INLINABLITY_FOR is set, re-check for specified edge that
+   it is inlinable. Otherwise check all edges.  */
 
 static void
 update_caller_keys (fibheap_t heap, struct cgraph_node *node,
-		    bitmap updated_nodes)
+		    bitmap updated_nodes,
+		    struct cgraph_edge *check_inlinablity_for)
 {
   struct cgraph_edge *edge;
 
@@ -864,32 +917,29 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
     return;
   if (!bitmap_set_bit (updated_nodes, node->uid))
     return;
-  reset_node_growth_cache (node);
 
-  /* See if there is something to do.  */
   for (edge = node->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
-      break;
-  if (!edge)
-    return;
-
-  for (; edge; edge = edge->next_caller)
-    if (edge->inline_failed)
       {
-	reset_edge_growth_cache (edge);
-	if (can_inline_edge_p (edge, false)
-	    && want_inline_small_function_p (edge, false))
-          update_edge_key (heap, edge);
-	else if (edge->aux)
+        if (!check_inlinablity_for
+	    || check_inlinablity_for == edge)
 	  {
-	    report_inline_failed_reason (edge);
-	    fibheap_delete_node (heap, (fibnode_t) edge->aux);
-	    edge->aux = NULL;
+	    if (can_inline_edge_p (edge, false)
+		&& want_inline_small_function_p (edge, false))
+	      update_edge_key (heap, edge);
+	    else if (edge->aux)
+	      {
+		report_inline_failed_reason (edge);
+		fibheap_delete_node (heap, (fibnode_t) edge->aux);
+		edge->aux = NULL;
+	      }
 	  }
+	else if (edge->aux)
+	  update_edge_key (heap, edge);
       }
 }
 
-/* Recompute heap nodes for each uninlined call.
+/* Recompute HEAP nodes for each uninlined call in NODE.
    This is used when we know that edge badnesses are going only to increase
    (we introduced new call site) and thus all we need is to insert newly
    created edges into heap.  */
@@ -900,8 +950,6 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
 {
   struct cgraph_edge *e = node->callees;
 
-  reset_node_growth_cache (node);
-
   if (!e)
     return;
   while (true)
@@ -909,14 +957,23 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
       e = e->callee->callees;
     else
       {
-	reset_edge_growth_cache (e);
+	/* We inlined and thus callees might have different number of calls.
+	   Reset their caches  */
+        reset_node_growth_cache (e->callee);
 	if (e->inline_failed
 	    && inline_summary (e->callee)->inlinable
 	    && cgraph_function_body_availability (e->callee) >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, e->callee->uid))
 	  {
-	    reset_node_growth_cache (node);
-	    update_edge_key (heap, e);
+	    if (can_inline_edge_p (e, false)
+		&& want_inline_small_function_p (e, false))
+	      update_edge_key (heap, e);
+	    else if (e->aux)
+	      {
+		report_inline_failed_reason (e);
+		fibheap_delete_node (heap, (fibnode_t) e->aux);
+		e->aux = NULL;
+	      }
 	  }
 	if (e->next_callee)
 	  e = e->next_callee;
@@ -943,8 +1000,6 @@ update_all_callee_keys (fibheap_t heap, struct cgraph_node *node,
 {
   struct cgraph_edge *e = node->callees;
 
-  reset_node_growth_cache (node);
-
   if (!e)
     return;
   while (true)
@@ -952,8 +1007,11 @@ update_all_callee_keys (fibheap_t heap, struct cgraph_node *node,
       e = e->callee->callees;
     else
       {
+	/* We inlined and thus callees might have different number of calls.
+	   Reset their caches  */
+        reset_node_growth_cache (e->callee);
 	if (e->inline_failed)
-	  update_caller_keys (heap, e->callee, updated_nodes);
+	  update_caller_keys (heap, e->callee, updated_nodes, e);
 	if (e->next_callee)
 	  e = e->next_callee;
 	else
@@ -1234,6 +1292,12 @@ inline_small_functions (void)
       if (!edge->inline_failed)
 	continue;
 
+      /* Be sure that caches are maintained consistent.  */
+#ifdef ENABLE_CHECKING
+      reset_edge_growth_cache (edge);
+      reset_node_growth_cache (edge->callee);
+#endif
+
       /* When updating the edge costs, we only decrease badness in the keys.
 	 Increases of badness are handled lazilly; when we see key with out
 	 of date value on it, we re-insert it now.  */
@@ -1302,6 +1366,7 @@ inline_small_functions (void)
 	      edge->inline_failed = CIF_RECURSIVE_INLINING;
 	      continue;
 	    }
+	  reset_edge_caches (where);
 	  /* Recursive inliner inlines all recursive calls of the function
 	     at once. Consequently we need to update all callee keys.  */
 	  if (flag_indirect_inlining)
@@ -1344,6 +1409,9 @@ inline_small_functions (void)
 	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
 
+	  reset_edge_caches (edge->callee);
+          reset_node_growth_cache (callee);
+
 	  /* We inlined last offline copy to the body.  This might lead
 	     to callees of function having fewer call sites and thus they
 	     may need updating.  */
@@ -1362,12 +1430,12 @@ inline_small_functions (void)
 	 inlined into (since it's body size changed) and for the functions
 	 called by function we inlined (since number of it inlinable callers
 	 might change).  */
-      update_caller_keys (heap, where, updated_nodes);
+      update_caller_keys (heap, where, updated_nodes, NULL);
 
       /* We removed one call of the function we just inlined.  If offline
 	 copy is still needed, be sure to update the keys.  */
       if (callee != where && !callee->global.inlined_to)
-        update_caller_keys (heap, callee, updated_nodes);
+        update_caller_keys (heap, callee, updated_nodes, NULL);
       bitmap_clear (updated_nodes);
 
       if (dump_file)
