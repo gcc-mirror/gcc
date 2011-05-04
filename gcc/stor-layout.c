@@ -152,16 +152,6 @@ variable_size (tree size)
        that determine sizes for variable size objects.  Trust it.  */
     return size;
 
-  if (lang_hooks.decls.global_bindings_p ())
-    {
-      if (TREE_CONSTANT (size))
-	error ("type size can%'t be explicitly evaluated");
-      else
-	error ("variable-size type declared outside of any function");
-
-      return size_one_node;
-    }
-
   put_pending_size (save);
 
   return size;
