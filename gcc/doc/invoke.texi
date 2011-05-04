@@ -12581,6 +12581,13 @@ SYSV ABI.  You can control this behavior for a specific function by
 using the function attribute @samp{ms_abi}/@samp{sysv_abi}.
 @xref{Function Attributes}.
 
+@item -mtls-dialect=@var{type}
+@opindex mtls-dialect
+Generate code to access thread-local storage using the @samp{gnu} or
+@samp{gnu2} conventions.  @samp{gnu} is the conservative default;
+@samp{gnu2} is more efficient, but it may add compile- and run-time
+requirements that cannot be satisfied on all systems.
+
 @item -mpush-args
 @itemx -mno-push-args
 @opindex mpush-args
@@ -18238,6 +18245,12 @@ files.  GCC uses temporary files to hold the output of one stage of
 compilation which is to be used as input to the next stage: for example,
 the output of the preprocessor, which is the input to the compiler
 proper.
+
+@item GCC_COMPARE_DEBUG
+@findex GCC_COMPARE_DEBUG
+Setting @env{GCC_COMPARE_DEBUG} is nearly equivalent to passing
+@option{-fcompare-debug} to the compiler driver.  See the documentation
+of this option for more details.
 
 @item GCC_EXEC_PREFIX
 @findex GCC_EXEC_PREFIX
