@@ -4717,7 +4717,7 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
     {
       error ("width of %qs exceeds its type", name);
       w = max_width;
-      *width = build_int_cst (NULL_TREE, w);
+      *width = build_int_cst (integer_type_node, w);
     }
   else
     w = tree_low_cst (*width, 1);

@@ -6636,7 +6636,7 @@ really_start_incremental_init (tree type)
     {
       /* Vectors are like simple fixed-size arrays.  */
       constructor_max_index =
-	build_int_cst (NULL_TREE, TYPE_VECTOR_SUBPARTS (constructor_type) - 1);
+	bitsize_int (TYPE_VECTOR_SUBPARTS (constructor_type) - 1);
       constructor_index = bitsize_zero_node;
       constructor_unfilled_index = constructor_index;
     }
@@ -6805,8 +6805,8 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
     {
       /* Vectors are like simple fixed-size arrays.  */
       constructor_max_index =
-	build_int_cst (NULL_TREE, TYPE_VECTOR_SUBPARTS (constructor_type) - 1);
-      constructor_index = convert (bitsizetype, integer_zero_node);
+	bitsize_int (TYPE_VECTOR_SUBPARTS (constructor_type) - 1);
+      constructor_index = bitsize_int (0);
       constructor_unfilled_index = constructor_index;
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
