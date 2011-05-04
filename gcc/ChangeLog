@@ -1,5 +1,13 @@
 2011-05-04  Richard Guenther  <rguenther@suse.de>
 
+	* coverage.c (tree_coverage_counter_ref): Use integer_type_node
+	for array-ref indices.
+	(tree_coverage_counter_addr): Likewise.
+	(build_fn_info_type): Use size_int for index types.
+	(build_gcov_info): Likewise.
+
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
 	* c-decl.c (check_bitfield_type_and_width): Do not pass NULL
 	to build_int_cst.
 	* c-typeck.c (really_start_incremental_init): Use bitsize_int

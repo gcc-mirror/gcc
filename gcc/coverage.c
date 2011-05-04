@@ -451,7 +451,7 @@ tree_coverage_counter_ref (unsigned counter, unsigned no)
 
   /* "no" here is an array index, scaled to bytes later.  */
   return build4 (ARRAY_REF, gcov_type_node, tree_ctr_tables[counter],
-		 build_int_cst (NULL_TREE, no), NULL, NULL);
+		 build_int_cst (integer_type_node, no), NULL, NULL);
 }
 
 /* Generate a tree to access the address of COUNTER NO.  */
@@ -469,7 +469,7 @@ tree_coverage_counter_addr (unsigned counter, unsigned no)
   /* "no" here is an array index, scaled to bytes later.  */
   return build_fold_addr_expr (build4 (ARRAY_REF, gcov_type_node,
 				       tree_ctr_tables[counter],
-				       build_int_cst (NULL_TREE, no),
+				       build_int_cst (integer_type_node, no),
 				       NULL, NULL));
 }
 
@@ -693,8 +693,7 @@ build_fn_info_type (unsigned int counters)
   DECL_CHAIN (field) = fields;
   fields = field;
 
-  array_type = build_int_cst (NULL_TREE, counters - 1);
-  array_type = build_index_type (array_type);
+  array_type = build_index_type (size_int (counters - 1));
   array_type = build_array_type (get_gcov_unsigned_t (), array_type);
 
   /* counters */
@@ -904,8 +903,7 @@ build_gcov_info (void)
   da_file_name_len = strlen (da_file_name);
   filename_string = build_string (da_file_name_len + 1, da_file_name);
   TREE_TYPE (filename_string) = build_array_type
-    (char_type_node, build_index_type
-     (build_int_cst (NULL_TREE, da_file_name_len)));
+    (char_type_node, build_index_type (size_int (da_file_name_len)));
   CONSTRUCTOR_APPEND_ELT (v1, field,
 			  build1 (ADDR_EXPR, string_type, filename_string));
 
@@ -921,7 +919,7 @@ build_gcov_info (void)
     {
       tree array_type;
 
-      array_type = build_index_type (build_int_cst (NULL_TREE, n_fns - 1));
+      array_type = build_index_type (size_int (n_fns - 1));
       array_type = build_array_type (fn_info_type, array_type);
 
       fn_info_value = build_constructor (array_type, v2);
@@ -956,8 +954,7 @@ build_gcov_info (void)
 
   /* counters */
   ctr_info_type = build_ctr_info_type ();
-  ctr_info_ary_type = build_index_type (build_int_cst (NULL_TREE,
-						       n_ctr_types));
+  ctr_info_ary_type = build_index_type (size_int (n_ctr_types));
   ctr_info_ary_type = build_array_type (ctr_info_type, ctr_info_ary_type);
   v2 = NULL;
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
