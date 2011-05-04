@@ -1,3 +1,12 @@
+2011-05-04  Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++/47913 (again)
+	* include/std/ratio (ratio_add, ratio_less): Rewrite.
+	* testsuite/20_util/ratio/operations/47913.cc: Extend.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+
 2011-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/48848
