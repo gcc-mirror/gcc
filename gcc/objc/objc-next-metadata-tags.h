@@ -1,6 +1,6 @@
 /* Declarations for meta-data attribute tags.
    Copyright (C) 2011 Free Software Foundation, Inc.
-   Contributed by Iain Sandoe 
+   Contributed by Iain Sandoe
 
 This file is part of GCC.
 
@@ -25,29 +25,29 @@ enum objc_runtime_tree_index
 {
   OCTI_RT_OBJC_META,
   OCTI_RT_META_BASE,
-  
+
   OCTI_RT_META_CLASS,
   OCTI_RT_META_METACLASS,
   OCTI_RT_META_CATEGORY,
   OCTI_RT_META_PROTOCOL,
-  
+
   OCTI_RT_META_CLASS_CLS_VARS,
   OCTI_RT_META_CLASS_NST_VARS,
-  
+
   OCTI_RT_META_CLASS_CLS_METH,
   OCTI_RT_META_CLASS_NST_METH,
   OCTI_RT_META_CATEG_CLS_METH,
   OCTI_RT_META_CATEG_NST_METH,
   OCTI_RT_META_PROTO_CLS_METH,
   OCTI_RT_META_PROTO_NST_METH,
-  
+
   OCTI_RT_META_CLASS_PROT,
   OCTI_RT_META_CATEG_PROT,
   OCTI_RT_META_PROT_REFS,
-  
+
   OCTI_RT_META_MSG_REFS,
   OCTI_RT_META_SEL_REFS,
-  
+
   OCTI_RT_META_CLSLST_REFS,
   OCTI_RT_META_CLASS_REF,
   OCTI_RT_META_SUPER_REF,
@@ -56,34 +56,34 @@ enum objc_runtime_tree_index
   OCTI_RT_META_LAB_PROTOLIST,
   OCTI_RT_META_LAB_NLZY_CAT,
   OCTI_RT_META_LAB_CAT,
-  
+
   OCTI_RT_META_PROPERTY_LIST,
   OCTI_RT_META_PROTOCOL_EXT,
   OCTI_RT_META_CLASS_EXT,
-  
+
   OCTI_RT_META_CLASS_NAME,
   OCTI_RT_META_METHD_NAME,
   OCTI_RT_META_METHD_TYPE,
   OCTI_RT_META_PROPN_ATTR,
-  
+
   OCTI_RT_META_MODULES,
   OCTI_RT_META_SYMTAB,
   OCTI_RT_META_INFO,
-  
+
   OCTI_RT_META_EHTYPE,
-  
+
   OCTI_RT_META_CONST_STR,
 
   OCTI_RT_META_MAX
 };
 
 /* Tags for the META data so that the backend can put them in the correct
-   sections for targets/runtimes (Darwin/NeXT) that require this.  
+   sections for targets/runtimes (Darwin/NeXT) that require this.
    This information also survives LTO - which might produce mixed language
    output.  */
 
 /* Objective-C meta data attribute tag */
-#define objc_meta	objc_rt_trees[OCTI_RT_OBJC_META] 
+#define objc_meta	objc_rt_trees[OCTI_RT_OBJC_META]
 /* Attribute values, base = default section. */
 #define meta_base	objc_rt_trees[OCTI_RT_META_BASE]
 
