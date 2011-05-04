@@ -1,3 +1,8 @@
+2011-05-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (spu_gimplify_va_arg_expr): Call pass_by_reference
+	instead of spu_pass_by_reference.
+
 2011-05-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* calls.c (emit_library_call_value_1): Invoke
