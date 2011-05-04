@@ -6479,9 +6479,8 @@
   "@
    #
    #
-   %vmov{q}\t{%1, %0|%0, %1}"
+   mov{q}\t{%1, %0|%0, %1}"
   [(set_attr "type" "*,*,imov")
-   (set_attr "prefix" "*,*,maybe_vex")
    (set_attr "mode" "*,*,DI")])
 
 (define_insn "*sse2_storeq"
@@ -6516,12 +6515,12 @@
    psrldq\t{$8, %0|%0, 8}
    vpsrldq\t{$8, %1, %0|%0, %1, 8}
    %vmovq\t{%H1, %0|%0, %H1}
-   %vmov{q}\t{%H1, %0|%0, %H1}"
+   mov{q}\t{%H1, %0|%0, %H1}"
   [(set_attr "isa" "base,noavx,avx,base,base")
    (set_attr "type" "ssemov,sseishft1,sseishft1,ssemov,imov")
    (set_attr "length_immediate" "*,1,1,*,*")
    (set_attr "memory" "*,none,none,*,*")
-   (set_attr "prefix" "maybe_vex,orig,vex,maybe_vex,maybe_vex")
+   (set_attr "prefix" "maybe_vex,orig,vex,maybe_vex,orig")
    (set_attr "mode" "V2SF,TI,TI,TI,DI")])
 
 (define_insn "*vec_extractv2di_1_sse2"
@@ -6687,6 +6686,7 @@
   [(set_attr "type" "sselog,ssemov,ssemov")
    (set_attr "mode" "TI,V4SF,V2SF")])
 
+;; movd instead of movq is required to handle broken assemblers.
 (define_insn "*vec_concatv2di_rex64_sse4_1"
   [(set (match_operand:V2DI 0 "register_operand"
 	  "=x, x, x,Yi,!x,x,x,x,x")
@@ -6700,7 +6700,7 @@
    pinsrq\t{$0x1, %2, %0|%0, %2, 0x1}
    vpinsrq\t{$0x1, %2, %1, %0|%0, %1, %2, 0x1}
    %vmovq\t{%1, %0|%0, %1}
-   %vmovq\t{%1, %0|%0, %1}
+   %vmovd\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}
@@ -6719,6 +6719,7 @@
    (set_attr "prefix" "orig,vex,maybe_vex,maybe_vex,orig,orig,vex,orig,vex")
    (set_attr "mode" "TI,TI,TI,TI,TI,TI,TI,V2SF,V2SF")])
 
+;; movd instead of movq is required to handle broken assemblers.
 (define_insn "*vec_concatv2di_rex64_sse"
   [(set (match_operand:V2DI 0 "register_operand"     "=Y2,Yi,!Y2,Y2,x,x")
 	(vec_concat:V2DI
@@ -6727,7 +6728,7 @@
   "TARGET_64BIT && TARGET_SSE"
   "@
    movq\t{%1, %0|%0, %1}
-   movq\t{%1, %0|%0, %1}
+   movd\t{%1, %0|%0, %1}
    movq2dq\t{%1, %0|%0, %1}
    punpcklqdq\t{%2, %0|%0, %2}
    movlhps\t{%2, %0|%0, %2}
