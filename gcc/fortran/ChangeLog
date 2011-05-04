@@ -1,3 +1,10 @@
+2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans-decl.c (build_library_function_decl_1): Call
+	build_function_type_vec.  Adjust argument list building accordingly.
+	* trans-intrinsic.c (gfc_get_intrinsic_lib_fndecl): Likewise.
+	* trans-types.c (gfc_get_function_type): Likewise.
+
 2011-05-04  Richard Guenther  <rguenther@suse.de>
 
 	* trans-array.c (gfc_trans_array_constructor_value): Use
