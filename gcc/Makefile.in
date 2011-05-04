@@ -3520,15 +3520,15 @@ mips-tfile: mips-tfile.o version.o $(LIBDEPS)
 	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
 		mips-tfile.o version.o $(LIBS)
 
-mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) version.h $(srcdir)/../include/getopt.h $(GSTAB_H) intl.h
+mips-tfile.o : mips-tfile.c $(CONFIG_H) $(SYSTEM_H) \
+   version.h $(srcdir)/../include/getopt.h $(GSTAB_H) intl.h
 
 mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
 		mips-tdump.o version.o $(LIBS)
 
-mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) version.h $(srcdir)/../include/getopt.h stab.def
+mips-tdump.o : mips-tdump.c $(CONFIG_H) $(SYSTEM_H) \
+   version.h $(srcdir)/../include/getopt.h stab.def
 
 #
 # Generate header and source files from the machine description,
