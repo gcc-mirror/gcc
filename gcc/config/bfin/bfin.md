@@ -1217,22 +1217,21 @@
   "%0 = %h2 * %h1 (IS,M)%!"
   [(set_attr "type" "dsp32")])
 
-;; The processor also supports ireg += mreg or ireg -= mreg, but these
-;; are unusable if we don't ensure that the corresponding lreg is zero.
-;; The same applies to the add/subtract constant versions involving
-;; iregs
+;; The alternative involving IREGS requires that the corresponding L register
+;; is zero.
 
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=ad,a,d")
-	(plus:SI (match_operand:SI 1 "register_operand" "%0, a,d")
-		 (match_operand:SI 2 "reg_or_7bit_operand" "Ks7, a,d")))]
+  [(set (match_operand:SI 0 "register_operand" "=ad,a,d,b")
+       (plus:SI (match_operand:SI 1 "register_operand" "%0, a,d,0")
+                (match_operand:SI 2 "reg_or_7bit_operand" "Ks7, a,d,fP2P4")))]
   ""
   "@
    %0 += %2;
    %0 = %1 + %2;
-   %0 = %1 + %2;"
+   %0 = %1 + %2;
+   %0 += %2;"
   [(set_attr "type" "alu0")
-   (set_attr "length" "2,2,2")])
+   (set_attr "length" "2,2,2,2")])
 
 (define_insn "ssaddsi3"
   [(set (match_operand:SI 0 "register_operand" "=d")

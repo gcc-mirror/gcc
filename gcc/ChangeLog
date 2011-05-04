@@ -1,3 +1,8 @@
+2011-05-04  Stuart Henderson  <shenders@gcc.gnu.org>
+
+	From Bernd Schmidt
+	* config/bfin/bfin.md (addsi3): Add an alternative for IREGS.
+
 2011-05-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/alpha/alpha.h (CODE_MASK, MIPS_IS_STAB, MIPS_MARK_STAB)
