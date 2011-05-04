@@ -1,3 +1,27 @@
+2011-05-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/alpha.h (CODE_MASK, MIPS_IS_STAB, MIPS_MARK_STAB)
+	(MIPS_UNMARK_STAB, SHASH_SIZE, THASH_SIZE, ALIGN_SYMTABLE_OFFSET):
+	Move ...
+	* mips-tfile.c: ... here.
+	Don't include coretypes.h, tm.h, filenames.h.
+	(saber_stop): Remove definition and all calls.
+	[__SABER__]: Remove.
+	(__LINE__): Remove default.
+	(Size_t, Ptrdiff_t): Remove definitions.
+	Replace by size_t, ptrdiff_t.
+	[!MIPS_DEBUGGING_INFO]: Remove.
+	(SHASH_SIZE, THASH_SIZE): Remove defaults.
+	(progname): Add const.
+	(STATIC): Remove.
+	Replace all uses by static.
+	(ALIGN_SYMTABLE_OFFSET): Remove default.
+	* mips-tdump.c: Don't include coretypes.h, tm.h.
+	Remove !MIPS_IS_STAB guard.
+	* Makefile.in (mips-tfile.o): Remove $(RTL_H), coretypes.h,
+	$(TM_H), filenames.h dependencies.
+	(mips-tdump.o): Remove $(RTL_H), coretypes.h, $(TM_H) dependencies.
+
 2011-05-04  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	From Jie Zhang
