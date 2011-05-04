@@ -1,3 +1,11 @@
+2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2010-12-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/sse2-init-v2di-2.c: Add "-dp" and update
+	expected scan.
+
 2011-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48774
