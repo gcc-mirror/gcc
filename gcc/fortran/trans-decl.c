@@ -2478,8 +2478,7 @@ static tree
 build_library_function_decl_1 (tree name, const char *spec,
 			       tree rettype, int nargs, va_list p)
 {
-  tree arglist;
-  tree argtype;
+  VEC(tree,gc) *arglist;
   tree fntype;
   tree fndecl;
   int n;
@@ -2488,20 +2487,18 @@ build_library_function_decl_1 (tree name, const char *spec,
   gcc_assert (current_function_decl == NULL_TREE);
 
   /* Create a list of the argument types.  */
-  for (arglist = NULL_TREE, n = abs (nargs); n > 0; n--)
+  arglist = VEC_alloc (tree, gc, abs (nargs));
+  for (n = abs (nargs); n > 0; n--)
     {
-      argtype = va_arg (p, tree);
-      arglist = gfc_chainon_list (arglist, argtype);
-    }
-
-  if (nargs >= 0)
-    {
-      /* Terminate the list.  */
-      arglist = chainon (arglist, void_list_node);
+      tree argtype = va_arg (p, tree);
+      VEC_quick_push (tree, arglist, argtype);
     }
 
   /* Build the function type and decl.  */
-  fntype = build_function_type (rettype, arglist);
+  if (nargs >= 0)
+    fntype = build_function_type_vec (rettype, arglist);
+  else
+    fntype = build_varargs_function_type_vec (rettype, arglist);
   if (spec)
     {
       tree attr_args = build_tree_list (NULL_TREE,

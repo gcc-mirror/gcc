@@ -7640,6 +7640,44 @@ build_varargs_function_type_list (tree return_type, ...)
   return args;
 }
 
+/* Build a function type.  RETURN_TYPE is the type returned by the
+   function; VAARGS indicates whether the function takes varargs.  The
+   function takes N named arguments, the types of which are provided in
+   ARG_TYPES.  */
+
+static tree
+build_function_type_array_1 (bool vaargs, tree return_type, int n,
+			     tree *arg_types)
+{
+  int i;
+  tree t = vaargs ? NULL_TREE : void_list_node;
+
+  for (i = n - 1; i >= 0; i--)
+    t = tree_cons (NULL_TREE, arg_types[i], t);
+
+  return build_function_type (return_type, t);
+}
+
+/* Build a function type.  RETURN_TYPE is the type returned by the
+   function.  The function takes N named arguments, the types of which
+   are provided in ARG_TYPES.  */
+
+tree
+build_function_type_array (tree return_type, int n, tree *arg_types)
+{
+  return build_function_type_array_1 (false, return_type, n, arg_types);
+}
+
+/* Build a variable argument function type.  RETURN_TYPE is the type
+   returned by the function.  The function takes N named arguments, the
+   types of which are provided in ARG_TYPES.  */
+
+tree
+build_varargs_function_type_array (tree return_type, int n, tree *arg_types)
+{
+  return build_function_type_array_1 (true, return_type, n, arg_types);
+}
+
 /* Build a METHOD_TYPE for a member of BASETYPE.  The RETTYPE (a TYPE)
    and ARGTYPES (a TREE_LIST) are the return type and arguments types
    for the method.  An implicit additional parameter (of type

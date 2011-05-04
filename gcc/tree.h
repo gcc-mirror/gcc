@@ -4256,6 +4256,13 @@ extern tree build_function_type_list (tree, ...);
 extern tree build_function_type_skip_args (tree, bitmap);
 extern tree build_function_decl_skip_args (tree, bitmap);
 extern tree build_varargs_function_type_list (tree, ...);
+extern tree build_function_type_array (tree, int, tree *);
+extern tree build_varargs_function_type_array (tree, int, tree *);
+#define build_function_type_vec(RET, V) \
+  build_function_type_array (RET, VEC_length (tree, V), VEC_address (tree, V))
+#define build_varargs_function_type_vec(RET, V) \
+  build_varargs_function_type_array (RET, VEC_length (tree, V), \
+				     VEC_address (tree, V))
 extern tree build_method_type_directly (tree, tree, tree);
 extern tree build_method_type (tree, tree);
 extern tree build_offset_type (tree, tree);

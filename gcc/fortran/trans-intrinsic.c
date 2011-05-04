@@ -722,7 +722,7 @@ static tree
 gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 {
   tree type;
-  tree argtypes;
+  VEC(tree,gc) *argtypes;
   tree fndecl;
   gfc_actual_arglist *actual;
   tree *pdecl;
@@ -803,14 +803,13 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 		ts->kind);
     }
 
-  argtypes = NULL_TREE;
+  argtypes = NULL;
   for (actual = expr->value.function.actual; actual; actual = actual->next)
     {
       type = gfc_typenode_for_spec (&actual->expr->ts);
-      argtypes = gfc_chainon_list (argtypes, type);
+      VEC_safe_push (tree, gc, argtypes, type);
     }
-  argtypes = chainon (argtypes, void_list_node);
-  type = build_function_type (gfc_typenode_for_spec (ts), argtypes);
+  type = build_function_type_vec (gfc_typenode_for_spec (ts), argtypes);
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, get_identifier (name), type);
 
