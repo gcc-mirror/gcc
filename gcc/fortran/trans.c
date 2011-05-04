@@ -63,19 +63,6 @@ gfc_advance_chain (tree t, int n)
 }
 
 
-/* Wrap a node in a TREE_LIST node and add it to the end of a list.  */
-
-tree
-gfc_chainon_list (tree list, tree add)
-{
-  tree l;
-
-  l = tree_cons (NULL_TREE, add, NULL_TREE);
-
-  return chainon (list, l);
-}
-
-
 /* Strip off a legitimate source ending from the input
    string NAME of length LEN.  */
 

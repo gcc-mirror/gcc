@@ -1,3 +1,8 @@
+2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans.h (gfc_chainon_list): Delete.
+	* trans.c (gfc_chainon_list): Delete.
+
 2011-05-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48864
