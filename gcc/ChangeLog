@@ -1,5 +1,13 @@
 2011-05-04  Richard Guenther  <rguenther@suse.de>
 
+	* c-decl.c (check_bitfield_type_and_width): Do not pass NULL
+	to build_int_cst.
+	* c-typeck.c (really_start_incremental_init): Use bitsize_int
+	for constructor indices.
+	(push_init_level): Likewise.
+
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
 	* explow.c (promote_mode): Move variable declarations before code.
 
 2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
