@@ -1,3 +1,18 @@
+2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/recip-vec-divf.c: Decrease array sizes.
+	* gcc.target/i386/recip-vec-sqrtf.c: Ditto.
+	* gcc.target/i386/recip-vec-divf-avx.c: Increase array sizes.
+	* gcc.target/i386/recip-vec-sqrtf-avx.c: Ditto.  Update scan times.
+	* gcc.target/i386/ssefn-1.c: Add -mno-sse2 to dg-options.
+	* gcc.target/i386/pr38824.c: Ditto.
+	* gcc.target/i386/vecinit-1.c: Add -mno-sse4 to dg-options.
+	* gcc.target/i386/vecinit-2.c: Ditto.
+	* gcc.target/i386/sse-19.c: Add -mno-ssse3 to dg-options.
+	* gcc.target/i386/parity-1.c: Add -mno-popcnt to dg-options.
+	* gcc.target/i386/parity-2.c: Ditto.
+	* gcc.target/i386/incoming-8.c: Add -mno-avx to dg-options.
+
 2011-05-04  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	* gcc.target/bfin/mcpu-bf512.c: Update to latest silicon revision and
