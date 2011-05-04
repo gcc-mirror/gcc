@@ -1445,6 +1445,14 @@ bfin_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
   return 1;
 }
 
+/* Implement TARGET_EXTRA_LIVE_ON_ENTRY.  */
+static void
+bfin_extra_live_on_entry (bitmap regs)
+{
+  if (TARGET_FDPIC)
+    bitmap_set_bit (regs, FDPIC_REGNO);
+}
+
 /* Return the value of the return address for the frame COUNT steps up
    from the current frame, after the prologue.
    We punt for everything but the current frame by returning const0_rtx.  */
@@ -6731,5 +6739,8 @@ bfin_conditional_register_usage (void)
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE bfin_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT bfin_trampoline_init
+
+#undef TARGET_EXTRA_LIVE_ON_ENTRY
+#define TARGET_EXTRA_LIVE_ON_ENTRY bfin_extra_live_on_entry
 
 struct gcc_target targetm = TARGET_INITIALIZER;
