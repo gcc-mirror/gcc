@@ -2213,8 +2213,8 @@ gfc_conv_intrinsic_minmax_char (gfc_se * se, gfc_expr * expr, int op)
   args[0] = gfc_build_addr_expr (NULL_TREE, len);
   var = gfc_create_var (gfc_get_pchar_type (expr->ts.kind), "pstr");
   args[1] = gfc_build_addr_expr (ppvoid_type_node, var);
-  args[2] = build_int_cst (NULL_TREE, op);
-  args[3] = build_int_cst (NULL_TREE, nargs / 2);
+  args[2] = build_int_cst (integer_type_node, op);
+  args[3] = build_int_cst (integer_type_node, nargs / 2);
 
   if (expr->ts.kind == 1)
     function = gfor_fndecl_string_minmax;
@@ -4420,7 +4420,7 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
   switch (arg->expr_type)
     {
     case EXPR_CONSTANT:
-      len = build_int_cst (NULL_TREE, arg->value.character.length);
+      len = build_int_cst (gfc_charlen_type_node, arg->value.character.length);
       break;
 
     case EXPR_ARRAY:
@@ -4766,8 +4766,8 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
   stmtblock_t block;
 
   k = gfc_validate_kind (BT_REAL, expr->ts.kind, false);
-  prec = build_int_cst (NULL_TREE, gfc_real_kinds[k].digits);
-  emin = build_int_cst (NULL_TREE, gfc_real_kinds[k].min_exponent - 1);
+  prec = build_int_cst (integer_type_node, gfc_real_kinds[k].digits);
+  emin = build_int_cst (integer_type_node, gfc_real_kinds[k].min_exponent - 1);
   tiny = gfc_conv_mpfr_to_tree (gfc_real_kinds[k].tiny, expr->ts.kind, 0);
 
   frexp = gfc_builtin_decl_for_float_kind (BUILT_IN_FREXP, expr->ts.kind);
@@ -4850,7 +4850,7 @@ gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
   gfc_add_expr_to_block (&block, tmp);
 
   tmp = fold_build2_loc (input_location, MINUS_EXPR, integer_type_node,
-			 build_int_cst (NULL_TREE, prec), e);
+			 build_int_cst (integer_type_node, prec), e);
   tmp = build_call_expr_loc (input_location, scalbn, 2, x, tmp);
   gfc_add_modify (&block, x, tmp);
   stmt = gfc_finish_block (&block);

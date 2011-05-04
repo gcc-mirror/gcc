@@ -309,7 +309,7 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
       addr = gfc_create_var_np (pvoid_type_node, h->sym->name);
       TREE_STATIC (len) = 1;
       TREE_STATIC (addr) = 1;
-      DECL_INITIAL (len) = build_int_cst (NULL_TREE, -2);
+      DECL_INITIAL (len) = build_int_cst (gfc_charlen_type_node, -2);
       gfc_set_decl_location (len, &h->sym->declared_at);
       gfc_set_decl_location (addr, &h->sym->declared_at);
       GFC_DECL_STRING_LEN (field) = pushdecl_top_level (len);

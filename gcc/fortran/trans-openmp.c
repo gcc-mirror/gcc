@@ -948,7 +948,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
   if (clauses->collapse)
     {
       c = build_omp_clause (where.lb->location, OMP_CLAUSE_COLLAPSE);
-      OMP_CLAUSE_COLLAPSE_EXPR (c) = build_int_cst (NULL, clauses->collapse);
+      OMP_CLAUSE_COLLAPSE_EXPR (c)
+	= build_int_cst (integer_type_node, clauses->collapse);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
