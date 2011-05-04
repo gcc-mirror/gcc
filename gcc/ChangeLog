@@ -1,3 +1,8 @@
+2011-05-04  Stuart Henderson  <shenders@gcc.gnu.org>
+
+	From Jie Zhang
+	* config/bfin/bfin.c (bfin_expand_prologue): Don't clobber P2.
+
 2011-05-04  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c: Include cfgloop.h.
