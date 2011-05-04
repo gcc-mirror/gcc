@@ -1126,16 +1126,26 @@ do { 						\
 
 #define ASM_COMMENT_START "//"
 
+#define PROFILE_BEFORE_PROLOGUE
 #define FUNCTION_PROFILER(FILE, LABELNO)	\
   do {						\
-    fprintf (FILE, "\tCALL __mcount;\n");	\
+    fprintf (FILE, "\t[--SP] = RETS;\n");	\
+    if (TARGET_LONG_CALLS)			\
+      {						\
+	fprintf (FILE, "\tP2.h = __mcount;\n");	\
+	fprintf (FILE, "\tP2.l = __mcount;\n");	\
+	fprintf (FILE, "\tCALL (P2);\n");	\
+      }						\
+    else					\
+      fprintf (FILE, "\tCALL __mcount;\n");	\
+    fprintf (FILE, "\tRETS = [SP++];\n");	\
   } while(0)
 
 #undef NO_PROFILE_COUNTERS
 #define NO_PROFILE_COUNTERS 1
 
-#define ASM_OUTPUT_REG_PUSH(FILE, REGNO) fprintf (FILE, "[SP--] = %s;\n", reg_names[REGNO])
-#define ASM_OUTPUT_REG_POP(FILE, REGNO)  fprintf (FILE, "%s = [SP++];\n", reg_names[REGNO])
+#define ASM_OUTPUT_REG_PUSH(FILE, REGNO) fprintf (FILE, "\t[--SP] = %s;\n", reg_names[REGNO])
+#define ASM_OUTPUT_REG_POP(FILE, REGNO)  fprintf (FILE, "\t%s = [SP++];\n", reg_names[REGNO])
 
 extern rtx bfin_cc_rtx, bfin_rets_rtx;
 
