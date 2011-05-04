@@ -124,7 +124,7 @@ default_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 			       const_tree funtype ATTRIBUTE_UNUSED,
 			       int for_return ATTRIBUTE_UNUSED)
 {
-  if (for_return == 2)
+  if (type != NULL_TREE && for_return == 2)
     return promote_mode (type, mode, punsignedp);
   return mode;
 }

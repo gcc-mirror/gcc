@@ -3477,6 +3477,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
     {
       rtx val = va_arg (p, rtx);
       enum machine_mode mode = (enum machine_mode) va_arg (p, int);
+      int unsigned_p = 0;
 
       /* We cannot convert the arg value to the mode the library wants here;
 	 must do it earlier where we know the signedness of the arg.  */
@@ -3524,9 +3525,9 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  val = force_operand (XEXP (slot, 0), NULL_RTX);
 	}
 
-      argvec[count].value = val;
+      mode = promote_function_mode (NULL_TREE, mode, &unsigned_p, NULL_TREE, 0);
       argvec[count].mode = mode;
-
+      argvec[count].value = convert_modes (mode, GET_MODE (val), val, unsigned_p);
       argvec[count].reg = targetm.calls.function_arg (&args_so_far, mode,
 						      NULL_TREE, true);
 
