@@ -1,3 +1,15 @@
+2011-05-03  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf2out.c (debug_str_hash_forced): Removed.
+	(gen_label_for_indirect_string): Removed.
+	(get_debug_string_label): Removed.
+	(AT_string_form): Generate label directly.
+	(output_indirect_string): Test indirect_string_node for
+	DW_FORM_strp instead of checking label and refcount.
+	(prune_indirect_string): Removed.
+	(prune_unused_types): Don't check debug_str_hash_forced or
+	call prune_indirect_string.
+
 2011-05-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR other/48093
