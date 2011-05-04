@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=x86-64" } } */
-/* { dg-options "-O3 -march=x86-64 -msse2" } */
+/* { dg-options "-O3 -march=x86-64 -msse2 -mno-ssse3" } */
 /* { dg-final { scan-assembler "punpcklbw" } } */
 extern void abort();
 #include <emmintrin.h>
