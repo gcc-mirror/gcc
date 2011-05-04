@@ -1,3 +1,14 @@
+2011-05-04  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (reset_edge_caches): New function.
+	(update_caller_keys): Add check_inlinablity_for; do not
+	reset edge caches; remove now unnecesary loop.
+	(update_callee_keys): Add comments; reset
+	node_growth_cache of callee.
+	(update_all_callee_keys): Likewise.
+	(inline_small_functions): Sanity check cache; update code
+	recomputing it.
+
 2011-05-04  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/47612
