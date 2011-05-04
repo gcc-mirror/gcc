@@ -371,7 +371,7 @@ struct GTY((variable_size)) sorted_fields_type @{
 @};
 @end smallexample
 
-Then the objects of @code{struct sorted_fields_type} are allocated in GC 
+Then the objects of @code{struct sorted_fields_type} are allocated in GC
 memory as follows:
 @smallexample
   field_vec = ggc_alloc_sorted_fields_type (size);

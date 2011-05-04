@@ -37,7 +37,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Complex::             Data types for complex numbers.
 * Floating Types::      Additional Floating Types.
 * Half-Precision::      Half-Precision Floating Point.
-* Decimal Float::       Decimal Floating Types. 
+* Decimal Float::       Decimal Floating Types.
 * Hex Floats::          Hexadecimal floating-point constants.
 * Fixed-Point::         Fixed-Point Types.
 * Named Address Spaces::Named address spaces.
@@ -455,7 +455,7 @@ does not refer to anything that has gone out of scope, you should be
 safe.
 
 GCC implements taking the address of a nested function using a technique
-called @dfn{trampolines}.  This technique was described in 
+called @dfn{trampolines}.  This technique was described in
 @cite{Lexical Closures for C++} (Thomas M. Breuel, USENIX
 C++ Conference Proceedings, October 17-21, 1988).
 
@@ -619,7 +619,7 @@ myopen (const char *path, int oflag, ...)
         @}
       return open (path, oflag, __builtin_va_arg_pack ());
     @}
-    
+
   if (__builtin_va_arg_pack_len () < 1)
     return __open_2 (path, oflag);
 
@@ -942,7 +942,7 @@ The @code{__float128} type is supported on hppa HP-UX targets.
 @cindex @code{__fp16} data type
 
 On ARM targets, GCC supports half-precision (16-bit) floating point via
-the @code{__fp16} type.  You must enable this type explicitly 
+the @code{__fp16} type.  You must enable this type explicitly
 with the @option{-mfp16-format} command-line option in order to use it.
 
 ARM supports two incompatible representations for half-precision
@@ -963,7 +963,7 @@ values in the range of @math{2^{-14}} to 131008.
 The @code{__fp16} type is a storage format only.  For purposes
 of arithmetic and other operations, @code{__fp16} values in C or C++
 expressions are automatically promoted to @code{float}.  In addition,
-you cannot declare a function with a return value or parameters 
+you cannot declare a function with a return value or parameters
 of type @code{__fp16}.
 
 Note that conversions from @code{double} to @code{__fp16}
@@ -971,14 +971,14 @@ involve an intermediate conversion to @code{float}.  Because
 of rounding, this can sometimes produce a different result than a
 direct conversion.
 
-ARM provides hardware support for conversions between 
+ARM provides hardware support for conversions between
 @code{__fp16} and @code{float} values
 as an extension to VFP and NEON (Advanced SIMD).  GCC generates
 code using these hardware instructions if you compile with
-options to select an FPU that provides them; 
+options to select an FPU that provides them;
 for example, @option{-mfpu=neon-fp16 -mfloat-abi=softfp},
 in addition to the @option{-mfp16-format} option to select
-a half-precision format.  
+a half-precision format.
 
 Language-level support for the @code{__fp16} data type is
 independent of whether GCC generates code using hardware floating-point
@@ -1995,7 +1995,7 @@ The @code{aligned} attribute can also be used for variables and fields
 @cindex @code{alloc_size} attribute
 The @code{alloc_size} attribute is used to tell the compiler that the
 function return value points to memory, where the size is given by
-one or two of the functions parameters.  GCC uses this 
+one or two of the functions parameters.  GCC uses this
 information to improve the correctness of @code{__builtin_object_size}.
 
 The function parameter(s) denoting the allocated size are specified by
@@ -2004,7 +2004,7 @@ is either the value of the single function argument specified or the product
 of the two function arguments specified.  Argument numbering starts at
 one.
 
-For instance, 
+For instance,
 
 @smallexample
 void* my_calloc(size_t, size_t) __attribute__((alloc_size(1,2)))
@@ -2213,7 +2213,7 @@ On systems that support the @code{visibility} attribute, this
 attribute also implies ``default'' visibility.  It is an error to
 explicitly specify any other visibility.
 
-In previous versions of GCC, the @code{dllexport} attribute was ignored 
+In previous versions of GCC, the @code{dllexport} attribute was ignored
 for inlined functions, unless the @option{-fkeep-inline-functions} flag
 had been used.  The default behaviour now is to emit all dllexported
 inline functions; however, this can cause object file-size bloat, in
@@ -2424,10 +2424,10 @@ standard modes, the X/Open function @code{strfmon} is also checked as
 are @code{printf_unlocked} and @code{fprintf_unlocked}.
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 
-For Objective-C dialects, @code{NSString} (or @code{__NSString__}) is 
+For Objective-C dialects, @code{NSString} (or @code{__NSString__}) is
 recognized in the same context.  Declarations including these format attributes
 will be parsed for correct syntax, however the result of checking of such format
-strings is not yet defined, and will not be carried out by this version of the 
+strings is not yet defined, and will not be carried out by this version of the
 compiler.
 
 The target may also provide additional types of format checks.
@@ -2752,7 +2752,7 @@ command-line switch.  The @code{long_call} and @code{far} attributes are
 synonyms, and cause the compiler to always call
 the function by first loading its address into a register, and then using
 the contents of that register.  The @code{near} attribute has the opposite
-effect; it specifies that non-PIC calls should be made using the more 
+effect; it specifies that non-PIC calls should be made using the more
 efficient @code{jal} instruction.
 
 @item malloc
@@ -2773,11 +2773,11 @@ value.
 
 On MIPS targets, you can use the @code{mips16} and @code{nomips16}
 function attributes to locally select or turn off MIPS16 code generation.
-A function with the @code{mips16} attribute is emitted as MIPS16 code, 
-while MIPS16 code generation is disabled for functions with the 
-@code{nomips16} attribute.  These attributes override the 
+A function with the @code{mips16} attribute is emitted as MIPS16 code,
+while MIPS16 code generation is disabled for functions with the
+@code{nomips16} attribute.  These attributes override the
 @option{-mips16} and @option{-mno-mips16} options on the command line
-(@pxref{MIPS Options}).  
+(@pxref{MIPS Options}).
 
 When compiling files containing mixed MIPS16 and non-MIPS16 code, the
 preprocessor symbol @code{__mips16} reflects the setting on the command line,
@@ -2854,11 +2854,11 @@ and newer.
 @cindex function without a prologue/epilogue code
 Use this attribute on the ARM, AVR, MCORE, RX and SPU ports to indicate that
 the specified function does not need prologue/epilogue sequences generated by
-the compiler.  It is up to the programmer to provide these sequences. The 
-only statements that can be safely included in naked functions are 
+the compiler.  It is up to the programmer to provide these sequences. The
+only statements that can be safely included in naked functions are
 @code{asm} statements that do not have operands.  All other statements,
-including declarations of local variables, @code{if} statements, and so 
-forth, should be avoided.  Naked functions should be used to implement the 
+including declarations of local variables, @code{if} statements, and so
+forth, should be avoided.  Naked functions should be used to implement the
 body of an assembly function, while allowing the compiler to construct
 the requisite function declaration for the assembler.
 
@@ -3173,10 +3173,10 @@ regardless of whether they are used or not.
 @item save_volatiles
 @cindex save volatile registers on the MicroBlaze
 Use this attribute on the MicroBlaze to indicate that the function is
-an interrupt handler.  All volatile registers (in addition to non-volatile 
-registers) will be saved in the function prologue.  If the function is a leaf 
-function, only volatiles used by the function are saved.  A normal function 
-return is generated instead of a return from interrupt.  
+an interrupt handler.  All volatile registers (in addition to non-volatile
+registers) will be saved in the function prologue.  If the function is a leaf
+function, only volatiles used by the function are saved.  A normal function
+return is generated instead of a return from interrupt.
 
 @item section ("@var{section-name}")
 @cindex @code{section} function attribute
@@ -4270,7 +4270,7 @@ up to a maximum of 8 byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} will still only provide you with 8 byte
 alignment.  See your linker documentation for further information.
 
-The @code{aligned} attribute can also be used for functions 
+The @code{aligned} attribute can also be used for functions
 (@pxref{Function Attributes}.)
 
 @item cleanup (@var{cleanup_function})
@@ -5162,7 +5162,7 @@ packed))}.
 Three attributes currently are defined for PowerPC configurations:
 @code{altivec}, @code{ms_struct} and @code{gcc_struct}.
 
-For full documentation of the @code{ms_struct} and @code{gcc_struct} 
+For full documentation of the @code{ms_struct} and @code{gcc_struct}
 attributes please see the documentation in @ref{i386 Type Attributes}.
 
 The @code{altivec} attribute allows one to declare AltiVec vector data
@@ -5832,7 +5832,7 @@ int frob(int x)
 
 In this (inefficient) example, the @code{frob} instruction sets the
 carry bit to indicate an error.  The @code{jc} instruction detects
-this and branches to the @code{error} label.  Finally, the output 
+this and branches to the @code{error} label.  Finally, the output
 of the @code{frob} instruction (@code{%r5}) is stored into the memory
 for variable @code{y}, which is later read by the @code{return} statement.
 
@@ -5888,7 +5888,7 @@ occasions we'd like to keep the overhead to the absolute minimum.
 The normal code path consists of a single @code{nop} instruction.
 However, we record the address of this @code{nop} together with the
 address of a label that calls the @code{trace} function.  This allows
-the @code{nop} instruction to be patched at runtime to be an 
+the @code{nop} instruction to be patched at runtime to be an
 unconditional branch to the stored label.  It is assumed that an
 optimizing compiler will move the labeled block out of line, to
 optimize the fall through path from the @code{asm}.
@@ -12770,10 +12770,10 @@ bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
 @node Darwin Format Checks
 @subsection Darwin Format Checks
 
-Darwin targets support the @code{CFString} (or @code{__CFString__}) in the format 
+Darwin targets support the @code{CFString} (or @code{__CFString__}) in the format
 attribute context.  Declarations made with such attribution will be parsed for correct syntax
 and format argument types.  However, parsing of the format string itself is currently undefined
-and will not be carried out by this version of the compiler.  
+and will not be carried out by this version of the compiler.
 
 Additionally, @code{CFStringRefs} (defined by the @code{CoreFoundation} headers) may
 also be used as format arguments.  Note that the relevant headers are only likely to be
@@ -13027,8 +13027,8 @@ adding a call to the @code{.init} section.
 
 For compatibility with the Solaris and Tru64 UNIX system headers, GCC
 supports two @code{#pragma} directives which change the name used in
-assembly for a given declaration.  @code{#pragma extern_prefix} is only 
-available on platforms whose system headers need it. To get this effect 
+assembly for a given declaration.  @code{#pragma extern_prefix} is only
+available on platforms whose system headers need it. To get this effect
 on all platforms supported by GCC, use the asm labels extension (@pxref{Asm
 Labels}).
 
@@ -13277,7 +13277,7 @@ For example:
 #undef X
 #define X -1
 #pragma pop_macro("X")
-int x [X]; 
+int x [X];
 @end smallexample
 
 In this example, the definition of X as 1 is saved by @code{#pragma
@@ -14305,7 +14305,7 @@ If @code{type} is const qualified or is a reference type then the trait is
 false.  Otherwise if @code{__has_trivial_assign (type)} is true then the trait
 is true, else if @code{type} is a cv class or union type with copy assignment
 operators that are known not to throw an exception then the trait is true,
-else it is false.  Requires: @code{type} shall be a complete type, 
+else it is false.  Requires: @code{type} shall be a complete type,
 (possibly cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __has_nothrow_copy (type)
@@ -14319,8 +14319,8 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 If @code{__has_trivial_constructor (type)} is true then the trait is
 true, else if @code{type} is a cv class or union type (or array
 thereof) with a default constructor that is known not to throw an
-exception then the trait is true, else it is false.  Requires: 
-@code{type} shall be a complete type, (possibly cv-qualified) 
+exception then the trait is true, else it is false.  Requires:
+@code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __has_trivial_assign (type)
@@ -14328,11 +14328,11 @@ If @code{type} is const qualified or is a reference type then the trait is
 false.  Otherwise if @code{__is_pod (type)} is true then the trait is
 true, else if @code{type} is a cv class or union type with a trivial
 copy assignment ([class.copy]) then the trait is true, else it is
-false.  Requires: @code{type} shall be a complete type, (possibly 
+false.  Requires: @code{type} shall be a complete type, (possibly
 cv-qualified) @code{void}, or an array of unknown bound.
 
 @item __has_trivial_copy (type)
-If @code{__is_pod (type)} is true or @code{type} is a reference type 
+If @code{__is_pod (type)} is true or @code{type} is a reference type
 then the trait is true, else if @code{type} is a cv class or union type
 with a trivial copy constructor ([class.copy]) then the trait
 is true, else it is false.  Requires: @code{type} shall be a complete
@@ -14384,7 +14384,7 @@ Otherwise @code{type} is considered empty if and only if: @code{type}
 has no non-static data members, or all non-static data members, if
 any, are bit-fields of length 0, and @code{type} has no virtual
 members, and @code{type} has no virtual base classes, and @code{type}
-has no base classes @code{base_type} for which 
+has no base classes @code{base_type} for which
 @code{__is_empty (base_type)} is false.  Requires: @code{type} shall
 be a complete type, (possibly cv-qualified) @code{void}, or an array
 of unknown bound.

@@ -498,28 +498,28 @@ syntactic order is important in some classical data dependence tests,
 and mapping this order to the elements of this array avoids costly
 queries to the loop body representation.
 
-Three types of data references are currently handled: ARRAY_REF, 
-INDIRECT_REF and COMPONENT_REF@. The data structure for the data reference 
-is @code{data_reference}, where @code{data_reference_p} is a name of a 
-pointer to the data reference structure. The structure contains the 
+Three types of data references are currently handled: ARRAY_REF,
+INDIRECT_REF and COMPONENT_REF@. The data structure for the data reference
+is @code{data_reference}, where @code{data_reference_p} is a name of a
+pointer to the data reference structure. The structure contains the
 following elements:
 
 @itemize
-@item @code{base_object_info}: Provides information about the base object 
-of the data reference and its access functions. These access functions 
-represent the evolution of the data reference in the loop relative to 
-its base, in keeping with the classical meaning of the data reference 
-access function for the support of arrays. For example, for a reference 
-@code{a.b[i][j]}, the base object is @code{a.b} and the access functions, 
-one for each array subscript, are: 
+@item @code{base_object_info}: Provides information about the base object
+of the data reference and its access functions. These access functions
+represent the evolution of the data reference in the loop relative to
+its base, in keeping with the classical meaning of the data reference
+access function for the support of arrays. For example, for a reference
+@code{a.b[i][j]}, the base object is @code{a.b} and the access functions,
+one for each array subscript, are:
 @code{@{i_init, + i_step@}_1, @{j_init, +, j_step@}_2}.
 
-@item @code{first_location_in_loop}: Provides information about the first 
-location accessed by the data reference in the loop and about the access 
-function used to represent evolution relative to this location. This data 
-is used to support pointers, and is not used for arrays (for which we 
+@item @code{first_location_in_loop}: Provides information about the first
+location accessed by the data reference in the loop and about the access
+function used to represent evolution relative to this location. This data
+is used to support pointers, and is not used for arrays (for which we
 have base objects). Pointer accesses are represented as a one-dimensional
-access that starts from the first location accessed in the loop. For 
+access that starts from the first location accessed in the loop. For
 example:
 
 @smallexample
@@ -528,27 +528,27 @@ example:
           *((int *)p + i + j) = a[i][j];
 @end smallexample
 
-The access function of the pointer access is @code{@{0, + 4B@}_for2} 
-relative to @code{p + i}. The access functions of the array are 
-@code{@{i_init, + i_step@}_for1} and @code{@{j_init, +, j_step@}_for2} 
+The access function of the pointer access is @code{@{0, + 4B@}_for2}
+relative to @code{p + i}. The access functions of the array are
+@code{@{i_init, + i_step@}_for1} and @code{@{j_init, +, j_step@}_for2}
 relative to @code{a}.
 
-Usually, the object the pointer refers to is either unknown, or we can't 
-prove that the access is confined to the boundaries of a certain object. 
+Usually, the object the pointer refers to is either unknown, or we can't
+prove that the access is confined to the boundaries of a certain object.
 
-Two data references can be compared only if at least one of these two 
-representations has all its fields filled for both data references. 
+Two data references can be compared only if at least one of these two
+representations has all its fields filled for both data references.
 
-The current strategy for data dependence tests is as follows: 
-If both @code{a} and @code{b} are represented as arrays, compare 
+The current strategy for data dependence tests is as follows:
+If both @code{a} and @code{b} are represented as arrays, compare
 @code{a.base_object} and @code{b.base_object};
-if they are equal, apply dependence tests (use access functions based on 
+if they are equal, apply dependence tests (use access functions based on
 base_objects).
-Else if both @code{a} and @code{b} are represented as pointers, compare 
-@code{a.first_location} and @code{b.first_location}; 
-if they are equal, apply dependence tests (use access functions based on 
+Else if both @code{a} and @code{b} are represented as pointers, compare
+@code{a.first_location} and @code{b.first_location};
+if they are equal, apply dependence tests (use access functions based on
 first location).
-However, if @code{a} and @code{b} are represented differently, only try 
+However, if @code{a} and @code{b} are represented differently, only try
 to prove that the bases are definitely different.
 
 @item Aliasing information.
@@ -571,7 +571,7 @@ data references, and the description of this dependence relation is
 given in the @code{subscripts}, @code{dir_vects}, and @code{dist_vects}
 arrays,
 @item a boolean that determines whether the dependence relation can be
-represented by a classical distance vector, 
+represented by a classical distance vector,
 @item an array @code{subscripts} that contains a description of each
 subscript of the data references.  Given two array accesses a
 subscript is the tuple composed of the access functions for a given
@@ -652,4 +652,4 @@ for the common data dependence tests.
 
 The interface used by the Omega solver for describing the linear
 programming problems is described in @file{omega.h}, and the solver is
-@code{omega_solve_problem}.  
+@code{omega_solve_problem}.
