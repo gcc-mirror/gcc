@@ -1,3 +1,9 @@
+2011-05-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48864
+	* doc/invoke.texi (Ofast): Document that it
+	enables Fortran's -fno-protect-parens.
+
 2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_reorg): Run move_or_delete_vzeroupper first.

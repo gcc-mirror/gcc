@@ -1,3 +1,11 @@
+2011-05-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48864
+	* invoke.texi (fno-protect-parens): Document
+	that -Ofast implies -fno-protect-parens.
+	* options.c (gfc_init_options, gfc_post_options):
+	Make -Ofast imply -fno-protect-parens.
+
 2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-decl.c (build_library_function_decl_1): Call
