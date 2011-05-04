@@ -1,3 +1,28 @@
+2011-05-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c: Include cfgloop.h.
+	(DUMP): New macro.
+	(mn10300_insert_setlb_lcc): New function.  Inserts a SETLB and a
+	Lcc or a FLcc insn into the instruction stream.
+	(mn10300_block_contains_call): New function.  Returns true if the
+	given basic block contains a CALL insn.
+	(mn10300_loop_contains_call_insn): New function.  Returns true if
+	the given loop contains a CALL insn.
+	(mn10300_scan_for_setlb_lcc): New function.  Finds opportunities
+	to use the SETLB and Lcc or FLcc insns.
+	(mn10300_reorg): Invoke mn10300_scan_for_setlb_lcc when optimizing.
+	(TARGET_FLAGS): Add MASK_ALLOW_SETLB.
+	* config/mn10300/mn10300.opt (msetlb): New option.  Used to
+	disable the SETLB optimization.
+	* config/mn10300/mn10300.h (TARGET_CPU_CPP_BUILTINS): Add
+	__SETLB__ or __NO_SETLB__.
+	* config/mn10300/mn10300.md (UNSPEC_SETLB): New constant.
+	(movsf_internal): Handle MDR register.
+	(cmpsi): Make visible.
+	(setlb): New pattern.
+	(Lcc): New pattern.
+	(FLcc): New pattern.
+
 2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/48860
