@@ -1,3 +1,21 @@
+2011-05-03  Ollie Wild  <aaw@google.com>
+
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_construct):
+	Fix unqualified lookup.
+	(__sso_string_base<>::_M_construct): Likewise.
+	(__sso_string_base<>::_M_construct): Likewise.
+	(__sso_string_base<>::_M_assign): Likewise.
+	(__sso_string_base<>::_M_reserve): Likewise.
+	(__sso_string_base<>::_M_mutate): Likewise.
+	(__sso_string_base<>::_M_erase): Likewise.
+	* include/ext/vstring.h (__versa_string<>::replace): Likewise.
+	(__versa_string<>::compare): Likewise.
+	* include/ext/vstring.tcc (__versa_string<>::compare): Likewise.
+	(__versa_string<>::compare): Likewise.
+	(__versa_string<>::compare): Likewise.
+	(__versa_string<>::compare): Likewise.
+	(__versa_string<>::compare): Likewise.
+
 2011-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/48750
