@@ -1,3 +1,11 @@
+2011-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdf_internal_rex64): Simplify nested "if"
+	conditions.
+	(*movdf_internal): Ditto.
+	(*movdf_internal_nointeger): Ditto.
+	(*movsf_internal): Ditto.
+
 2011-05-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (finish_decl): Don't call get_pending_sizes.
@@ -17,20 +25,18 @@
 	get_pending_sizes.  Update calls to get_parm_info.
 	(c_parser_objc_method_definition): Update calls to
 	c_parser_objc_method_decl and objc_start_method_definition.
-	(c_parser_objc_methodproto): Update call to
-	c_parser_objc_method_decl.
+	(c_parser_objc_methodproto): Update call to c_parser_objc_method_decl.
 	(c_parser_objc_method_decl): Add parameter expr.  Update call to
 	grokparm.
-	(c_parser_objc_try_catch_finally_statement): Update call to
-	grokparm.
+	(c_parser_objc_try_catch_finally_statement): Update call to grokparm.
 	* c-tree.h (struct c_arg_info.pending_sizes): Change to a tree.
 	(get_parm_info, grokparm, push_parm_decl): Update prototypes.
 
 2011-05-05  Michael Hope  <michael.hope@linaro.org>
 
-       PR pch/45979
-       * config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for
-       __ARM_EABI__ hosts.
+	PR pch/45979
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for
+	__ARM_EABI__ hosts.
 
 2011-05-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -49,8 +55,7 @@
 	* ipa-inline.c (reset_edge_caches): New function.
 	(update_caller_keys): Add check_inlinablity_for; do not
 	reset edge caches; remove now unnecesary loop.
-	(update_callee_keys): Add comments; reset
-	node_growth_cache of callee.
+	(update_callee_keys): Add comments; reset node_growth_cache of callee.
 	(update_all_callee_keys): Likewise.
 	(inline_small_functions): Sanity check cache; update code
 	recomputing it.
