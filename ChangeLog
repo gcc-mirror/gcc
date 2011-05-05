@@ -1,3 +1,7 @@
+2011-05-04  Janis Johnson  <janisjo@codesourcery.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2011-05-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac: Remove code setting special library locations for
