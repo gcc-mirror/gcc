@@ -4480,7 +4480,7 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	  opts_set->x_target_flags |= MASK_SOFT_FLOAT;
 	  opts->x_rs6000_single_float = opts->x_rs6000_double_float = 0;
 	}
-      /* Fall through.  */
+      break;
 
     case OPT_mrecip:
       opts->x_rs6000_recip_name = (value) ? "default" : "none";
