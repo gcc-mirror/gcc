@@ -1,3 +1,11 @@
+2011-05-05  Richard Guenther  <rguenther@suse.de>
+
+	* expmed.c (expand_variable_shift): Rename to ...
+	(expand_shift_1): ... this.  Take an expanded shift amount.
+	For rotates recurse directly not building trees for the shift amount.
+	(expand_variable_shift): Wrap around expand_shift_1.
+	(expand_shift): Adjust.
+
 2011-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (create_tmp_var_raw): Don't call build_type_variant.

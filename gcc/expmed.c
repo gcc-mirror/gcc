@@ -2032,14 +2032,14 @@ expand_dec (rtx target, rtx dec)
 
 /* Output a shift instruction for expression code CODE,
    with SHIFTED being the rtx for the value to shift,
-   and AMOUNT the tree for the amount to shift by.
+   and AMOUNT the rtx for the amount to shift by.
    Store the result in the rtx TARGET, if that is convenient.
    If UNSIGNEDP is nonzero, do a logical shift; otherwise, arithmetic.
    Return the rtx for where the value is.  */
 
-rtx
-expand_variable_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
-		       tree amount, rtx target, int unsignedp)
+static rtx
+expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
+		rtx amount, rtx target, int unsignedp)
 {
   rtx op1, temp = 0;
   int left = (code == LSHIFT_EXPR || code == LROTATE_EXPR);
@@ -2053,7 +2053,7 @@ expand_variable_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
   int attempt;
   bool speed = optimize_insn_for_speed_p ();
 
-  op1 = expand_normal (amount);
+  op1 = amount;
   op1_mode = GET_MODE (op1);
 
   /* Determine whether the shift/rotate amount is a vector, or scalar.  If the
@@ -2138,25 +2138,22 @@ expand_variable_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 		 code below.  */
 
 	      rtx subtarget = target == shifted ? 0 : target;
-	      tree new_amount, other_amount;
+	      rtx new_amount, other_amount;
 	      rtx temp1;
-	      tree type = TREE_TYPE (amount);
-	      if (GET_MODE (op1) != TYPE_MODE (type)
-		  && GET_MODE (op1) != VOIDmode)
-		op1 = convert_to_mode (TYPE_MODE (type), op1, 1);
-	      new_amount = make_tree (type, op1);
+
+	      new_amount = op1;
 	      other_amount
-		= fold_build2 (MINUS_EXPR, type,
-			       build_int_cst (type, GET_MODE_BITSIZE (mode)),
-			       new_amount);
+		= simplify_gen_binary (MINUS, GET_MODE (op1),
+				       GEN_INT (GET_MODE_BITSIZE (mode)),
+				       op1);
 
 	      shifted = force_reg (mode, shifted);
 
-	      temp = expand_variable_shift (left ? LSHIFT_EXPR : RSHIFT_EXPR,
-					    mode, shifted, new_amount, 0, 1);
-	      temp1 = expand_variable_shift (left ? RSHIFT_EXPR : LSHIFT_EXPR,
-					     mode, shifted, other_amount,
-					     subtarget, 1);
+	      temp = expand_shift_1 (left ? LSHIFT_EXPR : RSHIFT_EXPR,
+				     mode, shifted, new_amount, 0, 1);
+	      temp1 = expand_shift_1 (left ? RSHIFT_EXPR : LSHIFT_EXPR,
+				      mode, shifted, other_amount,
+				      subtarget, 1);
 	      return expand_binop (mode, ior_optab, temp, temp1, target,
 				   unsignedp, methods);
 	    }
@@ -2211,12 +2208,25 @@ rtx
 expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 	      int amount, rtx target, int unsignedp)
 {
-  /* ???  With re-writing expand_shift we could avoid going through a
-     tree for the shift amount and directly do GEN_INT (amount).  */
-  return expand_variable_shift (code, mode, shifted,
-				build_int_cst (integer_type_node, amount),
-				target, unsignedp);
+  return expand_shift_1 (code, mode,
+			 shifted, GEN_INT (amount), target, unsignedp);
 }
+
+/* Output a shift instruction for expression code CODE,
+   with SHIFTED being the rtx for the value to shift,
+   and AMOUNT the tree for the amount to shift by.
+   Store the result in the rtx TARGET, if that is convenient.
+   If UNSIGNEDP is nonzero, do a logical shift; otherwise, arithmetic.
+   Return the rtx for where the value is.  */
+
+rtx
+expand_variable_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
+		       tree amount, rtx target, int unsignedp)
+{
+  return expand_shift_1 (code, mode,
+			 shifted, expand_normal (amount), target, unsignedp);
+}
+
 
 /* Indicates the type of fixup needed after a constant multiplication.
    BASIC_VARIANT means no fixup is needed, NEGATE_VARIANT means that
