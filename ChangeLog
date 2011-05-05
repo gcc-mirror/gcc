@@ -1,3 +1,36 @@
+2011-05-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (alpha*-dec-osf*, i[[3456789]]86-*-rdos*,
+	sh*-*-pe|mips*-*-pe|arm-wince-pe, sparc-*-sunos4*, *-*-aix*,
+	*-*-beos*, *-*-chorusos, *-*-dragonfly*, *-*-freebsd*, *-*-linux*
+	| *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu, *-*-lynxos*,
+	*-*-mingw*, *-*-netbsd*, *-*-netware*, *-*-tpf*, *-*-uclinux*,
+	*-*-vxworks*): Disable newlib and libgloss in separate case
+	statement.
+	(i[[3456789]]86-*-linux*): Move logic allowing newlib to be built
+	to separate case statement.
+	(*-*-chorusos, *-*-dragonfly*, *-*-freebsd*, *-*-netbsd*,
+	*-*-netware*, *-*-tpf*, *-*-uclinux*, *-*-vxworks*,
+	alpha*-dec-osf*, alpha*-*-linux*, am33_2.0-*-linux*, sh-*-linux*,
+	sh*-*-pe|mips*-*-pe|*arm-wince-pe, arm-*-coff, arm-*-elf* |
+	arm*-*-eabi*, arm*-*-linux-gnueabi, arm*-*-symbianelf*, avr-*-*,
+	bfin-*-*, cris-*-* | crisv32-*-*, frv-*-*, i[[3456789]]86-*-coff |
+	i[[3456789]]86-*-elf, i[[3456789]]86-w64-mingw*,
+	i[[3456789]]86-*-mingw*, x86_64-*-mingw*,
+	i[[3456789]]86-*-interix*, i[[3456789]]86-*-beos*,
+	i[[3456789]]86-*-rdos*, m32r-*-*,
+	m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*, m68k-*-elf*, m68*-*-*
+	| fido-*-*, powerpc-*-aix*, powerpc-*-beos*, powerpc-*-eabi,
+	powerpc-*-eabi* | powerpcle-*-eabi* | powerpc-*-rtems*,
+	rs6000-*-lynxos*, rs6000-*-aix*, mips*-*-linux*, sparclet-*-aout*
+	| sparc86x-*-*, sparc-*-elf*, sparc64-*-elf*, sparclite-*-*,
+	sparc-*-sunos4*, sparc-*-solaris* | sparc64-*-solaris* |
+	sparcv9-*-solaris*, *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu |
+	*-*-kopensolaris*-gnu, *-*-lynxos*, *-*-*): Don't disable newlib
+	and libgloss in main case over targets.  Remove most empty cases
+	in main case over targets.
+	* configure: Regenerate.
+
 2011-05-04  Janis Johnson  <janisjo@codesourcery.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
