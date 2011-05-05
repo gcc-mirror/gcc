@@ -1,3 +1,16 @@
+2011-05-05  Steve Ellcey  <sje@cup.hp.com>
+
+	* config.gcc (hppa*64*-*-hpux11*): Modify tm_file and extra_options
+	for 11.31.
+	(hppa[12]*-*-hpux11*): Ditto.
+	(ia64*-*-hpux*): Add ia64/hpux-unix2003.h to tm_file.
+	* config/ia64/hpux-unix2003.h: New.
+	* config/pa/pa-hpux1131.opt: New.
+	* config/pa/pa-hpux1131.h: New.
+	* config/pa/pa64-hpux.h (STARTFILE_SPEC): Use unix2003.o if requested.
+	* config/pa/pa-hpux.opt (flag_pa_unix): Check TARGET_HPUX_11_31 value.
+	config/pa/pa.h (TARGET_HPUX_11_31): Provide default (0) value.
+
 2011-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48853

@@ -304,7 +304,14 @@ do {								\
 /* The following STARTFILE_SPEC and ENDFILE_SPEC defines provide the
    magic needed to run initializers and finalizers.  */
 #undef STARTFILE_SPEC
-#if TARGET_HPUX_11_11
+#if TARGET_HPUX_11_31
+#define STARTFILE_SPEC \
+  "%{!shared: %{!symbolic: crt0%O%s} \
+     %{munix=95:unix95.o%s} %{munix=98:unix98.o%s} \
+     %{!munix=93:%{!munix=95:%{!munix=98:unix2003%O%s}}}} \
+     %{static:crtbeginT%O%s} \
+   %{!static:%{!shared:crtbegin%O%s} %{shared:crtbeginS%O%s}}"
+#elif TARGET_HPUX_11_11
 #define STARTFILE_SPEC \
   "%{!shared: %{!symbolic: crt0%O%s} %{munix=95:unix95.o%s} \
      %{!munix=93:%{!munix=95:unix98%O%s}}} %{static:crtbeginT%O%s} \
