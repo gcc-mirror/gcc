@@ -1,4 +1,9 @@
-2010-05-05  Ira Rosen  <ira.rosen@linaro.org>
+2011-05-05  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/neon.md (vec_set<mode>_internal): Fix misplaced
+	parenthesis in D-register case.
+
+2011-05-05  Ira Rosen  <ira.rosen@linaro.org>
 
 	Backport from mainline:
 	2011-04-18  Ulrich Weigand  <ulrich.weigand@linaro.org>

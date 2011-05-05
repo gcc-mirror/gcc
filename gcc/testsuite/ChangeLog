@@ -1,4 +1,8 @@
-2010-05-05  Ira Rosen  <ira.rosen@linaro.org>
+2011-05-05  Julian Brown  <julian@codesourcery.com>
+
+	* gcc.target/arm/neon-vset_lanes8.c: New test.
+
+2011-05-05  Ira Rosen  <ira.rosen@linaro.org>
 
 	Backport from mainline:
 	2011-04-18  Ulrich Weigand  <ulrich.weigand@linaro.org>
