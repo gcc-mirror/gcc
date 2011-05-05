@@ -1,3 +1,16 @@
+2011-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48853
+	* dwarf2out.c (mem_loc_descriptor) <case SUBREG>: Pass mem_mode
+	instead of mode as 3rd argument to recursive call.
+	(mem_loc_descriptor) <case REG>: If POINTERS_EXTEND_UNSIGNED, don't
+	emit DW_OP_GNU_regval_type if mode is Pmode and mem_mode is not
+	VOIDmode.
+	(mem_loc_descriptor) <case SYMBOL_REF>: If POINTERS_EXTEND_UNSIGNED,
+	don't give up if mode is Pmode and mem_mode is not VOIDmode.
+	(mem_loc_descriptor) <case CONST_INT>: If POINTERS_EXTEND_UNSIGNED,
+	use int_loc_descriptor if mode is Pmode and mem_mode is not VOIDmode.
+
 2011-05-05  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/neon.md (vec_set<mode>_internal): Fix misplaced
