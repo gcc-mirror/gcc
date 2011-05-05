@@ -520,7 +520,6 @@ convert_from_reference (tree val)
       TREE_THIS_VOLATILE (ref) = CP_TYPE_VOLATILE_P (t);
       TREE_SIDE_EFFECTS (ref)
 	= (TREE_THIS_VOLATILE (ref) || TREE_SIDE_EFFECTS (val));
-      REFERENCE_REF_P (ref) = 1;
       val = ref;
     }
 

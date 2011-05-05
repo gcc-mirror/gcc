@@ -1,5 +1,11 @@
 2011-05-05  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (REFERENCE_REF_P): Just check the type.
+	* cvt.c (convert_from_reference): Adjust.
+	* pt.c (build_non_dependent_expr): Adjust.
+	* semantics.c (finish_offsetof): Adjust.
+	* tree.c (lvalue_kind): Use it.
+
 	PR c++/48873
 	* tree.c (stabilize_expr): Don't make gratuitous copies of classes.
 
