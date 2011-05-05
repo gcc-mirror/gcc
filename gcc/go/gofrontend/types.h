@@ -2068,10 +2068,6 @@ class Array_type : public Type
   Bexpression*
   get_backend_length(Gogo*);
 
-  // Fill in the fields for a named slice type.
-  tree
-  fill_in_slice_tree(Gogo*, tree);
-
   static Type*
   make_array_type_descriptor_type();
 

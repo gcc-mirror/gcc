@@ -465,16 +465,6 @@ class Gogo
   static void
   mark_fndecl_as_builtin_library(tree fndecl);
 
-  // Build the type of the struct that holds a slice for the given
-  // element type.
-  tree
-  slice_type_tree(tree element_type_tree);
-
-  // Given a tree for a slice type, return the tree for the element
-  // type.
-  static tree
-  slice_element_type_tree(tree slice_type_tree);
-
   // Build a constructor for a slice.  SLICE_TYPE_TREE is the type of
   // the slice.  VALUES points to the values.  COUNT is the size,
   // CAPACITY is the capacity.  If CAPACITY is NULL, it is set to
@@ -482,11 +472,6 @@ class Gogo
   static tree
   slice_constructor(tree slice_type_tree, tree values, tree count,
 		    tree capacity);
-
-  // Build a constructor for an empty slice.  SLICE_TYPE_TREE is the
-  // type of the slice.
-  static tree
-  empty_slice_constructor(tree slice_type_tree);
 
   // Build a map descriptor.
   tree
