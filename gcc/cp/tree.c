@@ -3119,7 +3119,10 @@ stabilize_expr (tree exp, tree* initp)
 
   if (!TREE_SIDE_EFFECTS (exp))
     init_expr = NULL_TREE;
-  else if (!TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (exp))
+  /* There are no expressions with REFERENCE_TYPE, but there can be call
+     arguments with such a type; just treat it as a pointer.  */
+  else if (TREE_CODE (TREE_TYPE (exp)) == REFERENCE_TYPE
+	   || SCALAR_TYPE_P (exp)
 	   || !lvalue_or_rvalue_with_address_p (exp))
     {
       init_expr = get_target_expr (exp);

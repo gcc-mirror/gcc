@@ -1,3 +1,8 @@
+2011-05-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48873
+	* tree.c (stabilize_expr): Don't make gratuitous copies of classes.
+
 2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (start_preparsed_function): Do not set

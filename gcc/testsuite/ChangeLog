@@ -1,3 +1,7 @@
+2011-05-05  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/new32.C: New.
+
 2011-05-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gfortran.dg/fmt_g0_6.f08: Use dg-options "-ffloat-store".
