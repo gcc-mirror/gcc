@@ -1,3 +1,12 @@
+2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/48844
+	* gcc-interface/gigi.h (get_variant_part): Declare.
+	* gcc-interface/decl.c (get_variant_part): Make global.
+	* gcc-interface/utils2.c (find_common_type): Do not return T1 if the
+	types have the same constant size, are record types and T1 has a
+	variant part while T2 doesn't.
+
 2011-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (gnatbind): Replace $(ALL_CFLAGS) with

@@ -177,7 +177,6 @@ static void check_ok_for_atomic (tree, Entity_Id, bool);
 static tree create_field_decl_from (tree, tree, tree, tree, tree,
 				    VEC(subst_pair,heap) *);
 static tree get_rep_part (tree);
-static tree get_variant_part (tree);
 static tree create_variant_part_from (tree, VEC(variant_desc,heap) *, tree,
 				      tree, VEC(subst_pair,heap) *);
 static void copy_and_substitute_in_size (tree, tree, VEC(subst_pair,heap) *);
@@ -8400,7 +8399,7 @@ get_rep_part (tree record_type)
 
 /* Return the variant part of RECORD_TYPE, if any.  Otherwise return NULL.  */
 
-static tree
+tree
 get_variant_part (tree record_type)
 {
   tree field;

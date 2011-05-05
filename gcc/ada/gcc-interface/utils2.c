@@ -193,15 +193,21 @@ find_common_type (tree t1, tree t2)
      calling into build_binary_op), some others are really expected and we
      have to be careful.  */
 
-  /* We must prevent writing more than what the target may hold if this is for
+  /* We must avoid writing more than what the target can hold if this is for
      an assignment and the case of tagged types is handled in build_binary_op
-     so use the lhs type if it is known to be smaller, or of constant size and
-     the rhs type is not, whatever the modes.  We also force t1 in case of
+     so we use the lhs type if it is known to be smaller or of constant size
+     and the rhs type is not, whatever the modes.  We also force t1 in case of
      constant size equality to minimize occurrences of view conversions on the
-     lhs of assignments.  */
+     lhs of an assignment, except for the case of record types with a variant
+     part on the lhs but not on the rhs to make the conversion simpler.  */
   if (TREE_CONSTANT (TYPE_SIZE (t1))
       && (!TREE_CONSTANT (TYPE_SIZE (t2))
-          || !tree_int_cst_lt (TYPE_SIZE (t2), TYPE_SIZE (t1))))
+	  || tree_int_cst_lt (TYPE_SIZE (t1), TYPE_SIZE (t2))
+	  || (TYPE_SIZE (t1) == TYPE_SIZE (t2)
+	      && !(TREE_CODE (t1) == RECORD_TYPE
+		   && TREE_CODE (t2) == RECORD_TYPE
+		   && get_variant_part (t1) != NULL_TREE
+		   && get_variant_part (t2) == NULL_TREE))))
     return t1;
 
   /* Otherwise, if the lhs type is non-BLKmode, use it.  Note that we know

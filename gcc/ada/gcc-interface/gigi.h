@@ -151,6 +151,9 @@ extern tree choices_to_gnu (tree operand, Node_Id choices);
 extern void annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size,
 			     bool by_ref, bool by_double_ref);
 
+/* Return the variant part of RECORD_TYPE, if any.  Otherwise return NULL.  */
+extern tree get_variant_part (tree record_type);
+
 /* Given a type T, a FIELD_DECL F, and a replacement value R, return a new
    type with all size expressions that contain F updated by replacing F
    with R.  If F is NULL_TREE, always make a new RECORD_TYPE, even if
