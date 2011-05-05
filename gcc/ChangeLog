@@ -9,7 +9,7 @@
 	* config/pa/pa-hpux1131.h: New.
 	* config/pa/pa64-hpux.h (STARTFILE_SPEC): Use unix2003.o if requested.
 	* config/pa/pa-hpux.opt (flag_pa_unix): Check TARGET_HPUX_11_31 value.
-	config/pa/pa.h (TARGET_HPUX_11_31): Provide default (0) value.
+	* config/pa/pa.h (TARGET_HPUX_11_31): Provide default (0) value.
 
 2011-05-05  Jakub Jelinek  <jakub@redhat.com>
 
