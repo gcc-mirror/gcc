@@ -60,7 +60,7 @@ crtbegin.o%s \
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
    crtend.o%s"
 
 /* Use the default (for now).  */
