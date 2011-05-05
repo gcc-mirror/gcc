@@ -192,6 +192,10 @@ function var_type_struct(flags)
 {
 	if (flag_set_p("UInteger", flags))
 		return "int "
+	else if (flag_set_p("Enum.*", flags)) {
+		en = opt_args("Enum", flags);
+		return enum_type[en] " "
+	}
 	else if (!flag_set_p("Joined.*", flags) && !flag_set_p("Separate", flags)) {
 		if (flag_set_p(".*Mask.*", flags))
 			return "int "

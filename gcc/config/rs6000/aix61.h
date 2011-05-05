@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V6.1.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
@@ -39,7 +39,7 @@ do {									\
   if (TARGET_SOFT_FLOAT && TARGET_LONG_DOUBLE_128)			\
     {									\
       rs6000_long_double_type_size = 64;				\
-      if (rs6000_explicit_options.long_double)				\
+      if (global_options_set.x_rs6000_long_double_type_size)		\
 	warning (0, "soft-float and long-double-128 are incompatible");	\
     }									\
   if (TARGET_POWERPC64 && ! TARGET_64BIT)				\

@@ -1,3 +1,59 @@
+2011-05-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* opt-functions.awk (var_type_struct): Handle Enum options.
+	* optc-gen.awk: Don't check range of variables of character type.
+	* config/rs6000/rs6000.c (rs6000_sched_insert_nops_str,
+	rs6000_sched_costly_dep_str, rs6000_recip_name, rs6000_abi_name,
+	rs6000_sdata_name, rs6000_explicit_options): Remove.
+	(rs6000_option_override_internal): Check for -malign-power here.
+	Use global_options_set instead of rs6000_explicit_options.
+	(rs6000_parse_fpu_option): Remove.
+	(rs6000_handle_option): Access variables via opts and opts_set
+	pointers.  Use error_at and warning_at.  Add fall-through
+	comments.  Don't handle OPT_mcmodel_, OPT_maix_struct_return,
+	OPT_msvr4_struct_return, OPT_mvrsave, OPT_mspe, OPT_mcall_,
+	OPT_msdata_, OPT_mtls_size_, OPT_mtraceback_, OPT_mfloat_gprs_,
+	OPT_msched_costly_dep_, OPT_malign_ or OPT_mrecip_ explicitly
+	here.  Don't use rs6000_parse_fpu_option.
+	* config/rs6000/rs6000.h (fpu_type): Remove declaration.
+	* config/rs6000/rs6000.opt (rs6000_long_double_type_size,
+	rs6000_spe, rs6000_float_gprs): Remove TargetVariable entries.
+	(mrecip=): Use Var.
+	(mspe): Use Var and Save.
+	(mtraceback=): Use Enum and Var.
+	(rs6000_traceback_type): New Enum and EnumValue entries.
+	(mfloat-gprs=): Use Enum, Var and Save.
+	(rs6000_float_gprs): New Enum and EnumValue entries.
+	(mlong-double-): use Var and Save.
+	(msched-costly-dep=, minsert-sched-nops=): Use Var.
+	(malign-): Use Enum and Var.
+	(rs6000_alignment_flags): New Enum and EnumValue entries.
+	(mfpu=): Use Enum.
+	(fpu_type_t): New Enum and EnumValue entries.
+	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Use
+	global_options_set instead of rs6000_explicit_options.
+	* config/rs6000/aix52.h (SUBTARGET_OVERRIDE_OPTIONS): Use
+	global_options_set instead of rs6000_explicit_options.
+	* config/rs6000/aix53.h (SUBTARGET_OVERRIDE_OPTIONS): Use
+	global_options_set instead of rs6000_explicit_options.
+	* config/rs6000/aix61.h (SUBTARGET_OVERRIDE_OPTIONS): Use
+	global_options_set instead of rs6000_explicit_options.
+	* config/rs6000/e500-double.h (SUB3TARGET_OVERRIDE_OPTIONS): Use
+	global_options_set instead of rs6000_explicit_options.
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Use
+	global_options_set instead of rs6000_explicit_options.
+	(RS6000_DEFAULT_LONG_DOUBLE_SIZE): Remove commented-out
+	definition.
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Use
+	global_options_set instead of rs6000_explicit_options.
+	* config/rs6000/linux64.opt (mcmodel=): Use Enum and Var.
+	(rs6000_cmodel): New Enum and EnumValue entries.
+	* config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Use
+	global_options_set instead of rs6000_explicit_options.
+	* config/rs6000/sysv4.opt (mcall-, msdata=): Use Var.
+	(mtls-size=): Use Enum and Var.
+	(rs6000_tls_size): New Enum and EnumValue entries.
+
 2011-05-05  Michael Matz  <matz@suse.de>
 
 	* config/alpha/elf.h (ENDFILE_SPEC): Add Ofast.
