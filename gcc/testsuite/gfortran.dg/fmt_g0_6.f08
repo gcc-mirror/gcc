@@ -1,5 +1,6 @@
 ! { dg-do run }
-! PE48602 Invalid F conversion of G descriptor for values close to powers of 10
+! { dg-options "-ffloat-store" }
+! PR48602 Invalid F conversion of G descriptor for values close to powers of 10
 ! Test case provided by Thomas Henlich
 program test_g0fr
     use iso_fortran_env
