@@ -1,3 +1,8 @@
+2011-05-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr) [rule 10]: Handle
+	POST_MODIFY.
+
 2011-05-05  Steve Ellcey  <sje@cup.hp.com>
 
 	* config.gcc (hppa*64*-*-hpux11*): Modify tm_file and extra_options

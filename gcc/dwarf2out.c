@@ -2237,7 +2237,7 @@ dwarf2out_frame_debug_cfa_restore (rtx reg, const char *label)
 	   cfa_temp.offset = <const_int>
 
   Rule 10:
-  (set (mem (pre_modify sp:cfa_store (???? <reg1> <const_int>))) <reg2>)
+  (set (mem ({pre,post}_modify sp:cfa_store (???? <reg1> <const_int>))) <reg2>)
   effects: cfa_store.offset -= <const_int>
 	   cfa.offset = cfa_store.offset if cfa.reg == sp
 	   cfa.reg = sp
@@ -2578,6 +2578,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  /* Rule 10 */
 	  /* With a push.  */
 	case PRE_MODIFY:
+	case POST_MODIFY:
 	  /* We can't handle variable size modifications.  */
 	  gcc_assert (GET_CODE (XEXP (XEXP (XEXP (dest, 0), 1), 1))
 		      == CONST_INT);
@@ -2590,7 +2591,10 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  if (cfa.reg == STACK_POINTER_REGNUM)
 	    cfa.offset = cfa_store.offset;
 
-	  offset = -cfa_store.offset;
+	  if (GET_CODE (XEXP (dest, 0)) == POST_MODIFY)
+	    offset -= cfa_store.offset;
+	  else
+	    offset = -cfa_store.offset;
 	  break;
 
 	  /* Rule 11 */
