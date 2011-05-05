@@ -744,9 +744,75 @@ case "${target}" in
     ;;
 esac
 
+# Disable newlib and libgloss for various target OSes.
 case "${target}" in
+  alpha*-dec-osf*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  i[[3456789]]86-*-linux*)
+    # This section makes it possible to build newlib natively on linux.
+    # If we are using a cross compiler then don't configure newlib.
+    if test x${is_cross_compiler} != xno ; then
+      noconfigdirs="$noconfigdirs target-newlib"
+    fi
+    noconfigdirs="$noconfigdirs target-libgloss"
+    # If we are not using a cross compiler, do configure newlib.
+    # Note however, that newlib will only be configured in this situation
+    # if the --with-newlib option has been given, because otherwise
+    # 'target-newlib' will appear in skipdirs.
+    ;;
+  i[[3456789]]86-*-rdos*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  sh*-*-pe|mips*-*-pe|arm-wince-pe)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  sparc-*-sunos4*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-aix*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-beos*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
   *-*-chorusos)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-dragonfly*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-freebsd*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-lynxos*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;; 
+  *-*-mingw*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-netbsd*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-netware*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-tpf*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-uclinux*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+  *-*-vxworks*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    ;;
+esac
+
+case "${target}" in
+  *-*-chorusos)
     ;;
   powerpc-*-darwin*)
     noconfigdirs="$noconfigdirs ld gas gdb gprof"
@@ -765,10 +831,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs sim target-rda"
     ;;
   *-*-dragonfly*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   *-*-freebsd*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     if test "x$with_gmp" = x && test "x$with_gmp_dir" = x \
 	&& test -f /usr/local/include/gmp.h; then
       with_gmp=/usr/local
@@ -779,75 +843,44 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   *-*-netbsd*)
-    # Skip some stuff on all NetBSD configurations.
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   *-*-netware*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
     # The tpf target doesn't support gdb yet.
   *-*-tpf*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss gdb tcl tk libgui itcl"
+    noconfigdirs="$noconfigdirs gdb tcl tk libgui itcl"
     ;;
   *-*-uclinux*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-rda"
+    noconfigdirs="$noconfigdirs target-rda"
     ;;
   *-*-vxworks*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   alpha*-dec-osf*)
     # ld works, but does not support shared libraries.
-    # newlib is not 64 bit ready.
     # gas doesn't generate exception information.
-    noconfigdirs="$noconfigdirs gas ld target-newlib target-libgloss"
+    noconfigdirs="$noconfigdirs gas ld"
     ;;
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
-    ;;
-  alpha*-*-linux*)
-    # newlib is not 64 bit ready
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   alpha*-*-*)
     # newlib is not 64 bit ready
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
-  am33_2.0-*-linux*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    ;;
-  sh-*-linux*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    ;;    
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs tcl tk itcl libgui sim"
-    noconfigdirs="$noconfigdirs target-newlib"
     ;;
   arc-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
-    ;;
-  arm-*-coff)
-    ;;
-  arm-*-elf* | arm*-*-eabi* )
-    ;;
-  arm*-*-linux-gnueabi)
-    case ${with_newlib} in
-      no) noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    esac
-    ;;
-  arm*-*-symbianelf*)
     ;;
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   arm-*-riscix*)
     noconfigdirs="$noconfigdirs ld target-libgloss"
-    ;;
-  avr-*-*)
-    ;;
-  bfin-*-*)
     ;;
   c4x-*-* | tic4x-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -858,12 +891,6 @@ case "${target}" in
   cr16-*-*)
     noconfigdirs="$noconfigdirs gdb"
     ;;
-  cris-*-* | crisv32-*-*)
-    case "${target}" in
-      *-*-linux*)
-	noconfigdirs="$noconfigdirs target-newlib target-libgloss";;
-    esac
-    ;;
   d10v-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
@@ -872,8 +899,6 @@ case "${target}" in
     ;;
   fr30-*-elf*)
     noconfigdirs="$noconfigdirs gdb"
-    ;;
-  frv-*-*)
     ;;
   moxie-*-*)
     noconfigdirs="$noconfigdirs gprof"
@@ -918,29 +943,10 @@ case "${target}" in
     # No gdb or ld support yet.
     noconfigdirs="$noconfigdirs readline libgui itcl gdb ld"
     ;;
-  i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
-    ;;
-  i[[3456789]]86-*-linux*)
-    # This section makes it possible to build newlib natively on linux.
-    # If we are using a cross compiler then don't configure newlib.
-    if test x${is_cross_compiler} != xno ; then
-      noconfigdirs="$noconfigdirs target-newlib"
-    fi
-    noconfigdirs="$noconfigdirs target-libgloss"
-    # If we are not using a cross compiler, do configure newlib.
-    # Note however, that newlib will only be configured in this situation
-    # if the --with-newlib option has been given, because otherwise
-    # 'target-newlib' will appear in skipdirs.
-    ;;
   i[[3456789]]86-w64-mingw*)
-    noconfigdirs="$noconfigdirs target-libgloss target-newlib"
     ;;
   i[[3456789]]86-*-mingw*)
     target_configdirs="$target_configdirs target-winsup"
-    noconfigdirs="$noconfigdirs target-libgloss target-newlib"
-    ;;
-  x86_64-*-mingw*)
-    noconfigdirs="$noconfigdirs target-libgloss target-newlib"
     ;;
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
@@ -951,8 +957,6 @@ case "${target}" in
     elif test -d "$srcdir/newlib"; then
       echo "Warning: winsup/cygwin is missing so newlib can't be built."
     fi
-    ;;
-  i[[3456789]]86-*-interix* )
     ;;
   i[[3456789]]86-*-pe)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -972,18 +976,10 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   i[[3456789]]86-*-beos*)
-    noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
+    noconfigdirs="$noconfigdirs gdb"
     ;;
   i[[3456789]]86-*-rdos*)
-    noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
-    ;;
-  m32r-*-*)
-    ;;
-  m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
-    ;;
-  m68k-*-elf*)
-    ;;
-  m68*-*-* | fido-*-*)
+    noconfigdirs="$noconfigdirs gdb"
     ;;
   mmix-*-*)
     noconfigdirs="$noconfigdirs gdb"
@@ -993,7 +989,7 @@ case "${target}" in
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
-    noconfigdirs="$noconfigdirs gprof target-libgloss target-newlib"
+    noconfigdirs="$noconfigdirs gprof"
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe*)
     target_configdirs="$target_configdirs target-winsup"
@@ -1006,17 +1002,13 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gdb sim tcl tk itcl"
     ;;
   powerpc-*-beos*)
-    noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
-    ;;
-  powerpc-*-eabi)
-    ;;
-  powerpc-*-eabi* | powerpcle-*-eabi* | powerpc-*-rtems* )
+    noconfigdirs="$noconfigdirs gdb"
     ;;
   rs6000-*-lynxos*)
-    noconfigdirs="$noconfigdirs target-newlib gprof"
+    noconfigdirs="$noconfigdirs gprof"
     ;;
   rs6000-*-aix*)
-    noconfigdirs="$noconfigdirs gprof target-libgloss target-newlib"
+    noconfigdirs="$noconfigdirs gprof"
     ;;
   rs6000-*-*)
     noconfigdirs="$noconfigdirs gprof"
@@ -1042,7 +1034,6 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gprof target-libgloss"
     ;;
   mips*-*-linux*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
@@ -1055,22 +1046,10 @@ case "${target}" in
          noconfigdirs="$noconfigdirs target-libgloss" ;;
     esac
     ;;
-  sparclet-*-aout* | sparc86x-*-*)
-    ;;
-  sparc-*-elf*)
-    ;;
-  sparc64-*-elf*)
-    ;;
-  sparclite-*-*)
-    ;;
   sparc-*-sunos4*)
-    if test x${is_cross_compiler} != xno ; then
-           noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
-    else
+    if test x${is_cross_compiler} = xno ; then
            use_gnu_ld=no
     fi
-    ;;
-  sparc-*-solaris* | sparc64-*-solaris* | sparcv9-*-solaris*)
     ;;
   tic6x-*-*)
     noconfigdirs="$noconfigdirs gdb sim"
@@ -1080,14 +1059,6 @@ case "${target}" in
     ;;
   vax-*-*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    ;;
-  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    ;;
-  *-*-lynxos*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    ;; 
-  *-*-*)
     ;;
 esac
 
