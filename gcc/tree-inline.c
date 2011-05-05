@@ -2080,7 +2080,6 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
   cfun->va_list_fpr_size = src_cfun->va_list_fpr_size;
   cfun->has_nonlocal_label = src_cfun->has_nonlocal_label;
   cfun->stdarg = src_cfun->stdarg;
-  cfun->dont_save_pending_sizes_p = src_cfun->dont_save_pending_sizes_p;
   cfun->after_inlining = src_cfun->after_inlining;
   cfun->can_throw_non_call_exceptions
     = src_cfun->can_throw_non_call_exceptions;
