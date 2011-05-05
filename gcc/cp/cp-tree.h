@@ -62,7 +62,6 @@ c-common.h, not after.
       STMT_EXPR_NO_SCOPE (in STMT_EXPR)
       BIND_EXPR_TRY_BLOCK (in BIND_EXPR)
       TYPENAME_IS_ENUM_P (in TYPENAME_TYPE)
-      REFERENCE_REF_P (in INDIRECT_EXPR)
       QUALIFIED_NAME_IS_TEMPLATE (in SCOPE_REF)
       OMP_FOR_GIMPLIFYING_P (in OMP_FOR)
       BASELINK_QUALIFIED_P (in BASELINK)
@@ -2781,9 +2780,12 @@ extern void decl_shadowed_for_var_insert (tree, tree);
   (LANG_DECL_FN_CHECK (FUNCTION_DECL_CHECK (NODE))	\
    ->u.saved_language_function)
 
-/* Indicates an indirect_expr is for converting a reference.  */
-#define REFERENCE_REF_P(NODE) \
-  TREE_LANG_FLAG_0 (INDIRECT_REF_CHECK (NODE))
+/* True if NODE is an implicit INDIRECT_EXPR from convert_from_reference.  */
+#define REFERENCE_REF_P(NODE)				\
+  (TREE_CODE (NODE) == INDIRECT_REF			\
+   && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
+   && (TREE_CODE (TREE_TYPE (TREE_OPERAND ((NODE), 0)))	\
+       == REFERENCE_TYPE))
 
 #define NEW_EXPR_USE_GLOBAL(NODE) \
   TREE_LANG_FLAG_0 (NEW_EXPR_CHECK (NODE))

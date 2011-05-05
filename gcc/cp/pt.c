@@ -18918,7 +18918,7 @@ build_non_dependent_expr (tree expr)
 
   /* Keep dereferences outside the NON_DEPENDENT_EXPR so lvalue_kind
      doesn't need to look inside.  */
-  if (TREE_CODE (expr) == INDIRECT_REF && REFERENCE_REF_P (expr))
+  if (REFERENCE_REF_P (expr))
     return convert_from_reference (build_non_dependent_expr
 				   (TREE_OPERAND (expr, 0)));
 
