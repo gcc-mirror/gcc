@@ -4630,6 +4630,7 @@ rs6000_handle_option (size_t code, const char *arg, int value)
         target_flags_explicit |= MASK_SOFT_FLOAT;
         rs6000_single_float = rs6000_double_float = 0;
       }
+      break;
 
     case OPT_mrecip:
       rs6000_recip_name = (value) ? "default" : "none";
