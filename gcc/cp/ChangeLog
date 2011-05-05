@@ -1,3 +1,8 @@
+2011-05-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* parser.c (cp_parser_objc_method_definition_list): Update call to
+	objc_start_method_definition.
+
 2011-05-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48749

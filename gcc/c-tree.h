@@ -1,6 +1,6 @@
 /* Definitions for C parsing and type checking.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -315,11 +315,12 @@ struct c_arg_info {
   /* A list of non-parameter decls (notably enumeration constants)
      defined with the parameters.  */
   tree others;
-  /* A VEC of VLA sizes from the parameters.  In a function
-     definition, these are used to ensure that side-effects in sizes
-     of arrays converted to pointers (such as a parameter int i[n++])
-     take place; otherwise, they are ignored.  */
-  VEC(tree,gc) *pending_sizes;
+  /* A compound expression of VLA sizes from the parameters, or NULL.
+     In a function definition, these are used to ensure that
+     side-effects in sizes of arrays converted to pointers (such as a
+     parameter int i[n++]) take place; otherwise, they are
+     ignored.  */
+  tree pending_sizes;
   /* True when these arguments had [*].  */
   BOOL_BITFIELD had_vla_unspec : 1;
 };
@@ -445,17 +446,17 @@ extern void finish_function (void);
 extern tree finish_struct (location_t, tree, tree, tree,
 			   struct c_struct_parse_info *);
 extern struct c_arg_info *build_arg_info (void);
-extern struct c_arg_info *get_parm_info (bool);
+extern struct c_arg_info *get_parm_info (bool, tree);
 extern tree grokfield (location_t, struct c_declarator *,
 		       struct c_declspecs *, tree, tree *);
 extern tree groktypename (struct c_type_name *, tree *, bool *);
-extern tree grokparm (const struct c_parm *);
+extern tree grokparm (const struct c_parm *, tree *);
 extern tree implicitly_declare (location_t, tree);
 extern void keep_next_level (void);
 extern void pending_xref_error (void);
 extern void c_push_function_context (void);
 extern void c_pop_function_context (void);
-extern void push_parm_decl (const struct c_parm *);
+extern void push_parm_decl (const struct c_parm *, tree *);
 extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
 							struct c_declarator *);
 extern tree c_builtin_function (tree);

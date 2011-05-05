@@ -22256,7 +22256,8 @@ cp_parser_objc_method_definition_list (cp_parser* parser)
 	      token = cp_lexer_peek_token (parser->lexer);
 	      continue;
 	    }
-	  objc_start_method_definition (is_class_method, sig, attribute);
+	  objc_start_method_definition (is_class_method, sig, attribute,
+					NULL_TREE);
 
 	  /* For historical reasons, we accept an optional semicolon.  */
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
