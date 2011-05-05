@@ -4399,6 +4399,41 @@ Array_type::get_length_tree(Gogo* gogo)
   return this->length_tree_;
 }
 
+// Get the backend representation of the fields of a slice.  This is
+// not declared in types.h so that types.h doesn't have to #include
+// backend.h.
+//
+// We use int for the count and capacity fields.  This matches 6g.
+// The language more or less assumes that we can't allocate space of a
+// size which does not fit in int.
+
+static void
+get_backend_slice_fields(Gogo* gogo, Array_type* type,
+			 std::vector<Backend::Btyped_identifier>* bfields)
+{
+  bfields->resize(3);
+
+  Type* pet = Type::make_pointer_type(type->element_type());
+  Btype* pbet = tree_to_type(pet->get_tree(gogo));
+
+  Backend::Btyped_identifier* p = &(*bfields)[0];
+  p->name = "__values";
+  p->btype = pbet;
+  p->location = UNKNOWN_LOCATION;
+
+  Type* int_type = Type::lookup_integer_type("int");
+
+  p = &(*bfields)[1];
+  p->name = "__count";
+  p->btype = tree_to_type(int_type->get_tree(gogo));
+  p->location = UNKNOWN_LOCATION;
+
+  p = &(*bfields)[2];
+  p->name = "__capacity";
+  p->btype = tree_to_type(int_type->get_tree(gogo));
+  p->location = UNKNOWN_LOCATION;
+}
+
 // Get a tree for the type of this array.  A fixed array is simply
 // represented as ARRAY_TYPE with the appropriate index--i.e., it is
 // just like an array in C.  An open array is a struct with three
@@ -4409,8 +4444,9 @@ Array_type::do_get_tree(Gogo* gogo)
 {
   if (this->length_ == NULL)
     {
-      tree struct_type = gogo->slice_type_tree(void_type_node);
-      return this->fill_in_slice_tree(gogo, struct_type);
+      std::vector<Backend::Btyped_identifier> bfields;
+      get_backend_slice_fields(gogo, this, &bfields);
+      return type_to_tree(gogo->backend()->struct_type(bfields));
     }
   else
     {
@@ -4434,26 +4470,6 @@ Bexpression*
 Array_type::get_backend_length(Gogo* gogo)
 {
   return tree_to_expr(this->get_length_tree(gogo));
-}
-
-// Fill in the fields for a slice type.  This is used for named slice
-// types.
-
-tree
-Array_type::fill_in_slice_tree(Gogo* gogo, tree struct_type)
-{
-  go_assert(this->length_ == NULL);
-
-  tree element_type_tree = this->element_type_->get_tree(gogo);
-  if (element_type_tree == error_mark_node)
-    return error_mark_node;
-  tree field = TYPE_FIELDS(struct_type);
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__values") == 0);
-  go_assert(POINTER_TYPE_P(TREE_TYPE(field))
-	     && TREE_TYPE(TREE_TYPE(field)) == void_type_node);
-  TREE_TYPE(field) = build_pointer_type(element_type_tree);
-
-  return struct_type;
 }
 
 // Return an initializer for an array type.
@@ -7168,13 +7184,12 @@ Named_type::create_placeholder(Gogo* gogo)
 
     case TYPE_ARRAY:
       if (base->is_open_array_type())
-	bt = tree_to_type(gogo->slice_type_tree(void_type_node));
+	bt = gogo->backend()->placeholder_struct_type(this->name(),
+						      this->location_);
       else
-	{
-	  bt = gogo->backend()->placeholder_array_type(this->name(),
-						       this->location_);
-	  set_name = false;
-	}
+	bt = gogo->backend()->placeholder_array_type(this->name(),
+						     this->location_);
+      set_name = false;
       break;
 
     case TYPE_INTERFACE:
@@ -7199,6 +7214,16 @@ Named_type::create_placeholder(Gogo* gogo)
     bt = gogo->backend()->named_type(this->name(), bt, this->location_);
 
   this->named_btype_ = bt;
+
+  if (base->is_open_array_type())
+    {
+      // We do not record slices as dependencies of other types,
+      // because we can fill them in completely here.
+      std::vector<Backend::Btyped_identifier> bfields;
+      get_backend_slice_fields(gogo, base->array_type(), &bfields);
+      if (!gogo->backend()->set_placeholder_struct_type(bt, bfields))
+	this->named_btype_ = gogo->backend()->error_type();
+    }
 }
 
 // Get a tree for a named type.
@@ -7255,6 +7280,7 @@ Named_type::do_get_tree(Gogo* gogo)
     case TYPE_MAP:
     case TYPE_CHANNEL:
     case TYPE_STRUCT:
+    case TYPE_ARRAY:
     case TYPE_INTERFACE:
       return type_to_tree(bt);
 
@@ -7292,22 +7318,6 @@ Named_type::do_get_tree(Gogo* gogo)
 	bt1 = gogo->backend()->circular_pointer_type(bt, false);
       if (!gogo->backend()->set_placeholder_pointer_type(bt, bt1))
 	bt = gogo->backend()->error_type();
-      return type_to_tree(bt);
-
-    case TYPE_ARRAY:
-      if (base->is_open_array_type())
-	{
-	  if (this->seen_ > 0)
-	    return type_to_tree(bt);
-	  else
-	    {
-	      ++this->seen_;
-	      tree t = base->array_type()->fill_in_slice_tree(gogo,
-							      type_to_tree(bt));
-	      bt = tree_to_type(t);
-	      --this->seen_;
-	    }
-	}
       return type_to_tree(bt);
 
     default:
