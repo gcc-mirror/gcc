@@ -177,6 +177,9 @@ copy_self_referential_tree_r (tree *tp, int *walk_subtrees, void *data)
   else if (code == SAVE_EXPR)
     return error_mark_node;
 
+  else if (code == STATEMENT_LIST)
+    gcc_unreachable ();
+
   return copy_tree_r (tp, walk_subtrees, data);
 }
 

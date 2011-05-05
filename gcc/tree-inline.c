@@ -662,8 +662,6 @@ copy_statement_list (tree *tp)
   for (; !tsi_end_p (oi); tsi_next (&oi))
     {
       tree stmt = tsi_stmt (oi);
-      if (TREE_CODE (stmt) == STATEMENT_LIST)
-	copy_statement_list (&stmt);
       tsi_link_after (&ni, stmt, TSI_CONTINUE_LINKING);
     }
 }
@@ -4271,19 +4269,9 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       *tp = new_tree;
     }
   else if (code == STATEMENT_LIST)
-    {
-      /* We used to just abort on STATEMENT_LIST, but we can run into them
-         with statement-expressions (c++/40975).  */
-      tree new_list = alloc_stmt_list ();
-      tree_stmt_iterator i = tsi_start (*tp);
-      tree_stmt_iterator j = tsi_last (new_list);
-      for (; !tsi_end_p (i); tsi_next (&i))
-	{
-	  tree stmt = tsi_stmt (i);
-	  tsi_link_after (&j, stmt, TSI_CONTINUE_LINKING);
-	}
-      *tp = new_list;
-    }
+    /* We used to just abort on STATEMENT_LIST, but we can run into them
+       with statement-expressions (c++/40975).  */
+    copy_statement_list (tp);
   else if (TREE_CODE_CLASS (code) == tcc_type)
     *walk_subtrees = 0;
   else if (TREE_CODE_CLASS (code) == tcc_declaration)
