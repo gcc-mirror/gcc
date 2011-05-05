@@ -1,3 +1,7 @@
+2010-05-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config-list.mk: New file.
+
 2011-05-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc_update (gcc/config/m68k/m68k-tables.opt): New dependencies.
