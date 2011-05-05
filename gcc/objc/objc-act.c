@@ -126,7 +126,7 @@ static void synth_module_prologue (void);
 static tree start_class (enum tree_code, tree, tree, tree, tree);
 static tree continue_class (tree);
 static void finish_class (tree);
-static void start_method_def (tree);
+static void start_method_def (tree, tree);
 
 static tree start_protocol (enum tree_code, tree, tree, tree);
 static tree build_method_decl (enum tree_code, tree, tree, tree, bool);
@@ -2041,9 +2041,12 @@ objc_add_method_declaration (bool is_class_method, tree decl, tree attributes)
 
 /* Return 'true' if the method definition could be started, and
    'false' if not (because we are outside an @implementation context).
+   EXPR is NULL or an expression that needs to be evaluated for the
+   side effects of array size expressions in the parameters.
 */
 bool
-objc_start_method_definition (bool is_class_method, tree decl, tree attributes)
+objc_start_method_definition (bool is_class_method, tree decl, tree attributes,
+			      tree expr)
 {
   if (!objc_implementation_context)
     {
@@ -2070,7 +2073,7 @@ objc_start_method_definition (bool is_class_method, tree decl, tree attributes)
 		   decl,
 		   is_class_method,
 		   /* is optional */ false);
-  start_method_def (decl);
+  start_method_def (decl, expr);
   return true;
 }
 
@@ -4557,7 +4560,7 @@ objc_generate_cxx_ctor_or_dtor (bool dtor)
 						  ? TAG_CXX_DESTRUCT
 						  : TAG_CXX_CONSTRUCT),
 				  make_node (TREE_LIST),
-				  false), NULL);
+				  false), NULL, NULL_TREE);
   body = begin_function_body ();
   compound_stmt = begin_compound_stmt (0);
 
@@ -7214,7 +7217,8 @@ objc_synthesize_getter (tree klass, tree class_methods ATTRIBUTE_UNUSED, tree pr
   decl = copy_node (decl);
   DECL_SOURCE_LOCATION (decl) = location;
 
-  objc_start_method_definition (false /* is_class_method */, decl, NULL_TREE);
+  objc_start_method_definition (false /* is_class_method */, decl, NULL_TREE,
+				NULL_TREE);
   body = c_begin_compound_stmt (true);
 
   /* Now we need to decide how we build the getter.  There are three
@@ -7393,7 +7397,8 @@ objc_synthesize_setter (tree klass, tree class_methods ATTRIBUTE_UNUSED, tree pr
   decl = copy_node (decl);
   DECL_SOURCE_LOCATION (decl) = DECL_SOURCE_LOCATION (property);
 
-  objc_start_method_definition (false /* is_class_method */, decl, NULL_TREE);
+  objc_start_method_definition (false /* is_class_method */, decl, NULL_TREE,
+				NULL_TREE);
 
   body = c_begin_compound_stmt (true);
 
@@ -8287,7 +8292,8 @@ objc_push_parm (tree parm)
 
 #ifdef OBJCPLUS
 tree
-objc_get_parm_info (int have_ellipsis ATTRIBUTE_UNUSED)
+objc_get_parm_info (int have_ellipsis ATTRIBUTE_UNUSED,
+		    tree expr ATTRIBUTE_UNUSED)
 {
   tree parm_info = objc_parmlist;
   objc_parmlist = NULL_TREE;
@@ -8296,7 +8302,7 @@ objc_get_parm_info (int have_ellipsis ATTRIBUTE_UNUSED)
 }
 #else
 struct c_arg_info *
-objc_get_parm_info (int have_ellipsis)
+objc_get_parm_info (int have_ellipsis, tree expr)
 {
   tree parm_info = objc_parmlist;
   struct c_arg_info *arg_info;
@@ -8313,7 +8319,7 @@ objc_get_parm_info (int have_ellipsis)
       finish_decl (parm_info, input_location, NULL_TREE, NULL_TREE, NULL_TREE);
       parm_info = next;
     }
-  arg_info = get_parm_info (have_ellipsis);
+  arg_info = get_parm_info (have_ellipsis, expr);
   pop_scope ();
   objc_parmlist = NULL_TREE;
   return arg_info;
@@ -8348,10 +8354,12 @@ synth_self_and_ucmd_args (void)
 
 /* Transform an Objective-C method definition into a static C function
    definition, synthesizing the first two arguments, "self" and "_cmd",
-   in the process.  */
+   in the process.  EXPR is NULL or an expression that needs to be
+   evaluated for the side effects of array size expressions in the
+   parameters.  */
 
 static void
-start_method_def (tree method)
+start_method_def (tree method, tree expr)
 {
   tree parmlist;
 #ifdef OBJCPLUS
@@ -8406,7 +8414,7 @@ start_method_def (tree method)
 	have_ellipsis = 1;
     }
 
-  parm_info = objc_get_parm_info (have_ellipsis);
+  parm_info = objc_get_parm_info (have_ellipsis, expr);
 
   really_start_method (objc_method_context, parm_info);
 }

@@ -948,7 +948,7 @@ build_module_initializer_routine (void)
 #else
   objc_start_function (get_identifier (TAG_GNUINIT),
 		       build_function_type_list (void_type_node, NULL_TREE),
-		       NULL_TREE, objc_get_parm_info (0));
+		       NULL_TREE, objc_get_parm_info (0, NULL_TREE));
 #endif
   body = c_begin_compound_stmt (true);
   add_stmt (build_function_call

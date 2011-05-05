@@ -1,3 +1,19 @@
+2011-05-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* objc-act.c (objc_start_method_definition): Add parameter expr.
+	Update call to start_method_def.
+	(objc_generate_cxx_ctor_or_dtor, objc_synthesize_getter,
+	objc_synthesize_setter) Update calls to
+	objc_start_method_definition.
+	(objc_get_parm_info): Add parameter expr.  Update call to
+	get_parm_info.
+	(start_method_def): Add parameter expr.  Update call to
+	objc_get_parm_info.
+	* objc-gnu-runtime-abi-01.c (build_module_initializer_routine):
+	Update call to objc_get_parm_info.
+	* objc-runtime-shared-support.h (objc_get_parm_info): Add extra
+	parameter.
+
 2011-04-26  Jason Merrill  <jason@redhat.com>
 
 	* objc-act.c (objc_fold_objc_type_ref): Remove.

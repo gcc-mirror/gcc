@@ -1110,7 +1110,8 @@ static struct c_declarator *c_parser_direct_declarator_inner (c_parser *,
 							      bool,
 							      struct c_declarator *);
 static struct c_arg_info *c_parser_parms_declarator (c_parser *, bool, tree);
-static struct c_arg_info *c_parser_parms_list_declarator (c_parser *, tree);
+static struct c_arg_info *c_parser_parms_list_declarator (c_parser *, tree,
+							  tree);
 static struct c_parm *c_parser_parameter_declaration (c_parser *, tree);
 static tree c_parser_simple_asm_expr (c_parser *);
 static tree c_parser_attributes (c_parser *);
@@ -1173,7 +1174,7 @@ static bool c_parser_objc_method_type (c_parser *);
 static void c_parser_objc_method_definition (c_parser *);
 static void c_parser_objc_methodprotolist (c_parser *);
 static void c_parser_objc_methodproto (c_parser *);
-static tree c_parser_objc_method_decl (c_parser *, bool, tree *);
+static tree c_parser_objc_method_decl (c_parser *, bool, tree *, tree *);
 static tree c_parser_objc_type_name (c_parser *);
 static tree c_parser_objc_protocol_refs (c_parser *);
 static void c_parser_objc_try_catch_finally_statement (c_parser *);
@@ -3101,7 +3102,8 @@ c_parser_parms_declarator (c_parser *parser, bool id_list_ok, tree attrs)
     }
   else
     {
-      struct c_arg_info *ret = c_parser_parms_list_declarator (parser, attrs);
+      struct c_arg_info *ret = c_parser_parms_list_declarator (parser, attrs,
+							       NULL);
       pop_scope ();
       return ret;
     }
@@ -3109,12 +3111,15 @@ c_parser_parms_declarator (c_parser *parser, bool id_list_ok, tree attrs)
 
 /* Parse a parameter list (possibly empty), including the closing
    parenthesis but not the opening one.  ATTRS are the attributes at
-   the start of the list.  */
+   the start of the list.  EXPR is NULL or an expression that needs to
+   be evaluated for the side effects of array size expressions in the
+   parameters.  */
 
 static struct c_arg_info *
-c_parser_parms_list_declarator (c_parser *parser, tree attrs)
+c_parser_parms_list_declarator (c_parser *parser, tree attrs, tree expr)
 {
   bool bad_parm = false;
+
   /* ??? Following the old parser, forward parameter declarations may
      use abstract declarators, and if no real parameter declarations
      follow the forward declarations then this is not diagnosed.  Also
@@ -3158,31 +3163,27 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
       if (parm == NULL)
 	bad_parm = true;
       else
-	push_parm_decl (parm);
+	push_parm_decl (parm, &expr);
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
 	  tree new_attrs;
 	  c_parser_consume_token (parser);
 	  mark_forward_parm_decls ();
 	  new_attrs = c_parser_attributes (parser);
-	  return c_parser_parms_list_declarator (parser, new_attrs);
+	  return c_parser_parms_list_declarator (parser, new_attrs, expr);
 	}
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	{
 	  c_parser_consume_token (parser);
 	  if (bad_parm)
-	    {
-	      get_pending_sizes ();
-	      return NULL;
-	    }
+	    return NULL;
 	  else
-	    return get_parm_info (false);
+	    return get_parm_info (false, expr);
 	}
       if (!c_parser_require (parser, CPP_COMMA,
 			     "expected %<;%>, %<,%> or %<)%>"))
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
-	  get_pending_sizes ();
 	  return NULL;
 	}
       if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
@@ -3192,18 +3193,14 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
 	    {
 	      c_parser_consume_token (parser);
 	      if (bad_parm)
-		{
-		  get_pending_sizes ();
-		  return NULL;
-		}
+		return NULL;
 	      else
-		return get_parm_info (true);
+		return get_parm_info (true, expr);
 	    }
 	  else
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 					 "expected %<)%>");
-	      get_pending_sizes ();
 	      return NULL;
 	    }
 	}
@@ -7164,9 +7161,10 @@ static void
 c_parser_objc_method_definition (c_parser *parser)
 {
   bool is_class_method = c_parser_objc_method_type (parser);
-  tree decl, attributes = NULL_TREE;
+  tree decl, attributes = NULL_TREE, expr = NULL_TREE;
   parser->objc_pq_context = true;
-  decl = c_parser_objc_method_decl (parser, is_class_method, &attributes);
+  decl = c_parser_objc_method_decl (parser, is_class_method, &attributes,
+				    &expr);
   if (decl == error_mark_node)
     return;  /* Bail here. */
 
@@ -7184,7 +7182,7 @@ c_parser_objc_method_definition (c_parser *parser)
     }
 
   parser->objc_pq_context = false;
-  if (objc_start_method_definition (is_class_method, decl, attributes))
+  if (objc_start_method_definition (is_class_method, decl, attributes, expr))
     {
       add_stmt (c_parser_compound_statement (parser));
       objc_finish_method_definition (current_function_decl);
@@ -7275,7 +7273,8 @@ c_parser_objc_methodproto (c_parser *parser)
 
   /* Remember protocol qualifiers in prototypes.  */
   parser->objc_pq_context = true;
-  decl = c_parser_objc_method_decl (parser, is_class_method, &attributes);
+  decl = c_parser_objc_method_decl (parser, is_class_method, &attributes,
+				    NULL);
   /* Forget protocol qualifiers now.  */
   parser->objc_pq_context = false;
 
@@ -7361,7 +7360,8 @@ c_parser_objc_maybe_method_attributes (c_parser* parser, tree* attributes)
 */
 
 static tree
-c_parser_objc_method_decl (c_parser *parser, bool is_class_method, tree *attributes)
+c_parser_objc_method_decl (c_parser *parser, bool is_class_method,
+			   tree *attributes, tree *expr)
 {
   tree type = NULL_TREE;
   tree sel;
@@ -7436,7 +7436,7 @@ c_parser_objc_method_decl (c_parser *parser, bool is_class_method, tree *attribu
 	  if (parm == NULL)
 	    break;
 	  parms = chainon (parms,
-			   build_tree_list (NULL_TREE, grokparm (parm)));
+			   build_tree_list (NULL_TREE, grokparm (parm, expr)));
 	}
       sel = list;
     }
@@ -7600,7 +7600,7 @@ c_parser_objc_try_catch_finally_statement (c_parser *parser)
 	  if (parm == NULL)
 	    parameter_declaration = error_mark_node;
 	  else
-	    parameter_declaration = grokparm (parm);
+	    parameter_declaration = grokparm (parm, NULL);
 	}
       if (seen_open_paren)
 	c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>");

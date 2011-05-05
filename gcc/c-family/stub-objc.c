@@ -2,7 +2,7 @@
    that are called from within the C and C++ front-ends,
    respectively.
    Copyright (C) 1991, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
+   2004, 2005, 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -204,7 +204,8 @@ objc_add_method_declaration (bool ARG_UNUSED (is_class_method),
 bool
 objc_start_method_definition (bool ARG_UNUSED (is_class_method),
 			      tree ARG_UNUSED (signature),
-			      tree ARG_UNUSED (attributes))
+			      tree ARG_UNUSED (attributes),
+			      tree ARG_UNUSED (expr))
 {
   return true;
 }

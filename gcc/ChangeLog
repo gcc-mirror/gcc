@@ -1,3 +1,31 @@
+2011-05-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (finish_decl): Don't call get_pending_sizes.
+	(grokparm): Add parameter expr.  Pass it to grokdeclarator.
+	(push_parm_decl): Add parameter expr.  Pass it to grokdeclarator.
+	(c_variable_size): Remove.
+	(grokdeclarator): Use save_expr instead of c_variable_size.  Don't
+	call put_pending_sizes.
+	(get_parm_info): Add parameter expr.  Use it to set
+	arg_info->pending_sizes.
+	(store_parm_decls): Use arg_info->pending_sizes instead or calling
+	get_pending_sizes.
+	* c-parser.c (c_parser_parms_declarator): Update call to
+	c_parser_parms_list_declarator.
+	(c_parser_parms_list_declarator): Take parameter expr.  Update
+	call to push_parm_decl.  Update recursive call.  Don't call
+	get_pending_sizes.  Update calls to get_parm_info.
+	(c_parser_objc_method_definition): Update calls to
+	c_parser_objc_method_decl and objc_start_method_definition.
+	(c_parser_objc_methodproto): Update call to
+	c_parser_objc_method_decl.
+	(c_parser_objc_method_decl): Add parameter expr.  Update call to
+	grokparm.
+	(c_parser_objc_try_catch_finally_statement): Update call to
+	grokparm.
+	* c-tree.h (struct c_arg_info.pending_sizes): Change to a tree.
+	(get_parm_info, grokparm, push_parm_decl): Update prototypes.
+
 2011-05-05  Michael Hope  <michael.hope@linaro.org>
 
        PR pch/45979

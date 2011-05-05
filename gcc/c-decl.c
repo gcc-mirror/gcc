@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -4428,12 +4428,6 @@ finish_decl (tree decl, location_t init_loc, tree init,
       rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl), 0);
     }
 
-  /* At the end of a declaration, throw away any variable type sizes
-     of types defined inside that declaration.  There is no use
-     computing them in the following function definition.  */
-  if (current_scope == file_scope)
-    get_pending_sizes ();
-
   /* Install a cleanup (aka destructor) if one was given.  */
   if (TREE_CODE (decl) == VAR_DECL && !TREE_STATIC (decl))
     {
@@ -4478,14 +4472,17 @@ finish_decl (tree decl, location_t init_loc, tree init,
     }
 }
 
-/* Given a parsed parameter declaration, decode it into a PARM_DECL.  */
+/* Given a parsed parameter declaration, decode it into a PARM_DECL.
+   EXPR is NULL or a pointer to an expression that needs to be
+   evaluated for the side effects of array size expressions in the
+   parameters.  */
 
 tree
-grokparm (const struct c_parm *parm)
+grokparm (const struct c_parm *parm, tree *expr)
 {
   tree attrs = parm->attrs;
   tree decl = grokdeclarator (parm->declarator, parm->specs, PARM, false,
-			      NULL, &attrs, NULL, NULL, DEPRECATED_NORMAL);
+			      NULL, &attrs, expr, NULL, DEPRECATED_NORMAL);
 
   decl_attributes (&decl, attrs, 0);
 
@@ -4493,16 +4490,18 @@ grokparm (const struct c_parm *parm)
 }
 
 /* Given a parsed parameter declaration, decode it into a PARM_DECL
-   and push that on the current scope.  */
+   and push that on the current scope.  EXPR is a pointer to an
+   expression that needs to be evaluated for the side effects of array
+   size expressions in the parameters.  */
 
 void
-push_parm_decl (const struct c_parm *parm)
+push_parm_decl (const struct c_parm *parm, tree *expr)
 {
   tree attrs = parm->attrs;
   tree decl;
 
   decl = grokdeclarator (parm->declarator, parm->specs, PARM, false, NULL,
-			 &attrs, NULL, NULL, DEPRECATED_NORMAL);
+			 &attrs, expr, NULL, DEPRECATED_NORMAL);
   decl_attributes (&decl, attrs, 0);
 
   decl = pushdecl (decl);
@@ -4787,34 +4786,6 @@ warn_variable_length_array (tree name, tree size)
 		     "variable length array is used");
 	}
     }
-}
-
-/* Given a size SIZE that may not be a constant, return a SAVE_EXPR to
-   serve as the actual size-expression for a type or decl.  This is
-   like variable_size in stor-layout.c, but we make global_bindings_p
-   return negative to avoid calls to that function from outside the
-   front end resulting in errors at file scope, then call this version
-   instead from front-end code.  */
-
-static tree
-c_variable_size (tree size)
-{
-  tree save;
-
-  if (TREE_CONSTANT (size))
-    return size;
-
-  size = save_expr (size);
-
-  save = skip_simple_arithmetic (size);
-
-  if (cfun && cfun->dont_save_pending_sizes_p)
-    return size;
-
-  if (!global_bindings_p ())
-    put_pending_size (save);
-
-  return size;
 }
 
 /* Given declspecs and a declarator,
@@ -5354,7 +5325,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		       MINUS_EXPR, which allows the -1 to get folded
 		       with the +1 that happens when building TYPE_SIZE.  */
 		    if (size_varies)
-		      size = c_variable_size (size);
+		      size = save_expr (size);
 		    if (this_size_varies && TREE_CODE (size) == INTEGER_CST)
 		      size = build2 (COMPOUND_EXPR, TREE_TYPE (size),
 				     integer_zero_node, size);
@@ -5573,8 +5544,6 @@ grokdeclarator (const struct c_declarator *declarator,
 	       inner layer of declarator.  */
 	    arg_info = declarator->u.arg_info;
 	    arg_types = grokparms (arg_info, really_funcdef);
-	    if (really_funcdef)
-	      put_pending_sizes (arg_info->pending_sizes);
 
 	    /* Type qualifiers before the return type of the function
 	       qualify the return type, not the function type.  */
@@ -6265,10 +6234,13 @@ build_arg_info (void)
    This structure is later fed to 'grokparms' and 'store_parm_decls'.
 
    ELLIPSIS being true means the argument list ended in '...' so don't
-   append a sentinel (void_list_node) to the end of the type-list.  */
+   append a sentinel (void_list_node) to the end of the type-list.
+
+   EXPR is NULL or an expression that needs to be evaluated for the
+   side effects of array size expressions in the parameters.  */
 
 struct c_arg_info *
-get_parm_info (bool ellipsis)
+get_parm_info (bool ellipsis, tree expr)
 {
   struct c_binding *b = current_scope->bindings;
   struct c_arg_info *arg_info = build_arg_info ();
@@ -6444,7 +6416,7 @@ get_parm_info (bool ellipsis)
   arg_info->tags = tags;
   arg_info->types = types;
   arg_info->others = others;
-  arg_info->pending_sizes = get_pending_sizes ();
+  arg_info->pending_sizes = expr;
   return arg_info;
 }
 
@@ -8199,14 +8171,8 @@ store_parm_decls (void)
      because we throw away the array type in favor of a pointer type, and
      thus won't naturally see the SAVE_EXPR containing the increment.  All
      other pending sizes would be handled by gimplify_parameters.  */
-  {
-    VEC(tree,gc) *pending_sizes = get_pending_sizes ();
-    tree t;
-    int i;
-
-    FOR_EACH_VEC_ELT (tree, pending_sizes, i, t)
-      add_stmt (t);
-  }
+  if (arg_info->pending_sizes)
+    add_stmt (arg_info->pending_sizes);
 
   /* Even though we're inside a function body, we still don't want to
      call expand_expr to calculate the size of a variable-sized array.
