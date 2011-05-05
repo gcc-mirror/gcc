@@ -735,7 +735,7 @@
           (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_NEON"
 {
-  operands[2] = GEN_INT (ffs ((int) INTVAL (operands[2]) - 1));
+  operands[2] = GEN_INT (ffs ((int) INTVAL (operands[2])) - 1);
   
   return "vmov%?.<V_uf_sclr>\t%P0[%c2], %1";
 }

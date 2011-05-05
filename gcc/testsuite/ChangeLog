@@ -1,3 +1,7 @@
+2011-05-05  Julian Brown  <julian@codesourcery.com>
+
+	* gcc.target/arm/neon-vset_lanes8.c: New test.
+
 2009-02-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/39219

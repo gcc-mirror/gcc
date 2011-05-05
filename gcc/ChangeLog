@@ -1,3 +1,8 @@
+2011-05-05  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/neon.md (vec_set<mode>_internal): Fix misplaced
+	parenthesis in D-register case.
+
 2011-02-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:
