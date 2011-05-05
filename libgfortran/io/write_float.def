@@ -221,6 +221,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 
   if (zero_flag)
     goto skip;
+
   /* Round the value.  The value being rounded is an unsigned magnitude.
      The ROUND_COMPATIBLE is rounding away from zero when there is a tie.  */
   switch (dtp->u.p.current_unit->round_status)
@@ -230,19 +231,11 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       case ROUND_UP:
 	if (sign_bit)
 	  goto skip;
-	rchar = '0';
-	/* Scan for trailing zeros to see if we really need to round it.  */
-	for(i = nbefore + nafter; i < ndigits; i++)
-	  {
-	    if (digits[i] != '0')
-	      goto do_rnd;
-	  }
-	goto skip;
+	goto updown;
       case ROUND_DOWN:
 	if (!sign_bit)
 	  goto skip;
-	rchar = '0';
-	break;
+	goto updown;
       case ROUND_NEAREST:
 	/* Round compatible unless there is a tie. A tie is a 5 with
 	   all trailing zero's.  */
@@ -254,7 +247,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 		if (digits[i] != '0')
 		  goto do_rnd;
 	      }
-	    /* It is a  tie so round to even.  */
+	    /* It is a tie so round to even.  */
 	    switch (digits[nafter + nbefore - 1])
 	      {
 		case '1':
@@ -274,8 +267,21 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       case ROUND_UNSPECIFIED:
       case ROUND_COMPATIBLE:
 	rchar = '5';
-	/* Just fall through and do the actual rounding.  */
+	goto do_rnd;
     }
+
+  updown:
+
+  rchar = '0';
+  if (w > 0 && d == 0 && p == 0)
+    nbefore = 1;
+  /* Scan for trailing zeros to see if we really need to round it.  */
+  for(i = nbefore + nafter; i < ndigits; i++)
+    {
+      if (digits[i] != '0')
+	goto do_rnd;
+    }
+  goto skip;
     
   do_rnd:
  
