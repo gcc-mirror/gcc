@@ -1,3 +1,7 @@
+2011-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (create_tmp_var_raw): Don't call build_type_variant.
+
 2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (get_pending_sizes): Remove prototype.
