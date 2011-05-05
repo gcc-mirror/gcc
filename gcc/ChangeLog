@@ -1,3 +1,16 @@
+2011-05-05  Ira Rosen  <ira.rosen@linaro.org>
+
+	Backport from mainline:
+	2011-04-18  Ulrich Weigand  <ulrich.weigand@linaro.org>
+		    Ira Rosen  <ira.rosen@linaro.org>
+
+	PR target/48252
+	* config/arm/arm.c (neon_emit_pair_result_insn): Swap arguments
+	to match neon_vzip/vuzp/vtrn_internal.
+	* config/arm/neon.md (neon_vtrn<mode>_internal): Make both
+	outputs explicitly dependent on both inputs.
+	(neon_vzip<mode>_internal, neon_vuzp<mode>_internal): Likewise.
+
 2011-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdi_internal_rex64) <TYPE_SSEMOV>:
