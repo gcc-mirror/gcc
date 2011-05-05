@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter 4.  Support</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="prev" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="next" href="dynamic_memory.html" title="Dynamic Memory"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 4. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter 4.  Support</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="prev" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="next" href="dynamic_memory.html" title="Dynamic Memory"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 4. 
   Support
   
 </th></tr><tr><td align="left"><a accesskey="p" href="bk01pt02.html">Prev</a> </td><th width="60%" align="center">Part II. 
     Standard Contents
-  </th><td align="right"> <a accesskey="n" href="dynamic_memory.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 4.  Support"><div class="titlepage"><div><div><h1 class="title"><a id="std.support"/>
+  </th><td align="right"> <a accesskey="n" href="dynamic_memory.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 4.  Support"><div class="titlepage"><div><div><h2 class="title"><a id="std.support"/>Chapter 4. 
   Support
-  <a id="id592185" class="indexterm"/>
-</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="support.html#std.support.types">Types</a></span></dt><dd><dl><dt><span class="section"><a href="support.html#std.support.types.fundamental">Fundamental Types</a></span></dt><dt><span class="section"><a href="support.html#std.support.types.numeric_limits">Numeric Properties</a></span></dt><dt><span class="section"><a href="support.html#std.support.types.null">NULL</a></span></dt></dl></dd><dt><span class="section"><a href="dynamic_memory.html">Dynamic Memory</a></span></dt><dt><span class="section"><a href="termination.html">Termination</a></span></dt><dd><dl><dt><span class="section"><a href="termination.html#support.termination.handlers">Termination Handlers</a></span></dt><dt><span class="section"><a href="termination.html#support.termination.verbose">Verbose Terminate Handler</a></span></dt></dl></dd></dl></div><p>
+  <a id="id471617" class="indexterm"/>
+</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl><dt><span class="section"><a href="support.html#std.support.types">Types</a></span></dt><dd><dl><dt><span class="section"><a href="support.html#std.support.types.fundamental">Fundamental Types</a></span></dt><dt><span class="section"><a href="support.html#std.support.types.numeric_limits">Numeric Properties</a></span></dt><dt><span class="section"><a href="support.html#std.support.types.null">NULL</a></span></dt></dl></dd><dt><span class="section"><a href="dynamic_memory.html">Dynamic Memory</a></span></dt><dt><span class="section"><a href="termination.html">Termination</a></span></dt><dd><dl><dt><span class="section"><a href="termination.html#support.termination.handlers">Termination Handlers</a></span></dt><dt><span class="section"><a href="termination.html#support.termination.verbose">Verbose Terminate Handler</a></span></dt></dl></dd></dl></div><p>
     This part deals with the functions called and objects created
     automatically during the course of a program's existence.
   </p><p>
@@ -58,7 +58,7 @@
     traits classes to give access to various implementation
     defined-aspects of the fundamental types. The traits classes --
     fourteen in total -- are all specializations of the template class
-    <code class="classname">numeric_limits</code>, documented <a class="link" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00593.html" target="">here</a>
+    <code class="classname">numeric_limits</code>, documented <a class="link" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00593.html">here</a>
     and defined as follows:
     </p><pre class="programlisting">
    template&lt;typename T&gt;
@@ -116,14 +116,14 @@
      overloading won't do what you expect. (This is why
      <span class="command"><strong>g++</strong></span> has a magic extension, so that
      <code class="constant">NULL</code> is always a pointer.)
-    </p><p>In his book <a class="link" href="http://www.awprofessional.com/titles/0-201-92488-9/" target=""><span class="emphasis"><em>Effective
+    </p><p>In his book <a class="link" href="http://www.awprofessional.com/titles/0-201-92488-9/"><span class="emphasis"><em>Effective
     C++</em></span></a>, Scott Meyers points out that the best way
     to solve this problem is to not overload on pointer-vs-integer
     types to begin with.  He also offers a way to make your own magic
     <code class="constant">NULL</code> that will match pointers before it
     matches integers.
     </p><p>See
-      <a class="link" href="http://www.awprofessional.com/titles/0-201-31015-5/" target="">the
+      <a class="link" href="http://www.awprofessional.com/titles/0-201-31015-5/">the
       Effective C++ CD example</a>
     </p></div></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="bk01pt02.html">Prev</a> </td><td align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td align="right"> <a accesskey="n" href="dynamic_memory.html">Next</a></td></tr><tr><td align="left" valign="top">Part II. 
     Standard Contents

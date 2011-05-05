@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>ABI Policy and Guidelines</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      ABI&#10;    , &#10;      version&#10;    , &#10;      dynamic&#10;    , &#10;      shared&#10;    , &#10;      compatibility&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance"/><link rel="prev" href="test.html" title="Test"/><link rel="next" href="api.html" title="API Evolution and Deprecation History"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">ABI Policy and Guidelines</th></tr><tr><td align="left"><a accesskey="p" href="test.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>ABI Policy and Guidelines</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      ABI&#10;    , &#10;      version&#10;    , &#10;      dynamic&#10;    , &#10;      shared&#10;    , &#10;      compatibility&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance"/><link rel="prev" href="test.html" title="Test"/><link rel="next" href="api.html" title="API Evolution and Deprecation History"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">ABI Policy and Guidelines</th></tr><tr><td align="left"><a accesskey="p" href="test.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
   Porting and Maintenance
   
 </th><td align="right"> <a accesskey="n" href="api.html">Next</a></td></tr></table><hr/></div><div class="section" title="ABI Policy and Guidelines"><div class="titlepage"><div><div><h2 class="title"><a id="appendix.porting.abi"/>ABI Policy and Guidelines</h2></div></div></div><p>
@@ -21,7 +21,7 @@
   virtual functions, etc. These details are defined as the compiler
   Application Binary Interface, or ABI. The GNU C++ compiler uses an
   industry-standard C++ ABI starting with version 3. Details can be
-  found in the <a class="link" href="http://www.codesourcery.com/public/cxx-abi/abi.html" target="">ABI
+  found in the <a class="link" href="http://www.codesourcery.com/public/cxx-abi/abi.html">ABI
   specification</a>.
 </p><p>
  The GNU C++ compiler, g++, has a compiler command line option to
@@ -30,7 +30,7 @@
   g++ command line options may change the ABI as a side-effect of
   use. Such flags include <code class="code">-fpack-struct</code> and
   <code class="code">-fno-exceptions</code>, but include others: see the complete
-  list in the GCC manual under the heading <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code%20Gen%20Options" target="">Options
+  list in the GCC manual under the heading <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code%20Gen%20Options">Options
   for Code Generation Conventions</a>.
 </p><p>
   The configure options used when building a specific libstdc++
@@ -115,7 +115,7 @@ compatible.
       Note 2: Not strictly required.
     </p><p>
       Note 3: This release (but not previous or subsequent) has one
-      known incompatibility, see <a class="link" href="http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33678" target="">33678</a>
+      known incompatibility, see <a class="link" href="http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33678">33678</a>
       in the GCC bug database.
     </p></li><li class="listitem"><p>Symbol versioning on the libstdc++.so binary.</p><p>mapfile: libstdc++-v3/config/abi/pre/gnu.ver</p><p>It is versioned with the following labels and version
    definitions, where the version definition is the maximum for a
@@ -289,7 +289,7 @@ class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
 statements or parameters: instead of passing instances of this
 class in registers, the compiler will be forced to use memory. See the
-section on <a class="link" href="http://www.codesourcery.com/public/cxx-abi/abi.html#calls" target="">Function
+section on <a class="link" href="http://www.codesourcery.com/public/cxx-abi/abi.html#calls">Function
 Calling Conventions and APIs</a>
  of the C++ ABI documentation for further details.
 </p></li></ol></div></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="abi.impl"/>Implementation</h3></div></div></div><div class="orderedlist"><ol class="orderedlist"><li class="listitem"><p>
@@ -479,41 +479,41 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 </p><p>
   For more background on this issue, see these bugzilla entries:
 </p><p>
-<a class="link" href="http://gcc.gnu.org/PR24660" target="">24660: versioning weak symbols in libstdc++</a>
+<a class="link" href="http://gcc.gnu.org/PR24660">24660: versioning weak symbols in libstdc++</a>
 </p><p>
-<a class="link" href="http://gcc.gnu.org/PR19664" target="">19664: libstdc++ headers should have pop/push of the visibility around the declarations</a>
-</p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"/>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id621956"/><p><span class="biblioid">
+<a class="link" href="http://gcc.gnu.org/PR19664">19664: libstdc++ headers should have pop/push of the visibility around the declarations</a>
+</p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"/>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id501388"/><p><span class="biblioid">
       . </span><span class="citetitle"><em class="citetitle">
 	ABIcheck, a vague idea of checking ABI compatibility
-      </em>. </span></p></div><div class="biblioentry"><a id="id621973"/><p><span class="biblioid">
+      </em>. </span></p></div><div class="biblioentry"><a id="id501406"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       C++ ABI Reference
-    </em>. </span></p></div><div class="biblioentry"><a id="id621990"/><p><span class="biblioid">
+    </em>. </span></p></div><div class="biblioentry"><a id="id501423"/><p><span class="biblioid">
       . </span><span class="citetitle"><em class="citetitle">
 	Intel Compilers for Linux Compatibility with the GNU Compilers
-      </em>. </span></p></div><div class="biblioentry"><a id="id622008"/><p><span class="biblioid">
+      </em>. </span></p></div><div class="biblioentry"><a id="id501441"/><p><span class="biblioid">
       . </span><span class="citetitle"><em class="citetitle">
 	Linker and Libraries Guide (document 819-0690)
-      </em>. </span></p></div><div class="biblioentry"><a id="id622026"/><p><span class="biblioid">
+      </em>. </span></p></div><div class="biblioentry"><a id="id501458"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       Sun Studio 11: C++ Migration Guide (document 819-3689)
-    </em>. </span></p></div><div class="biblioentry"><a id="id622043"/><p><span class="biblioid">
+    </em>. </span></p></div><div class="biblioentry"><a id="id501476"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       How to Write Shared Libraries
-    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span></p></div><div class="biblioentry"><a id="id622074"/><p><span class="biblioid">
+    </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span></p></div><div class="biblioentry"><a id="id501507"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       C++ ABI for the ARM Architecture
-    </em>. </span></p></div><div class="biblioentry"><a id="id622092"/><p><span class="biblioid">
+    </em>. </span></p></div><div class="biblioentry"><a id="id501524"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       Dynamic Shared Objects: Survey and Issues
     </em>. </span><span class="subtitle">
       ISO C++ J16/06-0046
-    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id622121"/><p><span class="biblioid">
+    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id501554"/><p><span class="biblioid">
       . </span><span class="citetitle"><em class="citetitle">
 	Versioning With Namespaces
       </em>. </span><span class="subtitle">
       ISO C++ J16/06-0083
-    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id622151"/><p><span class="biblioid">
+    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id501584"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       Binary Compatibility of Shared Libraries Implemented in C++
       on GNU/Linux Systems

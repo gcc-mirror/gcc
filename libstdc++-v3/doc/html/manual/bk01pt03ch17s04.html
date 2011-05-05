@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Design</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      debug&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="debug_mode.html" title="Chapter 17. Debug Mode"/><link rel="prev" href="bk01pt03ch17s03.html" title="Using"/><link rel="next" href="parallel_mode.html" title="Chapter 18. Parallel Mode"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch17s03.html">Prev</a> </td><th width="60%" align="center">Chapter 17. Debug Mode</th><td align="right"> <a accesskey="n" href="parallel_mode.html">Next</a></td></tr></table><hr/></div><div class="section" title="Design"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.debug_mode.design"/>Design</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Design</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      debug&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="debug_mode.html" title="Chapter 17. Debug Mode"/><link rel="prev" href="bk01pt03ch17s03.html" title="Using"/><link rel="next" href="parallel_mode.html" title="Chapter 18. Parallel Mode"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch17s03.html">Prev</a> </td><th width="60%" align="center">Chapter 17. Debug Mode</th><td align="right"> <a accesskey="n" href="parallel_mode.html">Next</a></td></tr></table><hr/></div><div class="section" title="Design"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.debug_mode.design"/>Design</h2></div></div></div><p>
   </p><div class="section" title="Goals"><div class="titlepage"><div><div><h3 class="title"><a id="debug_mode.design.goals"/>Goals</h3></div></div></div><p>
     </p><p> The libstdc++ debug mode replaces unsafe (but efficient) standard
   containers and iterators with semantically equivalent safe standard
@@ -194,7 +194,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   environments by minimizing dependencies.</p><p>Achieving link- and run-time coexistence is not a trivial
   implementation task. To achieve this goal we required a small
   extension to the GNU C++ compiler (since incorporated into the C++0x language specification, described in the GCC Manual for the C++ language as
-  <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Namespace-Association.html#Namespace-Association" target="">namespace
+  <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Namespace-Association.html#Namespace-Association">namespace
   association</a>), and a complex organization of debug- and
   release-modes. The end result is that we have achieved per-use
   recompilation but have had to give up some checking of the
@@ -353,7 +353,7 @@ test02()
       declarations disallow specialization. This method fails
       the <span class="emphasis"><em>correctness</em></span> criteria.</p></li><li class="listitem"><p><span class="emphasis"><em> Use implementation-specific properties of anonymous
     namespaces. </em></span>
-    See <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html" target=""> this post
+    See <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html"> this post
     </a>
     This method fails the <span class="emphasis"><em>correctness</em></span> criteria.</p></li><li class="listitem"><p><span class="emphasis"><em>Extension: allow reopening on namespaces</em></span>: This would
     allow the debug mode to effectively alias the
@@ -376,7 +376,7 @@ test02()
     functions taking no arguments in mixed-mode settings resulting in
     equivalent link names, <code class="code"> vector::push_back() </code> being
     one example.
-    See <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html" target="">link
+    See <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html">link
     name</a> </p></li></ul></div><p>Other options may exist for implementing the debug mode, many of
   which have probably been considered and others that may still be
   lurking. This list may be expanded over time to include other
@@ -392,13 +392,13 @@ test02()
     </p><p> There are several existing implementations of debug modes for C++
   standard library implementations, although none of them directly
   supports debugging for programs using libstdc++. The existing
-  implementations include:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p><a class="link" href="http://www.mathcs.sjsu.edu/faculty/horstman/safestl.html" target="">SafeSTL</a>:
+  implementations include:</p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p><a class="link" href="http://www.mathcs.sjsu.edu/faculty/horstman/safestl.html">SafeSTL</a>:
   SafeSTL was the original debugging version of the Standard Template
   Library (STL), implemented by Cay S. Horstmann on top of the
   Hewlett-Packard STL. Though it inspired much work in this area, it
   has not been kept up-to-date for use with modern compilers or C++
-  standard library implementations.</p></li><li class="listitem"><p><a class="link" href="http://www.stlport.org/" target="">STLport</a>: STLport is a free
-  implementation of the C++ standard library derived from the <a class="link" href="http://www.sgi.com/tech/stl/" target="">SGI implementation</a>, and
+  standard library implementations.</p></li><li class="listitem"><p><a class="link" href="http://www.stlport.org/">STLport</a>: STLport is a free
+  implementation of the C++ standard library derived from the <a class="link" href="http://www.sgi.com/tech/stl/">SGI implementation</a>, and
   ported to many other platforms. It includes a debug mode that uses a
   wrapper model (that in some ways inspired the libstdc++ debug mode
   design), although at the time of this writing the debug mode is

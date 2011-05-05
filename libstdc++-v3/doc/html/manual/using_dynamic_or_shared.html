@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Linking</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="using.html" title="Chapter 3. Using"/><link rel="prev" href="using_namespaces.html" title="Namespaces"/><link rel="next" href="using_concurrency.html" title="Concurrency"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Linking</th></tr><tr><td align="left"><a accesskey="p" href="using_namespaces.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td align="right"> <a accesskey="n" href="using_concurrency.html">Next</a></td></tr></table><hr/></div><div class="section" title="Linking"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.using.linkage"/>Linking</h2></div></div></div><div class="section" title="Almost Nothing"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.linkage.freestanding"/>Almost Nothing</h3></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Linking</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="using.html" title="Chapter 3. Using"/><link rel="prev" href="using_namespaces.html" title="Namespaces"/><link rel="next" href="using_concurrency.html" title="Concurrency"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Linking</th></tr><tr><td align="left"><a accesskey="p" href="using_namespaces.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td align="right"> <a accesskey="n" href="using_concurrency.html">Next</a></td></tr></table><hr/></div><div class="section" title="Linking"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.using.linkage"/>Linking</h2></div></div></div><div class="section" title="Almost Nothing"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.linkage.freestanding"/>Almost Nothing</h3></div></div></div><p>
 	Or as close as it gets: freestanding. This is a minimal
 	configuration, with only partial support for the standard
 	library. Assume only the following header files can be used:
@@ -51,10 +51,10 @@
       But how?
     </p><p>
 A quick read of the relevant part of the GCC
-      manual, <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Invoking-G_002b_002b.html#Invoking-G_002b_002b" target="">Compiling
+      manual, <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Invoking-G_002b_002b.html#Invoking-G_002b_002b">Compiling
       C++ Programs</a>, specifies linking against a C++
       library. More details from the
-      GCC <a class="link" href="http://gcc.gnu.org/faq.html#rpath" target="">FAQ</a>,
+      GCC <a class="link" href="http://gcc.gnu.org/faq.html#rpath">FAQ</a>,
       which states <span class="emphasis"><em>GCC does not, by default, specify a
       location so that the dynamic linker can find dynamic libraries at
       runtime.</em></span>

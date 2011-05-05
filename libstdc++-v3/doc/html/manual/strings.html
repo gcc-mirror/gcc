@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter 7.  Strings</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="prev" href="traits.html" title="Traits"/><link rel="next" href="localization.html" title="Chapter 8.  Localization"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 7. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter 7.  Strings</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="bk01pt02.html" title="Part II.  Standard Contents"/><link rel="prev" href="traits.html" title="Traits"/><link rel="next" href="localization.html" title="Chapter 8.  Localization"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 7. 
   Strings
   
 </th></tr><tr><td align="left"><a accesskey="p" href="traits.html">Prev</a> </td><th width="60%" align="center">Part II. 
     Standard Contents
-  </th><td align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 7.  Strings"><div class="titlepage"><div><div><h1 class="title"><a id="std.strings"/>
+  </th><td align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 7.  Strings"><div class="titlepage"><div><div><h2 class="title"><a id="std.strings"/>Chapter 7. 
   Strings
-  <a id="id595652" class="indexterm"/>
-</h1></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="strings.html#std.strings.string">String Classes</a></span></dt><dd><dl><dt><span class="section"><a href="strings.html#strings.string.simple">Simple Transformations</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.case">Case Sensitivity</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.character_types">Arbitrary Character Types</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.token">Tokenizing</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.shrink">Shrink to Fit</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.Cstring">CString (MFC)</a></span></dt></dl></dd></dl></div><div class="section" title="String Classes"><div class="titlepage"><div><div><h2 class="title"><a id="std.strings.string"/>String Classes</h2></div></div></div><div class="section" title="Simple Transformations"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.simple"/>Simple Transformations</h3></div></div></div><p>
+  <a id="id475084" class="indexterm"/>
+</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl><dt><span class="section"><a href="strings.html#std.strings.string">String Classes</a></span></dt><dd><dl><dt><span class="section"><a href="strings.html#strings.string.simple">Simple Transformations</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.case">Case Sensitivity</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.character_types">Arbitrary Character Types</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.token">Tokenizing</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.shrink">Shrink to Fit</a></span></dt><dt><span class="section"><a href="strings.html#strings.string.Cstring">CString (MFC)</a></span></dt></dl></dd></dl></div><div class="section" title="String Classes"><div class="titlepage"><div><div><h2 class="title"><a id="std.strings.string"/>String Classes</h2></div></div></div><div class="section" title="Simple Transformations"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.simple"/>Simple Transformations</h3></div></div></div><p>
       Here are Standard, simple, and portable ways to perform common
       transformations on a <code class="code">string</code> instance, such as
       "convert to all upper case." The word transformations
@@ -64,7 +64,7 @@
       are overloaded names (declared in <code class="code">&lt;cctype&gt;</code> and
       <code class="code">&lt;locale&gt;</code>) so the template-arguments for
       <code class="code">transform&lt;&gt;</code> cannot be deduced, as explained in
-      <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-11/msg00180.html" target="">this
+      <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-11/msg00180.html">this
       message</a>.
       
       At minimum, you can write short wrappers like
@@ -91,7 +91,7 @@
       optimize named temporaries out of existence.
    </p></div><div class="section" title="Case Sensitivity"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.case"/>Case Sensitivity</h3></div></div></div><p>
     </p><p>The well-known-and-if-it-isn't-well-known-it-ought-to-be
-      <a class="link" href="http://www.gotw.ca/gotw/" target="">Guru of the Week</a>
+      <a class="link" href="http://www.gotw.ca/gotw/">Guru of the Week</a>
       discussions held on Usenet covered this topic in January of 1998.
       Briefly, the challenge was, <span class="quote">“<span class="quote">write a 'ci_string' class which
       is identical to the standard 'string' class, but is
@@ -108,10 +108,10 @@
    assert( strcmp( s.c_str(), "AbCdE" ) == 0 );
    assert( strcmp( s.c_str(), "abcde" ) != 0 ); </pre><p>The solution is surprisingly easy.  The original answer was
    posted on Usenet, and a revised version appears in Herb Sutter's
-   book <span class="emphasis"><em>Exceptional C++</em></span> and on his website as <a class="link" href="http://www.gotw.ca/gotw/029.htm" target="">GotW 29</a>.
+   book <span class="emphasis"><em>Exceptional C++</em></span> and on his website as <a class="link" href="http://www.gotw.ca/gotw/029.htm">GotW 29</a>.
    </p><p>See?  Told you it was easy!</p><p>
      <span class="emphasis"><em>Added June 2000:</em></span> The May 2000 issue of C++
-     Report contains a fascinating <a class="link" href="http://lafstern.org/matt/col2_new.pdf" target=""> article</a> by
+     Report contains a fascinating <a class="link" href="http://lafstern.org/matt/col2_new.pdf"> article</a> by
      Matt Austern (yes, <span class="emphasis"><em>the</em></span> Matt Austern) on why
      case-insensitive comparisons are not as easy as they seem, and
      why creating a class is the <span class="emphasis"><em>wrong</em></span> way to go
@@ -123,7 +123,7 @@
       that nobody ever called me on it...)  The GotW question and answer
       remain useful instructional tools, however.
    </p><p><span class="emphasis"><em>Added September 2000:</em></span>  James Kanze provided a link to a
-      <a class="link" href="http://www.unicode.org/reports/tr21/tr21-5.html" target="">Unicode
+      <a class="link" href="http://www.unicode.org/reports/tr21/tr21-5.html">Unicode
       Technical Report discussing case handling</a>, which provides some
       very good information.
    </p></div><div class="section" title="Arbitrary Character Types"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.character_types"/>Arbitrary Character Types</h3></div></div></div><p>
@@ -169,15 +169,15 @@
       works and can be specialized even for <code class="code">int</code> and other
       built-in types.
    </p><p>If you want to use your own special character class, then you have
-      <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00163.html" target="">a lot
+      <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00163.html">a lot
       of work to do</a>, especially if you with to use i18n features
       (facets require traits information but don't have a traits argument).
-   </p><p>Another example of how to specialize char_traits was given <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00260.html" target="">on the
+   </p><p>Another example of how to specialize char_traits was given <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00260.html">on the
       mailing list</a> and at a later date was put into the file <code class="code">
       include/ext/pod_char_traits.h</code>.  We agree
       that the way it's used with basic_string (scroll down to main())
-      doesn't look nice, but that's because <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00236.html" target="">the
-      nice-looking first attempt</a> turned out to <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00242.html" target="">not
+      doesn't look nice, but that's because <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00236.html">the
+      nice-looking first attempt</a> turned out to <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00242.html">not
       be conforming C++</a>, due to the rule that CharT must be a POD.
       (See how tricky this is?)
    </p></div><div class="section" title="Tokenizing"><div class="titlepage"><div><div><h3 class="title"><a id="strings.string.token"/>Tokenizing</h3></div></div></div><p>
@@ -280,7 +280,7 @@ stringtok(Container &amp;container, string const &amp;in,
       their application from a Win32 platform, they discover that they
       are relying on special functions offered by the CString class.
    </p><p>Things are not as bad as they seem.  In
-      <a class="link" href="http://gcc.gnu.org/ml/gcc/1999-04n/msg00236.html" target="">this
+      <a class="link" href="http://gcc.gnu.org/ml/gcc/1999-04n/msg00236.html">this
       message</a>, Joe Buck points out a few very important things:
    </p><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem"><p>The Standard <code class="code">string</code> supports all the operations
 	     that CString does, with three exceptions.

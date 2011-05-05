@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Diagnostics</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="profile_mode.html" title="Chapter 19. Profile Mode"/><link rel="prev" href="bk01pt03ch19s06.html" title="Developer Information"/><link rel="next" href="ext_allocators.html" title="Chapter 20. Allocators"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Diagnostics</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch19s06.html">Prev</a> </td><th width="60%" align="center">Chapter 19. Profile Mode</th><td align="right"> <a accesskey="n" href="ext_allocators.html">Next</a></td></tr></table><hr/></div><div class="section" title="Diagnostics"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.profile_mode.diagnostics"/>Diagnostics</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Diagnostics</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="profile_mode.html" title="Chapter 19. Profile Mode"/><link rel="prev" href="bk01pt03ch19s06.html" title="Developer Information"/><link rel="next" href="ext_allocators.html" title="Chapter 20. Allocators"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Diagnostics</th></tr><tr><td align="left"><a accesskey="p" href="bk01pt03ch19s06.html">Prev</a> </td><th width="60%" align="center">Chapter 19. Profile Mode</th><td align="right"> <a accesskey="n" href="ext_allocators.html">Next</a></td></tr></table><hr/></div><div class="section" title="Diagnostics"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.profile_mode.diagnostics"/>Diagnostics</h2></div></div></div><p>
   The table below presents all the diagnostics we intend to implement.
   Each diagnostic has a corresponding compile time switch
   <code class="code">-D_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>.
@@ -18,7 +18,7 @@
   A high accuracy means that the diagnostic is unlikely to be wrong.
   These grades are not perfect.  They are just meant to guide users with
   specific needs or time budgets.
-  </p><div class="table"><a id="id607953"/><p class="title"><b>Table 19.2. Profile Diagnostics</b></p><div class="table-contents"><table summary="Profile Diagnostics" border="1"><colgroup><col style="text-align: left"/><col style="text-align: left"/><col style="text-align: left"/><col style="text-align: left"/><col style="text-align: left"/><col style="text-align: left"/><col style="text-align: left"/></colgroup><thead><tr><th style="text-align: left">Group</th><th style="text-align: left">Flag</th><th style="text-align: left">Benefit</th><th style="text-align: left">Cost</th><th style="text-align: left">Freq.</th><th style="text-align: left">Implemented</th><td class="auto-generated"> </td></tr></thead><tbody><tr><td style="text-align: left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.containers" title="Containers">
+  </p><div class="table"><a id="id487386"/><p class="title"><strong>Table 19.2. Profile Diagnostics</strong></p><div class="table-contents"><table summary="Profile Diagnostics" border="1"><colgroup><col style="text-align: left" class="c1"/><col style="text-align: left" class="c2"/><col style="text-align: left" class="c3"/><col style="text-align: left" class="c4"/><col style="text-align: left" class="c5"/><col style="text-align: left" class="c6"/><col style="text-align: left" class="c7"/></colgroup><thead><tr><th style="text-align: left">Group</th><th style="text-align: left">Flag</th><th style="text-align: left">Benefit</th><th style="text-align: left">Cost</th><th style="text-align: left">Freq.</th><th style="text-align: left">Implemented</th><td class="auto-generated"> </td></tr></thead><tbody><tr><td style="text-align: left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.containers" title="Containers">
     CONTAINERS</a></td><td style="text-align: left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.hashtable_too_small" title="Hashtable Too Small">
     HASHTABLE_TOO_SMALL</a></td><td style="text-align: left">10</td><td style="text-align: left">1</td><td style="text-align: left"> </td><td style="text-align: left">10</td><td style="text-align: left">yes</td></tr><tr><td style="text-align: left"> </td><td style="text-align: left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.hashtable_too_large" title="Hashtable Too Large">
     HASHTABLE_TOO_LARGE</a></td><td style="text-align: left">5</td><td style="text-align: left">1</td><td style="text-align: left"> </td><td style="text-align: left">10</td><td style="text-align: left">yes</td></tr><tr><td style="text-align: left"> </td><td style="text-align: left"><a class="link" href="bk01pt03ch19s07.html#manual.ext.profile_mode.analysis.inefficient_hash" title="Inefficient Hash">
@@ -375,9 +375,9 @@ foo.cc:1: advice: Change "list" to "forward_list".
   Quick Sort for a particular call context.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
   See papers:
-  <a class="link" href="http://portal.acm.org/citation.cfm?doid=1065944.1065981" target="">
+  <a class="link" href="http://portal.acm.org/citation.cfm?doid=1065944.1065981">
   A framework for adaptive algorithm selection in STAPL</a> and
-  <a class="link" href="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227" target="">
+  <a class="link" href="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227">
   Optimizing Sorting with Machine Learning Algorithms</a>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>60%.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span> Change sort algorithm
@@ -442,7 +442,7 @@ foo.cc:7: advice: Insert prefetch instruction.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>Allocation can be tuned
   to a specific traversal pattern, to result in better data locality.
   See paper:
-  <a class="link" href="http://www.springerlink.com/content/8085744l00x72662/" target="">
+  <a class="link" href="http://www.springerlink.com/content/8085744l00x72662/">
   Custom Memory Allocation for Free</a>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>30%.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>
@@ -501,7 +501,7 @@ the allocation sequence or switching to a structure conscious allocator.
   Keep a shadow for each container.  Record iterator dereferences and
   container member accesses.  Issue advice for elements referenced by
   multiple threads.
-  See paper: <a class="link" href="http://portal.acm.org/citation.cfm?id=207110.207148" target="">
+  See paper: <a class="link" href="http://portal.acm.org/citation.cfm?id=207110.207148">
   The LRPD test: speculative run-time parallelization of loops with
   privatization and reduction parallelization</a>.
   </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
