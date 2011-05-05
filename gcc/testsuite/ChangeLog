@@ -1,3 +1,8 @@
+2011-05-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/48787
+	gfortran.dg/round_3.f08: Add more checks to test case.
+
 2011-05-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.dg/pr47878.f90, gfortran.dg/endfile_3.f90,
