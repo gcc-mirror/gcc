@@ -1,3 +1,9 @@
+2011-05-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48749
+	* class.c (resolves_to_fixed_type_p): Don't look closely
+	in templates.
+
 2011-04-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48656
