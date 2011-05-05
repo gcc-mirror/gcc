@@ -1,3 +1,8 @@
+2011-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48381
+	* gcc.c-torture/compile/pr48381.c: New test.
+
 2011-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/opt-1.c: Add --param min-insn-to-prefetch -ratio=0
