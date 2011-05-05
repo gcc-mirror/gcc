@@ -13883,7 +13883,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 
 	  mem_loc_result = mem_loc_descriptor (SUBREG_REG (rtl),
 					       GET_MODE (SUBREG_REG (rtl)),
-					       mode, initialized);
+					       mem_mode, initialized);
 	  if (mem_loc_result == NULL)
 	    break;
 	  type_die = base_type_for_mode (mode, 0);
@@ -13906,7 +13906,11 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 
     case REG:
       if (GET_MODE_CLASS (mode) != MODE_INT
-	  || GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
+	  || (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      && (mode != Pmode || mem_mode == VOIDmode)
+#endif
+	      ))
 	{
 	  dw_die_ref type_die;
 
@@ -14049,8 +14053,12 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	 pool.  */
     case CONST:
     case SYMBOL_REF:
-      if (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
-	  || GET_MODE_CLASS (mode) != MODE_INT)
+      if (GET_MODE_CLASS (mode) != MODE_INT
+	  || (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      && (mode != Pmode || mem_mode == VOIDmode)
+#endif
+	      ))
 	break;
       if (GET_CODE (rtl) == SYMBOL_REF
 	  && SYMBOL_REF_TLS_MODEL (rtl) != TLS_MODEL_NONE)
@@ -14288,7 +14296,13 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       break;
 
     case CONST_INT:
-      if (GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE)
+      if (GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  || (mode == Pmode
+	      && mem_mode != VOIDmode
+	      && trunc_int_for_mode (INTVAL (rtl), ptr_mode) == INTVAL (rtl))
+#endif
+	  )
 	{
 	  mem_loc_result = int_loc_descriptor (INTVAL (rtl));
 	  break;
