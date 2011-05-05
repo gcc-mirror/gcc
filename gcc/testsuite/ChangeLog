@@ -1,3 +1,8 @@
+2011-05-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gfortran.dg/fmt_g0_6.f08: Use dg-options "-ffloat-store".
+	Fix typo.
+
 2011-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/48381
