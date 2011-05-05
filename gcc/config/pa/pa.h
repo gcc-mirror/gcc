@@ -64,6 +64,11 @@ extern unsigned long total_code_bytes;
 #define TARGET_HPUX_11_11 0
 #endif
 
+/* HP-UX 11i multibyte and UNIX 2003 extensions.  */
+#ifndef TARGET_HPUX_11_31
+#define TARGET_HPUX_11_31 0
+#endif
+
 /* HP-UX long double library.  */
 #ifndef HPUX_LONG_DOUBLE_LIBRARY
 #define HPUX_LONG_DOUBLE_LIBRARY 0
