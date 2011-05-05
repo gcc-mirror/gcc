@@ -1,3 +1,9 @@
+2011-05-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (TARGET_ASM_OUTPUT_MI_THUNK): Define.
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): Likewise.
+	(spu_output_mi_thunk): New function.
+
 2011-05-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/sol2.h (ASM_OUTPUT_CALL): Use
