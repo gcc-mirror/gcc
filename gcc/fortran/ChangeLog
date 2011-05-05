@@ -1,3 +1,8 @@
+2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-decl.c (trans_function_start): Do not set
+	dont_save_pending_sizes_p.
+
 2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans.h (gfc_chainon_list): Delete.

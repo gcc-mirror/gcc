@@ -403,12 +403,6 @@ tree_rest_of_compilation (tree fndecl)
   input_location = DECL_SOURCE_LOCATION (fndecl);
   init_function_start (fndecl);
 
-  /* Even though we're inside a function body, we still don't want to
-     call expand_expr to calculate the size of a variable-sized array.
-     We haven't necessarily assigned RTL to all variables yet, so it's
-     not safe to try to expand expressions involving them.  */
-  cfun->dont_save_pending_sizes_p = 1;
-
   gimple_register_cfg_hooks ();
 
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/

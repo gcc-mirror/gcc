@@ -2116,12 +2116,6 @@ trans_function_start (gfc_symbol * sym)
 
   init_function_start (fndecl);
 
-  /* Even though we're inside a function body, we still don't want to
-     call expand_expr to calculate the size of a variable-sized array.
-     We haven't necessarily assigned RTL to all variables yet, so it's
-     not safe to try to expand expressions involving them.  */
-  cfun->dont_save_pending_sizes_p = 1;
-
   /* function.c requires a push at the start of the function.  */
   pushlevel (0);
 }

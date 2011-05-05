@@ -1,3 +1,21 @@
+2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (get_pending_sizes): Remove prototype.
+	(put_pending_size): Likewise.
+	(put_pending_sizes): Likewise.
+	* stor-layout.c (pending_sizes): Delete.
+	(get_pending_sizes): Likewise.
+	(put_pending_size): Likewise.
+	(put_pending_sizes): Likewise.
+	(variable_size): Do not call put_pending_size and tidy up.
+	* function.h (struct function): Remove dont_save_pending_sizes_p.
+	* lto-streamer-in.c (input_function): Do not stream it.
+	* lto-streamer-out.c (output_function): Likewise.
+	* tree-inline.c (initialize_cfun): Do not copy it.
+	* c-decl.c (store_parm_decls): Do not set it.
+	* omp-low.c (create_task_copyfn): Likewise.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+
 2011-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdf_internal_rex64): Simplify nested "if"

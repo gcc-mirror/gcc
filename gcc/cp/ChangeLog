@@ -1,3 +1,8 @@
+2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (start_preparsed_function): Do not set
+	dont_save_pending_sizes_p.
+
 2011-05-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* parser.c (cp_parser_objc_method_definition_list): Update call to

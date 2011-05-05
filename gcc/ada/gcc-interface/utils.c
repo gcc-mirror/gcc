@@ -1954,11 +1954,6 @@ begin_subprog_body (tree subprog_decl)
     DECL_CONTEXT (param_decl) = subprog_decl;
 
   make_decl_rtl (subprog_decl);
-
-  /* We handle pending sizes via the elaboration of types, so we don't need to
-     save them.  This causes them to be marked as part of the outer function
-     and then discarded.  */
-  get_pending_sizes ();
 }
 
 /* Finish the definition of the current subprogram BODY and finalize it.  */
@@ -1972,10 +1967,6 @@ end_subprog_body (tree body)
   BLOCK_SUPERCONTEXT (current_binding_level->block) = fndecl;
   DECL_INITIAL (fndecl) = current_binding_level->block;
   gnat_poplevel ();
-
-  /* We handle pending sizes via the elaboration of types, so we don't
-     need to save them.  */
-  get_pending_sizes ();
 
   /* Mark the RESULT_DECL as being in this subprogram. */
   DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;

@@ -1,3 +1,9 @@
+2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (begin_subprog_body): Do not call
+	get_pending_sizes.
+	(end_subprog_body): Likewise.
+
 2011-05-04  Richard Guenther  <rguenther@suse.de>
 
 	* gcc-interface/trans.c (gnat_to_gnu): Remove zero notrunc argument to

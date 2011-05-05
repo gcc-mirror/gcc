@@ -8173,12 +8173,6 @@ store_parm_decls (void)
      other pending sizes would be handled by gimplify_parameters.  */
   if (arg_info->pending_sizes)
     add_stmt (arg_info->pending_sizes);
-
-  /* Even though we're inside a function body, we still don't want to
-     call expand_expr to calculate the size of a variable-sized array.
-     We haven't necessarily assigned RTL to all variables yet, so it's
-     not safe to try to expand expressions involving them.  */
-  cfun->dont_save_pending_sizes_p = 1;
 }
 
 

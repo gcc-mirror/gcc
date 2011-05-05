@@ -65,10 +65,6 @@ static int excess_unit_span (HOST_WIDE_INT, HOST_WIDE_INT, HOST_WIDE_INT,
 #endif
 extern void debug_rli (record_layout_info);
 
-/* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
-
-static GTY(()) VEC(tree,gc) *pending_sizes;
-
 /* Show that REFERENCE_TYPES are internal and should use address_mode.
    Called only by front end.  */
 
@@ -78,48 +74,12 @@ internal_reference_types (void)
   reference_types_internal = 1;
 }
 
-/* Get a VEC of all the objects put on the pending sizes list.  */
-
-VEC(tree,gc) *
-get_pending_sizes (void)
-{
-  VEC(tree,gc) *chain = pending_sizes;
-
-  pending_sizes = 0;
-  return chain;
-}
-
-/* Add EXPR to the pending sizes list.  */
-
-void
-put_pending_size (tree expr)
-{
-  /* Strip any simple arithmetic from EXPR to see if it has an underlying
-     SAVE_EXPR.  */
-  expr = skip_simple_arithmetic (expr);
-
-  if (TREE_CODE (expr) == SAVE_EXPR)
-    VEC_safe_push (tree, gc, pending_sizes, expr);
-}
-
-/* Put a chain of objects into the pending sizes list, which must be
-   empty.  */
-
-void
-put_pending_sizes (VEC(tree,gc) *chain)
-{
-  gcc_assert (!pending_sizes);
-  pending_sizes = chain;
-}
-
 /* Given a size SIZE that may not be a constant, return a SAVE_EXPR
    to serve as the actual size-expression for a type or decl.  */
 
 tree
 variable_size (tree size)
 {
-  tree save;
-
   /* Obviously.  */
   if (TREE_CONSTANT (size))
     return size;
@@ -135,26 +95,7 @@ variable_size (tree size)
   if (lang_hooks.decls.global_bindings_p () < 0)
     return size;
 
-  size = save_expr (size);
-
-  /* If an array with a variable number of elements is declared, and
-     the elements require destruction, we will emit a cleanup for the
-     array.  That cleanup is run both on normal exit from the block
-     and in the exception-handler for the block.  Normally, when code
-     is used in both ordinary code and in an exception handler it is
-     `unsaved', i.e., all SAVE_EXPRs are recalculated.  However, we do
-     not wish to do that here; the array-size is the same in both
-     places.  */
-  save = skip_simple_arithmetic (size);
-
-  if (cfun && cfun->dont_save_pending_sizes_p)
-    /* The front-end doesn't want us to keep a list of the expressions
-       that determine sizes for variable size objects.  Trust it.  */
-    return size;
-
-  put_pending_size (save);
-
-  return size;
+  return save_expr (size);
 }
 
 /* An array of functions used for self-referential size computation.  */

@@ -597,15 +597,6 @@ struct GTY(()) function {
   /* Nonzero if current function uses stdarg.h or equivalent.  */
   unsigned int stdarg : 1;
 
-  /* Nonzero if the back-end should not keep track of expressions that
-     determine the size of variable-sized objects.  Normally, such
-     expressions are saved away, and then expanded when the next
-     function is started.  For example, if a parameter has a
-     variable-sized type, then the size of the parameter is computed
-     when the function body is entered.  However, some front-ends do
-     not desire this behavior.  */
-  unsigned int dont_save_pending_sizes_p : 1;
-
   unsigned int after_inlining : 1;
   unsigned int always_inline_functions_inlined : 1;
 
