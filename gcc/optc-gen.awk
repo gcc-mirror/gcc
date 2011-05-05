@@ -629,6 +629,8 @@ if (have_save) {
 					var_target_range[name] = "0, 255"
 				else if (otype ~ "^signed +char *$")
 					var_target_range[name] = "-128, 127"
+				if (otype == var_type(flags[i]))
+					var_target_range[name] = ""
 			}
 			else
 				var_target_other[n_target_other++] = name;
