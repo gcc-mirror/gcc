@@ -1,3 +1,9 @@
+2011-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/48898
+	* config/i386/netware.c (i386_nlm_maybe_mangle_decl_assembler_name):
+	Fix typo in "ccvt" variable name.
+
 2011-05-06  Tristan Gingold  <gingold@adacore.com>
 
 	PR target/48895
