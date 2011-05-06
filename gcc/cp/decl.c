@@ -7615,8 +7615,9 @@ stabilize_save_expr_r (tree *expr_p, int *walk_subtrees, void *data)
       cp_walk_tree (&op, stabilize_save_expr_r, data, pset);
       if (TREE_SIDE_EFFECTS (op))
 	TREE_OPERAND (expr, 0) = get_temp_regvar (TREE_TYPE (op), op);
+      *walk_subtrees = 0;
     }
-  else if (!EXPR_P (expr))
+  else if (!EXPR_P (expr) || !TREE_SIDE_EFFECTS (expr))
     *walk_subtrees = 0;
   return NULL;
 }

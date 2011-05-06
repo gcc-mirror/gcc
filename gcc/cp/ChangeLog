@@ -1,5 +1,8 @@
 2011-05-06  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (stabilize_save_expr_r): Set *walk_subtrees as
+	appropriate.
+
 	PR c++/48909
 	* semantics.c (cxx_eval_conditional_expression): Check
 	integer_zerop instead.
