@@ -1,3 +1,8 @@
+2011-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_handle_option): Don't handle and
+	fall through for OPT_mcmodel_.
+
 2011-05-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_asm_trampoline_template): Comment

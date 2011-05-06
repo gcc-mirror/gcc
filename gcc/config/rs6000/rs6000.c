@@ -4214,11 +4214,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       break;
 #endif
 
-#if defined (HAVE_LD_LARGE_TOC) && defined (TARGET_USES_LINUX64_OPT)
-    case OPT_mcmodel_:
-      /* Fall through.  */
-#endif
-
 #ifdef TARGET_USES_AIX64_OPT
     case OPT_maix64:
 #else
