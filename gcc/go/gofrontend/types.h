@@ -2369,16 +2369,8 @@ class Interface_type : public Type
   do_import(Import*);
 
   // Make a struct for an empty interface type.
-  static tree
-  empty_type_tree(Gogo*);
-
-  // Make a struct for non-empty interface type.
-  static tree
-  non_empty_type_tree(source_location);
-
-  // Fill in the fields for a named interface type.
-  tree
-  fill_in_tree(Gogo*, tree);
+  static Btype*
+  get_backend_empty_interface_type(Gogo*);
 
   static Type*
   make_interface_type_descriptor_type();
