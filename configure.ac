@@ -449,14 +449,6 @@ esac
 # Disable libmudflap on some systems.
 if test x$enable_libmudflap = x ; then
     case "${target}" in
-    *-catamount-*)
-        # Disable for Cray catamount machine 
-        noconfigdirs="$noconfigdirs target-libmudflap"
-        ;;
-    *-cnl-*)
-        # Disable for Cray XT CNL machine 
-        noconfigdirs="$noconfigdirs target-libmudflap"
-        ;;
     *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | bfin*-*-uclinux* | *-*-kopensolaris*-gnu)
         # Enable libmudflap by default in GNU and friends.
 	;;
@@ -2794,17 +2786,7 @@ fi
 
 # Default to --enable-multilib.
 if test x${enable_multilib} = x ; then
-  case "${host}" in
-    *-catamount-*)
-      # no multilib for Cray catamount machine
-      ;;
-    *-cnl-*)
-      # or Cray XT CNL machine
-      ;;
-    *)
-      target_configargs="--enable-multilib ${target_configargs}"
-      ;;
-  esac
+  target_configargs="--enable-multilib ${target_configargs}"
 fi
 
 # Pass --with-newlib if appropriate.  Note that target_configdirs has
@@ -2951,13 +2933,6 @@ AC_ARG_ENABLE(upc-link-script,
 [
   if test x${use_gnu_ld} != xno ; then
     case "$target" in
-      # disable linker script for CRAY XT3/4 cnl/catamount
-      *-catamount-*)
-        enable_upc_link_script=no
-        ;;
-      *-cnl-*)
-        enable_upc_link_script=no
-        ;;
       # disable linker script for Apple Mac OS X
       *-*-darwin*)
         enable_upc_link_script=no

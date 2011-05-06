@@ -1814,10 +1814,7 @@ emit_tls_common (tree decl ATTRIBUTE_UNUSED,
   ASM_OUTPUT_TLS_COMMON (asm_out_file, decl, name, size);
   return true;
 #else
-  {
-    char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
-    sorry ("thread-local COMMON data not implemented for %s", name);
-  }
+  sorry ("thread-local COMMON data not implemented");
   return true;
 #endif
 }
@@ -1959,7 +1956,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   if (! dont_output_data
       && ! host_integerp (DECL_SIZE_UNIT (decl), 1))
     {
-      gcc_assert (DECL_SIZE_UNIT (decl) != NULL_TREE);
       error ("size of variable %q+D is too large", decl);
       return;
     }

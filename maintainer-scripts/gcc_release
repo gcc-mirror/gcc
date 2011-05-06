@@ -209,7 +209,7 @@ EOF
   fi
 
   # Move message catalogs to source directory.
-  [ -d ../objdir/gcc/po ] && mv ../objdir/gcc/po/*.gmo gcc/po
+  mv ../objdir/gcc/po/*.gmo gcc/po/
   [ -f libcpp/po/cpplib.pot ] && mv ../objdir/libcpp/po/*.gmo libcpp/po/
 
   # Create a "MD5SUMS" file to use for checking the validity of the release.

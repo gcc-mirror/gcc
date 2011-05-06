@@ -115,7 +115,7 @@ Target RejectNegative Joined Var(ia64_deferred_options) Defer
 Specify range of registers to make fixed
 
 mtls-size=
-Target RejectNegative Joined UInteger Var(ia64_tls_size) Init(64)
+Target RejectNegative Joined UInteger Var(ia64_tls_size) Init(22)
 Specify bit size of immediate TLS offsets
 
 mtune=

@@ -549,14 +549,6 @@ case $basic_machine in
 		basic_machine=j90-cray
 		os=-unicos
 		;;
-	catamount)
-		basic_machine=x86_64-catamount
-		os=-linux
-		;;
-	cnl)
-		basic_machine=x86_64-cnl
-		os=-linux
-		;;
 	craynv)
 		basic_machine=craynv-cray
 		os=-unicosmp

@@ -5916,6 +5916,7 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 				 G_("return makes pointer from integer "
 				     "without a cast"));
         }
+
       return convert (type, rhs);
     }
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)

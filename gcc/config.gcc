@@ -1239,16 +1239,6 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 	esac
 	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
 	;;
-x86_64-catamount-*)
-        tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h \
-                 i386/x86-64.h i386/linux64.h i386/cray-xt-cat.h"
-        tmake_file="${tmake_file} i386/t-linux64 i386/t-cray-xt i386/t-crtfm t-dfprules"
-        ;;
-x86_64-cnl-*)
-        tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h \
-                 i386/x86-64.h i386/linux64.h i386/cray-xt-cnl.h"
-        tmake_file="${tmake_file} i386/t-linux64 i386/t-cray-xt i386/t-crtfm t-dfprules"
-        ;;
 x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h \
 		 i386/x86-64.h i386/gnu-user64.h i386/linux64.h"

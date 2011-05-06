@@ -6741,6 +6741,26 @@ is_pseudo_reg (const_rtx rtl)
 	      && REGNO (SUBREG_REG (rtl)) >= FIRST_PSEUDO_REGISTER));
 }
 
+/* Return a reference to a type, with its const and volatile qualifiers
+   removed.  */
+
+static inline tree
+type_main_variant (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+
+  /* ??? There really should be only one main variant among any group of
+     variants of a given type (and all of the MAIN_VARIANT values for all
+     members of the group should point to that one type) but sometimes the C
+     front-end messes this up for array types, so we work around that bug
+     here.  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    while (type != TYPE_MAIN_VARIANT (type))
+      type = TYPE_MAIN_VARIANT (type);
+
+  return type;
+}
+
 /* Return nonzero if the given type node represents a tagged type.  */
 
 static inline int
@@ -12884,18 +12904,17 @@ modified_type_die (tree type, int type_quals,
   else
     {
       gen_type_die (type, context_die);
-      
-      /* We have to get the TYPE_MAIN_VARIANT here (and pass that to the
+
+      /* We have to get the type_main_variant here (and pass that to the
 	 `lookup_type_die' routine) because the ..._TYPE node we have
 	 might simply be a *copy* of some original type node (where the
 	 copy was created to help us keep track of typedef names) and
 	 that copy might have a different TYPE_UID from the original
 	 ..._TYPE node.  */
-      if (TREE_CODE (type) != ARRAY_TYPE
-          && TREE_CODE (type) != VECTOR_TYPE)
-	return lookup_type_die (TYPE_MAIN_VARIANT (type));
+      if (TREE_CODE (type) != VECTOR_TYPE)
+	return lookup_type_die (type_main_variant (type));
       else
-	/* Arrays and vectors have the debugging information in the type,
+	/* Vectors have the debugging information in the type,
 	   not the main variant.  */
 	return lookup_type_die (type);
     }
@@ -20706,11 +20725,10 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
   /* We are going to output a DIE to represent the unqualified version
      of this type (i.e. without any const or volatile qualifiers) so
      get the main variant (i.e. the unqualified version) of this type
-     now.  (Arrays and vectors are special because the debugging info
-     is in the cloned type itself).  */
-  if (TREE_CODE (type) != ARRAY_TYPE
-      && TREE_CODE (type) != VECTOR_TYPE)
-    type = TYPE_MAIN_VARIANT (type);
+     now.  (Vectors are special because the debugging info is in the
+     cloned type itself).  */
+  if (TREE_CODE (type) != VECTOR_TYPE)
+    type = type_main_variant (type);
 
   if (TREE_ASM_WRITTEN (type))
     return;

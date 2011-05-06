@@ -1,3 +1,39 @@
+2011-05-05  Gary Funck  <gary@intrepid.com>
+
+	Make changes that bring the GUPC branch more closely in sync. 
+	with the GCC trunk.  Revert any fixes that are not UPC-specific.
+	Remove gratuitous re-formatting.
+
+	* ../libstdc++-v3/config/os/bionic/ctype_noninline.h: Delete.
+	  This file should have been removed in a previous merge
+	  with the trunk.
+	* ../configure.ac: Remove Cray Catamount/CNL support.
+	* ../configure: Regenerate.
+	* ../config.sub: Remove Cray Catamount/CNL support.
+	* config.gcc: Remove Cray Catamount/CNL support.
+	* ../maintainer-scripts/gcc_release: Revert to trunk.
+        * c-family/c-common.h: Define parse_optimize_options.  Its definition
+	  was missed in a previous merge with the trunk.
+	* dwarf2out.c: Revert a fix which removed the 'type_main_variant'
+	  procedure.
+	* dwarf2out.c: Revert a fix that added a check for VECTOR_TYPE
+	  in addition to ARRAY_TYPE.
+	* c-typeck.c: Remove an extra newline character.
+	* varasm.c: Revert a fix that improved an error message
+	  when TLS common data is unimplemented.
+	* varasm.c: Revert a gcc_assert that had been added which
+	  checked for a null DECL_SIZE_UNIT field.
+	* emultls.c: Revert to trunk. Remove possible fix.
+	* Makefile.in: Revert extra blank line that is present
+	  in the trunk version.
+	* Makefile.in: Revert a fix that handled long shell
+	  argument lists for plugin headers.
+	* config/ia64/ia64.opt: Revert an option setting
+	  that increased the default TLS address range.
+	* config/ia64/crtbegin.asm: Revert to trunk.
+	  Removes an extra newline character.
+	* ChangeLog.upc: Spell check.
+
 2011-05-03  Gary Funck  <gary@intrepid.com>
 
 	* c-family/c-common.c: Remove extraneous FIXME/TODO comments.
@@ -95,7 +131,7 @@
 
 	* varasm.c: Call error() directly with a format specifier,
 	  rather than using sprintf() to format the message.
-	  This should make it easier to internationlize UPC's error messages.
+	  This should make it easier to internationalize UPC's error messages.
 
 2011-03-20  Gary Funck  <gary@intrepid.com>
 
@@ -148,8 +184,8 @@ libgcc/
 
 2011-02-23  Gary Funck  <gary@intrepid.com>
 
-	* c-decl.c (undeclared_variable): fix typo. Inadvertenly
-	removed nagation on following 'if'.
+	* c-decl.c (undeclared_variable): fix typo. Inadvertently
+	removed negation on following 'if'.
 
 2011-02-22  Gary Funck  <gary@intrepid.com>
 
@@ -189,7 +225,7 @@ libgcc/
 2010-10-19  Gary Funck  <gary@intrepid.com>
 
 	* c-typeck.c: Fix typo in previous fix
-	  which led to a mis-compare for equal block sizess.
+	  which led to a mis-compare for equal block sizes.
 
 2010-10-18  Gary Funck  <gary@intrepid.com>
 
@@ -197,7 +233,7 @@ libgcc/
 	  diagnosed as an error
 
 	  The conversion from any type (shared or not) to
-	  a shared type is likely either meanigless or an error.  This update
+	  a shared type is likely either meaningless or an error.  This update
 	  makes any conversion to a shared type, an error.
 
 2010-10-18  Gary Funck  <gary@intrepid.com>
@@ -216,7 +252,7 @@ libgcc/
 	  matching routine declaration.
 
 	  When checking for type compatibility, shared qualified types must
-	  have the same block foactor.  This check was missing from
+	  have the same block factor.  This check was missing from
 	  comptypes_internal().  This update adds the check for blocking
 	  factor equality.
 
@@ -273,7 +309,7 @@ libgcc/
 	  temporary type that is a clone of the element type and then set its
 	  block size using the given layout qualifier.  Then compare the block
 	  size of the temporary (the declaration) to the block size specified
-	  in the typedef.  This complexity is needed, becuase the '[*]' block
+	  in the typedef.  This complexity is needed, because the '[*]' block
 	  size needs to be calculated, and the '[]' needs to be mapped into a
 	  zero block size.
 
@@ -364,7 +400,7 @@ libgcc/
 	  The __upc_forall_depth variable should be defined in gcc-upc-lib.h.
 	  The compiler will generate code that references this variable in
 	  order to implement nested upc_forall semantics.  If there is a
-	  commpiler build or install problem, this variable may not be found.
+	  compiler build or install problem, this variable may not be found.
 	  In this case, terminate with an internal_error().
 
 2010-09-26  Gary Funck  <gary@intrepid.com>
@@ -378,7 +414,7 @@ libgcc/
 	       upc_forall (;;;d) {...} The compiler did not properly handle
 	  the empty "condition" clause, and did not recover well when it was
 	  determined that the use of a double value, "d" above, was neither a
-	  pointer-to-shared nor an intger expression.  The update implements a
+	  pointer-to-shared nor an integer expression.  The update implements a
 	  fix for both issues.
 
 	  See also: gcc/c-parser.c gcc/upc/upc-act.c
@@ -443,12 +479,12 @@ libgcc/
 	* c-decl.c: Fix Bug 402: ICE: '[*]' layout factor on
 	  multi-dimensional shared array with dynamic threads.
 
-	  This declaration caused an internatl compiler error when compiled
+	  This declaration caused an internal compiler error when compiled
 	  with dynamic threads:
 	      shared [*] int A[THREADS][16]; The bug was discovered when
 	  compiling the RTED_UPC test suite.
 
-	  The fix is to process layout qualifiiers after the entire array type
+	  The fix is to process layout qualifiers after the entire array type
 	  has been built.  Otherwise, we try to calculate the blocksize on a
 	  shared array type that has not had its "size depends upon the value
 	  of THREADS" flag set.
@@ -460,9 +496,9 @@ libgcc/
 2010-07-11  Gary Funck  <gary@intrepid.com>
 
 	Fix a bug where a statement in c_build_qualified_type()
-	in the trunk had been inadverntently deleted.
+	in the trunk had been inadvertently deleted.
 	This bug showed up in the IA64 port, because jmpbuf's
-	on that arehitecture must be 16 byte aligned, and they were not.
+	on that architecture must be 16 byte aligned, and they were not.
 	c-typeck.c (c_build_qualified_type): Revive the deleted line.
 
 2010-07-08  Gary Funck  <gary@intrepid.com>
