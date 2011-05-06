@@ -2665,6 +2665,11 @@ rs6000_option_override_internal (bool global_init_p)
     warning (0, "-malign-power is not supported for 64-bit Darwin;"
 	     " it is incompatible with the installed C and C++ libraries");
 
+  if (global_options_set.x_rs6000_spe_abi
+      && rs6000_spe_abi
+      && !TARGET_SPE_ABI)
+    error ("not configured for SPE ABI");
+
   /* Numerous experiment shows that IRA based loop pressure
      calculation works better for RTL loop invariant motion on targets
      with enough (>= 32) registers.  It is an expensive optimization.
@@ -4335,65 +4340,13 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       break;
 #endif
 
-    case OPT_mabi_:
-      if (!strcmp (arg, "altivec"))
-	{
-	  opts_set->x_rs6000_altivec_abi = true;
-	  opts->x_rs6000_altivec_abi = 1;
+    case OPT_mabi_altivec:
+      /* Enabling the AltiVec ABI turns off the SPE ABI.  */
+      opts->x_rs6000_spe_abi = 0;
+      break;
 
-	  /* Enabling the AltiVec ABI turns off the SPE ABI.  */
-	  opts->x_rs6000_spe_abi = 0;
-	}
-      else if (! strcmp (arg, "no-altivec"))
-	{
-	  opts_set->x_rs6000_altivec_abi = true;
-	  opts->x_rs6000_altivec_abi = 0;
-	}
-      else if (! strcmp (arg, "spe"))
-	{
-	  opts_set->x_rs6000_spe_abi = true;
-	  opts->x_rs6000_spe_abi = 1;
-	  opts->x_rs6000_altivec_abi = 0;
-	  if (!TARGET_SPE_ABI)
-	    error_at (loc, "not configured for ABI: '%s'", arg);
-	}
-      else if (! strcmp (arg, "no-spe"))
-	{
-	  opts_set->x_rs6000_spe_abi = true;
-	  opts->x_rs6000_spe_abi = 0;
-	}
-
-      /* These are here for testing during development only, do not
-	 document in the manual please.  */
-      else if (! strcmp (arg, "d64"))
-	{
-	  opts->x_rs6000_darwin64_abi = 1;
-	  warning_at (loc, 0, "using darwin64 ABI");
-	}
-      else if (! strcmp (arg, "d32"))
-	{
-	  opts->x_rs6000_darwin64_abi = 0;
-	  warning_at (loc, 0, "using old darwin ABI");
-	}
-
-      else if (! strcmp (arg, "ibmlongdouble"))
-	{
-	  opts_set->x_rs6000_ieeequad = true;
-	  opts->x_rs6000_ieeequad = 0;
-	  warning_at (loc, 0, "using IBM extended precision long double");
-	}
-      else if (! strcmp (arg, "ieeelongdouble"))
-	{
-	  opts_set->x_rs6000_ieeequad = true;
-	  opts->x_rs6000_ieeequad = 1;
-	  warning_at (loc, 0, "using IEEE extended precision long double");
-	}
-
-      else
-	{
-	  error_at (loc, "unknown ABI specified: '%s'", arg);
-	  return false;
-	}
+    case OPT_mabi_spe:
+      opts->x_rs6000_altivec_abi = 0;
       break;
 
     case OPT_mcpu_:

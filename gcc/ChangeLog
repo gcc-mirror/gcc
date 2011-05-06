@@ -1,3 +1,16 @@
+2011-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.opt (rs6000_ieeequad, rs6000_altivec_abi,
+	rs6000_spe_abi, rs6000_darwin64_abi): Remove TargetVariable
+	entries.
+	(mabi=): Replace with separate entries for mabi=altivec,
+	mabi=no-altivec, mabi=spe, mabi=no-spe, mabi=d64, mabi=d32,
+	mabi=ieeelongdouble and mabi=ibmlongdouble.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Move
+	check for -mabi=spe without SPE ABI support here.
+	(rs6000_handle_option): Replace OPT_mabi_ handling with
+	OPT_mabi_altivec and OPT_mabi_spe handling.
+
 2011-05-06  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (contains_subprogram_definition): New function.
