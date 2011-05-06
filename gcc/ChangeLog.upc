@@ -70,6 +70,10 @@
 	  occurred if there is an error in the barrier id
 	  expression.  Map error_mark_node into NULL.
 
+2011-04-22  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 172873 into gupc branch.
+
 2011-04-19  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 172359 into gupc branch.
@@ -569,3 +573,7 @@ libgcc/
 	not referenced" warnings.
 	* libupc/testsuite/libupc.upc/intrepid/test18.upc:
 	Likewise.
+
+2010-03-01 Gary Funck  <gary@intrepid.com>
+
+	Create gupc branch from trunk version 157149.
