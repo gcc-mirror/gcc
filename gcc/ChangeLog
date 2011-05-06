@@ -1,3 +1,9 @@
+2011-05-07  Alan Modra  <amodra@gmail.com>
+
+	PR target/48900
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Use
+	const0_rtx as the arg to the dummy __tls_get_addr libcall.
+
 2011-05-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40975
