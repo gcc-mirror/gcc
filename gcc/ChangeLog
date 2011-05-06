@@ -1,3 +1,10 @@
+2011-05-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_asm_trampoline_template): Comment
+	instruction sizes.
+	(s390_trampoline_init): Replace UNITS_PER_WORD with
+	UNITS_PER_LONG.
+
 2011-05-06  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/48252

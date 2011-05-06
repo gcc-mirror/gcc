@@ -9281,16 +9281,16 @@ s390_asm_trampoline_template (FILE *file)
 
   if (TARGET_64BIT)
     {
-      output_asm_insn ("basr\t%1,0", op);
-      output_asm_insn ("lmg\t%0,%1,14(%1)", op);
-      output_asm_insn ("br\t%1", op);
+      output_asm_insn ("basr\t%1,0", op);         /* 2 byte */
+      output_asm_insn ("lmg\t%0,%1,14(%1)", op);  /* 6 byte */
+      output_asm_insn ("br\t%1", op);             /* 2 byte */
       ASM_OUTPUT_SKIP (file, (HOST_WIDE_INT)(TRAMPOLINE_SIZE - 10));
     }
   else
     {
-      output_asm_insn ("basr\t%1,0", op);
-      output_asm_insn ("lm\t%0,%1,6(%1)", op);
-      output_asm_insn ("br\t%1", op);
+      output_asm_insn ("basr\t%1,0", op);         /* 2 byte */
+      output_asm_insn ("lm\t%0,%1,6(%1)", op);    /* 4 byte */
+      output_asm_insn ("br\t%1", op);             /* 2 byte */
       ASM_OUTPUT_SKIP (file, (HOST_WIDE_INT)(TRAMPOLINE_SIZE - 8));
     }
 }
@@ -9306,11 +9306,11 @@ s390_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
   rtx mem;
 
   emit_block_move (m_tramp, assemble_trampoline_template (),
-		   GEN_INT (2*UNITS_PER_WORD), BLOCK_OP_NORMAL);
+		   GEN_INT (2 * UNITS_PER_LONG), BLOCK_OP_NORMAL);
 
-  mem = adjust_address (m_tramp, Pmode, 2*UNITS_PER_WORD);
+  mem = adjust_address (m_tramp, Pmode, 2 * UNITS_PER_LONG);
   emit_move_insn (mem, cxt);
-  mem = adjust_address (m_tramp, Pmode, 3*UNITS_PER_WORD);
+  mem = adjust_address (m_tramp, Pmode, 3 * UNITS_PER_LONG);
   emit_move_insn (mem, fnaddr);
 }
 
