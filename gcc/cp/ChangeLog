@@ -1,5 +1,11 @@
 2011-05-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48446
+	* decl.c (stabilize_save_expr_r, stabilize_vla_size): New.
+	(grokdeclarator): Use stabilize_vla_size.
+	* init.c (get_temp_regvar): No longer static.
+	* cp-tree.h: Declare it.
+
 	PR c++/48089
 	* semantics.c (potential_constant_expression_1): Don't allow *this
 	in a constructor.

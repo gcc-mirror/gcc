@@ -1,5 +1,8 @@
 2011-05-06  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/ext/vla10.C: New.
+	* c-c++-common/vla-1.c: New.
+
 	* g++.dg/cpp0x/constexpr-48089.C: New.
 
 2011-05-06  Dodji Seketeli  <dodji@redhat.com>
