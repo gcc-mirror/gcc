@@ -1,3 +1,16 @@
+2011-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	PR fortran/48820
+	* lang.opt (std=f2008tr): New.
+	* libgfortran.h (GFC_STD_F2008_TR): New macro constant.
+	* decl.c (verify_c_interop_param): Allow OPTIONAL in BIND(C)
+	procedures for -std=f2008tr/gnu/legacy.
+	(gfc_match_import): Set sym to NULL.
+	* options.c (set_default_std_flags,gfc_handle_option): Handle
+	-std=f2008tr.
+	* invoke.texi (-std=): Document -std=f2008tr.
+
 2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-decl.c (gfc_trans_entry_master_switch): Call build_case_label.

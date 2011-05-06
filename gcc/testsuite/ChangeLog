@@ -1,3 +1,12 @@
+2011-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	PR fortran/48820
+	* gfortran.dg/bind_c_usage_22.f90: New.
+	* gfortran.dg/bind_c_usage_23.f90: New.
+	* gfortran.dg/bind_c_usage_24.f90: New.
+	* gfortran.dg/bind_c_usage_24_c.c: New.
+
 2011-05-06  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48838
