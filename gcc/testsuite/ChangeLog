@@ -1,5 +1,7 @@
 2011-05-06  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-missing.C: New.
+
 	* g++.dg/ext/vla10.C: New.
 	* c-c++-common/vla-1.c: New.
 

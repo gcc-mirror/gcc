@@ -1,5 +1,9 @@
 2011-05-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48911
+	* semantics.c (cxx_eval_array_reference): Handle implicit
+	initializers.
+
 	PR c++/48446
 	* decl.c (stabilize_save_expr_r, stabilize_vla_size): New.
 	(grokdeclarator): Use stabilize_vla_size.
