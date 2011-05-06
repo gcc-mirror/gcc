@@ -877,7 +877,47 @@ function_and_variable_visibility (bool whole_program)
 	       segfault though. */
 	    dissolve_same_comdat_group_list (node);
 	}
+
+      if (node->thunk.thunk_p
+	  && TREE_PUBLIC (node->decl))
+	{
+	  struct cgraph_node *decl_node = node;
+
+	  while (decl_node->thunk.thunk_p)
+	    decl_node = decl_node->callees->callee;
+
+	  /* Thunks have the same visibility as function they are attached to.
+	     For some reason C++ frontend don't seem to care. I.e. in 
+	     g++.dg/torture/pr41257-2.C the thunk is not comdat while function
+	     it is attached to is.
+
+	     We also need to arrange the thunk into the same comdat group as
+	     the function it reffers to.  */
+	  if (DECL_COMDAT (decl_node->decl))
+	    {
+	      DECL_COMDAT (node->decl) = 1;
+	      DECL_COMDAT_GROUP (node->decl) = DECL_COMDAT_GROUP (decl_node->decl);
+	      if (!node->same_comdat_group)
+		{
+		  node->same_comdat_group = decl_node;
+		  if (!decl_node->same_comdat_group)
+		    decl_node->same_comdat_group = node;
+		  else
+		    {
+		      struct cgraph_node *n;
+		      for (n = decl_node->same_comdat_group;
+			   n->same_comdat_group != decl_node;
+			   n = n->same_comdat_group)
+			;
+		      n->same_comdat_group = node;
+		    }
+		}
+	    }
+	  if (DECL_EXTERNAL (decl_node->decl))
+	    DECL_EXTERNAL (node->decl) = 1;
+	}
       node->local.local = cgraph_local_node_p (node);
+
     }
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     {

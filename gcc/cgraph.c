@@ -595,14 +595,16 @@ cgraph_same_body_alias (struct cgraph_node *decl_node, tree alias, tree decl)
    See comments in thunk_adjust for detail on the parameters.  */
 
 struct cgraph_node *
-cgraph_add_thunk (struct cgraph_node *decl_node, tree alias, tree decl,
+cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
+		  tree alias, tree decl,
 		  bool this_adjusting,
 		  HOST_WIDE_INT fixed_offset, HOST_WIDE_INT virtual_value,
 		  tree virtual_offset,
 		  tree real_alias)
 {
-  struct cgraph_node *node = cgraph_get_node (alias);
+  struct cgraph_node *node;
 
+  node = cgraph_get_node (alias);
   if (node)
     {
       gcc_assert (node->local.finalized);
@@ -610,8 +612,7 @@ cgraph_add_thunk (struct cgraph_node *decl_node, tree alias, tree decl,
       cgraph_remove_node (node);
     }
   
-  node = cgraph_same_body_alias_1 (decl_node, alias, decl);
-  gcc_assert (node);
+  node = cgraph_create_node (alias);
   gcc_checking_assert (!virtual_offset
 		       || double_int_equal_p
 		            (tree_to_double_int (virtual_offset),
@@ -622,6 +623,15 @@ cgraph_add_thunk (struct cgraph_node *decl_node, tree alias, tree decl,
   node->thunk.virtual_offset_p = virtual_offset != NULL;
   node->thunk.alias = real_alias;
   node->thunk.thunk_p = true;
+  node->local.finalized = true;
+
+  if (cgraph_decide_is_function_needed (node, decl))
+    cgraph_mark_needed_node (node);
+
+  if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+      || (DECL_VIRTUAL_P (decl)
+	  && (DECL_COMDAT (decl) || DECL_EXTERNAL (decl))))
+    cgraph_mark_reachable_node (node);
   return node;
 }
 
@@ -1875,7 +1885,21 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   if (node->only_called_at_exit)
     fprintf (f, " only_called_at_exit");
 
-  fprintf (f, "\n  called by: ");
+  fprintf (f, "\n");
+
+  if (node->thunk.thunk_p)
+    {
+      fprintf (f, "  thunk of %s (asm: %s) fixed offset %i virtual value %i has "
+	       "virtual offset %i)\n",
+	       lang_hooks.decl_printable_name (node->thunk.alias, 2),
+	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->thunk.alias)),
+	       (int)node->thunk.fixed_offset,
+	       (int)node->thunk.virtual_value,
+	       (int)node->thunk.virtual_offset_p);
+    }
+  
+  fprintf (f, "  called by: ");
+
   for (edge = node->callers; edge; edge = edge->next_caller)
     {
       fprintf (f, "%s/%i ", cgraph_node_name (edge->caller),
@@ -1927,20 +1951,10 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   if (node->same_body)
     {
       struct cgraph_node *n;
-      fprintf (f, "  aliases & thunks:");
+      fprintf (f, "  aliases:");
       for (n = node->same_body; n; n = n->next)
         {
           fprintf (f, " %s/%i", cgraph_node_name (n), n->uid);
-	  if (n->thunk.thunk_p)
-	    {
-	      fprintf (f, " (thunk of %s fixed offset %i virtual value %i has "
-		       "virtual offset %i",
-	      	       lang_hooks.decl_printable_name (n->thunk.alias, 2),
-		       (int)n->thunk.fixed_offset,
-		       (int)n->thunk.virtual_value,
-		       (int)n->thunk.virtual_offset_p);
-	      fprintf (f, ")");
-	    }
 	  if (DECL_ASSEMBLER_NAME_SET_P (n->decl))
 	    fprintf (f, " (asm: %s)", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
 	}

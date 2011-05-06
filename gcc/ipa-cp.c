@@ -951,6 +951,10 @@ ipcp_need_redirect_p (struct cgraph_edge *cs)
   if (!n_cloning_candidates)
     return false;
 
+  /* We can't redirect anything in thunks, yet.  */
+  if (cs->caller->thunk.thunk_p)
+    return true;
+
   if ((orig = ipcp_get_orig_node (node)) != NULL)
     node = orig;
   if (ipcp_get_orig_node (cs->caller))
@@ -1508,8 +1512,9 @@ ipcp_generate_summary (void)
     fprintf (dump_file, "\nIPA constant propagation start:\n");
   ipa_register_cgraph_hooks ();
 
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
+  /* FIXME: We could propagate through thunks happily and we could be
+     even able to clone them, if needed.  Do that later.  */
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
       {
 	/* Unreachable nodes should have been eliminated before ipcp.  */
 	gcc_assert (node->needed || node->reachable);

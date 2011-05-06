@@ -2196,7 +2196,8 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
   for (i = 0; i < n_nodes; i++)
     {
       node = lto_cgraph_encoder_deref (encoder, i);
-      if (lto_cgraph_encoder_encode_body_p (encoder, node))
+      if (lto_cgraph_encoder_encode_body_p (encoder, node)
+	  && !node->thunk.thunk_p)
 	{
 #ifdef ENABLE_CHECKING
 	  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
