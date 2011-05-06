@@ -1060,14 +1060,22 @@ verify_c_interop_param (gfc_symbol *sym)
 	      retval = FAILURE;
 	    }
 
-	  if (sym->attr.optional == 1)
+	  if (sym->attr.optional == 1 && sym->attr.value)
 	    {
-	      gfc_error ("Variable '%s' at %L cannot have the "
-			 "OPTIONAL attribute because procedure '%s'"
-			 " is BIND(C)", sym->name, &(sym->declared_at),
+	      gfc_error ("Variable '%s' at %L cannot have both the OPTIONAL "
+			 "and the VALUE attribute because procedure '%s' "
+			 "is BIND(C)", sym->name, &(sym->declared_at),
 			 sym->ns->proc_name->name);
 	      retval = FAILURE;
 	    }
+	  else if (sym->attr.optional == 1
+		   && gfc_notify_std (GFC_STD_F2008_TR, "TR29113: Variable '%s' "
+				      "at %L with OPTIONAL attribute in "
+				      "procedure '%s' which is BIND(C)",
+				      sym->name, &(sym->declared_at),
+				      sym->ns->proc_name->name)
+		      == FAILURE)
+	    retval = FAILURE;
 
           /* Make sure that if it has the dimension attribute, that it is
 	     either assumed size or explicit shape.  */
@@ -2985,6 +2993,7 @@ gfc_match_import (void)
 
   for(;;)
     {
+      sym = NULL;
       m = gfc_match (" %n", name);
       switch (m)
 	{
