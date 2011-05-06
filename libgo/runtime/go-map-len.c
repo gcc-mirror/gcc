@@ -18,6 +18,6 @@ __go_map_len (struct __go_map *map)
 {
   if (map == NULL)
     return 0;
-  __go_assert (map->__element_count == (size_t) (int) map->__element_count);
+  __go_assert (map->__element_count == (uintptr_t) (int) map->__element_count);
   return map->__element_count;
 }

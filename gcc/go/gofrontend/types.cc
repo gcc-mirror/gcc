@@ -845,7 +845,7 @@ Type::get_tree(Gogo* gogo)
 
   if (this->forward_declaration_type() != NULL
       || this->named_type() != NULL)
-    return this->get_tree_without_hash(gogo);
+    return type_to_tree(this->get_btype_without_hash(gogo));
 
   if (this->is_error_type())
     return error_mark_node;
@@ -865,7 +865,7 @@ Type::get_tree(Gogo* gogo)
       return ins.first->second;
     }
 
-  tree t = this->get_tree_without_hash(gogo);
+  tree t = type_to_tree(this->get_btype_without_hash(gogo));
 
   if (ins.first->second == NULL_TREE)
     ins.first->second = t;
@@ -884,35 +884,6 @@ Type::get_tree(Gogo* gogo)
   return t;
 }
 
-// Return a tree for a type without looking in the hash table for
-// identical types.  This is used for named types, since there is no
-// point to looking in the hash table for them.
-
-tree
-Type::get_tree_without_hash(Gogo* gogo)
-{
-  if (this->tree_ == NULL_TREE)
-    {
-      tree t = this->do_get_tree(gogo);
-
-      // For a recursive function or pointer type, we will temporarily
-      // return a circular pointer type during the recursion.  We
-      // don't want to record that for a forwarding type, as it may
-      // confuse us later.
-      if (this->forward_declaration_type() != NULL
-	  && gogo->backend()->is_circular_pointer_type(tree_to_type(t)))
-	return t;
-
-      if (gogo == NULL || !gogo->named_types_are_converted())
-	return t;
-
-      this->tree_ = t;
-      go_preserve_from_gc(t);
-    }
-
-  return this->tree_;
-}
-
 // Return the backend representation for a type without looking in the
 // hash table for identical types.  This is used for named types,
 // since a named type is never identical to any other type.
@@ -920,7 +891,26 @@ Type::get_tree_without_hash(Gogo* gogo)
 Btype*
 Type::get_btype_without_hash(Gogo* gogo)
 {
-  return tree_to_type(this->get_tree_without_hash(gogo));
+  if (this->tree_ == NULL_TREE)
+    {
+      Btype* bt = tree_to_type(this->do_get_tree(gogo));
+
+      // For a recursive function or pointer type, we will temporarily
+      // return a circular pointer type during the recursion.  We
+      // don't want to record that for a forwarding type, as it may
+      // confuse us later.
+      if (this->forward_declaration_type() != NULL
+	  && gogo->backend()->is_circular_pointer_type(bt))
+	return bt;
+
+      if (gogo == NULL || !gogo->named_types_are_converted())
+	return bt;
+
+      tree t = type_to_tree(bt);
+      this->tree_ = t;
+    }
+
+  return tree_to_type(this->tree_);
 }
 
 // Return a tree representing a zero initialization for this type.
@@ -1596,8 +1586,8 @@ class Error_type : public Type
 
  protected:
   tree
-  do_get_tree(Gogo*)
-  { return error_mark_node; }
+  do_get_tree(Gogo* gogo)
+  { return type_to_tree(gogo->backend()->error_type()); }
 
   tree
   do_get_init_tree(Gogo*, tree, bool)
@@ -3228,8 +3218,11 @@ class Nil_type : public Type
 
  protected:
   tree
-  do_get_tree(Gogo*)
-  { return ptr_type_node; }
+  do_get_tree(Gogo* gogo)
+  {
+    Btype* bt = gogo->backend()->pointer_type(gogo->backend()->void_type());
+    return type_to_tree(bt);
+  }
 
   tree
   do_get_init_tree(Gogo*, tree type_tree, bool is_clear)
@@ -5064,61 +5057,44 @@ Map_type::do_check_make_expression(Expression_list* args,
   return true;
 }
 
-// Get a tree for a map type.  A map type is represented as a pointer
-// to a struct.  The struct is __go_map in libgo/map.h.
+// Get the backend representation for a map type.  A map type is
+// represented as a pointer to a struct.  The struct is __go_map in
+// libgo/map.h.
 
 tree
 Map_type::do_get_tree(Gogo* gogo)
 {
-  static tree type_tree;
-  if (type_tree == NULL_TREE)
+  static Btype* backend_map_type;
+  if (backend_map_type == NULL)
     {
-      tree struct_type = make_node(RECORD_TYPE);
+      std::vector<Backend::Btyped_identifier> bfields(4);
 
-      tree map_descriptor_type = gogo->map_descriptor_type();
-      tree const_map_descriptor_type =
-	build_qualified_type(map_descriptor_type, TYPE_QUAL_CONST);
-      tree name = get_identifier("__descriptor");
-      tree field = build_decl(BUILTINS_LOCATION, FIELD_DECL, name,
-			      build_pointer_type(const_map_descriptor_type));
-      DECL_CONTEXT(field) = struct_type;
-      TYPE_FIELDS(struct_type) = field;
-      tree last_field = field;
+      Type* pdt = Type::make_type_descriptor_ptr_type();
+      bfields[0].name = "__descriptor";
+      bfields[0].btype = tree_to_type(pdt->get_tree(gogo));
+      bfields[0].location = BUILTINS_LOCATION;
 
-      name = get_identifier("__element_count");
-      field = build_decl(BUILTINS_LOCATION, FIELD_DECL, name, sizetype);
-      DECL_CONTEXT(field) = struct_type;
-      DECL_CHAIN(last_field) = field;
-      last_field = field;
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+      bfields[1].name = "__element_count";
+      bfields[1].btype = tree_to_type(uintptr_type->get_tree(gogo));
+      bfields[1].location = BUILTINS_LOCATION;
 
-      name = get_identifier("__bucket_count");
-      field = build_decl(BUILTINS_LOCATION, FIELD_DECL, name, sizetype);
-      DECL_CONTEXT(field) = struct_type;
-      DECL_CHAIN(last_field) = field;
-      last_field = field;
+      bfields[2].name = "__bucket_count";
+      bfields[2].btype = bfields[1].btype;
+      bfields[2].location = BUILTINS_LOCATION;
 
-      name = get_identifier("__buckets");
-      field = build_decl(BUILTINS_LOCATION, FIELD_DECL, name,
-			 build_pointer_type(ptr_type_node));
-      DECL_CONTEXT(field) = struct_type;
-      DECL_CHAIN(last_field) = field;
+      Btype* bvt = gogo->backend()->void_type();
+      Btype* bpvt = gogo->backend()->pointer_type(bvt);
+      Btype* bppvt = gogo->backend()->pointer_type(bpvt);
+      bfields[3].name = "__buckets";
+      bfields[3].btype = bppvt;
+      bfields[3].location = BUILTINS_LOCATION;
 
-      layout_type(struct_type);
-
-      // Give the struct a name for better debugging info.
-      name = get_identifier("__go_map");
-      tree type_decl = build_decl(BUILTINS_LOCATION, TYPE_DECL, name,
-				  struct_type);
-      DECL_ARTIFICIAL(type_decl) = 1;
-      TYPE_NAME(struct_type) = type_decl;
-      go_preserve_from_gc(type_decl);
-      rest_of_decl_compilation(type_decl, 1, 0);
-
-      type_tree = build_pointer_type(struct_type);
-      go_preserve_from_gc(type_tree);
+      Btype *bt = gogo->backend()->struct_type(bfields);
+      bt = gogo->backend()->named_type("__go_map", bt, BUILTINS_LOCATION);
+      backend_map_type = gogo->backend()->pointer_type(bt);
     }
-
-  return type_tree;
+  return type_to_tree(backend_map_type);
 }
 
 // Initialize a map.
@@ -5354,19 +5330,17 @@ Channel_type::do_check_make_expression(Expression_list* args,
 // libgo/runtime/channel.h.
 
 tree
-Channel_type::do_get_tree(Gogo*)
+Channel_type::do_get_tree(Gogo* gogo)
 {
-  static tree type_tree;
-  if (type_tree == NULL_TREE)
+  static Btype* backend_channel_type;
+  if (backend_channel_type == NULL)
     {
-      tree ret = make_node(RECORD_TYPE);
-      TYPE_NAME(ret) = get_identifier("__go_channel");
-      TYPE_STUB_DECL(ret) = build_decl(BUILTINS_LOCATION, TYPE_DECL, NULL_TREE,
-				       ret);
-      type_tree = build_pointer_type(ret);
-      go_preserve_from_gc(type_tree);
+      std::vector<Backend::Btyped_identifier> bfields;
+      Btype* bt = gogo->backend()->struct_type(bfields);
+      bt = gogo->backend()->named_type("__go_channel", bt, BUILTINS_LOCATION);
+      backend_channel_type = gogo->backend()->pointer_type(bt);
     }
-  return type_tree;
+  return type_to_tree(backend_channel_type);
 }
 
 // Initialize a channel variable.
@@ -8433,7 +8407,7 @@ Forward_declaration_type::do_traverse(Traverse* traverse)
   return TRAVERSE_CONTINUE;
 }
 
-// Get a tree for the type.
+// Get the backend representation for the type.
 
 tree
 Forward_declaration_type::do_get_tree(Gogo* gogo)
@@ -8445,15 +8419,13 @@ Forward_declaration_type::do_get_tree(Gogo* gogo)
     return error_mark_node;
 
   // We represent an undefined type as a struct with no fields.  That
-  // should work fine for the middle-end, since the same case can
-  // arise in C.
-  Named_object* no = this->named_object();
-  tree type_tree = make_node(RECORD_TYPE);
-  tree id = no->get_id(gogo);
-  tree decl = build_decl(no->location(), TYPE_DECL, id, type_tree);
-  TYPE_NAME(type_tree) = decl;
-  layout_type(type_tree);
-  return type_tree;
+  // should work fine for the backend, since the same case can arise
+  // in C.
+  std::vector<Backend::Btyped_identifier> fields;
+  Btype* bt = gogo->backend()->struct_type(fields);
+  bt = gogo->backend()->named_type(this->name(), bt,
+				   this->named_object()->location());
+  return type_to_tree(bt);
 }
 
 // Build a type descriptor for a forwarded type.
