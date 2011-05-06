@@ -1,3 +1,8 @@
+2011-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdf_internal_nointeger): Apply "*"
+	constraint modifier to "r".
+
 2011-05-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_handle_option): Don't handle and
@@ -7,8 +12,7 @@
 
 	* config/s390/s390.c (s390_asm_trampoline_template): Comment
 	instruction sizes.
-	(s390_trampoline_init): Replace UNITS_PER_WORD with
-	UNITS_PER_LONG.
+	(s390_trampoline_init): Replace UNITS_PER_WORD with UNITS_PER_LONG.
 
 2011-05-06  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
