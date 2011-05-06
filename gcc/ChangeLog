@@ -1,3 +1,8 @@
+2011-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdf_internal_nointeger): Apply "*"
+	constraint modifier to "r".
+
 2011-05-06  Alan Modra  <amodra@gmail.com>
 
 	PR target/48900
@@ -8,14 +13,12 @@
 
 	* config/s390/s390.c (s390_asm_trampoline_template): Comment
 	instruction sizes.
-	(s390_trampoline_init): Replace UNITS_PER_WORD with
-	UNITS_PER_LONG.
+	(s390_trampoline_init): Replace UNITS_PER_WORD with UNITS_PER_LONG.
 
 2011-05-06  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/48252
-	* config/arm/neon.md (neon_vtrn<mode>): Fix typo
-	from earlier commit.
+	* config/arm/neon.md (neon_vtrn<mode>): Fix typo from earlier commit.
 
 2011-05-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
