@@ -1,3 +1,9 @@
+2011-05-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48911
+	* semantics.c (cxx_eval_array_reference): Handle implicit
+	initializers.
+
 2011-05-06  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* cp-tree.h (type_of_this_parm, class_of_this_parm): New functions.
