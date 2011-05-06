@@ -125,12 +125,9 @@ main (int argc, char *argv[])
   FILE *comfile;
   int comfd;
   int outlen, maxoutlen = 4000;
-  char *cwd;
   char temp_filename[] = TEMP_FILE SUFFIX;
   char command[256];
   int status;
-
-  cwd = getcwd (0, 1024);
 
   if (argc < 2)
     {
