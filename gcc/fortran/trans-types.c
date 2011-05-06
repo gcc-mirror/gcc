@@ -1205,7 +1205,7 @@ gfc_get_element_type (tree type)
 int
 gfc_is_nodesc_array (gfc_symbol * sym)
 {
-  gcc_assert (sym->attr.dimension);
+  gcc_assert (sym->attr.dimension || sym->attr.codimension);
 
   /* We only want local arrays.  */
   if (sym->attr.pointer || sym->attr.allocatable)
@@ -1598,7 +1598,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
   char name[16 + 2*GFC_RANK_DIGITS + 1 + 1];
   int idx = 2 * (codimen + dimen - 1) + restricted;
 
-  gcc_assert (dimen >= 1 && codimen + dimen <= GFC_MAX_DIMENSIONS);
+  gcc_assert (codimen + dimen >= 1 && codimen + dimen <= GFC_MAX_DIMENSIONS);
   if (gfc_array_descriptor_base[idx])
     return gfc_array_descriptor_base[idx];
 
@@ -1996,7 +1996,7 @@ gfc_sym_type (gfc_symbol * sym)
   if (!restricted)
     type = gfc_nonrestricted_type (type);
 
-  if (sym->attr.dimension)
+  if (sym->attr.dimension || sym->attr.codimension)
     {
       if (gfc_is_nodesc_array (sym))
         {
