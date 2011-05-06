@@ -47,22 +47,6 @@ enum rs6000_dependence_cost rs6000_sched_costly_dep = no_dep_costly
 TargetVariable
 enum rs6000_nop_insertion rs6000_sched_insert_nops = sched_finish_none
 
-;; IEEE quad extended precision long double.
-TargetVariable
-unsigned char rs6000_ieeequad
-
-;; Nonzero to use AltiVec ABI.
-TargetVariable
-unsigned char rs6000_altivec_abi
-
-;; Nonzero if we want SPE ABI extensions.
-TargetVariable
-unsigned char rs6000_spe_abi
-
-;; Nonzero if we want Darwin's struct-by-value-in-regs ABI.
-TargetVariable
-unsigned char rs6000_darwin64_abi
-
 ;; Non-zero to allow overriding loop alignment.
 TargetVariable
 unsigned char can_override_loop_align
@@ -385,9 +369,37 @@ mdebug=
 Target RejectNegative Joined
 -mdebug=	Enable debug output
 
-mabi=
-Target RejectNegative Joined
--mabi=	Specify ABI to use
+mabi=altivec
+Target RejectNegative Var(rs6000_altivec_abi) Save
+Use the AltiVec ABI extensions
+
+mabi=no-altivec
+Target RejectNegative Var(rs6000_altivec_abi, 0)
+Do not use the AltiVec ABI extensions
+
+mabi=spe
+Target RejectNegative Var(rs6000_spe_abi) Save
+Use the SPE ABI extensions
+
+mabi=no-spe
+Target RejectNegative Var(rs6000_spe_abi, 0)
+Do not use the SPE ABI extensions
+
+; These are here for testing during development only, do not document
+; in the manual please.
+
+; If we want Darwin's struct-by-value-in-regs ABI.
+mabi=d64
+Target RejectNegative Undocumented Warn(using darwin64 ABI) Var(rs6000_darwin64_abi) Save
+
+mabi=d32
+Target RejectNegative Undocumented Warn(using old darwin ABI) Var(rs6000_darwin64_abi, 0)
+
+mabi=ieeelongdouble
+Target RejectNegative Undocumented Warn(using IEEE extended precision long double) Var(rs6000_ieeequad) Save
+
+mabi=ibmlongdouble
+Target RejectNegative Undocumented Warn(using IBM extended precision long double) Var(rs6000_ieeequad, 0)
 
 mcpu=
 Target RejectNegative Joined
