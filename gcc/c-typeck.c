@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "gimple.h"
 #include "c-family/c-objc.h"
+#include "c-family/c-upc.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */
@@ -3946,7 +3947,7 @@ build_unary_op (location_t location,
   /* The result of an operation on objects that
      are UPC shared qualified, must not be shared qualified.  */
   if (upc_shared_type_p (TREE_TYPE (ret)))
-    TREE_TYPE (ret) = upc_get_unshared_type (TREE_TYPE (ret));
+    TREE_TYPE (ret) = build_upc_unshared_type (TREE_TYPE (ret));
   if (TREE_CODE (ret) == INTEGER_CST && !TREE_OVERFLOW (ret)
       && !(TREE_CODE (xarg) == INTEGER_CST && !TREE_OVERFLOW (xarg)))
     ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
@@ -5102,7 +5103,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
      This will prevent the inadvertent creation of temporaries
      with "shared asserted.  */
   if (upc_shared_type_p (lhstype))
-    lhstype = upc_get_unshared_type (lhstype);
+    lhstype = build_upc_unshared_type (lhstype);
 
   newrhs = convert_for_assignment (location, lhstype, newrhs, rhs_origtype,
 				   ic_assign, npc, NULL_TREE, NULL_TREE, 0);
@@ -6877,7 +6878,7 @@ really_start_incremental_init (tree type)
 
   /* The result of the constructor must not be UPC shared qualified */
   if (upc_shared_type_p (constructor_type))
-    constructor_type = upc_get_unshared_type (constructor_type);
+    constructor_type = build_upc_unshared_type (constructor_type);
   if (TREE_CODE (constructor_type) == RECORD_TYPE
       || TREE_CODE (constructor_type) == UNION_TYPE)
     {

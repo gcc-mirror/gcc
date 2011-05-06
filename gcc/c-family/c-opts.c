@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "c-common.h"
 #include "c-pragma.h"
+#include "c-upc.h"
 #include "flags.h"
 #include "toplev.h"
 #include "langhooks.h"

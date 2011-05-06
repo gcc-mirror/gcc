@@ -3742,7 +3742,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       if (TREE_CODE_CLASS (code) == tcc_unary
 	  && node && !TYPE_P (node)
 	  && upc_shared_type_p (type))
-	TREE_TYPE (t) = upc_get_unshared_type (type);
+	TREE_TYPE (t) = build_upc_unshared_type (type);
       break;
     }
 
@@ -5734,6 +5734,40 @@ build_qualified_type (tree type, int type_quals)
     }
 
   return t;
+}
+
+/* Return a variant of TYPE, where all UPC qualifiers
+   have been removed.  */
+
+tree
+build_upc_unshared_type (tree type)
+{
+  tree u_type = type;
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      const tree elem_type = TREE_TYPE(type);
+      const tree u_elem_type = build_upc_unshared_type (elem_type);
+      if (u_elem_type != elem_type)
+        {
+          for (u_type = TYPE_MAIN_VARIANT (type);
+               u_type && TREE_TYPE(u_type) != u_elem_type;
+               u_type = TYPE_NEXT_VARIANT (u_type)) /* loop */;
+          if (!u_type)
+            {
+              u_type = build_variant_type_copy (type);
+              TREE_TYPE (u_type) = u_elem_type;
+            }
+        }
+    }
+  else
+    {
+      const int quals = TYPE_QUALS (type);
+      const int u_quals = quals & ~(TYPE_QUAL_SHARED
+                                    | TYPE_QUAL_RELAXED
+                                    | TYPE_QUAL_STRICT);
+      u_type = build_qualified_type (type, u_quals);
+    }
+  return u_type;
 }
 
 /* Create a variant of type T with alignment ALIGN.  */

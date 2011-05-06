@@ -25,8 +25,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "c-tree.h"
-#include "upc/upc-act.h"
+#include "c-common.h"
+#include "c-upc.h"
 
 int compiling_upc;
 int flag_upc;
@@ -77,12 +77,6 @@ upc_check_decl_init (tree ARG_UNUSED (decl),
   return 0;
 }
 
-tree
-upc_get_unshared_type (tree ARG_UNUSED (type))
-{
-  return 0;
-}
-
 void
 upc_decl_init (tree ARG_UNUSED (decl),
                tree ARG_UNUSED (init))
@@ -97,12 +91,6 @@ upc_set_decl_section (tree decl ATTRIBUTE_UNUSED)
 
 int
 upc_is_null_pts_p (tree p ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-int
-upc_pts_cvt_op_p (tree p ATTRIBUTE_UNUSED)
 {
   return 0;
 }
@@ -155,49 +143,25 @@ tree
 upc_build_sync_stmt (location_t ARG_UNUSED(loc),
                      tree ARG_UNUSED (op), tree ARG_UNUSED (exp))
 {
-  return 0;
+  return NULL_TREE;
 }
 
-struct c_expr
-upc_blocksizeof_expr (location_t ARG_UNUSED(loc), struct c_expr ARG_UNUSED (op))
+tree
+upc_blocksizeof (location_t ARG_UNUSED(loc), tree ARG_UNUSED (op))
 {
-  struct c_expr x = {NULL_TREE, ERROR_MARK, NULL_TREE};
-  return x;
+  return NULL_TREE;
 }
 
-struct c_expr
-upc_blocksizeof_type (location_t ARG_UNUSED(loc), struct c_type_name ARG_UNUSED (*op))
+tree
+upc_elemsizeof (location_t ARG_UNUSED(loc), tree ARG_UNUSED (op))
 {
-  struct c_expr x = {NULL_TREE, ERROR_MARK, NULL_TREE};
-  return x;
+  return NULL_TREE;
 }
 
-struct c_expr
-upc_elemsizeof_expr (location_t ARG_UNUSED(loc), struct c_expr ARG_UNUSED (op))
+tree
+upc_localsizeof (location_t ARG_UNUSED(loc), tree ARG_UNUSED (op))
 {
-  struct c_expr x = {NULL_TREE, ERROR_MARK, NULL_TREE};
-  return x;
-}
-
-struct c_expr
-upc_elemsizeof_type (location_t ARG_UNUSED(loc), struct c_type_name * ARG_UNUSED (op))
-{
-  struct c_expr x = {NULL_TREE, ERROR_MARK, NULL_TREE};
-  return x;
-}
-
-struct c_expr
-upc_localsizeof_expr (location_t ARG_UNUSED(loc), struct c_expr ARG_UNUSED (op))
-{
-  struct c_expr x = {NULL_TREE, ERROR_MARK, NULL_TREE};
-  return x;
-}
-
-struct c_expr
-upc_localsizeof_type (location_t ARG_UNUSED(loc), struct c_type_name * ARG_UNUSED (op))
-{
-  struct c_expr x = {NULL_TREE, ERROR_MARK, NULL_TREE};
-  return x;
+  return NULL_TREE;
 }
 
 tree
@@ -209,12 +173,6 @@ upc_num_threads(void)
 int
 upc_diagnose_deprecated_stmt (location_t ARG_UNUSED (loc),
                               tree ARG_UNUSED (id))
-{
-  return 0;
-}
-
-int
-upc_shared_type_p (tree ARG_UNUSED(type))
 {
   return 0;
 }

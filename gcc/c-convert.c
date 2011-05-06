@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "convert.h"
 #include "c-family/c-common.h"
+#include "c-family/c-upc.h"
 #include "c-tree.h"
 #include "langhooks.h"
 #include "target.h"
@@ -96,7 +97,7 @@ convert (tree type, tree expr)
      of expression values.  */
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr))
       && upc_shared_type_p (type))
-    return fold_convert_loc (loc, upc_get_unshared_type(type), expr);
+    return fold_convert_loc (loc, build_upc_unshared_type(type), expr);
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
     return fold_convert_loc (loc, type, expr);

@@ -48,12 +48,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-upc.h"
 /* define decl_default_tls_model() prototype */
 #include "rtl.h"
 
 static int contains_pts_refs_p (tree);
 static int recursive_count_upc_threads_refs (tree);
-static tree upc_blocksizeof (location_t, tree);
 static void upc_lang_layout_decl (tree, tree);
 static int upc_lang_layout_decl_p (tree, tree);
 static void upc_parse_init (void);
@@ -324,7 +324,6 @@ upc_sizeof_type_check (const char *op_name, tree type)
 
 /* Compute the value of the `upc_blocksizeof' operator.  */
 
-static
 tree
 upc_blocksizeof (location_t ARG_UNUSED(loc), tree type)
 {
@@ -336,48 +335,8 @@ upc_blocksizeof (location_t ARG_UNUSED(loc), tree type)
   return block_factor;
 }
 
-/* Return the result of upc_blocksizeof applied to EXPR.  */
-
-struct c_expr
-upc_blocksizeof_expr (location_t loc, struct c_expr expr)
-{
-  struct c_expr ret;
-  if (expr.value == error_mark_node)
-    {
-      ret.value = error_mark_node;
-      ret.original_code = ERROR_MARK;
-      ret.original_type = NULL_TREE;
-      pop_maybe_used (false);
-    }
-  else
-    {
-      ret.value = upc_blocksizeof (loc, TREE_TYPE (expr.value));
-      ret.original_code = ERROR_MARK;
-      ret.original_type = NULL_TREE;
-      pop_maybe_used (C_TYPE_VARIABLE_SIZE (TREE_TYPE (expr.value)));
-    }
-  return ret;
-}
-
-/* Return the result of upc_blocksizeof applied to T, a structure
-   for the type name passed to sizeof (rather than the type itself).  */
-
-struct c_expr
-upc_blocksizeof_type (location_t loc, struct c_type_name *t)
-{
-  tree type;
-  struct c_expr ret;
-  type = groktypename (t, NULL, NULL);
-  ret.value = upc_blocksizeof (loc, type);
-  ret.original_code = ERROR_MARK;
-  ret.original_type = NULL_TREE;
-  pop_maybe_used (C_TYPE_VARIABLE_SIZE (type));
-  return ret;
-}
-
 /* Compute the value of the `upc_elemsizeof' operator.  */
 
-static
 tree
 upc_elemsizeof (location_t loc, tree type)
 {
@@ -389,45 +348,6 @@ upc_elemsizeof (location_t loc, tree type)
   return elem_size;
 }
 
-/* Return the result of upc_elemsizeof applied to EXPR.  */
-
-struct c_expr
-upc_elemsizeof_expr (location_t loc, struct c_expr expr)
-{
-  struct c_expr ret;
-  if (expr.value == error_mark_node)
-    {
-      ret.value = error_mark_node;
-      ret.original_code = ERROR_MARK;
-      ret.original_type = NULL_TREE;
-      pop_maybe_used (false);
-    }
-  else
-    {
-      ret.value = upc_elemsizeof (loc, TREE_TYPE (expr.value));
-      ret.original_code = ERROR_MARK;
-      ret.original_type = NULL_TREE;
-      pop_maybe_used (C_TYPE_VARIABLE_SIZE (TREE_TYPE (expr.value)));
-    }
-  return ret;
-}
-
-/* Return the result of upc_elemsizeof applied to T, a structure
-   for the type name passed to sizeof (rather than the type itself).  */
-
-struct c_expr
-upc_elemsizeof_type (location_t loc, struct c_type_name *t)
-{
-  tree type;
-  struct c_expr ret;
-  type = groktypename (t, NULL, NULL);
-  ret.value = upc_elemsizeof (loc, type);
-  ret.original_code = ERROR_MARK;
-  ret.original_type = NULL_TREE;
-  pop_maybe_used (C_TYPE_VARIABLE_SIZE (type));
-  return ret;
-}
-
 /* Compute the value of the `upc_localsizeof' operator.  Per the language spec:
    The upc localsizeof operator returns the size, in bytes, of the local portion
    of its operand, which may be a shared object or a shared-qualified type.  It
@@ -435,7 +355,6 @@ upc_elemsizeof_type (location_t loc, struct c_type_name *t)
    allocated with affinity to any single thread and may include an unspecified
    amount of padding. The result of upc localsizeof is an integer constant.  */
 
-static
 tree
 upc_localsizeof (location_t loc, tree type)
 {
@@ -498,45 +417,6 @@ upc_localsizeof (location_t loc, tree type)
   local_size = size_binop (CEIL_DIV_EXPR, local_size,
                            size_int (BITS_PER_UNIT));
   return local_size;
-}
-
-/* Return the result of upc_localsizeof applied to EXPR.  */
-
-struct c_expr
-upc_localsizeof_expr (location_t loc, struct c_expr expr)
-{
-  struct c_expr ret;
-  if (expr.value == error_mark_node)
-    {
-      ret.value = error_mark_node;
-      ret.original_code = ERROR_MARK;
-      ret.original_type = NULL_TREE;
-      pop_maybe_used (false);
-    }
-  else
-    {
-      ret.value = upc_localsizeof (loc, TREE_TYPE (expr.value));
-      ret.original_code = ERROR_MARK;
-      ret.original_type = NULL_TREE;
-      pop_maybe_used (C_TYPE_VARIABLE_SIZE (TREE_TYPE (expr.value)));
-    }
-  return ret;
-}
-
-/* Return the result of upc_localsizeof applied to T, a structure
-   for the type name passed to sizeof (rather than the type itself).  */
-
-struct c_expr
-upc_localsizeof_type (location_t loc, struct c_type_name *t)
-{
-  tree type;
-  struct c_expr ret;
-  type = groktypename (t, NULL, NULL);
-  ret.value = upc_localsizeof (loc, type);
-  ret.original_code = ERROR_MARK;
-  ret.original_type = NULL_TREE;
-  pop_maybe_used (C_TYPE_VARIABLE_SIZE (type));
-  return ret;
 }
 
 /****** UPC tree-related checks, and operations **************/
@@ -717,7 +597,7 @@ upc_set_block_factor (const enum tree_code decl_kind,
           n_threads = convert (bitsizetype, upc_num_threads ());
           if (TREE_CODE (n_threads) != INTEGER_CST)
 	    {
-	      error ("A UPC layout qualifier of '[*]' requires that "
+	      error ("a UPC layout qualifier of '[*]' requires that "
 	             "the array size is either an integral constant "
 		     "or an integral multiple of THREADS");
               block_factor = size_one_node;
@@ -785,20 +665,6 @@ upc_set_block_factor (const enum tree_code decl_kind,
       TYPE_BLOCK_FACTOR (type) = block_factor;
     }
   return type;
-}
-
-/* Return TRUE if TYPE is a shared type.  For arrays, we need
-   to query its element type, because array types are never
-   qualified.  */
-
-int
-upc_shared_type_p (tree type)
-{
-  tree elt_type;
-  if (!type || TREE_CODE (type) == ERROR_MARK)
-    return 0;
-  elt_type = strip_array_types (type);
-  return TYPE_SHARED (elt_type);
 }
 
 void
@@ -884,37 +750,6 @@ upc_check_decl_init (tree decl, tree init)
   is_upc_decl = (is_shared_var_decl_init
                  || is_decl_init_with_shared_addr_refs);
   return is_upc_decl;
-}
-
-tree
-upc_get_unshared_type (tree type)
-{
-  tree u_type = type;
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-      const tree elem_type = TREE_TYPE(type);
-      const tree u_elem_type = upc_get_unshared_type (elem_type);
-      if (u_elem_type != elem_type)
-        {
-          for (u_type = TYPE_MAIN_VARIANT (type);
-               u_type && TREE_TYPE(u_type) != u_elem_type;
-               u_type = TYPE_NEXT_VARIANT (u_type)) /* loop */;
-          if (!u_type)
-            {
-              u_type = build_variant_type_copy (type);
-              TREE_TYPE (u_type) = u_elem_type;
-            }
-        }
-    }
-  else
-    {
-      const int quals = TYPE_QUALS (type);
-      const int u_quals = quals & ~(TYPE_QUAL_SHARED
-                                    | TYPE_QUAL_RELAXED
-                                    | TYPE_QUAL_STRICT);
-      u_type = build_qualified_type (type, u_quals);
-    }
-  return u_type;
 }
 
 void
@@ -1152,28 +987,6 @@ upc_affinity_test (location_t loc, tree affinity)
   return affinity_test;
 }
 
-/*
- * upc_pts_cvt_op_p checks for conversion operations involving
- * shared pointers.  If either of the types involved
- * are shared pointers, return TRUE, else FALSE.
- */
-int
-upc_pts_cvt_op_p (tree exp)
-{
-  tree t1 = TREE_TYPE (exp);
-  tree t2 = TREE_TYPE (TREE_OPERAND (exp, 0));
-  int result = 0;
-  if ((TREE_CODE (t1) == POINTER_TYPE)
-       && (TREE_CODE (t2) == POINTER_TYPE))
-    {
-      tree tt1 = TREE_TYPE (t1);
-      tree tt2 = TREE_TYPE (t2);
-      if (upc_shared_type_p (tt1) || upc_shared_type_p (tt2))
-        result = 1;
-    }
-  return result;
-}
-
 /* Check for the possible need to convert UPC-specific types.
    This routine must return 0, if it isn't absolutely certain
    that the types are equivalent.  */
@@ -1349,7 +1162,7 @@ create_unshared_var (location_t loc, const tree var)
   tree u_name, u_type, u;
   gcc_assert (var && TREE_CODE (var) == VAR_DECL);
   u_name = unshared_var_name (var);
-  u_type = upc_get_unshared_type (TREE_TYPE (var));
+  u_type = build_upc_unshared_type (TREE_TYPE (var));
   u = build_decl (loc, VAR_DECL, u_name, u_type);
   TREE_USED (u) = 1;
   TREE_ADDRESSABLE (u) = 1;

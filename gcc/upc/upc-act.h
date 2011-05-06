@@ -32,26 +32,14 @@ extern bool upc_handle_option (size_t, const char *, int, int, location_t,
                               const struct cl_option_handlers *);
 extern bool upc_lang_init (void);
 extern void upc_finish (void);
-extern void upc_write_global_declarations (void);
 extern void upc_write_init_func (void);
 extern void upc_free_unshared_var_table (void);
-extern void upc_check_decl (tree);
 extern int upc_types_compatible_p (tree, tree);
 extern int upc_inner_shared_ref_p (tree);
 
 /* used by c-parser */
-extern tree upc_build_sync_stmt (location_t, tree, tree);
-extern tree upc_affinity_test (location_t, tree);
-extern struct c_expr upc_blocksizeof_expr (location_t, struct c_expr);
-extern struct c_expr upc_blocksizeof_type (location_t, struct c_type_name *);
-extern struct c_expr upc_elemsizeof_expr (location_t, struct c_expr);
-extern struct c_expr upc_elemsizeof_type (location_t, struct c_type_name *);
-extern struct c_expr upc_localsizeof_expr (location_t, struct c_expr);
-extern struct c_expr upc_localsizeof_type (location_t, struct c_type_name *);
 
 /* UPC-specific routines */
-extern tree upc_num_threads (void);
-extern int upc_diagnose_deprecated_stmt (location_t, tree);
 extern int is_valid_pts_p (tree);
 
 #endif /* !_UPC_ACT_H_ */

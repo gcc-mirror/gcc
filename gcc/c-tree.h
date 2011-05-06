@@ -58,10 +58,6 @@ along with GCC; see the file COPYING3.  If not see
    This is used for -Wc++-compat. */
 #define C_TYPE_DEFINED_IN_STRUCT(TYPE) TYPE_LANG_FLAG_2 (TYPE)
 
-/* Record that we are processing a UPC shared array declaration
-   or type definition that refers to THREADS in its array dimension.*/
-#define UPC_TYPE_HAS_THREADS_FACTOR(TYPE) TYPE_LANG_FLAG_3 (TYPE)
-
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(EXP) DECL_LANG_FLAG_1 (EXP)
 
@@ -133,43 +129,6 @@ struct c_expr
      field will be the enum type.  */
   tree original_type;
 };
-
-
-/* In upc-act.c and stub-upc.c */
-extern int count_upc_threads_refs (tree);
-extern int is_multiple_of_upc_threads (tree);
-extern void set_upc_threads_refs_to_one (tree *);
-extern struct c_expr upc_blocksizeof_expr (location_t, struct c_expr);
-extern tree upc_affinity_test (location_t, tree);
-extern tree upc_build_shared_var_addr (location_t, tree, tree);
-extern tree upc_build_sync_stmt (location_t, tree, tree);
-extern int upc_check_decl_init (tree, tree);
-extern void upc_check_decl (tree);
-extern void upc_decl_init (tree, tree);
-extern struct c_expr upc_elemsizeof_expr (location_t, struct c_expr);
-extern tree upc_get_block_factor (const tree);
-extern tree upc_instrument_forall (location_t, int);
-extern int upc_is_null_pts_p (tree);
-extern struct c_expr upc_localsizeof_expr (location_t, struct c_expr);
-extern tree upc_num_threads (void);
-extern int upc_diagnose_deprecated_stmt (location_t, tree);
-extern int upc_pts_cvt_op_p (tree);
-extern tree upc_pts_diff (tree, tree);
-extern tree upc_pts_increment (location_t, enum tree_code, tree);
-extern tree upc_pts_int_sum (location_t, enum tree_code, tree, tree);
-extern tree upc_set_block_factor (enum tree_code, tree, tree);
-extern void upc_set_decl_section (tree);
-
-/* #pragma upc handling in c-pragma.c */
-extern void permit_pragma_upc (void);
-extern void deny_pragma_upc (void);
-extern int pragma_upc_permitted_p (void);
-extern void set_upc_consistency_mode (int);
-extern int get_upc_consistency_mode (void);
-extern void push_upc_consistency_mode (void);
-extern void pop_upc_consistency_mode (void);
-/* determine whether UPC profiling is on or off */
-extern int get_upc_pupc_mode(void);
 
 /* A kind of type specifier.  Note that this information is currently
    only used to distinguish tag definitions, tag references and typeof
@@ -512,12 +471,6 @@ extern void c_pop_function_context (void);
 extern void push_parm_decl (const struct c_parm *, tree *);
 extern struct c_declarator *set_array_declarator_inner (struct c_declarator *,
 							struct c_declarator *);
-
-/* UPC-related functions defined in upc-act.c and stub-upc.c */
-extern struct c_expr upc_blocksizeof_type (location_t, struct c_type_name *);
-extern struct c_expr upc_localsizeof_type (location_t, struct c_type_name *);
-extern struct c_expr upc_elemsizeof_type (location_t, struct c_type_name *);
-
 extern tree c_builtin_function (tree);
 extern tree c_builtin_function_ext_scope (tree);
 extern void shadow_tag (const struct c_declspecs *);

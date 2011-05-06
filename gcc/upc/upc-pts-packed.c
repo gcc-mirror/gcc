@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "hashtab.h"
 #include "input.h"
-#include "c-tree.h"
 #include "langhooks.h"
 #include "flags.h"
 #include "opts.h"
@@ -43,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-upc.h"
 /* define decl_default_tls_model() prototype */
 #include "rtl.h"
 

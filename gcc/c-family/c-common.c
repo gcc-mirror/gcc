@@ -25,13 +25,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "intl.h"
 #include "tree.h"
-#include "c-tree.h"
 #include "flags.h"
 #include "output.h"
 #include "c-pragma.h"
 #include "ggc.h"
 #include "c-common.h"
 #include "c-objc.h"
+#include "c-upc.h"
 #include "tm_p.h"
 #include "obstack.h"
 #include "cpplib.h"
@@ -3683,7 +3683,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
   /* If the pointer lives in UPC shared memory, then
      drop the 'shared' qualifier.  */
   if (upc_shared_type_p (result_type))
-    result_type = upc_get_unshared_type (result_type);
+    result_type = build_upc_unshared_type (result_type);
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {

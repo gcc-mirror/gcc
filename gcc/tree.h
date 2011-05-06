@@ -1156,6 +1156,29 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define COMPLETE_OR_UNBOUND_ARRAY_TYPE_P(NODE) \
   (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : (NODE)))
 
+
+/* Record that we are processing a UPC shared array declaration
+   or type definition that refers to THREADS in its array dimension.*/
+#define UPC_TYPE_HAS_THREADS_FACTOR(TYPE) TYPE_LANG_FLAG_3 (TYPE)
+
+/* Return TRUE if TYPE is a UPC shared type.  For arrays,
+   the element type must be queried, because array types
+   are never qualified.  */
+#define upc_shared_type_p(TYPE) \
+  ((TYPE) && TYPE_P (TYPE) \
+   && TYPE_SHARED ((TREE_CODE (TYPE) != ARRAY_TYPE \
+                    ? (TYPE) : strip_array_types (TYPE))))
+
+/* Return TRUE if EXP is a conversion operation involving
+   UPC pointers-to-shared.  If either of the types involved
+   in the conversion is a UPC pointer-to-shared type, return TRUE.  */
+#define upc_pts_cvt_op_p(EXP) \
+  ((EXP) && ((POINTER_TYPE_P (TREE_TYPE (EXP)) \
+              && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (EXP, 0)))) \
+              && (upc_shared_type_p (TREE_TYPE (TREE_TYPE (EXP))) \
+                  || upc_shared_type_p (TREE_TYPE ( \
+	                TREE_TYPE (TREE_OPERAND (EXP, 0)))))))
+
 
 /* Define many boolean fields that all tree nodes have.  */
 
@@ -4684,7 +4707,7 @@ extern HOST_WIDE_INT int_byte_position (const_tree);
 /* UPC related functions */
 extern void set_lang_layout_decl_p (int (*) (tree, tree));
 extern void set_lang_layout_decl (void (*) (tree, tree));
-extern void expand_affinity_test (tree);
+extern tree build_upc_unshared_type (tree);
 
 /* Define data structures, macros, and functions for handling sizes
    and the various types used to represent sizes.  */
@@ -5868,10 +5891,6 @@ is_lang_specific (tree t)
 {
   return TREE_CODE (t) == LANG_TYPE || TREE_CODE (t) >= NUM_TREE_CODES;
 }
-
-/* In upc-act.c and stub-upc.c */
-extern int upc_shared_type_p (tree);
-extern tree upc_get_unshared_type (tree);
 
 /* In gimple-low.c.  */
 extern bool block_may_fallthru (const_tree);

@@ -48,7 +48,7 @@ convert_to_pointer (tree type, tree expr)
       && upc_shared_type_p (TREE_TYPE (type)))
     {
       expr = copy_node (upc_null_pts_node);
-      TREE_TYPE (expr) = upc_get_unshared_type (type);
+      TREE_TYPE (expr) = build_upc_unshared_type (type);
       return expr;
     }
 

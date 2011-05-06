@@ -1,5 +1,97 @@
 2011-05-06  Gary Funck  <gary@intrepid.com>
 
+	Upgrade c-family source files to conform with modularity
+	improvements.  Mainly, remove #include of c-tree.h in files
+	under c-family, and define a new UPC-specific #include file,
+	c-upc.h, and use it.
+
+	* c-family/stub-upc.c: Remove #include of c-tree.h and
+	  upc/upc-act.h.  Replace with #include of c-common.h
+	  and c-upc.h.
+	  (upc_get_unshared_type, upc_pts_cvt_op_p, upc_blocksizeof_expr,
+	  upc_blocksizeof_type, upc_elemsizeof_expr, upc_elemsizeof_type,
+	  upc_localsizeof_expr, upc_localsizeof_type,
+	  upc_shared_type_p): Delete.
+
+	* c-family/c-opts.c: Add #include of c-upc.h
+
+	* c-family/c-common.c: Remove #include of c-tree.h and
+	  add #include of c-upc.h.
+
+	* c-family/c-upc.h: New. Define API for UPC-specific functions
+	  (mostly implemented in upc/upc-act.c).
+
+	* c-family/c-common.h (upc_cpp_builtins, upc_write_global_declarations):
+   	  Remove extern definitions.
+
+	* c-family/c-pragma.c: Remove #include of c-tree.h.
+	  Add #include of c-upc.h.
+
+	* tree.h (UPC_TYPE_HAS_THREADS_FACTOR): New.  Move from
+	  c-tree.h.
+	  (upc_shared_type_p, upc_pts_cvt_op_p): New.  Move from
+	  upc/upc-act.c, and define as a macro.
+	  (expand_affinity_test): Remove unused external definition.
+	  (build_upc_unshared_type): Add external definition.
+	  (upc_shared_type_p): Remove external definition.
+
+	* c-config-lang.in: Update gtfiles to refer to c-family/c-upc.h.
+
+	* dojump.c: Remove #include of c-tree.h.
+
+	* c-tree.h: Remove definition of UPC_TYPE_HAS_THREADS_FACTOR
+	  and move to tree.h.
+	  (count_upc_threads_refs, is_multiple_of_upc_threads,
+	  set_upc_threads_refs_to_one, c_expr, upc_affinity_test,
+	  upc_build_shared_var_addr, upc_build_sync_stmt,
+	  upc_check_decl_init, upc_check_decl, upc_decl_init, c_expr,
+	  upc_get_block_factor, upc_instrument_forall, upc_is_null_pts_p,
+	  c_expr, upc_num_threads, upc_diagnose_deprecated_stmt,
+	  upc_pts_cvt_op_p, upc_pts_diff, upc_pts_increment,
+	  upc_pts_int_sum, upc_set_block_factor, upc_set_decl_section,
+	  permit_pragma_upc, deny_pragma_upc, pragma_upc_permitted_p,
+	  set_upc_consistency_mode, get_upc_consistency_mode,
+	  push_upc_consistency_mode, pop_upc_consistency_mode,
+	  get_upc_pupc_mode):
+	  Move external definitions to c-family/c-upc.h.
+	  (upc_blocksizeof_type, upc_localsizeof_type,
+	  upc_elemsizeof_type): Remove external definitions;
+	  these functions were moved to c-parser.c.
+
+	* c-decl.c: Add #include of c-upc.h.
+
+	* c-typeck.c: Add #include of c-upc.h.
+
+	* c-convert.c: Add #include of c-upc.h.
+
+	* ChangeLog.upc: Fix typo.
+
+	* Makefile.in: Add references to c-family/c-upc.h, everywhere
+	  there is a reference to c-family/c-objc.h.
+	  Remove extraneous reference to upc-act.h.
+
+	* c-parser.c: Add #include of c-upc.h.
+	  (upc_blocksizeof_expr, upc_blocksizeof_type, 
+	  upc_elemsizeof_expr, upc_elemsizeof_type,
+	  upc_localsizeof_expr, upc_localsizeof_type):
+	  Move from upc/upc-act.c.
+
+        * tree.c (build_upc_unshared_type): New.
+	  Move upc_get_unshared_type from upc/upc-act.c and rename
+	  to build_upc_unshared_type.
+	  c-family/c-common.c (pointer_int_sum): refer to renamed
+	  build_upc_unshared_type function.
+	  c-convert.c (convert): Ditto.
+	  convert.c (convert_to_pointer): Ditto.
+	  c-typeck.c (build_unary_op, build_modify_expr,
+	  really_start_incremental_init): Ditto.
+	  gimplify.c (create_tmp_var_raw): Ditto.
+	  tree.c (build1_stat): Ditto.
+	  tree.h (upc_get_unshared_type): Rename to
+	  build_upc_unshared_type.
+
+2011-05-06  Gary Funck  <gary@intrepid.com>
+
 	Merge trunk version 173471 into gupc branch.
 
 2011-05-05  Gary Funck  <gary@intrepid.com>
@@ -44,7 +136,7 @@
 	  (c_apply_type_quals_to_decl): Ditto.
 	* c-family/c-common.h: Ditto.
 	* dojump.c: Ditto.
-	* c-delc.c (merge_decls): Ditto.
+	* c-decl.c (merge_decls): Ditto.
 	* c-typeck.c (qualify_type, default_conversion,
 	  build_component_ref, build_unary_op,
 	  c_build_qualified_type): Ditto.

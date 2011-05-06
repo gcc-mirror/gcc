@@ -1060,8 +1060,4 @@ extern bool c_omp_sharing_predetermined (tree);
 extern tree c_omp_remap_decl (tree, bool);
 extern void record_types_used_by_current_var_decl (tree);
 
-/* In upc-act.c and stub-upc.c */
-extern void upc_cpp_builtins (cpp_reader *);
-extern void upc_write_global_declarations (void);
-
 #endif /* ! GCC_C_COMMON_H */

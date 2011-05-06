@@ -430,7 +430,7 @@ create_tmp_var_raw (tree type, const char *prefix)
 
   /* Temps. cannot be UPC shared qualified. */
   if (upc_shared_type_p (type))
-    type = upc_get_unshared_type (type);
+    type = build_upc_unshared_type (type);
 
   tmp_var = build_decl (input_location,
 			VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,

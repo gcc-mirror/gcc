@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-upc.h"
 #include "function.h"
 #include "gimple.h"
 #include "tree-check.h"
@@ -291,7 +292,7 @@ upc_gimplify_lval (location_t loc, tree *expr_p,
       break;
     case VIEW_CONVERT_EXPR:
       if (type && upc_shared_type_p (type))
-        TREE_TYPE (expr) = upc_get_unshared_type (type);
+        TREE_TYPE (expr) = build_upc_unshared_type (type);
       gcc_assert (!TREE_SHARED (expr));
       break;
     default:
@@ -977,7 +978,7 @@ upc_gimplify_expr (tree *expr_p,
 	 We unshare the type in order to produce a
 	 valid tree.  */
       if (type && upc_shared_type_p (type))
-        TREE_TYPE (expr) = upc_get_unshared_type (type);
+        TREE_TYPE (expr) = build_upc_unshared_type (type);
       if (upc_pts_cvt_op_p (expr))
         return upc_gimplify_pts_cvt (loc, expr_p, pre_p, post_p);
       break;
@@ -1056,7 +1057,7 @@ upc_gimplify_expr (tree *expr_p,
 	 ensure that the hash table is updated.  */
       if (type && upc_shared_type_p (type))
         {
-          const tree u_type = upc_get_unshared_type (type);
+          const tree u_type = build_upc_unshared_type (type);
           *expr_p = build_int_cst_wide (u_type,
                         TREE_INT_CST_LOW (expr), TREE_INT_CST_HIGH (expr));
 	}
@@ -1076,7 +1077,7 @@ upc_gimplify_expr (tree *expr_p,
 	 We unshare the type in order to produce a
 	 valid constant.  */
       if (type && upc_shared_type_p (type))
-        TREE_TYPE (expr) = upc_get_unshared_type (type);
+        TREE_TYPE (expr) = build_upc_unshared_type (type);
       gcc_assert (!TREE_SHARED (expr));
       break;
 

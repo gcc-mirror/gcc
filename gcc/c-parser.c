@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
+#include "c-family/c-upc.h"
 #include "vec.h"
 #include "target.h"
 #include "cgraph.h"
@@ -5929,6 +5930,129 @@ c_parser_unary_expression (c_parser *parser)
     default:
       return c_parser_postfix_expression (parser);
     }
+}
+
+/* Return the result of upc_blocksizeof applied to EXPR.  */
+
+static
+struct c_expr
+upc_blocksizeof_expr (location_t loc, struct c_expr expr)
+{
+  struct c_expr ret;
+  if (expr.value == error_mark_node)
+    {
+      ret.value = error_mark_node;
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL_TREE;
+      pop_maybe_used (false);
+    }
+  else
+    {
+      ret.value = upc_blocksizeof (loc, TREE_TYPE (expr.value));
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL_TREE;
+      pop_maybe_used (C_TYPE_VARIABLE_SIZE (TREE_TYPE (expr.value)));
+    }
+  return ret;
+}
+
+/* Return the result of upc_blocksizeof applied to T, a structure
+   for the type name passed to sizeof (rather than the type itself).  */
+
+static
+struct c_expr
+upc_blocksizeof_type (location_t loc, struct c_type_name *t)
+{
+  tree type;
+  struct c_expr ret;
+  type = groktypename (t, NULL, NULL);
+  ret.value = upc_blocksizeof (loc, type);
+  ret.original_code = ERROR_MARK;
+  ret.original_type = NULL_TREE;
+  pop_maybe_used (C_TYPE_VARIABLE_SIZE (type));
+  return ret;
+}
+
+/* Return the result of upc_elemsizeof applied to EXPR.  */
+
+static
+struct c_expr
+upc_elemsizeof_expr (location_t loc, struct c_expr expr)
+{
+  struct c_expr ret;
+  if (expr.value == error_mark_node)
+    {
+      ret.value = error_mark_node;
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL_TREE;
+      pop_maybe_used (false);
+    }
+  else
+    {
+      ret.value = upc_elemsizeof (loc, TREE_TYPE (expr.value));
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL_TREE;
+      pop_maybe_used (C_TYPE_VARIABLE_SIZE (TREE_TYPE (expr.value)));
+    }
+  return ret;
+}
+
+/* Return the result of upc_elemsizeof applied to T, a structure
+   for the type name passed to sizeof (rather than the type itself).  */
+
+static
+struct c_expr
+upc_elemsizeof_type (location_t loc, struct c_type_name *t)
+{
+  tree type;
+  struct c_expr ret;
+  type = groktypename (t, NULL, NULL);
+  ret.value = upc_elemsizeof (loc, type);
+  ret.original_code = ERROR_MARK;
+  ret.original_type = NULL_TREE;
+  pop_maybe_used (C_TYPE_VARIABLE_SIZE (type));
+  return ret;
+}
+
+/* Return the result of upc_localsizeof applied to EXPR.  */
+
+static
+struct c_expr
+upc_localsizeof_expr (location_t loc, struct c_expr expr)
+{
+  struct c_expr ret;
+  if (expr.value == error_mark_node)
+    {
+      ret.value = error_mark_node;
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL_TREE;
+      pop_maybe_used (false);
+    }
+  else
+    {
+      ret.value = upc_localsizeof (loc, TREE_TYPE (expr.value));
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL_TREE;
+      pop_maybe_used (C_TYPE_VARIABLE_SIZE (TREE_TYPE (expr.value)));
+    }
+  return ret;
+}
+
+/* Return the result of upc_localsizeof applied to T, a structure
+   for the type name passed to sizeof (rather than the type itself).  */
+
+static
+struct c_expr
+upc_localsizeof_type (location_t loc, struct c_type_name *t)
+{
+  tree type;
+  struct c_expr ret;
+  type = groktypename (t, NULL, NULL);
+  ret.value = upc_localsizeof (loc, type);
+  ret.original_code = ERROR_MARK;
+  ret.original_type = NULL_TREE;
+  pop_maybe_used (C_TYPE_VARIABLE_SIZE (type));
+  return ret;
 }
 
 /* Parse a sizeof expression.  */

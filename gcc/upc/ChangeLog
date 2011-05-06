@@ -1,3 +1,44 @@
+2011-05-06  Gary Funck  <gary@intrepid.com>
+
+	Upgrade c-family source files to conform with modularity
+	improvements.  Mainly, remove #include of c-tree.h in files
+	under c-family, and define a new UPC-specific #include file,
+	c-upc.h, and use it.
+
+	* upc-act.h (upc_write_global_declarations,
+	  upc_check_decl, upc_build_sync_stmt, upc_affinity_test,
+	  upc_num_threads, upc_diagnose_deprecated_stmt):
+	  Move external definitions to c-family/c-upc.h
+	  (upc_blocksizeof_expr, upc_blocksizeof_type,
+	  upc_elemsizeof_expr, upc_elemsizeof_type,
+	  upc_localsizeof_expr, upc_localsizeof_type):
+	  Remove external definitions; these functions
+	  were moved from upc-act.c to c-parser.c.
+
+	* upc-gimplify.c: Add #include of c-family/c-upc.h.
+	  upc-pts-packed.c: Ditto.
+	  upc-pts-struct.c: Ditto.
+
+	* config-lang.in: Update gtfiles to refer to c-upc.h
+	  and other files.
+
+	* upc-act.c: Add #include of c-family/c-upc.h.
+	  (upc_blocksize, upc_elemsizeof, upc_localsizeof):
+	  Make external so that it can be called from c-parser.c.
+	  (upc_blocksizeof_expr, upc_blocksizeof_type, 
+	  upc_elemsizeof_expr, upc_elemsizeof_type,
+	  upc_localsizeof_expr, upc_localsizeof_type):
+	  Move from upc/upc-act.c to c-parser.c.
+	  (upc_set_block_factor): Fix typo in error message.
+	  (upc_shared_type_p, upc_pts_cvt_op_p): Delete.
+	  Move to tree.h and define as a macro.
+	  (upc_get_unshared_type): Delete. renamed to
+	  build_upc_unshared_type and moved to tree.c.
+
+	* upc-gimplify.c (upc_gimplify_lval, upc_gimplify_expr):
+	  refer to renamed build_upc_unshared_type function.
+	  upc-act.c (create_unshared_var): Ditto.
+         
 2011-05-03  Gary Funck  <gary@intrepid.com>
 
 	* upc-lang.c: Remove extraneous FIXME/TODO comments.

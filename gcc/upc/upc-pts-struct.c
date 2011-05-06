@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-upc.h"
 /* define decl_default_tls_model() prototype */
 #include "rtl.h"
 
