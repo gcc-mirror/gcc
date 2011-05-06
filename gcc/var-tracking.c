@@ -5646,8 +5646,8 @@ prepare_call_arguments (basic_block bb, rtx insn)
 			  }
 		    }
 		}
-#endif
 	      else
+#endif
 		INIT_CUMULATIVE_ARGS (args_so_far, type, NULL_RTX, fndecl,
 				      nargs);
 	      if (obj_type_ref && TYPE_ARG_TYPES (type) != void_list_node)

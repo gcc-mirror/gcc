@@ -1,3 +1,8 @@
+2011-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48902
+	* var-tracking.c (prepare_call_arguments): Move else before #endif.
+
 2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* except.c (sjlj_emit_dispatch_table): Call build_case_label.
