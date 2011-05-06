@@ -1,3 +1,8 @@
+2011-05-06  Tristan Gingold  <gingold@adacore.com>
+
+	PR target/48895
+	* config/vms/vms-ar.c (main): Remove cwd variable.
+
 2011-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48902
