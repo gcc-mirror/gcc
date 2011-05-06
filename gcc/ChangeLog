@@ -1,3 +1,8 @@
+2011-05-06  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (contains_subprogram_definition): New function.
+	(should_move_die_to_comdat): Call it.
+
 2011-05-06  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (create_block_for_threading): Do not call
