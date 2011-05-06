@@ -2172,14 +2172,27 @@ Type::lookup_complex_type(const char* name)
 // struct with two fields: a pointer to the characters and a length.
 
 tree
-String_type::do_get_tree(Gogo*)
+String_type::do_get_tree(Gogo* gogo)
 {
-  static tree struct_type;
-  return Gogo::builtin_struct(&struct_type, "__go_string", NULL_TREE, 2,
-			      "__data",
-			      build_pointer_type(unsigned_char_type_node),
-			      "__length",
-			      integer_type_node);
+  static Btype* backend_string_type;
+  if (backend_string_type == NULL)
+    {
+      std::vector<Backend::Btyped_identifier> fields(2);
+
+      Type* b = gogo->lookup_global("byte")->type_value();
+      Type* pb = Type::make_pointer_type(b);
+      fields[0].name = "__data";
+      fields[0].btype = tree_to_type(pb->get_tree(gogo));
+      fields[0].location = UNKNOWN_LOCATION;
+
+      Type* int_type = Type::lookup_integer_type("int");
+      fields[1].name = "__length";
+      fields[1].btype = tree_to_type(int_type->get_tree(gogo));
+      fields[1].location = UNKNOWN_LOCATION;
+
+      backend_string_type = gogo->backend()->struct_type(fields);
+    }
+  return type_to_tree(backend_string_type);
 }
 
 // Return a tree for the length of STRING.
