@@ -1,3 +1,9 @@
+2011-05-06  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/48252
+	* config/arm/neon.md (neon_vtrn<mode>): Fix typo
+	from earlier commit.
+
 2011-05-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_handle_option): Add missing break

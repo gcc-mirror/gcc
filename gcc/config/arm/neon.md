@@ -4093,7 +4093,7 @@
                     (const_string "neon_bp_3cycle")))]
 )
 
- "neon_vtrn<mode>"
+(define_expand "neon_vtrn<mode>"
   [(match_operand:SI 0 "s_register_operand" "r")
    (match_operand:VDQW 1 "s_register_operand" "w")
    (match_operand:VDQW 2 "s_register_operand" "w")]
