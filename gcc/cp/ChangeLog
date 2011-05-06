@@ -1,3 +1,10 @@
+2011-05-06  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48838
+	* cp-tree.h (non_static_member_function_p): Declare new function.
+	* tree.c (non_static_member_function_p): Define it.
+	* semantics.c (finish_call_expr): Use it.
+
 2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* decl.c (finish_case_label): Omit the loc argument to
