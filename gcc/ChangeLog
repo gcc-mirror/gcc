@@ -1,3 +1,11 @@
+2011-05-06  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (create_block_for_threading): Do not call
+	remove_ctrl_stmt_and_useless_edges.
+	(create_duplicates): Call remove_ctrl_stmt_and_useless_edges.
+	(fixup_template_block, thread_single_edge): Likewise.
+	(mark_threaded_blocks): Use THREAD_TARGET.
+
 2011-05-06  Alan Modra  <amodra@gmail.com>
 
 	PR target/48900

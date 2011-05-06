@@ -198,8 +198,7 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
     }
 }
 
-/* Create a duplicate of BB which only reaches the destination of the edge
-   stored in RD.  Record the duplicate block in RD.  */
+/* Create a duplicate of BB.  Record the duplicate block in RD.  */
 
 static void
 create_block_for_threading (basic_block bb, struct redirection_data *rd)
@@ -217,14 +216,6 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
   /* Zero out the profile, since the block is unreachable for now.  */
   rd->dup_block->frequency = 0;
   rd->dup_block->count = 0;
-
-  /* The call to duplicate_block will copy everything, including the
-     useless COND_EXPR or SWITCH_EXPR at the end of BB.  We just remove
-     the useless COND_EXPR or SWITCH_EXPR here rather than having a
-     specialized block copier.  We also remove all outgoing edges
-     from the duplicate block.  The appropriate edge will be created
-     later.  */
-  remove_ctrl_stmt_and_useless_edges (rd->dup_block, NULL);
 }
 
 /* Hashing and equality routines for our hash table.  */
@@ -375,6 +366,7 @@ create_duplicates (void **slot, void *data)
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
          block.  */
+      remove_ctrl_stmt_and_useless_edges (rd->dup_block, NULL);
       create_edge_and_update_destination_phis (rd, rd->dup_block);
     }
 
@@ -396,6 +388,7 @@ fixup_template_block (void **slot, void *data)
      and halt the hash table traversal.  */
   if (rd->dup_block && rd->dup_block == local_info->template_block)
     {
+      remove_ctrl_stmt_and_useless_edges (rd->dup_block, NULL);
       create_edge_and_update_destination_phis (rd, rd->dup_block);
       return 0;
     }
@@ -646,6 +639,7 @@ thread_single_edge (edge e)
   rd.outgoing_edge = eto;
 
   create_block_for_threading (bb, &rd);
+  remove_ctrl_stmt_and_useless_edges (rd.dup_block, NULL);
   create_edge_and_update_destination_phis (&rd, rd.dup_block);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -978,8 +972,8 @@ mark_threaded_blocks (bitmap threaded_blocks)
       edge e = VEC_index (edge, threaded_edges, i);
       edge *x = (edge *) XNEWVEC (edge, 1);
 
-      x[0] = VEC_index (edge, threaded_edges, i + 1);
       e->aux = x;
+      THREAD_TARGET (e) = VEC_index (edge, threaded_edges, i + 1);
       bitmap_set_bit (tmp, e->dest->index);
     }
 
