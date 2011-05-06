@@ -832,7 +832,7 @@ add_case (int label_value, gfc_st_label * label, stmtblock_t * body)
   tmp = gfc_build_label_decl (NULL_TREE);
 
   /* And the case itself.  */
-  tmp = build3_v (CASE_LABEL_EXPR, value, NULL_TREE, tmp);
+  tmp = build_case_label (value, NULL_TREE, tmp);
   gfc_add_expr_to_block (body, tmp);
 
   /* Jump to the label.  */

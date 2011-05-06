@@ -5327,7 +5327,7 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
     }
 
   /* Add a CASE_LABEL to the statement-tree.  */
-  case_label = add_stmt (build_case_label (loc, low_value, high_value, label));
+  case_label = add_stmt (build_case_label (low_value, high_value, label));
   /* Register this case label in the splay tree.  */
   splay_tree_insert (cases,
 		     (splay_tree_key) low_value,

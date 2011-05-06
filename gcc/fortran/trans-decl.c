@@ -4347,7 +4347,7 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
       /* Add the case label.  */
       label = gfc_build_label_decl (NULL_TREE);
       val = build_int_cst (gfc_array_index_type, el->id);
-      tmp = build3_v (CASE_LABEL_EXPR, val, NULL_TREE, label);
+      tmp = build_case_label (val, NULL_TREE, label);
       gfc_add_expr_to_block (&block, tmp);
 
       /* And jump to the actual entry point.  */

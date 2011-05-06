@@ -831,7 +831,6 @@ extern void warn_for_omitted_condop (location_t, tree);
 
 extern tree do_case (location_t, tree, tree);
 extern tree build_stmt (location_t, enum tree_code, ...);
-extern tree build_case_label (location_t, tree, tree, tree);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);
 
 /* These functions must be defined by each front-end which implements

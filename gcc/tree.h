@@ -4036,6 +4036,10 @@ extern tree copy_node_stat (tree MEM_STAT_DECL);
 
 extern tree copy_list (tree);
 
+/* Make a CASE_LABEL_EXPR.  */
+
+extern tree build_case_label (tree, tree, tree);
+
 /* Make a BINFO.  */
 extern tree make_tree_binfo_stat (unsigned MEM_STAT_DECL);
 #define make_tree_binfo(t) make_tree_binfo_stat (t MEM_STAT_INFO)

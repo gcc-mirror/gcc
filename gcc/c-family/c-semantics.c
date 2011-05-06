@@ -131,15 +131,6 @@ build_stmt (location_t loc, enum tree_code code, ...)
   return ret;
 }
 
-/* Create a CASE_LABEL_EXPR tree node and return it.  */
-
-tree
-build_case_label (location_t loc,
-		  tree low_value, tree high_value, tree label_decl)
-{
-  return build_stmt (loc, CASE_LABEL_EXPR, low_value, high_value, label_decl);
-}
-
 /* Build a REALPART_EXPR or IMAGPART_EXPR, according to CODE, from ARG.  */
 
 tree

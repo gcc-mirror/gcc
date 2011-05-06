@@ -1,3 +1,10 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans-decl.c (gfc_trans_entry_master_switch): Call build_case_label.
+	* trans-io.c (add_case): Likewise.
+	* trans-stmt.c (gfc_trans_integer_select): Likewise.
+	(gfc_trans_character_select): Likewise.
+
 2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans-decl.c (trans_function_start): Do not set

@@ -1,3 +1,10 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (c_add_case_label): Omit the loc argument to
+	build_case_label.
+	* c-common.h (build_case_label): Remove.
+	* c-semantics.c (build_case_label): Remove.
+
 2011-05-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-objc.h (objc_start_method_definition): Update prototype.

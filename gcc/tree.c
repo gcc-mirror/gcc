@@ -1653,6 +1653,23 @@ make_tree_binfo_stat (unsigned base_binfos MEM_STAT_DECL)
   return t;
 }
 
+/* Create a CASE_LABEL_EXPR tree node and return it.  */
+
+tree
+build_case_label (tree low_value, tree high_value, tree label_decl)
+{
+  tree t = make_node (CASE_LABEL_EXPR);
+
+  TREE_TYPE (t) = void_type_node;
+  SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (label_decl));
+
+  CASE_LOW (t) = low_value;
+  CASE_HIGH (t) = high_value;
+  CASE_LABEL (t) = label_decl;
+  CASE_CHAIN (t) = NULL_TREE;
+
+  return t;
+}
 
 /* Build a newly constructed TREE_VEC node of length LEN.  */
 

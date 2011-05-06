@@ -835,8 +835,7 @@ Gcc_backend::switch_statement(
 				 ? EXPR_LOCATION((*ps)->get_tree())
 				 : UNKNOWN_LOCATION);
 	  tree label = create_artificial_label(loc);
-	  tree c = build3_loc(loc, CASE_LABEL_EXPR, void_type_node, NULL_TREE,
-			      NULL_TREE, label);
+	  tree c = build_case_label(NULL_TREE, NULL_TREE, label);
 	  append_to_statement_list(c, &stmt_list);
 	}
       else
@@ -850,8 +849,7 @@ Gcc_backend::switch_statement(
 		return this->error_statement();
 	      source_location loc = EXPR_LOCATION(t);
 	      tree label = create_artificial_label(loc);
-	      tree c = build3_loc(loc, CASE_LABEL_EXPR, void_type_node,
-				  (*pcv)->get_tree(), NULL_TREE, label);
+	      tree c = build_case_label((*pcv)->get_tree(), NULL_TREE, label);
 	      append_to_statement_list(c, &stmt_list);
 	    }
 	}

@@ -4774,8 +4774,7 @@ expand_omp_sections (struct omp_region *region)
   i = 0;
   if (exit_reachable)
     {
-      t = build3 (CASE_LABEL_EXPR, void_type_node,
-		  build_int_cst (unsigned_type_node, 0), NULL, l2);
+      t = build_case_label (build_int_cst (unsigned_type_node, 0), NULL, l2);
       VEC_quick_push (tree, label_vec, t);
       i++;
     }
@@ -4800,7 +4799,7 @@ expand_omp_sections (struct omp_region *region)
 
       t = gimple_block_label (s_entry_bb);
       u = build_int_cst (unsigned_type_node, casei);
-      u = build3 (CASE_LABEL_EXPR, void_type_node, u, NULL, t);
+      u = build_case_label (u, NULL, t);
       VEC_quick_push (tree, label_vec, u);
 
       si = gsi_last_bb (s_entry_bb);
@@ -4821,7 +4820,7 @@ expand_omp_sections (struct omp_region *region)
 
   /* Error handling code goes in DEFAULT_BB.  */
   t = gimple_block_label (default_bb);
-  u = build3 (CASE_LABEL_EXPR, void_type_node, NULL, NULL, t);
+  u = build_case_label (NULL, NULL, t);
   make_edge (l0_bb, default_bb, 0);
 
   stmt = gimple_build_switch_vec (vmain, u, label_vec);

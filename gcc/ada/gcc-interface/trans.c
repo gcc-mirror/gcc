@@ -2028,9 +2028,8 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	  if ((!gnu_low || TREE_CODE (gnu_low) == INTEGER_CST)
 	      && (!gnu_high || TREE_CODE (gnu_high) == INTEGER_CST))
 	    {
-	      add_stmt_with_node (build3
-				  (CASE_LABEL_EXPR, void_type_node,
-				   gnu_low, gnu_high,
+	      add_stmt_with_node (build_case_label
+				  (gnu_low, gnu_high,
 				   create_artificial_label (input_location)),
 				  gnat_choice);
 	      choices_added_p = true;
