@@ -1367,7 +1367,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
 	  if (nlabel)
 	    n = gen_rtx_LABEL_REF (Pmode, nlabel);
 	  else
-	    n = gen_rtx_RETURN (VOIDmode);
+	    n = ret_rtx;
 
 	  validate_change (insn, loc, n, 1);
 	  return;
@@ -1378,7 +1378,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
       if (nlabel)
 	x = gen_rtx_LABEL_REF (Pmode, nlabel);
       else
-	x = gen_rtx_RETURN (VOIDmode);
+	x = ret_rtx;
       if (loc == &PATTERN (insn))
 	x = gen_rtx_SET (VOIDmode, pc_rtx, x);
       validate_change (insn, loc, x, 1);
@@ -1389,7 +1389,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
       && GET_CODE (SET_SRC (x)) == LABEL_REF
       && XEXP (SET_SRC (x), 0) == olabel)
     {
-      validate_change (insn, loc, gen_rtx_RETURN (VOIDmode), 1);
+      validate_change (insn, loc, ret_rtx, 1);
       return;
     }
 

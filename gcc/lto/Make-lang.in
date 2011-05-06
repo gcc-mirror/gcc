@@ -81,12 +81,12 @@ lto/lto-lang.o: lto/lto-lang.c $(CONFIG_H) coretypes.h debug.h \
 	$(TARGET_H) $(LTO_H) $(GIMPLE_H) gtype-lto.h gt-lto-lto-lang.h \
 	$(EXPR_H) $(LTO_STREAMER_H)
 lto/lto.o: lto/lto.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
-	toplev.h $(TREE_H) $(DIAGNOSTIC_CORE_H) $(TM_H) \
+	toplev.h $(TREE_H) $(TREE_FLOW_H) $(DIAGNOSTIC_CORE_H) $(TM_H) \
 	$(CGRAPH_H) $(GGC_H) tree-ssa-operands.h $(TREE_PASS_H) \
 	langhooks.h $(VEC_H) $(BITMAP_H) pointer-set.h $(IPA_PROP_H) \
 	$(COMMON_H) debug.h $(TIMEVAR_H) $(GIMPLE_H) $(LTO_H) $(LTO_TREE_H) \
 	$(LTO_TAGS_H) $(LTO_STREAMER_H) $(SPLAY_TREE_H) gt-lto-lto.h $(PARAMS_H) \
-	ipa-inline.h
+	ipa-inline.h $(IPA_UTILS_H)
 lto/lto-object.o: lto/lto-object.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(DIAGNOSTIC_CORE_H) $(LTO_H) $(TM_H) $(LTO_STREAMER_H) \
 	../include/simple-object.h

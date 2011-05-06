@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 
 bool objc_init (void);
 const char *objc_printable_name (tree, int);
-tree objc_fold_obj_type_ref (tree, tree);
 int objc_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 void objc_common_init_ts (void);
 
@@ -130,7 +129,7 @@ typedef enum objc_property_assign_semantics {
 /* PROPERTY_REF_PROPERTY_DECL is the PROPERTY_DECL for the property
    used in the expression.  From it, you can get the property type,
    and the getter/setter names.  This PROPERTY_DECL could be artificial
-   if we are processing an 'object.component' syntax with no matching 
+   if we are processing an 'object.component' syntax with no matching
    declared property.  */
 #define PROPERTY_REF_PROPERTY_DECL(NODE) TREE_OPERAND (PROPERTY_REF_CHECK (NODE), 1)
 
@@ -525,9 +524,9 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define objc_setjmp_decl	objc_global_trees[OCTI_SETJMP_DECL]
 #define objc_stack_exception_data		\
 				objc_global_trees[OCTI_STACK_EXCEPTION_DATA_DECL]
-#define objc_caught_exception	objc_global_trees[OCTI_LOCAL_EXCEPTION_DECL]	
-#define objc_rethrow_exception	objc_global_trees[OCTI_RETHROW_EXCEPTION_DECL]	
-#define objc_eval_once		objc_global_trees[OCTI_EVAL_ONCE_DECL]	
+#define objc_caught_exception	objc_global_trees[OCTI_LOCAL_EXCEPTION_DECL]
+#define objc_rethrow_exception	objc_global_trees[OCTI_RETHROW_EXCEPTION_DECL]
+#define objc_eval_once		objc_global_trees[OCTI_EVAL_ONCE_DECL]
 #define objc_catch_type		objc_global_trees[OCTI_CATCH_TYPE]
 
 #define execclass_decl		objc_global_trees[OCTI_EXECCLASS_DECL]
@@ -644,7 +643,7 @@ typedef enum string_section
 #define METHOD_REF			1
 
 /* (Decide if these can ever be validly changed.) */
-#define OBJC_ENCODE_INLINE_DEFS 	0
+#define OBJC_ENCODE_INLINE_DEFS		0
 #define OBJC_ENCODE_DONT_INLINE_DEFS	1
 
 #define BUFSIZE				1024
@@ -666,10 +665,8 @@ typedef enum string_section
 #define OBJC_MODIFIER_TRANSIENT		0x00000200
 #define OBJC_MODIFIER_NONE_SPECIFIED	0x80000000
 
-#define OBJC_VOID_AT_END		void_list_node
-
 /* Exception handling constructs.  We begin by having the parser do most
-   of the work and passing us blocks.  
+   of the work and passing us blocks.
    This allows us to handle different exceptions implementations.  */
 
 /* Stack of open try blocks.  */
@@ -707,7 +704,7 @@ struct objc_try_context
    than making them externs.  */
 
 extern tree objc_create_temporary_var (tree, const char *);
-  
+
 #define objc_is_object_id(TYPE) (OBJC_TYPE_NAME (TYPE) == objc_object_id)
 #define objc_is_class_id(TYPE) (OBJC_TYPE_NAME (TYPE) == objc_class_id)
 

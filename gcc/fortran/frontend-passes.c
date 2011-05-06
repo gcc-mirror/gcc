@@ -48,9 +48,14 @@ static gfc_expr ***expr_array;
 static int expr_size, expr_count;
 
 /* Pointer to the gfc_code we currently work on - to be able to insert
-   a statement before.  */
+   a block before the statement.  */
 
 static gfc_code **current_code;
+
+/* Pointer to the block to be inserted, and the statement we are
+   changing within the block.  */
+
+static gfc_code *inserted_block, **changed_statement;
 
 /* The namespace we are currently dealing with.  */
 
@@ -203,7 +208,9 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
 /* Returns a new expression (a variable) to be used in place of the old one,
    with an an assignment statement before the current statement to set
-   the value of the variable.  */
+   the value of the variable. Creates a new BLOCK for the statement if
+   that hasn't already been done and puts the statement, plus the
+   newly created variables, in that block.  */
 
 static gfc_expr*
 create_var (gfc_expr * e)
@@ -214,10 +221,31 @@ create_var (gfc_expr * e)
   gfc_symbol *symbol;
   gfc_expr *result;
   gfc_code *n;
+  gfc_namespace *ns;
   int i;
 
+  /* If the block hasn't already been created, do so.  */
+  if (inserted_block == NULL)
+    {
+      inserted_block = XCNEW (gfc_code);
+      inserted_block->op = EXEC_BLOCK;
+      inserted_block->loc = (*current_code)->loc;
+      ns = gfc_build_block_ns (current_ns);
+      inserted_block->ext.block.ns = ns;
+      inserted_block->ext.block.assoc = NULL;
+
+      ns->code = *current_code;
+      inserted_block->next = (*current_code)->next;
+      changed_statement = &(inserted_block->ext.block.ns->code);
+      (*current_code)->next = NULL;
+      /* Insert the BLOCK at the right position.  */
+      *current_code = inserted_block;
+    }
+  else
+    ns = inserted_block->ext.block.ns;
+
   sprintf(name, "__var_%d",num++);
-  if (gfc_get_sym_tree (name, current_ns, &symtree, false) != 0)
+  if (gfc_get_sym_tree (name, ns, &symtree, false) != 0)
     gcc_unreachable ();
 
   symbol = symtree->n.sym;
@@ -267,10 +295,10 @@ create_var (gfc_expr * e)
   n = XCNEW (gfc_code);
   n->op = EXEC_ASSIGN;
   n->loc = (*current_code)->loc;
-  n->next = *current_code;
+  n->next = *changed_statement;
   n->expr1 = gfc_copy_expr (result);
   n->expr2 = e;
-  *current_code = n;
+  *changed_statement = n;
 
   return result;
 }
@@ -347,6 +375,8 @@ cfe_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 	  void *data ATTRIBUTE_UNUSED)
 {
   current_code = c;
+  inserted_block = NULL;
+  changed_statement = NULL;
   return 0;
 }
 

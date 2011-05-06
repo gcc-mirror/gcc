@@ -140,7 +140,7 @@ proc go-set-goarch { } {
 		set goarch "amd64"
 	    }
 	}
-	"mips-*-*" {
+	"mips*-*-*" {
 	    if [check_no_compiler_messages mipso32 assembly {
 		#if _MIPS_SIM != _ABIO32
 		#error FOO

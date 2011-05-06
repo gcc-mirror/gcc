@@ -6629,7 +6629,7 @@ static void
 avr_init_builtins (void)
 {
   tree void_ftype_void
-    = build_function_type (void_type_node, void_list_node);
+    = build_function_type_list (void_type_node, NULL_TREE);
   tree uchar_ftype_uchar
     = build_function_type_list (unsigned_char_type_node, 
                                 unsigned_char_type_node,

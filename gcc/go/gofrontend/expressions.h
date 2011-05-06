@@ -877,15 +877,15 @@ class Parser_expression : public Expression
 
   void
   do_determine_type(const Type_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   void
   do_check_types(Gogo*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   tree
   do_get_tree(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 };
 
 // An expression which is simply a variable.

@@ -2466,7 +2466,6 @@ iq2000_output_conditional_branch (rtx insn, rtx * operands, int two_operands_p,
 static void
 iq2000_init_builtins (void)
 {
-  tree endlink = void_list_node;
   tree void_ftype, void_ftype_int, void_ftype_int_int;
   tree void_ftype_int_int_int;
   tree int_ftype_int, int_ftype_int_int, int_ftype_int_int_int;
@@ -2474,76 +2473,55 @@ iq2000_init_builtins (void)
 
   /* func () */
   void_ftype
-    = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, void_type_node, endlink));
+    = build_function_type_list (void_type_node, NULL_TREE);
 
   /* func (int) */
   void_ftype_int
-    = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, integer_type_node, endlink));
+    = build_function_type_list (void_type_node, integer_type_node, NULL_TREE);
 
   /* void func (int, int) */
   void_ftype_int_int
-    = build_function_type (void_type_node,
-                           tree_cons (NULL_TREE, integer_type_node,
-                                      tree_cons (NULL_TREE, integer_type_node,
-                                                 endlink)));
+    = build_function_type_list (void_type_node,
+                                integer_type_node,
+                                integer_type_node,
+                                NULL_TREE);
 
   /* int func (int) */
   int_ftype_int
-    = build_function_type (integer_type_node,
-                           tree_cons (NULL_TREE, integer_type_node, endlink));
+    = build_function_type_list (integer_type_node,
+                                integer_type_node, NULL_TREE);
 
   /* int func (int, int) */
   int_ftype_int_int
-    = build_function_type (integer_type_node,
-                           tree_cons (NULL_TREE, integer_type_node,
-                                      tree_cons (NULL_TREE, integer_type_node,
-                                                 endlink)));
+    = build_function_type_list (integer_type_node,
+                                integer_type_node,
+                                integer_type_node,
+                                NULL_TREE);
 
   /* void func (int, int, int) */
-void_ftype_int_int_int
-    = build_function_type
-    (void_type_node,
-     tree_cons (NULL_TREE, integer_type_node,
-		tree_cons (NULL_TREE, integer_type_node,
-			   tree_cons (NULL_TREE,
-				      integer_type_node,
-				      endlink))));
-
-  /* int func (int, int, int, int) */
-  int_ftype_int_int_int_int
-    = build_function_type
-    (integer_type_node,
-     tree_cons (NULL_TREE, integer_type_node,
-		tree_cons (NULL_TREE, integer_type_node,
-			   tree_cons (NULL_TREE,
-				      integer_type_node,
-				      tree_cons (NULL_TREE,
-						 integer_type_node,
-						 endlink)))));
+  void_ftype_int_int_int
+    = build_function_type_list (void_type_node,
+                                integer_type_node,
+                                integer_type_node,
+                                integer_type_node,
+                                NULL_TREE);
 
   /* int func (int, int, int) */
   int_ftype_int_int_int
-    = build_function_type
-    (integer_type_node,
-     tree_cons (NULL_TREE, integer_type_node,
-		tree_cons (NULL_TREE, integer_type_node,
-			   tree_cons (NULL_TREE,
-				      integer_type_node,
-				      endlink))));
+    = build_function_type_list (integer_type_node,
+                                integer_type_node,
+                                integer_type_node,
+                                integer_type_node,
+                                NULL_TREE);
 
   /* int func (int, int, int, int) */
   int_ftype_int_int_int_int
-    = build_function_type
-    (integer_type_node,
-     tree_cons (NULL_TREE, integer_type_node,
-		tree_cons (NULL_TREE, integer_type_node,
-			   tree_cons (NULL_TREE,
-				      integer_type_node,
-				      tree_cons (NULL_TREE,
-						 integer_type_node,
-						 endlink)))));
+    = build_function_type_list (integer_type_node,
+                                integer_type_node,
+                                integer_type_node,
+                                integer_type_node,
+                                integer_type_node,
+                                NULL_TREE);
 
   def_builtin ("__builtin_ado16", int_ftype_int_int, IQ2000_BUILTIN_ADO16);
   def_builtin ("__builtin_ram", int_ftype_int_int_int_int, IQ2000_BUILTIN_RAM);

@@ -103,7 +103,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    	note: unit function-graph*
 	unit: header int32:checksum string:source
 	function-graph: announce_function basic_blocks {arcs | lines}*
-	announce_function: header int32:ident int32:checksum
+	announce_function: header int32:ident
+		int32:lineno_checksum int32:cfg_checksum
 		string:name string:source int32:lineno
 	basic_block: header int32:flags*
 	arcs: header int32:block_no arc*
@@ -132,7 +133,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
         data: {unit function-data* summary:object summary:program*}*
 	unit: header int32:checksum
         function-data:	announce_function arc_counts
-	announce_function: header int32:ident int32:checksum
+	announce_function: header int32:ident
+		int32:lineno_checksum int32:cfg_checksum
 	arc_counts: header int64:count*
 	summary: int32:checksum {count-summary}GCOV_COUNTERS
 	count-summary:	int32:num int32:runs int64:sum
@@ -294,7 +296,7 @@ typedef HOST_WIDEST_INT gcov_type;
    file marker -- it is not required to be present.  */
 
 #define GCOV_TAG_FUNCTION	 ((gcov_unsigned_t)0x01000000)
-#define GCOV_TAG_FUNCTION_LENGTH (2)
+#define GCOV_TAG_FUNCTION_LENGTH (3)
 #define GCOV_TAG_BLOCKS		 ((gcov_unsigned_t)0x01410000)
 #define GCOV_TAG_BLOCKS_LENGTH(NUM) (NUM)
 #define GCOV_TAG_BLOCKS_NUM(LENGTH) (LENGTH)
@@ -412,10 +414,12 @@ struct gcov_summary
    idiom. The number of counters is determined from the counter_mask
    in gcov_info.  We hold an array of function info, so have to
    explicitly calculate the correct array stride.  */
+
 struct gcov_fn_info
 {
   gcov_unsigned_t ident;	/* unique ident of function */
-  gcov_unsigned_t checksum;	/* function checksum */
+  gcov_unsigned_t lineno_checksum;	/* function lineo_checksum */
+  gcov_unsigned_t cfg_checksum;	/* function cfg checksum */
   unsigned n_ctrs[0];		/* instrumented counters */
 };
 

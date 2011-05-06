@@ -1967,7 +1967,7 @@ Integer/Floating point constant that can be loaded into a register using
 three instructions
 
 @item m
-Memory operand.  
+Memory operand.
 Normally, @code{m} does not allow addresses that update the base register.
 If @samp{<} or @samp{>} constraint is also used, they are allowed and
 therefore on PowerPC targets in that case it is only safe
@@ -2142,7 +2142,7 @@ Signed 8-bit integer constant.
 0, 1, 2, or 3 (shifts for the @code{lea} instruction).
 
 @item N
-Unsigned 8-bit integer constant (for @code{in} and @code{out} 
+Unsigned 8-bit integer constant (for @code{in} and @code{out}
 instructions).
 
 @ifset INTERNALS
@@ -3022,70 +3022,70 @@ Vector zero
 @item SPU---@file{config/spu/spu.h}
 @table @code
 @item a
-An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 64 bit value.  
+An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 64 bit value.
 
 @item c
-An immediate for and/xor/or instructions.  const_int is treated as a 64 bit value.  
+An immediate for and/xor/or instructions.  const_int is treated as a 64 bit value.
 
 @item d
-An immediate for the @code{iohl} instruction.  const_int is treated as a 64 bit value.  
+An immediate for the @code{iohl} instruction.  const_int is treated as a 64 bit value.
 
 @item f
-An immediate which can be loaded with @code{fsmbi}.  
+An immediate which can be loaded with @code{fsmbi}.
 
 @item A
-An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 32 bit value.  
+An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 32 bit value.
 
 @item B
-An immediate for most arithmetic instructions.  const_int is treated as a 32 bit value.  
+An immediate for most arithmetic instructions.  const_int is treated as a 32 bit value.
 
 @item C
-An immediate for and/xor/or instructions.  const_int is treated as a 32 bit value.  
+An immediate for and/xor/or instructions.  const_int is treated as a 32 bit value.
 
 @item D
-An immediate for the @code{iohl} instruction.  const_int is treated as a 32 bit value.  
+An immediate for the @code{iohl} instruction.  const_int is treated as a 32 bit value.
 
 @item I
-A constant in the range [@minus{}64, 63] for shift/rotate instructions.  
+A constant in the range [@minus{}64, 63] for shift/rotate instructions.
 
 @item J
-An unsigned 7-bit constant for conversion/nop/channel instructions.  
+An unsigned 7-bit constant for conversion/nop/channel instructions.
 
 @item K
-A signed 10-bit constant for most arithmetic instructions.  
+A signed 10-bit constant for most arithmetic instructions.
 
 @item M
-A signed 16 bit immediate for @code{stop}.  
+A signed 16 bit immediate for @code{stop}.
 
 @item N
-An unsigned 16-bit constant for @code{iohl} and @code{fsmbi}.  
+An unsigned 16-bit constant for @code{iohl} and @code{fsmbi}.
 
 @item O
-An unsigned 7-bit constant whose 3 least significant bits are 0.  
+An unsigned 7-bit constant whose 3 least significant bits are 0.
 
 @item P
-An unsigned 3-bit constant for 16-byte rotates and shifts 
+An unsigned 3-bit constant for 16-byte rotates and shifts
 
 @item R
-Call operand, reg, for indirect calls 
+Call operand, reg, for indirect calls
 
 @item S
-Call operand, symbol, for relative calls.  
+Call operand, symbol, for relative calls.
 
 @item T
-Call operand, const_int, for absolute calls.  
+Call operand, const_int, for absolute calls.
 
 @item U
-An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is sign extended to 128 bit.  
+An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is sign extended to 128 bit.
 
 @item W
-An immediate for shift and rotate instructions.  const_int is treated as a 32 bit value.  
+An immediate for shift and rotate instructions.  const_int is treated as a 32 bit value.
 
 @item Y
-An immediate for and/xor/or instructions.  const_int is sign extended as a 128 bit.  
+An immediate for and/xor/or instructions.  const_int is sign extended as a 128 bit.
 
 @item Z
-An immediate for the @code{iohl} instruction.  const_int is sign extended to 128 bit.  
+An immediate for the @code{iohl} instruction.  const_int is sign extended to 128 bit.
 
 @end table
 
@@ -3435,7 +3435,7 @@ be specially marked, to give @code{reload} more information.
 Machine-specific constraints can be given names of arbitrary length,
 but they must be entirely composed of letters, digits, underscores
 (@samp{_}), and angle brackets (@samp{< >}).  Like C identifiers, they
-must begin with a letter or underscore. 
+must begin with a letter or underscore.
 
 In order to avoid ambiguity in operand constraint strings, no
 constraint can have a name that begins with any other constraint's
@@ -3846,6 +3846,48 @@ into consecutive memory locations.  Operand 0 is the first of the
 consecutive memory locations, operand 1 is the first register, and
 operand 2 is a constant: the number of consecutive registers.
 
+@cindex @code{vec_load_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_load_lanes@var{m}@var{n}}
+Perform an interleaved load of several vectors from memory operand 1
+into register operand 0.  Both operands have mode @var{m}.  The register
+operand is viewed as holding consecutive vectors of mode @var{n},
+while the memory operand is a flat array that contains the same number
+of elements.  The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  for (i = 0; i < c; i++)
+    operand0[i][j] = operand1[j * c + i];
+@end smallexample
+
+For example, @samp{vec_load_lanestiv4hi} loads 8 16-bit values
+from memory into a register of mode @samp{TI}@.  The register
+contains two consecutive vectors of mode @samp{V4HI}@.
+
+This pattern can only be used if:
+@smallexample
+TARGET_ARRAY_MODE_SUPPORTED_P (@var{n}, @var{c})
+@end smallexample
+is true.  GCC assumes that, if a target supports this kind of
+instruction for some mode @var{n}, it also supports unaligned
+loads for vectors of mode @var{n}.
+
+@cindex @code{vec_store_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_store_lanes@var{m}@var{n}}
+Equivalent to @samp{vec_load_lanes@var{m}@var{n}}, with the memory
+and register operands reversed.  That is, the instruction is
+equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  for (i = 0; i < c; i++)
+    operand0[j * c + i] = operand1[i][j];
+@end smallexample
+
+for a memory operand 0 and register operand 1.
+
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
 Set given field in the vector value.  Operand 0 is the vector to modify,
@@ -3858,15 +3900,15 @@ specify field index and operand 0 place to store value into.
 
 @cindex @code{vec_extract_even@var{m}} instruction pattern
 @item @samp{vec_extract_even@var{m}}
-Extract even elements from the input vectors (operand 1 and operand 2). 
+Extract even elements from the input vectors (operand 1 and operand 2).
 The even elements of operand 2 are concatenated to the even elements of operand
-1 in their original order. The result is stored in operand 0. 
-The output and input vectors should have the same modes. 
+1 in their original order. The result is stored in operand 0.
+The output and input vectors should have the same modes.
 
 @cindex @code{vec_extract_odd@var{m}} instruction pattern
 @item @samp{vec_extract_odd@var{m}}
-Extract odd elements from the input vectors (operand 1 and operand 2). 
-The odd elements of operand 2 are concatenated to the odd elements of operand 
+Extract odd elements from the input vectors (operand 1 and operand 2).
+The odd elements of operand 2 are concatenated to the odd elements of operand
 1 in their original order. The result is stored in operand 0.
 The output and input vectors should have the same modes.
 
@@ -3881,7 +3923,7 @@ and input vectors should have the same modes (@code{N} elements). The high
 @item @samp{vec_interleave_low@var{m}}
 Merge low elements of the two input vectors into the output vector. The output
 and input vectors should have the same modes (@code{N} elements). The low
-@code{N/2} elements of the first input vector are interleaved with the low 
+@code{N/2} elements of the first input vector are interleaved with the low
 @code{N/2} elements of the second input vector.
 
 @cindex @code{vec_init@var{m}} instruction pattern
@@ -4011,17 +4053,17 @@ and the scalar result is stored in the least significant bits of operand 0
 @item @samp{sdot_prod@var{m}}
 @cindex @code{udot_prod@var{m}} instruction pattern
 @item @samp{udot_prod@var{m}}
-Compute the sum of the products of two signed/unsigned elements. 
-Operand 1 and operand 2 are of the same mode. Their product, which is of a 
-wider mode, is computed and added to operand 3. Operand 3 is of a mode equal or 
+Compute the sum of the products of two signed/unsigned elements.
+Operand 1 and operand 2 are of the same mode. Their product, which is of a
+wider mode, is computed and added to operand 3. Operand 3 is of a mode equal or
 wider than the mode of the product. The result is placed in operand 0, which
-is of the same mode as operand 3. 
+is of the same mode as operand 3.
 
 @cindex @code{ssum_widen@var{m3}} instruction pattern
 @item @samp{ssum_widen@var{m3}}
 @cindex @code{usum_widen@var{m3}} instruction pattern
 @item @samp{usum_widen@var{m3}}
-Operands 0 and 2 are of the same mode, which is wider than the mode of 
+Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
@@ -7719,7 +7761,7 @@ The forth construction (@samp{absence_set}) means that each functional
 unit in the first string can be reserved only if each pattern of units
 whose names are in the second string is not reserved.  This is an
 asymmetric relation (actually @samp{exclusion_set} is analogous to
-this one but it is symmetric).  For example it might be useful in a 
+this one but it is symmetric).  For example it might be useful in a
 @acronym{VLIW} description to say that @samp{slot0} cannot be reserved
 after either @samp{slot1} or @samp{slot2} have been reserved.  This
 can be described as:

@@ -14,9 +14,9 @@ enddo
 
 write(out,nl1)
 if (out(1).ne."&NL1") call abort
-if (out(2).ne." A=  1.0000000    ,") call abort
-if (out(3).ne." B=  2.0000000    ,") call abort
-if (out(4).ne." C=  3.0000000    ,") call abort
+if (out(2).ne." A=  1.00000000    ,") call abort
+if (out(3).ne." B=  2.00000000    ,") call abort
+if (out(4).ne." C=  3.00000000    ,") call abort
 if (out(5).ne." /") call abort
 
 end program oneline

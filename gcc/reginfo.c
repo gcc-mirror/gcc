@@ -629,8 +629,9 @@ register_move_cost (enum machine_mode mode, reg_class_t from, reg_class_t to)
 }
 
 /* Compute cost of moving registers to/from memory.  */
+
 int
-memory_move_cost (enum machine_mode mode, enum reg_class rclass, bool in)
+memory_move_cost (enum machine_mode mode, reg_class_t rclass, bool in)
 {
   return targetm.memory_move_cost (mode, rclass, in);
 }

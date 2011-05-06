@@ -427,6 +427,7 @@ tree
 create_tmp_var_raw (tree type, const char *prefix)
 {
   tree tmp_var;
+
   /* Make the type of the variable writable.  */
   int type_quals = TYPE_QUALS (type)
                     & ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
@@ -1592,10 +1593,11 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 			break;
 		    }
 		  if (i == len)
-		    default_case = build3 (CASE_LABEL_EXPR, void_type_node,
-					   NULL_TREE, NULL_TREE,
-					   CASE_LABEL (VEC_index (tree,
-								  labels, 0)));
+		    {
+		      tree label = CASE_LABEL (VEC_index (tree, labels, 0));
+		      default_case = build_case_label (NULL_TREE, NULL_TREE,
+						       label);
+		    }
 		}
 	    }
 
@@ -1604,9 +1606,8 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 	      gimple new_default;
 
 	      default_case
-		= build3 (CASE_LABEL_EXPR, void_type_node,
-			  NULL_TREE, NULL_TREE,
-			  create_artificial_label (UNKNOWN_LOCATION));
+		= build_case_label (NULL_TREE, NULL_TREE,
+				    create_artificial_label (UNKNOWN_LOCATION));
 	      new_default = gimple_build_label (CASE_LABEL (default_case));
 	      gimplify_seq_add_stmt (&switch_body_seq, new_default);
 	    }

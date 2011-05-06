@@ -728,6 +728,16 @@ check_narrowing (tree type, tree init)
   if (!ARITHMETIC_TYPE_P (type))
     return;
 
+  if (BRACE_ENCLOSED_INITIALIZER_P (init)
+      && TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      tree elttype = TREE_TYPE (type);
+      check_narrowing (elttype, CONSTRUCTOR_ELT (init, 0)->value);
+      if (CONSTRUCTOR_NELTS (init) > 1)
+	check_narrowing (elttype, CONSTRUCTOR_ELT (init, 1)->value);
+      return;
+    }
+
   init = maybe_constant_value (init);
 
   if (TREE_CODE (type) == INTEGER_TYPE
@@ -1610,7 +1620,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
       && !TYPE_HAS_USER_CONSTRUCTOR (type))
     {
       exp = build_value_init (type, complain);
-      exp = get_target_expr (exp);
+      exp = get_target_expr_sfinae (exp, complain);
       /* FIXME this is wrong */
       if (literal_type_p (type))
 	TREE_CONSTANT (exp) = true;

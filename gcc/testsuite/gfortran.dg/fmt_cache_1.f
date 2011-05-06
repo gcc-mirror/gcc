@@ -1,11 +1,12 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! pr40662 segfaults when specific format is invoked twice.
 ! pr40330  incorrect io.
 ! test case derived from pr40662, <jvdelisle@gcc.gnu.org>
       program astap
-      character(40) teststring
-      arlxca = 0.0
-      open(10, status="scratch")
+      implicit none
+      character(34) :: teststring
+      real(4) :: arlxca = 0.0
+      open(10)
       write(10,40) arlxca
       write(10,40) arlxca
 40    format(t4,"arlxca = ",1pg13.6,t27,"arlxcc = ",g13.6,t53,
@@ -21,13 +22,12 @@
      .            "ebalnc = ",g13.6,t79,"ebalsa = ",g13.6,t105,
      .            "ebalsc = ",g13.6)
       rewind 10
-      rewind 10
       teststring = ""
       read(10,'(a)') teststring
-      if (teststring.ne."   arlxca =   0.00000     arlxcc = ")call abort
+      if (teststring.ne."   arlxca =   0.00000     arlxcc =")call abort
       teststring = ""
       read(10,'(a)') teststring
-      if (teststring.ne."   arlxca =   0.00000     arlxcc = ")call abort
+      if (teststring.ne."   arlxca =   0.00000     arlxcc =")call abort
       end program astap
 
 

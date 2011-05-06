@@ -1364,7 +1364,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 		  p = gfc_constructor_next (p);
 		}
 
-	      bound = build_int_cst (NULL_TREE, n - 1);
+	      bound = size_int (n - 1);
               /* Create an array type to hold them.  */
 	      tmptype = build_range_type (gfc_array_index_type,
 					  gfc_index_zero_node, bound);
@@ -1390,7 +1390,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	      init = gfc_build_addr_expr (NULL_TREE, init);
 
 	      size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
-	      bound = build_int_cst (NULL_TREE, n * size);
+	      bound = build_int_cst (size_type_node, n * size);
 	      tmp = build_call_expr_loc (input_location,
 				     built_in_decls[BUILT_IN_MEMCPY], 3,
 				     tmp, init, bound);

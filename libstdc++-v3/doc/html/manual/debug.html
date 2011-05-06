@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Debugging Support</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      debug&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="using.html" title="Chapter 3. Using"/><link rel="prev" href="using_exceptions.html" title="Exceptions"/><link rel="next" href="bk01pt02.html" title="Part II.  Standard Contents"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Debugging Support</th></tr><tr><td align="left"><a accesskey="p" href="using_exceptions.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td align="right"> <a accesskey="n" href="bk01pt02.html">Next</a></td></tr></table><hr/></div><div class="section" title="Debugging Support"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.using.debug"/>Debugging Support</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Debugging Support</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      C++&#10;    , &#10;      debug&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="using.html" title="Chapter 3. Using"/><link rel="prev" href="using_exceptions.html" title="Exceptions"/><link rel="next" href="bk01pt02.html" title="Part II.  Standard Contents"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Debugging Support</th></tr><tr><td align="left"><a accesskey="p" href="using_exceptions.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td align="right"> <a accesskey="n" href="bk01pt02.html">Next</a></td></tr></table><hr/></div><div class="section" title="Debugging Support"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.using.debug"/>Debugging Support</h2></div></div></div><p>
   There are numerous things that can be done to improve the ease with
   which C++ binaries are debugged when using the GNU tool chain. Here
   are some of them.
@@ -28,7 +28,7 @@
   platform can be identified via the value set by the
   PREFERRED_DEBUGGING_TYPE macro in the gcc sources.
 </p><p>
-  Many other options are available: please see <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html#Debugging%20Options" target="">"Options
+  Many other options are available: please see <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html#Debugging%20Options">"Options
   for Debugging Your Program"</a> in Using the GNU Compiler
   Collection (GCC) for a complete list.
 </p></div><div class="section" title="Debug Versions of Library Binary Files"><div class="titlepage"><div><div><h3 class="title"><a id="debug.req"/>Debug Versions of Library Binary Files</h3></div></div></div><p>
@@ -147,11 +147,11 @@
 </p><p>
   The approach described above is known to work with the following race
   detection tools:
-  <a class="link" href="http://valgrind.org/docs/manual/drd-manual.html" target="">
+  <a class="link" href="http://valgrind.org/docs/manual/drd-manual.html">
   DRD</a>,
-  <a class="link" href="http://valgrind.org/docs/manual/hg-manual.html" target=""> 
+  <a class="link" href="http://valgrind.org/docs/manual/hg-manual.html"> 
   Helgrind</a>, and
-  <a class="link" href="http://code.google.com/p/data-race-test" target=""> 
+  <a class="link" href="http://code.google.com/p/data-race-test"> 
   ThreadSanitizer</a>.
 </p><p>
   With DRD, Helgrind and ThreadSanitizer you will need to define
@@ -163,7 +163,7 @@
   Refer to the documentation of each particular tool for details.
 </p></div><div class="section" title="Using gdb"><div class="titlepage"><div><div><h3 class="title"><a id="debug.gdb"/>Using <span class="command"><strong>gdb</strong></span></h3></div></div></div><p>
   </p><p>
-  Many options are available for GDB itself: please see <a class="link" href="http://sources.redhat.com/gdb/current/onlinedocs/gdb/" target="">
+  Many options are available for GDB itself: please see <a class="link" href="http://sources.redhat.com/gdb/current/onlinedocs/gdb/">
   "GDB features for C++" </a> in the GDB documentation. Also
   recommended: the other parts of this manual.
 </p><p>
@@ -207,12 +207,12 @@
   pretty-printers were not loaded.
 </p><p>
   For additional information on STL support and GDB please visit:
-  <a class="link" href="http://sourceware.org/gdb/wiki/STLSupport" target=""> "GDB Support
+  <a class="link" href="http://sourceware.org/gdb/wiki/STLSupport"> "GDB Support
   for STL" </a> in the GDB wiki.  Additionally, in-depth
   documentation and discussion of the pretty printing feature can be
   found in "Pretty Printing" node in the GDB manual.  You can find
   on-line versions of the GDB user manual in GDB's homepage, at
-  <a class="link" href="http://sourceware.org/gdb/" target=""> "GDB: The GNU Project
+  <a class="link" href="http://sourceware.org/gdb/"> "GDB: The GNU Project
   Debugger" </a>.
 </p></div><div class="section" title="Tracking uncaught exceptions"><div class="titlepage"><div><div><h3 class="title"><a id="debug.exceptions"/>Tracking uncaught exceptions</h3></div></div></div><p>
   The <a class="link" href="termination.html#support.termination.verbose" title="Verbose Terminate Handler">verbose

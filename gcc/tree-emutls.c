@@ -437,7 +437,7 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
       gimple_seq_add_stmt (&d->seq, x);
 
       cgraph_create_edge (d->cfun_node, d->builtin_node, x,
-                          d->bb->count, d->bb_freq, d->bb->loop_depth);
+                          d->bb->count, d->bb_freq);
 
       /* We may be adding a new reference to a new variable to the function.
          This means we have to play with the ipa-reference web.  */
@@ -781,7 +781,7 @@ ipa_lower_emutls (void)
 
   VEC_free (varpool_node_ptr, heap, control_vars);
   VEC_free (tree, heap, access_vars);
-  tls_vars = NULL;
+  free_varpool_node_set (tls_vars);
 
   return TODO_dump_func | TODO_ggc_collect | TODO_verify_all;
 }

@@ -1422,39 +1422,58 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     struct is_bind_expression<_Bind_result<_Result, _Signature> >
     : public true_type { };
 
-  template<typename _Functor, typename... _ArgTypes>
+  // Trait type used to remove std::bind() from overload set via SFINAE
+  // when first argument has integer type, so that std::bind() will
+  // not be a better match than ::bind() from the BSD Sockets API.
+  template<typename _Tp>
+    class __is_socketlike
+    {
+      typedef typename decay<_Tp>::type _Tp2;
+    public:
+      static const bool value =
+	is_integral<_Tp2>::value || is_enum<_Tp2>::value;
+    };
+
+  template<bool _SocketLike, typename _Func, typename... _BoundArgs>
     struct _Bind_helper
     {
-      typedef _Maybe_wrap_member_pointer<typename decay<_Functor>::type>
+      typedef _Maybe_wrap_member_pointer<typename decay<_Func>::type>
 	__maybe_type;
-      typedef typename __maybe_type::type __functor_type;
-      typedef _Bind<__functor_type(typename decay<_ArgTypes>::type...)> type;
+      typedef typename __maybe_type::type __func_type;
+      typedef _Bind<__func_type(typename decay<_BoundArgs>::type...)> type;
     };
+
+  // Partial specialization for is_socketlike == true, does not define
+  // nested type so std::bind() will not participate in overload resolution
+  // when the first argument might be a socket file descriptor.
+  template<typename _Func, typename... _BoundArgs>
+    struct _Bind_helper<true, _Func, _BoundArgs...>
+    { };
 
   /**
    *  @brief Function template for std::bind.
    *  @ingroup binders
    */
-  template<typename _Functor, typename... _ArgTypes>
-    inline
-    typename _Bind_helper<_Functor, _ArgTypes...>::type
-    bind(_Functor&& __f, _ArgTypes&&... __args)
+  template<typename _Func, typename... _BoundArgs>
+    inline typename
+    _Bind_helper<__is_socketlike<_Func>::value, _Func, _BoundArgs...>::type
+    bind(_Func&& __f, _BoundArgs&&... __args)
     {
-      typedef _Bind_helper<_Functor, _ArgTypes...> __helper_type;
+      typedef _Bind_helper<false, _Func, _BoundArgs...> __helper_type;
       typedef typename __helper_type::__maybe_type __maybe_type;
       typedef typename __helper_type::type __result_type;
-      return __result_type(__maybe_type::__do_wrap(std::forward<_Functor>(__f)),
-			   std::forward<_ArgTypes>(__args)...);
+      return __result_type(__maybe_type::__do_wrap(std::forward<_Func>(__f)),
+			   std::forward<_BoundArgs>(__args)...);
     }
 
-  template<typename _Result, typename _Functor, typename... _ArgTypes>
+  template<typename _Result, typename _Func, typename... _BoundArgs>
     struct _Bindres_helper
     {
-      typedef _Maybe_wrap_member_pointer<typename decay<_Functor>::type>
+      typedef _Maybe_wrap_member_pointer<typename decay<_Func>::type>
 	__maybe_type;
       typedef typename __maybe_type::type __functor_type;
       typedef _Bind_result<_Result,
-			   __functor_type(typename decay<_ArgTypes>::type...)>
+			   __functor_type(typename decay<_BoundArgs>::type...)>
 	type;
     };
 
@@ -1462,16 +1481,16 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    *  @brief Function template for std::bind<R>.
    *  @ingroup binders
    */
-  template<typename _Result, typename _Functor, typename... _ArgTypes>
+  template<typename _Result, typename _Func, typename... _BoundArgs>
     inline
-    typename _Bindres_helper<_Result, _Functor, _ArgTypes...>::type
-    bind(_Functor&& __f, _ArgTypes&&... __args)
+    typename _Bindres_helper<_Result, _Func, _BoundArgs...>::type
+    bind(_Func&& __f, _BoundArgs&&... __args)
     {
-      typedef _Bindres_helper<_Result, _Functor, _ArgTypes...> __helper_type;
+      typedef _Bindres_helper<_Result, _Func, _BoundArgs...> __helper_type;
       typedef typename __helper_type::__maybe_type __maybe_type;
       typedef typename __helper_type::type __result_type;
-      return __result_type(__maybe_type::__do_wrap(std::forward<_Functor>(__f)),
-			   std::forward<_ArgTypes>(__args)...);
+      return __result_type(__maybe_type::__do_wrap(std::forward<_Func>(__f)),
+			   std::forward<_BoundArgs>(__args)...);
     }
 
   /**

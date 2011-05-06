@@ -165,10 +165,6 @@ static rtx m68k_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			      const_tree, bool);
 static bool m68k_cannot_force_const_mem (enum machine_mode mode, rtx x);
 
-
-/* Specify the identification number of the library being built */
-const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
-
 /* Initialize the GCC target structure.  */
 
 #if INT_OP_GROUP == INT_OP_DOT_WORD
@@ -385,20 +381,10 @@ static const struct m68k_target_selection all_devices[] =
    Used for -march selection.  */
 static const struct m68k_target_selection all_isas[] =
 {
-  { "68000",    m68000,     NULL,  u68000,   isa_00,    FL_FOR_isa_00 },
-  { "68010",    m68010,     NULL,  u68010,   isa_10,    FL_FOR_isa_10 },
-  { "68020",    m68020,     NULL,  u68020,   isa_20,    FL_FOR_isa_20 },
-  { "68030",    m68030,     NULL,  u68030,   isa_20,    FL_FOR_isa_20 },
-  { "68040",    m68040,     NULL,  u68040,   isa_40,    FL_FOR_isa_40 },
-  { "68060",    m68060,     NULL,  u68060,   isa_40,    FL_FOR_isa_40 },
-  { "cpu32",    cpu32,      NULL,  ucpu32,   isa_20,    FL_FOR_isa_cpu32 },
-  { "isaa",     mcf5206e,   NULL,  ucfv2,    isa_a,     (FL_FOR_isa_a
-							 | FL_CF_HWDIV) },
-  { "isaaplus", mcf5271,    NULL,  ucfv2,    isa_aplus, (FL_FOR_isa_aplus
-							 | FL_CF_HWDIV) },
-  { "isab",     mcf5407,    NULL,  ucfv4,    isa_b,     FL_FOR_isa_b },
-  { "isac",     unk_device, NULL,  ucfv4,    isa_c,     (FL_FOR_isa_c
-							 | FL_CF_HWDIV) },
+#define M68K_ISA(NAME,DEVICE,MICROARCH,ISA,FLAGS) \
+  { NAME, DEVICE, NULL, u##MICROARCH, ISA, FLAGS },
+#include "m68k-isas.def"
+#undef M68K_ISA
   { NULL,       unk_device, NULL,  unk_arch, isa_max,   0 }
 };
 
@@ -406,24 +392,10 @@ static const struct m68k_target_selection all_isas[] =
    device.  Used for -mtune selection.  */
 static const struct m68k_target_selection all_microarchs[] =
 {
-  { "68000",    m68000,     NULL,  u68000,    isa_00,  FL_FOR_isa_00 },
-  { "68010",    m68010,     NULL,  u68010,    isa_10,  FL_FOR_isa_10 },
-  { "68020",    m68020,     NULL,  u68020,    isa_20,  FL_FOR_isa_20 },
-  { "68020-40", m68020,     NULL,  u68020_40, isa_20,  FL_FOR_isa_20 },
-  { "68020-60", m68020,     NULL,  u68020_60, isa_20,  FL_FOR_isa_20 },
-  { "68030",    m68030,     NULL,  u68030,    isa_20,  FL_FOR_isa_20 },
-  { "68040",    m68040,     NULL,  u68040,    isa_40,  FL_FOR_isa_40 },
-  { "68060",    m68060,     NULL,  u68060,    isa_40,  FL_FOR_isa_40 },
-  { "cpu32",    cpu32,      NULL,  ucpu32,    isa_20,  FL_FOR_isa_cpu32 },
-  { "cfv1",     mcf51qe,    NULL,  ucfv1,     isa_c,   FL_FOR_isa_c },
-  { "cfv2",     mcf5206,    NULL,  ucfv2,     isa_a,   FL_FOR_isa_a },
-  { "cfv3",     mcf5307,    NULL,  ucfv3,     isa_a,   (FL_FOR_isa_a
-							| FL_CF_HWDIV) },
-  { "cfv4",     mcf5407,    NULL,  ucfv4,     isa_b,   FL_FOR_isa_b },
-  { "cfv4e",    mcf547x,    NULL,  ucfv4e,    isa_b,   (FL_FOR_isa_b
-							| FL_CF_USP
-							| FL_CF_EMAC
-							| FL_CF_FPU) },
+#define M68K_MICROARCH(NAME,DEVICE,MICROARCH,ISA,FLAGS) \
+  { NAME, DEVICE, NULL, u##MICROARCH, ISA, FLAGS },
+#include "m68k-microarchs.def"
+#undef M68K_MICROARCH
   { NULL,       unk_device, NULL,  unk_arch,  isa_max, 0 }
 };
 
@@ -458,70 +430,39 @@ const char *m68k_symbolic_jump;
 enum M68K_SYMBOLIC_CALL m68k_symbolic_call_var;
 
 
-/* See whether TABLE has an entry with name NAME.  Return true and
-   store the entry in *ENTRY if so, otherwise return false and
-   leave *ENTRY alone.  */
-
-static bool
-m68k_find_selection (const struct m68k_target_selection **entry,
-		     const struct m68k_target_selection *table,
-		     const char *name)
-{
-  size_t i;
-
-  for (i = 0; table[i].name; i++)
-    if (strcmp (table[i].name, name) == 0)
-      {
-	*entry = table + i;
-	return true;
-      }
-  return false;
-}
-
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-m68k_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+m68k_handle_option (struct gcc_options *opts,
+		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
+		    location_t loc)
 {
   size_t code = decoded->opt_index;
   const char *arg = decoded->arg;
   int value = decoded->value;
 
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
   switch (code)
     {
-    case OPT_march_:
-      return m68k_find_selection (&m68k_arch_entry, all_isas, arg);
-
-    case OPT_mcpu_:
-      return m68k_find_selection (&m68k_cpu_entry, all_devices, arg);
-
-    case OPT_mtune_:
-      return m68k_find_selection (&m68k_tune_entry, all_microarchs, arg);
-
     case OPT_m68020_40:
-      return (m68k_find_selection (&m68k_tune_entry, all_microarchs,
-				   "68020-40")
-	      && m68k_find_selection (&m68k_cpu_entry, all_devices, "68020"));
+      opts->x_m68k_tune_option = u68020_40;
+      opts->x_m68k_cpu_option = m68020;
+      return true;
 
     case OPT_m68020_60:
-      return (m68k_find_selection (&m68k_tune_entry, all_microarchs,
-				   "68020-60")
-	      && m68k_find_selection (&m68k_cpu_entry, all_devices, "68020"));
+      opts->x_m68k_tune_option = u68020_60;
+      opts->x_m68k_cpu_option = m68020;
+      return true;
 
     case OPT_mshared_library_id_:
       if (value > MAX_LIBRARY_ID)
-	error ("-mshared-library-id=%s is not between 0 and %d",
-	       arg, MAX_LIBRARY_ID);
+	error_at (loc, "-mshared-library-id=%s is not between 0 and %d",
+		  arg, MAX_LIBRARY_ID);
       else
         {
 	  char *tmp;
 	  asprintf (&tmp, "%d", (value * -4) - 4);
-	  m68k_library_id_string = tmp;
+	  opts->x_m68k_library_id_string = tmp;
 	}
       return true;
 
@@ -537,6 +478,15 @@ m68k_option_override (void)
 {
   const struct m68k_target_selection *entry;
   unsigned long target_mask;
+
+  if (global_options_set.x_m68k_arch_option)
+    m68k_arch_entry = &all_isas[m68k_arch_option];
+
+  if (global_options_set.x_m68k_cpu_option)
+    m68k_cpu_entry = &all_devices[(int) m68k_cpu_option];
+
+  if (global_options_set.x_m68k_tune_option)
+    m68k_tune_entry = &all_microarchs[(int) m68k_tune_option];
 
   /* User can choose:
 
@@ -1031,6 +981,10 @@ m68k_expand_prologue (void)
 
   m68k_compute_frame_layout ();
 
+  if (flag_stack_usage)
+    current_function_static_stack_size
+      = current_frame.size + current_frame.offset;
+
   /* If the stack limit is a symbol, we can check it here,
      before actually allocating the space.  */
   if (crtl->limit_stack
@@ -1354,7 +1308,7 @@ m68k_expand_epilogue (bool sibcall_p)
 			   EH_RETURN_STACKADJ_RTX));
 
   if (!sibcall_p)
-    emit_jump_insn (gen_rtx_RETURN (VOIDmode));
+    emit_jump_insn (ret_rtx);
 }
 
 /* Return true if X is a valid comparison operator for the dbcc 

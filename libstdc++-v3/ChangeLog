@@ -1,13 +1,157 @@
+2011-05-04  Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++/47913 (again)
+	* include/std/ratio (ratio_add, ratio_less): Rewrite.
+	* testsuite/20_util/ratio/operations/47913.cc: Extend.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+
+2011-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48848
+	* include/std/valarray (valarray<>::valarray(valarray&&),
+	valarray<>::operator=(valarray&&), valarray<>::swap): Add.
+	* doc/xml/manual/status_cxx200x.xml: Update.
+	* testsuite/26_numerics/valarray/moveable.cc: New.
+	* testsuite/26_numerics/valarray/swap.cc: Likewise.
+
+2011-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48750
+	* include/parallel/multiway_merge.h: Run _ValueType destructors.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/quicksort.h: Likewise.
+	* include/parallel/random_shuffle.h: Likewise.
+	* include/parallel/partial_sum.h: Likewise.
+	* include/parallel/losertree.h: Run destructors; minor tweaks.
+	* include/parallel/par_loop.h: Run destructors, fix memory
+	allocations and deallocations.
+	* testsuite/26_numerics/accumulate/48750.cc: New.
+
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Do not run in
+	parallel-mode to avoid spurious multiple errors.
+
+2011-05-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (bind): Remove from overload set when first
+	argument type might be a socket file descriptor.
+	* testsuite/20_util/bind/socket.cc: New.
+
+2011-05-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/48848
+	* doc/xml/manual/status_cxx200x.xml: Update valarray status.
+	* doc/html/*: Regenerate.
+
+2011-05-02  Ollie Wild  <aaw@google.com>
+
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_construct):
+	Fix unqualified lookup.
+	(__sso_string_base<>::_M_assign): Likewise.
+	(__sso_string_base<>::_M_reserve): Likewise.
+	(__sso_string_base<>::_M_mutate): Likewise.
+	(__sso_string_base<>::_M_erase): Likewise.
+	* include/ext/vstring.h (__versa_string<>::replace): Likewise.
+	(__versa_string<>::compare): Likewise.
+	* include/ext/vstring.tcc (__versa_string<>::compare): Likewise.
+
+2011-05-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update to reflect current status
+	and FDIS content.
+	* doc/xml/manual/documentation_hacking.xml: Fix typo.
+	* doc/html/*: Regenerate.
+
+2011-04-30  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/std/type_traits (__is_default_constructible_atom,
+	__is_default_constructible_safe<, true>,
+	__is_direct_constructible_new_safe,
+	__is_base_to_derived_ref<,, true>, __is_lvalue_to_rvalue_ref<,, true>,
+	__is_direct_constructible_ref_cast, __is_direct_constructible,
+	__is_nary_constructible): Simplify; add comments throughout.
+
+2011-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
+2011-04-30  Doug Kwan  <dougkwan@google.com>
+
+	* include/Makefile.am (install-freestanding-headers): Also install
+	cxxabi_tweaks.h.
+	* include/Makefile.in: Regenerate.
+
+2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48760
+	* include/std/complex (complex<float>::complex(float, float),
+	complex<double>::complex(double, double),
+	complex<long double>::complex(long double, long double)): Use
+	list-initialization in C++0x mode, initialize in the body in
+	C++03 mode.
+	* testsuite/26_numerics/complex/cons/48760.cc: New.
+	* testsuite/26_numerics/complex/cons/48760_c++0x.cc: Likewise.
+
+2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/bitset (_Base_bitset(unsigned long long)): Minor
+	tweak, remove redundant round braces.
+
+2011-04-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (move_if_noexcept): Add.
+	* testsuite/20_util/move_if_noexcept/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/move_if_noexcept/1.cc: Likewise.
+
+2011-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (struct underlying_type): Add.
+	* testsuite/20_util/underlying_type/requirements/typedefs-1.cc: New.
+	* testsuite/20_util/underlying_type/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/20_util/underlying_type/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+
+2011-04-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/multiway_merge.h: Uglify equally_split
+	and equally_split_point throughout.
+	* include/parallel/par_loop.h: Likewise.
+	* include/parallel/equally_split.h: Likewise.
+	* include/parallel/set_operations.h: Likewise.
+	* include/parallel/unique_copy.h: Likewise.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/search.h: Likewise.
+	* include/parallel/partial_sum.h: Likewise.
+	* include/parallel/find.h: Likewise.
+
+2011-04-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/parallel_mode.xml: Fix link to libgomp online
+	documentation.  Expand link text.
+
+2011-04-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* libsupc++/cxxabi.h: Adjust link to FAQ entry.
+
 2011-04-22  François Dumont  <francois.cppdevs@free.fr>
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_time): Discard
 	unused compilation result thanks to /dev/null.
-	* testsuite/lib/libstdc++.exp (check_v3_target_debug_mode
-	check_v3_target_profile_mode check_v3_target_normal_mode
-	check_v3_target_cstdint check_v3_target_cmath
-	check_v3_target_atomic_builtins check_v3_target_gthreads
-	check_v3_target_nanosleep check_v3_target_sched_yield
-	check_v3_target_string_conversions check_v3_target_swprintf
+	* testsuite/lib/libstdc++.exp (check_v3_target_debug_mode,
+	check_v3_target_profile_mode, check_v3_target_normal_mode,
+	check_v3_target_cstdint, check_v3_target_cmath,
+	check_v3_target_atomic_builtins, check_v3_target_gthreads,
+	check_v3_target_nanosleep, check_v3_target_sched_yield,
+	check_v3_target_string_conversions, check_v3_target_swprintf,
 	check_v3_target_binary_io): Use simple preprocessing rather than
 	compilation. Discard unused preprocessing result thanks to /dev/null.
 
@@ -28,7 +172,7 @@
 	(ref(const A&&), cref(const A&&): Define as deleted.
 	* include/std/future (async): Simplify SFINAE and use result_of to
 	support pointer to member.
-	* testsuite/20_util/reference_wrapper/invoke.cc: Test pointer to 
+	* testsuite/20_util/reference_wrapper/invoke.cc: Test pointer to
 	member.
 	* testsuite/20_util/reference_wrapper/24803.cc: Likewise.
 	* testsuite/20_util/reference_wrapper/typedefs.cc: Test for types

@@ -278,8 +278,7 @@ __morestack:
 	movl	4(%esp),%eax		# Function argument.
 	movl	%eax,(%esp)
 #ifdef __PIC__
-#undef __i686
-	call	__i686.get_pc_thunk.bx	# %ebx may not be set up for us.
+	call	__x86.get_pc_thunk.bx	# %ebx may not be set up for us.
 	addl	$_GLOBAL_OFFSET_TABLE_, %ebx
 	call	_Unwind_Resume@PLT	# Resume unwinding.
 #else
@@ -449,6 +448,23 @@ __morestack:
 	.size	__morestack, . - __morestack
 #endif
 
+#if !defined(__x86_64__) && defined(__PIC__)
+# Output the thunk to get PC into bx, since we use it above.
+	.section	.text.__x86.get_pc_thunk.bx,"axG",@progbits,__x86.get_pc_thunk.bx,comdat
+	.globl	__x86.get_pc_thunk.bx
+	.hidden	__x86.get_pc_thunk.bx
+#ifdef __ELF__
+	.type	__x86.get_pc_thunk.bx, @function
+#endif
+__x86.get_pc_thunk.bx:
+	.cfi_startproc
+	movl	(%esp), %ebx
+	ret
+	.cfi_endproc
+#ifdef __ELF__
+	.size	__x86.get_pc_thunk.bx, . - __x86.get_pc_thunk.bx
+#endif
+#endif
 
 # The exception table.  This tells the personality routine to execute
 # the exception handler.

@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! pr44477 ENDFILE not allowed after ENDFILE
 !-------------------------------------------
   open(10, form='formatted', &

@@ -232,6 +232,8 @@ static rtx spu_expand_load (rtx, rtx, rtx, int);
 static void spu_trampoline_init (rtx, tree, rtx);
 static void spu_conditional_register_usage (void);
 static bool spu_ref_may_alias_errno (ao_ref *);
+static void spu_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
+				 HOST_WIDE_INT, tree);
 
 /* Which instruction set architecture to use.  */
 int spu_arch;
@@ -502,6 +504,11 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_REF_MAY_ALIAS_ERRNO
 #define TARGET_REF_MAY_ALIAS_ERRNO spu_ref_may_alias_errno
 
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK spu_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 static void
@@ -748,10 +755,7 @@ spu_expand_extv (rtx ops[], int unsignedp)
     emit_insn (gen_rotlti3 (s0, s0, GEN_INT (start)));
 
   if (128 - width)
-    {
-      tree c = build_int_cst (NULL_TREE, 128 - width);
-      s0 = expand_shift (RSHIFT_EXPR, TImode, s0, c, s0, unsignedp);
-    }
+    s0 = expand_shift (RSHIFT_EXPR, TImode, s0, 128 - width, s0, unsignedp);
 
   emit_move_insn (dst, s0);
 }
@@ -2107,7 +2111,7 @@ spu_expand_epilogue (bool sibcall_p)
   int size = get_frame_size (), offset, regno;
   HOST_WIDE_INT saved_regs_size, total_size;
   rtx sp_reg = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
-  rtx jump, scratch_reg_0;
+  rtx scratch_reg_0;
 
   if (spu_naked_function_p (current_function_decl))
     return;
@@ -2149,10 +2153,8 @@ spu_expand_epilogue (bool sibcall_p)
   if (!sibcall_p)
     {
       emit_use (gen_rtx_REG (SImode, LINK_REGISTER_REGNUM));
-      jump = emit_jump_insn (gen__return ());
-      emit_barrier_after (jump);
+      emit_jump_insn (gen__return ());
     }
-
 }
 
 rtx
@@ -4250,8 +4252,8 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
 
   /* if an object is dynamically sized, a pointer to it is passed
      instead of the object itself. */
-  pass_by_reference_p = spu_pass_by_reference (NULL, TYPE_MODE (type), type,
-					       false);
+  pass_by_reference_p = pass_by_reference (NULL, TYPE_MODE (type), type,
+					   false);
   if (pass_by_reference_p)
     type = build_pointer_type (type);
   size = int_size_in_bytes (type);
@@ -7195,6 +7197,92 @@ spu_ref_may_alias_errno (ao_ref *ref)
     return true;
 
   return default_ref_may_alias_errno (ref);
+}
+
+/* Output thunk to FILE that implements a C++ virtual function call (with
+   multiple inheritance) to FUNCTION.  The thunk adjusts the this pointer
+   by DELTA, and unless VCALL_OFFSET is zero, applies an additional adjustment
+   stored at VCALL_OFFSET in the vtable whose address is located at offset 0
+   relative to the resulting this pointer.  */
+
+static void
+spu_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
+		     HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
+		     tree function)
+{
+  rtx op[8];
+
+  /* Make sure unwind info is emitted for the thunk if needed.  */
+  final_start_function (emit_barrier (), file, 1);
+
+  /* Operand 0 is the target function.  */
+  op[0] = XEXP (DECL_RTL (function), 0);
+
+  /* Operand 1 is the 'this' pointer.  */
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
+    op[1] = gen_rtx_REG (Pmode, FIRST_ARG_REGNUM + 1);
+  else
+    op[1] = gen_rtx_REG (Pmode, FIRST_ARG_REGNUM);
+
+  /* Operands 2/3 are the low/high halfwords of delta.  */
+  op[2] = GEN_INT (trunc_int_for_mode (delta, HImode));
+  op[3] = GEN_INT (trunc_int_for_mode (delta >> 16, HImode));
+
+  /* Operands 4/5 are the low/high halfwords of vcall_offset.  */
+  op[4] = GEN_INT (trunc_int_for_mode (vcall_offset, HImode));
+  op[5] = GEN_INT (trunc_int_for_mode (vcall_offset >> 16, HImode));
+
+  /* Operands 6/7 are temporary registers.  */
+  op[6] = gen_rtx_REG (Pmode, 79);
+  op[7] = gen_rtx_REG (Pmode, 78);
+
+  /* Add DELTA to this pointer.  */
+  if (delta)
+    {
+      if (delta >= -0x200 && delta < 0x200)
+	output_asm_insn ("ai\t%1,%1,%2", op);
+      else if (delta >= -0x8000 && delta < 0x8000)
+	{
+	  output_asm_insn ("il\t%6,%2", op);
+	  output_asm_insn ("a\t%1,%1,%6", op);
+	}
+      else
+	{
+	  output_asm_insn ("ilhu\t%6,%3", op);
+	  output_asm_insn ("iohl\t%6,%2", op);
+	  output_asm_insn ("a\t%1,%1,%6", op);
+	}
+    }
+
+  /* Perform vcall adjustment.  */
+  if (vcall_offset)
+    {
+      output_asm_insn ("lqd\t%7,0(%1)", op);
+      output_asm_insn ("rotqby\t%7,%7,%1", op);
+
+      if (vcall_offset >= -0x200 && vcall_offset < 0x200)
+	output_asm_insn ("ai\t%7,%7,%4", op);
+      else if (vcall_offset >= -0x8000 && vcall_offset < 0x8000)
+	{
+	  output_asm_insn ("il\t%6,%4", op);
+	  output_asm_insn ("a\t%7,%7,%6", op);
+	}
+      else
+	{
+	  output_asm_insn ("ilhu\t%6,%5", op);
+	  output_asm_insn ("iohl\t%6,%4", op);
+	  output_asm_insn ("a\t%7,%7,%6", op);
+	}
+
+      output_asm_insn ("lqd\t%6,0(%7)", op);
+      output_asm_insn ("rotqby\t%6,%6,%7", op);
+      output_asm_insn ("a\t%1,%1,%6", op);
+    }
+
+  /* Jump to target.  */
+  output_asm_insn ("br\t%0", op);
+
+  final_end_function ();
 }
 
 #include "gt-spu.h"

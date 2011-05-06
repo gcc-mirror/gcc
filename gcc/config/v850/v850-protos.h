@@ -23,8 +23,6 @@
 #ifndef GCC_V850_PROTOS_H
 #define GCC_V850_PROTOS_H
 
-#define Mmode enum machine_mode
-
 extern void   expand_prologue               (void);
 extern void   expand_epilogue               (void);
 extern int    v850_handle_pragma            (int (*)(void), void (*)(int), char *);
@@ -41,12 +39,14 @@ extern char * construct_restore_jr          (rtx);
 #ifdef HAVE_MACHINE_MODES
 extern char * construct_dispose_instruction (rtx);
 extern char * construct_prepare_instruction (rtx);
-extern int    ep_memory_operand             (rtx, Mmode, int);
-extern int    v850_float_z_comparison_operator (rtx, Mmode);
-extern int    v850_float_nz_comparison_operator (rtx, Mmode);
-extern rtx    v850_gen_compare              (enum rtx_code, Mmode, rtx, rtx);
-extern Mmode  v850_gen_float_compare (enum rtx_code, Mmode, rtx, rtx);
-extern Mmode  v850_select_cc_mode (RTX_CODE, rtx, rtx);
+extern int    ep_memory_operand             (rtx, enum machine_mode, int);
+extern int    v850_float_z_comparison_operator (rtx, enum machine_mode);
+extern int    v850_float_nz_comparison_operator (rtx, enum machine_mode);
+extern rtx    v850_gen_compare              (enum rtx_code, enum machine_mode,
+					     rtx, rtx);
+extern enum machine_mode  v850_gen_float_compare (enum rtx_code,
+						  enum machine_mode, rtx, rtx);
+extern enum machine_mode  v850_select_cc_mode (RTX_CODE, rtx, rtx);
 #endif
 #endif /* RTX_CODE */
 
@@ -66,7 +66,5 @@ extern void ghs_pragma_startzda		    (struct cpp_reader *);
 extern void ghs_pragma_endtda		    (struct cpp_reader *);
 extern void ghs_pragma_endsda		    (struct cpp_reader *);
 extern void ghs_pragma_endzda		    (struct cpp_reader *);
-
-#undef  Mmode
 
 #endif /* ! GCC_V850_PROTOS_H */

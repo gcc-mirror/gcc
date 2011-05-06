@@ -1146,7 +1146,7 @@ vect_get_cost (enum vect_cost_for_stmt type_of_cost)
    Scan the loop stmts and make sure they are all vectorizable.  */
 
 static bool
-vect_analyze_loop_operations (loop_vec_info loop_vinfo)
+vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
@@ -1167,6 +1167,40 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 
   gcc_assert (LOOP_VINFO_VECT_FACTOR (loop_vinfo));
   vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  if (slp)
+    {
+      /* If all the stmts in the loop can be SLPed, we perform only SLP, and
+	 vectorization factor of the loop is the unrolling factor required by
+	 the SLP instances.  If that unrolling factor is 1, we say, that we
+	 perform pure SLP on loop - cross iteration parallelism is not
+	 exploited.  */
+      for (i = 0; i < nbbs; i++)
+	{
+	  basic_block bb = bbs[i];
+	  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+	    {
+	      gimple stmt = gsi_stmt (si);
+	      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	      gcc_assert (stmt_info);
+	      if ((STMT_VINFO_RELEVANT_P (stmt_info)
+		   || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
+		  && !PURE_SLP_STMT (stmt_info))
+		/* STMT needs both SLP and loop-based vectorization.  */
+		only_slp_in_loop = false;
+	    }
+	}
+
+      if (only_slp_in_loop)
+	vectorization_factor = LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo);
+      else
+	vectorization_factor = least_common_multiple (vectorization_factor,
+				LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo));
+
+      LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "Updating vectorization factor to %d ",
+	 		    vectorization_factor);
+    }
 
   for (i = 0; i < nbbs; i++)
     {
@@ -1272,18 +1306,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
         {
           gimple stmt = gsi_stmt (si);
-          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-
-          gcc_assert (stmt_info);
-
 	  if (!vect_analyze_stmt (stmt, &need_to_vectorize, NULL))
 	    return false;
-
-          if ((STMT_VINFO_RELEVANT_P (stmt_info)
-               || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
-              && !PURE_SLP_STMT (stmt_info))
-            /* STMT needs both SLP and loop-based vectorization.  */
-            only_slp_in_loop = false;
         }
     } /* bbs */
 
@@ -1302,18 +1326,6 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
                  "not vectorized: redundant loop. no profit to vectorize.");
       return false;
     }
-
-  /* If all the stmts in the loop can be SLPed, we perform only SLP, and
-     vectorization factor of the loop is the unrolling factor required by the
-     SLP instances.  If that unrolling factor is 1, we say, that we perform
-     pure SLP on loop - cross iteration parallelism is not exploited.  */
-  if (only_slp_in_loop)
-    vectorization_factor = LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo);
-  else
-    vectorization_factor = least_common_multiple (vectorization_factor,
-                                LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo));
-
-  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
 
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       && vect_print_dump_info (REPORT_DETAILS))
@@ -1410,7 +1422,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 static bool
 vect_analyze_loop_2 (loop_vec_info loop_vinfo)
 {
-  bool ok, dummy;
+  bool ok, dummy, slp = false;
   int max_vf = MAX_VECTORIZATION_FACTOR;
   int min_vf = 2;
 
@@ -1524,7 +1536,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
   if (ok)
     {
       /* Decide which possible SLP instances to SLP.  */
-      vect_make_slp_decision (loop_vinfo);
+      slp = vect_make_slp_decision (loop_vinfo);
 
       /* Find stmts that need to be both vectorized and SLPed.  */
       vect_detect_hybrid_slp (loop_vinfo);
@@ -1533,7 +1545,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
   /* Scan all the operations in the loop and make sure they are
      vectorizable.  */
 
-  ok = vect_analyze_loop_operations (loop_vinfo);
+  ok = vect_analyze_loop_operations (loop_vinfo, slp);
   if (!ok)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -4136,7 +4148,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   if (STMT_VINFO_LIVE_P (vinfo_for_stmt (reduc_def_stmt)))
     return false;
 
-  if (slp_node)
+  if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
   else
     ncopies = (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
@@ -4305,9 +4317,9 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (!vec_stmt) /* transformation not required.  */
     {
-      STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       if (!vect_model_reduction_cost (stmt_info, epilog_reduc_code, ncopies))
         return false;
+      STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       return true;
     }
 

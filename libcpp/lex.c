@@ -1410,7 +1410,9 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 				       raw_prefix_len) == 0
 			   && cur[raw_prefix_len+1] == '"')
 		    {
-		      cur += raw_prefix_len+2;
+		      BUF_APPEND (")", 1);
+		      base++;
+		      cur += raw_prefix_len + 2;
 		      goto break_outer_loop;
 		    }
 		  else

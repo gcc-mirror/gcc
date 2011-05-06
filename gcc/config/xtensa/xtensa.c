@@ -3097,7 +3097,7 @@ xtensa_init_builtins (void)
 
   if (TARGET_THREADPTR)
     {
-      ftype = build_function_type (ptr_type_node, void_list_node);
+      ftype = build_function_type_list (ptr_type_node, NULL_TREE);
       decl = add_builtin_function ("__builtin_thread_pointer", ftype,
 				   XTENSA_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
 				   NULL, NULL_TREE);

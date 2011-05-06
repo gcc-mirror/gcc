@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC, for SPARC running Solaris 2
    Copyright 1992, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005,
-   2006, 2007, 2008, 2010 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -119,7 +119,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
    crtend.o%s crtn.o%s"
 
 /* Select a format to encode pointers in exception handling data.  CODE
@@ -168,13 +168,13 @@ along with GCC; see the file COPYING3.  If not see
 #define REGISTER_TARGET_PRAGMAS() solaris_register_pragmas ()
 
 /* Output a simple call for .init/.fini.  */
-#define ASM_OUTPUT_CALL(FILE, FN)			        \
-  do								\
-    {								\
-      fprintf (FILE, "\tcall\t");				\
-      print_operand (FILE, XEXP (DECL_RTL (FN), 0), 0);	\
-      fprintf (FILE, "\n\tnop\n");				\
-    }								\
+#define ASM_OUTPUT_CALL(FILE, FN)				        \
+  do									\
+    {									\
+      fprintf (FILE, "\tcall\t");					\
+      targetm.asm_out.print_operand (FILE, XEXP (DECL_RTL (FN), 0), 0);	\
+      fprintf (FILE, "\n\tnop\n");					\
+    }									\
   while (0)
 
 /* This is how to output an assembler line that says to advance

@@ -64,7 +64,7 @@ DEFTREECODE (CLASS_REFERENCE_EXPR, "class_reference_expr", tcc_expression, 1)
       it and we just need to swap Operand 2 in, and emit the deprecation
       warnings from Operand 3 if needed.
 
-  Please note that when the Objective-C 2.0 "dot-syntax" 'object.component' 
+  Please note that when the Objective-C 2.0 "dot-syntax" 'object.component'
   is encountered, where 'component' is not a property but there are valid
   setter/getter methods for it, an artificial PROPERTY_DECL is generated
   and used in the PROPERTY_REF.  */

@@ -1,6 +1,6 @@
 /* Definitions of Objective-C front-end entry points used for C and C++.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -75,7 +75,7 @@ extern void objc_finish_implementation (void);
 extern void objc_set_visibility (objc_ivar_visibility_kind);
 extern tree objc_build_method_signature (bool, tree, tree, tree, bool);
 extern void objc_add_method_declaration (bool, tree, tree);
-extern bool objc_start_method_definition (bool, tree, tree);
+extern bool objc_start_method_definition (bool, tree, tree, tree);
 extern void objc_finish_method_definition (tree);
 extern void objc_add_instance_variable (tree);
 extern tree objc_build_keyword_decl (tree, tree, tree, tree);

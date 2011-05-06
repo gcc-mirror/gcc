@@ -1,5 +1,5 @@
 ! PR fortran/47878
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
   integer :: a(5)
   open (99, recl = 40)
   write (99, '(5i3)') 1, 2, 3

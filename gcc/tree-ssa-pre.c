@@ -2771,7 +2771,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	    gcc_assert (base);
 	    offset = int_const_binop (PLUS_EXPR, offset,
 				      build_int_cst (TREE_TYPE (offset),
-						     off), 0);
+						     off));
 	    baseop = build_fold_addr_expr (base);
 	  }
 	return fold_build2 (MEM_REF, currop->type, baseop, offset);
@@ -4186,6 +4186,7 @@ static unsigned int
 eliminate (void)
 {
   VEC (gimple, heap) *to_remove = NULL;
+  VEC (gimple, heap) *to_update = NULL;
   basic_block b;
   unsigned int todo = 0;
   gimple_stmt_iterator gsi;
@@ -4411,7 +4412,7 @@ eliminate (void)
 		    }
 
 		  gimple_call_set_fn (stmt, fn);
-		  update_stmt (stmt);
+		  VEC_safe_push (gimple, heap, to_update, stmt);
 
 		  /* When changing a call into a noreturn call, cfg cleanup
 		     is needed to fix up the noreturn call.  */
@@ -4562,6 +4563,13 @@ eliminate (void)
 	}
     }
   VEC_free (gimple, heap, to_remove);
+
+  /* We cannot update call statements with virtual operands during
+     SSA walk.  This might remove them which in turn makes our
+     VN lattice invalid.  */
+  FOR_EACH_VEC_ELT (gimple, to_update, i, stmt)
+    update_stmt (stmt);
+  VEC_free (gimple, heap, to_update);
 
   return todo;
 }

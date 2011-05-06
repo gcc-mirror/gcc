@@ -437,7 +437,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       break;
 
     case CPP_PRAGMA:
-      *value = build_int_cst (NULL, tok->val.pragma);
+      *value = build_int_cst (integer_type_node, tok->val.pragma);
       break;
 
       /* These tokens should not be visible outside cpplib.  */

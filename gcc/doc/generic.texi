@@ -621,7 +621,7 @@ internal representation, except for declarations of functions
 @menu
 * Working with declarations::  Macros and functions that work on
 declarations.
-* Internal structure:: How declaration nodes are represented. 
+* Internal structure:: How declaration nodes are represented.
 @end menu
 
 @node Working with declarations
@@ -734,11 +734,11 @@ referenced in debug bind statements.
 
 @item FIELD_DECL
 These nodes represent non-static data members.  The @code{DECL_SIZE} and
-@code{DECL_ALIGN} behave as for @code{VAR_DECL} nodes.  
-The position of the field within the parent record is specified by a 
+@code{DECL_ALIGN} behave as for @code{VAR_DECL} nodes.
+The position of the field within the parent record is specified by a
 combination of three attributes.  @code{DECL_FIELD_OFFSET} is the position,
 counting in bytes, of the @code{DECL_OFFSET_ALIGN}-bit sized word containing
-the bit of the field closest to the beginning of the structure.  
+the bit of the field closest to the beginning of the structure.
 @code{DECL_FIELD_BIT_OFFSET} is the bit offset of the first bit of the field
 within this word; this may be nonzero even for fields that are not bit-fields,
 since @code{DECL_OFFSET_ALIGN} may be greater than the natural alignment
@@ -810,7 +810,7 @@ used to represent @code{CONST_DECL}.
 
 @item struct tree_parm_decl
 This structure inherits from @code{struct tree_decl_with_rtl}.  It is
-used to represent @code{PARM_DECL}.  
+used to represent @code{PARM_DECL}.
 
 @item struct tree_decl_with_vis
 This structure inherits from @code{struct tree_decl_with_rtl}.  It
@@ -819,11 +819,11 @@ a section name and assembler name.
 
 @item struct tree_var_decl
 This structure inherits from @code{struct tree_decl_with_vis}.  It is
-used to represent @code{VAR_DECL}.  
+used to represent @code{VAR_DECL}.
 
 @item struct tree_function_decl
 This structure inherits from @code{struct tree_decl_with_vis}.  It is
-used to represent @code{FUNCTION_DECL}.  
+used to represent @code{FUNCTION_DECL}.
 
 @end table
 @node Adding new DECL node types
@@ -1574,8 +1574,8 @@ function to call; it is always an expression whose type is a
 @code{POINTER_TYPE}.
 
 The number of arguments to the call is returned by @code{call_expr_nargs},
-while the arguments themselves can be accessed with the @code{CALL_EXPR_ARG} 
-macro.  The arguments are zero-indexed and numbered left-to-right.  
+while the arguments themselves can be accessed with the @code{CALL_EXPR_ARG}
+macro.  The arguments are zero-indexed and numbered left-to-right.
 You can iterate over the arguments using @code{FOR_EACH_CALL_EXPR_ARG}, as in:
 
 @smallexample
@@ -1695,7 +1695,7 @@ its sole argument yields the representation for @code{ap}.
 @tindex VEC_PACK_TRUNC_EXPR
 @tindex VEC_PACK_SAT_EXPR
 @tindex VEC_PACK_FIX_TRUNC_EXPR
-@tindex VEC_EXTRACT_EVEN_EXPR 
+@tindex VEC_EXTRACT_EVEN_EXPR
 @tindex VEC_EXTRACT_ODD_EXPR
 @tindex VEC_INTERLEAVE_HIGH_EXPR
 @tindex VEC_INTERLEAVE_LOW_EXPR
@@ -1703,8 +1703,8 @@ its sole argument yields the representation for @code{ap}.
 @table @code
 @item VEC_LSHIFT_EXPR
 @itemx VEC_RSHIFT_EXPR
-These nodes represent whole vector left and right shifts, respectively.  
-The first operand is the vector to shift; it will always be of vector type.  
+These nodes represent whole vector left and right shifts, respectively.
+The first operand is the vector to shift; it will always be of vector type.
 The second operand is an expression for the number of bits by which to
 shift.  Note that the result is undefined if the second operand is larger
 than or equal to the first operand's type size.
@@ -1712,9 +1712,9 @@ than or equal to the first operand's type size.
 @item VEC_WIDEN_MULT_HI_EXPR
 @itemx VEC_WIDEN_MULT_LO_EXPR
 These nodes represent widening vector multiplication of the high and low
-parts of the two input vectors, respectively.  Their operands are vectors 
-that contain the same number of elements (@code{N}) of the same integral type.  
-The result is a vector that contains half as many elements, of an integral type 
+parts of the two input vectors, respectively.  Their operands are vectors
+that contain the same number of elements (@code{N}) of the same integral type.
+The result is a vector that contains half as many elements, of an integral type
 whose size is twice as wide.  In the case of @code{VEC_WIDEN_MULT_HI_EXPR} the
 high @code{N/2} elements of the two vector are multiplied to produce the
 vector of @code{N/2} products. In the case of @code{VEC_WIDEN_MULT_LO_EXPR} the
@@ -1724,7 +1724,7 @@ vector of @code{N/2} products.
 @item VEC_UNPACK_HI_EXPR
 @itemx VEC_UNPACK_LO_EXPR
 These nodes represent unpacking of the high and low parts of the input vector,
-respectively.  The single operand is a vector that contains @code{N} elements 
+respectively.  The single operand is a vector that contains @code{N} elements
 of the same integral or floating point type.  The result is a vector
 that contains half as many elements, of an integral or floating point type
 whose size is twice as wide.  In the case of @code{VEC_UNPACK_HI_EXPR} the
@@ -1770,19 +1770,19 @@ vector.
 
 @item VEC_EXTRACT_EVEN_EXPR
 @itemx VEC_EXTRACT_ODD_EXPR
-These nodes represent extracting of the even/odd elements of the two input 
-vectors, respectively. Their operands and result are vectors that contain the 
+These nodes represent extracting of the even/odd elements of the two input
+vectors, respectively. Their operands and result are vectors that contain the
 same number of elements of the same type.
 
 @item VEC_INTERLEAVE_HIGH_EXPR
 @itemx VEC_INTERLEAVE_LOW_EXPR
 These nodes represent merging and interleaving of the high/low elements of the
-two input vectors, respectively. The operands and the result are vectors that 
+two input vectors, respectively. The operands and the result are vectors that
 contain the same number of elements (@code{N}) of the same type.
-In the case of @code{VEC_INTERLEAVE_HIGH_EXPR}, the high @code{N/2} elements of 
+In the case of @code{VEC_INTERLEAVE_HIGH_EXPR}, the high @code{N/2} elements of
 the first input vector are interleaved with the high @code{N/2} elements of the
 second input vector. In the case of @code{VEC_INTERLEAVE_LOW_EXPR}, the low
-@code{N/2} elements of the first input vector are interleaved with the low 
+@code{N/2} elements of the first input vector are interleaved with the low
 @code{N/2} elements of the second input vector.
 
 @end table
@@ -2616,7 +2616,7 @@ language-dependent info about GENERIC types.
 
 @item POINTER_TYPE
 Used to represent pointer types, and pointer to data member types.  If
-@code{TREE_TYPE} 
+@code{TREE_TYPE}
 is a pointer to data member type, then @code{TYPE_PTRMEM_P} will hold.
 For a pointer to data member type of the form @samp{T X::*},
 @code{TYPE_PTRMEM_CLASS_TYPE} will be the type @code{X}, while

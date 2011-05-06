@@ -1251,7 +1251,6 @@ input_function (tree fn_decl, struct data_in *data_in,
   fn->can_throw_non_call_exceptions = bp_unpack_value (&bp, 1);
   fn->always_inline_functions_inlined = bp_unpack_value (&bp, 1);
   fn->after_inlining = bp_unpack_value (&bp, 1);
-  fn->dont_save_pending_sizes_p = bp_unpack_value (&bp, 1);
   fn->stdarg = bp_unpack_value (&bp, 1);
   fn->has_nonlocal_label = bp_unpack_value (&bp, 1);
   fn->calls_alloca = bp_unpack_value (&bp, 1);
@@ -1653,11 +1652,9 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 
   if (TREE_CODE (expr) == FIELD_DECL)
     {
-      unsigned HOST_WIDE_INT off_align;
       DECL_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_NONADDRESSABLE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-      off_align = (unsigned HOST_WIDE_INT) bp_unpack_value (bp, 8);
-      SET_DECL_OFFSET_ALIGN (expr, off_align);
+      expr->decl_common.off_align = bp_unpack_value (bp, 8);
     }
 
   if (TREE_CODE (expr) == RESULT_DECL

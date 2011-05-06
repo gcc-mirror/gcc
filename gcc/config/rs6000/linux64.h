@@ -93,7 +93,7 @@ extern int dot_symbols;
 #define	SUBSUBTARGET_OVERRIDE_OPTIONS				\
   do								\
     {								\
-      if (!rs6000_explicit_options.alignment)			\
+      if (!global_options_set.x_rs6000_alignment_flags)		\
 	rs6000_alignment_flags = MASK_ALIGN_NATURAL;		\
       if (TARGET_64BIT)						\
 	{							\
@@ -125,14 +125,14 @@ extern int dot_symbols;
 	    }							\
 	  if ((target_flags_explicit & MASK_MINIMAL_TOC) != 0)	\
 	    {							\
-	      if (rs6000_explicit_options.cmodel		\
+	      if (global_options_set.x_rs6000_current_cmodel	\
 		  && rs6000_current_cmodel != CMODEL_SMALL)	\
 		error ("-mcmodel incompatible with other toc options"); \
 	      SET_CMODEL (CMODEL_SMALL);			\
 	    }							\
 	  else							\
 	    {							\
-	      if (!rs6000_explicit_options.cmodel)		\
+	      if (!global_options_set.x_rs6000_current_cmodel)	\
 		SET_CMODEL (CMODEL_MEDIUM);			\
 	      if (rs6000_current_cmodel != CMODEL_SMALL)	\
 		{						\
@@ -150,7 +150,7 @@ extern int dot_symbols;
 	      TARGET_PROFILE_KERNEL = 0;			\
 	      error (INVALID_32BIT, "profile-kernel");		\
 	    }							\
-	  if (rs6000_explicit_options.cmodel)			\
+	  if (global_options_set.x_rs6000_current_cmodel)	\
 	    {							\
 	      SET_CMODEL (CMODEL_SMALL);			\
 	      error (INVALID_32BIT, "cmodel");			\

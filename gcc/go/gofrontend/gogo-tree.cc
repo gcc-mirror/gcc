@@ -972,7 +972,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
     case NAMED_OBJECT_VAR:
     case NAMED_OBJECT_RESULT_VAR:
     case NAMED_OBJECT_SINK:
-      gcc_unreachable();
+      go_unreachable();
 
     case NAMED_OBJECT_FUNC:
       {
@@ -1005,7 +1005,7 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
       break;
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   if (TREE_TYPE(decl) == error_mark_node)
@@ -1743,7 +1743,7 @@ go_type_for_mode(enum machine_mode mode, int unsignedp)
 	    return long_double_type_node;
 	  return NULL_TREE;
 	}
-      return type->float_type()->type_tree();
+      return type->get_tree(go_get_gogo());
     }
   else if (mc == MODE_COMPLEX_FLOAT)
     {
@@ -1763,7 +1763,7 @@ go_type_for_mode(enum machine_mode mode, int unsignedp)
 	    return complex_long_double_type_node;
 	  return NULL_TREE;
 	}
-      return type->complex_type()->type_tree();
+      return type->get_tree(go_get_gogo());
     }
   else
     return NULL_TREE;
@@ -1936,38 +1936,6 @@ Gogo::ptr_go_string_constant_tree(const std::string& val)
   return build_fold_addr_expr(decl);
 }
 
-// Build the type of the struct that holds a slice for the given
-// element type.
-
-tree
-Gogo::slice_type_tree(tree element_type_tree)
-{
-  // We use int for the count and capacity fields in a slice header.
-  // This matches 6g.  The language definition guarantees that we
-  // can't allocate space of a size which does not fit in int
-  // anyhow. FIXME: integer_type_node is the the C type "int" but is
-  // not necessarily the Go type "int".  They will differ when the C
-  // type "int" has fewer than 32 bits.
-  return Gogo::builtin_struct(NULL, "__go_slice", NULL_TREE, 3,
-			      "__values",
-			      build_pointer_type(element_type_tree),
-			      "__count",
-			      integer_type_node,
-			      "__capacity",
-			      integer_type_node);
-}
-
-// Given the tree for a slice type, return the tree for the type of
-// the elements of the slice.
-
-tree
-Gogo::slice_element_type_tree(tree slice_type_tree)
-{
-  go_assert(TREE_CODE(slice_type_tree) == RECORD_TYPE
-	     && POINTER_TYPE_P(TREE_TYPE(TYPE_FIELDS(slice_type_tree))));
-  return TREE_TYPE(TREE_TYPE(TYPE_FIELDS(slice_type_tree)));
-}
-
 // Build a constructor for a slice.  SLICE_TYPE_TREE is the type of
 // the slice.  VALUES is the value pointer and COUNT is the number of
 // entries.  If CAPACITY is not NULL, it is the capacity; otherwise
@@ -2009,21 +1977,6 @@ Gogo::slice_constructor(tree slice_type_tree, tree values, tree count,
   elt->value = fold_convert(TREE_TYPE(field), capacity);
 
   return build_constructor(slice_type_tree, init);
-}
-
-// Build a constructor for an empty slice.
-
-tree
-Gogo::empty_slice_constructor(tree slice_type_tree)
-{
-  tree element_field = TYPE_FIELDS(slice_type_tree);
-  tree ret = Gogo::slice_constructor(slice_type_tree,
-				     fold_convert(TREE_TYPE(element_field),
-						  null_pointer_node),
-				     size_zero_node,
-				     size_zero_node);
-  TREE_CONSTANT(ret) = 1;
-  return ret;
 }
 
 // Build a map descriptor for a map of type MAPTYPE.
@@ -2424,7 +2377,7 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
 	fndecl = no->func_declaration_value()->get_or_make_decl(this, no,
 								fnid);
       else
-	gcc_unreachable();
+	go_unreachable();
       fndecl = build_fold_addr_expr(fndecl);
 
       elt = VEC_quick_push(constructor_elt, pointers, NULL);

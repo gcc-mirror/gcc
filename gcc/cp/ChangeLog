@@ -1,3 +1,321 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (finish_case_label): Omit the loc argument to
+	build_case_label.
+
+2011-05-05  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (REFERENCE_REF_P): Just check the type.
+	* cvt.c (convert_from_reference): Adjust.
+	* pt.c (build_non_dependent_expr): Adjust.
+	* semantics.c (finish_offsetof): Adjust.
+	* tree.c (lvalue_kind): Use it.
+
+	PR c++/48873
+	* tree.c (stabilize_expr): Don't make gratuitous copies of classes.
+
+2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (start_preparsed_function): Do not set
+	dont_save_pending_sizes_p.
+
+2011-05-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* parser.c (cp_parser_objc_method_definition_list): Update call to
+	objc_start_method_definition.
+
+2011-05-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48749
+	* class.c (resolves_to_fixed_type_p): Don't look closely
+	in templates.
+
+2011-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/28501
+	* call.c (add_builtin_candidate): Handle REALPART_EXPR and
+	IMAGPART_EXPR.
+
+2011-05-02  Lawrence Crowl  <crowl@google.com>
+
+	* decl.c: (push_local_name): Change TV_NAME_LOOKUP to start/stop.
+	(poplevel): Refactor POP_TIMEVAR_AND_RETURN to plain code.
+	Change TV_NAME_LOOKUP to start/stop.
+	(define_label): Refactor timevar calls out to a wrapper function.
+	Change TV_NAME_LOOKUP to start/stop.
+	(xref_tag): Likewise.
+	(lookup_label): Refactor timevar calls out to a wrapper function.
+	Change TV_NAME_LOOKUP to start_cond/stop_cond.
+
+        * pt.c: (instantiate_class_template): Add a wrapper to push/pop new
+	TV_TEMPLATE_INST.
+	(instantiate_template): Add a wrapper to push/pop new TV_TEMPLATE_INST.
+	(lookup_template_class): Refactor timevar calls out to a wrapper
+	function.  Change use of TV_NAME_LOOKUP to TV_TEMPLATE_INST.
+	(instantiate_decl): Change TV_PARSE to TV_TEMPLATE_INST.
+
+	* name-lookup.c: (store_bindings): Change TV_NAME_LOOKUP to start/stop.
+	(poplevel_class): Change TV_NAME_LOOKUP to start_cond/stop_cond.
+	(push_namespace): Likewise.
+	(pop_nested_namespace): Likewise.
+	(pushdecl_namespace_level): Likewise.
+	(store_class_bindings): Likewise.
+	(push_to_top_level): Likewise.
+	(identifier_type_value): Refactor timevar calls out to a wrapper
+	function.  Change TV_NAME_LOOKUP to start/stop.
+	(find_binding): Likewise.
+	(push_using_decl): Likewise.
+	(lookup_arg_dependent): Likewise.
+	(push_using_directive): Likewise.
+	(qualified_lookup_using_namespace): Refactor POP_TIMEVAR_AND_RETURN
+	to plain code.  Change TV_NAME_LOOKUP to start/stop.
+	(lookup_type_current_level): Likewise.  Refactor inner return to
+	break.
+	(pushdecl_class_level): Refactor POP_TIMEVAR_AND_RETURN to plain
+	code.  Change TV_NAME_LOOKUP to start_cond/stop_cond.
+	(pushdecl_top_level_1): Likewise.
+	(lookup_using_namespace): Likewise.
+	(pushdecl_with_scope): Refactor timevar calls out to a wrapper
+	function.  Change TV_NAME_LOOKUP to start_cond/stop_cond.
+	(push_overloaded_decl): Likewise.
+	(push_class_level_binding): Likewise.
+	(namespace_binding): Likewise.
+	(set_namespace_binding): Likewise.
+	(supplement_binding): Likewise.
+	(unqualified_namespace_lookup): Likewise.
+	(lookup_name_real): Likewise.
+	(lookup_type_scope): Likewise.
+	(namespace_ancestor): Likewise.
+	(lookup_name_innermost_nonclass_level): Likewise.
+	(pushtag): Likewise.
+	(pop_from_top_level): Likewise.
+	(pushdecl_maybe_friend): Refactor timevar calls out to a wrapper
+	function.  Change TV_NAME_LOOKUP to start_cond/stop_cond.  Wrap long
+	lines.
+	(add_using_namespace): Refactor timevar calls out to a wrapper
+	function.  Change TV_NAME_LOOKUP to start_cond/stop_cond.  Bypass
+	wrapper on call to self.
+
+	* decl2.c: (cp_write_global_declarations):  Add start/stop of
+	new TV_PHASE_DEFERRED, TV_PHASE_CGRAPH, TV_PHASE_CHECK_DBGINFO.
+	Remove push/pop calls to TV_VARCONST.
+
+	* parser.c: Add include of "timevar.h".
+	(cp_parser_explicit_instantiation): Add push/pop calls to
+	TV_TEMPLATE_INST.
+	(cp_parser_enum_specifier): Add push/pop calls to new TV_PARSE_ENUM.
+	(cp_parser_class_specifier): Add wrapper to add push/pop calls to
+	TV_PARSE_STRUCT.
+	(cp_parser_function_definition_from_specifiers_and_declarator): Add
+	push/pop calls to new TV_PARSE_FUNC or TV_PARSE_INLINE.
+	(cp_parser_late_parsing_for_member):  Add push/pop calls to
+	new TV_PARSE_INMETH.
+
+	* call.c: Add include of "timevar.h".
+        (convert_class_to_reference): Wrap and add push/pop calls to 
+	TV_OVERLOAD.
+	(build_op_call): Likewise.
+	(build_conditional_expr): Likewise.
+	(build_new_op): Likewise.
+	(build_new_method_call): Likewise.
+        (build_user_type_conversion): Reorganize to single return and add
+	push/pop calls to TV_OVERLOAD.
+        (perform_overload_resolution): Likewise.
+
+	* Make-lang.in: Add dependence of call.o and parser.o on $(TIMEVAR_H).
+
+2011-05-02  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_vec_init_expr): Take complain parm.
+	(build_vec_init_elt): Likewise.  Free arg vector.
+	(diagnose_non_constexpr_vec_init, build_array_copy): Adjust.
+	* cp-tree.h (VEC_INIT_EXPR_SLOT): Use VEC_INIT_EXPR_CHECK.
+	(VEC_INIT_EXPR_INIT): Likewise.
+	Adjust build_vec_init_expr declaration.
+	* init.c (perform_member_init): Adjust.
+
+	Revert:
+	PR c++/40975
+	* cp-tree.def (VEC_INIT_EXPR): Add third operand.
+	* cp-tree.h (VEC_INIT_EXPR_NELTS): New.
+	* cp-gimplify.c (cp_gimplify_expr) [VEC_INIT_EXPR]: Handle it.
+	* tree.c (build_vec_init_expr): Handle getting pointer/nelts.
+	(build_vec_init_elt): Don't expect an array type.
+	(build_array_copy): Adjust.
+	* init.c (perform_member_init): Adjust.
+	(build_new_1): Use build_vec_init_expr.
+
+	PR c++/48834
+	* tree.c (build_vec_init_expr): Set TREE_SIDE_EFFECTS.
+	Protect an explicit target.
+
+	PR c++/48446
+	* decl.c (stabilize_save_expr_r, stabilize_vla_size): New.
+	(compute_array_index_type): Revert earlier 48446 changes.
+	(grokdeclarator): Use stabilize_vla_size.
+
+2011-05-02  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+	    Eric Botcazou <ebotcazou@adacore.com>
+
+	* parser.c (cp_parser_init_declarator): Set pushed_scope to NULL_TREE
+	instead of inappropriate zero values.
+
+2011-05-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47969
+	* decl.c (compute_array_index_type): Check build_expr_type_conversion
+	return value for NULL_TREE.
+
+2011-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48606
+	* init.c (perform_member_init): Check build_value_init return
+	value for error_mark_node.
+
+2011-04-29  Diego Novillo  <dnovillo@google.com>
+	    Le-Chun Wu  <lcwu@google.com>
+
+	* call.c (conversion_null_warnings): Also handle assignments
+	when warning about NULL conversions.
+
+2011-04-29  Le-Chun Wu  <lcwu@google.com>
+
+	* cp-tree.h (LOOKUP_EXPLICIT_TMPL_ARGS): Define.
+	* call.c (build_new_function_call): Set it for TEMPLATE_ID_EXPRs.
+	(build_over_call): Use it to determine whether to emit a NULL
+	warning for template function instantiations.
+	(build_new_method_call): Set LOOKUP_EXPLICIT_TMPL_ARGS if
+	EXPLICIT_TARGS is set.
+
+2011-04-29  Nicola Pero  <nicola.pero@meta-innovation.com>,
+	    Mike Stump <mikestump@comcast.net>
+
+	* Make-lang.in ($(srcdir)/cp/cfns.h): Enable the dependency only
+	in maintainer mode.  Use the --output-file option of gperf instead
+	of > to prevent creating an empty cp/cfns.h when gperf is not
+	available.
+
+2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48798
+	* semantics.c (finish_base_specifier): cv-qualified base class
+	is fine, per DR 484.
+
+2011-04-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48656
+	* semantics.c (finish_call_expr): Don't forget BASELINK nodes when
+	considering call expressions involving a member function.
+
+2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48530
+	* tree.c (build_cplus_new): Check build_target_expr return
+	value for error_mark_node.
+
+2011-04-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48771
+	* semantics.c (literal_type_p): Reference types are literal types,
+	per the FDIS.
+	(valid_type_in_constexpr_fundecl_p): Remove.
+	(is_valid_constexpr_fn): Adjust.
+
+2011-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/48760
+	Implement list-initialization of _Complex.
+	* decl.c (reshape_init_r): Allow {real,imag} for _Complex.
+	(check_initializer): Likewise.
+	* call.c (build_complex_conv): New.
+	(implicit_conversion): Call it.
+	(convert_like_real): Handle it.
+	* typeck2.c (check_narrowing): Handle it.
+
+	* init.c (build_vec_delete_1): Look for sfk_deleting_destructor to
+	decide whether to delete.
+	(build_vec_init): Pass sfk_complete_destructor.
+
+	PR c++/40975
+	* cp-tree.def (VEC_INIT_EXPR): Add third operand.
+	* cp-tree.h (VEC_INIT_EXPR_NELTS): New.
+	* cp-gimplify.c (cp_gimplify_expr) [VEC_INIT_EXPR]: Handle it.
+	* tree.c (build_vec_init_expr): Handle getting pointer/nelts.
+	(build_vec_init_elt): Don't expect an array type.
+	(build_array_copy): Adjust.
+	* init.c (perform_member_init): Adjust.
+	(build_new_1): Use build_vec_init_expr.
+
+	* class.c (resolve_address_of_overloaded_function): Don't
+	change OVERLOAD to TREE_LIST.
+	* pt.c (print_candidates_1): Remove nonsensical assert.
+
+	PR c++/48046
+	* parser.c (cp_parser_diagnose_invalid_type_name): Commit
+	to tentative parse sooner.
+
+2011-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42687
+	* parser.c (cp_parser_primary_expression): Set *idk to
+	CP_ID_KIND_NONE for a parenthesized identifier.
+
+	* ptree.c (cxx_print_type) [TYPENAME_TYPE]: Dump fullname.
+	(cxx_print_identifier): Correct indentation.
+
+	PR c++/48530
+	* decl.c (cxx_maybe_build_cleanup): Add complain parm.
+	* tree.c (force_target_expr): Add complain parm.
+	(build_target_expr_with_type): Likewise.
+	(get_target_expr_sfinae): Split out.
+	(build_vec_init_expr, bot_manip): Adjust.
+	* init.c (build_vec_delete, build_vec_delete_1): Add complain parm.
+	(build_delete, build_dtor_call): Likewise.
+	(perform_direct_initialization_if_possible): Adjust.
+	(build_vec_init): Handle error return.
+	* cvt.c (force_rvalue): Add complain parm.
+	Call build_special_member_call directly.
+	* decl2.c (delete_sanity): Add complain parm.
+	(build_cleanup): Adjust.
+	* pt.c (tsubst_copy_and_build, tsubst_expr): Adjust.
+	* semantics.c (finish_stmt_expr_expr): Adjust.
+	(finish_compound_literal): Adjust.
+	* parser.c (cp_parser_delete_expression): Adjust.
+	* typeck2.c (build_functional_cast): Adjust.
+	* cp-tree.h: Adjust.
+
+2011-04-26  Martin Jambor  <mjambor@suse.cz>
+
+	* class.c (cp_fold_obj_type_ref): Remove.
+	* cp-tree.h (cp_fold_obj_type_ref): Remove declaration.
+
+2011-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.def: Add a new UNDERLYING_TYPE tree code.
+	* cp-tree.h (enum cp_trait_kind): Add CPTK_UNDERLYING_TYPE, tidy.
+	(UNDERLYING_TYPE_TYPE): Add.
+	* cp-objcp-common.c (cp_common_init_ts): Mark UNDERLYING_TYPE
+	as TS_COMMON.
+	* parser.c (cp_lexer_next_token_is_decl_specifier_keyword,
+	cp_parser_simple_type_specifier): Handle UNDERLYING_TYPE.
+	(cp_parser_trait_expr): Deal with RID_UNDERLYING_TYPE; tidy.
+	* semantics.c (finish_underlying_type): New.
+	* typeck.c (structural_comptypes): Handle UNDERLYING_TYPE.
+	* error.c (dump_type, dump_type_prefix, dump_type_suffix): Likewise.
+	* cxx-pretty-print.c (p_cxx_type_id): Likewise.
+	* tree.c (cp_walk_subtrees): Likewise.
+	* pt.c (for_each_template_parm_r, tsubst, unify,
+	dependent_type_p_r): Likewise.
+	* mangle.c (write_type): Sorry for __underlying_type.
+
+2011-04-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48707
+	* decl.c (type_dependent_init_p): New.
+	(cp_finish_decl): Check it.
+	* pt.c (any_type_dependent_elements_p): New.
+	* cp-tree.h: Declare it.
+
 2011-04-20  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_compound_literal): Don't put an array

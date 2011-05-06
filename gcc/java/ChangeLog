@@ -1,3 +1,14 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* expr.c (expand_java_switch): Call build_case_label.
+	(expand_java_add_case): Likewise.
+
+2011-04-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48819
+	* constants.c (build_constants_constructor): Use ptr_type_node for
+	temp.
+
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* jcf-parse.c (java_parse_file): Remove useless if-before-free.

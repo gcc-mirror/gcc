@@ -906,8 +906,8 @@ typedef struct data_area_stack_element
 extern data_area_stack_element * data_area_stack;
 
 /* Names of the various data areas used on the v850.  */
-extern union tree_node * GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
-extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+extern tree GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+extern tree GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
 
 /* The assembler op to start the file.  */
 

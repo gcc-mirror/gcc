@@ -5,7 +5,7 @@
 ! Test case prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program char4_iunit_1
   implicit none
-  character(kind=4,len=42) :: string
+  character(kind=4,len=44) :: string
   integer(kind=4) :: i,j
   real(kind=4) :: inf, nan, large
 
@@ -24,11 +24,11 @@ program char4_iunit_1
   write(string, *) .true., .false. , .true.
   if (string .ne. 4_" T F T                                    ") call abort
   write(string, *) 1.2345e-06, 4.2846e+10_8
-  if (string .ne. 4_"  1.23450002E-06   42846000000.000000     ") call abort
+  if (string .ne. 4_"   1.23450002E-06   42846000000.000000      ") call abort
   write(string, *) nan, inf
-  if (string .ne. 4_"             NaN        Infinity          ") call abort
+  if (string .ne. 4_"              NaN         Infinity    ") call abort
   write(string, '(10x,f3.1,3x,f9.1)') nan, inf
-  if (string .ne. 4_"          NaN    Infinity                 ") call abort
+  if (string .ne. 4_"          NaN    Infinity             ") call abort
   write(string, *) (1.2, 3.4 )
-  if (string .ne. 4_" (  1.2000000    ,  3.4000001    )        ") call abort
+  if (string .ne. 4_" (  1.20000005    ,  3.40000010    )  ") call abort
 end program char4_iunit_1

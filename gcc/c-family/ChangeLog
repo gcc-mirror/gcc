@@ -1,3 +1,46 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (c_add_case_label): Omit the loc argument to
+	build_case_label.
+	* c-common.h (build_case_label): Remove.
+	* c-semantics.c (build_case_label): Remove.
+
+2011-05-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-objc.h (objc_start_method_definition): Update prototype.
+	* stub-objc.c (objc_start_method_definition): Add extra parameter.
+
+2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (check_main_parameter_types): Reindent.  Don't use
+	TYPE_ARG_TYPES directly.
+	(handle_nonnull_attribute): Likewise.
+	(sync_resolve_params): Likewise.
+	* c-format.c (handle_format_arg_attribute): Likewise.  Adjust call
+	to check_format_string.
+	(handle_format_attribute): Likewise.
+	(check_format_string): Take a function type to examine instead of
+	a type list.  Use a function_arg_iterator to step through argument
+	types.
+
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (fix_string_type): Use size_int for index type bounds.
+	(start_fname_decls): Do not pass NULL to build_int_cst.
+	(c_init_attributes): Likewise.
+	* c-lex.c (c_lex_with_flags): Likewise.
+
+2011-04-27  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (make_tree_vector_from_list): New.
+	* c-common.h: Declare it.
+
+2011-04-26  Richard Guenther  <rguenther@suse.de>
+
+	PR preprocessor/48248
+	* c-ppoutput.c (maybe_print_line): Always optimize newlines
+	for output size with -P.
+
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* c-format.c (init_dollar_format_checking): Remove useless

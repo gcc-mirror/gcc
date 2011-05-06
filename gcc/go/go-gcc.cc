@@ -52,7 +52,7 @@ class Gcc_tree
   { }
 
   tree
-  get_tree()
+  get_tree() const
   { return this->t_; }
 
  private:
@@ -129,58 +129,70 @@ class Gcc_backend : public Backend
 
   Btype*
   error_type()
-  { gcc_unreachable(); }
+  { return this->make_type(error_mark_node); }
 
   Btype*
   void_type()
-  { gcc_unreachable(); }
+  { return this->make_type(void_type_node); }
 
   Btype*
   bool_type()
-  { gcc_unreachable(); }
+  { return this->make_type(boolean_type_node); }
 
   Btype*
-  integer_type(bool /* is_unsigned */, int /* bits */)
-  { gcc_unreachable(); }
+  integer_type(bool, int);
 
   Btype*
-  float_type(int /* bits */)
-  { gcc_unreachable(); }
+  float_type(int);
 
   Btype*
-  string_type()
-  { gcc_unreachable(); }
+  complex_type(int);
 
   Btype*
-  function_type(const Function_type*, Btype* /* receiver */,
-		const Btypes* /* parameters */,
-		const Btypes* /* results */)
-  { gcc_unreachable(); }
+  pointer_type(Btype*);
 
   Btype*
-  struct_type(const Struct_type*, const Btypes* /* field_types */)
-  { gcc_unreachable(); }
+  function_type(const Btyped_identifier&,
+		const std::vector<Btyped_identifier>&,
+		const std::vector<Btyped_identifier>&,
+		source_location);
 
   Btype*
-  array_type(const Btype* /* element_type */, const Bexpression* /* length */)
-  { gcc_unreachable(); }
+  struct_type(const std::vector<Btyped_identifier>&);
 
   Btype*
-  slice_type(const Btype* /* element_type */)
-  { gcc_unreachable(); }
+  array_type(Btype*, Bexpression*);
 
   Btype*
-  map_type(const Btype* /* key_type */, const Btype* /* value_type */,
-	   source_location)
-  { gcc_unreachable(); }
+  placeholder_pointer_type(const std::string&, source_location, bool);
+
+  bool
+  set_placeholder_pointer_type(Btype*, Btype*);
+
+  bool
+  set_placeholder_function_type(Btype*, Btype*);
 
   Btype*
-  channel_type(const Btype* /* element_type */)
-  { gcc_unreachable(); }
+  placeholder_struct_type(const std::string&, source_location);
+
+  bool
+  set_placeholder_struct_type(Btype* placeholder,
+			      const std::vector<Btyped_identifier>&);
 
   Btype*
-  interface_type(const Interface_type*, const Btypes* /* method_types */)
-  { gcc_unreachable(); }
+  placeholder_array_type(const std::string&, source_location);
+
+  bool
+  set_placeholder_array_type(Btype*, Btype*, Bexpression*);
+
+  Btype*
+  named_type(const std::string&, Btype*, source_location);
+
+  Btype*
+  circular_pointer_type(Btype*, bool);
+
+  bool
+  is_circular_pointer_type(Btype*);
 
   // Statements.
 
@@ -283,6 +295,17 @@ class Gcc_backend : public Backend
   Bstatement*
   make_statement(tree t)
   { return new Bstatement(t); }
+
+  // Make a Btype from a tree.
+  Btype*
+  make_type(tree t)
+  { return new Btype(t); }
+
+  Btype*
+  fill_in_struct(Btype*, const std::vector<Btyped_identifier>&);
+
+  Btype*
+  fill_in_array(Btype*, Btype*, Bexpression*);
 };
 
 // A helper function.
@@ -291,6 +314,386 @@ static inline tree
 get_identifier_from_string(const std::string& str)
 {
   return get_identifier_with_length(str.data(), str.length());
+}
+
+// Get an unnamed integer type.
+
+Btype*
+Gcc_backend::integer_type(bool is_unsigned, int bits)
+{
+  tree type;
+  if (is_unsigned)
+    {
+      if (bits == INT_TYPE_SIZE)
+        type = unsigned_type_node;
+      else if (bits == CHAR_TYPE_SIZE)
+        type = unsigned_char_type_node;
+      else if (bits == SHORT_TYPE_SIZE)
+        type = short_unsigned_type_node;
+      else if (bits == LONG_TYPE_SIZE)
+        type = long_unsigned_type_node;
+      else if (bits == LONG_LONG_TYPE_SIZE)
+        type = long_long_unsigned_type_node;
+      else
+        type = make_unsigned_type(bits);
+    }
+  else
+    {
+      if (bits == INT_TYPE_SIZE)
+        type = integer_type_node;
+      else if (bits == CHAR_TYPE_SIZE)
+        type = signed_char_type_node;
+      else if (bits == SHORT_TYPE_SIZE)
+        type = short_integer_type_node;
+      else if (bits == LONG_TYPE_SIZE)
+        type = long_integer_type_node;
+      else if (bits == LONG_LONG_TYPE_SIZE)
+        type = long_long_integer_type_node;
+      else
+        type = make_signed_type(bits);
+    }
+  return this->make_type(type);
+}
+
+// Get an unnamed float type.
+
+Btype*
+Gcc_backend::float_type(int bits)
+{
+  tree type;
+  if (bits == FLOAT_TYPE_SIZE)
+    type = float_type_node;
+  else if (bits == DOUBLE_TYPE_SIZE)
+    type = double_type_node;
+  else if (bits == LONG_DOUBLE_TYPE_SIZE)
+    type = long_double_type_node;
+  else
+    {
+      type = make_node(REAL_TYPE);
+      TYPE_PRECISION(type) = bits;
+      layout_type(type);
+    }
+  return this->make_type(type);
+}
+
+// Get an unnamed complex type.
+
+Btype*
+Gcc_backend::complex_type(int bits)
+{
+  tree type;
+  if (bits == FLOAT_TYPE_SIZE * 2)
+    type = complex_float_type_node;
+  else if (bits == DOUBLE_TYPE_SIZE * 2)
+    type = complex_double_type_node;
+  else if (bits == LONG_DOUBLE_TYPE_SIZE * 2)
+    type = complex_long_double_type_node;
+  else
+    {
+      type = make_node(REAL_TYPE);
+      TYPE_PRECISION(type) = bits / 2;
+      layout_type(type);
+      type = build_complex_type(type);
+    }
+  return this->make_type(type);
+}
+
+// Get a pointer type.
+
+Btype*
+Gcc_backend::pointer_type(Btype* to_type)
+{
+  tree to_type_tree = to_type->get_tree();
+  if (to_type_tree == error_mark_node)
+    return this->error_type();
+  tree type = build_pointer_type(to_type_tree);
+  return this->make_type(type);
+}
+
+// Make a function type.
+
+Btype*
+Gcc_backend::function_type(const Btyped_identifier& receiver,
+			   const std::vector<Btyped_identifier>& parameters,
+			   const std::vector<Btyped_identifier>& results,
+			   source_location location)
+{
+  tree args = NULL_TREE;
+  tree* pp = &args;
+  if (receiver.btype != NULL)
+    {
+      tree t = receiver.btype->get_tree();
+      if (t == error_mark_node)
+	return this->error_type();
+      *pp = tree_cons(NULL_TREE, t, NULL_TREE);
+      pp = &TREE_CHAIN(*pp);
+    }
+
+  for (std::vector<Btyped_identifier>::const_iterator p = parameters.begin();
+       p != parameters.end();
+       ++p)
+    {
+      tree t = p->btype->get_tree();
+      if (t == error_mark_node)
+	return this->error_type();
+      *pp = tree_cons(NULL_TREE, t, NULL_TREE);
+      pp = &TREE_CHAIN(*pp);
+    }
+
+  // Varargs is handled entirely at the Go level.  When converted to
+  // GENERIC functions are not varargs.
+  *pp = void_list_node;
+
+  tree result;
+  if (results.empty())
+    result = void_type_node;
+  else if (results.size() == 1)
+    result = results.front().btype->get_tree();
+  else
+    {
+      result = make_node(RECORD_TYPE);
+      tree field_trees = NULL_TREE;
+      pp = &field_trees;
+      for (std::vector<Btyped_identifier>::const_iterator p = results.begin();
+	   p != results.end();
+	   ++p)
+	{
+	  const std::string name = (p->name.empty()
+				    ? "UNNAMED"
+				    : p->name);
+	  tree name_tree = get_identifier_from_string(name);
+	  tree field_type_tree = p->btype->get_tree();
+	  if (field_type_tree == error_mark_node)
+	    return this->error_type();
+	  tree field = build_decl(location, FIELD_DECL, name_tree,
+				  field_type_tree);
+	  DECL_CONTEXT(field) = result;
+	  *pp = field;
+	  pp = &DECL_CHAIN(field);
+	}
+      TYPE_FIELDS(result) = field_trees;
+      layout_type(result);
+    }
+  if (result == error_mark_node)
+    return this->error_type();
+
+  tree fntype = build_function_type(result, args);
+  if (fntype == error_mark_node)
+    return this->error_type();
+
+  return this->make_type(build_pointer_type(fntype));
+}
+
+// Make a struct type.
+
+Btype*
+Gcc_backend::struct_type(const std::vector<Btyped_identifier>& fields)
+{
+  return this->fill_in_struct(this->make_type(make_node(RECORD_TYPE)), fields);
+}
+
+// Fill in the fields of a struct type.
+
+Btype*
+Gcc_backend::fill_in_struct(Btype* fill,
+			    const std::vector<Btyped_identifier>& fields)
+{
+  tree fill_tree = fill->get_tree();
+  tree field_trees = NULL_TREE;
+  tree* pp = &field_trees;
+  for (std::vector<Btyped_identifier>::const_iterator p = fields.begin();
+       p != fields.end();
+       ++p)
+    {
+      tree name_tree = get_identifier_from_string(p->name);
+      tree type_tree = p->btype->get_tree();
+      if (type_tree == error_mark_node)
+	return this->error_type();
+      tree field = build_decl(p->location, FIELD_DECL, name_tree, type_tree);
+      DECL_CONTEXT(field) = fill_tree;
+      *pp = field;
+      pp = &DECL_CHAIN(field);
+    }
+  TYPE_FIELDS(fill_tree) = field_trees;
+  layout_type(fill_tree);
+  return fill;
+}
+
+// Make an array type.
+
+Btype*
+Gcc_backend::array_type(Btype* element_btype, Bexpression* length)
+{
+  return this->fill_in_array(this->make_type(make_node(ARRAY_TYPE)),
+			     element_btype, length);
+}
+
+// Fill in an array type.
+
+Btype*
+Gcc_backend::fill_in_array(Btype* fill, Btype* element_type,
+			   Bexpression* length)
+{
+  tree element_type_tree = element_type->get_tree();
+  tree length_tree = length->get_tree();
+  if (element_type_tree == error_mark_node || length_tree == error_mark_node)
+    return this->error_type();
+
+  gcc_assert(TYPE_SIZE(element_type_tree) != NULL_TREE);
+
+  length_tree = fold_convert(sizetype, length_tree);
+
+  // build_index_type takes the maximum index, which is one less than
+  // the length.
+  tree index_type_tree = build_index_type(fold_build2(MINUS_EXPR, sizetype,
+						      length_tree,
+						      size_one_node));
+
+  tree fill_tree = fill->get_tree();
+  TREE_TYPE(fill_tree) = element_type_tree;
+  TYPE_DOMAIN(fill_tree) = index_type_tree;
+  TYPE_ADDR_SPACE(fill_tree) = TYPE_ADDR_SPACE(element_type_tree);
+  layout_type(fill_tree);
+
+  if (TYPE_STRUCTURAL_EQUALITY_P(element_type_tree))
+    SET_TYPE_STRUCTURAL_EQUALITY(fill_tree);
+  else if (TYPE_CANONICAL(element_type_tree) != element_type_tree
+	   || TYPE_CANONICAL(index_type_tree) != index_type_tree)
+    TYPE_CANONICAL(fill_tree) =
+      build_array_type(TYPE_CANONICAL(element_type_tree),
+		       TYPE_CANONICAL(index_type_tree));
+
+  return fill;
+}
+
+// Create a placeholder for a pointer type.
+
+Btype*
+Gcc_backend::placeholder_pointer_type(const std::string& name,
+				      source_location location, bool)
+{
+  tree ret = build_variant_type_copy(ptr_type_node);
+  tree decl = build_decl(location, TYPE_DECL,
+			 get_identifier_from_string(name),
+			 ret);
+  TYPE_NAME(ret) = decl;
+  return this->make_type(ret);
+}
+
+// Set the real target type for a placeholder pointer type.
+
+bool
+Gcc_backend::set_placeholder_pointer_type(Btype* placeholder,
+					  Btype* to_type)
+{
+  tree pt = placeholder->get_tree();
+  if (pt == error_mark_node)
+    return false;
+  gcc_assert(TREE_CODE(pt) == POINTER_TYPE);
+  tree tt = to_type->get_tree();
+  if (tt == error_mark_node)
+    {
+      TREE_TYPE(pt) = tt;
+      return false;
+    }
+  gcc_assert(TREE_CODE(tt) == POINTER_TYPE);
+  TREE_TYPE(pt) = TREE_TYPE(tt);
+  return true;
+}
+
+// Set the real values for a placeholder function type.
+
+bool
+Gcc_backend::set_placeholder_function_type(Btype* placeholder, Btype* ft)
+{
+  return this->set_placeholder_pointer_type(placeholder, ft);
+}
+
+// Create a placeholder for a struct type.
+
+Btype*
+Gcc_backend::placeholder_struct_type(const std::string& name,
+				     source_location location)
+{
+  tree ret = make_node(RECORD_TYPE);
+  tree decl = build_decl(location, TYPE_DECL,
+			 get_identifier_from_string(name),
+			 ret);
+  TYPE_NAME(ret) = decl;
+  return this->make_type(ret);
+}
+
+// Fill in the fields of a placeholder struct type.
+
+bool
+Gcc_backend::set_placeholder_struct_type(
+    Btype* placeholder,
+    const std::vector<Btyped_identifier>& fields)
+{
+  tree t = placeholder->get_tree();
+  gcc_assert(TREE_CODE(t) == RECORD_TYPE && TYPE_FIELDS(t) == NULL_TREE);
+  Btype* r = this->fill_in_struct(placeholder, fields);
+  return r->get_tree() != error_mark_node;
+}
+
+// Create a placeholder for an array type.
+
+Btype*
+Gcc_backend::placeholder_array_type(const std::string& name,
+				    source_location location)
+{
+  tree ret = make_node(ARRAY_TYPE);
+  tree decl = build_decl(location, TYPE_DECL,
+			 get_identifier_from_string(name),
+			 ret);
+  TYPE_NAME(ret) = decl;
+  return this->make_type(ret);
+}
+
+// Fill in the fields of a placeholder array type.
+
+bool
+Gcc_backend::set_placeholder_array_type(Btype* placeholder,
+					Btype* element_btype,
+					Bexpression* length)
+{
+  tree t = placeholder->get_tree();
+  gcc_assert(TREE_CODE(t) == ARRAY_TYPE && TREE_TYPE(t) == NULL_TREE);
+  Btype* r = this->fill_in_array(placeholder, element_btype, length);
+  return r->get_tree() != error_mark_node;
+}
+
+// Return a named version of a type.
+
+Btype*
+Gcc_backend::named_type(const std::string& name, Btype* btype,
+			source_location location)
+{
+  tree type = btype->get_tree();
+  if (type == error_mark_node)
+    return this->error_type();
+  type = build_variant_type_copy(type);
+  tree decl = build_decl(location, TYPE_DECL,
+			 get_identifier_from_string(name),
+			 type);
+  TYPE_NAME(type) = decl;
+  return this->make_type(type);
+}
+
+// Return a pointer type used as a marker for a circular type.
+
+Btype*
+Gcc_backend::circular_pointer_type(Btype*, bool)
+{
+  return this->make_type(ptr_type_node);
+}
+
+// Return whether we might be looking at a circular type.
+
+bool
+Gcc_backend::is_circular_pointer_type(Btype* btype)
+{
+  return btype->get_tree() == ptr_type_node;
 }
 
 // An expression as a statement.
@@ -432,8 +835,7 @@ Gcc_backend::switch_statement(
 				 ? EXPR_LOCATION((*ps)->get_tree())
 				 : UNKNOWN_LOCATION);
 	  tree label = create_artificial_label(loc);
-	  tree c = build3_loc(loc, CASE_LABEL_EXPR, void_type_node, NULL_TREE,
-			      NULL_TREE, label);
+	  tree c = build_case_label(NULL_TREE, NULL_TREE, label);
 	  append_to_statement_list(c, &stmt_list);
 	}
       else
@@ -447,8 +849,7 @@ Gcc_backend::switch_statement(
 		return this->error_statement();
 	      source_location loc = EXPR_LOCATION(t);
 	      tree label = create_artificial_label(loc);
-	      tree c = build3_loc(loc, CASE_LABEL_EXPR, void_type_node,
-				  (*pcv)->get_tree(), NULL_TREE, label);
+	      tree c = build_case_label((*pcv)->get_tree(), NULL_TREE, label);
 	      append_to_statement_list(c, &stmt_list);
 	    }
 	}
@@ -864,6 +1265,12 @@ tree_to_block(tree t)
 {
   gcc_assert(TREE_CODE(t) == BIND_EXPR);
   return new Bblock(t);
+}
+
+tree
+type_to_tree(Btype* bt)
+{
+  return bt->get_tree();
 }
 
 tree

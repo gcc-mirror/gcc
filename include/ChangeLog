@@ -1,3 +1,12 @@
+2011-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (DW_OP_GNU_const_type, DW_OP_GNU_regval_type,
+	DW_OP_GNU_deref_type, DW_OP_GNU_convert, DW_OP_GNU_reinterpret): New.
+
+2011-04-25  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* ansidecl.h (ENUM_BITFIELD): New, from gcc/system.h.
+
 2011-03-31  Tristan Gingold  <gingold@adacore.com>
 
 	* dwarf2.h (dwarf_line_number_hp_sfc_ops): New enum.

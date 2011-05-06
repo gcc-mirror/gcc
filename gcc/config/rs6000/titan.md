@@ -20,8 +20,6 @@
 
 ;; AppliedMicro Titan core complex
 
-(automata_option "progress")
-
 (define_automaton "titan_core,titan_fpu,titan_fxu,titan_bpu,titan_lsu")
 (define_cpu_unit "titan_issue_0,titan_issue_1" "titan_core")
 

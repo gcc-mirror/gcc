@@ -1,6 +1,6 @@
 // Move, forward and identity for C++0x + swap -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Move a value.
-   *  @ingroup mutating_algorithms
+   *  @ingroup utilities
    *  @param  __t  A thing of arbitrary type.
    *  @return Same, moved.
   */
@@ -82,12 +82,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     move(_Tp&& __t)
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
 
+  /**
+   *  @brief Move unless it could throw and the type is copyable.
+   *  @ingroup utilities
+   *  @param  __x  A thing of arbitrary type.
+   *  @return Same, possibly moved.
+   */
+  template<typename _Tp>
+    inline typename
+    conditional<(!is_nothrow_move_constructible<_Tp>::value
+		 && is_copy_constructible<_Tp>::value),
+                const _Tp&, _Tp&&>::type
+    move_if_noexcept(_Tp& __x) noexcept
+    { return std::move(__x); }
+
   /// declval, from type_traits.
 
   /**
    *  @brief Returns the actual address of the object or function
    *         referenced by r, even in the presence of an overloaded
    *         operator&.
+   *  @ingroup utilities
    *  @param  __r  Reference to an object or function.
    *  @return   The actual address.
   */
@@ -112,7 +127,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Swaps two values.
-   *  @ingroup mutating_algorithms
+   *  @ingroup utilities
    *  @param  __a  A thing of arbitrary type.
    *  @param  __b  Another thing of arbitrary type.
    *  @return   Nothing.

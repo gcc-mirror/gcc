@@ -1,3 +1,13 @@
+2011-05-04  Chris Demetriou  <cgd@google.com>
+
+	* config/i386/morestack.S (__i686.get_pc_thunk.bx): Rename to...
+	(__x86.get_pc_thunk.bx): ...this.
+	(__morestack): Adjust for rename, remove undef of __i686.
+
+2011-05-03  Chris Demetriou  <cgd@google.com>
+
+	* config/i386/morestack.S (__i686.get_pc_thunk.bx): New.
+
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.host (alpha*-*-gnu*, arc-*-elf*, arm*-*-netbsd*,

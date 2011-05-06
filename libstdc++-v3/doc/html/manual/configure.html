@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Configure</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.75.2"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      configure&#10;    , &#10;      options&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="setup.html" title="Chapter 2. Setup"/><link rel="prev" href="setup.html" title="Chapter 2. Setup"/><link rel="next" href="make.html" title="Make"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Configure</th></tr><tr><td align="left"><a accesskey="p" href="setup.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Setup</th><td align="right"> <a accesskey="n" href="make.html">Next</a></td></tr></table><hr/></div><div class="section" title="Configure"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.setup.configure"/>Configure</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Configure</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      configure&#10;    , &#10;      options&#10;    "/><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    "/><link rel="home" href="../spine.html" title="The GNU C++ Library"/><link rel="up" href="setup.html" title="Chapter 2. Setup"/><link rel="prev" href="setup.html" title="Chapter 2. Setup"/><link rel="next" href="make.html" title="Make"/></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Configure</th></tr><tr><td align="left"><a accesskey="p" href="setup.html">Prev</a> </td><th width="60%" align="center">Chapter 2. Setup</th><td align="right"> <a accesskey="n" href="make.html">Next</a></td></tr></table><hr/></div><div class="section" title="Configure"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.setup.configure"/>Configure</h2></div></div></div><p>
   When configuring libstdc++, you'll have to configure the entire
   <span class="emphasis"><em>gccsrcdir</em></span> directory. Consider using the
   toplevel gcc configuration option
@@ -10,7 +10,7 @@
   Here are all of the configure options specific to libstdc++.  Keep
   in mind that
    
-   <a class="link" href="http://sourceware.org/autobook/autobook/autobook_14.html" target="">they
+   <a class="link" href="http://sourceware.org/autobook/autobook/autobook_14.html">they
    all have opposite forms as well</a> (enable/disable and
    with/without).  The defaults are for the <span class="emphasis"><em>current
    development sources</em></span>, which may be different than those
@@ -53,7 +53,7 @@
 	choices are 'ieee_1003.1-2001' to specify an X/Open, Standard Unix
 	(IEEE Std. 1003.1-2001) model based on langinfo/iconv/catgets,
 	'gnu' to specify a model based on functionality from the GNU C
-	library (langinfo/iconv/gettext) (from <a class="link" href="http://sources.redhat.com/glibc/" target="">glibc</a>, the GNU C
+	library (langinfo/iconv/gettext) (from <a class="link" href="http://sources.redhat.com/glibc/">glibc</a>, the GNU C
 	library), or 'generic' to use a generic "C"
 	abstraction which consists of "C" locale info.
      </p><p>If not explicitly specified, the configure proccess tries
@@ -80,10 +80,24 @@
 	(described next).
      </p></dd><dt><span class="term"><code class="code">--enable-threads=OPTION</code></span></dt><dd><p>Select a threading library.  A full description is
 	given in the
-	general <a class="link" href="http://gcc.gnu.org/install/configure.html" target="">compiler
+	general <a class="link" href="http://gcc.gnu.org/install/configure.html">compiler
 	configuration instructions</a>. This option can change the
 	library ABI.
-     </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-debug</code></span></dt><dd><p>Build separate debug libraries in addition to what is normally built.
+     </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-time</code></span></dt><dd><p>This is an abbreviated form of
+	<code class="code">'--enable-libstdcxx-time=yes'</code>(described next).
+     </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-time=OPTION</code></span></dt><dd><p>Enables link-type checks for the availability of the
+	clock_gettime clocks, used in the implementation of [time.clock],
+	and of the nanosleep and sched_yield functions, used in the
+	implementation of [thread.thread.this] of the current C++0x draft.
+	The choice OPTION=yes checks for the availability of the facilities
+	in libc and libposix4.  In case of need the latter is also linked
+	to libstdc++ as part of the build process.  OPTION=rt also searches
+	(and, in case, links) librt.   Note that the latter is not always
+	desirable because, in glibc, for example, in turn it triggers the
+	linking of libpthread too, which activates locking, a large overhead
+	for single-thread programs.  OPTION=no skips the tests completely.
+	The default is OPTION=no.
+    </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-debug</code></span></dt><dd><p>Build separate debug libraries in addition to what is normally built.
 	By default, the debug libraries are compiled with
 	<code class="code"> CXXFLAGS='-g3 -O0 -fno-inline'</code>
 	, are installed in <code class="code">${libdir}/debug</code>, and have the
@@ -180,24 +194,18 @@
 	In addition, this generated file is used later on (by appending <code class="code">
 	--include bits/stdc++.h </code> to CXXFLAGS) when running the
 	testsuite.
+     </p></dd><dt><span class="term"><code class="code">--enable-extern-template</code>[default]</span></dt><dd><p>Use extern template to pre-instantiate all required
+ 	specializations for certain types defined in the standard libraries. 
+	These types include <code class="classname">string</code> and dependents like
+	<code class="classname">char_traits</code>, the templateized io classes,
+	<code class="classname">allocator</code>, and others.  
+	Disabling means that implicit
+	template generation will be used when compiling these types.  By
+	default, this option is on. This option can change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--disable-hosted-libstdcxx</code></span></dt><dd><p>
      By default, a complete <span class="emphasis"><em>hosted</em></span> C++ library is
      built.  The C++ Standard also describes a
      <span class="emphasis"><em>freestanding</em></span> environment, in which only a
      minimal set of headers are provided.  This option builds such an
      environment.
-     </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-time</code></span></dt><dd><p>This is an abbreviated form of
-	<code class="code">'--enable-libstdcxx-time=yes'</code>(described next).
-     </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-time=OPTION</code></span></dt><dd><p>Enables link-type checks for the availability of the
-	clock_gettime clocks, used in the implementation of [time.clock],
-	and of the nanosleep and sched_yield functions, used in the
-	implementation of [thread.thread.this] of the current C++0x draft.
-	The choice OPTION=yes checks for the availability of the facilities
-	in libc and libposix4.  In case of need the latter is also linked
-	to libstdc++ as part of the build process.  OPTION=rt also searches
-	(and, in case, links) librt.   Note that the latter is not always
-	desirable because, in glibc, for example, in turn it triggers the
-	linking of libpthread too, which activates locking, a large overhead
-	for single-thread programs.  OPTION=no skips the tests completely.
-	The default is OPTION=no.
-    </p></dd></dl></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="setup.html">Prev</a> </td><td align="center"><a accesskey="u" href="setup.html">Up</a></td><td align="right"> <a accesskey="n" href="make.html">Next</a></td></tr><tr><td align="left" valign="top">Chapter 2. Setup </td><td align="center"><a accesskey="h" href="../spine.html">Home</a></td><td align="right" valign="top"> Make</td></tr></table></div></body></html>
+     </p></dd></dl></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="setup.html">Prev</a> </td><td align="center"><a accesskey="u" href="setup.html">Up</a></td><td align="right"> <a accesskey="n" href="make.html">Next</a></td></tr><tr><td align="left" valign="top">Chapter 2. Setup </td><td align="center"><a accesskey="h" href="../spine.html">Home</a></td><td align="right" valign="top"> Make</td></tr></table></div></body></html>

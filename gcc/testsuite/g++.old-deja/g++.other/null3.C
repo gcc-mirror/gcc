@@ -2,5 +2,5 @@
 
 void x()
 {
- int* p = 1==0;
+ int* p = 1==0;	// { dg-warning "converting 'false' to pointer" }
 }

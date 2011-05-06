@@ -583,7 +583,7 @@ namespace __cxxabiv1
  *
  *  A brief overview of an ABI is given in the libstdc++ FAQ, question
  *  5.8 (you may have a copy of the FAQ locally, or you can view the online
- *  version at http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_8).
+ *  version at http://gcc.gnu.org/onlinedocs/libstdc++/faq.html#5_8 ).
  *
  *  GCC subscribes to a cross-vendor ABI for C++, sometimes
  *  called the IA64 ABI because it happens to be the native ABI for that

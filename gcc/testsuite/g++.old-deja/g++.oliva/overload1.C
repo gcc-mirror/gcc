@@ -6,7 +6,7 @@
 // Based on bug report by JDonner <jdonner@schedsys.com>
 
 struct foo {
-  static int bar(); // { dg-error "candidate" }
+  static int bar(); // { dg-error "foo::bar" }
   void bar(int); // { dg-error "foo::bar" }
 };
 

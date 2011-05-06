@@ -626,7 +626,7 @@ may be used at a later point in the program.  This information is
 used, for instance, during register allocation, as the pseudo
 registers only need to be assigned to a unique hard register or to a
 stack slot if they are live.  The hard registers and stack slots may
-be freely reused for other values when a register is dead.  
+be freely reused for other values when a register is dead.
 
 Liveness information is available in the back end starting with
 @code{pass_df_initialize} and ending with @code{pass_df_finish}.  Three
@@ -634,7 +634,7 @@ flavors of live analysis are available: With @code{LR}, it is possible
 to determine at any point @code{P} in the function if the register may be
 used on some path from @code{P} to the end of the function.  With
 @code{UR}, it is possible to determine if there is a path from the
-beginning of the function to @code{P} that defines the variable.  
+beginning of the function to @code{P} that defines the variable.
 @code{LIVE} is the intersection of the @code{LR} and @code{UR} and a
 variable is live at @code{P} if there is both an assignment that reaches
 it from the beginning of the function and a use that can be reached on
@@ -645,7 +645,7 @@ In general @code{LIVE} is the most useful of the three.  The macros
 The macros take a basic block number and return a bitmap that is indexed
 by the register number.  This information is only guaranteed to be up to
 date after calls are made to @code{df_analyze}.  See the file
-@code{df-core.c} for details on using the dataflow.  
+@code{df-core.c} for details on using the dataflow.
 
 
 @findex REG_DEAD, REG_UNUSED

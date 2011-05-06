@@ -24,8 +24,6 @@ Issues to be faced in this transition:
     features such as %<%> for appropriate quoting.
   + Localization may be an issue.
 
-* Use of gcc_unreachable.
-
 This compiler works, but the code is a work in progress.  Notably, the
 support for garbage collection is ineffective and needs a complete
 rethinking.  The frontend pays little attention to its memory usage

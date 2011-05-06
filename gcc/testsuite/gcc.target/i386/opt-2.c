@@ -1,7 +1,7 @@
 /* Test the attribute((optimize)) really works.  Do this test by checking
    whether we vectorize a simple loop.  */
 /* { dg-do compile } */
-/* { dg-options "-O1 -msse2 -mfpmath=sse -march=k8" } */
+/* { dg-options "-O1 -msse2 -mfpmath=sse -march=k8 --param min-insn-to-prefetch-ratio=0" } */
 /* { dg-final { scan-assembler "prefetcht0" } } */
 /* { dg-final { scan-assembler "addps" } } */
 /* { dg-final { scan-assembler "subss" } } */

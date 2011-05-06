@@ -214,15 +214,15 @@ initialization when a compilation driver is being initialized.
 @item HOST_LONG_LONG_FORMAT
 If defined, the string used to indicate an argument of type @code{long
 long} to functions like @code{printf}.  The default value is
-@code{"ll"}. 
+@code{"ll"}.
 
 @item HOST_LONG_FORMAT
 If defined, the string used to indicate an argument of type @code{long}
-to functions like @code{printf}.  The default value is @code{"l"}. 
+to functions like @code{printf}.  The default value is @code{"l"}.
 
 @item HOST_PTR_PRINTF
 If defined, the string used to indicate an argument of type @code{void *}
-to functions like @code{printf}.  The default value is @code{"%p"}. 
+to functions like @code{printf}.  The default value is @code{"%p"}.
 @end ftable
 
 In addition, if @command{configure} generates an incorrect definition of

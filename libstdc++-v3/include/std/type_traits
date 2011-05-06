@@ -550,7 +550,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_array_unknown_bounds
     : public __and_<is_array<_Tp>, __not_<extent<_Tp>>>::type
     { };
-
+    
+  // In N3290 is_destructible does not say anything about function 
+  // types and abstract types, see LWG 2049. This implementation
+  // describes function types as trivially nothrow destructible and
+  // abstract types as destructible, iff the  explicit destructor
+  // call expression is wellformed.
   struct __do_is_destructible_impl_1
   {
     template<typename _Up>
@@ -571,6 +576,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef decltype(__test<_Tp>(0)) type;
     };
 
+  // Special implementation for abstract types
   struct __do_is_destructible_impl_2
   {
     template<typename _Tp, typename = decltype(declval<_Tp&>().~_Tp())>
@@ -632,23 +638,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_default_constructible_atom
-    : public __and_<is_destructible<_Tp>,
-                    __is_default_constructible_impl<_Tp>>::type::type
+    : public __and_<__not_<is_void<_Tp>>,
+                    __is_default_constructible_impl<_Tp>>::type
     { };
 
   template<typename _Tp, bool = is_array<_Tp>::value>
     struct __is_default_constructible_safe;
 
-  // The following technique is a workaround for a gcc defect, which does
-  // not sfinae away attempts to default-construct arrays of unknown bounds.
-  // Complete arrays can be default-constructed, if the element type is
-  // default-constructible, but arrays with unknown bounds are not:
-
+  // The following technique is a workaround for a current core language
+  // restriction, which does not allow for array types to occur in 
+  // functional casts of the form T().  Complete arrays can be default-
+  // constructed, if the element type is default-constructible, but 
+  // arrays with unknown bounds are not.
   template<typename _Tp>
     struct __is_default_constructible_safe<_Tp, true>
     : public __and_<__is_array_known_bounds<_Tp>,
 		    __is_default_constructible_atom<typename
-                      remove_all_extents<_Tp>::type>>::type::type
+                      remove_all_extents<_Tp>::type>>::type
     { };
 
   template<typename _Tp>
@@ -663,6 +669,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				      _Tp>::value)>
     { };
 
+
+  // Implementation of is_constructible.
+
+  // The hardest part of this trait is the binary direct-initialization
+  // case, because we hit into a functional cast of the form T(arg).
+  // This implementation uses different strategies depending on the
+  // target type to reduce the test overhead as much as possible:
+  //
+  // a) For a reference target type, we use a static_cast expression 
+  //    modulo its extra cases.
+  //
+  // b) For a non-reference target type we use a ::new expression.
   struct __do_is_static_castable_impl
   {
     template<typename _From, typename _To, typename
@@ -682,8 +700,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _From, typename _To>
     struct __is_static_castable_safe
-    : public __and_<__or_<is_void<_To>, is_destructible<_To>>,
-                    __is_static_castable_impl<_From, _To>>::type::type
+    : public __is_static_castable_impl<_From, _To>::type
     { };
 
   // __is_static_castable
@@ -693,6 +710,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				      _From, _To>::value)>
     { };
 
+  // Implementation for non-reference types. To meet the proper
+  // variable definition semantics, we also need to test for
+  // is_destructible in this case.
   struct __do_is_direct_constructible_impl
   {
     template<typename _Tp, typename _Arg, typename
@@ -713,7 +733,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Arg>
     struct __is_direct_constructible_new_safe
     : public __and_<is_destructible<_Tp>,
-                    __is_direct_constructible_impl<_Tp, _Arg>>::type::type
+                    __is_direct_constructible_impl<_Tp, _Arg>>::type
     { };
 
   template<typename, typename>
@@ -736,10 +756,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         >::type>::type __src_t;
       typedef typename remove_cv<typename remove_reference<_To
         >::type>::type __dst_t;
-      typedef typename __and_<
-        __not_<is_same<__src_t, __dst_t>>,
-        is_base_of<__src_t, __dst_t>
-      >::type type;
+      typedef __and_<__not_<is_same<__src_t, __dst_t>>,
+		     is_base_of<__src_t, __dst_t>> type;
       static constexpr bool value = type::value;
     };
 
@@ -760,10 +778,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _From>::type>::type __src_t;
       typedef typename remove_cv<typename remove_reference<
         _To>::type>::type __dst_t;
-      typedef typename __or_<
-        is_same<__src_t, __dst_t>,
-        is_base_of<__dst_t, __src_t>
-      >::type type;
+      typedef __or_<is_same<__src_t, __dst_t>,
+		    is_base_of<__dst_t, __src_t>> type;
       static constexpr bool value = type::value;
     };
 
@@ -772,24 +788,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public false_type
     { };
 
-  // Here we handle direct-initialization to a reference type
-  // as equivalent to a static_cast modulo overshooting conversions.
-  // These are restricted to the following conversion:
-  //    a) A base class to a derived class reference
-  //    b) An lvalue-reference to an rvalue-reference
-
+  // Here we handle direct-initialization to a reference type as 
+  // equivalent to a static_cast modulo overshooting conversions.
+  // These are restricted to the following conversions:
+  //    a) A glvalue of a base class to a derived class reference
+  //    b) An lvalue to an rvalue-reference of reference-compatible 
+  //       types
   template<typename _Tp, typename _Arg>
     struct __is_direct_constructible_ref_cast
     : public __and_<__is_static_castable<_Arg, _Tp>,
                     __not_<__or_<__is_base_to_derived_ref<_Arg, _Tp>,
                                  __is_lvalue_to_rvalue_ref<_Arg, _Tp>
-                   >>>::type::type
+                   >>>::type
     { };
-
-  // Direct-initialization is tricky, because of functional
-  // casts: For a conversion to reference we fall back to a
-  // static_cast modulo extra cases, otherwise we use a
-  // new expression:
 
   template<typename _Tp, typename _Arg>
     struct __is_direct_constructible_new
@@ -802,9 +813,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Arg>
     struct __is_direct_constructible
     : public integral_constant<bool, (__is_direct_constructible_new<
-				      _Tp, _Arg>::type::value)>
+				      _Tp, _Arg>::value)>
     { };
 
+  // Since default-construction and binary direct-initialization have
+  // been handled separately, the implementation of the remaining
+  // n-ary construction cases is rather straightforward.
   struct __do_is_nary_constructible_impl
   {
     template<typename _Tp, typename... _Args, typename
@@ -824,9 +838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename... _Args>
     struct __is_nary_constructible
-    : public __and_<is_destructible<_Tp>,
-		    __is_nary_constructible_impl<_Tp, _Args...>
-                   >::type::type
+    : public __is_nary_constructible_impl<_Tp, _Args...>::type
     {
       static_assert(sizeof...(_Args) > 1,
                     "Only useful for > 1 arguments");
@@ -1581,7 +1593,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
     };
 
-  /// underlying_type (still unimplemented)
+  /// underlying_type
+  template<typename _Tp>
+    struct underlying_type
+    {
+      typedef __underlying_type(_Tp) type;
+    };
 
   /// declval
   template<typename _Tp>

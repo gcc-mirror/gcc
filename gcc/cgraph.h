@@ -256,10 +256,10 @@ DEF_VEC_ALLOC_P(cgraph_node_ptr,gc);
 
 /* A cgraph node set is a collection of cgraph nodes.  A cgraph node
    can appear in multiple sets.  */
-struct GTY(()) cgraph_node_set_def
+struct cgraph_node_set_def
 {
-  htab_t GTY((param_is (struct cgraph_node_set_element_def))) hashtab;
-  VEC(cgraph_node_ptr, gc) *nodes;
+  struct pointer_map_t *map;
+  VEC(cgraph_node_ptr, heap) *nodes;
 };
 
 typedef struct varpool_node *varpool_node_ptr;
@@ -270,10 +270,10 @@ DEF_VEC_ALLOC_P(varpool_node_ptr,gc);
 
 /* A varpool node set is a collection of varpool nodes.  A varpool node
    can appear in multiple sets.  */
-struct GTY(()) varpool_node_set_def
+struct varpool_node_set_def
 {
-  htab_t GTY((param_is (struct varpool_node_set_element_def))) hashtab;
-  VEC(varpool_node_ptr, gc) *nodes;
+  struct pointer_map_t * map;
+  VEC(varpool_node_ptr, heap) *nodes;
 };
 
 typedef struct cgraph_node_set_def *cgraph_node_set;
@@ -288,34 +288,12 @@ DEF_VEC_P(varpool_node_set);
 DEF_VEC_ALLOC_P(varpool_node_set,gc);
 DEF_VEC_ALLOC_P(varpool_node_set,heap);
 
-/* A cgraph node set element contains an index in the vector of nodes in
-   the set.  */
-struct GTY(()) cgraph_node_set_element_def
-{
-  struct cgraph_node *node;
-  HOST_WIDE_INT index;
-};
-
-typedef struct cgraph_node_set_element_def *cgraph_node_set_element;
-typedef const struct cgraph_node_set_element_def *const_cgraph_node_set_element;
-
 /* Iterator structure for cgraph node sets.  */
 typedef struct
 {
   cgraph_node_set set;
   unsigned index;
 } cgraph_node_set_iterator;
-
-/* A varpool node set element contains an index in the vector of nodes in
-   the set.  */
-struct GTY(()) varpool_node_set_element_def
-{
-  struct varpool_node *node;
-  HOST_WIDE_INT index;
-};
-
-typedef struct varpool_node_set_element_def *varpool_node_set_element;
-typedef const struct varpool_node_set_element_def *const_varpool_node_set_element;
 
 /* Iterator structure for varpool node sets.  */
 typedef struct
@@ -381,11 +359,6 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   int frequency;
   /* Unique id of the edge.  */
   int uid;
-  /* Estimated size and time of the call statement.  */
-  int call_stmt_size;
-  int call_stmt_time;
-  /* Depth of loop nest, 1 means no loop nest.  */
-  unsigned short int loop_nest;
   /* Whether this edge was made direct by indirect inlining.  */
   unsigned int indirect_inlining_edge : 1;
   /* Whether this edge describes an indirect call with an undetermined
@@ -504,9 +477,9 @@ void cgraph_release_function_body (struct cgraph_node *);
 void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					struct cgraph_node *,
-					gimple, gcov_type, int, int);
+					gimple, gcov_type, int);
 struct cgraph_edge *cgraph_create_indirect_edge (struct cgraph_node *, gimple,
-						 int, gcov_type, int, int);
+						 int, gcov_type, int);
 struct cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 struct cgraph_node * cgraph_get_node (const_tree);
 struct cgraph_node * cgraph_get_node_or_alias (const_tree);
@@ -522,7 +495,7 @@ void cgraph_set_call_stmt (struct cgraph_edge *, gimple);
 void cgraph_set_call_stmt_including_clones (struct cgraph_node *, gimple, gimple);
 void cgraph_create_edge_including_clones (struct cgraph_node *,
 					  struct cgraph_node *,
-					  gimple, gimple, gcov_type, int, int,
+					  gimple, gimple, gcov_type, int,
 					  cgraph_inline_failed_t);
 void cgraph_update_edges_for_call_stmt (gimple, tree, gimple);
 struct cgraph_local_info *cgraph_local_info (tree);
@@ -531,8 +504,8 @@ struct cgraph_rtl_info *cgraph_rtl_info (tree);
 const char * cgraph_node_name (struct cgraph_node *);
 struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 					struct cgraph_node *, gimple,
-					unsigned, gcov_type, int, int, bool);
-struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type, int,
+					unsigned, gcov_type, int, bool);
+struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
 					int, bool, VEC(cgraph_edge_p,heap) *);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
@@ -578,7 +551,7 @@ void cgraph_mark_needed_node (struct cgraph_node *);
 void cgraph_mark_address_taken_node (struct cgraph_node *);
 void cgraph_mark_reachable_node (struct cgraph_node *);
 bool cgraph_inline_p (struct cgraph_edge *, cgraph_inline_failed_t *reason);
-bool cgraph_preserve_function_body_p (tree);
+bool cgraph_preserve_function_body_p (struct cgraph_node *);
 void verify_cgraph (void);
 void verify_cgraph_node (struct cgraph_node *);
 void cgraph_build_static_cdtor (char which, tree body, int priority);
@@ -630,7 +603,6 @@ int compute_call_stmt_bb_frequency (tree, basic_block bb);
 
 /* In ipa.c  */
 bool cgraph_remove_unreachable_nodes (bool, FILE *);
-int cgraph_postorder (struct cgraph_node **);
 cgraph_node_set cgraph_node_set_new (void);
 cgraph_node_set_iterator cgraph_node_set_find (cgraph_node_set,
 					       struct cgraph_node *);
@@ -638,6 +610,7 @@ void cgraph_node_set_add (cgraph_node_set, struct cgraph_node *);
 void cgraph_node_set_remove (cgraph_node_set, struct cgraph_node *);
 void dump_cgraph_node_set (FILE *, cgraph_node_set);
 void debug_cgraph_node_set (cgraph_node_set);
+void free_cgraph_node_set (cgraph_node_set);
 
 varpool_node_set varpool_node_set_new (void);
 varpool_node_set_iterator varpool_node_set_find (varpool_node_set,
@@ -646,6 +619,7 @@ void varpool_node_set_add (varpool_node_set, struct varpool_node *);
 void varpool_node_set_remove (varpool_node_set, struct varpool_node *);
 void dump_varpool_node_set (FILE *, varpool_node_set);
 void debug_varpool_node_set (varpool_node_set);
+void free_varpool_node_set (varpool_node_set);
 void ipa_discover_readonly_nonaddressable_vars (void);
 bool cgraph_comdat_can_be_unshared_p (struct cgraph_node *);
 
@@ -769,7 +743,7 @@ cgraph_node_in_set_p (struct cgraph_node *node, cgraph_node_set set)
 static inline size_t
 cgraph_node_set_size (cgraph_node_set set)
 {
-  return htab_elements (set->hashtab);
+  return VEC_length (cgraph_node_ptr, set->nodes);
 }
 
 /* Return true if iterator VSI points to nothing.  */
@@ -817,7 +791,7 @@ varpool_node_in_set_p (struct varpool_node *node, varpool_node_set set)
 static inline size_t
 varpool_node_set_size (varpool_node_set set)
 {
-  return htab_elements (set->hashtab);
+  return VEC_length (varpool_node_ptr, set->nodes);
 }
 
 /* Uniquize all constants that appear in memory.

@@ -771,6 +771,7 @@ thread_across_edge (gimple dummy_cond,
 
 	  remove_temporary_equivalences (stack);
 	  register_jump_thread (e, taken_edge);
+	  return;
 	}
     }
 

@@ -63,6 +63,7 @@ static struct cgraph_edge_hook_list *edge_removal_hook_holder;
 static struct cgraph_node_hook_list *node_removal_hook_holder;
 static struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
 static struct cgraph_2node_hook_list *node_duplication_hook_holder;
+static struct cgraph_node_hook_list *function_insertion_hook_holder;
 
 /* Add cgraph NODE described by INFO to the worklist WL regardless of whether
    it is in one or not.  It should almost never be used directly, as opposed to
@@ -1890,10 +1891,6 @@ bool
 ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 				   VEC (cgraph_edge_p, heap) **new_edges)
 {
-  /* FIXME lto: We do not stream out indirect call information.  */
-  if (flag_wpa)
-    return false;
-
   /* Do nothing if the preparation phase has not been carried out yet
      (i.e. during early inlining).  */
   if (!ipa_node_params_vector)
@@ -2062,6 +2059,15 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
   new_info->node_enqueued = old_info->node_enqueued;
 }
 
+
+/* Analyze newly added function into callgraph.  */
+
+static void
+ipa_add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  ipa_analyze_node (node);
+}
+
 /* Register our cgraph hooks if they are not already there.  */
 
 void
@@ -2079,6 +2085,8 @@ ipa_register_cgraph_hooks (void)
   if (!node_duplication_hook_holder)
     node_duplication_hook_holder =
       cgraph_add_node_duplication_hook (&ipa_node_duplication_hook, NULL);
+  function_insertion_hook_holder =
+      cgraph_add_function_insertion_hook (&ipa_add_new_function, NULL);
 }
 
 /* Unregister our cgraph hooks if they are not already there.  */
@@ -2094,6 +2102,8 @@ ipa_unregister_cgraph_hooks (void)
   edge_duplication_hook_holder = NULL;
   cgraph_remove_node_duplication_hook (node_duplication_hook_holder);
   node_duplication_hook_holder = NULL;
+  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
+  function_insertion_hook_holder = NULL;
 }
 
 /* Allocate all necessary data structures necessary for indirect inlining.  */
@@ -2455,7 +2465,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 				       base_offset
 				       + adj->offset / BITS_PER_UNIT);
 		  off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1),
-					 off, 0);
+					 off);
 		  base = TREE_OPERAND (base, 0);
 		}
 	      else

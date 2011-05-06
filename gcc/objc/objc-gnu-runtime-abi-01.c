@@ -71,10 +71,10 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This macro provides a method of removing ambiguity between runtimes
    when LTO is in use on targets supporting multiple runtimes.
-   
+
    For example, at present, any target that includes an implementation of
    the NeXT runtime needs to place Objective-C meta-data into specific
-   named sections.  This should _not_ be done for the GNU runtime, and the 
+   named sections.  This should _not_ be done for the GNU runtime, and the
    folowing macro is used to attach Objective-C private attributes that may
    be used to identify the runtime for which the meta-data are intended.  */
 
@@ -103,7 +103,8 @@ static tree gnu_runtime_abi_01_get_class_super_ref (location_t, struct imp_entry
 static tree gnu_runtime_abi_01_get_category_super_ref (location_t, struct imp_entry *, bool);
 
 static tree gnu_runtime_abi_01_receiver_is_class_object (tree);
-static tree gnu_runtime_abi_01_get_arg_type_list_base (tree, int, int);
+static void gnu_runtime_abi_01_get_arg_type_list_base (VEC(tree,gc) **, tree,
+						       int, int);
 static tree gnu_runtime_abi_01_build_objc_method_call (location_t, tree, tree,
 							tree, tree, tree, int);
 
@@ -120,7 +121,7 @@ static tree begin_catch (struct objc_try_context **, tree, tree, tree, bool);
 static void finish_catch (struct objc_try_context **, tree);
 static tree finish_try_stmt (struct objc_try_context **);
 
-bool 
+bool
 objc_gnu_runtime_abi_01_init (objc_runtime_hooks *rthooks)
 {
   /* GNU runtime does not need the compiler to change code in order to do GC. */
@@ -265,14 +266,14 @@ static void gnu_runtime_01_initialize (void)
 			    NULL, NULL_TREE);
 
   /* id objc_getMetaClass (const char *); */
-  objc_get_meta_class_decl = add_builtin_function (TAG_GETMETACLASS, type, 
+  objc_get_meta_class_decl = add_builtin_function (TAG_GETMETACLASS, type,
 						   0, NOT_BUILT_IN, NULL,
 						   NULL_TREE);
 
   /* static SEL _OBJC_SELECTOR_TABLE[]; */
   build_selector_table_decl ();
-  
-  /* Stuff for properties.  
+
+  /* Stuff for properties.
      The codegen relies on this being NULL for GNU.  */
   objc_copyStruct_decl = NULL_TREE;
 
@@ -281,14 +282,14 @@ static void gnu_runtime_01_initialize (void)
   type = build_function_type_list (void_type_node,
 				   ptr_type_node,
 				   const_ptr_type_node,
-				   ptrdiff_type_node,       
+				   ptrdiff_type_node,
 				   boolean_type_node,
 				   boolean_type_node,
 				   NULL_TREE);
 
   /* Declare the following function:
 	 void
-	 objc_getPropertyStruct (void *destination, const void *source, 
+	 objc_getPropertyStruct (void *destination, const void *source,
                                  ptrdiff_t size, BOOL is_atomic, BOOL has_strong);  */
   objc_getPropertyStruct_decl = add_builtin_function ("objc_getPropertyStruct",
 							  type, 0, NOT_BUILT_IN,
@@ -296,13 +297,13 @@ static void gnu_runtime_01_initialize (void)
   TREE_NOTHROW (objc_getPropertyStruct_decl) = 0;
   /* Declare the following function:
 	 void
-	 objc_setPropertyStruct (void *destination, const void *source, 
+	 objc_setPropertyStruct (void *destination, const void *source,
 	                         ptrdiff_t size, BOOL is_atomic, BOOL has_strong);  */
   objc_setPropertyStruct_decl = add_builtin_function ("objc_setPropertyStruct",
 							  type, 0, NOT_BUILT_IN,
 							  NULL, NULL_TREE);
   TREE_NOTHROW (objc_setPropertyStruct_decl) = 0;
-  
+
   using_eh_for_cleanups ();
   lang_hooks.eh_runtime_type = objc_eh_runtime_type;
   lang_hooks.eh_personality = objc_eh_personality;
@@ -391,7 +392,7 @@ build_class_template (void)
   /* struct objc_class *sibling_class; */
   ptype = build_pointer_type (objc_class_template);
   add_field_decl (ptype, "sibling_class", &chain);
- 
+
   /* struct _objc_protocol **protocol_list; */
   ptype = build_pointer_type (build_pointer_type
 			      (xref_tag (RECORD_TYPE,
@@ -504,7 +505,7 @@ gnu_runtime_abi_01_class_decl (tree klass)
 {
   tree decl;
   char buf[BUFSIZE];
-  snprintf (buf, BUFSIZE, "_OBJC_Class_%s", 
+  snprintf (buf, BUFSIZE, "_OBJC_Class_%s",
 	    IDENTIFIER_POINTER (CLASS_NAME (klass)));
   decl = start_var_decl (objc_class_template, buf);
   OBJCMETA (decl, objc_meta, meta_base);
@@ -516,7 +517,7 @@ gnu_runtime_abi_01_metaclass_decl (tree klass)
 {
   tree decl;
   char buf[BUFSIZE];
-  snprintf (buf, BUFSIZE, "_OBJC_MetaClass_%s", 
+  snprintf (buf, BUFSIZE, "_OBJC_MetaClass_%s",
 	    IDENTIFIER_POINTER (CLASS_NAME (klass)));
   decl = start_var_decl (objc_class_template, buf);
   OBJCMETA (decl, objc_meta, meta_base);
@@ -528,7 +529,7 @@ gnu_runtime_abi_01_category_decl (tree klass)
 {
   tree decl;
   char buf[BUFSIZE];
-  snprintf (buf, BUFSIZE, "_OBJC_Category_%s_on_%s", 
+  snprintf (buf, BUFSIZE, "_OBJC_Category_%s_on_%s",
 	    IDENTIFIER_POINTER (CLASS_SUPER_NAME (klass)),
 	    IDENTIFIER_POINTER (CLASS_NAME (klass)));
   decl = start_var_decl (objc_category_template, buf);
@@ -551,7 +552,7 @@ gnu_runtime_abi_01_protocol_decl (tree p)
 }
 
 static tree
-gnu_runtime_abi_01_string_decl (tree type, const char *name, 
+gnu_runtime_abi_01_string_decl (tree type, const char *name,
 				string_section where ATTRIBUTE_UNUSED)
 {
   tree decl = start_var_decl (type, name);
@@ -568,7 +569,7 @@ gnu_runtime_abi_01_get_class_reference (tree ident)
 
   add_class_reference (ident);
 
-  params = build_tree_list (NULL_TREE, my_build_string_pointer 
+  params = build_tree_list (NULL_TREE, my_build_string_pointer
 						(IDENTIFIER_LENGTH (ident) + 1,
 						 IDENTIFIER_POINTER (ident)));
 
@@ -577,27 +578,28 @@ gnu_runtime_abi_01_get_class_reference (tree ident)
   return build_function_call (input_location, objc_get_class_decl, params);
 }
 
-/* Used by get_arg_type_list.  
-   Return the types for receiver & _cmd at the start of a method argument list.
-   context is either METHOD_DEF or METHOD_REF, saying whether we are trying
-   to define a method or call one.  superflag says this is for a send to super.
-   meth may be NULL, in the case that there is no prototype.  */
+/* Used by build_function_type_for_method.  Append the types for
+   receiver & _cmd at the start of a method argument list to ARGTYPES.
+   CONTEXT is either METHOD_DEF or METHOD_REF, saying whether we are
+   trying to define a method or call one.  SUPERFLAG says this is for a
+   send to super.  METH may be NULL, in the case that there is no
+   prototype.  */
 
-static tree
-gnu_runtime_abi_01_get_arg_type_list_base (tree meth, int context,
+static void
+gnu_runtime_abi_01_get_arg_type_list_base (VEC(tree,gc) **argtypes, tree meth,
+					   int context,
 					   int superflag ATTRIBUTE_UNUSED)
 {
-  tree arglist;
+  tree receiver_type;
 
-  /* Receiver type.  */
   if (context == METHOD_DEF && TREE_CODE (meth) == INSTANCE_METHOD_DECL)
-    arglist = build_tree_list (NULL_TREE, objc_instance_type);
+    receiver_type = objc_instance_type;
   else
-    arglist = build_tree_list (NULL_TREE, objc_object_type);
+    receiver_type = objc_object_type;
 
+  VEC_safe_push (tree, gc, *argtypes, receiver_type);
   /* Selector type - will eventually change to `int'.  */
-  chainon (arglist, build_tree_list (NULL_TREE, objc_selector_type));
-  return arglist;
+  VEC_safe_push (tree, gc, *argtypes, objc_selector_type);
 }
 
 /* Unused for GNU runtime.  */
@@ -621,9 +623,9 @@ gnu_runtime_abi_01_build_typed_selector_reference (location_t loc, tree ident,
 
   while (*chain)
     {
-      /* When we do a lookup for @selector () we have no idea of the 
+      /* When we do a lookup for @selector () we have no idea of the
          prototype - so match the first we find.  */
-      if (TREE_VALUE (*chain) == ident 
+      if (TREE_VALUE (*chain) == ident
           && (!prototype || TREE_PURPOSE (*chain) == prototype))
 	goto return_at_index;
 
@@ -633,7 +635,7 @@ gnu_runtime_abi_01_build_typed_selector_reference (location_t loc, tree ident,
 
   *chain = tree_cons (prototype, ident, NULL_TREE);
 
-  /* TODO: Use a vec and keep this in it to (a) avoid re-creating and 
+  /* TODO: Use a vec and keep this in it to (a) avoid re-creating and
      (b) provide better diagnostics for the first time an undefined
      selector is used.  */
  return_at_index:
@@ -657,7 +659,7 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
 			tree lookup_object, tree selector,
 			tree method_params)
 {
-  tree sender = (super_flag ? umsg_super_decl 
+  tree sender = (super_flag ? umsg_super_decl
 			    : (flag_objc_direct_dispatch ? umsg_fast_decl
 							 : umsg_decl));
   tree rcv_p = (super_flag ? objc_super_type : objc_object_type);
@@ -672,16 +674,15 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
     = (method_prototype
        ? TREE_VALUE (TREE_TYPE (method_prototype))
        : objc_object_type);
-
-  tree method_param_types = 
-  		get_arg_type_list (method_prototype, METHOD_REF, super_flag);
-  tree ftype = build_function_type (ret_type, method_param_types);
+  tree ftype
+    = build_function_type_for_method (ret_type, method_prototype,
+				      METHOD_REF, super_flag);
   tree sender_cast;
   tree method, t;
 
   if (method_prototype && METHOD_TYPE_ATTRIBUTES (method_prototype))
-    ftype = build_type_attribute_variant (ftype, 
-					  METHOD_TYPE_ATTRIBUTES 
+    ftype = build_type_attribute_variant (ftype,
+					  METHOD_TYPE_ATTRIBUTES
 					  (method_prototype));
 
   sender_cast = build_pointer_type (ftype);
@@ -728,9 +729,9 @@ gnu_runtime_abi_01_build_objc_method_call (location_t loc,
 					   tree method_params,
 					   int super ATTRIBUTE_UNUSED)
 {
-  tree selector = 
-	gnu_runtime_abi_01_build_typed_selector_reference (loc, 
-							  sel_name, 
+  tree selector =
+	gnu_runtime_abi_01_build_typed_selector_reference (loc,
+							  sel_name,
 							  method_prototype);
 
   return build_objc_method_call (loc, super, method_prototype, receiver,
@@ -767,7 +768,7 @@ gnu_runtime_abi_01_get_protocol_reference (location_t loc, tree p)
   /* This type is a struct containing the fields of a Protocol
      object.  (Cfr. objc_protocol_type instead is the type of a pointer
      to such a struct).  */
-  protocol_struct_type = xref_tag (RECORD_TYPE, 
+  protocol_struct_type = xref_tag (RECORD_TYPE,
 				   get_identifier (PROTOCOL_OBJECT_CLASS_NAME));
 
   /* Look for the list of Protocol statically allocated instances
@@ -797,7 +798,7 @@ gnu_runtime_abi_01_get_protocol_reference (location_t loc, tree p)
 /* For ABI 8 an IVAR is just a fixed offset in the class struct.  */
 
 static tree
-gnu_runtime_abi_01_build_ivar_ref (location_t loc ATTRIBUTE_UNUSED, 
+gnu_runtime_abi_01_build_ivar_ref (location_t loc ATTRIBUTE_UNUSED,
 				   tree base, tree id)
 {
   return objc_build_component_ref (base, id);
@@ -807,29 +808,29 @@ gnu_runtime_abi_01_build_ivar_ref (location_t loc ATTRIBUTE_UNUSED,
    built for the sake of efficiency).  */
 
 static tree
-gnu_runtime_abi_01_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED, 
+gnu_runtime_abi_01_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
 					struct imp_entry *imp, bool inst_meth)
 {
   if (inst_meth)
     {
       if (!ucls_super_ref)
-	ucls_super_ref = 
-		objc_build_component_ref (imp->class_decl, 
+	ucls_super_ref =
+		objc_build_component_ref (imp->class_decl,
 					  get_identifier ("super_class"));
 	return ucls_super_ref;
     }
   else
     {
       if (!uucls_super_ref)
-	uucls_super_ref = 
-		objc_build_component_ref (imp->meta_decl, 
+	uucls_super_ref =
+		objc_build_component_ref (imp->meta_decl,
 					  get_identifier ("super_class"));
 	return uucls_super_ref;
     }
 }
 
 static tree
-gnu_runtime_abi_01_get_category_super_ref (location_t loc ATTRIBUTE_UNUSED, 
+gnu_runtime_abi_01_get_category_super_ref (location_t loc ATTRIBUTE_UNUSED,
 					   struct imp_entry *imp, bool inst_meth)
 {
   tree super_name = CLASS_SUPER_NAME (imp->imp_template);
@@ -886,7 +887,7 @@ objc_add_static_instance (tree constructor, tree class_decl)
   OBJCMETA (decl, objc_meta, meta_base);
 
   /* We may be writing something else just now.
-     Postpone till end of input. */ 
+     Postpone till end of input. */
   DECL_DEFER_OUTPUT (decl) = 1;
   pushdecl_top_level (decl);
   rest_of_decl_compilation (decl, 1, 0);
@@ -903,13 +904,13 @@ gnu_runtime_abi_01_build_const_string_constructor (location_t loc, tree string,
 {
   tree constructor, fields;
   VEC(constructor_elt,gc) *v = NULL;
-  
+
   /* GNU:    (NXConstantString *) & ((__builtin_ObjCString) { NULL, string, length })  */
   fields = TYPE_FIELDS (internal_const_str_type);
   CONSTRUCTOR_APPEND_ELT (v, fields, build_int_cst (NULL_TREE, 0));
 
   fields = DECL_CHAIN (fields);
-  CONSTRUCTOR_APPEND_ELT (v, fields, build_unary_op (loc, 
+  CONSTRUCTOR_APPEND_ELT (v, fields, build_unary_op (loc,
 						     ADDR_EXPR, string, 1));
 
   fields = DECL_CHAIN (fields);
@@ -948,7 +949,7 @@ build_module_initializer_routine (void)
 #else
   objc_start_function (get_identifier (TAG_GNUINIT),
 		       build_function_type_list (void_type_node, NULL_TREE),
-		       NULL_TREE, objc_get_parm_info (0));
+		       NULL_TREE, objc_get_parm_info (0, NULL_TREE));
 #endif
   body = c_begin_compound_stmt (true);
   add_stmt (build_function_call
@@ -1035,9 +1036,9 @@ handle_impent (struct imp_entry *impent)
       {
 	const char *const class_name =
 	  IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
-	
+
 	string = (char *) alloca (strlen (class_name) + 30);
-	
+
 	sprintf (string, "__objc_class_name_%s", class_name);
 	break;
       }
@@ -1047,10 +1048,10 @@ handle_impent (struct imp_entry *impent)
 	  IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context));
 	const char *const class_super_name =
 	  IDENTIFIER_POINTER (CLASS_SUPER_NAME (impent->imp_context));
-	
+
 	string = (char *) alloca (strlen (class_name)
 				  + strlen (class_super_name) + 30);
-	
+
 	/* Do the same for categories.  Even though no references to
 	   these symbols are generated automatically by the compiler,
 	   it gives you a handle to pull them into an archive by
@@ -1093,7 +1094,7 @@ build_protocol_initializer (tree type, tree protocol_name, tree protocol_list,
 
   /* TODO: pass the loc in or find it from args.  */
   loc = input_location;
-  ttyp = build_pointer_type (xref_tag (RECORD_TYPE, 
+  ttyp = build_pointer_type (xref_tag (RECORD_TYPE,
 				       get_identifier (UTAG_CLASS)));
   /* Filling the "isa" in with a version allows the runtime system to
      detect this ...   */
@@ -1171,15 +1172,15 @@ generate_protocol_list (tree i_or_p, tree klass_ctxt)
   switch (TREE_CODE (i_or_p))
     {
     case PROTOCOL_INTERFACE_TYPE:
-      snprintf (buf, BUFSIZE, "_OBJC_ProtocolRefs_%s", 
+      snprintf (buf, BUFSIZE, "_OBJC_ProtocolRefs_%s",
 		IDENTIFIER_POINTER (PROTOCOL_NAME (i_or_p)));
       break;
     case CLASS_INTERFACE_TYPE:
-      snprintf (buf, BUFSIZE, "_OBJC_ClassProtocols_%s", 
+      snprintf (buf, BUFSIZE, "_OBJC_ClassProtocols_%s",
 		IDENTIFIER_POINTER (CLASS_NAME (i_or_p)));
       break;
     case CATEGORY_INTERFACE_TYPE:
-      snprintf (buf, BUFSIZE, "_OBJC_CategoryProtocols_%s_%s", 
+      snprintf (buf, BUFSIZE, "_OBJC_CategoryProtocols_%s_%s",
 		IDENTIFIER_POINTER (CLASS_NAME (klass_ctxt)),
 		IDENTIFIER_POINTER (CLASS_SUPER_NAME (klass_ctxt)));
       break;
@@ -1197,7 +1198,7 @@ generate_protocol_list (tree i_or_p, tree klass_ctxt)
   return refs_decl;
 }
 
-static tree 
+static tree
 generate_v1_meth_descriptor_table (tree chain, tree protocol, const char *prefix)
 {
   tree method_list_template, initlist, decl;
@@ -1210,18 +1211,18 @@ generate_v1_meth_descriptor_table (tree chain, tree protocol, const char *prefix
 
   if (!objc_method_prototype_template)
     objc_method_prototype_template = build_method_prototype_template ();
-  
+
   size = list_length (chain);
-  method_list_template = 
+  method_list_template =
 	build_method_prototype_list_template (objc_method_prototype_template,
 					      size);
-  snprintf (buf, BUFSIZE, "%s_%s", prefix, 
+  snprintf (buf, BUFSIZE, "%s_%s", prefix,
 	    IDENTIFIER_POINTER (PROTOCOL_NAME (protocol)));
 
   decl = start_var_decl (method_list_template, buf);
 
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, size));
-  initlist = 
+  initlist =
 	build_descriptor_table_initializer (objc_method_prototype_template,
 					    chain);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, initlist);
@@ -1300,7 +1301,7 @@ generate_protocols (void)
 	  nst_methods = DECL_CHAIN (nst_methods);
 	}
 
-      UOBJC_INSTANCE_METHODS_decl = 
+      UOBJC_INSTANCE_METHODS_decl =
 	generate_v1_meth_descriptor_table (PROTOCOL_NST_METHODS (p), p,
 					   "_OBJC_PROTOCOL_INSTANCE_METHODS");
 
@@ -1315,7 +1316,7 @@ generate_protocols (void)
 	  cls_methods = DECL_CHAIN (cls_methods);
 	}
 
-      UOBJC_CLASS_METHODS_decl = 
+      UOBJC_CLASS_METHODS_decl =
 	generate_v1_meth_descriptor_table (PROTOCOL_CLS_METHODS (p), p,
 					   "_OBJC_PROTOCOL_CLASS_METHODS");
 /*      generate_method_descriptors (p);*/
@@ -1363,7 +1364,7 @@ generate_dispatch_table (tree chain, const char *name)
   decl = start_var_decl (method_list_template, name);
 
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, integer_zero_node);
-  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, 
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			  build_int_cst (integer_type_node, size));
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, initlist);
 
@@ -1515,24 +1516,24 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
 
   /* objc_ivar_list = */
   if (!ivar_list)
-    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, 
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			    build_int_cst (objc_ivar_list_ptr, 0));
   else
     {
       expr = convert (objc_ivar_list_ptr,
-		      build_unary_op (input_location, ADDR_EXPR, 
+		      build_unary_op (input_location, ADDR_EXPR,
 				      ivar_list, 0));
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, expr);
     }
 
   /* objc_method_list = */
   if (!dispatch_table)
-    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, 
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			   convert (objc_method_list_ptr, null_pointer_node));
   else
     {
       expr = convert (objc_method_list_ptr,
-		      build_unary_op (input_location, ADDR_EXPR, 
+		      build_unary_op (input_location, ADDR_EXPR,
 				      dispatch_table, 0));
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, expr);
     }
@@ -1564,7 +1565,7 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
   else
     {
       expr = convert (ltyp,
-		      build_unary_op (input_location, ADDR_EXPR, 
+		      build_unary_op (input_location, ADDR_EXPR,
 				      protocol_list, 0));
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, expr);
     }
@@ -1627,14 +1628,14 @@ generate_class_structures (struct imp_entry *impent)
   location_t loc;
   char buf[BUFSIZE];
   int cls_flags = 0 ;
-  
+
 /*  objc_implementation_context = impent->imp_context;
   implementation_template = impent->imp_template;*/
   class_decl = impent->class_decl;
   meta_decl = impent->meta_decl;
 /*  UOBJC_CLASS_decl = impent->class_decl;
   UOBJC_METACLASS_decl = impent->meta_decl;*/
-  
+
   loc = DECL_SOURCE_LOCATION (impent->class_decl);
 
   my_super_id = CLASS_SUPER_NAME (impent->imp_template);
@@ -1670,7 +1671,7 @@ generate_class_structures (struct imp_entry *impent)
     super_expr = add_objc_string (my_super_id, class_names);
   else
     super_expr = null_pointer_node;
-    
+
   super_expr = build_c_cast (loc, cast_type, super_expr);
 
   root_expr = add_objc_string (my_root_id, class_names);
@@ -1703,11 +1704,11 @@ generate_class_structures (struct imp_entry *impent)
 
   /* static struct objc_class _OBJC_METACLASS_Foo = { ... }; */
 
-  initlist = 
-	build_shared_structure_initializer 
+  initlist =
+	build_shared_structure_initializer
 			(TREE_TYPE (meta_decl),
 			root_expr, super_expr, name_expr,
-			convert (integer_type_node, 
+			convert (integer_type_node,
 				TYPE_SIZE_UNIT (objc_class_template)),
 			CLS_META, class_methods, class_ivars,
 			protocol_decl);
@@ -1731,8 +1732,8 @@ generate_class_structures (struct imp_entry *impent)
       inst_ivars = generate_ivars_list (chain, buf);
     }
 
-  initlist = 
-	build_shared_structure_initializer 
+  initlist =
+	build_shared_structure_initializer
 		(TREE_TYPE (class_decl),
 		build_unary_op (loc, ADDR_EXPR, meta_decl, 0),
 		super_expr, name_expr,
@@ -1777,7 +1778,7 @@ handle_class_ref (tree chain)
   DECL_READ_P (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_INITIAL (decl) = error_mark_node;
- 
+
   /* We must force the reference.  */
   DECL_PRESERVE_P (decl) = 1;
 
@@ -1831,7 +1832,7 @@ build_gnu_selector_translation_table (void)
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, expr);
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, encoding);
       expr = objc_build_constructor (objc_selector_template, v);
-      
+
       CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE, expr);
     } /* each element in the chain */
 
@@ -1880,7 +1881,7 @@ generate_static_references (void)
       klass = TREE_VALUE (cl_chain);
       class_name = get_objc_string_decl (OBJC_TYPE_NAME (klass), class_names);
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-			      build_unary_op (input_location, 
+			      build_unary_op (input_location,
 					      ADDR_EXPR, class_name, 1));
 
       /* Output {..., instance, ...}.  */
@@ -2019,7 +2020,7 @@ init_objc_symtab (tree type)
 
   ltyp = build_pointer_type (objc_selector_type);
   if (sel_ref_chain)
-    expr = convert (ltyp, build_unary_op (loc, ADDR_EXPR, 
+    expr = convert (ltyp, build_unary_op (loc, ADDR_EXPR,
 					  UOBJC_SELECTOR_TABLE_decl, 1));
   else
     expr = convert (ltyp, null_pointer_node);
@@ -2027,12 +2028,12 @@ init_objc_symtab (tree type)
 
   /* cls_def_cnt = { ..., 5, ... } */
 
-  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, 
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			  build_int_cst (short_integer_type_node, imp_count));
 
   /* cat_def_cnt = { ..., 5, ... } */
 
-  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, 
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			  build_int_cst (short_integer_type_node, cat_count));
 
   /* cls_def = { ..., { &Foo, &Bar, ...}, ... } */
@@ -2110,7 +2111,7 @@ objc_generate_v1_gnu_metadata (void)
     {
       /* Make sure that the meta-data are identified as being
 	 GNU-runtime.  */
-      build_module_descriptor (OBJC_VERSION, 
+      build_module_descriptor (OBJC_VERSION,
 			       build_tree_list (objc_meta, meta_base));
       build_module_initializer_routine ();
     }
@@ -2156,7 +2157,7 @@ objc_eh_runtime_type (tree type)
   if (POINTER_TYPE_P (type) && objc_is_object_id (TREE_TYPE (type)))
     /* We don't want to identify 'id' for GNU. Instead, build a 0
        entry in the exceptions table.  */
-    return null_pointer_node; 
+    return null_pointer_node;
 
   if (!POINTER_TYPE_P (type) || !TYPED_OBJECT (TREE_TYPE (type)))
     {
@@ -2229,7 +2230,7 @@ objc_build_exc_ptr (struct objc_try_context **x ATTRIBUTE_UNUSED)
   return fold_convert (objc_object_type, t);
 }
 
-static tree 
+static tree
 begin_catch (struct objc_try_context **cur_try_context, tree type,
 	     tree decl, tree compound, bool ellipsis ATTRIBUTE_UNUSED)
 {
@@ -2248,13 +2249,13 @@ begin_catch (struct objc_try_context **cur_try_context, tree type,
   return build2 (MODIFY_EXPR, void_type_node, decl, t);
 }
 
-static void 
+static void
 finish_catch (struct objc_try_context **cur_try_context, tree current_catch)
 {
   append_to_statement_list (current_catch, &((*cur_try_context)->catch_list));
 }
 
-static tree 
+static tree
 finish_try_stmt (struct objc_try_context **cur_try_context)
 {
   struct objc_try_context *c = *cur_try_context;

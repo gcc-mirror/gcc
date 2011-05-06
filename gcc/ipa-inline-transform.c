@@ -49,12 +49,11 @@ along with GCC; see the file COPYING3.  If not see
 int ncalls_inlined;
 int nfunctions_inlined;
 
-/* Scale frequency of NODE edges by FREQ_SCALE and increase loop nest
-   by NEST.  */
+/* Scale frequency of NODE edges by FREQ_SCALE.  */
 
 static void
 update_noncloned_frequencies (struct cgraph_node *node,
-			      int freq_scale, int nest)
+			      int freq_scale)
 {
   struct cgraph_edge *e;
 
@@ -63,12 +62,17 @@ update_noncloned_frequencies (struct cgraph_node *node,
     freq_scale = 1;
   for (e = node->callees; e; e = e->next_callee)
     {
-      e->loop_nest += nest;
       e->frequency = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
       if (e->frequency > CGRAPH_FREQ_MAX)
         e->frequency = CGRAPH_FREQ_MAX;
       if (!e->inline_failed)
-        update_noncloned_frequencies (e->callee, freq_scale, nest);
+        update_noncloned_frequencies (e->callee, freq_scale);
+    }
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    {
+      e->frequency = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
+      if (e->frequency > CGRAPH_FREQ_MAX)
+        e->frequency = CGRAPH_FREQ_MAX;
     }
 }
 
@@ -83,9 +87,6 @@ void
 clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 		     bool update_original, int *overall_size)
 {
-  HOST_WIDE_INT peak;
-  struct inline_summary *caller_info, *callee_info;
-
   if (duplicate)
     {
       /* We may eliminate the need for out-of-line copy to be output.
@@ -125,34 +126,22 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    }
 	  duplicate = false;
 	  e->callee->local.externally_visible = false;
-          update_noncloned_frequencies (e->callee, e->frequency, e->loop_nest);
+          update_noncloned_frequencies (e->callee, e->frequency);
 	}
       else
 	{
 	  struct cgraph_node *n;
 	  n = cgraph_clone_node (e->callee, e->callee->decl,
-				 e->count, e->frequency, e->loop_nest,
+				 e->count, e->frequency,
 				 update_original, NULL);
 	  cgraph_redirect_edge_callee (e, n);
 	}
     }
 
-  callee_info = inline_summary (e->callee);
-  caller_info = inline_summary (e->caller);
-
   if (e->caller->global.inlined_to)
     e->callee->global.inlined_to = e->caller->global.inlined_to;
   else
     e->callee->global.inlined_to = e->caller;
-  callee_info->stack_frame_offset
-    = caller_info->stack_frame_offset
-      + caller_info->estimated_self_stack_size;
-  peak = callee_info->stack_frame_offset
-      + callee_info->estimated_self_stack_size;
-  if (inline_summary (e->callee->global.inlined_to)->estimated_stack_size
-      < peak)
-    inline_summary (e->callee->global.inlined_to)->estimated_stack_size = peak;
-  cgraph_propagate_frequency (e->callee);
 
   /* Recursively clone all bodies.  */
   for (e = e->callee->callees; e; e = e->next_callee)
@@ -187,13 +176,14 @@ inline_call (struct cgraph_edge *e, bool update_original,
   to = e->caller;
   if (to->global.inlined_to)
     to = to->global.inlined_to;
-  old_size = inline_summary (to)->size;
-  inline_merge_summary (e);
-  new_size = inline_summary (to)->size;
 
   clone_inlined_nodes (e, true, update_original, overall_size);
 
   gcc_assert (curr->callee->global.inlined_to == to);
+
+  old_size = inline_summary (to)->size;
+  inline_merge_summary (e);
+  new_size = inline_summary (to)->size;
   if (overall_size && new_size > old_size)
     *overall_size += new_size - old_size;
   ncalls_inlined++;
@@ -307,7 +297,7 @@ inline_transform (struct cgraph_node *node)
 
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */
-  if (cgraph_preserve_function_body_p (node->decl))
+  if (cgraph_preserve_function_body_p (node))
     save_inline_function_body (node);
 
   for (e = node->callees; e; e = e->next_callee)

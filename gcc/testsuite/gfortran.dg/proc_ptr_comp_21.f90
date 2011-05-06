@@ -19,7 +19,7 @@
 
 contains
 
-  elemental subroutine op_assign (str, ch)
+  elemental subroutine op_assign (str, ch) ! { dg-warning "Extension: Internal procedure" }
     type(nf_t), intent(out) :: str
     character(len=*), intent(in) :: ch
   end subroutine

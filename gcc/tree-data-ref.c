@@ -123,7 +123,7 @@ tree_fold_divides_p (const_tree a, const_tree b)
 {
   gcc_assert (TREE_CODE (a) == INTEGER_CST);
   gcc_assert (TREE_CODE (b) == INTEGER_CST);
-  return integer_zerop (int_const_binop (TRUNC_MOD_EXPR, b, a, 0));
+  return integer_zerop (int_const_binop (TRUNC_MOD_EXPR, b, a));
 }
 
 /* Returns true iff A divides B.  */

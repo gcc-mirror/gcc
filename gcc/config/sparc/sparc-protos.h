@@ -75,7 +75,6 @@ extern const char *output_v9branch (rtx, rtx, int, int, int, int, rtx);
 extern const char *output_probe_stack_range (rtx, rtx);
 extern bool emit_scc_insn (rtx []);
 extern void emit_conditional_branch_insn (rtx []);
-extern void print_operand (FILE *, rtx, int);
 extern int mems_ok_for_ldd_peep (rtx, rtx, rtx);
 extern int arith_double_4096_operand (rtx, enum machine_mode);
 extern int arith_4096_operand (rtx, enum machine_mode);

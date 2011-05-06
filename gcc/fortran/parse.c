@@ -3135,6 +3135,7 @@ gfc_namespace*
 gfc_build_block_ns (gfc_namespace *parent_ns)
 {
   gfc_namespace* my_ns;
+  static int numblock = 1;
 
   my_ns = gfc_get_namespace (parent_ns, 1);
   my_ns->construct_entities = 1;
@@ -3149,8 +3150,10 @@ gfc_build_block_ns (gfc_namespace *parent_ns)
   else
     {
       gfc_try t;
+      char buffer[20];  /* Enough to hold "block@2147483648\n".  */
 
-      gfc_get_symbol ("block@", my_ns, &my_ns->proc_name);
+      snprintf(buffer, sizeof(buffer), "block@%d", numblock++);
+      gfc_get_symbol (buffer, my_ns, &my_ns->proc_name);
       t = gfc_add_flavor (&my_ns->proc_name->attr, FL_LABEL,
 			  my_ns->proc_name->name, NULL);
       gcc_assert (t == SUCCESS);

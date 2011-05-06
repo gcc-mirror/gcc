@@ -42,15 +42,15 @@ program main
   if (trim(adjustl(str)) .ne. 'NaN') call abort
 
   write(str,*) z
-  if (trim(adjustl(str)) .ne. '(            NaN,            NaN)') call abort
+  if (trim(adjustl(str)) .ne. '(             NaN,             NaN)') call abort
 
   write(str,*) z2
-  if (trim(adjustl(str)) .ne. '(            NaN,            NaN)') call abort
+  if (trim(adjustl(str)) .ne. '(             NaN,             NaN)') call abort
 
   write(str,*) z3
-  if (trim(adjustl(str)) .ne. '(       Infinity,      -Infinity)') call abort
+  if (trim(adjustl(str)) .ne. '(        Infinity,       -Infinity)') call abort
 
   write(str,*) z4
-  if (trim(adjustl(str)) .ne. '(  0.0000000    , -0.0000000    )') call abort
+  if (trim(adjustl(str)) .ne. '(  0.00000000    , -0.00000000    )') call abort
 
 end program main

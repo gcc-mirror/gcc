@@ -1,3 +1,183 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans-decl.c (gfc_trans_entry_master_switch): Call build_case_label.
+	* trans-io.c (add_case): Likewise.
+	* trans-stmt.c (gfc_trans_integer_select): Likewise.
+	(gfc_trans_character_select): Likewise.
+
+2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-decl.c (trans_function_start): Do not set
+	dont_save_pending_sizes_p.
+
+2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans.h (gfc_chainon_list): Delete.
+	* trans.c (gfc_chainon_list): Delete.
+
+2011-05-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48864
+	* invoke.texi (fno-protect-parens): Document
+	that -Ofast implies -fno-protect-parens.
+	* options.c (gfc_init_options, gfc_post_options):
+	Make -Ofast imply -fno-protect-parens.
+
+2011-05-04  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans-decl.c (build_library_function_decl_1): Call
+	build_function_type_vec.  Adjust argument list building accordingly.
+	* trans-intrinsic.c (gfc_get_intrinsic_lib_fndecl): Likewise.
+	* trans-types.c (gfc_get_function_type): Likewise.
+
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* trans-array.c (gfc_trans_array_constructor_value): Use
+	size_int for bounds of range types.
+	(gfc_trans_array_constructor_value): Use size_type_node
+	for memcpy argument.
+	* trans-common.c (build_field): Use gfc_charlen_type_node
+	for lengths.
+	* trans-openmp.c (gfc_trans_omp_clauses): Do not pass NULL
+	as type to build_int_cst.
+	* trans-const.c (gfc_build_string_const): Use size_int
+	for bounds of range types.
+	(gfc_build_wide_string_const): Likewise.
+	* trans-stmt.c (gfc_trans_label_assign): Use gfc_charlen_type_node
+	for lengths.
+	(gfc_trans_character_select): Likewise.
+	(gfc_trans_character_select): Do not pass NULL
+	as type to build_int_cst.
+	(gfc_trans_character_select): Use size_int for bounds of range types.
+	* trans-io.c (gfc_build_io_library_fndecls): Likewise.
+	(add_case): Do not pass NULL as type to build_int_cst.
+	(transfer_expr): Likewise.
+	(transfer_array_desc): Likewise.
+	* trans-decl.c (gfc_add_assign_aux_vars): Use gfc_charlen_type_node
+	for lengths.
+	(gfc_trans_assign_aux_var): Likewise.
+	(create_main_function): Use size_int for bounds of range types.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax_char): Do not pass
+	NULL as type to build_int_cst.
+	(gfc_conv_intrinsic_spacing): Likewise.
+	(gfc_conv_intrinsic_rrspacing): Likewise.
+	(gfc_conv_intrinsic_len): Use gfc_charlen_type_node for lengths.
+
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* trans-types.c (gfc_get_array_type_bounds): Remove zero notrunc
+	argument to int_const_binop.
+
+2011-05-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-intrinsic.c (trans_this_image): Implement version with
+	coarray argument.
+	(conv_intrinsic_cobound): Simplify code.
+	(gfc_conv_intrinsic_function): Call trans_this_image for
+	this_image(coarray) except for -fcoarray=single.
+
+2011-05-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/48720
+	* gfortran.texi: Document the 'Q' exponent-letter extension.
+	* invoke.texi: Document -Wreal-q-constant.
+	* lang.opt: Add -Wreal-q-constant option.
+	* gfortran.h: Add warn_real_q_constant to option struct.
+	* primary.c (match_real_constant):  Use it.  Accept 'Q' as
+	exponent-letter for REAL(16) real-literal-constant with a
+	fallback to REAL(10) or error if REAL(10) is not available.
+	* options.c (gfc_init_options, set_Wall) Set it.
+	(gfc_handle_option): Handle new option.
+
+2011-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-prase-tree.c (show_code_node):  Set the current
+	namespace to the BLOCK before displaying it; restore
+	afterwards.
+
+2011-04-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48821
+	* decl.c (gfc_match_import): Don't try to find the
+	symbol if already found.
+
+2011-04-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48746
+	* trans-expr.c (fcncall_realloc_result): Set the bounds and the
+	offset so that the lbounds are one.
+	(gfc_trans_arrayfunc_assign): Add rank to arguments of above.
+
+2011-04-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/48462
+	* trans-expr.c (arrayfunc_assign_needs_temporary): Deal with
+	automatic reallocation when the lhs is a target.
+
+	PR fortran/48746
+	* trans-expr.c (fcncall_realloc_result): Make sure that the
+	result dtype field is set before the function call.
+
+2011-04-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48810
+	* resolve.c (resolve_typebound_generic_call): Don't check access
+	flags of the specific function.
+
+	PR fortran/48800
+	* resolve.c (resolve_formal_arglist): Don't change AS_DEFERRED
+	to AS_ASSUMED_SHAPE for function results.
+	(resolve_fl_var_and_proc): Print also for function results with
+	AS_DEFERRED an error, if they are not a pointer or allocatable.
+	(resolve_types): Make sure arguments of procedures in interface
+	blocks are resolved.
+
+2011-04-29  Michael Matz  <matz@suse.de>
+
+	* options.c (options.c): Set warn_maybe_uninitialized.
+
+2011-04-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48112
+	* resolve.c (resolve_fl_var_and_proc): Print diagnostic of
+	function results only once.
+	(resolve_symbol): Always resolve function results.
+
+	PR fortran/48279
+	* expr.c (gfc_check_vardef_context): Fix handling of generic
+	EXPR_FUNCTION.
+	* interface.c (check_interface0): Reject internal functions
+	in generic interfaces, unless -std=gnu.
+
+2011-04-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48788
+	* resolve.c (resolve_global_procedure): Error recovery -
+	avoid segfault for (non)character-returning functions.
+
+2011-04-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* decl.c (gfc_match_end):  Check that the block name starts
+	with "block@".
+	* parse.c (gfc_build_block_ns):  Make block names unique by
+	numbering them.
+
+2011-04-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (inserted_block):  New variable.
+	(changed_statement):  Likewise.
+	(create_var):  Encase statement to be operated on in a BLOCK.
+	Adjust code insertion for BLOCK.
+	(cfe_code):  Set inserted_block and changed_statement to NULL.
+
+2011-04-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* module.c (mio_array_spec): Set as->cotype on reading.
+	* resolve.c (resolve_allocate_expr): Fix allocating coarray
+	components.
+
 2011-04-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48405

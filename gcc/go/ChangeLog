@@ -1,3 +1,51 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* go-gcc.cc (Gcc_backend::switch_statement): Call build_case_label.
+
+2011-05-04  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::struct_type): Call fill_in_struct.
+	(Gcc_backend::fill_in_struct): New function.
+	(Gcc_backend::array_type): Implement.
+	(Gcc_backend::fill_in_array): New function.
+	(Gcc_backend::placeholder_pointer_type): New function.
+	(Gcc_backend::set_placeholder_pointer_type): New function.
+	(Gcc_backend::set_placeholder_function_type): New function.
+	(Gcc_backend::placeholder_struct_type): New function.
+	(Gcc_backend::set_placeholder_struct_type): New function.
+	(Gcc_backend::placeholder_array_type): New function.
+	(Gcc_backend::set_placeholder_array_type): New function.
+	(Gcc_backend::named_type): New function.
+	(Gcc_backend::circular_pointer_type): New function.
+	(Gcc_backend::is_circular_pointer_type): New function.
+
+2011-04-26  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::struct_type): Implement.
+
+2011-04-25  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::error_type): Implement.
+	(Gcc_backend::string_type): Remove.
+	(Gcc_backend::function_type): Change signature and implement.
+	(Gcc_backend::struct_type): Change signature.
+	(Gcc_backend::slice_type, Gcc_backend::map_type): Remove.
+	(Gcc_backend::channel_type, Gcc_backend::interface_type): Remove.
+	(Gcc_backend::pointer_type): Check for error.
+	* Make-lang.in (go/types.o): Depend on go/gofrontend/backend.h.
+
+2011-04-25  Evan Shaw  <edsrzf@gmail.com>
+
+	* go-gcc.c (class Gcc_tree): Make get_tree const.
+	(Gcc_backend::void_type): Implement.
+	(Gcc_backend::bool_type): Implement.
+	(Gcc_backend::integer_type): Implement.
+	(Gcc_backend::float_type): Implement.
+	(Gcc_backend::complex_type): New function.
+	(Gcc_backend::pointer_type): New function.
+	(Gcc_backend::make_type): New function.
+	(type_to_tree): New function.
+
 2011-04-21  Ian Lance Taylor  <iant@google.com>
 
 	* go-system.h (go_assert, go_unreachable): Define.

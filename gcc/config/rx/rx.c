@@ -78,7 +78,8 @@ rx_small_data_operand (rtx op)
 }
 
 static bool
-rx_is_legitimate_address (Mmode mode, rtx x, bool strict ATTRIBUTE_UNUSED)
+rx_is_legitimate_address (enum machine_mode mode, rtx x,
+			  bool strict ATTRIBUTE_UNUSED)
 {
   if (RTX_OK_FOR_BASE (x, strict))
     /* Register Indirect.  */
@@ -809,7 +810,7 @@ rx_round_up (unsigned int value, unsigned int alignment)
    occupied by an argument of type TYPE and mode MODE.  */
 
 static unsigned int
-rx_function_arg_size (Mmode mode, const_tree type)
+rx_function_arg_size (enum machine_mode mode, const_tree type)
 {
   unsigned int num_bytes;
 
@@ -829,7 +830,8 @@ rx_function_arg_size (Mmode mode, const_tree type)
    variable parameter list.  */
 
 static rtx
-rx_function_arg (Fargs * cum, Mmode mode, const_tree type, bool named)
+rx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+		 const_tree type, bool named)
 {
   unsigned int next_reg;
   unsigned int bytes_so_far = *cum;
@@ -866,14 +868,14 @@ rx_function_arg (Fargs * cum, Mmode mode, const_tree type, bool named)
 }
 
 static void
-rx_function_arg_advance (Fargs * cum, Mmode mode, const_tree type,
-			 bool named ATTRIBUTE_UNUSED)
+rx_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   *cum += rx_function_arg_size (mode, type);
 }
 
 static unsigned int
-rx_function_arg_boundary (Mmode mode ATTRIBUTE_UNUSED,
+rx_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type ATTRIBUTE_UNUSED)
 {
   return 32;
@@ -1565,7 +1567,7 @@ gen_rx_rtsd_vector (unsigned int adjust, unsigned int low, unsigned int high)
 				: plus_constant (stack_pointer_rtx,
 						 i * UNITS_PER_WORD)));
 
-  XVECEXP (vector, 0, count - 1) = gen_rtx_RETURN (VOIDmode);
+  XVECEXP (vector, 0, count - 1) = ret_rtx;
 
   return vector;
 }

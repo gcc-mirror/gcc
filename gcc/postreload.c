@@ -233,7 +233,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
   int did_change = 0;
   int dreg;
   rtx src;
-  enum reg_class dclass;
+  reg_class_t dclass;
   int old_cost;
   cselib_val *val;
   struct elt_loc_list *l;

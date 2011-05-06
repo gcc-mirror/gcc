@@ -201,7 +201,7 @@ Dataflow::Compare_vars::operator()(const Named_object* no1,
 
   // We can't have two variables with the same name in the same
   // location.
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Class Dataflow.

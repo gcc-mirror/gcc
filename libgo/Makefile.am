@@ -825,9 +825,13 @@ go_sync_files = \
 	go/sync/waitgroup.go
 
 if LIBGO_IS_SOLARIS
-go_syslog_file = go/syslog/syslog_solaris.go
+go_syslog_file = go/syslog/syslog_libc.go
+else
+if LIBGO_IS_IRIX
+go_syslog_file = go/syslog/syslog_libc.go
 else
 go_syslog_file = go/syslog/syslog_unix.go
+endif
 endif
 
 go_syslog_files = \
@@ -1300,7 +1304,11 @@ else
 if LIBGO_IS_SOLARIS
 syscall_socket_os_file = syscalls/socket_solaris.go
 else
+if LIBGO_IS_IRIX
+syscall_socket_os_file = syscalls/socket_irix.go
+else
 syscall_socket_os_file = syscalls/socket_bsd.go
+endif
 endif
 endif
 

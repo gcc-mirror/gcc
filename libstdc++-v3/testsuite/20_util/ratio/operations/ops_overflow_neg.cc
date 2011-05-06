@@ -39,7 +39,7 @@ test02()
 // { dg-error "instantiated from here" "" { target *-*-* } 29 }
 // { dg-error "instantiated from here" "" { target *-*-* } 35 }
 // { dg-error "instantiated from here" "" { target *-*-* } 36 }
-// { dg-error "overflow in addition" "" { target *-*-* } 132 }
+// { dg-error "overflow in addition" "" { target *-*-* } 432 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 104 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 100 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 102 }

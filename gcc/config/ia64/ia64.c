@@ -5347,12 +5347,9 @@ ia64_rtx_costs (rtx x, int code, int outer_code, int *total,
    one in class TO, using MODE.  */
 
 static int
-ia64_register_move_cost (enum machine_mode mode, reg_class_t from_i,
-			 reg_class_t to_i)
+ia64_register_move_cost (enum machine_mode mode, reg_class_t from,
+			 reg_class_t to)
 {
-  enum reg_class from = (enum reg_class) from_i;
-  enum reg_class to = (enum reg_class) to_i;
-
   /* ADDL_REGS is the same as GR_REGS for movement purposes.  */
   if (to == ADDL_REGS)
     to = GR_REGS;
@@ -5363,7 +5360,7 @@ ia64_register_move_cost (enum machine_mode mode, reg_class_t from_i,
      lower number class as the destination.  */
   if (from < to)
     {
-      enum reg_class tmp = to;
+      reg_class_t tmp = to;
       to = from, from = tmp;
     }
 

@@ -45,7 +45,7 @@
 @end ifset
 
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 
+@c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
 @c 2010, 2011 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -461,7 +461,7 @@ included in releases.
 
 @item @TeX{} (any working version)
 
-Necessary for running @command{texi2dvi} and @command{texi2pdf}, which 
+Necessary for running @command{texi2dvi} and @command{texi2pdf}, which
 are used when running @command{make dvi} or @command{make pdf} to create
 DVI or PDF files, respectively.
 
@@ -1214,7 +1214,7 @@ On MIPS targets, make @option{-mno-llsc} the default when no
 On MIPS targets, make @option{-msynci} the default when no
 @option{-mno-synci} option is passed.
 
-@item --without-synci 
+@item --without-synci
 On MIPS targets, make @option{-mno-synci} the default when no
 @option{-msynci} option is passed.  This is the default.
 
@@ -1711,7 +1711,7 @@ the directory specified with @option{--with-sysroot}.  This option is
 only useful when you are already using @option{--with-sysroot}.  You
 can use @option{--with-build-sysroot} when you are configuring with
 @option{--prefix} set to a directory that is different from the one in
-which you are installing GCC and your target libraries.  
+which you are installing GCC and your target libraries.
 
 This option affects the system root for the compiler used to build
 target libraries (which runs on the build system); it does not affect
@@ -1903,8 +1903,8 @@ Note that if --enable-java-home is used, --with-arch-directory=ARCH must also
 be specified.
 
 @item --with-arch-directory=ARCH
-Specifies the name to use for the @file{jre/lib/ARCH} directory in the SDK 
-environment created when --enable-java-home is passed. Typical names for this 
+Specifies the name to use for the @file{jre/lib/ARCH} directory in the SDK
+environment created when --enable-java-home is passed. Typical names for this
 directory include i386, amd64, ia64, etc.
 
 @item --with-os-directory=DIR
@@ -1916,7 +1916,7 @@ Specifies the JPackage origin name. This defaults to the 'gcj' in
 java-1.5.0-gcj.
 
 @item --with-arch-suffix=SUFFIX
-Specifies the suffix for the sdk directory. Defaults to the empty string. 
+Specifies the suffix for the sdk directory. Defaults to the empty string.
 Examples include '.x86_64' in 'java-1.5.0-gcj-1.5.0.0.x86_64'.
 
 @item --with-jvm-root-dir=DIR
@@ -1928,7 +1928,7 @@ Specifies where to install jars. Default is $(prefix)/lib/jvm-exports.
 @item --with-python-dir=DIR
 Specifies where to install the Python modules used for aot-compile. DIR should
 not include the prefix used in installation. For example, if the Python modules
-are to be installed in /usr/lib/python2.5/site-packages, then 
+are to be installed in /usr/lib/python2.5/site-packages, then
 --with-python-dir=/lib/python2.5/site-packages should be passed. If this is
 not specified, then the Python modules are installed in $(prefix)/share/python.
 
@@ -2344,7 +2344,7 @@ compilation options.  Check your target's definition of
 
 GNU Make 3.80 and above, which is necessary to build GCC, support
 building in parallel.  To activate this, you can use @samp{make -j 2}
-instead of @samp{make}.  You can also specify a bigger number, and 
+instead of @samp{make}.  You can also specify a bigger number, and
 in most cases using a value greater than the number of processors in
 your machine will result in fewer and shorter I/O latency hits, thus
 improving overall throughput; this is especially true for slow drives
@@ -3104,6 +3104,10 @@ As of GNU binutils 2.21, neither GNU @command{as} nor GNU @command{ld}
 are supported on Tru64 UNIX, so you must not configure GCC with
 @option{--with-gnu-as} or @option{--with-gnu-ld}.
 
+Cross-compilers for the Tru64 UNIX target currently do not work because
+the auxiliary programs @command{mips-tdump} and @command{mips-tfile} can't
+be compiled on anything but Tru64 UNIX.
+
 GCC writes a @samp{.verstamp} directive to the assembler output file
 unless it is built as a cross-compiler.  It gets the version to use from
 the system header file @file{/usr/include/stamp.h}.  If you install a
@@ -3845,12 +3849,6 @@ the use of break, use the @option{--with-divide=breaks}
 @command{configure} option when configuring GCC@.  The default is to
 use traps on systems that support them.
 
-Cross-compilers for the MIPS as target using the MIPS assembler
-currently do not work, because the auxiliary programs
-@file{mips-tdump.c} and @file{mips-tfile.c} can't be compiled on
-anything but a MIPS@.  It does work to cross compile for a MIPS
-if you use the GNU assembler and linker.
-
 The assembler from GNU binutils 2.17 and earlier has a bug in the way
 it sorts relocations for REL targets (o32, o64, EABI).  This can cause
 bad code to be generated for simple C++ programs.  Also the linker
@@ -4413,27 +4411,27 @@ respects, this target is the same as the
 @heading @anchor{windows}Microsoft Windows
 
 @subheading Intel 16-bit versions
-The 16-bit versions of Microsoft Windows, such as Windows 3.1, are not 
+The 16-bit versions of Microsoft Windows, such as Windows 3.1, are not
 supported.
 
-However, the 32-bit port has limited support for Microsoft 
+However, the 32-bit port has limited support for Microsoft
 Windows 3.11 in the Win32s environment, as a target only.  See below.
 
 @subheading Intel 32-bit versions
 
-The 32-bit versions of Windows, including Windows 95, Windows NT, Windows 
-XP, and Windows Vista, are supported by several different target 
-platforms.  These targets differ in which Windows subsystem they target 
+The 32-bit versions of Windows, including Windows 95, Windows NT, Windows
+XP, and Windows Vista, are supported by several different target
+platforms.  These targets differ in which Windows subsystem they target
 and which C libraries are used.
 
 @itemize
-@item Cygwin @uref{#x-x-cygwin,,*-*-cygwin}: Cygwin provides a user-space 
+@item Cygwin @uref{#x-x-cygwin,,*-*-cygwin}: Cygwin provides a user-space
 Linux API emulation layer in the Win32 subsystem.
-@item Interix @uref{#x-x-interix,,*-*-interix}: The Interix subsystem 
+@item Interix @uref{#x-x-interix,,*-*-interix}: The Interix subsystem
 provides native support for POSIX.
-@item MinGW @uref{#x-x-mingw32,,*-*-mingw32}: MinGW is a native GCC port for 
+@item MinGW @uref{#x-x-mingw32,,*-*-mingw32}: MinGW is a native GCC port for
 the Win32 subsystem that provides a subset of POSIX.
-@item MKS i386-pc-mks: NuTCracker from MKS.  See 
+@item MKS i386-pc-mks: NuTCracker from MKS.  See
 @uref{http://www.mkssoftware.com/} for more information.
 @end itemize
 
@@ -4447,19 +4445,19 @@ Presently Windows for Itanium is not supported.
 
 @subheading Windows CE
 
-Windows CE is supported as a target only on ARM (arm-wince-pe), Hitachi 
+Windows CE is supported as a target only on ARM (arm-wince-pe), Hitachi
 SuperH (sh-wince-pe), and MIPS (mips-wince-pe).
 
 @subheading Other Windows Platforms
 
 GCC no longer supports Windows NT on the Alpha or PowerPC.
 
-GCC no longer supports the Windows POSIX subsystem.  However, it does 
+GCC no longer supports the Windows POSIX subsystem.  However, it does
 support the Interix subsystem.  See above.
 
 Old target names including *-*-winnt and *-*-windowsnt are no longer used.
 
-PW32 (i386-pc-pw32) support was never completed, and the project seems to 
+PW32 (i386-pc-pw32) support was never completed, and the project seems to
 be inactive.  See @uref{http://pw32.sourceforge.net/} for more information.
 
 UWIN support has been removed due to a lack of maintenance.
@@ -4486,9 +4484,9 @@ or version 2.20 or above if building your own.
 @end html
 @heading @anchor{x-x-interix}*-*-interix
 
-The Interix target is used by OpenNT, Interix, Services For UNIX (SFU), 
-and Subsystem for UNIX-based Applications (SUA).  Applications compiled 
-with this target run in the Interix subsystem, which is separate from 
+The Interix target is used by OpenNT, Interix, Services For UNIX (SFU),
+and Subsystem for UNIX-based Applications (SUA).  Applications compiled
+with this target run in the Interix subsystem, which is separate from
 the Win32 subsystem.  This target was last known to work in GCC 3.3.
 
 @html

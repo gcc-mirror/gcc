@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -124,7 +124,7 @@ namespace __gnu_parallel
 	  __borders = new _DifferenceType[__num_threads + 2];
 
 	  if (__s.partial_sum_dilation == 1.0f)
-	    equally_split(__n, __num_threads + 1, __borders);
+	    __equally_split(__n, __num_threads + 1, __borders);
 	  else
 	    {
 	      _DifferenceType __first_part_length =
@@ -184,7 +184,10 @@ namespace __gnu_parallel
 					__bin_op, __sums[__iam]);
       } //parallel
 
+      for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
+	__sums[__i].~_ValueType();
       ::operator delete(__sums);
+
       delete[] __borders;
 
       return __result + __n;

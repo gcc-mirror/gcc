@@ -12634,7 +12634,7 @@ that is the entity @code{Main} is declared in main.ads, line 2, column 9,
 its body is in main.adb, line 1, column 14 and is not referenced any where.
 
 The entity @code{Print} is declared in bar.ads, line 2, column 15 and it
-it referenced in main.adb, line 6 column 12 and line 7 column 12.
+is referenced in main.adb, line 6 column 12 and line 7 column 12.
 
 @item gnatxref package1.adb package2.ads
 @code{gnatxref} will generates cross-reference information for
@@ -14362,7 +14362,7 @@ maximal loop nesting level
 
 @noindent
 The McCabe complexity metrics are defined
-in @url{http://www.mccabe.com/pdf/nist235r.pdf}
+in @url{http://www.mccabe.com/pdf/mccabe-nist235r.pdf}
 
 According to McCabe, both control statements and short-circuit control forms
 should be taken into account when computing cyclomatic complexity. For each

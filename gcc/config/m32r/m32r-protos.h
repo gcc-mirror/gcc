@@ -1,5 +1,6 @@
 /* Prototypes for m32r.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -18,9 +19,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* Function prototypes that cannot exist in v850.h due to dependency
+/* Function prototypes that cannot exist in m32r.h due to dependency
    complications.  */
-#define Mmode enum machine_mode
 
 extern void   m32r_init (void);
 extern void   m32r_init_expanders (void);
@@ -51,16 +51,14 @@ extern rtx    m32r_return_addr (int);
 extern rtx    m32r_function_symbol (const char *);
 
 #ifdef HAVE_MACHINE_MODES
-extern int    call_operand (rtx, Mmode);
-extern int    small_data_operand (rtx, Mmode);
-extern int    addr24_operand (rtx, Mmode);
-extern int    addr32_operand (rtx, Mmode);
-extern int    call26_operand (rtx, Mmode);
-extern int    memreg_operand (rtx, Mmode);
-extern int    small_insn_p (rtx, Mmode);
+extern int    call_operand (rtx, enum machine_mode);
+extern int    small_data_operand (rtx, enum machine_mode);
+extern int    addr24_operand (rtx, enum machine_mode);
+extern int    addr32_operand (rtx, enum machine_mode);
+extern int    call26_operand (rtx, enum machine_mode);
+extern int    memreg_operand (rtx, enum machine_mode);
+extern int    small_insn_p (rtx, enum machine_mode);
 
 #endif /* HAVE_MACHINE_MODES */
 
 #endif /* RTX_CODE */
-
-#undef  Mmode

@@ -1331,6 +1331,10 @@ structural_comptypes (tree t1, tree t2, int strict)
         return false;
       break;
 
+    case UNDERLYING_TYPE:
+      return same_type_p (UNDERLYING_TYPE_TYPE (t1), 
+			  UNDERLYING_TYPE_TYPE (t2));
+
     default:
       return false;
     }

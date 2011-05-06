@@ -42,6 +42,8 @@ class Function;
 class Translate_context;
 class Export;
 class Import;
+class Btype;
+class Bexpression;
 
 // Type codes used in type descriptors.  These must match the values
 // in libgo/runtime/go-type.h.  They also match the values in the gc
@@ -272,7 +274,7 @@ class Interface_method : public Method
   // called, as we always create a stub.
   Named_object*
   do_named_object() const
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   // The type of the method.
   Function_type*
@@ -973,10 +975,11 @@ class Type
   static unsigned int
   hash_string(const std::string&, unsigned int);
 
-  // Return a tree for the underlying type of a named type.
-  static tree
-  get_named_type_tree(Gogo* gogo, Type* base_type)
-  { return base_type->get_tree_without_hash(gogo); }
+  // Return the backend representation for the underlying type of a
+  // named type.
+  static Btype*
+  get_named_base_btype(Gogo* gogo, Type* base_type)
+  { return base_type->get_btype_without_hash(gogo); }
 
  private:
   // Convert to the desired type classification, or return NULL.  This
@@ -1099,6 +1102,11 @@ class Type
   // identical types.
   tree
   get_tree_without_hash(Gogo*);
+
+  // Get the backend representation for a type without looking in the
+  // hash table for identical types.
+  Btype*
+  get_btype_without_hash(Gogo*);
 
   // A mapping from Type to tree, used to ensure that the GIMPLE
   // representation of identical types is identical.
@@ -1396,10 +1404,6 @@ class Float_type : public Type
   bool
   is_identical(const Float_type* t) const;
 
-  // Return a tree for this type without using a Gogo*.
-  tree
-  type_tree() const;
-
  protected:
   unsigned int
   do_hash_for_method(Gogo*) const;
@@ -1467,10 +1471,6 @@ class Complex_type : public Type
   // Whether this type is the same as T.
   bool
   is_identical(const Complex_type* t) const;
-
-  // Return a tree for this type without using a Gogo*.
-  tree
-  type_tree() const;
 
  protected:
   unsigned int
@@ -1960,10 +1960,6 @@ class Struct_type : public Type
   static Struct_type*
   do_import(Import*);
 
-  // Fill in the fields for a named struct type.
-  tree
-  fill_in_tree(Gogo*, tree);
-
   static Type*
   make_struct_type_descriptor_type();
 
@@ -2064,13 +2060,13 @@ class Array_type : public Type
   static Array_type*
   do_import(Import*);
 
-  // Fill in the fields for a named array type.
-  tree
-  fill_in_array_tree(Gogo*, tree);
+  // Return the backend representation of the element type.
+  Btype*
+  get_backend_element(Gogo*);
 
-  // Fill in the fields for a named slice type.
-  tree
-  fill_in_slice_tree(Gogo*, tree);
+  // Return the backend representation of the length.
+  Bexpression*
+  get_backend_length(Gogo*);
 
   static Type*
   make_array_type_descriptor_type();
@@ -2373,16 +2369,8 @@ class Interface_type : public Type
   do_import(Import*);
 
   // Make a struct for an empty interface type.
-  static tree
-  empty_type_tree(Gogo*);
-
-  // Make a struct for non-empty interface type.
-  static tree
-  non_empty_type_tree(source_location);
-
-  // Fill in the fields for a named interface type.
-  tree
-  fill_in_tree(Gogo*, tree);
+  static Btype*
+  get_backend_empty_interface_type(Gogo*);
 
   static Type*
   make_interface_type_descriptor_type();
@@ -2438,7 +2426,7 @@ class Named_type : public Type
       named_object_(named_object), in_function_(NULL), type_(type),
       local_methods_(NULL), all_methods_(NULL),
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
-      location_(location), named_tree_(NULL), dependencies_(),
+      location_(location), named_btype_(NULL), dependencies_(),
       is_visible_(true), is_error_(false), is_converted_(false),
       is_circular_(false), seen_(0)
   { }
@@ -2684,9 +2672,10 @@ class Named_type : public Type
   Interface_method_tables* pointer_interface_method_tables_;
   // The location where this type was defined.
   source_location location_;
-  // The tree for this type while converting to GENERIC.  This is used
-  // to avoid endless recursion when a named type refers to itself.
-  tree named_tree_;
+  // The backend representation of this type during backend
+  // conversion.  This is used to avoid endless recursion when a named
+  // type refers to itself.
+  Btype* named_btype_;
   // A list of types which must be converted to the backend
   // representation before this type can be converted.  This is for
   // cases like

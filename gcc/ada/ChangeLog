@@ -1,3 +1,63 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/trans.c (Case_Statement_to_gnu): Call
+	build_case_label.
+
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/decl.c (intrin_arglists_compatible_p): Use iterators
+	instead of accessing TYPE_ARG_TYPES directly.
+	* gcc-interface/utils.c (handle_nonnull_attribute): Likewise.
+
+2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/48844
+	* gcc-interface/gigi.h (get_variant_part): Declare.
+	* gcc-interface/decl.c (get_variant_part): Make global.
+	* gcc-interface/utils2.c (find_common_type): Do not return T1 if the
+	types have the same constant size, are record types and T1 has a
+	variant part while T2 doesn't.
+
+2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (begin_subprog_body): Do not call
+	get_pending_sizes.
+	(end_subprog_body): Likewise.
+
+2011-05-04  Richard Guenther  <rguenther@suse.de>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Remove zero notrunc argument to
+	int_const_binop.
+	(pos_to_constructor): Likewise.
+
+2011-05-03  Nathan Froyd  <froydnj@codesourcery.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Call build_function_type_list instead
+	of build_function_type.  Adjust calls to...
+	(build_raise_check): ...this.  Do not take a void_tree parameter.
+	Call build_function_type_list instead of build_function_type.
+	Fix head comment and swap couple of conditional blocks.
+
+2011-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Library_Version): Bump to 4.7.
+	(Current_Year): Bump to 2011.
+
+2011-04-29  Michael Matz  <matz@suse.de>
+
+	* gcc-interface/misc.c (gnat_handle_option): Set
+	warn_maybe_uninitialized.
+
+2011-04-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gnat_ugn.texi (Complexity Metrics Control): Update link to
+	the Watson/McCabe paper.
+
+2011-04-23  Jim Meyering  <meyering@redhat.com>
+
+	* gnat_ugn.texi (Examples of gnatxref Usage): Fix typo: s/it it/it is/
+
 2011-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (make_packable_type): Copy DECL_PARALLEL_TYPE

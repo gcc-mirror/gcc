@@ -562,28 +562,23 @@ emit_debug_global_declarations (tree *vec, int len)
 static void
 compile_file (void)
 {
-  /* Initialize yet another pass.  */
-
-  ggc_protect_identifiers = true;
-
-  init_cgraph ();
-  init_final (main_input_filename);
-  coverage_init (aux_base_name);
-  statistics_init ();
-  invoke_plugin_callbacks (PLUGIN_START_UNIT, NULL);
-
-  timevar_push (TV_PARSE);
+  timevar_start (TV_PHASE_PARSING);
+  timevar_push (TV_PARSE_GLOBAL);
 
   /* Call the parser, which parses the entire file (calling
      rest_of_compilation for each function).  */
   lang_hooks.parse_file ();
 
+  timevar_pop (TV_PARSE_GLOBAL);
+  timevar_stop (TV_PHASE_PARSING);
+
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */
-  timevar_pop (TV_PARSE);
 
   if (flag_syntax_only || flag_wpa)
     return;
+
+  timevar_start (TV_PHASE_GENERATE);
 
   ggc_protect_identifiers = false;
 
@@ -591,7 +586,10 @@ compile_file (void)
   lang_hooks.decls.final_write_globals ();
 
   if (seen_error ())
-    return;
+    {
+      timevar_stop (TV_PHASE_GENERATE);
+      return;
+    }
 
   varpool_assemble_pending_decls ();
   finish_aliases_2 ();
@@ -671,6 +669,8 @@ compile_file (void)
      into the assembly file here, and hence we can not output anything to the
      assembly file after this point.  */
   targetm.asm_out.file_end ();
+
+  timevar_stop (TV_PHASE_GENERATE);
 }
 
 /* Indexed by enum debug_info_type.  */
@@ -1899,6 +1899,8 @@ do_compile (void)
   /* Don't do any more if an error has already occurred.  */
   if (!seen_error ())
     {
+      timevar_start (TV_PHASE_SETUP);
+
       /* This must be run always, because it is needed to compute the FP
 	 predefined macros, such as __LDBL_MAX__, for targets using non
 	 default FP formats.  */
@@ -1910,9 +1912,31 @@ do_compile (void)
 
       /* Language-dependent initialization.  Returns true on success.  */
       if (lang_dependent_init (main_input_filename))
-	compile_file ();
+        {
+          /* Initialize yet another pass.  */
+
+          ggc_protect_identifiers = true;
+
+          init_cgraph ();
+          init_final (main_input_filename);
+          coverage_init (aux_base_name);
+          statistics_init ();
+          invoke_plugin_callbacks (PLUGIN_START_UNIT, NULL);
+
+          timevar_stop (TV_PHASE_SETUP);
+
+          compile_file ();
+        }
+      else
+        {
+          timevar_stop (TV_PHASE_SETUP);
+        }
+
+      timevar_start (TV_PHASE_FINALIZE);
 
       finalize (no_backend);
+
+      timevar_stop (TV_PHASE_FINALIZE);
     }
 
   /* Stop timing and print the times.  */

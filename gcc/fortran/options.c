@@ -108,6 +108,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.warn_intrinsic_shadow = 0;
   gfc_option.warn_intrinsics_std = 0;
   gfc_option.warn_align_commons = 1;
+  gfc_option.warn_real_q_constant = 0;
   gfc_option.warn_unused_dummy_argument = 0;
   gfc_option.max_errors = 25;
 
@@ -150,7 +151,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
   gfc_option.flag_init_character_value = (char)0;
   gfc_option.flag_align_commons = 1;
-  gfc_option.flag_protect_parens = 1;
+  gfc_option.flag_protect_parens = -1;
   gfc_option.flag_realloc_lhs = -1;
   gfc_option.flag_aggressive_function_elimination = 0;
   gfc_option.flag_frontend_optimize = -1;
@@ -270,6 +271,9 @@ gfc_post_options (const char **pfilename)
      we want traps or signed zeros. Cf. also flag_protect_parens.  */
   if (flag_associative_math == -1)
     flag_associative_math = (!flag_trapping_math && !flag_signed_zeros);
+
+  if (gfc_option.flag_protect_parens == -1)
+    gfc_option.flag_protect_parens = !optimize_fast;
 
   /* By default, disable (re)allocation during assignment for -std=f95,
      and enable it for F2003/F2008/GNU/Legacy. */
@@ -455,12 +459,14 @@ set_Wall (int setting)
   gfc_option.warn_intrinsic_shadow = setting;
   gfc_option.warn_intrinsics_std = setting;
   gfc_option.warn_character_truncation = setting;
+  gfc_option.warn_real_q_constant = setting;
   gfc_option.warn_unused_dummy_argument = setting;
 
   warn_unused = setting;
   warn_return_type = setting;
   warn_switch = setting;
   warn_uninitialized = setting;
+  warn_maybe_uninitialized = setting;
 }
 
 
@@ -657,6 +663,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Walign_commons:
       gfc_option.warn_align_commons = value;
+      break;
+
+    case OPT_Wreal_q_constant:
+      gfc_option.warn_real_q_constant = value;
       break;
 
     case OPT_Wunused_dummy_argument:

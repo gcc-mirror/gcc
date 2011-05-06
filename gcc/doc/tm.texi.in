@@ -532,7 +532,7 @@ Any prefixes specified by the user with @option{-B}.
 
 @item
 The environment variable @code{GCC_EXEC_PREFIX} or, if @code{GCC_EXEC_PREFIX}
-is not set and the compiler has not been installed in the configure-time 
+is not set and the compiler has not been installed in the configure-time
 @var{prefix}, the location in which the compiler has actually been installed.
 
 @item
@@ -540,16 +540,16 @@ The directories specified by the environment variable @code{COMPILER_PATH}.
 
 @item
 The macro @code{STANDARD_EXEC_PREFIX}, if the compiler has been installed
-in the configured-time @var{prefix}. 
+in the configured-time @var{prefix}.
 
 @item
-The location @file{/usr/libexec/gcc/}, but only if this is a native compiler. 
+The location @file{/usr/libexec/gcc/}, but only if this is a native compiler.
 
 @item
-The location @file{/usr/lib/gcc/}, but only if this is a native compiler. 
+The location @file{/usr/lib/gcc/}, but only if this is a native compiler.
 
 @item
-The macro @code{MD_EXEC_PREFIX}, if defined, but only if this is a native 
+The macro @code{MD_EXEC_PREFIX}, if defined, but only if this is a native
 compiler.
 @end enumerate
 
@@ -569,21 +569,21 @@ The directories specified by the environment variable @code{LIBRARY_PATH}
 
 @item
 The macro @code{STANDARD_EXEC_PREFIX}, but only if the toolchain is installed
-in the configured @var{prefix} or this is a native compiler. 
+in the configured @var{prefix} or this is a native compiler.
 
 @item
 The location @file{/usr/lib/gcc/}, but only if this is a native compiler.
 
 @item
-The macro @code{MD_EXEC_PREFIX}, if defined, but only if this is a native 
+The macro @code{MD_EXEC_PREFIX}, if defined, but only if this is a native
 compiler.
 
 @item
-The macro @code{MD_STARTFILE_PREFIX}, if defined, but only if this is a 
+The macro @code{MD_STARTFILE_PREFIX}, if defined, but only if this is a
 native compiler, or we have a target system root.
 
 @item
-The macro @code{MD_STARTFILE_PREFIX_1}, if defined, but only if this is a 
+The macro @code{MD_STARTFILE_PREFIX_1}, if defined, but only if this is a
 native compiler, or we have a target system root.
 
 @item
@@ -951,6 +951,8 @@ If it is @code{2}, the returned mode should be that of the register in
 which an incoming parameter is copied, or the outgoing result is computed;
 then the hook should return the same mode as @code{promote_mode}, though
 the signedness may be different.
+
+@var{type} can be NULL when promoting function arguments of libcalls.
 
 The default is to not promote arguments and return values.  You can
 also define the hook to @code{default_promote_function_mode_always_promote}
@@ -4263,6 +4265,8 @@ insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
 @end deftypefn
 
+@hook TARGET_ARRAY_MODE_SUPPORTED_P
+
 @hook TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 Define this to return nonzero for machine modes for which the port has
 small register classes.  If this target hook returns nonzero for a given
@@ -4367,10 +4371,10 @@ compiled.
 
 @hook TARGET_LIBCALL_VALUE
 Define this hook if the back-end needs to know the name of the libcall
-function in order to determine where the result should be returned.  
+function in order to determine where the result should be returned.
 
 The mode of the result is given by @var{mode} and the name of the called
-library function is given by @var{fun}.  The hook should return an RTX 
+library function is given by @var{fun}.  The hook should return an RTX
 representing the place where the library function result will be returned.
 
 If this hook is not defined, then LIBCALL_VALUE will be used.
@@ -5093,12 +5097,12 @@ when it is called.
 If the target defines @code{TARGET_ASM_TRAMPOLINE_TEMPLATE}, then the
 first thing this hook should do is emit a block move into @var{m_tramp}
 from the memory block returned by @code{assemble_trampoline_template}.
-Note that the block move need only cover the constant parts of the 
+Note that the block move need only cover the constant parts of the
 trampoline.  If the target isolates the variable parts of the trampoline
 to the end, not all @code{TRAMPOLINE_SIZE} bytes need be copied.
 
 If the target requires any other actions, such as flushing caches or
-enabling stack execution, these actions should be performed after 
+enabling stack execution, these actions should be performed after
 initializing the trampoline proper.
 @end deftypefn
 
@@ -5302,7 +5306,7 @@ A C expression that is 1 if the RTX @var{x} is a constant which
 is a valid address.  On most machines the default definition of
 @code{(CONSTANT_P (@var{x}) && GET_CODE (@var{x}) != CONST_DOUBLE)}
 is acceptable, but a few machines are more restrictive as to which
-constant addresses are supported. 
+constant addresses are supported.
 @end defmac
 
 @defmac CONSTANT_P (@var{x})
@@ -5616,7 +5620,7 @@ preserved (e.g.@: used only by a reduction computation). Otherwise, the
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 Returns cost of different scalar or vector statements for vectorization cost model.
-For vector memory operations the cost may depend on type (@var{vectype}) and 
+For vector memory operations the cost may depend on type (@var{vectype}) and
 misalignment value (@var{misalign}).
 @end deftypefn
 
@@ -6214,7 +6218,7 @@ than @code{CLEAR_RATIO}.
 @defmac SET_RATIO (@var{speed})
 The threshold of number of scalar move insns, @emph{below} which a sequence
 of insns should be generated to set memory to a constant value, instead of
-a block set insn or a library call.  
+a block set insn or a library call.
 Increasing the value will always make code faster, but
 eventually incurs high cost in increased code size.
 
@@ -6226,8 +6230,8 @@ If you don't define this, it defaults to the value of @code{MOVE_RATIO}.
 
 @defmac SET_BY_PIECES_P (@var{size}, @var{alignment})
 A C expression used to determine whether @code{store_by_pieces} will be
-used to set a chunk of memory to a constant value, or whether some 
-other mechanism will be used.  Used by @code{__builtin_memset} when 
+used to set a chunk of memory to a constant value, or whether some
+other mechanism will be used.  Used by @code{__builtin_memset} when
 storing values other than constant zero.
 Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{SET_RATIO}.
@@ -7073,7 +7077,7 @@ must modify the definition of @samp{movsi} to do something appropriate
 when the source operand contains a symbolic address.  You may also
 need to alter the handling of switch statements so that they use
 relative addresses.
-@c i rearranged the order of the macros above to try to force one of 
+@c i rearranged the order of the macros above to try to force one of
 @c them to the next line, to eliminate an overfull hbox. --mew 10feb93
 
 @defmac PIC_OFFSET_TABLE_REGNUM
@@ -7257,7 +7261,7 @@ this section is associated.
 @hook TARGET_ASM_FUNCTION_SECTION
 Return preferred text (sub)section for function @var{decl}.
 Main purpose of this function is to separate cold, normal and hot
-functions. @var{startup} is true when function is known to be used only 
+functions. @var{startup} is true when function is known to be used only
 at startup (from static constructors or it is @code{main()}).
 @var{exit} is true when function is known to be used only at exit
 (from static destructors).
@@ -10455,14 +10459,14 @@ given mode.
 @defmac CLZ_DEFINED_VALUE_AT_ZERO (@var{mode}, @var{value})
 @defmacx CTZ_DEFINED_VALUE_AT_ZERO (@var{mode}, @var{value})
 A C expression that indicates whether the architecture defines a value
-for @code{clz} or @code{ctz} with a zero operand.  
+for @code{clz} or @code{ctz} with a zero operand.
 A result of @code{0} indicates the value is undefined.
 If the value is defined for only the RTL expression, the macro should
 evaluate to @code{1}; if the value applies also to the corresponding optab
 entry (which is normally the case if it expands directly into
-the corresponding RTL), then the macro should evaluate to @code{2}.  
+the corresponding RTL), then the macro should evaluate to @code{2}.
 In the cases where the value is defined, @var{value} should be set to
-this value.  
+this value.
 
 If this macro is not defined, the value of @code{clz} or
 @code{ctz} at zero is assumed to be undefined.
@@ -10495,7 +10499,7 @@ to @code{Pmode}.
 @defmac FUNCTION_MODE
 An alias for the machine mode used for memory references to functions
 being called, in @code{call} RTL expressions.  On most CISC machines,
-where an instruction can begin at any byte address, this should be 
+where an instruction can begin at any byte address, this should be
 @code{QImode}.  On most RISC machines, where all instructions have fixed
 size and alignment, this should be a mode with the same size and alignment
 as the machine instruction words - typically @code{SImode} or @code{HImode}.
@@ -10880,7 +10884,7 @@ passed along.
 @end deftypefn
 
 @hook TARGET_SET_CURRENT_FUNCTION
-The compiler invokes this hook whenever it changes its current function 
+The compiler invokes this hook whenever it changes its current function
 context (@code{cfun}).  You can define this function if
 the back end needs to perform any initialization or reset actions on a
 per-function basis.  For example, it may be used to implement function
@@ -11094,21 +11098,21 @@ the front end.
 
 @hook TARGET_INVALID_PARAMETER_TYPE
 If defined, this macro returns the diagnostic message when it is
-invalid for functions to include parameters of type @var{type}, 
+invalid for functions to include parameters of type @var{type},
 or @code{NULL} if validity should be determined by
 the front end.  This is currently used only by the C and C++ front ends.
 @end deftypefn
 
 @hook TARGET_INVALID_RETURN_TYPE
 If defined, this macro returns the diagnostic message when it is
-invalid for functions to have return type @var{type}, 
+invalid for functions to have return type @var{type},
 or @code{NULL} if validity should be determined by
 the front end.  This is currently used only by the C and C++ front ends.
 @end deftypefn
 
 @hook TARGET_PROMOTED_TYPE
-If defined, this target hook returns the type to which values of 
-@var{type} should be promoted when they appear in expressions, 
+If defined, this target hook returns the type to which values of
+@var{type} should be promoted when they appear in expressions,
 analogous to the integer promotions, or @code{NULL_TREE} to use the
 front end's normal promotion rules.  This hook is useful when there are
 target-specific types with special promotion rules.
@@ -11116,10 +11120,10 @@ This is currently used only by the C and C++ front ends.
 @end deftypefn
 
 @hook TARGET_CONVERT_TO_TYPE
-If defined, this hook returns the result of converting @var{expr} to 
-@var{type}.  It should return the converted expression, 
+If defined, this hook returns the result of converting @var{expr} to
+@var{type}.  It should return the converted expression,
 or @code{NULL_TREE} to apply the front end's normal conversion rules.
-This hook is useful when there are target-specific types with special 
+This hook is useful when there are target-specific types with special
 conversion rules.
 This is currently used only by the C and C++ front ends.
 @end deftypefn
@@ -11137,7 +11141,7 @@ NeXT runtime. By default, OBJC_JBLEN is defined to an innocuous value.
 
 @defmac LIBGCC2_UNWIND_ATTRIBUTE
 Define this macro if any target-specific attributes need to be attached
-to the functions in @file{libgcc} that provide low-level support for 
+to the functions in @file{libgcc} that provide low-level support for
 call stack unwinding.  It is used in declarations in @file{unwind-generic.h}
 and the associated definitions of those functions.
 @end defmac

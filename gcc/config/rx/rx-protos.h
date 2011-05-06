@@ -21,11 +21,6 @@
 #ifndef GCC_RX_PROTOS_H
 #define GCC_RX_PROTOS_H
 
-/* A few abbreviations to make the prototypes shorter.  */
-#define Mmode 	enum machine_mode
-#define Fargs	CUMULATIVE_ARGS
-#define Rcode	enum rtx_code
-
 extern int		rx_align_for_label (void);
 extern void		rx_expand_prologue (void);
 extern int		rx_initial_elimination_offset (int, int);
@@ -37,11 +32,13 @@ extern void             rx_emit_stack_pushm (rtx *);
 extern void		rx_expand_epilogue (bool);
 extern char *		rx_gen_move_template (rtx *, bool);
 extern bool		rx_legitimate_constant_p (enum machine_mode, rtx);
-extern bool		rx_is_restricted_memory_address (rtx, Mmode);
-extern bool		rx_match_ccmode (rtx, Mmode);
+extern bool		rx_is_restricted_memory_address (rtx,
+							 enum machine_mode);
+extern bool		rx_match_ccmode (rtx, enum machine_mode);
 extern void		rx_notice_update_cc (rtx body, rtx insn);
-extern void		rx_split_cbranch (Mmode, Rcode, rtx, rtx, rtx);
-extern Mmode		rx_select_cc_mode (Rcode, rtx, rtx);
+extern void		rx_split_cbranch (enum machine_mode, enum rtx_code,
+					  rtx, rtx, rtx);
+extern enum machine_mode	rx_select_cc_mode (enum rtx_code, rtx, rtx);
 #endif
 
 #endif /* GCC_RX_PROTOS_H */

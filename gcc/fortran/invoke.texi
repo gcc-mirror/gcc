@@ -134,12 +134,13 @@ by type.  Explanations are in the following sections.
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to request or suppress errors
 and warnings}.
-@gccoptlist{-fmax-errors=@var{n} @gol
--fsyntax-only  -pedantic  -pedantic-errors @gol
--Wall  -Waliasing  -Wampersand  -Warray-bounds -Wcharacter-truncation @gol
--Wconversion -Wimplicit-interface  -Wimplicit-procedure  -Wline-truncation @gol
--Wintrinsics-std  -Wsurprising  -Wno-tabs  -Wunderflow  -Wunused-parameter @gol
--Wintrinsic-shadow  -Wno-align-commons -Wfunction-elimination}
+@gccoptlist{-fmax-errors=@var{n}
+-fsyntax-only -pedantic -pedantic-errors -Wall @gol
+-Waliasing -Wampersand -Warray-bounds -Wcharacter-truncation @gol
+-Wconversion -Wimplicit-interface -Wimplicit-procedure -Wline-truncation @gol
+-Wintrinsics-std -Wreal-q-constant -Wsurprising -Wno-tabs -Wunderflow @gol
+-Wunused-parameter -Wintrinsic-shadow -Wno-align-commons @gol
+-Wfunction-elimination}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
@@ -694,7 +695,7 @@ we recommend avoiding and that we believe are easy to avoid.
 This currently includes @option{-Waliasing}, @option{-Wampersand}, 
 @option{-Wconversion}, @option{-Wsurprising}, @option{-Wintrinsics-std},
 @option{-Wno-tabs}, @option{-Wintrinsic-shadow}, @option{-Wline-truncation},
-and @option{-Wunused}.
+@option{-Wreal-q-constant} and @option{-Wunused}.
 
 @item -Waliasing
 @opindex @code{Waliasing}
@@ -781,6 +782,12 @@ available in the currently selected standard (with @option{-std}) and treats
 it as @code{EXTERNAL} procedure because of this.  @option{-fall-intrinsics} can
 be used to never trigger this behavior and always link to the intrinsic
 regardless of the selected standard.
+
+@item -Wreal-q-constant
+@opindex @code{Wreal-q-constant}
+@cindex warnings, @code{q} exponent-letter
+Produce a warning if a real-literal-constant contains a @code{q}
+exponent-letter.
 
 @item -Wsurprising
 @opindex @code{Wsurprising}
@@ -1481,7 +1488,8 @@ levels such that the compiler does not do any re-association. Using
 @option{-fno-protect-parens} allows the compiler to reorder @code{REAL} and
 @code{COMPLEX} expressions to produce faster code. Note that for the re-association
 optimization @option{-fno-signed-zeros} and @option{-fno-trapping-math}
-need to be in effect.
+need to be in effect. The parentheses protection is enabled by default, unless
+@option{-Ofast} is given.
 
 @item -frealloc-lhs
 @opindex @code{frealloc-lhs}

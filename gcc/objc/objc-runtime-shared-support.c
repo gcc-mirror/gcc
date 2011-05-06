@@ -159,8 +159,8 @@ build_selector (tree ident)
 
 /* struct _objc_super {
      struct _objc_object *self;
-     struct _objc_class *super_class; 
-     		[or Class cls; for the abi v2]
+     struct _objc_class *super_class;
+		[or Class cls; for the abi v2]
    };  */
 
 void
@@ -302,7 +302,7 @@ add_objc_string (tree ident, string_section section)
 {
   tree *chain, decl, type;
   char buf[BUFSIZE];
-  
+
   switch (section)
     {
     case class_names:
@@ -336,13 +336,13 @@ add_objc_string (tree ident, string_section section)
     }
 
   type = build_sized_array_type (char_type_node, IDENTIFIER_LENGTH (ident) + 1);
-  /* Get a runtime-specific string decl which will be finish_var()'ed in 
+  /* Get a runtime-specific string decl which will be finish_var()'ed in
      generate_strings ().  */
   decl = (*runtime.string_decl) (type, buf, section);
   TREE_CONSTANT (decl) = 1;
   *chain = tree_cons (decl, ident, NULL_TREE);
 
-  return convert (string_type_node, 
+  return convert (string_type_node,
 		  build_unary_op (input_location, ADDR_EXPR, decl, 1));
 }
 
@@ -442,7 +442,7 @@ init_module_descriptor (tree type, long vers)
 
   /* No really useful place to point to.  */
   loc = UNKNOWN_LOCATION;
-  
+
   /* version = { 1, ... } */
 
   expr = build_int_cst (long_integer_type_node, vers);
@@ -463,7 +463,7 @@ init_module_descriptor (tree type, long vers)
   /* symtab = { ..., _OBJC_SYMBOLS, ... } */
 
   ltyp = build_pointer_type (xref_tag (RECORD_TYPE,
-				       get_identifier (UTAG_SYMTAB)));  
+				       get_identifier (UTAG_SYMTAB)));
   if (UOBJC_SYMBOLS_decl)
     expr = convert (ltyp, build_unary_op (loc,
 			   ADDR_EXPR, UOBJC_SYMBOLS_decl, 0));
@@ -519,7 +519,7 @@ build_module_descriptor (long vers, tree attr)
   /* Allow the runtime to mark meta-data such that it can be assigned to target
      specific sections by the back-end.  */
   if (attr)
-    DECL_ATTRIBUTES (UOBJC_MODULES_decl) = attr; 
+    DECL_ATTRIBUTES (UOBJC_MODULES_decl) = attr;
 
   finish_var_decl (UOBJC_MODULES_decl,
 		   init_module_descriptor (TREE_TYPE (UOBJC_MODULES_decl),
@@ -640,7 +640,7 @@ build_next_selector_translation_table (void)
       if (warn_selector)
 	{
 	  location_t loc;
-	  if (decl) 
+	  if (decl)
 	    loc = DECL_SOURCE_LOCATION (decl);
 	  else
 	    loc = UNKNOWN_LOCATION;
@@ -652,7 +652,7 @@ build_next_selector_translation_table (void)
       if (decl)
 	{
 	  /* Entries of this form are used for references to methods.
-	  The runtime re-writes these on start-up, but the compiler can't see 
+	  The runtime re-writes these on start-up, but the compiler can't see
 	  that and optimizes it away unless we force it.  */
 	  DECL_PRESERVE_P (decl) = 1;
 	  finish_var_decl (decl, expr);

@@ -1680,6 +1680,11 @@ common_handle_option (struct gcc_options *opts,
       /* No-op. Used by the driver and passed to us because it starts with f.*/
       break;
 
+    case OPT_Wuninitialized:
+      /* Also turn on maybe uninitialized warning.  */
+      warn_maybe_uninitialized = value;
+      break;
+
     default:
       /* If the flag was handled in a standard way, assume the lack of
 	 processing here is intentional.  */
@@ -1958,6 +1963,9 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
       control_warning_option (option_index, (int) kind, value,
 			      loc, lang_mask,
 			      handlers, opts, opts_set, dc);
+      if (option_index == OPT_Wuninitialized)
+        enable_warning_as_error ("maybe-uninitialized", value, lang_mask,
+	                         handlers, opts, opts_set, loc, dc);
     }
   free (new_option);
 }

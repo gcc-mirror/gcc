@@ -51,13 +51,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "filenames.h"
 
+#include "gcov-io.h"
 #include "gcov-io.c"
 
 struct function_list
 {
   struct function_list *next;	 /* next function */
   unsigned ident;		 /* function ident */
-  unsigned checksum;	         /* function checksum */
+  unsigned lineno_checksum;	 /* function lineno checksum */
+  unsigned cfg_checksum;	 /* function cfg checksum */
   unsigned n_ctrs[GCOV_COUNTERS];/* number of counters.  */
 };
 
@@ -69,7 +71,8 @@ typedef struct counts_entry
   unsigned ctr;
 
   /* Store  */
-  unsigned checksum;
+  unsigned lineno_checksum;
+  unsigned cfg_checksum;
   gcov_type *counts;
   struct gcov_ctr_summary summary;
 
@@ -114,8 +117,6 @@ static hashval_t htab_counts_entry_hash (const void *);
 static int htab_counts_entry_eq (const void *, const void *);
 static void htab_counts_entry_del (void *);
 static void read_counts_file (void);
-static unsigned compute_checksum (void);
-static unsigned coverage_checksum_string (unsigned, const char *);
 static tree build_fn_info_type (unsigned);
 static tree build_fn_info_value (const struct function_list *, tree);
 static tree build_ctr_info_type (void);
@@ -171,11 +172,12 @@ static void
 read_counts_file (void)
 {
   gcov_unsigned_t fn_ident = 0;
-  gcov_unsigned_t checksum = -1;
   counts_entry_t *summaried = NULL;
   unsigned seen_summary = 0;
   gcov_unsigned_t tag;
   int is_error = 0;
+  unsigned lineno_checksum = 0;
+  unsigned cfg_checksum = 0;
 
   if (!gcov_open (da_file_name, 1))
     return;
@@ -215,7 +217,8 @@ read_counts_file (void)
       if (tag == GCOV_TAG_FUNCTION)
 	{
 	  fn_ident = gcov_read_unsigned ();
-	  checksum = gcov_read_unsigned ();
+	  lineno_checksum = gcov_read_unsigned ();
+	  cfg_checksum = gcov_read_unsigned ();
 	  if (seen_summary)
 	    {
 	      /* We have already seen a summary, this means that this
@@ -265,24 +268,26 @@ read_counts_file (void)
 	  if (!entry)
 	    {
 	      *slot = entry = XCNEW (counts_entry_t);
-	      entry->ident = elt.ident;
+	      entry->ident = fn_ident;
 	      entry->ctr = elt.ctr;
-	      entry->checksum = checksum;
+	      entry->lineno_checksum = lineno_checksum;
+	      entry->cfg_checksum = cfg_checksum;
 	      entry->summary.num = n_counts;
 	      entry->counts = XCNEWVEC (gcov_type, n_counts);
 	    }
-	  else if (entry->checksum != checksum)
+	  else if (entry->lineno_checksum != lineno_checksum
+		   || entry->cfg_checksum != cfg_checksum)
 	    {
-	      error ("coverage mismatch for function %u while reading execution counters",
-		     fn_ident);
-	      error ("checksum is %x instead of %x", entry->checksum, checksum);
+	      error ("Profile data for function %u is corrupted", fn_ident);
+	      error ("checksum is (%x,%x) instead of (%x,%x)",
+		     entry->lineno_checksum, entry->cfg_checksum,
+		     lineno_checksum, cfg_checksum);
 	      htab_delete (counts_hash);
 	      break;
 	    }
 	  else if (entry->summary.num != n_counts)
 	    {
-	      error ("coverage mismatch for function %u while reading execution counters",
-		     fn_ident);
+	      error ("Profile data for function %u is corrupted", fn_ident);
 	      error ("number of counters is %d instead of %d", entry->summary.num, n_counts);
 	      htab_delete (counts_hash);
 	      break;
@@ -324,10 +329,10 @@ read_counts_file (void)
 
 gcov_type *
 get_coverage_counts (unsigned counter, unsigned expected,
+                     unsigned cfg_checksum, unsigned lineno_checksum,
 		     const struct gcov_ctr_summary **summary)
 {
   counts_entry_t *entry, elt;
-  gcov_unsigned_t checksum = -1;
 
   /* No hash table, no counts.  */
   if (!counts_hash)
@@ -352,26 +357,21 @@ get_coverage_counts (unsigned counter, unsigned expected,
       return NULL;
     }
 
-  checksum = compute_checksum ();
-  if (entry->checksum != checksum
+  if (entry->cfg_checksum != cfg_checksum
       || entry->summary.num != expected)
     {
       static int warned = 0;
       bool warning_printed = false;
       tree id = DECL_ASSEMBLER_NAME (current_function_decl);
 
-      warning_printed = 
-	warning_at (input_location, OPT_Wcoverage_mismatch, 
-		    "coverage mismatch for function "
-		    "%qE while reading counter %qs", id, ctr_names[counter]);
+      warning_printed =
+	warning_at (input_location, OPT_Wcoverage_mismatch,
+		    "The control flow of function %qE does not match "
+		    "its profile data (counter %qs)", id, ctr_names[counter]);
       if (warning_printed)
 	{
-	  if (entry->checksum != checksum)
-	    inform (input_location, "checksum is %x instead of %x",
-		    entry->checksum, checksum);
-	  else
-	    inform (input_location, "number of counters is %d instead of %d",
-		    entry->summary.num, expected);
+	 inform (input_location, "Use -Wno-error=coverage-mismatch to tolerate "
+	 	 "the mismatch but performance may drop if the function is hot");
 	  
 	  if (!seen_error ()
 	      && !warned++)
@@ -388,6 +388,12 @@ get_coverage_counts (unsigned counter, unsigned expected,
 
       return NULL;
     }
+    else if (entry->lineno_checksum != lineno_checksum)
+      {
+        warning (0, "Source location for function %qE have changed,"
+                 " the profile data may be out of date",
+                 DECL_ASSEMBLER_NAME (current_function_decl));
+      }
 
   if (summary)
     *summary = &entry->summary;
@@ -445,7 +451,7 @@ tree_coverage_counter_ref (unsigned counter, unsigned no)
 
   /* "no" here is an array index, scaled to bytes later.  */
   return build4 (ARRAY_REF, gcov_type_node, tree_ctr_tables[counter],
-		 build_int_cst (NULL_TREE, no), NULL, NULL);
+		 build_int_cst (integer_type_node, no), NULL, NULL);
 }
 
 /* Generate a tree to access the address of COUNTER NO.  */
@@ -463,10 +469,11 @@ tree_coverage_counter_addr (unsigned counter, unsigned no)
   /* "no" here is an array index, scaled to bytes later.  */
   return build_fold_addr_expr (build4 (ARRAY_REF, gcov_type_node,
 				       tree_ctr_tables[counter],
-				       build_int_cst (NULL_TREE, no),
+				       build_int_cst (integer_type_node, no),
 				       NULL, NULL));
 }
 
+
 /* Generate a checksum for a string.  CHKSUM is the current
    checksum.  */
 
@@ -529,8 +536,8 @@ coverage_checksum_string (unsigned chksum, const char *string)
 
 /* Compute checksum for the current function.  We generate a CRC32.  */
 
-static unsigned
-compute_checksum (void)
+unsigned
+coverage_compute_lineno_checksum (void)
 {
   expanded_location xloc
     = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
@@ -542,6 +549,36 @@ compute_checksum (void)
 
   return chksum;
 }
+
+/* Compute cfg checksum for the current function.
+   The checksum is calculated carefully so that
+   source code changes that doesn't affect the control flow graph
+   won't change the checksum.
+   This is to make the profile data useable across source code change.
+   The downside of this is that the compiler may use potentially
+   wrong profile data - that the source code change has non-trivial impact
+   on the validity of profile data (e.g. the reversed condition)
+   but the compiler won't detect the change and use the wrong profile data.  */
+
+unsigned
+coverage_compute_cfg_checksum (void)
+{
+  basic_block bb;
+  unsigned chksum = n_basic_blocks;
+
+  FOR_EACH_BB (bb)
+    {
+      edge e;
+      edge_iterator ei;
+      chksum = crc32_byte (chksum, bb->index);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+        {
+          chksum = crc32_byte (chksum, e->dest->index);
+        }
+    }
+
+  return chksum;
+}
 
 /* Begin output to the graph file for the current function.
    Opens the output file, if not already done. Writes the
@@ -549,7 +586,7 @@ compute_checksum (void)
    should be output.  */
 
 int
-coverage_begin_output (void)
+coverage_begin_output (unsigned lineno_checksum, unsigned cfg_checksum)
 {
   /* We don't need to output .gcno file unless we're under -ftest-coverage
      (e.g. -fprofile-arcs/generate/use don't need .gcno to work). */
@@ -575,12 +612,14 @@ coverage_begin_output (void)
 	  bbg_file_opened = 1;
 	}
 
+
       /* Announce function */
       offset = gcov_write_tag (GCOV_TAG_FUNCTION);
       gcov_write_unsigned (current_function_funcdef_no + 1);
-      gcov_write_unsigned (compute_checksum ());
+      gcov_write_unsigned (lineno_checksum);
+      gcov_write_unsigned (cfg_checksum);
       gcov_write_string (IDENTIFIER_POINTER
-			 (DECL_ASSEMBLER_NAME (current_function_decl)));
+                         (DECL_ASSEMBLER_NAME (current_function_decl)));
       gcov_write_string (xloc.file);
       gcov_write_unsigned (xloc.line);
       gcov_write_length (offset);
@@ -594,7 +633,7 @@ coverage_begin_output (void)
    error has occurred.  Save function coverage counts.  */
 
 void
-coverage_end_function (void)
+coverage_end_function (unsigned lineno_checksum, unsigned cfg_checksum)
 {
   unsigned i;
 
@@ -608,14 +647,16 @@ coverage_end_function (void)
     {
       struct function_list *item;
 
-      item = XNEW (struct function_list);
+      item = XCNEW (struct function_list);
 
       *functions_tail = item;
       functions_tail = &item->next;
 
+
       item->next = 0;
       item->ident = current_function_funcdef_no + 1;
-      item->checksum = compute_checksum ();
+      item->lineno_checksum = lineno_checksum;
+      item->cfg_checksum = cfg_checksum;
       for (i = 0; i != GCOV_COUNTERS; i++)
 	{
 	  item->n_ctrs[i] = fn_n_ctrs[i];
@@ -640,15 +681,19 @@ build_fn_info_type (unsigned int counters)
   /* ident */
   fields = build_decl (BUILTINS_LOCATION,
 		       FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
-
-  /* checksum */
+  /* lineno_checksum */
   field = build_decl (BUILTINS_LOCATION,
 		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   DECL_CHAIN (field) = fields;
   fields = field;
 
-  array_type = build_int_cst (NULL_TREE, counters - 1);
-  array_type = build_index_type (array_type);
+  /* cfg checksum */
+  field = build_decl (BUILTINS_LOCATION,
+                      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
+  DECL_CHAIN (field) = fields;
+  fields = field;
+
+  array_type = build_index_type (size_int (counters - 1));
   array_type = build_array_type (get_gcov_unsigned_t (), array_type);
 
   /* counters */
@@ -680,10 +725,16 @@ build_fn_info_value (const struct function_list *function, tree type)
 					  function->ident));
   fields = DECL_CHAIN (fields);
 
-  /* checksum */
+  /* lineno_checksum */
   CONSTRUCTOR_APPEND_ELT (v1, fields,
 			  build_int_cstu (get_gcov_unsigned_t (),
-					  function->checksum));
+					  function->lineno_checksum));
+  fields = DECL_CHAIN (fields);
+
+  /* cfg_checksum */
+  CONSTRUCTOR_APPEND_ELT (v1, fields,
+			  build_int_cstu (get_gcov_unsigned_t (),
+					  function->cfg_checksum));
   fields = DECL_CHAIN (fields);
 
   /* counters */
@@ -852,8 +903,7 @@ build_gcov_info (void)
   da_file_name_len = strlen (da_file_name);
   filename_string = build_string (da_file_name_len + 1, da_file_name);
   TREE_TYPE (filename_string) = build_array_type
-    (char_type_node, build_index_type
-     (build_int_cst (NULL_TREE, da_file_name_len)));
+    (char_type_node, build_index_type (size_int (da_file_name_len)));
   CONSTRUCTOR_APPEND_ELT (v1, field,
 			  build1 (ADDR_EXPR, string_type, filename_string));
 
@@ -869,7 +919,7 @@ build_gcov_info (void)
     {
       tree array_type;
 
-      array_type = build_index_type (build_int_cst (NULL_TREE, n_fns - 1));
+      array_type = build_index_type (size_int (n_fns - 1));
       array_type = build_array_type (fn_info_type, array_type);
 
       fn_info_value = build_constructor (array_type, v2);
@@ -904,8 +954,7 @@ build_gcov_info (void)
 
   /* counters */
   ctr_info_type = build_ctr_info_type ();
-  ctr_info_ary_type = build_index_type (build_int_cst (NULL_TREE,
-						       n_ctr_types));
+  ctr_info_ary_type = build_index_type (size_int (n_ctr_types));
   ctr_info_ary_type = build_array_type (ctr_info_type, ctr_info_ary_type);
   v2 = NULL;
   for (ix = 0; ix != GCOV_COUNTERS; ix++)

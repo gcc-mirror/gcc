@@ -643,7 +643,7 @@ h8300_push_pop (int regno, int nregs, bool pop_p, bool return_p)
   /* Add the return instruction.  */
   if (return_p)
     {
-      RTVEC_ELT (vec, i) = gen_rtx_RETURN (VOIDmode);
+      RTVEC_ELT (vec, i) = ret_rtx;
       i++;
     }
 
@@ -927,7 +927,7 @@ h8300_expand_epilogue (void)
     }
 
   if (!returned_p)
-    emit_jump_insn (gen_rtx_RETURN (VOIDmode));
+    emit_jump_insn (ret_rtx);
 }
 
 /* Return nonzero if the current function is an interrupt

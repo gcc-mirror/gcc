@@ -215,7 +215,8 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	    vect_model_simple_cost (stmt_info, ncopies_for_cost, dt, slp_node);
 	  else
 	    /* Store.  */
-	    vect_model_store_cost (stmt_info, ncopies_for_cost, dt[0], slp_node);
+	    vect_model_store_cost (stmt_info, ncopies_for_cost, false,
+				   dt[0], slp_node);
 	}
 
       else
@@ -579,7 +580,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 
                   /* Analyze costs (for the first stmt in the group).  */
                   vect_model_load_cost (vinfo_for_stmt (stmt),
-                                        ncopies_for_cost, *node);
+                                        ncopies_for_cost, false, *node);
                 }
 
               /* Store the place of this load in the interleaving chain.  In
@@ -1351,9 +1352,10 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
 
 /* For each possible SLP instance decide whether to SLP it and calculate overall
-   unrolling factor needed to SLP the loop.  */
+   unrolling factor needed to SLP the loop.  Return TRUE if decided to SLP at
+   least one instance.  */
 
-void
+bool
 vect_make_slp_decision (loop_vec_info loop_vinfo)
 {
   unsigned int i, unrolling_factor = 1;
@@ -1382,6 +1384,8 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
   if (decided_to_slp && vect_print_dump_info (REPORT_SLP))
     fprintf (vect_dump, "Decided to SLP %d instances. Unrolling factor %d",
 	     decided_to_slp, unrolling_factor);
+
+  return (decided_to_slp > 0);
 }
 
 

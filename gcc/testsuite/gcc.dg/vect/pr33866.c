@@ -27,6 +27,6 @@ void test_select_fill_hyper_simple (long *offset)
 }
 
 /* Needs interleaving support.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_interleave } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_interleave || vect_strided2 } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

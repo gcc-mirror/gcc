@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -1045,11 +1045,12 @@ namespace __gnu_parallel
 	_ValueType;
 
       // __k sequences.
-      _SeqNumber __k = static_cast<_SeqNumber>(__seqs_end - __seqs_begin);
+      const _SeqNumber __k
+	= static_cast<_SeqNumber>(__seqs_end - __seqs_begin);
 
-      _ThreadIndex __num_threads = omp_get_num_threads();
+      const _ThreadIndex __num_threads = omp_get_num_threads();
 
-      _DifferenceType __num_samples =
+      const _DifferenceType __num_samples =
 	__gnu_parallel::_Settings::get().merge_oversampling * __num_threads;
 
       _ValueType* __samples = static_cast<_ValueType*>
@@ -1096,6 +1097,10 @@ namespace __gnu_parallel
 	      __pieces[__slab][__seq].second =
 		_GLIBCXX_PARALLEL_LENGTH(__seqs_begin[__seq]);
 	  }
+
+      for (_SeqNumber __s = 0; __s < __k; ++__s)
+	for (_DifferenceType __i = 0; __i < __num_samples; ++__i)
+	  __samples[__s * __num_samples + __i].~_ValueType();
       ::operator delete(__samples);
     }
 
@@ -1139,7 +1144,7 @@ namespace __gnu_parallel
 
       _DifferenceType* __borders =
 	new _DifferenceType[__num_threads + 1];
-      equally_split(__length, __num_threads, __borders);
+      __equally_split(__length, __num_threads, __borders);
 
       for (_ThreadIndex __s = 0; __s < (__num_threads - 1); ++__s)
 	{
@@ -1258,10 +1263,10 @@ namespace __gnu_parallel
 	__length = std::min<_DifferenceTp>(__length, __total_length);
 
 	if (__total_length == 0 || __k == 0)
-	{
-          delete[] __ne_seqs;
-          return __target;
-	}
+	  {
+	    delete[] __ne_seqs;
+	    return __target;
+	  }
 
 	std::vector<std::pair<_DifferenceType, _DifferenceType> >* __pieces;
 

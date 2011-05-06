@@ -2273,7 +2273,7 @@ picochip_expand_epilogue (int is_sibling_call ATTRIBUTE_UNUSED)
     rtvec p;
     p = rtvec_alloc (2);
 
-    RTVEC_ELT (p, 0) = gen_rtx_RETURN (VOIDmode);
+    RTVEC_ELT (p, 0) = ret_rtx;
     RTVEC_ELT (p, 1) = gen_rtx_USE (VOIDmode,
 				    gen_rtx_REG (Pmode, LINK_REGNUM));
     emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
@@ -4216,18 +4216,6 @@ void
 picochip_init_builtins (void)
 {
   tree noreturn;
-  tree endlink = void_list_node;
-  tree int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
-  tree unsigned_endlink = tree_cons (NULL_TREE, unsigned_type_node, endlink);
-  tree long_endlink = tree_cons (NULL_TREE, long_integer_type_node, endlink);
-  tree int_int_endlink =
-    tree_cons (NULL_TREE, integer_type_node, int_endlink);
-  tree int_int_int_endlink =
-    tree_cons (NULL_TREE, integer_type_node, int_int_endlink);
-  tree int_long_endlink =
-    tree_cons (NULL_TREE, integer_type_node, long_endlink);
-  tree long_int_int_int_endlink =
-    tree_cons (NULL_TREE, long_integer_type_node, int_int_int_endlink);
 
   tree int_ftype_int, int_ftype_int_int;
   tree long_ftype_int, long_ftype_int_int_int;
@@ -4236,36 +4224,51 @@ picochip_init_builtins (void)
   tree void_ftype_void, unsigned_ftype_unsigned;
 
   /* void func (void) */
-  void_ftype_void = build_function_type (void_type_node, endlink);
+  void_ftype_void = build_function_type_list (void_type_node, NULL_TREE);
 
   /* int func (int) */
-  int_ftype_int = build_function_type (integer_type_node, int_endlink);
+  int_ftype_int = build_function_type_list (integer_type_node,
+					    integer_type_node, NULL_TREE);
 
   /* unsigned int func (unsigned int) */
-  unsigned_ftype_unsigned = build_function_type (unsigned_type_node, unsigned_endlink);
+  unsigned_ftype_unsigned
+    = build_function_type_list (unsigned_type_node,
+				unsigned_type_node, NULL_TREE);
 
   /* int func(int, int) */
   int_ftype_int_int
-    = build_function_type (integer_type_node, int_int_endlink);
+    = build_function_type_list (integer_type_node,
+				integer_type_node, integer_type_node,
+				NULL_TREE);
 
   /* long func(int) */
-  long_ftype_int = build_function_type (long_integer_type_node, int_endlink);
+  long_ftype_int = build_function_type_list (long_integer_type_node,
+					     integer_type_node, NULL_TREE);
 
   /* long func(int, int, int) */
   long_ftype_int_int_int
-    = build_function_type (long_integer_type_node, int_int_int_endlink);
+    = build_function_type_list (long_integer_type_node,
+				integer_type_node, integer_type_node,
+				integer_type_node, NULL_TREE);
 
   /* int func(int, int, int) */
   int_ftype_int_int_int
-    = build_function_type (integer_type_node, int_int_int_endlink);
+    = build_function_type_list (integer_type_node,
+				integer_type_node, integer_type_node,
+				integer_type_node, NULL_TREE);
 
   /* void func(int, long) */
   void_ftype_int_long
-    = build_function_type (void_type_node, int_long_endlink);
+    = build_function_type_list (void_type_node,
+				integer_type_node, long_integer_type_node,
+				NULL_TREE);
 
   /* void func(long, int, int, int) */
   void_ftype_long_int_int_int
-    = build_function_type (void_type_node, long_int_int_int_endlink);
+    = build_function_type_list (void_type_node,
+				long_integer_type_node, integer_type_node,
+				integer_type_node, integer_type_node,
+				NULL_TREE);
 
   /* Initialise the sign-bit-count function. */
   add_builtin_function ("__builtin_sbc", int_ftype_int,

@@ -5,7 +5,7 @@ integer :: i
 real :: a(10) = [ (i*1.3, i=1,10) ]
 real :: b(10)
 complex :: c
-character(34) :: complex
+character(36) :: complex
 namelist /nm/ a
 
 open(99,file="mynml",form="formatted",decimal="point",status="replace")
@@ -18,9 +18,9 @@ close(99, status="delete")
 
 c = (3.123,4.456)
 write(complex,*,decimal="comma") c
-if (complex.ne." (  3,1229999    ;  4,4559999    )") call abort
+if (complex.ne." (  3,12299991    ;  4,45599985    )") call abort
 c = (0.0, 0.0)
 read(complex,*,decimal="comma") c
-if (complex.ne." (  3,1229999    ;  4,4559999    )") call abort
+if (complex.ne." (  3,12299991    ;  4,45599985    )") call abort
 
 end

@@ -148,7 +148,7 @@ Expression::do_discarding_value()
 void
 Expression::do_export(Export*) const
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Warn that the value of the expression is not used.
@@ -665,7 +665,7 @@ Expression::integer_constant_tree(mpz_t val, tree type)
       return build_complex(type, real, imag);
     }
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // Return a tree for VAL in TYPE.
@@ -703,7 +703,7 @@ Expression::float_constant_tree(mpfr_t val, tree type)
       return build_complex(type, build_real(TREE_TYPE(type), r2), imag);
     }
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // Return a tree for REAL/IMAG in TYPE.
@@ -731,7 +731,7 @@ Expression::complex_constant_tree(mpfr_t real, mpfr_t imag, tree type)
 			   build_real(TREE_TYPE(type), r4));
     }
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // Return a tree which evaluates to true if VAL, of arbitrary integer
@@ -880,7 +880,7 @@ Type_expression : public Expression
 
   tree
   do_get_tree(Translate_context*)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // The type which we are representing as an expression.
@@ -939,7 +939,7 @@ Var_expression::do_type()
   else if (this->variable_->is_result_variable())
     return this->variable_->result_var_value()->type();
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // Determine the type of a reference to a variable.
@@ -964,7 +964,7 @@ Var_expression::do_address_taken(bool escapes)
   else if (this->variable_->is_result_variable())
     this->variable_->result_var_value()->set_address_taken();
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // Get the tree for a reference to a variable.
@@ -983,7 +983,7 @@ Var_expression::do_get_tree(Translate_context* context)
   else if (this->variable_->is_result_variable())
     is_in_heap = this->variable_->result_var_value()->is_in_heap();
   else
-    gcc_unreachable();
+    go_unreachable();
   if (is_in_heap)
     {
       ret = build_fold_indirect_ref_loc(this->location(), ret);
@@ -1160,7 +1160,7 @@ Func_expression::do_type()
   else if (this->function_->is_function_declaration())
     return this->function_->func_declaration_value()->type();
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // Get the tree for a function expression without evaluating the
@@ -1175,7 +1175,7 @@ Func_expression::get_tree_without_closure(Gogo* gogo)
   else if (this->function_->is_function_declaration())
     fntype = this->function_->func_declaration_value()->type();
   else
-    gcc_unreachable();
+    go_unreachable();
 
   // Builtin functions are handled specially by Call_expression.  We
   // can't take their address.
@@ -1198,7 +1198,7 @@ Func_expression::get_tree_without_closure(Gogo* gogo)
   else if (no->is_function_declaration())
     fndecl = no->func_declaration_value()->get_or_make_decl(gogo, no, id);
   else
-    gcc_unreachable();
+    go_unreachable();
 
   if (fndecl == error_mark_node)
     return error_mark_node;
@@ -1321,7 +1321,7 @@ Unknown_expression::do_lower(Gogo*, Named_object*, int)
       error_at(location, "unexpected reference to package");
       return Expression::make_error(location);
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -1980,7 +1980,7 @@ Float_expression::check_constant(mpfr_t val, Type* type,
       max_exp = 1024;
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
   if (exp > max_exp)
     {
@@ -2220,7 +2220,7 @@ Complex_expression::check_constant(mpfr_t real, mpfr_t imag, Type* type,
       max_exp = 1024;
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   // A NaN or Infinity always fits in the range of the type.
@@ -2780,7 +2780,7 @@ Const_expression::do_get_tree(Translate_context* context)
   else if (TREE_CODE(type_tree) == COMPLEX_TYPE)
     ret = fold(convert_to_complex(type_tree, const_tree));
   else
-    gcc_unreachable();
+    go_unreachable();
   return ret;
 }
 
@@ -2899,12 +2899,12 @@ class Iota_expression : public Parser_expression
  protected:
   Expression*
   do_lower(Gogo*, Named_object*, int)
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
   // There should only ever be one of these.
   Expression*
   do_copy()
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 };
 
 // Make an iota expression.  This is only called for one case: the
@@ -3368,7 +3368,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 	  || expr_type->is_unsafe_pointer_type())
 	ret = fold(convert_to_integer(type_tree, expr_tree));
       else
-	gcc_unreachable();
+	go_unreachable();
     }
   else if (type->float_type() != NULL)
     {
@@ -3376,14 +3376,14 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 	  || expr_type->float_type() != NULL)
 	ret = fold(convert_to_real(type_tree, expr_tree));
       else
-	gcc_unreachable();
+	go_unreachable();
     }
   else if (type->complex_type() != NULL)
     {
       if (expr_type->complex_type() != NULL)
 	ret = fold(convert_to_complex(type_tree, expr_tree));
       else
-	gcc_unreachable();
+	go_unreachable();
     }
   else if (type->is_string_type()
 	   && expr_type->integer_type() != NULL)
@@ -3649,7 +3649,7 @@ Unsafe_type_conversion_expression::do_get_tree(Translate_context* context)
       return convert_to_integer(type_tree, expr_tree);
     }
   else
-    gcc_unreachable();
+    go_unreachable();
 
   if (use_view_convert)
     return fold_build1_loc(loc, VIEW_CONVERT_EXPR, type_tree, expr_tree);
@@ -3977,7 +3977,7 @@ Unary_expression::eval_integer(Operator op, Type* utype, mpz_t uval, mpz_t val,
     case OPERATOR_MULT:
       return false;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4001,7 +4001,7 @@ Unary_expression::eval_float(Operator op, mpfr_t uval, mpfr_t val)
     case OPERATOR_MULT:
       return false;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4028,7 +4028,7 @@ Unary_expression::eval_complex(Operator op, mpfr_t rval, mpfr_t ival,
     case OPERATOR_MULT:
       return false;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4114,7 +4114,7 @@ Unary_expression::do_type()
       }
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4155,7 +4155,7 @@ Unary_expression::do_determine_type(const Type_context* context)
       break;
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4202,7 +4202,7 @@ Unary_expression::do_check_types(Gogo*)
       break;
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4312,7 +4312,7 @@ Unary_expression::do_get_tree(Translate_context* context)
       }
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4338,7 +4338,7 @@ Unary_expression::do_export(Export* exp) const
     case OPERATOR_AND:
     case OPERATOR_MULT:
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
   this->expr_->export_expression(exp);
 }
@@ -4364,7 +4364,7 @@ Unary_expression::do_import(Import* imp)
       op = OPERATOR_XOR;
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
   imp->require_c_string(" ");
   Expression* expr = Expression::import_expression(imp);
@@ -4429,7 +4429,7 @@ Binary_expression::compare_integer(Operator op, mpz_t left_val,
     case OPERATOR_GE:
       return i >= 0;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4469,7 +4469,7 @@ Binary_expression::compare_float(Operator op, Type* type, mpfr_t left_val,
     case OPERATOR_GE:
       return i >= 0;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4510,7 +4510,7 @@ Binary_expression::compare_complex(Operator op, Type* type,
     case OPERATOR_NOTEQ:
       return !is_equal;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -4617,7 +4617,7 @@ Binary_expression::eval_integer(Operator op, Type* left_type, mpz_t left_val,
       }
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   Type* type = left_type;
@@ -4702,7 +4702,7 @@ Binary_expression::eval_float(Operator op, Type* left_type, mpfr_t left_val,
     case OPERATOR_RSHIFT:
       return false;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   Type* type = left_type;
@@ -5061,7 +5061,7 @@ Binary_expression::eval_complex(Operator op, Type* left_type,
     case OPERATOR_RSHIFT:
       return false;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   Type* type = left_type;
@@ -5619,7 +5619,7 @@ Binary_expression::do_type()
       return this->left_->type();
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -5810,7 +5810,7 @@ Binary_expression::check_operator_type(Operator op, Type* type,
       break;
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   return true;
@@ -5976,7 +5976,7 @@ Binary_expression::do_get_tree(Translate_context* context)
       code = BIT_AND_EXPR;
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   tree type = use_left_type ? TREE_TYPE(left) : TREE_TYPE(right);
@@ -6145,7 +6145,7 @@ Binary_expression::do_export(Export* exp) const
       exp->write_c_string(" &^ ");
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
   this->right_->export_expression(exp);
   exp->write_c_string(")");
@@ -6308,7 +6308,7 @@ Expression::comparison_tree(Translate_context* context, Operator op,
       code = GE_EXPR;
       break;
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 
   if (left_type->is_string_type() && right_type->is_string_type())
@@ -6760,7 +6760,7 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
   else if (name == "Sizeof")
     this->code_ = BUILTIN_SIZEOF;
   else
-    gcc_unreachable();
+    go_unreachable();
 }
 
 // Return whether this is a call to recover.  This is a virtual
@@ -7178,7 +7178,7 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
 	    }
 	}
       else
-	gcc_unreachable();
+	go_unreachable();
       mpz_set_ui(val, val_long);
       *ptype = NULL;
       return true;
@@ -7307,7 +7307,7 @@ Builtin_call_expression::do_type()
     {
     case BUILTIN_INVALID:
     default:
-      gcc_unreachable();
+      go_unreachable();
 
     case BUILTIN_NEW:
     case BUILTIN_MAKE:
@@ -7470,7 +7470,7 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
 		  else if (atype->is_abstract_boolean_type())
 		    want_type = Type::lookup_bool_type();
 		  else
-		    gcc_unreachable();
+		    go_unreachable();
 		  subcontext.type = want_type;
 		}
 	    }
@@ -7725,7 +7725,7 @@ Builtin_call_expression::do_check_types(Gogo*)
       break;
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -7741,7 +7741,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
     case BUILTIN_INVALID:
     case BUILTIN_NEW:
     case BUILTIN_MAKE:
-      gcc_unreachable();
+      go_unreachable();
 
     case BUILTIN_LEN:
     case BUILTIN_CAP:
@@ -7813,7 +7813,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					      arg_tree);
 	      }
 	    else
-	      gcc_unreachable();
+	      go_unreachable();
 	  }
 	else
 	  {
@@ -7841,7 +7841,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					      arg_tree);
 	      }
 	    else
-	      gcc_unreachable();
+	      go_unreachable();
 	  }
 
 	if (val_tree == error_mark_node)
@@ -7966,7 +7966,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 		    fnname = "__go_print_slice";
 		  }
 		else
-		  gcc_unreachable();
+		  go_unreachable();
 
 		tree call = Gogo::call_builtin(pfndecl,
 					       location,
@@ -8288,7 +8288,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
       }
 
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 
@@ -8570,7 +8570,7 @@ Call_expression::do_is_recover_call() const
 void
 Call_expression::do_set_recover_arg(Expression*)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Get the type.
@@ -8927,7 +8927,7 @@ Call_expression::do_get_tree(Translate_context* context)
   else if (interface_method != NULL)
     fn = this->interface_method_function(context, interface_method, &args[0]);
   else
-    gcc_unreachable();
+    go_unreachable();
 
   if (fn == error_mark_node || TREE_TYPE(fn) == error_mark_node)
     {
@@ -10318,7 +10318,7 @@ Interface_field_reference_expression::do_check_types(Gogo*)
 tree
 Interface_field_reference_expression::do_get_tree(Translate_context*)
 {
-  gcc_unreachable();
+  go_unreachable();
 }
 
 // Make a reference to a field in an interface.
@@ -12409,7 +12409,7 @@ class Heap_composite_expression : public Expression
   // this in global scope.
   void
   do_export(Export*) const
-  { gcc_unreachable(); }
+  { go_unreachable(); }
 
  private:
   // The composite literal which is being put on the heap.
@@ -12604,7 +12604,7 @@ Type_info_expression::do_type()
     case TYPE_INFO_FIELD_ALIGNMENT:
       return Type::lookup_integer_type("uint8");
     default:
-      gcc_unreachable();
+      go_unreachable();
     }
 }
 

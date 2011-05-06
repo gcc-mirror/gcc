@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tm.h"
 #include "rtl.h"
+#include "target.h"
 #include "tm_p.h"
 #include "diagnostic-core.h"
 #include "ggc.h"

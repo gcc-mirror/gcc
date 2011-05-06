@@ -86,15 +86,8 @@
 ;; %[abcd][hl].
 (define_predicate "ext_QIreg_operand"
   (and (match_code "reg")
-       (match_test "TARGET_64BIT
-		    && GET_MODE (op) == QImode
-		    && REGNO (op) > BX_REG")))
-
-;; Similarly, but don't check mode of the operand.
-(define_predicate "ext_QIreg_nomode_operand"
-  (and (match_code "reg")
-       (match_test "TARGET_64BIT
-		    && REGNO (op) > BX_REG")))
+       (match_test "TARGET_64BIT")
+       (match_test "REGNO (op) > BX_REG")))
 
 ;; Return true if op is not xmm0 register.
 (define_predicate "reg_not_xmm0_operand"
@@ -391,7 +384,8 @@
 
 ;; Return true if OP is nonmemory operand acceptable by movabs patterns.
 (define_predicate "x86_64_movabs_operand"
-  (if_then_else (match_test "!TARGET_64BIT || !flag_pic")
+  (if_then_else (not (and (match_test "TARGET_64BIT")
+			  (match_test "flag_pic")))
     (match_operand 0 "nonmemory_operand")
     (ior (match_operand 0 "register_operand")
 	 (and (match_operand 0 "const_double_operand")
@@ -483,7 +477,7 @@
 ;; scripts means that we can't be sure of that in general, so assume
 ;; that @GOTOFF is never valid on VxWorks.
 (define_predicate "gotoff_operand"
-  (and (match_test "!TARGET_VXWORKS_RTP")
+  (and (not (match_test "TARGET_VXWORKS_RTP"))
        (match_operand 0 "local_symbolic_operand")))
 
 ;; Test for various thread-local symbols.
@@ -611,7 +605,8 @@
 ;; Match 0 or 1.
 (define_predicate "const_0_to_1_operand"
   (and (match_code "const_int")
-       (match_test "op == const0_rtx || op == const1_rtx")))
+       (ior (match_test "op == const0_rtx")
+	    (match_test "op == const1_rtx"))))
 
 ;; Match 0 to 3.
 (define_predicate "const_0_to_3_operand"
@@ -696,7 +691,8 @@
 ;; Match exactly one bit in 2-bit mask.
 (define_predicate "const_pow2_1_to_2_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) == 1 || INTVAL (op) == 2")))
+       (ior (match_test "op == const1_rtx")
+	    (match_test "op == const2_rtx"))))
 
 ;; Match exactly one bit in 4-bit mask.
 (define_predicate "const_pow2_1_to_8_operand"
@@ -737,7 +733,8 @@
 (define_predicate "reg_or_pm1_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_int")
-	    (match_test "op == const1_rtx || op == constm1_rtx"))))
+	    (ior (match_test "op == const1_rtx")
+		 (match_test "op == constm1_rtx")))))
 
 ;; True if OP is acceptable as operand of DImode shift expander.
 (define_predicate "shiftdi_operand"
@@ -984,8 +981,8 @@
 
 (define_predicate "sse_comparison_operator"
   (ior (match_code "eq,ne,lt,le,unordered,unge,ungt,ordered")
-       (and (match_code "ge,gt,uneq,unle,unlt,ltgt")
-	    (match_test "TARGET_AVX"))))
+       (and (match_test "TARGET_AVX")
+	    (match_code "ge,gt,uneq,unle,unlt,ltgt"))))
 
 (define_predicate "ix86_comparison_int_operator"
   (match_code "ne,eq,ge,gt,le,lt"))
@@ -1181,41 +1178,6 @@
     }
   return true;
 })
-
-;; Return true if OP is a parallel for a vpermilp[ds] permute.
-;; ??? It would be much easier if the PARALLEL for a VEC_SELECT
-;; had a mode, but it doesn't.  So we have 4 copies and install
-;; the mode by hand.
-
-(define_predicate "avx_vpermilp_v8sf_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vpermilp_parallel (op, V8SFmode)")))
-
-(define_predicate "avx_vpermilp_v4df_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vpermilp_parallel (op, V4DFmode)")))
-
-(define_predicate "avx_vpermilp_v4sf_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vpermilp_parallel (op, V4SFmode)")))
-
-(define_predicate "avx_vpermilp_v2df_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vpermilp_parallel (op, V2DFmode)")))
-
-;; Return true if OP is a parallel for a vperm2f128 permute.
-
-(define_predicate "avx_vperm2f128_v8sf_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vperm2f128_parallel (op, V8SFmode)")))
-
-(define_predicate "avx_vperm2f128_v8si_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vperm2f128_parallel (op, V8SImode)")))
-
-(define_predicate "avx_vperm2f128_v4df_operand"
-  (and (match_code "parallel")
-       (match_test "avx_vperm2f128_parallel (op, V4DFmode)")))
 
 ;; Return true if OP is a parallel for a vbroadcast permute.
 

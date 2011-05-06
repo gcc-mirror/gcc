@@ -2453,8 +2453,8 @@ widen_bswap (enum machine_mode mode, rtx op0, rtx target)
 
   if (x != 0)
     x = expand_shift (RSHIFT_EXPR, wider_mode, x,
-		      size_int (GET_MODE_BITSIZE (wider_mode)
-			        - GET_MODE_BITSIZE (mode)),
+		      GET_MODE_BITSIZE (wider_mode)
+		      - GET_MODE_BITSIZE (mode),
 		      NULL_RTX, true);
 
   if (x != 0)
@@ -3150,7 +3150,7 @@ expand_abs_nojump (enum machine_mode mode, rtx op0, rtx target,
 	      	      false) >= 2)
     {
       rtx extended = expand_shift (RSHIFT_EXPR, mode, op0,
-				   size_int (GET_MODE_BITSIZE (mode) - 1),
+				   GET_MODE_BITSIZE (mode) - 1,
 				   NULL_RTX, 0);
 
       temp = expand_binop (mode, xor_optab, extended, op0, target, 0,
@@ -3251,7 +3251,7 @@ expand_one_cmpl_abs_nojump (enum machine_mode mode, rtx op0, rtx target)
 	             false) >= 2)
     {
       rtx extended = expand_shift (RSHIFT_EXPR, mode, op0,
-				   size_int (GET_MODE_BITSIZE (mode) - 1),
+				   GET_MODE_BITSIZE (mode) - 1,
 				   NULL_RTX, 0);
 
       temp = expand_binop (mode, xor_optab, extended, op0, target, 0,
@@ -4724,8 +4724,7 @@ expand_float (rtx to, rtx from, int unsignedp)
 	      emit_label (neglabel);
 	      temp = expand_binop (imode, and_optab, from, const1_rtx,
 				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	      temp1 = expand_shift (RSHIFT_EXPR, imode, from, integer_one_node,
-				    NULL_RTX, 1);
+	      temp1 = expand_shift (RSHIFT_EXPR, imode, from, 1, NULL_RTX, 1);
 	      temp = expand_binop (imode, ior_optab, temp, temp1, temp, 1,
 				   OPTAB_LIB_WIDEN);
 	      expand_float (target, temp, 0);

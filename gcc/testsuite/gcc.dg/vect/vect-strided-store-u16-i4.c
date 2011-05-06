@@ -65,8 +65,8 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect"  { target { vect_interleave && vect_pack_trunc  } } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target { { ! { vect_interleave } } && { vect_pack_trunc } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect"  { target { { vect_interleave || vect_strided4 } && vect_pack_trunc } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target { { ! { vect_interleave || vect_strided4 } } && { vect_pack_trunc } } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 
 

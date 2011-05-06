@@ -1,3 +1,7 @@
+2011-04-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* README: Refer to our generic bug reporting page.
+
 2011-04-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (THREADS): Remove decosf1, irix, mach, os2.

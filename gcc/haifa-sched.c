@@ -783,6 +783,12 @@ print_curr_reg_pressure (void)
 /* Pointer to the last instruction scheduled.  */
 static rtx last_scheduled_insn;
 
+/* Pointer to the last nondebug instruction scheduled within the
+   block, or the prev_head of the scheduling block.  Used by
+   rank_for_schedule, so that insns independent of the last scheduled
+   insn will be preferred over dependent instructions.  */
+static rtx last_nondebug_scheduled_insn;
+
 /* Pointer that iterates through the list of unscheduled insns if we
    have a dbg_cnt enabled.  It always points at an insn prior to the
    first unscheduled one.  */
@@ -1158,7 +1164,6 @@ rank_for_schedule (const void *x, const void *y)
 {
   rtx tmp = *(const rtx *) y;
   rtx tmp2 = *(const rtx *) x;
-  rtx last;
   int tmp_class, tmp2_class;
   int val, priority_val, info_val;
 
@@ -1239,24 +1244,13 @@ rank_for_schedule (const void *x, const void *y)
   if(flag_sched_rank_heuristic && info_val)
     return info_val;
 
-  if (flag_sched_last_insn_heuristic)
-    {
-      int i = VEC_length (rtx, scheduled_insns);
-      last = NULL_RTX;
-      while (i-- > 0)
-	{
-	  last = VEC_index (rtx, scheduled_insns, i);
-	  if (NONDEBUG_INSN_P (last))
-	    break;
-	}
-    }
-
   /* Compare insns based on their relation to the last scheduled
      non-debug insn.  */
-  if (flag_sched_last_insn_heuristic && last && NONDEBUG_INSN_P (last))
+  if (flag_sched_last_insn_heuristic && last_nondebug_scheduled_insn)
     {
       dep_t dep1;
       dep_t dep2;
+      rtx last = last_nondebug_scheduled_insn;
 
       /* Classify the instructions into three classes:
          1) Data dependent on last schedule insn.
@@ -2967,6 +2961,7 @@ schedule_block (basic_block *target_bb)
 
   /* We start inserting insns after PREV_HEAD.  */
   last_scheduled_insn = nonscheduled_insns_begin = prev_head;
+  last_nondebug_scheduled_insn = NULL_RTX;
 
   gcc_assert ((NOTE_P (last_scheduled_insn)
 	       || DEBUG_INSN_P (last_scheduled_insn))
@@ -3226,7 +3221,8 @@ schedule_block (basic_block *target_bb)
 	  /* Update counters, etc in the scheduler's front end.  */
 	  (*current_sched_info->begin_schedule_ready) (insn);
 	  VEC_safe_push (rtx, heap, scheduled_insns, insn);
-	  last_scheduled_insn = insn;
+	  gcc_assert (NONDEBUG_INSN_P (insn));
+	  last_nondebug_scheduled_insn = last_scheduled_insn = insn;
 
 	  if (recog_memoized (insn) >= 0)
 	    {
@@ -5654,9 +5650,16 @@ sched_create_empty_bb_1 (basic_block after)
 rtx
 sched_emit_insn (rtx pat)
 {
-  rtx insn = emit_insn_after (pat, last_scheduled_insn);
-  last_scheduled_insn = insn;
+  rtx insn = emit_insn_before (pat, nonscheduled_insns_begin);
   haifa_init_insn (insn);
+
+  if (current_sched_info->add_remove_insn)
+    current_sched_info->add_remove_insn (insn, 0);
+
+  (*current_sched_info->begin_schedule_ready) (insn);
+  VEC_safe_push (rtx, heap, scheduled_insns, insn);
+
+  last_scheduled_insn = insn;
   return insn;
 }
 

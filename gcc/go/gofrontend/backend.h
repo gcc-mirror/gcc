@@ -7,10 +7,6 @@
 #ifndef GO_BACKEND_H
 #define GO_BACKEND_H
 
-class Function_type;
-class Struct_type;
-class Interface_type;
-
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
@@ -36,9 +32,6 @@ class Bvariable;
 // The backend representation of a label.
 class Blabel;
 
-// A list of backend types.
-typedef std::vector<Btype*> Btypes;
-
 // The backend interface.  This is a pure abstract class that a
 // specific backend will implement.
 
@@ -46,6 +39,24 @@ class Backend
 {
  public:
   virtual ~Backend() { }
+
+  // Name/type/location.  Used for function parameters, struct fields,
+  // interface methods.
+  struct Btyped_identifier
+  {
+    std::string name;
+    Btype* btype;
+    source_location location;
+
+    Btyped_identifier()
+      : name(), btype(NULL), location(UNKNOWN_LOCATION)
+    { }
+
+    Btyped_identifier(const std::string& a_name, Btype* a_btype,
+		     source_location a_location)
+      : name(a_name), btype(a_btype), location(a_location)
+    { }
+  };
 
   // Types.
 
@@ -69,47 +80,121 @@ class Backend
   virtual Btype*
   integer_type(bool is_unsigned, int bits) = 0;
 
-  // Get an unnamed floating point type with the given number of bits.
+  // Get an unnamed floating point type with the given number of bits
+  // (32 or 64).
   virtual Btype*
   float_type(int bits) = 0;
 
-  // Get the unnamed string type.
+  // Get an unnamed complex type with the given number of bits (64 or 128).
   virtual Btype*
-  string_type() = 0;
+  complex_type(int bits) = 0;
+
+  // Get a pointer type.
+  virtual Btype*
+  pointer_type(Btype* to_type) = 0;
 
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
   // is provided so that the names are available.
   virtual Btype*
-  function_type(const Function_type*, Btype* receiver,
-		const Btypes* parameters,
-		const Btypes* results) = 0;
+  function_type(const Btyped_identifier& receiver,
+		const std::vector<Btyped_identifier>& parameters,
+		const std::vector<Btyped_identifier>& results,
+		source_location location) = 0;
 
-  // Get a struct type.  The Struct_type is provided to get the field
-  // names.
+  // Get a struct type.
   virtual Btype*
-  struct_type(const Struct_type*, const Btypes* field_types) = 0;
+  struct_type(const std::vector<Btyped_identifier>& fields) = 0;
 
   // Get an array type.
   virtual Btype*
-  array_type(const Btype* element_type, const Bexpression* length) = 0;
+  array_type(Btype* element_type, Bexpression* length) = 0;
 
-  // Get a slice type.
+  // Create a placeholder pointer type.  This is used for a named
+  // pointer type, since in Go a pointer type may refer to itself.
+  // NAME is the name of the type, and the location is where the named
+  // type is defined.  FOR_FUNCTION is true if this is for a Go
+  // function type, which corresponds to a C/C++ pointer to function
+  // type.  The return value will later be passed as the first
+  // parameter to set_placeholder_pointer_type or
+  // set_placeholder_function_type.
   virtual Btype*
-  slice_type(const Btype* element_type) = 0;
+  placeholder_pointer_type(const std::string& name, source_location,
+			   bool for_function) = 0;
 
-  // Get a map type.
-  virtual Btype*
-  map_type(const Btype* key_type, const Btype* value_type, source_location) = 0;
+  // Fill in a placeholder pointer type as a pointer.  This takes a
+  // type returned by placeholder_pointer_type and arranges for it to
+  // point to to_type.  Returns true on success, false on failure.
+  virtual bool
+  set_placeholder_pointer_type(Btype* placeholder, Btype* to_type) = 0;
 
-  // Get a channel type.
-  virtual Btype*
-  channel_type(const Btype* element_type) = 0;
+  // Fill in a placeholder pointer type as a function.  This takes a
+  // type returned by placeholder_pointer_type and arranges for it to
+  // become a real Go function type (which corresponds to a C/C++
+  // pointer to function type).  FT will be something returned by the
+  // function_type method.  Returns true on success, false on failure.
+  virtual bool
+  set_placeholder_function_type(Btype* placeholder, Btype* ft) = 0;
 
-  // Get an interface type.  The Interface_type is provided to get the
-  // method names.
+  // Create a placeholder struct type.  This is used for a named
+  // struct type, as with placeholder_pointer_type.
   virtual Btype*
-  interface_type(const Interface_type*, const Btypes* method_types) = 0;
+  placeholder_struct_type(const std::string& name, source_location) = 0;
+
+  // Fill in a placeholder struct type.  This takes a type returned by
+  // placeholder_struct_type and arranges for it to become a real
+  // struct type.  The parameter is as for struct_type.  Returns true
+  // on success, false on failure.
+  virtual bool
+  set_placeholder_struct_type(Btype* placeholder,
+			      const std::vector<Btyped_identifier>& fields)
+  			= 0;
+
+  // Create a placeholder array type.  This is used for a named array
+  // type, as with placeholder_pointer_type, to handle cases like
+  // type A []*A.
+  virtual Btype*
+  placeholder_array_type(const std::string& name, source_location) = 0;
+
+  // Fill in a placeholder array type.  This takes a type returned by
+  // placeholder_array_type and arranges for it to become a real array
+  // type.  The parameters are as for array_type.  Returns true on
+  // success, false on failure.
+  virtual bool
+  set_placeholder_array_type(Btype* placeholder, Btype* element_type,
+			     Bexpression* length) = 0;
+
+  // Return a named version of a type.  The location is the location
+  // of the type definition.  This will not be called for a type
+  // created via placeholder_pointer_type, placeholder_struct_type, or
+  // placeholder_array_type..  (It may be called for a pointer,
+  // struct, or array type in a case like "type P *byte; type Q P".)
+  virtual Btype*
+  named_type(const std::string& name, Btype*, source_location) = 0;
+
+  // Create a marker for a circular pointer type.  Go pointer and
+  // function types can refer to themselves in ways that are not
+  // permitted in C/C++.  When a circular type is found, this function
+  // is called for the circular reference.  This permits the backend
+  // to decide how to handle such a type.  PLACEHOLDER is the
+  // placeholder type which has already been created; if the backend
+  // is prepared to handle a circular pointer type, it may simply
+  // return PLACEHOLDER.  FOR_FUNCTION is true if this is for a
+  // function type.
+  //
+  // For "type P *P" the sequence of calls will be
+  //   bt1 = placeholder_pointer_type();
+  //   bt2 = circular_pointer_type(bt1, false);
+  //   set_placeholder_pointer_type(bt1, bt2);
+  virtual Btype*
+  circular_pointer_type(Btype* placeholder, bool for_function) = 0;
+
+  // Return whether the argument could be a special type created by
+  // circular_pointer_type.  This is used to introduce explicit type
+  // conversions where needed.  If circular_pointer_type returns its
+  // PLACEHOLDER parameter, this may safely always return false.
+  virtual bool
+  is_circular_pointer_type(Btype*) = 0;
 
   // Statements.
 
@@ -299,6 +384,7 @@ extern Bexpression* tree_to_expr(tree);
 extern Bstatement* tree_to_stat(tree);
 extern Bfunction* tree_to_function(tree);
 extern Bblock* tree_to_block(tree);
+extern tree type_to_tree(Btype*);
 extern tree expr_to_tree(Bexpression*);
 extern tree stat_to_tree(Bstatement*);
 extern tree block_to_tree(Bblock*);

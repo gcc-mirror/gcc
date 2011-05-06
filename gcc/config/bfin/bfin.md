@@ -415,44 +415,46 @@
 
 ;; Conditional moves
 
-(define_expand "movsicc"
-  [(set (match_operand:SI 0 "register_operand" "")
-        (if_then_else:SI (match_operand 1 "comparison_operator" "")
-                         (match_operand:SI 2 "register_operand" "")
-                         (match_operand:SI 3 "register_operand" "")))]
+(define_mode_iterator CCMOV [QI HI SI])
+
+(define_expand "mov<mode>cc"
+  [(set (match_operand:CCMOV 0 "register_operand" "")
+        (if_then_else:CCMOV (match_operand 1 "comparison_operator" "")
+			    (match_operand:CCMOV 2 "register_operand" "")
+			    (match_operand:CCMOV 3 "register_operand" "")))]
   ""
 {
-  operands[1] = bfin_gen_compare (operands[1], SImode);
+  operands[1] = bfin_gen_compare (operands[1], <MODE>mode);
 })
 
-(define_insn "*movsicc_insn1"
-  [(set (match_operand:SI 0 "register_operand" "=da,da,da")
-        (if_then_else:SI
+(define_insn "*mov<mode>cc_insn1"
+  [(set (match_operand:CCMOV 0 "register_operand" "=da,da,da")
+        (if_then_else:CCMOV
 	    (eq:BI (match_operand:BI 3 "register_operand" "C,C,C")
 		(const_int 0))
-	    (match_operand:SI 1 "register_operand" "da,0,da")
-	    (match_operand:SI 2 "register_operand" "0,da,da")))]
+	    (match_operand:CCMOV 1 "register_operand" "da,0,da")
+	    (match_operand:CCMOV 2 "register_operand" "0,da,da")))]
   ""
   "@
-    if !cc %0 =%1; /* movsicc-1a */
-    if cc %0 =%2; /* movsicc-1b */
-    if !cc %0 =%1; if cc %0=%2; /* movsicc-1 */"
+    if !cc %0 = %1;
+    if cc %0 = %2;
+    if !cc %0 = %1; if cc %0 = %2;"
   [(set_attr "length" "2,2,4")
    (set_attr "type" "movcc")
    (set_attr "seq_insns" "*,*,multi")])
 
-(define_insn "*movsicc_insn2"
-  [(set (match_operand:SI 0 "register_operand" "=da,da,da")
-        (if_then_else:SI
+(define_insn "*mov<mode>cc_insn2"
+  [(set (match_operand:CCMOV 0 "register_operand" "=da,da,da")
+        (if_then_else:CCMOV
 	    (ne:BI (match_operand:BI 3 "register_operand" "C,C,C")
 		(const_int 0))
-	    (match_operand:SI 1 "register_operand" "0,da,da")
-	    (match_operand:SI 2 "register_operand" "da,0,da")))]
+	    (match_operand:CCMOV 1 "register_operand" "0,da,da")
+	    (match_operand:CCMOV 2 "register_operand" "da,0,da")))]
   ""
   "@
-   if !cc %0 =%2; /* movsicc-2b */
-   if cc %0 =%1; /* movsicc-2a */
-   if cc %0 =%1; if !cc %0=%2; /* movsicc-1 */"
+   if !cc %0 = %2;
+   if cc %0 = %1;
+   if cc %0 = %1; if !cc %0 = %2;"
   [(set_attr "length" "2,2,4")
    (set_attr "type" "movcc")
    (set_attr "seq_insns" "*,*,multi")])
@@ -1215,22 +1217,21 @@
   "%0 = %h2 * %h1 (IS,M)%!"
   [(set_attr "type" "dsp32")])
 
-;; The processor also supports ireg += mreg or ireg -= mreg, but these
-;; are unusable if we don't ensure that the corresponding lreg is zero.
-;; The same applies to the add/subtract constant versions involving
-;; iregs
+;; The alternative involving IREGS requires that the corresponding L register
+;; is zero.
 
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=ad,a,d")
-	(plus:SI (match_operand:SI 1 "register_operand" "%0, a,d")
-		 (match_operand:SI 2 "reg_or_7bit_operand" "Ks7, a,d")))]
+  [(set (match_operand:SI 0 "register_operand" "=ad,a,d,b")
+       (plus:SI (match_operand:SI 1 "register_operand" "%0, a,d,0")
+                (match_operand:SI 2 "reg_or_7bit_operand" "Ks7, a,d,fP2P4")))]
   ""
   "@
    %0 += %2;
    %0 = %1 + %2;
-   %0 = %1 + %2;"
+   %0 = %1 + %2;
+   %0 += %2;"
   [(set_attr "type" "alu0")
-   (set_attr "length" "2,2,2")])
+   (set_attr "length" "2,2,2,2")])
 
 (define_insn "ssaddsi3"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -1688,20 +1689,20 @@
 (define_expand "rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(rotate:SI (match_operand:SI 1 "register_operand" "")
-		   (match_operand:SI 2 "immediate_operand" "")))]
+		   (match_operand:SI 2 "const_int_operand" "")))]
   ""
 {
-  if (INTVAL (operands[2]) != 16)
+  if (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 16)
     FAIL;
 })
 
 (define_expand "rotrsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(rotatert:SI (match_operand:SI 1 "register_operand" "")
-		     (match_operand:SI 2 "immediate_operand" "")))]
+		     (match_operand:SI 2 "const_int_operand" "")))]
   ""
 {
-  if (INTVAL (operands[2]) != 16)
+  if (GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != 16)
     FAIL;
   emit_insn (gen_rotl16 (operands[0], operands[1]));
   DONE;
@@ -1961,15 +1962,15 @@
 
 (define_insn "loop_end"
   [(set (pc)
-	(if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "+a*d,*b*v*f,m")
+	(if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,0,0")
 			  (const_int 1))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
-   (set (match_dup 0)
-	(plus (match_dup 0)
+   (set (match_operand:SI 0 "nonimmediate_operand" "=a*d,*b*v*f,m")
+	(plus (match_dup 2)
 	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
-   (clobber (match_scratch:SI 2 "=X,&r,&r"))]
+   (clobber (match_scratch:SI 3 "=X,&r,&r"))]
   ""
   "@
    /* loop end %0 %l1 */

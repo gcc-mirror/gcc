@@ -112,6 +112,7 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
     case OPT_Wall:
       warn_unused = value;
       warn_uninitialized = value;
+      warn_maybe_uninitialized = value;
       break;
 
     case OPT_Wmissing_prototypes:

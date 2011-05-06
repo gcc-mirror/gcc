@@ -61,3 +61,7 @@ Return pointers in both a0 and d0
 mliw
 Target Report Mask(ALLOW_LIW)
 Allow gcc to generate LIW instructions
+
+msetlb
+Target Report Mask(ALLOW_SETLB)
+Allow gcc to generate the SETLB and Lcc instructions

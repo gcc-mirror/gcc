@@ -18,6 +18,9 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/mips/mips-opts.h
+
 EB
 Driver
 
@@ -25,8 +28,27 @@ EL
 Driver
 
 mabi=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(mips_abi) Var(mips_abi) Init(MIPS_ABI_DEFAULT)
 -mabi=ABI	Generate code that conforms to the given ABI
+
+Enum
+Name(mips_abi) Type(int)
+Known MIPS ABIs (for use with the -mabi= option):
+
+EnumValue
+Enum(mips_abi) String(32) Value(ABI_32)
+
+EnumValue
+Enum(mips_abi) String(o64) Value(ABI_O64)
+
+EnumValue
+Enum(mips_abi) String(n32) Value(ABI_N32)
+
+EnumValue
+Enum(mips_abi) String(64) Value(ABI_64)
+
+EnumValue
+Enum(mips_abi) String(eabi) Value(ABI_EABI)
 
 mabicalls
 Target Report Mask(ABICALLS)
@@ -57,8 +79,21 @@ Target Report Mask(CHECK_ZERO_DIV)
 Trap on integer divide by zero
 
 mcode-readable=
-Target RejectNegative Joined
+Target RejectNegative Joined Enum(mips_code_readable_setting) Var(mips_code_readable) Init(CODE_READABLE_YES)
 -mcode-readable=SETTING	Specify when instructions are allowed to access code
+
+Enum
+Name(mips_code_readable_setting) Type(enum mips_code_readable_setting)
+Valid arguments to -mcode-readable=:
+
+EnumValue
+Enum(mips_code_readable_setting) String(yes) Value(CODE_READABLE_YES)
+
+EnumValue
+Enum(mips_code_readable_setting) String(pcrel) Value(CODE_READABLE_PCREL)
+
+EnumValue
+Enum(mips_code_readable_setting) String(no) Value(CODE_READABLE_NO)
 
 mdivide-breaks
 Target Report RejectNegative Mask(DIVIDE_BREAKS)
@@ -226,10 +261,6 @@ mmemcpy
 Target Report Mask(MEMCPY)
 Don't optimize block moves
 
-mmips-tfile
-Target
-Use the mips-tfile postpass
-
 mmt
 Target Report Var(TARGET_MT)
 Allow the use of MT instructions
@@ -259,8 +290,21 @@ Target Report Mask(PAIRED_SINGLE_FLOAT)
 Use paired-single floating-point instructions
 
 mr10k-cache-barrier=
-Target Joined RejectNegative
+Target Joined RejectNegative Enum(mips_r10k_cache_barrier_setting) Var(mips_r10k_cache_barrier) Init(R10K_CACHE_BARRIER_NONE)
 -mr10k-cache-barrier=SETTING	Specify when r10k cache barriers should be inserted
+
+Enum
+Name(mips_r10k_cache_barrier_setting) Type(enum mips_r10k_cache_barrier_setting)
+Valid arguments to -mr10k-cache-barrier=:
+
+EnumValue
+Enum(mips_r10k_cache_barrier_setting) String(load-store) Value(R10K_CACHE_BARRIER_LOAD_STORE)
+
+EnumValue
+Enum(mips_r10k_cache_barrier_setting) String(store) Value(R10K_CACHE_BARRIER_STORE)
+
+EnumValue
+Enum(mips_r10k_cache_barrier_setting) String(none) Value(R10K_CACHE_BARRIER_NONE)
 
 mrelax-pic-calls
 Target Report Mask(RELAX_PIC_CALLS)

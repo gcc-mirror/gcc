@@ -348,26 +348,20 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
 			     bool insert_at_next_slot_p)
 {
   void **slot;
-  struct tree_int_map d_entry, *entry;
   unsigned ix;
   bool existed_p;
 
   gcc_assert (t);
 
-  d_entry.base.from = t;
-  slot = htab_find_slot (cache->node_map, &d_entry, INSERT);
-  if (*slot == NULL)
+  slot = pointer_map_insert (cache->node_map, t);
+  if (!*slot)
     {
       /* Determine the next slot to use in the cache.  */
       if (insert_at_next_slot_p)
 	ix = VEC_length (tree, cache->nodes);
       else
 	ix = *ix_p;
-
-      entry = (struct tree_int_map *)pool_alloc (cache->node_map_entries);
-      entry->base.from = t;
-      entry->to = ix;
-      *slot = entry;
+       *slot = (void *)(size_t) (ix + 1);
 
       lto_streamer_cache_add_to_node_array (cache, ix, t);
 
@@ -376,26 +370,14 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
     }
   else
     {
-      entry = (struct tree_int_map *) *slot;
-      ix = entry->to;
+      ix = (size_t) *slot - 1;
 
       if (!insert_at_next_slot_p && ix != *ix_p)
 	{
 	  /* If the caller wants to insert T at a specific slot
 	     location, and ENTRY->TO does not match *IX_P, add T to
-	     the requested location slot.  This situation arises when
-	     streaming builtin functions.
-
-	     For instance, on the writer side we could have two
-	     FUNCTION_DECLS T1 and T2 that are represented by the same
-	     builtin function.  The reader will only instantiate the
-	     canonical builtin, but since T1 and T2 had been
-	     originally stored in different cache slots (S1 and S2),
-	     the reader must be able to find the canonical builtin
-	     function at slots S1 and S2.  */
-	  gcc_assert (lto_stream_as_builtin_p (t));
+	     the requested location slot.  */
 	  ix = *ix_p;
-
 	  lto_streamer_cache_add_to_node_array (cache, ix, t);
 	}
 
@@ -453,14 +435,12 @@ lto_streamer_cache_lookup (struct lto_streamer_cache_d *cache, tree t,
 			   unsigned *ix_p)
 {
   void **slot;
-  struct tree_int_map d_slot;
   bool retval;
   unsigned ix;
 
   gcc_assert (t);
 
-  d_slot.base.from = t;
-  slot = htab_find_slot (cache->node_map, &d_slot, NO_INSERT);
+  slot = pointer_map_contains  (cache->node_map, t);
   if (slot == NULL)
     {
       retval = false;
@@ -469,7 +449,7 @@ lto_streamer_cache_lookup (struct lto_streamer_cache_d *cache, tree t,
   else
     {
       retval = true;
-      ix = ((struct tree_int_map *) *slot)->to;
+      ix = (size_t) *slot - 1;
     }
 
   if (ix_p)
@@ -513,6 +493,8 @@ lto_record_common_node (tree *nodep, VEC(tree, heap) **common_nodes,
 	TYPE_CANONICAL (node) = NULL_TREE;
       node = gimple_register_type (node);
       TYPE_CANONICAL (node) = gimple_register_canonical_type (node);
+      if (in_lto_p)
+	TYPE_CANONICAL (*nodep) = TYPE_CANONICAL (node);
       *nodep = node;
     }
 
@@ -617,11 +599,7 @@ lto_streamer_cache_create (void)
 
   cache = XCNEW (struct lto_streamer_cache_d);
 
-  cache->node_map = htab_create (101, tree_int_map_hash, tree_int_map_eq, NULL);
-
-  cache->node_map_entries = create_alloc_pool ("node map",
-					       sizeof (struct tree_int_map),
-					       100);
+  cache->node_map = pointer_map_create ();
 
   /* Load all the well-known tree nodes that are always created by
      the compiler on startup.  This prevents writing them out
@@ -645,8 +623,7 @@ lto_streamer_cache_delete (struct lto_streamer_cache_d *c)
   if (c == NULL)
     return;
 
-  htab_delete (c->node_map);
-  free_alloc_pool (c->node_map_entries);
+  pointer_map_destroy (c->node_map);
   VEC_free (tree, heap, c->nodes);
   free (c);
 }

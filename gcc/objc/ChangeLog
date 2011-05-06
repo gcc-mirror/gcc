@@ -1,3 +1,51 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-runtime-shared-support.h (get_arg_type_list): Delete.
+	(build_function_type_for_method): Declare.
+	* objc-runtime-hooks.h (struct _objc_runtime_hooks_r): Change
+	type of get_arg_type_base_list field.
+	* objc-act.h (OBJC_VOID_AT_END): Delete.
+	* objc-act.c (get_arg_type_list): Delete.
+	(build_function_type_for_method): New function.
+	(objc_decl_method_attributes): Call build_function_type_for_method.
+	(really_start_method): Likewise.
+	* objc-gnu-runtime-abi-01.c
+	(gnu_runtime_abi_01_get_type_arg_list_base): Change prototype and
+	adjust function accordingly.  Update header comment.
+	(build_objc_method_call): Call build_function_type_for_method.
+	* objc-next-runtime-abi-01.c
+	(next_runtime_abi_01_get_type_arg_list_base): Change prototype and
+	adjust function accordingly.  Update header comment.
+	(build_objc_method_call): Call build_function_type_for_method.
+	* objc-next-runtime-abi-02.c
+	(next_runtime_abi_02_get_type_arg_list_base): Change prototype and
+	adjust function accordingly.  Update header comment.
+	(objc_copy_to_temp_side_effect_params): Take fntype instead of a
+	typelist.  Use function_args_iterator for traversing fntype.
+	(build_v2_build_objc_method_call): Adjust call to it.
+	Call build_function_type_for_method
+
+2011-05-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* objc-act.c (objc_start_method_definition): Add parameter expr.
+	Update call to start_method_def.
+	(objc_generate_cxx_ctor_or_dtor, objc_synthesize_getter,
+	objc_synthesize_setter) Update calls to
+	objc_start_method_definition.
+	(objc_get_parm_info): Add parameter expr.  Update call to
+	get_parm_info.
+	(start_method_def): Add parameter expr.  Update call to
+	objc_get_parm_info.
+	* objc-gnu-runtime-abi-01.c (build_module_initializer_routine):
+	Update call to objc_get_parm_info.
+	* objc-runtime-shared-support.h (objc_get_parm_info): Add extra
+	parameter.
+
+2011-04-26  Jason Merrill  <jason@redhat.com>
+
+	* objc-act.c (objc_fold_objc_type_ref): Remove.
+	* objc-act.h: Remove prototype.
+
 2011-04-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-act.c (synth_module_prologue): Call build_function_type_list
@@ -16,7 +64,7 @@
 	(objc_detect_field_duplicates): New.
 	(hash_instance_variable): New.
 	(eq_instance_variable): New.
-	
+
 2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_declare_protocols): Renamed to
@@ -30,7 +78,7 @@
 	identifier as argument instead of a tree list.  This means callers
 	don't have to build temporary tree lists to call this function.
 	(synth_module_prologue): Updated calls to objc_declare_class.
-	
+
 2011-04-13  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (build_keyword_selector): Use get_identifier_with_length
@@ -54,7 +102,7 @@
 	inefficient temporary argument lists.  Compare the arguments
 	directly.  (match_proto_with_proto): Removed; incorporated into
 	comp_proto_with_proto ().
-	
+
 2011-04-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (printable_ivar_name): New.
@@ -84,7 +132,7 @@
 2011-02-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_v2_encode_prop_attr): Rewritten.
-	
+
 2011-02-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (build_private_template): Do not copy the
@@ -245,7 +293,7 @@
 	hook.  Added assert.  Use the get_class_super_ref and
 	get_category_super_ref runtime hooks.
 	(objc_v2_encode_prop_attr): New.
-	
+
 2011-01-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47314
@@ -334,7 +382,7 @@
 	(objc_build_setter_call, objc_build_message_expr,
 	objc_finish_foreach_loop): Updated call to
 	objc_finish_message_expr.
-	
+
 2010-12-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47076
@@ -427,7 +475,7 @@
 	c-family/c-objc.h.
 	(objc/objc-lang.o): Same change.
 	* config-lang.in (gtfiles): Added c-family/c-objc.h.
-	
+
 2010-12-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang-specs.h: Don't handle -ftraditional.
@@ -454,7 +502,7 @@
 	Allow 'make check-objc -j2'
 	* Make-lang.in (lang_checks_parallelized): New.
 	(check_objc_parallelize): New.
-	
+
 2010-11-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (start_class): When a class is reimplemented,
@@ -495,7 +543,7 @@
 	readonly properties.
 	(objc_build_class_component_ref): Updated call to
 	maybe_make_artificial_property_decl.
-	
+
 2010-11-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_build_struct): Fixed loops that save and
@@ -504,7 +552,7 @@
 	Duplicate TYPE_LANG_SPECIFIC for each type before restoring
 	TYPE_OBJC_INFO.
 	(objc_get_protocol_qualified_type): Updated comments.
-	
+
 2010-11-25  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_build_struct): Install TYPE_OBJC_INTERFACE
@@ -549,8 +597,8 @@
 	class of a category.  Recognize the 'deprecated' attribute when
 	starting and interface, and mark the interface with
 	TREE_DEPRECATED if present.  Store attributes in the interface.
-	
-2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>	
+
+2010-11-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (lookup_protocol): Added 'warn_if_deprecated'
 	argument.  If it is 'true' and the protocol is deprecated, emit a
@@ -568,7 +616,7 @@
 	(check_protocol_recursively): Same change.
 	(lookup_and_install_protocols): Same change.
 	* objc-act.h: Updated comments.
-	
+
 2010-11-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (lookup_method_in_protocol_list): Search methods in
@@ -628,7 +676,7 @@
 	(objc_add_synthesize_declaration_for_property): Check that the
 	property to synthesize and the instance variable to use have the
 	same type.
-	
+
 2010-11-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* objc-act.c (objc_init): Use %' in diagnostic.
@@ -667,7 +715,7 @@
 	protocols and superclasses as well.
 	(objc_synthesize_setter): Search for the setter declaration in
 	protocols and superclasses as well.
-	
+
 2010-11-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (lookup_property): When checking categories, also
@@ -685,7 +733,7 @@
 	PROPERTY_GETTER_NAME here; this is now done earlier, in
 	objc_add_property_declaration.
 	* objc-act.h (CLASS_NAME, CLASS_SUPER_NAME): Added comments.
-	
+
 2010-11-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Fixed using the Objective-C 2.0 dot-syntax with self and super.
@@ -710,7 +758,7 @@
 	* objc-tree.def (PROPERTY_REF): Increased the number of operands
 	from 2 to 3.  Updated comments.
 	* objc-act.h (PROPERTY_REF_GETTER_CALL): New.
-	
+
 2010-11-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/44981
@@ -720,7 +768,7 @@
 
 2010-11-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Fixed using the Objective-C 2.0 dot-syntax with class names.	
+	Fixed using the Objective-C 2.0 dot-syntax with class names.
 	* objc-act.c (objc_build_class_component_ref): New.
 
 2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
@@ -735,7 +783,7 @@
 	and do not warn if the property is readonly or if the type is a Class.
 	(objc_finish_foreach_loop): Updated calls to
 	objc_type_valid_for_messaging.
-	
+
 2010-11-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented -fobjc-std=objc1 flag.
@@ -767,7 +815,7 @@
 	(PROPERTY_HAS_NO_GETTER): New.
 	(PROPERTY_HAS_NO_SETTER): New.
 	* objc-tree.def: Updated comment.
-	
+
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented format and noreturn attributes for Objective-C methods.
@@ -783,16 +831,16 @@
 	"deprecated".  In the case of "format", adjust the arguments.
 	Always process the attributes in the same way no matter if
 	"sentinel" is in the list or not.
-	
+
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_maybe_build_component_ref): Warn about using
 	deprecated properties.
 	(objc_maybe_printable_name): Support PROPERTY_DECL.
-	
+
 2010-11-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Implemented Objective-C 2.0 property accessors.	
+	Implemented Objective-C 2.0 property accessors.
 	* objc-act.h (enum objc_tree_index): Added OCTI_GET_PROPERTY_DECL,
 	OCTI_SET_PROPERTY_DECL, OCTI_COPY_STRUCT_DECL,
 	OCTI_GET_PROPERTY_STRUCT_DECL and OCTI_SET_PROPERTY_STRUCT_DECL.
@@ -809,7 +857,7 @@
 	work with properties that are not nonatomic, assign properties.
 	(objc_synthesize_setter): Implemented synthesizing setters that
 	work with properties that are not nonatomic, assign properties.
-	
+
 2010-10-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented Objective-C 2.0 @property, @synthesize and @dynamic.
@@ -900,7 +948,7 @@
 	(objc_gimplify_property_ref): New.
 	(objc_gimplify_expr): Use a switch.  In case of a PROPERTY_REF, call
 	objc_gimplify_property_ref.
-	
+
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_add_property_declaration): Added arguments to
@@ -914,10 +962,10 @@
 	(property_setter): Removed.
 	(property_getter): Removed.
 	(property_ivar): Removed.
-	(property_copies): Removed.	
+	(property_copies): Removed.
 	(objc_set_property_attr): Removed.
 	* objc-act.h (enum property_assign_semantics): New.
-	
+
 2010-10-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_add_property_variable): Renamed to
@@ -925,7 +973,7 @@
 	warnings and errors to use it.  Use error, not fatal_error, if a
 	property declaration is found outside an interface or
 	implementation context.
-	
+
 2010-10-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_build_keyword_decl): Updated comments.  Do not
@@ -940,7 +988,7 @@
 	of DECLs that we don't recognize.  Immediately return NULL for them.
 	(objc_printable_name): Removed C++-specific case, which is no
 	longer used.  Updated comments.
-	
+
 2010-10-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (OBJC_GEN_METHOD_LABEL): Updated comments.
@@ -956,7 +1004,7 @@
 2010-10-21  Iain Sandoe  <iains@gcc.gnu.org>
 
 	Based on the CFString implementation in FSF apple/trunk branch.
-	
+
 	* objc/objc-act.c (objc_build_string_object): Handle CFStrings.
 
 2010-10-21  Nicola Pero  <nicola.pero@meta-innovation.com>
@@ -985,7 +1033,7 @@
 	twice.  Added missing gcc_unreachable for default case - twice.
 	(dump_interface): Use a switch instead of a chain of ifs.
 	(handle_impent): Same change.
-	
+
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.h (objc_inherit_code): Removed.
@@ -1001,8 +1049,8 @@
 	(objc_synthesize_getter): Updated call to
 	objc_start_method_definition.  Do not set objc_inherit_code.
 	(objc_synthesize_setter): Updated call to
-	objc_start_method_definition.  Do not set objc_inherit_code.	
-	
+	objc_start_method_definition.  Do not set objc_inherit_code.
+
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.  Obvious updates
@@ -1018,8 +1066,8 @@
 	(objc_declare_class): Enter class name into hash table.
 	(objc_is_class_name): Do a hash look up of class name.
 	(hash_init): Initialize the two new hash tables.
-	* objc-act.h: Added cls_name_hash_list and als_name_hash_list 
-	declarations, removed class_chain and alias_chain.	
+	* objc-act.h: Added cls_name_hash_list and als_name_hash_list
+	declarations, removed class_chain and alias_chain.
 
 2010-10-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
@@ -1031,7 +1079,7 @@
 	for syntax-only run or PCH generation as this is done by the
 	callers.
 	* objc-act.h (objc_finish_file): Removed.
-	
+
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Implemented parsing @synthesize and @dynamic for
@@ -1039,11 +1087,11 @@
 	* objc-act.c (objc_add_synthesize_declaration): New.
 	(objc_add_dynamic_declaration): New.
 
-2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>	
+2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (lookup_and_install_protocols): Return NULL if passed
 	error_mark_node.
-	
+
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
@@ -1054,19 +1102,19 @@
 	* objc/objc-act.c (objc_is_class_name): template parameter is not
         an objective class name.
         (objc_generate_cxx_cdtors): Check for the null
-        objc_implementation_context.	
+        objc_implementation_context.
 
 2010-10-18  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Merge from 'apple/trunk' branch on FSF servers.	
-	
+	Merge from 'apple/trunk' branch on FSF servers.
+
 	2005-11-08  Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4330422
 	* objc/objc-act.c (objc_non_volatilized_type): New
 
 	2005-10-07  Fariborz Jahanian <fjahanian@apple.com>
-	
+
         Radar 4204796
 	* objc-act.c (objc_build_volatilized_type): Build 'volatilzed'
 	types with proper attribute set and correctly.
@@ -1074,11 +1122,11 @@
 	(objc_type_quals_match): Use the new attribute to check on
 	'volatilzed' type.
 	(hash_init): removed unneeded code.
-	
+
 2010-10-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
-	
+
 	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
 
 	Radar 4133425
@@ -1087,10 +1135,10 @@
 2010-10-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc-act.c: Rename 'objc_public_flag' to  objc_ivar_visibility and
-	make its type 'objc_ivar_visibility_kind'.  
+	make its type 'objc_ivar_visibility_kind'.
 	(objc_start_class_interface): Update to use visibility enum.
 	(objc_start_class_implementation): Likewise.
-	(objc_set_visibility): Update to use visibility enum, warn that 
+	(objc_set_visibility): Update to use visibility enum, warn that
 	@package is handle as per @public.
 	(add_instance_variable): Handle OBJC_IVAR_VIS_PACKAGE.
 	* objc-act.h: Rename 'objc_public_flag' to  objc_ivar_visibility and
@@ -1098,9 +1146,9 @@
 
 2010-10-14  Iain Sandoe  <iains@gcc.gnu.org>
 
-	merge from FSF apple 'trunk' branch. 
+	merge from FSF apple 'trunk' branch.
 	2006 Fariborz Jahanian <fjahanian@apple.com>
-	
+
 	Radars 4436866, 4505126, 4506903, 4517826
 	* objc-act.c (CALL_EXPR_OBJC_PROPERTY_GETTER): New.
 	property_readonly, property_getter, property_setter, property_ivar,
@@ -1148,7 +1196,7 @@
 
 2010-10-13  Iain Sandoe  <iains@gcc.gnu.org>
 
-	merge from FSF apple 'trunk' branch. 
+	merge from FSF apple 'trunk' branch.
 
 	2006-04-26 Fariborz Jahanian <fjahanian@apple.com>
 	Radar 3803157 (method attributes)
@@ -1175,13 +1223,13 @@
 
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* objc-act.c (build_objc_method_call): Replace calls to 
+	* objc-act.c (build_objc_method_call): Replace calls to
 	build_function_call () with the VEC equivalent.  Construct parameter
 	lists as VECs.
 
 2010-10-07  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* objc-act.c (objc_build_message_expr):  Call mark_exp_read () to 
+	* objc-act.c (objc_build_message_expr):  Call mark_exp_read () to
 	signal that the receiver has been used.
 
 2010-10-06  Nicola Pero  <nicola.pero@meta-innovation.com>
@@ -1215,7 +1263,7 @@
 	for valid objc object types.
 	(objc_finish_foreach_loop): Check for invalid objc objects in
 	foreach header.
-	
+
 2010-10-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
@@ -1225,7 +1273,7 @@
         Radar 4290840
 	* objc-act.c (objc_start_method_definition): Check for
 	error_mark_node for the selector name and make a quick exit.
-	
+
 2010-10-04  Andi Kleen <ak@linux.intel.com>
 
 	* Make-lang.in (cc1obj-dummy, cc1obj): Add + to build rule.
@@ -1246,7 +1294,7 @@
        * objc/objc-act.h (CLASS_OPTIONAL_CLS_METHODS,
        CLASS_OPTIONAL_NST_METHODS): New macros accessing a protocol
        class's optional method chains.
-	
+
 2010-09-30  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
@@ -1271,8 +1319,8 @@
 	* objc-act.c (objc_is_reserved_word): Removed.
 
 2010-09-28  Iain Sandoe  <iains@gcc.gnu.org>
-	
-	* objc-act.c (objc_add_method_declaration): Handle and ignore 
+
+	* objc-act.c (objc_add_method_declaration): Handle and ignore
 	attributes.
 	(objc_start_method_definition): Likewise.
 	(objc_generate_cxx_ctor_or_dtor): Pass NULL attributes to ctor/dtor.
@@ -1299,7 +1347,7 @@
 	* objc-act.c (objc_decay_parm_type): New function.
 	(get_arg_type_list): Decay types for all named arguments.
 	(objc_push_parm): Rebuild the PARM_DECL if its type has
-	been decayed.	
+	been decayed.
 
 2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
@@ -1316,7 +1364,7 @@
 	* objc-act.c (objc_compare_types): A new silent comparison
 	mode (-4), differing from regular comparison (-3) in that
 	'false' is returned instead of issuing warnings.
-	
+
 2010-09-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (encode_type): Do not add 'r' with the next runtime.
@@ -1353,7 +1401,7 @@
 	Encode C++ reference types as pointers.  Call encode_vector to
 	encode vectors.
 	(encode_vector): New function.
-	
+
 2010-09-27  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.  I modified the
@@ -1364,7 +1412,7 @@
         Radar 4301047
 
 	* objc-act.c (encode_type): Remove the hack.
-	
+
 	2005-07-20  Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4136935
@@ -1380,12 +1428,12 @@
 
 	Radar 4229905
 	* objc-act.c (objc_have_common_types): New function.
-	
+
 	2005-06-22  Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4154928
 	* objc-act.c (objc_common_type): New function.
-	
+
 2010-09-27  Richard Guenther  <rguenther@suse.de>
 
 	* objc-act.c (objc_get_class_reference): Use CP_TYPE_CONTEXT.
@@ -1409,7 +1457,7 @@
 	* objc-act.c (objc_get_interface_ivars): New function.
 	(objc_collecting_ivars): New variable.
 	(continue_class): Set and reset objc_collecting_ivars for context.
-	
+
 2010-09-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
@@ -1440,7 +1488,7 @@
 	* objc-act.c (objc_get_protocol_qualified_type): When looking
 	at a typedef, retrieve the precise type it describes (rather
 	than merely looking up a class by name).
-	
+
 2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-act.c (objc_begin_try_stmt): Generate an error if
@@ -1456,17 +1504,17 @@
 	PR objc/44140
 	* objc-act.c: build_objc_string_decl() remove declaration.
 	(finish_var_decl): Remove forcing of var output and marking
-	as "Used". 
-	(init_def_list): Use integer_zero_node. 
+	as "Used".
+	(init_def_list): Use integer_zero_node.
 	(init_objc_symtab): Use integer_zero_node, make the short
 	integer type specific on relevant nodes.
-	(generate_objc_symtab_decl): Remove call to 
+	(generate_objc_symtab_decl): Remove call to
 	forward_declare_categories().  Use null_pointer_node where
-	appropriate.  
-	(build_module_descriptor): Comment and mark this item as 
-	DECL_PRESERVE_P. 
+	appropriate.
+	(build_module_descriptor): Comment and mark this item as
+	DECL_PRESERVE_P.
 	(generate_static_references): Use gcc_unreachable instead of
-	abort (). 
+	abort ().
 	(diagnose_missing_method): New.
 	(build_next_selector_translation_table): New.
 	(build_gnu_selector_translation_table): New.
@@ -1474,20 +1522,20 @@
 	... and delete build_objc_string_decl().
 	(generate_dispatch_table): Make integer types explicit.
 	(generate_category): Pass implent and arrange for the data
-	to be extracted within the routine.  Do not start new vars, 
+	to be extracted within the routine.  Do not start new vars,
 	but finish the ones collcted during parsing.
 	(generate_shared_structures): Likewise.
 	(finish_objc):  Reorder code so that we finish variables before
 	referencing them.  Save the global data before calling meta-data
-	creation routines, and pass the current reference to the two 
-	main routines.  Only call generate_objc_image_info () for the 
+	creation routines, and pass the current reference to the two
+	main routines.  Only call generate_objc_image_info () for the
 	NeXT runtime.
 	(generate_classref_translation_entry): Comment on and make this
 	item DECL_PRESERVE_P.
 	(handle_class_ref): Use varpool interfaces, comment on and make
 	this item DECL_PRESERVE_P.
 	(handle_impent): Likewise.
-	(generate_objc_image_info): Only generate when the content is 
+	(generate_objc_image_info): Only generate when the content is
 	non-zero.  Make integer types explict.
 
 2010-07-03  Nathan Froyd  <froydnj@codesourcery.com>
@@ -1680,10 +1728,10 @@
 2009-07-17  Aldy Hernandez  <aldyh@redhat.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-	PR 40435 
+	PR 40435
 	* objc-act.c: Add location argument to all calls to
 	build_fold_addr_expr.
-	
+
 2009-07-14  Taras Glek  <tglek@mozilla.com>
 	    Rafael Espindola  <espindola@google.com>
 
@@ -1694,23 +1742,23 @@
 
 	* objc-act.c (next_sjlj_build_catch_list): Replace EXPR_LOCUS by
 	EXPR_LOCATION.
-	
+
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* objc-act.c: Replace %J by an explicit location. Update all
 	calls.
-	
+
 2009-07-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* objc-act.c: Replace %H by an explicit location. Update all
 	calls.
-	
+
 2009-06-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR objc/28050
 	* objc-act.c (objc_build_message_args): Return if ARGS is the
 	error_mark_node.
-	
+
 2009-06-19  Ian Lance Taylor  <iant@google.com>
 
 	* objc-act.c (objc_in_struct, objc_struct_types): Remove.
@@ -1725,7 +1773,7 @@
 	label_context_stack_se or label_context_stack_vm.
 
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
-	
+
 	* objc-act.c (finish_var_decl): Pass location to finish_decl.
 	(objc_get_parm_info): Same.
 	(get_super_receiver): Same.
@@ -1751,7 +1799,7 @@
 	build_modify_expr, build_compound_expr.
 	* objc-act.c: Add location to all calls to start_struct, build_decl,
 	finish_struct.
-	
+
 2009-06-09  Ian Lance Taylor  <iant@google.com>
 
 	* objc-act.c (objc_gimplify_expr): Change return type to int.
@@ -2082,11 +2130,11 @@
 	(add_class): Likewise.
 
 2007-01-02  Douglas Gregor  <doug.gregor@gmail.com>
-	
+
 	* objc-act.c (objc_build_volatilized_type): Keep track of
 	canonical types.
 	(objc_get_protocol_qualified_type): Ditto.
-	
+
 2006-11-02  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* objc-act.c (objc_finish_file): Remove ifdef clause for OBJCPLUS and
