@@ -1,5 +1,10 @@
 2011-05-06  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/18918
+	* gfortran.dg/coarray/this_image_2.f90: New.
+
+2011-05-06  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/48858
 	PR fortran/48820
 	* gfortran.dg/bind_c_usage_22.f90: New.
