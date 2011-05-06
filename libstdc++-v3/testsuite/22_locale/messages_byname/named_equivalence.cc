@@ -2,7 +2,7 @@
 
 // 2001-07-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2003, 2005, 2009 Free Software Foundation
+// Copyright (C) 2001, 2003, 2005, 2009, 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -62,8 +62,8 @@ void test01()
 
   // Check byname locale.
   catalog cat_byname = mssg_byname.open("libstdc++", loc_c, dir);
-  string s03 = mssg_byname.get(cat_de, 0, 0, "please");
-  string s04 = mssg_byname.get(cat_de, 0, 0, "thank you");
+  string s03 = mssg_byname.get(cat_byname, 0, 0, "please");
+  string s04 = mssg_byname.get(cat_byname, 0, 0, "thank you");
   VERIFY ( s03 == "bitte" );
   VERIFY ( s04 == "danke" );
   mssg_byname.close(cat_byname);
