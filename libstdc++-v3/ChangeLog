@@ -1,3 +1,7 @@
+2011-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/22_locale/messages_byname/named_equivalence.cc: Fix.
+
 2011-05-04  Marc Glisse  <marc.glisse@normalesup.org>
 
 	PR libstdc++/47913 (again)
