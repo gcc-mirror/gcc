@@ -1,3 +1,9 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/decl.c (intrin_arglists_compatible_p): Use iterators
+	instead of accessing TYPE_ARG_TYPES directly.
+	* gcc-interface/utils.c (handle_nonnull_attribute): Likewise.
+
 2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/48844

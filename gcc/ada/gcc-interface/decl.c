@@ -8330,22 +8330,26 @@ intrin_types_incompatible_p (tree t1, tree t2)
 static bool
 intrin_arglists_compatible_p (intrin_binding_t * inb)
 {
-  tree ada_args = TYPE_ARG_TYPES (inb->ada_fntype);
-  tree btin_args = TYPE_ARG_TYPES (inb->btin_fntype);
+  function_args_iterator ada_iter, btin_iter;
+
+  function_args_iter_init (&ada_iter, inb->ada_fntype);
+  function_args_iter_init (&btin_iter, inb->btin_fntype);
 
   /* Sequence position of the last argument we checked.  */
   int argpos = 0;
 
-  while (ada_args != 0 || btin_args != 0)
+  while (1)
     {
-      tree ada_type, btin_type;
+      tree ada_type = function_args_iter_cond (&ada_iter);
+      tree btin_type = function_args_iter_cond (&btin_iter);
+
+      /* If we've exhausted both lists simultaneously, we're done.  */
+      if (ada_type == NULL_TREE && btin_type == NULL_TREE)
+	break;
 
       /* If one list is shorter than the other, they fail to match.  */
-      if (ada_args == 0 || btin_args == 0)
+      if (ada_type == NULL_TREE || btin_type == NULL_TREE)
 	return false;
-
-      ada_type = TREE_VALUE (ada_args);
-      btin_type = TREE_VALUE (btin_args);
 
       /* If we're done with the Ada args and not with the internal builtin
 	 args, or the other way around, complain.  */
@@ -8373,8 +8377,9 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
 	  return false;
 	}
 
-      ada_args = TREE_CHAIN (ada_args);
-      btin_args = TREE_CHAIN (btin_args);
+      
+      function_args_iter_next (&ada_iter);
+      function_args_iter_next (&btin_iter);
     }
 
   return true;
