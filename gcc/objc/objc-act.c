@@ -5043,8 +5043,9 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 	 (by setting TREE_DEPRECATED and TREE_THIS_VOLATILE) so there
 	 is nothing to do.  */
       tree saved_type = TREE_TYPE (*node);
-      TREE_TYPE (*node) = build_function_type
-	(TREE_VALUE (saved_type), get_arg_type_list (*node, METHOD_REF, 0));
+      TREE_TYPE (*node)
+	= build_function_type_for_method (TREE_VALUE (saved_type), *node,
+					  METHOD_REF, 0);
       decl_attributes (node, filtered_attributes, flags);
       METHOD_TYPE_ATTRIBUTES (*node) = TYPE_ATTRIBUTES (TREE_TYPE (*node));
       TREE_TYPE (*node) = saved_type;
@@ -5057,60 +5058,66 @@ objc_method_decl (enum tree_code opcode)
   return opcode == INSTANCE_METHOD_DECL || opcode == CLASS_METHOD_DECL;
 }
 
-/* Used by `build_objc_method_call'.  Return an argument list for
-   method METH.  CONTEXT is either METHOD_DEF or METHOD_REF, saying
-   whether we are trying to define a method or call one.  SUPERFLAG
-   says this is for a send to super; this makes a difference for the
-   NeXT calling sequence in which the lookup and the method call are
-   done together.  If METH is null, user-defined arguments (i.e.,
-   beyond self and _cmd) shall be represented by `...'.  */
+/* Return a function type for METHOD with RETURN_TYPE.  CONTEXT is
+   either METHOD_DEF or METHOD_REF, indicating whether we are defining a
+   method or calling one.  SUPER_FLAG indicates whether this is a send
+   to super; this makes a difference for the NeXT calling sequence in
+   which the lookup and the method call are done together.  If METHOD is
+   NULL, user-defined arguments (i.e., beyond self and _cmd) shall be
+   represented as varargs.  */
 
 tree
-get_arg_type_list (tree meth, int context, int superflag)
+build_function_type_for_method (tree return_type, tree method,
+				int context, bool super_flag)
 {
-  tree arglist, akey;
+  VEC(tree,gc) *argtypes = make_tree_vector ();
+  tree t, ftype;
+  bool is_varargs = false;
 
-  /* Receiver & _cmd types are runtime-dependent.  */
-  arglist = (*runtime.get_arg_type_list_base) (meth, context, superflag);
+  (*runtime.get_arg_type_list_base) (&argtypes, method, context, super_flag);
 
-  /* No actual method prototype given -- assume that remaining arguments
-     are `...'.  */
-  if (!meth)
-    return arglist;
-
-  /* Build a list of argument types.  */
-  for (akey = METHOD_SEL_ARGS (meth); akey; akey = DECL_CHAIN (akey))
+  /* No actual method prototype given; remaining args passed as varargs.  */
+  if (method == NULL_TREE)
     {
-      tree arg_type = TREE_VALUE (TREE_TYPE (akey));
-
-      /* Decay argument types for the underlying C function as appropriate.  */
-      arg_type = objc_decay_parm_type (arg_type);
-
-      chainon (arglist, build_tree_list (NULL_TREE, arg_type));
+      is_varargs = true;
+      goto build_ftype;
     }
 
-  if (METHOD_ADD_ARGS (meth))
+  for (t = METHOD_SEL_ARGS (method); t; t = DECL_CHAIN (t))
     {
-      for (akey = TREE_CHAIN (METHOD_ADD_ARGS (meth));
-	   akey; akey = TREE_CHAIN (akey))
+      tree arg_type = TREE_VALUE (TREE_TYPE (t));
+
+      /* Decay argument types for the underlying C function as
+         appropriate.  */
+      arg_type = objc_decay_parm_type (arg_type);
+
+      VEC_safe_push (tree, gc, argtypes, arg_type);
+    }
+
+  if (METHOD_ADD_ARGS (method))
+    {
+      for (t = TREE_CHAIN (METHOD_ADD_ARGS (method));
+	   t; t = TREE_CHAIN (t))
 	{
-	  tree arg_type = TREE_TYPE (TREE_VALUE (akey));
+	  tree arg_type = TREE_TYPE (TREE_VALUE (t));
 
 	  arg_type = objc_decay_parm_type (arg_type);
 
-	  chainon (arglist, build_tree_list (NULL_TREE, arg_type));
+	  VEC_safe_push (tree, gc, argtypes, arg_type);
 	}
 
-      if (!METHOD_ADD_ARGS_ELLIPSIS_P (meth))
-	goto lack_of_ellipsis;
-    }
-  else
-    {
-     lack_of_ellipsis:
-      chainon (arglist, OBJC_VOID_AT_END);
+      if (METHOD_ADD_ARGS_ELLIPSIS_P (method))
+	is_varargs = true;
     }
 
-  return arglist;
+ build_ftype:
+  if (is_varargs)
+    ftype = build_varargs_function_type_vec (return_type, argtypes);
+  else
+    ftype = build_function_type_vec (return_type, argtypes);
+
+  release_tree_vector (argtypes);
+  return ftype;
 }
 
 static tree
@@ -8700,9 +8707,7 @@ really_start_method (tree method,
   push_lang_context (lang_name_c);
 #endif
 
-  meth_type
-    = build_function_type (ret_type,
-			   get_arg_type_list (method, METHOD_DEF, 0));
+  meth_type = build_function_type_for_method (ret_type, method, METHOD_DEF, 0);
   objc_start_function (method_id, meth_type, NULL_TREE, parmlist);
 
   /* Set self_decl from the first argument.  */

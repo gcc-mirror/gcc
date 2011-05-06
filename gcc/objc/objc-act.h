@@ -665,8 +665,6 @@ typedef enum string_section
 #define OBJC_MODIFIER_TRANSIENT		0x00000200
 #define OBJC_MODIFIER_NONE_SPECIFIED	0x80000000
 
-#define OBJC_VOID_AT_END		void_list_node
-
 /* Exception handling constructs.  We begin by having the parser do most
    of the work and passing us blocks.
    This allows us to handle different exceptions implementations.  */

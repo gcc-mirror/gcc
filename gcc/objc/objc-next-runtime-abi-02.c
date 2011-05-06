@@ -213,7 +213,8 @@ static tree next_runtime_abi_02_get_class_super_ref (location_t, struct imp_entr
 static tree next_runtime_abi_02_get_category_super_ref (location_t, struct imp_entry *, bool);
 
 static tree next_runtime_abi_02_receiver_is_class_object (tree);
-static tree next_runtime_abi_02_get_arg_type_list_base (tree, int, int);
+static void next_runtime_abi_02_get_arg_type_list_base (VEC(tree,gc) **, tree,
+							int, int);
 static tree next_runtime_abi_02_build_objc_method_call (location_t, tree, tree,
 							tree, tree, tree, int);
 static bool next_runtime_abi_02_setup_const_string_class_decl (void);
@@ -1098,31 +1099,32 @@ next_runtime_abi_02_get_class_reference (tree ident)
     }
 }
 
-/* Used by get_arg_type_list.
-   Return the types for receiver & _cmd at the start of a method
-   argument list.  context is either METHOD_DEF or METHOD_REF, saying
-   whether we are trying to define a method or call one.  superflag
-   says this is for a send to super.  meth may be NULL, in the case
-   that there is no prototype.  */
+/* Used by build_function_type_for_method.  Append the types for
+   receiver & _cmd at the start of a method argument list to ARGTYPES.
+   CONTEXT is either METHOD_DEF or METHOD_REF, saying whether we are
+   trying to define a method or call one.  SUPERFLAG says this is for a
+   send to super.  METH may be NULL, in the case that there is no
+   prototype.  */
 
-static tree
-next_runtime_abi_02_get_arg_type_list_base (tree meth, int context, int superflag)
+static void
+next_runtime_abi_02_get_arg_type_list_base (VEC(tree,gc) **argtypes, tree meth,
+					    int context, int superflag)
 {
-  tree arglist;
+  tree receiver_type;
 
-  /* Receiver type.  */
   if (superflag)
-    arglist = build_tree_list (NULL_TREE, objc_super_type);
+    receiver_type = objc_super_type;
   else if (context == METHOD_DEF && TREE_CODE (meth) == INSTANCE_METHOD_DECL)
-    arglist = build_tree_list (NULL_TREE, objc_instance_type);
+    receiver_type = objc_instance_type;
   else
-    arglist = build_tree_list (NULL_TREE, objc_object_type);
+    receiver_type = objc_object_type;
 
+  VEC_safe_push (tree, gc, *argtypes, receiver_type);
   /* Selector type - will eventually change to `int'.  */
-  chainon (arglist, build_tree_list (NULL_TREE,
-				     (superflag ? objc_v2_super_selector_type
-						: objc_v2_selector_type)));
-  return arglist;
+  VEC_safe_push (tree, gc, *argtypes,
+		 (superflag
+		  ? objc_v2_super_selector_type
+		  : objc_v2_selector_type));
 }
 
 /* TODO: Merge this with the message refs.  */
@@ -1539,23 +1541,26 @@ next_runtime_abi_02_receiver_is_class_object (tree receiver)
   return NULL_TREE;
 }
 
-/* Assign all arguments in VALUES which have side-effect to a
-   temporary and replaced that argument in VALUES list with the
-   temporary. TYPELIST is the list of argument types. */
+/* Assign all arguments in VALUES which have side-effect to a temporary
+   and replaced that argument in VALUES list with the temporary. The
+   arguments will be passed to a function with FNTYPE.  */
 
 static tree
-objc_copy_to_temp_side_effect_params (tree typelist, tree values)
+objc_copy_to_temp_side_effect_params (tree fntype, tree values)
 {
-  tree valtail, typetail;
+  tree valtail;
+  function_args_iterator iter;
+
   /* Skip over receiver and the &_msf_ref types.  */
-  gcc_assert (TREE_CHAIN (typelist));
-  typetail = TREE_CHAIN (TREE_CHAIN (typelist));
+  function_args_iter_init (&iter, fntype);
+  function_args_iter_next (&iter);
+  function_args_iter_next (&iter);
 
   for (valtail = values; valtail;
-       valtail = TREE_CHAIN (valtail), typetail = TREE_CHAIN (typetail))
+       valtail = TREE_CHAIN (valtail), function_args_iter_next (&iter))
     {
       tree value = TREE_VALUE (valtail);
-      tree type = typetail ? TREE_VALUE (typetail) : NULL_TREE;
+      tree type = function_args_iter_cond (&iter);
       if (type == NULL_TREE)
 	break;
       if (!TREE_SIDE_EFFECTS (value))
@@ -1583,10 +1588,8 @@ build_v2_build_objc_method_call (int super_flag, tree method_prototype,
     = (method_prototype
        ? TREE_VALUE (TREE_TYPE (method_prototype))
        : objc_object_type);
-  tree method_param_types = get_arg_type_list (method_prototype,
+  tree ftype = build_function_type_for_method (ret_type, method_prototype,
 					       METHOD_REF, super_flag);
-
-  tree ftype = build_function_type (ret_type, method_param_types);
   tree sender_cast;
 
   if (method_prototype && METHOD_TYPE_ATTRIBUTES (method_prototype))
@@ -1596,7 +1599,7 @@ build_v2_build_objc_method_call (int super_flag, tree method_prototype,
   sender_cast = build_pointer_type (ftype);
 
   if (check_for_nil)
-    method_params = objc_copy_to_temp_side_effect_params (method_param_types,
+    method_params = objc_copy_to_temp_side_effect_params (ftype,
 							  method_params);
 
   /* Get &message_ref_t.messenger.  */
