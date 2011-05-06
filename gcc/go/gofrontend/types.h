@@ -1098,11 +1098,6 @@ class Type
 		       bool* is_method, bool* found_pointer_method,
 		       std::string* ambig1, std::string* ambig2);
 
-  // Get a tree for a type without looking in the hash table for
-  // identical types.
-  tree
-  get_tree_without_hash(Gogo*);
-
   // Get the backend representation for a type without looking in the
   // hash table for identical types.
   Btype*
