@@ -6255,13 +6255,12 @@ cxx_eval_conditional_expression (const constexpr_call *call, tree t,
 					   allow_non_constant, addr,
 					   non_constant_p);
   VERIFY_CONSTANT (val);
-  if (val == boolean_true_node)
-    return cxx_eval_constant_expression (call, TREE_OPERAND (t, 1),
+  /* Don't VERIFY_CONSTANT the other operands.  */
+  if (integer_zerop (val))
+    return cxx_eval_constant_expression (call, TREE_OPERAND (t, 2),
 					 allow_non_constant, addr,
 					 non_constant_p);
-  gcc_assert (val == boolean_false_node);
-  /* Don't VERIFY_CONSTANT here.  */
-  return cxx_eval_constant_expression (call, TREE_OPERAND (t, 2),
+  return cxx_eval_constant_expression (call, TREE_OPERAND (t, 1),
 				       allow_non_constant, addr,
 				       non_constant_p);
 }
@@ -7828,11 +7827,11 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       tmp = TREE_OPERAND (t, 0);
       if (!potential_constant_expression_1 (tmp, rval, flags))
 	return false;
-      else if (tmp == boolean_true_node)
-	return potential_constant_expression_1 (TREE_OPERAND (t, 1),
-						want_rval, flags);
-      else if (tmp == boolean_false_node)
+      else if (integer_zerop (tmp))
 	return potential_constant_expression_1 (TREE_OPERAND (t, 2),
+						want_rval, flags);
+      else if (TREE_CODE (tmp) == INTEGER_CST)
+	return potential_constant_expression_1 (TREE_OPERAND (t, 1),
 						want_rval, flags);
       for (i = 1; i < 3; ++i)
 	if (potential_constant_expression_1 (TREE_OPERAND (t, i),
