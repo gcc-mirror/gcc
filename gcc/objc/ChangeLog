@@ -1,3 +1,30 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-runtime-shared-support.h (get_arg_type_list): Delete.
+	(build_function_type_for_method): Declare.
+	* objc-runtime-hooks.h (struct _objc_runtime_hooks_r): Change
+	type of get_arg_type_base_list field.
+	* objc-act.h (OBJC_VOID_AT_END): Delete.
+	* objc-act.c (get_arg_type_list): Delete.
+	(build_function_type_for_method): New function.
+	(objc_decl_method_attributes): Call build_function_type_for_method.
+	(really_start_method): Likewise.
+	* objc-gnu-runtime-abi-01.c
+	(gnu_runtime_abi_01_get_type_arg_list_base): Change prototype and
+	adjust function accordingly.  Update header comment.
+	(build_objc_method_call): Call build_function_type_for_method.
+	* objc-next-runtime-abi-01.c
+	(next_runtime_abi_01_get_type_arg_list_base): Change prototype and
+	adjust function accordingly.  Update header comment.
+	(build_objc_method_call): Call build_function_type_for_method.
+	* objc-next-runtime-abi-02.c
+	(next_runtime_abi_02_get_type_arg_list_base): Change prototype and
+	adjust function accordingly.  Update header comment.
+	(objc_copy_to_temp_side_effect_params): Take fntype instead of a
+	typelist.  Use function_args_iterator for traversing fntype.
+	(build_v2_build_objc_method_call): Adjust call to it.
+	Call build_function_type_for_method
+
 2011-05-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* objc-act.c (objc_start_method_definition): Add parameter expr.

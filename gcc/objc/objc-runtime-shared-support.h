@@ -49,7 +49,8 @@ extern void objc_start_function (tree, tree, tree, struct c_arg_info *);
 extern struct c_arg_info *objc_get_parm_info (int, tree);
 #endif
 extern void objc_push_parm (tree);
-extern tree get_arg_type_list (tree, int, int);
+
+extern tree build_function_type_for_method (tree, tree, int, bool);
 
 /* Stuff that should be migrated to shared support (or some v1-only file).  */
 extern void build_super_template (void);

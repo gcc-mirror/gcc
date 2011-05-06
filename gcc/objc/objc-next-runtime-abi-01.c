@@ -123,7 +123,8 @@ static tree next_runtime_abi_01_get_class_super_ref (location_t, struct imp_entr
 static tree next_runtime_abi_01_get_category_super_ref (location_t, struct imp_entry *, bool);
 
 static tree next_runtime_abi_01_receiver_is_class_object (tree);
-static tree next_runtime_abi_01_get_arg_type_list_base (tree, int, int);
+static void next_runtime_abi_01_get_arg_type_list_base (VEC(tree,gc) **, tree,
+							int, int);
 static tree next_runtime_abi_01_build_objc_method_call (location_t, tree, tree,
 							tree, tree, tree, int);
 static bool next_runtime_abi_01_setup_const_string_class_decl (void);
@@ -721,28 +722,29 @@ next_runtime_abi_01_get_class_reference (tree ident)
     }
 }
 
-/* Used by get_arg_type_list.
-   Return the types for receiver & _cmd at the start of a method argument list.
-   context is either METHOD_DEF or METHOD_REF, saying whether we are trying
-   to define a method or call one.  superflag says this is for a send to super.
-   meth may be NULL, in the case that there is no prototype.  */
+/* Used by build_function_type_for_method.  Append the types for
+   receiver & _cmd at the start of a method argument list to ARGTYPES.
+   CONTEXT is either METHOD_DEF or METHOD_REF, saying whether we are
+   trying to define a method or call one.  SUPERFLAG says this is for a
+   send to super.  METH may be NULL, in the case that there is no
+   prototype.  */
 
-static tree
-next_runtime_abi_01_get_arg_type_list_base (tree meth, int context, int superflag)
+static void
+next_runtime_abi_01_get_arg_type_list_base (VEC(tree,gc) **argtypes, tree meth,
+					    int context, int superflag)
 {
-  tree arglist;
+  tree receiver_type;
 
-  /* Receiver type.  */
   if (superflag)
-    arglist = build_tree_list (NULL_TREE, objc_super_type);
+    receiver_type = objc_super_type;
   else if (context == METHOD_DEF && TREE_CODE (meth) == INSTANCE_METHOD_DECL)
-    arglist = build_tree_list (NULL_TREE, objc_instance_type);
+    receiver_type = objc_instance_type;
   else
-    arglist = build_tree_list (NULL_TREE, objc_object_type);
+    receiver_type = objc_object_type;
 
+  VEC_safe_push (tree, gc, *argtypes, receiver_type);
   /* Selector type - will eventually change to `int'.  */
-  chainon (arglist, build_tree_list (NULL_TREE, objc_selector_type));
-  return arglist;
+  VEC_safe_push (tree, gc, *argtypes, objc_selector_type);
 }
 
 static tree
@@ -828,10 +830,8 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
     = (method_prototype
        ? TREE_VALUE (TREE_TYPE (method_prototype))
        : objc_object_type);
-
-  tree method_param_types =
-    get_arg_type_list (method_prototype, METHOD_REF, super_flag);
-  tree ftype = build_function_type (ret_type, method_param_types);
+  tree ftype = build_function_type_for_method (ret_type, method_prototype,
+					       METHOD_REF, super_flag);
 
   if (method_prototype && METHOD_TYPE_ATTRIBUTES (method_prototype))
     ftype = build_type_attribute_variant (ftype,
