@@ -1135,7 +1135,7 @@ do_per_function_toporder (void (*callback) (void *data), void *data)
 	  /* Allow possibly removed nodes to be garbage collected.  */
 	  order[i] = NULL;
 	  node->process = 0;
-	  if (node->analyzed)
+	  if (cgraph_function_with_gimple_body_p (node))
 	    {
 	      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 	      current_function_decl = node->decl;
@@ -1581,10 +1581,9 @@ execute_one_pass (struct opt_pass *pass)
   if (pass->type == IPA_PASS)
     {
       struct cgraph_node *node;
-      for (node = cgraph_nodes; node; node = node->next)
-        if (node->analyzed)
-          VEC_safe_push (ipa_opt_pass, heap, node->ipa_transforms_to_apply,
-			 (struct ipa_opt_pass_d *)pass);
+      FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+	VEC_safe_push (ipa_opt_pass, heap, node->ipa_transforms_to_apply,
+		       (struct ipa_opt_pass_d *)pass);
     }
 
   if (!current_function_decl)
@@ -1705,7 +1704,7 @@ ipa_write_summaries (void)
     {
       struct cgraph_node *node = order[i];
 
-      if (node->analyzed)
+      if (cgraph_function_with_gimple_body_p (node))
 	{
 	  /* When streaming out references to statements as part of some IPA
 	     pass summary, the statements need to have uids assigned and the
@@ -1718,7 +1717,7 @@ ipa_write_summaries (void)
 	  pop_cfun ();
 	}
       if (node->analyzed)
-	cgraph_node_set_add (set, node);
+        cgraph_node_set_add (set, node);
     }
   vset = varpool_node_set_new ();
 
@@ -2036,7 +2035,7 @@ function_called_by_processed_nodes_p (void)
     {
       if (e->caller->decl == current_function_decl)
         continue;
-      if (!e->caller->analyzed)
+      if (!cgraph_function_with_gimple_body_p (e->caller))
         continue;
       if (TREE_ASM_WRITTEN (e->caller->decl))
         continue;

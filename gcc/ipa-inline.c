@@ -1235,9 +1235,8 @@ inline_small_functions (void)
   max_count = 0;
   initialize_growth_caches ();
 
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed
-	&& !node->global.inlined_to)
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (!node->global.inlined_to)
       {
 	struct inline_summary *info = inline_summary (node);
 
@@ -1255,9 +1254,8 @@ inline_small_functions (void)
 
   /* Populate the heeap with all edges we might inline.  */
 
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed
-	&& !node->global.inlined_to)
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (!node->global.inlined_to)
       {
 	if (dump_file)
 	  fprintf (dump_file, "Enqueueing calls of %s/%i.\n",

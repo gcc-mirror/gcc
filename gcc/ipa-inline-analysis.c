@@ -1443,6 +1443,23 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
 
   info = inline_summary (node);
 
+  /* FIXME: Thunks are inlinable, but tree-inline don't know how to do that.
+     Once this happen, we will need to more curefully predict call
+     statement size.  */
+  if (node->thunk.thunk_p)
+    {
+      struct inline_edge_summary *es = inline_edge_summary (node->callees);
+      struct predicate t = true_predicate ();
+
+      info->inlinable = info->versionable = 0;
+      node->callees->call_stmt_cannot_inline_p = true;
+      node->local.can_change_signature = false;
+      es->call_stmt_time = 1;
+      es->call_stmt_size = 1;
+      account_size_time (info, 0, 0, &t);
+      return;
+    }
+
   /* Estimate the stack size for the function if we're optimizing.  */
   self_stack_size = optimize ? estimated_stack_frame_size (node) : 0;
   info->estimated_self_stack_size = self_stack_size;
@@ -2027,7 +2044,7 @@ inline_analyze_function (struct cgraph_node *node)
 	     cgraph_node_name (node), node->uid);
   /* FIXME: We should remove the optimize check after we ensure we never run
      IPA passes when not optimizing.  */
-  if (flag_indirect_inlining && optimize)
+  if (flag_indirect_inlining && optimize && !node->thunk.thunk_p)
     inline_indirect_intraprocedural_analysis (node);
   compute_inline_parameters (node, false);
 
@@ -2058,8 +2075,7 @@ inline_generate_summary (void)
   if (flag_indirect_inlining)
     ipa_register_cgraph_hooks ();
 
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
+  FOR_EACH_DEFINED_FUNCTION (node)
       inline_analyze_function (node);
 }
 

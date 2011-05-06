@@ -147,9 +147,9 @@ lto_materialize_function (struct cgraph_node *node)
   decl = node->decl;
   /* Read in functions with body (analyzed nodes)
      and also functions that are needed to produce virtual clones.  */
-  if (node->analyzed || has_analyzed_clone_p (node))
+  if (cgraph_function_with_gimple_body_p (node) || has_analyzed_clone_p (node))
     {
-      /* Clones don't need to be read.  */
+      /* Clones and thunks don't need to be read.  */
       if (node->clone_of)
 	return;
 
@@ -1197,6 +1197,12 @@ static void
 add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
 {
   struct cgraph_edge *e;
+  cgraph_node_set_iterator csi;
+
+  /* If NODE is already there, we have nothing to do.  */
+  csi = cgraph_node_set_find (part->cgraph_set, node);
+  if (!csi_end_p (csi))
+    return;
 
   part->insns += inline_summary (node)->self_size;
 
@@ -1210,6 +1216,13 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
   node->aux = (void *)((size_t)node->aux + 1);
 
   cgraph_node_set_add (part->cgraph_set, node);
+
+  /* Thunks always must go along with function they reffer to.  */
+  if (node->thunk.thunk_p)
+    add_cgraph_node_to_partition (part, node->callees->callee);
+  for (e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk.thunk_p)
+      add_cgraph_node_to_partition (part, e->caller);
 
   for (e = node->callees; e; e = e->next_callee)
     if ((!e->inline_failed || DECL_COMDAT (e->callee->decl))
@@ -1228,6 +1241,13 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
 static void
 add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode)
 {
+  varpool_node_set_iterator vsi;
+
+  /* If NODE is already there, we have nothing to do.  */
+  vsi = varpool_node_set_find (part->varpool_set, vnode);
+  if (!vsi_end_p (vsi))
+    return;
+
   varpool_node_set_add (part->varpool_set, vnode);
 
   if (vnode->aux)

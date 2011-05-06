@@ -2888,7 +2888,8 @@ ipa_prop_write_jump_functions (cgraph_node_set set)
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      if (node->analyzed && IPA_NODE_REF (node) != NULL)
+      if (cgraph_function_with_gimple_body_p (node)
+	  && IPA_NODE_REF (node) != NULL)
 	count++;
     }
 
@@ -2898,7 +2899,8 @@ ipa_prop_write_jump_functions (cgraph_node_set set)
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      if (node->analyzed && IPA_NODE_REF (node) != NULL)
+      if (cgraph_function_with_gimple_body_p (node)
+	  && IPA_NODE_REF (node) != NULL)
         ipa_write_node_info (ob, node);
     }
   lto_output_1_stream (ob->main_stream, 0);

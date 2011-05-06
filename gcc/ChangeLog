@@ -1,3 +1,40 @@
+2011-05-06  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_add_thunk): Create real function node instead
+	of alias node; finalize it and mark needed/reachale; arrange visibility
+	to be right and add it into the corresponding same comdat group list.
+	(dump_cgraph_node): Dump thunks.
+	* cgraph.h (cgraph_first_defined_function, cgraph_next_defined_function,
+	cgraph_function_with_gimple_body_p, cgraph_first_function_with_gimple_body,
+	cgraph_next_function_with_gimple_body): New functions.
+	(FOR_EACH_FUNCTION_WITH_GIMPLE_BODY, FOR_EACH_DEFINED_FUNCTION):
+	New macros.
+	* ipa-cp.c (ipcp_need_redirect_p): Thunks can't be redirected.
+	(ipcp_generate_summary): Use FOR_EACH_FUNCTION_WITH_GIMPLE_BODY.
+	* cgraphunit.c (cgraph_finalize_function): Only look into possible
+	devirtualization when optimizing.
+	(verify_cgraph_node): Verify thunks.
+	(cgraph_analyze_function): Analyze thunks.
+	(cgraph_mark_functions_to_output): Output thunks only in combination
+	with function they are assigned to.
+	(assemble_thunk): Turn thunk into non-thunk; don't try to turn
+	alias into normal node.
+	(assemble_thunks): New functoin.
+	(cgraph_expand_function): Use it.
+	* lto-cgraph.c (lto_output_node): Stream thunks.
+	(input_overwrite_node): Stream in thunks.
+	* ipa-pure-const.c (analyze_function): Thunks do nothing interesting.
+	* lto-streamer-out.c (lto_output): Do not try to output thunk's body.
+	* ipa-inline.c (inline_small_functions): Use FOR_EACH_DEFINED_FUNCTION.
+	* ipa-inline-analysis.c (compute_inline_parameters): "Analyze" thunks.
+	(inline_analyze_function): Do not care about thunk jump functions.
+	(inline_generate_summary):Use FOR_EACH_DEFINED_FUNCTION.
+	* ipa-prop.c (ipa_prop_write_jump_functions): Use cgraph_function_with_gimple_body_p.
+	* passes.c (do_per_function_toporder): Use cgraph_function_with_gimple_body_p.
+	(execute_one_pass);Use FOR_EACH_FUNCTION_WITH_GIMPLE_BODY.
+	(ipa_write_summaries): Use cgraph_function_with_gimple_body_p.
+	(function_called_by_processed_nodes_p): Likewise.
+
 2011-05-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.opt (rs6000_ieeequad, rs6000_altivec_abi,
