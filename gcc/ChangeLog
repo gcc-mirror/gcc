@@ -1,3 +1,13 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* except.c (sjlj_emit_dispatch_table): Call build_case_label.
+	* gimplify.c (gimplify_switch_expr): Likewise.
+	* omp-low.c (expand_omp_sections): Likewise.
+	* tree-eh.c (lower_try_finally_switch): Likewise.
+	(lower_eh_dispatch): Likewise.
+	* tree.h (build_case_label): Declare.
+	* tree.c (build_case_label): Define.
+
 2011-05-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40975

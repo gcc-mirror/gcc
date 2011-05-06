@@ -1,3 +1,8 @@
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* expr.c (expand_java_switch): Call build_case_label.
+	(expand_java_add_case): Likewise.
+
 2011-04-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48819

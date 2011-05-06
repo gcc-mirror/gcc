@@ -1285,12 +1285,11 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
 
 	if (num_dispatch > 1)
 	  {
-	    tree t_label, case_elt;
+	    tree t_label, case_elt, t;
 
 	    t_label = create_artificial_label (UNKNOWN_LOCATION);
-	    case_elt = build3 (CASE_LABEL_EXPR, void_type_node,
-			       build_int_cst (integer_type_node, disp_index),
-			       NULL, t_label);
+	    t = build_int_cst (integer_type_node, disp_index);
+	    case_elt = build_case_label (t, NULL, t_label);
 	    gimple_switch_set_label (switch_stmt, disp_index, case_elt);
 
 	    label = label_rtx (t_label);

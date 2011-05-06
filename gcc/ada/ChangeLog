@@ -1,5 +1,10 @@
 2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* gcc-interface/trans.c (Case_Statement_to_gnu): Call
+	build_case_label.
+
+2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* gcc-interface/decl.c (intrin_arglists_compatible_p): Use iterators
 	instead of accessing TYPE_ARG_TYPES directly.
 	* gcc-interface/utils.c (handle_nonnull_attribute): Likewise.

@@ -1770,8 +1770,7 @@ gfc_trans_integer_select (gfc_code * code)
 
 	  /* Add this case label.
              Add parameter 'label', make it match GCC backend.  */
-	  tmp = fold_build3_loc (input_location, CASE_LABEL_EXPR,
-				 void_type_node, low, high, label);
+	  tmp = build_case_label (low, high, label);
 	  gfc_add_expr_to_block (&body, tmp);
 	}
 
@@ -2048,8 +2047,7 @@ gfc_trans_character_select (gfc_code *code)
 
 		  /* Add this case label.
 		     Add parameter 'label', make it match GCC backend.  */
-		  tmp = fold_build3_loc (input_location, CASE_LABEL_EXPR,
-					 void_type_node, low, high, label);
+		  tmp = build_case_label (low, high, label);
 		  gfc_add_expr_to_block (&body, tmp);
 		}
 
@@ -2128,12 +2126,10 @@ gfc_trans_character_select (gfc_code *code)
       for (d = c->ext.block.case_list; d; d = d->next)
         {
 	  label = gfc_build_label_decl (NULL_TREE);
-	  tmp = fold_build3_loc (input_location, CASE_LABEL_EXPR,
-				 void_type_node,
-				 (d->low == NULL && d->high == NULL)
-				 ? NULL : build_int_cst (integer_type_node,
-							 d->n),
-				 NULL, label);
+	  tmp = build_case_label ((d->low == NULL && d->high == NULL)
+				  ? NULL
+				  : build_int_cst (integer_type_node, d->n),
+				  NULL, label);
           gfc_add_expr_to_block (&body, tmp);
         }
 
