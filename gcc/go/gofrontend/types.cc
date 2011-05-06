@@ -6003,6 +6003,77 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
   return true;
 }
 
+// Return the backend representation of the empty interface type.  We
+// use the same struct for all empty interfaces.
+
+Btype*
+Interface_type::get_backend_empty_interface_type(Gogo* gogo)
+{
+  static Btype* empty_interface_type;
+  if (empty_interface_type == NULL)
+    {
+      std::vector<Backend::Btyped_identifier> bfields(2);
+
+      Type* pdt = Type::make_type_descriptor_ptr_type();
+      bfields[0].name = "__type_descriptor";
+      bfields[0].btype = tree_to_type(pdt->get_tree(gogo));
+      bfields[0].location = UNKNOWN_LOCATION;
+
+      Type* vt = Type::make_pointer_type(Type::make_void_type());
+      bfields[1].name = "__object";
+      bfields[1].btype = tree_to_type(vt->get_tree(gogo));
+      bfields[1].location = UNKNOWN_LOCATION;
+
+      empty_interface_type = gogo->backend()->struct_type(bfields);
+    }
+  return empty_interface_type;
+}
+
+// Return the fields of a non-empty interface type.  This is not
+// declared in types.h so that types.h doesn't have to #include
+// backend.h.
+
+static void
+get_backend_interface_fields(Gogo* gogo, Interface_type* type,
+			     std::vector<Backend::Btyped_identifier>* bfields)
+{
+  source_location loc = type->location();
+
+  std::vector<Backend::Btyped_identifier> mfields(type->methods()->size() + 1);
+
+  Type* pdt = Type::make_type_descriptor_ptr_type();
+  mfields[0].name = "__type_descriptor";
+  mfields[0].btype = tree_to_type(pdt->get_tree(gogo));
+  mfields[0].location = loc;
+
+  std::string last_name = "";
+  size_t i = 1;
+  for (Typed_identifier_list::const_iterator p = type->methods()->begin();
+       p != type->methods()->end();
+       ++p, ++i)
+    {
+      mfields[i].name = Gogo::unpack_hidden_name(p->name());
+      mfields[i].btype = tree_to_type(p->type()->get_tree(gogo));
+      mfields[i].location = loc;
+      // Sanity check: the names should be sorted.
+      go_assert(p->name() > last_name);
+      last_name = p->name();
+    }
+
+  Btype* methods = gogo->backend()->struct_type(mfields);
+
+  bfields->resize(2);
+
+  (*bfields)[0].name = "__methods";
+  (*bfields)[0].btype = gogo->backend()->pointer_type(methods);
+  (*bfields)[0].location = loc;
+
+  Type* vt = Type::make_pointer_type(Type::make_void_type());
+  (*bfields)[1].name = "__object";
+  (*bfields)[1].btype = tree_to_type(vt->get_tree(gogo));
+  (*bfields)[1].location = UNKNOWN_LOCATION;
+}
+
 // Return a tree for an interface type.  An interface is a pointer to
 // a struct.  The struct has three fields.  The first field is a
 // pointer to the type descriptor for the dynamic type of the object.
@@ -6014,113 +6085,17 @@ tree
 Interface_type::do_get_tree(Gogo* gogo)
 {
   if (this->methods_ == NULL)
-    return Interface_type::empty_type_tree(gogo);
+    {
+      Btype* bt = Interface_type::get_backend_empty_interface_type(gogo);
+      return type_to_tree(bt);
+    }
   else
     {
-      tree t = Interface_type::non_empty_type_tree(this->location_);
-      return this->fill_in_tree(gogo, t);
+      std::vector<Backend::Btyped_identifier> bfields;
+      get_backend_interface_fields(gogo, this, &bfields);
+      Btype* bt = gogo->backend()->struct_type(bfields);
+      return type_to_tree(bt);
     }
-}
-
-// Return a singleton struct for an empty interface type.  We use the
-// same type for all empty interfaces.  This lets us assign them to
-// each other directly without triggering GIMPLE type errors.
-
-tree
-Interface_type::empty_type_tree(Gogo* gogo)
-{
-  static tree empty_interface;
-  if (empty_interface != NULL_TREE)
-    return empty_interface;
-
-  tree dtype = Type::make_type_descriptor_type()->get_tree(gogo);
-  dtype = build_pointer_type(build_qualified_type(dtype, TYPE_QUAL_CONST));
-  return Gogo::builtin_struct(&empty_interface, "__go_empty_interface",
-			      NULL_TREE, 2,
-			      "__type_descriptor",
-			      dtype,
-			      "__object",
-			      ptr_type_node);
-}
-
-// Return a new struct for a non-empty interface type.  The correct
-// values are filled in by fill_in_tree.
-
-tree
-Interface_type::non_empty_type_tree(source_location location)
-{
-  tree ret = make_node(RECORD_TYPE);
-
-  tree field_trees = NULL_TREE;
-  tree* pp = &field_trees;
-
-  tree name_tree = get_identifier("__methods");
-  tree field = build_decl(location, FIELD_DECL, name_tree, ptr_type_node);
-  DECL_CONTEXT(field) = ret;
-  *pp = field;
-  pp = &DECL_CHAIN(field);
-
-  name_tree = get_identifier("__object");
-  field = build_decl(location, FIELD_DECL, name_tree, ptr_type_node);
-  DECL_CONTEXT(field) = ret;
-  *pp = field;
-
-  TYPE_FIELDS(ret) = field_trees;
-
-  layout_type(ret);
-
-  return ret;
-}
-
-// Fill in the tree for an interface type.  This is used for named
-// interface types.
-
-tree
-Interface_type::fill_in_tree(Gogo* gogo, tree type)
-{
-  go_assert(this->methods_ != NULL);
-
-  // Build the type of the table of methods.
-
-  tree method_table = make_node(RECORD_TYPE);
-
-  // The first field is a pointer to the type descriptor.
-  tree name_tree = get_identifier("__type_descriptor");
-  tree dtype = Type::make_type_descriptor_type()->get_tree(gogo);
-  dtype = build_pointer_type(build_qualified_type(dtype, TYPE_QUAL_CONST));
-  tree field = build_decl(this->location_, FIELD_DECL, name_tree, dtype);
-  DECL_CONTEXT(field) = method_table;
-  TYPE_FIELDS(method_table) = field;
-
-  std::string last_name = "";
-  tree* pp = &DECL_CHAIN(field);
-  for (Typed_identifier_list::const_iterator p = this->methods_->begin();
-       p != this->methods_->end();
-       ++p)
-    {
-      std::string name = Gogo::unpack_hidden_name(p->name());
-      name_tree = get_identifier_with_length(name.data(), name.length());
-      tree field_type = p->type()->get_tree(gogo);
-      if (field_type == error_mark_node)
-	return error_mark_node;
-      field = build_decl(this->location_, FIELD_DECL, name_tree, field_type);
-      DECL_CONTEXT(field) = method_table;
-      *pp = field;
-      pp = &DECL_CHAIN(field);
-      // Sanity check: the names should be sorted.
-      go_assert(p->name() > last_name);
-      last_name = p->name();
-    }
-  layout_type(method_table);
-
-  // Update the type of the __methods field from a generic pointer to
-  // a pointer to the method table.
-  field = TYPE_FIELDS(type);
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__methods") == 0);
-
-  TREE_TYPE(field) = build_pointer_type(method_table);
-
-  return type;
 }
 
 // Initialization value.
@@ -7089,6 +7064,7 @@ Named_type::convert(Gogo* gogo)
       break;
 
     case TYPE_ARRAY:
+      // Slice types were completed in create_placeholder.
       if (!base->is_open_array_type())
 	{
 	  Btype* bet = base->array_type()->get_backend_element(gogo);
@@ -7099,11 +7075,7 @@ Named_type::convert(Gogo* gogo)
       break;
 
     case TYPE_INTERFACE:
-      if (!base->interface_type()->is_empty())
-	{
-	  tree t = type_to_tree(bt);
-	  bt = tree_to_type(base->interface_type()->fill_in_tree(gogo, t));
-	}
+      // Interface types were completed in create_placeholder.
       break;
 
     case TYPE_ERROR:
@@ -7194,11 +7166,12 @@ Named_type::create_placeholder(Gogo* gogo)
 
     case TYPE_INTERFACE:
       if (base->interface_type()->is_empty())
-	bt = tree_to_type(Interface_type::empty_type_tree(gogo));
+	bt = Interface_type::get_backend_empty_interface_type(gogo);
       else
 	{
-	  source_location loc = base->interface_type()->location();
-	  bt = tree_to_type(Interface_type::non_empty_type_tree(loc));
+	  bt = gogo->backend()->placeholder_struct_type(this->name(),
+							this->location_);
+	  set_name = false;
 	}
       break;
 
@@ -7218,9 +7191,21 @@ Named_type::create_placeholder(Gogo* gogo)
   if (base->is_open_array_type())
     {
       // We do not record slices as dependencies of other types,
-      // because we can fill them in completely here.
+      // because we can fill them in completely here with the final
+      // size.
       std::vector<Backend::Btyped_identifier> bfields;
       get_backend_slice_fields(gogo, base->array_type(), &bfields);
+      if (!gogo->backend()->set_placeholder_struct_type(bt, bfields))
+	this->named_btype_ = gogo->backend()->error_type();
+    }
+  else if (base->interface_type() != NULL
+	   && !base->interface_type()->is_empty())
+    {
+      // We do not record interfaces as dependencies of other types,
+      // because we can fill them in completely here with the final
+      // size.
+      std::vector<Backend::Btyped_identifier> bfields;
+      get_backend_interface_fields(gogo, base->interface_type(), &bfields);
       if (!gogo->backend()->set_placeholder_struct_type(bt, bfields))
 	this->named_btype_ = gogo->backend()->error_type();
     }
