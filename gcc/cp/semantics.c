@@ -5704,11 +5704,11 @@ register_constexpr_fundef (tree fun, tree body)
       body = unshare_expr (TREE_OPERAND (body, 0));
     }
 
-  if (!potential_constant_expression (body))
+  if (!potential_rvalue_constant_expression (body))
     {
       DECL_DECLARED_CONSTEXPR_P (fun) = false;
       if (!DECL_TEMPLATE_INSTANTIATION (fun))
-	require_potential_constant_expression (body);
+	require_potential_rvalue_constant_expression (body);
       return NULL;
     }
   fundef->body = body;
@@ -7560,7 +7560,16 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
         tree x = TREE_OPERAND (t, 0);
         STRIP_NOPS (x);
         if (is_this_parameter (x))
-	  return true;
+	  {
+	    if (DECL_CONSTRUCTOR_P (DECL_CONTEXT (x)) && want_rval)
+	      {
+		if (flags & tf_error)
+		  sorry ("use of the value of the object being constructed "
+			 "in a constant expression");
+		return false;
+	      }
+	    return true;
+	  }
 	return potential_constant_expression_1 (x, rval, flags);
       }
 
