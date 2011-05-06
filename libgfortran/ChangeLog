@@ -1,3 +1,19 @@
+2011-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* caf/libcaf.h: Cleanup headers.
+	(_gfortran_caf_critical, _gfortran_caf_end_critical): Make stub.
+	(caf_register_t): New enum.
+	(_gfortran_caf_register, _gfortran_caf_deregister): New prototype.
+	* caf/single.c (_gfortran_caf_critical,
+	_gfortran_caf_end_critical): Remove.
+	(_gfortran_caf_register, _gfortran_caf_deregister): New functions.
+	* caf/mpi.c (_gfortran_caf_critical,
+	_gfortran_caf_end_critical): Remove.
+	(_gfortran_caf_register, _gfortran_caf_deregister): New functions.
+	(caf_world_window): Remove global variable.
+	(_gfortran_caf_init): Fix off-by-one error of this_image.
+
 2011-05-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/48787
