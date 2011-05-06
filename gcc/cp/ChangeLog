@@ -1,3 +1,17 @@
+2011-05-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-tree.h (type_of_this_parm, class_of_this_parm): New functions.
+	* call.c (standard_conversion): Call class_of_this_parm.
+	* cxx-pretty-print.c (pp_cxx_implicit_parameter_type): Likewise.
+	(pp_cxx_direct_abstract_declarator): Likewise.
+	* decl2.c (change_return_type): Likewise.
+	(cp_reconstruct_complex_type): Likewise.
+	* error.c (dump_type_suffix, dump_function_decl): Likewise.
+	* mangle.c (write_function_type): Likewise.
+	* pt.c (unify): Likewise.
+	* typeck.c (merge_types, type_memfn_quals): Likewise.
+	* decl.c (build_this_parm): Call type_of_this_parm.
+
 2011-05-06  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48838

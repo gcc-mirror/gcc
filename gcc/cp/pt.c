@@ -15600,8 +15600,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	if (TREE_CODE (parm) == METHOD_TYPE
 	    && (!check_cv_quals_for_unify
 		(UNIFY_ALLOW_NONE,
-		 TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (arg))),
-		 TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (parm))))))
+		 class_of_this_parm (arg),
+		 class_of_this_parm (parm))))
 	  return 1;
 
 	if (unify (tparms, targs, TREE_TYPE (parm),

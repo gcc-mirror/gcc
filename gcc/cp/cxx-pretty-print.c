@@ -1363,7 +1363,7 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
 static inline tree
 pp_cxx_implicit_parameter_type (tree mf)
 {
-  return TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (mf))));
+  return class_of_this_parm (TREE_TYPE (mf));
 }
 
 /*
@@ -1652,8 +1652,7 @@ pp_cxx_direct_abstract_declarator (cxx_pretty_printer *pp, tree t)
       if (TREE_CODE (t) == METHOD_TYPE)
 	{
 	  pp_base (pp)->padding = pp_before;
-	  pp_cxx_cv_qualifier_seq
-	    (pp, TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))));
+	  pp_cxx_cv_qualifier_seq (pp, class_of_this_parm (t));
 	}
       pp_cxx_exception_specification (pp, t);
       break;
