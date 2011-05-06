@@ -1465,6 +1465,34 @@ build_overload (tree decl, tree chain)
   return ovl_cons (decl, chain);
 }
 
+/* Return TRUE if FN is a non-static member function, FALSE otherwise.
+   This function looks into BASELINK and OVERLOAD nodes.  */
+
+bool
+non_static_member_function_p (tree fn)
+{
+  if (fn == NULL_TREE)
+    return false;
+
+  if (BASELINK_P (fn))
+    {
+      tree type = TREE_TYPE (fn);
+
+      if (type && TREE_CODE (type) == METHOD_TYPE)
+	return true;
+      else if (type && TREE_CODE (type) == FUNCTION_TYPE)
+	return false;
+      /* This is an overload.  Lets look into its current value.  */
+      fn = get_fns (BASELINK_FUNCTIONS (fn));
+    }
+
+  if (TREE_CODE (fn) == OVERLOAD)
+    fn = OVL_CURRENT (fn);
+
+  return (DECL_P (fn)
+	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn));
+}
+
 
 #define PRINT_RING_SIZE 4
 

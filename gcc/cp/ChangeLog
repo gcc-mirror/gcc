@@ -1,3 +1,10 @@
+2011-05-06  Dodji Seketeli  <dodji@redhat.com>
+
+    	PR c++/48838
+    	* cp-tree.h (non_static_member_function_p): Declare new function.
+    	* tree.c (non_static_member_function_p): Define it.
+    	* semantics.c (finish_call_expr): Use it.
+
 2011-05-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48749
