@@ -3883,10 +3883,7 @@ build_unary_op (location_t location,
 
       /* If the lvalue is const or volatile, merge that into the type
 	 to which the address will point.  This is only needed
-	 for function types.
-
-	 By checking for all tree qualifiers, we also handle the UPC
-	 defined qualifiers (`shared', `strict', `relaxed') here. */
+	 for function types.  */
       if ((DECL_P (arg) || REFERENCE_CLASS_P (arg))
 	  && (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg))
 	  && TREE_CODE (argtype) == FUNCTION_TYPE)

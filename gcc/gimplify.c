@@ -428,14 +428,9 @@ create_tmp_var_raw (tree type, const char *prefix)
 {
   tree tmp_var;
 
-  /* Make the type of the variable writable.  */
-  int type_quals = TYPE_QUALS (type)
-                    & ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
-  /* Temps. cannot be UPC shared values. */
+  /* Temps. cannot be UPC shared qualified. */
   if (upc_shared_type_p (type))
-    type_quals &=  ~(TYPE_QUAL_SHARED | TYPE_QUAL_RELAXED | TYPE_QUAL_STRICT);
-
-  type = build_qualified_type (type, type_quals);
+    type = upc_get_unshared_type (type);
 
   tmp_var = build_decl (input_location,
 			VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,
