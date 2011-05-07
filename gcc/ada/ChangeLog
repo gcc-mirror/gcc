@@ -1,5 +1,7 @@
 2011-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (intrin_arglists_compatible_p): Remove spaces.
+
 	* gcc-interface/gigi.h (global_bindings_p): Adjust prototype.
 	* gcc-interface/utils.c (global_bindings_p): Return bool and simplify.
 
