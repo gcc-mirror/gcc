@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -71,7 +71,7 @@ do_resize_if_needed_no_throw()
   __catch(...)
     { }
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -86,7 +86,7 @@ resize_imp(size_type new_size)
   if (new_size == m_num_e)
     return;
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   const size_type old_size = m_num_e;
   entry_array a_entries_resized = 0;
 
@@ -113,13 +113,15 @@ resize_imp(size_type new_size)
     }
 
   // At this point no exceptions can be thrown.
-  _GLIBCXX_DEBUG_ONLY(assert_entry_array_valid(a_entries_resized, traits_base::m_store_extra_indicator);)
+  _GLIBCXX_DEBUG_ONLY(assert_entry_array_valid(a_entries_resized,
+					       traits_base::m_store_extra_indicator,
+					       __FILE__, __LINE__);)
 
   Resize_Policy::notify_resized(new_size);
   erase_all_valid_entries(m_entries, old_size);
   s_entry_allocator.deallocate(m_entries, old_size);
   m_entries = a_entries_resized;
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC

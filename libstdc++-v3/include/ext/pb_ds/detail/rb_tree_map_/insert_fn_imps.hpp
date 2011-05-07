@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,16 +43,16 @@ inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
 insert(const_reference r_value)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   std::pair<point_iterator, bool> ins_pair = base_type::insert_leaf(r_value);
   if (ins_pair.second == true)
     {
       ins_pair.first.m_p_nd->m_red = true;
-      _GLIBCXX_DEBUG_ONLY(this->structure_only_assert_valid();)
+      PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
       insert_fixup(ins_pair.first.m_p_nd);
     }
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   return ins_pair;
 }
 

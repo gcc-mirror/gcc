@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,31 +43,32 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_valid() const
+assert_valid(const char* __file, int __line) const
 {
-  _GLIBCXX_DEBUG_ASSERT(m_p_root == 0 || m_p_root->m_p_prev_or_parent == 0);
+  PB_DS_DEBUG_VERIFY(m_p_root == 0 || m_p_root->m_p_prev_or_parent == 0);
 
   if (m_p_root != 0)
-    assert_node_consistent(m_p_root, Single_Link_Roots);
-  assert_size();
-  assert_iterators();
+    assert_node_consistent(m_p_root, Single_Link_Roots, __file, __line);
+  assert_size(__file, __line);
+  assert_iterators(__file, __line);
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_node_consistent(const_node_pointer p_nd, bool single_link) const
+assert_node_consistent(const_node_pointer p_nd, bool single_link,
+		       const char* __file, int __line) const
 {
   if (p_nd == 0)
     return;
 
-  assert_node_consistent(p_nd->m_p_l_child, false);
-  assert_node_consistent(p_nd->m_p_next_sibling, single_link);
+  assert_node_consistent(p_nd->m_p_l_child, false, __file, __line);
+  assert_node_consistent(p_nd->m_p_next_sibling, single_link, __file, __line);
 
   if (single_link)
-    _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_prev_or_parent == 0);
+    PB_DS_DEBUG_VERIFY(p_nd->m_p_prev_or_parent == 0);
   else if (p_nd->m_p_next_sibling != 0)
-    _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling->m_p_prev_or_parent == p_nd);
+    PB_DS_DEBUG_VERIFY(p_nd->m_p_next_sibling->m_p_prev_or_parent == p_nd);
 
   if (p_nd->m_p_l_child == 0)
     return;
@@ -76,31 +77,26 @@ assert_node_consistent(const_node_pointer p_nd, bool single_link) const
   while (p_child != 0)
     {
       const_node_pointer p_next_child = p_child->m_p_next_sibling;
-      _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(p_nd->m_value, p_child->m_value));
+      PB_DS_DEBUG_VERIFY(!Cmp_Fn::operator()(p_nd->m_value, p_child->m_value));
       p_child = p_next_child;
     }
-  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_l_child->m_p_prev_or_parent == p_nd);
+  PB_DS_DEBUG_VERIFY(p_nd->m_p_l_child->m_p_prev_or_parent == p_nd);
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_iterators() const
+assert_iterators(const char* __file, int __line) const
 {
-  const size_type calc_size = std::distance(begin(), end());
-  if (calc_size == size())
-    return;
-  _GLIBCXX_DEBUG_ASSERT(0);
+  PB_DS_DEBUG_VERIFY(std::distance(begin(), end()) == size());
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_size() const
+assert_size(const char* __file, int __line) const
 {
-  if (size_from_node(m_p_root) == m_size)
-    return;
-  _GLIBCXX_DEBUG_ASSERT(0);
+  PB_DS_DEBUG_VERIFY(size_from_node(m_p_root) == m_size);
 }
 
 PB_DS_CLASS_T_DEC

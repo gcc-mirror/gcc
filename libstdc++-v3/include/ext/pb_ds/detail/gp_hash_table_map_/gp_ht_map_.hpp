@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2009, 2010, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -95,7 +96,14 @@ namespace __gnu_pbds
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_V2F(X) (X)
 #define PB_DS_V2S(X) Mapped()
-#endif 
+#endif
+
+#define PB_DS_CHECK_KEY_EXISTS(_Key)					\
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(_Key, __FILE__, __LINE__);)
+
+#define PB_DS_CHECK_KEY_DOES_NOT_EXIST(_Key)				\
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(_Key,	\
+							   __FILE__, __LINE__);)
 
     template<typename Key,
 	     typename Mapped,
@@ -280,7 +288,7 @@ namespace __gnu_pbds
       inline std::pair<point_iterator, bool>
       insert(const_reference r_val)
       {
-	_GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid(__FILE__, __LINE__);)
         return insert_imp(r_val, traits_base::m_store_extra_indicator);
       }
 
@@ -331,7 +339,7 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 #endif 
 
 #ifdef PB_DS_HT_MAP_TRACE_
@@ -406,7 +414,7 @@ namespace __gnu_pbds
 
 	_GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(p_e->m_value));)
 
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	return &p_e->m_value;
       }
 
@@ -432,7 +440,7 @@ namespace __gnu_pbds
 
 	_GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(p_e->m_value));)
 
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	return &p_e->m_value;
       }
 
@@ -440,7 +448,7 @@ namespace __gnu_pbds
       inline mapped_reference
       subscript_imp(const_key_reference key, false_type)
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 
 	const size_type pos = find_ins_pos(key, 
 					 traits_base::m_store_extra_indicator);
@@ -449,14 +457,14 @@ namespace __gnu_pbds
 	if (p_e->m_stat != valid_entry_status)
 	  return insert_new_imp(value_type(key, mapped_type()), pos)->second;
 
-	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(key);)	  
+	PB_DS_CHECK_KEY_EXISTS(key)
 	return p_e->m_value.second;
       }
 
       inline mapped_reference
       subscript_imp(const_key_reference key, true_type)
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 
 	comp_hash pos_hash_pair =
 	  find_ins_pos(key, traits_base::m_store_extra_indicator);
@@ -465,7 +473,7 @@ namespace __gnu_pbds
 	  return insert_new_imp(value_type(key, mapped_type()),
 				 pos_hash_pair)->second;
 
-	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(key));
+	PB_DS_CHECK_KEY_EXISTS(key)
 	return (m_entries + pos_hash_pair.first)->m_value.second;
       }
 #endif
@@ -488,17 +496,15 @@ namespace __gnu_pbds
 	      case empty_entry_status:
 		{
 		  resize_base::notify_find_search_end();
-		  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(key);)
-
-		    return 0;
+		  PB_DS_CHECK_KEY_DOES_NOT_EXIST(key)
+		  return 0;
 		}
 		break;
 	      case valid_entry_status:
 		if (hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), key))
 		  {
 		    resize_base::notify_find_search_end();
-		    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(key);)
-
+		    PB_DS_CHECK_KEY_EXISTS(key)
 		    return pointer(&p_e->m_value);
 		  }
 		break;
@@ -511,7 +517,7 @@ namespace __gnu_pbds
 	    resize_base::notify_find_search_collision();
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(key);)
+	PB_DS_CHECK_KEY_DOES_NOT_EXIST(key)
 	resize_base::notify_find_search_end();
 	return 0;
       }
@@ -536,8 +542,7 @@ namespace __gnu_pbds
 	      case empty_entry_status:
 		{
 		  resize_base::notify_find_search_end();
-		  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(key);)
-
+		  PB_DS_CHECK_KEY_DOES_NOT_EXIST(key)
 		  return 0;
 		}
 		break;
@@ -547,7 +552,7 @@ namespace __gnu_pbds
 						key, pos_hash_pair.second))
 		  {
 		    resize_base::notify_find_search_end();
-		    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(key);)
+		    PB_DS_CHECK_KEY_EXISTS(key)
 		    return pointer(&p_e->m_value);
 		  }
 		break;
@@ -560,7 +565,7 @@ namespace __gnu_pbds
 	    resize_base::notify_find_search_collision();
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(key);)
+	PB_DS_CHECK_KEY_DOES_NOT_EXIST(key)
 	resize_base::notify_find_search_end();
 	return 0;
       }
@@ -628,10 +633,12 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_entry_array_valid(const entry_array, false_type) const;
+      assert_entry_array_valid(const entry_array, false_type,
+			       const char* file, int line) const;
 
       void
-      assert_entry_array_valid(const entry_array, true_type) const;
+      assert_entry_array_valid(const entry_array, true_type,
+			       const char* file, int line) const;
 #endif 
 
       static entry_allocator 	s_entry_allocator;
@@ -651,6 +658,15 @@ namespace __gnu_pbds
       PB_DS_STATIC_ASSERT(sth, store_hash_ok);
     };
 
+#define PB_DS_ASSERT_VALID(X)						\
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
+
 #include <ext/pb_ds/detail/gp_hash_table_map_/constructor_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/gp_hash_table_map_/find_fn_imps.hpp>
 #include <ext/pb_ds/detail/gp_hash_table_map_/resize_fn_imps.hpp>
@@ -662,6 +678,10 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/gp_hash_table_map_/insert_fn_imps.hpp>
 #include <ext/pb_ds/detail/gp_hash_table_map_/trace_fn_imps.hpp>
 
+#undef PB_DS_DEBUG_VERIFY
+#undef PB_DS_ASSERT_VALID
+#undef PB_DS_CHECK_KEY_DOES_NOT_EXIST
+#undef PB_DS_CHECK_KEY_EXISTS
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_HASH_EQ_FN_C_DEC

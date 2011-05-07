@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -46,7 +46,7 @@ copy_from_range(It first_it, It last_it)
 {
   while (first_it != last_it)
     push(*(first_it++));
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -55,7 +55,7 @@ thin_heap_() :
   m_p_max(0)
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -65,7 +65,7 @@ thin_heap_(const Cmp_Fn& r_cmp_fn) :
   m_p_max(0)
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -79,7 +79,7 @@ thin_heap_(const PB_DS_CLASS_C_DEC& other) :
     if (Cmp_Fn::operator()(m_p_max->m_value, p_nd->m_value))
       m_p_max = p_nd;
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -87,10 +87,10 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   base_type::swap(other);
   std::swap(m_p_max, other.m_p_max);
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC

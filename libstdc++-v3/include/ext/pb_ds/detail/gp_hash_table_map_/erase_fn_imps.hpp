@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -72,7 +72,7 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   size_type num_ersd = 0;
   for (size_type pos = 0; pos < m_num_e; ++pos)
     {
@@ -86,7 +86,7 @@ erase_if(Pred pred)
     }
 
   do_resize_if_needed_no_throw();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   return num_ersd;
 }
 

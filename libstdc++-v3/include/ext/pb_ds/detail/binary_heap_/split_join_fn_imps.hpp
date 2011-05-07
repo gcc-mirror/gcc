@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -45,9 +45,9 @@ void
 PB_DS_CLASS_C_DEC::
 split(Pred pred, PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    typedef
+  typedef
     typename entry_pred<
     value_type,
     Pred,
@@ -114,17 +114,17 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
   resize_policy::notify_arbitrary(m_actual_size);
   other.notify_arbitrary(other.m_actual_size);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    }
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
+}
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 
   const size_type len = m_size + other.m_size;
   const size_type actual_size = resize_policy::get_new_size_for_arbitrary(len);
@@ -167,7 +167,7 @@ join(PB_DS_CLASS_C_DEC& other)
 
   other.notify_arbitrary(resize_policy::min_size);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 }
 

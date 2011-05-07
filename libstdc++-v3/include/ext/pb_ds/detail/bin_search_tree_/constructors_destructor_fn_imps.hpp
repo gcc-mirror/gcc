@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -48,7 +48,7 @@ PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME() : m_p_head(s_node_allocator.allocate(1)), m_size(0)
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -57,7 +57,7 @@ PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn) :
   Cmp_Fn(r_cmp_fn), m_p_head(s_node_allocator.allocate(1)), m_size(0)
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -69,7 +69,7 @@ PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update) :
   m_size(0)
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -88,7 +88,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 {
   initialize();
   m_size = other.m_size;
-  _GLIBCXX_DEBUG_ONLY(other.structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID(other)
 
     __try
       {
@@ -104,7 +104,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 	s_node_allocator.deallocate(m_p_head, 1);
         __throw_exception_again;
       }
-  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -112,12 +112,12 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
+  PB_DS_STRUCT_ONLY_ASSERT_VALID(other)
   value_swap(other);
   std::swap((Cmp_Fn& )(*this), (Cmp_Fn& )other);
-  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
+  PB_DS_STRUCT_ONLY_ASSERT_VALID(other)
 }
 
 PB_DS_CLASS_T_DEC
@@ -187,7 +187,7 @@ recursive_copy_node(const node_pointer p_nd)
   if (p_ret->m_p_right != 0)
     p_ret->m_p_right->m_p_parent = p_ret;
 
-  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_ret);)
+  PB_DS_ASSERT_NODE_CONSISTENT(p_ret)
   return p_ret;
 }
 

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -310,7 +310,7 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 #endif 
 
 #ifdef PB_DS_BINARY_HEAP_TRACE_
@@ -335,6 +335,15 @@ namespace __gnu_pbds
       entry_pointer m_a_entries;
     };
 
+#define PB_DS_ASSERT_VALID(X) \
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
+
 #include <ext/pb_ds/detail/binary_heap_/insert_fn_imps.hpp>
 #include <ext/pb_ds/detail/binary_heap_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/binary_heap_/iterators_fn_imps.hpp>
@@ -346,6 +355,8 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/binary_heap_/split_join_fn_imps.hpp>
 #include <ext/pb_ds/detail/binary_heap_/policy_access_fn_imps.hpp>
 
+#undef PB_DS_DEBUG_VERIFY
+#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_ENTRY_CMP_DEC

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -52,6 +52,15 @@ namespace __gnu_pbds
 
 #define PB_DS_CLASS_C_DEC resize_policy<Size_Type>
 
+#define PB_DS_ASSERT_VALID(X)\
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
+
     template<typename Size_Type>
     class resize_policy
     {
@@ -102,7 +111,7 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 #endif 
 
 #ifdef PB_DS_BINARY_HEAP_TRACE_
@@ -128,7 +137,7 @@ namespace __gnu_pbds
     resize_policy() :
       m_next_shrink_size(0),
       m_next_grow_size(min_size)
-    { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
+    { PB_DS_ASSERT_VALID((*this)) }
 
     PB_DS_CLASS_T_DEC
     inline void
@@ -188,11 +197,11 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     notify_grow_resize()
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       _GLIBCXX_DEBUG_ASSERT(m_next_grow_size >= min_size);
       m_next_grow_size *= factor;
       m_next_shrink_size = m_next_grow_size / ratio;
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
     PB_DS_CLASS_T_DEC
@@ -200,14 +209,14 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     notify_shrink_resize()
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       m_next_shrink_size /= factor;
       if (m_next_shrink_size == 1)
 	m_next_shrink_size = 0;
 
       m_next_grow_size =
 	std::max(m_next_grow_size / factor, static_cast<size_type>(min_size));
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
     PB_DS_CLASS_T_DEC
@@ -217,19 +226,19 @@ namespace __gnu_pbds
     {
       m_next_grow_size = actual_size;
       m_next_shrink_size = m_next_grow_size / ratio;
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
 #ifdef _GLIBCXX_DEBUG
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
-    assert_valid() const
+    assert_valid(const char* __file, int __line) const
     {
-      _GLIBCXX_DEBUG_ASSERT(m_next_shrink_size == 0 ||
+      PB_DS_DEBUG_VERIFY(m_next_shrink_size == 0 ||
 		       m_next_shrink_size*  ratio == m_next_grow_size);
 
-      _GLIBCXX_DEBUG_ASSERT(m_next_grow_size >= min_size);
+      PB_DS_DEBUG_VERIFY(m_next_grow_size >= min_size);
     }
 #endif 
 
@@ -244,6 +253,8 @@ namespace __gnu_pbds
     }
 #endif 
 
+#undef PB_DS_DEBUG_VERIFY
+#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 

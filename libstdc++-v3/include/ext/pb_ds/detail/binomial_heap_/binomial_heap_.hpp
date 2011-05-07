@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -100,13 +100,17 @@ namespace __gnu_pbds
     protected:
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 #endif 
     };
+
+#define PB_DS_ASSERT_VALID(X)						\
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
 
 #include <ext/pb_ds/detail/binomial_heap_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/binomial_heap_/debug_fn_imps.hpp>
 
+#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_C_DEC
 
 #undef PB_DS_CLASS_T_DEC

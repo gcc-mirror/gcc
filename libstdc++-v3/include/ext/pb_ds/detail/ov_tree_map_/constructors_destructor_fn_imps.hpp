@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -53,7 +53,7 @@ PB_DS_OV_TREE_CLASS_NAME() :
   m_a_metadata(0),
   m_end_it(0),
   m_size(0)
-{ _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();) }
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -63,7 +63,7 @@ PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn& r_cmp_fn) :
   m_a_metadata(0),
   m_end_it(0),
   m_size(0)
-{ _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();) }
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -74,14 +74,11 @@ PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_updat
   m_a_metadata(0),
   m_end_it(0),
   m_size(0)
-{ _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();) }
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_OV_TREE_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
-#ifdef _GLIBCXX_DEBUG
-  debug_base(other),
-#endif 
 #ifdef PB_DS_TREE_TRACE
   PB_DS_TREE_TRACE_BASE_C_DEC(other),
 #endif 
@@ -93,7 +90,7 @@ PB_DS_OV_TREE_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
   m_size(0)
 {
   copy_from_ordered_range(other.begin(), other.end());
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -123,6 +120,7 @@ copy_from_range(It first_it, It last_it)
 
   map_type m(first_it, last_it);
   copy_from_ordered_range(m.begin(), m.end());
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -157,14 +155,11 @@ copy_from_ordered_range(It first_it, It last_it)
   update(PB_DS_node_begin_imp(), (node_update* )this);
 
 #ifdef _GLIBCXX_DEBUG
-  const_iterator dbg_it = m_a_values;
-  while (dbg_it != m_end_it)
+  for (const_iterator dbg_it = m_a_values; dbg_it != m_end_it; ++dbg_it)
     {
       debug_base::insert_new(PB_DS_V2F(*dbg_it));
-      dbg_it++;
     }
-  PB_DS_CLASS_C_DEC::assert_valid();
-#endif 
+#endif
 }
 
 PB_DS_CLASS_T_DEC
@@ -210,14 +205,11 @@ copy_from_ordered_range(It first_it, It last_it, It other_first_it,
   update(PB_DS_node_begin_imp(), (node_update* )this);
 
 #ifdef _GLIBCXX_DEBUG
-  const_iterator dbg_it = m_a_values;
-  while (dbg_it != m_end_it)
+  for (const_iterator dbg_it = m_a_values; dbg_it != m_end_it; ++dbg_it)
     {
       debug_base::insert_new(PB_DS_V2F(*dbg_it));
-      dbg_it++;
     }
-  PB_DS_CLASS_C_DEC::assert_valid();
-#endif 
+#endif
 }
 
 PB_DS_CLASS_T_DEC
@@ -225,10 +217,12 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
   value_swap(other);
   std::swap((Cmp_Fn& )(*this), (Cmp_Fn& )other);
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID(other)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -247,9 +241,9 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 ~PB_DS_OV_TREE_CLASS_NAME()
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  //PB_DS_ASSERT_VALID((*this))
   cond_dtor<size_type> cd(m_a_values, m_end_it, m_size);
-  reallocate_metadata((node_update* )this, 0);
+  reallocate_metadata((node_update*)this, 0);
 }
 
 PB_DS_CLASS_T_DEC

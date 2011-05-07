@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,11 +43,11 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_valid() const
+assert_valid(const char* __file, int __line) const
 {
-  _GLIBCXX_DEBUG_ASSERT(base_type::m_p_root == 0 
+  PB_DS_DEBUG_VERIFY(base_type::m_p_root == 0 
 		        || base_type::m_p_root->m_p_next_sibling == 0);
-  base_type::assert_valid();
+  base_type::assert_valid(__file, __line);
 }
 
 #endif 

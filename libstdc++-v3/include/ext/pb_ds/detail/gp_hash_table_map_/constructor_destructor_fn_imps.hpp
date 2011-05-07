@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -61,7 +62,7 @@ PB_DS_CLASS_NAME()
   m_entries(s_entry_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -72,7 +73,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn)
   m_entries(s_entry_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -84,7 +85,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn)
   m_entries(s_entry_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -98,7 +99,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn,
   m_entries(s_entry_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -112,7 +113,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn,
   m_entries(s_entry_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -127,7 +128,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn,
   m_entries(s_entry_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -160,7 +161,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
       deallocate_all();
       __throw_exception_again;
     }
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -173,8 +174,8 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid());
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid());
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
   std::swap(m_num_e, other.m_num_e);
   std::swap(m_num_used_e, other.m_num_used_e);
   std::swap(m_entries, other.m_entries);
@@ -182,8 +183,8 @@ swap(PB_DS_CLASS_C_DEC& other)
   hash_eq_fn_base::swap(other);
   resize_base::swap(other);
   _GLIBCXX_DEBUG_ONLY(debug_base::swap(other));
-  _GLIBCXX_DEBUG_ONLY(assert_valid());
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid());
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 }
 
 PB_DS_CLASS_T_DEC

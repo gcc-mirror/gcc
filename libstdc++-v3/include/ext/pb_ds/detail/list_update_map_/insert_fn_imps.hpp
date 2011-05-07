@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -45,21 +45,21 @@ inline std::pair<
 PB_DS_CLASS_C_DEC::
 insert(const_reference r_val)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   entry_pointer p_l = find_imp(PB_DS_V2F(r_val));
 
   if (p_l != 0)
     {
-      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(PB_DS_V2F(r_val));)
+      PB_DS_CHECK_KEY_EXISTS(PB_DS_V2F(r_val))
       return std::make_pair(point_iterator(&p_l->m_value), false);
     }
 
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(PB_DS_V2F(r_val));)
+  PB_DS_CHECK_KEY_DOES_NOT_EXIST(PB_DS_V2F(r_val))
 
   p_l = allocate_new_entry(r_val, traits_base::m_no_throw_copies_indicator);
   p_l->m_p_next = m_p_l;
   m_p_l = p_l;
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   return std::make_pair(point_iterator(&p_l->m_value), true);
 }
 

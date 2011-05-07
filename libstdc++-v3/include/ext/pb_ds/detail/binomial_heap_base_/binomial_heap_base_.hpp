@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -187,10 +187,10 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid(bool strictly_binomial) const;
+      assert_valid(bool strictly_binomial, const char* file, int line) const;
 
       void
-      assert_max() const;
+      assert_max(const char* file, int line) const;
 #endif 
 
     private:
@@ -209,12 +209,26 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_node_consistent(const_node_pointer, bool, bool) const;
+      assert_node_consistent(const_node_pointer, bool, bool,
+			     const char*, int) const;
 #endif
 
     protected:
       node_pointer m_p_max;
     };
+
+#define PB_DS_ASSERT_VALID(X, _StrictlyBinomial)			\
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(_StrictlyBinomial,__FILE__, __LINE__);)
+
+#define PB_DS_ASSERT_BASE_NODE_CONSISTENT(_Node, _Bool)			\
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(_Node, _Bool,	\
+							__FILE__, __LINE__);)
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
 
 #include <ext/pb_ds/detail/binomial_heap_base_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/binomial_heap_base_/debug_fn_imps.hpp>
@@ -223,6 +237,9 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/binomial_heap_base_/erase_fn_imps.hpp>
 #include <ext/pb_ds/detail/binomial_heap_base_/split_join_fn_imps.hpp>
 
+#undef PB_DS_DEBUG_VERIFY
+#undef PB_DS_ASSERT_BASE_NODE_CONSISTENT
+#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_BASE_C_DEC

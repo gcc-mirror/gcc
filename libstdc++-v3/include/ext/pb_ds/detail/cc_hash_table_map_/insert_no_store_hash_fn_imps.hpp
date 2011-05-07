@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -44,7 +44,7 @@ inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
 insert_imp(const_reference r_val, false_type)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   const_key_reference r_key = PB_DS_V2F(r_val);
   const size_type pos = ranged_hash_fn_base::operator()(r_key);
   entry_pointer p_e = m_entries[pos];
@@ -60,11 +60,11 @@ insert_imp(const_reference r_val, false_type)
   resize_base::notify_insert_search_end();
   if (p_e != 0)
     {
-      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
+      PB_DS_CHECK_KEY_EXISTS(r_key)
       return std::make_pair(&p_e->m_value, false);
     }
 
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
+  PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
   return std::make_pair(insert_new_imp(r_val, pos), true);
 }
 

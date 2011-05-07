@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -62,7 +62,7 @@ find_ins_pos(const_key_reference r_key, false_type)
         case empty_entry_status:
 	  {
             resize_base::notify_insert_search_end();
-            _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
+	    PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
 	    return (ins_pos == m_num_e) ? pos : ins_pos;
 	  }
 	  break;
@@ -74,7 +74,7 @@ find_ins_pos(const_key_reference r_key, false_type)
 	  if (hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), r_key))
             {
 	      resize_base::notify_insert_search_end();
-	      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
+	      PB_DS_CHECK_KEY_EXISTS(r_key)
                 return pos;
             }
 	  break;
@@ -101,11 +101,11 @@ insert_imp(const_reference r_val, false_type)
 
   if (m_entries[pos].m_stat == valid_entry_status)
     {
-      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
+      PB_DS_CHECK_KEY_EXISTS(r_key)
       return std::make_pair(&(m_entries + pos)->m_value, false);
     }
 
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key));
+  PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
   return std::make_pair(insert_new_imp(r_val, pos), true);
 }
 

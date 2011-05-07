@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -53,7 +53,7 @@ left_child_next_sibling_heap_() :
   m_p_root(0),
   m_size(0)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -63,7 +63,7 @@ left_child_next_sibling_heap_(const Cmp_Fn& r_cmp_fn) :
   m_p_root(0),
   m_size(0)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -72,10 +72,10 @@ left_child_next_sibling_heap_(const PB_DS_CLASS_C_DEC& other)
 : Cmp_Fn(other), m_p_root(0), m_size(0)
 {
   m_size = other.m_size;
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID(other)
   m_p_root = recursive_copy_node(other.m_p_root);
   m_size = other.m_size;
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -83,12 +83,12 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
   value_swap(other);
   std::swap((Cmp_Fn& )(*this), (Cmp_Fn& )other);
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 }
 
 PB_DS_CLASS_T_DEC
