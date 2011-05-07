@@ -938,8 +938,10 @@ lto_type_for_mode (enum machine_mode mode, int unsigned_p)
   return NULL_TREE;
 }
 
-static int
-lto_global_bindings_p (void) 
+/* Return true if we are in the global binding level.  */
+
+static bool
+lto_global_bindings_p (void)
 {
   return cfun == NULL;
 }

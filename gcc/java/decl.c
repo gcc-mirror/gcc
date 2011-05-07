@@ -1302,9 +1302,9 @@ pushdecl_function_level (tree x)
   return t;
 }
 
-/* Nonzero if we are currently in the global binding level.  */
+/* Return true if we are in the global binding level.  */
 
-int
+bool
 global_bindings_p (void)
 {
   return current_binding_level == global_binding_level;

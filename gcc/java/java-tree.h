@@ -983,7 +983,7 @@ extern tree ident_subst (const char *, int, const char *, int, int,
 			 const char *);
 extern tree identifier_subst (const tree, const char *, int, int,
 			      const char *);
-extern int global_bindings_p (void);
+extern bool global_bindings_p (void);
 extern tree getdecls (void);
 extern void pushlevel (int);
 extern tree poplevel (int,int, int);

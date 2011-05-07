@@ -4849,8 +4849,8 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
 			   ? TRUTH_AND_EXPR : TRUTH_OR_EXPR,
 			   type, op0, op1);
 
-      else if (lang_hooks.decls.global_bindings_p () == 0
-	       && ! CONTAINS_PLACEHOLDER_P (lhs))
+      else if (!lang_hooks.decls.global_bindings_p ()
+	       && !CONTAINS_PLACEHOLDER_P (lhs))
 	{
 	  tree common = save_expr (lhs);
 
@@ -6148,10 +6148,6 @@ fold_mathfn_compare (location_t loc,
 				    build_real (TREE_TYPE (arg), dconst0));
 
 	      /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
-	      if (lang_hooks.decls.global_bindings_p () != 0
-		  || CONTAINS_PLACEHOLDER_P (arg))
-		return NULL_TREE;
-
 	      arg = save_expr (arg);
 	      return fold_build2_loc (loc, TRUTH_ANDIF_EXPR, type,
 				  fold_build2_loc (loc, GE_EXPR, type, arg,
@@ -6168,18 +6164,14 @@ fold_mathfn_compare (location_t loc,
 				build_real (TREE_TYPE (arg), c2));
 
 	  /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
-	  if (lang_hooks.decls.global_bindings_p () == 0
-	      && ! CONTAINS_PLACEHOLDER_P (arg))
-	    {
-	      arg = save_expr (arg);
-	      return fold_build2_loc (loc, TRUTH_ANDIF_EXPR, type,
+	  arg = save_expr (arg);
+	  return fold_build2_loc (loc, TRUTH_ANDIF_EXPR, type,
 				  fold_build2_loc (loc, GE_EXPR, type, arg,
 					       build_real (TREE_TYPE (arg),
 							   dconst0)),
 				  fold_build2_loc (loc, code, type, arg,
 					       build_real (TREE_TYPE (arg),
 							   c2)));
-	    }
 	}
     }
 
@@ -6226,13 +6218,8 @@ fold_inf_compare (location_t loc, enum tree_code code, tree type,
 	return omit_one_operand_loc (loc, type, integer_one_node, arg0);
 
       /* x <= +Inf is the same as x == x, i.e. isfinite(x).  */
-      if (lang_hooks.decls.global_bindings_p () == 0
-	  && ! CONTAINS_PLACEHOLDER_P (arg0))
-	{
-	  arg0 = save_expr (arg0);
-	  return fold_build2_loc (loc, EQ_EXPR, type, arg0, arg0);
-	}
-      break;
+      arg0 = save_expr (arg0);
+      return fold_build2_loc (loc, EQ_EXPR, type, arg0, arg0);
 
     case EQ_EXPR:
     case GE_EXPR:

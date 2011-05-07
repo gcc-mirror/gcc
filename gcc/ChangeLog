@@ -1,3 +1,14 @@
+2011-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* langhooks.h (lang_hooks_for_types): Change global_bindings_p's return
+	type to bool and adjust comment.
+	* fold-const.c (fold_range_test): Adjust call to global_bindings_p.
+	(fold_mathfn_compare): Remove calls to global_bindings_p.
+	(fold_inf_compare): Likewise.
+	* stor-layout.c (variable_size): Adjust call to global_bindings_p.
+	* c-tree.h (global_bindings_p): Adjust prototype.
+	* c-decl.c (global_bindings_p): Return bool and simplify.
+
 2011-05-07  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/48837
