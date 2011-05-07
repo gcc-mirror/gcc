@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,37 +43,33 @@ void
 PB_DS_CLASS_C_DEC::
 split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 
   if (m_size == 0)
     {
       other.clear();
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
       return;
     }
 
   if (Cmp_Fn::operator()(r_key, PB_DS_V2F(*begin())))
     {
       value_swap(other);
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
       return;
     }
 
   if (!Cmp_Fn::operator()(r_key, PB_DS_V2F(*(end() - 1))))
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
       return;
     }
 
   if (m_size == 1)
     {
       value_swap(other);
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
       return;
     }
 
@@ -90,8 +86,8 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
   update(node_begin(), (node_update* )this);
   other.value_swap(new_other);
   value_swap(new_this);
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 }
 
 PB_DS_CLASS_T_DEC
@@ -99,14 +95,16 @@ void
 PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
   if (other.m_size == 0)
     return;
 
   if (m_size == 0)
     {
       value_swap(other);
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
       return;
     }
 
@@ -129,9 +127,9 @@ join(PB_DS_CLASS_C_DEC& other)
 				     begin(), end());
 
   // No exceptions from this point.
-  _GLIBCXX_DEBUG_ONLY(debug_base::join(other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::join(other, false);)
   value_swap(new_this);
   other.clear();
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 }

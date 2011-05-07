@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,15 +43,15 @@ void
 PB_DS_CLASS_C_DEC::
 split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(););
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
   split_join_branch_bag bag;
   leaf_pointer p_split_lf = split_prep(r_key, other, bag);
   if (p_split_lf == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(bag.empty());
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
       return;
     }
 
@@ -73,8 +73,8 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
   other.m_size = std::distance(other.PB_DS_CLASS_C_DEC::begin(),
 			       other.PB_DS_CLASS_C_DEC::end());
   m_size -= other.m_size;
-  _GLIBCXX_DEBUG_ONLY(assert_valid(););
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 }
 
 PB_DS_CLASS_T_DEC
@@ -86,8 +86,8 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, split_join_branc
   if (m_size == 0)
     {
       other.clear();
-      _GLIBCXX_DEBUG_ONLY(assert_valid(););
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
       return (0);
     }
 
@@ -96,16 +96,16 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, split_join_branc
     {
       other.clear();
       value_swap(other);
-      _GLIBCXX_DEBUG_ONLY(assert_valid(););
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
       return (0);
     }
 
   if (!synth_e_access_traits::cmp_keys(r_key,
 				       PB_DS_V2F(static_cast<const_leaf_pointer>(m_p_head->m_p_max)->value())))
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid(););
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
       return (0);
     }
 
@@ -143,7 +143,7 @@ rec_split(node_pointer p_nd, const_e_iterator b_it, const_e_iterator e_it, PB_DS
 
   node_pointer p_child_ret = rec_split(p_internal_nd->get_child_node(b_it, e_it, this), b_it, e_it, other, r_bag);
 
-  _GLIBCXX_DEBUG_ONLY(p_child_ret->assert_valid(this);)
+  PB_DS_ASSERT_NODE_VALID(p_child_ret)
   p_internal_nd->replace_child(p_child_ret, b_it, e_it, this);
   apply_update(p_internal_nd, (node_update* )this);
 
@@ -184,7 +184,7 @@ rec_split(node_pointer p_nd, const_e_iterator b_it, const_e_iterator e_it, PB_DS
   if (std::distance(p_internal_nd->begin(), p_internal_nd->end()) > 1)
     {
       p_internal_nd->update_prefixes(this);
-      _GLIBCXX_DEBUG_ONLY(p_internal_nd->assert_valid(this);)
+      PB_DS_ASSERT_NODE_VALID(p_internal_nd)
       apply_update(p_internal_nd, (node_update* )this);
       return (p_internal_nd);
     }
@@ -203,7 +203,7 @@ split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_no
 {
 #ifdef _GLIBCXX_DEBUG
   if (m_p_head->m_p_parent != 0)
-    m_p_head->m_p_parent->assert_valid(this);
+    PB_DS_ASSERT_NODE_VALID(m_p_head->m_p_parent)
 #endif 
 
   const size_type total_num_children =((m_p_head->m_p_parent == 0)? 0 : 1) + num_children;
@@ -218,7 +218,7 @@ split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_no
     {
       if (m_p_head->m_p_parent != 0)
         {
-	  _GLIBCXX_DEBUG_ONLY(m_p_head->m_p_parent->assert_valid(this);)
+	  PB_DS_ASSERT_NODE_VALID(m_p_head->m_p_parent)
           return;
         }
 
@@ -226,7 +226,7 @@ split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_no
       m_p_head->m_p_parent =* child_b_it;
       m_p_head->m_p_parent->m_p_parent = m_p_head;
       apply_update(m_p_head->m_p_parent, (node_update* )this);
-      _GLIBCXX_DEBUG_ONLY(m_p_head->m_p_parent->assert_valid(this);)
+      PB_DS_ASSERT_NODE_VALID(m_p_head->m_p_parent)
       return;
     }
 
@@ -236,7 +236,7 @@ split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_no
   size_type num_inserted = 0;
   while (num_inserted++ < num_children)
     {
-      _GLIBCXX_DEBUG_ONLY((*child_b_it)->assert_valid(this);)
+      PB_DS_ASSERT_NODE_VALID((*child_b_it))
         p_new_root->add_child(*child_b_it, pref_begin(*child_b_it),
 			      pref_end(*child_b_it), this);
       ++child_b_it;
@@ -250,5 +250,5 @@ split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_no
   m_p_head->m_p_parent = p_new_root;
   p_new_root->m_p_parent = m_p_head;
   apply_update(m_p_head->m_p_parent, (node_update* )this);
-  _GLIBCXX_DEBUG_ONLY(m_p_head->m_p_parent->assert_valid(this);)
+  PB_DS_ASSERT_NODE_VALID(m_p_head->m_p_parent)
 }

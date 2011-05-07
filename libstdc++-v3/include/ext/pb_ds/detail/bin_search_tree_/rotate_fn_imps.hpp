@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -62,10 +62,10 @@ rotate_left(node_pointer p_x)
   p_y->m_p_left = p_x;
   p_x->m_p_parent = p_y;
 
-  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_x);)
-    _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y);)
+  PB_DS_ASSERT_NODE_CONSISTENT(p_x)
+  PB_DS_ASSERT_NODE_CONSISTENT(p_y)
 
-    apply_update(p_x, (node_update* )this);
+  apply_update(p_x, (node_update* )this);
   apply_update(p_x->m_p_parent, (node_update* )this);
 }
 
@@ -93,10 +93,10 @@ rotate_right(node_pointer p_x)
   p_y->m_p_right = p_x;
   p_x->m_p_parent = p_y;
 
-  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_x);)
-    _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y);)
+  PB_DS_ASSERT_NODE_CONSISTENT(p_x)
+  PB_DS_ASSERT_NODE_CONSISTENT(p_y)
 
-    apply_update(p_x, (node_update* )this);
+  apply_update(p_x, (node_update* )this);
   apply_update(p_x->m_p_parent, (node_update* )this);
 }
 
@@ -129,9 +129,8 @@ inline void
 PB_DS_CLASS_C_DEC::
 apply_update(node_pointer p_nd, Node_Update_*  /*p_update*/)
 {
-  node_update::operator()(
-			   node_iterator(p_nd),
-			   const_node_iterator(static_cast<node_pointer>(0)));
+  node_update::operator()(node_iterator(p_nd),
+			  const_node_iterator(static_cast<node_pointer>(0)));
 }
 
 PB_DS_CLASS_T_DEC

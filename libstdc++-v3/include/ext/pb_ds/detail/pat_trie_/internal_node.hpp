@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2009, 2010, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -94,7 +95,8 @@ namespace __gnu_pbds
       typedef typename base_type::subtree_debug_info subtree_debug_info;
 
       virtual subtree_debug_info
-      assert_valid_imp(const_e_access_traits_pointer) const;
+      assert_valid_imp(const_e_access_traits_pointer,
+		       const char* file, int line) const;
 #endif 
 
       inline size_type
@@ -564,28 +566,37 @@ namespace __gnu_pbds
     }
 
 #ifdef _GLIBCXX_DEBUG
+# define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
+
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::subtree_debug_info
     PB_DS_CLASS_C_DEC::
-    assert_valid_imp(const_e_access_traits_pointer p_traits) const
+    assert_valid_imp(const_e_access_traits_pointer p_traits,
+		     const char* __file, int __line) const
     {
-      _GLIBCXX_DEBUG_ASSERT(base_type::m_type == pat_trie_internal_node_type);
-      _GLIBCXX_DEBUG_ASSERT(static_cast<size_type>(std::distance(pref_b_it(), pref_e_it())) == m_e_ind);
-      _GLIBCXX_DEBUG_ASSERT(std::distance(begin(), end()) >= 2);
+      PB_DS_DEBUG_VERIFY(base_type::m_type == pat_trie_internal_node_type);
+      PB_DS_DEBUG_VERIFY(static_cast<size_type>(std::distance(pref_b_it(), pref_e_it())) == m_e_ind);
+      PB_DS_DEBUG_VERIFY(std::distance(begin(), end()) >= 2);
 
       for (typename pat_trie_internal_node::const_iterator it = begin();
 	   it != end(); ++it)
 	{
 	  const_node_pointer p_nd =* it;
-	  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_parent == this);
-	  subtree_debug_info child_ret = p_nd->assert_valid_imp(p_traits);
+	  PB_DS_DEBUG_VERIFY(p_nd->m_p_parent == this);
+	  subtree_debug_info child_ret =
+	    p_nd->assert_valid_imp(p_traits, __file, __line);
 
-	  _GLIBCXX_DEBUG_ASSERT(static_cast<size_type>(std::distance(child_ret.first, child_ret.second)) >= m_e_ind);
-	  _GLIBCXX_DEBUG_ASSERT(should_be_mine(child_ret.first, child_ret.second, 0, p_traits));
-	  _GLIBCXX_DEBUG_ASSERT(get_pref_pos(child_ret.first, child_ret.second, p_traits) == static_cast<size_type>(it.m_p_p_cur - m_a_p_children));
+	  PB_DS_DEBUG_VERIFY(static_cast<size_type>(std::distance(child_ret.first, child_ret.second)) >= m_e_ind);
+	  PB_DS_DEBUG_VERIFY(should_be_mine(child_ret.first, child_ret.second, 0, p_traits));
+	  PB_DS_DEBUG_VERIFY(get_pref_pos(child_ret.first, child_ret.second, p_traits) == static_cast<size_type>(it.m_p_p_cur - m_a_p_children));
 	}
       return std::make_pair(pref_b_it(), pref_e_it());
     }
+# undef PB_DS_DEBUG_VERIFY
 #endif 
 
 #undef PB_DS_CLASS_T_DEC

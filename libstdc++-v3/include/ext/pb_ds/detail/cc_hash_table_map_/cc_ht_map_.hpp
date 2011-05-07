@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2009, 2010, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -98,7 +99,15 @@ namespace __gnu_pbds
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_V2F(X) (X)
 #define PB_DS_V2S(X) Mapped_Data()
-#endif 
+#endif
+
+#define PB_DS_CHECK_KEY_EXISTS(_Key)					\
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(_Key, __FILE__, __LINE__);)
+
+#define PB_DS_CHECK_KEY_DOES_NOT_EXIST(_Key)				\
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(_Key,	\
+							   __FILE__, __LINE__);)
+
 
     // <011i$i0|\|-<|-|4i|\|i|\|g |-|4$|-| 74813.
     template<typename Key,
@@ -320,7 +329,7 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 #endif 
 
 #ifdef PB_DS_HT_MAP_TRACE_
@@ -369,7 +378,7 @@ namespace __gnu_pbds
       inline mapped_reference
       subscript_imp(const_key_reference r_key, false_type)
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
         const size_type pos = ranged_hash_fn_base::operator()(r_key);
 	entry_pointer p_e = m_entries[pos];
 	resize_base::notify_insert_search_start();
@@ -384,18 +393,18 @@ namespace __gnu_pbds
 	resize_base::notify_insert_search_end();
 	if (p_e != 0)
 	  {
-	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
+	    PB_DS_CHECK_KEY_EXISTS(r_key)
 	    return (p_e->m_value.second);
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
+	PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
 	return insert_new_imp(value_type(r_key, mapped_type()), pos)->second;
       }
 
       inline mapped_reference
       subscript_imp(const_key_reference r_key, true_type)
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
 	entry_pointer p_e = m_entries[pos_hash_pair.first];
 	resize_base::notify_insert_search_start();
@@ -409,11 +418,11 @@ namespace __gnu_pbds
 	resize_base::notify_insert_search_end();
 	if (p_e != 0)
 	  {
-	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
+	    PB_DS_CHECK_KEY_EXISTS(r_key)
 	    return p_e->m_value.second;
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
+	PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
 	return insert_new_imp(value_type(r_key, mapped_type()), 
 			      pos_hash_pair)->second;
       }
@@ -440,7 +449,7 @@ namespace __gnu_pbds
 	resize_base::notify_inserted(++m_num_used_e);
 
 	_GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_val));)
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	return &p_e->m_value;
       }
 
@@ -459,7 +468,7 @@ namespace __gnu_pbds
 	m_entries[r_pos_hash_pair.first] = p_e;
 	resize_base::notify_inserted(++m_num_used_e);
 	_GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_val));)
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	return &p_e->m_value;
       }
 
@@ -479,9 +488,9 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
 	if (p_e == 0)
-	  debug_base::check_key_does_not_exist(r_key);
+	  PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
 	else
-	  debug_base::check_key_exists(r_key);
+	  PB_DS_CHECK_KEY_EXISTS(r_key)
 #endif 
 	return &p_e->m_value;
       }
@@ -505,9 +514,9 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
 	if (p_e == 0)
-	  debug_base::check_key_does_not_exist(r_key);
+	  PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
 	else
-	  debug_base::check_key_exists(r_key);
+	  PB_DS_CHECK_KEY_EXISTS(r_key)
 #endif 
 	return &p_e->m_value;
       }
@@ -568,13 +577,16 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_entry_pointer_array_valid(const entry_pointer_array) const;
+      assert_entry_pointer_array_valid(const entry_pointer_array,
+				       const char* file, int line) const;
 
       void
-      assert_entry_pointer_valid(const entry_pointer, true_type) const;
+      assert_entry_pointer_valid(const entry_pointer, true_type,
+				 const char* file, int line) const;
 
       void
-      assert_entry_pointer_valid(const entry_pointer, false_type) const;
+      assert_entry_pointer_valid(const entry_pointer, false_type,
+				 const char* file, int line) const;
 #endif 
 
 #ifdef PB_DS_HT_MAP_TRACE_
@@ -609,6 +621,15 @@ namespace __gnu_pbds
       PB_DS_STATIC_ASSERT(sth, store_hash_ok);
     };
 
+#define PB_DS_ASSERT_VALID(X)						\
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
+
 #include <ext/pb_ds/detail/cc_hash_table_map_/constructor_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/cc_hash_table_map_/entry_list_fn_imps.hpp>
 #include <ext/pb_ds/detail/cc_hash_table_map_/find_fn_imps.hpp>
@@ -621,6 +642,10 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/cc_hash_table_map_/insert_fn_imps.hpp>
 #include <ext/pb_ds/detail/cc_hash_table_map_/trace_fn_imps.hpp>
 
+#undef PB_DS_DEBUG_VERIFY
+#undef PB_DS_ASSERT_VALID
+#undef PB_DS_CHECK_KEY_DOES_NOT_EXIST
+#undef PB_DS_CHECK_KEY_EXISTS
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_HASH_EQ_FN_C_DEC

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -41,19 +41,19 @@
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 binomial_heap_()
-{ _GLIBCXX_DEBUG_ONLY(assert_valid();) }
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 binomial_heap_(const Cmp_Fn& r_cmp_fn) :
   PB_DS_BASE_C_DEC(r_cmp_fn)
-{ _GLIBCXX_DEBUG_ONLY(assert_valid();) }
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 binomial_heap_(const PB_DS_CLASS_C_DEC& other) :
   PB_DS_BASE_C_DEC(other)
-{ _GLIBCXX_DEBUG_ONLY(assert_valid();) }
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::

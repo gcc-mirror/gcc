@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,17 +43,17 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
+  PB_DS_ASSERT_VALID((*this),true)
 
-    node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
+  node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
 
   insert_node(p_nd);
 
   m_p_max = 0;
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
+  PB_DS_ASSERT_VALID((*this),true)
 
-    return point_iterator(p_nd);
+  return point_iterator(p_nd);
 }
 
 PB_DS_CLASS_T_DEC
@@ -171,13 +171,13 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
-    node_pointer p_nd = it.m_p_nd;
+  PB_DS_ASSERT_VALID((*this),true)
+  node_pointer p_nd = it.m_p_nd;
 
   _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
-  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd, false);)
+  PB_DS_ASSERT_BASE_NODE_CONSISTENT(p_nd, false)
 
-    const bool bubble_up = Cmp_Fn::operator()(p_nd->m_value, r_new_val);
+  const bool bubble_up = Cmp_Fn::operator()(p_nd->m_value, r_new_val);
 
   p_nd->m_value = r_new_val;
 
@@ -198,7 +198,7 @@ modify(point_iterator it, const_reference r_new_val)
 
       m_p_max = 0;
 
-      _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
+      PB_DS_ASSERT_VALID((*this),true)
 
         return;
     }
@@ -211,6 +211,6 @@ modify(point_iterator it, const_reference r_new_val)
 
   m_p_max = 0;
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
-    }
+  PB_DS_ASSERT_VALID((*this),true)
+}
 

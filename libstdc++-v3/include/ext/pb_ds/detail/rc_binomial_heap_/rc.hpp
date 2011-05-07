@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -40,6 +40,15 @@
 
 #ifndef PB_DS_RC_HPP
 #define PB_DS_RC_HPP
+
+#define PB_DS_ASSERT_VALID(X)						\
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
 
 namespace __gnu_pbds
 {
@@ -121,7 +130,7 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 #endif 
 
 #ifdef PB_DS_RC_BINOMIAL_HEAP_TRACE_
@@ -138,20 +147,20 @@ namespace __gnu_pbds
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     rc() : m_over_top(0)
-    { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
+    { PB_DS_ASSERT_VALID((*this)) }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     rc(const PB_DS_CLASS_C_DEC& other) : m_over_top(0)
-    { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
+    { PB_DS_ASSERT_VALID((*this)) }
 
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
     swap(PB_DS_CLASS_C_DEC& other)
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
 
       const size_type over_top = std::max(m_over_top, other.m_over_top);
 
@@ -159,8 +168,8 @@ namespace __gnu_pbds
 	std::swap(m_a_entries[i], other.m_a_entries[i]);
 
       std::swap(m_over_top, other.m_over_top);
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
      }
 
     PB_DS_CLASS_T_DEC
@@ -168,10 +177,10 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     push(entry p_nd)
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       _GLIBCXX_DEBUG_ASSERT(m_over_top < max_entries);
       m_a_entries[m_over_top++] = p_nd;
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
     PB_DS_CLASS_T_DEC
@@ -179,10 +188,10 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     pop()
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       _GLIBCXX_DEBUG_ASSERT(!empty());
       --m_over_top;
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
     PB_DS_CLASS_T_DEC
@@ -190,7 +199,7 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     top() const
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       _GLIBCXX_DEBUG_ASSERT(!empty());
       return *(m_a_entries + m_over_top - 1);
     }
@@ -200,7 +209,7 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     empty() const
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       return m_over_top == 0;
     }
 
@@ -215,9 +224,9 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     clear()
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       m_over_top = 0;
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
     PB_DS_CLASS_T_DEC
@@ -236,8 +245,8 @@ namespace __gnu_pbds
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
-    assert_valid() const
-    { _GLIBCXX_DEBUG_ASSERT(m_over_top < max_entries); }
+    assert_valid(const char* __file, int __line) const
+    { PB_DS_DEBUG_VERIFY(m_over_top < max_entries); }
 #endif 
 
 #ifdef PB_DS_RC_BINOMIAL_HEAP_TRACE_
@@ -259,4 +268,6 @@ namespace __gnu_pbds
 } // namespace detail
 } // namespace __gnu_pbds
 
+#undef PB_DS_DEBUG_VERIFY
+#undef PB_DS_ASSERT_VALID
 #endif 

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,22 +43,22 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   node_pointer p_nd = find_imp(r_key);
 
   if (p_nd == 0 || p_nd->m_type != pat_trie_leaf_node_type)
     {
-      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
+      PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
       return end();
     }
 
   if (synth_e_access_traits::equal_keys(PB_DS_V2F(static_cast<leaf_pointer>(p_nd)->value()), r_key))
     {
-      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key));
+      PB_DS_CHECK_KEY_EXISTS(r_key)
       return iterator(p_nd);
     }
 
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
+  PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
   return end();
 }
 
@@ -67,23 +67,23 @@ inline typename PB_DS_CLASS_C_DEC::const_point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key) const
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
   const_node_pointer p_nd = const_cast<PB_DS_CLASS_C_DEC* >(this)->find_imp(r_key);
 
   if (p_nd == 0 || p_nd->m_type != pat_trie_leaf_node_type)
     {
-      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
+      PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
       return end();
     }
 
   if (synth_e_access_traits::equal_keys(PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value()), r_key))
     {
-      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key));
+      PB_DS_CHECK_KEY_EXISTS(r_key)
       return const_iterator(const_cast<node_pointer>(p_nd));
     }
 
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
+  PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
   return end();
 }
 

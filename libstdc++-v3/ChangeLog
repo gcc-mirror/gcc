@@ -1,3 +1,75 @@
+2011-05-07  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/macro.h (_GLIBCXX_DEBUG_VERIFY_AT): New.
+	(_GLICXX_DEBUG_VERIFY): Use latter.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp: Emit assertion on the line
+	containing the original assert call.
+	* include/ext/pb_ds/detail/binomial_heap_base_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, insert_fn_imps.hpp, binomial_heap_base_.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_store_hash_fn_imps.hpp, insert_no_store_hash_fn_imps.hpp,
+	find_fn_imps.hpp, insert_store_hash_fn_imps.hpp, debug_fn_imps.hpp,
+	debug_no_store_hash_fn_imps.hpp, cc_ht_map_.hpp, resize_fn_imps.hpp,
+	constructor_destructor_fn_imps.hpp, debug_store_hash_fn_imps.hpp,
+	erase_no_store_hash_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/find_fn_imps.hpp,
+	insert_join_fn_imps.hpp, pat_trie_/head.hpp, debug_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, pat_trie_.hpp, split_fn_imps.hpp,
+	leaf.hpp, erase_fn_imps.hpp, node_base.hpp, internal_node.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/find_fn_imps.hpp,
+	r_erase_fn_imps.hpp, constructors_destructor_fn_imps.hpp,
+	debug_fn_imps.hpp, rotate_fn_imps.hpp, erase_fn_imps.hpp,
+	bin_search_tree_.hpp, insert_fn_imps.hpp, split_join_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	erase_store_hash_fn_imps.hpp, insert_no_store_hash_fn_imps.hpp,
+	find_fn_imps.hpp, gp_ht_map_.hpp, insert_store_hash_fn_imps.hpp,
+	debug_fn_imps.hpp, erase_fn_imps.hpp, debug_no_store_hash_fn_imps.hpp,
+	resize_fn_imps.hpp, constructor_destructor_fn_imps.hpp,
+	debug_store_hash_fn_imps.hpp, erase_no_store_hash_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/find_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	erase_fn_imps.hpp, insert_fn_imps.hpp, binary_heap_.hpp,
+	resize_policy.hpp, split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, insert_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	pairing_heap_.hpp, split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_/
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	binomial_heap_.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	erase_fn_imps.hpp, left_child_next_sibling_heap_.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, thin_heap_.hpp, insert_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp,
+	ov_tree_map_.hpp, constructors_destructor_fn_imps.hpp,
+	debug_fn_imps.hpp, split_join_fn_imps.hpp, info_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/debug_map_base.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, insert_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	splay_fn_imps.hpp, split_join_fn_imps.hpp, splay_tree_.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, lu_map_.hpp, constructor_destructor_fn_imps.hpp,
+	insert_fn_imps.hpp, debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/erase_fn_imps.hpp,
+	rc_binomial_heap_.hpp, insert_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp, rc.hpp,
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/erase_fn_imps.hpp,
+	insert_fn_imps.hpp, constructors_destructor_fn_imps.hpp,
+	debug_fn_imps.hpp, rb_tree_.hpp, split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/hash_policy.hpp: Likewise.
+
 2011-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/22_locale/messages_byname/named_equivalence.cc: Fix.

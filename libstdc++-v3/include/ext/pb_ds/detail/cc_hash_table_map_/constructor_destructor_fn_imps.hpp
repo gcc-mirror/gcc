@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -66,7 +66,7 @@ PB_DS_CLASS_NAME() :
   m_entries(s_entry_pointer_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -77,7 +77,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn) :
   m_entries(s_entry_pointer_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -91,7 +91,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn) :
   std::fill(m_entries, m_entries + m_num_e, (entry_pointer)0);
   Resize_Policy::notify_cleared();
   ranged_hash_fn_base::notify_resized(m_num_e);
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -104,7 +104,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, const Comb_Hash
   m_entries(s_entry_pointer_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -118,22 +118,19 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, const Comb_Hash
   m_entries(s_entry_pointer_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
-#ifdef _GLIBCXX_DEBUG
-  debug_base(other),
-#endif 
   PB_DS_HASH_EQ_FN_C_DEC(other),
   resize_base(other), ranged_hash_fn_base(other),
   m_num_e(resize_base::get_nearest_larger_size(1)), m_num_used_e(0),
   m_entries(s_entry_pointer_allocator.allocate(m_num_e))
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
     __try
       {
         copy_from_range(other.begin(), other.end());
@@ -143,7 +140,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
         deallocate_all();
         __throw_exception_again;
       }
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -156,8 +153,8 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid());
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid());
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 
   std::swap(m_entries, other.m_entries);
   std::swap(m_num_e, other.m_num_e);
@@ -167,8 +164,8 @@ swap(PB_DS_CLASS_C_DEC& other)
   resize_base::swap(other);
 
   _GLIBCXX_DEBUG_ONLY(debug_base::swap(other));
-  _GLIBCXX_DEBUG_ONLY(assert_valid());
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid());
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 }
 
 PB_DS_CLASS_T_DEC

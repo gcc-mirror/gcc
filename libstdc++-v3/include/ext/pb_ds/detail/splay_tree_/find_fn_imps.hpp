@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -65,7 +65,8 @@ inline typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 find_imp(const_key_reference r_key)
 {
-  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid(__FILE__,
+							     __LINE__);)
   node_pointer p_nd = base_type::m_p_head->m_p_parent;
   while (p_nd != 0)
     if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), r_key))
@@ -84,7 +85,7 @@ inline const typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 find_imp(const_key_reference r_key) const
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   node_pointer p_nd = base_type::m_p_head->m_p_parent;
   while (p_nd != 0)
     if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), r_key))

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,9 +43,9 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
+  node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
 
   p_nd->m_metadata = 0;
 
@@ -57,9 +57,9 @@ push(const_reference r_val)
 
       m_p_max = base_type::m_p_root = p_nd;
 
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
 
-        return point_iterator(p_nd);
+      return point_iterator(p_nd);
     }
 
   p_nd->m_p_next_sibling = base_type::m_p_root;
@@ -70,9 +70,9 @@ push(const_reference r_val)
 
   update_max(p_nd);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    return point_iterator(p_nd);
+  return point_iterator(p_nd);
 }
 
 PB_DS_CLASS_T_DEC
@@ -81,7 +81,7 @@ PB_DS_CLASS_C_DEC::
 make_root(node_pointer p_nd)
 {
   p_nd->m_metadata =
-    p_nd->m_p_l_child == 0?
+    p_nd->m_p_l_child == 0 ?
     0 :
     1 + p_nd->m_p_l_child->m_metadata;
 }
@@ -170,8 +170,8 @@ fix_root(node_pointer p_y)
 
   make_root(p_y);
 
-  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, true);)
-    }
+  PB_DS_ASSERT_NODE_CONSISTENT(p_y, true)
+}
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -181,7 +181,7 @@ fix_sibling_rank_1_unmarked(node_pointer p_y)
   _GLIBCXX_DEBUG_ASSERT(p_y->m_p_prev_or_parent != 0);
 
   _GLIBCXX_DEBUG_ONLY(node_pointer p_w = p_y->m_p_l_child;)
-    _GLIBCXX_DEBUG_ASSERT(p_w != 0);
+  _GLIBCXX_DEBUG_ASSERT(p_w != 0);
   _GLIBCXX_DEBUG_ASSERT(p_w->m_p_next_sibling == 0);
   _GLIBCXX_DEBUG_ASSERT(p_y->m_p_next_sibling == 0);
 
@@ -191,8 +191,8 @@ fix_sibling_rank_1_unmarked(node_pointer p_y)
 
   p_y->m_p_l_child = 0;
 
-  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, false);)
-    }
+  PB_DS_ASSERT_NODE_CONSISTENT(p_y, false)
+}
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -204,8 +204,8 @@ fix_sibling_rank_1_marked(node_pointer p_y)
 
   p_y->m_metadata = 0;
 
-  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, false);)
-    }
+  PB_DS_ASSERT_NODE_CONSISTENT(p_y, false)
+}
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -228,8 +228,8 @@ fix_sibling_general_unmarked(node_pointer p_y)
   p_y->m_p_next_sibling = p_w;
   p_w->m_p_prev_or_parent = p_y;
 
-  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, false);)
-    }
+  PB_DS_ASSERT_NODE_CONSISTENT(p_y, false)
+}
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -240,8 +240,8 @@ fix_sibling_general_marked(node_pointer p_y)
 
   --p_y->m_metadata;
 
-  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, false);)
-    }
+  PB_DS_ASSERT_NODE_CONSISTENT(p_y, false)
+}
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -266,7 +266,7 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
     node_pointer p_nd = it.m_p_nd;
 
   _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
@@ -283,18 +283,18 @@ modify(point_iterator it, const_reference r_new_val)
 
       make_root_and_link(p_nd);
 
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
 
-        return;
+      return;
     }
 
   if (p_nd->m_p_prev_or_parent == 0)
     {
       update_max(p_nd);
 
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
 
-        return;
+      return;
     }
 
   node_pointer p_y = p_nd->m_p_prev_or_parent;
@@ -312,8 +312,8 @@ modify(point_iterator it, const_reference r_new_val)
 
   make_root_and_link(p_nd);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+  PB_DS_ASSERT_VALID((*this))
+}
 
 PB_DS_CLASS_T_DEC
 inline void

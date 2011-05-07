@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,13 +43,13 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    make_0_exposed();
+  make_0_exposed();
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
+  node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
 
   p_nd->m_p_l_child = p_nd->m_p_prev_or_parent = 0;
   p_nd->m_metadata = 0;
@@ -67,9 +67,9 @@ push(const_reference r_val)
   if (p_nd->m_p_next_sibling != 0&&  p_nd->m_p_next_sibling->m_metadata == 0)
     m_rc.push(p_nd);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    return point_iterator(p_nd);
+  return point_iterator(p_nd);
 }
 
 PB_DS_CLASS_T_DEC
@@ -77,16 +77,16 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    make_binomial_heap();
+  make_binomial_heap();
 
   base_type::modify(it, r_new_val);
 
   base_type::find_max();
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+  PB_DS_ASSERT_VALID((*this))
+}
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::node_pointer

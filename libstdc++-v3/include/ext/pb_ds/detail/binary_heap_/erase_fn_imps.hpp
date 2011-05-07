@@ -66,7 +66,7 @@ clear()
 
   m_size = 0;
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -89,7 +89,7 @@ inline void
 PB_DS_CLASS_C_DEC::
 pop()
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   _GLIBCXX_DEBUG_ASSERT(!empty());
 
   erase_at(m_a_entries, 0, s_no_throw_copies_ind);
@@ -102,7 +102,7 @@ pop()
   _GLIBCXX_DEBUG_ASSERT(m_size > 0);
   --m_size;
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -111,7 +111,7 @@ typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
   typedef typename entry_pred<value_type, Pred, simple_value, Allocator>::type
     pred_t;
@@ -148,7 +148,7 @@ erase_if(Pred pred)
   std::make_heap(m_a_entries, m_a_entries + m_size,
 		 static_cast<entry_cmp& >(*this));
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
   return ersd;
 }
@@ -158,7 +158,7 @@ inline void
 PB_DS_CLASS_C_DEC::
 erase(point_iterator it)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   _GLIBCXX_DEBUG_ASSERT(!empty());
 
   const size_type fix_pos = it.m_p_e - m_a_entries;
@@ -177,7 +177,7 @@ erase(point_iterator it)
   if (fix_pos != m_size)
     fix(m_a_entries + fix_pos);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC

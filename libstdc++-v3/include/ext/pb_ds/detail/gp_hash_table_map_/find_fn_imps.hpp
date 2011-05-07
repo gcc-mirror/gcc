@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,8 +43,8 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-   return find_key_pointer(r_key, traits_base::m_store_extra_indicator);
+  PB_DS_ASSERT_VALID((*this))
+  return find_key_pointer(r_key, traits_base::m_store_extra_indicator);
 }
 
 PB_DS_CLASS_T_DEC
@@ -52,7 +52,7 @@ inline typename PB_DS_CLASS_C_DEC::const_point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key) const
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   return const_cast<PB_DS_CLASS_C_DEC&>(*this).find_key_pointer(r_key, traits_base::m_store_extra_indicator);
 }
 

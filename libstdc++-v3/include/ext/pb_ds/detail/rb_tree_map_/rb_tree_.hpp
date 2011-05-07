@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -167,17 +167,17 @@ namespace __gnu_pbds
       operator[](const_key_reference r_key)
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	std::pair<point_iterator, bool> ins_pair =
 	base_type::insert_leaf(value_type(r_key, mapped_type()));
 
 	if (ins_pair.second == true)
 	  {
 	    ins_pair.first.m_p_nd->m_red = true;
-	    _GLIBCXX_DEBUG_ONLY(this->structure_only_assert_valid();)
+	    _GLIBCXX_DEBUG_ONLY(this->structure_only_assert_valid(__FILE__, __LINE__);)
 	    insert_fixup(ins_pair.first.m_p_nd);
 	  }
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	return ins_pair.first.m_p_nd->m_value.second;
 #else 
 	insert(r_key);
@@ -210,10 +210,11 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 
       size_type
-      assert_node_consistent(const node_pointer) const;
+      assert_node_consistent(const node_pointer, const char* file,
+						 int line) const;
 #endif 
 
       inline static bool
@@ -259,6 +260,18 @@ namespace __gnu_pbds
       split_at_node(node_pointer, PB_DS_CLASS_C_DEC&);
     };
 
+#define PB_DS_ASSERT_VALID(X)						\
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
+
+#define PB_DS_STRUCT_ONLY_ASSERT_VALID(X)				\
+  _GLIBCXX_DEBUG_ONLY(X.structure_only_assert_valid(__FILE__, __LINE__);)
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
+
 #include <ext/pb_ds/detail/rb_tree_map_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/rb_tree_map_/insert_fn_imps.hpp>
 #include <ext/pb_ds/detail/rb_tree_map_/erase_fn_imps.hpp>
@@ -266,6 +279,9 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/rb_tree_map_/split_join_fn_imps.hpp>
 #include <ext/pb_ds/detail/rb_tree_map_/info_fn_imps.hpp>
 
+#undef PB_DS_DEBUG_VERIFY
+#undef PB_DS_STRUCT_ONLY_ASSERT_VALID
+#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_NAME

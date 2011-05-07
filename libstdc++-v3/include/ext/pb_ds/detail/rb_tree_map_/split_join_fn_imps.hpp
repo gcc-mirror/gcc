@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,23 +43,20 @@ inline void
 PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.base_type::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
   if (base_type::join_prep(other) == false)
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
       return;
     }
 
   const node_pointer p_x = other.split_min();
   join_imp(p_x, other.m_p_head->m_p_parent);
   base_type::join_finish(other);
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(base_type::assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.base_type::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
  }
 
 PB_DS_CLASS_T_DEC
@@ -122,10 +119,10 @@ join_imp(node_pointer p_x, node_pointer p_r)
   p_x->m_red = true;
 
   base_type::initialize_min_max();
-  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
   base_type::update_to_top(p_x, (node_update* )this);
   insert_fixup(p_x);
-  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid());
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -237,21 +234,18 @@ void
 PB_DS_CLASS_C_DEC::
 split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid());
-  _GLIBCXX_DEBUG_ONLY(base_type::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid());
-  _GLIBCXX_DEBUG_ONLY(other.base_type::assert_valid();)
+  if (base_type::split_prep(r_key, other) == false)
+    {
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
+      return;
+    }
 
-    if (base_type::split_prep(r_key, other) == false)
-      {
-        _GLIBCXX_DEBUG_ONLY(assert_valid());
-        _GLIBCXX_DEBUG_ONLY(other.assert_valid());
-        return;
-      }
-
-  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.base_type::structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
+  PB_DS_STRUCT_ONLY_ASSERT_VALID(other)
   node_pointer p_nd = upper_bound(r_key).m_p_nd;
   do
     {
@@ -259,15 +253,14 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
       if (Cmp_Fn::operator()(r_key, PB_DS_V2F(p_nd->m_value)))
 	split_at_node(p_nd, other);
 
-      _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.base_type::structure_only_assert_valid();)
+      PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
+      PB_DS_STRUCT_ONLY_ASSERT_VALID(other)
       p_nd = p_next_nd;
     }
   while (p_nd != base_type::m_p_head);
 
   base_type::split_finish(other);
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -307,7 +300,7 @@ split_at_node(node_pointer p_nd, PB_DS_CLASS_C_DEC& other)
 
   base_type::initialize_min_max();
   other.join_imp(p_nd, p_r);
-  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid());
-  _GLIBCXX_DEBUG_ONLY(other.base_type::structure_only_assert_valid());
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
+  PB_DS_STRUCT_ONLY_ASSERT_VALID(other)
 }
 
