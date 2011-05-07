@@ -1,3 +1,7 @@
+2011-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-lang.c (global_bindings_p): Return bool.
+
 2011-05-07  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_materialize_function): Use cgraph_function_with_gimple_body_p.

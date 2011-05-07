@@ -89,10 +89,10 @@ variable_size (tree size)
   if (CONTAINS_PLACEHOLDER_P (size))
     return self_referential_size (size);
 
-  /* If the language-processor is to take responsibility for variable-sized
-     items (e.g., languages which have elaboration procedures like Ada),
-     just return SIZE unchanged.  */
-  if (lang_hooks.decls.global_bindings_p () < 0)
+  /* If we are in the global binding level, we can't make a SAVE_EXPR
+     since it may end up being shared across functions, so it is up
+     to the front-end to deal with this case.  */
+  if (lang_hooks.decls.global_bindings_p ())
     return size;
 
   return save_expr (size);

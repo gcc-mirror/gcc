@@ -413,7 +413,7 @@ extern struct obstack parser_obstack;
 extern tree c_break_label;
 extern tree c_cont_label;
 
-extern int global_bindings_p (void);
+extern bool global_bindings_p (void);
 extern void push_scope (void);
 extern tree pop_scope (void);
 extern void c_bindings_start_stmt_expr (struct c_spot_bindings *);

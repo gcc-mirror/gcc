@@ -365,12 +365,12 @@ build_dummy_unc_pointer_types (Entity_Id gnat_desig_type, tree gnu_desig_type)
   TYPE_OBJECT_RECORD_TYPE (gnu_desig_type) = gnu_object_type;
 }
 
-/* Return nonzero if we are currently in the global binding level.  */
+/* Return true if we are in the global binding level.  */
 
-int
+bool
 global_bindings_p (void)
 {
-  return ((force_global || !current_function_decl) ? -1 : 0);
+  return force_global || current_function_decl == NULL_TREE;
 }
 
 /* Enter a new binding level.  */
