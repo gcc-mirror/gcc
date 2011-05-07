@@ -2851,6 +2851,7 @@ bool gfc_is_function_return_value (gfc_symbol *, gfc_namespace *);
 /* trans.c */
 void gfc_generate_code (gfc_namespace *);
 void gfc_generate_module_code (gfc_namespace *);
+void gfc_init_coarray_decl (bool);
 
 /* bbt.c */
 typedef int (*compare_fn) (void *, void *);

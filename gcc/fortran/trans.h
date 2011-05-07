@@ -449,9 +449,6 @@ bool gfc_get_module_backend_decl (gfc_symbol *);
 /* Return the variable decl for a symbol.  */
 tree gfc_get_symbol_decl (gfc_symbol *);
 
-/* Initialize coarray global variables.  */
-void gfc_init_coarray_decl (void);
-
 /* Build a static initializer.  */
 tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool, bool);
 
