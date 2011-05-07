@@ -3703,7 +3703,7 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	    }
 
 	  std::string n = Gogo::unpack_hidden_name(name);
-	  Btype* btype = tree_to_type(type->get_tree(gogo));
+	  Btype* btype = type->get_backend(gogo);
 
 	  Bvariable* bvar;
 	  if (this->is_global_)
@@ -3753,7 +3753,7 @@ Result_variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	{
 	  if (this->is_in_heap())
 	    type = Type::make_pointer_type(type);
-	  Btype* btype = tree_to_type(type->get_tree(gogo));
+	  Btype* btype = type->get_backend(gogo);
 	  tree fndecl = function->func_value()->get_decl();
 	  Bfunction* bfunction = tree_to_function(fndecl);
 	  std::string n = Gogo::unpack_hidden_name(name);

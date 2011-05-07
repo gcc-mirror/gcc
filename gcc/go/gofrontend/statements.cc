@@ -375,7 +375,7 @@ Temporary_statement::do_get_backend(Translate_context* context)
   else
     bfunction = tree_to_function(function->func_value()->get_decl());
 
-  Btype* btype = tree_to_type(this->type()->get_tree(context->gogo()));
+  Btype* btype = this->type()->get_backend(context->gogo());
 
   Bexpression* binit;
   if (this->init_ == NULL)
