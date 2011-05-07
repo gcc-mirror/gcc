@@ -1,5 +1,45 @@
 2011-05-06  Gary Funck  <gary@intrepid.com>
 
+	Eliminate compilation warnings, by fixing
+	#include's and updating function prototypes.
+
+	* c-family/c-cppbuiltin.c: Include c-upc.h.
+
+	* optabs.c (gen_libfunc): Change type of 'suffix'
+	  parameter to conform with prototype.
+
+	* cp/cp-gimplify.c (cp_gimplify_expr): Add extra parameters
+	  ('gimple_test_f' and 'fallback') used by extended gimplify_expr
+	  hook used by UPC.
+
+	* cp/cp-tree.h (cp_gimplify_expr): Add extra paramters to
+	  the prototype.
+
+	* objc/objc-act.c (objc_gimplify_expr): Pass extra dummay
+	  argument values to cp_gimplify_expr.
+
+	* config.in (HAVE_UPC_AFFINITY_SUPPORT, 
+	  HAVE_UPC_NUMA_SUPPORT): Regenerated.  Removed
+	  pre-processor definitions that are no longer
+	  neeeded to build the 'upc' command (upc-cmd.c)
+	  because the linker specs. defined in libupc
+	  take care of linking in the needed libraries.
+
+	* c-parser.c (c_parser_upc_forall_statement):
+	  initialize affinity_loc to avoid "maybe unused" warning.
+	  (c_parser_upc_sync_statement): Remove un-needed
+	  'ret' variable.  Cast return value from
+	  'upc_build_sync_stmt' to avoid to avoid
+	  compile-time warning.
+
+	* config/upc-conf.h (UPC_MAX_THREADS): Define as an
+	  integer constant, not a string.  Range is restricted
+	  to maximum positive 32-bit integer (2+ billion) to
+	  fit in with the use of 'int' in the front-end's
+	  switch handling logic.
+
+2011-05-06  Gary Funck  <gary@intrepid.com>
+
 	Upgrade c-family source files to conform with modularity
 	improvements.  Mainly, remove #include of c-tree.h in files
 	under c-family, and define a new UPC-specific #include file,

@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "c-family/c-pretty-print.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-upc.h"
 #include "flags.h"
 #include "opts.h"
 #include "options.h"

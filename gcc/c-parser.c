@@ -8460,7 +8460,7 @@ c_parser_upc_forall_statement (c_parser *parser)
   tree block, cond, incr, save_break, save_cont, body;
   tree affinity;
   location_t loc = c_parser_peek_token (parser)->location;
-  location_t affinity_loc;
+  location_t affinity_loc = UNKNOWN_LOCATION;
   const int profile_upc_forall = flag_upc_instrument && get_upc_pupc_mode();
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_UPC_FORALL));
   c_parser_consume_token (parser);
@@ -8608,7 +8608,7 @@ c_parser_upc_sync_statement (c_parser *parser, int sync_kind)
 {
   location_t loc;
   tree expr = NULL_TREE;
-  tree stmt, ret;
+  tree stmt;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_UPC_BARRIER) ||
               c_parser_next_token_is_keyword (parser, RID_UPC_NOTIFY) ||
               c_parser_next_token_is_keyword (parser, RID_UPC_WAIT));
@@ -8621,7 +8621,7 @@ c_parser_upc_sync_statement (c_parser *parser, int sync_kind)
         expr = NULL;
     }
   stmt = size_int (sync_kind);
-  ret = upc_build_sync_stmt (loc, stmt, expr);
+  (void) upc_build_sync_stmt (loc, stmt, expr);
 }
 
 

@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-upc.h"
 #include "upc-gasp.h"
 
 static tree build_string_ref (const char *string);

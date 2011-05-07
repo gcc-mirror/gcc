@@ -5659,7 +5659,8 @@ extern void init_shadowed_var_for_decl		(void);
 
 /* in cp-gimplify.c */
 extern int cp_gimplify_expr			(tree *, gimple_seq *,
-						 gimple_seq *);
+						 gimple_seq *,
+						 bool (*) (tree), int);
 extern void cp_genericize			(tree);
 extern enum omp_clause_default_kind cxx_omp_predetermined_sharing (tree);
 extern tree cxx_omp_clause_default_ctor		(tree, tree, tree);

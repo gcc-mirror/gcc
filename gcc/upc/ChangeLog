@@ -1,5 +1,22 @@
 2011-05-06  Gary Funck  <gary@intrepid.com>
 
+	Eliminate compilation warnings, by fixing
+	#include's and updating function prototypes.
+
+	* upc-gimplify.c: Include bitmap.h.
+	  (upc_gimplify_real_image_ref): Mark various parameters
+	  as unused.  This is a stub procedure for now.
+
+	* upc-lang.c: Include c-family/c-upc.h.
+	  upc-gasp.c: Ditto.
+
+	* upc-cmd.c (no_start_files): Delete unused variable.
+	  The -nostartfiles switch is now handled by the linker spec.
+
+	* ChangeLog: Spell check.
+	
+2011-05-06  Gary Funck  <gary@intrepid.com>
+
 	Upgrade c-family source files to conform with modularity
 	improvements.  Mainly, remove #include of c-tree.h in files
 	under c-family, and define a new UPC-specific #include file,
@@ -73,7 +90,7 @@
 
 	* upc-act.c (create_unshared_var): call upc_get_unshared_type()
 	  instead of using TYPE_MAIN_VARIANT() to create an equivalent type
-	  that is not a UPC shared type.  This is somtimes necessary
+	  that is not a UPC shared type.  This is sometimes necessary
 	  when the given shared type is derived from a typedef.
 
 2011-04-24  Gary Funck  <gary@intrepid.com>
@@ -140,7 +157,7 @@
 
 	* upc-act.c: Call error() directly with a format specifier,
 	  rather than using sprintf() to format the message.
-	  This should make it easier to internationlize UPC's error messages.
+	  This should make it easier to internationalize UPC's error messages.
 
 2011-03-20  Gary Funck  <gary@intrepid.com>
 
@@ -206,7 +223,7 @@
 
 2011-01-09  Gary Funck  <gary@intrepid.com>
 
-	Fix behavior of upc_localsizef() when called in a dynamic
+	Fix behavior of upc_localsizeof() when called in a dynamic
 	threads compilation environment.  This bug, and the expected
 	behavior is documented in this bug report:
 	https://upc-bugs.lbl.gov/bugzilla/show_bug.cgi?id=2960.
@@ -219,12 +236,12 @@
 	cl_option_handlers * parameters.
 	(upc_finish_file) Remove.
 	(upc_write_global_declarations) New, replaces upc_finish_file.
-	* lnag-spec.h: Disable multi-file compilation for .upc files.
+	* lang-spec.h: Disable multi-file compilation for .upc files.
 	This fixes an issue where file-scoped static variables were
 	diagnosed as multiply-defined.  Both "C" and "ObjC" also disable
 	multi-file compilation.
 	* upc-gimplify.c: (upc_expand_put) Check for INDIRECT_REF_P()
-	explicitly when deciding whether a UPC shared object is addressible.
+	explicitly when deciding whether a UPC shared object is addressable.
 	is_gimple_addressable() used to do this, but now checks for MEM_REF
 	which does not apply to UPC shared objects.
 	(upc_gimplify_lval, upc_gimplify_expr) Delete references to
@@ -244,7 +261,7 @@
 	enable_warning_as_error().
 	* upc-pts-struct.c: (upc_pts_init_type) Move test that
 	UPC_PTS_THREAD_SIZE is a multiple of a byte into an "if" statement
-	rather than an #ifdef; this macro now depeneds upon a
+	rather than an #ifdef; this macro now depends upon a
 	target size macro which must be evaluated at runtime.
 	* Make-lang.in: (cc1-dummy) Remove make target.
 	(cc1upc-checksum.c) Generate directly from object files.
@@ -280,11 +297,11 @@
 
 2010-10-16  Gary Funck  <gary@intrepid.com>
 
-	* upc-act.c: Fix bug: Static initilialization of shared
-	  arrays is unsupported -- issue an error meesage.
+	* upc-act.c: Fix bug: Static initialization of shared
+	  arrays is unsupported -- issue an error message.
 
 	  Currently, static initialization of a shared array is not
-	  implemented corrrectly.
+	  implemented correctly.
 
 	  We do not plan to fix this for a while, therefore the compiler will
 	  issue an error message indicating that this is an unsupported
@@ -302,7 +319,7 @@
 2010-10-10  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.c: Fix bug: ICE: Attempt to take the difference of
-	  shared and nonshared pointers
+	  shared and non-shared pointers
 
 	  The compiler detected the error, and then tried to return
 	  error_mark_node.  This apparently is not acceptable, as there is an
@@ -378,7 +395,7 @@
 	       upc_forall (;;;d) {...} The compiler did not properly handle
 	  the empty "condition" clause, and did not recover well when it was
 	  determined that the use of a double value, "d" above, was neither a
-	  pointer-to-shared nor an intger expression.  The update implements a
+	  pointer-to-shared nor an integer expression.  The update implements a
 	  fix for both issues.
 
 	  See also: gcc/c-parser.c gcc/upc/upc-act.c
@@ -390,7 +407,7 @@
 
 	  Intrepid test, test10.upc, failed to compile due a mis-match between
 	  the COMPONENT_REF node and the internal 'thread' field.  Changed the
-	  code to make the types agree, and added a converstion to sizetype if
+	  code to make the types agree, and added a conversion to sizetype if
 	  necessary.
 
 2010-09-23  Gary Funck  <gary@intrepid.com>

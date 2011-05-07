@@ -9542,7 +9542,8 @@ objc_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     }
 
 #ifdef OBJCPLUS
-  return (enum gimplify_status) cp_gimplify_expr (expr_p, pre_p, post_p);
+  return (enum gimplify_status) cp_gimplify_expr (expr_p, pre_p, post_p,
+  						  NULL, fb_none);
 #else
   return (enum gimplify_status) c_gimplify_expr (expr_p, pre_p, post_p,
                                                  NULL, fb_none);

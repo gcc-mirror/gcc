@@ -71,7 +71,7 @@ Boston, MA 02111-1307, USA.  */
 #define UPC_MAX_BLOCK_SIZE_CSTU build_int_cstu (long_unsigned_type_node, \
                                 (LONG_TYPE_SIZE == 64) ? 0xffffffff : 0xffff)
 #define UPC_MAX_BLOCK_SIZE_STRING ((LONG_TYPE_SIZE == 64) ? "4294967295" : "65535")
-#define UPC_MAX_THREADS           ((LONG_TYPE_SIZE == 64) ? "4294967296" : "65536")
+#define UPC_MAX_THREADS           ((LONG_TYPE_SIZE == 64) ? 2147483647 : 65536)
 
 #else
 /* UPC shared pointer representaton not specified. */

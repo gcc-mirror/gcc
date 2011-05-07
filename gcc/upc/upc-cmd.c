@@ -304,7 +304,6 @@ main (int argc, char *argv[])
   int i, nargs;
   int info_only = 1;
   int invoke_linker = 1;
-  int no_start_files = 0;
   int no_default_libs = 0;
   int no_std_inc = 0;
   int no_upc_pre_inc = 0;
@@ -359,10 +358,6 @@ main (int argc, char *argv[])
           /* skip upc's '-debug' switch */
 	  if (!strcmp(arg, "-debug"))
 	    continue;
-	  else if (!strcmp(arg, "-nostartfiles"))
-	    { 
-	       no_start_files = 1;
-	    }
 	  else if (!strcmp(arg, "-nodefaultlibs"))
 	    {
 	       no_default_libs = 1;
@@ -373,7 +368,6 @@ main (int argc, char *argv[])
 	    }
 	  else if (!strcmp(arg, "-nostdlib"))
 	    { 
-	       no_start_files = 1;
 	       no_default_libs = 1;
 	    }
 	  else if (!strcmp(arg, "-fno-upc-pre-include"))

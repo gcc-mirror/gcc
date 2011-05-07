@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-pragma.h"
 #include "c-family/c-upc.h"
 #include "function.h"
+#include "bitmap.h"
 #include "gimple.h"
 #include "tree-check.h"
 #include "ggc.h"
@@ -616,8 +617,10 @@ upc_gimplify_indirect_ref (location_t loc, tree *expr_p,
 
 static
 int
-upc_gimplify_real_image_ref (location_t loc, tree *expr_p,
-                             gimple_seq *pre_p, gimple_seq *post_p)
+upc_gimplify_real_image_ref (location_t loc ATTRIBUTE_UNUSED,
+                             tree *expr_p ATTRIBUTE_UNUSED,
+                             gimple_seq *pre_p ATTRIBUTE_UNUSED,
+			     gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   gcc_unreachable ();
   return GS_OK;

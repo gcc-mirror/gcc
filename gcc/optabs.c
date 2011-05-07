@@ -5147,7 +5147,7 @@ init_convert_optab (convert_optab op, enum rtx_code code)
 */
 
 static void
-gen_libfunc (optab optable, const char *opname, int suffix, enum machine_mode mode)
+gen_libfunc (optab optable, const char *opname, char suffix, enum machine_mode mode)
 {
   unsigned opname_len = strlen (opname);
   const char *mname = GET_MODE_NAME (mode);
