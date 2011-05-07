@@ -1,3 +1,11 @@
+2011-05-07  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-transform.c (inline_call): Account when program size decreases.
+	* ipa-inline.c (relative_time_benefit): New function.
+	(edge_badness): Reorganize to be power 2 based; fix
+	thinko when computing badness for negative growth; update
+	comments to match reality; better dumps.
+
 2011-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* langhooks.h (lang_hooks_for_types): Change global_bindings_p's return

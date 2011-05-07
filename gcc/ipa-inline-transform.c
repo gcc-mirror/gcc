@@ -184,7 +184,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   old_size = inline_summary (to)->size;
   inline_merge_summary (e);
   new_size = inline_summary (to)->size;
-  if (overall_size && new_size > old_size)
+  if (overall_size)
     *overall_size += new_size - old_size;
   ncalls_inlined++;
 
