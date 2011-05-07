@@ -952,7 +952,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   /* The case -fcoarray=single is handled elsewhere.  */
   gcc_assert (gfc_option.coarray != GFC_FCOARRAY_SINGLE);
 
-  gfc_init_coarray_decl ();
+  gfc_init_coarray_decl (false);
 
   /* Argument-free version: THIS_IMAGE().  */
   if (expr->value.function.actual->expr == NULL)
@@ -1252,7 +1252,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
     num_images = build_int_cst (type, 1);
   else
     {
-      gfc_init_coarray_decl ();
+      gfc_init_coarray_decl (false);
       num_images = gfort_gvar_caf_num_images;
     }
 
@@ -1272,7 +1272,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 static void
 trans_num_images (gfc_se * se)
 {
-  gfc_init_coarray_decl ();
+  gfc_init_coarray_decl (false);
   se->expr = gfort_gvar_caf_num_images;
 }
 
@@ -1575,7 +1575,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	{
           tree cosize;
 
-	  gfc_init_coarray_decl ();
+	  gfc_init_coarray_decl (false);
 	  cosize = gfc_conv_descriptor_cosize (desc, arg->expr->rank, corank);
 
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
@@ -1591,7 +1591,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
       else if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
 	{
 	  /* ubound = lbound + num_images() - 1.  */
-	  gfc_init_coarray_decl ();
+	  gfc_init_coarray_decl (false);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type,
 				 gfort_gvar_caf_num_images,

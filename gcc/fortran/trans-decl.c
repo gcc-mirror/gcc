@@ -4454,10 +4454,16 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 }
 
 
+/* Generate the _gfortran_caf_this_image and _gfortran_caf_num_images
+   global variables for -fcoarray=lib. They are placed into the translation
+   unit of the main program.  Make sure that in one TU (the one of the main
+   program), the first call to gfc_init_coarray_decl is done with true.
+   Otherwise, expect link errors.  */
+
 void
-gfc_init_coarray_decl (void)
+gfc_init_coarray_decl (bool main_tu)
 {
-  tree save_fn_decl = current_function_decl;
+  tree save_fn_decl;
 
   if (gfc_option.coarray != GFC_FCOARRAY_LIB)
     return;
@@ -4469,19 +4475,37 @@ gfc_init_coarray_decl (void)
   current_function_decl = NULL_TREE;
   push_cfun (cfun);
 
-  gfort_gvar_caf_this_image = gfc_create_var (integer_type_node,
-					      PREFIX("caf_this_image"));
+  gfort_gvar_caf_this_image
+	= build_decl (input_location, VAR_DECL,
+		      get_identifier (PREFIX("caf_this_image")),
+		      integer_type_node);
   DECL_ARTIFICIAL (gfort_gvar_caf_this_image) = 1;
   TREE_USED (gfort_gvar_caf_this_image) = 1;
   TREE_PUBLIC (gfort_gvar_caf_this_image) = 1;
-  TREE_STATIC (gfort_gvar_caf_this_image) = 1;
+  TREE_READONLY (gfort_gvar_caf_this_image) = 0;
 
-  gfort_gvar_caf_num_images = gfc_create_var (integer_type_node,
-					      PREFIX("caf_num_images"));
+  if (main_tu)
+    TREE_STATIC (gfort_gvar_caf_this_image) = 1;
+  else
+    DECL_EXTERNAL (gfort_gvar_caf_this_image) = 1;
+
+  pushdecl_top_level (gfort_gvar_caf_this_image);
+
+  gfort_gvar_caf_num_images
+	= build_decl (input_location, VAR_DECL,
+		      get_identifier (PREFIX("caf_num_images")),
+		      integer_type_node);
   DECL_ARTIFICIAL (gfort_gvar_caf_num_images) = 1;
   TREE_USED (gfort_gvar_caf_num_images) = 1;
   TREE_PUBLIC (gfort_gvar_caf_num_images) = 1;
-  TREE_STATIC (gfort_gvar_caf_num_images) = 1;
+  TREE_READONLY (gfort_gvar_caf_num_images) = 0;
+
+  if (main_tu)
+    TREE_STATIC (gfort_gvar_caf_num_images) = 1;
+  else
+    DECL_EXTERNAL (gfort_gvar_caf_num_images) = 1;
+
+  pushdecl_top_level (gfort_gvar_caf_num_images);
 
   pop_cfun ();
   current_function_decl = save_fn_decl;
@@ -4575,7 +4599,7 @@ create_main_function (tree fndecl)
       pppchar_type
 	= build_pointer_type (build_pointer_type (pchar_type_node));
 
-      gfc_init_coarray_decl ();
+      gfc_init_coarray_decl (true);
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_init, 4,
 		gfc_build_addr_expr (pint_type, argc),
 		gfc_build_addr_expr (pppchar_type, argv),

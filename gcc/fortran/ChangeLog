@@ -1,3 +1,17 @@
+2011-05-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	PR fortran/48919
+	* trans.h: Move gfc_init_coarray_decl prototype ...
+	* gfortran.h: ... to here.
+	* parse.c (translate_all_program_units): Call gfc_init_coarray_decl.
+	(gfc_parse_file): Update translate_all_program_units call.
+	* trans-decl.c (gfc_init_coarray_decl): Fix variable declaration,
+	new argument whether DECL_EXTERNAL should be used.
+	(create_main_function): Update gfc_init_coarray_decl call.
+	* trans-intrinsic.c (trans_this_image, trans_image_index,
+	conv_intrinsic_cobound): Ditto.
+
 2011-05-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
