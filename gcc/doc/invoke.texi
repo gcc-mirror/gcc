@@ -7701,17 +7701,18 @@ files in LTO mode (via @option{-flto}).
 Disabled by default.
 
 @item -fuse-linker-plugin
-Enables the use of linker plugin during link time optimization.  This option
-relies on the linker plugin support in linker that is available in gold
+Enables the use of a linker plugin during link time optimization.  This
+option relies on plugin support in the linker, which is available in gold
 or in GNU ld 2.21 or newer.
 
-This option enables the extraction of object files with GIMPLE bytecode out of
-library archives. This improves the quality of optimization by exposing more
-code the link time optimizer.  This information specify what symbols
-can be accessed externally (by non-LTO object or during dynamic linking).
-Resulting code quality improvements on binaries (and shared libraries that do
-use hidden visibility) is similar to @code{-fwhole-program}.  See
-@option{-flto} for a description on the effect of this flag and how to use it.
+This option enables the extraction of object files with GIMPLE bytecode out
+of library archives. This improves the quality of optimization by exposing
+more code to the link time optimizer.  This information specifies what
+symbols can be accessed externally (by non-LTO object or during dynamic
+linking).  Resulting code quality improvements on binaries (and shared
+libraries that use hidden visibility) are similar to @code{-fwhole-program}.
+See @option{-flto} for a description of the effect of this flag and how to
+use it.
 
 Enabled by default when LTO support in GCC is enabled and GCC was compiled
 with a linker supporting plugins (GNU ld 2.21 or newer or gold).

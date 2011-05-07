@@ -1,3 +1,7 @@
+2011-05-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/invoke.texi (-fuse-linker-plugin): Improve grammar.
+
 2011-05-07  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-transform.c (inline_call): Account when program size decreases.
