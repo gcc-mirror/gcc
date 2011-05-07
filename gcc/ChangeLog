@@ -1,5 +1,13 @@
 2011-05-06  Jan Hubicka  <jh@suse.cz>
 
+	* i386.h (ix86_tune_indices): Add X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL.
+	(TARGET_SOFTWARE_PREFETCHING_BENEFICIAL): New macor.
+	* i386.c (initial_ix86_tune_features): Add X86_SOFTARE_PREFETCHING_BENEFICIAL.
+	(software_prefetching_beneficial_p): Remove predicate.
+	(ix86_option_override_internal): Use new macro.
+
+2011-05-06  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline.c (update_callee_keys): Don't reset node growth cache.
 
 2011-05-06  Jan Hubicka  <jh@suse.cz>
