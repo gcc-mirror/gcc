@@ -957,9 +957,9 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
       e = e->callee->callees;
     else
       {
-	/* We inlined and thus callees might have different number of calls.
-	   Reset their caches  */
-        reset_node_growth_cache (e->callee);
+	/* We do not reset callee growth cache here.  Since we added a new call,
+	   growth chould have just increased and consequentely badness metric
+           don't need updating.  */
 	if (e->inline_failed
 	    && inline_summary (e->callee)->inlinable
 	    && cgraph_function_body_availability (e->callee) >= AVAIL_AVAILABLE

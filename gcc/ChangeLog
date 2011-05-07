@@ -1,5 +1,9 @@
 2011-05-06  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline.c (update_callee_keys): Don't reset node growth cache.
+
+2011-05-06  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_add_thunk): Create real function node instead
 	of alias node; finalize it and mark needed/reachale; arrange visibility
 	to be right and add it into the corresponding same comdat group list.
