@@ -2083,6 +2083,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_VECTORIZE_DOUBLE: Enable double precision vector
      instructions.  */
   ~m_ATOM,
+
+  /* X86_SOFTARE_PREFETCHING_BENEFICIAL: Enable software prefetching
+     at -O3.  For the moment, the prefetching seems badly tuned for Intel
+     chips.  */
+  m_K6_GEODE | m_AMD_MULTIPLE
 };
 
 /* Feature tests against the various architecture variations.  */
@@ -3257,27 +3262,6 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
   return ret;
 }
 
-/* Return TRUE if software prefetching is beneficial for the
-   given CPU. */
-
-static bool
-software_prefetching_beneficial_p (void)
-{
-  switch (ix86_tune)
-    {
-    case PROCESSOR_GEODE:
-    case PROCESSOR_K6:
-    case PROCESSOR_ATHLON:
-    case PROCESSOR_K8:
-    case PROCESSOR_AMDFAM10:
-    case PROCESSOR_BTVER1:
-      return true;
-
-    default:
-      return false;
-    }
-}
-
 /* Return true, if profiling code should be emitted before
    prologue. Otherwise it returns false.
    Note: For x86 with "hotfix" it is sorried.  */
@@ -4205,7 +4189,7 @@ ix86_option_override_internal (bool main_args_p)
   if (flag_prefetch_loop_arrays < 0
       && HAVE_prefetch
       && optimize >= 3
-      && software_prefetching_beneficial_p ())
+      && TARGET_SOFTWARE_PREFETCHING_BENEFICIAL)
     flag_prefetch_loop_arrays = 1;
 
   /* If using typedef char *va_list, signal that __builtin_va_start (&ap, 0)
