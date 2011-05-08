@@ -1,5 +1,9 @@
 2011-05-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/avr/avr.c (print_operand_address): Fix invalid RTL access.
+
+2011-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/rs6000/rs6000.c (output_profile_hook): Fix thinko.
 
 2011-05-08  Jonathan Wakely  <jwakely.gcc@gmail.com>

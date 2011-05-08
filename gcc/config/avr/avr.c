@@ -1318,7 +1318,9 @@ print_operand_address (FILE *file, rtx addr)
       if (CONSTANT_ADDRESS_P (addr)
 	  && text_segment_operand (addr, VOIDmode))
 	{
-	  rtx x = XEXP (addr,0);
+	  rtx x = addr;
+	  if (GET_CODE (x) == CONST)
+	    x = XEXP (x, 0);
 	  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x,1)) == CONST_INT)
 	    {
 	      /* Assembler gs() will implant word address. Make offset 
