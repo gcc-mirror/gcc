@@ -4,8 +4,10 @@
 
 2011-05-07  Jan Hubicka  <jh@suse.cz>
 
-	* lto.c (lto_materialize_function): Use cgraph_function_with_gimple_body_p.
-	(add_cgraph_node_to_partition): Do not re-add items to partition; handle thunks.
+	* lto.c (lto_materialize_function): Use
+	cgraph_function_with_gimple_body_p.
+	(add_cgraph_node_to_partition): Do not re-add items to partition;
+	handle thunks.
 	(add_varpool_node_to_partition): Do not re-add items to partition.
 
 2011-05-03  Jan Hubicka  <jh@suse.cz>

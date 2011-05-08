@@ -4,11 +4,12 @@
 
 2011-05-07  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-inline-transform.c (inline_call): Account when program size decreases.
+	* ipa-inline-transform.c (inline_call): Account when program size
+	decreases.
 	* ipa-inline.c (relative_time_benefit): New function.
-	(edge_badness): Reorganize to be power 2 based; fix
-	thinko when computing badness for negative growth; update
-	comments to match reality; better dumps.
+	(edge_badness): Reorganize to be power 2 based; fix thinko when
+	computing badness for negative growth; update comments to match
+	reality; better dumps.
 
 2011-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -29,9 +30,11 @@
 
 2011-05-06  Jan Hubicka  <jh@suse.cz>
 
-	* i386.h (ix86_tune_indices): Add X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL.
+	* i386.h (ix86_tune_indices): Add
+	X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL.
 	(TARGET_SOFTWARE_PREFETCHING_BENEFICIAL): New macor.
-	* i386.c (initial_ix86_tune_features): Add X86_SOFTARE_PREFETCHING_BENEFICIAL.
+	* i386.c (initial_ix86_tune_features): Add
+	X86_SOFTARE_PREFETCHING_BENEFICIAL.
 	(software_prefetching_beneficial_p): Remove predicate.
 	(ix86_option_override_internal): Use new macro.
 
@@ -46,7 +49,8 @@
 	to be right and add it into the corresponding same comdat group list.
 	(dump_cgraph_node): Dump thunks.
 	* cgraph.h (cgraph_first_defined_function, cgraph_next_defined_function,
-	cgraph_function_with_gimple_body_p, cgraph_first_function_with_gimple_body,
+	cgraph_function_with_gimple_body_p,
+	cgraph_first_function_with_gimple_body,
 	cgraph_next_function_with_gimple_body): New functions.
 	(FOR_EACH_FUNCTION_WITH_GIMPLE_BODY, FOR_EACH_DEFINED_FUNCTION):
 	New macros.
@@ -70,8 +74,10 @@
 	* ipa-inline-analysis.c (compute_inline_parameters): "Analyze" thunks.
 	(inline_analyze_function): Do not care about thunk jump functions.
 	(inline_generate_summary):Use FOR_EACH_DEFINED_FUNCTION.
-	* ipa-prop.c (ipa_prop_write_jump_functions): Use cgraph_function_with_gimple_body_p.
-	* passes.c (do_per_function_toporder): Use cgraph_function_with_gimple_body_p.
+	* ipa-prop.c (ipa_prop_write_jump_functions): Use
+	cgraph_function_with_gimple_body_p.
+	* passes.c (do_per_function_toporder): Use
+	cgraph_function_with_gimple_body_p.
 	(execute_one_pass);Use FOR_EACH_FUNCTION_WITH_GIMPLE_BODY.
 	(ipa_write_summaries): Use cgraph_function_with_gimple_body_p.
 	(function_called_by_processed_nodes_p): Likewise.
