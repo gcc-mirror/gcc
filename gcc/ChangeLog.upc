@@ -1,4 +1,27 @@
-2011-05-06  Gary Funck  <gary@intrepid.com>
+2011-05-07  Gary Funck  <gary@intrepid.com>
+
+	* ../configure.ac: Disable build of libupc
+	  on non POSIX hosted systems.  Use AS_HELP_STRING
+	  to define messages.  Remove 'word-pair' as a
+	  possible --with-upc-pts UPC pointer-to-shared
+	  representation.
+
+	* ../configure: Regenerate.
+
+	* configure.ac: Use AS_HELP_STRING to define messages.
+	  Remove 'word-pair' as a possible --with-upc-pts
+	  UPC pointer-to-shared representation.
+	  (UPC_MAX_THREADS): Limit the maximum value to 2^31-1.
+	  (UPC_MAX_BLOCK_SIZE): Correct the default value.
+
+	* configure: Regenerate.
+
+	* config.in: Regenerate. Delete UPC_PTS_WORD_PAIR_REP
+	  definition.
+
+	* ChangeLog.upc: Fix some typos.
+
+2011-05-07  Gary Funck  <gary@intrepid.com>
 
 	* ../maintainer-scripts/gcc_release: Add "upc"
 	  as one of the released languages.
@@ -17,16 +40,16 @@
 	  ('gimple_test_f' and 'fallback') used by extended gimplify_expr
 	  hook used by UPC.
 
-	* cp/cp-tree.h (cp_gimplify_expr): Add extra paramters to
+	* cp/cp-tree.h (cp_gimplify_expr): Add extra parameters to
 	  the prototype.
 
-	* objc/objc-act.c (objc_gimplify_expr): Pass extra dummay
+	* objc/objc-act.c (objc_gimplify_expr): Pass extra dummy
 	  argument values to cp_gimplify_expr.
 
 	* config.in (HAVE_UPC_AFFINITY_SUPPORT, 
-	  HAVE_UPC_NUMA_SUPPORT): Regenerated.  Removed
+	  HAVE_UPC_NUMA_SUPPORT): Regenerate.  Remove
 	  pre-processor definitions that are no longer
-	  neeeded to build the 'upc' command (upc-cmd.c)
+	  needed to build the 'upc' command (upc-cmd.c)
 	  because the linker specs. defined in libupc
 	  take care of linking in the needed libraries.
 
@@ -34,7 +57,7 @@
 	  initialize affinity_loc to avoid "maybe unused" warning.
 	  (c_parser_upc_sync_statement): Remove un-needed
 	  'ret' variable.  Cast return value from
-	  'upc_build_sync_stmt' to avoid to avoid
+	  'upc_build_sync_stmt' to 'void' to avoid
 	  compile-time warning.
 
 	* config/upc-conf.h (UPC_MAX_THREADS): Define as an

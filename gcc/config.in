@@ -1814,12 +1814,6 @@
 #endif
 
 
-/* UPC word pair PTS representation supported. */
-#ifndef USED_FOR_TARGET
-#undef UPC_PTS_WORD_PAIR_REP
-#endif
-
-
 /* Define if your assembler mis-optimizes .eh_frame data. */
 #ifndef USED_FOR_TARGET
 #undef USE_AS_TRADITIONAL_FORMAT

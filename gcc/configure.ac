@@ -693,8 +693,9 @@ case ,${enable_languages}, in
 esac
 
 AC_ARG_WITH([upc-pts],
-[  --with-upc-pts={struct,word-pair,packed}   choose the representation
-                          of a UPC pointer-to-shared],
+AS_HELP_STRING(
+  [--with-upc-pts={struct,packed}],
+  [choose the representation of a UPC pointer-to-shared]),
 [
 case "$withval" in
   packed)
@@ -706,11 +707,6 @@ case "$withval" in
     upc_pts_rep="struct"
     AC_DEFINE(UPC_PTS_STRUCT_REP,1,
 	[UPC struct PTS representation supported.])
-    ;;
-  word-pair)
-    upc_pts_rep="word_pair"
-    AC_DEFINE(UPC_PTS_WORD_PAIR_REP,1,
-	[UPC word pair PTS representation supported.])
     ;;
   *) AC_MSG_ERROR([$withval is an invalid option to --with-upc-pts])
     ;;
@@ -730,8 +726,9 @@ AC_CHECK_PROG(PERL, perl, perl)
 
 AC_MSG_CHECKING([for UPC shared pointer address field position])
 AC_ARG_WITH([upc-pts-vaddr-order],
-[  --with-upc-pts-vaddr-order={last,first} choose position of the address field
-                          in UPC shared pointer representation],
+AS_HELP_STRING(
+[--with-upc-pts-vaddr-order={last,first}],
+[choose position of the address field in UPC shared pointer representation]),
 [
   upc_vaddr_order="$withval"
   if test "$withval" != "last" &&
@@ -749,17 +746,24 @@ AC_MSG_RESULT($upc_vaddr_order)
 
 AC_MSG_CHECKING([for UPC pointer-to-shared packed representation])
 AC_ARG_WITH([upc-packed-bits],
-[  --with-upc-packed-bits=phase,thread,vaddr choose bit distribution
-                          in packed UPC pointer-to-shared representation],
+AS_HELP_STRING(
+[--with-upc-packed-bits=phase,thread,vaddr],
+[choose bit distribution in packed UPC pointer-to-shared representation]),
 [
 if test x"$upc_pts_rep" = x"packed"; then
   upc_packed_bits="$withval";
   UPC_PTS_SIZE=64
-  UPC_PTS_PHASE_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;  print $1 if ($1+$2+$3 == 64) && $1>=1;'`
-  UPC_MAX_BLOCK_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;  print 1<<$1;'`
-  UPC_PTS_THREAD_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/; print $2 if ($1+$2+$3 == 64) && $2>=1;'`
-  UPC_MAX_THREADS=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;  print 1<<$2;'`
-  UPC_PTS_VADDR_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;   print $3 if ($1+$2+$3 == 64) && $3>=20;'`
+  UPC_PTS_PHASE_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+                                                print $1 if ($1+$2+$3 == 64) && $1>=1;'`
+  UPC_MAX_BLOCK_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+                                                print 1<<$1;'`
+  UPC_PTS_THREAD_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+                                                print $2 if ($1+$2+$3 == 64) && $2>=1;'`
+  # Limit UPC_MAX_THREADS to max. positive 32-bit integer.
+  UPC_MAX_THREADS=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/; 
+                                                print (1<<(($2 > 31) ? 31 : $2)) - 1;'`
+  UPC_PTS_VADDR_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+                                                print $3 if ($1+$2+$3 == 64) && $3>=20;'`
   if test -z $UPC_PTS_PHASE_SIZE -o \
           -z $UPC_PTS_THREAD_SIZE -o \
           -z $UPC_PTS_VADDR_SIZE ; then
@@ -773,7 +777,7 @@ fi
 # GCC UPC packed pointer representation defaults.
 UPC_PTS_SIZE=64
 UPC_PTS_PHASE_SIZE=16
-UPC_MAX_BLOCK_SIZE=65536
+UPC_MAX_BLOCK_SIZE=65535
 UPC_PTS_THREAD_SIZE=12
 UPC_MAX_THREADS=4096
 UPC_PTS_VADDR_SIZE=36
@@ -790,7 +794,7 @@ if test x"$upc_pts_rep" = x"packed"; then
   AC_DEFINE_UNQUOTED(UPC_MAX_BLOCK_SIZE,$UPC_MAX_BLOCK_SIZE,
     [maximum shared array blocking size.])
   AC_DEFINE_UNQUOTED(UPC_MAX_THREADS,$UPC_MAX_THREADS,
-      [maximum number of threads.])
+    [maximum number of threads.])
   if test x"$upc_vaddr_order" = x"first"; then
       UPC_PTS_VADDR_SHIFT=`(expr $UPC_PTS_THREAD_SIZE + $UPC_PTS_PHASE_SIZE)`
       UPC_PTS_THREAD_SHIFT=`(expr $UPC_PTS_PHASE_SIZE)`
@@ -814,9 +818,11 @@ AC_MSG_RESULT($upc_pts_rep_res)
 
 AC_MSG_CHECKING([for UPC link script support])
 AC_ARG_ENABLE(upc-link-script,
-[  --enable-upc-link-script Enable UPC's use of a custom linker script.
-  This will define the UPC shared section as a no load section on
-  targets where this feature is supported.  Requires GNU LD.],
+AS_HELP_STRING(
+  [--enable-upc-link-script],
+  [enable UPC's use of a custom linker script;
+  this will define the UPC shared section as a no load section on
+  targets where this feature is supported (requires GNU LD)]),
 [
   case $enableval in
   yes | no) ;;

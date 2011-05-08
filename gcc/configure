@@ -1590,9 +1590,11 @@ Optional Features:
                           overriding the assembler check for tls support
   --enable-objc-gc	  enable the use of Boehm's garbage collector with
 			  the GNU Objective-C runtime
-  --enable-upc-link-script Enable UPC's use of a custom linker script.
-  This will define the UPC shared section as a no load section on
-  targets where this feature is supported.  Requires GNU LD.
+  --enable-upc-link-script
+                          enable UPC's use of a custom linker script; this
+                          will define the UPC shared section as a no load
+                          section on targets where this feature is supported
+                          (requires GNU LD)
   --disable-shared        don't provide a shared libgcc
   --enable-languages=LIST specify which front-ends to build
   --disable-rpath         do not hardcode runtime library paths
@@ -1651,12 +1653,14 @@ Optional Packages:
   --with-gnu-as           arrange to work with GNU as
   --with-as               arrange to use the specified as (full pathname)
   --with-stabs            arrange to use stabs instead of host debug format
-  --with-upc-pts={struct,word-pair,packed}   choose the representation
-                          of a UPC pointer-to-shared
-  --with-upc-pts-vaddr-order={last,first} choose position of the address field
-                          in UPC shared pointer representation
-  --with-upc-packed-bits=phase,thread,vaddr choose bit distribution
-                          in packed UPC pointer-to-shared representation
+  --with-upc-pts={struct,packed}
+                          choose the representation of a UPC pointer-to-shared
+  --with-upc-pts-vaddr-order={last,first}
+                          choose position of the address field in UPC shared
+                          pointer representation
+  --with-upc-packed-bits=phase,thread,vaddr
+                          choose bit distribution in packed UPC
+                          pointer-to-shared representation
   --with-dwarf2           force the default debug format to be DWARF 2
   --with-build-sysroot=sysroot
                           use sysroot as the system root during the build
@@ -7064,12 +7068,6 @@ $as_echo "#define UPC_PTS_PACKED_REP 1" >>confdefs.h
 $as_echo "#define UPC_PTS_STRUCT_REP 1" >>confdefs.h
 
     ;;
-  word-pair)
-    upc_pts_rep="word_pair"
-
-$as_echo "#define UPC_PTS_WORD_PAIR_REP 1" >>confdefs.h
-
-    ;;
   *) as_fn_error "$withval is an invalid option to --with-upc-pts" "$LINENO" 5
     ;;
 esac
@@ -7162,11 +7160,17 @@ if test "${with_upc_packed_bits+set}" = set; then :
 if test x"$upc_pts_rep" = x"packed"; then
   upc_packed_bits="$withval";
   UPC_PTS_SIZE=64
-  UPC_PTS_PHASE_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;  print $1 if ($1+$2+$3 == 64) && $1>=1;'`
-  UPC_MAX_BLOCK_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;  print 1<<$1;'`
-  UPC_PTS_THREAD_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/; print $2 if ($1+$2+$3 == 64) && $2>=1;'`
-  UPC_MAX_THREADS=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;  print 1<<$2;'`
-  UPC_PTS_VADDR_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;   print $3 if ($1+$2+$3 == 64) && $3>=20;'`
+  UPC_PTS_PHASE_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+                                                print $1 if ($1+$2+$3 == 64) && $1>=1;'`
+  UPC_MAX_BLOCK_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+                                                print 1<<$1;'`
+  UPC_PTS_THREAD_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+                                                print $2 if ($1+$2+$3 == 64) && $2>=1;'`
+  # Limit UPC_MAX_THREADS to max. positive 32-bit integer.
+  UPC_MAX_THREADS=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+                                                print (1<<(($2 > 31) ? 31 : $2)) - 1;'`
+  UPC_PTS_VADDR_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+                                                print $3 if ($1+$2+$3 == 64) && $3>=20;'`
   if test -z $UPC_PTS_PHASE_SIZE -o \
           -z $UPC_PTS_THREAD_SIZE -o \
           -z $UPC_PTS_VADDR_SIZE ; then
@@ -7181,7 +7185,7 @@ else
 # GCC UPC packed pointer representation defaults.
 UPC_PTS_SIZE=64
 UPC_PTS_PHASE_SIZE=16
-UPC_MAX_BLOCK_SIZE=65536
+UPC_MAX_BLOCK_SIZE=65535
 UPC_PTS_THREAD_SIZE=12
 UPC_MAX_THREADS=4096
 UPC_PTS_VADDR_SIZE=36
@@ -17755,7 +17759,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17758 "configure"
+#line 17762 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17861,7 +17865,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17864 "configure"
+#line 17868 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

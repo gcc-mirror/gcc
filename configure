@@ -1480,9 +1480,11 @@ Optional Features:
                           force sequential configuration of sub-packages for
                           the host, target or build machine, or all
                           sub-packages
-  --enable-upc-link-script Enable UPC's use of a custom linker script.
-  This will define the UPC shared section as a no load section on
-  targets where this feature is supported.  Requires GNU LD.
+  --enable-upc-link-script
+                          enable UPC's use of a custom linker script; this
+                          will define the UPC shared section as a no load
+                          section on targets where this feature is supported
+                          (requires GNU LD)
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
@@ -1536,8 +1538,8 @@ Optional Packages:
                           Specify directory for installed CLooG include files
   --with-cloog-lib=PATH   Specify the directory for the installed CLooG
                           library
-  --with-upc-pts={struct,word-pair,packed}   choose the representation
-                          of a UPC pointer-to-shared
+  --with-upc-pts={struct,packed}
+                          choose the representation of a UPC pointer-to-shared
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
@@ -3022,22 +3024,31 @@ if test x$enable_libmudflap = x ; then
     esac
 fi
 
-# Disable libgomp on non POSIX hosted systems.
-if test x$enable_libgomp = x ; then
-    # Enable libgomp by default on hosted POSIX systems.
-    case "${target}" in
-    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
-	;;
-    *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
-	;;
-    *-*-solaris2* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
-	;;
-    *-*-darwin* | *-*-aix*)
-	;;
-    *)
-	noconfigdirs="$noconfigdirs target-libgomp"
-	;;
-    esac
+posix_based_os="yes"
+case "${target}" in
+*-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
+    ;;
+*-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
+    ;;
+*-*-solaris2* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
+    ;;
+*-*-darwin* | *-*-aix*)
+    ;;
+*)
+    posix_based_os="no"
+    ;;
+esac
+
+# Enable libgomp by default on POSIX hosted systems.
+if test x$enable_libgomp = x -a $posix_based_os = "no" ; then
+    # Disable libgomp on non POSIX hosted systems.
+    noconfigdirs="$noconfigdirs target-libgomp"
+fi
+
+# Enable libupc by default on POSIX hosted systems.
+if test x$enable_libupc = x -a $posix_based_os = "no" ; then
+    # Disable libupc on non POSIX hosted systems.
+    noconfigdirs="$noconfigdirs target-libupc"
 fi
 
 # Disable libssp for some systems.
@@ -6402,7 +6413,7 @@ if test "${with_upc_pts+set}" = set; then :
  case ,${enable_languages}, in
    *,upc,)
      case "$withval" in
-       struct|word-pair|packed)
+       struct|packed)
 	 true
          ;;
        *)

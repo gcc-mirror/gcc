@@ -462,22 +462,31 @@ if test x$enable_libmudflap = x ; then
     esac
 fi
 
-# Disable libgomp on non POSIX hosted systems.
-if test x$enable_libgomp = x ; then
-    # Enable libgomp by default on hosted POSIX systems.
-    case "${target}" in
-    *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
-	;;
-    *-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
-	;;
-    *-*-solaris2* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
-	;;
-    *-*-darwin* | *-*-aix*)
-	;;
-    *)
-	noconfigdirs="$noconfigdirs target-libgomp"
-	;;
-    esac
+posix_based_os="yes"
+case "${target}" in
+*-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-kopensolaris*-gnu)
+    ;;
+*-*-netbsd* | *-*-freebsd* | *-*-openbsd* | *-*-dragonfly*)
+    ;;
+*-*-solaris2* | *-*-irix6* | *-*-osf* | *-*-hpux11*)
+    ;;
+*-*-darwin* | *-*-aix*)
+    ;;
+*)
+    posix_based_os="no"
+    ;;
+esac
+
+# Enable libgomp by default on POSIX hosted systems.
+if test x$enable_libgomp = x -a $posix_based_os = "no" ; then
+    # Disable libgomp on non POSIX hosted systems.
+    noconfigdirs="$noconfigdirs target-libgomp"
+fi
+
+# Enable libupc by default on POSIX hosted systems.
+if test x$enable_libupc = x -a $posix_based_os = "no" ; then
+    # Disable libupc on non POSIX hosted systems.
+    noconfigdirs="$noconfigdirs target-libupc"
 fi
 
 # Disable libssp for some systems.
@@ -1925,13 +1934,14 @@ case ,${enable_languages},:${enable_objc_gc} in
 esac
 
 AC_ARG_WITH([upc-pts],
-[  --with-upc-pts={struct,word-pair,packed}   choose the representation
-                          of a UPC pointer-to-shared],
+AS_HELP_STRING(
+[[--with-upc-pts=[{struct,packed}]]],
+ [choose the representation of a UPC pointer-to-shared]),
 [
  case ,${enable_languages}, in
    *,upc,) 
      case "$withval" in
-       struct|word-pair|packed)
+       struct|packed)
 	 true
          ;;
        *)
@@ -2968,9 +2978,11 @@ esac
 # UPC linker script check
 AC_MSG_CHECKING([for UPC link script support])
 AC_ARG_ENABLE(upc-link-script,
-[  --enable-upc-link-script Enable UPC's use of a custom linker script.
-  This will define the UPC shared section as a no load section on
-  targets where this feature is supported.  Requires GNU LD.],
+AS_HELP_STRING(
+  [--enable-upc-link-script],
+  [enable UPC's use of a custom linker script;
+  this will define the UPC shared section as a no load section on
+  targets where this feature is supported (requires GNU LD)]),
 [
   case $enableval in
   yes | no) ;;
