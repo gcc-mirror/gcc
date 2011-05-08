@@ -1,5 +1,10 @@
 2011-05-06  Gary Funck  <gary@intrepid.com>
 
+	* ../maintainer-scripts/gcc_release: Add "upc"
+	  as one of the released languages.
+
+2011-05-06  Gary Funck  <gary@intrepid.com>
+
 	Eliminate compilation warnings, by fixing
 	#include's and updating function prototypes.
 

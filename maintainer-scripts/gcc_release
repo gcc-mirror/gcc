@@ -284,11 +284,13 @@ build_tarfiles() {
   maybe_build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
   maybe_build_tarfile gcc-objc-${RELEASE} ${OBJECTIVEC_DIRS}
   maybe_build_tarfile gcc-testsuite-${RELEASE} ${TESTSUITE_DIRS}
+  maybe_build_tarfile gcc-upc-${RELEASE} ${UPC_DIRS}
    
   # The core is everything else.
   EXCLUDES=""
   for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN95_DIRS}\
-	   ${GO_DIRS} ${JAVA_DIRS} ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
+	   ${GO_DIRS} ${JAVA_DIRS} ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}\
+	   ${UPC_DIRS}; do
     EXCLUDES="${EXCLUDES} --exclude $x"
   done
   build_tarfile gcc-core-${RELEASE} ${EXCLUDES} \
@@ -310,7 +312,8 @@ build_diffs() {
   old_vers=${old_file%.tar.bz2}
   old_vers=${old_vers#gcc-}
   inform "Building diffs against version $old_vers"
-  for f in gcc gcc-ada gcc-g++ gcc-fortran gcc-go gcc-java gcc-objc gcc-testsuite gcc-core; do
+  for f in gcc gcc-ada gcc-g++ gcc-fortran gcc-go gcc-java gcc-objc \
+           gcc-testsuite gcc-upc gcc-core; do
     old_tar=${old_dir}/${f}-${old_vers}.tar.bz2
     new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.bz2
     if [ ! -e $old_tar ]; then
@@ -444,6 +447,7 @@ with the following options: <code>"svn://gcc.gnu.org/svn/gcc/${SVNBRANCH} revisi
   snapshot_print gcc-java-${RELEASE}.tar.bz2 "Java front end and runtime"
   snapshot_print gcc-objc-${RELEASE}.tar.bz2 "Objective-C front end and runtime"
   snapshot_print gcc-testsuite-${RELEASE}.tar.bz2 "The GCC testsuite"
+  snapshot_print gcc-upc-${RELEASE}.tar.bz2 "UPC front end and runtime"
 
   echo \
 "Diffs from "${BRANCH}"-"${LAST_DATE}" are available in the diffs/ subdirectory.
@@ -552,6 +556,7 @@ GO_DIRS="gcc/go libgo libffi"
 JAVA_DIRS="gcc/java libjava libffi boehm-gc"
 OBJECTIVEC_DIRS="gcc/objc gcc/objcp libobjc"
 TESTSUITE_DIRS="gcc/testsuite"
+UPC_DIRS="gcc/upc libupc"
 
 # Non-zero if this is the final release, rather than a prerelease.
 FINAL=0
@@ -699,6 +704,7 @@ GO_DIRS=`adjust_dirs ${GO_DIRS}`
 JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
 OBJECTIVEC_DIRS=`adjust_dirs ${OBJECTIVEC_DIRS}`
 TESTSUITE_DIRS=`adjust_dirs ${TESTSUITE_DIRS}`
+UPC_DIRS=`adjust_dirs ${UPC_DIRS}`
 
 # Set up SVNROOT.
 if [ $LOCAL -eq 0 ]; then
