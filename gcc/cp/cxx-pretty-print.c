@@ -2133,7 +2133,6 @@ pp_cxx_template_declaration (cxx_pretty_printer *pp, tree t)
 {
   tree tmpl = most_general_template (t);
   tree level;
-  int i = 0;
 
   pp_maybe_newline_and_indent (pp, 0);
   for (level = DECL_TEMPLATE_PARMS (tmpl); level; level = TREE_CHAIN (level))
@@ -2143,7 +2142,6 @@ pp_cxx_template_declaration (cxx_pretty_printer *pp, tree t)
       pp_cxx_template_parameter_list (pp, TREE_VALUE (level));
       pp_cxx_end_template_argument_list (pp);
       pp_newline_and_indent (pp, 3);
-      i += 3;
     }
   if (TREE_CODE (t) == FUNCTION_DECL && DECL_SAVED_TREE (t))
     pp_cxx_function_definition (pp, t);
