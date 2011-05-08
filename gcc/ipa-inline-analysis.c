@@ -473,7 +473,7 @@ account_size_time (struct inline_summary *summary, int size, int time, struct pr
 
   /* We need to create initial empty unconitional clause, but otherwie
      we don't need to account empty times and sizes.  */
-  if (!size && !time && summary->conds)
+  if (!size && !time && summary->entry)
     return;
 
   /* Watch overflow that might result from insane profiles.  */
@@ -539,6 +539,42 @@ edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
 }
 
 
+/* KNOWN_VALS is partial mapping of parameters of NODE to constant values.
+   Return clause of possible truths. When INLINE_P is true, assume that
+   we are inlining.  */
+
+static clause_t
+evaluate_conditions_for_known_args (struct cgraph_node *node,
+				    bool inline_p,
+				    VEC (tree, heap) *known_vals)
+{
+  clause_t clause = inline_p ? 0 : 1 << predicate_not_inlined_condition;
+  struct inline_summary *info = inline_summary (node);
+  int i;
+  struct condition *c;
+
+  for (i = 0; VEC_iterate (condition, info->conds, i, c); i++)
+    {
+      tree val = VEC_index (tree, known_vals, c->operand_num);
+      tree res;
+
+      if (!val)
+	{
+	  clause |= 1 << (i + predicate_first_dynamic_condition);
+	  continue;
+	}
+      if (c->code == IS_NOT_CONSTANT)
+	continue;
+      res = fold_binary_to_constant (c->code, boolean_type_node, val, c->val);
+      if (res
+	  && integer_zerop (res))
+	continue;
+      clause |= 1 << (i + predicate_first_dynamic_condition);
+    }
+  return clause;
+}
+
+
 /* Work out what conditions might be true at invocation of E.  */
 
 static clause_t
@@ -557,7 +593,6 @@ evaluate_conditions_for_edge (struct cgraph_edge *e, bool inline_p)
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
       int i, count = ipa_get_cs_argument_count (args);
       struct ipcp_lattice lat;
-      struct condition *c;
       VEC (tree, heap) *known_vals = NULL;
 
       if (e->caller->global.inlined_to)
@@ -572,30 +607,39 @@ evaluate_conditions_for_edge (struct cgraph_edge *e, bool inline_p)
 	  if (lat.type == IPA_CONST_VALUE)
 	    VEC_replace (tree, known_vals, i, lat.constant);
 	}
-      for (i = 0; VEC_iterate (condition, info->conds, i, c); i++)
-	{
-	  tree val = VEC_index (tree, known_vals, c->operand_num);
-	  tree res;
-
-	  if (!val)
-	    {
-	      clause |= 1 << (i + predicate_first_dynamic_condition);
-	      continue;
-	    }
-	  if (c->code == IS_NOT_CONSTANT)
-	    continue;
-	  res = fold_binary_to_constant (c->code, boolean_type_node, val, c->val);
-	  if (res
-	      && integer_zerop (res))
-	    continue;
-	  clause |= 1 << (i + predicate_first_dynamic_condition);
-	}
+      clause = evaluate_conditions_for_known_args (e->callee,
+						   inline_p, known_vals);
       VEC_free (tree, heap, known_vals);
     }
   else
     for (i = 0; i < (int)VEC_length (condition, info->conds); i++)
       clause |= 1 << (i + predicate_first_dynamic_condition);
 
+  return clause;
+}
+
+
+/* Work out what conditions might be true at invocation of NODE
+   that is (future) ipa-cp clone.  */
+
+static clause_t
+evaluate_conditions_for_ipcp_clone (struct cgraph_node *node)
+{
+  struct ipa_node_params *parms_info = IPA_NODE_REF (node);
+  int i, count = ipa_get_param_count (parms_info);
+  struct ipcp_lattice *lat;
+  VEC (tree, heap) *known_vals = NULL;
+  clause_t clause;
+
+  VEC_safe_grow_cleared (tree, heap, known_vals, count);
+  for (i = 0; i < count; i++)
+    {
+      lat = ipa_get_lattice (parms_info, i);
+      if (lat->type == IPA_CONST_VALUE)
+	VEC_replace (tree, known_vals, i, lat->constant);
+    }
+  clause = evaluate_conditions_for_known_args (node, false, known_vals);
+  VEC_free (tree, heap, known_vals);
   return clause;
 }
 
@@ -661,8 +705,165 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
   info = inline_summary (dst);
   memcpy (info, inline_summary (src),
 	  sizeof (struct inline_summary));
+  /* TODO: as an optimization, we may avoid copying conditions
+     that are known to be false or true.  */
   info->conds = VEC_copy (condition, gc, info->conds);
-  info->entry = VEC_copy (size_time_entry, gc, info->entry);
+
+  /* When there are any replacements in the function body, see if we can figure
+     out that something was optimized out.  */
+  if (ipa_node_params_vector && dst->clone.tree_map)
+    {
+      VEC(size_time_entry,gc) *entry = info->entry;
+      /* Use SRC parm info since it may not be copied yet.  */
+      struct ipa_node_params *parms_info = IPA_NODE_REF (src);
+      VEC (tree, heap) *known_vals = NULL;
+      int count = ipa_get_param_count (parms_info);
+      int i,j;
+      clause_t possible_truths;
+      struct predicate true_pred = true_predicate ();
+      size_time_entry *e;
+      int optimized_out_size = 0;
+      gcov_type optimized_out_time = 0;
+      bool inlined_to_p = false;
+      struct cgraph_edge *edge;
+
+      info->entry = false;
+      VEC_safe_grow_cleared (tree, heap, known_vals, count);
+      for (i = 0; i < count; i++)
+        {
+	  tree t = ipa_get_param (parms_info, i);
+	  struct ipa_replace_map *r;
+
+	  for (j = 0;
+	       VEC_iterate (ipa_replace_map_p, dst->clone.tree_map, j, r);
+	       j++)
+	    {
+	      if (r->old_tree == t
+		  && r->replace_p
+		  && !r->ref_p)
+		{
+		  VEC_replace (tree, known_vals, i, r->new_tree);
+		  break;
+		}
+	    }
+	}
+      possible_truths = evaluate_conditions_for_known_args (dst,
+							    false, known_vals);
+      VEC_free (tree, heap, known_vals);
+
+      account_size_time (info, 0, 0, &true_pred);
+
+      /* Remap size_time vectors.
+	 Simplify the predicate by prunning out alternatives that are known
+	 to be false.
+	 TODO: as on optimization, we can also eliminate conditions known to be true.  */
+      for (i = 0; VEC_iterate (size_time_entry, entry, i, e); i++)
+	{
+	  struct predicate new_predicate = true_predicate ();
+	  for (j = 0; e->predicate.clause[j]; j++)
+	    if (!(possible_truths & e->predicate.clause[j]))
+	      {
+		new_predicate = false_predicate ();
+		break;
+	      }
+	    else
+	      add_clause (&new_predicate,
+			  possible_truths & e->predicate.clause[j]);
+	  if (false_predicate_p (&new_predicate))
+	    {
+	      optimized_out_size += e->size;
+	      optimized_out_time += e->time;
+	    }
+	  else
+	    account_size_time (info, e->size, e->time, &new_predicate);
+	}
+
+      /* Remap edge predicates with the same simplificaiton as above.  */
+      for (edge = dst->callees; edge; edge = edge->next_callee)
+	{
+	  struct predicate new_predicate = true_predicate ();
+	  struct inline_edge_summary *es = inline_edge_summary (edge);
+
+	  if (!edge->inline_failed)
+	    inlined_to_p = true;
+	  if (!es->predicate)
+	    continue;
+	  for (j = 0; es->predicate->clause[j]; j++)
+	    if (!(possible_truths & es->predicate->clause[j]))
+	      {
+		new_predicate = false_predicate ();
+		break;
+	      }
+	    else
+	      add_clause (&new_predicate,
+			  possible_truths & es->predicate->clause[j]);
+	  if (false_predicate_p (&new_predicate)
+	      && !false_predicate_p (es->predicate))
+	    {
+	      optimized_out_size += es->call_stmt_size * INLINE_SIZE_SCALE;
+	      optimized_out_time += (es->call_stmt_time
+				     * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE)
+				     * edge->frequency);
+	      edge->frequency = 0;
+	    }
+	  *es->predicate = new_predicate;
+	}
+
+      /* Remap indirect edge predicates with the same simplificaiton as above.  */
+      for (edge = dst->indirect_calls; edge; edge = edge->next_callee)
+	{
+	  struct predicate new_predicate = true_predicate ();
+	  struct inline_edge_summary *es = inline_edge_summary (edge);
+
+	  if (!edge->inline_failed)
+	    inlined_to_p = true;
+	  if (!es->predicate)
+	    continue;
+	  for (j = 0; es->predicate->clause[j]; j++)
+	    if (!(possible_truths & es->predicate->clause[j]))
+	      {
+		new_predicate = false_predicate ();
+		break;
+	      }
+	    else
+	      add_clause (&new_predicate,
+			  possible_truths & es->predicate->clause[j]);
+	  if (false_predicate_p (&new_predicate)
+	      && !false_predicate_p (es->predicate))
+	    {
+	      optimized_out_size += es->call_stmt_size * INLINE_SIZE_SCALE;
+	      optimized_out_time += (es->call_stmt_time
+				     * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE)
+				     * edge->frequency);
+	      edge->frequency = 0;
+	    }
+	  *es->predicate = new_predicate;
+	}
+
+      /* If inliner or someone after inliner will ever start producing
+	 non-trivial clones, we will get trouble with lack of information
+	 about updating self sizes, because size vectors already contains
+	 sizes of the calees.  */
+      gcc_assert (!inlined_to_p 
+		  || (!optimized_out_size && !optimized_out_time));
+
+      info->size -= optimized_out_size / INLINE_SIZE_SCALE;
+      info->self_size -= optimized_out_size / INLINE_SIZE_SCALE;
+      gcc_assert (info->size > 0);
+      gcc_assert (info->self_size > 0);
+
+      optimized_out_time /= INLINE_TIME_SCALE;
+      if (optimized_out_time > MAX_TIME)
+	optimized_out_time = MAX_TIME;
+      info->time -= optimized_out_time;
+      info->self_time -= optimized_out_time;
+      if (info->time < 0)
+	info->time = 0;
+      if (info->self_time < 0)
+	info->self_time = 0;
+    }
+  else
+    info->entry = VEC_copy (size_time_entry, gc, info->entry);
 }
 
 
@@ -1565,17 +1766,15 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size, int *time,
 }
 
 
-/* Estimate size and time needed to execute callee of EDGE assuming
-   that parameters known to be constant at caller of EDGE are
-   propagated.  If INLINE_P is true, it is assumed that call will
-   be inlined.  */
+/* Estimate size and time needed to execute NODE assuming
+   POSSIBLE_TRUTHS clause. */
 
 static void
-estimate_callee_size_and_time (struct cgraph_edge *edge, bool inline_p,
-		       	       int *ret_size, int *ret_time)
+estimate_node_size_and_time (struct cgraph_node *node,
+			     clause_t possible_truths,
+		       	     int *ret_size, int *ret_time)
 {
-  struct inline_summary *info = inline_summary (edge->callee);
-  clause_t clause = evaluate_conditions_for_edge (edge, inline_p);
+  struct inline_summary *info = inline_summary (node);
   size_time_entry *e;
   int size = 0, time = 0;
   int i;
@@ -1584,15 +1783,15 @@ estimate_callee_size_and_time (struct cgraph_edge *edge, bool inline_p,
       && (dump_flags & TDF_DETAILS))
     {
       bool found = false;
-      fprintf (dump_file, "   Estimating callee body: %s/%i\n"
+      fprintf (dump_file, "   Estimating body: %s/%i\n"
 			  "   Known to be false: ",
-	       cgraph_node_name (edge->callee),
-	       edge->callee->uid);
+	       cgraph_node_name (node),
+	       node->uid);
 
       for (i = predicate_not_inlined_condition;
 	   i < (predicate_first_dynamic_condition
 		+ (int)VEC_length (condition, info->conds)); i++)
-	if (!(clause & (1 << i)))
+	if (!(possible_truths & (1 << i)))
 	  {
 	    if (found)
 	      fprintf (dump_file, ", ");
@@ -1602,13 +1801,13 @@ estimate_callee_size_and_time (struct cgraph_edge *edge, bool inline_p,
     }
 
   for (i = 0; VEC_iterate (size_time_entry, info->entry, i, e); i++)
-    if (evaluate_predicate (&e->predicate, clause))
+    if (evaluate_predicate (&e->predicate, possible_truths))
       time += e->time, size += e->size;
 
   if (time > MAX_TIME * INLINE_TIME_SCALE)
     time = MAX_TIME * INLINE_TIME_SCALE;
 
-  estimate_calls_size_and_time (edge->callee, &size, &time, clause);
+  estimate_calls_size_and_time (node, &size, &time, possible_truths);
   time = (time + INLINE_TIME_SCALE / 2) / INLINE_TIME_SCALE;
   size = (size + INLINE_SIZE_SCALE / 2) / INLINE_SIZE_SCALE;
 
@@ -1621,6 +1820,21 @@ estimate_callee_size_and_time (struct cgraph_edge *edge, bool inline_p,
   if (ret_size)
     *ret_size = size;
   return;
+}
+
+
+/* Estimate size and time needed to execute callee of EDGE assuming
+   that parameters known to be constant at caller of EDGE are
+   propagated.  If INLINE_P is true, it is assumed that call will
+   be inlined.  */
+
+void
+estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
+		                   int *ret_size, int *ret_time)
+{
+  estimate_node_size_and_time (node,
+			       evaluate_conditions_for_ipcp_clone (node),
+			       ret_size, ret_time);
 }
 
 
@@ -1872,7 +2086,9 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   struct inline_edge_summary *es = inline_edge_summary (edge);
 
   gcc_checking_assert (edge->inline_failed);
-  estimate_callee_size_and_time (edge, true, &size, &time);
+  estimate_node_size_and_time (edge->callee,
+			       evaluate_conditions_for_edge (edge, true),
+			       &size, &time);
 
   ret = (((gcov_type)time - es->call_stmt_time) * edge->frequency
 	 + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
@@ -1921,7 +2137,9 @@ do_estimate_edge_growth (struct cgraph_edge *edge)
 
   /* Early inliner runs without caching, go ahead and do the dirty work.  */
   gcc_checking_assert (edge->inline_failed);
-  estimate_callee_size_and_time (edge, true, &size, NULL);
+  estimate_node_size_and_time (edge->callee,
+			       evaluate_conditions_for_edge (edge, true),
+			       &size, NULL);
   gcc_checking_assert (inline_edge_summary (edge)->call_stmt_size);
   return size - inline_edge_summary (edge)->call_stmt_size;
 }

@@ -1102,7 +1102,8 @@ ipcp_estimate_growth (struct cgraph_node *node)
      call site.  Precise cost is difficult to get, as our size metric counts
      constants and moves as free.  Generally we are looking for cases that
      small function is called very many times.  */
-  growth = inline_summary (node)->self_size
+  estimate_ipcp_clone_size_and_time (node, &growth, NULL);
+  growth = growth
   	   - removable_args * redirectable_node_callers;
   if (growth < 0)
     return 0;

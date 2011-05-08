@@ -506,7 +506,8 @@ struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 					struct cgraph_node *, gimple,
 					unsigned, gcov_type, int, bool);
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
-					int, bool, VEC(cgraph_edge_p,heap) *);
+					int, bool, VEC(cgraph_edge_p,heap) *,
+					bool);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *,

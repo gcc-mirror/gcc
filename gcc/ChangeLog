@@ -1,3 +1,25 @@
+2011-05-08  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_clone_node): Add call_duplication_hook parameter.
+	(cgraph_create_virtual_clone): Call hooks once virtual clone is finished.
+	* cgraph.h (cgraph_clone_node): Update prototype.
+	* ipa-cp.c (ipcp_estimate_growth): Use estimate_ipcp_clone_size_and_time.
+	* ipa-inline-transform.c (clone_inlined_nodes): Update.
+	* lto-cgraph.c (input_node): Update.
+	* ipa-inline.c (recursive_inlining): Update.
+	* ipa-inline.h (estimate_ipcp_clone_size_and_time): New function.
+	(evaluate_conditions_for_known_args): Break out from ...
+	(evaluate_conditions_for_edge): ... here.
+	(evaluate_conditions_for_ipcp_clone): New function.
+	(inline_node_duplication_hook): Update clone summary based
+	on parameter map.
+	(estimate_callee_size_and_time): Rename to ...
+	(estimate_node_size_and_time): take NODE instead of EDGE;
+	take POSSIBLE_TRUTHS as argument.
+	(estimate_callee_size_and_time): Update.
+	(estimate_ipcp_clone_size_and_time): New function.
+	(do_estimate_edge_time): Update.
+
 2011-05-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48908

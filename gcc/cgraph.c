@@ -2128,6 +2128,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
   return new_edge;
 }
 
+
 /* Create node representing clone of N executed COUNT times.  Decrease
    the execution counts from original node too.
    The new clone will have decl set to DECL that may or may not be the same
@@ -2135,11 +2136,15 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 
    When UPDATE_ORIGINAL is true, the counts are subtracted from the original
    function's profile to reflect the fact that part of execution is handled
-   by node.  */
+   by node.  
+   When CALL_DUPLICATOIN_HOOK is true, the ipa passes are acknowledged about
+   the new clone. Otherwise the caller is responsible for doing so later.  */
+
 struct cgraph_node *
 cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
 		   bool update_original,
-		   VEC(cgraph_edge_p,heap) *redirect_callers)
+		   VEC(cgraph_edge_p,heap) *redirect_callers,
+		   bool call_duplication_hook)
 {
   struct cgraph_node *new_node = cgraph_create_node_1 ();
   struct cgraph_edge *e;
@@ -2202,7 +2207,6 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   n->clones = new_node;
   new_node->clone_of = n;
 
-  cgraph_call_node_duplication_hooks (n, new_node);
   if (n->decl != decl)
     {
       struct cgraph_node **slot;
@@ -2221,6 +2225,9 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
 	  *aslot = new_node;
 	}
     }
+
+  if (call_duplication_hook)
+    cgraph_call_node_duplication_hooks (n, new_node);
   return new_node;
 }
 
@@ -2287,7 +2294,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
 
   new_node = cgraph_clone_node (old_node, new_decl, old_node->count,
 				CGRAPH_FREQ_BASE, false,
-				redirect_callers);
+				redirect_callers, false);
   /* Update the properties.
      Make clone visible only within this translation unit.  Make sure
      that is not weak also.
@@ -2357,6 +2364,8 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   new_node->local.local = 1;
   new_node->lowered = true;
   new_node->reachable = true;
+
+  cgraph_call_node_duplication_hooks (old_node, new_node);
 
 
   return new_node;
