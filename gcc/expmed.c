@@ -2142,10 +2142,14 @@ expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
 	      rtx temp1;
 
 	      new_amount = op1;
-	      other_amount
-		= simplify_gen_binary (MINUS, GET_MODE (op1),
-				       GEN_INT (GET_MODE_BITSIZE (mode)),
-				       op1);
+	      if (CONST_INT_P (op1))
+		other_amount = GEN_INT (GET_MODE_BITSIZE (mode)
+					- INTVAL (op1));
+	      else
+		other_amount
+		  = simplify_gen_binary (MINUS, GET_MODE (op1),
+					 GEN_INT (GET_MODE_BITSIZE (mode)),
+					 op1);
 
 	      shifted = force_reg (mode, shifted);
 
