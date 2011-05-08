@@ -1,3 +1,10 @@
+2011-05-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* combine.c (simplify_comparison): Abstract out parts into...
+	(simplify_compare_const): ... new function.
+	(try_combine): Generalize parallel arithmetic/compare combining
+	to call simplify_compare_const() and CANONICALIZE_COMPARE().
+
 2011-05-08  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_clone_node): Add call_duplication_hook parameter.
