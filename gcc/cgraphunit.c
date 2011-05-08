@@ -430,6 +430,11 @@ verify_edge_count_and_frequency (struct cgraph_edge *e)
     }
   if (gimple_has_body_p (e->caller->decl)
       && !e->caller->global.inlined_to
+      /* FIXME: Inline-analysis sets frequency to 0 when edge is optimized out.
+	 Remove this once edges are actualy removed from the function at that time.  */
+      && (e->frequency
+	  || (inline_edge_summary_vec
+	      && !inline_edge_summary (e)->predicate))
       && (e->frequency
 	  != compute_call_stmt_bb_frequency (e->caller->decl,
 					     gimple_bb (e->call_stmt))))

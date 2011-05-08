@@ -999,7 +999,7 @@ input_node (struct lto_file_decl_data *file_data,
   if (clone_ref != LCC_NOT_FOUND)
     {
       node = cgraph_clone_node (VEC_index (cgraph_node_ptr, nodes, clone_ref), fn_decl,
-				0, CGRAPH_FREQ_BASE, false, NULL);
+				0, CGRAPH_FREQ_BASE, false, NULL, false);
     }
   else
     node = cgraph_get_create_node (fn_decl);
