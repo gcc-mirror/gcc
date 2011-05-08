@@ -22879,7 +22879,7 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
 	  rtx fun;
 
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
-	  label_name = (*targetm.strip_name_encoding) (ggc_strdup (buf));
+	  label_name = ggc_strdup ((*targetm.strip_name_encoding) (buf));
 	  fun = gen_rtx_SYMBOL_REF (Pmode, label_name);
 
 	  emit_library_call (init_one_libfunc (RS6000_MCOUNT),
