@@ -1,3 +1,15 @@
+2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48735
+	* g++.dg/cpp0x/sfinae21.C: New.
+
+2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/sfinae28.C: Rename to...
+	* g++.dg/cpp0x/sfinae19.C: ... this.
+	* g++.dg/template/sfinae29.C: Rename to...
+	* g++.dg/cpp0x/sfinae20.C: ... this.
+
 2011-05-09  Jeff Law <law@redhat.com>
 
 	* lib/gcc-gdb-test.exp (gdb-test): Reorder matchers to give more
