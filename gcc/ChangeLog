@@ -1,4 +1,10 @@
-2011-05-04  Philipp Thomas  <pth@suse.de>
+2011-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* var-tracking.c (find_mem_expr_in_1pdv): Fix thinko.
+	(dataflow_set_preserve_mem_locs): Likewise.
+
+2011-05-09  Philipp Thomas  <pth@suse.de>
+
 	* config/mep/mep.c (mep_validate_vliw): Syntax description
 	should not be translated.
 
