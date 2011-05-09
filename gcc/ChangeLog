@@ -1,3 +1,9 @@
+2011-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_autovectorize_vector_sizes): Return 0
+	for !flag_prefer_avx128.
+	(ix86_preferred_simd_mode): Return word_mode for DFmode without SSE2.
+
 2011-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (fold_range_test): Pass LOC to build_range_check.

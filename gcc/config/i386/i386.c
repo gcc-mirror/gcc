@@ -35118,32 +35118,38 @@ has_dispatch (rtx insn, int action)
 static enum machine_mode
 ix86_preferred_simd_mode (enum machine_mode mode)
 {
-  /* Disable double precision vectorizer if needed.  */
-  if (mode == DFmode && !TARGET_VECTORIZE_DOUBLE)
-    return word_mode;
-
-  if (!TARGET_AVX && !TARGET_SSE)
+  if (!TARGET_SSE)
     return word_mode;
 
   switch (mode)
     {
-    case SFmode:
-      return (TARGET_AVX && !flag_prefer_avx128) ? V8SFmode : V4SFmode;
-    case DFmode:
-      return (TARGET_AVX && !flag_prefer_avx128) ? V4DFmode : V2DFmode;
-    case DImode:
-      return V2DImode;
-    case SImode:
-      return V4SImode;
-    case HImode:
-      return V8HImode;
     case QImode:
       return V16QImode;
+    case HImode:
+      return V8HImode;
+    case SImode:
+      return V4SImode;
+    case DImode:
+      return V2DImode;
 
-    default:;
+    case SFmode:
+      if (TARGET_AVX && !flag_prefer_avx128)
+	return V8SFmode;
+      else
+	return V4SFmode;
+
+    case DFmode:
+      if (!TARGET_VECTORIZE_DOUBLE)
+	return word_mode;
+      else if (TARGET_AVX && !flag_prefer_avx128)
+	return V4DFmode;
+      else if (TARGET_SSE2)
+	return V2DFmode;
+      /* FALLTHRU */
+
+    default:
+      return word_mode;
     }
-
-  return word_mode;
 }
 
 /* If AVX is enabled then try vectorizing with both 256bit and 128bit
@@ -35152,7 +35158,7 @@ ix86_preferred_simd_mode (enum machine_mode mode)
 static unsigned int
 ix86_autovectorize_vector_sizes (void)
 {
-  return TARGET_AVX ? 32 | 16 : 0;
+  return (TARGET_AVX && !flag_prefer_avx128) ? 32 | 16 : 0;
 }
 
 /* Initialize the GCC target structure.  */
