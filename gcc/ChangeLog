@@ -31,6 +31,10 @@
 
 2011-05-09  Nick Clifton  <nickc@redhat.com>
 
+	PR target/48899
+	* config/iq2000/iq2000.opt (iq2000_tune): Initialise to
+	PROCESSOR_DEFAULT.
+
 	PR target/48897
 	* config/mn10300/mn10300.c (extract_bundle): Remove spurious local
 	variable 's'.
