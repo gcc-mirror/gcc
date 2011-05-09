@@ -3208,6 +3208,8 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
 }
 
 
+enum gtc_mode { GTC_MERGE = 0, GTC_DIAG = 1 };
+
 static hashval_t gimple_type_hash_1 (const void *, enum gtc_mode);
 
 /* Structure used to maintain a cache of some type pairs compared by
@@ -3908,7 +3910,7 @@ pop:
    FOR_MERGING_P is true the an incomplete type and a complete type
    are considered different, otherwise they are considered compatible.  */
 
-bool
+static bool
 gimple_types_compatible_p (tree t1, tree t2, enum gtc_mode mode)
 {
   VEC(type_pair_t, heap) *sccstack = NULL;

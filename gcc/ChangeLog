@@ -1,3 +1,14 @@
+2011-05-09  Richard Guenther  <rguenther@suse.de>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Use types_compatible_p
+	for diagnostics.
+	(lto_symtab_merge): Likewise.  Do not register types here.
+	(lto_symtab_merge_decls_2): Likewise.
+	(lto_symtab_merge_decls_1): Likewise.
+	* gimple.h (enum gtc_mode, gimple_types_compatible_p): Do not declare.
+	* gimple.c (enum gtc_mode): Declare.
+	(gimple_types_compatible_p): Make static.
+
 2011-05-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (TD/TF mem to reg move splitter): Make the
