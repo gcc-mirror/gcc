@@ -1,3 +1,9 @@
+2011-05-09  Nick Clifton  <nickc@redhat.com>
+
+	PR target/48897
+	* config/mn10300/mn10300.c (extract_bundle): Remove spurious local
+	variable 's'.
+
 2011-05-08  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* combine.c (simplify_comparison): Abstract out parts into...
