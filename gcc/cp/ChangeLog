@@ -1,3 +1,9 @@
+2011-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34772
+	* decl.c (initialize_local_var): Use DECL_INITIAL for simple
+	initialization.
+
 2011-05-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement final/override for member functions.

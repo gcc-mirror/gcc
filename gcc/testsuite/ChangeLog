@@ -1,3 +1,14 @@
+2011-05-09  Jason Merrill  <jason@redhat.com>
+
+	* gcc.dg/gcc.dg/uninit-D.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-D-O0.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-E.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-E-O0.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-F.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-F-O0.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-G.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-G-O0.c: Move to c-c++-common.
+
 2011-05-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
         * g++.dg/inherit/virtual9.C: New.

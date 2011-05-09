@@ -5689,21 +5689,32 @@ initialize_local_var (tree decl, tree init)
   /* Perform the initialization.  */
   if (init)
     {
-      int saved_stmts_are_full_exprs_p;
+      if (TREE_CODE (init) == INIT_EXPR
+	  && !TREE_SIDE_EFFECTS (TREE_OPERAND (init, 1)))
+	{
+	  /* Stick simple initializers in DECL_INITIAL so that
+	     -Wno-init-self works (c++/34772).  */
+	  gcc_assert (TREE_OPERAND (init, 0) == decl);
+	  DECL_INITIAL (decl) = TREE_OPERAND (init, 1);
+	}
+      else
+	{
+	  int saved_stmts_are_full_exprs_p;
 
-      /* If we're only initializing a single object, guard the destructors
-	 of any temporaries used in its initializer with its destructor.
-	 This isn't right for arrays because each element initialization is
-	 a full-expression.  */
-      if (cleanup && TREE_CODE (type) != ARRAY_TYPE)
-	wrap_temporary_cleanups (init, cleanup);
+	  /* If we're only initializing a single object, guard the
+	     destructors of any temporaries used in its initializer with
+	     its destructor.  This isn't right for arrays because each
+	     element initialization is a full-expression.  */
+	  if (cleanup && TREE_CODE (type) != ARRAY_TYPE)
+	    wrap_temporary_cleanups (init, cleanup);
 
-      gcc_assert (building_stmt_tree ());
-      saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
-      current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-      finish_expr_stmt (init);
-      current_stmt_tree ()->stmts_are_full_exprs_p =
-	saved_stmts_are_full_exprs_p;
+	  gcc_assert (building_stmt_tree ());
+	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
+	  finish_expr_stmt (init);
+	  current_stmt_tree ()->stmts_are_full_exprs_p =
+	    saved_stmts_are_full_exprs_p;
+	}
     }
 
   /* Set this to 0 so we can tell whether an aggregate which was
