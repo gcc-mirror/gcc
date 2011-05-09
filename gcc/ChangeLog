@@ -1,3 +1,13 @@
+2011-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/48927
+	* ira-conflicts.c (commutative_constraint_p): Use
+	recog_data.alternative_enabled_p to disable alternatives where
+	"enabled" attribute is false.
+	(get_dup_num): Ditto.
+	* ira-lives.c (single_reg_class): Ditto.
+	(ira_implicitly_set_insn_hard_regs): Ditto.
+
 2011-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* var-tracking.c (find_mem_expr_in_1pdv): Fix thinko.
@@ -12,8 +22,7 @@
 
 	* config/mips/genopt.sh, config/mips/mips-cpus.def: New files.
 	* config/mips/mips-tables.opt: New file (generated).
-	* config.gcc (mips*-*-*): Add mips/mips-tables.opt to
-	extra_options.
+	* config.gcc (mips*-*-*): Add mips/mips-tables.opt to extra_options.
 	* config/mips/mips-opts.h (MIPS_ARCH_OPTION_FROM_ABI,
 	MIPS_ARCH_OPTION_NATIVE): Define.
 	* config/mips/mips.c (mips_cpu_info_table): Move contents to
@@ -24,8 +33,7 @@
 	(mips_handle_option): Don't assert that global structures are in
 	use.  Don't handle OPT_march_, OPT_mtune_ and OPT_mips here.
 	(mips_option_override): Use new variables and functions to set
-	state of these options.  Use strcmp to check for individual CPU
-	names.
+	state of these options.  Use strcmp to check for individual CPU names.
 	* config/mips/mips.h (MIPS_CPU_STRING_DEFAULT): Remove default
 	definition.
 	* config/mips/mips.opt (march=): Use ToLower and Enum.
@@ -59,9 +67,11 @@
 2011-05-08  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_clone_node): Add call_duplication_hook parameter.
-	(cgraph_create_virtual_clone): Call hooks once virtual clone is finished.
+	(cgraph_create_virtual_clone): Call hooks once virtual clone
+	is finished.
 	* cgraph.h (cgraph_clone_node): Update prototype.
-	* ipa-cp.c (ipcp_estimate_growth): Use estimate_ipcp_clone_size_and_time.
+	* ipa-cp.c (ipcp_estimate_growth): Use
+	estimate_ipcp_clone_size_and_time.
 	* ipa-inline-transform.c (clone_inlined_nodes): Update.
 	* lto-cgraph.c (input_node): Update.
 	* ipa-inline.c (recursive_inlining): Update.
@@ -127,7 +137,7 @@
 
 	* i386.h (ix86_tune_indices): Add
 	X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL.
-	(TARGET_SOFTWARE_PREFETCHING_BENEFICIAL): New macor.
+	(TARGET_SOFTWARE_PREFETCHING_BENEFICIAL): New macro.
 	* i386.c (initial_ix86_tune_features): Add
 	X86_SOFTARE_PREFETCHING_BENEFICIAL.
 	(software_prefetching_beneficial_p): Remove predicate.
@@ -227,9 +237,9 @@
 
 2011-05-06  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-      PR target/47930
-      * config/arm/arm.opt (marm): Document it.
-      (mthumb): Reject negative variant.
+	PR target/47930
+	* config/arm/arm.opt (marm): Document it.
+	(mthumb): Reject negative variant.
 
 2011-05-06  Uros Bizjak  <ubizjak@gmail.com>
 

@@ -213,19 +213,22 @@ allocnos_conflict_for_copy_p (ira_allocno_t a1, ira_allocno_t a2)
 static bool
 commutative_constraint_p (const char *str)
 {
+  int curr_alt, c;
   bool ignore_p;
-  int c;
 
-  for (ignore_p = false;;)
+  for (ignore_p = false, curr_alt = 0;;)
     {
       c = *str;
       if (c == '\0')
 	break;
       str += CONSTRAINT_LEN (c, str);
-      if (c == '#')
+      if (c == '#' || !recog_data.alternative_enabled_p[curr_alt])
 	ignore_p = true;
       else if (c == ',')
-	ignore_p = false;
+	{
+	  curr_alt++;
+	  ignore_p = false;
+	}
       else if (! ignore_p)
 	{
 	  /* Usually `%' is the first constraint character but the
@@ -270,7 +273,7 @@ get_dup_num (int op_num, bool use_commut_op_p)
       c = *str;
       if (c == '\0')
 	break;
-      if (c == '#')
+      if (c == '#' || !recog_data.alternative_enabled_p[curr_alt])
 	ignore_p = true;
       else if (c == ',')
 	{
