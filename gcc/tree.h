@@ -2253,11 +2253,13 @@ extern enum machine_mode vector_type_mode (const_tree);
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
    type.  */
-
-#define TYPE_UNQUALIFIED   0x0
-#define TYPE_QUAL_CONST    0x1
-#define TYPE_QUAL_VOLATILE 0x2
-#define TYPE_QUAL_RESTRICT 0x4
+enum cv_qualifier
+  {
+    TYPE_UNQUALIFIED   = 0x0,
+    TYPE_QUAL_CONST    = 0x1,
+    TYPE_QUAL_VOLATILE = 0x2,
+    TYPE_QUAL_RESTRICT = 0x4
+  };
 
 /* Encode/decode the named memory support as part of the qualifier.  If more
    than 8 qualifiers are added, these macros need to be adjusted.  */

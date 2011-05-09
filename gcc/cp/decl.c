@@ -7306,6 +7306,25 @@ grokfndecl (tree ctype,
   return decl;
 }
 
+/* decl is a FUNCTION_DECL.
+   specifiers are the parsed virt-specifiers.
+
+   Set flags to reflect the virt-specifiers.
+
+   Returns decl.  */
+
+static tree
+set_virt_specifiers (tree decl, cp_virt_specifiers specifiers)
+{
+  if (decl == NULL_TREE)
+    return decl;
+  if (specifiers & VIRT_SPEC_OVERRIDE)
+    DECL_OVERRIDE_P (decl) = 1;
+  if (specifiers & VIRT_SPEC_FINAL)
+    DECL_FINAL_P (decl) = 1;
+  return decl;
+}
+
 /* DECL is a VAR_DECL for a static data member.  Set flags to reflect
    the linkage that DECL will receive in the object file.  */
 
@@ -8116,6 +8135,9 @@ grokdeclarator (const cp_declarator *declarator,
   /* cv-qualifiers that apply to the declarator, for a declaration of
      a member function.  */
   cp_cv_quals memfn_quals = TYPE_UNQUALIFIED;
+  /* virt-specifiers that apply to the declarator, for a declaration of
+     a member function.  */
+  cp_virt_specifiers virt_specifiers = VIRT_SPEC_UNSPECIFIED;
   /* cv-qualifiers that apply to the type specified by the DECLSPECS.  */
   int type_quals;
   tree raises = NULL_TREE;
@@ -8876,7 +8898,8 @@ grokdeclarator (const cp_declarator *declarator,
 
 	    /* Pick up type qualifiers which should be applied to `this'.  */
 	    memfn_quals = declarator->u.function.qualifiers;
-
+	    /* Pick up virt-specifiers.  */
+            virt_specifiers = declarator->u.function.virt_specifiers;
 	    /* Pick up the exception specifications.  */
 	    raises = declarator->u.function.exception_specification;
 
@@ -9814,6 +9837,7 @@ grokdeclarator (const cp_declarator *declarator,
 			       sfk,
 			       funcdef_flag, template_count, in_namespace,
 			       attrlist, declarator->id_loc);
+            decl = set_virt_specifiers (decl, virt_specifiers);
 	    if (decl == NULL_TREE)
 	      return error_mark_node;
 #if 0
@@ -10007,6 +10031,8 @@ grokdeclarator (const cp_declarator *declarator,
 	else if (thread_p)
 	  error ("storage class %<__thread%> invalid for function %qs", name);
 
+        if (virt_specifiers)
+          error ("virt-specifiers in %qs not allowed outside a class definition", name);
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed
 	   and `extern' makes no difference.  */

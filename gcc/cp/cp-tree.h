@@ -72,6 +72,7 @@ c-common.h, not after.
       LAMBDA_EXPR_CAPTURES_THIS_P (in LAMBDA_EXPR)
       DECLTYPE_FOR_LAMBDA_CAPTURE (in DECLTYPE_TYPE)
       VEC_INIT_EXPR_IS_CONSTEXPR (in VEC_INIT_EXPR)
+      DECL_OVERRIDE_P (in FUNCTION_DECL)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -84,6 +85,7 @@ c-common.h, not after.
       TARGET_EXPR_LIST_INIT_P (in TARGET_EXPR)
       LAMBDA_EXPR_MUTABLE_P (in LAMBDA_EXPR)
       DECLTYPE_FOR_LAMBDA_RETURN (in DECLTYPE_TYPE)
+      DECL_FINAL_P (in FUNCTION_DECL)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -2284,6 +2286,14 @@ struct GTY((variable_size)) lang_decl {
 #define DECL_INVALID_OVERRIDER_P(NODE) \
   (DECL_LANG_FLAG_4 (NODE))
 
+/* True (in a FUNCTION_DECL) if NODE is a function declared with
+   an override virt-specifier */
+#define DECL_OVERRIDE_P(NODE) (TREE_LANG_FLAG_0 (NODE))
+
+/* True (in a FUNCTION_DECL) if NODE is a function declared with
+   a final virt-specifier */
+#define DECL_FINAL_P(NODE) (TREE_LANG_FLAG_1 (NODE))
+
 /* The thunks associated with NODE, a FUNCTION_DECL.  */
 #define DECL_THUNKS(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->context)
@@ -4429,6 +4439,22 @@ extern GTY(()) operator_name_info_t assignment_operator_name_info
 
 typedef int cp_cv_quals;
 
+/* Non-static member functions have an optional virt-specifier-seq.
+   There is a VIRT_SPEC value for each virt-specifier.
+   They can be combined by bitwise-or to form the complete set of
+   virt-specifiers for a member function.  */
+enum virt_specifier
+  {
+    VIRT_SPEC_UNSPECIFIED = 0x0,
+    VIRT_SPEC_FINAL       = 0x1,
+    VIRT_SPEC_OVERRIDE    = 0x2
+  };
+
+/* A type-qualifier, or bitmask therefore, using the VIRT_SPEC
+   constants.  */
+
+typedef int cp_virt_specifiers;
+
 /* A storage class.  */
 
 typedef enum cp_storage_class {
@@ -4571,6 +4597,8 @@ struct cp_declarator {
       tree parameters;
       /* The cv-qualifiers for the function.  */
       cp_cv_quals qualifiers;
+      /* The virt-specifiers for the function.  */
+      cp_virt_specifiers virt_specifiers;
       /* The exception-specification for the function.  */
       tree exception_specification;
       /* The late-specified return type, if any.  */

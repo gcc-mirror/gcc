@@ -1920,6 +1920,12 @@ check_final_overrider (tree overrider, tree basefn)
 	}
       return 0;
     }
+  if (DECL_FINAL_P (basefn))
+    {
+      error ("virtual function %q+D", overrider);
+      error ("overriding final function %q+D", basefn);
+      return 0;
+    }
   return 1;
 }
 

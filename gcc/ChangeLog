@@ -1,3 +1,8 @@
+2011-05-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* tree.h (TYPE_UNQUALIFIED, TYPE_QUAL_CONST): Convert to enum.
+	(TYPE_QUAL_VOLATILE, TYPE_QUAL_RESTRICT): Likewise.
+
 2011-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (const_pow2_1_to_2_operand): Remove.

@@ -1,3 +1,18 @@
+2011-05-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement final/override for member functions.
+	* class.c (check_for_override): Check for DECL_OVERRIDE_P.
+	* cp-tree.h (DECL_OVERRIDE_P, DECL_FINAL_P): New.
+	(cp_virt_specifiers, enum virt_specifier): New.
+	* decl.c (set_virt_specifiers): New.
+	(grokdeclarator): Use them. Diagnose virt-specifiers on non-fields.
+	* parser.c (make_call_declarator): add virt-specifiers parameter.
+	(cp_parser_lambda_declarator_opt): Adjust.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_virt_specifier_seq_opt): New.
+	* search.c (check_final_overrider): Diagnose attempts to override
+	a final member function.
+
 2011-05-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48574
