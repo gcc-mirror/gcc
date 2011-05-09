@@ -1,3 +1,8 @@
+2011-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* var-tracking.c (find_mem_expr_in_1pdv): Fix thinko.
+	(dataflow_set_preserve_mem_locs): Likewise.
+
 2011-05-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdf_internal_nointeger): Apply "*"
