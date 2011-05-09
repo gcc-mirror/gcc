@@ -1,3 +1,9 @@
+2011-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48936
+	* decl2.c (mark_used): Instantiate constant variables even
+	in unevaluated context.
+
 2011-04-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48046
