@@ -1,3 +1,8 @@
+2011-05-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (TD/TF mem to reg move splitter): Make the
+	temporary register to match Pmode.
+
 2011-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*vec_concatv4si): Merge from *vec_concatv4si_1
