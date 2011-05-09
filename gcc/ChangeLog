@@ -1,3 +1,8 @@
+2011-05-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (TD/TF mem to reg move splitter): Make the
+	temporary register to match Pmode.
+
 2011-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* var-tracking.c (find_mem_expr_in_1pdv): Fix thinko.
