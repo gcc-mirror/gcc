@@ -2959,7 +2959,7 @@ static bool
 extract_bundle (rtx insn, struct liw_data * pdata)
 {
   bool allow_consts = true;
-  rtx p,s;
+  rtx p;
 
   gcc_assert (pdata != NULL);
 
@@ -2976,8 +2976,6 @@ extract_bundle (rtx insn, struct liw_data * pdata)
     return false;
 
   pdata->op = get_attr_liw_op (insn);
-
-  s = SET_SRC (p);
 
   switch (pdata->op)
     {
