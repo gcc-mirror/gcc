@@ -1,3 +1,7 @@
+2011-05-09  Fabien Chêne  <fabien@gcc.gnu.org>
+	PR c++/20039
+	* g++.dg/init/pr20039.C: New.
+
 2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/48737
@@ -9,7 +13,7 @@
 
 	* g++.dg/template/nontype23.C: New.
 
-2001-05-07  Fabien Chêne  <fabien@gcc.gnu.org>
+2011-05-07  Fabien Chêne  <fabien@gcc.gnu.org>
 	PR c++/48859
 	* g++.dg/init/pr48859.C: New.
 
