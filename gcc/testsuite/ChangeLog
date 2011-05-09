@@ -1,4 +1,10 @@
+2011-05-09  Jeff Law <law@redhat.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Reorder matchers to give more
+	consistent results.
+
 2011-05-09  Fabien Chêne  <fabien@gcc.gnu.org>
+
 	PR c++/20039
 	* g++.dg/init/pr20039.C: New.
 

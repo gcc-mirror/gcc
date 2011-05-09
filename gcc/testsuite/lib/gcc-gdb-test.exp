@@ -1,4 +1,4 @@
-#   Copyright (C) 2009 Free Software Foundation, Inc.
+#   Copyright (C) 2009, 2011 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,6 +60,12 @@ proc gdb-test { args } {
     }
 
     remote_expect target [timeout_value] {
+	# Too old GDB
+	-re "Unhandled dwarf expression|Error in sourced command file" {
+	    unsupported "$testname"
+	    remote_close target
+	    return
+	}
 	-re {[\n\r]\$1 = ([^\n\r]*)[\n\r]+\$2 = ([^\n\r]*)[\n\r]} {
 	    set first $expect_out(1,string)
 	    set second $expect_out(2,string)
@@ -69,12 +75,6 @@ proc gdb-test { args } {
 		send_log "$first != $second\n"
 		fail "$testname"
 	    }
-	    remote_close target
-	    return
-	}
-	# Too old GDB
-	-re "Unhandled dwarf expression|Error in sourced command file" {
-	    unsupported "$testname"
 	    remote_close target
 	    return
 	}
