@@ -1,4 +1,4 @@
-# Copyright (C) 2002, 2003, 2006 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2006, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -39,3 +39,8 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 LIB2_SIDITI_CONV_FUNCS=yes
+
+$(srcdir)/config/mips/mips-tables.opt: $(srcdir)/config/mips/genopt.sh \
+  $(srcdir)/config/mips/mips-cpus.def
+	$(SHELL) $(srcdir)/config/mips/genopt.sh $(srcdir)/config/mips > \
+		$(srcdir)/config/mips/mips-tables.opt

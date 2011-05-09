@@ -59,7 +59,7 @@ Target Report Var(TARGET_MAD)
 Use PMC-style 'mad' instructions
 
 march=
-Target RejectNegative Joined Var(mips_arch_string)
+Target RejectNegative Joined Var(mips_arch_option) ToLower Enum(mips_arch_opt_value)
 -march=ISA	Generate code for the given ISA
 
 mbranch-cost=
@@ -222,7 +222,7 @@ Target Report Var(TARGET_INTERLINK_MIPS16) Init(0)
 Generate code that can be safely linked with MIPS16 code.
 
 mips
-Target RejectNegative Joined
+Target RejectNegative Joined ToLower Enum(mips_mips_opt_value) Var(mips_isa_option)
 -mipsN	Generate code for ISA level N
 
 mips16
@@ -339,7 +339,7 @@ Target Report Mask(SYNCI)
 Use synci instruction to invalidate i-cache
 
 mtune=
-Target RejectNegative Joined Var(mips_tune_string)
+Target RejectNegative Joined Var(mips_tune_option) ToLower Enum(mips_arch_opt_value)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR
 
 muninit-const-in-rodata
