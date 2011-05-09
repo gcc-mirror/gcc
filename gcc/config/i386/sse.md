@@ -6660,31 +6660,22 @@
   [(set_attr "type" "sselog,ssemov,mmxcvt,mmxmov")
    (set_attr "mode" "V4SF,V4SF,DI,DI")])
 
-(define_insn "*vec_concatv4si_1_avx"
-  [(set (match_operand:V4SI 0 "register_operand"       "=x,x")
+(define_insn "*vec_concatv4si"
+  [(set (match_operand:V4SI 0 "register_operand"       "=Y2,x,x,x,x")
 	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "register_operand"     " x,x")
-	  (match_operand:V2SI 2 "nonimmediate_operand" " x,m")))]
-  "TARGET_AVX"
-  "@
-   vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}
-   vmovhps\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog,ssemov")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "TI,V2SF")])
-
-(define_insn "*vec_concatv4si_1"
-  [(set (match_operand:V4SI 0 "register_operand"       "=Y2,x,x")
-	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "register_operand"     " 0 ,0,0")
-	  (match_operand:V2SI 2 "nonimmediate_operand" " Y2,x,m")))]
+	  (match_operand:V2SI 1 "register_operand"     " 0 ,x,0,0,x")
+	  (match_operand:V2SI 2 "nonimmediate_operand" " Y2,x,x,m,m")))]
   "TARGET_SSE"
   "@
    punpcklqdq\t{%2, %0|%0, %2}
+   vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}
    movlhps\t{%2, %0|%0, %2}
-   movhps\t{%2, %0|%0, %2}"
-  [(set_attr "type" "sselog,ssemov,ssemov")
-   (set_attr "mode" "TI,V4SF,V2SF")])
+   movhps\t{%2, %0|%0, %2}
+   vmovhps\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx,noavx,noavx,avx")
+   (set_attr "type" "sselog,sselog,ssemov,ssemov,ssemov")
+   (set_attr "prefix" "orig,vex,orig,orig,vex")
+   (set_attr "mode" "TI,TI,V4SF,V2SF,V2SF")])
 
 ;; movd instead of movq is required to handle broken assemblers.
 (define_insn "*vec_concatv2di_rex64_sse4_1"
