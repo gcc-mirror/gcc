@@ -1,3 +1,9 @@
+2011-05-08  Jan Hubicka  <jh@suse.cz>
+
+	* gimple.c (type_pair_hash, type_pair_eq, lookup_type_pair):
+	Arrange type pairs to be UID ordered.
+	(gimple_lookup_type_leader): Make inline.
+
 2011-05-09  Nick Clifton  <nickc@redhat.com>
 
 	PR target/48897
