@@ -23,7 +23,7 @@ config/iq2000/iq2000-opts.h
 
 ; The target cpu for optimization and scheduling.
 Variable
-enum processor_type iq2000_tune
+enum processor_type iq2000_tune = PROCESSOR_DEFAULT
 
 ; This option has no effect at the moment.
 march=
