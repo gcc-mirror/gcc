@@ -4122,16 +4122,18 @@ mep_validate_vliw (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
       if (TREE_CODE (*node) == POINTER_TYPE
  	  && !gave_pointer_note)
  	{
- 	  inform (input_location, "to describe a pointer to a VLIW function, use syntax like this:");
- 	  inform (input_location, "  typedef int (__vliw *vfuncptr) ();");
+ 	  inform (input_location,
+ 	          "to describe a pointer to a VLIW function, use syntax like this:\n%s",
+ 	          "   typedef int (__vliw *vfuncptr) ();");
  	  gave_pointer_note = 1;
  	}
  
       if (TREE_CODE (*node) == ARRAY_TYPE
  	  && !gave_array_note)
  	{
- 	  inform (input_location, "to describe an array of VLIW function pointers, use syntax like this:");
- 	  inform (input_location, "  typedef int (__vliw *vfuncptr[]) ();");
+ 	  inform (input_location,
+ 	          "to describe an array of VLIW function pointers, use syntax like this:\n%s",
+ 	          "   typedef int (__vliw *vfuncptr[]) ();");
  	  gave_array_note = 1;
  	}
     }
