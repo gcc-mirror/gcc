@@ -645,125 +645,13 @@ static const struct attribute_spec mips_attribute_table[] = {
   { NULL,	   0, 0, false, false, false, NULL, false }
 };
 
-/* A table describing all the processors GCC knows about.  Names are
-   matched in the order listed.  The first mention of an ISA level is
-   taken as the canonical name for that ISA.
-
-   To ease comparison, please keep this table in the same order
-   as GAS's mips_cpu_info_table.  Please also make sure that
-   MIPS_ISA_LEVEL_SPEC and MIPS_ARCH_FLOAT_SPEC handle all -march
-   options correctly.  */
+/* A table describing all the processors GCC knows about; see
+   mips-cpus.def for details.  */
 static const struct mips_cpu_info mips_cpu_info_table[] = {
-  /* Entries for generic ISAs.  */
-  { "mips1", PROCESSOR_R3000, 1, 0 },
-  { "mips2", PROCESSOR_R6000, 2, 0 },
-  { "mips3", PROCESSOR_R4000, 3, 0 },
-  { "mips4", PROCESSOR_R8000, 4, 0 },
-  /* Prefer not to use branch-likely instructions for generic MIPS32rX
-     and MIPS64rX code.  The instructions were officially deprecated
-     in revisions 2 and earlier, but revision 3 is likely to downgrade
-     that to a recommendation to avoid the instructions in code that
-     isn't tuned to a specific processor.  */
-  { "mips32", PROCESSOR_4KC, 32, PTF_AVOID_BRANCHLIKELY },
-  { "mips32r2", PROCESSOR_M4K, 33, PTF_AVOID_BRANCHLIKELY },
-  { "mips64", PROCESSOR_5KC, 64, PTF_AVOID_BRANCHLIKELY },
-  /* ??? For now just tune the generic MIPS64r2 for 5KC as well.   */
-  { "mips64r2", PROCESSOR_5KC, 65, PTF_AVOID_BRANCHLIKELY },
-
-  /* MIPS I processors.  */
-  { "r3000", PROCESSOR_R3000, 1, 0 },
-  { "r2000", PROCESSOR_R3000, 1, 0 },
-  { "r3900", PROCESSOR_R3900, 1, 0 },
-
-  /* MIPS II processors.  */
-  { "r6000", PROCESSOR_R6000, 2, 0 },
-
-  /* MIPS III processors.  */
-  { "r4000", PROCESSOR_R4000, 3, 0 },
-  { "vr4100", PROCESSOR_R4100, 3, 0 },
-  { "vr4111", PROCESSOR_R4111, 3, 0 },
-  { "vr4120", PROCESSOR_R4120, 3, 0 },
-  { "vr4130", PROCESSOR_R4130, 3, 0 },
-  { "vr4300", PROCESSOR_R4300, 3, 0 },
-  { "r4400", PROCESSOR_R4000, 3, 0 },
-  { "r4600", PROCESSOR_R4600, 3, 0 },
-  { "orion", PROCESSOR_R4600, 3, 0 },
-  { "r4650", PROCESSOR_R4650, 3, 0 },
-  /* ST Loongson 2E/2F processors.  */
-  { "loongson2e", PROCESSOR_LOONGSON_2E, 3, PTF_AVOID_BRANCHLIKELY },
-  { "loongson2f", PROCESSOR_LOONGSON_2F, 3, PTF_AVOID_BRANCHLIKELY },
-
-  /* MIPS IV processors. */
-  { "r8000", PROCESSOR_R8000, 4, 0 },
-  { "r10000", PROCESSOR_R10000, 4, 0 },
-  { "r12000", PROCESSOR_R10000, 4, 0 },
-  { "r14000", PROCESSOR_R10000, 4, 0 },
-  { "r16000", PROCESSOR_R10000, 4, 0 },
-  { "vr5000", PROCESSOR_R5000, 4, 0 },
-  { "vr5400", PROCESSOR_R5400, 4, 0 },
-  { "vr5500", PROCESSOR_R5500, 4, PTF_AVOID_BRANCHLIKELY },
-  { "rm7000", PROCESSOR_R7000, 4, 0 },
-  { "rm9000", PROCESSOR_R9000, 4, 0 },
-
-  /* MIPS32 processors.  */
-  { "4kc", PROCESSOR_4KC, 32, 0 },
-  { "4km", PROCESSOR_4KC, 32, 0 },
-  { "4kp", PROCESSOR_4KP, 32, 0 },
-  { "4ksc", PROCESSOR_4KC, 32, 0 },
-
-  /* MIPS32 Release 2 processors.  */
-  { "m4k", PROCESSOR_M4K, 33, 0 },
-  { "4kec", PROCESSOR_4KC, 33, 0 },
-  { "4kem", PROCESSOR_4KC, 33, 0 },
-  { "4kep", PROCESSOR_4KP, 33, 0 },
-  { "4ksd", PROCESSOR_4KC, 33, 0 },
-
-  { "24kc", PROCESSOR_24KC, 33, 0 },
-  { "24kf2_1", PROCESSOR_24KF2_1, 33, 0 },
-  { "24kf", PROCESSOR_24KF2_1, 33, 0 },
-  { "24kf1_1", PROCESSOR_24KF1_1, 33, 0 },
-  { "24kfx", PROCESSOR_24KF1_1, 33, 0 },
-  { "24kx", PROCESSOR_24KF1_1, 33, 0 },
-
-  { "24kec", PROCESSOR_24KC, 33, 0 }, /* 24K with DSP.  */
-  { "24kef2_1", PROCESSOR_24KF2_1, 33, 0 },
-  { "24kef", PROCESSOR_24KF2_1, 33, 0 },
-  { "24kef1_1", PROCESSOR_24KF1_1, 33, 0 },
-  { "24kefx", PROCESSOR_24KF1_1, 33, 0 },
-  { "24kex", PROCESSOR_24KF1_1, 33, 0 },
-
-  { "34kc", PROCESSOR_24KC, 33, 0 }, /* 34K with MT/DSP.  */
-  { "34kf2_1", PROCESSOR_24KF2_1, 33, 0 },
-  { "34kf", PROCESSOR_24KF2_1, 33, 0 },
-  { "34kf1_1", PROCESSOR_24KF1_1, 33, 0 },
-  { "34kfx", PROCESSOR_24KF1_1, 33, 0 },
-  { "34kx", PROCESSOR_24KF1_1, 33, 0 },
-
-  { "74kc", PROCESSOR_74KC, 33, 0 }, /* 74K with DSPr2.  */
-  { "74kf2_1", PROCESSOR_74KF2_1, 33, 0 },
-  { "74kf", PROCESSOR_74KF2_1, 33, 0 },
-  { "74kf1_1", PROCESSOR_74KF1_1, 33, 0 },
-  { "74kfx", PROCESSOR_74KF1_1, 33, 0 },
-  { "74kx", PROCESSOR_74KF1_1, 33, 0 },
-  { "74kf3_2", PROCESSOR_74KF3_2, 33, 0 },
-
-  { "1004kc", PROCESSOR_24KC, 33, 0 }, /* 1004K with MT/DSP.  */
-  { "1004kf2_1", PROCESSOR_24KF2_1, 33, 0 },
-  { "1004kf", PROCESSOR_24KF2_1, 33, 0 },
-  { "1004kf1_1", PROCESSOR_24KF1_1, 33, 0 },
-
-  /* MIPS64 processors.  */
-  { "5kc", PROCESSOR_5KC, 64, 0 },
-  { "5kf", PROCESSOR_5KF, 64, 0 },
-  { "20kc", PROCESSOR_20KC, 64, PTF_AVOID_BRANCHLIKELY },
-  { "sb1", PROCESSOR_SB1, 64, PTF_AVOID_BRANCHLIKELY },
-  { "sb1a", PROCESSOR_SB1A, 64, PTF_AVOID_BRANCHLIKELY },
-  { "sr71000", PROCESSOR_SR71000, 64, PTF_AVOID_BRANCHLIKELY },
-  { "xlr", PROCESSOR_XLR, 64, 0 },
-  { "loongson3a", PROCESSOR_LOONGSON_3A, 64, PTF_AVOID_BRANCHLIKELY },
-
-  /* MIPS64 Release 2 processors.  */
-  { "octeon", PROCESSOR_OCTEON, 65, PTF_AVOID_BRANCHLIKELY }
+#define MIPS_CPU(NAME, CPU, ISA, FLAGS) \
+  { NAME, CPU, ISA, FLAGS },
+#include "mips-cpus.def"
+#undef MIPS_CPU
 };
 
 /* Default costs.  If these are used for a processor we should look
@@ -15320,91 +15208,48 @@ mips_cpu_info_from_isa (int isa)
   return NULL;
 }
 
-/* Return true if GIVEN is the same as CANONICAL, or if it is CANONICAL
-   with a final "000" replaced by "k".  Ignore case.
-
-   Note: this function is shared between GCC and GAS.  */
-
-static bool
-mips_strict_matching_cpu_name_p (const char *canonical, const char *given)
-{
-  while (*given != 0 && TOLOWER (*given) == TOLOWER (*canonical))
-    given++, canonical++;
-
-  return ((*given == 0 && *canonical == 0)
-	  || (strcmp (canonical, "000") == 0 && strcasecmp (given, "k") == 0));
-}
-
-/* Return true if GIVEN matches CANONICAL, where GIVEN is a user-supplied
-   CPU name.  We've traditionally allowed a lot of variation here.
-
-   Note: this function is shared between GCC and GAS.  */
-
-static bool
-mips_matching_cpu_name_p (const char *canonical, const char *given)
-{
-  /* First see if the name matches exactly, or with a final "000"
-     turned into "k".  */
-  if (mips_strict_matching_cpu_name_p (canonical, given))
-    return true;
-
-  /* If not, try comparing based on numerical designation alone.
-     See if GIVEN is an unadorned number, or 'r' followed by a number.  */
-  if (TOLOWER (*given) == 'r')
-    given++;
-  if (!ISDIGIT (*given))
-    return false;
-
-  /* Skip over some well-known prefixes in the canonical name,
-     hoping to find a number there too.  */
-  if (TOLOWER (canonical[0]) == 'v' && TOLOWER (canonical[1]) == 'r')
-    canonical += 2;
-  else if (TOLOWER (canonical[0]) == 'r' && TOLOWER (canonical[1]) == 'm')
-    canonical += 2;
-  else if (TOLOWER (canonical[0]) == 'r')
-    canonical += 1;
-
-  return mips_strict_matching_cpu_name_p (canonical, given);
-}
-
-/* Return the mips_cpu_info entry for the processor or ISA given
-   by CPU_STRING.  Return null if the string isn't recognized.
-
-   A similar function exists in GAS.  */
+/* Return a mips_cpu_info entry determined by an option valued
+   OPT.  */
 
 static const struct mips_cpu_info *
-mips_parse_cpu (const char *cpu_string)
+mips_cpu_info_from_opt (int opt)
 {
+  switch (opt)
+    {
+    case MIPS_ARCH_OPTION_FROM_ABI:
+      /* 'from-abi' selects the most compatible architecture for the
+	 given ABI: MIPS I for 32-bit ABIs and MIPS III for 64-bit
+	 ABIs.  For the EABIs, we have to decide whether we're using
+	 the 32-bit or 64-bit version.  */
+      return mips_cpu_info_from_isa (ABI_NEEDS_32BIT_REGS ? 1
+				     : ABI_NEEDS_64BIT_REGS ? 3
+				     : (TARGET_64BIT ? 3 : 1));
+
+    case MIPS_ARCH_OPTION_NATIVE:
+      gcc_unreachable ();
+
+    default:
+      return &mips_cpu_info_table[opt];
+    }
+}
+
+/* Return a default mips_cpu_info entry, given that no -march= option
+   was explicitly specified.  */
+
+static const struct mips_cpu_info *
+mips_default_arch (void)
+{
+#ifdef MIPS_CPU_STRING_DEFAULT
   unsigned int i;
-  const char *s;
-
-  /* In the past, we allowed upper-case CPU names, but it doesn't
-     work well with the multilib machinery.  */
-  for (s = cpu_string; *s != 0; s++)
-    if (ISUPPER (*s))
-      {
-	warning (0, "CPU names must be lower case");
-	break;
-      }
-
-  /* 'from-abi' selects the most compatible architecture for the given
-     ABI: MIPS I for 32-bit ABIs and MIPS III for 64-bit ABIs.  For the
-     EABIs, we have to decide whether we're using the 32-bit or 64-bit
-     version.  */
-  if (strcasecmp (cpu_string, "from-abi") == 0)
-    return mips_cpu_info_from_isa (ABI_NEEDS_32BIT_REGS ? 1
-				   : ABI_NEEDS_64BIT_REGS ? 3
-				   : (TARGET_64BIT ? 3 : 1));
-
-  /* 'default' has traditionally been a no-op.  Probably not very useful.  */
-  if (strcasecmp (cpu_string, "default") == 0)
-    return NULL;
-
   for (i = 0; i < ARRAY_SIZE (mips_cpu_info_table); i++)
-    if (mips_matching_cpu_name_p (mips_cpu_info_table[i].name, cpu_string))
+    if (strcmp (mips_cpu_info_table[i].name, MIPS_CPU_STRING_DEFAULT) == 0)
       return mips_cpu_info_table + i;
-
-  return NULL;
+  gcc_unreachable ();
+#else
+  /* 'from-abi' makes a good default: you get whatever the ABI
+     requires.  */
+  return mips_cpu_info_from_opt (MIPS_ARCH_OPTION_FROM_ABI);
+#endif
 }
 
 /* Set up globals to generate code for the ISA or processor
@@ -15436,26 +15281,16 @@ mips_set_tune (const struct mips_cpu_info *info)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-mips_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
+mips_handle_option (struct gcc_options *opts,
+		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		    const struct cl_decoded_option *decoded,
 		    location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
   const char *arg = decoded->arg;
 
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
   switch (code)
     {
-    case OPT_march_:
-    case OPT_mtune_:
-      return mips_parse_cpu (arg) != 0;
-
-    case OPT_mips:
-      mips_isa_option_info = mips_parse_cpu (ACONCAT (("mips", arg, NULL)));
-      return mips_isa_option_info != 0;
-
     case OPT_mno_flush_func:
       opts->x_mips_cache_flush_func = NULL;
       return true;
@@ -15471,6 +15306,9 @@ static void
 mips_option_override (void)
 {
   int i, start, regno, mode;
+
+  if (global_options_set.x_mips_isa_option)
+    mips_isa_option_info = &mips_cpu_info_table[mips_isa_option];
 
   /* Process flags as though we were generating non-MIPS16 code.  */
   mips_base_mips16 = TARGET_MIPS16;
@@ -15499,8 +15337,8 @@ mips_option_override (void)
      Similar code was added to GAS 2.14 (see tc-mips.c:md_after_parse_args()).
      The GAS and GCC code should be kept in sync as much as possible.  */
 
-  if (mips_arch_string != 0)
-    mips_set_architecture (mips_parse_cpu (mips_arch_string));
+  if (global_options_set.x_mips_arch_option)
+    mips_set_architecture (mips_cpu_info_from_opt (mips_arch_option));
 
   if (mips_isa_option_info != 0)
     {
@@ -15514,21 +15352,15 @@ mips_option_override (void)
     }
 
   if (mips_arch_info == 0)
-    {
-#ifdef MIPS_CPU_STRING_DEFAULT
-      mips_set_architecture (mips_parse_cpu (MIPS_CPU_STRING_DEFAULT));
-#else
-      mips_set_architecture (mips_cpu_info_from_isa (MIPS_ISA_DEFAULT));
-#endif
-    }
+    mips_set_architecture (mips_default_arch ());
 
   if (ABI_NEEDS_64BIT_REGS && !ISA_HAS_64BIT_REGS)
     error ("%<-march=%s%> is not compatible with the selected ABI",
 	   mips_arch_info->name);
 
   /* Optimize for mips_arch, unless -mtune selects a different processor.  */
-  if (mips_tune_string != 0)
-    mips_set_tune (mips_parse_cpu (mips_tune_string));
+  if (global_options_set.x_mips_tune_option)
+    mips_set_tune (mips_cpu_info_from_opt (mips_tune_option));
 
   if (mips_tune_info == 0)
     mips_set_tune (mips_arch_info);
@@ -15788,19 +15620,19 @@ mips_option_override (void)
   /* Default to working around R4000 errata only if the processor
      was selected explicitly.  */
   if ((target_flags_explicit & MASK_FIX_R4000) == 0
-      && mips_matching_cpu_name_p (mips_arch_info->name, "r4000"))
+      && strcmp (mips_arch_info->name, "r4000") == 0)
     target_flags |= MASK_FIX_R4000;
 
   /* Default to working around R4400 errata only if the processor
      was selected explicitly.  */
   if ((target_flags_explicit & MASK_FIX_R4400) == 0
-      && mips_matching_cpu_name_p (mips_arch_info->name, "r4400"))
+      && strcmp (mips_arch_info->name, "r4400") == 0)
     target_flags |= MASK_FIX_R4400;
 
   /* Default to working around R10000 errata only if the processor
      was selected explicitly.  */
   if ((target_flags_explicit & MASK_FIX_R10000) == 0
-      && mips_matching_cpu_name_p (mips_arch_info->name, "r10000"))
+      && strcmp (mips_arch_info->name, "r10000") == 0)
     target_flags |= MASK_FIX_R10000;
 
   /* Make sure that branch-likely instructions available when using

@@ -1,3 +1,28 @@
+2011-05-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/genopt.sh, config/mips/mips-cpus.def: New files.
+	* config/mips/mips-tables.opt: New file (generated).
+	* config.gcc (mips*-*-*): Add mips/mips-tables.opt to
+	extra_options.
+	* config/mips/mips-opts.h (MIPS_ARCH_OPTION_FROM_ABI,
+	MIPS_ARCH_OPTION_NATIVE): Define.
+	* config/mips/mips.c (mips_cpu_info_table): Move contents to
+	mips-cpus.def.
+	(mips_strict_matching_cpu_name_p, mips_matching_cpu_name_p,
+	mips_parse_cpu): Remove.
+	(mips_cpu_info_from_opt, mips_default_arch): New.
+	(mips_handle_option): Don't assert that global structures are in
+	use.  Don't handle OPT_march_, OPT_mtune_ and OPT_mips here.
+	(mips_option_override): Use new variables and functions to set
+	state of these options.  Use strcmp to check for individual CPU
+	names.
+	* config/mips/mips.h (MIPS_CPU_STRING_DEFAULT): Remove default
+	definition.
+	* config/mips/mips.opt (march=): Use ToLower and Enum.
+	(mips): Use ToLower, Enum and Var.
+	(mtune=): Use ToLower and Enum.
+	* config/mips/t-mips ($(srcdir)/config/mips/mips-tables.opt): New.
+
 2011-05-08  Jan Hubicka  <jh@suse.cz>
 
 	* gimple.c (type_pair_hash, type_pair_eq, lookup_type_pair):

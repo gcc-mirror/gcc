@@ -1,0 +1,147 @@
+/* MIPS CPU names.
+   Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
+   Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* A table describing all the processors GCC knows about.  The first
+   mention of an ISA level is taken as the canonical name for that
+   ISA.
+
+   To ease comparison, please keep this table in the same order
+   as GAS's mips_cpu_info_table.  Please also make sure that
+   MIPS_ISA_LEVEL_SPEC and MIPS_ARCH_FLOAT_SPEC handle all -march
+   options correctly.
+
+   Before including this file, define a macro:
+
+   MIPS_CPU (NAME, CPU, ISA, FLAGS)
+
+   where the arguments are the fields of struct mips_cpu_info.  */
+
+/* Entries for generic ISAs.  */
+MIPS_CPU ("mips1", PROCESSOR_R3000, 1, 0)
+MIPS_CPU ("mips2", PROCESSOR_R6000, 2, 0)
+MIPS_CPU ("mips3", PROCESSOR_R4000, 3, 0)
+MIPS_CPU ("mips4", PROCESSOR_R8000, 4, 0)
+/* Prefer not to use branch-likely instructions for generic MIPS32rX
+   and MIPS64rX code.  The instructions were officially deprecated
+   in revisions 2 and earlier, but revision 3 is likely to downgrade
+   that to a recommendation to avoid the instructions in code that
+   isn't tuned to a specific processor.  */
+MIPS_CPU ("mips32", PROCESSOR_4KC, 32, PTF_AVOID_BRANCHLIKELY)
+MIPS_CPU ("mips32r2", PROCESSOR_M4K, 33, PTF_AVOID_BRANCHLIKELY)
+MIPS_CPU ("mips64", PROCESSOR_5KC, 64, PTF_AVOID_BRANCHLIKELY)
+/* ??? For now just tune the generic MIPS64r2 for 5KC as well.   */
+MIPS_CPU ("mips64r2", PROCESSOR_5KC, 65, PTF_AVOID_BRANCHLIKELY)
+
+/* MIPS I processors.  */
+MIPS_CPU ("r3000", PROCESSOR_R3000, 1, 0)
+MIPS_CPU ("r2000", PROCESSOR_R3000, 1, 0)
+MIPS_CPU ("r3900", PROCESSOR_R3900, 1, 0)
+
+/* MIPS II processors.  */
+MIPS_CPU ("r6000", PROCESSOR_R6000, 2, 0)
+
+/* MIPS III processors.  */
+MIPS_CPU ("r4000", PROCESSOR_R4000, 3, 0)
+MIPS_CPU ("vr4100", PROCESSOR_R4100, 3, 0)
+MIPS_CPU ("vr4111", PROCESSOR_R4111, 3, 0)
+MIPS_CPU ("vr4120", PROCESSOR_R4120, 3, 0)
+MIPS_CPU ("vr4130", PROCESSOR_R4130, 3, 0)
+MIPS_CPU ("vr4300", PROCESSOR_R4300, 3, 0)
+MIPS_CPU ("r4400", PROCESSOR_R4000, 3, 0)
+MIPS_CPU ("r4600", PROCESSOR_R4600, 3, 0)
+MIPS_CPU ("orion", PROCESSOR_R4600, 3, 0)
+MIPS_CPU ("r4650", PROCESSOR_R4650, 3, 0)
+/* ST Loongson 2E/2F processors.  */
+MIPS_CPU ("loongson2e", PROCESSOR_LOONGSON_2E, 3, PTF_AVOID_BRANCHLIKELY)
+MIPS_CPU ("loongson2f", PROCESSOR_LOONGSON_2F, 3, PTF_AVOID_BRANCHLIKELY)
+
+/* MIPS IV processors. */
+MIPS_CPU ("r8000", PROCESSOR_R8000, 4, 0)
+MIPS_CPU ("r10000", PROCESSOR_R10000, 4, 0)
+MIPS_CPU ("r12000", PROCESSOR_R10000, 4, 0)
+MIPS_CPU ("r14000", PROCESSOR_R10000, 4, 0)
+MIPS_CPU ("r16000", PROCESSOR_R10000, 4, 0)
+MIPS_CPU ("vr5000", PROCESSOR_R5000, 4, 0)
+MIPS_CPU ("vr5400", PROCESSOR_R5400, 4, 0)
+MIPS_CPU ("vr5500", PROCESSOR_R5500, 4, PTF_AVOID_BRANCHLIKELY)
+MIPS_CPU ("rm7000", PROCESSOR_R7000, 4, 0)
+MIPS_CPU ("rm9000", PROCESSOR_R9000, 4, 0)
+
+/* MIPS32 processors.  */
+MIPS_CPU ("4kc", PROCESSOR_4KC, 32, 0)
+MIPS_CPU ("4km", PROCESSOR_4KC, 32, 0)
+MIPS_CPU ("4kp", PROCESSOR_4KP, 32, 0)
+MIPS_CPU ("4ksc", PROCESSOR_4KC, 32, 0)
+
+/* MIPS32 Release 2 processors.  */
+MIPS_CPU ("m4k", PROCESSOR_M4K, 33, 0)
+MIPS_CPU ("4kec", PROCESSOR_4KC, 33, 0)
+MIPS_CPU ("4kem", PROCESSOR_4KC, 33, 0)
+MIPS_CPU ("4kep", PROCESSOR_4KP, 33, 0)
+MIPS_CPU ("4ksd", PROCESSOR_4KC, 33, 0)
+
+MIPS_CPU ("24kc", PROCESSOR_24KC, 33, 0)
+MIPS_CPU ("24kf2_1", PROCESSOR_24KF2_1, 33, 0)
+MIPS_CPU ("24kf", PROCESSOR_24KF2_1, 33, 0)
+MIPS_CPU ("24kf1_1", PROCESSOR_24KF1_1, 33, 0)
+MIPS_CPU ("24kfx", PROCESSOR_24KF1_1, 33, 0)
+MIPS_CPU ("24kx", PROCESSOR_24KF1_1, 33, 0)
+
+MIPS_CPU ("24kec", PROCESSOR_24KC, 33, 0) /* 24K with DSP.  */
+MIPS_CPU ("24kef2_1", PROCESSOR_24KF2_1, 33, 0)
+MIPS_CPU ("24kef", PROCESSOR_24KF2_1, 33, 0)
+MIPS_CPU ("24kef1_1", PROCESSOR_24KF1_1, 33, 0)
+MIPS_CPU ("24kefx", PROCESSOR_24KF1_1, 33, 0)
+MIPS_CPU ("24kex", PROCESSOR_24KF1_1, 33, 0)
+
+MIPS_CPU ("34kc", PROCESSOR_24KC, 33, 0) /* 34K with MT/DSP.  */
+MIPS_CPU ("34kf2_1", PROCESSOR_24KF2_1, 33, 0)
+MIPS_CPU ("34kf", PROCESSOR_24KF2_1, 33, 0)
+MIPS_CPU ("34kf1_1", PROCESSOR_24KF1_1, 33, 0)
+MIPS_CPU ("34kfx", PROCESSOR_24KF1_1, 33, 0)
+MIPS_CPU ("34kx", PROCESSOR_24KF1_1, 33, 0)
+
+MIPS_CPU ("74kc", PROCESSOR_74KC, 33, 0) /* 74K with DSPr2.  */
+MIPS_CPU ("74kf2_1", PROCESSOR_74KF2_1, 33, 0)
+MIPS_CPU ("74kf", PROCESSOR_74KF2_1, 33, 0)
+MIPS_CPU ("74kf1_1", PROCESSOR_74KF1_1, 33, 0)
+MIPS_CPU ("74kfx", PROCESSOR_74KF1_1, 33, 0)
+MIPS_CPU ("74kx", PROCESSOR_74KF1_1, 33, 0)
+MIPS_CPU ("74kf3_2", PROCESSOR_74KF3_2, 33, 0)
+
+MIPS_CPU ("1004kc", PROCESSOR_24KC, 33, 0) /* 1004K with MT/DSP.  */
+MIPS_CPU ("1004kf2_1", PROCESSOR_24KF2_1, 33, 0)
+MIPS_CPU ("1004kf", PROCESSOR_24KF2_1, 33, 0)
+MIPS_CPU ("1004kf1_1", PROCESSOR_24KF1_1, 33, 0)
+
+/* MIPS64 processors.  */
+MIPS_CPU ("5kc", PROCESSOR_5KC, 64, 0)
+MIPS_CPU ("5kf", PROCESSOR_5KF, 64, 0)
+MIPS_CPU ("20kc", PROCESSOR_20KC, 64, PTF_AVOID_BRANCHLIKELY)
+MIPS_CPU ("sb1", PROCESSOR_SB1, 64, PTF_AVOID_BRANCHLIKELY)
+MIPS_CPU ("sb1a", PROCESSOR_SB1A, 64, PTF_AVOID_BRANCHLIKELY)
+MIPS_CPU ("sr71000", PROCESSOR_SR71000, 64, PTF_AVOID_BRANCHLIKELY)
+MIPS_CPU ("xlr", PROCESSOR_XLR, 64, 0)
+MIPS_CPU ("loongson3a", PROCESSOR_LOONGSON_3A, 64, PTF_AVOID_BRANCHLIKELY)
+
+/* MIPS64 Release 2 processors.  */
+MIPS_CPU ("octeon", PROCESSOR_OCTEON, 65, PTF_AVOID_BRANCHLIKELY)
