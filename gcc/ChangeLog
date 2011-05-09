@@ -1,3 +1,29 @@
+2011-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (const_pow2_1_to_2_operand): Remove.
+	(const_pow2_1_to_8_operand): Ditto.
+	(const_pow2_1_to_128_operand): Ditto.
+	(const_pow2_1_to_32768_operand): Ditto.
+	* config/i386/mmx.md (*mmx_pinsrw): Use const_int_operand instead of
+	const_pow2_1_to_8_operand for operand 3 predicate.  Use exact_log2
+	in insn constraint to check integer value of operand 3.
+	* config/i386/sse.md (*vec_setv4sf_sse4_1): Ditto.
+
+	(PINSR_MODE): New mode iterator.
+	(sse2p4_1): New mode attribute.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Merge insn from sse4_1_pinsrb,
+	sse2_pinsrw, sse4_1_pinsrd and sse4_1_pinsrq using PINSR_MODE mode
+	iterator.  Use const_int_operand instead of
+	const_pow2_1_to_{2,8,128,32768}_operand for operand 3 predicate.  Use
+	exact_log2 in insn constraint to check integer value of operand 3.
+
+2011-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (blendbits): Remove mode attribute.
+	(<sse4_1>_blend<ssemodesuffix><avxsizesuffix>): Use const_int_operand
+	instead of const_0_to_<blendbits>_operand for operand 3 predicate.
+	Check integer value of operand 3 in insn constraint.
+
 2011-05-09  Richard Guenther  <rguenther@suse.de>
 
 	* lto-symtab.c (lto_cgraph_replace_node): Use types_compatible_p
