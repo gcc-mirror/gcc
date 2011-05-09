@@ -1,3 +1,7 @@
+2011-05-04  Philipp Thomas  <pth@suse.de>
+	* config/mep/mep.c (mep_validate_vliw): Syntax description
+	should not be translated.
+
 2011-05-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/genopt.sh, config/mips/mips-cpus.def: New files.
