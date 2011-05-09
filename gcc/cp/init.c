@@ -1435,7 +1435,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
     {
       /* A brace-enclosed initializer for an aggregate.  In C++0x this can
 	 happen for direct-initialization, too.  */
-      init = digest_init (type, init);
+      init = digest_init (type, init, complain);
       init = build2 (INIT_EXPR, TREE_TYPE (exp), exp, init);
       TREE_SIDE_EFFECTS (init) = 1;
       finish_expr_stmt (init);
@@ -2378,7 +2378,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 			     "verify length of initializer-list");
 		}
 	      arraytype = build_cplus_array_type (type, domain);
-	      vecinit = digest_init (arraytype, vecinit);
+	      vecinit = digest_init (arraytype, vecinit, complain);
 	    }
 	  else if (*init)
             {

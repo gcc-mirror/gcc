@@ -2369,7 +2369,7 @@ finish_compound_literal (tree type, tree compound_literal,
   if (TREE_CODE (type) == ARRAY_TYPE
       && check_array_initializer (NULL_TREE, type, compound_literal))
     return error_mark_node;
-  compound_literal = reshape_init (type, compound_literal);
+  compound_literal = reshape_init (type, compound_literal, complain);
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == NULL_TREE)
     {
@@ -2378,7 +2378,7 @@ finish_compound_literal (tree type, tree compound_literal,
       if (type == error_mark_node)
 	return error_mark_node;
     }
-  compound_literal = digest_init (type, compound_literal);
+  compound_literal = digest_init (type, compound_literal, complain);
   /* Put static/constant array temporaries in static variables, but always
      represent class temporaries with TARGET_EXPR so we elide copies.  */
   if ((!at_function_scope_p () || CP_TYPE_CONST_P (type))

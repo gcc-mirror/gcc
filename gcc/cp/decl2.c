@@ -924,7 +924,7 @@ grokfield (const cp_declarator *declarator,
       else if (!processing_template_decl)
 	{
 	  if (TREE_CODE (init) == CONSTRUCTOR)
-	    init = digest_init (TREE_TYPE (value), init);
+	    init = digest_init (TREE_TYPE (value), init, tf_warning_or_error);
 	  init = maybe_constant_init (init);
 
 	  if (init != error_mark_node && !TREE_CONSTANT (init))

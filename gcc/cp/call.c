@@ -5670,7 +5670,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  expr = build2 (COMPLEX_EXPR, totype, real, imag);
 	  return fold_if_not_in_template (expr);
 	}
-      return get_target_expr (digest_init (totype, expr));
+      return get_target_expr (digest_init (totype, expr, complain));
 
     default:
       break;
@@ -6032,7 +6032,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
   arg = break_out_target_exprs (arg);
   if (TREE_CODE (arg) == CONSTRUCTOR)
     {
-      arg = digest_init (type, arg);
+      arg = digest_init (type, arg, tf_warning_or_error);
       arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
 					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);

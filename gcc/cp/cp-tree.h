@@ -4903,7 +4903,7 @@ extern tree cxx_comdat_group			(tree);
 extern bool cp_missing_noreturn_ok_p		(tree);
 extern void initialize_artificial_var		(tree, VEC(constructor_elt,gc) *);
 extern tree check_var_type			(tree, tree);
-extern tree reshape_init (tree, tree);
+extern tree reshape_init                        (tree, tree, tsubst_flags_t);
 extern tree next_initializable_field (tree);
 
 extern bool defer_mark_used_calls;
@@ -5669,7 +5669,7 @@ extern int abstract_virtuals_error_sfinae	(tree, tree, tsubst_flags_t);
 
 extern tree store_init_value			(tree, tree, int);
 extern void check_narrowing			(tree, tree);
-extern tree digest_init				(tree, tree);
+extern tree digest_init				(tree, tree, tsubst_flags_t);
 extern tree digest_init_flags			(tree, tree, int);
 extern tree build_scoped_ref			(tree, tree, tree *);
 extern tree build_x_arrow			(tree);

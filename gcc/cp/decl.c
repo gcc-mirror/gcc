@@ -4878,7 +4878,7 @@ typedef struct reshape_iterator_t
   constructor_elt *end;
 } reshape_iter;
 
-static tree reshape_init_r (tree, reshape_iter *, bool);
+static tree reshape_init_r (tree, reshape_iter *, bool, tsubst_flags_t);
 
 /* FIELD is a FIELD_DECL or NULL.  In the former case, the value
    returned is the next FIELD_DECL (possibly FIELD itself) that can be
@@ -4904,7 +4904,8 @@ next_initializable_field (tree field)
    the iterator within the constructor.  */
 
 static tree
-reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d)
+reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
+		      tsubst_flags_t complain)
 {
   tree new_init;
   bool sized_array_p = (max_index != NULL_TREE);
@@ -4936,7 +4937,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d)
       tree elt_init;
 
       check_array_designated_initializer (d->cur);
-      elt_init = reshape_init_r (elt_type, d, /*first_initializer_p=*/false);
+      elt_init = reshape_init_r (elt_type, d, /*first_initializer_p=*/false,
+				 complain);
       if (elt_init == error_mark_node)
 	return error_mark_node;
       CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init),
@@ -4952,7 +4954,7 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d)
    Parameters are the same of reshape_init_r.  */
 
 static tree
-reshape_init_array (tree type, reshape_iter *d)
+reshape_init_array (tree type, reshape_iter *d, tsubst_flags_t complain)
 {
   tree max_index = NULL_TREE;
 
@@ -4961,14 +4963,14 @@ reshape_init_array (tree type, reshape_iter *d)
   if (TYPE_DOMAIN (type))
     max_index = array_type_nelts (type);
 
-  return reshape_init_array_1 (TREE_TYPE (type), max_index, d);
+  return reshape_init_array_1 (TREE_TYPE (type), max_index, d, complain);
 }
 
 /* Subroutine of reshape_init_r, processes the initializers for vectors.
    Parameters are the same of reshape_init_r.  */
 
 static tree
-reshape_init_vector (tree type, reshape_iter *d)
+reshape_init_vector (tree type, reshape_iter *d, tsubst_flags_t complain)
 {
   tree max_index = NULL_TREE;
 
@@ -4979,8 +4981,9 @@ reshape_init_vector (tree type, reshape_iter *d)
       tree value = d->cur->value;
       if (!same_type_p (TREE_TYPE (value), type))
 	{
-	  error ("invalid type %qT as initializer for a vector of type %qT",
-		TREE_TYPE (d->cur->value), type);
+	  if (complain & tf_error)
+	    error ("invalid type %qT as initializer for a vector of type %qT",
+		   TREE_TYPE (d->cur->value), type);
 	  value = error_mark_node;
 	}
       ++d->cur;
@@ -4991,14 +4994,15 @@ reshape_init_vector (tree type, reshape_iter *d)
   if (TREE_CODE (type) == VECTOR_TYPE)
     max_index = size_int (TYPE_VECTOR_SUBPARTS (type) - 1);
 
-  return reshape_init_array_1 (TREE_TYPE (type), max_index, d);
+  return reshape_init_array_1 (TREE_TYPE (type), max_index, d, complain);
 }
 
 /* Subroutine of reshape_init_r, processes the initializers for classes
    or union. Parameters are the same of reshape_init_r.  */
 
 static tree
-reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
+reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
+		    tsubst_flags_t complain)
 {
   tree field;
   tree new_init;
@@ -5018,7 +5022,8 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
 	initializer-list {}.  */
       if (!first_initializer_p)
 	{
-	  error ("initializer for %qT must be brace-enclosed", type);
+	  if (complain & tf_error)
+	    error ("initializer for %qT must be brace-enclosed", type);
 	  return error_mark_node;
 	}
       return new_init;
@@ -5036,8 +5041,9 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
 
 	  if (!field || TREE_CODE (field) != FIELD_DECL)
 	    {
-	      error ("%qT has no non-static data member named %qD", type,
-		    d->cur->index);
+	      if (complain & tf_error)
+		error ("%qT has no non-static data member named %qD", type,
+		       d->cur->index);
 	      return error_mark_node;
 	    }
 	}
@@ -5047,7 +5053,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
 	break;
 
       field_init = reshape_init_r (TREE_TYPE (field), d,
-				   /*first_initializer_p=*/false);
+				   /*first_initializer_p=*/false, complain);
       if (field_init == error_mark_node)
 	return error_mark_node;
 
@@ -5074,7 +5080,8 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
    outermost CONSTRUCTOR node.  */
 
 static tree
-reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
+reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
+		tsubst_flags_t complain)
 {
   tree init = d->cur->value;
 
@@ -5089,7 +5096,12 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
       if (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  if (CONSTRUCTOR_NELTS (init) > 2)
-	    error ("too many initializers for %qT", type);
+	    {
+	      if (complain & tf_error)
+		error ("too many initializers for %qT", type);
+	      else
+		return error_mark_node;
+	    }
 	}
       else if (first_initializer_p && d->cur != d->end)
 	{
@@ -5116,7 +5128,8 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
 	{
 	  if (SCALAR_TYPE_P (type))
 	    {
-	      error ("braces around scalar initializer for type %qT", type);
+	      if (complain & tf_error)
+		error ("braces around scalar initializer for type %qT", type);
 	      init = error_mark_node;
 	    }
 	  else
@@ -5203,7 +5216,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
 	    {
 	      ++d->cur;
 	      gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (init));
-	      return reshape_init (type, init);
+	      return reshape_init (type, init, complain);
 	    }
 	}
 
@@ -5213,11 +5226,11 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
 
   /* Dispatch to specialized routines.  */
   if (CLASS_TYPE_P (type))
-    return reshape_init_class (type, d, first_initializer_p);
+    return reshape_init_class (type, d, first_initializer_p, complain);
   else if (TREE_CODE (type) == ARRAY_TYPE)
-    return reshape_init_array (type, d);
+    return reshape_init_array (type, d, complain);
   else if (TREE_CODE (type) == VECTOR_TYPE)
-    return reshape_init_vector (type, d);
+    return reshape_init_vector (type, d, complain);
   else
     gcc_unreachable();
 }
@@ -5238,7 +5251,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
    revised CONSTRUCTOR node is returned.  */
 
 tree
-reshape_init (tree type, tree init)
+reshape_init (tree type, tree init, tsubst_flags_t complain)
 {
   VEC(constructor_elt, gc) *v;
   reshape_iter d;
@@ -5257,14 +5270,19 @@ reshape_init (tree type, tree init)
   d.cur = VEC_index (constructor_elt, v, 0);
   d.end = d.cur + VEC_length (constructor_elt, v);
 
-  new_init = reshape_init_r (type, &d, true);
+  new_init = reshape_init_r (type, &d, true, complain);
   if (new_init == error_mark_node)
     return error_mark_node;
 
   /* Make sure all the element of the constructor were used. Otherwise,
      issue an error about exceeding initializers.  */
   if (d.cur != d.end)
-    error ("too many initializers for %qT", type);
+    {
+      if (complain & tf_error)
+	error ("too many initializers for %qT", type);
+      else
+	return error_mark_node;
+    }
 
   return new_init;
 }
@@ -5417,7 +5435,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 	      init = error_mark_node;
 	    }
 	  else
-	    init = reshape_init (type, init);	    
+	    init = reshape_init (type, init, tf_warning_or_error);	    
 	}
 
       /* If DECL has an array type without a specific bound, deduce the
