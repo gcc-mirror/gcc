@@ -2110,6 +2110,8 @@ if test "x$CXXFLAGS_FOR_TARGET" = x; then
 fi
 AC_SUBST(CXXFLAGS_FOR_TARGET)
 
+AC_SUBST(LDFLAGS_FOR_TARGET)
+
 # Handle --with-headers=XXX.  If the value is not "yes", the contents of
 # the named directory are copied to $(tooldir)/sys-include.
 if test x"${with_headers}" != x && test x"${with_headers}" != xno ; then
