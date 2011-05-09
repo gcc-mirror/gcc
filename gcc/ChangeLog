@@ -1,5 +1,10 @@
 2011-05-09  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sse.md (*vec_concatv4si): Merge from *vec_concatv4si_1
+	and *vec_concatv4si_1_avx.
+
+2011-05-09  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR rtl-optimization/48927
 	* ira-conflicts.c (commutative_constraint_p): Use
 	recog_data.alternative_enabled_p to disable alternatives where
