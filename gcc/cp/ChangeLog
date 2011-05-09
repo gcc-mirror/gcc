@@ -1,3 +1,9 @@
+2011-05-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48574
+	* class.c (fixed_type_or_null): Use type_dependent_p_push to test
+	if the instance has a dependent initializer.
+
 2011-05-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48909

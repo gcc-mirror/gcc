@@ -1,3 +1,8 @@
+2011-05-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48574
+	* g++.dg/template/dependent-expr8.C: New test case.
+
 2011-05-06  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-condition2.C: New.
