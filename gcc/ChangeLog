@@ -1,3 +1,10 @@
+2011-05-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/48853
+	* dwarf2out.c (mem_loc_descriptor) <case SUBREG>: If
+	POINTERS_EXTEND_UNSIGNED is defined, don't give up if mode is
+	Pmode and mem_mode is not VOIDmode.
+
 2011-05-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* tree.h (TYPE_UNQUALIFIED, TYPE_QUAL_CONST): Convert to enum.

@@ -13880,7 +13880,11 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	break;
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_CLASS (GET_MODE (SUBREG_REG (rtl))) == MODE_INT
-	  && GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE
+	  && (GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      || (mode == Pmode && mem_mode != VOIDmode)
+#endif
+	     )
 	  && GET_MODE_SIZE (GET_MODE (SUBREG_REG (rtl))) <= DWARF2_ADDR_SIZE)
 	{
 	  mem_loc_result = mem_loc_descriptor (SUBREG_REG (rtl),
