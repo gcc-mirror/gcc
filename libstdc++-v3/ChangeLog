@@ -1,3 +1,15 @@
+2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48933
+	* include/c_global/cmath (acosh, asinh, atanh, cbrt, copysign,
+	erf, erfc, exp2, expm1, fdim, fma, fmax, hypot, ilogb, lgamma,
+	llrint, llround, log1p, log2, logb, lrint, lround, nearbyint,
+	nextafter, nexttoward, remainder, remquo, rint, round, scalbln,
+	scalbn, tgamma, trunc): Use __enable_if on the return type.
+	* include/tr1/cmath: Likewise.
+	* testsuite/26_numerics/headers/cmath/overloads_c++0x_neg.cc: New.
+	* testsuite/tr1/8_c_compatibility/cmath/overloads_neg.cc: Likewise.
+
 2011-05-07  François Dumont  <francois.cppdevs@free.fr>
 
 	* include/debug/macro.h (_GLIBCXX_DEBUG_VERIFY_AT): New.
