@@ -634,6 +634,7 @@ target_configargs
 host_configargs
 build_configargs
 BUILD_CONFIG
+LDFLAGS_FOR_TARGET
 CXXFLAGS_FOR_TARGET
 CFLAGS_FOR_TARGET
 DEBUG_PREFIX_CFLAGS_FOR_TARGET
@@ -6623,6 +6624,8 @@ if test "x$CXXFLAGS_FOR_TARGET" = x; then
     *) CXXFLAGS_FOR_TARGET="-g $CXXFLAGS" ;;
   esac
 fi
+
+
 
 
 # Handle --with-headers=XXX.  If the value is not "yes", the contents of
