@@ -1,3 +1,7 @@
+2011-05-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+        * g++.dg/inherit/virtual9.C: New.
+
 2011-05-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/48574

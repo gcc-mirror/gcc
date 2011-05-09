@@ -938,7 +938,7 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
    VAR_DECLs or FUNCTION_DECLs) should do that directly.  */
 
 static cp_declarator *make_call_declarator
-  (cp_declarator *, tree, cp_cv_quals, tree, tree);
+  (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, tree, tree);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator
@@ -1103,6 +1103,7 @@ cp_declarator *
 make_call_declarator (cp_declarator *target,
 		      tree parms,
 		      cp_cv_quals cv_qualifiers,
+		      cp_virt_specifiers virt_specifiers,
 		      tree exception_specification,
 		      tree late_return_type)
 {
@@ -1112,6 +1113,7 @@ make_call_declarator (cp_declarator *target,
   declarator->declarator = target;
   declarator->u.function.parameters = parms;
   declarator->u.function.qualifiers = cv_qualifiers;
+  declarator->u.function.virt_specifiers = virt_specifiers;
   declarator->u.function.exception_specification = exception_specification;
   declarator->u.function.late_return_type = late_return_type;
   if (target)
@@ -1690,6 +1692,8 @@ static cp_declarator *cp_parser_direct_declarator
 static enum tree_code cp_parser_ptr_operator
   (cp_parser *, tree *, cp_cv_quals *);
 static cp_cv_quals cp_parser_cv_qualifier_seq_opt
+  (cp_parser *);
+static cp_virt_specifiers cp_parser_virt_specifier_seq_opt
   (cp_parser *);
 static tree cp_parser_late_return_type_opt
   (cp_parser *);
@@ -7665,6 +7669,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     quals = (LAMBDA_EXPR_MUTABLE_P (lambda_expr)
 	     ? TYPE_UNQUALIFIED : TYPE_QUAL_CONST);
     declarator = make_call_declarator (declarator, param_list, quals,
+				       VIRT_SPEC_UNSPECIFIED,
 				       exception_spec,
                                        /*late_return_type=*/NULL_TREE);
     declarator->id_loc = LAMBDA_EXPR_LOCATION (lambda_expr);
@@ -14894,6 +14899,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      if (member_p || cp_parser_parse_definitely (parser))
 		{
 		  cp_cv_quals cv_quals;
+		  cp_virt_specifiers virt_specifiers;
 		  tree exception_specification;
 		  tree late_return;
 
@@ -14910,6 +14916,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* And the exception-specification.  */
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser);
+		  /* Parse the virt-specifier-seq.  */
+		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
 
 		  late_return
 		    = cp_parser_late_return_type_opt (parser);
@@ -14918,6 +14926,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  declarator = make_call_declarator (declarator,
 						     params,
 						     cv_quals,
+						     virt_specifiers,
 						     exception_specification,
 						     late_return);
 		  /* Any subsequent parameter lists are to do with
@@ -15423,6 +15432,53 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
     }
 
   return cv_quals;
+}
+
+/* Parse an (optional) virt-specifier-seq.
+
+   virt-specifier-seq:
+     virt-specifier virt-specifier-seq [opt]
+
+   virt-specifier:
+     override
+     final
+
+   Returns a bitmask representing the virt-specifiers.  */
+
+static cp_virt_specifiers
+cp_parser_virt_specifier_seq_opt (cp_parser* parser)
+{
+  cp_virt_specifiers virt_specifiers = VIRT_SPEC_UNSPECIFIED;
+
+  while (true)
+    {
+      cp_token *token;
+      cp_virt_specifiers virt_specifier;
+
+      /* Peek at the next token.  */
+      token = cp_lexer_peek_token (parser->lexer);
+      /* See if it's a virt-specifier-qualifier.  */
+      if (token->type != CPP_NAME)
+        break;
+      if (!strcmp (IDENTIFIER_POINTER(token->u.value), "override"))
+	virt_specifier = VIRT_SPEC_OVERRIDE;
+      else if (!strcmp (IDENTIFIER_POINTER(token->u.value), "final"))
+	virt_specifier = VIRT_SPEC_FINAL;
+      else
+	break;
+
+      if (virt_specifiers & virt_specifier)
+	{
+	  error_at (token->location, "duplicate virt-specifier");
+	  cp_lexer_purge_token (parser->lexer);
+	}
+      else
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  virt_specifiers |= virt_specifier;
+	}
+    }
+  return virt_specifiers;
 }
 
 /* Parse a late-specified return type, if any.  This is not a separate

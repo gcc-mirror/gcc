@@ -2477,6 +2477,11 @@ check_for_override (tree decl, tree ctype)
       if (DECL_DESTRUCTOR_P (decl))
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype) = true;
     }
+  else if (DECL_OVERRIDE_P (decl))
+    {
+      DECL_VINDEX (decl) = error_mark_node;
+      error ("%q+#D marked override, but does not override", decl);
+    }
 }
 
 /* Warn about hidden virtual functions that are not overridden in t.
