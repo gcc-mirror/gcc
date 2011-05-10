@@ -1,3 +1,10 @@
+2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (def_fn_type): Don't call build_function_type, call
+	build_function_type_array or build_varargs_function_type_array
+	instead.
+	(c_common_nodes_and_builtins): Likewise.
+
 2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.c (c_add_case_label): Omit the loc argument to

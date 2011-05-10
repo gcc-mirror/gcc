@@ -4414,7 +4414,8 @@ static tree builtin_types[(int) BT_LAST + 1];
 static void
 def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
 {
-  tree args = NULL, t;
+  tree t;
+  tree *args = XALLOCAVEC (tree, n);
   va_list list;
   int i;
 
@@ -4425,18 +4426,17 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
       t = builtin_types[a];
       if (t == error_mark_node)
 	goto egress;
-      args = tree_cons (NULL_TREE, t, args);
+      args[i] = t;
     }
   va_end (list);
-
-  args = nreverse (args);
-  if (!var)
-    args = chainon (args, void_list_node);
 
   t = builtin_types[ret];
   if (t == error_mark_node)
     goto egress;
-  t = build_function_type (t, args);
+  if (var)
+    t = build_varargs_function_type_array (t, n, args);
+  else
+    t = build_function_type_array (t, n, args);
 
  egress:
   builtin_types[def] = t;
@@ -4931,7 +4931,8 @@ c_common_nodes_and_builtins (void)
     uintptr_type_node =
       TREE_TYPE (identifier_global_value (c_get_ident (UINTPTR_TYPE)));
 
-  default_function_type = build_function_type (integer_type_node, NULL_TREE);
+  default_function_type
+    = build_varargs_function_type_list (integer_type_node, NULL_TREE);
   ptrdiff_type_node
     = TREE_TYPE (identifier_global_value (get_identifier (PTRDIFF_TYPE)));
   unsigned_ptrdiff_type_node = c_common_unsigned_type (ptrdiff_type_node);

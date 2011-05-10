@@ -1,3 +1,9 @@
+2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c (def_fn_type): Don't call build_function_type, call
+	build_function_type_array or build_varargs_function_type_array
+	instead.
+
 2011-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto-lang.c (global_bindings_p): Return bool.
