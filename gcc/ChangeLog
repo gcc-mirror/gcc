@@ -1,3 +1,8 @@
+2011-05-10  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_memory_move_cost): Reduce the cost for
+	stores.
+
 2011-05-10  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.h (JUMP_ALIGN, LABEL_ALIGN, LOOP_ALIGN): Define.
