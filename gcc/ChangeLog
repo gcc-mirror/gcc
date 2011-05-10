@@ -1,5 +1,9 @@
 2011-05-10  Joseph Myers  <joseph@codesourcery.com>
 
+	* doc/sourcebuild.texi (Back End): Mention contrib/config-list.mk.
+
+2011-05-10  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/rs6000/genopt.sh, config/rs6000/rs6000-cpus.def: New
 	files.
 	* config/rs6000/rs6000-tables.opt: New file (generated).
