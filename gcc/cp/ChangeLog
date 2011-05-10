@@ -1,3 +1,10 @@
+2011-05-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Fixes for override/final.
+	* class.c (check_for_override): Diagnose final on a nonvirtual
+	member function, diagnose override for a virtual with no matching
+	override. Don't fiddle around with DECL_VINDEX.
+
 2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
 
         * cp-tree.def (EXPR_PACK_EXPANSION): Add an operand.
