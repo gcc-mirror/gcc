@@ -1,3 +1,30 @@
+2011-05-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2011-05-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/48857, 48495
+	* config/rs6000/rs6000.h (VSX_SCALAR_MODE): Delete.
+	(VSX_MODE): Ditto.
+	(VSX_MOVE_MODE): Ditto.
+	(ALTIVEC_OR_VSX_VECTOR_MODE): New macro, combine all Altivec and
+	VSX vector types.  Add V2DImode.
+	(HARD_REGNO_CALLER_SAVE_MODE): Use it instead of
+	ALTIVEC_VECTOR_MODE and VSX_VECTOR_MODE calls.
+	(MODES_TIEABLE_P): Ditto.
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Use
+	ALTIVEC_OR_VSX_MODE instead of ALTIVEC_VECTOR_MODE and
+	VSX_VECTOR_MODE.
+	(init_cumulative_args): Ditto.
+	(rs6000_function_arg_boundary): Ditto.
+	(rs6000_function_arg_advance_1): Ditto.
+	(rs6000_function_arg): Ditto.
+	(rs6000_function_ok_for_sibcall): Ditto.
+	(emit_frame_save): Ditto.
+	(rs6000_function_value): Ditto.
+	(rs6000_libcall_value): Ditto.
+
 2011-05-10  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_memory_move_cost): Reduce the cost for

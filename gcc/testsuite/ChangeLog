@@ -1,3 +1,12 @@
+2011-05-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2011-05-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/48857
+	* gcc.target/powerpc/pr48857.c: New file, make sure V2DI arguments
+	are passed and returned in vector registers.
+
 2011-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
