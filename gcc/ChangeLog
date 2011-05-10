@@ -1,3 +1,18 @@
+2011-05-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (libgcc_tm_file): Define instead of including files
+	from ../../libgcc/config/ in tm_file.
+	* configure.ac (libgcc_tm_file_list, libgcc_tm_include_list):
+	Define.
+	* configure: Regenerate.
+	* Makefile.in (libgcc_tm_file_list, libgcc_tm_include_list,
+	libgcc_tm.h, cs-libgcc_tm.h): New.
+	(TM_H): Include libgcc_tm.h and $(libgcc_tm_file_list).
+	(clean): Remove libgcc_tm.h.
+	* config/arm/symbian.h (RENAME_LIBRARY): Remove.
+	* mkconfig.sh: Include libgcc_tm.h in tm.h if USED_FOR_TARGET.
+	* system.h (DECLARE_LIBRARY_RENAMES): Poison.
+
 2011-05-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/48896
