@@ -1,3 +1,8 @@
+2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.def (CASE_LABEL_EXPR): Add an operand.
+	* tree.h (CASE_CHAIN): Use TREE_OPERAND instead of TREE_CHAIN.
+
 2011-05-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (c_override_global_bindings_to_false): Remove.

@@ -863,7 +863,7 @@ DEFTREECODE (SWITCH_EXPR, "switch_expr", tcc_statement, 3)
    CASE_HIGH, respectively. If CASE_LOW is NULL_TREE, the label is a
    'default' label. If CASE_HIGH is NULL_TREE, the label is a normal case
    label.  CASE_LABEL is the corresponding LABEL_DECL.  */
-DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", tcc_statement, 3)
+DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", tcc_statement, 4)
 
 /* Used to represent an inline assembly statement.  ASM_STRING returns a
    STRING_CST for the instruction (e.g., "mov x, y"). ASM_OUTPUTS,
