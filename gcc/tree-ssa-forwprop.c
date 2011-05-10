@@ -1938,6 +1938,166 @@ out:
   return false;
 }
 
+/* Combine two conversions in a row for the second conversion at *GSI.
+   Returns true if there were any changes made.  */
+ 
+static bool
+combine_conversions (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  gimple def_stmt;
+  tree op0, lhs;
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+
+  gcc_checking_assert (CONVERT_EXPR_CODE_P (code)
+		       || code == FLOAT_EXPR
+		       || code == FIX_TRUNC_EXPR);
+
+  lhs = gimple_assign_lhs (stmt);
+  op0 = gimple_assign_rhs1 (stmt);
+  if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (op0)))
+    {
+      gimple_assign_set_rhs_code (stmt, TREE_CODE (op0));
+      return true;
+    }
+
+  if (TREE_CODE (op0) != SSA_NAME)
+    return false;
+
+  def_stmt = SSA_NAME_DEF_STMT (op0);
+  if (!is_gimple_assign (def_stmt))
+    return false;
+
+  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
+    {
+      tree defop0 = gimple_assign_rhs1 (def_stmt);
+      tree type = TREE_TYPE (lhs);
+      tree inside_type = TREE_TYPE (defop0);
+      tree inter_type = TREE_TYPE (op0);
+      int inside_int = INTEGRAL_TYPE_P (inside_type);
+      int inside_ptr = POINTER_TYPE_P (inside_type);
+      int inside_float = FLOAT_TYPE_P (inside_type);
+      int inside_vec = TREE_CODE (inside_type) == VECTOR_TYPE;
+      unsigned int inside_prec = TYPE_PRECISION (inside_type);
+      int inside_unsignedp = TYPE_UNSIGNED (inside_type);
+      int inter_int = INTEGRAL_TYPE_P (inter_type);
+      int inter_ptr = POINTER_TYPE_P (inter_type);
+      int inter_float = FLOAT_TYPE_P (inter_type);
+      int inter_vec = TREE_CODE (inter_type) == VECTOR_TYPE;
+      unsigned int inter_prec = TYPE_PRECISION (inter_type);
+      int inter_unsignedp = TYPE_UNSIGNED (inter_type);
+      int final_int = INTEGRAL_TYPE_P (type);
+      int final_ptr = POINTER_TYPE_P (type);
+      int final_float = FLOAT_TYPE_P (type);
+      int final_vec = TREE_CODE (type) == VECTOR_TYPE;
+      unsigned int final_prec = TYPE_PRECISION (type);
+      int final_unsignedp = TYPE_UNSIGNED (type);
+
+      /* In addition to the cases of two conversions in a row
+	 handled below, if we are converting something to its own
+	 type via an object of identical or wider precision, neither
+	 conversion is needed.  */
+      if (useless_type_conversion_p (type, inside_type)
+	  && (((inter_int || inter_ptr) && final_int)
+	      || (inter_float && final_float))
+	  && inter_prec >= final_prec)
+	{
+	  gimple_assign_set_rhs1 (stmt, unshare_expr (defop0));
+	  gimple_assign_set_rhs_code (stmt, TREE_CODE (defop0));
+	  update_stmt (stmt);
+	  return true;
+	}
+
+      /* Likewise, if the intermediate and initial types are either both
+	 float or both integer, we don't need the middle conversion if the
+	 former is wider than the latter and doesn't change the signedness
+	 (for integers).  Avoid this if the final type is a pointer since
+	 then we sometimes need the middle conversion.  Likewise if the
+	 final type has a precision not equal to the size of its mode.  */
+      if (((inter_int && inside_int)
+	   || (inter_float && inside_float)
+	   || (inter_vec && inside_vec))
+	  && inter_prec >= inside_prec
+	  && (inter_float || inter_vec
+	      || inter_unsignedp == inside_unsignedp)
+	  && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+		&& TYPE_MODE (type) == TYPE_MODE (inter_type))
+	  && ! final_ptr
+	  && (! final_vec || inter_prec == inside_prec))
+	{
+	  gimple_assign_set_rhs1 (stmt, defop0);
+	  update_stmt (stmt);
+	  return true;
+	}
+
+      /* If we have a sign-extension of a zero-extended value, we can
+	 replace that by a single zero-extension.  */
+      if (inside_int && inter_int && final_int
+	  && inside_prec < inter_prec && inter_prec < final_prec
+	  && inside_unsignedp && !inter_unsignedp)
+	{
+	  gimple_assign_set_rhs1 (stmt, defop0);
+	  update_stmt (stmt);
+	  return true;
+	}
+
+      /* Two conversions in a row are not needed unless:
+	 - some conversion is floating-point (overstrict for now), or
+	 - some conversion is a vector (overstrict for now), or
+	 - the intermediate type is narrower than both initial and
+	 final, or
+	 - the intermediate type and innermost type differ in signedness,
+	 and the outermost type is wider than the intermediate, or
+	 - the initial type is a pointer type and the precisions of the
+	 intermediate and final types differ, or
+	 - the final type is a pointer type and the precisions of the
+	 initial and intermediate types differ.  */
+      if (! inside_float && ! inter_float && ! final_float
+	  && ! inside_vec && ! inter_vec && ! final_vec
+	  && (inter_prec >= inside_prec || inter_prec >= final_prec)
+	  && ! (inside_int && inter_int
+		&& inter_unsignedp != inside_unsignedp
+		&& inter_prec < final_prec)
+	  && ((inter_unsignedp && inter_prec > inside_prec)
+	      == (final_unsignedp && final_prec > inter_prec))
+	  && ! (inside_ptr && inter_prec != final_prec)
+	  && ! (final_ptr && inside_prec != inter_prec)
+	  && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+		&& TYPE_MODE (type) == TYPE_MODE (inter_type)))
+	{
+	  gimple_assign_set_rhs1 (stmt, defop0);
+	  update_stmt (stmt);
+	  return true;
+	}
+
+      /* A truncation to an unsigned type should be canonicalized as
+	 bitwise and of a mask.  */
+      if (final_int && inter_int && inside_int
+	  && final_prec == inside_prec
+	  && final_prec > inter_prec
+	  && inter_unsignedp)
+	{
+	  tree tem;
+	  tem = fold_build2 (BIT_AND_EXPR, inside_type,
+			     defop0,
+			     double_int_to_tree
+			       (inside_type, double_int_mask (inter_prec)));
+	  if (!useless_type_conversion_p (type, inside_type))
+	    {
+	      tem = force_gimple_operand_gsi (gsi, tem, true, NULL_TREE, true,
+					      GSI_SAME_STMT);
+	      gimple_assign_set_rhs1 (stmt, tem);
+	    }
+	  else
+	    gimple_assign_set_rhs_from_tree (gsi, tem);
+	  update_stmt (gsi_stmt (*gsi));
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 /* Main entry point for the forward propagation optimizer.  */
 
 static unsigned int
@@ -2060,6 +2220,13 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		{
 		  cfg_changed |= associate_plusminus (stmt);
 		  gsi_next (&gsi);
+		}
+	      else if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+		       || gimple_assign_rhs_code (stmt) == FLOAT_EXPR
+		       || gimple_assign_rhs_code (stmt) == FIX_TRUNC_EXPR)
+		{
+		  if (!combine_conversions (&gsi))
+		    gsi_next (&gsi);
 		}
 	      else
 		gsi_next (&gsi);

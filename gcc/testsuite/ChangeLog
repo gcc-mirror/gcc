@@ -1,3 +1,12 @@
+2011-05-10  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-2.c: Disable forwprop.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-5.c: Likewise.
+	* gcc.dg/tree-ssa/scev-cast.c: Adjust.  Note what transformation
+	applies.
+
 2011-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48611
