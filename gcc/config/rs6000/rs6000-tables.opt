@@ -1,0 +1,205 @@
+; -*- buffer-read-only: t -*-
+; Generated automatically by genopt.sh from rs6000-cpus.def.
+
+; Copyright (C) 2011 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+Enum
+Name(rs6000_cpu_opt_value) Type(int)
+Known CPUs (for use with the -mcpu= and -mtune= options):
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(native) Value(RS6000_CPU_OPTION_NATIVE) DriverOnly
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(401) Value(0)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(403) Value(1)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(405) Value(2)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(405fp) Value(3)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(440) Value(4)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(440fp) Value(5)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(464) Value(6)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(464fp) Value(7)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(476) Value(8)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(476fp) Value(9)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(505) Value(10)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(601) Value(11)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(602) Value(12)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(603) Value(13)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(603e) Value(14)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(604) Value(15)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(604e) Value(16)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(620) Value(17)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(630) Value(18)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(740) Value(19)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(7400) Value(20)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(7450) Value(21)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(750) Value(22)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(801) Value(23)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(821) Value(24)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(823) Value(25)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(8540) Value(26)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(8548) Value(27)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(a2) Value(28)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(e300c2) Value(29)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(e300c3) Value(30)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(e500mc) Value(31)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(e500mc64) Value(32)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(860) Value(33)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(970) Value(34)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(cell) Value(35)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(common) Value(36)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(ec603e) Value(37)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(G3) Value(38)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(G4) Value(39)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(G5) Value(40)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(titan) Value(41)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(power) Value(42)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(power2) Value(43)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(power3) Value(44)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(power4) Value(45)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(power5) Value(46)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(power5+) Value(47)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(power6) Value(48)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(power6x) Value(49)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(power7) Value(50)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(powerpc) Value(51)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(powerpc64) Value(52)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(rios) Value(53)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(rios1) Value(54)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(rios2) Value(55)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(rsc) Value(56)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(rsc1) Value(57)
+
+EnumValue
+Enum(rs6000_cpu_opt_value) String(rs64) Value(58)
+

@@ -79,14 +79,6 @@ enum rs6000_cmodel rs6000_current_cmodel = CMODEL_SMALL
 TargetVariable
 unsigned int rs6000_recip_control
 
-;; -mcpu=<xxx> as an index into the processor_target_table or -1
-TargetVariable
-int rs6000_cpu_index = -1
-
-;; -mtune=<xxx> as an index into the processor_target_table or -1
-TargetVariable
-int rs6000_tune_index = -1
-
 ;; Debug flags
 TargetVariable
 unsigned int rs6000_debug
@@ -402,11 +394,11 @@ mabi=ibmlongdouble
 Target RejectNegative Undocumented Warn(using IBM extended precision long double) Var(rs6000_ieeequad, 0)
 
 mcpu=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(rs6000_cpu_index) Init(-1) Enum(rs6000_cpu_opt_value) Save
 -mcpu=	Use features of and schedule code for given CPU
 
 mtune=
-Target RejectNegative Joined
+Target RejectNegative Joined Var(rs6000_tune_index) Init(-1) Enum(rs6000_cpu_opt_value) Save
 -mtune=	Schedule code for given CPU
 
 mtraceback=

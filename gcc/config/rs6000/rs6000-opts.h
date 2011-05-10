@@ -1,6 +1,6 @@
 /* Definitions of target machine needed for option handling for GNU compiler,
    for IBM RS/6000.
-   Copyright (C) 2010
+   Copyright (C) 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
@@ -140,5 +140,10 @@ enum rs6000_vector {
   VECTOR_SPE,			/* Use SPE for vector processing */
   VECTOR_OTHER			/* Some other vector unit */
 };
+
+/* No enumeration is defined to index the -mcpu= values (entries in
+   processor_target_table), with the type int being used instead, but
+   we need to distinguish the special "native" value.  */
+#define RS6000_CPU_OPTION_NATIVE -1
 
 #endif

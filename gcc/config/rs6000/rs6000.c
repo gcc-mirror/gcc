@@ -138,16 +138,6 @@ typedef struct GTY(()) machine_function
   rtx sdmode_stack_slot;
 } machine_function;
 
-/* Target cpu type */
-
-struct rs6000_cpu_select rs6000_select[3] =
-{
-  /* switch		name,			tune	arch */
-  { (const char *)0,	"--with-cpu=",		1,	1 },
-  { (const char *)0,	"-mcpu=",		1,	1 },
-  { (const char *)0,	"-mtune=",		1,	0 },
-};
-
 /* Support targetm.vectorize.builtin_mask_for_load.  */
 static GTY(()) tree altivec_builtin_mask_for_load;
 
@@ -1697,14 +1687,6 @@ enum {
 			  | MASK_VSX)
 };
 
-/* This table occasionally claims that a processor does not support a
-   particular feature even though it does, but the feature is slower than the
-   alternative.  Thus, it shouldn't be relied on as a complete description of
-   the processor's support.
-
-   Please keep this list in order, and don't forget to update the documentation
-   in invoke.texi when adding a new processor or flag.  */
-
 struct rs6000_ptt
 {
   const char *const name;		/* Canonical processor name.  */
@@ -1714,110 +1696,9 @@ struct rs6000_ptt
 
 static struct rs6000_ptt const processor_target_table[] =
 {
-  {"401", PROCESSOR_PPC403, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-  {"403", PROCESSOR_PPC403,
-   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_STRICT_ALIGN},
-  {"405", PROCESSOR_PPC405,
-   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
-  {"405fp", PROCESSOR_PPC405,
-   POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
-  {"440", PROCESSOR_PPC440,
-   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
-  {"440fp", PROCESSOR_PPC440,
-   POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
-  {"464", PROCESSOR_PPC440,
-   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
-  {"464fp", PROCESSOR_PPC440,
-   POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
-  {"476", PROCESSOR_PPC476,
-   POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_PPC_GFXOPT | MASK_MFCRF
-   | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_MULHW | MASK_DLMZB},
-  {"476fp", PROCESSOR_PPC476,
-   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_MFCRF | MASK_POPCNTB
-   | MASK_FPRND | MASK_CMPB | MASK_MULHW | MASK_DLMZB},
-  {"505", PROCESSOR_MPCCORE, POWERPC_BASE_MASK},
-  {"601", PROCESSOR_PPC601,
-   MASK_POWER | POWERPC_BASE_MASK | MASK_MULTIPLE | MASK_STRING},
-  {"602", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-  {"603", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-  {"603e", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-  {"604", PROCESSOR_PPC604, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-  {"604e", PROCESSOR_PPC604e, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-  {"620", PROCESSOR_PPC620,
-   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
-  {"630", PROCESSOR_PPC630,
-   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
-  {"740", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-  {"7400", PROCESSOR_PPC7400, POWERPC_7400_MASK},
-  {"7450", PROCESSOR_PPC7450, POWERPC_7400_MASK},
-  {"750", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-  {"801", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-  {"821", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-  {"823", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-  {"8540", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN
-   | MASK_ISEL},
-  /* 8548 has a dummy entry for now.  */
-  {"8548", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN
-   | MASK_ISEL},
-  {"a2", PROCESSOR_PPCA2,
-   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_POPCNTB
-   | MASK_CMPB | MASK_NO_UPDATE },
-  {"e300c2", PROCESSOR_PPCE300C2, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-  {"e300c3", PROCESSOR_PPCE300C3, POWERPC_BASE_MASK},
-  {"e500mc", PROCESSOR_PPCE500MC, POWERPC_BASE_MASK | MASK_PPC_GFXOPT
-   | MASK_ISEL},
-  {"e500mc64", PROCESSOR_PPCE500MC64, POWERPC_BASE_MASK | MASK_POWERPC64
-   | MASK_PPC_GFXOPT | MASK_ISEL},
-  {"860", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-  {"970", PROCESSOR_POWER4,
-   POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
-  {"cell", PROCESSOR_CELL,
-   POWERPC_7400_MASK  | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
-  {"common", PROCESSOR_COMMON, MASK_NEW_MNEMONICS},
-  {"ec603e", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
-  {"G3", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
-  {"G4",  PROCESSOR_PPC7450, POWERPC_7400_MASK},
-  {"G5", PROCESSOR_POWER4,
-   POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
-  {"titan", PROCESSOR_TITAN,
-   POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
-  {"power", PROCESSOR_POWER, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-  {"power2", PROCESSOR_POWER,
-   MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING},
-  {"power3", PROCESSOR_PPC630,
-   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
-  {"power4", PROCESSOR_POWER4,
-   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-   | MASK_MFCRF},
-  {"power5", PROCESSOR_POWER5,
-   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-   | MASK_MFCRF | MASK_POPCNTB},
-  {"power5+", PROCESSOR_POWER5,
-   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-   | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND},
-  {"power6", PROCESSOR_POWER6,
-   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-   | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP
-   | MASK_RECIP_PRECISION},
-  {"power6x", PROCESSOR_POWER6,
-   POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
-   | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP
-   | MASK_MFPGPR | MASK_RECIP_PRECISION},
-  {"power7", PROCESSOR_POWER7,   /* Don't add MASK_ISEL by default */
-   POWERPC_7400_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_MFCRF
-   | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP | MASK_POPCNTD
-   | MASK_VSX | MASK_RECIP_PRECISION},
-  {"powerpc", PROCESSOR_POWERPC, POWERPC_BASE_MASK},
-  {"powerpc64", PROCESSOR_POWERPC64,
-   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
-  {"rios", PROCESSOR_RIOS1, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-  {"rios1", PROCESSOR_RIOS1, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-  {"rios2", PROCESSOR_RIOS2,
-   MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING},
-  {"rsc", PROCESSOR_PPC601, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-  {"rsc1", PROCESSOR_PPC601, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
-  {"rs64", PROCESSOR_RS64A,
-   POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64}
+#define RS6000_CPU(NAME, CPU, FLAGS) { NAME, CPU, FLAGS },
+#include "rs6000-cpus.def"
+#undef RS6000_CPU
 };
 
 /* Look up a processor name for -mcpu=xxx and -mtune=xxx.  Return -1 if the
@@ -2625,7 +2506,7 @@ darwin_rs6000_override_options (void)
       && !flag_apple_kext
       && strverscmp (darwin_macosx_version_min, "10.5") >= 0
       && ! (target_flags_explicit & MASK_ALTIVEC)
-      && ! rs6000_select[1].string)
+      && ! global_options_set.x_rs6000_cpu_index)
     {
       target_flags |= MASK_ALTIVEC;
     }
@@ -2983,7 +2864,7 @@ rs6000_option_override_internal (bool global_init_p)
       if ((target_flags & MASK_STRING) != 0)
 	target_flags = target_flags & ~MASK_STRING;
     }
-  else if (rs6000_select[1].string != NULL)
+  else if (global_options_set.x_rs6000_cpu_index)
     {
       /* For the powerpc-eabispe configuration, we set all these by
 	 default, so let's unset them if we manually set another
@@ -4181,9 +4062,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
   const char *arg = decoded->arg;
   int value = decoded->value;
 
-  gcc_assert (opts == &global_options);
-  gcc_assert (opts_set == &global_options_set);
-
   switch (code)
     {
     case OPT_mno_power:
@@ -4349,20 +4227,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_rs6000_altivec_abi = 0;
       break;
 
-    case OPT_mcpu_:
-      rs6000_select[1].string = arg;
-      opts->x_rs6000_cpu_index = rs6000_cpu_name_lookup (arg);
-      if (opts->x_rs6000_cpu_index < 0)
-	error_at (loc, "bad value (%s) for -mcpu", arg);
-      break;
-
-    case OPT_mtune_:
-      rs6000_select[2].string = arg;
-      opts->x_rs6000_tune_index = rs6000_cpu_name_lookup (arg);
-      if (opts->x_rs6000_tune_index < 0)
-	error_at (loc, "bad value (%s) for -mtune", arg);
-      break;
-
     case OPT_mlong_double_:
       if (value != 64 && value != 128)
 	{
@@ -4437,38 +4301,49 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
   return true;
 }
 
+/* Default CPU string for rs6000*_file_start functions.  */
+static const char *rs6000_default_cpu;
+
 /* Do anything needed at the start of the asm file.  */
 
 static void
 rs6000_file_start (void)
 {
-  size_t i;
   char buffer[80];
   const char *start = buffer;
-  struct rs6000_cpu_select *ptr;
-  const char *default_cpu = TARGET_CPU_DEFAULT;
   FILE *file = asm_out_file;
+
+  rs6000_default_cpu = TARGET_CPU_DEFAULT;
 
   default_file_start ();
 
 #ifdef TARGET_BI_ARCH
   if ((TARGET_DEFAULT ^ target_flags) & MASK_64BIT)
-    default_cpu = 0;
+    rs6000_default_cpu = 0;
 #endif
 
   if (flag_verbose_asm)
     {
       sprintf (buffer, "\n%s rs6000/powerpc options:", ASM_COMMENT_START);
-      rs6000_select[0].string = default_cpu;
 
-      for (i = 0; i < ARRAY_SIZE (rs6000_select); i++)
+      if (rs6000_default_cpu != 0 && rs6000_default_cpu[0] != '\0')
 	{
-	  ptr = &rs6000_select[i];
-	  if (ptr->string != (char *)0 && ptr->string[0] != '\0')
-	    {
-	      fprintf (file, "%s %s%s", start, ptr->name, ptr->string);
-	      start = "";
-	    }
+	  fprintf (file, "%s --with-cpu=%s", start, rs6000_default_cpu);
+	  start = "";
+	}
+
+      if (global_options_set.x_rs6000_cpu_index)
+	{
+	  fprintf (file, "%s -mcpu=%s", start,
+		   processor_target_table[rs6000_cpu_index].name);
+	  start = "";
+	}
+
+      if (global_options_set.x_rs6000_tune_index)
+	{
+	  fprintf (file, "%s -mtune=%s", start,
+		   processor_target_table[rs6000_tune_index].name);
+	  start = "";
 	}
 
       if (PPC405_ERRATUM77)
@@ -25712,10 +25587,12 @@ rs6000_darwin_file_start (void)
   darwin_file_start ();
 
   /* Determine the argument to -mcpu=.  Default to G3 if not specified.  */
-  for (i = 0; i < ARRAY_SIZE (rs6000_select); i++)
-    if (rs6000_select[i].set_arch_p && rs6000_select[i].string
-	&& rs6000_select[i].string[0] != '\0')
-      cpu_id = rs6000_select[i].string;
+  
+  if (rs6000_default_cpu != 0 && rs6000_default_cpu[0] != '\0')
+    cpu_id = rs6000_default_cpu;
+
+  if (global_options_set.x_rs6000_cpu_index)
+    cpu_id = processor_target_table[rs6000_cpu_index].name;
 
   /* Look through the mapping array.  Pick the first name that either
      matches the argument, has a bit set in IF_SET that is also set

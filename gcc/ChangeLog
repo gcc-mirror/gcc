@@ -1,5 +1,41 @@
 2011-05-10  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/rs6000/genopt.sh, config/rs6000/rs6000-cpus.def: New
+	files.
+	* config/rs6000/rs6000-tables.opt: New file (generated).
+	* config.gcc (powerpc*-*-*, rs6000*-*-*): Add
+	rs6000/rs6000-tables.opt to extra_options.
+	* config/rs6000/rs6000-opts.h (RS6000_CPU_OPTION_NATIVE): Define.
+	* config/rs6000/rs6000.c (rs6000_select): Remove.
+	(processor_target_table): Move contents to rs6000-cpus.def.
+	(darwin_rs6000_override_options): Check
+	global_options_set.x_rs6000_cpu_index instead of
+	rs6000_select[1].string.
+	(rs6000_option_override_internal): Likewise.
+	(rs6000_handle_option): Don't assert that global structures are in
+	use.  Don't handle OPT_mcpu_ and OPT_mtune_ here.
+	(rs6000_default_cpu): New variable.
+	(rs6000_file_start): Set it instead of local default_cpu.  Check
+	rs6000_default_cpu, global_options_set.x_rs6000_cpu_index and
+	global_options_set.x_rs6000_tune_index instead of rs6000_select.
+	(rs6000_darwin_file_start): Check rs6000_default_cpu and
+	global_options_set.x_rs6000_cpu_index instead of rs6000_select.
+	* config/rs6000/rs6000.h (struct rs6000_cpu_select,
+	rs6000_select): Remove.
+	* config/rs6000/rs6000.opt (rs6000_cpu_index, rs6000_tune_index):
+	Remove.
+	(mcpu=, mtune=): Use Var, Init, Enum and Save.
+	* config/rs6000/t-rs6000
+	($(srcdir)/config/rs6000/rs6000-tables.opt): New.
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Check
+	global_options_set.x_rs6000_cpu_index instead of
+	rs6000_select[1].string.
+	* config/rs6000/linuxspe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Check
+	global_options_set.x_rs6000_cpu_index instead of
+	rs6000_select[1].string.
+
+2011-05-10  Joseph Myers  <joseph@codesourcery.com>
+
 	* config.gcc (libgcc_tm_file): Define instead of including files
 	from ../../libgcc/config/ in tm_file.
 	* configure.ac (libgcc_tm_file_list, libgcc_tm_include_list):
