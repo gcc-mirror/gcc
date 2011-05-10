@@ -1,4 +1,4 @@
-2011-05-10  Nick Clifton  <nickc@redhat.com>
+2011-05-10  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.h (JUMP_ALIGN, LABEL_ALIGN, LOOP_ALIGN): Define.
 	(LABEL_ALIGN_AFTER_BARRIER): Pass label to rx_align_for_label
