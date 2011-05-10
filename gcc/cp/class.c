@@ -2453,6 +2453,7 @@ get_basefndecls (tree name, tree t)
 void
 check_for_override (tree decl, tree ctype)
 {
+  bool overrides_found = false;
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     /* In [temp.mem] we have:
 
@@ -2467,7 +2468,10 @@ check_for_override (tree decl, tree ctype)
     /* Set DECL_VINDEX to a value that is neither an INTEGER_CST nor
        the error_mark_node so that we know it is an overriding
        function.  */
-    DECL_VINDEX (decl) = decl;
+    {
+      DECL_VINDEX (decl) = decl;
+      overrides_found = true;
+    }
 
   if (DECL_VIRTUAL_P (decl))
     {
@@ -2477,11 +2481,10 @@ check_for_override (tree decl, tree ctype)
       if (DECL_DESTRUCTOR_P (decl))
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype) = true;
     }
-  else if (DECL_OVERRIDE_P (decl))
-    {
-      DECL_VINDEX (decl) = error_mark_node;
-      error ("%q+#D marked override, but does not override", decl);
-    }
+  else if (DECL_FINAL_P (decl))
+    error ("%q+#D marked final, but is not virtual", decl);
+  if (DECL_OVERRIDE_P (decl) && !overrides_found)
+    error ("%q+#D marked override, but does not override", decl);
 }
 
 /* Warn about hidden virtual functions that are not overridden in t.
