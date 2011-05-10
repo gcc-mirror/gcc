@@ -341,7 +341,7 @@ build_value_init (tree type, tsubst_flags_t complain)
 				      NULL, type, LOOKUP_NORMAL,
 				      complain),
 	   complain);
-      else if (TYPE_NEEDS_CONSTRUCTING (type))
+      else if (type_build_ctor_call (type))
 	{
 	  /* This is a class that needs constructing, but doesn't have
 	     a user-provided constructor.  So we need to zero-initialize
@@ -371,7 +371,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
      SFINAE-enabled.  */
   if (CLASS_TYPE_P (type))
     {
-      gcc_assert (!TYPE_NEEDS_CONSTRUCTING (type));
+      gcc_assert (!type_build_ctor_call (type));
 	
       if (TREE_CODE (type) != UNION_TYPE)
 	{
@@ -530,7 +530,7 @@ perform_member_init (tree member, tree init)
 	  finish_expr_stmt (init);
 	}
     }
-  else if (TYPE_NEEDS_CONSTRUCTING (type))
+  else if (type_build_ctor_call (type))
     {
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
@@ -1568,7 +1568,7 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	/* Fall through.  */;
       /* If there isn't, but we still need to call the constructor,
 	 zero out the object first.  */
-      else if (TYPE_NEEDS_CONSTRUCTING (type))
+      else if (type_build_ctor_call (type))
 	{
 	  init = build_zero_init (type, NULL_TREE, /*static_storage_p=*/false);
 	  init = build2 (INIT_EXPR, type, exp, init);
@@ -2046,7 +2046,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   if (abstract_virtuals_error_sfinae (NULL_TREE, elt_type, complain))
     return error_mark_node;
 
-  is_initialized = (TYPE_NEEDS_CONSTRUCTING (elt_type) || *init != NULL);
+  is_initialized = (type_build_ctor_call (elt_type) || *init != NULL);
 
   if (*init == NULL)
     {
@@ -2351,7 +2351,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	     rebuild it at instantiation time, so just build up a single
 	     constructor call to get any appropriate diagnostics.  */
 	  init_expr = cp_build_indirect_ref (data_addr, RO_NULL, complain);
-	  if (TYPE_NEEDS_CONSTRUCTING (elt_type))
+	  if (type_build_ctor_call (elt_type))
 	    init_expr = build_special_member_call (init_expr,
 						   complete_ctor_identifier,
 						   init, elt_type,
@@ -2408,7 +2408,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	{
 	  init_expr = cp_build_indirect_ref (data_addr, RO_NULL, complain);
 
-	  if (TYPE_NEEDS_CONSTRUCTING (type) && !explicit_value_init_p)
+	  if (type_build_ctor_call (type) && !explicit_value_init_p)
 	    {
 	      init_expr = build_special_member_call (init_expr,
 						     complete_ctor_identifier,
@@ -3164,8 +3164,7 @@ build_vec_init (tree base, tree maxindex, tree init,
     {
       if (init)
 	/* OK, we set base2 above.  */;
-      else if (TYPE_LANG_SPECIFIC (type)
-	       && TYPE_NEEDS_CONSTRUCTING (type)
+      else if (CLASS_TYPE_P (type)
 	       && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
 	{
           if (complain & tf_error)
@@ -3181,7 +3180,7 @@ build_vec_init (tree base, tree maxindex, tree init,
      We do need to keep going if we're copying an array.  */
 
   if (from_array
-      || ((TYPE_NEEDS_CONSTRUCTING (type) || explicit_value_init_p)
+      || ((type_build_ctor_call (type) || explicit_value_init_p)
 	  && ! (host_integerp (maxindex, 0)
 		&& (num_initialized_elts
 		    == tree_low_cst (maxindex, 0) + 1))))
@@ -3221,7 +3220,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  if (from_array == 2)
 	    elt_init = cp_build_modify_expr (to, NOP_EXPR, from, 
 					     complain);
-	  else if (TYPE_NEEDS_CONSTRUCTING (type))
+	  else if (type_build_ctor_call (type))
 	    elt_init = build_aggr_init (to, from, 0, complain);
 	  else if (from)
 	    elt_init = cp_build_modify_expr (to, NOP_EXPR, from,
@@ -3247,7 +3246,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
       else
 	{
-	  gcc_assert (TYPE_NEEDS_CONSTRUCTING (type));
+	  gcc_assert (type_build_ctor_call (type));
 	  elt_init = build_aggr_init (to, init, 0, complain);
 	}
 

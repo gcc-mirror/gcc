@@ -4787,6 +4787,7 @@ extern bool type_has_constexpr_default_constructor (tree);
 extern bool type_has_virtual_destructor		(tree);
 extern bool type_has_move_constructor		(tree);
 extern bool type_has_move_assign		(tree);
+extern bool type_build_ctor_call		(tree);
 extern void defaulted_late_check		(tree);
 extern bool defaultable_fn_check		(tree);
 extern void fixup_type_variants			(tree);

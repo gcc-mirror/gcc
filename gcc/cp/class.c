@@ -4466,6 +4466,27 @@ type_has_move_assign (tree t)
   return false;
 }
 
+/* Nonzero if we need to build up a constructor call when initializing an
+   object of this class, either because it has a user-provided constructor
+   or because it doesn't have a default constructor (so we need to give an
+   error if no initializer is provided).  Use TYPE_NEEDS_CONSTRUCTING when
+   what you care about is whether or not an object can be produced by a
+   constructor (e.g. so we don't set TREE_READONLY on const variables of
+   such type); use this function when what you care about is whether or not
+   to try to call a constructor to create an object.  The latter case is
+   the former plus some cases of constructors that cannot be called.  */
+
+bool
+type_build_ctor_call (tree t)
+{
+  tree inner;
+  if (TYPE_NEEDS_CONSTRUCTING (t))
+    return true;
+  inner = strip_array_types (t);
+  return (CLASS_TYPE_P (inner) && !TYPE_HAS_DEFAULT_CONSTRUCTOR (inner)
+	  && !ANON_AGGR_TYPE_P (inner));
+}
+
 /* Remove all zero-width bit-fields from T.  */
 
 static void
