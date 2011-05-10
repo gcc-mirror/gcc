@@ -1,5 +1,10 @@
 2011-05-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/48611
+	PR tree-optimization/48794
+	* tree-eh.c (remove_unreachable_handlers): Don't remove regions
+	referenced from RESX or EH_DISPATCH arguments.
+
 	PR debug/48928
 	* dfp.c (decimal_to_decnumber): Handle conversion from
 	dconst{1,2,m1,half}.
