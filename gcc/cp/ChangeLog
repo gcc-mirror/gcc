@@ -1,3 +1,9 @@
+2011-05-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48736
+	* pt.c (tsubst_copy_and_build): Handle substitution of a pack
+	expansion producing another expansion.
+
 2011-05-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Fixes for override/final.
