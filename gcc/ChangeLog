@@ -1,3 +1,10 @@
+2011-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48611
+	PR tree-optimization/48794
+	* tree-eh.c (remove_unreachable_handlers): Don't remove regions
+	referenced from RESX or EH_DISPATCH arguments.
+
 2011-05-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (TD/TF mem to reg move splitter): Make the
