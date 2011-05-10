@@ -6178,7 +6178,7 @@ avr_reorg (void)
 
 /* Returns register number for function return value.*/
 
-static inline int
+static inline unsigned int
 avr_ret_register (void)
 {
   return 24;
@@ -6209,18 +6209,14 @@ avr_libcall_value (enum machine_mode mode,
    function returns a value of data type VALTYPE.  */
 
 static rtx
-avr_function_value (const_tree type, const_tree fn_decl_or_type,
-		    bool outgoing ATTRIBUTE_UNUSED)
+avr_function_value (const_tree type,
+                    const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
+                    bool outgoing ATTRIBUTE_UNUSED)
 {
   unsigned int offs;
-  const_rtx func = fn_decl_or_type;
-
-  if (fn_decl_or_type
-      && !DECL_P (fn_decl_or_type))
-  fn_decl_or_type = NULL;
 
   if (TYPE_MODE (type) != BLKmode)
-    return avr_libcall_value (TYPE_MODE (type), func);
+    return avr_libcall_value (TYPE_MODE (type), NULL_RTX);
   
   offs = int_size_in_bytes (type);
   if (offs < 2)
@@ -6711,7 +6707,7 @@ avr_expand_unop_builtin (enum insn_code icode, tree exp,
 {
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
   enum machine_mode op0mode = GET_MODE (op0);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
@@ -6752,8 +6748,8 @@ avr_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   tree arg1 = CALL_EXPR_ARG (exp, 1);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, EXPAND_NORMAL);
   enum machine_mode op0mode = GET_MODE (op0);
   enum machine_mode op1mode = GET_MODE (op1);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
@@ -6845,7 +6841,7 @@ avr_expand_builtin (tree exp, rtx target,
     case AVR_BUILTIN_DELAY_CYCLES:
       {
         arg0 = CALL_EXPR_ARG (exp, 0);
-        op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+        op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
         if (! CONST_INT_P (op0))
           error ("__builtin_avr_delay_cycles expects a compile time integer constant.");

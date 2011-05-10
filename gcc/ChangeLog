@@ -1,3 +1,15 @@
+2011-05-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/48896
+	* config/avr/avr.c (avr_ret_register): Return unsigned int
+	instead of int.
+	(avr_function_value): Mark fn_decl_or_type as unused, don't pass
+	it to avr_libcall_value.
+	avr_expand_builtin): Use EXPAND_NORMAL as arg 4 in calls to
+	expand_expr.
+	(avr_expand_binop_builtin): Ditto.
+	(avr_expand_unop_builtin): Ditto.
+
 2011-05-10  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.h (JUMP_ALIGN, LABEL_ALIGN, LOOP_ALIGN): Define.
