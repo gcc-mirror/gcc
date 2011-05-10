@@ -18279,35 +18279,30 @@ value_dependent_expression_p (tree expression)
 	{
 	case tcc_reference:
 	case tcc_unary:
-	  return (value_dependent_expression_p
-		  (TREE_OPERAND (expression, 0)));
-
 	case tcc_comparison:
 	case tcc_binary:
-	  return ((value_dependent_expression_p
-		   (TREE_OPERAND (expression, 0)))
-		  || (value_dependent_expression_p
-		      (TREE_OPERAND (expression, 1))));
-
 	case tcc_expression:
 	case tcc_vl_exp:
 	  {
-	    int i;
-	    for (i = 0; i < TREE_OPERAND_LENGTH (expression); ++i)
-	      /* In some cases, some of the operands may be missing.
-		 (For example, in the case of PREDECREMENT_EXPR, the
-		 amount to increment by may be missing.)  That doesn't
-		 make the expression dependent.  */
-	      if (TREE_OPERAND (expression, i)
-		  && (value_dependent_expression_p
-		      (TREE_OPERAND (expression, i))))
-		return true;
-	    return false;
-	  }
+	    int i, len = cp_tree_operand_length (expression);
 
+	    for (i = 0; i < len; i++)
+	      {
+		tree t = TREE_OPERAND (expression, i);
+
+		/* In some cases, some of the operands may be missing.l
+		   (For example, in the case of PREDECREMENT_EXPR, the
+		   amount to increment by may be missing.)  That doesn't
+		   make the expression dependent.  */
+		if (t && value_dependent_expression_p (t))
+		  return true;
+	      }
+	  }
+	  break;
 	default:
 	  break;
 	}
+      break;
     }
 
   /* The expression is not value-dependent.  */

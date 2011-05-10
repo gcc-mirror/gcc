@@ -2701,23 +2701,7 @@ write_expression (tree expr)
 	default:
 	  /* In the middle-end, some expressions have more operands than
 	     they do in templates (and mangling).  */
-	  switch (code)
-	    {
-	    case PREINCREMENT_EXPR:
-	    case PREDECREMENT_EXPR:
-	    case POSTINCREMENT_EXPR:
-	    case POSTDECREMENT_EXPR:
-	      len = 1;
-	      break;
-
-	    case ARRAY_REF:
-	      len = 2;
-	      break;
-
-	    default:
-	      len = TREE_OPERAND_LENGTH (expr);
-	      break;
-	    }
+	  len = cp_tree_operand_length (expr);
 
 	  for (i = 0; i < len; ++i)
 	    {

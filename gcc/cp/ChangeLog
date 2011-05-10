@@ -1,3 +1,15 @@
+2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+        * cp-tree.def (EXPR_PACK_EXPANSION): Add an operand.
+        * cp-objcp-common.c (cp_common_init_ts): Mark it as TS_TYPED.
+        * cp-tree.h (PACK_EXPANSION_PARAMETER_PACKS): Use the new
+        operand of EXPR_PACK_EXPANSION.
+	(cp_tree_operand_length): Declare.
+        * tree.c (cp_tree_operand_length): Define.
+	(cp_tree_equal): Call it.
+        * pt.c (value_dependent_expr_P): Likewise.
+        * mangle.c (write_expression): Likewise.
+
 2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/48737
