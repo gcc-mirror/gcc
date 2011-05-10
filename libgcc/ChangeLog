@@ -1,5 +1,9 @@
 2011-05-10  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/darwin-lib.h: New file.
+
+2011-05-10  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/arm/symbian-lib.h: New.
 
 2011-05-04  Chris Demetriou  <cgd@google.com>
