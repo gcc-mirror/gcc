@@ -597,11 +597,6 @@ extern int current_function_returns_abnormally;
 
 extern int system_header_p;
 
-/* True means global_bindings_p should return false even if the scope stack
-   says we are in file scope.  */
-
-extern bool c_override_global_bindings_to_false;
-
 /* In c-decl.c */
 extern void c_finish_incomplete_decl (tree);
 extern void c_write_global_declarations (void);
