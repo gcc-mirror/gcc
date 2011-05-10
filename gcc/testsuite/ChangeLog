@@ -1,3 +1,11 @@
+2011-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2011-05-07  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/48837
+	* gcc.dg/pr48837.c: New testcase.
+
 2011-05-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/nontype23.C: New.
