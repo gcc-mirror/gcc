@@ -1,3 +1,10 @@
+2011-05-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (combine_conversions): Pattern-match
+	a series of conversions and apply foldings similar to what
+	fold-const does.
+	(tree_ssa_forward_propagate_single_use_vars): Call it.
+
 2011-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48611
