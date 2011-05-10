@@ -1048,7 +1048,7 @@ process_init_constructor_array (tree type, tree init,
       {
 	tree next;
 
-	if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type)))
+	if (type_build_ctor_call (TREE_TYPE (type)))
 	  {
 	    /* If this type needs constructors run for default-initialization,
 	      we can't rely on the back end to do it for us, so build up
@@ -1144,7 +1144,7 @@ process_init_constructor_record (tree type, tree init,
 				LOOKUP_IMPLICIT, complain);
 	  ++idx;
 	}
-      else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
+      else if (type_build_ctor_call (TREE_TYPE (field)))
 	{
 	  /* If this type needs constructors run for
 	     default-initialization, we can't rely on the back end to do it

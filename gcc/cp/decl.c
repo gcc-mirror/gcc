@@ -5410,7 +5410,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
     ;
   else if (TREE_CODE (type) == REFERENCE_TYPE)
     init = grok_reference_init (decl, type, init, cleanup);
-  else if (init || TYPE_NEEDS_CONSTRUCTING (type))
+  else if (init || type_build_ctor_call (type))
     {
       if (!init)
 	check_for_uninitialized_const_var (decl);
@@ -5445,7 +5445,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
       if (type == error_mark_node)
 	return NULL_TREE;
 
-      if (TYPE_NEEDS_CONSTRUCTING (type)
+      if (type_build_ctor_call (type)
 	  || (CLASS_TYPE_P (type)
 	      && !(init && BRACE_ENCLOSED_INITIALIZER_P (init))))
 	{

@@ -1,5 +1,16 @@
 2011-05-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48930
+	* class.c (type_build_ctor_call): New.
+	* cp-tree.h: Declare it.
+	* decl.c (check_initializer): Use it instead of
+	TYPE_NEEDS_CONSTRUCTING.
+	* init.c (build_value_init, build_value_init_noctor): Likewise.
+	(perform_member_init, expand_aggr_init_1, build_new_1): Likewise.
+	(build_vec_init): Likewise.
+	* typeck2.c (process_init_constructor_array): Likewise.
+	(process_init_constructor_record): Likewise.
+
 	PR c++/48736
 	* pt.c (tsubst_copy_and_build): Handle substitution of a pack
 	expansion producing another expansion.
