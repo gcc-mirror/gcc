@@ -1,5 +1,5 @@
 /* Configuration file for Symbian OS on ARM processors.
-   Copyright (C) 2004, 2005, 2007, 2008
+   Copyright (C) 2004, 2005, 2007, 2008, 2011
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
@@ -71,11 +71,6 @@
 #define SUBTARGET_ASM_FLOAT_SPEC \
   "%{!mfpu=*:-mfpu=vfp} %{!mcpu=*:%{!march=*:-march=armv5t}}"
   
-/* SymbianOS provides the BPABI routines in a separate library.
-   Therefore, we do not need to define any of them in libgcc.  */
-#undef RENAME_LIBRARY
-#define RENAME_LIBRARY(GCC_NAME, AEABI_NAME) /* empty */
-
 /* Define the __symbian__ macro.  */
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()				\
