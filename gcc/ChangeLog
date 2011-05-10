@@ -1,5 +1,14 @@
 2011-05-10  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2011-05-07  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/48837
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Do not mark tailcalls
+	when accumulator transformation is performed.
+
+2011-05-10  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/48611
 	PR tree-optimization/48794
 	* tree-eh.c (remove_unreachable_handlers): Don't remove regions

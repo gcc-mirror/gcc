@@ -1,5 +1,13 @@
 2011-05-10  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2011-05-07  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/48837
+	* gcc.dg/pr48837.c: New testcase.
+
+2011-05-10  Jakub Jelinek  <jakub@redhat.com>
+
 	PR tree-optimization/48611
 	PR tree-optimization/48794
 	* gfortran.dg/gomp/pr48611.f90: New test.
