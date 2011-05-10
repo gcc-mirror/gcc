@@ -1,5 +1,11 @@
 2011-05-10  Joseph Myers  <joseph@codesourcery.com>
 
+	* config.gcc (i[34567]86-*-darwin*, x86_64-*-darwin*): Add
+	i386/darwin-lib.h to $libgcc_tm_file.
+	* config/i386/darwin.h (DECLARE_LIBRARY_RENAMES): Remove.
+
+2011-05-10  Joseph Myers  <joseph@codesourcery.com>
+
 	* doc/sourcebuild.texi (Back End): Mention contrib/config-list.mk.
 
 2011-05-10  Joseph Myers  <joseph@codesourcery.com>
