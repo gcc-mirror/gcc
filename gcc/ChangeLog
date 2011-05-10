@@ -1,3 +1,12 @@
+2011-05-10  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (JUMP_ALIGN, LABEL_ALIGN, LOOP_ALIGN): Define.
+	(LABEL_ALIGN_AFTER_BARRIER): Pass label to rx_align_for_label
+	* config/rx/rx.c (rx_align_for_label): Add label and
+	uses_threshold parameters.  Do not align when the label is not
+	used enough.
+	* config/rx/rx-protos.h (rx_align_for_label): Update prototype.
+
 2011-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
