@@ -1,3 +1,8 @@
+2011-05-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_update (gcc/config/rs6000/rs6000-tables.opt): New
+	dependencies.
+
 2011-05-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc_update (gcc/config/mips/mips-tables.opt): New dependencies.

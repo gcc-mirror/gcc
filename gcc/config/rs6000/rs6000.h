@@ -358,17 +358,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    and the old mnemonics are dialect zero.  */
 #define ASSEMBLER_DIALECT (TARGET_NEW_MNEMONICS ? 1 : 0)
 
-/* rs6000_select[0] is reserved for the default cpu defined via --with-cpu */
-struct rs6000_cpu_select
-{
-  const char *string;
-  const char *name;
-  int set_tune_p;
-  int set_arch_p;
-};
-
-extern struct rs6000_cpu_select rs6000_select[];
-
 /* Debug support */
 #define MASK_DEBUG_STACK	0x01	/* debug stack applications */
 #define	MASK_DEBUG_ARG		0x02	/* debug argument handling */
