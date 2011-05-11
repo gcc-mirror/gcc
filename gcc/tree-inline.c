@@ -811,9 +811,15 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
     {
       /* Otherwise, just copy the node.  Note that copy_tree_r already
 	 knows not to copy VAR_DECLs, etc., so this is safe.  */
+
+      /* We should never have TREE_BLOCK set on non-statements.  */
+      if (EXPR_P (*tp))
+	gcc_assert (!TREE_BLOCK (*tp));
+
       if (TREE_CODE (*tp) == MEM_REF)
 	{
 	  tree ptr = TREE_OPERAND (*tp, 0);
+	  tree type = remap_type (TREE_TYPE (*tp), id);
 	  tree old = *tp;
 	  tree tem;
 
@@ -824,7 +830,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	  if ((tem = maybe_fold_offset_to_reference (EXPR_LOCATION (*tp),
 						     ptr,
 						     TREE_OPERAND (*tp, 1),
-						     TREE_TYPE (*tp)))
+						     type))
 	      && TREE_THIS_VOLATILE (tem) == TREE_THIS_VOLATILE (old))
 	    {
 	      tree *tem_basep = &tem;
@@ -846,7 +852,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	    }
 	  else
 	    {
-	      *tp = fold_build2 (MEM_REF, TREE_TYPE (*tp),
+	      *tp = fold_build2 (MEM_REF, type,
 				 ptr, TREE_OPERAND (*tp, 1));
 	      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 	      TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
@@ -860,6 +866,9 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	 tweak some special cases.  */
       copy_tree_r (tp, walk_subtrees, NULL);
 
+      if (TREE_CODE (*tp) != OMP_CLAUSE)
+	TREE_TYPE (*tp) = remap_type (TREE_TYPE (*tp), id);
+
       /* Global variables we haven't seen yet need to go into referenced
 	 vars.  If not referenced from types only.  */
       if (gimple_in_ssa_p (cfun)
@@ -867,13 +876,6 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	  && id->remapping_type_depth == 0
 	  && !processing_debug_stmt)
 	add_referenced_var (*tp);
-
-      /* We should never have TREE_BLOCK set on non-statements.  */
-      if (EXPR_P (*tp))
-	gcc_assert (!TREE_BLOCK (*tp));
-
-      if (TREE_CODE (*tp) != OMP_CLAUSE)
-	TREE_TYPE (*tp) = remap_type (TREE_TYPE (*tp), id);
 
       if (TREE_CODE (*tp) == TARGET_EXPR && TREE_OPERAND (*tp, 3))
 	{
