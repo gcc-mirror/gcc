@@ -12657,7 +12657,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 /* Load the thread pointer.  If TO_REG is true, force it into a register.  */
 
 static rtx
-get_thread_pointer (int to_reg)
+get_thread_pointer (bool to_reg)
 {
   rtx tp, reg, insn;
 
@@ -12672,76 +12672,154 @@ get_thread_pointer (int to_reg)
   return reg;
 }
 
+/* Construct the SYMBOL_REF for the tls_get_addr function.  */
+
+static GTY(()) rtx ix86_tls_symbol;
+
+static rtx
+ix86_tls_get_addr (void)
+{
+  if (!ix86_tls_symbol)
+    {
+      const char *sym
+	= ((TARGET_ANY_GNU_TLS && !TARGET_64BIT)
+	   ? "___tls_get_addr" : "__tls_get_addr");
+
+      ix86_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, sym);
+    }
+
+  return ix86_tls_symbol;
+}
+
+/* Construct the SYMBOL_REF for the _TLS_MODULE_BASE_ symbol.  */
+
+static GTY(()) rtx ix86_tls_module_base_symbol;
+
+rtx
+ix86_tls_module_base (void)
+{
+  if (!ix86_tls_module_base_symbol)
+    {
+      ix86_tls_module_base_symbol
+	= gen_rtx_SYMBOL_REF (Pmode, "_TLS_MODULE_BASE_");
+
+      SYMBOL_REF_FLAGS (ix86_tls_module_base_symbol)
+	|= TLS_MODEL_GLOBAL_DYNAMIC << SYMBOL_FLAG_TLS_SHIFT;
+    }
+
+  return ix86_tls_module_base_symbol;
+}
+
 /* A subroutine of ix86_legitimize_address and ix86_expand_move.  FOR_MOV is
    false if we expect this to be used for a memory address and true if
    we expect to load the address into a register.  */
 
 static rtx
-legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
+legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 {
-  rtx dest, base, off, pic, tp;
+  rtx dest, base, off;
+  rtx pic = NULL_RTX, tp = NULL_RTX;
   int type;
 
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
       dest = gen_reg_rtx (Pmode);
-      tp = TARGET_GNU2_TLS ? get_thread_pointer (1) : 0;
 
-      if (TARGET_64BIT && ! TARGET_GNU2_TLS)
+      if (!TARGET_64BIT)
 	{
-	  rtx rax = gen_rtx_REG (Pmode, AX_REG), insns;
-
-	  start_sequence ();
-	  emit_call_insn (gen_tls_global_dynamic_64 (rax, x));
-	  insns = get_insns ();
-	  end_sequence ();
-
-	  RTL_CONST_CALL_P (insns) = 1;
-	  emit_libcall_block (insns, dest, rax, x);
+	  if (flag_pic)
+	    pic = pic_offset_table_rtx;
+	  else
+	    {
+	      pic = gen_reg_rtx (Pmode);
+	      emit_insn (gen_set_got (pic));
+	    }
 	}
-      else if (TARGET_64BIT && TARGET_GNU2_TLS)
-	emit_insn (gen_tls_global_dynamic_64 (dest, x));
-      else
-	emit_insn (gen_tls_global_dynamic_32 (dest, x));
 
       if (TARGET_GNU2_TLS)
 	{
+	  if (TARGET_64BIT)
+	    emit_insn (gen_tls_dynamic_gnu2_64 (dest, x));
+	  else
+	    emit_insn (gen_tls_dynamic_gnu2_32 (dest, x, pic));
+
+	  tp = get_thread_pointer (true);
 	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, dest));
 
 	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
+	}
+      else
+	{
+	  rtx caddr = ix86_tls_get_addr ();
+
+	  if (TARGET_64BIT)
+	    {
+	      rtx rax = gen_rtx_REG (Pmode, AX_REG), insns;
+
+	      start_sequence ();
+	      emit_call_insn (gen_tls_global_dynamic_64 (rax, x, caddr));
+	      insns = get_insns ();
+	      end_sequence ();
+
+	      RTL_CONST_CALL_P (insns) = 1;
+	      emit_libcall_block (insns, dest, rax, x);
+	    }
+	  else
+	    emit_insn (gen_tls_global_dynamic_32 (dest, x, pic, caddr));
 	}
       break;
 
     case TLS_MODEL_LOCAL_DYNAMIC:
       base = gen_reg_rtx (Pmode);
-      tp = TARGET_GNU2_TLS ? get_thread_pointer (1) : 0;
 
-      if (TARGET_64BIT && ! TARGET_GNU2_TLS)
+      if (!TARGET_64BIT)
 	{
-	  rtx rax = gen_rtx_REG (Pmode, AX_REG), insns, note;
-
-	  start_sequence ();
-	  emit_call_insn (gen_tls_local_dynamic_base_64 (rax));
-	  insns = get_insns ();
-	  end_sequence ();
-
-	  note = gen_rtx_EXPR_LIST (VOIDmode, const0_rtx, NULL);
-	  note = gen_rtx_EXPR_LIST (VOIDmode, ix86_tls_get_addr (), note);
-	  RTL_CONST_CALL_P (insns) = 1;
-	  emit_libcall_block (insns, base, rax, note);
+	  if (flag_pic)
+	    pic = pic_offset_table_rtx;
+	  else
+	    {
+	      pic = gen_reg_rtx (Pmode);
+	      emit_insn (gen_set_got (pic));
+	    }
 	}
-      else if (TARGET_64BIT && TARGET_GNU2_TLS)
-	emit_insn (gen_tls_local_dynamic_base_64 (base));
-      else
-	emit_insn (gen_tls_local_dynamic_base_32 (base));
 
       if (TARGET_GNU2_TLS)
 	{
-	  rtx x = ix86_tls_module_base ();
+	  rtx tmp = ix86_tls_module_base ();
 
+	  if (TARGET_64BIT)
+	    emit_insn (gen_tls_dynamic_gnu2_64 (base, tmp));
+	  else
+	    emit_insn (gen_tls_dynamic_gnu2_32 (base, tmp, pic));
+
+	  tp = get_thread_pointer (true);
 	  set_unique_reg_note (get_last_insn (), REG_EQUIV,
-			       gen_rtx_MINUS (Pmode, x, tp));
+			       gen_rtx_MINUS (Pmode, tmp, tp));
+	}
+      else
+	{
+	  rtx caddr = ix86_tls_get_addr ();
+
+	  if (TARGET_64BIT)
+	    {
+	      rtx rax = gen_rtx_REG (Pmode, AX_REG), insns, eqv;
+
+	      start_sequence ();
+	      emit_call_insn (gen_tls_local_dynamic_base_64 (rax, caddr));
+	      insns = get_insns ();
+	      end_sequence ();
+
+	      /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+		 share the LD_BASE result with other LD model accesses.  */
+	      eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+				    UNSPEC_TLS_LD_BASE);
+
+	      RTL_CONST_CALL_P (insns) = 1;
+	      emit_libcall_block (insns, base, rax, eqv);
+	    }
+	  else
+	    emit_insn (gen_tls_local_dynamic_base_32 (base, pic, caddr));
 	}
 
       off = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), UNSPEC_DTPOFF);
@@ -12755,7 +12833,6 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 
 	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
 	}
-
       break;
 
     case TLS_MODEL_INITIAL_EXEC:
@@ -22165,43 +22242,6 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
   s->next = ix86_stack_locals;
   ix86_stack_locals = s;
   return s->rtl;
-}
-
-/* Construct the SYMBOL_REF for the tls_get_addr function.  */
-
-static GTY(()) rtx ix86_tls_symbol;
-rtx
-ix86_tls_get_addr (void)
-{
-
-  if (!ix86_tls_symbol)
-    {
-      ix86_tls_symbol = gen_rtx_SYMBOL_REF (Pmode,
-					    (TARGET_ANY_GNU_TLS
-					     && !TARGET_64BIT)
-					    ? "___tls_get_addr"
-					    : "__tls_get_addr");
-    }
-
-  return ix86_tls_symbol;
-}
-
-/* Construct the SYMBOL_REF for the _TLS_MODULE_BASE_ symbol.  */
-
-static GTY(()) rtx ix86_tls_module_base_symbol;
-rtx
-ix86_tls_module_base (void)
-{
-
-  if (!ix86_tls_module_base_symbol)
-    {
-      ix86_tls_module_base_symbol = gen_rtx_SYMBOL_REF (Pmode,
-							"_TLS_MODULE_BASE_");
-      SYMBOL_REF_FLAGS (ix86_tls_module_base_symbol)
-	|= TLS_MODEL_GLOBAL_DYNAMIC << SYMBOL_FLAG_TLS_SHIFT;
-    }
-
-  return ix86_tls_module_base_symbol;
 }
 
 /* Calculate the length of the memory address in the instruction

@@ -193,7 +193,6 @@ extern unsigned int ix86_get_callcvt (const_tree);
 
 #endif
 
-extern rtx ix86_tls_get_addr (void);
 extern rtx ix86_tls_module_base (void);
 
 extern void ix86_expand_vector_init (bool, rtx, rtx);
