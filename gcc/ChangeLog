@@ -1,3 +1,14 @@
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_canonical_types_compatible_p): Split out
+	from gimple_types_compatible_p and friends.  Do not recurse
+	to pointed-to types.
+	(gimple_canonical_type_eq): Use it.
+	(iterative_hash_canonical_type): Split out from
+	iterative_hash_gimple_type and friends.  Do not recurse
+	to pointed-to types.
+	(gimple_canonical_type_hash): Use it, allocate the hash here.
+
 2011-05-11  Revital Eres  <revital.eres@linaro.org>
 
 	* modulo-sched.c (doloop_register_get): Ignore DEBUG_INSNs while
