@@ -1623,6 +1623,9 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
   tree arg2 = gimple_assign_rhs2 (stmt);
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree res;
+  gimple def1 = NULL, def2 = NULL;
+  tree def1_arg1, def2_arg1;
+  enum tree_code def1_code, def2_code;
 
   /* If the first argument is an SSA name that is itself a result of a
      typecast of an ADDR_EXPR to an integer, feed the ADDR_EXPR to the
@@ -1655,44 +1658,102 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 	}
     }
 
+  def1_code = TREE_CODE (arg1);
+  def1_arg1 = arg1;
+  if (TREE_CODE (arg1) == SSA_NAME)
+    {
+      def1 = SSA_NAME_DEF_STMT (arg1);
+      if (is_gimple_assign (def1))
+	{
+	  def1_code = gimple_assign_rhs_code (def1);
+	  def1_arg1 = gimple_assign_rhs1 (def1);
+	}
+    }
+
+  def2_code = TREE_CODE (arg2);
+  def2_arg1 = arg2;
+  if (TREE_CODE (arg2) == SSA_NAME)
+    {
+      def2 = SSA_NAME_DEF_STMT (arg2);
+      if (is_gimple_assign (def2))
+	{
+	  def2_code = gimple_assign_rhs_code (def2);
+	  def2_arg1 = gimple_assign_rhs1 (def2);
+	}
+    }
+
   /* For bitwise binary operations apply operand conversions to the
      binary operation result instead of to the operands.  This allows
      to combine successive conversions and bitwise binary operations.  */
-  if (TREE_CODE (arg1) == SSA_NAME
-      && TREE_CODE (arg2) == SSA_NAME)
+  if (CONVERT_EXPR_CODE_P (def1_code)
+      && CONVERT_EXPR_CODE_P (def2_code)
+      && types_compatible_p (TREE_TYPE (def1_arg1), TREE_TYPE (def2_arg1))
+      /* Make sure that the conversion widens the operands or that it
+	 changes the operation to a bitfield precision.  */
+      && ((TYPE_PRECISION (TREE_TYPE (def1_arg1))
+	   < TYPE_PRECISION (TREE_TYPE (arg1)))
+	  || (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (arg1)))
+	      != MODE_INT)
+	  || (TYPE_PRECISION (TREE_TYPE (arg1))
+	      != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg1))))))
     {
-      gimple def_stmt1 = SSA_NAME_DEF_STMT (arg1);
-      gimple def_stmt2 = SSA_NAME_DEF_STMT (arg2);
-      if (is_gimple_assign (def_stmt1)
-	  && is_gimple_assign (def_stmt2)
-	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt1))
-	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt2)))
+      gimple newop;
+      tree tem = create_tmp_reg (TREE_TYPE (def1_arg1),
+				 NULL);
+      newop = gimple_build_assign_with_ops (code, tem, def1_arg1, def2_arg1);
+      tem = make_ssa_name (tem, newop);
+      gimple_assign_set_lhs (newop, tem);
+      gsi_insert_before (gsi, newop, GSI_SAME_STMT);
+      gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
+					tem, NULL_TREE, NULL_TREE);
+      update_stmt (gsi_stmt (*gsi));
+      return true;
+    }
+
+  /* (a | CST1) & CST2  ->  (a & CST2) | (CST1 & CST2).  */
+  if (code == BIT_AND_EXPR
+      && def1_code == BIT_IOR_EXPR
+      && TREE_CODE (arg2) == INTEGER_CST
+      && TREE_CODE (gimple_assign_rhs2 (def1)) == INTEGER_CST)
+    {
+      tree cst = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg2),
+			      arg2, gimple_assign_rhs2 (def1));
+      tree tem;
+      gimple newop;
+      if (integer_zerop (cst))
 	{
-	  tree darg1 = gimple_assign_rhs1 (def_stmt1);
-	  tree darg2 = gimple_assign_rhs1 (def_stmt2);
-	  /* Make sure that the conversion widens the operands or that it
-	     changes the operation to a bitfield precision.  */
-	  if (types_compatible_p (TREE_TYPE (darg1), TREE_TYPE (darg2))
-	      && ((TYPE_PRECISION (TREE_TYPE (darg1))
-		   < TYPE_PRECISION (TREE_TYPE (arg1)))
-		  || (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (arg1)))
-		      != MODE_INT)
-		  || (TYPE_PRECISION (TREE_TYPE (arg1))
-		      != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg1))))))
-	    {
-	      gimple newop;
-	      tree tem = create_tmp_reg (TREE_TYPE (darg1),
-					 NULL);
-	      newop = gimple_build_assign_with_ops (code, tem, darg1, darg2);
-	      tem = make_ssa_name (tem, newop);
-	      gimple_assign_set_lhs (newop, tem);
-	      gsi_insert_before (gsi, newop, GSI_SAME_STMT);
-	      gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
-						tem, NULL_TREE, NULL_TREE);
-	      update_stmt (gsi_stmt (*gsi));
-	      return true;
-	    }
+	  gimple_assign_set_rhs1 (stmt, def1_arg1);
+	  update_stmt (stmt);
+	  return true;
 	}
+      tem = create_tmp_reg (TREE_TYPE (arg2), NULL);
+      newop = gimple_build_assign_with_ops (BIT_AND_EXPR,
+					    tem, def1_arg1, arg2);
+      tem = make_ssa_name (tem, newop);
+      gimple_assign_set_lhs (newop, tem);
+      /* Make sure to re-process the new stmt as it's walking upwards.  */
+      gsi_insert_before (gsi, newop, GSI_NEW_STMT);
+      gimple_assign_set_rhs1 (stmt, tem);
+      gimple_assign_set_rhs2 (stmt, cst);
+      gimple_assign_set_rhs_code (stmt, BIT_IOR_EXPR);
+      update_stmt (stmt);
+      return true;
+    }
+
+  /* Combine successive equal operations with constants.  */
+  if ((code == BIT_AND_EXPR
+       || code == BIT_IOR_EXPR
+       || code == BIT_XOR_EXPR)
+      && def1_code == code 
+      && TREE_CODE (arg2) == INTEGER_CST
+      && TREE_CODE (gimple_assign_rhs2 (def1)) == INTEGER_CST)
+    {
+      tree cst = fold_build2 (code, TREE_TYPE (arg2),
+			      arg2, gimple_assign_rhs2 (def1));
+      gimple_assign_set_rhs1 (stmt, def1_arg1);
+      gimple_assign_set_rhs2 (stmt, cst);
+      update_stmt (stmt);
+      return true;
     }
 
   return false;
@@ -2171,7 +2232,8 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	      tree rhs = gimple_assign_rhs1 (stmt);
 	      enum tree_code code = gimple_assign_rhs_code (stmt);
 
-	      if (TREE_CODE (lhs) != SSA_NAME)
+	      if (TREE_CODE (lhs) != SSA_NAME
+		  || has_zero_uses (lhs))
 		{
 		  gsi_next (&gsi);
 		  continue;
