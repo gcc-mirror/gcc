@@ -10624,9 +10624,6 @@ class Allocation_expression : public Expression
   do_determine_type(const Type_context*)
   { }
 
-  void
-  do_check_types(Gogo*);
-
   Expression*
   do_copy()
   { return new Allocation_expression(this->type_, this->location()); }
@@ -10638,15 +10635,6 @@ class Allocation_expression : public Expression
   // The type we are allocating.
   Type* type_;
 };
-
-// Check the type of an allocation expression.
-
-void
-Allocation_expression::do_check_types(Gogo*)
-{
-  if (this->type_->function_type() != NULL)
-    this->report_error(_("invalid new of function type"));
-}
 
 // Return a tree for an allocation expression.
 
