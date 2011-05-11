@@ -1,3 +1,24 @@
+2011-05-11  Revital Eres  <revital.eres@linaro.org>
+
+	* ddg.c (create_ddg_dep_from_intra_loop_link): If a true dep edge
+	enters the branch create an anti edge in the opposite direction
+	to prevent the creation of reg-moves.
+	* modulo-sched.c: Adjust comment to reflect the fact we are
+	scheduling closing branch.
+	(PS_STAGE_COUNT): Rename to CALC_STAGE_COUNT and redefine.
+	(stage_count): New field in struct partial_schedule.
+	(calculate_stage_count): New function.
+	(normalize_sched_times): Rename to reset_sched_times and handle
+	incrementing the sched time of the nodes by a constant value
+	passed as parameter.
+	(duplicate_insns_of_cycles): Skip closing branch.
+	(sms_schedule_by_order): Schedule closing branch.
+	(ps_insn_find_column): Handle closing branch.
+	(sms_schedule): Call reset_sched_times and adjust the code to
+	support scheduling of the closing branch.
+	(ps_insert_empty_row): Update calls to normalize_sched_times
+	and rotate_partial_schedule functions.
+
 2011-05-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48953
