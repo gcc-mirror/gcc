@@ -1,3 +1,8 @@
+2011-05-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgrtl.c (commit_one_edge_insertion): Remove always-true test and
+	reindent the subsequent block.
+
 2011-05-11  Satoru Takabayashi  <satorux@google.com>
 	    Paul Pluzhnikov  <ppluzhnikov@google.com>
 
