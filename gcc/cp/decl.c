@@ -5911,13 +5911,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
     }
 
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      /* For members, defer until finalize_literal_type_property.  */
-      && (!DECL_CLASS_SCOPE_P (decl)
-	  || !TYPE_BEING_DEFINED (DECL_CONTEXT (decl))))
-    validate_constexpr_fundecl (decl);
-
-  else if (!ensure_literal_type_for_constexpr_object (decl))
+  if (!ensure_literal_type_for_constexpr_object (decl))
     DECL_DECLARED_CONSTEXPR_P (decl) = 0;
 
   if (init && TREE_CODE (decl) == FUNCTION_DECL)
@@ -7206,7 +7200,10 @@ grokfndecl (tree ctype,
   if (inlinep)
     DECL_DECLARED_INLINE_P (decl) = 1;
   if (inlinep & 2)
-    DECL_DECLARED_CONSTEXPR_P (decl) = true;
+    {
+      DECL_DECLARED_CONSTEXPR_P (decl) = true;
+      validate_constexpr_fundecl (decl);
+    }
 
   DECL_EXTERNAL (decl) = 1;
   if (quals && TREE_CODE (type) == FUNCTION_TYPE)
@@ -12523,10 +12520,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       if (DECL_FILE_SCOPE_P (decl1))
 	maybe_apply_pragma_weak (decl1);
     }
-
-  /* constexpr functions must have literal argument types and
-     literal return type.  */
-  validate_constexpr_fundecl (decl1);
 
   /* Reset this in case the call to pushdecl changed it.  */
   current_function_decl = decl1;
