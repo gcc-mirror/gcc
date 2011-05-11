@@ -1,5 +1,8 @@
 2011-05-11  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (register_constexpr_fundef): Add to hash table here.
+	(validate_constexpr_fundecl): Not here.
+
 	* decl.c (grokdeclarator): Only set DECL_DECLARED_CONSTEXPR_P once.
 
 	* pt.c (build_non_dependent_expr): Don't check null_ptr_cst_p,
