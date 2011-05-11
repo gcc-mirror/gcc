@@ -1,3 +1,9 @@
+2011-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/26_numerics/headers/cmath/overloads_c++0x_neg.cc: Use
+	dg-require-cmath.
+	* testsuite/tr1/8_c_compatibility/cmath/overloads_neg.cc: Likewise.
+
 2011-05-11  François Dumont  <francois.cppdevs@free.fr>
 
 	* include/ext/pb_ds/detail/resize_policy/
