@@ -1580,6 +1580,12 @@
 #endif
 
 
+/* The linker hash style */
+#ifndef USED_FOR_TARGET
+#undef LINKER_HASH_STYLE
+#endif
+
+
 /* Define to the name of the LTO plugin DSO that must be passed to the
    linker's -plugin=LIB option. */
 #ifndef USED_FOR_TARGET

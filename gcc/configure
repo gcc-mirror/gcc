@@ -915,6 +915,7 @@ enable_version_specific_runtime_libs
 with_slibdir
 enable_plugin
 enable_libquadmath_support
+with_linker_hash_style
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1665,6 +1666,8 @@ Optional Packages:
                           with the compiler
   --with-system-zlib      use installed libz
   --with-slibdir=DIR      shared libraries in DIR [LIBDIR]
+  --with-linker-hash-style={sysv,gnu,both}
+                          specify the linker hash style
 
 Some influential environment variables:
   CC          C compiler command
@@ -17514,7 +17517,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17517 "configure"
+#line 17520 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17620,7 +17623,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17623 "configure"
+#line 17626 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26468,6 +26471,36 @@ $as_echo "#define ENABLE_LIBQUADMATH_SUPPORT 1" >>confdefs.h
 
 fi
 
+
+# Specify what hash style to use by default.
+
+# Check whether --with-linker-hash-style was given.
+if test "${with_linker_hash_style+set}" = set; then :
+  withval=$with_linker_hash_style; case x"$withval" in
+   xsysv)
+     LINKER_HASH_STYLE=sysv
+     ;;
+   xgnu)
+     LINKER_HASH_STYLE=gnu
+     ;;
+   xboth)
+     LINKER_HASH_STYLE=both
+     ;;
+   *)
+     as_fn_error "$withval is an invalid option to --with-linker-hash-style" "$LINENO" 5
+     ;;
+ esac
+else
+  LINKER_HASH_STYLE=''
+fi
+
+if test x"${LINKER_HASH_STYLE}" != x; then
+
+cat >>confdefs.h <<_ACEOF
+#define LINKER_HASH_STYLE "$LINKER_HASH_STYLE"
+_ACEOF
+
+fi
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)
