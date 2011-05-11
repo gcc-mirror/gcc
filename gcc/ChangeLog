@@ -1,3 +1,14 @@
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_type_hash_1): Merge with ...
+	(gimple_type_hash): ... this.
+	(gtc_visit): Remove mode parameter and simplify accordingly.
+	(gimple_types_compatible_p_1): Likewise.
+	(gimple_types_compatible_p): Likewise.
+	(iterative_hash_gimple_type): Likewise.
+	(visit): Likewise.
+	(gimple_type_eq): Adjust.
+
 2011-05-11  Revital Eres  <revital.eres@linaro.org>
 
 	* ddg.c (create_ddg_dep_from_intra_loop_link): If a true dep edge
