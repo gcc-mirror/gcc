@@ -1,3 +1,26 @@
+2011-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (legitimize_tls_address)
+	<TLS_MODEL_GLOBAL_DYNAMIC>: Call gen_tls_dynamic_gnu2_{32,64}
+	expanders directly for TARGET_GNU2_TLS.  Determine pic and
+	__tls_get_addr symbol reference here.  Update call to
+	gen_tls_global_dynamic_{32,64} for added arguments.
+	<TLS_MODEL_LOCAL_DYNAMIC>: Call gen_tls_dynamic_gnu2_{32,64}
+	expanders directly for TARGET_GNU2_TLS.  Determine
+	__tls_get_addr symbol reference here.  Update call to
+	gen_tls_local_dynamic_base_{32,64} for added arguments.  Attach
+	unique UNSPEC REG_EQUIV to libcall block.
+	(ix86_tls_get_addr): Declare static.
+	* config/i386/i386-protos.h (ix86_tls_get_addr): Remove declaration.
+	* config/i386/i386.md (tls_global_dynamic_32): Add operand 2 and 3.
+	Do not determine pic and __tls_get_addr symbol reference here. Do not
+	call gen_tls_dynamic_gnu2_32 for TARGET_GNU2_TLS.
+	(tls_local_dynamic_base_32): Ditto for operands 1 and 2.
+	(tls_global_dynamic_64): Add operand 2.  Do not determine
+	__tls_get_addr symbol reference here.  Do not call
+	gen_tls_dynamic_gnu2_64 for TARGET_GNU2_TLS here.
+	(tls_local_dynamic_base64): Ditto for operand 1.
+
 2011-05-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.c (expand_function_start): Initialize stack_check_probe_note
@@ -13,8 +36,7 @@
 
 2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
 
-	* ggc-page.c (extra_order_size_table): Use struct
-	tree_type_non_common.
+	* ggc-page.c (extra_order_size_table): Use struct tree_type_non_common.
 	* lto-streamer-in.c (unpack_ts_type_value_fields): Rename to...
 	(unpack_ts_type_common_value_fields): ...this.  Update comment.
 	(unpack_value_fields): Adjust for renaming.
@@ -100,10 +122,8 @@
 
 2011-05-11  Joseph Myers  <joseph@codesourcery.com>
 
-	* opts.c (finish_options): Move warning settings from
-	process_options.
-	* toplev.c (process_options): Move warning settings to
-	finish_options.
+	* opts.c (finish_options): Move warning settings from process_options.
+	* toplev.c (process_options): Move warning settings to finish_options.
 
 2011-05-11  Richard Guenther  <rguenther@suse.de>
 
@@ -192,8 +212,7 @@
 
 2011-05-10  Joseph Myers  <joseph@codesourcery.com>
 
-	* config/rs6000/genopt.sh, config/rs6000/rs6000-cpus.def: New
-	files.
+	* config/rs6000/genopt.sh, config/rs6000/rs6000-cpus.def: New files.
 	* config/rs6000/rs6000-tables.opt: New file (generated).
 	* config.gcc (powerpc*-*-*, rs6000*-*-*): Add
 	rs6000/rs6000-tables.opt to extra_options.
@@ -230,8 +249,7 @@
 
 	* config.gcc (libgcc_tm_file): Define instead of including files
 	from ../../libgcc/config/ in tm_file.
-	* configure.ac (libgcc_tm_file_list, libgcc_tm_include_list):
-	Define.
+	* configure.ac (libgcc_tm_file_list, libgcc_tm_include_list): Define.
 	* configure: Regenerate.
 	* Makefile.in (libgcc_tm_file_list, libgcc_tm_include_list,
 	libgcc_tm.h, cs-libgcc_tm.h): New.
