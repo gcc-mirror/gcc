@@ -385,11 +385,11 @@ lto_ft_type (tree t)
 
   /* Accessors are for derived node types only. */
   if (!POINTER_TYPE_P (t))
-    LTO_FIXUP_TREE (t->type.minval);
-  LTO_FIXUP_TREE (t->type.maxval);
+    LTO_FIXUP_TREE (TYPE_MINVAL (t));
+  LTO_FIXUP_TREE (TYPE_MAXVAL (t));
 
   /* Accessor is for derived node types only. */
-  LTO_FIXUP_TREE (t->type.binfo);
+  LTO_FIXUP_TREE (t->type_non_common.binfo);
 
   LTO_FIXUP_TREE (TYPE_CONTEXT (t));
 
@@ -2079,9 +2079,9 @@ lto_fixup_prevailing_decls (tree t)
       LTO_NO_PREVAIL (TYPE_ATTRIBUTES (t));
       LTO_NO_PREVAIL (TYPE_NAME (t));
 
-      LTO_SET_PREVAIL (t->type.minval);
-      LTO_SET_PREVAIL (t->type.maxval);
-      LTO_SET_PREVAIL (t->type.binfo);
+      LTO_SET_PREVAIL (TYPE_MINVAL (t));
+      LTO_SET_PREVAIL (TYPE_MAXVAL (t));
+      LTO_SET_PREVAIL (t->type_non_common.binfo);
 
       LTO_SET_PREVAIL (TYPE_CONTEXT (t));
 

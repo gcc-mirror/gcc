@@ -1331,7 +1331,7 @@ extern tree *type_map;
 
 /* If FUNCTION_TYPE or METHOD_TYPE: cache for build_java_argument_signature. */
 #define TYPE_ARGUMENT_SIGNATURE(TYPE) \
-  (TREE_CHECK2 (TYPE, FUNCTION_TYPE, METHOD_TYPE)->type.minval)
+  (TYPE_MINVAL (TREE_CHECK2 (TYPE, FUNCTION_TYPE, METHOD_TYPE)))
 
 /* Given an array type, give the type of the elements. */
 /* FIXME this use of TREE_TYPE conflicts with something or other. */

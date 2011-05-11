@@ -1,3 +1,9 @@
+2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_ft_type): Use TYPE_MINVAL and TYPE_MAXVAL.  Adjust
+	location of binfo field.
+	(lto_fixup_prevailing_decls): Likewise.
+
 2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto-lang.c (def_fn_type): Don't call build_function_type, call

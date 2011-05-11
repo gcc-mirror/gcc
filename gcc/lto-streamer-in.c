@@ -1745,11 +1745,11 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 }
 
 
-/* Unpack all the non-pointer fields of the TS_TYPE structure
+/* Unpack all the non-pointer fields of the TS_TYPE_COMMON structure
    of expression EXPR from bitpack BP.  */
 
 static void
-unpack_ts_type_value_fields (struct bitpack_d *bp, tree expr)
+unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
   enum machine_mode mode;
 
@@ -1821,8 +1821,8 @@ unpack_value_fields (struct bitpack_d *bp, tree expr)
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     unpack_ts_function_decl_value_fields (bp, expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE))
-    unpack_ts_type_value_fields (bp, expr);
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    unpack_ts_type_common_value_fields (bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     unpack_ts_block_value_fields (bp, expr);
@@ -2099,13 +2099,37 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
 }
 
 
-/* Read all pointer fields in the TS_TYPE structure of EXPR from input
-   block IB.  DATA_IN contains tables and descriptors for the
+/* Read all pointer fields in the TS_TYPE_COMMON structure of EXPR from
+   input block IB.  DATA_IN contains tables and descriptors for the file
+   being read.  */
+
+static void
+lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
+					struct data_in *data_in, tree expr)
+{
+  TYPE_SIZE (expr) = lto_input_tree (ib, data_in);
+  TYPE_SIZE_UNIT (expr) = lto_input_tree (ib, data_in);
+  TYPE_ATTRIBUTES (expr) = lto_input_tree (ib, data_in);
+  TYPE_NAME (expr) = lto_input_tree (ib, data_in);
+  /* Do not stream TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
+     reconstructed during fixup.  */
+  /* Do not stream TYPE_NEXT_VARIANT, we reconstruct the variant lists
+     during fixup.  */
+  TYPE_MAIN_VARIANT (expr) = lto_input_tree (ib, data_in);
+  TYPE_CONTEXT (expr) = lto_input_tree (ib, data_in);
+  /* TYPE_CANONICAL gets re-computed during type merging.  */
+  TYPE_CANONICAL (expr) = NULL_TREE;
+  TYPE_STUB_DECL (expr) = lto_input_tree (ib, data_in);
+}
+
+/* Read all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR
+   from input block IB.  DATA_IN contains tables and descriptors for the
    file being read.  */
 
 static void
-lto_input_ts_type_tree_pointers (struct lto_input_block *ib,
-				 struct data_in *data_in, tree expr)
+lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
+					    struct data_in *data_in,
+					    tree expr)
 {
   if (TREE_CODE (expr) == ENUMERAL_TYPE)
     TYPE_VALUES (expr) = lto_input_tree (ib, data_in);
@@ -2117,24 +2141,11 @@ lto_input_ts_type_tree_pointers (struct lto_input_block *ib,
 	   || TREE_CODE (expr) == METHOD_TYPE)
     TYPE_ARG_TYPES (expr) = lto_input_tree (ib, data_in);
 
-  TYPE_SIZE (expr) = lto_input_tree (ib, data_in);
-  TYPE_SIZE_UNIT (expr) = lto_input_tree (ib, data_in);
-  TYPE_ATTRIBUTES (expr) = lto_input_tree (ib, data_in);
-  TYPE_NAME (expr) = lto_input_tree (ib, data_in);
-  /* Do not stream TYPE_POINTER_TO or TYPE_REFERENCE_TO nor
-     TYPE_NEXT_PTR_TO or TYPE_NEXT_REF_TO.  */
   if (!POINTER_TYPE_P (expr))
     TYPE_MINVAL (expr) = lto_input_tree (ib, data_in);
   TYPE_MAXVAL (expr) = lto_input_tree (ib, data_in);
-  TYPE_MAIN_VARIANT (expr) = lto_input_tree (ib, data_in);
-  /* Do not stream TYPE_NEXT_VARIANT, we reconstruct the variant lists
-     during fixup.  */
   if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_BINFO (expr) = lto_input_tree (ib, data_in);
-  TYPE_CONTEXT (expr) = lto_input_tree (ib, data_in);
-  /* TYPE_CANONICAL gets re-computed during type merging.  */
-  TYPE_CANONICAL (expr) = NULL_TREE;
-  TYPE_STUB_DECL (expr) = lto_input_tree (ib, data_in);
 }
 
 
@@ -2370,8 +2381,11 @@ lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     lto_input_ts_function_decl_tree_pointers (ib, data_in, expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE))
-    lto_input_ts_type_tree_pointers (ib, data_in, expr);
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    lto_input_ts_type_common_tree_pointers (ib, data_in, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
+    lto_input_ts_type_non_common_tree_pointers (ib, data_in, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
     lto_input_ts_list_tree_pointers (ib, data_in, expr);

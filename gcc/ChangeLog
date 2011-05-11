@@ -1,3 +1,41 @@
+2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* ggc-page.c (extra_order_size_table): Use struct
+	tree_type_non_common.
+	* lto-streamer-in.c (unpack_ts_type_value_fields): Rename to...
+	(unpack_ts_type_common_value_fields): ...this.  Update comment.
+	(unpack_value_fields): Adjust for renaming.
+	(lto_input_ts_type_tree_pointers): Split into...
+	(lto_input_ts_type_common_tree_pointer): ...this and...
+	(lto_input_ts_type_non_common_tree_pointers): ...this.
+	(lto_input_tree_pointers): Adjust for above split.
+	* lto-streamer-out.c (pack_ts_type_value_fields): Rename to...
+	(pack_ts_type_common_value_fields): ...this.  Update comment.
+	(lto_output_ts_type_tree_pointers): Split into...
+	(lto_output_ts_type_common_tree_pointers): ...this and...
+	(lto_output_ts_type_non_common_tree_pointers): ...this.
+	(lto_output_tree_pointers): Adjust for above split.
+	* lto-streamer.c (check_handled_ts_structures): Mark TS_TYPE_COMMON,
+	TS_TYPE_WITH_LANG_SPECIFIC, and TS_TYPE_NON_COMMON as handled.
+	* stor-layout.c (vector_type_mode): Adjust location of mode field.
+	* tree.h (MARK_TS_TYPE_COMMON, MARK_TS_TYPE_WITH_LANG_SPECIFIC):
+	Define.
+	(struct tree_type): Split into...
+	(struct tree_type_common: ...this and...
+	(struct tree_type_with_lang_specific): ...this and...
+	(struct tree_type_non_common): ...this.  Adjust accessor macros
+	accordingly.
+	(TYPE_VALUES_RAW): Define.
+	(union tree_node): Update for above changes.
+	* tree.c (tree_node_structure_for_code) [tcc_type]: Return
+	TS_TYPE_NON_COMMON.
+	(initialize_tree_contains_struct) [TS_TYPE]: Use TS_TYPE_COMMON.
+	Add TS_TYPE_WITH_LANG_SPECIFIC and TS_TYPE_NON_COMMON.
+	(tree_code_size) [tcc_type]: Use struct tree_type_non_common.
+	* treestructu.def (TS_TYPE): Remove.
+	(TS_TYPE_COMMON, TS_TYPE_WITH_LANG_SPECIFIC, TS_TYPE_NON_COMMON):
+	Define.
+
 2011-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48159
