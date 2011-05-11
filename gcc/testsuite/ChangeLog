@@ -1,3 +1,8 @@
+2011-05-11  Alan Modra  <amodra@gmail.com>
+
+	PR target/47755
+	* gcc.target/powerpc/pr47755-2.c: Require vsx_hw.
+
 2011-05-10  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/defaulted25.C: New.
