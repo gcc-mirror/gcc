@@ -9933,7 +9933,6 @@ grokdeclarator (const cp_declarator *declarator,
 		      return error_mark_node;
 		  }
 
-                DECL_DECLARED_CONSTEXPR_P (decl) = constexpr_p;
 		decl = do_friend (ctype, unqualified_id, decl,
 				  *attrlist, flags,
 				  funcdef_flag);
@@ -10183,8 +10182,11 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 	  }
 	else if (constexpr_p && DECL_EXTERNAL (decl))
-	  error ("declaration of constexpr variable %qD is not a definition",
-		 decl);
+	  {
+	    error ("declaration of constexpr variable %qD is not a definition",
+		   decl);
+	    constexpr_p = false;
+	  }
       }
 
     if (storage_class == sc_extern && initialized && !funcdef_flag)
@@ -10213,8 +10215,8 @@ grokdeclarator (const cp_declarator *declarator,
     else if (storage_class == sc_static)
       DECL_THIS_STATIC (decl) = 1;
 
-    /* Don't forget constexprness.  */
-    if (constexpr_p)
+    /* Set constexpr flag on vars (functions got it in grokfndecl).  */
+    if (constexpr_p && TREE_CODE (decl) == VAR_DECL)
       DECL_DECLARED_CONSTEXPR_P (decl) = true;
 
     /* Record constancy and volatility on the DECL itself .  There's
