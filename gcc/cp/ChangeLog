@@ -1,3 +1,11 @@
+2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-tree.h (TYPENAME_TYPE_FULLNAME, TYPEOF_TYPE_EXPR): Use
+	TYPE_VALUES_RAW.
+	(UNDERLYING_TYPE_TYPE, DECLTYPE_TYPE_EXPR): Likewise.
+	(DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P): Likewise.
+	(TEMPLATE_TYPE_PARM_INDEX): Likewise.
+
 2011-05-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48930

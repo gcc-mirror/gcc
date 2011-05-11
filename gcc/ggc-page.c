@@ -196,7 +196,7 @@ static const size_t extra_order_size_table[] = {
   sizeof (struct tree_field_decl),
   sizeof (struct tree_parm_decl),
   sizeof (struct tree_var_decl),
-  sizeof (struct tree_type),
+  sizeof (struct tree_type_non_common),
   sizeof (struct function),
   sizeof (struct basic_block_def),
   sizeof (struct cgraph_node),

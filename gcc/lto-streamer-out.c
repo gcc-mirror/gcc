@@ -488,11 +488,11 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 }
 
 
-/* Pack all the non-pointer fields of the TS_TYPE structure
+/* Pack all the non-pointer fields of the TS_TYPE_COMMON structure
    of expression EXPR into bitpack BP.  */
 
 static void
-pack_ts_type_value_fields (struct bitpack_d *bp, tree expr)
+pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
   bp_pack_value (bp, TYPE_PRECISION (expr), 10);
   bp_pack_value (bp, TYPE_MODE (expr), 8);
@@ -560,8 +560,8 @@ pack_value_fields (struct bitpack_d *bp, tree expr)
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     pack_ts_function_decl_value_fields (bp, expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE))
-    pack_ts_type_value_fields (bp, expr);
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    pack_ts_type_common_value_fields (bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     pack_ts_block_value_fields (bp, expr);
@@ -949,13 +949,36 @@ lto_output_ts_function_decl_tree_pointers (struct output_block *ob, tree expr,
 }
 
 
-/* Write all pointer fields in the TS_TYPE structure of EXPR to output
-   block OB.  If REF_P is true, write a reference to EXPR's pointer
-   fields.  */
+/* Write all pointer fields in the TS_TYPE_COMMON structure of EXPR to
+   output block OB.  If REF_P is true, write a reference to EXPR's
+   pointer fields.  */
 
 static void
-lto_output_ts_type_tree_pointers (struct output_block *ob, tree expr,
-				  bool ref_p)
+lto_output_ts_type_common_tree_pointers (struct output_block *ob, tree expr,
+					 bool ref_p)
+{
+  lto_output_tree_or_ref (ob, TYPE_SIZE (expr), ref_p);
+  lto_output_tree_or_ref (ob, TYPE_SIZE_UNIT (expr), ref_p);
+  lto_output_tree_or_ref (ob, TYPE_ATTRIBUTES (expr), ref_p);
+  lto_output_tree_or_ref (ob, TYPE_NAME (expr), ref_p);
+  /* Do not stream TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
+     reconstructed during fixup.  */
+  /* Do not stream TYPE_NEXT_VARIANT, we reconstruct the variant lists
+     during fixup.  */
+  lto_output_tree_or_ref (ob, TYPE_MAIN_VARIANT (expr), ref_p);
+  lto_output_tree_or_ref (ob, TYPE_CONTEXT (expr), ref_p);
+  /* TYPE_CANONICAL is re-computed during type merging, so no need
+     to stream it here.  */
+  lto_output_tree_or_ref (ob, TYPE_STUB_DECL (expr), ref_p);
+}
+
+/* Write all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR
+   to output block OB.  If REF_P is true, write a reference to EXPR's
+   pointer fields.  */
+
+static void
+lto_output_ts_type_non_common_tree_pointers (struct output_block *ob,
+					     tree expr, bool ref_p)
 {
   if (TREE_CODE (expr) == ENUMERAL_TYPE)
     lto_output_tree_or_ref (ob, TYPE_VALUES (expr), ref_p);
@@ -967,24 +990,11 @@ lto_output_ts_type_tree_pointers (struct output_block *ob, tree expr,
 	   || TREE_CODE (expr) == METHOD_TYPE)
     lto_output_tree_or_ref (ob, TYPE_ARG_TYPES (expr), ref_p);
 
-  lto_output_tree_or_ref (ob, TYPE_SIZE (expr), ref_p);
-  lto_output_tree_or_ref (ob, TYPE_SIZE_UNIT (expr), ref_p);
-  lto_output_tree_or_ref (ob, TYPE_ATTRIBUTES (expr), ref_p);
-  lto_output_tree_or_ref (ob, TYPE_NAME (expr), ref_p);
-  /* Do not stream TYPE_POINTER_TO or TYPE_REFERENCE_TO nor
-     TYPE_NEXT_PTR_TO or TYPE_NEXT_REF_TO.  */
   if (!POINTER_TYPE_P (expr))
     lto_output_tree_or_ref (ob, TYPE_MINVAL (expr), ref_p);
   lto_output_tree_or_ref (ob, TYPE_MAXVAL (expr), ref_p);
-  lto_output_tree_or_ref (ob, TYPE_MAIN_VARIANT (expr), ref_p);
-  /* Do not stream TYPE_NEXT_VARIANT, we reconstruct the variant lists
-     during fixup.  */
   if (RECORD_OR_UNION_TYPE_P (expr))
     lto_output_tree_or_ref (ob, TYPE_BINFO (expr), ref_p);
-  lto_output_tree_or_ref (ob, TYPE_CONTEXT (expr), ref_p);
-  /* TYPE_CANONICAL is re-computed during type merging, so no need
-     to stream it here.  */
-  lto_output_tree_or_ref (ob, TYPE_STUB_DECL (expr), ref_p);
 }
 
 
@@ -1183,8 +1193,11 @@ lto_output_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     lto_output_ts_function_decl_tree_pointers (ob, expr, ref_p);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE))
-    lto_output_ts_type_tree_pointers (ob, expr, ref_p);
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    lto_output_ts_type_common_tree_pointers (ob, expr, ref_p);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
+    lto_output_ts_type_non_common_tree_pointers (ob, expr, ref_p);
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
     lto_output_ts_list_tree_pointers (ob, expr, ref_p);
