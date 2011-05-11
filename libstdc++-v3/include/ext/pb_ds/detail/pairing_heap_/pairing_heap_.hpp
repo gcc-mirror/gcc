@@ -198,18 +198,9 @@ namespace __gnu_pbds
       remove_node(node_pointer p_nd);
     };
 
-#define PB_DS_ASSERT_VALID(X)						\
-  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
-
 #define PB_DS_ASSERT_NODE_CONSISTENT(_Node, _Bool)			\
   _GLIBCXX_DEBUG_ONLY(assert_node_consistent(_Node, _Bool,		\
 					     __FILE__, __LINE__);)
-
-#define PB_DS_DEBUG_VERIFY(_Cond)					\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
-			   _M_message(#_Cond" assertion from %1;:%2;")	\
-			   ._M_string(__FILE__)._M_integer(__LINE__)	\
-			   ,__file,__line)
 
 #include <ext/pb_ds/detail/pairing_heap_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/pairing_heap_/debug_fn_imps.hpp>
@@ -218,9 +209,7 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/pairing_heap_/erase_fn_imps.hpp>
 #include <ext/pb_ds/detail/pairing_heap_/split_join_fn_imps.hpp>
 
-#undef PB_DS_DEBUG_VERIFY
 #undef PB_DS_ASSERT_NODE_CONSISTENT
-#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_BASE_C_DEC

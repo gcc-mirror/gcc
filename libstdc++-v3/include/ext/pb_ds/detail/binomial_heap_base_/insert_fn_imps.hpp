@@ -43,7 +43,7 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
 
   node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
 
@@ -51,7 +51,7 @@ push(const_reference r_val)
 
   m_p_max = 0;
 
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
 
   return point_iterator(p_nd);
 }
@@ -171,7 +171,7 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
   node_pointer p_nd = it.m_p_nd;
 
   _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
@@ -198,7 +198,7 @@ modify(point_iterator it, const_reference r_new_val)
 
       m_p_max = 0;
 
-      PB_DS_ASSERT_VALID((*this),true)
+      PB_DS_ASSERT_VALID_COND((*this),true)
 
         return;
     }
@@ -211,6 +211,6 @@ modify(point_iterator it, const_reference r_new_val)
 
   m_p_max = 0;
 
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
 }
 

@@ -107,15 +107,9 @@ namespace __gnu_pbds
 		    Cmp_Fn, false, Allocator>
 #endif
 
-#define PB_DS_ASSERT_VALID(X)						\
-  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
-
-#define PB_DS_CHECK_KEY_EXISTS(_Key)					\
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(_Key, __FILE__, __LINE__);)
-
-#define PB_DS_CHECK_KEY_DOES_NOT_EXIST(_Key)				\
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(_Key,	\
-							   __FILE__, __LINE__);)
+#ifndef PB_DS_CHECK_KEY_EXISTS
+#  error Missing definition
+#endif
 
     // Ordered-vector tree associative-container.
     template<typename Key, typename Mapped, class Cmp_Fn,
@@ -502,12 +496,6 @@ namespace __gnu_pbds
       size_type m_size;
     };
 
-#define PB_DS_DEBUG_VERIFY(_Cond)					\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
-			   _M_message(#_Cond" assertion from %1;:%2;")	\
-			   ._M_string(__FILE__)._M_integer(__LINE__)	\
-			   ,__file,__line)
-
 #include <ext/pb_ds/detail/ov_tree_map_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/ov_tree_map_/iterators_fn_imps.hpp>
 #include <ext/pb_ds/detail/ov_tree_map_/debug_fn_imps.hpp>
@@ -517,10 +505,6 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/ov_tree_map_/split_join_fn_imps.hpp>
 #include <ext/pb_ds/detail/bin_search_tree_/policy_access_fn_imps.hpp>
 
-#undef PB_DS_DEBUG_VERIFY
-#undef PB_DS_CHECK_KEY_DOES_NOT_EXIST
-#undef PB_DS_CHECK_KEY_EXISTS
-#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_OV_TREE_CLASS_NAME

@@ -43,6 +43,22 @@
 
 #include <ext/typelist.h>
 
+#define PB_DS_ASSERT_VALID(X)						\
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
+
+#define PB_DS_CHECK_KEY_EXISTS(_Key)					\
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(_Key, __FILE__, __LINE__);)
+
+#define PB_DS_CHECK_KEY_DOES_NOT_EXIST(_Key)				\
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(_Key,	\
+							   __FILE__, __LINE__);)
+
 #define PB_DS_DATA_TRUE_INDICATOR
 #include <ext/pb_ds/detail/list_update_map_/lu_map_.hpp>
 #undef PB_DS_DATA_TRUE_INDICATOR
@@ -98,6 +114,11 @@
 #define PB_DS_DATA_FALSE_INDICATOR
 #include <ext/pb_ds/detail/pat_trie_/pat_trie_.hpp>
 #undef PB_DS_DATA_FALSE_INDICATOR
+
+#undef PB_DS_CHECK_KEY_DOES_NOT_EXIST
+#undef PB_DS_CHECK_KEY_EXISTS
+#undef PB_DS_DEBUG_VERIFY
+#undef PB_DS_ASSERT_VALID
 
 namespace __gnu_pbds
 {

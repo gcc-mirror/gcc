@@ -104,13 +104,9 @@ namespace __gnu_pbds
 #endif 
     };
 
-#define PB_DS_ASSERT_VALID(X)						\
-  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
-
 #include <ext/pb_ds/detail/binomial_heap_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/binomial_heap_/debug_fn_imps.hpp>
 
-#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_C_DEC
 
 #undef PB_DS_CLASS_T_DEC

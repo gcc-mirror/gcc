@@ -44,15 +44,15 @@ void
 PB_DS_CLASS_C_DEC::
 split(Pred pred, PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_ASSERT_VALID((*this),true)
-  PB_DS_ASSERT_VALID(other,true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
+  PB_DS_ASSERT_VALID_COND(other,true)
 
   other.clear();
 
   if (base_type::empty())
     {
-      PB_DS_ASSERT_VALID((*this),true)
-      PB_DS_ASSERT_VALID(other,true)
+      PB_DS_ASSERT_VALID_COND((*this),true)
+      PB_DS_ASSERT_VALID_COND(other,true)
 
       return;
     }
@@ -86,7 +86,7 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
       p_out = p_next;
     }
 
-  PB_DS_ASSERT_VALID(other,true)
+  PB_DS_ASSERT_VALID_COND(other,true)
 
   node_pointer p_cur = base_type::m_p_root;
 
@@ -114,8 +114,8 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
 
   m_p_max = 0;
 
-  PB_DS_ASSERT_VALID((*this),true)
-  PB_DS_ASSERT_VALID(other,true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
+  PB_DS_ASSERT_VALID_COND(other,true)
 }
 
 PB_DS_CLASS_T_DEC
@@ -123,8 +123,8 @@ inline void
 PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_ASSERT_VALID((*this),true)
-  PB_DS_ASSERT_VALID(other,true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
+  PB_DS_ASSERT_VALID_COND(other,true)
 
   node_pointer p_other = other.m_p_root;
 
@@ -147,8 +147,8 @@ join(PB_DS_CLASS_C_DEC& other)
   other.m_size = 0;
   other.m_p_max = 0;
 
-  PB_DS_ASSERT_VALID((*this),true)
-  PB_DS_ASSERT_VALID(other,true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
+  PB_DS_ASSERT_VALID_COND(other,true)
 }
 
 PB_DS_CLASS_T_DEC

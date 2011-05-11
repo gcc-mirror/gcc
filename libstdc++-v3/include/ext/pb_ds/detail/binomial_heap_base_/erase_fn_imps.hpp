@@ -43,7 +43,7 @@ void
 PB_DS_CLASS_C_DEC::
 pop()
 {
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
   _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
   if (m_p_max == 0)
@@ -59,7 +59,7 @@ pop()
 
   m_p_max = 0;
 
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
 }
 
 PB_DS_CLASS_T_DEC
@@ -113,7 +113,7 @@ void
 PB_DS_CLASS_C_DEC::
 erase(point_iterator it)
 {
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
   _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
   base_type::bubble_to_top(it.m_p_nd);
@@ -124,7 +124,7 @@ erase(point_iterator it)
 
   m_p_max = 0;
 
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
 }
 
 PB_DS_CLASS_T_DEC
@@ -133,11 +133,11 @@ typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
 
   if (base_type::empty())
     {
-      PB_DS_ASSERT_VALID((*this),true)
+      PB_DS_ASSERT_VALID_COND((*this),true)
 
       return 0;
     }
@@ -185,7 +185,7 @@ erase_if(Pred pred)
 
   m_p_max = 0;
 
-  PB_DS_ASSERT_VALID((*this),true)
+  PB_DS_ASSERT_VALID_COND((*this),true)
 
   return ersd;
 }

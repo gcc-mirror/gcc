@@ -337,22 +337,6 @@ namespace __gnu_pbds
       mutable entry_pointer m_p_l;
     };
 
-#define PB_DS_ASSERT_VALID(X)						\
-  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
-
-#define PB_DS_CHECK_KEY_EXISTS(_Key)					\
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(_Key, __FILE__, __LINE__);)
-
-#define PB_DS_CHECK_KEY_DOES_NOT_EXIST(_Key)				\
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(_Key,	\
-							   __FILE__, __LINE__);)
-
-#define PB_DS_DEBUG_VERIFY(_Cond)					\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
-			   _M_message(#_Cond" assertion from %1;:%2;")	\
-			   ._M_string(__FILE__)._M_integer(__LINE__)	\
-			   ,__file,__line)
-
 #include <ext/pb_ds/detail/list_update_map_/constructor_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/list_update_map_/info_fn_imps.hpp>
 #include <ext/pb_ds/detail/list_update_map_/debug_fn_imps.hpp>
@@ -362,10 +346,6 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/list_update_map_/insert_fn_imps.hpp>
 #include <ext/pb_ds/detail/list_update_map_/trace_fn_imps.hpp>
 
-#undef PB_DS_DEBUG_VERIFY
-#undef PB_DS_CHECK_KEY_DOES_NOT_EXIST
-#undef PB_DS_CHECK_KEY_EXISTS
-#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 #undef  PB_DS_TYPES_TRAITS_C_DEC

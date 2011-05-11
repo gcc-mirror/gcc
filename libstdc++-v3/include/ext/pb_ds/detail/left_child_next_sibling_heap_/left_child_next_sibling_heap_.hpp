@@ -332,15 +332,6 @@ namespace __gnu_pbds
       static no_throw_copies_t s_no_throw_copies_ind;
     };
 
-#define PB_DS_ASSERT_VALID(X) \
-  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
-
-#define PB_DS_DEBUG_VERIFY(_Cond)					\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
-			   _M_message(#_Cond" assertion from %1;:%2;")	\
-			   ._M_string(__FILE__)._M_integer(__LINE__)	\
-			   ,__file,__line)
-
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/iterators_fn_imps.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/debug_fn_imps.hpp>
@@ -350,8 +341,6 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/info_fn_imps.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/policy_access_fn_imps.hpp>
 
-#undef PB_DS_DEBUG_VERIFY
-#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_T_DEC
 

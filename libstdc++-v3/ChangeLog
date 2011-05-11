@@ -1,3 +1,31 @@
+2011-05-11  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp (assert_valid): Replace
+	_GLIBCXX_DEBUG_ASSERT calls with PB_DS_DEBUG_VERIFY.
+	* include/ext/pb_ds/detail/binomial_heap_base_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, insert_fn_imps.hpp, binomial_heap_base_.hpp,
+	constructors_destructor_fn_imps.hpp, split_join_fn_imps.hpp
+	(PB_DS_ASSERT_VALID): Rename in PB_DS_ASSERT_VALID_COND.
+	* include/ext/pb_ds/detail/debug_map_base.hpp,
+	splay_tree_/splay_tree_.hpp, ov_tree_map_/ov_tree_map_.hpp,
+	cc_hash_table_map_/cc_ht_map_.hpp, pat_trie_/pat_trie_.hpp,
+	leaf.hpp, internal_node.hpp, gp_hash_table_map_/gp_ht_map_.hpp,
+	bin_search_tree_/bin_search_tree_.hpp, list_update_map_/lu_map_.hpp,
+	rb_tree_map_/rb_tree_.hpp (PB_DS_ASSERT_VALID, PB_DS_DEBUG_VERIFY,
+	PB_DS_CHECK_KEY_EXISTS,	PB_DS_CHECK_KEY_DOES_NOT_EXIST): Duplicate
+	macro definitions move...
+	* include/ext/pb_ds/detail/container_base_dispatch.hpp: ... here...
+	* include/ext/pb_ds/detail/basic_tree_policy/traits.hpp: ... and here.
+	* include/ext/pb_ds/detail/binary_heap_/binary_heap_.hpp,
+	resize_policy.hpp, pairing_heap_/pairing_heap_.hpp,
+	left_child_next_sibling_heap_/left_child_next_sibling_heap_.hpp,
+	binomial_heap_/binomial_heap_.hpp, thin_heap_/thin_heap_.hpp,
+	rc_binomial_heap_/rc_binomial_heap_.hpp, rc.hpp (PB_DS_ASSERT_VALID,
+	PB_DS_DEBUG_VERIFY): Duplicate macro definitions move...
+	* include/ext/pb_ds/detail/priority_queue_base_dispatch.hpp:
+	...here.
+
 2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/48933
