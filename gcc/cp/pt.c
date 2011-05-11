@@ -18871,10 +18871,13 @@ build_non_dependent_expr (tree expr)
 {
   tree inner_expr;
 
-  /* Preserve null pointer constants so that the type of things like
-     "p == 0" where "p" is a pointer can be determined.  */
-  if (null_ptr_cst_p (expr))
-    return expr;
+#ifdef ENABLE_CHECKING
+  /* Try to get a constant value for all non-type-dependent expressions in
+      order to expose bugs in *_dependent_expression_p and constexpr.  */
+  if (cxx_dialect >= cxx0x)
+    maybe_constant_value (fold_non_dependent_expr (expr));
+#endif
+
   /* Preserve OVERLOADs; the functions must be available to resolve
      types.  */
   inner_expr = expr;
