@@ -4578,8 +4578,6 @@ type_requires_array_cookie (tree type)
 static void
 finalize_literal_type_property (tree t)
 {
-  tree fn;
-
   if (cxx_dialect < cxx0x
       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
       /* FIXME These constraints seem unnecessary; remove from standard.
@@ -4589,11 +4587,6 @@ finalize_literal_type_property (tree t)
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
-
-  for (fn = TYPE_METHODS (t); fn; fn = DECL_CHAIN (fn))
-    if (DECL_DECLARED_CONSTEXPR_P (fn)
-	&& TREE_CODE (fn) != TEMPLATE_DECL)
-      validate_constexpr_fundecl (fn);
 }
 
 /* Check the validity of the bases and members declared in T.  Add any
@@ -5833,6 +5826,8 @@ finish_struct (tree t, tree attributes)
     popclass ();
   else
     error ("trying to finish struct, but kicked out due to previous parse errors");
+
+  check_deferred_constexpr_decls ();
 
   if (processing_template_decl && at_function_scope_p ())
     add_stmt (build_min (TAG_DEFN, t));

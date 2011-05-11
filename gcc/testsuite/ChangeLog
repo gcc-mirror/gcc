@@ -1,5 +1,8 @@
 2011-05-11  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-friend.C: New.
+	* g++.dg/cpp0x/constexpr-incomplete1.C: New.
+
 	* g++.dg/cpp0x/sfinae22.C: New.
 
 2011-05-11  Tobias Burnus  <burnus@net-b.de>

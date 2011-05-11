@@ -1,0 +1,23 @@
+// PR c++/48948
+// { dg-options -std=c++0x }
+
+struct A { A(); };
+
+struct B {
+  friend constexpr int f(B) { return 0; } // OK
+  friend constexpr int f(A) { return 0; } // { dg-error "constexpr" }
+};
+
+template <class T>
+struct C
+{
+  friend constexpr int f(C) { return 0; }
+  friend constexpr int g(C, A) { return 0; } // { dg-error "double" }
+  constexpr int m(C) { return 0; }
+  constexpr int m(A) { return 0; } // { dg-error "double" }
+};
+
+constexpr int i = f(C<int>());
+constexpr int j = C<int>().m(C<int>());
+constexpr int k = C<double>().m(A()); // { dg-error "not a constexpr function" }
+constexpr int l = g(C<double>(),A()); // { dg-error "not a constexpr function" }

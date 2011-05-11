@@ -5336,7 +5336,11 @@ literal_type_p (tree t)
       || TREE_CODE (t) == REFERENCE_TYPE)
     return true;
   if (CLASS_TYPE_P (t))
-    return CLASSTYPE_LITERAL_P (t);
+    {
+      /* We can't answer this question until the class is complete.  */
+      gcc_assert (!TYPE_BEING_DEFINED (t) || errorcount);
+      return CLASSTYPE_LITERAL_P (complete_type (t));
+    }
   if (TREE_CODE (t) == ARRAY_TYPE)
     return literal_type_p (strip_array_types (t));
   return false;
@@ -5350,13 +5354,17 @@ ensure_literal_type_for_constexpr_object (tree decl)
 {
   tree type = TREE_TYPE (decl);
   if (TREE_CODE (decl) == VAR_DECL && DECL_DECLARED_CONSTEXPR_P (decl)
-      && !processing_template_decl
-      /* The call to complete_type is just for initializer_list.  */
-      && !literal_type_p (complete_type (type)))
+      && !processing_template_decl)
     {
-      error ("the type %qT of constexpr variable %qD is not literal",
-             type, decl);
-      return NULL;
+      if (CLASS_TYPE_P (type) && TYPE_BEING_DEFINED (type))
+	/* Don't complain here, we'll complain about incompleteness
+	   when we try to initialize the variable.  */;
+      else if (!literal_type_p (type))
+	{
+	  error ("the type %qT of constexpr variable %qD is not literal",
+		 type, decl);
+	  return NULL;
+	}
     }
   return decl;
 }
@@ -5409,15 +5417,22 @@ retrieve_constexpr_fundef (tree fun)
 }
 
 /* Check whether the parameter and return types of FUN are valid for a
-   constexpr function, and complain if COMPLAIN.  */
+   constexpr function, and complain if COMPLAIN.  If DEFER_OK is true,
+   return -1 if we can't tell yet because some of the types are still being
+   defined.  */
 
-static bool
-is_valid_constexpr_fn (tree fun, bool complain)
+static int
+is_valid_constexpr_fn (tree fun, bool complain, bool defer_ok)
 {
+#define IF_NON_LITERAL(TYPE)						\
+  if (defer_ok && CLASS_TYPE_P (TYPE) && TYPE_BEING_DEFINED (TYPE))	\
+    return -1;								\
+  else if (!literal_type_p (TYPE))
+
   tree parm = FUNCTION_FIRST_USER_PARM (fun);
   bool ret = true;
   for (; parm != NULL; parm = TREE_CHAIN (parm))
-    if (!literal_type_p (TREE_TYPE (parm)))
+    IF_NON_LITERAL (TREE_TYPE (parm))
       {
 	ret = false;
 	if (complain)
@@ -5428,7 +5443,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
   if (!DECL_CONSTRUCTOR_P (fun))
     {
       tree rettype = TREE_TYPE (TREE_TYPE (fun));
-      if (!literal_type_p (rettype))
+      IF_NON_LITERAL (rettype)
 	{
 	  ret = false;
 	  if (complain)
@@ -5436,16 +5451,49 @@ is_valid_constexpr_fn (tree fun, bool complain)
 		   rettype, fun);
 	}
 
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
-	  && !CLASSTYPE_LITERAL_P (DECL_CONTEXT (fun)))
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun))
 	{
-	  ret = false;
-	  if (complain)
-	    error ("enclosing class of %q+#D is not a literal type", fun);
+	  IF_NON_LITERAL (DECL_CONTEXT (fun))
+	    {
+	      ret = false;
+	      if (complain)
+		error ("enclosing class of %q+#D is not a literal type", fun);
+	    }
 	}
     }
 
   return ret;
+}
+
+/* We can't check the parameter and return types of a constexpr function
+   for literality until any open classes are complete, so we defer checking
+   of any constexpr functions declared in a class.  */
+
+static GTY(()) VEC(tree,gc) *deferred_constexpr_decls;
+
+void
+check_deferred_constexpr_decls (void)
+{
+  unsigned i;
+  tree fn;
+
+  /* Some of the deferred decls might still need to be deferred,
+     so move the vector out of the way.  */
+  VEC(tree,gc) *vec = deferred_constexpr_decls;
+  deferred_constexpr_decls = NULL;
+
+  FOR_EACH_VEC_ELT (tree, vec, i, fn)
+    validate_constexpr_fundecl (fn);
+
+  if (deferred_constexpr_decls == NULL)
+    {
+      /* If we didn't need to re-defer any, keep the same vector.  */
+      VEC_truncate (tree, vec, 0);
+      deferred_constexpr_decls = vec;
+    }
+  else
+    /* Otherwise, discard the old vector.  */
+    release_tree_vector (vec);
 }
 
 /* Return non-null if FUN certainly designates a valid constexpr function
@@ -5456,13 +5504,22 @@ is_valid_constexpr_fn (tree fun, bool complain)
 tree
 validate_constexpr_fundecl (tree fun)
 {
+  int valid;
+
   if (processing_template_decl || !DECL_DECLARED_CONSTEXPR_P (fun))
     return NULL;
   else if (DECL_CLONED_FUNCTION_P (fun))
     /* We already checked the original function.  */
     return fun;
 
-  if (!is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INFO (fun)))
+  valid = is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INFO (fun),
+				 /*defer_ok=*/true);
+  if (valid < 0)
+    {
+      VEC_safe_push (tree, gc, deferred_constexpr_decls, fun);
+      return NULL;
+    }
+  else if (valid == 0)
     {
       DECL_DECLARED_CONSTEXPR_P (fun) = false;
       return NULL;
@@ -6079,7 +6136,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 	  if (DECL_TEMPLATE_INFO (fun)
 	      && DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT
 					    (DECL_TI_TEMPLATE (fun))))
-	    is_valid_constexpr_fn (fun, true);
+	    is_valid_constexpr_fn (fun, true, /*defer_ok=*/false);
 	}
       *non_constant_p = true;
       return t;

@@ -1,5 +1,22 @@
 2011-05-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48948
+	* semantics.c (validate_constexpr_fundecl): Defer checking if
+	an argument type is being defined.
+	(is_valid_constexpr_fn): Add defer_ok parm.
+	(cxx_eval_call_expression): Adjust.
+	(check_deferred_constexpr_decls): New.
+	(literal_type_p): Make sure type isn't being defined.
+	(ensure_literal_type_for_constexpr_object): Handle type being defined.
+	* cp-tree.h: Declare check_deferred_constexpr_decls.
+	* decl.c (grokfndecl): Call validate_constexpr_fundecl here.
+	(start_preparsed_function, cp_finish_decl): Not here.
+	* class.c (finalize_literal_type_property): Don't call
+	validate_constexpr_fundecl.
+	(finish_struct): Call check_deferred_constexpr_decls.
+	* pt.c (tsubst_decl): Call validate_constexpr_fundecl.
+	(instantiate_class_template): Call check_deferred_constexpr_decls.
+
 	* semantics.c (validate_constexpr_fundecl): Check DECL_TEMPLATE_INFO
 	rather than DECL_TEMPLATE_INSTANTIATION.
 	(cxx_eval_call_expression): Likewise.
