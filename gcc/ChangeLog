@@ -1,3 +1,8 @@
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48964
+	* gimple.c (iterative_hash_canonical_type): Fix typo.
+
 2011-05-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (legitimize_tls_address)
