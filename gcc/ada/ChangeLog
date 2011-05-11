@@ -1,5 +1,13 @@
 2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* gcc-interface/utils.c (def_fn_type): Don't call build_function_type;
+	call build_function_type_array or build_varargs_function_type_array
+	instead.
+	(create_subprog_type): Don't call build_function_type; call
+	build_function_type_vec instead.
+
+2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* gcc-interface/ada-tree.h (TYPE_OBJECT_RECORD_TYPE): Use TYPE_MINVAL.
 	(TYPE_GCC_MIN_VALUE): Use TYPE_MINVAL.
 	(TYPE_GCC_MAX_VALUE): Use TYPE_MAXVAL.
