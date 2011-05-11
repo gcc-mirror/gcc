@@ -1904,6 +1904,9 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
 
       field_type = strip_array_types (TREE_TYPE (field));
 
+      if (type_has_user_provided_constructor (field_type))
+	continue;
+
       if (TREE_CODE (field_type) == REFERENCE_TYPE)
 	{
 	  ++ error_count;
