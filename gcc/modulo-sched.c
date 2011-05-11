@@ -310,10 +310,10 @@ doloop_register_get (rtx head ATTRIBUTE_UNUSED, rtx tail ATTRIBUTE_UNUSED)
      either a single (parallel) branch-on-count or a (non-parallel)
      branch immediately preceded by a single (decrement) insn.  */
   first_insn_not_to_check = (GET_CODE (PATTERN (tail)) == PARALLEL ? tail
-                             : PREV_INSN (tail));
+                             : prev_nondebug_insn (tail));
 
   for (insn = head; insn != first_insn_not_to_check; insn = NEXT_INSN (insn))
-    if (reg_mentioned_p (reg, insn))
+    if (reg_mentioned_p (reg, insn) && !DEBUG_INSN_P (insn))
       {
         if (dump_file)
         {

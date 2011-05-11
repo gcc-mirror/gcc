@@ -1,5 +1,10 @@
 2011-05-11  Revital Eres  <revital.eres@linaro.org>
 
+	* modulo-sched.c (doloop_register_get): Ignore DEBUG_INSNs while
+	recognizing doloop.
+
+2011-05-11  Revital Eres  <revital.eres@linaro.org>
+
 	* loop-doloop.c (doloop_condition_get): Use prev_nondebug_insn
 	instead of PREV_INSN.
 
