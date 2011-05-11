@@ -807,6 +807,31 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (!opts->x_flag_tree_vectorize || !opts->x_flag_tree_loop_if_convert)
     maybe_set_param_value (PARAM_MAX_STORES_TO_SINK, 0,
                            opts->x_param_values, opts_set->x_param_values);
+
+  /* This replaces set_Wunused.  */
+  if (opts->x_warn_unused_function == -1)
+    opts->x_warn_unused_function = opts->x_warn_unused;
+  if (opts->x_warn_unused_label == -1)
+    opts->x_warn_unused_label = opts->x_warn_unused;
+  /* Wunused-parameter is enabled if both -Wunused -Wextra are enabled.  */
+  if (opts->x_warn_unused_parameter == -1)
+    opts->x_warn_unused_parameter = (opts->x_warn_unused
+				     && opts->x_extra_warnings);
+  if (opts->x_warn_unused_variable == -1)
+    opts->x_warn_unused_variable = opts->x_warn_unused;
+  /* Wunused-but-set-parameter is enabled if both -Wunused -Wextra are
+     enabled.  */
+  if (opts->x_warn_unused_but_set_parameter == -1)
+    opts->x_warn_unused_but_set_parameter = (opts->x_warn_unused
+					     && opts->x_extra_warnings);
+  if (opts->x_warn_unused_but_set_variable == -1)
+    opts->x_warn_unused_but_set_variable = opts->x_warn_unused;
+  if (opts->x_warn_unused_value == -1)
+    opts->x_warn_unused_value = opts->x_warn_unused;
+
+  /* This replaces set_Wextra.  */
+  if (opts->x_warn_uninitialized == -1)
+    opts->x_warn_uninitialized = opts->x_extra_warnings;
 }
 
 #define LEFT_COLUMN	27

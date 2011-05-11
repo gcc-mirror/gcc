@@ -1,3 +1,10 @@
+2011-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* opts.c (finish_options): Move warning settings from
+	process_options.
+	* toplev.c (process_options): Move warning settings to
+	finish_options.
+
 2011-05-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/18041
