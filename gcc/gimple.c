@@ -3210,7 +3210,7 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
 
 enum gtc_mode { GTC_MERGE = 0, GTC_DIAG = 1 };
 
-static hashval_t gimple_type_hash_1 (const void *, enum gtc_mode);
+static hashval_t gimple_type_hash (const void *);
 
 /* Structure used to maintain a cache of some type pairs compared by
    gimple_types_compatible_p when comparing aggregate types.  There are
@@ -3459,7 +3459,7 @@ gimple_compatible_complete_and_incomplete_subtype_p (tree t1, tree t2)
 }
 
 static bool
-gimple_types_compatible_p_1 (tree, tree, enum gtc_mode, type_pair_t,
+gimple_types_compatible_p_1 (tree, tree, type_pair_t,
 			     VEC(type_pair_t, heap) **,
 			     struct pointer_map_t *, struct obstack *);
 
@@ -3470,7 +3470,7 @@ gimple_types_compatible_p_1 (tree, tree, enum gtc_mode, type_pair_t,
    SCCSTACK, SCCSTATE and SCCSTATE_OBSTACK are state for the DFS walk done.  */
 
 static bool
-gtc_visit (tree t1, tree t2, enum gtc_mode mode,
+gtc_visit (tree t1, tree t2,
 	   struct sccs *state,
 	   VEC(type_pair_t, heap) **sccstack,
 	   struct pointer_map_t *sccstate,
@@ -3479,6 +3479,7 @@ gtc_visit (tree t1, tree t2, enum gtc_mode mode,
   struct sccs *cstate = NULL;
   type_pair_t p;
   void **slot;
+  tree leader1, leader2;
 
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
@@ -3490,21 +3491,12 @@ gtc_visit (tree t1, tree t2, enum gtc_mode mode,
 
   /* If the types have been previously registered and found equal
      they still are.  */
-  if (mode == GTC_MERGE)
-    {
-      tree leader1 = gimple_lookup_type_leader (t1);
-      tree leader2 = gimple_lookup_type_leader (t2);
-      if (leader1 == t2
-	  || t1 == leader2
-	  || (leader1 && leader1 == leader2))
-	return true;
-    }
-  else if (mode == GTC_DIAG)
-    {
-      if (TYPE_CANONICAL (t1)
-	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
-	return true;
-    }
+  leader1 = gimple_lookup_type_leader (t1);
+  leader2 = gimple_lookup_type_leader (t2);
+  if (leader1 == t2
+      || t1 == leader2
+      || (leader1 && leader1 == leader2))
+    return true;
 
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
@@ -3558,16 +3550,16 @@ gtc_visit (tree t1, tree t2, enum gtc_mode mode,
   /* If the hash values of t1 and t2 are different the types can't
      possibly be the same.  This helps keeping the type-pair hashtable
      small, only tracking comparisons for hash collisions.  */
-  if (gimple_type_hash_1 (t1, mode) != gimple_type_hash_1 (t2, mode))
+  if (gimple_type_hash (t1) != gimple_type_hash (t2))
     return false;
 
   /* Allocate a new cache entry for this comparison.  */
   p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
-  if (p->same_p[mode] == 0 || p->same_p[mode] == 1)
+  if (p->same_p[GTC_MERGE] == 0 || p->same_p[GTC_MERGE] == 1)
     {
       /* We have already decided whether T1 and T2 are the
 	 same, return the cached result.  */
-      return p->same_p[mode] == 1;
+      return p->same_p[GTC_MERGE] == 1;
     }
 
   if ((slot = pointer_map_contains (sccstate, p)) != NULL)
@@ -3575,7 +3567,7 @@ gtc_visit (tree t1, tree t2, enum gtc_mode mode,
   /* Not yet visited.  DFS recurse.  */
   if (!cstate)
     {
-      gimple_types_compatible_p_1 (t1, t2, mode, p,
+      gimple_types_compatible_p_1 (t1, t2, p,
 				   sccstack, sccstate, sccstate_obstack);
       cstate = (struct sccs *)* pointer_map_contains (sccstate, p);
       state->low = MIN (state->low, cstate->low);
@@ -3595,15 +3587,14 @@ gtc_visit (tree t1, tree t2, enum gtc_mode mode,
    SCCSTACK, SCCSTATE and SCCSTATE_OBSTACK are state for the DFS walk done.  */
 
 static bool
-gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
-			     type_pair_t p,
+gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
 			     VEC(type_pair_t, heap) **sccstack,
 			     struct pointer_map_t *sccstate,
 			     struct obstack *sccstate_obstack)
 {
   struct sccs *state;
 
-  gcc_assert (p->same_p[mode] == -2);
+  gcc_assert (p->same_p[GTC_MERGE] == -2);
 
   state = XOBNEW (sccstate_obstack, struct sccs);
   *pointer_map_insert (sccstate, p) = state;
@@ -3625,7 +3616,7 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
     {
     case VECTOR_TYPE:
     case COMPLEX_TYPE:
-      if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
+      if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2),
 		      state, sccstack, sccstate, sccstate_obstack))
 	goto different_types;
       goto same_types;
@@ -3633,7 +3624,7 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
     case ARRAY_TYPE:
       /* Array types are the same if the element types are the same and
 	 the number of elements are the same.  */
-      if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
+      if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2),
 		      state, sccstack, sccstate, sccstate_obstack)
 	  || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)
 	  || TYPE_NONALIASED_COMPONENT (t1) != TYPE_NONALIASED_COMPONENT (t2))
@@ -3683,7 +3674,7 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
     case METHOD_TYPE:
       /* Method types should belong to the same class.  */
       if (!gtc_visit (TYPE_METHOD_BASETYPE (t1), TYPE_METHOD_BASETYPE (t2),
-		      mode, state, sccstack, sccstate, sccstate_obstack))
+		      state, sccstack, sccstate, sccstate_obstack))
 	goto different_types;
 
       /* Fallthru  */
@@ -3691,11 +3682,8 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
     case FUNCTION_TYPE:
       /* Function types are the same if the return type and arguments types
 	 are the same.  */
-      if ((mode != GTC_DIAG
-	   || !gimple_compatible_complete_and_incomplete_subtype_p
-	         (TREE_TYPE (t1), TREE_TYPE (t2)))
-	  && !gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
-			 state, sccstack, sccstate, sccstate_obstack))
+      if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2),
+		      state, sccstack, sccstate, sccstate_obstack))
 	goto different_types;
 
       if (!comp_type_attributes (t1, t2))
@@ -3711,11 +3699,8 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 	       parms1 && parms2;
 	       parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2))
 	    {
-	      if ((mode == GTC_MERGE
-		   || !gimple_compatible_complete_and_incomplete_subtype_p
-		         (TREE_VALUE (parms1), TREE_VALUE (parms2)))
-		  && !gtc_visit (TREE_VALUE (parms1), TREE_VALUE (parms2), mode,
-				 state, sccstack, sccstate, sccstate_obstack))
+	      if (!gtc_visit (TREE_VALUE (parms1), TREE_VALUE (parms2),
+			      state, sccstack, sccstate, sccstate_obstack))
 		goto different_types;
 	    }
 
@@ -3727,10 +3712,10 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 
     case OFFSET_TYPE:
       {
-	if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
+	if (!gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2),
 			state, sccstack, sccstate, sccstate_obstack)
 	    || !gtc_visit (TYPE_OFFSET_BASETYPE (t1),
-			   TYPE_OFFSET_BASETYPE (t2), mode,
+			   TYPE_OFFSET_BASETYPE (t2),
 			   state, sccstack, sccstate, sccstate_obstack))
 	  goto different_types;
 
@@ -3745,16 +3730,9 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 	if (TYPE_REF_CAN_ALIAS_ALL (t1) != TYPE_REF_CAN_ALIAS_ALL (t2))
 	  goto different_types;
 
-	/* If one pointer points to an incomplete type variant of
-	   the other pointed-to type they are the same.  */
-	if (mode == GTC_DIAG
-	    && gimple_compatible_complete_and_incomplete_subtype_p
-	         (TREE_TYPE (t1), TREE_TYPE (t2)))
-	  goto same_types;
-
 	/* Otherwise, pointer and reference types are the same if the
 	   pointed-to types are the same.  */
-	if (gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2), mode,
+	if (gtc_visit (TREE_TYPE (t1), TREE_TYPE (t2),
 		       state, sccstack, sccstate, sccstate_obstack))
 	  goto same_types;
 
@@ -3825,7 +3803,7 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 	    if (tree_int_cst_equal (c1, c2) != 1)
 	      goto different_types;
 
-	    if (mode == GTC_MERGE && TREE_PURPOSE (v1) != TREE_PURPOSE (v2))
+	    if (TREE_PURPOSE (v1) != TREE_PURPOSE (v2))
 	      goto different_types;
 	  }
 
@@ -3844,9 +3822,8 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 	tree f1, f2;
 
 	/* The struct tags shall compare equal.  */
-	if (mode == GTC_MERGE
-	    && !compare_type_names_p (TYPE_MAIN_VARIANT (t1),
-				      TYPE_MAIN_VARIANT (t2), false))
+	if (!compare_type_names_p (TYPE_MAIN_VARIANT (t1),
+				   TYPE_MAIN_VARIANT (t2), false))
 	  goto different_types;
 
 	/* For aggregate types, all the fields must be the same.  */
@@ -3855,11 +3832,10 @@ gimple_types_compatible_p_1 (tree t1, tree t2, enum gtc_mode mode,
 	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	  {
 	    /* The fields must have the same name, offset and type.  */
-	    if ((mode == GTC_MERGE
-		 && DECL_NAME (f1) != DECL_NAME (f2))
+	    if (DECL_NAME (f1) != DECL_NAME (f2)
 		|| DECL_NONADDRESSABLE_P (f1) != DECL_NONADDRESSABLE_P (f2)
 		|| !gimple_compare_field_offset (f1, f2)
-		|| !gtc_visit (TREE_TYPE (f1), TREE_TYPE (f2), mode,
+		|| !gtc_visit (TREE_TYPE (f1), TREE_TYPE (f2),
 			       state, sccstack, sccstate, sccstate_obstack))
 	      goto different_types;
 	  }
@@ -3898,7 +3874,7 @@ pop:
 	  x = VEC_pop (type_pair_t, *sccstack);
 	  cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
 	  cstate->on_sccstack = false;
-	  x->same_p[mode] = state->u.same_p;
+	  x->same_p[GTC_MERGE] = state->u.same_p;
 	}
       while (x != p);
     }
@@ -3911,13 +3887,14 @@ pop:
    are considered different, otherwise they are considered compatible.  */
 
 static bool
-gimple_types_compatible_p (tree t1, tree t2, enum gtc_mode mode)
+gimple_types_compatible_p (tree t1, tree t2)
 {
   VEC(type_pair_t, heap) *sccstack = NULL;
   struct pointer_map_t *sccstate;
   struct obstack sccstate_obstack;
   type_pair_t p = NULL;
   bool res;
+  tree leader1, leader2;
 
   /* Before starting to set up the SCC machinery handle simple cases.  */
 
@@ -3931,21 +3908,12 @@ gimple_types_compatible_p (tree t1, tree t2, enum gtc_mode mode)
 
   /* If the types have been previously registered and found equal
      they still are.  */
-  if (mode == GTC_MERGE)
-    {
-      tree leader1 = gimple_lookup_type_leader (t1);
-      tree leader2 = gimple_lookup_type_leader (t2);
-      if (leader1 == t2
-	  || t1 == leader2
-	  || (leader1 && leader1 == leader2))
-	return true;
-    }
-  else if (mode == GTC_DIAG)
-    {
-      if (TYPE_CANONICAL (t1)
-	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
-	return true;
-    }
+  leader1 = gimple_lookup_type_leader (t1);
+  leader2 = gimple_lookup_type_leader (t2);
+  if (leader1 == t2
+      || t1 == leader2
+      || (leader1 && leader1 == leader2))
+    return true;
 
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
@@ -3999,24 +3967,24 @@ gimple_types_compatible_p (tree t1, tree t2, enum gtc_mode mode)
   /* If the hash values of t1 and t2 are different the types can't
      possibly be the same.  This helps keeping the type-pair hashtable
      small, only tracking comparisons for hash collisions.  */
-  if (gimple_type_hash_1 (t1, mode) != gimple_type_hash_1 (t2, mode))
+  if (gimple_type_hash (t1) != gimple_type_hash (t2))
     return false;
 
   /* If we've visited this type pair before (in the case of aggregates
      with self-referential types), and we made a decision, return it.  */
   p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
-  if (p->same_p[mode] == 0 || p->same_p[mode] == 1)
+  if (p->same_p[GTC_MERGE] == 0 || p->same_p[GTC_MERGE] == 1)
     {
       /* We have already decided whether T1 and T2 are the
 	 same, return the cached result.  */
-      return p->same_p[mode] == 1;
+      return p->same_p[GTC_MERGE] == 1;
     }
 
   /* Now set up the SCC machinery for the comparison.  */
   gtc_next_dfs_num = 1;
   sccstate = pointer_map_create ();
   gcc_obstack_init (&sccstate_obstack);
-  res = gimple_types_compatible_p_1 (t1, t2, mode, p,
+  res = gimple_types_compatible_p_1 (t1, t2, p,
 				     &sccstack, sccstate, &sccstate_obstack);
   VEC_free (type_pair_t, heap, sccstack);
   pointer_map_destroy (sccstate);
@@ -4028,8 +3996,7 @@ gimple_types_compatible_p (tree t1, tree t2, enum gtc_mode mode)
 
 static hashval_t
 iterative_hash_gimple_type (tree, hashval_t, VEC(tree, heap) **,
-			    struct pointer_map_t *, struct obstack *,
-			    enum gtc_mode);
+			    struct pointer_map_t *, struct obstack *);
 
 /* DFS visit the edge from the callers type with state *STATE to T.
    Update the callers type hash V with the hash for T if it is not part
@@ -4040,7 +4007,7 @@ static hashval_t
 visit (tree t, struct sccs *state, hashval_t v,
        VEC (tree, heap) **sccstack,
        struct pointer_map_t *sccstate,
-       struct obstack *sccstate_obstack, enum gtc_mode mode)
+       struct obstack *sccstate_obstack)
 {
   struct sccs *cstate = NULL;
   struct tree_int_map m;
@@ -4049,9 +4016,7 @@ visit (tree t, struct sccs *state, hashval_t v,
   /* If there is a hash value recorded for this type then it can't
      possibly be part of our parent SCC.  Simply mix in its hash.  */
   m.base.from = t;
-  if ((slot = htab_find_slot (mode == GTC_MERGE
-			      ? type_hash_cache : canonical_type_hash_cache,
-			      &m, NO_INSERT))
+  if ((slot = htab_find_slot (type_hash_cache, &m, NO_INSERT))
       && *slot)
     return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, v);
 
@@ -4062,8 +4027,7 @@ visit (tree t, struct sccs *state, hashval_t v,
       hashval_t tem;
       /* Not yet visited.  DFS recurse.  */
       tem = iterative_hash_gimple_type (t, v,
-					sccstack, sccstate, sccstate_obstack,
-					mode);
+					sccstack, sccstate, sccstate_obstack);
       if (!cstate)
 	cstate = (struct sccs *)* pointer_map_contains (sccstate, t);
       state->low = MIN (state->low, cstate->low);
@@ -4114,8 +4078,7 @@ static hashval_t
 iterative_hash_gimple_type (tree type, hashval_t val,
 			    VEC(tree, heap) **sccstack,
 			    struct pointer_map_t *sccstate,
-			    struct obstack *sccstate_obstack,
-			    enum gtc_mode mode)
+			    struct obstack *sccstate_obstack)
 {
   hashval_t v;
   void **slot;
@@ -4165,7 +4128,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	}
       else
 	v = visit (TREE_TYPE (type), state, v,
-		   sccstack, sccstate, sccstate_obstack, mode);
+		   sccstack, sccstate, sccstate_obstack);
     }
 
   /* For integer types hash the types min/max values and the string flag.  */
@@ -4186,7 +4149,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
     {
       v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
       v = visit (TYPE_DOMAIN (type), state, v,
-		 sccstack, sccstate, sccstate_obstack, mode);
+		 sccstack, sccstate, sccstate_obstack);
     }
 
   /* Recurse for aggregates with a single element type.  */
@@ -4194,7 +4157,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       || TREE_CODE (type) == COMPLEX_TYPE
       || TREE_CODE (type) == VECTOR_TYPE)
     v = visit (TREE_TYPE (type), state, v,
-	       sccstack, sccstate, sccstate_obstack, mode);
+	       sccstack, sccstate, sccstate_obstack);
 
   /* Incorporate function return and argument types.  */
   if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
@@ -4205,7 +4168,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       /* For method types also incorporate their parent class.  */
       if (TREE_CODE (type) == METHOD_TYPE)
 	v = visit (TYPE_METHOD_BASETYPE (type), state, v,
-		   sccstack, sccstate, sccstate_obstack, mode);
+		   sccstack, sccstate, sccstate_obstack);
 
       /* For result types allow mismatch in completeness.  */
       if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
@@ -4216,7 +4179,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	}
       else
 	v = visit (TREE_TYPE (type), state, v,
-		   sccstack, sccstate, sccstate_obstack, mode);
+		   sccstack, sccstate, sccstate_obstack);
 
       for (p = TYPE_ARG_TYPES (type), na = 0; p; p = TREE_CHAIN (p))
 	{
@@ -4229,7 +4192,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	    }
 	  else
 	    v = visit (TREE_VALUE (p), state, v,
-		       sccstack, sccstate, sccstate_obstack, mode);
+		       sccstack, sccstate, sccstate_obstack);
 	  na++;
 	}
 
@@ -4243,15 +4206,13 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       unsigned nf;
       tree f;
 
-      if (mode == GTC_MERGE)
-	v = iterative_hash_name (TYPE_NAME (TYPE_MAIN_VARIANT (type)), v);
+      v = iterative_hash_name (TYPE_NAME (TYPE_MAIN_VARIANT (type)), v);
 
       for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
 	{
-	  if (mode == GTC_MERGE)
-	    v = iterative_hash_name (DECL_NAME (f), v);
+	  v = iterative_hash_name (DECL_NAME (f), v);
 	  v = visit (TREE_TYPE (f), state, v,
-		     sccstack, sccstate, sccstate_obstack, mode);
+		     sccstack, sccstate, sccstate_obstack);
 	  nf++;
 	}
 
@@ -4276,9 +4237,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	  cstate->on_sccstack = false;
 	  m->base.from = x;
 	  m->to = cstate->u.hash;
-	  slot = htab_find_slot (mode == GTC_MERGE
-				 ? type_hash_cache : canonical_type_hash_cache,
-				 m, INSERT);
+	  slot = htab_find_slot (type_hash_cache, m, INSERT);
 	  gcc_assert (!*slot);
 	  *slot = (void *) m;
 	}
@@ -4298,7 +4257,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
    types according to gimple_types_compatible_p.  */
 
 static hashval_t
-gimple_type_hash_1 (const void *p, enum gtc_mode mode)
+gimple_type_hash (const void *p)
 {
   const_tree t = (const_tree) p;
   VEC(tree, heap) *sccstack = NULL;
@@ -4308,19 +4267,12 @@ gimple_type_hash_1 (const void *p, enum gtc_mode mode)
   void **slot;
   struct tree_int_map m;
 
-  if (mode == GTC_MERGE
-      && type_hash_cache == NULL)
+  if (type_hash_cache == NULL)
     type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
 				       tree_int_map_eq, NULL);
-  else if (mode == GTC_DIAG
-	   && canonical_type_hash_cache == NULL)
-    canonical_type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
-						 tree_int_map_eq, NULL);
 
   m.base.from = CONST_CAST_TREE (t);
-  if ((slot = htab_find_slot (mode == GTC_MERGE
-			      ? type_hash_cache : canonical_type_hash_cache,
-			      &m, NO_INSERT))
+  if ((slot = htab_find_slot (type_hash_cache, &m, NO_INSERT))
       && *slot)
     return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, 0);
 
@@ -4329,19 +4281,12 @@ gimple_type_hash_1 (const void *p, enum gtc_mode mode)
   sccstate = pointer_map_create ();
   gcc_obstack_init (&sccstate_obstack);
   val = iterative_hash_gimple_type (CONST_CAST_TREE (t), 0,
-				    &sccstack, sccstate, &sccstate_obstack,
-				    mode);
+				    &sccstack, sccstate, &sccstate_obstack);
   VEC_free (tree, heap, sccstack);
   pointer_map_destroy (sccstate);
   obstack_free (&sccstate_obstack, NULL);
 
   return val;
-}
-
-static hashval_t
-gimple_type_hash (const void *p)
-{
-  return gimple_type_hash_1 (p, GTC_MERGE);
 }
 
 /* Returning a hash value for gimple type TYPE combined with VAL.
@@ -4497,7 +4442,7 @@ gimple_type_eq (const void *p1, const void *p2)
   const_tree t1 = (const_tree) p1;
   const_tree t2 = (const_tree) p2;
   return gimple_types_compatible_p (CONST_CAST_TREE (t1),
-				    CONST_CAST_TREE (t2), GTC_MERGE);
+				    CONST_CAST_TREE (t2));
 }
 
 
