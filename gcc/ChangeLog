@@ -1,3 +1,11 @@
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/15256
+	* tree-ssa-forwprop.c (simplify_bitwise_binary): Canonicalize
+	(A & B) | C, combine (A op CST1) op CST2.
+	(tree_ssa_forward_propagate_single_use_vars): Only bother to
+	visit assigns that have uses.
+
 2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* ggc-page.c (extra_order_size_table): Use struct

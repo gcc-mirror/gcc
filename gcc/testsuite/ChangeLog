@@ -1,3 +1,8 @@
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/15256
+	* gcc.dg/tree-ssa/forwprop-14.c: New testcase.
+
 2011-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48159
