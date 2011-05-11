@@ -1,3 +1,9 @@
+2011-05-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48889
+	* expr.c (gfc_is_constant_expr): Use e->value.function.esym
+	instead of e->symtree->n.sym, if available.
+
 2011-05-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/48720

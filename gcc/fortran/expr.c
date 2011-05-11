@@ -894,6 +894,9 @@ gfc_is_constant_expr (gfc_expr *e)
     case EXPR_FUNCTION:
     case EXPR_PPC:
     case EXPR_COMPCALL:
+      gcc_assert (e->symtree || e->value.function.esym
+		  || e->value.function.isym);
+
       /* Call to intrinsic with at least one argument.  */
       if (e->value.function.isym && e->value.function.actual)
 	{
@@ -902,13 +905,14 @@ gfc_is_constant_expr (gfc_expr *e)
 	      return 0;
 	}
 
-      /* Make sure we have a symbol.  */
-      gcc_assert (e->symtree);
-
-      sym = e->symtree->n.sym;
-    
       /* Specification functions are constant.  */
       /* F95, 7.1.6.2; F2003, 7.1.7  */
+      sym = NULL;
+      if (e->symtree)
+	sym = e->symtree->n.sym;
+      if (e->value.function.esym)
+	sym = e->value.function.esym;
+
       if (sym
 	  && sym->attr.function
 	  && sym->attr.pure
