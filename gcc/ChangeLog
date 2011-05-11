@@ -1,3 +1,13 @@
+2011-05-11  Satoru Takabayashi  <satorux@google.com>
+	    Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* gcc/doc/install.texi (Configuration): Document
+	--with-linker-hash-style.
+	* gcc/gcc.c (init_spec): Handle LINKER_HASH_STYLE.
+	* gcc/config.in: Add LINKER_HASH_STYLE.
+	* gcc/configure.ac: Add --with-linker-hash-style.
+	* gcc/configure: Regenerate.
+
 2011-05-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48964
