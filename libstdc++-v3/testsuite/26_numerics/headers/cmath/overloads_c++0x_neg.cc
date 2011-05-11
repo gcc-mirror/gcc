@@ -1,5 +1,6 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
+// { dg-require-cmath "" }
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //
@@ -21,8 +22,6 @@
 #include <cmath>
 
 // libstdc++/48933
-
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
 
 struct Foo { };
 
@@ -61,5 +60,3 @@ template Foo std::scalbln<Foo>(Foo, long); // { dg-error "not match" }
 template Foo std::scalbn<Foo>(Foo, int); // { dg-error "not match" }
 template Foo std::tgamma<Foo>(Foo); // { dg-error "not match" }
 template Foo std::trunc<Foo>(Foo); // { dg-error "not match" }
-
-#endif
