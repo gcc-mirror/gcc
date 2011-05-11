@@ -1612,44 +1612,90 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
   return false;
 }
 
-/* Run bitwise and assignments throug the folder.  If the first argument is an
-   ssa name that is itself a result of a typecast of an ADDR_EXPR to an
-   integer, feed the ADDR_EXPR to the folder rather than the ssa name.
-*/
+/* Simplify bitwise binary operations.
+   Return true if a transformation applied, otherwise return false.  */
 
-static void
-simplify_bitwise_and (gimple_stmt_iterator *gsi, gimple stmt)
+static bool
+simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 {
-  tree res;
+  gimple stmt = gsi_stmt (*gsi);
   tree arg1 = gimple_assign_rhs1 (stmt);
   tree arg2 = gimple_assign_rhs2 (stmt);
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  tree res;
 
-  if (TREE_CODE (arg2) != INTEGER_CST)
-    return;
-
-  if (TREE_CODE (arg1) == SSA_NAME && !SSA_NAME_IS_DEFAULT_DEF (arg1))
+  /* If the first argument is an SSA name that is itself a result of a
+     typecast of an ADDR_EXPR to an integer, feed the ADDR_EXPR to the
+     folder rather than the ssa name.  */
+  if (code == BIT_AND_EXPR
+      && TREE_CODE (arg2) == INTEGER_CST
+      && TREE_CODE (arg1) == SSA_NAME)
     {
       gimple def = SSA_NAME_DEF_STMT (arg1);
+      tree op = arg1;
 
-      if (gimple_assign_cast_p (def)
-	  && INTEGRAL_TYPE_P (gimple_expr_type (def)))
+      /* ???  This looks bogus - the conversion could be truncating.  */
+      if (is_gimple_assign (def)
+	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
 	{
-	  tree op = gimple_assign_rhs1 (def);
+	  tree opp = gimple_assign_rhs1 (def);
+	  if (TREE_CODE (opp) == ADDR_EXPR)
+	    op = opp;
+	}
 
-	  if (TREE_CODE (op) == ADDR_EXPR)
-	    arg1 = op;
+      res = fold_binary_loc (gimple_location (stmt),
+			     BIT_AND_EXPR, TREE_TYPE (gimple_assign_lhs (stmt)),
+			     op, arg2);
+      if (res && is_gimple_min_invariant (res))
+	{
+	  gimple_assign_set_rhs_from_tree (gsi, res);
+	  update_stmt (stmt);
+	  return true;
 	}
     }
 
-  res = fold_binary_loc (gimple_location (stmt),
-		     BIT_AND_EXPR, TREE_TYPE (gimple_assign_lhs (stmt)),
-		     arg1, arg2);
-  if (res && is_gimple_min_invariant (res))
+  /* For bitwise binary operations apply operand conversions to the
+     binary operation result instead of to the operands.  This allows
+     to combine successive conversions and bitwise binary operations.  */
+  if (TREE_CODE (arg1) == SSA_NAME
+      && TREE_CODE (arg2) == SSA_NAME)
     {
-      gimple_assign_set_rhs_from_tree (gsi, res);
-      update_stmt (stmt);
+      gimple def_stmt1 = SSA_NAME_DEF_STMT (arg1);
+      gimple def_stmt2 = SSA_NAME_DEF_STMT (arg2);
+      if (is_gimple_assign (def_stmt1)
+	  && is_gimple_assign (def_stmt2)
+	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt1))
+	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt2)))
+	{
+	  tree darg1 = gimple_assign_rhs1 (def_stmt1);
+	  tree darg2 = gimple_assign_rhs1 (def_stmt2);
+	  /* Make sure that the conversion widens the operands or that it
+	     changes the operation to a bitfield precision.  */
+	  if (types_compatible_p (TREE_TYPE (darg1), TREE_TYPE (darg2))
+	      && ((TYPE_PRECISION (TREE_TYPE (darg1))
+		   < TYPE_PRECISION (TREE_TYPE (arg1)))
+		  || (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (arg1)))
+		      != MODE_INT)
+		  || (TYPE_PRECISION (TREE_TYPE (arg1))
+		      != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg1))))))
+	    {
+	      gimple newop;
+	      tree tem = create_tmp_reg (TREE_TYPE (darg1),
+					 NULL);
+	      newop = gimple_build_assign_with_ops (code, tem, darg1, darg2);
+	      tem = make_ssa_name (tem, newop);
+	      gimple_assign_set_lhs (newop, tem);
+	      gsi_insert_before (gsi, newop, GSI_SAME_STMT);
+	      gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
+						tem, NULL_TREE, NULL_TREE);
+	      update_stmt (gsi_stmt (*gsi));
+	      return true;
+	    }
+	}
     }
-  return;
+
+  return false;
 }
 
 
@@ -2123,6 +2169,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);
 	      tree rhs = gimple_assign_rhs1 (stmt);
+	      enum tree_code code = gimple_assign_rhs_code (stmt);
 
 	      if (TREE_CODE (lhs) != SSA_NAME)
 		{
@@ -2130,10 +2177,10 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		  continue;
 		}
 
-	      if (gimple_assign_rhs_code (stmt) == ADDR_EXPR
+	      if (code == ADDR_EXPR
 		  /* Handle pointer conversions on invariant addresses
 		     as well, as this is valid gimple.  */
-		  || (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+		  || (CONVERT_EXPR_CODE_P (code)
 		      && TREE_CODE (rhs) == ADDR_EXPR
 		      && POINTER_TYPE_P (TREE_TYPE (lhs))))
 		{
@@ -2151,7 +2198,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		  else
 		    gsi_next (&gsi);
 		}
-	      else if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+	      else if (code == POINTER_PLUS_EXPR
 		       && can_propagate_from (stmt))
 		{
 		  if (TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
@@ -2183,14 +2230,14 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		  else
 		    gsi_next (&gsi);
 		}
-	      else if ((gimple_assign_rhs_code (stmt) == BIT_NOT_EXPR
-		        || gimple_assign_rhs_code (stmt) == NEGATE_EXPR)
+	      else if ((code == BIT_NOT_EXPR
+		        || code == NEGATE_EXPR)
 		       && TREE_CODE (rhs) == SSA_NAME)
 		{
 		  simplify_not_neg_expr (&gsi);
 		  gsi_next (&gsi);
 		}
-	      else if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+	      else if (code == COND_EXPR)
                 {
                   /* In this case the entire COND_EXPR is in rhs1. */
 		  int did_something;
@@ -2203,27 +2250,28 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		    && did_something, stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
 		  gsi_next (&gsi);
                 }
-	      else if (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
-					== tcc_comparison)
+	      else if (TREE_CODE_CLASS (code) == tcc_comparison)
 		{
 		  if (forward_propagate_comparison (stmt))
 		    cfg_changed = true;
 		  gsi_next (&gsi);
 		}
-	      else if (gimple_assign_rhs_code (stmt) == BIT_AND_EXPR)
+	      else if (code == BIT_AND_EXPR
+		       || code == BIT_IOR_EXPR
+		       || code == BIT_XOR_EXPR)
 		{
-		  simplify_bitwise_and (&gsi, stmt);
-		  gsi_next (&gsi);
+		  if (!simplify_bitwise_binary (&gsi))
+		    gsi_next (&gsi);
 		}
-	      else if (gimple_assign_rhs_code (stmt) == PLUS_EXPR
-		       || gimple_assign_rhs_code (stmt) == MINUS_EXPR)
+	      else if (code == PLUS_EXPR
+		       || code == MINUS_EXPR)
 		{
 		  cfg_changed |= associate_plusminus (stmt);
 		  gsi_next (&gsi);
 		}
-	      else if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
-		       || gimple_assign_rhs_code (stmt) == FLOAT_EXPR
-		       || gimple_assign_rhs_code (stmt) == FIX_TRUNC_EXPR)
+	      else if (CONVERT_EXPR_CODE_P (code)
+		       || code == FLOAT_EXPR
+		       || code == FIX_TRUNC_EXPR)
 		{
 		  if (!combine_conversions (&gsi))
 		    gsi_next (&gsi);

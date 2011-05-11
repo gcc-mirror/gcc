@@ -1,3 +1,8 @@
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/18041
+	* gcc.dg/tree-ssa/forwprop-13.c: New testcase.
+
 2011-05-11  Alan Modra  <amodra@gmail.com>
 
 	PR target/47755
