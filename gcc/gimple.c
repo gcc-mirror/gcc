@@ -4304,7 +4304,7 @@ iterative_hash_canonical_type (tree type, hashval_t val)
   m.base.from = type;
   if ((slot = htab_find_slot (canonical_type_hash_cache, &m, INSERT))
       && *slot)
-    return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, 0);
+    return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, val);
 
   /* Combine a few common features of types so that types are grouped into
      smaller sets; when searching for existing matching types to merge,
