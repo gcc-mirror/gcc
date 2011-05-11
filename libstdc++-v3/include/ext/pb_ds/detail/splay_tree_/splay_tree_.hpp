@@ -136,6 +136,9 @@ namespace __gnu_pbds
     {
     private:
       typedef PB_DS_BASE_C_DEC base_type;
+#ifdef _GLIBCXX_DEBUG
+      typedef base_type debug_base;
+#endif
       typedef typename base_type::node_pointer node_pointer;
 
     public:
@@ -277,22 +280,9 @@ namespace __gnu_pbds
       erase_node(node_pointer);
     };
 
-#define PB_DS_ASSERT_VALID(X)						\
-  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
-
 #define PB_DS_ASSERT_BASE_NODE_CONSISTENT(_Node)			\
   _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(_Node,		\
 							__FILE__, __LINE__);)
-
-#define PB_DS_CHECK_KEY_DOES_NOT_EXIST(_Key)				\
-  _GLIBCXX_DEBUG_ONLY(base_type::check_key_does_not_exist(_Key,	\
-							   __FILE__, __LINE__);)
-
-#define PB_DS_DEBUG_VERIFY(_Cond)					\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
-			   _M_message(#_Cond" assertion from %1;:%2;")	\
-			   ._M_string(__FILE__)._M_integer(__LINE__)	\
-			   ,__file,__line)
 
 #include <ext/pb_ds/detail/splay_tree_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp>
@@ -302,10 +292,7 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/splay_tree_/debug_fn_imps.hpp>
 #include <ext/pb_ds/detail/splay_tree_/split_join_fn_imps.hpp>
 
-#undef PB_DS_DEBUG_VERIFY
-#undef PB_DS_CHECK_KEY_DOES_NOT_EXIST
 #undef PB_DS_ASSERT_BASE_NODE_CONSISTENT
-#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_NAME

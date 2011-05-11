@@ -51,15 +51,6 @@
 #include <ext/throw_allocator.h>
 #include <debug/debug.h>
 
-#define PB_DS_ASSERT_VALID(X) \
-  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
-
-#define PB_DS_DEBUG_VERIFY(_Cond)					\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
-			   _M_message(#_Cond" assertion from %1;:%2;")	\
-			   ._M_string(__FILE__)._M_integer(__LINE__)	\
-			   ,__file,__line)
-
 namespace __gnu_pbds
 {
   namespace detail
@@ -356,8 +347,6 @@ namespace __gnu_pbds
 } // namespace detail
 } // namespace __gnu_pbds
 
-#undef PB_DS_DEBUG_VERIFY
-#undef PB_DS_ASSERT_VALID
 
 #endif
 

@@ -286,8 +286,8 @@ void
 PB_DS_CLASS_C_DEC::
 assert_valid(const char* __file, int __line) const
 {
-  _GLIBCXX_DEBUG_ASSERT(m_load_max > m_load_min);
-  _GLIBCXX_DEBUG_ASSERT(m_next_grow_size >= m_next_shrink_size);
+  PB_DS_DEBUG_VERIFY(m_load_max > m_load_min);
+  PB_DS_DEBUG_VERIFY(m_next_grow_size >= m_next_shrink_size);
 }
 # undef PB_DS_DEBUG_VERIFY
 #endif

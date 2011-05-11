@@ -140,12 +140,6 @@ namespace __gnu_pbds
     { return m_value; }
 
 #ifdef _GLIBCXX_DEBUG
-# define PB_DS_DEBUG_VERIFY(_Cond)					\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
-			   _M_message(#_Cond" assertion from %1;:%2;")	\
-			   ._M_string(__FILE__)._M_integer(__LINE__)	\
-			   ,__file,__line)
-
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::subtree_debug_info
     PB_DS_CLASS_C_DEC::
@@ -162,7 +156,6 @@ namespace __gnu_pbds
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     ~pat_trie_leaf() { }
-# undef PB_DS_DEBUG_VERIFY
 #endif 
 
 #undef PB_DS_CLASS_T_DEC

@@ -52,15 +52,6 @@ namespace __gnu_pbds
 
 #define PB_DS_CLASS_C_DEC resize_policy<Size_Type>
 
-#define PB_DS_ASSERT_VALID(X)\
-  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
-
-#define PB_DS_DEBUG_VERIFY(_Cond)					\
-  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
-			   _M_message(#_Cond" assertion from %1;:%2;")	\
-			   ._M_string(__FILE__)._M_integer(__LINE__)	\
-			   ,__file,__line)
-
     template<typename Size_Type>
     class resize_policy
     {
@@ -253,8 +244,6 @@ namespace __gnu_pbds
     }
 #endif 
 
-#undef PB_DS_DEBUG_VERIFY
-#undef PB_DS_ASSERT_VALID
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 
