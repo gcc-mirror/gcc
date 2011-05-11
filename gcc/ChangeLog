@@ -1,5 +1,10 @@
 2011-05-11  Revital Eres  <revital.eres@linaro.org>
 
+	* loop-doloop.c (doloop_condition_get): Use prev_nondebug_insn
+	instead of PREV_INSN.
+
+2011-05-11  Revital Eres  <revital.eres@linaro.org>
+
 	* modulo-sched.c (sms_schedule): Support new form of doloop pattern
 	* loop-doloop.c (doloop_condition_get): Likewise.
 	* config/arm/thumb2.md (*thumb2_addsi3_compare0): Remove "*".

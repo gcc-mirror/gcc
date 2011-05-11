@@ -151,7 +151,7 @@ doloop_condition_get (rtx doloop_pat)
 	  inc = XVECEXP (PATTERN (prev_insn), 0, 1);
 	}
       else
-        inc = PATTERN (PREV_INSN (doloop_pat));
+        inc = PATTERN (prev_insn);
       /* We expect the condition to be of the form (reg != 0)  */
       cond = XEXP (SET_SRC (cmp), 0);
       if (GET_CODE (cond) != NE || XEXP (cond, 1) != const0_rtx)
