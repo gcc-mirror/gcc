@@ -1,5 +1,10 @@
 2011-05-11  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/48953
+	* gcc.dg/torture/pr48953.c: New testcase.
+
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/18041
 	* gcc.dg/tree-ssa/forwprop-13.c: New testcase.
 
