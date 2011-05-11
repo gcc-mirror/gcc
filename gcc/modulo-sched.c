@@ -1009,9 +1009,11 @@ sms_schedule (void)
 	continue;
       }
 
-      /* Don't handle BBs with calls or barriers, or !single_set insns,
-         or auto-increment insns (to avoid creating invalid reg-moves
-         for the auto-increment insns).
+      /* Don't handle BBs with calls or barriers or auto-increment insns 
+	 (to avoid creating invalid reg-moves for the auto-increment insns),
+	 or !single_set with the exception of instructions that include
+	 count_reg---these instructions are part of the control part
+	 that do-loop recognizes.
          ??? Should handle auto-increment insns.
          ??? Should handle insns defining subregs.  */
      for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
@@ -1021,7 +1023,8 @@ sms_schedule (void)
         if (CALL_P (insn)
             || BARRIER_P (insn)
             || (NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
-                && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE)
+                && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE
+                && !reg_mentioned_p (count_reg, insn))
             || (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
             || (INSN_P (insn) && (set = single_set (insn))
                 && GET_CODE (SET_DEST (set)) == SUBREG))

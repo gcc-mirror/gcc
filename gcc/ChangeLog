@@ -1,3 +1,11 @@
+2011-05-11  Revital Eres  <revital.eres@linaro.org>
+
+	* modulo-sched.c (sms_schedule): Support new form of doloop pattern
+	* loop-doloop.c (doloop_condition_get): Likewise.
+	* config/arm/thumb2.md (*thumb2_addsi3_compare0): Remove "*".
+	(doloop_end): New.
+	* config/arm/arm.md (*addsi3_compare0): Remove "*".
+
 2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.def (CASE_LABEL_EXPR): Add an operand.
