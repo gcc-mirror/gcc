@@ -1,3 +1,8 @@
+2011-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48745
+	* pt.c (value_dependent_expr_p): Handle CONSTRUCTOR.
+
 2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* cp-tree.h (TYPENAME_TYPE_FULLNAME, TYPEOF_TYPE_EXPR): Use

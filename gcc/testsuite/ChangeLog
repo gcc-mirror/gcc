@@ -1,3 +1,7 @@
+2011-05-11  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae22.C: New.
+
 2011-05-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48889
