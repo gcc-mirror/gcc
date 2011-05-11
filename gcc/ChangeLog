@@ -1,3 +1,8 @@
+2011-05-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.c (expand_function_start): Initialize stack_check_probe_note
+	only if the generic stack checking mechanism is used.
+
 2011-05-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/15256
