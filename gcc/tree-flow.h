@@ -559,6 +559,7 @@ extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 
 void insert_debug_temps_for_defs (gimple_stmt_iterator *);
 void insert_debug_temp_for_var_def (gimple_stmt_iterator *, tree);
+void reset_debug_uses (gimple);
 void release_defs_bitset (bitmap toremove);
 
 /* In tree-into-ssa.c  */

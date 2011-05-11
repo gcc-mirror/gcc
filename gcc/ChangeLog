@@ -1,3 +1,15 @@
+2011-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48159
+	* tree-ssa.c (reset_debug_uses): New function.
+	* tree-flow.h (reset_debug_uses): New prototype.
+	* tree-data-ref.c (stmts_from_loop): Ignore debug stmts.
+	* tree-loop-distribution.c (generate_loops_for_partition): Call
+	reset_debug_uses on the stmts that will be removed.  Keep around
+	all debug stmts, don't count them as bits in partition bitmap.
+	(generate_builtin): Don't count debug stmts or labels as bits in
+	partition bitmap.
+
 2011-05-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline

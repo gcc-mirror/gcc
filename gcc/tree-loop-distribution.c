@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
@@ -181,6 +181,25 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
      stmts_from_loop.  */
   bbs = get_loop_body_in_dom_order (loop);
 
+  if (MAY_HAVE_DEBUG_STMTS)
+    for (x = 0, i = 0; i < loop->num_nodes; i++)
+      {
+	basic_block bb = bbs[i];
+
+	for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	  if (!bitmap_bit_p (partition, x++))
+	    reset_debug_uses (gsi_stmt (bsi));
+
+	for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	  {
+	    gimple stmt = gsi_stmt (bsi);
+	    if (gimple_code (stmt) != GIMPLE_LABEL
+		&& !is_gimple_debug (stmt)
+		&& !bitmap_bit_p (partition, x++))
+	      reset_debug_uses (stmt);
+	  }
+      }
+
   for (x = 0, i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = bbs[i];
@@ -199,7 +218,8 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi);)
 	{
 	  gimple stmt = gsi_stmt (bsi);
-	  if (gimple_code (gsi_stmt (bsi)) != GIMPLE_LABEL
+	  if (gimple_code (stmt) != GIMPLE_LABEL
+	      && !is_gimple_debug (stmt)
 	      && !bitmap_bit_p (partition, x++))
 	    {
 	      unlink_stmt_vdef (stmt);
@@ -312,7 +332,9 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
 	{
 	  gimple stmt = gsi_stmt (bsi);
 
-	  if (bitmap_bit_p (partition, x++)
+	  if (gimple_code (stmt) != GIMPLE_LABEL
+	      && !is_gimple_debug (stmt)
+	      && bitmap_bit_p (partition, x++)
 	      && is_gimple_assign (stmt)
 	      && !is_gimple_reg (gimple_assign_lhs (stmt)))
 	    {
