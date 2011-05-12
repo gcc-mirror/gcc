@@ -1,3 +1,9 @@
+2011-05-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (call_to_gnu): In the by-reference case, if the
+	type of the parameter is an unconstrained array, convert the actual to
+	the type of the formal in the In Out and Out cases as well.
+
 2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc-interface/utils.c (def_fn_type): Don't call build_function_type;
