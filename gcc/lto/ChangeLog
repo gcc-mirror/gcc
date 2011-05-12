@@ -1,3 +1,8 @@
+2011-05-11  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/48952
+	* lto.c (do_whole_program_analysis): Do not register cgraph hooks.
+
 2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto.c (lto_ft_type): Use TYPE_MINVAL and TYPE_MAXVAL.  Adjust

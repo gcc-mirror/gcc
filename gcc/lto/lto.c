@@ -2511,7 +2511,6 @@ do_whole_program_analysis (void)
       dump_varpool (cgraph_dump_file);
     }
   bitmap_obstack_initialize (NULL);
-  ipa_register_cgraph_hooks ();
   cgraph_state = CGRAPH_STATE_IPA_SSA;
 
   execute_ipa_pass_list (all_regular_ipa_passes);
