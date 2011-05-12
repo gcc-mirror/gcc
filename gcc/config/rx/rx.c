@@ -2451,8 +2451,7 @@ rx_is_legitimate_constant (rtx x)
 
 	default:
 	  /* FIXME: Can this ever happen ?  */
-	  abort ();
-	  return false;
+	  gcc_unreachable ();
 	}
       break;
       
@@ -2758,7 +2757,7 @@ rx_align_for_label (rtx lab, int uses_threshold)
      because the delay due to the inserted NOPs would be greater than the delay
      due to the misaligned branch.  If uses_threshold is zero then the alignment
      is always useful.  */
-  if (LABEL_NUSES (lab) < uses_threshold)
+  if (LABEL_P (lab) && LABEL_NUSES (lab) < uses_threshold)
     return 0;
 
   return optimize_size ? 1 : 3;
@@ -2775,7 +2774,7 @@ rx_max_skip_for_label (rtx lab)
   op = lab;
   do
     {
-      op = next_nonnote_insn (op);
+      op = next_nonnote_nondebug_insn (op);
     }
   while (op && (LABEL_P (op)
 		|| (INSN_P (op) && GET_CODE (PATTERN (op)) == USE)));

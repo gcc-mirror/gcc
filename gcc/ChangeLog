@@ -1,3 +1,12 @@
+2011-05-12  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (HAVE_PRE_DECREMENT): Fix typo.
+	* config/rx/rx.c (rx_is_legitimate_constant): Use gcc_unreachable
+	instead of abort.
+	(rx_align_for_label): Test label before extracting its number of
+	uses.
+	(rx_max_skip_for_label): Ignore debug insns.
+
 2011-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48159
