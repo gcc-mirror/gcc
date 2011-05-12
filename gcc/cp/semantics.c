@@ -5483,7 +5483,10 @@ check_deferred_constexpr_decls (void)
   deferred_constexpr_decls = NULL;
 
   FOR_EACH_VEC_ELT (tree, vec, i, fn)
-    validate_constexpr_fundecl (fn);
+    {
+      DECL_DEFERRED_CONSTEXPR_CHECK (fn) = false;
+      validate_constexpr_fundecl (fn);
+    }
 
   if (deferred_constexpr_decls == NULL)
     {
@@ -5516,6 +5519,7 @@ validate_constexpr_fundecl (tree fun)
 				 /*defer_ok=*/true);
   if (valid < 0)
     {
+      DECL_DEFERRED_CONSTEXPR_CHECK (fun) = true;
       VEC_safe_push (tree, gc, deferred_constexpr_decls, fun);
       return NULL;
     }
@@ -5763,6 +5767,9 @@ register_constexpr_fundef (tree fun, tree body)
 {
   constexpr_fundef entry;
   constexpr_fundef **slot;
+
+  gcc_assert (DECL_DECLARED_CONSTEXPR_P (fun)
+	      && !DECL_DEFERRED_CONSTEXPR_CHECK (fun));
 
   if (DECL_CONSTRUCTOR_P (fun))
     body = build_constexpr_constructor_member_initializers

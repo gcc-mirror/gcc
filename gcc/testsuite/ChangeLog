@@ -1,3 +1,7 @@
+2011-05-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-incomplete2.C: New.
+
 2011-05-12  Geert Bosch  <bosch@adacore.com>
 
 	* gnat.dg/view_conversion1.adb: New test.
