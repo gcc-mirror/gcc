@@ -1,3 +1,9 @@
+2011-05-12  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* ira.c (clarify_prohibited_class_mode_regs): Prevent the function from
+	accessing beyond the end of REGNO_REG_CLASS array by stopping the loop
+	early.
+
 2011-05-12  DJ Delorie  <dj@redhat.com>
 
 	(rx_builtins): New arrays - holds builtin functions.
