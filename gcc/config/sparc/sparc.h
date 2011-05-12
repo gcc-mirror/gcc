@@ -1538,41 +1538,6 @@ do {									\
    addresses which require two reload registers.  */
 
 #define LEGITIMATE_PIC_OPERAND_P(X) legitimate_pic_operand_p (X)
-
-/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
-   and check its validity for a certain class.
-   We have two alternate definitions for each of them.
-   The usual definition accepts all pseudo regs; the other rejects
-   them unless they have been allocated suitable hard regs.
-   The symbol REG_OK_STRICT causes the latter definition to be used.
-
-   Most source files want to accept pseudo regs in the hope that
-   they will get allocated to the class that the insn wants them to be in.
-   Source files for reload pass need to be strict.
-   After reload, it makes no difference, since pseudo regs have
-   been eliminated by then.  */
-
-#ifndef REG_OK_STRICT
-
-/* Nonzero if X is a hard reg that can be used as an index
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P(X) \
-  (REGNO (X) < 32				\
-   || REGNO (X) == FRAME_POINTER_REGNUM		\
-   || REGNO (X) >= FIRST_PSEUDO_REGISTER)
-
-/* Nonzero if X is a hard reg that can be used as a base reg
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X)  REG_OK_FOR_INDEX_P (X)
-
-#else
-
-/* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-/* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-
-#endif
 
 /* Should gcc use [%reg+%lo(xx)+offset] addresses?  */
 
@@ -1581,31 +1546,6 @@ do {									\
 #else
 #define USE_AS_OFFSETABLE_LO10 0
 #endif
-
-/* On SPARC, the actual legitimate addresses must be REG+REG or REG+SMALLINT
-   ordinarily.  This changes a bit when generating PIC.  The details are
-   in sparc.c's implementation of TARGET_LEGITIMATE_ADDRESS_P.  */
-
-#define SYMBOLIC_CONST(X) symbolic_operand (X, VOIDmode)
-
-#define RTX_OK_FOR_BASE_P(X)						\
-  ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
-  || (GET_CODE (X) == SUBREG						\
-      && GET_CODE (SUBREG_REG (X)) == REG				\
-      && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
-
-#define RTX_OK_FOR_INDEX_P(X)						\
-  ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))			\
-  || (GET_CODE (X) == SUBREG						\
-      && GET_CODE (SUBREG_REG (X)) == REG				\
-      && REG_OK_FOR_INDEX_P (SUBREG_REG (X))))
-
-#define RTX_OK_FOR_OFFSET_P(X)						\
-  (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0x1000 - 8)
-
-#define RTX_OK_FOR_OLO10_P(X)						\
-  (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0xc00 - 8)
-
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
