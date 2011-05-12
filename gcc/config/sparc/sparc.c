@@ -3110,8 +3110,16 @@ legitimate_pic_operand_p (rtx x)
   return true;
 }
 
-/* Return nonzero if ADDR is a valid memory address.
-   STRICT specifies whether strict register checking applies.  */
+#define RTX_OK_FOR_OFFSET_P(X)                                          \
+  (CONST_INT_P (X) && INTVAL (X) >= -0x1000 && INTVAL (X) < 0x1000 - 8)
+
+#define RTX_OK_FOR_OLO10_P(X)                                           \
+  (CONST_INT_P (X) && INTVAL (X) >= -0x1000 && INTVAL (X) < 0xc00 - 8)
+
+/* Handle the TARGET_LEGITIMATE_ADDRESS_P target hook.
+
+   On SPARC, the actual legitimate addresses must be REG+REG or REG+SMALLINT
+   ordinarily.  This changes a bit when generating PIC.  */
 
 static bool
 sparc_legitimate_address_p (enum machine_mode mode, rtx addr, bool strict)
@@ -3706,7 +3714,7 @@ sparc_mode_dependent_address_p (const_rtx addr)
       rtx op0 = XEXP (addr, 0);
       rtx op1 = XEXP (addr, 1);
       if (op0 == pic_offset_table_rtx
-	  && SYMBOLIC_CONST (op1))
+	  && symbolic_operand (op1, VOIDmode))
 	return true;
     }
 
