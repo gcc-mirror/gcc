@@ -1,3 +1,9 @@
+2011-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48967
+	* var-tracking.c (use_narrower_mode_test) <case REG>: Return 1
+	if validate_subreg fails.
+
 2011-05-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.h (HAVE_PRE_DECREMENT): Fix typo.

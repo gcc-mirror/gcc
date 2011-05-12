@@ -739,6 +739,10 @@ use_narrower_mode_test (rtx *loc, void *data)
     case REG:
       if (cselib_lookup (*loc, GET_MODE (SUBREG_REG (subreg)), 0, VOIDmode))
 	return 1;
+      if (!validate_subreg (GET_MODE (subreg), GET_MODE (*loc),
+			    *loc, subreg_lowpart_offset (GET_MODE (subreg),
+							 GET_MODE (*loc))))
+	return 1;
       return -1;
     case PLUS:
     case MINUS:
