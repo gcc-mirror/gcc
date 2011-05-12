@@ -1,3 +1,9 @@
+2011-05-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48972
+	* resolve.c (resolve_intrinsic): Don't resolve module
+	intrinsics multiple times.
+
 2011-05-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48889
