@@ -1,3 +1,8 @@
+2011-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48975
+	* gcc.dg/pr48975.c: New test.
+
 2011-05-12  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
