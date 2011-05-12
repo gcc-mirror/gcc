@@ -1,4 +1,10 @@
-2011-05-12  Hariharan Sandanagobalane <hariharan@picochip.com>
+2011-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48967
+	* var-tracking.c (use_narrower_mode_test) <case REG>: Return 1
+	if validate_subreg fails.
+
+2011-05-12  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* ira.c (clarify_prohibited_class_mode_regs): Prevent the function from
 	accessing beyond the end of REGNO_REG_CLASS array by stopping the loop
