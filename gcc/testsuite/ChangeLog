@@ -1,3 +1,8 @@
+2011-05-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48172
+	* gcc.dg/vect/pr48172.c: New testcase.
+
 2011-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48967
