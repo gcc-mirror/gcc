@@ -61,7 +61,7 @@
 
 2011-05-12  DJ Delorie  <dj@redhat.com>
 
-	(rx_builtins): New arrays - holds builtin functions.
+	* config/rx/rx.c (rx_builtins): New arrays - holds builtin functions.
 	(ADD_RX_BUILTIN1, ADD_RX_BUILTIN2, ADD_RX_BUILTIN3): Install
 	created builtin into rx_builtins array.
 	(rx_builtin_decl): New function.
