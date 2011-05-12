@@ -3541,10 +3541,10 @@ do_pointer_plus_expr_check:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
       {
-	/* We allow any kind of integral typed argument and result.  */
-	if (!INTEGRAL_TYPE_P (rhs1_type)
-	    || !INTEGRAL_TYPE_P (rhs2_type)
-	    || !INTEGRAL_TYPE_P (lhs_type))
+	/* We allow only boolean typed or compatible argument and result.  */
+	if (!useless_type_conversion_p (boolean_type_node,  rhs1_type)
+	    || !useless_type_conversion_p (boolean_type_node,  rhs2_type)
+	    || !useless_type_conversion_p (boolean_type_node,  lhs_type))
 	  {
 	    error ("type mismatch in binary truth expression");
 	    debug_generic_expr (lhs_type);

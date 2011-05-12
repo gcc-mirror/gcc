@@ -1,3 +1,13 @@
+2011-05-12  Kai Tietz  <ktietz@redhat.com>
+
+	* gimplify.c (gimple_boolify): Re-boolify expression
+	arguments even if expression type is of kind BOOLEAN_TYPE.
+	(gimplify_boolean_expr): Removed.
+	(gimplify_expr): Boolify truth opcodes AND, ANDIF, OR, ORIF,
+	and XOR. Additional take care that we keep expression's type.
+	* tree-cfg.c (verify_gimple_assign_binary): Adjust check for type
+	of TRUTH_AND|OR|XOR_EXPR.
+
 2011-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48975
