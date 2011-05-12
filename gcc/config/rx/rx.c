@@ -1930,10 +1930,13 @@ enum rx_builtin
   RX_BUILTIN_max
 };
 
+static GTY(()) tree rx_builtins[(int) RX_BUILTIN_max];
+
 static void
 rx_init_builtins (void)
 {
 #define ADD_RX_BUILTIN1(UC_NAME, LC_NAME, RET_TYPE, ARG_TYPE)		\
+   rx_builtins[RX_BUILTIN_##UC_NAME] =					\
    add_builtin_function ("__builtin_rx_" LC_NAME,			\
 			build_function_type_list (RET_TYPE##_type_node, \
 						  ARG_TYPE##_type_node, \
@@ -1942,6 +1945,7 @@ rx_init_builtins (void)
 			BUILT_IN_MD, NULL, NULL_TREE)
 
 #define ADD_RX_BUILTIN2(UC_NAME, LC_NAME, RET_TYPE, ARG_TYPE1, ARG_TYPE2) \
+  rx_builtins[RX_BUILTIN_##UC_NAME] =					\
   add_builtin_function ("__builtin_rx_" LC_NAME,			\
 			build_function_type_list (RET_TYPE##_type_node, \
 						  ARG_TYPE1##_type_node,\
@@ -1951,6 +1955,7 @@ rx_init_builtins (void)
 			BUILT_IN_MD, NULL, NULL_TREE)
 
 #define ADD_RX_BUILTIN3(UC_NAME,LC_NAME,RET_TYPE,ARG_TYPE1,ARG_TYPE2,ARG_TYPE3) \
+  rx_builtins[RX_BUILTIN_##UC_NAME] =					\
   add_builtin_function ("__builtin_rx_" LC_NAME,			\
 			build_function_type_list (RET_TYPE##_type_node, \
 						  ARG_TYPE1##_type_node,\
@@ -1980,6 +1985,17 @@ rx_init_builtins (void)
   ADD_RX_BUILTIN1 (ROUND,   "round",   intSI, float);
   ADD_RX_BUILTIN1 (REVW,    "revw",    intSI, intSI);
   ADD_RX_BUILTIN1 (WAIT,    "wait",    void,  void);
+}
+
+/* Return the RX builtin for CODE.  */
+
+static tree
+rx_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+{
+  if (code >= RX_BUILTIN_max)
+    return error_mark_node;
+
+  return rx_builtins[code];
 }
 
 static rtx
@@ -2955,6 +2971,9 @@ rx_adjust_insn_length (rtx insn, int current_length)
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS		rx_init_builtins
 
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL		rx_builtin_decl
+
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN		rx_expand_builtin
 
@@ -3068,4 +3087,4 @@ rx_adjust_insn_length (rtx insn, int current_length)
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* #include "gt-rx.h" */
+#include "gt-rx.h"
