@@ -1,3 +1,12 @@
+2011-05-12  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-05-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48822
+	* tree-ssa-sccvn.c (set_ssa_val_to): Never go up the lattice.
+	(process_scc): Indicate which iteration we start.
+
 2011-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48967

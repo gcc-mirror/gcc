@@ -1,3 +1,11 @@
+2011-05-12  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-05-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48822
+	* gcc.dg/torture/pr48822.c: New testcase.
+
 2011-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48967
