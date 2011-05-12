@@ -1,3 +1,10 @@
+2011-05-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_save_reg): Change maybe_eh_return
+	to bool.
+	(ix86_emit_restore_regs_using_mov): Likewise.
+	(ix86_emit_restore_sse_regs_using_mov): Likewise.
+
 2011-05-12  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/sparc/sparc.h (REG_OK_FOR_INDEX_P, REG_OK_FOR_BASE_P,

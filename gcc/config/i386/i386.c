@@ -9066,7 +9066,7 @@ ix86_select_alt_pic_regnum (void)
 
 /* Return 1 if we need to save REGNO.  */
 static int
-ix86_save_reg (unsigned int regno, int maybe_eh_return)
+ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 {
   if (pic_offset_table_rtx
       && regno == REAL_PIC_OFFSET_TABLE_REGNUM
@@ -10898,7 +10898,7 @@ ix86_emit_leave (void)
    First register is restored from CFA - CFA_OFFSET.  */
 static void
 ix86_emit_restore_regs_using_mov (HOST_WIDE_INT cfa_offset,
-				  int maybe_eh_return)
+				  bool maybe_eh_return)
 {
   struct machine_function *m = cfun->machine;
   unsigned int regno;
@@ -10937,7 +10937,7 @@ ix86_emit_restore_regs_using_mov (HOST_WIDE_INT cfa_offset,
    First register is restored from CFA - CFA_OFFSET.  */
 static void
 ix86_emit_restore_sse_regs_using_mov (HOST_WIDE_INT cfa_offset,
-				      int maybe_eh_return)
+				      bool maybe_eh_return)
 {
   unsigned int regno;
 
