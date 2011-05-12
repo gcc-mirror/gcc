@@ -18810,10 +18810,6 @@ build_non_dependent_expr (tree expr)
 {
   tree inner_expr;
 
-  /* Preserve null pointer constants so that the type of things like
-     "p == 0" where "p" is a pointer can be determined.  */
-  if (null_ptr_cst_p (expr))
-    return expr;
   /* Preserve OVERLOADs; the functions must be available to resolve
      types.  */
   inner_expr = expr;
