@@ -1,3 +1,10 @@
+2011-05-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48172
+	* tree-vect-loop-manip.c (vect_vfa_segment_size): Do not exclude
+	the number of iterations from the segment size calculation.
+	(vect_create_cond_for_alias_checks): Adjust.
+
 2011-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48967
