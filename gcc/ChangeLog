@@ -1,3 +1,7 @@
+2011-05-11  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (type_hash_canon): Use struct tree_type_non_common.
+
 2011-05-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgrtl.c (commit_one_edge_insertion): Remove always-true test and
