@@ -1,3 +1,11 @@
+2011-05-12  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (DECL_DEFERRED_CONSTEXPR_CHECK): New.
+	* semantics.c (validate_constexpr_fundecl): Set it.
+	(check_deferred_constexpr_decls): Clear it.
+	(register_constexpr_fundef): Make sure it isn't set.
+	* decl.c (grok_special_member_properties): Check it.
+
 2011-05-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48948

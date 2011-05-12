@@ -10681,6 +10681,9 @@ grok_special_member_properties (tree decl)
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
       if (DECL_DECLARED_CONSTEXPR_P (decl)
+	  /* It doesn't count if we can't tell yet whether or not
+	     the constructor is actually constexpr.  */
+	  && !DECL_DEFERRED_CONSTEXPR_CHECK (decl)
 	  && !copy_fn_p (decl) && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
