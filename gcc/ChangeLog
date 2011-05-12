@@ -1,3 +1,24 @@
+2011-05-12  DJ Delorie  <dj@redhat.com>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (HAVE_PRE_DECREMENT): Fix typo.
+	* config/rx/rx.c (CC_FLAG_FP): Fix comment.
+	(rx_is_legitimate_address): Add pre-decrement and post-increment
+	addressing in HImode and QImode.  Fix test for out of range
+	REG+INT addressing.
+	(rx_legitimate_constant_p): Rename ro rx_is_legitimate_constant.
+	(rx_align_for_label): Test label before extracting its usage
+	count.
+	(rx_adjust_insn_lengths): Fix selection of insn codes.
+	(TARGET_LEGITIMNATE_CONSTANT_P): Use renamed function.
+
+	(rx_builtins): New arrays - holds builtin functions.
+	(ADD_RX_BUILTIN1, ADD_RX_BUILTIN2, ADD_RX_BUILTIN3): Install
+	created builtin into rx_builtins array.
+	(rx_builtin_decl): New function.
+	(TARGET_BUITLIN_DECL): Define.
+	Include gt-rx.h.
+
 2011-05-11  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (type_hash_canon): Use struct tree_type_non_common.
