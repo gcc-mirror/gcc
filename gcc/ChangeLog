@@ -1,5 +1,21 @@
 2011-05-12  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (gtc_visit): Compare TREE_ADDRESSABLE, handle
+	NULLPTR_TYPE similar to VOID_TYPE.  Defer type-leader lookup
+	until after simple checks.
+	(gimple_types_compatible_p): Likewise.
+	(iterative_hash_gimple_type): Always hash pointer targets
+	and function return and argument types.
+	(iterative_hash_canonical_type): Do not hash TYPE_QUALS,
+	hash TYPE_ALIGN.  Do not hash TYPE_MIN/MAX_VALUE.
+	(gimple_canonical_types_compatible_p): Compare TREE_ADDRESSABLE,
+	handle NULLPTR_TYPE similar to VOID_TYPE.  Handle non-aggregates
+	completely in the simple compare section.
+	(gimple_register_canonical_type): Query the cache again after
+	registering.
+
+2011-05-12  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/48172
 	* tree-vect-loop-manip.c (vect_vfa_segment_size): Do not exclude
 	the number of iterations from the segment size calculation.

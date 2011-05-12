@@ -3489,15 +3489,6 @@ gtc_visit (tree t1, tree t2,
   if (t1 == NULL_TREE || t2 == NULL_TREE)
     return false;
 
-  /* If the types have been previously registered and found equal
-     they still are.  */
-  leader1 = gimple_lookup_type_leader (t1);
-  leader2 = gimple_lookup_type_leader (t2);
-  if (leader1 == t2
-      || t1 == leader2
-      || (leader1 && leader1 == leader2))
-    return true;
-
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return false;
@@ -3506,9 +3497,18 @@ gtc_visit (tree t1, tree t2,
   if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
     return false;
 
-  /* Void types are always the same.  */
-  if (TREE_CODE (t1) == VOID_TYPE)
+  if (TREE_ADDRESSABLE (t1) != TREE_ADDRESSABLE (t2))
+    return false;
+
+  /* Void types and nullptr types are always the same.  */
+  if (TREE_CODE (t1) == VOID_TYPE
+      || TREE_CODE (t1) == NULLPTR_TYPE)
     return true;
+
+  /* Can't be the same type if they have different alignment or mode.  */
+  if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
+      || TYPE_MODE (t1) != TYPE_MODE (t2))
+    return false;
 
   /* Do some simple checks before doing three hashtable queries.  */
   if (INTEGRAL_TYPE_P (t1)
@@ -3516,13 +3516,11 @@ gtc_visit (tree t1, tree t2,
       || FIXED_POINT_TYPE_P (t1)
       || TREE_CODE (t1) == VECTOR_TYPE
       || TREE_CODE (t1) == COMPLEX_TYPE
-      || TREE_CODE (t1) == OFFSET_TYPE)
+      || TREE_CODE (t1) == OFFSET_TYPE
+      || POINTER_TYPE_P (t1))
     {
-      /* Can't be the same type if they have different alignment,
-	 sign, precision or mode.  */
-      if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
-	  || TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
-	  || TYPE_MODE (t1) != TYPE_MODE (t2)
+      /* Can't be the same type if they have different sign or precision.  */
+      if (TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
 	  || TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))
 	return false;
 
@@ -3536,16 +3534,17 @@ gtc_visit (tree t1, tree t2,
 	  || FIXED_POINT_TYPE_P (t1))
 	return true;
 
-      /* For integral types fall thru to more complex checks.  */
+      /* For other types fall thru to more complex checks.  */
     }
 
-  else if (AGGREGATE_TYPE_P (t1) || POINTER_TYPE_P (t1))
-    {
-      /* Can't be the same type if they have different alignment or mode.  */
-      if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
-	  || TYPE_MODE (t1) != TYPE_MODE (t2))
-	return false;
-    }
+  /* If the types have been previously registered and found equal
+     they still are.  */
+  leader1 = gimple_lookup_type_leader (t1);
+  leader2 = gimple_lookup_type_leader (t2);
+  if (leader1 == t2
+      || t1 == leader2
+      || (leader1 && leader1 == leader2))
+    return true;
 
   /* If the hash values of t1 and t2 are different the types can't
      possibly be the same.  This helps keeping the type-pair hashtable
@@ -3739,10 +3738,6 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
 	goto different_types;
       }
 
-    case NULLPTR_TYPE:
-      /* There is only one decltype(nullptr).  */
-      goto same_types;
-
     case INTEGER_TYPE:
     case BOOLEAN_TYPE:
       {
@@ -3906,15 +3901,6 @@ gimple_types_compatible_p (tree t1, tree t2)
   if (t1 == NULL_TREE || t2 == NULL_TREE)
     return false;
 
-  /* If the types have been previously registered and found equal
-     they still are.  */
-  leader1 = gimple_lookup_type_leader (t1);
-  leader2 = gimple_lookup_type_leader (t2);
-  if (leader1 == t2
-      || t1 == leader2
-      || (leader1 && leader1 == leader2))
-    return true;
-
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return false;
@@ -3923,9 +3909,18 @@ gimple_types_compatible_p (tree t1, tree t2)
   if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
     return false;
 
-  /* Void types are always the same.  */
-  if (TREE_CODE (t1) == VOID_TYPE)
+  if (TREE_ADDRESSABLE (t1) != TREE_ADDRESSABLE (t2))
+    return false;
+
+  /* Void types and nullptr types are always the same.  */
+  if (TREE_CODE (t1) == VOID_TYPE
+      || TREE_CODE (t1) == NULLPTR_TYPE)
     return true;
+
+  /* Can't be the same type if they have different alignment or mode.  */
+  if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
+      || TYPE_MODE (t1) != TYPE_MODE (t2))
+    return false;
 
   /* Do some simple checks before doing three hashtable queries.  */
   if (INTEGRAL_TYPE_P (t1)
@@ -3933,13 +3928,11 @@ gimple_types_compatible_p (tree t1, tree t2)
       || FIXED_POINT_TYPE_P (t1)
       || TREE_CODE (t1) == VECTOR_TYPE
       || TREE_CODE (t1) == COMPLEX_TYPE
-      || TREE_CODE (t1) == OFFSET_TYPE)
+      || TREE_CODE (t1) == OFFSET_TYPE
+      || POINTER_TYPE_P (t1))
     {
-      /* Can't be the same type if they have different alignment,
-	 sign, precision or mode.  */
-      if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
-	  || TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
-	  || TYPE_MODE (t1) != TYPE_MODE (t2)
+      /* Can't be the same type if they have different sign or precision.  */
+      if (TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
 	  || TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))
 	return false;
 
@@ -3953,16 +3946,17 @@ gimple_types_compatible_p (tree t1, tree t2)
 	  || FIXED_POINT_TYPE_P (t1))
 	return true;
 
-      /* For integral types fall thru to more complex checks.  */
+      /* For other types fall thru to more complex checks.  */
     }
 
-  else if (AGGREGATE_TYPE_P (t1) || POINTER_TYPE_P (t1))
-    {
-      /* Can't be the same type if they have different alignment or mode.  */
-      if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
-	  || TYPE_MODE (t1) != TYPE_MODE (t2))
-	return false;
-    }
+  /* If the types have been previously registered and found equal
+     they still are.  */
+  leader1 = gimple_lookup_type_leader (t1);
+  leader2 = gimple_lookup_type_leader (t2);
+  if (leader1 == t2
+      || t1 == leader2
+      || (leader1 && leader1 == leader2))
+    return true;
 
   /* If the hash values of t1 and t2 are different the types can't
      possibly be the same.  This helps keeping the type-pair hashtable
@@ -4116,20 +4110,10 @@ iterative_hash_gimple_type (tree type, hashval_t val,
     }
 
   /* For pointer and reference types, fold in information about the type
-     pointed to but do not recurse into possibly incomplete types to
-     avoid hash differences for complete vs. incomplete types.  */
+     pointed to.  */
   if (POINTER_TYPE_P (type))
-    {
-      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
-	{
-	  v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
-	  v = iterative_hash_name
-		(TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
-	}
-      else
-	v = visit (TREE_TYPE (type), state, v,
-		   sccstack, sccstate, sccstate_obstack);
-    }
+    v = visit (TREE_TYPE (type), state, v,
+	       sccstack, sccstate, sccstate_obstack);
 
   /* For integer types hash the types min/max values and the string flag.  */
   if (TREE_CODE (type) == INTEGER_TYPE)
@@ -4170,29 +4154,13 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	v = visit (TYPE_METHOD_BASETYPE (type), state, v,
 		   sccstack, sccstate, sccstate_obstack);
 
-      /* For result types allow mismatch in completeness.  */
-      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
-	{
-	  v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
-	  v = iterative_hash_name
-		(TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
-	}
-      else
-	v = visit (TREE_TYPE (type), state, v,
-		   sccstack, sccstate, sccstate_obstack);
-
+      /* Check result and argument types.  */
+      v = visit (TREE_TYPE (type), state, v,
+		 sccstack, sccstate, sccstate_obstack);
       for (p = TYPE_ARG_TYPES (type), na = 0; p; p = TREE_CHAIN (p))
 	{
-	  /* For argument types allow mismatch in completeness.  */
-	  if (RECORD_OR_UNION_TYPE_P (TREE_VALUE (p)))
-	    {
-	      v = iterative_hash_hashval_t (TREE_CODE (TREE_VALUE (p)), v);
-	      v = iterative_hash_name
-		    (TYPE_NAME (TYPE_MAIN_VARIANT (TREE_VALUE (p))), v);
-	    }
-	  else
-	    v = visit (TREE_VALUE (p), state, v,
-		       sccstack, sccstate, sccstate_obstack);
+	  v = visit (TREE_VALUE (p), state, v,
+		     sccstack, sccstate, sccstate_obstack);
 	  na++;
 	}
 
@@ -4311,19 +4279,20 @@ iterative_hash_canonical_type (tree type, hashval_t val)
      only existing types having the same features as the new type will be
      checked.  */
   v = iterative_hash_hashval_t (TREE_CODE (type), 0);
-  v = iterative_hash_hashval_t (TYPE_QUALS (type), v);
   v = iterative_hash_hashval_t (TREE_ADDRESSABLE (type), v);
-
-  /* Do not hash the types size as this will cause differences in
-     hash values for the complete vs. the incomplete type variant.  */
+  v = iterative_hash_hashval_t (TYPE_ALIGN (type), v);
+  v = iterative_hash_hashval_t (TYPE_MODE (type), v);
 
   /* Incorporate common features of numerical types.  */
   if (INTEGRAL_TYPE_P (type)
       || SCALAR_FLOAT_TYPE_P (type)
-      || FIXED_POINT_TYPE_P (type))
+      || FIXED_POINT_TYPE_P (type)
+      || TREE_CODE (type) == VECTOR_TYPE
+      || TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == OFFSET_TYPE
+      || POINTER_TYPE_P (type))
     {
       v = iterative_hash_hashval_t (TYPE_PRECISION (type), v);
-      v = iterative_hash_hashval_t (TYPE_MODE (type), v);
       v = iterative_hash_hashval_t (TYPE_UNSIGNED (type), v);
     }
 
@@ -4332,19 +4301,16 @@ iterative_hash_canonical_type (tree type, hashval_t val)
   if (POINTER_TYPE_P (type))
     {
       v = iterative_hash_hashval_t (TYPE_REF_CAN_ALIAS_ALL (type), v);
+      v = iterative_hash_hashval_t (TYPE_ADDR_SPACE (TREE_TYPE (type)), v);
+      v = iterative_hash_hashval_t (TYPE_RESTRICT (type), v);
       v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
     }
 
   /* For integer types hash the types min/max values and the string flag.  */
   if (TREE_CODE (type) == INTEGER_TYPE)
     {
-      /* OMP lowering can introduce error_mark_node in place of
-	 random local decls in types.  */
-      if (TYPE_MIN_VALUE (type) != error_mark_node)
-	v = iterative_hash_expr (TYPE_MIN_VALUE (type), v);
-      if (TYPE_MAX_VALUE (type) != error_mark_node)
-	v = iterative_hash_expr (TYPE_MAX_VALUE (type), v);
       v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
+      v = iterative_hash_hashval_t (TYPE_IS_SIZETYPE (type), v);
     }
 
   /* For array types hash their domain and the string flag.  */
@@ -4599,27 +4565,32 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return false;
 
-  /* Can't be the same type if they have different CV qualifiers.  */
-  if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
+  if (TREE_ADDRESSABLE (t1) != TREE_ADDRESSABLE (t2))
     return false;
 
-  /* Void types are always the same.  */
-  if (TREE_CODE (t1) == VOID_TYPE)
+  /* Qualifiers do not matter for canonical type comparison purposes.  */
+
+  /* Void types and nullptr types are always the same.  */
+  if (TREE_CODE (t1) == VOID_TYPE
+      || TREE_CODE (t1) == NULLPTR_TYPE)
     return true;
 
-  /* Do some simple checks before doing three hashtable queries.  */
+  /* Can't be the same type if they have different alignment, or mode.  */
+  if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
+      || TYPE_MODE (t1) != TYPE_MODE (t2))
+    return false;
+
+  /* Non-aggregate types can be handled cheaply.  */
   if (INTEGRAL_TYPE_P (t1)
       || SCALAR_FLOAT_TYPE_P (t1)
       || FIXED_POINT_TYPE_P (t1)
       || TREE_CODE (t1) == VECTOR_TYPE
       || TREE_CODE (t1) == COMPLEX_TYPE
-      || TREE_CODE (t1) == OFFSET_TYPE)
+      || TREE_CODE (t1) == OFFSET_TYPE
+      || POINTER_TYPE_P (t1))
     {
-      /* Can't be the same type if they have different alignment,
-	 sign, precision or mode.  */
-      if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
-	  || TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
-	  || TYPE_MODE (t1) != TYPE_MODE (t2)
+      /* Can't be the same type if they have different sign or precision.  */
+      if (TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
 	  || TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))
 	return false;
 
@@ -4628,20 +4599,35 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 	      || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)))
 	return false;
 
-      /* That's all we need to check for float and fixed-point types.  */
-      if (SCALAR_FLOAT_TYPE_P (t1)
-	  || FIXED_POINT_TYPE_P (t1))
-	return true;
+      /* For canonical type comparisons we do not want to build SCCs
+	 so we cannot compare pointed-to types.  But we can, for now,
+	 require the same pointed-to type kind and match what
+	 useless_type_conversion_p would do.  */
+      if (POINTER_TYPE_P (t1))
+	{
+	  /* If the two pointers have different ref-all attributes,
+	     they can't be the same type.  */
+	  if (TYPE_REF_CAN_ALIAS_ALL (t1) != TYPE_REF_CAN_ALIAS_ALL (t2))
+	    return false;
 
-      /* For integral types fall thru to more complex checks.  */
-    }
+	  if (TYPE_ADDR_SPACE (TREE_TYPE (t1))
+	      != TYPE_ADDR_SPACE (TREE_TYPE (t2)))
+	    return false;
 
-  else if (AGGREGATE_TYPE_P (t1) || POINTER_TYPE_P (t1))
-    {
-      /* Can't be the same type if they have different alignment or mode.  */
-      if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
-	  || TYPE_MODE (t1) != TYPE_MODE (t2))
-	return false;
+	  if (TYPE_RESTRICT (t1) != TYPE_RESTRICT (t2))
+	    return false;
+
+	  if (TREE_CODE (TREE_TYPE (t1)) != TREE_CODE (TREE_TYPE (t2)))
+	    return false;
+	}
+
+      /* Tail-recurse to components.  */
+      if (TREE_CODE (t1) == VECTOR_TYPE
+	  || TREE_CODE (t1) == COMPLEX_TYPE)
+	return gimple_canonical_types_compatible_p (TREE_TYPE (t1),
+						    TREE_TYPE (t2));
+
+      return true;
     }
 
   /* If the hash values of t1 and t2 are different the types can't
@@ -4669,12 +4655,6 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
   /* Do type-specific comparisons.  */
   switch (TREE_CODE (t1))
     {
-    case VECTOR_TYPE:
-    case COMPLEX_TYPE:
-      if (!gimple_canonical_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
-	goto different_types;
-      goto same_types;
-
     case ARRAY_TYPE:
       /* Array types are the same if the element types are the same and
 	 the number of elements are the same.  */
@@ -4767,114 +4747,6 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 	  goto same_types;
 	}
 
-    case OFFSET_TYPE:
-      {
-	if (!gimple_canonical_types_compatible_p
-	       (TREE_TYPE (t1), TREE_TYPE (t2))
-	    || !gimple_canonical_types_compatible_p
-	          (TYPE_OFFSET_BASETYPE (t1), TYPE_OFFSET_BASETYPE (t2)))
-	  goto different_types;
-
-	goto same_types;
-      }
-
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-      {
-	/* If the two pointers have different ref-all attributes,
-	   they can't be the same type.  */
-	if (TYPE_REF_CAN_ALIAS_ALL (t1) != TYPE_REF_CAN_ALIAS_ALL (t2))
-	  goto different_types;
-
-	if (TYPE_ADDR_SPACE (TREE_TYPE (t1))
-	    != TYPE_ADDR_SPACE (TREE_TYPE (t2)))
-	  goto different_types;
-
-	if (TYPE_RESTRICT (t1) != TYPE_RESTRICT (t2))
-	  goto different_types;
-
-	/* For canonical type comparisons we do not want to build SCCs
-	   so we cannot compare pointed-to types.  But we can, for now,
-	   require the same pointed-to type kind.  */
-	if (TREE_CODE (TREE_TYPE (t1)) != TREE_CODE (TREE_TYPE (t2)))
-	  goto different_types;
-
-	goto same_types;
-      }
-
-    case NULLPTR_TYPE:
-      /* There is only one decltype(nullptr).  */
-      goto same_types;
-
-    case INTEGER_TYPE:
-    case BOOLEAN_TYPE:
-      {
-	tree min1 = TYPE_MIN_VALUE (t1);
-	tree max1 = TYPE_MAX_VALUE (t1);
-	tree min2 = TYPE_MIN_VALUE (t2);
-	tree max2 = TYPE_MAX_VALUE (t2);
-	bool min_equal_p = false;
-	bool max_equal_p = false;
-
-	/* If either type has a minimum value, the other type must
-	   have the same.  */
-	if (min1 == NULL_TREE && min2 == NULL_TREE)
-	  min_equal_p = true;
-	else if (min1 && min2 && operand_equal_p (min1, min2, 0))
-	  min_equal_p = true;
-
-	/* Likewise, if either type has a maximum value, the other
-	   type must have the same.  */
-	if (max1 == NULL_TREE && max2 == NULL_TREE)
-	  max_equal_p = true;
-	else if (max1 && max2 && operand_equal_p (max1, max2, 0))
-	  max_equal_p = true;
-
-	if (!min_equal_p || !max_equal_p)
-	  goto different_types;
-
-	goto same_types;
-      }
-
-    case ENUMERAL_TYPE:
-      {
-	/* FIXME lto, we cannot check bounds on enumeral types because
-	   different front ends will produce different values.
-	   In C, enumeral types are integers, while in C++ each element
-	   will have its own symbolic value.  We should decide how enums
-	   are to be represented in GIMPLE and have each front end lower
-	   to that.  */
-	tree v1, v2;
-
-	/* For enumeral types, all the values must be the same.  */
-	if (TYPE_VALUES (t1) == TYPE_VALUES (t2))
-	  goto same_types;
-
-	for (v1 = TYPE_VALUES (t1), v2 = TYPE_VALUES (t2);
-	     v1 && v2;
-	     v1 = TREE_CHAIN (v1), v2 = TREE_CHAIN (v2))
-	  {
-	    tree c1 = TREE_VALUE (v1);
-	    tree c2 = TREE_VALUE (v2);
-
-	    if (TREE_CODE (c1) == CONST_DECL)
-	      c1 = DECL_INITIAL (c1);
-
-	    if (TREE_CODE (c2) == CONST_DECL)
-	      c2 = DECL_INITIAL (c2);
-
-	    if (tree_int_cst_equal (c1, c2) != 1)
-	      goto different_types;
-	  }
-
-	/* If one enumeration has more values than the other, they
-	   are not the same.  */
-	if (v1 || v2)
-	  goto different_types;
-
-	goto same_types;
-      }
-
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
@@ -4948,6 +4820,9 @@ gimple_register_canonical_type (tree t)
   /* Always register the type itself first so that if it turns out
      to be the canonical type it will be the one we merge to as well.  */
   t = gimple_register_type (t);
+
+  if (TYPE_CANONICAL (t))
+    return TYPE_CANONICAL (t);
 
   /* Always register the main variant first.  This is important so we
      pick up the non-typedef variants as canonical, otherwise we'll end
