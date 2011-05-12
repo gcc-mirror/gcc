@@ -1422,6 +1422,12 @@ clarify_prohibited_class_mode_regs (void)
 	  if (TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j], hard_regno))
 	    continue;
 	  nregs = hard_regno_nregs[hard_regno][j];
+          if (hard_regno + nregs > FIRST_PSEUDO_REGISTER)
+            {
+              SET_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
+                                hard_regno);
+               continue;
+            }
 	  pclass = ira_pressure_class_translate[REGNO_REG_CLASS (hard_regno)];
 	  for (nregs-- ;nregs >= 0; nregs--)
 	    if (((enum reg_class) pclass
