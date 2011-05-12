@@ -6217,7 +6217,7 @@ type_hash_canon (unsigned int hashcode, tree type)
 #ifdef GATHER_STATISTICS
       tree_code_counts[(int) TREE_CODE (type)]--;
       tree_node_counts[(int) t_kind]--;
-      tree_node_sizes[(int) t_kind] -= sizeof (struct tree_type);
+      tree_node_sizes[(int) t_kind] -= sizeof (struct tree_type_non_common);
 #endif
       return t1;
     }
