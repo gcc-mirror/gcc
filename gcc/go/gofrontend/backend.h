@@ -317,19 +317,23 @@ class Backend
   // Create a local variable.  The frontend will create the local
   // variables first, and then create the block which contains them.
   // FUNCTION is the function in which the variable is defined.  NAME
-  // is the name of the variable.  TYPE is the type.  LOCATION is
-  // where the variable is defined.  For each local variable the
-  // frontend will call init_statement to set the initial value.
+  // is the name of the variable.  TYPE is the type.  IS_ADDRESS_TAKEN
+  // is true if the address of this variable is taken (this implies
+  // that the address does not escape the function, as otherwise the
+  // variable would be on the heap).  LOCATION is where the variable
+  // is defined.  For each local variable the frontend will call
+  // init_statement to set the initial value.
   virtual Bvariable*
   local_variable(Bfunction* function, const std::string& name, Btype* type,
-		 source_location location) = 0;
+		 bool is_address_taken, source_location location) = 0;
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
   // variables).  The arguments are as for local_variable.
   virtual Bvariable*
   parameter_variable(Bfunction* function, const std::string& name,
-		     Btype* type, source_location location) = 0;
+		     Btype* type, bool is_address_taken,
+		     source_location location) = 0;
 
   // Create a temporary variable.  A temporary variable has no name,
   // just a type.  We pass in FUNCTION and BLOCK in case they are

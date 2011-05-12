@@ -1160,6 +1160,22 @@ class Variable
   is_in_heap() const
   { return this->is_address_taken_ && !this->is_global_; }
 
+  // Note that something takes the address of this variable.
+  void
+  set_address_taken()
+  { this->is_address_taken_ = true; }
+
+  // Return whether the address is taken but does not escape.
+  bool
+  is_non_escaping_address_taken() const
+  { return this->is_non_escaping_address_taken_; }
+
+  // Note that something takes the address of this variable such that
+  // the address does not escape the function.
+  void
+  set_non_escaping_address_taken()
+  { this->is_non_escaping_address_taken_ = true; }
+
   // Get the source location of the variable's declaration.
   source_location
   location() const
@@ -1252,11 +1268,6 @@ class Variable
   void
   determine_type();
 
-  // Note that something takes the address of this variable.
-  void
-  set_address_taken()
-  { this->is_address_taken_ = true; }
-
   // Get the backend representation of the variable.
   Bvariable*
   get_backend_variable(Gogo*, Named_object*, const Package*,
@@ -1314,8 +1325,13 @@ class Variable
   bool is_receiver_ : 1;
   // Whether this is the varargs parameter of a function.
   bool is_varargs_parameter_ : 1;
-  // Whether something takes the address of this variable.
+  // Whether something takes the address of this variable.  For a
+  // local variable this implies that the variable has to be on the
+  // heap.
   bool is_address_taken_ : 1;
+  // Whether something takes the address of this variable such that
+  // the address does not escape the function.
+  bool is_non_escaping_address_taken_ : 1;
   // True if we have seen this variable in a traversal.
   bool seen_ : 1;
   // True if we have lowered the initialization expression.
@@ -1343,7 +1359,8 @@ class Result_variable
   Result_variable(Type* type, Function* function, int index,
 		  source_location location)
     : type_(type), function_(function), index_(index), location_(location),
-      backend_(NULL), is_address_taken_(false)
+      backend_(NULL), is_address_taken_(false),
+      is_non_escaping_address_taken_(false)
   { }
 
   // Get the type of the result variable.
@@ -1376,6 +1393,17 @@ class Result_variable
   set_address_taken()
   { this->is_address_taken_ = true; }
 
+  // Return whether the address is taken but does not escape.
+  bool
+  is_non_escaping_address_taken() const
+  { return this->is_non_escaping_address_taken_; }
+
+  // Note that something takes the address of this variable such that
+  // the address does not escape the function.
+  void
+  set_non_escaping_address_taken()
+  { this->is_non_escaping_address_taken_ = true; }
+
   // Whether this variable should live in the heap.
   bool
   is_in_heap() const
@@ -1404,6 +1432,9 @@ class Result_variable
   Bvariable* backend_;
   // Whether something takes the address of this variable.
   bool is_address_taken_;
+  // Whether something takes the address of this variable such that
+  // the address does not escape the function.
+  bool is_non_escaping_address_taken_;
 };
 
 // The value we keep for a named constant.  This lets us hold a type

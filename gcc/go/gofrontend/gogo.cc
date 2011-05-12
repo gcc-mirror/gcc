@@ -3333,10 +3333,11 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
   : type_(type), init_(init), preinit_(NULL), location_(location),
     backend_(NULL), is_global_(is_global), is_parameter_(is_parameter),
     is_receiver_(is_receiver), is_varargs_parameter_(false),
-    is_address_taken_(false), seen_(false), init_is_lowered_(false),
-    type_from_init_tuple_(false), type_from_range_index_(false),
-    type_from_range_value_(false), type_from_chan_element_(false),
-    is_type_switch_var_(false), determined_type_(false)
+    is_address_taken_(false), is_non_escaping_address_taken_(false),
+    seen_(false), init_is_lowered_(false), type_from_init_tuple_(false),
+    type_from_range_index_(false), type_from_range_value_(false),
+    type_from_chan_element_(false), is_type_switch_var_(false),
+    determined_type_(false)
 {
   go_assert(type != NULL || init != NULL);
   go_assert(!is_parameter || init == NULL);
@@ -3722,11 +3723,15 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	    {
 	      tree fndecl = function->func_value()->get_decl();
 	      Bfunction* bfunction = tree_to_function(fndecl);
+	      bool is_address_taken = (this->is_non_escaping_address_taken_
+				       && !this->is_in_heap());
 	      if (is_parameter)
 		bvar = backend->parameter_variable(bfunction, n, btype,
+						   is_address_taken,
 						   this->location_);
 	      else
 		bvar = backend->local_variable(bfunction, n, btype,
+					       is_address_taken,
 					       this->location_);
 	    }
 	  this->backend_ = bvar;
@@ -3757,7 +3762,10 @@ Result_variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	  tree fndecl = function->func_value()->get_decl();
 	  Bfunction* bfunction = tree_to_function(fndecl);
 	  std::string n = Gogo::unpack_hidden_name(name);
+	  bool is_address_taken = (this->is_non_escaping_address_taken_
+				   && !this->is_in_heap());
 	  this->backend_ = backend->local_variable(bfunction, n, btype,
+						   is_address_taken,
 						   this->location_);
 	}
     }
