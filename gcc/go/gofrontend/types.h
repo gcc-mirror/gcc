@@ -1628,6 +1628,10 @@ class Function_type : public Type
   Function_type*
   copy_with_receiver(Type*) const;
 
+  // Finishing converting function types.
+  static void
+  convert_types(Gogo*);
+
   static Type*
   make_function_type_descriptor_type();
 
@@ -1665,6 +1669,16 @@ class Function_type : public Type
   Expression*
   type_descriptor_params(Type*, const Typed_identifier*,
 			 const Typed_identifier_list*);
+
+  Btype*
+  get_function_backend(Gogo*);
+
+  // A list of function types with multiple results and their
+  // placeholder backend representations, used to postpone building
+  // the structs we use for multiple results until all types are
+  // converted.
+  typedef std::vector<std::pair<Function_type*, Btype*> > Placeholders;
+  static Placeholders placeholders;
 
   // The receiver name and type.  This will be NULL for a normal
   // function, non-NULL for a method.

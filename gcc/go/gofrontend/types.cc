@@ -831,7 +831,8 @@ Type::check_int_value(Expression* e, const char* errmsg,
   return false;
 }
 
-// A hash table mapping unnamed types to trees.
+// A hash table mapping unnamed types to the backend representation of
+// those types.
 
 Type::Type_btypes Type::type_btypes;
 
@@ -2588,10 +2589,10 @@ Function_type::do_hash_for_method(Gogo* gogo) const
   return ret;
 }
 
-// Get the tree for a function type.
+// Get the backend representation for a function type.
 
 Btype*
-Function_type::do_get_backend(Gogo* gogo)
+Function_type::get_function_backend(Gogo* gogo)
 {
   Backend::Btyped_identifier breceiver;
   if (this->receiver_ != NULL)
@@ -2641,6 +2642,46 @@ Function_type::do_get_backend(Gogo* gogo)
 
   return gogo->backend()->function_type(breceiver, bparameters, bresults,
 					this->location());
+}
+
+// A hash table mapping function types to their backend placeholders.
+
+Function_type::Placeholders Function_type::placeholders;
+
+// Get the backend representation for a function type.  If we are
+// still converting types, and this types has multiple results, return
+// a placeholder instead.  We do this because for multiple results we
+// build a struct, and we need to make sure that all the types in the
+// struct are valid before we create the struct.
+
+Btype*
+Function_type::do_get_backend(Gogo* gogo)
+{
+  if (!gogo->named_types_are_converted()
+      && this->results_ != NULL
+      && this->results_->size() > 1)
+    {
+      Btype* placeholder =
+	gogo->backend()->placeholder_pointer_type("", this->location(), true);
+      Function_type::placeholders.push_back(std::make_pair(this, placeholder));
+      return placeholder;
+    }
+  return this->get_function_backend(gogo);
+}
+
+// Convert function types after all named types are converted.
+
+void
+Function_type::convert_types(Gogo* gogo)
+{
+  for (Placeholders::const_iterator p = Function_type::placeholders.begin();
+       p != Function_type::placeholders.end();
+       ++p)
+    {
+      Btype* bt = p->first->get_function_backend(gogo);
+      if (!gogo->backend()->set_placeholder_function_type(p->second, bt))
+	go_assert(saw_errors());
+    }
 }
 
 // Functions are initialized to NULL.
@@ -7236,7 +7277,7 @@ Named_type::do_get_backend(Gogo* gogo)
       --this->seen_;
       if (this->is_circular_)
 	bt1 = gogo->backend()->circular_pointer_type(bt, true);
-      if (!gogo->backend()->set_placeholder_pointer_type(bt, bt1))
+      if (!gogo->backend()->set_placeholder_function_type(bt, bt1))
 	bt = gogo->backend()->error_type();
       return bt;
 

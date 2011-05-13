@@ -1,3 +1,9 @@
+2011-05-13  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::function_type): When building a struct
+	for multiple results, check that all fields types have a size.
+	(Gcc_backend::placeholder_pointer_type): Permit name to be empty.
+
 2011-05-12  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::local_variable): Add is_address_taken

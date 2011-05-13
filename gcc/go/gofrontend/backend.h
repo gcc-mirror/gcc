@@ -113,7 +113,9 @@ class Backend
   // Create a placeholder pointer type.  This is used for a named
   // pointer type, since in Go a pointer type may refer to itself.
   // NAME is the name of the type, and the location is where the named
-  // type is defined.  FOR_FUNCTION is true if this is for a Go
+  // type is defined.  This function is also used for unnamed function
+  // types with multiple results, in which case the type has no name
+  // and NAME will be empty.  FOR_FUNCTION is true if this is for a Go
   // function type, which corresponds to a C/C++ pointer to function
   // type.  The return value will later be passed as the first
   // parameter to set_placeholder_pointer_type or
