@@ -3342,6 +3342,15 @@ verify_gimple_assign_unary (gimple stmt)
       return false;
 
     case TRUTH_NOT_EXPR:
+      if (!useless_type_conversion_p (boolean_type_node,  rhs1_type))
+        {
+	    error ("invalid types in truth not");
+	    debug_generic_expr (lhs_type);
+	    debug_generic_expr (rhs1_type);
+	    return true;
+        }
+      break;
+
     case NEGATE_EXPR:
     case ABS_EXPR:
     case BIT_NOT_EXPR:
