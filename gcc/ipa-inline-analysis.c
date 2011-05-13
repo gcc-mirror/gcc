@@ -592,7 +592,6 @@ evaluate_conditions_for_edge (struct cgraph_edge *e, bool inline_p)
       struct ipa_node_params *parms_info;
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
       int i, count = ipa_get_cs_argument_count (args);
-      struct ipcp_lattice lat;
       VEC (tree, heap) *known_vals = NULL;
 
       if (e->caller->global.inlined_to)
@@ -603,9 +602,10 @@ evaluate_conditions_for_edge (struct cgraph_edge *e, bool inline_p)
       VEC_safe_grow_cleared (tree, heap, known_vals, count);
       for (i = 0; i < count; i++)
 	{
-	  ipa_lattice_from_jfunc (parms_info, &lat, ipa_get_ith_jump_func (args, i));
-	  if (lat.type == IPA_CONST_VALUE)
-	    VEC_replace (tree, known_vals, i, lat.constant);
+	  tree cst = ipa_cst_from_jfunc (parms_info,
+					 ipa_get_ith_jump_func (args, i));
+	  if (cst)
+	    VEC_replace (tree, known_vals, i, cst);
 	}
       clause = evaluate_conditions_for_known_args (e->callee,
 						   inline_p, known_vals);
@@ -615,31 +615,6 @@ evaluate_conditions_for_edge (struct cgraph_edge *e, bool inline_p)
     for (i = 0; i < (int)VEC_length (condition, info->conds); i++)
       clause |= 1 << (i + predicate_first_dynamic_condition);
 
-  return clause;
-}
-
-
-/* Work out what conditions might be true at invocation of NODE
-   that is (future) ipa-cp clone.  */
-
-static clause_t
-evaluate_conditions_for_ipcp_clone (struct cgraph_node *node)
-{
-  struct ipa_node_params *parms_info = IPA_NODE_REF (node);
-  int i, count = ipa_get_param_count (parms_info);
-  struct ipcp_lattice *lat;
-  VEC (tree, heap) *known_vals = NULL;
-  clause_t clause;
-
-  VEC_safe_grow_cleared (tree, heap, known_vals, count);
-  for (i = 0; i < count; i++)
-    {
-      lat = ipa_get_lattice (parms_info, i);
-      if (lat->type == IPA_CONST_VALUE)
-	VEC_replace (tree, known_vals, i, lat->constant);
-    }
-  clause = evaluate_conditions_for_known_args (node, false, known_vals);
-  VEC_free (tree, heap, known_vals);
   return clause;
 }
 
@@ -1823,18 +1798,19 @@ estimate_node_size_and_time (struct cgraph_node *node,
 }
 
 
-/* Estimate size and time needed to execute callee of EDGE assuming
-   that parameters known to be constant at caller of EDGE are
-   propagated.  If INLINE_P is true, it is assumed that call will
-   be inlined.  */
+/* Estimate size and time needed to execute callee of EDGE assuming that
+   parameters known to be constant at caller of EDGE are propagated.
+   KNOWN_VALs is a vector of assumed known constant values for parameters.  */
 
 void
 estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
+				   VEC (tree, heap) *known_vals,
 		                   int *ret_size, int *ret_time)
 {
-  estimate_node_size_and_time (node,
-			       evaluate_conditions_for_ipcp_clone (node),
-			       ret_size, ret_time);
+  clause_t clause;
+
+  clause = evaluate_conditions_for_known_args (node, false, known_vals);
+  estimate_node_size_and_time (node, clause, ret_size, ret_time);
 }
 
 

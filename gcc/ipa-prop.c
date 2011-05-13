@@ -3002,6 +3002,7 @@ ipa_update_after_lto_read (void)
 /* Given the jump function JFUNC, compute the lattice LAT that describes the
    value coming down the callsite. INFO describes the caller node so that
    pass-through jump functions can be evaluated.  */
+
 void
 ipa_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
 			 struct ipa_jump_func *jfunc)
@@ -3060,4 +3061,20 @@ ipa_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
     }
   else
     lat->type = IPA_BOTTOM;
+}
+
+/* Determine whether JFUNC evaluates to a constant and if so, return it.
+   Otherwise return NULL. INFO describes the caller node so that pass-through
+   jump functions can be evaluated.  */
+
+tree
+ipa_cst_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
+{
+  struct ipcp_lattice lat;
+
+  ipa_lattice_from_jfunc (info, &lat, jfunc);
+  if (lat.type == IPA_CONST_VALUE)
+    return lat.constant;
+  else
+    return NULL_TREE;
 }

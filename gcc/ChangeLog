@@ -1,3 +1,13 @@
+2011-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (ipa_cst_from_jfunc): New function.
+	* ipa-prop.h (ipa_cst_from_jfunc): Declare.
+	* ipa-inline-analysis.c (evaluate_conditions_for_edge): Use it.
+	(evaluate_conditions_for_ipcp_clone): Removed.
+	(estimate_ipcp_clone_size_and_time): Accept vector of known constants.
+	* ipa-cp.c (ipcp_estimate_growth): Build vector of known constants.
+	* ipa-inline.h (estimate_ipcp_clone_size_and_time): Update.
+
 2011-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgrtl.c (cfg_layout_redirect_edge_and_branch): Adjust dump message.
