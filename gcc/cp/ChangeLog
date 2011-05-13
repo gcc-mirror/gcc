@@ -1,5 +1,11 @@
 2011-05-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48969
+	* pt.c (deduction_tsubst_fntype): New.
+	(fn_type_unification): Use it.
+	(init_template_processing): Initialize hash table.
+	(print_template_statistics): Print hash table stats.
+
 	* call.c (build_op_call): Use timevar_cond_start/stop.
 	(build_user_type_conversion): Likewise.
 
