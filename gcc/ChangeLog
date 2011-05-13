@@ -1,3 +1,9 @@
+2011-05-13  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48978
+	* gimple.c (iterative_hash_gimple_type): Revert change in
+	pointer target and function result and argument hashing.
+
 2011-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movxf_internal): Use !can_create_pseudo ().
