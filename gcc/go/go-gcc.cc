@@ -465,6 +465,7 @@ Gcc_backend::function_type(const Btyped_identifier& receiver,
 	  tree field_type_tree = p->btype->get_tree();
 	  if (field_type_tree == error_mark_node)
 	    return this->error_type();
+	  gcc_assert(TYPE_SIZE(field_type_tree) != NULL_TREE);
 	  tree field = build_decl(location, FIELD_DECL, name_tree,
 				  field_type_tree);
 	  DECL_CONTEXT(field) = result;
@@ -573,10 +574,13 @@ Gcc_backend::placeholder_pointer_type(const std::string& name,
 				      source_location location, bool)
 {
   tree ret = build_variant_type_copy(ptr_type_node);
-  tree decl = build_decl(location, TYPE_DECL,
-			 get_identifier_from_string(name),
-			 ret);
-  TYPE_NAME(ret) = decl;
+  if (!name.empty())
+    {
+      tree decl = build_decl(location, TYPE_DECL,
+			     get_identifier_from_string(name),
+			     ret);
+      TYPE_NAME(ret) = decl;
+    }
   return this->make_type(ret);
 }
 
