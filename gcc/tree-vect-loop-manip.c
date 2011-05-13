@@ -2353,23 +2353,18 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 
    Input:
      DR: The data reference.
-     VECT_FACTOR: vectorization factor.
-     SCALAR_LOOP_NITERS: number of iterations.
+     LENGTH_FACTOR: segment length to consider.
 
    Return an expression whose value is the size of segment which will be
    accessed by DR.  */
 
 static tree
-vect_vfa_segment_size (struct data_reference *dr, int vect_factor,
-		       tree scalar_loop_niters)
+vect_vfa_segment_size (struct data_reference *dr, tree length_factor)
 {
   tree segment_length;
   segment_length = size_binop (MULT_EXPR,
 			       fold_convert (sizetype, DR_STEP (dr)),
-			       size_int (vect_factor));
-  segment_length = size_binop (MULT_EXPR,
-			       segment_length,
-			       fold_convert (sizetype, scalar_loop_niters));
+			       fold_convert (sizetype, length_factor));
   if (vect_supportable_dr_alignment (dr, false)
         == dr_explicit_realign_optimized)
     {
@@ -2417,7 +2412,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
 
   ddr_p ddr;
   unsigned int i;
-  tree part_cond_expr;
+  tree part_cond_expr, length_factor;
 
   /* Create expression
      ((store_ptr_0 + store_segment_length_0) < load_ptr_0)
@@ -2465,10 +2460,12 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
         vect_create_addr_base_for_vector_ref (stmt_b, cond_expr_stmt_list,
 					      NULL_TREE, loop);
 
-      segment_length_a = vect_vfa_segment_size (dr_a, vect_factor,
-						scalar_loop_iters);
-      segment_length_b = vect_vfa_segment_size (dr_b, vect_factor,
-						scalar_loop_iters);
+      if (!operand_equal_p (DR_STEP (dr_a), DR_STEP (dr_b), 0))
+	length_factor = scalar_loop_iters;
+      else
+	length_factor = size_int (vect_factor);
+      segment_length_a = vect_vfa_segment_size (dr_a, length_factor);
+      segment_length_b = vect_vfa_segment_size (dr_b, length_factor);
 
       if (vect_print_dump_info (REPORT_DR_DETAILS))
 	{
