@@ -2608,7 +2608,7 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	    delete_insn (BB_END (src));
 	}
       if (dump_file)
-	fprintf (dump_file, "Fallthru edge %i->%i redirected to %i\n",
+	fprintf (dump_file, "Redirecting fallthru edge %i->%i to %i\n",
 		 e->src->index, e->dest->index, dest->index);
       ret = redirect_edge_succ_nodup (e, dest);
     }

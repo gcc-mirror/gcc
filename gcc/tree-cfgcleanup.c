@@ -420,7 +420,7 @@ remove_forwarder_block (basic_block bb)
 	}
     }
 
-  can_move_debug_stmts = single_pred_p (dest);
+  can_move_debug_stmts = MAY_HAVE_DEBUG_STMTS && single_pred_p (dest);
 
   /* Redirect the edges.  */
   for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
@@ -476,8 +476,7 @@ remove_forwarder_block (basic_block bb)
 	gsi_next (&gsi);
     }
 
-  /* Move debug statements if the destination has just a single
-     predecessor.  */
+  /* Move debug statements if the destination has a single predecessor.  */
   if (can_move_debug_stmts)
     {
       gsi_to = gsi_after_labels (dest);
