@@ -1,3 +1,44 @@
+2011-05-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386-opts.h: New.
+	* gcc/config/i386/i386.c (stringop_alg, ix86_cmodel,
+	ix86_asm_dialect, ix86_regparm, ix86_abi, ix86_branch_cost,
+	ix86_section_threshold): Remove.
+	(ix86_handle_option): Move MAX_CODE_ALIGN define here.  Handle
+	OPT_malign_loops_, OPT_malign_jumps_, OPT_malign_functions_ and
+	OPT_mbranch_cost_.
+	(ix86_option_override_internal): Don't decode strings for options
+	other than -march=, -mtune= and -mfpmath=.  Don't allow for
+	__attribute__ uses in remaining diagnostics for options with
+	string arguments.  Don't check for integer arguments being
+	negative.
+	* gcc/config/i386/i386.h (enum stringop_alg, enum calling_abi,
+	enum tls_dialect, enum cmodel, enum asm_dialect): Move to
+	i386-opts.h.
+	(ix86_abi, ix86_tls_dialect, ix86_cmodel, ix86_asm_dialect,
+	ix86_branch_cost, ix86_section_threshold): Remove.
+	* gcc/config/i386/i386.opt (config/i386/i386-opts.h): New
+	HeaderInclude.
+	(malign-functions=, malign-jumps=, malign-loops=): Use UInteger
+	but not Var.
+	(masm=): Use Enum and Init.
+	(asm_dialect): New Enum and EnumValue entries.
+	(mbranch-cost=): Use UInteger.
+	(mlarge-data-threshold=): Use UInteger and Init.
+	(mcmodel=): Use Enum and Init.
+	(cmodel): New Enum and EnumValue entries.
+	(mpc): Replace with separate mpc32, mpc64 and mpc80 entries.
+	(mpreferred-stack-boundary=, mincoming-stack-boundary=,
+	mregparm=): Use UInteger.
+	(mstringop-strategy=): Use Enum and Init.
+	(stringop_alg): New Enum and EnumValue entries.
+	(mtls-dialect=): Use Enum and Init.
+	(tls_dialect): New Enum and EnumValue entries.
+	(mabi=): Use Enum and Init.
+	(calling_abi): New Enum and EnumValue entries.
+	(mveclibabi=): Use Enum and Init.
+	(ix86_veclibabi): New Enum and EnumValue entries.
+
 2011-05-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (mov expander): Fix use of

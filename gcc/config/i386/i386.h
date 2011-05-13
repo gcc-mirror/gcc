@@ -79,18 +79,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config/vxworks-dummy.h"
 
-/* Algorithm to expand string function with.  */
-enum stringop_alg
-{
-   no_stringop,
-   libcall,
-   rep_prefix_1_byte,
-   rep_prefix_4_byte,
-   rep_prefix_8_byte,
-   loop_1_byte,
-   loop,
-   unrolled_loop
-};
+#include "config/i386/i386-opts.h"
 
 #define MAX_STRINGOP_ALGS 4
 
@@ -505,16 +494,6 @@ extern tree x86_mfence;
 
 /* This is re-defined by cygming.h.  */
 #define TARGET_SEH 0
-
-/* Available call abi.  */
-enum calling_abi
-{
-  SYSV_ABI = 0,
-  MS_ABI = 1
-};
-
-/* The abi used by target.  */
-extern enum calling_abi ix86_abi;
 
 /* The default abi used by target.  */
 #define DEFAULT_ABI SYSV_ABI
@@ -2058,42 +2037,13 @@ enum fpmath_unit
 
 extern enum fpmath_unit ix86_fpmath;
 
-enum tls_dialect
-{
-  TLS_DIALECT_GNU,
-  TLS_DIALECT_GNU2,
-  TLS_DIALECT_SUN
-};
-
-extern enum tls_dialect ix86_tls_dialect;
-
-enum cmodel {
-  CM_32,	/* The traditional 32-bit ABI.  */
-  CM_SMALL,	/* Assumes all code and data fits in the low 31 bits.  */
-  CM_KERNEL,	/* Assumes all code and data fits in the high 31 bits.  */
-  CM_MEDIUM,	/* Assumes code fits in the low 31 bits; data unlimited.  */
-  CM_LARGE,	/* No assumptions.  */
-  CM_SMALL_PIC,	/* Assumes code+data+got/plt fits in a 31 bit region.  */
-  CM_MEDIUM_PIC,/* Assumes code+got/plt fits in a 31 bit region.  */
-  CM_LARGE_PIC	/* No assumptions.  */
-};
-
-extern enum cmodel ix86_cmodel;
-
 /* Size of the RED_ZONE area.  */
 #define RED_ZONE_SIZE 128
 /* Reserved area of the red zone for temporaries.  */
 #define RED_ZONE_RESERVE 8
 
-enum asm_dialect {
-  ASM_ATT,
-  ASM_INTEL
-};
-
-extern enum asm_dialect ix86_asm_dialect;
 extern unsigned int ix86_preferred_stack_boundary;
 extern unsigned int ix86_incoming_stack_boundary;
-extern int ix86_branch_cost, ix86_section_threshold;
 
 /* Smallest class containing REGNO.  */
 extern enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER];
