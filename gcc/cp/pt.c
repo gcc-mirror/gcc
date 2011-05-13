@@ -13525,6 +13525,53 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
   return result;
 }
 
+static GTY((param_is (spec_entry))) htab_t current_deduction_substs;
+
+/* In C++0x, it's possible to have a function template whose type depends
+   on itself recursively.  This is most obvious with decltype, but can also
+   occur with enumeration scope (c++/48969).  So we need to catch infinite
+   recursion and reject the substitution at deduction time.  */
+
+static tree
+deduction_tsubst_fntype (tree fn, tree targs)
+{
+  spec_entry **slot;
+  spec_entry elt;
+  tree r;
+  hashval_t hash;
+
+  tree fntype = TREE_TYPE (fn);
+
+  /* We don't need to worry about this in C++98.  */
+  if (cxx_dialect < cxx0x)
+    return tsubst (fntype, targs, tf_none, NULL_TREE);
+
+  elt.tmpl = fn;
+  elt.args = targs;
+  elt.spec = NULL_TREE;
+  hash = hash_specialization (&elt);
+
+  slot = (spec_entry **)
+    htab_find_slot_with_hash (current_deduction_substs, &elt, hash, INSERT);
+  if (*slot)
+    /* We already have an entry for this.  */
+    (*slot)->spec = r = error_mark_node;
+  else
+    {
+      /* Create a new entry.  */
+      spec_entry *p = *slot = ggc_alloc_spec_entry ();
+      *p = elt;
+
+      r = tsubst (fntype, targs, tf_none, NULL_TREE);
+      if (p->spec == error_mark_node)
+	r = error_mark_node;
+
+      htab_remove_elt_with_hash (current_deduction_substs, p, hash);
+    }
+
+  return r;
+}
+
 /* Instantiate the indicated variable or function template TMPL with
    the template arguments in TARG_PTR.  */
 
@@ -13788,7 +13835,7 @@ fn_type_unification (tree fn,
         incomplete = NUM_TMPL_ARGS (explicit_targs) != NUM_TMPL_ARGS (targs);
 
       processing_template_decl += incomplete;
-      fntype = tsubst (fntype, converted_args, tf_none, NULL_TREE);
+      fntype = deduction_tsubst_fntype (fn, converted_args);
       processing_template_decl -= incomplete;
 
       if (fntype == error_mark_node)
@@ -13859,7 +13906,7 @@ fn_type_unification (tree fn,
        substitution results in an invalid type, as described above,
        type deduction fails.  */
     {
-      tree substed = tsubst (TREE_TYPE (fn), targs, tf_none, NULL_TREE);
+      tree substed = deduction_tsubst_fntype (fn, targs);
       if (substed == error_mark_node)
 	return 1;
 
@@ -19283,6 +19330,10 @@ init_template_processing (void)
 					  hash_specialization,
 					  eq_specializations,
 					  ggc_free);
+  if (cxx_dialect >= cxx0x)
+    current_deduction_substs = htab_create_ggc (37, hash_specialization,
+						eq_specializations,
+						ggc_free);
 }
 
 /* Print stats about the template hash tables for -fstats.  */
@@ -19298,6 +19349,10 @@ print_template_statistics (void)
 	   "%f collisions\n", (long) htab_size (type_specializations),
 	   (long) htab_elements (type_specializations),
 	   htab_collisions (type_specializations));
+  fprintf (stderr, "current_deduction_substs: size %ld, %ld elements, "
+	   "%f collisions\n", (long) htab_size (current_deduction_substs),
+	   (long) htab_elements (current_deduction_substs),
+	   htab_collisions (current_deduction_substs));
 }
 
 #include "gt-cp-pt.h"

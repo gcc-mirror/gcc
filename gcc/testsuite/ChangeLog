@@ -1,3 +1,8 @@
+2011-05-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/decltype26.C: New.
+	* g++.dg/cpp0x/enum11.C: New.
+
 2011-05-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48972
