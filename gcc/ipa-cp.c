@@ -1068,6 +1068,7 @@ ipcp_estimate_growth (struct cgraph_node *node)
   int removable_args = 0;
   bool need_original
      = !cgraph_will_be_removed_from_program_if_no_direct_calls (node);
+  VEC (tree, heap) *known_vals = NULL;
   struct ipa_node_params *info;
   int i, count;
   int growth;
@@ -1085,6 +1086,7 @@ ipcp_estimate_growth (struct cgraph_node *node)
 
   info = IPA_NODE_REF (node);
   count = ipa_get_param_count (info);
+  VEC_safe_grow_cleared (tree, heap, known_vals, count);
   if (node->local.can_change_signature)
     for (i = 0; i < count; i++)
       {
@@ -1095,14 +1097,18 @@ ipcp_estimate_growth (struct cgraph_node *node)
 	  removable_args++;
 
 	if (lat->type == IPA_CONST_VALUE)
-	  removable_args++;
+	  {
+	    removable_args++;
+	    VEC_replace (tree, known_vals, i, lat->constant);
+	  }
       }
 
   /* We make just very simple estimate of savings for removal of operand from
      call site.  Precise cost is difficult to get, as our size metric counts
      constants and moves as free.  Generally we are looking for cases that
      small function is called very many times.  */
-  estimate_ipcp_clone_size_and_time (node, &growth, NULL);
+  estimate_ipcp_clone_size_and_time (node, known_vals, &growth, NULL);
+  VEC_free (tree, heap, known_vals);
   growth = growth
   	   - removable_args * redirectable_node_callers;
   if (growth < 0)
