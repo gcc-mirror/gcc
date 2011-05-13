@@ -1555,24 +1555,24 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-generated-files-in-srcdir
-                          put copies of generated files in source dir
-                          intended for creating source tarballs for users
-                          without texinfo bison or flex.
+                          put copies of generated files in source dir intended
+                          for creating source tarballs for users without
+                          texinfo bison or flex
   --disable-largefile     omit support for large files
   --enable-werror-always  enable -Werror despite compiler version
-  --enable-checking=LIST
-			  enable expensive run-time checks.  With LIST,
-			  enable only specific categories of checks.
-			  Categories are: yes,no,all,none,release.
-			  Flags are: assert,df,fold,gc,gcac,gimple,misc,
-			  rtlflag,rtl,runtime,tree,valgrind,types.
-  --enable-coverage=LEVEL
-			  enable compiler's code coverage collection.
-			  Use to measure compiler performance and locate
-			  unused parts of the compiler. With LEVEL, specify
-			  optimization. Values are opt, noopt,
-			  default is noopt
-  --enable-gather-detailed-mem-stats         enable detailed memory allocation stats gathering
+  --enable-checking[=LIST]
+                          enable expensive run-time checks. With LIST, enable
+                          only specific categories of checks. Categories are:
+                          yes,no,all,none,release. Flags are:
+                          assert,df,fold,gc,gcac,gimple,misc,
+                          rtlflag,rtl,runtime,tree,valgrind,types
+  --enable-coverage[=LEVEL]
+                          enable compiler's code coverage collection. Use to
+                          measure compiler performance and locate unused parts
+                          of the compiler. With LEVEL, specify optimization.
+                          Values are opt, noopt, default is noopt
+  --enable-gather-detailed-mem-stats
+                          enable detailed memory allocation stats gathering
   --enable-build-with-cxx build with C++ compiler instead of C compiler
   --enable-multilib       enable library support for multiple ABIs
   --enable-__cxa_atexit   enable __cxa_atexit for C++
@@ -1581,12 +1581,12 @@ Optional Features:
 			or 'dpd' choses which decimal floating point format
 			to use
   --enable-fixed-point    enable fixed-point arithmetic extension to C
-  --enable-threads        enable thread usage for target GCC
-  --enable-threads=LIB    use LIB thread package for target GCC
-  --enable-tls            enable or disable generation of tls code
-                          overriding the assembler check for tls support
-  --enable-objc-gc	  enable the use of Boehm's garbage collector with
-			  the GNU Objective-C runtime
+  --enable-threads[=LIB]  enable thread usage for target GCC, using LIB thread
+                          package
+  --enable-tls            enable or disable generation of tls code overriding
+                          the assembler check for tls support
+  --enable-objc-gc        enable the use of Boehm's garbage collector with the
+                          GNU Objective-C runtime
   --disable-shared        don't provide a shared libgcc
   --enable-languages=LIST specify which front-ends to build
   --disable-rpath         do not hardcode runtime library paths
@@ -1595,12 +1595,13 @@ Optional Features:
                           arrange to use setjmp/longjmp exception handling
   --enable-secureplt      enable -msecure-plt by default for PowerPC
   --enable-leading-mingw64-underscores
-                          Enable leading underscores on 64 bit mingw targets
+                          enable leading underscores on 64 bit mingw targets
   --enable-cld            enable -mcld by default for 32bit x86
-  --enable-frame-pointer  enable -fno-omit-frame-pointer by default for 32bit x86
+  --enable-frame-pointer  enable -fno-omit-frame-pointer by default for 32bit
+                          x86
   --disable-win32-registry
-                          disable lookup of installation paths in the
-                          Registry on Windows hosts
+                          disable lookup of installation paths in the Registry
+                          on Windows hosts
   --enable-win32-registry enable registry lookup (default)
   --enable-win32-registry=KEY
                           use KEY instead of GCC version as the last portion
@@ -1620,11 +1621,11 @@ Optional Features:
   --enable-linker-build-id
                           compiler will always pass --build-id to linker
   --enable-maintainer-mode
-                          enable make rules and dependencies not useful
-                          (and sometimes confusing) to the casual installer
+                          enable make rules and dependencies not useful (and
+                          sometimes confusing) to the casual installer
   --enable-version-specific-runtime-libs
-                          specify that runtime libraries should be
-                          installed in a compiler-specific directory
+                          specify that runtime libraries should be installed
+                          in a compiler-specific directory
   --enable-plugin         enable plugin support
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
@@ -1639,20 +1640,20 @@ Optional Packages:
   --with-cpp-install-dir=DIR
                           install the user visible C preprocessor in DIR
                           (relative to PREFIX) as well as PREFIX/bin
-  --with-gnu-ld           arrange to work with GNU ld.
+  --with-gnu-ld           arrange to work with GNU ld
   --with-ld               arrange to use the specified ld (full pathname)
-  --with-demangler-in-ld  try to use demangler in GNU ld.
+  --with-demangler-in-ld  try to use demangler in GNU ld
   --with-gnu-as           arrange to work with GNU as
   --with-as               arrange to use the specified as (full pathname)
   --with-stabs            arrange to use stabs instead of host debug format
   --with-dwarf2           force the default debug format to be DWARF 2
   --with-build-sysroot=sysroot
                           use sysroot as the system root during the build
-  --with-sysroot=DIR Search for usr/lib, usr/include, et al, within DIR.
+  --with-sysroot[=DIR]    search for usr/lib, usr/include, et al, within DIR
   --with-specs=SPECS      add SPECS to driver command-line processing
   --with-pkgversion=PKG   Use PKG in the version string in place of "GCC"
   --with-bugurl=URL       Direct users to URL to report a bug
-  --with-multilib-list    Select multilibs (SH only)
+  --with-multilib-list    select multilibs (SH only)
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
@@ -1661,9 +1662,9 @@ Optional Packages:
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-plugin-ld=[ARG]  specify the plugin linker
-  --with-long-double-128  Use 128-bit long double by default.
-  --with-gc={page,zone}   choose the garbage collection mechanism to use
-                          with the compiler
+  --with-long-double-128  use 128-bit long double by default
+  --with-gc={page,zone}   choose the garbage collection mechanism to use with
+                          the compiler
   --with-system-zlib      use installed libz
   --with-slibdir=DIR      shared libraries in DIR [LIBDIR]
   --with-linker-hash-style={sysv,gnu,both}
@@ -6959,7 +6960,6 @@ _ACEOF
 # Check whether --enable-fixed-point was given.
 if test "${enable_fixed_point+set}" = set; then :
   enableval=$enable_fixed_point;
-
 else
 
   case $target in

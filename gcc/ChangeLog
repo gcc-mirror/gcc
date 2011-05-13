@@ -1,3 +1,8 @@
+2011-05-13  Andreas Schwab  <schwab@redhat.com>
+
+	* configure.ac: Use AS_HELP_STRING throughout.
+	* configure: Regenerate.
+
 2011-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_save_reg): Change maybe_eh_return
