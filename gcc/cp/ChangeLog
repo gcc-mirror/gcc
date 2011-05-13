@@ -1,3 +1,8 @@
+2011-05-13  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_op_call): Use timevar_cond_start/stop.
+	(build_user_type_conversion): Likewise.
+
 2011-05-12  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (DECL_DEFERRED_CONSTEXPR_CHECK): New.
