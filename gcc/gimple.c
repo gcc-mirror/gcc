@@ -4110,10 +4110,20 @@ iterative_hash_gimple_type (tree type, hashval_t val,
     }
 
   /* For pointer and reference types, fold in information about the type
-     pointed to.  */
+     pointed to but do not recurse into possibly incomplete types to
+     avoid hash differences for complete vs. incomplete types.  */
   if (POINTER_TYPE_P (type))
-    v = visit (TREE_TYPE (type), state, v,
-	       sccstack, sccstate, sccstate_obstack);
+    {
+      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
+	{
+	  v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
+	  v = iterative_hash_name
+		(TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
+	}
+      else
+	v = visit (TREE_TYPE (type), state, v,
+		   sccstack, sccstate, sccstate_obstack);
+    }
 
   /* For integer types hash the types min/max values and the string flag.  */
   if (TREE_CODE (type) == INTEGER_TYPE)
@@ -4154,13 +4164,29 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	v = visit (TYPE_METHOD_BASETYPE (type), state, v,
 		   sccstack, sccstate, sccstate_obstack);
 
-      /* Check result and argument types.  */
-      v = visit (TREE_TYPE (type), state, v,
-		 sccstack, sccstate, sccstate_obstack);
+      /* For result types allow mismatch in completeness.  */
+      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
+	{
+	  v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
+	  v = iterative_hash_name
+		(TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
+	}
+      else
+	v = visit (TREE_TYPE (type), state, v,
+		   sccstack, sccstate, sccstate_obstack);
+
       for (p = TYPE_ARG_TYPES (type), na = 0; p; p = TREE_CHAIN (p))
 	{
-	  v = visit (TREE_VALUE (p), state, v,
-		     sccstack, sccstate, sccstate_obstack);
+	  /* For argument types allow mismatch in completeness.  */
+	  if (RECORD_OR_UNION_TYPE_P (TREE_VALUE (p)))
+	    {
+	      v = iterative_hash_hashval_t (TREE_CODE (TREE_VALUE (p)), v);
+	      v = iterative_hash_name
+		    (TYPE_NAME (TYPE_MAIN_VARIANT (TREE_VALUE (p))), v);
+	    }
+	  else
+	    v = visit (TREE_VALUE (p), state, v,
+		       sccstack, sccstate, sccstate_obstack);
 	  na++;
 	}
 
