@@ -843,7 +843,7 @@ edge_to_cases_cleanup (const void *key ATTRIBUTE_UNUSED, void **value,
     }
 
   *value = NULL;
-  return false;
+  return true;
 }
 
 /* Start recording information mapping edges to case labels.  */
@@ -2828,6 +2828,14 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case CONSTRUCTOR:
       if (TREE_CONSTANT (t) && TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
 	*walk_subtrees = 0;
+      break;
+
+    case CASE_LABEL_EXPR:
+      if (CASE_CHAIN (t))
+	{
+	  error ("invalid CASE_CHAIN");
+	  return t;
+	}
       break;
 
     default:
