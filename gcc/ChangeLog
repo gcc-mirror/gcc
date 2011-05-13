@@ -1,3 +1,11 @@
+2011-05-13  Kai Tietz  <ktietz@redhat.com>
+
+	PR middle-end/48984
+	* gimplify.c (gimplify_expr): Check for boolean_type_node instead
+	for BOOLEAN_TYPE for TRUTH-NOT/AND/OR/XOR.
+	(gimple_boolify): Check for cast for boolean_type_node instead for
+	BOOLEAN_TYPE.
+
 2011-05-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48172
