@@ -9001,8 +9001,9 @@ ix86_select_alt_pic_regnum (void)
   return INVALID_REGNUM;
 }
 
-/* Return 1 if we need to save REGNO.  */
-static int
+/* Return TRUE if we need to save REGNO.  */
+
+static bool
 ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 {
   if (pic_offset_table_rtx
@@ -9011,11 +9012,7 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 	  || crtl->profile
 	  || crtl->calls_eh_return
 	  || crtl->uses_const_pool))
-    {
-      if (ix86_select_alt_pic_regnum () != INVALID_REGNUM)
-	return 0;
-      return 1;
-    }
+    return ix86_select_alt_pic_regnum () == INVALID_REGNUM;
 
   if (crtl->calls_eh_return && maybe_eh_return)
     {
@@ -9026,12 +9023,12 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 	  if (test == INVALID_REGNUM)
 	    break;
 	  if (test == regno)
-	    return 1;
+	    return true;
 	}
     }
 
   if (crtl->drap_reg && regno == REGNO (crtl->drap_reg))
-    return 1;
+    return true;
 
   return (df_regs_ever_live_p (regno)
 	  && !call_used_regs[regno]
@@ -28936,7 +28933,8 @@ ix86_register_move_cost (enum machine_mode mode, reg_class_t class1_i,
   return 2;
 }
 
-/* Return 1 if hard register REGNO can hold a value of machine-mode MODE.  */
+/* Return TRUE if hard register REGNO can hold a value of machine-mode
+   MODE.  */
 
 bool
 ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
@@ -28947,7 +28945,7 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
   if (GET_MODE_CLASS (mode) == MODE_CC
       || GET_MODE_CLASS (mode) == MODE_RANDOM
       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
-    return 0;
+    return false;
   if (FP_REGNO_P (regno))
     return VALID_FP_MODE_P (mode);
   if (SSE_REGNO_P (regno))
@@ -28977,26 +28975,26 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
       /* Take care for QImode values - they can be in non-QI regs,
 	 but then they do cause partial register stalls.  */
       if (regno <= BX_REG || TARGET_64BIT)
-	return 1;
+	return true;
       if (!TARGET_PARTIAL_REG_STALL)
-	return 1;
-      return reload_in_progress || reload_completed;
+	return true;
+      return !can_create_pseudo_p ();
     }
   /* We handle both integer and floats in the general purpose registers.  */
   else if (VALID_INT_MODE_P (mode))
-    return 1;
+    return true;
   else if (VALID_FP_MODE_P (mode))
-    return 1;
+    return true;
   else if (VALID_DFP_MODE_P (mode))
-    return 1;
+    return true;
   /* Lots of MMX code casts 8 byte vector modes to DImode.  If we then go
      on to use that value in smaller contexts, this can easily force a
      pseudo to be allocated to GENERAL_REGS.  Since this is no worse than
      supporting DImode, allow it.  */
   else if (VALID_MMX_REG_MODE_3DNOW (mode) || VALID_MMX_REG_MODE (mode))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* A subroutine of ix86_modes_tieable_p.  Return true if MODE is a
