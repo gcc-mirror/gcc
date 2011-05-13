@@ -1,3 +1,9 @@
+2011-05-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48972
+	* gfortran.dg/io_constraints_8.f90: New.
+	* gfortran.dg/io_constraints_9.f90: New.
+
 2011-05-13  Martin Thuresson  <martint@google.com>
 
 	PR gcov-profile/47793
