@@ -1,3 +1,13 @@
+2011-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movxf_internal): Use !can_create_pseudo ().
+	(*movxf_internal_nointeger): Ditto.
+	(*movdf_internal_rex64): Ditto.
+	(*movdf_internal): Ditto.
+	(*movdf_internal_nointeger): Ditto.
+	(*movsf_internal): Ditto.
+	(sincos splitters): Use can_create_pseudo ().
+
 2011-05-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386-opts.h: New.
@@ -10,11 +20,9 @@
 	(ix86_option_override_internal): Don't decode strings for options
 	other than -march=, -mtune= and -mfpmath=.  Don't allow for
 	__attribute__ uses in remaining diagnostics for options with
-	string arguments.  Don't check for integer arguments being
-	negative.
+	string arguments.  Don't check for integer arguments being negative.
 	* gcc/config/i386/i386.h (enum stringop_alg, enum calling_abi,
-	enum tls_dialect, enum cmodel, enum asm_dialect): Move to
-	i386-opts.h.
+	enum tls_dialect, enum cmodel, enum asm_dialect): Move to i386-opts.h.
 	(ix86_abi, ix86_tls_dialect, ix86_cmodel, ix86_asm_dialect,
 	ix86_branch_cost, ix86_section_threshold): Remove.
 	* gcc/config/i386/i386.opt (config/i386/i386-opts.h): New
@@ -41,10 +49,8 @@
 
 2011-05-13  Nick Clifton  <nickc@redhat.com>
 
-	* config/rx/rx.md (mov expander): Fix use of
-	rx_legitimate_constant_p.
-	* config/rx/rx-protos.h (rx_legitimate_constant_p): Rename
-	prototype.
+	* config/rx/rx.md (mov expander): Fix use of rx_legitimate_constant_p.
+	* config/rx/rx-protos.h (rx_legitimate_constant_p): Rename prototype.
 
 2011-05-13  Kai Tietz  <ktietz@redhat.com>
 
@@ -68,8 +74,7 @@
 
 2011-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.c (ix86_save_reg): Change maybe_eh_return
-	to bool.
+	* config/i386/i386.c (ix86_save_reg): Change maybe_eh_return to bool.
 	(ix86_emit_restore_regs_using_mov): Likewise.
 	(ix86_emit_restore_sse_regs_using_mov): Likewise.
 
@@ -140,8 +145,7 @@
 	(ADD_RX_BUILTIN1, ADD_RX_BUILTIN2, ADD_RX_BUILTIN3): Install
 	created builtin into rx_builtins array.
 	(rx_builtin_decl): New function.
-	(TARGET_BUITLIN_DECL): Define.
-	Include gt-rx.h.
+	(TARGET_BUITLIN_DECL): Define.  Include gt-rx.h.
 
 2011-05-12  DJ Delorie  <dj@redhat.com>
 	    Nick Clifton  <nickc@redhat.com>
@@ -152,8 +156,7 @@
 	addressing in HImode and QImode.  Fix test for out of range
 	REG+INT addressing.
 	(rx_legitimate_constant_p): Rename to rx_is_legitimate_constant.
-	(rx_align_for_label): Test label before extracting its usage
-	count.
+	(rx_align_for_label): Test label before extracting its usage count.
 	(rx_adjust_insn_lengths): Fix selection of insn codes.
 	(TARGET_LEGITIMATE_CONSTANT_P): Use renamed function.
 
@@ -169,8 +172,7 @@
 2011-05-11  Satoru Takabayashi  <satorux@google.com>
 	    Paul Pluzhnikov  <ppluzhnikov@google.com>
 
-	* doc/install.texi (Configuration): Document
-	--with-linker-hash-style.
+	* doc/install.texi (Configuration): Document --with-linker-hash-style.
 	* gcc.c (init_spec): Handle LINKER_HASH_STYLE.
 	* config.in: Add LINKER_HASH_STYLE.
 	* configure.ac: Add --with-linker-hash-style.
