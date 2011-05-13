@@ -6754,13 +6754,17 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 
 	case TRUTH_NOT_EXPR:
-	  if (TREE_TYPE (*expr_p) != boolean_type_node)
-	    {
-	      tree type = TREE_TYPE (*expr_p);
-	      *expr_p = fold_convert (type, gimple_boolify (*expr_p));
-	      ret = GS_OK;
-	      break;
-	    }
+	  {
+	    tree org_type = TREE_TYPE (*expr_p);
+
+	    *expr_p = gimple_boolify (*expr_p);
+	    if (org_type != boolean_type_node)
+	      {
+		*expr_p = fold_convert (org_type, *expr_p);
+		ret = GS_OK;
+		break;
+	      }
+	  }
 
 	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 			       is_gimple_val, fb_rvalue);
