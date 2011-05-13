@@ -2120,8 +2120,6 @@ static const unsigned int x86_arch_always_fancy_math_387
   = m_PENT | m_ATOM | m_PPRO | m_AMD_MULTIPLE | m_PENT4
     | m_NOCONA | m_CORE2I7 | m_GENERIC;
 
-static enum stringop_alg stringop_alg = no_stringop;
-
 /* In case the average insn count for single function invocation is
    lower than this constant, emit fast (but longer) prologue and
    epilogue code.  */
@@ -2327,13 +2325,6 @@ struct ix86_frame
   bool save_regs_using_mov;
 };
 
-/* Code model option.  */
-enum cmodel ix86_cmodel;
-/* Asm dialect.  */
-enum asm_dialect ix86_asm_dialect = ASM_ATT;
-/* TLS dialects.  */
-enum tls_dialect ix86_tls_dialect = TLS_DIALECT_GNU;
-
 /* Which unit we are generating floating point math for.  */
 enum fpmath_unit ix86_fpmath;
 
@@ -2348,9 +2339,6 @@ enum processor_type ix86_arch;
 
 /* true if sse prefetch instruction is not NOOP.  */
 int x86_prefetch_sse;
-
-/* ix86_regparm_string as a number */
-static int ix86_regparm;
 
 /* -mstackrealign option */
 static const char ix86_force_align_arg_pointer_string[]
@@ -2380,20 +2368,9 @@ static unsigned int ix86_default_incoming_stack_boundary;
 /* Alignment for incoming stack boundary in bits.  */
 unsigned int ix86_incoming_stack_boundary;
 
-/* The abi used by target.  */
-enum calling_abi ix86_abi;
-
-/* Values 1-5: see jump.c */
-int ix86_branch_cost;
-
 /* Calling abi specific va_list type nodes.  */
 static GTY(()) tree sysv_va_list_type_node;
 static GTY(()) tree ms_va_list_type_node;
-
-/* Variables which are this size or smaller are put in the data/bss
-   or ldata/lbss sections.  */
-
-int ix86_section_threshold = 65536;
 
 /* Prefix built by ASM_GENERATE_INTERNAL_LABEL.  */
 char internal_label_prefix[16];
@@ -2688,7 +2665,7 @@ static bool
 ix86_handle_option (struct gcc_options *opts,
 		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
+		    location_t loc)
 {
   size_t code = decoded->opt_index;
   int value = decoded->value;
@@ -3059,6 +3036,45 @@ ix86_handle_option (struct gcc_options *opts,
 	}
       return true;
 
+  /* Comes from final.c -- no real reason to change it.  */
+#define MAX_CODE_ALIGN 16
+
+    case OPT_malign_loops_:
+      warning_at (loc, 0, "-malign-loops is obsolete, use -falign-loops");
+      if (value > MAX_CODE_ALIGN)
+	error_at (loc, "-malign-loops=%d is not between 0 and %d",
+		  value, MAX_CODE_ALIGN);
+      else
+	opts->x_align_loops = 1 << value;
+      return true;
+
+    case OPT_malign_jumps_:
+      warning_at (loc, 0, "-malign-jumps is obsolete, use -falign-jumps");
+      if (value > MAX_CODE_ALIGN)
+	error_at (loc, "-malign-jumps=%d is not between 0 and %d",
+		  value, MAX_CODE_ALIGN);
+      else
+	opts->x_align_jumps = 1 << value;
+      return true;
+
+    case OPT_malign_functions_:
+      warning_at (loc, 0,
+		  "-malign-functions is obsolete, use -falign-functions");
+      if (value > MAX_CODE_ALIGN)
+	error_at (loc, "-malign-functions=%d is not between 0 and %d",
+		  value, MAX_CODE_ALIGN);
+      else
+	opts->x_align_functions = 1 << value;
+      return true;
+
+    case OPT_mbranch_cost_:
+      if (value > 5)
+	{
+	  error_at (loc, "-mbranch-cost=%d is not between 0 and 5", value);
+	  opts->x_ix86_branch_cost = 5;
+	}
+      return true;
+
     default:
       return true;
     }
@@ -3305,9 +3321,6 @@ ix86_option_override_internal (bool main_args_p)
   const char *suffix;
   const char *sw;
 
-  /* Comes from final.c -- no real reason to change it.  */
-#define MAX_CODE_ALIGN 16
-
   enum pta_flags
     {
       PTA_SSE = 1 << 0,
@@ -3530,27 +3543,11 @@ ix86_option_override_internal (bool main_args_p)
 	}
     }
 
-  if (ix86_stringop_string)
+  if (ix86_stringop_alg == rep_prefix_8_byte && !TARGET_64BIT)
     {
-      if (!strcmp (ix86_stringop_string, "rep_byte"))
-	stringop_alg = rep_prefix_1_byte;
-      else if (!strcmp (ix86_stringop_string, "libcall"))
-	stringop_alg = libcall;
-      else if (!strcmp (ix86_stringop_string, "rep_4byte"))
-	stringop_alg = rep_prefix_4_byte;
-      else if (!strcmp (ix86_stringop_string, "rep_8byte")
-	       && TARGET_64BIT)
-	/* rep; movq isn't available in 32-bit code.  */
-	stringop_alg = rep_prefix_8_byte;
-      else if (!strcmp (ix86_stringop_string, "byte_loop"))
-	stringop_alg = loop_1_byte;
-      else if (!strcmp (ix86_stringop_string, "loop"))
-	stringop_alg = loop;
-      else if (!strcmp (ix86_stringop_string, "unrolled_loop"))
-	stringop_alg = unrolled_loop;
-      else
-	error ("bad value (%s) for %sstringop-strategy=%s %s",
-	       ix86_stringop_string, prefix, suffix, sw);
+      /* rep; movq isn't available in 32-bit code.  */
+      error ("-mstringop-strategy=rep_8byte not supported for 32-bit code");
+      ix86_stringop_alg = no_stringop;
     }
 
   if (!ix86_arch_string)
@@ -3558,37 +3555,62 @@ ix86_option_override_internal (bool main_args_p)
   else
     ix86_arch_specified = 1;
 
-  /* Validate -mabi= value.  */
-  if (ix86_abi_string)
-    {
-      if (strcmp (ix86_abi_string, "sysv") == 0)
-	ix86_abi = SYSV_ABI;
-      else if (strcmp (ix86_abi_string, "ms") == 0)
-	ix86_abi = MS_ABI;
-      else
-	error ("unknown ABI (%s) for %sabi=%s %s",
-	       ix86_abi_string, prefix, suffix, sw);
-    }
-  else
+  if (!global_options_set.x_ix86_abi)
     ix86_abi = DEFAULT_ABI;
 
-  if (ix86_cmodel_string != 0)
+  if (global_options_set.x_ix86_cmodel)
     {
-      if (!strcmp (ix86_cmodel_string, "small"))
-	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
-      else if (!strcmp (ix86_cmodel_string, "medium"))
-	ix86_cmodel = flag_pic ? CM_MEDIUM_PIC : CM_MEDIUM;
-      else if (!strcmp (ix86_cmodel_string, "large"))
-	ix86_cmodel = flag_pic ? CM_LARGE_PIC : CM_LARGE;
-      else if (flag_pic)
-	error ("code model %s does not support PIC mode", ix86_cmodel_string);
-      else if (!strcmp (ix86_cmodel_string, "32"))
-	ix86_cmodel = CM_32;
-      else if (!strcmp (ix86_cmodel_string, "kernel") && !flag_pic)
-	ix86_cmodel = CM_KERNEL;
-      else
-	error ("bad value (%s) for %scmodel=%s %s",
-	       ix86_cmodel_string, prefix, suffix, sw);
+      switch (ix86_cmodel)
+	{
+	case CM_SMALL:
+	case CM_SMALL_PIC:
+	  if (flag_pic)
+	    ix86_cmodel = CM_SMALL_PIC;
+	  if (!TARGET_64BIT)
+	    error ("code model %qs not supported in the %s bit mode",
+		   "small", "32");
+	  break;
+
+	case CM_MEDIUM:
+	case CM_MEDIUM_PIC:
+	  if (flag_pic)
+	    ix86_cmodel = CM_MEDIUM_PIC;
+	  if (!TARGET_64BIT)
+	    error ("code model %qs not supported in the %s bit mode",
+		   "medium", "32");
+	  break;
+
+	case CM_LARGE:
+	case CM_LARGE_PIC:
+	  if (flag_pic)
+	    ix86_cmodel = CM_LARGE_PIC;
+	  if (!TARGET_64BIT)
+	    error ("code model %qs not supported in the %s bit mode",
+		   "large", "32");
+	  break;
+
+	case CM_32:
+	  if (flag_pic)
+	    error ("code model %s does not support PIC mode", "32");
+	  if (TARGET_64BIT)
+	    error ("code model %qs not supported in the %s bit mode",
+		   "32", "64");
+	  break;
+
+	case CM_KERNEL:
+	  if (flag_pic)
+	    {
+	      error ("code model %s does not support PIC mode", "kernel");
+	      ix86_cmodel = CM_32;
+	    }
+	  if (!TARGET_64BIT)
+	    error ("code model %qs not supported in the %s bit mode",
+		   "kernel", "32");
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
     }
   else
     {
@@ -3603,20 +3625,11 @@ ix86_option_override_internal (bool main_args_p)
       else
         ix86_cmodel = CM_32;
     }
-  if (ix86_asm_string != 0)
+  if (TARGET_MACHO && ix86_asm_dialect == ASM_INTEL)
     {
-      if (! TARGET_MACHO
-	  && !strcmp (ix86_asm_string, "intel"))
-	ix86_asm_dialect = ASM_INTEL;
-      else if (!strcmp (ix86_asm_string, "att"))
-	ix86_asm_dialect = ASM_ATT;
-      else
-	error ("bad value (%s) for %sasm=%s %s",
-	       ix86_asm_string, prefix, suffix, sw);
+      error ("-masm=intel not supported in this configuration");
+      ix86_asm_dialect = ASM_ATT;
     }
-  if ((TARGET_64BIT == 0) != (ix86_cmodel == CM_32))
-    error ("code model %qs not supported in the %s bit mode",
-	   ix86_cmodel_string, TARGET_64BIT ? "64" : "32");
   if ((TARGET_64BIT != 0) != ((ix86_isa_flags & OPTION_MASK_ISA_64BIT) != 0))
     sorry ("%i-bit mode not compiled in",
 	   (ix86_isa_flags & OPTION_MASK_ISA_64BIT) ? 64 : 32);
@@ -3836,67 +3849,19 @@ ix86_option_override_internal (bool main_args_p)
   init_machine_status = ix86_init_machine_status;
 
   /* Validate -mregparm= value.  */
-  if (ix86_regparm_string)
+  if (global_options_set.x_ix86_regparm)
     {
       if (TARGET_64BIT)
-	warning (0, "%sregparm%s is ignored in 64-bit mode", prefix, suffix);
-      i = atoi (ix86_regparm_string);
-      if (i < 0 || i > REGPARM_MAX)
-	error ("%sregparm=%d%s is not between 0 and %d",
-	       prefix, i, suffix, REGPARM_MAX);
-      else
-	ix86_regparm = i;
+	warning (0, "-mregparm is ignored in 64-bit mode");
+      if (ix86_regparm > REGPARM_MAX)
+	{
+	  error ("-mregparm=%d is not between 0 and %d",
+		 ix86_regparm, REGPARM_MAX);
+	  ix86_regparm = 0;
+	}
     }
   if (TARGET_64BIT)
     ix86_regparm = REGPARM_MAX;
-
-  /* If the user has provided any of the -malign-* options,
-     warn and use that value only if -falign-* is not set.
-     Remove this code in GCC 3.2 or later.  */
-  if (ix86_align_loops_string)
-    {
-      warning (0, "%salign-loops%s is obsolete, use -falign-loops%s",
-	       prefix, suffix, suffix);
-      if (align_loops == 0)
-	{
-	  i = atoi (ix86_align_loops_string);
-	  if (i < 0 || i > MAX_CODE_ALIGN)
-	    error ("%salign-loops=%d%s is not between 0 and %d",
-		   prefix, i, suffix, MAX_CODE_ALIGN);
-	  else
-	    align_loops = 1 << i;
-	}
-    }
-
-  if (ix86_align_jumps_string)
-    {
-      warning (0, "%salign-jumps%s is obsolete, use -falign-jumps%s",
-	       prefix, suffix, suffix);
-      if (align_jumps == 0)
-	{
-	  i = atoi (ix86_align_jumps_string);
-	  if (i < 0 || i > MAX_CODE_ALIGN)
-	    error ("%salign-loops=%d%s is not between 0 and %d",
-		   prefix, i, suffix, MAX_CODE_ALIGN);
-	  else
-	    align_jumps = 1 << i;
-	}
-    }
-
-  if (ix86_align_funcs_string)
-    {
-      warning (0, "%salign-functions%s is obsolete, use -falign-functions%s",
-	       prefix, suffix, suffix);
-      if (align_functions == 0)
-	{
-	  i = atoi (ix86_align_funcs_string);
-	  if (i < 0 || i > MAX_CODE_ALIGN)
-	    error ("%salign-loops=%d%s is not between 0 and %d",
-		   prefix, i, suffix, MAX_CODE_ALIGN);
-	  else
-	    align_functions = 1 << i;
-	}
-    }
 
   /* Default align_* from the processor table.  */
   if (align_loops == 0)
@@ -3914,42 +3879,9 @@ ix86_option_override_internal (bool main_args_p)
       align_functions = processor_target_table[ix86_tune].align_func;
     }
 
-  /* Validate -mbranch-cost= value, or provide default.  */
-  ix86_branch_cost = ix86_cost->branch_cost;
-  if (ix86_branch_cost_string)
-    {
-      i = atoi (ix86_branch_cost_string);
-      if (i < 0 || i > 5)
-	error ("%sbranch-cost=%d%s is not between 0 and 5", prefix, i, suffix);
-      else
-	ix86_branch_cost = i;
-    }
-  if (ix86_section_threshold_string)
-    {
-      i = atoi (ix86_section_threshold_string);
-      if (i < 0)
-	error ("%slarge-data-threshold=%d%s is negative", prefix, i, suffix);
-      else
-	ix86_section_threshold = i;
-    }
-
-  if (ix86_tls_dialect_string)
-    {
-      if (strcmp (ix86_tls_dialect_string, "gnu") == 0)
-	ix86_tls_dialect = TLS_DIALECT_GNU;
-      else if (strcmp (ix86_tls_dialect_string, "gnu2") == 0)
-	ix86_tls_dialect = TLS_DIALECT_GNU2;
-      else
-	error ("bad value (%s) for %stls-dialect=%s %s",
-	       ix86_tls_dialect_string, prefix, suffix, sw);
-    }
-
-  if (ix87_precision_string)
-    {
-      i = atoi (ix87_precision_string);
-      if (i != 32 && i != 64 && i != 80)
-	error ("pc%d is not valid precision setting (32, 64 or 80)", i);
-    }
+  /* Provide default for -mbranch-cost= value.  */
+  if (!global_options_set.x_ix86_branch_cost)
+    ix86_branch_cost = ix86_cost->branch_cost;
 
   if (TARGET_64BIT)
     {
@@ -4015,23 +3947,24 @@ ix86_option_override_internal (bool main_args_p)
   /* Validate -mpreferred-stack-boundary= value or default it to
      PREFERRED_STACK_BOUNDARY_DEFAULT.  */
   ix86_preferred_stack_boundary = PREFERRED_STACK_BOUNDARY_DEFAULT;
-  if (ix86_preferred_stack_boundary_string)
+  if (global_options_set.x_ix86_preferred_stack_boundary_arg)
     {
       int min = (TARGET_64BIT ? 4 : 2);
       int max = (TARGET_SEH ? 4 : 12);
 
-      i = atoi (ix86_preferred_stack_boundary_string);
-      if (i < min || i > max)
+      if (ix86_preferred_stack_boundary_arg < min
+	  || ix86_preferred_stack_boundary_arg > max)
 	{
 	  if (min == max)
-	    error ("%spreferred-stack-boundary%s is not supported "
-		   "for this target", prefix, suffix);
+	    error ("-mpreferred-stack-boundary is not supported "
+		   "for this target");
 	  else
-	    error ("%spreferred-stack-boundary=%d%s is not between %d and %d",
-		   prefix, i, suffix, min, max);
+	    error ("-mpreferred-stack-boundary=%d is not between %d and %d",
+		   ix86_preferred_stack_boundary_arg, min, max);
 	}
       else
-	ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
+	ix86_preferred_stack_boundary
+	  = (1 << ix86_preferred_stack_boundary_arg) * BITS_PER_UNIT;
     }
 
   /* Set the default value for -mstackrealign.  */
@@ -4043,15 +3976,16 @@ ix86_option_override_internal (bool main_args_p)
   /* Validate -mincoming-stack-boundary= value or default it to
      MIN_STACK_BOUNDARY/PREFERRED_STACK_BOUNDARY.  */
   ix86_incoming_stack_boundary = ix86_default_incoming_stack_boundary;
-  if (ix86_incoming_stack_boundary_string)
+  if (global_options_set.x_ix86_incoming_stack_boundary_arg)
     {
-      i = atoi (ix86_incoming_stack_boundary_string);
-      if (i < (TARGET_64BIT ? 4 : 2) || i > 12)
+      if (ix86_incoming_stack_boundary_arg < (TARGET_64BIT ? 4 : 2)
+	  || ix86_incoming_stack_boundary_arg > 12)
 	error ("-mincoming-stack-boundary=%d is not between %d and 12",
-	       i, TARGET_64BIT ? 4 : 2);
+	       ix86_incoming_stack_boundary_arg, TARGET_64BIT ? 4 : 2);
       else
 	{
-	  ix86_user_incoming_stack_boundary = (1 << i) * BITS_PER_UNIT;
+	  ix86_user_incoming_stack_boundary
+	    = (1 << ix86_incoming_stack_boundary_arg) * BITS_PER_UNIT;
 	  ix86_incoming_stack_boundary
 	    = ix86_user_incoming_stack_boundary;
 	}
@@ -4106,17 +4040,20 @@ ix86_option_override_internal (bool main_args_p)
     target_flags &= ~MASK_FLOAT_RETURNS;
 
   /* Use external vectorized library in vectorizing intrinsics.  */
-  if (ix86_veclibabi_string)
-    {
-      if (strcmp (ix86_veclibabi_string, "svml") == 0)
+  if (global_options_set.x_ix86_veclibabi_type)
+    switch (ix86_veclibabi_type)
+      {
+      case ix86_veclibabi_type_svml:
 	ix86_veclib_handler = ix86_veclibabi_svml;
-      else if (strcmp (ix86_veclibabi_string, "acml") == 0)
+	break;
+
+      case ix86_veclibabi_type_acml:
 	ix86_veclib_handler = ix86_veclibabi_acml;
-      else
-	error ("unknown vectorization library ABI type (%s) for "
-	       "%sveclibabi=%s %s", ix86_veclibabi_string,
-	       prefix, suffix, sw);
-    }
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
 
   if ((!USE_IX86_FRAME_POINTER
        || (x86_accumulate_outgoing_args & ix86_tune_mask))
@@ -20874,8 +20811,8 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
     algs = &cost->memset[TARGET_64BIT != 0];
   else
     algs = &cost->memcpy[TARGET_64BIT != 0];
-  if (stringop_alg != no_stringop && ALG_USABLE_P (stringop_alg))
-    return stringop_alg;
+  if (ix86_stringop_alg != no_stringop && ALG_USABLE_P (ix86_stringop_alg))
+    return ix86_stringop_alg;
   /* rep; movq or rep; movl is the smallest variant.  */
   else if (!optimize_for_speed)
     {
