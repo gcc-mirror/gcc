@@ -1,3 +1,9 @@
+2011-05-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR middle-end/48965
+	* tree-cfg.c (edge_to_cases_cleanup): Return true.
+	(verify_expr) [CASE_LABEL_EXPR]: Add checking.
+
 2011-05-13  Kai Tietz  <ktietz@redhat.com>
 
 	* gimplify.c (gimplify_expr): Make sure operand is boolified.
