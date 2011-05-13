@@ -1,3 +1,8 @@
+2011-05-13  Martin Thuresson  <martint@google.com>
+
+	PR gcov-profile/47793
+	* gcc.dg/pr47793.c: New.
+
 2011-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48975

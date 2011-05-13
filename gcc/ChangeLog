@@ -1,3 +1,9 @@
+2011-05-13  Martin Thuresson  <martint@google.com>
+
+	PR gcov-profile/47793
+	* libgcov.c (gcov_exit): Support relative profile paths.
+	* doc/invoke.texi (-fprofile-dir): Update for above change.
+
 2011-05-13  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_canonical_types_compatible_p): Do not use
@@ -102,6 +108,7 @@
 	* configure.ac: Use AS_HELP_STRING throughout.
 	* configure: Regenerate.
 
+>>>>>>> .r173734
 2011-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_save_reg): Change maybe_eh_return to bool.
