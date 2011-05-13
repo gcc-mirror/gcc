@@ -1,3 +1,8 @@
+2011-05-13  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_canonical_types_compatible_p): Do not use
+	type-pair caching, do not compare hashes.
+
 2011-05-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR middle-end/48965

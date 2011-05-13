@@ -4569,8 +4569,6 @@ gimple_register_type (tree t)
 static bool
 gimple_canonical_types_compatible_p (tree t1, tree t2)
 {
-  type_pair_t p = NULL;
-
   /* Before starting to set up the SCC machinery handle simple cases.  */
 
   /* Check first for the obvious case of pointer identity.  */
@@ -4656,27 +4654,9 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
       return true;
     }
 
-  /* If the hash values of t1 and t2 are different the types can't
-     possibly be the same.  This helps keeping the type-pair hashtable
-     small, only tracking comparisons for hash collisions.  */
-  if (gimple_canonical_type_hash (t1) != gimple_canonical_type_hash (t2))
-    return false;
-
-  /* If we've visited this type pair before (in the case of aggregates
-     with self-referential types), and we made a decision, return it.  */
-  p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
-  if (p->same_p[GTC_DIAG] == 0 || p->same_p[GTC_DIAG] == 1)
-    {
-      /* We have already decided whether T1 and T2 are the
-	 same, return the cached result.  */
-      return p->same_p[GTC_DIAG] == 1;
-    }
-
-  gcc_assert (p->same_p[GTC_DIAG] == -2);
-
   /* If their attributes are not the same they can't be the same type.  */
   if (!attribute_list_equal (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2)))
-    goto different_types;
+    return false;
 
   /* Do type-specific comparisons.  */
   switch (TREE_CODE (t1))
@@ -4687,7 +4667,7 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
       if (!gimple_canonical_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2))
 	  || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)
 	  || TYPE_NONALIASED_COMPONENT (t1) != TYPE_NONALIASED_COMPONENT (t2))
-	goto different_types;
+	return false;
       else
 	{
 	  tree i1 = TYPE_DOMAIN (t1);
@@ -4696,16 +4676,16 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 	  /* For an incomplete external array, the type domain can be
  	     NULL_TREE.  Check this condition also.  */
 	  if (i1 == NULL_TREE && i2 == NULL_TREE)
-	    goto same_types;
+	    return true;
 	  else if (i1 == NULL_TREE || i2 == NULL_TREE)
-	    goto different_types;
+	    return false;
 	  /* If for a complete array type the possibly gimplified sizes
 	     are different the types are different.  */
 	  else if (((TYPE_SIZE (i1) != NULL) ^ (TYPE_SIZE (i2) != NULL))
 		   || (TYPE_SIZE (i1)
 		       && TYPE_SIZE (i2)
 		       && !operand_equal_p (TYPE_SIZE (i1), TYPE_SIZE (i2), 0)))
-	    goto different_types;
+	    return false;
 	  else
 	    {
 	      tree min1 = TYPE_MIN_VALUE (i1);
@@ -4724,9 +4704,9 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 			  && ((TREE_CODE (max1) == PLACEHOLDER_EXPR
 			       && TREE_CODE (max2) == PLACEHOLDER_EXPR)
 			      || operand_equal_p (max1, max2, 0)))))
-		goto same_types;
+		return true;
 	      else
-		goto different_types;
+		return false;
 	    }
 	}
 
@@ -4734,7 +4714,7 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
       /* Method types should belong to the same class.  */
       if (!gimple_canonical_types_compatible_p
 	     (TYPE_METHOD_BASETYPE (t1), TYPE_METHOD_BASETYPE (t2)))
-	goto different_types;
+	return false;
 
       /* Fallthru  */
 
@@ -4745,13 +4725,13 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 	     (TREE_TYPE (t1), TREE_TYPE (t2))
 	  && !gimple_canonical_types_compatible_p
 	        (TREE_TYPE (t1), TREE_TYPE (t2)))
-	goto different_types;
+	return false;
 
       if (!comp_type_attributes (t1, t2))
-	goto different_types;
+	return false;
 
       if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))
-	goto same_types;
+	return true;
       else
 	{
 	  tree parms1, parms2;
@@ -4764,13 +4744,13 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 		         (TREE_VALUE (parms1), TREE_VALUE (parms2))
 		  && !gimple_canonical_types_compatible_p
 		        (TREE_VALUE (parms1), TREE_VALUE (parms2)))
-		goto different_types;
+		return false;
 	    }
 
 	  if (parms1 || parms2)
-	    goto different_types;
+	    return false;
 
-	  goto same_types;
+	  return true;
 	}
 
     case RECORD_TYPE:
@@ -4789,30 +4769,20 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 		|| !gimple_compare_field_offset (f1, f2)
 		|| !gimple_canonical_types_compatible_p
 		      (TREE_TYPE (f1), TREE_TYPE (f2)))
-	      goto different_types;
+	      return false;
 	  }
 
 	/* If one aggregate has more fields than the other, they
 	   are not the same.  */
 	if (f1 || f2)
-	  goto different_types;
+	  return false;
 
-	goto same_types;
+	return true;
       }
 
     default:
       gcc_unreachable ();
     }
-
-  /* Common exit path for types that are not compatible.  */
-different_types:
-  p->same_p[GTC_DIAG] = 0;
-  return false;
-
-  /* Common exit path for types that are compatible.  */
-same_types:
-  p->same_p[GTC_DIAG] = 1;
-  return true;
 }
 
 
