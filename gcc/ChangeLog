@@ -1,3 +1,11 @@
+2011-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgrtl.c (cfg_layout_redirect_edge_and_branch): Adjust dump message.
+	* regcprop.c (copyprop_hardreg_forward): Test MAY_HAVE_DEBUG_INSNS in
+	lieu of MAY_HAVE_DEBUG_STMTS.
+	* tree-cfgcleanup.c (remove_forwarder_block): Do not attempt to move
+	debug statements if !MAY_HAVE_DEBUG_STMTS.
+
 2011-05-13  Martin Thuresson  <martint@google.com>
 
 	PR gcov-profile/47793
@@ -23,8 +31,7 @@
 
 2011-05-13  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.c (ix86_save_reg): Change return type to
-	bool.
+	* config/i386/i386.c (ix86_save_reg): Change return type to bool.
 	(ix86_hard_regno_mode_ok): Change return value to bool.  Use
 	can_create_pseudo_p ().
 
