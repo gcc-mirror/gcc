@@ -31,7 +31,7 @@ extern void             rx_emit_stack_popm (rtx *, bool);
 extern void             rx_emit_stack_pushm (rtx *);
 extern void		rx_expand_epilogue (bool);
 extern char *		rx_gen_move_template (rtx *, bool);
-extern bool		rx_legitimate_constant_p (enum machine_mode, rtx);
+extern bool		rx_is_legitimate_constant (enum machine_mode, rtx);
 extern bool		rx_is_restricted_memory_address (rtx,
 							 enum machine_mode);
 extern bool		rx_match_ccmode (rtx, enum machine_mode);

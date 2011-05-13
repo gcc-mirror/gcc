@@ -1,3 +1,10 @@
+2011-05-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (mov expander): Fix use of
+	rx_legitimate_constant_p.
+	* config/rx/rx-protos.h (rx_legitimate_constant_p): Rename
+	prototype.
+
 2011-05-13  Kai Tietz  <ktietz@redhat.com>
 
 	PR middle-end/48984
