@@ -1,6 +1,12 @@
 2011-05-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48972
+	PR fortran/48991
+	* gfortran.dg/assign_8.f90: Update dg-error.
+
+2011-05-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48972
 	* gfortran.dg/io_constraints_8.f90: New.
 	* gfortran.dg/io_constraints_9.f90: New.
 
