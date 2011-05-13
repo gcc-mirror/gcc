@@ -2848,7 +2848,7 @@ gimple_boolify (tree expr)
     default:
       /* Other expressions that get here must have boolean values, but
 	 might need to be converted to the appropriate mode.  */
-      if (TREE_CODE (type) == BOOLEAN_TYPE)
+      if (type == boolean_type_node)
 	return expr;
       return fold_convert_loc (loc, boolean_type_node, expr);
     }
@@ -6754,7 +6754,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 
 	case TRUTH_NOT_EXPR:
-	  if (TREE_CODE (TREE_TYPE (*expr_p)) != BOOLEAN_TYPE)
+	  if (TREE_TYPE (*expr_p) != boolean_type_node)
 	    {
 	      tree type = TREE_TYPE (*expr_p);
 	      *expr_p = fold_convert (type, gimple_boolify (*expr_p));
@@ -7199,7 +7199,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	       fold_truth_not_expr) happily uses operand type and doesn't
 	       automatically uses boolean_type as result, we need to keep
 	       orignal type.  */
-	    if (TREE_CODE (org_type) != BOOLEAN_TYPE)
+	    if (org_type != boolean_type_node)
 	      {
 		*expr_p = fold_convert (org_type, *expr_p);
 		ret = GS_OK;
