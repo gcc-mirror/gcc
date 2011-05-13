@@ -1,3 +1,10 @@
+2011-05-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_save_reg): Change return type to
+	bool.
+	(ix86_hard_regno_mode_ok): Change return value to bool.  Use
+	can_create_pseudo_p ().
+
 2011-05-13  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/48978
