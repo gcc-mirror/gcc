@@ -1879,7 +1879,7 @@ objc_build_internal_classname (tree ident, bool metaclass)
 static const char *
 newabi_append_ro (const char *name)
 {
-  char *dollar;
+  const char *dollar;
   char *p;
   static char string[BUFSIZE];
   dollar = strchr (name, '$');
