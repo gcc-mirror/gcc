@@ -2527,7 +2527,7 @@ gfortran calls @code{_gfortran_set_args} and
 @code{_gfortran_set_options}.  The initialization of the former
 is needed if the called procedures access the command line
 (and for backtracing); the latter sets some flags based on the
-standard chosen or to disable backtracing.  In typical programs,
+standard chosen or to enable backtracing.  In typical programs,
 it is not necessary to call any initialization function.
 
 If your @code{PROGRAM} is compiled with GNU Fortran, you shall
