@@ -17082,9 +17082,12 @@ cp_parser_class_specifier (cp_parser* parser)
 
    class-head:
      class-key identifier [opt] base-clause [opt]
-     class-key nested-name-specifier identifier base-clause [opt]
+     class-key nested-name-specifier identifier class-virt-specifier [opt] base-clause [opt]
      class-key nested-name-specifier [opt] template-id
        base-clause [opt]
+
+   class-virt-specifier:
+     final
 
    GNU Extensions:
      class-key attributes identifier [opt] base-clause [opt]
@@ -17117,6 +17120,7 @@ cp_parser_class_head (cp_parser* parser,
   tree id = NULL_TREE;
   tree type = NULL_TREE;
   tree attributes;
+  cp_virt_specifiers virt_specifiers = VIRT_SPEC_UNSPECIFIED;
   bool template_id_p = false;
   bool qualified_p = false;
   bool invalid_nested_name_p = false;
@@ -17260,8 +17264,11 @@ cp_parser_class_head (cp_parser* parser,
   pop_deferring_access_checks ();
 
   if (id)
-    cp_parser_check_for_invalid_template_id (parser, id,
-					     type_start_token->location);
+    {
+      cp_parser_check_for_invalid_template_id (parser, id,
+                                               type_start_token->location);
+      virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
+    }
 
   /* If it's not a `:' or a `{' then we can't really be looking at a
      class-head, since a class-head only appears as part of a
@@ -17277,6 +17284,13 @@ cp_parser_class_head (cp_parser* parser,
   /* At this point, we're going ahead with the class-specifier, even
      if some other problem occurs.  */
   cp_parser_commit_to_tentative_parse (parser);
+  if (virt_specifiers & VIRT_SPEC_OVERRIDE)
+    {
+      cp_parser_error (parser,
+                       "cannot specify %<override%> for a class");
+      type = error_mark_node;
+      goto out;
+    }
   /* Issue the error about the overly-qualified name now.  */
   if (qualified_p)
     {
@@ -17493,6 +17507,8 @@ cp_parser_class_head (cp_parser* parser,
   if (type)
     DECL_SOURCE_LOCATION (TYPE_NAME (type)) = type_start_token->location;
   *attributes_p = attributes;
+  if (type && (virt_specifiers & VIRT_SPEC_FINAL))
+    CLASSTYPE_FINAL (type) = 1;
  out:
   parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
   return type;

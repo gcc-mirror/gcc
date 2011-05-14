@@ -1,3 +1,8 @@
+2011-05-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* g++.dg/cpp0x/override1.C: Move from inherit/virtual9.C.
+	* g++.dg/cpp0x/override2.C: New.
+
 2011-05-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
