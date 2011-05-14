@@ -579,7 +579,6 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_STDIN_UNIT:: Unit number for standard input
 * GFORTRAN_STDOUT_UNIT:: Unit number for standard output
 * GFORTRAN_STDERR_UNIT:: Unit number for standard error
-* GFORTRAN_USE_STDERR:: Send library output to standard error
 * GFORTRAN_TMPDIR:: Directory for scratch files
 * GFORTRAN_UNBUFFERED_ALL:: Don't buffer I/O for all units.
 * GFORTRAN_UNBUFFERED_PRECONNECTED:: Don't buffer I/O for preconnected units.
@@ -612,14 +611,6 @@ The default value is 6.
 This environment variable can be used to select the unit number
 preconnected to standard error.  This must be a positive integer.
 The default value is 0.
-
-@node GFORTRAN_USE_STDERR
-@section @env{GFORTRAN_USE_STDERR}---Send library output to standard error
-
-This environment variable controls where library output is sent.
-If the first letter is @samp{y}, @samp{Y} or @samp{1}, standard
-error is used.  If the first letter is @samp{n}, @samp{N} or
-@samp{0}, standard output is used.
 
 @node GFORTRAN_TMPDIR
 @section @env{GFORTRAN_TMPDIR}---Directory for scratch files
