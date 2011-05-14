@@ -1,5 +1,20 @@
 2011-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
+        PR libfortran/48915
+        * gfortran.h (gfc_option_t): Remove flag_dump_core.
+        * gfortran.texi (GFORTRAN_ERROR_DUMPCORE): Remove section.
+        (GFORTRAN_ERROR_BACKTRACE): Document that it's enabled by default.
+        * intrinsic.texi (ABORT): Remove explanation of -fdump-core.
+        * invoke.texi: Remove -fdump-core, document that -fbacktrace is
+        enabled by default.
+        * lang.opt: Remove -fdump-core.
+        * options.c (gfc_init_options): Make backtrace default to enabled,
+        remove dump_core.
+        (gfc_handle_option): Remove OPT_fdump-core.
+        * trans-decl.c: Pass a 0 to preserve ABI.
+
+2011-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
         * gfortran.texi: Remove GFORTRAN_USE_STDERR documentation.
 
 2011-05-13  Tobias Burnus  <burnus@net-b.de>

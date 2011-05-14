@@ -58,44 +58,32 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 
-/* sys_exit()-- Terminate the program with an exit code.  */
+/* Termination of a program: F2008 2.3.5 talks about "normal
+   termination" and "error termination". Normal termination occurs as
+   a result of e.g. executing the end program statement, and executing
+   the STOP statement. It includes the effect of the C exit()
+   function. 
 
-void
-sys_exit (int code)
-{
-  /* Show error backtrace if possible.  */
-  if (code != 0 && code != 4
-      && (options.backtrace == 1
-	  || (options.backtrace == -1 && compile_options.backtrace == 1)))
-    show_backtrace ();
+   Error termination is initiated when the ERROR STOP statement is
+   executed, when ALLOCATE/DEALLOCATE fails without STAT= being
+   specified, when some of the co-array synchronization statements
+   fail without STAT= being specified, and some I/O errors if
+   ERR/IOSTAT/END/EOR is not present, and finally EXECUTE_COMMAND_LINE
+   failure without CMDSTAT=.
 
-  /* Dump core if requested.  */
-  if (code != 0
-      && (options.dump_core == 1
-	 || (options.dump_core == -1 && compile_options.dump_core == 1)))
-    {
-#if defined(HAVE_GETRLIMIT) && defined(RLIMIT_CORE)
-      /* Warn if a core file cannot be produced because
-	 of core size limit.  */
+   2.3.5 also explains how co-images synchronize during termination.
 
-      struct rlimit core_limit;
+   In libgfortran we have two ways of ending a program. exit(code) is
+   a normal exit; calling exit() also causes open units to be
+   closed. No backtrace or core dump is needed here. When something
+   goes wrong, we have sys_abort() which tries to print the backtrace
+   if -fbacktrace is enabled, and then dumps core; whether a core file
+   is generated is system dependent. When aborting, we don't flush and
+   close open units, as program memory might be corrupted and we'd
+   rather risk losing dirty data in the buffers rather than corrupting
+   files on disk.
 
-      if (getrlimit (RLIMIT_CORE, &core_limit) == 0 && core_limit.rlim_cur == 0)
-	estr_write ("** Warning: a core dump was requested, but the core size"
-		   "limit\n**          is currently zero.\n\n");
-#endif
-      
-      
-#if defined(HAVE_KILL) && defined(HAVE_GETPID) && defined(SIGQUIT)
-      kill (getpid (), SIGQUIT);
-#else
-      estr_write ("Core dump not possible, sorry.");
-#endif
-    }
-
-  exit (code);
-}
-
+*/
 
 /* Error conditions.  The tricky part here is printing a message when
  * it is the I/O subsystem that is severely wounded.  Our goal is to
@@ -107,7 +95,6 @@ sys_exit (int code)
  * 1    Terminated because of operating system error.
  * 2    Error in the runtime library
  * 3    Internal error in runtime library
- * 4    Error during error processing (very bad)
  *
  * Other error returns are reserved for the STOP statement with a numeric code.
  */
@@ -150,7 +137,7 @@ st_vprintf (const char *format, va_list ap)
 #define ERROR_MESSAGE "Internal error: buffer overrun in st_vprintf()\n"
       write (STDERR_FILENO, buffer, ST_VPRINTF_SIZE - 1);
       write (STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
-      sys_exit(2);
+      sys_abort ();
 #undef ERROR_MESSAGE
 
     }
@@ -170,6 +157,27 @@ st_printf (const char * format, ...)
   written = st_vprintf (format, ap);
   va_end (ap);
   return written;
+}
+
+
+/* sys_abort()-- Terminate the program showing backtrace and dumping
+   core.  */
+
+void
+sys_abort ()
+{
+  /* If backtracing is enabled, print backtrace and disable signal
+     handler for ABRT.  */
+  if (options.backtrace == 1
+      || (options.backtrace == -1 && compile_options.backtrace == 1))
+    {
+      show_backtrace ();
+#if defined(HAVE_SIGNAL) && defined(SIGABRT)
+      signal (SIGABRT, SIG_DFL);
+#endif
+    }
+
+  abort();
 }
 
 
@@ -278,7 +286,7 @@ recursion_check (void)
 
   /* Don't even try to print something at this point */
   if (magic == MAGIC)
-    sys_exit (4);
+    sys_abort ();
 
   magic = MAGIC;
 }
@@ -300,7 +308,7 @@ os_error (const char *message)
   estr_write ("\n");
   estr_write (message);
   estr_write ("\n");
-  sys_exit (1);
+  exit (1);
 }
 iexport(os_error);
 
@@ -319,7 +327,7 @@ runtime_error (const char *message, ...)
   st_vprintf (message, ap);
   va_end (ap);
   estr_write ("\n");
-  sys_exit (2);
+  exit (2);
 }
 iexport(runtime_error);
 
@@ -338,7 +346,7 @@ runtime_error_at (const char *where, const char *message, ...)
   st_vprintf (message, ap);
   va_end (ap);
   estr_write ("\n");
-  sys_exit (2);
+  exit (2);
 }
 iexport(runtime_error_at);
 
@@ -376,7 +384,7 @@ internal_error (st_parameter_common *cmp, const char *message)
      because hopefully it doesn't happen too often).  */
   stupid_function_name_for_static_linking();
 
-  sys_exit (3);
+  exit (3);
 }
 
 
@@ -544,7 +552,7 @@ generate_error (st_parameter_common *cmp, int family, const char *message)
   estr_write ("Fortran runtime error: ");
   estr_write (message);
   estr_write ("\n");
-  sys_exit (2);
+  exit (2);
 }
 iexport(generate_error);
 
@@ -606,7 +614,7 @@ notify_std (st_parameter_common *cmp, int std, const char * message)
       estr_write ("Fortran runtime error: ");
       estr_write (message);
       estr_write ("\n");
-      sys_exit (2);
+      exit (2);
     }
   else
     {

@@ -509,15 +509,15 @@ typedef struct
   const char *separator;
 
   int all_unbuffered, unbuffered_preconnected, default_recl;
-  int fpe, dump_core, backtrace;
+  int fpe, backtrace;
 }
 options_t;
 
 extern options_t options;
 internal_proto(options);
 
-extern void handler (int);
-internal_proto(handler);
+extern void backtrace_handler (int);
+internal_proto(backtrace_handler);
 
 
 /* Compile-time options that will influence the library.  */
@@ -528,7 +528,6 @@ typedef struct
   int allow_std;
   int pedantic;
   int convert;
-  int dump_core;
   int backtrace;
   int sign_zero;
   size_t record_marker;
@@ -688,8 +687,8 @@ internal_proto(show_backtrace);
 #define GFC_OTOA_BUF_SIZE (GFC_LARGEST_BUF * 3 + 1)
 #define GFC_BTOA_BUF_SIZE (GFC_LARGEST_BUF * 8 + 1)
 
-extern void sys_exit (int) __attribute__ ((noreturn));
-internal_proto(sys_exit);
+extern void sys_abort (void) __attribute__ ((noreturn));
+internal_proto(sys_abort);
 
 extern ssize_t estr_write (const char *);
 internal_proto(estr_write);

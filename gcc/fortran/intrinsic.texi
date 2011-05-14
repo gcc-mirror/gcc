@@ -345,10 +345,7 @@ the applicable standard for each intrinsic procedure is noted.
 @table @asis
 @item @emph{Description}:
 @code{ABORT} causes immediate termination of the program.  On operating
-systems that support a core dump, @code{ABORT} will produce a core dump even if
-the option @option{-fno-dump-core} is in effect, which is suitable for debugging
-purposes.
-@c TODO: Check if this (with -fno-dump-core) is correct.
+systems that support a core dump, @code{ABORT} will produce a core dump.
 
 @item @emph{Standard}:
 GNU extension
