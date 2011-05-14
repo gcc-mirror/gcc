@@ -2527,7 +2527,7 @@ gfortran calls @code{_gfortran_set_args} and
 @code{_gfortran_set_options}.  The initialization of the former
 is needed if the called procedures access the command line
 (and for backtracing); the latter sets some flags based on the
-standard chosen or to enable backtracing.  In typical programs,
+standard chosen or to disable backtracing.  In typical programs,
 it is not necessary to call any initialization function.
 
 If your @code{PROGRAM} is compiled with GNU Fortran, you shall
@@ -2578,7 +2578,7 @@ int main (int argc, char *argv[])
 @table @asis
 @item @emph{Description}:
 @code{_gfortran_set_options} sets several flags related to the Fortran
-standard to be used, whether backtracing or core dumps should be enabled
+standard to be used, whether backtracing should be enabled
 and whether range checks should be performed.  The syntax allows for
 upward compatibility since the number of passed flags is specified; for
 non-passed flags, the default value is used.  See also
@@ -2609,10 +2609,9 @@ Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
 standard error.  Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
 @item @var{option}[2] @tab If non zero, enable pedantic checking.
 Default: off.
-@item @var{option}[3] @tab If non zero, enable core dumps on run-time
-errors.  Default: off.
+@item @var{option}[3] @tab Unused.
 @item @var{option}[4] @tab If non zero, enable backtracing on run-time
-errors.  Default: off.
+errors.  Default: enabled.
 Note: Installs a signal handler and requires command-line
 initialization using @code{_gfortran_set_args}.
 @item @var{option}[5] @tab If non zero, supports signed zeros.
@@ -2627,8 +2626,8 @@ Default: enabled.  See -frange-check (@pxref{Code Gen Options}).
 
 @item @emph{Example}:
 @smallexample
-  /* Use gfortran 4.5 default options.  */
-  static int options[] = @{68, 255, 0, 0, 0, 1, 0, 1@};
+  /* Use gfortran 4.7 default options.  */
+  static int options[] = @{68, 255, 0, 0, 1, 1, 0, 1@};
   _gfortran_set_options (8, &options);
 @end smallexample
 @end table
