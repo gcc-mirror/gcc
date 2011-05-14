@@ -1,3 +1,9 @@
+2011-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-im.c (SET_ALWAYS_EXECUTED_IN): New macro.
+	(fill_always_executed_in): Use [SET_]ALWAYS_EXECUTED_IN.
+	(tree_ssa_lim_finalize): Likewise.
+
 2011-05-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/constraint.md (Yd, Yx): New register constraints.
