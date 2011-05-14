@@ -1,3 +1,12 @@
+2011-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/22572
+	* frontend-passes.c (cfe_register_funcs):  Also register functions
+	for potential elimination if the rank is > 0, the shape is unknown
+	and reallocate on assignment is active.
+	(create_var):  For rank > 0 functions with unknown shape, create
+	an allocatable temporary.
+
 2011-05-14  Tobias Burnus  <burnus@net-b.de>
 
 	* options.c (gfc_init_options, gfc_post_options): Enable
