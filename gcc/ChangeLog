@@ -129,7 +129,6 @@
 	* configure.ac: Use AS_HELP_STRING throughout.
 	* configure: Regenerate.
 
->>>>>>> .r173734
 2011-05-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_save_reg): Change maybe_eh_return to bool.
@@ -1475,7 +1474,7 @@
 	* config/bfin/uclinux.h (LINK_GCC_C_SEQUENCE_SPEC): Make sure
 	libbffastfp overrides libgcc when -mfast-fp.
 
-2011-05-03  Stuart Henderson <shenders@gcc.gnu.org>
+2011-05-03  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	Originally from Bernd Schmidt
 	* config/bfin/uclinux.h (SUBTARGET_FDPIC_NOT_SUPPORTED): New macro.
@@ -3926,7 +3925,7 @@
 	* haifa-sched.c (prune_ready_list, schedule_block): Use
 	sched_pressure_p rather than flag_sched_pressure.
 
-2011-04-15  Pat Haugen <pthaugen@us.ibm.com>
+2011-04-15  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (call_ABI_of_interest): Call
 	cgraph_get_node instead of cgraph_get_create_node.
@@ -4217,7 +4216,7 @@
 
 2011-04-14  Anatoly Sokolov  <aesok@post.ru>
 	    Eric Weddington  <eric.weddington@atmel.com>
-	    Georg-Johann Lay <avr@gjlay.de>
+	    Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c ("insn-codes.h", "optabs.h", "langhooks.h"):
 	New Includes
@@ -4462,7 +4461,7 @@
 	(TREE_CHAIN): Check for a TS_COMMON structure.
 	(TREE_TYPE): Check for a TS_TYPED structure.
 
-2011-04-12  Pat Haugen <pthaugen@us.ibm.com>
+2011-04-12  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (call_ABI_of_interest): Call
 	cgraph_get_create_node instead of cgraph_node.
@@ -6248,7 +6247,7 @@
 	* config/i386/cygming.opt: Make sure trailing empty line is retained.
 	* config/i386/mingw-w64.opt: Likewise.
 
-2011-04-01  Gary Funck <gary@intrepid.com>
+2011-04-01  Gary Funck  <gary@intrepid.com>
 
 	* c-decl.c (grokdeclarator): Fix formatting.
 
