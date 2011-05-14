@@ -92,7 +92,7 @@ error_stop_string (const char *string, GFC_INTEGER_4 len)
   (void) sizeof (w); /* Avoid compiler warning about not using w.  */
   estr_write ("\n");
 
-  sys_abort ();
+  exit (1);
 }
 
 
@@ -106,8 +106,5 @@ void
 error_stop_numeric (GFC_INTEGER_4 code)
 {
   st_printf ("ERROR STOP %d\n", (int) code);
-  if (options.backtrace == 1
-      || (options.backtrace == -1 && compile_options.backtrace == 1))
-    show_backtrace ();
   exit (code);
 }
