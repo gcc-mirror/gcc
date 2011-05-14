@@ -1322,6 +1322,7 @@ struct GTY(()) lang_type_class {
   unsigned has_complex_move_ctor : 1;
   unsigned has_complex_move_assign : 1;
   unsigned has_constexpr_ctor : 1;
+  unsigned is_final : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1330,7 +1331,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 3;
+  unsigned dummy : 2;
 
   tree primary_base;
   VEC(tree_pair_s,gc) *vcall_indices;
@@ -1437,6 +1438,11 @@ struct GTY((variable_size)) lang_type {
    it has not yet been declared.  */
 #define CLASSTYPE_LAZY_DESTRUCTOR(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->lazy_destructor)
+
+/* Nonzero means that NODE (a class type) is final */
+#define CLASSTYPE_FINAL(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->is_final)
+
 
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
 #define TYPE_HAS_COPY_ASSIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_copy_assign)
