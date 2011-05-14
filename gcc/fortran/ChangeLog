@@ -16,6 +16,12 @@
 
 2011-05-14  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/18918
+	* interface.c (compare_parameter): Skip diagnostic if
+	actual argument is not an array; rank mismatch is diagnosted later.
+
+2011-05-14  Tobias Burnus  <burnus@net-b.de>
+
 	* options.c (gfc_init_options, gfc_post_options): Enable
 	-fstack-arrays by default if -Ofast is used.
 	* invoke.texi (-fstack-arrays): Document this.

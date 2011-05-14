@@ -1618,6 +1618,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       /* F2008, 12.5.2.8.  */
       if (formal->attr.dimension
 	  && (formal->attr.contiguous || formal->as->type != AS_ASSUMED_SHAPE)
+	  && gfc_expr_attr (actual).dimension
 	  && !gfc_is_simply_contiguous (actual, true))
 	{
 	  if (where)
