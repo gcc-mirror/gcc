@@ -366,6 +366,10 @@ fdollar-ok
 Fortran
 Allow dollar signs in entity names
 
+fdump-core
+Fortran Ignore
+Does nothing. Preserved for backward compatibility.
+
 fdump-fortran-original
 Fortran
 Display the code tree after parsing

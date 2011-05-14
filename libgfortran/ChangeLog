@@ -1,73 +1,78 @@
+2011-05-14  Tobias Burnus  <burnus@net-b.de>
+
+	* runtime/stop.c (error_stop_string, error_stop_numeric):
+	Do not backtrace for ERROR STOP.
+
 2011-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/48915
-        * intrinsics/abort.c (abort): Call sys_abort().
-        * io/unix.c (st_vprintf): Call sys_abort().
-        * libgfortran.h (options_t): Remove dump_core member.
-        (handler): Rename to backtrace_handler.
-        (compile_options_t): Remove dump_core member.
-        (sys_exit): Remove.
-        (sys_abort): New function.
-        * runtime/backtrace.c (show_backtrace): Print a message if
+	PR libfortran/48915
+	* intrinsics/abort.c (abort): Call sys_abort().
+	* io/unix.c (st_vprintf): Call sys_abort().
+	* libgfortran.h (options_t): Remove dump_core member.
+	(handler): Rename to backtrace_handler.
+	(compile_options_t): Remove dump_core member.
+	(sys_exit): Remove.
+	(sys_abort): New function.
+	* runtime/backtrace.c (show_backtrace): Print a message if
 	backtrace is not available on target, update filter symbol name
 	due to backtrace_handler renaming.
-        * runtime/compile_options.c (backtrace_handler): New
+	* runtime/compile_options.c (backtrace_handler): New
 	implementation based on example in Glibc manual.
-        (set_options): Remove dump_core handling, make signal handler
+	(set_options): Remove dump_core handling, make signal handler
 	handle more signals.
-        (init_compile_options): Remove dump_core.
-        * runtime/environ.c (variable_table[]): Remove
+	(init_compile_options): Remove dump_core.
+	* runtime/environ.c (variable_table[]): Remove
 	GFORTRAN_ERROR_DUMPCORE element.
-        (show_variables): Update name, call exit().
-        * runtime/error.c (sys_exit): Remove.
-        (sys_abort): New function.
-        (recursion_check): Call sys_abort().
-        (os_error): Call exit().
-        (runtime_error): Likewise.
-        (runtime_error_at): Likewise.
-        (internal_error): Likewise.
-        (generate_error): Likewise.
-        (notify_std): Likewise.
-        * runtime/stop.c (stop_numeric): Call exit().
-        (stop_numeric_f08): Likewise.
-        (stop_string): Likewise.
-        (error_stop_string): Call sys_abort().
-        (error_stop_numeric): Print backtrace, exit with provided code.
+	(show_variables): Update name, call exit().
+	* runtime/error.c (sys_exit): Remove.
+	(sys_abort): New function.
+	(recursion_check): Call sys_abort().
+	(os_error): Call exit().
+	(runtime_error): Likewise.
+	(runtime_error_at): Likewise.
+	(internal_error): Likewise.
+	(generate_error): Likewise.
+	(notify_std): Likewise.
+	* runtime/stop.c (stop_numeric): Call exit().
+	(stop_numeric_f08): Likewise.
+	(stop_string): Likewise.
+	(error_stop_string): Call sys_abort().
+	(error_stop_numeric): Print backtrace, exit with provided code.
 
 2011-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * io/unix.c (st_vprintf,st_printf): Move to runtime/error.c.
-        * libgfortran.h (struct options_t): Remove use_stderr field.
-        (st_vprintf,st_printf): Move prototypes.
-        (estr_write): New prototype.
-        * runtime/error.c (sys_exit): Use estr_write instead of st_printf.
-        (estr_write): New function.
-        (st_vprintf): Move from io/unix.c, use stack allocated buffer,
-        always output to stderr.
-        (st_printf): Move from io/unix.c.
-        (show_locus): Use a local variable instead of static.
-        (os_error): Use estr_write instead of st_printf.
-        (runtime_error): Likewise.
-        (runtime_error_at): Likewise.
-        (runtime_warning_at): Likewise.
-        (internal_error): Likewise.
-        (generate_error): Likewise.
-        (generate_warning): Likewise.
-        (notify_std): Likewise.
-        * runtime/pause.c (do_pause): Likewise.
-        (pause_string): Likewise.
-        * runtime/stop.c (stop_string): Likewise.
-        (error_stop_string): Likewise.
-        * config/fpu_aix.h (set_fpu): Likewise.
-        * config/fpu_generic.h (set_fpu): Likewise.
-        * config/fpu_glibc.h (set_fpu): Likewise.
-        * config/fpu-sysv.h (set_fpu): Likewise.
-        * runtime/backtrace.c (dump_glibc_backtrace): Likewise.
-        (show_backtrace): Likewise.
-        * runtime/environ.c (print_spaces): Likewise.
-        (show_string): Likewise.
-        (show_variables): Likewise.
-        (variable_table[]): Remove GFORTRAN_USE_STDERR entry.
+	* io/unix.c (st_vprintf,st_printf): Move to runtime/error.c.
+	* libgfortran.h (struct options_t): Remove use_stderr field.
+	(st_vprintf,st_printf): Move prototypes.
+	(estr_write): New prototype.
+	* runtime/error.c (sys_exit): Use estr_write instead of st_printf.
+	(estr_write): New function.
+	(st_vprintf): Move from io/unix.c, use stack allocated buffer,
+	always output to stderr.
+	(st_printf): Move from io/unix.c.
+	(show_locus): Use a local variable instead of static.
+	(os_error): Use estr_write instead of st_printf.
+	(runtime_error): Likewise.
+	(runtime_error_at): Likewise.
+	(runtime_warning_at): Likewise.
+	(internal_error): Likewise.
+	(generate_error): Likewise.
+	(generate_warning): Likewise.
+	(notify_std): Likewise.
+	* runtime/pause.c (do_pause): Likewise.
+	(pause_string): Likewise.
+	* runtime/stop.c (stop_string): Likewise.
+	(error_stop_string): Likewise.
+	* config/fpu_aix.h (set_fpu): Likewise.
+	* config/fpu_generic.h (set_fpu): Likewise.
+	* config/fpu_glibc.h (set_fpu): Likewise.
+	* config/fpu-sysv.h (set_fpu): Likewise.
+	* runtime/backtrace.c (dump_glibc_backtrace): Likewise.
+	(show_backtrace): Likewise.
+	* runtime/environ.c (print_spaces): Likewise.
+	(show_string): Likewise.
+	(show_variables): Likewise.
+	(variable_table[]): Remove GFORTRAN_USE_STDERR entry.
 
 2011-05-14  Tobias Burnus  <burnus@net-b.de>
 
