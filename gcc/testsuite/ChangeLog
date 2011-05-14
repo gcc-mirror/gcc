@@ -1,3 +1,10 @@
+2011-05-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline:
+	2010-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/compile/20100915-1.c: New test.
+
 2011-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
