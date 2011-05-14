@@ -197,9 +197,10 @@ static bool ref_indep_loop_p (struct loop *, mem_ref_p);
 /* Minimum cost of an expensive expression.  */
 #define LIM_EXPENSIVE ((unsigned) PARAM_VALUE (PARAM_LIM_EXPENSIVE))
 
-/* The outermost loop for that execution of the header guarantees that the
+/* The outermost loop for which execution of the header guarantees that the
    block will be executed.  */
 #define ALWAYS_EXECUTED_IN(BB) ((struct loop *) (BB)->aux)
+#define SET_ALWAYS_EXECUTED_IN(BB, VAL) ((BB)->aux = (void *) (VAL))
 
 static struct lim_aux_data *
 init_lim_data (gimple stmt)
@@ -2440,7 +2441,7 @@ fill_always_executed_in (struct loop *loop, sbitmap contains_call)
   edge e;
   struct loop *inn_loop = loop;
 
-  if (!loop->header->aux)
+  if (ALWAYS_EXECUTED_IN (loop->header) == NULL)
     {
       bbs = get_loop_body_in_dom_order (loop);
 
@@ -2482,7 +2483,7 @@ fill_always_executed_in (struct loop *loop, sbitmap contains_call)
 
       while (1)
 	{
-	  last->aux = loop;
+	  SET_ALWAYS_EXECUTED_IN (last, loop);
 	  if (last == loop->header)
 	    break;
 	  last = get_immediate_dominator (CDI_DOMINATORS, last);
@@ -2537,9 +2538,7 @@ tree_ssa_lim_finalize (void)
   htab_t h;
 
   FOR_EACH_BB (bb)
-    {
-      bb->aux = NULL;
-    }
+    SET_ALWAYS_EXECUTED_IN (bb, NULL);
 
   pointer_map_destroy (lim_aux_data_map);
 
