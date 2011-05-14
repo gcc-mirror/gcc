@@ -1,3 +1,8 @@
+2011-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/22572
+	* function_optimize_7.f90:  New test case.
+
 2011-05-13  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/decltype26.C: New.
