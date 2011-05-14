@@ -1,3 +1,7 @@
+2011-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * gfortran.texi: Remove GFORTRAN_USE_STDERR documentation.
+
 2011-05-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48972

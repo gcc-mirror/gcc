@@ -508,7 +508,7 @@ typedef struct
   int separator_len;
   const char *separator;
 
-  int use_stderr, all_unbuffered, unbuffered_preconnected, default_recl;
+  int all_unbuffered, unbuffered_preconnected, default_recl;
   int fpe, dump_core, backtrace;
 }
 options_t;
@@ -691,6 +691,16 @@ internal_proto(show_backtrace);
 extern void sys_exit (int) __attribute__ ((noreturn));
 internal_proto(sys_exit);
 
+extern ssize_t estr_write (const char *);
+internal_proto(estr_write);
+
+extern int st_vprintf (const char *, va_list);
+internal_proto(st_vprintf);
+
+extern int st_printf (const char *, ...)
+  __attribute__((format (gfc_printf, 1, 2)));
+internal_proto(st_printf);
+
 extern const char *gfc_xtoa (GFC_UINTEGER_LARGEST, char *, size_t);
 internal_proto(gfc_xtoa);
 
@@ -791,13 +801,6 @@ internal_proto(close_units);
 
 extern int unit_to_fd (int);
 internal_proto(unit_to_fd);
-
-extern int st_printf (const char *, ...)
-  __attribute__ ((format (gfc_printf, 1, 2)));
-internal_proto(st_printf);
-
-extern int st_vprintf (const char *, va_list);
-internal_proto(st_vprintf);
 
 extern char * filename_from_unit (int);
 internal_proto(filename_from_unit);
