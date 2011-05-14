@@ -90,6 +90,8 @@
 ;;  2	SSE2 enabled
 ;;  i	SSE2 inter-unit moves enabled
 ;;  m	MMX inter-unit moves enabled
+;;  d	Integer register when integer DFmode moves are enabled
+;;  x	Integer register when integer XFmode moves are enabled
 
 (define_register_constraint "Yz" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
  "First SSE register (@code{%xmm0}).")
@@ -104,6 +106,14 @@
 (define_register_constraint "Ym"
  "TARGET_MMX && TARGET_INTER_UNIT_MOVES ? MMX_REGS : NO_REGS"
  "@internal Any MMX register, when inter-unit moves are enabled.")
+
+(define_register_constraint "Yd"
+ "TARGET_INTEGER_DFMODE_MOVES ? GENERAL_REGS : NO_REGS"
+ "@internal Any integer register when integer DFmode moves are enabled.")
+
+(define_register_constraint "Yx"
+ "optimize_function_for_speed_p (cfun) ? GENERAL_REGS : NO_REGS"
+ "@internal Any integer register when integer XFmode moves are enabled.")
 
 ;; Integer constant constraints.
 (define_constraint "I"
@@ -149,7 +159,7 @@
 (define_constraint "G"
   "Standard 80387 floating point constant."
   (and (match_code "const_double")
-       (match_test "standard_80387_constant_p (op)")))
+       (match_test "standard_80387_constant_p (op) > 0")))
 
 ;; This can theoretically be any mode's CONST0_RTX.
 (define_constraint "C"

@@ -1,3 +1,41 @@
+2011-05-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraint.md (Yd, Yx): New register constraints.
+	* config/i386/i386.md (*pushdf): Merge with *pushdf_nointeger.  Use
+	Yd conditional register constraint.
+	(*movtf_internal): Use standard_sse_constant_opcode.
+	(*movxf_internal): Merge with *movxf_internal_nointeger.  Use
+	Yx conditional register constraint.
+	(*movdf_internal): Merge with *movdf_internal_nointeger.  Use
+	Yd conditional register constraint.  Use standard_sse_constant_p to
+	check for valid SSE constants and call standard_sse_constant_opcode to
+	output SSE insn.
+	(*movsf_internal): Use standard_sse_constant_p to check for valid SSE
+	constants and call standard_sse_constant_opcode to output SSE insn.
+	* config/i386/i386.c (ix86_option_ovverride_internal): Set
+	TARGET_INTEGER_DFMODE_MOVES for 64bit targets.  Clear it when
+	optimize_size is set.
+	(standard_sse_constant_opcode): Output conditional AVX insn templates.
+
+2011-05-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraint.md (Yd, Yx): New register constraints.
+	* config/i386/i386.md (*pushdf): Merge with *pushdf_nointeger.  Use
+	Yd conditional register constraint.
+	(*movtf_internal): Use standard_sse_constant_opcode.
+	(*movxf_internal): Merge with *movxf_internal_nointeger.  Use
+	Yx conditional register constraint.
+	(*movdf_internal): Merge with *movdf_internal_nointeger.  Use
+	Yd conditional register constraint.  Use standard_sse_constant_p to
+	check for valid SSE constants and call standard_sse_constant_opcode to
+	output SSE insn.
+	(*movsf_internal): Use standard_sse_constant_p to check for valid SSE
+	constants and call standard_sse_constant_opcode to output SSE insn.
+	* config/i386/i386.c (ix86_option_ovverride_internal): Set
+	TARGET_INTEGER_DFMODE_MOVES for 64bit targets.  Clear it when
+	optimize_size is set.
+	(standard_sse_constant_opcode): Output conditional AVX insn templates.
+
 2011-05-14  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi (-Ofast): Also enables -fstack-arrays.
@@ -243,11 +281,11 @@
 2011-05-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (legitimize_tls_address)
-	<TLS_MODEL_GLOBAL_DYNAMIC>: Call gen_tls_dynamic_gnu2_{32,64}
+	<case TLS_MODEL_GLOBAL_DYNAMIC>: Call gen_tls_dynamic_gnu2_{32,64}
 	expanders directly for TARGET_GNU2_TLS.  Determine pic and
 	__tls_get_addr symbol reference here.  Update call to
 	gen_tls_global_dynamic_{32,64} for added arguments.
-	<TLS_MODEL_LOCAL_DYNAMIC>: Call gen_tls_dynamic_gnu2_{32,64}
+	<case TLS_MODEL_LOCAL_DYNAMIC>: Call gen_tls_dynamic_gnu2_{32,64}
 	expanders directly for TARGET_GNU2_TLS.  Determine
 	__tls_get_addr symbol reference here.  Update call to
 	gen_tls_local_dynamic_base_{32,64} for added arguments.  Attach

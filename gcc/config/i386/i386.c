@@ -3933,6 +3933,13 @@ ix86_option_override_internal (bool main_args_p)
   if (!TARGET_80387)
     target_flags |= MASK_NO_FANCY_MATH_387;
 
+  /* On 32bit targets, avoid moving DFmode values in
+     integer registers when optimizing for size.  */
+  if (TARGET_64BIT)
+    target_flags |= TARGET_INTEGER_DFMODE_MOVES;
+  else if (optimize_size)
+    target_flags &= ~TARGET_INTEGER_DFMODE_MOVES;
+
   /* Turn on MMX builtins for -msse.  */
   if (TARGET_SSE)
     {
@@ -8580,17 +8587,17 @@ standard_sse_constant_opcode (rtx insn, rtx x)
       switch (get_attr_mode (insn))
 	{
 	case MODE_V4SF:
-	  return TARGET_AVX ? "vxorps\t%0, %0, %0" : "xorps\t%0, %0";
+	  return "%vxorps\t%0, %d0";
 	case MODE_V2DF:
 	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return TARGET_AVX ? "vxorps\t%0, %0, %0" : "xorps\t%0, %0";
+	    return "%vxorps\t%0, %d0";
 	  else
-	    return TARGET_AVX ? "vxorpd\t%0, %0, %0" : "xorpd\t%0, %0";
+	    return "%vxorpd\t%0, %d0";
 	case MODE_TI:
 	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return TARGET_AVX ? "vxorps\t%0, %0, %0" : "xorps\t%0, %0";
+	    return "%vxorps\t%0, %d0";
 	  else
-	    return TARGET_AVX ? "vpxor\t%0, %0, %0" : "pxor\t%0, %0";
+	    return "%vpxor\t%0, %d0";
 	case MODE_V8SF:
 	  return "vxorps\t%x0, %x0, %x0";
 	case MODE_V4DF:
@@ -8607,7 +8614,7 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	  break;
 	}
     case 2:
-      return TARGET_AVX ? "vpcmpeqd\t%0, %0, %0" : "pcmpeqd\t%0, %0";
+      return "%vpcmpeqd\t%0, %d0";
     default:
       break;
     }
