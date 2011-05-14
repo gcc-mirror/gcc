@@ -134,9 +134,8 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_automatic = 1;
   gfc_option.flag_backslash = 0;
   gfc_option.flag_module_private = 0;
-  gfc_option.flag_backtrace = 0;
+  gfc_option.flag_backtrace = 1;
   gfc_option.flag_allow_leading_underscore = 0;
-  gfc_option.flag_dump_core = 0;
   gfc_option.flag_external_blas = 0;
   gfc_option.blas_matmul_limit = 30;
   gfc_option.flag_cray_pointer = 0;
@@ -697,10 +696,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       gfc_option.rtcheck |= GFC_RTCHECK_ARRAY_TEMPS;
       break;
       
-    case OPT_fdump_core:
-      gfc_option.flag_dump_core = value;
-      break;
-
     case OPT_fcray_pointer:
       gfc_option.flag_cray_pointer = value;
       break;

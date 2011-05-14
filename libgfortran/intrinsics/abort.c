@@ -30,6 +30,5 @@ export_proto_np(PREFIX(abort));
 
 void PREFIX(abort) (void)
 {
-  close_units ();
-  abort ();
+  sys_abort ();
 }

@@ -214,7 +214,7 @@ show_backtrace (void)
 	    if (strncasecmp (func, "*_gfortran", 10) == 0
 		|| strncasecmp (func, "_gfortran", 9) == 0
 		|| strcmp (func, "main") == 0 || strcmp (func, "_start") == 0
-		|| strcmp (func, "_gfortrani_handler") == 0)
+		|| strcmp (func, "_gfortrani_backtrace_handler") == 0)
 	      continue;
 
 	    if (local_strcasestr (str[i], "libgfortran.so") != NULL
@@ -334,5 +334,7 @@ fallback:
   /* Fallback to the glibc backtrace.  */
   estr_write ("\nBacktrace for this error:\n");
   dump_glibc_backtrace (depth, str);
+  return;
 #endif
+  estr_write ("\nBacktrace not yet available on this platform, sorry!\n");
 }

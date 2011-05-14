@@ -41,7 +41,7 @@ stop_numeric (GFC_INTEGER_4 code)
   else
     st_printf ("STOP %d\n", (int)code);
 
-  sys_exit (code);
+  exit (code);
 }
 
 
@@ -55,7 +55,7 @@ void
 stop_numeric_f08 (GFC_INTEGER_4 code)
 {
   st_printf ("STOP %d\n", (int)code);
-  sys_exit (code);
+  exit (code);
 }
 
 
@@ -71,7 +71,7 @@ stop_string (const char *string, GFC_INTEGER_4 len)
       (void) sizeof (w); /* Avoid compiler warning about not using w.  */
       estr_write ("\n");
     }
-  sys_exit (0);
+  exit (0);
 }
 
 
@@ -92,7 +92,7 @@ error_stop_string (const char *string, GFC_INTEGER_4 len)
   (void) sizeof (w); /* Avoid compiler warning about not using w.  */
   estr_write ("\n");
 
-  sys_exit (1);
+  sys_abort ();
 }
 
 
@@ -106,5 +106,8 @@ void
 error_stop_numeric (GFC_INTEGER_4 code)
 {
   st_printf ("ERROR STOP %d\n", (int) code);
-  sys_exit (code);
+  if (options.backtrace == 1
+      || (options.backtrace == -1 && compile_options.backtrace == 1))
+    show_backtrace ();
+  exit (code);
 }
