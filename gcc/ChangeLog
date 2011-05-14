@@ -1,3 +1,7 @@
+2011-05-14  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-Ofast): Also enables -fstack-arrays.
+
 2011-05-13  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (ipa_cst_from_jfunc): New function.

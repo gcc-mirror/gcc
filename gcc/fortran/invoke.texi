@@ -1381,7 +1381,9 @@ The default value for @var{n} is 32768.
 Adding this option will make the fortran compiler put all local arrays,
 even those of unknown size onto stack memory.  If your program uses very
 large local arrays it's possible that you'll have to extend your runtime
-limits for stack memory on some operating systems.
+limits for stack memory on some operating systems. This flag is enabled
+by default at optimization level @option{-Ofast}.
+
 
 @item -fpack-derived
 @opindex @code{fpack-derived}
