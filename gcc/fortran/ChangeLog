@@ -1,3 +1,9 @@
+2011-05-15  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR middle-end/46500
+	* trans-types.c: Include "tm.h".
+	[0] (c_size_t_size): Remove.
+
 2011-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/48915
