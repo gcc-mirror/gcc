@@ -1,3 +1,8 @@
+2011-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-common.c (c_common_reswords): Reorder.
+	* c-common.h (rid): Likewise.
+
 2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.c (def_fn_type): Don't call build_function_type, call
@@ -48,6 +53,11 @@
 	* c-ppoutput.c (maybe_print_line): Always optimize newlines
 	for output size with -P.
 
+2011-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-common.c (struct c_common_resword): Add __underlying_type.
+	* c-common.h (enum rid): Add RID_UNDERLYING_TYPE.
+
 2011-04-20  Jim Meyering  <meyering@redhat.com>
 
 	* c-format.c (init_dollar_format_checking): Remove useless
@@ -56,15 +66,15 @@
 2011-04-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-objc.h (objc_get_interface_ivars): Removed.
-	(objc_detect_field_duplicates): New.	
+	(objc_detect_field_duplicates): New.
 	* stub-objc.c: Likewise.
-	
+
 2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* stub-objc.c (objc_declare_protocols): Renamed to
 	objc_declare_protocol.
 	* c-objc.h: Likewise.
-	
+
 2011-04-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* stub-objc.c (objc_declare_class): Updated argument name.
