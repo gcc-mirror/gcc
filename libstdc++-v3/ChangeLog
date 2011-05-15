@@ -1,3 +1,13 @@
+2011-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/c++config (_GLIBCXX_NOEXCEPT, _GLIBCXX_USE_NOEXCEPT):
+	Add.
+	* include/std/limits: Use the latter everywhere.
+	(numeric_limits<char16_t>, numeric_limits<char32_t>): Simplify
+	macro usages, the specializations exist only in C++0x mode.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error
+	line number.
+
 2011-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/26_numerics/headers/cmath/overloads_c++0x_neg.cc: Use
