@@ -1,5 +1,11 @@
 2011-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (floating point move splitters): Fix
+	usage of standard_80387_constant_p.
+	(ix86_preferred_reload_class): Ditto.
+
+2011-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*movdf_internal): Simplify insn condition.
 
 2011-05-14  Eric Botcazou  <ebotcazou@adacore.com>
