@@ -1,3 +1,8 @@
+2011-05-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray/image_index_2.f90: New.
+
 2011-05-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* g++.dg/cpp0x/override1.C: Move from inherit/virtual9.C.
