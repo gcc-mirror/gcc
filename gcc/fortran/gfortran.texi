@@ -2611,7 +2611,7 @@ standard error.  Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
 Default: off.
 @item @var{option}[3] @tab Unused.
 @item @var{option}[4] @tab If non zero, enable backtracing on run-time
-errors.  Default: enabled.
+errors.  Default: off.
 Note: Installs a signal handler and requires command-line
 initialization using @code{_gfortran_set_args}.
 @item @var{option}[5] @tab If non zero, supports signed zeros.

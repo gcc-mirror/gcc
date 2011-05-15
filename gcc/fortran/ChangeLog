@@ -1,3 +1,9 @@
+2011-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/48915
+	* gfortran.texi (_gfortran_set_options): Even though -fbacktrace
+	is now the default, the library defaults to backtracing disabled.
+
 2011-05-14  Tobias Burnus  <burnus@net-b.de>
 
 	* lang.opt (fdump-core): Re-add as ignored option
