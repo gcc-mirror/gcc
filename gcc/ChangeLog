@@ -1,3 +1,7 @@
+2011-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdf_internal): Simplify insn condition.
+
 2011-05-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-im.c (SET_ALWAYS_EXECUTED_IN): New macro.
