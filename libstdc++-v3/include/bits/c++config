@@ -99,6 +99,17 @@
 # endif
 #endif
 
+// Macro for noexcept, to support in mixed 03/0x mode.
+#ifndef _GLIBCXX_NOEXCEPT
+# ifdef __GXX_EXPERIMENTAL_CXX0X__
+#  define _GLIBCXX_NOEXCEPT noexcept
+#  define _GLIBCXX_USE_NOEXCEPT noexcept
+# else
+#  define _GLIBCXX_NOEXCEPT
+#  define _GLIBCXX_USE_NOEXCEPT throw()
+# endif
+#endif
+
 // Macro for extern template, ie controling template linkage via use
 // of extern keyword on template declaration. As documented in the g++
 // manual, it inhibits all implicit instantiations and is used
