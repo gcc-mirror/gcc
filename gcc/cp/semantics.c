@@ -5165,6 +5165,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_ENUM:
       return (type_code1 == ENUMERAL_TYPE);
 
+    case CPTK_IS_LITERAL_TYPE:
+      return (literal_type_p (type1));
+
     case CPTK_IS_POD:
       return (pod_type_p (type1));
 
@@ -5179,9 +5182,6 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_UNION:
       return (type_code1 == UNION_TYPE);
-
-    case CPTK_IS_LITERAL_TYPE:
-      return (literal_type_p (type1));
 
     default:
       gcc_unreachable ();
@@ -5227,11 +5227,11 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
 	      || kind == CPTK_IS_CONVERTIBLE_TO
 	      || kind == CPTK_IS_EMPTY
 	      || kind == CPTK_IS_ENUM
+	      || kind == CPTK_IS_LITERAL_TYPE
 	      || kind == CPTK_IS_POD
 	      || kind == CPTK_IS_POLYMORPHIC
 	      || kind == CPTK_IS_STD_LAYOUT
 	      || kind == CPTK_IS_TRIVIAL
-	      || kind == CPTK_IS_LITERAL_TYPE
 	      || kind == CPTK_IS_UNION);
 
   if (kind == CPTK_IS_CONVERTIBLE_TO)
@@ -5271,11 +5271,11 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
     case CPTK_IS_ABSTRACT:
     case CPTK_IS_EMPTY:
+    case CPTK_IS_LITERAL_TYPE:
     case CPTK_IS_POD:
     case CPTK_IS_POLYMORPHIC:
     case CPTK_IS_STD_LAYOUT:
     case CPTK_IS_TRIVIAL:
-    case CPTK_IS_LITERAL_TYPE:
       if (!check_trait_type (type1))
 	{
 	  error ("incomplete type %qT not allowed", type1);

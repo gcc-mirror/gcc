@@ -3274,8 +3274,11 @@ cp_parser_translation_unit (cp_parser* parser)
      __is_convertible_to ( type-id , type-id )     
      __is_empty ( type-id )
      __is_enum ( type-id )
+     __is_literal_type ( type-id )
      __is_pod ( type-id )
      __is_polymorphic ( type-id )
+     __is_std_layout ( type-id )
+     __is_trivial ( type-id )
      __is_union ( type-id )
 
    Objective-C++ Extension:
@@ -3601,12 +3604,12 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_CONVERTIBLE_TO:
 	case RID_IS_EMPTY:
 	case RID_IS_ENUM:
+	case RID_IS_LITERAL_TYPE:
 	case RID_IS_POD:
 	case RID_IS_POLYMORPHIC:
 	case RID_IS_STD_LAYOUT:
 	case RID_IS_TRIVIAL:
 	case RID_IS_UNION:
-	case RID_IS_LITERAL_TYPE:
 	  return cp_parser_trait_expr (parser, token->keyword);
 
 	/* Objective-C++ expressions.  */

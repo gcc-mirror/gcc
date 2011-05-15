@@ -1,3 +1,10 @@
+2011-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cxx-pretty-print.c: Update comment.
+	* semantics.c (trait_expr_value, finish_trait_expr):
+	Reorder the cases.
+	* parser.c (cp_parser_primary_expression): Likewise.
+
 2011-05-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/48994

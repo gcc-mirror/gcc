@@ -394,8 +394,11 @@ pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
      __is_convertible_to ( type-id , type-id )     
      __is_empty ( type-id )
      __is_enum ( type-id )
+     __is_literal_type ( type-id )
      __is_pod ( type-id )
      __is_polymorphic ( type-id )
+     __is_std_layout ( type-id )
+     __is_trivial ( type-id )
      __is_union ( type-id )  */
 
 static void
