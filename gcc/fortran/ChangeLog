@@ -1,3 +1,11 @@
+2011-05-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	actual argument is not an array; rank mismatch is diagnosted later.
+	* trans-decl.c (gfc_get_symbol_decl, gfc_trans_deferred_vars): Handle
+	scalar coarrays.
+	* trans-types.c (gfc_get_array_type_bounds): Ditto.
+
 2011-05-15  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR middle-end/46500

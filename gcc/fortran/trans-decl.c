@@ -1228,7 +1228,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	}
 
       /* Use a copy of the descriptor for dummy arrays.  */
-      if (sym->attr.dimension && !TREE_USED (sym->backend_decl))
+      if ((sym->attr.dimension || sym->attr.codimension)
+         && !TREE_USED (sym->backend_decl))
         {
 	  decl = gfc_build_dummy_array_decl (sym, sym->backend_decl);
 	  /* Prevent the dummy from being detected as unused if it is copied.  */
@@ -1316,7 +1317,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	DECL_IGNORED_P (decl) = 1;
     }
 
-  if (sym->attr.dimension)
+  if (sym->attr.dimension || sym->attr.codimension)
     {
       /* Create variables to hold the non-constant bits of array info.  */
       gfc_build_qualified_array (decl, sym);
@@ -3435,7 +3436,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       if (sym->assoc)
 	continue;
 
-      if (sym->attr.dimension)
+      if (sym->attr.dimension || sym->attr.codimension)
 	{
 	  switch (sym->as->type)
 	    {
