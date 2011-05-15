@@ -1,3 +1,8 @@
+2011-05-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/48994
+	* parser.c (cp_parser_perform_range_for_lookup): Call complete_type.
+
 2011-05-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement final on class.

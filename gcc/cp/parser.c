@@ -8682,7 +8682,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
 static tree
 cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 {
-  if (!COMPLETE_TYPE_P (TREE_TYPE (range)))
+  if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (range))))
     {
       error ("range-based %<for%> expression of type %qT "
 	     "has incomplete type", TREE_TYPE (range));
