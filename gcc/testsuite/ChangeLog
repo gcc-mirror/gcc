@@ -1,3 +1,8 @@
+2011-05-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/48994
+	* g++.dg/cpp0x/range-for18.C: New.
+
 2011-05-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
