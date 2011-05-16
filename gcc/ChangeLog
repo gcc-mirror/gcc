@@ -1,3 +1,8 @@
+2011-05-16  Revital Eres  <revital.eres@linaro.org>
+
+	* modulo-sched.c (doloop_register_get): Check !DEBUG_INSN_P
+	first.
+
 2011-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (floating point move splitters): Fix
