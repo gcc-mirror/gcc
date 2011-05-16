@@ -1,5 +1,10 @@
 2011-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/utility: Simplify the last commit, the whole
+	std::get code is C++0x only.
+
+2011-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/utility (get(std::pair<>&&)): Add.
 	* include/bits/stl_pair.h (pair::swap(pair&),
 	swap(pair<>&, pair<>&)): Use noexcept.
