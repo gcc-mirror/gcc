@@ -316,7 +316,7 @@ doloop_register_get (rtx head ATTRIBUTE_UNUSED, rtx tail ATTRIBUTE_UNUSED)
                              : prev_nondebug_insn (tail));
 
   for (insn = head; insn != first_insn_not_to_check; insn = NEXT_INSN (insn))
-    if (reg_mentioned_p (reg, insn) && !DEBUG_INSN_P (insn))
+    if (!DEBUG_INSN_P (insn) && reg_mentioned_p (reg, insn))
       {
         if (dump_file)
         {
