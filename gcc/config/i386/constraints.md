@@ -116,7 +116,7 @@
  "@internal Any integer register when integer XFmode moves are enabled.")
 
 (define_constraint "z"
-  "@internal Yada, yada, yada..."
+  "@internal Constant call address operand."
   (match_operand 0 "constant_call_address_operand"))
 
 ;; Integer constant constraints.
