@@ -1,3 +1,8 @@
+2011-05-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48969
+	* pt.c (deduction_tsubst_fntype): Use a VEC initially.
+
 2011-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cxx-pretty-print.c: Update comment.
