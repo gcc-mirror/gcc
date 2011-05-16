@@ -1,3 +1,9 @@
+2011-05-16  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (_gfortran_set_options): Add GFC_STD_F2008_TR.
+	(Fortran 2008 status): Multi-image support for coarrays.
+	(TR 19113 status): New section.
+
 2011-05-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
