@@ -22073,23 +22073,25 @@ ix86_split_call_vzeroupper (rtx insn, rtx vzeroupper)
 /* Output the assembly for a call instruction.  */
 
 const char *
-ix86_output_call_insn (rtx insn, rtx call_op, int addr_op)
+ix86_output_call_insn (rtx insn, rtx call_op)
 {
   bool direct_p = constant_call_address_operand (call_op, Pmode);
   bool seh_nop_p = false;
-
-  gcc_assert (addr_op == 0 || addr_op == 1);
+  const char *xasm;
 
   if (SIBLING_CALL_P (insn))
     {
       if (direct_p)
-	return addr_op ? "jmp\t%P1" : "jmp\t%P0";
+	xasm = "jmp\t%P0";
       /* SEH epilogue detection requires the indirect branch case
 	 to include REX.W.  */
       else if (TARGET_SEH)
-	return addr_op ? "rex.W jmp %A1" : "rex.W jmp %A0";
+	xasm = "rex.W jmp %A0";
       else
-	return addr_op ? "jmp\t%A1" : "jmp\t%A0";
+	xasm = "jmp\t%A0";
+
+      output_asm_insn (xasm, &call_op);
+      return "";
     }
 
   /* SEH unwinding can require an extra nop to be emitted in several
@@ -22123,19 +22125,16 @@ ix86_output_call_insn (rtx insn, rtx call_op, int addr_op)
     }
 
   if (direct_p)
-    {
-      if (seh_nop_p)
-	return addr_op ? "call\t%P1\n\tnop" : "call\t%P0\n\tnop";
-      else
-	return addr_op ? "call\t%P1" : "call\t%P0";
-    }
+    xasm = "call\t%P0";
   else
-    {
-      if (seh_nop_p)
-	return addr_op ? "call\t%A1\n\tnop" : "call\t%A0\n\tnop";
-      else
-	return addr_op ? "call\t%A1" : "call\t%A0";
-    }
+    xasm = "call\t%A0";
+
+  output_asm_insn (xasm, &call_op);
+
+  if (seh_nop_p)
+    return "nop";
+
+  return "";
 }
 
 /* Clear stack slot assignments remembered from previous functions.

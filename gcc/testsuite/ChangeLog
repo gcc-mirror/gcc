@@ -1,3 +1,10 @@
+2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-vzeroupper-16.c: Update scan-assembler-times
+	scan pattern.
+	* gcc.target/i386/avx-vzeroupper-17.c: Ditto.
+	* gcc.target/i386/avx-vzeroupper-18.c: Ditto.
+
 2011-05-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/48994

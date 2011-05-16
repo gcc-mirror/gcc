@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;     B     H           T  W
-;;;           h jk          vw  z
+;;;           h jk          vw
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
@@ -114,6 +114,10 @@
 (define_register_constraint "Yx"
  "optimize_function_for_speed_p (cfun) ? GENERAL_REGS : NO_REGS"
  "@internal Any integer register when integer XFmode moves are enabled.")
+
+(define_constraint "z"
+  "@internal Yada, yada, yada..."
+  (match_operand 0 "constant_call_address_operand"))
 
 ;; Integer constant constraints.
 (define_constraint "I"
