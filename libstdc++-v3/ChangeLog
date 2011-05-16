@@ -1,3 +1,18 @@
+2011-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/utility (get(std::pair<>&&)): Add.
+	* include/bits/stl_pair.h (pair::swap(pair&),
+	swap(pair<>&, pair<>&)): Use noexcept.
+	* include/bits/random.h (discard_block_engine<>::base,
+	independent_bits_engine<>::base, shuffle_order_engine<>::base,
+	random_device::entropy): Use noexcept.
+	* include/std/array: Use noexcept where appropriate.
+	(get(array<>&&)): Add.
+	* testsuite/23_containers/array/requirements/get.cc: New.
+	* testsuite/20_util/pair/get.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Tweak dg-error
+	line number.
+
 2011-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/c++config (_GLIBCXX_NOEXCEPT, _GLIBCXX_USE_NOEXCEPT):
