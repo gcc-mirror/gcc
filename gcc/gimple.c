@@ -3817,8 +3817,7 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
 	tree f1, f2;
 
 	/* The struct tags shall compare equal.  */
-	if (!compare_type_names_p (TYPE_MAIN_VARIANT (t1),
-				   TYPE_MAIN_VARIANT (t2), false))
+	if (!compare_type_names_p (t1, t2, false))
 	  goto different_types;
 
 	/* For aggregate types, all the fields must be the same.  */
@@ -4193,7 +4192,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       unsigned nf;
       tree f;
 
-      v = iterative_hash_name (TYPE_NAME (TYPE_MAIN_VARIANT (type)), v);
+      v = iterative_hash_name (TYPE_NAME (type), v);
 
       for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
 	{

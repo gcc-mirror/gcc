@@ -1,5 +1,11 @@
 2011-05-16  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (gimple_types_compatible_p_1): Use names of the
+	type itself, not its main variant.
+	(iterative_hash_gimple_type): Likewise.
+
+2011-05-16  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.c (iterative_hash_gimple_type): Re-instantiate
 	change to always visit pointer target and function result
 	and argument types.
