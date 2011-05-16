@@ -1,3 +1,17 @@
+2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movxf_internal): Disable CONST_DOUBLE
+	optimization for CM_MEDIUM and CM_LARGE code models.  Fix usage
+	of standard_80387_constant_p.
+	(*movxf_internal_nointeger): Ditto.
+	(*movdf_internal): Remove dead code-size optimization.
+	(*movdf_internal_rex64): Fix usage of standard_80387_constant_p.
+	(*movdf_internal_nointeger): Ditto.
+	(*movsf_internal): Ditto.
+	(floating point move splitters): Ditto.
+	* config/i386/constraints.md (G): Ditto.
+	* config/i386/i386.c (ix86_preferred_reload_class): Ditto.
+
 2011-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48975
