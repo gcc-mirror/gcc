@@ -1,3 +1,10 @@
+2011-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (struct type_hash_pair): New type.
+	(type_hash_pair_compare): New function.
+	(iterative_hash_gimple_type): Mix in SCC member hashes in
+	hash-order.
+
 2011-05-16  Revital Eres  <revital.eres@linaro.org>
 
 	* modulo-sched.c (doloop_register_get): Check !DEBUG_INSN_P

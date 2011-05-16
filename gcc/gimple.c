@@ -4056,6 +4056,25 @@ iterative_hash_name (tree name, hashval_t v)
   return iterative_hash_object (IDENTIFIER_HASH_VALUE (name), v);
 }
 
+/* A type, hashvalue pair for sorting SCC members.  */
+
+struct type_hash_pair {
+  tree type;
+  hashval_t hash;
+};
+
+/* Compare two type, hashvalue pairs.  */
+
+static int
+type_hash_pair_compare (const void *p1_, const void *p2_)
+{
+  const struct type_hash_pair *p1 = (const struct type_hash_pair *) p1_;
+  const struct type_hash_pair *p2 = (const struct type_hash_pair *) p2_;
+  if (p1->hash == p2->hash)
+    return TYPE_UID (p1->type) - TYPE_UID (p2->type);
+  return p1->hash - p2->hash;
+}
+
 /* Returning a hash value for gimple type TYPE combined with VAL.
    SCCSTACK, SCCSTATE and SCCSTATE_OBSTACK are state for the DFS walk done.
 
@@ -4220,22 +4239,73 @@ iterative_hash_gimple_type (tree type, hashval_t val,
   if (state->low == state->dfsnum)
     {
       tree x;
+      struct sccs *cstate;
+      struct tree_int_map *m;
 
       /* Pop off the SCC and set its hash values.  */
-      do
+      x = VEC_pop (tree, *sccstack);
+      cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
+      cstate->on_sccstack = false;
+      /* Optimize SCC size one.  */
+      if (x == type)
 	{
-	  struct sccs *cstate;
-	  struct tree_int_map *m = ggc_alloc_cleared_tree_int_map ();
-	  x = VEC_pop (tree, *sccstack);
-	  cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
-	  cstate->on_sccstack = false;
+	  m = ggc_alloc_cleared_tree_int_map ();
 	  m->base.from = x;
 	  m->to = cstate->u.hash;
 	  slot = htab_find_slot (type_hash_cache, m, INSERT);
 	  gcc_assert (!*slot);
 	  *slot = (void *) m;
 	}
-      while (x != type);
+      else
+	{
+	  unsigned first, i, size, j;
+	  struct type_hash_pair *pairs;
+	  /* Pop off the SCC and build an array of type, hash pairs.  */
+	  first = VEC_length (tree, *sccstack) - 1;
+	  while (VEC_index (tree, *sccstack, first) != type)
+	    --first;
+	  size = VEC_length (tree, *sccstack) - first + 1;
+	  pairs = XALLOCAVEC (struct type_hash_pair, size);
+	  i = 0;
+	  pairs[i].type = x;
+	  pairs[i].hash = cstate->u.hash;
+	  do
+	    {
+	      x = VEC_pop (tree, *sccstack);
+	      cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
+	      cstate->on_sccstack = false;
+	      ++i;
+	      pairs[i].type = x;
+	      pairs[i].hash = cstate->u.hash;
+	    }
+	  while (x != type);
+	  gcc_assert (i + 1 == size);
+	  /* Sort the arrays of type, hash pairs so that when we mix in
+	     all members of the SCC the hash value becomes independent on
+	     the order we visited the SCC.  Disregard hashes equal to
+	     the hash of the type we mix into because we cannot guarantee
+	     a stable sort for those across different TUs.  */
+	  qsort (pairs, size, sizeof (struct type_hash_pair),
+		 type_hash_pair_compare);
+	  for (i = 0; i < size; ++i)
+	    {
+	      hashval_t hash;
+	      m = ggc_alloc_cleared_tree_int_map ();
+	      m->base.from = pairs[i].type;
+	      hash = pairs[i].hash;
+	      /* Skip same hashes.  */
+	      for (j = i + 1; j < size && pairs[j].hash == pairs[i].hash; ++j)
+		;
+	      for (; j < size; ++j)
+		hash = iterative_hash_hashval_t (pairs[j].hash, hash);
+	      for (j = 0; pairs[j].hash != pairs[i].hash; ++j)
+		hash = iterative_hash_hashval_t (pairs[j].hash, hash);
+	      m->to = hash;
+	      slot = htab_find_slot (type_hash_cache, m, INSERT);
+	      gcc_assert (!*slot);
+	      *slot = (void *) m;
+	    }
+	}
     }
 
   return iterative_hash_hashval_t (v, val);
