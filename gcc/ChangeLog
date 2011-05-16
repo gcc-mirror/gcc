@@ -1,3 +1,9 @@
+2011-05-16  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/48677
+	* cppspec.c (lang_specific_driver): Set new_decoded_options[0]
+	from decoded_options[0], not from itself.
+
 2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movxf_internal): Disable CONST_DOUBLE
