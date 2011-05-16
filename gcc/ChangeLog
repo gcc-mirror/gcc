@@ -1,3 +1,9 @@
+2011-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (iterative_hash_gimple_type): Re-instantiate
+	change to always visit pointer target and function result
+	and argument types.
+
 2011-05-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48999
