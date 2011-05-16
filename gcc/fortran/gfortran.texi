@@ -772,6 +772,7 @@ compile option was used.
 @menu
 * Fortran 2003 status::
 * Fortran 2008 status::
+* TR 29113 status::
 @end menu
 
 @node Fortran 2003 status
@@ -953,8 +954,8 @@ International Organization for Standardization and the International
 Electrotechnical Commission (IEC).  This group is known as
 @uref{http://www.nag.co.uk/sc22wg5/, WG5}.
 
-The GNU Fortran supports several of the new features of Fortran 2008; the
-@uref{http://gcc.gnu.org/wiki/Fortran2008Status, wiki} has some information
+The GNU Fortran compiler supports several of the new features of Fortran 2008;
+the @uref{http://gcc.gnu.org/wiki/Fortran2008Status, wiki} has some information
 about the current Fortran 2008 implementation status.  In particular, the
 following is implemented.
 
@@ -1002,8 +1003,8 @@ the intrinsic module @code{ISO_FORTRAN_ENV}.
 @code{ISO_C_BINDINGS} and @code{COMPILER_VERSION} and @code{COMPILER_OPTIONS}
 of @code{ISO_FORTRAN_ENV}.
 
-@item Experimental coarray support (for one image only), use the
-@option{-fcoarray=single} flag to enable it.
+@item Experimental coarray, use the @option{-fcoarray=single} or
+@option{-fcoarray=lib} flag to enable it.
 
 @item The @code{BLOCK} construct is supported.
 
@@ -1044,6 +1045,23 @@ now also takes a @code{RADIX} argument; intrinsic types are supported
 for @code{TYPE}(@var{intrinsic-type-spec}); multiple type-bound procedures
 can be declared in a single @code{PROCEDURE} statement; implied-shape
 arrays are supported for named constants (@code{PARAMETER}).
+@end itemize
+
+
+
+@node TR 29113 status
+@section Fortran 29113 status
+
+GNU Fortran supports some of the new features of the technical report (TR)
+29113 on Further Interoperability of Fortran with C.
+@uref{http://gcc.gnu.org/wiki/Fortran2008Status, wiki} has some information
+about the current TR 29113 implementation status.  In particular, the
+following is implemented.
+
+@itemize
+@item The @option{-std=f2008} option.
+@item The OPTIONAL attribute is now allowed for dummy arguments of
+BIND(C) procedures.
 @end itemize
 
 
@@ -2601,10 +2619,11 @@ if e.g. an input-output edit descriptor is invalid in a given standard.
 Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
 @code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4), @code{GFC_STD_F95}
 (8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU} (32),
-@code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128), and
-@code{GFC_STD_F2008_OBS} (256).  Default: @code{GFC_STD_F95_OBS
-| GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003 | GFC_STD_F2008
-| GFC_STD_F2008_OBS | GFC_STD_F77 | GFC_STD_GNU | GFC_STD_LEGACY}.
+@code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128), 
+@code{GFC_STD_F2008_OBS} (256) and GFC_STD_F2008_TR (512). Default:
+@code{GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003
+| GFC_STD_F2008 | GFC_STD_F2008_TR | GFC_STD_F2008_OBS | GFC_STD_F77
+| GFC_STD_GNU | GFC_STD_LEGACY}.
 @item @var{option}[1] @tab Standard-warning flag; prints a warning to
 standard error.  Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
 @item @var{option}[2] @tab If non zero, enable pedantic checking.
@@ -2627,7 +2646,7 @@ Default: enabled.  See -frange-check (@pxref{Code Gen Options}).
 @item @emph{Example}:
 @smallexample
   /* Use gfortran 4.7 default options.  */
-  static int options[] = @{68, 255, 0, 0, 1, 1, 0, 1@};
+  static int options[] = @{68, 511, 0, 0, 1, 1, 0, 1@};
   _gfortran_set_options (8, &options);
 @end smallexample
 @end table
