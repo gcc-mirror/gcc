@@ -1,3 +1,9 @@
+2011-05-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/45099
+	* config/avr/avr.c (avr_function_arg_advance): Error if a fixed
+	register is needed for a function argument.
+
 2011-05-16  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (struct type_hash_pair): New type.

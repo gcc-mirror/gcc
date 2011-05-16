@@ -1796,6 +1796,20 @@ avr_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       cfun->machine->sibcall_fails = 1;
     }
 
+  /* Test if all registers needed by the ABI are actually available.  If the
+     user has fixed a GPR needed to pass an argument, an (implicit) function
+     call would clobber that fixed register.  See PR45099 for an example.  */
+  
+  if (cum->regno >= 0)
+    {
+      int regno;
+
+      for (regno = cum->regno; regno < cum->regno + bytes; regno++)
+        if (fixed_regs[regno])
+          error ("Register %s is needed to pass a parameter but is fixed",
+                 reg_names[regno]);
+    }
+      
   if (cum->nregs <= 0)
     {
       cum->nregs = 0;
