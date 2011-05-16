@@ -1,3 +1,54 @@
+2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (z): New constraint.
+	* config/i386/i386.c (c): New mode attribute.
+	(*call): Merge insn pattern from *call_0, *call_1, *call_1_rex64 and
+	*call_1_rex64_large patterns using "P" mode iterator. Use "<c>zm"
+	constraint for operand 0.
+	(*call_vzeroupper): Ditto.
+	(*call_rex64_ms_sysv): Ditto.  Use "rzm" constraint for operand 0.
+	(*call_rex64_ms_sysv_vzeroupper): Ditto.
+	(*call_pop): Merge insn pattern from *call_pop_0 and *call_pop_1.
+	Use "lzm" constraint for operand 0.
+	(*call_pop_vzeroupper): Ditto.
+	(*sibcall): Merge insn pattern from *sibcall_0, *sibcall_1 and
+	*sibcall_1_rex64 patterns using "P" mode iterator.  Use "Uz"
+	constraint for operand 0.
+	(*sibcall_vzeroupper): Ditto.
+	(*sibcall_rex64_ms_sysv): Ditto.
+	(*sibcall_rex64_ms_sysv_vzeroupper): Ditto.
+	(*sibcall_pop): Merge insn pattern from *sibcall_pop_0 and
+	*sibcall_pop_1.  Use "Uz" constraint for operand 0.
+	(*sibcall_pop_vzeroupper): Ditto.
+	(*call_value): Merge insn pattern from *call_value_0, *call_value_1,
+	*call_value_1_rex64 and *call_value_1_rex64_large patterns using "P"
+	mode iterator.  Use "<c>zm" constraint for operand 1.
+	(*call_value_vzeroupper): Ditto.
+	(*call_value_rex64_ms_sysv): Ditto.  Use "rzm" constraint
+	for operand 0.
+	(*call_value_rex64_ms_sysv_vzeroupper): Ditto.
+	(*call_value_pop): Merge insn pattern from *call_value_pop_0 and
+	*call_value_pop_1.  Use "lzm" constraint for operand 1.
+	(*call_value_pop_vzeroupper): Ditto.
+	(*sibcall_value): Merge insn pattern from *sibcall_value_0,
+	*sibcall_value_1 and *sibcall_value_1_rex64 patterns using "P"
+	mode iterator.  Use "Uz" constraint for operand 1.
+	(*sibcall_value_vzeroupper): Ditto.
+	(*sibcall_value_rex64_ms_sysv): Ditto.
+	(*sibcall_value_rex64_ms_sysv_vzeroupper): Ditto.
+	(*sibcall_value_pop): Rename from *sibcall_pop_1.  Use "Uz"
+	constraint for operand 1.
+	(*sibcall_value_pop_vzeroupper): Ditto.
+	(*tls_global_dynamic_64): Use constant_call_address_operand predicate
+	and "z" constraint for operand 2.
+	(*tls_global_dynamic_32_gnu): Ditto.
+	(*tls_local_dynamic_base_32_gnu): Ditto.
+	(*tls_local_dynamic_base_64): Ditto.
+	(*tls_local_dynamic_32_once): Ditto.
+	* config/i386/i386.c (ix86_output_call_insn): Remove int_addr argument.
+	Update all callers.
+	* config/i386/i386-protos.h (ix86_output_call_insn): Update prototype.
+
 2011-05-16  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_types_compatible_p_1): Use names of the
@@ -6,9 +57,8 @@
 
 2011-05-16  Richard Guenther  <rguenther@suse.de>
 
-	* gimple.c (iterative_hash_gimple_type): Re-instantiate
-	change to always visit pointer target and function result
-	and argument types.
+	* gimple.c (iterative_hash_gimple_type): Re-instantiate change to
+	always visit pointer target and function result and argument types.
 
 2011-05-16  Jason Merrill  <jason@redhat.com>
 
@@ -33,19 +83,17 @@
 
 	* gimple.c (struct type_hash_pair): New type.
 	(type_hash_pair_compare): New function.
-	(iterative_hash_gimple_type): Mix in SCC member hashes in
-	hash-order.
+	(iterative_hash_gimple_type): Mix in SCC member hashes in hash-order.
 
 2011-05-16  Revital Eres  <revital.eres@linaro.org>
 
-	* modulo-sched.c (doloop_register_get): Check !DEBUG_INSN_P
-	first.
+	* modulo-sched.c (doloop_register_get): Check !DEBUG_INSN_P first.
 
 2011-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (floating point move splitters): Fix
 	usage of standard_80387_constant_p.
-	(ix86_preferred_reload_class): Ditto.
+	* config/i386/i386.c (ix86_preferred_reload_class): Ditto.
 
 2011-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -56,25 +104,6 @@
 	* tree-ssa-loop-im.c (SET_ALWAYS_EXECUTED_IN): New macro.
 	(fill_always_executed_in): Use [SET_]ALWAYS_EXECUTED_IN.
 	(tree_ssa_lim_finalize): Likewise.
-
-2011-05-14  Uros Bizjak  <ubizjak@gmail.com>
-
-	* config/i386/constraint.md (Yd, Yx): New register constraints.
-	* config/i386/i386.md (*pushdf): Merge with *pushdf_nointeger.  Use
-	Yd conditional register constraint.
-	(*movtf_internal): Use standard_sse_constant_opcode.
-	(*movxf_internal): Merge with *movxf_internal_nointeger.  Use
-	Yx conditional register constraint.
-	(*movdf_internal): Merge with *movdf_internal_nointeger.  Use
-	Yd conditional register constraint.  Use standard_sse_constant_p to
-	check for valid SSE constants and call standard_sse_constant_opcode to
-	output SSE insn.
-	(*movsf_internal): Use standard_sse_constant_p to check for valid SSE
-	constants and call standard_sse_constant_opcode to output SSE insn.
-	* config/i386/i386.c (ix86_option_ovverride_internal): Set
-	TARGET_INTEGER_DFMODE_MOVES for 64bit targets.  Clear it when
-	optimize_size is set.
-	(standard_sse_constant_opcode): Output conditional AVX insn templates.
 
 2011-05-14  Uros Bizjak  <ubizjak@gmail.com>
 

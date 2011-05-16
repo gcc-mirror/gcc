@@ -15,4 +15,4 @@ foo (void)
 }
 
 /* { dg-final { scan-assembler-times "avx_vzeroupper" 1 } } */
-/* { dg-final { scan-assembler-times "\\*call_value_1_rex64_ms_sysv" 1 } } */
+/* { dg-final { scan-assembler-times "\\*call_value_rex64_ms_sysv" 1 } } */
