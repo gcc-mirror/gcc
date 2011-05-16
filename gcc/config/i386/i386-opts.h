@@ -47,6 +47,12 @@ enum calling_abi
   MS_ABI = 1
 };
 
+enum fpmath_unit
+{
+  FPMATH_387 = 1,
+  FPMATH_SSE = 2
+};
+
 enum tls_dialect
 {
   TLS_DIALECT_GNU,

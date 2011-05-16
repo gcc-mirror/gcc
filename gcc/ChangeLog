@@ -1,5 +1,37 @@
 2011-05-16  Joseph Myers  <joseph@codesourcery.com>
 
+	* opts-common.c (opt_enum_arg_to_value): New.
+	* opts.h (opt_enum_arg_to_value): Declare.
+	* config/i386/i386.opt (fpmath): Remove.
+	(mfpmath=): Use Enum, Init and Save.
+	(fpmath_unit): New Enum and EnumValue entries.
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Update field
+	name for function fpmath state.
+	* config/i386/i386-opts.h (enum fpmath_unit): Move from i386.h.
+	* config/i386/i386.c: Include diagnostic.h.
+	(ix86_fpmath, IX86_FUNCTION_SPECIFIC_FPMATH): Remove.
+	(ix86_target_string): Take enum fpmath_unit value instead of
+	string.
+	(ix86_debug_options): Update call to ix86_target_string.
+	(ix86_option_override_internal): Don't process fpmath strings
+	here.
+	(x86_function_specific_save, ix86_function_specific_restore):
+	Don't handle fpmath state specially.
+	(ix86_function_specific_print): Pass fpmath state to
+	ix86_target_string instead of printing in this function.
+	(ix86_valid_target_attribute_inner_p): Take gcc_options pointer.
+	Handle enum attributes.
+	(IX86_ATTR_ENUM, ix86_opt_enum): New.
+	(ix86_valid_target_attribute_tree): Update option_strings
+	handling.  Handle fpmath as enum option.
+	(ix86_can_inline_p): Update field names for function fpmath state.
+	(ix86_expand_builtin): Update call to ix86_target_string.
+	* config/i386/i386.h (enum fpmath_unit): Move to i386-opts.h.
+	(ix86_fpmath): Remove.
+	* config/i386/t-i386 (i386.o): Update dependencies.
+
+2011-05-16  Joseph Myers  <joseph@codesourcery.com>
+
 	PR preprocessor/48677
 	* cppspec.c (lang_specific_driver): Set new_decoded_options[0]
 	from decoded_options[0], not from itself.
