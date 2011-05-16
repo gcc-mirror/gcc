@@ -662,6 +662,11 @@ copy_statement_list (tree *tp)
   for (; !tsi_end_p (oi); tsi_next (&oi))
     {
       tree stmt = tsi_stmt (oi);
+      if (TREE_CODE (stmt) == STATEMENT_LIST)
+	/* This copy is not redundant; tsi_link_after will smash this
+	   STATEMENT_LIST into the end of the one we're building, and we
+	   don't want to do that with the original.  */
+	copy_statement_list (&stmt);
       tsi_link_after (&ni, stmt, TSI_CONTINUE_LINKING);
     }
 }

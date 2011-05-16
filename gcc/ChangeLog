@@ -1,3 +1,8 @@
+2011-05-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48999
+	* tree-inline.c (copy_statement_list): Put back recursion.
+
 2011-05-16  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/27663
