@@ -1,5 +1,13 @@
 2011-05-16  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/27663
+	PR target/41076
+	* config/avr/predicates.md (const_8_16_24_operand): New predicate.
+	* config/avr/avr.md ("*ior<mode>qi.byte0",
+	"*ior<mode>qi.byte1-3"): New define_insn_and_split patterns.
+
+2011-05-16  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/45099
 	* config/avr/avr.c (avr_function_arg_advance): Error if a fixed
 	register is needed for a function argument.
