@@ -1,4 +1,11 @@
-2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
+2011-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* ipa-inline-analysis.c (inline_node_duplication_hook): Initialize
+	info->entry with 0
+	* tree-inline.c (maybe_inline_call_in_expr):  Initialize
+	id.transform_lang_insert_block with NULL.
+
+2011-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.h (output_fix_trunc): Change arg 3 to bool.
 	(output_fp_compare): Change args 3 and 4 to bool.
