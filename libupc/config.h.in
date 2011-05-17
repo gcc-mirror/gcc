@@ -35,11 +35,8 @@
 /* Define if UPC GUM debug server is supported */
 #undef GUPCR_HAVE_GUM_DEBUG
 
-/* Whether UPC shared pointers use the 'packed' representation */
+/* Whether UPC pointers-to-shared use the 'packed' representation */
 #undef GUPCR_PTS_PACKED_REP
-
-/* The (optional) field specifier (eg, ": 48") for the 'phase' field */
-#undef GUPCR_PTS_PHASE_FIELD
 
 /* Size of shared pointer's phase field (in bits) */
 #undef GUPCR_PTS_PHASE_SIZE
@@ -50,17 +47,11 @@
 /* Whether UPC shared pointers use the 'struct' representation */
 #undef GUPCR_PTS_STRUCT_REP
 
-/* The (optional) field specifier (eg, ": 48") for the 'thread' field */
-#undef GUPCR_PTS_THREAD_FIELD
-
 /* Size of shared pointer's thread field (in bits) */
 #undef GUPCR_PTS_THREAD_SIZE
 
 /* The data type of the 'thread' field in a UPC shared pointer */
 #undef GUPCR_PTS_THREAD_TYPE
-
-/* The (optional) field specifier (eg, ": 48") for the 'vaddr' field */
-#undef GUPCR_PTS_VADDR_FIELD
 
 /* Whether the 'vaddr' field comes first (ie, [[vaddr,thread,phase]]) */
 #undef GUPCR_PTS_VADDR_FIRST

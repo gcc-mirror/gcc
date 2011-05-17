@@ -686,9 +686,7 @@ fi,
 objc_boehm_gc='')
 
 case ,${enable_languages}, in
-   *,upc,) 
-     lang_upc_enabled=1
-     ;;
+   *,upc,) lang_upc_enabled="yes" ;;
    *) ;;
 esac
 
@@ -697,126 +695,88 @@ AS_HELP_STRING(
   [--with-upc-pts={struct,packed}],
   [choose the representation of a UPC pointer-to-shared]),
 [
-case "$withval" in
-  packed)
-    upc_pts_rep="packed"
-    AC_DEFINE(UPC_PTS_PACKED_REP,1,
-	[UPC packed PTS representation supported.])
-    ;;
-  struct)
-    upc_pts_rep="struct"
-    AC_DEFINE(UPC_PTS_STRUCT_REP,1,
-	[UPC struct PTS representation supported.])
-    ;;
-  *) AC_MSG_ERROR([$withval is an invalid option to --with-upc-pts])
-    ;;
-esac
+if test x"$lang_upc_enabled" = x"yes" ; then
+  case "$withval" in
+    packed|struct) upc_pts_rep="$withval" ;;
+    *) AC_MSG_ERROR([$withval is an invalid option to --with-upc-pts])
+      ;;
+  esac
+else
+  AC_MSG_WARN([--with-upc-pts is allowed only when UPC
+support has been enabled])
+fi
 ],
 [
-if test -n "$lang_upc_enabled"; then
+if test x"$lang_upc_enabled" = x"yes" ; then
   upc_pts_rep="packed"
-  AC_DEFINE(UPC_PTS_PACKED_REP,1,
-	    [UPC packed PTS representation supported.])
 fi
 ])
-AC_SUBST(upc_pts_rep)
+
 
 # Perl is required for checking pts representation
 AC_CHECK_PROG(PERL, perl, perl)
 
-AC_MSG_CHECKING([for UPC shared pointer address field position])
 AC_ARG_WITH([upc-pts-vaddr-order],
 AS_HELP_STRING(
 [--with-upc-pts-vaddr-order={last,first}],
-[choose position of the address field in UPC shared pointer representation]),
+[choose position of the address field in UPC pointer-to-shared representation]),
 [
+if test x"$lang_upc_enabled" = x"yes" ; then
   upc_vaddr_order="$withval"
-  if test "$withval" != "last" &&
-     test "$withval" != "first"; then
-       AC_MSG_ERROR([$withval is an invalid option to --with-upc-pts-vaddr-order])
-  fi
+  case "$upc_vaddr_order" in
+    first|last) ;;
+    *) AC_MSG_ERROR(
+	 [$withval is an invalid option to --with-upc-pts-vaddr-order]) ;;
+  esac
+else
+  AC_MSG_WARN([--upc-pts-vaddr-order is allowed only when UPC
+support has been enabled])
+fi
 ],
 [
-  upc_vaddr_order="first"
+if test x"$lang_upc_enabled" = x"yes" ; then
+  upc_vaddr_order="last"
+fi
 ])
-AC_DEFINE_UNQUOTED(UPC_PTS_VADDR_FIRST,`if test x"$upc_vaddr_order" = x"first"; then echo 1; else echo 0; fi`,
-    [UPC shared pointer address field position.])
 
-AC_MSG_RESULT($upc_vaddr_order)
-
-AC_MSG_CHECKING([for UPC pointer-to-shared packed representation])
-AC_ARG_WITH([upc-packed-bits],
+AC_ARG_WITH([packed-upc-pts-bits],
 AS_HELP_STRING(
-[--with-upc-packed-bits=phase,thread,vaddr],
+[--with-packed-upc-pts-bits=phase,thread,vaddr],
 [choose bit distribution in packed UPC pointer-to-shared representation]),
 [
-if test x"$upc_pts_rep" = x"packed"; then
-  upc_packed_bits="$withval";
-  UPC_PTS_SIZE=64
-  UPC_PTS_PHASE_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
-                                                print $1 if ($1+$2+$3 == 64) && $1>=1;'`
-  UPC_MAX_BLOCK_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
-                                                print 1<<$1;'`
-  UPC_PTS_THREAD_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
-                                                print $2 if ($1+$2+$3 == 64) && $2>=1;'`
-  # Limit UPC_MAX_THREADS to max. positive 32-bit integer.
-  UPC_MAX_THREADS=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/; 
-                                                print (1<<(($2 > 31) ? 31 : $2)) - 1;'`
-  UPC_PTS_VADDR_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
-                                                print $3 if ($1+$2+$3 == 64) && $3>=20;'`
-  if test -z $UPC_PTS_PHASE_SIZE -o \
-          -z $UPC_PTS_THREAD_SIZE -o \
-          -z $UPC_PTS_VADDR_SIZE ; then
-    AC_MSG_ERROR([--with-upc-packed-bits=phase,thread,vaddr requires phase+thread+vaddr=64 and phase >= 1 and thread >= 1 and vaddr >= 20])
+if test x"$lang_upc_enabled" = x"yes" ; then
+  if test x"$upc_pts_rep" = x"packed"; then
+    upc_packed_bits="$withval";
+    UPC_PTS_PHASE_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+						  print $1 if ($1+$2+$3 == 64) && $1>=1;'`
+    UPC_PTS_THREAD_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+						  print $2 if ($1+$2+$3 == 64) && $2>=1;'`
+    UPC_PTS_VADDR_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
+						  print $3 if ($1+$2+$3 == 64) && $3>=20;'`
+    if test -z $UPC_PTS_PHASE_SIZE -o \
+	    -z $UPC_PTS_THREAD_SIZE -o \
+	    -z $UPC_PTS_VADDR_SIZE ; then
+      AC_MSG_ERROR([--with-packed-upc-pts-bits=phase,thread,vaddr requires
+  phase+thread+vaddr=64 and phase >= 1 and thread >= 1 and vaddr >= 20])
+    fi
+  else
+    AC_MSG_ERROR([--with-packed-upc-pts-bits is only supported for
+the packed UPC pointer-to-shared representation])
   fi
 else
-  AC_MSG_ERROR([--with-upc-packed-bits is only supported for packed pointer representation])
+  AC_MSG_WARN([--with-packed-upc-pts-bits is allowed only when UPC
+support has been enabled])
 fi
 ],
 [
-# GCC UPC packed pointer representation defaults.
-UPC_PTS_SIZE=64
-UPC_PTS_PHASE_SIZE=16
-UPC_MAX_BLOCK_SIZE=65535
-UPC_PTS_THREAD_SIZE=12
-UPC_MAX_THREADS=4096
-UPC_PTS_VADDR_SIZE=36
-])
-if test x"$upc_pts_rep" = x"packed"; then
-  AC_DEFINE_UNQUOTED(UPC_PTS_SIZE,$UPC_PTS_SIZE,
-    [size of the shared pointer rep.])
-  AC_DEFINE_UNQUOTED(UPC_PTS_PHASE_SIZE,$UPC_PTS_PHASE_SIZE,
-    [size of the address field in shared pointer rep.])
-  AC_DEFINE_UNQUOTED(UPC_PTS_THREAD_SIZE,$UPC_PTS_THREAD_SIZE,
-    [size of the address field in shared pointer rep.])
-  AC_DEFINE_UNQUOTED(UPC_PTS_VADDR_SIZE,$UPC_PTS_VADDR_SIZE,
-    [size of the address field in shared pointer rep.])
-  AC_DEFINE_UNQUOTED(UPC_MAX_BLOCK_SIZE,$UPC_MAX_BLOCK_SIZE,
-    [maximum shared array blocking size.])
-  AC_DEFINE_UNQUOTED(UPC_MAX_THREADS,$UPC_MAX_THREADS,
-    [maximum number of threads.])
-  if test x"$upc_vaddr_order" = x"first"; then
-      UPC_PTS_VADDR_SHIFT=`(expr $UPC_PTS_THREAD_SIZE + $UPC_PTS_PHASE_SIZE)`
-      UPC_PTS_THREAD_SHIFT=`(expr $UPC_PTS_PHASE_SIZE)`
-      UPC_PTS_PHASE_SHIFT=0
-  else
-      UPC_PTS_VADDR_SHIFT=0
-      UPC_PTS_THREAD_SHIFT=`(expr $UPC_PTS_VADDR_SIZE)`
-      UPC_PTS_PHASE_SHIFT=`(expr $UPC_PTS_VADDR_SIZE+$UPC_PTS_THREAD_SIZE)`
-  fi
-  AC_DEFINE_UNQUOTED(UPC_PTS_VADDR_SHIFT,$UPC_PTS_VADDR_SHIFT,
-      [UPC shared pointer address field shift.])
-  AC_DEFINE_UNQUOTED(UPC_PTS_THREAD_SHIFT,$UPC_PTS_THREAD_SHIFT,
-      [UPC shared pointer thread field shift.])
-  AC_DEFINE_UNQUOTED(UPC_PTS_PHASE_SHIFT,$UPC_PTS_PHASE_SHIFT,
-      [UPC shared pointer phase field shift.])
-  upc_pts_rep_res="$UPC_PTS_PHASE_SIZE,$UPC_PTS_THREAD_SIZE,$UPC_PTS_VADDR_SIZE"
-else
-  upc_pts_rep_res="not used (configured for struct)"
+if test x"$lang_upc_enabled" = x"yes" ; then
+  # GCC UPC packed pointer representation defaults.
+  UPC_PTS_PHASE_SIZE=20
+  UPC_PTS_THREAD_SIZE=10
+  UPC_PTS_VADDR_SIZE=34
 fi
-AC_MSG_RESULT($upc_pts_rep_res)
+])
 
-AC_MSG_CHECKING([for UPC link script support])
 AC_ARG_ENABLE(upc-link-script,
 AS_HELP_STRING(
   [--enable-upc-link-script],
@@ -824,18 +784,65 @@ AS_HELP_STRING(
   this will define the UPC shared section as a no load section on
   targets where this feature is supported (requires GNU LD)]),
 [
+if test x"$lang_upc_enabled" = x"yes" ; then
   case $enableval in
   yes | no) ;;
   *)
     AC_MSG_ERROR([--enable-upc-link-script accepts only yes or no.])
   esac
+else
+  AC_MSG_WARN([--enable-upc-link-script is allowed only when UPC
+support has been enabled])
+fi
 ],
 [
+if test x"$lang_upc_enabled" = x"yes" ; then
   enable_upc_link_script=no
+fi
 ])
-AC_MSG_RESULT($enable_upc_link_script)
-if test "$enable_upc_link_script" = yes; then
-  AC_DEFINE(HAVE_UPC_LINK_SCRIPT, 1, [Define to 1 if UPC link script is supported.])
+
+if test x"$lang_upc_enabled" = x"yes" ; then
+  AC_MSG_CHECKING([for UPC pointer-to-shared representation])
+  AC_MSG_RESULT([$upc_pts_rep])
+  case "$upc_pts_rep" in
+    packed)
+      AC_DEFINE(HAVE_UPC_PTS_PACKED_REP,[1],
+	[Define to 1 if UPC pointer-to-shared representation
+	 is a packed 64 bit word.])
+      ;;
+    struct)
+      AC_DEFINE(HAVE_UPC_PTS_STRUCT_REP,[1],
+	[Define to 1 if UPC pointer-to-shared representation
+	 is a structure.])
+      ;;
+  esac
+  AC_MSG_CHECKING([for UPC pointer-to-shared address field position])
+  AC_MSG_RESULT([$upc_vaddr_order])
+  if test x"upc_vaddr_order" = x"first"; then
+    AC_DEFINE(UPC_PTS_VADDR_FIRST,[1],
+      [Define to 1 if the 'vaddr' field is the first field
+in the UPC pointer-to-shared representation.])
+  fi
+  if test x"$upc_pts_rep" = x"packed"; then
+    AC_DEFINE_UNQUOTED(UPC_PTS_PHASE_SIZE,$UPC_PTS_PHASE_SIZE,
+      [For packed UPC pointers-to-shared,
+       the size of the phase field (in bits).])
+    AC_DEFINE_UNQUOTED(UPC_PTS_THREAD_SIZE,$UPC_PTS_THREAD_SIZE,
+      [For packed UPC pointers-to-shared,
+       the size of the thread field (in bits).])
+    AC_DEFINE_UNQUOTED(UPC_PTS_VADDR_SIZE,$UPC_PTS_VADDR_SIZE,
+      [For packed UPC pointers-to-shared,
+       the size of the address field (in bits).])
+    AC_MSG_CHECKING([for packed UPC pointer-to-shared layout])
+    AC_MSG_RESULT(
+      ["phase=${UPC_PTS_PHASE_SIZE},thread=${UPC_PTS_THREAD_SIZE},
+vaddr=${UPC_PTS_VADDR_SIZE}"])
+  fi
+  AC_MSG_CHECKING([for UPC link script support])
+  AC_MSG_RESULT($enable_upc_link_script)
+  if test "$enable_upc_link_script" = yes; then
+    AC_DEFINE(HAVE_UPC_LINK_SCRIPT, 1, [Define to 1 if UPC link script is supported.])
+  fi
 fi
 
 AC_ARG_WITH(dwarf2,

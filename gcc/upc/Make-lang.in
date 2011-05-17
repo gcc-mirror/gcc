@@ -56,14 +56,14 @@ UPC Upc upc: $(UPC_EXE)
 upc-warn = $(STRICT_WARN)
 
 # UPC PTS representation-dependent support.
-# (Set by the --with-upc-pts={struct,word-pair,packed}
-# configure switch.)
-UPC_PTS_C = upc-pts-$(UPC_PTS_REP).c
-UPC_PTS_OBJ = upc-pts-$(UPC_PTS_REP).o
+# (Set by the --with-upc-pts={struct,packed} configure switch.)
+UPC_PTS_C = upc-pts-packed.c upc-pts-struct.c
+UPC_PTS_OBJ = upc/upc-pts-packed.o upc/upc-pts-struct.o
 
 # Language-specific object files for UPC.
-UPC_OBJS = c-family/stub-objc.o upc/upc-act.o upc/upc-gimplify.o \
-           upc/upc-lang.o upc/$(UPC_PTS_OBJ) upc/upc-gasp.o
+UPC_OBJS = c-family/stub-objc.o upc/upc-act.o \
+	   upc/upc-gimplify.o upc/upc-lang.o \
+	   upc/upc-gasp.o $(UPC_PTS_OBJ)
 
 cc1upc-checksum.c : build/genchecksum$(build_exeext) checksum-options \
         $(UPC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBDEPS)
@@ -73,7 +73,8 @@ cc1upc-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 
 cc1upc-checksum.o : cc1upc-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
-cc1upc$(exeext): $(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o $(BACKEND) $(LIBDEPS)
+cc1upc$(exeext): $(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o \
+		 $(BACKEND) $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(UPC_OBJS) $(C_AND_OBJC_OBJS) cc1upc-checksum.o \
 		$(BACKEND) $(LIBS) $(BACKENDLIBS)
@@ -103,8 +104,9 @@ upc-cmd$(exeext): $(srcdir)/upc/upc-cmd.c Makefile cc1upc$(exeext) $(LIBDEPS)
 	$(CC) upc-cmd-tmp.o -o upc-cmd$(exeext) $(LIBS)
 	rm -f upc-cmd-tmp.o
 
+#
 # UPC language specific files.
-
+#
 upc/upc-lang.o : upc/upc-lang.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(C_TREE_H) upc/upc-tree.h toplev.h \
@@ -117,29 +119,40 @@ upc/upc-act.o : upc/upc-act.c \
    $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h toplev.h \
    flags.h input.h function.h output.h debug.h langhooks.h \
    $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-family/c-pragma.h \
-   gtype-upc.h gt-upc-upc-act.h upc/upc-act.h upc/upc-pts.h
+   gtype-upc.h gt-upc-upc-act.h upc/upc-act.h upc/upc-pts.h \
+   upc/upc-rts-names.h
 
 upc/upc-gimplify.o : upc/upc-gimplify.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h \
    toplev.h flags.h input.h function.h output.h debug.h langhooks.h \
    $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-family/c-pragma.h \
-   upc/upc-gimplify.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h
+   upc/upc-gimplify.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h \
+   upc/upc-rts-names.h
 
-upc/$(UPC_PTS_OBJ): upc/$(UPC_PTS_C) \
+upc/upc-pts-packed.o: upc/upc-pts-packed.c \
    $(CONFIG_H) $(SYSTEM_H) $(TARGET_H) $(TM_H) $(TM_P_H) \
    $(TREE_H) coretypes.h $(LANGHOOKS_DEF_H) langhooks.h \
    c-family/c-pragma.h $(C_TREE_H) debug.h \
    diagnostic.h $(EXPR_H) flags.h function.h input.h \
    output.h $(RTL_H) toplev.h \
-   upc/upc-act.h upc/upc-pts.h
+   upc/upc-act.h upc/upc-pts.h upc/upc-rts-names.h
+
+upc/upc-pts-struct.o: upc/upc-pts-struct.c \
+   $(CONFIG_H) $(SYSTEM_H) $(TARGET_H) $(TM_H) $(TM_P_H) \
+   $(TREE_H) coretypes.h $(LANGHOOKS_DEF_H) langhooks.h \
+   c-family/c-pragma.h $(C_TREE_H) debug.h \
+   diagnostic.h $(EXPR_H) flags.h function.h input.h \
+   output.h $(RTL_H) toplev.h \
+   upc/upc-act.h upc/upc-pts.h upc/upc-rts-names.h
 
 upc/upc-gasp.o : upc/upc-gasp.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h \
    toplev.h flags.h input.h function.h output.h debug.h langhooks.h \
    $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-family/c-pragma.h \
-   upc/upc-gasp.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h
+   upc/upc-gasp.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h \
+   upc/upc-rts-names.h
 
 #
 # Build hooks:

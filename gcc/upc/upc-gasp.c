@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-pragma.h"
 #include "c-family/c-upc.h"
 #include "upc-gasp.h"
+#include "upc-rts-names.h"
 
 static tree build_string_ref (const char *string);
 
@@ -66,10 +67,11 @@ build_string_ref (const char *string)
 tree
 upc_gasp_add_src_args (tree args, const char *filename, int lineno)
 {
-  return chainon(args,
-               tree_cons (NULL_TREE, build_string_ref (filename),
-                 tree_cons (NULL_TREE, build_int_cst(NULL_TREE, lineno),
-                       NULL_TREE)));
+  return chainon (args,
+		  tree_cons (NULL_TREE, build_string_ref (filename),
+			     tree_cons (NULL_TREE,
+					build_int_cst (NULL_TREE, lineno),
+					NULL_TREE)));
 }
 
 /* Instrument `upc_forall' statement begin/end.
@@ -83,12 +85,13 @@ upc_instrument_forall (location_t loc, int start)
 
   pfunc = lookup_name (get_identifier (UPC_INSTRUMENT_FORALL));
   if (!pfunc)
-    internal_error ("UPC profiling function `%s' not found", UPC_INSTRUMENT_FORALL);
-  
+    internal_error ("UPC profiling function `%s' not found",
+		    UPC_INSTRUMENT_FORALL);
+
   return build_call_expr (pfunc, 3,
-                          build_int_cst(NULL_TREE, start),
-		          build_string_ref (filename),
-                          build_int_cst(NULL_TREE, lineno));
+			  build_int_cst (NULL_TREE, start),
+			  build_string_ref (filename),
+			  build_int_cst (NULL_TREE, lineno));
 }
 
 void
@@ -99,35 +102,34 @@ upc_instrument_func (tree fndecl)
   int lineno;
 
   /* Skip, if profiling disabled via #pragma pupc.  */
-  if (!get_upc_pupc_mode())
+  if (!get_upc_pupc_mode ())
     return;
 
   pfunc = lookup_name (get_identifier (UPC_INSTRUMENT_FUNC));
   if (!pfunc)
-    internal_error ("UPC profiling function `%s' not found", UPC_INSTRUMENT_FUNC);
+    internal_error ("UPC profiling function `%s' not found",
+		    UPC_INSTRUMENT_FUNC);
   funcname = "<unknown>";
-  if (DECL_NAME(fndecl))
-    funcname = IDENTIFIER_POINTER(DECL_NAME(fndecl));
+  if (DECL_NAME (fndecl))
+    funcname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
   lineno = DECL_SOURCE_LINE (fndecl);
   filename = DECL_SOURCE_FILE (fndecl);
   tf = build2 (TRY_FINALLY_EXPR, void_type_node, NULL, NULL);
   TREE_SIDE_EFFECTS (tf) = 1;
   x = DECL_SAVED_TREE (fndecl);
   append_to_statement_list (x, &TREE_OPERAND (tf, 0));
-  x = build_call_expr (pfunc, 4,
-                       integer_zero_node, /* start == 0 */
+  x = build_call_expr (pfunc, 4, integer_zero_node,	/* start == 0 */
 		       build_string_ref (funcname),
 		       build_string_ref (filename),
-                       build_int_cst(NULL_TREE, lineno));
+		       build_int_cst (NULL_TREE, lineno));
   append_to_statement_list (x, &TREE_OPERAND (tf, 1));
 
   bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
   TREE_SIDE_EFFECTS (bind) = 1;
-  x = build_call_expr (pfunc, 4,
-                       integer_one_node, /* start == 1 */
+  x = build_call_expr (pfunc, 4, integer_one_node,	/* start == 1 */
 		       build_string_ref (funcname),
 		       build_string_ref (filename),
-                       build_int_cst(NULL_TREE, lineno));
+		       build_int_cst (NULL_TREE, lineno));
   append_to_statement_list (x, &BIND_EXPR_BODY (bind));
   append_to_statement_list (tf, &BIND_EXPR_BODY (bind));
 

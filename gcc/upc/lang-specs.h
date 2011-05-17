@@ -35,9 +35,12 @@ along with GCC; see the file COPYING3.  If not see
      "%{E|M|MM:cc1upc -E %(upc_options) %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
 	%{traditional|ftraditional|traditional-cpp:\
-%e UPC does not support traditional compilation}\
-	%{save-temps|no-integrated-cpp:cc1upc -E %(upc_options) %(cpp_options) %{save-temps:%b.mi} %{!save-temps:%g.mi} \n\
-	    cc1upc -fpreprocessed %{save-temps:%b.mi} %{!save-temps:%g.mi} %(upc_options) %(cc1_options)}\
+              %e UPC does not support traditional compilation}\
+	%{save-temps|no-integrated-cpp:\
+	      cc1upc -E %(upc_options) %(cpp_options)\
+	  %{save-temps:%b.mi} %{!save-temps:%g.mi} \n\
+	      cc1upc -fpreprocessed %{save-temps:%b.mi} %{!save-temps:%g.mi}\
+	             %(upc_options) %(cc1_options)}\
 	%{!save-temps:%{!no-integrated-cpp:\
 	    cc1upc %(cpp_unique_options) %(upc_options) %(cc1_options)}}\
         %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},

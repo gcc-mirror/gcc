@@ -8564,16 +8564,10 @@ c_parser_upc_forall_statement (c_parser *parser)
   loc = c_parser_peek_token (parser)->location;
   if (affinity != NULL_TREE && affinity != error_mark_node)
     {
-      tree upc_forall_depth, depth_gt_one;
-      upc_forall_depth = lookup_name (get_identifier (UPC_FORALL_DEPTH_NAME));
-      if (upc_forall_depth == NULL_TREE)
-        internal_error ("the UPC runtime variable '" UPC_FORALL_DEPTH_NAME "' "
-	                "cannot be located; this variable should be defined "
-			"in a compiler-supplied include file");
-      assemble_external (upc_forall_depth);
-      TREE_USED (upc_forall_depth) = 1;
-      c_finish_expr_stmt (loc,
-      build_unary_op (loc, PREINCREMENT_EXPR, upc_forall_depth, 0));
+      tree upc_forall_depth = upc_rts_forall_depth_var ();
+      tree inc_depth, depth_gt_one;
+      inc_depth = build_unary_op (loc, PREINCREMENT_EXPR, upc_forall_depth, 0);
+      c_finish_expr_stmt (loc, inc_depth);
       depth_gt_one = build_binary_op (affinity_loc,
 				      GT_EXPR, upc_forall_depth, integer_one_node, 0);
       depth_gt_one = c_objc_common_truthvalue_conversion (affinity_loc, depth_gt_one);

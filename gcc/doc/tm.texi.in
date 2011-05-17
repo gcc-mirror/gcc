@@ -56,6 +56,7 @@ through the macros defined in the @file{.h} file.
 * PCH Target::          Validity checking for precompiled headers.
 * C++ ABI::             Controlling C++ ABI changes.
 * Named Address Spaces:: Adding support for named address spaces
+* UPC Language::	Defining UPC-related configuration items
 * Misc::                Everything else.
 @end menu
 
@@ -10112,6 +10113,86 @@ to a different named address space.  When this hook it called, it is
 guaranteed that one of the two address spaces is a subset of the other,
 as determined by the @code{TARGET_ADDR_SPACE_SUBSET_P} target hook.
 @end deftypefn
+
+@node UPC Language
+@section UPC Language Support
+@cindex UPC, pointer-to-shared, libupc
+
+@defmac HAVE_UPC_PTS_VADDR_FIRST
+If non-zero, the @var{vaddr} (virtual address) field of the UPC
+pointer-to-shared representation is first.  Typically, this macro
+is set by @command{configure} and is defined in @file{config.in},
+based on the setting of the @option{--with-upc-pts-vaddr-order} option.
+By default, the @var{vaddr} is first.
+@end defmac
+
+@defmac HAVE_UPC_PTS_PACKED_REP
+If defined, the UPC pointer-to-shared representation is a packed
+unsigned 64-bit integer.  This macro is determined by
+@command{configure} and is defined in @file{config.in},
+based on the setting of the @option{--with-upc-pts=packed} option.
+(The default representation is `packed'.)
+@end defmac
+
+@defmac HAVE_UPC_PTS_STRUCT_REP
+If defined, the UPC pointer-to-shared representation is a structure
+with three fields: @var{vaddr} (virtual address), @var{thread}
+(UPC thread number), and @var{phased} (UPC block offset).
+This macro is determined by @command{configure}
+and is defined in @file{config.in}, based on the setting of the
+@option{--with-upc-pts=struct} option.
+@end defmac
+
+@defmac UPC_SHARED_SECTION_NAME
+Name of section used to assign addresses to UPC shared data items.
+@end defmac
+
+@defmac UPC_SHARED_BEGIN_NAME
+Used by @code{upc-crtbegin} to define the beginning of the shared section.
+@end defmac
+
+@defmac UPC_SHARED_END_NAME
+Used by @code{upc-crtend} to define the end of the shared section.
+@end defmac
+
+@defmac UPC_PGM_INFO_SECTION_NAME
+Name of section used to hold info. describing how a UPC source file was compiled.
+@end defmac
+
+@defmac UPC_PGM_INFO_BEGIN_NAME
+Used by @code{upc-crtbegin} to define the beginning of the shared section.
+@end defmac
+
+@defmac UPC_PGM_INFO_END_NAME
+Used by @code{upc-crtend} to define the end of the shared section.
+@end defmac
+
+@defmac UPC_INIT_SECTION_NAME
+Name of section where UPC initialization routines are located.
+@end defmac
+
+@defmac UPC_INIT_BEGIN_NAME
+Used by @code{upc-crtbegin} to define the beginning of init. routines section.
+@end defmac
+
+@defmac UPC_INIT_END_NAME
+Used by @code{upc-crtend} to define the beginning of init. routines section.
+@end defmac
+
+@defmac UPC_INIT_ARRAY_SECTION_NAME
+Name of section that holds an array of addresses that points to 
+the UPC initialization routines.
+@end defmac
+
+@defmac UPC_INIT_ARRAY_BEGIN_NAME
+Used by @code{upc-crtbegin} to define the beginning of UPC initialization
+array section.
+@end defmac
+
+@defmac UPC_INIT_ARRAY_END_NAME
+Used by @code{upc-crtend} to define the beginning of UPC initialization
+array section.
+@end defmac
 
 @node Misc
 @section Miscellaneous Parameters

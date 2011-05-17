@@ -62,6 +62,7 @@ extern tree upc_num_threads (void);
 extern tree upc_pts_diff (tree, tree);
 extern tree upc_pts_increment (location_t, enum tree_code, tree);
 extern tree upc_pts_int_sum (location_t, enum tree_code, tree, tree);
+extern tree upc_rts_forall_depth_var (void);
 extern tree upc_set_block_factor (enum tree_code, tree, tree);
 extern void upc_set_decl_section (tree);
 extern void upc_write_global_declarations (void);

@@ -1,3 +1,19 @@
+2011-05-17  Gary Funck  <gary@intrepid.com>
+
+	* configure.ac (GUPCR_PTS_VADDR_FIELD,
+	  Delete unused definitions.
+	  configure: Regenerate.
+
+	* smp/upc_pts.h (GUPCR_PTS_THREAD_FIELD,
+	  GUPCR_PTS_PHASE_FIELD): Delete unused definitions
+	  and references.
+
+	* config.h.in (GUPCR_PTS_THREAD_FIELD,
+	  GUPCR_PTS_PHASE_FIELD): Delete unused definitions
+	  and references.
+ 
+ 	* upc-crtstuff.c: Delete include of "upc-conf.h".
+
 2011-05-03  Gary Funck  <gary@intrepid.com>
 
 	* smp/upc_alloc.upc (__upc_global_heap_alloc,

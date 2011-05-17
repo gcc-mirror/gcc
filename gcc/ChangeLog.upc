@@ -1,3 +1,53 @@
+2011-05-17  Gary Funck  <gary@intrepid.com>
+
+	* c-family/stub-upc.c (upc_rts_forall_depth_var): New.
+	  c-family/c-upc.h (upc_rts_forall_depth_var): Define.
+
+	* c-family/c-pragma.c: Remove conditional compilation
+	  with HANDLE_PRAGMA_UPC and HANDLE_PRAGMA_PUPC.
+	  Test 'compiling_upc' when compiling to determine if
+	  the "upc" and "pupc" pragmas should be registered.
+
+	* defaults.h (UPC_SHARED_SECTION_NAME, UPC_SHARED_BEGIN_NAME,
+	  UPC_SHARED_END_NAME, UPC_PGM_INFO_SECTION_NAME,
+	  UPC_PGM_INFO_BEGIN_NAME, UPC_PGM_INFO_END_NAME,
+	  UPC_INIT_SECTION_NAME, UPC_INIT_BEGIN_NAME,
+	  UPC_INIT_END_NAME, UPC_INIT_ARRAY_SECTION_NAME,
+	  UPC_INIT_ARRAY_BEGIN_NAME, UPC_INIT_ARRAY_END_NAME): New.
+	  Move these target-dependent definitions from config/upc-conf.h
+	  to here.
+
+	* configure.ac: Improve the logic for UPC-related options.
+	  Delete references to pre-processor definitions that have
+	  been moved to "upc/upc-pts.h".
+
+	* configure, config.in: Regenerate.
+
+	* Makefile.in (UPC_PTS_REP): Remove definition and revert
+	  to trunk.  This substitution variable was used to
+	  configure the representation-specific versions of
+	  the tree rewrites that operate on UPC pointer-to-shared
+	  types and objects.
+
+	* c-parser.c (c_parser_upc_forall_statement): Remove
+	  reference to UPC_FORALL_DEPTH_NAME, and call
+	  newly defined upc_rts_forall_depth_var() instead.
+
+	* config/upc-config.h: Delete. Various definitions
+	  moved to "upc/upc-rts-names.h", "defaults.h", and
+	  "upc/upc-pts.h".
+
+	* doc/doc/tm.texi.in (HAVE_UPC_PTS_VADDR_FIRST,
+	  HAVE_UPC_PTS_PACKED_REP, HAVE_UPC_PTS_STRUCT_REP,
+	  UPC_SHARED_SECTION_NAME, UPC_SHARED_BEGIN_NAME,
+	  UPC_SHARED_END_NAME, UPC_PGM_INFO_SECTION_NAME,
+	  UPC_PGM_INFO_BEGIN_NAME, UPC_PGM_INFO_END_NAME,
+	  UPC_INIT_SECTION_NAME, UPC_INIT_BEGIN_NAME,
+	  UPC_INIT_END_NAME, UPC_INIT_ARRAY_SECTION_NAME,
+	  UPC_INIT_ARRAY_BEGIN_NAME, UPC_INIT_ARRAY_END_NAME):
+	  New.  Document UPC target macros.
+	  doc/doc/tm.texi: Regenerate.
+
 2011-05-07  Gary Funck  <gary@intrepid.com>
 
 	* ../configure.ac: Disable build of libupc

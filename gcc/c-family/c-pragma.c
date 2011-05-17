@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef HANDLE_PRAGMA_UPC
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -31,9 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "flags.h"
 #include "c-common.h"
-#ifdef HANDLE_PRAGMA_UPC
 #include "c-upc.h"
-#endif
 #include "output.h"
 #include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS (why is
 				   this not a target hook?).  */
@@ -504,8 +501,6 @@ handle_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
 	     "#pragma extern_prefix not supported on this target");
 }
 
-#ifdef HANDLE_PRAGMA_UPC
-
 /* variables used to implement #pragma upc semantics */
 #ifndef UPC_CMODE_STACK_INCREMENT
 #define UPC_CMODE_STACK_INCREMENT 32
@@ -685,10 +680,6 @@ pop_upc_consistency_mode (void)
   upc_cmode = upc_cmode_stack[--upc_cmode_stack_in_use];
 }
 
-#endif /* HANDLE_PRAGMA_UPC */
-
-#ifdef HANDLE_PRAGMA_PUPC
-
 static int pragma_pupc_on;
 static void init_pragma_pupc (void);
 static void handle_pragma_pupc (cpp_reader *);
@@ -728,8 +719,6 @@ static void handle_pragma_pupc (cpp_reader *dummy ATTRIBUTE_UNUSED)
   if (t != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of #pragma pupc");
 }
-
-#endif /* HANDLE_PRAGMA_PUPC */
 
 /* Hook from the front ends to apply the results of one of the preceding
    pragmas that rename variables.  */
@@ -1544,15 +1533,13 @@ init_pragma (void)
 
   c_register_pragma_with_expansion (0, "message", handle_pragma_message);
 
-#ifdef HANDLE_PRAGMA_UPC
-  c_register_pragma (0, "upc", handle_pragma_upc);
-  init_pragma_upc ();
-#endif
-
-#ifdef HANDLE_PRAGMA_PUPC
-  c_register_pragma (0, "pupc", handle_pragma_pupc);
-  init_pragma_pupc ();
-#endif
+  if (compiling_upc)
+    {
+      c_register_pragma (0, "upc", handle_pragma_upc);
+      init_pragma_upc ();
+      c_register_pragma (0, "pupc", handle_pragma_pupc);
+      init_pragma_pupc ();
+    }
 
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS ();

@@ -45,12 +45,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "upc-act.h"
 #include "upc-pts.h"
+#include "upc-rts-names.h"
 #include "cgraph.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-upc.h"
 /* define decl_default_tls_model() prototype */
 #include "rtl.h"
+
+/* UPC_PTS is a table of functions that implement various
+   operations on expressions which refer to UPC pointers-to-shared,
+   where their implementation varies with the representation
+   of a pointer-to-shared value.  ('packed' or 'struct')  */
+upc_pts_ops_t upc_pts;
 
 static int contains_pts_refs_p (tree);
 static int recursive_count_upc_threads_refs (tree);
@@ -60,41 +67,45 @@ static void upc_parse_init (void);
 static int upc_sizeof_type_check (const char *, tree);
 static void upc_build_init_func (const tree);
 
+
 /* Given a shared variable's VAR_DECL node, map to another
    VAR_DECL that has same external symbol name, with
    the "shared" qualifier removed from its type.  This
    "shadow variable" is used to generate conventional
    address constants when referring to a shared variable.  */
 
-struct GTY(()) uid_tree_map
+struct GTY (()) uid_tree_map
 {
   unsigned int uid;
   tree to;
 };
 
 /* Hash the UID of a shared variable to its unshared shadow variable.  */
-static GTY ((param_is (struct uid_tree_map))) htab_t unshared_vars;
+static
+GTY ((param_is (struct uid_tree_map)))
+     htab_t unshared_vars;
 
-static hashval_t uid_tree_map_hash (const void *);
-static int uid_tree_map_eq (const void *, const void *);
+     static hashval_t uid_tree_map_hash (const void *);
+     static int uid_tree_map_eq (const void *, const void *);
 
-static GTY(()) tree upc_init_stmt_list;
-static GTY(()) section *upc_init_array_section;
+     static GTY (())
+     tree upc_init_stmt_list;
+     static GTY (())
+     section *upc_init_array_section;
 
-static tree lookup_unshared_var (const tree);
-static tree unshared_var_name (const tree);
-static tree create_unshared_var (location_t, const tree);
-static void map_unshared_var (const tree, const tree);
-static tree unshared_var_addr (location_t, const tree);
-
+     static tree lookup_unshared_var (const tree);
+     static tree unshared_var_name (const tree);
+     static tree create_unshared_var (location_t, const tree);
+     static void map_unshared_var (const tree, const tree);
+     static tree unshared_var_addr (location_t, const tree);
 
-   
+
+
 /* Process UPC specific command line switches */
 
 bool
 upc_handle_option (size_t scode, const char *arg, int value, int kind,
-                   location_t loc,
-		   const struct cl_option_handlers *handlers)
+		   location_t loc, const struct cl_option_handlers *handlers)
 {
   enum opt_code code = (enum opt_code) scode;
   int result = 1;
@@ -102,31 +113,33 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
     {
     default:
       result = c_common_handle_option (scode, arg, value, kind, loc,
-                                       handlers);
+				       handlers);
       break;
     case OPT_dwarf_2_upc:
       use_upc_dwarf2_extensions = value;
       break;
     case OPT_fupc_debug:
       if ((value == 1) && (flag_upc_inline_lib == 1))
-        error ("-fupc-debug is incompatible with -fupc-inline-lib");
+	error ("-fupc-debug is incompatible with -fupc-inline-lib");
       flag_upc_debug = value;
       break;
     case OPT_fupc_inline_lib:
       if ((value == 1) && (flag_upc_instrument == 1))
-        error ("-fupc-inline-lib is incompatible with -fupc-instrument");
+	error ("-fupc-inline-lib is incompatible with -fupc-instrument");
       if ((value == 1) && (flag_upc_debug == 1))
-        error ("-fupc-inline-lib is incompatible with -fupc-debug");
+	error ("-fupc-inline-lib is incompatible with -fupc-debug");
       flag_upc_inline_lib = value;
       break;
     case OPT_fupc_instrument:
       if ((value == 1) && (flag_upc_inline_lib == 1))
-        error ("-fupc-instrument is incompatible with -fupc-inline-lib");
+	error ("-fupc-instrument is incompatible with -fupc-inline-lib");
       flag_upc_instrument = value;
       break;
     case OPT_fupc_instrument_functions:
       if ((value == 1) && (flag_upc_inline_lib == 1))
-        error ("-fupc-instrument-functions is incompatible with -fupc-inline-lib");
+	error
+	  ("-fupc-instrument-functions is incompatible "
+	   "with -fupc-inline-lib");
       flag_upc_instrument = value;
       flag_upc_instrument_functions = value;
       break;
@@ -165,7 +178,8 @@ upc_lang_init (void)
   if (!targetm.have_named_sections)
     {
       fatal_error ("UPC is not implemented on this target; "
-                   "the target linker does not support separately linked sections");
+		   "the target linker does not support separately "
+		   "linked sections");
     }
   /* c_obj_common_init is also called from regular 'C'
      It will return 'false' if we're pre-processing only. */
@@ -183,17 +197,18 @@ upc_finish (void)
 /* UPC specific initialization */
 
 void
-upc_cpp_builtins (cpp_reader *pfile)
+upc_cpp_builtins (cpp_reader * pfile)
 {
   char def_buf[256];
   cpp_define (pfile, "__GCC_UPC__=1");
   cpp_define (pfile, "__UPC__=1");
   cpp_define (pfile, "__UPC_VERSION__=200505L");
-  (void) sprintf (def_buf, "UPC_MAX_BLOCK_SIZE=%s", UPC_MAX_BLOCK_SIZE_STRING);
+  (void) sprintf (def_buf, "UPC_MAX_BLOCK_SIZE=%lu",
+		  (unsigned long) UPC_MAX_BLOCK_SIZE);
   cpp_define (pfile, def_buf);
-#if defined(UPC_PTS_PACKED_REP)
+#if defined(HAVE_UPC_PTS_PACKED_REP)
   cpp_define (pfile, "__UPC_PTS_PACKED_REP__=1");
-#elif defined(UPC_PTS_STRUCT_REP)
+#elif defined(HAVE_UPC_PTS_STRUCT_REP)
   cpp_define (pfile, "__UPC_PTS_STRUCT_REP__=1");
   (void) sprintf (def_buf, "__UPC_VADDR_TYPE__=%s", UPC_PTS_VADDR_TYPE);
   cpp_define (pfile, def_buf);
@@ -201,24 +216,11 @@ upc_cpp_builtins (cpp_reader *pfile)
   cpp_define (pfile, def_buf);
   (void) sprintf (def_buf, "__UPC_PHASE_TYPE__=%s", UPC_PTS_PHASE_TYPE);
   cpp_define (pfile, def_buf);
-#ifdef UPC_PTS_VADDR_FIELD
-  (void) sprintf (def_buf, "__UPC_VADDR_FIELD__=%s", UPC_PTS_VADDR_FIELD);
-  cpp_define (pfile, def_buf);
+#else
+#error cannot determine UPC pointer-to-shared representation
 #endif
-#ifdef UPC_PTS_THREAD_FIELD
-  (void) sprintf (def_buf, "__UPC_THREAD_FIELD__=%s", UPC_PTS_THREAD_FIELD);
-  cpp_define (pfile, def_buf);
-#endif
-#ifdef UPC_PTS_PHASE_FIELD
-  (void) sprintf (def_buf, "__UPC_PHASE_FIELD__=%s", UPC_PTS_PHASE_FIELD);
-  cpp_define (pfile, def_buf);
-#endif
-#elif defined(UPC_PTS_WORD_PAIR_REP)
-  cpp_define (pfile, "__UPC_PTS_WORD_PAIR_REP__=1");
-#endif
-#ifdef UPC_PTS_VADDR_FIRST
-  (void) sprintf (def_buf, "__UPC_VADDR_FIRST__=%d", UPC_PTS_VADDR_FIRST);
-  cpp_define (pfile, def_buf);
+#ifdef HAVE_UPC_PTS_VADDR_FIRST
+  cpp_define (pfile, "__UPC_VADDR_FIRST__=1");
 #endif
   (void) sprintf (def_buf, "__UPC_PTS_SIZE__=%d", UPC_PTS_SIZE);
   cpp_define (pfile, def_buf);
@@ -238,20 +240,19 @@ upc_cpp_builtins (cpp_reader *pfile)
     {
       cpp_define (pfile, "__UPC_DYNAMIC_THREADS__=1");
     }
-  if (flag_upc_pthreads
-      && (upc_pthreads_model == upc_pthreads_tls_model))  
+  if (flag_upc_pthreads && (upc_pthreads_model == upc_pthreads_tls_model))
     {
       cpp_define (pfile, "__UPC_PTHREADS_MODEL_TLS__=1");
       if (flag_upc_pthreads_per_process)
-        {
-          cpp_define (pfile, "__UPC_STATIC_PTHREADS__=1");
-          (void) sprintf (def_buf, "PTHREADS=%d",
-	                      flag_upc_pthreads_per_process);
-          cpp_define (pfile, def_buf);
+	{
+	  cpp_define (pfile, "__UPC_STATIC_PTHREADS__=1");
+	  (void) sprintf (def_buf, "PTHREADS=%d",
+			  flag_upc_pthreads_per_process);
+	  cpp_define (pfile, def_buf);
 	}
       else
-        {
-          cpp_define (pfile, "__UPC_DYNAMIC_PTHREADS__=1");
+	{
+	  cpp_define (pfile, "__UPC_DYNAMIC_PTHREADS__=1");
 	}
     }
   /* Collectives are supported. */
@@ -275,23 +276,38 @@ upc_cpp_builtins (cpp_reader *pfile)
 }
 
 static void
+upc_pts_init (void)
+{
+#if HAVE_UPC_PTS_PACKED_REP
+    upc_pts = upc_pts_packed_ops;
+#elif HAVE_UPC_PTS_STRUCT_REP
+    upc_pts = upc_pts_struct_ops;
+#else
+#  error either HAVE_UPC_PTS_PACKED_REP or HAVE_UPC_PTS_STRUCT_REP must be defined.
+#endif
+  /* Define the various pre-defined types and values, like 'upc_shared_ptr_t'
+     that depend upon the representation of UPC pointer-to-shared type.  */
+  (*upc_pts.init) ();
+}
+
+static void
 upc_parse_init (void)
 {
   set_lang_layout_decl_p (upc_lang_layout_decl_p);
   set_lang_layout_decl (upc_lang_layout_decl);
-  upc_pts_init_type ();
-  unshared_vars = htab_create_ggc (101, uid_tree_map_hash, uid_tree_map_eq, NULL);
+  upc_pts_init ();
+  unshared_vars =
+    htab_create_ggc (101, uid_tree_map_hash, uid_tree_map_eq, NULL);
   upc_init_stmt_list = NULL;
 }
 
 tree
 upc_build_sync_stmt (location_t loc, tree sync_kind, tree sync_expr)
 {
-  return add_stmt (build_stmt (loc, UPC_SYNC_STMT, sync_kind, sync_expr)); 
+  return add_stmt (build_stmt (loc, UPC_SYNC_STMT, sync_kind, sync_expr));
 }
 
-static
-int
+static int
 upc_sizeof_type_check (const char *op_name, tree type)
 {
   enum tree_code code = TREE_CODE (type);
@@ -325,7 +341,7 @@ upc_sizeof_type_check (const char *op_name, tree type)
 /* Compute the value of the `upc_blocksizeof' operator.  */
 
 tree
-upc_blocksizeof (location_t ARG_UNUSED(loc), tree type)
+upc_blocksizeof (location_t ARG_UNUSED (loc), tree type)
 {
   tree block_factor = size_one_node;
   if (!type || TREE_CODE (type) == ERROR_MARK)
@@ -348,12 +364,14 @@ upc_elemsizeof (location_t loc, tree type)
   return elem_size;
 }
 
-/* Compute the value of the `upc_localsizeof' operator.  Per the language spec:
-   The upc localsizeof operator returns the size, in bytes, of the local portion
-   of its operand, which may be a shared object or a shared-qualified type.  It
-   returns the same value on all threads; the value is an upper bound of the size
-   allocated with affinity to any single thread and may include an unspecified
-   amount of padding. The result of upc localsizeof is an integer constant.  */
+/* Compute the value of the `upc_localsizeof' operator.
+   Per the language spec:
+   The upc localsizeof operator returns the size, in bytes, of the
+   local portion of its operand, which may be a shared object or a
+   shared-qualified type.  It returns the same value on all threads; the
+   value is an upper bound of the size allocated with affinity to any
+   single thread and may include an unspecified amount of padding. The
+   result of upc localsizeof is an integer constant.  */
 
 tree
 upc_localsizeof (location_t loc, tree type)
@@ -365,8 +383,8 @@ upc_localsizeof (location_t loc, tree type)
 
   /* for scalars, return sizeof */
 
-  if (TREE_CODE(type) != ARRAY_TYPE)
-    return c_sizeof(loc, type);
+  if (TREE_CODE (type) != ARRAY_TYPE)
+    return c_sizeof (loc, type);
 
   block_factor = upc_blocksizeof (loc, type);
   block_factor = convert (bitsizetype, block_factor);
@@ -386,28 +404,29 @@ upc_localsizeof (location_t loc, tree type)
       tree n_rem_elts, n_local_elts;
       elt_type = strip_array_types (type);
       if (!elt_type || TREE_CODE (elt_type) == ERROR_MARK)
-        return size_one_node;
+	return size_one_node;
       elt_size = TYPE_SIZE (elt_type);
       n_elts = size_binop (EXACT_DIV_EXPR, total_size, elt_size);
       /* Use the worst case size, if compiling in a dynamic
-	 threads environment.  The worst case size can
-	 be derived by setting T_FACTOR to 1 in the calculations
-	 that follow.  Otherwise T_FACTOR is equal to THREADS. */
+         threads environment.  The worst case size can
+         be derived by setting T_FACTOR to 1 in the calculations
+         that follow.  Otherwise T_FACTOR is equal to THREADS. */
       t_factor = flag_upc_threads ? upc_num_threads () : size_one_node;
       t_factor = convert (bitsizetype, t_factor);
       n_full_blocks = size_binop (FLOOR_DIV_EXPR, n_elts, block_factor);
       n_full_blocks_per_thread = size_binop (FLOOR_DIV_EXPR,
-				   n_full_blocks, t_factor);
-      n_elts_in_full_blocks    = size_binop (MULT_EXPR,
-	size_binop (MULT_EXPR, n_full_blocks_per_thread, t_factor),
-	block_factor);
-      n_rem_elts = size_binop (MINUS_EXPR, n_elts,
-			       n_elts_in_full_blocks);
+					     n_full_blocks, t_factor);
+      n_elts_in_full_blocks = size_binop (MULT_EXPR,
+					  size_binop (MULT_EXPR,
+					       n_full_blocks_per_thread,
+					       t_factor),
+					  block_factor);
+      n_rem_elts = size_binop (MINUS_EXPR, n_elts, n_elts_in_full_blocks);
       n_local_elts = size_binop (MULT_EXPR,
-			   n_full_blocks_per_thread, block_factor);
+				 n_full_blocks_per_thread, block_factor);
       /* If any elements remain, add a full block size.  */
       if (!integer_zerop (n_rem_elts))
-        n_local_elts = size_binop (PLUS_EXPR, n_local_elts, block_factor);
+	n_local_elts = size_binop (PLUS_EXPR, n_local_elts, block_factor);
       local_size = size_binop (MULT_EXPR, n_local_elts, elt_size);
     }
 
@@ -415,7 +434,7 @@ upc_localsizeof (location_t loc, tree type)
 
   local_size = convert (sizetype, local_size);
   local_size = size_binop (CEIL_DIV_EXPR, local_size,
-                           size_int (BITS_PER_UNIT));
+			   size_int (BITS_PER_UNIT));
   return local_size;
 }
 
@@ -424,8 +443,7 @@ upc_localsizeof (location_t loc, tree type)
 /* Traverse the expression and return the number of times
    THREADS is referenced.  */
 
-static
-int
+static int
 recursive_count_upc_threads_refs (tree expr)
 {
   enum tree_code code;
@@ -480,7 +498,7 @@ is_multiple_of_upc_threads (tree expr)
   code = TREE_CODE (expr);
   if (code == MULT_EXPR)
     return is_multiple_of_upc_threads (TREE_OPERAND (expr, 0))
-	   | is_multiple_of_upc_threads (TREE_OPERAND (expr, 1));
+      | is_multiple_of_upc_threads (TREE_OPERAND (expr, 1));
   if ((code == NOP_EXPR) || (code == NON_LVALUE_EXPR)
       || (code == CONVERT_EXPR))
     return is_multiple_of_upc_threads (TREE_OPERAND (expr, 0));
@@ -492,7 +510,7 @@ is_multiple_of_upc_threads (tree expr)
    shared array will yield the local size of the array */
 
 void
-set_upc_threads_refs_to_one (tree *expr)
+set_upc_threads_refs_to_one (tree * expr)
 {
   enum tree_code code;
   int i;
@@ -542,8 +560,7 @@ upc_get_block_factor (const tree type)
 
 tree
 upc_set_block_factor (const enum tree_code decl_kind,
-                      tree type,
-                      tree layout_qualifier)
+		      tree type, tree layout_qualifier)
 {
   tree block_factor = NULL_TREE;
 
@@ -571,52 +588,57 @@ upc_set_block_factor (const enum tree_code decl_kind,
       block_factor = size_zero_node;
     }
   else if ((TREE_CODE (layout_qualifier) == INDIRECT_REF)
-           && ((TREE_OPERAND (layout_qualifier, 0)) == NULL_TREE))
+	   && ((TREE_OPERAND (layout_qualifier, 0)) == NULL_TREE))
     {
       tree elt_size, elt_type, n_threads;
       /* layout qualifier is [*] */
       if (!COMPLETE_TYPE_P (type))
-        {
-          error ("UPC layout qualifier of the form [*] cannot be applied to an incomplete type");
-          return type;
-        }
+	{
+	  error
+	    ("UPC layout qualifier of the form [*] cannot be applied "
+	     "to an incomplete type");
+	  return type;
+	}
       if (decl_kind == POINTER_TYPE)
-        {
-          error ("UPC [*] qualifier may not be used in declaration of pointers");
-          return type;
-        }
+	{
+	  error
+	    ("UPC [*] qualifier may not be used in declaration of pointers");
+	  return type;
+	}
       /* The blocking factor is given by this expression:
          ( sizeof(a) / upc_elemsizeof(a) + THREADS - 1 ) / THREADS,
          where 'a' is the array being distributed. */
       elt_type = strip_array_types (type);
       elt_size = TYPE_SIZE (elt_type);
       if (UPC_TYPE_HAS_THREADS_FACTOR (type))
-        block_factor = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type), elt_size);
+	block_factor =
+	  size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type), elt_size);
       else
-        {
-          n_threads = convert (bitsizetype, upc_num_threads ());
-          if (TREE_CODE (n_threads) != INTEGER_CST)
+	{
+	  n_threads = convert (bitsizetype, upc_num_threads ());
+	  if (TREE_CODE (n_threads) != INTEGER_CST)
 	    {
 	      error ("a UPC layout qualifier of '[*]' requires that "
-	             "the array size is either an integral constant "
+		     "the array size is either an integral constant "
 		     "or an integral multiple of THREADS");
-              block_factor = size_one_node;
+	      block_factor = size_one_node;
 	    }
-          else
+	  else
 	    {
-              block_factor = size_binop (CEIL_DIV_EXPR,
-                         size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type), elt_size),
-	    	         n_threads);
+	      block_factor = size_binop (CEIL_DIV_EXPR,
+					 size_binop (FLOOR_DIV_EXPR,
+						     TYPE_SIZE (type),
+						     elt_size), n_threads);
 	    }
-        }
+	}
     }
   else
     {
       STRIP_NOPS (layout_qualifier);
       if (TREE_CODE (layout_qualifier) != INTEGER_CST)
-        error ("UPC layout qualifier is not an integral constant");
+	error ("UPC layout qualifier is not an integral constant");
       else
-        block_factor = fold (layout_qualifier);
+	block_factor = fold (layout_qualifier);
     }
 
   if (!block_factor)
@@ -633,16 +655,16 @@ upc_set_block_factor (const enum tree_code decl_kind,
   if (tree_int_cst_equal (block_factor, size_one_node))
     return type;
 
-  if (tree_int_cst_compare (block_factor, integer_zero_node) <  0)
+  if (tree_int_cst_compare (block_factor, integer_zero_node) < 0)
     {
       error ("UPC layout qualifier must be a non-negative integral constant");
       return type;
     }
 
-  if (tree_int_cst_compare (block_factor, UPC_MAX_BLOCK_SIZE_CSTU) > 0)
+  if (tree_low_cst (block_factor, 1) > (HOST_WIDE_INT) UPC_MAX_BLOCK_SIZE)
     {
-      error ("the maximum UPC block size in this implementation is %s",
-	        UPC_MAX_BLOCK_SIZE_STRING);
+      error ("the maximum UPC block size in this implementation is %ld",
+	     (long int) UPC_MAX_BLOCK_SIZE);
       return type;
     }
 
@@ -674,22 +696,21 @@ upc_check_decl (tree decl)
      in the executable file.  */
   if (decl
       && TREE_CODE (decl) == VAR_DECL
-      && TREE_TYPE (decl)
-      && upc_shared_type_p (TREE_TYPE (decl)))
+      && TREE_TYPE (decl) && upc_shared_type_p (TREE_TYPE (decl)))
     {
       TREE_USED (decl) = 1;
       TREE_ADDRESSABLE (decl) = 1;
       TREE_STATIC (decl) = 1;
       /* Work-around a problem where the front-end doesn't
-	 properly process the used flags set above, on
-	 static variables when flag_unit_at_a_time isn't set. */
+         properly process the used flags set above, on
+         static variables when flag_unit_at_a_time isn't set. */
       if ((TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
 	  && !flag_unit_at_a_time
 	  && !lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
-        {
-	   tree used_id = get_identifier ("used");
-           tree used_attrib = tree_cons (used_id, NULL_TREE, NULL_TREE);
-           decl_attributes (&decl, used_attrib, 0);
+	{
+	  tree used_id = get_identifier ("used");
+	  tree used_attrib = tree_cons (used_id, NULL_TREE, NULL_TREE);
+	  decl_attributes (&decl, used_attrib, 0);
 	}
     }
 }
@@ -711,7 +732,8 @@ contains_pts_refs_p (tree type)
       {
 	tree fields;
 	/* For a type that has fields, see if the fields have pointers.  */
-	for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
+	for (fields = TYPE_FIELDS (type); fields;
+	     fields = TREE_CHAIN (fields))
 	  if (TREE_CODE (fields) == FIELD_DECL
 	      && contains_pts_refs_p (TREE_TYPE (fields)))
 	    return 1;
@@ -737,18 +759,17 @@ upc_check_decl_init (tree decl, tree init)
   if (!(decl && init && TREE_TYPE (decl) && TREE_TYPE (init)))
     return 0;
   if ((TREE_CODE (decl) == ERROR_MARK)
-       || (TREE_CODE (TREE_TYPE (decl)) == ERROR_MARK)
-       || (TREE_CODE (init) == ERROR_MARK)
-       || (TREE_CODE (TREE_TYPE (init)) == ERROR_MARK))
+      || (TREE_CODE (TREE_TYPE (decl)) == ERROR_MARK)
+      || (TREE_CODE (init) == ERROR_MARK)
+      || (TREE_CODE (TREE_TYPE (init)) == ERROR_MARK))
     return 0;
   init_type = TREE_TYPE (init);
   is_shared_var_decl_init = (TREE_CODE (decl) == VAR_DECL)
-                             && TREE_TYPE (decl)
-		             && upc_shared_type_p (TREE_TYPE (decl));
+    && TREE_TYPE (decl) && upc_shared_type_p (TREE_TYPE (decl));
   is_decl_init_with_shared_addr_refs = TREE_STATIC (decl)
-			     && contains_pts_refs_p (init_type);
+    && contains_pts_refs_p (init_type);
   is_upc_decl = (is_shared_var_decl_init
-                 || is_decl_init_with_shared_addr_refs);
+		 || is_decl_init_with_shared_addr_refs);
   return is_upc_decl;
 }
 
@@ -759,7 +780,7 @@ upc_decl_init (tree decl, tree init)
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
     {
       error ("initialization of UPC shared arrays "
-             "is currently not supported");
+	     "is currently not supported");
       return;
     }
   if (!upc_init_stmt_list)
@@ -773,8 +794,7 @@ upc_decl_init (tree decl, tree init)
 
 /* Return TRUE if DECL's size is zero, and DECL is a shared array. */
 
-static
-int
+static int
 upc_lang_layout_decl_p (tree decl, tree type)
 {
   int need_to_size_shared_array_decl = 0;
@@ -784,10 +804,10 @@ upc_lang_layout_decl_p (tree decl, tree type)
     {
       while (t != NULL && TREE_CODE (t) == ARRAY_TYPE
 	     && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
-	t = TREE_TYPE(t);
+	t = TREE_TYPE (t);
 
       need_to_size_shared_array_decl = t && TREE_CODE (t) == ARRAY_TYPE
-					 && upc_shared_type_p (TREE_TYPE (t));
+	&& upc_shared_type_p (TREE_TYPE (t));
     }
 
   return need_to_size_shared_array_decl;
@@ -806,26 +826,25 @@ upc_set_decl_section (tree decl)
 #ifdef UPC_SHARED_SECTION_NAME
       /* shared variables are placed in their own shared section */
       int slen = strlen (UPC_SHARED_SECTION_NAME);
-      DECL_SECTION_NAME (decl) =
-	 build_string (slen, UPC_SHARED_SECTION_NAME);
+      DECL_SECTION_NAME (decl) = build_string (slen, UPC_SHARED_SECTION_NAME);
 #endif
     }
   else if (flag_upc_pthreads
-           && ((TREE_STATIC (decl) && (DECL_SECTION_NAME (decl) == NULL_TREE))
+	   && ((TREE_STATIC (decl) && (DECL_SECTION_NAME (decl) == NULL_TREE))
 	       || DECL_EXTERNAL (decl)))
     {
       /* If we're compiling with -fupc-pthreads asserted
-	 and this is a static scoped object which
-	 is either declared in a system header file,
-	 or is being compiled in a UPC setting,
-	 then assign the object to the
-	 thread local storage (TLS) section. */
-      extern int c_header_level; /* in c-lex.c */
+         and this is a static scoped object which
+         is either declared in a system header file,
+         or is being compiled in a UPC setting,
+         then assign the object to the
+         thread local storage (TLS) section. */
+      extern int c_header_level;	/* in c-lex.c */
       if (compiling_upc && (c_header_level <= 0))
 	{
 	  if (upc_pthreads_model == upc_pthreads_tls_model)
 	    {
-              DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+	      DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
 	      DECL_COMMON (decl) = 0;
 	    }
 	  else
@@ -838,37 +857,36 @@ upc_set_decl_section (tree decl)
 /* Given that TYPE describes a shared array, and that DECL's size hasn't
    been calculated, size the type and adust the size attributes in DECL. */
 
-static
-void
+static void
 upc_lang_layout_decl (tree decl, tree type)
 {
   tree t = type;
 
   while (TREE_CODE (t) == ARRAY_TYPE
 	 && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
-    t = TREE_TYPE(t);
+    t = TREE_TYPE (t);
 
   if (TREE_CODE (t) == ARRAY_TYPE
-      && TYPE_SIZE (type) != NULL_TREE
-      && upc_shared_type_p (TREE_TYPE (t)))
+      && TYPE_SIZE (type) != NULL_TREE && upc_shared_type_p (TREE_TYPE (t)))
     {
       const tree elt_type = TREE_TYPE (t);
       const tree elt_size = TYPE_SIZE (elt_type);
       const tree block_factor = TYPE_BLOCK_FACTOR (elt_type)
-                 ? convert (bitsizetype, TYPE_BLOCK_FACTOR (elt_type)) : NULL;
+	? convert (bitsizetype, TYPE_BLOCK_FACTOR (elt_type)) : NULL;
       if (block_factor && integer_zerop (block_factor))
-        {
+	{
 	  /* Allocate the entire array on thread 0. */
 	  if (UPC_TYPE_HAS_THREADS_FACTOR (type))
 	    {
-	      const tree n_threads = convert (bitsizetype, upc_num_threads ());
+	      const tree n_threads =
+		convert (bitsizetype, upc_num_threads ());
 	      DECL_SIZE (decl) = size_binop (MULT_EXPR, elt_size, n_threads);
 	    }
 	  else
 	    DECL_SIZE (decl) = TYPE_SIZE (type);
-        }
+	}
       else
-        {
+	{
 	  const tree t_size = TYPE_SIZE (type);
 	  const tree n_elem = size_binop (FLOOR_DIV_EXPR, t_size, elt_size);
 	  const tree n_threads = convert (bitsizetype, upc_num_threads ());
@@ -888,10 +906,10 @@ upc_lang_layout_decl (tree decl, tree type)
 	  else
 	    {
 	      /* We want to allocate ceiling of n_elem/n_threads elements per
-		 thread, where n_elem is the total number of elements in
-		 the array.  If the array is blocked, then we allocate
-		 ((ceiling of (ceiling of n_elem/block_factor)/n_threads) *
-		 block_factor) elements per thread. */
+	         thread, where n_elem is the total number of elements in
+	         the array.  If the array is blocked, then we allocate
+	         ((ceiling of (ceiling of n_elem/block_factor)/n_threads) *
+	         block_factor) elements per thread. */
 	      tree n_elem_per_thread;
 	      if (block_factor)
 		{
@@ -899,18 +917,19 @@ upc_lang_layout_decl (tree decl, tree type)
 		  block_count = size_binop (CEIL_DIV_EXPR,
 					    n_elem, block_factor);
 		  blocks_per_thread = size_binop (CEIL_DIV_EXPR,
-					    block_count, n_threads);
+						  block_count, n_threads);
 		  n_elem_per_thread = size_binop (MULT_EXPR,
-					    blocks_per_thread, block_factor);
+						  blocks_per_thread,
+						  block_factor);
 		}
 	      else
 		n_elem_per_thread = size_binop (CEIL_DIV_EXPR,
-					    n_elem, n_threads);
-	      
+						n_elem, n_threads);
+
 	      /* In the special case of an array of size 1, we know that
-		 we want a constant size no matter what n_threads is.  Make
-		 the size a constant so that declarations of shared int x[1]
-		 will work for runtime specification of threads. */
+	         we want a constant size no matter what n_threads is.  Make
+	         the size a constant so that declarations of shared int x[1]
+	         will work for runtime specification of threads. */
 	      if (integer_onep (n_elem))
 		DECL_SIZE (decl) = elt_size;
 	      else
@@ -918,10 +937,12 @@ upc_lang_layout_decl (tree decl, tree type)
 					       elt_size);
 	    }
 	}
-        if (DECL_SIZE_UNIT (decl) == 0)
-            DECL_SIZE_UNIT (decl)
-              = fold_convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
-			        bitsize_unit_node));
+      if (DECL_SIZE_UNIT (decl) == 0)
+	DECL_SIZE_UNIT (decl)
+	  =
+	  fold_convert (sizetype,
+			size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
+				    bitsize_unit_node));
     }
   else if (DECL_SIZE (decl) == 0)
     {
@@ -931,41 +952,44 @@ upc_lang_layout_decl (tree decl, tree type)
   else if (DECL_SIZE_UNIT (decl) == 0)
     DECL_SIZE_UNIT (decl)
       = fold_convert (sizetype, size_binop (CEIL_DIV_EXPR, DECL_SIZE (decl),
-			        bitsize_unit_node));
+					    bitsize_unit_node));
 }
 
-/* Implement UPC's upc_forall `affinity' test, by augmenting the for statement's
-   for_body by rewriting it into:
-     if (affinity == MYTHREAD) for_body; */
+/* Implement UPC's upc_forall 'affinity' test, by augmenting
+   the 'for' statement.  Rewrite 'for_body' into:
+     if (affinity == MYTHREAD) for_body;  */
 
 tree
 upc_affinity_test (location_t loc, tree affinity)
 {
   tree mythread;
   tree affinity_test;
-  
+
   gcc_assert (affinity != NULL_TREE);
-  
+
   if (TREE_CODE (TREE_TYPE (affinity)) == POINTER_TYPE
       && upc_shared_type_p (TREE_TYPE (TREE_TYPE (affinity))))
     {
-	/* then we have a pointer to a shared object and the affinity is
-	   determined by the thread component of the address */
-        const tree pts_rep = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node,
-	                             save_expr (affinity));
-	affinity = upc_pts_build_threadof (loc, pts_rep);
+      /* then we have a pointer to a shared object and the affinity is
+         determined by the thread component of the address */
+      const tree pts_rep = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node,
+				   save_expr (affinity));
+      affinity = (*upc_pts.threadof) (loc, pts_rep);
     }
   else if (TREE_CODE (TREE_TYPE (affinity)) == INTEGER_TYPE)
     {
       tree n_threads = upc_num_threads ();
-      affinity = build_binary_op (loc, FLOOR_MOD_EXPR, affinity, n_threads, 0);
+      affinity =
+	build_binary_op (loc, FLOOR_MOD_EXPR, affinity, n_threads, 0);
     }
   else
     {
-      error ("UPC affinity expression is neither an integer nor the address of a shared object");
+      error
+	("UPC affinity expression is neither an integer nor the address of "
+	 "a shared object");
       return error_mark_node;
     }
-  
+
 
   /* Generate an external reference to the "MYTHREAD" indentifier.  */
 
@@ -980,11 +1004,26 @@ upc_affinity_test (location_t loc, tree affinity)
   if (!c_types_compatible_p (TREE_TYPE (affinity), TREE_TYPE (mythread)))
     affinity = convert (TREE_TYPE (mythread), affinity);
   affinity_test = c_objc_common_truthvalue_conversion (loc,
-		    build_binary_op (loc, EQ_EXPR, affinity, mythread, 1));
+				   build_binary_op (loc, EQ_EXPR,
+						    affinity, mythread, 1));
   /* remove the MAYBE_CONST_EXPR's.  */
   affinity_test = c_fully_fold (affinity_test, false, NULL);
 
   return affinity_test;
+}
+
+tree
+upc_rts_forall_depth_var (void)
+{
+  tree upc_forall_depth = lookup_name (
+                                  get_identifier (UPC_FORALL_DEPTH_NAME));
+  if (upc_forall_depth == NULL_TREE)
+    internal_error ("the UPC runtime variable '" UPC_FORALL_DEPTH_NAME "' "
+		    "cannot be located; this variable should be defined "
+		    "in a compiler-supplied include file");
+  assemble_external (upc_forall_depth);
+  TREE_USED (upc_forall_depth) = 1;
+  return upc_forall_depth;
 }
 
 /* Check for the possible need to convert UPC-specific types.
@@ -1006,11 +1045,11 @@ upc_types_compatible_p (tree x, tree y)
 	  tree bx, by, sx, sy;
 	  int x_has_zero_phase, y_has_zero_phase;
 	  int result;
-          /* If both types are generic pointer-to-shared,
+	  /* If both types are generic pointer-to-shared,
 	     then they're compatible.  */
 	  if (VOID_TYPE_P (ttx) && VOID_TYPE_P (tty))
 	    return 1;
-          /* Intermediate conversions to (shared void *) cannot
+	  /* Intermediate conversions to (shared void *) cannot
 	     always be optimized away.  For example,
 	     p1 = (shared void *)p2;
 	     preserves the phase of p2, when assigning to p1.
@@ -1025,33 +1064,35 @@ upc_types_compatible_p (tree x, tree y)
 	  x_has_zero_phase = (integer_zerop (bx) || integer_onep (bx));
 	  y_has_zero_phase = (integer_zerop (by) || integer_onep (by));
 	  /* Normalize type size so that 0 => NULL. */
-	  if (sx && integer_zerop (sx)) sx = NULL_TREE;
-	  if (sy && integer_zerop (sy)) sy = NULL_TREE;
+	  if (sx && integer_zerop (sx))
+	    sx = NULL_TREE;
+	  if (sy && integer_zerop (sy))
+	    sy = NULL_TREE;
 	  /* If the target types have the same blocksize
 	     (or they both have a phase value of zero) 
 	     and the same size and the target types are
 	     otherwise compatible, then the pointer-to-shared
 	     types are compatible. */
 	  result = (tree_int_cst_equal (bx, by)
-	            || (x_has_zero_phase && y_has_zero_phase))
-	           && tree_int_cst_equal (sx, sy);
+		    || (x_has_zero_phase && y_has_zero_phase))
+	    && tree_int_cst_equal (sx, sy);
 	  return result;
 	}
       /* If one is shared, and the other is local,
          then they aren't equivalent.  */
       else if (upc_shared_type_p (ttx) != upc_shared_type_p (tty))
-	    return 0;
+	return 0;
     }
   else if (upc_shared_type_p (x) || upc_shared_type_p (y))
     {
       /* In UPC, blocking factors can be applied to
          non-pointer objects/types. They're compatible
-	 if the block sizes are equal.  */
+         if the block sizes are equal.  */
       const tree bx = upc_get_block_factor (x);
       const tree by = upc_get_block_factor (y);
       return tree_int_cst_equal (bx, by)
-             && c_types_compatible_p (TYPE_MAIN_VARIANT (x),
-	                              TYPE_MAIN_VARIANT (y));
+	&& c_types_compatible_p (TYPE_MAIN_VARIANT (x),
+				 TYPE_MAIN_VARIANT (y));
     }
   /* C thinks they're compatible, and there are no special
      UPC exceptions.  */
@@ -1065,11 +1106,11 @@ upc_num_threads (void)
 {
   tree n;
   n = flag_upc_threads ? size_int (flag_upc_threads)
-		  : lookup_name (get_identifier ("THREADS"));
+    : lookup_name (get_identifier ("THREADS"));
   if (!n)
     {
       error ("the UPC-required THREADS variable is undefined; "
-             "when compiling preprocessd source, "
+	     "when compiling preprocessd source, "
 	     "all -fupc-* switches must be passed on the command line, "
 	     "asserting the same values as supplied when the "
 	     "original source file was preprocessed");
@@ -1084,50 +1125,47 @@ upc_diagnose_deprecated_stmt (location_t loc, tree id)
 {
   const char *name = IDENTIFIER_POINTER (id);
   struct deprecated_stmt_entry
-    {
-      const char *deprecated_id;
-      const char *correct_id;
-    };
+  {
+    const char *deprecated_id;
+    const char *correct_id;
+  };
   static const struct deprecated_stmt_entry deprecated_stmts[] =
-    {{"barrier", "upc_barrier"}, {"barrier_wait", "upc_wait"},
-     {"barrier_notify", "upc_notify"}, {"fence", "upc_fence"},
-     {"forall", "upc_forall"}};
+    { {"barrier", "upc_barrier"}, {"barrier_wait", "upc_wait"},
+  {"barrier_notify", "upc_notify"}, {"fence", "upc_fence"},
+  {"forall", "upc_forall"}
+  };
   const int n_deprecated_stmts = sizeof (deprecated_stmts)
-                                 / sizeof (struct deprecated_stmt_entry);
+    / sizeof (struct deprecated_stmt_entry);
   int i;
   for (i = 0; i < n_deprecated_stmts; ++i)
     {
       if (!strcmp (name, deprecated_stmts[i].deprecated_id))
-        {
-          error_at (loc, "%qs was supported in version 1.0 of the UPC "
-	                 "specification, it has been deprecated, "
-			 "use %qs instead", name,
-			 deprecated_stmts[i].correct_id);
-          return 1;
-        }
+	{
+	  error_at (loc, "%qs was supported in version 1.0 of the UPC "
+		    "specification, it has been deprecated, "
+		    "use %qs instead", name, deprecated_stmts[i].correct_id);
+	  return 1;
+	}
     }
   return 0;
 }
 
-static
-hashval_t
+static hashval_t
 uid_tree_map_hash (const void *p)
 {
-  const struct uid_tree_map * const map = (const struct uid_tree_map *) p;
+  const struct uid_tree_map *const map = (const struct uid_tree_map *) p;
   return map->uid;
 }
 
-static
-int
+static int
 uid_tree_map_eq (const void *va, const void *vb)
 {
-  const struct uid_tree_map * const a = (const struct uid_tree_map *) va;
-  const struct uid_tree_map * const b = (const struct uid_tree_map *) vb; 
+  const struct uid_tree_map *const a = (const struct uid_tree_map *) va;
+  const struct uid_tree_map *const b = (const struct uid_tree_map *) vb;
   return a->uid == b->uid;
 }
 
-static
-tree
+static tree
 lookup_unshared_var (const tree var)
 {
   const struct uid_tree_map *h;
@@ -1143,8 +1181,7 @@ lookup_unshared_var (const tree var)
 
 #define UNSHARE_PREFIX "_u_"
 
-static
-tree
+static tree
 unshared_var_name (const tree var)
 {
   const tree name = DECL_NAME (var);
@@ -1155,8 +1192,7 @@ unshared_var_name (const tree var)
   return get_identifier (tmp_name);
 }
 
-static
-tree
+static tree
 create_unshared_var (location_t loc, const tree var)
 {
   tree u_name, u_type, u;
@@ -1167,7 +1203,7 @@ create_unshared_var (location_t loc, const tree var)
   TREE_USED (u) = 1;
   TREE_ADDRESSABLE (u) = 1;
   TREE_PUBLIC (u) = TREE_PUBLIC (var);
-  TREE_STATIC (u) = TREE_STATIC(var);
+  TREE_STATIC (u) = TREE_STATIC (var);
   DECL_ARTIFICIAL (u) = 1;
   DECL_IGNORED_P (u) = 1;
   DECL_EXTERNAL (u) = DECL_EXTERNAL (var);
@@ -1180,8 +1216,7 @@ create_unshared_var (location_t loc, const tree var)
   return u;
 }
 
-static
-void
+static void
 map_unshared_var (const tree var, const tree u_var)
 {
   struct uid_tree_map *h;
@@ -1197,8 +1232,7 @@ map_unshared_var (const tree var, const tree u_var)
   *(struct uid_tree_map **) loc = h;
 }
 
-static
-tree
+static tree
 unshared_var_addr (location_t loc, const tree var)
 {
   tree unshared_var, addr;
@@ -1214,7 +1248,7 @@ unshared_var_addr (location_t loc, const tree var)
   return addr;
 }
 
-/* Convert shared variable reference VAR into a shared pointer
+/* Convert shared variable reference VAR into a UPC pointer-to-shared
    value of the form {0, 0, &VAR} */
 
 tree
@@ -1223,59 +1257,60 @@ upc_build_shared_var_addr (location_t loc, tree type, tree var)
   tree var_addr, val;
   gcc_assert (TREE_CODE (var) == VAR_DECL && TREE_SHARED (var));
   gcc_assert (TREE_CODE (type) == POINTER_TYPE
-              && upc_shared_type_p (TREE_TYPE (type)));
+	      && upc_shared_type_p (TREE_TYPE (type)));
   /* Refer to a shadow variable that has the same type as VAR, but
      with the shared qualifier removed.  */
   var_addr = unshared_var_addr (loc, var);
-#ifdef UPC_PTS_PACKED_REP
+#ifdef HAVE_UPC_PTS_PACKED_REP
   {
     const tree char_ptr_type = build_pointer_type (char_type_node);
     tree shared_vaddr_base;
     /* Subtract off the shared section base address so that the
        resulting quantity will fit into the vaddr field.  */
-    shared_vaddr_base = identifier_global_value (
-                          get_identifier ("__upc_shared_start"));
+    shared_vaddr_base =
+      identifier_global_value (get_identifier ("__upc_shared_start"));
     if (!shared_vaddr_base)
-      shared_vaddr_base = identifier_global_value (
-                            get_identifier ("UPCRL_shared_begin"));
+      shared_vaddr_base =
+	identifier_global_value (get_identifier ("UPCRL_shared_begin"));
     if (!shared_vaddr_base)
       fatal_error ("UPC shared section start address not found; "
-                   "cannot find a definition for either "
+		   "cannot find a definition for either "
 		   "__upc_shared_start or UPCRL_shared_begin");
     assemble_external (shared_vaddr_base);
     TREE_USED (shared_vaddr_base) = 1;
     shared_vaddr_base = build1 (ADDR_EXPR, char_ptr_type, shared_vaddr_base);
-    var_addr  = build_binary_op (loc, MINUS_EXPR,
-                           convert (ptrdiff_type_node, var_addr),
-			   convert (ptrdiff_type_node, shared_vaddr_base), 0);
+    var_addr = build_binary_op (loc, MINUS_EXPR,
+				convert (ptrdiff_type_node, var_addr),
+				convert (ptrdiff_type_node,
+					 shared_vaddr_base), 0);
   }
 #endif
-  val = upc_pts_build_value (loc, type,
-                             var_addr, integer_zero_node, integer_zero_node);
+  val = (*upc_pts.build) (loc, type,
+			  var_addr, integer_zero_node, integer_zero_node);
   return val;
 }
 
-/* Expand the pre/post increment/decrement of shared pointer
+/* Expand the pre/post increment/decrement of UPC pointer-to-shared
    into its equivalent expression tree. */
 
 tree
 upc_pts_increment (location_t location ATTRIBUTE_UNUSED,
-                   enum tree_code code, tree arg)
+		   enum tree_code code, tree arg)
 {
   /* The result type is a pointer of the same type as the argument
      type after dropping the shared qualifier (for PTS's that happen
      to live in shared memory). */
   tree stable_arg = stabilize_reference (arg);
   tree val = (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
-	      ? stable_arg : save_expr (stable_arg);
+    ? stable_arg : save_expr (stable_arg);
   enum tree_code incr_op = (code == PREINCREMENT_EXPR
 			    || code == POSTINCREMENT_EXPR)
-		            ? PLUS_EXPR : MINUS_EXPR;
+    ? PLUS_EXPR : MINUS_EXPR;
   tree incr_val, result;
   incr_val = upc_pts_int_sum (location, incr_op, val, integer_one_node);
   TREE_SIDE_EFFECTS (incr_val) = 1;
   result = build_modify_expr (location, arg, NULL_TREE, NOP_EXPR,
-                              location, incr_val, NULL_TREE);
+			      location, incr_val, NULL_TREE);
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
     result = build2 (COMPOUND_EXPR, TREE_TYPE (incr_val), result, val);
   return result;
@@ -1283,13 +1318,14 @@ upc_pts_increment (location_t location ATTRIBUTE_UNUSED,
 
 tree
 upc_pts_int_sum (location_t loc,
-                 enum tree_code resultcode, tree ptrop, tree intop)
+		 enum tree_code resultcode, tree ptrop, tree intop)
 {
   /* The result type is a pointer of the same type that is being added,
      after dropping the shared qualifier (for PTS's that happen
      to live in shared memory). */
   const tree ttype = TREE_TYPE (ptrop);
-  const int shared_quals = (TYPE_QUAL_SHARED | TYPE_QUAL_STRICT | TYPE_QUAL_RELAXED);
+  const int shared_quals =
+    (TYPE_QUAL_SHARED | TYPE_QUAL_STRICT | TYPE_QUAL_RELAXED);
   const int quals_minus_shared = TYPE_QUALS (ttype) & ~shared_quals;
   const tree result_type = c_build_qualified_type (ttype, quals_minus_shared);
   const tree result_targ_type = TREE_TYPE (result_type);
@@ -1299,7 +1335,7 @@ upc_pts_int_sum (location_t loc,
 
   if (TREE_CODE (result_targ_type) == VOID_TYPE)
     error_at (loc, "UPC does not a pointer of type %<shared void *%> "
-                   "to be used in arithmetic");
+	      "to be used in arithmetic");
 
   /* We have a pointer to a shared object.  For pointers to
      simple objects, just build a "resultcode" tree with the intop and
@@ -1337,11 +1373,11 @@ upc_pts_int_sum (location_t loc,
   intop = fold (intop);
   /* POINTER_PLUS expects the operand to be sizetype, which
      is potentially unsigned.  This will have to be dealt
-     with later, when expanding the shared pointer arithmetic.  */
+     with later, when expanding the UPC pointer-to-shared arithmetic.  */
   intop = convert (sizetype, intop);
   result = build2 (POINTER_PLUS_EXPR, result_type, ptrop, intop);
   /* Althoough there may be some specific cases where the
-     addition of a constant integer to a shared pointer can
+     addition of a constant integer to a UPC pointer-to-shared can
      be calculated at compile-time, in the more general
      cases the calculation must be made at runtime, so
      we mark the resulting sum as non-constant.  This will
@@ -1358,12 +1394,13 @@ upc_pts_diff (tree op0, tree op1)
   const tree target_type = TREE_TYPE (TREE_TYPE (op0));
   tree result;
   /* The two pointers must both point to shared objects.  */
-  if ( (upc_shared_type_p (target_type)
-	&& !upc_shared_type_p (TREE_TYPE (TREE_TYPE (op1))))
+  if ((upc_shared_type_p (target_type)
+       && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (op1))))
       || (upc_shared_type_p (TREE_TYPE (TREE_TYPE (op1)))
 	  && !upc_shared_type_p (target_type)))
     {
-      error ("attempt to take the difference of a UPC pointer-to-shared and a local pointers");
+      error ("attempt to take the difference of a UPC pointer-to-shared "
+	     "and a local pointer");
       return size_one_node;
     }
   result = build2 (MINUS_EXPR, ptrdiff_type_node, op0, op1);
@@ -1371,15 +1408,20 @@ upc_pts_diff (tree op0, tree op1)
 }
 
 int
-is_valid_pts_p (tree exp)
+upc_is_null_pts_p (tree exp)
+{
+  return (*upc_pts.is_null_p) (exp);
+}
+
+int
+upc_pts_is_valid_p (tree exp)
 {
   tree type = TREE_TYPE (exp);
   return (TREE_CODE (type) == POINTER_TYPE)
-         && upc_shared_type_p (TREE_TYPE (type));
+    && upc_shared_type_p (TREE_TYPE (type));
 }
 
-static
-void
+static void
 upc_build_init_func (const tree stmt_list)
 {
   tree init_func_id = get_identifier (UPC_INIT_DECLS_FUNC);
@@ -1408,7 +1450,7 @@ upc_build_init_func (const tree stmt_list)
   TREE_PUBLIC (current_function_decl) = 0;
   TREE_USED (current_function_decl) = 1;
   DECL_SECTION_NAME (current_function_decl) =
-     build_string (strlen (UPC_INIT_SECTION_NAME), UPC_INIT_SECTION_NAME);
+    build_string (strlen (UPC_INIT_SECTION_NAME), UPC_INIT_SECTION_NAME);
   /* Swap the statement list that we've built up,
      for the current statement list.  */
   t_list = c_begin_compound_stmt (true);
@@ -1421,8 +1463,7 @@ upc_build_init_func (const tree stmt_list)
   gcc_assert (DECL_RTL (init_func));
   mark_decl_referenced (init_func);
   DECL_PRESERVE_P (init_func) = 1;
-  upc_init_array_section = get_section (UPC_INIT_ARRAY_SECTION_NAME,
-				        0, NULL);
+  upc_init_array_section = get_section (UPC_INIT_ARRAY_SECTION_NAME, 0, NULL);
   init_func_symbol = XEXP (DECL_RTL (init_func), 0);
   assemble_addr_to_section (init_func_symbol, upc_init_array_section);
 }

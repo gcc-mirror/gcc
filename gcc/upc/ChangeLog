@@ -1,3 +1,73 @@
+2011-05-17  Gary Funck  <gary@intrepid.com>
+
+	* upc-pts.h (upc_pts_build_value, upc_pts_build_add_offset,
+	  upc_pts_build_cond_expr, upc_pts_build_constant,
+	  upc_pts_build_cvt, upc_pts_build_diff, upc_pts_build_sum,
+	  upc_pts_build_threadof, upc_pts_init_type): Remove extern
+	  definitions.
+	  (upc_pts_ops_t): New. Define handler table that will
+	  implement either the 'packed' or the 'struct' representation
+	  of a UPC pointer-to-shared value.
+	  (upc_pts_packed_ops, upc_pts_struct_ops): New. Define extern that
+	  refers to the packed and the struct UPC pointer-to-shared
+	  representation implementation.
+	  (upc_pts): New. Define handler table that is set up at initialization
+	  to refer to the handlers for the UPC pointer-to-shared
+	  representation (packed/struct) that has been configured.
+	  Add conditional compilation test for HAVE_UPC_PTS_PACKED_REP
+	  and configure the UPC pointer-to-shared definitions that
+	  are specific to the configured UPC pointer-to-shared
+	  representation.
+
+	* upc-act.h (upc_pts_is_valid_p): Rename extern definition from
+	  is_valid_pts_p to upc_pts_is_valid_p.
+
+	* lang-specs.h: Reformat the UPC compilation specs.
+	  to improve readability.
+
+	* upc-rts-names.h: New. Define the names of UPC runtime
+	  library functions that implement UPC language statement
+	  semantics.  These definitions were moved from config/upc-conf.h
+
+	* upc-gimplify.c: Add include of "upc-rts-names.h".
+	  Refer to newly defined pointer manipulation routines
+	  by indirecting through the newly defined "pts" handler table.
+	  Re-format, re-indent.
+
+	* upc-lang.c: Add include of "upc-pts.h".  Fix a comment.
+
+	* config-lang.in: Remove logic that inserted "config/upc-conf.h"
+	  into the target include and file path.
+
+	* upc-pts-struct.c: Add include of "upc-rts-names.h".
+	  (upc_pts_struct_ops): Define the pointer manipulation
+	  handler table that implements operations on UPC
+	  pointers-to-shared, represented as a struct.
+	  Re-format and re-indent.
+
+	* upc-gasp.c: Add include of "upc-rts-names.h".
+	  Re-format and re-indent.
+
+	* upc-pts-packed.c: Add include of "upc-rts-names.h".
+	  (upc_pts_packed_ops): Define the pointer manipulation
+	  handler table that implements operations on UPC
+	  pointers-to-shared, represented as a packed integer.
+	  Re-format and re-indent.
+
+	* Make-lang.in: Compile both "upc-pts-packed.c" and
+	  "upc-pts-struct.c".  One/other will be selected at
+	  compilation time to implement operations on UPC
+	  on the UPC pointer-to-shared that has been configured.
+	  Add dependencies on "upc-rts-names.h".
+
+	* upc-cmd.c: Re-format and re-indent.
+
+	* upc-act.c: Add include of "upc-rts-names.h".
+	  (upc_pts): New. Add definition of the handler
+	  table that implements representation specific
+	  operations on trees that refer to UPC pointer-to-shared
+	  objects and types.  Re-format and re-indent.
+
 2011-05-06  Gary Funck  <gary@intrepid.com>
 
 	Eliminate compilation warnings, by fixing

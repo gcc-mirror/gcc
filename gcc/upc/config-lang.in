@@ -35,7 +35,7 @@
 
 language="upc"
 
-build_by_default="yes"
+build_by_default="no"
 
 compilers="cc1upc\$(exeext)"
 
@@ -48,36 +48,24 @@ gtfiles="\$(srcdir)/c-lang.h \$(srcdir)/c-tree.h \$(srcdir)/c-family/c-common.h 
 #
 # UPC specific configuration definitions
 #
-for v in tm_include_list tm_file_list
-do
-  cfiles="config/upc-conf.h"
-  case $build in
-  alpha*-*-unicosmk*)
-  	cfiles="${cfiles} config/alpha/upc-unicosmk.h"
-	;;
-  i[356]86-*-darwin*)
-	;;
-  i[56]86-*-linux*)
-	;;
-  mips-sgi-irix6*)
-	;;
-  ia64-*-linux*)
-	;;
-  x86_64-*-linux*)
-	;;
-  x86_64-*-darwin*)
-	;;
-  *)
-	echo "UPC has not been configured for ${build}." >&2
-        exit 2
-	;;
-  esac 
-  extra_parts="${extra_parts} ${upc_extra_parts}"
-  case $v in
-  *file*)
-  	cfiles=`echo $cfiles | sed -e 's=config/=\$(srcdir)/config/=g'`
-  	;;
-  *) ;;
-  esac
-  eval "${v}=\`echo \$${v} | sed -e 's=[^ ]*defaults.h= ${cfiles} &='\`"
-done
+case $build in
+alpha*-*-unicosmk*)
+      ;;
+i[356]86-*-darwin*)
+      ;;
+i[56]86-*-linux*)
+      ;;
+mips-sgi-irix6*)
+      ;;
+ia64-*-linux*)
+      ;;
+x86_64-*-linux*)
+      ;;
+x86_64-*-darwin*)
+      ;;
+*)
+      echo "UPC has not been configured for ${build}." >&2
+      exit 2
+      ;;
+esac 
+extra_parts="${extra_parts} ${upc_extra_parts}"

@@ -43,12 +43,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifdef GUPCR_PTS_STRUCT_REP
 
-#ifndef GUPCR_PTS_THREAD_FIELD
-#define GUPCR_PTS_THREAD_FIELD
-#endif
-#ifndef GUPCR_PTS_PHASE_FIELD
-#define GUPCR_PTS_PHASE_FIELD
-#endif
 #if GUPCR_PTS_THREAD_SIZE == 32
 #undef GUPCR_PTS_THREAD_TYPE
 #define GUPCR_PTS_THREAD_TYPE u_intSI_t
@@ -75,11 +69,11 @@ typedef struct shared_ptr_struct
   {
 #if GUPCR_PTS_VADDR_FIRST
     GUPCR_PTS_VADDR_TYPE  vaddr;
-    GUPCR_PTS_THREAD_TYPE thread GUPCR_PTS_THREAD_FIELD;
-    GUPCR_PTS_PHASE_TYPE  phase  GUPCR_PTS_PHASE_FIELD;
+    GUPCR_PTS_THREAD_TYPE thread;
+    GUPCR_PTS_PHASE_TYPE  phase;
 #else
-    GUPCR_PTS_PHASE_TYPE  phase  GUPCR_PTS_PHASE_FIELD;
-    GUPCR_PTS_THREAD_TYPE thread GUPCR_PTS_THREAD_FIELD;
+    GUPCR_PTS_PHASE_TYPE  phase;
+    GUPCR_PTS_THREAD_TYPE thread;
     GUPCR_PTS_VADDR_TYPE  vaddr;
 #endif
   } upc_shared_ptr_t

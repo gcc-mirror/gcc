@@ -139,6 +139,12 @@ upc_affinity_test (location_t ARG_UNUSED(start_locus),
   return 0;
 }
 
+tree
+upc_rts_forall_depth_var (void)
+{
+  return 0;
+}
+
 tree 
 upc_build_sync_stmt (location_t ARG_UNUSED(loc),
                      tree ARG_UNUSED (op), tree ARG_UNUSED (exp))

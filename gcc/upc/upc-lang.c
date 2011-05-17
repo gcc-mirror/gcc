@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "upc-pts.h"
 #include "upc-gimplify.h"
 #include "upc-gasp.h"
+#include "upc-pts.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "c-objc-common.h"
@@ -186,10 +187,10 @@ static alias_set_type
 upc_get_alias_set (tree t)
 {
 
-  /* For the time being, make shared pointers conflict
-     with everything else. Ideally, shared pointers should
+  /* For the time being, make UPC pointers-to-shared conflict
+     with everything else. Ideally, UPC pointers-to-shared should
      only conflict with the internal type used to represent
-     the shared pointer (i.e., upc_pts_rep_type_node) */
+     the UPC pointer-to-shared (i.e., upc_pts_rep_type_node) */
 
   if (TYPE_P (t) ? (TREE_CODE (t) == POINTER_TYPE
 		    && upc_shared_type_p (TREE_TYPE (t)))

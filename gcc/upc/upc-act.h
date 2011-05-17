@@ -36,10 +36,6 @@ extern void upc_write_init_func (void);
 extern void upc_free_unshared_var_table (void);
 extern int upc_types_compatible_p (tree, tree);
 extern int upc_inner_shared_ref_p (tree);
-
-/* used by c-parser */
-
-/* UPC-specific routines */
-extern int is_valid_pts_p (tree);
+extern int upc_pts_is_valid_p (tree);
 
 #endif /* !_UPC_ACT_H_ */

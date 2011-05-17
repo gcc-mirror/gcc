@@ -367,8 +367,10 @@ AC_MSG_CHECKING([UPC shared pointer representation])
 cat > conftest.upc << _ACEOF
 #define _XSTR(X) #X
 #define _STR(S) _XSTR(S)
-#if __UPC_VADDR_FIRST__
+#ifdef __UPC_VADDR_FIRST__
   GUPCR_PTS_VADDR_FIRST=1
+#else
+  GUPCR_PTS_VADDR_FIRST=0
 #endif
 GUPCR_PTS_VADDR_SIZE=_STR(__UPC_VADDR_SIZE__)
 GUPCR_PTS_PHASE_SIZE=_STR(__UPC_PHASE_SIZE__)
@@ -379,15 +381,6 @@ GUPCR_PTS_THREAD_SIZE=_STR(__UPC_THREAD_SIZE__)
   GUPCR_PTS_VADDR_TYPE=_STR(__UPC_VADDR_TYPE__)
   GUPCR_PTS_PHASE_TYPE=_STR(__UPC_PHASE_TYPE__)
   GUPCR_PTS_THREAD_TYPE=_STR(__UPC_THREAD_TYPE__)
-  #ifdef __UPC_VADDR_FIELD__
-    GUPCR_PTS_VADDR_FIELD=_STR(__UPC_VADDR_FIELD__)
-  #endif
-  #ifdef __UPC_PHASE_FIELD__
-    GUPCR_PTS_PHASE_FIELD=_STR(__UPC_PHASE_FIELD__)
-  #endif
-  #ifdef __UPC_THREAD_FIELD__
-    GUPCR_PTS_THREAD_FIELD=_STR(__UPC_THREAD_FIELD__)
-  #endif
 #else
   GUPCR_PTS_REP="packed"
   GUPCR_PTS_PACKED_REP=1
@@ -400,12 +393,15 @@ if test -z "$GUPCR_PTS_REP"; then
   AC_MSG_ERROR([can't determine UPC sptr representation])
 fi
 for cfg in \
-     GUPCR_PTS_PACKED_REP GUPCR_PTS_PHASE_FIELD \
-     GUPCR_PTS_PHASE_SIZE GUPCR_PTS_PHASE_TYPE \
-     GUPCR_PTS_REP GUPCR_PTS_STRUCT_REP \
-     GUPCR_PTS_THREAD_FIELD GUPCR_PTS_THREAD_SIZE \
-     GUPCR_PTS_THREAD_TYPE GUPCR_PTS_VADDR_FIELD \
-     GUPCR_PTS_VADDR_FIRST GUPCR_PTS_VADDR_SIZE \
+     GUPCR_PTS_PACKED_REP \
+     GUPCR_PTS_PHASE_SIZE \
+     GUPCR_PTS_PHASE_TYPE \
+     GUPCR_PTS_REP \
+     GUPCR_PTS_STRUCT_REP \
+     GUPCR_PTS_THREAD_SIZE \
+     GUPCR_PTS_THREAD_TYPE \
+     GUPCR_PTS_VADDR_FIRST \
+     GUPCR_PTS_VADDR_SIZE \
      GUPCR_PTS_VADDR_TYPE ; do
   eval "cval=\$$cfg"
   if test -n "$cval"; then
@@ -415,7 +411,7 @@ for cfg in \
 done
 if test "$with_upc_pts" -a "$with_upc_pts" != "$GUPCR_PTS_REP" ; then
   AC_MSG_ERROR([--with-upc-pts=$with_upc_pts is incompatible with the
-UPC compiler's supported sptr representation ($GUPCR_PTS_REP)])
+UPC compiler's supported pointer-to-shared representation ($GUPCR_PTS_REP)])
 fi
 AC_DEFINE_UNQUOTED(GUPCR_PTS_VADDR_SIZE,[$GUPCR_PTS_VADDR_SIZE],
   [Size of shared pointer's vaddr field (in bits)])
@@ -432,23 +428,11 @@ if test "$GUPCR_PTS_REP" = "struct"; then
     [The data type of the 'thread' field in a UPC shared pointer])
   AC_DEFINE_UNQUOTED(GUPCR_PTS_PHASE_TYPE,[$GUPCR_PTS_PHASE_TYPE],
     [The data type of the 'phase' field in a UPC shared pointer])
-  if test "$GUPCR_PTS_VADDR_FIELD"; then
-    AC_DEFINE_UNQUOTED(GUPCR_PTS_VADDR_FIELD,[$GUPCR_PTS_VADDR_FIELD],
-    [The (optional) field specifier (eg, ": 48") for the 'vaddr' field])
-  fi
-  if test "$GUPCR_PTS_THREAD_FIELD"; then
-    AC_DEFINE_UNQUOTED(GUPCR_PTS_THREAD_FIELD,[$GUPCR_PTS_THREAD_FIELD],
-    [The (optional) field specifier (eg, ": 48") for the 'thread' field])
-  fi
-  if test "$GUPCR_PTS_PHASE_FIELD"; then
-    AC_DEFINE_UNQUOTED(GUPCR_PTS_PHASE_FIELD,[$GUPCR_PTS_PHASE_FIELD],
-    [The (optional) field specifier (eg, ": 48") for the 'phase' field])
-  fi
 else
   AC_DEFINE(GUPCR_PTS_PACKED_REP,[1],
-    [Whether UPC shared pointers use the 'packed' representation])
+    [Whether UPC pointers-to-shared use the 'packed' representation])
 fi
-if test "$GUPCR_PTS_VADDR_FIRST"; then
+if test "$GUPCR_PTS_VADDR_FIRST" -eq 1; then
   AC_DEFINE(GUPCR_PTS_VADDR_FIRST,[1],
     [Whether the 'vaddr' field comes first (ie, [[vaddr,thread,phase]])])
 fi

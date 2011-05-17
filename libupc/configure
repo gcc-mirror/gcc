@@ -14358,8 +14358,10 @@ $as_echo_n "checking UPC shared pointer representation... " >&6; }
 cat > conftest.upc << _ACEOF
 #define _XSTR(X) #X
 #define _STR(S) _XSTR(S)
-#if __UPC_VADDR_FIRST__
+#ifdef __UPC_VADDR_FIRST__
   GUPCR_PTS_VADDR_FIRST=1
+#else
+  GUPCR_PTS_VADDR_FIRST=0
 #endif
 GUPCR_PTS_VADDR_SIZE=_STR(__UPC_VADDR_SIZE__)
 GUPCR_PTS_PHASE_SIZE=_STR(__UPC_PHASE_SIZE__)
@@ -14370,15 +14372,6 @@ GUPCR_PTS_THREAD_SIZE=_STR(__UPC_THREAD_SIZE__)
   GUPCR_PTS_VADDR_TYPE=_STR(__UPC_VADDR_TYPE__)
   GUPCR_PTS_PHASE_TYPE=_STR(__UPC_PHASE_TYPE__)
   GUPCR_PTS_THREAD_TYPE=_STR(__UPC_THREAD_TYPE__)
-  #ifdef __UPC_VADDR_FIELD__
-    GUPCR_PTS_VADDR_FIELD=_STR(__UPC_VADDR_FIELD__)
-  #endif
-  #ifdef __UPC_PHASE_FIELD__
-    GUPCR_PTS_PHASE_FIELD=_STR(__UPC_PHASE_FIELD__)
-  #endif
-  #ifdef __UPC_THREAD_FIELD__
-    GUPCR_PTS_THREAD_FIELD=_STR(__UPC_THREAD_FIELD__)
-  #endif
 #else
   GUPCR_PTS_REP="packed"
   GUPCR_PTS_PACKED_REP=1
@@ -14392,12 +14385,15 @@ if test -z "$GUPCR_PTS_REP"; then
   as_fn_error "can't determine UPC sptr representation" "$LINENO" 5
 fi
 for cfg in \
-     GUPCR_PTS_PACKED_REP GUPCR_PTS_PHASE_FIELD \
-     GUPCR_PTS_PHASE_SIZE GUPCR_PTS_PHASE_TYPE \
-     GUPCR_PTS_REP GUPCR_PTS_STRUCT_REP \
-     GUPCR_PTS_THREAD_FIELD GUPCR_PTS_THREAD_SIZE \
-     GUPCR_PTS_THREAD_TYPE GUPCR_PTS_VADDR_FIELD \
-     GUPCR_PTS_VADDR_FIRST GUPCR_PTS_VADDR_SIZE \
+     GUPCR_PTS_PACKED_REP \
+     GUPCR_PTS_PHASE_SIZE \
+     GUPCR_PTS_PHASE_TYPE \
+     GUPCR_PTS_REP \
+     GUPCR_PTS_STRUCT_REP \
+     GUPCR_PTS_THREAD_SIZE \
+     GUPCR_PTS_THREAD_TYPE \
+     GUPCR_PTS_VADDR_FIRST \
+     GUPCR_PTS_VADDR_SIZE \
      GUPCR_PTS_VADDR_TYPE ; do
   eval "cval=\$$cfg"
   if test -n "$cval"; then
@@ -14409,7 +14405,7 @@ $as_echo "$cval" >&6; }
 done
 if test "$with_upc_pts" -a "$with_upc_pts" != "$GUPCR_PTS_REP" ; then
   as_fn_error "--with-upc-pts=$with_upc_pts is incompatible with the
-UPC compiler's supported sptr representation ($GUPCR_PTS_REP)" "$LINENO" 5
+UPC compiler's supported pointer-to-shared representation ($GUPCR_PTS_REP)" "$LINENO" 5
 fi
 
 cat >>confdefs.h <<_ACEOF
@@ -14445,33 +14441,12 @@ cat >>confdefs.h <<_ACEOF
 #define GUPCR_PTS_PHASE_TYPE $GUPCR_PTS_PHASE_TYPE
 _ACEOF
 
-  if test "$GUPCR_PTS_VADDR_FIELD"; then
-
-cat >>confdefs.h <<_ACEOF
-#define GUPCR_PTS_VADDR_FIELD $GUPCR_PTS_VADDR_FIELD
-_ACEOF
-
-  fi
-  if test "$GUPCR_PTS_THREAD_FIELD"; then
-
-cat >>confdefs.h <<_ACEOF
-#define GUPCR_PTS_THREAD_FIELD $GUPCR_PTS_THREAD_FIELD
-_ACEOF
-
-  fi
-  if test "$GUPCR_PTS_PHASE_FIELD"; then
-
-cat >>confdefs.h <<_ACEOF
-#define GUPCR_PTS_PHASE_FIELD $GUPCR_PTS_PHASE_FIELD
-_ACEOF
-
-  fi
 else
 
 $as_echo "#define GUPCR_PTS_PACKED_REP 1" >>confdefs.h
 
 fi
-if test "$GUPCR_PTS_VADDR_FIRST"; then
+if test "$GUPCR_PTS_VADDR_FIRST" -eq 1; then
 
 $as_echo "#define GUPCR_PTS_VADDR_FIRST 1" >>confdefs.h
 

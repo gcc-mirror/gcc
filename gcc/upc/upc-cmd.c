@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <unistd.h>
 #include <ctype.h>
 
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <sys/param.h>
 #include <sys/types.h>
 
@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
    link a UPC program. */
 
 #ifndef COMPILER
- #error "-DCOMPILER must be supplied when compiling upc.c"
+#error "-DCOMPILER must be supplied when compiling upc.c"
 #endif
 
 #define MULTI_DIR_SWITCH "-print-multi-directory"
@@ -96,7 +96,8 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifndef GET_ENV_PATH_LIST
-#define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
+#define GET_ENV_PATH_LIST(VAR,NAME) \
+	do { (VAR) = getenv (NAME); } while (0)
 #endif
 
 #define BINSUFFIX "/bin/"
@@ -109,8 +110,8 @@ static char *progname;
 
 static int debug;
 
-static char *substr PARAMS((const char *s, int len));
-static int match_suffix PARAMS((const char *s, const char *suffix));
+static char *substr PARAMS ((const char *s, int len));
+static int match_suffix PARAMS ((const char *s, const char *suffix));
 
 #define END_ARGS ((char *) 0)
 
@@ -159,18 +160,16 @@ concat (const char *first, ...)
   return newstr;
 }
 
-static
-char *
+static char *
 substr (const char *s, int len)
 {
-  char *sub = (char *)xmalloc (len + 1);
+  char *sub = (char *) xmalloc (len + 1);
   strncpy (sub, s, len);
   sub[len] = '\0';
   return sub;
 }
 
-static
-int
+static int
 match_suffix (const char *s, const char *suffix)
 {
   int slen = strlen (s);
@@ -181,8 +180,7 @@ match_suffix (const char *s, const char *suffix)
 
 /* Escape characters that might be harmful to the shell.  */
 
-static
-char *
+static char *
 shell_escape (const char *s)
 {
   const char *meta = "&;`'\\\"|*?~<>^()[]{}$\n\r\f\t ";
@@ -192,17 +190,20 @@ shell_escape (const char *s)
   char *result = xstrdup (s);
   for (needs_quote = 0, needs_escape = 0, ps = s; *ps; ++ps)
     {
-      if (strchr (meta, (int)*ps))
-         needs_quote = 1;
+      if (strchr (meta, (int) *ps))
+	needs_quote = 1;
       needs_escape += (*ps == '\'');
     }
   if (needs_quote)
     {
-      result = (char *) xmalloc (strlen(s) + 1 + 2 + needs_escape * 5);
+      result = (char *) xmalloc (strlen (s) + 1 + 2 + needs_escape * 5);
       for (ps = s, r = result, *r++ = '\''; *ps; ++ps)
-        if (*ps == '\'')
-	  { memcpy(r, "'\"'\"'", 5); r += 5; }
-        else
+	if (*ps == '\'')
+	  {
+	    memcpy (r, "'\"'\"'", 5);
+	    r += 5;
+	  }
+	else
 	  *r++ = *ps;
       *r++ = '\'';
       *r = '\0';
@@ -213,8 +214,7 @@ shell_escape (const char *s)
 /* Using the arg. list we've built up so far, tack on
    the PRINT_CMD argument, and return the result.  */
 
-static
-const char *
+static const char *
 get_print_cmd (const char *exec_args[], int n_args, const char *print_cmd)
 {
   int i, len;
@@ -222,13 +222,14 @@ get_print_cmd (const char *exec_args[], int n_args, const char *print_cmd)
   char *s;
   const char *result = NULL;
   FILE *pipe;
-  for (i = 0, len = strlen(print_cmd) + 1; i < n_args; ++i)
-    len += strlen (shell_escape(exec_args[i])) + 1;
-  cmd = (char *)xmalloc (len);
+  for (i = 0, len = strlen (print_cmd) + 1; i < n_args; ++i)
+    len += strlen (shell_escape (exec_args[i])) + 1;
+  cmd = (char *) xmalloc (len);
   for (i = 0, s = cmd; i < n_args; ++i)
     {
-      char *p = shell_escape(exec_args[i]);
-      while (*p) *s++ = *p++;
+      char *p = shell_escape (exec_args[i]);
+      while (*p)
+	*s++ = *p++;
       *s++ = ' ';
     }
   strcpy (s, print_cmd);
@@ -239,7 +240,8 @@ get_print_cmd (const char *exec_args[], int n_args, const char *print_cmd)
       int slen;
       (void) fgets (buf, sizeof (buf), pipe);
       slen = strlen (buf);
-      if (buf[slen-1] == '\n') buf[slen-1] = '\0';
+      if (buf[slen - 1] == '\n')
+	buf[slen - 1] = '\0';
       (void) pclose (pipe);
       result = (const char *) xstrdup (buf);
     }
@@ -254,8 +256,7 @@ get_print_cmd (const char *exec_args[], int n_args, const char *print_cmd)
    upc command, use -print-file-name to find the "libupc.a"
    library file, and return the containing directory.  */
 
-static
-const char *
+static const char *
 get_libupc_path (const char *exec_args[], int n_args)
 {
   const char *libupc_path = NULL;
@@ -266,8 +267,8 @@ get_libupc_path (const char *exec_args[], int n_args)
     lib_suffix = get_print_cmd (exec_args, n_args, MULTI_DIR_SWITCH);
     if (debug)
       fprintf (stderr, "lib suffix = %s\n",
-               lib_suffix ? lib_suffix : "<none>");
-    if (lib_suffix && *lib_suffix && (strcmp(lib_suffix, ".") != 0))
+	       lib_suffix ? lib_suffix : "<none>");
+    if (lib_suffix && *lib_suffix && (strcmp (lib_suffix, ".") != 0))
       libupc_path = concat (libupc_path, "/", lib_suffix, END_ARGS);
     libupc_path = concat (libupc_path, "/libupc", END_ARGS);
   }
@@ -277,19 +278,20 @@ get_libupc_path (const char *exec_args[], int n_args)
     libupc_archive = get_print_cmd (exec_args, n_args, FIND_LIBUPC_SWITCH);
     if (debug)
       fprintf (stderr, "libupc.a path = %s\n",
-               libupc_archive ? libupc_archive : "<none>");
+	       libupc_archive ? libupc_archive : "<none>");
     if (libupc_archive[0] == '/')
       {
-        const char *s, *last_slash;
+	const char *s, *last_slash;
 	char *path;
-        size_t slen;
+	size_t slen;
 	for (s = libupc_archive; *s; ++s)
-	  if (*s == '/') last_slash = s;
-        slen = (last_slash - libupc_archive);
+	  if (*s == '/')
+	    last_slash = s;
+	slen = (last_slash - libupc_archive);
 	path = (char *) xmalloc (slen + 1);
 	memcpy (path, libupc_archive, slen);
 	path[slen] = '\0';
-	libupc_path = (const char *)path;
+	libupc_path = (const char *) path;
       }
   }
 #endif
@@ -321,7 +323,7 @@ main (int argc, char *argv[])
 
 #ifdef DEBUG
   debug = 1;
-#endif 
+#endif
 
   /* Parse command line early for instances of -debug.  This allows
      the debug flag to be set before functions like find_a_file()
@@ -331,8 +333,8 @@ main (int argc, char *argv[])
       debug = 1;
 
   /* extract the program's name from the command line. */
-  for (cp = argv[0] + strlen(argv[0]) - 1;
-       cp != argv [0] && *cp != '/'; --cp) /* loop */;
+  for (cp = argv[0] + strlen (argv[0]) - 1;
+       cp != argv[0] && *cp != '/'; --cp) /* loop */ ;
   progname = (char *) xmalloc (strlen (cp + 1) + 1);
   strcpy (progname, cp + 1);
 
@@ -346,33 +348,33 @@ main (int argc, char *argv[])
 #ifdef INC_PATH
   inc_dir = INC_PATH;
 #endif
-  
+
   /* Check to see if any switches are asserted that inhibit linking
      and record the presence of other switches that may require
      special handling. */
   for (i = 1; i < argc; ++i)
     {
-      const char * const arg = argv[i];
+      const char *const arg = argv[i];
       if (arg[0] == '-')
 	{
-          /* skip upc's '-debug' switch */
-	  if (!strcmp(arg, "-debug"))
+	  /* skip upc's '-debug' switch */
+	  if (!strcmp (arg, "-debug"))
 	    continue;
-	  else if (!strcmp(arg, "-nodefaultlibs"))
+	  else if (!strcmp (arg, "-nodefaultlibs"))
 	    {
-	       no_default_libs = 1;
+	      no_default_libs = 1;
 	    }
-	  else if (!strcmp(arg, "-nostdinc"))
-	    { 
-	       no_std_inc = 1;
+	  else if (!strcmp (arg, "-nostdinc"))
+	    {
+	      no_std_inc = 1;
 	    }
-	  else if (!strcmp(arg, "-nostdlib"))
-	    { 
-	       no_default_libs = 1;
+	  else if (!strcmp (arg, "-nostdlib"))
+	    {
+	      no_default_libs = 1;
 	    }
-	  else if (!strcmp(arg, "-fno-upc-pre-include"))
-	    { 
-	       no_upc_pre_inc = 1;
+	  else if (!strcmp (arg, "-fno-upc-pre-include"))
+	    {
+	      no_upc_pre_inc = 1;
 	    }
 	  invoke_linker = invoke_linker && !NO_LINK_SWITCHES (arg);
 	  info_only = info_only && GCC_INFO_ONLY_SWITCHES (arg);
@@ -396,36 +398,38 @@ main (int argc, char *argv[])
      binary lives, usually with a "/" appended to the end, so
      that the result can be passed directly to the "gcc" command,
      yield an invocation of the form:
-       <full_pathname_of_gcc_or_xgcc> -B<compiler_dir>/
-     
+     <full_pathname_of_gcc_or_xgcc> -B<compiler_dir>/
+
      If the UPC_EXEC_PREFIX env. variable is set, this value overrides
      the compiled-in COMPILER_DIR setting. */
 
   GET_ENV_PATH_LIST (upc_exec_prefix, "UPC_EXEC_PREFIX");
   if (!(compiler_dir || upc_exec_prefix))
     {
-      upc_exec_prefix = make_relative_prefix (argv[0], standard_bindir_prefix, standard_exec_prefix);
+      upc_exec_prefix =
+	make_relative_prefix (argv[0], standard_bindir_prefix,
+			      standard_exec_prefix);
     }
-  if (upc_exec_prefix && strcmp(upc_exec_prefix, standard_exec_prefix) != 0)
+  if (upc_exec_prefix && strcmp (upc_exec_prefix, standard_exec_prefix) != 0)
     {
       int len = strlen (upc_exec_prefix);
 
       if (debug)
-        {
+	{
 	  fprintf (stderr, "using UPC_EXEC_PREFIX=%s\n", upc_exec_prefix);
 	}
       if (match_suffix (upc_exec_prefix, GCCLIBSUFFIX))
-        {
+	{
 	  bin_dir = concat (substr (upc_exec_prefix,
-			            len - (sizeof(GCCLIBSUFFIX) - 1)),
+				    len - (sizeof (GCCLIBSUFFIX) - 1)),
 			    "/bin", END_ARGS);
 	  compiler_dir = upc_exec_prefix;
 	}
-      else if (match_suffix(upc_exec_prefix, BINSUFFIX))
-        {
+      else if (match_suffix (upc_exec_prefix, BINSUFFIX))
+	{
 	  bin_dir = substr (upc_exec_prefix, len - 1);
-          compiler_dir = concat (substr (upc_exec_prefix,
-					 len - (sizeof(BINSUFFIX) - 1)), 
+	  compiler_dir = concat (substr (upc_exec_prefix,
+					 len - (sizeof (BINSUFFIX) - 1)),
 				 GCCLIBSUFFIX, END_ARGS);
 	}
       else
@@ -436,8 +440,7 @@ main (int argc, char *argv[])
 
       inc_dir = concat (compiler_dir,
 			DEFAULT_TARGET_MACHINE, "/",
-			DEFAULT_TARGET_VERSION,
-			"/include", END_ARGS);
+			DEFAULT_TARGET_VERSION, "/include", END_ARGS);
     }
 
   compiler = concat (bin_dir, "/", COMPILER, END_ARGS);
@@ -453,7 +456,7 @@ main (int argc, char *argv[])
     {
       if (inc_dir && !no_std_inc && !no_upc_pre_inc)
 	{
-          /* Copy in the -isystem <path> argument */
+	  /* Copy in the -isystem <path> argument */
 	  exec_args[nargs++] = xstrdup ("-isystem");
 	  exec_args[nargs++] = inc_dir;
 	}
@@ -462,50 +465,50 @@ main (int argc, char *argv[])
   /* Copy in the arguments as passed to 'upc' */
   for (i = 1, is_x_upc_in_effect = 0; i < argc; ++i)
     {
-      const char * const arg = argv[i];
+      const char *const arg = argv[i];
       const int is_c_file = match_suffix (arg, ".c")
-                            || match_suffix (arg, ".h");
+	|| match_suffix (arg, ".h");
       const int is_upc_file = match_suffix (arg, ".upc")
-                              || match_suffix (arg, ".uph");
+	|| match_suffix (arg, ".uph");
       int num;
       /* skip upc's '-debug' switch */
-      if (!strcmp(arg, "-debug"))
-        continue;
-      if (!strcmp(arg, "-n") && ((i + 1) < argc))
-        {
+      if (!strcmp (arg, "-debug"))
+	continue;
+      if (!strcmp (arg, "-n") && ((i + 1) < argc))
+	{
 	  /* rewrite "-n <num>" into "-fupc-threads-<num>" */
-          exec_args[nargs++] = concat ("-fupc-threads-", argv[++i], END_ARGS);
+	  exec_args[nargs++] = concat ("-fupc-threads-", argv[++i], END_ARGS);
 	}
-      else if (!strncmp(arg, "-n", 2)
-               && (sscanf (arg + 2, "%d", &num) == 1))
-        {
+      else if (!strncmp (arg, "-n", 2) && (sscanf (arg + 2, "%d", &num) == 1))
+	{
 	  /* rewrite "-n<num>" into "-fupc-threads-<num>" */
-          exec_args[nargs++] = concat ("-fupc-threads-", arg + 2, END_ARGS);
+	  exec_args[nargs++] = concat ("-fupc-threads-", arg + 2, END_ARGS);
 	}
-      else if (!strcmp(arg, "-inst") || !strcmp(arg, "--inst"))
-        {
+      else if (!strcmp (arg, "-inst") || !strcmp (arg, "--inst"))
+	{
 	  /* rewrite "-inst" or "--inst" into "-fupc-instrument" */
-          exec_args[nargs++] = "-fupc-instrument";
+	  exec_args[nargs++] = "-fupc-instrument";
 	}
-      else if (!strcmp(arg, "-inst-functions") || !strcmp(arg, "--inst-functions"))
-        {
+      else if (!strcmp (arg, "-inst-functions")
+	       || !strcmp (arg, "--inst-functions"))
+	{
 	  /* rewrite "-inst-functions" or "--inst-functions"
 	     into "-fupc-instrument-functions" */
-          exec_args[nargs++] = "-fupc-instrument-functions";
+	  exec_args[nargs++] = "-fupc-instrument-functions";
 	}
       else if (((arg[2] == '\0') && GCC_SWITCH_TAKES_ARG (arg[1]))
-	      || GCC_WORD_SWITCH_TAKES_ARG (&arg[1])
-	      || ((arg[1] == '-') && GCC_WORD_SWITCH_TAKES_ARG (&arg[2])))
+	       || GCC_WORD_SWITCH_TAKES_ARG (&arg[1])
+	       || ((arg[1] == '-') && GCC_WORD_SWITCH_TAKES_ARG (&arg[2])))
 	{
 	  /* Copy the switch and the following argument.  */
-          exec_args[nargs++] = arg;
-          exec_args[nargs++] = argv[++i];
-        }
+	  exec_args[nargs++] = arg;
+	  exec_args[nargs++] = argv[++i];
+	}
       else if (arg[1] == '-')
-        /* Copy the switch and continue.  */
-        exec_args[nargs++] = arg;
+	/* Copy the switch and continue.  */
+	exec_args[nargs++] = arg;
       else
-        {
+	{
 	  if (is_c_file && !is_x_upc_in_effect)
 	    {
 	      /* Assume that .c files are in fact UPC source files */
@@ -520,7 +523,7 @@ main (int argc, char *argv[])
 	      exec_args[nargs++] = "none";
 	    }
 	  exec_args[nargs++] = arg;
-        }
+	}
     }
 
   if (!info_only)
@@ -532,11 +535,11 @@ main (int argc, char *argv[])
 	  exit (2);
 	}
       if (!no_std_inc && !no_upc_pre_inc)
-        {
+	{
 	  /* Place libdir first so that we can find gcc-upc-lib.h. */
 	  exec_args[nargs++] = xstrdup ("-isystem");
 	  exec_args[nargs++] = lib_dir;
-        }
+	}
       /* add -B <lib_dir>/ so that we can find libupc.spec.  */
       exec_args[nargs++] = concat ("-B", lib_dir, "/", END_ARGS);
     }
@@ -555,19 +558,21 @@ main (int argc, char *argv[])
 	  if (is_dev_compiler)
 	    link_lib_dir = concat (link_lib_dir, "/.libs", END_ARGS);
 	  /* Add the link library path where libupc.a is located.  */
-          exec_args[nargs++] = concat (xstrdup ("-L"), link_lib_dir, END_ARGS);
-        }
+	  exec_args[nargs++] =
+	    concat (xstrdup ("-L"), link_lib_dir, END_ARGS);
+	}
     }
 
   if (debug)
     {
-      fprintf(stderr, "upc exec args: ");
+      fprintf (stderr, "upc exec args: ");
       for (i = 0; i < nargs; ++i)
 	{
-	    if (i != 0) fprintf(stderr, " ");
-	    fprintf(stderr, "%s", exec_args[i]);
+	  if (i != 0)
+	    fprintf (stderr, " ");
+	  fprintf (stderr, "%s", exec_args[i]);
 	}
-      fprintf(stderr, "\n");
+      fprintf (stderr, "\n");
     }
   exec_args[nargs++] = 0;
 
@@ -578,11 +583,11 @@ main (int argc, char *argv[])
     {
       char *arg_copy = NULL;
       if (exec_args[i] != NULL)
-        arg_copy = xstrdup (exec_args[i]);
+	arg_copy = xstrdup (exec_args[i]);
       exec_arg_list[i] = arg_copy;
     }
 
-  if (execv(exec_args[0], exec_arg_list) < 0)
+  if (execv (exec_args[0], exec_arg_list) < 0)
     {
       perror (exec_args[0]);
       exit (255);

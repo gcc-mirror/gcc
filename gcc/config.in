@@ -1495,6 +1495,19 @@
 #endif
 
 
+/* Define to 1 if UPC pointer-to-shared representation is a packed 64 bit
+   word. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_UPC_PTS_PACKED_REP
+#endif
+
+
+/* Define to 1 if UPC pointer-to-shared representation is a structure. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_UPC_PTS_STRUCT_REP
+#endif
+
+
 /* Define if valgrind's valgrind/memcheck.h header is installed. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_VALGRIND_MEMCHECK_H
@@ -1742,73 +1755,29 @@
 #endif
 
 
-/* maximum shared array blocking size. */
-#ifndef USED_FOR_TARGET
-#undef UPC_MAX_BLOCK_SIZE
-#endif
-
-
-/* maximum number of threads. */
-#ifndef USED_FOR_TARGET
-#undef UPC_MAX_THREADS
-#endif
-
-
-/* UPC packed PTS representation supported. */
-#ifndef USED_FOR_TARGET
-#undef UPC_PTS_PACKED_REP
-#endif
-
-
-/* UPC shared pointer phase field shift. */
-#ifndef USED_FOR_TARGET
-#undef UPC_PTS_PHASE_SHIFT
-#endif
-
-
-/* size of the address field in shared pointer rep. */
+/* For packed UPC pointers-to-shared, the size of the phase field (in bits).
+   */
 #ifndef USED_FOR_TARGET
 #undef UPC_PTS_PHASE_SIZE
 #endif
 
 
-/* size of the shared pointer rep. */
-#ifndef USED_FOR_TARGET
-#undef UPC_PTS_SIZE
-#endif
-
-
-/* UPC struct PTS representation supported. */
-#ifndef USED_FOR_TARGET
-#undef UPC_PTS_STRUCT_REP
-#endif
-
-
-/* UPC shared pointer thread field shift. */
-#ifndef USED_FOR_TARGET
-#undef UPC_PTS_THREAD_SHIFT
-#endif
-
-
-/* size of the address field in shared pointer rep. */
+/* For packed UPC pointers-to-shared, the size of the thread field (in bits).
+   */
 #ifndef USED_FOR_TARGET
 #undef UPC_PTS_THREAD_SIZE
 #endif
 
 
-/* UPC shared pointer address field position. */
+/* Define to 1 if the 'vaddr' field is the first field in the UPC
+   pointer-to-shared representation. */
 #ifndef USED_FOR_TARGET
 #undef UPC_PTS_VADDR_FIRST
 #endif
 
 
-/* UPC shared pointer address field shift. */
-#ifndef USED_FOR_TARGET
-#undef UPC_PTS_VADDR_SHIFT
-#endif
-
-
-/* size of the address field in shared pointer rep. */
+/* For packed UPC pointers-to-shared, the size of the address field (in bits).
+   */
 #ifndef USED_FOR_TARGET
 #undef UPC_PTS_VADDR_SIZE
 #endif
