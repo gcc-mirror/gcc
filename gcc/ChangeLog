@@ -1,5 +1,9 @@
 2011-05-17  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (type_hash_pair_compare): Fix comparison.
+
+2011-05-17  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.c (iterative_hash_gimple_type): Simplify singleton
 	case some more, fix final hash value of the non-singleton case.
 

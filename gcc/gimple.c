@@ -4070,9 +4070,11 @@ type_hash_pair_compare (const void *p1_, const void *p2_)
 {
   const struct type_hash_pair *p1 = (const struct type_hash_pair *) p1_;
   const struct type_hash_pair *p2 = (const struct type_hash_pair *) p2_;
-  if (p1->hash == p2->hash)
-    return TYPE_UID (p1->type) - TYPE_UID (p2->type);
-  return p1->hash - p2->hash;
+  if (p1->hash < p2->hash)
+    return -1;
+  else if (p1->hash > p2->hash)
+    return 1;
+  return 0;
 }
 
 /* Returning a hash value for gimple type TYPE combined with VAL.
