@@ -904,6 +904,39 @@
    (set_attr "length"   "3,4,5,6,7,6")]
 )
 
+;; Peepholes to match:
+;;   (set (reg A) (reg B))
+;;   (set (CC) (compare:CC (reg A/reg B) (const_int 0)))
+;; and replace them with the addsi3_flags pattern, using an add
+;; of zero to copy the register and set the condition code bits.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand")
+        (match_operand:SI 1 "register_operand"))
+   (set (reg:CC CC_REG)
+        (compare:CC (match_dup 0)
+                    (const_int 0)))]
+  ""
+  [(parallel [(set (match_dup 0)
+		   (plus:SI (match_dup 1) (const_int 0)))
+	      (set (reg:CC_ZSC CC_REG)
+		   (compare:CC_ZSC (plus:SI (match_dup 1) (const_int 0))
+				   (const_int 0)))])]
+)
+
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand")
+        (match_operand:SI 1 "register_operand"))
+   (set (reg:CC CC_REG)
+        (compare:CC (match_dup 1)
+                    (const_int 0)))]
+  ""
+  [(parallel [(set (match_dup 0)
+		   (plus:SI (match_dup 1) (const_int 0)))
+	      (set (reg:CC_ZSC CC_REG)
+		   (compare:CC_ZSC (plus:SI (match_dup 1) (const_int 0))
+				   (const_int 0)))])]
+)
+
 (define_expand "adddi3"
   [(set (match_operand:DI          0 "register_operand")
 	(plus:DI (match_operand:DI 1 "register_operand")
