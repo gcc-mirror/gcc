@@ -702,7 +702,7 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
       bool inlined_to_p = false;
       struct cgraph_edge *edge;
 
-      info->entry = false;
+      info->entry = 0;
       VEC_safe_grow_cleared (tree, heap, known_vals, count);
       for (i = 0; i < count; i++)
         {

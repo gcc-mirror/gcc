@@ -5232,7 +5232,7 @@ maybe_inline_call_in_expr (tree exp)
       id.transform_call_graph_edges = CB_CGE_DUPLICATE;
       id.transform_new_cfg = false;
       id.transform_return_to_modify = true;
-      id.transform_lang_insert_block = false;
+      id.transform_lang_insert_block = NULL;
 
       /* Make sure not to unshare trees behind the front-end's back
 	 since front-end specific mechanisms may rely on sharing.  */
