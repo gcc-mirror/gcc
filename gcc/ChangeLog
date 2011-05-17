@@ -4,6 +4,9 @@
 
 	2011-05-17  Nick Clifton  <nickc@redhat.com>
 
+	* config/rx/rx.c (rx_memory_move_cost): Include cost of register
+	moves.
+
 	* config/rx/rx.md: Add peephole to remove redundant extensions
 	after loads.
 	(bitset_in_memory): Use rx_restricted_mem_operand.

@@ -2592,9 +2592,11 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
 }
 
 static int
-rx_memory_move_cost (enum machine_mode mode, reg_class_t regclass, bool in)
+rx_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+		     reg_class_t regclass ATTRIBUTE_UNUSED,
+		     bool in)
 {
-  return (in ? 2:0) + memory_move_secondary_cost (mode, regclass, in);
+  return (in ? 2 : 0) + REGISTER_MOVE_COST (mode, regclass, regclass);
 }
 
 /* Convert a CC_MODE to the set of flags that it represents.  */
