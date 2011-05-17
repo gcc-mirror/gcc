@@ -4856,18 +4856,13 @@ gimple_register_canonical_type (tree t)
   if (TYPE_CANONICAL (t))
     return TYPE_CANONICAL (t);
 
-  /* Always register the type itself first so that if it turns out
-     to be the canonical type it will be the one we merge to as well.  */
-  t = gimple_register_type (t);
+  /* Use the leader of our main variant for determining our canonical
+     type.  The main variant leader is a type that will always
+     prevail.  */
+  t = gimple_register_type (TYPE_MAIN_VARIANT (t));
 
   if (TYPE_CANONICAL (t))
     return TYPE_CANONICAL (t);
-
-  /* Always register the main variant first.  This is important so we
-     pick up the non-typedef variants as canonical, otherwise we'll end
-     up taking typedef ids for structure tags during comparison.  */
-  if (TYPE_MAIN_VARIANT (t) != t)
-    gimple_register_canonical_type (TYPE_MAIN_VARIANT (t));
 
   if (gimple_canonical_types == NULL)
     gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
