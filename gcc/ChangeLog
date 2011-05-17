@@ -2,6 +2,9 @@
 
 	* config/rx/rx.md: Add peephole to remove redundant extensions
 	after loads.
+	(bitset_in_memory): Use rx_restricted_mem_operand.
+	(bitinvert_in_memory): Likewise.
+	(bitclr_in_memory): Likewise.
 
 2011-05-17  Kazuhio Inaoka  <kazuhiro.inaoka.ud@renesas.com>
 	    Nick Clifton  <nickc@redhat.com>

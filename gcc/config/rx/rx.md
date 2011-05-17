@@ -1831,7 +1831,7 @@
 )
 
 (define_insn "*bitset_in_memory"
-  [(set (match_operand:QI                    0 "memory_operand" "+Q")
+  [(set (match_operand:QI                    0 "rx_restricted_mem_operand" "+Q")
 	(ior:QI (ashift:QI (const_int 1)
 			   (match_operand:QI 1 "nonmemory_operand" "ri"))
 		(match_dup 0)))]
@@ -1852,7 +1852,7 @@
 )
 
 (define_insn "*bitinvert_in_memory"
-  [(set (match_operand:QI 0 "memory_operand" "+Q")
+  [(set (match_operand:QI 0 "rx_restricted_mem_operand" "+Q")
 	(xor:QI (ashift:QI (const_int 1)
 			   (match_operand:QI 1 "nonmemory_operand" "ri"))
 		(match_dup 0)))]
@@ -1875,7 +1875,7 @@
 )
 
 (define_insn "*bitclr_in_memory"
-  [(set (match_operand:QI 0 "memory_operand" "+Q")
+  [(set (match_operand:QI 0 "rx_restricted_mem_operand" "+Q")
 	(and:QI (not:QI
 		  (ashift:QI
 		    (const_int 1)
