@@ -4213,25 +4213,24 @@ iterative_hash_gimple_type (tree type, hashval_t val,
   if (state->low == state->dfsnum)
     {
       tree x;
-      struct sccs *cstate;
       struct tree_int_map *m;
 
       /* Pop off the SCC and set its hash values.  */
       x = VEC_pop (tree, *sccstack);
-      cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
-      cstate->on_sccstack = false;
       /* Optimize SCC size one.  */
       if (x == type)
 	{
+	  state->on_sccstack = false;
 	  m = ggc_alloc_cleared_tree_int_map ();
 	  m->base.from = x;
-	  m->to = cstate->u.hash;
+	  m->to = v;
 	  slot = htab_find_slot (type_hash_cache, m, INSERT);
 	  gcc_assert (!*slot);
 	  *slot = (void *) m;
 	}
       else
 	{
+	  struct sccs *cstate;
 	  unsigned first, i, size, j;
 	  struct type_hash_pair *pairs;
 	  /* Pop off the SCC and build an array of type, hash pairs.  */
@@ -4241,6 +4240,8 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	  size = VEC_length (tree, *sccstack) - first + 1;
 	  pairs = XALLOCAVEC (struct type_hash_pair, size);
 	  i = 0;
+	  cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
+	  cstate->on_sccstack = false;
 	  pairs[i].type = x;
 	  pairs[i].hash = cstate->u.hash;
 	  do
@@ -4275,6 +4276,8 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 	      for (j = 0; pairs[j].hash != pairs[i].hash; ++j)
 		hash = iterative_hash_hashval_t (pairs[j].hash, hash);
 	      m->to = hash;
+	      if (pairs[i].type == type)
+		v = hash;
 	      slot = htab_find_slot (type_hash_cache, m, INSERT);
 	      gcc_assert (!*slot);
 	      *slot = (void *) m;

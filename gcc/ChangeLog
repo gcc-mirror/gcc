@@ -1,5 +1,10 @@
 2011-05-17  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (iterative_hash_gimple_type): Simplify singleton
+	case some more, fix final hash value of the non-singleton case.
+
+2011-05-17  Richard Guenther  <rguenther@suse.de>
+
 	PR bootstrap/49013
 	Revert
 	2011-05-16  Richard Guenther  <rguenther@suse.de>
