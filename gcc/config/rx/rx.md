@@ -1701,6 +1701,35 @@
 		    (extend_types:SI (match_dup 1))))]
 )
 
+;; Convert:
+;;   (set (reg1) (sign_extend (mem))
+;;   (set (reg2) (zero_extend (reg1))
+;; into
+;;   (set (reg2) (zero_extend (mem)))
+(define_peephole2
+  [(set (match_operand:SI                              0 "register_operand")
+	(sign_extend:SI (match_operand:small_int_modes 1 "memory_operand")))
+   (set (match_operand:SI                              2 "register_operand")
+	(zero_extend:SI (match_operand:small_int_modes 3 "register_operand")))]
+  "REGNO (operands[0]) == REGNO (operands[3])
+   && (REGNO (operands[0]) == REGNO (operands[2])
+       || peep2_regno_dead_p (2, REGNO (operands[0])))"
+  [(set (match_dup 2)
+	(zero_extend:SI (match_dup 1)))]
+)
+
+;; Remove the redundant sign extension from:
+;;   (set (reg) (extend (mem)))
+;;   (set (reg) (extend (reg)))
+(define_peephole2
+  [(set (match_operand:SI                               0 "register_operand")
+	(extend_types:SI (match_operand:small_int_modes 1 "memory_operand")))
+   (set (match_dup 0)
+	(extend_types:SI (match_operand:small_int_modes 2 "register_operand")))]
+  "REGNO (operands[0]) == REGNO (operands[2])"
+  [(set (match_dup 0) (extend_types:SI (match_dup 1)))]
+)
+
 (define_insn "comparesi3_<extend_types:code><small_int_modes:mode>"
   [(set (reg:CC CC_REG)
 	(compare:CC (match_operand:SI                               0 "register_operand" "=r")

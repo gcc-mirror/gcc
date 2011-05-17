@@ -1,3 +1,8 @@
+2011-05-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md: Add peephole to remove redundant extensions
+	after loads.
+
 2011-05-17  Kazuhio Inaoka  <kazuhiro.inaoka.ud@renesas.com>
 	    Nick Clifton  <nickc@redhat.com>
 
