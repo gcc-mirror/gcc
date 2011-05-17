@@ -1,3 +1,14 @@
+2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (output_fix_trunc): Change arg 3 to bool.
+	(output_fp_compare): Change args 3 and 4 to bool.
+	(ix86_expand_call): Change arg 6 to bool.
+	(ix86_attr_length_immediate_default): Change arg 2 to bool.
+	(ix86_attr_length_vex_default): Change arg 3 to bool.
+	* config/i386/i386.md: Update all uses.
+	* config/i386/i386.c: Ditto.
+	(ix86_flags_dependent): Change return type to bool.
+
 2011-05-17  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (type_hash_pair_compare): Fix comparison.
@@ -59,11 +70,9 @@
 	* config/i386/i386-opts.h (enum fpmath_unit): Move from i386.h.
 	* config/i386/i386.c: Include diagnostic.h.
 	(ix86_fpmath, IX86_FUNCTION_SPECIFIC_FPMATH): Remove.
-	(ix86_target_string): Take enum fpmath_unit value instead of
-	string.
+	(ix86_target_string): Take enum fpmath_unit value instead of string.
 	(ix86_debug_options): Update call to ix86_target_string.
-	(ix86_option_override_internal): Don't process fpmath strings
-	here.
+	(ix86_option_override_internal): Don't process fpmath strings here.
 	(x86_function_specific_save, ix86_function_specific_restore):
 	Don't handle fpmath state specially.
 	(ix86_function_specific_print): Pass fpmath state to
@@ -112,7 +121,7 @@
 	mode iterator.  Use "<c>zm" constraint for operand 1.
 	(*call_value_vzeroupper): Ditto.
 	(*call_value_rex64_ms_sysv): Ditto.  Use "rzm" constraint
-	for operand 0.
+	for operand 1.
 	(*call_value_rex64_ms_sysv_vzeroupper): Ditto.
 	(*call_value_pop): Merge insn pattern from *call_value_pop_0 and
 	*call_value_pop_1.  Use "lzm" constraint for operand 1.

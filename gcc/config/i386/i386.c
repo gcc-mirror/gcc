@@ -11517,7 +11517,7 @@ ix86_expand_split_stack_prologue (void)
     }
   call_insn = ix86_expand_call (NULL_RTX, gen_rtx_MEM (QImode, fn),
 				GEN_INT (UNITS_PER_WORD), constm1_rtx,
-				NULL_RTX, 0);
+				NULL_RTX, false);
   add_function_usage_to (call_insn, call_fusage);
 
   /* In order to make call/return prediction work right, we now need
@@ -15196,7 +15196,7 @@ emit_i387_cw_initialization (int mode)
    operand may be [SDX]Fmode.  */
 
 const char *
-output_fix_trunc (rtx insn, rtx *operands, int fisttp)
+output_fix_trunc (rtx insn, rtx *operands, bool fisttp)
 {
   int stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
   int dimode_p = GET_MODE (operands[0]) == DImode;
@@ -15261,7 +15261,7 @@ output_387_ffreep (rtx *operands ATTRIBUTE_UNUSED, int opno)
    should be used.  UNORDERED_P is true when fucom should be used.  */
 
 const char *
-output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
+output_fp_compare (rtx insn, rtx *operands, bool eflags_p, bool unordered_p)
 {
   int stack_top_dies;
   rtx cmp_op0, cmp_op1;
@@ -21961,7 +21961,7 @@ construct_plt_address (rtx symbol)
 rtx
 ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 		  rtx callarg2,
-		  rtx pop, int sibcall)
+		  rtx pop, bool sibcall)
 {
   rtx use = NULL, call;
 
@@ -22326,7 +22326,7 @@ memory_address_length (rtx addr)
 /* Compute default value for "length_immediate" attribute.  When SHORTFORM
    is set, expect that insn have 8bit immediate alternative.  */
 int
-ix86_attr_length_immediate_default (rtx insn, int shortform)
+ix86_attr_length_immediate_default (rtx insn, bool shortform)
 {
   int len = 0;
   int i;
@@ -22436,8 +22436,7 @@ ix86_attr_length_address_default (rtx insn)
    2 or 3 byte VEX prefix and 1 opcode byte.  */
 
 int
-ix86_attr_length_vex_default (rtx insn, int has_0f_opcode,
-			      int has_vex_w)
+ix86_attr_length_vex_default (rtx insn, bool has_0f_opcode, bool has_vex_w)
 {
   int i;
 
@@ -22504,10 +22503,10 @@ ix86_issue_rate (void)
     }
 }
 
-/* A subroutine of ix86_adjust_cost -- return true iff INSN reads flags set
+/* A subroutine of ix86_adjust_cost -- return TRUE iff INSN reads flags set
    by DEP_INSN and nothing set by DEP_INSN.  */
 
-static int
+static bool
 ix86_flags_dependent (rtx insn, rtx dep_insn, enum attr_type insn_type)
 {
   rtx set, set2;
@@ -22517,7 +22516,7 @@ ix86_flags_dependent (rtx insn, rtx dep_insn, enum attr_type insn_type)
       && insn_type != TYPE_ICMOV
       && insn_type != TYPE_FCMOV
       && insn_type != TYPE_IBR)
-    return 0;
+    return false;
 
   if ((set = single_set (dep_insn)) != 0)
     {
@@ -22533,20 +22532,20 @@ ix86_flags_dependent (rtx insn, rtx dep_insn, enum attr_type insn_type)
       set2 = SET_DEST (XVECEXP (PATTERN (dep_insn), 0, 0));
     }
   else
-    return 0;
+    return false;
 
   if (!REG_P (set) || REGNO (set) != FLAGS_REG)
-    return 0;
+    return false;
 
   /* This test is true if the dependent insn reads the flags but
      not any other potentially set register.  */
   if (!reg_overlap_mentioned_p (set, PATTERN (insn)))
-    return 0;
+    return false;
 
   if (set2 && reg_overlap_mentioned_p (set2, PATTERN (insn)))
-    return 0;
+    return false;
 
-  return 1;
+  return true;
 }
 
 /* Return true iff USE_INSN has a memory address with operands set by
