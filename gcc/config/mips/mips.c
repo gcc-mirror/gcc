@@ -15287,7 +15287,6 @@ mips_handle_option (struct gcc_options *opts,
 		    location_t loc ATTRIBUTE_UNUSED)
 {
   size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
 
   switch (code)
     {
