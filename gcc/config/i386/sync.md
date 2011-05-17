@@ -1,5 +1,5 @@
 ;; GCC machine description for i386 synchronization instructions.
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -164,13 +164,16 @@
   "!TARGET_64BIT && TARGET_CMPXCHG8B && flag_pic"
   "xchg{l}\t%%ebx, %3\;lock{%;} cmpxchg8b\t%1\;xchg{l}\t%%ebx, %3")
 
+;; For operand 2 nonmemory_operand predicate is used instead of
+;; register_operand to allow combiner to better optimize atomic
+;; additions of constants.
 (define_insn "sync_old_add<mode>"
   [(set (match_operand:SWI 0 "register_operand" "=<r>")
 	(unspec_volatile:SWI
 	  [(match_operand:SWI 1 "memory_operand" "+m")] UNSPECV_XCHG))
    (set (match_dup 1)
 	(plus:SWI (match_dup 1)
-		  (match_operand:SWI 2 "register_operand" "0")))
+		  (match_operand:SWI 2 "nonmemory_operand" "0")))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_XADD"
   "lock{%;} xadd{<imodesuffix>}\t{%0, %1|%1, %0}")

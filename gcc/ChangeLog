@@ -1,3 +1,9 @@
+2011-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48986
+	* config/i386/sync.md (sync_old_add<mode>): Relax operand 2
+	predicate to allow CONST_INT.
+
 2011-05-16  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/48677
