@@ -1,3 +1,22 @@
+2011-05-17  Nick Clifton  <nickc@redhat.com>
+
+	Import these patches from the mainline:
+
+	2011-05-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md: Add peephole to remove redundant extensions
+	after loads.
+	(bitset_in_memory): Use rx_restricted_mem_operand.
+	(bitinvert_in_memory): Likewise.
+	(bitclr_in_memory): Likewise.
+
+	2011-05-17  Kazuhio Inaoka  <kazuhiro.inaoka.ud@renesas.com>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md: Add peepholes to match a register move followed
+	by a comparison of the moved register.  Replace these with an
+	addition of zero that does both actions in one instruction.
+
 2011-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48986
