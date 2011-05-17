@@ -1,3 +1,8 @@
+2011-05-17  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_register_canonical_type): Use the main-variant
+	leader for computing the canonical type.
+
 2011-05-17  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_memory_move_cost): Include cost of register
