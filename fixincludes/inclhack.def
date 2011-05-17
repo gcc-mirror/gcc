@@ -3315,9 +3315,9 @@ fix = {
     hackname  = solaris_complex_cxx;
     mach      = "*-*-solaris2.*";
     files     = complex.h;
-    sed	      = "/#if[ \t]*!defined(__cplusplus)/c"
+    sed	      = "/#if[ \t]*!defined(__cplusplus)/c\\\n"
     		"#ifdef\t__cplusplus\\\nextern \"C\" {\\\n#endif";
-    sed	      = "/#endif[ \t]*\\/\\* !defined(__cplusplus) \\*\\//c"
+    sed	      = "/#endif[ \t]*\\/\\* !defined(__cplusplus) \\*\\//c\\\n"
 		"#ifdef\t__cplusplus\\\n}\\\n#endif";
     test_text = "#if !defined(__cplusplus)\n"
 		"#endif	/* !defined(__cplusplus) */";
