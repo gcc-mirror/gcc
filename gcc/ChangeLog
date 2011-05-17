@@ -1,5 +1,15 @@
 2011-05-17  Richard Guenther  <rguenther@suse.de>
 
+	PR bootstrap/49013
+	Revert
+	2011-05-16  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_types_compatible_p_1): Use names of the
+	type itself, not its main variant.
+	(iterative_hash_gimple_type): Likewise.
+
+2011-05-17  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.c (gimple_register_canonical_type): Use the main-variant
 	leader for computing the canonical type.
 
