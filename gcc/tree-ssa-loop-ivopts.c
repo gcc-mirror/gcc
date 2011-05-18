@@ -2745,7 +2745,7 @@ seq_cost (rtx seq, bool speed)
     {
       set = single_set (seq);
       if (set)
-	cost += rtx_cost (set, SET,speed);
+	cost += rtx_cost (SET_SRC (set), SET, speed);
       else
 	cost++;
     }
