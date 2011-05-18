@@ -1,3 +1,10 @@
+2011-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49039
+	* tree-vrp.c (extract_range_from_binary_expr): For
+	MIN_EXPR <~[a, b], ~[c, d]> and MAX_EXPR <~[a, b], ~[c, d]>
+	return ~[MAX_EXPR <a, c>, MIN_EXPR <b, d>].
+
 2011-05-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49018

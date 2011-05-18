@@ -1,3 +1,10 @@
+2011-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49039
+	* gcc.c-torture/execute/pr49039.c: New test.
+	* gcc.dg/tree-ssa/pr49039.c: New test.
+	* g++.dg/torture/pr49039.C: New test.
+
 2011-05-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
