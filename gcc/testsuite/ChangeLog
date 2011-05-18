@@ -1,6 +1,20 @@
 2011-05-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2011-04-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48207
+	* g++.dg/lto/pr48207_0.C: New testcase.
+
+	2011-04-21  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48703
+	* g++.dg/lto/pr48207-2_0.C: New testcase.
+	* g++.dg/lto/pr48207-3_0.C: Likewise.
+
+2011-05-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2011-05-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48172

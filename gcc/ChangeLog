@@ -1,6 +1,21 @@
 2011-05-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2011-04-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48207
+	* tree.c (free_lang_data): Do not reset the decl-assembler-name
+	langhook.
+
+	2011-04-21  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48703
+	* tree.c (free_lang_data_in_decl): Do not zero TREE_TYPE of
+	DECL_NAME.
+
+2011-05-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2011-05-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48172
