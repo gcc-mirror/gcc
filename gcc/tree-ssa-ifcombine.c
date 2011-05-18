@@ -107,7 +107,7 @@ bb_no_side_effects_p (basic_block bb)
     {
       gimple stmt = gsi_stmt (gsi);
 
-      if (gimple_has_volatile_ops (stmt)
+      if (gimple_has_side_effects (stmt)
 	  || gimple_vuse (stmt))
 	return false;
     }
