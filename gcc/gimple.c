@@ -4487,23 +4487,17 @@ gimple_type_eq (const void *p1, const void *p2)
 }
 
 
-/* Register type T in the global type table gimple_types.
-   If another type T', compatible with T, already existed in
-   gimple_types then return T', otherwise return T.  This is used by
-   LTO to merge identical types read from different TUs.  */
+/* Worker for gimple_register_type.
+   Register type T in the global type table gimple_types.
+   When REGISTERING_MV is false first recurse for the main variant of T.  */
 
-tree
-gimple_register_type (tree t)
+static tree
+gimple_register_type_1 (tree t, bool registering_mv)
 {
   void **slot;
   gimple_type_leader_entry *leader;
   tree mv_leader = NULL_TREE;
 
-  gcc_assert (TYPE_P (t));
-
-  if (!gimple_type_leader)
-    gimple_type_leader = ggc_alloc_cleared_vec_gimple_type_leader_entry_s
-				(GIMPLE_TYPE_LEADER_SIZE);
   /* If we registered this type before return the cached result.  */
   leader = &gimple_type_leader[TYPE_UID (t) % GIMPLE_TYPE_LEADER_SIZE];
   if (leader->type == t)
@@ -4511,12 +4505,14 @@ gimple_register_type (tree t)
 
   /* Always register the main variant first.  This is important so we
      pick up the non-typedef variants as canonical, otherwise we'll end
-     up taking typedef ids for structure tags during comparison.  */
-  if (TYPE_MAIN_VARIANT (t) != t)
-    mv_leader = gimple_register_type (TYPE_MAIN_VARIANT (t));
-
-  if (gimple_types == NULL)
-    gimple_types = htab_create_ggc (16381, gimple_type_hash, gimple_type_eq, 0);
+     up taking typedef ids for structure tags during comparison.
+     It also makes sure that main variants will be merged to main variants.
+     As we are operating on a possibly partially fixed up type graph
+     do not bother to recurse more than once, otherwise we may end up
+     walking in circles.  */
+  if (!registering_mv
+      && TYPE_MAIN_VARIANT (t) != t)
+    mv_leader = gimple_register_type_1 (TYPE_MAIN_VARIANT (t), true);
 
   slot = htab_find_slot (gimple_types, t, INSERT);
   if (*slot
@@ -4602,6 +4598,25 @@ gimple_register_type (tree t)
   return t;
 }
 
+/* Register type T in the global type table gimple_types.
+   If another type T', compatible with T, already existed in
+   gimple_types then return T', otherwise return T.  This is used by
+   LTO to merge identical types read from different TUs.  */
+
+tree
+gimple_register_type (tree t)
+{
+  gcc_assert (TYPE_P (t));
+
+  if (!gimple_type_leader)
+    gimple_type_leader = ggc_alloc_cleared_vec_gimple_type_leader_entry_s
+				(GIMPLE_TYPE_LEADER_SIZE);
+
+  if (gimple_types == NULL)
+    gimple_types = htab_create_ggc (16381, gimple_type_hash, gimple_type_eq, 0);
+
+  return gimple_register_type_1 (t, false);
+}
 
 /* The TYPE_CANONICAL merging machinery.  It should closely resemble
    the middle-end types_compatible_p function.  It needs to avoid
