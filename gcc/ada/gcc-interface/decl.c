@@ -6595,7 +6595,7 @@ choices_to_gnu (tree operand, Node_Id choices)
 {
   Node_Id choice;
   Node_Id gnat_temp;
-  tree result = integer_zero_node;
+  tree result = boolean_false_node;
   tree this_test, low = 0, high = 0, single = 0;
 
   for (choice = First (choices); Present (choice); choice = Next (choice))
@@ -6660,7 +6660,7 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  break;
 
 	case N_Others_Choice:
-	  this_test = integer_one_node;
+	  this_test = boolean_true_node;
 	  break;
 
 	default:

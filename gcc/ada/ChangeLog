@@ -1,3 +1,10 @@
+2011-05-18  Kai Tietz <ktietz@redhat.com>
+
+	* gcc-interface/trans.c (Exception_Handler_to_gnu_sjlj): Use
+	boolean_false_node instead of integer_zero_node.
+	(convert_with_check): Likewise.
+	* gcc-interface/decl.c (choices_to_gnu): Likewise.
+
 2011-05-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (call_to_gnu): In the by-reference case, if the
