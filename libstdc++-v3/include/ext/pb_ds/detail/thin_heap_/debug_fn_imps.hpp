@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,70 +43,77 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_valid() const
+assert_valid(const char* __file, int __line) const
 {
-  base_type::assert_valid();
-  assert_node_consistent(base_type::m_p_root, true);
-  assert_max();
-  assert_aux_null();
+  base_type::assert_valid(__file, __line);
+  assert_node_consistent(base_type::m_p_root, true, __file, __line);
+  assert_max(__file, __line);
+  assert_aux_null(__file, __line);
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_aux_null() const
+assert_aux_null(const char* __file, int __line) const
 {
   for (size_type i = 0; i < max_rank; ++i)
-    _GLIBCXX_DEBUG_ASSERT(m_a_aux[i] == 0);
+    PB_DS_DEBUG_VERIFY(m_a_aux[i] == 0);
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_max() const
+assert_max(const char* __file, int __line) const
 {
   if (m_p_max == 0)
     {
-      _GLIBCXX_DEBUG_ASSERT(base_type::empty());
+      PB_DS_DEBUG_VERIFY(base_type::empty());
       return;
     }
 
-  _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
-  _GLIBCXX_DEBUG_ASSERT(base_type::parent(m_p_max) == 0);
-  _GLIBCXX_DEBUG_ASSERT(m_p_max->m_p_prev_or_parent == 0);
+  PB_DS_DEBUG_VERIFY(!base_type::empty());
+  PB_DS_DEBUG_VERIFY(base_type::parent(m_p_max) == 0);
+  PB_DS_DEBUG_VERIFY(m_p_max->m_p_prev_or_parent == 0);
   for (const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-    _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(m_p_max->m_value, it.m_p_nd->m_value));
+    PB_DS_DEBUG_VERIFY(!Cmp_Fn::operator()(m_p_max->m_value, it.m_p_nd->m_value));
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_node_consistent(const_node_pointer p_nd, bool root) const
+assert_node_consistent(const_node_pointer p_nd, bool root,
+		       const char* __file, int __line) const
 {
-  base_type::assert_node_consistent(p_nd, root);
+  base_type::assert_node_consistent(p_nd, root, __file, __line);
   if (p_nd == 0)
     return;
 
-  assert_node_consistent(p_nd->m_p_next_sibling, root);
-  assert_node_consistent(p_nd->m_p_l_child, false);
+  assert_node_consistent(p_nd->m_p_next_sibling, root, __file, __line);
+  assert_node_consistent(p_nd->m_p_l_child, false, __file, __line);
   if (!root)
     {
       if (p_nd->m_metadata == 0)
-	_GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling == 0);
+	PB_DS_DEBUG_VERIFY(p_nd->m_p_next_sibling == 0);
       else
-	_GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata == p_nd->m_p_next_sibling->m_metadata + 1);
+	PB_DS_DEBUG_VERIFY(p_nd->m_metadata == p_nd->m_p_next_sibling->m_metadata + 1);
     }
 
   if (p_nd->m_p_l_child != 0)
-    _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_l_child->m_metadata + 1 == base_type::degree(p_nd));
+    PB_DS_DEBUG_VERIFY(p_nd->m_p_l_child->m_metadata + 1 == base_type::degree(p_nd));
 
-  const bool unmarked_valid =(p_nd->m_p_l_child == 0&&  p_nd->m_metadata == 0) ||(p_nd->m_p_l_child != 0&&  p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 1);
+  const bool unmarked_valid =
+    (p_nd->m_p_l_child == 0 && p_nd->m_metadata == 0)
+    || (p_nd->m_p_l_child != 0
+	 && p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 1);
 
-  const bool marked_valid =(p_nd->m_p_l_child == 0&&  p_nd->m_metadata == 1) ||(p_nd->m_p_l_child != 0&&  p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 2);
+  const bool marked_valid =
+    (p_nd->m_p_l_child == 0 && p_nd->m_metadata == 1)
+    || (p_nd->m_p_l_child != 0
+	&& p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 2);
 
-  _GLIBCXX_DEBUG_ASSERT(unmarked_valid || marked_valid);
+  PB_DS_DEBUG_VERIFY(unmarked_valid || marked_valid);
   if (root)
-    _GLIBCXX_DEBUG_ASSERT(unmarked_valid);
+    PB_DS_DEBUG_VERIFY(unmarked_valid);
 }
 
 #endif 

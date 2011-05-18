@@ -26,7 +26,7 @@
 
 #undef  SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS \
-  if (rs6000_select[1].string == NULL) \
+  if (!global_options_set.x_rs6000_cpu_index) \
     rs6000_cpu = PROCESSOR_PPC8540; \
   if (!global_options_set.x_rs6000_spe_abi) \
     rs6000_spe_abi = 1; \

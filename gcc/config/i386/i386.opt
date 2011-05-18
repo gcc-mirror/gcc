@@ -19,6 +19,9 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+HeaderInclude
+config/i386/i386-opts.h
+
 ; Bit flags that specify the ISA we are compiling for.
 Variable
 int ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAULT
@@ -36,10 +39,6 @@ unsigned char arch
 ;; -mtune= processor
 TargetSave
 unsigned char tune
-
-;; -mfpath=
-TargetSave
-unsigned char fpmath
 
 ;; CPU schedule model
 TargetSave
@@ -87,15 +86,15 @@ Target Report Mask(ALIGN_DOUBLE) Save
 Align some doubles on dword boundary
 
 malign-functions=
-Target RejectNegative Joined Var(ix86_align_funcs_string)
+Target RejectNegative Joined UInteger
 Function starts are aligned to this power of 2
 
 malign-jumps=
-Target RejectNegative Joined Var(ix86_align_jumps_string)
+Target RejectNegative Joined UInteger
 Jump targets are aligned to this power of 2
 
 malign-loops=
-Target RejectNegative Joined Var(ix86_align_loops_string)
+Target RejectNegative Joined UInteger
 Loop code aligned to this power of 2
 
 malign-stringops
@@ -107,20 +106,49 @@ Target RejectNegative Joined Var(ix86_arch_string)
 Generate code for given CPU
 
 masm=
-Target RejectNegative Joined Var(ix86_asm_string)
+Target RejectNegative Joined Enum(asm_dialect) Var(ix86_asm_dialect) Init(ASM_ATT)
 Use given assembler dialect
 
+Enum
+Name(asm_dialect) Type(enum asm_dialect)
+Known assembler dialects (for use with the -masm-dialect= option):
+
+EnumValue
+Enum(asm_dialect) String(intel) Value(ASM_INTEL)
+
+EnumValue
+Enum(asm_dialect) String(att) Value(ASM_ATT)
+
 mbranch-cost=
-Target RejectNegative Joined Var(ix86_branch_cost_string)
+Target RejectNegative Joined UInteger Var(ix86_branch_cost)
 Branches are this expensive (1-5, arbitrary units)
 
 mlarge-data-threshold=
-Target RejectNegative Joined Var(ix86_section_threshold_string)
+Target RejectNegative Joined UInteger Var(ix86_section_threshold) Init(65536)
 Data greater than given threshold will go into .ldata section in x86-64 medium model
 
 mcmodel=
-Target RejectNegative Joined Var(ix86_cmodel_string)
+Target RejectNegative Joined Enum(cmodel) Var(ix86_cmodel) Init(CM_32)
 Use given x86-64 code model
+
+Enum
+Name(cmodel) Type(enum cmodel)
+Known code models (for use with the -mcmodel= option):
+
+EnumValue
+Enum(cmodel) String(small) Value(CM_SMALL)
+
+EnumValue
+Enum(cmodel) String(medium) Value(CM_MEDIUM)
+
+EnumValue
+Enum(cmodel) String(large) Value(CM_LARGE)
+
+EnumValue
+Enum(cmodel) String(32) Value(CM_32)
+
+EnumValue
+Enum(cmodel) String(kernel) Value(CM_KERNEL)
 
 mcpu=
 Target RejectNegative Joined Undocumented Alias(mtune=) Warn(%<-mcpu=%> is deprecated; use %<-mtune=%> or %<-march=%> instead)
@@ -138,8 +166,33 @@ Target Report Mask(FLOAT_RETURNS) Save
 Return values of functions in FPU registers
 
 mfpmath=
-Target RejectNegative Joined Var(ix86_fpmath_string)
+Target RejectNegative Joined Var(ix86_fpmath) Enum(fpmath_unit) Init(FPMATH_387) Save
 Generate floating point mathematics using given instruction set
+
+Enum
+Name(fpmath_unit) Type(enum fpmath_unit)
+Valid arguments to -mfpmath=:
+
+EnumValue
+Enum(fpmath_unit) String(387) Value(FPMATH_387)
+
+EnumValue
+Enum(fpmath_unit) String(sse) Value(FPMATH_SSE)
+
+EnumValue
+Enum(fpmath_unit) String(387,sse) Value({(enum fpmath_unit) (FPMATH_SSE | FPMATH_387)})
+
+EnumValue
+Enum(fpmath_unit) String(387+sse) Value({(enum fpmath_unit) (FPMATH_SSE | FPMATH_387)})
+
+EnumValue
+Enum(fpmath_unit) String(sse,387) Value({(enum fpmath_unit) (FPMATH_SSE | FPMATH_387)})
+
+EnumValue
+Enum(fpmath_unit) String(sse+387) Value({(enum fpmath_unit) (FPMATH_SSE | FPMATH_387)})
+
+EnumValue
+Enum(fpmath_unit) String(both) Value({(enum fpmath_unit) (FPMATH_SSE | FPMATH_387)})
 
 mhard-float
 Target RejectNegative Mask(80387) MaskExists Save
@@ -181,16 +234,24 @@ momit-leaf-frame-pointer
 Target Report Mask(OMIT_LEAF_FRAME_POINTER) Save
 Omit the frame pointer in leaf functions
 
-mpc
-Target RejectNegative Report Joined Var(ix87_precision_string)
-Set 80387 floating-point precision (-mpc32, -mpc64, -mpc80)
+mpc32
+Target RejectNegative Report
+Set 80387 floating-point precision to 32-bit
+
+mpc64
+Target RejectNegative Report
+Set 80387 floating-point precision to 64-bit
+
+mpc80
+Target RejectNegative Report
+Set 80387 floating-point precision to 80-bit
 
 mpreferred-stack-boundary=
-Target RejectNegative Joined Var(ix86_preferred_stack_boundary_string)
+Target RejectNegative Joined UInteger Var(ix86_preferred_stack_boundary_arg)
 Attempt to keep stack aligned to this power of 2
 
 mincoming-stack-boundary=
-Target RejectNegative Joined Var(ix86_incoming_stack_boundary_string)
+Target RejectNegative Joined UInteger Var(ix86_incoming_stack_boundary_arg)
 Assume incoming stack aligned to this power of 2
 
 mpush-args
@@ -202,7 +263,7 @@ Target RejectNegative Report InverseMask(NO_RED_ZONE, RED_ZONE) Save
 Use red-zone in the x86-64 code
 
 mregparm=
-Target RejectNegative Joined Var(ix86_regparm_string)
+Target RejectNegative Joined UInteger Var(ix86_regparm)
 Number of registers used to pass integer arguments
 
 mrtd
@@ -226,12 +287,47 @@ Target Report Mask(STACK_PROBE) Save
 Enable stack probing
 
 mstringop-strategy=
-Target RejectNegative Joined Var(ix86_stringop_string)
+Target RejectNegative Joined Enum(stringop_alg) Var(ix86_stringop_alg) Init(no_stringop)
 Chose strategy to generate stringop using
 
+Enum
+Name(stringop_alg) Type(enum stringop_alg)
+Valid arguments to -mstringop-strategy=:
+
+EnumValue
+Enum(stringop_alg) String(rep_byte) Value(rep_prefix_1_byte)
+
+EnumValue
+Enum(stringop_alg) String(libcall) Value(libcall)
+
+EnumValue
+Enum(stringop_alg) String(rep_4byte) Value(rep_prefix_4_byte)
+
+EnumValue
+Enum(stringop_alg) String(rep_8byte) Value(rep_prefix_8_byte)
+
+EnumValue
+Enum(stringop_alg) String(byte_loop) Value(loop_1_byte)
+
+EnumValue
+Enum(stringop_alg) String(loop) Value(loop)
+
+EnumValue
+Enum(stringop_alg) String(unrolled_loop) Value(unrolled_loop)
+
 mtls-dialect=
-Target RejectNegative Joined Var(ix86_tls_dialect_string)
+Target RejectNegative Joined Var(ix86_tls_dialect) Enum(tls_dialect) Init(TLS_DIALECT_GNU)
 Use given thread-local storage dialect
+
+Enum
+Name(tls_dialect) Type(enum tls_dialect)
+Known TLS dialects (for use with the -mtls-dialect= option):
+
+EnumValue
+Enum(tls_dialect) String(gnu) Value(TLS_DIALECT_GNU)
+
+EnumValue
+Enum(tls_dialect) String(gnu2) Value(TLS_DIALECT_GNU2)
 
 mtls-direct-seg-refs
 Target Report Mask(TLS_DIRECT_SEG_REFS)
@@ -242,12 +338,32 @@ Target RejectNegative Joined Var(ix86_tune_string)
 Schedule code for given CPU
 
 mabi=
-Target RejectNegative Joined Var(ix86_abi_string)
+Target RejectNegative Joined Var(ix86_abi) Enum(calling_abi) Init(SYSV_ABI)
 Generate code that conforms to the given ABI
 
+Enum
+Name(calling_abi) Type(enum calling_abi)
+Known ABIs (for use with the -mabi= option):
+
+EnumValue
+Enum(calling_abi) String(sysv) Value(SYSV_ABI)
+
+EnumValue
+Enum(calling_abi) String(ms) Value(MS_ABI)
+
 mveclibabi=
-Target RejectNegative Joined Var(ix86_veclibabi_string)
+Target RejectNegative Joined Var(ix86_veclibabi_type) Enum(ix86_veclibabi) Init(ix86_veclibabi_type_none)
 Vector library ABI to use
+
+Enum
+Name(ix86_veclibabi) Type(enum ix86_veclibabi)
+Known vectorization library ABIs (for use with the -mveclibabi= option):
+
+EnumValue
+Enum(ix86_veclibabi) String(svml) Value(ix86_veclibabi_type_svml)
+
+EnumValue
+Enum(ix86_veclibabi) String(acml) Value(ix86_veclibabi_type_acml)
 
 mvect8-ret-in-mem
 Target Report Mask(VECT8_RETURNS) Save

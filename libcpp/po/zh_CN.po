@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5.0\n"
+"Project-Id-Version: cpplib 4.6.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-03-24 16:45+0000\n"
-"PO-Revision-Date: 2010-04-19 14:55+0800\n"
+"PO-Revision-Date: 2011-05-12 17:23+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -483,9 +483,8 @@ msgid "use of C++0x long long integer constant"
 msgstr "使用 C++0x long long 整数常量"
 
 #: expr.c:434
-#, fuzzy
 msgid "use of C99 long long integer constant"
-msgstr "使用 C++0x long long 整数常量"
+msgstr "使用 C99 long long 整数常量"
 
 #: expr.c:448
 msgid "imaginary constants are a GCC extension"

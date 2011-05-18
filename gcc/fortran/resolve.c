@@ -1441,6 +1441,10 @@ resolve_intrinsic (gfc_symbol *sym, locus *loc)
   if (sym->formal)
     return SUCCESS;
 
+  /* Already resolved.  */
+  if (sym->from_intmod && sym->ts.type != BT_UNKNOWN)
+    return SUCCESS;
+
   /* We already know this one is an intrinsic, so we don't call
      gfc_is_intrinsic for full checking but rather use gfc_find_function and
      gfc_find_subroutine directly to check whether it is a function or

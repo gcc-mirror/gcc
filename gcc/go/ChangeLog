@@ -1,3 +1,19 @@
+2011-05-13  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::function_type): When building a struct
+	for multiple results, check that all fields types have a size.
+	(Gcc_backend::placeholder_pointer_type): Permit name to be empty.
+
+2011-05-12  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::local_variable): Add is_address_taken
+	parameter.
+	(Gcc_backend::parameter_variable): Likewise.
+
+2011-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* go-lang.c (global_bindings_p): Return bool and simplify.
+
 2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* go-gcc.cc (Gcc_backend::switch_statement): Call build_case_label.

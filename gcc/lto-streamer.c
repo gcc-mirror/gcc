@@ -292,7 +292,9 @@ check_handled_ts_structures (void)
   handled_p[TS_CONST_DECL] = true;
   handled_p[TS_TYPE_DECL] = true;
   handled_p[TS_FUNCTION_DECL] = true;
-  handled_p[TS_TYPE] = true;
+  handled_p[TS_TYPE_COMMON] = true;
+  handled_p[TS_TYPE_WITH_LANG_SPECIFIC] = true;
+  handled_p[TS_TYPE_NON_COMMON] = true;
   handled_p[TS_LIST] = true;
   handled_p[TS_VEC] = true;
   handled_p[TS_EXP] = true;

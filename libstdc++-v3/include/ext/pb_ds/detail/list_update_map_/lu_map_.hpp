@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -217,7 +217,7 @@ namespace __gnu_pbds
       operator[](const_key_reference r_key)
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	return insert(std::make_pair(r_key, mapped_type())).first->second;
 #else 
 	insert(r_key);
@@ -231,7 +231,7 @@ namespace __gnu_pbds
       inline point_iterator
       find(const_key_reference r_key)
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	entry_pointer p_e = find_imp(r_key);
 	return point_iterator(p_e == 0 ? 0: &p_e->m_value);
       }
@@ -239,7 +239,7 @@ namespace __gnu_pbds
       inline const_point_iterator
       find(const_key_reference r_key) const
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	entry_pointer p_e = find_imp(r_key);
 	return const_point_iterator(p_e == 0 ? 0: &p_e->m_value);
       }
@@ -268,7 +268,7 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 #endif 
 
 #ifdef PB_DS_LU_MAP_TRACE_

@@ -27,8 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef LIBCAF_H
 #define LIBCAF_H
 
-#include <stdint.h>
-#include <string.h>
+#include <stdint.h>	/* For int32_t.  */
+#include <stddef.h>	/* For ptrdiff_t.  */
+
 
 /* Definitions of the Fortran 2008 standard; need to kept in sync with
    ISO_FORTRAN_ENV, cf. libgfortran.h.  */
@@ -38,16 +39,32 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STAT_STOPPED_IMAGE 	3
 
 
+typedef enum caf_register_t {
+  CAF_REGTYPE_COARRAY,
+  CAF_REGTYPE_LOCK,
+  CAF_REGTYPE_LOCK_COMP 
+}
+caf_register_t;
+
+
 void _gfortran_caf_init (int *, char ***, int *, int *);
 void _gfortran_caf_finalize (void);
 
+void * _gfortran_caf_register (ptrdiff_t, caf_register_t, void **);
+int _gfortran_caf_deregister (void **);
+
+
 int _gfortran_caf_sync_all (char *, int);
-int _gfortran_caf_sync_images (int count, int images[], char *, int);
+int _gfortran_caf_sync_images (int, int[], char *, int);
 
-void _gfortran_caf_critical (void);
-void _gfortran_caf_end_critical (void);
+/* FIXME: The CRITICAL functions should be removed;
+   the functionality is better represented using Coarray's lock feature.  */
+void _gfortran_caf_critical (void)  { }
+void _gfortran_caf_end_critical (void)  { }
 
-void _gfortran_caf_error_stop_str (const char *, int32_t) __attribute__ ((noreturn));
+
+void _gfortran_caf_error_stop_str (const char *, int32_t)
+     __attribute__ ((noreturn));
 void _gfortran_caf_error_stop (int32_t) __attribute__ ((noreturn));
 
 #endif  /* LIBCAF_H  */

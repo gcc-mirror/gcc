@@ -422,8 +422,8 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 /* Routines expected by the gcc back-end. They must have exactly the same
    prototype and names as below.  */
 
-/* Returns nonzero if we are currently in the global binding level.  */
-extern int global_bindings_p (void);
+/* Return true if we are in the global binding level.  */
+extern bool global_bindings_p (void);
 
 /* Enter and exit a new binding level.  */
 extern void gnat_pushlevel (void);

@@ -1,8 +1,8 @@
 /* AIX FPU-related code.
-   Copyright 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -38,44 +38,44 @@ set_fpu (void)
 #ifdef TRP_INVALID
     mode |= TRP_INVALID;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'invalid operation' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'invalid operation' "
+	        "exception not supported.\n");
 #endif
 
   if (options.fpe & GFC_FPE_DENORMAL)
-    st_printf ("Fortran runtime warning: IEEE 'denormal number' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'denormal number' "
+	        "exception not supported.\n");
 
   if (options.fpe & GFC_FPE_ZERO)
 #ifdef TRP_DIV_BY_ZERO
     mode |= TRP_DIV_BY_ZERO;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'division by zero' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'division by zero' "
+	        "exception not supported.\n");
 #endif
 
   if (options.fpe & GFC_FPE_OVERFLOW)
 #ifdef TRP_OVERFLOW
     mode |= TRP_OVERFLOW;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'overflow' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'overflow' "
+	        "exception not supported.\n");
 #endif
 
   if (options.fpe & GFC_FPE_UNDERFLOW)
 #ifdef TRP_UNDERFLOW
     mode |= TRP_UNDERFLOW;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'underflow' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'underflow' "
+	        "exception not supported.\n");
 #endif
 
   if (options.fpe & GFC_FPE_PRECISION)
 #ifdef TRP_UNDERFLOW
     mode |= TRP_UNDERFLOW;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'loss of precision' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'loss of precision' "
+	        "exception not supported.\n");
 #endif
 
   fp_trap(FP_TRAP_SYNC);

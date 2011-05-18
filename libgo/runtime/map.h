@@ -1,10 +1,11 @@
 /* map.h -- the map type for Go.
 
-   Copyright 2009, 2010 The Go Authors. All rights reserved.
+   Copyright 2009 The Go Authors. All rights reserved.
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "go-type.h"
 
@@ -38,10 +39,10 @@ struct __go_map
   const struct __go_map_descriptor *__descriptor;
 
   /* The number of elements in the hash table.  */
-  size_t __element_count;
+  uintptr_t __element_count;
 
   /* The number of entries in the __buckets array.  */
-  size_t __bucket_count;
+  uintptr_t __bucket_count;
 
   /* Each bucket is a pointer to a linked list of map entries.  */
   void **__buckets;
@@ -64,13 +65,13 @@ struct __go_hash_iter
      all the entries in the current bucket.  */
   const void *next_entry;
   /* The bucket index of the current and next entry.  */
-  size_t bucket;
+  uintptr_t bucket;
 };
 
 extern struct __go_map *__go_new_map (const struct __go_map_descriptor *,
 				      uintptr_t);
 
-extern unsigned long __go_map_next_prime (unsigned long);
+extern uintptr_t __go_map_next_prime (uintptr_t);
 
 extern void *__go_map_index (struct __go_map *, const void *, _Bool);
 

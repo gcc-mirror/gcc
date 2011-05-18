@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,7 +43,7 @@ inline bool
 PB_DS_CLASS_C_DEC::
 erase(const_key_reference r_key)
 {
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   if (m_p_l == 0)
     return false;
 
@@ -81,7 +81,7 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   size_type num_ersd = 0;
   while (m_p_l != 0 && pred(m_p_l->m_value))
     {
@@ -106,7 +106,7 @@ erase_if(Pred pred)
 	p_l = p_l->m_p_next;
     }
 
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   return num_ersd;
 }
 
@@ -116,7 +116,6 @@ PB_DS_CLASS_C_DEC::
 erase_next(entry_pointer p_l)
 {
   _GLIBCXX_DEBUG_ASSERT(p_l != 0);
-  _GLIBCXX_DEBUG_ASSERT(p_l != m_p_l);
   _GLIBCXX_DEBUG_ASSERT(p_l->m_p_next != 0);
   entry_pointer p_next_l = p_l->m_p_next->m_p_next;
   actual_erase_entry(p_l->m_p_next);

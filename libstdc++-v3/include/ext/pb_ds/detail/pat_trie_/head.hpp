@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -88,7 +88,8 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       virtual subtree_debug_info
-      assert_valid_imp(const_e_access_traits_pointer p_traits) const;
+      assert_valid_imp(const_e_access_traits_pointer p_traits,
+		       const char* file, int line) const;
 #endif 
 
     public:
@@ -106,9 +107,13 @@ namespace __gnu_pbds
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::subtree_debug_info
     PB_DS_CLASS_C_DEC::
-    assert_valid_imp(const_e_access_traits_pointer /*p_traits*/) const
+    assert_valid_imp(const_e_access_traits_pointer /*p_traits*/,
+		     const char* __file, int __line) const
     {
-      _GLIBCXX_DEBUG_ASSERT(false);
+      _GLIBCXX_DEBUG_VERIFY_AT(false,
+			       _M_message("Assertion from %1;:%2;")
+			       ._M_string(__FILE__)._M_integer(__LINE__),
+			       __file, __line);
       return subtree_debug_info();
     }
 #endif 

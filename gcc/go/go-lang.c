@@ -308,10 +308,12 @@ go_langhook_builtin_function (tree decl)
   return decl;
 }
 
-static int
+/* Return true if we are in the global binding level.  */
+
+static bool
 go_langhook_global_bindings_p (void)
 {
-  return current_function_decl == NULL ? 1 : 0;
+  return current_function_decl == NULL_TREE;
 }
 
 /* Push a declaration into the current binding level.  We can't

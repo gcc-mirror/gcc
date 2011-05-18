@@ -983,7 +983,7 @@ extern tree ident_subst (const char *, int, const char *, int, int,
 			 const char *);
 extern tree identifier_subst (const tree, const char *, int, int,
 			      const char *);
-extern int global_bindings_p (void);
+extern bool global_bindings_p (void);
 extern tree getdecls (void);
 extern void pushlevel (int);
 extern tree poplevel (int,int, int);
@@ -1331,7 +1331,7 @@ extern tree *type_map;
 
 /* If FUNCTION_TYPE or METHOD_TYPE: cache for build_java_argument_signature. */
 #define TYPE_ARGUMENT_SIGNATURE(TYPE) \
-  (TREE_CHECK2 (TYPE, FUNCTION_TYPE, METHOD_TYPE)->type.minval)
+  (TYPE_MINVAL (TREE_CHECK2 (TYPE, FUNCTION_TYPE, METHOD_TYPE)))
 
 /* Given an array type, give the type of the elements. */
 /* FIXME this use of TREE_TYPE conflicts with something or other. */

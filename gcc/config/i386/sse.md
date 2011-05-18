@@ -178,10 +178,6 @@
 (define_mode_attr sserotatemax
   [(V16QI "7") (V8HI "15") (V4SI "31") (V2DI "63")])
 
-;; Mapping of immediate bits for blend instructions
-(define_mode_attr blendbits
-  [(V8SF "255") (V4SF "15") (V4DF "15") (V2DF "3")])
-
 ;; Instruction suffix for sign and zero extensions.
 (define_code_attr extsuffix [(sign_extend "sx") (zero_extend "zx")])
 
@@ -3337,7 +3333,7 @@
   [(set_attr "type" "sselog,ssemov,mmxcvt,mmxmov")
    (set_attr "mode" "V4SF,SF,DI,DI")])
 
-(define_insn "*vec_concatv4sf_sse"
+(define_insn "*vec_concatv4sf"
   [(set (match_operand:V4SF 0 "register_operand"       "=x,x,x,x")
 	(vec_concat:V4SF
 	  (match_operand:V2SF 1 "register_operand"     " 0,x,0,x")
@@ -3445,8 +3441,10 @@
 	  (vec_duplicate:V4SF
 	    (match_operand:SF 2 "nonimmediate_operand" "xm,xm"))
 	  (match_operand:V4SF 1 "register_operand" "0,x")
-	  (match_operand:SI 3 "const_pow2_1_to_8_operand" "n,n")))]
-  "TARGET_SSE4_1"
+	  (match_operand:SI 3 "const_int_operand" "")))]
+  "TARGET_SSE4_1
+   && ((unsigned) exact_log2 (INTVAL (operands[3]))
+       < GET_MODE_NUNITS (V4SFmode))"
 {
   operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])) << 4);
   switch (which_alternative)
@@ -6055,127 +6053,70 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_insn "sse4_1_pinsrb"
-  [(set (match_operand:V16QI 0 "register_operand" "=x,x,x,x")
-	(vec_merge:V16QI
-	  (vec_duplicate:V16QI
-	    (match_operand:QI 2 "nonimmediate_operand" "r,m,r,m"))
-	  (match_operand:V16QI 1 "register_operand" "0,0,x,x")
-	  (match_operand:SI 3 "const_pow2_1_to_32768_operand" "n,n,n,n")))]
-  "TARGET_SSE4_1"
+;; Modes handled by pinsr patterns.
+(define_mode_iterator PINSR_MODE
+  [(V16QI "TARGET_SSE4_1") V8HI
+   (V4SI "TARGET_SSE4_1")
+   (V2DI "TARGET_SSE4_1 && TARGET_64BIT")])
+
+(define_mode_attr sse2p4_1
+  [(V16QI "sse4_1") (V8HI "sse2")
+   (V4SI "sse4_1") (V2DI "sse4_1")])
+
+;; sse4_1_pinsrd must come before sse2_loadld since it is preferred.
+(define_insn "<sse2p4_1>_pinsr<ssemodesuffix>"
+  [(set (match_operand:PINSR_MODE 0 "register_operand" "=x,x,x,x")
+	(vec_merge:PINSR_MODE
+	  (vec_duplicate:PINSR_MODE
+	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "r,m,r,m"))
+	  (match_operand:PINSR_MODE 1 "register_operand" "0,0,x,x")
+	  (match_operand:SI 3 "const_int_operand" "")))]
+  "TARGET_SSE2
+   && ((unsigned) exact_log2 (INTVAL (operands[3]))
+       < GET_MODE_NUNITS (<MODE>mode))"
 {
   operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
 
   switch (which_alternative)
     {
     case 0:
-      return "pinsrb\t{%3, %k2, %0|%0, %k2, %3}";
+      if (GET_MODE_SIZE (<ssescalarmode>mode) < GET_MODE_SIZE (SImode))
+        return "pinsr<ssemodesuffix>\t{%3, %k2, %0|%0, %k2, %3}";
+      /* FALLTHRU */
     case 1:
-      return "pinsrb\t{%3, %2, %0|%0, %2, %3}";
+      return "pinsr<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}";
     case 2:
-      return "vpinsrb\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
+      if (GET_MODE_SIZE (<ssescalarmode>mode) < GET_MODE_SIZE (SImode))
+        return "vpinsr<ssemodesuffix>\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
+      /* FALLTHRU */
     case 3:
-      return "vpinsrb\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+      return "vpinsr<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}";
     default:
       gcc_unreachable ();
     }
 }
   [(set_attr "isa" "noavx,noavx,avx,avx")
    (set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
+   (set (attr "prefix_rex")
+     (if_then_else
+       (and (eq (symbol_ref "TARGET_AVX") (const_int 0))
+	    (eq (const_string "<MODE>mode") (const_string "V2DImode")))
+       (const_string "1")
+       (const_string "*")))
+   (set (attr "prefix_data16")
+     (if_then_else
+       (and (eq (symbol_ref "TARGET_AVX") (const_int 0))
+	    (eq (const_string "<MODE>mode") (const_string "V8HImode")))
+       (const_string "1")
+       (const_string "*")))
+   (set (attr "prefix_extra")
+     (if_then_else
+       (and (eq (symbol_ref "TARGET_AVX") (const_int 0))
+	    (eq (const_string "<MODE>mode") (const_string "V8HImode")))
+       (const_string "*")
+       (const_string "1")))
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "orig,orig,vex,vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "sse2_pinsrw"
-  [(set (match_operand:V8HI 0 "register_operand" "=x,x,x,x")
-	(vec_merge:V8HI
-	  (vec_duplicate:V8HI
-	    (match_operand:HI 2 "nonimmediate_operand" "r,m,r,m"))
-	  (match_operand:V8HI 1 "register_operand" "0,0,x,x")
-	  (match_operand:SI 3 "const_pow2_1_to_128_operand" "n,n,n,n")))]
-  "TARGET_SSE2"
-{
-  operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
-
-  switch (which_alternative)
-    {
-    case 0:
-      return "pinsrw\t{%3, %k2, %0|%0, %k2, %3}";
-    case 1:
-      return "pinsrw\t{%3, %2, %0|%0, %2, %3}";
-    case 2:
-      return "vpinsrw\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
-    case 3:
-      return "vpinsrw\t{%3, %2, %1, %0|%0, %1, %2, %3}";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "isa" "noavx,noavx,avx,avx")
-   (set_attr "type" "sselog")
-   (set_attr "prefix_data16" "1,1,*,*")
-   (set_attr "prefix_extra" "*,*,1,1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "orig,orig,vex,vex")
-   (set_attr "mode" "TI")])
-
-;; It must come before sse2_loadld since it is preferred.
-(define_insn "sse4_1_pinsrd"
-  [(set (match_operand:V4SI 0 "register_operand" "=x,x")
-	(vec_merge:V4SI
-	  (vec_duplicate:V4SI
-	    (match_operand:SI 2 "nonimmediate_operand" "rm,rm"))
-	  (match_operand:V4SI 1 "register_operand" "0,x")
-	  (match_operand:SI 3 "const_pow2_1_to_8_operand" "n,n")))]
-  "TARGET_SSE4_1"
-{
-  operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
-
-  switch (which_alternative)
-    {
-    case 0:
-      return "pinsrd\t{%3, %2, %0|%0, %2, %3}";
-    case 1:
-      return "vpinsrd\t{%3, %2, %1, %0|%0, %1, %2, %3}";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "isa" "noavx,avx")
-   (set_attr "type" "sselog")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "orig,vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "sse4_1_pinsrq"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
-	(vec_merge:V2DI
-	  (vec_duplicate:V2DI
-	    (match_operand:DI 2 "nonimmediate_operand" "rm,rm"))
-	  (match_operand:V2DI 1 "register_operand" "0,x")
-	  (match_operand:SI 3 "const_pow2_1_to_2_operand" "n,n")))]
-  "TARGET_SSE4_1 && TARGET_64BIT"
-{
-  operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
-
-  switch (which_alternative)
-    {
-    case 0:
-      return "pinsrq\t{%3, %2, %0|%0, %2, %3}";
-    case 1:
-      return "vpinsrq\t{%3, %2, %1, %0|%0, %1, %2, %3}";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "isa" "noavx,avx")
-   (set_attr "type" "sselog")
-   (set_attr "prefix_rex" "1,*")
-   (set_attr "prefix_extra" "1")
-   (set_attr "length_immediate" "1")
-   (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
 (define_insn "*sse4_1_pextrb_<mode>"
@@ -6660,31 +6601,22 @@
   [(set_attr "type" "sselog,ssemov,mmxcvt,mmxmov")
    (set_attr "mode" "V4SF,V4SF,DI,DI")])
 
-(define_insn "*vec_concatv4si_1_avx"
-  [(set (match_operand:V4SI 0 "register_operand"       "=x,x")
+(define_insn "*vec_concatv4si"
+  [(set (match_operand:V4SI 0 "register_operand"       "=Y2,x,x,x,x")
 	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "register_operand"     " x,x")
-	  (match_operand:V2SI 2 "nonimmediate_operand" " x,m")))]
-  "TARGET_AVX"
-  "@
-   vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}
-   vmovhps\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sselog,ssemov")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "TI,V2SF")])
-
-(define_insn "*vec_concatv4si_1"
-  [(set (match_operand:V4SI 0 "register_operand"       "=Y2,x,x")
-	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "register_operand"     " 0 ,0,0")
-	  (match_operand:V2SI 2 "nonimmediate_operand" " Y2,x,m")))]
+	  (match_operand:V2SI 1 "register_operand"     " 0 ,x,0,0,x")
+	  (match_operand:V2SI 2 "nonimmediate_operand" " Y2,x,x,m,m")))]
   "TARGET_SSE"
   "@
    punpcklqdq\t{%2, %0|%0, %2}
+   vpunpcklqdq\t{%2, %1, %0|%0, %1, %2}
    movlhps\t{%2, %0|%0, %2}
-   movhps\t{%2, %0|%0, %2}"
-  [(set_attr "type" "sselog,ssemov,ssemov")
-   (set_attr "mode" "TI,V4SF,V2SF")])
+   movhps\t{%2, %0|%0, %2}
+   vmovhps\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx,noavx,noavx,avx")
+   (set_attr "type" "sselog,sselog,ssemov,ssemov,ssemov")
+   (set_attr "prefix" "orig,vex,orig,orig,vex")
+   (set_attr "mode" "TI,TI,V4SF,V2SF,V2SF")])
 
 ;; movd instead of movq is required to handle broken assemblers.
 (define_insn "*vec_concatv2di_rex64_sse4_1"
@@ -7894,8 +7826,9 @@
 	(vec_merge:VF
 	  (match_operand:VF 2 "nonimmediate_operand" "xm,xm")
 	  (match_operand:VF 1 "register_operand" "0,x")
-	  (match_operand:SI 3 "const_0_to_<blendbits>_operand" "n,n")))]
-  "TARGET_SSE4_1"
+	  (match_operand:SI 3 "const_int_operand" "")))]
+  "TARGET_SSE4_1
+   && IN_RANGE (INTVAL (operands[3]), 0, (1 << GET_MODE_NUNITS (<MODE>mode))-1)"
   "@
    blend<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
    vblend<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"

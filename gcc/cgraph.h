@@ -506,7 +506,8 @@ struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 					struct cgraph_node *, gimple,
 					unsigned, gcov_type, int, bool);
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
-					int, bool, VEC(cgraph_edge_p,heap) *);
+					int, bool, VEC(cgraph_edge_p,heap) *,
+					bool);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *,
@@ -694,6 +695,79 @@ varpool_next_static_initializer (struct varpool_node *node)
 #define FOR_EACH_STATIC_INITIALIZER(node) \
    for ((node) = varpool_first_static_initializer (); (node); \
         (node) = varpool_next_static_initializer (node))
+
+/* Return first function with body defined.  */
+static inline struct cgraph_node *
+cgraph_first_defined_function (void)
+{
+  struct cgraph_node *node;
+  for (node = cgraph_nodes; node; node = node->next)
+    {
+      if (node->analyzed)
+	return node;
+    }
+  return NULL;
+}
+
+/* Return next reachable static variable with initializer after NODE.  */
+static inline struct cgraph_node *
+cgraph_next_defined_function (struct cgraph_node *node)
+{
+  for (node = node->next; node; node = node->next)
+    {
+      if (node->analyzed)
+	return node;
+    }
+  return NULL;
+}
+
+/* Walk all functions with body defined.  */
+#define FOR_EACH_DEFINED_FUNCTION(node) \
+   for ((node) = cgraph_first_defined_function (); (node); \
+        (node) = cgraph_next_defined_function (node))
+
+
+/* Return true when NODE is a function with Gimple body defined
+   in current unit.  Functions can also be define externally or they
+   can be thunks with no Gimple representation.
+
+   Note that at WPA stage, the function body may not be present in memory.  */
+
+static inline bool
+cgraph_function_with_gimple_body_p (struct cgraph_node *node)
+{
+  return node->analyzed && !node->thunk.thunk_p;
+}
+
+/* Return first function with body defined.  */
+static inline struct cgraph_node *
+cgraph_first_function_with_gimple_body (void)
+{
+  struct cgraph_node *node;
+  for (node = cgraph_nodes; node; node = node->next)
+    {
+      if (cgraph_function_with_gimple_body_p (node))
+	return node;
+    }
+  return NULL;
+}
+
+/* Return next reachable static variable with initializer after NODE.  */
+static inline struct cgraph_node *
+cgraph_next_function_with_gimple_body (struct cgraph_node *node)
+{
+  for (node = node->next; node; node = node->next)
+    {
+      if (cgraph_function_with_gimple_body_p (node))
+	return node;
+    }
+  return NULL;
+}
+
+/* Walk all functions with body defined.  */
+#define FOR_EACH_FUNCTION_WITH_GIMPLE_BODY(node) \
+   for ((node) = cgraph_first_function_with_gimple_body (); (node); \
+        (node) = cgraph_next_function_with_gimple_body (node))
 
 /* Create a new static variable of type TYPE.  */
 tree add_new_static_var (tree type);

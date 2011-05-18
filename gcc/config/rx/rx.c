@@ -58,7 +58,7 @@ static void rx_print_operand (FILE *, rtx, int);
 #define CC_FLAG_Z	(1 << 1)
 #define CC_FLAG_O	(1 << 2)
 #define CC_FLAG_C	(1 << 3)
-#define CC_FLAG_FP	(1 << 4)	/* fake, to differentiate CC_Fmode */
+#define CC_FLAG_FP	(1 << 4)	/* Fake, to differentiate CC_Fmode.  */
 
 static unsigned int flags_from_mode (enum machine_mode mode);
 static unsigned int flags_from_code (enum rtx_code code);
@@ -85,7 +85,9 @@ rx_is_legitimate_address (enum machine_mode mode, rtx x,
     /* Register Indirect.  */
     return true;
 
-  if (GET_MODE_SIZE (mode) <= 4
+  if ((GET_MODE_SIZE (mode) == 4
+       || GET_MODE_SIZE (mode) == 2
+       || GET_MODE_SIZE (mode) == 1)
       && (GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_INC))
     /* Pre-decrement Register Indirect or
        Post-increment Register Indirect.  */
@@ -125,7 +127,7 @@ rx_is_legitimate_address (enum machine_mode mode, rtx x,
 	      case 1: factor = 1; break;
 	      }
 
-	    if (val >= (0x10000 * factor))
+	    if (val > (65535 * factor))
 	      return false;
 	    return (val % factor) == 0;
 	  }
@@ -1349,7 +1351,7 @@ gen_safe_add (rtx dest, rtx src, rtx val, bool is_frame_related)
     insn = emit_insn (gen_addsi3 (dest, src, val));
   else
     {
-      /* Wrap VAL in an UNSPEC so that rx_legitimate_constant_p
+      /* Wrap VAL in an UNSPEC so that rx_is_legitimate_constant
 	 will not reject it.  */
       val = gen_rtx_CONST (SImode, gen_rtx_UNSPEC (SImode, gen_rtvec (1, val), UNSPEC_CONST));
       insn = emit_insn (gen_addsi3 (dest, src, val));
@@ -1928,11 +1930,14 @@ enum rx_builtin
   RX_BUILTIN_max
 };
 
+static GTY(()) tree rx_builtins[(int) RX_BUILTIN_max];
+
 static void
 rx_init_builtins (void)
 {
 #define ADD_RX_BUILTIN1(UC_NAME, LC_NAME, RET_TYPE, ARG_TYPE)		\
-  add_builtin_function ("__builtin_rx_" LC_NAME,			\
+   rx_builtins[RX_BUILTIN_##UC_NAME] =					\
+   add_builtin_function ("__builtin_rx_" LC_NAME,			\
 			build_function_type_list (RET_TYPE##_type_node, \
 						  ARG_TYPE##_type_node, \
 						  NULL_TREE),		\
@@ -1940,6 +1945,7 @@ rx_init_builtins (void)
 			BUILT_IN_MD, NULL, NULL_TREE)
 
 #define ADD_RX_BUILTIN2(UC_NAME, LC_NAME, RET_TYPE, ARG_TYPE1, ARG_TYPE2) \
+  rx_builtins[RX_BUILTIN_##UC_NAME] =					\
   add_builtin_function ("__builtin_rx_" LC_NAME,			\
 			build_function_type_list (RET_TYPE##_type_node, \
 						  ARG_TYPE1##_type_node,\
@@ -1949,6 +1955,7 @@ rx_init_builtins (void)
 			BUILT_IN_MD, NULL, NULL_TREE)
 
 #define ADD_RX_BUILTIN3(UC_NAME,LC_NAME,RET_TYPE,ARG_TYPE1,ARG_TYPE2,ARG_TYPE3) \
+  rx_builtins[RX_BUILTIN_##UC_NAME] =					\
   add_builtin_function ("__builtin_rx_" LC_NAME,			\
 			build_function_type_list (RET_TYPE##_type_node, \
 						  ARG_TYPE1##_type_node,\
@@ -1978,6 +1985,17 @@ rx_init_builtins (void)
   ADD_RX_BUILTIN1 (ROUND,   "round",   intSI, float);
   ADD_RX_BUILTIN1 (REVW,    "revw",    intSI, intSI);
   ADD_RX_BUILTIN1 (WAIT,    "wait",    void,  void);
+}
+
+/* Return the RX builtin for CODE.  */
+
+static tree
+rx_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+{
+  if (code >= RX_BUILTIN_max)
+    return error_mark_node;
+
+  return rx_builtins[code];
 }
 
 static rtx
@@ -2448,7 +2466,7 @@ rx_is_ms_bitfield_layout (const_tree record_type ATTRIBUTE_UNUSED)
    operand on the RX.  X is already known to satisfy CONSTANT_P.  */
 
 bool
-rx_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+rx_is_legitimate_constant (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -2620,7 +2638,7 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
 static int
 rx_memory_move_cost (enum machine_mode mode, reg_class_t regclass, bool in)
 {
-  return (in ? 2 : 0) + memory_move_secondary_cost (mode, regclass, in);
+  return (in ? 2 : 0) + REGISTER_MOVE_COST (mode, regclass, regclass);
 }
 
 /* Convert a CC_MODE to the set of flags that it represents.  */
@@ -2776,8 +2794,15 @@ rx_match_ccmode (rtx insn, enum machine_mode cc_mode)
 }
 
 int
-rx_align_for_label (void)
+rx_align_for_label (rtx lab, int uses_threshold)
 {
+  /* This is a simple heuristic to guess when an alignment would not be useful
+     because the delay due to the inserted NOPs would be greater than the delay
+     due to the misaligned branch.  If uses_threshold is zero then the alignment
+     is always useful.  */
+  if (LABEL_P (lab) && LABEL_NUSES (lab) < uses_threshold)
+    return 0;
+
   return optimize_size ? 1 : 3;
 }
 
@@ -2830,7 +2855,7 @@ rx_adjust_insn_length (rtx insn, int current_length)
     case CODE_FOR_smaxsi3_zero_extendhi:
     case CODE_FOR_sminsi3_zero_extendhi:
     case CODE_FOR_multsi3_zero_extendhi:
-    case CODE_FOR_comparesi3_zero_extendqi:
+    case CODE_FOR_comparesi3_zero_extendhi:
       zero = true;
       factor = 2;
       break;
@@ -2845,7 +2870,7 @@ rx_adjust_insn_length (rtx insn, int current_length)
     case CODE_FOR_smaxsi3_sign_extendhi:
     case CODE_FOR_sminsi3_sign_extendhi:
     case CODE_FOR_multsi3_sign_extendhi:
-    case CODE_FOR_comparesi3_zero_extendhi:
+    case CODE_FOR_comparesi3_sign_extendhi:
       zero = false;
       factor = 2;
       break;
@@ -2860,7 +2885,7 @@ rx_adjust_insn_length (rtx insn, int current_length)
     case CODE_FOR_smaxsi3_zero_extendqi:
     case CODE_FOR_sminsi3_zero_extendqi:
     case CODE_FOR_multsi3_zero_extendqi:
-    case CODE_FOR_comparesi3_sign_extendqi:
+    case CODE_FOR_comparesi3_zero_extendqi:
       zero = true;
       factor = 1;
       break;
@@ -2875,7 +2900,7 @@ rx_adjust_insn_length (rtx insn, int current_length)
     case CODE_FOR_smaxsi3_sign_extendqi:
     case CODE_FOR_sminsi3_sign_extendqi:
     case CODE_FOR_multsi3_sign_extendqi:
-    case CODE_FOR_comparesi3_sign_extendhi:
+    case CODE_FOR_comparesi3_sign_extendqi:
       zero = false;
       factor = 1;
       break;
@@ -2945,6 +2970,9 @@ rx_adjust_insn_length (rtx insn, int current_length)
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS		rx_init_builtins
+
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL		rx_builtin_decl
 
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN		rx_expand_builtin
@@ -3055,8 +3083,8 @@ rx_adjust_insn_length (rtx insn, int current_length)
 #define TARGET_FLAGS_REGNUM			CC_REG
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
-#define TARGET_LEGITIMATE_CONSTANT_P		rx_legitimate_constant_p
+#define TARGET_LEGITIMATE_CONSTANT_P		rx_is_legitimate_constant
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* #include "gt-rx.h" */
+#include "gt-rx.h"

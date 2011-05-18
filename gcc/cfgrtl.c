@@ -1465,80 +1465,76 @@ void
 commit_one_edge_insertion (edge e)
 {
   rtx before = NULL_RTX, after = NULL_RTX, insns, tmp, last;
-  basic_block bb = NULL;
+  basic_block bb;
 
   /* Pull the insns off the edge now since the edge might go away.  */
   insns = e->insns.r;
   e->insns.r = NULL_RTX;
 
-  if (!before && !after)
+  /* Figure out where to put these insns.  If the destination has
+     one predecessor, insert there.  Except for the exit block.  */
+  if (single_pred_p (e->dest) && e->dest != EXIT_BLOCK_PTR)
     {
-      /* Figure out where to put these things.  If the destination has
-	 one predecessor, insert there.  Except for the exit block.  */
-      if (single_pred_p (e->dest) && e->dest != EXIT_BLOCK_PTR)
-	{
-	  bb = e->dest;
+      bb = e->dest;
 
-	  /* Get the location correct wrt a code label, and "nice" wrt
-	     a basic block note, and before everything else.  */
-	  tmp = BB_HEAD (bb);
-	  if (LABEL_P (tmp))
-	    tmp = NEXT_INSN (tmp);
-	  if (NOTE_INSN_BASIC_BLOCK_P (tmp))
-	    tmp = NEXT_INSN (tmp);
-	  if (tmp == BB_HEAD (bb))
-	    before = tmp;
-	  else if (tmp)
-	    after = PREV_INSN (tmp);
-	  else
-	    after = get_last_insn ();
-	}
+      /* Get the location correct wrt a code label, and "nice" wrt
+	 a basic block note, and before everything else.  */
+      tmp = BB_HEAD (bb);
+      if (LABEL_P (tmp))
+	tmp = NEXT_INSN (tmp);
+      if (NOTE_INSN_BASIC_BLOCK_P (tmp))
+	tmp = NEXT_INSN (tmp);
+      if (tmp == BB_HEAD (bb))
+	before = tmp;
+      else if (tmp)
+	after = PREV_INSN (tmp);
+      else
+	after = get_last_insn ();
+    }
 
-      /* If the source has one successor and the edge is not abnormal,
-	 insert there.  Except for the entry block.  */
-      else if ((e->flags & EDGE_ABNORMAL) == 0
-	       && single_succ_p (e->src)
-	       && e->src != ENTRY_BLOCK_PTR)
-	{
-	  bb = e->src;
+  /* If the source has one successor and the edge is not abnormal,
+     insert there.  Except for the entry block.  */
+  else if ((e->flags & EDGE_ABNORMAL) == 0
+	   && single_succ_p (e->src)
+	   && e->src != ENTRY_BLOCK_PTR)
+    {
+      bb = e->src;
 
-	  /* It is possible to have a non-simple jump here.  Consider a target
-	     where some forms of unconditional jumps clobber a register.  This
-	     happens on the fr30 for example.
+      /* It is possible to have a non-simple jump here.  Consider a target
+	 where some forms of unconditional jumps clobber a register.  This
+	 happens on the fr30 for example.
 
-	     We know this block has a single successor, so we can just emit
-	     the queued insns before the jump.  */
-	  if (JUMP_P (BB_END (bb)))
-	    before = BB_END (bb);
-	  else
-	    {
-	      /* We'd better be fallthru, or we've lost track of
-		 what's what.  */
-	      gcc_assert (e->flags & EDGE_FALLTHRU);
-
-	      after = BB_END (bb);
-	    }
-	}
-      /* Otherwise we must split the edge.  */
+	 We know this block has a single successor, so we can just emit
+	 the queued insns before the jump.  */
+      if (JUMP_P (BB_END (bb)))
+	before = BB_END (bb);
       else
 	{
-	  bb = split_edge (e);
-	  after = BB_END (bb);
+	  /* We'd better be fallthru, or we've lost track of what's what.  */
+	  gcc_assert (e->flags & EDGE_FALLTHRU);
 
-	  if (flag_reorder_blocks_and_partition
-	      && targetm.have_named_sections
-	      && e->src != ENTRY_BLOCK_PTR
-	      && BB_PARTITION (e->src) == BB_COLD_PARTITION
-	      && !(e->flags & EDGE_CROSSING)
-	      && JUMP_P (after)
-	      && !any_condjump_p (after)
-	      && (single_succ_edge (bb)->flags & EDGE_CROSSING))
-	    add_reg_note (after, REG_CROSSING_JUMP, NULL_RTX);
+	  after = BB_END (bb);
 	}
     }
 
-  /* Now that we've found the spot, do the insertion.  */
+  /* Otherwise we must split the edge.  */
+  else
+    {
+      bb = split_edge (e);
+      after = BB_END (bb);
 
+      if (flag_reorder_blocks_and_partition
+	  && targetm.have_named_sections
+	  && e->src != ENTRY_BLOCK_PTR
+	  && BB_PARTITION (e->src) == BB_COLD_PARTITION
+	  && !(e->flags & EDGE_CROSSING)
+	  && JUMP_P (after)
+	  && !any_condjump_p (after)
+	  && (single_succ_edge (bb)->flags & EDGE_CROSSING))
+	add_reg_note (after, REG_CROSSING_JUMP, NULL_RTX);
+    }
+
+  /* Now that we've found the spot, do the insertion.  */
   if (before)
     {
       emit_insn_before_noloc (insns, before, bb);
@@ -2612,7 +2608,7 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	    delete_insn (BB_END (src));
 	}
       if (dump_file)
-	fprintf (dump_file, "Fallthru edge %i->%i redirected to %i\n",
+	fprintf (dump_file, "Redirecting fallthru edge %i->%i to %i\n",
 		 e->src->index, e->dest->index, dest->index);
       ret = redirect_edge_succ_nodup (e, dest);
     }

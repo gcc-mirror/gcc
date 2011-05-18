@@ -71,7 +71,7 @@ print_spaces (int n)
 
   buffer[i] = '\0';
 
-  st_printf (buffer);
+  estr_write (buffer);
 }
 
 
@@ -261,7 +261,10 @@ show_string (variable * v)
   if (p == NULL)
     p = "";
 
-  st_printf ("%s  \"%s\"\n", var_source (v), p);
+  estr_write (var_source (v));
+  estr_write ("  \"");
+  estr_write (p);
+  estr_write ("\"\n");
 }
 
 
@@ -280,10 +283,6 @@ static variable variable_table[] = {
    init_integer, show_integer,
    "Unit number that will be preconnected to standard error\n"
    "(No preconnection if negative)", 0},
-
-  {"GFORTRAN_USE_STDERR", 1, &options.use_stderr, init_boolean,
-   show_boolean,
-   "Sends library output to standard error instead of standard output.", 0},
 
   {"GFORTRAN_TMPDIR", 0, NULL, init_string, show_string,
    "Directory for scratch files.  Overrides the TMP environment variable\n"
@@ -319,11 +318,6 @@ static variable variable_table[] = {
   {"GFORTRAN_CONVERT_UNIT", 0, 0, init_unformatted, show_string,
    "Set format for unformatted files", 0},
 
-  /* Behaviour when encoutering a runtime error.  */
-  {"GFORTRAN_ERROR_DUMPCORE", -1, &options.dump_core,
-    init_boolean, show_boolean,
-    "Dump a core file (if possible) on runtime error", -1},
-
   {"GFORTRAN_ERROR_BACKTRACE", -1, &options.backtrace,
     init_boolean, show_boolean,
     "Print out a backtrace (if possible) on runtime error", -1},
@@ -352,32 +346,33 @@ show_variables (void)
   int n;
 
   /* TODO: print version number.  */
-  st_printf ("GNU Fortran 95 runtime library version "
+  estr_write ("GNU Fortran runtime library version "
 	     "UNKNOWN" "\n\n");
 
-  st_printf ("Environment variables:\n");
-  st_printf ("----------------------\n");
+  estr_write ("Environment variables:\n");
+  estr_write ("----------------------\n");
 
   for (v = variable_table; v->name; v++)
     {
-      n = st_printf ("%s", v->name);
+      n = estr_write (v->name);
       print_spaces (25 - n);
 
       if (v->show == show_integer)
-	st_printf ("Integer ");
+	estr_write ("Integer ");
       else if (v->show == show_boolean)
-	st_printf ("Boolean ");
+	estr_write ("Boolean ");
       else
-	st_printf ("String  ");
+	estr_write ("String  ");
 
       v->show (v);
-      st_printf ("%s\n\n", v->desc);
+      estr_write (v->desc);
+      estr_write ("\n\n");
     }
 
   /* System error codes */
 
-  st_printf ("\nRuntime error codes:");
-  st_printf ("\n--------------------\n");
+  estr_write ("\nRuntime error codes:");
+  estr_write ("\n--------------------\n");
 
   for (n = LIBERROR_FIRST + 1; n < LIBERROR_LAST; n++)
     if (n < 0 || n > 9)
@@ -385,12 +380,10 @@ show_variables (void)
     else
       st_printf (" %d  %s\n", n, translate_error (n));
 
-  st_printf ("\nCommand line arguments:\n");
-  st_printf ("  --help               Print this list\n");
+  estr_write ("\nCommand line arguments:\n");
+  estr_write ("  --help               Print this list\n");
 
-  /* st_printf("  --resume <dropfile>  Resume program execution from dropfile\n"); */
-
-  sys_exit (0);
+  exit (0);
 }
 
 /* This is the handling of the GFORTRAN_CONVERT_UNITS environment variable.

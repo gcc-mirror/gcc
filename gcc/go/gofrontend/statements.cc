@@ -375,7 +375,7 @@ Temporary_statement::do_get_backend(Translate_context* context)
   else
     bfunction = tree_to_function(function->func_value()->get_decl());
 
-  Btype* btype = tree_to_type(this->type()->get_tree(context->gogo()));
+  Btype* btype = this->type()->get_backend(context->gogo());
 
   Bexpression* binit;
   if (this->init_ == NULL)
@@ -4536,7 +4536,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing)
   else
     {
       this->report_error(_("range clause must have "
-			   "array, slice, setring, map, or channel type"));
+			   "array, slice, string, map, or channel type"));
       return Statement::make_error_statement(this->location());
     }
 
@@ -4552,6 +4552,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing)
     {
       range_temp = Statement::make_temporary(NULL, this->range_, loc);
       temp_block->add_statement(range_temp);
+      this->range_ = NULL;
     }
 
   Temporary_statement* index_temp = Statement::make_temporary(index_type,

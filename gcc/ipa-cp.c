@@ -951,6 +951,10 @@ ipcp_need_redirect_p (struct cgraph_edge *cs)
   if (!n_cloning_candidates)
     return false;
 
+  /* We can't redirect anything in thunks, yet.  */
+  if (cs->caller->thunk.thunk_p)
+    return true;
+
   if ((orig = ipcp_get_orig_node (node)) != NULL)
     node = orig;
   if (ipcp_get_orig_node (cs->caller))
@@ -1064,6 +1068,7 @@ ipcp_estimate_growth (struct cgraph_node *node)
   int removable_args = 0;
   bool need_original
      = !cgraph_will_be_removed_from_program_if_no_direct_calls (node);
+  VEC (tree, heap) *known_vals = NULL;
   struct ipa_node_params *info;
   int i, count;
   int growth;
@@ -1081,6 +1086,7 @@ ipcp_estimate_growth (struct cgraph_node *node)
 
   info = IPA_NODE_REF (node);
   count = ipa_get_param_count (info);
+  VEC_safe_grow_cleared (tree, heap, known_vals, count);
   if (node->local.can_change_signature)
     for (i = 0; i < count; i++)
       {
@@ -1091,14 +1097,19 @@ ipcp_estimate_growth (struct cgraph_node *node)
 	  removable_args++;
 
 	if (lat->type == IPA_CONST_VALUE)
-	  removable_args++;
+	  {
+	    removable_args++;
+	    VEC_replace (tree, known_vals, i, lat->constant);
+	  }
       }
 
   /* We make just very simple estimate of savings for removal of operand from
      call site.  Precise cost is difficult to get, as our size metric counts
      constants and moves as free.  Generally we are looking for cases that
      small function is called very many times.  */
-  growth = inline_summary (node)->self_size
+  estimate_ipcp_clone_size_and_time (node, known_vals, &growth, NULL);
+  VEC_free (tree, heap, known_vals);
+  growth = growth
   	   - removable_args * redirectable_node_callers;
   if (growth < 0)
     return 0;
@@ -1508,8 +1519,9 @@ ipcp_generate_summary (void)
     fprintf (dump_file, "\nIPA constant propagation start:\n");
   ipa_register_cgraph_hooks ();
 
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
+  /* FIXME: We could propagate through thunks happily and we could be
+     even able to clone them, if needed.  Do that later.  */
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
       {
 	/* Unreachable nodes should have been eliminated before ipcp.  */
 	gcc_assert (node->needed || node->reachable);

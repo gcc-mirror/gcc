@@ -21,11 +21,11 @@ __go_map_rehash (struct __go_map *map)
   size_t key_offset;
   size_t key_size;
   size_t (*hashfn) (const void *, size_t);
-  size_t old_bucket_count;
+  uintptr_t old_bucket_count;
   void **old_buckets;
-  size_t new_bucket_count;
+  uintptr_t new_bucket_count;
   void **new_buckets;
-  size_t i;
+  uintptr_t i;
 
   descriptor = map->__descriptor;
 

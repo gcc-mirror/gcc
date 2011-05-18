@@ -243,8 +243,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 
   /* Redirect all incoming edges.  */
   compatible_p
-    = gimple_types_compatible_p (TREE_TYPE (TREE_TYPE (prevailing_node->decl)),
-				 TREE_TYPE (TREE_TYPE (node->decl)), GTC_DIAG);
+    = types_compatible_p (TREE_TYPE (TREE_TYPE (prevailing_node->decl)),
+			  TREE_TYPE (TREE_TYPE (node->decl)));
   for (e = node->callers; e; e = next)
     {
       next = e->next_caller;
@@ -360,8 +360,8 @@ lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (!gimple_types_compatible_p (TREE_TYPE (prevailing_decl),
-				      TREE_TYPE (decl), GTC_DIAG))
+      if (!types_compatible_p (TREE_TYPE (prevailing_decl),
+			       TREE_TYPE (decl)))
 	/* If we don't have a merged type yet...sigh.  The linker
 	   wouldn't complain if the types were mismatched, so we
 	   probably shouldn't either.  Just use the type from
@@ -390,11 +390,7 @@ lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
   prevailing_type = TYPE_MAIN_VARIANT (TREE_TYPE (prevailing_decl));
   type = TYPE_MAIN_VARIANT (TREE_TYPE (decl));
 
-  /* We have to register and fetch canonical types here as the global
-     fixup process didn't yet run.  */
-  prevailing_type = gimple_register_type (prevailing_type);
-  type = gimple_register_type (type);
-  if (!gimple_types_compatible_p (prevailing_type, type, GTC_DIAG))
+  if (!types_compatible_p (prevailing_type, type))
     {
       if (COMPLETE_TYPE_P (type))
 	return false;
@@ -419,9 +415,7 @@ lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
 	  if (TREE_CODE (tem1) != TREE_CODE (tem2))
 	    return false;
 
-	  if (!gimple_types_compatible_p (gimple_register_type (tem1),
-					  gimple_register_type (tem2),
-					  GTC_DIAG))
+	  if (!types_compatible_p (tem1, tem2))
 	    return false;
 	}
 
@@ -620,8 +614,7 @@ lto_symtab_merge_decls_2 (void **slot, bool diagnosed_p)
   /* Diagnose all mismatched re-declarations.  */
   FOR_EACH_VEC_ELT (tree, mismatches, i, decl)
     {
-      if (!gimple_types_compatible_p (TREE_TYPE (prevailing->decl),
-				      TREE_TYPE (decl), GTC_DIAG))
+      if (!types_compatible_p (TREE_TYPE (prevailing->decl), TREE_TYPE (decl)))
 	diagnosed_p |= warning_at (DECL_SOURCE_LOCATION (decl), 0,
 				   "type of %qD does not match original "
 				   "declaration", decl);
@@ -743,10 +736,6 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   if (diagnosed_p)
       inform (DECL_SOURCE_LOCATION (prevailing->decl),
 	      "previously declared here");
-
-  /* Register and adjust types of the entries.  */
-  for (e = (lto_symtab_entry_t) *slot; e; e = e->next)
-    TREE_TYPE (e->decl) = gimple_register_type (TREE_TYPE (e->decl));
 
   /* Merge the chain to the single prevailing decl and diagnose
      mismatches.  */

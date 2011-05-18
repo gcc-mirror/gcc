@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,11 +43,12 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_entry_pointer_valid(const entry_pointer p_e, true_type) const
+assert_entry_pointer_valid(const entry_pointer p_e, true_type,
+			   const char* __file, int __line) const
 {
-  debug_base::check_key_exists(PB_DS_V2F(p_e->m_value));
+  debug_base::check_key_exists(PB_DS_V2F(p_e->m_value), __file, __line);
   comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(PB_DS_V2F(p_e->m_value));
-  _GLIBCXX_DEBUG_ASSERT(p_e->m_hash == pos_hash_pair.second);
+  PB_DS_DEBUG_VERIFY(p_e->m_hash == pos_hash_pair.second);
 }
 
 #endif 

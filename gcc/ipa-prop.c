@@ -2888,7 +2888,8 @@ ipa_prop_write_jump_functions (cgraph_node_set set)
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      if (node->analyzed && IPA_NODE_REF (node) != NULL)
+      if (cgraph_function_with_gimple_body_p (node)
+	  && IPA_NODE_REF (node) != NULL)
 	count++;
     }
 
@@ -2898,7 +2899,8 @@ ipa_prop_write_jump_functions (cgraph_node_set set)
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      if (node->analyzed && IPA_NODE_REF (node) != NULL)
+      if (cgraph_function_with_gimple_body_p (node)
+	  && IPA_NODE_REF (node) != NULL)
         ipa_write_node_info (ob, node);
     }
   lto_output_1_stream (ob->main_stream, 0);
@@ -3000,6 +3002,7 @@ ipa_update_after_lto_read (void)
 /* Given the jump function JFUNC, compute the lattice LAT that describes the
    value coming down the callsite. INFO describes the caller node so that
    pass-through jump functions can be evaluated.  */
+
 void
 ipa_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
 			 struct ipa_jump_func *jfunc)
@@ -3058,4 +3061,20 @@ ipa_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
     }
   else
     lat->type = IPA_BOTTOM;
+}
+
+/* Determine whether JFUNC evaluates to a constant and if so, return it.
+   Otherwise return NULL. INFO describes the caller node so that pass-through
+   jump functions can be evaluated.  */
+
+tree
+ipa_cst_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
+{
+  struct ipcp_lattice lat;
+
+  ipa_lattice_from_jfunc (info, &lat, jfunc);
+  if (lat.type == IPA_CONST_VALUE)
+    return lat.constant;
+  else
+    return NULL_TREE;
 }

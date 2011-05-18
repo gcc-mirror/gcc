@@ -1,3 +1,32 @@
+2011-05-11  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/48952
+	* lto.c (do_whole_program_analysis): Do not register cgraph hooks.
+
+2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_ft_type): Use TYPE_MINVAL and TYPE_MAXVAL.  Adjust
+	location of binfo field.
+	(lto_fixup_prevailing_decls): Likewise.
+
+2011-05-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c (def_fn_type): Don't call build_function_type, call
+	build_function_type_array or build_varargs_function_type_array
+	instead.
+
+2011-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-lang.c (global_bindings_p): Return bool.
+
+2011-05-07  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_materialize_function): Use
+	cgraph_function_with_gimple_body_p.
+	(add_cgraph_node_to_partition): Do not re-add items to partition;
+	handle thunks.
+	(add_varpool_node_to_partition): Do not re-add items to partition.
+
 2011-05-03  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (free_ltrans_partitions): Fix accidental commit.

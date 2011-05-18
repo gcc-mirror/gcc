@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -133,9 +133,9 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key)
 {
-  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
 
-    node_pointer p_pot = m_p_head;
+  node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;
 
   while (p_nd != 0)
@@ -148,10 +148,10 @@ find(const_key_reference r_key)
     else
       p_nd = p_nd->m_p_right;
 
-  return point_iterator((p_pot != m_p_head&&  Cmp_Fn::operator()(
-								 r_key,
-								 PB_DS_V2F(p_pot->m_value)))?
-			m_p_head : p_pot);
+  return point_iterator((p_pot != m_p_head
+			 && Cmp_Fn::operator()(r_key,
+					       PB_DS_V2F(p_pot->m_value)))
+				? m_p_head : p_pot);
 }
 
 PB_DS_CLASS_T_DEC
@@ -159,9 +159,9 @@ inline typename PB_DS_CLASS_C_DEC::const_point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key) const
 {
-  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
 
-    node_pointer p_pot = m_p_head;
+  node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;
 
   while (p_nd != 0)
@@ -174,9 +174,9 @@ find(const_key_reference r_key) const
     else
       p_nd = p_nd->m_p_right;
 
-  return const_point_iterator((p_pot != m_p_head&&  Cmp_Fn::operator()(
-								       r_key,
-								       PB_DS_V2F(p_pot->m_value)))?
-			      m_p_head : p_pot);
+  return const_point_iterator((p_pot != m_p_head
+			       && Cmp_Fn::operator()(r_key,
+						     PB_DS_V2F(p_pot->m_value)))
+					? m_p_head : p_pot);
 }
 

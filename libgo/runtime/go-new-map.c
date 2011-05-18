@@ -73,8 +73,8 @@ static const unsigned long prime_list[] = /* 256 + 1 or 256 + 48 + 1 */
 
 /* Return the next number from PRIME_LIST >= N.  */
 
-unsigned long
-__go_map_next_prime (unsigned long n)
+uintptr_t
+__go_map_next_prime (uintptr_t n)
 {
   size_t low;
   size_t high;

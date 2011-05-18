@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,14 +43,14 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_valid() const
+assert_valid(const char* __file, int __line) const
 {
 #ifdef PB_DS_REGRESSION
   s_entry_allocator.check_allocated(m_a_entries, m_actual_size);
 #endif 
 
-  resize_policy::assert_valid();
-  _GLIBCXX_DEBUG_ASSERT(m_size <= m_actual_size);
+  resize_policy::assert_valid(__file, __line);
+  PB_DS_DEBUG_VERIFY(m_size <= m_actual_size);
   for (size_type i = 0; i < m_size; ++i)
     {
 #ifdef PB_DS_REGRESSION
@@ -58,14 +58,14 @@ assert_valid() const
 #endif 
 
       if (left_child(i) < m_size)
-	_GLIBCXX_DEBUG_ASSERT(!entry_cmp::operator()(m_a_entries[i], m_a_entries[left_child(i)]));
+	PB_DS_DEBUG_VERIFY(!entry_cmp::operator()(m_a_entries[i], m_a_entries[left_child(i)]));
 
-      _GLIBCXX_DEBUG_ASSERT(parent(left_child(i)) == i);
+      PB_DS_DEBUG_VERIFY(parent(left_child(i)) == i);
 
       if (right_child(i) < m_size)
-	_GLIBCXX_DEBUG_ASSERT(!entry_cmp::operator()(m_a_entries[i], m_a_entries[right_child(i)]));
+	PB_DS_DEBUG_VERIFY(!entry_cmp::operator()(m_a_entries[i], m_a_entries[right_child(i)]));
 
-      _GLIBCXX_DEBUG_ASSERT(parent(right_child(i)) == i);
+      PB_DS_DEBUG_VERIFY(parent(right_child(i)) == i);
     }
 }
 

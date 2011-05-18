@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -44,17 +44,17 @@ void
 PB_DS_CLASS_C_DEC::
 split(Pred pred, PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid(true);)
+  PB_DS_ASSERT_VALID_COND((*this),true)
+  PB_DS_ASSERT_VALID_COND(other,true)
 
-    other.clear();
+  other.clear();
 
   if (base_type::empty())
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
-        _GLIBCXX_DEBUG_ONLY(other.assert_valid(true);)
+      PB_DS_ASSERT_VALID_COND((*this),true)
+      PB_DS_ASSERT_VALID_COND(other,true)
 
-        return;
+      return;
     }
 
   base_type::to_linked_list();
@@ -86,9 +86,9 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
       p_out = p_next;
     }
 
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid(true);)
+  PB_DS_ASSERT_VALID_COND(other,true)
 
-    node_pointer p_cur = base_type::m_p_root;
+  node_pointer p_cur = base_type::m_p_root;
 
   base_type::m_p_root = 0;
 
@@ -114,19 +114,19 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
 
   m_p_max = 0;
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid(true);)
-    }
+  PB_DS_ASSERT_VALID_COND((*this),true)
+  PB_DS_ASSERT_VALID_COND(other,true)
+}
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid(true);)
+  PB_DS_ASSERT_VALID_COND((*this),true)
+  PB_DS_ASSERT_VALID_COND(other,true)
 
-    node_pointer p_other = other.m_p_root;
+  node_pointer p_other = other.m_p_root;
 
   if (p_other != 0)
     do
@@ -147,9 +147,9 @@ join(PB_DS_CLASS_C_DEC& other)
   other.m_size = 0;
   other.m_p_max = 0;
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid(true);)
-    }
+  PB_DS_ASSERT_VALID_COND((*this),true)
+  PB_DS_ASSERT_VALID_COND(other,true)
+}
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::node_pointer

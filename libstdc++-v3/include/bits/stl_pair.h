@@ -1,6 +1,7 @@
 // Pair implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+// 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -152,6 +153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       pair&
       operator=(pair&& __p)
+      // noexcept has to wait is_nothrow_move_assignable
       {
 	first = std::move(__p.first);
 	second = std::move(__p.second);
@@ -178,6 +180,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       swap(pair& __p)
+      noexcept(noexcept(swap(first, __p.first))
+	       && noexcept(swap(second, __p.second)))
       {
 	using std::swap;
 	swap(first, __p.first);
@@ -239,6 +243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<class _T1, class _T2>
     inline void
     swap(pair<_T1, _T2>& __x, pair<_T1, _T2>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 #endif
 

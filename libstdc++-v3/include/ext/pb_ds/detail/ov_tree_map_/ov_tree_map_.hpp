@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -102,10 +102,14 @@ namespace __gnu_pbds
 
 #ifdef PB_DS_TREE_TRACE
 #define PB_DS_TREE_TRACE_BASE_C_DEC \
-    tree_trace_base<typename Node_And_It_Traits::const_node_iterator, \
-		    typename Node_And_It_Traits::node_iterator, \
+    tree_trace_base<typename Node_And_It_Traits::const_node_iterator,	\
+		    typename Node_And_It_Traits::node_iterator,		\
 		    Cmp_Fn, false, Allocator>
-#endif 
+#endif
+
+#ifndef PB_DS_CHECK_KEY_EXISTS
+#  error Missing definition
+#endif
 
     // Ordered-vector tree associative-container.
     template<typename Key, typename Mapped, class Cmp_Fn,
@@ -234,16 +238,15 @@ namespace __gnu_pbds
       operator[](const_key_reference r_key)
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	PB_DS_ASSERT_VALID((*this))
 	point_iterator it = lower_bound(r_key);
 	if (it != end() && !Cmp_Fn::operator()(r_key, PB_DS_V2F(*it)))
 	  {
-	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key));
-	    _GLIBCXX_DEBUG_ONLY(assert_valid();)
+	    PB_DS_CHECK_KEY_EXISTS(r_key)
+	    PB_DS_ASSERT_VALID((*this))
 	     return it->second;
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 	return (insert_new_val(it, std::make_pair(r_key, mapped_type()))->second);
 #else 
 	insert(r_key);
@@ -254,18 +257,17 @@ namespace __gnu_pbds
       inline std::pair<point_iterator, bool>
       insert(const_reference r_value)
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	PB_DS_ASSERT_VALID((*this))
 	const_key_reference r_key = PB_DS_V2F(r_value);
 	point_iterator it = lower_bound(r_key);
 
 	if (it != end()&&  !Cmp_Fn::operator()(r_key, PB_DS_V2F(*it)))
 	  {
-	    _GLIBCXX_DEBUG_ONLY(assert_valid();)
-	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key));
+	    PB_DS_ASSERT_VALID((*this))
+	    PB_DS_CHECK_KEY_EXISTS(r_key)
 	    return std::make_pair(it, false);
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 	return std::make_pair(insert_new_val(it, r_value), true);
       }
 
@@ -295,11 +297,11 @@ namespace __gnu_pbds
 	iterator pot_it = lower_bound(r_key);
 	if (pot_it != end()&&  !Cmp_Fn::operator()(r_key, PB_DS_V2F(*pot_it)))
 	  {
-	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key));
+	    PB_DS_CHECK_KEY_EXISTS(r_key)
 	    return ++pot_it;
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key));
+	PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
 	return pot_it;
       }
 
@@ -310,15 +312,15 @@ namespace __gnu_pbds
       inline point_iterator
       find(const_key_reference r_key)
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	PB_DS_ASSERT_VALID((*this))
 	iterator pot_it = lower_bound(r_key);
 	if (pot_it != end() && !Cmp_Fn::operator()(r_key, PB_DS_V2F(*pot_it)))
 	  {
-	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key));
+	    PB_DS_CHECK_KEY_EXISTS(r_key)
 	    return pot_it;
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key));
+	PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
 	return end();
       }
 
@@ -412,12 +414,11 @@ namespace __gnu_pbds
       inline iterator
       insert_new_val(iterator it, const_reference r_value)
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 #ifdef PB_DS_REGRESSION
 	  typename Allocator::group_adjustor adjust(m_size);
 #endif 
 
-	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(PB_DS_V2F(r_value)));
+	PB_DS_CHECK_KEY_DOES_NOT_EXIST(PB_DS_V2F(r_value))
 
 	value_vector a_values = s_value_alloc.allocate(m_size + 1);
 
@@ -457,16 +458,16 @@ namespace __gnu_pbds
 	m_end_it = m_a_values + m_size;
 	_GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_value)));
 	update(node_begin(), (node_update* )this);
-	_GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+	PB_DS_ASSERT_VALID((*this))
 	return ret_it;
       }
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 
       void
-      assert_iterators() const;
+      assert_iterators(const char* file, int line) const;
 #endif 
 
       template<typename It>

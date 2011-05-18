@@ -133,7 +133,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  struct cgraph_node *n;
 	  n = cgraph_clone_node (e->callee, e->callee->decl,
 				 e->count, e->frequency,
-				 update_original, NULL);
+				 update_original, NULL, true);
 	  cgraph_redirect_edge_callee (e, n);
 	}
     }
@@ -184,7 +184,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   old_size = inline_summary (to)->size;
   inline_merge_summary (e);
   new_size = inline_summary (to)->size;
-  if (overall_size && new_size > old_size)
+  if (overall_size)
     *overall_size += new_size - old_size;
   ncalls_inlined++;
 

@@ -8377,7 +8377,7 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
 	  return false;
 	}
 
-      
+
       function_args_iter_next (&ada_iter);
       function_args_iter_next (&btin_iter);
     }

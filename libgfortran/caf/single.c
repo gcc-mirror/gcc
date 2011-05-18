@@ -26,15 +26,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libcaf.h"
 #include <stdio.h>  /* For fputs and fprintf.  */
-#include <stdlib.h> /* For exit.  */
+#include <stdlib.h> /* For exit and malloc.  */
 
 /* Define GFC_CAF_CHECK to enable run-time checking.  */
 /* #define GFC_CAF_CHECK  1  */
 
-
 /* Single-image implementation of the CAF library.
    Note: For performance reasons -fcoarry=single should be used
    rather than this library.  */
+
 
 void
 _gfortran_caf_init (int *argc __attribute__ ((unused)),
@@ -45,10 +45,29 @@ _gfortran_caf_init (int *argc __attribute__ ((unused)),
   *num_images = 1;
 }
 
+
 void
 _gfortran_caf_finalize (void)
 {
 }
+
+
+void *
+_gfortran_caf_register (ptrdiff_t size,
+			caf_register_t type __attribute__ ((unused)),
+			void **token)
+{
+  *token = NULL;
+  return malloc (size);
+}
+
+
+int
+_gfortran_caf_deregister (void **token __attribute__ ((unused)))
+{
+  return 0;
+}
+
 
 int
 _gfortran_caf_sync_all (char *errmsg __attribute__ ((unused)),
@@ -78,15 +97,6 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
   return 0;
 }
 
-void
-_gfortran_caf_critical (void)
-{
-}
-
-void
-_gfortran_caf_end_critical (void)
-{
-}
 
 void
 _gfortran_caf_error_stop_str (const char *string, int32_t len)
@@ -98,6 +108,7 @@ _gfortran_caf_error_stop_str (const char *string, int32_t len)
 
   exit (1);
 }
+
 
 void
 _gfortran_caf_error_stop (int32_t error)

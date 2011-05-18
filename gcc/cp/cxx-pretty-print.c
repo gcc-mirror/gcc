@@ -394,8 +394,11 @@ pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
      __is_convertible_to ( type-id , type-id )     
      __is_empty ( type-id )
      __is_enum ( type-id )
+     __is_literal_type ( type-id )
      __is_pod ( type-id )
      __is_polymorphic ( type-id )
+     __is_std_layout ( type-id )
+     __is_trivial ( type-id )
      __is_union ( type-id )  */
 
 static void
@@ -1363,7 +1366,7 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
 static inline tree
 pp_cxx_implicit_parameter_type (tree mf)
 {
-  return TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (mf))));
+  return class_of_this_parm (TREE_TYPE (mf));
 }
 
 /*
@@ -1652,8 +1655,7 @@ pp_cxx_direct_abstract_declarator (cxx_pretty_printer *pp, tree t)
       if (TREE_CODE (t) == METHOD_TYPE)
 	{
 	  pp_base (pp)->padding = pp_before;
-	  pp_cxx_cv_qualifier_seq
-	    (pp, TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))));
+	  pp_cxx_cv_qualifier_seq (pp, class_of_this_parm (t));
 	}
       pp_cxx_exception_specification (pp, t);
       break;
@@ -2134,7 +2136,6 @@ pp_cxx_template_declaration (cxx_pretty_printer *pp, tree t)
 {
   tree tmpl = most_general_template (t);
   tree level;
-  int i = 0;
 
   pp_maybe_newline_and_indent (pp, 0);
   for (level = DECL_TEMPLATE_PARMS (tmpl); level; level = TREE_CHAIN (level))
@@ -2144,7 +2145,6 @@ pp_cxx_template_declaration (cxx_pretty_printer *pp, tree t)
       pp_cxx_template_parameter_list (pp, TREE_VALUE (level));
       pp_cxx_end_template_argument_list (pp);
       pp_newline_and_indent (pp, 3);
-      i += 3;
     }
   if (TREE_CODE (t) == FUNCTION_DECL && DECL_SAVED_TREE (t))
     pp_cxx_function_definition (pp, t);

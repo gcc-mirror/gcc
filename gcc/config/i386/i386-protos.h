@@ -67,8 +67,8 @@ extern void split_double_mode (enum machine_mode, rtx[], int, rtx[], rtx[]);
 extern const char *output_set_got (rtx, rtx);
 extern const char *output_387_binary_op (rtx, rtx*);
 extern const char *output_387_reg_move (rtx, rtx*);
-extern const char *output_fix_trunc (rtx, rtx*, int);
-extern const char *output_fp_compare (rtx, rtx*, int, int);
+extern const char *output_fix_trunc (rtx, rtx*, bool);
+extern const char *output_fp_compare (rtx, rtx*, bool, bool);
 extern const char *output_adjust_stack_and_probe (rtx);
 extern const char *output_probe_stack_range (rtx, rtx);
 
@@ -114,7 +114,7 @@ extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_sse_unpack (rtx[], bool, bool);
 extern bool ix86_expand_int_addcc (rtx[]);
-extern rtx ix86_expand_call (rtx, rtx, rtx, rtx, rtx, int);
+extern rtx ix86_expand_call (rtx, rtx, rtx, rtx, rtx, bool);
 extern void ix86_split_call_vzeroupper (rtx, rtx);
 extern void x86_initialize_trampoline (rtx, rtx, rtx);
 extern rtx ix86_zero_extend_to_Pmode (rtx);
@@ -127,9 +127,9 @@ extern bool ix86_check_movabs (rtx, int);
 extern void ix86_split_idivmod (enum machine_mode, rtx[], bool);
 
 extern rtx assign_386_stack_local (enum machine_mode, enum ix86_stack_slot);
-extern int ix86_attr_length_immediate_default (rtx, int);
+extern int ix86_attr_length_immediate_default (rtx, bool);
 extern int ix86_attr_length_address_default (rtx);
-extern int ix86_attr_length_vex_default (rtx, int, int);
+extern int ix86_attr_length_vex_default (rtx, bool, bool);
 
 extern enum machine_mode ix86_fp_compare_mode (enum rtx_code);
 
@@ -193,7 +193,6 @@ extern unsigned int ix86_get_callcvt (const_tree);
 
 #endif
 
-extern rtx ix86_tls_get_addr (void);
 extern rtx ix86_tls_module_base (void);
 
 extern void ix86_expand_vector_init (bool, rtx, rtx);
@@ -271,7 +270,7 @@ extern int asm_preferred_eh_data_format (int, int);
 extern enum attr_cpu ix86_schedule;
 #endif
 
-extern const char * ix86_output_call_insn (rtx insn, rtx call_op, int addr_op);
+extern const char * ix86_output_call_insn (rtx insn, rtx call_op);
 
 #ifdef RTX_CODE
 /* Target data for multipass lookahead scheduling.

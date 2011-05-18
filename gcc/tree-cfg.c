@@ -843,7 +843,7 @@ edge_to_cases_cleanup (const void *key ATTRIBUTE_UNUSED, void **value,
     }
 
   *value = NULL;
-  return false;
+  return true;
 }
 
 /* Start recording information mapping edges to case labels.  */
@@ -2830,6 +2830,14 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	*walk_subtrees = 0;
       break;
 
+    case CASE_LABEL_EXPR:
+      if (CASE_CHAIN (t))
+	{
+	  error ("invalid CASE_CHAIN");
+	  return t;
+	}
+      break;
+
     default:
       break;
     }
@@ -3342,6 +3350,15 @@ verify_gimple_assign_unary (gimple stmt)
       return false;
 
     case TRUTH_NOT_EXPR:
+      if (!useless_type_conversion_p (boolean_type_node,  rhs1_type))
+        {
+	    error ("invalid types in truth not");
+	    debug_generic_expr (lhs_type);
+	    debug_generic_expr (rhs1_type);
+	    return true;
+        }
+      break;
+
     case NEGATE_EXPR:
     case ABS_EXPR:
     case BIT_NOT_EXPR:
@@ -3541,10 +3558,10 @@ do_pointer_plus_expr_check:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
       {
-	/* We allow any kind of integral typed argument and result.  */
-	if (!INTEGRAL_TYPE_P (rhs1_type)
-	    || !INTEGRAL_TYPE_P (rhs2_type)
-	    || !INTEGRAL_TYPE_P (lhs_type))
+	/* We allow only boolean typed or compatible argument and result.  */
+	if (!useless_type_conversion_p (boolean_type_node,  rhs1_type)
+	    || !useless_type_conversion_p (boolean_type_node,  rhs2_type)
+	    || !useless_type_conversion_p (boolean_type_node,  lhs_type))
 	  {
 	    error ("type mismatch in binary truth expression");
 	    debug_generic_expr (lhs_type);

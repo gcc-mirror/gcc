@@ -4822,7 +4822,7 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
   if ((lhs == 0 || rhs == 0 || operand_equal_p (lhs, rhs, 0))
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
-      && 0 != (tem = (build_range_check (UNKNOWN_LOCATION, type,
+      && 0 != (tem = (build_range_check (loc, type,
 					 lhs != 0 ? lhs
 					 : rhs != 0 ? rhs : integer_zero_node,
 					 in_p, low, high))))
@@ -4849,8 +4849,8 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
 			   ? TRUTH_AND_EXPR : TRUTH_OR_EXPR,
 			   type, op0, op1);
 
-      else if (lang_hooks.decls.global_bindings_p () == 0
-	       && ! CONTAINS_PLACEHOLDER_P (lhs))
+      else if (!lang_hooks.decls.global_bindings_p ()
+	       && !CONTAINS_PLACEHOLDER_P (lhs))
 	{
 	  tree common = save_expr (lhs);
 
@@ -6148,10 +6148,6 @@ fold_mathfn_compare (location_t loc,
 				    build_real (TREE_TYPE (arg), dconst0));
 
 	      /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
-	      if (lang_hooks.decls.global_bindings_p () != 0
-		  || CONTAINS_PLACEHOLDER_P (arg))
-		return NULL_TREE;
-
 	      arg = save_expr (arg);
 	      return fold_build2_loc (loc, TRUTH_ANDIF_EXPR, type,
 				  fold_build2_loc (loc, GE_EXPR, type, arg,
@@ -6168,18 +6164,14 @@ fold_mathfn_compare (location_t loc,
 				build_real (TREE_TYPE (arg), c2));
 
 	  /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
-	  if (lang_hooks.decls.global_bindings_p () == 0
-	      && ! CONTAINS_PLACEHOLDER_P (arg))
-	    {
-	      arg = save_expr (arg);
-	      return fold_build2_loc (loc, TRUTH_ANDIF_EXPR, type,
+	  arg = save_expr (arg);
+	  return fold_build2_loc (loc, TRUTH_ANDIF_EXPR, type,
 				  fold_build2_loc (loc, GE_EXPR, type, arg,
 					       build_real (TREE_TYPE (arg),
 							   dconst0)),
 				  fold_build2_loc (loc, code, type, arg,
 					       build_real (TREE_TYPE (arg),
 							   c2)));
-	    }
 	}
     }
 
@@ -6226,13 +6218,8 @@ fold_inf_compare (location_t loc, enum tree_code code, tree type,
 	return omit_one_operand_loc (loc, type, integer_one_node, arg0);
 
       /* x <= +Inf is the same as x == x, i.e. isfinite(x).  */
-      if (lang_hooks.decls.global_bindings_p () == 0
-	  && ! CONTAINS_PLACEHOLDER_P (arg0))
-	{
-	  arg0 = save_expr (arg0);
-	  return fold_build2_loc (loc, EQ_EXPR, type, arg0, arg0);
-	}
-      break;
+      arg0 = save_expr (arg0);
+      return fold_build2_loc (loc, EQ_EXPR, type, arg0, arg0);
 
     case EQ_EXPR:
     case GE_EXPR:
@@ -13390,9 +13377,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 					     TREE_OPERAND (arg0, 1))
 	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (op2))))
 	{
-	  location_t loc0 = EXPR_LOCATION (arg0);
-	  if (loc0 == UNKNOWN_LOCATION)
-	    loc0 = loc;
+	  location_t loc0 = expr_location_or (arg0, loc);
 	  tem = fold_truth_not_expr (loc0, arg0);
 	  if (tem && COMPARISON_CLASS_P (tem))
 	    {
@@ -13407,9 +13392,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
       if (truth_value_p (TREE_CODE (arg0))
 	  && tree_swap_operands_p (op1, op2, false))
 	{
-	  location_t loc0 = EXPR_LOCATION (arg0);
-	  if (loc0 == UNKNOWN_LOCATION)
-	    loc0 = loc;
+	  location_t loc0 = expr_location_or (arg0, loc);
 	  /* See if this can be inverted.  If it can't, possibly because
 	     it was a floating-point inequality comparison, don't do
 	     anything.  */
@@ -13558,9 +13541,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (arg1)))
 	{
-	  location_t loc0 = EXPR_LOCATION (arg0);
-	  if (loc0 == UNKNOWN_LOCATION)
-	    loc0 = loc;
+	  location_t loc0 = expr_location_or (arg0, loc);
 	  /* Only perform transformation if ARG0 is easily inverted.  */
 	  tem = fold_truth_not_expr (loc0, arg0);
 	  if (tem)
@@ -13574,9 +13555,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && truth_value_p (TREE_CODE (arg0))
 	  && truth_value_p (TREE_CODE (op2)))
 	{
-	  location_t loc0 = EXPR_LOCATION (arg0);
-	  if (loc0 == UNKNOWN_LOCATION)
-	    loc0 = loc;
+	  location_t loc0 = expr_location_or (arg0, loc);
 	  /* Only perform transformation if ARG0 is easily inverted.  */
 	  tem = fold_truth_not_expr (loc0, arg0);
 	  if (tem)

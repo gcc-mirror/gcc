@@ -1197,8 +1197,10 @@
           (vec_duplicate:V4HI
             (match_operand:HI 2 "nonimmediate_operand" "rm"))
 	  (match_operand:V4HI 1 "register_operand" "0")
-          (match_operand:SI 3 "const_pow2_1_to_8_operand" "n")))]
-  "TARGET_SSE || TARGET_3DNOW_A"
+          (match_operand:SI 3 "const_int_operand" "")))]
+  "(TARGET_SSE || TARGET_3DNOW_A)
+   && ((unsigned) exact_log2 (INTVAL (operands[3]))
+       < GET_MODE_NUNITS (V4HImode))"
 {
   operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
   if (MEM_P (operands[2]))

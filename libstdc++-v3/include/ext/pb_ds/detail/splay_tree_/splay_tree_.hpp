@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -136,6 +136,9 @@ namespace __gnu_pbds
     {
     private:
       typedef PB_DS_BASE_C_DEC base_type;
+#ifdef _GLIBCXX_DEBUG
+      typedef base_type debug_base;
+#endif
       typedef typename base_type::node_pointer node_pointer;
 
     public:
@@ -191,14 +194,14 @@ namespace __gnu_pbds
       operator[](const_key_reference r_key)
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-	_GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	std::pair<point_iterator, bool> ins_pair =
 	  insert_leaf_imp(value_type(r_key, mapped_type()));
 
 	ins_pair.first.m_p_nd->m_special = false;
-	_GLIBCXX_DEBUG_ONLY(base_type::assert_valid());
+	_GLIBCXX_DEBUG_ONLY(base_type::assert_valid(__FILE__, __LINE__));
 	splay(ins_pair.first.m_p_nd);
-	_GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	return ins_pair.first.m_p_nd->m_value.second;
 #else 
 	insert(r_key);
@@ -243,10 +246,10 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 
       void
-      assert_special_imp(const node_pointer) const;
+      assert_special_imp(const node_pointer, const char* file, int line) const;
 #endif 
 
       void
@@ -277,6 +280,10 @@ namespace __gnu_pbds
       erase_node(node_pointer);
     };
 
+#define PB_DS_ASSERT_BASE_NODE_CONSISTENT(_Node)			\
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(_Node,		\
+							__FILE__, __LINE__);)
+
 #include <ext/pb_ds/detail/splay_tree_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp>
 #include <ext/pb_ds/detail/splay_tree_/splay_fn_imps.hpp>
@@ -285,6 +292,7 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/splay_tree_/debug_fn_imps.hpp>
 #include <ext/pb_ds/detail/splay_tree_/split_join_fn_imps.hpp>
 
+#undef PB_DS_ASSERT_BASE_NODE_CONSISTENT
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_NAME

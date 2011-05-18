@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,34 +43,37 @@
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
-assert_node_consistent(const node_pointer p_nd) const
+assert_node_consistent(const node_pointer p_nd, const char* __file,
+						int __line) const
 {
   if (p_nd == 0)
     return 1;
 
-  const size_type l_height = assert_node_consistent(p_nd->m_p_left);
-  const size_type r_height = assert_node_consistent(p_nd->m_p_right);
+  const size_type l_height =
+    assert_node_consistent(p_nd->m_p_left, __file, __line);
+  const size_type r_height =
+    assert_node_consistent(p_nd->m_p_right, __file, __line);
   if (p_nd->m_red)
     {
-      _GLIBCXX_DEBUG_ASSERT(is_effectively_black(p_nd->m_p_left));
-      _GLIBCXX_DEBUG_ASSERT(is_effectively_black(p_nd->m_p_right));
+      PB_DS_DEBUG_VERIFY(is_effectively_black(p_nd->m_p_left));
+      PB_DS_DEBUG_VERIFY(is_effectively_black(p_nd->m_p_right));
     }
-  _GLIBCXX_DEBUG_ASSERT(l_height == r_height);
+  PB_DS_DEBUG_VERIFY(l_height == r_height);
   return (p_nd->m_red ? 0 : 1) + l_height;
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_valid() const
+assert_valid(const char* __file, int __line) const
 {
-  base_type::assert_valid();
+  base_type::assert_valid(__file, __line);
   const node_pointer p_head = base_type::m_p_head;
-  _GLIBCXX_DEBUG_ASSERT(p_head->m_red);
+  PB_DS_DEBUG_VERIFY(p_head->m_red);
   if (p_head->m_p_parent != 0)
     {
-      _GLIBCXX_DEBUG_ASSERT(!p_head->m_p_parent->m_red);
-      assert_node_consistent(p_head->m_p_parent);
+      PB_DS_DEBUG_VERIFY(!p_head->m_p_parent->m_red);
+      assert_node_consistent(p_head->m_p_parent, __file, __line);
     }
 }
 

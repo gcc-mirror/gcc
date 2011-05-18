@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -273,10 +273,11 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 
       void
-      assert_node_consistent(const_node_pointer p_nd, bool single_link) const;
+      assert_node_consistent(const_node_pointer p_nd, bool single_link,
+			     const char* file, int line) const;
 
       static size_type
       size_under_node(const_node_pointer p_nd);
@@ -298,10 +299,10 @@ namespace __gnu_pbds
     private:
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_iterators() const;
+      assert_iterators(const char* file, int line) const;
 
       void
-      assert_size() const;
+      assert_size(const char* file, int line) const;
 
       static size_type
       size_from_node(const_node_pointer p_nd);

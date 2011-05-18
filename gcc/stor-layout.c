@@ -89,10 +89,10 @@ variable_size (tree size)
   if (CONTAINS_PLACEHOLDER_P (size))
     return self_referential_size (size);
 
-  /* If the language-processor is to take responsibility for variable-sized
-     items (e.g., languages which have elaboration procedures like Ada),
-     just return SIZE unchanged.  */
-  if (lang_hooks.decls.global_bindings_p () < 0)
+  /* If we are in the global binding level, we can't make a SAVE_EXPR
+     since it may end up being shared across functions, so it is up
+     to the front-end to deal with this case.  */
+  if (lang_hooks.decls.global_bindings_p ())
     return size;
 
   return save_expr (size);
@@ -2115,12 +2115,12 @@ vector_type_mode (const_tree t)
 
   gcc_assert (TREE_CODE (t) == VECTOR_TYPE);
 
-  mode = t->type.mode;
+  mode = t->type_common.mode;
   if (VECTOR_MODE_P (mode)
       && (!targetm.vector_mode_supported_p (mode)
 	  || !have_regs_of_mode[mode]))
     {
-      enum machine_mode innermode = TREE_TYPE (t)->type.mode;
+      enum machine_mode innermode = TREE_TYPE (t)->type_common.mode;
 
       /* For integers, try mapping it to a same-sized scalar mode.  */
       if (GET_MODE_CLASS (innermode) == MODE_INT)

@@ -521,8 +521,12 @@ void ipa_prop_write_jump_functions (cgraph_node_set set);
 void ipa_prop_read_jump_functions (void);
 void ipa_update_after_lto_read (void);
 int ipa_get_param_decl_index (struct ipa_node_params *, tree);
-void ipa_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
+void ipa_lattice_from_jfunc (struct ipa_node_params *info,
+			     struct ipcp_lattice *lat,
 			     struct ipa_jump_func *jfunc);
+tree ipa_cst_from_jfunc (struct ipa_node_params *info,
+			 struct ipa_jump_func *jfunc);
+
 
 /* From tree-sra.c:  */
 tree build_ref_for_offset (location_t, tree, HOST_WIDE_INT, tree,

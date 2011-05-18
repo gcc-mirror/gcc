@@ -666,6 +666,37 @@ want_inline_function_called_once_p (struct cgraph_node *node)
    return true;
 }
 
+
+/* Return relative time improvement for inlining EDGE in range
+   1...2^9.  */
+
+static inline int
+relative_time_benefit (struct inline_summary *callee_info,
+		       struct cgraph_edge *edge,
+		       int time_growth)
+{
+  int relbenefit;
+  gcov_type uninlined_call_time;
+
+  uninlined_call_time =
+    ((gcov_type)
+     (callee_info->time
+      + inline_edge_summary (edge)->call_stmt_time
+      + CGRAPH_FREQ_BASE / 2) * edge->frequency
+     / CGRAPH_FREQ_BASE);
+  /* Compute relative time benefit, i.e. how much the call becomes faster.
+     ??? perhaps computing how much the caller+calle together become faster
+     would lead to more realistic results.  */
+  if (!uninlined_call_time)
+    uninlined_call_time = 1;
+  relbenefit =
+    (uninlined_call_time - time_growth) * 256 / (uninlined_call_time);
+  relbenefit = MIN (relbenefit, 512);
+  relbenefit = MAX (relbenefit, 1);
+  return relbenefit;
+}
+
+
 /* A cost model driving the inlining heuristics in a way so the edges with
    smallest badness are inlined first.  After each inlining is performed
    the costs of all caller edges of nodes affected are recomputed so the
@@ -690,7 +721,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       fprintf (dump_file, "    Badness calculation for %s -> %s\n",
 	       cgraph_node_name (edge->caller),
 	       cgraph_node_name (edge->callee));
-      fprintf (dump_file, "      growth size %i, time %i\n",
+      fprintf (dump_file, "      size growth %i, time growth %i\n",
 	       growth,
 	       time_growth);
     }
@@ -698,26 +729,29 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   /* Always prefer inlining saving code size.  */
   if (growth <= 0)
     {
-      badness = INT_MIN - growth;
+      badness = INT_MIN / 2 + growth;
       if (dump)
-	fprintf (dump_file, "      %i: Growth %i < 0\n", (int) badness,
+	fprintf (dump_file, "      %i: Growth %i <= 0\n", (int) badness,
 		 growth);
     }
 
-  /* When profiling is available, base priorities -(#calls / growth).
-     So we optimize for overall number of "executed" inlined calls.  */
+  /* When profiling is available, compute badness as:
+
+	        relative_edge_count * relative_time_benefit
+     goodness = -------------------------------------------
+		edge_growth
+     badness = -goodness  
+
+    The fraction is upside down, becuase on edge counts and time beneits
+    the bounds are known. Edge growth is essentially unlimited.  */
+
   else if (max_count)
     {
-      int benefitperc;
-      benefitperc = (((gcov_type)callee_info->time
-		     * edge->frequency / CGRAPH_FREQ_BASE - time_growth) * 100
-		     / (callee_info->time + 1) + 1);
-      benefitperc = MIN (benefitperc, 100);
-      benefitperc = MAX (benefitperc, 0);
+      int relbenefit = relative_time_benefit (callee_info, edge, time_growth);
       badness =
 	((int)
-	 ((double) edge->count * INT_MIN / max_count / 100) *
-	 benefitperc) / growth;
+	 ((double) edge->count * INT_MIN / 2 / max_count / 512) *
+	 relative_time_benefit (callee_info, edge, time_growth)) / growth;
       
       /* Be sure that insanity of the profile won't lead to increasing counts
 	 in the scalling and thus to overflow in the computation above.  */
@@ -729,51 +763,62 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   " * Relative benefit %f\n",
 		   (int) badness, (double) badness / INT_MIN,
 		   (double) edge->count / max_count,
-		   (double) benefitperc);
+		   relbenefit * 100 / 256.0);
 	}
     }
 
-  /* When function local profile is available, base priorities on
-     growth / frequency, so we optimize for overall frequency of inlined
-     calls.  This is not too accurate since while the call might be frequent
-     within function, the function itself is infrequent.
+  /* When function local profile is available. Compute badness as:
 
-     Other objective to optimize for is number of different calls inlined.
-     We add the estimated growth after inlining all functions to bias the
-     priorities slightly in this direction (so fewer times called functions
-     of the same size gets priority).  */
+     
+               growth_of_callee
+     badness = -------------------------------------- + growth_for-all
+	       relative_time_benefit * edge_frequency
+
+  */
   else if (flag_guess_branch_prob)
     {
-      int div = edge->frequency * 100 / CGRAPH_FREQ_BASE + 1;
-      int benefitperc;
+      int div = edge->frequency * (1<<10) / CGRAPH_FREQ_MAX;
       int growth_for_all;
-      badness = growth * 10000;
-      benefitperc = (((gcov_type)callee_info->time
-		     * edge->frequency / CGRAPH_FREQ_BASE - time_growth) * 100
-		     / (callee_info->time + 1) + 1);
-      benefitperc = MIN (benefitperc, 100);
-      benefitperc = MAX (benefitperc, 0);
-      div *= benefitperc;
 
-      /* Decrease badness if call is nested.  */
-      /* Compress the range so we don't overflow.  */
-      if (div > 10000)
-	div = 10000 + ceil_log2 (div) - 8;
-      if (div < 1)
-	div = 1;
-      if (badness > 0)
-	badness /= div;
+      div = MAX (div, 1);
+      gcc_checking_assert (edge->frequency <= CGRAPH_FREQ_MAX);
+      div *= relative_time_benefit (callee_info, edge, time_growth);
+
+      /* frequency is normalized in range 1...2^10.
+         relbenefit in range 1...2^9
+	 DIV should be in range 1....2^19.  */
+      gcc_checking_assert (div >= 1 && div <= (1<<19));
+
+      /* Result must be integer in range 0...INT_MAX.
+	 Set the base of fixed point calculation so we don't lose much of
+	 precision for small bandesses (those are interesting) yet we don't
+	 overflow for growths that are still in interesting range.  */
+      badness = ((gcov_type)growth) * (1<<18);
+      badness = (badness + div / 2) / div;
+
+      /* Overall growth of inlining all calls of function matters: we want to
+	 inline so offline copy of function is no longer needed.
+
+	 Additionally functions that can be fully inlined without much of
+	 effort are better inline candidates than functions that can be fully
+	 inlined only after noticeable overall unit growths. The latter
+	 are better in a sense compressing of code size by factoring out common
+	 code into separate function shared by multiple code paths.
+
+	 We might mix the valud into the fraction by taking into account
+	 relative growth of the unit, but for now just add the number
+	 into resulting fraction.  */
       growth_for_all = estimate_growth (edge->callee);
       badness += growth_for_all;
-      if (badness > INT_MAX)
-	badness = INT_MAX;
+      if (badness > INT_MAX - 1)
+	badness = INT_MAX - 1;
       if (dump)
 	{
 	  fprintf (dump_file,
-		   "      %i: guessed profile. frequency %i, overall growth %i,"
-		   " benefit %i%%, divisor %i\n",
-		   (int) badness, edge->frequency, growth_for_all,
-		   benefitperc, div);
+		   "      %i: guessed profile. frequency %f, overall growth %i,"
+		   " benefit %f%%, divisor %i\n",
+		   (int) badness, (double)edge->frequency / CGRAPH_FREQ_BASE, growth_for_all,
+		   relative_time_benefit (callee_info, edge, time_growth) * 100 / 256.0, div);
 	}
     }
   /* When function local profile is not available or it does not give
@@ -823,7 +868,6 @@ update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
 	 a minimum of heap.  */
       if (badness < n->key)
 	{
-	  fibheap_replace_key (heap, n, badness);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file,
@@ -833,6 +877,7 @@ update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
 		       (int)n->key,
 		       badness);
 	    }
+	  fibheap_replace_key (heap, n, badness);
 	  gcc_checking_assert (n->key == badness);
 	}
     }
@@ -957,9 +1002,9 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
       e = e->callee->callees;
     else
       {
-	/* We inlined and thus callees might have different number of calls.
-	   Reset their caches  */
-        reset_node_growth_cache (e->callee);
+	/* We do not reset callee growth cache here.  Since we added a new call,
+	   growth chould have just increased and consequentely badness metric
+           don't need updating.  */
 	if (e->inline_failed
 	    && inline_summary (e->callee)->inlinable
 	    && cgraph_function_body_availability (e->callee) >= AVAIL_AVAILABLE
@@ -1129,7 +1174,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	  /* We need original clone to copy around.  */
 	  master_clone = cgraph_clone_node (node, node->decl,
 					    node->count, CGRAPH_FREQ_BASE,
-					    false, NULL);
+					    false, NULL, true);
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
 	      clone_inlined_nodes (e, true, false, NULL);
@@ -1235,9 +1280,8 @@ inline_small_functions (void)
   max_count = 0;
   initialize_growth_caches ();
 
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed
-	&& !node->global.inlined_to)
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (!node->global.inlined_to)
       {
 	struct inline_summary *info = inline_summary (node);
 
@@ -1255,9 +1299,8 @@ inline_small_functions (void)
 
   /* Populate the heeap with all edges we might inline.  */
 
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed
-	&& !node->global.inlined_to)
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (!node->global.inlined_to)
       {
 	if (dump_file)
 	  fprintf (dump_file, "Enqueueing calls of %s/%i.\n",

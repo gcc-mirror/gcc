@@ -78,6 +78,8 @@ doloop_condition_get (rtx doloop_pat)
   rtx inc_src;
   rtx condition;
   rtx pattern;
+  rtx cc_reg = NULL_RTX;
+  rtx reg_orig = NULL_RTX;
 
   /* The canonical doloop pattern we expect has one of the following
      forms:
@@ -96,7 +98,16 @@ doloop_condition_get (rtx doloop_pat)
      2)  (set (reg) (plus (reg) (const_int -1))
          (set (pc) (if_then_else (reg != 0)
 	                         (label_ref (label))
-			         (pc))).  */
+			         (pc))).  
+
+     Some targets (ARM) do the comparison before the branch, as in the
+     following form:
+
+     3) (parallel [(set (cc) (compare ((plus (reg) (const_int -1), 0)))
+                   (set (reg) (plus (reg) (const_int -1)))])
+        (set (pc) (if_then_else (cc == NE)
+                                (label_ref (label))
+                                (pc))) */
 
   pattern = PATTERN (doloop_pat);
 
@@ -104,19 +115,47 @@ doloop_condition_get (rtx doloop_pat)
     {
       rtx cond;
       rtx prev_insn = prev_nondebug_insn (doloop_pat);
+      rtx cmp_arg1, cmp_arg2;
+      rtx cmp_orig;
 
-      /* We expect the decrement to immediately precede the branch.  */
+      /* In case the pattern is not PARALLEL we expect two forms
+	 of doloop which are cases 2) and 3) above: in case 2) the
+	 decrement immediately precedes the branch, while in case 3)
+	 the compare and decrement instructions immediately precede
+	 the branch.  */
 
       if (prev_insn == NULL_RTX || !INSN_P (prev_insn))
         return 0;
 
       cmp = pattern;
-      inc = PATTERN (PREV_INSN (doloop_pat));
+      if (GET_CODE (PATTERN (prev_insn)) == PARALLEL)
+        {
+	  /* The third case: the compare and decrement instructions
+	     immediately precede the branch.  */
+	  cmp_orig = XVECEXP (PATTERN (prev_insn), 0, 0);
+	  if (GET_CODE (cmp_orig) != SET)
+	    return 0;
+	  if (GET_CODE (SET_SRC (cmp_orig)) != COMPARE)
+	    return 0;
+	  cmp_arg1 = XEXP (SET_SRC (cmp_orig), 0);
+          cmp_arg2 = XEXP (SET_SRC (cmp_orig), 1);
+	  if (cmp_arg2 != const0_rtx 
+	      || GET_CODE (cmp_arg1) != PLUS)
+	    return 0;
+	  reg_orig = XEXP (cmp_arg1, 0);
+	  if (XEXP (cmp_arg1, 1) != GEN_INT (-1) 
+	      || !REG_P (reg_orig))
+	    return 0;
+	  cc_reg = SET_DEST (cmp_orig);
+	  
+	  inc = XVECEXP (PATTERN (prev_insn), 0, 1);
+	}
+      else
+        inc = PATTERN (prev_insn);
       /* We expect the condition to be of the form (reg != 0)  */
       cond = XEXP (SET_SRC (cmp), 0);
       if (GET_CODE (cond) != NE || XEXP (cond, 1) != const0_rtx)
         return 0;
-
     }
   else
     {
@@ -162,11 +201,15 @@ doloop_condition_get (rtx doloop_pat)
     return 0;
 
   if ((XEXP (condition, 0) == reg)
+      /* For the third case:  */  
+      || ((cc_reg != NULL_RTX)
+	  && (XEXP (condition, 0) == cc_reg)
+	  && (reg_orig == reg))
       || (GET_CODE (XEXP (condition, 0)) == PLUS
-		   && XEXP (XEXP (condition, 0), 0) == reg))
+	  && XEXP (XEXP (condition, 0), 0) == reg))
    {
      if (GET_CODE (pattern) != PARALLEL)
-     /*  The second form we expect:
+     /*  For the second form we expect:
 
          (set (reg) (plus (reg) (const_int -1))
          (set (pc) (if_then_else (reg != 0)
@@ -181,7 +224,24 @@ doloop_condition_get (rtx doloop_pat)
                      (set (reg) (plus (reg) (const_int -1)))
                      (additional clobbers and uses)])
 
-         So we return that form instead.
+        For the third form we expect:
+
+        (parallel [(set (cc) (compare ((plus (reg) (const_int -1)), 0))
+                   (set (reg) (plus (reg) (const_int -1)))])
+        (set (pc) (if_then_else (cc == NE)
+                                (label_ref (label))
+                                (pc))) 
+
+        which is equivalent to the following:
+
+        (parallel [(set (cc) (compare (reg,  1))
+                   (set (reg) (plus (reg) (const_int -1)))
+                   (set (pc) (if_then_else (NE == cc)
+                                           (label_ref (label))
+                                           (pc))))])
+
+        So we return the second form instead for the two cases.
+
      */
         condition = gen_rtx_fmt_ee (NE, VOIDmode, inc_src, const1_rtx);
 

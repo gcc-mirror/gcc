@@ -1,3 +1,14 @@
+2011-05-13  Toon Moene  <toon@moene.org>
+
+	* objc-next-runtime-abi-02.c (newabi_append_ro):
+	Add const qualifier to constant variable pointer declaration.
+
+2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.h (CLASS_NAME, CLASS_SUPER_NAME): Use proper accessors.
+	(CLASS_NST_METHODS, CLASS_CLS_METHODS): Likewise.
+	(PROTOCOL_NAME, PROTOCOL_NST_METHODS, PROTOCOL_CLS_METHODS): Likewise.
+
 2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-runtime-shared-support.h (get_arg_type_list): Delete.

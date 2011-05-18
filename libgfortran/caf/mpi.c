@@ -27,7 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libcaf.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>	/* For memcpy.  */
 #include <mpi.h>
+
 
 /* Define GFC_CAF_CHECK to enable run-time checking.  */
 /* #define GFC_CAF_CHECK  1  */
@@ -39,7 +41,6 @@ static void error_stop (int error) __attribute__ ((noreturn));
 static int caf_mpi_initialized;
 static int caf_this_image;
 static int caf_num_images;
-static MPI_Win caf_world_window;
 
 
 /* Initialize coarray program.  This routine assumes that no other
@@ -58,13 +59,9 @@ _gfortran_caf_init (int *argc, char ***argv, int *this_image, int *num_images)
     MPI_Init (argc, argv);
 
   MPI_Comm_rank (MPI_COMM_WORLD, &caf_this_image);
-  *this_image = caf_this_image + 1;
+  *this_image = ++caf_this_image;
   MPI_Comm_size (MPI_COMM_WORLD, &caf_num_images);
   *num_images = caf_num_images;
-
-  /* Obtain window for CRITICAL section locking.  */
-  MPI_Win_create (NULL, 0, 1, MPI_INFO_NULL, MPI_COMM_WORLD,
-		  &caf_world_window);
 }
 
 
@@ -73,10 +70,25 @@ _gfortran_caf_init (int *argc, char ***argv, int *this_image, int *num_images)
 void
 _gfortran_caf_finalize (void)
 {
-  MPI_Win_free (&caf_world_window);
-
   if (!caf_mpi_initialized)
     MPI_Finalize ();
+}
+
+
+void *
+_gfortran_caf_register (ptrdiff_t size,
+                        caf_register_t type __attribute__ ((unused)),
+                        void **token)
+{
+  *token = NULL;
+  return malloc (size);
+}
+
+
+int
+_gfortran_caf_deregister (void **token __attribute__ ((unused)))
+{
+  return 0;
 }
 
 
@@ -153,22 +165,6 @@ _gfortran_caf_sync_images (int count, int images[], char *errmsg,
 
   /* TODO: Is ierr correct? When should STAT_STOPPED_IMAGE be used?  */
   return ierr;
-}
-
-
-/* CRITICAL BLOCK. */
-
-void
-_gfortran_caf_critical (void)
-{
-  MPI_Win_lock (MPI_LOCK_SHARED, 0, 0, caf_world_window);
-}
-
-
-void
-_gfortran_caf_end_critical (void)
-{
-  MPI_Win_unlock (0, caf_world_window);
 }
 
 

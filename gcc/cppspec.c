@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the C preprocessor.
-   Copyright (C) 1999, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2007, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -158,7 +158,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   new_decoded_options = XNEWVEC (struct cl_decoded_option, new_argc);
 
-  new_decoded_options[0] = new_decoded_options[0];
+  new_decoded_options[0] = decoded_options[0];
   j = 1;
 
   if (need_E)

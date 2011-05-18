@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,15 +43,15 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    node_pointer p_new_nd = base_type::get_new_node_for_insert(r_val);
+  node_pointer p_new_nd = base_type::get_new_node_for_insert(r_val);
 
   push_imp(p_new_nd);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    return point_iterator(p_new_nd);
+  return point_iterator(p_new_nd);
 }
 
 PB_DS_CLASS_T_DEC
@@ -72,14 +72,14 @@ push_imp(node_pointer p_nd)
       p_nd->m_p_next_sibling = p_nd->m_p_prev_or_parent = 0;
 
       base_type::make_child_of(base_type::m_p_root, p_nd);
-      _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd, false));
+      PB_DS_ASSERT_NODE_CONSISTENT(p_nd, false)
 
       base_type::m_p_root = p_nd;
     }
   else
     {
       base_type::make_child_of(p_nd, base_type::m_p_root);
-      _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(base_type::m_p_root, false));
+      PB_DS_ASSERT_NODE_CONSISTENT(base_type::m_p_root, false)
     }
 }
 
@@ -88,14 +88,14 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    remove_node(it.m_p_nd);
+  remove_node(it.m_p_nd);
 
   it.m_p_nd->m_value = r_new_val;
 
   push_imp(it.m_p_nd);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+  PB_DS_ASSERT_VALID((*this))
+}
 

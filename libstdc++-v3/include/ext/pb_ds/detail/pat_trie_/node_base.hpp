@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -95,10 +95,12 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid(const_e_access_traits_pointer p_traits) const;
+      assert_valid(const_e_access_traits_pointer p_traits,
+		   const char* file, int line) const;
 
       virtual subtree_debug_info
-      assert_valid_imp(const_e_access_traits_pointer p_traits) const = 0;
+      assert_valid_imp(const_e_access_traits_pointer p_traits,
+		       const char* file, int line) const = 0;
 #endif 
 
       node_pointer m_p_parent;
@@ -114,8 +116,9 @@ namespace __gnu_pbds
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
-    assert_valid(const_e_access_traits_pointer p_traits) const
-    { assert_valid_imp(p_traits); }
+    assert_valid(const_e_access_traits_pointer p_traits,
+		 const char* __file, int __line) const
+    { assert_valid_imp(p_traits, __file, __line); }
 #endif 
 
 #undef PB_DS_CLASS_T_DEC

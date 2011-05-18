@@ -1,3 +1,165 @@
+2011-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/tuple: Use noexcept where appropriate.
+	(tuple<>::swap): Rework implementation.
+	(_Head_base<>::_M_swap_impl): Remove.
+	(get(std::tuple<>&&)): Add.
+	* testsuite/20_util/tuple/element_access/get2.cc: New.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line number.
+
+2011-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/utility: Simplify the last commit, the whole
+	std::get code is C++0x only.
+
+2011-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/utility (get(std::pair<>&&)): Add.
+	* include/bits/stl_pair.h (pair::swap(pair&),
+	swap(pair<>&, pair<>&)): Use noexcept.
+	* include/bits/random.h (discard_block_engine<>::base,
+	independent_bits_engine<>::base, shuffle_order_engine<>::base,
+	random_device::entropy): Use noexcept.
+	* include/std/array: Use noexcept where appropriate.
+	(get(array<>&&)): Add.
+	* testsuite/23_containers/array/requirements/get.cc: New.
+	* testsuite/20_util/pair/get.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Tweak dg-error
+	line number.
+
+2011-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/c++config (_GLIBCXX_NOEXCEPT, _GLIBCXX_USE_NOEXCEPT):
+	Add.
+	* include/std/limits: Use the latter everywhere.
+	(numeric_limits<char16_t>, numeric_limits<char32_t>): Simplify
+	macro usages, the specializations exist only in C++0x mode.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error
+	line number.
+
+2011-05-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/26_numerics/headers/cmath/overloads_c++0x_neg.cc: Use
+	dg-require-cmath.
+	* testsuite/tr1/8_c_compatibility/cmath/overloads_neg.cc: Likewise.
+
+2011-05-11  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp (assert_valid): Replace
+	_GLIBCXX_DEBUG_ASSERT calls with PB_DS_DEBUG_VERIFY.
+	* include/ext/pb_ds/detail/binomial_heap_base_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, insert_fn_imps.hpp, binomial_heap_base_.hpp,
+	constructors_destructor_fn_imps.hpp, split_join_fn_imps.hpp
+	(PB_DS_ASSERT_VALID): Rename in PB_DS_ASSERT_VALID_COND.
+	* include/ext/pb_ds/detail/debug_map_base.hpp,
+	splay_tree_/splay_tree_.hpp, ov_tree_map_/ov_tree_map_.hpp,
+	cc_hash_table_map_/cc_ht_map_.hpp, pat_trie_/pat_trie_.hpp,
+	leaf.hpp, internal_node.hpp, gp_hash_table_map_/gp_ht_map_.hpp,
+	bin_search_tree_/bin_search_tree_.hpp, list_update_map_/lu_map_.hpp,
+	rb_tree_map_/rb_tree_.hpp (PB_DS_ASSERT_VALID, PB_DS_DEBUG_VERIFY,
+	PB_DS_CHECK_KEY_EXISTS,	PB_DS_CHECK_KEY_DOES_NOT_EXIST): Duplicate
+	macro definitions move...
+	* include/ext/pb_ds/detail/container_base_dispatch.hpp: ... here...
+	* include/ext/pb_ds/detail/basic_tree_policy/traits.hpp: ... and here.
+	* include/ext/pb_ds/detail/binary_heap_/binary_heap_.hpp,
+	resize_policy.hpp, pairing_heap_/pairing_heap_.hpp,
+	left_child_next_sibling_heap_/left_child_next_sibling_heap_.hpp,
+	binomial_heap_/binomial_heap_.hpp, thin_heap_/thin_heap_.hpp,
+	rc_binomial_heap_/rc_binomial_heap_.hpp, rc.hpp (PB_DS_ASSERT_VALID,
+	PB_DS_DEBUG_VERIFY): Duplicate macro definitions move...
+	* include/ext/pb_ds/detail/priority_queue_base_dispatch.hpp:
+	...here.
+
+2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48933
+	* include/c_global/cmath (acosh, asinh, atanh, cbrt, copysign,
+	erf, erfc, exp2, expm1, fdim, fma, fmax, hypot, ilogb, lgamma,
+	llrint, llround, log1p, log2, logb, lrint, lround, nearbyint,
+	nextafter, nexttoward, remainder, remquo, rint, round, scalbln,
+	scalbn, tgamma, trunc): Use __enable_if on the return type.
+	* include/tr1/cmath: Likewise.
+	* testsuite/26_numerics/headers/cmath/overloads_c++0x_neg.cc: New.
+	* testsuite/tr1/8_c_compatibility/cmath/overloads_neg.cc: Likewise.
+
+2011-05-07  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/macro.h (_GLIBCXX_DEBUG_VERIFY_AT): New.
+	(_GLICXX_DEBUG_VERIFY): Use latter.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp: Emit assertion on the line
+	containing the original assert call.
+	* include/ext/pb_ds/detail/binomial_heap_base_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, insert_fn_imps.hpp, binomial_heap_base_.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_store_hash_fn_imps.hpp, insert_no_store_hash_fn_imps.hpp,
+	find_fn_imps.hpp, insert_store_hash_fn_imps.hpp, debug_fn_imps.hpp,
+	debug_no_store_hash_fn_imps.hpp, cc_ht_map_.hpp, resize_fn_imps.hpp,
+	constructor_destructor_fn_imps.hpp, debug_store_hash_fn_imps.hpp,
+	erase_no_store_hash_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/find_fn_imps.hpp,
+	insert_join_fn_imps.hpp, pat_trie_/head.hpp, debug_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, pat_trie_.hpp, split_fn_imps.hpp,
+	leaf.hpp, erase_fn_imps.hpp, node_base.hpp, internal_node.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/find_fn_imps.hpp,
+	r_erase_fn_imps.hpp, constructors_destructor_fn_imps.hpp,
+	debug_fn_imps.hpp, rotate_fn_imps.hpp, erase_fn_imps.hpp,
+	bin_search_tree_.hpp, insert_fn_imps.hpp, split_join_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	erase_store_hash_fn_imps.hpp, insert_no_store_hash_fn_imps.hpp,
+	find_fn_imps.hpp, gp_ht_map_.hpp, insert_store_hash_fn_imps.hpp,
+	debug_fn_imps.hpp, erase_fn_imps.hpp, debug_no_store_hash_fn_imps.hpp,
+	resize_fn_imps.hpp, constructor_destructor_fn_imps.hpp,
+	debug_store_hash_fn_imps.hpp, erase_no_store_hash_fn_imps.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/find_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	erase_fn_imps.hpp, insert_fn_imps.hpp, binary_heap_.hpp,
+	resize_policy.hpp, split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, insert_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	pairing_heap_.hpp, split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_/
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	binomial_heap_.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	erase_fn_imps.hpp, left_child_next_sibling_heap_.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, thin_heap_.hpp, insert_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp,
+	ov_tree_map_.hpp, constructors_destructor_fn_imps.hpp,
+	debug_fn_imps.hpp, split_join_fn_imps.hpp, info_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/debug_map_base.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, insert_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp,
+	splay_fn_imps.hpp, split_join_fn_imps.hpp, splay_tree_.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/erase_fn_imps.hpp,
+	find_fn_imps.hpp, lu_map_.hpp, constructor_destructor_fn_imps.hpp,
+	insert_fn_imps.hpp, debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/erase_fn_imps.hpp,
+	rc_binomial_heap_.hpp, insert_fn_imps.hpp,
+	constructors_destructor_fn_imps.hpp, debug_fn_imps.hpp, rc.hpp,
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/erase_fn_imps.hpp,
+	insert_fn_imps.hpp, constructors_destructor_fn_imps.hpp,
+	debug_fn_imps.hpp, rb_tree_.hpp, split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/hash_policy.hpp: Likewise.
+
+2011-05-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/22_locale/messages_byname/named_equivalence.cc: Fix.
+
 2011-05-04  Marc Glisse  <marc.glisse@normalesup.org>
 
 	PR libstdc++/47913 (again)

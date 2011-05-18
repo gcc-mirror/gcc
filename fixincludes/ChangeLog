@@ -1,3 +1,12 @@
+2011-05-17  Tristan Gingold  <gingold@adacore.com>
+
+	* inclhack.def (solaris_complex_cxx): Fix syntax.
+	* fixincl.x: Regenerate.
+
+2011-05-17  Tristan Gingold  <gingold@adacore.com>
+
+	* check.tpl: Shell-quote testing file.
+
 2011-03-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* mkfixinc.sh: Don't handle i?86-moss-msdos* or i?86-*-pe.

@@ -152,11 +152,11 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   if ((*e)->ts.type == BT_CHARACTER)
     return 0;
 
-  /* If we don't know the shape at compile time, we do not create a temporary
-     variable to hold the intermediate result.  FIXME: Change this later when
-     allocation on assignment works for intrinsics.  */
+  /* If we don't know the shape at compile time, we create an allocatable
+     temporary variable to hold the intermediate result, but only if
+     allocation on assignment is active.  */
 
-  if ((*e)->rank > 0 && (*e)->shape == NULL)
+  if ((*e)->rank > 0 && (*e)->shape == NULL && !gfc_option.flag_realloc_lhs)
     return 0;
   
   /* Skip the test for pure functions if -faggressive-function-elimination
@@ -250,22 +250,38 @@ create_var (gfc_expr * e)
 
   symbol = symtree->n.sym;
   symbol->ts = e->ts;
-  symbol->as = gfc_get_array_spec ();
-  symbol->as->rank = e->rank;
-  symbol->as->type = AS_EXPLICIT;
-  for (i=0; i<e->rank; i++)
+
+  if (e->rank > 0)
     {
-      gfc_expr *p, *q;
+      symbol->as = gfc_get_array_spec ();
+      symbol->as->rank = e->rank;
+
+      if (e->shape == NULL)
+	{
+	  /* We don't know the shape at compile time, so we use an
+	     allocatable. */
+	  symbol->as->type = AS_DEFERRED;
+	  symbol->attr.allocatable = 1;
+	}
+      else
+	{
+	  symbol->as->type = AS_EXPLICIT;
+	  /* Copy the shape.  */
+	  for (i=0; i<e->rank; i++)
+	    {
+	      gfc_expr *p, *q;
       
-      p = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
-				 &(e->where));
-      mpz_set_si (p->value.integer, 1);
-      symbol->as->lower[i] = p;
-	  
-      q = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
-				 &(e->where));
-      mpz_set (q->value.integer, e->shape[i]);
-      symbol->as->upper[i] = q;
+	      p = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
+					 &(e->where));
+	      mpz_set_si (p->value.integer, 1);
+	      symbol->as->lower[i] = p;
+	      
+	      q = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
+					 &(e->where));
+	      mpz_set (q->value.integer, e->shape[i]);
+	      symbol->as->upper[i] = q;
+	    }
+	}
     }
 
   symbol->attr.flavor = FL_VARIABLE;

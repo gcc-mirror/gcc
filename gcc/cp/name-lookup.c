@@ -1576,9 +1576,9 @@ maybe_push_cleanup_level (tree type)
     }
 }
 
-/* Nonzero if we are currently in the global binding level.  */
+/* Return true if we are in the global binding level.  */
 
-int
+bool
 global_bindings_p (void)
 {
   return global_scope_p (current_binding_level);

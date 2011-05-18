@@ -2828,9 +2828,6 @@ gimple_boolify (tree expr)
 	}
     }
 
-  if (TREE_CODE (type) == BOOLEAN_TYPE)
-    return expr;
-
   switch (TREE_CODE (expr))
     {
     case TRUTH_AND_EXPR:
@@ -2855,6 +2852,8 @@ gimple_boolify (tree expr)
     default:
       /* Other expressions that get here must have boolean values, but
 	 might need to be converted to the appropriate mode.  */
+      if (type == boolean_type_node)
+	return expr;
       return fold_convert_loc (loc, boolean_type_node, expr);
     }
 }
@@ -4695,31 +4694,6 @@ gimplify_scalar_mode_aggregate_compare (tree *expr_p)
 
   *expr_p
     = fold_build2_loc (loc, TREE_CODE (*expr_p), TREE_TYPE (*expr_p), op0, op1);
-
-  return GS_OK;
-}
-
-/* Gimplify TRUTH_ANDIF_EXPR and TRUTH_ORIF_EXPR expressions.  EXPR_P
-   points to the expression to gimplify.
-
-   Expressions of the form 'a && b' are gimplified to:
-
-	a && b ? true : false
-
-   LOCUS is the source location to be put on the generated COND_EXPR.
-   gimplify_cond_expr will do the rest.  */
-
-static enum gimplify_status
-gimplify_boolean_expr (tree *expr_p, location_t locus)
-{
-  /* Preserve the original type of the expression.  */
-  tree type = TREE_TYPE (*expr_p);
-
-  *expr_p = build3 (COND_EXPR, type, *expr_p,
-		    fold_convert_loc (locus, type, boolean_true_node),
-		    fold_convert_loc (locus, type, boolean_false_node));
-
-  SET_EXPR_LOCATION (*expr_p, locus);
 
   return GS_OK;
 }
@@ -6767,18 +6741,35 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case TRUTH_ANDIF_EXPR:
 	case TRUTH_ORIF_EXPR:
-	  /* Pass the source location of the outer expression.  */
-	  ret = gimplify_boolean_expr (expr_p, saved_location);
-	  break;
+	  {
+	    /* Preserve the original type of the expression and the
+	       source location of the outer expression.  */
+	    tree org_type = TREE_TYPE (*expr_p);
+	    *expr_p = gimple_boolify (*expr_p);
+	    *expr_p = build3_loc (saved_location, COND_EXPR,
+				  org_type, *expr_p,
+				  fold_convert_loc
+				    (saved_location,
+				     org_type, boolean_true_node),
+				  fold_convert_loc
+				    (saved_location,
+				     org_type, boolean_false_node));
+	    ret = GS_OK;
+	    break;
+	  }
 
 	case TRUTH_NOT_EXPR:
-	  if (TREE_CODE (TREE_TYPE (*expr_p)) != BOOLEAN_TYPE)
-	    {
-	      tree type = TREE_TYPE (*expr_p);
-	      *expr_p = fold_convert (type, gimple_boolify (*expr_p));
-	      ret = GS_OK;
-	      break;
-	    }
+	  {
+	    tree org_type = TREE_TYPE (*expr_p);
+
+	    *expr_p = gimple_boolify (*expr_p);
+	    if (org_type != boolean_type_node)
+	      {
+		*expr_p = fold_convert (org_type, *expr_p);
+		ret = GS_OK;
+		break;
+	      }
+	  }
 
 	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 			       is_gimple_val, fb_rvalue);
@@ -7208,6 +7199,23 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case TRUTH_AND_EXPR:
 	case TRUTH_OR_EXPR:
 	case TRUTH_XOR_EXPR:
+	  {
+	    tree org_type = TREE_TYPE (*expr_p);
+	    
+	    *expr_p = gimple_boolify (*expr_p);
+
+	    /* This shouldn't happen, but due fold-const (and here especially
+	       fold_truth_not_expr) happily uses operand type and doesn't
+	       automatically uses boolean_type as result, we need to keep
+	       orignal type.  */
+	    if (org_type != boolean_type_node)
+	      {
+		*expr_p = fold_convert (org_type, *expr_p);
+		ret = GS_OK;
+		break;
+	      }
+	  }
+	  
 	  /* Classified as tcc_expression.  */
 	  goto expr_2;
 

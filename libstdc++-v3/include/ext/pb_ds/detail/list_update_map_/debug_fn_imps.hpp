@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,15 +43,15 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_valid() const
+assert_valid(const char* __file, int __line) const
 {
   size_type calc_size = 0;
   for (const_iterator it = begin(); it != end(); ++it)
     {
-      debug_base::check_key_exists(PB_DS_V2F(*it));
+      debug_base::check_key_exists(PB_DS_V2F(*it), __file, __line);
       ++calc_size;
     }
-  debug_base::check_size(calc_size);
+  debug_base::check_size(calc_size, __file, __line);
 }
 
 #endif 

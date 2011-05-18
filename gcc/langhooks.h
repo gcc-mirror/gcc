@@ -148,9 +148,10 @@ struct lang_hooks_for_types
 
 struct lang_hooks_for_decls
 {
-  /* Returns nonzero if we are in the global binding level.  Ada
-     returns -1 for an undocumented reason used in stor-layout.c.  */
-  int (*global_bindings_p) (void);
+  /* Return true if we are in the global binding level.  This hook is really
+     needed only if the language supports variable-sized types at the global
+     level, i.e. declared outside subprograms.  */
+  bool (*global_bindings_p) (void);
 
   /* Function to add a decl to the current scope level.  Takes one
      argument, a decl to add.  Returns that decl, or, if the same

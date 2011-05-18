@@ -1,3 +1,142 @@
+2011-05-16  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (_gfortran_set_options): Add GFC_STD_F2008_TR.
+	(Fortran 2008 status): Multi-image support for coarrays.
+	(TR 19113 status): New section.
+
+2011-05-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	actual argument is not an array; rank mismatch is diagnosted later.
+	* trans-decl.c (gfc_get_symbol_decl, gfc_trans_deferred_vars): Handle
+	scalar coarrays.
+	* trans-types.c (gfc_get_array_type_bounds): Ditto.
+
+2011-05-15  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR middle-end/46500
+	* trans-types.c: Include "tm.h".
+	[0] (c_size_t_size): Remove.
+
+2011-05-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/48915
+	* gfortran.texi (_gfortran_set_options): Even though -fbacktrace
+	is now the default, the library defaults to backtracing disabled.
+
+2011-05-14  Tobias Burnus  <burnus@net-b.de>
+
+	* lang.opt (fdump-core): Re-add as ignored option
+	for backward compatibility.
+
+2011-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/48915
+	* gfortran.texi: Update mixed-language programming section
+	reflecting the removal of the fdump-core option, and that
+	-fbacktrace is now enabled by default.
+
+2011-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/22572
+	* frontend-passes.c (cfe_register_funcs):  Also register functions
+	for potential elimination if the rank is > 0, the shape is unknown
+	and reallocate on assignment is active.
+	(create_var):  For rank > 0 functions with unknown shape, create
+	an allocatable temporary.
+
+2011-05-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* interface.c (compare_parameter): Skip diagnostic if
+	actual argument is not an array; rank mismatch is diagnosted later.
+
+2011-05-14  Tobias Burnus  <burnus@net-b.de>
+
+	* options.c (gfc_init_options, gfc_post_options): Enable
+	-fstack-arrays by default if -Ofast is used.
+	* invoke.texi (-fstack-arrays): Document this.
+
+2011-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/48915
+	* gfortran.h (gfc_option_t): Remove flag_dump_core.
+	* gfortran.texi (GFORTRAN_ERROR_DUMPCORE): Remove section.
+	(GFORTRAN_ERROR_BACKTRACE): Document that it's enabled by default.
+	* intrinsic.texi (ABORT): Remove explanation of -fdump-core.
+	* invoke.texi: Remove -fdump-core, document that -fbacktrace is
+	enabled by default.
+	* lang.opt: Remove -fdump-core.
+	* options.c (gfc_init_options): Make backtrace default to enabled,
+	remove dump_core.
+	(gfc_handle_option): Remove OPT_fdump-core.
+	* trans-decl.c: Pass a 0 to preserve ABI.
+
+2011-05-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.texi: Remove GFORTRAN_USE_STDERR documentation.
+
+2011-05-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48972
+	* io.c (resolve_tag_format, resolve_tag): Make sure
+	that the string is of default kind.
+	(gfc_resolve_inquire): Also resolve decimal tag.
+
+2011-05-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48972
+	* resolve.c (resolve_intrinsic): Don't resolve module
+	intrinsics multiple times.
+
+2011-05-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48889
+	* expr.c (gfc_is_constant_expr): Use e->value.function.esym
+	instead of e->symtree->n.sym, if available.
+
+2011-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* f95-lang.c (global_bindings_p): Return bool and simplify.
+
+2011-05-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	PR fortran/48919
+	* trans.h: Move gfc_init_coarray_decl prototype ...
+	* gfortran.h: ... to here.
+	* parse.c (translate_all_program_units): Call gfc_init_coarray_decl.
+	(gfc_parse_file): Update translate_all_program_units call.
+	* trans-decl.c (gfc_init_coarray_decl): Fix variable declaration,
+	new argument whether DECL_EXTERNAL should be used.
+	(create_main_function): Update gfc_init_coarray_decl call.
+	* trans-intrinsic.c (trans_this_image, trans_image_index,
+	conv_intrinsic_cobound): Ditto.
+
+2011-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-array.c (gfc_walk_variable_expr): Continue walking
+	for scalar coarrays.
+	* trans-intrinsic.c (convert_element_to_coarray_ref): New function.
+	(trans_this_image, trans_image_index, conv_intrinsic_cobound): Use it.
+	(trans_this_image): Fix algorithm.
+	* trans-types.c (gfc_get_element_type, gfc_get_array_descriptor_base,
+	gfc_sym_type): Handle scalar coarrays.
+
+2011-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	PR fortran/48820
+	* lang.opt (std=f2008tr): New.
+	* libgfortran.h (GFC_STD_F2008_TR): New macro constant.
+	* decl.c (verify_c_interop_param): Allow OPTIONAL in BIND(C)
+	procedures for -std=f2008tr/gnu/legacy.
+	(gfc_match_import): Set sym to NULL.
+	* options.c (set_default_std_flags,gfc_handle_option): Handle
+	-std=f2008tr.
+	* invoke.texi (-std=): Document -std=f2008tr.
+
 2011-05-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-decl.c (gfc_trans_entry_master_switch): Call build_case_label.

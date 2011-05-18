@@ -1,3 +1,15 @@
+2011-05-11  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2011-05-08  Doug Kwan  <dougkwan@google.com>
+
+	* configure.ac: Propagate LDFLAGS_FOR_TARGET.
+	* configure: Regenerated.
+	* Makefile.tpl (LDFLAGS_FOR_TARGET): Use LDFLAGS_FOR_TARGET
+	value from configure.
+	* Makefile.in: Regenerated.
+
 2011-05-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (alpha*-dec-osf*, i[[3456789]]86-*-rdos*,

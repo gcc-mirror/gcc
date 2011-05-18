@@ -595,14 +595,16 @@ cgraph_same_body_alias (struct cgraph_node *decl_node, tree alias, tree decl)
    See comments in thunk_adjust for detail on the parameters.  */
 
 struct cgraph_node *
-cgraph_add_thunk (struct cgraph_node *decl_node, tree alias, tree decl,
+cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
+		  tree alias, tree decl,
 		  bool this_adjusting,
 		  HOST_WIDE_INT fixed_offset, HOST_WIDE_INT virtual_value,
 		  tree virtual_offset,
 		  tree real_alias)
 {
-  struct cgraph_node *node = cgraph_get_node (alias);
+  struct cgraph_node *node;
 
+  node = cgraph_get_node (alias);
   if (node)
     {
       gcc_assert (node->local.finalized);
@@ -610,8 +612,7 @@ cgraph_add_thunk (struct cgraph_node *decl_node, tree alias, tree decl,
       cgraph_remove_node (node);
     }
   
-  node = cgraph_same_body_alias_1 (decl_node, alias, decl);
-  gcc_assert (node);
+  node = cgraph_create_node (alias);
   gcc_checking_assert (!virtual_offset
 		       || double_int_equal_p
 		            (tree_to_double_int (virtual_offset),
@@ -622,6 +623,15 @@ cgraph_add_thunk (struct cgraph_node *decl_node, tree alias, tree decl,
   node->thunk.virtual_offset_p = virtual_offset != NULL;
   node->thunk.alias = real_alias;
   node->thunk.thunk_p = true;
+  node->local.finalized = true;
+
+  if (cgraph_decide_is_function_needed (node, decl))
+    cgraph_mark_needed_node (node);
+
+  if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+      || (DECL_VIRTUAL_P (decl)
+	  && (DECL_COMDAT (decl) || DECL_EXTERNAL (decl))))
+    cgraph_mark_reachable_node (node);
   return node;
 }
 
@@ -1875,7 +1885,21 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   if (node->only_called_at_exit)
     fprintf (f, " only_called_at_exit");
 
-  fprintf (f, "\n  called by: ");
+  fprintf (f, "\n");
+
+  if (node->thunk.thunk_p)
+    {
+      fprintf (f, "  thunk of %s (asm: %s) fixed offset %i virtual value %i has "
+	       "virtual offset %i)\n",
+	       lang_hooks.decl_printable_name (node->thunk.alias, 2),
+	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->thunk.alias)),
+	       (int)node->thunk.fixed_offset,
+	       (int)node->thunk.virtual_value,
+	       (int)node->thunk.virtual_offset_p);
+    }
+  
+  fprintf (f, "  called by: ");
+
   for (edge = node->callers; edge; edge = edge->next_caller)
     {
       fprintf (f, "%s/%i ", cgraph_node_name (edge->caller),
@@ -1927,20 +1951,10 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   if (node->same_body)
     {
       struct cgraph_node *n;
-      fprintf (f, "  aliases & thunks:");
+      fprintf (f, "  aliases:");
       for (n = node->same_body; n; n = n->next)
         {
           fprintf (f, " %s/%i", cgraph_node_name (n), n->uid);
-	  if (n->thunk.thunk_p)
-	    {
-	      fprintf (f, " (thunk of %s fixed offset %i virtual value %i has "
-		       "virtual offset %i",
-	      	       lang_hooks.decl_printable_name (n->thunk.alias, 2),
-		       (int)n->thunk.fixed_offset,
-		       (int)n->thunk.virtual_value,
-		       (int)n->thunk.virtual_offset_p);
-	      fprintf (f, ")");
-	    }
 	  if (DECL_ASSEMBLER_NAME_SET_P (n->decl))
 	    fprintf (f, " (asm: %s)", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
 	}
@@ -2114,6 +2128,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
   return new_edge;
 }
 
+
 /* Create node representing clone of N executed COUNT times.  Decrease
    the execution counts from original node too.
    The new clone will have decl set to DECL that may or may not be the same
@@ -2121,11 +2136,15 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 
    When UPDATE_ORIGINAL is true, the counts are subtracted from the original
    function's profile to reflect the fact that part of execution is handled
-   by node.  */
+   by node.  
+   When CALL_DUPLICATOIN_HOOK is true, the ipa passes are acknowledged about
+   the new clone. Otherwise the caller is responsible for doing so later.  */
+
 struct cgraph_node *
 cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
 		   bool update_original,
-		   VEC(cgraph_edge_p,heap) *redirect_callers)
+		   VEC(cgraph_edge_p,heap) *redirect_callers,
+		   bool call_duplication_hook)
 {
   struct cgraph_node *new_node = cgraph_create_node_1 ();
   struct cgraph_edge *e;
@@ -2188,7 +2207,6 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   n->clones = new_node;
   new_node->clone_of = n;
 
-  cgraph_call_node_duplication_hooks (n, new_node);
   if (n->decl != decl)
     {
       struct cgraph_node **slot;
@@ -2207,6 +2225,9 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
 	  *aslot = new_node;
 	}
     }
+
+  if (call_duplication_hook)
+    cgraph_call_node_duplication_hooks (n, new_node);
   return new_node;
 }
 
@@ -2273,7 +2294,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
 
   new_node = cgraph_clone_node (old_node, new_decl, old_node->count,
 				CGRAPH_FREQ_BASE, false,
-				redirect_callers);
+				redirect_callers, false);
   /* Update the properties.
      Make clone visible only within this translation unit.  Make sure
      that is not weak also.
@@ -2343,6 +2364,8 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   new_node->local.local = 1;
   new_node->lowered = true;
   new_node->reachable = true;
+
+  cgraph_call_node_duplication_hooks (old_node, new_node);
 
 
   return new_node;

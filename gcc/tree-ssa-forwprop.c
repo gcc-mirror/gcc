@@ -1612,44 +1612,151 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
   return false;
 }
 
-/* Run bitwise and assignments throug the folder.  If the first argument is an
-   ssa name that is itself a result of a typecast of an ADDR_EXPR to an
-   integer, feed the ADDR_EXPR to the folder rather than the ssa name.
-*/
+/* Simplify bitwise binary operations.
+   Return true if a transformation applied, otherwise return false.  */
 
-static void
-simplify_bitwise_and (gimple_stmt_iterator *gsi, gimple stmt)
+static bool
+simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 {
-  tree res;
+  gimple stmt = gsi_stmt (*gsi);
   tree arg1 = gimple_assign_rhs1 (stmt);
   tree arg2 = gimple_assign_rhs2 (stmt);
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  tree res;
+  gimple def1 = NULL, def2 = NULL;
+  tree def1_arg1, def2_arg1;
+  enum tree_code def1_code, def2_code;
 
-  if (TREE_CODE (arg2) != INTEGER_CST)
-    return;
-
-  if (TREE_CODE (arg1) == SSA_NAME && !SSA_NAME_IS_DEFAULT_DEF (arg1))
+  /* If the first argument is an SSA name that is itself a result of a
+     typecast of an ADDR_EXPR to an integer, feed the ADDR_EXPR to the
+     folder rather than the ssa name.  */
+  if (code == BIT_AND_EXPR
+      && TREE_CODE (arg2) == INTEGER_CST
+      && TREE_CODE (arg1) == SSA_NAME)
     {
       gimple def = SSA_NAME_DEF_STMT (arg1);
+      tree op = arg1;
 
-      if (gimple_assign_cast_p (def)
-	  && INTEGRAL_TYPE_P (gimple_expr_type (def)))
+      /* ???  This looks bogus - the conversion could be truncating.  */
+      if (is_gimple_assign (def)
+	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
 	{
-	  tree op = gimple_assign_rhs1 (def);
+	  tree opp = gimple_assign_rhs1 (def);
+	  if (TREE_CODE (opp) == ADDR_EXPR)
+	    op = opp;
+	}
 
-	  if (TREE_CODE (op) == ADDR_EXPR)
-	    arg1 = op;
+      res = fold_binary_loc (gimple_location (stmt),
+			     BIT_AND_EXPR, TREE_TYPE (gimple_assign_lhs (stmt)),
+			     op, arg2);
+      if (res && is_gimple_min_invariant (res))
+	{
+	  gimple_assign_set_rhs_from_tree (gsi, res);
+	  update_stmt (stmt);
+	  return true;
 	}
     }
 
-  res = fold_binary_loc (gimple_location (stmt),
-		     BIT_AND_EXPR, TREE_TYPE (gimple_assign_lhs (stmt)),
-		     arg1, arg2);
-  if (res && is_gimple_min_invariant (res))
+  def1_code = TREE_CODE (arg1);
+  def1_arg1 = arg1;
+  if (TREE_CODE (arg1) == SSA_NAME)
     {
-      gimple_assign_set_rhs_from_tree (gsi, res);
-      update_stmt (stmt);
+      def1 = SSA_NAME_DEF_STMT (arg1);
+      if (is_gimple_assign (def1))
+	{
+	  def1_code = gimple_assign_rhs_code (def1);
+	  def1_arg1 = gimple_assign_rhs1 (def1);
+	}
     }
-  return;
+
+  def2_code = TREE_CODE (arg2);
+  def2_arg1 = arg2;
+  if (TREE_CODE (arg2) == SSA_NAME)
+    {
+      def2 = SSA_NAME_DEF_STMT (arg2);
+      if (is_gimple_assign (def2))
+	{
+	  def2_code = gimple_assign_rhs_code (def2);
+	  def2_arg1 = gimple_assign_rhs1 (def2);
+	}
+    }
+
+  /* For bitwise binary operations apply operand conversions to the
+     binary operation result instead of to the operands.  This allows
+     to combine successive conversions and bitwise binary operations.  */
+  if (CONVERT_EXPR_CODE_P (def1_code)
+      && CONVERT_EXPR_CODE_P (def2_code)
+      && types_compatible_p (TREE_TYPE (def1_arg1), TREE_TYPE (def2_arg1))
+      /* Make sure that the conversion widens the operands or that it
+	 changes the operation to a bitfield precision.  */
+      && ((TYPE_PRECISION (TREE_TYPE (def1_arg1))
+	   < TYPE_PRECISION (TREE_TYPE (arg1)))
+	  || (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (arg1)))
+	      != MODE_INT)
+	  || (TYPE_PRECISION (TREE_TYPE (arg1))
+	      != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg1))))))
+    {
+      gimple newop;
+      tree tem = create_tmp_reg (TREE_TYPE (def1_arg1),
+				 NULL);
+      newop = gimple_build_assign_with_ops (code, tem, def1_arg1, def2_arg1);
+      tem = make_ssa_name (tem, newop);
+      gimple_assign_set_lhs (newop, tem);
+      gsi_insert_before (gsi, newop, GSI_SAME_STMT);
+      gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
+					tem, NULL_TREE, NULL_TREE);
+      update_stmt (gsi_stmt (*gsi));
+      return true;
+    }
+
+  /* (a | CST1) & CST2  ->  (a & CST2) | (CST1 & CST2).  */
+  if (code == BIT_AND_EXPR
+      && def1_code == BIT_IOR_EXPR
+      && TREE_CODE (arg2) == INTEGER_CST
+      && TREE_CODE (gimple_assign_rhs2 (def1)) == INTEGER_CST)
+    {
+      tree cst = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg2),
+			      arg2, gimple_assign_rhs2 (def1));
+      tree tem;
+      gimple newop;
+      if (integer_zerop (cst))
+	{
+	  gimple_assign_set_rhs1 (stmt, def1_arg1);
+	  update_stmt (stmt);
+	  return true;
+	}
+      tem = create_tmp_reg (TREE_TYPE (arg2), NULL);
+      newop = gimple_build_assign_with_ops (BIT_AND_EXPR,
+					    tem, def1_arg1, arg2);
+      tem = make_ssa_name (tem, newop);
+      gimple_assign_set_lhs (newop, tem);
+      /* Make sure to re-process the new stmt as it's walking upwards.  */
+      gsi_insert_before (gsi, newop, GSI_NEW_STMT);
+      gimple_assign_set_rhs1 (stmt, tem);
+      gimple_assign_set_rhs2 (stmt, cst);
+      gimple_assign_set_rhs_code (stmt, BIT_IOR_EXPR);
+      update_stmt (stmt);
+      return true;
+    }
+
+  /* Combine successive equal operations with constants.  */
+  if ((code == BIT_AND_EXPR
+       || code == BIT_IOR_EXPR
+       || code == BIT_XOR_EXPR)
+      && def1_code == code 
+      && TREE_CODE (arg2) == INTEGER_CST
+      && TREE_CODE (gimple_assign_rhs2 (def1)) == INTEGER_CST)
+    {
+      tree cst = fold_build2 (code, TREE_TYPE (arg2),
+			      arg2, gimple_assign_rhs2 (def1));
+      gimple_assign_set_rhs1 (stmt, def1_arg1);
+      gimple_assign_set_rhs2 (stmt, cst);
+      update_stmt (stmt);
+      return true;
+    }
+
+  return false;
 }
 
 
@@ -1938,6 +2045,166 @@ out:
   return false;
 }
 
+/* Combine two conversions in a row for the second conversion at *GSI.
+   Returns true if there were any changes made.  */
+ 
+static bool
+combine_conversions (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  gimple def_stmt;
+  tree op0, lhs;
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+
+  gcc_checking_assert (CONVERT_EXPR_CODE_P (code)
+		       || code == FLOAT_EXPR
+		       || code == FIX_TRUNC_EXPR);
+
+  lhs = gimple_assign_lhs (stmt);
+  op0 = gimple_assign_rhs1 (stmt);
+  if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (op0)))
+    {
+      gimple_assign_set_rhs_code (stmt, TREE_CODE (op0));
+      return true;
+    }
+
+  if (TREE_CODE (op0) != SSA_NAME)
+    return false;
+
+  def_stmt = SSA_NAME_DEF_STMT (op0);
+  if (!is_gimple_assign (def_stmt))
+    return false;
+
+  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
+    {
+      tree defop0 = gimple_assign_rhs1 (def_stmt);
+      tree type = TREE_TYPE (lhs);
+      tree inside_type = TREE_TYPE (defop0);
+      tree inter_type = TREE_TYPE (op0);
+      int inside_int = INTEGRAL_TYPE_P (inside_type);
+      int inside_ptr = POINTER_TYPE_P (inside_type);
+      int inside_float = FLOAT_TYPE_P (inside_type);
+      int inside_vec = TREE_CODE (inside_type) == VECTOR_TYPE;
+      unsigned int inside_prec = TYPE_PRECISION (inside_type);
+      int inside_unsignedp = TYPE_UNSIGNED (inside_type);
+      int inter_int = INTEGRAL_TYPE_P (inter_type);
+      int inter_ptr = POINTER_TYPE_P (inter_type);
+      int inter_float = FLOAT_TYPE_P (inter_type);
+      int inter_vec = TREE_CODE (inter_type) == VECTOR_TYPE;
+      unsigned int inter_prec = TYPE_PRECISION (inter_type);
+      int inter_unsignedp = TYPE_UNSIGNED (inter_type);
+      int final_int = INTEGRAL_TYPE_P (type);
+      int final_ptr = POINTER_TYPE_P (type);
+      int final_float = FLOAT_TYPE_P (type);
+      int final_vec = TREE_CODE (type) == VECTOR_TYPE;
+      unsigned int final_prec = TYPE_PRECISION (type);
+      int final_unsignedp = TYPE_UNSIGNED (type);
+
+      /* In addition to the cases of two conversions in a row
+	 handled below, if we are converting something to its own
+	 type via an object of identical or wider precision, neither
+	 conversion is needed.  */
+      if (useless_type_conversion_p (type, inside_type)
+	  && (((inter_int || inter_ptr) && final_int)
+	      || (inter_float && final_float))
+	  && inter_prec >= final_prec)
+	{
+	  gimple_assign_set_rhs1 (stmt, unshare_expr (defop0));
+	  gimple_assign_set_rhs_code (stmt, TREE_CODE (defop0));
+	  update_stmt (stmt);
+	  return true;
+	}
+
+      /* Likewise, if the intermediate and initial types are either both
+	 float or both integer, we don't need the middle conversion if the
+	 former is wider than the latter and doesn't change the signedness
+	 (for integers).  Avoid this if the final type is a pointer since
+	 then we sometimes need the middle conversion.  Likewise if the
+	 final type has a precision not equal to the size of its mode.  */
+      if (((inter_int && inside_int)
+	   || (inter_float && inside_float)
+	   || (inter_vec && inside_vec))
+	  && inter_prec >= inside_prec
+	  && (inter_float || inter_vec
+	      || inter_unsignedp == inside_unsignedp)
+	  && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+		&& TYPE_MODE (type) == TYPE_MODE (inter_type))
+	  && ! final_ptr
+	  && (! final_vec || inter_prec == inside_prec))
+	{
+	  gimple_assign_set_rhs1 (stmt, defop0);
+	  update_stmt (stmt);
+	  return true;
+	}
+
+      /* If we have a sign-extension of a zero-extended value, we can
+	 replace that by a single zero-extension.  */
+      if (inside_int && inter_int && final_int
+	  && inside_prec < inter_prec && inter_prec < final_prec
+	  && inside_unsignedp && !inter_unsignedp)
+	{
+	  gimple_assign_set_rhs1 (stmt, defop0);
+	  update_stmt (stmt);
+	  return true;
+	}
+
+      /* Two conversions in a row are not needed unless:
+	 - some conversion is floating-point (overstrict for now), or
+	 - some conversion is a vector (overstrict for now), or
+	 - the intermediate type is narrower than both initial and
+	 final, or
+	 - the intermediate type and innermost type differ in signedness,
+	 and the outermost type is wider than the intermediate, or
+	 - the initial type is a pointer type and the precisions of the
+	 intermediate and final types differ, or
+	 - the final type is a pointer type and the precisions of the
+	 initial and intermediate types differ.  */
+      if (! inside_float && ! inter_float && ! final_float
+	  && ! inside_vec && ! inter_vec && ! final_vec
+	  && (inter_prec >= inside_prec || inter_prec >= final_prec)
+	  && ! (inside_int && inter_int
+		&& inter_unsignedp != inside_unsignedp
+		&& inter_prec < final_prec)
+	  && ((inter_unsignedp && inter_prec > inside_prec)
+	      == (final_unsignedp && final_prec > inter_prec))
+	  && ! (inside_ptr && inter_prec != final_prec)
+	  && ! (final_ptr && inside_prec != inter_prec)
+	  && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+		&& TYPE_MODE (type) == TYPE_MODE (inter_type)))
+	{
+	  gimple_assign_set_rhs1 (stmt, defop0);
+	  update_stmt (stmt);
+	  return true;
+	}
+
+      /* A truncation to an unsigned type should be canonicalized as
+	 bitwise and of a mask.  */
+      if (final_int && inter_int && inside_int
+	  && final_prec == inside_prec
+	  && final_prec > inter_prec
+	  && inter_unsignedp)
+	{
+	  tree tem;
+	  tem = fold_build2 (BIT_AND_EXPR, inside_type,
+			     defop0,
+			     double_int_to_tree
+			       (inside_type, double_int_mask (inter_prec)));
+	  if (!useless_type_conversion_p (type, inside_type))
+	    {
+	      tem = force_gimple_operand_gsi (gsi, tem, true, NULL_TREE, true,
+					      GSI_SAME_STMT);
+	      gimple_assign_set_rhs1 (stmt, tem);
+	    }
+	  else
+	    gimple_assign_set_rhs_from_tree (gsi, tem);
+	  update_stmt (gsi_stmt (*gsi));
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 /* Main entry point for the forward propagation optimizer.  */
 
 static unsigned int
@@ -1963,17 +2230,19 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);
 	      tree rhs = gimple_assign_rhs1 (stmt);
+	      enum tree_code code = gimple_assign_rhs_code (stmt);
 
-	      if (TREE_CODE (lhs) != SSA_NAME)
+	      if (TREE_CODE (lhs) != SSA_NAME
+		  || has_zero_uses (lhs))
 		{
 		  gsi_next (&gsi);
 		  continue;
 		}
 
-	      if (gimple_assign_rhs_code (stmt) == ADDR_EXPR
+	      if (code == ADDR_EXPR
 		  /* Handle pointer conversions on invariant addresses
 		     as well, as this is valid gimple.  */
-		  || (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+		  || (CONVERT_EXPR_CODE_P (code)
 		      && TREE_CODE (rhs) == ADDR_EXPR
 		      && POINTER_TYPE_P (TREE_TYPE (lhs))))
 		{
@@ -1991,7 +2260,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		  else
 		    gsi_next (&gsi);
 		}
-	      else if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+	      else if (code == POINTER_PLUS_EXPR
 		       && can_propagate_from (stmt))
 		{
 		  if (TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
@@ -2023,14 +2292,14 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		  else
 		    gsi_next (&gsi);
 		}
-	      else if ((gimple_assign_rhs_code (stmt) == BIT_NOT_EXPR
-		        || gimple_assign_rhs_code (stmt) == NEGATE_EXPR)
+	      else if ((code == BIT_NOT_EXPR
+		        || code == NEGATE_EXPR)
 		       && TREE_CODE (rhs) == SSA_NAME)
 		{
 		  simplify_not_neg_expr (&gsi);
 		  gsi_next (&gsi);
 		}
-	      else if (gimple_assign_rhs_code (stmt) == COND_EXPR)
+	      else if (code == COND_EXPR)
                 {
                   /* In this case the entire COND_EXPR is in rhs1. */
 		  int did_something;
@@ -2043,23 +2312,31 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		    && did_something, stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
 		  gsi_next (&gsi);
                 }
-	      else if (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
-					== tcc_comparison)
+	      else if (TREE_CODE_CLASS (code) == tcc_comparison)
 		{
 		  if (forward_propagate_comparison (stmt))
 		    cfg_changed = true;
 		  gsi_next (&gsi);
 		}
-	      else if (gimple_assign_rhs_code (stmt) == BIT_AND_EXPR)
+	      else if (code == BIT_AND_EXPR
+		       || code == BIT_IOR_EXPR
+		       || code == BIT_XOR_EXPR)
 		{
-		  simplify_bitwise_and (&gsi, stmt);
-		  gsi_next (&gsi);
+		  if (!simplify_bitwise_binary (&gsi))
+		    gsi_next (&gsi);
 		}
-	      else if (gimple_assign_rhs_code (stmt) == PLUS_EXPR
-		       || gimple_assign_rhs_code (stmt) == MINUS_EXPR)
+	      else if (code == PLUS_EXPR
+		       || code == MINUS_EXPR)
 		{
 		  cfg_changed |= associate_plusminus (stmt);
 		  gsi_next (&gsi);
+		}
+	      else if (CONVERT_EXPR_CODE_P (code)
+		       || code == FLOAT_EXPR
+		       || code == FIX_TRUNC_EXPR)
+		{
+		  if (!combine_conversions (&gsi))
+		    gsi_next (&gsi);
 		}
 	      else
 		gsi_next (&gsi);

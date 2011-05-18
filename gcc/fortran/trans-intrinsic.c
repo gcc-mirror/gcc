@@ -921,6 +921,24 @@ gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 }
 
 
+/* Convert the last ref of a scalar coarray from an AR_ELEMENT to an
+   AR_FULL, suitable for the scalarizer.  */
+
+static void
+convert_element_to_coarray_ref (gfc_expr *expr)
+{
+  gfc_ref *ref;
+
+  for (ref = expr->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->next == NULL
+	&& ref->u.ar.codimen)
+      {
+	ref->u.ar.type = AR_FULL;
+	break;
+      }
+}
+
+
 static void
 trans_this_image (gfc_se * se, gfc_expr *expr)
 {
@@ -934,7 +952,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   /* The case -fcoarray=single is handled elsewhere.  */
   gcc_assert (gfc_option.coarray != GFC_FCOARRAY_SINGLE);
 
-  gfc_init_coarray_decl ();
+  gfc_init_coarray_decl (false);
 
   /* Argument-free version: THIS_IMAGE().  */
   if (expr->value.function.actual->expr == NULL)
@@ -951,6 +969,8 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
+  if (expr->value.function.actual->expr->rank == 0)
+    convert_element_to_coarray_ref (expr->value.function.actual->expr);
   ss = gfc_walk_expr (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
   ss->data.info.codimen = corank;
@@ -970,7 +990,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
       dim_arg = se->loop->loopvar[0];
       dim_arg = fold_build2_loc (input_location, PLUS_EXPR,
 				 gfc_array_index_type, dim_arg,
-				 gfc_rank_cst[rank]);
+				 build_int_cst (TREE_TYPE (dim_arg), 1));
       gfc_advance_se_ss_chain (se);
     }
   else
@@ -1016,7 +1036,7 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 
      m = this_images() - 1
      i = rank
-     min_var = min (corank - 2, dim_arg)
+     min_var = min (rank + corank - 2, rank + dim_arg - 1)
      for (;;)
        {
 	 extent = gfc_extent(i)
@@ -1042,10 +1062,13 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 		       build_int_cst (type, 1));
   gfc_add_modify (&se->pre, m, tmp);
 
-  /* min_var = min (rank+corank-2, dim_arg).  */
+  /* min_var = min (rank + corank-2, rank + dim_arg - 1).  */
+  tmp = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
+			 fold_convert (integer_type_node, dim_arg),
+			 build_int_cst (integer_type_node, rank - 1));
   tmp = fold_build2_loc (input_location, MIN_EXPR, integer_type_node,
 			 build_int_cst (integer_type_node, rank + corank - 2),
-			 fold_convert (integer_type_node, dim_arg));
+			 tmp);
   gfc_add_modify (&se->pre, min_var, tmp);
 
   /* i = rank.  */
@@ -1102,9 +1125,9 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 			  build_int_cst (TREE_TYPE (dim_arg), corank));
 
   lbound = gfc_conv_descriptor_lbound_get (desc,
-			fold_build2_loc (input_location, PLUS_EXPR,
-					 gfc_array_index_type, dim_arg,
-					 gfc_rank_cst[rank - 1]));
+		fold_build2_loc (input_location, PLUS_EXPR,
+				 gfc_array_index_type, dim_arg,
+				 build_int_cst (TREE_TYPE (dim_arg), rank-1)));
   lbound = fold_convert (type, lbound);
 
   tmp = fold_build2_loc (input_location, MINUS_EXPR, type, ml,
@@ -1133,6 +1156,8 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
+  if (expr->value.function.actual->expr->rank == 0)
+    convert_element_to_coarray_ref (expr->value.function.actual->expr);
   ss = gfc_walk_expr (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
   ss->data.info.codimen = corank;
@@ -1227,7 +1252,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
     num_images = build_int_cst (type, 1);
   else
     {
-      gfc_init_coarray_decl ();
+      gfc_init_coarray_decl (false);
       num_images = gfort_gvar_caf_num_images;
     }
 
@@ -1247,7 +1272,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 static void
 trans_num_images (gfc_se * se)
 {
-  gfc_init_coarray_decl ();
+  gfc_init_coarray_decl (false);
   se->expr = gfort_gvar_caf_num_images;
 }
 
@@ -1457,6 +1482,8 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
   gcc_assert (arg->expr->expr_type == EXPR_VARIABLE);
   corank = gfc_get_corank (arg->expr);
 
+  if (expr->value.function.actual->expr->rank == 0)
+    convert_element_to_coarray_ref (expr->value.function.actual->expr);
   ss = gfc_walk_expr (arg->expr);
   gcc_assert (ss != gfc_ss_terminator);
   ss->data.info.codimen = corank;
@@ -1548,7 +1575,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	{
           tree cosize;
 
-	  gfc_init_coarray_decl ();
+	  gfc_init_coarray_decl (false);
 	  cosize = gfc_conv_descriptor_cosize (desc, arg->expr->rank, corank);
 
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
@@ -1564,7 +1591,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
       else if (gfc_option.coarray != GFC_FCOARRAY_SINGLE)
 	{
 	  /* ubound = lbound + num_images() - 1.  */
-	  gfc_init_coarray_decl ();
+	  gfc_init_coarray_decl (false);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type,
 				 gfort_gvar_caf_num_images,

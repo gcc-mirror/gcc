@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -44,8 +44,8 @@ void
 PB_DS_CLASS_C_DEC::
 split(Pred pred, PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 
     make_binomial_heap();
   other.make_binomial_heap();
@@ -55,19 +55,19 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
   base_type::find_max();
   other.find_max();
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    }
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
+}
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 
-    make_binomial_heap();
+  make_binomial_heap();
   other.make_binomial_heap();
 
   base_type::join(other);
@@ -75,7 +75,7 @@ join(PB_DS_CLASS_C_DEC& other)
   base_type::find_max();
   other.find_max();
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    }
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
+}
 

@@ -1,3 +1,255 @@
+2011-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/invalid1.adb: New test.
+
+2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-vzeroupper-16.c: Update scan-assembler-times
+	scan pattern.
+	* gcc.target/i386/avx-vzeroupper-17.c: Ditto.
+	* gcc.target/i386/avx-vzeroupper-18.c: Ditto.
+
+2011-05-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/48994
+	* g++.dg/cpp0x/range-for18.C: New.
+
+2011-05-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray/image_index_2.f90: New.
+
+2011-05-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* g++.dg/cpp0x/override1.C: Move from inherit/virtual9.C.
+	* g++.dg/cpp0x/override2.C: New.
+
+2011-05-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.de/coarray_20.f90: New.
+
+2011-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/22572
+	* function_optimize_7.f90:  New test case.
+
+2011-05-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/decltype26.C: New.
+	* g++.dg/cpp0x/enum11.C: New.
+
+2011-05-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48972
+	PR fortran/48991
+	* gfortran.dg/assign_8.f90: Update dg-error.
+
+2011-05-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48972
+	* gfortran.dg/io_constraints_8.f90: New.
+	* gfortran.dg/io_constraints_9.f90: New.
+
+2011-05-13  Martin Thuresson  <martint@google.com>
+
+	PR gcov-profile/47793
+	* gcc.dg/pr47793.c: New.
+
+2011-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48975
+	* gcc.dg/pr48975.c: New test.
+
+2011-05-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48972
+	* gfortran.dg/iso_c_binding_compiler_3.f90: New.
+
+2011-05-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-incomplete2.C: New.
+
+2011-05-12  Geert Bosch  <bosch@adacore.com>
+
+	* gnat.dg/view_conversion1.adb: New test.
+
+2011-05-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48172
+	* gcc.dg/vect/pr48172.c: New testcase.
+
+2011-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48967
+	* g++.dg/opt/pr48967.C: New test.
+
+2011-05-11  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-friend.C: New.
+	* g++.dg/cpp0x/constexpr-incomplete1.C: New.
+
+	* g++.dg/cpp0x/sfinae22.C: New.
+
+2011-05-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48889
+	* gfortran.dg/generic_24.f90: New.
+
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/15256
+	* gcc.dg/tree-ssa/forwprop-14.c: New testcase.
+
+2011-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48159
+	* gcc.dg/pr48159-1.c: New test.
+	* gcc.dg/pr48159-2.c: New test.
+
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48953
+	* gcc.dg/torture/pr48953.c: New testcase.
+
+2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/18041
+	* gcc.dg/tree-ssa/forwprop-13.c: New testcase.
+
+2011-05-11  Alan Modra  <amodra@gmail.com>
+
+	PR target/47755
+	* gcc.target/powerpc/pr47755-2.c: Require vsx_hw.
+
+2011-05-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/defaulted25.C: New.
+	* g++.dg/template/crash7.C: Adjust.
+
+	* g++.dg/cpp0x/variadic108.C: New.
+
+2011-05-10  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* g++.dg/inherit/virtual9.C: Extend.
+
+2011-05-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/48857
+	* gcc.target/powerpc/pr48857.c: New file, make sure V2DI arguments
+	are passed and returned in vector registers.
+
+2011-05-10  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-2.c: Disable forwprop.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-5.c: Likewise.
+	* gcc.dg/tree-ssa/scev-cast.c: Adjust.  Note what transformation
+	applies.
+
+2011-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48611
+	PR tree-optimization/48794
+	* gfortran.dg/gomp/pr48611.f90: New test.
+	* gfortran.dg/gomp/pr48794.f90: New test.
+
+	PR debug/48928
+	* gcc.dg/dfp/pr48928.c: New test.
+
+2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48522
+	* g++.dg/cpp0x/pr48522.C: New.
+
+2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48735
+	* g++.dg/cpp0x/sfinae21.C: New.
+
+2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/sfinae28.C: Rename to...
+	* g++.dg/cpp0x/sfinae19.C: ... this.
+	* g++.dg/template/sfinae29.C: Rename to...
+	* g++.dg/cpp0x/sfinae20.C: ... this.
+
+2011-05-09  Jeff Law <law@redhat.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Reorder matchers to give more
+	consistent results.
+
+2011-05-09  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/20039
+	* g++.dg/init/pr20039.C: New.
+
+2011-05-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48737
+	PR c++/48744
+	* g++.dg/template/sfinae28.C: New.
+	* g++.dg/template/sfinae29.C: Likewise.
+
+2011-05-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/nontype23.C: New.
+
+2011-05-07  Fabien Chêne  <fabien@gcc.gnu.org>
+	PR c++/48859
+	* g++.dg/init/pr48859.C: New.
+
+2011-05-09  Jason Merrill  <jason@redhat.com>
+
+	* gcc.dg/gcc.dg/uninit-D.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-D-O0.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-E.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-E-O0.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-F.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-F-O0.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-G.c: Move to c-c++-common.
+	* gcc.dg/gcc.dg/uninit-G-O0.c: Move to c-c++-common.
+
+2011-05-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+        * g++.dg/inherit/virtual9.C: New.
+
+2011-05-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48574
+	* g++.dg/template/dependent-expr8.C: New test case.
+
+2011-05-07  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/48837
+	* gcc.dg/pr48837.c: New testcase.
+
+2011-05-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-condition2.C: New.
+
+	* g++.dg/cpp0x/constexpr-missing.C: New.
+
+2011-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray/this_image_2.f90: New.
+
+2011-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	PR fortran/48820
+	* gfortran.dg/bind_c_usage_22.f90: New.
+	* gfortran.dg/bind_c_usage_23.f90: New.
+	* gfortran.dg/bind_c_usage_24.f90: New.
+	* gfortran.dg/bind_c_usage_24_c.c: New.
+
+2011-05-06  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/48838
+	* g++.dg/template/member9.C: New test case.
+
 2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr29.ad[sb]: New test.

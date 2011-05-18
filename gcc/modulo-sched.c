@@ -84,14 +84,13 @@ along with GCC; see the file COPYING3.  If not see
       II cycles (i.e. use register copies to prevent a def from overwriting
       itself before reaching the use).
 
-    SMS works with countable loops (1) whose control part can be easily
-    decoupled from the rest of the loop and (2) whose loop count can
-    be easily adjusted.  This is because we peel a constant number of
-    iterations into a prologue and epilogue for which we want to avoid
-    emitting the control part, and a kernel which is to iterate that
-    constant number of iterations less than the original loop.  So the
-    control part should be a set of insns clearly identified and having
-    its own iv, not otherwise used in the loop (at-least for now), which
+    SMS works with countable loops whose loop count can be easily
+    adjusted.  This is because we peel a constant number of iterations
+    into a prologue and epilogue for which we want to avoid emitting
+    the control part, and a kernel which is to iterate that constant
+    number of iterations less than the original loop.  So the control
+    part should be a set of insns clearly identified and having its
+    own iv, not otherwise used in the loop (at-least for now), which
     initializes a register before the loop to the number of iterations.
     Currently SMS relies on the do-loop pattern to recognize such loops,
     where (1) the control part comprises of all insns defining and/or
@@ -116,8 +115,10 @@ typedef struct ps_insn *ps_insn_ptr;
 
 /* The number of different iterations the nodes in ps span, assuming
    the stage boundaries are placed efficiently.  */
-#define PS_STAGE_COUNT(ps) ((PS_MAX_CYCLE (ps) - PS_MIN_CYCLE (ps) \
-			     + 1 + (ps)->ii - 1) / (ps)->ii)
+#define CALC_STAGE_COUNT(max_cycle,min_cycle,ii) ((max_cycle - min_cycle \
+                         + 1 + ii - 1) / ii)
+/* The stage count of ps.  */
+#define PS_STAGE_COUNT(ps) (((partial_schedule_ptr)(ps))->stage_count)
 
 /* A single instruction in the partial schedule.  */
 struct ps_insn
@@ -155,6 +156,8 @@ struct partial_schedule
   int max_cycle;
 
   ddg_ptr g;	/* The DDG of the insns in the partial schedule.  */
+
+  int stage_count;  /* The stage count of the partial schedule.  */
 };
 
 /* We use this to record all the register replacements we do in
@@ -195,7 +198,7 @@ static void generate_prolog_epilog (partial_schedule_ptr, struct loop *,
                                     rtx, rtx);
 static void duplicate_insns_of_cycles (partial_schedule_ptr,
 				       int, int, int, rtx);
-
+static int calculate_stage_count (partial_schedule_ptr ps);
 #define SCHED_ASAP(x) (((node_sched_params_ptr)(x)->aux.info)->asap)
 #define SCHED_TIME(x) (((node_sched_params_ptr)(x)->aux.info)->time)
 #define SCHED_FIRST_REG_MOVE(x) \
@@ -310,10 +313,10 @@ doloop_register_get (rtx head ATTRIBUTE_UNUSED, rtx tail ATTRIBUTE_UNUSED)
      either a single (parallel) branch-on-count or a (non-parallel)
      branch immediately preceded by a single (decrement) insn.  */
   first_insn_not_to_check = (GET_CODE (PATTERN (tail)) == PARALLEL ? tail
-                             : PREV_INSN (tail));
+                             : prev_nondebug_insn (tail));
 
   for (insn = head; insn != first_insn_not_to_check; insn = NEXT_INSN (insn))
-    if (reg_mentioned_p (reg, insn))
+    if (!DEBUG_INSN_P (insn) && reg_mentioned_p (reg, insn))
       {
         if (dump_file)
         {
@@ -569,13 +572,13 @@ free_undo_replace_buff (struct undo_replace_buff_elem *reg_move_replaces)
     }
 }
 
-/* Bump the SCHED_TIMEs of all nodes to start from zero.  Set the values
-   of SCHED_ROW and SCHED_STAGE.  */
+/* Bump the SCHED_TIMEs of all nodes by AMOUNT.  Set the values of
+   SCHED_ROW and SCHED_STAGE.  Instruction scheduled on cycle AMOUNT
+   will move to cycle zero.  */
 static void
-normalize_sched_times (partial_schedule_ptr ps)
+reset_sched_times (partial_schedule_ptr ps, int amount)
 {
   int row;
-  int amount = PS_MIN_CYCLE (ps);
   int ii = ps->ii;
   ps_insn_ptr crr_insn;
 
@@ -584,19 +587,43 @@ normalize_sched_times (partial_schedule_ptr ps)
       {
 	ddg_node_ptr u = crr_insn->node;
 	int normalized_time = SCHED_TIME (u) - amount;
+	int new_min_cycle = PS_MIN_CYCLE (ps) - amount;
+        int sc_until_cycle_zero, stage;
 
-	if (dump_file)
-	  fprintf (dump_file, "crr_insn->node=%d, crr_insn->cycle=%d,\
-		   min_cycle=%d\n", crr_insn->node->cuid, SCHED_TIME
-		   (u), ps->min_cycle);
+        if (dump_file)
+          {
+            /* Print the scheduling times after the rotation.  */
+            fprintf (dump_file, "crr_insn->node=%d (insn id %d), "
+                     "crr_insn->cycle=%d, min_cycle=%d", crr_insn->node->cuid,
+                     INSN_UID (crr_insn->node->insn), SCHED_TIME (u),
+                     normalized_time);
+            if (JUMP_P (crr_insn->node->insn))
+              fprintf (dump_file, " (branch)");
+            fprintf (dump_file, "\n");
+          }
+	
 	gcc_assert (SCHED_TIME (u) >= ps->min_cycle);
 	gcc_assert (SCHED_TIME (u) <= ps->max_cycle);
 	SCHED_TIME (u) = normalized_time;
-	SCHED_ROW (u) = normalized_time % ii;
-	SCHED_STAGE (u) = normalized_time / ii;
+	SCHED_ROW (u) = SMODULO (normalized_time, ii);
+      
+        /* The calculation of stage count is done adding the number
+           of stages before cycle zero and after cycle zero.  */
+	sc_until_cycle_zero = CALC_STAGE_COUNT (-1, new_min_cycle, ii);
+	
+	if (SCHED_TIME (u) < 0)
+	  {
+	    stage = CALC_STAGE_COUNT (-1, SCHED_TIME (u), ii);
+	    SCHED_STAGE (u) = sc_until_cycle_zero - stage;
+	  }
+	else
+	  {
+	    stage = CALC_STAGE_COUNT (SCHED_TIME (u), 0, ii);
+	    SCHED_STAGE (u) = sc_until_cycle_zero + stage - 1;
+	  }
       }
 }
-
+ 
 /* Set SCHED_COLUMN of each node according to its position in PS.  */
 static void
 set_columns_for_ps (partial_schedule_ptr ps)
@@ -646,9 +673,12 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
 
         /* Do not duplicate any insn which refers to count_reg as it
            belongs to the control part.
+           The closing branch is scheduled as well and thus should
+           be ignored.
            TODO: This should be done by analyzing the control part of
            the loop.  */
-        if (reg_mentioned_p (count_reg, u_node->insn))
+        if (reg_mentioned_p (count_reg, u_node->insn)
+            || JUMP_P (ps_ij->node->insn))
           continue;
 
 	if (for_prolog)
@@ -1009,9 +1039,11 @@ sms_schedule (void)
 	continue;
       }
 
-      /* Don't handle BBs with calls or barriers, or !single_set insns,
-         or auto-increment insns (to avoid creating invalid reg-moves
-         for the auto-increment insns).
+      /* Don't handle BBs with calls or barriers or auto-increment insns 
+	 (to avoid creating invalid reg-moves for the auto-increment insns),
+	 or !single_set with the exception of instructions that include
+	 count_reg---these instructions are part of the control part
+	 that do-loop recognizes.
          ??? Should handle auto-increment insns.
          ??? Should handle insns defining subregs.  */
      for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
@@ -1021,7 +1053,8 @@ sms_schedule (void)
         if (CALL_P (insn)
             || BARRIER_P (insn)
             || (NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
-                && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE)
+                && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE
+                && !reg_mentioned_p (count_reg, insn))
             || (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
             || (INSN_P (insn) && (set = single_set (insn))
                 && GET_CODE (SET_DEST (set)) == SUBREG))
@@ -1049,7 +1082,11 @@ sms_schedule (void)
 	  continue;
 	}
 
-      if (! (g = create_ddg (bb, 0)))
+      /* Always schedule the closing branch with the rest of the
+         instructions. The branch is rotated to be in row ii-1 at the
+         end of the scheduling procedure to make sure it's the last
+         instruction in the iteration.  */
+      if (! (g = create_ddg (bb, 1)))
         {
           if (dump_file)
 	    fprintf (dump_file, "SMS create_ddg failed\n");
@@ -1157,10 +1194,12 @@ sms_schedule (void)
 
       ps = sms_schedule_by_order (g, mii, maxii, node_order);
 
-      if (ps){
-	stage_count = PS_STAGE_COUNT (ps);
-        gcc_assert(stage_count >= 1);
-      }
+       if (ps)
+       {
+         stage_count = calculate_stage_count (ps);
+         gcc_assert(stage_count >= 1);
+         PS_STAGE_COUNT(ps) = stage_count;
+       }
 
       /* The default value of PARAM_SMS_MIN_SC is 2 as stage count of
 	 1 means that there is no interleaving between iterations thus
@@ -1182,32 +1221,24 @@ sms_schedule (void)
       else
 	{
 	  struct undo_replace_buff_elem *reg_move_replaces;
-
-	  if (dump_file)
-	    {
-	      fprintf (dump_file,
-		       "SMS succeeded %d %d (with ii, sc)\n", ps->ii,
-		       stage_count);
-	      print_partial_schedule (ps, dump_file);
-	      fprintf (dump_file,
-		       "SMS Branch (%d) will later be scheduled at cycle %d.\n",
-		       g->closing_branch->cuid, PS_MIN_CYCLE (ps) - 1);
-	    }
-
-	  /* Set the stage boundaries.  If the DDG is built with closing_branch_deps,
-	     the closing_branch was scheduled and should appear in the last (ii-1)
-	     row.  Otherwise, we are free to schedule the branch, and we let nodes
-	     that were scheduled at the first PS_MIN_CYCLE cycle appear in the first
-	     row; this should reduce stage_count to minimum.
-             TODO: Revisit the issue of scheduling the insns of the
-             control part relative to the branch when the control part
-             has more than one insn.  */
-	  normalize_sched_times (ps);
-	  rotate_partial_schedule (ps, PS_MIN_CYCLE (ps));
+          int amount = SCHED_TIME (g->closing_branch) + 1;
+	  
+	  /* Set the stage boundaries.	The closing_branch was scheduled
+	     and should appear in the last (ii-1) row.  */
+	  reset_sched_times (ps, amount);
+	  rotate_partial_schedule (ps, amount);
 	  set_columns_for_ps (ps);
 
 	  canon_loop (loop);
 
+          if (dump_file)
+            {
+	      fprintf (dump_file,
+		       "SMS succeeded %d %d (with ii, sc)\n", ps->ii,
+		       stage_count);
+	      print_partial_schedule (ps, dump_file);
+	    }
+ 
           /* case the BCT count is not known , Do loop-versioning */
 	  if (count_reg && ! count_init)
             {
@@ -1760,12 +1791,6 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 	      continue;
 	    }
 
-	  if (JUMP_P (insn)) /* Closing branch handled later.  */
-	    {
-	      RESET_BIT (tobe_scheduled, u);
-	      continue;
-	    }
-
 	  if (TEST_BIT (sched_nodes, u))
 	    continue;
 
@@ -1893,8 +1918,8 @@ ps_insert_empty_row (partial_schedule_ptr ps, int split_row,
   if (dump_file)
     fprintf (dump_file, "split_row=%d\n", split_row);
 
-  normalize_sched_times (ps);
-  rotate_partial_schedule (ps, ps->min_cycle);
+  reset_sched_times (ps, PS_MIN_CYCLE (ps));
+  rotate_partial_schedule (ps, PS_MIN_CYCLE (ps));
 
   rows_new = (ps_insn_ptr *) xcalloc (new_ii, sizeof (ps_insn_ptr));
   for (row = 0; row < split_row; row++)
@@ -2571,6 +2596,7 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
   ps_insn_ptr next_ps_i;
   ps_insn_ptr first_must_follow = NULL;
   ps_insn_ptr last_must_precede = NULL;
+  ps_insn_ptr last_in_row = NULL;
   int row;
 
   if (! ps_i)
@@ -2597,8 +2623,37 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
 	  else
             last_must_precede = next_ps_i;
         }
+      /* The closing branch must be the last in the row.  */
+      if (must_precede 
+	  && TEST_BIT (must_precede, next_ps_i->node->cuid) 
+	  && JUMP_P (next_ps_i->node->insn))     
+	return false;
+             
+       last_in_row = next_ps_i;
     }
 
+  /* The closing branch is scheduled as well.  Make sure there is no
+     dependent instruction after it as the branch should be the last
+     instruction in the row.  */
+  if (JUMP_P (ps_i->node->insn)) 
+    {
+      if (first_must_follow)
+	return false;
+      if (last_in_row)
+	{
+	  /* Make the branch the last in the row.  New instructions
+	     will be inserted at the beginning of the row or after the
+	     last must_precede instruction thus the branch is guaranteed
+	     to remain the last instruction in the row.  */
+	  last_in_row->next_in_row = ps_i;
+	  ps_i->prev_in_row = last_in_row;
+	  ps_i->next_in_row = NULL;
+	}
+      else
+	ps->rows[row] = ps_i;
+      return true;
+    }
+  
   /* Now insert the node after INSERT_AFTER_PSI.  */
 
   if (! last_must_precede)
@@ -2818,6 +2873,24 @@ ps_add_node_check_conflicts (partial_schedule_ptr ps, ddg_node_ptr n,
   ps->min_cycle = MIN (ps->min_cycle, c);
   ps->max_cycle = MAX (ps->max_cycle, c);
   return ps_i;
+}
+
+/* Calculate the stage count of the partial schedule PS.  The calculation
+   takes into account the rotation to bring the closing branch to row
+   ii-1.  */
+int
+calculate_stage_count (partial_schedule_ptr ps)
+{
+  int rotation_amount = (SCHED_TIME (ps->g->closing_branch)) + 1;
+  int new_min_cycle = PS_MIN_CYCLE (ps) - rotation_amount;
+  int new_max_cycle = PS_MAX_CYCLE (ps) - rotation_amount;
+  int stage_count = CALC_STAGE_COUNT (-1, new_min_cycle, ps->ii);
+
+  /* The calculation of stage count is done adding the number of stages
+     before cycle zero and after cycle zero.  */ 
+  stage_count += CALC_STAGE_COUNT (new_max_cycle, 0, ps->ii);
+
+  return stage_count;
 }
 
 /* Rotate the rows of PS such that insns scheduled at time

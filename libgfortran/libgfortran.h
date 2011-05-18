@@ -508,16 +508,16 @@ typedef struct
   int separator_len;
   const char *separator;
 
-  int use_stderr, all_unbuffered, unbuffered_preconnected, default_recl;
-  int fpe, dump_core, backtrace;
+  int all_unbuffered, unbuffered_preconnected, default_recl;
+  int fpe, backtrace;
 }
 options_t;
 
 extern options_t options;
 internal_proto(options);
 
-extern void handler (int);
-internal_proto(handler);
+extern void backtrace_handler (int);
+internal_proto(backtrace_handler);
 
 
 /* Compile-time options that will influence the library.  */
@@ -528,7 +528,6 @@ typedef struct
   int allow_std;
   int pedantic;
   int convert;
-  int dump_core;
   int backtrace;
   int sign_zero;
   size_t record_marker;
@@ -688,8 +687,18 @@ internal_proto(show_backtrace);
 #define GFC_OTOA_BUF_SIZE (GFC_LARGEST_BUF * 3 + 1)
 #define GFC_BTOA_BUF_SIZE (GFC_LARGEST_BUF * 8 + 1)
 
-extern void sys_exit (int) __attribute__ ((noreturn));
-internal_proto(sys_exit);
+extern void sys_abort (void) __attribute__ ((noreturn));
+internal_proto(sys_abort);
+
+extern ssize_t estr_write (const char *);
+internal_proto(estr_write);
+
+extern int st_vprintf (const char *, va_list);
+internal_proto(st_vprintf);
+
+extern int st_printf (const char *, ...)
+  __attribute__((format (gfc_printf, 1, 2)));
+internal_proto(st_printf);
 
 extern const char *gfc_xtoa (GFC_UINTEGER_LARGEST, char *, size_t);
 internal_proto(gfc_xtoa);
@@ -791,13 +800,6 @@ internal_proto(close_units);
 
 extern int unit_to_fd (int);
 internal_proto(unit_to_fd);
-
-extern int st_printf (const char *, ...)
-  __attribute__ ((format (gfc_printf, 1, 2)));
-internal_proto(st_printf);
-
-extern int st_vprintf (const char *, va_list);
-internal_proto(st_vprintf);
 
 extern char * filename_from_unit (int);
 internal_proto(filename_from_unit);

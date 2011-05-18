@@ -160,7 +160,7 @@ i386_nlm_maybe_mangle_decl_assembler_name (tree decl, tree id)
     }
   else if ((ccvt & IX86_CALLCVT_FASTCALL) != 0)
     new_id = gen_stdcall_or_fastcall_decoration (decl, id, FASTCALL_PREFIX);
-  else if ((cvt & IX86_CALLCVT_REGPARM) != 0
+  else if ((ccvt & IX86_CALLCVT_REGPARM) != 0
 	   && (new_id = lookup_attribute ("regparm", type_attributes)))
     new_id = gen_regparm_prefix (decl, id,
 		  TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (new_id))));

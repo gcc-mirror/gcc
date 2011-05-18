@@ -1,7 +1,7 @@
 // The template and inlines for the numeric_limits classes. -*- C++ -*-
 
 // Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-// 2008, 2009, 2010  Free Software Foundation, Inc.
+// 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -306,47 +306,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /** The minimum finite value, or for floating types with
 	  denormalization, the minimum positive normalized value.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      min() throw() { return static_cast<_Tp>(0); }
+      min() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
 
       /** The maximum finite value.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      max() throw() { return static_cast<_Tp>(0); }
+      max() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /** A finite value x such that there is no other finite value y
        *  where y < x.  */
       static constexpr _Tp
-      lowest() throw() { return static_cast<_Tp>(0); }
+      lowest() noexcept { return static_cast<_Tp>(0); }
 #endif
 
       /** The @e machine @e epsilon:  the difference between 1 and the least
 	  value greater than 1 that is representable.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      epsilon() throw() { return static_cast<_Tp>(0); }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
 
       /** The maximum rounding error measurement (see LIA-1).  */
       static _GLIBCXX_CONSTEXPR _Tp
-      round_error() throw() { return static_cast<_Tp>(0); }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
 
       /** The representation of positive infinity, if @c has_infinity.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      infinity() throw()  { return static_cast<_Tp>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
 
       /** The representation of a quiet <em>Not a Number</em>,
 	  if @c has_quiet_NaN. */
       static _GLIBCXX_CONSTEXPR _Tp
-      quiet_NaN() throw() { return static_cast<_Tp>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
 
       /** The representation of a signaling <em>Not a Number</em>, if
 	  @c has_signaling_NaN. */
       static _GLIBCXX_CONSTEXPR _Tp
-      signaling_NaN() throw() { return static_cast<_Tp>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
 
       /** The minimum positive denormalized value.  For types where
 	  @c has_denorm is false, this is the minimum positive normalized
 	  value.  */
       static _GLIBCXX_CONSTEXPR _Tp
-      denorm_min() throw() { return static_cast<_Tp>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<_Tp>(0); }
     };
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -373,14 +373,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR bool 
-      min() throw() { return false; }
+      min() _GLIBCXX_USE_NOEXCEPT { return false; }
 
       static _GLIBCXX_CONSTEXPR bool 
-      max() throw()  { return true; }
+      max() _GLIBCXX_USE_NOEXCEPT { return true; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr bool
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
       static _GLIBCXX_USE_CONSTEXPR int digits = 1;
       static _GLIBCXX_USE_CONSTEXPR int digits10 = 0;
@@ -393,10 +393,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR bool 
-      epsilon() throw() { return false; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return false; }
 
       static _GLIBCXX_CONSTEXPR bool 
-      round_error() throw() { return false; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return false; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -411,16 +411,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR bool 
-      infinity() throw() { return false; }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return false; }
 
       static _GLIBCXX_CONSTEXPR bool 
-      quiet_NaN() throw() { return false; }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return false; }
 
       static _GLIBCXX_CONSTEXPR bool 
-      signaling_NaN() throw() { return false; }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return false; }
 
       static _GLIBCXX_CONSTEXPR bool 
-      denorm_min() throw() { return false; }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return false; }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -442,14 +442,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR char 
-      min() throw() { return __glibcxx_min(char); }
+      min() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_min(char); }
 
       static _GLIBCXX_CONSTEXPR char 
-      max() throw() { return __glibcxx_max(char); }
+      max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max(char); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr char 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (char);
@@ -463,10 +463,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR char 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR char 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -481,16 +481,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR 
-      char infinity() throw()  { return char(); }
+      char infinity() _GLIBCXX_USE_NOEXCEPT { return char(); }
 
       static _GLIBCXX_CONSTEXPR char 
-      quiet_NaN() throw() { return char(); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return char(); }
 
       static _GLIBCXX_CONSTEXPR char 
-      signaling_NaN() throw() { return char(); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return char(); }
 
       static _GLIBCXX_CONSTEXPR char 
-      denorm_min() throw() { return static_cast<char>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<char>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -509,14 +509,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR signed char 
-      min() throw() { return -__SCHAR_MAX__ - 1; }
+      min() _GLIBCXX_USE_NOEXCEPT { return -__SCHAR_MAX__ - 1; }
 
       static _GLIBCXX_CONSTEXPR signed char 
-      max() throw() { return __SCHAR_MAX__; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __SCHAR_MAX__; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr signed char 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (signed char);
@@ -531,10 +531,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR signed char 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR signed char 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -549,16 +549,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR signed char 
-      infinity() throw() { return static_cast<signed char>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<signed char>(0); }
 
       static _GLIBCXX_CONSTEXPR signed char 
-      quiet_NaN() throw() { return static_cast<signed char>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<signed char>(0); }
 
       static _GLIBCXX_CONSTEXPR signed char 
-      signaling_NaN() throw() { return static_cast<signed char>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<signed char>(0); }
 
       static _GLIBCXX_CONSTEXPR signed char 
-      denorm_min() throw() { return static_cast<signed char>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<signed char>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -577,14 +579,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR unsigned char 
-      min() throw() { return 0; }
+      min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned char 
-      max() throw() { return __SCHAR_MAX__ * 2U + 1; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __SCHAR_MAX__ * 2U + 1; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr unsigned char 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits 
@@ -600,10 +602,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR unsigned char 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned char 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -618,16 +620,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR unsigned char 
-      infinity() throw() { return static_cast<unsigned char>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned char>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned char 
-      quiet_NaN() throw() { return static_cast<unsigned char>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned char>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned char 
-      signaling_NaN() throw() { return static_cast<unsigned char>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned char>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned char 
-      denorm_min() throw() { return static_cast<unsigned char>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned char>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -646,14 +652,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR wchar_t 
-      min() throw() { return __glibcxx_min (wchar_t); }
+      min() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_min (wchar_t); }
 
       static _GLIBCXX_CONSTEXPR wchar_t 
-      max() throw()  { return __glibcxx_max (wchar_t); }
+      max() _GLIBCXX_USE_NOEXCEPT { return __glibcxx_max (wchar_t); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      static constexpr wchar_t 
-      lowest() throw() { return min(); }
+      static constexpr wchar_t
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (wchar_t);
@@ -668,10 +674,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR wchar_t 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR wchar_t 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -686,16 +692,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR wchar_t 
-      infinity() throw() { return wchar_t(); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return wchar_t(); }
 
       static _GLIBCXX_CONSTEXPR wchar_t 
-      quiet_NaN() throw() { return wchar_t(); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return wchar_t(); }
 
       static _GLIBCXX_CONSTEXPR wchar_t 
-      signaling_NaN() throw() { return wchar_t(); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return wchar_t(); }
 
       static _GLIBCXX_CONSTEXPR wchar_t 
-      denorm_min() throw() { return wchar_t(); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return wchar_t(); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -712,139 +718,122 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct numeric_limits<char16_t>
     {
-      static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
+      static constexpr bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR char16_t 
-      min() throw() { return __glibcxx_min (char16_t); }
-
-      static _GLIBCXX_CONSTEXPR char16_t 
-      max() throw() { return __glibcxx_max (char16_t); }
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr char16_t 
-      lowest() throw() { return min(); }
-#endif
+      min() noexcept { return __glibcxx_min (char16_t); }
 
-      static _GLIBCXX_USE_CONSTEXPR int digits 
-       = __glibcxx_digits (char16_t);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
-       = __glibcxx_digits10 (char16_t);
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static constexpr char16_t 
+      max() noexcept { return __glibcxx_max (char16_t); }
+
+      static constexpr char16_t 
+      lowest() noexcept { return min(); }
+
+      static constexpr int digits = __glibcxx_digits (char16_t);
+      static constexpr int digits10 = __glibcxx_digits10 (char16_t);
       static constexpr int max_digits10 = 0;
-#endif
-      static _GLIBCXX_USE_CONSTEXPR bool is_signed 
-       = __glibcxx_signed (char16_t);
-      static _GLIBCXX_USE_CONSTEXPR bool is_integer = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
-      static _GLIBCXX_USE_CONSTEXPR int radix = 2;
+      static constexpr bool is_signed = __glibcxx_signed (char16_t);
+      static constexpr bool is_integer = true;
+      static constexpr bool is_exact = true;
+      static constexpr int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR char16_t 
-      epsilon() throw() { return 0; }
+      static constexpr char16_t 
+      epsilon() noexcept { return 0; }
 
-      static _GLIBCXX_CONSTEXPR char16_t 
-      round_error() throw() { return 0; }
+      static constexpr char16_t 
+      round_error() noexcept { return 0; }
 
-      static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
-      static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
-      static _GLIBCXX_USE_CONSTEXPR int max_exponent = 0;
-      static _GLIBCXX_USE_CONSTEXPR int max_exponent10 = 0;
+      static constexpr int min_exponent = 0;
+      static constexpr int min_exponent10 = 0;
+      static constexpr int max_exponent = 0;
+      static constexpr int max_exponent10 = 0;
 
-      static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
-      static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
-       = denorm_absent;
-      static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
+      static constexpr bool has_infinity = false;
+      static constexpr bool has_quiet_NaN = false;
+      static constexpr bool has_signaling_NaN = false;
+      static constexpr float_denorm_style has_denorm = denorm_absent;
+      static constexpr bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR char16_t 
-      infinity() throw()  { return char16_t(); }
+      static constexpr char16_t 
+      infinity() noexcept { return char16_t(); }
 
-      static _GLIBCXX_CONSTEXPR char16_t 
-      quiet_NaN() throw() { return char16_t(); }
+      static constexpr char16_t 
+      quiet_NaN() noexcept { return char16_t(); }
 
-      static _GLIBCXX_CONSTEXPR char16_t 
-      signaling_NaN() throw() { return char16_t(); }
+      static constexpr char16_t 
+      signaling_NaN() noexcept { return char16_t(); }
 
-      static _GLIBCXX_CONSTEXPR char16_t 
-      denorm_min() throw() { return char16_t(); }
+      static constexpr char16_t 
+      denorm_min() noexcept { return char16_t(); }
 
-      static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
-      static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static constexpr bool is_iec559 = false;
+      static constexpr bool is_bounded = true;
+      static constexpr bool is_modulo = true;
 
-      static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
-      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
-       = round_toward_zero;
+      static constexpr bool traps = __glibcxx_integral_traps;
+      static constexpr bool tinyness_before = false;
+      static constexpr float_round_style round_style = round_toward_zero;
     };
 
   /// numeric_limits<char32_t> specialization.
   template<>
     struct numeric_limits<char32_t>
     {
-      static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
+      static constexpr bool is_specialized = true;
 
-      static _GLIBCXX_CONSTEXPR char32_t 
-      min() throw() { return __glibcxx_min (char32_t); }
-
-      static _GLIBCXX_CONSTEXPR char32_t 
-      max() throw() { return __glibcxx_max (char32_t); }
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr char32_t 
-      lowest() throw() { return min(); }
-#endif
+      min() noexcept { return __glibcxx_min (char32_t); }
 
-      static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (char32_t);
-      static _GLIBCXX_USE_CONSTEXPR int digits10 
-       = __glibcxx_digits10 (char32_t);
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      static constexpr char32_t 
+      max() noexcept { return __glibcxx_max (char32_t); }
+
+      static constexpr char32_t 
+      lowest() noexcept { return min(); }
+
+      static constexpr int digits = __glibcxx_digits (char32_t);
+      static constexpr int digits10 = __glibcxx_digits10 (char32_t);
       static constexpr int max_digits10 = 0;
-#endif
-      static _GLIBCXX_USE_CONSTEXPR bool is_signed 
-       = __glibcxx_signed (char32_t);
-      static _GLIBCXX_USE_CONSTEXPR bool is_integer = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_exact = true;
-      static _GLIBCXX_USE_CONSTEXPR int radix = 2;
+      static constexpr bool is_signed = __glibcxx_signed (char32_t);
+      static constexpr bool is_integer = true;
+      static constexpr bool is_exact = true;
+      static constexpr int radix = 2;
 
-      static _GLIBCXX_CONSTEXPR char32_t 
-      epsilon() throw() { return 0; }
+      static constexpr char32_t 
+      epsilon() noexcept { return 0; }
 
-      static _GLIBCXX_CONSTEXPR char32_t 
-      round_error() throw() { return 0; }
+      static constexpr char32_t 
+      round_error() noexcept { return 0; }
 
-      static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
-      static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
-      static _GLIBCXX_USE_CONSTEXPR int max_exponent = 0;
-      static _GLIBCXX_USE_CONSTEXPR int max_exponent10 = 0;
+      static constexpr int min_exponent = 0;
+      static constexpr int min_exponent10 = 0;
+      static constexpr int max_exponent = 0;
+      static constexpr int max_exponent10 = 0;
 
-      static _GLIBCXX_USE_CONSTEXPR bool has_infinity = false;
-      static _GLIBCXX_USE_CONSTEXPR bool has_quiet_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR bool has_signaling_NaN = false;
-      static _GLIBCXX_USE_CONSTEXPR float_denorm_style has_denorm 
-       = denorm_absent;
-      static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
+      static constexpr bool has_infinity = false;
+      static constexpr bool has_quiet_NaN = false;
+      static constexpr bool has_signaling_NaN = false;
+      static constexpr float_denorm_style has_denorm = denorm_absent;
+      static constexpr bool has_denorm_loss = false;
 
-      static _GLIBCXX_CONSTEXPR char32_t 
-      infinity() throw() { return char32_t(); }
+      static constexpr char32_t 
+      infinity() noexcept { return char32_t(); }
 
-      static _GLIBCXX_CONSTEXPR char32_t 
-      quiet_NaN() throw() { return char32_t(); }
+      static constexpr char32_t 
+      quiet_NaN() noexcept { return char32_t(); }
 
-      static _GLIBCXX_CONSTEXPR char32_t 
-      signaling_NaN() throw() { return char32_t(); }
+      static constexpr char32_t 
+      signaling_NaN() noexcept { return char32_t(); }
 
-      static _GLIBCXX_CONSTEXPR char32_t 
-      denorm_min() throw() { return char32_t(); }
+      static constexpr char32_t 
+      denorm_min() noexcept { return char32_t(); }
 
-      static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
-      static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
-      static _GLIBCXX_USE_CONSTEXPR bool is_modulo = true;
+      static constexpr bool is_iec559 = false;
+      static constexpr bool is_bounded = true;
+      static constexpr bool is_modulo = true;
 
-      static _GLIBCXX_USE_CONSTEXPR bool traps = __glibcxx_integral_traps;
-      static _GLIBCXX_USE_CONSTEXPR bool tinyness_before = false;
-      static _GLIBCXX_USE_CONSTEXPR float_round_style round_style 
-       = round_toward_zero;
+      static constexpr bool traps = __glibcxx_integral_traps;
+      static constexpr bool tinyness_before = false;
+      static constexpr float_round_style round_style = round_toward_zero;
     };
 #endif
 
@@ -855,14 +844,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR short 
-      min() throw() { return -__SHRT_MAX__ - 1; }
+      min() _GLIBCXX_USE_NOEXCEPT { return -__SHRT_MAX__ - 1; }
 
       static _GLIBCXX_CONSTEXPR short 
-      max() throw() { return __SHRT_MAX__; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __SHRT_MAX__; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr short 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (short);
@@ -876,10 +865,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR short 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR short 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -894,16 +883,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR short 
-      infinity() throw() { return short(); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return short(); }
 
       static _GLIBCXX_CONSTEXPR short 
-      quiet_NaN() throw() { return short(); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return short(); }
 
       static _GLIBCXX_CONSTEXPR short 
-      signaling_NaN() throw() { return short(); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return short(); }
 
       static _GLIBCXX_CONSTEXPR short 
-      denorm_min() throw() { return short(); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return short(); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -922,14 +911,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR unsigned short 
-      min() throw() { return 0; }
+      min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned short 
-      max() throw() { return __SHRT_MAX__ * 2U + 1; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __SHRT_MAX__ * 2U + 1; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr unsigned short 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits 
@@ -945,10 +934,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR unsigned short 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned short 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -963,16 +952,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR unsigned short 
-      infinity() throw() { return static_cast<unsigned short>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned short>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned short 
-      quiet_NaN() throw() { return static_cast<unsigned short>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned short>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned short 
-      signaling_NaN() throw() { return static_cast<unsigned short>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned short>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned short 
-      denorm_min() throw() { return static_cast<unsigned short>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned short>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -991,14 +984,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR int 
-      min() throw() { return -__INT_MAX__ - 1; }
+      min() _GLIBCXX_USE_NOEXCEPT { return -__INT_MAX__ - 1; }
 
       static _GLIBCXX_CONSTEXPR int 
-      max() throw() { return __INT_MAX__; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __INT_MAX__; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr int 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (int);
@@ -1012,10 +1005,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR int 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR int 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -1030,16 +1023,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR int 
-      infinity() throw() { return static_cast<int>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<int>(0); }
 
       static _GLIBCXX_CONSTEXPR int 
-      quiet_NaN() throw() { return static_cast<int>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<int>(0); }
 
       static _GLIBCXX_CONSTEXPR int 
-      signaling_NaN() throw() { return static_cast<int>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<int>(0); }
 
       static _GLIBCXX_CONSTEXPR int 
-      denorm_min() throw() { return static_cast<int>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<int>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -1058,14 +1051,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR unsigned int 
-      min() throw() { return 0; }
+      min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned int 
-      max() throw() { return __INT_MAX__ * 2U + 1; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __INT_MAX__ * 2U + 1; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr unsigned int 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits 
@@ -1081,10 +1074,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR unsigned int 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned int 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -1099,16 +1092,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR unsigned int 
-      infinity() throw() { return static_cast<unsigned int>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<unsigned int>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned int 
-      quiet_NaN() throw() { return static_cast<unsigned int>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned int>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned int 
-      signaling_NaN() throw() { return static_cast<unsigned int>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned int>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned int 
-      denorm_min() throw() { return static_cast<unsigned int>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned int>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -1127,14 +1123,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR long
-      min() throw() { return -__LONG_MAX__ - 1; }
+      min() _GLIBCXX_USE_NOEXCEPT { return -__LONG_MAX__ - 1; }
 
       static _GLIBCXX_CONSTEXPR long 
-      max() throw() { return __LONG_MAX__; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __LONG_MAX__; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr long 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __glibcxx_digits (long);
@@ -1148,10 +1144,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR long 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR long 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -1166,16 +1162,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR long 
-      infinity() throw() { return static_cast<long>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<long>(0); }
 
       static _GLIBCXX_CONSTEXPR long 
-      quiet_NaN() throw() { return static_cast<long>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<long>(0); }
 
       static _GLIBCXX_CONSTEXPR long 
-      signaling_NaN() throw() { return static_cast<long>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<long>(0); }
 
       static _GLIBCXX_CONSTEXPR long 
-      denorm_min() throw() { return static_cast<long>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<long>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -1194,14 +1190,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR unsigned long 
-      min() throw() { return 0; }
+      min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned long 
-      max() throw() { return __LONG_MAX__ * 2UL + 1; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __LONG_MAX__ * 2UL + 1; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr unsigned long 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits 
@@ -1217,10 +1213,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR unsigned long 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned long 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -1235,16 +1231,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR unsigned long 
-      infinity() throw() { return static_cast<unsigned long>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned long>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned long 
-      quiet_NaN() throw() { return static_cast<unsigned long>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned long>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned long 
-      signaling_NaN() throw() { return static_cast<unsigned long>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned long>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned long 
-      denorm_min() throw() { return static_cast<unsigned long>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned long>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -1263,14 +1263,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR long long 
-      min() throw() { return -__LONG_LONG_MAX__ - 1; }
+      min() _GLIBCXX_USE_NOEXCEPT { return -__LONG_LONG_MAX__ - 1; }
 
       static _GLIBCXX_CONSTEXPR long long 
-      max() throw() { return __LONG_LONG_MAX__; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __LONG_LONG_MAX__; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr long long 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits 
@@ -1286,10 +1286,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR long long 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR long long 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -1304,16 +1304,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR long long 
-      infinity() throw() { return static_cast<long long>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return static_cast<long long>(0); }
 
       static _GLIBCXX_CONSTEXPR long long 
-      quiet_NaN() throw() { return static_cast<long long>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return static_cast<long long>(0); }
 
       static _GLIBCXX_CONSTEXPR long long 
-      signaling_NaN() throw() { return static_cast<long long>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<long long>(0); }
 
       static _GLIBCXX_CONSTEXPR long long 
-      denorm_min() throw() { return static_cast<long long>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return static_cast<long long>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -1332,14 +1333,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR unsigned long long 
-      min() throw() { return 0; }
+      min() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned long long 
-      max() throw() { return __LONG_LONG_MAX__ * 2ULL + 1; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __LONG_LONG_MAX__ * 2ULL + 1; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr unsigned long long 
-      lowest() throw() { return min(); }
+      lowest() noexcept { return min(); }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits 
@@ -1355,10 +1356,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = 2;
 
       static _GLIBCXX_CONSTEXPR unsigned long long 
-      epsilon() throw() { return 0; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_CONSTEXPR unsigned long long 
-      round_error() throw() { return 0; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = 0;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = 0;
@@ -1373,16 +1374,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool has_denorm_loss = false;
 
       static _GLIBCXX_CONSTEXPR unsigned long long 
-      infinity() throw() { return static_cast<unsigned long long>(0); }
+      infinity() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned long long>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned long long 
-      quiet_NaN() throw() { return static_cast<unsigned long long>(0); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned long long>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned long long 
-      signaling_NaN() throw() { return static_cast<unsigned long long>(0); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned long long>(0); }
 
       static _GLIBCXX_CONSTEXPR unsigned long long 
-      denorm_min() throw() { return static_cast<unsigned long long>(0); }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT
+      { return static_cast<unsigned long long>(0); }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559 = false;
       static _GLIBCXX_USE_CONSTEXPR bool is_bounded = true;
@@ -1401,14 +1406,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR float 
-      min() throw() { return __FLT_MIN__; }
+      min() _GLIBCXX_USE_NOEXCEPT { return __FLT_MIN__; }
 
       static _GLIBCXX_CONSTEXPR float 
-      max() throw() { return __FLT_MAX__; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __FLT_MAX__; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr float 
-      lowest() throw() { return -__FLT_MAX__; }
+      lowest() noexcept { return -__FLT_MAX__; }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __FLT_MANT_DIG__;
@@ -1423,10 +1428,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
 
       static _GLIBCXX_CONSTEXPR float 
-      epsilon() throw() { return __FLT_EPSILON__; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return __FLT_EPSILON__; }
 
       static _GLIBCXX_CONSTEXPR float 
-      round_error() throw() { return 0.5F; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5F; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = __FLT_MIN_EXP__;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = __FLT_MIN_10_EXP__;
@@ -1442,16 +1447,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        = __glibcxx_float_has_denorm_loss;
 
       static _GLIBCXX_CONSTEXPR float 
-      infinity() throw() { return __builtin_huge_valf (); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_valf(); }
 
       static _GLIBCXX_CONSTEXPR float 
-      quiet_NaN() throw() { return __builtin_nanf (""); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nanf(""); }
 
       static _GLIBCXX_CONSTEXPR float 
-      signaling_NaN() throw() { return __builtin_nansf (""); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nansf(""); }
 
       static _GLIBCXX_CONSTEXPR float 
-      denorm_min() throw() { return __FLT_DENORM_MIN__; }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return __FLT_DENORM_MIN__; }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559
 	= has_infinity && has_quiet_NaN && has_denorm == denorm_present;
@@ -1476,14 +1481,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR double 
-      min() throw()  { return __DBL_MIN__; }
+      min() _GLIBCXX_USE_NOEXCEPT { return __DBL_MIN__; }
 
       static _GLIBCXX_CONSTEXPR double 
-      max() throw() { return __DBL_MAX__; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __DBL_MAX__; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr double 
-      lowest() throw() { return -__DBL_MAX__; }
+      lowest() noexcept { return -__DBL_MAX__; }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __DBL_MANT_DIG__;
@@ -1498,10 +1503,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
 
       static _GLIBCXX_CONSTEXPR double 
-      epsilon() throw() { return __DBL_EPSILON__; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return __DBL_EPSILON__; }
 
       static _GLIBCXX_CONSTEXPR double 
-      round_error() throw() { return 0.5; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = __DBL_MIN_EXP__;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = __DBL_MIN_10_EXP__;
@@ -1517,16 +1522,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         = __glibcxx_double_has_denorm_loss;
 
       static _GLIBCXX_CONSTEXPR double 
-      infinity() throw() { return __builtin_huge_val(); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_val(); }
 
       static _GLIBCXX_CONSTEXPR double 
-      quiet_NaN() throw() { return __builtin_nan (""); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nan(""); }
 
       static _GLIBCXX_CONSTEXPR double 
-      signaling_NaN() throw() { return __builtin_nans (""); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nans(""); }
 
       static _GLIBCXX_CONSTEXPR double 
-      denorm_min() throw() { return __DBL_DENORM_MIN__; }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return __DBL_DENORM_MIN__; }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559
 	= has_infinity && has_quiet_NaN && has_denorm == denorm_present;
@@ -1551,14 +1556,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR bool is_specialized = true;
 
       static _GLIBCXX_CONSTEXPR long double 
-      min() throw() { return __LDBL_MIN__; }
+      min() _GLIBCXX_USE_NOEXCEPT { return __LDBL_MIN__; }
 
       static _GLIBCXX_CONSTEXPR long double 
-      max() throw() { return __LDBL_MAX__; }
+      max() _GLIBCXX_USE_NOEXCEPT { return __LDBL_MAX__; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       static constexpr long double 
-      lowest() throw() { return -__LDBL_MAX__; }
+      lowest() noexcept { return -__LDBL_MAX__; }
 #endif
 
       static _GLIBCXX_USE_CONSTEXPR int digits = __LDBL_MANT_DIG__;
@@ -1573,10 +1578,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static _GLIBCXX_USE_CONSTEXPR int radix = __FLT_RADIX__;
 
       static _GLIBCXX_CONSTEXPR long double 
-      epsilon() throw() { return __LDBL_EPSILON__; }
+      epsilon() _GLIBCXX_USE_NOEXCEPT { return __LDBL_EPSILON__; }
 
       static _GLIBCXX_CONSTEXPR long double 
-      round_error() throw() { return 0.5L; }
+      round_error() _GLIBCXX_USE_NOEXCEPT { return 0.5L; }
 
       static _GLIBCXX_USE_CONSTEXPR int min_exponent = __LDBL_MIN_EXP__;
       static _GLIBCXX_USE_CONSTEXPR int min_exponent10 = __LDBL_MIN_10_EXP__;
@@ -1592,16 +1597,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= __glibcxx_long_double_has_denorm_loss;
 
       static _GLIBCXX_CONSTEXPR long double 
-      infinity() throw() { return __builtin_huge_vall (); }
+      infinity() _GLIBCXX_USE_NOEXCEPT { return __builtin_huge_vall(); }
 
       static _GLIBCXX_CONSTEXPR long double 
-      quiet_NaN() throw() { return __builtin_nanl (""); }
+      quiet_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nanl(""); }
 
       static _GLIBCXX_CONSTEXPR long double 
-      signaling_NaN() throw() { return __builtin_nansl (""); }
+      signaling_NaN() _GLIBCXX_USE_NOEXCEPT { return __builtin_nansl(""); }
 
       static _GLIBCXX_CONSTEXPR long double 
-      denorm_min() throw() { return __LDBL_DENORM_MIN__; }
+      denorm_min() _GLIBCXX_USE_NOEXCEPT { return __LDBL_DENORM_MIN__; }
 
       static _GLIBCXX_USE_CONSTEXPR bool is_iec559
 	= has_infinity && has_quiet_NaN && has_denorm == denorm_present;

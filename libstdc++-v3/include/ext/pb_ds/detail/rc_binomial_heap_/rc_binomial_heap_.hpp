@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -149,7 +149,7 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 #endif 
 
 #ifdef PB_DS_RC_BINOMIAL_HEAP_TRACE_
@@ -188,11 +188,8 @@ namespace __gnu_pbds
 #include <ext/pb_ds/detail/rc_binomial_heap_/split_join_fn_imps.hpp>
 
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_BASE_C_DEC
-
 #undef PB_DS_RC_C_DEC
   } // namespace detail
 } // namespace __gnu_pbds

@@ -881,7 +881,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        object.
        */
       const _RandomNumberEngine&
-      base() const
+      base() const noexcept
       { return _M_b; }
 
       /**
@@ -1090,7 +1090,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        object.
        */
       const _RandomNumberEngine&
-      base() const
+      base() const noexcept
       { return _M_b; }
 
       /**
@@ -1320,7 +1320,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * Gets a const reference to the underlying generator engine object.
        */
       const _RandomNumberEngine&
-      base() const
+      base() const noexcept
       { return _M_b; }
 
       /**
@@ -1553,7 +1553,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return std::numeric_limits<result_type>::max(); }
 
     double
-    entropy() const
+    entropy() const noexcept
     { return 0.0; }
 
     result_type

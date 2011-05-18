@@ -1,3 +1,7 @@
+2011-05-18  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 173845 into gupc branch.
+
 2011-05-17  Gary Funck  <gary@intrepid.com>
 
 	* c-family/stub-upc.c (upc_rts_forall_depth_var): New.
@@ -37,7 +41,7 @@
 	  moved to "upc/upc-rts-names.h", "defaults.h", and
 	  "upc/upc-pts.h".
 
-	* doc/doc/tm.texi.in (HAVE_UPC_PTS_VADDR_FIRST,
+	* doc/tm.texi.in (HAVE_UPC_PTS_VADDR_FIRST,
 	  HAVE_UPC_PTS_PACKED_REP, HAVE_UPC_PTS_STRUCT_REP,
 	  UPC_SHARED_SECTION_NAME, UPC_SHARED_BEGIN_NAME,
 	  UPC_SHARED_END_NAME, UPC_PGM_INFO_SECTION_NAME,
@@ -46,7 +50,7 @@
 	  UPC_INIT_END_NAME, UPC_INIT_ARRAY_SECTION_NAME,
 	  UPC_INIT_ARRAY_BEGIN_NAME, UPC_INIT_ARRAY_END_NAME):
 	  New.  Document UPC target macros.
-	  doc/doc/tm.texi: Regenerate.
+	  doc/tm.texi: Regenerate.
 
 2011-05-07  Gary Funck  <gary@intrepid.com>
 

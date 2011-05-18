@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,13 +43,13 @@ void
 PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(););
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
   split_join_branch_bag bag;
   if (!join_prep(other, bag))
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid(););
-      _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
+      PB_DS_ASSERT_VALID((*this))
+      PB_DS_ASSERT_VALID(other)
       return;
     }
 
@@ -59,10 +59,10 @@ join(PB_DS_CLASS_C_DEC& other)
   m_p_head->m_p_parent->m_p_parent = m_p_head;
   m_size += other.m_size;
   other.initialize();
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid(););
+  PB_DS_ASSERT_VALID(other)
   m_p_head->m_p_min = leftmost_descendant(m_p_head->m_p_parent);
   m_p_head->m_p_max = rightmost_descendant(m_p_head->m_p_parent);
-  _GLIBCXX_DEBUG_ONLY(assert_valid(););
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -70,8 +70,8 @@ bool
 PB_DS_CLASS_C_DEC::
 join_prep(PB_DS_CLASS_C_DEC& other, split_join_branch_bag& r_bag)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
   if (other.m_size == 0)
     return false;
 
@@ -81,18 +81,19 @@ join_prep(PB_DS_CLASS_C_DEC& other, split_join_branch_bag& r_bag)
       return false;
     }
 
-  const bool greater = synth_e_access_traits::cmp_keys(PB_DS_V2F(static_cast<const_leaf_pointer>(
-												 m_p_head->m_p_max)->value()),PB_DS_V2F(static_cast<const_leaf_pointer>(
-												 other.m_p_head->m_p_min)->value()));
+  const bool greater =
+    synth_e_access_traits::cmp_keys(PB_DS_V2F(static_cast<const_leaf_pointer>(m_p_head->m_p_max)->value()),
+				    PB_DS_V2F(static_cast<const_leaf_pointer>(other.m_p_head->m_p_min)->value()));
 
-  const bool lesser = synth_e_access_traits::cmp_keys(PB_DS_V2F(static_cast<const_leaf_pointer>(
-												other.m_p_head->m_p_max)->value()),PB_DS_V2F(static_cast<const_leaf_pointer>(m_p_head->m_p_min)->value()));
+  const bool lesser =
+    synth_e_access_traits::cmp_keys(PB_DS_V2F(static_cast<const_leaf_pointer>(other.m_p_head->m_p_max)->value()),
+				    PB_DS_V2F(static_cast<const_leaf_pointer>(m_p_head->m_p_min)->value()));
 
   if (!greater && !lesser)
     __throw_join_error();
 
   rec_join_prep(m_p_head->m_p_parent, other.m_p_head->m_p_parent, r_bag);
-  _GLIBCXX_DEBUG_ONLY(debug_base::join(other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::join(other, false);)
   return true;
 }
 
@@ -249,7 +250,7 @@ rec_join(leaf_pointer p_l, leaf_pointer p_r, split_join_branch_bag& r_bag)
   if (p_l == 0)
     return (p_r);
   node_pointer p_ret = insert_branch(p_l, p_r, r_bag);
-  _GLIBCXX_DEBUG_ASSERT(recursive_count_leafs(p_ret) == 2);
+  _GLIBCXX_DEBUG_ASSERT(PB_DS_RECURSIVE_COUNT_LEAFS(p_ret) == 2);
   return p_ret;
 }
 
@@ -260,13 +261,13 @@ rec_join(leaf_pointer p_l, internal_node_pointer p_r, size_type checked_ind,
 	 split_join_branch_bag& r_bag)
 {
 #ifdef _GLIBCXX_DEBUG
-  const size_type lhs_leafs = recursive_count_leafs(p_l);
-  const size_type rhs_leafs = recursive_count_leafs(p_r);
+  const size_type lhs_leafs = PB_DS_RECURSIVE_COUNT_LEAFS(p_l);
+  const size_type rhs_leafs = PB_DS_RECURSIVE_COUNT_LEAFS(p_r);
 #endif 
 
   _GLIBCXX_DEBUG_ASSERT(p_r != 0);
   node_pointer p_ret = rec_join(p_r, p_l, checked_ind, r_bag);
-  _GLIBCXX_DEBUG_ASSERT(recursive_count_leafs(p_ret) == lhs_leafs + rhs_leafs);
+  _GLIBCXX_DEBUG_ASSERT(PB_DS_RECURSIVE_COUNT_LEAFS(p_ret) == lhs_leafs + rhs_leafs);
   return p_ret;
 }
 
@@ -279,15 +280,15 @@ rec_join(internal_node_pointer p_l, leaf_pointer p_r, size_type checked_ind, spl
   _GLIBCXX_DEBUG_ASSERT(p_r != 0);
 
 #ifdef _GLIBCXX_DEBUG
-  const size_type lhs_leafs = recursive_count_leafs(p_l);
-  const size_type rhs_leafs = recursive_count_leafs(p_r);
+  const size_type lhs_leafs = PB_DS_RECURSIVE_COUNT_LEAFS(p_l);
+  const size_type rhs_leafs = PB_DS_RECURSIVE_COUNT_LEAFS(p_r);
 #endif 
 
   if (!p_l->should_be_mine(pref_begin(p_r), pref_end(p_r), checked_ind, this))
     {
       node_pointer p_ret = insert_branch(p_l, p_r, r_bag);
-      _GLIBCXX_DEBUG_ONLY(p_ret->assert_valid(this);)
-      _GLIBCXX_DEBUG_ASSERT(recursive_count_leafs(p_ret) ==
+      PB_DS_ASSERT_NODE_VALID(p_ret)
+      _GLIBCXX_DEBUG_ASSERT(PB_DS_RECURSIVE_COUNT_LEAFS(p_ret) ==
        		            lhs_leafs + rhs_leafs);
       return p_ret;
     }
@@ -303,8 +304,8 @@ rec_join(internal_node_pointer p_l, leaf_pointer p_r, size_type checked_ind, spl
 			 pref_end(p_new_child), this);
     }
 
-  _GLIBCXX_DEBUG_ONLY(p_l->assert_valid(this));
-  _GLIBCXX_DEBUG_ASSERT(recursive_count_leafs(p_l) == lhs_leafs + rhs_leafs);
+  PB_DS_ASSERT_NODE_VALID(p_l)
+  _GLIBCXX_DEBUG_ASSERT(PB_DS_RECURSIVE_COUNT_LEAFS(p_l) == lhs_leafs + rhs_leafs);
   return p_l;
 }
 
@@ -317,8 +318,8 @@ rec_join(internal_node_pointer p_l, internal_node_pointer p_r, split_join_branch
   _GLIBCXX_DEBUG_ASSERT(p_r != 0);
 
 #ifdef _GLIBCXX_DEBUG
-  const size_type lhs_leafs = recursive_count_leafs(p_l);
-  const size_type rhs_leafs = recursive_count_leafs(p_r);
+  const size_type lhs_leafs = PB_DS_RECURSIVE_COUNT_LEAFS(p_l);
+  const size_type rhs_leafs = PB_DS_RECURSIVE_COUNT_LEAFS(p_r);
 #endif 
 
   if (p_l->get_e_ind() == p_r->get_e_ind() && 
@@ -336,8 +337,8 @@ rec_join(internal_node_pointer p_l, internal_node_pointer p_r, split_join_branch
 
       p_r->~internal_node();
       s_internal_node_allocator.deallocate(p_r, 1);
-      _GLIBCXX_DEBUG_ONLY(p_l->assert_valid(this);)
-      _GLIBCXX_DEBUG_ASSERT(recursive_count_leafs(p_l) == lhs_leafs + rhs_leafs);
+      PB_DS_ASSERT_NODE_VALID(p_l)
+      _GLIBCXX_DEBUG_ASSERT(PB_DS_RECURSIVE_COUNT_LEAFS(p_l) == lhs_leafs + rhs_leafs);
       return p_l;
     }
 
@@ -348,7 +349,7 @@ rec_join(internal_node_pointer p_l, internal_node_pointer p_r, split_join_branch
 					  p_r, 0, r_bag);
       p_l->replace_child(p_new_child, pref_begin(p_new_child),
 			 pref_end(p_new_child), this);
-      _GLIBCXX_DEBUG_ONLY(p_l->assert_valid(this);)
+      PB_DS_ASSERT_NODE_VALID(p_l)
       return p_l;
     }
 
@@ -361,14 +362,14 @@ rec_join(internal_node_pointer p_l, internal_node_pointer p_r, split_join_branch
       p_r->replace_child(p_new_child, pref_begin(p_new_child), 
 			 pref_end(p_new_child), this);
 
-      _GLIBCXX_DEBUG_ONLY(p_r->assert_valid(this);)
-      _GLIBCXX_DEBUG_ASSERT(recursive_count_leafs(p_r) == lhs_leafs + rhs_leafs);
+      PB_DS_ASSERT_NODE_VALID(p_r)
+      _GLIBCXX_DEBUG_ASSERT(PB_DS_RECURSIVE_COUNT_LEAFS(p_r) == lhs_leafs + rhs_leafs);
       return p_r;
     }
 
   node_pointer p_ret = insert_branch(p_l, p_r, r_bag);
-  _GLIBCXX_DEBUG_ONLY(p_ret->assert_valid(this);)
-  _GLIBCXX_DEBUG_ASSERT(recursive_count_leafs(p_ret) == lhs_leafs + rhs_leafs);
+  PB_DS_ASSERT_NODE_VALID(p_ret)
+  _GLIBCXX_DEBUG_ASSERT(PB_DS_RECURSIVE_COUNT_LEAFS(p_ret) == lhs_leafs + rhs_leafs);
   return p_ret;
 }
 
@@ -381,12 +382,12 @@ insert(const_reference r_val)
   if (p_lf != 0 && p_lf->m_type == pat_trie_leaf_node_type && 
       synth_e_access_traits::equal_keys(PB_DS_V2F(static_cast<leaf_pointer>(p_lf)->value()), PB_DS_V2F(r_val)))
     {
-      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(PB_DS_V2F(r_val)));
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_CHECK_KEY_EXISTS(PB_DS_V2F(r_val))
+      PB_DS_ASSERT_VALID((*this))
       return std::make_pair(iterator(p_lf), false);
     }
 
-  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(PB_DS_V2F(r_val)));
+  PB_DS_CHECK_KEY_DOES_NOT_EXIST(PB_DS_V2F(r_val))
 
   leaf_pointer p_new_lf = s_leaf_allocator.allocate(1);
   cond_dealtor cond(p_new_lf);
@@ -402,14 +403,17 @@ insert(const_reference r_val)
   ++m_size;
   update_min_max_for_inserted_leaf(p_new_lf);
   _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_val));)   
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   return std::make_pair(point_iterator(p_new_lf), true);
 }
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
-keys_diff_ind(typename e_access_traits::const_iterator b_l, typename e_access_traits::const_iterator e_l, typename e_access_traits::const_iterator b_r, typename e_access_traits::const_iterator e_r)
+keys_diff_ind(typename e_access_traits::const_iterator b_l,
+	      typename e_access_traits::const_iterator e_l,
+	      typename e_access_traits::const_iterator b_r,
+	      typename e_access_traits::const_iterator e_r)
 {
   size_type diff_pos = 0;
   while (b_l != e_l)
@@ -445,7 +449,7 @@ insert_branch(node_pointer p_l, node_pointer p_r, split_join_branch_bag& r_bag)
   p_new_nd->add_child(p_r, right_b_it, right_e_it, this);
   p_l->m_p_parent = p_new_nd;
   p_r->m_p_parent = p_new_nd;
-  _GLIBCXX_DEBUG_ONLY(p_new_nd->assert_valid(this);)
+  PB_DS_ASSERT_NODE_VALID(p_new_nd)
   return (p_new_nd);
 }
 

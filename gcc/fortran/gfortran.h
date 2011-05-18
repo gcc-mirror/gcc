@@ -2212,7 +2212,6 @@ typedef struct
   int flag_backslash;
   int flag_backtrace;
   int flag_allow_leading_underscore;
-  int flag_dump_core;
   int flag_external_blas;
   int blas_matmul_limit;
   int flag_cray_pointer;
@@ -2851,6 +2850,7 @@ bool gfc_is_function_return_value (gfc_symbol *, gfc_namespace *);
 /* trans.c */
 void gfc_generate_code (gfc_namespace *);
 void gfc_generate_module_code (gfc_namespace *);
+void gfc_init_coarray_decl (bool);
 
 /* bbt.c */
 typedef int (*compare_fn) (void *, void *);

@@ -95,7 +95,11 @@ dump_glibc_backtrace (int depth, char *str[])
   int i;
 
   for (i = 0; i < depth; i++)
-    st_printf ("  + %s\n", str[i]);
+    {
+      estr_write ("  + ");
+      estr_write (str[i]);
+      estr_write ("\n");
+    }
 
   free (str);
 }
@@ -192,7 +196,7 @@ show_backtrace (void)
 
     if (fgets (func, sizeof(func), output))
       {
-	st_printf ("\nBacktrace for this error:\n");
+	estr_write ("\nBacktrace for this error:\n");
 
 	do
 	  {
@@ -210,7 +214,7 @@ show_backtrace (void)
 	    if (strncasecmp (func, "*_gfortran", 10) == 0
 		|| strncasecmp (func, "_gfortran", 9) == 0
 		|| strcmp (func, "main") == 0 || strcmp (func, "_start") == 0
-		|| strcmp (func, "_gfortrani_handler") == 0)
+		|| strcmp (func, "_gfortrani_backtrace_handler") == 0)
 	      continue;
 
 	    if (local_strcasestr (str[i], "libgfortran.so") != NULL
@@ -222,7 +226,9 @@ show_backtrace (void)
 	    if (func[0] == '?' && func[1] == '?' && file[0] == '?'
 		&& file[1] == '?')
 	      {
-	        st_printf ("  + %s\n", str[i]);
+		estr_write ("  + ");
+		estr_write (str[i]);
+		estr_write ("\n");
 	        continue;
 	      }
 
@@ -239,15 +245,25 @@ show_backtrace (void)
 	      line = -1;
 
 	    if (strcmp (func, "MAIN__") == 0)
-	      st_printf ("  + in the main program\n");
+	      estr_write ("  + in the main program\n");
 	    else
-	      st_printf ("  + function %s (0x%s)\n", func, addr[i]);
+	      {
+		estr_write ("  + function ");
+		estr_write (func);
+		estr_write (" (0x");
+		estr_write (addr[i]);
+		estr_write (")\n");
+	      }
 
 	    if (line <= 0 && strcmp (file, "??") == 0)
 	      continue;
 
 	    if (line <= 0)
-	      st_printf ("    from file %s\n", file);
+	      {
+		estr_write ("    from file ");
+		estr_write (file);
+		estr_write ("\n");
+	      }
 	    else
 	      st_printf ("    at line %d of file %s\n", line, file);
 	  }
@@ -257,8 +273,8 @@ show_backtrace (void)
 	return;
 
 fallback:
-	st_printf ("** Something went wrong while running addr2line. **\n"
-		   "** Falling back  to a simpler  backtrace scheme. **\n");
+	estr_write ("** Something went wrong while running addr2line. **\n"
+		    "** Falling back  to a simpler  backtrace scheme. **\n");
       }
     }
   while (0);
@@ -288,7 +304,7 @@ fallback:
 	char *arg[NUM_ARGS+1];
 	char buf[20];
 
-	st_printf ("\nBacktrace for this error:\n");
+	estr_write ("\nBacktrace for this error:\n");
 	arg[0] = (char *) "pstack";
 	snprintf (buf, sizeof(buf), "%d", (int) getppid ());
 	arg[1] = buf;
@@ -301,7 +317,7 @@ fallback:
 #if GLIBC_BACKTRACE
 	dump_glibc_backtrace (depth, str);
 #else
-	st_printf ("  unable to produce a backtrace, sorry!\n");
+	estr_write ("  unable to produce a backtrace, sorry!\n");
 #endif
 
 	_exit (0);
@@ -316,7 +332,9 @@ fallback:
 
 #if GLIBC_BACKTRACE
   /* Fallback to the glibc backtrace.  */
-  st_printf ("\nBacktrace for this error:\n");
+  estr_write ("\nBacktrace for this error:\n");
   dump_glibc_backtrace (depth, str);
+  return;
 #endif
+  estr_write ("\nBacktrace not yet available on this platform, sorry!\n");
 }

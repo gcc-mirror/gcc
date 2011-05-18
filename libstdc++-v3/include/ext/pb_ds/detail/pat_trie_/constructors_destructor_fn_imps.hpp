@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -58,7 +58,7 @@ PB_DS_CLASS_NAME() :
   m_size(0)
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -69,7 +69,7 @@ PB_DS_CLASS_NAME(const e_access_traits& r_e_access_traits) :
   m_size(0)
 {
   initialize();
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -85,10 +85,10 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 {
   initialize();
   m_size = other.m_size;
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID(other)
     if (other.m_p_head->m_p_parent == 0)
       {
-	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	PB_DS_ASSERT_VALID((*this))
 	return;
       }
   __try
@@ -104,7 +104,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
   m_p_head->m_p_min = leftmost_descendant(m_p_head->m_p_parent);
   m_p_head->m_p_max = rightmost_descendant(m_p_head->m_p_parent);
   m_p_head->m_p_parent->m_p_parent = m_p_head;
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -112,12 +112,12 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
   value_swap(other);
   std::swap((e_access_traits& )(*this), (e_access_traits& )other);
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
+  PB_DS_ASSERT_VALID(other)
 }
 
 PB_DS_CLASS_T_DEC

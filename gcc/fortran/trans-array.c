@@ -7443,7 +7443,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 
       ar = &ref->u.ar;
 
-      if (ar->as->rank == 0)
+      if (ar->as->rank == 0 && ref->next != NULL)
 	{
 	  /* Scalar coarray.  */
 	  continue;

@@ -834,6 +834,9 @@ Normally, one or more maintainers of that target listed in
 @file{MAINTAINERS}.  Some existing architectures may be unmaintained,
 but it would be unusual to add support for a target that does not have
 a maintainer when support is added.
+@item
+Target triplets covering all @file{config.gcc} stanzas for the target,
+in the list in @file{contrib/config-list.mk}.
 @end itemize
 
 @node Testsuites

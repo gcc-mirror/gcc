@@ -8209,6 +8209,7 @@ instantiate_class_template_1 (tree type)
       CLASSTYPE_VISIBILITY_SPECIFIED (type) = 1;
       CLASSTYPE_VISIBILITY (type) = CLASSTYPE_VISIBILITY (pattern);
     }
+  CLASSTYPE_FINAL (type) = CLASSTYPE_FINAL (pattern);
 
   pbinfo = TYPE_BINFO (pattern);
 
@@ -8593,6 +8594,8 @@ instantiate_class_template_1 (tree type)
   pop_from_top_level ();
   pop_deferring_access_checks ();
   pop_tinst_level ();
+
+  check_deferred_constexpr_decls ();
 
   /* The vtable for a template class can be emitted in any translation
      unit in which the class is instantiated.  When there is no key
@@ -9740,6 +9743,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (DECL_DEFAULTED_OUTSIDE_CLASS_P (r)
 	    && !processing_template_decl)
 	  defaulted_late_check (r);
+	validate_constexpr_fundecl (r);
 
 	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
 					args, complain, in_decl);
@@ -13250,7 +13254,8 @@ tsubst_copy_and_build (tree t,
                 ce->value = tsubst_pack_expansion (ce->value, args, complain,
                                                   in_decl);
 
-		if (ce->value == error_mark_node)
+		if (ce->value == error_mark_node
+		    || PACK_EXPANSION_P (ce->value))
 		  ;
 		else if (TREE_VEC_LENGTH (ce->value) == 1)
                   /* Just move the argument into place.  */
@@ -13521,6 +13526,120 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
   return result;
 }
 
+DEF_VEC_O (spec_entry);
+DEF_VEC_ALLOC_O (spec_entry,gc);
+static GTY(()) VEC(spec_entry,gc) *current_deduction_vec;
+static GTY((param_is (spec_entry))) htab_t current_deduction_htab;
+
+/* In C++0x, it's possible to have a function template whose type depends
+   on itself recursively.  This is most obvious with decltype, but can also
+   occur with enumeration scope (c++/48969).  So we need to catch infinite
+   recursion and reject the substitution at deduction time.
+
+   Use of a VEC here is O(n^2) in the depth of function template argument
+   deduction substitution, but using a hash table creates a lot of constant
+   overhead for the typical case of very low depth.  So to make the typical
+   case fast we start out with a VEC and switch to a hash table only if
+   depth gets to be significant; in one metaprogramming testcase, even at
+   depth 80 the overhead of the VEC relative to a hash table was only about
+   0.5% of compile time.  */
+
+static tree
+deduction_tsubst_fntype (tree fn, tree targs)
+{
+  unsigned i;
+  spec_entry **slot;
+  spec_entry *p;
+  spec_entry elt;
+  tree r;
+  hashval_t hash;
+
+  tree fntype = TREE_TYPE (fn);
+
+  /* We don't need to worry about this in C++98.  */
+  if (cxx_dialect < cxx0x)
+    return tsubst (fntype, targs, tf_none, NULL_TREE);
+
+  /* If we're seeing a lot of recursion, switch over to a hash table.  The
+     constant 40 is fairly arbitrary.  */
+  if (!current_deduction_htab
+      && VEC_length (spec_entry, current_deduction_vec) > 40)
+    {
+      current_deduction_htab = htab_create_ggc (40*2, hash_specialization,
+						eq_specializations, ggc_free);
+      FOR_EACH_VEC_ELT (spec_entry, current_deduction_vec, i, p)
+	{
+	  slot = (spec_entry **) htab_find_slot (current_deduction_htab,
+						 p, INSERT);
+	  *slot = ggc_alloc_spec_entry ();
+	  **slot = *p;
+	}
+      VEC_free (spec_entry, gc, current_deduction_vec);
+    }
+
+  /* Now check everything in the vector, if any.  */
+  FOR_EACH_VEC_ELT (spec_entry, current_deduction_vec, i, p)
+    if (p->tmpl == fn && comp_template_args (p->args, targs))
+      {
+	p->spec = error_mark_node;
+	return error_mark_node;
+      }
+
+  elt.tmpl = fn;
+  elt.args = targs;
+  elt.spec = NULL_TREE;
+
+  /* If we've created a hash table, look there.  */
+  if (current_deduction_htab)
+    {
+      hash = hash_specialization (&elt);
+      slot = (spec_entry **)
+	htab_find_slot_with_hash (current_deduction_htab, &elt, hash, INSERT);
+      if (*slot)
+	{
+	  /* We already have an entry for this.  */
+	  (*slot)->spec = error_mark_node;
+	  return error_mark_node;
+	}
+      else
+	{
+	  /* Create a new entry.  */
+	  *slot = ggc_alloc_spec_entry ();
+	  **slot = elt;
+	}
+    }
+  else
+    {
+      /* No hash table, so add it to the VEC.  */
+      hash = 0;
+      VEC_safe_push (spec_entry, gc, current_deduction_vec, &elt);
+    }
+
+  r = tsubst (fntype, targs, tf_none, NULL_TREE);
+
+  /* After doing the substitution, make sure we didn't hit it again.  Note
+     that we might have switched to a hash table during tsubst.  */
+  if (current_deduction_htab)
+    {
+      if (hash == 0)
+	hash = hash_specialization (&elt);
+      slot = (spec_entry **)
+	htab_find_slot_with_hash (current_deduction_htab, &elt, hash,
+				  NO_INSERT);
+      if ((*slot)->spec == error_mark_node)
+	r = error_mark_node;
+      htab_clear_slot (current_deduction_htab, (void**)slot);
+    }
+  else
+    {
+      if (VEC_last (spec_entry, current_deduction_vec)->spec
+	  == error_mark_node)
+	r = error_mark_node;
+      VEC_pop (spec_entry, current_deduction_vec);
+    }
+  return r;
+}
+
 /* Instantiate the indicated variable or function template TMPL with
    the template arguments in TARG_PTR.  */
 
@@ -13784,7 +13903,7 @@ fn_type_unification (tree fn,
         incomplete = NUM_TMPL_ARGS (explicit_targs) != NUM_TMPL_ARGS (targs);
 
       processing_template_decl += incomplete;
-      fntype = tsubst (fntype, converted_args, tf_none, NULL_TREE);
+      fntype = deduction_tsubst_fntype (fn, converted_args);
       processing_template_decl -= incomplete;
 
       if (fntype == error_mark_node)
@@ -13855,7 +13974,7 @@ fn_type_unification (tree fn,
        substitution results in an invalid type, as described above,
        type deduction fails.  */
     {
-      tree substed = tsubst (TREE_TYPE (fn), targs, tf_none, NULL_TREE);
+      tree substed = deduction_tsubst_fntype (fn, targs);
       if (substed == error_mark_node)
 	return 1;
 
@@ -15600,8 +15719,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	if (TREE_CODE (parm) == METHOD_TYPE
 	    && (!check_cv_quals_for_unify
 		(UNIFY_ALLOW_NONE,
-		 TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (arg))),
-		 TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (parm))))))
+		 class_of_this_parm (arg),
+		 class_of_this_parm (parm))))
 	  return 1;
 
 	if (unify (tparms, targs, TREE_TYPE (parm),
@@ -18272,6 +18391,16 @@ value_dependent_expression_p (tree expression)
 	 type-dependent.  */
       return type_dependent_expression_p (expression);
 
+    case CONSTRUCTOR:
+      {
+	unsigned ix;
+	tree val;
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expression), ix, val)
+	  if (value_dependent_expression_p (val))
+	    return true;
+	return false;
+      }
+
     default:
       /* A constant expression is value-dependent if any subexpression is
 	 value-dependent.  */
@@ -18279,35 +18408,30 @@ value_dependent_expression_p (tree expression)
 	{
 	case tcc_reference:
 	case tcc_unary:
-	  return (value_dependent_expression_p
-		  (TREE_OPERAND (expression, 0)));
-
 	case tcc_comparison:
 	case tcc_binary:
-	  return ((value_dependent_expression_p
-		   (TREE_OPERAND (expression, 0)))
-		  || (value_dependent_expression_p
-		      (TREE_OPERAND (expression, 1))));
-
 	case tcc_expression:
 	case tcc_vl_exp:
 	  {
-	    int i;
-	    for (i = 0; i < TREE_OPERAND_LENGTH (expression); ++i)
-	      /* In some cases, some of the operands may be missing.
-		 (For example, in the case of PREDECREMENT_EXPR, the
-		 amount to increment by may be missing.)  That doesn't
-		 make the expression dependent.  */
-	      if (TREE_OPERAND (expression, i)
-		  && (value_dependent_expression_p
-		      (TREE_OPERAND (expression, i))))
-		return true;
-	    return false;
-	  }
+	    int i, len = cp_tree_operand_length (expression);
 
+	    for (i = 0; i < len; i++)
+	      {
+		tree t = TREE_OPERAND (expression, i);
+
+		/* In some cases, some of the operands may be missing.l
+		   (For example, in the case of PREDECREMENT_EXPR, the
+		   amount to increment by may be missing.)  That doesn't
+		   make the expression dependent.  */
+		if (t && value_dependent_expression_p (t))
+		  return true;
+	      }
+	  }
+	  break;
 	default:
 	  break;
 	}
+      break;
     }
 
   /* The expression is not value-dependent.  */
@@ -18865,10 +18989,13 @@ build_non_dependent_expr (tree expr)
 {
   tree inner_expr;
 
-  /* Preserve null pointer constants so that the type of things like
-     "p == 0" where "p" is a pointer can be determined.  */
-  if (null_ptr_cst_p (expr))
-    return expr;
+#ifdef ENABLE_CHECKING
+  /* Try to get a constant value for all non-type-dependent expressions in
+      order to expose bugs in *_dependent_expression_p and constexpr.  */
+  if (cxx_dialect >= cxx0x)
+    maybe_constant_value (fold_non_dependent_expr (expr));
+#endif
+
   /* Preserve OVERLOADs; the functions must be available to resolve
      types.  */
   inner_expr = expr;
@@ -19286,6 +19413,11 @@ print_template_statistics (void)
 	   "%f collisions\n", (long) htab_size (type_specializations),
 	   (long) htab_elements (type_specializations),
 	   htab_collisions (type_specializations));
+  if (current_deduction_htab)
+    fprintf (stderr, "current_deduction_htab: size %ld, %ld elements, "
+	     "%f collisions\n", (long) htab_size (current_deduction_htab),
+	     (long) htab_elements (current_deduction_htab),
+	     htab_collisions (current_deduction_htab));
 }
 
 #include "gt-cp-pt.h"

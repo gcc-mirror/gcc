@@ -145,7 +145,7 @@ and warnings}.
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
 @gccoptlist{-fdump-fortran-original  -fdump-fortran-optimized @gol
--ffpe-trap=@var{list}  -fdump-core -fbacktrace -fdump-parse-tree}
+-ffpe-trap=@var{list} -fbacktrace -fdump-parse-tree}
 
 @item Directory Options
 @xref{Directory Options,,Options for directory search}.
@@ -368,7 +368,9 @@ extensions, and may be useful for old non-standard programs.  The
 conformance to the Fortran 95, Fortran 2003 and Fortran 2008 standards,
 respectively; errors are given for all extensions beyond the relevant
 language standard, and warnings are given for the Fortran 77 features
-that are permitted but obsolescent in later standards.
+that are permitted but obsolescent in later standards. @samp{-std=f2008tr}
+allows the Fortran 2008 standard including the additions of the 
+technical report (TR) 29113.
 
 @end table
 
@@ -933,22 +935,18 @@ Some of the routines in the Fortran runtime library, like
 @code{ffpe-trap=precision} is used. For this reason, the use of 
 @code{ffpe-trap=precision} is not recommended.
 
-@item -fbacktrace
-@opindex @code{fbacktrace}
+@item -fno-backtrace
+@opindex @code{fno-backtrace}
 @cindex backtrace
 @cindex trace
-Specify that, when a runtime error is encountered or a deadly signal is
-emitted (segmentation fault, illegal instruction, bus error or
-floating-point exception), the Fortran runtime
-library should output a backtrace of the error.  This option
-only has influence for compilation of the Fortran main program.
+When a serious runtime error is encountered or a deadly signal is
+emitted (segmentation fault, illegal instruction, bus error,
+floating-point exception, and the other POSIX signals that have the
+action @samp{core}), the Fortran runtime library tries to output a
+backtrace of the error. @code{-fno-backtrace} disables the backtrace
+generation. This option only has influence for compilation of the
+Fortran main program.
 
-@item -fdump-core
-@cindex core, dump
-@opindex @code{fdump-core}
-Request that a core-dump file is written to disk when a runtime error
-is encountered on systems that support core dumps. This option is
-only effective for the compilation of the Fortran main program.
 @end table
 
 @xref{Debugging Options,,Options for Debugging Your Program or GCC,
@@ -1383,7 +1381,9 @@ The default value for @var{n} is 32768.
 Adding this option will make the fortran compiler put all local arrays,
 even those of unknown size onto stack memory.  If your program uses very
 large local arrays it's possible that you'll have to extend your runtime
-limits for stack memory on some operating systems.
+limits for stack memory on some operating systems. This flag is enabled
+by default at optimization level @option{-Ofast}.
+
 
 @item -fpack-derived
 @opindex @code{fpack-derived}

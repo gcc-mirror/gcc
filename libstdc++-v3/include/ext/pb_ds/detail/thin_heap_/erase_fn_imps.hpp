@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,8 +43,8 @@ void
 PB_DS_CLASS_C_DEC::
 pop()
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
+  PB_DS_ASSERT_VALID((*this))
+  _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
   _GLIBCXX_DEBUG_ASSERT(m_p_max != 0);
 
@@ -54,8 +54,8 @@ pop()
 
   base_type::actual_erase_node(p_nd);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+  PB_DS_ASSERT_VALID((*this))
+}
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -177,8 +177,8 @@ make_from_aux()
       ++i;
     }
 
-  _GLIBCXX_DEBUG_ONLY(assert_aux_null();)
-    }
+  PB_DS_ASSERT_AUX_NULL((*this))
+}
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -218,8 +218,8 @@ void
 PB_DS_CLASS_C_DEC::
 erase(point_iterator it)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
+  PB_DS_ASSERT_VALID((*this))
+  _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
   node_pointer p_nd = it.m_p_nd;
 
@@ -227,8 +227,8 @@ erase(point_iterator it)
 
   base_type::actual_erase_node(p_nd);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+  PB_DS_ASSERT_VALID((*this))
+}
 
 PB_DS_CLASS_T_DEC
 template<typename Pred>
@@ -236,14 +236,14 @@ typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    if (base_type::empty())
-      {
-        _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  if (base_type::empty())
+    {
+      PB_DS_ASSERT_VALID((*this))
 
-	  return 0;
-      }
+      return 0;
+    }
 
   base_type::to_linked_list();
 
@@ -275,9 +275,9 @@ erase_if(Pred pred)
       p_cur = p_next;
     }
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
-    return ersd;
+  return ersd;
 }
 
 PB_DS_CLASS_T_DEC
@@ -285,8 +285,11 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 rank_bound()
 {
-  const std::size_t* const p_upper =
-    std::upper_bound(            g_a_rank_bounds, g_a_rank_bounds + num_distinct_rank_bounds, base_type::m_size);
+  using namespace std;
+  const size_t* const p_upper =
+    _GLIBCXX_STD_A::upper_bound(g_a_rank_bounds,
+				g_a_rank_bounds + num_distinct_rank_bounds,
+			       	base_type::m_size);
 
   if (p_upper == g_a_rank_bounds + num_distinct_rank_bounds)
     return max_rank;

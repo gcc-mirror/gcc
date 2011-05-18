@@ -36,4 +36,10 @@ enum mips_r10k_cache_barrier_setting {
   R10K_CACHE_BARRIER_LOAD_STORE
 };
 
+/* No enumeration is defined to index the -march= values (entries in
+   mips_cpu_info_table), with the type int being used instead, but we
+   need to distinguish the special "from-abi" and "native" values.  */
+#define MIPS_ARCH_OPTION_FROM_ABI -1
+#define MIPS_ARCH_OPTION_NATIVE -2
+
 #endif

@@ -3388,3 +3388,42 @@
 	clr __zero_reg__"
   [(set_attr "length" "3")
    (set_attr "cc" "clobber")])
+
+
+;; Some combine patterns that try to fix bad code when a value is composed
+;; from byte parts like in PR27663.
+;; The patterns give some release but the code still is not optimal,
+;; in particular when subreg lowering (-fsplit-wide-types) is turned on.
+;; That switch obfuscates things here and in many other places.
+
+(define_insn_and_split "*ior<mode>qi.byte0"
+  [(set (match_operand:HISI 0 "register_operand"                 "=r")
+        (ior:HISI
+         (zero_extend:HISI (match_operand:QI 1 "register_operand" "r"))
+         (match_operand:HISI 2 "register_operand"                 "0")))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 3)
+        (ior:QI (match_dup 3)
+                (match_dup 1)))]
+  {
+    operands[3] = simplify_gen_subreg (QImode, operands[0], <MODE>mode, 0);
+  })
+
+(define_insn_and_split "*ior<mode>qi.byte1-3"
+  [(set (match_operand:HISI 0 "register_operand"                              "=r")
+        (ior:HISI
+         (ashift:HISI (zero_extend:HISI (match_operand:QI 1 "register_operand" "r"))
+                      (match_operand:QI 2 "const_8_16_24_operand"              "n"))
+         (match_operand:HISI 3 "register_operand"                              "0")))]
+  "INTVAL(operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+        (ior:QI (match_dup 4)
+                (match_dup 1)))]
+  {
+    int byteno = INTVAL(operands[2]) / BITS_PER_UNIT;
+    operands[4] = simplify_gen_subreg (QImode, operands[0], <MODE>mode, byteno);
+  })

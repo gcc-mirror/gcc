@@ -1394,10 +1394,12 @@ resolve_tag_format (const gfc_expr *e)
 	  || e->symtree->n.sym->as == NULL
 	  || e->symtree->n.sym->as->rank == 0))
     {
-      if (e->ts.type != BT_CHARACTER && e->ts.type != BT_INTEGER)
+      if ((e->ts.type != BT_CHARACTER
+	   || e->ts.kind != gfc_default_character_kind)
+	  && e->ts.type != BT_INTEGER)
 	{
-	  gfc_error ("FORMAT tag at %L must be of type CHARACTER or INTEGER",
-		     &e->where);
+	  gfc_error ("FORMAT tag at %L must be of type default-kind CHARACTER "
+		     "or of INTEGER", &e->where);
 	  return FAILURE;
 	}
       else if (e->ts.type == BT_INTEGER && e->expr_type == EXPR_VARIABLE)
@@ -1475,6 +1477,13 @@ resolve_tag (const io_tag *tag, gfc_expr *e)
     {
       gfc_error ("%s tag at %L must be of type %s", tag->name,
 		 &e->where, gfc_basic_typename (tag->type));
+      return FAILURE;
+    }
+
+  if (e->ts.type == BT_CHARACTER && e->ts.kind != gfc_default_character_kind)
+    {
+      gfc_error ("%s tag at %L must be a character string of default kind",
+		 tag->name, &e->where);
       return FAILURE;
     }
 
@@ -4059,6 +4068,7 @@ gfc_resolve_inquire (gfc_inquire *inquire)
   INQUIRE_RESOLVE_TAG (&tag_s_round, inquire->round);
   INQUIRE_RESOLVE_TAG (&tag_pending, inquire->pending);
   INQUIRE_RESOLVE_TAG (&tag_size, inquire->size);
+  INQUIRE_RESOLVE_TAG (&tag_s_decimal, inquire->decimal);
 #undef INQUIRE_RESOLVE_TAG
 
   if (gfc_reference_st_label (inquire->err, ST_LABEL_TARGET) == FAILURE)

@@ -425,7 +425,7 @@ extern struct obstack parser_obstack;
 extern tree c_break_label;
 extern tree c_cont_label;
 
-extern int global_bindings_p (void);
+extern bool global_bindings_p (void);
 extern void push_scope (void);
 extern tree pop_scope (void);
 extern void c_bindings_start_stmt_expr (struct c_spot_bindings *);
@@ -608,11 +608,6 @@ extern int current_function_returns_abnormally;
 /* Nonzero means we are reading code that came from a system header file.  */
 
 extern int system_header_p;
-
-/* True means global_bindings_p should return false even if the scope stack
-   says we are in file scope.  */
-
-extern bool c_override_global_bindings_to_false;
 
 /* In c-decl.c */
 extern void c_finish_incomplete_decl (tree);

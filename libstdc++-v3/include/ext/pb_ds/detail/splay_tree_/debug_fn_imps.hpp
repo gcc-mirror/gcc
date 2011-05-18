@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,31 +43,32 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_valid() const
+assert_valid(const char* __file, int __line) const
 {
-  base_type::assert_valid();
+  base_type::assert_valid(__file, __line);
   const node_pointer p_head = base_type::m_p_head;
-  assert_special_imp(p_head);
+  assert_special_imp(p_head, __file, __line);
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_special_imp(const node_pointer p_nd) const
+assert_special_imp(const node_pointer p_nd,
+		   const char* __file, int __line) const
 {
   if (p_nd == 0)
     return;
 
   if (p_nd == base_type::m_p_head)
     {
-      _GLIBCXX_DEBUG_ASSERT(p_nd->m_special);
-      assert_special_imp(p_nd->m_p_parent);
+      PB_DS_DEBUG_VERIFY(p_nd->m_special);
+      assert_special_imp(p_nd->m_p_parent, __file, __line);
       return;
     }
 
-  _GLIBCXX_DEBUG_ASSERT(!p_nd->m_special);
-  assert_special_imp(p_nd->m_p_left);
-  assert_special_imp(p_nd->m_p_right);
+  PB_DS_DEBUG_VERIFY(!p_nd->m_special);
+  assert_special_imp(p_nd->m_p_left, __file, __line);
+  assert_special_imp(p_nd->m_p_right, __file, __line);
 }
 
 #endif 

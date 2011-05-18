@@ -303,7 +303,7 @@ tree_node_structure_for_code (enum tree_code code)
 	  }
       }
     case tcc_type:
-      return TS_TYPE;
+      return TS_TYPE_NON_COMMON;
     case tcc_reference:
     case tcc_comparison:
     case tcc_unary:
@@ -385,7 +385,7 @@ initialize_tree_contains_struct (void)
 
 	case TS_IDENTIFIER:
 	case TS_DECL_MINIMAL:
-	case TS_TYPE:
+	case TS_TYPE_COMMON:
 	case TS_LIST:
 	case TS_VEC:
 	case TS_EXP:
@@ -396,6 +396,14 @@ initialize_tree_contains_struct (void)
 	case TS_OPTIMIZATION:
 	case TS_TARGET_OPTION:
 	  MARK_TS_COMMON (code);
+	  break;
+
+	case TS_TYPE_WITH_LANG_SPECIFIC:
+	  MARK_TS_TYPE_COMMON (code);
+	  break;
+
+	case TS_TYPE_NON_COMMON:
+	  MARK_TS_TYPE_WITH_LANG_SPECIFIC (code);
 	  break;
 
 	case TS_DECL_COMMON:
@@ -639,7 +647,7 @@ tree_code_size (enum tree_code code)
       }
 
     case tcc_type:  /* a type node */
-      return sizeof (struct tree_type);
+      return sizeof (struct tree_type_non_common);
 
     case tcc_reference:   /* a reference */
     case tcc_expression:  /* an expression */
@@ -6262,7 +6270,7 @@ type_hash_canon (unsigned int hashcode, tree type)
 #ifdef GATHER_STATISTICS
       tree_code_counts[(int) TREE_CODE (type)]--;
       tree_node_counts[(int) t_kind]--;
-      tree_node_sizes[(int) t_kind] -= sizeof (struct tree_type);
+      tree_node_sizes[(int) t_kind] -= sizeof (struct tree_type_non_common);
 #endif
       return t1;
     }

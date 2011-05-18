@@ -58,44 +58,32 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 
-/* sys_exit()-- Terminate the program with an exit code.  */
+/* Termination of a program: F2008 2.3.5 talks about "normal
+   termination" and "error termination". Normal termination occurs as
+   a result of e.g. executing the end program statement, and executing
+   the STOP statement. It includes the effect of the C exit()
+   function. 
 
-void
-sys_exit (int code)
-{
-  /* Show error backtrace if possible.  */
-  if (code != 0 && code != 4
-      && (options.backtrace == 1
-	  || (options.backtrace == -1 && compile_options.backtrace == 1)))
-    show_backtrace ();
+   Error termination is initiated when the ERROR STOP statement is
+   executed, when ALLOCATE/DEALLOCATE fails without STAT= being
+   specified, when some of the co-array synchronization statements
+   fail without STAT= being specified, and some I/O errors if
+   ERR/IOSTAT/END/EOR is not present, and finally EXECUTE_COMMAND_LINE
+   failure without CMDSTAT=.
 
-  /* Dump core if requested.  */
-  if (code != 0
-      && (options.dump_core == 1
-	 || (options.dump_core == -1 && compile_options.dump_core == 1)))
-    {
-#if defined(HAVE_GETRLIMIT) && defined(RLIMIT_CORE)
-      /* Warn if a core file cannot be produced because
-	 of core size limit.  */
+   2.3.5 also explains how co-images synchronize during termination.
 
-      struct rlimit core_limit;
+   In libgfortran we have two ways of ending a program. exit(code) is
+   a normal exit; calling exit() also causes open units to be
+   closed. No backtrace or core dump is needed here. When something
+   goes wrong, we have sys_abort() which tries to print the backtrace
+   if -fbacktrace is enabled, and then dumps core; whether a core file
+   is generated is system dependent. When aborting, we don't flush and
+   close open units, as program memory might be corrupted and we'd
+   rather risk losing dirty data in the buffers rather than corrupting
+   files on disk.
 
-      if (getrlimit (RLIMIT_CORE, &core_limit) == 0 && core_limit.rlim_cur == 0)
-	st_printf ("** Warning: a core dump was requested, but the core size"
-		   "limit\n**          is currently zero.\n\n");
-#endif
-      
-      
-#if defined(HAVE_KILL) && defined(HAVE_GETPID) && defined(SIGQUIT)
-      kill (getpid (), SIGQUIT);
-#else
-      st_printf ("Core dump not possible, sorry.");
-#endif
-    }
-
-  exit (code);
-}
-
+*/
 
 /* Error conditions.  The tricky part here is printing a message when
  * it is the I/O subsystem that is severely wounded.  Our goal is to
@@ -107,10 +95,91 @@ sys_exit (int code)
  * 1    Terminated because of operating system error.
  * 2    Error in the runtime library
  * 3    Internal error in runtime library
- * 4    Error during error processing (very bad)
  *
  * Other error returns are reserved for the STOP statement with a numeric code.
  */
+
+
+/* Write a null-terminated C string to standard error. This function
+   is async-signal-safe.  */
+
+ssize_t
+estr_write (const char *str)
+{
+  return write (STDERR_FILENO, str, strlen (str));
+}
+
+
+/* st_vprintf()-- vsnprintf-like function for error output.  We use a
+   stack allocated buffer for formatting; since this function might be
+   called from within a signal handler, printing directly to stderr
+   with vfprintf is not safe since the stderr locking might lead to a
+   deadlock.  */
+
+#define ST_VPRINTF_SIZE 512
+
+int
+st_vprintf (const char *format, va_list ap)
+{
+  int written;
+  char buffer[ST_VPRINTF_SIZE];
+
+#ifdef HAVE_VSNPRINTF
+  written = vsnprintf(buffer, ST_VPRINTF_SIZE, format, ap);
+#else
+  written = vsprintf(buffer, format, ap);
+
+  if (written >= ST_VPRINTF_SIZE - 1)
+    {
+      /* The error message was longer than our buffer.  Ouch.  Because
+	 we may have messed up things badly, report the error and
+	 quit.  */
+#define ERROR_MESSAGE "Internal error: buffer overrun in st_vprintf()\n"
+      write (STDERR_FILENO, buffer, ST_VPRINTF_SIZE - 1);
+      write (STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
+      sys_abort ();
+#undef ERROR_MESSAGE
+
+    }
+#endif
+
+  written = write (STDERR_FILENO, buffer, written);
+  return written;
+}
+
+
+int
+st_printf (const char * format, ...)
+{
+  int written;
+  va_list ap;
+  va_start (ap, format);
+  written = st_vprintf (format, ap);
+  va_end (ap);
+  return written;
+}
+
+
+/* sys_abort()-- Terminate the program showing backtrace and dumping
+   core.  */
+
+void
+sys_abort ()
+{
+  /* If backtracing is enabled, print backtrace and disable signal
+     handler for ABRT.  */
+  if (options.backtrace == 1
+      || (options.backtrace == -1 && compile_options.backtrace == 1))
+    {
+      show_backtrace ();
+#if defined(HAVE_SIGNAL) && defined(SIGABRT)
+      signal (SIGABRT, SIG_DFL);
+#endif
+    }
+
+  abort();
+}
+
 
 /* gfc_xtoa()-- Integer to hexadecimal conversion.  */
 
@@ -177,7 +246,7 @@ gf_strerror (int errnum,
 void
 show_locus (st_parameter_common *cmp)
 {
-  static char *filename;
+  char *filename;
 
   if (!options.locus || cmp == NULL || cmp->filename == NULL)
     return;
@@ -185,6 +254,7 @@ show_locus (st_parameter_common *cmp)
   if (cmp->unit > 0)
     {
       filename = filename_from_unit (cmp->unit);
+
       if (filename != NULL)
 	{
 	  st_printf ("At line %d of file %s (unit = %d, file = '%s')\n",
@@ -216,7 +286,7 @@ recursion_check (void)
 
   /* Don't even try to print something at this point */
   if (magic == MAGIC)
-    sys_exit (4);
+    sys_abort ();
 
   magic = MAGIC;
 }
@@ -233,9 +303,12 @@ os_error (const char *message)
 {
   char errmsg[STRERR_MAXSZ];
   recursion_check ();
-  st_printf ("Operating system error: %s\n%s\n", 
-	     gf_strerror (errno, errmsg, STRERR_MAXSZ), message);
-  sys_exit (1);
+  estr_write ("Operating system error: ");
+  estr_write (gf_strerror (errno, errmsg, STRERR_MAXSZ));
+  estr_write ("\n");
+  estr_write (message);
+  estr_write ("\n");
+  exit (1);
 }
 iexport(os_error);
 
@@ -249,12 +322,12 @@ runtime_error (const char *message, ...)
   va_list ap;
 
   recursion_check ();
-  st_printf ("Fortran runtime error: ");
+  estr_write ("Fortran runtime error: ");
   va_start (ap, message);
   st_vprintf (message, ap);
   va_end (ap);
-  st_printf ("\n");
-  sys_exit (2);
+  estr_write ("\n");
+  exit (2);
 }
 iexport(runtime_error);
 
@@ -267,13 +340,13 @@ runtime_error_at (const char *where, const char *message, ...)
   va_list ap;
 
   recursion_check ();
-  st_printf ("%s\n", where);
-  st_printf ("Fortran runtime error: ");
+  estr_write (where);
+  estr_write ("\nFortran runtime error: ");
   va_start (ap, message);
   st_vprintf (message, ap);
   va_end (ap);
-  st_printf ("\n");
-  sys_exit (2);
+  estr_write ("\n");
+  exit (2);
 }
 iexport(runtime_error_at);
 
@@ -283,12 +356,12 @@ runtime_warning_at (const char *where, const char *message, ...)
 {
   va_list ap;
 
-  st_printf ("%s\n", where);
-  st_printf ("Fortran runtime warning: ");
+  estr_write (where);
+  estr_write ("\nFortran runtime warning: ");
   va_start (ap, message);
   st_vprintf (message, ap);
   va_end (ap);
-  st_printf ("\n");
+  estr_write ("\n");
 }
 iexport(runtime_warning_at);
 
@@ -301,7 +374,9 @@ internal_error (st_parameter_common *cmp, const char *message)
 {
   recursion_check ();
   show_locus (cmp);
-  st_printf ("Internal Error: %s\n", message);
+  estr_write ("Internal Error: ");
+  estr_write (message);
+  estr_write ("\n");
 
   /* This function call is here to get the main.o object file included
      when linking statically. This works because error.o is supposed to
@@ -309,7 +384,7 @@ internal_error (st_parameter_common *cmp, const char *message)
      because hopefully it doesn't happen too often).  */
   stupid_function_name_for_static_linking();
 
-  sys_exit (3);
+  exit (3);
 }
 
 
@@ -474,8 +549,10 @@ generate_error (st_parameter_common *cmp, int family, const char *message)
 
   recursion_check ();
   show_locus (cmp);
-  st_printf ("Fortran runtime error: %s\n", message);
-  sys_exit (2);
+  estr_write ("Fortran runtime error: ");
+  estr_write (message);
+  estr_write ("\n");
+  exit (2);
 }
 iexport(generate_error);
 
@@ -489,7 +566,9 @@ generate_warning (st_parameter_common *cmp, const char *message)
     message = " ";
 
   show_locus (cmp);
-  st_printf ("Fortran runtime warning: %s\n", message);
+  estr_write ("Fortran runtime warning: ");
+  estr_write (message);
+  estr_write ("\n");
 }
 
 
@@ -532,13 +611,17 @@ notify_std (st_parameter_common *cmp, int std, const char * message)
     {
       recursion_check ();
       show_locus (cmp);
-      st_printf ("Fortran runtime error: %s\n", message);
-      sys_exit (2);
+      estr_write ("Fortran runtime error: ");
+      estr_write (message);
+      estr_write ("\n");
+      exit (2);
     }
   else
     {
       show_locus (cmp);
-      st_printf ("Fortran runtime warning: %s\n", message);
+      estr_write ("Fortran runtime warning: ");
+      estr_write (message);
+      estr_write ("\n");
     }
   return FAILURE;
 }

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -49,31 +49,27 @@ namespace __gnu_pbds
   {
 
 #define PB_DS_CLASS_T_DEC						\
-    template<								\
-						class Type_Traits,	\
-						class E_Access_Traits,	\
-						class Metadata,		\
-						class Allocator>
+    template<class Type_Traits,						\
+	     class E_Access_Traits,					\
+	     class Metadata,						\
+	     class Allocator>
 
 #define PB_DS_CLASS_C_DEC						\
-    pat_trie_leaf<							\
-						Type_Traits,		\
-						E_Access_Traits,	\
-						Metadata,		\
-						Allocator>
+    pat_trie_leaf<Type_Traits,						\
+		  E_Access_Traits,					\
+		  Metadata,						\
+		  Allocator>
 
-#define PB_DS_BASE_C_DEC					\
-    pat_trie_node_base<						\
-					Type_Traits,		\
-					E_Access_Traits,	\
-					Metadata,		\
-					Allocator>
+#define PB_DS_BASE_C_DEC						\
+    pat_trie_node_base<Type_Traits,					\
+		       E_Access_Traits,					\
+		       Metadata,					\
+		       Allocator>
 
 #define PB_DS_PAT_TRIE_SUBTREE_DEBUG_INFO_C_DEC				\
-    pat_trie_subtree_debug_info<					\
-							Type_Traits,	\
-							E_Access_Traits, \
-							Allocator>
+    pat_trie_subtree_debug_info<Type_Traits,				\
+				E_Access_Traits,			\
+				Allocator>
 
     template<typename Type_Traits,
 	     class E_Access_Traits,
@@ -112,7 +108,8 @@ namespace __gnu_pbds
 
 #ifdef _GLIBCXX_DEBUG
       virtual subtree_debug_info
-      assert_valid_imp(const_e_access_traits_pointer p_traits) const;
+      assert_valid_imp(const_e_access_traits_pointer p_traits,
+		       const char* file, int line) const;
 
       virtual
       ~pat_trie_leaf();
@@ -146,9 +143,10 @@ namespace __gnu_pbds
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::subtree_debug_info
     PB_DS_CLASS_C_DEC::
-    assert_valid_imp(const_e_access_traits_pointer p_traits) const
+    assert_valid_imp(const_e_access_traits_pointer p_traits,
+		     const char* __file, int __line) const
     {
-      _GLIBCXX_DEBUG_ASSERT(base_type::m_type == pat_trie_leaf_node_type);
+      PB_DS_DEBUG_VERIFY(base_type::m_type == pat_trie_leaf_node_type);
       subtree_debug_info ret;
       const_reference r_val = value();
       return std::make_pair(p_traits->begin(p_traits->extract_key(r_val)),

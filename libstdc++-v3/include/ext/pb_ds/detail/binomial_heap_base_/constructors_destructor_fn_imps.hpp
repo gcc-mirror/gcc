@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -47,16 +47,16 @@ copy_from_range(It first_it, It last_it)
   while (first_it != last_it)
     push(*(first_it++));
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
-    }
+  PB_DS_ASSERT_VALID_COND((*this),false)
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 binomial_heap_base_() :
   m_p_max(0)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
-    }
+  PB_DS_ASSERT_VALID_COND((*this),false)
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -64,8 +64,8 @@ binomial_heap_base_(const Cmp_Fn& r_cmp_fn) :
   PB_DS_BASE_C_DEC(r_cmp_fn),
   m_p_max(0)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
-    }
+  PB_DS_ASSERT_VALID_COND((*this),false)
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -73,22 +73,22 @@ binomial_heap_base_(const PB_DS_CLASS_C_DEC& other) :
   PB_DS_BASE_C_DEC(other),
   m_p_max(0)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
-    }
+  PB_DS_ASSERT_VALID_COND((*this),false)
+}
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
+  PB_DS_ASSERT_VALID_COND((*this),false)
 
-    base_type::swap(other);
+  base_type::swap(other);
 
   std::swap(m_p_max, other.m_p_max);
 
-  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
-    }
+  PB_DS_ASSERT_VALID_COND((*this),false)
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::

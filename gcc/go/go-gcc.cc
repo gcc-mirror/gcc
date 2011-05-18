@@ -260,11 +260,11 @@ class Gcc_backend : public Backend
   global_variable_set_init(Bvariable*, Bexpression*);
 
   Bvariable*
-  local_variable(Bfunction*, const std::string& name, Btype* type,
+  local_variable(Bfunction*, const std::string&, Btype*, bool,
 		 source_location);
 
   Bvariable*
-  parameter_variable(Bfunction*, const std::string& name, Btype* type,
+  parameter_variable(Bfunction*, const std::string&, Btype*, bool,
 		     source_location);
 
   Bvariable*
@@ -465,6 +465,7 @@ Gcc_backend::function_type(const Btyped_identifier& receiver,
 	  tree field_type_tree = p->btype->get_tree();
 	  if (field_type_tree == error_mark_node)
 	    return this->error_type();
+	  gcc_assert(TYPE_SIZE(field_type_tree) != NULL_TREE);
 	  tree field = build_decl(location, FIELD_DECL, name_tree,
 				  field_type_tree);
 	  DECL_CONTEXT(field) = result;
@@ -573,10 +574,13 @@ Gcc_backend::placeholder_pointer_type(const std::string& name,
 				      source_location location, bool)
 {
   tree ret = build_variant_type_copy(ptr_type_node);
-  tree decl = build_decl(location, TYPE_DECL,
-			 get_identifier_from_string(name),
-			 ret);
-  TYPE_NAME(ret) = decl;
+  if (!name.empty())
+    {
+      tree decl = build_decl(location, TYPE_DECL,
+			     get_identifier_from_string(name),
+			     ret);
+      TYPE_NAME(ret) = decl;
+    }
   return this->make_type(ret);
 }
 
@@ -1074,7 +1078,8 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
 
 Bvariable*
 Gcc_backend::local_variable(Bfunction* function, const std::string& name,
-			    Btype* btype, source_location location)
+			    Btype* btype, bool is_address_taken,
+			    source_location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -1084,6 +1089,8 @@ Gcc_backend::local_variable(Bfunction* function, const std::string& name,
 			 type_tree);
   DECL_CONTEXT(decl) = function->get_tree();
   TREE_USED(decl) = 1;
+  if (is_address_taken)
+    TREE_ADDRESSABLE(decl) = 1;
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
 }
@@ -1092,7 +1099,8 @@ Gcc_backend::local_variable(Bfunction* function, const std::string& name,
 
 Bvariable*
 Gcc_backend::parameter_variable(Bfunction* function, const std::string& name,
-				Btype* btype, source_location location)
+				Btype* btype, bool is_address_taken,
+				source_location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -1103,6 +1111,8 @@ Gcc_backend::parameter_variable(Bfunction* function, const std::string& name,
   DECL_CONTEXT(decl) = function->get_tree();
   DECL_ARG_TYPE(decl) = type_tree;
   TREE_USED(decl) = 1;
+  if (is_address_taken)
+    TREE_ADDRESSABLE(decl) = 1;
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
 }

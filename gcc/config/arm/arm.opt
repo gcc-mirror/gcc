@@ -52,7 +52,8 @@ Target RejectNegative Joined Enum(arm_arch) Var(arm_arch_option)
 Specify the name of the target architecture
 
 marm
-Target RejectNegative InverseMask(THUMB) Undocumented
+Target Report RejectNegative InverseMask(THUMB)
+Generate code in 32 bit ARM state.
 
 mbig-endian
 Target Report RejectNegative Mask(BIG_END)
@@ -131,8 +132,8 @@ Target RejectNegative Joined Var(structure_size_string)
 Specify the minimum bit alignment of structures
 
 mthumb
-Target Report Mask(THUMB)
-Compile for the Thumb not the ARM
+Target Report RejectNegative Mask(THUMB)
+Generate code for Thumb state
 
 mthumb-interwork
 Target Report Mask(INTERWORK)

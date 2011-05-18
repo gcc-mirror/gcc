@@ -2039,8 +2039,7 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 	     is not included in *ARGS even though it is considered to
 	     be part of the list of arguments.  Note that this is
 	     related to CWG issues 515 and 1005.  */
-	  || (((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
-	       || BASELINK_P (fn))
+	  || (non_static_member_function_p (fn)
 	      && current_class_ref
 	      && type_dependent_expression_p (current_class_ref)))
 	{
@@ -2370,7 +2369,7 @@ finish_compound_literal (tree type, tree compound_literal,
   if (TREE_CODE (type) == ARRAY_TYPE
       && check_array_initializer (NULL_TREE, type, compound_literal))
     return error_mark_node;
-  compound_literal = reshape_init (type, compound_literal);
+  compound_literal = reshape_init (type, compound_literal, complain);
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == NULL_TREE)
     {
@@ -2379,7 +2378,7 @@ finish_compound_literal (tree type, tree compound_literal,
       if (type == error_mark_node)
 	return error_mark_node;
     }
-  compound_literal = digest_init (type, compound_literal);
+  compound_literal = digest_init (type, compound_literal, complain);
   /* Put static/constant array temporaries in static variables, but always
      represent class temporaries with TARGET_EXPR so we elide copies.  */
   if ((!at_function_scope_p () || CP_TYPE_CONST_P (type))
@@ -5166,6 +5165,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_ENUM:
       return (type_code1 == ENUMERAL_TYPE);
 
+    case CPTK_IS_LITERAL_TYPE:
+      return (literal_type_p (type1));
+
     case CPTK_IS_POD:
       return (pod_type_p (type1));
 
@@ -5180,9 +5182,6 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_IS_UNION:
       return (type_code1 == UNION_TYPE);
-
-    case CPTK_IS_LITERAL_TYPE:
-      return (literal_type_p (type1));
 
     default:
       gcc_unreachable ();
@@ -5228,11 +5227,11 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
 	      || kind == CPTK_IS_CONVERTIBLE_TO
 	      || kind == CPTK_IS_EMPTY
 	      || kind == CPTK_IS_ENUM
+	      || kind == CPTK_IS_LITERAL_TYPE
 	      || kind == CPTK_IS_POD
 	      || kind == CPTK_IS_POLYMORPHIC
 	      || kind == CPTK_IS_STD_LAYOUT
 	      || kind == CPTK_IS_TRIVIAL
-	      || kind == CPTK_IS_LITERAL_TYPE
 	      || kind == CPTK_IS_UNION);
 
   if (kind == CPTK_IS_CONVERTIBLE_TO)
@@ -5272,11 +5271,11 @@ finish_trait_expr (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
     case CPTK_IS_ABSTRACT:
     case CPTK_IS_EMPTY:
+    case CPTK_IS_LITERAL_TYPE:
     case CPTK_IS_POD:
     case CPTK_IS_POLYMORPHIC:
     case CPTK_IS_STD_LAYOUT:
     case CPTK_IS_TRIVIAL:
-    case CPTK_IS_LITERAL_TYPE:
       if (!check_trait_type (type1))
 	{
 	  error ("incomplete type %qT not allowed", type1);
@@ -5337,7 +5336,11 @@ literal_type_p (tree t)
       || TREE_CODE (t) == REFERENCE_TYPE)
     return true;
   if (CLASS_TYPE_P (t))
-    return CLASSTYPE_LITERAL_P (t);
+    {
+      /* We can't answer this question until the class is complete.  */
+      gcc_assert (!TYPE_BEING_DEFINED (t) || errorcount);
+      return CLASSTYPE_LITERAL_P (complete_type (t));
+    }
   if (TREE_CODE (t) == ARRAY_TYPE)
     return literal_type_p (strip_array_types (t));
   return false;
@@ -5351,13 +5354,17 @@ ensure_literal_type_for_constexpr_object (tree decl)
 {
   tree type = TREE_TYPE (decl);
   if (TREE_CODE (decl) == VAR_DECL && DECL_DECLARED_CONSTEXPR_P (decl)
-      && !processing_template_decl
-      /* The call to complete_type is just for initializer_list.  */
-      && !literal_type_p (complete_type (type)))
+      && !processing_template_decl)
     {
-      error ("the type %qT of constexpr variable %qD is not literal",
-             type, decl);
-      return NULL;
+      if (CLASS_TYPE_P (type) && TYPE_BEING_DEFINED (type))
+	/* Don't complain here, we'll complain about incompleteness
+	   when we try to initialize the variable.  */;
+      else if (!literal_type_p (type))
+	{
+	  error ("the type %qT of constexpr variable %qD is not literal",
+		 type, decl);
+	  return NULL;
+	}
     }
   return decl;
 }
@@ -5410,15 +5417,22 @@ retrieve_constexpr_fundef (tree fun)
 }
 
 /* Check whether the parameter and return types of FUN are valid for a
-   constexpr function, and complain if COMPLAIN.  */
+   constexpr function, and complain if COMPLAIN.  If DEFER_OK is true,
+   return -1 if we can't tell yet because some of the types are still being
+   defined.  */
 
-static bool
-is_valid_constexpr_fn (tree fun, bool complain)
+static int
+is_valid_constexpr_fn (tree fun, bool complain, bool defer_ok)
 {
+#define IF_NON_LITERAL(TYPE)						\
+  if (defer_ok && CLASS_TYPE_P (TYPE) && TYPE_BEING_DEFINED (TYPE))	\
+    return -1;								\
+  else if (!literal_type_p (TYPE))
+
   tree parm = FUNCTION_FIRST_USER_PARM (fun);
   bool ret = true;
   for (; parm != NULL; parm = TREE_CHAIN (parm))
-    if (!literal_type_p (TREE_TYPE (parm)))
+    IF_NON_LITERAL (TREE_TYPE (parm))
       {
 	ret = false;
 	if (complain)
@@ -5429,7 +5443,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
   if (!DECL_CONSTRUCTOR_P (fun))
     {
       tree rettype = TREE_TYPE (TREE_TYPE (fun));
-      if (!literal_type_p (rettype))
+      IF_NON_LITERAL (rettype)
 	{
 	  ret = false;
 	  if (complain)
@@ -5437,16 +5451,52 @@ is_valid_constexpr_fn (tree fun, bool complain)
 		   rettype, fun);
 	}
 
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
-	  && !CLASSTYPE_LITERAL_P (DECL_CONTEXT (fun)))
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun))
 	{
-	  ret = false;
-	  if (complain)
-	    error ("enclosing class of %q+#D is not a literal type", fun);
+	  IF_NON_LITERAL (DECL_CONTEXT (fun))
+	    {
+	      ret = false;
+	      if (complain)
+		error ("enclosing class of %q+#D is not a literal type", fun);
+	    }
 	}
     }
 
   return ret;
+}
+
+/* We can't check the parameter and return types of a constexpr function
+   for literality until any open classes are complete, so we defer checking
+   of any constexpr functions declared in a class.  */
+
+static GTY(()) VEC(tree,gc) *deferred_constexpr_decls;
+
+void
+check_deferred_constexpr_decls (void)
+{
+  unsigned i;
+  tree fn;
+
+  /* Some of the deferred decls might still need to be deferred,
+     so move the vector out of the way.  */
+  VEC(tree,gc) *vec = deferred_constexpr_decls;
+  deferred_constexpr_decls = NULL;
+
+  FOR_EACH_VEC_ELT (tree, vec, i, fn)
+    {
+      DECL_DEFERRED_CONSTEXPR_CHECK (fn) = false;
+      validate_constexpr_fundecl (fn);
+    }
+
+  if (deferred_constexpr_decls == NULL)
+    {
+      /* If we didn't need to re-defer any, keep the same vector.  */
+      VEC_truncate (tree, vec, 0);
+      deferred_constexpr_decls = vec;
+    }
+  else
+    /* Otherwise, discard the old vector.  */
+    release_tree_vector (vec);
 }
 
 /* Return non-null if FUN certainly designates a valid constexpr function
@@ -5457,8 +5507,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 tree
 validate_constexpr_fundecl (tree fun)
 {
-  constexpr_fundef entry;
-  constexpr_fundef **slot;
+  int valid;
 
   if (processing_template_decl || !DECL_DECLARED_CONSTEXPR_P (fun))
     return NULL;
@@ -5466,27 +5515,20 @@ validate_constexpr_fundecl (tree fun)
     /* We already checked the original function.  */
     return fun;
 
-  if (!is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INSTANTIATION (fun)))
+  valid = is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INFO (fun),
+				 /*defer_ok=*/true);
+  if (valid < 0)
+    {
+      DECL_DEFERRED_CONSTEXPR_CHECK (fun) = true;
+      VEC_safe_push (tree, gc, deferred_constexpr_decls, fun);
+      return NULL;
+    }
+  else if (valid == 0)
     {
       DECL_DECLARED_CONSTEXPR_P (fun) = false;
       return NULL;
     }
 
-  /* Create the constexpr function table if necessary.  */
-  if (constexpr_fundef_table == NULL)
-    constexpr_fundef_table = htab_create_ggc (101,
-                                              constexpr_fundef_hash,
-                                              constexpr_fundef_equal,
-                                              ggc_free);
-  entry.decl = fun;
-  entry.body = NULL;
-  slot = (constexpr_fundef **)
-    htab_find_slot (constexpr_fundef_table, &entry, INSERT);
-  if (*slot == NULL)
-    {
-      *slot = ggc_alloc_constexpr_fundef ();
-      **slot = entry;
-    }
   return fun;
 }
 
@@ -5723,8 +5765,11 @@ constexpr_fn_retval (tree body)
 tree
 register_constexpr_fundef (tree fun, tree body)
 {
-  constexpr_fundef *fundef = retrieve_constexpr_fundef (fun);
-  gcc_assert (fundef != NULL && fundef->body == NULL);
+  constexpr_fundef entry;
+  constexpr_fundef **slot;
+
+  gcc_assert (DECL_DECLARED_CONSTEXPR_P (fun)
+	      && !DECL_DEFERRED_CONSTEXPR_CHECK (fun));
 
   if (DECL_CONSTRUCTOR_P (fun))
     body = build_constexpr_constructor_member_initializers
@@ -5751,11 +5796,26 @@ register_constexpr_fundef (tree fun, tree body)
   if (!potential_rvalue_constant_expression (body))
     {
       DECL_DECLARED_CONSTEXPR_P (fun) = false;
-      if (!DECL_TEMPLATE_INSTANTIATION (fun))
+      if (!DECL_TEMPLATE_INFO (fun))
 	require_potential_rvalue_constant_expression (body);
       return NULL;
     }
-  fundef->body = body;
+
+  /* Create the constexpr function table if necessary.  */
+  if (constexpr_fundef_table == NULL)
+    constexpr_fundef_table = htab_create_ggc (101,
+                                              constexpr_fundef_hash,
+                                              constexpr_fundef_equal,
+                                              ggc_free);
+  entry.decl = fun;
+  entry.body = body;
+  slot = (constexpr_fundef **)
+    htab_find_slot (constexpr_fundef_table, &entry, INSERT);
+
+  gcc_assert (*slot == NULL);
+  *slot = ggc_alloc_constexpr_fundef ();
+  **slot = entry;
+
   return fun;
 }
 
@@ -6080,10 +6140,10 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
       if (!allow_non_constant)
 	{
 	  error_at (loc, "%qD is not a constexpr function", fun);
-	  if (DECL_TEMPLATE_INSTANTIATION (fun)
+	  if (DECL_TEMPLATE_INFO (fun)
 	      && DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT
 					    (DECL_TI_TEMPLATE (fun))))
-	    is_valid_constexpr_fn (fun, true);
+	    is_valid_constexpr_fn (fun, true, /*defer_ok=*/false);
 	}
       *non_constant_p = true;
       return t;
@@ -6299,13 +6359,12 @@ cxx_eval_conditional_expression (const constexpr_call *call, tree t,
 					   allow_non_constant, addr,
 					   non_constant_p);
   VERIFY_CONSTANT (val);
-  if (val == boolean_true_node)
-    return cxx_eval_constant_expression (call, TREE_OPERAND (t, 1),
+  /* Don't VERIFY_CONSTANT the other operands.  */
+  if (integer_zerop (val))
+    return cxx_eval_constant_expression (call, TREE_OPERAND (t, 2),
 					 allow_non_constant, addr,
 					 non_constant_p);
-  gcc_assert (val == boolean_false_node);
-  /* Don't VERIFY_CONSTANT here.  */
-  return cxx_eval_constant_expression (call, TREE_OPERAND (t, 2),
+  return cxx_eval_constant_expression (call, TREE_OPERAND (t, 1),
 				       allow_non_constant, addr,
 				       non_constant_p);
 }
@@ -6324,6 +6383,7 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
 					   non_constant_p);
   tree index, oldidx;
   HOST_WIDE_INT i;
+  tree elem_type;
   unsigned len, elem_nchars = 1;
   if (*non_constant_p)
     return t;
@@ -6336,16 +6396,27 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
     return t;
   else if (addr)
     return build4 (ARRAY_REF, TREE_TYPE (t), ary, index, NULL, NULL);
+  elem_type = TREE_TYPE (TREE_TYPE (ary));
   if (TREE_CODE (ary) == CONSTRUCTOR)
     len = CONSTRUCTOR_NELTS (ary);
   else
     {
-      elem_nchars = (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (ary)))
+      elem_nchars = (TYPE_PRECISION (elem_type)
 		     / TYPE_PRECISION (char_type_node));
       len = (unsigned) TREE_STRING_LENGTH (ary) / elem_nchars;
     }
   if (compare_tree_int (index, len) >= 0)
     {
+      if (tree_int_cst_lt (index, array_type_nelts_top (TREE_TYPE (ary))))
+	{
+	  /* If it's within the array bounds but doesn't have an explicit
+	     initializer, it's value-initialized.  */
+	  tree val = build_value_init (elem_type, tf_warning_or_error);
+	  return cxx_eval_constant_expression (call, val,
+					       allow_non_constant, addr,
+					       non_constant_p);
+	}
+
       if (!allow_non_constant)
 	error ("array subscript out of bound");
       *non_constant_p = true;
@@ -6901,6 +6972,7 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
       break;
 
     case FUNCTION_DECL:
+    case TEMPLATE_DECL:
     case LABEL_DECL:
       return t;
 
@@ -7860,11 +7932,11 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       tmp = TREE_OPERAND (t, 0);
       if (!potential_constant_expression_1 (tmp, rval, flags))
 	return false;
-      else if (tmp == boolean_true_node)
-	return potential_constant_expression_1 (TREE_OPERAND (t, 1),
-						want_rval, flags);
-      else if (tmp == boolean_false_node)
+      else if (integer_zerop (tmp))
 	return potential_constant_expression_1 (TREE_OPERAND (t, 2),
+						want_rval, flags);
+      else if (TREE_CODE (tmp) == INTEGER_CST)
+	return potential_constant_expression_1 (TREE_OPERAND (t, 1),
 						want_rval, flags);
       for (i = 1; i < 3; ++i)
 	if (potential_constant_expression_1 (TREE_OPERAND (t, i),

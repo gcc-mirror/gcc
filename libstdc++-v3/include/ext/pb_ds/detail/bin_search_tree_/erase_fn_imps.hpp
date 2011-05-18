@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -46,7 +46,7 @@ actual_erase_node(node_pointer p_z)
   _GLIBCXX_DEBUG_ASSERT(m_size > 0);
   --m_size;
 
-  _GLIBCXX_DEBUG_ONLY(erase_existing(PB_DS_V2F(p_z->m_value)));
+  _GLIBCXX_DEBUG_ONLY(erase_existing(PB_DS_V2F(p_z->m_value));)
 
   p_z->~node();
 
@@ -88,9 +88,9 @@ void
 PB_DS_CLASS_C_DEC::
 clear()
 {
-  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
 
-    clear_imp(m_p_head->m_p_parent);
+  clear_imp(m_p_head->m_p_parent);
 
   m_size = 0;
 
@@ -98,8 +98,8 @@ clear()
 
   _GLIBCXX_DEBUG_ONLY(debug_base::clear();)
 
-    _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
-    }
+  PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
+}
 
 PB_DS_CLASS_T_DEC
 void

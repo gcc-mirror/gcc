@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -98,13 +98,15 @@ namespace __gnu_pbds
       clear();
 
       inline void
-      check_key_exists(const_key_reference r_key) const;
+      check_key_exists(const_key_reference r_key,
+		       const char* file, int line) const;
 
       inline void
-      check_key_does_not_exist(const_key_reference r_key) const;
+      check_key_does_not_exist(const_key_reference r_key,
+			       const char* file, int line) const;
 
       inline void
-      check_size(size_type size) const;
+      check_size(size_type size, const char* file, int line) const;
 
       void
       swap(PB_DS_CLASS_C_DEC& other);
@@ -114,11 +116,11 @@ namespace __gnu_pbds
       split(const_key_reference, Cmp_Fn, PB_DS_CLASS_C_DEC&);
 
       void
-      join(PB_DS_CLASS_C_DEC& other);
+      join(PB_DS_CLASS_C_DEC& other, bool with_cleanup = true);
 
     private:
       void
-      assert_valid() const;
+      assert_valid(const char* file, int line) const;
 
       const_key_set_iterator
       find(const_key_reference r_key) const;
@@ -133,24 +135,24 @@ namespace __gnu_pbds
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     debug_map_base()
-    { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
+    { PB_DS_ASSERT_VALID((*this)) }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     debug_map_base(const PB_DS_CLASS_C_DEC& other) : m_key_set(other.m_key_set)
-    { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
+    { PB_DS_ASSERT_VALID((*this)) }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     ~debug_map_base()
-    { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
+    { PB_DS_ASSERT_VALID((*this)) }
 
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
     insert_new(const_key_reference r_key)
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
 
       if (find(r_key) != m_key_set.end())
 	{
@@ -169,7 +171,7 @@ namespace __gnu_pbds
 	  std::abort();
 	}
 
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
     PB_DS_CLASS_T_DEC
@@ -177,7 +179,7 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     erase_existing(const_key_reference r_key)
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       key_set_iterator it = find(r_key);
       if (it == m_key_set.end())
 	{
@@ -185,7 +187,7 @@ namespace __gnu_pbds
 	  std::abort();
 	}
       m_key_set.erase(it);
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
     PB_DS_CLASS_T_DEC
@@ -193,36 +195,39 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     clear()
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       m_key_set.clear();
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
-    check_key_exists(const_key_reference r_key) const
+    check_key_exists(const_key_reference r_key,
+		     const char* __file, int __line) const
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      assert_valid(__file, __line);
       if (find(r_key) == m_key_set.end())
 	{
-	  std::cerr << "check_key_exists " << r_key << std::endl;
+	  std::cerr << __file << ':' << __line << ": check_key_exists "
+		    << r_key << std::endl;
 	  std::abort();
 	}
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
-    check_key_does_not_exist(const_key_reference r_key) const
+    check_key_does_not_exist(const_key_reference r_key,
+			     const char* __file, int __line) const
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      assert_valid(__file, __line);
       if (find(r_key) != m_key_set.end())
 	{
 	  using std::cerr;
 	  using std::endl;
-	  cerr << "check_key_does_not_exist " << r_key << endl;
+	  cerr << __file << ':' << __line << ": check_key_does_not_exist "
+	       << r_key << endl;
 	  std::abort();
 	}
     }
@@ -230,17 +235,16 @@ namespace __gnu_pbds
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
-    check_size(size_type size) const
+    check_size(size_type size, const char* __file, int __line) const
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      assert_valid(__file, __line);
       const size_type key_set_size = m_key_set.size();
       if (size != key_set_size)
 	{
-	  std::cerr << "check_size " << size
-		    << " " << key_set_size << std::endl;
+	  std::cerr << __file << ':' << __line << ": check_size " << size
+		    << " != " << key_set_size << std::endl;
 	  std::abort();
 	}
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
      }
 
     PB_DS_CLASS_T_DEC
@@ -248,9 +252,9 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     swap(PB_DS_CLASS_C_DEC& other)
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       m_key_set.swap(other.m_key_set);
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
     }
 
     PB_DS_CLASS_T_DEC
@@ -258,7 +262,7 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     find(const_key_reference r_key) const
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       typedef const_key_set_iterator iterator_type;
       for (iterator_type it = m_key_set.begin(); it != m_key_set.end(); ++it)
 	if (m_eq(*it, r_key))
@@ -271,7 +275,7 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     find(const_key_reference r_key)
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      PB_DS_ASSERT_VALID((*this))
       key_set_iterator it = m_key_set.begin();
       while (it != m_key_set.end())
 	{
@@ -280,13 +284,12 @@ namespace __gnu_pbds
 	  ++it;
 	}
       return it;
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
      }
 
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
-    assert_valid() const
+    assert_valid(const char* __file, int __line) const
     {
       const_key_set_iterator prime_it = m_key_set.begin();
       while (prime_it != m_key_set.end())
@@ -295,8 +298,8 @@ namespace __gnu_pbds
 	  ++sec_it;
 	  while (sec_it != m_key_set.end())
 	    {
-	      _GLIBCXX_DEBUG_ASSERT(!m_eq(*sec_it, *prime_it));
-	      _GLIBCXX_DEBUG_ASSERT(!m_eq(*prime_it, *sec_it));
+	      PB_DS_DEBUG_VERIFY(!m_eq(*sec_it, *prime_it));
+	      PB_DS_DEBUG_VERIFY(!m_eq(*prime_it, *sec_it));
 	      ++sec_it;
 	    }
 	  ++prime_it;
@@ -324,15 +327,18 @@ namespace __gnu_pbds
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
-    join(PB_DS_CLASS_C_DEC& other)
+    join(PB_DS_CLASS_C_DEC& other, bool with_cleanup)
     {
       key_set_iterator it = other.m_key_set.begin();
       while (it != other.m_key_set.end())
 	{
 	  insert_new(*it);
-	  it = other.m_key_set.erase(it);
+	  if (with_cleanup)
+	    it = other.m_key_set.erase(it);
+	  else
+	    ++it;
 	}
-      _GLIBCXX_DEBUG_ASSERT(other.m_key_set.empty());
+      _GLIBCXX_DEBUG_ASSERT(!with_cleanup || other.m_key_set.empty());
     }
 
 #undef PB_DS_CLASS_T_DEC
@@ -340,6 +346,7 @@ namespace __gnu_pbds
 
 } // namespace detail
 } // namespace __gnu_pbds
+
 
 #endif
 

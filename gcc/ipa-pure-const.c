@@ -731,6 +731,16 @@ analyze_function (struct cgraph_node *fn, bool ipa)
   l->looping_previously_known = true;
   l->looping = false;
   l->can_throw = false;
+  state_from_flags (&l->state_previously_known, &l->looping_previously_known,
+		    flags_from_decl_or_type (fn->decl),
+		    cgraph_node_cannot_return (fn));
+
+  if (fn->thunk.thunk_p)
+    {
+      /* Thunk gets propagated through, so nothing interesting happens.  */
+      gcc_assert (ipa);
+      return l;
+    }
 
   if (dump_file)
     {
@@ -799,9 +809,6 @@ end:
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "    checking previously known:");
-  state_from_flags (&l->state_previously_known, &l->looping_previously_known,
-		    flags_from_decl_or_type (fn->decl),
-		    cgraph_node_cannot_return (fn));
 
   better_state (&l->pure_const_state, &l->looping,
 		l->state_previously_known,

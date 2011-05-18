@@ -1146,8 +1146,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
     {
       tree fromfn = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (from));
       tree tofn = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (to));
-      tree fbase = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fromfn)));
-      tree tbase = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (tofn)));
+      tree fbase = class_of_this_parm (fromfn);
+      tree tbase = class_of_this_parm (tofn);
 
       if (!DERIVED_FROM_P (fbase, tbase)
 	  || !same_type_p (TREE_TYPE (fromfn), TREE_TYPE (tofn))
@@ -3521,7 +3521,7 @@ build_user_type_conversion (tree totype, tree expr, int flags)
   struct z_candidate *cand;
   tree ret;
 
-  timevar_start (TV_OVERLOAD);
+  bool subtime = timevar_cond_start (TV_OVERLOAD);
   cand = build_user_type_conversion_1 (totype, expr, flags);
 
   if (cand)
@@ -3537,7 +3537,7 @@ build_user_type_conversion (tree totype, tree expr, int flags)
   else
     ret = NULL_TREE;
 
-  timevar_stop (TV_OVERLOAD);
+  timevar_cond_stop (TV_OVERLOAD, subtime);
   return ret;
 }
 
@@ -4029,9 +4029,9 @@ tree
 build_op_call (tree obj, VEC(tree,gc) **args, tsubst_flags_t complain)
 {
   tree ret;
-  timevar_start (TV_OVERLOAD);
+  bool subtime = timevar_cond_start (TV_OVERLOAD);
   ret = build_op_call_1 (obj, args, complain);
-  timevar_stop (TV_OVERLOAD);
+  timevar_cond_stop (TV_OVERLOAD, subtime);
   return ret;
 }
 
@@ -5670,7 +5670,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  expr = build2 (COMPLEX_EXPR, totype, real, imag);
 	  return fold_if_not_in_template (expr);
 	}
-      return get_target_expr (digest_init (totype, expr));
+      return get_target_expr (digest_init (totype, expr, complain));
 
     default:
       break;
@@ -6032,7 +6032,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
   arg = break_out_target_exprs (arg);
   if (TREE_CODE (arg) == CONSTRUCTOR)
     {
-      arg = digest_init (type, arg);
+      arg = digest_init (type, arg, tf_warning_or_error);
       arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
 					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);

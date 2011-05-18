@@ -1,6 +1,7 @@
 // <utility> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+// 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -86,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
    // Various functions which give std::pair a tuple-like interface.
   template<class _Tp1, class _Tp2>
-    struct tuple_size<std::pair<_Tp1, _Tp2> >
+    struct tuple_size<std::pair<_Tp1, _Tp2>>
     { static const std::size_t value = 2; };
 
   template<class _Tp1, class _Tp2>
@@ -94,11 +95,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     tuple_size<std::pair<_Tp1, _Tp2> >::value;
 
   template<class _Tp1, class _Tp2>
-    struct tuple_element<0, std::pair<_Tp1, _Tp2> >
+    struct tuple_element<0, std::pair<_Tp1, _Tp2>>
     { typedef _Tp1 type; };
  
   template<class _Tp1, class _Tp2>
-    struct tuple_element<1, std::pair<_Tp1, _Tp2> >
+    struct tuple_element<1, std::pair<_Tp1, _Tp2>>
     { typedef _Tp2 type; };
 
   template<std::size_t _Int>
@@ -108,34 +109,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __pair_get<0>
     {
       template<typename _Tp1, typename _Tp2>
-      static _Tp1& __get(std::pair<_Tp1, _Tp2>& __pair)
-      { return __pair.first; }
+        static _Tp1&
+        __get(std::pair<_Tp1, _Tp2>& __pair) noexcept
+        { return __pair.first; }
 
       template<typename _Tp1, typename _Tp2>
-      static const _Tp1& __const_get(const std::pair<_Tp1, _Tp2>& __pair)
-      { return __pair.first; }
+        static _Tp1&&
+        __move_get(std::pair<_Tp1, _Tp2>&& __pair) noexcept
+        { return std::forward<_Tp1>(__pair.first); }
+
+      template<typename _Tp1, typename _Tp2>
+        static const _Tp1&
+        __const_get(const std::pair<_Tp1, _Tp2>& __pair) noexcept
+        { return __pair.first; }
     };
 
   template<>
     struct __pair_get<1>
     {
       template<typename _Tp1, typename _Tp2>
-      static _Tp2& __get(std::pair<_Tp1, _Tp2>& __pair)
-      { return __pair.second; }
+        static _Tp2&
+        __get(std::pair<_Tp1, _Tp2>& __pair) noexcept
+        { return __pair.second; }
 
       template<typename _Tp1, typename _Tp2>
-      static const _Tp2& __const_get(const std::pair<_Tp1, _Tp2>& __pair)
-      { return __pair.second; }
+        static _Tp2&&
+        __move_get(std::pair<_Tp1, _Tp2>&& __pair) noexcept
+        { return std::forward<_Tp2>(__pair.second); }
+
+      template<typename _Tp1, typename _Tp2>
+        static const _Tp2&
+        __const_get(const std::pair<_Tp1, _Tp2>& __pair) noexcept
+        { return __pair.second; }
     };
 
   template<std::size_t _Int, class _Tp1, class _Tp2>
-    inline typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
-    get(std::pair<_Tp1, _Tp2>& __in)
+    inline typename tuple_element<_Int, std::pair<_Tp1, _Tp2>>::type&
+    get(std::pair<_Tp1, _Tp2>& __in) noexcept
     { return __pair_get<_Int>::__get(__in); }
 
   template<std::size_t _Int, class _Tp1, class _Tp2>
-    inline const typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
-    get(const std::pair<_Tp1, _Tp2>& __in)
+    inline typename tuple_element<_Int, std::pair<_Tp1, _Tp2>>::type&&
+    get(std::pair<_Tp1, _Tp2>&& __in) noexcept
+    { return __pair_get<_Int>::__move_get(std::move(__in)); }
+
+  template<std::size_t _Int, class _Tp1, class _Tp2>
+    inline const typename tuple_element<_Int, std::pair<_Tp1, _Tp2>>::type&
+    get(const std::pair<_Tp1, _Tp2>& __in) noexcept
     { return __pair_get<_Int>::__const_get(__in); }
 
 _GLIBCXX_END_NAMESPACE_VERSION

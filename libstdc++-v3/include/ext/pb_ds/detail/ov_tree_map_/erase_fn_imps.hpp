@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -43,10 +43,9 @@ void
 PB_DS_CLASS_C_DEC::
 clear()
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   if (m_size == 0)
     {
-      _GLIBCXX_DEBUG_ONLY(assert_valid();)
       return;
     }
   else
@@ -59,7 +58,7 @@ clear()
   m_a_values = 0;
   m_size = 0;
   m_end_it = m_a_values;
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
@@ -68,7 +67,7 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
 
 #ifdef PB_DS_REGRESSION
     typename Allocator::group_adjustor adjust(m_size);
@@ -76,8 +75,7 @@ erase_if(Pred pred)
 
   size_type new_size = 0;
   size_type num_val_ersd = 0;
-  iterator source_it = m_a_values;
-  for (source_it = begin(); source_it != m_end_it; ++source_it)
+  for (iterator source_it = begin(); source_it != m_end_it; ++source_it)
     if (!pred(*source_it))
       ++new_size;
     else
@@ -93,7 +91,7 @@ erase_if(Pred pred)
   iterator target_it = a_new_values;
   cond_dtor<size_type> cd(a_new_values, target_it, new_size);
   _GLIBCXX_DEBUG_ONLY(debug_base::clear());
-  for (source_it = begin(); source_it != m_end_it; ++source_it)
+  for (iterator source_it = begin(); source_it != m_end_it; ++source_it)
     {
       if (!pred(*source_it))
         {
@@ -116,7 +114,7 @@ erase_if(Pred pred)
   m_size = new_size;
   m_end_it = target_it;
   update(node_begin(), (node_update* )this);
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   return num_val_ersd;
 }
 
@@ -126,11 +124,11 @@ It
 PB_DS_CLASS_C_DEC::
 erase_imp(It it)
 {
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   if (it == end())
     return end();
 
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::check_key_exists(PB_DS_V2F(*it));)
+  PB_DS_CHECK_KEY_EXISTS(PB_DS_V2F(*it))
 
 #ifdef PB_DS_REGRESSION
     typename Allocator::group_adjustor adjust(m_size);
@@ -175,7 +173,7 @@ erase_imp(It it)
   --m_size;
   m_end_it = m_a_values + m_size;
   update(node_begin(), (node_update* )this);
-  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  PB_DS_ASSERT_VALID((*this))
   return It(ret_it);
 }
 

@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 
 static tree
-process_init_constructor (tree type, tree init);
+process_init_constructor (tree type, tree init, tsubst_flags_t complain);
 
 
 /* Print an error message stemming from an attempt to use
@@ -783,8 +783,8 @@ check_narrowing (tree type, tree init)
     }
 
   if (!ok)
-    permerror (input_location, "narrowing conversion of %qE from %qT to %qT inside { }",
-	       init, ftype, type);
+    permerror (input_location, "narrowing conversion of %qE from %qT "
+	       "to %qT inside { }", init, ftype, type);
 }
 
 /* Process the initializer INIT for a variable of type TYPE, emitting
@@ -797,7 +797,8 @@ check_narrowing (tree type, tree init)
    NESTED is true iff we are being called for an element of a CONSTRUCTOR.  */
 
 static tree
-digest_init_r (tree type, tree init, bool nested, int flags)
+digest_init_r (tree type, tree init, bool nested, int flags,
+	       tsubst_flags_t complain)
 {
   enum tree_code code = TREE_CODE (type);
 
@@ -833,7 +834,8 @@ digest_init_r (tree type, tree init, bool nested, int flags)
 	    {
 	      if (char_type != char_type_node)
 		{
-		  error ("char-array initialized from wide string");
+		  if (complain & tf_error)
+		    error ("char-array initialized from wide string");
 		  return error_mark_node;
 		}
 	    }
@@ -841,12 +843,15 @@ digest_init_r (tree type, tree init, bool nested, int flags)
 	    {
 	      if (char_type == char_type_node)
 		{
-		  error ("int-array initialized from non-wide string");
+		  if (complain & tf_error)
+		    error ("int-array initialized from non-wide string");
 		  return error_mark_node;
 		}
 	      else if (char_type != typ1)
 		{
-		  error ("int-array initialized from incompatible wide string");
+		  if (complain & tf_error)
+		    error ("int-array initialized from incompatible "
+			   "wide string");
 		  return error_mark_node;
 		}
 	    }
@@ -861,7 +866,8 @@ digest_init_r (tree type, tree init, bool nested, int flags)
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
 	      if (size < TREE_STRING_LENGTH (init))
-		permerror (input_location, "initializer-string for array of chars is too long");
+		permerror (input_location, "initializer-string for array "
+			   "of chars is too long");
 	    }
 	  return init;
 	}
@@ -878,7 +884,7 @@ digest_init_r (tree type, tree init, bool nested, int flags)
 	check_narrowing (type, init);
       init = convert_for_initialization (0, type, init, flags,
 					 ICR_INIT, NULL_TREE, 0,
-					 tf_warning_or_error);
+					 complain);
       exp = &init;
 
       /* Skip any conversions since we'll be outputting the underlying
@@ -902,13 +908,14 @@ digest_init_r (tree type, tree init, bool nested, int flags)
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init)
       && !TYPE_NON_AGGREGATE_CLASS (type))
-    return process_init_constructor (type, init);
+    return process_init_constructor (type, init, complain);
   else
     {
       if (COMPOUND_LITERAL_P (init) && TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  error ("cannot initialize aggregate of type %qT with "
-		 "a compound literal", type);
+	  if (complain & tf_error)
+	    error ("cannot initialize aggregate of type %qT with "
+		   "a compound literal", type);
 
 	  return error_mark_node;
 	}
@@ -924,28 +931,29 @@ digest_init_r (tree type, tree init, bool nested, int flags)
 		  (type, TREE_TYPE (init))))
 	    return init;
 
-	  error ("array must be initialized with a brace-enclosed"
-		 " initializer");
+	  if (complain & tf_error)
+	    error ("array must be initialized with a brace-enclosed"
+		   " initializer");
 	  return error_mark_node;
 	}
 
       return convert_for_initialization (NULL_TREE, type, init,
 					 flags,
 					 ICR_INIT, NULL_TREE, 0,
-                                         tf_warning_or_error);
+                                         complain);
     }
 }
 
 tree
-digest_init (tree type, tree init)
+digest_init (tree type, tree init, tsubst_flags_t complain)
 {
-  return digest_init_r (type, init, false, LOOKUP_IMPLICIT);
+  return digest_init_r (type, init, false, LOOKUP_IMPLICIT, complain);
 }
 
 tree
 digest_init_flags (tree type, tree init, int flags)
 {
-  return digest_init_r (type, init, false, flags);
+  return digest_init_r (type, init, false, flags, tf_warning_or_error);
 }
 
 /* Set of flags used within process_init_constructor to describe the
@@ -974,7 +982,8 @@ picflag_from_initializer (tree init)
    which describe the initializers.  */
 
 static int
-process_init_constructor_array (tree type, tree init)
+process_init_constructor_array (tree type, tree init,
+				tsubst_flags_t complain)
 {
   unsigned HOST_WIDE_INT i, len = 0;
   int flags = 0;
@@ -1001,7 +1010,12 @@ process_init_constructor_array (tree type, tree init)
 
   /* There must not be more initializers than needed.  */
   if (!unbounded && VEC_length (constructor_elt, v)  > len)
-    error ("too many initializers for %qT", type);
+    {
+      if (complain & tf_error)
+	error ("too many initializers for %qT", type);
+      else
+	return PICFLAG_ERRONEOUS;
+    }
 
   FOR_EACH_VEC_ELT (constructor_elt, v, i, ce)
     {
@@ -1017,7 +1031,8 @@ process_init_constructor_array (tree type, tree init)
       else
 	ce->index = size_int (i);
       gcc_assert (ce->value);
-      ce->value = digest_init_r (TREE_TYPE (type), ce->value, true, LOOKUP_IMPLICIT);
+      ce->value = digest_init_r (TREE_TYPE (type), ce->value, true,
+				 LOOKUP_IMPLICIT, complain);
 
       if (ce->value != error_mark_node)
 	gcc_assert (same_type_ignoring_top_level_qualifiers_p
@@ -1033,7 +1048,7 @@ process_init_constructor_array (tree type, tree init)
       {
 	tree next;
 
-	if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type)))
+	if (type_build_ctor_call (TREE_TYPE (type)))
 	  {
 	    /* If this type needs constructors run for default-initialization,
 	      we can't rely on the back end to do it for us, so build up
@@ -1041,10 +1056,10 @@ process_init_constructor_array (tree type, tree init)
 	      one up; if it's an array, recurse.  */
 	    if (MAYBE_CLASS_TYPE_P (TREE_TYPE (type)))
               next = build_functional_cast (TREE_TYPE (type), NULL_TREE,
-                                            tf_warning_or_error);
+                                            complain);
 	    else
 	      next = build_constructor (init_list_type_node, NULL);
-	    next = digest_init (TREE_TYPE (type), next);
+	    next = digest_init (TREE_TYPE (type), next, complain);
 	  }
 	else if (!zero_init_p (TREE_TYPE (type)))
 	  next = build_zero_init (TREE_TYPE (type),
@@ -1068,7 +1083,8 @@ process_init_constructor_array (tree type, tree init)
    the initializers.  */
 
 static int
-process_init_constructor_record (tree type, tree init)
+process_init_constructor_record (tree type, tree init,
+				 tsubst_flags_t complain)
 {
   VEC(constructor_elt,gc) *v = NULL;
   int flags = 0;
@@ -1124,10 +1140,11 @@ process_init_constructor_record (tree type, tree init)
 	    }
 
 	  gcc_assert (ce->value);
-	  next = digest_init_r (type, ce->value, true, LOOKUP_IMPLICIT);
+	  next = digest_init_r (type, ce->value, true,
+				LOOKUP_IMPLICIT, complain);
 	  ++idx;
 	}
-      else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
+      else if (type_build_ctor_call (TREE_TYPE (field)))
 	{
 	  /* If this type needs constructors run for
 	     default-initialization, we can't rely on the back end to do it
@@ -1137,14 +1154,15 @@ process_init_constructor_record (tree type, tree init)
 	  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (field)))
 	    {
 	      next = finish_compound_literal (TREE_TYPE (field), next,
-					      tf_warning_or_error);
+					      complain);
 	      /* direct-initialize the target. No temporary is going
 		  to be involved.  */
 	      if (TREE_CODE (next) == TARGET_EXPR)
 		TARGET_EXPR_DIRECT_INIT_P (next) = true;
 	    }
 
-	  next = digest_init_r (TREE_TYPE (field), next, true, LOOKUP_IMPLICIT);
+	  next = digest_init_r (TREE_TYPE (field), next, true,
+				LOOKUP_IMPLICIT, complain);
 
 	  /* Warn when some struct elements are implicitly initialized.  */
 	  warning (OPT_Wmissing_field_initializers,
@@ -1153,11 +1171,26 @@ process_init_constructor_record (tree type, tree init)
       else
 	{
 	  if (TREE_READONLY (field))
-	    error ("uninitialized const member %qD", field);
+	    {
+	      if (complain & tf_error)
+		error ("uninitialized const member %qD", field);
+	      else
+		return PICFLAG_ERRONEOUS;
+	    }
 	  else if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (TREE_TYPE (field)))
-	    error ("member %qD with uninitialized const fields", field);
+	    {
+	      if (complain & tf_error)
+		error ("member %qD with uninitialized const fields", field);
+	      else
+		return PICFLAG_ERRONEOUS;
+	    }
 	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
-	    error ("member %qD is uninitialized reference", field);
+	    {
+	      if (complain & tf_error)
+		error ("member %qD is uninitialized reference", field);
+	      else
+		return PICFLAG_ERRONEOUS;
+	    }
 
 	  /* Warn when some struct elements are implicitly initialized
 	     to zero.  */
@@ -1181,8 +1214,13 @@ process_init_constructor_record (tree type, tree init)
     }
 
   if (idx < VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)))
-    error ("too many initializers for %qT", type);
-    
+    {
+      if (complain & tf_error)
+	error ("too many initializers for %qT", type);
+      else
+	return PICFLAG_ERRONEOUS;
+    }
+
   CONSTRUCTOR_ELTS (init) = v;
   return flags;
 }
@@ -1192,7 +1230,8 @@ process_init_constructor_record (tree type, tree init)
    which describe the initializer.  */
 
 static int
-process_init_constructor_union (tree type, tree init)
+process_init_constructor_union (tree type, tree init,
+				tsubst_flags_t complain)
 {
   constructor_elt *ce;
   int len;
@@ -1204,6 +1243,8 @@ process_init_constructor_union (tree type, tree init)
   len = VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init));
   if (len > 1)
     {
+      if (!(complain & tf_error))
+	return PICFLAG_ERRONEOUS;
       error ("too many initializers for %qT", type);
       VEC_block_remove (constructor_elt, CONSTRUCTOR_ELTS (init), 1, len-1);
     }
@@ -1225,7 +1266,9 @@ process_init_constructor_union (tree type, tree init)
 	      break;
 	  if (!field)
 	    {
-	      error ("no field %qD found in union being initialized", field);
+	      if (complain & tf_error)
+		error ("no field %qD found in union being initialized",
+		       field);
 	      ce->value = error_mark_node;
 	    }
 	  ce->index = field;
@@ -1234,7 +1277,8 @@ process_init_constructor_union (tree type, tree init)
 	{
 	  gcc_assert (TREE_CODE (ce->index) == INTEGER_CST
 		      || TREE_CODE (ce->index) == RANGE_EXPR);
-	  error ("index value instead of field name in union initializer");
+	  if (complain & tf_error)
+	    error ("index value instead of field name in union initializer");
 	  ce->value = error_mark_node;
 	}
     }
@@ -1247,14 +1291,16 @@ process_init_constructor_union (tree type, tree init)
 	field = TREE_CHAIN (field);
       if (field == NULL_TREE)
 	{
-	  error ("too many initializers for %qT", type);
+	  if (complain & tf_error)
+	    error ("too many initializers for %qT", type);
 	  ce->value = error_mark_node;
 	}
       ce->index = field;
     }
 
   if (ce->value && ce->value != error_mark_node)
-    ce->value = digest_init_r (TREE_TYPE (ce->index), ce->value, true, LOOKUP_IMPLICIT);
+    ce->value = digest_init_r (TREE_TYPE (ce->index), ce->value,
+			       true, LOOKUP_IMPLICIT, complain);
 
   return picflag_from_initializer (ce->value);
 }
@@ -1274,18 +1320,18 @@ process_init_constructor_union (tree type, tree init)
    of error.  */
 
 static tree
-process_init_constructor (tree type, tree init)
+process_init_constructor (tree type, tree init, tsubst_flags_t complain)
 {
   int flags;
 
   gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (init));
 
   if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
-    flags = process_init_constructor_array (type, init);
+    flags = process_init_constructor_array (type, init, complain);
   else if (TREE_CODE (type) == RECORD_TYPE)
-    flags = process_init_constructor_record (type, init);
+    flags = process_init_constructor_record (type, init, complain);
   else if (TREE_CODE (type) == UNION_TYPE)
-    flags = process_init_constructor_union (type, init);
+    flags = process_init_constructor_union (type, init, complain);
   else
     gcc_unreachable ();
 

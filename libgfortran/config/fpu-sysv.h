@@ -1,8 +1,8 @@
 /* SysV FPU-related code (for systems not otherwise supported).
-   Copyright 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -34,48 +34,48 @@ set_fpu (void)
 #ifdef FP_X_INV
     cw |= FP_X_INV;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'invalid operation' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'invalid operation' "
+	        "exception not supported.\n");
 #endif
 
   if (options.fpe & GFC_FPE_DENORMAL)
 #ifdef FP_X_DNML
     cw |= FP_X_DNML;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'denormal number' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'denormal number' "
+	        "exception not supported.\n");
 #endif
 
   if (options.fpe & GFC_FPE_ZERO)
 #ifdef FP_X_DZ
     cw |= FP_X_DZ;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'division by zero' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'division by zero' "
+	        "exception not supported.\n");
 #endif
 
   if (options.fpe & GFC_FPE_OVERFLOW)
 #ifdef FP_X_OFL
     cw |= FP_X_OFL;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'overflow' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'overflow' "
+	        "exception not supported.\n");
 #endif
 
   if (options.fpe & GFC_FPE_UNDERFLOW)
 #ifdef FP_X_UFL
     cw |= FP_X_UFL;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'underflow' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'underflow' "
+	        "exception not supported.\n");
 #endif
 
   if (options.fpe & GFC_FPE_PRECISION)
 #ifdef FP_X_IMP
     cw |= FP_X_IMP;
 #else
-    st_printf ("Fortran runtime warning: IEEE 'loss of precision' "
-	       "exception not supported.\n");
+    estr_write ("Fortran runtime warning: IEEE 'loss of precision' "
+	        "exception not supported.\n");
 #endif
 
   fpsetmask(cw);
