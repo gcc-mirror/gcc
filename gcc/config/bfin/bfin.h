@@ -140,6 +140,10 @@
 	case BFIN_CPU_BF561:			\
 	  builtin_define ("__ADSPBF561__");	\
 	  break;				\
+	case BFIN_CPU_BF592:            \
+	  builtin_define ("__ADSPBF592__"); \
+	  builtin_define ("__ADSPBF59x__"); \
+	  break;                \
 	}					\
 						\
       if (bfin_si_revision != -1)		\

@@ -1,3 +1,16 @@
+2011-05-18  Stuart Henderson  <shenders@gcc.gnu.org>
+
+	* doc/invoke.texi (Blackfin Options): -mcpu accepts bf592.
+	* config/bfin/t-bfin-elf (MULTILIB_MATCHES): Select bf532-none for
+	bf592-none.
+	* config/bfin/t-bfin-linux (MULTILIB_MATCHES): Likewise.
+	* config/bfin/t-bfin-uclinux (MULTILIB_MATCHES): Likewise.
+	* config/bfin/bfin.c (bfin_cpus): Add bf592.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define
+	__ADSPBF592__ and __ADSPBF59x__ for     BFIN_CPU_BF592.
+	* config/bfin/bfin-opts.h (bfin_cpu_type): Add BFIN_CPU_BF592.
+	* config/bfin/elf.h (LIB_SPEC): Add bf592.
+
 2011-05-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm-opts.h (enum arm_fp16_format_type, enum
