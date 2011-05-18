@@ -1,3 +1,11 @@
+2011-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*tls_global_dynamic_32_gnu): Split asm template.
+	(*tls_global_dynamic_64): Ditto.
+	(*tls_local_dynamic_base_32_gnu): Ditto.
+	(*tls_local_dynamic_base_64): Ditto.
+	(tls_initial_exec_64_sun): Ditto.
+
 2011-05-18  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	* doc/invoke.texi (Blackfin Options): -mcpu accepts bf592.
@@ -7,23 +15,21 @@
 	* config/bfin/t-bfin-uclinux (MULTILIB_MATCHES): Likewise.
 	* config/bfin/bfin.c (bfin_cpus): Add bf592.
 	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define
-	__ADSPBF592__ and __ADSPBF59x__ for     BFIN_CPU_BF592.
+	__ADSPBF592__ and __ADSPBF59x__ for BFIN_CPU_BF592.
 	* config/bfin/bfin-opts.h (bfin_cpu_type): Add BFIN_CPU_BF592.
 	* config/bfin/elf.h (LIB_SPEC): Add bf592.
 
 2011-05-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm-opts.h (enum arm_fp16_format_type, enum
-	arm_abi_type, enum float_abi_type, enum arm_tp_type): Move from
-	arm.h.
+	arm_abi_type, enum float_abi_type, enum arm_tp_type): Move from arm.h.
 	* config/arm/arm.c (arm_float_abi, arm_fp16_format, arm_abi,
 	target_thread_pointer, arm_structure_size_boundary, struct
 	float_abi, all_float_abis, struct fp16_format, all_fp16_formats,
 	struct abi_name, arm_all_abis): Remove.
-	(arm_option_override) Don't process most enumerated option values
-	here.  Don't process target_fpe_name here.  Work with integer not
-	string for structure size boundary; use separate diagnostics for
-	each case.
+	(arm_option_override) Don't process most enumerated option values here.
+	Don't process target_fpe_name here.  Work with integer not string for
+	structure size boundary; use separate diagnostics for each case.
 	* config/arm/arm.h (enum float_abi_type, enum
 	arm_fp16_format_type, enum arm_abi_type, enum arm_tp_type): Move
 	to arm-opts.h.
@@ -33,8 +39,7 @@
 	(arm_abi_type): New Enum and EnumValue entries.
 	(mfloat-abi=): Use Enum and Init.
 	(float_abi_type): New Enum and EnumValue entries.
-	(mfp=, mfpe=): Replace by separate Alias entries for each
-	argument.
+	(mfp=, mfpe=): Replace by separate Alias entries for each argument.
 	(mfp16-format=): Use Enum and Init.
 	(arm_fp16_format_type): New Enum and EnumValue entries.
 	(mstructure-size-boundary=): Use UInteger and Init.
