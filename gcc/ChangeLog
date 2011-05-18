@@ -1,5 +1,26 @@
 2011-05-18  Ira Rosen  <ira.rosen@linaro.org>
 
+	PR tree-optimization/41881
+	* tree-vectorizer.h (struct _loop_vec_info): Add new field
+	reduction_chains along with a macro for its access.
+	* tree-vect-loop.c (new_loop_vec_info): Initialize reduction chains.
+	(destroy_loop_vec_info): Free reduction chains.
+	(vect_analyze_loop_2): Return false if vect_analyze_slp() returns false.
+	(vect_is_slp_reduction): New function.
+	(vect_is_simple_reduction_1): Call vect_is_slp_reduction.
+	(vect_create_epilog_for_reduction): Support SLP reduction chains.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Allow different
+	definition types for reduction chains.
+	(vect_supported_load_permutation_p): Don't allow permutations for
+	reduction chains.
+	(vect_analyze_slp_instance): Support reduction chains.
+	(vect_analyze_slp): Try to build SLP instance from reduction chains.
+	(vect_get_constant_vectors):  Handle reduction chains.
+	(vect_schedule_slp_instance): Mark the first statement of the
+	reduction chain as reduction.
+
+2011-05-18  Ira Rosen  <ira.rosen@linaro.org>
+
 	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks): Use new
 	names for group elements access.
 	* tree-vectorizer.h (struct _stmt_vec_info): Use interleaving info for
