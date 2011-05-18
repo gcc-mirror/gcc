@@ -1,6 +1,6 @@
 2011-05-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	PR rtl_optimization/48932
+	PR rtl-optimization/48932
 	Backport from mainline:
 	2010-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
