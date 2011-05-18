@@ -93,7 +93,6 @@ c-common.h, not after.
       TYPENAME_IS_RESOLVING_P (in TYPE_NAME_TYPE)
       LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (in LAMBDA_EXPR)
       TARGET_EXPR_DIRECT_INIT_P (in TARGET_EXPR)
-      DECL_DEFERRED_CONSTEXPR_CHECK (in FUNCTION_DECL)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -2344,11 +2343,6 @@ struct GTY((variable_size)) lang_decl {
 /* True if DECL is declared 'constexpr'.  */
 #define DECL_DECLARED_CONSTEXPR_P(DECL) \
   DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (STRIP_TEMPLATE (DECL)))
-
-/* True if we can't tell yet whether the argument/return types of DECL
-   are literal because one is still being defined.  */
-#define DECL_DEFERRED_CONSTEXPR_CHECK(DECL) \
-  TREE_LANG_FLAG_2 (FUNCTION_DECL_CHECK (STRIP_TEMPLATE (DECL)))
 
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
@@ -5337,7 +5331,6 @@ extern void finish_handler_parms		(tree, tree);
 extern void finish_handler			(tree);
 extern void finish_cleanup			(tree, tree);
 extern bool literal_type_p (tree);
-extern void check_deferred_constexpr_decls (void);
 extern tree validate_constexpr_fundecl (tree);
 extern tree register_constexpr_fundef (tree, tree);
 extern bool check_constexpr_ctor_body (tree, tree);

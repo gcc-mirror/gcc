@@ -7200,10 +7200,7 @@ grokfndecl (tree ctype,
   if (inlinep)
     DECL_DECLARED_INLINE_P (decl) = 1;
   if (inlinep & 2)
-    {
-      DECL_DECLARED_CONSTEXPR_P (decl) = true;
-      validate_constexpr_fundecl (decl);
-    }
+    DECL_DECLARED_CONSTEXPR_P (decl) = true;
 
   DECL_EXTERNAL (decl) = 1;
   if (quals && TREE_CODE (type) == FUNCTION_TYPE)
@@ -10681,9 +10678,6 @@ grok_special_member_properties (tree decl)
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
       if (DECL_DECLARED_CONSTEXPR_P (decl)
-	  /* It doesn't count if we can't tell yet whether or not
-	     the constructor is actually constexpr.  */
-	  && !DECL_DEFERRED_CONSTEXPR_CHECK (decl)
 	  && !copy_fn_p (decl) && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
@@ -12523,6 +12517,10 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       if (DECL_FILE_SCOPE_P (decl1))
 	maybe_apply_pragma_weak (decl1);
     }
+
+  /* constexpr functions must have literal argument types and
+     literal return type.  */
+  validate_constexpr_fundecl (decl1);
 
   /* Reset this in case the call to pushdecl changed it.  */
   current_function_decl = decl1;

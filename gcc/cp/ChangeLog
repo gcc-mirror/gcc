@@ -1,3 +1,25 @@
+2011-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48948
+	PR c++/49015
+	* class.c (finalize_literal_type_property): Do check
+	for constexpr member functions of non-literal class.
+	(finish_struct): Don't call check_deferred_constexpr_decls.
+	* cp-tree.h: Don't declare it.
+	(DECL_DEFERRED_CONSTEXPR_CHECK): Remove.
+	* decl.c (grok_special_member_properties): Don't check it
+	(grokfnedcl): Don't call validate_constexpr_fundecl.
+	(start_preparsed_function): Do call it.
+	* pt.c (tsubst_decl): Don't call it.
+	(instantiate_class_template_1): Don't call
+	check_deferred_constexpr_decls.
+	* semantics.c (literal_type_p): Check for any incompleteness.
+	(ensure_literal_type_for_constexpr_object): Likewise.
+	(is_valid_constexpr_fn): Revert deferral changes.
+	(validate_constexpr_fundecl): Likewise.
+	(register_constexpr_fundef): Likewise.
+	(check_deferred_constexpr_decls): Remove.
+
 2011-05-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48969

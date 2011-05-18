@@ -1,4 +1,4 @@
-// A constructor that might or might not be constexpr doesn't make
+// A constructor that might or might not be constexpr still makes
 // its class literal.
 // { dg-options -std=c++0x }
 
@@ -28,4 +28,4 @@ struct D
   C<D> c;
 };
 
-constexpr D d {};		// { dg-error "not literal" }
+constexpr D d {};		// { dg-error "not a constexpr function" }
