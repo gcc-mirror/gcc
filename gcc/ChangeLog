@@ -1,5 +1,12 @@
 2011-05-18  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/49018
+	* gimple.c (gimple_has_side_effects): Volatile asms have side-effects.
+	* tree-ssa-ifcombine.c (bb_no_side_effects_p): Use
+	gimple_has_side_effects.
+
+2011-05-18  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline
 	2011-04-19  Richard Guenther  <rguenther@suse.de>
 

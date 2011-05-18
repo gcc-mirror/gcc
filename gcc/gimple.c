@@ -2286,6 +2286,10 @@ gimple_has_side_effects (const_gimple s)
   if (gimple_has_volatile_ops (s))
     return true;
 
+  if (gimple_code (s) == GIMPLE_ASM
+      && gimple_asm_volatile_p (s))
+    return true;
+
   if (is_gimple_call (s))
     {
       unsigned nargs = gimple_call_num_args (s);
@@ -2299,7 +2303,7 @@ gimple_has_side_effects (const_gimple s)
       if (gimple_call_lhs (s)
           && TREE_SIDE_EFFECTS (gimple_call_lhs (s)))
 	{
-	  gcc_assert (gimple_has_volatile_ops (s));
+	  gcc_checking_assert (gimple_has_volatile_ops (s));
 	  return true;
 	}
 
@@ -2309,7 +2313,7 @@ gimple_has_side_effects (const_gimple s)
       for (i = 0; i < nargs; i++)
         if (TREE_SIDE_EFFECTS (gimple_call_arg (s, i)))
 	  {
-	    gcc_assert (gimple_has_volatile_ops (s));
+	    gcc_checking_assert (gimple_has_volatile_ops (s));
 	    return true;
 	  }
 
@@ -2318,11 +2322,14 @@ gimple_has_side_effects (const_gimple s)
   else
     {
       for (i = 0; i < gimple_num_ops (s); i++)
-	if (TREE_SIDE_EFFECTS (gimple_op (s, i)))
-	  {
-	    gcc_assert (gimple_has_volatile_ops (s));
-	    return true;
-	  }
+	{
+	  tree op = gimple_op (s, i);
+	  if (op && TREE_SIDE_EFFECTS (op))
+	    {
+	      gcc_checking_assert (gimple_has_volatile_ops (s));
+	      return true;
+	    }
+	}
     }
 
   return false;
