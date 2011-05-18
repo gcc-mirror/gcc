@@ -1,3 +1,12 @@
+2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/49002
+	* gcc.target/i386/pr49002-1.c: New test.
+	* gcc.target/i386/pr49002-2.c: Likewise.
+
 2011-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49039

@@ -1,3 +1,12 @@
+2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/49002
+	* config/i386/sse.md (avx_<avxmodesuffixp><avxmodesuffix>_<avxmodesuffixp>):
+	Properly handle load cast.
+
 2011-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49039

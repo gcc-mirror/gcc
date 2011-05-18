@@ -12017,12 +12017,13 @@
   "&& reload_completed"
   [(const_int 0)]
 {
+  rtx op0 = operands[0];
   rtx op1 = operands[1];
-  if (REG_P (op1))
+  if (REG_P (op0))
+    op0 = gen_rtx_REG (<avxhalfvecmode>mode, REGNO (op0));
+  else 
     op1 = gen_rtx_REG (<MODE>mode, REGNO (op1));
-  else
-    op1 = gen_lowpart (<MODE>mode, op1);
-  emit_move_insn (operands[0], op1);
+  emit_move_insn (op0, op1);
   DONE;
 })
 
