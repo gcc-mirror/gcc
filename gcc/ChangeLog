@@ -1,3 +1,20 @@
+2011-05-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-05-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48172
+	* tree-vect-loop-manip.c (vect_vfa_segment_size): Do not exclude
+	the number of iterations from the segment size calculation.
+	(vect_create_cond_for_alias_checks): Adjust.
+
+	2011-05-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48172
+	* tree-vect-loop-manip.c (vect_vfa_segment_size): Avoid
+	multiplying by number of iterations for equal step.
+	(vect_create_cond_for_alias_checks): Likewise.
+
 2011-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49000

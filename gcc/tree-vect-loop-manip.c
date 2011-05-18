@@ -2353,27 +2353,27 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 
    Input:
      DR: The data reference.
-     VECT_FACTOR: vectorization factor.
+     LENGTH_FACTOR: segment length to consider.
 
    Return an expression whose value is the size of segment which will be
    accessed by DR.  */
 
 static tree
-vect_vfa_segment_size (struct data_reference *dr, tree vect_factor)
+vect_vfa_segment_size (struct data_reference *dr, tree length_factor)
 {
-  tree segment_length = fold_build2 (MULT_EXPR, integer_type_node,
-			             DR_STEP (dr), vect_factor);
-
+  tree segment_length;
+  segment_length = size_binop (MULT_EXPR,
+			       fold_convert (sizetype, DR_STEP (dr)),
+			       fold_convert (sizetype, length_factor));
   if (vect_supportable_dr_alignment (dr, false)
         == dr_explicit_realign_optimized)
     {
       tree vector_size = TYPE_SIZE_UNIT
 			  (STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr))));
 
-      segment_length = fold_build2 (PLUS_EXPR, integer_type_node,
-				    segment_length, vector_size);
+      segment_length = size_binop (PLUS_EXPR, segment_length, vector_size);
     }
-  return fold_convert (sizetype, segment_length);
+  return segment_length;
 }
 
 
@@ -2407,12 +2407,12 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   VEC (ddr_p, heap) * may_alias_ddrs =
     LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
-  tree vect_factor =
-    build_int_cst (integer_type_node, LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+  int vect_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
 
   ddr_p ddr;
   unsigned int i;
-  tree part_cond_expr;
+  tree part_cond_expr, length_factor;
 
   /* Create expression
      ((store_ptr_0 + store_segment_length_0) < load_ptr_0)
@@ -2460,8 +2460,12 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
         vect_create_addr_base_for_vector_ref (stmt_b, cond_expr_stmt_list,
 					      NULL_TREE, loop);
 
-      segment_length_a = vect_vfa_segment_size (dr_a, vect_factor);
-      segment_length_b = vect_vfa_segment_size (dr_b, vect_factor);
+      if (!operand_equal_p (DR_STEP (dr_a), DR_STEP (dr_b), 0))
+	length_factor = scalar_loop_iters;
+      else
+	length_factor = size_int (vect_factor);
+      segment_length_a = vect_vfa_segment_size (dr_a, length_factor);
+      segment_length_b = vect_vfa_segment_size (dr_b, length_factor);
 
       if (vect_print_dump_info (REPORT_DR_DETAILS))
 	{
