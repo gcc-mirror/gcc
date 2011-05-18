@@ -6958,14 +6958,27 @@ gfc_conv_intrinsic_move_alloc (gfc_code *code)
   if (code->ext.actual->expr->rank == 0)
     {
       /* Scalar arguments: Generate pointer assignments.  */
-      gfc_expr *from, *to;
+      gfc_expr *from, *to, *deal;
       stmtblock_t block;
       tree tmp;
+      gfc_se se;
 
       from = code->ext.actual->expr;
       to = code->ext.actual->next->expr;
 
       gfc_start_block (&block);
+
+      /* Deallocate 'TO' argument.  */
+      gfc_init_se (&se, NULL);
+      se.want_pointer = 1;
+      deal = gfc_copy_expr (to);
+      if (deal->ts.type == BT_CLASS)
+	gfc_add_data_component (deal);
+      gfc_conv_expr (&se, deal);
+      tmp = gfc_deallocate_scalar_with_status (se.expr, NULL, true,
+					       deal, deal->ts);
+      gfc_add_expr_to_block (&block, tmp);
+      gfc_free_expr (deal);
 
       if (to->ts.type == BT_CLASS)
 	tmp = gfc_trans_class_assign (to, from, EXEC_POINTER_ASSIGN);
