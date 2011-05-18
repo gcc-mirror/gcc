@@ -509,10 +509,10 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	    {
 	      /* Load.  */
               /* FORNOW: Check that there is no gap between the loads.  */
-              if ((DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) == stmt
-                   && DR_GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
-                  || (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) != stmt
-                      && DR_GROUP_GAP (vinfo_for_stmt (stmt)) != 1))
+              if ((GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
+                   && GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
+                  || (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) != stmt
+                      && GROUP_GAP (vinfo_for_stmt (stmt)) != 1))
                 {
                   if (vect_print_dump_info (REPORT_SLP))
                     {
@@ -526,7 +526,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 
               /* Check that the size of interleaved loads group is not
                  greater than the SLP group size.  */
-              if (DR_GROUP_SIZE (vinfo_for_stmt (stmt)) > ncopies * group_size)
+              if (GROUP_SIZE (vinfo_for_stmt (stmt)) > ncopies * group_size)
                 {
                   if (vect_print_dump_info (REPORT_SLP))
                     {
@@ -539,7 +539,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
                   return false;
                 }
 
-              first_load = DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt));
+              first_load = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt));
               if (prev_first_load)
                 {
                   /* Check that there are no loads from different interleaving
@@ -784,7 +784,7 @@ vect_supported_slp_permutation_p (slp_instance instance)
 {
   slp_tree node = VEC_index (slp_tree, SLP_INSTANCE_LOADS (instance), 0);
   gimple stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (node), 0);
-  gimple first_load = DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt));
+  gimple first_load = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt));
   VEC (slp_tree, heap) *sorted_loads = NULL;
   int index;
   slp_tree *tmp_loads = NULL;
@@ -803,7 +803,7 @@ vect_supported_slp_permutation_p (slp_instance instance)
     {
       gimple scalar_stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (load), 0);
       /* Check that the loads are all in the same interleaving chain.  */
-      if (DR_GROUP_FIRST_DR (vinfo_for_stmt (scalar_stmt)) != first_load)
+      if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (scalar_stmt)) != first_load)
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             {
@@ -933,7 +933,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
                 first = stmt;
               else
                 {
-                  if (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) != first)
+                  if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) != first)
                     {
                       if (complex_numbers != 2)
                         return false;
@@ -948,7 +948,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
                       other_node_first = VEC_index (gimple, 
                                 SLP_TREE_SCALAR_STMTS (other_complex_node), 0);
 
-                      if (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) 
+                      if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt))
                           != other_node_first)
                        return false;
                     }
@@ -1142,7 +1142,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 {
   slp_instance new_instance;
   slp_tree node = XNEW (struct _slp_tree);
-  unsigned int group_size = DR_GROUP_SIZE (vinfo_for_stmt (stmt));
+  unsigned int group_size = GROUP_SIZE (vinfo_for_stmt (stmt));
   unsigned int unrolling_factor = 1, nunits;
   tree vectype, scalar_type = NULL_TREE;
   gimple next;
@@ -1157,7 +1157,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
     {
       scalar_type = TREE_TYPE (DR_REF (dr));
       vectype = get_vectype_for_scalar_type (scalar_type);
-      group_size = DR_GROUP_SIZE (vinfo_for_stmt (stmt));
+      group_size = GROUP_SIZE (vinfo_for_stmt (stmt));
     }
   else
     {
@@ -1204,7 +1204,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       while (next)
         {
           VEC_safe_push (gimple, heap, SLP_TREE_SCALAR_STMTS (node), next);
-          next = DR_GROUP_NEXT_DR (vinfo_for_stmt (next));
+          next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next));
         }
     }
   else

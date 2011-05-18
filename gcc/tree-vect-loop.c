@@ -4924,7 +4924,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		  /* Interleaving. If IS_STORE is TRUE, the vectorization of the
 		     interleaving chain was completed - free all the stores in
 		     the chain.  */
-		  vect_remove_stores (DR_GROUP_FIRST_DR (stmt_info));
+		  vect_remove_stores (GROUP_FIRST_ELEMENT (stmt_info));
 		  gsi_remove (&si, true);
 		  continue;
 		}
