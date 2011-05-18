@@ -248,6 +248,10 @@ typedef struct _loop_vec_info {
   /* Reduction cycles detected in the loop. Used in loop-aware SLP.  */
   VEC (gimple, heap) *reductions;
 
+  /* All reduction chains in the loop, represented by the first
+     stmt in the chain.  */
+  VEC (gimple, heap) *reduction_chains;
+
   /* Hash table used to choose the best peeling option.  */
   htab_t peeling_htab;
 
@@ -277,6 +281,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_SLP_INSTANCES(L)        (L)->slp_instances
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
+#define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
 #define LOOP_VINFO_PEELING_HTAB(L)         (L)->peeling_htab
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
