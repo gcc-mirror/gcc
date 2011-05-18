@@ -1,3 +1,13 @@
+2011-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libsupc++/initializer_list: Use noexcept specifier.
+	(initializer_list<>::size, begin, end): Qualify as const.
+	* include/bits/move.h (__addressof, forward, move, addressof): Specify
+	as noexcept.
+	* include/std/bitset: Use noexcept specifier throughout.
+	* include/debug/bitset: Update.
+	* include/profile/bitset: Likewise.
+
 2011-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/tuple: Use noexcept where appropriate.
