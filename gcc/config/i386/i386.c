@@ -4692,7 +4692,7 @@ ix86_valid_target_attribute_tree (tree args)
       || target_flags != def->x_target_flags
       || option_strings[IX86_FUNCTION_SPECIFIC_ARCH]
       || option_strings[IX86_FUNCTION_SPECIFIC_TUNE]
-      || ix86_fpmath != def->x_ix86_fpmath)
+      || enum_opts_set.x_ix86_fpmath)
     {
       /* If we are using the default tune= or arch=, undo the string assigned,
 	 and use the default.  */

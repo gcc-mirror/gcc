@@ -1,3 +1,8 @@
+2011-05-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386.c (ix86_valid_target_attribute_tree): Use
+	enum_opts_set when testing if attributes have set -mfpmath=.
+
 2011-05-17  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_handle_option): Remove unused variable.
