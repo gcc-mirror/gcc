@@ -2866,6 +2866,8 @@ computation_cost (tree expr, bool speed)
   if (MEM_P (rslt))
     cost += address_cost (XEXP (rslt, 0), TYPE_MODE (type),
 			  TYPE_ADDR_SPACE (type), speed);
+  else if (!REG_P (rslt))
+    cost += rtx_cost (rslt, SET, speed);
 
   return cost;
 }
