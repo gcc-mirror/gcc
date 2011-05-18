@@ -3350,12 +3350,15 @@ verify_gimple_assign_unary (gimple stmt)
       return false;
 
     case TRUTH_NOT_EXPR:
-      if (!useless_type_conversion_p (boolean_type_node,  rhs1_type))
+      /* We require two-valued operand types.  */
+      if (!(TREE_CODE (rhs1_type) == BOOLEAN_TYPE
+	    || (INTEGRAL_TYPE_P (rhs1_type)
+		&& TYPE_PRECISION (rhs1_type) == 1)))
         {
-	    error ("invalid types in truth not");
-	    debug_generic_expr (lhs_type);
-	    debug_generic_expr (rhs1_type);
-	    return true;
+	  error ("invalid types in truth not");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
         }
       break;
 
@@ -3558,10 +3561,13 @@ do_pointer_plus_expr_check:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
       {
-	/* We allow only boolean typed or compatible argument and result.  */
-	if (!useless_type_conversion_p (boolean_type_node,  rhs1_type)
-	    || !useless_type_conversion_p (boolean_type_node,  rhs2_type)
-	    || !useless_type_conversion_p (boolean_type_node,  lhs_type))
+	/* We require two-valued operand types.  */
+	if (!(TREE_CODE (rhs1_type) == BOOLEAN_TYPE
+	      || (INTEGRAL_TYPE_P (rhs1_type)
+		  && TYPE_PRECISION (rhs1_type) == 1))
+	    || !(TREE_CODE (rhs2_type) == BOOLEAN_TYPE
+		 || (INTEGRAL_TYPE_P (rhs2_type)
+		     && TYPE_PRECISION (rhs2_type) == 1)))
 	  {
 	    error ("type mismatch in binary truth expression");
 	    debug_generic_expr (lhs_type);
@@ -3570,7 +3576,7 @@ do_pointer_plus_expr_check:
 	    return true;
 	  }
 
-	return false;
+	break;
       }
 
     case LT_EXPR:

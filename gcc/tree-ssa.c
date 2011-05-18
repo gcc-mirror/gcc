@@ -1306,6 +1306,13 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	  || TYPE_PRECISION (inner_type) != TYPE_PRECISION (outer_type))
 	return false;
 
+      /* Preserve conversions to BOOLEAN_TYPE if it is not of precision
+         one.  */
+      if (TREE_CODE (inner_type) != BOOLEAN_TYPE
+	  && TREE_CODE (outer_type) == BOOLEAN_TYPE
+	  && TYPE_PRECISION (outer_type) != 1)
+	return false;
+
       /* We don't need to preserve changes in the types minimum or
 	 maximum value in general as these do not generate code
 	 unless the types precisions are different.  */
