@@ -2205,6 +2205,17 @@ execute_update_addresses_taken (void)
 		  }
 	      }
 
+	    else if (gimple_debug_bind_p (stmt)
+		     && gimple_debug_bind_has_value_p (stmt))
+	      {
+		tree *valuep = gimple_debug_bind_get_value_ptr (stmt);
+		tree decl;
+		maybe_rewrite_mem_ref_base (valuep);
+		decl = non_rewritable_mem_ref_base (*valuep);
+		if (decl && symbol_marked_for_renaming (decl))
+		  gimple_debug_bind_reset_value (stmt);
+	      }
+
 	    if (gimple_references_memory_p (stmt)
 		|| is_gimple_debug (stmt))
 	      update_stmt (stmt);

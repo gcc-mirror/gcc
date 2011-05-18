@@ -1,3 +1,11 @@
+2011-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49000
+	* tree-ssa.c (execute_update_addresses_taken): Call
+	maybe_rewrite_mem_ref_base on debug stmt value.  If it couldn't
+	be rewritten and decl has been marked for renaming, reset
+	the debug stmt.
+
 2011-05-17  Nick Clifton  <nickc@redhat.com>
 
 	Import these patches from the mainline:
