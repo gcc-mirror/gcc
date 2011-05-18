@@ -1,3 +1,9 @@
+2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/49002
+	* config/i386/sse.md (avx_<ssemodesuffix><avxsizesuffix>_<ssemodesuffix>):
+	Properly handle load cast.
+
 2011-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49039
