@@ -51,6 +51,7 @@ crti%O%s crtbegin%O%s crtlibid%O%s"
 			    %{mmulticore:%{mcorea:-T bf561a.ld%s}} \
 			    %{mmulticore:%{mcoreb:-T bf561b.ld%s}} \
 			    %{mmulticore:%{!mcorea:%{!mcoreb:-T bf561m.ld%s}}}} \
+	      %{mcpu=bf592*:-T bf592.ld%s} \
 	      %{!mcpu=*:%eno processor type specified for linking} \
 	      %{!mcpu=bf561*:-T bfin-common-sc.ld%s} \
 	      %{mcpu=bf561*:%{!mmulticore:-T bfin-common-sc.ld%s} \
