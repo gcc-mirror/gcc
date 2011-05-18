@@ -2437,7 +2437,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
 
       dr_a = DDR_A (ddr);
       stmt_a = DR_STMT (DDR_A (ddr));
-      dr_group_first_a = DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt_a));
+      dr_group_first_a = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt_a));
       if (dr_group_first_a)
         {
 	  stmt_a = dr_group_first_a;
@@ -2446,7 +2446,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
 
       dr_b = DDR_B (ddr);
       stmt_b = DR_STMT (DDR_B (ddr));
-      dr_group_first_b = DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt_b));
+      dr_group_first_b = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt_b));
       if (dr_group_first_b)
         {
 	  stmt_b = dr_group_first_b;

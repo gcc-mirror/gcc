@@ -1,3 +1,27 @@
+2011-05-18  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks): Use new
+	names for group elements access.
+	* tree-vectorizer.h (struct _stmt_vec_info): Use interleaving info for
+	reduction chains as well.  Remove data reference and interleaving
+	related words from the fields names.
+	* tree-vect-loop.c (vect_transform_loop): Use new names for group
+	elements access.
+	* tree-vect-data-refs.c (vect_get_place_in_interleaving_chain,
+	vect_insert_into_interleaving_chain, vect_update_interleaving_chain,
+	vect_update_interleaving_chain, vect_same_range_drs,
+	vect_analyze_data_ref_dependence, vect_update_misalignment_for_peel,
+	vect_verify_datarefs_alignment, vector_alignment_reachable_p,
+	vect_peeling_hash_get_lowest_cost, vect_enhance_data_refs_alignment,
+	vect_analyze_group_access, vect_analyze_data_ref_access,
+	vect_create_data_ref_ptr, vect_transform_strided_load,
+	vect_record_strided_load_vectors): Likewise.
+	* tree-vect-stmts.c (vect_model_simple_cost, vect_model_store_cost,
+	vect_model_load_cost, vectorizable_store, vectorizable_load,
+	vect_remove_stores, new_stmt_vec_info): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree,
+	vect_supported_slp_permutation_p, vect_analyze_slp_instance): Likewise.
+
 2011-05-18  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48989
