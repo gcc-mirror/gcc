@@ -8595,8 +8595,6 @@ instantiate_class_template_1 (tree type)
   pop_deferring_access_checks ();
   pop_tinst_level ();
 
-  check_deferred_constexpr_decls ();
-
   /* The vtable for a template class can be emitted in any translation
      unit in which the class is instantiated.  When there is no key
      method, however, finish_struct_1 will already have added TYPE to
@@ -9743,7 +9741,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (DECL_DEFAULTED_OUTSIDE_CLASS_P (r)
 	    && !processing_template_decl)
 	  defaulted_late_check (r);
-	validate_constexpr_fundecl (r);
 
 	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
 					args, complain, in_decl);

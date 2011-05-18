@@ -1,3 +1,9 @@
+2011-05-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-incomplete3.C: New.
+	* g++.dg/cpp0x/constexpr-incomplete2.C: Adjust.
+	* g++.dg/cpp0x/constexpr-memfn1.C: Adjust.
+
 2011-05-18  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	* gcc.target/bfin/mcpu-bf592.c: New test.
