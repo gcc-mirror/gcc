@@ -1,3 +1,13 @@
+2011-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/tuple: Use noexcept where appropriate.
+	(tuple<>::swap): Rework implementation.
+	(_Head_base<>::_M_swap_impl): Remove.
+	(get(std::tuple<>&&)): Add.
+	* testsuite/20_util/tuple/element_access/get2.cc: New.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line number.
+
 2011-05-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/utility: Simplify the last commit, the whole

@@ -59,6 +59,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __add_ref<_Tp&>
     { typedef _Tp& type; };
 
+  // Adds an rvalue reference to a non-reference type.
+  template<typename _Tp>
+    struct __add_r_ref
+    { typedef _Tp&& type; };
+
+  template<typename _Tp>
+    struct __add_r_ref<_Tp&>
+    { typedef _Tp& type; };
+
   template<std::size_t _Idx, typename _Head, bool _IsEmpty>
     struct _Head_base;
 
@@ -78,13 +87,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Head&       _M_head()       { return *this; }
       const _Head& _M_head() const { return *this; }
-    
-      void 
-      _M_swap_impl(_Head& __h)
-      {
-	using std::swap;
-	swap(__h, _M_head());
-      }
     };
 
   template<std::size_t _Idx, typename _Head>
@@ -102,13 +104,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Head&       _M_head()       { return _M_head_impl; }
       const _Head& _M_head() const { return _M_head_impl; }        
-
-      void
-      _M_swap_impl(_Head& __h)
-      { 
-	using std::swap;
-	swap(__h, _M_head());
-      }
 
       _Head _M_head_impl; 
     };
@@ -130,9 +125,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<std::size_t _Idx>
     struct _Tuple_impl<_Idx>
-    { 
+    {
+      template<std::size_t, typename...> friend class _Tuple_impl;
+
     protected:
-      void _M_swap_impl(_Tuple_impl&) { /* no-op */ }
+      void _M_swap(_Tuple_impl&) noexcept { /* no-op */ }
     };
 
   /**
@@ -145,6 +142,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public _Tuple_impl<_Idx + 1, _Tail...>,
       private _Head_base<_Idx, _Head, std::is_empty<_Head>::value>
     {
+      template<std::size_t, typename...> friend class _Tuple_impl;
+
       typedef _Tuple_impl<_Idx + 1, _Tail...> _Inherited;
       typedef _Head_base<_Idx, _Head, std::is_empty<_Head>::value> _Base;
 
@@ -218,10 +217,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       void
-      _M_swap_impl(_Tuple_impl& __in)
+      _M_swap(_Tuple_impl& __in)
+      noexcept(noexcept(swap(std::declval<_Head&>(),
+			     std::declval<_Head&>()))
+	       && noexcept(__in._M_tail()._M_swap(__in._M_tail())))
       {
-	_Base::_M_swap_impl(__in._M_head());
-	_Inherited::_M_swap_impl(__in._M_tail());
+	using std::swap;
+	swap(this->_M_head(), __in._M_head());
+	_Inherited::_M_swap(__in._M_tail());
       }
     };
 
@@ -300,14 +303,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       swap(tuple& __in)
-      { _Inherited::_M_swap_impl(__in); }
+      noexcept(noexcept(__in._M_swap(__in)))
+      { _Inherited::_M_swap(__in); }
     };
 
   template<>  
     class tuple<>
     {
     public:
-      void swap(tuple&) { /* no-op */ }
+      void swap(tuple&) noexcept { /* no-op */ }
     };
 
   /// tuple (2-element), with construction and assignment from a pair.
@@ -360,6 +364,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       tuple&
       operator=(tuple&& __in)
+      // noexcept has to wait is_nothrow_move_assignable
       {
 	static_cast<_Inherited&>(*this) = std::move(__in);
 	return *this;
@@ -392,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _U1, typename _U2>
         tuple&
-        operator=(pair<_U1, _U2>&& __in)
+        operator=(pair<_U1, _U2>&& __in) noexcept
         {
 	  this->_M_head() = std::forward<_U1>(__in.first);
 	  this->_M_tail()._M_head() = std::forward<_U2>(__in.second);
@@ -401,11 +406,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       swap(tuple& __in)
-      { 
-	using std::swap;
-	swap(this->_M_head(), __in._M_head());
-	swap(this->_M_tail()._M_head(), __in._M_tail()._M_head());	
-      }
+      noexcept(noexcept(__in._M_swap(__in)))
+      { _Inherited::_M_swap(__in); }
     };
 
   /// tuple (1-element).
@@ -473,7 +475,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       swap(tuple& __in)
-      { _Inherited::_M_swap_impl(__in); }
+      noexcept(noexcept(__in._M_swap(__in)))
+      { _Inherited::_M_swap(__in); }
     };
 
 
@@ -522,21 +525,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __get_helper(const _Tuple_impl<__i, _Head, _Tail...>& __t)
     { return __t._M_head(); }
 
-  // Return a reference (const reference) to the ith element of a tuple.
-  // Any const or non-const ref elements are returned with their original type.
+  // Return a reference (const reference, rvalue reference) to the ith element
+  // of a tuple.  Any const or non-const ref elements are returned with their
+  // original type.
   template<std::size_t __i, typename... _Elements>
     inline typename __add_ref<
-                      typename tuple_element<__i, tuple<_Elements...> >::type
+                      typename tuple_element<__i, tuple<_Elements...>>::type
                     >::type
-    get(tuple<_Elements...>& __t)
+    get(tuple<_Elements...>& __t) noexcept
     { return __get_helper<__i>(__t); }
 
   template<std::size_t __i, typename... _Elements>
     inline typename __add_c_ref<
-                      typename tuple_element<__i, tuple<_Elements...> >::type
+                      typename tuple_element<__i, tuple<_Elements...>>::type
                     >::type
-    get(const tuple<_Elements...>& __t)
+    get(const tuple<_Elements...>& __t) noexcept
     { return __get_helper<__i>(__t); }
+
+  template<std::size_t __i, typename... _Elements>
+    inline typename __add_r_ref<
+                      typename tuple_element<__i, tuple<_Elements...>>::type
+                    >::type
+    get(tuple<_Elements...>&& __t) noexcept
+    { return std::forward<typename tuple_element<__i,
+	tuple<_Elements...>>::type&&>(get<__i>(__t)); }
 
   // This class helps construct the various comparison operations on tuples
   template<std::size_t __check_equal_size, std::size_t __i, std::size_t __j,
@@ -628,7 +640,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Elements>
     inline tuple<_Elements&&...>
-    forward_as_tuple(_Elements&&... __args)
+    forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
   template<std::size_t...> struct __index_holder { };    
@@ -737,12 +749,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Elements>
     inline tuple<_Elements&...>
-    tie(_Elements&... __args)
+    tie(_Elements&... __args) noexcept
     { return tuple<_Elements&...>(__args...); }
 
   template<typename... _Elements>
     inline void 
     swap(tuple<_Elements...>& __x, tuple<_Elements...>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   // A class (and instance) which can be used in 'tie' when an element
