@@ -1,3 +1,33 @@
+2011-05-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm-opts.h (enum arm_fp16_format_type, enum
+	arm_abi_type, enum float_abi_type, enum arm_tp_type): Move from
+	arm.h.
+	* config/arm/arm.c (arm_float_abi, arm_fp16_format, arm_abi,
+	target_thread_pointer, arm_structure_size_boundary, struct
+	float_abi, all_float_abis, struct fp16_format, all_fp16_formats,
+	struct abi_name, arm_all_abis): Remove.
+	(arm_option_override) Don't process most enumerated option values
+	here.  Don't process target_fpe_name here.  Work with integer not
+	string for structure size boundary; use separate diagnostics for
+	each case.
+	* config/arm/arm.h (enum float_abi_type, enum
+	arm_fp16_format_type, enum arm_abi_type, enum arm_tp_type): Move
+	to arm-opts.h.
+	(arm_float_abi, arm_fp16_format, arm_abi, target_thread_pointer,
+	arm_structure_size_boundary): Remove.
+	* config/arm/arm.opt (mabi=): Use Enum and Init.
+	(arm_abi_type): New Enum and EnumValue entries.
+	(mfloat-abi=): Use Enum and Init.
+	(float_abi_type): New Enum and EnumValue entries.
+	(mfp=, mfpe=): Replace by separate Alias entries for each
+	argument.
+	(mfp16-format=): Use Enum and Init.
+	(arm_fp16_format_type): New Enum and EnumValue entries.
+	(mstructure-size-boundary=): Use UInteger and Init.
+	(mtp=): Use Enum and Init.
+	(arm_tp_type): New Enum and EnumValue entries.
+
 2011-05-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49018
