@@ -636,21 +636,6 @@ int arm_fpu_attr;
 /* Which floating popint hardware to use.  */
 const struct arm_fpu_desc *arm_fpu_desc;
 
-/* Whether to use floating point hardware.  */
-enum float_abi_type arm_float_abi;
-
-/* Which __fp16 format to use.  */
-enum arm_fp16_format_type arm_fp16_format;
-
-/* Which ABI to use.  */
-enum arm_abi_type arm_abi;
-
-/* Which thread pointer model to use.  */
-enum arm_tp_type target_thread_pointer = TP_AUTO;
-
-/* Used to parse -mstructure_size_boundary command line option.  */
-int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
-
 /* Used for Thumb call_via trampolines.  */
 rtx thumb_call_via_label[14];
 static int thumb_call_reg_needed;
@@ -975,58 +960,6 @@ static const struct arm_fpu_desc all_fpus[] =
   {"vfp3",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false},
 };
 
-
-struct float_abi
-{
-  const char * name;
-  enum float_abi_type abi_type;
-};
-
-
-/* Available values for -mfloat-abi=.  */
-
-static const struct float_abi all_float_abis[] =
-{
-  {"soft",	ARM_FLOAT_ABI_SOFT},
-  {"softfp",	ARM_FLOAT_ABI_SOFTFP},
-  {"hard",	ARM_FLOAT_ABI_HARD}
-};
-
-
-struct fp16_format
-{
-  const char *name;
-  enum arm_fp16_format_type fp16_format_type;
-};
-
-
-/* Available values for -mfp16-format=.  */
-
-static const struct fp16_format all_fp16_formats[] =
-{
-  {"none",		ARM_FP16_FORMAT_NONE},
-  {"ieee",		ARM_FP16_FORMAT_IEEE},
-  {"alternative",	ARM_FP16_FORMAT_ALTERNATIVE}
-};
-
-
-struct abi_name
-{
-  const char *name;
-  enum arm_abi_type abi_type;
-};
-
-
-/* Available values for -mabi=.  */
-
-static const struct abi_name arm_all_abis[] =
-{
-  {"apcs-gnu",    ARM_ABI_APCS},
-  {"atpcs",   ARM_ABI_ATPCS},
-  {"aapcs",   ARM_ABI_AAPCS},
-  {"iwmmxt",  ARM_ABI_IWMMXT},
-  {"aapcs-linux",   ARM_ABI_AAPCS_LINUX}
-};
 
 /* Supported TLS relocations.  */
 
@@ -1447,39 +1380,6 @@ arm_option_override (void)
   tune_flags = arm_selected_tune->flags;
   current_tune = arm_selected_tune->tune;
 
-  if (target_fp16_format_name)
-    {
-      for (i = 0; i < ARRAY_SIZE (all_fp16_formats); i++)
-	{
-	  if (streq (all_fp16_formats[i].name, target_fp16_format_name))
-	    {
-	      arm_fp16_format = all_fp16_formats[i].fp16_format_type;
-	      break;
-	    }
-	}
-      if (i == ARRAY_SIZE (all_fp16_formats))
-	error ("invalid __fp16 format option: -mfp16-format=%s",
-	       target_fp16_format_name);
-    }
-  else
-    arm_fp16_format = ARM_FP16_FORMAT_NONE;
-
-  if (target_abi_name)
-    {
-      for (i = 0; i < ARRAY_SIZE (arm_all_abis); i++)
-	{
-	  if (streq (arm_all_abis[i].name, target_abi_name))
-	    {
-	      arm_abi = arm_all_abis[i].abi_type;
-	      break;
-	    }
-	}
-      if (i == ARRAY_SIZE (arm_all_abis))
-	error ("invalid ABI option: -mabi=%s", target_abi_name);
-    }
-  else
-    arm_abi = ARM_DEFAULT_ABI;
-
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
   if (TARGET_ARM && !(insn_flags & FL_NOTM))
@@ -1607,17 +1507,6 @@ arm_option_override (void)
   if (TARGET_IWMMXT_ABI && !TARGET_IWMMXT)
     error ("iwmmxt abi requires an iwmmxt capable cpu");
 
-  if (target_fpu_name == NULL && target_fpe_name != NULL)
-    {
-      if (streq (target_fpe_name, "2"))
-	target_fpu_name = "fpe2";
-      else if (streq (target_fpe_name, "3"))
-	target_fpu_name = "fpe3";
-      else
-	error ("invalid floating point emulation option: -mfpe=%s",
-	       target_fpe_name);
-    }
-
   if (target_fpu_name == NULL)
     {
 #ifdef FPUTYPE_DEFAULT
@@ -1668,24 +1557,6 @@ arm_option_override (void)
     default:
       gcc_unreachable();
     }
-
-  if (target_float_abi_name != NULL)
-    {
-      /* The user specified a FP ABI.  */
-      for (i = 0; i < ARRAY_SIZE (all_float_abis); i++)
-	{
-	  if (streq (all_float_abis[i].name, target_float_abi_name))
-	    {
-	      arm_float_abi = all_float_abis[i].abi_type;
-	      break;
-	    }
-	}
-      if (i == ARRAY_SIZE (all_float_abis))
-	error ("invalid floating point abi: -mfloat-abi=%s",
-	       target_float_abi_name);
-    }
-  else
-    arm_float_abi = TARGET_DEFAULT_FLOAT_ABI;
 
   if (TARGET_AAPCS_BASED
       && (arm_fpu_desc->model == ARM_FP_MODEL_FPA))
@@ -1747,18 +1618,6 @@ arm_option_override (void)
       && (tune_flags & FL_MODE32) == 0)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
 
-  if (target_thread_switch)
-    {
-      if (strcmp (target_thread_switch, "soft") == 0)
-	target_thread_pointer = TP_SOFT;
-      else if (strcmp (target_thread_switch, "auto") == 0)
-	target_thread_pointer = TP_AUTO;
-      else if (strcmp (target_thread_switch, "cp15") == 0)
-	target_thread_pointer = TP_CP15;
-      else
-	error ("invalid thread pointer option: -mtp=%s", target_thread_switch);
-    }
-
   /* Use the cp15 method if it is available.  */
   if (target_thread_pointer == TP_AUTO)
     {
@@ -1772,19 +1631,25 @@ arm_option_override (void)
     error ("can not use -mtp=cp15 with 16-bit Thumb");
 
   /* Override the default structure alignment for AAPCS ABI.  */
-  if (TARGET_AAPCS_BASED)
-    arm_structure_size_boundary = 8;
-
-  if (structure_size_string != NULL)
+  if (!global_options_set.x_arm_structure_size_boundary)
     {
-      int size = strtol (structure_size_string, NULL, 0);
-
-      if (size == 8 || size == 32
-	  || (ARM_DOUBLEWORD_ALIGN && size == 64))
-	arm_structure_size_boundary = size;
-      else
-	warning (0, "structure size boundary can only be set to %s",
-		 ARM_DOUBLEWORD_ALIGN ? "8, 32 or 64": "8 or 32");
+      if (TARGET_AAPCS_BASED)
+	arm_structure_size_boundary = 8;
+    }
+  else
+    {
+      if (arm_structure_size_boundary != 8
+	  && arm_structure_size_boundary != 32
+	  && !(ARM_DOUBLEWORD_ALIGN && arm_structure_size_boundary == 64))
+	{
+	  if (ARM_DOUBLEWORD_ALIGN)
+	    warning (0,
+		     "structure size boundary can only be set to 8, 32 or 64");
+	  else
+	    warning (0, "structure size boundary can only be set to 8 or 32");
+	  arm_structure_size_boundary
+	    = (TARGET_AAPCS_BASED ? 8 : DEFAULT_STRUCTURE_SIZE_BOUNDARY);
+	}
     }
 
   if (!TARGET_ARM && TARGET_VXWORKS_RTP && flag_pic)
