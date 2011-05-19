@@ -1,5 +1,11 @@
 2011-05-19  Tom de Vries  <tom@codesourcery.com>
 
+	PR target/45098
+	* gcc.target/arm/ivopts.c: New test.
+	* gcc.target/arm/ivopts-2.c: New test.
+
+2011-05-19  Tom de Vries  <tom@codesourcery.com>
+
 	* lib/lib/scanasm.exp (object-size): Fix target selector handling.
 
 2011-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
