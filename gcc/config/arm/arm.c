@@ -939,25 +939,10 @@ char arm_arch_name[] = "__ARM_ARCH_0UNK__";
 
 static const struct arm_fpu_desc all_fpus[] =
 {
-  {"fpa",		ARM_FP_MODEL_FPA, 0, VFP_NONE, false, false},
-  {"fpe2",		ARM_FP_MODEL_FPA, 2, VFP_NONE, false, false},
-  {"fpe3",		ARM_FP_MODEL_FPA, 3, VFP_NONE, false, false},
-  {"maverick",		ARM_FP_MODEL_MAVERICK, 0, VFP_NONE, false, false},
-  {"vfp",		ARM_FP_MODEL_VFP, 2, VFP_REG_D16, false, false},
-  {"vfpv3",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false},
-  {"vfpv3-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, true},
-  {"vfpv3-d16",		ARM_FP_MODEL_VFP, 3, VFP_REG_D16, false, false},
-  {"vfpv3-d16-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D16, false, true},
-  {"vfpv3xd",		ARM_FP_MODEL_VFP, 3, VFP_REG_SINGLE, false, false},
-  {"vfpv3xd-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_SINGLE, false, true},
-  {"neon",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, true , false},
-  {"neon-fp16",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, true , true },
-  {"vfpv4",		ARM_FP_MODEL_VFP, 4, VFP_REG_D32, false, true},
-  {"vfpv4-d16",		ARM_FP_MODEL_VFP, 4, VFP_REG_D16, false, true},
-  {"fpv4-sp-d16",	ARM_FP_MODEL_VFP, 4, VFP_REG_SINGLE, false, true},
-  {"neon-vfpv4",	ARM_FP_MODEL_VFP, 4, VFP_REG_D32, true, true},
-  /* Compatibility aliases.  */
-  {"vfp3",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false},
+#define ARM_FPU(NAME, MODEL, REV, VFP_REGS, NEON, FP16) \
+  { NAME, MODEL, REV, VFP_REGS, NEON, FP16 },
+#include "arm-fpus.def"
+#undef ARM_FPU
 };
 
 
@@ -1244,8 +1229,6 @@ arm_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 static void
 arm_option_override (void)
 {
-  unsigned i;
-
   if (global_options_set.x_arm_arch_option)
     arm_selected_arch = &all_architectures[arm_arch_option];
 
@@ -1507,8 +1490,11 @@ arm_option_override (void)
   if (TARGET_IWMMXT_ABI && !TARGET_IWMMXT)
     error ("iwmmxt abi requires an iwmmxt capable cpu");
 
-  if (target_fpu_name == NULL)
+  if (!global_options_set.x_arm_fpu_index)
     {
+      const char *target_fpu_name;
+      bool ok;
+
 #ifdef FPUTYPE_DEFAULT
       target_fpu_name = FPUTYPE_DEFAULT;
 #else
@@ -1517,23 +1503,13 @@ arm_option_override (void)
       else
 	target_fpu_name = "fpe2";
 #endif
+
+      ok = opt_enum_arg_to_value (OPT_mfpu_, target_fpu_name, &arm_fpu_index,
+				  CL_TARGET);
+      gcc_assert (ok);
     }
 
-  arm_fpu_desc = NULL;
-  for (i = 0; i < ARRAY_SIZE (all_fpus); i++)
-    {
-      if (streq (all_fpus[i].name, target_fpu_name))
-	{
-	  arm_fpu_desc = &all_fpus[i];
-	  break;
-	}
-    }
-
-  if (!arm_fpu_desc)
-    {
-      error ("invalid floating point option: -mfpu=%s", target_fpu_name);
-      return;
-    }
+  arm_fpu_desc = &all_fpus[arm_fpu_index];
 
   switch (arm_fpu_desc->model)
     {

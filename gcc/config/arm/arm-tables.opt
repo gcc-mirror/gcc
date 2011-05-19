@@ -1,5 +1,6 @@
 ; -*- buffer-read-only: t -*-
-; Generated automatically by genopt.sh from arm-cores.def and arm-arches.def.
+; Generated automatically by genopt.sh from arm-cores.def, arm-arches.def
+; and arm-fpus.def.
 
 ; Copyright (C) 2011 Free Software Foundation, Inc.
 ;
@@ -338,4 +339,62 @@ Enum(arm_arch) String(iwmmxt) Value(23)
 
 EnumValue
 Enum(arm_arch) String(iwmmxt2) Value(24)
+
+Enum
+Name(arm_fpu) Type(int)
+Known ARM FPUs (for use with the -mfpu= option):
+
+EnumValue
+Enum(arm_fpu) String(fpa) Value(0)
+
+EnumValue
+Enum(arm_fpu) String(fpe2) Value(1)
+
+EnumValue
+Enum(arm_fpu) String(fpe3) Value(2)
+
+EnumValue
+Enum(arm_fpu) String(maverick) Value(3)
+
+EnumValue
+Enum(arm_fpu) String(vfp) Value(4)
+
+EnumValue
+Enum(arm_fpu) String(vfpv3) Value(5)
+
+EnumValue
+Enum(arm_fpu) String(vfpv3-fp16) Value(6)
+
+EnumValue
+Enum(arm_fpu) String(vfpv3-d16) Value(7)
+
+EnumValue
+Enum(arm_fpu) String(vfpv3-d16-fp16) Value(8)
+
+EnumValue
+Enum(arm_fpu) String(vfpv3xd) Value(9)
+
+EnumValue
+Enum(arm_fpu) String(vfpv3xd-fp16) Value(10)
+
+EnumValue
+Enum(arm_fpu) String(neon) Value(11)
+
+EnumValue
+Enum(arm_fpu) String(neon-fp16) Value(12)
+
+EnumValue
+Enum(arm_fpu) String(vfpv4) Value(13)
+
+EnumValue
+Enum(arm_fpu) String(vfpv4-d16) Value(14)
+
+EnumValue
+Enum(arm_fpu) String(fpv4-sp-d16) Value(15)
+
+EnumValue
+Enum(arm_fpu) String(neon-vfpv4) Value(16)
+
+EnumValue
+Enum(arm_fpu) String(vfp3) Value(17)
 
