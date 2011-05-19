@@ -330,7 +330,7 @@ proc object-size { args } {
 	return
     }
     if { [llength $args] >= 4 } {
-	switch [dg-process-target [lindex $args 1]] {
+	switch [dg-process-target [lindex $args 3]] {
 	    "S" { }
 	    "N" { return }
 	    "F" { setup_xfail "*-*-*" }
