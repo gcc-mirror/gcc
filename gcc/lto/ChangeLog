@@ -1,3 +1,8 @@
+2011-05-19  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (uniquify_nodes): First register all types before
+	fixing up the tree SCC.
+
 2011-05-11  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/48952

@@ -1,3 +1,11 @@
+2011-05-19  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_types_compatible_p_1): Compare names of
+	the types themselves.
+	(iterative_hash_gimple_type): And hash them that way.
+	(gimple_register_type_1): If we register a main variant properly
+	initialize the leader to ourselves.
+
 2011-05-19  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/45098
