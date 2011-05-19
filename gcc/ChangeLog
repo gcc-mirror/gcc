@@ -1,3 +1,8 @@
+2011-05-19  Quentin Neill  <quentin.neill@amd.com>
+
+	* config/i386/sse.md (fma4_fmsubadd): Use <ssemodesuffix>.
+	(fma4_fmaddsub): Likewise
+
 2011-05-19  Jan Hubicka  <jh@suse.cz>
 
 	* gimple.c (gtc_visited, gtc_ob, type_pair_hash, type_pair_eq): Remove.
