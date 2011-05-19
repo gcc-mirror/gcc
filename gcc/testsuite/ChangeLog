@@ -1,3 +1,8 @@
+2011-05-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/prune.exe (prune_gcc_output): Expect "error:" in collect2
+	output.
+
 2011-05-19  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/49063

@@ -1,3 +1,19 @@
+2011-05-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* collect2.c: Include diagnostic.h.
+	(fatal_perror, fatal, error, fancy_abort): Remove.
+	(main): Set progname.  Call xmalloc_set_program_name and
+	diagnostic_initialize.
+	(maybe_run_lto_and_relink, main, collect_execute, scan_prog_file,
+	scan_libraries, resolve_lib_name): Call fatal_error instead of
+	fatal and fatal_perror.
+	* collect2.h (error, fatal, fatal_perror): Don't declare.
+	* tlink.c: Include diagnostic-core.h.
+	(recompile_files): Call fatal_error instead of fatal_perror.
+	* Makefile.in (COLLECT2_OBJS): Include diagnostic.o,
+	pretty-print.o and input.o.
+	(collect2.o, tlink.o): Update dependencies.
+
 2011-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/i386.md (tls_initial_exec_64_sun): Add semicolon.
