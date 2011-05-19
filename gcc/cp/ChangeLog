@@ -1,5 +1,8 @@
 2011-05-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/49043
+	* decl.c (check_omp_return): Stop searching on sk_function_parms.
+
 	PR c++/48869
 	* method.c (get_dtor, get_copy_ctor): Add COMPLAIN argument,
 	pass it down to locate_fn_flags.

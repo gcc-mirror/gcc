@@ -2807,6 +2807,8 @@ check_omp_return (void)
 	error ("invalid exit from OpenMP structured block");
 	return false;
       }
+    else if (b->kind == sk_function_parms)
+      break;
   return true;
 }
 
