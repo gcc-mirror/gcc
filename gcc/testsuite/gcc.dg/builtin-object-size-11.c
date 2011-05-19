@@ -1,5 +1,6 @@
 /* PR48985 */
 /* { dg-do run } */
+/* { dg-options "-std=gnu89" } */
 
 extern void abort (void);
 
