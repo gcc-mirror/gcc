@@ -1,3 +1,10 @@
+2011-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (option_override_internal): Enable TARGET_CMOVE
+	when TARGET_RDRND is active.
+	(ix86_expand_builtin) <case IX86_BUILTIN_RDRAND{16,32,64}_STEP>:
+	Generate dummy SImode target register when target is NULL.
+
 2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

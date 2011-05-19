@@ -4164,8 +4164,9 @@ ix86_option_override_internal (bool main_args_p)
     }
 
   /* For sane SSE instruction set generation we need fcomi instruction.
-     It is safe to enable all CMOVE instructions.  */
-  if (TARGET_SSE)
+     It is safe to enable all CMOVE instructions.  Also, RDRAND intrinsic
+     expands to a sequence that includes conditional move. */
+  if (TARGET_SSE || TARGET_RDRND)
     TARGET_CMOVE = 1;
 
   /* Figure out what ASM_GENERATE_INTERNAL_LABEL builds as a prefix.  */
@@ -27450,6 +27451,12 @@ rdrand_step:
       op0 = gen_reg_rtx (mode0);
       emit_insn (GEN_FCN (icode) (op0));
 
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op1 = expand_normal (arg0);
+      if (!address_operand (op1, VOIDmode))
+	op1 = copy_addr_to_reg (op1);
+      emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
+
       op1 = gen_reg_rtx (SImode);
       emit_move_insn (op1, CONST1_RTX (SImode));
 
@@ -27464,17 +27471,13 @@ rdrand_step:
       else
 	op2 = gen_rtx_SUBREG (SImode, op0, 0);
 
+      if (target == 0)
+	target = gen_reg_rtx (SImode);
+
       pat = gen_rtx_GEU (VOIDmode, gen_rtx_REG (CCCmode, FLAGS_REG),
 			 const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, op1,
+      emit_insn (gen_rtx_SET (VOIDmode, target,
 			      gen_rtx_IF_THEN_ELSE (SImode, pat, op2, op1)));
-      emit_move_insn (target, op1);
-
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      op1 = expand_normal (arg0);
-      if (!address_operand (op1, VOIDmode))
-	op1 = copy_addr_to_reg (op1);
-      emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
       return target;
 
     default:
