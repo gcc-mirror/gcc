@@ -1,5 +1,18 @@
 2011-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/tuple (tuple_element<__i, const _Tp>,
+	tuple_element<__i, volatile _Tp>, tuple_element<__i,
+	const volatile _Tp>, tuple_size<const _Tp>, tuple_size<volatile _Tp>,
+	tuple_size<const volatile _Tp>): Add.
+	* include/std/utility (tuple_size<std::pair<_Tp1, _Tp2>>): Tweak.
+	* include/std/array (tuple_size<array<_Tp, _Nm>>): Likewise.
+	* testsuite/20_util/tuple/cv_tuple_size.cc: New.
+	* testsuite/20_util/tuple/cv_tuple_element.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Tweak dg-warning
+	line number.
+
+2011-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/tuple (tuple<>::operator=(tuple&&)): Specify as
         noexcept.
 	(__get_helper): Likewise.
