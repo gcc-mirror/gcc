@@ -85,8 +85,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _Head_base(_UHead&& __h)
 	: _Head(std::forward<_UHead>(__h)) { }
 
-      _Head&       _M_head()       { return *this; }
-      const _Head& _M_head() const { return *this; }
+      _Head&       _M_head() noexcept       { return *this; }
+      const _Head& _M_head() const noexcept { return *this; }
     };
 
   template<std::size_t _Idx, typename _Head>
@@ -102,8 +102,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _Head_base(_UHead&& __h)
 	: _M_head_impl(std::forward<_UHead>(__h)) { }
 
-      _Head&       _M_head()       { return _M_head_impl; }
-      const _Head& _M_head() const { return _M_head_impl; }        
+      _Head&       _M_head() noexcept       { return _M_head_impl; }
+      const _Head& _M_head() const noexcept { return _M_head_impl; }        
 
       _Head _M_head_impl; 
     };
@@ -147,11 +147,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tuple_impl<_Idx + 1, _Tail...> _Inherited;
       typedef _Head_base<_Idx, _Head, std::is_empty<_Head>::value> _Base;
 
-      _Head&            _M_head()       { return _Base::_M_head(); }
-      const _Head&      _M_head() const { return _Base::_M_head(); }
+      _Head&            _M_head() noexcept       { return _Base::_M_head(); }
+      const _Head&      _M_head() const noexcept { return _Base::_M_head(); }
 
-      _Inherited&       _M_tail()       { return *this; }
-      const _Inherited& _M_tail() const { return *this; }
+      _Inherited&       _M_tail() noexcept       { return *this; }
+      const _Inherited& _M_tail() const noexcept { return *this; }
 
       constexpr _Tuple_impl()
       : _Inherited(), _Base() { }
@@ -191,6 +191,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Tuple_impl&
       operator=(_Tuple_impl&& __in)
+      noexcept(is_nothrow_move_assignable<_Head>::value
+	       && is_nothrow_move_assignable<_Inherited>::value)
       {
 	_M_head() = std::forward<_Head>(__in._M_head());
 	_M_tail() = std::move(__in._M_tail());
@@ -276,6 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       tuple&
       operator=(tuple&& __in)
+      noexcept(is_nothrow_move_assignable<_Inherited>::value)
       {
 	static_cast<_Inherited&>(*this) = std::move(__in);
 	return *this;
@@ -364,7 +367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       tuple&
       operator=(tuple&& __in)
-      // noexcept has to wait is_nothrow_move_assignable
+      noexcept(is_nothrow_move_assignable<_Inherited>::value)
       {
 	static_cast<_Inherited&>(*this) = std::move(__in);
 	return *this;
@@ -397,7 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _U1, typename _U2>
         tuple&
-        operator=(pair<_U1, _U2>&& __in) noexcept
+        operator=(pair<_U1, _U2>&& __in)
         {
 	  this->_M_head() = std::forward<_U1>(__in.first);
 	  this->_M_tail()._M_head() = std::forward<_U2>(__in.second);
@@ -452,6 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       tuple&
       operator=(tuple&& __in)
+      noexcept(is_nothrow_move_assignable<_Inherited>::value)
       {
 	static_cast<_Inherited&>(*this) = std::move(__in);
 	return *this;
@@ -517,12 +521,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<std::size_t __i, typename _Head, typename... _Tail>
     inline typename __add_ref<_Head>::type
-    __get_helper(_Tuple_impl<__i, _Head, _Tail...>& __t)
+    __get_helper(_Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
     { return __t._M_head(); }
 
   template<std::size_t __i, typename _Head, typename... _Tail>
     inline typename __add_c_ref<_Head>::type
-    __get_helper(const _Tuple_impl<__i, _Head, _Tail...>& __t)
+    __get_helper(const _Tuple_impl<__i, _Head, _Tail...>& __t) noexcept
     { return __t._M_head(); }
 
   // Return a reference (const reference, rvalue reference) to the ith element

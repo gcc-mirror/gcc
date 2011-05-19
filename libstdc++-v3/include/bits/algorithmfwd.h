@@ -549,7 +549,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp> 
     void 
-    swap(_Tp&, _Tp&);
+    swap(_Tp&, _Tp&)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    noexcept(is_nothrow_move_constructible<_Tp>::value
+	     && is_nothrow_move_assignable<_Tp>::value)
+#endif
+    ;
 
   template<typename _Tp, size_t _Nm>
     void

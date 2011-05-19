@@ -135,7 +135,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     inline void
     swap(_Tp& __a, _Tp& __b)
-    // noexcept has to wait is_nothrow_move_assignable
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    noexcept(is_nothrow_move_constructible<_Tp>::value
+	     && is_nothrow_move_assignable<_Tp>::value)
+#endif
     {
       // concept requirements
       __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
