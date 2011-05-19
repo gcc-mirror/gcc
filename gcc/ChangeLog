@@ -1,5 +1,11 @@
 2011-05-19  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/48985
+	* tree-object-size.c (addr_object_size): If the pointed-to
+	variable is a decl use DECL_SIZE_UNIT instead of TYPE_SIZE_UNIT.
+
+2011-05-19  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.c (gimple_types_compatible_p_1): Compare names of
 	the types themselves.
 	(iterative_hash_gimple_type): And hash them that way.
