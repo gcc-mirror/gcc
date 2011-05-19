@@ -1,3 +1,24 @@
+2011-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/tuple (tuple<>::operator=(tuple&&)): Specify as
+        noexcept.
+	(__get_helper): Likewise.
+	(_Head_base<>::_M_head, _Tuple_impl<>::_M_head, _M_tail): Likewise.
+	* include/bits/move.h (swap): Likewise.
+	* include/bits/algorithmfwd.h (swap): Adjust.
+	* include/bits/stl_pair.h (pair<>::operator=(pair&&)): Spec noexcept.
+	* testsuite/util/testsuite_allocator.h (uneq_allocator): In C++0x
+	mode, prefer delete to access control to make the type not copy
+	assignable.
+	* testsuite/util/testsuite_tr1.h: Add test classes.
+	* testsuite/20_util/tuple/noexcept_swap.cc: New.
+	* testsuite/20_util/tuple/noexcept_move_assign.cc: Likewise.
+	* testsuite/25_algorithms/reverse/moveable.cc: Likewise, prefer
+	delete to access control.
+	* testsuite/25_algorithms/swap_ranges/moveable.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-warning
+	line numbers.
+
 2011-05-19  Daniel Krugler  <daniel.kruegler@googlemail.com>
 
 	* testsuite/util/testsuite_tr1.h: Add test classes.

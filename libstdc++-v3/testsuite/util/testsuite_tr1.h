@@ -240,6 +240,42 @@ namespace __gnu_test
     DeletedMoveAssignClass&
     operator=(DeletedMoveAssignClass&&) = delete;
   };
+
+  struct NoexceptMoveConsNoexceptMoveAssignClass
+  {
+    NoexceptMoveConsNoexceptMoveAssignClass
+    (NoexceptMoveConsNoexceptMoveAssignClass&&) noexcept(true);
+
+    NoexceptMoveConsNoexceptMoveAssignClass&
+    operator=(NoexceptMoveConsNoexceptMoveAssignClass&&) noexcept(true);
+  };
+
+  struct ExceptMoveConsNoexceptMoveAssignClass
+  {
+    ExceptMoveConsNoexceptMoveAssignClass
+    (ExceptMoveConsNoexceptMoveAssignClass&&) noexcept(false);
+
+    ExceptMoveConsNoexceptMoveAssignClass&
+    operator=(ExceptMoveConsNoexceptMoveAssignClass&&) noexcept(true);
+  };
+
+  struct NoexceptMoveConsExceptMoveAssignClass
+  {
+    NoexceptMoveConsExceptMoveAssignClass
+    (NoexceptMoveConsExceptMoveAssignClass&&) noexcept(true);
+
+    NoexceptMoveConsExceptMoveAssignClass&
+    operator=(NoexceptMoveConsExceptMoveAssignClass&&) noexcept(false);
+  };
+
+  struct ExceptMoveConsExceptMoveAssignClass
+  {
+    ExceptMoveConsExceptMoveAssignClass
+    (ExceptMoveConsExceptMoveAssignClass&&) noexcept(false);
+
+    ExceptMoveConsExceptMoveAssignClass&
+    operator=(ExceptMoveConsExceptMoveAssignClass&&) noexcept(false);
+  };
 #endif
 
   struct NType   // neither trivial nor standard-layout

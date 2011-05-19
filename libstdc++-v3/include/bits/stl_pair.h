@@ -153,7 +153,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       pair&
       operator=(pair&& __p)
-      // noexcept has to wait is_nothrow_move_assignable
+      noexcept(is_nothrow_move_assignable<_T1>::value
+	       && is_nothrow_move_assignable<_T2>::value)
       {
 	first = std::move(__p.first);
 	second = std::move(__p.second);
