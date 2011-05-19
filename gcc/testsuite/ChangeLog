@@ -1,3 +1,7 @@
+2011-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.c-torture/execute/960321-1.x: Remove.
+
 2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
