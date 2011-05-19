@@ -8768,6 +8768,10 @@ ix86_code_end (void)
   rtx xops[2];
   int regno;
 
+#ifdef TARGET_SOLARIS
+  solaris_code_end ();
+#endif
+
   for (regno = AX_REG; regno <= SP_REG; regno++)
     {
       char name[32];
@@ -32148,9 +32152,10 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
 			  gen_rtx_MULT (mode, e2, e3)));
 }
 
+#ifdef TARGET_SOLARIS
 /* Solaris implementation of TARGET_ASM_NAMED_SECTION.  */
 
-static void ATTRIBUTE_UNUSED
+static void
 i386_solaris_elf_named_section (const char *name, unsigned int flags,
 				tree decl)
 {
@@ -32164,8 +32169,18 @@ i386_solaris_elf_named_section (const char *name, unsigned int flags,
 	       flags & SECTION_WRITE ? "aw" : "a");
       return;
     }
+
+#ifndef USE_GAS
+  if (HAVE_COMDAT_GROUP && flags & SECTION_LINKONCE)
+    {
+      solaris_elf_asm_comdat_section (name, flags, decl);
+      return;
+    }
+#endif
+
   default_elf_asm_named_section (name, flags, decl);
 }
+#endif /* TARGET_SOLARIS */
 
 /* Return the mangling of TYPE if it is an extended fundamental type.  */
 

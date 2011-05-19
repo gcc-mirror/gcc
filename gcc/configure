@@ -22328,8 +22328,8 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for COMDAT group support" >&5
-$as_echo_n "checking assembler for COMDAT group support... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for COMDAT group support (GNU as)" >&5
+$as_echo_n "checking assembler for COMDAT group support (GNU as)... " >&6; }
 if test "${gcc_cv_as_comdat_group+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
@@ -22361,9 +22361,10 @@ $as_echo "$gcc_cv_as_comdat_group" >&6; }
 
 if test $gcc_cv_as_comdat_group = yes; then
   gcc_cv_as_comdat_group_percent=no
+  gcc_cv_as_comdat_group_group=no
 else
- { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for COMDAT group support" >&5
-$as_echo_n "checking assembler for COMDAT group support... " >&6; }
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for COMDAT group support (GNU as, %type)" >&5
+$as_echo_n "checking assembler for COMDAT group support (GNU as, %type)... " >&6; }
 if test "${gcc_cv_as_comdat_group_percent+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
@@ -22393,6 +22394,59 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_comdat_group_percent" >&5
 $as_echo "$gcc_cv_as_comdat_group_percent" >&6; }
 
+ if test $gcc_cv_as_comdat_group_percent = yes; then
+   gcc_cv_as_comdat_group_group=no
+ else
+   case "${target}" in
+     # Sun as uses a completely different syntax.
+     *-*-solaris2*)
+       case "${target}" in
+         sparc*-*-solaris2*)
+           conftest_s='
+               .group foo,".text%foo",#comdat
+               .section ".text%foo", #alloc,#execinstr,#progbits
+               .globl foo
+             foo:
+	     '
+           ;;
+         i?86-*-solaris2*)
+	   conftest_s='
+               .group foo,.text%foo,#comdat
+               .section .text%foo, "ax", @progbits
+               .globl  foo
+             foo:
+	     '
+	   ;;
+       esac
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for COMDAT group support (Sun as, .group)" >&5
+$as_echo_n "checking assembler for COMDAT group support (Sun as, .group)... " >&6; }
+if test "${gcc_cv_as_comdat_group_group+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_comdat_group_group=no
+  if test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_comdat_group_group=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_comdat_group_group" >&5
+$as_echo "$gcc_cv_as_comdat_group_group" >&6; }
+
+       ;;
+   esac
+ fi
 fi
 if test x"$ld_is_gold" = xyes; then
   comdat_group=yes
@@ -22417,16 +22471,19 @@ elif echo "$ld_ver" | grep GNU > /dev/null; then
 else
   case "${target}" in
     *-*-solaris2.1[1-9]*)
+      comdat_group=no
       # Sun ld has COMDAT group support since Solaris 9, but it doesn't
       # interoperate with GNU as until Solaris 11 build 130, i.e. ld
       # version 1.688.
       #
-      # FIXME: Maybe need to refine later when COMDAT group support with
-      # Sun as is implemented.
-      if test "$ld_vers_major" -gt 1 || test "$ld_vers_minor" -ge 1688; then
+      # If using Sun as for COMDAT group as emitted by GCC, one needs at
+      # least ld version 1.2267.
+      if test "$ld_vers_major" -gt 1; then
         comdat_group=yes
-      else
-        comdat_group=no
+      elif test "x$gas_flag" = xyes && test "$ld_vers_minor" -ge 1688; then
+	comdat_group=yes
+      elif test "$ld_vers_minor" -ge 2267; then
+	comdat_group=yes
       fi
       ;;
     *)
@@ -22444,10 +22501,13 @@ fi
 if test $comdat_group = no; then
   gcc_cv_as_comdat_group=no
   gcc_cv_as_comdat_group_percent=no
+  gcc_cv_as_comdat_group_group=no
 fi
 
 cat >>confdefs.h <<_ACEOF
-#define HAVE_COMDAT_GROUP `if test $gcc_cv_as_comdat_group = yes || test $gcc_cv_as_comdat_group_percent = yes; then echo 1; else echo 0; fi`
+#define HAVE_COMDAT_GROUP `if test $gcc_cv_as_comdat_group = yes \
+    || test $gcc_cv_as_comdat_group_percent = yes \
+    || test $gcc_cv_as_comdat_group_group = yes; then echo 1; else echo 0; fi`
 _ACEOF
 
 
