@@ -605,6 +605,20 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
   struct lto_streamer_cache_d *cache = data_in->reader_cache;
   unsigned len = VEC_length (tree, cache->nodes);
   unsigned i;
+
+  /* Go backwards because childs streamed for the first time come
+     as part of their parents, and hence are created after them.  */
+  for (i = len; i-- > from;)
+    {
+      tree t = VEC_index (tree, cache->nodes, i);
+      if (!t)
+	continue;
+
+      /* Now try to find a canonical variant of T itself.  */
+      if (TYPE_P (t))
+	gimple_register_type (t);
+    }
+
   /* Go backwards because childs streamed for the first time come
      as part of their parents, and hence are created after them.  */
   for (i = len; i-- > from;)

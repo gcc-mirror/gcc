@@ -3824,8 +3824,7 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
 	tree f1, f2;
 
 	/* The struct tags shall compare equal.  */
-	if (!compare_type_names_p (TYPE_MAIN_VARIANT (t1),
-				   TYPE_MAIN_VARIANT (t2), false))
+	if (!compare_type_names_p (t1, t2, false))
 	  goto different_types;
 
 	/* For aggregate types, all the fields must be the same.  */
@@ -4202,7 +4201,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       unsigned nf;
       tree f;
 
-      v = iterative_hash_name (TYPE_NAME (TYPE_MAIN_VARIANT (type)), v);
+      v = iterative_hash_name (TYPE_NAME (type), v);
 
       for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
 	{
@@ -4503,7 +4502,7 @@ gimple_register_type_1 (tree t, bool registering_mv)
 {
   void **slot;
   gimple_type_leader_entry *leader;
-  tree mv_leader = NULL_TREE;
+  tree mv_leader;
 
   /* If we registered this type before return the cached result.  */
   leader = &gimple_type_leader[TYPE_UID (t) % GIMPLE_TYPE_LEADER_SIZE];
@@ -4516,10 +4515,15 @@ gimple_register_type_1 (tree t, bool registering_mv)
      It also makes sure that main variants will be merged to main variants.
      As we are operating on a possibly partially fixed up type graph
      do not bother to recurse more than once, otherwise we may end up
-     walking in circles.  */
+     walking in circles.
+     If we are registering a main variant it will either remain its
+     own main variant or it will be merged to something else in which
+     case we do not care for the main variant leader.  */
   if (!registering_mv
       && TYPE_MAIN_VARIANT (t) != t)
     mv_leader = gimple_register_type_1 (TYPE_MAIN_VARIANT (t), true);
+  else
+    mv_leader = t;
 
   slot = htab_find_slot (gimple_types, t, INSERT);
   if (*slot
