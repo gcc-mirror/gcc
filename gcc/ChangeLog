@@ -1,3 +1,15 @@
+2011-05-19  Jan Hubicka  <jh@suse.cz>
+
+	* gimple.c (gtc_visited, gtc_ob, type_pair_hash, type_pair_eq): Remove.
+	(GIMPLE_TYPE_PAIR_SIZE): New macro.
+	(type_pair_cache): New static var.
+	(lookup_type_pair): Use fixed sized custom hash; make inline.
+	(gtc_visit, gimple_types_compatible_p, gimple_register_type_1): Update
+	calls of lookup_type_pair.
+	(print_gimple_types_stats): Remove cache stats.
+	(free_gimple_type_tables): Free type_pair_cache instead of gtc_visited
+	and gtc_ob.
+
 2011-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (option_override_internal): Enable TARGET_CMOVE

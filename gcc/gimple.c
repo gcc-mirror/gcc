@@ -50,11 +50,6 @@ static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map))
 static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
   htab_t canonical_type_hash_cache;
 
-/* Global type comparison cache.  This is by TYPE_UID for space efficiency
-   and thus cannot use and does not need GC.  */
-static htab_t gtc_visited;
-static struct obstack gtc_ob;
-
 /* All the tuples have their operand vector (if present) at the very bottom
    of the structure.  Therefore, the offset required to find the
    operands vector the size of the structure minus the size of the 1
@@ -3237,72 +3232,51 @@ struct type_pair_d
   signed char same_p[2];
 };
 typedef struct type_pair_d *type_pair_t;
-
 DEF_VEC_P(type_pair_t);
 DEF_VEC_ALLOC_P(type_pair_t,heap);
 
-/* Return a hash value for the type pair pointed-to by P.  */
+#define GIMPLE_TYPE_PAIR_SIZE 16381
+struct type_pair_d *type_pair_cache;
 
-static hashval_t
-type_pair_hash (const void *p)
-{
-  const struct type_pair_d *pair = (const struct type_pair_d *) p;
-  hashval_t val1 = pair->uid1;
-  hashval_t val2 = pair->uid2;
-  return iterative_hash_hashval_t (val1, val2);
-}
-
-/* Compare two type pairs pointed-to by P1 and P2.  */
-
-static int
-type_pair_eq (const void *p1, const void *p2)
-{
-  const struct type_pair_d *pair1 = (const struct type_pair_d *) p1;
-  const struct type_pair_d *pair2 = (const struct type_pair_d *) p2;
-  return (pair1->uid1 == pair2->uid1 && pair1->uid2 == pair2->uid2);
-}
 
 /* Lookup the pair of types T1 and T2 in *VISITED_P.  Insert a new
    entry if none existed.  */
 
-static type_pair_t
-lookup_type_pair (tree t1, tree t2, htab_t *visited_p, struct obstack *ob_p)
+static inline type_pair_t
+lookup_type_pair (tree t1, tree t2)
 {
-  struct type_pair_d pair;
-  type_pair_t p;
-  void **slot;
+  unsigned int index;
+  unsigned int uid1, uid2;
 
-  if (*visited_p == NULL)
-    {
-      *visited_p = htab_create (251, type_pair_hash, type_pair_eq, NULL);
-      gcc_obstack_init (ob_p);
-    }
+  if (type_pair_cache == NULL)
+    type_pair_cache = XCNEWVEC (struct type_pair_d, GIMPLE_TYPE_PAIR_SIZE);
 
   if (TYPE_UID (t1) < TYPE_UID (t2))
     {
-      pair.uid1 = TYPE_UID (t1);
-      pair.uid2 = TYPE_UID (t2);
+      uid1 = TYPE_UID (t1);
+      uid2 = TYPE_UID (t2);
     }
   else
     {
-      pair.uid1 = TYPE_UID (t2);
-      pair.uid2 = TYPE_UID (t1);
+      uid1 = TYPE_UID (t2);
+      uid2 = TYPE_UID (t1);
     }
-  slot = htab_find_slot (*visited_p, &pair, INSERT);
+  gcc_checking_assert (uid1 != uid2);
 
-  if (*slot)
-    p = *((type_pair_t *) slot);
-  else
-    {
-      p = XOBNEW (ob_p, struct type_pair_d);
-      p->uid1 = pair.uid1;
-      p->uid2 = pair.uid2;
-      p->same_p[0] = -2;
-      p->same_p[1] = -2;
-      *slot = (void *) p;
-    }
+  /* iterative_hash_hashval_t imply an function calls.
+     We know that UIDS are in limited range.  */
+  index = ((((unsigned HOST_WIDE_INT)uid1 << HOST_BITS_PER_WIDE_INT / 2) + uid2)
+	   % GIMPLE_TYPE_PAIR_SIZE);
+  if (type_pair_cache [index].uid1 == uid1
+      && type_pair_cache [index].uid2 == uid2)
+    return &type_pair_cache[index];
 
-  return p;
+  type_pair_cache [index].uid1 = uid1;
+  type_pair_cache [index].uid2 = uid2;
+  type_pair_cache [index].same_p[0] = -2;
+  type_pair_cache [index].same_p[1] = -2;
+
+  return &type_pair_cache[index];
 }
 
 /* Per pointer state for the SCC finding.  The on_sccstack flag
@@ -3560,7 +3534,7 @@ gtc_visit (tree t1, tree t2,
     return false;
 
   /* Allocate a new cache entry for this comparison.  */
-  p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
+  p = lookup_type_pair (t1, t2);
   if (p->same_p[GTC_MERGE] == 0 || p->same_p[GTC_MERGE] == 1)
     {
       /* We have already decided whether T1 and T2 are the
@@ -3972,7 +3946,7 @@ gimple_types_compatible_p (tree t1, tree t2)
 
   /* If we've visited this type pair before (in the case of aggregates
      with self-referential types), and we made a decision, return it.  */
-  p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
+  p = lookup_type_pair (t1, t2);
   if (p->same_p[GTC_MERGE] == 0 || p->same_p[GTC_MERGE] == 1)
     {
       /* We have already decided whether T1 and T2 are the
@@ -4967,16 +4941,6 @@ print_gimple_types_stats (void)
 	     htab_collisions (canonical_type_hash_cache));
   else
     fprintf (stderr, "GIMPLE canonical type hash table is empty\n");
-  if (gtc_visited)
-    fprintf (stderr, "GIMPLE type comparison table: size %ld, %ld "
-	     "elements, %ld searches, %ld collisions (ratio: %f)\n",
-	     (long) htab_size (gtc_visited),
-	     (long) htab_elements (gtc_visited),
-	     (long) gtc_visited->searches,
-	     (long) gtc_visited->collisions,
-	     htab_collisions (gtc_visited));
-  else
-    fprintf (stderr, "GIMPLE type comparison table is empty\n");
 }
 
 /* Free the gimple type hashtables used for LTO type merging.  */
@@ -5008,11 +4972,10 @@ free_gimple_type_tables (void)
       htab_delete (canonical_type_hash_cache);
       canonical_type_hash_cache = NULL;
     }
-  if (gtc_visited)
+  if (type_pair_cache)
     {
-      htab_delete (gtc_visited);
-      obstack_free (&gtc_ob, NULL);
-      gtc_visited = NULL;
+      free (type_pair_cache);
+      type_pair_cache = NULL;
     }
   gimple_type_leader = NULL;
 }
