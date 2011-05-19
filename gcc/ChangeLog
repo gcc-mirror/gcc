@@ -1,5 +1,9 @@
 2011-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/i386/i386.md (tls_initial_exec_64_sun): Add semicolon.
+
+2011-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR target/40483
 	* configure.ac (gcc_cv_as_comdat_group_group): Check for Sun as
 	COMDAT group syntax, both SPARC and x86 variants.
