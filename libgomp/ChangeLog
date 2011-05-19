@@ -1,3 +1,8 @@
+2011-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48869
+	* testsuite/libgomp.c++/pr48869.C: New test.
+
 2011-05-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/48894

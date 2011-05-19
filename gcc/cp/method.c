@@ -1,7 +1,7 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -838,10 +838,10 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
 /* Locate the dtor of TYPE.  */
 
 tree
-get_dtor (tree type)
+get_dtor (tree type, tsubst_flags_t complain)
 {
   tree fn = locate_fn_flags (type, complete_dtor_identifier, NULL_TREE,
-			     LOOKUP_NORMAL, tf_warning_or_error);
+			     LOOKUP_NORMAL, complain);
   if (fn == error_mark_node)
     return NULL_TREE;
   return fn;
@@ -878,13 +878,13 @@ get_default_ctor (tree type)
 /* Locate the copy ctor of TYPE.  */
 
 tree
-get_copy_ctor (tree type)
+get_copy_ctor (tree type, tsubst_flags_t complain)
 {
   int quals = (TYPE_HAS_CONST_COPY_CTOR (type)
 	       ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
   tree argtype = build_stub_type (type, quals, false);
   tree fn = locate_fn_flags (type, complete_ctor_identifier, argtype,
-			     LOOKUP_NORMAL, tf_warning_or_error);
+			     LOOKUP_NORMAL, complain);
   if (fn == error_mark_node)
     return NULL_TREE;
   return fn;

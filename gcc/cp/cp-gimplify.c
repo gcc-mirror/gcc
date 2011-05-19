@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "pointer-set.h"
 #include "flags.h"
+#include "splay-tree.h"
 
 /* Local declarations.  */
 
@@ -731,10 +732,105 @@ cxx_int_tree_map_hash (const void *item)
   return ((const struct cxx_int_tree_map *)item)->uid;
 }
 
+/* A stable comparison routine for use with splay trees and DECLs.  */
+
+static int
+splay_tree_compare_decl_uid (splay_tree_key xa, splay_tree_key xb)
+{
+  tree a = (tree) xa;
+  tree b = (tree) xb;
+
+  return DECL_UID (a) - DECL_UID (b);
+}
+
+/* OpenMP context during genericization.  */
+
+struct cp_genericize_omp_taskreg
+{
+  bool is_parallel;
+  bool default_shared;
+  struct cp_genericize_omp_taskreg *outer;
+  splay_tree variables;
+};
+
+/* Return true if genericization should try to determine if
+   DECL is firstprivate or shared within task regions.  */
+
+static bool
+omp_var_to_track (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  if (is_invisiref_parm (decl))
+    type = TREE_TYPE (type);
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+  if (type == error_mark_node || !CLASS_TYPE_P (type))
+    return false;
+  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+    return false;
+  if (cxx_omp_predetermined_sharing (decl) != OMP_CLAUSE_DEFAULT_UNSPECIFIED)
+    return false;
+  return true;
+}
+
+/* Note DECL use in OpenMP region OMP_CTX during genericization.  */
+
+static void
+omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
+{
+  splay_tree_node n = splay_tree_lookup (omp_ctx->variables,
+					 (splay_tree_key) decl);
+  if (n == NULL)
+    {
+      int flags = OMP_CLAUSE_DEFAULT_SHARED;
+      if (omp_ctx->outer)
+	omp_cxx_notice_variable (omp_ctx->outer, decl);
+      if (!omp_ctx->default_shared)
+	{
+	  struct cp_genericize_omp_taskreg *octx;
+
+	  for (octx = omp_ctx->outer; octx; octx = octx->outer)
+	    {
+	      n = splay_tree_lookup (octx->variables, (splay_tree_key) decl);
+	      if (n && n->value != OMP_CLAUSE_DEFAULT_SHARED)
+		{
+		  flags = OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
+		  break;
+		}
+	      if (octx->is_parallel)
+		break;
+	    }
+	  if (octx == NULL
+	      && (TREE_CODE (decl) == PARM_DECL
+		  || (!(TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+		      && DECL_CONTEXT (decl) == current_function_decl)))
+	    flags = OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
+	  if (flags == OMP_CLAUSE_DEFAULT_FIRSTPRIVATE)
+	    {
+	      /* DECL is implicitly determined firstprivate in
+		 the current task construct.  Ensure copy ctor and
+		 dtor are instantiated, because during gimplification
+		 it will be already too late.  */
+	      tree type = TREE_TYPE (decl);
+	      if (is_invisiref_parm (decl))
+		type = TREE_TYPE (type);
+	      while (TREE_CODE (type) == ARRAY_TYPE)
+		type = TREE_TYPE (type);
+	      get_copy_ctor (type, tf_none);
+	      get_dtor (type, tf_none);
+	    }
+	}
+      splay_tree_insert (omp_ctx->variables, (splay_tree_key) decl, flags);
+    }
+}
+
+/* Genericization context.  */
+
 struct cp_genericize_data
 {
   struct pointer_set_t *p_set;
   VEC (tree, heap) *bind_expr_stack;
+  struct cp_genericize_omp_taskreg *omp_ctx;
 };
 
 /* Perform any pre-gimplification lowering of C++ front end trees to
@@ -746,6 +842,14 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   tree stmt = *stmt_p;
   struct cp_genericize_data *wtd = (struct cp_genericize_data *) data;
   struct pointer_set_t *p_set = wtd->p_set;
+
+  /* If in an OpenMP context, note var uses.  */
+  if (__builtin_expect (wtd->omp_ctx != NULL, 0)
+      && (TREE_CODE (stmt) == VAR_DECL
+	  || TREE_CODE (stmt) == PARM_DECL
+	  || TREE_CODE (stmt) == RESULT_DECL)
+      && omp_var_to_track (stmt))
+    omp_cxx_notice_variable (wtd->omp_ctx, stmt);
 
   if (is_invisiref_parm (stmt)
       /* Don't dereference parms in a thunk, pass the references through. */
@@ -786,6 +890,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   if (TREE_CODE (stmt) == ADDR_EXPR
       && is_invisiref_parm (TREE_OPERAND (stmt, 0)))
     {
+      /* If in an OpenMP context, note var uses.  */
+      if (__builtin_expect (wtd->omp_ctx != NULL, 0)
+	  && omp_var_to_track (TREE_OPERAND (stmt, 0)))
+	omp_cxx_notice_variable (wtd->omp_ctx, TREE_OPERAND (stmt, 0));
       *stmt_p = convert (TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
       *walk_subtrees = 0;
     }
@@ -808,6 +916,22 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  }
 	break;
       case OMP_CLAUSE_PRIVATE:
+	/* Don't dereference an invisiref in OpenMP clauses.  */
+	if (is_invisiref_parm (OMP_CLAUSE_DECL (stmt)))
+	  *walk_subtrees = 0;
+	else if (wtd->omp_ctx != NULL)
+	  {
+	    /* Private clause doesn't cause any references to the
+	       var in outer contexts, avoid calling
+	       omp_cxx_notice_variable for it.  */
+	    struct cp_genericize_omp_taskreg *old = wtd->omp_ctx;
+	    wtd->omp_ctx = NULL;
+	    cp_walk_tree (&OMP_CLAUSE_DECL (stmt), cp_genericize_r,
+			  data, NULL);
+	    wtd->omp_ctx = old;
+	    *walk_subtrees = 0;
+	  }
+	break;
       case OMP_CLAUSE_SHARED:
       case OMP_CLAUSE_FIRSTPRIVATE:
       case OMP_CLAUSE_COPYIN:
@@ -876,6 +1000,25 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
   else if (TREE_CODE (stmt) == BIND_EXPR)
     {
+      if (__builtin_expect (wtd->omp_ctx != NULL, 0))
+	{
+	  tree decl;
+	  for (decl = BIND_EXPR_VARS (stmt); decl; decl = DECL_CHAIN (decl))
+	    if (TREE_CODE (decl) == VAR_DECL
+		&& !DECL_EXTERNAL (decl)
+		&& omp_var_to_track (decl))
+	      {
+		splay_tree_node n
+		  = splay_tree_lookup (wtd->omp_ctx->variables,
+				       (splay_tree_key) decl);
+		if (n == NULL)
+		  splay_tree_insert (wtd->omp_ctx->variables,
+				     (splay_tree_key) decl,
+				     TREE_STATIC (decl)
+				     ? OMP_CLAUSE_DEFAULT_SHARED
+				     : OMP_CLAUSE_DEFAULT_PRIVATE);
+	      }
+	}
       VEC_safe_push (tree, heap, wtd->bind_expr_stack, stmt);
       cp_walk_tree (&BIND_EXPR_BODY (stmt),
 		    cp_genericize_r, data, NULL);
@@ -921,6 +1064,50 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       /* Using decls inside DECL_EXPRs are just dropped on the floor.  */
       *stmt_p = build1 (NOP_EXPR, void_type_node, integer_zero_node);
       *walk_subtrees = 0;
+    }
+  else if (TREE_CODE (stmt) == OMP_PARALLEL || TREE_CODE (stmt) == OMP_TASK)
+    {
+      struct cp_genericize_omp_taskreg omp_ctx;
+      tree c, decl;
+      splay_tree_node n;
+
+      *walk_subtrees = 0;
+      cp_walk_tree (&OMP_CLAUSES (stmt), cp_genericize_r, data, NULL);
+      omp_ctx.is_parallel = TREE_CODE (stmt) == OMP_PARALLEL;
+      omp_ctx.default_shared = omp_ctx.is_parallel;
+      omp_ctx.outer = wtd->omp_ctx;
+      omp_ctx.variables = splay_tree_new (splay_tree_compare_decl_uid, 0, 0);
+      wtd->omp_ctx = &omp_ctx;
+      for (c = OMP_CLAUSES (stmt); c; c = OMP_CLAUSE_CHAIN (c))
+	switch (OMP_CLAUSE_CODE (c))
+	  {
+	  case OMP_CLAUSE_SHARED:
+	  case OMP_CLAUSE_PRIVATE:
+	  case OMP_CLAUSE_FIRSTPRIVATE:
+	  case OMP_CLAUSE_LASTPRIVATE:
+	    decl = OMP_CLAUSE_DECL (c);
+	    if (decl == error_mark_node || !omp_var_to_track (decl))
+	      break;
+	    n = splay_tree_lookup (omp_ctx.variables, (splay_tree_key) decl);
+	    if (n != NULL)
+	      break;
+	    splay_tree_insert (omp_ctx.variables, (splay_tree_key) decl,
+			       OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+			       ? OMP_CLAUSE_DEFAULT_SHARED
+			       : OMP_CLAUSE_DEFAULT_PRIVATE);
+	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_PRIVATE
+		&& omp_ctx.outer)
+	      omp_cxx_notice_variable (omp_ctx.outer, decl);
+	    break;
+	  case OMP_CLAUSE_DEFAULT:
+	    if (OMP_CLAUSE_DEFAULT_KIND (c) == OMP_CLAUSE_DEFAULT_SHARED)
+	      omp_ctx.default_shared = true;
+	  default:
+	    break;
+	  }
+      cp_walk_tree (&OMP_BODY (stmt), cp_genericize_r, data, NULL);
+      wtd->omp_ctx = omp_ctx.outer;
+      splay_tree_delete (omp_ctx.variables);
     }
 
   pointer_set_insert (p_set, *stmt_p);
@@ -985,6 +1172,7 @@ cp_genericize (tree fndecl)
      walk_tree's hash functionality.  */
   wtd.p_set = pointer_set_create ();
   wtd.bind_expr_stack = NULL;
+  wtd.omp_ctx = NULL;
   cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_genericize_r, &wtd, NULL);
   pointer_set_destroy (wtd.p_set);
   VEC_free (tree, heap, wtd.bind_expr_stack);

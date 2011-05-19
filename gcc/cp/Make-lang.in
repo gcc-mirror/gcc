@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU C++.
 #   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-#   2005, 2007, 2008, 2009, 2010
+#   2005, 2007, 2008, 2009, 2010, 2011
 #   Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -318,7 +318,7 @@ cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \
   gt-cp-parser.h output.h $(TARGET_H) $(PLUGIN_H) intl.h \
   c-family/c-objc.h
 cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) $(C_COMMON_H) \
-	$(TM_H) coretypes.h pointer-set.h tree-iterator.h
+	$(TM_H) coretypes.h pointer-set.h tree-iterator.h $(SPLAY_TREE_H)
 
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(CXX_TREE_H) $(TIMEVAR_H) gt-cp-name-lookup.h \

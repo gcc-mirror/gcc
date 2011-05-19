@@ -3667,7 +3667,7 @@ cxx_omp_create_clause_info (tree c, tree type, bool need_default_ctor,
       if (need_default_ctor)
 	t = get_default_ctor (type);
       else
-	t = get_copy_ctor (type);
+	t = get_copy_ctor (type, tf_warning_or_error);
 
       if (t && !trivial_fn_p (t))
 	TREE_VEC_ELT (info, 0) = t;
@@ -3675,7 +3675,7 @@ cxx_omp_create_clause_info (tree c, tree type, bool need_default_ctor,
 
   if ((need_default_ctor || need_copy_ctor)
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-    TREE_VEC_ELT (info, 1) = get_dtor (type);
+    TREE_VEC_ELT (info, 1) = get_dtor (type, tf_warning_or_error);
 
   if (need_copy_assignment)
     {

@@ -1,3 +1,20 @@
+2011-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/48869
+	* method.c (get_dtor, get_copy_ctor): Add COMPLAIN argument,
+	pass it down to locate_fn_flags.
+	* cp-tree.h (get_dtor, get_copy_ctor): Adjust prototypes.
+	* semantics.c (cxx_omp_create_clause_info): Adjust callers.
+	* cp-gimplify.c: Include splay-tree.h.
+	(splay_tree_compare_decl_uid, omp_var_to_track,
+	omp_cxx_notice_variable): New functions.
+	(struct cp_genericize_omp_taskreg): New type.
+	(struct cp_genericize_data): Add omp_ctx field.
+	(cp_genericize_r): Attempt to determine implicitly determined
+	firstprivate class type variables.
+	(cp_genericize): Clear omp_ctx.
+	* Make-lang.in (cp/cp-gimplify.o): Depend on $(SPLAY_TREE_H).
+
 2011-05-11  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (build_non_dependent_expr): Don't check null_ptr_cst_p.
