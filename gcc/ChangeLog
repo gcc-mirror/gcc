@@ -1,3 +1,10 @@
+2011-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (option_override_internal): Enable TARGET_CMOVE
+	when TARGET_RDRND is active.
+	(ix86_expand_builtin) <case IX86_BUILTIN_RDRAND{16,32,64}_STEP>:
+	Generate dummy SImode target register when target is NULL.
+
 2011-05-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm-fpus.def: New.
@@ -59,8 +66,7 @@
 	Remove ATTRIBUTE_UNUSED.
 	[!USE_GAS]: Call solaris_elf_asm_comdat_section for
 	SECTION_LINKONCE sections if HAVE_COMDAT_GROUP.
-	* config/sparc/sparc.c (sparc_solaris_elf_asm_named_section):
-	Likewise.
+	* config/sparc/sparc.c (sparc_solaris_elf_asm_named_section): Likewise.
 	* config/i386/sol2-10.h (TARGET_ASM_NAMED_SECTION): Moved ...
 	* config/i386/sol2.h (TARGET_ASM_NAMED_SECTION): ... here.
 	* config/sparc/sol2.h (TARGET_ASM_CODE_END): Redefine.
