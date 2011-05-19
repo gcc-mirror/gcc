@@ -145,7 +145,7 @@ mfpe=3
 Target RejectNegative Undocumented Alias(mfpu=, fpe3)
 
 mfpu=
-Target RejectNegative Joined Var(target_fpu_name)
+Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index)
 Specify the name of the target floating point hardware/format
 
 mhard-float

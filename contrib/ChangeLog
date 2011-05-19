@@ -1,3 +1,8 @@
+2011-05-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_update (gcc/config/arm/arm-tables.opt): Also depend on
+	gcc/config/arm/arm-fpus.def.
+
 2011-05-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc_update (gcc/config/rs6000/rs6000-tables.opt): New

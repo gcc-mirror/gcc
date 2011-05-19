@@ -1,0 +1,48 @@
+/* ARM FPU variants.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Before using #include to read this file, define a macro:
+
+      ARM_FPU(NAME, MODEL, REV, VFP_REGS, NEON, FP16)
+
+   The arguments are the fields of struct arm_fpu_desc.
+
+   genopt.sh assumes no whitespace up to the first "," in each entry.  */
+
+ARM_FPU("fpa",		ARM_FP_MODEL_FPA, 0, VFP_NONE, false, false)
+ARM_FPU("fpe2",		ARM_FP_MODEL_FPA, 2, VFP_NONE, false, false)
+ARM_FPU("fpe3",		ARM_FP_MODEL_FPA, 3, VFP_NONE, false, false)
+ARM_FPU("maverick",	ARM_FP_MODEL_MAVERICK, 0, VFP_NONE, false, false)
+ARM_FPU("vfp",		ARM_FP_MODEL_VFP, 2, VFP_REG_D16, false, false)
+ARM_FPU("vfpv3",	ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false)
+ARM_FPU("vfpv3-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, true)
+ARM_FPU("vfpv3-d16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D16, false, false)
+ARM_FPU("vfpv3-d16-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D16, false, true)
+ARM_FPU("vfpv3xd",	ARM_FP_MODEL_VFP, 3, VFP_REG_SINGLE, false, false)
+ARM_FPU("vfpv3xd-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_SINGLE, false, true)
+ARM_FPU("neon",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, true , false)
+ARM_FPU("neon-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D32, true, true)
+ARM_FPU("vfpv4",	ARM_FP_MODEL_VFP, 4, VFP_REG_D32, false, true)
+ARM_FPU("vfpv4-d16",	ARM_FP_MODEL_VFP, 4, VFP_REG_D16, false, true)
+ARM_FPU("fpv4-sp-d16",	ARM_FP_MODEL_VFP, 4, VFP_REG_SINGLE, false, true)
+ARM_FPU("neon-vfpv4",	ARM_FP_MODEL_VFP, 4, VFP_REG_D32, true, true)
+/* Compatibility aliases.  */
+ARM_FPU("vfp3",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false)
