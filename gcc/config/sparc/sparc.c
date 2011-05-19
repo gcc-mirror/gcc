@@ -8537,12 +8537,19 @@ sparc_profile_hook (int labelno)
     }
 }
 
+#ifdef TARGET_SOLARIS
 /* Solaris implementation of TARGET_ASM_NAMED_SECTION.  */
 
 static void
 sparc_solaris_elf_asm_named_section (const char *name, unsigned int flags,
 				     tree decl ATTRIBUTE_UNUSED)
 {
+  if (HAVE_COMDAT_GROUP && flags & SECTION_LINKONCE)
+    {
+      solaris_elf_asm_comdat_section (name, flags, decl);
+      return;
+    }
+
   fprintf (asm_out_file, "\t.section\t\"%s\"", name);
 
   if (!(flags & SECTION_DEBUG))
@@ -8558,6 +8565,7 @@ sparc_solaris_elf_asm_named_section (const char *name, unsigned int flags,
 
   fputc ('\n', asm_out_file);
 }
+#endif /* TARGET_SOLARIS */
 
 /* We do not allow indirect calls to be optimized into sibling calls.
 

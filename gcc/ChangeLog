@@ -1,3 +1,40 @@
+2011-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/40483
+	* configure.ac (gcc_cv_as_comdat_group_group): Check for Sun as
+	COMDAT group syntax, both SPARC and x86 variants.
+	(HAVE_COMDAT_GROUP): Also define if gcc_cv_as_comdat_group_group.
+	* configure: Regenerate.
+	* config/sol2.h (TARGET_SOLARIS): Define.
+	(PUSHSECTION_FORMAT): Remove.
+	(SECTION_NAME_FORMAT): Define.
+	* config/sol2.c: Include hashtab.h.
+	(solaris_output_init_fini): Replace PUSHSECTION_FORMAT by its
+	expansion, using SECTION_NAME_FORMAT.
+	(solaris_comdat_htab): New variable.
+	(struct comdat_entry): Define.
+	(comdat_hash): New function.
+	(comdat_eq): New function.
+	(solaris_elf_asm_comdat_section): New function.
+	(solaris_define_comdat_signature): New function.
+	(solaris_code_end): New function.
+	* config/sol2-protos.h (solaris_elf_asm_comdat_section): Declare.
+	(solaris_code_end): Declare.
+	* config/t-sol2 (sol2.o): Add $HASHTAB_H dependency.
+	* config/i386/i386.c (ix86_code_end) [TARGET_SOLARIS]: Call
+	solaris_code_end.
+	(i386_solaris_elf_named_section): Wrap in TARGET_SOLARIS.
+	Remove ATTRIBUTE_UNUSED.
+	[!USE_GAS]: Call solaris_elf_asm_comdat_section for
+	SECTION_LINKONCE sections if HAVE_COMDAT_GROUP.
+	* config/sparc/sparc.c (sparc_solaris_elf_asm_named_section):
+	Likewise.
+	* config/i386/sol2-10.h (TARGET_ASM_NAMED_SECTION): Moved ...
+	* config/i386/sol2.h (TARGET_ASM_NAMED_SECTION): ... here.
+	* config/sparc/sol2.h (TARGET_ASM_CODE_END): Redefine.
+	(PUSHSECTION_FORMAT): Remove.
+	(SECTION_NAME_FORMAT): Redefine.
+
 2011-05-19  Kai Tietz  <ktietz@redhat.com>
 
 	* tree-cfg.c (verify_gimple_assign_binary): Barf on

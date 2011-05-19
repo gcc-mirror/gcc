@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* We are compiling for Solaris 2 now.  */
+#define TARGET_SOLARIS 1
+
 /* We use stabs-in-elf for debugging, because that is what the native
    toolchain uses.  */
 #undef PREFERRED_DEBUGGING_TYPE
@@ -257,9 +260,8 @@ __enable_execute_stack (void *addr)					\
   { "init",      0, 0, true,  false,  false, NULL, false },		\
   { "fini",      0, 0, true,  false,  false, NULL, false }
 
-/* Solaris/x86 as and gas support the common ELF .section/.pushsection
-   syntax.  */
-#define PUSHSECTION_FORMAT	"\t.pushsection\t%s\n"
+/* Solaris/x86 as and gas support unquoted section names.  */
+#define SECTION_NAME_FORMAT	"%s"
 
 /* This is how to declare the size of a function.  For Solaris, we output
    any .init or .fini entries here.  */

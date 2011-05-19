@@ -133,6 +133,3 @@ along with GCC; see the file COPYING3.  If not see
 
 /* We do not need to search a special directory for startup files.  */
 #undef MD_STARTFILE_PREFIX
-
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION i386_solaris_elf_named_section

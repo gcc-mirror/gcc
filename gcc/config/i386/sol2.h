@@ -154,6 +154,9 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION i386_solaris_elf_named_section
+
 /* We do not need NT_VERSION notes.  */
 #undef X86_FILE_START_VERSION_DIRECTIVE
 #define X86_FILE_START_VERSION_DIRECTIVE false
