@@ -7210,7 +7210,23 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		break;
 	      }
 	  }
-	  
+
+	  /* With two-valued operand types binary truth expressions are
+	     semantically equivalent to bitwise binary expressions.  Canonicalize
+	     them to the bitwise variant.  */	switch (TREE_CODE (*expr_p))
+	  {
+	  case TRUTH_AND_EXPR:
+	    TREE_SET_CODE (*expr_p, BIT_AND_EXPR);
+	    break;
+	  case TRUTH_OR_EXPR:
+	    TREE_SET_CODE (*expr_p, BIT_IOR_EXPR);
+	    break;
+	  case TRUTH_XOR_EXPR:
+	    TREE_SET_CODE (*expr_p, BIT_XOR_EXPR);
+	    break;
+	  default:
+	    break;
+	  }
 	  /* Classified as tcc_expression.  */
 	  goto expr_2;
 
