@@ -1,3 +1,8 @@
+2011-05-19  Anatoly Sokolov <aesok@post.ru>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/t-sol2 (sol2.o): Add $(TARGET_H) dependency.
+
 2011-05-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48985
