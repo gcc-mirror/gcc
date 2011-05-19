@@ -316,6 +316,13 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
   tree type = TREE_TYPE (base);
   tree tmp;
 
+  if (GFC_ARRAY_TYPE_P (type) && GFC_TYPE_ARRAY_RANK (type) == 0)
+    {
+      gcc_assert (GFC_TYPE_ARRAY_CORANK (type) > 0);
+
+      return fold_convert (TREE_TYPE (type), base);
+    }
+
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
   type = TREE_TYPE (type);
 

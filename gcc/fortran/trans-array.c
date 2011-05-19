@@ -2621,7 +2621,12 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
   gfc_se tmpse;
 
   if (ar->dimen == 0)
-    return;
+    {
+      gcc_assert (ar->codimen);
+      /* Use the actual tree type and not the wrapped coarray. */
+      se->expr = fold_convert (TREE_TYPE (TREE_TYPE (se->expr)), se->expr);
+      return;
+    }
 
   /* Handle scalarized references separately.  */
   if (ar->type != AR_ELEMENT)

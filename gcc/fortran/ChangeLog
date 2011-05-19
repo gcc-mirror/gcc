@@ -1,3 +1,13 @@
+2011-06-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-types.c (gfc_get_element_type): Handle scalar coarrays.
+	(gfc_get_nodesc_array_type): Make a variant-type copy for scalar
+	coarrays.
+	* trans.c (gfc_build_array_ref): Return original type not variant
+	copy for scalar coarrays.
+	* trans-array.c (gfc_conv_array_ref): Ditto.
+
 2011-05-16  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (_gfortran_set_options): Add GFC_STD_F2008_TR.

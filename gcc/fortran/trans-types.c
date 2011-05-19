@@ -1100,8 +1100,16 @@ gfc_get_element_type (tree type)
     {
       if (TREE_CODE (type) == POINTER_TYPE)
         type = TREE_TYPE (type);
-      gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
-      element = TREE_TYPE (type);
+      if (GFC_TYPE_ARRAY_RANK (type) == 0)
+	{
+	  gcc_assert (GFC_TYPE_ARRAY_CORANK (type) > 0);
+	  element = type;
+	}
+      else
+	{
+	  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+	  element = TREE_TYPE (type);
+	}
     }
   else
     {
@@ -1412,7 +1420,13 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
   /* We don't use build_array_type because this does not include include
      lang-specific information (i.e. the bounds of the array) when checking
      for duplicates.  */
-  type = make_node (ARRAY_TYPE);
+  if (as->rank)
+    type = make_node (ARRAY_TYPE);
+  else
+    {
+      type = build_variant_type_copy (etype);
+      TREE_TYPE (type) = etype;
+    }
 
   GFC_ARRAY_TYPE_P (type) = 1;
   TYPE_LANG_SPECIFIC (type)
@@ -1525,6 +1539,23 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
     GFC_TYPE_ARRAY_DATAPTR_TYPE (type) =
       build_qualified_type (GFC_TYPE_ARRAY_DATAPTR_TYPE (type),
 			    TYPE_QUAL_RESTRICT);
+
+  if (as->rank == 0)
+    {
+      if (packed != PACKED_STATIC)
+	type = build_pointer_type (type);
+
+      if (restricted)
+        type = build_qualified_type (type, TYPE_QUAL_RESTRICT);	
+
+      if (packed != PACKED_STATIC)
+	{
+	  GFC_ARRAY_TYPE_P (type) = 1;
+	  TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type)); 
+	}
+
+      return type;
+    }
 
   if (known_stride)
     {
