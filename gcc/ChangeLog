@@ -1,3 +1,9 @@
+2011-05-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/45098
+	* tree-ssa-loop-ivopts.c (determine_iv_cost): Prevent
+	cost_base.cost == 0.
+
 2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/49002

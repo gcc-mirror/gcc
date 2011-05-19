@@ -4690,6 +4690,11 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
 
   base = cand->iv->base;
   cost_base = force_var_cost (data, base, NULL);
+  /* It will be exceptional that the iv register happens to be initialized with
+     the proper value at no cost.  In general, there will at least be a regcopy
+     or a const set.  */
+  if (cost_base.cost == 0)
+    cost_base.cost = COSTS_N_INSNS (1);
   cost_step = add_cost (TYPE_MODE (TREE_TYPE (base)), data->speed);
 
   cost = cost_step + adjust_setup_cost (data, cost_base.cost);
