@@ -1,3 +1,49 @@
+2011-05-19  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* testsuite/util/testsuite_tr1.h: Add test classes.
+	* testsuite/20_util/is_nothrow_assignable/value.cc: Add.
+
+2011-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (is_assignable, is_copy_assignable,
+	is_move_assignable, is_nothrow_assignable, is_nothrow_copy_assignable,
+	is_nothrow_move_assignable): Add; minor tweaks elsewhere.
+	(has_nothrow_copy_assign): Remove.
+	* testsuite/util/testsuite_tr1.h: Add test classes.
+	* testsuite/20_util/is_assignable/requirements/typedefs.cc: Add.
+	* testsuite/20_util/is_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_nothrow_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_assignable/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_nothrow_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_move_assignable/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_move_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_copy_assignable/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_copy_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_nothrow_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_move_assignable/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_nothrow_move_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_nothrow_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_copy_assignable/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_nothrow_copy_assignable/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
 2011-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/shared_ptr_base.h: Use noexcept. Define special member
