@@ -1,6 +1,17 @@
 2011-05-19  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/45098
+	* tree-ssa-loop-ivopts.c (get_expr_id): Factored new function out of
+	get_loop_invariant_expr_id.
+	(get_loop_invariant_expr_id): Use get_expr_id.
+	(parm_decl_cost): New function.
+	(determine_use_iv_cost_condition): Use get_expr_id and parm_decl_cost.
+	Improve bound cost estimation.  Use different inv_expr_id for elim and
+	express cases.
+
+2011-05-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/45098
 	* tree-ssa-loop-ivopts.c (determine_iv_cost): Prevent
 	cost_base.cost == 0.
 
