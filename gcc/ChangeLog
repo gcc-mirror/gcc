@@ -1,3 +1,9 @@
+2011-05-19  Kai Tietz  <ktietz@redhat.com>
+
+	* tree-cfg.c (verify_gimple_assign_binary): Barf on
+	TRUTH_AND_EXPR, TRUTH_OR_EXPR, and TRUTH_XOR_EXPR.
+	(gimplify_expr): Move TRUTH_AND|OR|XOR_EXPR to its binary form.
+
 2011-05-19  Anatoly Sokolov <aesok@post.ru>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

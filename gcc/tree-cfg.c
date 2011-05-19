@@ -3555,29 +3555,11 @@ do_pointer_plus_expr_check:
 
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-      gcc_unreachable ();
-
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
-      {
-	/* We require two-valued operand types.  */
-	if (!(TREE_CODE (rhs1_type) == BOOLEAN_TYPE
-	      || (INTEGRAL_TYPE_P (rhs1_type)
-		  && TYPE_PRECISION (rhs1_type) == 1))
-	    || !(TREE_CODE (rhs2_type) == BOOLEAN_TYPE
-		 || (INTEGRAL_TYPE_P (rhs2_type)
-		     && TYPE_PRECISION (rhs2_type) == 1)))
-	  {
-	    error ("type mismatch in binary truth expression");
-	    debug_generic_expr (lhs_type);
-	    debug_generic_expr (rhs1_type);
-	    debug_generic_expr (rhs2_type);
-	    return true;
-	  }
 
-	break;
-      }
+      gcc_unreachable ();
 
     case LT_EXPR:
     case LE_EXPR:
