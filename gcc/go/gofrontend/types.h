@@ -1044,7 +1044,7 @@ class Type
   // Build a composite literal for one method.
   Expression*
   method_constructor(Gogo*, Type* method_type, const std::string& name,
-		     const Method*) const;
+		     const Method*, bool only_value_methods) const;
 
   static tree
   build_receive_return_type(tree type);

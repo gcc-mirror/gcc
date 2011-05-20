@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// The asn1 package implements parsing of DER-encoded ASN.1 data structures,
+// Package asn1 implements parsing of DER-encoded ASN.1 data structures,
 // as defined in ITU-T Rec X.690.
 //
 // See also ``A Layman's Guide to a Subset of ASN.1, BER, and DER,''
@@ -373,7 +373,7 @@ func parseTagAndLength(bytes []byte, initOffset int) (ret tagAndLength, offset i
 // parseSequenceOf is used for SEQUENCE OF and SET OF values. It tries to parse
 // a number of ASN.1 values from the given byte array and returns them as a
 // slice of Go values of the given type.
-func parseSequenceOf(bytes []byte, sliceType *reflect.SliceType, elemType reflect.Type) (ret *reflect.SliceValue, err os.Error) {
+func parseSequenceOf(bytes []byte, sliceType reflect.Type, elemType reflect.Type) (ret reflect.Value, err os.Error) {
 	expectedTag, compoundType, ok := getUniversalType(elemType)
 	if !ok {
 		err = StructuralError{"unknown Go type for slice"}
@@ -409,7 +409,7 @@ func parseSequenceOf(bytes []byte, sliceType *reflect.SliceType, elemType reflec
 	params := fieldParameters{}
 	offset := 0
 	for i := 0; i < numElements; i++ {
-		offset, err = parseField(ret.Elem(i), bytes, offset, params)
+		offset, err = parseField(ret.Index(i), bytes, offset, params)
 		if err != nil {
 			return
 		}
@@ -418,13 +418,13 @@ func parseSequenceOf(bytes []byte, sliceType *reflect.SliceType, elemType reflec
 }
 
 var (
-	bitStringType        = reflect.Typeof(BitString{})
-	objectIdentifierType = reflect.Typeof(ObjectIdentifier{})
-	enumeratedType       = reflect.Typeof(Enumerated(0))
-	flagType             = reflect.Typeof(Flag(false))
-	timeType             = reflect.Typeof(&time.Time{})
-	rawValueType         = reflect.Typeof(RawValue{})
-	rawContentsType      = reflect.Typeof(RawContent(nil))
+	bitStringType        = reflect.TypeOf(BitString{})
+	objectIdentifierType = reflect.TypeOf(ObjectIdentifier{})
+	enumeratedType       = reflect.TypeOf(Enumerated(0))
+	flagType             = reflect.TypeOf(Flag(false))
+	timeType             = reflect.TypeOf(&time.Time{})
+	rawValueType         = reflect.TypeOf(RawValue{})
+	rawContentsType      = reflect.TypeOf(RawContent(nil))
 )
 
 // invalidLength returns true iff offset + length > sliceLength, or if the
@@ -461,13 +461,12 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 		}
 		result := RawValue{t.class, t.tag, t.isCompound, bytes[offset : offset+t.length], bytes[initOffset : offset+t.length]}
 		offset += t.length
-		v.(*reflect.StructValue).Set(reflect.NewValue(result).(*reflect.StructValue))
+		v.Set(reflect.ValueOf(result))
 		return
 	}
 
 	// Deal with the ANY type.
-	if ifaceType, ok := fieldType.(*reflect.InterfaceType); ok && ifaceType.NumMethod() == 0 {
-		ifaceValue := v.(*reflect.InterfaceValue)
+	if ifaceType := fieldType; ifaceType.Kind() == reflect.Interface && ifaceType.NumMethod() == 0 {
 		var t tagAndLength
 		t, offset, err = parseTagAndLength(bytes, offset)
 		if err != nil {
@@ -506,7 +505,7 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 			return
 		}
 		if result != nil {
-			ifaceValue.Set(reflect.NewValue(result))
+			v.Set(reflect.ValueOf(result))
 		}
 		return
 	}
@@ -536,9 +535,7 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 					err = StructuralError{"Zero length explicit tag was not an asn1.Flag"}
 					return
 				}
-
-				flagValue := v.(*reflect.BoolValue)
-				flagValue.Set(true)
+				v.SetBool(true)
 				return
 			}
 		} else {
@@ -606,23 +603,20 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 	switch fieldType {
 	case objectIdentifierType:
 		newSlice, err1 := parseObjectIdentifier(innerBytes)
-		sliceValue := v.(*reflect.SliceValue)
-		sliceValue.Set(reflect.MakeSlice(sliceValue.Type().(*reflect.SliceType), len(newSlice), len(newSlice)))
+		v.Set(reflect.MakeSlice(v.Type(), len(newSlice), len(newSlice)))
 		if err1 == nil {
-			reflect.Copy(sliceValue, reflect.NewValue(newSlice).(reflect.ArrayOrSliceValue))
+			reflect.Copy(v, reflect.ValueOf(newSlice))
 		}
 		err = err1
 		return
 	case bitStringType:
-		structValue := v.(*reflect.StructValue)
 		bs, err1 := parseBitString(innerBytes)
 		if err1 == nil {
-			structValue.Set(reflect.NewValue(bs).(*reflect.StructValue))
+			v.Set(reflect.ValueOf(bs))
 		}
 		err = err1
 		return
 	case timeType:
-		ptrValue := v.(*reflect.PtrValue)
 		var time *time.Time
 		var err1 os.Error
 		if universalTag == tagUTCTime {
@@ -631,55 +625,53 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 			time, err1 = parseGeneralizedTime(innerBytes)
 		}
 		if err1 == nil {
-			ptrValue.Set(reflect.NewValue(time).(*reflect.PtrValue))
+			v.Set(reflect.ValueOf(time))
 		}
 		err = err1
 		return
 	case enumeratedType:
 		parsedInt, err1 := parseInt(innerBytes)
-		enumValue := v.(*reflect.IntValue)
 		if err1 == nil {
-			enumValue.Set(int64(parsedInt))
+			v.SetInt(int64(parsedInt))
 		}
 		err = err1
 		return
 	case flagType:
-		flagValue := v.(*reflect.BoolValue)
-		flagValue.Set(true)
+		v.SetBool(true)
 		return
 	}
-	switch val := v.(type) {
-	case *reflect.BoolValue:
+	switch val := v; val.Kind() {
+	case reflect.Bool:
 		parsedBool, err1 := parseBool(innerBytes)
 		if err1 == nil {
-			val.Set(parsedBool)
+			val.SetBool(parsedBool)
 		}
 		err = err1
 		return
-	case *reflect.IntValue:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		switch val.Type().Kind() {
 		case reflect.Int:
 			parsedInt, err1 := parseInt(innerBytes)
 			if err1 == nil {
-				val.Set(int64(parsedInt))
+				val.SetInt(int64(parsedInt))
 			}
 			err = err1
 			return
 		case reflect.Int64:
 			parsedInt, err1 := parseInt64(innerBytes)
 			if err1 == nil {
-				val.Set(parsedInt)
+				val.SetInt(parsedInt)
 			}
 			err = err1
 			return
 		}
-	case *reflect.StructValue:
-		structType := fieldType.(*reflect.StructType)
+	case reflect.Struct:
+		structType := fieldType
 
 		if structType.NumField() > 0 &&
 			structType.Field(0).Type == rawContentsType {
 			bytes := bytes[initOffset:offset]
-			val.Field(0).SetValue(reflect.NewValue(RawContent(bytes)))
+			val.Field(0).Set(reflect.ValueOf(RawContent(bytes)))
 		}
 
 		innerOffset := 0
@@ -697,11 +689,11 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 		// adding elements to the end has been used in X.509 as the
 		// version numbers have increased.
 		return
-	case *reflect.SliceValue:
-		sliceType := fieldType.(*reflect.SliceType)
+	case reflect.Slice:
+		sliceType := fieldType
 		if sliceType.Elem().Kind() == reflect.Uint8 {
 			val.Set(reflect.MakeSlice(sliceType, len(innerBytes), len(innerBytes)))
-			reflect.Copy(val, reflect.NewValue(innerBytes).(reflect.ArrayOrSliceValue))
+			reflect.Copy(val, reflect.ValueOf(innerBytes))
 			return
 		}
 		newSlice, err1 := parseSequenceOf(innerBytes, sliceType, sliceType.Elem())
@@ -710,7 +702,7 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 		}
 		err = err1
 		return
-	case *reflect.StringValue:
+	case reflect.String:
 		var v string
 		switch universalTag {
 		case tagPrintableString:
@@ -729,7 +721,7 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 			err = SyntaxError{fmt.Sprintf("internal error: unknown string type %d", universalTag)}
 		}
 		if err == nil {
-			val.Set(v)
+			val.SetString(v)
 		}
 		return
 	}
@@ -748,9 +740,9 @@ func setDefaultValue(v reflect.Value, params fieldParameters) (ok bool) {
 	if params.defaultValue == nil {
 		return
 	}
-	switch val := v.(type) {
-	case *reflect.IntValue:
-		val.Set(*params.defaultValue)
+	switch val := v; val.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		val.SetInt(*params.defaultValue)
 	}
 	return
 }
@@ -806,7 +798,7 @@ func Unmarshal(b []byte, val interface{}) (rest []byte, err os.Error) {
 // UnmarshalWithParams allows field parameters to be specified for the
 // top-level element. The form of the params is the same as the field tags.
 func UnmarshalWithParams(b []byte, val interface{}, params string) (rest []byte, err os.Error) {
-	v := reflect.NewValue(val).(*reflect.PtrValue).Elem()
+	v := reflect.ValueOf(val).Elem()
 	offset, err := parseField(v, b, 0, parseFieldParameters(params))
 	if err != nil {
 		return nil, err

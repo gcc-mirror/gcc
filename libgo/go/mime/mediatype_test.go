@@ -5,6 +5,7 @@
 package mime
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -85,23 +86,152 @@ func TestConsumeMediaParam(t *testing.T) {
 	}
 }
 
+type mediaTypeTest struct {
+	in string
+	t  string
+	p  map[string]string
+}
+
 func TestParseMediaType(t *testing.T) {
-	tests := [...]string{
-		`form-data; name="foo"`,
-		` form-data ; name=foo`,
-		`FORM-DATA;name="foo"`,
-		` FORM-DATA ; name="foo"`,
-		` FORM-DATA ; name="foo"`,
-		`form-data; key=value;  blah="value";name="foo" `,
+	// Convenience map initializer
+	m := func(s ...string) map[string]string {
+		sm := make(map[string]string)
+		for i := 0; i < len(s); i += 2 {
+			sm[s[i]] = s[i+1]
+		}
+		return sm
+	}
+
+	nameFoo := map[string]string{"name": "foo"}
+	tests := []mediaTypeTest{
+		{`form-data; name="foo"`, "form-data", nameFoo},
+		{` form-data ; name=foo`, "form-data", nameFoo},
+		{`FORM-DATA;name="foo"`, "form-data", nameFoo},
+		{` FORM-DATA ; name="foo"`, "form-data", nameFoo},
+		{` FORM-DATA ; name="foo"`, "form-data", nameFoo},
+
+		{`form-data; key=value;  blah="value";name="foo" `,
+			"form-data",
+			m("key", "value", "blah", "value", "name", "foo")},
+
+		{`foo; key=val1; key=the-key-appears-again-which-is-bogus`,
+			"", m()},
+
+		// From RFC 2231:
+		{`application/x-stuff; title*=us-ascii'en-us'This%20is%20%2A%2A%2Afun%2A%2A%2A`,
+			"application/x-stuff",
+			m("title", "This is ***fun***")},
+
+		{`message/external-body; access-type=URL; ` +
+			`URL*0="ftp://";` +
+			`URL*1="cs.utk.edu/pub/moore/bulk-mailer/bulk-mailer.tar"`,
+			"message/external-body",
+			m("access-type", "URL",
+				"URL", "ftp://cs.utk.edu/pub/moore/bulk-mailer/bulk-mailer.tar")},
+
+		{`application/x-stuff; ` +
+			`title*0*=us-ascii'en'This%20is%20even%20more%20; ` +
+			`title*1*=%2A%2A%2Afun%2A%2A%2A%20; ` +
+			`title*2="isn't it!"`,
+			"application/x-stuff",
+			m("title", "This is even more ***fun*** isn't it!")},
+
+		// Tests from http://greenbytes.de/tech/tc2231/
+		// TODO(bradfitz): add the rest of the tests from that site.
+		{`attachment; filename="f\oo.html"`,
+			"attachment",
+			m("filename", "foo.html")},
+		{`attachment; filename="\"quoting\" tested.html"`,
+			"attachment",
+			m("filename", `"quoting" tested.html`)},
+		{`attachment; filename="Here's a semicolon;.html"`,
+			"attachment",
+			m("filename", "Here's a semicolon;.html")},
+		{`attachment; foo="\"\\";filename="foo.html"`,
+			"attachment",
+			m("foo", "\"\\", "filename", "foo.html")},
+		{`attachment; filename=foo.html`,
+			"attachment",
+			m("filename", "foo.html")},
+		{`attachment; filename=foo.html ;`,
+			"attachment",
+			m("filename", "foo.html")},
+		{`attachment; filename='foo.html'`,
+			"attachment",
+			m("filename", "foo.html")},
+		{`attachment; filename="foo-%41.html"`,
+			"attachment",
+			m("filename", "foo-%41.html")},
+		{`attachment; filename="foo-%\41.html"`,
+			"attachment",
+			m("filename", "foo-%41.html")},
+		{`filename=foo.html`,
+			"", m()},
+		{`x=y; filename=foo.html`,
+			"", m()},
+		{`"foo; filename=bar;baz"; filename=qux`,
+			"", m()},
+		{`inline; attachment; filename=foo.html`,
+			"", m()},
+		{`attachment; filename="foo.html".txt`,
+			"", m()},
+		{`attachment; filename="bar`,
+			"", m()},
+		{`attachment; creation-date="Wed, 12 Feb 1997 16:29:51 -0500"`,
+			"attachment",
+			m("creation-date", "Wed, 12 Feb 1997 16:29:51 -0500")},
+		{`foobar`, "foobar", m()},
+		{`attachment; filename* =UTF-8''foo-%c3%a4.html`,
+			"attachment",
+			m("filename", "foo-ä.html")},
+		{`attachment; filename*=UTF-8''A-%2541.html`,
+			"attachment",
+			m("filename", "A-%41.html")},
+		{`attachment; filename*0="foo."; filename*1="html"`,
+			"attachment",
+			m("filename", "foo.html")},
+		{`attachment; filename*0*=UTF-8''foo-%c3%a4; filename*1=".html"`,
+			"attachment",
+			m("filename", "foo-ä.html")},
+		{`attachment; filename*0="foo"; filename*01="bar"`,
+			"attachment",
+			m("filename", "foo")},
+		{`attachment; filename*0="foo"; filename*2="bar"`,
+			"attachment",
+			m("filename", "foo")},
+		{`attachment; filename*1="foo"; filename*2="bar"`,
+			"attachment", m()},
+		{`attachment; filename*1="bar"; filename*0="foo"`,
+			"attachment",
+			m("filename", "foobar")},
+		{`attachment; filename="foo-ae.html"; filename*=UTF-8''foo-%c3%a4.html`,
+			"attachment",
+			m("filename", "foo-ä.html")},
+		{`attachment; filename*=UTF-8''foo-%c3%a4.html; filename="foo-ae.html"`,
+			"attachment",
+			m("filename", "foo-ä.html")},
+
+		// Browsers also just send UTF-8 directly without RFC 2231,
+		// at least when the source page is served with UTF-8.
+		{`form-data; firstname="Брэд"; lastname="Фицпатрик"`,
+			"form-data",
+			m("firstname", "Брэд", "lastname", "Фицпатрик")},
 	}
 	for _, test := range tests {
-		mt, params := ParseMediaType(test)
-		if mt != "form-data" {
-			t.Errorf("expected type form-data for %s, got [%s]", test, mt)
+		mt, params := ParseMediaType(test.in)
+		if g, e := mt, test.t; g != e {
+			t.Errorf("for input %q, expected type %q, got %q",
+				test.in, e, g)
 			continue
 		}
-		if params["name"] != "foo" {
-			t.Errorf("expected name=foo for %s", test)
+		if len(params) == 0 && len(test.p) == 0 {
+			continue
+		}
+		if !reflect.DeepEqual(params, test.p) {
+			t.Errorf("for input %q, wrong params.\n"+
+				"expected: %#v\n"+
+				"     got: %#v",
+				test.in, test.p, params)
 		}
 	}
 }

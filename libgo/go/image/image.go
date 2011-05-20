@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// The image package implements a basic 2-D image library.
+// Package image implements a basic 2-D image library.
 package image
 
 // A Config consists of an image's color model and dimensions.
@@ -49,6 +49,13 @@ func (p *RGBA) Set(x, y int, c Color) {
 		return
 	}
 	p.Pix[y*p.Stride+x] = toRGBAColor(c).(RGBAColor)
+}
+
+func (p *RGBA) SetRGBA(x, y int, c RGBAColor) {
+	if !p.Rect.Contains(Point{x, y}) {
+		return
+	}
+	p.Pix[y*p.Stride+x] = c
 }
 
 // Opaque scans the entire image and returns whether or not it is fully opaque.
@@ -103,6 +110,13 @@ func (p *RGBA64) Set(x, y int, c Color) {
 	p.Pix[y*p.Stride+x] = toRGBA64Color(c).(RGBA64Color)
 }
 
+func (p *RGBA64) SetRGBA64(x, y int, c RGBA64Color) {
+	if !p.Rect.Contains(Point{x, y}) {
+		return
+	}
+	p.Pix[y*p.Stride+x] = c
+}
+
 // Opaque scans the entire image and returns whether or not it is fully opaque.
 func (p *RGBA64) Opaque() bool {
 	if p.Rect.Empty() {
@@ -153,6 +167,13 @@ func (p *NRGBA) Set(x, y int, c Color) {
 		return
 	}
 	p.Pix[y*p.Stride+x] = toNRGBAColor(c).(NRGBAColor)
+}
+
+func (p *NRGBA) SetNRGBA(x, y int, c NRGBAColor) {
+	if !p.Rect.Contains(Point{x, y}) {
+		return
+	}
+	p.Pix[y*p.Stride+x] = c
 }
 
 // Opaque scans the entire image and returns whether or not it is fully opaque.
@@ -207,6 +228,13 @@ func (p *NRGBA64) Set(x, y int, c Color) {
 	p.Pix[y*p.Stride+x] = toNRGBA64Color(c).(NRGBA64Color)
 }
 
+func (p *NRGBA64) SetNRGBA64(x, y int, c NRGBA64Color) {
+	if !p.Rect.Contains(Point{x, y}) {
+		return
+	}
+	p.Pix[y*p.Stride+x] = c
+}
+
 // Opaque scans the entire image and returns whether or not it is fully opaque.
 func (p *NRGBA64) Opaque() bool {
 	if p.Rect.Empty() {
@@ -257,6 +285,13 @@ func (p *Alpha) Set(x, y int, c Color) {
 		return
 	}
 	p.Pix[y*p.Stride+x] = toAlphaColor(c).(AlphaColor)
+}
+
+func (p *Alpha) SetAlpha(x, y int, c AlphaColor) {
+	if !p.Rect.Contains(Point{x, y}) {
+		return
+	}
+	p.Pix[y*p.Stride+x] = c
 }
 
 // Opaque scans the entire image and returns whether or not it is fully opaque.
@@ -311,6 +346,13 @@ func (p *Alpha16) Set(x, y int, c Color) {
 	p.Pix[y*p.Stride+x] = toAlpha16Color(c).(Alpha16Color)
 }
 
+func (p *Alpha16) SetAlpha16(x, y int, c Alpha16Color) {
+	if !p.Rect.Contains(Point{x, y}) {
+		return
+	}
+	p.Pix[y*p.Stride+x] = c
+}
+
 // Opaque scans the entire image and returns whether or not it is fully opaque.
 func (p *Alpha16) Opaque() bool {
 	if p.Rect.Empty() {
@@ -363,6 +405,13 @@ func (p *Gray) Set(x, y int, c Color) {
 	p.Pix[y*p.Stride+x] = toGrayColor(c).(GrayColor)
 }
 
+func (p *Gray) SetGray(x, y int, c GrayColor) {
+	if !p.Rect.Contains(Point{x, y}) {
+		return
+	}
+	p.Pix[y*p.Stride+x] = c
+}
+
 // Opaque scans the entire image and returns whether or not it is fully opaque.
 func (p *Gray) Opaque() bool {
 	return true
@@ -399,6 +448,13 @@ func (p *Gray16) Set(x, y int, c Color) {
 		return
 	}
 	p.Pix[y*p.Stride+x] = toGray16Color(c).(Gray16Color)
+}
+
+func (p *Gray16) SetGray16(x, y int, c Gray16Color) {
+	if !p.Rect.Contains(Point{x, y}) {
+		return
+	}
+	p.Pix[y*p.Stride+x] = c
 }
 
 // Opaque scans the entire image and returns whether or not it is fully opaque.

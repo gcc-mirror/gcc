@@ -41,7 +41,19 @@ func doDial(t *testing.T, network, addr string) {
 	fd.Close()
 }
 
-var googleaddrs = []string{
+func TestLookupCNAME(t *testing.T) {
+	if testing.Short() {
+		// Don't use external network.
+		t.Logf("skipping external network test during -short")
+		return
+	}
+	cname, err := LookupCNAME("www.google.com")
+	if !strings.HasSuffix(cname, ".l.google.com.") || err != nil {
+		t.Errorf(`LookupCNAME("www.google.com.") = %q, %v, want "*.l.google.com.", nil`, cname, err)
+	}
+}
+
+var googleaddrsipv4 = []string{
 	"%d.%d.%d.%d:80",
 	"www.google.com:80",
 	"%d.%d.%d.%d:http",
@@ -52,42 +64,40 @@ var googleaddrs = []string{
 	"[0:0:0:0:0000:ffff:%d.%d.%d.%d]:80",
 	"[0:0:0:0:000000:ffff:%d.%d.%d.%d]:80",
 	"[0:0:0:0:0:ffff::%d.%d.%d.%d]:80",
-	"[2001:4860:0:2001::68]:80", // ipv6.google.com; removed if ipv6 flag not set
 }
 
-func TestLookupCNAME(t *testing.T) {
-	cname, err := LookupCNAME("www.google.com")
-	if cname != "www.l.google.com." || err != nil {
-		t.Errorf(`LookupCNAME("www.google.com.") = %q, %v, want "www.l.google.com.", nil`, cname, err)
-	}
-}
-
-func TestDialGoogle(t *testing.T) {
-	// If no ipv6 tunnel, don't try the last address.
-	if !*ipv6 {
-		googleaddrs[len(googleaddrs)-1] = ""
+func TestDialGoogleIPv4(t *testing.T) {
+	if testing.Short() {
+		// Don't use external network.
+		t.Logf("skipping external network test during -short")
+		return
 	}
 
-	// Insert an actual IP address for google.com
+	// Insert an actual IPv4 address for google.com
 	// into the table.
-
 	addrs, err := LookupIP("www.google.com")
 	if err != nil {
 		t.Fatalf("lookup www.google.com: %v", err)
 	}
-	if len(addrs) == 0 {
-		t.Fatalf("no addresses for www.google.com")
+	var ip IP
+	for _, addr := range addrs {
+		if x := addr.To4(); x != nil {
+			ip = x
+			break
+		}
 	}
-	ip := addrs[0].To4()
+	if ip == nil {
+		t.Fatalf("no IPv4 addresses for www.google.com")
+	}
 
-	for i, s := range googleaddrs {
+	for i, s := range googleaddrsipv4 {
 		if strings.Contains(s, "%") {
-			googleaddrs[i] = fmt.Sprintf(s, ip[0], ip[1], ip[2], ip[3])
+			googleaddrsipv4[i] = fmt.Sprintf(s, ip[0], ip[1], ip[2], ip[3])
 		}
 	}
 
-	for i := 0; i < len(googleaddrs); i++ {
-		addr := googleaddrs[i]
+	for i := 0; i < len(googleaddrsipv4); i++ {
+		addr := googleaddrsipv4[i]
 		if addr == "" {
 			continue
 		}
@@ -95,20 +105,67 @@ func TestDialGoogle(t *testing.T) {
 		doDial(t, "tcp", addr)
 		if addr[0] != '[' {
 			doDial(t, "tcp4", addr)
-
 			if !preferIPv4 {
 				// make sure preferIPv4 flag works.
 				preferIPv4 = true
 				syscall.SocketDisableIPv6 = true
+				doDial(t, "tcp", addr)
 				doDial(t, "tcp4", addr)
 				syscall.SocketDisableIPv6 = false
 				preferIPv4 = false
 			}
 		}
+	}
+}
 
-		// Only run tcp6 if the kernel will take it.
-		if kernelSupportsIPv6() {
-			doDial(t, "tcp6", addr)
+var googleaddrsipv6 = []string{
+	"[%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x]:80",
+	"ipv6.google.com:80",
+	"[%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x]:http",
+	"ipv6.google.com:http",
+}
+
+func TestDialGoogleIPv6(t *testing.T) {
+	if testing.Short() {
+		// Don't use external network.
+		t.Logf("skipping external network test during -short")
+		return
+	}
+	// Only run tcp6 if the kernel will take it.
+	if !*ipv6 || !kernelSupportsIPv6() {
+		return
+	}
+
+	// Insert an actual IPv6 address for ipv6.google.com
+	// into the table.
+	addrs, err := LookupIP("ipv6.google.com")
+	if err != nil {
+		t.Fatalf("lookup ipv6.google.com: %v", err)
+	}
+	var ip IP
+	for _, addr := range addrs {
+		if x := addr.To16(); x != nil {
+			ip = x
+			break
 		}
+	}
+	if ip == nil {
+		t.Fatalf("no IPv6 addresses for ipv6.google.com")
+	}
+
+	for i, s := range googleaddrsipv6 {
+		if strings.Contains(s, "%") {
+			googleaddrsipv6[i] = fmt.Sprintf(s, ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[8], ip[9], ip[10], ip[11], ip[12], ip[13], ip[14], ip[15])
+		}
+	}
+
+	for i := 0; i < len(googleaddrsipv6); i++ {
+		addr := googleaddrsipv6[i]
+		if addr == "" {
+			continue
+		}
+		t.Logf("-- %s --", addr)
+		doDial(t, "tcp", addr)
+		doDial(t, "tcp6", addr)
 	}
 }

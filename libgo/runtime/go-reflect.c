@@ -121,6 +121,9 @@ Reflect (struct __go_empty_interface e)
 {
   struct reflect_ret ret;
 
+  if (((uintptr_t) e.__type_descriptor & reflectFlags) != 0)
+    __go_panic_msg ("invalid interface value");
+
   if (e.__type_descriptor == NULL)
     {
       ret.rettype.__type_descriptor = NULL;
@@ -165,6 +168,9 @@ struct __go_empty_interface
 Typeof (const struct __go_empty_interface e)
 {
   struct __go_empty_interface ret;
+
+  if (((uintptr_t) e.__type_descriptor & reflectFlags) != 0)
+    __go_panic_msg ("invalid interface value");
 
   if (e.__type_descriptor == NULL)
     {

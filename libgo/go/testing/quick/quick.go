@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This package implements utility functions to help with black box testing.
+// Package quick implements utility functions to help with black box testing.
 package quick
 
 import (
@@ -53,96 +53,93 @@ const complexSize = 50
 // If the type implements the Generator interface, that will be used.
 // Note: in order to create arbitrary values for structs, all the members must be public.
 func Value(t reflect.Type, rand *rand.Rand) (value reflect.Value, ok bool) {
-	if m, ok := reflect.MakeZero(t).Interface().(Generator); ok {
+	if m, ok := reflect.Zero(t).Interface().(Generator); ok {
 		return m.Generate(rand, complexSize), true
 	}
 
-	switch concrete := t.(type) {
-	case *reflect.BoolType:
-		return reflect.NewValue(rand.Int()&1 == 0), true
-	case *reflect.FloatType, *reflect.IntType, *reflect.UintType, *reflect.ComplexType:
-		switch t.Kind() {
-		case reflect.Float32:
-			return reflect.NewValue(randFloat32(rand)), true
-		case reflect.Float64:
-			return reflect.NewValue(randFloat64(rand)), true
-		case reflect.Complex64:
-			return reflect.NewValue(complex(randFloat32(rand), randFloat32(rand))), true
-		case reflect.Complex128:
-			return reflect.NewValue(complex(randFloat64(rand), randFloat64(rand))), true
-		case reflect.Int16:
-			return reflect.NewValue(int16(randInt64(rand))), true
-		case reflect.Int32:
-			return reflect.NewValue(int32(randInt64(rand))), true
-		case reflect.Int64:
-			return reflect.NewValue(randInt64(rand)), true
-		case reflect.Int8:
-			return reflect.NewValue(int8(randInt64(rand))), true
-		case reflect.Int:
-			return reflect.NewValue(int(randInt64(rand))), true
-		case reflect.Uint16:
-			return reflect.NewValue(uint16(randInt64(rand))), true
-		case reflect.Uint32:
-			return reflect.NewValue(uint32(randInt64(rand))), true
-		case reflect.Uint64:
-			return reflect.NewValue(uint64(randInt64(rand))), true
-		case reflect.Uint8:
-			return reflect.NewValue(uint8(randInt64(rand))), true
-		case reflect.Uint:
-			return reflect.NewValue(uint(randInt64(rand))), true
-		case reflect.Uintptr:
-			return reflect.NewValue(uintptr(randInt64(rand))), true
-		}
-	case *reflect.MapType:
+	switch concrete := t; concrete.Kind() {
+	case reflect.Bool:
+		return reflect.ValueOf(rand.Int()&1 == 0), true
+	case reflect.Float32:
+		return reflect.ValueOf(randFloat32(rand)), true
+	case reflect.Float64:
+		return reflect.ValueOf(randFloat64(rand)), true
+	case reflect.Complex64:
+		return reflect.ValueOf(complex(randFloat32(rand), randFloat32(rand))), true
+	case reflect.Complex128:
+		return reflect.ValueOf(complex(randFloat64(rand), randFloat64(rand))), true
+	case reflect.Int16:
+		return reflect.ValueOf(int16(randInt64(rand))), true
+	case reflect.Int32:
+		return reflect.ValueOf(int32(randInt64(rand))), true
+	case reflect.Int64:
+		return reflect.ValueOf(randInt64(rand)), true
+	case reflect.Int8:
+		return reflect.ValueOf(int8(randInt64(rand))), true
+	case reflect.Int:
+		return reflect.ValueOf(int(randInt64(rand))), true
+	case reflect.Uint16:
+		return reflect.ValueOf(uint16(randInt64(rand))), true
+	case reflect.Uint32:
+		return reflect.ValueOf(uint32(randInt64(rand))), true
+	case reflect.Uint64:
+		return reflect.ValueOf(uint64(randInt64(rand))), true
+	case reflect.Uint8:
+		return reflect.ValueOf(uint8(randInt64(rand))), true
+	case reflect.Uint:
+		return reflect.ValueOf(uint(randInt64(rand))), true
+	case reflect.Uintptr:
+		return reflect.ValueOf(uintptr(randInt64(rand))), true
+	case reflect.Map:
 		numElems := rand.Intn(complexSize)
 		m := reflect.MakeMap(concrete)
 		for i := 0; i < numElems; i++ {
 			key, ok1 := Value(concrete.Key(), rand)
 			value, ok2 := Value(concrete.Elem(), rand)
 			if !ok1 || !ok2 {
-				return nil, false
+				return reflect.Value{}, false
 			}
-			m.SetElem(key, value)
+			m.SetMapIndex(key, value)
 		}
 		return m, true
-	case *reflect.PtrType:
+	case reflect.Ptr:
 		v, ok := Value(concrete.Elem(), rand)
 		if !ok {
-			return nil, false
+			return reflect.Value{}, false
 		}
-		p := reflect.MakeZero(concrete)
-		p.(*reflect.PtrValue).PointTo(v)
+		p := reflect.New(concrete.Elem())
+		p.Elem().Set(v)
 		return p, true
-	case *reflect.SliceType:
+	case reflect.Slice:
 		numElems := rand.Intn(complexSize)
 		s := reflect.MakeSlice(concrete, numElems, numElems)
 		for i := 0; i < numElems; i++ {
 			v, ok := Value(concrete.Elem(), rand)
 			if !ok {
-				return nil, false
+				return reflect.Value{}, false
 			}
-			s.Elem(i).SetValue(v)
+			s.Index(i).Set(v)
 		}
 		return s, true
-	case *reflect.StringType:
+	case reflect.String:
 		numChars := rand.Intn(complexSize)
 		codePoints := make([]int, numChars)
 		for i := 0; i < numChars; i++ {
 			codePoints[i] = rand.Intn(0x10ffff)
 		}
-		return reflect.NewValue(string(codePoints)), true
-	case *reflect.StructType:
-		s := reflect.MakeZero(t).(*reflect.StructValue)
+		return reflect.ValueOf(string(codePoints)), true
+	case reflect.Struct:
+		s := reflect.New(t).Elem()
 		for i := 0; i < s.NumField(); i++ {
 			v, ok := Value(concrete.Field(i).Type, rand)
 			if !ok {
-				return nil, false
+				return reflect.Value{}, false
 			}
-			s.Field(i).SetValue(v)
+			s.Field(i).Set(v)
 		}
 		return s, true
 	default:
-		return nil, false
+		return reflect.Value{}, false
 	}
 
 	return
@@ -247,7 +244,7 @@ func Check(function interface{}, config *Config) (err os.Error) {
 		err = SetupError("function returns more than one value.")
 		return
 	}
-	if _, ok := fType.Out(0).(*reflect.BoolType); !ok {
+	if fType.Out(0).Kind() != reflect.Bool {
 		err = SetupError("function does not return a bool")
 		return
 	}
@@ -262,7 +259,7 @@ func Check(function interface{}, config *Config) (err os.Error) {
 			return
 		}
 
-		if !f.Call(arguments)[0].(*reflect.BoolValue).Get() {
+		if !f.Call(arguments)[0].Bool() {
 			err = &CheckError{i + 1, toInterfaces(arguments)}
 			return
 		}
@@ -320,7 +317,7 @@ func CheckEqual(f, g interface{}, config *Config) (err os.Error) {
 
 // arbitraryValues writes Values to args such that args contains Values
 // suitable for calling f.
-func arbitraryValues(args []reflect.Value, f *reflect.FuncType, config *Config, rand *rand.Rand) (err os.Error) {
+func arbitraryValues(args []reflect.Value, f reflect.Type, config *Config, rand *rand.Rand) (err os.Error) {
 	if config.Values != nil {
 		config.Values(args, rand)
 		return
@@ -338,12 +335,13 @@ func arbitraryValues(args []reflect.Value, f *reflect.FuncType, config *Config, 
 	return
 }
 
-func functionAndType(f interface{}) (v *reflect.FuncValue, t *reflect.FuncType, ok bool) {
-	v, ok = reflect.NewValue(f).(*reflect.FuncValue)
+func functionAndType(f interface{}) (v reflect.Value, t reflect.Type, ok bool) {
+	v = reflect.ValueOf(f)
+	ok = v.Kind() == reflect.Func
 	if !ok {
 		return
 	}
-	t = v.Type().(*reflect.FuncType)
+	t = v.Type()
 	return
 }
 

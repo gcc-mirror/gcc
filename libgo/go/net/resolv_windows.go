@@ -47,7 +47,7 @@ func goLookupIP(name string) (addrs []IP, err os.Error) {
 	return addrs, nil
 }
 
-func LookupCNAME(name string) (cname string, err os.Error) {
+func goLookupCNAME(name string) (cname string, err os.Error) {
 	var r *syscall.DNSRecord
 	e := syscall.DnsQuery(name, syscall.DNS_TYPE_CNAME, 0, nil, &r, nil)
 	if int(e) != 0 {
@@ -110,6 +110,10 @@ func isDomainName(s string) bool {
 }
 
 func reverseaddr(addr string) (arpa string, err os.Error) {
+	panic("unimplemented")
+}
+
+func answer(name, server string, dns *dnsMsg, qtype uint16) (cname string, addrs []dnsRR, err os.Error) {
 	panic("unimplemented")
 }
 

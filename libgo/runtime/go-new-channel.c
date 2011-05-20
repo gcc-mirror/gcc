@@ -13,11 +13,15 @@
 #include "channel.h"
 
 struct __go_channel*
-__go_new_channel (uintptr_t element_size, uintptr_t entries)
+__go_new_channel (const struct __go_type_descriptor *element_type,
+		  uintptr_t entries)
 {
+  uintptr_t element_size;
   struct __go_channel* ret;
   size_t alloc_size;
   int i;
+
+  element_size = element_type->__size;
 
   if ((uintptr_t) (int) entries != entries
       || entries > (uintptr_t) -1 / element_size)
@@ -40,7 +44,7 @@ __go_new_channel (uintptr_t element_size, uintptr_t entries)
   __go_assert (i == 0);
   i = pthread_cond_init (&ret->cond, NULL);
   __go_assert (i == 0);
-  ret->element_size = element_size;
+  ret->element_type = element_type;
   ret->waiting_to_send = 0;
   ret->waiting_to_receive = 0;
   ret->selected_for_send = 0;

@@ -32,17 +32,7 @@ func socket(net string, f, p, t int, la, ra syscall.Sockaddr, toAddr func(syscal
 	syscall.CloseOnExec(s)
 	syscall.ForkLock.RUnlock()
 
-	// Allow reuse of recently-used addresses.
-	syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
-
-	// Allow broadcast.
-	syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_BROADCAST, 1)
-
-	if f == syscall.AF_INET6 {
-		// using ip, tcp, udp, etc.
-		// allow both protocols even if the OS default is otherwise.
-		syscall.SetsockoptInt(s, syscall.IPPROTO_IPV6, syscall.IPV6_V6ONLY, 0)
-	}
+	setKernelSpecificSockopt(s, f)
 
 	if la != nil {
 		e = syscall.Bind(s, la)
@@ -161,7 +151,7 @@ type UnknownSocketError struct {
 }
 
 func (e *UnknownSocketError) String() string {
-	return "unknown socket address type " + reflect.Typeof(e.sa).String()
+	return "unknown socket address type " + reflect.TypeOf(e.sa).String()
 }
 
 func sockaddrToString(sa syscall.Sockaddr) (name string, err os.Error) {

@@ -93,7 +93,7 @@ __go_send_nonblocking_acquire (struct __go_channel *channel)
 _Bool
 __go_send_nonblocking_small (struct __go_channel *channel, uint64_t val)
 {
-  __go_assert (channel->element_size <= sizeof (uint64_t));
+  __go_assert (channel->element_type->__size <= sizeof (uint64_t));
 
   if (!__go_send_nonblocking_acquire (channel))
     return 0;

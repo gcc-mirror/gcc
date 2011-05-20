@@ -22,6 +22,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -141,9 +142,13 @@ func newConn(rwc net.Conn, handler Handler) (c *conn, err os.Error) {
 type expectContinueReader struct {
 	resp       *response
 	readCloser io.ReadCloser
+	closed     bool
 }
 
 func (ecr *expectContinueReader) Read(p []byte) (n int, err os.Error) {
+	if ecr.closed {
+		return 0, os.NewError("http: Read after Close on request Body")
+	}
 	if !ecr.resp.wroteContinue && !ecr.resp.conn.hijacked {
 		ecr.resp.wroteContinue = true
 		io.WriteString(ecr.resp.conn.buf, "HTTP/1.1 100 Continue\r\n\r\n")
@@ -153,6 +158,7 @@ func (ecr *expectContinueReader) Read(p []byte) (n int, err os.Error) {
 }
 
 func (ecr *expectContinueReader) Close() os.Error {
+	ecr.closed = true
 	return ecr.readCloser.Close()
 }
 
@@ -180,12 +186,6 @@ func (c *conn) readRequest() (w *response, err os.Error) {
 	w.req = req
 	w.header = make(Header)
 	w.contentLength = -1
-
-	// Expect 100 Continue support
-	if req.expectsContinue() && req.ProtoAtLeast(1, 1) {
-		// Wrap the Body reader with one that replies on the connection
-		req.Body = &expectContinueReader{readCloser: req.Body, resp: w}
-	}
 	return w, nil
 }
 
@@ -202,6 +202,16 @@ func (w *response) WriteHeader(code int) {
 		log.Print("http: multiple response.WriteHeader calls")
 		return
 	}
+
+	// Per RFC 2616, we should consume the request body before
+	// replying, if the handler hasn't already done so.
+	if w.req.ContentLength != 0 {
+		ecr, isExpecter := w.req.Body.(*expectContinueReader)
+		if !isExpecter || ecr.resp.wroteContinue {
+			w.req.Body.Close()
+		}
+	}
+
 	w.wroteHeader = true
 	w.status = code
 	if code == StatusNotModified {
@@ -299,7 +309,7 @@ func (w *response) WriteHeader(code int) {
 		text = "status code " + codestring
 	}
 	io.WriteString(w.conn.buf, proto+" "+codestring+" "+text+"\r\n")
-	writeSortedHeader(w.conn.buf, w.header, nil)
+	w.header.Write(w.conn.buf)
 	io.WriteString(w.conn.buf, "\r\n")
 }
 
@@ -413,6 +423,9 @@ func (w *response) finishRequest() {
 	}
 	w.conn.buf.Flush()
 	w.req.Body.Close()
+	if w.req.MultipartForm != nil {
+		w.req.MultipartForm.RemoveAll()
+	}
 
 	if w.contentLength != -1 && w.contentLength != w.written {
 		// Did not write enough. Avoid getting out of sync.
@@ -446,6 +459,38 @@ func (c *conn) serve() {
 		if err != nil {
 			break
 		}
+
+		// Expect 100 Continue support
+		req := w.req
+		if req.expectsContinue() {
+			if req.ProtoAtLeast(1, 1) {
+				// Wrap the Body reader with one that replies on the connection
+				req.Body = &expectContinueReader{readCloser: req.Body, resp: w}
+			}
+			if req.ContentLength == 0 {
+				w.Header().Set("Connection", "close")
+				w.WriteHeader(StatusBadRequest)
+				break
+			}
+			req.Header.Del("Expect")
+		} else if req.Header.Get("Expect") != "" {
+			// TODO(bradfitz): let ServeHTTP handlers handle
+			// requests with non-standard expectation[s]? Seems
+			// theoretical at best, and doesn't fit into the
+			// current ServeHTTP model anyway.  We'd need to
+			// make the ResponseWriter an optional
+			// "ExpectReplier" interface or something.
+			//
+			// For now we'll just obey RFC 2616 14.20 which says
+			// "If a server receives a request containing an
+			// Expect field that includes an expectation-
+			// extension that it does not support, it MUST
+			// respond with a 417 (Expectation Failed) status."
+			w.Header().Set("Connection", "close")
+			w.WriteHeader(StatusExpectationFailed)
+			break
+		}
+
 		// HTTP cannot have multiple simultaneous active requests.[*]
 		// Until the server replies to this request, it can't read another,
 		// so we might as well run the handler in this goroutine.
@@ -856,4 +901,90 @@ func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Han
 
 	tlsListener := tls.NewListener(conn, config)
 	return Serve(tlsListener, handler)
+}
+
+// TimeoutHandler returns a Handler that runs h with the given time limit.
+//
+// The new Handler calls h.ServeHTTP to handle each request, but if a
+// call runs for more than ns nanoseconds, the handler responds with
+// a 503 Service Unavailable error and the given message in its body.
+// (If msg is empty, a suitable default message will be sent.)
+// After such a timeout, writes by h to its ResponseWriter will return
+// ErrHandlerTimeout.
+func TimeoutHandler(h Handler, ns int64, msg string) Handler {
+	f := func() <-chan int64 {
+		return time.After(ns)
+	}
+	return &timeoutHandler{h, f, msg}
+}
+
+// ErrHandlerTimeout is returned on ResponseWriter Write calls
+// in handlers which have timed out.
+var ErrHandlerTimeout = os.NewError("http: Handler timeout")
+
+type timeoutHandler struct {
+	handler Handler
+	timeout func() <-chan int64 // returns channel producing a timeout
+	body    string
+}
+
+func (h *timeoutHandler) errorBody() string {
+	if h.body != "" {
+		return h.body
+	}
+	return "<html><head><title>Timeout</title></head><body><h1>Timeout</h1></body></html>"
+}
+
+func (h *timeoutHandler) ServeHTTP(w ResponseWriter, r *Request) {
+	done := make(chan bool)
+	tw := &timeoutWriter{w: w}
+	go func() {
+		h.handler.ServeHTTP(tw, r)
+		done <- true
+	}()
+	select {
+	case <-done:
+		return
+	case <-h.timeout():
+		tw.mu.Lock()
+		defer tw.mu.Unlock()
+		if !tw.wroteHeader {
+			tw.w.WriteHeader(StatusServiceUnavailable)
+			tw.w.Write([]byte(h.errorBody()))
+		}
+		tw.timedOut = true
+	}
+}
+
+type timeoutWriter struct {
+	w ResponseWriter
+
+	mu          sync.Mutex
+	timedOut    bool
+	wroteHeader bool
+}
+
+func (tw *timeoutWriter) Header() Header {
+	return tw.w.Header()
+}
+
+func (tw *timeoutWriter) Write(p []byte) (int, os.Error) {
+	tw.mu.Lock()
+	timedOut := tw.timedOut
+	tw.mu.Unlock()
+	if timedOut {
+		return 0, ErrHandlerTimeout
+	}
+	return tw.w.Write(p)
+}
+
+func (tw *timeoutWriter) WriteHeader(code int) {
+	tw.mu.Lock()
+	if tw.timedOut || tw.wroteHeader {
+		tw.mu.Unlock()
+		return
+	}
+	tw.wroteHeader = true
+	tw.mu.Unlock()
+	tw.w.WriteHeader(code)
 }

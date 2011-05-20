@@ -97,7 +97,7 @@ func (enc *Encoder) sendActualType(w io.Writer, state *encoderState, ut *userTyp
 	// Id:
 	state.encodeInt(-int64(info.id))
 	// Type:
-	enc.encode(state.b, reflect.NewValue(info.wire), wireTypeUserInfo)
+	enc.encode(state.b, reflect.ValueOf(info.wire), wireTypeUserInfo)
 	enc.writeMessage(w, state.b)
 	if enc.err != nil {
 		return
@@ -109,12 +109,15 @@ func (enc *Encoder) sendActualType(w io.Writer, state *encoderState, ut *userTyp
 		enc.sent[ut.user] = info.id
 	}
 	// Now send the inner types
-	switch st := actual.(type) {
-	case *reflect.StructType:
+	switch st := actual; st.Kind() {
+	case reflect.Struct:
 		for i := 0; i < st.NumField(); i++ {
 			enc.sendType(w, state, st.Field(i).Type)
 		}
-	case reflect.ArrayOrSliceType:
+	case reflect.Array, reflect.Slice:
+		enc.sendType(w, state, st.Elem())
+	case reflect.Map:
+		enc.sendType(w, state, st.Key())
 		enc.sendType(w, state, st.Elem())
 	}
 	return true
@@ -130,27 +133,27 @@ func (enc *Encoder) sendType(w io.Writer, state *encoderState, origt reflect.Typ
 	}
 
 	// It's a concrete value, so drill down to the base type.
-	switch rt := ut.base.(type) {
+	switch rt := ut.base; rt.Kind() {
 	default:
 		// Basic types and interfaces do not need to be described.
 		return
-	case *reflect.SliceType:
+	case reflect.Slice:
 		// If it's []uint8, don't send; it's considered basic.
 		if rt.Elem().Kind() == reflect.Uint8 {
 			return
 		}
 		// Otherwise we do send.
 		break
-	case *reflect.ArrayType:
+	case reflect.Array:
 		// arrays must be sent so we know their lengths and element types.
 		break
-	case *reflect.MapType:
+	case reflect.Map:
 		// maps must be sent so we know their lengths and key/value types.
 		break
-	case *reflect.StructType:
+	case reflect.Struct:
 		// structs must be sent so we know their fields.
 		break
-	case *reflect.ChanType, *reflect.FuncType:
+	case reflect.Chan, reflect.Func:
 		// Probably a bad field in a struct.
 		enc.badType(rt)
 		return
@@ -162,7 +165,7 @@ func (enc *Encoder) sendType(w io.Writer, state *encoderState, origt reflect.Typ
 // Encode transmits the data item represented by the empty interface value,
 // guaranteeing that all necessary type information has been transmitted first.
 func (enc *Encoder) Encode(e interface{}) os.Error {
-	return enc.EncodeValue(reflect.NewValue(e))
+	return enc.EncodeValue(reflect.ValueOf(e))
 }
 
 // sendTypeDescriptor makes sure the remote side knows about this type.

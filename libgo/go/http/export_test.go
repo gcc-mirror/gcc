@@ -14,7 +14,7 @@ func (t *Transport) IdleConnKeysForTesting() (keys []string) {
 	if t.idleConn == nil {
 		return
 	}
-	for key, _ := range t.idleConn {
+	for key := range t.idleConn {
 		keys = append(keys, key)
 	}
 	return
@@ -31,4 +31,11 @@ func (t *Transport) IdleConnCountForTesting(cacheKey string) int {
 		return 0
 	}
 	return len(conns)
+}
+
+func NewTestTimeoutHandler(handler Handler, ch <-chan int64) Handler {
+	f := func() <-chan int64 {
+		return ch
+	}
+	return &timeoutHandler{handler, f, ""}
 }

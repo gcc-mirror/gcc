@@ -266,12 +266,14 @@ uint64_t
 __go_receive_small_closed (struct __go_channel *channel, _Bool for_select,
 			   _Bool *received)
 {
+  uintptr_t element_size;
   uint64_t ret;
 
   if (channel == NULL)
     __go_panic_msg ("receive from nil channel");
 
-  __go_assert (channel->element_size <= sizeof (uint64_t));
+  element_size = channel->element_type->__size;
+  __go_assert (element_size <= sizeof (uint64_t));
 
   if (!__go_receive_acquire (channel, for_select))
     {

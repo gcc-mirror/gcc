@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <pthread.h>
 
+#include "go-type.h"
+
 /* This structure is used when a select is waiting for a synchronous
    channel.  */
 
@@ -34,8 +36,8 @@ struct __go_channel
   /* A condition variable.  This is signalled when data is added to
      the channel and when data is removed from the channel.  */
   pthread_cond_t cond;
-  /* The size of elements on this channel.  */
-  size_t element_size;
+  /* The type of elements on this channel.  */
+  const struct __go_type_descriptor *element_type;
   /* True if a goroutine is waiting to send on a synchronous
      channel.  */
   _Bool waiting_to_send;
@@ -82,7 +84,8 @@ typedef struct __go_channel __go_channel;
    acquired while this mutex is held.  */
 extern pthread_mutex_t __go_select_data_mutex;
 
-extern struct __go_channel *__go_new_channel (uintptr_t, uintptr_t);
+extern struct __go_channel *
+__go_new_channel (const struct __go_type_descriptor *, uintptr_t);
 
 extern _Bool __go_synch_with_select (struct __go_channel *, _Bool);
 

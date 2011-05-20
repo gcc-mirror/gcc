@@ -170,7 +170,7 @@ func TestTypeToPtrType(t *testing.T) {
 		A int
 	}
 	t0 := Type0{7}
-	t0p := (*Type0)(nil)
+	t0p := new(Type0)
 	if err := encAndDec(t0, t0p); err != nil {
 		t.Error(err)
 	}
@@ -339,7 +339,7 @@ func TestSingletons(t *testing.T) {
 			continue
 		}
 		// Get rid of the pointer in the rhs
-		val := reflect.NewValue(test.out).(*reflect.PtrValue).Elem().Interface()
+		val := reflect.ValueOf(test.out).Elem().Interface()
 		if !reflect.DeepEqual(test.in, val) {
 			t.Errorf("decoding singleton: expected %v got %v", test.in, val)
 		}
@@ -512,5 +512,40 @@ func TestNestedInterfaces(t *testing.T) {
 	}
 	if inner.A != 7 {
 		t.Fatalf("final value %d; expected %d", inner.A, 7)
+	}
+}
+
+// The bugs keep coming. We forgot to send map subtypes before the map.
+
+type Bug1Elem struct {
+	Name string
+	Id   int
+}
+
+type Bug1StructMap map[string]Bug1Elem
+
+func bug1EncDec(in Bug1StructMap, out *Bug1StructMap) os.Error {
+	return nil
+}
+
+func TestMapBug1(t *testing.T) {
+	in := make(Bug1StructMap)
+	in["val1"] = Bug1Elem{"elem1", 1}
+	in["val2"] = Bug1Elem{"elem2", 2}
+
+	b := new(bytes.Buffer)
+	enc := NewEncoder(b)
+	err := enc.Encode(in)
+	if err != nil {
+		t.Fatal("encode:", err)
+	}
+	dec := NewDecoder(b)
+	out := make(Bug1StructMap)
+	err = dec.Decode(&out)
+	if err != nil {
+		t.Fatal("decode:", err)
+	}
+	if !reflect.DeepEqual(in, out) {
+		t.Errorf("mismatch: %v %v", in, out)
 	}
 }

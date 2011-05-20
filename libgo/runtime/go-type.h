@@ -149,6 +149,9 @@ struct __go_array_type
   /* The element type.  */
   struct __go_type_descriptor *__element_type;
 
+  /* The type of a slice of the same element type.  */
+  struct __go_type_descriptor *__slice_type;
+
   /* The length of the array.  */
   uintptr_t __len;
 };
@@ -287,6 +290,15 @@ struct __go_struct_type
 
   /* An array of struct __go_struct_field.  */
   struct __go_open_array __fields;
+};
+
+/* If an empty interface has these bits set in its type pointer, it
+   was copied from a reflect.Value and is not a valid empty
+   interface.  */
+
+enum 
+{
+  reflectFlags = 3,
 };
 
 /* Whether a type descriptor is a pointer.  */

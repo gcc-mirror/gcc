@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This package provides basic interfaces to I/O primitives.
+// Package io provides basic interfaces to I/O primitives.
 // Its primary job is to wrap existing implementations of such primitives,
 // such as those in package os, into shared public interfaces that
 // abstract the functionality, plus some other related primitives.
@@ -136,6 +136,10 @@ type WriterTo interface {
 // At the end of the input stream, ReadAt returns 0, os.EOF.
 // ReadAt may return a non-zero number of bytes with a non-nil err.
 // In particular, a ReadAt that exhausts the input may return n > 0, os.EOF.
+//
+// If ReadAt is reading from an data stream with a seek offset,
+// ReadAt should not affect nor be affected by the underlying
+// seek offset.
 type ReaderAt interface {
 	ReadAt(p []byte, off int64) (n int, err os.Error)
 }
@@ -182,16 +186,16 @@ func ReadAtLeast(r Reader, buf []byte, min int) (n int, err os.Error) {
 	if len(buf) < min {
 		return 0, ErrShortBuffer
 	}
-	for n < min {
-		nn, e := r.Read(buf[n:])
-		if nn > 0 {
-			n += nn
-		}
-		if e != nil {
-			if e == os.EOF && n > 0 {
-				e = ErrUnexpectedEOF
-			}
-			return n, e
+	for n < min && err == nil {
+		var nn int
+		nn, err = r.Read(buf[n:])
+		n += nn
+	}
+	if err == os.EOF {
+		if n >= min {
+			err = nil
+		} else if n > 0 {
+			err = ErrUnexpectedEOF
 		}
 	}
 	return

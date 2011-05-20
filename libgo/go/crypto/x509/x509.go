@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This package parses X.509-encoded keys and certificates.
+// Package x509 parses X.509-encoded keys and certificates.
 package x509
 
 import (
 	"asn1"
 	"big"
+	"bytes"
 	"container/vector"
 	"crypto"
 	"crypto/rsa"
@@ -15,7 +16,6 @@ import (
 	"hash"
 	"io"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -27,6 +27,20 @@ type pkcs1PrivateKey struct {
 	D       asn1.RawValue
 	P       asn1.RawValue
 	Q       asn1.RawValue
+	// We ignore these values, if present, because rsa will calculate them.
+	Dp   asn1.RawValue "optional"
+	Dq   asn1.RawValue "optional"
+	Qinv asn1.RawValue "optional"
+
+	AdditionalPrimes []pkcs1AddtionalRSAPrime "optional"
+}
+
+type pkcs1AddtionalRSAPrime struct {
+	Prime asn1.RawValue
+
+	// We ignore these values because rsa will calculate them.
+	Exp   asn1.RawValue
+	Coeff asn1.RawValue
 }
 
 // rawValueIsInteger returns true iff the given ASN.1 RawValue is an INTEGER type.
@@ -46,6 +60,10 @@ func ParsePKCS1PrivateKey(der []byte) (key *rsa.PrivateKey, err os.Error) {
 		return
 	}
 
+	if priv.Version > 1 {
+		return nil, os.ErrorString("x509: unsupported private key version")
+	}
+
 	if !rawValueIsInteger(&priv.N) ||
 		!rawValueIsInteger(&priv.D) ||
 		!rawValueIsInteger(&priv.P) ||
@@ -61,26 +79,66 @@ func ParsePKCS1PrivateKey(der []byte) (key *rsa.PrivateKey, err os.Error) {
 	}
 
 	key.D = new(big.Int).SetBytes(priv.D.Bytes)
-	key.P = new(big.Int).SetBytes(priv.P.Bytes)
-	key.Q = new(big.Int).SetBytes(priv.Q.Bytes)
+	key.Primes = make([]*big.Int, 2+len(priv.AdditionalPrimes))
+	key.Primes[0] = new(big.Int).SetBytes(priv.P.Bytes)
+	key.Primes[1] = new(big.Int).SetBytes(priv.Q.Bytes)
+	for i, a := range priv.AdditionalPrimes {
+		if !rawValueIsInteger(&a.Prime) {
+			return nil, asn1.StructuralError{"tags don't match"}
+		}
+		key.Primes[i+2] = new(big.Int).SetBytes(a.Prime.Bytes)
+		// We ignore the other two values because rsa will calculate
+		// them as needed.
+	}
 
 	err = key.Validate()
 	if err != nil {
 		return nil, err
 	}
+	key.Precompute()
 
 	return
 }
 
+// rawValueForBig returns an asn1.RawValue which represents the given integer.
+func rawValueForBig(n *big.Int) asn1.RawValue {
+	b := n.Bytes()
+	if n.Sign() >= 0 && len(b) > 0 && b[0]&0x80 != 0 {
+		// This positive number would be interpreted as a negative
+		// number in ASN.1 because the MSB is set.
+		padded := make([]byte, len(b)+1)
+		copy(padded[1:], b)
+		b = padded
+	}
+	return asn1.RawValue{Tag: 2, Bytes: b}
+}
+
 // MarshalPKCS1PrivateKey converts a private key to ASN.1 DER encoded form.
 func MarshalPKCS1PrivateKey(key *rsa.PrivateKey) []byte {
+	key.Precompute()
+
+	version := 0
+	if len(key.Primes) > 2 {
+		version = 1
+	}
+
 	priv := pkcs1PrivateKey{
-		Version: 1,
-		N:       asn1.RawValue{Tag: 2, Bytes: key.PublicKey.N.Bytes()},
+		Version: version,
+		N:       rawValueForBig(key.N),
 		E:       key.PublicKey.E,
-		D:       asn1.RawValue{Tag: 2, Bytes: key.D.Bytes()},
-		P:       asn1.RawValue{Tag: 2, Bytes: key.P.Bytes()},
-		Q:       asn1.RawValue{Tag: 2, Bytes: key.Q.Bytes()},
+		D:       rawValueForBig(key.D),
+		P:       rawValueForBig(key.Primes[0]),
+		Q:       rawValueForBig(key.Primes[1]),
+		Dp:      rawValueForBig(key.Precomputed.Dp),
+		Dq:      rawValueForBig(key.Precomputed.Dq),
+		Qinv:    rawValueForBig(key.Precomputed.Qinv),
+	}
+
+	priv.AdditionalPrimes = make([]pkcs1AddtionalRSAPrime, len(key.Precomputed.CRTValues))
+	for i, values := range key.Precomputed.CRTValues {
+		priv.AdditionalPrimes[i].Prime = rawValueForBig(key.Primes[2+i])
+		priv.AdditionalPrimes[i].Exp = rawValueForBig(values.Exp)
+		priv.AdditionalPrimes[i].Coeff = rawValueForBig(values.Coeff)
 	}
 
 	b, _ := asn1.Marshal(priv)
@@ -90,6 +148,7 @@ func MarshalPKCS1PrivateKey(key *rsa.PrivateKey) []byte {
 // These structures reflect the ASN.1 structure of X.509 certificates.:
 
 type certificate struct {
+	Raw                asn1.RawContent
 	TBSCertificate     tbsCertificate
 	SignatureAlgorithm algorithmIdentifier
 	SignatureValue     asn1.BitString
@@ -127,6 +186,7 @@ type validity struct {
 }
 
 type publicKeyInfo struct {
+	Raw       asn1.RawContent
 	Algorithm algorithmIdentifier
 	PublicKey asn1.BitString
 }
@@ -343,7 +403,10 @@ const (
 
 // A Certificate represents an X.509 certificate.
 type Certificate struct {
-	Raw                []byte // Raw ASN.1 DER contents.
+	Raw                     []byte // Complete ASN.1 DER content (certificate, signature algorithm and signature).
+	RawTBSCertificate       []byte // Certificate part of raw ASN.1 DER content.
+	RawSubjectPublicKeyInfo []byte // DER encoded SubjectPublicKeyInfo.
+
 	Signature          []byte
 	SignatureAlgorithm SignatureAlgorithm
 
@@ -395,6 +458,10 @@ func (ConstraintViolationError) String() string {
 	return "invalid signature: parent certificate cannot sign this kind of certificate"
 }
 
+func (c *Certificate) Equal(other *Certificate) bool {
+	return bytes.Equal(c.Raw, other.Raw)
+}
+
 // CheckSignatureFrom verifies that the signature on c is a valid signature
 // from parent.
 func (c *Certificate) CheckSignatureFrom(parent *Certificate) (err os.Error) {
@@ -434,67 +501,10 @@ func (c *Certificate) CheckSignatureFrom(parent *Certificate) (err os.Error) {
 		return UnsupportedAlgorithmError{}
 	}
 
-	h.Write(c.Raw)
+	h.Write(c.RawTBSCertificate)
 	digest := h.Sum()
 
 	return rsa.VerifyPKCS1v15(pub, hashType, digest, c.Signature)
-}
-
-func matchHostnames(pattern, host string) bool {
-	if len(pattern) == 0 || len(host) == 0 {
-		return false
-	}
-
-	patternParts := strings.Split(pattern, ".", -1)
-	hostParts := strings.Split(host, ".", -1)
-
-	if len(patternParts) != len(hostParts) {
-		return false
-	}
-
-	for i, patternPart := range patternParts {
-		if patternPart == "*" {
-			continue
-		}
-		if patternPart != hostParts[i] {
-			return false
-		}
-	}
-
-	return true
-}
-
-type HostnameError struct {
-	Certificate *Certificate
-	Host        string
-}
-
-func (h *HostnameError) String() string {
-	var valid string
-	c := h.Certificate
-	if len(c.DNSNames) > 0 {
-		valid = strings.Join(c.DNSNames, ", ")
-	} else {
-		valid = c.Subject.CommonName
-	}
-	return "certificate is valid for " + valid + ", not " + h.Host
-}
-
-// VerifyHostname returns nil if c is a valid certificate for the named host.
-// Otherwise it returns an os.Error describing the mismatch.
-func (c *Certificate) VerifyHostname(h string) os.Error {
-	if len(c.DNSNames) > 0 {
-		for _, match := range c.DNSNames {
-			if matchHostnames(match, h) {
-				return nil
-			}
-		}
-		// If Subject Alt Name is given, we ignore the common name.
-	} else if matchHostnames(c.Subject.CommonName, h) {
-		return nil
-	}
-
-	return &HostnameError{c, h}
 }
 
 type UnhandledCriticalExtension struct{}
@@ -558,7 +568,9 @@ func parsePublicKey(algo PublicKeyAlgorithm, asn1Data []byte) (interface{}, os.E
 
 func parseCertificate(in *certificate) (*Certificate, os.Error) {
 	out := new(Certificate)
-	out.Raw = in.TBSCertificate.Raw
+	out.Raw = in.Raw
+	out.RawTBSCertificate = in.TBSCertificate.Raw
+	out.RawSubjectPublicKeyInfo = in.TBSCertificate.PublicKey.Raw
 
 	out.Signature = in.SignatureValue.RightAlign()
 	out.SignatureAlgorithm =
@@ -975,7 +987,7 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub *rsa.P
 		Issuer:             parent.Subject.toRDNSequence(),
 		Validity:           validity{template.NotBefore, template.NotAfter},
 		Subject:            template.Subject.toRDNSequence(),
-		PublicKey:          publicKeyInfo{algorithmIdentifier{oidRSA}, encodedPublicKey},
+		PublicKey:          publicKeyInfo{nil, algorithmIdentifier{oidRSA}, encodedPublicKey},
 		Extensions:         extensions,
 	}
 
@@ -996,6 +1008,7 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub *rsa.P
 	}
 
 	cert, err = asn1.Marshal(certificate{
+		nil,
 		c,
 		algorithmIdentifier{oidSHA1WithRSA},
 		asn1.BitString{Bytes: signature, BitLength: len(signature) * 8},
