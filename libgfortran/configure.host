@@ -20,16 +20,16 @@
 # DEFAULTS
 fpu_host='fpu-generic'
 
-# HOST-SPECIFIC OVERRIDES
+if test "x${have_feenableexcept}" = "xyes"; then
+  fpu_host='fpu-glibc'
+fi
+
+# x86 asm should be used instead of glibc, since glibc doesn't support
+# the x86 denormal exception.
 case "${host_cpu}" in
   i?86 | x86_64)
     fpu_host='fpu-387' ;;
 esac
-
-# CONFIGURATION-SPECIFIC OVERRIDES
-if test "x${have_feenableexcept}" = "xyes"; then
-  fpu_host='fpu-glibc'
-fi
 
 if test "x${have_fpsetmask}" = "xyes"; then
   fpu_host='fpu-sysv'
