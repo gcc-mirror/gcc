@@ -5797,13 +5797,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
     }
 
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      /* For members, defer until finalize_literal_type_property.  */
-      && (!DECL_CLASS_SCOPE_P (decl)
-	  || !TYPE_BEING_DEFINED (DECL_CONTEXT (decl))))
-    validate_constexpr_fundecl (decl);
-
-  else if (!ensure_literal_type_for_constexpr_object (decl))
+  if (!ensure_literal_type_for_constexpr_object (decl))
     DECL_DECLARED_CONSTEXPR_P (decl) = 0;
 
   if (init && TREE_CODE (decl) == FUNCTION_DECL)

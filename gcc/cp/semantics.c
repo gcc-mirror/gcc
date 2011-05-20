@@ -5327,7 +5327,7 @@ literal_type_p (tree t)
   if (SCALAR_TYPE_P (t))
     return true;
   if (CLASS_TYPE_P (t))
-    return CLASSTYPE_LITERAL_P (t);
+    return CLASSTYPE_LITERAL_P (complete_type (t));
   if (TREE_CODE (t) == ARRAY_TYPE)
     return literal_type_p (strip_array_types (t));
   return false;
@@ -5439,6 +5439,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
 		   rettype, fun);
 	}
 
+      /* Check this again here for cxx_eval_call_expression.  */
       if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
 	  && !CLASSTYPE_LITERAL_P (DECL_CONTEXT (fun)))
 	{
