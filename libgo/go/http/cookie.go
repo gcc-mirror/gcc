@@ -15,9 +15,9 @@ import (
 	"time"
 )
 
-// This implementation is done according to IETF draft-ietf-httpstate-cookie-23, found at
+// This implementation is done according to RFC 6265:
 //
-//    http://tools.ietf.org/html/draft-ietf-httpstate-cookie-23
+//    http://tools.ietf.org/html/rfc6265
 
 // A Cookie represents an HTTP cookie as sent in the Set-Cookie header of an
 // HTTP response or the Cookie header of an HTTP request.
@@ -142,12 +142,12 @@ func writeSetCookies(w io.Writer, kk []*Cookie) os.Error {
 	var b bytes.Buffer
 	for _, c := range kk {
 		b.Reset()
-		fmt.Fprintf(&b, "%s=%s", c.Name, c.Value)
+		fmt.Fprintf(&b, "%s=%s", sanitizeName(c.Name), sanitizeValue(c.Value))
 		if len(c.Path) > 0 {
-			fmt.Fprintf(&b, "; Path=%s", URLEscape(c.Path))
+			fmt.Fprintf(&b, "; Path=%s", sanitizeValue(c.Path))
 		}
 		if len(c.Domain) > 0 {
-			fmt.Fprintf(&b, "; Domain=%s", URLEscape(c.Domain))
+			fmt.Fprintf(&b, "; Domain=%s", sanitizeValue(c.Domain))
 		}
 		if len(c.Expires.Zone) > 0 {
 			fmt.Fprintf(&b, "; Expires=%s", c.Expires.Format(time.RFC1123))
@@ -225,7 +225,7 @@ func readCookies(h Header) []*Cookie {
 func writeCookies(w io.Writer, kk []*Cookie) os.Error {
 	lines := make([]string, 0, len(kk))
 	for _, c := range kk {
-		lines = append(lines, fmt.Sprintf("Cookie: %s=%s\r\n", c.Name, c.Value))
+		lines = append(lines, fmt.Sprintf("Cookie: %s=%s\r\n", sanitizeName(c.Name), sanitizeValue(c.Value)))
 	}
 	sort.SortStrings(lines)
 	for _, l := range lines {
@@ -234,6 +234,19 @@ func writeCookies(w io.Writer, kk []*Cookie) os.Error {
 		}
 	}
 	return nil
+}
+
+func sanitizeName(n string) string {
+	n = strings.Replace(n, "\n", "-", -1)
+	n = strings.Replace(n, "\r", "-", -1)
+	return n
+}
+
+func sanitizeValue(v string) string {
+	v = strings.Replace(v, "\n", " ", -1)
+	v = strings.Replace(v, "\r", " ", -1)
+	v = strings.Replace(v, ";", " ", -1)
+	return v
 }
 
 func unquoteCookieValue(v string) string {

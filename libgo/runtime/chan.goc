@@ -13,7 +13,8 @@ typedef struct __go_channel chan;
 /* Do a channel receive with closed status.  */
 
 func chanrecv2(c *chan, val *byte) (received bool) {
-	if (c->element_size > 8) {
+	uintptr_t element_size = c->element_type->__size;
+	if (element_size > 8) {
 		return __go_receive_big(c, val, 0);
 	} else {
 		union {
@@ -23,10 +24,9 @@ func chanrecv2(c *chan, val *byte) (received bool) {
 
 		u.v = __go_receive_small_closed(c, 0, &received);
 #ifndef WORDS_BIGENDIAN
-		__builtin_memcpy(val, u.b, c->element_size);
+		__builtin_memcpy(val, u.b, element_size);
 #else
-		__builtin_memcpy(val, u.b + 8 - c->element_size,
-				 c->element_size);
+		__builtin_memcpy(val, u.b + 8 - element_size, element_size);
 #endif
 		return received;
 	}
@@ -35,7 +35,8 @@ func chanrecv2(c *chan, val *byte) (received bool) {
 /* Do a channel receive with closed status for a select statement.  */
 
 func chanrecv3(c *chan, val *byte) (received bool) {
-	if (c->element_size > 8) {
+	uintptr_t element_size = c->element_type->__size;
+	if (element_size > 8) {
 		return __go_receive_big(c, val, 1);
 	} else {
 		union {
@@ -45,10 +46,9 @@ func chanrecv3(c *chan, val *byte) (received bool) {
 
 		u.v = __go_receive_small_closed(c, 1, &received);
 #ifndef WORDS_BIGENDIAN
-		__builtin_memcpy(val, u.b, c->element_size);
+		__builtin_memcpy(val, u.b, element_size);
 #else
-		__builtin_memcpy(val, u.b + 8 - c->element_size,
-				 c->element_size);
+		__builtin_memcpy(val, u.b + 8 - element_size, element_size);
 #endif
 		return received;
 	}

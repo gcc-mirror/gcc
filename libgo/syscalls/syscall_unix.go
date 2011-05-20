@@ -56,3 +56,12 @@ func munmap(addr uintptr, length uintptr) (errno int) {
 	}
 	return
 }
+
+func libc_getrusage(who int, rusage *Rusage) int __asm__ ("getrusage")
+
+func Getrusage(who int, rusage *Rusage) (errno int) {
+	if libc_getrusage(who, rusage) < 0 {
+		errno = GetErrno()
+	}
+	return
+}

@@ -100,6 +100,8 @@ type ConnectionState struct {
 
 	// the certificate chain that was presented by the other side
 	PeerCertificates []*x509.Certificate
+	// the verified certificate chains built from PeerCertificates.
+	VerifiedChains [][]*x509.Certificate
 }
 
 // A Config structure is used to configure a TLS client or server. After one
@@ -122,7 +124,7 @@ type Config struct {
 	// RootCAs defines the set of root certificate authorities
 	// that clients use when verifying server certificates.
 	// If RootCAs is nil, TLS uses the host's root CA set.
-	RootCAs *CASet
+	RootCAs *x509.CertPool
 
 	// NextProtos is a list of supported, application level protocols.
 	NextProtos []string
@@ -158,7 +160,7 @@ func (c *Config) time() int64 {
 	return t()
 }
 
-func (c *Config) rootCAs() *CASet {
+func (c *Config) rootCAs() *x509.CertPool {
 	s := c.RootCAs
 	if s == nil {
 		s = defaultRoots()
@@ -178,6 +180,9 @@ func (c *Config) cipherSuites() []uint16 {
 type Certificate struct {
 	Certificate [][]byte
 	PrivateKey  *rsa.PrivateKey
+	// OCSPStaple contains an optional OCSP response which will be served
+	// to clients that request it.
+	OCSPStaple []byte
 }
 
 // A TLS record.
@@ -221,7 +226,7 @@ var certFiles = []string{
 
 var once sync.Once
 
-func defaultRoots() *CASet {
+func defaultRoots() *x509.CertPool {
 	once.Do(initDefaults)
 	return varDefaultRoots
 }
@@ -236,14 +241,14 @@ func initDefaults() {
 	initDefaultCipherSuites()
 }
 
-var varDefaultRoots *CASet
+var varDefaultRoots *x509.CertPool
 
 func initDefaultRoots() {
-	roots := NewCASet()
+	roots := x509.NewCertPool()
 	for _, file := range certFiles {
 		data, err := ioutil.ReadFile(file)
 		if err == nil {
-			roots.SetFromPEM(data)
+			roots.AppendCertsFromPEM(data)
 			break
 		}
 	}
@@ -255,7 +260,7 @@ var varDefaultCipherSuites []uint16
 func initDefaultCipherSuites() {
 	varDefaultCipherSuites = make([]uint16, len(cipherSuites))
 	i := 0
-	for id, _ := range cipherSuites {
+	for id := range cipherSuites {
 		varDefaultCipherSuites[i] = id
 		i++
 	}

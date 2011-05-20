@@ -74,6 +74,8 @@ cat > sysinfo.c <<EOF
 #include <sys/select.h>
 #endif
 #include <unistd.h>
+#include <netdb.h>
+#include <pwd.h>
 EOF
 
 ${CC} -fdump-go-spec=gen-sysinfo.go -std=gnu99 -S -o sysinfo.s sysinfo.c
@@ -403,6 +405,10 @@ else
   echo "type Rusage struct {}" >> ${OUT}
 fi
 
+# The RUSAGE constants.
+grep '^const _RUSAGE_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(RUSAGE_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
 # The utsname struct.
 grep '^type _utsname ' gen-sysinfo.go | \
     sed -e 's/_utsname/Utsname/' \
@@ -455,5 +461,21 @@ if test "$fd_set" != ""; then
     fds_bits_type=`echo $fd_set | sed -e 's/.*[]]\([^;]*\); }$/\1/'`
 fi
 echo "type fds_bits_type $fds_bits_type" >> ${OUT}
+
+# The addrinfo struct.
+grep '^type _addrinfo ' gen-sysinfo.go | \
+    sed -e 's/_addrinfo/Addrinfo/g' \
+      -e 's/ ai_/ Ai_/g' \
+    >> ${OUT}
+
+# The addrinfo flags.
+grep '^const _AI_' gen-sysinfo.go | \
+  sed -e 's/^\(const \)_\(AI_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+
+# The passwd struct.
+grep '^type _passwd ' gen-sysinfo.go | \
+    sed -e 's/_passwd/Passwd/' \
+      -e 's/ pw_/ Pw_/g' \
+    >> ${OUT}
 
 exit $?

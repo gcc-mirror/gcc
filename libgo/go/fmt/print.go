@@ -256,11 +256,11 @@ func Sprintln(a ...interface{}) string {
 // Get the i'th arg of the struct value.
 // If the arg itself is an interface, return a value for
 // the thing inside the interface, not the interface itself.
-func getField(v *reflect.StructValue, i int) reflect.Value {
+func getField(v reflect.Value, i int) reflect.Value {
 	val := v.Field(i)
-	if i, ok := val.(*reflect.InterfaceValue); ok {
+	if i := val; i.Kind() == reflect.Interface {
 		if inter := i.Interface(); inter != nil {
-			return reflect.NewValue(inter)
+			return reflect.ValueOf(inter)
 		}
 	}
 	return val
@@ -278,18 +278,13 @@ func parsenum(s string, start, end int) (num int, isnum bool, newi int) {
 	return
 }
 
-// Reflection values like reflect.FuncValue implement this method. We use it for %p.
-type uintptrGetter interface {
-	Get() uintptr
-}
-
 func (p *pp) unknownType(v interface{}) {
 	if v == nil {
 		p.buf.Write(nilAngleBytes)
 		return
 	}
 	p.buf.WriteByte('?')
-	p.buf.WriteString(reflect.Typeof(v).String())
+	p.buf.WriteString(reflect.TypeOf(v).String())
 	p.buf.WriteByte('?')
 }
 
@@ -301,7 +296,7 @@ func (p *pp) badVerb(verb int, val interface{}) {
 	if val == nil {
 		p.buf.Write(nilAngleBytes)
 	} else {
-		p.buf.WriteString(reflect.Typeof(val).String())
+		p.buf.WriteString(reflect.TypeOf(val).String())
 		p.add('=')
 		p.printField(val, 'v', false, false, 0)
 	}
@@ -394,6 +389,8 @@ func (p *pp) fmtUint64(v uint64, verb int, goSyntax bool, value interface{}) {
 		p.fmt.integer(int64(v), 16, unsigned, ldigits)
 	case 'X':
 		p.fmt.integer(int64(v), 16, unsigned, udigits)
+	case 'U':
+		p.fmtUnicode(int64(v))
 	default:
 		p.badVerb(verb, value)
 	}
@@ -521,16 +518,16 @@ func (p *pp) fmtBytes(v []byte, verb int, goSyntax bool, depth int, value interf
 
 func (p *pp) fmtPointer(field interface{}, value reflect.Value, verb int, goSyntax bool) {
 	var u uintptr
-	switch value.(type) {
-	case *reflect.ChanValue, *reflect.FuncValue, *reflect.MapValue, *reflect.PtrValue, *reflect.SliceValue, *reflect.UnsafePointerValue:
-		u = value.(uintptrGetter).Get()
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.Slice, reflect.UnsafePointer:
+		u = value.Pointer()
 	default:
 		p.badVerb(verb, field)
 		return
 	}
 	if goSyntax {
 		p.add('(')
-		p.buf.WriteString(reflect.Typeof(field).String())
+		p.buf.WriteString(reflect.TypeOf(field).String())
 		p.add(')')
 		p.add('(')
 		if u == 0 {
@@ -545,10 +542,10 @@ func (p *pp) fmtPointer(field interface{}, value reflect.Value, verb int, goSynt
 }
 
 var (
-	intBits     = reflect.Typeof(0).Bits()
-	floatBits   = reflect.Typeof(0.0).Bits()
-	complexBits = reflect.Typeof(1i).Bits()
-	uintptrBits = reflect.Typeof(uintptr(0)).Bits()
+	intBits     = reflect.TypeOf(0).Bits()
+	floatBits   = reflect.TypeOf(0.0).Bits()
+	complexBits = reflect.TypeOf(1i).Bits()
+	uintptrBits = reflect.TypeOf(uintptr(0)).Bits()
 )
 
 func (p *pp) printField(field interface{}, verb int, plus, goSyntax bool, depth int) (wasString bool) {
@@ -565,10 +562,10 @@ func (p *pp) printField(field interface{}, verb int, plus, goSyntax bool, depth 
 	// %T (the value's type) and %p (its address) are special; we always do them first.
 	switch verb {
 	case 'T':
-		p.printField(reflect.Typeof(field).String(), 's', false, false, 0)
+		p.printField(reflect.TypeOf(field).String(), 's', false, false, 0)
 		return false
 	case 'p':
-		p.fmtPointer(field, reflect.NewValue(field), verb, goSyntax)
+		p.fmtPointer(field, reflect.ValueOf(field), verb, goSyntax)
 		return false
 	}
 	// Is it a Formatter?
@@ -656,38 +653,38 @@ func (p *pp) printField(field interface{}, verb int, plus, goSyntax bool, depth 
 	}
 
 	// Need to use reflection
-	value := reflect.NewValue(field)
+	value := reflect.ValueOf(field)
 
 BigSwitch:
-	switch f := value.(type) {
-	case *reflect.BoolValue:
-		p.fmtBool(f.Get(), verb, field)
-	case *reflect.IntValue:
-		p.fmtInt64(f.Get(), verb, field)
-	case *reflect.UintValue:
-		p.fmtUint64(uint64(f.Get()), verb, goSyntax, field)
-	case *reflect.FloatValue:
+	switch f := value; f.Kind() {
+	case reflect.Bool:
+		p.fmtBool(f.Bool(), verb, field)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		p.fmtInt64(f.Int(), verb, field)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		p.fmtUint64(uint64(f.Uint()), verb, goSyntax, field)
+	case reflect.Float32, reflect.Float64:
 		if f.Type().Size() == 4 {
-			p.fmtFloat32(float32(f.Get()), verb, field)
+			p.fmtFloat32(float32(f.Float()), verb, field)
 		} else {
-			p.fmtFloat64(float64(f.Get()), verb, field)
+			p.fmtFloat64(float64(f.Float()), verb, field)
 		}
-	case *reflect.ComplexValue:
+	case reflect.Complex64, reflect.Complex128:
 		if f.Type().Size() == 8 {
-			p.fmtComplex64(complex64(f.Get()), verb, field)
+			p.fmtComplex64(complex64(f.Complex()), verb, field)
 		} else {
-			p.fmtComplex128(complex128(f.Get()), verb, field)
+			p.fmtComplex128(complex128(f.Complex()), verb, field)
 		}
-	case *reflect.StringValue:
-		p.fmtString(f.Get(), verb, goSyntax, field)
-	case *reflect.MapValue:
+	case reflect.String:
+		p.fmtString(f.String(), verb, goSyntax, field)
+	case reflect.Map:
 		if goSyntax {
 			p.buf.WriteString(f.Type().String())
 			p.buf.WriteByte('{')
 		} else {
 			p.buf.Write(mapBytes)
 		}
-		keys := f.Keys()
+		keys := f.MapKeys()
 		for i, key := range keys {
 			if i > 0 {
 				if goSyntax {
@@ -698,20 +695,20 @@ BigSwitch:
 			}
 			p.printField(key.Interface(), verb, plus, goSyntax, depth+1)
 			p.buf.WriteByte(':')
-			p.printField(f.Elem(key).Interface(), verb, plus, goSyntax, depth+1)
+			p.printField(f.MapIndex(key).Interface(), verb, plus, goSyntax, depth+1)
 		}
 		if goSyntax {
 			p.buf.WriteByte('}')
 		} else {
 			p.buf.WriteByte(']')
 		}
-	case *reflect.StructValue:
+	case reflect.Struct:
 		if goSyntax {
-			p.buf.WriteString(reflect.Typeof(field).String())
+			p.buf.WriteString(reflect.TypeOf(field).String())
 		}
 		p.add('{')
 		v := f
-		t := v.Type().(*reflect.StructType)
+		t := v.Type()
 		for i := 0; i < v.NumField(); i++ {
 			if i > 0 {
 				if goSyntax {
@@ -729,11 +726,11 @@ BigSwitch:
 			p.printField(getField(v, i).Interface(), verb, plus, goSyntax, depth+1)
 		}
 		p.buf.WriteByte('}')
-	case *reflect.InterfaceValue:
+	case reflect.Interface:
 		value := f.Elem()
-		if value == nil {
+		if !value.IsValid() {
 			if goSyntax {
-				p.buf.WriteString(reflect.Typeof(field).String())
+				p.buf.WriteString(reflect.TypeOf(field).String())
 				p.buf.Write(nilParenBytes)
 			} else {
 				p.buf.Write(nilAngleBytes)
@@ -741,9 +738,9 @@ BigSwitch:
 		} else {
 			return p.printField(value.Interface(), verb, plus, goSyntax, depth+1)
 		}
-	case reflect.ArrayOrSliceValue:
+	case reflect.Array, reflect.Slice:
 		// Byte slices are special.
-		if f.Type().(reflect.ArrayOrSliceType).Elem().Kind() == reflect.Uint8 {
+		if f.Type().Elem().Kind() == reflect.Uint8 {
 			// We know it's a slice of bytes, but we also know it does not have static type
 			// []byte, or it would have been caught above.  Therefore we cannot convert
 			// it directly in the (slightly) obvious way: f.Interface().([]byte); it doesn't have
@@ -753,13 +750,13 @@ BigSwitch:
 			// if reflection could help a little more.
 			bytes := make([]byte, f.Len())
 			for i := range bytes {
-				bytes[i] = byte(f.Elem(i).(*reflect.UintValue).Get())
+				bytes[i] = byte(f.Index(i).Uint())
 			}
 			p.fmtBytes(bytes, verb, goSyntax, depth, field)
 			return verb == 's'
 		}
 		if goSyntax {
-			p.buf.WriteString(reflect.Typeof(field).String())
+			p.buf.WriteString(reflect.TypeOf(field).String())
 			p.buf.WriteByte('{')
 		} else {
 			p.buf.WriteByte('[')
@@ -772,24 +769,24 @@ BigSwitch:
 					p.buf.WriteByte(' ')
 				}
 			}
-			p.printField(f.Elem(i).Interface(), verb, plus, goSyntax, depth+1)
+			p.printField(f.Index(i).Interface(), verb, plus, goSyntax, depth+1)
 		}
 		if goSyntax {
 			p.buf.WriteByte('}')
 		} else {
 			p.buf.WriteByte(']')
 		}
-	case *reflect.PtrValue:
-		v := f.Get()
+	case reflect.Ptr:
+		v := f.Pointer()
 		// pointer to array or slice or struct?  ok at top level
 		// but not embedded (avoid loops)
 		if v != 0 && depth == 0 {
-			switch a := f.Elem().(type) {
-			case reflect.ArrayOrSliceValue:
+			switch a := f.Elem(); a.Kind() {
+			case reflect.Array, reflect.Slice:
 				p.buf.WriteByte('&')
 				p.printField(a.Interface(), verb, plus, goSyntax, depth+1)
 				break BigSwitch
-			case *reflect.StructValue:
+			case reflect.Struct:
 				p.buf.WriteByte('&')
 				p.printField(a.Interface(), verb, plus, goSyntax, depth+1)
 				break BigSwitch
@@ -797,7 +794,7 @@ BigSwitch:
 		}
 		if goSyntax {
 			p.buf.WriteByte('(')
-			p.buf.WriteString(reflect.Typeof(field).String())
+			p.buf.WriteString(reflect.TypeOf(field).String())
 			p.buf.WriteByte(')')
 			p.buf.WriteByte('(')
 			if v == 0 {
@@ -813,7 +810,7 @@ BigSwitch:
 			break
 		}
 		p.fmt0x64(uint64(v), true)
-	case *reflect.ChanValue, *reflect.FuncValue, *reflect.UnsafePointerValue:
+	case reflect.Chan, reflect.Func, reflect.UnsafePointer:
 		p.fmtPointer(field, value, verb, goSyntax)
 	default:
 		p.unknownType(f)
@@ -918,7 +915,7 @@ func (p *pp) doPrintf(format string, a []interface{}) {
 		for ; fieldnum < len(a); fieldnum++ {
 			field := a[fieldnum]
 			if field != nil {
-				p.buf.WriteString(reflect.Typeof(field).String())
+				p.buf.WriteString(reflect.TypeOf(field).String())
 				p.buf.WriteByte('=')
 			}
 			p.printField(field, 'v', false, false, 0)
@@ -937,7 +934,7 @@ func (p *pp) doPrint(a []interface{}, addspace, addnewline bool) {
 		// always add spaces if we're doing println
 		field := a[fieldnum]
 		if fieldnum > 0 {
-			isString := field != nil && reflect.Typeof(field).Kind() == reflect.String
+			isString := field != nil && reflect.TypeOf(field).Kind() == reflect.String
 			if addspace || !isString && !prevString {
 				p.buf.WriteByte(' ')
 			}

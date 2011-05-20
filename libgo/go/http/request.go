@@ -4,9 +4,8 @@
 
 // HTTP Request reading and parsing.
 
-// The http package implements parsing of HTTP requests, replies,
-// and URLs and provides an extensible HTTP server and a basic
-// HTTP client.
+// Package http implements parsing of HTTP requests, replies, and URLs and
+// provides an extensible HTTP server and a basic HTTP client.
 package http
 
 import (
@@ -25,11 +24,16 @@ import (
 )
 
 const (
-	maxLineLength  = 4096 // assumed <= bufio.defaultBufSize
-	maxValueLength = 4096
-	maxHeaderLines = 1024
-	chunkSize      = 4 << 10 // 4 KB chunks
+	maxLineLength    = 4096 // assumed <= bufio.defaultBufSize
+	maxValueLength   = 4096
+	maxHeaderLines   = 1024
+	chunkSize        = 4 << 10  // 4 KB chunks
+	defaultMaxMemory = 32 << 20 // 32 MB
 )
+
+// ErrMissingFile is returned by FormFile when the provided file field name
+// is either not present in the request or not a file field.
+var ErrMissingFile = os.ErrorString("http: no such file")
 
 // HTTP request parsing errors.
 type ProtocolError struct {
@@ -65,9 +69,12 @@ var reqExcludeHeader = map[string]bool{
 
 // A Request represents a parsed HTTP request header.
 type Request struct {
-	Method     string // GET, POST, PUT, etc.
-	RawURL     string // The raw URL given in the request.
-	URL        *URL   // Parsed URL.
+	Method string // GET, POST, PUT, etc.
+	RawURL string // The raw URL given in the request.
+	URL    *URL   // Parsed URL.
+
+	// The protocol version for incoming requests.
+	// Outgoing requests always use HTTP/1.1.
 	Proto      string // "HTTP/1.0"
 	ProtoMajor int    // 1
 	ProtoMinor int    // 0
@@ -134,6 +141,10 @@ type Request struct {
 	// The parsed form. Only available after ParseForm is called.
 	Form map[string][]string
 
+	// The parsed multipart form, including file uploads.
+	// Only available after ParseMultipartForm is called.
+	MultipartForm *multipart.Form
+
 	// Trailer maps trailer keys to values.  Like for Header, if the
 	// response has multiple trailer lines with the same key, they will be
 	// concatenated, delimited by commas.
@@ -163,9 +174,30 @@ func (r *Request) ProtoAtLeast(major, minor int) bool {
 		r.ProtoMajor == major && r.ProtoMinor >= minor
 }
 
+// multipartByReader is a sentinel value.
+// Its presence in Request.MultipartForm indicates that parsing of the request
+// body has been handed off to a MultipartReader instead of ParseMultipartFrom.
+var multipartByReader = &multipart.Form{
+	Value: make(map[string][]string),
+	File:  make(map[string][]*multipart.FileHeader),
+}
+
 // MultipartReader returns a MIME multipart reader if this is a
 // multipart/form-data POST request, else returns nil and an error.
+// Use this function instead of ParseMultipartForm to
+// process the request body as a stream.
 func (r *Request) MultipartReader() (multipart.Reader, os.Error) {
+	if r.MultipartForm == multipartByReader {
+		return nil, os.NewError("http: MultipartReader called twice")
+	}
+	if r.MultipartForm != nil {
+		return nil, os.NewError("http: multipart handled by ParseMultipartForm")
+	}
+	r.MultipartForm = multipartByReader
+	return r.multipartReader()
+}
+
+func (r *Request) multipartReader() (multipart.Reader, os.Error) {
 	v := r.Header.Get("Content-Type")
 	if v == "" {
 		return nil, ErrNotMultipart
@@ -199,10 +231,14 @@ const defaultUserAgent = "Go http package"
 //	UserAgent (defaults to defaultUserAgent)
 //	Referer
 //	Header
+//	Cookie
+//	ContentLength
+//	TransferEncoding
 //	Body
 //
-// If Body is present, Write forces "Transfer-Encoding: chunked" as a header
-// and then closes Body when finished sending it.
+// If Body is present but Content-Length is <= 0, Write adds
+// "Transfer-Encoding: chunked" to the header. Body is closed after
+// it is sent.
 func (req *Request) Write(w io.Writer) os.Error {
 	return req.write(w, false)
 }
@@ -264,7 +300,7 @@ func (req *Request) write(w io.Writer, usingProxy bool) os.Error {
 	// from Request, and introduce Request methods along the lines of
 	// Response.{GetHeader,AddHeader} and string constants for "Host",
 	// "User-Agent" and "Referer".
-	err = writeSortedHeader(w, req.Header, reqExcludeHeader)
+	err = req.Header.WriteSubset(w, reqExcludeHeader)
 	if err != nil {
 		return err
 	}
@@ -420,6 +456,29 @@ func (cr *chunkedReader) Read(b []uint8) (n int, err os.Error) {
 	return n, cr.err
 }
 
+// NewRequest returns a new Request given a method, URL, and optional body.
+func NewRequest(method, url string, body io.Reader) (*Request, os.Error) {
+	u, err := ParseURL(url)
+	if err != nil {
+		return nil, err
+	}
+	rc, ok := body.(io.ReadCloser)
+	if !ok && body != nil {
+		rc = ioutil.NopCloser(body)
+	}
+	req := &Request{
+		Method:     method,
+		URL:        u,
+		Proto:      "HTTP/1.1",
+		ProtoMajor: 1,
+		ProtoMinor: 1,
+		Header:     make(Header),
+		Body:       rc,
+		Host:       u.Host,
+	}
+	return req, nil
+}
+
 // ReadRequest reads and parses a request from b.
 func ReadRequest(b *bufio.Reader) (req *Request, err os.Error) {
 
@@ -549,7 +608,9 @@ func parseQuery(m map[string][]string, query string) (err os.Error) {
 	return err
 }
 
-// ParseForm parses the request body as a form for POST requests, or the raw query for GET requests.
+// ParseForm parses the raw query.
+// For POST requests, it also parses the request body as a form.
+// ParseMultipartForm calls ParseForm automatically.
 // It is idempotent.
 func (r *Request) ParseForm() (err os.Error) {
 	if r.Form != nil {
@@ -567,18 +628,23 @@ func (r *Request) ParseForm() (err os.Error) {
 		ct := r.Header.Get("Content-Type")
 		switch strings.Split(ct, ";", 2)[0] {
 		case "text/plain", "application/x-www-form-urlencoded", "":
-			b, e := ioutil.ReadAll(r.Body)
+			const maxFormSize = int64(10 << 20) // 10 MB is a lot of text.
+			b, e := ioutil.ReadAll(io.LimitReader(r.Body, maxFormSize+1))
 			if e != nil {
 				if err == nil {
 					err = e
 				}
 				break
 			}
+			if int64(len(b)) > maxFormSize {
+				return os.NewError("http: POST too large")
+			}
 			e = parseQuery(r.Form, string(b))
 			if err == nil {
 				err = e
 			}
-		// TODO(dsymonds): Handle multipart/form-data
+		case "multipart/form-data":
+			// handled by ParseMultipartForm
 		default:
 			return &badStringError{"unknown Content-Type", ct}
 		}
@@ -586,16 +652,76 @@ func (r *Request) ParseForm() (err os.Error) {
 	return err
 }
 
+// ParseMultipartForm parses a request body as multipart/form-data.
+// The whole request body is parsed and up to a total of maxMemory bytes of
+// its file parts are stored in memory, with the remainder stored on
+// disk in temporary files.
+// ParseMultipartForm calls ParseForm if necessary.
+// After one call to ParseMultipartForm, subsequent calls have no effect.
+func (r *Request) ParseMultipartForm(maxMemory int64) os.Error {
+	if r.Form == nil {
+		err := r.ParseForm()
+		if err != nil {
+			return err
+		}
+	}
+	if r.MultipartForm != nil {
+		return nil
+	}
+	if r.MultipartForm == multipartByReader {
+		return os.NewError("http: multipart handled by MultipartReader")
+	}
+
+	mr, err := r.multipartReader()
+	if err == ErrNotMultipart {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	f, err := mr.ReadForm(maxMemory)
+	if err != nil {
+		return err
+	}
+	for k, v := range f.Value {
+		r.Form[k] = append(r.Form[k], v...)
+	}
+	r.MultipartForm = f
+
+	return nil
+}
+
 // FormValue returns the first value for the named component of the query.
-// FormValue calls ParseForm if necessary.
+// FormValue calls ParseMultipartForm and ParseForm if necessary.
 func (r *Request) FormValue(key string) string {
 	if r.Form == nil {
-		r.ParseForm()
+		r.ParseMultipartForm(defaultMaxMemory)
 	}
 	if vs := r.Form[key]; len(vs) > 0 {
 		return vs[0]
 	}
 	return ""
+}
+
+// FormFile returns the first file for the provided form key.
+// FormFile calls ParseMultipartForm and ParseForm if necessary.
+func (r *Request) FormFile(key string) (multipart.File, *multipart.FileHeader, os.Error) {
+	if r.MultipartForm == multipartByReader {
+		return nil, nil, os.NewError("http: multipart handled by MultipartReader")
+	}
+	if r.MultipartForm == nil {
+		err := r.ParseMultipartForm(defaultMaxMemory)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+	if r.MultipartForm != nil && r.MultipartForm.File != nil {
+		if fhs := r.MultipartForm.File[key]; len(fhs) > 0 {
+			f, err := fhs[0].Open()
+			return f, fhs[0], err
+		}
+	}
+	return nil, nil, ErrMissingFile
 }
 
 func (r *Request) expectsContinue() bool {

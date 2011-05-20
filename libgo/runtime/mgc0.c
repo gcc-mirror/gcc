@@ -90,6 +90,11 @@ scanblock(byte *b, int64 n)
 	void **bw, **w, **ew;
 	Workbuf *wbuf;
 
+	if((int64)(uintptr)n != n || n < 0) {
+		// runtime_printf("scanblock %p %lld\n", b, (long long)n);
+		runtime_throw("scanblock");
+	}
+
 	// Memory arena parameters.
 	arena_start = runtime_mheap.arena_start;
 	
@@ -602,7 +607,7 @@ runfinq(void* dummy)
 
 			next = f->next;
 			params[0] = &f->arg;
-			reflect_call(f->ft, (void*)f->fn, 0, params, nil);
+			reflect_call(f->ft, (void*)f->fn, 0, 0, params, nil);
 			f->fn = nil;
 			f->arg = nil;
 			f->next = nil;

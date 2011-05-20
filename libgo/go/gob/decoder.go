@@ -50,7 +50,7 @@ func (dec *Decoder) recvType(id typeId) {
 
 	// Type:
 	wire := new(wireType)
-	dec.decodeValue(tWireType, reflect.NewValue(wire))
+	dec.decodeValue(tWireType, reflect.ValueOf(wire))
 	if dec.err != nil {
 		return
 	}
@@ -159,9 +159,9 @@ func (dec *Decoder) decodeTypeSequence(isInterface bool) typeId {
 // data item received, and must be a pointer.
 func (dec *Decoder) Decode(e interface{}) os.Error {
 	if e == nil {
-		return dec.DecodeValue(nil)
+		return dec.DecodeValue(reflect.Value{})
 	}
-	value := reflect.NewValue(e)
+	value := reflect.ValueOf(e)
 	// If e represents a value as opposed to a pointer, the answer won't
 	// get back to the caller.  Make sure it's a pointer.
 	if value.Type().Kind() != reflect.Ptr {
@@ -171,12 +171,18 @@ func (dec *Decoder) Decode(e interface{}) os.Error {
 	return dec.DecodeValue(value)
 }
 
-// DecodeValue reads the next value from the connection and stores
-// it in the data represented by the reflection value.
-// The value must be the correct type for the next
-// data item received, or it may be nil, which means the
-// value will be discarded.
-func (dec *Decoder) DecodeValue(value reflect.Value) os.Error {
+// DecodeValue reads the next value from the connection.
+// If v is the zero reflect.Value (v.Kind() == Invalid), DecodeValue discards the value.
+// Otherwise, it stores the value into v.  In that case, v must represent
+// a non-nil pointer to data or be an assignable reflect.Value (v.CanSet())
+func (dec *Decoder) DecodeValue(v reflect.Value) os.Error {
+	if v.IsValid() {
+		if v.Kind() == reflect.Ptr && !v.IsNil() {
+			// That's okay, we'll store through the pointer.
+		} else if !v.CanSet() {
+			return os.ErrorString("gob: DecodeValue of unassignable value")
+		}
+	}
 	// Make sure we're single-threaded through here.
 	dec.mutex.Lock()
 	defer dec.mutex.Unlock()
@@ -185,7 +191,7 @@ func (dec *Decoder) DecodeValue(value reflect.Value) os.Error {
 	dec.err = nil
 	id := dec.decodeTypeSequence(false)
 	if dec.err == nil {
-		dec.decodeValue(id, value)
+		dec.decodeValue(id, v)
 	}
 	return dec.err
 }

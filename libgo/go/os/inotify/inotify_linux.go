@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
-This package implements a wrapper for the Linux inotify system.
+Package inotify implements a wrapper for the Linux inotify system.
 
 Example:
     watcher, err := inotify.NewWatcher()
@@ -109,7 +109,7 @@ func (w *Watcher) AddWatch(path string, flags uint32) os.Error {
 	}
 	wd, errno := syscall.InotifyAddWatch(w.fd, path, flags)
 	if wd == -1 {
-		return os.NewSyscallError("inotify_add_watch", errno)
+		return &os.PathError{"inotify_add_watch", path, os.Errno(errno)}
 	}
 
 	if !found {

@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
-The gob package manages streams of gobs - binary values exchanged between an
+Package gob manages streams of gobs - binary values exchanged between an
 Encoder (transmitter) and a Decoder (receiver).  A typical use is transporting
 arguments and results of remote procedure calls (RPCs) such as those provided by
 package "rpc".
@@ -159,7 +159,7 @@ description, constructed from these types:
 		Elem typeId
 		Len  int
 	}
-	type CommonType {
+	type CommonType struct {
 		Name string // the name of the struct type
 		Id  int    // the id of the type, repeated so it's inside the type
 	}

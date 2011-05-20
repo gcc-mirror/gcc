@@ -245,3 +245,26 @@ runtime_resetcpuprofiler(int32 hz)
 
   m->profilehz = hz;
 }
+
+/* Used by the os package to raise SIGPIPE.  */
+
+void os_sigpipe (void) __asm__ ("libgo_os.os.sigpipe");
+
+void
+os_sigpipe (void)
+{
+  struct sigaction sa;
+  int i;
+
+  memset (&sa, 0, sizeof sa);
+
+  sa.sa_handler = SIG_DFL;
+
+  i = sigemptyset (&sa.sa_mask);
+  __go_assert (i == 0);
+
+  if (sigaction (SIGPIPE, &sa, NULL) != 0)
+    abort ();
+
+  raise (SIGPIPE);
+}

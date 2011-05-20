@@ -9,10 +9,12 @@ package cgi
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"http"
 	"io"
 	"io/ioutil"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -21,8 +23,16 @@ import (
 // Request returns the HTTP request as represented in the current
 // environment. This assumes the current program is being run
 // by a web server in a CGI environment.
+// The returned Request's Body is populated, if applicable.
 func Request() (*http.Request, os.Error) {
-	return requestFromEnvironment(envMap(os.Environ()))
+	r, err := RequestFromMap(envMap(os.Environ()))
+	if err != nil {
+		return nil, err
+	}
+	if r.ContentLength > 0 {
+		r.Body = ioutil.NopCloser(io.LimitReader(os.Stdin, r.ContentLength))
+	}
+	return r, nil
 }
 
 func envMap(env []string) map[string]string {
@@ -42,37 +52,44 @@ var skipHeader = map[string]bool{
 	"HTTP_USER_AGENT": true,
 }
 
-func requestFromEnvironment(env map[string]string) (*http.Request, os.Error) {
+// RequestFromMap creates an http.Request from CGI variables.
+// The returned Request's Body field is not populated.
+func RequestFromMap(params map[string]string) (*http.Request, os.Error) {
 	r := new(http.Request)
-	r.Method = env["REQUEST_METHOD"]
+	r.Method = params["REQUEST_METHOD"]
 	if r.Method == "" {
 		return nil, os.NewError("cgi: no REQUEST_METHOD in environment")
 	}
+
+	r.Proto = params["SERVER_PROTOCOL"]
+	var ok bool
+	r.ProtoMajor, r.ProtoMinor, ok = http.ParseHTTPVersion(r.Proto)
+	if !ok {
+		return nil, os.NewError("cgi: invalid SERVER_PROTOCOL version")
+	}
+
 	r.Close = true
 	r.Trailer = http.Header{}
 	r.Header = http.Header{}
 
-	r.Host = env["HTTP_HOST"]
-	r.Referer = env["HTTP_REFERER"]
-	r.UserAgent = env["HTTP_USER_AGENT"]
+	r.Host = params["HTTP_HOST"]
+	r.Referer = params["HTTP_REFERER"]
+	r.UserAgent = params["HTTP_USER_AGENT"]
 
-	// CGI doesn't allow chunked requests, so these should all be accurate:
-	r.Proto = "HTTP/1.0"
-	r.ProtoMajor = 1
-	r.ProtoMinor = 0
-	r.TransferEncoding = nil
-
-	if lenstr := env["CONTENT_LENGTH"]; lenstr != "" {
+	if lenstr := params["CONTENT_LENGTH"]; lenstr != "" {
 		clen, err := strconv.Atoi64(lenstr)
 		if err != nil {
 			return nil, os.NewError("cgi: bad CONTENT_LENGTH in environment: " + lenstr)
 		}
 		r.ContentLength = clen
-		r.Body = ioutil.NopCloser(io.LimitReader(os.Stdin, clen))
+	}
+
+	if ct := params["CONTENT_TYPE"]; ct != "" {
+		r.Header.Set("Content-Type", ct)
 	}
 
 	// Copy "HTTP_FOO_BAR" variables to "Foo-Bar" Headers
-	for k, v := range env {
+	for k, v := range params {
 		if !strings.HasPrefix(k, "HTTP_") || skipHeader[k] {
 			continue
 		}
@@ -84,7 +101,7 @@ func requestFromEnvironment(env map[string]string) (*http.Request, os.Error) {
 	if r.Host != "" {
 		// Hostname is provided, so we can reasonably construct a URL,
 		// even if we have to assume 'http' for the scheme.
-		r.RawURL = "http://" + r.Host + env["REQUEST_URI"]
+		r.RawURL = "http://" + r.Host + params["REQUEST_URI"]
 		url, err := http.ParseURL(r.RawURL)
 		if err != nil {
 			return nil, os.NewError("cgi: failed to parse host and REQUEST_URI into a URL: " + r.RawURL)
@@ -94,13 +111,25 @@ func requestFromEnvironment(env map[string]string) (*http.Request, os.Error) {
 	// Fallback logic if we don't have a Host header or the URL
 	// failed to parse
 	if r.URL == nil {
-		r.RawURL = env["REQUEST_URI"]
+		r.RawURL = params["REQUEST_URI"]
 		url, err := http.ParseURL(r.RawURL)
 		if err != nil {
 			return nil, os.NewError("cgi: failed to parse REQUEST_URI into a URL: " + r.RawURL)
 		}
 		r.URL = url
 	}
+
+	// There's apparently a de-facto standard for this.
+	// http://docstore.mik.ua/orelly/linux/cgi/ch03_02.htm#ch03-35636
+	if s := params["HTTPS"]; s == "on" || s == "ON" || s == "1" {
+		r.TLS = &tls.ConnectionState{HandshakeComplete: true}
+	}
+
+	// Request.RemoteAddr has its port set by Go's standard http
+	// server, so we do here too. We don't have one, though, so we
+	// use a dummy one.
+	r.RemoteAddr = net.JoinHostPort(params["REMOTE_ADDR"], "0")
+
 	return r, nil
 }
 
@@ -139,10 +168,6 @@ func (r *response) Flush() {
 	r.bufw.Flush()
 }
 
-func (r *response) RemoteAddr() string {
-	return os.Getenv("REMOTE_ADDR")
-}
-
 func (r *response) Header() http.Header {
 	return r.header
 }
@@ -168,25 +193,7 @@ func (r *response) WriteHeader(code int) {
 		r.header.Add("Content-Type", "text/html; charset=utf-8")
 	}
 
-	// TODO: add a method on http.Header to write itself to an io.Writer?
-	// This is duplicated code.
-	for k, vv := range r.header {
-		for _, v := range vv {
-			v = strings.Replace(v, "\n", "", -1)
-			v = strings.Replace(v, "\r", "", -1)
-			v = strings.TrimSpace(v)
-			fmt.Fprintf(r.bufw, "%s: %s\r\n", k, v)
-		}
-	}
-	r.bufw.Write([]byte("\r\n"))
+	r.header.Write(r.bufw)
+	r.bufw.WriteString("\r\n")
 	r.bufw.Flush()
-}
-
-func (r *response) UsingTLS() bool {
-	// There's apparently a de-facto standard for this.
-	// http://docstore.mik.ua/orelly/linux/cgi/ch03_02.htm#ch03-35636
-	if s := os.Getenv("HTTPS"); s == "on" || s == "ON" || s == "1" {
-		return true
-	}
-	return false
 }

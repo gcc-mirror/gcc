@@ -10,11 +10,13 @@ import (
 	"syscall"
 )
 
+func sigpipe() // implemented in package runtime
+
 func epipecheck(file *File, e int) {
 	if e == syscall.EPIPE {
 		file.nepipe++
 		if file.nepipe >= 10 {
-			Exit(syscall.EPIPE)
+			sigpipe()
 		}
 	} else {
 		file.nepipe = 0
