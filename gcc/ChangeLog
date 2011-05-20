@@ -1,3 +1,7 @@
+2011-05-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in: Update comment referring to $(OBJS-common).
+
 2011-05-20  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_output_typedef): Put enum constants in the macro
