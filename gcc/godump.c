@@ -844,9 +844,24 @@ go_output_typedef (struct godump_container *container, tree decl)
       for (element = TYPE_VALUES (TREE_TYPE (decl));
 	   element != NULL_TREE;
 	   element = TREE_CHAIN (element))
-	fprintf (go_dump_file, "const _%s = " HOST_WIDE_INT_PRINT_DEC "\n",
-		 IDENTIFIER_POINTER (TREE_PURPOSE (element)),
-		 tree_low_cst (TREE_VALUE (element), 0));
+	{
+	  const char *name;
+	  void **slot;
+
+	  name = IDENTIFIER_POINTER (TREE_PURPOSE (element));
+
+	  /* Sometimes a name will be defined as both an enum constant
+	     and a macro.  Avoid duplicate definition errors by
+	     treating enum constants as macros.  */
+	  slot = htab_find_slot (macro_hash, name, INSERT);
+	  if (*slot == NULL)
+	    {
+	      *slot = CONST_CAST (char *, name);
+	      fprintf (go_dump_file,
+		       "const _%s = " HOST_WIDE_INT_PRINT_DEC "\n",
+		       name, tree_low_cst (TREE_VALUE (element), 0));
+	    }
+	}
       pointer_set_insert (container->decls_seen, TREE_TYPE (decl));
       if (TYPE_CANONICAL (TREE_TYPE (decl)) != NULL_TREE)
 	pointer_set_insert (container->decls_seen,
