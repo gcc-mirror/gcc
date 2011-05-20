@@ -2276,7 +2276,8 @@ and_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
 							code2, op2a, op2b))
 			return NULL_TREE;
 		    }
-		  else if (TREE_CODE (arg) == SSA_NAME)
+		  else if (TREE_CODE (arg) == SSA_NAME
+			   && !SSA_NAME_IS_DEFAULT_DEF (arg))
 		    {
 		      tree temp;
 		      gimple def_stmt = SSA_NAME_DEF_STMT (arg);
@@ -2737,7 +2738,8 @@ or_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
 							code2, op2a, op2b))
 			return NULL_TREE;
 		    }
-		  else if (TREE_CODE (arg) == SSA_NAME)
+		  else if (TREE_CODE (arg) == SSA_NAME
+			   && !SSA_NAME_IS_DEFAULT_DEF (arg))
 		    {
 		      tree temp;
 		      gimple def_stmt = SSA_NAME_DEF_STMT (arg);
