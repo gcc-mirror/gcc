@@ -3124,7 +3124,8 @@ stabilize_expr (tree exp, tree* initp)
 
   if (!TREE_SIDE_EFFECTS (exp))
     init_expr = NULL_TREE;
-  else if (!TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (exp))
+  else if ((!TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (exp))
+	    && !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (exp)))
 	   || !lvalue_or_rvalue_with_address_p (exp))
     {
       init_expr = get_target_expr (exp);

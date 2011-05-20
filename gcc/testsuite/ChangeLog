@@ -1,3 +1,7 @@
+2011-05-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/new32.C: New.
+
 2011-05-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49079

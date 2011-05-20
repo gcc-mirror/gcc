@@ -1,3 +1,8 @@
+2011-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48873
+	* tree.c (stabilize_expr): Don't make gratuitous copies of classes.
+
 2011-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49043
