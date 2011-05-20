@@ -919,21 +919,31 @@ GNU Fortran compiler itself.  This option is deprecated; use
 
 @item -ffpe-trap=@var{list}
 @opindex @code{ffpe-trap=}@var{list}
-Specify a list of IEEE exceptions when a Floating Point Exception
-(FPE) should be raised.  On most systems, this will result in a SIGFPE
-signal being sent and the program being interrupted, producing a core
-file useful for debugging.  @var{list} is a (possibly empty) comma-separated
-list of the following IEEE exceptions: @samp{invalid} (invalid floating
-point operation, such as @code{SQRT(-1.0)}), @samp{zero} (division by
-zero), @samp{overflow} (overflow in a floating point operation),
-@samp{underflow} (underflow in a floating point operation),
-@samp{precision} (loss of precision during operation) and @samp{denormal}
-(operation produced a denormal value).
+Specify a list of floating point exception traps to enable.  On most
+systems, if a floating point exception occurs and the trap for that
+exception is enabled, a SIGFPE signal will be sent and the program
+being aborted, producing a core file useful for debugging.  @var{list}
+is a (possibly empty) comma-separated list of the following
+exceptions: @samp{invalid} (invalid floating point operation, such as
+@code{SQRT(-1.0)}), @samp{zero} (division by zero), @samp{overflow}
+(overflow in a floating point operation), @samp{underflow} (underflow
+in a floating point operation), @samp{inexact} (loss of precision
+during operation), and @samp{denormal} (operation performed on a
+denormal value).  The first five exceptions correspond to the five
+IEEE 754 exceptions, whereas the last one (@samp{denormal}) is not
+part of the IEEE 754 standard but is available on some common
+architectures such as x86.
 
-Some of the routines in the Fortran runtime library, like
-@samp{CPU_TIME}, are likely to trigger floating point exceptions when
-@code{ffpe-trap=precision} is used. For this reason, the use of 
-@code{ffpe-trap=precision} is not recommended.
+The first three exceptions (@samp{invalid}, @samp{zero}, and
+@samp{overflow}) often indicate serious errors, and unless the program
+has provisions for dealing with these exceptions, enabling traps for
+these three exceptions is probably a good idea.
+
+Many, if not most, floating point operations incur loss of precision
+due to rounding, and hence the @code{ffpe-trap=inexact} is likely to
+be uninteresting in practice.
+
+By default no exception traps are enabled.
 
 @item -fno-backtrace
 @opindex @code{fno-backtrace}

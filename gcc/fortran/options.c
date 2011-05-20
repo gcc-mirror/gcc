@@ -492,12 +492,14 @@ static void
 gfc_handle_fpe_trap_option (const char *arg)
 {
   int result, pos = 0, n;
+  /* precision is a backwards compatibility alias for inexact.  */
   static const char * const exception[] = { "invalid", "denormal", "zero",
 					    "overflow", "underflow",
-					    "precision", NULL };
+					    "inexact", "precision", NULL };
   static const int opt_exception[] = { GFC_FPE_INVALID, GFC_FPE_DENORMAL,
 				       GFC_FPE_ZERO, GFC_FPE_OVERFLOW,
-				       GFC_FPE_UNDERFLOW, GFC_FPE_PRECISION,
+				       GFC_FPE_UNDERFLOW, GFC_FPE_INEXACT,
+				       GFC_FPE_INEXACT,
 				       0 };
  
   while (*arg)

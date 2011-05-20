@@ -1,4 +1,12 @@
-2011-06-19  Tobias Burnus  <burnus@net-b.de>
+2011-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * gfortran.texi (set_fpe): Update documentation.
+        * invoke.texi (-ffpe-trap): Likewise.
+        * libgfortran.h (GFC_FPE_PRECISION): Rename to GFC_FPE_INEXACT.
+        * options.c (gfc_handle_fpe_trap_option): Handle inexact and make
+        precision an alias for it.
+
+2011-05-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
 	* trans-types.c (gfc_get_element_type): Handle scalar coarrays.
