@@ -1,3 +1,10 @@
+2011-05-20  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/45098
+	* tree-ssa-loop-ivopts.c: Include expmed.h.
+	(get_shiftadd_cost): New function.
+	(force_expr_to_var_cost): Declare forward.  Use get_shiftadd_cost.
+
 2011-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/49086

@@ -92,6 +92,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-ssa-propagate.h"
 
+/* FIXME: add_cost and zero_cost defined in exprmed.h conflict with local uses.
+ */
+#include "expmed.h"
+#undef add_cost
+#undef zero_cost
+
 /* FIXME: Expressions are expanded to RTL in this pass to determine the
    cost of different addressing modes.  This should be moved to a TBD
    interface between the GIMPLE and RTL worlds.  */
@@ -376,6 +382,8 @@ struct iv_ca_delta
    here.  */
 
 static VEC(tree,heap) *decl_rtl_to_reset;
+
+static comp_cost force_expr_to_var_cost (tree, bool);
 
 /* Number of uses recorded in DATA.  */
 
@@ -3506,6 +3514,42 @@ get_address_cost (bool symbol_present, bool var_present,
   return new_cost (cost + acost, complexity);
 }
 
+ /* Calculate the SPEED or size cost of shiftadd EXPR in MODE.  MULT is the
+    the EXPR operand holding the shift.  COST0 and COST1 are the costs for
+    calculating the operands of EXPR.  Returns true if successful, and returns
+    the cost in COST.  */
+
+static bool
+get_shiftadd_cost (tree expr, enum machine_mode mode, comp_cost cost0,
+                   comp_cost cost1, tree mult, bool speed, comp_cost *cost)
+{
+  comp_cost res;
+  tree op1 = TREE_OPERAND (expr, 1);
+  tree cst = TREE_OPERAND (mult, 1);
+  tree multop = TREE_OPERAND (mult, 0);
+  int m = exact_log2 (int_cst_value (cst));
+  int maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (mode));
+  int sa_cost;
+
+  if (!(m >= 0 && m < maxm))
+    return false;
+
+  sa_cost = (TREE_CODE (expr) != MINUS_EXPR
+             ? shiftadd_cost[speed][mode][m]
+             : (mult == op1
+                ? shiftsub1_cost[speed][mode][m]
+                : shiftsub0_cost[speed][mode][m]));
+  res = new_cost (sa_cost, 0);
+  res = add_costs (res, mult == op1 ? cost0 : cost1);
+
+  STRIP_NOPS (multop);
+  if (!is_gimple_val (multop))
+    res = add_costs (res, force_expr_to_var_cost (multop, speed));
+
+  *cost = res;
+  return true;
+}
+
 /* Estimates cost of forcing expression EXPR into a variable.  */
 
 static comp_cost
@@ -3631,6 +3675,21 @@ force_expr_to_var_cost (tree expr, bool speed)
     case MINUS_EXPR:
     case NEGATE_EXPR:
       cost = new_cost (add_cost (mode, speed), 0);
+      if (TREE_CODE (expr) != NEGATE_EXPR)
+        {
+          tree mult = NULL_TREE;
+          comp_cost sa_cost;
+          if (TREE_CODE (op1) == MULT_EXPR)
+            mult = op1;
+          else if (TREE_CODE (op0) == MULT_EXPR)
+            mult = op0;
+
+          if (mult != NULL_TREE
+              && TREE_CODE (TREE_OPERAND (mult, 1)) == INTEGER_CST
+              && get_shiftadd_cost (expr, mode, cost0, cost1, mult, speed,
+                                    &sa_cost))
+            return sa_cost;
+        }
       break;
 
     case MULT_EXPR:
