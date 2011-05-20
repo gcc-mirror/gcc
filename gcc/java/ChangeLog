@@ -1,3 +1,15 @@
+2011-05-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in ($(XGCJ)$(exeext)): Don't explicitly use intl.o and
+	version.o.
+	(JCFDUMP_OBJS): Remove errors.o, version.o and intl.o.
+	(JVGENMAIN_OBJS): Remove errors.o and intl.o.
+	(java/jcf-dump.o, java/jvgenmain.o): Depend in $(DIAGNOSTIC_H).
+	* jcf-dump.c: Include diagnostic.h.
+	(main): Initialize diagnostics.
+	* jvgenmain.c: Include diagnostic.h.
+	(main): Initialize diagnostics.
+
 2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* java-tree.h (TYPE_ARGUMENT_SIGNATURE): Use TYPE_MINVAL.

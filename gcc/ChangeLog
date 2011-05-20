@@ -1,3 +1,36 @@
+2011-05-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (LIBDEPS): Add libcommon.a.
+	(LIBS): Likewise.
+	(GCC_OBJS): Remove diagnostic.o, pretty-print.o and input.o.
+	(OBJS-common): Remove diagnostic.o, input.o, intl.o,
+	pretty-print.o and version.o.
+	(OBJS-libcommon): New.
+	(ALL_HOST_BACKEND_OBJS): Add $(OBJS-libcommon).
+	(BACKEND): Add libcommon.a.
+	(MOSTLYCLEANFILES): Likewise.
+	(libcommon.a): New.
+	(xgcc$(exeext)): Don't explicitly use version.o and intl.o.
+	(cpp$(exeext)): Likewise.
+	(COLLECT2_OBJS): Remove intl.o, version.o, diagnostic.o,
+	pretty-print.o and input.o.
+	(lto-wrapper$(exeext)): Don't explicitly use intl.o.
+	(lto-wrapper.o): Depend on $(DIAGNOSTIC_H).
+	(errors.o): Remove.
+	(mips-tfile): Don't explicitly use version.o.
+	(mips-tdump): Likewise.
+	(gcov.o): Depend on $(DIAGNOSTIC_H).
+	(gcov-dump.o): Depend on intl.h and $(DIAGNOSTIC_H).
+	(GCOV_OBJS): Remove intl.o, version.o and errors.o.
+	(GCOV_DUMP_OBJS): Remove version.o and errors.o.
+	* gcov-dump.c: Include intl.h and diagnostic.h.
+	(main): Initialize diagnostics.
+	* gcov.c: Include diagnostic.h.
+	(fnotice): Remove.
+	(main): Initialize diagnostics.
+	* lto-wrapper.c: Include diagnostic.h.
+	(main): Initialize diagnostics.
+
 2011-05-20  Michael Matz  <matz@suse.de>
 
 	* Makefile.in (OBJS-common, OBJS-md, OBJS-archive): Merge into OBJS.

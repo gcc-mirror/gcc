@@ -36,7 +36,7 @@ gospec.o: $(srcdir)/go/gospec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/go/gospec.c)
 
-GCCGO_OBJS = $(GCC_OBJS) gospec.o intl.o prefix.o version.o
+GCCGO_OBJS = $(GCC_OBJS) gospec.o prefix.o
 gccgo$(exeext): $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)

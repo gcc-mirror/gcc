@@ -22,6 +22,8 @@ along with Gcov; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "version.h"
+#include "intl.h"
+#include "diagnostic.h"
 #include <getopt.h>
 #define IN_GCOV (-1)
 #include "gcov-io.h"
@@ -76,9 +78,21 @@ int
 main (int argc ATTRIBUTE_UNUSED, char **argv)
 {
   int opt;
+  const char *p;
+
+  p = argv[0] + strlen (argv[0]);
+  while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
+    --p;
+  progname = p;
+
+  xmalloc_set_program_name (progname);
 
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
+
+  gcc_init_libintl ();
+
+  diagnostic_initialize (global_dc, 0);
 
   while ((opt = getopt_long (argc, argv, "hlpv", options, NULL)) != -1)
     {
