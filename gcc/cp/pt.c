@@ -13221,7 +13221,8 @@ tsubst_copy_and_build (tree t,
                 ce->value = tsubst_pack_expansion (ce->value, args, complain,
                                                   in_decl);
 
-		if (ce->value == error_mark_node)
+		if (ce->value == error_mark_node
+		    || PACK_EXPANSION_P (ce->value))
 		  ;
 		else if (TREE_VEC_LENGTH (ce->value) == 1)
                   /* Just move the argument into place.  */
