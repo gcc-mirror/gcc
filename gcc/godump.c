@@ -741,9 +741,11 @@ go_format_type (struct godump_container *container, tree type,
 
     case FUNCTION_TYPE:
       {
-	tree args;
+	tree arg_type;
 	bool is_varargs;
 	tree result;
+	function_args_iterator iter;
+	bool seen_arg;
 
 	/* Go has no way to write a type which is a function but not a
 	   pointer to a function.  */
@@ -754,25 +756,21 @@ go_format_type (struct godump_container *container, tree type,
 	  }
 
 	obstack_1grow (ob, '(');
-	is_varargs = true;
-	for (args = TYPE_ARG_TYPES (type);
-	     args != NULL_TREE;
-	     args = TREE_CHAIN (args))
+	is_varargs = stdarg_p (type);
+	seen_arg = false;
+	FOREACH_FUNCTION_ARGS (type, arg_type, iter)
 	  {
-	    if (VOID_TYPE_P (TREE_VALUE (args)))
-	      {
-		gcc_assert (TREE_CHAIN (args) == NULL);
-		is_varargs = false;
-		break;
-	      }
-	    if (args != TYPE_ARG_TYPES (type))
+	    if (VOID_TYPE_P (arg_type))
+	      break;
+	    if (seen_arg)
 	      obstack_grow (ob, ", ", 2);
-	    if (!go_format_type (container, TREE_VALUE (args), true, false))
+	    if (!go_format_type (container, arg_type, true, false))
 	      ret = false;
+	    seen_arg = true;
 	  }
 	if (is_varargs)
 	  {
-	    if (TYPE_ARG_TYPES (type) != NULL_TREE)
+	    if (prototype_p (type))
 	      obstack_grow (ob, ", ", 2);
 	    obstack_grow (ob, "...interface{}", 14);
 	  }
