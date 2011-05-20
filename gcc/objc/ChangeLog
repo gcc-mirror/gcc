@@ -1,3 +1,8 @@
+2011-05-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.c (objc_compare_types): Use function_args_iterator
+	instead of TYPE_ARG_TYPES to compare function argument types.
+
 2011-05-13  Toon Moene  <toon@moene.org>
 
 	* objc-next-runtime-abi-02.c (newabi_append_ro):
