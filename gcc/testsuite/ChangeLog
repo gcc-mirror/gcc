@@ -1,5 +1,10 @@
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/noexcept02.C: Fix.
+	* g++.dg/cpp0x/noexcept03.C: Fix.
+	* g++.dg/cpp0x/noexcept08.C: Fix.
+	* g++.dg/cpp0x/noexcept10.C: New.
+
 	* g++.dg/cpp0x/constexpr-friend.C: New.
 	* g++.dg/cpp0x/constexpr-incomplete1.C: New.
 	* g++.dg/cpp0x/constexpr-incomplete2.C: New.

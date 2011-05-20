@@ -10,9 +10,9 @@ void f();
 
 SA(!noexcept(f()));
 
-void g() throw (int);
-void g() noexcept(false);	// { dg-error "previous declaration" }
-void g();			// { dg-error "different exception" }
+void g() throw (int);		// { dg-error "previous declaration" }
+void g() noexcept(false);	// { dg-error "different exception" }
+void g();
 
 void h() throw();
 void h() noexcept;
