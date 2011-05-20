@@ -34,7 +34,7 @@ struct D: A
   void g() noexcept(false);	// { dg-error "looser" }
   void h() noexcept(false);	// { dg-error "looser" }
   void i() noexcept(false);
-  void j() noexcept(false);	// compatible; treated as throw(int)
+  void j() noexcept(false);	// { dg-error "looser" }
 };
 
 struct E: A
