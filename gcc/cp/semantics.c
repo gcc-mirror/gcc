@@ -5465,7 +5465,7 @@ validate_constexpr_fundecl (tree fun)
     /* We already checked the original function.  */
     return fun;
 
-  if (!is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INSTANTIATION (fun)))
+  if (!is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INFO (fun)))
     {
       DECL_DECLARED_CONSTEXPR_P (fun) = false;
       return NULL;
@@ -5689,7 +5689,7 @@ register_constexpr_fundef (tree fun, tree body)
   if (!potential_rvalue_constant_expression (body))
     {
       DECL_DECLARED_CONSTEXPR_P (fun) = false;
-      if (!DECL_TEMPLATE_INSTANTIATION (fun))
+      if (!DECL_TEMPLATE_INFO (fun))
 	require_potential_rvalue_constant_expression (body);
       return NULL;
     }
@@ -6033,7 +6033,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
       if (!allow_non_constant)
 	{
 	  error_at (loc, "%qD is not a constexpr function", fun);
-	  if (DECL_TEMPLATE_INSTANTIATION (fun)
+	  if (DECL_TEMPLATE_INFO (fun)
 	      && DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT
 					    (DECL_TI_TEMPLATE (fun))))
 	    is_valid_constexpr_fn (fun, true);

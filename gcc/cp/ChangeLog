@@ -1,5 +1,9 @@
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (validate_constexpr_fundecl): Check DECL_TEMPLATE_INFO
+	rather than DECL_TEMPLATE_INSTANTIATION.
+	(cxx_eval_call_expression): Likewise.
+
 	* semantics.c (register_constexpr_fundef): Add to hash table here.
 	(validate_constexpr_fundecl): Not here.
 
