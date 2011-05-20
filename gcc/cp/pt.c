@@ -18231,6 +18231,16 @@ value_dependent_expression_p (tree expression)
 	 type-dependent.  */
       return type_dependent_expression_p (expression);
 
+    case CONSTRUCTOR:
+      {
+	unsigned ix;
+	tree val;
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expression), ix, val)
+	  if (value_dependent_expression_p (val))
+	    return true;
+	return false;
+      }
+
     default:
       /* A constant expression is value-dependent if any subexpression is
 	 value-dependent.  */

@@ -1,5 +1,7 @@
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/sfinae22.C: New.
+
 	* g++.dg/cpp0x/variadic108.C: New.
 
 	* g++.dg/init/new32.C: New.
