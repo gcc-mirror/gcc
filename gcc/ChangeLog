@@ -1,4 +1,8 @@
 2011-05-20  Michael Matz  <matz@suse.de>
+
+	* Makefile.in (OBJS-common, OBJS-md, OBJS-archive): Merge into OBJS.
+
+2011-05-20  Michael Matz  <matz@suse.de>
 	    Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer.c (lto_record_common_node): Don't track seen nodes,
