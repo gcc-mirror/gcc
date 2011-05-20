@@ -1,3 +1,7 @@
+2011-05-20  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (HAVE_PRE_DECREMENT): Fix typo in macro name.
+
 2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movxf_internal): Disable CONST_DOUBLE
