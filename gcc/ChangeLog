@@ -1,3 +1,9 @@
+2011-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/49086
+	* gimple-fold.c (and_comparisons_1, or_comparisons_1): Return NULL
+	for PHI args that are SSA_NAME_IS_DEFAULT_DEF.
+
 2011-05-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49079
