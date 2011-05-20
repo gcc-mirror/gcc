@@ -1,3 +1,11 @@
+2011-05-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49079
+	* tree-dfa.c (get_ref_base_and_extent): Handle view-converting
+	MEM_REFs correctly for the trailing array access detection.
+	Special case constants the same way as decls for overall size
+	constraining.
+
 2011-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49073

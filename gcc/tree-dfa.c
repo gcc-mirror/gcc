@@ -709,6 +709,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   tree size_tree = NULL_TREE;
   HOST_WIDE_INT bit_offset = 0;
   bool seen_variable_array_ref = false;
+  tree base_type;
 
   /* First get the final access size from just the outermost expression.  */
   if (TREE_CODE (exp) == COMPONENT_REF)
@@ -739,6 +740,8 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
      and find the ultimate containing object.  */
   while (1)
     {
+      base_type = TREE_TYPE (exp);
+
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
@@ -926,9 +929,16 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
      the array.  The simplest way to conservatively deal with this
      is to punt in the case that offset + maxsize reaches the
      base type boundary.  This needs to include possible trailing padding
-     that is there for alignment purposes.
+     that is there for alignment purposes.  */
 
-     That is of course only true if the base object is not a decl.  */
+  if (seen_variable_array_ref
+      && maxsize != -1
+      && (!host_integerp (TYPE_SIZE (base_type), 1)
+	  || (bit_offset + maxsize
+	      == (signed) TREE_INT_CST_LOW (TYPE_SIZE (base_type)))))
+    maxsize = -1;
+
+  /* In case of a decl or constant base object we can do better.  */
 
   if (DECL_P (exp))
     {
@@ -938,12 +948,14 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	  && host_integerp (DECL_SIZE (exp), 1))
 	maxsize = TREE_INT_CST_LOW (DECL_SIZE (exp)) - bit_offset;
     }
-  else if (seen_variable_array_ref
-	   && maxsize != -1
-	   && (!host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1)
-	       || (bit_offset + maxsize
-		   == (signed) TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))))))
-    maxsize = -1;
+  else if (CONSTANT_CLASS_P (exp))
+    {
+      /* If maxsize is unknown adjust it according to the size of the
+         base type constant.  */
+      if (maxsize == -1
+	  && host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1))
+	maxsize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))) - bit_offset;
+    }
 
   /* ???  Due to negative offsets in ARRAY_REF we can end up with
      negative bit_offset here.  We might want to store a zero offset
