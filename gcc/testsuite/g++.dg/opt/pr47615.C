@@ -360,7 +360,7 @@ template < typename Const_Node_Iterator, typename Node_Iterator, typename, typen
 {
 {
 {
-	    rotate_right (p_nd);
+	    this->rotate_right (p_nd);
 	  }
 	}
       }

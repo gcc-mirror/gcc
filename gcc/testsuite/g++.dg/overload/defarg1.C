@@ -3,7 +3,9 @@
 template<typename T>
 int foo (T t, int = foo(T()));
 
+struct A { };
+
 int main()
 {
-  foo(0);			// { dg-error "default argument" }
+  foo(A());			// { dg-error "default argument" }
 }

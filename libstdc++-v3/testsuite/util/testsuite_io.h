@@ -144,7 +144,7 @@ namespace __gnu_test
       {
 	p[0] = char_type('s');
 	p[1] = char_type();
-	setg(p, p, p + 1); 
+	this->setg(p, p, p + 1);
       }
 
       virtual int_type underflow() 

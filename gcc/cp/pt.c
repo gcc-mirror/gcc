@@ -12894,6 +12894,20 @@ tsubst_copy_and_build (tree t,
 					    /*done=*/false,
 					    /*address_p=*/false);
 	  }
+	else if (koenig_p && TREE_CODE (function) == IDENTIFIER_NODE)
+	  {
+	    /* Do nothing; calling tsubst_copy_and_build on an identifier
+	       would incorrectly perform unqualified lookup again.
+
+	       Note that we can also have an IDENTIFIER_NODE if the earlier
+	       unqualified lookup found a member function; in that case
+	       koenig_p will be false and we do want to do the lookup
+	       again to find the instantiated member function.
+
+	       FIXME but doing that causes c++/15272, so we need to stop
+	       using IDENTIFIER_NODE in that situation.  */
+	    qualified_p = false;
+	  }
 	else
 	  {
 	    if (TREE_CODE (function) == COMPONENT_REF)
@@ -12965,14 +12979,59 @@ tsubst_copy_and_build (tree t,
 	       into a non-dependent call.  */
 	    && type_dependent_expression_p_push (t)
 	    && !any_type_dependent_arguments_p (call_args))
-	  function = perform_koenig_lookup (function, call_args, false);
+	  function = perform_koenig_lookup (function, call_args, false,
+					    tf_none);
 
 	if (TREE_CODE (function) == IDENTIFIER_NODE
-	    && !processing_template_decl)
+	    && !any_type_dependent_arguments_p (call_args))
 	  {
-	    unqualified_name_lookup_error (function);
-	    release_tree_vector (call_args);
-	    return error_mark_node;
+	    if (koenig_p && (complain & tf_warning_or_error))
+	      {
+		/* For backwards compatibility and good diagnostics, try
+		   the unqualified lookup again if we aren't in SFINAE
+		   context.  */
+		tree unq = (tsubst_copy_and_build
+			    (function, args, complain, in_decl, true,
+			     integral_constant_expression_p));
+		if (unq != function)
+		  {
+		    tree fn = unq;
+		    if (TREE_CODE (fn) == COMPONENT_REF)
+		      fn = TREE_OPERAND (fn, 1);
+		    if (is_overloaded_fn (fn))
+		      fn = get_first_fn (fn);
+		    permerror (EXPR_LOC_OR_HERE (t),
+			       "%qD was not declared in this scope, "
+			       "and no declarations were found by "
+			       "argument-dependent lookup at the point "
+			       "of instantiation", function);
+		    if (DECL_CLASS_SCOPE_P (fn))
+		      {
+			inform (EXPR_LOC_OR_HERE (t),
+				"declarations in dependent base %qT are "
+				"not found by unqualified lookup",
+				DECL_CLASS_CONTEXT (fn));
+			if (current_class_ptr)
+			  inform (EXPR_LOC_OR_HERE (t),
+				  "use %<this->%D%> instead", function);
+			else
+			  inform (EXPR_LOC_OR_HERE (t),
+				  "use %<%T::%D%> instead",
+				  TYPE_IDENTIFIER (current_class_type),
+				  function);
+		      }
+		    else
+		      inform (0, "%q+D declared here, later in the "
+				"translation unit", fn);
+		    function = unq;
+		  }
+	      }
+	    if (TREE_CODE (function) == IDENTIFIER_NODE)
+	      {
+		unqualified_name_lookup_error (function);
+		release_tree_vector (call_args);
+		return error_mark_node;
+	      }
 	  }
 
 	/* Remember that there was a reference to this entity.  */

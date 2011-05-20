@@ -48,7 +48,7 @@ template<typename T> void MemoryRegion<T>::create(u32bit n)    {
 template<typename T> class SecureVector : public MemoryRegion<T>    {
 public:
     SecureVector<T>& operator=(const MemoryRegion<T>& in)          {
-	if(this != &in) set(in);
+	if(this != &in) this->set(in);
     }
 };
 class OctetString    {

@@ -461,7 +461,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  __alloc);
 
       if (_M_info._M_length)
-	_S_copy(__r->_M_refdata(), _M_refdata(), _M_info._M_length);
+	__rc_string_base::_S_copy(__r->_M_refdata(), _M_refdata(), _M_info._M_length);
 
       __r->_M_set_length(_M_info._M_length);
       return __r->_M_refdata();
@@ -569,7 +569,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Check for out_of_range and length_error exceptions.
 	_Rep* __r = _Rep::_S_create(__dnew, size_type(0), __a);
 	__try
-	  { _S_copy_chars(__r->_M_refdata(), __beg, __end); }
+	  { __rc_string_base::_S_copy_chars(__r->_M_refdata(), __beg, __end); }
 	__catch(...)
 	  {
 	    __r->_M_destroy(__a);
@@ -590,7 +590,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Check for out_of_range and length_error exceptions.
       _Rep* __r = _Rep::_S_create(__n, size_type(0), __a);
       if (__n)
-	_S_assign(__r->_M_refdata(), __n, __c);
+	__rc_string_base::_S_assign(__r->_M_refdata(), __n, __c);
 
       __r->_M_set_length(__n);
       return __r->_M_refdata();
@@ -659,11 +659,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  _M_capacity(), _M_get_allocator());
 
       if (__pos)
-	_S_copy(__r->_M_refdata(), _M_data(), __pos);
+	this->_S_copy(__r->_M_refdata(), _M_data(), __pos);
       if (__s && __len2)
-	_S_copy(__r->_M_refdata() + __pos, __s, __len2);
+	this->_S_copy(__r->_M_refdata() + __pos, __s, __len2);
       if (__how_much)
-	_S_copy(__r->_M_refdata() + __pos + __len2,
+	this->_S_copy(__r->_M_refdata() + __pos + __len2,
 		_M_data() + __pos + __len1, __how_much);
 
       _M_dispose();
@@ -685,9 +685,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				      _M_get_allocator());
 
 	  if (__pos)
-	    _S_copy(__r->_M_refdata(), _M_data(), __pos);
+	    this->_S_copy(__r->_M_refdata(), _M_data(), __pos);
 	  if (__how_much)
-	    _S_copy(__r->_M_refdata() + __pos,
+	    this->_S_copy(__r->_M_refdata() + __pos,
 		    _M_data() + __pos + __n, __how_much);
 
 	  _M_dispose();
@@ -696,7 +696,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (__how_much && __n)
 	{
 	  // Work in-place.
-	  _S_move(_M_data() + __pos,
+	  this->_S_move(_M_data() + __pos,
 		  _M_data() + __pos + __n, __how_much);
 	}
 

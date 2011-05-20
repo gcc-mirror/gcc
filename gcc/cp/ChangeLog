@@ -1,5 +1,16 @@
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/24163
+	PR c++/29131
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Avoid repeating
+	unqualified lookup.
+	* semantics.c (perform_koenig_lookup): Add complain parm.
+	* cp-tree.h: Adjust.
+	* parser.c (cp_parser_postfix_expression): Adjust.
+	(cp_parser_perform_range_for_lookup): Adjust.
+
+2011-05-20  Jason Merrill  <jason@redhat.com>
+
 	* semantics.c (finish_call_expr): SET_EXPR_LOCATION.
 
 2011-05-20  Joseph Myers  <joseph@codesourcery.com>

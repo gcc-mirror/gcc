@@ -142,7 +142,7 @@ erase_node(node_pointer p_nd)
   if (p_l != 0)
     p_l->m_p_parent = p_target_r;
   PB_DS_ASSERT_VALID((*this))
-  apply_update(p_target_r, (node_update* )this);
+  this->apply_update(p_target_r, (node_update* )this);
 }
 
 PB_DS_CLASS_T_DEC

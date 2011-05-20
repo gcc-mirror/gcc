@@ -18,7 +18,7 @@ struct T : public S<X>
 {
   template <class U>
   void f(U u)
-  { printf ("In T::f(U)\n"); g(u); }
+  { printf ("In T::f(U)\n"); this->g(u); }
 };
 
 int main()
