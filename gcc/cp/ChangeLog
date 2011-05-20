@@ -1,5 +1,8 @@
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (register_constexpr_fundef): Add to hash table here.
+	(validate_constexpr_fundecl): Not here.
+
 	PR c++/48745
 	* pt.c (value_dependent_expr_p): Handle CONSTRUCTOR.
 
