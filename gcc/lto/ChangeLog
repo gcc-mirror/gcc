@@ -1,3 +1,10 @@
+2011-05-20  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_ft_common): Remove pointer-to chain teardown.
+	(lto_ft_type): Move main-variant and pointer-to chain building ...
+	(uniquify_nodes): ... here.  Compute TYPE_CANONICAL also here,
+	in a separate final loop.
+
 2011-05-19  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (uniquify_nodes): First register all types before
