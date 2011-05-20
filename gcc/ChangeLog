@@ -1,3 +1,9 @@
+2011-05-20  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_register_type_1): Do not fiddle with
+	main-variant or pointer-to chains.  Delay all fixup to
+	uniquify_nodes.
+
 2011-05-19  Quentin Neill  <quentin.neill@amd.com>
 
 	* config/i386/sse.md (fma4_fmsubadd): Use <ssemodesuffix>.

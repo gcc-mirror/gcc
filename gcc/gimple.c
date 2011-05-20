@@ -4476,7 +4476,6 @@ gimple_register_type_1 (tree t, bool registering_mv)
 {
   void **slot;
   gimple_type_leader_entry *leader;
-  tree mv_leader;
 
   /* If we registered this type before return the cached result.  */
   leader = &gimple_type_leader[TYPE_UID (t) % GIMPLE_TYPE_LEADER_SIZE];
@@ -4495,91 +4494,23 @@ gimple_register_type_1 (tree t, bool registering_mv)
      case we do not care for the main variant leader.  */
   if (!registering_mv
       && TYPE_MAIN_VARIANT (t) != t)
-    mv_leader = gimple_register_type_1 (TYPE_MAIN_VARIANT (t), true);
-  else
-    mv_leader = t;
+    gimple_register_type_1 (TYPE_MAIN_VARIANT (t), true);
 
+  /* See if we already have an equivalent type registered.  */
   slot = htab_find_slot (gimple_types, t, INSERT);
   if (*slot
       && *(tree *)slot != t)
     {
       tree new_type = (tree) *((tree *) slot);
-
-      /* Do not merge types with different addressability.  */
-      gcc_assert (TREE_ADDRESSABLE (t) == TREE_ADDRESSABLE (new_type));
-
-      /* If t is not its main variant then make t unreachable from its
-	 main variant list.  Otherwise we'd queue up a lot of duplicates
-	 there.  */
-      if (t != TYPE_MAIN_VARIANT (t))
-	{
-	  tree tem = TYPE_MAIN_VARIANT (t);
-	  while (tem && TYPE_NEXT_VARIANT (tem) != t)
-	    tem = TYPE_NEXT_VARIANT (tem);
-	  if (tem)
-	    TYPE_NEXT_VARIANT (tem) = TYPE_NEXT_VARIANT (t);
-	  TYPE_NEXT_VARIANT (t) = NULL_TREE;
-	}
-
-      /* If we are a pointer then remove us from the pointer-to or
-	 reference-to chain.  Otherwise we'd queue up a lot of duplicates
-	 there.  */
-      if (TREE_CODE (t) == POINTER_TYPE)
-	{
-	  if (TYPE_POINTER_TO (TREE_TYPE (t)) == t)
-	    TYPE_POINTER_TO (TREE_TYPE (t)) = TYPE_NEXT_PTR_TO (t);
-	  else
-	    {
-	      tree tem = TYPE_POINTER_TO (TREE_TYPE (t));
-	      while (tem && TYPE_NEXT_PTR_TO (tem) != t)
-		tem = TYPE_NEXT_PTR_TO (tem);
-	      if (tem)
-		TYPE_NEXT_PTR_TO (tem) = TYPE_NEXT_PTR_TO (t);
-	    }
-	  TYPE_NEXT_PTR_TO (t) = NULL_TREE;
-	}
-      else if (TREE_CODE (t) == REFERENCE_TYPE)
-	{
-	  if (TYPE_REFERENCE_TO (TREE_TYPE (t)) == t)
-	    TYPE_REFERENCE_TO (TREE_TYPE (t)) = TYPE_NEXT_REF_TO (t);
-	  else
-	    {
-	      tree tem = TYPE_REFERENCE_TO (TREE_TYPE (t));
-	      while (tem && TYPE_NEXT_REF_TO (tem) != t)
-		tem = TYPE_NEXT_REF_TO (tem);
-	      if (tem)
-		TYPE_NEXT_REF_TO (tem) = TYPE_NEXT_REF_TO (t);
-	    }
-	  TYPE_NEXT_REF_TO (t) = NULL_TREE;
-	}
-
       leader->type = t;
       leader->leader = new_type;
-      t = new_type;
-    }
-  else
-    {
-      leader->type = t;
-      leader->leader = t;
-      /* We're the type leader.  Make our TYPE_MAIN_VARIANT valid.  */
-      if (TYPE_MAIN_VARIANT (t) != t
-	  && TYPE_MAIN_VARIANT (t) != mv_leader)
-	{
-	  /* Remove us from our main variant list as we are not the variant
-	     leader and the variant leader will change.  */
-	  tree tem = TYPE_MAIN_VARIANT (t);
-	  while (tem && TYPE_NEXT_VARIANT (tem) != t)
-	    tem = TYPE_NEXT_VARIANT (tem);
-	  if (tem)
-	    TYPE_NEXT_VARIANT (tem) = TYPE_NEXT_VARIANT (t);
-	  TYPE_NEXT_VARIANT (t) = NULL_TREE;
-	  /* Adjust our main variant.  Linking us into its variant list
-	     will happen at fixup time.  */
-	  TYPE_MAIN_VARIANT (t) = mv_leader;
-	}
-      *slot = (void *) t;
+      return new_type;
     }
 
+  /* If not, insert it to the cache and the hash.  */
+  leader->type = t;
+  leader->leader = t;
+  *slot = (void *) t;
   return t;
 }
 
