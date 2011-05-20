@@ -42,7 +42,7 @@ set_fpu (void)
 #ifdef FP_X_DNML
     cw |= FP_X_DNML;
 #else
-    estr_write ("Fortran runtime warning: IEEE 'denormal number' "
+    estr_write ("Fortran runtime warning: Floating point 'denormal operand' "
 	        "exception not supported.\n");
 #endif
 
@@ -70,11 +70,11 @@ set_fpu (void)
 	        "exception not supported.\n");
 #endif
 
-  if (options.fpe & GFC_FPE_PRECISION)
+  if (options.fpe & GFC_FPE_INEXACT)
 #ifdef FP_X_IMP
     cw |= FP_X_IMP;
 #else
-    estr_write ("Fortran runtime warning: IEEE 'loss of precision' "
+    estr_write ("Fortran runtime warning: IEEE 'inexact' "
 	        "exception not supported.\n");
 #endif
 

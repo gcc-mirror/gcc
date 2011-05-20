@@ -110,7 +110,7 @@ void set_fpu (void)
   if (options.fpe & GFC_FPE_ZERO) cw &= ~_FPU_MASK_ZM;
   if (options.fpe & GFC_FPE_OVERFLOW) cw &= ~_FPU_MASK_OM;
   if (options.fpe & GFC_FPE_UNDERFLOW) cw &= ~_FPU_MASK_UM;
-  if (options.fpe & GFC_FPE_PRECISION) cw &= ~_FPU_MASK_PM;
+  if (options.fpe & GFC_FPE_INEXACT) cw &= ~_FPU_MASK_PM;
 
   asm volatile ("fldcw %0" : : "m" (cw));
 
@@ -129,7 +129,7 @@ void set_fpu (void)
       if (options.fpe & GFC_FPE_ZERO) cw_sse &= ~(_FPU_MASK_ZM << 7);
       if (options.fpe & GFC_FPE_OVERFLOW) cw_sse &= ~(_FPU_MASK_OM << 7);
       if (options.fpe & GFC_FPE_UNDERFLOW) cw_sse &= ~(_FPU_MASK_UM << 7);
-      if (options.fpe & GFC_FPE_PRECISION) cw_sse &= ~(_FPU_MASK_PM << 7);
+      if (options.fpe & GFC_FPE_INEXACT) cw_sse &= ~(_FPU_MASK_PM << 7);
 
       asm volatile ("ldmxcsr %0" : : "m" (cw_sse));
     }

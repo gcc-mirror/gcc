@@ -35,7 +35,7 @@ set_fpu (void)
     estr_write ("Fortran runtime warning: IEEE 'invalid operation' "
 	        "exception not supported.\n");
   if (options.fpe & GFC_FPE_DENORMAL)
-    estr_write ("Fortran runtime warning: IEEE 'denormal number' "
+    estr_write ("Fortran runtime warning: Floating point 'denormal operand' "
 	        "exception not supported.\n");
   if (options.fpe & GFC_FPE_ZERO)
     estr_write ("Fortran runtime warning: IEEE 'division by zero' "
@@ -46,7 +46,7 @@ set_fpu (void)
   if (options.fpe & GFC_FPE_UNDERFLOW)
     estr_write ("Fortran runtime warning: IEEE 'underflow' "
 	        "exception not supported.\n");
-  if (options.fpe & GFC_FPE_PRECISION)
-    estr_write ("Fortran runtime warning: IEEE 'loss of precision' "
+  if (options.fpe & GFC_FPE_INEXACT)
+    estr_write ("Fortran runtime warning: IEEE 'inexact' "
 	        "exception not supported.\n");
 }

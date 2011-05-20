@@ -1,3 +1,14 @@
+2011-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * config/fpu-387.h (set_fpu): Use renamed inexact macro.
+        * config/fpu-aix.h (set_fpu): Clarify error messages, use renamed
+        inexact macro, set TRP_INEXACT for inexact exception instead of
+        TRP_UNDERFLOW.
+        * config/fpu-generic.h (set_fpu): Clarify error messages, use
+        renamed inexact macro.
+        * config/fpu-glibc.h (set_fpu): Likewise.
+        * config/fpu-sysv.h (set_fpu): Likewise.
+
 2011-05-14  Tobias Burnus  <burnus@net-b.de>
 
 	* runtime/stop.c (error_stop_string, error_stop_numeric):
