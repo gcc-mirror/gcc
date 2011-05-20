@@ -986,14 +986,14 @@ comp_except_specs (const_tree t1, const_tree t2, int exact)
   /* First handle noexcept.  */
   if (exact < ce_exact)
     {
-      /* noexcept(false) is compatible with any throwing dynamic-exc-spec
+      /* noexcept(false) is compatible with no exception-specification,
 	 and stricter than any spec.  */
       if (t1 == noexcept_false_spec)
-	return !nothrow_spec_p (t2) || exact == ce_derived;
-      /* Even a derived noexcept(false) is compatible with a throwing
-	 dynamic spec.  */
+	return t2 == NULL_TREE || exact == ce_derived;
+      /* Even a derived noexcept(false) is compatible with no
+	 exception-specification.  */
       if (t2 == noexcept_false_spec)
-	return !nothrow_spec_p (t1);
+	return t1 == NULL_TREE;
 
       /* Otherwise, if we aren't looking for an exact match, noexcept is
 	 equivalent to throw().  */
