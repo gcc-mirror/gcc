@@ -1,3 +1,8 @@
+2011-05-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48706
+	* gfortran.dg/extends_12.f03: New.
+
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/koenig9.C: New.
@@ -52,6 +57,11 @@
 2011-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.c-torture/execute/960321-1.x: Remove.
+
+2011-05-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48700
+	* gfortran.dg/move_alloc_4.f90: New.
 
 2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
 
