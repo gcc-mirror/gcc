@@ -1,3 +1,13 @@
+2011-05-20  Michael Matz  <matz@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer.c (lto_record_common_node): Don't track seen nodes,
+	use lto_streamer_cache_append directly instead of returning a VEC.
+	(preload_common_node): Remove.
+	(lto_get_common_nodes): Rename to lto_preload_common_nodes, don't
+	track seen nodes.
+	(lto_streamer_cache_create): Call lto_preload_common_nodes.
+
 2011-05-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49079

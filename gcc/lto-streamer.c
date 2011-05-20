@@ -475,17 +475,21 @@ lto_streamer_cache_get (struct lto_streamer_cache_d *cache, unsigned ix)
 }
 
 
-/* Record NODE in COMMON_NODES if it is not NULL and is not already in
-   SEEN_NODES.  */
+/* Record NODE in CACHE.  */
 
 static void
-lto_record_common_node (tree *nodep, VEC(tree, heap) **common_nodes,
-			struct pointer_set_t *seen_nodes)
+lto_record_common_node (struct lto_streamer_cache_d *cache, tree *nodep)
 {
   tree node = *nodep;
 
-  if (node == NULL_TREE)
-    return;
+  /* We have to make sure to fill exactly the same number of
+     elements for all frontends.  That can include NULL trees.
+     As our hash table can't deal with zero entries we'll simply stream
+     a random other tree.  A NULL tree never will be looked up so it
+     doesn't matter which tree we replace it with, just to be sure
+     use error_mark_node.  */
+  if (!node)
+    node = error_mark_node;
 
   if (TYPE_P (node))
     {
@@ -500,28 +504,32 @@ lto_record_common_node (tree *nodep, VEC(tree, heap) **common_nodes,
       *nodep = node;
     }
 
-  /* Return if node is already seen.  */
-  if (pointer_set_insert (seen_nodes, node))
-    return;
-
-  VEC_safe_push (tree, heap, *common_nodes, node);
+  lto_streamer_cache_append (cache, node);
 
   if (POINTER_TYPE_P (node)
       || TREE_CODE (node) == COMPLEX_TYPE
       || TREE_CODE (node) == ARRAY_TYPE)
-    lto_record_common_node (&TREE_TYPE (node), common_nodes, seen_nodes);
+    lto_record_common_node (cache, &TREE_TYPE (node));
+  else if (TREE_CODE (node) == RECORD_TYPE)
+    {
+      /* The FIELD_DECLs of structures should be shared, so that every
+	 COMPONENT_REF uses the same tree node when referencing a field.
+	 Pointer equality between FIELD_DECLs is used by the alias
+	 machinery to compute overlapping memory references (See
+	 nonoverlapping_component_refs_p).  */
+      tree f;
+      for (f = TYPE_FIELDS (node); f; f = TREE_CHAIN (f))
+	lto_record_common_node (cache, &f);
+    }
 }
 
-
-/* Generate a vector of common nodes and make sure they are merged
+/* Preload common nodes into CACHE and make sure they are merged
    properly according to the gimple type table.  */
 
-static VEC(tree,heap) *
-lto_get_common_nodes (void)
+static void
+lto_preload_common_nodes (struct lto_streamer_cache_d *cache)
 {
   unsigned i;
-  VEC(tree,heap) *common_nodes = NULL;
-  struct pointer_set_t *seen_nodes;
 
   /* The MAIN_IDENTIFIER_NODE is normally set up by the front-end, but the
      LTO back-end must agree. Currently, the only languages that set this
@@ -545,49 +553,17 @@ lto_get_common_nodes (void)
   gcc_assert (fileptr_type_node == ptr_type_node);
   gcc_assert (TYPE_MAIN_VARIANT (fileptr_type_node) == ptr_type_node);
 
-  seen_nodes = pointer_set_create ();
-
   /* Skip itk_char.  char_type_node is shared with the appropriately
      signed variant.  */
   for (i = itk_signed_char; i < itk_none; i++)
-    lto_record_common_node (&integer_types[i], &common_nodes, seen_nodes);
+    lto_record_common_node (cache, &integer_types[i]);
 
   for (i = 0; i < TYPE_KIND_LAST; i++)
-    lto_record_common_node (&sizetype_tab[i], &common_nodes, seen_nodes);
+    lto_record_common_node (cache, &sizetype_tab[i]);
 
   for (i = 0; i < TI_MAX; i++)
-    lto_record_common_node (&global_trees[i], &common_nodes, seen_nodes);
-
-  pointer_set_destroy (seen_nodes);
-
-  return common_nodes;
+    lto_record_common_node (cache, &global_trees[i]);
 }
-
-
-/* Assign an index to tree node T and enter it in the streamer cache
-   CACHE.  */
-
-static void
-preload_common_node (struct lto_streamer_cache_d *cache, tree t)
-{
-  gcc_assert (t);
-
-  lto_streamer_cache_insert (cache, t, NULL);
-
- /* The FIELD_DECLs of structures should be shared, so that every
-    COMPONENT_REF uses the same tree node when referencing a field.
-    Pointer equality between FIELD_DECLs is used by the alias
-    machinery to compute overlapping memory references (See
-    nonoverlapping_component_refs_p).  */
- if (TREE_CODE (t) == RECORD_TYPE)
-   {
-     tree f;
-
-     for (f = TYPE_FIELDS (t); f; f = TREE_CHAIN (f))
-       preload_common_node (cache, f);
-   }
-}
-
 
 /* Create a cache of pickled nodes.  */
 
@@ -595,9 +571,6 @@ struct lto_streamer_cache_d *
 lto_streamer_cache_create (void)
 {
   struct lto_streamer_cache_d *cache;
-  VEC(tree, heap) *common_nodes;
-  unsigned i;
-  tree node;
 
   cache = XCNEW (struct lto_streamer_cache_d);
 
@@ -606,12 +579,7 @@ lto_streamer_cache_create (void)
   /* Load all the well-known tree nodes that are always created by
      the compiler on startup.  This prevents writing them out
      unnecessarily.  */
-  common_nodes = lto_get_common_nodes ();
-
-  FOR_EACH_VEC_ELT (tree, common_nodes, i, node)
-    preload_common_node (cache, node);
-
-  VEC_free(tree, heap, common_nodes);
+  lto_preload_common_nodes (cache);
 
   return cache;
 }
