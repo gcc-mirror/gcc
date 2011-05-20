@@ -1,3 +1,7 @@
+2011-05-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* godump.c (go_format_type): Don't use TYPE_ARG_TYPES.
+
 2011-05-20  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/45098
