@@ -3848,7 +3848,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h
 
 # In order for parallel make to really start compiling the expensive
-# objects from $(OBJS-common) as early as possible, build all their
+# objects from $(OBJS) as early as possible, build all their
 # prerequisites strictly before all objects.
 $(ALL_HOST_OBJS) : | $(generated_files)
 
