@@ -1,5 +1,5 @@
 /* Statement simplification on GIMPLE.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
    Split out from tree-ssa-ccp.c.
 
 This file is part of GCC.
@@ -2185,8 +2185,19 @@ and_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
 		    }
 		  else if (TREE_CODE (arg) == SSA_NAME)
 		    {
-		      tree temp = and_var_with_comparison (arg, invert,
-							   code2, op2a, op2b);
+		      tree temp;
+		      gimple def_stmt = SSA_NAME_DEF_STMT (arg);
+		      /* In simple cases we can look through PHI nodes,
+			 but we have to be careful with loops.
+			 See PR49073.  */
+		      if (! dom_info_available_p (CDI_DOMINATORS)
+			  || gimple_bb (def_stmt) == gimple_bb (stmt)
+			  || dominated_by_p (CDI_DOMINATORS,
+					     gimple_bb (def_stmt),
+					     gimple_bb (stmt)))
+			return NULL_TREE;
+		      temp = and_var_with_comparison (arg, invert, code2,
+						      op2a, op2b);
 		      if (!temp)
 			return NULL_TREE;
 		      else if (!result)
@@ -2635,8 +2646,19 @@ or_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
 		    }
 		  else if (TREE_CODE (arg) == SSA_NAME)
 		    {
-		      tree temp = or_var_with_comparison (arg, invert,
-							  code2, op2a, op2b);
+		      tree temp;
+		      gimple def_stmt = SSA_NAME_DEF_STMT (arg);
+		      /* In simple cases we can look through PHI nodes,
+			 but we have to be careful with loops.
+			 See PR49073.  */
+		      if (! dom_info_available_p (CDI_DOMINATORS)
+			  || gimple_bb (def_stmt) == gimple_bb (stmt)
+			  || dominated_by_p (CDI_DOMINATORS,
+					     gimple_bb (def_stmt),
+					     gimple_bb (stmt)))
+			return NULL_TREE;
+		      temp = or_var_with_comparison (arg, invert, code2,
+						     op2a, op2b);
 		      if (!temp)
 			return NULL_TREE;
 		      else if (!result)

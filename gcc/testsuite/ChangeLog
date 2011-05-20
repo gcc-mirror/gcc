@@ -1,3 +1,8 @@
+2011-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49073
+	* gcc.c-torture/execute/pr49073.c: New test.
+
 2011-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.c-torture/execute/960321-1.x: Remove.

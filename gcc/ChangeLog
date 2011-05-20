@@ -1,3 +1,11 @@
+2011-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49073
+	* gimple-fold.c (and_comparisons_1, or_comparisons_1): Return
+	NULL if PHI argument is SSA_NAME, whose def_stmt is dominated
+	by the PHI.
+	* tree-ssa-ifcombine.c (tree_ssa_ifcombine): Calculate dominators.
+
 2011-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (option_override_internal): Enable TARGET_CMOVE
