@@ -1,3 +1,14 @@
+2011-05-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/koenig9.C: New.
+	* g++.dg/opt/pr47615.C: Fix.
+	* g++.dg/overload/defarg1.C: Fix.
+	* g++.dg/tc1/dr213.C: Remove xfail.
+	* g++.dg/torture/pr34850.C: Fix.
+	* g++.dg/torture/pr39362.C: Fix.
+	* g++.old-deja/g++.brendan/crash56.C: Fix.
+	* g++.old-deja/g++.pt/memtemp47.C: Fix.
+
 2011-05-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49079

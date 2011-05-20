@@ -274,9 +274,9 @@ splay_zz_end(node_pointer p_nd, node_pointer p_parent,
   if (p_nd->m_p_parent == base_type::m_p_head)
     base_type::m_p_head->m_p_parent = p_nd;
 
-  apply_update(p_grandparent, (node_update* )this);
-  apply_update(p_parent, (node_update* )this);
-  apply_update(p_nd, (node_update* )this);
+  this->apply_update(p_grandparent, (node_update* )this);
+  this->apply_update(p_parent, (node_update* )this);
+  this->apply_update(p_nd, (node_update* )this);
 
   PB_DS_ASSERT_BASE_NODE_CONSISTENT(p_nd)
 }

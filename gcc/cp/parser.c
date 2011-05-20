@@ -5019,7 +5019,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			if (!any_type_dependent_arguments_p (args))
 			  postfix_expression
 			    = perform_koenig_lookup (postfix_expression, args,
-						     /*include_std=*/false);
+						     /*include_std=*/false,
+						     tf_warning_or_error);
 		      }
 		    else
 		      postfix_expression
@@ -5044,7 +5045,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			if (!any_type_dependent_arguments_p (args))
 			  postfix_expression
 			    = perform_koenig_lookup (postfix_expression, args,
-						     /*include_std=*/false);
+						     /*include_std=*/false,
+						     tf_warning_or_error);
 		      }
 		  }
 	      }
@@ -8741,11 +8743,13 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 	  VEC_safe_push (tree, gc, vec, range);
 
 	  member_begin = perform_koenig_lookup (id_begin, vec,
-						/*include_std=*/true);
+						/*include_std=*/true,
+						tf_warning_or_error);
 	  *begin = finish_call_expr (member_begin, &vec, false, true,
 				     tf_warning_or_error);
 	  member_end = perform_koenig_lookup (id_end, vec,
-					      /*include_std=*/true);
+					      /*include_std=*/true,
+					      tf_warning_or_error);
 	  *end = finish_call_expr (member_end, &vec, false, true,
 				   tf_warning_or_error);
 

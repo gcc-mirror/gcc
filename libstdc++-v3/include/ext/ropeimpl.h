@@ -380,7 +380,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _Rope_RopeLeaf<_CharT, _Alloc>* __l
 	      = (_Rope_RopeLeaf<_CharT, _Alloc>*)this;
 	    __l->_Rope_RopeLeaf<_CharT, _Alloc>::~_Rope_RopeLeaf();
-	    _L_deallocate(__l, 1);
+	    this->_L_deallocate(__l, 1);
 	    break;
 	  }
 	case __detail::_S_concat:
@@ -389,7 +389,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      = (_Rope_RopeConcatenation<_CharT, _Alloc>*)this;
 	    __c->_Rope_RopeConcatenation<_CharT, _Alloc>::
 	      ~_Rope_RopeConcatenation();
-	    _C_deallocate(__c, 1);
+	    this->_C_deallocate(__c, 1);
 	    break;
 	  }
 	case __detail::_S_function:
@@ -397,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _Rope_RopeFunction<_CharT, _Alloc>* __f
 	      = (_Rope_RopeFunction<_CharT, _Alloc>*)this;
 	    __f->_Rope_RopeFunction<_CharT, _Alloc>::~_Rope_RopeFunction();
-	    _F_deallocate(__f, 1);
+	    this->_F_deallocate(__f, 1);
 	    break;
 	  }
 	case __detail::_S_substringfn:
@@ -406,7 +406,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      (_Rope_RopeSubstring<_CharT, _Alloc>*)this;
 	    __ss->_Rope_RopeSubstring<_CharT, _Alloc>::
 	      ~_Rope_RopeSubstring();
-	    _S_deallocate(__ss, 1);
+	    this->_S_deallocate(__ss, 1);
 	    break;
 	  }
 	}
@@ -430,7 +430,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       size_t __old_len = __r->_M_size;
       _CharT* __new_data = (_CharT*)
-	_Data_allocate(_S_rounded_up_size(__old_len + __len));
+	rope::_Data_allocate(_S_rounded_up_size(__old_len + __len));
       _RopeLeaf* __result;
 
       uninitialized_copy_n(__r->_M_data, __old_len, __new_data);
@@ -511,7 +511,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  __catch(...)
 	    {
-	      _C_deallocate(__result,1);
+	      rope::_C_deallocate(__result,1);
 	      __throw_exception_again;
 	    }
 	  // In case of exception, we need to deallocate
@@ -814,7 +814,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (__result_len > __lazy_threshold)
 	      goto lazy;
 	    __section = (_CharT*)
-	      _Data_allocate(_S_rounded_up_size(__result_len));
+	      rope::_Data_allocate(_S_rounded_up_size(__result_len));
 	    __try
 	      {	(*(__f->_M_fn))(__start, __result_len, __section); }
 	    __catch(...)

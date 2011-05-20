@@ -188,7 +188,7 @@ namespace __gnu_pbds
       modify(const_reference r_old, const_reference r_new)
       {
         erase(r_old);
-        push(r_new);
+        this->push(r_new);
       }
 
       void

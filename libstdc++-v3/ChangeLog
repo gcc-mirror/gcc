@@ -1,3 +1,29 @@
+2011-05-20  Jason Merrill  <jason@redhat.com>
+
+	* include/ext/pb_ds/assoc_container.hpp: Explicitly qualify calls to
+	functions from dependent bases.
+	* include/ext/pb_ds/detail/rb_tree_map_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/splay_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/tree_policy/
+	order_statistics_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy/
+	prefix_search_node_update_imp.hpp: Likewise.
+	* include/ext/rc_string_base.h: Likewise.
+	* include/ext/rope: Likewise.
+	* include/ext/ropeimpl.h: Likewise.
+	* testsuite/util/exception/safety.h: Likewise.
+	* testsuite/util/native_type/native_priority_queue.hpp: Likewise.
+	* testsuite/util/testsuite_io.h: Likewise.
+	* include/std/functional: Declare mem_fn earlier.
+	* include/tr1/functional: Likewise.
+	* include/tr1/exp_integral.tcc: Declare __expint_E1 earlier.
+
 2011-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/tuple (tuple_element<__i, const _Tp>,

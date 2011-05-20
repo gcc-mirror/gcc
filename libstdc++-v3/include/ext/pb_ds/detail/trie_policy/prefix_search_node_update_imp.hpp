@@ -104,9 +104,9 @@ prefix_range(typename e_access_traits::const_iterator b, typename e_access_trait
 
       if (common_range_length >= given_range_length)
         {
-	  iterator ret_b = leftmost_it(nd_it);
+	  iterator ret_b = this->leftmost_it(nd_it);
 
-	  iterator ret_e = rightmost_it(nd_it);
+	  iterator ret_e = this->rightmost_it(nd_it);
 
 	  return (std::make_pair(ret_b, ++ret_e));
         }

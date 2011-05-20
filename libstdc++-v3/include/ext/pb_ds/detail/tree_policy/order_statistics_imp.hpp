@@ -96,9 +96,9 @@ order_of_key(const_key_reference r_key) const
     {
       const_node_iterator l_it = it.get_l_child();
 
-      if (r_cmp_fn(r_key, extract_key(*(*it))))
+      if (r_cmp_fn(r_key, this->extract_key(*(*it))))
 	it = l_it;
-      else if (r_cmp_fn(extract_key(*(*it)), r_key))
+      else if (r_cmp_fn(this->extract_key(*(*it)), r_key))
         {
 
 	  ord += (l_it == end_it)?

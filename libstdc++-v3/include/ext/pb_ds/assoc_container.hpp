@@ -234,7 +234,7 @@ namespace __gnu_pbds
     template<typename It>
     cc_hash_table(It first, It last, const hash_fn& h)
     : base_type(h)
-    { copy_from_range(first, last); }
+    { this->copy_from_range(first, last); }
 
     // Constructor taking __iterators to a range of value_types and
     // some policy objects The value_types between first_it and
@@ -245,7 +245,7 @@ namespace __gnu_pbds
     template<typename It>
     cc_hash_table(It first, It last, const hash_fn& h, const eq_fn& e)
     : base_type(h, e)
-    { copy_from_range(first, last); }
+    { this->copy_from_range(first, last); }
 
     // Constructor taking __iterators to a range of value_types and
     // some policy objects The value_types between first_it and
@@ -258,7 +258,7 @@ namespace __gnu_pbds
     cc_hash_table(It first, It last, const hash_fn& h, const eq_fn& e,
 		  const comb_hash_fn& ch)
     : base_type(h, e, ch)
-    { copy_from_range(first, last); }
+    { this->copy_from_range(first, last); }
 
     // Constructor taking __iterators to a range of value_types and
     // some policy objects The value_types between first_it and
@@ -272,7 +272,7 @@ namespace __gnu_pbds
     cc_hash_table(It first, It last, const hash_fn& h, const eq_fn& e, 
 		  const comb_hash_fn& ch, const resize_policy& rp)
     : base_type(h, e, ch, rp)
-    { copy_from_range(first, last); }
+    { this->copy_from_range(first, last); }
 
     cc_hash_table(const cc_hash_table& other)
     : base_type((const base_type&)other)
