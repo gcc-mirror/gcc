@@ -1,5 +1,11 @@
 2011-05-20  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/48849
+	* gimple.c (gimple_register_canonical_type): Compute TYPE_CANONICAL
+	of pointer types the same way the middle-end does.
+
+2011-05-20  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.c (gimple_register_type_1): Do not fiddle with
 	main-variant or pointer-to chains.  Delay all fixup to
 	uniquify_nodes.
