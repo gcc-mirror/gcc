@@ -2420,6 +2420,8 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
      lenient than C or C++ on this.  */
   if (TREE_CODE (ltyp) == FUNCTION_TYPE && TREE_CODE (rtyp) == FUNCTION_TYPE)
     {
+      function_args_iterator liter, riter;
+
       /* Return types must be covariant.  */
       if (!comptypes (TREE_TYPE (ltyp), TREE_TYPE (rtyp))
 	  && !objc_compare_types (TREE_TYPE (ltyp), TREE_TYPE (rtyp),
@@ -2427,16 +2429,31 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
       return false;
 
       /* Argument types must be contravariant.  */
-      for (ltyp = TYPE_ARG_TYPES (ltyp), rtyp = TYPE_ARG_TYPES (rtyp);
-	   ltyp && rtyp; ltyp = TREE_CHAIN (ltyp), rtyp = TREE_CHAIN (rtyp))
-	{
-	  if (!comptypes (TREE_VALUE (rtyp), TREE_VALUE (ltyp))
-	      && !objc_compare_types (TREE_VALUE (rtyp), TREE_VALUE (ltyp),
-				      argno, callee))
-	    return false;
-      }
+      function_args_iter_init (&liter, ltyp);
+      function_args_iter_init (&riter, rtyp);
 
-      return (ltyp == rtyp);
+      while (1)
+	{
+	  ltyp = function_args_iter_cond (&liter);
+	  rtyp = function_args_iter_cond (&riter);
+
+	  /* If we've exhaused both lists simulateously, we're done.  */
+	  if (ltyp == NULL_TREE && rtyp == NULL_TREE)
+	    break;
+
+	  /* If one list is shorter than the other, they fail to match.  */
+	  if (ltyp == NULL_TREE || rtyp == NULL_TREE)
+	    return false;
+
+	  if (!comptypes (rtyp, ltyp)
+	      && !objc_compare_types (rtyp, ltyp, argno, callee))
+	    return false;
+
+	  function_args_iter_next (&liter);
+	  function_args_iter_next (&riter);
+	}
+
+      return true;
     }
 
   /* Past this point, we are only interested in ObjC class instances,
