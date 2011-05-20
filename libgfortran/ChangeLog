@@ -1,4 +1,10 @@
 2011-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
+        Uros Bizjak  <ubizjak@gmail.com>
+
+        PR libfortran/48977
+        * configure.host: Swap order of glibc and x86 tests.
+
+2011-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
         * config/fpu-387.h (set_fpu): Use renamed inexact macro.
         * config/fpu-aix.h (set_fpu): Clarify error messages, use renamed
@@ -186,7 +192,7 @@
 	* io/write_float.def (output_float_FMT_G): Use current rounding mode
 	to set the rounding parameters. (output_float): Skip rounding
 	if value is zero.
-	
+
 2011-04-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/date_and_time.c (date_and_time): Remove sprintf CPP
