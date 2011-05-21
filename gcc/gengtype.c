@@ -2386,6 +2386,7 @@ walk_type (type_p t, struct walk_type_data *d)
   int maybe_undef_p = 0;
   int use_param_num = -1;
   int use_params_p = 0;
+  int atomic_p = 0;
   options_p oo;
   const struct nested_ptr_data *nested_ptr_d = NULL;
 
@@ -2415,6 +2416,8 @@ walk_type (type_p t, struct walk_type_data *d)
       ;
     else if (strcmp (oo->name, "skip") == 0)
       ;
+    else if (strcmp (oo->name, "atomic") == 0)
+      atomic_p = 1;
     else if (strcmp (oo->name, "default") == 0)
       ;
     else if (strcmp (oo->name, "param_is") == 0)
@@ -2480,6 +2483,12 @@ walk_type (type_p t, struct walk_type_data *d)
       return;
     }
 
+  if (atomic_p && (t->kind != TYPE_POINTER))
+    {
+      error_at_line (d->line, "field `%s' has invalid option `atomic'\n", d->val);
+      return;
+    }
+
   switch (t->kind)
     {
     case TYPE_SCALAR:
@@ -2492,6 +2501,25 @@ walk_type (type_p t, struct walk_type_data *d)
 	if (maybe_undef_p && t->u.p->u.s.line.file == NULL)
 	  {
 	    oprintf (d->of, "%*sgcc_assert (!%s);\n", d->indent, "", d->val);
+	    break;
+	  }
+
+	/* If a pointer type is marked as "atomic", we process the
+	   field itself, but we don't walk the data that they point to.
+	   
+	   There are two main cases where we walk types: to mark
+	   pointers that are reachable, and to relocate pointers when
+	   writing a PCH file.  In both cases, an atomic pointer is
+	   itself marked or relocated, but the memory that it points
+	   to is left untouched.  In the case of PCH, that memory will
+	   be read/written unchanged to the PCH file.  */
+	if (atomic_p)
+	  {
+	    oprintf (d->of, "%*sif (%s != NULL) {\n", d->indent, "", d->val);
+	    d->indent += 2;
+	    d->process_field (t, d);
+	    d->indent -= 2;
+	    oprintf (d->of, "%*s}\n", d->indent, "");
 	    break;
 	  }
 
