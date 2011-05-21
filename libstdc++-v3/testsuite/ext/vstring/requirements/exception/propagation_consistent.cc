@@ -3,7 +3,7 @@
 
 // 2009-09-14  Benjamin Kosnik  <benjamin@redhat.com>
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,14 +26,9 @@
 void
 value()
 {
-#if 1
+  // NB: Instantiating with __gnu_cxx::throw_value_limit would be illegal,
+  // isn't a POD type.
   typedef char value_type;
-#else
-  // XXX
-  // __gnu_cxx::__rc_string_base<>::_Rep::_M_align’ with constructor
-  // not allowed in union
-  // typedef __gnu_cxx::throw_value_limit value_type;
-#endif
   typedef __gnu_cxx::throw_allocator_limit<value_type> allocator_type;
   typedef std::char_traits<value_type> traits_type;
 

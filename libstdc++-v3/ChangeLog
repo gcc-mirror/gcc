@@ -1,5 +1,15 @@
 2011-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/21_strings/basic_string/requirements/exception/
+	propagation_consistent.cc: Fix vs POD-ness of value_type.
+	* testsuite/21_strings/basic_string/requirements/exception/
+	basic.cc: Likewise.
+	* testsuite/ext/vstring/requirements/exception/
+	propagation_consistent.cc: Likewise.
+	* testsuite/ext/vstring/requirements/exception/basic.cc: Likewise.
+
+2011-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/char_traits.h: Use noexcept throughout.
 	* include/std/typeindex: Likewise.
 
