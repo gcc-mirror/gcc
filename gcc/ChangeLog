@@ -1,3 +1,8 @@
+2011-05-21  Nick Clifton  <nickc@redhat.com>
+
+	PR target/49098
+	* config/rx/rx.c (rx_memory_move_cost): Note unused parameters.
+
 2011-05-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* gengtype.c (walk_type): Implemented "atomic" GTY option.
