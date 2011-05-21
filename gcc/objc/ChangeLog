@@ -1,3 +1,9 @@
+2011-05-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* config-lang.in (gtfiles): Updated order of files to fix building
+	when the gcc/cp directory is missing, as in the case of some
+	release tarballs.
+
 2011-05-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-act.c (objc_compare_types): Use function_args_iterator
