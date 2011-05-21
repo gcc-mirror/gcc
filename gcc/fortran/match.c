@@ -4533,7 +4533,11 @@ select_type_set_tmp (gfc_typespec *ts)
   gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
   gfc_add_type (tmp->n.sym, ts, NULL);
   gfc_set_sym_referenced (tmp->n.sym);
-  gfc_add_pointer (&tmp->n.sym->attr, NULL);
+  if (select_type_stack->selector->ts.type == BT_CLASS &&
+      CLASS_DATA (select_type_stack->selector)->attr.allocatable)
+    gfc_add_allocatable (&tmp->n.sym->attr, NULL);
+  else
+    gfc_add_pointer (&tmp->n.sym->attr, NULL);
   gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
   if (ts->type == BT_CLASS)
     gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
