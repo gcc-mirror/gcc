@@ -759,6 +759,9 @@ Driver Undocumented
 ;    function parameters used in other parameters and the return type.
 ;    First selectable in G++ 4.6.
 ;
+; 6: The version of the ABI that doesn't promote scoped enums to int.
+;    First selectable in G++ 4.7.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
