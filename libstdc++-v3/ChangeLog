@@ -1,3 +1,18 @@
+2011-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/char_traits.h: Use noexcept throughout.
+	* include/std/typeindex: Likewise.
+
+	* include/std/tuple (_Tuple_impl<>_Tuple_impl(_Tuple_impl&&)): Use
+	noexcept; adjust callers.
+	* include/bits/stl_pair.h (pair<>::pair(pair<>&&)): Use noexcept.
+	* testsuite/20_util/tuple/cons/noexcept_move_construct.cc: New.
+	* testsuite/20_util/pair/cons/noexcept_move_construct.cc: Likewise.
+	* testsuite/20_util/pair/noexcept_swap.cc: Likewise.
+	* testsuite/20_util/pair/noexcept_move_assign.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-warning
+	line numbers.
+
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
 	* include/ext/pb_ds/assoc_container.hpp: Explicitly qualify calls to

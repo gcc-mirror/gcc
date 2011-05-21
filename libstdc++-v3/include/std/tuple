@@ -169,6 +169,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Tuple_impl(const _Tuple_impl&) = default;
 
       _Tuple_impl(_Tuple_impl&& __in)
+      noexcept(std::is_nothrow_move_constructible<_Head>::value
+	       && std::is_nothrow_move_constructible<_Inherited>::value)
       : _Inherited(std::move(__in._M_tail())), 
 	_Base(std::forward<_Head>(__in._M_head())) { }
 
@@ -191,8 +193,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Tuple_impl&
       operator=(_Tuple_impl&& __in)
-      noexcept(is_nothrow_move_assignable<_Head>::value
-	       && is_nothrow_move_assignable<_Inherited>::value)
+      noexcept(std::is_nothrow_move_assignable<_Head>::value
+	       && std::is_nothrow_move_assignable<_Inherited>::value)
       {
 	_M_head() = std::forward<_Head>(__in._M_head());
 	_M_tail() = std::move(__in._M_tail());
@@ -252,9 +254,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
 
       constexpr tuple(const tuple&) = default;
-
-      tuple(tuple&& __in)
-      : _Inherited(static_cast<_Inherited&&>(__in)) { }
+      tuple(tuple&&) = default;
 
       template<typename... _UElements, typename = typename
 	       std::enable_if<sizeof...(_UElements)
@@ -278,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       tuple&
       operator=(tuple&& __in)
-      noexcept(is_nothrow_move_assignable<_Inherited>::value)
+      noexcept(std::is_nothrow_move_assignable<_Inherited>::value)
       {
 	static_cast<_Inherited&>(*this) = std::move(__in);
 	return *this;
@@ -337,9 +337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Inherited(std::forward<_U1>(__a1), std::forward<_U2>(__a2)) { }
 
       constexpr tuple(const tuple&) = default;
-
-      tuple(tuple&& __in)
-      : _Inherited(static_cast<_Inherited&&>(__in)) { }
+      tuple(tuple&&) = default;
 
       template<typename _U1, typename _U2>
         tuple(const tuple<_U1, _U2>& __in)
@@ -367,7 +365,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       tuple&
       operator=(tuple&& __in)
-      noexcept(is_nothrow_move_assignable<_Inherited>::value)
+      noexcept(std::is_nothrow_move_assignable<_Inherited>::value)
       {
 	static_cast<_Inherited&>(*this) = std::move(__in);
 	return *this;
@@ -434,9 +432,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Inherited(std::forward<_U1>(__a1)) { }
 
       constexpr tuple(const tuple&) = default;
-
-      tuple(tuple&& __in)
-      : _Inherited(static_cast<_Inherited&&>(__in)) { }
+      tuple(tuple&&) = default;
 
       template<typename _U1>
         tuple(const tuple<_U1>& __in)
@@ -455,7 +451,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       tuple&
       operator=(tuple&& __in)
-      noexcept(is_nothrow_move_assignable<_Inherited>::value)
+      noexcept(std::is_nothrow_move_assignable<_Inherited>::value)
       {
 	static_cast<_Inherited&>(*this) = std::move(__in);
 	return *this;
