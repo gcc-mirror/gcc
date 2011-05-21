@@ -2845,11 +2845,6 @@ eligible_for_return_delay (rtx trial)
   if (get_attr_length (trial) != 1)
     return 0;
 
-  /* If there are any call-saved registers, we should scan TRIAL if it
-     does not reference them.  For now just make it easy.  */
-  if (num_gfregs)
-    return 0;
-
   /* If the function uses __builtin_eh_return, the eh_return machinery
      occupies the delay slot.  */
   if (crtl->calls_eh_return)
@@ -4421,7 +4416,7 @@ save_or_restore_regs (int low, int high, rtx base, int offset, int action)
 	    emit_move_insn (gen_rtx_REG (mode, regno), mem);
 
 	  /* Always preserve double-word alignment.  */
-	  offset = (offset + 7) & -8;
+	  offset = (offset + 8) & -8;
 	}
     }
 
@@ -4528,7 +4523,7 @@ sparc_expand_prologue (void)
      example, the regrename pass has special provisions to not rename to
      non-leaf registers in a leaf function.  */
   sparc_leaf_function_p
-    = optimize > 0 && leaf_function_p () && only_leaf_regs_used ();
+    = optimize > 0 && current_function_is_leaf && only_leaf_regs_used ();
 
   /* Need to use actual_fsize, since we are also allocating
      space for our callee (and our own register save area).  */
@@ -4658,6 +4653,7 @@ bool
 sparc_can_use_return_insn_p (void)
 {
   return sparc_prologue_data_valid_p
+	 && num_gfregs == 0
 	 && (actual_fsize == 0 || !sparc_leaf_function_p);
 }
 
@@ -9680,7 +9676,7 @@ sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
 bool
 sparc_frame_pointer_required (void)
 {
-  return !(leaf_function_p () && only_leaf_regs_used ());
+  return !(current_function_is_leaf && only_leaf_regs_used ());
 }
 
 /* The way this is structured, we can't eliminate SFP in favor of SP

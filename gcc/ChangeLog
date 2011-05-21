@@ -1,3 +1,12 @@
+2011-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (eligible_for_return_delay): Do not return
+	false if there are call-saved registers here...
+	(sparc_can_use_return_insn_p): ...but here instead.
+	(save_or_restore_regs): Fix thinko.
+	(sparc_expand_prologue): Use current_function_is_leaf.
+	(sparc_frame_pointer_required): Likewise.
+
 2011-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/49086
