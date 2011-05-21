@@ -1,5 +1,10 @@
 2011-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.md (setjmp): Handle PIC mode and use the hard
+	frame pointer.
+
+2011-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/sparc/sparc.c (eligible_for_return_delay): Do not return
 	false if there are call-saved registers here...
 	(sparc_can_use_return_insn_p): ...but here instead.
