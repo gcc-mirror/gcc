@@ -2263,13 +2263,17 @@ s-options: $(ALL_OPT_FILES) Makefile $(srcdir)/opt-gather.awk
 	$(SHELL) $(srcdir)/../move-if-change tmp-optionlist optionlist
 	$(STAMP) s-options
 
-options.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/optc-gen.awk
-	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/optc-gen.awk \
+options.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
+    $(srcdir)/optc-gen.awk
+	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
+	       -f $(srcdir)/optc-gen.awk \
 	       -v header_name="config.h system.h coretypes.h tm.h" < $< > $@
 
 options.h: s-options-h ; @true
-s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opth-gen.awk
-	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opth-gen.awk \
+s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
+    $(srcdir)/opth-gen.awk
+	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
+	       -f $(srcdir)/opth-gen.awk \
 	       < $< > tmp-options.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-options.h options.h
 	$(STAMP) $@

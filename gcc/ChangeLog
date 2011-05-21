@@ -1,3 +1,11 @@
+2011-05-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* opt-read.awk: New.  Split out of optc-gen.awk and opth-gen.awk.
+	* optc-gen.awk: Move common code to opt-read.awk.
+	* opth-gen.awk: Likewise.
+	* Makefile.in (options.c, s-options-h): Update to use
+	opt-read.awk.
+
 2011-05-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* godump.c (go_format_type): Don't use TYPE_ARG_TYPES.
