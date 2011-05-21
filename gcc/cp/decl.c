@@ -1686,6 +1686,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  error ("deleted definition of %qD", newdecl);
 	  error ("after previous declaration %q+D", olddecl);
 	}
+      DECL_DELETED_FN (newdecl) |= DECL_DELETED_FN (olddecl);
     }
 
   /* Deal with C++: must preserve virtual function table size.  */
