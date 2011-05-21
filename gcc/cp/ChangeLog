@@ -1,6 +1,14 @@
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48945
+	* decl.c (grokdeclarator): Don't add set const function-cv-qual
+	for constexpr fns to memfn_quals, just add it to the type.
+	(revert_static_member_fn): Don't complain about quals.
+	(check_static_quals): New.
+	(grokfndecl): Call it.
+	(start_preparsed_function): Don't call revert_static_member_fn.
+
+	PR c++/48945
 	* decl.c (revert_static_member_fn): Ignore const on constexpr fn.
 
 	PR c++/48780
