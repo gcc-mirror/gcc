@@ -1,3 +1,9 @@
+2011-05-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48699
+	* match.c (select_type_set_tmp): Make the temporary ALLOCATABLE if the
+	selector is ALLOCATABLE.
+
 2011-05-20  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/48706
