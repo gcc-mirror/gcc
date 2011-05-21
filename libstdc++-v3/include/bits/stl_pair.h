@@ -112,7 +112,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       constexpr pair(const pair&) = default;
 
-      // Implicit.
+      // Implicit?!? Breaks containers!!!
       // pair(pair&&) = default;
 
       // DR 811.
@@ -134,6 +134,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<class _U1, class _U2>
 	pair(pair<_U1, _U2>&& __p)
+	noexcept(std::is_nothrow_constructible<_T1, _U1&&>::value
+		 && std::is_nothrow_constructible<_T2, _U2&&>::value)
 	: first(std::forward<_U1>(__p.first)),
 	  second(std::forward<_U2>(__p.second)) { }
 
@@ -153,8 +155,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       pair&
       operator=(pair&& __p)
-      noexcept(is_nothrow_move_assignable<_T1>::value
-	       && is_nothrow_move_assignable<_T2>::value)
+      noexcept(std::is_nothrow_move_assignable<_T1>::value
+	       && std::is_nothrow_move_assignable<_T2>::value)
       {
 	first = std::move(__p.first);
 	second = std::move(__p.second);
