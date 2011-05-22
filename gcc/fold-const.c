@@ -13822,7 +13822,8 @@ recursive_label:
   if (TREE_CODE_CLASS (code) != tcc_type
       && TREE_CODE_CLASS (code) != tcc_declaration
       && code != TREE_LIST
-      && code != SSA_NAME)
+      && code != SSA_NAME
+      && CODE_CONTAINS_STRUCT (code, TS_COMMON))
     fold_checksum_tree (TREE_CHAIN (expr), ctx, ht);
   switch (TREE_CODE_CLASS (code))
     {
