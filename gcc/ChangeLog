@@ -1,3 +1,9 @@
+2011-05-22  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49087
+	* tree-vect-loop.c (vect_is_slp_reduction): Fail if
+	LHS has no uses.
+
 2011-05-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49092
