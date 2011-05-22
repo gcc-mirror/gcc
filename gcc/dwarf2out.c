@@ -17719,7 +17719,9 @@ tree_add_const_value_attribute_for_decl (dw_die_ref var_die, tree decl)
 
   if (!decl
       || (TREE_CODE (decl) != VAR_DECL
-	  && TREE_CODE (decl) != CONST_DECL))
+	  && TREE_CODE (decl) != CONST_DECL)
+      || (TREE_CODE (decl) == VAR_DECL
+	  && !TREE_STATIC (decl)))
     return false;
 
     if (TREE_READONLY (decl)
