@@ -1,3 +1,11 @@
+2011-05-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.h (SUBTARGET_ASM_OPTIMIZING_SPEC): Delete.
+	(ASM_SPEC): Add a -O* option here.  Pass -O0 for -noasmopt,
+	-O1 for -fno-delayed-branch, -O2 if optimization is enabled,
+	and -O0 otherwise.
+	(EXTRA_SPECS): Remove subtarget_asm_optimizing_spec.
+
 2011-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgcleanup.c (try_forward_edges): Do not update BB_FORWARDER_BLOCK.

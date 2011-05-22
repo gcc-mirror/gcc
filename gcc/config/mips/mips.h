@@ -1079,14 +1079,6 @@ struct mips_cpu_info {
 #endif
 
 
-/* SUBTARGET_ASM_OPTIMIZING_SPEC handles passing optimization options
-   to the assembler.  It may be overridden by subtargets.  */
-#ifndef SUBTARGET_ASM_OPTIMIZING_SPEC
-#define SUBTARGET_ASM_OPTIMIZING_SPEC "\
-%{noasmopt:-O0} \
-%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}}"
-#endif
-
 /* SUBTARGET_ASM_DEBUGGING_SPEC handles passing debugging options to
    the assembler.  It may be overridden by subtargets.
 
@@ -1123,7 +1115,7 @@ struct mips_cpu_info {
 %{mmt} %{mno-mt} \
 %{mfix-vr4120} %{mfix-vr4130} \
 %{mfix-24k} \
-%(subtarget_asm_optimizing_spec) \
+%{noasmopt:-O0; O0|fno-delayed-branch:-O1; O*:-O2; :-O1} \
 %(subtarget_asm_debugging_spec) \
 %{mabi=*} %{!mabi=*: %(asm_abi_default_spec)} \
 %{mgp32} %{mgp64} %{march=*} %{mxgot:-xgot} \
@@ -1181,7 +1173,6 @@ struct mips_cpu_info {
 #define EXTRA_SPECS							\
   { "subtarget_cc1_spec", SUBTARGET_CC1_SPEC },				\
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
-  { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC },	\
   { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC },	\
   { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },				\
   { "asm_abi_default_spec", "-" MULTILIB_ABI_DEFAULT },			\
