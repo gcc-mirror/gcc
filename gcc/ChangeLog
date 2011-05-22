@@ -1,5 +1,10 @@
 2011-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.c (sparc_delegitimize_address): Handle
+	UNSPEC_MOVE_PIC pattern.
+
+2011-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config.gcc (sparc-*-elf*): Add sparc/t-crtin.
 	(sparc-*-rtems*): Likewise.
 	(sparc64-*-elf*): Likewise.
