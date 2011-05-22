@@ -505,7 +505,8 @@ init_vectorized_lexer (void)
     }
   else if (__get_cpuid (0x80000001, &dummy, &dummy, &dummy, &edx))
     {
-      if (minimum == 1 || (edx & (bit_MMXEXT | bit_CMOV)))
+      if (minimum == 1
+	  || (edx & (bit_MMXEXT | bit_CMOV)) == (bit_MMXEXT | bit_CMOV))
 	impl = search_line_mmx;
     }
 
