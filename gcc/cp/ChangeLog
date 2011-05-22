@@ -1,3 +1,9 @@
+2011-05-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48647
+	* typeck.c (composite_pointer_type_r): Return error_mark_node
+	on error in SFINAE context.
+
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48945
