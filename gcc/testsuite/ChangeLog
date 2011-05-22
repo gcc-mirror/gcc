@@ -1,3 +1,8 @@
+2011-05-22  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae23.C: New.
+	* g++.dg/cpp0x/sfinae8.C: Correct.
+
 2011-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49029

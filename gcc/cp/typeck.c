@@ -516,7 +516,8 @@ composite_pointer_type_r (tree t1, tree t2,
     {
       if (complain & tf_error)
 	composite_pointer_error (DK_PERMERROR, t1, t2, operation);
-
+      else
+	return error_mark_node;
       result_type = void_type_node;
     }
   result_type = cp_build_qualified_type (result_type,
@@ -527,9 +528,13 @@ composite_pointer_type_r (tree t1, tree t2,
   if (TYPE_PTR_TO_MEMBER_P (t1))
     {
       if (!same_type_p (TYPE_PTRMEM_CLASS_TYPE (t1),
-			TYPE_PTRMEM_CLASS_TYPE (t2))
-	  && (complain & tf_error))
-	composite_pointer_error (DK_PERMERROR, t1, t2, operation);
+			TYPE_PTRMEM_CLASS_TYPE (t2)))
+	{
+	  if (complain & tf_error)
+	    composite_pointer_error (DK_PERMERROR, t1, t2, operation);
+	  else
+	    return error_mark_node;
+	}
       result_type = build_ptrmem_type (TYPE_PTRMEM_CLASS_TYPE (t1),
 				       result_type);
     }
