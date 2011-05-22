@@ -1,3 +1,8 @@
+2011-05-22  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae23.C: New.
+	* g++.dg/cpp0x/sfinae8.C: Correct.
+
 2011-05-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/function_optimize_8.f90:  New test case.

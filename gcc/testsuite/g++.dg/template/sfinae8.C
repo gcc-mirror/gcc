@@ -120,7 +120,7 @@ STATIC_ASSERT((!is_equality_comparable<Y, X>::value));
 STATIC_ASSERT((!is_equality_comparable<Y>::value));
 STATIC_ASSERT((is_equality_comparable<int X::*>::value));
 STATIC_ASSERT((!is_equality_comparable<int X::*, int Y::*>::value));
-STATIC_ASSERT((is_equality_comparable<int*, float*>::value));
+STATIC_ASSERT((!is_equality_comparable<int*, float*>::value));
 STATIC_ASSERT((is_equality_comparable<X*, Z*>::value));
 STATIC_ASSERT((!is_equality_comparable<X*, Y*>::value));
 
@@ -139,7 +139,7 @@ STATIC_ASSERT((!is_not_equal_comparable<Y, X>::value));
 STATIC_ASSERT((!is_not_equal_comparable<Y>::value));
 STATIC_ASSERT((is_not_equal_comparable<int X::*>::value));
 STATIC_ASSERT((!is_not_equal_comparable<int X::*, int Y::*>::value));
-STATIC_ASSERT((is_not_equal_comparable<int*, float*>::value));
+STATIC_ASSERT((!is_not_equal_comparable<int*, float*>::value));
 STATIC_ASSERT((is_not_equal_comparable<X*, Z*>::value));
 STATIC_ASSERT((!is_not_equal_comparable<X*, Y*>::value));
 
