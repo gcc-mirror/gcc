@@ -1,5 +1,8 @@
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48945
+	* decl.c (revert_static_member_fn): Ignore const on constexpr fn.
+
 	PR c++/48780
 	* cvt.c (type_promotes_to): Warn about promoting scoped enums.
 

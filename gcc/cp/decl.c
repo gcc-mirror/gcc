@@ -13394,10 +13394,15 @@ void
 revert_static_member_fn (tree decl)
 {
   tree stype = static_fn_type (decl);
+  cp_cv_quals quals = type_memfn_quals (stype);
 
-  if (type_memfn_quals (stype) != TYPE_UNQUALIFIED)
+  if (quals != TYPE_UNQUALIFIED)
     {
-      error ("static member function %q#D declared with type qualifiers", decl);
+      if (quals == TYPE_QUAL_CONST && DECL_DECLARED_CONSTEXPR_P (decl))
+	/* The const was implicit, don't complain.  */;
+      else
+	error ("static member function %q#D declared with type qualifiers",
+	       decl);
       stype = apply_memfn_quals (stype, TYPE_UNQUALIFIED);
     }
   TREE_TYPE (decl) = stype;
