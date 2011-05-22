@@ -1,3 +1,8 @@
+2011-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49104
+	* config/i386/cpuid.h (bit_MMXEXT): New define.
+
 2011-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49029

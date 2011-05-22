@@ -1,3 +1,9 @@
+2011-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49104
+	* lex.c (init_vectorized_lexer): Do not set "minimum" when __3dNOW_A__
+	is defined.  Check bit_MMXEXT and bit_CMOV to use search_line_mmx.
+
 2011-04-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline
