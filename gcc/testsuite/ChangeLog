@@ -1,5 +1,7 @@
 2011-05-20  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/enum13.C: New.
+
 	* g++.dg/cpp0x/defaulted26.C: New.
 
 	* g++.dg/cpp0x/noexcept02.C: Fix.
