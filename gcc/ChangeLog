@@ -1,3 +1,18 @@
+2011-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc (sparc-*-elf*): Add sparc/t-crtin.
+	(sparc-*-rtems*): Likewise.
+	(sparc64-*-elf*): Likewise.
+	(sparc64-*-rtems*): Likewise.
+	(sparc*-*-solaris2*): Likewise.  Remove crti.o crtn.o extra parts.
+	* config/sparc/t-crtin: New file.
+	* config/sparc/t-sol2 (crti.o): Delete rule.
+	(crtn.o): Likewise.
+	* config/sparc/t-linux64 (EXTRA_MULTILIB_PARTS): Delete.
+	* config/sparc/t-sol2-64 (EXTRA_MULTILIB_PARTS): Likewise.
+	* config/sparc/sp64-elf.h (STARTFILE_SPEC): Tidy and add crti.o.
+	(ENDFILE_SPEC): Add crtn.o.
+
 2011-05-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49104

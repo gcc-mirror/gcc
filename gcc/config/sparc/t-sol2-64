@@ -5,6 +5,3 @@ MULTILIB_OSDIRNAMES = . sparcv9
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o gmon.o crt1.o crti.o crtn.o gcrt1.o \
-	crtfastmath.o

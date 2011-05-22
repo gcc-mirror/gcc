@@ -53,18 +53,13 @@ along with GCC; see the file COPYING3.  If not see
 %{mlittle-endian:-EL} \
 "
 
-/* We need something a little simpler for the embedded environment.
-   Profiling doesn't really work yet so we just copy the default.  */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "\
-%{!shared:%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}} \
-crtbegin.o%s \
-"
+#define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
-   crtend.o%s"
+   crtend.o%s crtn.o%s"
 
 /* Use the default (for now).  */
 #undef LIB_SPEC

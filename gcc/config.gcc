@@ -2522,12 +2522,12 @@ sparc-*-elf*)
 		tmake_file="sparc/t-elf"
 		;;
 	esac
-	tmake_file="${tmake_file} sparc/t-crtfm"
+	tmake_file="${tmake_file} sparc/t-crtin sparc/t-crtfm"
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/sp-elf.h sparc/rtemself.h rtems.h newlib-stdint.h"
-	tmake_file="sparc/t-elf sparc/t-crtfm t-rtems"
+	tmake_file="sparc/t-elf sparc/t-crtin sparc/t-crtfm t-rtems"
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc-*-linux*)
@@ -2585,7 +2585,7 @@ sparc*-*-solaris2*)
 		tm_file="${tm_file} sol2-gld.h sparc/sol2-gld-bi.h"
 	fi
 	tm_file="${tm_file} tm-dwarf2.h"
-	tmake_file="t-sol2 sparc/t-sol2 sparc/t-sol2-64 sparc/t-crtfm"
+	tmake_file="t-sol2 sparc/t-sol2 sparc/t-sol2-64 sparc/t-crtin sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
@@ -2598,7 +2598,7 @@ sparc*-*-solaris2*)
 	cxx_target_objs="sol2-c.o"
 	extra_objs="sol2.o"
 	tm_p_file="${tm_p_file} sol2-protos.h"
-	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
+	extra_parts="crt1.o gcrt1.o gmon.o crtbegin.o crtend.o"
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
 	  "":yes:* | yes:yes:* )
 		thread_file=posix
@@ -2615,13 +2615,13 @@ sparc-wrs-vxworks)
 sparc64-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h sparc/sysv4.h sparc/sp64-elf.h"
 	extra_options="${extra_options} sparc/little-endian.opt"
-	tmake_file="${tmake_file} sparc/t-crtfm"
+	tmake_file="${tmake_file} sparc/t-crtin sparc/t-crtfm"
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc64-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h sparc/sysv4.h sparc/sp64-elf.h sparc/rtemself.h rtems.h"
 	extra_options="${extra_options} sparc/little-endian.opt"
-	tmake_file="${tmake_file} sparc/t-crtfm t-rtems"
+	tmake_file="${tmake_file} sparc/t-crtin sparc/t-crtfm t-rtems"
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc64-*-linux*)
