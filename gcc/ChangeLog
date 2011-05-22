@@ -1,3 +1,9 @@
+2011-05-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/45098
+	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost): Fixed const test
+	for call to get_shiftadd_cost.
+
 2011-05-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49104
