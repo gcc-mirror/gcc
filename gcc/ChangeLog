@@ -1,3 +1,9 @@
+2011-05-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/48689
+	* fold-const.c (fold_checksum_tree): Guard TREE_CHAIN use with
+	CODE_CONTAINS_STRUCT (TS_COMMON).
+
 2011-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49029
