@@ -1704,7 +1704,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
   tree lhs;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
-  int nloop_uses, size = 0;
+  int nloop_uses, size = 0, nuses;
   bool found = false;
 
   if (loop != vect_loop)
@@ -1715,9 +1715,11 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
   while (1)
     {
       nloop_uses = 0;
+      nuses = 0;
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
         {
           use_stmt = USE_STMT (use_p);
+          nuses++;
           if (is_gimple_debug (use_stmt))
             continue;
 
@@ -1738,6 +1740,10 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
           if (nloop_uses > 1)
             return false;
         }
+
+      /* We reached a statement with no uses.  */
+      if (nuses == 0)
+	return false;
 
       if (found)
         break;
