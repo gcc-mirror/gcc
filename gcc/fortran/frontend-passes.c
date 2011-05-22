@@ -137,8 +137,7 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
 
 /* Callback function for common function elimination, called from cfe_expr_0.
-   Put all eligible function expressions into expr_array.  We can't do
-   allocatable functions.  */
+   Put all eligible function expressions into expr_array.  */
 
 static int
 cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
@@ -148,8 +147,10 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   if ((*e)->expr_type != EXPR_FUNCTION)
     return 0;
 
-  /* We don't do character functions (yet).  */
-  if ((*e)->ts.type == BT_CHARACTER)
+  /* We don't do character functions with unknown charlens.  */
+  if ((*e)->ts.type == BT_CHARACTER 
+      && ((*e)->ts.u.cl == NULL || (*e)->ts.u.cl->length == NULL
+	  || (*e)->ts.u.cl->length->expr_type != EXPR_CONSTANT))
     return 0;
 
   /* If we don't know the shape at compile time, we create an allocatable
@@ -163,9 +164,6 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
      is specified.  */
   if ((*e)->value.function.esym)
     {
-      if ((*e)->value.function.esym->attr.allocatable)
-	return 0;
-
       /* Don't create an array temporary for elemental functions.  */
       if ((*e)->value.function.esym->attr.elemental && (*e)->rank > 0)
 	return 0;
@@ -181,9 +179,10 @@ cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   if ((*e)->value.function.isym)
     {
       /* Conversions are handled on the fly by the middle end,
-	 transpose during trans-* stages.  */
+	 transpose during trans-* stages and TRANSFER by the middle end.  */
       if ((*e)->value.function.isym->id == GFC_ISYM_CONVERSION
-	  || (*e)->value.function.isym->id == GFC_ISYM_TRANSPOSE)
+	  || (*e)->value.function.isym->id == GFC_ISYM_TRANSPOSE
+	  || (*e)->value.function.isym->id == GFC_ISYM_TRANSFER)
 	return 0;
 
       /* Don't create an array temporary for elemental functions,

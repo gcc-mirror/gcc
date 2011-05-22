@@ -1,3 +1,9 @@
+2011-05-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (cfe_register_funcs):  Also register
+	character functions if their charlens are known and constant.
+	Also register allocatable functions.
+
 2011-05-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/48699
