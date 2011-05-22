@@ -2266,7 +2266,7 @@ xstormy16_init_builtins (void)
 
       gcc_assert (n_args <= (int) ARRAY_SIZE (args));
 
-      for (a = n_args; a >= 0; a--)
+      for (a = n_args - 1; a >= 0; a--)
 	args[a] = NULL_TREE;
 
       for (a = n_args; a >= 0; a--)
@@ -2284,9 +2284,9 @@ xstormy16_init_builtins (void)
 	  else
 	    args[a-1] = arg;
 	}
-      ftype = build_function_type_list (ret_type, arg[0], arg[1], NULL_TREE);
+      ftype = build_function_type_list (ret_type, args[0], args[1], NULL_TREE);
       add_builtin_function (s16builtins[i].name, ftype,
-			    i, BUILT_IN_MD, NULL, NULL);
+			    i, BUILT_IN_MD, NULL, NULL_TREE);
     }
 }
 
@@ -2407,7 +2407,8 @@ combine_bnp (rtx insn)
     {
       /* LT and GE conditionals should have a sign extend before
 	 them.  */
-      for (and_insn = prev_real_insn (insn); and_insn;
+      for (and_insn = prev_real_insn (insn);
+	   and_insn != NULL_RTX;
 	   and_insn = prev_real_insn (and_insn))
 	{
 	  int and_code = recog_memoized (and_insn);
@@ -2436,7 +2437,8 @@ combine_bnp (rtx insn)
   else
     {
       /* EQ and NE conditionals have an AND before them.  */
-      for (and_insn = prev_real_insn (insn); and_insn;
+      for (and_insn = prev_real_insn (insn);
+	   and_insn != NULL_RTX;
 	   and_insn = prev_real_insn (and_insn))
 	{
 	  if (recog_memoized (and_insn) == CODE_FOR_andhi3
@@ -2481,7 +2483,8 @@ combine_bnp (rtx insn)
 	    }
 	}
     }
-  if (!and_insn)
+
+  if (and_insn == NULL_RTX)
     return;
 
   for (load = shift ? prev_real_insn (shift) : prev_real_insn (and_insn);
