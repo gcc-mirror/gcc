@@ -92,6 +92,19 @@ store_exe_path (const char * argv0)
   if (please_free_exe_path_when_done)
     free ((char *) exe_path);
 
+  /* Reading the /proc/self/exe symlink is Linux-specific(?), but if
+     it works it gives the correct answer.  */
+#ifdef HAVE_READLINK
+  int len;
+  if ((len = readlink ("/proc/self/exe", buf, sizeof (buf) - 1)) != -1)
+    {
+      buf[len] = '\0';
+      exe_path = strdup (buf);
+      please_free_exe_path_when_done = 1;
+      return;
+    }
+#endif
+
   /* On the simulator argv is not set.  */
   if (argv0 == NULL || argv0[0] == '/')
     {
@@ -107,7 +120,9 @@ store_exe_path (const char * argv0)
   cwd = "";
 #endif
 
-  /* exe_path will be cwd + "/" + argv[0] + "\0" */
+  /* exe_path will be cwd + "/" + argv[0] + "\0".  This will not work
+     if the executable is not in the cwd, but at this point we're out
+     of better ideas.  */
   size_t pathlen = strlen (cwd) + 1 + strlen (argv0) + 1;
   path = malloc (pathlen);
   snprintf (path, pathlen, "%s%c%s", cwd, DIR_SEPARATOR, argv0);
