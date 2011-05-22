@@ -1875,8 +1875,6 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
   /* To extract a signed bit-field, first shift its msb to the msb of the word,
      then arithmetic-shift its lsb to the lsb of the word.  */
   op0 = force_reg (mode, op0);
-  if (mode != tmode)
-    target = 0;
 
   /* Find the narrowest integer mode that contains the field.  */
 
@@ -1887,6 +1885,9 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 	op0 = convert_to_mode (mode, op0, 0);
 	break;
       }
+
+  if (mode != tmode)
+    target = 0;
 
   if (GET_MODE_BITSIZE (mode) != (bitsize + bitpos))
     {

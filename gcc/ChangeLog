@@ -1,3 +1,9 @@
+2011-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/49029
+	* expmed.c (extract_fixed_bit_field): Test whether target can be used
+	only after deciding which mode to use.
+
 2011-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (setjmp): Handle PIC mode and use the hard
