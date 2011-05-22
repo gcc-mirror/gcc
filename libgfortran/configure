@@ -16458,7 +16458,7 @@ _ACEOF
 fi
 done
 
-for ac_func in clock_gettime strftime
+for ac_func in clock_gettime strftime readlink
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -16473,7 +16473,7 @@ done
 
 
 # Check for glibc backtrace functions
-for ac_func in backtrace backtrace_symbols
+for ac_func in backtrace backtrace_symbols_fd
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
