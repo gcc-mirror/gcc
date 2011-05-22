@@ -1,36 +1,40 @@
+2011-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	* runtime/stop.c (stop_string,error_stop_string): Minor cleanup.
+
 2011-05-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/48931
-        * configure.ac: Check for backtrace_symbols_fd instead of
+	PR libfortran/48931
+	* configure.ac: Check for backtrace_symbols_fd instead of
 	backtrace_symbols, check for readlink.
-        * config.h.in: Regenerated.
-        * configure: Regenerated.
-        * runtime/backtrace.c (local_strcasestr): Remove.
-        (bt_header): New function.
-        (dump_glibc_backtrace): Remove.
-        (fd_gets): New function.
-        (show_backtrace): Rework to use backtrace_symbols_fd and pipes
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* runtime/backtrace.c (local_strcasestr): Remove.
+	(bt_header): New function.
+	(dump_glibc_backtrace): Remove.
+	(fd_gets): New function.
+	(show_backtrace): Rework to use backtrace_symbols_fd and pipes
 	avoiding functions that are not async-signal-safe, reformat
 	output.
-        * runtime/main.c (store_exe_path): Try to check /proc/self/exe
+	* runtime/main.c (store_exe_path): Try to check /proc/self/exe
 	first.
 
 2011-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
-        Uros Bizjak  <ubizjak@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
-        PR libfortran/48977
-        * configure.host: Swap order of glibc and x86 tests.
+	PR libfortran/48977
+	* configure.host: Swap order of glibc and x86 tests.
 
 2011-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * config/fpu-387.h (set_fpu): Use renamed inexact macro.
-        * config/fpu-aix.h (set_fpu): Clarify error messages, use renamed
-        inexact macro, set TRP_INEXACT for inexact exception instead of
-        TRP_UNDERFLOW.
-        * config/fpu-generic.h (set_fpu): Clarify error messages, use
-        renamed inexact macro.
-        * config/fpu-glibc.h (set_fpu): Likewise.
-        * config/fpu-sysv.h (set_fpu): Likewise.
+	* config/fpu-387.h (set_fpu): Use renamed inexact macro.
+	* config/fpu-aix.h (set_fpu): Clarify error messages, use renamed
+	inexact macro, set TRP_INEXACT for inexact exception instead of
+	TRP_UNDERFLOW.
+	* config/fpu-generic.h (set_fpu): Clarify error messages, use
+	renamed inexact macro.
+	* config/fpu-glibc.h (set_fpu): Likewise.
+	* config/fpu-sysv.h (set_fpu): Likewise.
 
 2011-05-14  Tobias Burnus  <burnus@net-b.de>
 
