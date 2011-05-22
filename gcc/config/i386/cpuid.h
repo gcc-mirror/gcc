@@ -57,6 +57,7 @@
 #define bit_TBM         (1 << 21)
 
 /* %edx */
+#define bit_MMXEXT	(1 << 22)
 #define bit_LM		(1 << 29)
 #define bit_3DNOWP	(1 << 30)
 #define bit_3DNOW	(1 << 31)

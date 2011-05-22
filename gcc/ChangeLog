@@ -1,3 +1,8 @@
+2011-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49104
+	* config/i386/cpuid.h (bit_MMXEXT): New define.
+
 2011-05-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.c (xstormy16_init_builtins): prevent
@@ -7,8 +12,7 @@
 2011-05-22  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49087
-	* tree-vect-loop.c (vect_is_slp_reduction): Fail if
-	LHS has no uses.
+	* tree-vect-loop.c (vect_is_slp_reduction): Fail if LHS has no uses.
 
 2011-05-21  Jason Merrill  <jason@redhat.com>
 
@@ -45,8 +49,7 @@
 	* opt-read.awk: New.  Split out of optc-gen.awk and opth-gen.awk.
 	* optc-gen.awk: Move common code to opt-read.awk.
 	* opth-gen.awk: Likewise.
-	* Makefile.in (options.c, s-options-h): Update to use
-	opt-read.awk.
+	* Makefile.in (options.c, s-options-h): Update to use opt-read.awk.
 
 2011-05-20  Nathan Froyd  <froydnj@codesourcery.com>
 
