@@ -9,7 +9,7 @@
 # Contents:
 #   Script to create a GCC release.
 #
-# Copyright (c) 2001, 2002, 2006, 2009, 2010 Free Software Foundation.
+# Copyright (c) 2001, 2002, 2006, 2009, 2010, 2011 Free Software Foundation.
 #
 # This file is part of GCC.
 #
@@ -87,16 +87,6 @@ EOF
 changedir() {
   cd $1 || \
     error "Could not change directory to $1"
-}
-
-# Each of the arguments is a directory name, relative to the top
-# of the source tree.  Return another name for that directory, relative
-# to the working directory.
-
-adjust_dirs() {
-  for x in $@; do
-    echo `basename ${SOURCE_DIRECTORY}`/$x
-  done
 }
 
 # Build the source tree that will be the basis for the release
@@ -247,19 +237,6 @@ build_tarfile() {
   FILE_LIST="${FILE_LIST} ${TARFILE}"
 }
 
-# Build a single tarfile if any of the directories listed exist,
-# but not if none of them do (because that component doesn't exist
-# on this branch).
-maybe_build_tarfile() {
-  dest=$1
-  shift
-  if [ $# != 0 -a -d "$1" ]; then
-    build_tarfile "$dest" "$@"
-  else
-    echo "Not building $dest tarfile"
-  fi
-}
-
 # Build the various tar files for the release.
 
 build_tarfiles() {
@@ -275,24 +252,6 @@ build_tarfiles() {
  
   # Build one huge tarfile for the entire distribution.
   build_tarfile gcc-${RELEASE} `basename ${SOURCE_DIRECTORY}`
-
-  # Now, build one for each of the languages.
-  maybe_build_tarfile gcc-ada-${RELEASE} ${ADA_DIRS}
-  maybe_build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
-  maybe_build_tarfile gcc-fortran-${RELEASE} ${FORTRAN95_DIRS}
-  maybe_build_tarfile gcc-go-${RELEASE} ${GO_DIRS}
-  maybe_build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
-  maybe_build_tarfile gcc-objc-${RELEASE} ${OBJECTIVEC_DIRS}
-  maybe_build_tarfile gcc-testsuite-${RELEASE} ${TESTSUITE_DIRS}
-   
-  # The core is everything else.
-  EXCLUDES=""
-  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN95_DIRS}\
-	   ${GO_DIRS} ${JAVA_DIRS} ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
-    EXCLUDES="${EXCLUDES} --exclude $x"
-  done
-  build_tarfile gcc-core-${RELEASE} ${EXCLUDES} \
-    `basename ${SOURCE_DIRECTORY}`
 }
 
 # Build .gz files.
@@ -310,7 +269,7 @@ build_diffs() {
   old_vers=${old_file%.tar.bz2}
   old_vers=${old_vers#gcc-}
   inform "Building diffs against version $old_vers"
-  for f in gcc gcc-ada gcc-g++ gcc-fortran gcc-go gcc-java gcc-objc gcc-testsuite gcc-core; do
+  for f in gcc; do
     old_tar=${old_dir}/${f}-${old_vers}.tar.bz2
     new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.bz2
     if [ ! -e $old_tar ]; then
@@ -435,15 +394,7 @@ with the following options: <code>"svn://gcc.gnu.org/svn/gcc/${SVNBRANCH} revisi
 
 <table>" > ${SNAPSHOT_INDEX}
        
-  snapshot_print gcc-${RELEASE}.tar.bz2 "Complete GCC (includes all of below)"
-  snapshot_print gcc-core-${RELEASE}.tar.bz2 "C front end and core compiler"
-  snapshot_print gcc-ada-${RELEASE}.tar.bz2 "Ada front end and runtime"
-  snapshot_print gcc-fortran-${RELEASE}.tar.bz2 "Fortran front end and runtime"
-  snapshot_print gcc-g++-${RELEASE}.tar.bz2 "C++ front end and runtime"
-  snapshot_print gcc-go-${RELEASE}.tar.bz2 "Go front end and runtime"
-  snapshot_print gcc-java-${RELEASE}.tar.bz2 "Java front end and runtime"
-  snapshot_print gcc-objc-${RELEASE}.tar.bz2 "Objective-C front end and runtime"
-  snapshot_print gcc-testsuite-${RELEASE}.tar.bz2 "The GCC testsuite"
+  snapshot_print gcc-${RELEASE}.tar.bz2 "Complete GCC"
 
   echo \
 "Diffs from "${BRANCH}"-"${LAST_DATE}" are available in the diffs/ subdirectory.
@@ -542,16 +493,6 @@ DESTINATION=${HOME}
 WORKING_DIRECTORY=""
 # The directory that will contain the GCC sources.
 SOURCE_DIRECTORY=""
-
-# The directories that should be part of the various language-specific
-# tar files.  These are all relative to the top of the source tree.
-ADA_DIRS="gcc/ada libada gnattools"
-CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
-FORTRAN95_DIRS="gcc/fortran libgfortran"
-GO_DIRS="gcc/go libgo libffi"
-JAVA_DIRS="gcc/java libjava libffi boehm-gc"
-OBJECTIVEC_DIRS="gcc/objc gcc/objcp libobjc"
-TESTSUITE_DIRS="gcc/testsuite"
 
 # Non-zero if this is the final release, rather than a prerelease.
 FINAL=0
@@ -689,16 +630,6 @@ fi
 # Compute the name of the WORKING_DIRECTORY and the SOURCE_DIRECTORY.
 WORKING_DIRECTORY="${DESTINATION}/gcc-${RELEASE}"
 SOURCE_DIRECTORY="${WORKING_DIRECTORY}/gcc-${RELEASE}"
-
-# Recompute the names of all the language-specific directories,
-# relative to the WORKING_DIRECTORY.
-ADA_DIRS=`adjust_dirs ${ADA_DIRS}`
-CPLUSPLUS_DIRS=`adjust_dirs ${CPLUSPLUS_DIRS}`
-FORTRAN95_DIRS=`adjust_dirs ${FORTRAN95_DIRS}`
-GO_DIRS=`adjust_dirs ${GO_DIRS}`
-JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
-OBJECTIVEC_DIRS=`adjust_dirs ${OBJECTIVEC_DIRS}`
-TESTSUITE_DIRS=`adjust_dirs ${TESTSUITE_DIRS}`
 
 # Set up SVNROOT.
 if [ $LOCAL -eq 0 ]; then
