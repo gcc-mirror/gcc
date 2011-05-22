@@ -1,3 +1,14 @@
+2011-05-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_release (adjust_dirs, maybe_build_tarfile): Remove.
+	(build_tarfiles): Don't build separate files for languages and
+	core.
+	(build_diffs): Only build one set of diffs.
+	(announce_snapshot): Only announce one tar file.
+	(ADA_DIRS, CPLUSPLUS_DIRS, FORTRAN95_DIRS, GO_DIRS, JAVA_DIRS,
+	OBJECTIVEC_DIRS, TESTSUITE_DIRS): Remove.  Don't adjust names
+	relative to WORKING_DIRECTORY.
+
 2011-04-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc_release (maybe_build_tarfile): Don't build a tarfile if
