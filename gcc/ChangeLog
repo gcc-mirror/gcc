@@ -1,3 +1,9 @@
+2011-05-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_init_builtins): prevent
+	initialisation of non-existant args[2] element.  Use args[] array
+	not arg[] array to pass arguments to build_function_type_list.
+
 2011-05-22  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49087
