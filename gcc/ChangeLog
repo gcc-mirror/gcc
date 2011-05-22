@@ -1,3 +1,9 @@
+2011-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgcleanup.c (try_forward_edges): Do not update BB_FORWARDER_BLOCK.
+	(try_optimize_cfg): Update BB_FORWARDER_BLOCK if try_forward_edges
+	returns true.
+
 2011-05-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_default_arch): Honor MIPS_ISA_DEFAULT.
