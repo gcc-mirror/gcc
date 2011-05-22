@@ -3685,7 +3685,7 @@ force_expr_to_var_cost (tree expr, bool speed)
             mult = op0;
 
           if (mult != NULL_TREE
-              && TREE_CODE (TREE_OPERAND (mult, 1)) == INTEGER_CST
+              && cst_and_fits_in_hwi (TREE_OPERAND (mult, 1))
               && get_shiftadd_cost (expr, mode, cost0, cost1, mult, speed,
                                     &sa_cost))
             return sa_cost;
