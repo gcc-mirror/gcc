@@ -1,3 +1,8 @@
+2011-05-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/47315
+	* gcc.target/i386/pr47315.c: New test.
+
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-eh2.C: New.

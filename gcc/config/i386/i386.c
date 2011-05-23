@@ -4191,11 +4191,6 @@ ix86_option_override_internal (bool main_args_p)
 #endif
    }
 
-  /* Save the initial options in case the user does function specific options */
-  if (main_args_p)
-    target_option_default_node = target_option_current_node
-      = build_target_option_node ();
-
   if (TARGET_AVX)
     {
       /* When not optimize for size, enable vzeroupper optimization for
@@ -4217,6 +4212,12 @@ ix86_option_override_internal (bool main_args_p)
       /* Disable vzeroupper pass if TARGET_AVX is disabled.  */
       target_flags &= ~MASK_VZEROUPPER;
     }
+
+  /* Save the initial options in case the user does function specific
+     options.  */
+  if (main_args_p)
+    target_option_default_node = target_option_current_node
+      = build_target_option_node ();
 }
 
 /* Return TRUE if VAL is passed in register with 256bit AVX modes.  */
