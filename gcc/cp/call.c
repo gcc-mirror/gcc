@@ -3009,6 +3009,11 @@ splice_viable (struct z_candidate *cands,
   struct z_candidate **last_viable;
   struct z_candidate **cand;
 
+  /* Be strict inside templates, since build_over_call won't actually
+     do the conversions to get pedwarns.  */
+  if (processing_template_decl)
+    strict_p = true;
+
   viable = NULL;
   last_viable = &viable;
   *any_viable_p = false;
