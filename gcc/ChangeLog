@@ -1,3 +1,9 @@
+2011-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgexpand.c (expand_debug_expr): For unused non-addressable
+	parameters passed in memory prefer using DECL_INCOMING_RTL over
+	the pseudos it will be copied into.
+
 2011-05-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/47315
