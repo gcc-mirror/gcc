@@ -1,3 +1,9 @@
+2011-05-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/48826
+	* emit-rtl.c (try_split): When splitting a call that is followed
+	by a NOTE_INSN_CALL_ARG_LOCATION, move the note after the new call.
+
 2011-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgexpand.c (expand_debug_expr): For unused non-addressable
