@@ -1,3 +1,8 @@
+2011-05-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/45098
+	* gcc.target/arm/ivopts-6.c: New test.
+
 2011-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49029
