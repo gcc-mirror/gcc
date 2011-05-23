@@ -2832,6 +2832,54 @@ infer_loop_bounds_from_array (struct loop *loop, gimple stmt, bool reliable)
 }
 
 /* Determine information about number of iterations of a LOOP from the fact
+   that pointer arithmetics in STMT does not overflow.  */
+
+static void
+infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple stmt)
+{
+  tree def, base, step, scev, type, low, high;
+  tree var, ptr;
+
+  if (!is_gimple_assign (stmt)
+      || gimple_assign_rhs_code (stmt) != POINTER_PLUS_EXPR)
+    return;
+
+  def = gimple_assign_lhs (stmt);
+  if (TREE_CODE (def) != SSA_NAME)
+    return;
+
+  type = TREE_TYPE (def);
+  if (!nowrap_type_p (type))
+    return;
+
+  ptr = gimple_assign_rhs1 (stmt);
+  if (!expr_invariant_in_loop_p (loop, ptr))
+    return;
+
+  var = gimple_assign_rhs2 (stmt);
+  if (TYPE_PRECISION (type) != TYPE_PRECISION (TREE_TYPE (var)))
+    return;
+
+  scev = instantiate_parameters (loop, analyze_scalar_evolution (loop, def));
+  if (chrec_contains_undetermined (scev))
+    return;
+
+  base = initial_condition_in_loop_num (scev, loop->num);
+  step = evolution_part_in_loop_num (scev, loop->num);
+
+  if (!base || !step
+      || TREE_CODE (step) != INTEGER_CST
+      || tree_contains_chrecs (base, NULL)
+      || chrec_contains_symbols_defined_in_loop (base, loop->num))
+    return;
+
+  low = lower_bound_in_type (type, type);
+  high = upper_bound_in_type (type, type);
+
+  record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
+}
+
+/* Determine information about number of iterations of a LOOP from the fact
    that signed arithmetics in STMT does not overflow.  */
 
 static void
@@ -2907,7 +2955,10 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 	  infer_loop_bounds_from_array (loop, stmt, reliable);
 
 	  if (reliable)
-	    infer_loop_bounds_from_signedness (loop, stmt);
+            {
+              infer_loop_bounds_from_signedness (loop, stmt);
+              infer_loop_bounds_from_pointer_arith (loop, stmt);
+            }
   	}
 
     }
