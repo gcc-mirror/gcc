@@ -1,3 +1,10 @@
+2011-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/streambuf_iterator.h: Use noexcept per the FDIS.
+	(istreambuf_iterator<>::istreambuf_iterator(const
+	istreambuf_iterator&),  ~istreambuf_iterator()): Add defaulted
+	in C++0x mode.
+
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/exception_ptr.h: Fix compilation in C++0x mode.
