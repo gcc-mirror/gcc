@@ -1,3 +1,17 @@
+2011-05-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/bind/cv_quals_2.cc: New.
+
+2011-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49058
+	* include/std/functional (_Bind<_Functor(_Bound_args...)>::
+	operator()(_Args&&...)): Don't cv qualify _Functor directly
+	in the default template argument, SFINAE doesn't apply when
+	the functor has no arguments.
+	* testsuite/20_util/bind/49058_1.cc: New.
+	* testsuite/20_util/bind/49058_2.cc: Likewise.
+
 2011-05-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/status_cxx200x.xml: Update to reflect current status
