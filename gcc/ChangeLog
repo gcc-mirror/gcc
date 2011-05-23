@@ -1,3 +1,9 @@
+2011-05-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/47315
+	* config/i386/i386.c (ix86_option_override_internal): Save the
+	initial options after checking vzeroupper.
+
 2011-05-23  David Li  <davidxl@google.com>
 
 	PR tree-optimization/48988
