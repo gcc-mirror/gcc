@@ -3160,6 +3160,20 @@ expand_debug_expr (tree exp)
 			ENTRY_VALUE_EXP (op0) = incoming;
 			goto adjust_mode;
 		      }
+		    if (incoming
+			&& MEM_P (incoming)
+			&& !TREE_ADDRESSABLE (SSA_NAME_VAR (exp))
+			&& GET_MODE (incoming) != BLKmode
+			&& (XEXP (incoming, 0) == virtual_incoming_args_rtx
+			    || (GET_CODE (XEXP (incoming, 0)) == PLUS
+				&& XEXP (XEXP (incoming, 0), 0)
+				   == virtual_incoming_args_rtx
+				&& CONST_INT_P (XEXP (XEXP (incoming, 0),
+						      1)))))
+		      {
+			op0 = incoming;
+			goto adjust_mode;
+		      }
 		    op0 = expand_debug_expr (SSA_NAME_VAR (exp));
 		    if (!op0)
 		      return NULL;
