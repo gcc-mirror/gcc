@@ -3271,8 +3271,7 @@ cp_build_function_call_vec (tree function, VEC(tree,gc) **params,
 
   /* Check for errors in format strings and inappropriately
      null parameters.  */
-  check_function_arguments (TYPE_ATTRIBUTES (fntype), nargs, argarray,
-			    parm_types);
+  check_function_arguments (fntype, nargs, argarray);
 
   ret = build_cxx_call (function, nargs, argarray);
 
