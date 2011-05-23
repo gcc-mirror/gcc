@@ -1,5 +1,9 @@
 2011-05-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR lto/49123
+	* fold-const.c (constant_boolean_node): If type is non-NULL,
+	use build_int_cst_type instead of build_int_cst.
+
 	PR debug/49032
 	* dbxout.c: Include cgraph.h.
 	(dbxout_expand_expr): If a VAR_DECL is TREE_STATIC, not written

@@ -5953,8 +5953,10 @@ constant_boolean_node (int value, tree type)
     return value ? integer_one_node : integer_zero_node;
   else if (type == boolean_type_node)
     return value ? boolean_true_node : boolean_false_node;
+  else if (type)
+    return build_int_cst_type (type, value);
   else
-    return build_int_cst (type, value);
+    return build_int_cst (NULL_TREE, value);
 }
 
 
