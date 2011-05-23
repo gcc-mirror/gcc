@@ -1,5 +1,7 @@
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/sfinae25.C: New.
+
 	* g++.dg/cpp0x/rv-cast2.C: New.
 
 	* g++.dg/cpp0x/enum14.C: New.

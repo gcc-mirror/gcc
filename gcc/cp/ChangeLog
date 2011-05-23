@@ -1,6 +1,11 @@
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49105
+	* typeck.c (cp_build_c_cast): Don't strip cv-quals when
+	converting to reference.
+	(build_static_cast_1): Update for glvalues.
+
+	PR c++/49105
 	* typeck.c (build_const_cast_1): Handle rvalue references.
 
 	PR c++/47263
