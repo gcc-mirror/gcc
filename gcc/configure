@@ -10794,8 +10794,8 @@ case ${enable_threads} in
     # default
     target_thread_file='single'
     ;;
-  aix | dce | gnat | irix | posix | posix95 | rtems | \
-  single | vxworks | win32 | mipssde)
+  aix | dce | gnat | lynx | mipssde | nks | posix | posix95 | rtems | \
+  single | tpf | vxworks | win32)
     target_thread_file=${enable_threads}
     ;;
   *)
