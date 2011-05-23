@@ -1,3 +1,7 @@
+2011-05-23  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/exception_ptr.h: Fix compilation in C++0x mode.
+
 2011-05-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/bind/cv_quals_2.cc: New.
