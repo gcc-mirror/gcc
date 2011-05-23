@@ -1,3 +1,8 @@
+2011-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/49120
+	* gcc.dg/pr49120.c: New test.
+
 2011-05-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/47315
