@@ -1,7 +1,7 @@
 /* Output dbx-format symbol table information from GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -91,6 +91,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "obstack.h"
 #include "expr.h"
+#include "cgraph.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -2393,6 +2394,20 @@ dbxout_expand_expr (tree expr)
 	 disable debug info for these variables.  */
       if (!targetm.have_tls && DECL_THREAD_LOCAL_P (expr))
 	return NULL;
+      if (TREE_STATIC (expr)
+	  && !TREE_ASM_WRITTEN (expr)
+	  && !DECL_HAS_VALUE_EXPR_P (expr)
+	  && !TREE_PUBLIC (expr)
+	  && DECL_RTL_SET_P (expr)
+	  && MEM_P (DECL_RTL (expr)))
+	{
+	  /* If this is a var that might not be actually output,
+	     return NULL, otherwise stabs might reference an undefined
+	     symbol.  */
+	  struct varpool_node *node = varpool_get_node (expr);
+	  if (!node || !node->needed)
+	    return NULL;
+	}
       /* FALLTHRU */
 
     case PARM_DECL:

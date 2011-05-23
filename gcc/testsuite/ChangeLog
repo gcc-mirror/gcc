@@ -1,5 +1,8 @@
 2011-05-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/49032
+	* gcc.dg/debug/pr49032.c: New test.
+
 	PR c/49120
 	* gcc.dg/pr49120.c: New test.
 
