@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2004, 2009, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2004, 2009, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -32,8 +32,6 @@ gcov-io.h
 gcov-iov.c
 gthr-aix.h
 gthr-dce.h
-gthr-gnat.c
-gthr-gnat.h
 gthr-posix.c
 gthr-posix.h
 gthr-rtems.h
