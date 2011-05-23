@@ -1,3 +1,9 @@
+2011-05-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48106
+	* c-common.c (c_common_get_narrower): New.
+	(shorten_binary_op, shorten_compare, warn_for_sign_compare): Use it.
+
 2011-05-23  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.h (check_function_arguments): Tweak prototype of

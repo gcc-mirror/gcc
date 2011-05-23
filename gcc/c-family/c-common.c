@@ -1765,6 +1765,28 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
   return false;
 }
 
+/* Like tree.c:get_narrower, but retain conversion from C++0x scoped enum
+   to integral type.  */
+
+static tree
+c_common_get_narrower (tree op, int *unsignedp_ptr)
+{
+  op = get_narrower (op, unsignedp_ptr);
+
+  if (TREE_CODE (TREE_TYPE (op)) == ENUMERAL_TYPE
+      && ENUM_IS_SCOPED (TREE_TYPE (op)))
+    {
+      /* C++0x scoped enumerations don't implicitly convert to integral
+	 type; if we stripped an explicit conversion to a larger type we
+	 need to replace it so common_type will still work.  */
+      tree type = (lang_hooks.types.type_for_size
+		   (TYPE_PRECISION (TREE_TYPE (op)),
+		    TYPE_UNSIGNED (TREE_TYPE (op))));
+      op = fold_convert (type, op);
+    }
+  return op;
+}
+
 /* This is a helper function of build_binary_op.
 
    For certain operations if both args were extended from the same
@@ -1777,7 +1799,8 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
    Eg, (short)-1 | (unsigned short)-1 is (int)-1
    but calculated in (unsigned short) it would be (unsigned short)-1.
 */
-tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
+tree
+shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
 {
   int unsigned0, unsigned1;
   tree arg0, arg1;
@@ -1803,8 +1826,8 @@ tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
   op0 = convert (result_type, op0);
   op1 = convert (result_type, op1);
 
-  arg0 = get_narrower (op0, &unsigned0);
-  arg1 = get_narrower (op1, &unsigned1);
+  arg0 = c_common_get_narrower (op0, &unsigned0);
+  arg1 = c_common_get_narrower (op1, &unsigned1);
 
   /* UNS is 1 if the operation to be done is an unsigned one.  */
   uns = TYPE_UNSIGNED (result_type);
@@ -3301,8 +3324,8 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   /* Throw away any conversions to wider types
      already present in the operands.  */
 
-  primop0 = get_narrower (op0, &unsignedp0);
-  primop1 = get_narrower (op1, &unsignedp1);
+  primop0 = c_common_get_narrower (op0, &unsignedp0);
+  primop1 = c_common_get_narrower (op1, &unsignedp1);
 
   /* If primopN is first sign-extended from primopN's precision to opN's
      precision, then zero-extended from opN's precision to
@@ -9371,16 +9394,16 @@ warn_for_sign_compare (location_t location,
      have all bits set that are set in the ~ operand when it is
      extended.  */
 
-  op0 = get_narrower (op0, &unsignedp0);
-  op1 = get_narrower (op1, &unsignedp1);
+  op0 = c_common_get_narrower (op0, &unsignedp0);
+  op1 = c_common_get_narrower (op1, &unsignedp1);
 
   if ((TREE_CODE (op0) == BIT_NOT_EXPR)
       ^ (TREE_CODE (op1) == BIT_NOT_EXPR))
     {
       if (TREE_CODE (op0) == BIT_NOT_EXPR)
-	op0 = get_narrower (TREE_OPERAND (op0, 0), &unsignedp0);
+	op0 = c_common_get_narrower (TREE_OPERAND (op0, 0), &unsignedp0);
       if (TREE_CODE (op1) == BIT_NOT_EXPR)
-	op1 = get_narrower (TREE_OPERAND (op1, 0), &unsignedp1);
+	op1 = c_common_get_narrower (TREE_OPERAND (op1, 0), &unsignedp1);
 
       if (host_integerp (op0, 0) || host_integerp (op1, 0))
         {
