@@ -1,0 +1,21 @@
+// Test for const_cast to reference (5.2.11/4).
+// { dg-options -std=c++0x }
+
+template <class T> T&& xval();
+template <class T> T& lval();
+template <class T> T prval();
+
+struct A { };
+
+int main()
+{
+  const_cast<int&>(lval<int>());
+  const_cast<int&>(xval<int>());   // { dg-error "" }
+  const_cast<int&>(prval<int>());  // { dg-error "" }
+  const_cast<int&&>(lval<int>());
+  const_cast<int&&>(xval<int>());
+  const_cast<int&&>(prval<int>()); // { dg-error "" }
+  const_cast<A&&>(lval<A>());
+  const_cast<A&&>(xval<A>());
+  const_cast<A&&>(prval<A>());
+}
