@@ -1,5 +1,9 @@
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47263
+	* decl.c (use_eh_spec_block): Do use an EH spec block for a
+	lambda op().
+
 	PR c++/49058
 	* call.c (splice_viable): Be strict in templates.
 
