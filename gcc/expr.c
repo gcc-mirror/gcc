@@ -8134,7 +8134,10 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       op1 = gen_label_rtx ();
       jumpifnot_1 (code, treeop0, treeop1, op1, -1);
 
-      emit_move_insn (target, const1_rtx);
+      if (TYPE_PRECISION (type) == 1 && !TYPE_UNSIGNED (type))
+	emit_move_insn (target, constm1_rtx);
+      else
+	emit_move_insn (target, const1_rtx);
 
       emit_label (op1);
       return target;
@@ -10088,7 +10091,8 @@ do_store_flag (sepops ops, rtx target, enum machine_mode mode)
 
   if ((code == NE || code == EQ)
       && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
-      && integer_pow2p (TREE_OPERAND (arg0, 1)))
+      && integer_pow2p (TREE_OPERAND (arg0, 1))
+      && (TYPE_PRECISION (ops->type) != 1 || TYPE_UNSIGNED (ops->type)))
     {
       tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
       return expand_expr (fold_single_bit_test (loc,
@@ -10108,7 +10112,9 @@ do_store_flag (sepops ops, rtx target, enum machine_mode mode)
 
   /* Try a cstore if possible.  */
   return emit_store_flag_force (target, code, op0, op1,
-			        operand_mode, unsignedp, 1);
+				operand_mode, unsignedp,
+				(TYPE_PRECISION (ops->type) == 1
+				 && !TYPE_UNSIGNED (ops->type)) ? -1 : 1);
 }
 
 

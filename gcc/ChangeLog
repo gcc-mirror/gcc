@@ -1,3 +1,13 @@
+2011-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48973
+	* expr.c (expand_expr_real_2) <case LT_EXPR>: If do_store_flag
+	failed and the comparison has a single bit signed type, use
+	constm1_rtx instead of const1_rtx for true value.
+	(do_store_flag): If ops->type is single bit signed type, disable
+	signel bit test optimization and pass -1 instead of 1 as last
+	parameter to emit_store_flag_force.
+
 2011-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config.gcc (sparc-*-elf*): Add sparc/t-crtin.

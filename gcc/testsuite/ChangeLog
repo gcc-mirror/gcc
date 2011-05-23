@@ -1,3 +1,9 @@
+2011-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48973
+	* gcc.c-torture/execute/pr48973-1.c: New test.
+	* gcc.c-torture/execute/pr48973-2.c: New test.
+
 2011-05-22  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/sfinae23.C: New.
