@@ -8509,6 +8509,9 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	 Perhaps we ought to inherit type from non-VOID argument here?  */
       STRIP_NOPS (src);
       STRIP_NOPS (dest);
+      if (!POINTER_TYPE_P (TREE_TYPE (src))
+	  || !POINTER_TYPE_P (TREE_TYPE (dest)))
+	return NULL_TREE;
       /* As we fold (void *)(p + CST) to (void *)p + CST undo this here.  */
       if (TREE_CODE (src) == POINTER_PLUS_EXPR)
 	{
@@ -8525,8 +8528,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	    dest = build1 (NOP_EXPR, TREE_TYPE (tem), dest);
 	}
       srctype = TREE_TYPE (TREE_TYPE (src));
-      if (srctype
-	  && TREE_CODE (srctype) == ARRAY_TYPE
+      if (TREE_CODE (srctype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
 	{
 	  srctype = TREE_TYPE (srctype);
@@ -8534,21 +8536,15 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  src = build1 (NOP_EXPR, build_pointer_type (srctype), src);
 	}
       desttype = TREE_TYPE (TREE_TYPE (dest));
-      if (desttype
-	  && TREE_CODE (desttype) == ARRAY_TYPE
+      if (TREE_CODE (desttype) == ARRAY_TYPE
 	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
 	{
 	  desttype = TREE_TYPE (desttype);
 	  STRIP_NOPS (dest);
 	  dest = build1 (NOP_EXPR, build_pointer_type (desttype), dest);
 	}
-      if (!srctype || !desttype
-	  || TREE_ADDRESSABLE (srctype)
-	  || TREE_ADDRESSABLE (desttype)
-	  || !TYPE_SIZE_UNIT (srctype)
-	  || !TYPE_SIZE_UNIT (desttype)
-	  || TREE_CODE (TYPE_SIZE_UNIT (srctype)) != INTEGER_CST
-	  || TREE_CODE (TYPE_SIZE_UNIT (desttype)) != INTEGER_CST)
+      if (TREE_ADDRESSABLE (srctype)
+	  || TREE_ADDRESSABLE (desttype))
 	return NULL_TREE;
 
       src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
