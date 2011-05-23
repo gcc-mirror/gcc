@@ -1,3 +1,13 @@
+2011-05-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR rtl-optimization/49007
+	Backport from mainline:
+	2009-11-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/40086
+	* reorg.c (relax_delay_slots): When looking for redundant insn at
+	the branch target, use next_real_insn, not next_active_insn.
+
 2011-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (setjmp): Handle PIC mode and use the hard
