@@ -680,7 +680,7 @@ CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 
 # Additional sources to handle exceptions; overridden by targets as needed.
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
-   $(srcdir)/unwind-sjlj.c $(srcdir)/gthr-gnat.c $(srcdir)/unwind-c.c
+   $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
 LIB2ADDEHSTATIC = $(LIB2ADDEH)
 LIB2ADDEHSHARED = $(LIB2ADDEH)
 LIB2ADDEHDEP = $(UNWIND_H) unwind-pe.h unwind.inc unwind-dw2-fde.h unwind-dw2.h

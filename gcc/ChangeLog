@@ -1,3 +1,16 @@
+2011-05-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gthr-gnat.c: Remove.
+	* gthr-gnat.h: Remove.
+	* Makefile.in (LIB2ADDEH): Remove $(srcdir)/gthr-gnat.c.
+	* config/t-freebsd (LIB2ADDEH): Likewise.
+	* config/t-linux (LIB2ADDEH): Likewise.
+	* config/t-sol2 (LIB2ADDEH): Likewise.
+	* config/ia64/t-vms (LIB2ADDEH): Likewise.
+	* configure.ac (target_thread_file): Remove gnat handling.
+	* configure: Regenerate.
+	* doc/install.texi (Configuration, --enable-threads): Remove gnat.
+
 2011-05-23  Tristan Gingold  <gingold@adacore.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 

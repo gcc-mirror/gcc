@@ -1106,12 +1106,6 @@ like C++ and Java.  The possibilities for @var{lib} are:
 AIX thread support.
 @item dce
 DCE thread support.
-@item gnat
-Ada tasking support.  For non-Ada programs, this setting is equivalent
-to @samp{single}.  When used in conjunction with the Ada run time, it
-causes GCC to use the same thread primitives as Ada uses.  This option
-is necessary when using both Ada and the back end exception handling,
-which is the default for most Ada targets.
 @item lynx
 LynxOS thread support.
 @item mipssde
