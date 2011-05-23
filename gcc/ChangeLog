@@ -1,3 +1,9 @@
+2011-05-23  David Li  <davidxl@google.com>
+
+	PR tree-optimization/48988
+	* tree-ssa-uninit.c (convert_control_dep_chain_into_preds):
+	Initialize has_valid_pred for each pred chain.
+
 2011-05-23  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_types_compatible_p_1): Always compare type names.
