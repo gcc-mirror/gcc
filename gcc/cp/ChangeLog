@@ -1,5 +1,8 @@
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49058
+	* call.c (splice_viable): Be strict in templates.
+
 	PR c++/47336
 	* error.c (dump_template_bindings): Suppress access control.
 
