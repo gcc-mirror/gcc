@@ -5768,11 +5768,11 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       return convert_from_reference (rvalue (cp_fold_convert (type, expr)));
     }
 
-  /* "An lvalue of type cv1 T1 can be cast to type rvalue reference to
+  /* "A glvalue of type cv1 T1 can be cast to type rvalue reference to
      cv2 T2 if cv2 T2 is reference-compatible with cv1 T1 (8.5.3)."  */
   if (TREE_CODE (type) == REFERENCE_TYPE
       && TYPE_REF_IS_RVALUE (type)
-      && real_lvalue_p (expr)
+      && lvalue_or_rvalue_with_address_p (expr)
       && reference_related_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
@@ -6448,7 +6448,7 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
       if (!CLASS_TYPE_P (type))
 	type = TYPE_MAIN_VARIANT (type);
       result_type = TREE_TYPE (result);
-      if (!CLASS_TYPE_P (result_type))
+      if (!CLASS_TYPE_P (result_type) && TREE_CODE (type) != REFERENCE_TYPE)
 	result_type = TYPE_MAIN_VARIANT (result_type);
       /* If the type of RESULT does not match TYPE, perform a
 	 const_cast to make it match.  If the static_cast or
