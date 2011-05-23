@@ -1,5 +1,12 @@
 2011-05-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/49032
+	* dbxout.c: Include cgraph.h.
+	(dbxout_expand_expr): If a VAR_DECL is TREE_STATIC, not written
+	and without value expr, return NULL if no varpool node exists for
+	it or if it is not needed.
+	* Makefile.in (dbxout.o): Depend on $(CGRAPH_H).
+
 	PR c/49120
 	* c-decl.c (start_decl): Convert expr to void_type_node.
 
