@@ -1,3 +1,9 @@
+2011-05-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/15419
+	* builtins.c (fold_builtin_memory_op): Be less restrictive about
+	what pointer types we accept for folding.
+
 2011-05-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gthr-gnat.c: Remove.
