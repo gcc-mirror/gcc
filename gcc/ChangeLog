@@ -1,5 +1,8 @@
 2011-05-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/49120
+	* c-decl.c (start_decl): Convert expr to void_type_node.
+
 	PR middle-end/48973
 	* expr.c (expand_expr_real_2) <case LT_EXPR>: If do_store_flag
 	failed and the comparison has a single bit signed type, use
