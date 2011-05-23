@@ -1,3 +1,11 @@
+2011-05-23  Gary Funck  <gary@intrepid.com>
+
+	* upc-pts-struct.c: Revert to code that aligned the
+	  internal pointer-to-shared representation to
+	  twice the alignment of a pointer.  This fixes
+	  an ICE that occurred when building the compiler
+	  on an IA64 target.
+
 2011-05-17  Gary Funck  <gary@intrepid.com>
 
 	* upc-pts.h (upc_pts_build_value, upc_pts_build_add_offset,
