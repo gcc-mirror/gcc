@@ -1,3 +1,8 @@
+2011-05-23  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_types_compatible_p_1): Always compare type names.
+	(iterative_hash_gimple_type): Always hash type names.
+
 2011-05-23  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-typeck.c (build_function_call_vec): Tweak call to

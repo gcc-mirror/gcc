@@ -3587,6 +3587,10 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
      SCCs this assumption may get revisited.  */
   state->u.same_p = 1;
 
+  /* The struct tags shall compare equal.  */
+  if (!compare_type_names_p (t1, t2, false))
+    goto different_types;
+
   /* If their attributes are not the same they can't be the same type.  */
   if (!attribute_list_equal (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2)))
     goto different_types;
@@ -3796,10 +3800,6 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
     case QUAL_UNION_TYPE:
       {
 	tree f1, f2;
-
-	/* The struct tags shall compare equal.  */
-	if (!compare_type_names_p (t1, t2, false))
-	  goto different_types;
 
 	/* For aggregate types, all the fields must be the same.  */
 	for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
@@ -4093,7 +4093,8 @@ iterative_hash_gimple_type (tree type, hashval_t val,
      smaller sets; when searching for existing matching types to merge,
      only existing types having the same features as the new type will be
      checked.  */
-  v = iterative_hash_hashval_t (TREE_CODE (type), 0);
+  v = iterative_hash_name (TYPE_NAME (type), 0);
+  v = iterative_hash_hashval_t (TREE_CODE (type), v);
   v = iterative_hash_hashval_t (TYPE_QUALS (type), v);
   v = iterative_hash_hashval_t (TREE_ADDRESSABLE (type), v);
 
@@ -4174,8 +4175,6 @@ iterative_hash_gimple_type (tree type, hashval_t val,
     {
       unsigned nf;
       tree f;
-
-      v = iterative_hash_name (TYPE_NAME (type), v);
 
       for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
 	{
