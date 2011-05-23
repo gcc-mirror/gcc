@@ -652,13 +652,12 @@ release_structures (void)
     }
 }
 
-/* Generate the names of the graph and data files. If OBJECT_DIRECTORY
-   is not specified, these are looked for in the current directory,
-   and named from the basename of the FILE_NAME sans extension. If
-   OBJECT_DIRECTORY is specified and is a directory, the files are in
-   that directory, but named from the basename of the FILE_NAME, sans
-   extension. Otherwise OBJECT_DIRECTORY is taken to be the name of
-   the object *file*, and the data files are named from that.  */
+/* Generate the names of the graph and data files.  If OBJECT_DIRECTORY
+   is not specified, these are named from FILE_NAME sans extension.  If
+   OBJECT_DIRECTORY is specified and is a directory, the files are in that
+   directory, but named from the basename of the FILE_NAME, sans extension.
+   Otherwise OBJECT_DIRECTORY is taken to be the name of the object *file*
+   and the data files are named from that.  */
 
 static void
 create_file_names (const char *file_name)
@@ -691,8 +690,8 @@ create_file_names (const char *file_name)
   else
     {
       name = XNEWVEC (char, length + 1);
-      name[0] = 0;
-      base = 1;
+      strcpy (name, file_name);
+      base = 0;
     }
 
   if (base)
