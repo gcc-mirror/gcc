@@ -2808,8 +2808,7 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
     return error_mark_node;
 
   /* Check that the arguments to the function are valid.  */
-  check_function_arguments (TYPE_ATTRIBUTES (fntype), nargs, argarray,
-			    TYPE_ARG_TYPES (fntype));
+  check_function_arguments (fntype, nargs, argarray);
 
   if (name != NULL_TREE
       && !strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10))

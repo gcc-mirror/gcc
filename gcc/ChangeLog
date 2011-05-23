@@ -1,3 +1,8 @@
+2011-05-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-typeck.c (build_function_call_vec): Tweak call to
+	check_function_arguments.
+
 2011-05-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49115

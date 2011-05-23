@@ -6477,8 +6477,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   gcc_assert (j <= nargs);
   nargs = j;
 
-  check_function_arguments (TYPE_ATTRIBUTES (TREE_TYPE (fn)),
-			    nargs, argarray, TYPE_ARG_TYPES (TREE_TYPE (fn)));
+  check_function_arguments (TREE_TYPE (fn), nargs, argarray);
 
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */
