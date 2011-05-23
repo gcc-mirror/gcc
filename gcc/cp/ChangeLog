@@ -1,3 +1,8 @@
+2011-05-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/18016
+	* init.c (perform_member_init): Check for self-initialization.
+
 2011-05-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48647
