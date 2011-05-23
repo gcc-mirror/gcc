@@ -1,3 +1,18 @@
+2011-05-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* optc-save-gen.awk: New.  Based on optc-gen.awk.  Don't generate
+	parts of output shared with the driver.
+	* optc-gen.awk: Don't generate parts of output not shared with the
+	driver.
+	* opth-gen.awk: Remove GCC_DRIVER conditionals.
+	* doc/options.texi (SourcerInclude): Mention options-save.c.
+	* Makefile.in (GCC_OBJS): Use options.o instead of gcc-options.o.
+	(OBJS): Add options-save.o.
+	(options-save.c, options-save.o): New.
+	(options.o): Update dependencies.
+	(gcc-options.o): Remove.
+	(mostlyclean): Remove options-save.c.
+
 2011-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/49032

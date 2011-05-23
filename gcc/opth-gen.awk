@@ -46,7 +46,7 @@ if (n_extra_h_includes > 0) {
 
 print "#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)"
 print "#ifndef GENERATOR_FILE"
-print "#if !defined(GCC_DRIVER) && !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)"
+print "#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)"
 print "struct GTY(()) gcc_options"
 print "#else"
 print "struct gcc_options"
@@ -127,7 +127,7 @@ print ""
 # Also, order the structure so that pointer fields occur first, then int
 # fields, and then char fields to provide the best packing.
 
-print "#if !defined(GCC_DRIVER) && !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)"
+print "#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)"
 print ""
 print "/* Structure to save/restore optimization and target specific options.  */";
 print "struct GTY(()) cl_optimization";

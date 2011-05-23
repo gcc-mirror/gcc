@@ -1168,7 +1168,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 FORTRAN_TARGET_OBJS=@fortran_target_objs@
 
 # Object files for gcc driver.
-GCC_OBJS = gcc.o opts-common.o gcc-options.o vec.o ggc-none.o
+GCC_OBJS = gcc.o opts-common.o options.o vec.o ggc-none.o
 
 # Language-specific object files shared by all C-family front ends.
 C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
@@ -1341,6 +1341,7 @@ OBJS = \
 	omp-low.o \
 	optabs.o \
 	options.o \
+	options-save.o \
 	opts-common.o \
 	opts-global.o \
 	opts.o \
@@ -2269,6 +2270,12 @@ options.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
 	       -f $(srcdir)/optc-gen.awk \
 	       -v header_name="config.h system.h coretypes.h tm.h" < $< > $@
 
+options-save.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
+    $(srcdir)/optc-save-gen.awk
+	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
+	       -f $(srcdir)/optc-save-gen.awk \
+	       -v header_name="config.h system.h coretypes.h tm.h" < $< > $@
+
 options.h: s-options-h ; @true
 s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
     $(srcdir)/opth-gen.awk
@@ -2278,13 +2285,11 @@ s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
 	$(SHELL) $(srcdir)/../move-if-change tmp-options.h options.h
 	$(STAMP) $@
 
-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) $(FLAGS_H) \
+options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(OPTS_H) intl.h $(OPTIONS_C_EXTRA)
 
-gcc-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(OPTS_H) intl.h \
-	$(OPTIONS_C_EXTRA)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(OUTPUT_OPTION) \
-		-DGCC_DRIVER options.c
+options-save.o: options-save.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) $(FLAGS_H) \
+	$(TM_H) $(OPTS_H) intl.h $(OPTIONS_C_EXTRA)
 
 dumpvers: dumpvers.c
 
@@ -4443,7 +4448,7 @@ mostlyclean: lang.mostlyclean
 	-rm -f build/*
 	-rm -f mddeps.mk
 # Delete other built files.
-	-rm -f specs.h options.c options.h
+	-rm -f specs.h options.c options.h options-save.c
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*
