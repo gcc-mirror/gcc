@@ -136,6 +136,8 @@ along with GCC; see the file COPYING3.  If not see
    %{!symbolic:\
      %{pthreads|pthread:" \
         LIB_THREAD_LDFLAGS_SPEC " -lpthread " LIB_TLS_SPEC "} \
+     %{fprofile-generate*:" \
+        LIB_THREAD_LDFLAGS_SPEC " " LIB_TLS_SPEC "} \
      %{p|pg:-ldl} -lc}"
 
 #undef  ENDFILE_SPEC
