@@ -1052,9 +1052,13 @@ go_mime_files = \
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@go_net_newpollserver_file = go/net/newpollserver.go
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_RTEMS_FALSE@go_net_newpollserver_file = go/net/newpollserver.go
 @LIBGO_IS_RTEMS_TRUE@go_net_newpollserver_file = go/net/newpollserver_rtems.go
-@LIBGO_IS_LINUX_FALSE@go_net_cgo_file = go/net/cgo_bsd.go
+@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_net_cgo_file = go/net/cgo_bsd.go
+@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_net_cgo_file = go/net/cgo_linux.go
+@LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@go_net_cgo_file = go/net/cgo_linux.go
 @LIBGO_IS_LINUX_TRUE@go_net_cgo_file = go/net/cgo_linux.go
-@LIBGO_IS_LINUX_FALSE@go_net_sock_file = go/net/sock_bsd.go
+@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_net_sock_file = go/net/sock_bsd.go
+@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_net_sock_file = go/net/sock_linux.go
+@LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@go_net_sock_file = go/net/sock_linux.go
 @LIBGO_IS_LINUX_TRUE@go_net_sock_file = go/net/sock_linux.go
 go_net_files = \
 	go/net/cgo_unix.go \

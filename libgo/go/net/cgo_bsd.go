@@ -10,6 +10,6 @@ package net
 
 import "syscall"
 
-func cgoAddrInfoMask() C.int {
+func cgoAddrInfoMask() int {
 	return syscall.AI_MASK
 }

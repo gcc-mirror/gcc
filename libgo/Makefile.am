@@ -669,8 +669,18 @@ if LIBGO_IS_LINUX
 go_net_cgo_file = go/net/cgo_linux.go
 go_net_sock_file = go/net/sock_linux.go
 else
+if LIBGO_IS_IRIX
+go_net_cgo_file = go/net/cgo_linux.go
+go_net_sock_file = go/net/sock_linux.go
+else
+if LIBGO_IS_SOLARIS
+go_net_cgo_file = go/net/cgo_linux.go
+go_net_sock_file = go/net/sock_linux.go
+else
 go_net_cgo_file = go/net/cgo_bsd.go
 go_net_sock_file = go/net/sock_bsd.go
+endif
+endif
 endif
 
 go_net_files = \
