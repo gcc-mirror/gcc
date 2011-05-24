@@ -5,20 +5,20 @@
 #define TYPE char*
 #endif
 
-extern int a[];
+extern char a[];
 
 /* Can not infer loop iteration from array -- exit test can not be replaced.  */
-void foo (int i_width, TYPE dst, TYPE src1, TYPE src2)
+void foo (unsigned int i_width, TYPE dst)
 {
-      TYPE dstn= dst + i_width;
-      TYPE dst0 = dst;
-      unsigned long long i = 0;
-       for( ; dst <= dstn; )
-       {
-           dst0[i] = ( src1[i] + src2[i] + 1 +a[i]) >> 1;
-           dst++;
-	   i += 16;
-       }
+  unsigned long long i = 0;
+  unsigned long long j = 0;
+  for ( ; j < i_width; )
+    {
+      *dst = a[i];
+      dst++;
+      i += 2;
+      j += 1;
+    }
 }
 
 /* { dg-final { scan-tree-dump-times "Replacing" 0 "ivopts"} } */

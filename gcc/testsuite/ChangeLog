@@ -1,3 +1,8 @@
+2011-05-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/49121
+	* gcc.dg/tree-ssa/ivopt_infer_2.c: Adapt test.
+
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/defaulted28.C: New.
