@@ -1,3 +1,7 @@
+2011-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (FORCE_CODE_SECTION_ALIGN): Remove.
+
 2011-05-24  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/49078
