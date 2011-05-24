@@ -1,3 +1,7 @@
+2011-05-24  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/access01.C: New.
+
 2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/48177
