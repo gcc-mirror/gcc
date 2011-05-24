@@ -748,7 +748,9 @@ alpha*-dec-osf5.1*)
 	then
 		tm_file="${tm_file} dbx.h"
 	fi
-	if test x$gas != xyes
+	# mips-tfile and mips-tdump are only used with the native assembler
+	# and require the Tru64 UNIX <a.out.h>, so only build native.
+	if test x$gas != xyes && test x${host} = x${target}
 	then
 		extra_passes="mips-tfile mips-tdump"
 	fi
