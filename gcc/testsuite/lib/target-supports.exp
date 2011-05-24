@@ -687,7 +687,7 @@ proc check_effective_target_tls_runtime {} {
     return [check_runtime tls_runtime {
 	__thread int thr = 0;
 	int main (void) { return thr; }
-    }]
+    } [add_options_for_tls ""]]
 }
 
 # Return 1 if -ffunction-sections is supported, 0 otherwise.
