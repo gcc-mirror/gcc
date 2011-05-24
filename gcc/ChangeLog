@@ -1,3 +1,15 @@
+2011-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	
+	PR tree-optimization/46728
+	* tree-ssa-math-opts.c (powi_table): New.
+	(powi_lookup_cost): New.
+	(powi_cost): New.
+	(powi_as_mults_1): New.
+	(powi_as_mults): New.
+	(gimple_expand_builtin_powi): New.
+	(execute_cse_sincos): Add switch case for BUILT_IN_POWI.
+	(gate_cse_sincos): Remove sincos/cexp restriction.
+	
 2011-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/3746
