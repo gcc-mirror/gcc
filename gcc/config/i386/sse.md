@@ -4270,30 +4270,28 @@
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "sse2_loadhpd"
   [(set (match_operand:V2DF 0 "nonimmediate_operand"
-	  "=x,x,x,x,x,o,o ,o")
+	  "=x,x,x,x,o,o ,o")
 	(vec_concat:V2DF
 	  (vec_select:DF
 	    (match_operand:V2DF 1 "nonimmediate_operand"
-	  " 0,x,0,x,x,0,0 ,0")
+	  " 0,x,0,x,0,0 ,0")
 	    (parallel [(const_int 0)]))
 	  (match_operand:DF 2 "nonimmediate_operand"
-	  " m,m,x,x,0,x,*f,r")))]
+	  " m,m,x,x,x,*f,r")))]
   "TARGET_SSE2 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    movhpd\t{%2, %0|%0, %2}
    vmovhpd\t{%2, %1, %0|%0, %1, %2}
    unpcklpd\t{%2, %0|%0, %2}
    vunpcklpd\t{%2, %1, %0|%0, %1, %2}
-   shufpd\t{$1, %1, %0|%0, %1, 1}
    #
    #
    #"
-  [(set_attr "isa" "noavx,avx,noavx,avx,noavx,base,base,base")
-   (set_attr "type" "ssemov,ssemov,sselog,sselog,sselog,ssemov,fmov,imov")
-   (set_attr "prefix_data16" "1,*,*,*,*,*,*,*")
-   (set_attr "length_immediate" "*,*,*,*,1,*,*,*")
-   (set_attr "prefix" "orig,vex,orig,vex,orig,*,*,*")
-   (set_attr "mode" "V1DF,V1DF,V2DF,V2DF,V2DF,DF,DF,DF")])
+  [(set_attr "isa" "noavx,avx,noavx,avx,base,base,base")
+   (set_attr "type" "ssemov,ssemov,sselog,sselog,ssemov,fmov,imov")
+   (set_attr "prefix_data16" "1,*,*,*,*,*,*")
+   (set_attr "prefix" "orig,vex,orig,vex,*,*,*")
+   (set_attr "mode" "V1DF,V1DF,V2DF,V2DF,DF,DF,DF")])
 
 (define_split
   [(set (match_operand:V2DF 0 "memory_operand" "")
