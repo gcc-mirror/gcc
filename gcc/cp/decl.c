@@ -9910,7 +9910,7 @@ grokdeclarator (const cp_declarator *declarator,
 	       instantiation made the field's type be incomplete.  */
 	    if (current_class_type
 		&& TYPE_NAME (current_class_type)
-		&& IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (current_class_type))
+		&& IDENTIFIER_TEMPLATE (current_class_name)
 		&& declspecs->type
 		&& declspecs->type == type)
 	      error ("  in instantiation of template %qT",
