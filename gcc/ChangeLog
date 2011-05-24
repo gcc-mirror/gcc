@@ -1,5 +1,10 @@
 2011-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.c (sparc_option_override): If not set by the user,
+	force flag_ira_share_save_slots to 0.
+
+2011-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* var-tracking.c (compute_cfa_pointer): Adjust head comment.
 	(vt_initialize): Set PROLOGUE_BB unconditionally.
 	Add block comment about CFA_BASE_RTX machinery.
