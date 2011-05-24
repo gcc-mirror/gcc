@@ -1,3 +1,13 @@
+2011-05-24  Uros Bizjak <ubizjak@gmail.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/tls/run-gd.c: New test.
+	* gcc.dg/torture/tls/run-ie.c: New test.
+	* gcc.dg/torture/tls/run-ld.c: New test.
+	* gcc.dg/torture/tls/run-le.c: New test.
+	* lib/target-supports.exp (check_effective_target_tls_runtime):
+	Build testcase with TLS options.
+
 2011-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/vect/pr48172.c: Remove dg-do run.
