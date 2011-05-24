@@ -1,3 +1,7 @@
+2011-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/vect/pr48172.c: Remove dg-do run.
+
 2011-05-24  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/49121
