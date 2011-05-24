@@ -970,6 +970,12 @@ sparc_option_override (void)
 			  ? 64 : 32),
 			 global_options.x_param_values,
 			 global_options_set.x_param_values);
+
+  /* Disable save slot sharing for call-clobbered registers by default.
+     The IRA sharing algorithm works on single registers only and this
+     pessimizes for double floating-point registers.  */
+  if (!global_options_set.x_flag_ira_share_save_slots)
+    flag_ira_share_save_slots = 0;
 }
 
 /* Miscellaneous utilities.  */
