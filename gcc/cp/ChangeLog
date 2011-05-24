@@ -1,5 +1,8 @@
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49102
+	* call.c (convert_arg_to_ellipsis): Call force_rvalue.
+
 	PR c++/49105
 	* typeck.c (cp_build_c_cast): Don't strip cv-quals when
 	converting to reference.
