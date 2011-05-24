@@ -1,5 +1,10 @@
 2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR libobjc/48177
+	* objc.dg/pr48177.m: New testcase.	
+
+2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR objc/48187
 	* objc.dg/pr48187.m: New testcase.
 	* obj-c++.dg/pr48187.mm: New testcase.
