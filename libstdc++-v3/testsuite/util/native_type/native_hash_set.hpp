@@ -50,14 +50,14 @@ namespace __gnu_pbds
   {
 #define PB_DS_BASE_C_DEC \
     std::tr1::__unordered_set<Key, Hash_Fn, Eq_Fn, \
-    typename Allocator::template rebind<Key>::other, Cache_Hash>
+    typename _Alloc::template rebind<Key>::other, Cache_Hash>
 
     template<typename Key,
 	     size_t Init_Size = 8,
          typename Hash_Fn = typename __gnu_pbds::detail::default_hash_fn<Key>::type,
 	     typename Eq_Fn = std::equal_to<Key>,
 	     typename Less_Fn = std::less<Key>,
-	     typename Allocator = std::allocator<char>, bool Cache_Hash = false
+	     typename _Alloc = std::allocator<char>, bool Cache_Hash = false
 	     >
     class native_hash_set : public PB_DS_BASE_C_DEC
     {

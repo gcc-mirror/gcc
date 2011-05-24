@@ -51,21 +51,21 @@ namespace __gnu_pbds
   {
     namespace detail
     {
-      template<typename Value_Type, bool Vector, typename Allocator>
+      template<typename Value_Type, bool Vector, typename _Alloc>
       struct base_seq
       {
       private:
-	typedef typename Allocator::template rebind<Value_Type> value_rebind;
+	typedef typename _Alloc::template rebind<Value_Type> value_rebind;
 
       public:
 	typedef std::vector<Value_Type, typename value_rebind::other> type;
       };
 
-      template<typename Value_Type, typename Allocator>
-      struct base_seq<Value_Type, false, Allocator>
+      template<typename Value_Type, typename _Alloc>
+      struct base_seq<Value_Type, false, _Alloc>
       {
       private:
-	typedef typename Allocator::template rebind<Value_Type> value_rebind;
+	typedef typename _Alloc::template rebind<Value_Type> value_rebind;
 
       public:
 	typedef std::deque<Value_Type, typename value_rebind::other> type;
@@ -76,20 +76,20 @@ namespace __gnu_pbds
     { };
 
 #define PB_DS_CLASS_C_DEC \
-    native_priority_queue<Value_Type, Vector, Cmp_Fn, Allocator>
+    native_priority_queue<Value_Type, Vector, Cmp_Fn, _Alloc>
 
 #define PB_DS_BASE_C_DEC \
-    std::priority_queue<Value_Type, typename detail::base_seq<Value_Type, Vector, Allocator>::type, Cmp_Fn>
+    std::priority_queue<Value_Type, typename detail::base_seq<Value_Type, Vector, _Alloc>::type, Cmp_Fn>
 
     template<typename Value_Type,
 	     bool Vector,
 	     typename Cmp_Fn = std::less<Value_Type>,
-	     typename Allocator = std::allocator<char> >
+	     typename _Alloc = std::allocator<char> >
     class native_priority_queue : public PB_DS_BASE_C_DEC
     {
     private:
       typedef PB_DS_BASE_C_DEC base_type;
-      typedef typename Allocator::template rebind<Value_Type> value_rebind;
+      typedef typename _Alloc::template rebind<Value_Type> value_rebind;
 
     public:
       typedef Value_Type value_type;

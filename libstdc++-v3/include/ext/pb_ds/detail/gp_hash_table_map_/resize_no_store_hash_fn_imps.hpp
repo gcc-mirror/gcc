@@ -34,9 +34,9 @@
 // warranty.
 
 /**
- * @file resize_no_store_hash_fn_imps.hpp
+ * @file gp_hash_table_map_/resize_no_store_hash_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s resize related functions, when the
- *    hash value is not stored.
+ * hash value is not stored.
  */
 
 PB_DS_CLASS_T_DEC
@@ -45,7 +45,7 @@ PB_DS_CLASS_C_DEC::
 resize_imp_reassign(entry_pointer p_e, entry_array a_entries_resized, 
 		    false_type)
 {
-  const_key_reference r_key = PB_DS_V2F(p_e->m_value);
+  key_const_reference r_key = PB_DS_V2F(p_e->m_value);
   size_type hash = ranged_probe_fn_base::operator()(r_key);
   size_type i;
   for (i = 0; i < m_num_e; ++i)

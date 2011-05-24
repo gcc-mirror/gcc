@@ -227,23 +227,28 @@ class png_maker:
 		return self.__mmap_re.sub('\nmmap_\n', cntnr)
 
 	def make(self, res, of_name):
-		theme.output_format = 'png'
+		theme.output_format = 'svg'
 		theme.output_file = of_name
 		theme.scale_factor = 2
-#		theme.default_font_size = 5
+		theme.default_font_family = "Gill Sans Std"
+		theme.default_line_width = 0.5
+		theme.default_font_size = 7
 		theme.use_color = 1
 		theme.reinitialize()
 		y_tick_interval = self.__get_y_tics(res)
-		xaxis = axis.X(format = '/a90/hL%d',
+#		xaxis = axis.X(format = '/a90/hL%d',
+		xaxis = axis.X(format = "/a-50{}%d",
 			       tic_interval = 200,
 			       label = res.x_label)
-		yaxis = axis.Y(format = '%.2e', 
+#		yaxis = axis.Y(format = '%.2e', 
+		yaxis = axis.Y(format = "/a-50{}%.2e",
 			       tic_interval = y_tick_interval,
 			       label = res.y_label)
 		legend_lines = len(res.cntnr_list)
 		legend_vloc = 50 + (legend_lines * 10)
+		legend_hloc = -0
 		ar = area.T(x_axis = xaxis, y_axis = yaxis,
-			    legend = legend.T(loc=(0,-legend_vloc),
+			    legend = legend.T(loc=(legend_hloc,-legend_vloc),
 					      frame_line_style=None,
 					      inter_row_sep=2),
 			    size=(240,110))
@@ -554,7 +559,8 @@ def main(doc_dir, res_dir, test_infos_f_name, test_name, build_name):
 	res_gtr = res_getter(test_infos_f_name)
 	res = res_gtr.get(res_dir, test_name)
 	png_mkr = png_maker()
-	png_of_name = doc_dir + '/' + test_name + '_' + build_name + '.png'
+#	png_of_name = doc_dir + '/' + test_name + '_' + build_name + '.png'
+	png_of_name = doc_dir + '/' + test_name + '_' + build_name + '.svg'
 	print png_of_name
 	png_mkr.make(res, png_of_name)
 

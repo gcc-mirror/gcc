@@ -35,7 +35,7 @@
 // warranty.
 
 /**
- * @file resize_fn_imps.hpp
+ * @file cc_hash_table_map_/resize_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s resize related functions.
  */
 

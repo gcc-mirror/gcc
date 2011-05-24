@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file standard_policies.hpp
+ * @file detail/standard_policies.hpp
  * Contains standard policies for containers.
  */
 
@@ -44,8 +44,8 @@
 #include <memory>
 #include <ext/pb_ds/hash_policy.hpp>
 #include <ext/pb_ds/list_update_policy.hpp>
+#include <ext/pb_ds/detail/branch_policy/null_node_metadata.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
-#include <ext/pb_ds/detail/basic_tree_policy/null_node_metadata.hpp>
 #include <ext/pb_ds/trie_policy.hpp>
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <tr1/functional>
@@ -54,12 +54,14 @@ namespace __gnu_pbds
 {
   namespace detail
   {
+    /// default_hash_fn
     template<typename Key>
     struct default_hash_fn
     {
       typedef std::tr1::hash<Key> type;
     };
 
+    /// default_eq_fn
     template<typename Key>
     struct default_eq_fn
     {
@@ -71,11 +73,13 @@ namespace __gnu_pbds
 	default_store_hash = false
       };
 
+    /// default_comb_hash_fn
     struct default_comb_hash_fn
     {
       typedef __gnu_pbds::direct_mask_range_hashing<> type;
     };
 
+    /// default_resize_policy
     template<typename Comb_Hash_Fn>
     struct default_resize_policy
     {
@@ -95,11 +99,13 @@ namespace __gnu_pbds
       typedef __gnu_pbds::hash_standard_resize_policy<size_policy_type, trigger, false, size_type> type;
     };
 
+    /// default_update_policy
     struct default_update_policy
     {
-      typedef __gnu_pbds::move_to_front_lu_policy<> type;
+      typedef __gnu_pbds::lu_move_to_front_policy<> type;
     };
 
+    /// default_probe_fn
     template<typename Comb_Probe_Fn>
     struct default_probe_fn
     {
@@ -116,21 +122,21 @@ namespace __gnu_pbds
       typedef typename cond_type::__type type;
     };
 
+    /// default_trie_access_traits
     template<typename Key>
-    struct default_trie_e_access_traits;
+    struct default_trie_access_traits;
 
-    template<typename Char, class Char_Traits>
-    struct default_trie_e_access_traits<std::basic_string<Char, Char_Traits, std::allocator<char> > >
+    template<typename Char, typename Char_Traits>
+    struct default_trie_access_traits<std::basic_string<Char, Char_Traits, std::allocator<char> > >
     {
     private:
       typedef std::basic_string<Char, Char_Traits, std::allocator<char> > string_type;
 
     public:
-      typedef __gnu_pbds::string_trie_e_access_traits<string_type> type;
+      typedef __gnu_pbds::trie_string_access_traits<string_type> type;
     };
 
   } // namespace detail
 } // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_STANDARD_POLICIES_HPP
-

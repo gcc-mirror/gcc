@@ -123,7 +123,7 @@ int main()
   acc["a"][160] = 142;
 
   // Verify the number of accounts that "a" holds.
-  accounts_t::const_point_iterator it = acc.find("a");
+  accounts_t::point_const_iterator it = acc.find("a");
   assert(it != acc.end());
   assert(it->second.size() == 2);
 

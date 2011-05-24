@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -34,317 +34,105 @@
 // warranty.
 
 /**
- * @file traits.hpp
+ * @file pat_trie_/traits.hpp
  * Contains an implementation class for pat_trie_.
  */
 
 #ifndef PB_DS_PAT_TRIE_NODE_AND_IT_TRAITS_HPP
 #define PB_DS_PAT_TRIE_NODE_AND_IT_TRAITS_HPP
 
-#include <ext/pb_ds/detail/pat_trie_/node_base.hpp>
-#include <ext/pb_ds/detail/pat_trie_/head.hpp>
-#include <ext/pb_ds/detail/pat_trie_/leaf.hpp>
-#include <ext/pb_ds/detail/pat_trie_/internal_node.hpp>
-#include <ext/pb_ds/detail/pat_trie_/point_iterators.hpp>
-#include <ext/pb_ds/detail/pat_trie_/node_iterators.hpp>
-#include <ext/pb_ds/detail/pat_trie_/synth_e_access_traits.hpp>
+#include <ext/pb_ds/detail/pat_trie_/pat_trie_base.hpp>
+#include <ext/pb_ds/detail/pat_trie_/synth_access_traits.hpp>
 
 namespace __gnu_pbds
 {
   namespace detail
   {
-
+    /// Specialization.
     template<typename Key,
 	     typename Mapped,
-	     class E_Access_Traits,
-	     template<typename Const_Node_Iterator,
-		      class Node_Iterator,
-		      class Cmp_Fn_,
-		      class Allocator_>
-    class Node_Update,
-	     class Allocator>
-    struct trie_traits<
-      Key,
-      Mapped,
-      E_Access_Traits,
-      Node_Update,
-      pat_trie_tag,
-      Allocator>
+	     typename _ATraits,
+	     template<typename Node_CItr,
+		      typename Node_Itr,
+		      typename Cmp_Fn_,
+		      typename _Alloc_>
+	     class Node_Update,
+	     typename _Alloc>
+    struct trie_traits<Key, Mapped, _ATraits, Node_Update, pat_trie_tag, _Alloc>
     {
     private:
-      typedef types_traits< Key, Mapped, Allocator, false> type_traits;
+      typedef pat_trie_base				    	base_type;
+      typedef types_traits<Key, Mapped, _Alloc, false> 		type_traits;
 
     public:
-      typedef
-      typename trie_node_metadata_selector<
-      Key,
-      Mapped,
-      E_Access_Traits,
-      Node_Update,
-      Allocator>::type
-      metadata_type;
+      typedef typename trie_node_metadata_dispatch<Key, Mapped, _ATraits, Node_Update, _Alloc>::type metadata_type;
+      typedef base_type::_Metadata<metadata_type, _Alloc>      	metadata;
+      typedef _ATraits 		       			       	access_traits;
 
-      typedef E_Access_Traits e_access_traits;
+      typedef __gnu_pbds::detail::synth_access_traits<type_traits, false, access_traits>   synth_access_traits;
 
-      typedef
-      __gnu_pbds::detail::synth_e_access_traits<
-	type_traits,
-	false,
-	e_access_traits>
-      synth_e_access_traits;
+      typedef base_type::_Node_base<synth_access_traits, metadata>     	node;
+      typedef base_type::_Head<synth_access_traits, metadata>	       	head;
+      typedef base_type::_Leaf<synth_access_traits, metadata>	       	leaf;
+      typedef base_type::_Inode<synth_access_traits, metadata> 		inode;
 
-      typedef
-      pat_trie_node_base<
-	type_traits,
-	synth_e_access_traits,
-	metadata_type,
-	Allocator>
-      node;
+      typedef base_type::_Iter<node, leaf, head, inode, true>	       	iterator;
+      typedef base_type::_CIter<node, leaf, head, inode, true> 	 	const_iterator;
+      typedef base_type::_Iter<node, leaf, head, inode, false> 		reverse_iterator;
+      typedef base_type::_CIter<node, leaf, head, inode, false>	 	const_reverse_iterator;
 
-      typedef
-      pat_trie_leaf<
-	type_traits,
-	synth_e_access_traits,
-	metadata_type,
-	Allocator>
-      leaf;
 
-      typedef
-      pat_trie_head<
-	type_traits,
-	synth_e_access_traits,
-	metadata_type,
-	Allocator>
-      head;
+      typedef base_type::_Node_citer<node, leaf, head, inode, const_iterator, iterator, _Alloc> node_const_iterator;
 
-      typedef
-      pat_trie_internal_node<
-	type_traits,
-	synth_e_access_traits,
-	metadata_type,
-	Allocator>
-      internal_node;
+      typedef base_type::_Node_iter<node, leaf, head, inode, const_iterator, iterator, _Alloc> node_iterator;
 
-      typedef
-      pat_trie_const_it_<
-	type_traits,
-	node,
-	leaf,
-	head,
-	internal_node,
-	true,
-	Allocator>
-      const_iterator;
+      typedef Node_Update<node_const_iterator, node_iterator, _ATraits, _Alloc> 		node_update;
 
-      typedef
-      pat_trie_it_<
-	type_traits,
-	node,
-	leaf,
-	head,
-	internal_node,
-	true,
-	Allocator>
-      iterator;
-
-      typedef
-      pat_trie_const_it_<
-	type_traits,
-	node,
-	leaf,
-	head,
-	internal_node,
-	false,
-	Allocator>
-      const_reverse_iterator;
-
-      typedef
-      pat_trie_it_<
-	type_traits,
-	node,
-	leaf,
-	head,
-	internal_node,
-	false,
-	Allocator>
-      reverse_iterator;
-
-      typedef
-      pat_trie_const_node_it_<
-	node,
-	leaf,
-	head,
-	internal_node,
-	const_iterator,
-	iterator,
-	synth_e_access_traits,
-	Allocator>
-      const_node_iterator;
-
-      typedef
-      pat_trie_node_it_<
-	node,
-	leaf,
-	head,
-	internal_node,
-	const_iterator,
-	iterator,
-	synth_e_access_traits,
-	Allocator>
-      node_iterator;
-
-      typedef
-      Node_Update<
-	const_node_iterator,
-	node_iterator,
-	E_Access_Traits,
-	Allocator>
-      node_update;
-
-      typedef
-      __gnu_pbds::null_trie_node_update<
-	const_node_iterator,
-	node_iterator,
-	E_Access_Traits,
-	Allocator>* 
-      null_node_update_pointer;
+      typedef null_node_update<node_const_iterator, node_iterator, _ATraits, _Alloc>* 		null_node_update_pointer;
     };
 
+    /// Specialization.
     template<typename Key,
-	     class E_Access_Traits,
-	     template<typename Const_Node_Iterator,
-		      class Node_Iterator,
-		      class Cmp_Fn_,
-		      class Allocator_>
-    class Node_Update,
-	     class Allocator>
-    struct trie_traits<
-      Key,
-      null_mapped_type,
-      E_Access_Traits,
-      Node_Update,
-      pat_trie_tag,
-      Allocator>
+	     typename _ATraits,
+	     template<typename Node_CItr,
+		      typename Node_Itr,
+		      typename Cmp_Fn_,
+		      typename _Alloc_>
+	     class Node_Update,
+	     typename _Alloc>
+    struct trie_traits<Key, null_type, _ATraits, Node_Update, pat_trie_tag, _Alloc>
     {
     private:
-      typedef
-      types_traits<
-      Key,
-      null_mapped_type,
-      Allocator,
-      false>
-      type_traits;
+      typedef pat_trie_base					base_type;
+      typedef types_traits<Key, null_type, _Alloc, false> 	type_traits;
 
     public:
-      typedef
-      typename trie_node_metadata_selector<
-      Key,
-      null_mapped_type,
-      E_Access_Traits,
-      Node_Update,
-      Allocator>::type
-      metadata_type;
+      typedef typename trie_node_metadata_dispatch<Key, null_type, _ATraits, Node_Update, _Alloc>::type metadata_type;
+      typedef base_type::_Metadata<metadata_type, _Alloc>				metadata;
+      typedef _ATraits 				     					access_traits;
+      typedef __gnu_pbds::detail::synth_access_traits<type_traits, true, access_traits> synth_access_traits;
 
-      typedef E_Access_Traits e_access_traits;
+      typedef base_type::_Node_base<synth_access_traits, metadata>     	node;
+      typedef base_type::_Head<synth_access_traits, metadata> 	       	head;
+      typedef base_type::_Leaf<synth_access_traits, metadata> 	       	leaf;
+      typedef base_type::_Inode<synth_access_traits, metadata> 	       	inode;
 
-      typedef
-      __gnu_pbds::detail::synth_e_access_traits<
-	type_traits,
-	true,
-	e_access_traits>
-      synth_e_access_traits;
+      typedef base_type::_CIter<node, leaf, head, inode, true> 		const_iterator;
+      typedef const_iterator 					       	iterator;
+      typedef base_type::_CIter<node, leaf, head, inode, false>	       	const_reverse_iterator;
+      typedef const_reverse_iterator 			       		reverse_iterator;
 
-      typedef
-      pat_trie_node_base<
-	type_traits,
-	synth_e_access_traits,
-	metadata_type,
-	Allocator>
-      node;
 
-      typedef
-      pat_trie_leaf<
-	type_traits,
-	synth_e_access_traits,
-	metadata_type,
-	Allocator>
-      leaf;
+      typedef base_type::_Node_citer<node, leaf, head, inode, const_iterator, iterator, _Alloc> node_const_iterator;
 
-      typedef
-      pat_trie_head<
-	type_traits,
-	synth_e_access_traits,
-	metadata_type,
-	Allocator>
-      head;
+      typedef node_const_iterator 								node_iterator;
 
-      typedef
-      pat_trie_internal_node<
-	type_traits,
-	synth_e_access_traits,
-	metadata_type,
-	Allocator>
-      internal_node;
+      typedef Node_Update<node_const_iterator, node_iterator, _ATraits, _Alloc> 		node_update;
 
-      typedef
-      pat_trie_const_it_<
-	type_traits,
-	node,
-	leaf,
-	head,
-	internal_node,
-	true,
-	Allocator>
-      const_iterator;
-
-      typedef const_iterator iterator;
-
-      typedef
-      pat_trie_const_it_<
-	type_traits,
-	node,
-	leaf,
-	head,
-	internal_node,
-	false,
-	Allocator>
-      const_reverse_iterator;
-
-      typedef const_reverse_iterator reverse_iterator;
-
-      typedef
-      pat_trie_const_node_it_<
-	node,
-	leaf,
-	head,
-	internal_node,
-	const_iterator,
-	iterator,
-	synth_e_access_traits,
-	Allocator>
-      const_node_iterator;
-
-      typedef const_node_iterator node_iterator;
-
-      typedef
-      Node_Update<
-	const_node_iterator,
-	node_iterator,
-	E_Access_Traits,
-	Allocator>
-      node_update;
-
-      typedef
-      __gnu_pbds::null_trie_node_update<
-	const_node_iterator,
-	const_node_iterator,
-	E_Access_Traits,
-	Allocator>* 
-      null_node_update_pointer;
+      typedef null_node_update<node_const_iterator, node_const_iterator, _ATraits, _Alloc>* 	null_node_update_pointer;
     };
 
   } // namespace detail
 } // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_PAT_TRIE_NODE_AND_IT_TRAITS_HPP
-

@@ -34,14 +34,14 @@
 // warranty.
 
 /**
- * @file erase_fn_imps.hpp
+ * @file list_update_map_/erase_fn_imps.hpp
  * Contains implementations of lu_map_.
  */
 
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
-erase(const_key_reference r_key)
+erase(key_const_reference r_key)
 {
   PB_DS_ASSERT_VALID((*this))
   if (m_p_l == 0)

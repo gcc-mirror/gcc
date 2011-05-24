@@ -75,7 +75,7 @@ namespace detail
     typedef typename cntnr::size_type 			size_type;
     typedef regression_test_traits<Cntnr> 		test_traits;
     typedef typename test_traits::key_type 		key_type;
-    typedef typename test_traits::const_key_reference	const_key_reference;
+    typedef typename test_traits::key_const_reference	key_const_reference;
     typedef typename test_traits::value_type 		value_type;
     typedef typename test_traits::native_type 		native_type;
     typedef twister_rand_gen 				gen;

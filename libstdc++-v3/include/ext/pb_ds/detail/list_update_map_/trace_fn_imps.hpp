@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file trace_fn_imps.hpp
+ * @file list_update_map_/trace_fn_imps.hpp
  * Contains implementations of lu_map_.
  */
 

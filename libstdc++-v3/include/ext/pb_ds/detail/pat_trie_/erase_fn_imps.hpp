@@ -34,24 +34,24 @@
 // warranty.
 
 /**
- * @file erase_fn_imps.hpp
- * Contains an implementation class for bin_search_tree_.
+ * @file pat_trie_/erase_fn_imps.hpp
+ * Contains an implementation class for pat_trie.
  */
 
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
-erase(const_key_reference r_key)
+erase(key_const_reference r_key)
 {
   node_pointer p_nd = find_imp(r_key);
-  if (p_nd == 0 || p_nd->m_type == pat_trie_internal_node_type)
+  if (p_nd == 0 || p_nd->m_type == i_node)
     {
       PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
       return false;
     }
 
-  _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_leaf_node_type);
-  if (!synth_e_access_traits::equal_keys(PB_DS_V2F(reinterpret_cast<leaf_pointer>(p_nd)->value()), r_key))
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == leaf_node);
+  if (!synth_access_traits::equal_keys(PB_DS_V2F(reinterpret_cast<leaf_pointer>(p_nd)->value()), r_key))
     {
       PB_DS_CHECK_KEY_DOES_NOT_EXIST(r_key)
       return false;
@@ -66,48 +66,47 @@ erase(const_key_reference r_key)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-erase_fixup(internal_node_pointer p_nd)
+erase_fixup(inode_pointer p_nd)
 {
   _GLIBCXX_DEBUG_ASSERT(std::distance(p_nd->begin(), p_nd->end()) >= 1);
   if (std::distance(p_nd->begin(), p_nd->end()) == 1)
     {
       node_pointer p_parent = p_nd->m_p_parent;
       if (p_parent == m_p_head)
-	m_p_head->m_p_parent =* p_nd->begin();
+	m_p_head->m_p_parent = *p_nd->begin();
       else
-        {
-	  _GLIBCXX_DEBUG_ASSERT(p_parent->m_type == pat_trie_internal_node_type);
-	  node_pointer p_new_child =* p_nd->begin();
-	  static_cast<internal_node_pointer>(p_parent)->replace_child(
-								      p_new_child,
-								      pref_begin(p_new_child),
-								      pref_end(p_new_child),
-								      this);
-        }
+	{
+	  _GLIBCXX_DEBUG_ASSERT(p_parent->m_type == i_node);
+	  node_pointer p_new_child = *p_nd->begin();
+
+	  typedef inode_pointer inode_ptr;
+	  inode_ptr p_internal = static_cast<inode_ptr>(p_parent);
+	  p_internal->replace_child(p_new_child, pref_begin(p_new_child),
+				    pref_end(p_new_child), this);
+	}
       (*p_nd->begin())->m_p_parent = p_nd->m_p_parent;
-      p_nd->~internal_node();
-      s_internal_node_allocator.deallocate(p_nd, 1);
+      p_nd->~inode();
+      s_inode_allocator.deallocate(p_nd, 1);
 
       if (p_parent == m_p_head)
 	return;
 
-      _GLIBCXX_DEBUG_ASSERT(p_parent->m_type == pat_trie_internal_node_type);
-      p_nd = static_cast<internal_node_pointer>(p_parent);
+      _GLIBCXX_DEBUG_ASSERT(p_parent->m_type == i_node);
+      p_nd = static_cast<inode_pointer>(p_parent);
     }
 
   while (true)
     {
       _GLIBCXX_DEBUG_ASSERT(std::distance(p_nd->begin(), p_nd->end()) > 1);
       p_nd->update_prefixes(this);
-      apply_update(p_nd, (node_update* )this);
+      apply_update(p_nd, (node_update*)this);
       PB_DS_ASSERT_NODE_VALID(p_nd)
-      if (p_nd->m_p_parent->m_type == pat_trie_head_node_type)
-        return;
+      if (p_nd->m_p_parent->m_type == head_node)
+	return;
 
-      _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_parent->m_type ==
-		       pat_trie_internal_node_type);
+      _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_parent->m_type == i_node);
 
-      p_nd = static_cast<internal_node_pointer>(p_nd->m_p_parent);
+      p_nd = static_cast<inode_pointer>(p_nd->m_p_parent);
     }
 }
 
@@ -118,7 +117,7 @@ actual_erase_leaf(leaf_pointer p_l)
 {
   _GLIBCXX_DEBUG_ASSERT(m_size > 0);
   --m_size;
-  _GLIBCXX_DEBUG_ONLY(erase_existing(PB_DS_V2F(p_l->value())));
+  _GLIBCXX_DEBUG_ONLY(debug_base::erase_existing(PB_DS_V2F(p_l->value())));
   p_l->~leaf();
   s_leaf_allocator.deallocate(p_l, 1);
 }
@@ -128,15 +127,14 @@ void
 PB_DS_CLASS_C_DEC::
 clear()
 {
-  PB_DS_ASSERT_VALID((*this))
-  if (empty())
-    return;
-
-  clear_imp(m_p_head->m_p_parent);
-  m_size = 0;
-  initialize();
-  _GLIBCXX_DEBUG_ONLY(debug_base::clear();)
-  PB_DS_ASSERT_VALID((*this))
+  if (!empty())
+    {
+      clear_imp(m_p_head->m_p_parent);
+      m_size = 0;
+      initialize();
+      _GLIBCXX_DEBUG_ONLY(debug_base::clear();)
+      PB_DS_ASSERT_VALID((*this))
+    }
 }
 
 PB_DS_CLASS_T_DEC
@@ -144,22 +142,22 @@ void
 PB_DS_CLASS_C_DEC::
 clear_imp(node_pointer p_nd)
 {
-  if (p_nd->m_type == pat_trie_internal_node_type)
+  if (p_nd->m_type == i_node)
     {
-      _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_internal_node_type);
-      for (typename internal_node::iterator it =
-	     static_cast<internal_node_pointer>(p_nd)->begin();
-	   it != static_cast<internal_node_pointer>(p_nd)->end();
+      _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == i_node);
+      for (typename inode::iterator it =
+	     static_cast<inode_pointer>(p_nd)->begin();
+	   it != static_cast<inode_pointer>(p_nd)->end();
 	   ++it)
-        {
+	{
 	  node_pointer p_child =* it;
 	  clear_imp(p_child);
-        }
-      s_internal_node_allocator.deallocate(static_cast<internal_node_pointer>(p_nd), 1);
+	}
+      s_inode_allocator.deallocate(static_cast<inode_pointer>(p_nd), 1);
       return;
     }
 
-  _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_leaf_node_type);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == leaf_node);
   static_cast<leaf_pointer>(p_nd)->~leaf();
   s_leaf_allocator.deallocate(static_cast<leaf_pointer>(p_nd), 1);
 }
@@ -176,7 +174,7 @@ erase(const_iterator it)
 
   const_iterator ret_it = it;
   ++ret_it;
-  _GLIBCXX_DEBUG_ASSERT(it.m_p_nd->m_type == pat_trie_leaf_node_type);
+  _GLIBCXX_DEBUG_ASSERT(it.m_p_nd->m_type == leaf_node);
   erase_leaf(static_cast<leaf_pointer>(it.m_p_nd));
   PB_DS_ASSERT_VALID((*this))
   return ret_it;
@@ -194,7 +192,7 @@ erase(iterator it)
     return it;
   iterator ret_it = it;
   ++ret_it;
-  _GLIBCXX_DEBUG_ASSERT(it.m_p_nd->m_type == pat_trie_leaf_node_type);
+  _GLIBCXX_DEBUG_ASSERT(it.m_p_nd->m_type == leaf_node);
   erase_leaf(static_cast<leaf_pointer>(it.m_p_nd));
   PB_DS_ASSERT_VALID((*this))
   return ret_it;
@@ -213,7 +211,7 @@ erase(const_reverse_iterator it)
   const_reverse_iterator ret_it = it;
   ++ret_it;
 
-  _GLIBCXX_DEBUG_ASSERT(it.m_p_nd->m_type == pat_trie_leaf_node_type);
+  _GLIBCXX_DEBUG_ASSERT(it.m_p_nd->m_type == leaf_node);
   erase_leaf(static_cast<leaf_pointer>(it.m_p_nd));
   PB_DS_ASSERT_VALID((*this))
   return ret_it;
@@ -232,7 +230,7 @@ erase(reverse_iterator it)
   reverse_iterator ret_it = it;
   ++ret_it;
 
-  _GLIBCXX_DEBUG_ASSERT(it.m_p_nd->m_type == pat_trie_leaf_node_type);
+  _GLIBCXX_DEBUG_ASSERT(it.m_p_nd->m_type == leaf_node);
   erase_leaf(static_cast<leaf_pointer>(it.m_p_nd));
   PB_DS_ASSERT_VALID((*this))
   return ret_it;
@@ -254,8 +252,8 @@ erase_if(Pred pred)
       PB_DS_ASSERT_VALID((*this))
       if (pred(*it))
 	{
-          ++num_ersd;
-          it = erase(it);
+	  ++num_ersd;
+	  it = erase(it);
 	}
       else
 	++it;
@@ -271,7 +269,7 @@ PB_DS_CLASS_C_DEC::
 erase_leaf(leaf_pointer p_l)
 {
   update_min_max_for_erased_leaf(p_l);
-  if (p_l->m_p_parent->m_type == pat_trie_head_node_type)
+  if (p_l->m_p_parent->m_type == head_node)
     {
       _GLIBCXX_DEBUG_ASSERT(size() == 1);
       clear();
@@ -279,11 +277,9 @@ erase_leaf(leaf_pointer p_l)
     }
 
   _GLIBCXX_DEBUG_ASSERT(size() > 1);
-  _GLIBCXX_DEBUG_ASSERT(p_l->m_p_parent->m_type ==
-		   pat_trie_internal_node_type);
+  _GLIBCXX_DEBUG_ASSERT(p_l->m_p_parent->m_type == i_node);
 
-  internal_node_pointer p_parent =
-    static_cast<internal_node_pointer>(p_l->m_p_parent);
+  inode_pointer p_parent = static_cast<inode_pointer>(p_l->m_p_parent);
 
   p_parent->remove_child(p_l);
   erase_fixup(p_parent);
@@ -302,7 +298,7 @@ update_min_max_for_erased_leaf(leaf_pointer p_l)
       return;
     }
 
-  if (p_l == static_cast<const_leaf_pointer>(m_p_head->m_p_min))
+  if (p_l == static_cast<leaf_const_pointer>(m_p_head->m_p_min))
     {
       iterator it(p_l);
       ++it;
@@ -310,7 +306,7 @@ update_min_max_for_erased_leaf(leaf_pointer p_l)
       return;
     }
 
-  if (p_l == static_cast<const_leaf_pointer>(m_p_head->m_p_max))
+  if (p_l == static_cast<leaf_const_pointer>(m_p_head->m_p_max))
     {
       iterator it(p_l);
       --it;

@@ -34,9 +34,9 @@
 // warranty.
 
 /**
- * @file resize_store_hash_fn_imps.hpp
+ * @file cc_hash_table_map_/resize_store_hash_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s resize related functions, when the
- *    hash value is stored.
+ * hash value is stored.
  */
 
 PB_DS_CLASS_T_DEC

@@ -53,15 +53,15 @@ namespace __gnu_pbds
       template<typename Trigger_Policy>
       struct trigger_policy_string_form;
 
-      template<typename Allocator,
-	       typename Allocator::size_type Min_Load_Nom,
-	       typename Allocator::size_type Min_Load_Denom,
-	       typename Allocator::size_type Max_Load_Nom,
-	       typename Allocator::size_type Max_Load_Denom,
+      template<typename _Alloc,
+	       typename _Alloc::size_type Min_Load_Nom,
+	       typename _Alloc::size_type Min_Load_Denom,
+	       typename _Alloc::size_type Max_Load_Nom,
+	       typename _Alloc::size_type Max_Load_Denom,
 	       bool External_Access>
       struct trigger_policy_string_form<
 	__gnu_pbds::test::hash_load_check_resize_trigger_t_<
-        Allocator,
+        _Alloc,
         Min_Load_Nom,
         Min_Load_Denom,
         Max_Load_Nom,
@@ -95,13 +95,13 @@ namespace __gnu_pbds
 	}
       };
 
-      template<typename Allocator,
-	       typename Allocator::size_type Load_Nom,
-	       typename Allocator::size_type Load_Denom,
+      template<typename _Alloc,
+	       typename _Alloc::size_type Load_Nom,
+	       typename _Alloc::size_type Load_Denom,
 	       bool External_Access>
       struct trigger_policy_string_form<
 	__gnu_pbds::test::cc_hash_max_collision_check_resize_trigger_t_<
-        Allocator,
+        _Alloc,
         Load_Nom,
         Load_Denom,
         External_Access> >

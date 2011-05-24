@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -34,53 +34,62 @@
 // warranty.
 
 /**
- * @file node_metadata_base.hpp
- * Contains an internal PB_DS_BASE_C_DEC for a patricia tree.
+ * @file branch_policy/traits.hpp
+ * Contains an implementation class for tree-like classes.
  */
 
-#ifndef PB_DS_PAT_TRIE_NODE_METADATA_BASE_HPP
-#define PB_DS_PAT_TRIE_NODE_METADATA_BASE_HPP
+#ifndef PB_DS_NODE_AND_IT_TRAITS_HPP
+#define PB_DS_NODE_AND_IT_TRAITS_HPP
 
-#include <ext/pb_ds/detail/basic_tree_policy/null_node_metadata.hpp>
+#include <ext/pb_ds/detail/types_traits.hpp>
+#include <ext/pb_ds/detail/bin_search_tree_/traits.hpp>
+#include <ext/pb_ds/detail/tree_policy/node_metadata_selector.hpp>
+#include <ext/pb_ds/detail/trie_policy/node_metadata_selector.hpp>
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
 
 namespace __gnu_pbds
 {
   namespace detail
   {
+    /// Tree traits class, primary template.
+    template<typename Key,
+	     typename Data,
+	     typename Cmp_Fn,
+	     template<typename Node_CItr,
+		      typename Node_Itr,
+		      typename Cmp_Fn_,
+		      typename _Alloc>
+	     class Node_Update,
+	     typename Tag,
+	     typename _Alloc>
+    struct tree_traits;
 
-    template<typename Metadata, class Allocator>
-    struct pat_trie_node_metadata_base
-    {
-    public:
-      typedef Metadata metadata_type;
-
-      typedef
-      typename Allocator::template rebind<
-	metadata_type>::other::const_reference
-      const_metadata_reference;
-
-    public:
-      inline const_metadata_reference
-      get_metadata() const
-      {
-	return (m_metadata);
-      }
-
-    public:
-      metadata_type m_metadata;
-    };
-
-    template<typename Allocator>
-    struct pat_trie_node_metadata_base<
-      null_node_metadata,
-      Allocator>
-    {
-    public:
-      typedef null_node_metadata metadata_type;
-    };
+    /// Trie traits class, primary template.
+    template<typename Key,
+	     typename Data,
+	     typename _ATraits,
+	     template<typename Node_CItr,
+		      typename Node_Itr,
+		      typename _ATraits_,
+		      typename _Alloc>
+	     class Node_Update,
+	     typename Tag,
+	     typename _Alloc>
+    struct trie_traits;
 
   } // namespace detail
 } // namespace __gnu_pbds
 
-#endif // #ifndef PB_DS_PAT_TRIE_NODE_BASE_HPP
+#include <ext/pb_ds/detail/rb_tree_map_/traits.hpp>
+#include <ext/pb_ds/detail/splay_tree_/traits.hpp>
+#include <ext/pb_ds/detail/ov_tree_map_/traits.hpp>
+#include <ext/pb_ds/detail/pat_trie_/traits.hpp>
 
+#undef PB_DS_DEBUG_VERIFY
+
+#endif // #ifndef PB_DS_NODE_AND_IT_TRAITS_HPP

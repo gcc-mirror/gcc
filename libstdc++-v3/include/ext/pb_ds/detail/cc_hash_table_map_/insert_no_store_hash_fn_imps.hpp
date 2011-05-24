@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file insert_no_store_hash_fn_imps.hpp
+ * @file cc_hash_table_map_/insert_no_store_hash_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s insert related functions,
  * when the hash value is not stored.
  */
@@ -45,7 +45,7 @@ PB_DS_CLASS_C_DEC::
 insert_imp(const_reference r_val, false_type)
 {
   PB_DS_ASSERT_VALID((*this))
-  const_key_reference r_key = PB_DS_V2F(r_val);
+  key_const_reference r_key = PB_DS_V2F(r_val);
   const size_type pos = ranged_hash_fn_base::operator()(r_key);
   entry_pointer p_e = m_entries[pos];
   resize_base::notify_insert_search_start();

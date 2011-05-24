@@ -643,7 +643,7 @@ PB_DS_CLASS_C_DEC::
 iterator_defs()
 {
   typedef typename Cntnr::point_iterator test_point_iterator;
-  typedef typename Cntnr::const_point_iterator const_test_point_iterator;
+  typedef typename Cntnr::point_const_iterator const_test_point_iterator;
   typedef typename Cntnr::iterator test_iterator;
   typedef typename Cntnr::const_iterator const_test_iterator;
 }
@@ -744,14 +744,14 @@ it_copy()
 
   {
     typename cntnr::const_iterator const_it = m_p_c->end();
-    typename cntnr::const_point_iterator const_find_it(const_it);
+    typename cntnr::point_const_iterator const_find_it(const_it);
     _GLIBCXX_THROW_IF(const_find_it != const_it, "", m_p_c, &m_native_c);
     _GLIBCXX_THROW_IF(!(const_find_it == const_it), "", m_p_c, &m_native_c);
   }
 
   {
     typename cntnr::iterator it = m_p_c->end();
-    typename cntnr::const_point_iterator const_find_it1(it);
+    typename cntnr::point_const_iterator const_find_it1(it);
     _GLIBCXX_THROW_IF(const_find_it1 != it, "", m_p_c, &m_native_c);
     _GLIBCXX_THROW_IF(!(const_find_it1 == it), "", m_p_c, &m_native_c);
 
@@ -760,7 +760,7 @@ it_copy()
     _GLIBCXX_THROW_IF(!(find_it1 == it), "", m_p_c, &m_native_c);
 
     typename cntnr::point_iterator find_it = m_p_c->end();
-    typename cntnr::const_point_iterator const_find_it(find_it);
+    typename cntnr::point_const_iterator const_find_it(find_it);
     _GLIBCXX_THROW_IF(find_it != const_find_it, "", m_p_c, &m_native_c);
     _GLIBCXX_THROW_IF(!(find_it == const_find_it), "", m_p_c, &m_native_c);
   }
@@ -780,7 +780,7 @@ it_assign()
     _GLIBCXX_THROW_IF(const_it != it, "", m_p_c, &m_native_c);
     _GLIBCXX_THROW_IF(!(const_it == it), "", m_p_c, &m_native_c);
 
-    typename cntnr::const_point_iterator const_find_it;
+    typename cntnr::point_const_iterator const_find_it;
     const_find_it = it;
     _GLIBCXX_THROW_IF(const_find_it != it, "", m_p_c, &m_native_c);
     _GLIBCXX_THROW_IF(!(const_find_it == it), "", m_p_c, &m_native_c);
@@ -793,7 +793,7 @@ it_assign()
 
   {
     typename cntnr::const_iterator const_it = m_p_c->end();
-    typename cntnr::const_point_iterator const_find_it;
+    typename cntnr::point_const_iterator const_find_it;
     const_find_it = const_it;
     _GLIBCXX_THROW_IF(const_find_it != const_it, "", m_p_c, &m_native_c);
     _GLIBCXX_THROW_IF(!(const_find_it == const_it), "", m_p_c, &m_native_c);
@@ -801,7 +801,7 @@ it_assign()
 
   {
     typename cntnr::point_iterator find_it = m_p_c->end();
-    typename cntnr::const_point_iterator const_find_it;
+    typename cntnr::point_const_iterator const_find_it;
     const_find_it = find_it;
     _GLIBCXX_THROW_IF(find_it != const_find_it, "", m_p_c, &m_native_c);
     _GLIBCXX_THROW_IF(!(find_it == const_find_it), "", m_p_c, &m_native_c);

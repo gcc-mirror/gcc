@@ -35,7 +35,7 @@
 // warranty.
 
 /**
- * @file constructors_destructor_fn_imps.hpp
+ * @file binary_heap_/constructors_destructor_fn_imps.hpp
  * Contains an implementation class for binary_heap_.
  */
 
@@ -62,55 +62,37 @@ copy_from_range(It first_it, It last_it)
       insert_value(*first_it, s_no_throw_copies_ind);
       ++first_it;
     }
-
-  std::make_heap(m_a_entries, m_a_entries + m_size, static_cast<entry_cmp& >(*this));
-
-  PB_DS_ASSERT_VALID((*this))
+  make_heap();
+ PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-binary_heap_() :
-  m_size(0),
-  m_actual_size(resize_policy::min_size),
+binary_heap()
+: m_size(0), m_actual_size(resize_policy::min_size),
   m_a_entries(s_entry_allocator.allocate(m_actual_size))
-{
-  PB_DS_ASSERT_VALID((*this))
-}
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-binary_heap_(const Cmp_Fn& r_cmp_fn) :
-  entry_cmp(r_cmp_fn),
-  m_size(0),
-  m_actual_size(resize_policy::min_size),
+binary_heap(const Cmp_Fn& r_cmp_fn)
+: entry_cmp(r_cmp_fn), m_size(0), m_actual_size(resize_policy::min_size),
   m_a_entries(s_entry_allocator.allocate(m_actual_size))
-{
-  PB_DS_ASSERT_VALID((*this))
-}
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-binary_heap_(const PB_DS_CLASS_C_DEC& other) :
-  entry_cmp(other),
-  resize_policy(other),
-  m_size(0),
+binary_heap(const PB_DS_CLASS_C_DEC& other)
+: entry_cmp(other), resize_policy(other), m_size(0),
   m_actual_size(other.m_actual_size),
   m_a_entries(s_entry_allocator.allocate(m_actual_size))
 {
   PB_DS_ASSERT_VALID(other)
   _GLIBCXX_DEBUG_ASSERT(m_a_entries != other.m_a_entries);
 
-  const_iterator first_it = other.begin();
-  const_iterator last_it = other.end();
-
   __try
     {
-      while (first_it != last_it)
-        {
-	  insert_value(*first_it, s_no_throw_copies_ind);
-	  ++first_it;
-        }
+      copy_from_range(other.begin(), other.end());
     }
   __catch(...)
     {
@@ -131,9 +113,8 @@ swap(PB_DS_CLASS_C_DEC& other)
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)
   _GLIBCXX_DEBUG_ASSERT(m_a_entries != other.m_a_entries);
-
   value_swap(other);
-  std::swap((entry_cmp& )(*this), (entry_cmp& )other);
+  std::swap((entry_cmp&)(*this), (entry_cmp&)other);
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)
 }
@@ -151,10 +132,9 @@ value_swap(PB_DS_CLASS_C_DEC& other)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-~binary_heap_()
+~binary_heap()
 {
   for (size_type i = 0; i < m_size; ++i)
     erase_at(m_a_entries, i, s_no_throw_copies_ind);
   s_entry_allocator.deallocate(m_a_entries, m_actual_size);
 }
-

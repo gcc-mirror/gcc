@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file detail/binomial_heap_/debug_fn_imps.hpp
  * Contains an implementation for binomial_heap_.
  */
 

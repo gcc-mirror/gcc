@@ -71,10 +71,10 @@ typedef pair< unsigned int, unsigned int> interval;
 
 // Functor updating maximal endpoints of entries. Algorithm taken from
 // "Introduction to Algorithms" by Cormen, Leiserson, and Rivest.
-template<class Const_Node_Iterator,
-	 class Node_Iterator,
+template<class Node_CItr,
+	 class Node_Itr,
 	 class Cmp_Fn,
-	 class Allocator>
+	 typename _Alloc>
 struct intervals_node_update
 {
 public:
@@ -88,8 +88,8 @@ public:
   bool
   overlaps(const interval& r_interval)
   {
-    Const_Node_Iterator nd_it = node_begin();
-    Const_Node_Iterator end_it = node_end();
+    Node_CItr nd_it = node_begin();
+    Node_CItr end_it = node_end();
 
     while (nd_it != end_it)
       {
@@ -99,7 +99,7 @@ public:
 	  return true;
 
 	// Get the const node iterator of the node's left child.
-	Const_Node_Iterator l_nd_it = nd_it.get_l_child();
+	Node_CItr l_nd_it = nd_it.get_l_child();
 
 	// Calculate the maximal endpoint of the left child. If the
 	// node has no left child, then this is the node's maximal
@@ -122,7 +122,7 @@ protected:
   // updated; end_nd_it is a const node iterator to a just-after leaf
   // node.
   inline void
-  operator()(Node_Iterator nd_it, Const_Node_Iterator end_nd_it)
+  operator()(Node_Itr nd_it, Node_CItr end_nd_it)
   {
     // The left maximal endpoint is 0 if there is no left child.
     const unsigned int l_max_endpoint =(nd_it.get_l_child() == end_nd_it)?
@@ -138,10 +138,10 @@ protected:
       max((*nd_it)->second, max<unsigned int>(l_max_endpoint, r_max_endpoint));
   }
 
-  virtual Const_Node_Iterator
+  virtual Node_CItr
   node_begin() const = 0;
 
-  virtual Const_Node_Iterator
+  virtual Node_CItr
   node_end() const = 0;
 
   virtual
@@ -186,7 +186,7 @@ int main()
   // Test a red-black tree.
   some_op_sequence(tree<
 		   interval,
-		   null_mapped_type,
+		   null_type,
 		   less<interval>,
 		   rb_tree_tag,
 		   intervals_node_update>());
@@ -194,7 +194,7 @@ int main()
   // Test an ordered-vector tree.
   some_op_sequence(tree<
 		   interval,
-		   null_mapped_type,
+		   null_type,
 		   less<interval>,
 		   ov_tree_tag,
 		   intervals_node_update>());
@@ -202,7 +202,7 @@ int main()
   // Test a splay tree.
   some_op_sequence(tree<
 		   interval,
-		   null_mapped_type,
+		   null_type,
 		   less<interval>,
 		   splay_tree_tag,
 		   intervals_node_update>());

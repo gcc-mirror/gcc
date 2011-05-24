@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file trace_fn_imps.hpp
+ * @file cc_hash_table_map_/trace_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s trace-mode functions.
  */
 

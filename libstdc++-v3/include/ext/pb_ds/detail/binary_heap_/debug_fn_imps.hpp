@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file binary_heap_/debug_fn_imps.hpp
  * Contains an implementation class for a binary_heap.
  */
 
@@ -47,7 +47,7 @@ assert_valid(const char* __file, int __line) const
 {
 #ifdef PB_DS_REGRESSION
   s_entry_allocator.check_allocated(m_a_entries, m_actual_size);
-#endif 
+#endif
 
   resize_policy::assert_valid(__file, __line);
   PB_DS_DEBUG_VERIFY(m_size <= m_actual_size);
@@ -55,7 +55,7 @@ assert_valid(const char* __file, int __line) const
     {
 #ifdef PB_DS_REGRESSION
       s_value_allocator.check_allocated(m_a_entries[i], 1);
-#endif 
+#endif
 
       if (left_child(i) < m_size)
 	PB_DS_DEBUG_VERIFY(!entry_cmp::operator()(m_a_entries[i], m_a_entries[left_child(i)]));
@@ -69,4 +69,4 @@ assert_valid(const char* __file, int __line) const
     }
 }
 
-#endif 
+#endif

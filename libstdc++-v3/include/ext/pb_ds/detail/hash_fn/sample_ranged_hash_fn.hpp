@@ -41,37 +41,35 @@
 #ifndef PB_DS_SAMPLE_RANGED_HASH_FN_HPP
 #define PB_DS_SAMPLE_RANGED_HASH_FN_HPP
 
-// A sample ranged-hash functor.
-class sample_ranged_hash_fn
+namespace __gnu_pbds
 {
+  /// A sample ranged-hash functor.
+  class sample_ranged_hash_fn
+  {
+  public:
+    typedef std::size_t size_type;
 
-public:
+    // Default constructor.
+    sample_ranged_hash_fn();
 
-  // Size type.
-  typedef std::size_t size_type;
+    // Copy constructor.
+    sample_ranged_hash_fn(const sample_ranged_hash_fn&);
 
-public:
+    // Swaps content.
+    inline void
+    swap(sample_ranged_hash_fn&);
 
-  // Default constructor.
-  sample_ranged_hash_fn();
+  protected:
 
-  // Copy constructor.
-  sample_ranged_hash_fn(const sample_ranged_hash_fn& other);
+    // Notifies the policy object that the container's __size has
+    // changed to size.
+    void
+    notify_resized(size_type);
 
-  // Swaps content.
-  inline void
-  swap(sample_ranged_hash_fn& other);
+    // Transforms key_const_reference into a position within the table.
+    inline size_type
+    operator()(key_const_reference) const;
 
-protected:
-
-  // Notifies the policy object that the container's __size has changed to size.
-  void
-  notify_resized(size_type size);
-
-  // Transforms r_key into a position within the table.
-  inline size_type
-  operator()(const_key_reference r_key) const;
-
-};
-
+  };
+}
 #endif // #ifndef PB_DS_SAMPLE_RANGED_HASH_FN_HPP

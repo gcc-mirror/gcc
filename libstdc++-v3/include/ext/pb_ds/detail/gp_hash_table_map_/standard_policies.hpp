@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file standard_policies.hpp
+ * @file gp_hash_table_map_/standard_policies.hpp
  * Contains standard policies for gp_ht_map types.
  */
 

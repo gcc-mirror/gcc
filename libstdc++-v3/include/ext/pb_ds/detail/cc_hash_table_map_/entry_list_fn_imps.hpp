@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file entry_list_fn_imps.hpp
+ * @file cc_hash_table_map_/entry_list_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s entry-list related functions.
  */
 

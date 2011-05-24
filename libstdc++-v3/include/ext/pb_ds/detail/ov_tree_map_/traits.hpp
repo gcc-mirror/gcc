@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file traits.hpp
+ * @file ov_tree_map_/traits.hpp
  * Contains an implementation class for ov_tree_.
  */
 
@@ -47,135 +47,135 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-
+    /// Tree traits.
     template<typename Key,
 	     typename Mapped,
 	     class Cmp_Fn,
-	     template<typename Const_Node_Iterator,
-		      class Node_Iterator,
+	     template<typename Node_CItr,
+		      class Node_Itr,
 		      class Cmp_Fn_,
-		      class Allocator_>
+		      typename _Alloc_>
     class Node_Update,
-	     class Allocator>
+	     typename _Alloc>
     struct tree_traits<
       Key,
       Mapped,
       Cmp_Fn,
       Node_Update,
       ov_tree_tag,
-      Allocator>
+      _Alloc>
     {
     private:
       typedef
       typename types_traits<
       Key,
       Mapped,
-      Allocator,
+      _Alloc,
       false>::value_type
       value_type;
 
     public:
       typedef
-      typename tree_node_metadata_selector<
+      typename tree_node_metadata_dispatch<
       Key,
       Mapped,
       Cmp_Fn,
       Node_Update,
-      Allocator>::type
+      _Alloc>::type
       metadata_type;
 
       typedef
       ov_tree_node_const_it_<
 	value_type,
 	metadata_type,
-	Allocator>
-      const_node_iterator;
+	_Alloc>
+      node_const_iterator;
 
       typedef
       ov_tree_node_it_<
 	value_type,
 	metadata_type,
-	Allocator>
+	_Alloc>
       node_iterator;
 
       typedef
       Node_Update<
-	const_node_iterator,
+	node_const_iterator,
 	node_iterator,
 	Cmp_Fn,
-	Allocator>
+	_Alloc>
       node_update;
 
       typedef
-      __gnu_pbds::null_tree_node_update<
-	const_node_iterator,
+      __gnu_pbds::null_node_update<
+	node_const_iterator,
 	node_iterator,
 	Cmp_Fn,
-	Allocator>* 
+	_Alloc>* 
       null_node_update_pointer;
     };
 
+    /// Specialization.
     template<typename Key,
 	     class Cmp_Fn,
-	     template<typename Const_Node_Iterator,
-		      class Node_Iterator,
+	     template<typename Node_CItr,
+		      class Node_Itr,
 		      class Cmp_Fn_,
-		      class Allocator_>
+		      typename _Alloc_>
     class Node_Update,
-	     class Allocator>
+	     typename _Alloc>
     struct tree_traits<
       Key,
-      null_mapped_type,
+      null_type,
       Cmp_Fn,
       Node_Update,
       ov_tree_tag,
-      Allocator>
+      _Alloc>
     {
     private:
       typedef
       typename types_traits<
       Key,
-      null_mapped_type,
-      Allocator,
+      null_type,
+      _Alloc,
       false>::value_type
       value_type;
 
     public:
       typedef
-      typename tree_node_metadata_selector<
+      typename tree_node_metadata_dispatch<
       Key,
-      null_mapped_type,
+      null_type,
       Cmp_Fn,
       Node_Update,
-      Allocator>::type
+      _Alloc>::type
       metadata_type;
 
       typedef
       ov_tree_node_const_it_<
 	value_type,
 	metadata_type,
-	Allocator>
-      const_node_iterator;
+	_Alloc>
+      node_const_iterator;
 
-      typedef const_node_iterator node_iterator;
+      typedef node_const_iterator node_iterator;
 
       typedef
       Node_Update<
-	const_node_iterator,
-	const_node_iterator,
+	node_const_iterator,
+	node_const_iterator,
 	Cmp_Fn,
-	Allocator>
+	_Alloc>
       node_update;
 
       typedef
-      __gnu_pbds::null_tree_node_update<
-	const_node_iterator,
+      __gnu_pbds::null_node_update<
+	node_const_iterator,
 	node_iterator,
 	Cmp_Fn,
-	Allocator>* 
+	_Alloc>* 
       null_node_update_pointer;
     };
-
   } // namespace detail
 } // namespace __gnu_pbds
 

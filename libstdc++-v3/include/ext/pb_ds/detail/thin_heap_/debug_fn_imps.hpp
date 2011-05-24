@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file thin_heap_/debug_fn_imps.hpp
  * Contains an implementation for thin_heap_.
  */
 
@@ -81,7 +81,7 @@ assert_max(const char* __file, int __line) const
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_node_consistent(const_node_pointer p_nd, bool root,
+assert_node_consistent(node_const_pointer p_nd, bool root,
 		       const char* __file, int __line) const
 {
   base_type::assert_node_consistent(p_nd, root, __file, __line);

@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file splay_tree_/debug_fn_imps.hpp
  * Contains an implementation class for splay_tree_.
  */
 

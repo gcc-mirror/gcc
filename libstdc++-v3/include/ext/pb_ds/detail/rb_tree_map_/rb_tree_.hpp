@@ -34,30 +34,11 @@
 // warranty.
 
 /**
- * @file rb_tree_.hpp
- * Contains an implementation for rb_tree_.
+ * @file rb_tree_map_/rb_tree_.hpp
+ * Contains an implementation for Red Black trees.
  */
-/*
- * This implementation uses an idea from the SGI STL (using a @a header node
- *    which is needed for efficient iteration).
- */
-
-#ifdef PB_DS_DATA_TRUE_INDICATOR
-#ifndef PB_DS_BIN_SEARCH_TREE_HPP__DATA_TRUE_INDICATOR
-#define PB_DS_BIN_SEARCH_TREE_HPP__DATA_TRUE_INDICATOR
-#include <ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp>
-#endif 
-#endif 
-
-#ifdef PB_DS_DATA_FALSE_INDICATOR
-#ifndef PB_DS_BIN_SEARCH_TREE_HPP__DATA_FALSE_INDICATOR
-#define PB_DS_BIN_SEARCH_TREE_HPP__DATA_FALSE_INDICATOR
-#include <ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp>
-#endif 
-#endif 
 
 #include <ext/pb_ds/detail/standard_policies.hpp>
-#include <ext/pb_ds/detail/basic_types.hpp>
 #include <utility>
 #include <vector>
 #include <assert.h>
@@ -69,89 +50,78 @@ namespace __gnu_pbds
   {
 #define PB_DS_CLASS_T_DEC \
     template<typename Key, typename Mapped, typename Cmp_Fn, \
-	     typename Node_And_It_Traits, typename Allocator>
+	     typename Node_And_It_Traits, typename _Alloc>
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-#define PB_DS_CLASS_NAME rb_tree_data_
-#endif 
-
-#ifdef PB_DS_DATA_TRUE_INDICATOR
-#define PB_DS_BASE_CLASS_NAME bin_search_tree_data_
-#endif 
+# define PB_DS_RB_TREE_NAME rb_tree_map
+# define PB_DS_RB_TREE_BASE_NAME bin_search_tree_map
+#endif
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
-#define PB_DS_CLASS_NAME rb_tree_no_data_
-#endif 
-
-#ifdef PB_DS_DATA_FALSE_INDICATOR
-#define PB_DS_BASE_CLASS_NAME bin_search_tree_no_data_
-#endif 
+# define PB_DS_RB_TREE_NAME rb_tree_set
+# define PB_DS_RB_TREE_BASE_NAME bin_search_tree_set
+#endif
 
 #define PB_DS_CLASS_C_DEC \
-    PB_DS_CLASS_NAME<Key, Mapped, Cmp_Fn, Node_And_It_Traits, Allocator>
+    PB_DS_RB_TREE_NAME<Key, Mapped, Cmp_Fn, Node_And_It_Traits, _Alloc>
 
-#define PB_DS_BASE_C_DEC \
-    PB_DS_BASE_CLASS_NAME<Key, Mapped, Cmp_Fn, Node_And_It_Traits, Allocator>
+#define PB_DS_RB_TREE_BASE \
+    PB_DS_RB_TREE_BASE_NAME<Key, Mapped, Cmp_Fn, Node_And_It_Traits, _Alloc>
 
-#ifdef PB_DS_DATA_TRUE_INDICATOR
-#define PB_DS_V2F(X) (X).first
-#define PB_DS_V2S(X) (X).second
-#define PB_DS_EP2VP(X)& ((X)->m_value)
-#endif 
 
-#ifdef PB_DS_DATA_FALSE_INDICATOR
-#define PB_DS_V2F(X) (X)
-#define PB_DS_V2S(X) Mapped_Data()
-#define PB_DS_EP2VP(X)& ((X)->m_value.first)
-#endif 
-
+    /*
+     *  @brief Red-Black tree.
+     *
+     *  This implementation uses an idea from the SGI STL (using a
+     *  @a header node which is needed for efficient iteration).
+     */
     template<typename Key,
 	     typename Mapped,
 	     typename Cmp_Fn,
 	     typename Node_And_It_Traits,
-	     typename Allocator>
-    class PB_DS_CLASS_NAME : public PB_DS_BASE_C_DEC
+	     typename _Alloc>
+    class PB_DS_RB_TREE_NAME : public PB_DS_RB_TREE_BASE
     {
     private:
-      typedef PB_DS_BASE_C_DEC base_type;
-      typedef typename base_type::node_pointer node_pointer;
+      typedef PB_DS_RB_TREE_BASE 		       	 base_type;
+      typedef typename base_type::node_pointer 		 node_pointer;
 
     public:
-      typedef Cmp_Fn cmp_fn;
-      typedef Allocator allocator_type;
-      typedef typename Allocator::size_type size_type;
-      typedef typename Allocator::difference_type difference_type;
-      typedef typename base_type::key_type key_type;
-      typedef typename base_type::key_pointer key_pointer;
-      typedef typename base_type::const_key_pointer const_key_pointer;
-      typedef typename base_type::key_reference key_reference;
-      typedef typename base_type::const_key_reference const_key_reference;
-      typedef typename base_type::mapped_type mapped_type;
-      typedef typename base_type::mapped_pointer mapped_pointer;
-      typedef typename base_type::const_mapped_pointer const_mapped_pointer;
-      typedef typename base_type::mapped_reference mapped_reference;
-      typedef typename base_type::const_mapped_reference const_mapped_reference;
-      typedef typename base_type::value_type value_type;
-      typedef typename base_type::pointer pointer;
-      typedef typename base_type::const_pointer const_pointer;
-      typedef typename base_type::reference reference;
-      typedef typename base_type::const_reference const_reference;
-      typedef typename base_type::point_iterator point_iterator;
-      typedef typename base_type::const_iterator const_point_iterator;
-      typedef typename base_type::iterator iterator;
-      typedef typename base_type::const_iterator const_iterator;
-      typedef typename base_type::reverse_iterator reverse_iterator;
+      typedef rb_tree_tag 				 container_category;
+      typedef Cmp_Fn 					 cmp_fn;
+      typedef _Alloc 					 allocator_type;
+      typedef typename _Alloc::size_type 		 size_type;
+      typedef typename _Alloc::difference_type 		 difference_type;
+      typedef typename base_type::key_type 		 key_type;
+      typedef typename base_type::key_pointer 		 key_pointer;
+      typedef typename base_type::key_const_pointer 	 key_const_pointer;
+      typedef typename base_type::key_reference 	 key_reference;
+      typedef typename base_type::key_const_reference 	 key_const_reference;
+      typedef typename base_type::mapped_type 		 mapped_type;
+      typedef typename base_type::mapped_pointer 	 mapped_pointer;
+      typedef typename base_type::mapped_const_pointer 	 mapped_const_pointer;
+      typedef typename base_type::mapped_reference 	 mapped_reference;
+      typedef typename base_type::mapped_const_reference mapped_const_reference;
+      typedef typename base_type::value_type 		 value_type;
+      typedef typename base_type::pointer 		 pointer;
+      typedef typename base_type::const_pointer 	 const_pointer;
+      typedef typename base_type::reference 		 reference;
+      typedef typename base_type::const_reference 	 const_reference;
+      typedef typename base_type::point_iterator 	 point_iterator;
+      typedef typename base_type::const_iterator 	 point_const_iterator;
+      typedef typename base_type::iterator 		 iterator;
+      typedef typename base_type::const_iterator 	 const_iterator;
+      typedef typename base_type::reverse_iterator 	 reverse_iterator;
       typedef typename base_type::const_reverse_iterator const_reverse_iterator;
-      typedef typename base_type::node_update node_update;
+      typedef typename base_type::node_update 		 node_update;
 
+      PB_DS_RB_TREE_NAME();
 
-      PB_DS_CLASS_NAME();
+      PB_DS_RB_TREE_NAME(const Cmp_Fn&);
 
-      PB_DS_CLASS_NAME(const Cmp_Fn&);
+      PB_DS_RB_TREE_NAME(const Cmp_Fn&, const node_update&);
 
-      PB_DS_CLASS_NAME(const Cmp_Fn&, const node_update&);
-
-      PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC&);
+      PB_DS_RB_TREE_NAME(const PB_DS_CLASS_C_DEC&);
 
       void
       swap(PB_DS_CLASS_C_DEC&);
@@ -164,7 +134,7 @@ namespace __gnu_pbds
       insert(const_reference);
 
       inline mapped_reference
-      operator[](const_key_reference r_key)
+      operator[](key_const_reference r_key)
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
@@ -179,14 +149,14 @@ namespace __gnu_pbds
 	  }
 	_GLIBCXX_DEBUG_ONLY(assert_valid(__FILE__, __LINE__);)
 	return ins_pair.first.m_p_nd->m_value.second;
-#else 
+#else
 	insert(r_key);
-	return base_type::s_null_mapped;
-#endif 
+	return base_type::s_null_type;
+#endif
       }
 
       inline bool
-      erase(const_key_reference);
+      erase(key_const_reference);
 
       inline iterator
       erase(iterator);
@@ -202,20 +172,17 @@ namespace __gnu_pbds
       join(PB_DS_CLASS_C_DEC&);
 
       void
-      split(const_key_reference, PB_DS_CLASS_C_DEC&);
-
-    protected:
+      split(key_const_reference, PB_DS_CLASS_C_DEC&);
 
     private:
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid(const char* file, int line) const;
+      assert_valid(const char*, int) const;
 
       size_type
-      assert_node_consistent(const node_pointer, const char* file,
-						 int line) const;
-#endif 
+      assert_node_consistent(const node_pointer, const char*, int) const;
+#endif
 
       inline static bool
       is_effectively_black(const node_pointer);
@@ -273,13 +240,8 @@ namespace __gnu_pbds
 #undef PB_DS_STRUCT_ONLY_ASSERT_VALID
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
-#undef PB_DS_CLASS_NAME
-#undef PB_DS_BASE_CLASS_NAME
-#undef PB_DS_BASE_C_DEC
-#undef PB_DS_V2F
-#undef PB_DS_EP2VP
-#undef PB_DS_V2S
-
+#undef PB_DS_RB_TREE_NAME
+#undef PB_DS_RB_TREE_BASE_NAME
+#undef PB_DS_RB_TREE_BASE
   } // namespace detail
 } // namespace __gnu_pbds
-

@@ -34,9 +34,9 @@
 // warranty.
 
 /**
- * @file info_fn_imps.hpp
+ * @file gp_hash_table_map_/info_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s entire container info related
- *    functions.
+ * functions.
  */
 
 PB_DS_CLASS_T_DEC

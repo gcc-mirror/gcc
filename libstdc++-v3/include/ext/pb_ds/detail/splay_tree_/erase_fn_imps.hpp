@@ -34,14 +34,14 @@
 // warranty.
 
 /**
- * @file erase_fn_imps.hpp
+ * @file splay_tree_/erase_fn_imps.hpp
  * Contains an implementation class for splay_tree_.
  */
 
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
-erase(const_key_reference r_key)
+erase(key_const_reference r_key)
 {
   point_iterator it = find(r_key);
   if (it == base_type::end())
@@ -142,7 +142,7 @@ erase_node(node_pointer p_nd)
   if (p_l != 0)
     p_l->m_p_parent = p_target_r;
   PB_DS_ASSERT_VALID((*this))
-  this->apply_update(p_target_r, (node_update* )this);
+  this->apply_update(p_target_r, (node_update*)this);
 }
 
 PB_DS_CLASS_T_DEC

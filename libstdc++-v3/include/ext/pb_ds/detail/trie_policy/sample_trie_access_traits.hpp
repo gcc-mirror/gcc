@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -34,17 +34,44 @@
 // warranty.
 
 /**
- * @file null_node_update_imp.hpp
- * Contains an implementation of null_node_update.
+ * @file trie_policy/sample_trie_access_traits.hpp
+ * Contains a sample probe policy.
  */
 
-PB_DS_CLASS_T_DEC
-template<typename Const_Node_Iterator_,
-	 typename Node_Iterator_,
-	 class    Cmp_Fn_,
-	 typename Allocator_>
-inline void
-PB_DS_CLASS_C_DEC::
-swap(null_tree_node_update<            Const_Node_Iterator_, Node_Iterator_, Cmp_Fn_, Allocator_>& /*other*/)
-{ }
+#ifndef PB_DS_SAMPLE_TRIE_E_ACCESS_TRAITS_HPP
+#define PB_DS_SAMPLE_TRIE_E_ACCESS_TRAITS_HPP
 
+namespace __gnu_pbds
+{
+  /// A sample trie element access traits.
+  struct sample_trie_access_traits
+  {
+    typedef std::size_t 		       		size_type;
+    typedef std::string 			       	key_type;
+
+    typedef typename _Alloc::template rebind<key_type>	__rebind_k;
+    typedef typename __rebind_k::other::const_reference	key_const_reference;
+    typedef std::string::const_iterator 		const_iterator;
+
+    // Element type.
+    typedef char 				       	e_type;
+
+    enum
+      {
+	max_size = 4
+      };
+
+    // Returns a const_iterator to the first element of r_key.
+    inline static const_iterator
+    begin(key_const_reference);
+
+    // Returns a const_iterator to the after-last element of r_key.
+    inline static const_iterator
+    end(key_const_reference);
+
+    // Maps an element to a position.
+    inline static size_type
+    e_pos(e_type);
+  };
+}
+#endif // #ifndef PB_DS_SAMPLE_TRIE_E_ACCESS_TRAITS_HPP

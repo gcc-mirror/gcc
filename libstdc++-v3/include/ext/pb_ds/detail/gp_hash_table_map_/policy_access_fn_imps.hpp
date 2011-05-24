@@ -34,9 +34,9 @@
 // warranty.
 
 /**
- * @file policy_access_fn_imps.hpp
+ * @file gp_hash_table_map_/policy_access_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s policy agpess
- *    functions.
+ * functions.
  */
 
 PB_DS_CLASS_T_DEC

@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file standard_policies.hpp
+ * @file cc_hash_table_map_/standard_policies.hpp
  * Contains standard policies for cc_ht_map types.
  */
 

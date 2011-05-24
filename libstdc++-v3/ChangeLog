@@ -1,3 +1,512 @@
+2011-05-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/37144
+	PR libstdc++/28457
+	Interface changes for ext/pb_ds.
+	PB_DS_BASE_C_DEC to unique PB_DS_*_BASE macros.
+	* include/ext/pb_ds/assoc_container.hpp (container_base): Remove.
+	(basic_hash_table, basic_branch, list_update): Derive from
+	container_base_dispatch.
+	* include/ext/pb_ds/list_update_policy.hpp (null_lu_metadata): Remove.
+	(move_to_front_lu_policy): To lu_move_to_front_policy.
+	(counter_lu_policy): To lu_counter_policy.
+	* include/ext/pb_ds/tree_policy.hpp (null_tree_node_update): Remove.
+	* include/ext/pb_ds/tag_and_trait.hpp (container_base_dispatch): Adjust
+	template parameters, declare here.
+	(null_mapped_type) Remove.
+	(null_type): Just use this for template tricks everywhere.
+	* include/ext/pb_ds/hash_policy.hpp (null_hash_fn, null_probe_fn):
+	Remove.
+	* include/ext/pb_ds/trie_policy.hpp (null_trie_node_update): Remove.
+	(string_trie_e_access_traits): To trie_string_access_traits.
+	* include/ext/pb_ds/priority_queue.hpp: Use container_base_dispatch.
+
+	File changes.
+	* include/Makefile.am (pb_headers): Removed and changed file names.
+	* include/Makefile.in: Regenerated.
+	* include/ext/pb_ds/detail/basic_types.hpp: Remove.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	  cond_dtor_entry_dealtor.hpp: Remove.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	  cond_key_dtor_entry_dealtor.hpp: Remove.
+	* include/ext/pb_ds/detail/binary_heap_/const_point_iterator.hpp: Move..
+	* include/ext/pb_ds/detail/binary_heap_/
+	  point_const_iterator.hpp: ..here.
+	* include/ext/pb_ds/detail/basic_tree_policy: Move to...
+	* include/ext/pb_ds/detail/branch_policy: This.
+	* include/ext/pb_ds/detail/branch_policy/
+	  basic_tree_policy_base.hpp: Move...
+	* include/ext/pb_ds/detail/branch_policy/branch_policy.hpp: ...here.
+	* include/ext/pb_ds/detail/branch_policy/null_node_metadata.hpp: Add.
+	* include/ext/pb_ds/detail/branch_policy/traits.hpp: Add.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	null_metadata.hpp: Remove.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	const_point_iterator.hpp: Move...
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	point_const_iterator.hpp: ...here.
+	* include/ext/pb_ds/detail/list_update_policy/
+	counter_lu_metadata.hpp: Move..
+	* include/ext/pb_ds/detail/list_update_policy/
+	lu_counter_metadata.hpp: ...here.
+	* include/ext/pb_ds/detail/list_update_policy/
+	counter_lu_policy_imp.hpp: Remove.
+	* include/ext/pb_ds/detail/list_update_policy/
+	mtf_lu_policy_imp.hpp: Remove.
+	* include/ext/pb_ds/detail/trie_policy/
+	string_trie_e_access_traits_imp.hpp: Move...
+	* include/ext/pb_ds/detail/trie_policy/
+	sample_trie_access_traits.hpp: ...here.
+	* include/ext/pb_ds/detail/trie_policy/
+	sample_trie_e_access_traits.hpp: Move...
+	* include/ext/pb_ds/detail/trie_policy/
+	trie_string_access_traits_imp.hpp: ...here.
+	* include/ext/pb_ds/detail/trie_policy/null_node_update_imp.hpp: Remove.
+	* include/ext/pb_ds/detail/tree_policy/null_node_update_imp.hpp: Remove.
+	* include/ext/pb_ds/detail/ov_tree_map_/cond_dtor.hpp: Remove.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_base.hpp: New, fold all
+	types found in the following files into pat_trie_base.
+	* include/ext/pb_ds/detail/pat_trie_/const_child_iterator.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/
+	  cond_dtor_entry_dealtor.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/child_iterator.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/split_join_branch_bag.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/head.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/leaf.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/node_base.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/node_metadata_base.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/internal_node.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/node_iterators.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/point_iterators.hpp: Folded.
+	* include/ext/pb_ds/detail/pat_trie_/synth_e_access_traits.hpp: Move...
+	* include/ext/pb_ds/detail/pat_trie_/synth_access_traits.hpp: ...here.
+	* include/ext/pb_ds/detail/unordered_iterator/
+	const_point_iterator.hpp: Move...
+	* include/ext/pb_ds/detail/unordered_iterator/
+	point_const_iterator.hpp: ...here.
+
+
+	Adjust for above changes.
+	* include/ext/pb_ds/detail/resize_policy/sample_size_policy.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/sample_resize_policy.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	  sample_resize_trigger.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	  binomial_heap_base_.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	  split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/container_base_dispatch.hpp: Same. Adjust
+	  for template parameter ordering change.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  erase_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  constructor_destructor_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cmp_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  resize_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  constructor_destructor_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  entry_list_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  find_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  debug_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cc_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/resize_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  cond_key_dtor_entry_dealtor.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  debug_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  erase_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/size_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  resize_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	  standard_policies.hpp: Same.
+	* include/ext/pb_ds/detail/tree_trace_base.hpp: Same.
+	* include/ext/pb_ds/detail/unordered_iterator/iterator.hpp: Same.
+	* include/ext/pb_ds/detail/unordered_iterator/const_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/unordered_iterator/point_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/r_erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/update_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/insert_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/split_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/rotate_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	  policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/r_erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/rotate_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/node_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/point_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	  split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_policy/
+	  sample_update_policy.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  erase_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  constructor_destructor_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  resize_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  constructor_destructor_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  iterator_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  find_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  find_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  debug_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/resize_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  debug_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  erase_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  resize_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	  standard_policies.hpp: Same.
+	* include/ext/pb_ds/detail/standard_policies.hpp: Same.
+	* include/ext/pb_ds/detail/types_traits.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/const_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/entry_cmp.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/entry_pred.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/binary_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/resize_policy.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/tree_policy/order_statistics_imp.hpp: Same.
+	* include/ext/pb_ds/detail/tree_policy/node_metadata_selector.hpp: Same.
+	* include/ext/pb_ds/detail/tree_policy/
+	  sample_tree_node_update.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/order_statistics_imp.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/
+	  sample_trie_node_update.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/trie_policy_base.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/
+	  prefix_search_node_update_imp.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/node_metadata_selector.hpp: Same.
+	* include/ext/pb_ds/detail/cond_dealtor.hpp: Same.
+	* include/ext/pb_ds/detail/priority_queue_base_dispatch.hpp: Same.
+	  Adjust for template parameter change, fold into
+	  container_base_dispatch.
+	* include/ext/pb_ds/detail/pairing_heap_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/pairing_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_/binomial_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/type_utils.hpp: Same.
+	* include/ext/pb_ds/detail/eq_fn/hash_eq_fn.hpp: Same.
+	* include/ext/pb_ds/detail/eq_fn/eq_by_less.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  left_child_next_sibling_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  const_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  node.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	  iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/thin_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/ov_tree_map_.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/node_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/debug_map_base.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/ranged_probe_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/sample_probe_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/sample_ranged_probe_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/sample_range_hashing.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/probe_fn_base.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/ranged_hash_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/sample_ranged_hash_fn.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/splay_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/node.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/splay_tree_.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/
+	  entry_metadata_base.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/lu_map_.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/
+	  constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/
+	  rc_binomial_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/rc.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/
+	  split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/
+	  constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/rb_tree_.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/node.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/traits.hpp: Same.
+
+
+	Documentation changes.
+	* include/ext/pb_ds/*: Add doxygen markup.
+	* doc/doxygen/user.cfg.in: Add details for extracting comments
+	from pb_ds.
+	* scripts/run_doxygen: Fixup __gnu_pb_ds::detail.
+	* scripts/make_graph.py: Move to svg output. Re-format generated tables.
+
+	* doc/Makefile.am (stamp-html-copy): New rule.
+	(stamp-html): Use it to copy non-generated files into html docs.
+	* doc/Makefile.in: Regenerated.
+
+	* doc/html/ext/pb_ds/sample_trie_e_access_traits.html: Move...
+	* doc/html/ext/pb_ds/trie_string_access_traits.html: ...here.
+	* doc/html/ext/pb_ds/string_trie_e_access_traits.html: Move..
+	* doc/html/ext/pb_ds/sample_trie_access_traits.html: ...here.
+
+	* doc/html/ext/pb_ds/tree_text_lor_find_timing_test_local.png,
+	hash_random_int_erase_mem_usage_test_local.png,
+	multimap_text_insert_mem_usage_test_small_s2p_hash_local.png,
+	tree_text_insert_timing_test_pat_trie_local.png ,
+	multimap_text_insert_mem_usage_test_small_s2p_tree_local.png ,
+	priority_queue_text_modify_down_timing_test_local.png,
+	gp_hash_random_int_subscript_timing_test_find_local.png,
+	text_find_timing_test_hash_local.png,
+	multimap_text_insert_timing_test_small_s2p_hash_local.png,
+	multimap_text_insert_timing_test_small_s2p_tree_local.png,
+	multimap_text_insert_mem_usage_test_large_s2p_hash_local.png,
+	multimap_text_insert_mem_usage_test_large_s2p_tree_local.png,
+	multimap_text_insert_timing_test_large_s2p_hash_local.png,
+	hash_zlob_random_int_find_timing_test_local.png,
+	multimap_text_insert_timing_test_large_s2p_tree_local.png,
+	binary_priority_queue_random_int_push_timing_test_local.png,
+	priority_queue_text_pop_mem_usage_test_local.png,
+	priority_queue_text_modify_down_timing_test_pairing_thin_local.png,
+	tree_split_join_timing_test_local.png,
+	multimap_text_find_timing_test_small_s2p_hash_local.png,
+	ccgp_hash_random_int_subscript_timing_test_insert_local.png,
+	priority_queue_random_int_push_pop_timing_test_local.png,
+	multimap_text_find_timing_test_small_s2p_tree_local.png,
+	gp_hash_random_int_subscript_timing_test_insert_local.png,
+	priority_queue_text_push_timing_test_local.png,
+	cc_hash_random_int_subscript_timing_test_find_local.png,
+	tree_text_insert_timing_test_vector_tree_local.png,
+	multimap_text_find_timing_test_large_s2p_hash_local.png,
+	pairing_priority_queue_text_push_timing_test_local.png,
+	tree_order_statistics_timing_test_local.png,
+	priority_queue_text_push_pop_timing_test_local.png,
+	text_find_timing_test_tree_like_local.png,
+	multimap_text_find_timing_test_large_s2p_tree_local.png,
+	priority_queue_text_modify_up_timing_test_pairing_thin_local.png,
+	cc_hash_random_int_subscript_timing_test_insert_local.png,
+	priority_queue_text_modify_up_timing_test_local.png,
+	random_int_find_find_timing_test_tree_local.png,
+	priority_queue_random_int_push_timing_test_local.png,
+	tree_text_insert_timing_test_node_tree_local.png,
+	pairing_priority_queue_text_push_pop_timing_test_local.png,
+	gp_hash_random_int_find_timing_test_local.png,
+	cc_hash_random_int_find_timing_test_local.png,
+	priority_queue_text_join_timing_test_local.png: Update local pngs.
+
+
+	Testsuite changes.
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand_debug.cc: New.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand_debug.cc: New.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand_debug.cc: New.
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand_debug.cc: New.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand_debug.cc: New.
+	* testsuite/ext/pb_ds/regression/list_update_no_data_map_rand_debug.cc:
+	New.
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand_debug.cc:
+	New.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand_debug.cc: New.
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand_debug.cc: New.
+
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand.cc: Fix typo.
+
+	* testsuite/ext/pb_ds/example/basic_set.cc: Update.
+	* testsuite/ext/pb_ds/example/ranged_hash.cc: Same.
+	* testsuite/ext/pb_ds/example/tree_order_statistics.cc: Same.
+	* testsuite/ext/pb_ds/example/trie_prefix_search.cc: Same.
+	* testsuite/ext/pb_ds/example/trie_dna.cc: Same.
+	* testsuite/ext/pb_ds/example/tree_intervals.cc: Same.
+	* testsuite/ext/pb_ds/example/basic_multimap.cc: Same.
+	* testsuite/performance/ext/pb_ds/hash_random_int_erase_mem_usage.cc:
+	  Same.
+	* testsuite/performance/ext/pb_ds/tree_split_join_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/tree_order_statistics_timing.cc: Same.
+	* testsuite/data/make_graph_test_infos.xml: Same.
+	* testsuite/util/regression/common_type.hpp: Same.
+	* testsuite/util/regression/trait/assoc/native_type_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/type_trait.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/
+	  rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/
+	  container_rand_regression_test.tcc: Same.
+	* testsuite/util/regression/rand/assoc/rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/assoc/container_rand_regression_test.h
+	* testsuite/util/regression/rand/assoc/
+	  container_rand_regression_test.tcc: Same.
+	* testsuite/util/native_type/native_priority_queue.hpp: Same.
+	* testsuite/util/native_type/native_multimap.hpp: Same.
+	* testsuite/util/native_type/native_hash_multimap.hpp: Same.
+	* testsuite/util/native_type/native_set.hpp: Same.
+	* testsuite/util/native_type/native_map.hpp: Same.
+	* testsuite/util/native_type/native_hash_set.hpp: Same.
+	* testsuite/util/native_type/native_hash_map.hpp: Same.
+	* testsuite/util/testsuite_containers.h
+	* testsuite/util/common_type/priority_queue/common_type.hpp: Same.
+	* testsuite/util/common_type/assoc/common_type.hpp: Same.
+	* testsuite/util/common_type/assoc/string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/template_policy.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	  trigger_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/ds_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	  size_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	  probe_fn_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	  tree_supports_order_statistics.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	  trie_supports_prefix_search.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	  list_update_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/
+	  trie_supports_order_statistics.hpp: Same.
+	* testsuite/util/common_type/assoc/native_set.hpp: Same.
+	* testsuite/util/performance/assoc/timing/common_type.hpp: Same.
+	* testsuite/util/performance/assoc/timing/multimap_find_test.hpp: Same.
+	* testsuite/util/performance/assoc/multimap_common_type.hpp: Same.
+
 2011-05-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/streambuf_iterator.h: Use noexcept per the FDIS.

@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file node_iterators.hpp
+ * @file ov_tree_map_/node_iterators.hpp
  * Contains an implementation class for ov_tree_.
  */
 
@@ -49,28 +49,27 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-
 #define PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC	\
-    ov_tree_node_const_it_<Value_Type, Metadata_Type, Allocator>
+    ov_tree_node_const_it_<Value_Type, Metadata_Type, _Alloc>
 
-    // Const node reference.
-    template<typename Value_Type, typename Metadata_Type, class Allocator>
+    /// Const node reference.
+    template<typename Value_Type, typename Metadata_Type, typename _Alloc>
     class ov_tree_node_const_it_
     {
 
     protected:
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
       Value_Type>::other::pointer
       pointer;
 
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	Value_Type>::other::const_pointer
       const_pointer;
 
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	Metadata_Type>::other::const_pointer
       const_metadata_pointer;
 
@@ -93,18 +92,18 @@ namespace __gnu_pbds
       typedef trivial_iterator_difference_type difference_type;
 
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	Value_Type>::other::const_pointer
       value_type;
 
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	typename remove_const<
 	Value_Type>::type>::other::const_pointer
       reference;
 
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	typename remove_const<
 	Value_Type>::type>::other::const_pointer
       const_reference;
@@ -112,9 +111,9 @@ namespace __gnu_pbds
       typedef Metadata_Type metadata_type;
 
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	metadata_type>::other::const_reference
-      const_metadata_reference;
+      metadata_const_reference;
 
     public:
       inline
@@ -125,12 +124,12 @@ namespace __gnu_pbds
       operator*() const
       { return m_p_value; }
 
-      inline const_metadata_reference
+      inline metadata_const_reference
       get_metadata() const
       {
 	enum
 	  {
-	    has_metadata = !is_same<Metadata_Type, null_node_metadata>::value
+	    has_metadata = !is_same<Metadata_Type, null_type>::value
 	  };
 
 	PB_DS_STATIC_ASSERT(should_have_metadata, has_metadata);
@@ -196,10 +195,10 @@ namespace __gnu_pbds
     };
 
 #define PB_DS_OV_TREE_NODE_ITERATOR_C_DEC \
-    ov_tree_node_it_<Value_Type, Metadata_Type, Allocator>
+    ov_tree_node_it_<Value_Type, Metadata_Type, _Alloc>
 
-    // Node reference.
-    template<typename Value_Type, typename Metadata_Type, class Allocator>
+    /// Node reference.
+    template<typename Value_Type, typename Metadata_Type, typename _Alloc>
     class ov_tree_node_it_ : public PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC
     {
 
@@ -223,18 +222,18 @@ namespace __gnu_pbds
       typedef trivial_iterator_difference_type difference_type;
 
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	Value_Type>::other::pointer
       value_type;
 
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	typename remove_const<
 	Value_Type>::type>::other::pointer
       reference;
 
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	typename remove_const<
 	Value_Type>::type>::other::pointer
       const_reference;
@@ -270,7 +269,9 @@ namespace __gnu_pbds
       get_r_child() const
       {
 	if (base_type::m_p_value == base_type::m_p_end_value)
-	  return (this_type(base_type::m_p_end_value,  base_type::m_p_end_value,  base_type::m_p_end_value));
+	  return this_type(base_type::m_p_end_value,
+			   base_type::m_p_end_value,  
+			   base_type::m_p_end_value);
 
 	const_metadata_pointer p_end_metadata =
 	  base_type::m_p_metadata + (base_type::m_p_end_value - base_type::m_p_value);

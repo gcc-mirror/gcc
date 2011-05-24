@@ -85,7 +85,6 @@
 	</test>
 	<test name = "text_find_timing_test_hash">
 		<file name = "text_find_timing.xml"></file>
-		<cntnr name = "n_hash_map_ncah"></cntnr>
 		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map"></cntnr>
 		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map"></cntnr>
 		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_sth_map"></cntnr>

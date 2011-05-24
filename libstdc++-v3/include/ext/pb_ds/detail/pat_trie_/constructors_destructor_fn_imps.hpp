@@ -1,4 +1,4 @@
-// -*- C++ -*-
+ // -*- C++ -*-
 
 // Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
@@ -35,8 +35,8 @@
 // warranty.
 
 /**
- * @file constructors_destructor_fn_imps.hpp
- * Contains an implementation class for bin_search_tree_.
+ * @file pat_trie_/constructors_destructor_fn_imps.hpp
+ * Contains an implementation class for pat_trie.
  */
 
 PB_DS_CLASS_T_DEC
@@ -44,8 +44,8 @@ typename PB_DS_CLASS_C_DEC::head_allocator
 PB_DS_CLASS_C_DEC::s_head_allocator;
 
 PB_DS_CLASS_T_DEC
-typename PB_DS_CLASS_C_DEC::internal_node_allocator
-PB_DS_CLASS_C_DEC::s_internal_node_allocator;
+typename PB_DS_CLASS_C_DEC::inode_allocator
+PB_DS_CLASS_C_DEC::s_inode_allocator;
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::leaf_allocator
@@ -53,7 +53,7 @@ PB_DS_CLASS_C_DEC::s_leaf_allocator;
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME() :
+PB_DS_PAT_TRIE_NAME() :
   m_p_head(s_head_allocator.allocate(1)),
   m_size(0)
 {
@@ -63,8 +63,8 @@ PB_DS_CLASS_NAME() :
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const e_access_traits& r_e_access_traits) :
-  synth_e_access_traits(r_e_access_traits),
+PB_DS_PAT_TRIE_NAME(const access_traits& r_access_traits) :
+  synth_access_traits(r_access_traits),
   m_p_head(s_head_allocator.allocate(1)),
   m_size(0)
 {
@@ -74,11 +74,11 @@ PB_DS_CLASS_NAME(const e_access_traits& r_e_access_traits) :
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
+PB_DS_PAT_TRIE_NAME(const PB_DS_CLASS_C_DEC& other) :
 #ifdef _GLIBCXX_DEBUG
   debug_base(other),
 #endif
-  synth_e_access_traits(other),
+  synth_access_traits(other),
   node_update(other),
   m_p_head(s_head_allocator.allocate(1)),
   m_size(0)
@@ -115,7 +115,7 @@ swap(PB_DS_CLASS_C_DEC& other)
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)
   value_swap(other);
-  std::swap((e_access_traits& )(*this), (e_access_traits& )other);
+  std::swap((access_traits& )(*this), (access_traits& )other);
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)
 }
@@ -132,7 +132,7 @@ value_swap(PB_DS_CLASS_C_DEC& other)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-~PB_DS_CLASS_NAME()
+~PB_DS_PAT_TRIE_NAME()
 {
   clear();
   s_head_allocator.deallocate(m_p_head, 1);
@@ -163,36 +163,33 @@ copy_from_range(It first_it, It last_it)
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
-recursive_copy_node(const_node_pointer p_other_nd)
+recursive_copy_node(node_const_pointer p_ncp)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_other_nd != 0);
-  if (p_other_nd->m_type == pat_trie_leaf_node_type)
+  _GLIBCXX_DEBUG_ASSERT(p_ncp != 0);
+  if (p_ncp->m_type == leaf_node)
     {
-      const_leaf_pointer p_other_leaf = static_cast<const_leaf_pointer>(p_other_nd);
-
+      leaf_const_pointer p_other_lf = static_cast<leaf_const_pointer>(p_ncp);
       leaf_pointer p_new_lf = s_leaf_allocator.allocate(1);
       cond_dealtor cond(p_new_lf);
-      new (p_new_lf) leaf(p_other_leaf->value());
-      apply_update(p_new_lf, (node_update* )this);
+      new (p_new_lf) leaf(p_other_lf->value());
+      apply_update(p_new_lf, (node_update*)this);
       cond.set_no_action_dtor();
       return (p_new_lf);
     }
 
-  _GLIBCXX_DEBUG_ASSERT(p_other_nd->m_type == pat_trie_internal_node_type);
-  node_pointer a_p_children[internal_node::arr_size];
+  _GLIBCXX_DEBUG_ASSERT(p_ncp->m_type == i_node);
+  node_pointer a_p_children[inode::arr_size];
   size_type child_i = 0;
-  const_internal_node_pointer p_other_internal_nd =
-    static_cast<const_internal_node_pointer>(p_other_nd);
+  inode_const_pointer p_icp = static_cast<inode_const_pointer>(p_ncp);
 
-  typename internal_node::const_iterator child_it =
-    p_other_internal_nd->begin();
+  typename inode::const_iterator child_it = p_icp->begin();
 
-  internal_node_pointer p_ret;
+  inode_pointer p_ret;
   __try
     {
-      while (child_it != p_other_internal_nd->end())
+      while (child_it != p_icp->end())
 	a_p_children[child_i++] = recursive_copy_node(*(child_it++));
-      p_ret = s_internal_node_allocator.allocate(1);
+      p_ret = s_inode_allocator.allocate(1);
     }
   __catch(...)
     {
@@ -201,8 +198,7 @@ recursive_copy_node(const_node_pointer p_other_nd)
       __throw_exception_again;
     }
 
-  new (p_ret) internal_node(p_other_internal_nd->get_e_ind(),
-			    pref_begin(a_p_children[0]));
+  new (p_ret) inode(p_icp->get_e_ind(), pref_begin(a_p_children[0]));
 
   --child_i;
   _GLIBCXX_DEBUG_ASSERT(child_i >= 1);
@@ -210,6 +206,6 @@ recursive_copy_node(const_node_pointer p_other_nd)
     p_ret->add_child(a_p_children[child_i], pref_begin(a_p_children[child_i]),
 		     pref_end(a_p_children[child_i]), this);
   while (child_i-- > 0);
-  apply_update(p_ret, (node_update* )this);
+  apply_update(p_ret, (node_update*)this);
   return p_ret;
 }

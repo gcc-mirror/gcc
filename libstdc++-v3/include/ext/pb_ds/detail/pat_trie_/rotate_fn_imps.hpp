@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file rotate_fn_imps.hpp
+ * @file pat_trie_/rotate_fn_imps.hpp
  * Contains imps for rotating nodes.
  */
 
@@ -63,8 +63,8 @@ rotate_left(node_pointer p_x)
   _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_x);)
   _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y);)
 
-  apply_update(p_x, (Node_Update* )this);
-  apply_update(p_x->m_p_parent, (Node_Update* )this);
+  apply_update(p_x, (Node_Update*)this);
+  apply_update(p_x->m_p_parent, (Node_Update*)this);
 }
 
 PB_DS_CLASS_T_DEC
@@ -92,8 +92,8 @@ rotate_right(node_pointer p_x)
   _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_x);)
   _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y);)
 
-  apply_update(p_x, (Node_Update* )this);
-  apply_update(p_x->m_p_parent, (Node_Update* )this);
+  apply_update(p_x, (Node_Update*)this);
+  apply_update(p_x->m_p_parent, (Node_Update*)this);
 }
 
 PB_DS_CLASS_T_DEC

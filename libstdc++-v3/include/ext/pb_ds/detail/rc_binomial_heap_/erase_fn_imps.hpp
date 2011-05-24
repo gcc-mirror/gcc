@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file erase_fn_imps.hpp
+ * @file rc_binomial_heap_/erase_fn_imps.hpp
  * Contains an implementation for rc_binomial_heap_.
  */
 

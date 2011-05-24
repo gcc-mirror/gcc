@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_no_store_hash_fn_imps.hpp
+ * @file gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s debug-mode functions.
  */
 
@@ -57,7 +57,7 @@ assert_entry_array_valid(const entry_array a_entries, false_type,
 	  break;
         case valid_entry_status:
 	  {
-	    const_key_reference r_key = PB_DS_V2F(p_e->m_value);
+	    key_const_reference r_key = PB_DS_V2F(p_e->m_value);
 	    debug_base::check_key_exists(r_key, __file, __line);
 	    ++iterated_num_used_e;
 	    break;

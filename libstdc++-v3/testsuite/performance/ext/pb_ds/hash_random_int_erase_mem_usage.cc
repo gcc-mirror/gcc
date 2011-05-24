@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -77,7 +77,7 @@ main(int argc, char* a_p_argv[])
       erase_test<vec_t::const_iterator> tst(b,  vn, vs, vm);
       typedef __gnu_test::tracker_allocator<char> alloc_t;
       {
-	typedef hash_common_types<int, __gnu_pbds::null_mapped_type, int_hash, std::equal_to<int>, alloc_t>::performance_tl tl_t;
+	typedef hash_common_types<int, __gnu_pbds::null_type, int_hash, std::equal_to<int>, alloc_t>::performance_tl tl_t;
 
 	tl_t tl;
 	__gnu_cxx::typelist::apply(tst, tl);

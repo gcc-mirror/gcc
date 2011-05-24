@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file ov_tree_map_/debug_fn_imps.hpp
  * Contains an implementation class for ov_tree_.
  */
 
@@ -76,5 +76,4 @@ assert_iterators(const char* __file, int __line) const
   PB_DS_DEBUG_VERIFY(iterated_num == m_size);
 }
 
-#endif 
-
+#endif

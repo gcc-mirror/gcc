@@ -324,6 +324,7 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
 # XML
 xmldir = "$(DESTDIR)@docdir@"
+copydir = ${docbook_outdir}/html/manual/ext/
 
 # EPUB
 # Assumes ruby installed
@@ -649,8 +650,14 @@ doc-install-xml: doc-xml
 	test -z ${xmldir} || $(mkinstalldirs) ${xmldir}
 	$(INSTALL_DATA) ${manual_xml} ${xmldir}
 	$(INSTALL_DATA)	${api_xml} ${xmldir}
-stamp-html: stamp-html-docbook stamp-html-doxygen
+stamp-html: stamp-html-copy stamp-html-doxygen
 	$(STAMP) stamp-html
+stamp-html-copy: stamp-html-docbook
+	cp -r ${top_srcdir}/doc/html/ext ${docbook_outdir}/html/manual/ext
+	cd ${docbook_outdir}/html/manual/ext
+	rm -rf ${docbook_outdir}/html/manual/ext/.svn 
+	rm -rf ${docbook_outdir}/html/manual/ext/pb_ds/.svn
+	$(STAMP) stamp-html-copy
 
 doc-html: stamp-html
 

@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2009, 2010, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -34,46 +35,54 @@
 // warranty.
 
 /**
- * @file cond_dtor_entry_dealtor.hpp
- * Contains a binary tree container conditional deallocator
+ * @file lu_counter_metadata.hpp
+ * Contains implementation of a lu counter policy's metadata.
  */
 
-class cond_dealtor
+namespace __gnu_pbds
 {
-public:
-  inline
-  cond_dealtor(leaf_pointer p_nd) : m_p_nd(p_nd),
-				    m_no_action_dtor(false),
-				    m_call_destructor(false)
-  { }
-
-  inline void
-  set_no_action_dtor()
+  namespace detail
   {
-    m_no_action_dtor = true;
-  }
+    template<typename Size_Type>
+      class lu_counter_policy_base;
 
-  inline void
-  set_call_destructor()
-  {
-    m_call_destructor = true;
-  }
+    /// A list-update metadata type that moves elements to the front of
+    /// the list based on the counter algorithm.
+    template<typename Size_Type = std::size_t>
+      class lu_counter_metadata
+      {
+      public:
+	typedef Size_Type 	size_type;
 
-  inline
-  ~cond_dealtor()
-  {
-    if (m_no_action_dtor)
-      return;
+      private:
+	lu_counter_metadata(size_type init_count) : m_count(init_count)
+	{ }
 
-    if (m_call_destructor)
-      m_p_nd->~leaf();
+	friend class lu_counter_policy_base<size_type>;
 
-    s_leaf_allocator.deallocate(m_p_nd, 1);
-  }
+	mutable size_type 	m_count;
+    };
 
-protected:
-  leaf_pointer m_p_nd;
-  bool m_no_action_dtor;
-  bool m_call_destructor;
-};
+    /// Base class for list-update counter policy.
+    template<typename Size_Type>
+      class lu_counter_policy_base
+      {
+      protected:
+	typedef Size_Type 	size_type;
 
+	lu_counter_metadata<size_type>
+	operator()(size_type max_size) const
+	{ return lu_counter_metadata<Size_Type>(std::rand() % max_size); }
+
+	template<typename Metadata_Reference>
+	bool
+	operator()(Metadata_Reference r_data, size_type m_max_count) const
+	{
+	  if (++r_data.m_count != m_max_count)
+	    return false;
+	  r_data.m_count = 0;
+	  return true;
+	}
+      };
+  } // namespace detail
+} // namespace __gnu_pbds
