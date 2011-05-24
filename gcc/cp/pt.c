@@ -13017,8 +13017,7 @@ tsubst_copy_and_build (tree t,
 			else
 			  inform (EXPR_LOC_OR_HERE (t),
 				  "use %<%T::%D%> instead",
-				  TYPE_IDENTIFIER (current_class_type),
-				  function);
+				  current_class_name, function);
 		      }
 		    else
 		      inform (0, "%q+D declared here, later in the "
