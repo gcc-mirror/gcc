@@ -22494,7 +22494,8 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 			      NULL_TREE, attributes);
 
 	  /* Add the instance variable.  */
-	  objc_add_instance_variable (decl);
+	  if (decl != error_mark_node && decl != NULL_TREE)
+	    objc_add_instance_variable (decl);
 
 	  /* Reset PREFIX_ATTRIBUTES.  */
 	  while (attributes && TREE_CHAIN (attributes) != first_attribute)

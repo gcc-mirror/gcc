@@ -1,3 +1,10 @@
+2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/48187
+	* objc.dg/pr48187.m: New testcase.
+	* obj-c++.dg/pr48187.mm: New testcase.
+	* objc.dg/ivar-extra-semicolon.m: New testcase.
+
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/access21.C: New.

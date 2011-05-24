@@ -1,3 +1,8 @@
+2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>,
+
+	* parser.c (cp_parser_objc_class_ivars): Deal gracefully with a
+	syntax error in declaring an ObjC instance variable.
+
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48884

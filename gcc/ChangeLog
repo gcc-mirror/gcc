@@ -1,3 +1,11 @@
+2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/48187
+	* c-parser.c (c_parser_objc_class_instance_variables): More robust
+	parsing of syntax error in ObjC instance variable lists.  In
+	particular, avoid an infinite loop if there is a stray ']'.
+	Updated error message.
+
 2011-05-24  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_define): Don't accept a string immediately after
