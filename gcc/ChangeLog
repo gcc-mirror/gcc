@@ -1,5 +1,12 @@
+2011-05-24  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (struct godump_container): Add invalid_hash field.
+	(go_format_type): Return false if type is found in invalid_hash.
+	(go_output_typedef): Add invalid type to invalid_hash.
+	(go_finish): Create and delete invalid_hash.
+
 2011-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-	
+
 	PR tree-optimization/46728
 	* tree-ssa-math-opts.c (powi_table): New.
 	(powi_lookup_cost): New.
@@ -9,7 +16,7 @@
 	(gimple_expand_builtin_powi): New.
 	(execute_cse_sincos): Add switch case for BUILT_IN_POWI.
 	(gate_cse_sincos): Remove sincos/cexp restriction.
-	
+
 2011-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/3746
