@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-require-c-std "" }
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //

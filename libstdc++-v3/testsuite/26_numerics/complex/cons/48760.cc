@@ -1,3 +1,5 @@
+// { dg-require-c-std "" }
+
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
