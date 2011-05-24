@@ -1,3 +1,8 @@
+2011-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49133
+	* g++.dg/other/pr49133.C: New test.
+
 2011-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/49123

@@ -1,3 +1,8 @@
+2011-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49133
+	* config/i386/sse.md (sse2_loadhpd): Remove shufpd alternative.
+
 2011-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
