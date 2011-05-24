@@ -300,7 +300,11 @@ go_define (unsigned int lineno, const char *buffer)
 	case '"':
 	case '\'':
 	  {
-	    char quote = *p;
+	    char quote;
+
+	    if (saw_operand)
+	      goto unknown;
+	    quote = *p;
 	    *q++ = *p++;
 	    while (*p != quote)
 	      {
