@@ -597,7 +597,7 @@ __sel_register_typed_name (const char *name, const char *types,
 		    return s;
 		}
 	    }
-	  else if (! strcmp (s->sel_types, types))
+	  else if (sel_types_match (s->sel_types, types))
 	    {
 	      if (orig)
 		{

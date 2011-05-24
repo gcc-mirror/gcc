@@ -1,3 +1,10 @@
+2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/48177
+	* selector.c (__sel_register_typed_name): Use sel_types_match()
+	instead of strcmp() to compare selector types (Suggestion by
+	Richard Frith-Macdonald <rfm@gnu.org>).
+
 2011-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libobjc/32037
