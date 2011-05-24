@@ -1,3 +1,11 @@
+2011-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/3746
+	* config.gcc (alpha*-dec-osf5.1*): Only build mips-tfile,
+	mips-tdump native.
+	* mips-tfile.c: Remove CROSS_DIRECTORY_STRUCTURE handling.
+	* mips-tdump.c: Likewise.
+
 2011-05-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/49128
