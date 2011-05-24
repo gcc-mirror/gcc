@@ -1,3 +1,12 @@
+2011-05-24  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (compare_type_names_p): Remove for_completion_p arg.
+	(gimple_compatible_complete_and_incomplete_subtype_p): Remove.
+	(gimple_types_compatible_p_1): Adjust.
+	(iterative_hash_canonical_type): Do not bother about complete vs.
+	incomplete types.
+	(gimple_canonical_types_compatible_p): Likewise.
+
 2011-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (FORCE_CODE_SECTION_ALIGN): Remove.
