@@ -1,5 +1,12 @@
 2011-05-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	Backport from mainline:
+	2010-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/42775
+	* cfgrtl.c (rest_of_pass_free_cfg): Recompute notes if delay slot
+	scheduling is enabled.
+
 	PR rtl-optimization/49007
 	Backport from mainline:
 	2009-11-30  Hans-Peter Nilsson  <hp@axis.com>
