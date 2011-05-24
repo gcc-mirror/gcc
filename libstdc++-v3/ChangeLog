@@ -1,5 +1,12 @@
 2011-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/49151
+	* include/std/chrono (operator+, operator-, operator*, operator/,
+	operator&): Implement LWG 2020 [WP]; specify constexpr.
+	* testsuite/20_util/duration/arithmetic/dr2020.cc: New.
+
+2011-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/49141
 	* testsuite/26_numerics/complex/cons/48760.cc: Use dg-require-c-std.
 	* testsuite/26_numerics/complex/cons/48760_c++0x.cc: Likewise.
