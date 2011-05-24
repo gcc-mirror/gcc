@@ -464,6 +464,9 @@ struct godump_container
   /* Global type definitions.  */
   htab_t type_hash;
 
+  /* Invalid types.  */
+  htab_t invalid_hash;
+
   /* Obstack used to write out a type definition.  */
   struct obstack type_obstack;
 };
@@ -500,20 +503,20 @@ go_format_type (struct godump_container *container, tree type,
 	  || TREE_CODE (type) == FUNCTION_TYPE))
     {
       tree name;
+      void **slot;
 
       name = TYPE_NAME (type);
-      if (TREE_CODE (name) == IDENTIFIER_NODE)
-	{
-	  obstack_1grow (ob, '_');
-	  go_append_string (ob, name);
-	  return ret;
-	}
-      else if (TREE_CODE (name) == TYPE_DECL)
-	{
-	  obstack_1grow (ob, '_');
-	  go_append_string (ob, DECL_NAME (name));
-	  return ret;
-	}
+      if (TREE_CODE (name) == TYPE_DECL)
+	name = DECL_NAME (name);
+
+      slot = htab_find_slot (container->invalid_hash, IDENTIFIER_POINTER (name),
+			     NO_INSERT);
+      if (slot != NULL)
+	ret = false;
+
+      obstack_1grow (ob, '_');
+      go_append_string (ob, name);
+      return ret;
     }
 
   pointer_set_insert (container->decls_seen, type);
@@ -879,7 +882,11 @@ go_output_typedef (struct godump_container *container, tree decl)
       *slot = CONST_CAST (void *, (const void *) type);
 
       if (!go_format_type (container, TREE_TYPE (decl), false, false))
-	fprintf (go_dump_file, "// ");
+	{
+	  fprintf (go_dump_file, "// ");
+	  slot = htab_find_slot (container->invalid_hash, type, INSERT);
+	  *slot = CONST_CAST (void *, (const void *) type);
+	}
       fprintf (go_dump_file, "type _%s ",
 	       IDENTIFIER_POINTER (DECL_NAME (decl)));
       go_output_type (container);
@@ -898,7 +905,11 @@ go_output_typedef (struct godump_container *container, tree decl)
        *slot = CONST_CAST (void *, (const void *) type);
 
        if (!go_format_type (container, TREE_TYPE (decl), false, false))
-	 fprintf (go_dump_file, "// ");
+	 {
+	   fprintf (go_dump_file, "// ");
+	   slot = htab_find_slot (container->invalid_hash, type, INSERT);
+	   *slot = CONST_CAST (void *, (const void *) type);
+	 }
        fprintf (go_dump_file, "type _%s ",
 	       IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (decl))));
        go_output_type (container);
@@ -1010,6 +1021,8 @@ go_finish (const char *filename)
   container.pot_dummy_types = pointer_set_create ();
   container.type_hash = htab_create (100, htab_hash_string,
                                      string_hash_eq, NULL);
+  container.invalid_hash = htab_create (10, htab_hash_string,
+					string_hash_eq, NULL);
   container.keyword_hash = htab_create (50, htab_hash_string,
                                         string_hash_eq, NULL);
   obstack_init (&container.type_obstack);
@@ -1044,6 +1057,7 @@ go_finish (const char *filename)
   pointer_set_destroy (container.decls_seen);
   pointer_set_destroy (container.pot_dummy_types);
   htab_delete (container.type_hash);
+  htab_delete (container.invalid_hash);
   htab_delete (container.keyword_hash);
   obstack_free (&container.type_obstack, NULL);
 
