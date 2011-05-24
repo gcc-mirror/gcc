@@ -1,3 +1,7 @@
+2011-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use current_class_name.
+
 2011-05-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (GXX_OBJS): Remove prefix.o.
