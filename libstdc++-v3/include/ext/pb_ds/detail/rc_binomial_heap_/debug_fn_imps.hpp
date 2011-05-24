@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file rc_binomial_heap_/debug_fn_imps.hpp
  * Contains an implementation for rc_binomial_heap_.
  */
 
@@ -61,14 +61,14 @@ assert_valid(const char* __file, int __line) const
       return;
     }
 
-  const_node_pointer p_nd = next_2_pointer(base_type::m_p_root);
+  node_const_pointer p_nd = next_2_pointer(base_type::m_p_root);
   typename rc_t::const_iterator it = m_rc.end();
   --it;
 
   while (p_nd != 0)
     {
       PB_DS_DEBUG_VERIFY(*it == p_nd);
-      const_node_pointer p_next = p_nd->m_p_next_sibling;
+      node_const_pointer p_next = p_nd->m_p_next_sibling;
       PB_DS_DEBUG_VERIFY(p_next != 0);
       PB_DS_DEBUG_VERIFY(p_nd->m_metadata == p_next->m_metadata);
       PB_DS_DEBUG_VERIFY(p_next->m_p_next_sibling == 0 ||
@@ -81,9 +81,9 @@ assert_valid(const char* __file, int __line) const
 }
 
 PB_DS_CLASS_T_DEC
-typename PB_DS_CLASS_C_DEC::const_node_pointer
+typename PB_DS_CLASS_C_DEC::node_const_pointer
 PB_DS_CLASS_C_DEC::
-next_2_pointer(const_node_pointer p_nd)
+next_2_pointer(node_const_pointer p_nd)
 {
   if (p_nd == 0)
     return 0;
@@ -100,9 +100,9 @@ next_2_pointer(const_node_pointer p_nd)
 }
 
 PB_DS_CLASS_T_DEC
-typename PB_DS_CLASS_C_DEC::const_node_pointer
+typename PB_DS_CLASS_C_DEC::node_const_pointer
 PB_DS_CLASS_C_DEC::
-next_after_0_pointer(const_node_pointer p_nd)
+next_after_0_pointer(node_const_pointer p_nd)
 {
   if (p_nd == 0)
     return 0;

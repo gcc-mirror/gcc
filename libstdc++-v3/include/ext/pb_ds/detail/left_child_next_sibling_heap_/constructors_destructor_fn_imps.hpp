@@ -35,7 +35,7 @@
 // warranty.
 
 /**
- * @file constructors_destructor_fn_imps.hpp
+ * @file left_child_next_sibling_heap_/constructors_destructor_fn_imps.hpp
  * Contains an implementation class for left_child_next_sibling_heap_.
  */
 
@@ -49,7 +49,7 @@ PB_DS_CLASS_C_DEC::s_no_throw_copies_ind;
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-left_child_next_sibling_heap_() :
+left_child_next_sibling_heap() :
   m_p_root(0),
   m_size(0)
 {
@@ -58,7 +58,7 @@ left_child_next_sibling_heap_() :
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-left_child_next_sibling_heap_(const Cmp_Fn& r_cmp_fn) :
+left_child_next_sibling_heap(const Cmp_Fn& r_cmp_fn) :
   Cmp_Fn(r_cmp_fn),
   m_p_root(0),
   m_size(0)
@@ -68,7 +68,7 @@ left_child_next_sibling_heap_(const Cmp_Fn& r_cmp_fn) :
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-left_child_next_sibling_heap_(const PB_DS_CLASS_C_DEC& other) 
+left_child_next_sibling_heap(const PB_DS_CLASS_C_DEC& other) 
 : Cmp_Fn(other), m_p_root(0), m_size(0)
 {
   m_size = other.m_size;
@@ -102,7 +102,7 @@ value_swap(PB_DS_CLASS_C_DEC& other)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-~left_child_next_sibling_heap_()
+~left_child_next_sibling_heap()
 {
   clear();
 }
@@ -110,7 +110,7 @@ PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
-recursive_copy_node(const_node_pointer p_nd)
+recursive_copy_node(node_const_pointer p_nd)
 {
   if (p_nd == 0)
     return (0);

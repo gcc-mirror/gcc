@@ -34,87 +34,54 @@
 // warranty.
 
 /**
- * @file node.hpp
+ * @file left_child_next_sibling_heap_/node.hpp
  * Contains an implementation struct for this type of heap's node.
  */
 
 #ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_NODE_HPP
 #define PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_NODE_HPP
 
-#include <ext/pb_ds/detail/left_child_next_sibling_heap_/null_metadata.hpp>
-
 namespace __gnu_pbds
 {
   namespace detail
   {
-
-    template<typename Value_Type, typename Metadata_Type, class Allocator>
+    /// Node.
+    template<typename _Value, typename _Metadata, typename _Alloc>
     struct left_child_next_sibling_heap_node_
     {
     private:
-      typedef
-      left_child_next_sibling_heap_node_<
-      Value_Type,
-      Metadata_Type,
-      Allocator>
-      this_type;
+      typedef left_child_next_sibling_heap_node_<_Value, _Metadata, _Alloc> this_type;
 
     public:
-      typedef typename Allocator::size_type size_type;
+      typedef _Value 				value_type;
+      typedef typename _Alloc::size_type 	size_type;
+      typedef _Metadata 			metadata_type;
 
-      typedef
-      typename Allocator::template rebind<
-	this_type>::other::pointer
-      node_pointer;
+      typedef typename _Alloc::template rebind<this_type>::other::pointer node_pointer;
 
-      typedef Value_Type value_type;
-
-      typedef Metadata_Type metadata_type;
-
-    public:
-      value_type m_value;
-
-      metadata_type m_metadata;
-
-      node_pointer m_p_l_child;
-
-      node_pointer m_p_next_sibling;
-
-      node_pointer m_p_prev_or_parent;
+      value_type 	m_value;
+      metadata_type 	m_metadata;
+      node_pointer 	m_p_l_child;
+      node_pointer 	m_p_next_sibling;
+      node_pointer 	m_p_prev_or_parent;
     };
 
-    template<typename Value_Type, class Allocator>
-    struct left_child_next_sibling_heap_node_<
-      Value_Type,
-      null_left_child_next_sibling_heap_node_metadata,
-      Allocator>
+    template<typename _Value, typename _Alloc>
+    struct left_child_next_sibling_heap_node_<_Value, null_type, _Alloc>
     {
     private:
-      typedef
-      left_child_next_sibling_heap_node_<
-      Value_Type,
-      null_left_child_next_sibling_heap_node_metadata,
-      Allocator>
-      this_type;
+      typedef left_child_next_sibling_heap_node_<_Value, null_type, _Alloc> this_type;
 
     public:
-      typedef typename Allocator::size_type size_type;
+      typedef _Value 				value_type;
+      typedef typename _Alloc::size_type 	size_type;
 
-      typedef
-      typename Allocator::template rebind<
-	this_type>::other::pointer
-      node_pointer;
+      typedef typename _Alloc::template rebind<this_type>::other::pointer node_pointer;
 
-      typedef Value_Type value_type;
-
-    public:
-      value_type m_value;
-
-      node_pointer m_p_l_child;
-
-      node_pointer m_p_next_sibling;
-
-      node_pointer m_p_prev_or_parent;
+      value_type 	m_value;
+      node_pointer 	m_p_l_child;
+      node_pointer 	m_p_next_sibling;
+      node_pointer 	m_p_prev_or_parent;
     };
 
   } // namespace detail

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -61,7 +61,7 @@ main(int argc, char* a_p_argv[])
       {
 	typedef tree_order_statistics_test< true> test_t;
 	test_t tst(vn, vs, vm);
-	typedef tree_common_types<int, __gnu_pbds::null_mapped_type, std::less<int>, __gnu_pbds::tree_order_statistics_node_update>::performance_tl tl_t;
+	typedef tree_common_types<int, __gnu_pbds::null_type, std::less<int>, __gnu_pbds::tree_order_statistics_node_update>::performance_tl tl_t;
 	tl_t tl;
 	__gnu_cxx::typelist::apply(tst, tl);
       }

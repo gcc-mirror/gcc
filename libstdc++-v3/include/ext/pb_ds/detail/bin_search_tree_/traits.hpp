@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file traits.hpp
+ * @file bin_search_tree_/traits.hpp
  * Contains an implementation for bin_search_tree_.
  */
 
@@ -48,34 +48,28 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-
+    /// Binary search tree traits, primary template.
     template<typename Key,
 	     typename Mapped,
 	     class Cmp_Fn,
-	     template<typename Const_Node_Iterator,
-		      class Node_Iterator,
+	     template<typename Node_CItr,
+		      class Node_Itr,
 		      class Cmp_Fn,
-		      class Allocator>
+		      typename _Alloc>
     class Node_Update,
 	     class Node,
-	     class Allocator>
+	     typename _Alloc>
     struct bin_search_tree_traits
     {
     private:
-      typedef
-      types_traits<
-      Key,
-      Mapped,
-      Allocator,
-      false>
-      type_traits;
+      typedef types_traits<Key, Mapped, _Alloc, false> type_traits;
 
     public:
       typedef Node node;
 
       typedef
       bin_search_tree_const_it_<
-	typename Allocator::template rebind<
+	typename _Alloc::template rebind<
 	node>::other::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
@@ -83,12 +77,12 @@ namespace __gnu_pbds
 	typename type_traits::reference,
 	typename type_traits::const_reference,
 	true,
-	Allocator>
-      const_point_iterator;
+	_Alloc>
+      point_const_iterator;
 
       typedef
       bin_search_tree_it_<
-	typename Allocator::template rebind<
+	typename _Alloc::template rebind<
 	node>::other::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
@@ -96,12 +90,12 @@ namespace __gnu_pbds
 	typename type_traits::reference,
 	typename type_traits::const_reference,
 	true,
-	Allocator>
+	_Alloc>
       point_iterator;
 
       typedef
       bin_search_tree_const_it_<
-	typename Allocator::template rebind<
+	typename _Alloc::template rebind<
 	node>::other::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
@@ -109,12 +103,12 @@ namespace __gnu_pbds
 	typename type_traits::reference,
 	typename type_traits::const_reference,
 	false,
-	Allocator>
+	_Alloc>
       const_reverse_iterator;
 
       typedef
       bin_search_tree_it_<
-	typename Allocator::template rebind<
+	typename _Alloc::template rebind<
 	node>::other::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
@@ -122,74 +116,69 @@ namespace __gnu_pbds
 	typename type_traits::reference,
 	typename type_traits::const_reference,
 	false,
-	Allocator>
+	_Alloc>
       reverse_iterator;
 
       typedef
       bin_search_tree_const_node_it_<
 	Node,
-	const_point_iterator,
+	point_const_iterator,
 	point_iterator,
-	Allocator>
-      const_node_iterator;
+	_Alloc>
+      node_const_iterator;
 
       typedef
       bin_search_tree_node_it_<
 	Node,
-	const_point_iterator,
+	point_const_iterator,
 	point_iterator,
-	Allocator>
+	_Alloc>
       node_iterator;
 
       typedef
       Node_Update<
-	const_node_iterator,
+	node_const_iterator,
 	node_iterator,
 	Cmp_Fn,
-	Allocator>
+	_Alloc>
       node_update;
 
       typedef
-      __gnu_pbds::null_tree_node_update<
-	const_node_iterator,
+      __gnu_pbds::null_node_update<
+	node_const_iterator,
 	node_iterator,
 	Cmp_Fn,
-	Allocator>* 
+	_Alloc>* 
       null_node_update_pointer;
     };
 
+    /// Specialization.
     template<typename Key,
 	     class Cmp_Fn,
-	     template<typename Const_Node_Iterator,
-		      class Node_Iterator,
+	     template<typename Node_CItr,
+		      class Node_Itr,
 		      class Cmp_Fn,
-		      class Allocator>
+		      typename _Alloc>
     class Node_Update,
 	     class Node,
-	     class Allocator>
+	     typename _Alloc>
     struct bin_search_tree_traits<
       Key,
-      null_mapped_type,
+      null_type,
       Cmp_Fn,
       Node_Update,
       Node,
-      Allocator>
+      _Alloc>
     {
     private:
-      typedef
-      types_traits<
-      Key,
-      null_mapped_type,
-      Allocator,
-      false>
-      type_traits;
+      typedef types_traits<Key, null_type, _Alloc, false> type_traits;
 
     public:
       typedef Node node;
 
       typedef
       bin_search_tree_const_it_<
-	typename Allocator::template rebind<
+	typename _Alloc::template rebind<
 	node>::other::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
@@ -197,14 +186,14 @@ namespace __gnu_pbds
 	typename type_traits::reference,
 	typename type_traits::const_reference,
 	true,
-	Allocator>
-      const_point_iterator;
+	_Alloc>
+      point_const_iterator;
 
-      typedef const_point_iterator point_iterator;
+      typedef point_const_iterator point_iterator;
 
       typedef
       bin_search_tree_const_it_<
-	typename Allocator::template rebind<
+	typename _Alloc::template rebind<
 	node>::other::pointer,
 	typename type_traits::value_type,
 	typename type_traits::pointer,
@@ -212,7 +201,7 @@ namespace __gnu_pbds
 	typename type_traits::reference,
 	typename type_traits::const_reference,
 	false,
-	Allocator>
+	_Alloc>
       const_reverse_iterator;
 
       typedef const_reverse_iterator reverse_iterator;
@@ -220,27 +209,23 @@ namespace __gnu_pbds
       typedef
       bin_search_tree_const_node_it_<
 	Node,
-	const_point_iterator,
+	point_const_iterator,
 	point_iterator,
-	Allocator>
-      const_node_iterator;
+	_Alloc>
+      node_const_iterator;
 
-      typedef const_node_iterator node_iterator;
+      typedef node_const_iterator node_iterator;
 
       typedef
-      Node_Update<
-	const_node_iterator,
-	node_iterator,
-	Cmp_Fn,
-	Allocator>
+      Node_Update<node_const_iterator, node_iterator, Cmp_Fn, _Alloc>
       node_update;
 
       typedef
-      __gnu_pbds::null_tree_node_update<
-	const_node_iterator,
+      __gnu_pbds::null_node_update<
+	node_const_iterator,
 	node_iterator,
 	Cmp_Fn,
-	Allocator>* 
+	_Alloc>* 
       null_node_update_pointer;
     };
 

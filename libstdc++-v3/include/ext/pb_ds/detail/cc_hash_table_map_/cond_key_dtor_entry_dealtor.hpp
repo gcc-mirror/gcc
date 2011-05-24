@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file cond_key_dtor_entry_dealtor.hpp
+ * @file cc_hash_table_map_/cond_key_dtor_entry_dealtor.hpp
  * Contains a conditional key destructor, used for exception handling.
  */
 
@@ -42,65 +42,43 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-
-#define PB_DS_CLASS_T_DEC template<typename HT_Map>
-#define PB_DS_CLASS_C_DEC PB_DS_CKDED_CLASS_NAME<HT_Map>
-
-    /**
-     * A conditional key destructor, used for exception handling.
-     **/
+    /// Conditional dey destructor, cc_hash.
     template<typename HT_Map>
-    class PB_DS_CKDED_CLASS_NAME
+    class cond_dealtor
     {
     public:
-      typedef typename HT_Map::entry entry;
-      typedef typename HT_Map::entry_allocator entry_allocator;
-      typedef typename HT_Map::key_type key_type;
+      typedef typename HT_Map::entry 		entry;
+      typedef typename HT_Map::entry_allocator 	entry_allocator;
+      typedef typename HT_Map::key_type 	key_type;
+
+      cond_dealtor(entry_allocator* p_a, entry* p_e)
+      : m_p_a(p_a), m_p_e(p_e), m_key_destruct(false),
+	m_no_action_destructor(false)
+      { }
 
       inline
-      PB_DS_CKDED_CLASS_NAME(entry_allocator* p_a, entry* p_e);
+      ~cond_dealtor();
 
-      inline
-      ~PB_DS_CKDED_CLASS_NAME();
+      void
+      set_key_destruct()
+      { m_key_destruct = true; }
 
-      inline void
-      set_key_destruct();
-
-      inline void
-      set_no_action_destructor();
+      void
+      set_no_action_destructor()
+      { m_no_action_destructor = true; }
 
     protected:
-      entry_allocator* const m_p_a;
-      entry* const m_p_e;
+      entry_allocator* const 			m_p_a;
+      entry* const 				m_p_e;
 
-      bool m_key_destruct;
-      bool m_no_action_destructor;
+      bool 					m_key_destruct;
+      bool 					m_no_action_destructor;
     };
 
-    PB_DS_CLASS_T_DEC
+    template<typename HT_Map>
     inline
-    PB_DS_CLASS_C_DEC::
-    PB_DS_CKDED_CLASS_NAME(entry_allocator* p_a, entry* p_e) 
-    : m_p_a(p_a), m_p_e(p_e), m_key_destruct(false), 
-      m_no_action_destructor(false)
-    { }
-
-    PB_DS_CLASS_T_DEC
-    inline void
-    PB_DS_CLASS_C_DEC::
-    set_key_destruct()
-    { m_key_destruct = true; }
-
-    PB_DS_CLASS_T_DEC
-    inline void
-    PB_DS_CLASS_C_DEC::
-    set_no_action_destructor()
-    { m_no_action_destructor = true; }
-
-    PB_DS_CLASS_T_DEC
-    inline
-    PB_DS_CLASS_C_DEC::
-    ~PB_DS_CKDED_CLASS_NAME()
+    cond_dealtor<HT_Map>::
+    ~cond_dealtor()
     {
       if (m_no_action_destructor)
 	return;
@@ -108,10 +86,5 @@ namespace __gnu_pbds
 	m_p_e->m_value.first.~key_type();
       m_p_a->deallocate(m_p_e, 1);
     }
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace detail
 } // namespace __gnu_pbds
-

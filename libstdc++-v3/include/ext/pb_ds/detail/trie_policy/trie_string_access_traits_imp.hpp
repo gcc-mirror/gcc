@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file string_trie_e_access_traits_imp.hpp
+ * @file trie_policy/trie_string_access_traits_imp.hpp
  * Contains a policy for extracting character positions from
  *    a string for a vector-based PATRICIA tree
  */
@@ -53,7 +53,7 @@ e_pos(e_type e)
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_iterator
 PB_DS_CLASS_C_DEC::
-begin(const_key_reference r_key)
+begin(key_const_reference r_key)
 {
   return (begin_imp(r_key, s_rev_ind));
 }
@@ -61,7 +61,7 @@ begin(const_key_reference r_key)
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_iterator
 PB_DS_CLASS_C_DEC::
-end(const_key_reference r_key)
+end(key_const_reference r_key)
 {
   return (end_imp(r_key, s_rev_ind));
 }
@@ -69,7 +69,7 @@ end(const_key_reference r_key)
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_iterator
 PB_DS_CLASS_C_DEC::
-begin_imp(const_key_reference r_key, detail::false_type)
+begin_imp(key_const_reference r_key, detail::false_type)
 {
   return (r_key.begin());
 }
@@ -77,7 +77,7 @@ begin_imp(const_key_reference r_key, detail::false_type)
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_iterator
 PB_DS_CLASS_C_DEC::
-begin_imp(const_key_reference r_key, detail::true_type)
+begin_imp(key_const_reference r_key, detail::true_type)
 {
   return (r_key.rbegin());
 }
@@ -85,7 +85,7 @@ begin_imp(const_key_reference r_key, detail::true_type)
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_iterator
 PB_DS_CLASS_C_DEC::
-end_imp(const_key_reference r_key, detail::false_type)
+end_imp(key_const_reference r_key, detail::false_type)
 {
   return (r_key.end());
 }
@@ -93,7 +93,7 @@ end_imp(const_key_reference r_key, detail::false_type)
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_iterator
 PB_DS_CLASS_C_DEC::
-end_imp(const_key_reference r_key, detail::true_type)
+end_imp(key_const_reference r_key, detail::true_type)
 {
   return (r_key.rend());
 }

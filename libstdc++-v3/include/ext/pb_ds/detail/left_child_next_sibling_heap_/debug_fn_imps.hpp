@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file left_child_next_sibling_heap_/debug_fn_imps.hpp
  * Contains an implementation class for left_child_next_sibling_heap_.
  */
 
@@ -56,7 +56,7 @@ assert_valid(const char* __file, int __line) const
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_node_consistent(const_node_pointer p_nd, bool single_link,
+assert_node_consistent(node_const_pointer p_nd, bool single_link,
 		       const char* __file, int __line) const
 {
   if (p_nd == 0)
@@ -73,10 +73,10 @@ assert_node_consistent(const_node_pointer p_nd, bool single_link,
   if (p_nd->m_p_l_child == 0)
     return;
 
-  const_node_pointer p_child = p_nd->m_p_l_child;
+  node_const_pointer p_child = p_nd->m_p_l_child;
   while (p_child != 0)
     {
-      const_node_pointer p_next_child = p_child->m_p_next_sibling;
+      node_const_pointer p_next_child = p_child->m_p_next_sibling;
       PB_DS_DEBUG_VERIFY(!Cmp_Fn::operator()(p_nd->m_value, p_child->m_value));
       p_child = p_next_child;
     }
@@ -102,13 +102,13 @@ assert_size(const char* __file, int __line) const
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
-size_under_node(const_node_pointer p_nd)
+size_under_node(node_const_pointer p_nd)
 { return 1 + size_from_node(p_nd->m_p_l_child); }
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
-size_from_node(const_node_pointer p_nd)
+size_from_node(node_const_pointer p_nd)
 {
   size_type ret = 0;
   while (p_nd != 0)
@@ -122,10 +122,10 @@ size_from_node(const_node_pointer p_nd)
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
-degree(const_node_pointer p_nd)
+degree(node_const_pointer p_nd)
 {
   size_type ret = 0;
-  const_node_pointer p_child = p_nd->m_p_l_child;
+  node_const_pointer p_child = p_nd->m_p_l_child;
   while (p_child != 0)
     {
       ++ret;

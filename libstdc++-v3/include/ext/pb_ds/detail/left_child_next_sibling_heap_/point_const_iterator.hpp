@@ -34,13 +34,13 @@
 // warranty.
 
 /**
- * @file const_point_iterator.hpp
+ * @file left_child_next_sibling_heap_/point_const_iterator.hpp
  * Contains an iterator class returned by the table's const find and insert
- *     methods.
+ * methods.
  */
 
-#ifndef PB_DS_BINARY_HEAP_CONST_FIND_ITERATOR_HPP
-#define PB_DS_BINARY_HEAP_CONST_FIND_ITERATOR_HPP
+#ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_CONST_FIND_ITERATOR_HPP
+#define PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_CONST_FIND_ITERATOR_HPP
 
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <debug/debug.h>
@@ -49,15 +49,23 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-    // Const point-type iterator.
-    template<typename Value_Type, typename Entry, bool Simple, 
-	     typename Allocator>
-    class binary_heap_const_point_iterator_
+
+#define PB_DS_CLASS_T_DEC			\
+    template<typename Node, typename _Alloc>
+
+#define PB_DS_CLASS_C_DEC \
+    left_child_next_sibling_heap_node_point_const_iterator_<Node, _Alloc>
+
+    /// Const point-type iterator.
+    template<typename Node, typename _Alloc>
+    class left_child_next_sibling_heap_node_point_const_iterator_
     {
+
     protected:
-      typedef typename Allocator::template rebind<Entry>::other::pointer entry_pointer;
+      typedef typename _Alloc::template rebind<Node>::other::pointer node_pointer;
 
     public:
+
       // Category.
       typedef trivial_iterator_tag iterator_category;
 
@@ -65,79 +73,81 @@ namespace __gnu_pbds
       typedef trivial_iterator_difference_type difference_type;
 
       // Iterator's value type.
-      typedef Value_Type value_type;
+      typedef typename Node::value_type value_type;
 
       // Iterator's pointer type.
-      typedef typename Allocator::template rebind<value_type>::other::pointer
+      typedef
+      typename _Alloc::template rebind<
+	value_type>::other::pointer
       pointer;
 
       // Iterator's const pointer type.
       typedef
-      typename Allocator::template rebind<value_type>::other::const_pointer
+      typename _Alloc::template rebind<
+	value_type>::other::const_pointer
       const_pointer;
 
       // Iterator's reference type.
       typedef
-      typename Allocator::template rebind<value_type>::other::reference
+      typename _Alloc::template rebind<
+	value_type>::other::reference
       reference;
 
       // Iterator's const reference type.
       typedef
-      typename Allocator::template rebind<value_type>::other::const_reference
+      typename _Alloc::template rebind<
+	value_type>::other::const_reference
       const_reference;
 
+    public:
+
       inline
-      binary_heap_const_point_iterator_(entry_pointer p_e) : m_p_e(p_e)
+      left_child_next_sibling_heap_node_point_const_iterator_(node_pointer p_nd) : m_p_nd(p_nd)
       { }
 
       // Default constructor.
       inline
-      binary_heap_const_point_iterator_() : m_p_e(0) { }
+      left_child_next_sibling_heap_node_point_const_iterator_() : m_p_nd(0)
+      { }
 
       // Copy constructor.
       inline
-      binary_heap_const_point_iterator_(const binary_heap_const_point_iterator_& other)
-      : m_p_e(other.m_p_e)
+      left_child_next_sibling_heap_node_point_const_iterator_(const PB_DS_CLASS_C_DEC& other) : m_p_nd(other.m_p_nd)
       { }
 
       // Access.
       inline const_pointer
       operator->() const
       {
-	_GLIBCXX_DEBUG_ASSERT(m_p_e != 0);
-	return to_ptr(integral_constant<int, Simple>());
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != 0);
+	return &m_p_nd->m_value;
       }
 
       // Access.
       inline const_reference
       operator*() const
       {
-	_GLIBCXX_DEBUG_ASSERT(m_p_e != 0);
-	return *to_ptr(integral_constant<int, Simple>());
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != 0);
+	return m_p_nd->m_value;
       }
 
       // Compares content to a different iterator object.
       inline bool
-      operator==(const binary_heap_const_point_iterator_& other) const
-      { return m_p_e == other.m_p_e; }
+      operator==(const PB_DS_CLASS_C_DEC& other) const
+      { return m_p_nd == other.m_p_nd; }
 
       // Compares content (negatively) to a different iterator object.
       inline bool
-      operator!=(const binary_heap_const_point_iterator_& other) const
-      { return m_p_e != other.m_p_e; }
-
-    private:
-      inline const_pointer
-      to_ptr(true_type) const
-      { return m_p_e; }
-
-      inline const_pointer
-      to_ptr(false_type) const
-      { return *m_p_e; }
+      operator!=(const PB_DS_CLASS_C_DEC& other) const
+      { return m_p_nd != other.m_p_nd; }
 
     public:
-      entry_pointer m_p_e;
+      node_pointer m_p_nd;
     };
+
+#undef PB_DS_CLASS_T_DEC
+#undef PB_DS_CLASS_C_DEC
+
   } // namespace detail
 } // namespace __gnu_pbds
 

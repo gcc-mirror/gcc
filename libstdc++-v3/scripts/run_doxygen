@@ -313,6 +313,10 @@ for f in *__detail_*; do
     newname=`echo $f | sed 's/__detail_/__detail::/'`
     mv $f $newname
 done
+for f in *__gnu_pbds_detail_*; do
+    newname=`echo $f | sed 's/detail_/detail::/'`
+    mv $f $newname
+done
 for f in *__parallel_*; do
     newname=`echo $f | sed 's/__parallel_/__parallel::/'`
     mv $f $newname

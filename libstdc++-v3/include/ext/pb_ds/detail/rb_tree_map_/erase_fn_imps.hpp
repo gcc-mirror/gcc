@@ -34,14 +34,14 @@
 // warranty.
 
 /**
- * @file erase_fn_imps.hpp
+ * @file rb_tree_map_/erase_fn_imps.hpp
  * Contains an implementation for rb_tree_.
  */
 
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
-erase(const_key_reference r_key)
+erase(key_const_reference r_key)
 {
   point_iterator it = this->find(r_key);
   if (it == base_type::end())

@@ -34,14 +34,14 @@
 // warranty.
 
 /**
- * @file const_iterator.hpp
+ * @file unordered_iterator/const_iterator.hpp
  * Contains an iterator class used for const ranging over the elements of the
- *     table.
+ * table.
  */
 
 // Const range-type iterator.
 class const_iterator_ : 
-  public const_point_iterator_
+  public point_const_iterator_
 
 {
 
@@ -51,7 +51,7 @@ public:
   typedef std::forward_iterator_tag iterator_category;
 
   // Difference type.
-  typedef typename Allocator::difference_type difference_type;
+  typedef typename _Alloc::difference_type difference_type;
 
   // Iterator's value type.
   typedef value_type_ value_type;
@@ -99,7 +99,7 @@ public:
 
 protected:
 
-  typedef const_point_iterator_ base_type;
+  typedef point_const_iterator_ base_type;
 
 protected:
 
@@ -109,7 +109,7 @@ protected:
    *      of a table.
    * */
   inline
-  const_iterator_(const_pointer_ p_value,  PB_DS_GEN_POS pos,  const PB_DS_CLASS_C_DEC* p_tbl) : const_point_iterator_(p_value),
+  const_iterator_(const_pointer_ p_value,  PB_DS_GEN_POS pos,  const PB_DS_CLASS_C_DEC* p_tbl) : point_const_iterator_(p_value),
 												 m_p_tbl(p_tbl),
 												 m_pos(pos)
   { }

@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file erase_fn_imps.hpp
+ * @file left_child_next_sibling_heap_/erase_fn_imps.hpp
  * Contains an implementation class for left_child_next_sibling_heap_.
  */
 
@@ -92,7 +92,7 @@ to_linked_list()
       p_cur = p_cur->m_p_next_sibling;
 
 #ifdef _GLIBCXX_DEBUG
-  const_node_pointer p_counter = m_p_root;
+  node_const_pointer p_counter = m_p_root;
   size_type count = 0;
   while (p_counter != 0)
     {

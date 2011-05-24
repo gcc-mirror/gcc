@@ -34,157 +34,121 @@
 // warranty.
 
 /**
- * @file trie_policy_base.hpp
+ * @file trie_policy/trie_policy_base.hpp
  * Contains an implementation of trie_policy_base.
  */
 
 #ifndef PB_DS_TRIE_POLICY_BASE_HPP
 #define PB_DS_TRIE_POLICY_BASE_HPP
 
-#include <ext/pb_ds/detail/basic_tree_policy/basic_tree_policy_base.hpp>
+#include <ext/pb_ds/detail/branch_policy/branch_policy.hpp>
 
 namespace __gnu_pbds
 {
   namespace detail
   {
-
-#define PB_DS_CLASS_T_DEC						\
-    template<								\
-						class Const_Node_Iterator, \
-						class Node_Iterator,	\
-						class E_Access_Traits,	\
-						typename Allocator>
-
-#define PB_DS_CLASS_C_DEC						\
-    trie_policy_base<							\
-						Const_Node_Iterator,	\
-						Node_Iterator,		\
-						E_Access_Traits,	\
-						Allocator>
-
-#define PB_DS_BASE_C_DEC						\
-    basic_tree_policy_base<				\
-								Const_Node_Iterator, \
-								Node_Iterator, \
-								Allocator>
-
-    template<typename Const_Node_Iterator,
-	     class Node_Iterator,
-	     class E_Access_Traits,
-	     class Allocator>
-    class trie_policy_base : public PB_DS_BASE_C_DEC
+    /// Base class for trie policies.
+    template<typename Node_CItr, typename Node_Itr,
+	     typename _ATraits, typename _Alloc>
+    class trie_policy_base
+    : public branch_policy<Node_CItr, Node_Itr, _Alloc>
     {
+      typedef branch_policy<Node_CItr, Node_Itr, _Alloc> base_type;
 
     public:
-
-      typedef E_Access_Traits e_access_traits;
-
-      typedef Allocator allocator_type;
-
-      typedef typename allocator_type::size_type size_type;
-
-      typedef null_node_metadata metadata_type;
-
-      typedef Const_Node_Iterator const_node_iterator;
-
-      typedef Node_Iterator node_iterator;
-
-      typedef typename const_node_iterator::value_type const_iterator;
-
-      typedef typename node_iterator::value_type iterator;
-
-    public:
-
-      typedef typename PB_DS_BASE_C_DEC::key_type key_type;
-
-      typedef
-      typename PB_DS_BASE_C_DEC::const_key_reference
-      const_key_reference;
+      typedef _ATraits 				access_traits;
+      typedef _Alloc 					allocator_type;
+      typedef typename allocator_type::size_type 	size_type;
+      typedef null_type 				metadata_type;
+      typedef Node_CItr 				node_const_iterator;
+      typedef Node_Itr 					node_iterator;
+      typedef typename node_const_iterator::value_type 	const_iterator;
+      typedef typename node_iterator::value_type 	iterator;
+      typedef typename base_type::key_type 		key_type;
+      typedef typename base_type::key_const_reference 	key_const_reference;
 
     protected:
-
       virtual const_iterator
       end() const = 0;
 
       virtual iterator
       end() = 0;
 
-      virtual const_node_iterator
+      virtual node_const_iterator
       node_begin() const = 0;
 
       virtual node_iterator
       node_begin() = 0;
 
-      virtual const_node_iterator
+      virtual node_const_iterator
       node_end() const = 0;
 
       virtual node_iterator
       node_end() = 0;
 
-      virtual const e_access_traits& 
-      get_e_access_traits() const = 0;
+      virtual const access_traits&
+      get_access_traits() const = 0;
 
     private:
-      typedef
-      std::pair<
-      typename e_access_traits::const_iterator,
-      typename e_access_traits::const_iterator>
-      prefix_range_t;
-
-      typedef PB_DS_BASE_C_DEC base_type;
+      typedef typename access_traits::const_iterator 	e_const_iterator;
+      typedef std::pair<e_const_iterator, e_const_iterator> prefix_range_t;
 
     protected:
       static size_type
-      common_prefix_len(node_iterator nd_it, typename e_access_traits::const_iterator b_r, typename e_access_traits::const_iterator e_r, const e_access_traits& r_traits);
+      common_prefix_len(node_iterator, e_const_iterator,
+			e_const_iterator, const access_traits&);
 
       static iterator
-      leftmost_it(node_iterator nd_it);
+      leftmost_it(node_iterator);
 
       static iterator
-      rightmost_it(node_iterator nd_it);
+      rightmost_it(node_iterator);
 
       static bool
-      less(typename e_access_traits::const_iterator b_l, typename e_access_traits::const_iterator e_l, typename e_access_traits::const_iterator b_r, typename e_access_traits::const_iterator e_r, const e_access_traits& r_traits);
+      less(e_const_iterator, e_const_iterator, e_const_iterator,
+	   e_const_iterator, const access_traits&);
     };
+
+
+#define PB_DS_CLASS_T_DEC \
+    template<typename Node_CItr, typename Node_Itr, \
+	     typename _ATraits, typename _Alloc>
+
+#define PB_DS_CLASS_C_DEC \
+    trie_policy_base<Node_CItr, Node_Itr, _ATraits, _Alloc>
 
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::size_type
     PB_DS_CLASS_C_DEC::
-    common_prefix_len(node_iterator nd_it, typename e_access_traits::const_iterator b_r, typename e_access_traits::const_iterator e_r, const e_access_traits& r_traits)
+    common_prefix_len(node_iterator nd_it, e_const_iterator b_r,
+		      e_const_iterator e_r, const access_traits& r_traits)
     {
       prefix_range_t pref_range = nd_it.valid_prefix();
 
-      typename e_access_traits::const_iterator b_l = pref_range.first;
-      typename e_access_traits::const_iterator e_l = pref_range.second;
+      e_const_iterator b_l = pref_range.first;
+      e_const_iterator e_l = pref_range.second;
 
-      const size_type range_length_l =
-	std::distance(b_l, e_l);
-
-      const size_type range_length_r =
-	std::distance(b_r, e_r);
+      const size_type range_length_l = std::distance(b_l, e_l);
+      const size_type range_length_r = std::distance(b_r, e_r);
 
       if (range_length_r < range_length_l)
 	{
 	  std::swap(b_l, b_r);
-
 	  std::swap(e_l, e_r);
 	}
 
       size_type ret = 0;
-
       while (b_l != e_l)
 	{
 	  if (r_traits.e_pos(*b_l) != r_traits.e_pos(*b_r))
-	    return (ret);
+	    return ret;
 
 	  ++ret;
-
 	  ++b_l;
-
 	  ++b_r;
 	}
 
-      return (ret);
+      return ret;
     }
 
     PB_DS_CLASS_T_DEC
@@ -193,9 +157,9 @@ namespace __gnu_pbds
     leftmost_it(node_iterator nd_it)
     {
       if (nd_it.num_children() == 0)
-	return (*nd_it);
+	return *nd_it;
 
-      return (leftmost_it(nd_it.get_child(0)));
+      return leftmost_it(nd_it.get_child(0));
     }
 
     PB_DS_CLASS_T_DEC
@@ -206,44 +170,38 @@ namespace __gnu_pbds
       const size_type num_children = nd_it.num_children();
 
       if (num_children == 0)
-	return (*nd_it);
+	return *nd_it;
 
-      return (rightmost_it(nd_it.get_child(num_children - 1)));
+      return rightmost_it(nd_it.get_child(num_children - 1));
     }
 
     PB_DS_CLASS_T_DEC
     bool
     PB_DS_CLASS_C_DEC::
-    less(typename e_access_traits::const_iterator b_l, typename e_access_traits::const_iterator e_l, typename e_access_traits::const_iterator b_r, typename e_access_traits::const_iterator e_r, const e_access_traits& r_traits)
+    less(e_const_iterator b_l, e_const_iterator e_l,
+	 e_const_iterator b_r, e_const_iterator e_r,
+	 const access_traits& r_traits)
     {
       while (b_l != e_l)
 	{
 	  if (b_r == e_r)
-	    return (false);
+	    return false;
 
-	  size_type l_pos =
-	    r_traits.e_pos(*b_l);
-	  size_type r_pos =
-	    r_traits.e_pos(*b_r);
-
+	  size_type l_pos = r_traits.e_pos(*b_l);
+	  size_type r_pos = r_traits.e_pos(*b_r);
 	  if (l_pos != r_pos)
 	    return (l_pos < r_pos);
 
 	  ++b_l;
 	  ++b_r;
 	}
-
-      return (b_r != e_r);
+      return b_r != e_r;
     }
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
-#undef PB_DS_BASE_C_DEC
 
   } // namespace detail
 } // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_TRIE_POLICY_BASE_HPP
-

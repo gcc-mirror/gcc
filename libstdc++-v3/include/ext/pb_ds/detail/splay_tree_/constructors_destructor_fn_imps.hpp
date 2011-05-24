@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file constructors_destructor_fn_imps.hpp
+ * @file splay_tree_/constructors_destructor_fn_imps.hpp
  * Contains an implementation class for splay_tree_.
  */
 
@@ -50,7 +50,7 @@ copy_from_range(It first_it, It last_it)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME()
+PB_DS_S_TREE_NAME()
 {
   initialize();
   PB_DS_ASSERT_VALID((*this))
@@ -58,7 +58,7 @@ PB_DS_CLASS_NAME()
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn) :
+PB_DS_S_TREE_NAME(const Cmp_Fn& r_cmp_fn) :
   base_type(r_cmp_fn)
 {
   initialize();
@@ -67,7 +67,7 @@ PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn) :
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update) :
+PB_DS_S_TREE_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update) :
   base_type(r_cmp_fn, r_node_update)
 {
   initialize();
@@ -76,7 +76,7 @@ PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update) :
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
+PB_DS_S_TREE_NAME(const PB_DS_CLASS_C_DEC& other) :
   base_type(other)
 {
   initialize();

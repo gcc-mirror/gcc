@@ -80,19 +80,19 @@ int main()
 {
   {
     // Perform operations on a collision-chaining hash set.
-    cc_hash_table<int, null_mapped_type> c;
+    cc_hash_table<int, null_type> c;
     some_op_sequence(c);
   }
 
   {
     // Perform operations on a general-probing hash set.
-    gp_hash_table<int, null_mapped_type> c;
+    gp_hash_table<int, null_type> c;
     some_op_sequence(c);
   }
 
   {
     // Perform operations on a red-black tree set.
-    tree<int, null_mapped_type> c;
+    tree<int, null_type> c;
     some_op_sequence(c);
   }
 
@@ -100,7 +100,7 @@ int main()
     // Perform operations on a splay tree set.
     tree<
       int,
-      null_mapped_type,
+      null_type,
       less<int>,
       splay_tree_tag> c;
     some_op_sequence(c);
@@ -110,7 +110,7 @@ int main()
     // Perform operations on a splay tree set.
     tree<
       int,
-      null_mapped_type,
+      null_type,
       less<int>,
       ov_tree_tag> c;
     some_op_sequence(c);
@@ -118,7 +118,7 @@ int main()
 
   {
     // Perform operations on a list-update set.
-    list_update<int, null_mapped_type> c;
+    list_update<int, null_type> c;
     some_op_sequence(c);
   }
 

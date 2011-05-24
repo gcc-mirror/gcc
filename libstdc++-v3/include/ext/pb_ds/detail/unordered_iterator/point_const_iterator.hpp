@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file const_point_iterator.hpp
+ * @file unordered_iterator/point_const_iterator.hpp
  * Contains an iterator class returned by the tables' const find and insert
  *     methods.
  */
@@ -42,7 +42,7 @@
 class point_iterator_;
 
 // Const point-type iterator.
-class const_point_iterator_
+class point_const_iterator_
 {
 
 public:
@@ -71,26 +71,26 @@ public:
 public:
 
   inline
-  const_point_iterator_(const_pointer p_value) : m_p_value(p_value)
+  point_const_iterator_(const_pointer p_value) : m_p_value(p_value)
   { }
 
   // Default constructor.
   inline
-  const_point_iterator_()
+  point_const_iterator_()
 
     : m_p_value(0)
   { }
 
   // Copy constructor.
   inline
-  const_point_iterator_(const const_point_iterator_& other)
+  point_const_iterator_(const point_const_iterator_& other)
 
     : m_p_value(other.m_p_value)
   { }
 
   // Copy constructor.
   inline
-  const_point_iterator_(const point_iterator_& other)
+  point_const_iterator_(const point_iterator_& other)
 
     : m_p_value(other.m_p_value)
   { }
@@ -122,7 +122,7 @@ public:
 
   // Compares content to a different iterator object.
   inline bool
-  operator==(const const_point_iterator_& other) const
+  operator==(const point_const_iterator_& other) const
   {
     return (m_p_value == other.m_p_value);
   }
@@ -136,7 +136,7 @@ public:
 
   // Compares content (negatively) to a different iterator object.
   inline bool
-  operator!=(const const_point_iterator_& other) const
+  operator!=(const point_const_iterator_& other) const
   {
     return (m_p_value != other.m_p_value);
   }

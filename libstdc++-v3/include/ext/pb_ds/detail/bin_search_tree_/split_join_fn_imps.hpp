@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file split_join_fn_imps.hpp
+ * @file bin_search_tree_/split_join_fn_imps.hpp
  * Contains an implementation class for bin_search_tree_.
  */
 
@@ -85,7 +85,7 @@ join_finish(PB_DS_CLASS_C_DEC& other)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
+split_prep(key_const_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)

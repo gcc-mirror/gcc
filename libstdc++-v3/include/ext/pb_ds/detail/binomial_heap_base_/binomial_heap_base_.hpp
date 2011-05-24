@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file binomial_heap_base_.hpp
+ * @file binomial_heap_base_/binomial_heap_base_.hpp
  * Contains an implementation class for a base of binomial heaps.
  */
 
@@ -51,96 +51,65 @@
 #include <ext/pb_ds/detail/cond_dealtor.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/left_child_next_sibling_heap_.hpp>
-#include <ext/pb_ds/detail/left_child_next_sibling_heap_/null_metadata.hpp>
 
 namespace __gnu_pbds
 {
   namespace detail
   {
-
 #define PB_DS_CLASS_T_DEC \
-    template<typename Value_Type, class Cmp_Fn, class Allocator>
+    template<typename Value_Type, typename Cmp_Fn, typename _Alloc>
 
 #define PB_DS_CLASS_C_DEC \
-    binomial_heap_base_<Value_Type, Cmp_Fn, Allocator>
+    binomial_heap_base<Value_Type, Cmp_Fn, _Alloc>
 
 #ifdef _GLIBCXX_DEBUG
-#define PB_DS_BASE_C_DEC \
-    left_child_next_sibling_heap_<Value_Type, Cmp_Fn, \
-				  typename Allocator::size_type, \
-				  Allocator, false>
-#else 
-#define PB_DS_BASE_C_DEC \
-    left_child_next_sibling_heap_<Value_Type, Cmp_Fn,	\
-				typename Allocator::size_type, Allocator>
-#endif 
+#define PB_DS_B_HEAP_BASE \
+  left_child_next_sibling_heap<Value_Type, Cmp_Fn, \
+				typename _Alloc::size_type,  _Alloc, false>
+#else
+#define PB_DS_B_HEAP_BASE \
+  left_child_next_sibling_heap<Value_Type, Cmp_Fn, \
+				typename _Alloc::size_type, _Alloc>
+#endif
 
-    /**
-     * class description = "8y|\|0|\/|i41 h34p 74813">
-     **/
-    template<typename Value_Type, class Cmp_Fn, class Allocator>
-    class binomial_heap_base_ : public PB_DS_BASE_C_DEC
+    /// Base class for binomial heap.
+    template<typename Value_Type, typename Cmp_Fn, typename _Alloc>
+    class binomial_heap_base
+    : public PB_DS_B_HEAP_BASE
     {
-
     private:
-      typedef PB_DS_BASE_C_DEC base_type;
+      typedef typename _Alloc::template rebind<Value_Type>::other __rebind_v;
+      typedef PB_DS_B_HEAP_BASE	  			base_type;
 
     protected:
-      typedef typename base_type::node node;
-
-      typedef typename base_type::node_pointer node_pointer;
-
-      typedef typename base_type::const_node_pointer const_node_pointer;
+      typedef typename base_type::node 			node;
+      typedef typename base_type::node_pointer 		node_pointer;
+      typedef typename base_type::node_const_pointer 	node_const_pointer;
 
     public:
+      typedef Value_Type 				value_type;
+      typedef Cmp_Fn 					cmp_fn;
+      typedef _Alloc 					allocator_type;
+      typedef typename _Alloc::size_type 		size_type;
+      typedef typename _Alloc::difference_type 		difference_type;
 
-      typedef typename Allocator::size_type size_type;
+      typedef typename __rebind_v::pointer 		pointer;
+      typedef typename __rebind_v::const_pointer 	const_pointer;
+      typedef typename __rebind_v::reference 		reference;
+      typedef typename __rebind_v::const_reference   	const_reference;
 
-      typedef typename Allocator::difference_type difference_type;
-
-      typedef Value_Type value_type;
-
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::pointer
-      pointer;
-
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::const_pointer
-      const_pointer;
-
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::reference
-      reference;
-
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::const_reference
-      const_reference;
-
-      typedef
-      typename PB_DS_BASE_C_DEC::const_point_iterator
-      const_point_iterator;
-
-      typedef typename PB_DS_BASE_C_DEC::point_iterator point_iterator;
-
-      typedef typename PB_DS_BASE_C_DEC::const_iterator const_iterator;
-
-      typedef typename PB_DS_BASE_C_DEC::iterator iterator;
-
-      typedef Cmp_Fn cmp_fn;
-
-      typedef Allocator allocator_type;
+      typedef typename base_type::point_const_iterator 	point_const_iterator;
+      typedef typename base_type::point_iterator 	point_iterator;
+      typedef typename base_type::const_iterator 	const_iterator;
+      typedef typename base_type::iterator 		iterator;
 
     public:
 
       inline point_iterator
-      push(const_reference r_val);
+      push(const_reference);
 
       void
-      modify(point_iterator it, const_reference r_new_val);
+      modify(point_iterator, const_reference);
 
       inline const_reference
       top() const;
@@ -149,72 +118,72 @@ namespace __gnu_pbds
       pop();
 
       void
-      erase(point_iterator it);
+      erase(point_iterator);
 
       inline void
       clear();
 
       template<typename Pred>
       size_type
-      erase_if(Pred pred);
+      erase_if(Pred);
 
       template<typename Pred>
       void
-      split(Pred pred, PB_DS_CLASS_C_DEC& other);
+      split(Pred, PB_DS_CLASS_C_DEC&);
 
       void
-      join(PB_DS_CLASS_C_DEC& other);
+      join(PB_DS_CLASS_C_DEC&);
 
     protected:
 
-      binomial_heap_base_();
+      binomial_heap_base();
 
-      binomial_heap_base_(const Cmp_Fn& r_cmp_fn);
+      binomial_heap_base(const Cmp_Fn&);
 
-      binomial_heap_base_(const PB_DS_CLASS_C_DEC& other);
+      binomial_heap_base(const PB_DS_CLASS_C_DEC&);
 
       void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(PB_DS_CLASS_C_DEC&);
 
-      ~binomial_heap_base_();
+      ~binomial_heap_base();
 
       template<typename It>
       void
-      copy_from_range(It first_it, It last_it);
+      copy_from_range(It, It);
 
       inline void
       find_max();
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid(bool strictly_binomial, const char* file, int line) const;
+      assert_valid(bool, const char*, int) const;
 
       void
-      assert_max(const char* file, int line) const;
-#endif 
+      assert_max(const char*, int) const;
+#endif
 
     private:
 
       inline node_pointer
-      fix(node_pointer p_nd) const;
+      fix(node_pointer) const;
 
       inline void
-      insert_node(node_pointer p_nd);
+      insert_node(node_pointer);
 
       inline void
-      remove_parentless_node(node_pointer p_nd);
+      remove_parentless_node(node_pointer);
 
       inline node_pointer
-      join(node_pointer p_lhs, node_pointer p_rhs) const;
+      join(node_pointer, node_pointer) const;
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_node_consistent(const_node_pointer, bool, bool,
+      assert_node_consistent(node_const_pointer, bool, bool,
 			     const char*, int) const;
 #endif
 
     protected:
-      node_pointer m_p_max;
+      node_pointer 	m_p_max;
     };
 
 #define PB_DS_ASSERT_VALID_COND(X, _StrictlyBinomial)			\
@@ -235,10 +204,8 @@ namespace __gnu_pbds
 #undef PB_DS_ASSERT_VALID_COND
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_T_DEC
-#undef PB_DS_BASE_C_DEC
-
-
+#undef PB_DS_B_HEAP_BASE
   } // namespace detail
 } // namespace __gnu_pbds
 
-#endif 
+#endif

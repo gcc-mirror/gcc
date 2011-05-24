@@ -47,11 +47,11 @@ namespace __gnu_pbds
   namespace test
   {
     template<typename Key, class Cmp_Fn = std::less<Key>,
-	     class Allocator = std::allocator<char> >
+	     typename _Alloc = std::allocator<char> >
     class native_set : public PB_DS_BASE_C_DEC
     {
     private:
-      typedef std::set<Key, Cmp_Fn, typename Allocator::template rebind<Key>::other> base_type;
+      typedef std::set<Key, Cmp_Fn, typename _Alloc::template rebind<Key>::other> base_type;
 
     public:
       typedef native_tree_tag container_category;

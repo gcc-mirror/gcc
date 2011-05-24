@@ -136,8 +136,16 @@ doc-install-xml: doc-xml
 
 # HTML
 htmldir="$(DESTDIR)@docdir@"
-stamp-html: stamp-html-docbook stamp-html-doxygen
+stamp-html: stamp-html-copy stamp-html-doxygen
 	$(STAMP) stamp-html
+
+copydir=${docbook_outdir}/html/manual/ext/
+stamp-html-copy: stamp-html-docbook
+	cp -r ${top_srcdir}/doc/html/ext ${docbook_outdir}/html/manual/ext
+	cd ${docbook_outdir}/html/manual/ext
+	rm -rf ${docbook_outdir}/html/manual/ext/.svn 
+	rm -rf ${docbook_outdir}/html/manual/ext/pb_ds/.svn
+	$(STAMP) stamp-html-copy
 
 doc-html: stamp-html
 

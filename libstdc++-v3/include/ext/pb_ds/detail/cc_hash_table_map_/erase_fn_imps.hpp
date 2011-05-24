@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file erase_fn_imps.hpp
+ * @file cc_hash_table_map_/erase_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s erase related functions.
  */
 

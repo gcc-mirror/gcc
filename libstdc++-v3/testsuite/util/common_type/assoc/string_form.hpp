@@ -109,11 +109,11 @@ namespace __gnu_pbds
 	  { return (""); }
 
 	  static std::string
-	  name(__gnu_pbds::null_mapped_type)
+	  name(__gnu_pbds::null_type)
 	  { return ("set"); }
 
 	  static std::string
-	  desc(__gnu_pbds::null_mapped_type)
+	  desc(__gnu_pbds::null_type)
 	  { return (""); }
 
 	public:

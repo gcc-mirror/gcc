@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file split_join_fn_imps.hpp
+ * @file rb_tree_map_/split_join_fn_imps.hpp
  * Contains an implementation for rb_tree_.
  */
 
@@ -232,7 +232,7 @@ black_height(node_pointer p_nd)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
+split(key_const_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)

@@ -50,7 +50,7 @@ namespace __gnu_pbds
   {
 #define PB_DS_BASE_C_DEC \
     std::tr1::__unordered_map<Key, Data, Hash_Fn, Eq_Fn, \
-    typename Allocator::template rebind<std::pair<const Key, Data> >::other, Cache_Hash>
+    typename _Alloc::template rebind<std::pair<const Key, Data> >::other, Cache_Hash>
 
     template<typename Key,
 	     typename Data,
@@ -58,7 +58,7 @@ namespace __gnu_pbds
 	     typename Hash_Fn = typename __gnu_pbds::detail::default_hash_fn<Key>::type,
 	     typename Eq_Fn = std::equal_to<Key>,
 	     typename Less_Fn = std::less<Key>,
-	     typename Allocator = std::allocator<char>, bool Cache_Hash = false
+	     typename _Alloc = std::allocator<char>, bool Cache_Hash = false
 	     >
     class native_hash_map : public PB_DS_BASE_C_DEC
     {

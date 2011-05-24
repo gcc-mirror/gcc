@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file info_fn_imps.hpp
+ * @file left_child_next_sibling_heap_/info_fn_imps.hpp
  * Contains an implementation class for left_child_next_sibling_heap_.
  */
 

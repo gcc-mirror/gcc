@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file find_fn_imps.hpp
+ * @file binomial_heap_base_/find_fn_imps.hpp
  * Contains an implementation class for a base of binomial heaps.
  */
 
@@ -59,14 +59,11 @@ PB_DS_CLASS_C_DEC::
 find_max()
 {
   node_pointer p_cur = base_type::m_p_root;
-
   m_p_max = p_cur;
-
   while (p_cur != 0)
     {
       if (Cmp_Fn::operator()(m_p_max->m_value, p_cur->m_value))
 	m_p_max = p_cur;
-
       p_cur = p_cur->m_p_next_sibling;
     }
 }

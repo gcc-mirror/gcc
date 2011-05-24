@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file find_fn_imps.hpp
+ * @file thin_heap_/find_fn_imps.hpp
  * Contains an implementation for thin_heap_.
  */
 

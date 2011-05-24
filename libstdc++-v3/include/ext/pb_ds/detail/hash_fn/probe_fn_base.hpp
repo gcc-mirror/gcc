@@ -47,7 +47,7 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-    template<typename Allocator>
+    template<typename _Alloc>
     class probe_fn_base
     {
     protected:

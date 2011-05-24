@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file insert_fn_imps.hpp
+ * @file list_update_map_/insert_fn_imps.hpp
  * Contains implementations of lu_map_.
  */
 
@@ -101,6 +101,6 @@ init_entry_metadata(entry_pointer p_l, type_to_type<Metadata>)
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-init_entry_metadata(entry_pointer, type_to_type<null_lu_metadata>)
+init_entry_metadata(entry_pointer, type_to_type<null_type>)
 { }
 

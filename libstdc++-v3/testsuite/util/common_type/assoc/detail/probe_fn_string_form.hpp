@@ -53,8 +53,8 @@ namespace __gnu_pbds
       template<typename Probe_Fn>
       struct probe_fn_string_form;
 
-      template<typename Key, class Allocator>
-      struct probe_fn_string_form<linear_probe_fn_t_<Key, Allocator> >
+      template<typename Key, typename _Alloc>
+      struct probe_fn_string_form<linear_probe_fn_t_<Key, _Alloc> >
       {
 	static std::string
         name()
@@ -65,8 +65,8 @@ namespace __gnu_pbds
 	{ return make_xml_tag("Probe_Fn", "value", "linear_probe_fn"); }
       };
 
-      template<typename Key, class Allocator>
-      struct probe_fn_string_form<quadratic_probe_fn_t_<Key, Allocator> >
+      template<typename Key, typename _Alloc>
+      struct probe_fn_string_form<quadratic_probe_fn_t_<Key, _Alloc> >
       {
 	static std::string
         name()
@@ -78,7 +78,7 @@ namespace __gnu_pbds
       };
 
       template<>
-      struct probe_fn_string_form<__gnu_pbds::null_probe_fn>
+      struct probe_fn_string_form<__gnu_pbds::null_type>
       {
 	static std::string
         name()
@@ -86,7 +86,7 @@ namespace __gnu_pbds
 
 	static std::string
         desc()
-	{ return make_xml_tag("Probe_Fn", "value", "null_probe_fn"); }
+	{ return make_xml_tag("Probe_Fn", "value", "null_type"); }
       };
 
     } // namespace detail

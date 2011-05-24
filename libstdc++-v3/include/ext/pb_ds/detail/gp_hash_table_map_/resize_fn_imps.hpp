@@ -35,7 +35,7 @@
 // warranty.
 
 /**
- * @file resize_fn_imps.hpp
+ * @file gp_hash_table_map_/resize_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s resize related functions.
  */
 
@@ -80,7 +80,7 @@ PB_DS_CLASS_C_DEC::
 resize_imp(size_type new_size)
 {
 #ifdef PB_DS_REGRESSION
-  typename Allocator::group_adjustor adjust(m_num_e);
+  typename _Alloc::group_adjustor adjust(m_num_e);
 #endif 
 
   if (new_size == m_num_e)

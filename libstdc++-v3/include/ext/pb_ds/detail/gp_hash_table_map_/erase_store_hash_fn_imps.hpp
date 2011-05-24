@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file erase_store_hash_fn_imps.hpp
+ * @file gp_hash_table_map_/erase_store_hash_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s erase related functions,
  * when the hash value is stored.
  */
@@ -42,7 +42,7 @@
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
-erase_imp(const_key_reference r_key, true_type)
+erase_imp(key_const_reference r_key, true_type)
 {
   const comp_hash pos_hash_pair = ranged_probe_fn_base::operator()(r_key);
   size_type i;

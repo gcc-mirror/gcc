@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file insert_fn_imps.hpp
+ * @file cc_hash_table_map_/insert_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s insert related functions.
  */
 

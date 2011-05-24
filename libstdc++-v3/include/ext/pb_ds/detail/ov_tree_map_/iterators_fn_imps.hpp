@@ -34,18 +34,18 @@
 // warranty.
 
 /**
- * @file iterators_fn_imps.hpp
+ * @file ov_tree_map_/iterators_fn_imps.hpp
  * Contains an implementation class for ov_tree_.
  */
 
 PB_DS_CLASS_T_DEC
-inline typename PB_DS_CLASS_C_DEC::const_node_iterator
+inline typename PB_DS_CLASS_C_DEC::node_const_iterator
 PB_DS_CLASS_C_DEC::
 node_begin() const
 { return PB_DS_node_begin_imp(); }
 
 PB_DS_CLASS_T_DEC
-inline typename PB_DS_CLASS_C_DEC::const_node_iterator
+inline typename PB_DS_CLASS_C_DEC::node_const_iterator
 PB_DS_CLASS_C_DEC::
 node_end() const
 { return PB_DS_node_end_imp(); }
@@ -63,11 +63,11 @@ node_end()
 { return PB_DS_node_end_imp(); }
 
 PB_DS_CLASS_T_DEC
-inline typename PB_DS_CLASS_C_DEC::const_node_iterator
+inline typename PB_DS_CLASS_C_DEC::node_const_iterator
 PB_DS_CLASS_C_DEC::
 PB_DS_node_begin_imp() const
 {
-  return const_node_iterator(const_cast<pointer>(mid_pointer(begin(), end())),
+  return node_const_iterator(const_cast<pointer>(mid_pointer(begin(), end())),
 			      const_cast<pointer>(begin()),
 			      const_cast<pointer>(end()),(m_a_metadata == 0)?
 			      0 :
@@ -75,11 +75,11 @@ PB_DS_node_begin_imp() const
 }
 
 PB_DS_CLASS_T_DEC
-inline typename PB_DS_CLASS_C_DEC::const_node_iterator
+inline typename PB_DS_CLASS_C_DEC::node_const_iterator
 PB_DS_CLASS_C_DEC::
 PB_DS_node_end_imp() const
 {
-  return const_node_iterator(end(), end(), end(),
+  return node_const_iterator(end(), end(), end(),
 		     (m_a_metadata == 0) ? 0 : m_a_metadata + m_size);
 }
 

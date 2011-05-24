@@ -35,7 +35,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file binomial_heap_base_/debug_fn_imps.hpp
  * Contains an implementation class for a base of binomial heaps.
  */
 
@@ -68,7 +68,7 @@ assert_max(const char* __file, int __line) const
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_node_consistent(const_node_pointer p_nd, bool strictly_binomial,
+assert_node_consistent(node_const_pointer p_nd, bool strictly_binomial,
 		       bool increasing, const char* __file, int __line) const
 {
   PB_DS_DEBUG_VERIFY(increasing || strictly_binomial);

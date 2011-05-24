@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file entry_pred.hpp
+ * @file binary_heap_/entry_pred.hpp
  * Contains an implementation class for a binary_heap.
  */
 
@@ -45,48 +45,40 @@ namespace __gnu_pbds
 {
   namespace detail
   {
+    /// Entry predicate primary class template.
+    template<typename _VTp, typename Pred, typename _Alloc, bool No_Throw>
+      struct entry_pred;
 
-    template<typename Value_Type,
-	     class Pred,
-	     bool No_Throw,
-	     class Allocator>
-    struct entry_pred
-    {
-      typedef Pred type;
-    };
-
-    template<typename Value_Type, class Pred, class Allocator>
-    struct entry_pred<
-      Value_Type,
-      Pred,
-      false,
-      Allocator>
-    {
-    public:
-      typedef
-      typename Allocator::template rebind<
-      Value_Type>::other::const_pointer
-      entry;
-
-      struct type : public Pred
+    /// Specialization, true.
+    template<typename _VTp, typename Pred, typename _Alloc>
+      struct entry_pred<_VTp, Pred, _Alloc, true>
       {
-      public:
-	inline
-	type()
-	{ }
-
-	inline
-	type(const Pred& other) : Pred(other)
-	{ }
-
-	inline bool
-	operator()(entry p_v) const
-	{
-	  return Pred::operator()(*p_v);
-	}
+	typedef Pred 						type;
       };
-    };
 
+    /// Specialization, false.
+    template<typename _VTp, typename Pred, typename _Alloc>
+      struct entry_pred<_VTp, Pred, _Alloc, false>
+      {
+      private:
+	typedef typename _Alloc::template rebind<_VTp>		__rebind_v;
+
+      public:
+	typedef typename __rebind_v::other::const_pointer	entry;
+
+	struct type : public Pred
+	{
+	  inline
+	  type() { }
+
+	  inline
+	  type(const Pred& other) : Pred(other) { }
+
+	  inline bool
+	  operator()(entry p_v) const
+	  { return Pred::operator()(*p_v); }
+	};
+      };
   } // namespace detail
 } // namespace __gnu_pbds
 

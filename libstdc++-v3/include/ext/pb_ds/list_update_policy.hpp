@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -44,96 +44,86 @@
 
 #include <bits/c++config.h>
 #include <cstdlib>
-#include <ext/pb_ds/detail/list_update_policy/counter_lu_metadata.hpp>
+#include <ext/pb_ds/detail/list_update_policy/lu_counter_metadata.hpp>
+#include <ext/pb_ds/tag_and_trait.hpp>
 
 namespace __gnu_pbds
 {
-  // A null type that means that each link in a list-based container
-  // does not actually need metadata.
-  struct null_lu_metadata
-  { };
+  /**
+   *  A list-update policy that unconditionally moves elements to the
+   *  front of the list. A null type means that each link in a
+   *  list-based container does not actually need metadata.
+   */
+ template<typename _Alloc = std::allocator<char> >
+   class lu_move_to_front_policy
+   {
+   public:
+     typedef _Alloc 					allocator_type;
 
-#define PB_DS_CLASS_T_DEC template<typename Allocator>
-#define PB_DS_CLASS_C_DEC move_to_front_lu_policy<Allocator>
+     // Metadata on which this functor operates.
+     typedef null_type 					metadata_type;
 
-  // A list-update policy that unconditionally moves elements to the
-  // front of the list.
-  template<typename Allocator = std::allocator<char> >
-  class move_to_front_lu_policy
-  {
-  public:
-    typedef Allocator allocator_type;
-      
-    // Metadata on which this functor operates.
-    typedef null_lu_metadata metadata_type;
-      
-    // Reference to metadata on which this functor operates.
-    typedef typename allocator_type::template rebind<metadata_type>::other metadata_rebind;
-    typedef typename metadata_rebind::reference metadata_reference;
-      
-    // Creates a metadata object.
-    metadata_type
-    operator()() const;
-      
-    // Decides whether a metadata object should be moved to the front
-    // of the list.
-    inline bool
-    operator()(metadata_reference r_metadata) const;
-      
-  private:
-    static null_lu_metadata s_metadata;
-  };
-  
-#include <ext/pb_ds/detail/list_update_policy/mtf_lu_policy_imp.hpp>
+   private:
+     typedef typename _Alloc::template rebind<metadata_type> __rebind_m;
 
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
+   public:
+     // Reference to metadata on which this functor operates.
+     typedef typename __rebind_m::other::reference 	metadata_reference;
 
-#define PB_DS_CLASS_T_DEC template<std::size_t Max_Count, class Allocator>
-#define PB_DS_CLASS_C_DEC counter_lu_policy<Max_Count, Allocator>
+     // Creates a metadata object.
+     metadata_type
+     operator()() const
+     { return s_metadata; }
 
-  // A list-update policy that moves elements to the front of the list
-  // based on the counter algorithm.
-  template<std::size_t Max_Count = 5,
-	   typename Allocator = std::allocator<char> >
-  class counter_lu_policy 
-  : private detail::counter_lu_policy_base<typename Allocator::size_type>
-  {
-  public:
-    typedef Allocator allocator_type;
+     // Decides whether a metadata object should be moved to the front
+     // of the list.
+     inline bool
+     operator()(metadata_reference r_metadata) const
+     { return true; }
 
-    enum
-      {
-	max_count = Max_Count
-      };
+   private:
+     static null_type 					s_metadata;
+   };
 
-    typedef typename allocator_type::size_type size_type;
+  /**
+   *  A list-update policy that moves elements to the front of the
+   *  list based on the counter algorithm.
+   */
+  template<std::size_t Max_Count = 5, typename _Alloc = std::allocator<char> >
+    class lu_counter_policy
+    : private detail::lu_counter_policy_base<typename _Alloc::size_type>
+    {
+    public:
+      typedef _Alloc 					allocator_type;
+      typedef typename allocator_type::size_type       	size_type;
 
-    // Metadata on which this functor operates.
-    typedef detail::counter_lu_metadata<size_type> metadata_type;
+      enum
+	{
+	  max_count = Max_Count
+	};
 
-    // Reference to metadata on which this functor operates.
-    typedef typename Allocator::template rebind<metadata_type>::other metadata_rebind;
-    typedef typename metadata_rebind::reference metadata_reference;
+      // Metadata on which this functor operates.
+      typedef detail::lu_counter_metadata<size_type> 	metadata_type;
 
-    // Creates a metadata object.
-    metadata_type
-    operator()() const;
+    private:
+      typedef detail::lu_counter_policy_base<size_type> 	base_type;
+      typedef typename _Alloc::template rebind<metadata_type> __rebind_m;
 
-    // Decides whether a metadata object should be moved to the front
-    // of the list.
-    bool
-    operator()(metadata_reference r_metadata) const;
+    public:
+      // Reference to metadata on which this functor operates.
+      typedef typename __rebind_m::other::reference 	metadata_reference;
 
-  private:
-    typedef detail::counter_lu_policy_base<typename Allocator::size_type> base_type;
-  };
+      // Creates a metadata object.
+      metadata_type
+      operator()() const
+      { return base_type::operator()(max_count); }
 
-#include <ext/pb_ds/detail/list_update_policy/counter_lu_policy_imp.hpp>
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
-
+      // Decides whether a metadata object should be moved to the front
+      // of the list.
+      bool
+      operator()(metadata_reference r_data) const
+      { return base_type::operator()(r_data, max_count); }
+    };
 } // namespace __gnu_pbds
 
 #endif

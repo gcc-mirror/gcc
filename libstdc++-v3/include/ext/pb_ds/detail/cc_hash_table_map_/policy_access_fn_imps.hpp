@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file policy_access_fn_imps.hpp
+ * @file cc_hash_table_map_/policy_access_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s policy access
  *    functions.
  */

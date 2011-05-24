@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file split_join_fn_imps.hpp
+ * @file splay_tree_/split_join_fn_imps.hpp
  * Contains an implementation class for splay_tree_.
  */
 
@@ -66,8 +66,8 @@ join(PB_DS_CLASS_C_DEC& other)
 
   base_type::m_p_head->m_p_parent = p_target_r;
   p_target_r->m_p_parent = base_type::m_p_head;
-  this->apply_update(p_target_r, (node_update* )this);
 
+  this->apply_update(p_target_r, (node_update*)this);
   base_type::join_finish(other);
 
   PB_DS_ASSERT_VALID((*this))
@@ -77,7 +77,7 @@ join(PB_DS_CLASS_C_DEC& other)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
+split(key_const_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)
@@ -103,7 +103,7 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
   other.m_p_head->m_p_parent = p_upper_bound;
   p_upper_bound->m_p_parent = other.m_p_head;
   p_upper_bound->m_p_left = 0;
-  this->apply_update(p_upper_bound, (node_update* )this);
+  this->apply_update(p_upper_bound, (node_update*)this);
   base_type::split_finish(other);
 
   PB_DS_ASSERT_VALID((*this))

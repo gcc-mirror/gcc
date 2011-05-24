@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file node_iterators.hpp
+ * @file bin_search_tree_/node_iterators.hpp
  * Contains an implementation class for bin_search_tree_.
  */
 
@@ -47,31 +47,27 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-
 #define PB_DS_TREE_CONST_NODE_ITERATOR_CLASS_C_DEC			\
     bin_search_tree_const_node_it_<					\
 							Node,		\
 							Const_Iterator,	\
 							Iterator,	\
-							Allocator>
+							_Alloc>
 
-    // Const node iterator.
+    /// Const node iterator.
     template<typename Node,
 	     class Const_Iterator,
 	     class Iterator,
-	     class Allocator>
+	     typename _Alloc>
     class bin_search_tree_const_node_it_
     {
     private:
-
-    private:
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
       Node>::other::pointer
       node_pointer;
 
     public:
-
       // Category.
       typedef trivial_iterator_tag iterator_category;
 
@@ -92,11 +88,9 @@ namespace __gnu_pbds
 
       // Const metadata reference type.
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
 	metadata_type>::other::const_reference
-      const_metadata_reference;
-
-    public:
+      metadata_const_reference;
 
       // Default constructor.
       /*
@@ -105,7 +99,8 @@ namespace __gnu_pbds
       */
 
       inline
-      bin_search_tree_const_node_it_(const node_pointer p_nd = 0) : m_p_nd(const_cast<node_pointer>(p_nd))
+      bin_search_tree_const_node_it_(const node_pointer p_nd = 0) 
+      : m_p_nd(const_cast<node_pointer>(p_nd))
       { }
 
       // Access.
@@ -116,7 +111,7 @@ namespace __gnu_pbds
       }
 
       // Metadata access.
-      inline const_metadata_reference
+      inline metadata_const_reference
       get_metadata() const
       {
 	return (m_p_nd->get_metadata());
@@ -150,7 +145,6 @@ namespace __gnu_pbds
 	return (m_p_nd != other.m_p_nd);
       }
 
-    public:
       node_pointer m_p_nd;
     };
 
@@ -159,26 +153,23 @@ namespace __gnu_pbds
 						Node,		\
 						Const_Iterator, \
 						Iterator,	\
-						Allocator>
+						_Alloc>
 
-    // Node iterator.
+    /// Node iterator.
     template<typename Node,
 	     class Const_Iterator,
 	     class Iterator,
-	     class Allocator>
-    class bin_search_tree_node_it_ : 
-      public PB_DS_TREE_CONST_NODE_ITERATOR_CLASS_C_DEC
-
+	     typename _Alloc>
+    class bin_search_tree_node_it_ 
+    : public PB_DS_TREE_CONST_NODE_ITERATOR_CLASS_C_DEC
     {
-
     private:
       typedef
-      typename Allocator::template rebind<
+      typename _Alloc::template rebind<
       Node>::other::pointer
       node_pointer;
 
     public:
-
       // __Iterator's value type.
       typedef Iterator value_type;
 
@@ -188,8 +179,6 @@ namespace __gnu_pbds
       // __Iterator's __const reference type.
       typedef Iterator const_reference;
 
-    public:
-
       // Default constructor.
       /*
 	inline
@@ -197,8 +186,8 @@ namespace __gnu_pbds
       */
 
       inline
-      bin_search_tree_node_it_(const node_pointer p_nd = 0) : PB_DS_TREE_CONST_NODE_ITERATOR_CLASS_C_DEC(
-													    const_cast<node_pointer>(p_nd))
+      bin_search_tree_node_it_(const node_pointer p_nd = 0) 
+      : PB_DS_TREE_CONST_NODE_ITERATOR_CLASS_C_DEC(const_cast<node_pointer>(p_nd))
       { }
 
       // Access.
@@ -227,7 +216,6 @@ namespace __gnu_pbds
     };
 
 #undef PB_DS_TREE_CONST_NODE_ITERATOR_CLASS_C_DEC
-
 #undef PB_DS_TREE_NODE_ITERATOR_CLASS_C_DEC
 
   } // namespace detail

@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -36,7 +37,7 @@
 /**
  * @file tag_and_trait.hpp
  * Contains tags and traits, e.g., ones describing underlying
- *    data structures.
+ * data structures.
  */
 
 #ifndef PB_DS_TAG_AND_TRAIT_HPP
@@ -51,59 +52,91 @@
  */
 namespace __gnu_pbds
 {
-  // A trivial iterator tag. Signifies that the iterators has none of
-  // the STL's movement abilities.
+  /** @defgroup pbds Policy-Based Data Structures
+   *  @ingroup extensions
+   *
+   *  This is a library of policy-based elementary data structures:
+   *  associative containers and priority queues. It is designed for
+   *  high-performance, flexibility, semantic safety, and conformance
+   *  to the corresponding containers in std (except for some points
+   *  where it differs by design).
+   *
+   *  For details, see:
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/ext/pb_ds/index.html
+   *
+   *  @{
+   */
+
+  /**
+   *  @defgroup tags Tags
+   *  @{   
+   */
+  /// A trivial iterator tag. Signifies that the iterators has none of
+  /// the STL's movement abilities.
   struct trivial_iterator_tag
   { };
 
-  // Prohibit moving trivial iterators.
+  /// Prohibit moving trivial iterators.
   typedef void trivial_iterator_difference_type;
 
 
-  // Signifies a basic invalidation guarantee that any iterator,
-  // pointer, or reference to a container object's mapped value type
-  // is valid as long as the container is not modified.
+  /**
+   *  @defgroup invalidation_tags  Invalidation Guarantees.
+   *  @ingroup tags
+   *  @{
+   */
+
+  /**
+   *  Signifies a basic invalidation guarantee that any iterator,
+   *  pointer, or reference to a container object's mapped value type
+   *  is valid as long as the container is not modified.
+   */
   struct basic_invalidation_guarantee
   { };
 
-  // Signifies an invalidation guarantee that includes all those of
-  // its base, and additionally, that any point-type iterator,
-  // pointer, or reference to a container object's mapped value type
-  // is valid as long as its corresponding entry has not be erased,
-  // regardless of modifications to the container object.
+  /**
+   *  Signifies an invalidation guarantee that includes all those of
+   *  its base, and additionally, that any point-type iterator,
+   *  pointer, or reference to a container object's mapped value type
+   *  is valid as long as its corresponding entry has not be erased,
+   *  regardless of modifications to the container object.
+   */
   struct point_invalidation_guarantee : public basic_invalidation_guarantee
   { };
 
-  // Signifies an invalidation guarantee that includes all those of
-  // its base, and additionally, that any range-type iterator
-  // (including the returns of begin() and end()) is in the correct
-  // relative positions to other range-type iterators as long as its
-  // corresponding entry has not be erased, regardless of
-  // modifications to the container object.
+  /**
+   *  Signifies an invalidation guarantee that includes all those of
+   *  its base, and additionally, that any range-type iterator
+   *  (including the returns of begin() and end()) is in the correct
+   *  relative positions to other range-type iterators as long as its
+   *  corresponding entry has not be erased, regardless of
+   *  modifications to the container object.
+   */
   struct range_invalidation_guarantee : public point_invalidation_guarantee
   { };
+  //@}
 
 
-  /// A mapped-policy indicating that an associative container is a set.
-  // XXX should this be a trait of the form is_set<T> ??
-  struct null_mapped_type { };
-
-
+  /**
+   *  @defgroup ds_tags Data Structure Tag Hierarchy.
+   *  @ingroup tags
+   *  @{
+   */
   /// Base data structure tag.
   struct container_tag
   { };
 
-  /// Basic string container, inclusive of strings, ropes, etc.
-  struct string_tag : public container_tag { };
-
   /// Basic sequence.
   struct sequence_tag : public container_tag { };
 
-  /// Basic associative-container.
-  struct associative_container_tag : public container_tag { };
+  /// Basic string container, inclusive of strings, ropes, etc.
+  struct string_tag : public sequence_tag { };
 
-  /// Basic hash.
-  struct basic_hash_tag : public associative_container_tag { };
+  /// Basic associative-container.
+  struct associative_tag : public container_tag { };
+
+  /// Basic hash structure.
+  struct basic_hash_tag : public associative_tag { };
 
   /// Collision-chaining hash.
   struct cc_hash_tag : public basic_hash_tag { };
@@ -111,11 +144,11 @@ namespace __gnu_pbds
   /// General-probing hash.
   struct gp_hash_tag : public basic_hash_tag { };
 
-  /// Basic tree.
-  struct basic_tree_tag : public associative_container_tag { };
+  /// Basic branch structure.
+  struct basic_branch_tag : public associative_tag { };
 
   /// tree.
-  struct tree_tag : public basic_tree_tag { };
+  struct tree_tag : public basic_branch_tag { };
 
   /// Red-black tree.
   struct rb_tree_tag : public tree_tag { };
@@ -127,13 +160,13 @@ namespace __gnu_pbds
   struct ov_tree_tag : public tree_tag { };
 
   /// trie.
-  struct trie_tag : public basic_tree_tag { };
+  struct trie_tag : public basic_branch_tag { };
 
   /// PATRICIA trie.
   struct pat_trie_tag : public trie_tag { };
 
   /// List-update.
-  struct list_update_tag : public associative_container_tag { };
+  struct list_update_tag : public associative_tag { };
 
   /// Basic priority-queue.
   struct priority_queue_tag : public container_tag { };
@@ -152,203 +185,238 @@ namespace __gnu_pbds
 
   /// Thin heap.
   struct thin_heap_tag : public priority_queue_tag { };
+  //@}
+  //@}
 
 
-  /// Base traits type for containers.
-  template<typename Tag>
-  struct container_traits_base;
+  /**
+   *  @defgroup traits Traits
+   *  @{
+   */
 
+  /**
+   *  @brief Represents no type, or absence of type, for template tricks.
+   *
+   *  In a mapped-policy, indicates that an associative container is a set.
+   *
+   *  In a list-update policy, indicates that each link does not need
+   *  metadata.
+   *
+   *  In a hash policy, indicates that the combining hash function
+   *  is actually a ranged hash function.
+   *
+   *  In a probe policy, indicates that the combining probe function
+   *  is actually a ranged probe function.
+   */
+  struct null_type { };
+
+
+  /// Primary template, container traits base.
+  template<typename _Tag>
+    struct container_traits_base;
+
+  /// Specialization, cc hash.
   template<>
   struct container_traits_base<cc_hash_tag>
   {
-    typedef cc_hash_tag container_category;
-    typedef point_invalidation_guarantee invalidation_guarantee;
+    typedef cc_hash_tag 			container_category;
+    typedef point_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = false,
-        erase_can_throw = false,
-	split_join_can_throw = false,
-	reverse_iteration = false
-      };
-  };
-
-  template<>
-  struct container_traits_base<gp_hash_tag>
-  {
-    typedef gp_hash_tag container_category;
-    typedef basic_invalidation_guarantee invalidation_guarantee;
-
-    enum
-      {
-        order_preserving = false,
+	order_preserving = false,
 	erase_can_throw = false,
 	split_join_can_throw = false,
 	reverse_iteration = false
       };
   };
 
+  /// Specialization, gp hash.
+  template<>
+  struct container_traits_base<gp_hash_tag>
+  {
+    typedef gp_hash_tag 			container_category;
+    typedef basic_invalidation_guarantee 	invalidation_guarantee;
+
+    enum
+      {
+	order_preserving = false,
+	erase_can_throw = false,
+	split_join_can_throw = false,
+	reverse_iteration = false
+      };
+  };
+
+  /// Specialization, rb tree.
   template<>
   struct container_traits_base<rb_tree_tag>
   {
-    typedef rb_tree_tag container_category;
-    typedef range_invalidation_guarantee invalidation_guarantee;
+    typedef rb_tree_tag 			container_category;
+    typedef range_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = true,
-        erase_can_throw = false,
+	order_preserving = true,
+	erase_can_throw = false,
 	split_join_can_throw = false,
-        reverse_iteration = true
+	reverse_iteration = true
       };
   };
 
+  /// Specialization, splay tree.
   template<>
   struct container_traits_base<splay_tree_tag>
   {
-    typedef splay_tree_tag container_category;
-    typedef range_invalidation_guarantee invalidation_guarantee;
+    typedef splay_tree_tag 			container_category;
+    typedef range_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = true,
-        erase_can_throw = false,
-        split_join_can_throw = false,
-        reverse_iteration = true
+	order_preserving = true,
+	erase_can_throw = false,
+	split_join_can_throw = false,
+	reverse_iteration = true
       };
   };
 
+  /// Specialization, ov tree.
   template<>
   struct container_traits_base<ov_tree_tag>
   {
-    typedef ov_tree_tag container_category;
-    typedef basic_invalidation_guarantee invalidation_guarantee;
+    typedef ov_tree_tag 			container_category;
+    typedef basic_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = true,
-        erase_can_throw = true,
-        split_join_can_throw = true,
-        reverse_iteration = false
+	order_preserving = true,
+	erase_can_throw = true,
+	split_join_can_throw = true,
+	reverse_iteration = false
       };
   };
 
+  /// Specialization, pat trie.
   template<>
   struct container_traits_base<pat_trie_tag>
   {
-    typedef pat_trie_tag container_category;
-    typedef range_invalidation_guarantee invalidation_guarantee;
+    typedef pat_trie_tag 			container_category;
+    typedef range_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = true,
-        erase_can_throw = false,
-        split_join_can_throw = true,
-        reverse_iteration = true
+	order_preserving = true,
+	erase_can_throw = false,
+	split_join_can_throw = true,
+	reverse_iteration = true
       };
   };
 
+  /// Specialization, list update.
   template<>
   struct container_traits_base<list_update_tag>
   {
-    typedef list_update_tag container_category;
-    typedef point_invalidation_guarantee invalidation_guarantee;
+    typedef list_update_tag 			container_category;
+    typedef point_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = false,
-        erase_can_throw = false,
+	order_preserving = false,
+	erase_can_throw = false,
 	split_join_can_throw = false,
-        reverse_iteration = false
+	reverse_iteration = false
       };
   };
 
-
+  /// Specialization, pairing heap.
   template<>
   struct container_traits_base<pairing_heap_tag>
   {
-    typedef pairing_heap_tag container_category;
-    typedef point_invalidation_guarantee invalidation_guarantee;
+    typedef pairing_heap_tag 			container_category;
+    typedef point_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = false,
-        erase_can_throw = false,
+	order_preserving = false,
+	erase_can_throw = false,
 	split_join_can_throw = false,
-        reverse_iteration = false
+	reverse_iteration = false
       };
   };
 
+  /// Specialization, thin heap.
   template<>
   struct container_traits_base<thin_heap_tag>
   {
-    typedef thin_heap_tag container_category;
-    typedef point_invalidation_guarantee invalidation_guarantee;
+    typedef thin_heap_tag 			container_category;
+    typedef point_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = false,
-        erase_can_throw = false,
+	order_preserving = false,
+	erase_can_throw = false,
 	split_join_can_throw = false,
-        reverse_iteration = false
+	reverse_iteration = false
       };
   };
 
+  /// Specialization, binomial heap.
   template<>
   struct container_traits_base<binomial_heap_tag>
   {
-    typedef binomial_heap_tag container_category;
-    typedef point_invalidation_guarantee invalidation_guarantee;
+    typedef binomial_heap_tag 			container_category;
+    typedef point_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = false,
-        erase_can_throw = false,
+	order_preserving = false,
+	erase_can_throw = false,
 	split_join_can_throw = false,
-        reverse_iteration = false
+	reverse_iteration = false
       };
   };
 
+  /// Specialization, rc binomial heap.
   template<>
   struct container_traits_base<rc_binomial_heap_tag>
   {
-    typedef rc_binomial_heap_tag container_category;
-    typedef point_invalidation_guarantee invalidation_guarantee;
+    typedef rc_binomial_heap_tag 		container_category;
+    typedef point_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = false,
-        erase_can_throw = false,
+	order_preserving = false,
+	erase_can_throw = false,
 	split_join_can_throw = false,
-        reverse_iteration = false
+	reverse_iteration = false
       };
   };
 
+  /// Specialization, binary heap.
   template<>
   struct container_traits_base<binary_heap_tag>
   {
-    typedef binary_heap_tag container_category;
-    typedef basic_invalidation_guarantee invalidation_guarantee;
+    typedef binary_heap_tag 			container_category;
+    typedef basic_invalidation_guarantee 	invalidation_guarantee;
 
     enum
       {
-        order_preserving = false,
-        erase_can_throw = false,
+	order_preserving = false,
+	erase_can_throw = false,
 	split_join_can_throw = true,
-        reverse_iteration = false
+	reverse_iteration = false
       };
   };
 
 
-  /// container_traits
+  /// Container traits.
   // See Matt Austern for the name, S. Meyers MEFC++ #2, others.
   template<typename Cntnr>
-  struct container_traits 
+  struct container_traits
   : public container_traits_base<typename Cntnr::container_category>
   {
-    typedef Cntnr container_type;
-    typedef typename Cntnr::container_category container_category;
-    typedef container_traits_base<container_category> base_type;
+    typedef Cntnr 				       container_type;
+    typedef typename Cntnr::container_category         container_category;
+    typedef container_traits_base<container_category>  base_type;
     typedef typename base_type::invalidation_guarantee invalidation_guarantee;
 
     enum
@@ -359,6 +427,17 @@ namespace __gnu_pbds
 	reverse_iteration = base_type::reverse_iteration
       };
   };
+  //@}
+
+
+  namespace detail
+  {
+    /// Dispatch mechanism, primary template for associative types.
+    template<typename Key, typename Mapped, typename _Alloc, typename Tag,
+	     typename Policy_Tl = null_type>
+      struct container_base_dispatch;
+  } // namespace __detail
+  //@}
 } // namespace __gnu_pbds
 
 #endif

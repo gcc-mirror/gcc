@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file rotate_fn_imps.hpp
+ * @file bin_search_tree_/rotate_fn_imps.hpp
  * Contains imps for rotating nodes.
  */
 
@@ -130,7 +130,7 @@ PB_DS_CLASS_C_DEC::
 apply_update(node_pointer p_nd, Node_Update_*  /*p_update*/)
 {
   node_update::operator()(node_iterator(p_nd),
-			  const_node_iterator(static_cast<node_pointer>(0)));
+			  node_const_iterator(static_cast<node_pointer>(0)));
 }
 
 PB_DS_CLASS_T_DEC

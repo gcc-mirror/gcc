@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file insert_fn_imps.hpp
+ * @file bin_search_tree_/insert_fn_imps.hpp
  * Contains an implementation class for bin_search_tree_.
  */
 
@@ -101,38 +101,30 @@ insert_leaf_new(const_reference r_value, node_pointer p_nd, bool left_nd)
   if (left_nd)
     {
       _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_left == 0);
-      _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(
-					  PB_DS_V2F(r_value),
-					  PB_DS_V2F(p_nd->m_value)));
+      _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(PB_DS_V2F(r_value),
+					       PB_DS_V2F(p_nd->m_value)));
 
       p_nd->m_p_left = p_new_nd;
-
       if (m_p_head->m_p_left == p_nd)
 	m_p_head->m_p_left = p_new_nd;
     }
   else
     {
       _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_right == 0);
-      _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(
-					  PB_DS_V2F(p_nd->m_value),
-					  PB_DS_V2F(r_value)));
+      _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value),
+					       PB_DS_V2F(r_value)));
 
       p_nd->m_p_right = p_new_nd;
-
       if (m_p_head->m_p_right == p_nd)
 	m_p_head->m_p_right = p_new_nd;
     }
 
   p_new_nd->m_p_parent = p_nd;
-
   p_new_nd->m_p_left = p_new_nd->m_p_right = 0;
-
   PB_DS_ASSERT_NODE_CONSISTENT(p_nd)
 
   update_to_top(p_new_nd, (node_update* )this);
-
   _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_value));)
-
   return iterator(p_new_nd);
 }
 
@@ -148,13 +140,10 @@ insert_imp_empty(const_reference r_value)
     m_p_head->m_p_parent = p_new_node;
 
   p_new_node->m_p_parent = m_p_head;
-
   p_new_node->m_p_left = p_new_node->m_p_right = 0;
-
   _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_value));)
 
   update_to_top(m_p_head->m_p_parent, (node_update*)this);
-
   return iterator(p_new_node);
 }
 
@@ -164,18 +153,14 @@ PB_DS_CLASS_C_DEC::
 get_new_node_for_leaf_insert(const_reference r_val, false_type)
 {
   node_pointer p_new_nd = s_node_allocator.allocate(1);
-
   cond_dealtor_t cond(p_new_nd);
 
   new (const_cast<void* >(static_cast<const void* >(&p_new_nd->m_value)))
     typename node::value_type(r_val);
 
   cond.set_no_action();
-
   p_new_nd->m_p_left = p_new_nd->m_p_right = 0;
-
   ++m_size;
-
   return p_new_nd;
 }
 
@@ -190,9 +175,6 @@ get_new_node_for_leaf_insert(const_reference r_val, true_type)
     typename node::value_type(r_val);
 
   p_new_nd->m_p_left = p_new_nd->m_p_right = 0;
-
   ++m_size;
-
   return p_new_nd;
 }
-

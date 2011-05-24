@@ -34,56 +34,33 @@
 // warranty.
 
 /**
- * @file sample_trie_e_access_traits.hpp
- * Contains a sample probe policy.
+ * @file branch_policy/null_node_metadata.hpp
+ * Contains an implementation class for tree-like classes.
  */
 
-#ifndef PB_DS_SAMPLE_TRIE_E_ACCESS_TRAITS_HPP
-#define PB_DS_SAMPLE_TRIE_E_ACCESS_TRAITS_HPP
+#ifndef PB_DS_0_NODE_METADATA_HPP
+#define PB_DS_0_NODE_METADATA_HPP
 
-// A sample trie element-access traits.
-class sample_trie_e_access_traits
+#include <ext/pb_ds/detail/types_traits.hpp>
+
+namespace __gnu_pbds
 {
+  namespace detail
+  {
+    /// Constant node iterator.
+    template<typename Key, typename Data, typename _Alloc>
+      struct dumnode_const_iterator
+      {
+      private:
+	typedef types_traits<Key, Data, _Alloc, false>	__traits_type;
+	typedef typename __traits_type::pointer        	const_iterator;
+	
+      public:
+	typedef const_iterator 				value_type;
+	typedef const_iterator 				const_reference;
+	typedef const_reference 	       		reference;
+      };
+  } // namespace detail
+} // namespace __gnu_pbds
 
-public:
-
-  // Size type.
-  typedef std::size_t size_type;
-
-  // Key type.
-  typedef std::string key_type;
-
-  // Const key reference type.
-  typedef
-  typename Allocator::template rebind<
-    key_type>::other::const_reference
-  const_key_reference;
-
-  // Element const iterator type.
-  typedef std::string::const_iterator const_iterator;
-
-  // Element type.
-  typedef char e_type;
-
-  enum
-    {
-      max_size = 4
-    };
-
-public:
-
-  // Returns a const_iterator to the first element of r_key.
-  inline static const_iterator
-  begin(const_key_reference r_key);
-
-  // Returns a const_iterator to the after-last element of r_key.
-  inline static const_iterator
-  end(const_key_reference r_key);
-
-  // Maps an element to a position.
-  inline static size_type
-  e_pos(e_type e);
-
-};
-
-#endif // #ifndef PB_DS_SAMPLE_TRIE_E_ACCESS_TRAITS_HPP
+#endif

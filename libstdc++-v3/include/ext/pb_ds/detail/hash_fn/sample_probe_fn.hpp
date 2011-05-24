@@ -41,33 +41,28 @@
 #ifndef PB_DS_SAMPLE_PROBE_FN_HPP
 #define PB_DS_SAMPLE_PROBE_FN_HPP
 
-// A sample probe policy.
-class sample_probe_fn
+namespace __gnu_pbds
 {
+  /// A sample probe policy.
+  class sample_probe_fn
+  {
+  public:
+    typedef std::size_t size_type;
 
-public:
+    // Default constructor.
+    sample_probe_fn();
 
-  // Size type.
-  typedef std::size_t size_type;
+    // Copy constructor.
+    sample_probe_fn(const sample_probe_fn&);
 
-public:
+    // Swaps content.
+    inline void
+    swap(sample_probe_fn&);
 
-  // Default constructor.
-  sample_probe_fn();
-
-  // Copy constructor.
-  sample_probe_fn(const sample_probe_fn& other);
-
-  // Swaps content.
-  inline void
-  swap(sample_probe_fn& other);
-
-protected:
-
-  // Returns the i-th offset from the hash value of some key r_key.
-  inline size_type
-  operator()(const_key_reference r_key, size_type i) const;
-
-};
-
+  protected:
+    // Returns the i-th offset from the hash value of some key r_key.
+    inline size_type
+    operator()(key_const_reference r_key, size_type i) const;
+  };
+}
 #endif // #ifndef PB_DS_SAMPLE_PROBE_FN_HPP

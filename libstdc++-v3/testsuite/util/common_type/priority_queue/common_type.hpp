@@ -46,19 +46,19 @@ namespace __gnu_pbds
   namespace test
   {
     template<typename Value_Type, typename Cmp_Fn = std::less<Value_Type>,
-	     class Allocator = std::allocator<Value_Type> >
+	     typename _Alloc = std::allocator<Value_Type> >
     struct pq_common_types
     {
     private:
-      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::pairing_heap_tag, Allocator> pairing_heap_t;
+      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::pairing_heap_tag, _Alloc> pairing_heap_t;
 
-      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::binomial_heap_tag, Allocator> binomial_heap_t;
+      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::binomial_heap_tag, _Alloc> binomial_heap_t;
 
-      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::rc_binomial_heap_tag, Allocator> rc_binomial_heap_t;
+      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::rc_binomial_heap_tag, _Alloc> rc_binomial_heap_t;
 
-      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::binary_heap_tag, Allocator> binary_heap_t;
+      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::binary_heap_tag, _Alloc> binary_heap_t;
 
-      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::thin_heap_tag, Allocator> thin_heap_t;
+      typedef __gnu_pbds::priority_queue<Value_Type, Cmp_Fn, __gnu_pbds::thin_heap_tag, _Alloc> thin_heap_t;
 
       typedef typename __gnu_cxx::typelist::create5<thin_heap_t, pairing_heap_t, binomial_heap_t, rc_binomial_heap_t, binary_heap_t>::type all_tl;
 

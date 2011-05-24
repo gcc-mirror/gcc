@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file entry_metadata_base.hpp
+ * @file list_update_map_/entry_metadata_base.hpp
  * Contains an implementation for a list update map.
  */
 
@@ -52,7 +52,7 @@ namespace __gnu_pbds
     };
     
     template<>
-    struct lu_map_entry_metadata_base<null_lu_metadata>
+    struct lu_map_entry_metadata_base<null_type>
     { };  
   } // namespace detail
 } // namespace __gnu_pbds
