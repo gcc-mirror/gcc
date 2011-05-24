@@ -1,3 +1,13 @@
+2011-05-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/Make-lang.in (GNAT1_OBJS): Don't include
+	$(EXTRA_GNAT1_OBJS).
+	(GNATBIND_OBJS): Don't include $(EXTRA_GNATBIND_OBJS).
+	(EXTRA_GNAT1_OBJS, EXTRA_GNATBIND_OBJS): Remove.
+	(gnat1$(exeext), gnatbind$(exeext)): Use libcommon-target.a.
+	* gcc-interface/Makefile.in (EXTRA_GNATTOOLS_OBJS): Use
+	libcommon-target.a instead of prefix.o.
+
 2011-05-21  Joseph Myers  <joseph@codesourcery.com>
 
 	PR ada/49097

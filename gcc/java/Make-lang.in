@@ -64,9 +64,9 @@ jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
 
 # Create the compiler driver for $(XGCJ).
 $(XGCJ)$(exeext): $(GCC_OBJS) jvspec.o java/jcf-path.o \
-	   prefix.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	   libcommon-target.a $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  jvspec.o java/jcf-path.o prefix.o $(EXTRA_GCC_OBJS) $(LIBS)
+	  jvspec.o java/jcf-path.o $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
 
 # Create a version of the $(XGCJ) driver which calls the cross-compiler.
 $(XGCJ)-cross$(exeext): $(XGCJ)$(exeext)
