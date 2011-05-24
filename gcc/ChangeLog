@@ -1,3 +1,12 @@
+2011-05-24  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/49078
+	* gimple.c (gimple_register_canonical_type): Revert
+	previous change.
+	* alias.c (get_alias_set): Only assert that TYPE_CANONICAL
+	does not for a tree for the case where it matters.  Cache
+	pointer-type alias-sets.
+
 2011-05-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (GCC_OBJS): Remove opts-common.o and options.o.

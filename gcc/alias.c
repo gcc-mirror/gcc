@@ -709,10 +709,8 @@ get_alias_set (tree t)
 
   t = TYPE_CANONICAL (t);
 
-  /* Canonical types shouldn't form a tree nor should the canonical
-     type require structural equality checks.  */
-  gcc_checking_assert (TYPE_CANONICAL (t) == t
-		       && !TYPE_STRUCTURAL_EQUALITY_P (t));
+  /* The canonical type should not require structural equality checks.  */
+  gcc_checking_assert (!TYPE_STRUCTURAL_EQUALITY_P (t));
 
   /* If this is a type with a known alias set, return it.  */
   if (TYPE_ALIAS_SET_KNOWN_P (t))
@@ -813,11 +811,19 @@ get_alias_set (tree t)
      That's simple and avoids all the above problems.  */
   else if (POINTER_TYPE_P (t)
 	   && t != ptr_type_node)
-    return get_alias_set (ptr_type_node);
+    set = get_alias_set (ptr_type_node);
 
   /* Otherwise make a new alias set for this type.  */
   else
-    set = new_alias_set ();
+    {
+      /* Each canonical type gets its own alias set, so canonical types
+	 shouldn't form a tree.  It doesn't really matter for types
+	 we handle specially above, so only check it where it possibly
+	 would result in a bogus alias set.  */
+      gcc_checking_assert (TYPE_CANONICAL (t) == t);
+
+      set = new_alias_set ();
+    }
 
   TYPE_ALIAS_SET (t) = set;
 

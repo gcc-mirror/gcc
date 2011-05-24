@@ -4779,7 +4779,12 @@ gimple_canonical_type_eq (const void *p1, const void *p2)
 /* Register type T in the global type table gimple_types.
    If another type T', compatible with T, already existed in
    gimple_types then return T', otherwise return T.  This is used by
-   LTO to merge identical types read from different TUs.  */
+   LTO to merge identical types read from different TUs.
+
+   ???  This merging does not exactly match how the tree.c middle-end
+   functions will assign TYPE_CANONICAL when new types are created
+   during optimization (which at least happens for pointer and array
+   types).  */
 
 tree
 gimple_register_canonical_type (tree t)
@@ -4799,25 +4804,6 @@ gimple_register_canonical_type (tree t)
 
   if (TYPE_CANONICAL (t))
     return TYPE_CANONICAL (t);
-
-  /* For pointer and reference types do as the middle-end does - the
-     canonical type is a pointer to the canonical pointed-to type.  */
-  if (TREE_CODE (t) == POINTER_TYPE)
-    {
-      TYPE_CANONICAL (t)
-	  = build_pointer_type_for_mode
-	  (gimple_register_canonical_type (TREE_TYPE (t)),
-	   TYPE_MODE (t), TYPE_REF_CAN_ALIAS_ALL (t));
-      return TYPE_CANONICAL (t);
-    }
-  else if (TREE_CODE (t) == REFERENCE_TYPE)
-    {
-      TYPE_CANONICAL (t)
-	  = build_reference_type_for_mode
-	  (gimple_register_canonical_type (TREE_TYPE (t)),
-	   TYPE_MODE (t), TYPE_REF_CAN_ALIAS_ALL (t));
-      return TYPE_CANONICAL (t);
-    }
 
   if (gimple_canonical_types == NULL)
     gimple_canonical_types = htab_create_ggc (16381, gimple_canonical_type_hash,
