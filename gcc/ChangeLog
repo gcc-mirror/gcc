@@ -1,3 +1,9 @@
+2011-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR gcov-profile/48845
+	* config/sol2.h (LIB_SPEC): Link TLS support for tree profiling.
+
 2011-05-24  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (compare_type_names_p): Remove for_completion_p arg.
