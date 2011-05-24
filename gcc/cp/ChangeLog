@@ -1,5 +1,7 @@
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_copy_and_build): Use current_class_name.
+
 	PR c++/49102
 	* call.c (convert_arg_to_ellipsis): Call force_rvalue.
 
