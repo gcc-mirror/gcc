@@ -212,7 +212,7 @@ push_access_scope (tree t)
   else if (DECL_CLASS_SCOPE_P (t))
     push_nested_class (DECL_CONTEXT (t));
   else
-    push_to_top_level ();
+    pushclass (NULL_TREE);
 
   if (TREE_CODE (t) == FUNCTION_DECL)
     {
@@ -237,7 +237,7 @@ pop_access_scope (tree t)
   if (DECL_FRIEND_CONTEXT (t) || DECL_CLASS_SCOPE_P (t))
     pop_nested_class ();
   else
-    pop_from_top_level ();
+    popclass ();
 }
 
 /* Do any processing required when DECL (a member template
@@ -13820,6 +13820,30 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
   return ret;
 }
 
+/* We're going to do deduction substitution on the type of TMPL, a function
+   template.  In C++11 mode, push into that access scope.  In C++03 mode,
+   disable access checking.  */
+
+static void
+push_deduction_access_scope (tree tmpl)
+{
+  if (cxx_dialect >= cxx0x)
+    push_access_scope (DECL_TEMPLATE_RESULT (tmpl));
+  else
+    push_deferring_access_checks (dk_no_check);
+}
+
+/* And pop back out.  */
+
+static void
+pop_deduction_access_scope (tree tmpl)
+{
+  if (cxx_dialect >= cxx0x)
+    pop_access_scope (DECL_TEMPLATE_RESULT (tmpl));
+  else
+    pop_deferring_access_checks ();
+}
+
 /* The FN is a TEMPLATE_DECL for a function.  ARGS is an array with
    NARGS elements of the arguments that are being used when calling
    it.  TARGS is a vector into which the deduced template arguments
@@ -13958,7 +13982,9 @@ fn_type_unification (tree fn,
         incomplete = NUM_TMPL_ARGS (explicit_targs) != NUM_TMPL_ARGS (targs);
 
       processing_template_decl += incomplete;
+      push_deduction_access_scope (fn);
       fntype = deduction_tsubst_fntype (fn, converted_args);
+      pop_deduction_access_scope (fn);
       processing_template_decl -= incomplete;
 
       if (fntype == error_mark_node)
@@ -14029,7 +14055,10 @@ fn_type_unification (tree fn,
        substitution results in an invalid type, as described above,
        type deduction fails.  */
     {
-      tree substed = deduction_tsubst_fntype (fn, targs);
+      tree substed;
+      push_deduction_access_scope (fn);
+      substed = deduction_tsubst_fntype (fn, targs);
+      pop_deduction_access_scope (fn);
       if (substed == error_mark_node)
 	return 1;
 

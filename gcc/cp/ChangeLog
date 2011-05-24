@@ -1,3 +1,14 @@
+2011-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48884
+	* class.c (pushclass): Accept NULL argument.
+	(popclass): Deal with popping null class.
+	* pt.c (push_access_scope, pop_access_scope): Use them rather than
+	push_to_top_level/pop_from_top_level.
+	(push_deduction_access_scope, pop_defarg_context): New.
+	(fn_type_unification): Use them.
+	* name-lookup.c (lookup_name_real_1): Check current_class_type.
+
 2011-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use current_class_name.
