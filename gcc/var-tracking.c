@@ -705,7 +705,8 @@ vt_stack_adjustments (void)
 static rtx cfa_base_rtx;
 static HOST_WIDE_INT cfa_base_offset;
 
-/* Compute a CFA-based value for the stack pointer.  */
+/* Compute a CFA-based value for an ADJUSTMENT made to stack_pointer_rtx
+   or hard_frame_pointer_rtx.  */
 
 static inline rtx
 compute_cfa_pointer (HOST_WIDE_INT adjustment)
@@ -8664,7 +8665,7 @@ vt_init_cfa_base (void)
 static bool
 vt_initialize (void)
 {
-  basic_block bb, prologue_bb = NULL;
+  basic_block bb, prologue_bb = single_succ (ENTRY_BLOCK_PTR);
   HOST_WIDE_INT fp_cfa_offset = -1;
 
   alloc_aux_for_blocks (sizeof (struct variable_tracking_info_def));
@@ -8722,6 +8723,16 @@ vt_initialize (void)
 
   CLEAR_HARD_REG_SET (argument_reg_set);
 
+  /* In order to factor out the adjustments made to the stack pointer or to
+     the hard frame pointer and thus be able to use DW_OP_fbreg operations
+     instead of individual location lists, we're going to rewrite MEMs based
+     on them into MEMs based on the CFA by de-eliminating stack_pointer_rtx
+     or hard_frame_pointer_rtx to the virtual CFA pointer frame_pointer_rtx
+     resp. arg_pointer_rtx.  We can do this either when there is no frame
+     pointer in the function and stack adjustments are consistent for all
+     basic blocks or when there is a frame pointer and no stack realignment.
+     But we first have to check that frame_pointer_rtx resp. arg_pointer_rtx
+     has been eliminated.  */
   if (!frame_pointer_needed)
     {
       rtx reg, elim;
@@ -8764,10 +8775,11 @@ vt_initialize (void)
 	    }
 	  if (elim != hard_frame_pointer_rtx)
 	    fp_cfa_offset = -1;
-	  else
-	    prologue_bb = single_succ (ENTRY_BLOCK_PTR);
 	}
+      else
+	fp_cfa_offset = -1;
     }
+
   if (frame_pointer_needed)
     {
       rtx insn;
@@ -8868,6 +8880,7 @@ vt_initialize (void)
 		    }
 
 		  if (bb == prologue_bb
+		      && fp_cfa_offset != -1
 		      && hard_frame_pointer_adjustment == -1
 		      && RTX_FRAME_RELATED_P (insn)
 		      && fp_setter (insn))

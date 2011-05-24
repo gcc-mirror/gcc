@@ -1,3 +1,11 @@
+2011-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* var-tracking.c (compute_cfa_pointer): Adjust head comment.
+	(vt_initialize): Set PROLOGUE_BB unconditionally.
+	Add block comment about CFA_BASE_RTX machinery.
+	Reset FP_CFA_OFFSET to -1 on all invalid paths.
+	Call vt_init_cfa_base only if FP_CFA_OFFSET isn't equal to -1.
+
 2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/48187
