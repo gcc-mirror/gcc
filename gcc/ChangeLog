@@ -1,4 +1,10 @@
-2011-05-13  Vladimir Makarov  <vmakarov@redhat.com>
+2011-05-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/48633
+	* ira-build.c (loop_with_eh_edge_p): New function.
+	(mark_loops_for_removal): Use it.
+
+2011-05-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/48971
 	* ira.c (setup_pressure_classes): Don't check register move cost
