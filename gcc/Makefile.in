@@ -1168,7 +1168,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 FORTRAN_TARGET_OBJS=@fortran_target_objs@
 
 # Object files for gcc driver.
-GCC_OBJS = gcc.o opts-common.o options.o vec.o ggc-none.o
+GCC_OBJS = gcc.o vec.o ggc-none.o
 
 # Language-specific object files shared by all C-family front ends.
 C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
@@ -1340,9 +1340,7 @@ OBJS = \
 	omega.o \
 	omp-low.o \
 	optabs.o \
-	options.o \
 	options-save.o \
-	opts-common.o \
 	opts-global.o \
 	opts.o \
 	params.o \
@@ -1352,7 +1350,6 @@ OBJS = \
 	postreload-gcse.o \
 	postreload.o \
 	predict.o \
-	prefix.o \
 	print-rtl.o \
 	print-tree.o \
 	profile.o \
@@ -1494,12 +1491,16 @@ OBJS = \
 # no target dependencies.
 OBJS-libcommon = diagnostic.o pretty-print.o intl.o input.o version.o
 
+# Objects in libcommon-target.a, used by drivers and by the core
+# compiler and containing target-dependent code.
+OBJS-libcommon-target = prefix.o opts-common.o options.o
+
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(C_OBJS) \
   $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
-  @TREEBROWSER@ main.o gccspec.o prefix.o cppspec.o \
+  $(OBJS-libcommon-target) @TREEBROWSER@ main.o gccspec.o cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) mips-tfile.o mips-tdump.o \
   $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
 
@@ -1507,8 +1508,8 @@ ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
 # compilation or not.
 ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
-BACKEND = main.o @TREEBROWSER@ libbackend.a libcommon.a $(CPPLIB) \
-	$(LIBDECNUMBER)
+BACKEND = main.o @TREEBROWSER@ libbackend.a libcommon-target.a libcommon.a \
+	$(CPPLIB) $(LIBDECNUMBER)
 
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
@@ -1520,7 +1521,8 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) lto-wrapper$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
- *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a libcommon.a libgcc.mk
+ *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a libcommon-target.a \
+ libcommon.a libgcc.mk
 
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
@@ -1832,6 +1834,11 @@ libbackend.a: $(OBJS)
 	$(AR) $(AR_FLAGS) libbackend.a $(OBJS)
 	-$(RANLIB) $(RANLIB_FLAGS) libbackend.a
 
+libcommon-target.a: $(OBJS-libcommon-target)
+	-rm -rf libcommon-target.a
+	$(AR) $(AR_FLAGS) libcommon-target.a $(OBJS-libcommon-target)
+	-$(RANLIB) $(RANLIB_FLAGS) libcommon-target.a
+
 libcommon.a: $(OBJS-libcommon)
 	-rm -rf libcommon.a
 	$(AR) $(AR_FLAGS) libcommon.a $(OBJS-libcommon)
@@ -1840,16 +1847,18 @@ libcommon.a: $(OBJS-libcommon)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc$(exeext): $(GCC_OBJS) gccspec.o prefix.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+xgcc$(exeext): $(GCC_OBJS) gccspec.o libcommon-target.a $(LIBDEPS) \
+	$(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  gccspec.o prefix.o $(EXTRA_GCC_OBJS) $(LIBS)
+	  gccspec.o $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
 
 # cpp is to cpp0 as gcc is to cc1.
 # The only difference from xgcc is that it's linked with cppspec.o
 # instead of gccspec.o.
-cpp$(exeext): $(GCC_OBJS) cppspec.o prefix.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+cpp$(exeext): $(GCC_OBJS) cppspec.o libcommon-target.a $(LIBDEPS) \
+	$(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  cppspec.o prefix.o $(EXTRA_GCC_OBJS) $(LIBS)
+	  cppspec.o $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 $(SPECS): xgcc$(exeext)

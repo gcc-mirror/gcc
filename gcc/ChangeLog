@@ -1,3 +1,15 @@
+2011-05-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (GCC_OBJS): Remove opts-common.o and options.o.
+	(OBJS): Remove options.o, opts-common.o and prefix.o.
+	(OBJS-libcommon-target): New.
+	(ALL_HOST_BACKEND_OBJS): Include $(OBJS-libcommon-target).
+	(BACKEND): Include libcommon-target.a.
+	(MOSTLYCLEANFILES): Include libcommon-target.a.
+	(libcommon-target.a): New.
+	(xgcc$(exeext), cpp$(exeext)): Use libcommon-target.a instead of
+	prefix.o.
+
 2011-05-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* optc-save-gen.awk: New.  Based on optc-gen.awk.  Don't generate

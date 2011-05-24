@@ -36,10 +36,10 @@ gospec.o: $(srcdir)/go/gospec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/go/gospec.c)
 
-GCCGO_OBJS = $(GCC_OBJS) gospec.o prefix.o
-gccgo$(exeext): $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
+GCCGO_OBJS = $(GCC_OBJS) gospec.o
+gccgo$(exeext): $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	  $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
+	  $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
 
 # Use strict warnings.
 go-warn = $(STRICT_WARN)

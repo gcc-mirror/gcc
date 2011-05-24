@@ -60,10 +60,10 @@ g++spec.o: $(srcdir)/cp/g++spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 		$(INCLUDES) $(srcdir)/cp/g++spec.c)
 
 # Create the compiler driver for g++.
-GXX_OBJS = $(GCC_OBJS) g++spec.o prefix.o
-g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
+GXX_OBJS = $(GCC_OBJS) g++spec.o
+g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
+	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
 
 # Create a version of the g++ driver which calls the cross-compiler.
 g++-cross$(exeext): g++$(exeext)
@@ -72,7 +72,7 @@ g++-cross$(exeext): g++$(exeext)
 
 # The compiler itself.
 # Shared with C front end:
-CXX_C_OBJS = attribs.o incpath.o prefix.o \
+CXX_C_OBJS = attribs.o incpath.o \
 	$(C_COMMON_OBJS) $(CXX_TARGET_OBJS)
 
 # Language-specific object files for C++ and Objective C++.

@@ -1,3 +1,9 @@
+2011-05-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (GXX_OBJS): Remove prefix.o.
+	(g++$(exeext)): Use libcommon-target.a.
+	(CXX_C_OBJS): Remove prefix.o.
+
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_copy_and_build): Use current_class_name.
