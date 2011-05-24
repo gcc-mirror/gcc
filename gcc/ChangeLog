@@ -1,3 +1,12 @@
+2011-05-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/48971
+	* ira.c (setup_pressure_classes): Don't check register move cost
+	for classes with one registers.  Don't add pressure class if there
+	is a pressure class with the same available hard registers.
+	Check contains_reg_of_mode.  Fix a typo in collecting
+	temp_hard_regset.  Ignore hard registers not belonging to a class.
+
 2011-05-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49133
