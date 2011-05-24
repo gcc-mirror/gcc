@@ -1,3 +1,8 @@
+2011-05-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49133
+	* g++.dg/other/pr49133.C: New test.
+
 2011-05-24  Uros Bizjak <ubizjak@gmail.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -450,7 +455,7 @@
 
 2011-05-08  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
-        * g++.dg/inherit/virtual9.C: New.
+	* g++.dg/inherit/virtual9.C: New.
 
 2011-05-09  Dodji Seketeli  <dodji@redhat.com>
 
