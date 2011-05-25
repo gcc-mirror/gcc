@@ -1,3 +1,9 @@
+2011-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49141
+	* testsuite/26_numerics/complex/cons/48760.cc: Use dg-require-c-std.
+	* testsuite/26_numerics/headers/cmath/19322.cc: Likewise.
+
 2011-05-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/bind/cv_quals_2.cc: New.
