@@ -221,6 +221,12 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	  fprintf (file, "pending_template");
 	}
       break;
+    case ARGUMENT_PACK_SELECT:
+      print_node (file, "pack", ARGUMENT_PACK_SELECT_FROM_PACK (node),
+		  indent+4);
+      indent_to (file, indent + 3);
+      fprintf (file, "index %d", ARGUMENT_PACK_SELECT_INDEX (node));
+      break;
     default:
       break;
     }

@@ -1,3 +1,7 @@
+2011-05-25  Jason Merrill  <jason@redhat.com>
+
+	* print-tree.c (print_node): Only look at TREE_TYPE if TS_TYPED.
+
 2011-05-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*<sse>_maskcmp<mode>3_comm): New pattern.
