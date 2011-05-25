@@ -1,5 +1,8 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/enum16.C: New.
+	* g++.dg/parse/error15.C: Adjust.
+
 	* g++.dg/cpp0x/initlist50.C: New.
 
 	* g++.dg/cpp0x/lambda/lambda-conv5.C: New.
