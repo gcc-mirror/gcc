@@ -1,3 +1,33 @@
+2011-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* common.opt (flag_stack_usage_info): New variable.
+	(-Wstack-usage): New option.
+	* doc/invoke.texi (Warning options): Document -Wstack-usage.
+	* opts.c (common_handle_option) <OPT_Wstack_usage_>: New case.
+	<OPT_fstack_usage>: Likewise.
+	* toplev.c (output_stack_usage): Handle -Wstack-usage.
+	* calls.c (expand_call): Test flag_stack_usage_info variable instead
+	of flag_stack_usage.
+	(emit_library_call_value_1): Likewise.
+	* explow.c (allocate_dynamic_stack_space): Likewise.
+	* function.c (instantiate_virtual_regs ): Likewise.
+	(prepare_function_start): Likewise.
+	(rest_of_handle_thread_prologue_and_epilogue): Likewise.
+	* config/alpha/alpha.c (alpha_expand_prologue): Likewise.
+	* config/arm/arm.c (arm_expand_prologue): Likewise.
+	(thumb1_expand_prologue): Likewise.
+	* config/avr/avr.c (expand_prologue): Likewise.
+	* config/i386/i386.c (ix86_expand_prologue): Likewise.
+	* config/ia64/ia64.c (ia64_expand_prologue): Likewise.
+	* config/m68k/m68k.c (m68k_expand_prologue): Likewise.
+	* config/mips/mips.c (mips_expand_prologue): Likewise.
+	* config/pa/pa.c (hppa_expand_prologue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Likewise.
+	* config/s390/s390.c (s390_emit_prologue): Likewise.
+	* config/sh/sh.c (sh_expand_prologue): Likewise.
+	* config/sparc/sparc.c (sparc_expand_prologue): Likewise.
+	* config/spu/spu.c (spu_expand_prologue): Likewise.
+
 2011-05-25  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (iterative_hash_canonical_type): Skip non-FIELD_DECLs.

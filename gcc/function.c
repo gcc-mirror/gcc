@@ -1939,7 +1939,7 @@ instantiate_virtual_regs (void)
 
   /* See allocate_dynamic_stack_space for the rationale.  */
 #ifdef SETJMP_VIA_SAVE_AREA
-  if (flag_stack_usage && cfun->calls_setjmp)
+  if (flag_stack_usage_info && cfun->calls_setjmp)
     {
       int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
       dynamic_offset = (dynamic_offset + align - 1) / align * align;
@@ -4465,7 +4465,7 @@ prepare_function_start (void)
   init_expr ();
   default_rtl_profile ();
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     {
       cfun->su = ggc_alloc_cleared_stack_usage ();
       cfun->su->static_stack_size = -1;
@@ -5939,7 +5939,7 @@ rest_of_handle_thread_prologue_and_epilogue (void)
   thread_prologue_and_epilogue_insns ();
 
   /* The stack usage info is finalized during prologue expansion.  */
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     output_stack_usage ();
 
   return 0;

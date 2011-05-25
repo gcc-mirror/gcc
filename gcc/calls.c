@@ -2501,7 +2501,7 @@ expand_call (tree exp, rtx target, int ignore)
 	      stack_arg_under_construction = 0;
 	    }
 	  argblock = push_block (ARGS_SIZE_RTX (adjusted_args_size), 0, 0);
-	  if (flag_stack_usage)
+	  if (flag_stack_usage_info)
 	    current_function_has_unbounded_dynamic_stack_size = 1;
 	}
       else
@@ -2708,7 +2708,7 @@ expand_call (tree exp, rtx target, int ignore)
       /* Record the maximum pushed stack space size.  We need to delay
 	 doing it this far to take into account the optimization done
 	 by combine_pending_stack_adjustment_and_call.  */
-      if (flag_stack_usage
+      if (flag_stack_usage_info
 	  && !ACCUMULATE_OUTGOING_ARGS
 	  && pass
 	  && adjusted_args_size.var == 0)
@@ -3573,7 +3573,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   if (args_size.constant > crtl->outgoing_args_size)
     crtl->outgoing_args_size = args_size.constant;
 
-  if (flag_stack_usage && !ACCUMULATE_OUTGOING_ARGS)
+  if (flag_stack_usage_info && !ACCUMULATE_OUTGOING_ARGS)
     {
       int pushed = args_size.constant + pending_stack_adjust;
       if (pushed > current_function_pushed_stack_size)

@@ -15815,7 +15815,7 @@ arm_expand_prologue (void)
 	}
     }
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     current_function_static_stack_size
       = offsets->outgoing_args - offsets->saved_args;
 
@@ -20800,7 +20800,7 @@ thumb1_expand_prologue (void)
     emit_move_insn (gen_rtx_REG (Pmode, ARM_HARD_FRAME_POINTER_REGNUM),
 		    stack_pointer_rtx);
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     current_function_static_stack_size
       = offsets->outgoing_args - offsets->saved_args;
 

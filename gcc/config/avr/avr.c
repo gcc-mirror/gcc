@@ -892,7 +892,7 @@ expand_prologue (void)
         }
     }
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     current_function_static_stack_size = cfun->machine->stack_usage;
 }
 

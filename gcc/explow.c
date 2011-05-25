@@ -1150,7 +1150,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   /* If stack usage info is requested, look into the size we are passed.
      We need to do so this early to avoid the obfuscation that may be
      introduced later by the various alignment operations.  */
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     {
       if (CONST_INT_P (size))
 	stack_usage_size = INTVAL (size);
@@ -1242,7 +1242,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       size = plus_constant (size, extra);
       size = force_operand (size, NULL_RTX);
 
-      if (flag_stack_usage)
+      if (flag_stack_usage_info)
 	stack_usage_size += extra;
 
       if (extra && size_align > extra_align)
@@ -1273,7 +1273,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       /* The above dynamic offset cannot be computed statically at this
 	 point, but it will be possible to do so after RTL expansion is
 	 done.  Record how many times we will need to add it.  */
-      if (flag_stack_usage)
+      if (flag_stack_usage_info)
 	current_function_dynamic_alloc_count++;
 
       /* ??? Can we infer a minimum of STACK_BOUNDARY here?  */
@@ -1298,7 +1298,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     {
       size = round_push (size);
 
-      if (flag_stack_usage)
+      if (flag_stack_usage_info)
 	{
 	  int align = crtl->preferred_stack_boundary / BITS_PER_UNIT;
 	  stack_usage_size = (stack_usage_size + align - 1) / align * align;
@@ -1309,7 +1309,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
   /* The size is supposed to be fully adjusted at this point so record it
      if stack usage info is requested.  */
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     {
       current_function_dynamic_stack_size += stack_usage_size;
 

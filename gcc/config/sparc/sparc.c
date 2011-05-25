@@ -4522,7 +4522,7 @@ sparc_expand_prologue (void)
   /* Advertise that the data calculated just above are now valid.  */
   sparc_prologue_data_valid_p = true;
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     current_function_static_stack_size = actual_fsize;
 
   if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK && actual_fsize)

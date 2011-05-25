@@ -1048,14 +1048,12 @@ output_stack_usage (void)
   };
   HOST_WIDE_INT stack_usage = current_function_static_stack_size;
   enum stack_usage_kind_type stack_usage_kind;
-  expanded_location loc;
-  const char *raw_id, *id;
 
   if (stack_usage < 0)
     {
       if (!warning_issued)
 	{
-	  warning (0, "-fstack-usage not supported for this target");
+	  warning (0, "stack usage computation not supported for this target");
 	  warning_issued = true;
 	}
       return;
@@ -1082,24 +1080,44 @@ output_stack_usage (void)
       stack_usage += current_function_dynamic_stack_size;
     }
 
-  loc = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
+  if (flag_stack_usage)
+    {
+      expanded_location loc
+	= expand_location (DECL_SOURCE_LOCATION (current_function_decl));
+      const char *raw_id, *id;
 
-  /* Strip the scope prefix if any.  */
-  raw_id = lang_hooks.decl_printable_name (current_function_decl, 2);
-  id = strrchr (raw_id, '.');
-  if (id)
-    id++;
-  else
-    id = raw_id;
+      /* Strip the scope prefix if any.  */
+      raw_id = lang_hooks.decl_printable_name (current_function_decl, 2);
+      id = strrchr (raw_id, '.');
+      if (id)
+	id++;
+      else
+	id = raw_id;
 
-  fprintf (stack_usage_file,
-	   "%s:%d:%d:%s\t"HOST_WIDE_INT_PRINT_DEC"\t%s\n",
-	   lbasename (loc.file),
-	   loc.line,
-	   loc.column,
-	   id,
-	   stack_usage,
-	   stack_usage_kind_str[stack_usage_kind]);
+      fprintf (stack_usage_file,
+	       "%s:%d:%d:%s\t"HOST_WIDE_INT_PRINT_DEC"\t%s\n",
+	       lbasename (loc.file),
+	       loc.line,
+	       loc.column,
+	       id,
+	       stack_usage,
+	       stack_usage_kind_str[stack_usage_kind]);
+    }
+
+  if (warn_stack_usage >= 0)
+    {
+      if (stack_usage_kind == DYNAMIC)
+	warning (OPT_Wstack_usage_, "stack usage might be unbounded");
+      else if (stack_usage > warn_stack_usage)
+	{
+	  if (stack_usage_kind == DYNAMIC_BOUNDED)
+	    warning (OPT_Wstack_usage_, "stack usage might be %wd bytes",
+		     stack_usage);
+	  else
+	    warning (OPT_Wstack_usage_, "stack usage is %wd bytes",
+		     stack_usage);
+	}
+    }
 }
 
 /* Open an auxiliary output file.  */
