@@ -1,3 +1,8 @@
+2011-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/thread: Use noexcept throughout per the FDIS.
+	* include/std/mutex: Likewise.
+
 2011-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/20_util/duration/arithmetic/dr2020.cc: Fix typo.
