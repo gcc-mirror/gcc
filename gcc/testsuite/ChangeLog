@@ -1,3 +1,11 @@
+2011-05-25  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/fp16-compile-none-1.c: Update expected error.
+	* g++.dg/abi/packed1.C: Suppress warning.
+	* g++.dg/warn/Wunused-parm-3.C: Likewise.
+	* g++.dg/template/stdarg1.C: Likewise.
+	* g++.dg/other/packed1.C: Remove arm from xfail list.
+
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/enum16.C: New.

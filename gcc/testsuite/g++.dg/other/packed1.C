@@ -1,4 +1,4 @@
-// { dg-do run { xfail arm*-*-* sh-*-* lm32-*-* } }
+// { dg-do run { xfail sh-*-* lm32-*-* } }
 
 // NMS:2003-04-21 this fails on strict aligned architectures again,
 // the patch was reverted because it broke something more important.
