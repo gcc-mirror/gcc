@@ -1,3 +1,9 @@
+2011-05-25  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/49062
+	* ipa.c (function_and_variable_visibility): Only add to same
+	comdat group list if DECL_ONE_ONLY.
+
 2011-05-25  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/49014
