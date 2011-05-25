@@ -1,5 +1,11 @@
 2011-05-25  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.md (*movqi_extv_1)): Put back
+	"register_operand" check in "type" calculation.
+	(*movqi_extzv_2): Likewise.
+
+2011-05-25  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* doc/extend.texi (X86 Built-in Functions): Update pause
 	intrinsic.
 
