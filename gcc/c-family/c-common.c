@@ -4451,7 +4451,6 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
 	goto egress;
       args[i] = t;
     }
-  va_end (list);
 
   t = builtin_types[ret];
   if (t == error_mark_node)
