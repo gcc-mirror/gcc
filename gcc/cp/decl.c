@@ -8559,12 +8559,6 @@ grokdeclarator (const cp_declarator *declarator,
 	       || thread_p)
 	error ("storage class specifiers invalid in parameter declarations");
 
-      if (type_uses_auto (type))
-	{
-	  error ("parameter declared %<auto%>");
-	  type = error_mark_node;
-	}
-
       /* Function parameters cannot be constexpr.  If we saw one, moan
          and pretend it wasn't there.  */
       if (constexpr_p)
@@ -9549,6 +9543,12 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (ctype || in_namespace)
 	error ("cannot use %<::%> in parameter declaration");
+
+      if (type_uses_auto (type))
+	{
+	  error ("parameter declared %<auto%>");
+	  type = error_mark_node;
+	}
 
       /* A parameter declared as an array of T is really a pointer to T.
 	 One declared as a function is really a pointer to a function.

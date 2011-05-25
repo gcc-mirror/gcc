@@ -19061,7 +19061,12 @@ splice_late_return_type (tree type, tree late_return_type)
     return type;
   argvec = make_tree_vec (1);
   TREE_VEC_ELT (argvec, 0) = late_return_type;
-  if (processing_template_decl)
+  if (processing_template_parmlist)
+    /* For a late-specified return type in a template type-parameter, we
+       need to add a dummy argument level for its parmlist.  */
+    argvec = add_to_template_args
+      (make_tree_vec (processing_template_parmlist), argvec);
+  if (current_template_parms)
     argvec = add_to_template_args (current_template_args (), argvec);
   return tsubst (type, argvec, tf_warning_or_error, NULL_TREE);
 }

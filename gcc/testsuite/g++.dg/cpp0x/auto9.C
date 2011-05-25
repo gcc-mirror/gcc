@@ -79,10 +79,10 @@ enum struct D : auto * { FF = 0 };		// { dg-error "must be an integral type|decl
 void
 bar ()
 {
-  try { } catch (auto i) { }			// { dg-error "invalid use of" }
-  try { } catch (auto) { }			// { dg-error "invalid use of" }
-  try { } catch (auto *i) { }			// { dg-error "invalid use of" }
-  try { } catch (auto *) { }			// { dg-error "invalid use of" }
+  try { } catch (auto i) { }			// { dg-error "parameter declared" }
+  try { } catch (auto) { }			// { dg-error "parameter declared" }
+  try { } catch (auto *i) { }			// { dg-error "parameter declared" }
+  try { } catch (auto *) { }			// { dg-error "parameter declared" }
 }
 
 void
