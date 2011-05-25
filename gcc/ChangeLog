@@ -168,12 +168,6 @@
 	(go_finish): Create and delete invalid_hash.
 
 2011-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-
-	PR tree-optimization/46728
-	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): New.
-	(execute_cse_sincos): Add switch case for BUILT_IN_POW.
-	
-2011-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	
 	PR tree-optimization/46728
 	* tree-ssa-math-opts.c (powi_table): New.
