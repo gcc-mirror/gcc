@@ -1,5 +1,7 @@
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/access01.C: New.
+
 	* g++.dg/template/access21.C: New.
 	* g++.dg/template/access22.C: New.
 

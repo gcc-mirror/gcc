@@ -17800,7 +17800,7 @@ get_mostly_instantiated_function_type (tree decl)
     ;
   else
     {
-      int i, save_access_control;
+      int i;
       tree partial_args;
 
       /* Replace the innermost level of the TARGS with NULL_TREEs to
@@ -17815,8 +17815,7 @@ get_mostly_instantiated_function_type (tree decl)
 
       /* Disable access control as this function is used only during
 	 name-mangling.  */
-      save_access_control = flag_access_control;
-      flag_access_control = 0;
+      push_deferring_access_checks (dk_no_check);
 
       ++processing_template_decl;
       /* Now, do the (partial) substitution to figure out the
@@ -17831,7 +17830,7 @@ get_mostly_instantiated_function_type (tree decl)
       TREE_VEC_LENGTH (partial_args)--;
       tparms = tsubst_template_parms (tparms, partial_args, tf_error);
 
-      flag_access_control = save_access_control;
+      pop_deferring_access_checks ();
     }
 
   return fn_type;

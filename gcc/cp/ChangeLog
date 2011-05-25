@@ -1,5 +1,9 @@
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49042
+	* pt.c (get_mostly_instantiated_function_type): Use
+	push_deferring_access_checks rather than set flag_access_control.
+
 	PR c++/48884
 	* pt.c (fn_type_unification): Disable access control during
 	substitution.
