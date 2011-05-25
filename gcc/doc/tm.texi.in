@@ -1571,6 +1571,15 @@ anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
 is 128 then the default is 1, otherwise it is 0.
 @end defmac
 
+@defmac LIBGCC2_GNU_PREFIX
+This macro corresponds to the @code{TARGET_LIBFUNC_GNU_PREFIX} target
+hook and should be defined if that hook is overriden to be true.  It
+causes function names in libgcc to be changed to use a @code{__gnu_}
+prefix for their name rather than the default @code{__}.  A port which
+uses this macro should also arrange to use @file{t-gnu-prefix} in
+the libgcc @file{config.host}.
+@end defmac
+
 @defmac SF_SIZE
 @defmacx DF_SIZE
 @defmacx XF_SIZE
@@ -5196,6 +5205,8 @@ library routines.
 
 The default is to do nothing.  Most ports don't need to define this hook.
 @end deftypefn
+
+@hook TARGET_LIBFUNC_GNU_PREFIX
 
 @defmac FLOAT_LIB_COMPARE_RETURNS_BOOL (@var{mode}, @var{comparison})
 This macro should return @code{true} if the library routine that

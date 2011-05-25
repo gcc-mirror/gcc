@@ -1898,7 +1898,10 @@ LIB2ADD_ST = $(LIB2FUNCS_STATIC_EXTRA)
 # which case they will start with $(srcdir)), or generated into the build
 # directory (in which case they will be relative paths).
 srcdirify = $(patsubst $(srcdir)%,$$(gcc_srcdir)%,$(filter $(srcdir)%,$(1))) \
-            $(patsubst %,$$(gcc_objdir)/%,$(filter-out $(srcdir)%,$(1)))
+            $(patsubst $$(libgcc_objdir)/%,%, \
+		$(filter $$(libgcc_objdir)%,$(1))) \
+            $(patsubst %,$$(gcc_objdir)/%, \
+		$(filter-out $(srcdir)% $$(libgcc_objdir)%,$(1)))
 
 # The distinction between these two variables is no longer relevant,
 # so we combine them.  Sort removes duplicates.
