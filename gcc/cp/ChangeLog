@@ -1,5 +1,8 @@
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47336
+	* error.c (dump_template_bindings): Suppress access control.
+
 	PR c++/47544
 	* pt.c (instantiate_decl): Handle =default.
 

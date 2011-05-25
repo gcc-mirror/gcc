@@ -312,7 +312,9 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
       pp_cxx_whitespace (cxx_pp);
       pp_equal (cxx_pp);
       pp_cxx_whitespace (cxx_pp);
+      push_deferring_access_checks (dk_no_check);
       t = tsubst (t, args, tf_none, NULL_TREE);
+      pop_deferring_access_checks ();
       /* Strip typedefs.  We can't just use TFF_CHASE_TYPEDEF because
 	 pp_simple_type_specifier doesn't know about it.  */
       t = strip_typedefs (t);
