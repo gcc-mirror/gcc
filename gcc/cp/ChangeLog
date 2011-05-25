@@ -1,5 +1,9 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44311
+	* decl.c (case_conversion): New.
+	(finish_case_label): Use it.
+
 	* ptree.c (cxx_print_xnode): Handle ARGUMENT_PACK_SELECT.
 
 	PR c++/45698
