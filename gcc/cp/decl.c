@@ -12570,7 +12570,7 @@ use_eh_spec_block (tree fn)
 	     not creating the EH_SPEC_BLOCK we save a little memory,
 	     and we avoid spurious warnings about unreachable
 	     code.  */
-	  && !DECL_ARTIFICIAL (fn));
+	  && !DECL_DEFAULTED_FN (fn));
 }
 
 /* Store the parameter declarations into the current function declaration.

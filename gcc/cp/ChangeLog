@@ -1,5 +1,9 @@
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47263
+	* decl.c (use_eh_spec_block): Do use an EH spec block for a
+	lambda op().
+
 	PR c++/47336
 	* error.c (dump_template_bindings): Suppress access control.
 
