@@ -324,23 +324,48 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define __parityDI2	__NDW(parity,2)
 
 #define __clz_tab		__N(clz_tab)
-#define __powisf2		__N(powisf2)
-#define __powidf2		__N(powidf2)
-#define __powitf2		__N(powitf2)
-#define __powixf2		__N(powixf2)
 #define __bswapsi2		__N(bswapsi2)
 #define __bswapdi2		__N(bswapdi2)
-#define __mulsc3		__N(mulsc3)
-#define __muldc3		__N(muldc3)
-#define __mulxc3		__N(mulxc3)
-#define __multc3		__N(multc3)
-#define __divsc3		__N(divsc3)
-#define __divdc3		__N(divdc3)
-#define __divxc3		__N(divxc3)
-#define __divtc3		__N(divtc3)
 #define __udiv_w_sdiv		__N(udiv_w_sdiv)
 #define __clear_cache		__N(clear_cache)
 #define __enable_execute_stack	__N(enable_execute_stack)
+
+#ifndef __powisf2
+#define __powisf2		__N(powisf2)
+#endif
+#ifndef __powidf2
+#define __powidf2		__N(powidf2)
+#endif
+#ifndef __powitf2
+#define __powitf2		__N(powitf2)
+#endif
+#ifndef __powixf2
+#define __powixf2		__N(powixf2)
+#endif
+#ifndef __mulsc3
+#define __mulsc3		__N(mulsc3)
+#endif
+#ifndef __muldc3
+#define __muldc3		__N(muldc3)
+#endif
+#ifndef __mulxc3
+#define __mulxc3		__N(mulxc3)
+#endif
+#ifndef __multc3
+#define __multc3		__N(multc3)
+#endif
+#ifndef __divsc3
+#define __divsc3		__N(divsc3)
+#endif
+#ifndef __divdc3
+#define __divdc3		__N(divdc3)
+#endif
+#ifndef __divxc3
+#define __divxc3		__N(divxc3)
+#endif
+#ifndef __divtc3
+#define __divtc3		__N(divtc3)
+#endif
 
 extern DWtype __muldi3 (DWtype, DWtype);
 extern DWtype __divdi3 (DWtype, DWtype);
