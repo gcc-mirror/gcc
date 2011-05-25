@@ -895,7 +895,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node,
 	  continue;
 	}
 
-      if (max_count)
+      if (max_count && node->count)
 	{
           if (!cgraph_maybe_hot_edge_p (curr))
 	    {
