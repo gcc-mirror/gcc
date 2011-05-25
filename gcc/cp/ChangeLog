@@ -1,5 +1,8 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46145
+	* decl.c (grokdeclarator): Complain about auto typedef.
+
 	PR c++/46245
 	* decl.c (grokdeclarator): Complain later for auto parameter.
 	* pt.c (splice_late_return_type): Handle use in a template

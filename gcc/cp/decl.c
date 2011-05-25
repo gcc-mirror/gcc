@@ -9304,6 +9304,12 @@ grokdeclarator (const cp_declarator *declarator,
           memfn_quals = TYPE_UNQUALIFIED;
         }
 
+      if (type_uses_auto (type))
+	{
+	  error ("typedef declared %<auto%>");
+	  type = error_mark_node;
+	}
+
       if (decl_context == FIELD)
 	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
       else
