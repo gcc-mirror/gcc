@@ -1,3 +1,9 @@
+2011-05-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Fix
+	type-based offset disambiguation, streamline MEM_REF and
+	TARGET_MEM_REF handling.
+
 2011-05-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_PAUSE.
