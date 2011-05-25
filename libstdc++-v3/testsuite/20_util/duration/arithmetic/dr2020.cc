@@ -39,7 +39,7 @@ void test01()
   constexpr auto d3 = d0 - d1;
   VERIFY( d3.count() == 9 );
 
-  constexpr auto d4 = d0 * 5;
+  constexpr auto d4 = d0 * i;
   VERIFY( d4.count() == 60 );
 
   constexpr auto d5 = i * d0;
