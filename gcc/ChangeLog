@@ -1,3 +1,9 @@
+2011-05-25  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (struct tree_exp): Inherit from struct tree_typed.
+	* tree.c (initialize_tree_contains_struct): Mark TS_EXP as TS_TYPED
+	instead of TS_COMMON.
+
 2011-05-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* libgcc2.h (__NW, __NDW): Define using a __gnu_ prefix if

@@ -254,14 +254,20 @@ remember_with_vars (tree t)
 
 static void lto_fixup_types (tree);
 
+/* Fix up fields of a tree_typed T.  */
+
+static void
+lto_ft_typed (tree t)
+{
+  LTO_FIXUP_TREE (TREE_TYPE (t));
+}
+
 /* Fix up fields of a tree_common T.  */
 
 static void
 lto_ft_common (tree t)
 {
-  /* Fixup our type.  */
-  LTO_FIXUP_TREE (TREE_TYPE (t));
-
+  lto_ft_typed (t);
   LTO_FIXUP_TREE (TREE_CHAIN (t));
 }
 
@@ -398,7 +404,7 @@ lto_ft_constructor (tree t)
   unsigned HOST_WIDE_INT idx;
   constructor_elt *ce;
 
-  LTO_FIXUP_TREE (TREE_TYPE (t));
+  lto_ft_typed (t);
 
   for (idx = 0;
        VEC_iterate(constructor_elt, CONSTRUCTOR_ELTS (t), idx, ce);
@@ -415,7 +421,7 @@ static void
 lto_ft_expr (tree t)
 {
   int i;
-  lto_ft_common (t);
+  lto_ft_typed (t);
   for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
     LTO_FIXUP_TREE (TREE_OPERAND (t, i));
 }
@@ -2029,7 +2035,8 @@ lto_fixup_prevailing_decls (tree t)
 {
   enum tree_code code = TREE_CODE (t);
   LTO_NO_PREVAIL (TREE_TYPE (t));
-  LTO_NO_PREVAIL (TREE_CHAIN (t));
+  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+    LTO_NO_PREVAIL (TREE_CHAIN (t));
   if (DECL_P (t))
     {
       LTO_NO_PREVAIL (DECL_NAME (t));
