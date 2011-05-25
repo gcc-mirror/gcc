@@ -1,7 +1,7 @@
 2011-05-25  Richard Frith-Macdonald <rfm@gnu.org>
 	    David Ayers  <ayers@fsfe.org>
 
-	PR libobjc/38037
+	PR libobjc/38307
 	* sendmsg.c: Include objc/hash.h.
 	(get_implementation): New function, mostly with code from get_imp
 	updated to support the new +initialize dispatch table logic.
