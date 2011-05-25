@@ -1,3 +1,8 @@
+2011-05-25  Jason Merrill  <jason@redhat.com>
+
+	* cp-objcp-common.c (cp_common_init_ts): TYPE_ARGUMENT_PACK has
+	TS_COMMON.
+
 2011-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-objcp-common.c (cp_common_init_ts): Mark CTOR_INITIALIZER
