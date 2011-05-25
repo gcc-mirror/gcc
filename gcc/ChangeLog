@@ -1,3 +1,15 @@
+2011-05-25  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (output_record_start): Use lto_output_enum
+	(lto_output_tree): Use output_record_start.
+	* lto-streamer-in.c (input_record_start): Use lto_input_enum
+	(lto_get_pickled_tree): Use input_record_start.
+	* lto-section-in.c (lto_section_overrun): Turn into fatal error.
+	(lto_value_range_error): New function.
+	* lto-streamer.h (lto_value_range_error): Declare.
+	(lto_output_int_in_range, lto_input_int_in_range): New functions.
+	(lto_output_enum, lto_input_enum): New macros.
+
 2011-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* common.opt (flag_stack_usage_info): New variable.

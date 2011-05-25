@@ -231,11 +231,10 @@ lto_input_string (struct data_in *data_in, struct lto_input_block *ib)
 
 /* Return the next tag in the input block IB.  */
 
-static enum LTO_tags
+static inline enum LTO_tags
 input_record_start (struct lto_input_block *ib)
 {
-  enum LTO_tags tag = (enum LTO_tags) lto_input_uleb128 (ib);
-  return tag;
+  return lto_input_enum (ib, LTO_tags, LTO_NUM_TAGS);
 }
 
 
@@ -2558,7 +2557,7 @@ lto_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
   enum LTO_tags expected_tag;
 
   ix = lto_input_uleb128 (ib);
-  expected_tag = (enum LTO_tags) lto_input_uleb128 (ib);
+  expected_tag = lto_input_enum (ib, LTO_tags, LTO_NUM_TAGS);
 
   result = lto_streamer_cache_get (data_in->reader_cache, ix);
   gcc_assert (result
