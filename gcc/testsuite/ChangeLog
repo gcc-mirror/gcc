@@ -1,3 +1,9 @@
+2011-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49136
+	* g++.dg/cpp0x/constexpr-bitfield2.C: New test.
+	* g++.dg/cpp0x/constexpr-bitfield3.C: New test.
+
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/access01.C: New.
