@@ -1,5 +1,9 @@
 2011-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/random.h (random_device::min, max): Specify constexpr.
+
+2011-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/thread: Use noexcept throughout per the FDIS.
 	* include/std/mutex: Likewise.
 
