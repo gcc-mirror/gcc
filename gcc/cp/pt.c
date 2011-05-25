@@ -8690,7 +8690,12 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 		 have the wrong value for a recursive call.  Just make a
 		 dummy decl, since it's only used for its type.  */
 	      arg_pack = tsubst_decl (parm_pack, args, complain);
-	      arg_pack = make_fnparm_pack (arg_pack);
+	      if (arg_pack && FUNCTION_PARAMETER_PACK_P (arg_pack))
+		/* Partial instantiation of the parm_pack, we can't build
+		   up an argument pack yet.  */
+		arg_pack = NULL_TREE;
+	      else
+		arg_pack = make_fnparm_pack (arg_pack);
 	    }
 	}
       else
@@ -9780,14 +9785,14 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
             if (DECL_TEMPLATE_PARM_P (t))
               SET_DECL_TEMPLATE_PARM_P (r);
 
-	    /* An argument of a function parameter pack is not a parameter
-	       pack.  */
-	    FUNCTION_PARAMETER_PACK_P (r) = false;
-
             if (expanded_types)
               /* We're on the Ith parameter of the function parameter
                  pack.  */
               {
+		/* An argument of a function parameter pack is not a parameter
+		   pack.  */
+		FUNCTION_PARAMETER_PACK_P (r) = false;
+
                 /* Get the Ith type.  */
                 type = TREE_VEC_ELT (expanded_types, i);
 
