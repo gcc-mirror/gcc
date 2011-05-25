@@ -1,5 +1,8 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/enum15.C: New.
+	* g++.dg/cpp0x/constexpr-switch2.C: New.
+
 	* g++.dg/cpp0x/variadic110.C: New.
 
 	* g++.dg/cpp0x/auto9.C: Add typedef test.

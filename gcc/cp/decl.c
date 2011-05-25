@@ -2920,6 +2920,28 @@ pop_switch (void)
   free (cs);
 }
 
+/* Convert a case constant VALUE in a switch to the type TYPE of the switch
+   condition.  Note that if TYPE and VALUE are already integral we don't
+   really do the conversion because the language-independent
+   warning/optimization code will work better that way.  */
+
+static tree
+case_conversion (tree type, tree value)
+{
+  if (value == NULL_TREE)
+    return value;
+
+  if (cxx_dialect >= cxx0x
+      && (SCOPED_ENUM_P (type)
+	  || !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (value))))
+    {
+      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
+	type = type_promotes_to (type);
+      value = perform_implicit_conversion (type, value, tf_warning_or_error);
+    }
+  return cxx_constant_value (value);
+}
+
 /* Note that we've seen a definition of a case label, and complain if this
    is a bad place for one.  */
 
@@ -2928,6 +2950,7 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
 {
   tree cond, r;
   struct cp_binding_level *p;
+  tree type;
 
   if (processing_template_decl)
     {
@@ -2947,13 +2970,12 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
   if (!check_switch_goto (switch_stack->level))
     return error_mark_node;
 
-  if (low_value)
-    low_value = cxx_constant_value (low_value);
-  if (high_value)
-    high_value = cxx_constant_value (high_value);
+  type = SWITCH_STMT_TYPE (switch_stack->switch_stmt);
 
-  r = c_add_case_label (loc, switch_stack->cases, cond,
-			SWITCH_STMT_TYPE (switch_stack->switch_stmt),
+  low_value = case_conversion (type, low_value);
+  high_value = case_conversion (type, high_value);
+
+  r = c_add_case_label (loc, switch_stack->cases, cond, type,
 			low_value, high_value);
 
   /* After labels, make any new cleanups in the function go into their
