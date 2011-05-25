@@ -1,5 +1,8 @@
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/access21.C: New.
+	* g++.dg/template/access22.C: New.
+
 	* g++.dg/cpp0x/rv-cast2.C: New.
 
 	* g++.dg/cpp0x/lambda/lambda-eh2.C: New.

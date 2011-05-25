@@ -1,5 +1,9 @@
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48884
+	* pt.c (fn_type_unification): Disable access control during
+	substitution.
+
 	PR c++/49105
 	* typeck.c (build_const_cast_1): Handle rvalue references.
 

@@ -13743,7 +13743,9 @@ fn_type_unification (tree fn,
         incomplete = NUM_TMPL_ARGS (explicit_targs) != NUM_TMPL_ARGS (targs);
 
       processing_template_decl += incomplete;
+      push_deferring_access_checks (dk_no_check);
       fntype = tsubst (fntype, converted_args, tf_none, NULL_TREE);
+      pop_deferring_access_checks ();
       processing_template_decl -= incomplete;
 
       if (fntype == error_mark_node)
@@ -13830,7 +13832,10 @@ fn_type_unification (tree fn,
        substitution results in an invalid type, as described above,
        type deduction fails.  */
     {
-      tree substed = tsubst (TREE_TYPE (fn), targs, tf_none, NULL_TREE);
+      tree substed;
+      push_deferring_access_checks (dk_no_check);
+      substed = tsubst (TREE_TYPE (fn), targs, tf_none, NULL_TREE);
+      pop_deferring_access_checks ();
       if (substed == error_mark_node)
 	return 1;
 
