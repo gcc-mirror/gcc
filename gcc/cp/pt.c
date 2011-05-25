@@ -17210,7 +17210,8 @@ instantiate_decl (tree d, int defer_ok,
     args = gen_args;
 
   if (TREE_CODE (d) == FUNCTION_DECL)
-    pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE);
+    pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE
+		       || DECL_DEFAULTED_OUTSIDE_CLASS_P (code_pattern));
   else
     pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
 
@@ -17405,6 +17406,8 @@ instantiate_decl (tree d, int defer_ok,
       cp_finish_decl (d, init, const_init, NULL_TREE, 0);
       pop_nested_class ();
     }
+  else if (TREE_CODE (d) == FUNCTION_DECL && DECL_DEFAULTED_FN (code_pattern))
+    synthesize_method (d);
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
       htab_t saved_local_specializations;
