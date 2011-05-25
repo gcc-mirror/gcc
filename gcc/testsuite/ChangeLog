@@ -1,3 +1,8 @@
+2011-05-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/48757
+	* gfortran.dg/pr48757.f:  New test case.
+
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/access01.C: New.

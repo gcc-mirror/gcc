@@ -1,3 +1,12 @@
+2011-05-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/48757
+	* ira-build.c (loop_with_eh_edge_p): Rename to
+	loop_with_complex_edge_p, check edges on complexity, make function
+	conditional.
+	(mark_loops_for_removal): Make call of loop_with_complex_edge_p
+	conditional.
+
 2011-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_option_override): If not set by the user,

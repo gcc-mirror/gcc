@@ -1806,9 +1806,12 @@ low_pressure_loop_node_p (ira_loop_tree_node_t node)
   return true;
 }
 
-/* Return TRUE if LOOP has a EH enter or exit edge.  */
+#ifdef STACK_REGS
+/* Return TRUE if LOOP has a complex enter or exit edge.  We don't
+   form a region from such loop if the target use stack register
+   because reg-stack.c can not deal with such edges.  */
 static bool
-loop_with_eh_edge_p (struct loop *loop)
+loop_with_complex_edge_p (struct loop *loop)
 {
   int i;
   edge_iterator ei;
@@ -1820,10 +1823,11 @@ loop_with_eh_edge_p (struct loop *loop)
       return true;
   edges = get_loop_exit_edges (loop);
   FOR_EACH_VEC_ELT (edge, edges, i, e)
-    if (e->flags & EDGE_EH)
+    if (e->flags & EDGE_COMPLEX)
       return true;
   return false;
 }
+#endif
 
 /* Sort loops for marking them for removal.  We put already marked
    loops first, then less frequent loops next, and then outer loops
@@ -1884,7 +1888,10 @@ mark_loops_for_removal (void)
 	ira_loop_nodes[i].to_remove_p
 	  = ((low_pressure_loop_node_p (ira_loop_nodes[i].parent)
 	      && low_pressure_loop_node_p (&ira_loop_nodes[i]))
-	     || loop_with_eh_edge_p (ira_loop_nodes[i].loop));
+#ifdef STACK_REGS
+	     || loop_with_complex_edge_p (ira_loop_nodes[i].loop)
+#endif
+	     );
       }
   qsort (sorted_loops, n, sizeof (ira_loop_tree_node_t), loop_compare_func);
   for (i = 0; n - i + 1 > IRA_MAX_LOOPS_NUM; i++)
