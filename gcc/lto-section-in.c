@@ -483,6 +483,16 @@ lto_get_function_in_decl_state (struct lto_file_decl_data *file_data,
 void
 lto_section_overrun (struct lto_input_block *ib)
 {
-  internal_error ("bytecode stream: trying to read %d bytes "
-	          "after the end of the input buffer", ib->p - ib->len);
+  fatal_error ("bytecode stream: trying to read %d bytes "
+	       "after the end of the input buffer", ib->p - ib->len);
+}
+
+/* Report out of range value.  */
+
+void
+lto_value_range_error (const char *purpose, HOST_WIDE_INT val,
+		       HOST_WIDE_INT min, HOST_WIDE_INT max)
+{
+  fatal_error ("%s out of range: Range is %i to %i, value is %i",
+	       purpose, (int)min, (int)max, (int)val);
 }

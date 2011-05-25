@@ -771,6 +771,9 @@ extern int lto_eq_in_decl_state (const void *, const void *);
 extern struct lto_in_decl_state *lto_get_function_in_decl_state (
 				      struct lto_file_decl_data *, tree);
 extern void lto_section_overrun (struct lto_input_block *) ATTRIBUTE_NORETURN;
+extern void lto_value_range_error (const char *,
+				   HOST_WIDE_INT, HOST_WIDE_INT,
+				   HOST_WIDE_INT) ATTRIBUTE_NORETURN;
 
 /* In lto-section-out.c  */
 extern hashval_t lto_hash_decl_slot_node (const void *);
@@ -1198,5 +1201,67 @@ lto_input_1_unsigned (struct lto_input_block *ib)
     lto_section_overrun (ib);
   return (ib->data[ib->p++]);
 }
+
+/* Output VAL into OBS and verify it is in range MIN...MAX that is supposed
+   to be compile time constant.
+   Be host independent, limit range to 31bits.  */
+
+static inline void
+lto_output_int_in_range (struct lto_output_stream *obs,
+			 HOST_WIDE_INT min,
+			 HOST_WIDE_INT max,
+			 HOST_WIDE_INT val)
+{
+  HOST_WIDE_INT range = max - min;
+
+  gcc_checking_assert (val >= min && val <= max && range > 0
+		       && range < 0x7fffffff);
+
+  val -= min;
+  lto_output_1_stream (obs, val & 255);
+  if (range >= 0xff)
+    lto_output_1_stream (obs, (val << 8) & 255);
+  if (range >= 0xffff)
+    lto_output_1_stream (obs, (val << 16) & 255);
+  if (range >= 0xffffff)
+    lto_output_1_stream (obs, (val << 24) & 255);
+}
+
+/* Input VAL into OBS and verify it is in range MIN...MAX that is supposed
+   to be compile time constant.  PURPOSE is used for error reporting.  */
+
+static inline HOST_WIDE_INT
+lto_input_int_in_range (struct lto_input_block *ib,
+			const char *purpose,
+			HOST_WIDE_INT min,
+			HOST_WIDE_INT max)
+{
+  HOST_WIDE_INT range = max - min;
+  HOST_WIDE_INT val = lto_input_1_unsigned (ib);
+
+  gcc_checking_assert (range > 0 && range < 0x7fffffff);
+
+  if (range >= 0xff)
+    val |= ((HOST_WIDE_INT)lto_input_1_unsigned (ib)) << 8;
+  if (range >= 0xffff)
+    val |= ((HOST_WIDE_INT)lto_input_1_unsigned (ib)) << 16;
+  if (range >= 0xffffff)
+    val |= ((HOST_WIDE_INT)lto_input_1_unsigned (ib)) << 24;
+  val += min;
+  if (val < min || val > max)
+    lto_value_range_error (purpose, val, min, max);
+  return val;
+}
+
+/* Output VAL of type "enum enum_name" into OBS.
+   Assume range 0...ENUM_LAST - 1.  */
+#define lto_output_enum(obs,enum_name,enum_last,val) \
+  lto_output_int_in_range ((obs), 0, (int)(enum_last) - 1, (int)(val))
+
+/* Input enum of type "enum enum_name" from IB.
+   Assume range 0...ENUM_LAST - 1.  */
+#define lto_input_enum(ib,enum_name,enum_last) \
+  (enum enum_name)lto_input_int_in_range ((ib), #enum_name, 0, \
+					  (int)(enum_last) - 1)
 
 #endif /* GCC_LTO_STREAMER_H  */

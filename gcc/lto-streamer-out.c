@@ -270,12 +270,10 @@ output_sleb128 (struct output_block *ob, HOST_WIDE_INT work)
 
 /* Output the start of a record with TAG to output block OB.  */
 
-static void
+static inline void
 output_record_start (struct output_block *ob, enum LTO_tags tag)
 {
-  /* Make sure TAG fits inside an unsigned int.  */
-  gcc_assert (tag == (enum LTO_tags) (unsigned) tag);
-  output_uleb128 (ob, tag);
+  lto_output_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS, tag);
 }
 
 
@@ -1401,7 +1399,8 @@ lto_output_tree (struct output_block *ob, tree expr, bool ref_p)
 	 will instantiate two different nodes for the same object.  */
       output_record_start (ob, LTO_tree_pickle_reference);
       output_uleb128 (ob, ix);
-      output_uleb128 (ob, lto_tree_code_to_tag (TREE_CODE (expr)));
+      lto_output_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
+		       lto_tree_code_to_tag (TREE_CODE (expr)));
     }
   else if (lto_stream_as_builtin_p (expr))
     {
