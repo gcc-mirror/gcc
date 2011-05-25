@@ -1,3 +1,7 @@
+2011-05-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*<sse>_maskcmp<mode>3_comm): New pattern.
+
 2011-05-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (*movqi_extv_1)): Put back
@@ -6,8 +10,7 @@
 
 2011-05-25  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* doc/extend.texi (X86 Built-in Functions): Update pause
-	intrinsic.
+	* doc/extend.texi (X86 Built-in Functions): Update pause intrinsic.
 
 2011-05-25  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -52,7 +55,7 @@
 	PR tree-optimization/46728
 	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): New.
 	(execute_cse_sincos): Add switch case for BUILT_IN_POW.
-	
+
 2011-05-25  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (struct tree_exp): Inherit from struct tree_typed.
@@ -204,7 +207,7 @@
 	(go_finish): Create and delete invalid_hash.
 
 2011-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-	
+
 	PR tree-optimization/46728
 	* tree-ssa-math-opts.c (powi_table): New.
 	(powi_lookup_cost): New.
