@@ -1,3 +1,8 @@
+2011-05-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/extend.texi (X86 Built-in Functions): Update pause
+	intrinsic.
+
 2011-05-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/49160

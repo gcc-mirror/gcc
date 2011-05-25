@@ -8699,7 +8699,8 @@ The following built-in function is always available.
 
 @table @code
 @item void __builtin_ia32_pause (void)
-Generates the @code{pause} machine instruction with full memory barrier.
+Generates the @code{pause} machine instruction with a compiler memory
+barrier.
 @end table
 
 The following floating point built-in functions are made available in the
