@@ -1,3 +1,8 @@
+2011-05-26  Fabien Chêne  <fabien@gcc.gnu.org>
+	* g++.dg/init/pr25811-2.C: New.
+	* g++.dg/init/pr25811-3.C: New.
+	* g++.dg/init/pr25811-4.C: New.
+
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/enum15.C: New.
@@ -35,12 +40,12 @@
 
 2011-05-25  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	Backport from mainline	
+	Backport from mainline
 	2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/48177
-	* objc.dg/pr48177.m: New testcase.	
-	
+	* objc.dg/pr48177.m: New testcase.
+
 2011-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49136

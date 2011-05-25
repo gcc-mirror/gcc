@@ -1,3 +1,7 @@
+2011-05-26  Fabien Chêne  <fabien@gcc.gnu.org>
+	* init.c (diagnose_uninitialized_cst_or_ref_member_1): Use
+	permerror instead of error, adjust the error count.
+
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44311
