@@ -1,10 +1,10 @@
 // PR c++/41788
-// { dg-options "-Wpacked" }
 // { dg-do run }
+// { dg-options "-Wpacked -Wno-attributes" }
 
 extern "C" void abort ();
 
-struct INNER { // { dg-warning "inefficient.*vptr" "" { target alpha*-*-* ia64-*-* hppa*-*-* mips-sgi-irix* sparc*-*-* spu-*-* sh*-*-* } }
+struct INNER {
   virtual int foo() const { return 1; }
 } __attribute__ ((packed));
 
