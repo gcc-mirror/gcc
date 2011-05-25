@@ -1,5 +1,7 @@
 // { dg-do compile }
 // { dg-options "-Wunused -W" }
+// Suppress a warning that is irrelevant to the purpose of this test.
+// { dg-options "-Wunused -W -Wno-abi" { target arm_eabi } }
 
 #include <stdarg.h>
 
