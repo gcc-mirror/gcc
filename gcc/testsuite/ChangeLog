@@ -1,3 +1,11 @@
+2011-05-25  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Backport from mainline	
+	2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/48177
+	* objc.dg/pr48177.m: New testcase.	
+	
 2011-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49136
