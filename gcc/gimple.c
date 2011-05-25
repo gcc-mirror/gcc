@@ -4376,10 +4376,11 @@ iterative_hash_canonical_type (tree type, hashval_t val)
       tree f;
 
       for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
-	{
-	  v = iterative_hash_canonical_type (TREE_TYPE (f), v);
-	  nf++;
-	}
+	if (TREE_CODE (f) == FIELD_DECL)
+	  {
+	    v = iterative_hash_canonical_type (TREE_TYPE (f), v);
+	    nf++;
+	  }
 
       v = iterative_hash_hashval_t (nf, v);
     }
@@ -4688,6 +4689,13 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 	     f1 && f2;
 	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	  {
+	    /* Skip non-fields.  */
+	    while (f1 && TREE_CODE (f1) != FIELD_DECL)
+	      f1 = TREE_CHAIN (f1);
+	    while (f2 && TREE_CODE (f2) != FIELD_DECL)
+	      f2 = TREE_CHAIN (f2);
+	    if (!f1 || !f2)
+	      break;
 	    /* The fields must have the same name, offset and type.  */
 	    if (DECL_NONADDRESSABLE_P (f1) != DECL_NONADDRESSABLE_P (f2)
 		|| !gimple_compare_field_offset (f1, f2)
