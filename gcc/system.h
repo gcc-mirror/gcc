@@ -762,8 +762,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	HOT_TEXT_SECTION_NAME LEGITIMATE_CONSTANT_P
 
 /* Target macros only used for code built for the target, that have
-   moved to libgcc-tm.h.  */
- #pragma GCC poison DECLARE_LIBRARY_RENAMES
+   moved to libgcc-tm.h or have never been present elsewhere.  */
+ #pragma GCC poison DECLARE_LIBRARY_RENAMES LIBGCC2_GNU_PREFIX
 
 /* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

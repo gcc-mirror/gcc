@@ -1,3 +1,42 @@
+2011-05-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* libgcc2.h (__NW, __NDW): Define using a __gnu_ prefix if
+	LIBGCC2_GNU_PREFIX is defined.
+	(__N): New macro.
+	(__powisf2, __powidf2, __powitf2, __powixf2, __bswapsi2, __bswapdi2,
+	__mulsc3, __muldc3, __mulxc3, __multc3, __divsc3, __divdc3, __divxc3,
+	__divtc3, __udiv_w_sdiv, __clear_cache, __enable_execute_stack,
+	__clz_tab): Define using __N.
+	(__absvsi2, __negvsi2, __addvsi3, __subvsi3, __mulvsi3): Likewise if
+	COMPAT_SIMODE_TRAPPING_ARITHMETIC.
+	* target.def (libfunc_gnu_prefix): New hook.
+	* doc/tm.texi.in (LIBGCC2_GNU_PREFIX): Document.
+	(TARGET_LIBFUNC_GNU_PREFIX): Add hook.
+	* doc/tm.texi: Regenerate.
+	* system.h (LIBGCC2_GNU_PREFIX): Poison.
+	* optabs.c (gen_libfunc): Take the libfunc_gnu_prefix hook into
+	account.
+	(gen_interclass_conv_libfunc, gen_intraclass_conv_libfunc): Likewise.
+	(init_optabs): Likewise for the bswap libfuncs.
+	* tree.c (build_common_builtin_nodes): Likewise for complex multiply
+	and divide.
+	* config/t-slibgcc-elf-ver (SHLIB_MAPFILES): Use $$(libgcc_objdir).
+	* config/t-slibgcc-sld (SHLIB_MAPFILES): Likewise.
+	* libgcc-std.ver: Remove.
+	* Makefile.in (srcdirify): Handle $$(libgcc_objdir).
+	* config/frv/t-linux (SHLIB_MAPFILES): Use $$(libgcc_objdir) for
+	libgcc-std.ver.
+	* config/i386/t-linux (SHLIB_MAPFILES): Likewise.
+	* config/mips/t-slibgcc-irix (SHLIB_MAPFILES): Likewise.
+	* config/rs6000/t-aix43 (SHLIB_MAPFILES): Likewise.
+	* config/rs6000/t-aix52 (SHLIB_MAPFILES): Likewise.
+	* config/sparc/t-linux (SHLIB_MAPFILES): Likewise.
+	* config/i386/t-linux (SHLIB_MAPFILES): Likewise.
+	* config/i386/t-linux (SHLIB_MAPFILES): Likewise.
+	* config/fixed-bit.h (FIXED_OP): Define differently depending on
+	LIBGCC2_GNU_PREFIX. All uses changed not to pass leading underscores.
+	(FIXED_CONVERT_OP, FIXED_CONVERT_OP2): Likewise.
+
 2011-05-25  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-out.c (output_record_start): Use lto_output_enum

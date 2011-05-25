@@ -63,7 +63,7 @@ SHLIB_INSTALL = \
 		$$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@/
 SHLIB_LIBS = -lc `case @multilib_dir@ in *pthread*) echo -lpthread ;; esac`
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
-SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver $(srcdir)/config/rs6000/libgcc-ppc64.ver
+SHLIB_MAPFILES = $$(libgcc_objdir)/libgcc-std.ver $(srcdir)/config/rs6000/libgcc-ppc64.ver
 SHLIB_NM_FLAGS = -Bpg -X32_64
 
 # GCC 128-bit long double support routines.

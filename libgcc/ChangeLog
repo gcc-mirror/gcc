@@ -1,3 +1,11 @@
+2011-05-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* libgcc-std.ver.in: New file.
+	* Makefile.in (LIBGCC_VER_GNU_PREFIX, LIBGCC_VER_SYMBOLS_PREFIX): New
+	variables.
+	(libgcc-std.ver): New rule.
+	* config/t-gnu-prefix: New file.
+
 2011-05-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/s390/t-tpf (LIB2ADDEH): Remove $(gcc_srcdir)/gthr-gnat.c.

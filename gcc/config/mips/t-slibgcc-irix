@@ -49,4 +49,4 @@ SHLIB_INSTALL = \
 	$(LN_S) $(SHLIB_SONAME) \
 	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
-SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
+SHLIB_MAPFILES = $$(libgcc_objdir)/libgcc-std.ver

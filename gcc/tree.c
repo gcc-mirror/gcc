@@ -9525,6 +9525,10 @@ build_common_builtin_nodes (void)
 	const char *p;
 	enum built_in_function mcode, dcode;
 	tree type, inner_type;
+	const char *prefix = "__";
+
+	if (targetm.libfunc_gnu_prefix)
+	  prefix = "__gnu_";
 
 	type = lang_hooks.types.type_for_mode ((enum machine_mode) mode, 0);
 	if (type == NULL)
@@ -9543,13 +9547,17 @@ build_common_builtin_nodes (void)
 	  *q = TOLOWER (*p);
 	*q = '\0';
 
-	built_in_names[mcode] = concat ("__mul", mode_name_buf, "3", NULL);
+	built_in_names[mcode] = concat (prefix, "mul", mode_name_buf, "3",
+					NULL);
         local_define_builtin (built_in_names[mcode], ftype, mcode,
-			      built_in_names[mcode], ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+			      built_in_names[mcode],
+			      ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
-	built_in_names[dcode] = concat ("__div", mode_name_buf, "3", NULL);
+	built_in_names[dcode] = concat (prefix, "div", mode_name_buf, "3",
+					NULL);
         local_define_builtin (built_in_names[dcode], ftype, dcode,
-			      built_in_names[dcode], ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+			      built_in_names[dcode],
+			      ECF_CONST | ECF_NOTHROW | ECF_LEAF);
       }
   }
 }

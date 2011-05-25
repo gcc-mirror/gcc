@@ -29,5 +29,5 @@ EXTRA_MULTILIB_PARTS =
 CRTSTUFF_T_CFLAGS = -fPIC
 TARGET_LIBGCC2_CFLAGS = -fPIC
 
-SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver \
+SHLIB_MAPFILES = $$(libgcc_objdir)/libgcc-std.ver \
 		 $(srcdir)/config/frv/libgcc-frv.ver
