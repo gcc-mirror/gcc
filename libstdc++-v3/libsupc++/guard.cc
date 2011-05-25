@@ -85,7 +85,7 @@ namespace
 # if defined(__GTHREAD_HAS_COND) && !defined(_GLIBCXX_USE_FUTEX)
 namespace
 {
-  // A single conditional variable controlling all static initializations.
+  // A single condition variable controlling all static initializations.
   static __gnu_cxx::__cond* static_cond;  
 
   // using a fake type to avoid initializing a static class.
@@ -136,7 +136,7 @@ __set_and_release (__cxxabiv1::__guard *g)
 #endif /* __GTHREADS */
 
 //
-// Here are C++ run-time routines for guarded initiailization of static
+// Here are C++ run-time routines for guarded initialization of static
 // variables. There are 4 scenarios under which these routines are called:
 //
 //   1. Threads not supported (__GTHREADS not defined)
@@ -147,24 +147,24 @@ __set_and_release (__cxxabiv1::__guard *g)
 //
 // The old code supported scenarios 1-3 but was broken since it used a global
 // mutex for all threads and had the mutex locked during the whole duration of
-// initlization of a guarded static variable. The following created a dead-lock
-// with the old code.
+// initialization of a guarded static variable. The following created a
+// dead-lock with the old code.
 //
 //	Thread 1 acquires the global mutex.
 //	Thread 1 starts initializing static variable.
 //	Thread 1 creates thread 2 during initialization.
-//	Thread 2 attempts to acuqire mutex to initialize another variable.
+//	Thread 2 attempts to acquire mutex to initialize another variable.
 //	Thread 2 blocks since thread 1 is locking the mutex.
 //	Thread 1 waits for result from thread 2 and also blocks. A deadlock.
 //
-// The new code here can handle this situation and thus is more robust. Howere,
-// we need to use the POSIX thread conditional variable, which is not supported
+// The new code here can handle this situation and thus is more robust. However,
+// we need to use the POSIX thread condition variable, which is not supported
 // in all platforms, notably older versions of Microsoft Windows. The gthr*.h
 // headers define a symbol __GTHREAD_HAS_COND for platforms that support POSIX
-// like conditional variables. For platforms that do not support conditional
+// like condition variables. For platforms that do not support condition
 // variables, we need to fall back to the old code.
 
-// If _GLIBCXX_USE_FUTEX, no global mutex or conditional variable is used,
+// If _GLIBCXX_USE_FUTEX, no global mutex or condition variable is used,
 // only atomic operations are used together with futex syscall.
 // Valid values of the first integer in guard are:
 // 0				  No thread encountered the guarded init
@@ -211,7 +211,7 @@ namespace __cxxabiv1
 #endif
   }
 
-  // acuire() is a helper function used to acquire guard if thread support is
+  // acquire() is a helper function used to acquire guard if thread support is
   // not compiled in or is compiled in but not enabled at run-time.
   static int
   acquire(__guard *g)
@@ -284,7 +284,7 @@ namespace __cxxabiv1
 	      {
 		// The guarded static is currently being initialized by
 		// another thread, so we release mutex and wait for the
-		// conditional variable. We will lock the mutex again after
+		// condition variable. We will lock the mutex again after
 		// this.
 		get_static_cond().wait_recursive(&get_static_mutex());
 	      }
@@ -295,7 +295,7 @@ namespace __cxxabiv1
 	      }
 #  else
 	    // This provides compatibility with older systems not supporting
-	    // POSIX like conditional variables.
+	    // POSIX like condition variables.
 	    if (acquire(g))
 	      {
 		mw.unlock = false;
@@ -335,7 +335,7 @@ namespace __cxxabiv1
 	set_init_in_progress_flag(g, 0);
 
 	// If we abort, we still need to wake up all other threads waiting for
-	// the conditional variable.
+	// the condition variable.
         get_static_cond().broadcast();
 	return;
       }	
@@ -344,7 +344,7 @@ namespace __cxxabiv1
     set_init_in_progress_flag(g, 0);
 #if defined(__GTHREADS) && !defined(__GTHREAD_HAS_COND)
     // This provides compatibility with older systems not supporting POSIX like
-    // conditional variables.
+    // condition variables.
     if (__gthread_active_p ())
       static_mutex->unlock();
 #endif
@@ -385,7 +385,7 @@ namespace __cxxabiv1
 
 #if defined(__GTHREADS) && !defined(__GTHREAD_HAS_COND)
     // This provides compatibility with older systems not supporting POSIX like
-    // conditional variables.
+    // condition variables.
     if (__gthread_active_p())
       static_mutex->unlock();
 #endif
