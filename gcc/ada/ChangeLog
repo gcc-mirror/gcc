@@ -1,3 +1,8 @@
+2011-05-25  Kai Tietz  <ktietz@redhat.com>
+
+	* adaint.c (__gnat_to_canonical_file_list_next): Use array
+	initialization instead of const/none-const pointer assignment.
+
 2011-05-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/Make-lang.in (GNAT1_OBJS): Don't include
