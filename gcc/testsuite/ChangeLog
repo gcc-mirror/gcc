@@ -1,3 +1,8 @@
+2011-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/stack-usage-1.c: Adjust comment.
+	* gcc.dg/stack-usage-2.c: New test.
+
 2011-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49136

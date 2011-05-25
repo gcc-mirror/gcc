@@ -10008,7 +10008,7 @@ mips_expand_prologue (void)
   frame = &cfun->machine->frame;
   size = frame->total_size;
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     current_function_static_stack_size = size;
 
   /* Save the registers.  Allocate up to MIPS_MAX_FIRST_STACK_STEP

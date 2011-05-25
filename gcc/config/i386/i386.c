@@ -10546,7 +10546,7 @@ ix86_expand_prologue (void)
 
   allocate = frame.stack_pointer_offset - m->fs.sp_offset;
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     {
       /* We start to count from ARG_POINTER.  */
       HOST_WIDE_INT stack_size = frame.stack_pointer_offset;

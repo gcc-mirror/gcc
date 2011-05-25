@@ -7349,7 +7349,7 @@ sh_expand_prologue (void)
       emit_insn (gen_shcompact_incoming_args ());
     }
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     current_function_static_stack_size = stack_usage;
 }
 
