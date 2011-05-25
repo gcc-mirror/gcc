@@ -82,6 +82,10 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == FLAGS_REG")))
 
+;; Return true if op is one of QImode registers: %[abcd][hl].
+(define_predicate "QIreg_operand"
+  (match_test "QI_REG_P (op)"))
+
 ;; Return true if op is a QImode register operand other than
 ;; %[abcd][hl].
 (define_predicate "ext_QIreg_operand"
