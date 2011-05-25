@@ -1,3 +1,8 @@
+2011-05-25  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (iterative_hash_canonical_type): Skip non-FIELD_DECLs.
+	(gimple_canonical_types_compatible_p): Likewise.
+
 2011-05-25  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/49062
