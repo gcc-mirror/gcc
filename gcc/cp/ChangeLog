@@ -1,5 +1,10 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46245
+	* decl.c (grokdeclarator): Complain later for auto parameter.
+	* pt.c (splice_late_return_type): Handle use in a template
+	type-parameter.
+
 	PR c++/46696
 	* typeck.c (cp_build_modify_expr): Check DECL_DEFAULTED_FN.
 
