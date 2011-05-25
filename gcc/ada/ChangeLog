@@ -1,3 +1,7 @@
+2011-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/utils.c (def_fn_type): Remove extra va_end.
+
 2011-05-25  Kai Tietz  <ktietz@redhat.com>
 
 	* adaint.c (__gnat_to_canonical_file_list_next): Use array

@@ -1,3 +1,7 @@
+2011-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (def_fn_type): Remove extra va_end.
+
 2011-05-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48106
