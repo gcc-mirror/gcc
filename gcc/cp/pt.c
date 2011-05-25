@@ -18512,6 +18512,9 @@ dependent_template_arg_p (tree arg)
   if (arg == error_mark_node)
     return true;
 
+  if (TREE_CODE (arg) == ARGUMENT_PACK_SELECT)
+    arg = ARGUMENT_PACK_SELECT_ARG (arg);
+
   if (TREE_CODE (arg) == TEMPLATE_DECL
       || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
     return dependent_template_p (arg);
