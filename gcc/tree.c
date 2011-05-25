@@ -380,6 +380,7 @@ initialize_tree_contains_struct (void)
 	case TS_COMPLEX:
 	case TS_SSA_NAME:
 	case TS_CONSTRUCTOR:
+	case TS_EXP:
 	  MARK_TS_TYPED (code);
 	  break;
 
@@ -388,7 +389,6 @@ initialize_tree_contains_struct (void)
 	case TS_TYPE_COMMON:
 	case TS_LIST:
 	case TS_VEC:
-	case TS_EXP:
 	case TS_BLOCK:
 	case TS_BINFO:
 	case TS_STATEMENT_LIST:

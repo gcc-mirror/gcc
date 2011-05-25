@@ -1,3 +1,12 @@
+2011-05-25  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_ft_typed): New function.
+	(lto_ft_common): Call it.
+	(lto_ft_constructor): Likewise.
+	(lto_ft_expr): Likewise.
+	(lto_fixup_prevailing_decls): Check for TS_COMMON before accessing
+	TREE_CHAIN.
+
 2011-05-20  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (lto_ft_common): Remove pointer-to chain teardown.
