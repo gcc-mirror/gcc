@@ -1,3 +1,7 @@
+2011-05-24  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/decltype27.C: New.
+
 2011-05-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49133

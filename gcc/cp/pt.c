@@ -17867,6 +17867,8 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
     return 0;
   else if (TREE_CODE (type) == TYPENAME_TYPE)
     return 0;
+  else if (TREE_CODE (type) == DECLTYPE_TYPE)
+    return 0;
 
   if (complain & tf_error)
     error ("%q#T is not a valid type for a template constant parameter", type);

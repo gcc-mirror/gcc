@@ -1,3 +1,8 @@
+2011-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48617
+	* pt.c (invalid_nontype_parm_type_p): Allow DECLTYPE_TYPE.
+
 2011-05-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48647
