@@ -119,3 +119,6 @@ H<auto> h;					// { dg-error "invalid" }
 
 void qq (auto);			// { dg-error "auto" }
 void qr (auto*);		// { dg-error "auto" }
+
+// PR c++/46145
+typedef auto autot;		// { dg-error "auto" }
