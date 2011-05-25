@@ -8566,6 +8566,9 @@ instantiate_class_template_1 (tree type)
 	}
     }
 
+  if (CLASSTYPE_LAMBDA_EXPR (type))
+    maybe_add_lambda_conv_op (type);
+
   /* Set the file and line number information to whatever is given for
      the class itself.  This puts error messages involving generated
      implicit functions at a predictable point, and the same point
