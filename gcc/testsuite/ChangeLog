@@ -1,5 +1,7 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/lambda/lambda-conv5.C: New.
+
 	* g++.dg/cpp0x/variadic109.C: New.
 
 2011-05-25  Nicola Pero  <nicola.pero@meta-innovation.com>

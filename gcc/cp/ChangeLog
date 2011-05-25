@@ -1,5 +1,9 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45080
+	* pt.c (instantiate_class_template_1): Call maybe_add_lambda_conv_op.
+	* semantics.c (lambda_function): Check COMPLETE_OR_OPEN_TYPE_P.
+
 	PR c++/48292
 	* pt.c (tsubst_decl) [PARM_DECL]: Handle partial instantiation of
 	function parameter pack.
