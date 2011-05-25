@@ -898,18 +898,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  __next = __cur->_M_next;
 		}
 	    }
-	  if (_M_equals(_M_get_key(__first->_M_val), __key))
-	    {
-	      _M_buckets[__n] = __first->_M_next;
-	      _M_delete_node(__first);
-	      ++__erased;
-	      --_M_num_elements;
-	    }
+	  bool __delete_first = _M_equals(_M_get_key(__first->_M_val), __key);
 	  if (__saved_slot)
 	    {
 	      __next = __saved_slot->_M_next;
 	      __saved_slot->_M_next = __next->_M_next;
 	      _M_delete_node(__next);
+	      ++__erased;
+	      --_M_num_elements;
+	    }
+	  if (__delete_first)
+	    {
+	      _M_buckets[__n] = __first->_M_next;
+	      _M_delete_node(__first);
 	      ++__erased;
 	      --_M_num_elements;
 	    }

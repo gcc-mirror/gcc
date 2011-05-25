@@ -1,3 +1,11 @@
+2011-05-25  Ian Lance Taylor  <iant@google.com>
+
+	PR libstdc++/49060
+	* include/backward/hashtable.h (hashtable::erase): Don't crash if
+	erasing first and another element with a reference to the other
+	element.
+	* testsuite/backward/hash_set/49060.cc: New.
+
 2011-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.h (random_device::min, max): Specify constexpr.
