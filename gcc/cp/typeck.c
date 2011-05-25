@@ -6220,14 +6220,29 @@ build_const_cast_1 (tree dst_type, tree expr, bool complain,
 
   /* [expr.const.cast]
 
-     An lvalue of type T1 can be explicitly converted to an lvalue of
-     type T2 using the cast const_cast<T2&> (where T1 and T2 are object
-     types) if a pointer to T1 can be explicitly converted to the type
-     pointer to T2 using a const_cast.  */
+     For two object types T1 and T2, if a pointer to T1 can be explicitly
+     converted to the type "pointer to T2" using a const_cast, then the
+     following conversions can also be made:
+
+     -- an lvalue of type T1 can be explicitly converted to an lvalue of
+     type T2 using the cast const_cast<T2&>;
+
+     -- a glvalue of type T1 can be explicitly converted to an xvalue of
+     type T2 using the cast const_cast<T2&&>; and
+
+     -- if T1 is a class type, a prvalue of type T1 can be explicitly
+     converted to an xvalue of type T2 using the cast const_cast<T2&&>.  */
+
   if (TREE_CODE (dst_type) == REFERENCE_TYPE)
     {
       reference_type = dst_type;
-      if (! real_lvalue_p (expr))
+      if (!TYPE_REF_IS_RVALUE (dst_type)
+	  ? real_lvalue_p (expr)
+	  : (CLASS_TYPE_P (TREE_TYPE (dst_type))
+	     ? lvalue_p (expr)
+	     : lvalue_or_rvalue_with_address_p (expr)))
+	/* OK.  */;
+      else
 	{
 	  if (complain)
 	    error ("invalid const_cast of an rvalue of type %qT to type %qT",

@@ -1,5 +1,7 @@
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/rv-cast2.C: New.
+
 	* g++.dg/cpp0x/lambda/lambda-eh2.C: New.
 
 	* g++.dg/cpp0x/error3.C: New.
