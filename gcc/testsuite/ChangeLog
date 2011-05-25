@@ -1,5 +1,7 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/variadic110.C: New.
+
 	* g++.dg/cpp0x/auto9.C: Add typedef test.
 
 	* g++.dg/cpp0x/auto23.C: New.
