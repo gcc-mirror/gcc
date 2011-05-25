@@ -1,5 +1,8 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45698
+	* pt.c (dependent_template_arg_p): See through ARGUMENT_PACK_SELECT.
+
 	PR c++/46145
 	* decl.c (grokdeclarator): Complain about auto typedef.
 
