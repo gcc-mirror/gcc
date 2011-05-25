@@ -1,5 +1,9 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45418
+	* init.c (perform_member_init): Handle list-initialization
+	of array of non-trivial class type.
+
 	PR c++/45080
 	* pt.c (instantiate_class_template_1): Call maybe_add_lambda_conv_op.
 	* semantics.c (lambda_function): Check COMPLETE_OR_OPEN_TYPE_P.
