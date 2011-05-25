@@ -1272,6 +1272,17 @@ GLIBCXX_3.4.16 {
 
 } GLIBCXX_3.4.15;
 
+GLIBCXX_3.4.17 {
+
+    # basic_streambuf<>::__safe_gbump, __safe_pbump
+    _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE12__safe_gbumpE*;
+    _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE12__safe_pbumpE*;
+
+    # basic_stringbuf<>::_M_pbump
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE8_M_pbumpE*;
+
+} GLIBCXX_3.4.16;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 

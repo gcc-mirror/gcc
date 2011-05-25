@@ -1,3 +1,11 @@
+2011-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/abi/pre/gnu.ver: Export recently added  basic_streambuf
+	and basic_stringbuf symbols @3.4.17.
+	* configure.ac: Update.
+	* testsuite/util/testsuite_abi.cc: Likewise.
+	* configure: Regenerate.
+
 2011-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/49141
