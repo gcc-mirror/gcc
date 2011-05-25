@@ -1,5 +1,12 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48935
+	* parser.c (cp_parser_constructor_declarator_p): Don't check
+	constructor_name_p for enums.
+	(cp_parser_diagnose_invalid_type_name): Correct error message.
+
+2011-05-25  Jason Merrill  <jason@redhat.com>
+
 	PR c++/45418
 	* init.c (perform_member_init): Handle list-initialization
 	of array of non-trivial class type.

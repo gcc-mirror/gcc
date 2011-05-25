@@ -2788,7 +2788,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 		  "%qT is a dependent scope",
 		  parser->scope, id, parser->scope);
       else if (TYPE_P (parser->scope))
-	error_at (location, "%qE in class %qT does not name a type",
+	error_at (location, "%qE in %q#T does not name a type",
 		  id, parser->scope);
       else
 	gcc_unreachable ();
@@ -19642,7 +19642,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
   /* If we have a class scope, this is easy; DR 147 says that S::S always
      names the constructor, and no other qualified name could.  */
   if (constructor_p && nested_name_specifier
-      && TYPE_P (nested_name_specifier))
+      && CLASS_TYPE_P (nested_name_specifier))
     {
       tree id = cp_parser_unqualified_id (parser,
 					  /*template_keyword_p=*/false,
