@@ -1,5 +1,11 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47184
+	* parser.c (cp_parser_parameter_declaration): Recognize
+	list-initialization.
+	(cp_parser_direct_declarator): Check for the closing
+	paren before parsing definitely.
+
 	PR c++/48935
 	* parser.c (cp_parser_constructor_declarator_p): Don't check
 	constructor_name_p for enums.
