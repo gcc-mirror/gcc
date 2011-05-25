@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1024,6 +1024,39 @@ gimple_expand_builtin_powi (gimple_stmt_iterator *gsi, location_t loc,
   return NULL_TREE;
 }
 
+/* ARG0 and ARG1 are the two arguments to a pow builtin call in GSI
+   with location info LOC.  If possible, create an equivalent and
+   less expensive sequence of statements prior to GSI, and return an
+   expession holding the result.  */
+
+static tree
+gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc, 
+			   tree arg0, tree arg1)
+{
+  REAL_VALUE_TYPE c, cint;
+  HOST_WIDE_INT n;
+
+  /* If the exponent isn't a constant, there's nothing of interest
+     to be done.  */
+  if (TREE_CODE (arg1) != REAL_CST)
+    return NULL_TREE;
+
+  /* If the exponent is equivalent to an integer, expand it into
+     multiplies when profitable.  */
+  c = TREE_REAL_CST (arg1);
+  n = real_to_integer (&c);
+  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+
+  if (real_identical (&c, &cint)
+      && ((n >= -1 && n <= 2)
+	  || (flag_unsafe_math_optimizations
+	      && optimize_insn_for_speed_p ()
+	      && powi_cost (n) <= POWI_MAX_MULTS)))
+    return gimple_expand_builtin_powi (gsi, loc, arg0, n);
+
+  return NULL_TREE;
+}
+
 /* Go through all calls to sin, cos and cexpi and call execute_cse_sincos_1
    on the SSA_NAME argument of each of them.  Also expand powi(x,n) into
    an optimal number of multiplies, when n is a constant.  */
@@ -1063,6 +1096,23 @@ execute_cse_sincos (void)
 		  arg = gimple_call_arg (stmt, 0);
 		  if (TREE_CODE (arg) == SSA_NAME)
 		    cfg_changed |= execute_cse_sincos_1 (arg);
+		  break;
+
+		CASE_FLT_FN (BUILT_IN_POW):
+		  arg0 = gimple_call_arg (stmt, 0);
+		  arg1 = gimple_call_arg (stmt, 1);
+
+		  loc = gimple_location (stmt);
+		  result = gimple_expand_builtin_pow (&gsi, loc, arg0, arg1);
+
+		  if (result)
+		    {
+		      tree lhs = gimple_get_lhs (stmt);
+		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gimple_set_location (new_stmt, loc);
+		      unlink_stmt_vdef (stmt);
+		      gsi_replace (&gsi, new_stmt, true);
+		    }
 		  break;
 
 		CASE_FLT_FN (BUILT_IN_POWI):

@@ -1,3 +1,9 @@
+2011-05-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/46728
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): New.
+	(execute_cse_sincos): Add switch case for BUILT_IN_POW.
+	
 2011-05-25  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (struct tree_exp): Inherit from struct tree_typed.
@@ -150,6 +156,12 @@
 
 2011-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	PR tree-optimization/46728
+	* tree-ssa-math-opts.c (gimple_expand_builtin_pow): New.
+	(execute_cse_sincos): Add switch case for BUILT_IN_POW.
+	
+2011-05-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	
 	PR tree-optimization/46728
 	* tree-ssa-math-opts.c (powi_table): New.
 	(powi_lookup_cost): New.
