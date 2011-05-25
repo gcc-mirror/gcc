@@ -1,5 +1,8 @@
 2011-05-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* cp-objcp-common.c (cp_common_init_ts): Mark CTOR_INITIALIZER
+	as TS_TYPED.
+
 	PR c++/49136
 	* semantics.c (cxx_eval_bit_field_ref): Handle the
 	case when BIT_FIELD_REF doesn't cover only a single field.
