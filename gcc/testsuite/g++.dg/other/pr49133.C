@@ -1,5 +1,6 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -msse2" } */
+/* { dg-require-effective-target sse2 } */
 /* { dg-require-effective-target sse2_runtime } */
 
 #include <xmmintrin.h>
