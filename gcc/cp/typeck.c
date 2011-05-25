@@ -6727,7 +6727,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 
       /* Allow array assignment in compiler-generated code.  */
       else if (!current_function_decl
-	       || !DECL_ARTIFICIAL (current_function_decl))
+	       || !DECL_DEFAULTED_FN (current_function_decl))
 	{
           /* This routine is used for both initialization and assignment.
              Make sure the diagnostic message differentiates the context.  */

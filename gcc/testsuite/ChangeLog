@@ -1,5 +1,7 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/defaulted29.C: New.
+
 	* g++.dg/cpp0x/initlist51.C: New.
 
 2011-05-25  Janis Johnson  <janisjo@codesourcery.com>
