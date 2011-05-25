@@ -1,3 +1,7 @@
+2011-05-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/variadic109.C: New.
+
 2011-05-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	 * gcc.target/i386/pause-1.c: New.
