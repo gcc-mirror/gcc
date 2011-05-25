@@ -528,6 +528,8 @@ perform_member_init (tree member, tree init)
 	    {
 	      gcc_assert (TREE_CHAIN (init) == NULL_TREE);
 	      init = TREE_VALUE (init);
+	      if (BRACE_ENCLOSED_INITIALIZER_P (init))
+		init = digest_init (type, init);
 	    }
 	  if (init == NULL_TREE
 	      || same_type_ignoring_top_level_qualifiers_p (type,
