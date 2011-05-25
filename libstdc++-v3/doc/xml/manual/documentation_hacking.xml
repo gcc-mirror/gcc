@@ -648,7 +648,7 @@
       </para>
 
       <para>
-	For processing XML, an XML processor and some style
+	For processing XML, an XSLT processor and some style
 	sheets are necessary. Defaults are <command>xsltproc</command>
 	provided by <filename>libxslt</filename>.
       </para>
@@ -711,7 +711,7 @@
       <para>
 	If the Docbook stylesheets are installed in a custom location,
 	one can use the variable <literal>XSL_STYLE_DIR</literal> to
-	over-ride the Makefile defaults. As so:
+	override the Makefile defaults. For example:
       </para>
 
       <screen>
