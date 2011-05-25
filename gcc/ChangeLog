@@ -1,3 +1,16 @@
+2011-05-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_builtins): Add IX86_BUILTIN_PAUSE.
+	(bdesc_special_args): Add pause intrinsic.
+
+	* config/i386/i386.md (UNSPEC_PAUSE): New.
+	(pause): Likewise.
+	(*pause): Likewise.
+	* config/i386/ia32intrin.h (__pause): Likewise.
+
+	* doc/extend.texi (X86 Built-in Functions): Add documentation for
+	pause intrinsic.
+
 2011-05-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/46728
