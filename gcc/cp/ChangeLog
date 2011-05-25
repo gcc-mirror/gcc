@@ -1,3 +1,9 @@
+2011-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49136
+	* semantics.c (cxx_eval_bit_field_ref): Handle the
+	case when BIT_FIELD_REF doesn't cover only a single field.
+
 2011-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49042
