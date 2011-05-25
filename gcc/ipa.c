@@ -897,7 +897,7 @@ function_and_variable_visibility (bool whole_program)
 	    {
 	      DECL_COMDAT (node->decl) = 1;
 	      DECL_COMDAT_GROUP (node->decl) = DECL_COMDAT_GROUP (decl_node->decl);
-	      if (!node->same_comdat_group)
+	      if (DECL_ONE_ONLY (decl_node->decl) && !node->same_comdat_group)
 		{
 		  node->same_comdat_group = decl_node;
 		  if (!decl_node->same_comdat_group)
