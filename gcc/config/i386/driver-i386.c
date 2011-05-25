@@ -696,7 +696,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *bmi = has_bmi ? " -mbmi" : " -mno-bmi";
       const char *tbm = has_tbm ? " -mtbm" : " -mno-tbm";
       const char *avx = has_avx ? " -mavx" : " -mno-avx";
-      const char *sse4_2 = has_sse4_2 ? " -msse4.2" : " -mno-msse4.2";
+      const char *sse4_2 = has_sse4_2 ? " -msse4.2" : " -mno-sse4.2";
       const char *sse4_1 = has_sse4_1 ? " -msse4.1" : " -mno-sse4.1";
 
       options = concat (options, cx16, sahf, movbe, ase, pclmul,
