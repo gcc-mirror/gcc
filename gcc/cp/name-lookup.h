@@ -140,7 +140,7 @@ typedef enum tag_scope {
 } tag_scope;
 
 typedef struct GTY(()) cp_class_binding {
-  cxx_binding base;
+  cxx_binding *base;
   /* The bound name.  */
   tree identifier;
 } cp_class_binding;
