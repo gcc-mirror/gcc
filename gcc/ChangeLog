@@ -1,3 +1,8 @@
+2011-05-25  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (go_format_type): Check for invalid type names, pointer
+	target types, and struct field types.
+
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
 	* print-tree.c (print_node): Only look at TREE_TYPE if TS_TYPED.

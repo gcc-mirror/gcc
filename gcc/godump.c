@@ -532,8 +532,18 @@ go_format_type (struct godump_container *container, tree type,
       break;
 
     case TYPE_DECL:
-      obstack_1grow (ob, '_');
-      go_append_string (ob, DECL_NAME (type));
+      {
+	void **slot;
+
+	slot = htab_find_slot (container->invalid_hash,
+			       IDENTIFIER_POINTER (DECL_NAME (type)),
+			       NO_INSERT);
+	if (slot != NULL)
+	  ret = false;
+
+	obstack_1grow (ob, '_');
+	go_append_string (ob, DECL_NAME (type));
+      }
       break;
 
     case INTEGER_TYPE:
@@ -604,31 +614,28 @@ go_format_type (struct godump_container *container, tree type,
 		      == FUNCTION_TYPE))))
         {
 	  tree name;
+	  void **slot;
 
 	  name = TYPE_NAME (TREE_TYPE (type));
-	  if (TREE_CODE (name) == IDENTIFIER_NODE)
-	    {
-	      obstack_grow (ob, "*_", 2);
-	      go_append_string (ob, name);
+	  if (TREE_CODE (name) == TYPE_DECL)
+	    name = DECL_NAME (name);
 
-	      /* The pointer here can be used without the struct or
-		 union definition.  So this struct or union is a a
-		 potential dummy type.  */
-	      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
-		pointer_set_insert (container->pot_dummy_types,
-				    IDENTIFIER_POINTER (name));
+	  slot = htab_find_slot (container->invalid_hash,
+				 IDENTIFIER_POINTER (name), NO_INSERT);
+	  if (slot != NULL)
+	    ret = false;
 
-	      return ret;
-	    }
-	  else if (TREE_CODE (name) == TYPE_DECL)
-	    {
-	      obstack_grow (ob, "*_", 2);
-	      go_append_string (ob, DECL_NAME (name));
-	      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
-		pointer_set_insert (container->pot_dummy_types,
-				    IDENTIFIER_POINTER (DECL_NAME (name)));
-	      return ret;
-	    }
+	  obstack_grow (ob, "*_", 2);
+	  go_append_string (ob, name);
+
+	  /* The pointer here can be used without the struct or union
+	     definition.  So this struct or union is a potential dummy
+	     type.  */
+	  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
+	    pointer_set_insert (container->pot_dummy_types,
+				IDENTIFIER_POINTER (name));
+
+	  return ret;
         }
       if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
 	obstack_grow (ob, "func", 4);
@@ -716,17 +723,21 @@ go_format_type (struct godump_container *container, tree type,
 			    && (TREE_CODE (TREE_TYPE (TREE_TYPE (field)))
                                 == FUNCTION_TYPE))))
 		  {
-		    tree name = TYPE_NAME (TREE_TYPE (field));
-		    if (TREE_CODE (name) == IDENTIFIER_NODE)
-		      {
-			obstack_1grow (ob, '_');
-			go_append_string (ob, name);
-		      }
-		    else if (TREE_CODE (name) == TYPE_DECL)
-		      {
-			obstack_1grow (ob, '_');
-			go_append_string (ob, DECL_NAME (name));
-		      }
+		    tree name;
+		    void **slot;
+
+		    name = TYPE_NAME (TREE_TYPE (field));
+		    if (TREE_CODE (name) == TYPE_DECL)
+		      name = DECL_NAME (name);
+
+		    slot = htab_find_slot (container->invalid_hash,
+					   IDENTIFIER_POINTER (name),
+					   NO_INSERT);
+		    if (slot != NULL)
+		      ret = false;
+
+		    obstack_1grow (ob, '_');
+		    go_append_string (ob, name);
 		  }
 		else
 		  {
