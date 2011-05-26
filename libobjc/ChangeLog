@@ -1,5 +1,10 @@
 2011-05-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* sendmsg.c: Reindented part of the file.  No non-trivial changes
+	in code.
+
+2011-05-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* sendmsg.c (__objc_install_dtable_for_class): Use objc_getClass,
 	not objc_lookupClass.
 
