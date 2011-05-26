@@ -1551,7 +1551,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   edge pe;
   basic_block new_bb;
   gimple_seq stmts;
-  tree ni_name;
+  tree ni_name, ni_minus_gap_name;
   tree var;
   tree ratio_name;
   tree ratio_mult_vf_name;
@@ -1568,9 +1568,39 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   ni_name = vect_build_loop_niters (loop_vinfo, cond_expr_stmt_list);
   log_vf = build_int_cst (TREE_TYPE (ni), exact_log2 (vf));
 
+  /* If epilogue loop is required because of data accesses with gaps, we
+     subtract one iteration from the total number of iterations here for
+     correct calculation of RATIO.  */
+  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
+    {
+      ni_minus_gap_name = fold_build2 (MINUS_EXPR, TREE_TYPE (ni_name),
+				       ni_name,
+			               build_one_cst (TREE_TYPE (ni_name)));
+      if (!is_gimple_val (ni_minus_gap_name))
+	{
+	  var = create_tmp_var (TREE_TYPE (ni), "ni_gap");
+          add_referenced_var (var);
+
+          stmts = NULL;
+          ni_minus_gap_name = force_gimple_operand (ni_minus_gap_name, &stmts,
+						    true, var);
+          if (cond_expr_stmt_list)
+            gimple_seq_add_seq (&cond_expr_stmt_list, stmts);
+          else
+            {
+              pe = loop_preheader_edge (loop);
+              new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+              gcc_assert (!new_bb);
+            }
+        }
+    }
+  else
+    ni_minus_gap_name = ni_name;
+
   /* Create: ratio = ni >> log2(vf) */
 
-  ratio_name = fold_build2 (RSHIFT_EXPR, TREE_TYPE (ni_name), ni_name, log_vf);
+  ratio_name = fold_build2 (RSHIFT_EXPR, TREE_TYPE (ni_minus_gap_name),
+			    ni_minus_gap_name, log_vf);
   if (!is_gimple_val (ratio_name))
     {
       var = create_tmp_var (TREE_TYPE (ni), "bnd");
