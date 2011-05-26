@@ -1,3 +1,30 @@
+2011-05-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-array.c (gfc_conv_array_ref): Handle pointer coarrays.
+	* trans-decl.c (has_coarray_vars, caf_init_block,
+	gfor_fndecl_caf_register): New file-global variables.
+	(gfc_finish_var_decl): Make sure that coarrays in main are static.
+	(gfc_build_qualified_array): Generate coarray token variable.
+	(gfc_get_symbol_decl): Don't use a static initializer for coarrays.
+	(gfc_build_builtin_function_decls): Set gfor_fndecl_caf_register.
+	(gfc_trans_deferred_vars, gfc_emit_parameter_debug_info): Skip for
+	static coarrays.
+	(generate_local_decl): Check for local coarrays.
+	(create_main_function): SYNC ALL before calling MAIN.
+	(generate_coarray_sym_init): Register static coarray.
+	(generate_coarray_init): Generate CAF registering constructor
+	function.
+	(gfc_generate_function_code): Call it, if needed, do not create
+	cgraph twice.
+	(gfc_generate_module_vars, gfc_process_block_locals): Call
+	generate_coarray_init.
+	* trans-types.c (gfc_get_nodesc_array_type): Generate pointers for
+	-fcoarray=lib.
+	* trans.h (gfor_fndecl_caf_register): New variable.
+	(lang_type): New element caf_token.
+	(GFC_TYPE_ARRAY_CAF_TOKEN): New macro.
+
 2011-05-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (GFORTRAN_D_OBJS): Remove prefix.o.
@@ -27,11 +54,11 @@
 
 2011-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * gfortran.texi (set_fpe): Update documentation.
-        * invoke.texi (-ffpe-trap): Likewise.
-        * libgfortran.h (GFC_FPE_PRECISION): Rename to GFC_FPE_INEXACT.
-        * options.c (gfc_handle_fpe_trap_option): Handle inexact and make
-        precision an alias for it.
+	* gfortran.texi (set_fpe): Update documentation.
+	* invoke.texi (-ffpe-trap): Likewise.
+	* libgfortran.h (GFC_FPE_PRECISION): Rename to GFC_FPE_INEXACT.
+	* options.c (gfc_handle_fpe_trap_option): Handle inexact and make
+	precision an alias for it.
 
 2011-05-19  Tobias Burnus  <burnus@net-b.de>
 

@@ -2623,6 +2623,10 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
   if (ar->dimen == 0)
     {
       gcc_assert (ar->codimen);
+      if (GFC_ARRAY_TYPE_P (TREE_TYPE (se->expr))
+	  && TREE_CODE (TREE_TYPE (se->expr)) == POINTER_TYPE)
+	se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
+
       /* Use the actual tree type and not the wrapped coarray. */
       se->expr = fold_convert (TREE_TYPE (TREE_TYPE (se->expr)), se->expr);
       return;

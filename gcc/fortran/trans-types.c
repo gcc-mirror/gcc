@@ -1542,13 +1542,13 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 
   if (as->rank == 0)
     {
-      if (packed != PACKED_STATIC)
+      if (packed != PACKED_STATIC  || gfc_option.coarray == GFC_FCOARRAY_LIB)
 	type = build_pointer_type (type);
 
       if (restricted)
         type = build_qualified_type (type, TYPE_QUAL_RESTRICT);	
 
-      if (packed != PACKED_STATIC)
+      if (packed != PACKED_STATIC  || gfc_option.coarray == GFC_FCOARRAY_LIB)
 	{
 	  GFC_ARRAY_TYPE_P (type) = 1;
 	  TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type)); 
@@ -1596,7 +1596,8 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
       DECL_ORIGINAL_TYPE (type_decl) = gtype;
     }
 
-  if (packed != PACKED_STATIC || !known_stride)
+  if (packed != PACKED_STATIC || !known_stride
+      || (as->corank && gfc_option.coarray == GFC_FCOARRAY_LIB))
     {
       /* For dummy arrays and automatic (heap allocated) arrays we
 	 want a pointer to the array.  */
