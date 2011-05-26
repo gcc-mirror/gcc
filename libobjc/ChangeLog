@@ -1,3 +1,8 @@
+2011-05-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* sendmsg.c (__objc_install_dtable_for_class): Use objc_getClass,
+	not objc_lookupClass.
+
 2011-05-25  Richard Frith-Macdonald <rfm@gnu.org>
 	    David Ayers  <ayers@fsfe.org>
 
