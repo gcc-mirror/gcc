@@ -2296,7 +2296,6 @@ assemble_name (FILE *file, const char *name)
       ultimate_transparent_alias_target (&id);
       if (id != id_orig)
 	name = IDENTIFIER_POINTER (id);
-      gcc_assert (! TREE_CHAIN (id));
     }
 
   assemble_name_raw (file, name);
