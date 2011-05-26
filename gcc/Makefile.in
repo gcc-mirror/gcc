@@ -1894,13 +1894,15 @@ cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
 LIB2ADD = $(LIB2FUNCS_EXTRA)
 LIB2ADD_ST = $(LIB2FUNCS_STATIC_EXTRA)
 
-# All source files for libgcc are either in the source directory (in
-# which case they will start with $(srcdir)), or generated into the build
-# directory (in which case they will be relative paths).
-srcdirify = $(patsubst $(srcdir)%,$$(gcc_srcdir)%,$(filter $(srcdir)%,$(1))) \
-            $(patsubst $$(libgcc_objdir)/%,%, \
+# All source files for libgcc are either generated in the libgcc build
+# directory which will be substituted for $$(libgcc_objdir), in the
+# source directory (in which case they will start with $(srcdir)), or
+# generated into the build directory (in which case they will be
+# relative paths).
+srcdirify = $(patsubst $$(libgcc_objdir)/%,%, \
 		$(filter $$(libgcc_objdir)%,$(1))) \
-            $(patsubst %,$$(gcc_objdir)/%, \
+	    $(patsubst $(srcdir)%,$$(gcc_srcdir)%,$(filter $(srcdir)%,$(1))) \
+	    $(patsubst %,$$(gcc_objdir)/%, \
 		$(filter-out $(srcdir)% $$(libgcc_objdir)%,$(1)))
 
 # The distinction between these two variables is no longer relevant,

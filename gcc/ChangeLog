@@ -1,3 +1,9 @@
+2011-05-26  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* Makefile.in (srcdirify): Change order so that libgcc_objdir is
+	substituted first.
+	* libgcc-std.ver: Delete file.
+
 2011-05-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48702
