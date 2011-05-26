@@ -1,5 +1,9 @@
 2011-05-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/49165
+	* gimplify.c (shortcut_cond_r): Don't special case
+	COND_EXPRs if they have void type on one of their arms.
+
 	PR tree-optimization/49161
 	* tree-vrp.c (struct case_info): New type.
 	(compare_case_labels): Sort case_info structs instead of
