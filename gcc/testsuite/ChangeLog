@@ -1,3 +1,8 @@
+2011-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48955
+	* gfortran.dg/dependency_40.f90 : New test.
+
 2011-05-26  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/variadic111.C: New.

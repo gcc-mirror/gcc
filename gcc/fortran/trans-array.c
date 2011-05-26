@@ -2223,7 +2223,7 @@ gfc_init_loopinfo (gfc_loopinfo * loop)
   for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
     {
       loop->order[n] = n;
-      loop->reverse[n] = GFC_CANNOT_REVERSE;
+      loop->reverse[n] = GFC_INHIBIT_REVERSE;
     }
 
   loop->ss = gfc_ss_terminator;

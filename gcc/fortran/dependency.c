@@ -1793,7 +1793,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 
 	      /* Now deal with the loop reversal logic:  This only works on
 		 ranges and is activated by setting
-				reverse[n] == GFC_CAN_REVERSE
+				reverse[n] == GFC_ENABLE_REVERSE
 		 The ability to reverse or not is set by previous conditions
 		 in this dimension.  If reversal is not activated, the
 		 value GFC_DEP_BACKWARD is reset to GFC_DEP_OVERLAP.  */
@@ -1801,25 +1801,34 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 		    && lref->u.ar.dimen_type[n] == DIMEN_RANGE)
 		{
 		  /* Set reverse if backward dependence and not inhibited.  */
-		  if (reverse && reverse[n] != GFC_CANNOT_REVERSE)
+		  if (reverse && reverse[n] == GFC_ENABLE_REVERSE)
 		    reverse[n] = (this_dep == GFC_DEP_BACKWARD) ?
 			         GFC_REVERSE_SET : reverse[n];
 
-		  /* Inhibit loop reversal if dependence not compatible.  */
-		  if (reverse && reverse[n] != GFC_REVERSE_NOT_SET
-		        && this_dep != GFC_DEP_EQUAL
-		        && this_dep != GFC_DEP_BACKWARD
-		        && this_dep != GFC_DEP_NODEP)
+		  /* Set forward if forward dependence and not inhibited.  */
+		  if (reverse && reverse[n] == GFC_ENABLE_REVERSE)
+		    reverse[n] = (this_dep == GFC_DEP_FORWARD) ?
+			         GFC_FORWARD_SET : reverse[n];
+
+		  /* Flag up overlap if dependence not compatible with
+		     the overall state of the expression.  */
+		  if (reverse && reverse[n] == GFC_REVERSE_SET
+		        && this_dep == GFC_DEP_FORWARD)
 		    {
-	              reverse[n] = GFC_CANNOT_REVERSE;
-		      if (this_dep != GFC_DEP_FORWARD)
-			this_dep = GFC_DEP_OVERLAP;
+	              reverse[n] = GFC_INHIBIT_REVERSE;
+		      this_dep = GFC_DEP_OVERLAP;
+		    }
+		  else if (reverse && reverse[n] == GFC_FORWARD_SET
+		        && this_dep == GFC_DEP_BACKWARD)
+		    {
+	              reverse[n] = GFC_INHIBIT_REVERSE;
+		      this_dep = GFC_DEP_OVERLAP;
 		    }
 
 		  /* If no intention of reversing or reversing is explicitly
 		     inhibited, convert backward dependence to overlap.  */
-		  if (this_dep == GFC_DEP_BACKWARD
-		      && (reverse == NULL || reverse[n] == GFC_CANNOT_REVERSE))
+		  if ((reverse == NULL && this_dep == GFC_DEP_BACKWARD)
+		      || (reverse != NULL && reverse[n] == GFC_INHIBIT_REVERSE))
 		    this_dep = GFC_DEP_OVERLAP;
 		}
 

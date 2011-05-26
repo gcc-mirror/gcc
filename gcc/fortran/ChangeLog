@@ -1,3 +1,18 @@
+2011-05-26  Paul Thomas  <pault@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48955
+	* trans-expr.c (gfc_trans_assignment_1): GFC_REVERSE_NOT_SET
+	changed to GFC_ENABLE_REVERSE.
+	* trans-array.c (gfc_init_loopinfo): GFC_CANNOT_REVERSE changed
+	to GFC_INHIBIT_REVERSE.
+	* gfortran.h : Enum gfc_reverse is now GFC_ENABLE_REVERSE,
+	GFC_FORWARD_SET, GFC_REVERSE_SET and GFC_INHIBIT_REVERSE.
+	* dependency.c (gfc_dep_resolver): Change names for elements of
+	gfc_reverse as necessary. Change the logic so that forward
+	dependences are remembered as well as backward ones. When both
+	have appeared, force a temporary.
+
 2011-05-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48889

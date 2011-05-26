@@ -6067,8 +6067,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       /* Calculate the bounds of the scalarization.  */
       gfc_conv_ss_startstride (&loop);
       /* Enable loop reversal.  */
-      for (n = 0; n < loop.dimen; n++)
-	loop.reverse[n] = GFC_REVERSE_NOT_SET;
+      for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
+	loop.reverse[n] = GFC_ENABLE_REVERSE;
       /* Resolve any data dependencies in the statement.  */
       gfc_conv_resolve_dependencies (&loop, lss, rss);
       /* Setup the scalarizing loops.  */
