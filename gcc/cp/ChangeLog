@@ -1,5 +1,10 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44994
+	PR c++/49156
+	* error.c (dump_template_bindings): Set processing_template_decl
+	for a partial instantiation.
+
 	PR c++/45401
 	* decl.c (grokdeclarator): Don't change type when adding rvalue ref
 	to another reference type.
