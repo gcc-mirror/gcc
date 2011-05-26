@@ -1,3 +1,9 @@
+2011-05-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/44643
+	* config/avr/avr.c (avr_insert_attributes): Leave TREE_READONLY
+	alone. Error if non-const data has attribute progmem.
+
 2011-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49165

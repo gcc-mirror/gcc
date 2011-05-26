@@ -4995,14 +4995,20 @@ avr_insert_attributes (tree node, tree *attributes)
       && (TREE_STATIC (node) || DECL_EXTERNAL (node))
       && avr_progmem_p (node, *attributes))
     {
-      static const char dsec[] = ".progmem.data";
-      *attributes = tree_cons (get_identifier ("section"),
-		build_tree_list (NULL, build_string (strlen (dsec), dsec)),
-		*attributes);
+      if (TREE_READONLY (node)) 
+        {
+          static const char dsec[] = ".progmem.data";
 
-      /* ??? This seems sketchy.  Why can't the user declare the
-	 thing const in the first place?  */
-      TREE_READONLY (node) = 1;
+          *attributes = tree_cons (get_identifier ("section"),
+                                   build_tree_list (NULL, build_string (strlen (dsec), dsec)),
+                                   *attributes);
+        }
+      else
+        {
+          error ("variable %q+D must be const in order to be put into"
+                 " read-only section by means of %<__attribute__((progmem))%>",
+                 node);
+        }
     }
 }
 
