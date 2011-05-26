@@ -656,7 +656,7 @@ tree
 begin_if_stmt (void)
 {
   tree r, scope;
-  scope = do_pushlevel (sk_block);
+  scope = do_pushlevel (sk_cond);
   r = build_stmt (input_location, IF_STMT, NULL_TREE,
 		  NULL_TREE, NULL_TREE, scope);
   begin_cond (&IF_COND (r));
@@ -1013,7 +1013,7 @@ begin_switch_stmt (void)
 {
   tree r, scope;
 
-  scope = do_pushlevel (sk_block);
+  scope = do_pushlevel (sk_cond);
   r = build_stmt (input_location, SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE, scope);
 
   begin_cond (&SWITCH_STMT_COND (r));

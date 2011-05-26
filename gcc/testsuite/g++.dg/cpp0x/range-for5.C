@@ -47,8 +47,8 @@ void test1()
 
   //Check the correct scopes
   int i;
-  for (int i : a)
+  for (int i : a)		// { dg-error "previously declared" }
   {
-    int i;
+    int i;			// { dg-error "redeclaration" }
   }
 }

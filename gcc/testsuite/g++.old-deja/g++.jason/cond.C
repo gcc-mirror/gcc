@@ -6,14 +6,14 @@ int main()
 {
   float i;
   
-  if (int i = 1)		// { dg-error "" "" { xfail *-*-* } } , 
+  if (int i = 1)		// { dg-error "previously" }
     {
-      char i;			// { dg-error "" "" { xfail *-*-* } } , 
+      char i;			// { dg-error "redeclaration" } 
       char j;
     }
   else
     {
-      short i;			// { dg-error "" "" { xfail *-*-* } } , 
+      short i;			// { dg-error "redeclaration" }
       char j;
     }
 
@@ -27,10 +27,10 @@ int main()
       int i;			// { dg-error "redeclaration" }
     }
 
-  switch (int i = 0)		// { dg-error "" "" { xfail *-*-* } } 
+  switch (int i = 0)		// { dg-error "previously" }
     {
     default:
-      int i;			// { dg-error "" "" { xfail *-*-* } } 
+      int i;			// { dg-error "redeclaration" } 
     }
 
   if (struct A { operator int () { return 1; } } *foo = new A) // { dg-error "defined" } 
