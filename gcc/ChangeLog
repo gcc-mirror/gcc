@@ -1,3 +1,10 @@
+2011-05-26  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.md (cbranchhi4): No :CC for match_operator.
+	  The instruction is then expanded explicitly.
+	(supported_compare): Callable instruction.
+	(compare): Likewise.
+
 2011-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49165
