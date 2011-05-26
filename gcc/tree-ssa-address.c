@@ -361,8 +361,11 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr,
       index2 = addr->base;
     }
 
-  /* If possible use a plain MEM_REF instead of a TARGET_MEM_REF.  */
-  if (alias_ptr_type
+  /* If possible use a plain MEM_REF instead of a TARGET_MEM_REF.
+     ???  As IVOPTs does not follow restrictions to where the base
+     pointer may point to create a MEM_REF only if we know that
+     base is valid.  */
+  if (TREE_CODE (base) == ADDR_EXPR
       && (!index2 || integer_zerop (index2))
       && (!addr->index || integer_zerop (addr->index)))
     return fold_build2 (MEM_REF, type, base, addr->offset);
