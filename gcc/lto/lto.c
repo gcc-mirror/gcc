@@ -610,33 +610,36 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	    }
 	}
 
-      else if (RECORD_OR_UNION_TYPE_P (t))
+      else
 	{
-	  tree f1, f2;
-	  if (TYPE_FIELDS (t) != TYPE_FIELDS (oldt))
-	    for (f1 = TYPE_FIELDS (t), f2 = TYPE_FIELDS (oldt);
-		 f1 && f2; f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
-	      {
-		unsigned ix;
-		gcc_assert (f1 != f2 && DECL_NAME (f1) == DECL_NAME (f2));
-		if (!lto_streamer_cache_lookup (cache, f2, &ix))
-		  gcc_unreachable ();
-		/* If we're going to replace an element which we'd
-		   still visit in the next iterations, we wouldn't
-		   handle it, so do it here.  We do have to handle it
-		   even though the field_decl itself will be removed,
-		   as it could refer to e.g. integer_cst which we
-		   wouldn't reach via any other way, hence they
-		   (and their type) would stay uncollected.  */
-		/* ???  We should rather make sure to replace all
-		   references to f2 with f1.  That means handling
-		   COMPONENT_REFs and CONSTRUCTOR elements in
-		   lto_fixup_types and special-case the field-decl
-		   operand handling.  */
-		if (ix < i)
-		  lto_fixup_types (f2);
-		lto_streamer_cache_insert_at (cache, f1, ix);
-	      }
+	  if (RECORD_OR_UNION_TYPE_P (t))
+	    {
+	      tree f1, f2;
+	      if (TYPE_FIELDS (t) != TYPE_FIELDS (oldt))
+		for (f1 = TYPE_FIELDS (t), f2 = TYPE_FIELDS (oldt);
+		     f1 && f2; f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
+		  {
+		    unsigned ix;
+		    gcc_assert (f1 != f2 && DECL_NAME (f1) == DECL_NAME (f2));
+		    if (!lto_streamer_cache_lookup (cache, f2, &ix))
+		      gcc_unreachable ();
+		    /* If we're going to replace an element which we'd
+		       still visit in the next iterations, we wouldn't
+		       handle it, so do it here.  We do have to handle it
+		       even though the field_decl itself will be removed,
+		       as it could refer to e.g. integer_cst which we
+		       wouldn't reach via any other way, hence they
+		       (and their type) would stay uncollected.  */
+		    /* ???  We should rather make sure to replace all
+		       references to f2 with f1.  That means handling
+		       COMPONENT_REFs and CONSTRUCTOR elements in
+		       lto_fixup_types and special-case the field-decl
+		       operand handling.  */
+		    if (ix < i)
+		      lto_fixup_types (f2);
+		    lto_streamer_cache_insert_at (cache, f1, ix);
+		  }
+	    }
 
 	  /* If we found a tree that is equal to oldt replace it in the
 	     cache, so that further users (in the various LTO sections)
