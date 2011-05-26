@@ -1,3 +1,7 @@
+2011-05-26  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (uniquify_nodes): Fix bug in one of the previous changes.
+
 2011-05-25  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto.c (lto_ft_typed): New function.
