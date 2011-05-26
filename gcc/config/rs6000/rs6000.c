@@ -26670,9 +26670,10 @@ rs6000_register_move_cost (enum machine_mode mode,
       else if (from == CR_REGS)
 	ret = 4;
 
-      /* Power6 has slower LR/CTR moves so make them more expensive than
-	 memory in order to bias spills to memory .*/
-      else if (rs6000_cpu == PROCESSOR_POWER6
+      /* For those processors that have slow LR/CTR moves, make them more
+	 expensive than memory in order to bias spills to memory .*/
+      else if ((rs6000_cpu == PROCESSOR_POWER6
+		|| rs6000_cpu == PROCESSOR_POWER7)
 	       && reg_classes_intersect_p (from, LINK_OR_CTR_REGS))
         ret = 6 * hard_regno_nregs[0][mode];
 
