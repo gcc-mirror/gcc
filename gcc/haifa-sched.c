@@ -3066,63 +3066,77 @@ schedule_block (basic_block *target_bb)
 	}
       while (advance > 0);
 
-      prune_ready_list (temp_state, true);
+      if (ready.n_ready > 0)
+	prune_ready_list (temp_state, true);
       if (ready.n_ready == 0)
-        continue;
-
-      if (sort_p)
-	{
-	  /* Sort the ready list based on priority.  */
-	  ready_sort (&ready);
-
-	  if (sched_verbose >= 2)
-	    {
-	      fprintf (sched_dump, ";;\t\tReady list after ready_sort:  ");
-	      debug_ready_list (&ready);
-	    }
-	}
-
-      /* We don't want md sched reorder to even see debug isns, so put
-	 them out right away.  */
-      if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
-	{
-	  while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
-	    {
-	      rtx insn = ready_remove_first (&ready);
-	      gcc_assert (DEBUG_INSN_P (insn));
-	      (*current_sched_info->begin_schedule_ready) (insn);
-	      VEC_safe_push (rtx, heap, scheduled_insns, insn);
-	      last_scheduled_insn = insn;
-	      advance = schedule_insn (insn);
-	      gcc_assert (advance == 0);
-	      if (ready.n_ready > 0)
-		ready_sort (&ready);
-	    }
-
-	  if (!ready.n_ready)
-	    continue;
-	}
-
-      /* Allow the target to reorder the list, typically for
-	 better instruction bundling.  */
-      if (sort_p && targetm.sched.reorder
-	  && (ready.n_ready == 0
-	      || !SCHED_GROUP_P (ready_element (&ready, 0))))
-	can_issue_more =
-	  targetm.sched.reorder (sched_dump, sched_verbose,
-				 ready_lastpos (&ready),
-				 &ready.n_ready, clock_var);
-      else
-	can_issue_more = issue_rate;
+	continue;
 
       first_cycle_insn_p = true;
       cycle_issued_insns = 0;
+      can_issue_more = issue_rate;
       for (;;)
 	{
 	  rtx insn;
 	  int cost;
 	  bool asm_p = false;
 
+	  if (sort_p && ready.n_ready > 0)
+	    {
+	      /* Sort the ready list based on priority.  This must be
+		 done every iteration through the loop, as schedule_insn
+		 may have readied additional insns that will not be
+		 sorted correctly.  */
+	      ready_sort (&ready);
+
+	      if (sched_verbose >= 2)
+		{
+		  fprintf (sched_dump, ";;\t\tReady list after ready_sort:  ");
+		  debug_ready_list (&ready);
+		}
+	    }
+
+	  /* We don't want md sched reorder to even see debug isns, so put
+	     them out right away.  */
+	  if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0))
+	      && (*current_sched_info->schedule_more_p) ())
+	    {
+	      while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
+		{
+		  rtx insn = ready_remove_first (&ready);
+		  gcc_assert (DEBUG_INSN_P (insn));
+		  (*current_sched_info->begin_schedule_ready) (insn);
+		  VEC_safe_push (rtx, heap, scheduled_insns, insn);
+		  last_scheduled_insn = insn;
+		  advance = schedule_insn (insn);
+		  gcc_assert (advance == 0);
+		  if (ready.n_ready > 0)
+		    ready_sort (&ready);
+		}
+	    }
+
+	  if (first_cycle_insn_p && !ready.n_ready)
+	    break;
+
+	  /* Allow the target to reorder the list, typically for
+	     better instruction bundling.  */
+	  if (sort_p
+	      && (ready.n_ready == 0
+		  || !SCHED_GROUP_P (ready_element (&ready, 0))))
+	    {
+	      if (first_cycle_insn_p && targetm.sched.reorder)
+		can_issue_more
+		  = targetm.sched.reorder (sched_dump, sched_verbose,
+					   ready_lastpos (&ready),
+					   &ready.n_ready, clock_var);
+	      else if (!first_cycle_insn_p && targetm.sched.reorder2)
+		can_issue_more
+		  = targetm.sched.reorder2 (sched_dump, sched_verbose,
+					    ready.n_ready
+					    ? ready_lastpos (&ready) : NULL,
+					    &ready.n_ready, clock_var);
+	    }
+
+	restart_choose_ready:
 	  if (sched_verbose >= 2)
 	    {
 	      fprintf (sched_dump, ";;\tReady list (t = %3d):  ",
@@ -3164,8 +3178,7 @@ schedule_block (basic_block *target_bb)
 		/* Finish cycle.  */
 		break;
 	      if (res > 0)
-		/* Restart choose_ready ().  */
-		continue;
+		goto restart_choose_ready;
 
 	      gcc_assert (insn != NULL_RTX);
 	    }
@@ -3207,7 +3220,7 @@ schedule_block (basic_block *target_bb)
 	       insn from the split block.  */
 	    {
 	      TODO_SPEC (insn) = (TODO_SPEC (insn) & ~SPECULATIVE) | HARD_DEP;
-	      continue;
+	      goto restart_choose_ready;
 	    }
 
 	  /* DECISION is made.  */
@@ -3256,45 +3269,8 @@ schedule_block (basic_block *target_bb)
 	    break;
 
 	  first_cycle_insn_p = false;
-
 	  if (ready.n_ready > 0)
-            prune_ready_list (temp_state, false);
-
-	  /* Sort the ready list based on priority.  This must be
-	     redone here, as schedule_insn may have readied additional
-	     insns that will not be sorted correctly.  */
-	  if (ready.n_ready > 0)
-	    ready_sort (&ready);
-
-	  /* Quickly go through debug insns such that md sched
-	     reorder2 doesn't have to deal with debug insns.  */
-	  if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0))
-	      && (*current_sched_info->schedule_more_p) ())
-	    {
-	      while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
-		{
-		  insn = ready_remove_first (&ready);
-		  gcc_assert (DEBUG_INSN_P (insn));
-		  (*current_sched_info->begin_schedule_ready) (insn);
-		  VEC_safe_push (rtx, heap, scheduled_insns, insn);
-		  advance = schedule_insn (insn);
-		  last_scheduled_insn = insn;
-		  gcc_assert (advance == 0);
-		  if (ready.n_ready > 0)
-		    ready_sort (&ready);
-		}
-	    }
-
-	  if (targetm.sched.reorder2
-	      && (ready.n_ready == 0
-		  || !SCHED_GROUP_P (ready_element (&ready, 0))))
-	    {
-	      can_issue_more =
-		targetm.sched.reorder2 (sched_dump, sched_verbose,
-					ready.n_ready
-					? ready_lastpos (&ready) : NULL,
-					&ready.n_ready, clock_var);
-	    }
+	    prune_ready_list (temp_state, false);
 	}
     }
 
