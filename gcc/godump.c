@@ -685,6 +685,17 @@ go_format_type (struct godump_container *container, tree type,
 	     field != NULL_TREE;
 	     field = TREE_CHAIN (field))
 	  {
+	    struct obstack hold_type_obstack;
+	    bool field_ok;
+
+	    if (TREE_CODE (type) == UNION_TYPE)
+	      {
+		hold_type_obstack = container->type_obstack;
+		obstack_init (&container->type_obstack);
+	      }
+
+	    field_ok = true;
+
 	    if (DECL_NAME (field) == NULL)
 	      {
 		char buf[100];
@@ -711,7 +722,7 @@ go_format_type (struct godump_container *container, tree type,
 	    if (DECL_BIT_FIELD (field))
 	      {
 		obstack_grow (ob, "INVALID-bit-field", 17);
-		ret = false;
+		field_ok = false;
 	      }
 	    else
               {
@@ -734,7 +745,7 @@ go_format_type (struct godump_container *container, tree type,
 					   IDENTIFIER_POINTER (name),
 					   NO_INSERT);
 		    if (slot != NULL)
-		      ret = false;
+		      field_ok = false;
 
 		    obstack_1grow (ob, '_');
 		    go_append_string (ob, name);
@@ -743,15 +754,39 @@ go_format_type (struct godump_container *container, tree type,
 		  {
 		    if (!go_format_type (container, TREE_TYPE (field), true,
 					 false))
-		      ret = false;
+		      field_ok = false;
 		  }
               }
 	    obstack_grow (ob, "; ", 2);
 
-	    /* Only output the first field of a union, and hope for
-	       the best.  */
+	    /* Only output the first successful field of a union, and
+	       hope for the best.  */
 	    if (TREE_CODE (type) == UNION_TYPE)
-	      break;
+	      {
+		if (!field_ok && TREE_CHAIN (field) == NULL_TREE)
+		  {
+		    field_ok = true;
+		    ret = false;
+		  }
+		if (field_ok)
+		  {
+		    unsigned int sz;
+
+		    sz = obstack_object_size (&container->type_obstack);
+		    obstack_grow (&hold_type_obstack,
+				  obstack_base (&container->type_obstack),
+				  sz);
+		  }
+		obstack_free (&container->type_obstack, NULL);
+		container->type_obstack = hold_type_obstack;
+		if (field_ok)
+		  break;
+	      }
+	    else
+	      {
+		if (!field_ok)
+		  ret = false;
+	      }
 	  }
 	obstack_1grow (ob, '}');
       }

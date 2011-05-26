@@ -1,5 +1,10 @@
 2011-05-25  Ian Lance Taylor  <iant@google.com>
 
+	* godump.c (go_format_type): Output the first field with a usable
+	Go type, if any.
+
+2011-05-25  Ian Lance Taylor  <iant@google.com>
+
 	* godump.c (go_format_type): Check for invalid type names, pointer
 	target types, and struct field types.
 
