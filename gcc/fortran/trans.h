@@ -617,6 +617,7 @@ extern GTY(()) tree gfor_fndecl_associated;
 /* Coarray run-time library function decls.  */
 extern GTY(()) tree gfor_fndecl_caf_init;
 extern GTY(()) tree gfor_fndecl_caf_finalize;
+extern GTY(()) tree gfor_fndecl_caf_register;
 extern GTY(()) tree gfor_fndecl_caf_critical;
 extern GTY(()) tree gfor_fndecl_caf_end_critical;
 extern GTY(()) tree gfor_fndecl_caf_sync_all;
@@ -722,6 +723,7 @@ struct GTY((variable_size))	lang_type	 {
   tree span;
   tree base_decl[2];
   tree nonrestricted_type;
+  tree caf_token;
 };
 
 struct GTY((variable_size)) lang_decl {
@@ -766,6 +768,7 @@ struct GTY((variable_size)) lang_decl {
   (TYPE_LANG_SPECIFIC(node)->stride[dim])
 #define GFC_TYPE_ARRAY_RANK(node) (TYPE_LANG_SPECIFIC(node)->rank)
 #define GFC_TYPE_ARRAY_CORANK(node) (TYPE_LANG_SPECIFIC(node)->corank)
+#define GFC_TYPE_ARRAY_CAF_TOKEN(node) (TYPE_LANG_SPECIFIC(node)->caf_token)
 #define GFC_TYPE_ARRAY_SIZE(node) (TYPE_LANG_SPECIFIC(node)->size)
 #define GFC_TYPE_ARRAY_OFFSET(node) (TYPE_LANG_SPECIFIC(node)->offset)
 #define GFC_TYPE_ARRAY_AKIND(node) (TYPE_LANG_SPECIFIC(node)->akind)
