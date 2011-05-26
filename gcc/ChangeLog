@@ -1,3 +1,9 @@
+2011-05-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/49154
+	* ira.c (setup_pressure_classes): Process class without sublcasses
+	as a candidate for pressure classes.
+
 2011-05-26  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/48575

@@ -799,7 +799,12 @@ setup_pressure_classes (void)
     {
       if (ira_available_class_regs[cl] == 0)
 	continue;
-      if (ira_available_class_regs[cl] != 1)
+      if (ira_available_class_regs[cl] != 1
+	  /* A register class without subclasses may contain a few
+	     hard registers and movement between them is costly
+	     (e.g. SPARC FPCC registers).  We still should consider it
+	     as a candidate for a pressure class.  */
+	  && alloc_reg_class_subclasses[cl][0] != LIM_REG_CLASSES)
 	{
 	  /* Check that the moves between any hard registers of the
 	     current class are not more expensive for a legal mode
