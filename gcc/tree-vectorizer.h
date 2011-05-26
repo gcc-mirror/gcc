@@ -255,6 +255,11 @@ typedef struct _loop_vec_info {
   /* Hash table used to choose the best peeling option.  */
   htab_t peeling_htab;
 
+  /* When we have strided data accesses with gaps, we may introduce invalid
+     memory accesses.  We peel the last iteration of the loop to prevent
+     this.  */
+  bool peeling_for_gaps;
+
 } *loop_vec_info;
 
 /* Access Functions.  */
@@ -283,6 +288,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
 #define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
 #define LOOP_VINFO_PEELING_HTAB(L)         (L)->peeling_htab
+#define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
 VEC_length (gimple, (L)->may_misalign_stmts) > 0
