@@ -1,3 +1,9 @@
+2011-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49165
+	* gimplify.c (shortcut_cond_r): Don't special case
+	COND_EXPRs if they have void type on one of their arms.
+
 2011-05-26  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* haifa-sched.c (schedule-block): Reorder the inner scheduling loop

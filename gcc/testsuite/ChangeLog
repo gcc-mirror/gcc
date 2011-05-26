@@ -1,5 +1,8 @@
 2011-05-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/49165
+	* g++.dg/eh/cond5.C: New test.
+
 	PR tree-optimization/49161
 	* gcc.c-torture/execute/pr49161.c: New test.
 
