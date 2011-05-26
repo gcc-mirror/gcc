@@ -627,6 +627,17 @@ sparc_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
   return true;
 }
 
+/* Specify default optimizations.  */
+
+void
+sparc_optimization_options (int l ATTRIBUTE_UNUSED, int s ATTRIBUTE_UNUSED)
+{
+  /* Disable save slot sharing for call-clobbered registers by default.
+     The IRA sharing algorithm works on single registers only and this
+     pessimizes for double floating-point registers.  */
+  flag_ira_share_save_slots = 0;
+}
+
 /* Validate and override various options, and do some machine dependent
    initialization.  */
 

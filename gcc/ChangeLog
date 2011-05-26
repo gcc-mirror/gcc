@@ -1,5 +1,10 @@
 2011-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc-protos.h (sparc_optimization_options): Declare.
+	* config/sparc/sparc.h (OPTIMIZATION_OPTIONS): Define.
+	* config/sparc/sparc.c (sparc_optimization_options): New function.
+	Set flag_ira_share_save_slots to 0.
+
 	Backport from mainline
 	2011-01-21  Jeff Law  <law@redhat.com>
 
