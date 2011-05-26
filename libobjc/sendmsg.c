@@ -1111,7 +1111,7 @@ __objc_install_dtable_for_class (Class cls)
   else
     {
       /* Retreive the class from the meta class.  */
-      Class c = objc_lookup_class (cls->name);
+      Class c = objc_getClass (cls->name);
       assert (CLS_ISMETA (cls));
       assert (c);
       __objc_send_initialize (c);
