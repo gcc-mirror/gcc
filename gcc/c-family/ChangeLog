@@ -1,5 +1,9 @@
 2011-05-26  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* c-common.c (warning_candidate_p): Check for BLOCKs.
+
+2011-05-26  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* c-common.h (struct c_common_identifier): Inherit from tree_typed,
 	not tree_common.
 

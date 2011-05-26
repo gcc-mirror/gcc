@@ -368,6 +368,7 @@ initialize_tree_contains_struct (void)
       switch (ts_code)
 	{
 	case TS_TYPED:
+	case TS_BLOCK:
 	  MARK_TS_BASE (code);
 	  break;
 
@@ -389,7 +390,6 @@ initialize_tree_contains_struct (void)
 	case TS_TYPE_COMMON:
 	case TS_LIST:
 	case TS_VEC:
-	case TS_BLOCK:
 	case TS_BINFO:
 	case TS_STATEMENT_LIST:
 	case TS_OMP_CLAUSE:
@@ -4892,7 +4892,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       fld_worklist_push (BLOCK_ABSTRACT_ORIGIN (t), fld);
     }
 
-  if (TREE_CODE (t) != IDENTIFIER_NODE)
+  if (TREE_CODE (t) != IDENTIFIER_NODE
+      && CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED))
     fld_worklist_push (TREE_TYPE (t), fld);
 
   return NULL_TREE;

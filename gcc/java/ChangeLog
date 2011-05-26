@@ -1,3 +1,8 @@
+2011-05-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (poplevel): Don't access TREE_TYPE of BLOCKs.
+	* expr.c (build_jni_stub): Likewise.
+
 2011-05-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in ($(XGCJ)$(exeext)): Use libcommon-target.a instead
