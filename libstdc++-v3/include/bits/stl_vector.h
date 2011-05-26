@@ -92,15 +92,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef _Alloc allocator_type;
 
       _Tp_alloc_type&
-      _M_get_Tp_allocator()
+      _M_get_Tp_allocator() _GLIBCXX_NOEXCEPT
       { return *static_cast<_Tp_alloc_type*>(&this->_M_impl); }
 
       const _Tp_alloc_type&
-      _M_get_Tp_allocator() const
+      _M_get_Tp_allocator() const _GLIBCXX_NOEXCEPT
       { return *static_cast<const _Tp_alloc_type*>(&this->_M_impl); }
 
       allocator_type
-      get_allocator() const
+      get_allocator() const _GLIBCXX_NOEXCEPT
       { return allocator_type(_M_get_Tp_allocator()); }
 
       _Vector_base()
@@ -460,7 +460,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       iterator
-      begin()
+      begin() _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_impl._M_start); }
 
       /**
@@ -469,7 +469,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      begin() const
+      begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(this->_M_impl._M_start); }
 
       /**
@@ -478,7 +478,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       iterator
-      end()
+      end() _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_impl._M_finish); }
 
       /**
@@ -487,7 +487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  ordinary element order.
        */
       const_iterator
-      end() const
+      end() const _GLIBCXX_NOEXCEPT
       { return const_iterator(this->_M_impl._M_finish); }
 
       /**
@@ -496,7 +496,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       reverse_iterator
-      rbegin()
+      rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(end()); }
 
       /**
@@ -505,7 +505,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  reverse element order.
        */
       const_reverse_iterator
-      rbegin() const
+      rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(end()); }
 
       /**
@@ -514,7 +514,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  in reverse element order.
        */
       reverse_iterator
-      rend()
+      rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
 
       /**
@@ -523,7 +523,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  is done in reverse element order.
        */
       const_reverse_iterator
-      rend() const
+      rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -533,7 +533,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return const_iterator(this->_M_impl._M_start); }
 
       /**
@@ -542,7 +542,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  ordinary element order.
        */
       const_iterator
-      cend() const
+      cend() const noexcept
       { return const_iterator(this->_M_impl._M_finish); }
 
       /**
@@ -551,7 +551,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  reverse element order.
        */
       const_reverse_iterator
-      crbegin() const
+      crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
       /**
@@ -560,19 +560,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  is done in reverse element order.
        */
       const_reverse_iterator
-      crend() const
+      crend() const noexcept
       { return const_reverse_iterator(begin()); }
 #endif
 
       // [23.2.4.2] capacity
       /**  Returns the number of elements in the %vector.  */
       size_type
-      size() const
+      size() const _GLIBCXX_NOEXCEPT
       { return size_type(this->_M_impl._M_finish - this->_M_impl._M_start); }
 
       /**  Returns the size() of the largest possible %vector.  */
       size_type
-      max_size() const
+      max_size() const _GLIBCXX_NOEXCEPT
       { return _M_get_Tp_allocator().max_size(); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -647,7 +647,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  hold before needing to allocate more memory.
        */
       size_type
-      capacity() const
+      capacity() const _GLIBCXX_NOEXCEPT
       { return size_type(this->_M_impl._M_end_of_storage
 			 - this->_M_impl._M_start); }
 
@@ -656,7 +656,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  equal end().)
        */
       bool
-      empty() const
+      empty() const _GLIBCXX_NOEXCEPT
       { return begin() == end(); }
 
       /**
@@ -800,7 +800,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
       pointer
 #endif
-      data()
+      data() _GLIBCXX_NOEXCEPT
       { return std::__addressof(front()); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -808,7 +808,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #else
       const_pointer
 #endif
-      data() const
+      data() const _GLIBCXX_NOEXCEPT
       { return std::__addressof(front()); }
 
       // [23.2.4.3] modifiers
@@ -1036,7 +1036,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the user's responsibility.
        */
       void
-      clear()
+      clear() _GLIBCXX_NOEXCEPT
       { _M_erase_at_end(this->_M_impl._M_start); }
 
     protected:

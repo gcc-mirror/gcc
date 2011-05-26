@@ -141,34 +141,34 @@ namespace __debug
       }
 
       void
-      clear()
+      clear() noexcept
       {
 	_Base::clear();
 	this->_M_invalidate_all();
       }
 
       iterator 
-      begin()
+      begin() noexcept
       { return iterator(_Base::begin(), this); }
 
       const_iterator
-      begin() const
+      begin() const noexcept
       { return const_iterator(_Base::begin(), this); }
 
       iterator
-      end()
+      end() noexcept
       { return iterator(_Base::end(), this); }
 
       const_iterator
-      end() const
+      end() const noexcept
       { return const_iterator(_Base::end(), this); }
 
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return const_iterator(_Base::begin(), this); }
 
       const_iterator
-      cend() const
+      cend() const noexcept
       { return const_iterator(_Base::end(), this); }
 
       // local versions
@@ -293,10 +293,10 @@ namespace __debug
       }
 
       _Base&
-      _M_base() { return *this; }
+      _M_base() noexcept       { return *this; }
 
       const _Base&
-      _M_base() const { return *this; }
+      _M_base() const noexcept { return *this; }
 
     private:
       void
@@ -429,34 +429,34 @@ namespace __debug
       }
 
       void
-      clear()
+      clear() noexcept
       {
 	_Base::clear();
 	this->_M_invalidate_all();
       }
 
       iterator 
-      begin()
+      begin() noexcept
       { return iterator(_Base::begin(), this); }
 
       const_iterator
-      begin() const
+      begin() const noexcept
       { return const_iterator(_Base::begin(), this); }
 
       iterator
-      end()
+      end() noexcept
       { return iterator(_Base::end(), this); }
 
       const_iterator
-      end() const
+      end() const noexcept
       { return const_iterator(_Base::end(), this); }
 
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return const_iterator(_Base::begin(), this); }
 
       const_iterator
-      cend() const
+      cend() const noexcept
       { return const_iterator(_Base::end(), this); }
 
       // local versions
@@ -575,10 +575,10 @@ namespace __debug
       }
 
       _Base&
-      _M_base() { return *this; }
+      _M_base() noexcept       { return *this; }
 
       const _Base&
-      _M_base() const { return *this; }
+      _M_base() const noexcept { return *this; }
 
     private:
       void

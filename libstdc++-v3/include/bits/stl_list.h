@@ -77,22 +77,22 @@ namespace std _GLIBCXX_VISIBILITY(default)
     {
       _List_node_base* _M_next;
       _List_node_base* _M_prev;
-      
+
       static void
-      swap(_List_node_base& __x, _List_node_base& __y) throw ();
-      
+      swap(_List_node_base& __x, _List_node_base& __y) _GLIBCXX_USE_NOEXCEPT;
+
       void
       _M_transfer(_List_node_base* const __first,
-		  _List_node_base* const __last) throw ();
-      
+		  _List_node_base* const __last) _GLIBCXX_USE_NOEXCEPT;
+
       void
-      _M_reverse() throw ();
-      
+      _M_reverse() _GLIBCXX_USE_NOEXCEPT;
+
       void
-      _M_hook(_List_node_base* const __position) throw ();
-      
+      _M_hook(_List_node_base* const __position) _GLIBCXX_USE_NOEXCEPT;
+
       void
-      _M_unhook() throw ();
+      _M_unhook() _GLIBCXX_USE_NOEXCEPT;
     };
 
   _GLIBCXX_END_NAMESPACE_VERSION
@@ -334,19 +334,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef _Alloc allocator_type;
 
       _Node_alloc_type&
-      _M_get_Node_allocator()
+      _M_get_Node_allocator() _GLIBCXX_NOEXCEPT
       { return *static_cast<_Node_alloc_type*>(&this->_M_impl); }
 
       const _Node_alloc_type&
-      _M_get_Node_allocator() const
+      _M_get_Node_allocator() const _GLIBCXX_NOEXCEPT
       { return *static_cast<const _Node_alloc_type*>(&this->_M_impl); }
 
       _Tp_alloc_type
-      _M_get_Tp_allocator() const
+      _M_get_Tp_allocator() const _GLIBCXX_NOEXCEPT
       { return _Tp_alloc_type(_M_get_Node_allocator()); }
 
       allocator_type
-      get_allocator() const
+      get_allocator() const _GLIBCXX_NOEXCEPT
       { return allocator_type(_M_get_Node_allocator()); }
 
       _List_base()
@@ -718,7 +718,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Get a copy of the memory allocation object.
       allocator_type
-      get_allocator() const
+      get_allocator() const _GLIBCXX_NOEXCEPT
       { return _Base::get_allocator(); }
 
       // iterators
@@ -727,7 +727,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  %list.  Iteration is done in ordinary element order.
        */
       iterator
-      begin()
+      begin() _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_impl._M_node._M_next); }
 
       /**
@@ -736,7 +736,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      begin() const
+      begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(this->_M_impl._M_node._M_next); }
 
       /**
@@ -745,7 +745,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  order.
        */
       iterator
-      end()
+      end() _GLIBCXX_NOEXCEPT
       { return iterator(&this->_M_impl._M_node); }
 
       /**
@@ -754,7 +754,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      end() const
+      end() const _GLIBCXX_NOEXCEPT
       { return const_iterator(&this->_M_impl._M_node); }
 
       /**
@@ -763,7 +763,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  order.
        */
       reverse_iterator
-      rbegin()
+      rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(end()); }
 
       /**
@@ -772,7 +772,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_reverse_iterator
-      rbegin() const
+      rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(end()); }
 
       /**
@@ -781,7 +781,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  reverse element order.
        */
       reverse_iterator
-      rend()
+      rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
 
       /**
@@ -790,7 +790,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_reverse_iterator
-      rend() const
+      rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -800,7 +800,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return const_iterator(this->_M_impl._M_node._M_next); }
 
       /**
@@ -809,7 +809,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      cend() const
+      cend() const noexcept
       { return const_iterator(&this->_M_impl._M_node); }
 
       /**
@@ -818,7 +818,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_reverse_iterator
-      crbegin() const
+      crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
       /**
@@ -827,7 +827,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_reverse_iterator
-      crend() const
+      crend() const noexcept
       { return const_reverse_iterator(begin()); }
 #endif
 
@@ -837,17 +837,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  end().)
        */
       bool
-      empty() const
+      empty() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_node._M_next == &this->_M_impl._M_node; }
 
       /**  Returns the number of elements in the %list.  */
       size_type
-      size() const
+      size() const _GLIBCXX_NOEXCEPT
       { return std::distance(begin(), end()); }
 
       /**  Returns the size() of the largest possible %list.  */
       size_type
-      max_size() const
+      max_size() const _GLIBCXX_NOEXCEPT
       { return _M_get_Node_allocator().max_size(); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -1192,7 +1192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Managing the pointer is the user's responsibility.
        */
       void
-      clear()
+      clear() _GLIBCXX_NOEXCEPT
       {
         _Base::_M_clear();
         _Base::_M_init();
@@ -1412,7 +1412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Reverse the order of elements in the list in linear time.
        */
       void
-      reverse()
+      reverse() _GLIBCXX_NOEXCEPT
       { this->_M_impl._M_node._M_reverse(); }
 
       /**

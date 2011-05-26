@@ -57,7 +57,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     void
-    _List_node_base::swap(_List_node_base& __x, _List_node_base& __y) throw()
+    _List_node_base::swap(_List_node_base& __x,
+			  _List_node_base& __y) _GLIBCXX_USE_NOEXCEPT
     {
       if ( __x._M_next != &__x )
 	{
@@ -89,8 +90,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 
     void
-    _List_node_base::_M_transfer(_List_node_base * const __first,
-				 _List_node_base * const __last) throw()
+    _List_node_base::
+    _M_transfer(_List_node_base * const __first,
+		_List_node_base * const __last) _GLIBCXX_USE_NOEXCEPT
     {
       if (this != __last)
 	{
@@ -108,7 +110,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 
     void
-    _List_node_base::_M_reverse() throw()
+    _List_node_base::_M_reverse() _GLIBCXX_USE_NOEXCEPT
     {
       _List_node_base* __tmp = this;
       do
@@ -122,7 +124,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 
     void
-    _List_node_base::_M_hook(_List_node_base* const __position) throw()
+    _List_node_base::
+    _M_hook(_List_node_base* const __position) _GLIBCXX_USE_NOEXCEPT
     {
       this->_M_next = __position;
       this->_M_prev = __position->_M_prev;
@@ -131,7 +134,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 
     void
-    _List_node_base::_M_unhook() throw()
+    _List_node_base::_M_unhook() _GLIBCXX_USE_NOEXCEPT
     {
       _List_node_base* const __next_node = this->_M_next;
       _List_node_base* const __prev_node = this->_M_prev;

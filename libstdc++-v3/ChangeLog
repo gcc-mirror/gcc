@@ -1,3 +1,40 @@
+2011-05-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/list.cc: Use noexcept per the FDIS.
+	* src/compatibility-list-2.cc: Likewise.
+	* include/debug/set.h: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/forward_list: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/vector: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/profile/set.h: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/multiset.h: Likewise.
+	* include/profile/forward_list: Likewise.
+	* include/profile/vector: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/list: Likewise.
+	* include/profile/multimap.h: Likewise.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+
 2011-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_queue.h: Use noexcept per the FDIS.

@@ -1,6 +1,6 @@
 // Profiling unordered_set/unordered_multiset implementation -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -155,7 +155,7 @@ namespace __profile
       }
 
       void
-      clear()
+      clear() noexcept
       {
         __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
                                      _Base::size());
@@ -233,10 +233,10 @@ namespace __profile
 
     private:
       _Base&
-      _M_base()       { return *this; }
+      _M_base() noexcept       { return *this; }
 
       const _Base&
-      _M_base() const { return *this; }
+      _M_base() const noexcept { return *this; }
 
       void
       _M_profile_resize(size_type __old_size, size_type __new_size)
@@ -397,7 +397,7 @@ namespace __profile
       }
 
       void
-      clear()
+      clear() noexcept
       {
         __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
                                      _Base::size());
@@ -475,10 +475,10 @@ namespace __profile
 
     private:
       _Base&
-      _M_base()       { return *this; }
+      _M_base() noexcept       { return *this; }
 
       const _Base&
-      _M_base() const { return *this; }
+      _M_base() const noexcept { return *this; }
 
       void
       _M_profile_resize(size_type __old_size, size_type __new_size)

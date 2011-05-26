@@ -293,7 +293,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Get a copy of the memory allocation object.
       allocator_type
-      get_allocator() const
+      get_allocator() const _GLIBCXX_NOEXCEPT 
       { return _M_t.get_allocator(); }
 
       // iterators
@@ -303,7 +303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  keys.
        */
       iterator
-      begin()
+      begin() _GLIBCXX_NOEXCEPT
       { return _M_t.begin(); }
 
       /**
@@ -312,7 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the keys.
        */
       const_iterator
-      begin() const
+      begin() const _GLIBCXX_NOEXCEPT
       { return _M_t.begin(); }
 
       /**
@@ -321,7 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  keys.
        */
       iterator
-      end()
+      end() _GLIBCXX_NOEXCEPT
       { return _M_t.end(); }
 
       /**
@@ -330,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to the keys.
        */
       const_iterator
-      end() const
+      end() const _GLIBCXX_NOEXCEPT
       { return _M_t.end(); }
 
       /**
@@ -339,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  keys.
        */
       reverse_iterator
-      rbegin()
+      rbegin() _GLIBCXX_NOEXCEPT
       { return _M_t.rbegin(); }
 
       /**
@@ -348,7 +348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  according to the keys.
        */
       const_reverse_iterator
-      rbegin() const
+      rbegin() const _GLIBCXX_NOEXCEPT
       { return _M_t.rbegin(); }
 
       /**
@@ -357,7 +357,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  according to the keys.
        */
       reverse_iterator
-      rend()
+      rend() _GLIBCXX_NOEXCEPT
       { return _M_t.rend(); }
 
       /**
@@ -366,7 +366,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  descending order according to the keys.
        */
       const_reverse_iterator
-      rend() const
+      rend() const _GLIBCXX_NOEXCEPT
       { return _M_t.rend(); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -376,7 +376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  the keys.
        */
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return _M_t.begin(); }
 
       /**
@@ -385,7 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  to the keys.
        */
       const_iterator
-      cend() const
+      cend() const noexcept
       { return _M_t.end(); }
 
       /**
@@ -394,7 +394,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  according to the keys.
        */
       const_reverse_iterator
-      crbegin() const
+      crbegin() const noexcept
       { return _M_t.rbegin(); }
 
       /**
@@ -403,24 +403,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  descending order according to the keys.
        */
       const_reverse_iterator
-      crend() const
+      crend() const noexcept
       { return _M_t.rend(); }
 #endif
 
       // capacity
       /** Returns true if the %multimap is empty.  */
       bool
-      empty() const
+      empty() const _GLIBCXX_NOEXCEPT
       { return _M_t.empty(); }
 
       /** Returns the size of the %multimap.  */
       size_type
-      size() const
+      size() const _GLIBCXX_NOEXCEPT
       { return _M_t.size(); }
 
       /** Returns the maximum size of the %multimap.  */
       size_type
-      max_size() const
+      max_size() const _GLIBCXX_NOEXCEPT
       { return _M_t.max_size(); }
 
       // modifiers
@@ -625,7 +625,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  is the user's responsibility.
        */
       void
-      clear()
+      clear() _GLIBCXX_NOEXCEPT
       { _M_t.clear(); }
 
       // observers
