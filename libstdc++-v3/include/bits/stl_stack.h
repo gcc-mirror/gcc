@@ -217,6 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
       swap(stack& __s)
+      noexcept(noexcept(swap(c, __s.c)))
       {
 	using std::swap;
 	swap(c, __s.c);
@@ -287,6 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Seq>
     inline void
     swap(stack<_Tp, _Seq>& __x, stack<_Tp, _Seq>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<typename _Tp, typename _Seq, typename _Alloc>
