@@ -1,5 +1,8 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/enum17.C: New.
+	* g++.old-deja/g++.jason/rfg10.C: Adjust.
+
 	* g++.dg/cpp0x/auto24.C: New.
 
 	* g++.dg/cpp0x/error4.C: New.

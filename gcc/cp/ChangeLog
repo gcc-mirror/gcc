@@ -1,5 +1,9 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48536
+	* decl.c (build_enumerator): If incremented enumerator won't fit in
+	previous integral type, find one it will fit in.
+
 	PR c++/48599
 	* decl.c (create_array_type_for_decl): Complain about array of auto.
 
