@@ -551,7 +551,7 @@
 (define_insn_and_split "cbranchhi4"
   [(set (pc)
         (if_then_else
-            (match_operator:CC 0 "ordered_comparison_operator"
+            (match_operator 0 "ordered_comparison_operator"
                             [(match_operand:HI 1 "register_operand" "r")
                              (match_operand:HI 2 "picochip_comparison_operand" "ri")])
             (label_ref       (match_operand    3 "" ""))
@@ -561,14 +561,15 @@
   "* return picochip_output_cbranch(operands);"
   "reload_completed
    && (picochip_schedule_type != DFA_TYPE_NONE || flag_delayed_branch)"
-  [(set (reg:CC CC_REGNUM) (match_dup 0))
-   (parallel [(set (pc)
-                   (if_then_else (match_op_dup:HI 0 [(reg:CC CC_REGNUM) (const_int 0)])
-                                 (label_ref (match_dup 3))
-                                 (pc)))
-              (use (match_dup 4))])]
+  [(const_int 0)]
   "{
-     operands[4] = GEN_INT(GET_CODE(operands[0]));
+     rtx const_int_opnd;
+     const_int_opnd = GEN_INT(GET_CODE(operands[0]));
+     if (picochip_supported_comparison_operator (operands[0], HImode))
+       emit_insn (gen_supported_compare (operands[0], operands[1], operands[2]));
+     else
+       emit_insn (gen_compare (operands[0], operands[1], operands[2]));
+     emit_jump_insn (gen_branch (operands[3], const_int_opnd, operands[0]));
    }")
 
 ;; The only difference between this and the next pattern is that the next pattern
@@ -577,7 +578,7 @@
 ;; comparison operator and hence this pattern assumes that the second constraint combo
 ;; would still generate a normal instruction.
 
-(define_insn "*supported_compare"
+(define_insn "supported_compare"
   [(set (reg:CC CC_REGNUM)
         (match_operator:CC 0 "picochip_supported_comparison_operator"
                         [(match_operand:HI 1 "register_operand" "r,r,r")
@@ -607,7 +608,7 @@
    (set_attr "length" "2,2,4")
    ])
 
-(define_insn "*compare"
+(define_insn "compare"
   [(set (reg:CC CC_REGNUM)
         (match_operator:CC 0 "comparison_operator"
                         [(match_operand:HI 1 "register_operand" "r,r,r")
