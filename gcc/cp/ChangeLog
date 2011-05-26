@@ -1,5 +1,9 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45401
+	* decl.c (grokdeclarator): Don't change type when adding rvalue ref
+	to another reference type.
+
 	PR c++/44311
 	* decl.c (case_conversion): New.
 	(finish_case_label): Use it.

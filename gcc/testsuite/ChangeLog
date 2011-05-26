@@ -1,5 +1,7 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/rv-restrict.C: New.
+
 	* g++.dg/cpp0x/enum15.C: New.
 	* g++.dg/cpp0x/constexpr-switch2.C: New.
 
