@@ -1,3 +1,12 @@
+2011-05-26  Janis Johnson  <janis187@us.ibm.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/2288
+	PR c++/18770
+	* g++.old-deja/g++.jason/cond.C: Remove xfails.
+	* g++.dg/parse/pr18770.C: New test.
+	* g++.dg/cpp0x/range-for5.C: Add dg-error marker.
+
 2011-05-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48955

@@ -935,8 +935,15 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
       else
 	{
 	  /* Here to install a non-global value.  */
-	  tree oldlocal = innermost_non_namespace_value (name);
 	  tree oldglobal = IDENTIFIER_NAMESPACE_VALUE (name);
+	  tree oldlocal = NULL_TREE;
+	  cxx_scope *oldscope = NULL;
+	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
+	  if (oldbinding)
+	    {
+	      oldlocal = oldbinding->value;
+	      oldscope = oldbinding->scope;
+	    }
 
 	  if (need_new_binding)
 	    {
@@ -1064,6 +1071,20 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 			 break;
 		       }
 		   }
+		}
+	      /* Error if redeclaring a local declared in a
+		 for-init-statement or in the condition of an if or
+		 switch statement when the new declaration is in the
+		 outermost block of the controlled statement.
+		 Redeclaring a variable from a for or while condition is
+		 detected elsewhere.  */
+	      else if (TREE_CODE (oldlocal) == VAR_DECL
+		       && oldscope == current_binding_level->level_chain
+		       && (oldscope->kind == sk_cond
+			   || oldscope->kind == sk_for))
+		{
+		  error ("redeclaration of %q#D", x);
+		  error ("%q+#D previously declared here", oldlocal);
 		}
 
 	      if (warn_shadow && !nowarn)
@@ -1424,6 +1445,7 @@ begin_scope (scope_kind kind, tree entity)
     case sk_try:
     case sk_catch:
     case sk_for:
+    case sk_cond:
     case sk_class:
     case sk_scoped_enum:
     case sk_function_parms:
