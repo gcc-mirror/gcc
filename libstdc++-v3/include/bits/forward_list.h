@@ -76,7 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
     void
-    _M_reverse_after()
+    _M_reverse_after() noexcept
     {
       _Fwd_list_node_base* __tail = _M_next;
       if (!__tail)
@@ -300,11 +300,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef _Fwd_list_node<_Tp>                     _Node;
 
       _Node_alloc_type&
-      _M_get_Node_allocator()
+      _M_get_Node_allocator() noexcept
       { return *static_cast<_Node_alloc_type*>(&this->_M_impl); }
 
       const _Node_alloc_type&
-      _M_get_Node_allocator() const
+      _M_get_Node_allocator() const noexcept
       { return *static_cast<const _Node_alloc_type*>(&this->_M_impl); }
 
       _Fwd_list_base()
@@ -644,7 +644,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Get a copy of the memory allocation object.
       allocator_type
-      get_allocator() const
+      get_allocator() const noexcept
       { return this->_M_get_Node_allocator(); }
 
       // 23.2.3.2 iterators:
@@ -654,7 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  in the %forward_list.  Iteration is done in ordinary element order.
        */
       iterator
-      before_begin()
+      before_begin() noexcept
       { return iterator(&this->_M_impl._M_head); }
 
       /**
@@ -663,7 +663,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      before_begin() const
+      before_begin() const noexcept
       { return const_iterator(&this->_M_impl._M_head); }
 
       /**
@@ -671,7 +671,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  in the %forward_list.  Iteration is done in ordinary element order.
        */
       iterator
-      begin()
+      begin() noexcept
       { return iterator(this->_M_impl._M_head._M_next); }
 
       /**
@@ -680,7 +680,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      begin() const
+      begin() const noexcept
       { return const_iterator(this->_M_impl._M_head._M_next); }
 
       /**
@@ -689,7 +689,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       iterator
-      end()
+      end() noexcept
       { return iterator(0); }
 
       /**
@@ -698,7 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      end() const
+      end() const noexcept
       { return const_iterator(0); }
 
       /**
@@ -707,7 +707,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return const_iterator(this->_M_impl._M_head._M_next); }
 
       /**
@@ -716,7 +716,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element order.
        */
       const_iterator
-      cbefore_begin() const
+      cbefore_begin() const noexcept
       { return const_iterator(&this->_M_impl._M_head); }
 
       /**
@@ -725,7 +725,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  ordinary element order.
        */
       const_iterator
-      cend() const
+      cend() const noexcept
       { return const_iterator(0); }
 
       /**
@@ -733,14 +733,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  equal end().)
        */
       bool
-      empty() const
+      empty() const noexcept
       { return this->_M_impl._M_head._M_next == 0; }
 
       /**
        *  Returns the largest possible size of %forward_list.
        */
       size_type
-      max_size() const
+      max_size() const noexcept
       { return this->_M_get_Node_allocator().max_size(); }
 
       // 23.2.3.3 element access:
@@ -1021,7 +1021,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Managing the pointer is the user's responsibility.
        */
       void
-      clear()
+      clear() noexcept
       { this->_M_erase_after(&this->_M_impl._M_head, 0); }
 
       // 23.2.3.5 forward_list operations:
@@ -1196,7 +1196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Reverse the order of elements in the list in linear time.
        */
       void
-      reverse()
+      reverse() noexcept
       { this->_M_impl._M_head._M_reverse_after(); }
 
     private:

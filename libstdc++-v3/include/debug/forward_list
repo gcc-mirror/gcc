@@ -173,39 +173,39 @@ namespace __debug
       // iterators:
 
       iterator
-      before_begin()
+      before_begin() noexcept
       { return iterator(_Base::before_begin(), this); }
 
       const_iterator
-      before_begin() const
+      before_begin() const noexcept
       { return const_iterator(_Base::before_begin(), this); }
 
       iterator
-      begin()
+      begin() noexcept
       { return iterator(_Base::begin(), this); }
 
       const_iterator
-      begin() const
+      begin() const noexcept
       { return const_iterator(_Base::begin(), this); }
 
       iterator
-      end()
+      end() noexcept
       { return iterator(_Base::end(), this); }
 
       const_iterator
-      end() const
+      end() const noexcept
       { return const_iterator(_Base::end(), this); }
 
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return const_iterator(_Base::cbegin(), this); }
 
       const_iterator
-      cbefore_begin() const
+      cbefore_begin() const noexcept
       { return const_iterator(_Base::cbefore_begin(), this); }
 
       const_iterator
-      cend() const
+      cend() const noexcept
       { return const_iterator(_Base::cend(), this); }
 
       using _Base::empty;
@@ -392,7 +392,7 @@ namespace __debug
       }
 
       void
-      clear()
+      clear() noexcept
       {
 	_Base::clear();
 	this->_M_invalidate_all();
@@ -585,10 +585,10 @@ namespace __debug
       using _Base::reverse;
 
       _Base&
-      _M_base()       { return *this; }
+      _M_base() noexcept       { return *this; }
 
       const _Base&
-      _M_base() const { return *this; }
+      _M_base() const noexcept { return *this; }
 
     private:
       void
@@ -669,7 +669,8 @@ namespace __debug
       _Safe_iterator_base* __this_its = this->_M_iterators;
       _M_swap_aux(__list, __list._M_iterators, *this, this->_M_iterators);
       _Safe_iterator_base* __this_const_its = this->_M_const_iterators;
-      _M_swap_aux(__list, __list._M_const_iterators, *this, this->_M_const_iterators);
+      _M_swap_aux(__list, __list._M_const_iterators, *this,
+		  this->_M_const_iterators);
       _M_swap_aux(*this, __this_its, __list, __list._M_iterators);
       _M_swap_aux(*this, __this_const_its, __list, __list._M_const_iterators);
     }

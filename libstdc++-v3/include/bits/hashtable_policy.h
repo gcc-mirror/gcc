@@ -391,7 +391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _M_max_load_factor(__z), _M_growth_factor(2.f), _M_next_resize(0) { }
 
     float
-    max_load_factor() const
+    max_load_factor() const noexcept
     { return _M_max_load_factor; }
 
     // Return a bucket size no smaller than n.
@@ -615,7 +615,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Rehash_base<_Prime_rehash_policy, _Hashtable>
     {
       float
-      max_load_factor() const
+      max_load_factor() const noexcept
       {
 	const _Hashtable* __this = static_cast<const _Hashtable*>(this);
 	return __this->__rehash_policy().max_load_factor();

@@ -1,6 +1,6 @@
 // <forward_list> -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -119,10 +119,10 @@ namespace __profile
       }
 
       _Base&
-      _M_base()       { return *this; }
+      _M_base() noexcept       { return *this; }
 
       const _Base&
-      _M_base() const { return *this; }
+      _M_base() const noexcept { return *this; }
     };
 
   template<typename _Tp, typename _Alloc>

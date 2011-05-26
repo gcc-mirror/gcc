@@ -239,43 +239,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Basic container operations
       iterator
-      begin()
+      begin() noexcept
       { return iterator(_M_buckets + _M_begin_bucket_index); }
 
       const_iterator
-      begin() const
+      begin() const noexcept
       { return const_iterator(_M_buckets + _M_begin_bucket_index); }
 
       iterator
-      end()
+      end() noexcept
       { return iterator(_M_buckets + _M_bucket_count); }
 
       const_iterator
-      end() const
+      end() const noexcept
       { return const_iterator(_M_buckets + _M_bucket_count); }
 
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return const_iterator(_M_buckets + _M_begin_bucket_index); }
 
       const_iterator
-      cend() const
+      cend() const noexcept
       { return const_iterator(_M_buckets + _M_bucket_count); }
 
       size_type
-      size() const
+      size() const noexcept
       { return _M_element_count; }
 
       bool
-      empty() const
+      empty() const noexcept
       { return size() == 0; }
 
       allocator_type
-      get_allocator() const
+      get_allocator() const noexcept
       { return allocator_type(_M_node_allocator); }
 
       size_type
-      max_size() const
+      max_size() const noexcept
       { return _M_node_allocator.max_size(); }
 
       // Observers
@@ -287,11 +287,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Bucket operations
       size_type
-      bucket_count() const
+      bucket_count() const noexcept
       { return _M_bucket_count; }
 
       size_type
-      max_bucket_count() const
+      max_bucket_count() const noexcept
       { return max_size(); }
 
       size_type
@@ -331,7 +331,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return const_local_iterator(0); }
 
       float
-      load_factor() const
+      load_factor() const noexcept
       {
 	return static_cast<float>(size()) / static_cast<float>(bucket_count());
       }
@@ -447,7 +447,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       erase(const_iterator, const_iterator);
 
       void
-      clear();
+      clear() noexcept;
 
       // Set number of buckets to be appropriate for container of n element.
       void rehash(size_type __n);
@@ -1167,7 +1167,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    clear()
+    clear() noexcept
     {
       _M_deallocate_nodes(_M_buckets, _M_bucket_count);
       _M_element_count = 0;

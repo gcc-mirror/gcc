@@ -43,21 +43,22 @@ _GLIBCXX_BEGIN_NAMESPACE_COMPAT
 
     void
     _M_transfer(_List_node_base * const __first,
-		_List_node_base * const __last) throw ();
+		_List_node_base * const __last) _GLIBCXX_USE_NOEXCEPT;
 
     void
-    _M_reverse() throw ();
+    _M_reverse() _GLIBCXX_USE_NOEXCEPT;
 
     void
-    _M_hook(_List_node_base * const __position) throw ();
+    _M_hook(_List_node_base * const __position) _GLIBCXX_USE_NOEXCEPT;
 
     void
-    _M_unhook() throw ();
+    _M_unhook() _GLIBCXX_USE_NOEXCEPT;
   };
 
   void
-  _List_node_base::_M_transfer(_List_node_base * const __first,
-			       _List_node_base * const __last) throw ()
+  _List_node_base::
+  _M_transfer(_List_node_base * const __first,
+	      _List_node_base * const __last) _GLIBCXX_USE_NOEXCEPT
   {
     if (this != __last)
     {
@@ -75,7 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_COMPAT
   }
 
   void
-  _List_node_base::_M_reverse() throw ()
+  _List_node_base::_M_reverse() _GLIBCXX_USE_NOEXCEPT
   {
     _List_node_base* __tmp = this;
     do
@@ -89,7 +90,8 @@ _GLIBCXX_BEGIN_NAMESPACE_COMPAT
   }
 
   void
-  _List_node_base::_M_hook(_List_node_base* const __position) throw ()
+  _List_node_base::
+  _M_hook(_List_node_base* const __position) _GLIBCXX_USE_NOEXCEPT
   {
     this->_M_next = __position;
     this->_M_prev = __position->_M_prev;
@@ -98,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_COMPAT
   }
 
   void
-  _List_node_base::_M_unhook() throw ()
+  _List_node_base::_M_unhook() _GLIBCXX_USE_NOEXCEPT
   {
     _List_node_base* const __next_node = this->_M_next;
     _List_node_base* const __prev_node = this->_M_prev;
