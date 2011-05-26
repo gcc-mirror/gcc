@@ -1,3 +1,17 @@
+2011-05-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/48575
+	* genrecog.c (position_type): New enum.
+	(position): New structure.
+	(decision): Use position structure instead of a string.
+	(root_pos, peep2_insn_pos_list): New variables.
+	(next_position, compare_positions): New functions.
+	(new_decision): Use position structures instead of strings.
+	(maybe_both_true): Likewise.
+	(change_state): Likewise.
+	(write_tree): Likewise.
+	(make_insn_sequence): Likewise.
+
 2011-05-26  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.c (initialize_tree_contains_struct): Mark TS_BLOCK as
