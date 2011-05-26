@@ -1,3 +1,8 @@
+2011-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49161
+	* gcc.c-torture/execute/pr49161.c: New test.
+
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/error4.C: New.
