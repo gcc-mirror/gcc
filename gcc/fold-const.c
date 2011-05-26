@@ -7639,21 +7639,6 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 						    0)));
 	  return tem;
 	}
-      else if (COMPARISON_CLASS_P (arg0))
-	{
-	  if (TREE_CODE (type) == BOOLEAN_TYPE)
-	    {
-	      arg0 = copy_node (arg0);
-	      TREE_TYPE (arg0) = type;
-	      return arg0;
-	    }
-	  else if (TREE_CODE (type) != INTEGER_TYPE)
-	    return fold_build3_loc (loc, COND_EXPR, type, arg0,
-				fold_build1_loc (loc, code, type,
-					     integer_one_node),
-				fold_build1_loc (loc, code, type,
-					     integer_zero_node));
-	}
    }
 
   switch (code)
