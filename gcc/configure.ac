@@ -826,7 +826,7 @@ if test x"$lang_upc_enabled" = x"yes" ; then
   esac
   AC_MSG_CHECKING([for UPC pointer-to-shared address field position])
   AC_MSG_RESULT([$upc_vaddr_order])
-  if test x"upc_vaddr_order" = x"first"; then
+  if test x"$upc_vaddr_order" = x"first"; then
     AC_DEFINE(UPC_PTS_VADDR_FIRST,[1],
       [Define to 1 if the 'vaddr' field is the first field
 in the UPC pointer-to-shared representation.])

@@ -1,3 +1,11 @@
+2011-05-26  Gary Funck  <gary@intrepid.com>
+
+	* configure.ac: Fix typo when referring to $upc_vaddr_order.
+	  configure: Regenerate.
+
+	* ../fixincludes/fixincl.x: Revert to trunk.
+	  This file is auto-generated, and should not be merged.
+
 2011-05-18  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 173845 into gupc branch.
