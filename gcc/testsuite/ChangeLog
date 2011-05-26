@@ -1,3 +1,7 @@
+2011-05-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/rv-restrict.C: New.
+
 2011-05-26  Fabien Chêne  <fabien@gcc.gnu.org>
 	* g++.dg/init/pr25811-2.C: New.
 	* g++.dg/init/pr25811-3.C: New.

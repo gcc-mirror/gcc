@@ -9017,13 +9017,18 @@ grokdeclarator (const cp_declarator *declarator,
 		 to create the type "rvalue reference to cv TD' creates the
 		 type TD."
               */
-	      if (!VOID_TYPE_P (type))
+	      if (VOID_TYPE_P (type))
+		/* We already gave an error.  */;
+	      else if (TREE_CODE (type) == REFERENCE_TYPE)
+		{
+		  if (declarator->u.reference.rvalue_ref)
+		    /* Leave type alone.  */;
+		  else
+		    type = cp_build_reference_type (TREE_TYPE (type), false);
+		}
+	      else
 		type = cp_build_reference_type
-		       ((TREE_CODE (type) == REFERENCE_TYPE
-			 ? TREE_TYPE (type) : type),
-			(declarator->u.reference.rvalue_ref
-			 && (TREE_CODE(type) != REFERENCE_TYPE
-			     || TYPE_REF_IS_RVALUE (type))));
+		  (type, declarator->u.reference.rvalue_ref);
 
 	      /* In C++0x, we need this check for direct reference to
 		 reference declarations, which are forbidden by
