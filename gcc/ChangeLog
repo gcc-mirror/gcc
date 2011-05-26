@@ -1,3 +1,13 @@
+2011-05-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.c (initialize_tree_contains_struct): Mark TS_BLOCK as
+	TS_BASE instead of TS_COMMON.
+	(find_decls_types_r): Check for TS_TYPED structure before looking at
+	TREE_TYPE.
+	* tree.h (struct tree_block): Inherit from tree_base, not tree_common.
+	Add chain field.
+	(BLOCK_CHAIN): Use new chain field.
+
 2011-05-26  Pat Haugen <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_register_move_cost): Make LR/CTR
