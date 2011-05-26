@@ -1,5 +1,10 @@
 2011-05-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48211
+	* name-lookup.h (cp_class_binding): Make base a pointer.
+	* name-lookup.c (new_class_binding): Adjust.
+	(poplevel_class): Adjust.
+
 	PR c++/48424
 	* decl.c (grokparms): Function parameter packs don't need to
 	go at the end.
