@@ -10358,12 +10358,6 @@ grokparms (tree parmlist, tree *parms)
 	    init = check_default_argument (decl, init);
 	}
 
-      if (TREE_CODE (decl) == PARM_DECL
-          && FUNCTION_PARAMETER_PACK_P (decl)
-          && TREE_CHAIN (parm)
-          && TREE_CHAIN (parm) != void_list_node)
-        error ("parameter packs must be at the end of the parameter list");
-
       DECL_CHAIN (decl) = decls;
       decls = decl;
       result = tree_cons (init, type, result);

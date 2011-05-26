@@ -1,3 +1,10 @@
+2011-05-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48424
+	* decl.c (grokparms): Function parameter packs don't need to
+	go at the end.
+	* pt.c (type_unification_real): But they aren't deduced otherwise.
+
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44994

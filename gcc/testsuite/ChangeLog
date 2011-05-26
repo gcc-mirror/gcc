@@ -1,3 +1,8 @@
+2011-05-26  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/variadic111.C: New.
+	* g++.dg/cpp0x/variadic41.C: Adjust.
+
 2011-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49165
