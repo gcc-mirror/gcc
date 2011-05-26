@@ -263,29 +263,26 @@ get_implementation (id receiver, Class class, SEL sel)
 
       /* Double-checked locking pattern: Check
 	 __objc_uninstalled_dtable again in case another thread
-	 installed the dtable while we were waiting for the lock
-	 to be released.  */
+	 installed the dtable while we were waiting for the lock to be
+	 released.  */
       if (class->dtable == __objc_uninstalled_dtable)
-	{
-	  __objc_install_dtable_for_class (class);
-	}
+	__objc_install_dtable_for_class (class);
 
-      /* If the dispatch table is not yet installed,
-	we are still in the process of executing +initialize.
-	But the implementation pointer should be available
-	in the prepared ispatch table if it exists at all.  */
+      /* If the dispatch table is not yet installed, we are still in
+	 the process of executing +initialize.  But the implementation
+	 pointer should be available in the prepared ispatch table if
+	 it exists at all.  */
       if (class->dtable == __objc_uninstalled_dtable)
 	{
 	  assert (__objc_prepared_dtable_for_class (class) != 0);
 	  res = __objc_get_prepared_imp (class, sel);
 	}
       else
-	{
-	  res = 0;
-	}
+	res = 0;
+
       objc_mutex_unlock (__objc_runtime_mutex);
-      /* Call ourselves with the installed dispatch table and get
-	 the real method.  */
+      /* Call ourselves with the installed dispatch table and get the
+	 real method.  */
       if (!res)
 	res = get_implementation (receiver, class, sel);
     }
@@ -295,9 +292,9 @@ get_implementation (id receiver, Class class, SEL sel)
       res = sarray_get_safe (class->dtable, (size_t) sel->sel_id);
       if (res == 0)
 	{
-	  /* The dispatch table has been installed, and the method
-	     is not in the dispatch table.  So the method just
-	     doesn't exist for the class.  */
+	  /* The dispatch table has been installed, and the method is
+	     not in the dispatch table.  So the method just doesn't
+	     exist for the class.  */
 
 	  /* Try going through the +resolveClassMethod: or
 	     +resolveInstanceMethod: process.  */
@@ -305,9 +302,9 @@ get_implementation (id receiver, Class class, SEL sel)
 	    {
 	      /* We have the meta class, but we need to invoke the
 		 +resolveClassMethod: method on the class.  So, we
-		 need to obtain the class from the meta class,
-		 which we do using the fact that both the class
-		 and the meta-class have the same name.  */
+		 need to obtain the class from the meta class, which
+		 we do using the fact that both the class and the
+		 meta-class have the same name.  */
 	      Class realClass = objc_lookUpClass (class->name);
 	      if (realClass)
 		res = __objc_resolve_class_method (realClass, sel);
@@ -316,9 +313,7 @@ get_implementation (id receiver, Class class, SEL sel)
 	    res = __objc_resolve_instance_method (class, sel);
 
 	  if (res == 0)
-	    {
-	      res = __objc_get_forward_imp (receiver, sel);
-	    }
+	    res = __objc_get_forward_imp (receiver, sel);
 	}
     }
   return res;
@@ -365,10 +360,9 @@ method_get_imp (struct objc_method * method)
 
 /* Query if an object can respond to a selector, returns YES if the
    object implements the selector otherwise NO.  Does not check if the
-   method can be forwarded.
-   Since this requires the dispatch table to installed, this function
-   will implicitly invoke +initialize for the class of OBJECT if it
-   hasn't been invoked yet.  */
+   method can be forwarded.  Since this requires the dispatch table to
+   installed, this function will implicitly invoke +initialize for the
+   class of OBJECT if it hasn't been invoked yet.  */
 inline
 BOOL
 __objc_responds_to (id object, SEL sel)
@@ -384,9 +378,9 @@ __objc_responds_to (id object, SEL sel)
       if (object->class_pointer->dtable == __objc_uninstalled_dtable)
         __objc_install_dtable_for_class (object->class_pointer);
 
-      /* If the dispatch table is not yet installed,
-         we are still in the process of executing +initialize.
-         Yet the dispatch table should be available.  */
+      /* If the dispatch table is not yet installed, we are still in
+         the process of executing +initialize.  Yet the dispatch table
+         should be available.  */
       if (object->class_pointer->dtable == __objc_uninstalled_dtable)
         {
           dtable = __objc_prepared_dtable_for_class (object->class_pointer);
@@ -418,9 +412,8 @@ class_respondsToSelector (Class class_, SEL selector)
     {
       objc_mutex_lock (__objc_runtime_mutex);
       if (class_->dtable == __objc_uninstalled_dtable)
-	{
-	  __objc_install_dtable_for_class (class_);
-	}
+	__objc_install_dtable_for_class (class_);
+
       /* If the dispatch table is not yet installed,
          we are still in the process of executing +initialize.
          Yet the dispatch table should be available.  */
@@ -431,6 +424,7 @@ class_respondsToSelector (Class class_, SEL selector)
         }
       else
         dtable = class_->dtable;
+
       objc_mutex_unlock (__objc_runtime_mutex);
     }
 
@@ -454,9 +448,10 @@ objc_msg_lookup (id receiver, SEL op)
 				(sidx)op->sel_id);
       if (result == 0)
 	{
-	  /* Not found ... call get_implementation () to install the dispatch
-             table and call +initialize as required, providing the method
-	     implementation or a forwarding function */
+	  /* Not found ... call get_implementation () to install the
+             dispatch table and call +initialize as required,
+             providing the method implementation or a forwarding
+             function.  */
 	  result = get_implementation (receiver, receiver->class_pointer, op);
 	}
       return result;
@@ -504,7 +499,7 @@ __objc_init_dispatch_tables ()
 
   /* TODO: It would be cool to register typed selectors here.  */
   selector_resolveClassMethod = sel_registerName ("resolveClassMethod:");
-  selector_resolveInstanceMethod  =sel_registerName ("resolveInstanceMethod:");
+  selector_resolveInstanceMethod = sel_registerName ("resolveInstanceMethod:");
 }
 
 
@@ -525,9 +520,9 @@ __objc_send_initialize (Class class)
   assert (CLS_ISCLASS (class));
   assert (! CLS_ISMETA (class));
 
-  /* class_add_method_list/__objc_update_dispatch_table_for_class
-     may have reset the dispatch table.  The canonical way to insure
-     that we send +initialize just once, is this flag.  */
+  /* class_add_method_list/__objc_update_dispatch_table_for_class may
+     have reset the dispatch table.  The canonical way to insure that
+     we send +initialize just once, is this flag.  */
   if (! CLS_ISINITIALIZED (class))
     {
       DEBUG_PRINTF ("+initialize: need to initialize class '%s'\n", class->name);
@@ -619,13 +614,13 @@ __objc_update_dispatch_table_for_class (Class class)
 
   objc_mutex_lock (__objc_runtime_mutex);
 
-  /* not yet installed -- skip it unless in +initialize */
+  /* Not yet installed -- skip it unless in +initialize.  */
   if (class->dtable == __objc_uninstalled_dtable) 
     {
       if (__objc_prepared_dtable_for_class (class))
 	{
 	  /* There is a prepared table so we must be initialising this
-	     class ... we must re-do the table preparation. */
+	     class ... we must re-do the table preparation.  */
 	  __objc_prepare_dtable_for_class (class);
 	}
       objc_mutex_unlock (__objc_runtime_mutex);
@@ -1039,10 +1034,9 @@ objc_get_uninstalled_dtable (void)
 
 static cache_ptr prepared_dtable_table = 0;
 
-/* This function is called by:
-   objc_msg_lookup, get_imp and __objc_responds_to
-   (and the dispatch table installation functions themselves)
-   to install a dispatch table for a class.
+/* This function is called by: objc_msg_lookup, get_imp and
+   __objc_responds_to (and the dispatch table installation functions
+   themselves) to install a dispatch table for a class.
 
    If CLS is a class, it installs instance methods.
    If CLS is a meta class, it installs class methods.
@@ -1051,66 +1045,57 @@ static cache_ptr prepared_dtable_table = 0;
 
    The implementation must insure that the dispatch table is not
    installed until +initialize completes.  Otherwise it opens a
-   potential race since the installation of the dispatch table is
-   used as gate in regular method dispatch and we need to guarantee
-   that +initialize is the first method invoked an that no other
-   thread my dispatch messages to the class before +initialize
-   completes.
- */
+   potential race since the installation of the dispatch table is used
+   as gate in regular method dispatch and we need to guarantee that
+   +initialize is the first method invoked an that no other thread my
+   dispatch messages to the class before +initialize completes.  */
 static void
 __objc_install_dtable_for_class (Class cls)
 {
-  /* If the class has not yet had its class links resolved, we must 
-     re-compute all class links */
+  /* If the class has not yet had its class links resolved, we must
+     re-compute all class links.  */
   if (! CLS_ISRESOLV (cls))
     __objc_resolve_class_links ();
 
-  /* Make sure the super class has its dispatch table installed
-     or is at least preparing.
-     We do not need to send initialize for the super class since
-     __objc_send_initialize will insure that.
-   */
+  /* Make sure the super class has its dispatch table installed or is
+     at least preparing.  We do not need to send initialize for the
+     super class since __objc_send_initialize will insure that.  */
   if (cls->super_class
-    && cls->super_class->dtable == __objc_uninstalled_dtable
-    && !__objc_prepared_dtable_for_class (cls->super_class))
+      && cls->super_class->dtable == __objc_uninstalled_dtable
+      && !__objc_prepared_dtable_for_class (cls->super_class))
     {
       __objc_install_dtable_for_class (cls->super_class);
       /* The superclass initialisation may have also initialised the
-         current class, in which case there is no more to do. */
+         current class, in which case there is no more to do.  */
       if (cls->dtable != __objc_uninstalled_dtable)
-	{
-	  return;
-	}
+	return;
     }
 
   /* We have already been prepared but +initialize hasn't completed.
-     The +initialize implementation is probably sending 'self' messages.
-     We rely on _objc_get_prepared_imp to retrieve the implementation
-     pointers.  */
+     The +initialize implementation is probably sending 'self'
+     messages.  We rely on _objc_get_prepared_imp to retrieve the
+     implementation pointers.  */
   if (__objc_prepared_dtable_for_class (cls))
-    {
-      return;
-    }
+    return;
 
-  /* We have this function cache the implementation pointers
-     for _objc_get_prepared_imp but the dispatch table won't
-     be initilized until __objc_send_initialize completes.  */
+  /* We have this function cache the implementation pointers for
+     _objc_get_prepared_imp but the dispatch table won't be initilized
+     until __objc_send_initialize completes.  */
   __objc_prepare_dtable_for_class (cls);
 
-  /* We may have already invoked +initialize but 
-     __objc_update_dispatch_table_for_class  invoked by
+  /* We may have already invoked +initialize but
+     __objc_update_dispatch_table_for_class invoked by
      class_add_method_list may have reset dispatch table.  */
 
-  /* Call +initialize.
-     If we are a real class, we are installing instance methods.
-     If we are a meta class, we are installing class methods.
-     The __objc_send_initialize itself will insure that the message
-     is called only once per class.  */
+  /* Call +initialize.  If we are a real class, we are installing
+     instance methods.  If we are a meta class, we are installing
+     class methods.  The __objc_send_initialize itself will insure
+     that the message is called only once per class.  */
   if (CLS_ISCLASS (cls))
     __objc_send_initialize (cls);
   else
     {
-      /* Retreive the class from the meta class.  */
+      /* Retrieve the class from the meta class.  */
       Class c = objc_getClass (cls->name);
       assert (CLS_ISMETA (cls));
       assert (c);
@@ -1121,44 +1106,41 @@ __objc_install_dtable_for_class (Class cls)
   __objc_install_prepared_dtable_for_class (cls);
 }
 
-/* Builds the dispatch table for the class CLS and stores
-   it in a place where it can be retrieved by
-   __objc_get_prepared_imp until __objc_install_prepared_dtable_for_class
-   installs it into the class.
-   The dispatch table should not be installed into the class until
-   +initialize has completed.  */
+/* Builds the dispatch table for the class CLS and stores it in a
+   place where it can be retrieved by __objc_get_prepared_imp until
+   __objc_install_prepared_dtable_for_class installs it into the
+   class.  The dispatch table should not be installed into the class
+   until +initialize has completed.  */
 static void
 __objc_prepare_dtable_for_class (Class cls)
 {
   struct sarray *dtable;
   struct sarray *super_dtable;
 
-  /* This table could be initialized in init.c. 
-     We can not use the class name since
-     the class maintains the instance methods and
-     the meta class maintains the the class methods yet
-     both share the same name.  
-     Classes should be unique in any program.  */
+  /* This table could be initialized in init.c.  We can not use the
+     class name since the class maintains the instance methods and the
+     meta class maintains the the class methods yet both share the
+     same name.  Classes should be unique in any program.  */
   if (! prepared_dtable_table)
     prepared_dtable_table 
-      = objc_hash_new(32,
-		      (hash_func_type) objc_hash_ptr,
-		      (compare_func_type) objc_compare_ptrs);
-
-  /* If the class has not yet had its class links resolved, we must 
-     re-compute all class links */
+      = objc_hash_new (32,
+		       (hash_func_type) objc_hash_ptr,
+		       (compare_func_type) objc_compare_ptrs);
+  
+  /* If the class has not yet had its class links resolved, we must
+     re-compute all class links.  */
   if (! CLS_ISRESOLV (cls))
     __objc_resolve_class_links ();
 
   assert (cls);
   assert (cls->dtable == __objc_uninstalled_dtable);
 
-  /* If there is already a prepared dtable for this class, we must replace
-     it with a new version (since there must have been methods added to or
-     otherwise modified in the class while executing +initialize, and the
-     table needs to be recomputed.  */
+  /* If there is already a prepared dtable for this class, we must
+     replace it with a new version (since there must have been methods
+     added to or otherwise modified in the class while executing
+     +initialize, and the table needs to be recomputed.  */
   dtable = __objc_prepared_dtable_for_class (cls);
-  if (0 != dtable)
+  if (dtable != 0)
     {
       objc_hash_remove (prepared_dtable_table, cls);
       sarray_free (dtable);
@@ -1168,17 +1150,16 @@ __objc_prepare_dtable_for_class (Class cls)
   assert (cls != cls->super_class);
   if (cls->super_class)
     {
-      /* Inherit the method list from the super class.
-         Yet the super class may still be initializing
-	 in the case when a class cluster sub class initializes
-	 its super classes.  */
+      /* Inherit the method list from the super class.  Yet the super
+         class may still be initializing in the case when a class
+         cluster sub class initializes its super classes.  */
       if (cls->super_class->dtable == __objc_uninstalled_dtable)
 	__objc_install_dtable_for_class (cls->super_class);
 
       super_dtable = cls->super_class->dtable;
-      /* If the dispatch table is not yet installed,
-	 we are still in the process of executing +initialize.
-	 Yet the dispatch table should be available.  */
+      /* If the dispatch table is not yet installed, we are still in
+	 the process of executing +initialize.  Yet the dispatch table
+	 should be available.  */
       if (super_dtable == __objc_uninstalled_dtable)
 	super_dtable = __objc_prepared_dtable_for_class (cls->super_class);
 
@@ -1195,9 +1176,9 @@ __objc_prepare_dtable_for_class (Class cls)
 		 dtable);
 }
 
-/* This wrapper only exists to allow an easy replacement of
-   the lookup implementation and it is expected that the compiler
-   will optimize it away.  */
+/* This wrapper only exists to allow an easy replacement of the lookup
+   implementation and it is expected that the compiler will optimize
+   it away.  */
 static struct sarray *
 __objc_prepared_dtable_for_class (Class cls)
 {
@@ -1205,20 +1186,19 @@ __objc_prepared_dtable_for_class (Class cls)
   assert (cls);
   if (prepared_dtable_table)
     dtable = objc_hash_value_for_key (prepared_dtable_table, cls);
-  /* dtable my be nil, 
-     since we call this to check whether we are currently preparing
-     before we start preparing.  */
+  /* dtable my be nil, since we call this to check whether we are
+     currently preparing before we start preparing.  */
   return dtable;
 }
 
 /* Helper function for messages sent to CLS or implementation pointers
-   retrieved from CLS during +initialize before the dtable is installed.
-   When a class implicitly initializes another class which in turn
-   implicitly invokes methods in this class, before the implementation of
-   +initialize of CLS completes, this returns the expected implementation.
-   Forwarding remains the responsibility of objc_msg_lookup.
-   This function should only be called under the global lock.
- */
+   retrieved from CLS during +initialize before the dtable is
+   installed.  When a class implicitly initializes another class which
+   in turn implicitly invokes methods in this class, before the
+   implementation of +initialize of CLS completes, this returns the
+   expected implementation.  Forwarding remains the responsibility of
+   objc_msg_lookup.  This function should only be called under the
+   global lock.  */
 static IMP
 __objc_get_prepared_imp (Class cls,SEL sel)
 {
@@ -1234,16 +1214,15 @@ __objc_get_prepared_imp (Class cls,SEL sel)
   assert (dtable != __objc_uninstalled_dtable);
   imp = sarray_get_safe (dtable, (size_t) sel->sel_id);
 
-  /* imp may be Nil if the method does not exist and we
-     may fallback to the forwarding implementation later.  */
+  /* imp may be Nil if the method does not exist and we may fallback
+     to the forwarding implementation later.  */
   return imp;  
 }
 
-/* When this function is called +initialize should be completed.
-   So now we are safe to install the dispatch table for the
-   class so that they become available for other threads
-   that may be waiting in the lock.
- */
+/* When this function is called +initialize should be completed.  So
+   now we are safe to install the dispatch table for the class so that
+   they become available for other threads that may be waiting in the
+   lock.  */
 static void
 __objc_install_prepared_dtable_for_class (Class cls)
 {
