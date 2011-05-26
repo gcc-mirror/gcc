@@ -1,3 +1,19 @@
+2011-05-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR gcov-profile/48845
+	* g++.dg/tree-prof/tree-prof.exp: Check for -fprofile-generate
+	support.
+	* gcc.dg/matrix/matrix.exp: Likewise.
+	* gcc.dg/tree-prof/tree-prof.exp: Likewise.
+	* lib/target-supports-dg.exp (dg-require-profiling): Don't pass
+	line number to check_profiling_available.
+	* lib/target-supports.exp (check_profiling_available): Account for
+	this.
+	Require TLS runtime support with -fprofile-generate.
+	* lib/profopt.exp (profopt-execute): Add TLS options for
+	-fprofile-generate.
+	* gcc.dg/pr47793.c: Add dg-require-profiling "-fprofile-generate".
+
 2011-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49165

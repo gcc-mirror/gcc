@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2004, 2005, 2007, 2008, 2010
+# Copyright (C) 2001, 2004, 2005, 2007, 2008, 2010, 2011
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -273,6 +273,12 @@ proc profopt-execute { src } {
 	}
 
         set extra_options [dg-additional-files-options "" "$src"]
+
+	# Tree profiling requires TLS runtime support, which may need
+	# additional flags.
+	if { [string first "-fprofile-generate" $profile_option] >= 0 } {
+	    set extra_flags [add_options_for_tls $extra_flags]
+	}
 
 	# Compile for profiling.
 
