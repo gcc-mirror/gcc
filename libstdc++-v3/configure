@@ -2825,7 +2825,7 @@ ac_config_headers="$ac_config_headers config.h"
 ### am handles this now?  ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:17:0
+libtool_VERSION=6:16:0
 
 
 # Find the rest of the source tree framework.

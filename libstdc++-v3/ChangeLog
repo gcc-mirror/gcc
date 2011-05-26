@@ -1,5 +1,13 @@
 2011-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* config/abi/pre/gnu.ver: Correct last change, export instead
+	at the existing @3.4.16.
+	* configure.ac: Revert last change.
+	* testsuite/util/testsuite_abi.cc: Likewise.
+	* configure: Regenerate.
+
+2011-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* config/abi/pre/gnu.ver: Export recently added  basic_streambuf
 	and basic_stringbuf symbols @3.4.17.
 	* configure.ac: Update.
