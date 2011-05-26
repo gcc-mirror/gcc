@@ -1,3 +1,8 @@
+2011-05-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48702
+	* gcc.dg/torture/pr48702.c: New testcase.
+
 2011-05-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR gcov-profile/48845

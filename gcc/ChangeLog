@@ -1,3 +1,11 @@
+2011-05-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48702
+	* tree-ssa-address.c (create_mem_ref_raw): Create MEM_REFs
+	only when we know the base address is within bounds.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Do not
+	assume the base address of TARGET_MEM_REFs is in bounds.
+
 2011-05-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/49099
