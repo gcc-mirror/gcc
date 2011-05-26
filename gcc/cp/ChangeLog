@@ -1,5 +1,8 @@
 2011-05-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48599
+	* decl.c (create_array_type_for_decl): Complain about array of auto.
+
 	PR c++/44944
 	PR c++/49156
 	* error.c (dump_template_bindings): Set processing_template_decl

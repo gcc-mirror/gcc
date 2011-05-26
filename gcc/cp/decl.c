@@ -7974,6 +7974,12 @@ create_array_type_for_decl (tree name, tree type, tree size)
   if (type == error_mark_node || size == error_mark_node)
     return error_mark_node;
 
+  /* 8.3.4/1: If the type of the identifier of D contains the auto
+     type-specifier, the program is ill-formed.  */
+  if (pedantic && type_uses_auto (type))
+    pedwarn (input_location, OPT_pedantic,
+	     "declaration of %qD as array of %<auto%>", name);
+
   /* If there are some types which cannot be array elements,
      issue an error-message and return.  */
   switch (TREE_CODE (type))
