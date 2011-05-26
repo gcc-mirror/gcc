@@ -1,3 +1,9 @@
+2011-05-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/49099
+	* config/sparc/sparc.c (sparc_solaris_elf_asm_named_section): Wrap
+	declaration in TARGET_SOLARIS.
+
 2011-05-26  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.md (cbranchhi4): No :CC for match_operator.
