@@ -875,6 +875,15 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
       return FAILURE;
     }
 
+  /* F2008, C1242.  */
+  if (attr1.pointer && gfc_is_coindexed (pointer))
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+		 "conindexed", gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &pointer->where);
+      return FAILURE;
+    }
+
   /* Target argument is optional.  */
   if (target == NULL)
     return SUCCESS;
@@ -898,6 +907,15 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER "
 		 "or a TARGET", gfc_current_intrinsic_arg[1]->name,
+		 gfc_current_intrinsic, &target->where);
+      return FAILURE;
+    }
+
+  /* F2008, C1242.  */
+  if (attr1.pointer && gfc_is_coindexed (target))
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+		 "conindexed", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &target->where);
       return FAILURE;
     }
@@ -2647,6 +2665,15 @@ gfc_check_null (gfc_expr *mold)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER",
 		 gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &mold->where);
+      return FAILURE;
+    }
+
+  /* F2008, C1242.  */
+  if (gfc_is_coindexed (mold))
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+		 "conindexed", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &mold->where);
       return FAILURE;
     }

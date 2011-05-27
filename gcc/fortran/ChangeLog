@@ -1,5 +1,14 @@
 2011-05-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/18918
+	* check.c (gfc_check_associated, gfc_check_null): Add coindexed check.
+	* match.c (gfc_match_nullify): Ditto.
+	* resolve.c (resolve_deallocate_expr): Ditto.
+	* trans-types.c (gfc_get_nodesc_array_type): Don't set restricted
+	for nonpointers.
+
+2011-05-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/48820
 	* gfortran.h (gfc_isym_id): Add GFC_ISYM_RANK.
 	* intrinsic.c (add_functions): Add rank intrinsic.
