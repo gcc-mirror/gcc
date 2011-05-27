@@ -1,3 +1,14 @@
+2011-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_RANK.
+	* intrinsic.c (add_functions): Add rank intrinsic.
+	(gfc_check_intrinsic_standard): Handle GFC_STD_F2008_TR.
+	* intrinsic.h (gfc_simplify_rank, gfc_check_rank): Add prototypes.
+	* simplify.c (gfc_simplify_rank): New function.
+	* intrinsic.texi (RANK): Add description for rank intrinsic.
+	* check.c (gfc_check_rank): New function.
+
 2011-05-26  Paul Thomas  <pault@gcc.gnu.org>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 

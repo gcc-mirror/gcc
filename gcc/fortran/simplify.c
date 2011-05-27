@@ -4822,6 +4822,13 @@ gfc_simplify_range (gfc_expr *e)
 
 
 gfc_expr *
+gfc_simplify_rank (gfc_expr *e)
+{
+  return gfc_get_int_expr (gfc_default_integer_kind, &e->where, e->rank);
+}
+
+
+gfc_expr *
 gfc_simplify_real (gfc_expr *e, gfc_expr *k)
 {
   gfc_expr *result = NULL;
