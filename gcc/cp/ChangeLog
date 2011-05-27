@@ -1,3 +1,9 @@
+2011-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48657
+	PR c++/49176
+	* decl.c (cp_finish_decl): Simplify template handling.
+
 2011-05-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48424

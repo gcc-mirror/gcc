@@ -5760,7 +5760,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   const char *asmspec = NULL;
   int was_readonly = 0;
   bool var_definition_p = false;
-  int saved_processing_template_decl;
   tree auto_node;
 
   if (decl == error_mark_node)
@@ -5782,7 +5781,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   /* Assume no cleanup is required.  */
   cleanup = NULL_TREE;
-  saved_processing_template_decl = processing_template_decl;
 
   /* If a name was specified, get the string.  */
   if (global_scope_p (current_binding_level))
@@ -5882,45 +5880,24 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 template is instantiated.  But, if DECL is a variable constant
 	 then it can be used in future constant expressions, so its value
 	 must be available. */
-      if (!(init
-	    && init_const_expr_p
-	    && !type_dependent_p
-	    && decl_maybe_constant_var_p (decl)
-	    && !value_dependent_init_p (init)))
-	{
-	  if (init)
-	    DECL_INITIAL (decl) = init;
-	  if (TREE_CODE (decl) == VAR_DECL
-	      && !DECL_PRETTY_FUNCTION_P (decl)
-	      && !type_dependent_p)
-	    maybe_deduce_size_from_array_init (decl, init);
-	  goto finish_end;
-	}
-
-      if (!DECL_CLASS_SCOPE_P (decl))
+      if (init
+	  && init_const_expr_p
+	  && !type_dependent_p
+	  && decl_maybe_constant_var_p (decl)
+	  && !value_dependent_init_p (init))
 	{
 	  tree init_code = check_initializer (decl, init, flags, &cleanup);
-	  if (init_code)
-	    DECL_INITIAL (decl) = init;
-	  goto finish_end;
+	  if (init_code == NULL_TREE)
+	    init = NULL_TREE;
 	}
+      else if (TREE_CODE (decl) == VAR_DECL
+	       && !DECL_PRETTY_FUNCTION_P (decl)
+	       && !type_dependent_p)
+	maybe_deduce_size_from_array_init (decl, init);
 
-      if (TREE_CODE (init) == TREE_LIST)
-	{
-	  /* If the parenthesized-initializer form was used (e.g.,
-	     "int A<N>::i(X)"), then INIT will be a TREE_LIST of initializer
-	     arguments.  (There is generally only one.)  We convert them
-	     individually.  */
-	  tree list = init;
-	  for (; list; list = TREE_CHAIN (list))
-	    {
-	      tree elt = TREE_VALUE (list);
-	      TREE_VALUE (list) = fold_non_dependent_expr (elt);
-	    }
-	}
-      else
-	init = fold_non_dependent_expr (init);
-      processing_template_decl = 0;
+      if (init)
+	DECL_INITIAL (decl) = init;
+      return;
     }
 
   /* Take care of TYPE_DECLs up front.  */
@@ -5943,7 +5920,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
       rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl),
 				at_eof);
-      goto finish_end;
+      return;
     }
 
   /* A reference will be modified here, as it is initialized.  */
@@ -6067,8 +6044,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	layout_type (type);
 
-      if (!processing_template_decl
-	  && TREE_STATIC (decl)
+      if (TREE_STATIC (decl)
 	  && !at_function_scope_p ()
 	  && current_function_decl == NULL)
 	/* So decl is a global variable or a static member of a
@@ -6088,9 +6064,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   /* Let the middle end know about variables and functions -- but not
      static data members in uninstantiated class templates.  */
-  if (!saved_processing_template_decl
-      && (TREE_CODE (decl) == VAR_DECL 
-	  || TREE_CODE (decl) == FUNCTION_DECL))
+  if (TREE_CODE (decl) == VAR_DECL
+      || TREE_CODE (decl) == FUNCTION_DECL)
     {
       if (TREE_CODE (decl) == VAR_DECL)
 	{
@@ -6176,9 +6151,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
      reference, insert it in the statement-tree now.  */
   if (cleanup)
     push_cleanup (decl, cleanup, false);
-
- finish_end:
-  processing_template_decl = saved_processing_template_decl;
 
   if (was_readonly)
     TREE_READONLY (decl) = 1;
