@@ -1,3 +1,38 @@
+2011-05-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* haifa-sched.c (sched_scan_info): Remove.
+	(schedule_block): Call sched_extend_luids rather than sched_init_luids
+	with NULL args.
+	(extend_bb, init_bb, extend_insn, init_insn, init_insns_in_bb):
+	Remove functions.
+	(sched_scan): Remove.
+	(sched_extend_luids): Renamed from luids_extend_insn and no longer
+	static.  All callers changed.
+	(sched_init_insn_luid): Renamed from luids_init_insn and no longer
+	static.  All callers changed.
+	(sched_init_luids): Remove all arguments except the first.  All
+	callers changed.  Don't use sched_scan.
+	(haifa_init_h_i_d): Likewise.
+	(haifa_init_insn): Call sched_extend_luids and sched_init_insn_luid
+	manually rather than using sched_init_luids.  Likewise with
+	extend_h_i_d, init_h_i_d and haifa_init_h_i_d.
+	* sel-sched.c (sel_region_target_finish): Call sched_extend_luids
+	rather than sched_init_luids with NULL args.
+	* sel-sched-ir.c (new_insns): Remove variable.
+	(sched_scan): New static function, previously in haifa-sched.c.  Remove
+	all arguments but the first two; all callers changed.
+	(sel_init_new_insn): Call sched_extend_luids and sched_init_insn_luid
+	rather than sched_init_luids.
+	(sel_init_bbs): Remove second argument.  All callers changed.
+	(sel_add_bb): Call sched_extend_luids rather than sched_init_luids
+	with NULL arguments.
+	(create_insn_rtx_from_pattern): Likewise.
+	* sel-sched-ir.h (sel_init_bbs): Adjust declaration.
+	* sched-int.h (sched_init_luids, haifa_init_h_i_d): Likewise.
+	(sched_init_insn_luid, sched_extend_luids): Declare.
+	(sched_scan_info_def, sched_scan_info, sched_scan): Remove
+	declarations.
+
 2011-05-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/49177
