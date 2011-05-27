@@ -1,5 +1,9 @@
 2011-05-26  Jason Merrill  <jason@redhat.com>
 
+	DR 1004
+	* pt.c (convert_template_argument): Don't complain about using
+	injected-class-name as template template argument.
+
 	PR c++/47956
 	* decl.c (check_static_variable_definition): Now static.
 	(cp_finish_decl): Call it here.
