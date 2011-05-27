@@ -66,6 +66,8 @@ extern void go_trampoline_info (unsigned int *size, unsigned int *alignment);
 
 extern void go_imported_unsafe (void);
 
+extern void go_write_export_data (const char *, unsigned int);
+
 #if defined(__cplusplus) && !defined(ENABLE_BUILD_WITH_CXX)
 } /* End extern "C".  */
 #endif

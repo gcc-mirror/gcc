@@ -5,20 +5,10 @@
 // license that can be found in the LICENSE file.
 
 #include "go-system.h"
+
 #include "sha1.h"
 
-#ifndef ENABLE_BUILD_WITH_CXX
-extern "C"
-{
-#endif
-
-#include "machmode.h"
-#include "output.h"
-#include "target.h"
-
-#ifndef ENABLE_BUILD_WITH_CXX
-}
-#endif
+#include "go-c.h"
 
 #include "gogo.h"
 #include "types.h"
@@ -416,7 +406,6 @@ Export::Stream::write_checksum(const std::string& s)
 // Class Stream_to_section.
 
 Stream_to_section::Stream_to_section()
-  : section_(NULL)
 {
 }
 
@@ -425,15 +414,5 @@ Stream_to_section::Stream_to_section()
 void
 Stream_to_section::do_write(const char* bytes, size_t length)
 {
-  section* sec = (section*) this->section_;
-  if (sec == NULL)
-    {
-      go_assert(targetm.have_named_sections);
-
-      sec = get_section(".go_export", SECTION_DEBUG, NULL);
-      this->section_ = (void*) sec;
-    }
-
-  switch_to_section(sec);
-  assemble_string(bytes, length);
+  go_write_export_data (bytes, length);
 }

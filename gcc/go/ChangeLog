@@ -1,3 +1,12 @@
+2011-05-27  Ian Lance Taylor  <iant@google.com>
+
+	* go-backend.c: Include "output.h".
+	(go_write_export_data): New function.
+	* go-c.h (go_write_export_data): Declare.
+	* Make-lang.in (go/go-backend.o): Depend on output.h.
+	(go/export.o): Depend on $(GO_C_H).  Do not depend on
+	$(MACHMODE_H), output.h, or $(TARGET_H).
+
 2011-05-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (GCCGO_OBJS): Remove prefix.o.
