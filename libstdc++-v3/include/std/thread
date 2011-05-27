@@ -260,12 +260,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #endif
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
-    /// sleep_until
-    template<typename _Clock, typename _Duration>
-      inline void
-      sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)
-      { sleep_for(__atime - _Clock::now()); }
-
     /// sleep_for
     template<typename _Rep, typename _Period>
       inline void
@@ -285,6 +279,12 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 	::nanosleep(&__ts, 0);
       }
+
+    /// sleep_until
+    template<typename _Clock, typename _Duration>
+      inline void
+      sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)
+      { sleep_for(__atime - _Clock::now()); }
 #endif
 
   _GLIBCXX_END_NAMESPACE_VERSION
