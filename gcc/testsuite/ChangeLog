@@ -1,5 +1,8 @@
 2011-05-26  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/friend1.C: New.
+	* g++.dg/cpp0x/friend2.C: New.
+
 	* g++.dg/cpp0x/auto7.C: Update.
 	* g++.dg/template/crash50.C: Adjust.
 	* g++.dg/template/static9.C: Adjust.

@@ -17758,9 +17758,10 @@ cp_parser_member_declaration (cp_parser* parser)
 	    {
 	      /* If the `friend' keyword was present, the friend must
 		 be introduced with a class-key.  */
-	       if (!declares_class_or_enum)
-		 error_at (decl_spec_token_start->location,
-			   "a class-key must be used when declaring a friend");
+	       if (!declares_class_or_enum && cxx_dialect < cxx0x)
+		 pedwarn (decl_spec_token_start->location, OPT_pedantic,
+			  "in C++03 a class-key must be used "
+			  "when declaring a friend");
 	       /* In this case:
 
 		    template <typename T> struct A {
@@ -17769,10 +17770,12 @@ cp_parser_member_declaration (cp_parser* parser)
 
 		  A<T>::B will be represented by a TYPENAME_TYPE, and
 		  therefore not recognized by check_tag_decl.  */
-	       if (!type
-		   && decl_specifiers.type
-		   && TYPE_P (decl_specifiers.type))
-		 type = decl_specifiers.type;
+	       if (!type)
+		 {
+		   type = decl_specifiers.type;
+		   if (type && TREE_CODE (type) == TYPE_DECL)
+		     type = TREE_TYPE (type);
+		 }
 	       if (!type || !TYPE_P (type))
 		 error_at (decl_spec_token_start->location,
 			   "friend declaration does not name a class or "
