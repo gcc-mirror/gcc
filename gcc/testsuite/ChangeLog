@@ -1,5 +1,9 @@
 2011-05-27  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.c-torture/execute/920711-1.x: Add -fwrapv.
+
+2011-05-27  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.c-torture/execute/920612-1.x: Add -fwrapv.
 
 2011-05-27  Richard Guenther  <rguenther@suse.de>
