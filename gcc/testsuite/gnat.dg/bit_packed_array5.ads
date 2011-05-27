@@ -1,5 +1,3 @@
--- { dg-do compile }
-
 package Bit_Packed_Array5 is
 
    type Bit_Array is array (Integer range <>) of Boolean;
