@@ -1093,6 +1093,10 @@ execute_cse_sincos (void)
 		CASE_FLT_FN (BUILT_IN_COS):
 		CASE_FLT_FN (BUILT_IN_SIN):
 		CASE_FLT_FN (BUILT_IN_CEXPI):
+		  /* Make sure we have either sincos or cexp.  */
+		  if (!TARGET_HAS_SINCOS && !TARGET_C99_FUNCTIONS)
+		    break;
+
 		  arg = gimple_call_arg (stmt, 0);
 		  if (TREE_CODE (arg) == SSA_NAME)
 		    cfg_changed |= execute_cse_sincos_1 (arg);

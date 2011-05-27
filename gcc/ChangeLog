@@ -1,3 +1,9 @@
+2011-05-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/49170
+	* tree-ssa-math-opts.c (execute_cse_sincos):  Add checks for
+	sincos or cexp.
+	
 2011-05-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/49189
