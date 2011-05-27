@@ -1,3 +1,23 @@
+2011-05-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/46728
+	* gcc.target/powerpc/pr46728-1.c: New.
+	* gcc.target/powerpc/pr46728-2.c: New.
+	* gcc.target/powerpc/pr46728-3.c: New.
+	* gcc.target/powerpc/pr46728-4.c: New.
+	* gcc.target/powerpc/pr46728-5.c: New.
+	* gcc.dg/pr46728-6.c: New.
+	* gcc.target/powerpc/pr46728-7.c: New.
+	* gcc.target/powerpc/pr46728-8.c: New.
+	* gcc.dg/pr46728-9.c: New.
+	* gcc.target/powerpc/pr46728-10.c: New.
+	* gcc.target/powerpc/pr46728-11.c: New.
+	* gcc.dg/pr46728-12.c: New.
+	* gcc.target/powerpc/pr46728-13.c: New.
+	* gcc.target/powerpc/pr46728-14.c: New.
+	* gcc.target/powerpc/pr46728-15.c: New.
+	* gcc.target/powerpc/pr46728-16.c: New.
+
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/mangle47.C: New.
