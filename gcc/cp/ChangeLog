@@ -1,5 +1,9 @@
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48284
+	* error.c (dump_expr) [COMPONENT_REF]: Use pp_cxx_dot
+	with INDIRECT_REF of REFERENCE_TYPE.
+
 	PR c++/48657
 	PR c++/49176
 	* decl.c (cp_finish_decl): Simplify template handling.
