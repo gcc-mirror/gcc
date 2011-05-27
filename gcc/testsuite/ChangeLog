@@ -1,3 +1,9 @@
+2011-05-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/49189
+	* gnat.dg/bit_packed_array5.adb: New testcase.
+	* gnat.dg/bit_packed_array5.ads: Likewise.
+
 2011-05-26  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/friend1.C: New.

@@ -7660,15 +7660,19 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
       if (COMPARISON_CLASS_P (op0))
 	{
 	  /* If we have (type) (a CMP b) and type is an integral type, return
-	     new expression involving the new type.  */
+	     new expression involving the new type.  Canonicalize
+	     (type) (a CMP b) to (a CMP b) ? (type) true : (type) false for
+	     non-integral type.
+	     Do not fold the result as that would not simplify further, also
+	     folding again results in recursions.  */
 	  if (INTEGRAL_TYPE_P (type))
-	    return fold_build2_loc (loc, TREE_CODE (op0), type,
-				    TREE_OPERAND (op0, 0),
-				    TREE_OPERAND (op0, 1));
+	    return build2_loc (loc, TREE_CODE (op0), type,
+			       TREE_OPERAND (op0, 0),
+			       TREE_OPERAND (op0, 1));
 	  else
-	    return fold_build3_loc (loc, COND_EXPR, type, op0,
-				    fold_convert (type, boolean_true_node),
-				    fold_convert (type, boolean_false_node));
+	    return build3_loc (loc, COND_EXPR, type, op0,
+			       fold_convert (type, boolean_true_node),
+			       fold_convert (type, boolean_false_node));
 	}
 
       /* Handle cases of two conversions in a row.  */
