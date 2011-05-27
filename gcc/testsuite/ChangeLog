@@ -1,3 +1,8 @@
+2011-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42056
+	* testsuite/g++.dg/cpp0x/auto25.C: New.
+
 2011-05-27  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/execute/920711-1.x: Add -fwrapv.

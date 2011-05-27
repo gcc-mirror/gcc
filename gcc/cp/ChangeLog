@@ -1,3 +1,9 @@
+2011-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42056
+	* typeck2.c (build_functional_cast): Complain early for invalid uses
+	of 'auto' and set type to error_mark_node.
+
 2011-05-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47721
