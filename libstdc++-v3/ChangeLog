@@ -1,3 +1,37 @@
+2011-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49187
+	* include/parallel/losertree.h: Add missing using declarations
+	of _Base::_M_comp.
+	* include/parallel/algobase.h: Include <parallel/algorithmfwd.h>.
+	* include/parallel/multiway_merge.h: Include <parallel/
+	multiseq_selection.h>, forward declare __merge_advance.
+	* include/parallel/multiseq_selection.h: Don't include <parallel/
+	sort.h> here.
+	* include/ext/pb_ds/detail/thin_heap_/erase_fn_imps.hpp: Fix
+	qualification of upper_bound.
+
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand_debug.cc:
+	Use dg-require-debug-mode.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand_debug.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand_debug.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand_debug.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand_debug.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_no_data_map_rand_debug.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand_debug.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand_debug.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand_debug.cc:
+	Likewise.
+
+	* include/parallel/algo.h: Minor uglification fixes.
+
 2011-05-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/list.cc: Use noexcept per the FDIS.
