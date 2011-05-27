@@ -1,21 +1,30 @@
+2011-05-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/49177
+	* fold-const.c (fold_unary_loc): Fold (T)(A CMP B) to
+	A CMP B ? (T) true : (T) false for non-integral types T again.
+
 2011-05-27  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-out.c (lto_string_index): break out from...; offset by 1
 	so 0 means NULL string.
 	(lto_output_string_with_length): ... here.
-	(lto_output_string, output_string_cst, output_identifier): Update handling
-	of NULL strings.
+	(lto_output_string, output_string_cst, output_identifier): Update
+	handling of NULL strings.
 	(lto_output_location_bitpack): New function.
 	(lto_output_location): Use it.
 	(lto_output_tree_ref): Use output_record_start.
-	(pack_ts_type_common_value_fields): Pack aliagn & alias set in var len values.
-	* lto-streamer-in.c (string_for_index): Break out from ...; offset values by 1.
+	(pack_ts_type_common_value_fields): Pack aliagn & alias set in var
+	len values.
+	* lto-streamer-in.c (string_for_index): Break out from ...; offset
+	values by 1.
 	(input_string_internal): ... here; 
-	(input_string_cst, input_identifier, lto_input_string): Update handling of
-	NULL strings.
+	(input_string_cst, input_identifier, lto_input_string): Update handling
+	of NULL strings.
 	(lto_input_location_bitpack): New function
 	(lto_input_location): Use it.
-	(unpack_ts_type_common_value_fields): Pack align & alias in var len values.
+	(unpack_ts_type_common_value_fields): Pack align & alias in var len
+	values.
 	* lto-streamer.h (bp_pack_val_len_unsigned, bp_pack_val_len_int,
 	bp_unpack_val_len_unsigned, bp_unpack_val_len_int): Declare.
 	(bp_pack_value): Sanity check the value range.
