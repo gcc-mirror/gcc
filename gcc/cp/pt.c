@@ -18080,9 +18080,9 @@ get_mostly_instantiated_function_type (tree decl)
 			   TMPL_ARGS_DEPTH (targs),
 			   make_tree_vec (DECL_NTPARMS (tmpl)));
 
-      /* Disable access control as this function is used only during
-	 name-mangling.  */
-      push_deferring_access_checks (dk_no_check);
+      /* Make sure that we can see identifiers, and compute access
+	 correctly.  */
+      push_access_scope (decl);
 
       ++processing_template_decl;
       /* Now, do the (partial) substitution to figure out the
@@ -18097,7 +18097,7 @@ get_mostly_instantiated_function_type (tree decl)
       TREE_VEC_LENGTH (partial_args)--;
       tparms = tsubst_template_parms (tparms, partial_args, tf_error);
 
-      pop_deferring_access_checks ();
+      pop_access_scope (decl);
     }
 
   return fn_type;
