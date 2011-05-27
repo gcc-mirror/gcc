@@ -8414,8 +8414,6 @@ instantiate_class_template_1 (tree type)
 			 /*init_const_expr_p=*/false,
 			 /*asmspec_tree=*/NULL_TREE,
 			 /*flags=*/0);
-		      if (DECL_INITIALIZED_IN_CLASS_P (r))
-			check_static_variable_definition (r, TREE_TYPE (r));
 		    }
 		  else if (TREE_CODE (r) == FIELD_DECL)
 		    {

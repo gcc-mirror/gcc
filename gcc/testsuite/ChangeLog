@@ -1,3 +1,10 @@
+2011-05-26  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto7.C: Update.
+	* g++.dg/template/crash50.C: Adjust.
+	* g++.dg/template/static9.C: Adjust.
+	* g++.old-deja/g++.ext/memconst.C: Adjust.
+
 2011-05-26  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.dg/march.c: Ignore a note for some targets.
