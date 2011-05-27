@@ -9293,7 +9293,7 @@ c_end_compound_stmt (location_t loc, tree stmt, bool do_scope)
      do the wrong thing for ({ { 1; } }) or ({ 1; { } }).  In particular,
      STATEMENT_LISTs merge, and thus we can lose track of what statement
      was really last.  */
-  if (cur_stmt_list
+  if (building_stmt_list_p ()
       && STATEMENT_LIST_STMT_EXPR (cur_stmt_list)
       && TREE_CODE (stmt) != BIND_EXPR)
     {

@@ -452,8 +452,8 @@ typedef enum ref_operator {
 /* Information about a statement tree.  */
 
 struct GTY(()) stmt_tree_s {
-  /* The current statement list being collected.  */
-  tree x_cur_stmt_list;
+  /* A stack of statement lists being collected.  */
+  VEC(tree,gc) *x_cur_stmt_list;
 
   /* In C++, Nonzero if we should treat statements as full
      expressions.  In particular, this variable is no-zero if at the
@@ -483,11 +483,17 @@ struct GTY(()) c_language_function {
   struct stmt_tree_s x_stmt_tree;
 };
 
-/* When building a statement-tree, this is the current statement list
-   being collected.  It's TREE_CHAIN is a back-pointer to the previous
-   statement list.  */
+#define stmt_list_stack (current_stmt_tree ()->x_cur_stmt_list)
 
-#define cur_stmt_list (current_stmt_tree ()->x_cur_stmt_list)
+/* When building a statement-tree, this is the current statement list
+   being collected.  We define it in this convoluted way, rather than
+   using VEC_last, because it must be an lvalue.  */
+
+#define cur_stmt_list							\
+  (*(VEC_address (tree, stmt_list_stack)				\
+     + VEC_length (tree, stmt_list_stack) - 1))
+
+#define building_stmt_list_p() (!VEC_empty (tree, stmt_list_stack))
 
 /* Language-specific hooks.  */
 

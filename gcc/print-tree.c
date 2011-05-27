@@ -911,7 +911,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 		print_node (file, "stmt", tsi_stmt (i), indent + 4);
 	      }
 	  }
-	  print_node (file, "chain", TREE_CHAIN (node), indent + 4);
 	  break;
 
 	case BLOCK:

@@ -293,10 +293,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define same_type_p(TYPE1, TYPE2) \
   comptypes ((TYPE1), (TYPE2), COMPARE_STRICT)
 
-/* Nonzero if we are presently building a statement tree, rather
-   than expanding each statement as we encounter it.  */
-#define building_stmt_tree()  (cur_stmt_list != NULL_TREE)
-
 /* Returns nonzero iff NODE is a declaration for the global function
    `main'.  */
 #define DECL_MAIN_P(NODE)				\

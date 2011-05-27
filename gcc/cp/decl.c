@@ -5353,13 +5353,13 @@ build_aggr_init_full_exprs (tree decl, tree init, int flags)
      
 {
   int saved_stmts_are_full_exprs_p = 0;
-  if (building_stmt_tree ())
+  if (building_stmt_list_p ())
     {
       saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
       current_stmt_tree ()->stmts_are_full_exprs_p = 1;
     }
   init = build_aggr_init (decl, init, flags, tf_warning_or_error);
-  if (building_stmt_tree ())
+  if (building_stmt_list_p ())
     current_stmt_tree ()->stmts_are_full_exprs_p =
       saved_stmts_are_full_exprs_p;
   return init;
@@ -5752,7 +5752,7 @@ initialize_local_var (tree decl, tree init)
 	  if (cleanup && TREE_CODE (type) != ARRAY_TYPE)
 	    wrap_temporary_cleanups (init, cleanup);
 
-	  gcc_assert (building_stmt_tree ());
+	  gcc_assert (building_stmt_list_p ());
 	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  finish_expr_stmt (init);
@@ -12913,7 +12913,7 @@ save_function_data (tree decl)
   DECL_SAVED_FUNCTION_DATA (decl) = f;
 
   /* Clear out the bits we don't need.  */
-  f->base.x_stmt_tree.x_cur_stmt_list = NULL_TREE;
+  f->base.x_stmt_tree.x_cur_stmt_list = NULL;
   f->bindings = NULL;
   f->x_local_names = NULL;
 }
@@ -13158,7 +13158,7 @@ finish_function (int flags)
       This caused &foo to be of type ptr-to-const-function
       which then got a warning when stored in a ptr-to-function variable.  */
 
-  gcc_assert (building_stmt_tree ());
+  gcc_assert (building_stmt_list_p ());
   /* The current function is being defined, so its DECL_INITIAL should
      be set, and unless there's a multiple definition, it should be
      error_mark_node.  */

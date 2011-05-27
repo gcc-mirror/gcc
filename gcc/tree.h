@@ -3556,7 +3556,7 @@ struct GTY ((chain_next ("%h.next"), chain_prev ("%h.prev"))) tree_statement_lis
 
 struct GTY(()) tree_statement_list
  {
-  struct tree_common common;
+  struct tree_typed typed;
   struct tree_statement_list_node *head;
   struct tree_statement_list_node *tail;
 };

@@ -1,3 +1,21 @@
+2011-05-27  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-tree.h (building_stmt_tree): Delete.
+	* decl.c (save_function_data): Tweak initializer for x_cur_stmt_list.
+	(build_aggr_init_full_exprs): Call building_stmt_list_p
+	instead of building_stmt_tree.
+	(initialize_local_var): Likewise.
+	(finish_function): Likewise.
+	* decl2.c (finish_anon_union): Likewise.
+	* init.c (begin_init_stmts): Likewise.
+	(finish_init_stmts): Likewise.
+	(expand_aggr_init_1): Likewise.
+	* name-lookup.c (do_local_using_decl): Likewise.
+	(do_namespace_alias): Likewise.
+	(do_using_directive): Likewise.
+	(cp_emit_debug_info_for_using): Likewise.
+	* semantics.c (add_stmt): Assert that stmt_list_stack is non-empty.
+
 2011-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42056

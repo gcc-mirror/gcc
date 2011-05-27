@@ -1437,7 +1437,7 @@ finish_anon_union (tree anon_union_decl)
     }
 
   pushdecl (anon_union_decl);
-  if (building_stmt_tree ()
+  if (building_stmt_list_p ()
       && at_function_scope_p ())
     add_decl_expr (anon_union_decl);
   else if (!processing_template_decl)
