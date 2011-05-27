@@ -143,16 +143,14 @@ destroy_output_block (struct output_block *ob)
   free (ob);
 }
 
-
-/* Output STRING of LEN characters to the string
-   table in OB. The string might or might not include a trailing '\0'.
+/* Return index used to reference STRING of LEN characters in the string table
+   in OB.  The string might or might not include a trailing '\0'.
    Then put the index onto the INDEX_STREAM.  */
 
-void
-lto_output_string_with_length (struct output_block *ob,
-			       struct lto_output_stream *index_stream,
-			       const char *s,
-			       unsigned int len)
+static unsigned
+lto_string_index (struct output_block *ob,
+		  const char *s,
+		  unsigned int len)
 {
   struct string_slot **slot;
   struct string_slot s_slot;
@@ -163,9 +161,6 @@ lto_output_string_with_length (struct output_block *ob,
   s_slot.s = string;
   s_slot.len = len;
   s_slot.slot_num = 0;
-
-  /* Indicate that this is not a NULL string.  */
-  lto_output_uleb128_stream (index_stream, 0);
 
   slot = (struct string_slot **) htab_find_slot (ob->string_hash_table,
 						 &s_slot, INSERT);
@@ -180,16 +175,31 @@ lto_output_string_with_length (struct output_block *ob,
       new_slot->len = len;
       new_slot->slot_num = start;
       *slot = new_slot;
-      lto_output_uleb128_stream (index_stream, start);
       lto_output_uleb128_stream (string_stream, len);
       lto_output_data_stream (string_stream, string, len);
+      return start + 1;
     }
   else
     {
       struct string_slot *old_slot = *slot;
-      lto_output_uleb128_stream (index_stream, old_slot->slot_num);
       free (string);
+      return old_slot->slot_num + 1;
     }
+}
+
+
+/* Output STRING of LEN characters to the string
+   table in OB. The string might or might not include a trailing '\0'.
+   Then put the index onto the INDEX_STREAM.  */
+
+void
+lto_output_string_with_length (struct output_block *ob,
+			       struct lto_output_stream *index_stream,
+			       const char *s,
+			       unsigned int len)
+{
+  lto_output_uleb128_stream (index_stream,
+			     lto_string_index (ob, s, len));
 }
 
 /* Output the '\0' terminated STRING to the string
@@ -204,7 +214,7 @@ lto_output_string (struct output_block *ob,
     lto_output_string_with_length (ob, index_stream, string,
 				   strlen (string) + 1);
   else
-    lto_output_uleb128_stream (index_stream, 1);
+    lto_output_1_stream (index_stream, 0);
 }
 
 
@@ -221,7 +231,7 @@ output_string_cst (struct output_block *ob,
 				   TREE_STRING_POINTER (string),
 				   TREE_STRING_LENGTH (string ));
   else
-    lto_output_uleb128_stream (index_stream, 1);
+    lto_output_1_stream (index_stream, 0);
 }
 
 
@@ -238,8 +248,9 @@ output_identifier (struct output_block *ob,
 				   IDENTIFIER_POINTER (id),
 				   IDENTIFIER_LENGTH (id));
   else
-    lto_output_uleb128_stream (index_stream, 1);
+    lto_output_1_stream (index_stream, 0);
 }
+
 
 /* Write a zero to the output stream.  */
 
@@ -504,8 +515,8 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr), 2);
   bp_pack_value (bp, TYPE_USER_ALIGN (expr), 1);
   bp_pack_value (bp, TYPE_READONLY (expr), 1);
-  bp_pack_value (bp, TYPE_ALIGN (expr), HOST_BITS_PER_INT);
-  bp_pack_value (bp, TYPE_ALIAS_SET (expr) == 0 ? 0 : -1, HOST_BITS_PER_INT);
+  bp_pack_var_len_unsigned (bp, TYPE_ALIGN (expr));
+  bp_pack_var_len_int (bp, TYPE_ALIAS_SET (expr) == 0 ? 0 : -1);
 }
 
 
@@ -587,29 +598,52 @@ pack_value_fields (struct bitpack_d *bp, tree expr)
 }
 
 
-/* Emit location LOC to output block OB.  */
+/* Output info about new location into bitpack BP.
+   After outputting bitpack, lto_output_location_data has
+   to be done to output actual data.  */
+
+static inline void
+lto_output_location_bitpack (struct bitpack_d *bp,
+			     struct output_block *ob,
+			     location_t loc)
+{
+  expanded_location xloc;
+
+  bp_pack_value (bp, loc == UNKNOWN_LOCATION, 1);
+  if (loc == UNKNOWN_LOCATION)
+    return;
+
+  xloc = expand_location (loc);
+
+  bp_pack_value (bp, ob->current_file != xloc.file, 1);
+  if (ob->current_file != xloc.file)
+    bp_pack_var_len_unsigned (bp, lto_string_index (ob,
+					          xloc.file,
+						  strlen (xloc.file) + 1));
+  ob->current_file = xloc.file;
+
+  bp_pack_value (bp, ob->current_line != xloc.line, 1);
+  if (ob->current_line != xloc.line)
+    bp_pack_var_len_unsigned (bp, xloc.line);
+  ob->current_line = xloc.line;
+
+  bp_pack_value (bp, ob->current_col != xloc.column, 1);
+  if (ob->current_col != xloc.column)
+    bp_pack_var_len_unsigned (bp, xloc.column);
+  ob->current_col = xloc.column;
+}
+
+
+/* Emit location LOC to output block OB.
+   When bitpack is handy, it is more space effecient to call
+   lto_output_location_bitpack with existing bitpack.  */
 
 static void
 lto_output_location (struct output_block *ob, location_t loc)
 {
-  expanded_location xloc;
-
-  if (loc == UNKNOWN_LOCATION)
-    {
-      lto_output_string (ob, ob->main_stream, NULL);
-      return;
-    }
-
-  xloc = expand_location (loc);
-
-  lto_output_string (ob, ob->main_stream, xloc.file);
-  output_sleb128 (ob, xloc.line);
-  output_sleb128 (ob, xloc.column);
-  output_sleb128 (ob, xloc.sysp);
-
-  ob->current_file = xloc.file;
-  ob->current_line = xloc.line;
-  ob->current_col = xloc.column;
+  struct bitpack_d bp = bitpack_create (ob->main_stream);
+  lto_output_location_bitpack (&bp, ob, loc);
+  lto_output_bitpack (&bp);
 }
 
 
@@ -642,7 +676,7 @@ lto_output_tree_ref (struct output_block *ob, tree expr)
 
   if (expr == NULL_TREE)
     {
-      output_zero (ob);
+      output_record_start (ob, LTO_null);
       return;
     }
 

@@ -774,6 +774,10 @@ extern void lto_section_overrun (struct lto_input_block *) ATTRIBUTE_NORETURN;
 extern void lto_value_range_error (const char *,
 				   HOST_WIDE_INT, HOST_WIDE_INT,
 				   HOST_WIDE_INT) ATTRIBUTE_NORETURN;
+extern void bp_pack_var_len_unsigned (struct bitpack_d *, unsigned HOST_WIDE_INT);
+extern void bp_pack_var_len_int (struct bitpack_d *, HOST_WIDE_INT);
+extern unsigned HOST_WIDE_INT bp_unpack_var_len_unsigned (struct bitpack_d *);
+extern HOST_WIDE_INT bp_unpack_var_len_int (struct bitpack_d *);
 
 /* In lto-section-out.c  */
 extern hashval_t lto_hash_decl_slot_node (const void *);
@@ -1110,6 +1114,11 @@ bp_pack_value (struct bitpack_d *bp, bitpack_word_t val, unsigned nbits)
 {
   bitpack_word_t word = bp->word;
   int pos = bp->pos;
+
+  /* Verify that VAL fits in the NBITS.  */
+  gcc_checking_assert (nbits == BITS_PER_BITPACK_WORD
+		       || !(val & ~(((bitpack_word_t)1<<nbits)-1)));
+
   /* If val does not fit into the current bitpack word switch to the
      next one.  */
   if (pos + nbits > BITS_PER_BITPACK_WORD)

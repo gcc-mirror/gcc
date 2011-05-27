@@ -132,19 +132,22 @@ eq_string_slot_node (const void *p1, const void *p2)
    IB.  Write the length to RLEN.  */
 
 static const char *
-input_string_internal (struct data_in *data_in, struct lto_input_block *ib,
-		       unsigned int *rlen)
+string_for_index (struct data_in *data_in,
+		  unsigned int loc,
+		  unsigned int *rlen)
 {
   struct lto_input_block str_tab;
   unsigned int len;
-  unsigned int loc;
   const char *result;
 
-  /* Read the location of the string from IB.  */
-  loc = lto_input_uleb128 (ib);
+  if (!loc)
+    {
+      *rlen = 0;
+      return NULL;
+    }
 
   /* Get the string stored at location LOC in DATA_IN->STRINGS.  */
-  LTO_INIT_INPUT_BLOCK (str_tab, data_in->strings, loc, data_in->strings_len);
+  LTO_INIT_INPUT_BLOCK (str_tab, data_in->strings, loc - 1, data_in->strings_len);
   len = lto_input_uleb128 (&str_tab);
   *rlen = len;
 
@@ -157,6 +160,17 @@ input_string_internal (struct data_in *data_in, struct lto_input_block *ib,
 }
 
 
+/* Read a string from the string table in DATA_IN using input block
+   IB.  Write the length to RLEN.  */
+
+static const char *
+input_string_internal (struct data_in *data_in, struct lto_input_block *ib,
+		       unsigned int *rlen)
+{
+  return string_for_index (data_in, lto_input_uleb128 (ib), rlen);
+}
+
+
 /* Read a STRING_CST from the string table in DATA_IN using input
    block IB.  */
 
@@ -165,13 +179,10 @@ input_string_cst (struct data_in *data_in, struct lto_input_block *ib)
 {
   unsigned int len;
   const char * ptr;
-  unsigned int is_null;
-
-  is_null = lto_input_uleb128 (ib);
-  if (is_null)
-    return NULL;
 
   ptr = input_string_internal (data_in, ib, &len);
+  if (!ptr)
+    return NULL;
   return build_string (len, ptr);
 }
 
@@ -184,13 +195,10 @@ input_identifier (struct data_in *data_in, struct lto_input_block *ib)
 {
   unsigned int len;
   const char *ptr;
-  unsigned int is_null;
-
-  is_null = lto_input_uleb128 (ib);
-  if (is_null)
-    return NULL;
 
   ptr = input_string_internal (data_in, ib, &len);
+  if (!ptr)
+    return NULL;
   return get_identifier_with_length (ptr, len);
 }
 
@@ -215,13 +223,10 @@ lto_input_string (struct data_in *data_in, struct lto_input_block *ib)
 {
   unsigned int len;
   const char *ptr;
-  unsigned int is_null;
-
-  is_null = lto_input_uleb128 (ib);
-  if (is_null)
-    return NULL;
 
   ptr = input_string_internal (data_in, ib, &len);
+  if (!ptr)
+    return NULL;
   if (ptr[len - 1] != '\0')
     internal_error ("bytecode stream: found non-null terminated string");
 
@@ -284,37 +289,57 @@ clear_line_info (struct data_in *data_in)
 }
 
 
+/* Read a location bitpack from input block IB.  */
+
+static location_t
+lto_input_location_bitpack (struct data_in *data_in, struct bitpack_d *bp)
+{
+  bool file_change, line_change, column_change;
+  unsigned len;
+  bool prev_file = data_in->current_file != NULL;
+
+  if (bp_unpack_value (bp, 1))
+    return UNKNOWN_LOCATION;
+
+  file_change = bp_unpack_value (bp, 1);
+  if (file_change)
+    data_in->current_file = canon_file_name
+			      (string_for_index (data_in,
+						 bp_unpack_var_len_unsigned (bp),
+					         &len));
+
+  line_change = bp_unpack_value (bp, 1);
+  if (line_change)
+    data_in->current_line = bp_unpack_var_len_unsigned (bp);
+
+  column_change = bp_unpack_value (bp, 1);
+  if (column_change)
+    data_in->current_col = bp_unpack_var_len_unsigned (bp);
+
+  if (file_change)
+    {
+      if (prev_file)
+	linemap_add (line_table, LC_LEAVE, false, NULL, 0);
+
+      linemap_add (line_table, LC_ENTER, false, data_in->current_file,
+		   data_in->current_line);
+    }
+  else if (line_change)
+    linemap_line_start (line_table, data_in->current_line, data_in->current_col);
+
+  return linemap_position_for_column (line_table, data_in->current_col);
+}
+
+
 /* Read a location from input block IB.  */
 
 static location_t
 lto_input_location (struct lto_input_block *ib, struct data_in *data_in)
 {
-  expanded_location xloc;
+  struct bitpack_d bp;
 
-  xloc.file = lto_input_string (data_in, ib);
-  if (xloc.file == NULL)
-    return UNKNOWN_LOCATION;
-
-  xloc.file = canon_file_name (xloc.file);
-  xloc.line = lto_input_sleb128 (ib);
-  xloc.column = lto_input_sleb128 (ib);
-  xloc.sysp = lto_input_sleb128 (ib);
-
-  if (data_in->current_file != xloc.file)
-    {
-      if (data_in->current_file)
-	linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-
-      linemap_add (line_table, LC_ENTER, xloc.sysp, xloc.file, xloc.line);
-    }
-  else if (data_in->current_line != xloc.line)
-    linemap_line_start (line_table, xloc.line, xloc.column);
-
-  data_in->current_file = xloc.file;
-  data_in->current_line = xloc.line;
-  data_in->current_col = xloc.column;
-
-  return linemap_position_for_column (line_table, xloc.column);
+  bp = lto_input_bitpack (ib);
+  return lto_input_location_bitpack (data_in, &bp);
 }
 
 
@@ -1766,8 +1791,8 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     	= (unsigned) bp_unpack_value (bp, 2);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_ALIGN (expr) = (unsigned) bp_unpack_value (bp, HOST_BITS_PER_INT);
-  TYPE_ALIAS_SET (expr) = bp_unpack_value (bp, HOST_BITS_PER_INT);
+  TYPE_ALIGN (expr) = bp_unpack_var_len_unsigned (bp);
+  TYPE_ALIAS_SET (expr) = bp_unpack_var_len_int (bp);
 }
 
 

@@ -127,6 +127,51 @@ lto_input_sleb128 (struct lto_input_block *ib)
 }
 
 
+/* Unpack VAL from BP in a variant of uleb format.  */
+
+unsigned HOST_WIDE_INT
+bp_unpack_var_len_unsigned (struct bitpack_d *bp)
+{
+  unsigned HOST_WIDE_INT result = 0;
+  int shift = 0;
+  unsigned HOST_WIDE_INT half_byte;
+
+  while (true)
+    {
+      half_byte = bp_unpack_value (bp, 4);
+      result |= (half_byte & 0x7) << shift;
+      shift += 3;
+      if ((half_byte & 0x8) == 0)
+	return result;
+    }
+}
+
+
+/* Unpack VAL from BP in a variant of sleb format.  */
+
+HOST_WIDE_INT
+bp_unpack_var_len_int (struct bitpack_d *bp)
+{
+  HOST_WIDE_INT result = 0;
+  int shift = 0;
+  unsigned HOST_WIDE_INT half_byte;
+
+  while (true)
+    {
+      half_byte = bp_unpack_value (bp, 4);
+      result |= (half_byte & 0x7) << shift;
+      shift += 3;
+      if ((half_byte & 0x8) == 0)
+	{
+	  if ((shift < HOST_BITS_PER_WIDE_INT) && (half_byte & 0x4))
+	    result |= - ((HOST_WIDE_INT)1 << shift);
+
+	  return result;
+	}
+    }
+}
+
+
 /* Hooks so that the ipa passes can call into the lto front end to get
    sections.  */
 
