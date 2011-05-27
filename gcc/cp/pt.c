@@ -18260,8 +18260,15 @@ dependent_type_p_r (tree type)
   scope = TYPE_CONTEXT (type);
   if (scope && TYPE_P (scope))
     return dependent_type_p (scope);
-  else if (scope && TREE_CODE (scope) == FUNCTION_DECL)
-    return type_dependent_expression_p (scope);
+  /* Don't use type_dependent_expression_p here, as it can lead
+     to infinite recursion trying to determine whether a lambda
+     nested in a lambda is dependent (c++/47687).  */
+  else if (scope && TREE_CODE (scope) == FUNCTION_DECL
+	   && DECL_LANG_SPECIFIC (scope)
+	   && DECL_TEMPLATE_INFO (scope)
+	   && (any_dependent_template_arguments_p
+	       (INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (scope)))))
+    return true;
 
   /* Other types are non-dependent.  */
   return false;
