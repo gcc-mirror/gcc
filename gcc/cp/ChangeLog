@@ -1,3 +1,12 @@
+2011-05-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47956
+	* decl.c (check_static_variable_definition): Now static.
+	(cp_finish_decl): Call it here.
+	(grokdeclarator): Not here.
+	* pt.c (instantiate_class_template_1): Or here.
+	* cp-tree.h: Don't declare it.
+
 2011-05-26  Janis Johnson  <janis187@us.ibm.com>
 	    Nathan Froyd  <froydnj@codesourcery.com>
 
