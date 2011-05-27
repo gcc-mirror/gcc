@@ -1,9 +1,24 @@
+2011-05-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* sched-int.h (struct _haifa_deps_insn_data): New members cond
+	and reverse_cond.
+	(INSN_COND, INSN_REVERSE_COND): New macros.
+	* sched-deps.c (deps_analyze_insn): Call sched_get_condition_with_rev
+	once.
+	(sched_get_condition_with_rev): Cache the results, and look them up
+	if possible.
+	(sched_analyze_insn): Destroy INSN_COND of previous insns if they
+	are clobbered by the current insn.
+	* target.def (exposed_pipline): New sched data hook.
+	* doc/tm.texi.in: TARGET_SCHED_EXPOSED_PIPELINE: Add hook.
+	* doc/tm.texi: Regenerate.
+
 2011-05-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/49170
 	* tree-ssa-math-opts.c (execute_cse_sincos):  Add checks for
 	sincos or cexp.
-	
+
 2011-05-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/49189

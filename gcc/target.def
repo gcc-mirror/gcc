@@ -897,6 +897,13 @@ DEFHOOK
 bool, (rtx insn, int x),
 hook_bool_rtx_int_false)
 
+DEFHOOKPOD
+(exposed_pipeline,
+"True if the processor has an exposed pipeline, which means that not just\n\
+the order of instructions is important for correctness when scheduling, but\n\
+also the latencies of operations.",
+bool, false)
+
 HOOK_VECTOR_END (sched)
 
 /* Functions relating to vectorization.  */

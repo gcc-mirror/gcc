@@ -6739,6 +6739,8 @@ This hook is called by Haifa Scheduler.  It performs the operation specified
 in its second parameter.
 @end deftypefn
 
+@hook TARGET_SCHED_EXPOSED_PIPELINE
+
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
 @c the above section title is WAY too long.  maybe cut the part between
