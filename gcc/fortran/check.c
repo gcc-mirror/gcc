@@ -2830,6 +2830,33 @@ gfc_check_range (gfc_expr *x)
 }
 
 
+gfc_try
+gfc_check_rank (gfc_expr *a ATTRIBUTE_UNUSED)
+{
+  /* Any data object is allowed; a "data object" is a "constant (4.1.3),
+     variable (6), or subobject of a constant (2.4.3.2.3)" (F2008, 1.3.45).  */
+
+  bool is_variable = true;
+
+  /* Functions returning pointers are regarded as variable, cf. F2008, R602. */
+  if (a->expr_type == EXPR_FUNCTION) 
+    is_variable = a->value.function.esym
+		  ? a->value.function.esym->result->attr.pointer
+		  : a->symtree->n.sym->result->attr.pointer;
+
+  if (a->expr_type == EXPR_OP || a->expr_type == EXPR_NULL
+      || a->expr_type == EXPR_COMPCALL|| a->expr_type == EXPR_PPC
+      || !is_variable)
+    {
+      gfc_error ("The argument of the RANK intrinsic at %L must be a data "
+		 "object", &a->where);
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
+
+
 /* real, float, sngl.  */
 gfc_try
 gfc_check_real (gfc_expr *a, gfc_expr *kind)

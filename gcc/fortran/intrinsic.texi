@@ -236,6 +236,7 @@ Some basic guidelines for editing this document:
 * @code{RANDOM_SEED}:   RANDOM_SEED, Initialize a pseudo-random number sequence
 * @code{RAND}:          RAND,      Real pseudo-random number
 * @code{RANGE}:         RANGE,     Decimal exponent range
+* @code{RANK} :         RANK,      Rank of a data object
 * @code{RAN}:           RAN,       Real pseudo-random number
 * @code{REAL}:          REAL,      Convert to real type 
 * @code{RENAME}:        RENAME,    Rename a file
@@ -10111,6 +10112,47 @@ kind.
 
 @item @emph{Example}:
 See @code{PRECISION} for an example.
+@end table
+
+
+
+@node RANK
+@section @code{RANK} --- Rank of a data object
+@fnindex RANK
+@cindex rank
+
+@table @asis
+@item @emph{Description}:
+@code{RANK(A)} returns the rank of a scalar or array data object.
+
+@item @emph{Standard}:
+Technical Report (TR) 29113
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@code{RESULT = RANGE(A)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{A} @tab can be of any type
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind. For arrays, their rank is returned; for scalars zero is returned.
+
+@item @emph{Example}:
+@smallexample
+program test_rank
+  integer :: a
+  real, allocatable :: b(:,:)
+
+  print *, rank(a), rank(b) ! Prints:  0  3
+end program test_rank
+@end smallexample
+
 @end table
 
 
