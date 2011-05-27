@@ -72,16 +72,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Points to a statically-allocated object derived from error_category.
   const error_category&
-  future_category();
+  future_category() noexcept;
 
   /// Overload for make_error_code.
   inline error_code 
-  make_error_code(future_errc __errc)
+  make_error_code(future_errc __errc) noexcept
   { return error_code(static_cast<int>(__errc), future_category()); }
 
   /// Overload for make_error_condition.
   inline error_condition 
-  make_error_condition(future_errc __errc)
+  make_error_condition(future_errc __errc) noexcept
   { return error_condition(static_cast<int>(__errc), future_category()); }
 
   /**
@@ -97,13 +97,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : logic_error("std::future_error"), _M_code(__ec)
     { }
 
-    virtual ~future_error() throw();
+    virtual ~future_error() noexcept;
 
     virtual const char* 
-    what() const throw();
+    what() const noexcept;
 
     const error_code& 
-    code() const throw() { return _M_code; }
+    code() const noexcept { return _M_code; }
   };
 
   // Forward declarations.
@@ -197,7 +197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool 			_M_initialized;
 
       public:
-	_Result() : _M_initialized() { }
+	_Result() noexcept : _M_initialized() { }
 	
 	~_Result()
 	{
@@ -207,7 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// Return lvalue, future will add const or rvalue-reference
 	_Res& 
-	_M_value() { return *static_cast<_Res*>(_M_addr()); }
+	_M_value() noexcept { return *static_cast<_Res*>(_M_addr()); }
 
 	void
 	_M_set(const _Res& __res)
@@ -226,7 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       private:
 	void _M_destroy() { delete this; }
 
-	void* _M_addr() { return static_cast<void*>(&_M_storage); }
+	void* _M_addr() noexcept { return static_cast<void*>(&_M_storage); }
     };
 
     // TODO: use template alias when available
@@ -294,7 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       once_flag			_M_once;
 
     public:
-      _State_base() : _M_result(), _M_retrieved(ATOMIC_FLAG_INIT) { }
+      _State_base() noexcept : _M_result(), _M_retrieved(ATOMIC_FLAG_INIT) { }
       _State_base(const _State_base&) = delete;
       _State_base& operator=(const _State_base&) = delete;
       virtual ~_State_base();
@@ -454,7 +454,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         __set = true;
       }
 
-      bool _M_ready() const { return static_cast<bool>(_M_result); }
+      bool _M_ready() const noexcept { return static_cast<bool>(_M_result); }
 
       virtual void _M_run_deferred() { }
     };
@@ -476,11 +476,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res>
     struct __future_base::_Result<_Res&> : __future_base::_Result_base
     {
-      _Result() : _M_value_ptr() { }
+      _Result() noexcept : _M_value_ptr() { }
 
-      void _M_set(_Res& __res) { _M_value_ptr = &__res; }
+      void _M_set(_Res& __res) noexcept { _M_value_ptr = &__res; }
 
-      _Res& _M_get() { return *_M_value_ptr; }
+      _Res& _M_get() noexcept { return *_M_value_ptr; }
 
     private:
       _Res* 			_M_value_ptr;
@@ -514,7 +514,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __basic_future& operator=(const __basic_future&) = delete;
 
       bool 
-      valid() const { return static_cast<bool>(_M_state); }
+      valid() const noexcept { return static_cast<bool>(_M_state); }
 
       void 
       wait() const
@@ -551,7 +551,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return static_cast<__result_type>(__res);
       }
 
-      void _M_swap(__basic_future& __that)
+      void _M_swap(__basic_future& __that) noexcept
       {
         _M_state.swap(__that._M_state);
       }
@@ -566,21 +566,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Copy construction from a shared_future
       explicit
-      __basic_future(const shared_future<_Res>&);
+      __basic_future(const shared_future<_Res>&) noexcept;
 
       // Move construction from a shared_future
       explicit
-      __basic_future(shared_future<_Res>&&);
+      __basic_future(shared_future<_Res>&&) noexcept;
 
       // Move construction from a future
       explicit
-      __basic_future(future<_Res>&&);
+      __basic_future(future<_Res>&&) noexcept;
 
-      constexpr __basic_future() : _M_state() { }
+      constexpr __basic_future() noexcept : _M_state() { }
 
       struct _Reset
       {
-        explicit _Reset(__basic_future& __fut) : _M_fut(__fut) { }
+        explicit _Reset(__basic_future& __fut) noexcept : _M_fut(__fut) { }
         ~_Reset() { _M_fut._M_state.reset(); }
         __basic_future& _M_fut;
       };
@@ -604,16 +604,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       future(const __state_type& __state) : _Base_type(__state) { }
 
     public:
-      constexpr future() : _Base_type() { }
+      constexpr future() noexcept : _Base_type() { }
 
       /// Move constructor
-      future(future&& __uf) : _Base_type(std::move(__uf)) { }
+      future(future&& __uf) noexcept : _Base_type(std::move(__uf)) { }
 
       // Disable copying
       future(const future&) = delete;
       future& operator=(const future&) = delete;
 
-      future& operator=(future&& __fut)
+      future& operator=(future&& __fut) noexcept
       {
         future(std::move(__fut))._M_swap(*this);
         return *this;
@@ -647,16 +647,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       future(const __state_type& __state) : _Base_type(__state) { }
 
     public:
-      constexpr future() : _Base_type() { }
+      constexpr future() noexcept : _Base_type() { }
 
       /// Move constructor
-      future(future&& __uf) : _Base_type(std::move(__uf)) { }
+      future(future&& __uf) noexcept : _Base_type(std::move(__uf)) { }
 
       // Disable copying
       future(const future&) = delete;
       future& operator=(const future&) = delete;
 
-      future& operator=(future&& __fut)
+      future& operator=(future&& __fut) noexcept
       {
         future(std::move(__fut))._M_swap(*this);
         return *this;
@@ -690,16 +690,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       future(const __state_type& __state) : _Base_type(__state) { }
 
     public:
-      constexpr future() : _Base_type() { }
+      constexpr future() noexcept : _Base_type() { }
 
       /// Move constructor
-      future(future&& __uf) : _Base_type(std::move(__uf)) { }
+      future(future&& __uf) noexcept : _Base_type(std::move(__uf)) { }
 
       // Disable copying
       future(const future&) = delete;
       future& operator=(const future&) = delete;
 
-      future& operator=(future&& __fut)
+      future& operator=(future&& __fut) noexcept
       {
         future(std::move(__fut))._M_swap(*this);
         return *this;
@@ -724,18 +724,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __basic_future<_Res> _Base_type;
 
     public:
-      constexpr shared_future() : _Base_type() { }
+      constexpr shared_future() noexcept : _Base_type() { }
 
       /// Copy constructor
       shared_future(const shared_future& __sf) : _Base_type(__sf) { }
 
       /// Construct from a future rvalue
-      shared_future(future<_Res>&& __uf)
+      shared_future(future<_Res>&& __uf) noexcept
       : _Base_type(std::move(__uf))
       { }
 
       /// Construct from a shared_future rvalue
-      shared_future(shared_future&& __sf)
+      shared_future(shared_future&& __sf) noexcept
       : _Base_type(std::move(__sf))
       { }
 
@@ -745,7 +745,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return *this;
       }
 
-      shared_future& operator=(shared_future&& __sf)
+      shared_future& operator=(shared_future&& __sf) noexcept
       {
         shared_future(std::move(__sf))._M_swap(*this);
         return *this;
@@ -768,18 +768,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __basic_future<_Res&>           _Base_type;
 
     public:
-      constexpr shared_future() : _Base_type() { }
+      constexpr shared_future() noexcept : _Base_type() { }
 
       /// Copy constructor
       shared_future(const shared_future& __sf) : _Base_type(__sf) { }
 
       /// Construct from a future rvalue
-      shared_future(future<_Res&>&& __uf)
+      shared_future(future<_Res&>&& __uf) noexcept
       : _Base_type(std::move(__uf))
       { }
 
       /// Construct from a shared_future rvalue
-      shared_future(shared_future&& __sf)
+      shared_future(shared_future&& __sf) noexcept
       : _Base_type(std::move(__sf))
       { }
 
@@ -789,7 +789,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return *this;
       }
 
-      shared_future& operator=(shared_future&& __sf)
+      shared_future& operator=(shared_future&& __sf) noexcept
       {
         shared_future(std::move(__sf))._M_swap(*this);
         return *this;
@@ -807,18 +807,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __basic_future<void> _Base_type;
 
     public:
-      constexpr shared_future() : _Base_type() { }
+      constexpr shared_future() noexcept : _Base_type() { }
 
       /// Copy constructor
       shared_future(const shared_future& __sf) : _Base_type(__sf) { }
 
       /// Construct from a future rvalue
-      shared_future(future<void>&& __uf)
+      shared_future(future<void>&& __uf) noexcept
       : _Base_type(std::move(__uf))
       { }
 
       /// Construct from a shared_future rvalue
-      shared_future(shared_future&& __sf)
+      shared_future(shared_future&& __sf) noexcept
       : _Base_type(std::move(__sf))
       { }
 
@@ -828,7 +828,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         return *this;
       }
 
-      shared_future& operator=(shared_future&& __sf)
+      shared_future& operator=(shared_future&& __sf) noexcept
       {
         shared_future(std::move(__sf))._M_swap(*this);
         return *this;
@@ -842,19 +842,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Now we can define the protected __basic_future constructors.
   template<typename _Res>
     inline __basic_future<_Res>::
-    __basic_future(const shared_future<_Res>& __sf)
+    __basic_future(const shared_future<_Res>& __sf) noexcept
     : _M_state(__sf._M_state)
     { }
 
   template<typename _Res>
     inline __basic_future<_Res>::
-    __basic_future(shared_future<_Res>&& __sf)
+    __basic_future(shared_future<_Res>&& __sf) noexcept
     : _M_state(std::move(__sf._M_state))
     { }
 
   template<typename _Res>
     inline __basic_future<_Res>::
-    __basic_future(future<_Res>&& __uf)
+    __basic_future(future<_Res>&& __uf) noexcept
     : _M_state(std::move(__uf._M_state))
     { }
 
@@ -890,7 +890,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_storage(new _Res_type())
       { }
 
-      promise(promise&& __rhs)
+      promise(promise&& __rhs) noexcept
       : _M_future(std::move(__rhs._M_future)),
 	_M_storage(std::move(__rhs._M_storage))
       { }
@@ -911,7 +911,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Assignment
       promise&
-      operator=(promise&& __rhs)
+      operator=(promise&& __rhs) noexcept
       {
         promise(std::move(__rhs)).swap(*this);
         return *this;
@@ -920,7 +920,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       promise& operator=(const promise&) = delete;
 
       void
-      swap(promise& __rhs)
+      swap(promise& __rhs) noexcept
       {
         _M_future.swap(__rhs._M_future);
         _M_storage.swap(__rhs._M_storage);
@@ -956,7 +956,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Res>
     inline void
-    swap(promise<_Res>& __x, promise<_Res>& __y)
+    swap(promise<_Res>& __x, promise<_Res>& __y) noexcept
     { __x.swap(__y); }
 
   template<typename _Res, typename _Alloc>
@@ -982,7 +982,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_storage(new _Res_type())
       { }
 
-      promise(promise&& __rhs)
+      promise(promise&& __rhs) noexcept
       : _M_future(std::move(__rhs._M_future)), 
 	_M_storage(std::move(__rhs._M_storage))
       { }
@@ -1003,7 +1003,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Assignment
       promise&
-      operator=(promise&& __rhs)
+      operator=(promise&& __rhs) noexcept
       {
         promise(std::move(__rhs)).swap(*this);
         return *this;
@@ -1012,7 +1012,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       promise& operator=(const promise&) = delete;
 
       void
-      swap(promise& __rhs)
+      swap(promise& __rhs) noexcept
       {
         _M_future.swap(__rhs._M_future);
         _M_storage.swap(__rhs._M_storage);
@@ -1057,7 +1057,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_storage(new _Res_type())
       { }
 
-      promise(promise&& __rhs)
+      promise(promise&& __rhs) noexcept
       : _M_future(std::move(__rhs._M_future)),
 	_M_storage(std::move(__rhs._M_storage))
       { }
@@ -1078,7 +1078,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Assignment
       promise&
-      operator=(promise&& __rhs)
+      operator=(promise&& __rhs) noexcept
       {
         promise(std::move(__rhs)).swap(*this);
         return *this;
@@ -1087,7 +1087,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       promise& operator=(const promise&) = delete;
 
       void
-      swap(promise& __rhs)
+      swap(promise& __rhs) noexcept
       {
         _M_future.swap(__rhs._M_future);
         _M_storage.swap(__rhs._M_storage);
@@ -1226,7 +1226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       // Construction and destruction
-      packaged_task() { }
+      packaged_task() noexcept { }
 
       template<typename _Fn>
         explicit
@@ -1252,21 +1252,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       packaged_task& operator=(packaged_task&) = delete;
 
       // Move support
-      packaged_task(packaged_task&& __other)
+      packaged_task(packaged_task&& __other) noexcept
       { this->swap(__other); }
 
-      packaged_task& operator=(packaged_task&& __other)
+      packaged_task& operator=(packaged_task&& __other) noexcept
       {
         packaged_task(std::move(__other)).swap(*this);
         return *this;
       }
 
       void
-      swap(packaged_task& __other)
+      swap(packaged_task& __other) noexcept
       { _M_state.swap(__other._M_state); }
 
       bool
-      valid() const
+      valid() const noexcept
       { return static_cast<bool>(_M_state); }
 
       // Result retrieval
@@ -1294,7 +1294,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename... _ArgTypes>
     inline void
     swap(packaged_task<_Res(_ArgTypes...)>& __x,
-	 packaged_task<_Res(_ArgTypes...)>& __y)
+	 packaged_task<_Res(_ArgTypes...)>& __y) noexcept
     { __x.swap(__y); }
 
   template<typename _Res, typename _Alloc>
