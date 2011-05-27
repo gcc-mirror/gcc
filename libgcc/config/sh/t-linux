@@ -5,7 +5,7 @@ HOST_LIBGCC2_CFLAGS = -fpic -mieee -DNO_FPSCR_VALUES
 # routines which should not be called via PLT.  We have to create
 # the list from scratch.
 SHLIB_MAPFILES = \
-	$(gcc_srcdir)/libgcc-std.ver \
+	libgcc-std.ver \
 	$(gcc_srcdir)/config/sh/libgcc-excl.ver \
 	$(gcc_srcdir)/config/sh/libgcc-glibc.ver
 

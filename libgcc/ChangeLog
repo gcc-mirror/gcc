@@ -1,3 +1,11 @@
+2011-05-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/49173
+	* config/t-slibgcc-darwin (SHLIB_MAPFILES): Look for
+	libgcc-std.ver in the build directory.
+	* config/s390/t-linux (SHLIB_MAPFILES): Likewise.
+	* config/sh/t-linux (SHLIB_MAPFILES): Likewise.
+
 2011-05-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* libgcc-std.ver.in: New file.
