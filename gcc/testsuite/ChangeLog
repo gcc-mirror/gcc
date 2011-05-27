@@ -1,5 +1,8 @@
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49176
+	* g++.dg/template/const5.C: New.
+
 	* g++.dg/cpp0x/enum18.C: New.
 
 	* g++.dg/cpp0x/lambda/lambda-nested4.C: New.
