@@ -1,3 +1,9 @@
+2011-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49165
+	* c-common.c (c_common_truthvalue_conversion) <case COND_EXPR>: For
+	C++ don't call c_common_truthvalue_conversion on void type arms.
+
 2011-04-19  Richard Guenther  <rguenther@suse.de>
 
 	PR preprocessor/48248

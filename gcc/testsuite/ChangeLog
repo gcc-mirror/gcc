@@ -1,3 +1,8 @@
+2011-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49165
+	* g++.dg/eh/cond6.C: New test.
+
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/const5.C: New.
