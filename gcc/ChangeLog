@@ -1,3 +1,8 @@
+2011-05-27  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.c (reorder_var_tracking_notes): Drop
+	call_arg_location instructions down the floor.
+
 2011-05-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/49154

@@ -3243,13 +3243,20 @@ reorder_var_tracking_notes (void)
                     }
                 }
             }
-          else if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
+          else if (NOTE_P (insn))
             {
                rtx prev = PREV_INSN (insn);
                PREV_INSN (next) = prev;
                NEXT_INSN (prev) = next;
-               PREV_INSN (insn) = queue;
-               queue = insn;
+               /* Ignore call_arg notes. They are expected to be just after the
+                  call insn. If the call is start of a long VLIW, labels are
+                  emitted in the middle of a VLIW, which our assembler can not
+                  handle. */
+               if (NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION)
+                 {
+                   PREV_INSN (insn) = queue;
+                   queue = insn;
+                 }
             }
         }
         /* Make sure we are not dropping debug instructions.*/
