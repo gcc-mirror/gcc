@@ -1,3 +1,8 @@
+2011-05-27  Janis Johnson  <janisjo@codesourcery.com>
+
+	* g++.dg/tree-ssa-pr43411.C: Rename function to be inlined and
+	replace dump search.
+
 2011-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/bit_packed_array5.ads: Move dg directive to...
