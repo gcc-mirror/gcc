@@ -4320,7 +4320,8 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
 		!= CPP_LESS)
 	    && (token->u.value == TYPE_IDENTIFIER (scope)
-		|| constructor_name_p (token->u.value, scope)))
+		|| (CLASS_TYPE_P (scope)
+		    && constructor_name_p (token->u.value, scope))))
 	  {
 	    cp_lexer_consume_token (parser->lexer);
 	    return build_nt (BIT_NOT_EXPR, scope);

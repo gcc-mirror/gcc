@@ -1,5 +1,9 @@
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47277
+	* parser.c (cp_parser_unqualified_id): Don't check
+	constructor_name_p for enums.
+
 	PR c++/48284
 	* error.c (dump_expr) [COMPONENT_REF]: Use pp_cxx_dot
 	with INDIRECT_REF of REFERENCE_TYPE.
