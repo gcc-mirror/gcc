@@ -1,3 +1,25 @@
+2011-05-27  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/48981
+	* gengtype.c (vec_prefix_type): New function.
+	(note_def_vec): Use vec_prefix_type and change the length
+	attribute to be based on the prefix.
+	* vec.c: Include coretypes.h before vec.h.
+	(struct vec_prefix): Remove.
+	(vec_gc_p_reserve): Change the offsetof to sizeof.
+	(vec_gc_p_reserve_exact): Likewise.
+	(vec_heap_p_reserve): Likewise.
+	(vec_heap_p_reserve_exact): Likewise.
+	(vec_stack_o_reserve_1): Copy from +1 instead of from vec.
+	(vec_stack_p_reserve): Change the offsetof to sizeof.
+	(vec_stack_p_reserve_exact): Likewise.
+	* vec.h (struct vec_prefix): New struct definition.
+	(VEC_T(T,B)): Use vec_prefix instead of having num/alloc fields.
+	(VEC_T_GTY(T,B)): Likewise.
+	(DEF_VEC_FUNC_P(T)): Use prefix field.
+	(DEF_VEC_NONALLOC_FUNCS_O(T,A)): Likewise.
+	(DEF_VEC_NONALLOC_FUNCS_I(T,A)): Likewise.
+
 2011-05-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/46728
