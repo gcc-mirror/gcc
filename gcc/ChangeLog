@@ -1,3 +1,20 @@
+2011-05-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Uros Bizjak <ubizjak@gmail.com>
+
+	* configure.ac (gcc_cv_as_ix86_tlsgdplt): Check for @tlsgdplt
+	(HAVE_AS_IX86_TLSGDPTL): Define.
+	(gcc_cv_as_ix86_tlsldmplt): Check for @tlsldmplt.
+	(HAVE_AS_IX86_TLSLDMPLT): Define.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/i386.c (ix86_print_operand): Handle code 'p'.
+	* config/i386/i386.md (*tls_global_dynamic_32_gnu): If
+	TARGET_SUN_TLS, use @tlsgdplt or @plt.
+	(*tls_global_dynamic_64): Use @plt if TARGET_SUN_TLS.
+	(*tls_local_dynamic_base_32_gnu): If TARGET_SUN_TLS, use
+	@tlsldmplt or @plt.
+	(*tls_local_dynamic_base_64): Use @plt if TARGET_SUN_TLS.
+
 2011-05-27  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* sched-int.h (struct _haifa_deps_insn_data): New members cond
