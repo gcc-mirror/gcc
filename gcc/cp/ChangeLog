@@ -1,5 +1,8 @@
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47132
+	* mangle.c (write_expression): Handle MODOP_EXPR.
+
 	PR c++/47277
 	* parser.c (cp_parser_unqualified_id): Don't check
 	constructor_name_p for enums.

@@ -1,5 +1,7 @@
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/abi/mangle47.C: New.
+
 	PR c++/49176
 	* g++.dg/template/const5.C: New.
 
