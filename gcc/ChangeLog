@@ -1,3 +1,8 @@
+2011-05-27  Alexander Monakov  <amonakov@ispras.ru>
+
+	* doc/contrib.texi: Update copyright years.
+	(Contributors): Add Zdenek Sojka.
+
 2011-05-27  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-decl.c (c_push_function_context): Copy the current statement

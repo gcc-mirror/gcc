@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,
-@c 2001,2002,2003,2004,2005,2006,2007,2008,2009, 2010
+@c 2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -866,6 +866,10 @@ Scott Snyder for queue, iterator, istream, and string fixes and libstdc++
 testsuite entries.  Also for providing the patch to G77 to add
 rudimentary support for @code{INTEGER*1}, @code{INTEGER*2}, and
 @code{LOGICAL*1}.
+
+@item
+Zdenek Sojka for running automated regression testing of GCC and reporting
+numerous bugs.
 
 @item
 Brad Spencer for contributions to the GLIBCPP_FORCE_NEW technique.
