@@ -3194,6 +3194,13 @@ gfc_match_nullify (void)
       if (gfc_check_do_variable (p->symtree))
 	goto cleanup;
 
+      /* F2008, C1242.  */
+      if (gfc_is_coindexed (p))
+	{
+	  gfc_error ("Pointer object at %C shall not be conindexed");
+	  goto cleanup;
+	}
+
       /* build ' => NULL() '.  */
       e = gfc_get_null_expr (&gfc_current_locus);
 

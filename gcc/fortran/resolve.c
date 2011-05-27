@@ -6494,6 +6494,13 @@ resolve_deallocate_expr (gfc_expr *e)
       return FAILURE;
     }
 
+  /* F2008, C644.  */
+  if (gfc_is_coindexed (e))
+    {
+      gfc_error ("Coindexed allocatable object at %L", &e->where);
+      return FAILURE;
+    }
+
   if (pointer
       && gfc_check_vardef_context (e, true, _("DEALLOCATE object")) == FAILURE)
     return FAILURE;
