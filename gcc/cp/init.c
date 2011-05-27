@@ -61,7 +61,7 @@ static int diagnose_uninitialized_cst_or_ref_member_1 (tree, tree, bool, bool);
 static bool
 begin_init_stmts (tree *stmt_expr_p, tree *compound_stmt_p)
 {
-  bool is_global = !building_stmt_tree ();
+  bool is_global = !building_stmt_list_p ();
 
   *stmt_expr_p = begin_stmt_expr ();
   *compound_stmt_p = begin_compound_stmt (BCS_NO_SCOPE);
@@ -79,7 +79,7 @@ finish_init_stmts (bool is_global, tree stmt_expr, tree compound_stmt)
 
   stmt_expr = finish_stmt_expr (stmt_expr, true);
 
-  gcc_assert (!building_stmt_tree () == is_global);
+  gcc_assert (!building_stmt_list_p () == is_global);
 
   return stmt_expr;
 }
@@ -1552,7 +1552,7 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
   tree type = TREE_TYPE (exp);
 
   gcc_assert (init != error_mark_node && type != error_mark_node);
-  gcc_assert (building_stmt_tree ());
+  gcc_assert (building_stmt_list_p ());
 
   /* Use a function returning the desired type to initialize EXP for us.
      If the function is a constructor, and its first argument is

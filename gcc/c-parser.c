@@ -6126,7 +6126,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  c_parser_consume_token (parser);
 	  brace_loc = c_parser_peek_token (parser)->location;
 	  c_parser_consume_token (parser);
-	  if (cur_stmt_list == NULL)
+	  if (!building_stmt_list_p ())
 	    {
 	      error_at (loc, "braced-group within expression allowed "
 			"only inside a function");

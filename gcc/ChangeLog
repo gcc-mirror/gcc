@@ -1,3 +1,21 @@
+2011-05-27  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-decl.c (c_push_function_context): Copy the current statement
+	list stack.
+	(add_stmt): Check building_stmt_list_p and push_stmt if necessary.
+	(finish_struct): Call building_stmt_list_p instead of checking
+	cur_stmt_list.
+	* c-parser.c (c_parser_postfix_expression): Likewise.
+	* c-typeck.c (c_end_compound_stmt): Likewise.
+	* print-tree.c (print_node) [STATEMENT_LIST]: Don't print TREE_CHAIN.
+	* tree-iterator.c (stmt_list_cache): Change to a VEC.
+	(alloc_stmt_list): Adjust for stmt_list_cache's new type.
+	(free_stmt_list): Likewise.
+	* tree.h (struct tree_statement_list): Include typed_tree instead
+	of tree_common.
+	* tree.c (initialize_tree_contains_struct): Mark TS_STATEMENT_LIST
+	as TS_TYPED instead of TS_COMMON.
+
 2011-05-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Uros Bizjak <ubizjak@gmail.com>
 

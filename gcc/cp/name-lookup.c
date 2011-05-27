@@ -2475,7 +2475,7 @@ do_local_using_decl (tree decl, tree scope, tree name)
   if (decl == NULL_TREE)
     return;
 
-  if (building_stmt_tree ()
+  if (building_stmt_list_p ()
       && at_function_scope_p ())
     add_decl_expr (decl);
 
@@ -3570,7 +3570,7 @@ do_namespace_alias (tree alias, tree name_space)
   pushdecl (alias);
 
   /* Emit debug info for namespace alias.  */
-  if (!building_stmt_tree ())
+  if (!building_stmt_list_p ())
     (*debug_hooks->global_decl) (alias);
 }
 
@@ -3718,7 +3718,7 @@ do_using_directive (tree name_space)
 
   gcc_assert (TREE_CODE (name_space) == NAMESPACE_DECL);
 
-  if (building_stmt_tree ())
+  if (building_stmt_list_p ())
     add_stmt (build_stmt (input_location, USING_STMT, name_space));
   name_space = ORIGINAL_NAMESPACE (name_space);
 
@@ -5890,7 +5890,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
   for (t = OVL_CURRENT (t); t; t = OVL_NEXT (t))
     if (TREE_CODE (t) != TEMPLATE_DECL)
       {
-	if (building_stmt_tree ())
+	if (building_stmt_list_p ())
 	  add_stmt (build_stmt (input_location, USING_STMT, t));
 	else
 	  (*debug_hooks->imported_module_or_decl) (t, NULL_TREE, context, false);

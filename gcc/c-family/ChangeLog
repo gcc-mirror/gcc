@@ -1,3 +1,10 @@
+2011-05-27  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.h (struct stmt_tree_s) [x_cur_stmt_list]: Change to a VEC.
+	(stmt_list_stack): Define.
+	(cur_stmt_list): Adjust for new type of x_cur_stmt_list.
+	* c-semantics.c (push_stmt_list, pop_stmt_list): Likewise.
+
 2011-05-26  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.c (warning_candidate_p): Check for BLOCKs.
