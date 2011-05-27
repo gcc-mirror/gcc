@@ -1,5 +1,10 @@
 2011-05-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47721
+	* parser.c (cp_parser_member_declaration): Allow friend T.
+	* friend.c (make_friend_class): Ignore non-classes.
+	* pt.c (instantiate_class_template_1): Handle TEMPLATE_TYPE_PARM.
+
 	DR 1004
 	* pt.c (convert_template_argument): Don't complain about using
 	injected-class-name as template template argument.

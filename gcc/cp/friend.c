@@ -226,7 +226,14 @@ make_friend_class (tree type, tree friend_type, bool complain)
 
   if (! MAYBE_CLASS_TYPE_P (friend_type))
     {
-      error ("invalid type %qT declared %<friend%>", friend_type);
+      /* N1791: If the type specifier in a friend declaration designates a
+	 (possibly cv-qualified) class type, that class is declared as a
+	 friend; otherwise, the friend declaration is ignored.
+
+         So don't complain in C++0x mode.  */
+      if (cxx_dialect < cxx0x)
+	pedwarn (input_location, complain ? 0 : OPT_pedantic,
+		 "invalid type %qT declared %<friend%>", friend_type);
       return;
     }
 
