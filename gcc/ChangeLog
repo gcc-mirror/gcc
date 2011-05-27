@@ -1,3 +1,9 @@
+2011-05-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/49189
+	* fold-const.c (fold_unary_loc): Do not re-fold folding conversions
+	of comparisons.
+
 2011-05-27  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* haifa-sched.c (sched_scan_info): Remove.
