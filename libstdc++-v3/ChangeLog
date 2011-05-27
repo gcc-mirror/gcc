@@ -1,3 +1,8 @@
+2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/future: Use noexcept.
+	* src/future.cc: Likewise.
+
 2011-05-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/thread (this_thread::sleep_until): Move after sleep_for.
