@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 with System;
 
 package body Bit_Packed_Array5 is
