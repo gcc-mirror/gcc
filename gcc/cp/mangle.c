@@ -2599,6 +2599,15 @@ write_expression (tree expr)
       write_unqualified_id (fn);
       write_template_args (TREE_OPERAND (expr, 1));
     }
+  else if (TREE_CODE (expr) == MODOP_EXPR)
+    {
+      enum tree_code subop = TREE_CODE (TREE_OPERAND (expr, 1));
+      const char *name = (assignment_operator_name_info[(int) subop]
+			  .mangled_name);
+      write_string (name);
+      write_expression (TREE_OPERAND (expr, 0));
+      write_expression (TREE_OPERAND (expr, 2));
+    }
   else
     {
       int i, len;
