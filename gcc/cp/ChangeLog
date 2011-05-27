@@ -1,3 +1,8 @@
+2011-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49181
+	* pt.c (get_mostly_instantiated_function_type): Use push_access_scope.
+
 2011-05-27  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* cp-tree.h (building_stmt_tree): Delete.
