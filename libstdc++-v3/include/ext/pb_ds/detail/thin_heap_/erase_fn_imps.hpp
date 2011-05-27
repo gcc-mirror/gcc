@@ -244,9 +244,9 @@ rank_bound()
 {
   using namespace std;
   const size_t* const p_upper =
-    _GLIBCXX_STD_A::upper_bound(g_a_rank_bounds,
-				g_a_rank_bounds + num_distinct_rank_bounds,
-			       	base_type::m_size);
+    std::upper_bound(g_a_rank_bounds,
+		     g_a_rank_bounds + num_distinct_rank_bounds,
+		     base_type::m_size);
 
   if (p_upper == g_a_rank_bounds + num_distinct_rank_bounds)
     return max_rank;

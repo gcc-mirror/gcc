@@ -1,7 +1,7 @@
+// { dg-require-debug-mode "" }
 // { dg-require-time "" }
 // This can take long on simulators, timing out the test.
-// { dg-options "-D_GLIBCXX_DEBUG -DITERATIONS=5" { target simulator } }
-// { dg-options "-D_GLIBCXX_DEBUG" }
+// { dg-options "-DITERATIONS=5" { target simulator } }
 // { dg-timeout-factor 2.0 }
 
 // -*- C++ -*-

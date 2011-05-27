@@ -1,5 +1,5 @@
+// { dg-require-debug-mode "" }
 // { dg-require-time "" }
-// { dg-options "-D_GLIBCXX_DEBUG" }
 // { dg-timeout-factor 2.0 }
 
 // -*- C++ -*-
