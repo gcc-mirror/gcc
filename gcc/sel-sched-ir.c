@@ -2720,6 +2720,54 @@ deps_init_id (idata_t id, insn_t insn, bool force_unique_p)
 }
 
 
+struct sched_scan_info_def
+{
+  /* This hook notifies scheduler frontend to extend its internal per basic
+     block data structures.  This hook should be called once before a series of
+     calls to bb_init ().  */
+  void (*extend_bb) (void);
+
+  /* This hook makes scheduler frontend to initialize its internal data
+     structures for the passed basic block.  */
+  void (*init_bb) (basic_block);
+
+  /* This hook notifies scheduler frontend to extend its internal per insn data
+     structures.  This hook should be called once before a series of calls to
+     insn_init ().  */
+  void (*extend_insn) (void);
+
+  /* This hook makes scheduler frontend to initialize its internal data
+     structures for the passed insn.  */
+  void (*init_insn) (rtx);
+};
+
+/* A driver function to add a set of basic blocks (BBS) to the
+   scheduling region.  */
+static void
+sched_scan (const struct sched_scan_info_def *ssi, bb_vec_t bbs)
+{
+  unsigned i;
+  basic_block bb;
+
+  if (ssi->extend_bb)
+    ssi->extend_bb ();
+
+  if (ssi->init_bb)
+    FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
+      ssi->init_bb (bb);
+
+  if (ssi->extend_insn)
+    ssi->extend_insn ();
+
+  if (ssi->init_insn)
+    FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
+      {
+	rtx insn;
+
+	FOR_BB_INSNS (bb, insn)
+	  ssi->init_insn (insn);
+      }
+}
 
 /* Implement hooks for collecting fundamental insn properties like if insn is
    an ASM or is within a SCHED_GROUP.  */
@@ -2944,7 +2992,7 @@ sel_init_global_and_expr (bb_vec_t bbs)
       init_global_and_expr_for_insn /* init_insn */
     };
 
-  sched_scan (&ssi, bbs, NULL, NULL, NULL);
+  sched_scan (&ssi, bbs);
 }
 
 /* Finalize region-scope data structures for basic blocks.  */
@@ -3001,7 +3049,7 @@ sel_finish_global_and_expr (void)
 	  finish_global_and_expr_insn /* init_insn */
 	};
 
-      sched_scan (&ssi, bbs, NULL, NULL, NULL);
+      sched_scan (&ssi, bbs);
     }
 
     VEC_free (basic_block, heap, bbs);
@@ -3990,9 +4038,6 @@ finish_region_bb_info (void)
 /* Data for each insn in current region.  */
 VEC (sel_insn_data_def, heap) *s_i_d = NULL;
 
-/* A vector for the insns we've emitted.  */
-static insn_vec_t new_insns = NULL;
-
 /* Extend data structures for insns from current region.  */
 static void
 extend_insn_data (void)
@@ -4131,7 +4176,10 @@ sel_init_new_insn (insn_t insn, int flags)
     }
 
   if (flags & INSN_INIT_TODO_LUID)
-    sched_init_luids (NULL, NULL, NULL, insn);
+    {
+      sched_extend_luids ();
+      sched_init_insn_luid (insn);
+    }
 
   if (flags & INSN_INIT_TODO_SSID)
     {
@@ -4473,7 +4521,7 @@ init_bb (basic_block bb)
 }
 
 void
-sel_init_bbs (bb_vec_t bbs, basic_block bb)
+sel_init_bbs (bb_vec_t bbs)
 {
   const struct sched_scan_info_def ssi =
     {
@@ -4483,7 +4531,7 @@ sel_init_bbs (bb_vec_t bbs, basic_block bb)
       NULL /* init_insn */
     };
 
-  sched_scan (&ssi, bbs, bb, new_insns, NULL);
+  sched_scan (&ssi, bbs);
 }
 
 /* Restore notes for the whole region.  */
@@ -5040,9 +5088,9 @@ static void
 sel_add_bb (basic_block bb)
 {
   /* Extend luids so that new notes will receive zero luids.  */
-  sched_init_luids (NULL, NULL, NULL, NULL);
+  sched_extend_luids ();
   sched_init_bbs ();
-  sel_init_bbs (last_added_blocks, NULL);
+  sel_init_bbs (last_added_blocks);
 
   /* When bb is passed explicitly, the vector should contain
      the only element that equals to bb; otherwise, the vector
@@ -5583,7 +5631,7 @@ create_insn_rtx_from_pattern (rtx pattern, rtx label)
 
   end_sequence ();
 
-  sched_init_luids (NULL, NULL, NULL, NULL);
+  sched_extend_luids ();
   sched_extend_target ();
   sched_deps_init (false);
 

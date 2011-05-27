@@ -39,42 +39,18 @@ enum sched_pass_id_t { SCHED_PASS_UNKNOWN, SCHED_RGN_PASS, SCHED_EBB_PASS,
 
 typedef VEC (basic_block, heap) *bb_vec_t;
 typedef VEC (rtx, heap) *insn_vec_t;
-typedef VEC(rtx, heap) *rtx_vec_t;
-
-struct sched_scan_info_def
-{
-  /* This hook notifies scheduler frontend to extend its internal per basic
-     block data structures.  This hook should be called once before a series of
-     calls to bb_init ().  */
-  void (*extend_bb) (void);
-
-  /* This hook makes scheduler frontend to initialize its internal data
-     structures for the passed basic block.  */
-  void (*init_bb) (basic_block);
-
-  /* This hook notifies scheduler frontend to extend its internal per insn data
-     structures.  This hook should be called once before a series of calls to
-     insn_init ().  */
-  void (*extend_insn) (void);
-
-  /* This hook makes scheduler frontend to initialize its internal data
-     structures for the passed insn.  */
-  void (*init_insn) (rtx);
-};
-
-extern const struct sched_scan_info_def *sched_scan_info;
-
-extern void sched_scan (const struct sched_scan_info_def *,
-			bb_vec_t, basic_block, insn_vec_t, rtx);
+typedef VEC (rtx, heap) *rtx_vec_t;
 
 extern void sched_init_bbs (void);
 
-extern void sched_init_luids (bb_vec_t, basic_block, insn_vec_t, rtx);
+extern void sched_extend_luids (void);
+extern void sched_init_insn_luid (rtx);
+extern void sched_init_luids (bb_vec_t);
 extern void sched_finish_luids (void);
 
 extern void sched_extend_target (void);
 
-extern void haifa_init_h_i_d (bb_vec_t, basic_block, insn_vec_t, rtx);
+extern void haifa_init_h_i_d (bb_vec_t);
 extern void haifa_finish_h_i_d (void);
 
 /* Hooks that are common to all the schedulers.  */
