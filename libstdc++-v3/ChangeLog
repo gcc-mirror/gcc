@@ -1,5 +1,14 @@
 2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/future (launch): Update enumerators and define
+	operators required for bitmask type. Remove trailing whitespace.
+	* src/future.cc: Remove trailing whitespace.
+	* testsuite/30_threads/async/any.cc: Adjust.
+	* testsuite/30_threads/async/sync.cc: Adjust.
+	* testsuite/30_threads/async/launch.cc: New.
+
+2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/future: Use noexcept.
 	* src/future.cc: Likewise.
 
