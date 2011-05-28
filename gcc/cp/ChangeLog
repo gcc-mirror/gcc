@@ -1,5 +1,8 @@
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
+	* mangle.c (mangle_decl_string): Make sure we don't try to mangle
+	templates.
+
 	PR c++/47049
 	* semantics.c (maybe_add_lambda_conv_op): Fix COMDAT sharing.
 	* decl.c (start_preparsed_function): Don't call comdat_linkage for
