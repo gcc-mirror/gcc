@@ -1580,7 +1580,7 @@ static tree cp_parser_lambda_expression
   (cp_parser *);
 static void cp_parser_lambda_introducer
   (cp_parser *, tree);
-static void cp_parser_lambda_declarator_opt
+static bool cp_parser_lambda_declarator_opt
   (cp_parser *, tree);
 static void cp_parser_lambda_body
   (cp_parser *, tree);
@@ -7347,6 +7347,7 @@ cp_parser_lambda_expression (cp_parser* parser)
 {
   tree lambda_expr = build_lambda_expr ();
   tree type;
+  bool ok;
 
   LAMBDA_EXPR_LOCATION (lambda_expr)
     = cp_lexer_peek_token (parser->lexer)->location;
@@ -7382,9 +7383,12 @@ cp_parser_lambda_expression (cp_parser* parser)
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
-    cp_parser_lambda_declarator_opt (parser, lambda_expr);
+    ok = cp_parser_lambda_declarator_opt (parser, lambda_expr);
 
-    cp_parser_lambda_body (parser, lambda_expr);
+    if (ok)
+      cp_parser_lambda_body (parser, lambda_expr);
+    else if (cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
+      cp_parser_skip_to_end_of_block_or_statement (parser);
 
     /* The capture list was built up in reverse order; fix that now.  */
     {
@@ -7418,7 +7422,8 @@ cp_parser_lambda_expression (cp_parser* parser)
       LAMBDA_EXPR_CAPTURE_LIST (lambda_expr) = newlist;
     }
 
-    maybe_add_lambda_conv_op (type);
+    if (ok)
+      maybe_add_lambda_conv_op (type);
 
     type = finish_struct (type, /*attributes=*/NULL_TREE);
 
@@ -7427,7 +7432,10 @@ cp_parser_lambda_expression (cp_parser* parser)
 
   pop_deferring_access_checks ();
 
-  return build_lambda_object (lambda_expr);
+  if (ok)
+    return build_lambda_object (lambda_expr);
+  else
+    return error_mark_node;
 }
 
 /* Parse the beginning of a lambda expression.
@@ -7592,7 +7600,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
    LAMBDA_EXPR is the current representation of the lambda expression.  */
 
-static void
+static bool
 cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 {
   /* 5.1.1.4 of the standard says:
@@ -7688,12 +7696,17 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     fco = grokmethod (&return_type_specs,
 		      declarator,
 		      attributes);
-    DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
-    DECL_ARTIFICIAL (fco) = 1;
+    if (fco != error_mark_node)
+      {
+	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
+	DECL_ARTIFICIAL (fco) = 1;
+      }
 
     finish_member_declaration (fco);
 
     obstack_free (&declarator_obstack, p);
+
+    return (fco != error_mark_node);
   }
 }
 
