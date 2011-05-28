@@ -1,5 +1,22 @@
 2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* acinclude.m4: Define GLIBCXX_CHECK_GET_NPROCS and
+	GLIBCXX_CHECK_SC_NPROCESSORS_ONLN.
+	* configure.ac: Use them. Increase minor version.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* include/std/thread (thread::hardware_concurrency): Remove inline
+	definition.
+	* src/thread.cc (thread::hardware_concurrency): Define.
+	* config/abi/pre/gnu.ver: Export new symbol @3.4.17
+	* testsuite/util/testsuite_abi.cc: Add new version.
+	* testsuite/lib/libstdc++.exp (check_v3_target_nprocs): Add.
+	* testsuite/lib/dg-options.exp (dg-require-nprocs): Add.
+	* testsuite/30_threads/thread/members/hardware_concurrency.cc: Use
+	dg-require-nprocs and verify hardware_concurrency returns non-zero.
+
+2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* testsuite/20_util/pointer_traits/pointer_to.cc: New.
 
 2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>

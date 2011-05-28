@@ -179,8 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Returns a value that hints at the number of hardware thread contexts.
     static unsigned int
-    hardware_concurrency() noexcept
-    { return 0; }
+    hardware_concurrency() noexcept;
 
   private:
     void
