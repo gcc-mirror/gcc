@@ -1,5 +1,9 @@
 2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* testsuite/20_util/pointer_traits/pointer_to.cc: Fix.
+
+2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* acinclude.m4: Define GLIBCXX_CHECK_GET_NPROCS and
 	GLIBCXX_CHECK_SC_NPROCESSORS_ONLN.
 	* configure.ac: Use them. Increase minor version.
