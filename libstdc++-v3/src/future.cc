@@ -76,7 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   future_error::~future_error() noexcept { }
 
-  const char* 
+  const char*
   future_error::what() const noexcept { return _M_code.message().c_str(); }
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
