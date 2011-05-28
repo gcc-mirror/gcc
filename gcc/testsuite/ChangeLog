@@ -1,5 +1,7 @@
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/lambda/lambda-template2.C: New.
+
 	* g++.dg/cpp0x/enum18.C: New.
 
 	* g++.dg/cpp0x/error6.C: New.

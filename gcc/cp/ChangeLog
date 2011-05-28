@@ -1,5 +1,10 @@
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47049
+	* semantics.c (maybe_add_lambda_conv_op): Fix COMDAT sharing.
+	* decl.c (start_preparsed_function): Don't call comdat_linkage for
+	a template.
+
 	PR c++/47277
 	* parser.c (cp_parser_unqualified_id): Don't check
 	constructor_name_p for enums.
