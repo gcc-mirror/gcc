@@ -12,7 +12,7 @@ AC_CONFIG_HEADER(config.h)
 ### am handles this now?  ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:16:0
+libtool_VERSION=6:17:0
 AC_SUBST(libtool_VERSION)
 
 # Find the rest of the source tree framework.
@@ -169,6 +169,12 @@ GLIBCXX_ENABLE_LIBSTDCXX_TIME([no])
 GLIBCXX_CHECK_GTHREADS
 
 AC_LC_MESSAGES
+
+# For hardware_concurrency
+AC_CHECK_HEADERS(sys/sysinfo.h)
+GLIBCXX_CHECK_GET_NPROCS
+AC_CHECK_HEADERS(unistd.h)
+GLIBCXX_CHECK_SC_NPROCESSORS_ONLN
 
 # Check for available headers.
 AC_CHECK_HEADERS([endian.h execinfo.h float.h fp.h ieeefp.h inttypes.h \

@@ -1279,6 +1279,13 @@ GLIBCXX_3.4.16 {
 
 } GLIBCXX_3.4.15;
 
+GLIBCXX_3.4.17 {
+
+    # std::thread::hardware_concurrency
+    _ZNSt6thread20hardware_concurrencyEv;
+
+} GLIBCXX_3.4.16;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 

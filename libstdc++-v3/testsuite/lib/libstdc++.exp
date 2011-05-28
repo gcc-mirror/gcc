@@ -1579,4 +1579,67 @@ proc check_v3_target_binary_io { } {
     return $et_binary_io
 }
 
+proc check_v3_target_nprocs { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_nprocs
+
+    global tool
+
+    if { ![info exists et_nprocs_target_name] } {
+	set et_nprocs_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_nprocs_target_name } {
+	verbose "check_v3_target_nprocs: `$et_nprocs_target_name'" 2
+	set et_nprocs_target_name $current_target
+	if [info exists et_nprocs] {
+	    verbose "check_v3_target_nprocs: removing cached result" 2
+	    unset et_nprocs
+	}
+    }
+
+    if [info exists et_nprocs] {
+	verbose "check_v3_target_nprocs: using cached result" 2
+    } else {
+	set et_nprocs 0
+
+	# Set up and preprocess a C++0x test program that depends
+	# on either get_nprocs or sysconf to be available.
+	set src nprocs[pid].cc
+
+	set f [open $src "w"]
+        puts $f "#include <bits/c++config.h>"
+	puts $f "#if defined(_GLIBCXX_USE_GET_NPROCS)"
+	puts $f "#elif defined(_GLIBCXX_USE_SYSCONF)"
+        puts $f "# include <unistd.h>"
+	puts $f "# if !defined(_SC_NPROCESSORS_ONLN)"
+	puts $f "#  error No sysconf option"
+	puts $f "# endif"
+	puts $f "#else"
+	puts $f "#  error No get_nprocs or sysconf"
+	puts $f "#endif"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+
+	set lines [v3_target_compile $src /dev/null preprocess ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, preprocess succeeded.
+	    set et_nprocs 1
+	} else {
+	    verbose "check_v3_target_nprocs: compilation failed" 2
+	}
+    }
+    verbose "check_v3_target_nprocs: $et_nprocs" 2
+    return $et_nprocs
+}
+
+
 set additional_prunes ""
