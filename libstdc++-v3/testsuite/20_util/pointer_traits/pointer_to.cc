@@ -24,15 +24,17 @@
 struct Ptr
 {
   typedef bool element_type;
+  bool* value;
 
-  static bool* pointer_to(bool& b) { return 0; }
+  static Ptr pointer_to(bool& b) { return Ptr{&b}; }
 };
 
 void test01()
 {
   bool test = true;
+  Ptr p{&test};
 
-  VERIFY( std::pointer_traits<Ptr>::pointer_to(test) == 0 );
+  VERIFY( std::pointer_traits<Ptr>::pointer_to(test).value == &test );
 }
 
 void test02()
