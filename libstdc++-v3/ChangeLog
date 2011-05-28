@@ -1,5 +1,32 @@
 2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/Makefile.am: Add new ptr_traits.h header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/ptr_traits.h (pointer_traits): New.
+	* include/bits/allocator.h (allocator_traits): Add.
+	* include/ext/array_allocator.h (construct, destroy): Update C++0x
+	versions.
+	* include/ext/bitmap_allocator.h (construct, destroy): Likewise.
+	* include/ext/extptr_allocator.h (construct, destroy): Likewise.
+	* include/ext/malloc_allocator.h (construct, destroy): Likewise.
+	* include/ext/mt_allocator.h (construct, destroy): Likewise.
+	* include/ext/new_allocator.h (construct, destroy): Likewise.
+	* include/ext/pool_allocator.h (construct, destroy): Likewise.
+	* include/ext/throw_allocator.h (construct, destroy): Likewise.
+	* testsuite/20_util/allocator_traits/requirements/typedefs.cc: New.
+	* testsuite/20_util/allocator_traits/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/allocator_traits/members/max_size.cc: New.
+	* testsuite/20_util/allocator_traits/members/select.cc: New.
+	* testsuite/20_util/allocator_traits/members/construct.cc: New.
+	* testsuite/20_util/allocator_traits/members/allocate_hint.cc: New.
+	* testsuite/20_util/allocator_traits/members/destroy.cc: New.
+	* testsuite/20_util/pointer_traits/requirements/typedefs.cc: New.
+	* testsuite/20_util/pointer_traits/requirements/
+	explicit_instantiation.cc: New.
+
+2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/future (launch): Update enumerators and define
 	operators required for bitmask type. Remove trailing whitespace.
 	* src/future.cc: Remove trailing whitespace.
