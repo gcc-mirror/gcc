@@ -1,5 +1,9 @@
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47277
+	* parser.c (cp_parser_pseudo_destructor_name): Commit to parse
+	after we see the ~.
+
 	* mangle.c (mangle_decl_string): Make sure we don't try to mangle
 	templates.
 
