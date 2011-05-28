@@ -100,18 +100,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type max_size() const throw()
       { return std::numeric_limits<size_type>::max() / sizeof(_Tp); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Up, typename... _Args>
+        void
+        construct(_Up* __p, _Args&&... __args)
+	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
+
+      template<typename _Up>
+        void 
+        destroy(_Up* __p)
+        { __p->~_Up(); }
+#else
       void construct(pointer __p, const _Tp& __val)
       { ::new(__p.get()) _Tp(__val); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      template<typename... _Args>
-        void
-        construct(pointer __p, _Args&&... __args)
-        { ::new(__p.get()) _Tp(std::forward<_Args>(__args)...); }
-#endif
-
       void destroy(pointer __p)
       { __p->~_Tp(); }
+#endif
 
       template<typename _Up>
         inline bool
