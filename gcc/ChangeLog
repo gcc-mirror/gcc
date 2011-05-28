@@ -1,5 +1,9 @@
 2011-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* genrecog.c: Remove redundant forward declarations.
+
+2011-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config.gcc: Deprecate mips*-*-openbsd*.
 
 2011-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
