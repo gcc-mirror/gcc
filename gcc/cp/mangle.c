@@ -3095,6 +3095,9 @@ mangle_decl_string (const tree decl)
   tree saved_fn = NULL_TREE;
   bool template_p = false;
 
+  /* We shouldn't be trying to mangle an uninstantiated template.  */
+  gcc_assert (!type_dependent_expression_p (decl));
+
   if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
     {
       struct tinst_level *tl = current_instantiation ();

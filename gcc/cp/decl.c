@@ -12664,7 +12664,9 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 			compiler-generated functions.  */
 		     && !DECL_ARTIFICIAL (decl1));
 
-  if (DECL_INTERFACE_KNOWN (decl1))
+  if (processing_template_decl)
+    /* Don't mess with interface flags.  */;
+  else if (DECL_INTERFACE_KNOWN (decl1))
     {
       tree ctx = decl_function_context (decl1);
 
@@ -12672,7 +12674,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	DECL_EXTERNAL (decl1) = 0;
 
       if (ctx != NULL_TREE && DECL_DECLARED_INLINE_P (ctx)
-	  && !processing_template_decl
 	  && TREE_PUBLIC (ctx))
 	/* This is a function in a local class in an extern inline
 	   function.  */
@@ -12684,8 +12685,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   else if (!finfo->interface_unknown && honor_interface)
     {
       if (DECL_DECLARED_INLINE_P (decl1)
-	  || DECL_TEMPLATE_INSTANTIATION (decl1)
-	  || processing_template_decl)
+	  || DECL_TEMPLATE_INSTANTIATION (decl1))
 	{
 	  DECL_EXTERNAL (decl1)
 	    = (finfo->interface_only
