@@ -913,10 +913,10 @@ add_to_sequence (rtx pattern, struct decision_head *last,
       test = new_decision_test (DT_accept_op, &place);
       test->u.opno = XINT (pattern, 0);
 
-      subpos_ptr = &pos->xvecexp0s;
+      subpos_ptr = &pos->xexps;
       for (i = 0; i < (size_t) XVECLEN (pattern, 1); i++)
 	{
-	  subpos = next_position (subpos_ptr, pos, POS_XVECEXP0, i);
+	  subpos = next_position (subpos_ptr, pos, POS_XEXP, i);
 	  sub = add_to_sequence (XVECEXP (pattern, 1, i),
 				 &sub->success, subpos, insn_type, 0);
 	  subpos_ptr = &subpos->next;
