@@ -3452,8 +3452,8 @@ simplify_subreg_regno (unsigned int xregno, enum machine_mode xmode,
   /* See whether (reg:YMODE YREGNO) is valid.
 
      ??? We allow invalid registers if (reg:XMODE XREGNO) is also invalid.
-     This is a kludge to work around how float/complex arguments are passed
-     on 32-bit SPARC and should be fixed.  */
+     This is a kludge to work around how complex FP arguments are passed
+     on IA-64 and should be fixed.  See PR target/49226.  */
   if (!HARD_REGNO_MODE_OK (yregno, ymode)
       && HARD_REGNO_MODE_OK (xregno, xmode))
     return -1;
