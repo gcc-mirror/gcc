@@ -1,5 +1,6 @@
 2011-05-29  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/43700
 	* config/mips/mips.c (mips_cfun_call_saved_reg_p): Handle global
 	registers.
 
