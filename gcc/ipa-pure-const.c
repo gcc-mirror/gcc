@@ -1223,7 +1223,7 @@ propagate_pure_const (void)
 	    break;
 
 	  /* Now process the indirect call.  */
-          for (ie = node->indirect_calls; ie; ie = ie->next_callee)
+          for (ie = w->indirect_calls; ie; ie = ie->next_callee)
 	    {
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
@@ -1246,7 +1246,7 @@ propagate_pure_const (void)
 	    break;
 
 	  /* And finally all loads and stores.  */
-	  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
+	  for (i = 0; ipa_ref_list_reference_iterate (&w->ref_list, i, ref); i++)
 	    {
 	      enum pure_const_state_e ref_state = IPA_CONST;
 	      bool ref_looping = false;

@@ -1,3 +1,8 @@
+2011-05-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49217
+	* ipa-pure-const.c (propagate_pure_const): Fix typos.
+
 2011-05-26  Pat Haugen <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_register_move_cost): Make LR/CTR

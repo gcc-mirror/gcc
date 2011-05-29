@@ -1,3 +1,8 @@
+2011-05-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49217
+	* gcc.dg/torture/pr49217.c: New testcase.
+
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-template2.C: New.
