@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+;; Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -1069,6 +1069,10 @@
 ;; Return true if this is a division operation.
 (define_predicate "div_operator"
   (match_code "div"))
+
+;; Return true if this is a plus, minus, and, ior or xor operation.
+(define_predicate "plusminuslogic_operator"
+  (match_code "plus,minus,and,ior,xor"))
 
 ;; Return true if this is a float extend operation.
 (define_predicate "float_operator"
