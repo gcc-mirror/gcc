@@ -1,3 +1,15 @@
+2011-05-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movoi_internal_avx): Use
+	standard_sse_constant_opcode for alternative 0.
+	(*movti_internal_sse): Ditto.
+	(*movti_internal_rex64): Use standard_sse_constant_opcode for
+	alternative 2.
+	(*movdi_internal_rex64): Use standard_sse_constant_opcode for
+	sselog1 type moves.
+	(*movsi_internal): Ditto.
+	(*movdi_internal): Ditto.  Add ssecvt type moves.
+
 2011-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/48830
@@ -45,8 +57,8 @@
 	(lto_output_location_bitpack): Update.
 	(lto_output_builtin_tree): Update.
 	* lto-streamer.h (struct output_block): Add obstack.
-	(lto_output_string, lto_output_string_with_length): Remove declarations;
-	functions are static now.
+	(lto_output_string, lto_output_string_with_length): Remove
+	declarations; functions are static now.
 
 2011-05-28  Jan Hubicka  <jh@suse.cz>
 
@@ -108,7 +120,7 @@
 	(build_and_insert_call): New.
 	(gimple_expand_builtin_pow): Add handling for pow(x,y) when y is
 	0.5, 0.25, 0.75, 1./3., or 1./6.
-	
+
 2011-05-27  Alexander Monakov  <amonakov@ispras.ru>
 
 	* doc/contrib.texi: Update copyright years.
@@ -231,7 +243,7 @@
 	len values.
 	* lto-streamer-in.c (string_for_index): Break out from ...; offset
 	values by 1.
-	(input_string_internal): ... here; 
+	(input_string_internal): ... here;
 	(input_string_cst, input_identifier, lto_input_string): Update handling
 	of NULL strings.
 	(lto_input_location_bitpack): New function
@@ -322,7 +334,7 @@
 2011-05-26  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.md (cbranchhi4): No :CC for match_operator.
-	  The instruction is then expanded explicitly.
+	The instruction is then expanded explicitly.
 	(supported_compare): Callable instruction.
 	(compare): Likewise.
 
