@@ -1,3 +1,12 @@
+2011-05-29  Tobias Burnus  <burnus@net-b.de>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/18918
+	* trans-types.c (gfc_get_nodesc_array_type): Don't mess with
+	the type's TREE_TYPE.
+	* trans-array.c (gfc_conv_array_ref): Use TYPE_MAIN_VARIANT.
+	* trans.c (gfc_build_array_ref): Ditto.
+
 2011-05-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

@@ -2628,7 +2628,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 	se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
 
       /* Use the actual tree type and not the wrapped coarray. */
-      se->expr = fold_convert (TREE_TYPE (TREE_TYPE (se->expr)), se->expr);
+      se->expr = fold_convert (TYPE_MAIN_VARIANT (TREE_TYPE (se->expr)), se->expr);
       return;
     }
 
