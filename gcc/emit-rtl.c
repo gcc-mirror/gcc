@@ -3494,16 +3494,15 @@ try_split (rtx pat, rtx trial, int last)
 	       we must move any following NOTE_INSN_CALL_ARG_LOCATION note
 	       so that it comes immediately after the new call.  */
 	    if (NEXT_INSN (insn))
-	      {
-		next = NEXT_INSN (trial);
-		if (next
-		    && NOTE_P (next)
-		    && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
+	      for (next = NEXT_INSN (trial);
+		   next && NOTE_P (next);
+		   next = NEXT_INSN (next))
+		if (NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
 		  {
 		    remove_insn (next);
 		    add_insn_after (next, insn, NULL);
+		    break;
 		  }
-	      }
 	  }
     }
 
