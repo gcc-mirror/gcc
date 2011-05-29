@@ -1262,6 +1262,47 @@ lto_input_int_in_range (struct lto_input_block *ib,
   return val;
 }
 
+
+/* Output VAL into BP and verify it is in range MIN...MAX that is supposed
+   to be compile time constant.
+   Be host independent, limit range to 31bits.  */
+
+static inline void
+bp_pack_int_in_range (struct bitpack_d *bp,
+		      HOST_WIDE_INT min,
+		      HOST_WIDE_INT max,
+		      HOST_WIDE_INT val)
+{
+  HOST_WIDE_INT range = max - min;
+  int nbits = floor_log2 (range) + 1;
+
+  gcc_checking_assert (val >= min && val <= max && range > 0
+		       && range < 0x7fffffff);
+
+  val -= min;
+  bp_pack_value (bp, val, nbits);
+}
+
+/* Input VAL into BP and verify it is in range MIN...MAX that is supposed
+   to be compile time constant.  PURPOSE is used for error reporting.  */
+
+static inline HOST_WIDE_INT
+bp_unpack_int_in_range (struct bitpack_d *bp,
+		        const char *purpose,
+		        HOST_WIDE_INT min,
+		        HOST_WIDE_INT max)
+{
+  HOST_WIDE_INT range = max - min;
+  int nbits = floor_log2 (range) + 1;
+  HOST_WIDE_INT val = bp_unpack_value (bp, nbits);
+
+  gcc_checking_assert (range > 0 && range < 0x7fffffff);
+
+  if (val < min || val > max)
+    lto_value_range_error (purpose, val, min, max);
+  return val;
+}
+
 /* Output VAL of type "enum enum_name" into OBS.
    Assume range 0...ENUM_LAST - 1.  */
 #define lto_output_enum(obs,enum_name,enum_last,val) \
@@ -1272,5 +1313,16 @@ lto_input_int_in_range (struct lto_input_block *ib,
 #define lto_input_enum(ib,enum_name,enum_last) \
   (enum enum_name)lto_input_int_in_range ((ib), #enum_name, 0, \
 					  (int)(enum_last) - 1)
+
+/* Output VAL of type "enum enum_name" into BP.
+   Assume range 0...ENUM_LAST - 1.  */
+#define bp_pack_enum(bp,enum_name,enum_last,val) \
+  bp_pack_int_in_range ((bp), 0, (int)(enum_last) - 1, (int)(val))
+
+/* Input enum of type "enum enum_name" from BP.
+   Assume range 0...ENUM_LAST - 1.  */
+#define bp_unpack_enum(bp,enum_name,enum_last) \
+  (enum enum_name)bp_unpack_int_in_range ((bp), #enum_name, 0, \
+					(int)(enum_last) - 1)
 
 #endif /* GCC_LTO_STREAMER_H  */

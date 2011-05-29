@@ -1,3 +1,19 @@
+2011-05-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (pack_ts_fixed_cst_value_fields,
+	pack_ts_decl_common_value_fields, pack_ts_decl_with_vis_value_fields,
+	pack_ts_function_decl_value_fields, lto_output_builtin_tree,
+	output_cfg, output_gimple_stmt): Use enum and variable length i/o.
+	* lto-streamer-in.c (input_cfg, input_gimple_stmt,
+	unpack_ts_fixed_cst_value_fields, unpack_ts_decl_common_value_fields,
+	unpack_ts_decl_with_vis_value_fields,
+	unpack_ts_type_common_value_fields, unpack_ts_block_value_fields,
+	lto_get_builtin_tree): Use enum and variable length i/o.
+	* basic-block.h (profile_status_d): Add PROFILE_LAST.
+	* lto-streamer.h (bp_pack_int_in_range, bp_unpack_int_in_range):
+	New functions.
+	(bp_pack_enum, bp_unpack_enum): New macros.
+
 2011-05-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* genrecog.c: Remove redundant forward declarations.
