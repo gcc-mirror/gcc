@@ -1645,6 +1645,24 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       return 0;
     }
 
+  if (formal->attr.allocatable && !formal->attr.codimension
+      && gfc_expr_attr (actual).codimension)
+    {
+      if (formal->attr.intent == INTENT_OUT)
+	{
+	  if (where)
+	    gfc_error ("Passing coarray at %L to allocatable, noncoarray, "
+		       "INTENT(OUT) dummy argument '%s'", &actual->where,
+		       formal->name);
+	    return 0;
+	}
+      else if (gfc_option.warn_surprising && where
+	       && formal->attr.intent != INTENT_IN)
+	gfc_warning ("Passing coarray at %L to allocatable, noncoarray dummy "
+		     "argument '%s', which is invalid if the allocation status"
+		     " is modified",  &actual->where, formal->name);
+    }
+
   if (symbol_rank (formal) == actual->rank)
     return 1;
 

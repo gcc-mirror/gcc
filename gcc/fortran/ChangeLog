@@ -1,4 +1,10 @@
 2011-05-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* interface.c (compare_parameter): Add check for passing coarray
+	to allocatable noncoarray dummy.
+
+2011-05-29  Tobias Burnus  <burnus@net-b.de>
 	    Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/18918
