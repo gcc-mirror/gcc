@@ -1,3 +1,8 @@
+2011-05-29  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR testsuite/49222
+	* gcc.dg/vect/pr49038.c: Use MAP_ANON if MAP_ANONYMOUS is not defined.
+
 2011-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/boolean_subtype.adb: Rename to...

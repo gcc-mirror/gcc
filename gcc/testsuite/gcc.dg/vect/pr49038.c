@@ -6,6 +6,10 @@
 #define ADDRESS 0x1122000000
 #define TYPE unsigned short
 
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
 void __attribute__((noinline))
 foo (TYPE *__restrict a, TYPE *__restrict b)
 {
