@@ -1,9 +1,9 @@
-/* Copyright (C) 2002, 2003, 2005, 2007, 2008, 2009, 2010
+/* Copyright (C) 2002, 2003, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -131,45 +131,45 @@ max_value (int length, int signed_flag)
 
 
 /* convert_real()-- Convert a character representation of a floating
-   point number to the machine number.  Returns nonzero if there is a
-   range problem during conversion.  Note: many architectures
-   (e.g. IA-64, HP-PA) require that the storage pointed to by the dest
-   argument is properly aligned for the type in question.  */
+   point number to the machine number.  Returns nonzero if there is an
+   invalid input.  Note: many architectures (e.g. IA-64, HP-PA)
+   require that the storage pointed to by the dest argument is
+   properly aligned for the type in question.  */
 
 int
 convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
 {
-  errno = 0;
+  char *endptr = NULL;
 
   switch (length)
     {
     case 4:
       *((GFC_REAL_4*) dest) =
 #if defined(HAVE_STRTOF)
-	gfc_strtof (buffer, NULL);
+	gfc_strtof (buffer, &endptr);
 #else
-	(GFC_REAL_4) gfc_strtod (buffer, NULL);
+	(GFC_REAL_4) gfc_strtod (buffer, &endptr);
 #endif
       break;
 
     case 8:
-      *((GFC_REAL_8*) dest) = gfc_strtod (buffer, NULL);
+      *((GFC_REAL_8*) dest) = gfc_strtod (buffer, &endptr);
       break;
 
 #if defined(HAVE_GFC_REAL_10) && defined (HAVE_STRTOLD)
     case 10:
-      *((GFC_REAL_10*) dest) = gfc_strtold (buffer, NULL);
+      *((GFC_REAL_10*) dest) = gfc_strtold (buffer, &endptr);
       break;
 #endif
 
 #if defined(HAVE_GFC_REAL_16)
 # if defined(GFC_REAL_16_IS_FLOAT128)
     case 16:
-      *((GFC_REAL_16*) dest) = __qmath_(strtoflt128) (buffer, NULL);
+      *((GFC_REAL_16*) dest) = __qmath_(strtoflt128) (buffer, &endptr);
       break;
 # elif defined(HAVE_STRTOLD)
     case 16:
-      *((GFC_REAL_16*) dest) = gfc_strtold (buffer, NULL);
+      *((GFC_REAL_16*) dest) = gfc_strtold (buffer, &endptr);
       break;
 # endif
 #endif
@@ -178,10 +178,10 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
       internal_error (&dtp->common, "Unsupported real kind during IO");
     }
 
-  if (errno == EINVAL)
+  if (buffer == endptr)
     {
       generate_error (&dtp->common, LIBERROR_READ_VALUE,
-		      "Error during floating point read");
+  		      "Error during floating point read");
       next_record (dtp, 1);
       return 1;
     }
@@ -1114,6 +1114,14 @@ done:
   /* Output a trailing '0' after decimal point if not yet found.  */
   if (seen_dp && !seen_dec_digit)
     *(out++) = '0';
+  /* Handle input of style "E+NN" by inserting a 0 for the
+     significand.  */
+  else if (!seen_int_digit && !seen_dec_digit)
+    {
+      notify_std (&dtp->common, GFC_STD_LEGACY, 
+		  "REAL input of style 'E+NN'");
+      *(out++) = '0';
+    }
 
   /* Print out the exponent to finish the reformatted number.  Maximum 4
      digits for the exponent.  */
