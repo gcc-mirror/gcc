@@ -1,3 +1,8 @@
+2011-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49095
+	* gcc.target/i386/pr49095.c: New test.
+
 2011-05-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
