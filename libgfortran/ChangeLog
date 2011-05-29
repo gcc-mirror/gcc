@@ -1,3 +1,10 @@
+2011-05-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/19155
+	* io/read.c (convert_real): Check for invalid input by comparing
+	endptr instead of EINVAL.
+	(read_f): Fixup floating point input without significand.
+
 2011-05-22  Tobias Burnus  <burnus@net-b.de>
 
 	* runtime/stop.c (stop_string,error_stop_string): Minor cleanup.
