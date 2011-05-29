@@ -9053,6 +9053,11 @@ mips_interrupt_extra_call_saved_reg_p (unsigned int regno)
 static bool
 mips_cfun_call_saved_reg_p (unsigned int regno)
 {
+  /* If the user makes an ordinarily-call-saved register global,
+     that register is no longer call-saved.  */
+  if (global_regs[regno])
+    return false;
+
   /* Interrupt handlers need to save extra registers.  */
   if (cfun->machine->interrupt_handler_p
       && mips_interrupt_extra_call_saved_reg_p (regno))

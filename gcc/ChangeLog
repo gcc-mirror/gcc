@@ -1,5 +1,10 @@
 2011-05-29  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_cfun_call_saved_reg_p): Handle global
+	registers.
+
+2011-05-29  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR target/43995
 	* config/mips/mips.c (mips_pic_call_symbol_from_set): Add a
 	recurse_p argument.  Only follow register copies if it is set,
