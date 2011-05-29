@@ -372,9 +372,9 @@ static void
 pack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
   struct fixed_value fv = TREE_FIXED_CST (expr);
-  bp_pack_value (bp, fv.data.low, HOST_BITS_PER_WIDE_INT);
-  bp_pack_value (bp, fv.data.high, HOST_BITS_PER_WIDE_INT);
-  bp_pack_value (bp, fv.mode, HOST_BITS_PER_INT);
+  bp_pack_enum (bp, machine_mode, MAX_MACHINE_MODE, fv.mode);
+  bp_pack_var_len_int (bp, fv.data.low);
+  bp_pack_var_len_int (bp, fv.data.high);
 }
 
 
@@ -384,7 +384,7 @@ pack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 {
-  bp_pack_value (bp, DECL_MODE (expr), 8);
+  bp_pack_enum (bp, machine_mode, MAX_MACHINE_MODE, DECL_MODE (expr));
   bp_pack_value (bp, DECL_NONLOCAL (expr), 1);
   bp_pack_value (bp, DECL_VIRTUAL_P (expr), 1);
   bp_pack_value (bp, DECL_IGNORED_P (expr), 1);
@@ -395,7 +395,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_DEBUG_EXPR_IS_FROM (expr), 1);
   bp_pack_value (bp, DECL_EXTERNAL (expr), 1);
   bp_pack_value (bp, DECL_GIMPLE_REG_P (expr), 1);
-  bp_pack_value (bp, DECL_ALIGN (expr), HOST_BITS_PER_INT);
+  bp_pack_var_len_unsigned (bp, DECL_ALIGN (expr));
 
   if (TREE_CODE (expr) == LABEL_DECL)
     {
@@ -403,7 +403,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 	 always assume an initial value of -1 so that the
 	 label_to_block_map is recreated by gimple_set_bb.  */
       bp_pack_value (bp, DECL_ERROR_ISSUED (expr), 1);
-      bp_pack_value (bp, EH_LANDING_PAD_NR (expr), HOST_BITS_PER_INT);
+      bp_pack_var_len_unsigned (bp, EH_LANDING_PAD_NR (expr));
     }
 
   if (TREE_CODE (expr) == FIELD_DECL)
@@ -460,7 +460,7 @@ pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
     }
 
   if (VAR_OR_FUNCTION_DECL_P (expr))
-    bp_pack_value (bp, DECL_INIT_PRIORITY (expr), HOST_BITS_PER_SHORT);
+    bp_pack_var_len_unsigned (bp, DECL_INIT_PRIORITY (expr));
 }
 
 
@@ -474,8 +474,8 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
      should never be handled here.  */
   gcc_assert (!lto_stream_as_builtin_p (expr));
 
-  bp_pack_value (bp, DECL_FUNCTION_CODE (expr), 11);
-  bp_pack_value (bp, DECL_BUILT_IN_CLASS (expr), 2);
+  bp_pack_enum (bp, built_in_class, BUILT_IN_LAST,
+		DECL_BUILT_IN_CLASS (expr));
   bp_pack_value (bp, DECL_STATIC_CONSTRUCTOR (expr), 1);
   bp_pack_value (bp, DECL_STATIC_DESTRUCTOR (expr), 1);
   bp_pack_value (bp, DECL_UNINLINABLE (expr), 1);
@@ -492,8 +492,10 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, DECL_DISREGARD_INLINE_LIMITS (expr), 1);
   bp_pack_value (bp, DECL_PURE_P (expr), 1);
   bp_pack_value (bp, DECL_LOOPING_CONST_OR_PURE_P (expr), 1);
+  if (DECL_BUILT_IN_CLASS (expr) != NOT_BUILT_IN)
+    bp_pack_value (bp, DECL_FUNCTION_CODE (expr), 11);
   if (DECL_STATIC_DESTRUCTOR (expr))
-    bp_pack_value (bp, DECL_FINI_PRIORITY (expr), HOST_BITS_PER_SHORT);
+    bp_pack_var_len_unsigned (bp, DECL_FINI_PRIORITY (expr));
 }
 
 
@@ -503,8 +505,7 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
-  bp_pack_value (bp, TYPE_PRECISION (expr), 10);
-  bp_pack_value (bp, TYPE_MODE (expr), 8);
+  bp_pack_enum (bp, machine_mode, MAX_MACHINE_MODE, TYPE_MODE (expr));
   bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
   bp_pack_value (bp, TYPE_NO_FORCE_BLK (expr), 1);
   bp_pack_value (bp, TYPE_NEEDS_CONSTRUCTING (expr), 1);
@@ -515,6 +516,7 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr), 2);
   bp_pack_value (bp, TYPE_USER_ALIGN (expr), 1);
   bp_pack_value (bp, TYPE_READONLY (expr), 1);
+  bp_pack_var_len_unsigned (bp, TYPE_PRECISION (expr));
   bp_pack_var_len_unsigned (bp, TYPE_ALIGN (expr));
   bp_pack_var_len_int (bp, TYPE_ALIAS_SET (expr) == 0 ? 0 : -1);
 }
@@ -527,7 +529,7 @@ static void
 pack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
 {
   bp_pack_value (bp, BLOCK_ABSTRACT (expr), 1);
-  bp_pack_value (bp, BLOCK_NUMBER (expr), 31);
+  /* BLOCK_NUMBER is recomputed.  */
 }
 
 /* Pack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL structure
@@ -1339,7 +1341,8 @@ lto_output_builtin_tree (struct output_block *ob, tree expr)
 	   "functions on this target");
 
   output_record_start (ob, LTO_builtin_decl);
-  output_uleb128 (ob, DECL_BUILT_IN_CLASS (expr));
+  lto_output_enum (ob->main_stream, built_in_class, BUILT_IN_LAST,
+		   DECL_BUILT_IN_CLASS (expr));
   output_uleb128 (ob, DECL_FUNCTION_CODE (expr));
 
   if (DECL_ASSEMBLER_NAME_SET_P (expr))
@@ -1660,7 +1663,8 @@ output_cfg (struct output_block *ob, struct function *fn)
 
   ob->main_stream = ob->cfg_stream;
 
-  output_uleb128 (ob, profile_status_for_function (fn));
+  lto_output_enum (ob->main_stream, profile_status_d, PROFILE_LAST,
+		   profile_status_for_function (fn));
 
   /* Output the number of the highest basic block.  */
   output_uleb128 (ob, last_basic_block_for_function (fn));
@@ -1734,12 +1738,12 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 
   /* Emit the tuple header.  */
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, gimple_num_ops (stmt), sizeof (unsigned) * 8);
+  bp_pack_var_len_unsigned (&bp, gimple_num_ops (stmt));
   bp_pack_value (&bp, gimple_no_warning_p (stmt), 1);
   if (is_gimple_assign (stmt))
     bp_pack_value (&bp, gimple_assign_nontemporal_move_p (stmt), 1);
   bp_pack_value (&bp, gimple_has_volatile_ops (stmt), 1);
-  bp_pack_value (&bp, stmt->gsbase.subcode, 16);
+  bp_pack_var_len_unsigned (&bp, stmt->gsbase.subcode);
   lto_output_bitpack (&bp);
 
   /* Emit location information for the statement.  */
@@ -1808,7 +1812,8 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       if (is_gimple_call (stmt))
 	{
 	  if (gimple_call_internal_p (stmt))
-	    output_sleb128 (ob, (int) gimple_call_internal_fn (stmt));
+	    lto_output_enum (ob->main_stream, internal_fn,
+			     IFN_LAST, gimple_call_internal_fn (stmt));
 	  else
 	    lto_output_tree_ref (ob, gimple_call_fntype (stmt));
 	}

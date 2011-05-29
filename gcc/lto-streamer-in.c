@@ -798,8 +798,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
   init_empty_tree_cfg_for_function (fn);
   init_ssa_operands ();
 
-  profile_status_for_function (fn) =
-    (enum profile_status_d) lto_input_uleb128 (ib);
+  profile_status_for_function (fn) = lto_input_enum (ib, profile_status_d, PROFILE_LAST);
 
   bb_count = lto_input_uleb128 (ib);
 
@@ -960,13 +959,13 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 
   /* Read the tuple header.  */
   bp = lto_input_bitpack (ib);
-  num_ops = bp_unpack_value (&bp, sizeof (unsigned) * 8);
+  num_ops = bp_unpack_var_len_unsigned (&bp);
   stmt = gimple_alloc (code, num_ops);
   stmt->gsbase.no_warning = bp_unpack_value (&bp, 1);
   if (is_gimple_assign (stmt))
     stmt->gsbase.nontemporal_move = bp_unpack_value (&bp, 1);
   stmt->gsbase.has_volatile_ops = bp_unpack_value (&bp, 1);
-  stmt->gsbase.subcode = bp_unpack_value (&bp, 16);
+  stmt->gsbase.subcode = bp_unpack_var_len_unsigned (&bp);
 
   /* Read location information.  */
   gimple_set_location (stmt, lto_input_location (ib, data_in));
@@ -1090,7 +1089,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	{
 	  if (gimple_call_internal_p (stmt))
 	    gimple_call_set_internal_fn
-	      (stmt, (enum internal_fn) lto_input_sleb128 (ib));
+	      (stmt, lto_input_enum (ib, internal_fn, IFN_LAST));
 	  else
 	    gimple_call_set_fntype (stmt, lto_input_tree (ib, data_in));
 	}
@@ -1638,9 +1637,9 @@ unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
   struct fixed_value fv;
 
-  fv.data.low = (HOST_WIDE_INT) bp_unpack_value (bp, HOST_BITS_PER_WIDE_INT);
-  fv.data.high = (HOST_WIDE_INT) bp_unpack_value (bp, HOST_BITS_PER_WIDE_INT);
-  fv.mode = (enum machine_mode) bp_unpack_value (bp, HOST_BITS_PER_INT);
+  fv.mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
+  fv.data.low = bp_unpack_var_len_int (bp);
+  fv.data.high = bp_unpack_var_len_int (bp);
   TREE_FIXED_CST (expr) = fv;
 }
 
@@ -1651,7 +1650,7 @@ unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 {
-  DECL_MODE (expr) = (enum machine_mode) bp_unpack_value (bp, 8);
+  DECL_MODE (expr) = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
   DECL_NONLOCAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_VIRTUAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IGNORED_P (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -1662,12 +1661,12 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DEBUG_EXPR_IS_FROM (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_EXTERNAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_GIMPLE_REG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_ALIGN (expr) = (unsigned) bp_unpack_value (bp, HOST_BITS_PER_INT);
+  DECL_ALIGN (expr) = (unsigned) bp_unpack_var_len_unsigned (bp);
 
   if (TREE_CODE (expr) == LABEL_DECL)
     {
       DECL_ERROR_ISSUED (expr) = (unsigned) bp_unpack_value (bp, 1);
-      EH_LANDING_PAD_NR (expr) = (int) bp_unpack_value (bp, HOST_BITS_PER_INT);
+      EH_LANDING_PAD_NR (expr) = (int) bp_unpack_var_len_unsigned (bp);
 
       /* Always assume an initial value of -1 for LABEL_DECL_UID to
 	 force gimple_set_bb to recreate label_to_block_map.  */
@@ -1730,7 +1729,7 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
   if (VAR_OR_FUNCTION_DECL_P (expr))
     {
       priority_type p;
-      p = (priority_type) bp_unpack_value (bp, HOST_BITS_PER_SHORT);
+      p = (priority_type) bp_unpack_var_len_unsigned (bp);
       SET_DECL_INIT_PRIORITY (expr, p);
     }
 }
@@ -1742,8 +1741,8 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 {
-  DECL_FUNCTION_CODE (expr) = (enum built_in_function) bp_unpack_value (bp, 11);
-  DECL_BUILT_IN_CLASS (expr) = (enum built_in_class) bp_unpack_value (bp, 2);
+  DECL_BUILT_IN_CLASS (expr) = bp_unpack_enum (bp, built_in_class,
+					       BUILT_IN_LAST);
   DECL_STATIC_CONSTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_STATIC_DESTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_UNINLINABLE (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -1761,10 +1760,24 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DISREGARD_INLINE_LIMITS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_LOOPING_CONST_OR_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (DECL_BUILT_IN_CLASS (expr) != NOT_BUILT_IN)
+    {
+      DECL_FUNCTION_CODE (expr) = (enum built_in_function) bp_unpack_value (bp, 11);
+      if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
+	  && DECL_FUNCTION_CODE (expr) >= END_BUILTINS)
+	fatal_error ("machine independent builtin code out of range");
+      else if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD)
+	{
+          tree result = targetm.builtin_decl (DECL_FUNCTION_CODE (expr), true);
+	  if (!result || result == error_mark_node)
+	    fatal_error ("target specific builtin not available");
+	}
+    }
   if (DECL_STATIC_DESTRUCTOR (expr))
     {
-       priority_type p = (priority_type) bp_unpack_value (bp, HOST_BITS_PER_SHORT);
-       SET_DECL_FINI_PRIORITY (expr, p);
+      priority_type p;
+      p = (priority_type) bp_unpack_var_len_unsigned (bp);
+      SET_DECL_FINI_PRIORITY (expr, p);
     }
 }
 
@@ -1777,8 +1790,7 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
   enum machine_mode mode;
 
-  TYPE_PRECISION (expr) = (unsigned) bp_unpack_value (bp, 10);
-  mode = (enum machine_mode) bp_unpack_value (bp, 8);
+  mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
   SET_TYPE_MODE (expr, mode);
   TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_NO_FORCE_BLK (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -1791,6 +1803,7 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     	= (unsigned) bp_unpack_value (bp, 2);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
+  TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
   TYPE_ALIGN (expr) = bp_unpack_var_len_unsigned (bp);
   TYPE_ALIAS_SET (expr) = bp_unpack_var_len_int (bp);
 }
@@ -1803,7 +1816,7 @@ static void
 unpack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
 {
   BLOCK_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
-  BLOCK_NUMBER (expr) = (unsigned) bp_unpack_value (bp, 31);
+  /* BLOCK_NUMBER is recomputed.  */
 }
 
 /* Unpack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL
@@ -2603,14 +2616,15 @@ lto_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
   const char *asmname;
   tree result;
 
-  fclass = (enum built_in_class) lto_input_uleb128 (ib);
+  fclass = lto_input_enum (ib, built_in_class, BUILT_IN_LAST);
   gcc_assert (fclass == BUILT_IN_NORMAL || fclass == BUILT_IN_MD);
 
   fcode = (enum built_in_function) lto_input_uleb128 (ib);
 
   if (fclass == BUILT_IN_NORMAL)
     {
-      gcc_assert (fcode < END_BUILTINS);
+      if (fcode >= END_BUILTINS)
+	fatal_error ("machine independent builtin code out of range");
       result = built_in_decls[fcode];
       gcc_assert (result);
     }
