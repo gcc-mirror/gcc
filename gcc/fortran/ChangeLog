@@ -1,3 +1,9 @@
+2011-05-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47601
+	* module.c (mio_component_ref): Handle components of extended types.
+	* symbol.c (gfc_find_component): Return is sym is NULL.
+
 2011-05-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

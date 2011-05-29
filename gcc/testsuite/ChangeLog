@@ -1,3 +1,8 @@
+2011-05-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47601
+	* gfortran.dg/extends_13.f03: New.
+
 2011-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/49095
