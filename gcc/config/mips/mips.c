@@ -8495,7 +8495,7 @@ mips_cfun_call_saved_reg_p (unsigned int regno)
      property here.  */
   return (regno == GLOBAL_POINTER_REGNUM
 	  ? TARGET_CALL_SAVED_GP
-	  : !call_really_used_regs[regno]);
+	  : !global_regs[regno] && !call_really_used_regs[regno]);
 }
 
 /* Return true if the function body might clobber register REGNO.
