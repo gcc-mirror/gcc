@@ -51,13 +51,19 @@ struct string_slot
 };
 
 
-/* Returns a hash code for P.  */
+/* Returns a hash code for P.  
+   Shamelessly stollen from libiberty.  */
 
 static hashval_t
 hash_string_slot_node (const void *p)
 {
   const struct string_slot *ds = (const struct string_slot *) p;
-  return (hashval_t) htab_hash_string (ds->s);
+  hashval_t r = ds->len;
+  int i;
+
+  for (i = 0; i < ds->len; i++)
+     r = r * 67 + (unsigned)ds->s[i] - 113;
+  return r;
 }
 
 
@@ -73,17 +79,6 @@ eq_string_slot_node (const void *p1, const void *p2)
     return memcmp (ds1->s, ds2->s, ds1->len) == 0;
 
   return 0;
-}
-
-
-/* Free the string slot pointed-to by P.  */
-
-static void
-string_slot_free (void *p)
-{
-  struct string_slot *slot = (struct string_slot *) p;
-  free (CONST_CAST (void *, (const void *) slot->s));
-  free (slot);
 }
 
 
@@ -118,7 +113,8 @@ create_output_block (enum lto_section_type section_type)
   clear_line_info (ob);
 
   ob->string_hash_table = htab_create (37, hash_string_slot_node,
-				       eq_string_slot_node, string_slot_free);
+				       eq_string_slot_node, NULL);
+  gcc_obstack_init (&ob->obstack);
 
   return ob;
 }
@@ -139,26 +135,27 @@ destroy_output_block (struct output_block *ob)
     free (ob->cfg_stream);
 
   lto_streamer_cache_delete (ob->writer_cache);
+  obstack_free (&ob->obstack, NULL);
 
   free (ob);
 }
 
 /* Return index used to reference STRING of LEN characters in the string table
    in OB.  The string might or might not include a trailing '\0'.
-   Then put the index onto the INDEX_STREAM.  */
+   Then put the index onto the INDEX_STREAM.  
+   When PERSISTENT is set, the string S is supposed to not change during
+   duration of the OB and thus OB can keep pointer into it.  */
 
 static unsigned
 lto_string_index (struct output_block *ob,
 		  const char *s,
-		  unsigned int len)
+		  unsigned int len,
+		  bool persistent)
 {
   struct string_slot **slot;
   struct string_slot s_slot;
-  char *string = (char *) xmalloc (len + 1);
-  memcpy (string, s, len);
-  string[len] = '\0';
 
-  s_slot.s = string;
+  s_slot.s = s;
   s_slot.len = len;
   s_slot.slot_num = 0;
 
@@ -169,7 +166,17 @@ lto_string_index (struct output_block *ob,
       struct lto_output_stream *string_stream = ob->string_stream;
       unsigned int start = string_stream->total_size;
       struct string_slot *new_slot
-	= (struct string_slot *) xmalloc (sizeof (struct string_slot));
+	= XOBNEW (&ob->obstack, struct string_slot);
+      const char *string;
+
+      if (!persistent)
+	{
+	  char *tmp;
+	  string = tmp = XOBNEWVEC (&ob->obstack, char, len);
+          memcpy (tmp, s, len);
+        }
+      else
+	string = s;
 
       new_slot->s = string;
       new_slot->len = len;
@@ -182,7 +189,6 @@ lto_string_index (struct output_block *ob,
   else
     {
       struct string_slot *old_slot = *slot;
-      free (string);
       return old_slot->slot_num + 1;
     }
 }
@@ -190,29 +196,39 @@ lto_string_index (struct output_block *ob,
 
 /* Output STRING of LEN characters to the string
    table in OB. The string might or might not include a trailing '\0'.
-   Then put the index onto the INDEX_STREAM.  */
+   Then put the index onto the INDEX_STREAM. 
+   When PERSISTENT is set, the string S is supposed to not change during
+   duration of the OB and thus OB can keep pointer into it.  */
 
-void
+static void
 lto_output_string_with_length (struct output_block *ob,
 			       struct lto_output_stream *index_stream,
 			       const char *s,
-			       unsigned int len)
+			       unsigned int len,
+			       bool persistent)
 {
-  lto_output_uleb128_stream (index_stream,
-			     lto_string_index (ob, s, len));
+  if (s)
+    lto_output_uleb128_stream (index_stream,
+			       lto_string_index (ob, s, len, persistent));
+  else
+    lto_output_1_stream (index_stream, 0);
 }
 
 /* Output the '\0' terminated STRING to the string
-   table in OB.  Then put the index onto the INDEX_STREAM.  */
+   table in OB.  Then put the index onto the INDEX_STREAM.
+   When PERSISTENT is set, the string S is supposed to not change during
+   duration of the OB and thus OB can keep pointer into it.  */
 
-void
+static void
 lto_output_string (struct output_block *ob,
 	           struct lto_output_stream *index_stream,
-	           const char *string)
+	           const char *string,
+		   bool persistent)
 {
   if (string)
     lto_output_string_with_length (ob, index_stream, string,
-				   strlen (string) + 1);
+				   strlen (string) + 1,
+				   persistent);
   else
     lto_output_1_stream (index_stream, 0);
 }
@@ -226,12 +242,10 @@ output_string_cst (struct output_block *ob,
 		   struct lto_output_stream *index_stream,
 		   tree string)
 {
-  if (string)
-    lto_output_string_with_length (ob, index_stream,
-				   TREE_STRING_POINTER (string),
-				   TREE_STRING_LENGTH (string ));
-  else
-    lto_output_1_stream (index_stream, 0);
+  lto_output_string_with_length (ob, index_stream,
+				 TREE_STRING_POINTER (string),
+				 TREE_STRING_LENGTH (string),
+				 true);
 }
 
 
@@ -243,12 +257,10 @@ output_identifier (struct output_block *ob,
 		   struct lto_output_stream *index_stream,
 		   tree id)
 {
-  if (id)
-    lto_output_string_with_length (ob, index_stream,
-				   IDENTIFIER_POINTER (id),
-				   IDENTIFIER_LENGTH (id));
-  else
-    lto_output_1_stream (index_stream, 0);
+  lto_output_string_with_length (ob, index_stream,
+				 IDENTIFIER_POINTER (id),
+				 IDENTIFIER_LENGTH (id),
+				 true);
 }
 
 
@@ -620,8 +632,9 @@ lto_output_location_bitpack (struct bitpack_d *bp,
   bp_pack_value (bp, ob->current_file != xloc.file, 1);
   if (ob->current_file != xloc.file)
     bp_pack_var_len_unsigned (bp, lto_string_index (ob,
-					          xloc.file,
-						  strlen (xloc.file) + 1));
+					            xloc.file,
+						    strlen (xloc.file) + 1,
+						    true));
   ob->current_file = xloc.file;
 
   bp_pack_value (bp, ob->current_line != xloc.line, 1);
@@ -1186,7 +1199,8 @@ static void
 lto_output_ts_translation_unit_decl_tree_pointers (struct output_block *ob,
 						   tree expr)
 {
-  lto_output_string (ob, ob->main_stream, TRANSLATION_UNIT_LANGUAGE (expr));
+  lto_output_string (ob, ob->main_stream,
+		     TRANSLATION_UNIT_LANGUAGE (expr), true);
 }
 
 /* Helper for lto_output_tree.  Write all pointer fields in EXPR to output
@@ -1353,12 +1367,12 @@ lto_output_builtin_tree (struct output_block *ob, tree expr)
 	 reader side from adding a second '*', we omit it here.  */
       const char *str = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (expr));
       if (strlen (str) > 1 && str[0] == '*')
-	lto_output_string (ob, ob->main_stream, &str[1]);
+	lto_output_string (ob, ob->main_stream, &str[1], true);
       else
-	lto_output_string (ob, ob->main_stream, NULL);
+	lto_output_string (ob, ob->main_stream, NULL, true);
     }
   else
-    lto_output_string (ob, ob->main_stream, NULL);
+    lto_output_string (ob, ob->main_stream, NULL, true);
 }
 
 
@@ -1772,7 +1786,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_noutputs (stmt));
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_nclobbers (stmt));
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_nlabels (stmt));
-      lto_output_string (ob, ob->main_stream, gimple_asm_string (stmt));
+      lto_output_string (ob, ob->main_stream, gimple_asm_string (stmt), true);
       /* Fallthru  */
 
     case GIMPLE_ASSIGN:
