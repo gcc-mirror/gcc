@@ -320,7 +320,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
     {
       gcc_assert (GFC_TYPE_ARRAY_CORANK (type) > 0);
 
-      return fold_convert (TREE_TYPE (type), base);
+      return fold_convert (TYPE_MAIN_VARIANT (type), base);
     }
 
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
