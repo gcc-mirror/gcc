@@ -1,5 +1,10 @@
 2011-05-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR libfortran/49214
+	* runtime/backtrace.c (fd_gets): Return NULL if nothing was read.
+
+2011-05-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR libfortran/19155
 	* io/read.c (convert_real): Check for invalid input by comparing
 	endptr instead of EINVAL.

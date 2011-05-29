@@ -95,6 +95,8 @@ fd_gets (char *s, int size, int fd)
       else
 	{
 	  s[i] = '\0';
+	  if (i == 0)
+	    return NULL;
 	  break;
 	}
     }
