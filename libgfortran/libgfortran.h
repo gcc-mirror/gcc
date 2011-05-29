@@ -665,6 +665,9 @@ export_proto(store_exe_path);
 extern char * full_exe_path (void);
 internal_proto(full_exe_path);
 
+extern void find_addr2line (void);
+internal_proto(find_addr2line);
+
 /* backtrace.c */
 
 extern void show_backtrace (void);

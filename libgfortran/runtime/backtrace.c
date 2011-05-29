@@ -104,6 +104,9 @@ fd_gets (char *s, int size, int fd)
 }
 
 
+extern char *addr2line_path;
+
+
 /* show_backtrace displays the backtrace, currently obtained by means of
    the glibc backtrace* functions.  */
 
@@ -123,6 +126,9 @@ show_backtrace (void)
     return;
 
 #if CAN_PIPE
+
+  if (addr2line_path == NULL)
+    goto fallback_noerr;
 
   /* We attempt to extract file and line information from addr2line.  */
   do
@@ -146,6 +152,7 @@ show_backtrace (void)
 	/* Child process.  */
 #define NUM_FIXEDARGS 7
 	char *arg[NUM_FIXEDARGS];
+	char *newenv[] = { NULL };
 
 	close (f[0]);
 
@@ -160,14 +167,14 @@ show_backtrace (void)
 	  _exit (1);
 	close (f[1]);
 
-	arg[0] = (char *) "addr2line";
+	arg[0] = addr2line_path;
 	arg[1] = (char *) "-e";
 	arg[2] = full_exe_path ();
 	arg[3] = (char *) "-f";
 	arg[4] = (char *) "-s";
 	arg[5] = (char *) "-C";
 	arg[6] = NULL;
-	execvp (arg[0], arg);
+	execve (addr2line_path, arg, newenv);
 	_exit (1);
 #undef NUM_FIXEDARGS
       }
@@ -264,6 +271,7 @@ fallback:
 
 #endif /* CAN_PIPE */
 
+fallback_noerr:
   /* Fallback to the glibc backtrace.  */
   estr_write ("\nBacktrace for this error:\n");
   backtrace_symbols_fd (trace, depth, STDERR_FILENO);
