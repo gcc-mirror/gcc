@@ -1,6 +1,11 @@
 2011-05-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
+	* gfortran.dg/coarray_24.f90: New.
+
+2011-05-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
 	* gfortran.dg/coarray_23.f90: New.
 
 2011-05-29  Richard Sandiford  <rdsandiford@googlemail.com>
