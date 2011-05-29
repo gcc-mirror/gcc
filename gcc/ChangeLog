@@ -1,3 +1,13 @@
+2011-05-29  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/43995
+	* config/mips/mips.c (mips_pic_call_symbol_from_set): Add a
+	recurse_p argument.  Only follow register copies if it is set,
+	and prevent mips_find_pic_call_symbol from recursing.
+	(mips_find_pic_call_symbol): Add a recurse_p argument.
+	Pass it to mips_pic_call_symbol_from_set.
+	(mips_annotate_pic_calls): Update accordingly.
+
 2011-05-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49217
