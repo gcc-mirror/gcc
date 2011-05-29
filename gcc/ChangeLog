@@ -1,5 +1,24 @@
 2011-05-28  Jan Hubicka  <jh@suse.cz>
 
+	* lto-streamer-out.c (hash_string_slot_node): Hash string based on its
+	length.
+	(string_slot_free): Remove
+	(create_output_block): Initialize obstack.
+	(destroy_output_block): Free obstack.
+	(lto_string_index): Add PERSISTENT parameter; do not duplicate
+	the string unless it needs to be added into the hash.
+	(lto_output_string_with_length): Add persistent attribute;
+	handle NULL strings.
+	(lto_output_string): Add PERSISTENT parameter.
+	(output_string_cst, output_identifier): Simplify.
+	(lto_output_location_bitpack): Update.
+	(lto_output_builtin_tree): Update.
+	* lto-streamer.h (struct output_block): Add obstack.
+	(lto_output_string, lto_output_string_with_length): Remove declarations;
+	functions are static now.
+
+2011-05-28  Jan Hubicka  <jh@suse.cz>
+
 	* lto-streamer-out.c (pack_ts_fixed_cst_value_fields,
 	pack_ts_decl_common_value_fields, pack_ts_decl_with_vis_value_fields,
 	pack_ts_function_decl_value_fields, lto_output_builtin_tree,

@@ -700,6 +700,10 @@ struct output_block
 
   /* Cache of nodes written in this section.  */
   struct lto_streamer_cache_d *writer_cache;
+
+  /* All data persistent across whole duration of output block
+     can go here.  */
+  struct obstack obstack;
 };
 
 
@@ -873,13 +877,6 @@ extern struct output_block *create_output_block (enum lto_section_type);
 extern void destroy_output_block (struct output_block *);
 extern void lto_output_tree (struct output_block *, tree, bool);
 extern void produce_asm (struct output_block *ob, tree fn);
-extern void lto_output_string (struct output_block *,
-			       struct lto_output_stream *,
-			       const char *);
-extern void lto_output_string_with_length (struct output_block *,
-			                   struct lto_output_stream *,
-			                   const char *,
-			                   unsigned int);
 void lto_output_decl_state_streams (struct output_block *,
 				    struct lto_out_decl_state *);
 void lto_output_decl_state_refs (struct output_block *,
