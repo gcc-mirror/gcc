@@ -139,6 +139,40 @@ full_exe_path (void)
 }
 
 
+char *addr2line_path;
+
+/* Find addr2line and store the path.  */
+
+void
+find_addr2line (void)
+{
+#ifdef HAVE_ACCESS
+#define A2L_LEN 10
+  char *path = getenv ("PATH");
+  size_t n = strlen (path);
+  char ap[n + 1 + A2L_LEN];
+  size_t ai = 0;
+  for (size_t i = 0; i < n; i++)
+    {
+      if (path[i] != ':')
+	ap[ai++] = path[i];
+      else
+	{
+	  ap[ai++] = '/';
+	  memcpy (ap + ai, "addr2line", A2L_LEN);
+	  if (access (ap, R_OK|X_OK) == 0)
+	    {
+	      addr2line_path = strdup (ap);
+	      return;
+	    }
+	  else
+	    ai = 0;
+	}
+    }
+#endif
+}
+
+
 /* Set the saved values of the command line arguments.  */
 
 void
@@ -185,6 +219,9 @@ init (void)
   /* if (argc > 1 && strcmp(argv[1], "--resume") == 0) resume();  */
 #endif
 
+  if (options.backtrace == 1)
+    find_addr2line ();
+
   random_seed_i4 (NULL, NULL, NULL);
 }
 
@@ -198,4 +235,6 @@ cleanup (void)
   
   if (please_free_exe_path_when_done)
     free ((char *) exe_path);
+
+  free (addr2line_path);
 }
