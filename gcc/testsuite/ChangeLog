@@ -1,3 +1,8 @@
+2011-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/boolean_subtype.adb: Rename to...
+	* gnat.dg/boolean_subtype1.adb: ...this.
+
 2011-05-28  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-syntax1.C: New.

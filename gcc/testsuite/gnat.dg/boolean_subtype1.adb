@@ -1,7 +1,7 @@
 -- { dg-do compile }
 -- { dg-options "-O2" }
 
-procedure boolean_subtype is
+procedure Boolean_Subtype1 is
 
    subtype Component_T is Boolean;
 
