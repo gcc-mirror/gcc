@@ -1,5 +1,11 @@
 2011-05-30  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/49218
+	* tree-vrp.c (adjust_range_with_scev): Properly check whether
+	overflow occured.
+
+2011-05-30  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-forwprop.c (forward_propagate_into_comparison):
 	New function split out from ...
 	(forward_propagate_into_gimple_cond): ... here.  Adjust.
