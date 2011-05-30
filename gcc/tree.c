@@ -382,11 +382,11 @@ initialize_tree_contains_struct (void)
 	case TS_SSA_NAME:
 	case TS_CONSTRUCTOR:
 	case TS_EXP:
-	case TS_IDENTIFIER:
 	case TS_STATEMENT_LIST:
 	  MARK_TS_TYPED (code);
 	  break;
 
+	case TS_IDENTIFIER:
 	case TS_DECL_MINIMAL:
 	case TS_TYPE_COMMON:
 	case TS_LIST:

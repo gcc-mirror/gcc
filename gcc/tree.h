@@ -1545,11 +1545,11 @@ struct GTY(()) tree_vector {
    pointer, and vice versa.  */
 
 #define HT_IDENT_TO_GCC_IDENT(NODE) \
-  ((tree) ((char *) (NODE) - sizeof (struct tree_typed)))
+  ((tree) ((char *) (NODE) - sizeof (struct tree_common)))
 #define GCC_IDENT_TO_HT_IDENT(NODE) (&((struct tree_identifier *) (NODE))->id)
 
 struct GTY(()) tree_identifier {
-  struct tree_typed typed;
+  struct tree_common common;
   struct ht_identifier id;
 };
 

@@ -1,3 +1,17 @@
+2011-05-30  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	PR bootstrap/49190
+
+	Revert:
+	2011-05-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (struct tree_identifier): Inherit from tree_typed, not
+	tree_common.
+	(HT_IDENT_TO_GCC_IDENT): Adjust for said change.
+	* tree.c (initialize_tree_contains_struct): Mark TS_IDENTIFIER as
+	TS_BASE instead of TS_COMMON.
+	* varasm.c (assemble_name): Remove assert.
+
 2011-05-30  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config.gcc: Keep obselete list sorted.
