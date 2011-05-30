@@ -3947,13 +3947,6 @@ ix86_option_override_internal (bool main_args_p)
   if (!TARGET_80387)
     target_flags |= MASK_NO_FANCY_MATH_387;
 
-  /* On 32bit targets, avoid moving DFmode values in
-     integer registers when optimizing for size.  */
-  if (TARGET_64BIT)
-    target_flags |= TARGET_INTEGER_DFMODE_MOVES;
-  else if (optimize_size)
-    target_flags &= ~TARGET_INTEGER_DFMODE_MOVES;
-
   /* Turn on MMX builtins for -msse.  */
   if (TARGET_SSE)
     {
