@@ -1,3 +1,9 @@
+2011-05-30  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/49186
+	* config/sh/sh.c (expand_cbranchdi4): Set msw_skip when the high
+	part of the second operand is 0.
+
 2011-05-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movxf_internal): Penalize FYx*r->o alternative
