@@ -1,5 +1,10 @@
 2011-05-30  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (gimple_types_compatible_p_1): Compare record
+	and union type members properly.
+
+2011-05-30  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/49210
 	* ipa-split.c (split_function): Care for the case where the
 	call result is not trivially convertible to the result holding
