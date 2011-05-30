@@ -1700,7 +1700,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
   struct loop *loop = (gimple_bb (phi))->loop_father;
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   enum tree_code code;
-  gimple current_stmt = NULL, use_stmt = NULL, first;
+  gimple current_stmt = NULL, use_stmt = NULL, first, next_stmt;
   stmt_vec_info use_stmt_info, current_stmt_info;
   tree lhs;
   imm_use_iterator imm_iter;
@@ -1778,35 +1778,91 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
   if (!found || use_stmt != phi || size < 2)
     return false;
 
+  /* Swap the operands, if needed, to make the reduction operand be the second
+     operand.  */
+  lhs = PHI_RESULT (phi);
+  next_stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (current_stmt));
+  while (next_stmt)
+    {
+      if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
+	{
+          if (gimple_assign_rhs2 (next_stmt) == lhs)
+	    {
+	      tree op = gimple_assign_rhs1 (next_stmt);
+              gimple def_stmt = NULL;
+
+              if (TREE_CODE (op) == SSA_NAME)
+                def_stmt = SSA_NAME_DEF_STMT (op);
+
+	      /* Check that the other def is either defined in the loop
+		 ("vect_internal_def"), or it's an induction (defined by a
+		 loop-header phi-node).  */
+	      if (code == COND_EXPR
+                  || (def_stmt
+		      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
+                      && (is_gimple_assign (def_stmt)
+                          || is_gimple_call (def_stmt)
+                          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
+                              == vect_induction_def
+                          || (gimple_code (def_stmt) == GIMPLE_PHI
+                              && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
+                                  == vect_internal_def
+                              && !is_loop_header_bb_p (gimple_bb (def_stmt))))))
+		{
+		  lhs = gimple_assign_lhs (next_stmt);
+		  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+ 		  continue;
+		}
+
+	      return false;
+	    }
+	  else
+	    {
+              tree op = gimple_assign_rhs2 (next_stmt);
+              gimple def_stmt = NULL;
+
+              if (TREE_CODE (op) == SSA_NAME)
+                def_stmt = SSA_NAME_DEF_STMT (op);
+
+              /* Check that the other def is either defined in the loop
+                 ("vect_internal_def"), or it's an induction (defined by a
+                 loop-header phi-node).  */
+              if (code == COND_EXPR
+                  || (def_stmt
+		      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
+                      && (is_gimple_assign (def_stmt)
+                          || is_gimple_call (def_stmt)
+                          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
+                              == vect_induction_def
+                          || (gimple_code (def_stmt) == GIMPLE_PHI
+                              && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
+                                  == vect_internal_def
+                              && !is_loop_header_bb_p (gimple_bb (def_stmt))))))
+		{
+		  if (vect_print_dump_info (REPORT_DETAILS))
+		    {
+		      fprintf (vect_dump, "swapping oprnds: ");
+		      print_gimple_stmt (vect_dump, next_stmt, 0, TDF_SLIM);
+		    }
+
+		  swap_tree_operands (next_stmt,
+			      gimple_assign_rhs1_ptr (next_stmt),
+                              gimple_assign_rhs2_ptr (next_stmt));
+		  mark_symbols_for_renaming (next_stmt);
+		}
+	      else
+		return false;
+	    }
+        }
+
+      lhs = gimple_assign_lhs (next_stmt);
+      next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+    }
+
   /* Save the chain for further analysis in SLP detection.  */
   first = GROUP_FIRST_ELEMENT (vinfo_for_stmt (current_stmt));
   VEC_safe_push (gimple, heap, LOOP_VINFO_REDUCTION_CHAINS (loop_info), first);
   GROUP_SIZE (vinfo_for_stmt (first)) = size;
-
-  /* Swap the operands, if needed, to make the reduction operand be the second
-     operand.  */
-  lhs = PHI_RESULT (phi);
-  current_stmt = first;
-  while (current_stmt)
-    {
-      if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS
-          && gimple_assign_rhs2 (current_stmt) != lhs)
-        {
-          if (vect_print_dump_info (REPORT_DETAILS))
-            {
-              fprintf (vect_dump, "swapping oprnds: ");
-              print_gimple_stmt (vect_dump, current_stmt, 0, TDF_SLIM);
-            }
-
-          swap_tree_operands (current_stmt,
-			      gimple_assign_rhs1_ptr (current_stmt),
-                              gimple_assign_rhs2_ptr (current_stmt));
-          mark_symbols_for_renaming (current_stmt);
-        }
-
-      lhs = gimple_assign_lhs (current_stmt);
-      current_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (current_stmt));
-    }
 
   return true;
 }

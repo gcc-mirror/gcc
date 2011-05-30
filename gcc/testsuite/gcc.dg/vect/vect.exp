@@ -176,6 +176,12 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-scevccp-vect-*.\[cS\]]]  
 # -fno-tree-scev-cprop
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-fno-tree-scev-cprop"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-scevccp-pr*.\[cS\]]]  \
+        "" $DEFAULT_VECTCFLAGS
+
+# -fno-tree-scev-cprop
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-fno-tree-scev-cprop"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-scevccp-outer-*.\[cS\]]]  \
         "" $DEFAULT_VECTCFLAGS
 

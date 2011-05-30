@@ -1,3 +1,10 @@
+2011-05-30  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49199
+	* tree-vect-loop.c (vect_is_slp_reduction): Check that the
+	non-reduction operands are either defined in the loop or
+	by induction.
+
 2011-05-29  Xinliang David Li  <davidxl@google.com>
 
 	* opts-global.c (handle_common_deferred_options): Handle new options.
