@@ -1,3 +1,15 @@
+2011-05-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/tuple: Implement uses-allocator construction.
+	* include/bits/allocator.h (uses_allocator): Move to ...
+	* include/bits/uses_allocator.h: New file.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: New.
+	* testsuite/20_util/uses_allocator/construction.cc: New.
+	* testsuite/20_util/tuple/cons/allocate_noncopyable.cc: New.
+	* testsuite/20_util/tuple/cons/allocators.cc: New.
+
 2011-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/pointer_traits/pointer_to.cc: Fix.

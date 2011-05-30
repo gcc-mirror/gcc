@@ -49,7 +49,7 @@
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <bits/ptr_traits.h>
-#include <type_traits> // For _GLIBCXX_HAS_NESTED_TYPE
+#include <bits/uses_allocator.h>
 #include <limits>
 #endif
 
@@ -206,32 +206,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__catch(...) { }
       }
     };
-
-
-  /// [allocator.tag]
-  struct allocator_arg_t { };
-
-  constexpr allocator_arg_t allocator_arg = allocator_arg_t();
-
-_GLIBCXX_HAS_NESTED_TYPE(allocator_type)
-
-  template<typename _Tp, typename _Alloc,
-	   bool = __has_allocator_type<_Tp>::value>
-    struct __uses_allocator_helper
-    : public false_type { };
-
-  template<typename _Tp, typename _Alloc>
-    struct __uses_allocator_helper<_Tp, _Alloc, true>
-    : public integral_constant<bool, is_convertible<_Alloc,
-				     typename _Tp::allocator_type>::value>
-    { };
-
-  /// [allocator.uses.trait]
-  template<typename _Tp, typename _Alloc>
-    struct uses_allocator
-    : public integral_constant<bool,
-			       __uses_allocator_helper<_Tp, _Alloc>::value>
-    { };
 
   template<typename _Alloc, typename _Tp>
     class __alloctr_rebind_helper

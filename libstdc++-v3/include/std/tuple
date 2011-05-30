@@ -36,6 +36,7 @@
 #else
 
 #include <utility>
+#include <bits/uses_allocator.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -81,9 +82,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Head_base(const _Head& __h)
       : _Head(__h) { }
 
-      template<typename _UHead>
+      template<typename _UHead, typename = typename
+	       enable_if<!is_convertible<_UHead,
+	                                 __uses_alloc_base>::value>::type>
         _Head_base(_UHead&& __h)
 	: _Head(std::forward<_UHead>(__h)) { }
+
+      _Head_base(__uses_alloc0)
+      : _Head() { }
+
+      template<typename _Alloc>
+	_Head_base(__uses_alloc1<_Alloc> __a)
+	: _Head(allocator_arg, *__a._M_a) { }
+
+      template<typename _Alloc>
+	_Head_base(__uses_alloc2<_Alloc> __a)
+	: _Head(*__a._M_a) { }
+
+      template<typename _UHead>
+	_Head_base(__uses_alloc0, _UHead&& __uhead)
+	: _Head(std::forward<_UHead>(__uhead)) { }
+
+      template<typename _Alloc, typename _UHead>
+	_Head_base(__uses_alloc1<_Alloc> __a, _UHead&& __uhead)
+	: _Head(allocator_arg, *__a._M_a, std::forward<_UHead>(__uhead)) { }
+
+      template<typename _Alloc, typename _UHead>
+	_Head_base(__uses_alloc2<_Alloc> __a, _UHead&& __uhead)
+	: _Head(std::forward<_UHead>(__uhead), *__a._M_a) { }
 
       _Head&       _M_head() noexcept       { return *this; }
       const _Head& _M_head() const noexcept { return *this; }
@@ -98,9 +124,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Head_base(const _Head& __h)
       : _M_head_impl(__h) { }
 
-      template<typename _UHead>
+      template<typename _UHead, typename = typename
+	       enable_if<!is_convertible<_UHead,
+	                                 __uses_alloc_base>::value>::type>
         _Head_base(_UHead&& __h)
 	: _M_head_impl(std::forward<_UHead>(__h)) { }
+
+      _Head_base(__uses_alloc0)
+      : _M_head_impl() { }
+
+      template<typename _Alloc>
+	_Head_base(__uses_alloc1<_Alloc> __a)
+	: _M_head_impl(allocator_arg, *__a._M_a) { }
+
+      template<typename _Alloc>
+	_Head_base(__uses_alloc2<_Alloc> __a)
+	: _M_head_impl(*__a._M_a) { }
+
+      template<typename _UHead>
+	_Head_base(__uses_alloc0, _UHead&& __uhead)
+	: _M_head_impl(std::forward<_UHead>(__uhead)) { }
+
+      template<typename _Alloc, typename _UHead>
+	_Head_base(__uses_alloc1<_Alloc> __a, _UHead&& __uhead)
+	: _M_head_impl(allocator_arg, *__a._M_a, std::forward<_UHead>(__uhead))
+	{ }
+
+      template<typename _Alloc, typename _UHead>
+	_Head_base(__uses_alloc2<_Alloc> __a, _UHead&& __uhead)
+	: _M_head_impl(std::forward<_UHead>(__uhead), *__a._M_a) { }
 
       _Head&       _M_head() noexcept       { return _M_head_impl; }
       const _Head& _M_head() const noexcept { return _M_head_impl; }        
@@ -127,6 +179,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Tuple_impl<_Idx>
     {
       template<std::size_t, typename...> friend class _Tuple_impl;
+
+      _Tuple_impl() = default;
+
+      template<typename _Alloc>
+        _Tuple_impl(allocator_arg_t, const _Alloc&) { }
+
+      template<typename _Alloc>
+        _Tuple_impl(allocator_arg_t, const _Alloc&, const _Tuple_impl&) { }
+
+      template<typename _Alloc>
+        _Tuple_impl(allocator_arg_t, const _Alloc&, _Tuple_impl&&) { }
 
     protected:
       void _M_swap(_Tuple_impl&) noexcept { /* no-op */ }
@@ -160,7 +223,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Tuple_impl(const _Head& __head, const _Tail&... __tail)
       : _Inherited(__tail...), _Base(__head) { }
 
-      template<typename _UHead, typename... _UTail> 
+      template<typename _UHead, typename... _UTail, typename = typename
+               std::enable_if<sizeof...(_Tail)==sizeof...(_UTail)>::type> 
         explicit
         _Tuple_impl(_UHead&& __head, _UTail&&... __tail)
 	: _Inherited(std::forward<_UTail>(__tail)...),
@@ -182,6 +246,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         _Tuple_impl(_Tuple_impl<_Idx, _UHead, _UTails...>&& __in)
 	: _Inherited(std::move(__in._M_tail())),
 	  _Base(std::forward<_UHead>(__in._M_head())) { }
+
+      template<typename _Alloc>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a)
+	: _Inherited(__tag, __a),
+          _Base(__use_alloc<_Head>(__a)) { }
+
+      template<typename _Alloc>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	    const _Head& __head, const _Tail&... __tail)
+	: _Inherited(__tag, __a, __tail...),
+          _Base(__use_alloc<_Head, _Alloc, _Head>(__a), __head) { }
+
+      template<typename _Alloc, typename _UHead, typename... _UTail,
+               typename = typename std::enable_if<sizeof...(_Tail)
+		                                  ==sizeof...(_UTail)>::type>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            _UHead&& __head, _UTail&&... __tail)
+	: _Inherited(__tag, __a, std::forward<_UTail>(__tail)...),
+          _Base(__use_alloc<_Head, _Alloc, _UHead>(__a),
+	        std::forward<_UHead>(__head)) { }
+
+      template<typename _Alloc>
+        _Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            const _Tuple_impl& __in)
+	: _Inherited(__tag, __a, __in._M_tail()), 
+          _Base(__use_alloc<_Head, _Alloc, _Head>(__a), __in._M_head()) { }
+
+      template<typename _Alloc>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            _Tuple_impl&& __in)
+	noexcept(std::is_nothrow_move_constructible<_Head>::value
+		 && std::is_nothrow_move_constructible<_Inherited>::value)
+	: _Inherited(__tag, __a, std::move(__in._M_tail())), 
+	  _Base(__use_alloc<_Head, _Alloc, _Head>(__a),
+	        std::forward<_Head>(__in._M_head())) { }
+
+      template<typename _Alloc, typename... _UElements>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            const _Tuple_impl<_Idx, _UElements...>& __in)
+	: _Inherited(__tag, __a, __in._M_tail()),
+	  _Base(__use_alloc<_Head, _Alloc, _Head>(__a), __in._M_head()) { }
+
+      template<typename _Alloc, typename _UHead, typename... _UTails>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            _Tuple_impl<_Idx, _UHead, _UTails...>&& __in)
+	: _Inherited(__tag, __a, std::move(__in._M_tail())),
+	  _Base(__use_alloc<_Head, _Alloc, _UHead>(__a),
+                std::forward<_UHead>(__in._M_head())) { }
 
       _Tuple_impl&
       operator=(const _Tuple_impl& __in)
@@ -268,6 +380,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      == sizeof...(_Elements)>::type>
         tuple(tuple<_UElements...>&& __in)
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
+
+      // allocator-extended constructors
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a)
+	: _Inherited(__tag, __a) { }
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      const _Elements&... __elements)
+	: _Inherited(__tag, __a, __elements...) { }
+
+      template<typename _Alloc, typename... _UElements, typename = typename
+	       std::enable_if<sizeof...(_UElements)
+			      == sizeof...(_Elements)>::type>
+	tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      _UElements&&... __elements)
+	: _Inherited(__tag, __a, std::forward<_UElements>(__elements)...)
+       	{ }
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, const tuple& __in)
+	: _Inherited(__tag, __a, static_cast<const _Inherited&>(__in)) { }
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple&& __in)
+	: _Inherited(__tag, __a, static_cast<_Inherited&&>(__in)) { }
+
+      template<typename _Alloc, typename... _UElements, typename = typename
+	       std::enable_if<sizeof...(_UElements)
+			      == sizeof...(_Elements)>::type>
+	tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      const tuple<_UElements...>& __in)
+	: _Inherited(__tag, __a,
+	             static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
+	{ }
+
+      template<typename _Alloc, typename... _UElements, typename = typename
+	       std::enable_if<sizeof...(_UElements)
+			      == sizeof...(_Elements)>::type>
+	tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      tuple<_UElements...>&& __in)
+	: _Inherited(__tag, __a,
+	             static_cast<_Tuple_impl<0, _UElements...>&&>(__in))
+	{ }
 
       tuple&
       operator=(const tuple& __in)
@@ -356,6 +513,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Inherited(std::forward<_U1>(__in.first),
 		     std::forward<_U2>(__in.second)) { }
 
+      // allocator-extended constructors
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a)
+	: _Inherited(__tag, __a) { }
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      const _T1& __a1, const _T2& __a2)
+	: _Inherited(__tag, __a, __a1, __a2) { }
+
+      template<typename _Alloc, typename _U1, typename _U2>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, _U1&& __a1, _U2&& __a2)
+	: _Inherited(__tag, __a, std::forward<_U1>(__a1),
+	             std::forward<_U2>(__a2)) { }
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, const tuple& __in)
+	: _Inherited(__tag, __a, static_cast<const _Inherited&>(__in)) { }
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple&& __in)
+	: _Inherited(__tag, __a, static_cast<_Inherited&&>(__in)) { }
+
+      template<typename _Alloc, typename _U1, typename _U2>
+	tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      const tuple<_U1, _U2>& __in)
+	: _Inherited(__tag, __a,
+	             static_cast<const _Tuple_impl<0, _U1, _U2>&>(__in))
+	{ }
+
+      template<typename _Alloc, typename _U1, typename _U2>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple<_U1, _U2>&& __in)
+	: _Inherited(__tag, __a, static_cast<_Tuple_impl<0, _U1, _U2>&&>(__in))
+	{ }
+
+      template<typename _Alloc, typename _U1, typename _U2>
+        tuple(allocator_arg_t __tag, const _Alloc& __a,
+	      const pair<_U1, _U2>& __in)
+	: _Inherited(__tag, __a, __in.first, __in.second) { }
+
+      template<typename _Alloc, typename _U1, typename _U2>
+        tuple(allocator_arg_t __tag, const _Alloc& __a, pair<_U1, _U2>&& __in)
+	: _Inherited(__tag, __a, std::forward<_U1>(__in.first),
+		     std::forward<_U2>(__in.second)) { }
+
       tuple&
       operator=(const tuple& __in)
       {
@@ -426,7 +629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _Inherited(__a1) { }
 
       template<typename _U1, typename = typename
-	       std::enable_if<std::is_convertible<_U1, _T1>::value>::type>
+	       std::enable_if<std::is_constructible<_T1, _U1&&>::value>::type>
         explicit
         tuple(_U1&& __a1)
 	: _Inherited(std::forward<_U1>(__a1)) { }
@@ -441,6 +644,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _U1>
         tuple(tuple<_U1>&& __in)
 	: _Inherited(static_cast<_Tuple_impl<0, _U1>&&>(__in)) { }
+
+      // allocator-extended constructors
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a)
+	: _Inherited(__tag, __a) { }
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, const _T1& __a1)
+	: _Inherited(__tag, __a, __a1) { }
+
+      // TODO: constrain for is_uses_allocator_constructible<_T1, _U1&&, _Alloc>
+      template<typename _Alloc, typename _U1>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, _U1&& __a1)
+	: _Inherited(__tag, __a, std::forward<_U1>(__a1)) { }
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, const tuple& __in)
+	: _Inherited(__tag, __a, static_cast<const _Inherited&>(__in)) { }
+
+      template<typename _Alloc>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple&& __in)
+	: _Inherited(__tag, __a, static_cast<_Inherited&&>(__in)) { }
+
+      template<typename _Alloc, typename _U1>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, const tuple<_U1>& __in)
+	: _Inherited(__tag, __a, static_cast<const _Tuple_impl<0, _U1>&>(__in))
+       	{ }
+
+      template<typename _Alloc, typename _U1>
+	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple<_U1>&& __in)
+	: _Inherited(__tag, __a, static_cast<_Tuple_impl<0, _U1>&&>(__in)) { }
 
       tuple&
       operator=(const tuple& __in)
@@ -803,6 +1038,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   const _Swallow_assign ignore{};
+
+  /// Partial specialization for tuples
+  template<typename... _Types, typename _Alloc>
+    struct uses_allocator<tuple<_Types...>, _Alloc> : true_type { };
 
   /**
    * Stores a tuple of indices. Used by bind() to extract the elements
