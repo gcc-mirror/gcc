@@ -1508,6 +1508,13 @@
 #endif
 
 
+/* Define to 1 if the 'vaddr' field is the first field in the UPC
+   pointer-to-shared representation. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_UPC_PTS_VADDR_FIRST
+#endif
+
+
 /* Define if valgrind's valgrind/memcheck.h header is installed. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_VALGRIND_MEMCHECK_H
@@ -1772,13 +1779,6 @@
    */
 #ifndef USED_FOR_TARGET
 #undef UPC_PTS_THREAD_SIZE
-#endif
-
-
-/* Define to 1 if the 'vaddr' field is the first field in the UPC
-   pointer-to-shared representation. */
-#ifndef USED_FOR_TARGET
-#undef UPC_PTS_VADDR_FIRST
 #endif
 
 

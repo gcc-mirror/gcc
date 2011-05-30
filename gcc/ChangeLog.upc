@@ -1,3 +1,15 @@
+2011-05-30  Gary Funck  <gary@intrepid.com>
+
+	* configure.ac: Make the default order of the virtual
+	  address field in a UPC pointer-to-shared to be "first".
+	  This reverts to the previous setting, and is a short term
+	  measure to work around a bug found on the IA64,
+	  where vaddr=last led to incorrect code generation.
+	  Rename UPC_PTS_VADDR_FIRST to HAVE_UPC_PTS_VADDR_FIRST
+	  in AC_DEFINE(), to agree with recent changes in files
+	  that reference this define.
+	  configure, config.in: Regenerate.
+
 2011-05-26  Gary Funck  <gary@intrepid.com>
 
 	* configure.ac: Fix typo when referring to $upc_vaddr_order.

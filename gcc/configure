@@ -7139,7 +7139,8 @@ fi
 else
 
 if test x"$lang_upc_enabled" = x"yes" ; then
-  upc_vaddr_order="last"
+  # Default UPC PTS vaddr order to "first"
+  upc_vaddr_order="first"
 fi
 
 fi
@@ -7235,7 +7236,7 @@ $as_echo_n "checking for UPC pointer-to-shared address field position... " >&6; 
 $as_echo "$upc_vaddr_order" >&6; }
   if test x"$upc_vaddr_order" = x"first"; then
 
-$as_echo "#define UPC_PTS_VADDR_FIRST 1" >>confdefs.h
+$as_echo "#define HAVE_UPC_PTS_VADDR_FIRST 1" >>confdefs.h
 
   fi
   if test x"$upc_pts_rep" = x"packed"; then
@@ -17759,7 +17760,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17762 "configure"
+#line 17763 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17865,7 +17866,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17868 "configure"
+#line 17869 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
