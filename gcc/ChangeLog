@@ -1,3 +1,22 @@
+2011-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movxf_internal): Penalize FYx*r->o alternative
+	to prevent partial memory stalls.  Do not move CONST_DOUBLEs directly
+	to memory for !TARGET_MEMORY_MISMATCH_STALL.
+	(*movdf_internal_rex64): Do not penalize F->r alternative.
+	(*movdf_internal):  Penalize FYd*r->o alternative to prevent partial
+	memory stalls.  Generate SSE and x87 CONST_DOUBLE immediates only
+	when optimizing function for size.  Do not move CONST_DOUBLEs
+	directly to memory for !TARGET_MEMORY_MISMATCH_STALL.
+	(FP move splitters): Merge {TF,XF,DF}mode move splitters.  Do not
+	handle SUBREGs.  Do not check for MEM_P operands in the insn condition,
+	check for ANY_FP_REGNO_P instead.
+	* config/i386/constraints.md (Yd): Enable GENERAL_REGS for
+	TARGET_64BIT and for TARGET_INTEGER_DFMODE_MOVES when optimizing
+	function for speed.
+	* config/i386/i386.c (ix86_option_override_internal): Do not
+	set TARGET_INTEGER_DFMODE_MOVES here.
+
 2011-05-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/49168
@@ -18,7 +37,7 @@
 	(gimple_expand_builtin_pow): Reorder args for
 	build_and_insert_call; use build_and_insert_binop; add more
 	optimizations for fractional exponents.
-	
+
 2011-05-30  Nathan Froyd  <froydnj@gcc.gnu.org>
 
 	PR bootstrap/49190
@@ -86,8 +105,7 @@
 
 	PR tree-optimization/49199
 	* tree-vect-loop.c (vect_is_slp_reduction): Check that the
-	non-reduction operands are either defined in the loop or
-	by induction.
+	non-reduction operands are either defined in the loop or by induction.
 
 2011-05-29  Xinliang David Li  <davidxl@google.com>
 
