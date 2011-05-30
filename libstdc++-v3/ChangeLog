@@ -1,3 +1,8 @@
+2011-05-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/tuple: Restore is_convertible constraint.
+	* testsuite/20_util/tuple/cons/allocate_noncopyable.cc: Remove.
+
 2011-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/49236
