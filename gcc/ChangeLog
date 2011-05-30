@@ -1,3 +1,9 @@
+2011-05-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/49168
+	* config/i386/i386.md (*movtf_internal): Handle misaligned
+	load/store.
+
 2011-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (modified_type_die, gen_reference_type_die): Use
