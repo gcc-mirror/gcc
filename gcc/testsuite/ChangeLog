@@ -1,3 +1,8 @@
+2011-05-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49218
+	* gcc.c-torture/execute/pr49218.c: New testcase.
+
 2011-05-29  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/reg-var-1.c: New test.

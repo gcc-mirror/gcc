@@ -1,3 +1,9 @@
+2011-05-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49218
+	* tree-vrp.c (adjust_range_with_scev): Properly check whether
+	overflow occured.
+
 2011-05-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/45263

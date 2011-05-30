@@ -3422,11 +3422,17 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
                                            loop->nb_iterations_upper_bound,
                                            double_int_one),
                                        unsigned_p, &overflow);
-      tem = double_int_to_tree (TREE_TYPE (init), dtmp);
       /* If the multiplication overflowed we can't do a meaningful
-	 adjustment.  */
-      if (!overflow && double_int_equal_p (dtmp, tree_to_double_int (tem)))
+	 adjustment.  Likewise if the result doesn't fit in the type
+	 of the induction variable.  For a signed type we have to
+	 check whether the result has the expected signedness which
+	 is that of the step as nb_iterations_upper_bound is unsigned.  */
+      if (!overflow
+	  && double_int_fits_to_tree_p (TREE_TYPE (init), dtmp)
+	  && (unsigned_p
+	      || ((dtmp.high ^ TREE_INT_CST_HIGH (step)) >= 0)))
 	{
+	  tem = double_int_to_tree (TREE_TYPE (init), dtmp);
 	  extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
 					  TREE_TYPE (init), init, tem);
 	  /* Likewise if the addition did.  */
