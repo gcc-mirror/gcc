@@ -1,3 +1,8 @@
+2011-05-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49218
+	* gcc.c-torture/execute/pr49218.c: New testcase.
+
 2011-05-30  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49199
