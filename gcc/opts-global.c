@@ -370,6 +370,14 @@ handle_common_deferred_options (void)
 	    error ("unrecognized command line option %<-fdump-%s%>", opt->arg);
 	  break;
 
+	case OPT_fenable_:
+	case OPT_fdisable_:
+	  if (opt->opt_index == OPT_fenable_)
+	    enable_pass (opt->arg);
+          else
+	    disable_pass (opt->arg);
+          break;
+
 	case OPT_ffixed_:
 	  /* Deferred.  */
 	  fix_register (opt->arg, 1, 1);
