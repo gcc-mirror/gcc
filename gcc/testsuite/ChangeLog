@@ -1,9 +1,13 @@
+2011-05-30  Jakub Jelinek  <jakub@redhat.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/guality/drap.c: New test.
+
 2011-05-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49210
-	* gnat.dg/boolean_subtype2.adb: New testcase.
-	* gnat.dg/boolean_subtype2.ads: Likewise.
-	* gnat.dg/boolean_subtype2_pkg.ads: Likewise.
+	* gnat.dg/boolean_subtype2.ad[sb]: New testcase.
+	* gnat.dg/boolean_subtype2_pkg.ads: New helper.
 
 2011-05-30  Jakub Jelinek  <jakub@redhat.com>
 
