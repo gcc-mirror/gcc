@@ -1,3 +1,9 @@
+2011-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49223
+	* g++.dg/gomp/pr49223-1.C: New test.
+	* g++.dg/gomp/pr49223-2.C: New test.
+
 2011-05-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49218

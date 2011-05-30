@@ -1,3 +1,10 @@
+2011-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49223
+	* semantics.c (finish_omp_clauses): Call require_complete_type
+	even for copyin/copyprivate clauses.  Only call
+	cxx_omp_create_clause_info if inner_type is COMPLETE_TYPE_P.
+
 2011-05-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47049
