@@ -97,6 +97,8 @@ along with GCC; see the file COPYING3.  If not see
    The variable current_pass is also used for statistics and plugins.  */
 struct opt_pass *current_pass;
 
+static void register_pass_name (struct opt_pass *, const char *);
+
 /* Call from anywhere to find out what pass this is.  Useful for
    printing out debugging information deep inside an service
    routine.  */
@@ -375,7 +377,7 @@ void
 register_one_dump_file (struct opt_pass *pass)
 {
   char *dot_name, *flag_name, *glob_name;
-  const char *name, *prefix;
+  const char *name, *full_name, *prefix;
   char num[10];
   int flags, id;
 
@@ -404,6 +406,8 @@ register_one_dump_file (struct opt_pass *pass)
   glob_name = concat (prefix, name, NULL);
   id = dump_register (dot_name, flag_name, glob_name, flags);
   set_pass_for_id (id, pass);
+  full_name = concat (prefix, pass->name, num, NULL);
+  register_pass_name (pass, full_name);
 }
 
 /* Recursive worker function for register_dump_files.  */
@@ -445,6 +449,297 @@ register_dump_files (struct opt_pass *pass,int properties)
 {
   pass->properties_required |= properties;
   register_dump_files_1 (pass, properties);
+}
+
+struct pass_registry
+{
+  const char* unique_name;
+  struct opt_pass *pass;
+};
+
+/* Pass registry hash function.  */
+
+static hashval_t
+passr_hash (const void *p)
+{
+  const struct pass_registry *const s = (const struct pass_registry *const) p;
+  return htab_hash_string (s->unique_name);
+}
+
+/* Hash equal function  */
+
+static int
+passr_eq (const void *p1, const void *p2)
+{
+  const struct pass_registry *const s1 = (const struct pass_registry *const) p1;
+  const struct pass_registry *const s2 = (const struct pass_registry *const) p2;
+
+  return !strcmp (s1->unique_name, s2->unique_name);
+}
+
+static htab_t pass_name_tab = NULL;
+
+/* Register PASS with NAME.  */
+
+static void
+register_pass_name (struct opt_pass *pass, const char *name)
+{
+  struct pass_registry **slot;
+  struct pass_registry pr;
+
+  if (!pass_name_tab)
+    pass_name_tab = htab_create (256, passr_hash, passr_eq, NULL);
+
+  pr.unique_name = name;
+  slot = (struct pass_registry **) htab_find_slot (pass_name_tab, &pr, INSERT);
+  if (!*slot)
+    {
+      struct pass_registry *new_pr;
+
+      new_pr = XCNEW (struct pass_registry);
+      new_pr->unique_name = xstrdup (name);
+      new_pr->pass = pass;
+      *slot = new_pr;
+    }
+  else
+    return; /* Ignore plugin passes.  */
+}
+
+/* Returns the pass with NAME.  */
+
+static struct opt_pass *
+get_pass_by_name (const char *name)
+{
+  struct pass_registry **slot, pr;
+
+  gcc_assert (pass_name_tab);
+  pr.unique_name = name;
+  slot = (struct pass_registry **) htab_find_slot (pass_name_tab,
+                                                   &pr, NO_INSERT);
+
+  if (!slot || !*slot)
+    return NULL;
+
+  return (*slot)->pass;
+}
+
+
+/* Range [start, last].  */
+
+struct uid_range
+{
+  unsigned int start;
+  unsigned int last;
+  struct uid_range *next;
+};
+
+typedef struct uid_range *uid_range_p;
+
+DEF_VEC_P(uid_range_p);
+DEF_VEC_ALLOC_P(uid_range_p, heap);
+
+static VEC(uid_range_p, heap) *enabled_pass_uid_range_tab = NULL;
+static VEC(uid_range_p, heap) *disabled_pass_uid_range_tab = NULL;
+
+/* Parse option string for -fdisable- and -fenable-
+   The syntax of the options:
+
+   -fenable-<pass_name>
+   -fdisable-<pass_name>
+
+   -fenable-<pass_name>=s1:e1,s2:e2,...
+   -fdisable-<pass_name>=s1:e1,s2:e2,...
+*/
+
+static void
+enable_disable_pass (const char *arg, bool is_enable)
+{
+  struct opt_pass *pass;
+  char *range_str, *phase_name;
+  char *argstr = xstrdup (arg);
+  VEC(uid_range_p, heap) **tab = 0;
+
+  range_str = strchr (argstr,'=');
+  if (range_str)
+    {
+      *range_str = '\0';
+      range_str++;
+    }
+
+  phase_name = argstr;
+  if (!*phase_name)
+    {
+      if (is_enable)
+        error ("unrecognized option -fenable");
+      else
+        error ("unrecognized option -fdisable");
+      free (argstr);
+      return;
+    }
+  pass = get_pass_by_name (phase_name);
+  if (!pass || pass->static_pass_number == -1)
+    {
+      if (is_enable)
+        error ("unknown pass %s specified in -fenable", phase_name);
+      else
+        error ("unknown pass %s specified in -fdisble", phase_name);
+      free (argstr);
+      return;
+    }
+
+  if (is_enable)
+    tab = &enabled_pass_uid_range_tab;
+  else
+    tab = &disabled_pass_uid_range_tab;
+
+  if ((unsigned) pass->static_pass_number >= VEC_length (uid_range_p, *tab))
+    VEC_safe_grow_cleared (uid_range_p, heap,
+                           *tab, pass->static_pass_number + 1);
+
+  if (!range_str)
+    {
+      uid_range_p slot;
+      uid_range_p new_range = XCNEW (struct uid_range);
+
+      new_range->start = 0;
+      new_range->last = (unsigned)-1;
+
+      slot = VEC_index (uid_range_p, *tab, pass->static_pass_number);
+      new_range->next = slot;
+      VEC_replace (uid_range_p, *tab, pass->static_pass_number,
+                   new_range);
+      if (is_enable)
+        inform (UNKNOWN_LOCATION, "enable pass %s for functions in the range "
+                "of [%u, %u]", phase_name, new_range->start, new_range->last);
+      else
+        inform (UNKNOWN_LOCATION, "disable pass %s for functions in the range "
+                "of [%u, %u]", phase_name, new_range->start, new_range->last);
+    }
+  else
+    {
+      char *next_range = NULL;
+      char *one_range = range_str;
+      char *end_val = NULL;
+
+      do
+	{
+	  uid_range_p slot;
+	  uid_range_p new_range;
+	  char *invalid = NULL;
+	  long start;
+
+	  next_range = strchr (one_range, ',');
+	  if (next_range)
+	    {
+	      *next_range = '\0';
+	      next_range++;
+	    }
+
+	  end_val = strchr (one_range, ':');
+	  if (end_val)
+	    {
+	      *end_val = '\0';
+	      end_val++;
+	    }
+	  start = strtol (one_range, &invalid, 10);
+	  if (*invalid || start < 0)
+	    {
+	      error ("Invalid range %s in option %s",
+		     one_range,
+		     is_enable ? "-fenable" : "-fdisable");
+	      free (argstr);
+	      return;
+	    }
+	  if (!end_val)
+	    {
+	      new_range = XCNEW (struct uid_range);
+	      new_range->start = (unsigned) start;
+	      new_range->last = (unsigned) start;
+	    }
+	  else
+	    {
+	      long last = strtol (end_val, &invalid, 10);
+	      if (*invalid || last < start)
+		{
+		  error ("Invalid range %s in option %s",
+			 end_val,
+			 is_enable ? "-fenable" : "-fdisable");
+		  free (argstr);
+		  return;
+		}
+	      new_range = XCNEW (struct uid_range);
+	      new_range->start = (unsigned) start;
+	      new_range->last = (unsigned) last;
+	    }
+
+          slot = VEC_index (uid_range_p, *tab, pass->static_pass_number);
+          new_range->next = slot;
+          VEC_replace (uid_range_p, *tab, pass->static_pass_number,
+                       new_range);
+
+          if (is_enable)
+            inform (UNKNOWN_LOCATION,
+                    "enable pass %s for functions in the range of [%u, %u]",
+                    phase_name, new_range->start, new_range->last);
+          else
+            inform (UNKNOWN_LOCATION,
+                    "disable pass %s for functions in the range of [%u, %u]",
+                    phase_name, new_range->start, new_range->last);
+
+	  one_range = next_range;
+	} while (next_range);
+    }
+
+  free (argstr);
+}
+
+/* Enable pass specified by ARG.  */
+
+void
+enable_pass (const char *arg)
+{
+  enable_disable_pass (arg, true);
+}
+
+/* Disable pass specified by ARG.  */
+
+void
+disable_pass (const char *arg)
+{
+  enable_disable_pass (arg, false);
+}
+
+/* Returns true if PASS is explicitly enabled/disabled for FUNC.  */
+
+static bool
+is_pass_explicitly_enabled_or_disabled (struct opt_pass *pass,
+					tree func,
+					VEC(uid_range_p, heap) *tab)
+{
+  uid_range_p slot, range;
+  int cgraph_uid;
+
+  if (!tab
+      || (unsigned) pass->static_pass_number >= VEC_length (uid_range_p, tab)
+      || pass->static_pass_number == -1)
+    return false;
+
+  slot = VEC_index (uid_range_p, tab, pass->static_pass_number);
+  if (!slot)
+    return false;
+
+  cgraph_uid = func ? cgraph_get_node (func)->uid : 0;
+
+  range = slot;
+  while (range)
+    {
+      if ((unsigned) cgraph_uid >= range->start
+	  && (unsigned) cgraph_uid <= range->last)
+	return true;
+      range = range->next;
+    }
+
+  return false;
 }
 
 /* Look at the static_pass_number and duplicate the pass
@@ -1493,6 +1788,30 @@ execute_all_ipa_transforms (void)
     }
 }
 
+/* Check if PASS is explicitly disabled or enabled and return
+   the gate status.  FUNC is the function to be processed, and
+   GATE_STATUS is the gate status determined by pass manager by
+   default.  */
+
+static bool
+override_gate_status (struct opt_pass *pass, tree func, bool gate_status)
+{
+  bool explicitly_enabled = false;
+  bool explicitly_disabled = false;
+
+  explicitly_enabled
+   = is_pass_explicitly_enabled_or_disabled (pass, func,
+                                             enabled_pass_uid_range_tab);
+  explicitly_disabled
+   = is_pass_explicitly_enabled_or_disabled (pass, func,
+                                             disabled_pass_uid_range_tab);
+
+  gate_status = !explicitly_disabled && (gate_status || explicitly_enabled);
+
+  return gate_status;
+}
+
+
 /* Execute PASS. */
 
 bool
@@ -1515,6 +1834,7 @@ execute_one_pass (struct opt_pass *pass)
   /* Check whether gate check should be avoided.
      User controls the value of the gate through the parameter "gate_status". */
   gate_status = (pass->gate == NULL) ? true : pass->gate();
+  gate_status = override_gate_status (pass, current_function_decl, gate_status);
 
   /* Override gate with plugin.  */
   invoke_plugin_callbacks (PLUGIN_OVERRIDE_GATE, &gate_status);

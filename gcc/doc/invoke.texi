@@ -282,6 +282,11 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
+-fdisable-ipa-@var{pass_name} @gol
+-fdisable-rtl-@var{pass_name} @gol
+-fdisable-rtl-@var{pass-name}=@var{range-list} @gol
+-fdisable-tree-@var{pass_name} @gol
+-fdisable-tree-@var{pass-name}=@var{range-list} @gol
 -fdump-noaddr -fdump-unnumbered -fdump-unnumbered-links @gol
 -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
@@ -313,6 +318,8 @@ Objective-C and Objective-C++ Dialects}.
 -fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
 -feliminate-unused-debug-symbols -femit-class-debug-always @gol
+-fenable-@var{kind}-@var{pass} @gol
+-fenable-@var{kind}-@var{pass}=@var{range-list} @gol
 -fdebug-types-section @gol
 -fmem-report -fpre-ipa-mem-report -fpost-ipa-mem-report -fprofile-arcs @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
@@ -5017,6 +5024,7 @@ more closely, if you do not optimize.
 @opindex fdbg-cnt-list
 Print the name and the counter upper bound for all debug counters.
 
+
 @item -fdbg-cnt=@var{counter-value-list}
 @opindex fdbg-cnt
 Set the internal debug counter upper bound.  @var{counter-value-list}
@@ -5026,7 +5034,73 @@ All debug counters have the initial upper bound of @var{UINT_MAX},
 thus dbg_cnt() returns true always unless the upper bound is set by this option.
 e.g. With -fdbg-cnt=dce:10,tail_call:0
 dbg_cnt(dce) will return true only for first 10 invocations
-and dbg_cnt(tail_call) will return false always.
+
+@itemx -fenable-@var{kind}-@var{pass}
+@itemx -fdisable-@var{kind}-@var{pass}=@var{range-list}
+@opindex fdisable-
+@opindex fenable-
+
+This is a set of debugging options that are used to explicitly disable/enable
+optimization passes. For compiler users, regular options for enabling/disabling
+passes should be used instead.
+
+@itemize
+
+@item -fdisable-ipa-@var{pass}
+Disable ipa pass @var{pass}. @var{pass} is the pass name.  If the same pass is
+statically invoked in the compiler multiple times, the pass name should be
+appended with a sequential number starting from 1.
+
+@item -fdisable-rtl-@var{pass}
+@item -fdisable-rtl-@var{pass}=@var{range-list}
+Disable rtl pass @var{pass}.  @var{pass} is the pass name.  If the same pass is
+statically invoked in the compiler multiple times, the pass name should be
+appended with a sequential number starting from 1.  @var{range-list} is a comma
+seperated list of function ranges.  Each range is a number pair seperated by a colon.
+The range is inclusive in both ends.  If the range is trivial, the number pair can be
+simplified a a single number.  If the function's cgraph node's @var{uid} is falling
+within one of the specified ranges, the @var{pass} is disabled for that function.
+The @var{uid} is shown in the function header of a dump file.
+
+@item -fdisable-tree-@var{pass}
+@item -fdisable-tree-@var{pass}=@var{range-list}
+Disable tree pass @var{pass}.  See @option{-fdisable-rtl} for the description of
+option arguments.
+
+@item -fenable-ipa-@var{pass}
+Enable ipa pass @var{pass}.  @var{pass} is the pass name.  If the same pass is
+statically invoked in the compiler multiple times, the pass name should be
+appended with a sequential number starting from 1.
+
+@item -fenable-rtl-@var{pass}
+@item -fenable-rtl-@var{pass}=@var{range-list}
+Enable rtl pass @var{pass}.  See @option{-fdisable-rtl} for option argument
+description and examples.
+
+@item -fenable-tree-@var{pass}
+@item -fenable-tree-@var{pass}=@var{range-list}
+Enable tree pass @var{pass}.  See @option{-fdisable-rtl} for the description
+of option arguments.
+
+@smallexample
+
+# disable ccp1 for all functions
+   -fdisable-tree-ccp1
+# disable complete unroll for function whose cgraph node uid is 1
+   -fenable-tree-cunroll=1
+# disable gcse2 for functions at the following ranges [1,1],
+# [300,400], and [400,1000]
+   -fdisable-rtl-gcse2=1:100,300,400:1000
+# disable early inlining
+   -fdisable-tree-einline
+# disable ipa inlining
+   -fdisable-ipa-inline
+# enable tree full unroll
+   -fenable-tree-unroll
+
+@end smallexample
+
+@end itemize
 
 @item -d@var{letters}
 @itemx -fdump-rtl-@var{pass}

@@ -1,3 +1,18 @@
+2011-05-29  Xinliang David Li  <davidxl@google.com>
+
+	* opts-global.c (handle_common_deferred_options): Handle new options.
+	* passes.c (register_one_dump_file): Call register_pass_name.
+	(execute_one_pass): Check explicit enable/disable flag.
+	(passr_hash): New function.
+	(passr_eq): Ditto.
+	(register_pass_name): Ditto.
+	(get_pass_by_name): Ditto.
+	(pass_hash): Ditto.
+	(pass_eq): Ditto.
+	(enable_pass): Ditto.
+	(disable_pass): Ditto.
+	(is_pass_explicitly_enabled_or_disabled): Ditto.
+
 2011-05-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movoi_internal_avx): Use
