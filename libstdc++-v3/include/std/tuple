@@ -629,7 +629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _Inherited(__a1) { }
 
       template<typename _U1, typename = typename
-	       std::enable_if<std::is_constructible<_T1, _U1&&>::value>::type>
+	       std::enable_if<std::is_convertible<_U1, _T1>::value>::type>
         explicit
         tuple(_U1&& __a1)
 	: _Inherited(std::forward<_U1>(__a1)) { }
