@@ -1,3 +1,9 @@
+2011-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (modified_type_die, gen_reference_type_die): Use
+	DW_TAG_rvalue_reference_type even for
+	-gdwarf-4 -fno-debug-types-section.
+
 2011-05-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/46728
