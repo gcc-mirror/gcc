@@ -1,3 +1,12 @@
+2011-05-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/46728
+	* tree-ssa-math-opts.c (build_and_insert_call): Reorder parms.
+	(build_and_insert_binop): New.
+	(gimple_expand_builtin_pow): Reorder args for
+	build_and_insert_call; use build_and_insert_binop; add more
+	optimizations for fractional exponents.
+	
 2011-05-30  Nathan Froyd  <froydnj@gcc.gnu.org>
 
 	PR bootstrap/49190

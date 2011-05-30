@@ -1033,8 +1033,8 @@ gimple_expand_builtin_powi (gimple_stmt_iterator *gsi, location_t loc,
    SSA name.  */
 
 static tree
-build_and_insert_call (gimple_stmt_iterator *gsi, tree fn, tree arg,
-		       tree *var, location_t loc)
+build_and_insert_call (gimple_stmt_iterator *gsi, location_t loc,
+		       tree *var, tree fn, tree arg)
 {
   gimple call_stmt;
   tree ssa_target;
@@ -1054,6 +1054,22 @@ build_and_insert_call (gimple_stmt_iterator *gsi, tree fn, tree arg,
   return ssa_target;
 }
 
+/* Build a gimple binary operation with the given CODE and arguments
+   ARG0, ARG1, assigning the result to a new SSA name for variable
+   TARGET.  Insert the statement prior to GSI's current position, and
+   return the fresh SSA name.*/
+
+static tree
+build_and_insert_binop (gimple_stmt_iterator *gsi, location_t loc,
+			tree target, enum tree_code code, tree arg0, tree arg1)
+{
+  tree result = make_ssa_name (target, NULL);
+  gimple stmt = gimple_build_assign_with_ops (code, result, arg0, arg1);
+  gimple_set_location (stmt, loc);
+  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+  return result;
+}
+
 /* ARG0 and ARG1 are the two arguments to a pow builtin call in GSI
    with location info LOC.  If possible, create an equivalent and
    less expensive sequence of statements prior to GSI, and return an
@@ -1064,12 +1080,12 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 			   tree arg0, tree arg1)
 {
   REAL_VALUE_TYPE c, cint, dconst1_4, dconst3_4, dconst1_3, dconst1_6;
+  REAL_VALUE_TYPE c2, dconst3;
   HOST_WIDE_INT n;
-  tree type, sqrtfn, cbrtfn, sqrt_arg0, sqrt_sqrt, ssa_target;
+  tree type, sqrtfn, cbrtfn, sqrt_arg0, sqrt_sqrt, result, cbrt_x, powi_cbrt_x;
   tree target = NULL_TREE;
   enum machine_mode mode;
   bool hw_sqrt_exists;
-  gimple mult_stmt;
 
   /* If the exponent isn't a constant, there's nothing of interest
      to be done.  */
@@ -1100,7 +1116,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   if (sqrtfn
       && REAL_VALUES_EQUAL (c, dconsthalf)
       && !HONOR_SIGNED_ZEROS (mode))
-    return build_and_insert_call (gsi, sqrtfn, arg0, &target, loc);
+    return build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
 
   /* Optimize pow(x,0.25) = sqrt(sqrt(x)).  Assume on most machines that
      a builtin sqrt instruction is smaller than a call to pow with 0.25,
@@ -1116,10 +1132,10 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       && hw_sqrt_exists)
     {
       /* sqrt(x)  */
-      sqrt_arg0 = build_and_insert_call (gsi, sqrtfn, arg0, &target, loc);
+      sqrt_arg0 = build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
 
       /* sqrt(sqrt(x))  */
-      return build_and_insert_call (gsi, sqrtfn, sqrt_arg0, &target, loc);
+      return build_and_insert_call (gsi, loc, &target, sqrtfn, sqrt_arg0);
     }
       
   /* Optimize pow(x,0.75) = sqrt(x) * sqrt(sqrt(x)) unless we are
@@ -1135,19 +1151,14 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       && hw_sqrt_exists)
     {
       /* sqrt(x)  */
-      sqrt_arg0 = build_and_insert_call (gsi, sqrtfn, arg0, &target, loc);
+      sqrt_arg0 = build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
 
       /* sqrt(sqrt(x))  */
-      sqrt_sqrt = build_and_insert_call (gsi, sqrtfn, sqrt_arg0, &target, loc);
+      sqrt_sqrt = build_and_insert_call (gsi, loc, &target, sqrtfn, sqrt_arg0);
 
       /* sqrt(x) * sqrt(sqrt(x))  */
-      ssa_target = make_ssa_name (target, NULL);
-      mult_stmt = gimple_build_assign_with_ops (MULT_EXPR, ssa_target,
-						sqrt_arg0, sqrt_sqrt);
-      gimple_set_location (mult_stmt, loc);
-      gsi_insert_before (gsi, mult_stmt, GSI_SAME_STMT);
-
-      return ssa_target;
+      return build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+				     sqrt_arg0, sqrt_sqrt);
     }
 
   /* Optimize pow(x,1./3.) = cbrt(x).  This requires unsafe math
@@ -1169,7 +1180,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
          added in gimple-fold.c.  */
       && !HONOR_NANS (mode)
       && REAL_VALUES_EQUAL (c, dconst1_3))
-    return build_and_insert_call (gsi, cbrtfn, arg0, &target, loc);
+    return build_and_insert_call (gsi, loc, &target, cbrtfn, arg0);
   
   /* Optimize pow(x,1./6.) = cbrt(sqrt(x)).  Don't do this optimization
      if we don't have a hardware sqrt insn.  */
@@ -1191,12 +1202,125 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       && REAL_VALUES_EQUAL (c, dconst1_6))
     {
       /* sqrt(x)  */
-      sqrt_arg0 = build_and_insert_call (gsi, sqrtfn, arg0, &target, loc);
+      sqrt_arg0 = build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
 
       /* cbrt(sqrt(x))  */
-      return build_and_insert_call (gsi, cbrtfn, sqrt_arg0, &target, loc);
+      return build_and_insert_call (gsi, loc, &target, cbrtfn, sqrt_arg0);
     }
 
+  /* Optimize pow(x,c), where n = 2c for some nonzero integer n, into
+
+       sqrt(x) * powi(x, n/2),                n > 0;
+       1.0 / (sqrt(x) * powi(x, abs(n/2))),   n < 0.
+
+     Do not calculate the powi factor when n/2 = 0.  */
+  real_arithmetic (&c2, MULT_EXPR, &c, &dconst2);
+  n = real_to_integer (&c2);
+  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+
+  if (flag_unsafe_math_optimizations
+      && sqrtfn
+      && real_identical (&c2, &cint))
+    {
+      tree powi_x_ndiv2 = NULL_TREE;
+
+      /* Attempt to fold powi(arg0, abs(n/2)) into multiplies.  If not
+         possible or profitable, give up.  Skip the degenerate case when
+         n is 1 or -1, where the result is always 1.  */
+      if (abs (n) != 1)
+	{
+	  powi_x_ndiv2 = gimple_expand_builtin_powi (gsi, loc, arg0, abs(n/2));
+	  if (!powi_x_ndiv2)
+	    return NULL_TREE;
+	}
+
+      /* Calculate sqrt(x).  When n is not 1 or -1, multiply it by the
+	 result of the optimal multiply sequence just calculated.  */
+      sqrt_arg0 = build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
+
+      if (abs (n) == 1)
+	result = sqrt_arg0;
+      else
+	result = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+					 sqrt_arg0, powi_x_ndiv2);
+
+      /* If n is negative, reciprocate the result.  */
+      if (n < 0)
+	result = build_and_insert_binop (gsi, loc, target, RDIV_EXPR,
+					 build_real (type, dconst1), result);
+      return result;
+    }
+
+  /* Optimize pow(x,c), where 3c = n for some nonzero integer n, into
+
+     powi(x, n/3) * powi(cbrt(x), n%3),                    n > 0;
+     1.0 / (powi(x, abs(n)/3) * powi(cbrt(x), abs(n)%3)),  n < 0.
+
+     Do not calculate the first factor when n/3 = 0.  As cbrt(x) is
+     different from pow(x, 1./3.) due to rounding and behavior with
+     negative x, we need to constrain this transformation to unsafe
+     math and positive x or finite math.  */
+  real_from_integer (&dconst3, VOIDmode, 3, 0, 0);
+  real_arithmetic (&c2, MULT_EXPR, &c, &dconst3);
+  real_round (&c2, mode, &c2);
+  n = real_to_integer (&c2);
+  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+  real_arithmetic (&c2, RDIV_EXPR, &cint, &dconst3);
+  real_convert (&c2, mode, &c2);
+
+  if (flag_unsafe_math_optimizations
+      && cbrtfn
+      /* FIXME: The following line was originally
+	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
+	 but since arg0 is a gimple value, the first predicate
+	 will always return false.  It needs to be replaced with a
+	 call to a similar gimple_val_nonnegative_p function to be
+         added in gimple-fold.c.  */
+      && !HONOR_NANS (mode)
+      && real_identical (&c2, &c)
+      && optimize_function_for_speed_p (cfun)
+      && powi_cost (n / 3) <= POWI_MAX_MULTS)
+    {
+      tree powi_x_ndiv3 = NULL_TREE;
+
+      /* Attempt to fold powi(arg0, abs(n/3)) into multiplies.  If not
+         possible or profitable, give up.  Skip the degenerate case when
+         abs(n) < 3, where the result is always 1.  */
+      if (abs (n) >= 3)
+	{
+	  powi_x_ndiv3 = gimple_expand_builtin_powi (gsi, loc, arg0,
+						     abs (n / 3));
+	  if (!powi_x_ndiv3)
+	    return NULL_TREE;
+	}
+
+      /* Calculate powi(cbrt(x), n%3).  Don't use gimple_expand_builtin_powi
+         as that creates an unnecessary variable.  Instead, just produce
+         either cbrt(x) or cbrt(x) * cbrt(x).  */
+      cbrt_x = build_and_insert_call (gsi, loc, &target, cbrtfn, arg0);
+
+      if (abs (n) % 3 == 1)
+	powi_cbrt_x = cbrt_x;
+      else
+	powi_cbrt_x = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+					      cbrt_x, cbrt_x);
+
+      /* Multiply the two subexpressions, unless powi(x,abs(n)/3) = 1.  */
+      if (abs (n) < 3)
+	result = powi_cbrt_x;
+      else
+	result = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+					 powi_x_ndiv3, powi_cbrt_x);
+
+      /* If n is negative, reciprocate the result.  */
+      if (n < 0)
+	result = build_and_insert_binop (gsi, loc, target, RDIV_EXPR, 
+					 build_real (type, dconst1), result);
+
+      return result;
+    }
+
+  /* No optimizations succeeded.  */
   return NULL_TREE;
 }
 
