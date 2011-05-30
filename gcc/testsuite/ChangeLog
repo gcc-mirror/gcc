@@ -1,3 +1,10 @@
+2011-05-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49210
+	* gnat.dg/boolean_subtype2.adb: New testcase.
+	* gnat.dg/boolean_subtype2.ads: Likewise.
+	* gnat.dg/boolean_subtype2_pkg.ads: Likewise.
+
 2011-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49223
