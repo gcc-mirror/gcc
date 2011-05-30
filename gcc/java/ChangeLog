@@ -1,3 +1,8 @@
+2011-05-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR middle-end/46500
+	* expr.c: Include "tm.h" .
+
 2011-05-26  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* decl.c (poplevel): Don't access TREE_TYPE of BLOCKs.
