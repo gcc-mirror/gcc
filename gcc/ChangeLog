@@ -1,3 +1,12 @@
+2011-05-30  Jakub Jelinek  <jakub@redhat.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* var-tracking.c (vt_add_function_parameter): Remap incoming MEMs with
+	crtl->args.internal_arg_pointer based address to arg_pointer_rtx if
+	there is a DRAP register and arg_pointer_rtx is the CFA pointer.
+	(vt_init_cfa_base): Don't equate cfa_base_rtx if stack was realigned.
+	(vt_initialize): Initialize cfa_base_rtx if there is a DRAP register.
+
 2011-05-30  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_types_compatible_p_1): Compare record

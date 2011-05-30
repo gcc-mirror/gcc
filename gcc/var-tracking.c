@@ -8398,6 +8398,28 @@ vt_add_function_parameter (tree parm)
   if (GET_MODE (decl_rtl) == BLKmode || GET_MODE (incoming) == BLKmode)
     return;
 
+  /* If there is a DRAP register, rewrite the incoming location of parameters
+     passed on the stack into MEMs based on the argument pointer, as the DRAP
+     register can be reused for other purposes and we do not track locations
+     based on generic registers.  But the prerequisite is that this argument
+     pointer be also the virtual CFA pointer, see vt_initialize.  */
+  if (MEM_P (incoming)
+      && stack_realign_drap
+      && arg_pointer_rtx == cfa_base_rtx
+      && (XEXP (incoming, 0) == crtl->args.internal_arg_pointer
+	  || (GET_CODE (XEXP (incoming, 0)) == PLUS
+	      && XEXP (XEXP (incoming, 0), 0)
+		 == crtl->args.internal_arg_pointer
+	      && CONST_INT_P (XEXP (XEXP (incoming, 0), 1)))))
+    {
+      HOST_WIDE_INT off = -FIRST_PARM_OFFSET (current_function_decl);
+      if (GET_CODE (XEXP (incoming, 0)) == PLUS)
+	off += INTVAL (XEXP (XEXP (incoming, 0), 1));
+      incoming
+	= replace_equiv_address_nv (incoming,
+				    plus_constant (arg_pointer_rtx, off));
+    }
+
   if (!vt_get_decl_and_offset (incoming, &decl, &offset))
     {
       if (REG_P (incoming) || MEM_P (incoming))
@@ -8647,9 +8669,11 @@ vt_init_cfa_base (void)
 
   /* Tell alias analysis that cfa_base_rtx should share
      find_base_term value with stack pointer or hard frame pointer.  */
-  vt_equate_reg_base_value (cfa_base_rtx,
-			    frame_pointer_needed
-			    ? hard_frame_pointer_rtx : stack_pointer_rtx);
+  if (!frame_pointer_needed)
+    vt_equate_reg_base_value (cfa_base_rtx, stack_pointer_rtx);
+  else if (!crtl->stack_realign_tried)
+    vt_equate_reg_base_value (cfa_base_rtx, hard_frame_pointer_rtx);
+
   val = cselib_lookup_from_insn (cfa_base_rtx, GET_MODE (cfa_base_rtx), 1,
 				 VOIDmode, get_insns ());
   preserve_value (val);
@@ -8778,6 +8802,33 @@ vt_initialize (void)
 	}
       else
 	fp_cfa_offset = -1;
+    }
+
+  /* If the stack is realigned and a DRAP register is used, we're going to
+     rewrite MEMs based on it representing incoming locations of parameters
+     passed on the stack into MEMs based on the argument pointer.  Although
+     we aren't going to rewrite other MEMs, we still need to initialize the
+     virtual CFA pointer in order to ensure that the argument pointer will
+     be seen as a constant throughout the function.
+
+     ??? This doesn't work if FRAME_POINTER_CFA_OFFSET is defined.  */
+  else if (stack_realign_drap)
+    {
+      rtx reg, elim;
+
+#ifdef FRAME_POINTER_CFA_OFFSET
+      reg = frame_pointer_rtx;
+#else
+      reg = arg_pointer_rtx;
+#endif
+      elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
+      if (elim != reg)
+	{
+	  if (GET_CODE (elim) == PLUS)
+	    elim = XEXP (elim, 0);
+	  if (elim == hard_frame_pointer_rtx)
+	    vt_init_cfa_base ();
+	}
     }
 
   if (frame_pointer_needed)
