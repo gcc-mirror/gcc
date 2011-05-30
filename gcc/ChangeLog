@@ -1,5 +1,12 @@
 2011-05-30  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/49210
+	* ipa-split.c (split_function): Care for the case where the
+	call result is not trivially convertible to the result holding
+	variable.
+
+2011-05-30  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/49218
 	* tree-vrp.c (adjust_range_with_scev): Properly check whether
 	overflow occured.
