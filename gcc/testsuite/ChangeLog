@@ -1,3 +1,10 @@
+2011-05-30  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49199
+	* gcc.dg/vect/no-scevccp-pr49199.c: New test.
+	* gcc.dg/vect/vect.exp: Run no-scevccp-pr* tests with
+	-fno-tree-scev-cprop.
+
 2011-05-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47601
