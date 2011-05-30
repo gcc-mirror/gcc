@@ -1,3 +1,9 @@
+2011-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49236
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-warning
+	line number.
+
 2011-05-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/tuple: Implement uses-allocator construction.
