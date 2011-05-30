@@ -1,3 +1,9 @@
+2011-05-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_lto_plugin): Determine lto plugin support
+	from plugin linker.
+	* configure: Regenerate.
+
 2011-05-30  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49199
