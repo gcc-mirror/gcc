@@ -1,3 +1,8 @@
+2011-05-31  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gengtype-state.c (read_state_params_structs): Initialize
+	previous.
+
 2011-05-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*pushxf_nointeger): Merge alternatives 1 and 2.
