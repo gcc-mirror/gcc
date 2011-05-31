@@ -5215,6 +5215,8 @@ add_uses_1 (rtx *x, void *cui)
   for_each_rtx (x, add_uses, cui);
 }
 
+#define EXPR_DEPTH (PARAM_VALUE (PARAM_MAX_VARTRACK_EXPR_DEPTH))
+
 /* Attempt to reverse the EXPR operation in the debug info.  Say for
    reg1 = reg2 + 6 even when reg2 is no longer live we
    can express its value as VAL - 6.  */
@@ -5286,7 +5288,7 @@ reverse_op (rtx val, const_rtx expr)
       arg = XEXP (src, 1);
       if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
 	{
-	  arg = cselib_expand_value_rtx (arg, scratch_regs, 5);
+	  arg = cselib_expand_value_rtx (arg, scratch_regs, EXPR_DEPTH);
 	  if (arg == NULL_RTX)
 	    return NULL_RTX;
 	  if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
@@ -7416,7 +7418,7 @@ vt_expand_loc (rtx loc, htab_t vars, bool ignore_cur_loc)
   data.dummy = false;
   data.cur_loc_changed = false;
   data.ignore_cur_loc = ignore_cur_loc;
-  loc = cselib_expand_value_rtx_cb (loc, scratch_regs, 8,
+  loc = cselib_expand_value_rtx_cb (loc, scratch_regs, EXPR_DEPTH,
 				    vt_expand_loc_callback, &data);
 
   if (loc && MEM_P (loc))
@@ -7438,7 +7440,7 @@ vt_expand_loc_dummy (rtx loc, htab_t vars, bool *pcur_loc_changed)
   data.dummy = true;
   data.cur_loc_changed = false;
   data.ignore_cur_loc = false;
-  ret = cselib_dummy_expand_value_rtx_cb (loc, scratch_regs, 8,
+  ret = cselib_dummy_expand_value_rtx_cb (loc, scratch_regs, EXPR_DEPTH,
 					  vt_expand_loc_callback, &data);
   *pcur_loc_changed = data.cur_loc_changed;
   return ret;
