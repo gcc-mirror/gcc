@@ -24100,23 +24100,84 @@ resolve_one_addr (rtx *addr, void *data ATTRIBUTE_UNUSED)
 static bool
 resolve_addr_in_expr (dw_loc_descr_ref loc)
 {
+  dw_loc_descr_ref keep = NULL;
   for (; loc; loc = loc->dw_loc_next)
-    if (((loc->dw_loc_opc == DW_OP_addr || loc->dtprel)
-	 && resolve_one_addr (&loc->dw_loc_oprnd1.v.val_addr, NULL))
-	|| (loc->dw_loc_opc == DW_OP_implicit_value
-	    && loc->dw_loc_oprnd2.val_class == dw_val_class_addr
-	    && resolve_one_addr (&loc->dw_loc_oprnd2.v.val_addr, NULL)))
-      return false;
-    else if (loc->dw_loc_opc == DW_OP_GNU_implicit_pointer
-	     && loc->dw_loc_oprnd1.val_class == dw_val_class_decl_ref)
+    switch (loc->dw_loc_opc)
       {
-	dw_die_ref ref
-	  = lookup_decl_die (loc->dw_loc_oprnd1.v.val_decl_ref);
-	if (ref == NULL)
+      case DW_OP_addr:
+	if (resolve_one_addr (&loc->dw_loc_oprnd1.v.val_addr, NULL))
 	  return false;
-	loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-	loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
-	loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	break;
+      case DW_OP_const4u:
+      case DW_OP_const8u:
+	if (loc->dtprel
+	    && resolve_one_addr (&loc->dw_loc_oprnd1.v.val_addr, NULL))
+	  return false;
+	break;
+      case DW_OP_implicit_value:
+	if (loc->dw_loc_oprnd2.val_class == dw_val_class_addr
+	    && resolve_one_addr (&loc->dw_loc_oprnd2.v.val_addr, NULL))
+	  return false;
+	break;
+      case DW_OP_GNU_implicit_pointer:
+	if (loc->dw_loc_oprnd1.val_class == dw_val_class_decl_ref)
+	  {
+	    dw_die_ref ref
+	      = lookup_decl_die (loc->dw_loc_oprnd1.v.val_decl_ref);
+	    if (ref == NULL)
+	      return false;
+	    loc->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+	    loc->dw_loc_oprnd1.v.val_die_ref.die = ref;
+	    loc->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	  }
+	break;
+      case DW_OP_GNU_const_type:
+      case DW_OP_GNU_regval_type:
+      case DW_OP_GNU_deref_type:
+      case DW_OP_GNU_convert:
+      case DW_OP_GNU_reinterpret:
+	while (loc->dw_loc_next
+	       && loc->dw_loc_next->dw_loc_opc == DW_OP_GNU_convert)
+	  {
+	    dw_die_ref base1, base2;
+	    unsigned enc1, enc2, size1, size2;
+	    if (loc->dw_loc_opc == DW_OP_GNU_regval_type
+		|| loc->dw_loc_opc == DW_OP_GNU_deref_type)
+	      base1 = loc->dw_loc_oprnd2.v.val_die_ref.die;
+	    else
+	      base1 = loc->dw_loc_oprnd1.v.val_die_ref.die;
+	    base2 = loc->dw_loc_next->dw_loc_oprnd1.v.val_die_ref.die;
+	    gcc_assert (base1->die_tag == DW_TAG_base_type
+			&& base2->die_tag == DW_TAG_base_type);
+	    enc1 = get_AT_unsigned (base1, DW_AT_encoding);
+	    enc2 = get_AT_unsigned (base2, DW_AT_encoding);
+	    size1 = get_AT_unsigned (base1, DW_AT_byte_size);
+	    size2 = get_AT_unsigned (base2, DW_AT_byte_size);
+	    if (size1 == size2
+		&& (((enc1 == DW_ATE_unsigned || enc1 == DW_ATE_signed)
+		     && (enc2 == DW_ATE_unsigned || enc2 == DW_ATE_signed)
+		     && loc != keep)
+		    || enc1 == enc2))
+	      {
+		/* Optimize away next DW_OP_GNU_convert after
+		   adjusting LOC's base type die reference.  */
+		if (loc->dw_loc_opc == DW_OP_GNU_regval_type
+		    || loc->dw_loc_opc == DW_OP_GNU_deref_type)
+		  loc->dw_loc_oprnd2.v.val_die_ref.die = base2;
+		else
+		  loc->dw_loc_oprnd1.v.val_die_ref.die = base2;
+		loc->dw_loc_next = loc->dw_loc_next->dw_loc_next;
+		continue;
+	      }
+	    /* Don't change integer DW_OP_GNU_convert after e.g. floating
+	       point typed stack entry.  */
+	    else if (enc1 != DW_ATE_unsigned && enc1 != DW_ATE_signed)
+	      keep = loc;
+	    break;
+	  }
+	break;
+      default:
+	break;
       }
   return true;
 }
