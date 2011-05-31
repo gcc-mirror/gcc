@@ -1,9 +1,3 @@
-2011-05-31  Dodji Seketeli  <dodji@redhat.com>
-
-	PR debug/49047
-	* dwarf2out.c (gen_subprogram_die): Emit linkage name attribute
-	for concrete functions containing the code of cloned functions.
-
 2011-05-31  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_into_comparison): Rename

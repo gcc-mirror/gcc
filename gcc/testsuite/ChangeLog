@@ -1,8 +1,3 @@
-2011-05-31  Dodji Seketeli  <dodji@redhat.com>
-
-	PR debug/49047
-	* g++.dg/debug/dwarf2/cdtor-1.C: New test.
-
 2011-05-31  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR testsuite/49239

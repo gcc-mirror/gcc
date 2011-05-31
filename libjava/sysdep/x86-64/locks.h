@@ -2,6 +2,8 @@
 
    Copyright (C) 2002  Free Software Foundation
 
+   Contributed by Bo Thorsen <bo@suse.de>.
+
    This file is part of libgcj.
 
 This software is copyrighted work licensed under the terms of the
