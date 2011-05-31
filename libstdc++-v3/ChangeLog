@@ -1,3 +1,14 @@
+2011-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h: Use noexcept per the FDIS (minus
+	compare(const string&), which uses char_traits::compare, which
+	isn't noexcept; also no noexcept in the move assignment operator
+	and move assign, see c++std-lib-30855).
+	* include/bits/basic_string.tcc: Likewise.
+	* include/ext/vstring.h: Likewise.
+	* include/ext/vstring.tcc: Likewise.
+	* include/debug/string: Likewise.
+
 2011-05-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/status_cxx200x.xml: Update.
