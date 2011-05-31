@@ -4749,17 +4749,8 @@ tree
 gimple_register_canonical_type (tree t)
 {
   void **slot;
-  tree orig_t = t;
 
   gcc_assert (TYPE_P (t));
-
-  if (TYPE_CANONICAL (t))
-    return TYPE_CANONICAL (t);
-
-  /* Use the leader of our main variant for determining our canonical
-     type.  The main variant leader is a type that will always
-     prevail.  */
-  t = gimple_register_type (TYPE_MAIN_VARIANT (t));
 
   if (TYPE_CANONICAL (t))
     return TYPE_CANONICAL (t);
@@ -4782,9 +4773,6 @@ gimple_register_canonical_type (tree t)
       TYPE_CANONICAL (t) = t;
       *slot = (void *) t;
     }
-
-  /* Also cache the canonical type in the non-leaders.  */
-  TYPE_CANONICAL (orig_t) = t;
 
   return t;
 }
