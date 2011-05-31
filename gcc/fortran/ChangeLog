@@ -1,6 +1,12 @@
 2011-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
+	* trans-array.c (gfc_trans_dummy_array_bias): Handle
+	cobounds of assumed-shape arrays.
+
+2011-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
 	* resolve.c (resolve_fl_variable): Handle static coarrays
 	with non-constant cobounds.
 
