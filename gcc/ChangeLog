@@ -1,3 +1,8 @@
+2011-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48688
+	* config/i386/i386.md (*lea_general_4): New define_insn_and_split.
+
 2011-05-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Use SWI248x instead of X87MODEI, SWI24 instead
