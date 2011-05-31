@@ -1,3 +1,27 @@
+2011-05-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (__or_, __and_): Add trivial definitions
+	for a single element.
+	* include/bits/stl_pair.h: Use __and_ in noexcept specs and
+	constraints.
+	(pair<>::pair(pair&&)): Define.
+	(pair<>::pair(const pair<>&)): Constrain with is_convertible.
+	(pair<>::pair(pair<>&&)): Likewise, remove noexcept.
+	* include/std/tuple: Use __and_ in noexcept specs and constraints.
+	(_Tuple_impl<>::_Tuple_impl(allocator_arg_t, const _Alloc&,
+	_Tuple_impl&&)): Remove noexcept.
+	(tuple<>::tuple(_UElements&&...), tuple(const tuple<_UElements...>&),
+	tuple(tuple<_UElements...>&&), tuple(const pair<_U1, _U2>&),
+	tuple(pair<_U1, _U2>&&)): Constrain with is_convertible.
+	* testsuite/20_util/tuple/moveable2.cc: Use = delete.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+
 2011-05-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/tuple: Restore is_convertible constraint.

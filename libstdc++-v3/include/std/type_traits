@@ -59,8 +59,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, _Tp>
     struct integral_constant;
 
-  template<typename, typename, typename...>
+  template<typename...>
     struct __or_;
+
+  template<typename _B1>
+    struct __or_<_B1>
+    : public _B1
+    { };
 
   template<typename _B1, typename _B2>
     struct __or_<_B1, _B2>
@@ -72,8 +77,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public conditional<_B1::value, _B1, __or_<_B2, _B3, _Bn...>>::type
     { };
 
-  template<typename, typename, typename...>
+  template<typename...>
     struct __and_;
+
+  template<typename _B1>
+    struct __and_<_B1>
+    : public _B1
+    { };
 
   template<typename _B1, typename _B2>
     struct __and_<_B1, _B2>
