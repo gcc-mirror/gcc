@@ -51,9 +51,9 @@ main()
 // { dg-warning "note" "" { target *-*-* } 485 }
 // { dg-warning "note" "" { target *-*-* } 479 }
 // { dg-warning "note" "" { target *-*-* } 469 }
-// { dg-warning "note" "" { target *-*-* } 868 }
+// { dg-warning "note" "" { target *-*-* } 887 }
 // { dg-warning "note" "" { target *-*-* } 1056 }
 // { dg-warning "note" "" { target *-*-* } 1050 }
 // { dg-warning "note" "" { target *-*-* } 342 }
 // { dg-warning "note" "" { target *-*-* } 292 }
-// { dg-warning "note" "" { target *-*-* } 214 }
+// { dg-warning "note" "" { target *-*-* } 224 }
