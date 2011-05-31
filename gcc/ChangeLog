@@ -1,3 +1,8 @@
+2011-05-30  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (go_format_type): Correct length of name added to
+	obstack for anonymous field.
+
 2011-05-30  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/49186
