@@ -1,6 +1,35 @@
 2011-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
+	* intrinsic.c (klass): Add CLASS_ATOMIC.
+	(add_subroutines): Add atomic_ref/atomic_define.
+	* intrinsic.texi (ATOMIC_REF, ATOMIC_DEFINE): Document.
+	* intrinsic.h (gfc_check_atomic_def, gfc_check_atomic_ref,
+	gfc_resolve_atomic_def, gfc_resolve_atomic_ref): New prototypes.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_ATOMIC_DEF
+	and GFC_ISYM_ATOMIC_REF.
+	(gfc_atomic_int_kind, gfc_atomic_logical_kind): New global vars.
+	* iresolve.c (gfc_resolve_atomic_def, gfc_resolve_atomic_ref): New
+	functions.
+	* check.c (gfc_check_atomic, gfc_check_atomic_def,
+	gfc_check_atomic_ref): New functions.
+	* iso-fortran-env.def (ISOFORTRANENV_FILE_ATOMIC_INT_KIND,
+	ISOFORTRANENV_FILE_ATOMIC_LOGICAL_KIND): Change kind value.
+	* trans-intrinsic.c (conv_intrinsic_atomic_def,
+	conv_intrinsic_atomic_ref, gfc_conv_intrinsic_subroutine): New
+	functions.
+	(conv_intrinsic_move_alloc) Renamed from
+	gfc_conv_intrinsic_move_alloc - and made static.
+	* trans.h (gfc_conv_intrinsic_move_alloc): Remove.
+	(gfc_conv_intrinsic_subroutine) Add prototype.
+	* trans.c (trans_code): Call gfc_conv_intrinsic_subroutine.
+	* trans-types (gfc_atomic_int_kind, gfc_atomic_logical_kind): New
+	global vars.
+	(gfc_init_kinds): Set them.
+
+2011-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
 	* trans-array.c (gfc_trans_dummy_array_bias): Handle
 	cobounds of assumed-shape arrays.
 

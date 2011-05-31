@@ -118,6 +118,8 @@ int gfc_default_character_kind;
 int gfc_default_logical_kind;
 int gfc_default_complex_kind;
 int gfc_c_int_kind;
+int gfc_atomic_int_kind;
+int gfc_atomic_logical_kind;
 
 /* The kind size used for record offsets. If the target system supports
    kind=8, this will be set to 8, otherwise it is set to 4.  */
@@ -577,6 +579,10 @@ gfc_init_kinds (void)
   gfc_index_integer_kind = POINTER_SIZE / 8;
   /* Pick a kind the same size as the C "int" type.  */
   gfc_c_int_kind = INT_TYPE_SIZE / 8;
+
+  /* Choose atomic kinds to match C's int.  */
+  gfc_atomic_int_kind = gfc_c_int_kind;
+  gfc_atomic_logical_kind = gfc_c_int_kind;
 
   /* initialize the C interoperable kinds  */
   init_c_interop_kinds();

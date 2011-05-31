@@ -61,6 +61,8 @@ Some basic guidelines for editing this document:
 * @code{ATAN}:          ATAN,      Arctangent function
 * @code{ATAN2}:         ATAN2,     Arctangent function
 * @code{ATANH}:         ATANH,     Inverse hyperbolic tangent function
+* @code{ATOMIC_DEFINE}: ATOMIC_DEFINE, Setting a variable atomically
+* @code{ATOMIC_REF}:    ATOMIC_REF, Obtaining the value of a variable atomically
 * @code{BESSEL_J0}:     BESSEL_J0, Bessel function of the first kind of order 0
 * @code{BESSEL_J1}:     BESSEL_J1, Bessel function of the first kind of order 1
 * @code{BESSEL_JN}:     BESSEL_JN, Bessel function of the first kind
@@ -1542,6 +1544,100 @@ END PROGRAM
 
 @item @emph{See also}:
 Inverse function: @ref{TANH}
+@end table
+
+
+
+@node ATOMIC_DEFINE
+@section @code{ATOMIC_DEFINE} --- Setting a variable atomically
+@fnindex ATOMIC_DEFINE
+@cindex Atomic subroutine, define
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_DEFINE(ATOM, VALUE)} defines the variable @var{ATOM} with the value
+@var{VALUE} atomically.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_DEFINE(ATOM, VALUE)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of either integer
+                        type with @code{ATOMIC_INT_KIND} kind or logical type
+                        with @code{ATOMIC_LOGICAL_KIND} kind.
+@item @var{VALURE} @tab Scalar and of the same type as @var{ATOM}. If the kind
+                        is different, the value is converted to the kind of
+                        @var{ATOM}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  integer(atomic_int_kind) :: atom[*]
+  call atomic_define (atom[1], this_image())
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_REF}, @ref{ISO_FORTRAN_ENV}
+@end table
+
+
+
+@node ATOMIC_REF
+@section @code{ATOMIC_REF} --- Obtaining the value of a variable atomically
+@fnindex ATOMIC_REF
+@cindex Atomic subroutine, reference
+
+@table @asis
+@item @emph{Description}:
+@code{ATOMIC_DEFINE(ATOM, VALUE)} atomically assigns the value of the
+variable @var{ATOM} to @var{VALUE}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Atomic subroutine
+
+@item @emph{Syntax}:
+@code{CALL ATOMIC_REF(VALUE, ATOM)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{VALURE} @tab Scalar and of the same type as @var{ATOM}. If the kind
+                        is different, the value is converted to the kind of
+                        @var{ATOM}.
+@item @var{ATOM}   @tab Scalar coarray or coindexed variable of either integer
+                        type with @code{ATOMIC_INT_KIND} kind or logical type
+                        with @code{ATOMIC_LOGICAL_KIND} kind.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program atomic
+  use iso_fortran_env
+  logical(atomic_logical_kind) :: atom[*]
+  logical :: val
+  call atomic_ref (atom, .false.)
+  ! ...
+  call atomic_ref (atom, val)
+  if (val) then
+    print *, "Obtained"
+  end if
+end program atomic
+@end smallexample
+
+@item @emph{See also}:
+@ref{ATOMIC_DEFINE}, @ref{ISO_FORTRAN_ENV}
 @end table
 
 
