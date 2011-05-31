@@ -1,3 +1,9 @@
+2011-05-31  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_register_move_cost): Preserve from
+	parameter value for dump. Dump cost on outermost call only.
+	(rs6000_memory_move_cost): Dump cost on outermost call only.
+
 2011-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (resolve_addr_in_expr): Optimize away redundant
