@@ -304,7 +304,7 @@ typedef struct
 
 #define DEFCIFCODE(code, string)	CIF_ ## code,
 /* Reasons for inlining failures.  */
-typedef enum {
+typedef enum cgraph_inline_failed_enum {
 #include "cif-code.def"
   CIF_N_REASONS
 } cgraph_inline_failed_t;

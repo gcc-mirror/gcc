@@ -1,3 +1,18 @@
+2011-05-31  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_inline_failed_t): Give enum a name
+	* lto-cgraph.c (LDPR_NUM_KNOWN): New macro.
+	(LTO_cgraph_tags): Add LTO_cgraph_last_tag.
+	(lto_output_edge): Use output_enum and var_len_unsigned.
+	(lto_output_varpool_node): Likewise.
+	(input_overwrite_node): Do not take resolution parameter;
+	extract it from a bitpack.
+	(input_node): Do not read resolution; use input_enum and
+	var_len_unsigned.
+	(input_varpool_node): Likewise.
+	(input_edge): Likewise.
+	(input_cgraph_1): Likewise.
+
 2011-05-31  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_register_canonical_type): Do not register
