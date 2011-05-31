@@ -1,6 +1,6 @@
 /* locks.h - Thread synchronization primitives. X86/x86-64 implementation.
 
-   Copyright (C) 2002  Free Software Foundation
+   Copyright (C) 2002, 2011  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -23,42 +23,7 @@ compare_and_swap(volatile obj_addr_t *addr,
 		 obj_addr_t old,
 		 obj_addr_t new_val)
 {
-  char result;
-#ifdef __x86_64__
-  __asm__ __volatile__("lock; cmpxchgq %2, %0; setz %1"
-	      : "=m"(*(addr)), "=q"(result)
-	      : "r" (new_val), "a"(old), "m"(*addr)
-	      : "memory");
-#else
-  __asm__ __volatile__("lock; cmpxchgl %2, %0; setz %1"
-		       : "=m"(*addr), "=q"(result)
-		       : "r" (new_val), "a"(old), "m"(*addr)
-		       : "memory");
-#endif
-  return (bool) result;
-}
-
-// Set *addr to new_val with release semantics, i.e. making sure
-// that prior loads and stores complete before this
-// assignment.
-// On X86/x86-64, the hardware shouldn't reorder reads and writes,
-// so we just have to convince gcc not to do it either.
-inline static void
-release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
-{
-  __asm__ __volatile__(" " : : : "memory");
-  *(addr) = new_val;
-}
-
-// Compare_and_swap with release semantics instead of acquire semantics.
-// On many architecture, the operation makes both guarantees, so the
-// implementation can be the same.
-inline static bool
-compare_and_swap_release(volatile obj_addr_t *addr,
-			 obj_addr_t old,
-			 obj_addr_t new_val)
-{
-  return compare_and_swap(addr, old, new_val);
+  return __sync_bool_compare_and_swap (addr, old, new_val);
 }
 
 // Ensure that subsequent instructions do not execute on stale
@@ -77,5 +42,28 @@ write_barrier()
   /* x86-64/X86 does not reorder writes. We just need to ensure that
      gcc also doesn't.  */
   __asm__ __volatile__(" " : : : "memory");
+}
+
+// Set *addr to new_val with release semantics, i.e. making sure
+// that prior loads and stores complete before this
+// assignment.
+// On X86/x86-64, the hardware shouldn't reorder reads and writes,
+// so we just have to convince gcc not to do it either.
+inline static void
+release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
+{
+  write_barrier ();
+  *(addr) = new_val;
+}
+
+// Compare_and_swap with release semantics instead of acquire semantics.
+// On many architecture, the operation makes both guarantees, so the
+// implementation can be the same.
+inline static bool
+compare_and_swap_release(volatile obj_addr_t *addr,
+			 obj_addr_t old,
+			 obj_addr_t new_val)
+{
+  return compare_and_swap(addr, old, new_val);
 }
 #endif
