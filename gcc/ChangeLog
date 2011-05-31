@@ -1,3 +1,8 @@
+2011-05-31  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_merge_cgraph_nodes): Merge alias decl
+	of thunks.
+
 2011-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/49235

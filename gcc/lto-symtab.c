@@ -821,11 +821,15 @@ lto_symtab_merge_cgraph_nodes (void)
   htab_traverse (lto_symtab_identifiers, lto_symtab_merge_cgraph_nodes_1, NULL);
 
   for (node = cgraph_nodes; node; node = node->next)
-    for (alias = node->same_body; alias; alias = next)
-      {
-	next = alias->next;
-	alias->thunk.alias = lto_symtab_prevailing_decl (alias->thunk.alias);
-      }
+    {
+      if (node->thunk.thunk_p)
+        node->thunk.alias = lto_symtab_prevailing_decl (node->thunk.alias);
+      for (alias = node->same_body; alias; alias = next)
+	{
+	  next = alias->next;
+	  alias->thunk.alias = lto_symtab_prevailing_decl (alias->thunk.alias);
+	}
+    }
 }
 
 /* Given the decl DECL, return the prevailing decl with the same name. */
