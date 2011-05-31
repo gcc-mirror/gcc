@@ -1,5 +1,8 @@
 2011-05-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (resolve_addr_in_expr): Optimize away redundant
+	DW_OP_GNU_convert ops.
+
 	* cselib.c (promote_debug_loc): Allow l->next non-NULL for
 	cselib_preserve_constants.
 	(cselib_lookup_1): If cselib_preserve_constants,
