@@ -2137,7 +2137,7 @@ read_state_param_structs (type_p *param_structs)
   int nbparamstructs = 0;
   int countparamstructs = 0;
   type_p head = NULL;
-  type_p previous;
+  type_p previous = NULL;
   type_p tmp;
   struct state_token_st *t0 = peek_state_token (0);
   struct state_token_st *t1 = peek_state_token (1);
