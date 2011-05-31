@@ -1,3 +1,9 @@
+2011-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49235
+	* tree-ssa-address.c (gen_addr_rtx): Ignore base if it is const0_rtx.
+	(create_mem_ref_raw): Create MEM_REF even if base is INTEGER_CST.
+
 2011-05-31  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49093
