@@ -345,7 +345,8 @@ tree gfc_evaluate_now (tree, stmtblock_t *);
 /* Find the appropriate variant of a math intrinsic.  */
 tree gfc_builtin_decl_for_float_kind (enum built_in_function, int);
 
-/* Intrinsic function handling.  */
+/* Intrinsic procedure handling.  */
+tree gfc_conv_intrinsic_subroutine (gfc_code *);
 void gfc_conv_intrinsic_function (gfc_se *, gfc_expr *);
 
 /* Is the intrinsic expanded inline.  */
@@ -355,8 +356,6 @@ bool gfc_inline_intrinsic_function_p (gfc_expr *);
    This is true for array-returning intrinsics, unless
    gfc_inline_intrinsic_function_p returns true.  */
 int gfc_is_intrinsic_libcall (gfc_expr *);
-
-tree gfc_conv_intrinsic_move_alloc (gfc_code *);
 
 /* Used to call ordinary functions/subroutines
    and procedure pointer components.  */

@@ -6952,8 +6952,44 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
 }
 
 
-tree
-gfc_conv_intrinsic_move_alloc (gfc_code *code)
+static tree
+conv_intrinsic_atomic_def (gfc_code *code)
+{
+  gfc_se atom, value;
+  stmtblock_t block;
+
+  gfc_init_se (&atom, NULL);
+  gfc_init_se (&value, NULL);
+  gfc_conv_expr (&atom, code->ext.actual->expr);
+  gfc_conv_expr (&value, code->ext.actual->next->expr);
+
+  gfc_init_block (&block);
+  gfc_add_modify (&block, atom.expr,
+		  fold_convert (TREE_TYPE (atom.expr), value.expr));
+  return gfc_finish_block (&block);
+}
+
+
+static tree
+conv_intrinsic_atomic_ref (gfc_code *code)
+{
+  gfc_se atom, value;
+  stmtblock_t block;
+
+  gfc_init_se (&atom, NULL);
+  gfc_init_se (&value, NULL);
+  gfc_conv_expr (&value, code->ext.actual->expr);
+  gfc_conv_expr (&atom, code->ext.actual->next->expr);
+
+  gfc_init_block (&block);
+  gfc_add_modify (&block, value.expr,
+		  fold_convert (TREE_TYPE (value.expr), atom.expr));
+  return gfc_finish_block (&block);
+}
+
+
+static tree
+conv_intrinsic_move_alloc (gfc_code *code)
 {
   if (code->ext.actual->expr->rank == 0)
     {
@@ -7001,5 +7037,34 @@ gfc_conv_intrinsic_move_alloc (gfc_code *code)
     return gfc_trans_call (code, false, NULL_TREE, NULL_TREE, false);
 }
 
+
+tree
+gfc_conv_intrinsic_subroutine (gfc_code *code)
+{
+  tree res;
+
+  gcc_assert (code->resolved_isym);
+
+  switch (code->resolved_isym->id)
+    {
+    case GFC_ISYM_MOVE_ALLOC:
+      res = conv_intrinsic_move_alloc (code);
+      break;
+
+    case GFC_ISYM_ATOMIC_DEF:
+      res = conv_intrinsic_atomic_def (code);
+      break;
+
+    case GFC_ISYM_ATOMIC_REF:
+      res = conv_intrinsic_atomic_ref (code);
+      break;
+
+    default:
+      res = NULL_TREE;
+      break;
+    }
+
+  return res;
+}
 
 #include "gt-fortran-trans-intrinsic.h"
