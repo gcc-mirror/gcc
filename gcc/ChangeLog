@@ -1,3 +1,23 @@
+2011-05-31  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_into_comparison): Rename
+	to ...
+	(forward_propagate_into_comparison_1): ... this.
+	(forward_propagate_comparison): Rename to ...
+	(forward_propagate_into_comparison): ... this.  Split out
+	real forward propagation code to ...
+	(forward_propagate_comparison): ... this.
+	(forward_propagate_into_gimple_cond): Remove looping.
+	(forward_propagate_into_cond): Likewise.
+	(simplify_not_neg_expr): Return whether we have done something.
+	(simplify_gimple_switch): Likewise.
+	(tree_ssa_forward_propagate_single_use_vars): Rename to ...
+	(ssa_forward_propagate_and_combine): ... this.  Re-structure
+	to do a forward forward-propagation walk on BBs and a backward
+	stmt combining walk on BBs.  Consistently re-scan changed
+	statements.
+	(pass_forwprop): Adjust.
+
 2011-05-30  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_format_type): Correct length of name added to
