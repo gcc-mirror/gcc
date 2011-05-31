@@ -1,6 +1,11 @@
 2011-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
+	* gfortran.dg/coarray/dummy_1.f90: New.
+
+2011-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
 	* gfortran.dg/coarray/save_1.f90: New.
 	* gfortran.dg/coarray_4.f90: Update dg-error.
 

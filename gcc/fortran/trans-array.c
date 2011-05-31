@@ -5232,6 +5232,8 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
 	}
     }
 
+  gfc_trans_array_cobounds (type, &init, sym);
+
   /* Set the offset.  */
   if (TREE_CODE (GFC_TYPE_ARRAY_OFFSET (type)) == VAR_DECL)
     gfc_add_modify (&init, GFC_TYPE_ARRAY_OFFSET (type), offset);
