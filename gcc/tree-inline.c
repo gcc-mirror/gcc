@@ -816,6 +816,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
       if (TREE_CODE (*tp) == MEM_REF)
 	{
 	  tree ptr = TREE_OPERAND (*tp, 0);
+	  tree type = remap_type (TREE_TYPE (*tp), id);
 	  tree old = *tp;
 	  tree tem;
 
@@ -826,7 +827,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	  if ((tem = maybe_fold_offset_to_reference (EXPR_LOCATION (*tp),
 						     ptr,
 						     TREE_OPERAND (*tp, 1),
-						     TREE_TYPE (*tp)))
+						     type))
 	      && TREE_THIS_VOLATILE (tem) == TREE_THIS_VOLATILE (old))
 	    {
 	      tree *tem_basep = &tem;
@@ -848,7 +849,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	    }
 	  else
 	    {
-	      *tp = fold_build2 (MEM_REF, TREE_TYPE (*tp),
+	      *tp = fold_build2 (MEM_REF, type,
 				 ptr, TREE_OPERAND (*tp, 1));
 	      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 	      TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);

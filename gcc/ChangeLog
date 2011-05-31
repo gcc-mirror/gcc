@@ -1,3 +1,11 @@
+2011-05-31  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-05-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48953
+	* tree-inline.c (remap_gimple_op_r): Also remap types of MEM_REFs.
+
 2011-05-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49218
