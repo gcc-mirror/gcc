@@ -132,7 +132,7 @@ case "${host}" in
 	slow_pthread_self=yes
 	;;
   x86_64-*)
-	sysdeps_dir=x86-64
+	sysdeps_dir=i386
 	# For 64-bit we always use SSE registers for arithmetic,
 	# which doesn't have the extra precision problems of the fpu.
 	# But be careful about 32-bit multilibs.
@@ -279,7 +279,7 @@ EOF
         slow_pthread_self=
         ;;
   i[34567]86-*-solaris2.1[0-9]* )
-	sysdeps_dir=x86-64
+	sysdeps_dir=i386
 	DIVIDESPEC=-f%{m32:no-}%{!m32:%{!m64:no-}}%{m64:}use-divide-subroutine
 	;;
   mips-sgi-irix6* )
