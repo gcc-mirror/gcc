@@ -1264,6 +1264,54 @@ check_uop_interfaces (gfc_user_op *uop)
     }
 }
 
+/* Given an intrinsic op, return an equivalent op if one exists,
+   or INTRINSIC_NONE otherwise.  */
+
+gfc_intrinsic_op
+gfc_equivalent_op (gfc_intrinsic_op op)
+{
+  switch(op)
+    {
+    case INTRINSIC_EQ:
+      return INTRINSIC_EQ_OS;
+
+    case INTRINSIC_EQ_OS:
+      return INTRINSIC_EQ;
+
+    case INTRINSIC_NE:
+      return INTRINSIC_NE_OS;
+
+    case INTRINSIC_NE_OS:
+      return INTRINSIC_NE;
+
+    case INTRINSIC_GT:
+      return INTRINSIC_GT_OS;
+
+    case INTRINSIC_GT_OS:
+      return INTRINSIC_GT;
+
+    case INTRINSIC_GE:
+      return INTRINSIC_GE_OS;
+
+    case INTRINSIC_GE_OS:
+      return INTRINSIC_GE;
+
+    case INTRINSIC_LT:
+      return INTRINSIC_LT_OS;
+
+    case INTRINSIC_LT_OS:
+      return INTRINSIC_LT;
+
+    case INTRINSIC_LE:
+      return INTRINSIC_LE_OS;
+
+    case INTRINSIC_LE_OS:
+      return INTRINSIC_LE;
+
+    default:
+      return INTRINSIC_NONE;
+    }
+}
 
 /* For the namespace, check generic, user operator and intrinsic
    operator interfaces for consistency and to remove duplicate
@@ -1304,75 +1352,19 @@ gfc_check_interfaces (gfc_namespace *ns)
 
       for (ns2 = ns; ns2; ns2 = ns2->parent)
 	{
+	  gfc_intrinsic_op other_op;
+	  
 	  if (check_interface1 (ns->op[i], ns2->op[i], 0,
 				interface_name, true))
 	    goto done;
 
-	  switch (i)
-	    {
-	      case INTRINSIC_EQ:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_EQ_OS],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_EQ_OS:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_EQ],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_NE:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_NE_OS],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_NE_OS:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_NE],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_GT:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_GT_OS],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_GT_OS:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_GT],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_GE:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_GE_OS],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_GE_OS:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_GE],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_LT:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_LT_OS],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_LT_OS:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_LT],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_LE:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_LE_OS],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      case INTRINSIC_LE_OS:
-		if (check_interface1 (ns->op[i], ns2->op[INTRINSIC_LE],
-				      0, interface_name, true)) goto done;
-		break;
-
-	      default:
-		break;
-            }
+	  /* i should be gfc_intrinsic_op, but has to be int with this cast
+	     here for stupid C++ compatibility rules.  */
+	  other_op = gfc_equivalent_op ((gfc_intrinsic_op) i);
+	  if (other_op != INTRINSIC_NONE
+	    &&  check_interface1 (ns->op[i], ns2->op[other_op],
+				  0, interface_name, true))
+	    goto done;
 	}
     }
 

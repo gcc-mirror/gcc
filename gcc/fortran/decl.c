@@ -6467,8 +6467,19 @@ access_attr_decl (gfc_statement st)
 	case INTERFACE_INTRINSIC_OP:
 	  if (gfc_current_ns->operator_access[op] == ACCESS_UNKNOWN)
 	    {
+	      gfc_intrinsic_op other_op;
+
 	      gfc_current_ns->operator_access[op] =
 		(st == ST_PUBLIC) ? ACCESS_PUBLIC : ACCESS_PRIVATE;
+
+	      /* Handle the case if there is another op with the same
+		 function, for INTRINSIC_EQ vs. INTRINSIC_EQ_OS and so on.  */
+	      other_op = gfc_equivalent_op (op);
+
+	      if (other_op != INTRINSIC_NONE)
+		gfc_current_ns->operator_access[other_op] =
+		  (st == ST_PUBLIC) ? ACCESS_PUBLIC : ACCESS_PRIVATE;
+
 	    }
 	  else
 	    {

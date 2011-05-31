@@ -2816,6 +2816,7 @@ gfc_symtree* gfc_find_sym_in_symtree (gfc_symbol*);
 bool gfc_arglist_matches_symbol (gfc_actual_arglist**, gfc_symbol*);
 bool gfc_check_operator_interface (gfc_symbol*, gfc_intrinsic_op, locus);
 int gfc_has_vector_subscript (gfc_expr*);
+gfc_intrinsic_op gfc_equivalent_op (gfc_intrinsic_op);
 
 /* io.c */
 extern gfc_st_label format_asterisk;

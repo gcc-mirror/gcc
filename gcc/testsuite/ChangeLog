@@ -1,3 +1,9 @@
+2011-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/45786
+	* gfortran.dg/operator_7.f90:  New test case.
+
 2011-05-31  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
