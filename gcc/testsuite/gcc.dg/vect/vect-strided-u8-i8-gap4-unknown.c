@@ -25,6 +25,19 @@ main1 (s *arr, int n)
   s res[N];
   unsigned char x;
 
+  for (i = 0; i < N; i++)
+    {
+      res[i].a = 0;
+      res[i].b = 0;
+      res[i].c = 0;
+      res[i].d = 0;
+      res[i].e = 0;
+      res[i].f = 0;
+      res[i].g = 0;
+      res[i].h = 0;
+      __asm__ volatile ("");
+    }
+
   /* Check peeling for gaps for unknown loop bound.  */
   for (i = 0; i < n; i++)
     {
