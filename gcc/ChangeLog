@@ -1,5 +1,12 @@
 2011-05-31  Alexandre Oliva  <aoliva@redhat.com>
 
+	* params.def (PARAM_MAX_VARTRACK_EXPR_DEPTH): New.
+	* doc/invoke.texi: Document max-vartrack-expr-depth.
+	* var-tracking.c (EXPR_DEPTH): New.
+	(reverse_op, vt_expand_loc, vt_expand_loc_dummy): Use it.
+
+2011-05-31  Alexandre Oliva  <aoliva@redhat.com>
+
 	* config/i386/i386.c (ix86_rtx_costs): Drop NEG from sub for FMA.
 	* config/i386/sse.md: Add n to negated FMA pattern names.
 
