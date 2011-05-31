@@ -25,7 +25,7 @@ func fileInfoFromStat(name string, fi *FileInfo, lstat, stat *syscall.Stat_t) *F
 	fi.Blocks = int64(stat.Blocks)
 	fi.Atime_ns = int64(stat.Atime.Sec)*1e9 + int64(stat.Atime.Nsec)
 	fi.Mtime_ns = int64(stat.Mtime.Sec)*1e9 + int64(stat.Mtime.Nsec)
-	fi.Ctime_ns = int64(stat.Ctime.Sec)*1e9 + int64(stat.Atime.Nsec)
+	fi.Ctime_ns = int64(stat.Ctime.Sec)*1e9 + int64(stat.Ctime.Nsec)
 	for i := len(name)-1; i >= 0; i-- {
 		if name[i] == '/' {
 			name = name[i+1:]
