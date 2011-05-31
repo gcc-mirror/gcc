@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -436,7 +436,9 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
 	       && DECL_ANTICIPATED (bval)
 	       && !DECL_HIDDEN_FRIEND_P (bval)))
     binding->value = decl;
-  else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval))
+  else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval)
+	   && (TREE_CODE (decl) != TYPE_DECL
+	       || same_type_p (TREE_TYPE (decl), TREE_TYPE (bval))))
     {
       /* The old binding was a type name.  It was placed in
 	 VALUE field because it was thought, at the point it was
