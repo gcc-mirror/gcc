@@ -3277,7 +3277,7 @@ driver_handle_option (struct gcc_options *opts,
     compare_debug_with_arg:
       gcc_assert (decoded->canonical_option_num_elements == 1);
       gcc_assert (arg != NULL);
-      if (arg)
+      if (*arg)
 	compare_debug = 1;
       else
 	compare_debug = -1;
