@@ -1,3 +1,8 @@
+2011-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/48688
+	* gcc.target/i386/pr48688.c: New test.
+
 2010-11-15  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/48010
