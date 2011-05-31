@@ -1,3 +1,26 @@
+2011-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*pushxf_nointeger): Merge alternatives 1 and 2.
+	(FP push_operand splitters): Merge {TF,XF,DF}mode splitters.
+
+2011-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movtf_internal): Avoid allocating general
+	registers.  Penalize F*r->o alternative to prevent partial memory
+	stalls.  Slightly penalize *roF->*r alternative.  Generate SSE
+	CONST_DOUBLE immediates when optimizing function for size.  Do not move
+	CONST_DOUBLEs directly to memory for !TARGET_MEMORY_MISMATCH_STALL.
+	(*movxf_internal): Slightly penalize Yx*roF->Yx*r alternative.
+	(*movdf_internal): Slightly penalize Yd*roF->Yd*r alternative.
+	(*movdf_internal_rex64): Slightly penalize rm->r, F->m and r->m
+	alternatives.
+	(*movsf_internal): Slightly penalize rmF->r and Fr->m alternatives.
+
+	(fp_register_operand splitters): Use fp_register_operand
+	constraint.  Do not use FP_REG_P in insn condition.
+	(any_fp_register_operand splitters): Use any_fp_register_operand
+	constraint.  Do not use ANY_FP_REG_P in insn condition.
+
 2011-05-31  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (cgraph_inline_failed_t): Give enum a name
@@ -39,7 +62,7 @@
 
 	PR debug/49047
 	* dwarf2out.c (gen_subprogram_die): Emit linkage name attribute
-    	for concrete functions containing the code of cloned functions.
+	for concrete functions containing the code of cloned functions.
 
 2011-05-31  Richard Guenther  <rguenther@suse.de>
 
@@ -57,8 +80,7 @@
 	(tree_ssa_forward_propagate_single_use_vars): Rename to ...
 	(ssa_forward_propagate_and_combine): ... this.  Re-structure
 	to do a forward forward-propagation walk on BBs and a backward
-	stmt combining walk on BBs.  Consistently re-scan changed
-	statements.
+	stmt combining walk on BBs.  Consistently re-scan changed statements.
 	(pass_forwprop): Adjust.
 
 2011-05-30  Ian Lance Taylor  <iant@google.com>
@@ -78,12 +100,12 @@
 	to prevent partial memory stalls.  Do not move CONST_DOUBLEs directly
 	to memory for !TARGET_MEMORY_MISMATCH_STALL.
 	(*movdf_internal_rex64): Do not penalize F->r alternative.
-	(*movdf_internal):  Penalize FYd*r->o alternative to prevent partial
+	(*movdf_internal): Penalize FYd*r->o alternative to prevent partial
 	memory stalls.  Generate SSE and x87 CONST_DOUBLE immediates only
 	when optimizing function for size.  Do not move CONST_DOUBLEs
 	directly to memory for !TARGET_MEMORY_MISMATCH_STALL.
-	(FP move splitters): Merge {TF,XF,DF}mode move splitters.  Do not
-	handle SUBREGs.  Do not check for MEM_P operands in the insn condition,
+	(FP move splitters): Merge {TF,XF,DF}mode splitters.  Do not handle
+	SUBREGs.  Do not check for MEM_P operands in the insn condition,
 	check for ANY_FP_REGNO_P instead.
 	* config/i386/constraints.md (Yd): Enable GENERAL_REGS for
 	TARGET_64BIT and for TARGET_INTEGER_DFMODE_MOVES when optimizing
@@ -147,9 +169,8 @@
 2011-05-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49210
-	* ipa-split.c (split_function): Care for the case where the
-	call result is not trivially convertible to the result holding
-	variable.
+	* ipa-split.c (split_function): Care for the case where the call
+	result is not trivially convertible to the result holding variable.
 
 2011-05-30  Richard Guenther  <rguenther@suse.de>
 
