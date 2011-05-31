@@ -1,3 +1,8 @@
+2011-05-19  Quentin Neill  <quentin.neill@amd.com>
+
+	* config/i386/sse.md (fma4_fmsubadd): Use <ssemodesuffix>.
+	(fma4_fmaddsub): Likewise
+
 2011-05-31  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

@@ -2068,7 +2068,7 @@
 	   (match_operand:AVXMODEF2P 3 "nonimmediate_operand" "xm,x")]
 	  UNSPEC_FMADDSUB))]
   "TARGET_FMA4"
-  "vfmaddsubps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  "vfmaddsub<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
@@ -2081,7 +2081,7 @@
 	     (match_operand:AVXMODEF2P 3 "nonimmediate_operand" "xm,x"))]
 	  UNSPEC_FMADDSUB))]
   "TARGET_FMA4"
-  "vfmsubaddps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  "vfmsubadd<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
