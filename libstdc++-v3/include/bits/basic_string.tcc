@@ -759,7 +759,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
-    find(_CharT __c, size_type __pos) const
+    find(_CharT __c, size_type __pos) const _GLIBCXX_NOEXCEPT
     {
       size_type __ret = npos;
       const size_type __size = this->size();
@@ -798,7 +798,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
-    rfind(_CharT __c, size_type __pos) const
+    rfind(_CharT __c, size_type __pos) const _GLIBCXX_NOEXCEPT
     {
       size_type __size = this->size();
       if (__size)
@@ -863,7 +863,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
-    find_first_not_of(_CharT __c, size_type __pos) const
+    find_first_not_of(_CharT __c, size_type __pos) const _GLIBCXX_NOEXCEPT
     {
       for (; __pos < this->size(); ++__pos)
 	if (!traits_type::eq(_M_data()[__pos], __c))
@@ -895,7 +895,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
-    find_last_not_of(_CharT __c, size_type __pos) const
+    find_last_not_of(_CharT __c, size_type __pos) const _GLIBCXX_NOEXCEPT
     {
       size_type __size = this->size();
       if (__size)
