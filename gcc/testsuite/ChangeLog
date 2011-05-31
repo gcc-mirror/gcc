@@ -1,5 +1,10 @@
 2011-05-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/guality/bswaptest.c: New test.
+	* gcc.dg/guality/clztest.c: New test.
+	* gcc.dg/guality/ctztest.c: New test.
+	* gcc.dg/guality/rotatetest.c: New test.
+
 	PR target/48688
 	* gcc.target/i386/pr48688.c: New test.
 
