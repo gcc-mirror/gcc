@@ -1,5 +1,25 @@
 2011-05-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* cselib.c (promote_debug_loc): Allow l->next non-NULL for
+	cselib_preserve_constants.
+	(cselib_lookup_1): If cselib_preserve_constants,
+	a new VALUE is being created for REG and there is a VALUE for the
+	same register in wider mode, add another loc with lowpart SUBREG of
+	the wider VALUE.
+	(cselib_subst_to_values): Handle ENTRY_VALUE.
+	* var-tracking.c  (replace_expr_with_values): Return NULL for
+	ENTRY_VALUE too.
+	* dwarf2out.c (convert_descriptor_to_signed): New function.
+	(mem_loc_descriptor) <case ZERO_EXTEND>: Optimize using DW_OP_and
+	instead of two shifts.
+	(mem_loc_descriptor) <do_shift>: ZERO_EXTEND second argument to
+	the right mode if needed.
+	(mem_loc_descriptor) <case MOD>: For typed ops just use DW_OP_mod.
+	(mem_loc_descriptor) <case UNSIGNED_FIX>: Use
+	convert_descriptor_to_signed.
+	(mem_loc_descriptor) <case UDIV, CLZ, CTZ, FFS, POPCOUNT, PARITY,
+	BSWAP, ROTATE, ROTATERT>: Handle these rtls.
+
 	PR target/48688
 	* config/i386/i386.md (*lea_general_4): New define_insn_and_split.
 
