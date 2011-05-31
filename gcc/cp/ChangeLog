@@ -1,3 +1,11 @@
+2011-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44870
+	* tree.c (lvalue_kind): Recurse on NON_DEPENDENT_EXPR.  Handle
+	ARROW_EXPR, TYPEID_EXPR, and arbitrary class-valued expressions.
+	(build_min_non_dep): Preserve reference refs.
+	(build_min_non_dep_call_vec): Likewise
+
 2011-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49223
