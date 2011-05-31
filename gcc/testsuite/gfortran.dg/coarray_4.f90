@@ -18,7 +18,8 @@ subroutine valid(n, c, f)
   save :: k
   integer :: ii = 7
   block
-    integer, save :: kk[ii, *] ! { dg-error "cannot have the SAVE attribute" }
+    integer :: j = 5
+    integer, save :: kk[j, *] ! { dg-error "Variable .j. cannot appear in the expression" }
   end block
 end subroutine valid
 
@@ -43,10 +44,10 @@ subroutine invalid(n)
   complex, save :: hh(n)[*] ! { dg-error "cannot have the SAVE attribute" }
   integer :: j = 6
 
-  integer, save :: hf1[j,*] ! { dg-error "cannot appear in the expression|cannot have the SAVE attribute" }
-  integer, save :: hf2[n,*] ! { dg-error "cannot have the SAVE attribute" }
+  integer, save :: hf1[j,*] ! { dg-error "cannot appear in the expression" }
+  integer, save :: hf2[n,*] ! OK
   integer, save :: hf3(4)[j,*] ! { dg-error "cannot appear in the expression|cannot have the SAVE attribute" }
-  integer, save :: hf4(5)[n,*] ! { dg-error "cannot have the SAVE attribute" }
+  integer, save :: hf4(5)[n,*] ! OK
 
   integer, allocatable :: a2[*] ! { dg-error "must have deferred shape" }
   integer, allocatable :: a3(:)[*] ! { dg-error "must have deferred shape" }
