@@ -189,6 +189,8 @@ enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 /* Reload functions based on the type and the vector unit.  */
 static enum insn_code rs6000_vector_reload[NUM_MACHINE_MODES][2];
 
+static int dbg_cost_ctrl;
+
 /* Built in types.  */
 tree rs6000_builtin_types[RS6000_BTI_MAX];
 tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
@@ -26428,27 +26430,32 @@ rs6000_register_move_cost (enum machine_mode mode,
 {
   int ret;
 
+  if (TARGET_DEBUG_COST)
+    dbg_cost_ctrl++;
+
   /*  Moves from/to GENERAL_REGS.  */
   if (reg_classes_intersect_p (to, GENERAL_REGS)
       || reg_classes_intersect_p (from, GENERAL_REGS))
     {
-      if (! reg_classes_intersect_p (to, GENERAL_REGS))
-	from = to;
+      reg_class_t rclass = from;
 
-      if (from == FLOAT_REGS || from == ALTIVEC_REGS || from == VSX_REGS)
-	ret = (rs6000_memory_move_cost (mode, from, false)
+      if (! reg_classes_intersect_p (to, GENERAL_REGS))
+	rclass = to;
+
+      if (rclass == FLOAT_REGS || rclass == ALTIVEC_REGS || rclass == VSX_REGS)
+	ret = (rs6000_memory_move_cost (mode, rclass, false)
 	       + rs6000_memory_move_cost (mode, GENERAL_REGS, false));
 
       /* It's more expensive to move CR_REGS than CR0_REGS because of the
 	 shift.  */
-      else if (from == CR_REGS)
+      else if (rclass == CR_REGS)
 	ret = 4;
 
       /* For those processors that have slow LR/CTR moves, make them more
          expensive than memory in order to bias spills to memory .*/
       else if ((rs6000_cpu == PROCESSOR_POWER6
 		|| rs6000_cpu == PROCESSOR_POWER7)
-	       && reg_classes_intersect_p (from, LINK_OR_CTR_REGS))
+	       && reg_classes_intersect_p (rclass, LINK_OR_CTR_REGS))
         ret = 6 * hard_regno_nregs[0][mode];
 
       else
@@ -26472,10 +26479,14 @@ rs6000_register_move_cost (enum machine_mode mode,
 	   + rs6000_register_move_cost (mode, from, GENERAL_REGS));
 
   if (TARGET_DEBUG_COST)
-    fprintf (stderr,
-	     "rs6000_register_move_cost:, ret=%d, mode=%s, from=%s, to=%s\n",
-	     ret, GET_MODE_NAME (mode), reg_class_names[from],
-	     reg_class_names[to]);
+    {
+      if (dbg_cost_ctrl == 1)
+	fprintf (stderr,
+		 "rs6000_register_move_cost:, ret=%d, mode=%s, from=%s, to=%s\n",
+		 ret, GET_MODE_NAME (mode), reg_class_names[from],
+		 reg_class_names[to]);
+      dbg_cost_ctrl--;
+    }
 
   return ret;
 }
@@ -26489,6 +26500,9 @@ rs6000_memory_move_cost (enum machine_mode mode, reg_class_t rclass,
 {
   int ret;
 
+  if (TARGET_DEBUG_COST)
+    dbg_cost_ctrl++;
+
   if (reg_classes_intersect_p (rclass, GENERAL_REGS))
     ret = 4 * hard_regno_nregs[0][mode];
   else if (reg_classes_intersect_p (rclass, FLOAT_REGS))
@@ -26499,9 +26513,13 @@ rs6000_memory_move_cost (enum machine_mode mode, reg_class_t rclass,
     ret = 4 + rs6000_register_move_cost (mode, rclass, GENERAL_REGS);
 
   if (TARGET_DEBUG_COST)
-    fprintf (stderr,
-	     "rs6000_memory_move_cost: ret=%d, mode=%s, rclass=%s, in=%d\n",
-	     ret, GET_MODE_NAME (mode), reg_class_names[rclass], in);
+    {
+      if (dbg_cost_ctrl == 1)
+	fprintf (stderr,
+		 "rs6000_memory_move_cost: ret=%d, mode=%s, rclass=%s, in=%d\n",
+		 ret, GET_MODE_NAME (mode), reg_class_names[rclass], in);
+      dbg_cost_ctrl--;
+    }
 
   return ret;
 }
