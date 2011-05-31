@@ -1,6 +1,14 @@
 2011-05-31  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2011-05-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48985
+	* gcc.dg/builtin-object-size-11.c: New testcase.
+
+2011-05-31  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2011-05-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48953
