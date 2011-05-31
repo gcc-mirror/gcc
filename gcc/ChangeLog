@@ -1,5 +1,9 @@
 2011-05-31  Alexandre Oliva  <aoliva@redhat.com>
 
+	* gcc.c (driver_handle_option): Fix disabling of -fcompare-debug.
+
+2011-05-31  Alexandre Oliva  <aoliva@redhat.com>
+
 	* gengtype-state.c (read_state_params_structs): Initialize
 	previous.
 
