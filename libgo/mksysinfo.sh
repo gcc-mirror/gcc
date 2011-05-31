@@ -358,6 +358,7 @@ fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec_t\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
+         -e 's/Godump_[0-9] struct { \([^;]*;\) };/\1/g' \
        >> ${OUT}
 
 # The directory searching types.
