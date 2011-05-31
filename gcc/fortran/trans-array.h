@@ -132,6 +132,9 @@ tree gfc_conv_array_stride (tree, int);
 tree gfc_conv_array_lbound (tree, int);
 tree gfc_conv_array_ubound (tree, int);
 
+/* Set cobounds of an array.  */
+void gfc_trans_array_cobounds (tree, stmtblock_t *, const gfc_symbol *);
+
 /* Build expressions for accessing components of an array descriptor.  */
 tree gfc_conv_descriptor_data_get (tree);
 tree gfc_conv_descriptor_data_addr (tree);

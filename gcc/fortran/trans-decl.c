@@ -1349,7 +1349,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   /* Remember this variable for allocation/cleanup.  */
-  if (sym->attr.dimension || sym->attr.allocatable
+  if (sym->attr.dimension || sym->attr.allocatable || sym->attr.codimension
       || (sym->ts.type == BT_CLASS &&
 	  (CLASS_DATA (sym)->attr.dimension
 	   || CLASS_DATA (sym)->attr.allocatable))
@@ -3484,6 +3484,15 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		      seen_trans_deferred_array = true;
 		      gfc_trans_deferred_array (sym, block);
 		    }
+		}
+	      else if (sym->attr.codimension && TREE_STATIC (sym->backend_decl))
+		{
+		  gfc_init_block (&tmpblock);
+		  gfc_trans_array_cobounds (TREE_TYPE (sym->backend_decl),
+					    &tmpblock, sym);
+		  gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock),
+					NULL_TREE);
+		  continue;
 		}
 	      else if (gfc_option.coarray != GFC_FCOARRAY_LIB)
 		{

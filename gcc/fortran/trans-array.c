@@ -4648,6 +4648,43 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 }
 
 
+/* Generate code to evaluate non-constant coarray cobounds.  */
+
+void
+gfc_trans_array_cobounds (tree type, stmtblock_t * pblock,
+			  const gfc_symbol *sym)
+{
+  int dim;
+  tree ubound;
+  tree lbound;
+  gfc_se se;
+  gfc_array_spec *as;
+
+  as = sym->as;
+
+  for (dim = as->rank; dim < as->rank + as->corank; dim++)
+    {
+      /* Evaluate non-constant array bound expressions.  */
+      lbound = GFC_TYPE_ARRAY_LBOUND (type, dim);
+      if (as->lower[dim] && !INTEGER_CST_P (lbound))
+        {
+          gfc_init_se (&se, NULL);
+          gfc_conv_expr_type (&se, as->lower[dim], gfc_array_index_type);
+          gfc_add_block_to_block (pblock, &se.pre);
+          gfc_add_modify (pblock, lbound, se.expr);
+        }
+      ubound = GFC_TYPE_ARRAY_UBOUND (type, dim);
+      if (as->upper[dim] && !INTEGER_CST_P (ubound))
+        {
+          gfc_init_se (&se, NULL);
+          gfc_conv_expr_type (&se, as->upper[dim], gfc_array_index_type);
+          gfc_add_block_to_block (pblock, &se.pre);
+          gfc_add_modify (pblock, ubound, se.expr);
+        }
+    }
+}
+
+
 /* Generate code to evaluate non-constant array bounds.  Sets *poffset and
    returns the size (in elements) of the array.  */
 
@@ -4728,26 +4765,8 @@ gfc_trans_array_bounds (tree type, gfc_symbol * sym, tree * poffset,
 
       size = stride;
     }
-  for (dim = as->rank; dim < as->rank + as->corank; dim++)
-    {
-      /* Evaluate non-constant array bound expressions.  */
-      lbound = GFC_TYPE_ARRAY_LBOUND (type, dim);
-      if (as->lower[dim] && !INTEGER_CST_P (lbound))
-        {
-          gfc_init_se (&se, NULL);
-          gfc_conv_expr_type (&se, as->lower[dim], gfc_array_index_type);
-          gfc_add_block_to_block (pblock, &se.pre);
-          gfc_add_modify (pblock, lbound, se.expr);
-        }
-      ubound = GFC_TYPE_ARRAY_UBOUND (type, dim);
-      if (as->upper[dim] && !INTEGER_CST_P (ubound))
-        {
-          gfc_init_se (&se, NULL);
-          gfc_conv_expr_type (&se, as->upper[dim], gfc_array_index_type);
-          gfc_add_block_to_block (pblock, &se.pre);
-          gfc_add_modify (pblock, ubound, se.expr);
-        }
-    }
+
+  gfc_trans_array_cobounds (type, pblock, sym);
   gfc_trans_vla_type_sizes (sym, pblock);
 
   *poffset = offset;
