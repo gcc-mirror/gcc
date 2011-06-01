@@ -1,5 +1,17 @@
 2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/gmon-sol2.c: Reindent.
+	Cleanup comments.
+	Remove, correct casts.
+	Use STDERR_FILENO, NULL.
+	(BASEADDRESS): Remove.
+	(minbrk): Remove.
+	(errno, sbrk): Remove declarations.
+	(monstartup) [hp300]: Remove.
+	(mcount): Remove.
+
+2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.in (cpu_type): Define.
 	* config.host (i[34567]86-*-rtems*): Handle it.
 	(i[34567]86-*-solaris2*): Move body ...
