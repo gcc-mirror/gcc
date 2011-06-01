@@ -3034,7 +3034,7 @@ dump_function_header (FILE *dump_file, tree fdecl)
 
   if (node)
     {
-      fprintf (dump_file, "\n;; Function %s (%s, funcdef_no=%d, decl_uid = %d, cgraph_uid=%d)",
+      fprintf (dump_file, "\n;; Function %s (%s, funcdef_no=%d, decl_uid=%d, cgraph_uid=%d)",
                dname, aname, fun->funcdef_no, DECL_UID(fdecl), node->uid);
       fprintf (dump_file, "%s\n\n",
                node->frequency == NODE_FREQUENCY_HOT
