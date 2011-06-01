@@ -1,3 +1,8 @@
+2011-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (create_entry_value): New function.
+	(vt_add_function_parameter): Use it.
+
 2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/crtfastmath.c [!__x86_64__ && __sun__ && __svr4__]:
