@@ -1537,7 +1537,10 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       /* If TARGET is the same as one of the operands, the REG_EQUAL note
 	 won't be accurate, so use a new target.  */
-      if (target == 0 || target == op0 || target == op1)
+      if (target == 0
+	  || target == op0
+	  || target == op1
+	  || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (mode);
 
       start_sequence ();
@@ -1605,7 +1608,10 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
 	  /* If TARGET is the same as one of the operands, the REG_EQUAL note
 	     won't be accurate, so use a new target.  */
-	  if (target == 0 || target == op0 || target == op1)
+	  if (target == 0
+	      || target == op0
+	      || target == op1
+	      || !valid_multiword_target_p (target))
 	    target = gen_reg_rtx (mode);
 
 	  start_sequence ();
@@ -1659,7 +1665,11 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	 opportunities, and second because if target and op0 happen to be MEMs
 	 designating the same location, we would risk clobbering it too early
 	 in the code sequence we generate below.  */
-      if (target == 0 || target == op0 || target == op1 || ! REG_P (target))
+      if (target == 0
+	  || target == op0
+	  || target == op1
+	  || !REG_P (target)
+	  || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (mode);
 
       start_sequence ();
@@ -1779,7 +1789,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       xtarget = gen_reg_rtx (mode);
 
-      if (target == 0 || !REG_P (target))
+      if (target == 0 || !REG_P (target) || !valid_multiword_target_p (target))
 	target = xtarget;
 
       /* Indicate for flow that the entire target reg is being set.  */
@@ -2481,7 +2491,7 @@ expand_doubleword_bswap (enum machine_mode mode, rtx op, rtx target)
   t0 = expand_unop (word_mode, bswap_optab,
 		    operand_subword_force (op, 1, mode), NULL_RTX, true);
 
-  if (target == 0)
+  if (target == 0 || !valid_multiword_target_p (target))
     target = gen_reg_rtx (mode);
   if (REG_P (target))
     emit_clobber (target);
@@ -2724,7 +2734,9 @@ expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
   if (code == ABS)
     mask = double_int_not (mask);
 
-  if (target == 0 || target == op0)
+  if (target == 0
+      || target == op0
+      || (nwords > 1 && !valid_multiword_target_p (target)))
     target = gen_reg_rtx (mode);
 
   if (nwords > 1)
@@ -2915,7 +2927,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
       int i;
       rtx insns;
 
-      if (target == 0 || target == op0)
+      if (target == 0 || target == op0 || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (mode);
 
       start_sequence ();
@@ -3386,7 +3398,10 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 
   mask = double_int_setbit (double_int_zero, bitpos);
 
-  if (target == 0 || target == op0 || target == op1)
+  if (target == 0
+      || target == op0
+      || target == op1
+      || (nwords > 1 && !valid_multiword_target_p (target)))
     target = gen_reg_rtx (mode);
 
   if (nwords > 1)
@@ -7034,6 +7049,23 @@ insn_operand_matches (enum insn_code icode, unsigned int opno, rtx operand)
 	      (operand, insn_data[(int) icode].operand[opno].mode)));
 }
 
+/* TARGET is a target of a multiword operation that we are going to
+   implement as a series of word-mode operations.  Return true if
+   TARGET is suitable for this purpose.  */
+
+bool
+valid_multiword_target_p (rtx target)
+{
+  enum machine_mode mode;
+  int i;
+
+  mode = GET_MODE (target);
+  for (i = 0; i < GET_MODE_SIZE (mode); i += UNITS_PER_WORD)
+    if (!validate_subreg (word_mode, mode, target, i))
+      return false;
+  return true;
+}
+
 /* Like maybe_legitimize_operand, but do not change the code of the
    current rtx value.  */
 
