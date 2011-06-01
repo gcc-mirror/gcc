@@ -19189,12 +19189,6 @@ build_non_dependent_expr (tree expr)
 		   TREE_OPERAND (expr, 0),
 		   build_non_dependent_expr (TREE_OPERAND (expr, 1)));
 
-  /* Keep dereferences outside the NON_DEPENDENT_EXPR so lvalue_kind
-     doesn't need to look inside.  */
-  if (REFERENCE_REF_P (expr))
-    return convert_from_reference (build_non_dependent_expr
-				   (TREE_OPERAND (expr, 0)));
-
   /* If the type is unknown, it can't really be non-dependent */
   gcc_assert (TREE_TYPE (expr) != unknown_type_node);
 
