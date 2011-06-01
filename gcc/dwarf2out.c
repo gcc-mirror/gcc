@@ -14685,7 +14685,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  }
 	else
 	  {
-	    dw_die_ref type_die = base_type_for_mode (mode, 1);
+	    dw_die_ref type_die = base_type_for_mode (op_mode, 1);
 	    dw_loc_descr_ref cvt;
 
 	    if (type_die == NULL)
