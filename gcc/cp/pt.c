@@ -6476,6 +6476,8 @@ template_args_equal (tree ot, tree nt)
 {
   if (nt == ot)
     return 1;
+  if (nt == NULL_TREE || ot == NULL_TREE)
+    return false;
 
   if (TREE_CODE (nt) == TREE_VEC)
     /* For member templates */
@@ -13598,7 +13600,14 @@ static GTY((param_is (spec_entry))) htab_t current_deduction_htab;
 /* In C++0x, it's possible to have a function template whose type depends
    on itself recursively.  This is most obvious with decltype, but can also
    occur with enumeration scope (c++/48969).  So we need to catch infinite
-   recursion and reject the substitution at deduction time.
+   recursion and reject the substitution at deduction time; this function
+   will return error_mark_node for any repeated substitution.
+
+   This also catches excessive recursion such as when f<N> depends on
+   f<N-1> across all integers, and returns error_mark_node for all the
+   substitutions back up to the initial one.
+
+   This is, of course, not reentrant.
 
    Use of a VEC here is O(n^2) in the depth of function template argument
    deduction substitution, but using a hash table creates a lot of constant
@@ -13611,6 +13620,8 @@ static GTY((param_is (spec_entry))) htab_t current_deduction_htab;
 static tree
 deduction_tsubst_fntype (tree fn, tree targs)
 {
+  static bool excessive_deduction_depth;
+
   unsigned i;
   spec_entry **slot;
   spec_entry *p;
@@ -13656,6 +13667,14 @@ deduction_tsubst_fntype (tree fn, tree targs)
   /* If we've created a hash table, look there.  */
   if (current_deduction_htab)
     {
+      if (htab_elements (current_deduction_htab)
+	  > (unsigned) max_tinst_depth)
+	{
+	  /* Trying to recurse across all integers or some such.  */
+	  excessive_deduction_depth = true;
+	  return error_mark_node;
+	}
+
       hash = hash_specialization (&elt);
       slot = (spec_entry **)
 	htab_find_slot_with_hash (current_deduction_htab, &elt, hash, INSERT);
@@ -13700,6 +13719,13 @@ deduction_tsubst_fntype (tree fn, tree targs)
 	  == error_mark_node)
 	r = error_mark_node;
       VEC_pop (spec_entry, current_deduction_vec);
+    }
+  if (excessive_deduction_depth)
+    {
+      r = error_mark_node;
+      if (htab_elements (current_deduction_htab) == 0)
+	/* Reset once we're all the way out.  */
+	excessive_deduction_depth = false;
     }
   return r;
 }
