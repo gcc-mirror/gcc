@@ -138,6 +138,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
 	x = env->stack[--(env->stack_size)];
 	x_info = (struct ipa_dfs_info *) x->aux;
 	x_info->on_stack = false;
+	x_info->scc_no = v_info->dfn_number;
 
 	if (env->reduce)
 	  {

@@ -1,5 +1,10 @@
 2011-06-01  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-utils.c (ipa_dfs_info): New field scc_no.
+	* ipa-utils.c (searchc): Set scc_no.
+
+2011-06-01  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-utils.c (searchc_env): New field allow_overwritable.
 	(searchc): do not ignore edges to overwritable nodes if indicated
 	by env->allow_overwritable.
