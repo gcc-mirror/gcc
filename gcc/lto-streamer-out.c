@@ -931,11 +931,6 @@ lto_output_ts_decl_non_common_tree_pointers (struct output_block *ob,
 {
   if (TREE_CODE (expr) == FUNCTION_DECL)
     {
-      /* DECL_SAVED_TREE holds the GENERIC representation for DECL.
-	 At this point, it should not exist.  Either because it was
-	 converted to gimple or because DECL didn't have a GENERIC
-	 representation in this TU.  */
-      gcc_assert (DECL_SAVED_TREE (expr) == NULL_TREE);
       lto_output_tree_or_ref (ob, DECL_ARGUMENTS (expr), ref_p);
       lto_output_tree_or_ref (ob, DECL_RESULT (expr), ref_p);
     }
