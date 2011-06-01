@@ -1,5 +1,13 @@
 2011-06-01  David Li  <davidxl@google.com>
 
+	* predict.c : Change pass name
+	* ipa.c: Ditto.
+	* dce.c: Ditto.
+	* tree-profile.c: Ditto.
+	* except.c: Ditto.
+
+2011-06-01  David Li  <davidxl@google.com>
+
 	* tree-pretty-print.c (dump_function_header): New function.
 	* final.c (rest_of_clean_state): Use header dumper.
 	* tree-cfg.c (gimple_dump_cfg): Use header dumper.
