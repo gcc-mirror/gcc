@@ -1,3 +1,9 @@
+2011-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/48830
+	* gcc.target/sparc/ultrasp12.c: New test.
+
 2011-06-01  David Li  <davidxl@google.com>
 
 	* testsuite/gcc.dg/profile-dir-1.c: Change pass name.
