@@ -1,3 +1,9 @@
+2011-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49250
+	* var-tracking.c (add_uses, add_stores): Don't call
+	cselib_subst_to_values on ENTRY_VALUE.
+
 2011-06-01  Diego Novillo  <dnovillo@google.com>
 
 	* lto-streamer-out.c (lto_output_ts_decl_with_vis_tree_pointers): Call
