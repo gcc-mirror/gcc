@@ -141,7 +141,9 @@ along with GCC; see the file COPYING3.  If not see
      %{p|pg:-ldl} -lc}"
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s crtn.o%s"
+#define ENDFILE_SPEC \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   crtend.o%s crtn.o%s"
 
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.  */
 #undef STARTFILE_SPEC

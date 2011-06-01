@@ -1,5 +1,17 @@
 2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/i386/crtfastmath.c [!__x86_64__ && __sun__ && __svr4__]:
+	Include <signal.h>, <ucontext.h>.
+	(sigill_caught): Define.
+	(sigill_hdlr): New function.
+	(set_fast_math) [!__x86_64__ && __sun__ && __svr4__]: Check if SSE
+	insns can be executed.
+	* config/sol2.h (ENDFILE_SPEC): Use crtfastmath.o if -ffast-math
+	etc.
+	* config/sparc/sol2.h (ENDFILE_SPEC): Remove.
+
+2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/t-slibgcc-darwin: Move to ...
 	* config/t-slibgcc-dummy: .. this.
 	Clarify comments.
