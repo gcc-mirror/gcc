@@ -109,7 +109,7 @@ namespace __debug
       : _Base(__x), _Safe_base(), _M_guaranteed_capacity(__x.size()) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      vector(vector&& __x)
+      vector(vector&& __x) noexcept
       : _Base(std::move(__x)), _Safe_base(),
 	_M_guaranteed_capacity(this->size())
       {
@@ -123,7 +123,7 @@ namespace __debug
 	_M_guaranteed_capacity(__l.size()) { }
 #endif
 
-      ~vector() { }
+      ~vector() _GLIBCXX_NOEXCEPT { }
 
       vector&
       operator=(const vector& __x)

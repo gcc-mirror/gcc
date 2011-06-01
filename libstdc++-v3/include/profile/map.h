@@ -92,6 +92,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       map(map&& __x)
+      noexcept(is_nothrow_copy_constructible<_Compare>::value)
       : _Base(std::move(__x))
       { }
 
@@ -101,7 +102,7 @@ namespace __profile
       : _Base(__l, __c, __a) { }
 #endif
 
-      ~map()
+      ~map() _GLIBCXX_NOEXCEPT
       { __profcxx_map_to_unordered_map_destruct(this); }
 
       map&

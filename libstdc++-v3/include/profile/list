@@ -67,7 +67,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       explicit
       list(const _Allocator& __a = _Allocator())
       : _Base(__a) 
-      { 
+      {
         __profcxx_list_construct(this); 	// list2slist
         __profcxx_list_construct2(this); 	// list2vector
       }
@@ -76,7 +76,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       explicit
       list(size_type __n)
       : _Base(__n) 
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
@@ -84,7 +84,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       list(size_type __n, const _Tp& __value,
 	   const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) 
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
@@ -93,7 +93,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       list(size_type __n, const _Tp& __value = _Tp(),
 	   const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) 
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
@@ -103,29 +103,29 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       list(_InputIterator __first, _InputIterator __last,
 	   const _Allocator& __a = _Allocator())
       : _Base(__first, __last, __a)
-      {	 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
 
       list(const list& __x)
       : _Base(__x) 
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
 
       list(const _Base& __x)
       : _Base(__x) 
-      { 	
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      list(list&& __x)
+      list(list&& __x) noexcept
       : _Base(std::move(__x))
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
@@ -135,7 +135,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
         : _Base(__l, __a) { }
 #endif
 
-      ~list()
+      ~list() _GLIBCXX_NOEXCEPT
       { 
         __profcxx_list_destruct(this); 
         __profcxx_list_destruct2(this); 

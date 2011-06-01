@@ -318,6 +318,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_List_impl(const _Node_alloc_type& __a)
 	: _Node_alloc_type(__a), _M_node()
 	{ }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	_List_impl(_Node_alloc_type&& __a)
+	: _Node_alloc_type(std::move(__a)), _M_node()
+	{ }
+#endif
       };
 
       _List_impl _M_impl;
@@ -359,7 +365,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       _List_base(_List_base&& __x)
-      : _M_impl(__x._M_get_Node_allocator())
+      : _M_impl(std::move(__x._M_get_Node_allocator()))
       {
 	_M_init();
 	__detail::_List_node_base::swap(this->_M_impl._M_node, 
@@ -368,7 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       // This is what actually destroys the list.
-      ~_List_base()
+      ~_List_base() _GLIBCXX_NOEXCEPT
       { _M_clear(); }
 
       void
@@ -580,7 +586,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  The newly-created %list contains the exact contents of @a x.
        *  The contents of @a x are a valid, but unspecified %list.
        */
-      list(list&& __x)
+      list(list&& __x) noexcept
       : _Base(std::move(__x)) { }
 
       /**

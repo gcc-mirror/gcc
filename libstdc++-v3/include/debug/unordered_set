@@ -97,7 +97,9 @@ namespace __debug
       unordered_set(const _Base& __x) 
       : _Base(__x), _Safe_base() { }
 
-      unordered_set(unordered_set&& __x) 
+      unordered_set(unordered_set&& __x)
+      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
+	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_set(initializer_list<value_type> __l,
@@ -106,6 +108,8 @@ namespace __debug
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
       : _Base(__l, __n, __hf, __eql, __a), _Safe_base() { }
+
+      ~unordered_set() noexcept { }
 
       unordered_set&
       operator=(const unordered_set& __x)
@@ -374,7 +378,9 @@ namespace __debug
       unordered_multiset(const _Base& __x) 
       : _Base(__x), _Safe_base() { }
 
-      unordered_multiset(unordered_multiset&& __x) 
+      unordered_multiset(unordered_multiset&& __x)
+      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
+	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_multiset(initializer_list<value_type> __l,
@@ -383,6 +389,8 @@ namespace __debug
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
       : _Base(__l, __n, __hf, __eql, __a), _Safe_base() { }
+
+      ~unordered_multiset() noexcept { }
 
       unordered_multiset&
       operator=(const unordered_multiset& __x)

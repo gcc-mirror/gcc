@@ -104,7 +104,7 @@ namespace __debug
       : _Base(__list)
       { }
 
-      forward_list(forward_list&& __list)
+      forward_list(forward_list&& __list) noexcept
       : _Base(std::move(__list._M_base()))
       {
 	this->_M_swap(__list);
@@ -115,7 +115,7 @@ namespace __debug
       : _Base(__il, __al)
       { }
 
-      ~forward_list()
+      ~forward_list() noexcept
       { }
 
       forward_list&

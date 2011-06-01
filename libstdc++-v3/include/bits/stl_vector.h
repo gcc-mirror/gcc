@@ -86,6 +86,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_Vector_impl(_Tp_alloc_type const& __a)
 	: _Tp_alloc_type(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
 	{ }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	_Vector_impl(_Tp_alloc_type&& __a)
+	: _Tp_alloc_type(std::move(__a)),
+	  _M_start(0), _M_finish(0), _M_end_of_storage(0)
+	{ }
+#endif
       };
       
     public:
@@ -127,7 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       _Vector_base(_Vector_base&& __x)
-      : _M_impl(__x._M_get_Tp_allocator())
+      : _M_impl(std::move(__x._M_get_Tp_allocator()))
       {
 	this->_M_impl._M_start = __x._M_impl._M_start;
 	this->_M_impl._M_finish = __x._M_impl._M_finish;
@@ -291,7 +298,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  The newly-created %vector contains the exact contents of @a x.
        *  The contents of @a x are a valid, but unspecified %vector.
        */
-      vector(vector&& __x)
+      vector(vector&& __x) noexcept
       : _Base(std::move(__x)) { }
 
       /**
@@ -346,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  not touched in any way.  Managing the pointer is the user's
        *  responsibility.
        */
-      ~vector()
+      ~vector() _GLIBCXX_NOEXCEPT
       { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
 		      _M_get_Tp_allocator()); }
 

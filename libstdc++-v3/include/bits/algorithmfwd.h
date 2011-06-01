@@ -551,8 +551,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void 
     swap(_Tp&, _Tp&)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    noexcept(is_nothrow_move_constructible<_Tp>::value
-	     && is_nothrow_move_assignable<_Tp>::value)
+    noexcept(__and_<is_nothrow_move_constructible<_Tp>,
+	            is_nothrow_move_assignable<_Tp>>::value)
 #endif
     ;
 

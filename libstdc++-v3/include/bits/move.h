@@ -136,8 +136,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     swap(_Tp& __a, _Tp& __b)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    noexcept(is_nothrow_move_constructible<_Tp>::value
-	     && is_nothrow_move_assignable<_Tp>::value)
+    noexcept(__and_<is_nothrow_move_constructible<_Tp>,
+	            is_nothrow_move_assignable<_Tp>>::value)
 #endif
     {
       // concept requirements

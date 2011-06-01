@@ -213,8 +213,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Hashtable(const _Hashtable&);
 
-      _Hashtable(_Hashtable&&);
-
+      _Hashtable(_Hashtable&&)
+      noexcept(__and_<is_nothrow_copy_constructible<_Equal>,
+	              is_nothrow_copy_constructible<_H1>>::value);
+ 
       _Hashtable&
       operator=(const _Hashtable& __ht)
       {
@@ -233,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      ~_Hashtable();
+      ~_Hashtable() noexcept;
 
       void swap(_Hashtable&);
 
@@ -672,11 +674,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     _Hashtable(_Hashtable&& __ht)
+    noexcept(__and_<is_nothrow_copy_constructible<_Equal>,
+	            is_nothrow_copy_constructible<_H1>>::value)
     : __detail::_Rehash_base<_RehashPolicy, _Hashtable>(__ht),
       __detail::_Hash_code_base<_Key, _Value, _ExtractKey, _Equal,
 				_H1, _H2, _Hash, __chc>(__ht),
       __detail::_Map_base<_Key, _Value, _ExtractKey, __uk, _Hashtable>(__ht),
-      _M_node_allocator(__ht._M_node_allocator),
+      _M_node_allocator(std::move(__ht._M_node_allocator)),
       _M_buckets(__ht._M_buckets),
       _M_bucket_count(__ht._M_bucket_count),
       _M_begin_bucket_index(__ht._M_begin_bucket_index),
@@ -697,7 +701,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   bool __chc, bool __cit, bool __uk>
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    ~_Hashtable()
+    ~_Hashtable() noexcept
     {
       clear();
       _M_deallocate_buckets(_M_buckets, _M_bucket_count);

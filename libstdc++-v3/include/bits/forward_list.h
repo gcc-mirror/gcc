@@ -290,6 +290,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         _Fwd_list_impl(const _Node_alloc_type& __a)
         : _Node_alloc_type(__a), _M_head()
         { }
+
+        _Fwd_list_impl(_Node_alloc_type&& __a)
+	: _Node_alloc_type(std::move(__a)), _M_head()
+        { }
       };
 
       _Fwd_list_impl _M_impl;
@@ -323,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       _Fwd_list_base(_Fwd_list_base&& __lst)
-      : _M_impl(__lst._M_get_Node_allocator())
+      : _M_impl(std::move(__lst._M_get_Node_allocator()))
       {
 	this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
 	__lst._M_impl._M_head._M_next = 0;
@@ -523,7 +527,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  forward_list. The contents of @a list are a valid, but unspecified
        *  %forward_list.
        */
-      forward_list(forward_list&& __list)
+      forward_list(forward_list&& __list) noexcept
       : _Base(std::move(__list)) { }
 
       /**
@@ -542,7 +546,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  The forward_list dtor.
        */
-      ~forward_list()
+      ~forward_list() noexcept
       { }
 
       /**

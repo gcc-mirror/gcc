@@ -1,6 +1,6 @@
 // Debugging set implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -95,6 +95,7 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       set(set&& __x)
+      noexcept(is_nothrow_copy_constructible<_Compare>::value)
       : _Base(std::move(__x)), _Safe_base()
       { this->_M_swap(__x); }
 
@@ -104,7 +105,7 @@ namespace __debug
       : _Base(__l, __comp, __a), _Safe_base() { }
 #endif
 
-      ~set() { }
+      ~set() _GLIBCXX_NOEXCEPT { }
 
       set&
       operator=(const set& __x)

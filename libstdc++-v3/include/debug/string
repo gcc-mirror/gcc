@@ -124,7 +124,7 @@ namespace __gnu_debug
     { }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
-    ~basic_string() { }
+    ~basic_string() _GLIBCXX_NOEXCEPT { }
 
     basic_string&
     operator=(const basic_string& __str)

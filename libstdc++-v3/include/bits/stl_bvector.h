@@ -392,6 +392,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_Bvector_impl(const _Bit_alloc_type& __a)
 	: _Bit_alloc_type(__a), _M_start(), _M_finish(), _M_end_of_storage(0)
 	{ }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	_Bvector_impl(_Bit_alloc_type&& __a)
+	: _Bit_alloc_type(std::move(__a)), _M_start(), _M_finish(),
+	  _M_end_of_storage(0)
+	{ }
+#endif
       };
 
     public:
@@ -416,8 +423,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _M_impl(__a) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      _Bvector_base(_Bvector_base&& __x)
-      : _M_impl(__x._M_get_Bit_allocator())
+      _Bvector_base(_Bvector_base&& __x) noexcept
+      : _M_impl(std::move(__x._M_get_Bit_allocator()))
       {
 	this->_M_impl._M_start = __x._M_impl._M_start;
 	this->_M_impl._M_finish = __x._M_impl._M_finish;
@@ -532,7 +539,7 @@ template<typename _Alloc>
     }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    vector(vector&& __x)
+    vector(vector&& __x) noexcept
     : _Base(std::move(__x)) { }
 
     vector(initializer_list<bool> __l,
@@ -553,7 +560,7 @@ template<typename _Alloc>
 	_M_initialize_dispatch(__first, __last, _Integral());
       }
 
-    ~vector() { }
+    ~vector() _GLIBCXX_NOEXCEPT { }
 
     vector&
     operator=(const vector& __x)

@@ -95,6 +95,7 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       map(map&& __x)
+      noexcept(is_nothrow_copy_constructible<_Compare>::value)
       : _Base(std::move(__x)), _Safe_base()
       { this->_M_swap(__x); }
 
@@ -104,7 +105,7 @@ namespace __debug
       : _Base(__l, __c, __a), _Safe_base() { }
 #endif
 
-      ~map() { }
+      ~map() _GLIBCXX_NOEXCEPT { }
 
       map&
       operator=(const map& __x)

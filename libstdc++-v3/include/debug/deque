@@ -113,7 +113,7 @@ namespace __debug
       : _Base(__l, __a), _Safe_base() { }
 #endif
 
-      ~deque() { }
+      ~deque() _GLIBCXX_NOEXCEPT { }
 
       deque&
       operator=(const deque& __x)
