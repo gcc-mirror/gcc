@@ -1,4 +1,4 @@
-# Copyright (C) 2004, 2011 Free Software Foundation, Inc.
+# Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,6 +16,14 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = m32/m64
-MULTILIB_DIRNAMES = 32 amd64
-MULTILIB_OSDIRNAMES = . amd64
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
+
+$(gcc_objdir)/dp-bit.c: $(gcc_srcdir)/config/fp-bit.c
+	cat $<			> $@
+
+$(gcc_objdir)/fp-bit.c: $(gcc_srcdir)/config/fp-bit.c
+	echo '#define FLOAT'	> $@
+	cat $<			>> $@

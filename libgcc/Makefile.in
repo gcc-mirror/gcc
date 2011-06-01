@@ -1,6 +1,6 @@
 # Makefile.in
 
-# Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation
+# Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation
 #
 # This file is part of GCC.
 #
@@ -35,6 +35,7 @@ shlib_slibdir = @slibdir@
 
 SHELL = @SHELL@
 
+cpu_type = @cpu_type@
 enable_shared = @enable_shared@
 decimal_float = @decimal_float@
 enable_decimal_float = @enable_decimal_float@

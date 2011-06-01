@@ -1,0 +1,3 @@
+# SHLIB_LINK must be non-empty so ENABLE_SHARED_LIBGCC is defined correctly
+# in DRIVER_DEFINES if libgcc configuration has been moved to toplevel.
+SHLIB_LINK = dummy

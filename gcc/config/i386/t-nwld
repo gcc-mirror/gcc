@@ -45,6 +45,3 @@ nwld.o: $(srcdir)/config/i386/nwld.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_P_H)
 
 
 s-crt0: $(srcdir)/unwind-dw2-fde.h
-
-# To keep DRIVER_DEFINES correct.
-SHLIB_LINK = dummy

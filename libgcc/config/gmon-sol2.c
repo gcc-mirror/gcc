@@ -28,7 +28,10 @@
  * SUCH DAMAGE.
  */
 
-/*
+/* FIXME: Check comment.  */
+/* Mangled into a form that works on SPARC Solaris 2 by Mark Eichin
+ * for Cygnus Support, July 1992.
+ *
  * This is a modified gmon.c by J.W.Hawtin <oolon@ankh.org>,
  * 14/8/96 based on the original gmon.c in GCC and the hacked version
  * solaris 2 sparc version (config/sparc/gmon-sol.c) by Mark Eichin. To do
@@ -64,19 +67,11 @@
 static void moncontrol (int);
 extern void monstartup (char *, char *);
 extern void _mcleanup (void);
-extern void internal_mcount (
-#ifdef __x86_64__
-			     char *, unsigned short *
-#else
-			     void
-#endif
-			     );
-
 
 struct phdr {
-                char    *lpc;
-                char    *hpc;
-                int     ncnt;
+  char *lpc;
+  char *hpc;
+  int ncnt;
 };
 
 
@@ -102,10 +97,14 @@ struct rawarc {
 #define ROUNDDOWN(x,y)  (((x)/(y))*(y))
 #define ROUNDUP(x,y)    ((((x)+(y)-1)/(y))*(y))
 
-/* char *minbrk; */
-
+/* extern mcount() asm ("mcount"); */
+/*extern*/ char *minbrk /* asm ("minbrk") */;
 typedef __SIZE_TYPE__ size_t;
 typedef __PTRDIFF_TYPE__ intptr_t;
+
+extern int errno;
+
+extern void *sbrk (intptr_t);
 
     /*
      *	froms is actually a bunch of unsigned shorts indexing tos
@@ -126,12 +125,11 @@ static int	s_scale;
 
 #define	MSG "No space for profiling buffer(s)\n"
 
-extern int errno;
+static void moncontrol (int);
+extern void monstartup (char *, char *);
+extern void _mcleanup (void);
 
-extern void *sbrk (intptr_t);
-
-void
-monstartup(char *lowpc, char *highpc)
+void monstartup(char *lowpc, char *highpc)
 {
     size_t		monsize;
     char		*buffer;
@@ -173,7 +171,7 @@ monstartup(char *lowpc, char *highpc)
 	tos = 0;
 	return;
     }
-/*    minbrk = (char *) sbrk(0);*/
+    minbrk = sbrk(0);
     tos[0].link = 0;
     sbuf = buffer;
     ssiz = monsize;
@@ -207,7 +205,7 @@ monstartup(char *lowpc, char *highpc)
 }
 
 void
-_mcleanup (void)
+_mcleanup(void)
 {
     int			fd;
     int			fromindex;
@@ -215,11 +213,35 @@ _mcleanup (void)
     char		*frompc;
     int			toindex;
     struct rawarc	rawarc;
+    char		*profdir;
+    const char		*proffile;
+    char		*progname;
+    char		 buf[PATH_MAX];
+    extern char	       **___Argv;
 
     moncontrol(0);
-    fd = creat( "gmon.out" , 0666 );
+
+    if ((profdir = getenv("PROFDIR")) != NULL) {
+	/* If PROFDIR contains a null value, no profiling output is produced */
+	if (*profdir == '\0') {
+	    return;
+	}
+
+	progname=strrchr(___Argv[0], '/');
+	if (progname == NULL)
+	    progname=___Argv[0];
+	else
+	    progname++;
+
+	sprintf(buf, "%s/%ld.%s", profdir, (long) getpid(), progname);
+	proffile = buf;
+    } else {
+	proffile = "gmon.out";
+    }
+
+    fd = creat( proffile, 0666 );
     if ( fd < 0 ) {
-	perror( "mcount: gmon.out" );
+	perror( proffile );
 	return;
     }
 #   ifdef DEBUG
@@ -248,7 +270,53 @@ _mcleanup (void)
     close( fd );
 }
 
-#ifdef __x86_64__
+#ifdef __sparc__
+/*
+ * The SPARC stack frame is only held together by the frame pointers
+ * in the register windows. According to the SVR4 SPARC ABI
+ * Supplement, Low Level System Information/Operating System
+ * Interface/Software Trap Types, a type 3 trap will flush all of the
+ * register windows to the stack, which will make it possible to walk
+ * the frames and find the return addresses.
+ * 	However, it seems awfully expensive to incur a trap (system
+ * call) for every function call. It turns out that "call" simply puts
+ * the return address in %o7 expecting the "save" in the procedure to
+ * shift it into %i7; this means that before the "save" occurs, %o7
+ * contains the address of the call to mcount, and %i7 still contains
+ * the caller above that. The asm mcount here simply saves those
+ * registers in argument registers and branches to internal_mcount,
+ * simulating a call with arguments.
+ * 	Kludges:
+ * 	1) the branch to internal_mcount is hard coded; it should be
+ * possible to tell asm to use the assembler-name of a symbol.
+ * 	2) in theory, the function calling mcount could have saved %i7
+ * somewhere and reused the register; in practice, I *think* this will
+ * break longjmp (and maybe the debugger) but I'm not certain. (I take
+ * some comfort in the knowledge that it will break the native mcount
+ * as well.)
+ * 	3) if builtin_return_address worked, this could be portable.
+ * However, it would really have to be optimized for arguments of 0
+ * and 1 and do something like what we have here in order to avoid the
+ * trap per function call performance hit. 
+ * 	4) the atexit and monsetup calls prevent this from simply
+ * being a leaf routine that doesn't do a "save" (and would thus have
+ * access to %o7 and %i7 directly) but the call to write() at the end
+ * would have also prevented this.
+ *
+ * -- [eichin:19920702.1107EST]
+ */
+
+static void internal_mcount (char *, unsigned short *) __attribute__ ((used));
+
+/* i7 == last ret, -> frompcindex */
+/* o7 == current ret, -> selfpc */
+/* Solaris 2 libraries use _mcount.  */
+asm(".global _mcount; _mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
+/* This is for compatibility with old versions of gcc which used mcount.  */
+asm(".global mcount; mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
+#elif defined __x86_64__
+extern void internal_mcount (char *, unsigned short *);
+
 /* See GLIBC for additional information about this technique.  */
 asm(".globl _mcount\n" 
     "\t.type\t_mcount, @function\n"
@@ -281,15 +349,20 @@ asm(".globl _mcount\n"
     "\tretq\n"
     );
 #else
-/* Solaris 2 libraries use _mcount.  */
+extern void internal_mcount (void);
+
+ /* Solaris 2 libraries use _mcount.  */
 asm(".globl _mcount; _mcount: jmp internal_mcount");
-/* This is for compatibility with old versions of gcc which used mcount.  */
+ /* This is for compatibility with old versions of gcc which used mcount.  */
 asm(".globl mcount; mcount: jmp internal_mcount");
 #endif
 
+#ifdef __sparc__
+static
+#endif
 void
 internal_mcount (
-#ifdef __x86_64__
+#if defined __sparc__ || defined __x86_64__
 		 char *selfpc,
 		 unsigned short *frompcindex
 #else
@@ -297,7 +370,7 @@ internal_mcount (
 #endif
 		 )
 {
-#ifndef __x86_64__
+#if !defined __sparc__ && !defined __x86_64__
 	register char			*selfpc;
 	register unsigned short		*frompcindex;
 #endif
@@ -306,7 +379,7 @@ internal_mcount (
 	register long			toindex;
 	static char already_setup;
 
-#ifndef __x86_64__
+#if !defined __sparc__ && !defined __x86_64__
 	/*
 	 *	find the return address for mcount,
 	 *	and the return address for mcount's caller.
@@ -322,8 +395,14 @@ internal_mcount (
 
 	if(!already_setup) {
           extern char etext[];
+#ifdef __sparc__
+	  extern char _start[];
+	  extern char _init[];
+#endif
 	  already_setup = 1;
-#ifdef __x86_64__
+#if defined __sparc__
+	  monstartup(_start < _init ? _start : _init, etext);
+#elif defined __x86_64__
 	  monstartup(0, etext);
 #else
 	  monstartup((char*)0x08040000, etext);
@@ -440,20 +519,18 @@ overflow:
  *	profiling is what mcount checks to see if
  *	all the data structures are ready.
  */
-static void
-moncontrol(int mode)
+static void moncontrol(int mode)
 {
-    if (mode)
-    {
-      /* start */
-      profil((unsigned short *)(sbuf + sizeof(struct phdr)),
-	     ssiz - sizeof(struct phdr),
-	     (size_t)s_lowpc, s_scale);
-      
-      profiling = 0;
+    if (mode) {
+	/* start */
+	profil((unsigned short *)(sbuf + sizeof(struct phdr)),
+	       ssiz - sizeof(struct phdr),
+	       (size_t)s_lowpc, s_scale);
+
+	profiling = 0;
     } else {
-      /* stop */
-      profil((unsigned short *)0, 0, 0, 0);
-      profiling = 3;
+	/* stop */
+	profil((unsigned short *)0, 0, 0, 0);
+	profiling = 3;
     }
 }

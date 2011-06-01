@@ -1,0 +1,4 @@
+# If we are building next to newlib, this will let us find the RTEMS
+# limits.h when building libgcc2.  Otherwise, newlib must be installed
+# first.
+HOST_LIBGCC2_CFLAGS = -I$(srcdir)/../newlib/libc/sys/rtems/include

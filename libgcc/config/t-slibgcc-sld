@@ -1,0 +1,5 @@
+# Build a shared libgcc library for ELF with symbol versioning
+# with the Solaris linker.
+
+SHLIB_LDFLAGS = -Wl,-h,$(SHLIB_SONAME) -Wl,-z,text -Wl,-z,defs \
+	-Wl,-M,$(SHLIB_MAP)
