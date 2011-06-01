@@ -1,3 +1,8 @@
+2011-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (mem_loc_descriptor) <do_ucompare>: Call
+	base_type_for_mode with op_mode instead of mode.
+
 2011-06-01  Paul Brook  <paul@cpodesourcery.com>
 
 	* config/arm/arm-cores.def: Add cortex-r5.  Add DIV flags to
