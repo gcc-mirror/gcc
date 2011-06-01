@@ -1,5 +1,18 @@
 2011-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/45074
+	* optabs.h (valid_multiword_target_p): Declare.
+	* expmed.c (extract_bit_field_1): Check valid_multiword_target_p when
+	doing multi-word operations.
+	* optabs.c (expand_binop): Likewise.
+	(expand_doubleword_bswap): Likewise.
+	(expand_absneg_bit): Likewise.
+	(expand_unop): Likewise.
+	(expand_copysign_bit): Likewise.
+	(multiword_target_p): New function.
+
+2011-06-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR rtl-optimization/48830
 	PR rtl-optimization/48808
 	PR rtl-optimization/48792
