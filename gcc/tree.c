@@ -5176,25 +5176,6 @@ free_lang_data (void)
   /* Create gimple variants for common types.  */
   ptrdiff_type_node = integer_type_node;
   fileptr_type_node = ptr_type_node;
-  if (TREE_CODE (boolean_type_node) != BOOLEAN_TYPE
-      || (TYPE_MODE (boolean_type_node)
-	  != mode_for_size (BOOL_TYPE_SIZE, MODE_INT, 0))
-      || TYPE_PRECISION (boolean_type_node) != 1
-      || !TYPE_UNSIGNED (boolean_type_node))
-    {
-      boolean_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
-      TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
-      TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
-      TYPE_PRECISION (boolean_type_node) = 1;
-      boolean_false_node = TYPE_MIN_VALUE (boolean_type_node);
-      boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
-    }
-
-  /* Unify char_type_node with its properly signed variant.  */
-  if (TYPE_UNSIGNED (char_type_node))
-    unsigned_char_type_node = char_type_node;
-  else
-    signed_char_type_node = char_type_node;
 
   /* Reset some langhooks.  Do not reset types_compatible_p, it may
      still be used indirectly via the get_alias_set langhook.  */

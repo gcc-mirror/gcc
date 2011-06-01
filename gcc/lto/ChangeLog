@@ -1,3 +1,9 @@
+2011-06-01  Richard Guenther  <rguenther@suse.de>
+
+	* lto-lang.c (lto_register_canonical_types): New function.
+	(lto_init): Register common nodes with the canonical type machinery.
+	Do not play tricks with char_type_node.
+
 2011-05-26  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (uniquify_nodes): Fix bug in one of the previous changes.
