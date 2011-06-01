@@ -5042,6 +5042,48 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 	      filtered_attributes = chainon (filtered_attributes,
 					     new_attribute);
 	    }
+	  else if (is_attribute_p ("nonnull", name))
+	    {
+	      /* We need to fixup all the argument indexes by adding 2
+		 for the two hidden arguments of an Objective-C method
+		 invocation, similat to what we do above for the
+		 "format" attribute.  */
+	      /* FIXME: This works great in terms of implementing the
+		 functionality, but the warnings that are produced by
+		 nonnull do mention the argument index (while the
+		 format ones don't).  For example, you could get
+		 "warning: null argument where non-null required
+		 (argument 3)".  Now in that message, "argument 3"
+		 includes the 2 hidden arguments; it would be much
+		 more friendly to call it "argument 1", as that would
+		 be consistent with __attribute__ ((nonnnull (1))).
+		 To do this, we'd need to have the C family code that
+		 checks the arguments know about adding/removing 2 to
+		 the argument index ... or alternatively we could
+		 maybe store the "printable" argument index in
+		 addition to the actual argument index ?  Some
+		 refactoring is needed to do this elegantly.  */
+	      tree new_attribute = copy_node (attribute);
+	      tree argument = TREE_VALUE (attribute);
+	      while (argument != NULL_TREE)
+		{
+		  /* Get the value of the argument and add 2.  */
+		  tree number = TREE_VALUE (argument);
+		  if (number
+		      && TREE_CODE (number) == INTEGER_CST
+		      && TREE_INT_CST_HIGH (number) == 0
+		      && TREE_INT_CST_LOW (number) != 0)
+		    {
+		      TREE_VALUE (argument)
+			= build_int_cst (integer_type_node,
+					 TREE_INT_CST_LOW (number) + 2);
+		    }
+		  argument = TREE_CHAIN (argument);
+		}
+
+	      filtered_attributes = chainon (filtered_attributes,
+					     new_attribute);
+	    }
 	  else
 	    warning (OPT_Wattributes, "%qE attribute directive ignored", name);
 	}
