@@ -1,5 +1,9 @@
 2011-06-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44175
+	* pt.c (template_args_equal): Handle one arg being NULL_TREE.
+	(deduction_tsubst_fntype): Handle excessive non-infinite recursion.
+
 	PR c++/49253
 	* typeck2.c (build_x_arrow): Don't use build_min_nt.
 
