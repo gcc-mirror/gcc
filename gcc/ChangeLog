@@ -1,3 +1,10 @@
+2011-06-01  David Li  <davidxl@google.com>
+
+	* tree-pretty-print.c (dump_function_header): New function.
+	* final.c (rest_of_clean_state): Use header dumper.
+	* tree-cfg.c (gimple_dump_cfg): Use header dumper.
+	* passes.c (pass_init_dump_file): Use header dumper.
+
 2011-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (compare_loc_descriptor, scompare_loc_descriptor,

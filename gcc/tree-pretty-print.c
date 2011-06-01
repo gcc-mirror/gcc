@@ -3013,3 +3013,39 @@ pp_base_tree_identifier (pretty_printer *pp, tree id)
     pp_append_text (pp, IDENTIFIER_POINTER (id),
 		    IDENTIFIER_POINTER (id) + IDENTIFIER_LENGTH (id));
 }
+
+/* A helper function that is used to dump function information before the
+   function dump.  */
+
+void
+dump_function_header (FILE *dump_file, tree fdecl)
+{
+  const char *dname, *aname;
+  struct cgraph_node *node = cgraph_get_node (fdecl);
+  struct function *fun = DECL_STRUCT_FUNCTION (fdecl);
+
+  dname = lang_hooks.decl_printable_name (fdecl, 2);
+
+  if (DECL_ASSEMBLER_NAME_SET_P (fdecl))
+    aname = (IDENTIFIER_POINTER
+             (DECL_ASSEMBLER_NAME (fdecl)));
+  else
+    aname = "<unset-asm-name>";
+
+  if (node)
+    {
+      fprintf (dump_file, "\n;; Function %s (%s, funcdef_no=%d, decl_uid = %d, cgraph_uid=%d)",
+               dname, aname, fun->funcdef_no, DECL_UID(fdecl), node->uid);
+      fprintf (dump_file, "%s\n\n",
+               node->frequency == NODE_FREQUENCY_HOT
+               ? " (hot)"
+               : node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
+               ? " (unlikely executed)"
+               : node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
+               ? " (executed once)"
+               : "");
+    }
+  else
+    fprintf (dump_file, "\n;; Function %s (%s, funcdef_no=%d, decl_uid = %d)",
+             dname, aname, fun->funcdef_no, DECL_UID(fdecl));
+}
