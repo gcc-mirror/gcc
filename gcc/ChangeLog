@@ -1,3 +1,12 @@
+2011-06-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (free_lang_data): Do not reset boolean_type_node nor
+	char_type_node.
+	* lto-streamer.c (lto_record_common_node): Take node pointer,
+	do not register types.
+	(lto_preload_common_nodes): Explicitly skip preloading nodes
+	that differ between frontends.
+
 2011-05-31  Pat Haugen <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.h (REG_CLASS_CONTENTS): Remove vr0..vr2 from

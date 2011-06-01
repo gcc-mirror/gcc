@@ -478,10 +478,8 @@ lto_streamer_cache_get (struct lto_streamer_cache_d *cache, unsigned ix)
 /* Record NODE in CACHE.  */
 
 static void
-lto_record_common_node (struct lto_streamer_cache_d *cache, tree *nodep)
+lto_record_common_node (struct lto_streamer_cache_d *cache, tree node)
 {
-  tree node = *nodep;
-
   /* We have to make sure to fill exactly the same number of
      elements for all frontends.  That can include NULL trees.
      As our hash table can't deal with zero entries we'll simply stream
@@ -491,25 +489,12 @@ lto_record_common_node (struct lto_streamer_cache_d *cache, tree *nodep)
   if (!node)
     node = error_mark_node;
 
-  if (TYPE_P (node))
-    {
-      /* Type merging will get confused by the canonical types as they
-	 are set by the middle-end.  */
-      if (in_lto_p)
-	TYPE_CANONICAL (node) = NULL_TREE;
-      node = gimple_register_type (node);
-      TYPE_CANONICAL (node) = gimple_register_canonical_type (node);
-      if (in_lto_p)
-	TYPE_CANONICAL (*nodep) = TYPE_CANONICAL (node);
-      *nodep = node;
-    }
-
   lto_streamer_cache_append (cache, node);
 
   if (POINTER_TYPE_P (node)
       || TREE_CODE (node) == COMPLEX_TYPE
       || TREE_CODE (node) == ARRAY_TYPE)
-    lto_record_common_node (cache, &TREE_TYPE (node));
+    lto_record_common_node (cache, TREE_TYPE (node));
   else if (TREE_CODE (node) == RECORD_TYPE)
     {
       /* The FIELD_DECLs of structures should be shared, so that every
@@ -519,7 +504,7 @@ lto_record_common_node (struct lto_streamer_cache_d *cache, tree *nodep)
 	 nonoverlapping_component_refs_p).  */
       tree f;
       for (f = TYPE_FIELDS (node); f; f = TREE_CHAIN (f))
-	lto_record_common_node (cache, &f);
+	lto_record_common_node (cache, f);
     }
 }
 
@@ -553,16 +538,20 @@ lto_preload_common_nodes (struct lto_streamer_cache_d *cache)
   gcc_assert (fileptr_type_node == ptr_type_node);
   gcc_assert (TYPE_MAIN_VARIANT (fileptr_type_node) == ptr_type_node);
 
-  /* Skip itk_char.  char_type_node is shared with the appropriately
-     signed variant.  */
-  for (i = itk_signed_char; i < itk_none; i++)
-    lto_record_common_node (cache, &integer_types[i]);
+  for (i = 0; i < itk_none; i++)
+    /* Skip itk_char.  char_type_node is dependent on -f[un]signed-char.  */
+    if (i != itk_char)
+      lto_record_common_node (cache, integer_types[i]);
 
   for (i = 0; i < TYPE_KIND_LAST; i++)
-    lto_record_common_node (cache, &sizetype_tab[i]);
+    lto_record_common_node (cache, sizetype_tab[i]);
 
   for (i = 0; i < TI_MAX; i++)
-    lto_record_common_node (cache, &global_trees[i]);
+    /* Skip boolean type and constants, they are frontend dependent.  */
+    if (i != TI_BOOLEAN_TYPE
+	&& i != TI_BOOLEAN_FALSE
+	&& i != TI_BOOLEAN_TRUE)
+      lto_record_common_node (cache, global_trees[i]);
 }
 
 /* Create a cache of pickled nodes.  */
