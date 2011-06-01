@@ -28,45 +28,27 @@
  * SUCH DAMAGE.
  */
 
-/* FIXME: Check comment.  */
-/* Mangled into a form that works on SPARC Solaris 2 by Mark Eichin
+/* Mangled into a form that works on Solaris 2/SPARC by Mark Eichin
  * for Cygnus Support, July 1992.
  *
- * This is a modified gmon.c by J.W.Hawtin <oolon@ankh.org>,
- * 14/8/96 based on the original gmon.c in GCC and the hacked version
- * solaris 2 sparc version (config/sparc/gmon-sol.c) by Mark Eichin. To do
- * process profiling on solaris 2.X X86
+ * Modified to support Solaris 2/x86 by J.W.Hawtin <oolon@ankh.org>, 14/8/96.
  *
- * It must be used in conjunction with sol2-gc1.asm, which is used to start
+ * It must be used in conjunction with sol2-gc1.S, which is used to start
  * and stop process monitoring.
- *
- * Differences.
- *
- * On Solaris 2 _mcount is called by library functions not mcount, so support
- * has been added for both.
- *
- * Also the prototype for profil() is different
- *
- * Solaris 2 does not seem to have char *minbrk whcih allows the setting of
- * the minimum SBRK region so this code has been removed and lets pray malloc
- * does not mess it up.
- *
- * Notes
- *
- * This code could easily be integrated with the original gmon.c and perhaps
- * should be.
  */
+
 #include "tconfig.h"
 #include "tsystem.h"
-#include <fcntl.h> /* for creat() */
+#include <fcntl.h>		/* For creat.  */
 
-#ifdef DEBUG
-#include <stdio.h>
-#endif
-
-static void moncontrol (int);
 extern void monstartup (char *, char *);
 extern void _mcleanup (void);
+#ifdef __i386__
+static void internal_mcount (void) __attribute__ ((used));
+#else
+static void internal_mcount (char *, unsigned short *) __attribute__ ((used));
+#endif
+static void moncontrol (int);
 
 struct phdr {
   char *lpc;
@@ -74,14 +56,11 @@ struct phdr {
   int ncnt;
 };
 
-
-#define HISTFRACTION 2
-#define HISTCOUNTER unsigned short
-#define HASHFRACTION 1
-#define ARCDENSITY 2
-#define MINARCS 50
-#define BASEADDRESS 0x8000000 /* On Solaris 2 X86 all executables start here
-				 and not at 0 */ 
+#define HISTFRACTION	2
+#define HISTCOUNTER	unsigned short
+#define HASHFRACTION	1
+#define ARCDENSITY	2
+#define MINARCS		50
 
 struct tostruct {
   char *selfpc;
@@ -90,447 +69,376 @@ struct tostruct {
 };
 
 struct rawarc {
-    unsigned long       raw_frompc;
-    unsigned long       raw_selfpc;
-    long                raw_count;
+  unsigned long raw_frompc;
+  unsigned long raw_selfpc;
+  long raw_count;
 };
-#define ROUNDDOWN(x,y)  (((x)/(y))*(y))
-#define ROUNDUP(x,y)    ((((x)+(y)-1)/(y))*(y))
 
-/* extern mcount() asm ("mcount"); */
-/*extern*/ char *minbrk /* asm ("minbrk") */;
-typedef __SIZE_TYPE__ size_t;
-typedef __PTRDIFF_TYPE__ intptr_t;
+#define ROUNDDOWN(x, y)	(((x) / (y)) * (y))
+#define ROUNDUP(x, y)	((((x) + (y) - 1) / (y)) * (y))
 
-extern int errno;
+/* froms is actually a bunch of unsigned shorts indexing tos.  */
+static int profiling = 3;
+static unsigned short *froms;
+static struct tostruct *tos = NULL;
+static long tolimit = 0;
+static char *s_lowpc = NULL;
+static char *s_highpc = NULL;
+static size_t s_textsize = 0;
 
-extern void *sbrk (intptr_t);
-
-    /*
-     *	froms is actually a bunch of unsigned shorts indexing tos
-     */
-static int		profiling = 3;
-static unsigned short	*froms;
-static struct tostruct	*tos = 0;
-static long		tolimit = 0;
-static char		*s_lowpc = 0;
-static char		*s_highpc = 0;
-static size_t		s_textsize = 0;
-
-static int	ssiz;
-static char	*sbuf;
-static int	s_scale;
-    /* see profil(2) where this is describe (incorrectly) */
-#define		SCALE_1_TO_1	0x10000L
+static int ssiz;
+static char *sbuf;
+static int s_scale;
+/* See profil(2) where this is describe (incorrectly).  */
+#define	SCALE_1_TO_1	0x10000L
 
 #define	MSG "No space for profiling buffer(s)\n"
 
-static void moncontrol (int);
-extern void monstartup (char *, char *);
-extern void _mcleanup (void);
-
-void monstartup(char *lowpc, char *highpc)
+void
+monstartup (char *lowpc, char *highpc)
 {
-    size_t		monsize;
-    char		*buffer;
-    register size_t	o;
+  size_t monsize;
+  char *buffer;
+  size_t o;
 
-	/*
-	 *	round lowpc and highpc to multiples of the density we're using
-	 *	so the rest of the scaling (here and in gprof) stays in ints.
-	 */
-    lowpc = (char *)
-	    ROUNDDOWN((size_t)lowpc, HISTFRACTION*sizeof(HISTCOUNTER));
-    s_lowpc = lowpc;
-    highpc = (char *)
-	    ROUNDUP((size_t)highpc, HISTFRACTION*sizeof(HISTCOUNTER));
-    s_highpc = highpc;
-    s_textsize = highpc - lowpc;
-    monsize = (s_textsize / HISTFRACTION) + sizeof(struct phdr);
-    buffer = (char *) sbrk( monsize );
-    if ( buffer == (char *) -1 ) {
-	write( 2 , MSG , sizeof(MSG) );
-	return;
-    }
-    froms = (unsigned short *) sbrk( s_textsize / HASHFRACTION );
-    if ( froms == (unsigned short *) -1 ) {
-	write( 2 , MSG , sizeof(MSG) );
-	froms = 0;
-	return;
-    }
-    tolimit = s_textsize * ARCDENSITY / 100;
-    if ( tolimit < MINARCS ) {
-	tolimit = MINARCS;
-    } else if ( tolimit > 65534 ) {
-	tolimit = 65534;
-    }
-    tos = (struct tostruct *) sbrk( tolimit * sizeof( struct tostruct ) );
-    if ( tos == (struct tostruct *) -1 ) {
-	write( 2 , MSG , sizeof(MSG) );
-	froms = 0;
-	tos = 0;
-	return;
-    }
-    minbrk = sbrk(0);
-    tos[0].link = 0;
-    sbuf = buffer;
-    ssiz = monsize;
-    ( (struct phdr *) buffer ) -> lpc = lowpc;
-    ( (struct phdr *) buffer ) -> hpc = highpc;
-    ( (struct phdr *) buffer ) -> ncnt = ssiz;
-    monsize -= sizeof(struct phdr);
-    if ( monsize <= 0 )
-	return;
-    o = highpc - lowpc;
-    if( monsize < o )
-#ifndef hp300
-	s_scale = ( (float) monsize / o ) * SCALE_1_TO_1;
-#else /* avoid floating point */
-    {
-	int quot = o / monsize;
-
-	if (quot >= 0x10000)
-		s_scale = 1;
-	else if (quot >= 0x100)
-		s_scale = 0x10000 / quot;
-	else if (o >= 0x800000)
-		s_scale = 0x1000000 / (o / (monsize >> 8));
-	else
-		s_scale = 0x1000000 / ((o << 8) / monsize);
-    }
-#endif
-    else
-	s_scale = SCALE_1_TO_1;
-    moncontrol(1);
+  /* Round lowpc and highpc to multiples of the density we're using
+     so the rest of the scaling (here and in gprof) stays in ints.  */
+  lowpc = (char *) ROUNDDOWN ((size_t) lowpc,
+			      HISTFRACTION * sizeof (HISTCOUNTER));
+  s_lowpc = lowpc;
+  highpc = (char *) ROUNDUP ((size_t) highpc,
+			     HISTFRACTION * sizeof (HISTCOUNTER));
+  s_highpc = highpc;
+  s_textsize = highpc - lowpc;
+  monsize = (s_textsize / HISTFRACTION) + sizeof (struct phdr);
+  buffer = sbrk (monsize);
+  if (buffer == (void *) -1) {
+    write (STDERR_FILENO, MSG, sizeof (MSG));
+    return;
+  }
+  froms = sbrk (s_textsize / HASHFRACTION);
+  if (froms == (void *) -1) {
+    write (STDERR_FILENO, MSG, sizeof (MSG));
+    froms = NULL;
+    return;
+  }
+  tolimit = s_textsize * ARCDENSITY / 100;
+  if (tolimit < MINARCS) {
+    tolimit = MINARCS;
+  } else if (tolimit > 65534) {
+    tolimit = 65534;
+  }
+  tos = sbrk (tolimit * sizeof (struct tostruct));
+  if (tos == (void *) -1) {
+    write (STDERR_FILENO, MSG, sizeof (MSG));
+    froms = NULL;
+    tos = NULL;
+    return;
+  }
+  tos[0].link = 0;
+  sbuf = buffer;
+  ssiz = monsize;
+  ((struct phdr *) buffer)->lpc = lowpc;
+  ((struct phdr *) buffer)->hpc = highpc;
+  ((struct phdr *) buffer)->ncnt = ssiz;
+  monsize -= sizeof (struct phdr);
+  if (monsize <= 0)
+    return;
+  o = highpc - lowpc;
+  if(monsize < o)
+    s_scale = ((float) monsize / o) * SCALE_1_TO_1;
+  else
+    s_scale = SCALE_1_TO_1;
+  moncontrol (1);
 }
 
 void
-_mcleanup(void)
+_mcleanup (void)
 {
-    int			fd;
-    int			fromindex;
-    int			endfrom;
-    char		*frompc;
-    int			toindex;
-    struct rawarc	rawarc;
-    char		*profdir;
-    const char		*proffile;
-    char		*progname;
-    char		 buf[PATH_MAX];
-    extern char	       **___Argv;
+  int fd;
+  int fromindex;
+  int endfrom;
+  char *frompc;
+  int toindex;
+  struct rawarc	rawarc;
+  char *profdir;
+  const char *proffile;
+  char *progname;
+  char buf[PATH_MAX];
+  extern char **___Argv;
 
-    moncontrol(0);
+  moncontrol (0);
 
-    if ((profdir = getenv("PROFDIR")) != NULL) {
-	/* If PROFDIR contains a null value, no profiling output is produced */
-	if (*profdir == '\0') {
-	    return;
-	}
-
-	progname=strrchr(___Argv[0], '/');
-	if (progname == NULL)
-	    progname=___Argv[0];
-	else
-	    progname++;
-
-	sprintf(buf, "%s/%ld.%s", profdir, (long) getpid(), progname);
-	proffile = buf;
-    } else {
-	proffile = "gmon.out";
+  if ((profdir = getenv ("PROFDIR")) != NULL) {
+    /* If PROFDIR contains a null value, no profiling output is produced.  */
+    if (*profdir == '\0') {
+      return;
     }
 
-    fd = creat( proffile, 0666 );
-    if ( fd < 0 ) {
-	perror( proffile );
-	return;
-    }
-#   ifdef DEBUG
-	fprintf( stderr , "[mcleanup] sbuf %#x ssiz %d\n" , sbuf , ssiz );
-#   endif /* DEBUG */
+    progname = strrchr (___Argv[0], '/');
+    if (progname == NULL)
+      progname = ___Argv[0];
+    else
+      progname++;
 
-    write( fd , sbuf , ssiz );
-    endfrom = s_textsize / (HASHFRACTION * sizeof(*froms));
-    for ( fromindex = 0 ; fromindex < endfrom ; fromindex++ ) {
-	if ( froms[fromindex] == 0 ) {
-	    continue;
-	}
-	frompc = s_lowpc + (fromindex * HASHFRACTION * sizeof(*froms));
-	for (toindex=froms[fromindex]; toindex!=0; toindex=tos[toindex].link) {
-#	    ifdef DEBUG
-		fprintf( stderr ,
-			"[mcleanup] frompc %#x selfpc %#x count %d\n" ,
-			frompc , tos[toindex].selfpc , tos[toindex].count );
-#	    endif /* DEBUG */
-	    rawarc.raw_frompc = (unsigned long) frompc;
-	    rawarc.raw_selfpc = (unsigned long) tos[toindex].selfpc;
-	    rawarc.raw_count = tos[toindex].count;
-	    write( fd , &rawarc , sizeof rawarc );
-	}
+    sprintf (buf, "%s/%ld.%s", profdir, (long) getpid (), progname);
+    proffile = buf;
+  } else {
+    proffile = "gmon.out";
+  }
+
+  fd = creat (proffile, 0666);
+  if (fd < 0) {
+    perror (proffile);
+    return;
+  }
+#ifdef DEBUG
+  fprintf (stderr, "[mcleanup] sbuf %#x ssiz %d\n", sbuf, ssiz);
+#endif /* DEBUG */
+
+  write (fd, sbuf, ssiz);
+  endfrom = s_textsize / (HASHFRACTION * sizeof (*froms));
+  for (fromindex = 0; fromindex < endfrom; fromindex++) {
+    if (froms[fromindex] == 0) {
+      continue;
     }
-    close( fd );
+    frompc = s_lowpc + (fromindex * HASHFRACTION * sizeof (*froms));
+    for (toindex = froms[fromindex];
+	 toindex != 0;
+	 toindex = tos[toindex].link) {
+#ifdef DEBUG
+      fprintf (stderr, "[mcleanup] frompc %#x selfpc %#x count %d\n",
+	       frompc, tos[toindex].selfpc, tos[toindex].count);
+#endif /* DEBUG */
+      rawarc.raw_frompc = (unsigned long) frompc;
+      rawarc.raw_selfpc = (unsigned long) tos[toindex].selfpc;
+      rawarc.raw_count = tos[toindex].count;
+      write (fd, &rawarc, sizeof (rawarc));
+    }
+  }
+  close (fd);
 }
 
-#ifdef __sparc__
-/*
- * The SPARC stack frame is only held together by the frame pointers
- * in the register windows. According to the SVR4 SPARC ABI
- * Supplement, Low Level System Information/Operating System
- * Interface/Software Trap Types, a type 3 trap will flush all of the
- * register windows to the stack, which will make it possible to walk
- * the frames and find the return addresses.
- * 	However, it seems awfully expensive to incur a trap (system
- * call) for every function call. It turns out that "call" simply puts
- * the return address in %o7 expecting the "save" in the procedure to
- * shift it into %i7; this means that before the "save" occurs, %o7
- * contains the address of the call to mcount, and %i7 still contains
- * the caller above that. The asm mcount here simply saves those
- * registers in argument registers and branches to internal_mcount,
- * simulating a call with arguments.
- * 	Kludges:
- * 	1) the branch to internal_mcount is hard coded; it should be
- * possible to tell asm to use the assembler-name of a symbol.
- * 	2) in theory, the function calling mcount could have saved %i7
- * somewhere and reused the register; in practice, I *think* this will
- * break longjmp (and maybe the debugger) but I'm not certain. (I take
- * some comfort in the knowledge that it will break the native mcount
- * as well.)
- * 	3) if builtin_return_address worked, this could be portable.
- * However, it would really have to be optimized for arguments of 0
- * and 1 and do something like what we have here in order to avoid the
- * trap per function call performance hit. 
- * 	4) the atexit and monsetup calls prevent this from simply
- * being a leaf routine that doesn't do a "save" (and would thus have
- * access to %o7 and %i7 directly) but the call to write() at the end
- * would have also prevented this.
- *
- * -- [eichin:19920702.1107EST]
- */
-
-static void internal_mcount (char *, unsigned short *) __attribute__ ((used));
-
-/* i7 == last ret, -> frompcindex */
-/* o7 == current ret, -> selfpc */
 /* Solaris 2 libraries use _mcount.  */
-asm(".global _mcount; _mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
-/* This is for compatibility with old versions of gcc which used mcount.  */
-asm(".global mcount; mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
+#if defined __i386__
+asm(".globl _mcount\n"
+    "_mcount:\n"
+    "	jmp	internal_mcount\n");
 #elif defined __x86_64__
-extern void internal_mcount (char *, unsigned short *);
-
 /* See GLIBC for additional information about this technique.  */
 asm(".globl _mcount\n" 
-    "\t.type\t_mcount, @function\n"
+    "	.type	_mcount, @function\n"
     "_mcount:\n"
     /* The compiler calls _mcount after the prologue, and does not
        save any of the registers.  Therefore we must preserve all
        seven registers which may contain function arguments.  */
-    "\tsubq\t$0x38,%rsp\n"
-    "\tmovq\t%rax,(%rsp)\n"
-    "\tmovq\t%rcx,0x08(%rsp)\n"
-    "\tmovq\t%rdx,0x10(%rsp)\n"
-    "\tmovq\t%rsi,0x18(%rsp)\n"
-    "\tmovq\t%rdi,0x20(%rsp)\n"
-    "\tmovq\t%r8,0x28(%rsp)\n"
-    "\tmovq\t%r9,0x30(%rsp)\n"
+    "	subq	$0x38, %rsp\n"
+    "	movq	%rax, (%rsp)\n"
+    "	movq	%rcx, 0x08(%rsp)\n"
+    "	movq	%rdx, 0x10(%rsp)\n"
+    "	movq	%rsi, 0x18(%rsp)\n"
+    "	movq	%rdi, 0x20(%rsp)\n"
+    "	movq	%r8, 0x28(%rsp)\n"
+    "	movq	%r9, 0x30(%rsp)\n"
     /* Get SELFPC (pushed by the call to this function) and
-       FROMPCINDEX (via the frame pointer.  */
-    "\tmovq\t0x38(%rsp),%rdi\n"
-    "\tmovq\t0x8(%rbp),%rsi\n"
-    "\tcall\tinternal_mcount\n"
+       FROMPCINDEX (via the frame pointer).  */
+    "	movq	0x38(%rsp), %rdi\n"
+    "	movq	0x8(%rbp), %rsi\n"
+    "	call	internal_mcount\n"
     /* Restore the saved registers.  */
-    "\tmovq\t0x30(%rsp),%r9\n"
-    "\tmovq\t0x28(%rsp),%r8\n"
-    "\tmovq\t0x20(%rsp),%rdi\n"
-    "\tmovq\t0x18(%rsp),%rsi\n"
-    "\tmovq\t0x10(%rsp),%rdx\n"
-    "\tmovq\t0x08(%rsp),%rcx\n"
-    "\tmovq\t(%rsp),%rax\n"
-    "\taddq\t$0x38,%rsp\n"
-    "\tretq\n"
-    );
-#else
-extern void internal_mcount (void);
+    "	movq	0x30(%rsp), %r9\n"
+    "	movq	0x28(%rsp), %r8\n"
+    "	movq	0x20(%rsp), %rdi\n"
+    "	movq	0x18(%rsp), %rsi\n"
+    "	movq	0x10(%rsp), %rdx\n"
+    "	movq	0x08(%rsp), %rcx\n"
+    "	movq	(%rsp), %rax\n"
+    "	addq	$0x38, %rsp\n"
+    "	retq\n");
+#elif defined __sparc__
+/* The SPARC stack frame is only held together by the frame pointers
+   in the register windows. According to the SVR4 SPARC ABI
+   Supplement, Low Level System Information/Operating System
+   Interface/Software Trap Types, a type 3 trap will flush all of the
+   register windows to the stack, which will make it possible to walk
+   the frames and find the return addresses.
+	However, it seems awfully expensive to incur a trap (system
+   call) for every function call. It turns out that "call" simply puts
+   the return address in %o7 expecting the "save" in the procedure to
+   shift it into %i7; this means that before the "save" occurs, %o7
+   contains the address of the call to mcount, and %i7 still contains
+   the caller above that. The asm mcount here simply saves those
+   registers in argument registers and branches to internal_mcount,
+   simulating a call with arguments.
+	Kludges:
+	1) the branch to internal_mcount is hard coded; it should be
+   possible to tell asm to use the assembler-name of a symbol.
+	2) in theory, the function calling mcount could have saved %i7
+   somewhere and reused the register; in practice, I *think* this will
+   break longjmp (and maybe the debugger) but I'm not certain. (I take
+   some comfort in the knowledge that it will break the native mcount
+   as well.)
+	3) if builtin_return_address worked, this could be portable.
+   However, it would really have to be optimized for arguments of 0
+   and 1 and do something like what we have here in order to avoid the
+   trap per function call performance hit. 
+	4) the atexit and monsetup calls prevent this from simply
+   being a leaf routine that doesn't do a "save" (and would thus have
+   access to %o7 and %i7 directly) but the call to write() at the end
+   would have also prevented this.
 
- /* Solaris 2 libraries use _mcount.  */
-asm(".globl _mcount; _mcount: jmp internal_mcount");
- /* This is for compatibility with old versions of gcc which used mcount.  */
-asm(".globl mcount; mcount: jmp internal_mcount");
+   -- [eichin:19920702.1107EST]  */
+asm(".global _mcount\n"
+    "_mcount:\n"
+    /* i7 == last ret, -> frompcindex.  */
+    "	mov	%i7, %o1\n"
+    /* o7 == current ret, -> selfpc.  */
+    "	mov	%o7, %o0\n"
+    "	b,a	internal_mcount\n");
 #endif
 
-#ifdef __sparc__
-static
-#endif
-void
-internal_mcount (
-#if defined __sparc__ || defined __x86_64__
-		 char *selfpc,
-		 unsigned short *frompcindex
+static void
+#ifdef __i386__
+internal_mcount (void)
 #else
-		 void
+internal_mcount (char *selfpc, unsigned short *frompcindex)
 #endif
-		 )
 {
-#if !defined __sparc__ && !defined __x86_64__
-	register char			*selfpc;
-	register unsigned short		*frompcindex;
-#endif
-	register struct tostruct	*top;
-	register struct tostruct	*prevtop;
-	register long			toindex;
-	static char already_setup;
+  struct tostruct *top;
+  struct tostruct *prevtop;
+  long toindex;
+  static char already_setup;
 
-#if !defined __sparc__ && !defined __x86_64__
-	/*
-	 *	find the return address for mcount,
-	 *	and the return address for mcount's caller.
-	 */
+#ifdef __i386__
+  char *selfpc;
+  unsigned short *frompcindex;
 
-	/* selfpc = pc pushed by mcount call.
-	   This identifies the function that was just entered.  */
-	selfpc = (void *) __builtin_return_address (0);
-	/* frompcindex = pc in preceding frame.
-	   This identifies the caller of the function just entered.  */
-	frompcindex = (void *) __builtin_return_address (1);
+  /* Find the return address for mcount and the return address for mcount's
+     caller.  */
+
+  /* selfpc = pc pushed by mcount call.
+     This identifies the function that was just entered.  */
+  selfpc = (void *) __builtin_return_address (0);
+  /* frompcindex = pc in preceding frame.
+     This identifies the caller of the function just entered.  */
+  frompcindex = (void *) __builtin_return_address (1);
 #endif
 
-	if(!already_setup) {
-          extern char etext[];
-#ifdef __sparc__
-	  extern char _start[];
-	  extern char _init[];
-#endif
-	  already_setup = 1;
-#if defined __sparc__
-	  monstartup(_start < _init ? _start : _init, etext);
+  if(!already_setup) {
+    extern char etext[];
+
+    already_setup = 1;
+
+#if defined __i386__
+    /* <sys/vmparam.h> USERSTACK.  */
+    monstartup ((char *) 0x8048000, etext);
 #elif defined __x86_64__
-	  monstartup(0, etext);
-#else
-	  monstartup((char*)0x08040000, etext);
-#endif
-#ifdef USE_ONEXIT
-	  on_exit(_mcleanup, 0);
-#else
-	  atexit(_mcleanup);
-#endif
-	}
-	/*
-	 *	check that we are profiling
-	 *	and that we aren't recursively invoked.
-	 */
-	if (profiling) {
-		goto out;
-	}
-	profiling++;
-	/*
-	 *	check that frompcindex is a reasonable pc value.
-	 *	for example:	signal catchers get called from the stack,
-	 *			not from text space.  too bad.
-	 */
-	frompcindex = (unsigned short *)((long)frompcindex - (long)s_lowpc);
-	if ((unsigned long)frompcindex > s_textsize) {
-		goto done;
-	}
-	frompcindex =
-	    &froms[((long)frompcindex) / (HASHFRACTION * sizeof(*froms))];
-	toindex = *frompcindex;
-	if (toindex == 0) {
-		/*
-		 *	first time traversing this arc
-		 */
-		toindex = ++tos[0].link;
-		if (toindex >= tolimit) {
-			goto overflow;
-		}
-		*frompcindex = toindex;
-		top = &tos[toindex];
-		top->selfpc = selfpc;
-		top->count = 1;
-		top->link = 0;
-		goto done;
-	}
-	top = &tos[toindex];
-	if (top->selfpc == selfpc) {
-		/*
-		 *	arc at front of chain; usual case.
-		 */
-		top->count++;
-		goto done;
-	}
-	/*
-	 *	have to go looking down chain for it.
-	 *	top points to what we are looking at,
-	 *	prevtop points to previous top.
-	 *	we know it is not at the head of the chain.
-	 */
-	for (; /* goto done */; ) {
-		if (top->link == 0) {
-			/*
-			 *	top is end of the chain and none of the chain
-			 *	had top->selfpc == selfpc.
-			 *	so we allocate a new tostruct
-			 *	and link it to the head of the chain.
-			 */
-			toindex = ++tos[0].link;
-			if (toindex >= tolimit) {
-				goto overflow;
-			}
-			top = &tos[toindex];
-			top->selfpc = selfpc;
-			top->count = 1;
-			top->link = *frompcindex;
-			*frompcindex = toindex;
-			goto done;
-		}
-		/*
-		 *	otherwise, check the next arc on the chain.
-		 */
-		prevtop = top;
-		top = &tos[top->link];
-		if (top->selfpc == selfpc) {
-			/*
-			 *	there it is.
-			 *	increment its count
-			 *	move it to the head of the chain.
-			 */
-			top->count++;
-			toindex = prevtop->link;
-			prevtop->link = top->link;
-			top->link = *frompcindex;
-			*frompcindex = toindex;
-			goto done;
-		}
+    monstartup (NULL, etext);
+#elif defined __sparc__
+    {
+      extern char _start[];
+      extern char _init[];
 
-	}
-done:
-	profiling--;
-	/* and fall through */
-out:
-	return;		/* normal return restores saved registers */
+      monstartup (_start < _init ? _start : _init, etext);
+    }
+#endif
+    atexit (_mcleanup);
+  }
+  /* Check that we are profiling and that we aren't recursively invoked.  */
+  if (profiling) {
+    goto out;
+  }
+  profiling++;
+  /* Check that frompcindex is a reasonable pc value.  For example: signal
+     catchers get called from the stack, not from text space.  too bad.  */
+  frompcindex = (unsigned short *) ((long) frompcindex - (long) s_lowpc);
+  if ((unsigned long) frompcindex > s_textsize) {
+    goto done;
+  }
+  frompcindex = &froms[((long) frompcindex) / (HASHFRACTION * sizeof (*froms))];
+  toindex = *frompcindex;
+  if (toindex == 0) {
+    /* First time traversing this arc.  */
+    toindex = ++tos[0].link;
+    if (toindex >= tolimit) {
+      goto overflow;
+    }
+    *frompcindex = toindex;
+    top = &tos[toindex];
+    top->selfpc = selfpc;
+    top->count = 1;
+    top->link = 0;
+    goto done;
+  }
+  top = &tos[toindex];
+  if (top->selfpc == selfpc) {
+    /* arc at front of chain; usual case.  */
+    top->count++;
+    goto done;
+  }
+  /* Have to go looking down chain for it.  Top points to what we are
+     looking at, prevtop points to previous top.  We know it is not at the
+     head of the chain.  */
+  for (; /* goto done */; ) {
+    if (top->link == 0) {
+      /* top is end of the chain and none of the chain had top->selfpc ==
+	 selfpc, so we allocate a new tostruct and link it to the head of
+	 the chain.  */
+      toindex = ++tos[0].link;
+      if (toindex >= tolimit) {
+	goto overflow;
+      }
+      top = &tos[toindex];
+      top->selfpc = selfpc;
+      top->count = 1;
+      top->link = *frompcindex;
+      *frompcindex = toindex;
+      goto done;
+    }
+    /* Otherwise, check the next arc on the chain.  */
+    prevtop = top;
+    top = &tos[top->link];
+    if (top->selfpc == selfpc) {
+      /* There it is.  Increment its count move it to the head of the
+	 chain.  */
+      top->count++;
+      toindex = prevtop->link;
+      prevtop->link = top->link;
+      top->link = *frompcindex;
+      *frompcindex = toindex;
+      goto done;
+    }
 
-overflow:
-	profiling++; /* halt further profiling */
-#   define	TOLIMIT	"mcount: tos overflow\n"
-	write(2, TOLIMIT, sizeof(TOLIMIT));
-	goto out;
+  }
+ done:
+  profiling--;
+  /* ... and fall through. */
+ out:
+  /* Normal return restores saved registers.  */
+  return;
+
+ overflow:
+  /* Halt further profiling.  */
+  profiling++;
+
+#define	TOLIMIT	"mcount: tos overflow\n"
+  write (STDERR_FILENO, TOLIMIT, sizeof (TOLIMIT));
+  goto out;
 }
 
-/*
- * Control profiling
- *	profiling is what mcount checks to see if
- *	all the data structures are ready.
- */
-static void moncontrol(int mode)
+/* Control profiling.  Profiling is what mcount checks to see if all the
+   data structures are ready.  */
+static void
+moncontrol (int mode)
 {
-    if (mode) {
-	/* start */
-	profil((unsigned short *)(sbuf + sizeof(struct phdr)),
-	       ssiz - sizeof(struct phdr),
-	       (size_t)s_lowpc, s_scale);
-
-	profiling = 0;
-    } else {
-	/* stop */
-	profil((unsigned short *)0, 0, 0, 0);
-	profiling = 3;
-    }
+  if (mode) {
+    /* Start.  */
+    profil ((unsigned short *) (sbuf + sizeof (struct phdr)),
+	    ssiz - sizeof (struct phdr), (size_t) s_lowpc, s_scale);
+    profiling = 0;
+  } else {
+    /* Stop.  */
+    profil ((unsigned short *) 0, 0, 0, 0);
+    profiling = 3;
+  }
 }
