@@ -474,6 +474,13 @@
 	* intl.c (get_spaces): New.
 	* intl.h (get_spaces): New.
 
+2009-12-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.ac (--with-specs): New option.
+	* configure: Regenerated.
+	* gcc.c (driver_self_specs): Include CONFIGURE_SPECS.
+	* Makefile.in (DRIVER_DEFINES): Add -DCONFIGURE_SPECS.
+
 2009-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/42369
