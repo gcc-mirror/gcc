@@ -1,5 +1,11 @@
 2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.host (i[34567]86-*-solaris2*): Add i386/t-crtfm to
+	tmake_file.
+	Add crtfastmath.o to extra_parts.
+
+2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/gmon-sol2.c: Reindent.
 	Cleanup comments.
 	Remove, correct casts.
