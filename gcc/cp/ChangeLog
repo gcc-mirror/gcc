@@ -1,3 +1,8 @@
+2011-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49253
+	* typeck2.c (build_x_arrow): Don't use build_min_nt.
+
 2010-05-31  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/48010
