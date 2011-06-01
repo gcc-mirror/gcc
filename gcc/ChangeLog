@@ -1,5 +1,23 @@
 2011-06-01  Diego Novillo  <dnovillo@google.com>
 
+	* lto-streamer-out.c (lto_output_ts_decl_with_vis_tree_pointers): Call
+	output_record_start with LTO_null instead of output_zero.
+	(lto_output_ts_binfo_tree_pointers): Likewise.
+	(lto_output_tree): Likewise.
+	(output_eh_try_list): Likewise.
+	(output_eh_region): Likewise.
+	(output_eh_lp): Likewise.
+	(output_eh_regions): Likewise.
+	(output_bb): Likewise.
+	(output_function): Likewise.
+	(output_unreferenced_globals): Likewise.
+	* lto-streamer.h (enum LTO_tags): Reserve MAX_TREE_CODES
+	instead of NUM_TREE_CODES.
+	(lto_tag_is_tree_code_p): Check max value against MAX_TREE_CODES.
+	(lto_output_int_in_range): Change << to >> when shifting VAL.
+
+2011-06-01  Diego Novillo  <dnovillo@google.com>
+
 	* lto-streamer-out.c (lto_output_ts_decl_non_common_tree_pointers):
 	Remove assertion for DECL_SAVED_TREE in FUNCTION_DECL nodes.
 
