@@ -101,7 +101,7 @@ namespace __profile
       : _Base(__l, __a) { }
 #endif
 
-      ~deque() { }
+      ~deque() _GLIBCXX_NOEXCEPT { }
 
       deque&
       operator=(const deque& __x)

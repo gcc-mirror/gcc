@@ -1,6 +1,6 @@
 // Debugging unordered_map/unordered_multimap implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -98,6 +98,8 @@ namespace __debug
       : _Base(__x), _Safe_base() { }
 
       unordered_map(unordered_map&& __x)
+      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
+	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_map(initializer_list<value_type> __l,
@@ -106,6 +108,8 @@ namespace __debug
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
       : _Base(__l, __n, __hf, __eql, __a), _Safe_base() { }
+
+      ~unordered_map() noexcept { }
 
       unordered_map&
       operator=(const unordered_map& __x)
@@ -385,7 +389,9 @@ namespace __debug
       unordered_multimap(const _Base& __x) 
       : _Base(__x), _Safe_base() { }
 
-      unordered_multimap(unordered_multimap&& __x) 
+      unordered_multimap(unordered_multimap&& __x)
+      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
+	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_multimap(initializer_list<value_type> __l,
@@ -394,6 +400,8 @@ namespace __debug
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
       : _Base(__l, __n, __hf, __eql, __a), _Safe_base() { }
+
+      ~unordered_multimap() noexcept { }
 
       unordered_multimap&
       operator=(const unordered_multimap& __x)

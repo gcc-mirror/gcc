@@ -106,7 +106,7 @@ namespace __debug
       : _Base(__x), _Safe_base() { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      list(list&& __x)
+      list(list&& __x) noexcept
       : _Base(std::move(__x)), _Safe_base()
       { this->_M_swap(__x); }
 
@@ -115,7 +115,7 @@ namespace __debug
         : _Base(__l, __a), _Safe_base() { }
 #endif
 
-      ~list() { }
+      ~list() _GLIBCXX_NOEXCEPT { }
 
       list&
       operator=(const list& __x)

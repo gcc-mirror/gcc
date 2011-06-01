@@ -465,7 +465,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       _Deque_base(_Deque_base&& __x)
-      : _M_impl(__x._M_get_Tp_allocator())
+      : _M_impl(std::move(__x._M_get_Tp_allocator()))
       {
 	_M_initialize_map(0);
 	if (__x._M_impl._M_map)
@@ -505,6 +505,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _Tp_alloc_type(__a), _M_map(0), _M_map_size(0),
 	  _M_start(), _M_finish()
 	{ }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	_Deque_impl(_Tp_alloc_type&& __a)
+	: _Tp_alloc_type(std::move(__a)), _M_map(0), _M_map_size(0),
+	  _M_start(), _M_finish()
+	{ }
+#endif
       };
 
       _Tp_alloc_type&
@@ -894,7 +901,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  themselves are pointers, the pointed-to memory is not touched in any
        *  way.  Managing the pointer is the user's responsibility.
        */
-      ~deque()
+      ~deque() _GLIBCXX_NOEXCEPT
       { _M_destroy_data(begin(), end(), _M_get_Tp_allocator()); }
 
       /**

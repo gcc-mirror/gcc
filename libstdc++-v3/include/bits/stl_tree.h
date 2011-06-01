@@ -450,6 +450,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_node_count(0)
 	  { _M_initialize(); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	  _Rb_tree_impl(const _Key_compare& __comp, _Node_allocator&& __a)
+	  : _Node_allocator(std::move(__a)), _M_key_compare(__comp),
+	    _M_header(), _M_node_count(0)
+	  { _M_initialize(); }
+#endif
+
 	private:
 	  void
 	  _M_initialize()
@@ -635,7 +642,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Rb_tree(_Rb_tree&& __x);
 #endif
 
-      ~_Rb_tree()
+      ~_Rb_tree() _GLIBCXX_NOEXCEPT
       { _M_erase(_M_begin()); }
 
       _Rb_tree&
@@ -900,7 +907,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            typename _Compare, typename _Alloc>
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     _Rb_tree(_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&& __x)
-    : _M_impl(__x._M_impl._M_key_compare, __x._M_get_Node_allocator())
+    : _M_impl(__x._M_impl._M_key_compare,
+	      std::move(__x._M_get_Node_allocator()))
     {
       if (__x._M_root() != 0)
 	{

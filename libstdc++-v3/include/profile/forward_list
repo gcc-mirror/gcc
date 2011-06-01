@@ -83,7 +83,7 @@ namespace __profile
       : _Base(__list)
       { }
 
-      forward_list(forward_list&& __list)
+      forward_list(forward_list&& __list) noexcept
       : _Base(std::move(__list)) { }
 
       forward_list(std::initializer_list<_Tp> __il,
@@ -91,7 +91,7 @@ namespace __profile
       : _Base(__il, __al)
       { }
 
-      ~forward_list()
+      ~forward_list() noexcept
       { }
 
       forward_list&

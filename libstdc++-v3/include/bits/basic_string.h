@@ -530,7 +530,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief  Destroy the string instance.
        */
-      ~basic_string()
+      ~basic_string() _GLIBCXX_NOEXCEPT
       { _M_rep()->_M_dispose(this->get_allocator()); }
 
       /**

@@ -192,6 +192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  The contents of @a x are a valid, but unspecified %multiset.
        */
       multiset(multiset&& __x)
+      noexcept(is_nothrow_copy_constructible<_Compare>::value)
       : _M_t(std::move(__x._M_t)) { }
 
       /**

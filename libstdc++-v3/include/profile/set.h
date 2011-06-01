@@ -82,6 +82,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       set(set&& __x)
+      noexcept(is_nothrow_copy_constructible<_Compare>::value)
       : _Base(std::move(__x))
       { }
 
@@ -91,7 +92,7 @@ namespace __profile
       : _Base(__l, __comp, __a) { }
 #endif
 
-      ~set() { }
+      ~set() _GLIBCXX_NOEXCEPT { }
 
       set&
       operator=(const set& __x)
