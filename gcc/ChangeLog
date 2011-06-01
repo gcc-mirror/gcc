@@ -1,3 +1,10 @@
+2011-06-01  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-utils.c (searchc_env): New field allow_overwritable.
+	(searchc): do not ignore edges to overwritable nodes if indicated
+	by env->allow_overwritable.
+	(ipa_reduced_postorder): Set env.allow_overwritable.
+
 2011-06-01  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (free_lang_data): Do not reset boolean_type_node nor
