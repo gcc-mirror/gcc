@@ -1,5 +1,11 @@
 2011-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (compare_loc_descriptor, scompare_loc_descriptor,
+	ucompare_loc_descriptor, minmax_loc_descriptor, clz_loc_descriptor,
+	popcount_loc_descriptor, bswap_loc_descriptor, rotate_loc_descriptor):
+	New functions.
+	(mem_loc_descriptor): Use them.
+
 	* var-tracking.c (create_entry_value): New function.
 	(vt_add_function_parameter): Use it.
 
