@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "plugin.h"
 #include "ipa-utils.h"
+#include "tree-pretty-print.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -1637,21 +1638,7 @@ pass_init_dump_file (struct opt_pass *pass)
       dump_file_name = get_dump_file_name (pass->static_pass_number);
       dump_file = dump_begin (pass->static_pass_number, &dump_flags);
       if (dump_file && current_function_decl)
-	{
-	  const char *dname, *aname;
-	  struct cgraph_node *node = cgraph_get_node (current_function_decl);
-	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
-	  aname = (IDENTIFIER_POINTER
-		   (DECL_ASSEMBLER_NAME (current_function_decl)));
-	  fprintf (dump_file, "\n;; Function %s (%s)%s\n\n", dname, aname,
-	     node->frequency == NODE_FREQUENCY_HOT
-	     ? " (hot)"
-	     : node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
-	     ? " (unlikely executed)"
-	     : node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-	     ? " (executed once)"
-	     : "");
-	}
+        dump_function_header (dump_file, current_function_decl);
       return initializing_dump;
     }
   else
