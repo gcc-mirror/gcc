@@ -1,3 +1,8 @@
+2011-06-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/attributes/method-nonnull-1.m: New test.
+	* obj-c++.dg/attributes/method-nonnull-1.mm: New test.	
+
 2011-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

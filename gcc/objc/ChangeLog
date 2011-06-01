@@ -1,3 +1,8 @@
+2011-06-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_decl_method_attributes): Implement nonnull
+	attribute for Objective-C methods.
+
 2011-05-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* config-lang.in (gtfiles): Updated order of files to fix building
