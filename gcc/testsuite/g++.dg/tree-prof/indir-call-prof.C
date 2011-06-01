@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-tree_profile_ipa" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fdump-ipa-profile" } */
 
 struct A {
   A () {}
@@ -33,7 +33,7 @@ main (void)
   return 0;
 }
 
-/* { dg-final-use { scan-ipa-dump "Indirect call -> direct call.* AA transformation on insn" "tree_profile_ipa" } } */
+/* { dg-final-use { scan-ipa-dump "Indirect call -> direct call.* AA transformation on insn" "profile" } } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized" } } */
 /* { dg-final-use { cleanup-tree-dump "optimized" } } */
-/* { dg-final-use { cleanup-ipa-dump "tree_profile_ipa" } } */
+/* { dg-final-use { cleanup-ipa-dump "profile" } } */

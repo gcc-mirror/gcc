@@ -1145,7 +1145,7 @@ struct ipa_opt_pass_d pass_ipa_profile =
 {
  {
   IPA_PASS,
-  "ipa-profile",			/* name */
+  "profile_estimate",			/* name */
   gate_ipa_profile,			/* gate */
   ipa_profile,			        /* execute */
   NULL,					/* sub */

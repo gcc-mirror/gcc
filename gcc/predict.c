@@ -2306,7 +2306,7 @@ struct gimple_opt_pass pass_profile =
 {
  {
   GIMPLE_PASS,
-  "profile",				/* name */
+  "profile_estimate",			/* name */
   gate_estimate_probability,		/* gate */
   tree_estimate_probability_driver,	/* execute */
   NULL,					/* sub */

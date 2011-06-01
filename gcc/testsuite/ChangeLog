@@ -1,3 +1,24 @@
+2011-06-01  David Li  <davidxl@google.com>
+
+	* testsuite/gcc.dg/profile-dir-1.c: Change pass name.
+	* testsuite/gcc.dg/profile-dir-2.c: Ditto.
+	* testsuite/gcc.dg/tree-ssa/dump-1.c: Ditto.
+	* testsuite/gcc.dg/tree-ssa/loop-25.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/stringop-1.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/update-loopch.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/stringop-2.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/ic-misattribution-1.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/ic-misattribution-1a.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/indir-call-prof.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/val-prof-1.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/val-prof-2.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/val-prof-3.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/val-prof-4.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/val-prof-5.c: Ditto.
+	* testsuite/gcc.dg/tree-prof/val-prof-7.c: Ditto.
+	* testsuite/gcc.dg/profile-dir-3.c: Ditto.
+	* testsuite/g++.dg/tree-prof/indir-call-prof.C: Ditto.
+
 2011-06-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/attributes/method-nonnull-1.m: New test.
