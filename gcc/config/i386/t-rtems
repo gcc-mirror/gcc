@@ -1,4 +1,5 @@
-# Copyright (C) 2004, 2011 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2001, 2002, 2005, 2007, 2011
+# Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -15,7 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
+#
 
-MULTILIB_OPTIONS = m32/m64
-MULTILIB_DIRNAMES = 32 amd64
-MULTILIB_OSDIRNAMES = . amd64
+MULTILIB_OPTIONS = mtune=i486/mtune=pentium/mtune=pentiumpro \
+msoft-float
+MULTILIB_DIRNAMES= m486 mpentium mpentiumpro soft-float
+MULTILIB_MATCHES = msoft-float=mno-m80387
+MULTILIB_MATCHES += mtune?pentium=mtune?k6 mtune?pentiumpro=mtune?mathlon
+MULTILIB_EXCEPTIONS = \
+mtune=pentium/*msoft-float* \
+mtune=pentiumpro/*msoft-float*

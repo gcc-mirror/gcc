@@ -1,2 +1,0 @@
-# To keep DRIVER_DEFINES correct.
-SHLIB_LINK = dummy

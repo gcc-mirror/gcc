@@ -1,0 +1,4 @@
+crti.o: $(srcdir)/config/$(cpu_type)/sol2-ci.S
+	$(crt_compile) -c $<
+crtn.o: $(srcdir)/config/$(cpu_type)/sol2-cn.S
+	$(crt_compile) -c $<

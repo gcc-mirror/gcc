@@ -2,6 +2,3 @@ MULTILIB_OPTIONS = m32/m64
 MULTILIB_DIRNAMES = sparcv8plus sparcv9
 MULTILIB_MATCHES =
 MULTILIB_OSDIRNAMES = . sparcv9
-
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib

@@ -1,3 +1,47 @@
+2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/t-slibgcc-darwin: Move to ...
+	* config/t-slibgcc-dummy: .. this.
+	Clarify comments.
+	* config.gcc (i[34567]86-*-darwin*, x86_64-*-darwin*,
+	powerpc-*-darwin*, powerpc64-*-darwin*): Reflect this.
+	(i[3456x]86-*-netware*): Add t-slibgcc-dummy to tmake_file.
+	(i[34567]86-*-rtems*): Remove extra_parts.
+	Use i386/t-rtems.
+	Remove i386/t-crtstuff from tmake_file.
+	(i[34567]86-*-solaris2*): Remove t-svr4,
+	t-slibgcc-elf-ver, t-slibgcc-sld from tmake_file, add
+	t-slibgcc-dummy.
+	(sparc-*-elf*, sparc64-*-elf*): Remove tmake_file, extra_parts.
+	(sparc-*-rtems*, sparc64-*-rtems*): Remove sparc/t-crtin,
+	sparc/t-crtfm from tmake_file.
+	(sparc*-*-solaris2*): Remove sparc/t-sol2, sparc/t-crtfm,
+	t-slibgcc-elf-ver, t-slibgcc-sld, add t-slibgcc-dummy.
+	Remove extra_parts.
+	* config/t-sol2 (TARGET_LIBGCC2_CFLAGS): Define.
+	* config/i386/t-nwld (SHLIB_LINK): Remove.
+	* config/i386/t-rtems-i386: Rename to ...
+	* config/i386/t-rtems: ... this.
+	($(T)crti.o, $(T)crtn.o): Remove.
+	(FPBIT, DPBIT, LIB2FUNCS_EXTRA): Remove.
+	(dp-bit.c, fp-bit.c, xp-bit.c): Remove.
+	(EXTRA_MULTILIB_PARTS, LIBGCC, INSTALL_LIBGCC): Remove.
+	* config/i386/t-sol2-10 (LIBGCC, INSTALL_LIBGCC,
+	EXTRA_MULTILIB_PARTS): Remove.
+	* config/sparc/t-sol2-64: Likewise.
+	* config/sparc/t-sol2: Remove.
+	* config/sparc/t-crtin: Remove.
+	* config/sparc/gmon-sol2.c: Move to ../libgcc/config.
+	* config/i386/gmon-sol2.c: Remove.
+	* config/i386/sol2-c1.asm: Move to ../libgcc/config/i386/sol2-c1.S.
+	* config/i386/sol2-ci.asm: Move to ../libgcc/config/i386/sol2-ci.S.
+	* config/i386/sol2-cn.asm: Move to ../libgcc/config/i386/sol2-cn.S.
+	* config/i386/sol2-gc1.asm: Remove.
+	* config/sparc/sol2-c1.asm: Move to ../libgcc/config/sparc/sol2-c1.S.
+	* config/sparc/sol2-ci.asm: Move to ../libgcc/config/sparc/sol2-ci.S.
+	* config/sparc/sol2-cn.asm: Move to ../libgcc/config/sparc/sol2-cn.S.
+	* config/t-slibgcc-sld: Remove.
+
 2011-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor) <do_ucompare>: Call

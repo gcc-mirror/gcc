@@ -1,0 +1,4 @@
+# Build a shared libgcc library for ELF with symbol versioning.
+
+SHLIB_MKMAP = $(gcc_srcdir)/mkmap-symver.awk
+SHLIB_MAPFILES = libgcc-std.ver

@@ -1,0 +1,5 @@
+# Build a shared libgcc library for ELF with symbol versioning
+# with the GNU linker.
+
+SHLIB_LDFLAGS = -Wl,--soname=$(SHLIB_SONAME) \
+	-Wl,--version-script=$(SHLIB_MAP)

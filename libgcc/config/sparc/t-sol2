@@ -3,11 +3,4 @@
 # to produce a shared library, but since we don't know ahead of time when
 # we will be doing that, we just always use -fPIC when compiling the
 # routines in crtstuff.c.
-#
-# We must also enable optimization to avoid having any code appear after
-# the call & alignment statement, but before we switch back to the
-# .text section.
-CRTSTUFF_T_CFLAGS = -fPIC -O2
-
-# Add support for the introduction of 128-bit long double.
-SHLIB_MAPFILES += $(srcdir)/config/i386/libgcc-sol2.ver
+CRTSTUFF_T_CFLAGS = -fPIC

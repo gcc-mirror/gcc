@@ -16,24 +16,19 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Solaris-specific format checking and pragmas
-sol2-c.o: $(srcdir)/config/sol2-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  tree.h c-family/c-format.h $(C_PRAGMA_H) $(C_COMMON_H) $(CPPLIB_H) \
-  intl.h $(TM_H) $(TM_P_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  $(srcdir)/config/sol2-c.c
-
-# Solaris-specific attributes
-sol2.o: $(srcdir)/config/sol2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  tree.h output.h $(TM_H) $(TARGET_H) $(TM_P_H) $(GGC_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  $(srcdir)/config/sol2.c
-
-# This is required by gcc/ada/gcc-interface/Makefile.in.
-TARGET_LIBGCC2_CFLAGS = -fPIC
-
 # Use unwind-dw2-fde-glibc.c.  Unless linker support and dl_iterate_phdr
 # are present, automatically falls back to unwind-dw2-fde.c.
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-glibc.c \
   $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
-LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h unwind-dw2-fde.c
+
+# gmon build rule:
+gmon.o:	$(srcdir)/config/gmon-sol2.c
+	$(gcc_compile) -c $<
+
+# Assemble startup files.
+crt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
+	$(crt_compile) -c $<
+gcrt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
+	$(crt_compile) -c -DGCRT1 $<
+
+HOST_LIBGCC2_CFLAGS = -fPIC
