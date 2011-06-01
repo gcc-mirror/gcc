@@ -5052,6 +5052,7 @@ add_uses (rtx *ploc, void *data)
 	  if (MEM_P (vloc)
 	      && !REG_P (XEXP (vloc, 0))
 	      && !MEM_P (XEXP (vloc, 0))
+	      && GET_CODE (XEXP (vloc, 0)) != ENTRY_VALUE
 	      && (GET_CODE (XEXP (vloc, 0)) != PLUS
 		  || XEXP (XEXP (vloc, 0), 0) != cfa_base_rtx
 		  || !CONST_INT_P (XEXP (XEXP (vloc, 0), 1))))
@@ -5130,6 +5131,7 @@ add_uses (rtx *ploc, void *data)
 	  if (MEM_P (oloc)
 	      && !REG_P (XEXP (oloc, 0))
 	      && !MEM_P (XEXP (oloc, 0))
+	      && GET_CODE (XEXP (oloc, 0)) != ENTRY_VALUE
 	      && (GET_CODE (XEXP (oloc, 0)) != PLUS
 		  || XEXP (XEXP (oloc, 0), 0) != cfa_base_rtx
 		  || !CONST_INT_P (XEXP (XEXP (oloc, 0), 1))))
@@ -5383,6 +5385,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
       if (MEM_P (loc) && type == MO_VAL_SET
 	  && !REG_P (XEXP (loc, 0))
 	  && !MEM_P (XEXP (loc, 0))
+	  && GET_CODE (XEXP (loc, 0)) != ENTRY_VALUE
 	  && (GET_CODE (XEXP (loc, 0)) != PLUS
 	      || XEXP (XEXP (loc, 0), 0) != cfa_base_rtx
 	      || !CONST_INT_P (XEXP (XEXP (loc, 0), 1))))
