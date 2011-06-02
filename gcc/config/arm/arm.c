@@ -856,48 +856,73 @@ const struct tune_params arm_slowmul_tune =
 {
   arm_slowmul_rtx_costs,
   NULL,
-  3,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  3,						/* Constant limit.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true						/* Prefer constant pool.  */
 };
 
 const struct tune_params arm_fastmul_tune =
 {
   arm_fastmul_rtx_costs,
   NULL,
-  1,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  1,						/* Constant limit.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true						/* Prefer constant pool.  */
 };
 
 const struct tune_params arm_xscale_tune =
 {
   arm_xscale_rtx_costs,
   xscale_sched_adjust_cost,
-  2,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  2,						/* Constant limit.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true						/* Prefer constant pool.  */
 };
 
 const struct tune_params arm_9e_tune =
 {
   arm_9e_rtx_costs,
   NULL,
-  1,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  1,						/* Constant limit.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true						/* Prefer constant pool.  */
+};
+
+const struct tune_params arm_v6t2_tune =
+{
+  arm_9e_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  false						/* Prefer constant pool.  */
+};
+
+/* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
+const struct tune_params arm_cortex_tune =
+{
+  arm_9e_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  false						/* Prefer constant pool.  */
 };
 
 const struct tune_params arm_cortex_a9_tune =
 {
   arm_9e_rtx_costs,
   cortex_a9_sched_adjust_cost,
-  1,
-  ARM_PREFETCH_BENEFICIAL(4,32,32)
+  1,						/* Constant limit.  */
+  ARM_PREFETCH_BENEFICIAL(4,32,32),
+  false						/* Prefer constant pool.  */
 };
 
 const struct tune_params arm_fa726te_tune =
 {
   arm_9e_rtx_costs,
   fa726te_sched_adjust_cost,
-  1,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  1,						/* Constant limit.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true						/* Prefer constant pool.  */
 };
 
 
