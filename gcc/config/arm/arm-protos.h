@@ -225,6 +225,7 @@ struct tune_params
   int l1_cache_size;
   int l1_cache_line_size;
   bool prefer_constant_pool;
+  int (*branch_cost) (bool, bool);
 };
 
 extern const struct tune_params *current_tune;
