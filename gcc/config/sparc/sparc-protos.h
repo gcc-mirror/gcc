@@ -60,6 +60,7 @@ extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern rtx sparc_legitimize_reload_address (rtx, enum machine_mode, int, int,
 					    int, int *win);
+extern void load_got_register (void);
 extern void sparc_emit_call_insn (rtx, rtx);
 extern void sparc_defer_case_vector (rtx, rtx, int);
 extern bool sparc_expand_move (enum machine_mode, rtx *);

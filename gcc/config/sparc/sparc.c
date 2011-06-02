@@ -387,7 +387,6 @@ static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
 static int set_extends (rtx);
-static void load_got_register (void);
 static int save_or_restore_regs (int, int, rtx, int, int);
 static void emit_save_or_restore_regs (int);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
@@ -464,6 +463,7 @@ static void sparc_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void sparc_file_end (void);
 static bool sparc_frame_pointer_required (void);
 static bool sparc_can_eliminate (const int, const int);
+static rtx sparc_builtin_setjmp_frame_value (void);
 static void sparc_conditional_register_usage (void);
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 static const char *sparc_mangle_type (const_tree);
@@ -650,8 +650,12 @@ static const struct default_options sparc_option_optimization_table[] =
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED sparc_frame_pointer_required
 
+#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
+#define TARGET_BUILTIN_SETJMP_FRAME_VALUE sparc_builtin_setjmp_frame_value
+
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE sparc_can_eliminate
+
 #undef  TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS sparc_preferred_reload_class
 
@@ -3770,7 +3774,7 @@ gen_load_pcrel_sym (rtx op0, rtx op1, rtx op2, rtx op3)
 
 /* Emit code to load the GOT register.  */
 
-static void
+void
 load_got_register (void)
 {
   /* In PIC mode, this will retrieve pic_offset_table_rtx.  */
@@ -9801,7 +9805,7 @@ sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
 
 /* Implement TARGET_FRAME_POINTER_REQUIRED.  */
 
-bool
+static bool
 sparc_frame_pointer_required (void)
 {
   return !(current_function_is_leaf && only_leaf_regs_used ());
@@ -9812,11 +9816,18 @@ sparc_frame_pointer_required (void)
    in that case.  But the test in update_eliminables doesn't know we are
    assuming below that we only do the former elimination.  */
 
-bool
+static bool
 sparc_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
-  return (to == HARD_FRAME_POINTER_REGNUM
-          || !targetm.frame_pointer_required ());
+  return to == HARD_FRAME_POINTER_REGNUM || !sparc_frame_pointer_required ();
+}
+
+/* Return the hard frame pointer directly to bypass the stack bias.  */
+
+static rtx
+sparc_builtin_setjmp_frame_value (void)
+{
+  return hard_frame_pointer_rtx;
 }
 
 /* If !TARGET_FPU, then make the fp registers and fp cc regs fixed so that
