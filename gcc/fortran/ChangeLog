@@ -1,3 +1,13 @@
+2011-06-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/45786
+	* interface.c (gfc_equivalent_op):  New function.
+	(gfc_check_interface):  Use gfc_equivalent_op instead
+	of switch statement.
+	* decl.c (access_attr_decl):  Also set access to an
+	equivalent operator.
+
 2011-04-28  Release Manager
 
 	* GCC 4.5.3 released.
