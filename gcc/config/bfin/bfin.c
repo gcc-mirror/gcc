@@ -2110,6 +2110,8 @@ bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
  
   this_func = cgraph_local_info (current_function_decl);
   called_func = cgraph_local_info (decl);
+  if (!called_func)
+    return false;
   return !called_func->local || this_func->local;
 }
 

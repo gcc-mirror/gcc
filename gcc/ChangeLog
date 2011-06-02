@@ -1,3 +1,9 @@
+2011-06-02  Stuart Henderson  <shenders@gcc.gnu.org>
+
+	PR target/48807
+	* config/bfin/bfin.c (bfin_function_ok_for_sibcall): Check return value
+	of cgraph_local_info for null before attempting to use it.
+
 2011-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.h (struct stack_usage): Remove dynamic_alloc_count field.
