@@ -1,3 +1,11 @@
+2011-06-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/49265
+	* decl.c (gfc_match_modproc):  Allow for a double colon in a module
+	procedure statement.
+	* parse.c ( decode_statement): Deal with whitespace around :: in
+	gfc_match_modproc.
+ 
 2011-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
