@@ -1639,9 +1639,6 @@ do {									   \
    but a CALL with constant address is cheap.  */
 #define NO_FUNCTION_CSE
 
-/* alloca should avoid clobbering the old register save area.  */
-#define SETJMP_VIA_SAVE_AREA
-
 /* The _Q_* comparison libcalls return booleans.  */
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)
 

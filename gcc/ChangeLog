@@ -12,6 +12,7 @@
 	* postreload-gcse.c (bb_has_well_behaved_predecessors): Return false
 	for a block with a single abnormal incoming edge.
 	* config/sparc/sparc.h (STACK_SAVEAREA_MODE): Define.
+	(SETJMP_VIA_SAVE_AREA): Delete.
 	* config/sparc/sparc-protos.h (load_got_register): Declare.
 	* config/sparc/sparc.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Define.
 	(load_got_register): Make global.
