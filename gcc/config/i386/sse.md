@@ -3804,15 +3804,15 @@
     operands[2] = force_reg (V2DFmode, operands[2]);
 })
 
-(define_insn "*sse3_interleave_highv2df"
-  [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,x,x,x,m")
+(define_insn "*vec_interleave_highv2df"
+  [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,Y3,x,x,m")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
-	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,x,o,o,o,x")
-	    (match_operand:V2DF 2 "nonimmediate_operand" " x,x,1,0,x,0"))
+	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,x,o ,o,o,x")
+	    (match_operand:V2DF 2 "nonimmediate_operand" " x,x,1 ,0,x,0"))
 	  (parallel [(const_int 1)
 		     (const_int 3)])))]
-  "TARGET_SSE3 && ix86_vec_interleave_v2df_operator_ok (operands, 1)"
+  "TARGET_SSE2 && ix86_vec_interleave_v2df_operator_ok (operands, 1)"
   "@
    unpckhpd\t{%2, %0|%0, %2}
    vunpckhpd\t{%2, %1, %0|%0, %1, %2}
@@ -3825,23 +3825,6 @@
    (set_attr "prefix_data16" "*,*,*,1,*,1")
    (set_attr "prefix" "orig,vex,maybe_vex,orig,vex,maybe_vex")
    (set_attr "mode" "V2DF,V2DF,V2DF,V1DF,V1DF,V1DF")])
-
-(define_insn "*sse2_interleave_highv2df"
-  [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,m")
-	(vec_select:V2DF
-	  (vec_concat:V4DF
-	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,o,x")
-	    (match_operand:V2DF 2 "nonimmediate_operand" " x,0,0"))
-	  (parallel [(const_int 1)
-		     (const_int 3)])))]
-  "TARGET_SSE2 && ix86_vec_interleave_v2df_operator_ok (operands, 1)"
-  "@
-   unpckhpd\t{%2, %0|%0, %2}
-   movlpd\t{%H1, %0|%0, %H1}
-   movhpd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "sselog,ssemov,ssemov")
-   (set_attr "prefix_data16" "*,1,1")
-   (set_attr "mode" "V2DF,V1DF,V1DF")])
 
 ;; Recall that the 256-bit unpck insns only shuffle within their lanes.
 (define_expand "avx_movddup256"
@@ -3923,15 +3906,15 @@
     operands[1] = force_reg (V2DFmode, operands[1]);
 })
 
-(define_insn "*sse3_interleave_lowv2df"
-  [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,x,x,x,o")
+(define_insn "*vec_interleave_lowv2df"
+  [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,Y3,x,x,o")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
-	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,x,m,0,x,0")
-	    (match_operand:V2DF 2 "nonimmediate_operand" " x,x,1,m,m,x"))
+	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,x,m ,0,x,0")
+	    (match_operand:V2DF 2 "nonimmediate_operand" " x,x,1 ,m,m,x"))
 	  (parallel [(const_int 0)
 		     (const_int 2)])))]
-  "TARGET_SSE3 && ix86_vec_interleave_v2df_operator_ok (operands, 0)"
+  "TARGET_SSE2 && ix86_vec_interleave_v2df_operator_ok (operands, 0)"
   "@
    unpcklpd\t{%2, %0|%0, %2}
    vunpcklpd\t{%2, %1, %0|%0, %1, %2}
@@ -3944,23 +3927,6 @@
    (set_attr "prefix_data16" "*,*,*,1,*,1")
    (set_attr "prefix" "orig,vex,maybe_vex,orig,vex,maybe_vex")
    (set_attr "mode" "V2DF,V2DF,V2DF,V1DF,V1DF,V1DF")])
-
-(define_insn "*sse2_interleave_lowv2df"
-  [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,o")
-	(vec_select:V2DF
-	  (vec_concat:V4DF
-	    (match_operand:V2DF 1 "nonimmediate_operand" " 0,0,0")
-	    (match_operand:V2DF 2 "nonimmediate_operand" " x,m,x"))
-	  (parallel [(const_int 0)
-		     (const_int 2)])))]
-  "TARGET_SSE2 && ix86_vec_interleave_v2df_operator_ok (operands, 0)"
-  "@
-   unpcklpd\t{%2, %0|%0, %2}
-   movhpd\t{%2, %0|%0, %2}
-   movlpd\t{%2, %H0|%H0, %2}"
-  [(set_attr "type" "sselog,ssemov,ssemov")
-   (set_attr "prefix_data16" "*,1,1")
-   (set_attr "mode" "V2DF,V1DF,V1DF")])
 
 (define_split
   [(set (match_operand:V2DF 0 "memory_operand" "")
