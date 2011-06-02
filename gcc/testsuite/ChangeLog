@@ -1,3 +1,8 @@
+2011-06-02  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/37039
+	* gfortran.dg/PR37039.f90: New test.
+
 2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/48539
