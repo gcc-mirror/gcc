@@ -1,3 +1,13 @@
+2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/48539
+	* objc.dg/method-5.m: Updated.	
+	* objc.dg/method-19.m: Updated.
+	* objc.dg/method-lookup-1.m: New.	
+	* obj-c++.dg/method-6.mm: Updated.
+	* obj-c++.dg/method-7.mm: Updated.
+	* obj-c++.dg/method-lookup-1.mm: New.	
+
 2011-06-02  DJ Delorie  <dj@redhat.com>
 
 	* lib/timeout.exp (timeout): Add board_info support.
