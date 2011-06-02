@@ -193,12 +193,12 @@
 	(lto_preload_common_nodes): Explicitly skip preloading nodes
 	that differ between frontends.
 
-2011-05-31  Pat Haugen <pthaugen@us.ibm.com>
+2011-05-31  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.h (REG_CLASS_CONTENTS): Remove vr0..vr2 from
 	NON_FLOAT_REGS.
 
-2011-05-31  Pat Haugen <pthaugen@us.ibm.com>
+2011-05-31  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_register_move_cost): Preserve from
 	parameter value for dump. Dump cost on outermost call only.
@@ -627,7 +627,7 @@
 	as TS_TYPED instead of TS_COMMON.
 
 2011-05-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
-	    Uros Bizjak <ubizjak@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (gcc_cv_as_ix86_tlsgdplt): Check for @tlsgdplt
 	(HAVE_AS_IX86_TLSGDPTL): Define.
@@ -740,7 +740,7 @@
 	* lto-section-out.h (bp_pack_val_len_unsigned, bp_pack_val_len_int):
 	New functions.
 
-2011-05-27  Hariharan Sandanagobalane <hariharan@picochip.com>
+2011-05-27  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (reorder_var_tracking_notes): Drop
 	call_arg_location instructions down the floor.
@@ -775,7 +775,7 @@
 	Add chain field.
 	(BLOCK_CHAIN): Use new chain field.
 
-2011-05-26  Pat Haugen <pthaugen@us.ibm.com>
+2011-05-26  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_register_move_cost): Make LR/CTR
 	moves expensive on Power7 also.
@@ -813,7 +813,7 @@
 	* config/sparc/sparc.c (sparc_solaris_elf_asm_named_section): Wrap
 	declaration in TARGET_SOLARIS.
 
-2011-05-26  Hariharan Sandanagobalane <hariharan@picochip.com>
+2011-05-26  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.md (cbranchhi4): No :CC for match_operator.
 	The instruction is then expanded explicitly.
@@ -1639,8 +1639,9 @@
 2011-05-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/49002
-	* config/i386/sse.md (avx_<ssemodesuffix><avxsizesuffix>_<ssemodesuffix>):
-	Properly handle load cast.
+	* config/i386/sse.md
+	(avx_<ssemodesuffix><avxsizesuffix>_<ssemodesuffix>): Properly handle
+	load cast.
 
 2011-05-18  Jakub Jelinek  <jakub@redhat.com>
 
@@ -4496,7 +4497,6 @@
 	* tree-ssa.c (warn_uninit): Add one more parameter.
 	(warn_uninitialized_var): Pass warning code.
 	* tree-flow.h: Interface change.
-
 
 2011-04-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
