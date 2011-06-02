@@ -1,5 +1,11 @@
 2011-06-02  Julian Brown  <julian@codesourcery.com>
 
+	* config/arm/arm-cores.def (cortex-a5): Use cortex_a5 tuning.
+	* config/arm/arm.c (arm_cortex_a5_branch_cost): New.
+	(arm_cortex_a5_tune): New.
+
+2011-06-02  Julian Brown  <julian@codesourcery.com>
+
 	* config/arm/arm-protos.h (tune_params): Add branch_cost hook.
 	* config/arm/arm.c (arm_default_branch_cost): New.
 	(arm_slowmul_tune, arm_fastmul_tune, arm_xscale_tune, arm_9e_tune)
