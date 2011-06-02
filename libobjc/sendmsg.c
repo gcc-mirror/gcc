@@ -977,16 +977,8 @@ __objc_forward (id object, SEL sel, arglist_t args)
 	      : "instance" ),
              object->class_pointer->name, sel_getName (sel));
 
-    /* TODO: support for error: is surely deprecated ? */
-    err_sel = sel_get_any_uid ("error:");
-    if (__objc_responds_to (object, err_sel))
-      {
-	imp = get_implementation (object, object->class_pointer, err_sel);
-	return (*imp) (object, sel_get_any_uid ("error:"), msg);
-      }
-
-    /* The object doesn't respond to doesNotRecognize: or error:;
-       Therefore, a default action is taken.  */
+    /* The object doesn't respond to doesNotRecognize:.  Therefore, a
+       default action is taken.  */
     _objc_abort ("%s\n", msg);
 
     return 0;

@@ -48,11 +48,6 @@
 + (struct objc_method_description *)descriptionForInstanceMethod:(SEL)aSel;
 - (struct objc_method_description *)descriptionForMethod:(SEL)aSel;
 
-/* Sending messages determined at run time */
-- perform:(SEL)aSel;
-- perform:(SEL)aSel with:anObject;
-- perform:(SEL)aSel with:anObject1 with:anObject2;
-
 /* Forwarding */
 - (retval_t)forward:(SEL)aSel :(arglist_t)argFrame;
 - (retval_t)performv:(SEL)aSel :(arglist_t)argFrame;
@@ -60,15 +55,6 @@
 /* Posing */
 + poseAs:(Class)aClassObject;
 - (Class)transmuteClassTo:(Class)aClassObject;
-
-/* Enforcing intentions */
-- subclassResponsibility:(SEL)aSel;
-- notImplemented:(SEL)aSel;
-- shouldNotImplement:(SEL)aSel;
-
-/* Error handling */
-- doesNotRecognize:(SEL)aSel;
-- error:(const char *)aString, ...;
 
 /* Archiving */
 + (int)version;

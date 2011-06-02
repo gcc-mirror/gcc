@@ -248,30 +248,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
             :class_get_class_method(self->isa, aSel)));
 }
 
-- perform:(SEL)aSel
-{
-  IMP msg = objc_msg_lookup(self, aSel);
-  if (!msg)
-    return [self error:"invalid selector passed to %s", sel_get_name(_cmd)];
-  return (*msg)(self, aSel);
-}
-
-- perform:(SEL)aSel with:anObject
-{
-  IMP msg = objc_msg_lookup(self, aSel);
-  if (!msg)
-    return [self error:"invalid selector passed to %s", sel_get_name(_cmd)];
-  return (*msg)(self, aSel, anObject);
-}
-
-- perform:(SEL)aSel with:anObject1 with:anObject2
-{
-  IMP msg = objc_msg_lookup(self, aSel);
-  if (!msg)
-    return [self error:"invalid selector passed to %s", sel_get_name(_cmd)];
-  return (*msg)(self, aSel, anObject1, anObject2);
-}
-
 - (retval_t)forward:(SEL)aSel :(arglist_t)argFrame
 {
   (void) argFrame; /* UNUSED */
@@ -300,45 +276,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
             return old_isa;
           }
   return nil;
-}
-
-- subclassResponsibility:(SEL)aSel
-{
-  return [self error:"subclass should override %s", sel_get_name(aSel)];
-}
-
-- notImplemented:(SEL)aSel
-{
-  return [self error:"method %s not implemented", sel_get_name(aSel)];
-}
-
-- shouldNotImplement:(SEL)aSel
-{
-  return [self error:"%s should not implement %s", 
-	             object_get_class_name(self), sel_get_name(aSel)];
-}
-
-- doesNotRecognize:(SEL)aSel
-{
-  return [self error:"%s does not recognize %s",
-                     object_get_class_name(self), sel_get_name(aSel)];
-}
-
-- error:(const char *)aString, ...
-{
-#define FMT "error: %s (%s)\n%s\n"
-  char fmt[(strlen((char*)FMT)+strlen((char*)object_get_class_name(self))
-            +((aString!=NULL)?strlen((char*)aString):0)+8)];
-  va_list ap;
-
-  sprintf(fmt, FMT, object_get_class_name(self),
-                    object_is_instance(self)?"instance":"class",
-                    (aString!=NULL)?aString:"");
-  va_start(ap, aString);
-  objc_verror(self, OBJC_ERR_UNKNOWN, fmt, ap);
-  va_end(ap);
-  return nil;
-#undef FMT
 }
 
 + (int)version
