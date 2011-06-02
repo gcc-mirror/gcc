@@ -806,10 +806,6 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
     emit_insn (gen_builtin_setjmp_setup (buf_addr));
 #endif
 
-  /* Tell optimize_save_area_alloca that extra work is going to
-     need to go on during alloca.  */
-  cfun->calls_setjmp = 1;
-
   /* We have a nonlocal label.   */
   cfun->has_nonlocal_label = 1;
 }
@@ -992,8 +988,8 @@ expand_builtin_nonlocal_goto (tree exp)
   r_label = convert_memory_address (Pmode, r_label);
   r_save_area = expand_normal (t_save_area);
   r_save_area = convert_memory_address (Pmode, r_save_area);
-  /* Copy the address of the save location to a register just in case it was based
-    on the frame pointer.   */
+  /* Copy the address of the save location to a register just in case it was
+     based on the frame pointer.   */
   r_save_area = copy_to_reg (r_save_area);
   r_fp = gen_rtx_MEM (Pmode, r_save_area);
   r_sp = gen_rtx_MEM (STACK_SAVEAREA_MODE (SAVE_NONLOCAL),
@@ -1013,11 +1009,7 @@ expand_builtin_nonlocal_goto (tree exp)
       emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
       emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-      /* Restore frame pointer for containing function.
-	 This sets the actual hard register used for the frame pointer
-	 to the location of the function's incoming static chain info.
-	 The non-local goto handler will then adjust it to contain the
-	 proper value and reload the argument pointer, if needed.  */
+      /* Restore frame pointer for containing function.  */
       emit_move_insn (hard_frame_pointer_rtx, r_fp);
       emit_stack_restore (SAVE_NONLOCAL, r_sp);
 
@@ -1066,28 +1058,12 @@ expand_builtin_nonlocal_goto (tree exp)
 static void
 expand_builtin_update_setjmp_buf (rtx buf_addr)
 {
-  enum machine_mode sa_mode = Pmode;
-  rtx stack_save;
-
-
-#ifdef HAVE_save_stack_nonlocal
-  if (HAVE_save_stack_nonlocal)
-    sa_mode = insn_data[(int) CODE_FOR_save_stack_nonlocal].operand[0].mode;
-#endif
-#ifdef STACK_SAVEAREA_MODE
-  sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
-#endif
-
-  stack_save
+  enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
+  rtx stack_save
     = gen_rtx_MEM (sa_mode,
 		   memory_address
 		   (sa_mode,
 		    plus_constant (buf_addr, 2 * GET_MODE_SIZE (Pmode))));
-
-#ifdef HAVE_setjmp
-  if (HAVE_setjmp)
-    emit_insn (gen_setjmp ());
-#endif
 
   emit_stack_save (SAVE_NONLOCAL, &stack_save);
 }

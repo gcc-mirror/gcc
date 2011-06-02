@@ -1,7 +1,7 @@
 /* Common subexpression elimination for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -6192,7 +6192,9 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
 	  else
 	    e = NULL;
 
-	  if (e && e->dest != EXIT_BLOCK_PTR
+	  if (e
+	      && (e->flags & EDGE_ABNORMAL) == 0
+	      && e->dest != EXIT_BLOCK_PTR
 	      && single_pred_p (e->dest)
 	      /* Avoid visiting basic blocks twice.  The large comment
 		 above explains why this can happen.  */

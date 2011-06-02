@@ -1,5 +1,5 @@
 /* Post reload partially redundant load elimination
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -912,10 +912,12 @@ get_avail_load_store_reg (rtx insn)
 static bool
 bb_has_well_behaved_predecessors (basic_block bb)
 {
+  unsigned int edge_count = EDGE_COUNT (bb->preds);
   edge pred;
   edge_iterator ei;
 
-  if (EDGE_COUNT (bb->preds) == 0)
+  if (edge_count == 0
+      || (edge_count == 1 && (single_pred_edge (bb)->flags & EDGE_ABNORMAL)))
     return false;
 
   FOR_EACH_EDGE (pred, ei, bb->preds)

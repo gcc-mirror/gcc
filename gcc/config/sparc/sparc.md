@@ -1,7 +1,7 @@
 ;; Machine description for SPARC chip for GCC
 ;;  Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-;;  Free Software Foundation, Inc.
+;;  1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+;;  2011 Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 ;;  64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
 ;;  at Cygnus Support.
@@ -70,7 +70,6 @@
    (UNSPECV_FLUSHW		1)
    (UNSPECV_GOTO		2)
    (UNSPECV_FLUSH		4)
-   (UNSPECV_SETJMP		5)
    (UNSPECV_SAVEW		6)
    (UNSPECV_CAS			8)
    (UNSPECV_SWAP		9)
@@ -6444,136 +6443,100 @@
   "jmp\t%a0%#"
   [(set_attr "type" "uncond_branch")])
 
-(define_expand "nonlocal_goto"
-  [(match_operand:SI 0 "general_operand" "")
-   (match_operand:SI 1 "general_operand" "")
-   (match_operand:SI 2 "general_operand" "")
-   (match_operand:SI 3 "" "")]
+(define_expand "save_stack_nonlocal"
+  [(set (match_operand 0 "memory_operand" "")
+	(match_operand 1 "register_operand" ""))
+   (set (match_dup 2) (match_dup 3))]
   ""
 {
-  rtx lab = operands[1];
-  rtx stack = operands[2];
-  rtx fp = operands[3];
-  rtx labreg;
+  operands[0] = adjust_address_nv (operands[0], Pmode, 0);
+  operands[2] = adjust_address_nv (operands[0], Pmode, GET_MODE_SIZE (Pmode));
+  operands[3] = gen_rtx_REG (Pmode, 31); /* %i7 */
+})
 
-  /* Trap instruction to flush all the register windows.  */
+(define_expand "restore_stack_nonlocal"
+  [(set (match_operand 0 "register_operand" "")
+	(match_operand 1 "memory_operand" ""))]
+  ""
+{
+  operands[1] = adjust_address_nv (operands[1], Pmode, 0);
+})
+
+(define_expand "nonlocal_goto"
+  [(match_operand 0 "general_operand" "")
+   (match_operand 1 "general_operand" "")
+   (match_operand 2 "memory_operand" "")
+   (match_operand 3 "memory_operand" "")]
+  ""
+{
+  rtx r_label = copy_to_reg (operands[1]);
+  rtx r_sp = adjust_address_nv (operands[2], Pmode, 0);
+  rtx r_fp = operands[3];
+  rtx r_i7 = adjust_address_nv (operands[2], Pmode, GET_MODE_SIZE (Pmode));
+
+  /* We need to flush all the register windows so that their contents will
+     be re-synchronized by the restore insn of the target function.  */
   emit_insn (gen_flush_register_windows ());
 
-  /* Load the fp value for the containing fn into %fp.  This is needed
-     because STACK refers to %fp.  Note that virtual register instantiation
-     fails if the virtual %fp isn't set from a register.  */
-  if (GET_CODE (fp) != REG)
-    fp = force_reg (Pmode, fp);
-  emit_move_insn (virtual_stack_vars_rtx, fp);
+  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
+  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-  /* Find the containing function's current nonlocal goto handler,
-     which will do any cleanups and then jump to the label.  */
-  labreg = gen_rtx_REG (Pmode, 8);
-  emit_move_insn (labreg, lab);
+  /* Restore frame pointer for containing function.  */
+  emit_move_insn (hard_frame_pointer_rtx, r_fp);
+  emit_stack_restore (SAVE_NONLOCAL, r_sp);
 
-  /* Restore %fp from stack pointer value for containing function.
-     The restore insn that follows will move this to %sp,
-     and reload the appropriate value into %fp.  */
-  emit_move_insn (hard_frame_pointer_rtx, stack);
-
+  /* USE of hard_frame_pointer_rtx added for consistency;
+     not clear if really needed.  */
+  emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
 
-  /* ??? The V9-specific version was disabled in rev 1.65.  */
-  emit_jump_insn (gen_goto_handler_and_restore (labreg));
+  /* We need to smuggle the load of %i7 as it is a fixed register.  */
+  emit_jump_insn (gen_nonlocal_goto_internal (r_label, r_i7));
   emit_barrier ();
   DONE;
 })
 
-;; Special trap insn to flush register windows.
-(define_insn "flush_register_windows"
-  [(unspec_volatile [(const_int 0)] UNSPECV_FLUSHW)]
-  ""
-  { return TARGET_V9 ? "flushw" : "ta\t3"; }
-  [(set_attr "type" "flushw")])
-
-(define_insn "goto_handler_and_restore"
-  [(unspec_volatile [(match_operand 0 "register_operand" "=r")] UNSPECV_GOTO)]
-  "GET_MODE (operands[0]) == Pmode"
+(define_insn "nonlocal_goto_internal"
+  [(unspec_volatile [(match_operand 0 "register_operand" "r")
+                     (match_operand 1 "memory_operand" "m")] UNSPECV_GOTO)]
+  "GET_MODE (operands[0]) == Pmode && GET_MODE (operands[1]) == Pmode"
 {
   if (flag_delayed_branch)
-    return "jmp\t%0\n\t restore";
+    {
+      if (TARGET_ARCH64)
+	return "jmp\t%0\n\t ldx\t%1, %%i7";
+      else
+	return "jmp\t%0\n\t ld\t%1, %%i7";
+    }
   else
-    return "mov\t%0,%%g1\n\trestore\n\tjmp\t%%g1\n\t nop";
+    {
+      if (TARGET_ARCH64)
+	return "ldx\t%1, %%i7\n\tjmp\t%0\n\t nop";
+      else
+	return "ld\t%1, %%i7\n\tjmp\t%0\n\t nop";
+    }
 }
   [(set (attr "type") (const_string "multi"))
    (set (attr "length")
 	(if_then_else (eq_attr "delayed_branch" "true")
 		      (const_int 2)
-		      (const_int 4)))])
+		      (const_int 3)))])
 
-;; For __builtin_setjmp we need to flush register windows iff the function
-;; calls alloca as well, because otherwise the current register window might
-;; be saved after the %sp adjustment and thus setjmp would crash.
-(define_expand "builtin_setjmp_setup"
-  [(match_operand 0 "register_operand" "r")]
-  ""
+(define_expand "builtin_setjmp_receiver"
+  [(label_ref (match_operand 0 "" ""))]
+  "flag_pic"
 {
-  emit_insn (gen_do_builtin_setjmp_setup ());
+  load_got_register ();
   DONE;
 })
 
-(define_insn "do_builtin_setjmp_setup"
-  [(unspec_volatile [(const_int 0)] UNSPECV_SETJMP)]
+;; Special insn to flush register windows.
+
+(define_insn "flush_register_windows"
+  [(unspec_volatile [(const_int 0)] UNSPECV_FLUSHW)]
   ""
-{
-  if (!cfun->calls_alloca)
-    return "";
-  if (!TARGET_V9)
-    return "ta\t3";
-  fputs ("\tflushw\n", asm_out_file);
-  if (flag_pic)
-    fprintf (asm_out_file, "\tst%c\t%%l7, [%%sp+%d]\n",
-	     TARGET_ARCH64 ? 'x' : 'w',
-	     SPARC_STACK_BIAS + 7 * UNITS_PER_WORD);
-  fprintf (asm_out_file, "\tst%c\t%%fp, [%%sp+%d]\n",
-	   TARGET_ARCH64 ? 'x' : 'w',
-	   SPARC_STACK_BIAS + 14 * UNITS_PER_WORD);
-  fprintf (asm_out_file, "\tst%c\t%%i7, [%%sp+%d]\n",
-	   TARGET_ARCH64 ? 'x' : 'w',
-	   SPARC_STACK_BIAS + 15 * UNITS_PER_WORD);
-  return "";
-}
-  [(set_attr "type" "multi")
-   (set (attr "length")
-        (cond [(eq_attr "calls_alloca" "false")
-                 (const_int 0)
-               (eq_attr "isa" "!v9")
-                 (const_int 1)
-               (eq_attr "pic" "true")
-                 (const_int 4)] (const_int 3)))])
-
-;; Pattern for use after a setjmp to store registers into the save area.
-
-(define_expand "setjmp"
-  [(const_int 0)]
-  ""
-{
-  rtx mem;
-
-  if (flag_pic)
-    {
-      mem = gen_rtx_MEM (Pmode,
-			 plus_constant (stack_pointer_rtx,
-					SPARC_STACK_BIAS + 7 * UNITS_PER_WORD));
-      emit_insn (gen_rtx_SET (VOIDmode, mem, pic_offset_table_rtx));
-    }
-
-  mem = gen_rtx_MEM (Pmode,
-		     plus_constant (stack_pointer_rtx,
-				    SPARC_STACK_BIAS + 14 * UNITS_PER_WORD));
-  emit_insn (gen_rtx_SET (VOIDmode, mem, hard_frame_pointer_rtx));
-
-  mem = gen_rtx_MEM (Pmode,
-		     plus_constant (stack_pointer_rtx,
-				    SPARC_STACK_BIAS + 15 * UNITS_PER_WORD));
-  emit_insn (gen_rtx_SET (VOIDmode, mem, gen_rtx_REG (Pmode, 31)));
-  DONE;
-})
+  { return TARGET_V9 ? "flushw" : "ta\t3"; }
+  [(set_attr "type" "flushw")])
 
 ;; Special pattern for the FLUSH instruction.
 

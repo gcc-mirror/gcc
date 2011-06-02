@@ -1384,11 +1384,19 @@ do {									\
 #define EPILOGUE_USES(REGNO) ((REGNO) == 31 \
   || (crtl->calls_eh_return && (REGNO) == 1))
 
+/* We need 2 words, so we can save the stack pointer and the return register
+   of the function containing a non-local goto target.  */
+
+#define STACK_SAVEAREA_MODE(LEVEL) \
+  ((LEVEL) == SAVE_NONLOCAL ? (TARGET_ARCH64 ? TImode : DImode) : Pmode)
+
 /* Length in units of the trampoline for entering a nested function.  */
 
 #define TRAMPOLINE_SIZE (TARGET_ARCH64 ? 32 : 16)
 
-#define TRAMPOLINE_ALIGNMENT 128 /* 16 bytes */
+/* Alignment required for trampolines, in bits.  */
+
+#define TRAMPOLINE_ALIGNMENT 128
 
 /* Generate RTL to flush the register windows so as to make arbitrary frames
    available.  */

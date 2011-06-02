@@ -1937,17 +1937,6 @@ instantiate_virtual_regs (void)
      frame_pointer_rtx.  */
   virtuals_instantiated = 1;
 
-  /* See allocate_dynamic_stack_space for the rationale.  */
-#ifdef SETJMP_VIA_SAVE_AREA
-  if (flag_stack_usage_info && cfun->calls_setjmp)
-    {
-      int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-      dynamic_offset = (dynamic_offset + align - 1) / align * align;
-      current_function_dynamic_stack_size
-	+= current_function_dynamic_alloc_count * dynamic_offset;
-    }
-#endif
-
   return 0;
 }
 

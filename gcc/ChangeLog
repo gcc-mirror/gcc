@@ -1,3 +1,34 @@
+2011-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.h (struct stack_usage): Remove dynamic_alloc_count field.
+	(current_function_dynamic_alloc_count): Delete.
+	* builtins.c (expand_builtin_setjmp_setup): Do not set calls_setjmp.
+	(expand_builtin_nonlocal_goto): Remove obsolete comment.
+	(expand_builtin_update_setjmp_buf): Remove dead code.
+	* cse.c (cse_find_path): Do not follow a single abnormal incoming edge.
+	* explow.c (allocate_dynamic_stack_space): Remove SETJMP_VIA_SAVE_AREA
+	support.
+	* function.c (instantiate_virtual_regs): Likewise.
+	* postreload-gcse.c (bb_has_well_behaved_predecessors): Return false
+	for a block with a single abnormal incoming edge.
+	* config/sparc/sparc.h (STACK_SAVEAREA_MODE): Define.
+	* config/sparc/sparc-protos.h (load_got_register): Declare.
+	* config/sparc/sparc.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Define.
+	(load_got_register): Make global.
+	(sparc_frame_pointer_required): Add 'static'.
+	(sparc_can_eliminate): Likewise.  Call sparc_frame_pointer_required.
+	(sparc_builtin_setjmp_frame_value): New function.
+	* config/sparc/sparc.md (UNSPECV_SETJMP): Remove.
+	(save_stack_nonlocal): New expander.
+	(restore_stack_nonlocal): Likewise.
+	(nonlocal_goto): Remove modes, adjust predicates and reimplement.
+	(nonlocal_goto_internal): New insn.
+	(goto_handler_and_restore): Delete.
+	(builtin_setjmp_setup): Likewise.
+	(do_builtin_setjmp_setup): Likewise.
+	(setjmp): Likewise.
+	(builtin_setjmp_receiver): New expander.
+
 2011-06-01  David Li  <davidxl@google.com>
 
 	PR middle-end/49261
