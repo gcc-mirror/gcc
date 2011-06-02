@@ -25,7 +25,6 @@ search_for_method_in_list
 objc_get_uninstalled_dtable
 objc_hash_is_key_in_hash
 hash_is_key_in_hash
-objc_verror
 _objc_load_callback
 objc_malloc
 objc_atomic_malloc
@@ -53,7 +52,6 @@ objc_thread_remove
 __objc_class_name_Object
 __objc_class_name_Protocol
 __objc_class_name_NXConstantString
-objc_error
 __objc_object_alloc
 __objc_object_copy
 __objc_object_dispose

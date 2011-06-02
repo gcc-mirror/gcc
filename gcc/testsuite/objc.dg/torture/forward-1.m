@@ -71,7 +71,9 @@ id forwarder, receiver;
   /* If we have a reciever try to perform on that object */
     if (receiver)
         return [receiver performv: theSel: theArgFrame];
-    return [self doesNotRecognize:theSel];
+
+    /* Normally you'd emit an error here.  */
+    printf ("Unrecognized selector\n");
 }
 @end
 int main()

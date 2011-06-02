@@ -109,8 +109,6 @@ struct objc_method_description
    equivalent to "*".  */
 #define _C_ATOM     '%'
 
-#include "deprecated/objc_error.h"
-
 #include "deprecated/struct_objc_static_instances.h"
 #include "deprecated/struct_objc_symtab.h"
 #include "deprecated/struct_objc_module.h"

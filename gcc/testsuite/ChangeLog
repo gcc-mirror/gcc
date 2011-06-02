@@ -1,3 +1,7 @@
+2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/torture/forward-1.m (main): Updated testcase.
+
 2011-06-02  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/49163

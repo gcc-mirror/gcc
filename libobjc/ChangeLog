@@ -1,3 +1,19 @@
+2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_error.h.
+	* objc/deprecated/objc_error.h: Removed.
+	* objc/objc-api.h: Do not include deprecated/objc_error.h.
+	* libobjc.def (objc_error, objc_verror): Removed.
+	* error.c (_objc_error_handler, objc_error, objc_verror,
+	objc_set_error_handler): Removed.
+	* Object.m ([-error:], [-perform:], [-perform:with:],
+	[-perform:with:with], [-subclassResponsibility:],
+	[-notImplemented:], [-shouldNotImplement:], [-doesNotRecognize:]):
+	Removed.
+	* objc/deprecated/Object.h: Removed the same methods.
+	* sendmsg.c (__objc_forward): Do not try to invoke the "error:"
+	method after trying to invoke the "doesNotRecognize:" method.
+	
 2011-05-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* sendmsg.c: Reindented part of the file.  No non-trivial changes
