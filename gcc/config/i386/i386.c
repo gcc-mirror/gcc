@@ -8601,33 +8601,28 @@ standard_sse_constant_opcode (rtx insn, rtx x)
     case 1:
       switch (get_attr_mode (insn))
 	{
+	case MODE_TI:
+	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "%vpxor\t%0, %d0";
+	case MODE_V2DF:
+	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "%vxorpd\t%0, %d0";
 	case MODE_V4SF:
 	  return "%vxorps\t%0, %d0";
-	case MODE_V2DF:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "%vxorps\t%0, %d0";
-	  else
-	    return "%vxorpd\t%0, %d0";
-	case MODE_TI:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "%vxorps\t%0, %d0";
-	  else
-	    return "%vpxor\t%0, %d0";
+
+	case MODE_OI:
+	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "vpxor\t%x0, %x0, %x0";
+	case MODE_V4DF:
+	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "vxorpd\t%x0, %x0, %x0";
 	case MODE_V8SF:
 	  return "vxorps\t%x0, %x0, %x0";
-	case MODE_V4DF:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "vxorps\t%x0, %x0, %x0";
-	  else
-	    return "vxorpd\t%x0, %x0, %x0";
-	case MODE_OI:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "vxorps\t%x0, %x0, %x0";
-	  else
-	    return "vpxor\t%x0, %x0, %x0";
+
 	default:
 	  break;
 	}
+
     case 2:
       return "%vpcmpeqd\t%0, %d0";
     default:

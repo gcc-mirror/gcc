@@ -1,3 +1,18 @@
+2011-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (standard_sse_constant_p) <case 1>:
+	Simplify switch statement.
+	* config/i386/i386.md (*movdf_internal_rex64) <case 8,9,10>: Ditto.
+	(*movdf_internal) <case 6,7,8>: Ditto.
+
+	* config/i386/constraints.md (Y4): New constraint.
+	* config/i386/sse.md (vec_set<mode>_0): Merge with
+	*vec_set<mode>_0_sse4_1 and *vec_set<mode>_0_sse2.
+	(*vec_extractv2di_1): Merge from *vec_extractv2di_1_sse2 and
+	*vec_extractv2di_1_sse.
+	(*vec_concatv2di_rex64): Merge from *vec_concatv2di_rex64_sse4_1
+	and *vec_concatv2di_rex64_sse.
+
 2011-06-02  Stuart Henderson  <shenders@gcc.gnu.org>
 
 	PR target/48807
@@ -134,20 +149,17 @@
 	(sigill_hdlr): New function.
 	(set_fast_math) [!__x86_64__ && __sun__ && __svr4__]: Check if SSE
 	insns can be executed.
-	* config/sol2.h (ENDFILE_SPEC): Use crtfastmath.o if -ffast-math
-	etc.
+	* config/sol2.h (ENDFILE_SPEC): Use crtfastmath.o if -ffast-math etc.
 	* config/sparc/sol2.h (ENDFILE_SPEC): Remove.
 
 2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/t-slibgcc-darwin: Move to ...
-	* config/t-slibgcc-dummy: .. this.
-	Clarify comments.
+	* config/t-slibgcc-dummy: ... this.  Clarify comments.
 	* config.gcc (i[34567]86-*-darwin*, x86_64-*-darwin*,
 	powerpc-*-darwin*, powerpc64-*-darwin*): Reflect this.
 	(i[3456x]86-*-netware*): Add t-slibgcc-dummy to tmake_file.
-	(i[34567]86-*-rtems*): Remove extra_parts.
-	Use i386/t-rtems.
+	(i[34567]86-*-rtems*): Remove extra_parts.  Use i386/t-rtems.
 	Remove i386/t-crtstuff from tmake_file.
 	(i[34567]86-*-solaris2*): Remove t-svr4,
 	t-slibgcc-elf-ver, t-slibgcc-sld from tmake_file, add
@@ -417,8 +429,7 @@
 2011-05-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/49168
-	* config/i386/i386.md (*movtf_internal): Handle misaligned
-	load/store.
+	* config/i386/i386.md (*movtf_internal): Handle misaligned load/store.
 
 2011-05-30  Jakub Jelinek  <jakub@redhat.com>
 
