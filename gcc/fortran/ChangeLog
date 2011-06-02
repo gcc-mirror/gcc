@@ -1,3 +1,8 @@
+2011-06-02  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/37039
+	* decl.c (variable_decl): Merge current_as before copying to cp_as.
+
 2011-06-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/49265
