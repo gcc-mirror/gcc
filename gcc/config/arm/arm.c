@@ -255,6 +255,7 @@ static bool arm_builtin_support_vector_misalignment (enum machine_mode mode,
 static void arm_conditional_register_usage (void);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
 static unsigned int arm_autovectorize_vector_sizes (void);
+static int arm_default_branch_cost (bool, bool);
 
 
 /* Table of machine attributes.  */
@@ -858,7 +859,8 @@ const struct tune_params arm_slowmul_tune =
   NULL,
   3,						/* Constant limit.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true						/* Prefer constant pool.  */
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_fastmul_tune =
@@ -867,7 +869,8 @@ const struct tune_params arm_fastmul_tune =
   NULL,
   1,						/* Constant limit.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true						/* Prefer constant pool.  */
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_xscale_tune =
@@ -876,7 +879,8 @@ const struct tune_params arm_xscale_tune =
   xscale_sched_adjust_cost,
   2,						/* Constant limit.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true						/* Prefer constant pool.  */
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_9e_tune =
@@ -885,7 +889,8 @@ const struct tune_params arm_9e_tune =
   NULL,
   1,						/* Constant limit.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true						/* Prefer constant pool.  */
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_v6t2_tune =
@@ -894,7 +899,8 @@ const struct tune_params arm_v6t2_tune =
   NULL,
   1,						/* Constant limit.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false						/* Prefer constant pool.  */
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 /* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
@@ -904,7 +910,8 @@ const struct tune_params arm_cortex_tune =
   NULL,
   1,						/* Constant limit.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false						/* Prefer constant pool.  */
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_cortex_a9_tune =
@@ -913,7 +920,8 @@ const struct tune_params arm_cortex_a9_tune =
   cortex_a9_sched_adjust_cost,
   1,						/* Constant limit.  */
   ARM_PREFETCH_BENEFICIAL(4,32,32),
-  false						/* Prefer constant pool.  */
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_fa726te_tune =
@@ -922,7 +930,8 @@ const struct tune_params arm_fa726te_tune =
   fa726te_sched_adjust_cost,
   1,						/* Constant limit.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true						/* Prefer constant pool.  */
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 
@@ -8034,6 +8043,15 @@ arm_adjust_cost (rtx insn, rtx link, rtx dep, int cost)
     }
 
   return cost;
+}
+
+static int
+arm_default_branch_cost (bool speed_p, bool predictable_p ATTRIBUTE_UNUSED)
+{
+  if (TARGET_32BIT)
+    return (TARGET_THUMB2 && !speed_p) ? 1 : 4;
+  else
+    return (optimize > 0) ? 2 : 0;
 }
 
 static int fp_consts_inited = 0;

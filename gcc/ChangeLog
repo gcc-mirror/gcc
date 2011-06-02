@@ -1,6 +1,19 @@
 2011-06-02  Julian Brown  <julian@codesourcery.com>
 
-	* arm-cores.def (arm1156t2-s, arm1156t2f-s): Use v6t2 tuning.
+	* config/arm/arm-protos.h (tune_params): Add branch_cost hook.
+	* config/arm/arm.c (arm_default_branch_cost): New.
+	(arm_slowmul_tune, arm_fastmul_tune, arm_xscale_tune, arm_9e_tune)
+	(arm_v6t2_tune, arm_cortex_tune, arm_cortex_a9_tune)
+	(arm_fa726_tune): Set branch_cost field using
+	arm_default_branch_cost.
+	* config/arm/arm.h (BRANCH_COST): Use branch_cost hook from
+	current_tune structure.
+	* dojump.c (tm_p.h): Include file.
+
+2011-06-02  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm-cores.def (arm1156t2-s, arm1156t2f-s): Use v6t2
+	tuning.
 	(cortex-a5, cortex-a8, cortex-a15, cortex-r4, cortex-r4f, cortex-m4)
 	(cortex-m3, cortex-m1, cortex-m0): Use cortex tuning.
 	* config/arm/arm-protos.h (tune_params): Add prefer_constant_pool

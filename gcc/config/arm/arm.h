@@ -1956,8 +1956,8 @@ typedef struct
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */
 #define BRANCH_COST(speed_p, predictable_p) \
-  (TARGET_32BIT ? (TARGET_THUMB2 && !speed_p ? 1 : 4) \
-		: (optimize > 0 ? 2 : 0))
+  (current_tune->branch_cost (speed_p, predictable_p))
+
 
 /* Position Independent Code.  */
 /* We decide which register to use based on the compilation options and
