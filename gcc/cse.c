@@ -6193,7 +6193,7 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
 	    e = NULL;
 
 	  if (e
-	      && (e->flags & EDGE_ABNORMAL) == 0
+	      && !((e->flags & EDGE_ABNORMAL_CALL) && cfun->has_nonlocal_label)
 	      && e->dest != EXIT_BLOCK_PTR
 	      && single_pred_p (e->dest)
 	      /* Avoid visiting basic blocks twice.  The large comment

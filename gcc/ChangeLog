@@ -1,3 +1,9 @@
+2011-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cse.c (cse_find_path): Refine change to exclude EDGE_ABNORMAL_CALL
+	edges only, when there is a non-local label in the function.
+	* postreload-gcse.c (bb_has_well_behaved_predecessors): Likewise.
+
 2011-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/constraints.md (Y3): New register constraint.
