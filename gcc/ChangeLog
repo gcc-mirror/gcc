@@ -1,3 +1,11 @@
+2011-06-02  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/49163
+	* config/sh/predicates.md (general_movsrc_operand): Return 0
+	for memory and memory subreg of which address is an invalid
+	indexed address for QI and HImode.
+	(general_movdst_operand): Likewise.
+
 2011-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cse.c (cse_find_path): Refine change to exclude EDGE_ABNORMAL_CALL
