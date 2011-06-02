@@ -3465,7 +3465,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
       if (sym->attr.dimension || sym->attr.codimension)
 	{
-	  switch (sym->as->type)
+          /* Assumed-size Cray pointees need to be treated as AS_EXPLICIT.  */
+          array_type tmp = sym->as->type;
+          if (tmp == AS_ASSUMED_SIZE && sym->as->cp_was_assumed)
+            tmp = AS_EXPLICIT;
+          switch (tmp)
 	    {
 	    case AS_EXPLICIT:
 	      if (sym->attr.dummy || sym->attr.result)

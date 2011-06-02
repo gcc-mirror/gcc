@@ -1,5 +1,11 @@
 2011-06-02  Asher Langton  <langton2@llnl.gov>
 
+	PR fortran/49268
+	* trans-decl.c (gfc_trans_deferred_vars): Treat assumed-size Cray
+	pointees as AS_EXPLICIT.
+
+2011-06-02  Asher Langton  <langton2@llnl.gov>
+
 	PR fortran/37039
 	* decl.c (variable_decl): Merge current_as before copying to cp_as.
 
