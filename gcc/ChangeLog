@@ -1,3 +1,11 @@
+2011-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Y3): New register constraint.
+	* config/i386/sse.md (*vec_interleave_highv2df): Merge with
+	*sse3_interleave_highv2df and *sse2_interleave_highv2df.
+	(*vec_interleave_lowv2df): Merge with *sse3_interleave_lowv2df and
+	*sse2_interleave_lowv2df.
+
 2011-06-02  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm-cores.def (cortex-a5): Use cortex_a5 tuning.
@@ -33,12 +41,12 @@
 
 2011-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.c (standard_sse_constant_p) <case 1>:
-	Simplify switch statement.
+	* config/i386/i386.c (standard_sse_constant_p) <case 1>: Simplify
+	switch statement.
 	* config/i386/i386.md (*movdf_internal_rex64) <case 8,9,10>: Ditto.
 	(*movdf_internal) <case 6,7,8>: Ditto.
 
-	* config/i386/constraints.md (Y4): New constraint.
+	* config/i386/constraints.md (Y4): New register constraint.
 	* config/i386/sse.md (vec_set<mode>_0): Merge with
 	*vec_set<mode>_0_sse4_1 and *vec_set<mode>_0_sse2.
 	(*vec_extractv2di_1): Merge from *vec_extractv2di_1_sse2 and
