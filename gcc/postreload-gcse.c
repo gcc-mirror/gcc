@@ -912,17 +912,18 @@ get_avail_load_store_reg (rtx insn)
 static bool
 bb_has_well_behaved_predecessors (basic_block bb)
 {
-  unsigned int edge_count = EDGE_COUNT (bb->preds);
   edge pred;
   edge_iterator ei;
 
-  if (edge_count == 0
-      || (edge_count == 1 && (single_pred_edge (bb)->flags & EDGE_ABNORMAL)))
+  if (EDGE_COUNT (bb->preds) == 0)
     return false;
 
   FOR_EACH_EDGE (pred, ei, bb->preds)
     {
       if ((pred->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (pred))
+	return false;
+
+      if ((pred->flags & EDGE_ABNORMAL_CALL) && cfun->has_nonlocal_label)
 	return false;
 
       if (JUMP_TABLE_DATA_P (BB_END (pred->src)))
