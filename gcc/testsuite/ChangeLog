@@ -1,3 +1,7 @@
+2011-06-02  DJ Delorie  <dj@redhat.com>
+
+	* lib/timeout.exp (timeout): Add board_info support.
+
 2011-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse2-init-v2di-2: Update scan-assembler-times string.
