@@ -2577,6 +2577,16 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
             return false;
         }
 
+      if (TREE_THIS_VOLATILE (DR_REF (dr)))
+        {
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+            {
+              fprintf (vect_dump, "not vectorized: volatile type ");
+              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+            }
+          return false;
+        }
+
       base = unshare_expr (DR_BASE_ADDRESS (dr));
       offset = unshare_expr (DR_OFFSET (dr));
       init = unshare_expr (DR_INIT (dr));

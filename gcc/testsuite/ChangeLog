@@ -1,3 +1,8 @@
+2011-06-02  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49093
+	* gcc.dg/vect/pr49093.c: New test.
+
 2011-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
