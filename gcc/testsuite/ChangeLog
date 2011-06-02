@@ -1,3 +1,7 @@
+2011-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-init-v2di-2: Update scan-assembler-times string.
+
 2011-06-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/49265
