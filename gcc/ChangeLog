@@ -1,3 +1,17 @@
+2011-06-02  Julian Brown  <julian@codesourcery.com>
+
+	* arm-cores.def (arm1156t2-s, arm1156t2f-s): Use v6t2 tuning.
+	(cortex-a5, cortex-a8, cortex-a15, cortex-r4, cortex-r4f, cortex-m4)
+	(cortex-m3, cortex-m1, cortex-m0): Use cortex tuning.
+	* config/arm/arm-protos.h (tune_params): Add prefer_constant_pool
+	field.
+	* config/arm/arm.c (arm_slowmul_tune, arm_fastmul_tune)
+	(arm_xscale_tune, arm_9e_tune, arm_cortex_a9_tune)
+	(arm_fa726te_tune): Add prefer_constant_pool setting.
+	(arm_v6t2_tune, arm_cortex_tune): New.
+	* config/arm/arm.h (TARGET_USE_MOVT): Make dependent on
+	prefer_constant_pool setting.
+
 2011-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (standard_sse_constant_p) <case 1>:

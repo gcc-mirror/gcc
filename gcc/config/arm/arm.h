@@ -271,7 +271,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
   (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7em))
 
 /* Should MOVW/MOVT be used in preference to a constant pool.  */
-#define TARGET_USE_MOVT (arm_arch_thumb2 && !optimize_size)
+#define TARGET_USE_MOVT \
+  (arm_arch_thumb2 && !optimize_size && !current_tune->prefer_constant_pool)
 
 /* We could use unified syntax for arm mode, but for now we just use it
    for Thumb-2.  */
