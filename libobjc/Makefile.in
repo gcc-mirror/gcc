@@ -125,7 +125,6 @@ OBJC_H = \
   thr.h \
   \
   hash.h \
-  objc-list.h \
   sarray.h
 
 # User-visible header files containing deprecated APIs, from the
@@ -137,7 +136,6 @@ OBJC_DEPRECATED_H = \
   Protocol.h \
   STR.h \
   hash.h \
-  objc-list.h \
   objc_get_uninstalled_dtable.h \
   objc_malloc.h \
   objc_msg_sendv.h \
