@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file erase_fn_imps.hpp
+ * @file ov_tree_map_/erase_fn_imps.hpp
  * Contains an implementation class for ov_tree_.
  */
 
@@ -70,11 +70,12 @@ erase_if(Pred pred)
   PB_DS_ASSERT_VALID((*this))
 
 #ifdef PB_DS_REGRESSION
-    typename Allocator::group_adjustor adjust(m_size);
-#endif 
+    typename _Alloc::group_adjustor adjust(m_size);
+#endif
 
   size_type new_size = 0;
   size_type num_val_ersd = 0;
+
   for (iterator source_it = begin(); source_it != m_end_it; ++source_it)
     if (!pred(*source_it))
       ++new_size;
@@ -94,16 +95,16 @@ erase_if(Pred pred)
   for (iterator source_it = begin(); source_it != m_end_it; ++source_it)
     {
       if (!pred(*source_it))
-        {
-	  new (const_cast<void*>(static_cast<const void* >(target_it)))
+	{
+	  new (const_cast<void*>(static_cast<const void*>(target_it)))
 	    value_type(*source_it);
 
 	  _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(*source_it)));
 	  ++target_it;
-        }
+	}
     }
 
-  reallocate_metadata((node_update* )this, new_size);
+  reallocate_metadata((node_update*)this, new_size);
   cd.set_no_action();
 
   {
@@ -113,7 +114,7 @@ erase_if(Pred pred)
   m_a_values = a_new_values;
   m_size = new_size;
   m_end_it = target_it;
-  update(node_begin(), (node_update* )this);
+  update(node_begin(), (node_update*)this);
   PB_DS_ASSERT_VALID((*this))
   return num_val_ersd;
 }
@@ -131,8 +132,8 @@ erase_imp(It it)
   PB_DS_CHECK_KEY_EXISTS(PB_DS_V2F(*it))
 
 #ifdef PB_DS_REGRESSION
-    typename Allocator::group_adjustor adjust(m_size);
-#endif 
+    typename _Alloc::group_adjustor adjust(m_size);
+#endif
 
   _GLIBCXX_DEBUG_ASSERT(m_size > 0);
   value_vector a_values = s_value_alloc.allocate(m_size - 1);
@@ -149,12 +150,12 @@ erase_imp(It it)
     {
       if (source_it != it)
 	{
-          _GLIBCXX_DEBUG_ONLY(++cnt;)
+	  _GLIBCXX_DEBUG_ONLY(++cnt;)
 	  _GLIBCXX_DEBUG_ASSERT(cnt != m_size);
-          new (const_cast<void* >(static_cast<const void* >(target_it)))
+	  new (const_cast<void*>(static_cast<const void*>(target_it)))
 	      value_type(*source_it);
 
-          ++target_it;
+	  ++target_it;
 	}
       else
 	ret_it = target_it;
@@ -162,9 +163,9 @@ erase_imp(It it)
     }
 
   _GLIBCXX_DEBUG_ASSERT(m_size > 0);
-  reallocate_metadata((node_update* )this, m_size - 1);
+  reallocate_metadata((node_update*)this, m_size - 1);
   cd.set_no_action();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::erase_existing(PB_DS_V2F(*it));)
+  _GLIBCXX_DEBUG_ONLY(debug_base::erase_existing(PB_DS_V2F(*it));)
   {
     cond_dtor<size_type> cd1(m_a_values, m_end_it, m_size);
   }
@@ -172,7 +173,7 @@ erase_imp(It it)
   m_a_values = a_values;
   --m_size;
   m_end_it = m_a_values + m_size;
-  update(node_begin(), (node_update* )this);
+  update(node_begin(), (node_update*)this);
   PB_DS_ASSERT_VALID((*this))
   return It(ret_it);
 }
@@ -180,7 +181,7 @@ erase_imp(It it)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-erase(const_key_reference r_key)
+erase(key_const_reference r_key)
 {
   point_iterator it = find(r_key);
   if (it == end())
@@ -188,4 +189,3 @@ erase(const_key_reference r_key)
   erase(it);
   return true;
 }
-

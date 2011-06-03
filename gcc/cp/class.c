@@ -4582,6 +4582,8 @@ type_requires_array_cookie (tree type)
 static void
 finalize_literal_type_property (tree t)
 {
+  tree fn;
+
   if (cxx_dialect < cxx0x
       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
       /* FIXME These constraints seem unnecessary; remove from standard.
@@ -4591,6 +4593,18 @@ finalize_literal_type_property (tree t)
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
+
+  if (!CLASSTYPE_LITERAL_P (t))
+    for (fn = TYPE_METHODS (t); fn; fn = DECL_CHAIN (fn))
+      if (DECL_DECLARED_CONSTEXPR_P (fn)
+	  && TREE_CODE (fn) != TEMPLATE_DECL
+	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	  && !DECL_CONSTRUCTOR_P (fn))
+	{
+	  DECL_DECLARED_CONSTEXPR_P (fn) = false;
+	  if (!DECL_TEMPLATE_INFO (fn))
+	    error ("enclosing class of %q+#D is not a literal type", fn);
+	}
 }
 
 /* Check the validity of the bases and members declared in T.  Add any
@@ -5831,8 +5845,6 @@ finish_struct (tree t, tree attributes)
   else
     error ("trying to finish struct, but kicked out due to previous parse errors");
 
-  check_deferred_constexpr_decls ();
-
   if (processing_template_decl && at_function_scope_p ())
     add_stmt (build_min (TAG_DEFN, t));
 
@@ -6070,6 +6082,9 @@ restore_class_cache (void)
    So that we may avoid calls to lookup_name, we cache the _TYPE
    nodes of local TYPE_DECLs in the TREE_TYPE field of the name.
 
+   For use by push_access_scope, we allow TYPE to be null to temporarily
+   push out of class scope.  This does not actually change binding levels.
+
    For multiple inheritance, we perform a two-pass depth-first search
    of the type lattice.  */
 
@@ -6077,8 +6092,6 @@ void
 pushclass (tree type)
 {
   class_stack_node_t csn;
-
-  type = TYPE_MAIN_VARIANT (type);
 
   /* Make sure there is enough room for the new entry on the stack.  */
   if (current_class_depth + 1 >= current_class_stack_size)
@@ -6097,6 +6110,15 @@ pushclass (tree type)
   csn->names_used = 0;
   csn->hidden = 0;
   current_class_depth++;
+
+  if (type == NULL_TREE)
+    {
+      current_class_name = current_class_type = NULL_TREE;
+      csn->hidden = true;
+      return;
+    }
+
+  type = TYPE_MAIN_VARIANT (type);
 
   /* Now set up the new type.  */
   current_class_name = TYPE_NAME (type);
@@ -6142,7 +6164,11 @@ invalidate_class_lookup_cache (void)
 void
 popclass (void)
 {
-  poplevel_class ();
+  if (current_class_type)
+    poplevel_class ();
+  else
+    gcc_assert (current_class_depth
+		&& current_class_stack[current_class_depth - 1].hidden);
 
   current_class_depth--;
   current_class_name = current_class_stack[current_class_depth].name;

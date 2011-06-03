@@ -327,10 +327,19 @@ namespace __gnu_test
       void 
       destroy(pointer p) { p->~Tp(); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // Not copy assignable...
+      uneq_allocator&
+      operator=(const uneq_allocator&) = delete;
+#endif
+
     private:
+
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       // Not assignable...
       uneq_allocator&
       operator=(const uneq_allocator&);
+#endif
 
       // ... yet swappable!
       friend inline void

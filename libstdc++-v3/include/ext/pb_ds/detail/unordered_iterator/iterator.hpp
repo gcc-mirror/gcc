@@ -51,7 +51,7 @@ public:
   typedef std::forward_iterator_tag iterator_category;
 
   // Difference type.
-  typedef typename Allocator::difference_type difference_type;
+  typedef typename _Alloc::difference_type difference_type;
 
   // Iterator's value type.
   typedef value_type_ value_type;

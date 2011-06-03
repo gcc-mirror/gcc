@@ -51,11 +51,11 @@ namespace __gnu_pbds
       {
 	typedef Cntnr cntnr;
 	typedef typename cntnr::key_type key_type;
-	typedef typename cntnr::const_key_reference const_key_reference;
+	typedef typename cntnr::key_const_reference key_const_reference;
 	typedef typename cntnr::value_type value_type;
 	typedef typename cntnr::const_reference const_reference;
 	typedef typename cntnr::mapped_type mapped_type;
-	typedef typename cntnr::const_mapped_reference const_mapped_reference;
+	typedef typename cntnr::mapped_const_reference mapped_const_reference;
 
 	template<typename Gen>
 	static key_type
@@ -67,7 +67,7 @@ namespace __gnu_pbds
         generate_value(Gen& r_gen, size_t max)
 	{ return generate_value(r_gen, max, value_type()); }
 
-	static const_key_reference
+	static key_const_reference
         extract_key(const_reference r_val)
 	{ return extract_key_imp(r_val); }
 
@@ -82,7 +82,7 @@ namespace __gnu_pbds
 
 	template<typename Gen>
 	static value_type
-        generate_value(Gen& r_gen, size_t max, __gnu_pbds::null_mapped_type)
+        generate_value(Gen& r_gen, size_t max, __gnu_pbds::null_type)
 	{ return basic_type(r_gen, max); }
 
 	template<typename Gen>
@@ -96,11 +96,11 @@ namespace __gnu_pbds
 		       std::pair<const basic_type, basic_type>)
 	{ return std::make_pair(basic_type(gen, max), basic_type(gen, max)); }
 
-	static const_key_reference
+	static key_const_reference
         extract_key_imp(basic_type_const_reference r_val)
 	{ return r_val; }
 
-	static const_key_reference
+	static key_const_reference
         extract_key_imp(pair_type_const_reference r_val)
 	{ return r_val.first; }
       };

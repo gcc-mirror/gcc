@@ -1,3 +1,34 @@
+2011-06-01  Richard Guenther  <rguenther@suse.de>
+
+	* lto-lang.c (lto_register_canonical_types): New function.
+	(lto_init): Register common nodes with the canonical type machinery.
+	Do not play tricks with char_type_node.
+
+2011-05-26  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (uniquify_nodes): Fix bug in one of the previous changes.
+
+2011-05-25  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_ft_typed): New function.
+	(lto_ft_common): Call it.
+	(lto_ft_constructor): Likewise.
+	(lto_ft_expr): Likewise.
+	(lto_fixup_prevailing_decls): Check for TS_COMMON before accessing
+	TREE_CHAIN.
+
+2011-05-20  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_ft_common): Remove pointer-to chain teardown.
+	(lto_ft_type): Move main-variant and pointer-to chain building ...
+	(uniquify_nodes): ... here.  Compute TYPE_CANONICAL also here,
+	in a separate final loop.
+
+2011-05-19  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (uniquify_nodes): First register all types before
+	fixing up the tree SCC.
+
 2011-05-11  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/48952

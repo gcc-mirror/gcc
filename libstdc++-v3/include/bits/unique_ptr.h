@@ -49,11 +49,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct default_delete
     {
-      constexpr default_delete() = default;
+      constexpr default_delete() noexcept = default;
 
       template<typename _Up, typename = typename
 	       std::enable_if<std::is_convertible<_Up*, _Tp*>::value>::type>
-        default_delete(const default_delete<_Up>&) { }
+        default_delete(const default_delete<_Up>&) noexcept { }
 
       void
       operator()(_Tp* __ptr) const
@@ -70,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct default_delete<_Tp[]>
     {
-      constexpr default_delete() = default;
+      constexpr default_delete() noexcept = default;
 
       void
       operator()(_Tp* __ptr) const
@@ -111,35 +111,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Dp                       deleter_type;
 
       // Constructors.
-      constexpr unique_ptr()
+      constexpr unique_ptr() noexcept
       : _M_t()
       { static_assert(!std::is_pointer<deleter_type>::value,
 		     "constructed with null function pointer deleter"); }
 
       explicit
-      unique_ptr(pointer __p)
+      unique_ptr(pointer __p) noexcept
       : _M_t(__p, deleter_type())
       { static_assert(!std::is_pointer<deleter_type>::value,
 		     "constructed with null function pointer deleter"); }
 
       unique_ptr(pointer __p,
 	  typename std::conditional<std::is_reference<deleter_type>::value,
-	    deleter_type, const deleter_type&>::type __d)
+	    deleter_type, const deleter_type&>::type __d) noexcept
       : _M_t(__p, __d) { }
 
       unique_ptr(pointer __p,
-	  typename std::remove_reference<deleter_type>::type&& __d)
+	  typename std::remove_reference<deleter_type>::type&& __d) noexcept
       : _M_t(std::move(__p), std::move(__d))
       { static_assert(!std::is_reference<deleter_type>::value,
 		      "rvalue deleter bound to reference"); }
 
-      constexpr unique_ptr(nullptr_t)
+      constexpr unique_ptr(nullptr_t) noexcept
       : _M_t()
       { static_assert(!std::is_pointer<deleter_type>::value,
 		     "constructed with null function pointer deleter"); }
 
       // Move constructors.
-      unique_ptr(unique_ptr&& __u)
+      unique_ptr(unique_ptr&& __u) noexcept
       : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
 
       template<typename _Up, typename _Ep, typename = typename
@@ -152,7 +152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       || (!std::is_reference<_Dp>::value
 		   && std::is_convertible<_Ep, _Dp>::value))>
 	     ::type>
-	unique_ptr(unique_ptr<_Up, _Ep>&& __u)
+	unique_ptr(unique_ptr<_Up, _Ep>&& __u) noexcept
 	: _M_t(__u.release(), std::forward<_Ep>(__u.get_deleter()))
 	{ }
 
@@ -161,7 +161,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::enable_if<std::is_convertible<_Up*, _Tp*>::value
 		       && std::is_same<_Dp,
 				       default_delete<_Tp>>::value>::type>
-	unique_ptr(auto_ptr<_Up>&& __u)
+	unique_ptr(auto_ptr<_Up>&& __u) noexcept
 	: _M_t(__u.release(), deleter_type()) { }
 #endif
 
@@ -170,7 +170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Assignment.
       unique_ptr&
-      operator=(unique_ptr&& __u)
+      operator=(unique_ptr&& __u) noexcept
       {
 	reset(__u.release());
 	get_deleter() = std::forward<deleter_type>(__u.get_deleter());
@@ -183,7 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       pointer>::value
 	   && !std::is_array<_Up>::value>::type>
 	unique_ptr&
-	operator=(unique_ptr<_Up, _Ep>&& __u)
+	operator=(unique_ptr<_Up, _Ep>&& __u) noexcept
 	{
 	  reset(__u.release());
 	  get_deleter() = std::forward<_Ep>(__u.get_deleter());
@@ -191,7 +191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       unique_ptr&
-      operator=(nullptr_t)
+      operator=(nullptr_t) noexcept
       {
 	reset();
 	return *this;
@@ -206,30 +206,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       pointer
-      operator->() const
+      operator->() const noexcept
       {
 	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
 	return get();
       }
 
       pointer
-      get() const
+      get() const noexcept
       { return std::get<0>(_M_t); }
 
       deleter_type&
-      get_deleter()
+      get_deleter() noexcept
       { return std::get<1>(_M_t); }
 
       const deleter_type&
-      get_deleter() const
+      get_deleter() const noexcept
       { return std::get<1>(_M_t); }
 
-      explicit operator bool() const
+      explicit operator bool() const noexcept
       { return get() == pointer() ? false : true; }
 
       // Modifiers.
       pointer
-      release()
+      release() noexcept
       {
 	pointer __p = get();
 	std::get<0>(_M_t) = pointer();
@@ -237,7 +237,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       void
-      reset(pointer __p = pointer())
+      reset(pointer __p = pointer()) noexcept
       {
 	using std::swap;
 	swap(std::get<0>(_M_t), __p);
@@ -246,7 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       void
-      swap(unique_ptr& __u)
+      swap(unique_ptr& __u) noexcept
       {
 	using std::swap;
 	swap(_M_t, __u._M_t);
@@ -273,39 +273,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Dp                       deleter_type;
 
       // Constructors.
-      constexpr unique_ptr()
+      constexpr unique_ptr() noexcept
       : _M_t()
       { static_assert(!std::is_pointer<deleter_type>::value,
 		     "constructed with null function pointer deleter"); }
 
       explicit
-      unique_ptr(pointer __p)
+      unique_ptr(pointer __p) noexcept
       : _M_t(__p, deleter_type())
       { static_assert(!std::is_pointer<deleter_type>::value,
 		     "constructed with null function pointer deleter"); }
 
       unique_ptr(pointer __p,
 	  typename std::conditional<std::is_reference<deleter_type>::value,
-	      deleter_type, const deleter_type&>::type __d)
+	      deleter_type, const deleter_type&>::type __d) noexcept
       : _M_t(__p, __d) { }
 
-      unique_ptr(pointer __p,
-		 typename std::remove_reference<deleter_type>::type && __d)
+      unique_ptr(pointer __p, typename
+		 std::remove_reference<deleter_type>::type && __d) noexcept
       : _M_t(std::move(__p), std::move(__d))
       { static_assert(!std::is_reference<deleter_type>::value,
 		      "rvalue deleter bound to reference"); }
 
-      constexpr unique_ptr(nullptr_t)
+      constexpr unique_ptr(nullptr_t) noexcept
       : _M_t()
       { static_assert(!std::is_pointer<deleter_type>::value,
 		     "constructed with null function pointer deleter"); }
 
       // Move constructors.
-      unique_ptr(unique_ptr&& __u)
+      unique_ptr(unique_ptr&& __u) noexcept
       : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
 
       template<typename _Up, typename _Ep>
-	unique_ptr(unique_ptr<_Up, _Ep>&& __u)
+	unique_ptr(unique_ptr<_Up, _Ep>&& __u) noexcept
 	: _M_t(__u.release(), std::forward<_Ep>(__u.get_deleter()))
 	{ }
 
@@ -314,7 +314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Assignment.
       unique_ptr&
-      operator=(unique_ptr&& __u)
+      operator=(unique_ptr&& __u) noexcept
       {
 	reset(__u.release());
 	get_deleter() = std::forward<deleter_type>(__u.get_deleter());
@@ -323,7 +323,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up, typename _Ep>
 	unique_ptr&
-	operator=(unique_ptr<_Up, _Ep>&& __u)
+	operator=(unique_ptr<_Up, _Ep>&& __u) noexcept
 	{
 	  reset(__u.release());
 	  get_deleter() = std::forward<_Ep>(__u.get_deleter());
@@ -331,7 +331,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       unique_ptr&
-      operator=(nullptr_t)
+      operator=(nullptr_t) noexcept
       {
 	reset();
 	return *this;
@@ -346,23 +346,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       pointer
-      get() const
+      get() const noexcept
       { return std::get<0>(_M_t); }
 
       deleter_type&
-      get_deleter()
+      get_deleter() noexcept
       { return std::get<1>(_M_t); }
 
       const deleter_type&
-      get_deleter() const
+      get_deleter() const noexcept
       { return std::get<1>(_M_t); }
 
-      explicit operator bool() const
+      explicit operator bool() const noexcept
       { return get() == pointer() ? false : true; }
 
       // Modifiers.
       pointer
-      release()
+      release() noexcept
       {
 	pointer __p = get();
 	std::get<0>(_M_t) = pointer();
@@ -370,7 +370,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       void
-      reset(pointer __p = pointer())
+      reset(pointer __p = pointer()) noexcept
       {
 	using std::swap;
 	swap(std::get<0>(_M_t), __p);
@@ -379,7 +379,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       void
-      reset(nullptr_t)
+      reset(nullptr_t) noexcept
       {
 	pointer __p = get();
 	std::get<0>(_M_t) = pointer();
@@ -392,7 +392,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void reset(_Up) = delete;
 
       void
-      swap(unique_ptr& __u)
+      swap(unique_ptr& __u) noexcept
       {
 	using std::swap;
 	swap(_M_t, __u._M_t);
@@ -420,12 +420,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	explicit
 	unique_ptr(_Up*, typename std::enable_if<std::is_convertible<_Up*,
 		   pointer>::value>::type* = 0) = delete;
-  };
+    };
 
   template<typename _Tp, typename _Dp>
     inline void
     swap(unique_ptr<_Tp, _Dp>& __x,
-	 unique_ptr<_Tp, _Dp>& __y)
+	 unique_ptr<_Tp, _Dp>& __y) noexcept
     { __x.swap(__y); }
 
   template<typename _Tp, typename _Dp,

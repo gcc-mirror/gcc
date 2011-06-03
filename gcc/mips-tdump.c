@@ -26,11 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef index
 #undef index
 #endif
-#ifndef CROSS_DIRECTORY_STRUCTURE
 #include <a.out.h>
-#else
-#include "mips/a.out.h"
-#endif /* CROSS_DIRECTORY_STRUCTURE */
 
 /* Include getopt.h for the sake of getopt_long.  */
 #include "getopt.h"

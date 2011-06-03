@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file bin_search_tree_/debug_fn_imps.hpp
  * Contains an implementation class for bin_search_tree_.
  */
 
@@ -272,8 +272,6 @@ PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 assert_size(const char* __file, int __line) const
-{
-  PB_DS_DEBUG_VERIFY(recursive_count(m_p_head->m_p_parent) == m_size);
-}
+{ PB_DS_DEBUG_VERIFY(recursive_count(m_p_head->m_p_parent) == m_size); }
 
 #endif

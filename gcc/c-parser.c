@@ -6352,7 +6352,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  c_parser_consume_token (parser);
 	  brace_loc = c_parser_peek_token (parser)->location;
 	  c_parser_consume_token (parser);
-	  if (cur_stmt_list == NULL)
+	  if (!building_stmt_list_p ())
 	    {
 	      error_at (loc, "braced-group within expression allowed "
 			"only inside a function");
@@ -7171,7 +7171,7 @@ c_parser_objc_class_instance_variables (c_parser *parser)
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
 	  pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
-		   "extra semicolon in struct or union specified");
+		   "extra semicolon");
 	  c_parser_consume_token (parser);
 	  continue;
 	}
@@ -7214,13 +7214,34 @@ c_parser_objc_class_instance_variables (c_parser *parser)
 
       /* Parse some comma-separated declarations.  */
       decls = c_parser_struct_declaration (parser);
-      {
-	/* Comma-separated instance variables are chained together in
-	   reverse order; add them one by one.  */
-	tree ivar = nreverse (decls);
-	for (; ivar; ivar = DECL_CHAIN (ivar))
-	  objc_add_instance_variable (copy_node (ivar));
-      }
+      if (decls == NULL)
+	{
+	  /* There is a syntax error.  We want to skip the offending
+	     tokens up to the next ';' (included) or '}'
+	     (excluded).  */
+	  
+	  /* First, skip manually a ')' or ']'.  This is because they
+	     reduce the nesting level, so c_parser_skip_until_found()
+	     wouldn't be able to skip past them.  */
+	  c_token *token = c_parser_peek_token (parser);
+	  if (token->type == CPP_CLOSE_PAREN || token->type == CPP_CLOSE_SQUARE)
+	    c_parser_consume_token (parser);
+
+	  /* Then, do the standard skipping.  */
+	  c_parser_skip_until_found (parser, CPP_SEMICOLON, NULL);
+
+	  /* We hopefully recovered.  Start normal parsing again.  */
+	  parser->error = false;
+	  continue;
+	}
+      else
+	{
+	  /* Comma-separated instance variables are chained together
+	     in reverse order; add them one by one.  */
+	  tree ivar = nreverse (decls);
+	  for (; ivar; ivar = DECL_CHAIN (ivar))
+	    objc_add_instance_variable (copy_node (ivar));
+	}
       c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
     }
 }

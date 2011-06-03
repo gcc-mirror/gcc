@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file trace_fn_imps.hpp
+ * @file binary_heap_/trace_fn_imps.hpp
  * Contains an implementation class for a binary_heap.
  */
 

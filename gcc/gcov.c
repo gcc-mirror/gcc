@@ -37,6 +37,7 @@ along with Gcov; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "intl.h"
+#include "diagnostic.h"
 #include "version.h"
 
 #include <getopt.h>
@@ -342,7 +343,6 @@ static int flag_preserve_paths = 0;
 static int flag_counts = 0;
 
 /* Forward declarations.  */
-static void fnotice (FILE *, const char *, ...) ATTRIBUTE_PRINTF_2;
 static int process_args (int, char **);
 static void print_usage (int) ATTRIBUTE_NORETURN;
 static void print_version (void) ATTRIBUTE_NORETURN;
@@ -369,11 +369,21 @@ main (int argc, char **argv)
 {
   int argno;
   int first_arg;
+  const char *p;
+
+  p = argv[0] + strlen (argv[0]);
+  while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
+    --p;
+  progname = p;
+
+  xmalloc_set_program_name (progname);
 
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
 
   gcc_init_libintl ();
+
+  diagnostic_initialize (global_dc, 0);
 
   /* Handle response files.  */
   expandargv (&argc, &argv);
@@ -400,16 +410,6 @@ main (int argc, char **argv)
   release_structures ();
 
   return 0;
-}
-
-static void
-fnotice (FILE *file, const char *cmsgid, ...)
-{
-  va_list ap;
-
-  va_start (ap, cmsgid);
-  vfprintf (file, _(cmsgid), ap);
-  va_end (ap);
 }
 
 /* Print a usage message and exit.  If ERROR_P is nonzero, this is an error,
@@ -652,13 +652,12 @@ release_structures (void)
     }
 }
 
-/* Generate the names of the graph and data files. If OBJECT_DIRECTORY
-   is not specified, these are looked for in the current directory,
-   and named from the basename of the FILE_NAME sans extension. If
-   OBJECT_DIRECTORY is specified and is a directory, the files are in
-   that directory, but named from the basename of the FILE_NAME, sans
-   extension. Otherwise OBJECT_DIRECTORY is taken to be the name of
-   the object *file*, and the data files are named from that.  */
+/* Generate the names of the graph and data files.  If OBJECT_DIRECTORY
+   is not specified, these are named from FILE_NAME sans extension.  If
+   OBJECT_DIRECTORY is specified and is a directory, the files are in that
+   directory, but named from the basename of the FILE_NAME, sans extension.
+   Otherwise OBJECT_DIRECTORY is taken to be the name of the object *file*
+   and the data files are named from that.  */
 
 static void
 create_file_names (const char *file_name)
@@ -691,8 +690,8 @@ create_file_names (const char *file_name)
   else
     {
       name = XNEWVEC (char, length + 1);
-      name[0] = 0;
-      base = 1;
+      strcpy (name, file_name);
+      base = 0;
     }
 
   if (base)

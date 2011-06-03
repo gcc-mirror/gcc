@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -139,7 +139,7 @@ namespace __gnu_pbds
 	  const std::string node_update_str =
             make_xml_tag("Node_Update",
 			 "value",(tree_supports_order_statistics<Cntnr>::value ?
-	 "tree_order_statistics_node_update" : "null_tree_node_update"));
+	 "tree_order_statistics_node_update" : "null_node_update"));
 
 	  return make_xml_tag("type", "value", "tree", category_str + node_update_str);
 	}
@@ -239,7 +239,7 @@ namespace __gnu_pbds
 	  else if (trie_supports_prefix_search<Cntnr>::value)
 	    s = "trie_prefix_search_node_update";
 	  else
-            s = "null_trie_node_update";
+            s = "null_node_update";
 	  std::string node_s = make_xml_tag("Node_Update", "value", s);
 	  return make_xml_tag("type", "value", "trie", category_s + node_s);
 	}

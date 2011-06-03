@@ -193,8 +193,13 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define UHWtype	UDItype
 #define DWtype	TItype
 #define UDWtype	UTItype
+#ifdef LIBGCC2_GNU_PREFIX
+#define __NW(a,b)	__gnu_ ## a ## di ## b
+#define __NDW(a,b)	__gnu_ ## a ## ti ## b
+#else
 #define __NW(a,b)	__ ## a ## di ## b
 #define __NDW(a,b)	__ ## a ## ti ## b
+#endif
 #define COMPAT_SIMODE_TRAPPING_ARITHMETIC
 #elif LIBGCC2_UNITS_PER_WORD == 4
 #define W_TYPE_SIZE (4 * BITS_PER_UNIT)
@@ -204,8 +209,13 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define UHWtype	USItype
 #define DWtype	DItype
 #define UDWtype	UDItype
+#ifdef LIBGCC2_GNU_PREFIX
+#define __NW(a,b)	__gnu_ ## a ## si ## b
+#define __NDW(a,b)	__gnu_ ## a ## di ## b
+#else
 #define __NW(a,b)	__ ## a ## si ## b
 #define __NDW(a,b)	__ ## a ## di ## b
+#endif
 #elif LIBGCC2_UNITS_PER_WORD == 2
 #define W_TYPE_SIZE (2 * BITS_PER_UNIT)
 #define Wtype	HItype
@@ -214,8 +224,13 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define UHWtype	UHItype
 #define DWtype	SItype
 #define UDWtype	USItype
+#ifdef LIBGCC2_GNU_PREFIX
+#define __NW(a,b)	__gnu_ ## a ## hi ## b
+#define __NDW(a,b)	__gnu_ ## a ## si ## b
+#else
 #define __NW(a,b)	__ ## a ## hi ## b
 #define __NDW(a,b)	__ ## a ## si ## b
+#endif
 #else
 #define W_TYPE_SIZE BITS_PER_UNIT
 #define Wtype	QItype
@@ -224,10 +239,20 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define UHWtype	UQItype
 #define DWtype	HItype
 #define UDWtype	UHItype
+#ifdef LIBGCC2_GNU_PREFIX
+#define __NW(a,b)	__gnu_ ## a ## qi ## b
+#define __NDW(a,b)	__gnu_ ## a ## hi ## b
+#else
 #define __NW(a,b)	__ ## a ## qi ## b
 #define __NDW(a,b)	__ ## a ## hi ## b
 #endif
+#endif
 
+#ifdef LIBGCC2_GNU_PREFIX
+#define __N(a)	__gnu_ ## a
+#else
+#define __N(a)	__ ## a
+#endif
 #define Wtype_MAX ((Wtype)(((UWtype)1 << (W_TYPE_SIZE - 1)) - 1))
 #define Wtype_MIN (- Wtype_MAX - 1)
 
@@ -298,6 +323,50 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define __popcountDI2	__NDW(popcount,2)
 #define __parityDI2	__NDW(parity,2)
 
+#define __clz_tab		__N(clz_tab)
+#define __bswapsi2		__N(bswapsi2)
+#define __bswapdi2		__N(bswapdi2)
+#define __udiv_w_sdiv		__N(udiv_w_sdiv)
+#define __clear_cache		__N(clear_cache)
+#define __enable_execute_stack	__N(enable_execute_stack)
+
+#ifndef __powisf2
+#define __powisf2		__N(powisf2)
+#endif
+#ifndef __powidf2
+#define __powidf2		__N(powidf2)
+#endif
+#ifndef __powitf2
+#define __powitf2		__N(powitf2)
+#endif
+#ifndef __powixf2
+#define __powixf2		__N(powixf2)
+#endif
+#ifndef __mulsc3
+#define __mulsc3		__N(mulsc3)
+#endif
+#ifndef __muldc3
+#define __muldc3		__N(muldc3)
+#endif
+#ifndef __mulxc3
+#define __mulxc3		__N(mulxc3)
+#endif
+#ifndef __multc3
+#define __multc3		__N(multc3)
+#endif
+#ifndef __divsc3
+#define __divsc3		__N(divsc3)
+#endif
+#ifndef __divdc3
+#define __divdc3		__N(divdc3)
+#endif
+#ifndef __divxc3
+#define __divxc3		__N(divxc3)
+#endif
+#ifndef __divtc3
+#define __divtc3		__N(divtc3)
+#endif
+
 extern DWtype __muldi3 (DWtype, DWtype);
 extern DWtype __divdi3 (DWtype, DWtype);
 extern UDWtype __udivdi3 (UDWtype, UDWtype);
@@ -347,6 +416,12 @@ extern DWtype __mulvDI3 (DWtype, DWtype);
 extern DWtype __negvDI2 (DWtype);
 
 #ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
+#define __absvsi2	__N(absvsi2)
+#define __negvsi2	__N(negvsi2)
+#define __addvsi3	__N(addvsi3)
+#define __subvsi3	__N(subvsi3)
+#define __mulvsi3	__N(mulvsi3)
+
 extern SItype __absvsi2 (SItype);
 extern SItype __addvsi3 (SItype, SItype);
 extern SItype __subvsi3 (SItype, SItype);

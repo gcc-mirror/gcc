@@ -839,6 +839,14 @@ DEFPARAM (PARAM_MAX_VARTRACK_SIZE,
 	  "Max. size of var tracking hash tables",
 	  50000000, 0, 0)
 
+/* Set maximum recursion depth for var tracking expression expansion
+   and resolution.  */
+
+DEFPARAM (PARAM_MAX_VARTRACK_EXPR_DEPTH,
+	  "max-vartrack-expr-depth",
+	  "Max. recursion depth for expanding var tracking expressions",
+	  10, 0, 0)
+
 /* Set minimum insn uid for non-debug insns.  */
 
 DEFPARAM (PARAM_MIN_NONDEBUG_INSN_UID,

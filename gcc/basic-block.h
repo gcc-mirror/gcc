@@ -283,7 +283,8 @@ enum profile_status_d
 {
   PROFILE_ABSENT,
   PROFILE_GUESSED,
-  PROFILE_READ
+  PROFILE_READ,
+  PROFILE_LAST	/* Last value, used by profile streaming.  */
 };
 
 /* A structure to group all the per-function control flow graph data.

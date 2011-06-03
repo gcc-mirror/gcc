@@ -383,6 +383,51 @@ could be calculated as follows:
   size_t size = sizeof (struct sorted_fields_type) + n * sizeof (tree);
 @end smallexample
 
+@findex atomic
+@item atomic
+
+The @code{atomic} option can only be used with pointers.  It informs
+the GC machinery that the memory that the pointer points to does not
+contain any pointers, and hence it should be treated by the GC and PCH
+machinery as an ``atomic'' block of memory that does not need to be
+examined when scanning memory for pointers.  In particular, the
+machinery will not scan that memory for pointers to mark them as
+reachable (when marking pointers for GC) or to relocate them (when
+writing a PCH file).
+
+The @code{atomic} option differs from the @code{skip} option.
+@code{atomic} keeps the memory under Garbage Collection, but makes the
+GC ignore the contents of the memory.  @code{skip} is more drastic in
+that it causes the pointer and the memory to be completely ignored by
+the Garbage Collector.  So, memory marked as @code{atomic} is
+automatically freed when no longer reachable, while memory marked as
+@code{skip} is not.
+
+The @code{atomic} option must be used with great care, because all
+sorts of problem can occur if used incorrectly, that is, if the memory
+the pointer points to does actually contain a pointer.
+
+Here is an example of how to use it:
+@smallexample
+struct GTY(()) my_struct @{
+  int number_of_elements;
+  unsigned int GTY ((atomic)) * elements;
+@};
+@end smallexample
+In this case, @code{elements} is a pointer under GC, and the memory it
+points to needs to be allocated using the Garbage Collector, and will
+be freed automatically by the Garbage Collector when it is no longer
+referenced.  But the memory that the pointer points to is an array of
+@code{unsigned int} elements, and the GC must not try to scan it to
+find pointers to mark or relocate, which is why it is marked with the
+@code{atomic} option.
+
+Note that, currently, global variables can not be marked with
+@code{atomic}; only fields of a struct can.  This is a known
+limitation.  It would be useful to be able to mark global pointers
+with @code{atomic} to make the PCH machinery aware of them so that
+they are saved and restored correctly to PCH files.
+
 @findex special
 @item special ("@var{name}")
 

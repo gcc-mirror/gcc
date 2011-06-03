@@ -53,12 +53,12 @@ using namespace __gnu_pbds;
 typedef string dna_t;
 
 // Following is an element access traits for a DNA string.
-struct dna_string_e_access_traits
+struct dna_string_access_traits
 {
 public:
   typedef size_t size_type;
   typedef dna_t key_type;
-  typedef const key_type& const_key_reference;
+  typedef const key_type& key_const_reference;
   typedef char e_type;
   typedef string::const_iterator const_iterator;
 
@@ -70,12 +70,12 @@ public:
 
   // Returns a const_iterator to the firstelement of r_key.
   inline static const_iterator
-  begin(const_key_reference r_key)
+  begin(key_const_reference r_key)
   { return r_key.begin(); }
 
   // Returns a const_iterator to the after-lastelement of r_key.
   inline static const_iterator
-  end(const_key_reference r_key)
+  end(key_const_reference r_key)
   { return r_key.end(); }
 
   // Maps an element to a position.
@@ -99,7 +99,7 @@ public:
 };
 
 // A PATRICIA trie with DNA string element-access traits.
-typedef dna_string_e_access_traits traits_type;
+typedef dna_string_access_traits traits_type;
 typedef trie<dna_t, string, traits_type> trie_type;
 
 int main()

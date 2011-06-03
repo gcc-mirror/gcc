@@ -3947,13 +3947,6 @@ ix86_option_override_internal (bool main_args_p)
   if (!TARGET_80387)
     target_flags |= MASK_NO_FANCY_MATH_387;
 
-  /* On 32bit targets, avoid moving DFmode values in
-     integer registers when optimizing for size.  */
-  if (TARGET_64BIT)
-    target_flags |= TARGET_INTEGER_DFMODE_MOVES;
-  else if (optimize_size)
-    target_flags &= ~TARGET_INTEGER_DFMODE_MOVES;
-
   /* Turn on MMX builtins for -msse.  */
   if (TARGET_SSE)
     {
@@ -4091,8 +4084,9 @@ ix86_option_override_internal (bool main_args_p)
     }
 
   /* For sane SSE instruction set generation we need fcomi instruction.
-     It is safe to enable all CMOVE instructions.  */
-  if (TARGET_SSE)
+     It is safe to enable all CMOVE instructions.  Also, RDRAND intrinsic
+     expands to a sequence that includes conditional move. */
+  if (TARGET_SSE || TARGET_RDRND)
     TARGET_CMOVE = 1;
 
   /* Figure out what ASM_GENERATE_INTERNAL_LABEL builds as a prefix.  */
@@ -4190,11 +4184,6 @@ ix86_option_override_internal (bool main_args_p)
 #endif
    }
 
-  /* Save the initial options in case the user does function specific options */
-  if (main_args_p)
-    target_option_default_node = target_option_current_node
-      = build_target_option_node ();
-
   if (TARGET_AVX)
     {
       /* When not optimize for size, enable vzeroupper optimization for
@@ -4216,6 +4205,12 @@ ix86_option_override_internal (bool main_args_p)
       /* Disable vzeroupper pass if TARGET_AVX is disabled.  */
       target_flags &= ~MASK_VZEROUPPER;
     }
+
+  /* Save the initial options in case the user does function specific
+     options.  */
+  if (main_args_p)
+    target_option_default_node = target_option_current_node
+      = build_target_option_node ();
 }
 
 /* Return TRUE if VAL is passed in register with 256bit AVX modes.  */
@@ -8777,6 +8772,10 @@ ix86_code_end (void)
   rtx xops[2];
   int regno;
 
+#ifdef TARGET_SOLARIS
+  solaris_code_end ();
+#endif
+
   for (regno = AX_REG; regno <= SP_REG; regno++)
     {
       char name[32];
@@ -10549,7 +10548,7 @@ ix86_expand_prologue (void)
 
   allocate = frame.stack_pointer_offset - m->fs.sp_offset;
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     {
       /* We start to count from ARG_POINTER.  */
       HOST_WIDE_INT stack_size = frame.stack_pointer_offset;
@@ -13921,6 +13920,7 @@ get_some_local_dynamic_name (void)
    d -- print duplicated register operand for AVX instruction.
    D -- print condition for SSE cmp instruction.
    P -- if PIC, print an @PLT suffix.
+   p -- print raw symbol name.
    X -- don't print any sort of PIC '@' suffix for a symbol.
    & -- print some in-use local-dynamic symbol name.
    H -- print a memory address offset by 8; used for sse high-parts
@@ -14126,6 +14126,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case 'x':
 	case 'X':
 	case 'P':
+	case 'p':
 	  break;
 
 	case 's':
@@ -14525,7 +14526,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  x = const0_rtx;
 	}
 
-      if (code != 'P')
+      if (code != 'P' && code != 'p')
 	{
 	  if (CONST_INT_P (x) || GET_CODE (x) == CONST_DOUBLE)
 	    {
@@ -23915,6 +23916,7 @@ enum ix86_builtins
   IX86_BUILTIN_CLFLUSH,
   IX86_BUILTIN_MFENCE,
   IX86_BUILTIN_LFENCE,
+  IX86_BUILTIN_PAUSE,
 
   IX86_BUILTIN_BSRSI,
   IX86_BUILTIN_BSRDI,
@@ -24667,6 +24669,7 @@ static const struct builtin_description bdesc_special_args[] =
 {
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdtsc, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdtscp, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
+  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   /* MMX */
   { OPTION_MASK_ISA_MMX, CODE_FOR_mmx_emms, "__builtin_ia32_emms", IX86_BUILTIN_EMMS, UNKNOWN, (int) VOID_FTYPE_VOID },
@@ -27618,6 +27621,12 @@ rdrand_step:
       op0 = gen_reg_rtx (mode0);
       emit_insn (GEN_FCN (icode) (op0));
 
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op1 = expand_normal (arg0);
+      if (!address_operand (op1, VOIDmode))
+	op1 = copy_addr_to_reg (op1);
+      emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
+
       op1 = gen_reg_rtx (SImode);
       emit_move_insn (op1, CONST1_RTX (SImode));
 
@@ -27632,17 +27641,13 @@ rdrand_step:
       else
 	op2 = gen_rtx_SUBREG (SImode, op0, 0);
 
+      if (target == 0)
+	target = gen_reg_rtx (SImode);
+
       pat = gen_rtx_GEU (VOIDmode, gen_rtx_REG (CCCmode, FLAGS_REG),
 			 const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, op1,
+      emit_insn (gen_rtx_SET (VOIDmode, target,
 			      gen_rtx_IF_THEN_ELSE (SImode, pat, op2, op1)));
-      emit_move_insn (target, op1);
-
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      op1 = expand_normal (arg0);
-      if (!address_operand (op1, VOIDmode))
-	op1 = copy_addr_to_reg (op1);
-      emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
       return target;
 
     default:
@@ -29230,12 +29235,12 @@ ix86_rtx_costs (rtx x, int code, int outer_code_i, int *total, bool speed)
         /* Negate in op0 or op2 is free: FMS, FNMA, FNMS.  */
 	sub = XEXP (x, 0);
 	if (GET_CODE (sub) == NEG)
-	  sub = XEXP (x, 0);
+	  sub = XEXP (sub, 0);
 	*total += rtx_cost (sub, FMA, speed);
 
 	sub = XEXP (x, 2);
 	if (GET_CODE (sub) == NEG)
-	  sub = XEXP (x, 0);
+	  sub = XEXP (sub, 0);
 	*total += rtx_cost (sub, FMA, speed);
 	return true;
       }
@@ -32157,9 +32162,10 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
 			  gen_rtx_MULT (mode, e2, e3)));
 }
 
+#ifdef TARGET_SOLARIS
 /* Solaris implementation of TARGET_ASM_NAMED_SECTION.  */
 
-static void ATTRIBUTE_UNUSED
+static void
 i386_solaris_elf_named_section (const char *name, unsigned int flags,
 				tree decl)
 {
@@ -32173,8 +32179,18 @@ i386_solaris_elf_named_section (const char *name, unsigned int flags,
 	       flags & SECTION_WRITE ? "aw" : "a");
       return;
     }
+
+#ifndef USE_GAS
+  if (HAVE_COMDAT_GROUP && flags & SECTION_LINKONCE)
+    {
+      solaris_elf_asm_comdat_section (name, flags, decl);
+      return;
+    }
+#endif
+
   default_elf_asm_named_section (name, flags, decl);
 }
+#endif /* TARGET_SOLARIS */
 
 /* Return the mangling of TYPE if it is an extended fundamental type.  */
 

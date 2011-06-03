@@ -35,9 +35,9 @@
 // warranty.
 
 /**
- * @file constructor_destructor_fn_imps.hpp
+ * @file gp_hash_table_map_/constructor_destructor_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s constructors, destructor,
- *    and related functions.
+ * and related functions.
  */
 
 PB_DS_CLASS_T_DEC
@@ -56,7 +56,7 @@ copy_from_range(It first_it, It last_it)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME() 
+PB_DS_GP_HASH_NAME() 
 : ranged_probe_fn_base(resize_base::get_nearest_larger_size(1)),
   m_num_e(resize_base::get_nearest_larger_size(1)), m_num_used_e(0),
   m_entries(s_entry_allocator.allocate(m_num_e))
@@ -67,7 +67,7 @@ PB_DS_CLASS_NAME()
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn)    
+PB_DS_GP_HASH_NAME(const Hash_Fn& r_hash_fn)    
 : ranged_probe_fn_base(resize_base::get_nearest_larger_size(1), r_hash_fn),
   m_num_e(resize_base::get_nearest_larger_size(1)), m_num_used_e(0),
   m_entries(s_entry_allocator.allocate(m_num_e))
@@ -78,7 +78,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn) 
+PB_DS_GP_HASH_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn) 
 : hash_eq_fn_base(r_eq_fn),
   ranged_probe_fn_base(resize_base::get_nearest_larger_size(1), r_hash_fn),
   m_num_e(resize_base::get_nearest_larger_size(1)), m_num_used_e(0),
@@ -90,7 +90,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, 
+PB_DS_GP_HASH_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, 
 		 const Comb_Probe_Fn& r_comb_hash_fn) 
 : hash_eq_fn_base(r_eq_fn),
   ranged_probe_fn_base(resize_base::get_nearest_larger_size(1),
@@ -104,7 +104,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn,
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, 
+PB_DS_GP_HASH_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, 
 		 const Comb_Probe_Fn& comb_hash_fn, const Probe_Fn& prober) 
 : hash_eq_fn_base(r_eq_fn),
   ranged_probe_fn_base(resize_base::get_nearest_larger_size(1),
@@ -118,7 +118,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn,
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, 
+PB_DS_GP_HASH_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, 
 		 const Comb_Probe_Fn& comb_hash_fn, const Probe_Fn& prober, 
 		 const Resize_Policy& r_resize_policy) 
 : hash_eq_fn_base(r_eq_fn), resize_base(r_resize_policy),
@@ -133,7 +133,7 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn,
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
+PB_DS_GP_HASH_NAME(const PB_DS_CLASS_C_DEC& other) :
 #ifdef _GLIBCXX_DEBUG
   debug_base(other),
 #endif 
@@ -166,7 +166,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-~PB_DS_CLASS_NAME()
+~PB_DS_GP_HASH_NAME()
 { deallocate_all(); }
 
 PB_DS_CLASS_T_DEC

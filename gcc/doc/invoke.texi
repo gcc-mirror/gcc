@@ -260,7 +260,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wsign-conversion  -Wstack-protector @gol
--Wstrict-aliasing -Wstrict-aliasing=n @gol
+-Wstack-usage=@var{len} -Wstrict-aliasing -Wstrict-aliasing=n @gol
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{]} @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
@@ -282,6 +282,11 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
+-fdisable-ipa-@var{pass_name} @gol
+-fdisable-rtl-@var{pass_name} @gol
+-fdisable-rtl-@var{pass-name}=@var{range-list} @gol
+-fdisable-tree-@var{pass_name} @gol
+-fdisable-tree-@var{pass-name}=@var{range-list} @gol
 -fdump-noaddr -fdump-unnumbered -fdump-unnumbered-links @gol
 -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
@@ -313,6 +318,8 @@ Objective-C and Objective-C++ Dialects}.
 -fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
 -feliminate-unused-debug-symbols -femit-class-debug-always @gol
+-fenable-@var{kind}-@var{pass} @gol
+-fenable-@var{kind}-@var{pass}=@var{range-list} @gol
 -fdebug-types-section @gol
 -fmem-report -fpre-ipa-mem-report -fpost-ipa-mem-report -fprofile-arcs @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
@@ -1838,6 +1845,8 @@ Version 4 implements a standard mangling for vector types.
 Version 5 corrects the mangling of attribute const/volatile on
 function pointer types, decltype of a plain decl, and use of a
 function parameter in the declaration of another parameter.
+
+Version 6 corrects the promotion behavior of C++0x scoped enums.
 
 See also @option{-Wabi}.
 
@@ -3922,6 +3931,37 @@ via @code{alloca}, variable-length arrays, or related constructs
 is not included by the compiler when determining
 whether or not to issue a warning.
 
+@item -Wstack-usage=@var{len}
+@opindex Wstack-usage
+Warn if the stack usage of a function might be larger than @var{len} bytes.
+The computation done to determine the stack usage is conservative.
+Any space allocated via @code{alloca}, variable-length arrays, or related
+constructs is included by the compiler when determining whether or not to
+issue a warning.
+
+The message is in keeping with the output of @option{-fstack-usage}.
+
+@itemize
+@item
+If the stack usage is fully static but exceeds the specified amount, it's:
+
+@smallexample
+  warning: stack usage is 1120 bytes
+@end smallexample
+@item
+If the stack usage is (partly) dynamic but bounded, it's:
+
+@smallexample
+  warning: stack usage might be 1648 bytes
+@end smallexample
+@item
+If the stack usage is (partly) dynamic and not bounded, it's:
+
+@smallexample
+  warning: stack usage might be unbounded
+@end smallexample
+@end itemize
+
 @item -Wunsafe-loop-optimizations
 @opindex Wunsafe-loop-optimizations
 @opindex Wno-unsafe-loop-optimizations
@@ -4984,6 +5024,7 @@ more closely, if you do not optimize.
 @opindex fdbg-cnt-list
 Print the name and the counter upper bound for all debug counters.
 
+
 @item -fdbg-cnt=@var{counter-value-list}
 @opindex fdbg-cnt
 Set the internal debug counter upper bound.  @var{counter-value-list}
@@ -4993,7 +5034,73 @@ All debug counters have the initial upper bound of @var{UINT_MAX},
 thus dbg_cnt() returns true always unless the upper bound is set by this option.
 e.g. With -fdbg-cnt=dce:10,tail_call:0
 dbg_cnt(dce) will return true only for first 10 invocations
-and dbg_cnt(tail_call) will return false always.
+
+@itemx -fenable-@var{kind}-@var{pass}
+@itemx -fdisable-@var{kind}-@var{pass}=@var{range-list}
+@opindex fdisable-
+@opindex fenable-
+
+This is a set of debugging options that are used to explicitly disable/enable
+optimization passes. For compiler users, regular options for enabling/disabling
+passes should be used instead.
+
+@itemize
+
+@item -fdisable-ipa-@var{pass}
+Disable ipa pass @var{pass}. @var{pass} is the pass name.  If the same pass is
+statically invoked in the compiler multiple times, the pass name should be
+appended with a sequential number starting from 1.
+
+@item -fdisable-rtl-@var{pass}
+@item -fdisable-rtl-@var{pass}=@var{range-list}
+Disable rtl pass @var{pass}.  @var{pass} is the pass name.  If the same pass is
+statically invoked in the compiler multiple times, the pass name should be
+appended with a sequential number starting from 1.  @var{range-list} is a comma
+seperated list of function ranges.  Each range is a number pair seperated by a colon.
+The range is inclusive in both ends.  If the range is trivial, the number pair can be
+simplified a a single number.  If the function's cgraph node's @var{uid} is falling
+within one of the specified ranges, the @var{pass} is disabled for that function.
+The @var{uid} is shown in the function header of a dump file.
+
+@item -fdisable-tree-@var{pass}
+@item -fdisable-tree-@var{pass}=@var{range-list}
+Disable tree pass @var{pass}.  See @option{-fdisable-rtl} for the description of
+option arguments.
+
+@item -fenable-ipa-@var{pass}
+Enable ipa pass @var{pass}.  @var{pass} is the pass name.  If the same pass is
+statically invoked in the compiler multiple times, the pass name should be
+appended with a sequential number starting from 1.
+
+@item -fenable-rtl-@var{pass}
+@item -fenable-rtl-@var{pass}=@var{range-list}
+Enable rtl pass @var{pass}.  See @option{-fdisable-rtl} for option argument
+description and examples.
+
+@item -fenable-tree-@var{pass}
+@item -fenable-tree-@var{pass}=@var{range-list}
+Enable tree pass @var{pass}.  See @option{-fdisable-rtl} for the description
+of option arguments.
+
+@smallexample
+
+# disable ccp1 for all functions
+   -fdisable-tree-ccp1
+# disable complete unroll for function whose cgraph node uid is 1
+   -fenable-tree-cunroll=1
+# disable gcse2 for functions at the following ranges [1,1],
+# [300,400], and [400,1000]
+   -fdisable-rtl-gcse2=1:100,300,400:1000
+# disable early inlining
+   -fdisable-tree-einline
+# disable ipa inlining
+   -fdisable-ipa-inline
+# enable tree full unroll
+   -fenable-tree-unroll
+
+@end smallexample
+
+@end itemize
 
 @item -d@var{letters}
 @itemx -fdump-rtl-@var{pass}
@@ -8833,6 +8940,16 @@ the function.  If the limit is exceeded even without debug insns, var
 tracking analysis is completely disabled for the function.  Setting
 the parameter to zero makes it unlimited.
 
+@item max-vartrack-expr-depth
+Sets a maximum number of recursion levels when attempting to map
+variable names or debug temporaries to value expressions.  This trades
+compile time for more complete debug information.  If this is set too
+low, value expressions that are available and could be represented in
+debug information may end up not being used; setting this higher may
+enable the compiler to find more complex debug expressions, but compile
+time may grow exponentially, and even then, it may fail to find more
+usable expressions.  The default is 10.
+
 @item min-nondebug-insn-uid
 Use uids starting at this parameter for nondebug insns.  The range below
 the parameter is reserved exclusively for debug insns created by
@@ -10124,7 +10241,8 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{arm1136j-s}, @samp{arm1136jf-s}, @samp{mpcore}, @samp{mpcorenovfp},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
 @samp{cortex-a5}, @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a15},
-@samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-m4}, @samp{cortex-m3},
+@samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-r5},
+@samp{cortex-m4}, @samp{cortex-m3},
 @samp{cortex-m1},
 @samp{cortex-m0},
 @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
@@ -10414,7 +10532,7 @@ can be one of @samp{bf512}, @samp{bf514}, @samp{bf516}, @samp{bf518},
 @samp{bf534}, @samp{bf536}, @samp{bf537}, @samp{bf538}, @samp{bf539},
 @samp{bf542}, @samp{bf544}, @samp{bf547}, @samp{bf548}, @samp{bf549},
 @samp{bf542m}, @samp{bf544m}, @samp{bf547m}, @samp{bf548m}, @samp{bf549m},
-@samp{bf561}.
+@samp{bf561}, @samp{bf592}.
 The optional @var{sirevision} specifies the silicon revision of the target
 Blackfin processor.  Any workarounds available for the targeted silicon revision
 will be enabled.  If @var{sirevision} is @samp{none}, no workarounds are enabled.

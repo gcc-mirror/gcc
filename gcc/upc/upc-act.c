@@ -776,7 +776,7 @@ upc_check_decl_init (tree decl, tree init)
 void
 upc_decl_init (tree decl, tree init)
 {
-  tree cur_stmt_list_save, init_stmt;
+  tree init_stmt;
   if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
     {
       error ("initialization of UPC shared arrays "
@@ -785,11 +785,8 @@ upc_decl_init (tree decl, tree init)
     }
   if (!upc_init_stmt_list)
     upc_init_stmt_list = alloc_stmt_list ();
-  cur_stmt_list_save = cur_stmt_list;
-  cur_stmt_list = upc_init_stmt_list;
   init_stmt = build2 (INIT_EXPR, void_type_node, decl, init);
-  add_stmt (init_stmt);
-  cur_stmt_list = cur_stmt_list_save;
+  append_to_statement_list_force (init_stmt, &upc_init_stmt_list);
 }
 
 /* Return TRUE if DECL's size is zero, and DECL is a shared array. */
@@ -1429,7 +1426,7 @@ upc_build_init_func (const tree stmt_list)
   struct c_typespec void_spec;
   struct c_declarator *init_func_decl;
   struct c_arg_info args;
-  tree init_func, t_list;
+  tree init_func, fn_body;
   location_t loc = input_location;
   rtx init_func_symbol;
   int decl_ok;
@@ -1451,14 +1448,10 @@ upc_build_init_func (const tree stmt_list)
   TREE_USED (current_function_decl) = 1;
   DECL_SECTION_NAME (current_function_decl) =
     build_string (strlen (UPC_INIT_SECTION_NAME), UPC_INIT_SECTION_NAME);
-  /* Swap the statement list that we've built up,
-     for the current statement list.  */
-  t_list = c_begin_compound_stmt (true);
-  TREE_CHAIN (stmt_list) = TREE_CHAIN (t_list);
-  cur_stmt_list = stmt_list;
-  free_stmt_list (t_list);
-  t_list = c_end_compound_stmt (loc, stmt_list, true);
-  add_stmt (t_list);
+  fn_body = c_begin_compound_stmt (true);
+  append_to_statement_list_force (stmt_list, &fn_body);
+  fn_body = c_end_compound_stmt (loc, fn_body, true);
+  add_stmt (fn_body);
   finish_function ();
   gcc_assert (DECL_RTL (init_func));
   mark_decl_referenced (init_func);

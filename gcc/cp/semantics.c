@@ -393,6 +393,7 @@ add_stmt (tree t)
 
   /* Add T to the statement-tree.  Non-side-effect statements need to be
      recorded during statement expressions.  */
+  gcc_checking_assert (!VEC_empty (tree, stmt_list_stack));
   append_to_statement_list_force (t, &cur_stmt_list);
 
   return t;
@@ -656,7 +657,7 @@ tree
 begin_if_stmt (void)
 {
   tree r, scope;
-  scope = do_pushlevel (sk_block);
+  scope = do_pushlevel (sk_cond);
   r = build_stmt (input_location, IF_STMT, NULL_TREE,
 		  NULL_TREE, NULL_TREE, scope);
   begin_cond (&IF_COND (r));
@@ -1013,7 +1014,7 @@ begin_switch_stmt (void)
 {
   tree r, scope;
 
-  scope = do_pushlevel (sk_block);
+  scope = do_pushlevel (sk_cond);
   r = build_stmt (input_location, SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE, scope);
 
   begin_cond (&SWITCH_STMT_COND (r));
@@ -1953,7 +1954,8 @@ empty_expr_stmt_p (tree expr_stmt)
    Returns the functions to be considered by overload resolution.  */
 
 tree
-perform_koenig_lookup (tree fn, VEC(tree,gc) *args, bool include_std)
+perform_koenig_lookup (tree fn, VEC(tree,gc) *args, bool include_std,
+		       tsubst_flags_t complain)
 {
   tree identifier = NULL_TREE;
   tree functions = NULL_TREE;
@@ -1991,8 +1993,13 @@ perform_koenig_lookup (tree fn, VEC(tree,gc) *args, bool include_std)
     {
       fn = lookup_arg_dependent (identifier, functions, args, include_std);
       if (!fn)
-	/* The unqualified name could not be resolved.  */
-	fn = unqualified_fn_lookup_error (identifier);
+	{
+	  /* The unqualified name could not be resolved.  */
+	  if (complain)
+	    fn = unqualified_fn_lookup_error (identifier);
+	  else
+	    fn = identifier;
+	}
     }
 
   if (fn && template_id)
@@ -2170,6 +2177,7 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
       if (TREE_CODE (result) == INDIRECT_REF)
 	result = TREE_OPERAND (result, 0);
       result = build_call_vec (TREE_TYPE (result), orig_fn, orig_args);
+      SET_EXPR_LOCATION (result, input_location);
       KOENIG_LOOKUP_P (result) = koenig_p;
       release_tree_vector (orig_args);
       result = convert_from_reference (result);
@@ -3756,7 +3764,7 @@ cxx_omp_create_clause_info (tree c, tree type, bool need_default_ctor,
       if (need_default_ctor)
 	t = get_default_ctor (type);
       else
-	t = get_copy_ctor (type);
+	t = get_copy_ctor (type, tf_warning_or_error);
 
       if (t && !trivial_fn_p (t))
 	TREE_VEC_ELT (info, 0) = t;
@@ -3764,7 +3772,7 @@ cxx_omp_create_clause_info (tree c, tree type, bool need_default_ctor,
 
   if ((need_default_ctor || need_copy_ctor)
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-    TREE_VEC_ELT (info, 1) = get_dtor (type);
+    TREE_VEC_ELT (info, 1) = get_dtor (type, tf_warning_or_error);
 
   if (need_copy_assignment)
     {
@@ -4034,12 +4042,13 @@ finish_omp_clauses (tree clauses)
 	  break;
 	}
 
-      if (need_complete_non_reference)
+      if (need_complete_non_reference || need_copy_assignment)
 	{
 	  t = require_complete_type (t);
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
+	  else if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE
+		   && need_complete_non_reference)
 	    {
 	      error ("%qE has reference type for %qs", t, name);
 	      remove = true;
@@ -4081,6 +4090,7 @@ finish_omp_clauses (tree clauses)
 	 Save the results, because later we won't be in the right context
 	 for making these queries.  */
       if (CLASS_TYPE_P (inner_type)
+	  && COMPLETE_TYPE_P (inner_type)
 	  && (need_default_ctor || need_copy_ctor || need_copy_assignment)
 	  && !type_dependent_expression_p (t)
 	  && cxx_omp_create_clause_info (c, inner_type, need_default_ctor,
@@ -5337,9 +5347,9 @@ literal_type_p (tree t)
     return true;
   if (CLASS_TYPE_P (t))
     {
-      /* We can't answer this question until the class is complete.  */
-      gcc_assert (!TYPE_BEING_DEFINED (t) || errorcount);
-      return CLASSTYPE_LITERAL_P (complete_type (t));
+      t = complete_type (t);
+      gcc_assert (COMPLETE_TYPE_P (t) || errorcount);
+      return CLASSTYPE_LITERAL_P (t);
     }
   if (TREE_CODE (t) == ARRAY_TYPE)
     return literal_type_p (strip_array_types (t));
@@ -5356,7 +5366,7 @@ ensure_literal_type_for_constexpr_object (tree decl)
   if (TREE_CODE (decl) == VAR_DECL && DECL_DECLARED_CONSTEXPR_P (decl)
       && !processing_template_decl)
     {
-      if (CLASS_TYPE_P (type) && TYPE_BEING_DEFINED (type))
+      if (CLASS_TYPE_P (type) && !COMPLETE_TYPE_P (complete_type (type)))
 	/* Don't complain here, we'll complain about incompleteness
 	   when we try to initialize the variable.  */;
       else if (!literal_type_p (type))
@@ -5417,22 +5427,15 @@ retrieve_constexpr_fundef (tree fun)
 }
 
 /* Check whether the parameter and return types of FUN are valid for a
-   constexpr function, and complain if COMPLAIN.  If DEFER_OK is true,
-   return -1 if we can't tell yet because some of the types are still being
-   defined.  */
+   constexpr function, and complain if COMPLAIN.  */
 
-static int
-is_valid_constexpr_fn (tree fun, bool complain, bool defer_ok)
+static bool
+is_valid_constexpr_fn (tree fun, bool complain)
 {
-#define IF_NON_LITERAL(TYPE)						\
-  if (defer_ok && CLASS_TYPE_P (TYPE) && TYPE_BEING_DEFINED (TYPE))	\
-    return -1;								\
-  else if (!literal_type_p (TYPE))
-
   tree parm = FUNCTION_FIRST_USER_PARM (fun);
   bool ret = true;
   for (; parm != NULL; parm = TREE_CHAIN (parm))
-    IF_NON_LITERAL (TREE_TYPE (parm))
+    if (!literal_type_p (TREE_TYPE (parm)))
       {
 	ret = false;
 	if (complain)
@@ -5443,7 +5446,7 @@ is_valid_constexpr_fn (tree fun, bool complain, bool defer_ok)
   if (!DECL_CONSTRUCTOR_P (fun))
     {
       tree rettype = TREE_TYPE (TREE_TYPE (fun));
-      IF_NON_LITERAL (rettype)
+      if (!literal_type_p (rettype))
 	{
 	  ret = false;
 	  if (complain)
@@ -5451,52 +5454,17 @@ is_valid_constexpr_fn (tree fun, bool complain, bool defer_ok)
 		   rettype, fun);
 	}
 
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun))
+      /* Check this again here for cxx_eval_call_expression.  */
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
+	  && !CLASSTYPE_LITERAL_P (DECL_CONTEXT (fun)))
 	{
-	  IF_NON_LITERAL (DECL_CONTEXT (fun))
-	    {
-	      ret = false;
-	      if (complain)
-		error ("enclosing class of %q+#D is not a literal type", fun);
-	    }
+	  ret = false;
+	  if (complain)
+	    error ("enclosing class of %q+#D is not a literal type", fun);
 	}
     }
 
   return ret;
-}
-
-/* We can't check the parameter and return types of a constexpr function
-   for literality until any open classes are complete, so we defer checking
-   of any constexpr functions declared in a class.  */
-
-static GTY(()) VEC(tree,gc) *deferred_constexpr_decls;
-
-void
-check_deferred_constexpr_decls (void)
-{
-  unsigned i;
-  tree fn;
-
-  /* Some of the deferred decls might still need to be deferred,
-     so move the vector out of the way.  */
-  VEC(tree,gc) *vec = deferred_constexpr_decls;
-  deferred_constexpr_decls = NULL;
-
-  FOR_EACH_VEC_ELT (tree, vec, i, fn)
-    {
-      DECL_DEFERRED_CONSTEXPR_CHECK (fn) = false;
-      validate_constexpr_fundecl (fn);
-    }
-
-  if (deferred_constexpr_decls == NULL)
-    {
-      /* If we didn't need to re-defer any, keep the same vector.  */
-      VEC_truncate (tree, vec, 0);
-      deferred_constexpr_decls = vec;
-    }
-  else
-    /* Otherwise, discard the old vector.  */
-    release_tree_vector (vec);
 }
 
 /* Return non-null if FUN certainly designates a valid constexpr function
@@ -5507,23 +5475,13 @@ check_deferred_constexpr_decls (void)
 tree
 validate_constexpr_fundecl (tree fun)
 {
-  int valid;
-
   if (processing_template_decl || !DECL_DECLARED_CONSTEXPR_P (fun))
     return NULL;
   else if (DECL_CLONED_FUNCTION_P (fun))
     /* We already checked the original function.  */
     return fun;
 
-  valid = is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INFO (fun),
-				 /*defer_ok=*/true);
-  if (valid < 0)
-    {
-      DECL_DEFERRED_CONSTEXPR_CHECK (fun) = true;
-      VEC_safe_push (tree, gc, deferred_constexpr_decls, fun);
-      return NULL;
-    }
-  else if (valid == 0)
+  if (!is_valid_constexpr_fn (fun, !DECL_TEMPLATE_INFO (fun)))
     {
       DECL_DECLARED_CONSTEXPR_P (fun) = false;
       return NULL;
@@ -5767,9 +5725,6 @@ register_constexpr_fundef (tree fun, tree body)
 {
   constexpr_fundef entry;
   constexpr_fundef **slot;
-
-  gcc_assert (DECL_DECLARED_CONSTEXPR_P (fun)
-	      && !DECL_DEFERRED_CONSTEXPR_CHECK (fun));
 
   if (DECL_CONSTRUCTOR_P (fun))
     body = build_constexpr_constructor_member_initializers
@@ -6143,7 +6098,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 	  if (DECL_TEMPLATE_INFO (fun)
 	      && DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT
 					    (DECL_TI_TEMPLATE (fun))))
-	    is_valid_constexpr_fn (fun, true, /*defer_ok=*/false);
+	    is_valid_constexpr_fn (fun, true);
 	}
       *non_constant_p = true;
       return t;
@@ -6497,6 +6452,9 @@ cxx_eval_bit_field_ref (const constexpr_call *call, tree t,
 			bool *non_constant_p)
 {
   tree orig_whole = TREE_OPERAND (t, 0);
+  tree retval, fldval, utype, mask;
+  bool fld_seen = false;
+  HOST_WIDE_INT istart, isize;
   tree whole = cxx_eval_constant_expression (call, orig_whole,
 					     allow_non_constant, addr,
 					     non_constant_p);
@@ -6517,12 +6475,47 @@ cxx_eval_bit_field_ref (const constexpr_call *call, tree t,
     return t;
 
   start = TREE_OPERAND (t, 2);
+  istart = tree_low_cst (start, 0);
+  isize = tree_low_cst (TREE_OPERAND (t, 1), 0);
+  utype = TREE_TYPE (t);
+  if (!TYPE_UNSIGNED (utype))
+    utype = build_nonstandard_integer_type (TYPE_PRECISION (utype), 1);
+  retval = build_int_cst (utype, 0);
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (whole), i, field, value)
     {
-      if (bit_position (field) == start)
+      tree bitpos = bit_position (field);
+      if (bitpos == start && DECL_SIZE (field) == TREE_OPERAND (t, 1))
 	return value;
+      if (TREE_CODE (TREE_TYPE (field)) == INTEGER_TYPE
+	  && TREE_CODE (value) == INTEGER_CST
+	  && host_integerp (bitpos, 0)
+	  && host_integerp (DECL_SIZE (field), 0))
+	{
+	  HOST_WIDE_INT bit = tree_low_cst (bitpos, 0);
+	  HOST_WIDE_INT sz = tree_low_cst (DECL_SIZE (field), 0);
+	  HOST_WIDE_INT shift;
+	  if (bit >= istart && bit + sz <= istart + isize)
+	    {
+	      fldval = fold_convert (utype, value);
+	      mask = build_int_cst_type (utype, -1);
+	      mask = fold_build2 (LSHIFT_EXPR, utype, mask,
+				  size_int (TYPE_PRECISION (utype) - sz));
+	      mask = fold_build2 (RSHIFT_EXPR, utype, mask,
+				  size_int (TYPE_PRECISION (utype) - sz));
+	      fldval = fold_build2 (BIT_AND_EXPR, utype, fldval, mask);
+	      shift = bit - istart;
+	      if (BYTES_BIG_ENDIAN)
+		shift = TYPE_PRECISION (utype) - shift - sz;
+	      fldval = fold_build2 (LSHIFT_EXPR, utype, fldval,
+				    size_int (shift));
+	      retval = fold_build2 (BIT_IOR_EXPR, utype, retval, fldval);
+	      fld_seen = true;
+	    }
+	}
     }
-  gcc_unreachable();
+  if (fld_seen)
+    return fold_convert (TREE_TYPE (t), retval);
+  gcc_unreachable ();
   return error_mark_node;
 }
 
@@ -8155,7 +8148,8 @@ lambda_function (tree lambda)
     type = lambda;
   gcc_assert (LAMBDA_TYPE_P (type));
   /* Don't let debug_tree cause instantiation.  */
-  if (CLASSTYPE_TEMPLATE_INSTANTIATION (type) && !COMPLETE_TYPE_P (type))
+  if (CLASSTYPE_TEMPLATE_INSTANTIATION (type)
+      && !COMPLETE_OR_OPEN_TYPE_P (type))
     return NULL_TREE;
   lambda = lookup_member (type, ansi_opname (CALL_EXPR),
 			  /*protect=*/0, /*want_type=*/false);
@@ -8586,7 +8580,7 @@ maybe_add_lambda_conv_op (tree type)
     {
       /* Put the thunk in the same comdat group as the call op.  */
       struct cgraph_node *callop_node, *thunk_node;
-      DECL_COMDAT_GROUP (statfn) = DECL_COMDAT_GROUP (callop);
+      DECL_COMDAT_GROUP (statfn) = cxx_comdat_group (callop);
       callop_node = cgraph_get_create_node (callop);
       thunk_node = cgraph_get_create_node (statfn);
       gcc_assert (callop_node->same_comdat_group == NULL);

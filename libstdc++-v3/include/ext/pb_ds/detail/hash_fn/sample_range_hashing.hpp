@@ -41,37 +41,34 @@
 #ifndef PB_DS_SAMPLE_RANGE_HASHING_HPP
 #define PB_DS_SAMPLE_RANGE_HASHING_HPP
 
-// A sample range-hashing functor.
-class sample_range_hashing
+namespace __gnu_pbds
 {
+  /// A sample range-hashing functor.
+  class sample_range_hashing
+  {
+  public:
+    // Size type.
+    typedef std::size_t size_type;
 
-public:
+    // Default constructor.
+    sample_range_hashing();
 
-  // Size type.
-  typedef std::size_t size_type;
+    // Copy constructor.
+    sample_range_hashing(const sample_range_hashing& other);
 
-public:
+    // Swaps content.
+    inline void
+    swap(sample_range_hashing& other);
 
-  // Default constructor.
-  sample_range_hashing();
+  protected:
+    // Notifies the policy object that the container's __size has
+    // changed to size.
+    void
+    notify_resized(size_type);
 
-  // Copy constructor.
-  sample_range_hashing(const sample_range_hashing& other);
-
-  // Swaps content.
-  inline void
-  swap(sample_range_hashing& other);
-
-protected:
-
-  // Notifies the policy object that the container's __size has changed to size.
-  void
-  notify_resized(size_type size);
-
-  // Transforms the __hash value hash into a ranged-hash value.
-  inline size_type
-  operator()(size_type hash) const;
-
-};
-
+    // Transforms the __hash value hash into a ranged-hash value.
+    inline size_type
+    operator()(size_type ) const;
+  };
+}
 #endif // #ifndef PB_DS_SAMPLE_RANGE_HASHING_HPP

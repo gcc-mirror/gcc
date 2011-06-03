@@ -330,6 +330,48 @@ lto_output_sleb128_stream (struct lto_output_stream *obs, HOST_WIDE_INT work)
 }
 
 
+/* Pack WORK into BP in a variant of uleb format.  */
+
+void
+bp_pack_var_len_unsigned (struct bitpack_d *bp, unsigned HOST_WIDE_INT work)
+{
+  do
+    {
+      unsigned int half_byte = (work & 0x7);
+      work >>= 3;
+      if (work != 0)
+	/* More half_bytes to follow.  */
+	half_byte |= 0x8;
+
+      bp_pack_value (bp, half_byte, 4);
+    }
+  while (work != 0);
+}
+
+
+/* Pack WORK into BP in a variant of sleb format.  */
+
+void
+bp_pack_var_len_int (struct bitpack_d *bp, HOST_WIDE_INT work)
+{
+  int more, half_byte;
+
+  do
+    {
+      half_byte = (work & 0x7);
+      /* arithmetic shift */
+      work >>= 3;
+      more = !((work == 0 && (half_byte & 0x4) == 0)
+	       || (work == -1 && (half_byte & 0x4) != 0));
+      if (more)
+	half_byte |= 0x8;
+
+      bp_pack_value (bp, half_byte, 4);
+    }
+  while (more);
+}
+
+
 /* Lookup NAME in ENCODER.  If NAME is not found, create a new entry in
    ENCODER for NAME with the next available index of ENCODER,  then
    print the index to OBS.  True is returned if NAME was added to

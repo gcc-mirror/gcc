@@ -1,3 +1,20 @@
+2011-06-02  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 174558 into gupc branch.
+
+	upc-lang.c (upc_check_decl_init): Use recently defined
+	'append_to_statement_list_force' function to add UPC
+	initialization statements to the UPC initialization
+	statement list ('upc_init_stmt_list').
+	(upc_build_init_func): Use recently defined
+	'append_to_statement_list_force' function to add
+	statements listed in 'upc_init_stmt_list' onto the
+	function body constructed to implement initialization
+	of UPC declarations that require active initialization
+	at program start up.  The previous methods of manipulating
+	statement lists no longer worked, due to changes in the
+	the statement list structure.
+
 2011-05-23  Gary Funck  <gary@intrepid.com>
 
 	* upc-pts-struct.c: Revert to code that aligned the

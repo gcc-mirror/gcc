@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file insert_fn_imps.hpp
+ * @file rb_tree_map_/insert_fn_imps.hpp
  * Contains an implementation for rb_tree_.
  */
 

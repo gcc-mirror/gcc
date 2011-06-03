@@ -45,6 +45,7 @@
 #include <parallel/features.h>
 #include <parallel/parallel.h>
 #include <parallel/losertree.h>
+#include <parallel/multiseq_selection.h>
 #if _GLIBCXX_ASSERTIONS
 #include <parallel/checkers.h>
 #endif
@@ -54,6 +55,12 @@
 
 namespace __gnu_parallel
 {
+  template<typename _RAIter1, typename _RAIter2, typename _OutputIterator,
+	   typename _DifferenceTp, typename _Compare>
+    _OutputIterator
+    __merge_advance(_RAIter1&, _RAIter1, _RAIter2&, _RAIter2,
+		    _OutputIterator, _DifferenceTp, _Compare);
+
   /** @brief _Iterator wrapper supporting an implicit supremum at the end
    *         of the sequence, dominating all comparisons.
    *

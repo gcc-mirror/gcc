@@ -23,7 +23,7 @@
 
   <para>
     As this name suggests, this allocator uses a bit-map to keep track
-    of the used and unused memory locations for it's book-keeping
+    of the used and unused memory locations for its book-keeping
     purposes.
   </para>
   <para>
@@ -84,7 +84,7 @@
     free list if it exists.
   </para>
   <para>
-    Suppose the free list size has reached it's threshold, then the
+    Suppose the free list size has reached its threshold, then the
     largest block from among those in the list and the new block will
     be selected and given back to the OS. This is done because it
     reduces external fragmentation, and allows the OS to use the
@@ -509,7 +509,7 @@ Block a bitmap as well?
 
   <orderedlist>
   <listitem><para>Constant time access for the bitmap themselves, since no kind of
-look up will be needed to find the correct bitmap list or it's
+look up will be needed to find the correct bitmap list or its
 equivalent.</para></listitem>
   <listitem><para>And also this would preserve the cache as far as possible.</para></listitem>
   </orderedlist>

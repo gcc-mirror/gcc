@@ -1,0 +1,34 @@
+# Copyright (C) 2004, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Use unwind-dw2-fde-glibc.c.  Unless linker support and dl_iterate_phdr
+# are present, automatically falls back to unwind-dw2-fde.c.
+LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-glibc.c \
+  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
+
+# gmon build rule:
+gmon.o:	$(srcdir)/config/gmon-sol2.c
+	$(gcc_compile) -c $<
+
+# Assemble startup files.
+crt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
+	$(crt_compile) -c $<
+gcrt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
+	$(crt_compile) -c -DGCRT1 $<
+
+HOST_LIBGCC2_CFLAGS = -fPIC

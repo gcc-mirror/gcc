@@ -1099,6 +1099,8 @@ create_integer_operand (struct expand_operand *op, HOST_WIDE_INT intval)
   create_expand_operand (op, EXPAND_INTEGER, GEN_INT (intval), VOIDmode, false);
 }
 
+extern bool valid_multiword_target_p (rtx);
+
 extern bool maybe_legitimize_operands (enum insn_code icode,
 				       unsigned int opno, unsigned int nops,
 				       struct expand_operand *ops);

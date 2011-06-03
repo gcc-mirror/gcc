@@ -1196,20 +1196,20 @@ namespace __gnu_test
 	  // constructor or assignment operator of value_type throws.
 	  if (!traits<container_type>::has_throwing_erase::value)
 	    {
-	      _M_erasep(_M_container);
-	      _M_eraser(_M_container);
+	      this->_M_erasep(_M_container);
+	      this->_M_eraser(_M_container);
 	    }
 
-	  _M_popf(_M_container);
-	  _M_popb(_M_container);
+	  this->_M_popf(_M_container);
+	  this->_M_popb(_M_container);
 
-	  _M_iops(_M_container);
-	  _M_ciops(_M_container);
+	  this->_M_iops(_M_container);
+	  this->_M_ciops(_M_container);
 
-	  _M_swap(_M_container);
+	  this->_M_swap(_M_container);
 
 	  // Last.
-	  _M_clear(_M_container);
+	  this->_M_clear(_M_container);
 	}
       }
     };

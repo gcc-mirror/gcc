@@ -38,8 +38,7 @@ push_stmt_list (void)
 {
   tree t;
   t = alloc_stmt_list ();
-  TREE_CHAIN (t) = cur_stmt_list;
-  cur_stmt_list = t;
+  VEC_safe_push (tree, gc, stmt_list_stack, t);
   return t;
 }
 
@@ -48,21 +47,23 @@ push_stmt_list (void)
 tree
 pop_stmt_list (tree t)
 {
-  tree u = cur_stmt_list, chain;
+  tree u = NULL_TREE;
 
   /* Pop statement lists until we reach the target level.  The extra
      nestings will be due to outstanding cleanups.  */
   while (1)
     {
-      chain = TREE_CHAIN (u);
-      TREE_CHAIN (u) = NULL_TREE;
-      if (chain)
-	STATEMENT_LIST_HAS_LABEL (chain) |= STATEMENT_LIST_HAS_LABEL (u);
+      u = VEC_pop (tree, stmt_list_stack);
+      if (!VEC_empty (tree, stmt_list_stack))
+	{
+	  tree x = VEC_last (tree, stmt_list_stack);
+	  STATEMENT_LIST_HAS_LABEL (x) |= STATEMENT_LIST_HAS_LABEL (u);
+	}
       if (t == u)
 	break;
-      u = chain;
     }
-  cur_stmt_list = chain;
+
+  gcc_assert (u != NULL_TREE);
 
   /* If the statement list is completely empty, just return it.  This is
      just as good small as build_empty_stmt, with the advantage that

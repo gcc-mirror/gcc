@@ -72,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       native_handle_type	_M_thread;
 
     public:
-      id() : _M_thread() { }
+      id() noexcept : _M_thread() { }
 
       explicit
       id(native_handle_type __id) : _M_thread(__id) { }
@@ -82,11 +82,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class hash<thread::id>;
 
       friend bool
-      operator==(thread::id __x, thread::id __y)
+      operator==(thread::id __x, thread::id __y) noexcept
       { return __gthread_equal(__x._M_thread, __y._M_thread); }
 
       friend bool
-      operator<(thread::id __x, thread::id __y)
+      operator<(thread::id __x, thread::id __y) noexcept
       { return __x._M_thread < __y._M_thread; }
 
       template<class _CharT, class _Traits>
@@ -121,11 +121,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     id				_M_id;
 
   public:
-    thread() = default;
+    thread() noexcept = default;
     thread(thread&) = delete;
     thread(const thread&) = delete;
 
-    thread(thread&& __t)
+    thread(thread&& __t) noexcept
     { swap(__t); }
 
     template<typename _Callable, typename... _Args>
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     thread& operator=(const thread&) = delete;
 
-    thread& operator=(thread&& __t)
+    thread& operator=(thread&& __t) noexcept
     {
       if (joinable())
 	std::terminate();
@@ -154,11 +154,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     void
-    swap(thread& __t)
+    swap(thread& __t) noexcept
     { std::swap(_M_id, __t._M_id); }
 
     bool
-    joinable() const
+    joinable() const noexcept
     { return !(_M_id == id()); }
 
     void
@@ -168,7 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     detach();
 
     thread::id
-    get_id() const
+    get_id() const noexcept
     { return _M_id; }
 
     /** @pre thread is joinable
@@ -179,8 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Returns a value that hints at the number of hardware thread contexts.
     static unsigned int
-    hardware_concurrency()
-    { return 0; }
+    hardware_concurrency() noexcept;
 
   private:
     void
@@ -198,23 +197,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline thread::_Impl_base::~_Impl_base() = default;
 
   inline void
-  swap(thread& __x, thread& __y)
+  swap(thread& __x, thread& __y) noexcept
   { __x.swap(__y); }
 
   inline bool
-  operator!=(thread::id __x, thread::id __y)
+  operator!=(thread::id __x, thread::id __y) noexcept
   { return !(__x == __y); }
 
   inline bool
-  operator<=(thread::id __x, thread::id __y)
+  operator<=(thread::id __x, thread::id __y) noexcept
   { return !(__y < __x); }
 
   inline bool
-  operator>(thread::id __x, thread::id __y)
+  operator>(thread::id __x, thread::id __y) noexcept
   { return __y < __x; }
 
   inline bool
-  operator>=(thread::id __x, thread::id __y)
+  operator>=(thread::id __x, thread::id __y) noexcept
   { return !(__x < __y); }
 
   // DR 889.
@@ -250,22 +249,16 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
     /// get_id
     inline thread::id
-    get_id() { return thread::id(__gthread_self()); }
+    get_id() noexcept { return thread::id(__gthread_self()); }
 
 #ifdef _GLIBCXX_USE_SCHED_YIELD
     /// yield
     inline void
-    yield()
+    yield() noexcept
     { __gthread_yield(); }
 #endif
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
-    /// sleep_until
-    template<typename _Clock, typename _Duration>
-      inline void
-      sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)
-      { sleep_for(__atime - _Clock::now()); }
-
     /// sleep_for
     template<typename _Rep, typename _Period>
       inline void
@@ -285,6 +278,12 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 	::nanosleep(&__ts, 0);
       }
+
+    /// sleep_until
+    template<typename _Clock, typename _Duration>
+      inline void
+      sleep_until(const chrono::time_point<_Clock, _Duration>& __atime)
+      { sleep_for(__atime - _Clock::now()); }
 #endif
 
   _GLIBCXX_END_NAMESPACE_VERSION

@@ -1,3 +1,30 @@
+2011-05-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR middle-end/46500
+	* expr.c: Include "tm.h" .
+
+2011-05-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (poplevel): Don't access TREE_TYPE of BLOCKs.
+	* expr.c (build_jni_stub): Likewise.
+
+2011-05-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in ($(XGCJ)$(exeext)): Use libcommon-target.a instead
+	of prefix.o.
+
+2011-05-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in ($(XGCJ)$(exeext)): Don't explicitly use intl.o and
+	version.o.
+	(JCFDUMP_OBJS): Remove errors.o, version.o and intl.o.
+	(JVGENMAIN_OBJS): Remove errors.o and intl.o.
+	(java/jcf-dump.o, java/jvgenmain.o): Depend in $(DIAGNOSTIC_H).
+	* jcf-dump.c: Include diagnostic.h.
+	(main): Initialize diagnostics.
+	* jvgenmain.c: Include diagnostic.h.
+	(main): Initialize diagnostics.
+
 2011-05-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* java-tree.h (TYPE_ARGUMENT_SIGNATURE): Use TYPE_MINVAL.

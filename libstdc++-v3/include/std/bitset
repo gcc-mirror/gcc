@@ -75,11 +75,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// 0 is the least significant word.
       _WordT 		_M_w[_Nw];
 
-      _GLIBCXX_CONSTEXPR _Base_bitset()
+      _GLIBCXX_CONSTEXPR _Base_bitset() _GLIBCXX_NOEXCEPT
       : _M_w() { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      constexpr _Base_bitset(unsigned long long __val)
+      constexpr _Base_bitset(unsigned long long __val) noexcept
       : _M_w{ _WordT(__val)
 #if __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
 	       , _WordT(__val >> _GLIBCXX_BITSET_BITS_PER_WORD)
@@ -92,90 +92,90 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichword(size_t __pos )
+      _S_whichword(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbyte(size_t __pos )
+      _S_whichbyte(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbit(size_t __pos )
+      _S_whichbit(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR _WordT
-      _S_maskbit(size_t __pos )
+      _S_maskbit(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
       _WordT&
-      _M_getword(size_t __pos)
+      _M_getword(size_t __pos) _GLIBCXX_NOEXCEPT
       { return _M_w[_S_whichword(__pos)]; }
 
       _WordT
-      _M_getword(size_t __pos) const
+      _M_getword(size_t __pos) const _GLIBCXX_NOEXCEPT
       { return _M_w[_S_whichword(__pos)]; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       const _WordT*
-      _M_getdata() const
+      _M_getdata() const noexcept
       { return _M_w; }
 #endif
 
       _WordT&
-      _M_hiword()
+      _M_hiword() _GLIBCXX_NOEXCEPT
       { return _M_w[_Nw - 1]; }
 
       _GLIBCXX_CONSTEXPR _WordT
-      _M_hiword() const
+      _M_hiword() const _GLIBCXX_NOEXCEPT
       { return _M_w[_Nw - 1]; }
 
       void
-      _M_do_and(const _Base_bitset<_Nw>& __x)
+      _M_do_and(const _Base_bitset<_Nw>& __x) _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] &= __x._M_w[__i];
       }
 
       void
-      _M_do_or(const _Base_bitset<_Nw>& __x)
+      _M_do_or(const _Base_bitset<_Nw>& __x) _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] |= __x._M_w[__i];
       }
 
       void
-      _M_do_xor(const _Base_bitset<_Nw>& __x)
+      _M_do_xor(const _Base_bitset<_Nw>& __x) _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] ^= __x._M_w[__i];
       }
 
       void
-      _M_do_left_shift(size_t __shift);
+      _M_do_left_shift(size_t __shift) _GLIBCXX_NOEXCEPT;
 
       void
-      _M_do_right_shift(size_t __shift);
+      _M_do_right_shift(size_t __shift) _GLIBCXX_NOEXCEPT;
 
       void
-      _M_do_flip()
+      _M_do_flip() _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] = ~_M_w[__i];
       }
 
       void
-      _M_do_set()
+      _M_do_set() _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  _M_w[__i] = ~static_cast<_WordT>(0);
       }
 
       void
-      _M_do_reset()
+      _M_do_reset() _GLIBCXX_NOEXCEPT
       { __builtin_memset(_M_w, 0, _Nw * sizeof(_WordT)); }
 
       bool
-      _M_is_equal(const _Base_bitset<_Nw>& __x) const
+      _M_is_equal(const _Base_bitset<_Nw>& __x) const _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; ++__i)
 	  if (_M_w[__i] != __x._M_w[__i])
@@ -184,7 +184,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       size_t
-      _M_are_all_aux() const
+      _M_are_all_aux() const _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw - 1; __i++)
 	  if (_M_w[__i] != ~static_cast<_WordT>(0))
@@ -194,7 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       bool
-      _M_is_any() const
+      _M_is_any() const _GLIBCXX_NOEXCEPT
       {
 	for (size_t __i = 0; __i < _Nw; __i++)
 	  if (_M_w[__i] != static_cast<_WordT>(0))
@@ -203,7 +203,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       size_t
-      _M_do_count() const
+      _M_do_count() const _GLIBCXX_NOEXCEPT
       {
 	size_t __result = 0;
 	for (size_t __i = 0; __i < _Nw; __i++)
@@ -221,17 +221,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // find first "on" bit
       size_t
-      _M_do_find_first(size_t __not_found) const;
+      _M_do_find_first(size_t __not_found) const _GLIBCXX_NOEXCEPT;
 
       // find the next "on" bit that follows "prev"
       size_t
-      _M_do_find_next(size_t __prev, size_t __not_found) const;
+      _M_do_find_next(size_t __prev, size_t __not_found) const
+	_GLIBCXX_NOEXCEPT;
     };
 
   // Definitions of non-inline functions from _Base_bitset.
   template<size_t _Nw>
     void
-    _Base_bitset<_Nw>::_M_do_left_shift(size_t __shift)
+    _Base_bitset<_Nw>::_M_do_left_shift(size_t __shift) _GLIBCXX_NOEXCEPT
     {
       if (__builtin_expect(__shift != 0, 1))
 	{
@@ -257,7 +258,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<size_t _Nw>
     void
-    _Base_bitset<_Nw>::_M_do_right_shift(size_t __shift)
+    _Base_bitset<_Nw>::_M_do_right_shift(size_t __shift) _GLIBCXX_NOEXCEPT
     {
       if (__builtin_expect(__shift != 0, 1))
 	{
@@ -311,7 +312,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<size_t _Nw>
     size_t
-    _Base_bitset<_Nw>::_M_do_find_first(size_t __not_found) const
+    _Base_bitset<_Nw>::
+    _M_do_find_first(size_t __not_found) const _GLIBCXX_NOEXCEPT
     {
       for (size_t __i = 0; __i < _Nw; __i++)
 	{
@@ -326,7 +328,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<size_t _Nw>
     size_t
-    _Base_bitset<_Nw>::_M_do_find_next(size_t __prev, size_t __not_found) const
+    _Base_bitset<_Nw>::
+    _M_do_find_next(size_t __prev, size_t __not_found) const _GLIBCXX_NOEXCEPT
     {
       // make bound inclusive
       ++__prev;
@@ -370,12 +373,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef unsigned long _WordT;
       _WordT _M_w;
 
-      _GLIBCXX_CONSTEXPR _Base_bitset()
+      _GLIBCXX_CONSTEXPR _Base_bitset() _GLIBCXX_NOEXCEPT
       : _M_w(0)
       { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      constexpr _Base_bitset(unsigned long long __val)
+      constexpr _Base_bitset(unsigned long long __val) noexcept
 #else
       _Base_bitset(unsigned long __val)
 #endif
@@ -383,103 +386,103 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichword(size_t __pos )
+      _S_whichword(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbyte(size_t __pos )
+      _S_whichbyte(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbit(size_t __pos )
+      _S_whichbit(size_t __pos ) _GLIBCXX_NOEXCEPT
       {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR _WordT
-      _S_maskbit(size_t __pos )
+      _S_maskbit(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
       _WordT&
-      _M_getword(size_t)
+      _M_getword(size_t) _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
       _WordT
-      _M_getword(size_t) const
+      _M_getword(size_t) const _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       const _WordT*
-      _M_getdata() const
+      _M_getdata() const noexcept
       { return &_M_w; }
 #endif
 
       _WordT&
-      _M_hiword()
+      _M_hiword() _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
       _GLIBCXX_CONSTEXPR _WordT
-      _M_hiword() const
+      _M_hiword() const _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
       void
-      _M_do_and(const _Base_bitset<1>& __x)
+      _M_do_and(const _Base_bitset<1>& __x) _GLIBCXX_NOEXCEPT
       { _M_w &= __x._M_w; }
 
       void
-      _M_do_or(const _Base_bitset<1>& __x)
+      _M_do_or(const _Base_bitset<1>& __x) _GLIBCXX_NOEXCEPT
       { _M_w |= __x._M_w; }
 
       void
-      _M_do_xor(const _Base_bitset<1>& __x)
+      _M_do_xor(const _Base_bitset<1>& __x) _GLIBCXX_NOEXCEPT
       { _M_w ^= __x._M_w; }
 
       void
-      _M_do_left_shift(size_t __shift)
+      _M_do_left_shift(size_t __shift) _GLIBCXX_NOEXCEPT
       { _M_w <<= __shift; }
 
       void
-      _M_do_right_shift(size_t __shift)
+      _M_do_right_shift(size_t __shift) _GLIBCXX_NOEXCEPT
       { _M_w >>= __shift; }
 
       void
-      _M_do_flip()
+      _M_do_flip() _GLIBCXX_NOEXCEPT
       { _M_w = ~_M_w; }
 
       void
-      _M_do_set()
+      _M_do_set() _GLIBCXX_NOEXCEPT
       { _M_w = ~static_cast<_WordT>(0); }
 
       void
-      _M_do_reset()
+      _M_do_reset() _GLIBCXX_NOEXCEPT
       { _M_w = 0; }
 
       bool
-      _M_is_equal(const _Base_bitset<1>& __x) const
+      _M_is_equal(const _Base_bitset<1>& __x) const _GLIBCXX_NOEXCEPT
       { return _M_w == __x._M_w; }
 
       size_t
-      _M_are_all_aux() const
+      _M_are_all_aux() const _GLIBCXX_NOEXCEPT
       { return __builtin_popcountl(_M_w); }
 
       bool
-      _M_is_any() const
+      _M_is_any() const _GLIBCXX_NOEXCEPT
       { return _M_w != 0; }
 
       size_t
-      _M_do_count() const
+      _M_do_count() const _GLIBCXX_NOEXCEPT
       { return __builtin_popcountl(_M_w); }
 
       unsigned long
-      _M_do_to_ulong() const
+      _M_do_to_ulong() const _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       unsigned long long
-      _M_do_to_ullong() const
+      _M_do_to_ullong() const noexcept
       { return _M_w; }
 #endif
 
       size_t
-      _M_do_find_first(size_t __not_found) const
+      _M_do_find_first(size_t __not_found) const _GLIBCXX_NOEXCEPT
       {
         if (_M_w != 0)
           return __builtin_ctzl(_M_w);
@@ -490,6 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // find the next "on" bit that follows "prev"
       size_t
       _M_do_find_next(size_t __prev, size_t __not_found) const
+	_GLIBCXX_NOEXCEPT
       {
 	++__prev;
 	if (__prev >= ((size_t) _GLIBCXX_BITSET_BITS_PER_WORD))
@@ -513,30 +517,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       typedef unsigned long _WordT;
 
-      _GLIBCXX_CONSTEXPR _Base_bitset()
+      _GLIBCXX_CONSTEXPR _Base_bitset() _GLIBCXX_NOEXCEPT
       { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      constexpr _Base_bitset(unsigned long long)
+      constexpr _Base_bitset(unsigned long long) noexcept
 #else
       _Base_bitset(unsigned long)
 #endif
       { }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichword(size_t __pos )
+      _S_whichword(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbyte(size_t __pos )
+      _S_whichbyte(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static _GLIBCXX_CONSTEXPR size_t
-      _S_whichbit(size_t __pos )
+      _S_whichbit(size_t __pos ) _GLIBCXX_NOEXCEPT
       {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _GLIBCXX_CONSTEXPR _WordT
-      _S_maskbit(size_t __pos )
+      _S_maskbit(size_t __pos ) _GLIBCXX_NOEXCEPT
       { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
 
       // This would normally give access to the data.  The bounds-checking
@@ -547,89 +551,89 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // make an unchecked call; all the memory ugliness is therefore
       // localized to this single should-never-get-this-far function.
       _WordT&
-      _M_getword(size_t)
-      { 
+      _M_getword(size_t) _GLIBCXX_NOEXCEPT
+      {
 	__throw_out_of_range(__N("_Base_bitset::_M_getword")); 
-	return *new _WordT; 
+	return *new _WordT;
       }
 
       _WordT
-      _M_getword(size_t __pos) const
+      _M_getword(size_t __pos) const _GLIBCXX_NOEXCEPT
       { return 0; }
 
       _GLIBCXX_CONSTEXPR _WordT
-      _M_hiword() const
+      _M_hiword() const _GLIBCXX_NOEXCEPT
       { return 0; }
 
       void
-      _M_do_and(const _Base_bitset<0>&)
+      _M_do_and(const _Base_bitset<0>&) _GLIBCXX_NOEXCEPT
       { }
 
       void
-      _M_do_or(const _Base_bitset<0>&)
+      _M_do_or(const _Base_bitset<0>&) _GLIBCXX_NOEXCEPT
       { }
 
       void
-      _M_do_xor(const _Base_bitset<0>&)
+      _M_do_xor(const _Base_bitset<0>&) _GLIBCXX_NOEXCEPT
       { }
 
       void
-      _M_do_left_shift(size_t)
+      _M_do_left_shift(size_t) _GLIBCXX_NOEXCEPT
       { }
 
       void
-      _M_do_right_shift(size_t)
+      _M_do_right_shift(size_t) _GLIBCXX_NOEXCEPT
       { }
 
       void
-      _M_do_flip()
+      _M_do_flip() _GLIBCXX_NOEXCEPT
       { }
 
       void
-      _M_do_set()
+      _M_do_set() _GLIBCXX_NOEXCEPT
       { }
 
       void
-      _M_do_reset()
+      _M_do_reset() _GLIBCXX_NOEXCEPT
       { }
 
       // Are all empty bitsets equal to each other?  Are they equal to
       // themselves?  How to compare a thing which has no state?  What is
       // the sound of one zero-length bitset clapping?
       bool
-      _M_is_equal(const _Base_bitset<0>&) const
+      _M_is_equal(const _Base_bitset<0>&) const _GLIBCXX_NOEXCEPT
       { return true; }
 
       size_t
-      _M_are_all_aux() const
+      _M_are_all_aux() const _GLIBCXX_NOEXCEPT
       { return 0; }
 
       bool
-      _M_is_any() const
+      _M_is_any() const _GLIBCXX_NOEXCEPT
       { return false; }
 
       size_t
-      _M_do_count() const
+      _M_do_count() const _GLIBCXX_NOEXCEPT
       { return 0; }
 
       unsigned long
-      _M_do_to_ulong() const
+      _M_do_to_ulong() const _GLIBCXX_NOEXCEPT
       { return 0; }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       unsigned long long
-      _M_do_to_ullong() const
+      _M_do_to_ullong() const noexcept
       { return 0; }
 #endif
 
       // Normally "not found" is the size, but that could also be
       // misinterpreted as an index in this corner case.  Oh well.
       size_t
-      _M_do_find_first(size_t) const
+      _M_do_find_first(size_t) const _GLIBCXX_NOEXCEPT
       { return 0; }
 
       size_t
-      _M_do_find_next(size_t, size_t) const
+      _M_do_find_next(size_t, size_t) const _GLIBCXX_NOEXCEPT
       { return 0; }
     };
 
@@ -641,7 +645,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef unsigned long _WordT;
 
       static void 
-      _S_do_sanitize(_WordT& __val)
+      _S_do_sanitize(_WordT& __val) _GLIBCXX_NOEXCEPT
       { __val &= ~((~static_cast<_WordT>(0)) << _Extrabits); }
     };
 
@@ -651,7 +655,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef unsigned long _WordT;
 
       static void 
-      _S_do_sanitize(_WordT) { } 
+      _S_do_sanitize(_WordT) _GLIBCXX_NOEXCEPT { } 
     };
 
   /**
@@ -727,7 +731,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef unsigned long _WordT;
 
       void
-      _M_do_sanitize()
+      _M_do_sanitize() _GLIBCXX_NOEXCEPT
       { 
 	typedef _Sanitize<_Nb % _GLIBCXX_BITSET_BITS_PER_WORD> __sanitize_type;
 	__sanitize_type::_S_do_sanitize(this->_M_hiword());
@@ -761,18 +765,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	reference();
 	
       public:
-	reference(bitset& __b, size_t __pos)
+	reference(bitset& __b, size_t __pos) _GLIBCXX_NOEXCEPT
 	{
 	  _M_wp = &__b._M_getword(__pos);
 	  _M_bpos = _Base::_S_whichbit(__pos);
 	}
 
-	~reference()
+	~reference() _GLIBCXX_NOEXCEPT
 	{ }
 
 	// For b[i] = __x;
 	reference&
-	operator=(bool __x)
+	operator=(bool __x) _GLIBCXX_NOEXCEPT
 	{
 	  if (__x)
 	    *_M_wp |= _Base::_S_maskbit(_M_bpos);
@@ -783,7 +787,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	// For b[i] = b[__j];
 	reference&
-	operator=(const reference& __j)
+	operator=(const reference& __j) _GLIBCXX_NOEXCEPT
 	{
 	  if ((*(__j._M_wp) & _Base::_S_maskbit(__j._M_bpos)))
 	    *_M_wp |= _Base::_S_maskbit(_M_bpos);
@@ -794,16 +798,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	// Flips the bit
 	bool
-	operator~() const
+	operator~() const _GLIBCXX_NOEXCEPT
 	{ return (*(_M_wp) & _Base::_S_maskbit(_M_bpos)) == 0; }
 
 	// For __x = b[i];
-	operator bool() const
+	operator bool() const _GLIBCXX_NOEXCEPT
 	{ return (*(_M_wp) & _Base::_S_maskbit(_M_bpos)) != 0; }
 
 	// For b[i].flip();
 	reference&
-	flip()
+	flip() _GLIBCXX_NOEXCEPT
 	{
 	  *_M_wp ^= _Base::_S_maskbit(_M_bpos);
 	  return *this;
@@ -813,12 +817,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // 23.3.5.1 constructors:
       /// All bits set to zero.
-      _GLIBCXX_CONSTEXPR bitset()
+      _GLIBCXX_CONSTEXPR bitset() _GLIBCXX_NOEXCEPT
       { }
 
       /// Initial bits bitwise-copied from a single word (others set to zero).
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      constexpr bitset(unsigned long long __val)
+      constexpr bitset(unsigned long long __val) noexcept
       : _Base(__val) { }
 #else
       bitset(unsigned long __val)
@@ -921,21 +925,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  These should be self-explanatory.
        */
       bitset<_Nb>&
-      operator&=(const bitset<_Nb>& __rhs)
+      operator&=(const bitset<_Nb>& __rhs) _GLIBCXX_NOEXCEPT
       {
 	this->_M_do_and(__rhs);
 	return *this;
       }
 
       bitset<_Nb>&
-      operator|=(const bitset<_Nb>& __rhs)
+      operator|=(const bitset<_Nb>& __rhs) _GLIBCXX_NOEXCEPT
       {
 	this->_M_do_or(__rhs);
 	return *this;
       }
 
       bitset<_Nb>&
-      operator^=(const bitset<_Nb>& __rhs)
+      operator^=(const bitset<_Nb>& __rhs) _GLIBCXX_NOEXCEPT
       {
 	this->_M_do_xor(__rhs);
 	return *this;
@@ -950,7 +954,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  These should be self-explanatory.
        */
       bitset<_Nb>&
-      operator<<=(size_t __position)
+      operator<<=(size_t __position) _GLIBCXX_NOEXCEPT
       {
 	if (__builtin_expect(__position < _Nb, 1))
 	  {
@@ -963,7 +967,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       bitset<_Nb>&
-      operator>>=(size_t __position)
+      operator>>=(size_t __position) _GLIBCXX_NOEXCEPT
       {
 	if (__builtin_expect(__position < _Nb, 1))
 	  {
@@ -983,14 +987,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @ingroup SGIextensions
        */
       bitset<_Nb>&
-      _Unchecked_set(size_t __pos)
+      _Unchecked_set(size_t __pos) _GLIBCXX_NOEXCEPT
       {
 	this->_M_getword(__pos) |= _Base::_S_maskbit(__pos);
 	return *this;
       }
 
       bitset<_Nb>&
-      _Unchecked_set(size_t __pos, int __val)
+      _Unchecked_set(size_t __pos, int __val) _GLIBCXX_NOEXCEPT
       {
 	if (__val)
 	  this->_M_getword(__pos) |= _Base::_S_maskbit(__pos);
@@ -1000,21 +1004,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       bitset<_Nb>&
-      _Unchecked_reset(size_t __pos)
+      _Unchecked_reset(size_t __pos) _GLIBCXX_NOEXCEPT
       {
 	this->_M_getword(__pos) &= ~_Base::_S_maskbit(__pos);
 	return *this;
       }
 
       bitset<_Nb>&
-      _Unchecked_flip(size_t __pos)
+      _Unchecked_flip(size_t __pos) _GLIBCXX_NOEXCEPT
       {
 	this->_M_getword(__pos) ^= _Base::_S_maskbit(__pos);
 	return *this;
       }
 
       bool
-      _Unchecked_test(size_t __pos) const
+      _Unchecked_test(size_t __pos) const _GLIBCXX_NOEXCEPT
       { return ((this->_M_getword(__pos) & _Base::_S_maskbit(__pos))
 		!= static_cast<_WordT>(0)); }
       //@}
@@ -1024,7 +1028,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Sets every bit to true.
        */
       bitset<_Nb>&
-      set()
+      set() _GLIBCXX_NOEXCEPT
       {
 	this->_M_do_set();
 	this->_M_do_sanitize();
@@ -1049,7 +1053,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Sets every bit to false.
        */
       bitset<_Nb>&
-      reset()
+      reset() _GLIBCXX_NOEXCEPT
       {
 	this->_M_do_reset();
 	return *this;
@@ -1074,7 +1078,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief Toggles every bit to its opposite value.
        */
       bitset<_Nb>&
-      flip()
+      flip() _GLIBCXX_NOEXCEPT
       {
 	this->_M_do_flip();
 	this->_M_do_sanitize();
@@ -1096,7 +1100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       
       /// See the no-argument flip().
       bitset<_Nb>
-      operator~() const
+      operator~() const _GLIBCXX_NOEXCEPT
       { return bitset<_Nb>(*this).flip(); }
 
       //@{
@@ -1247,22 +1251,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       /// Returns the number of bits which are set.
       size_t
-      count() const
+      count() const _GLIBCXX_NOEXCEPT
       { return this->_M_do_count(); }
 
       /// Returns the total number of bits.
       _GLIBCXX_CONSTEXPR size_t
-      size() const
+      size() const _GLIBCXX_NOEXCEPT
       { return _Nb; }
 
       //@{
       /// These comparisons for equality/inequality are, well, @e bitwise.
       bool
-      operator==(const bitset<_Nb>& __rhs) const
+      operator==(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
       { return this->_M_is_equal(__rhs); }
 
       bool
-      operator!=(const bitset<_Nb>& __rhs) const
+      operator!=(const bitset<_Nb>& __rhs) const _GLIBCXX_NOEXCEPT
       { return !this->_M_is_equal(__rhs); }
       //@}
       
@@ -1287,7 +1291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @return  True if all the bits are set.
        */
       bool
-      all() const
+      all() const _GLIBCXX_NOEXCEPT
       { return this->_M_are_all_aux() == _Nb; }
 
       /**
@@ -1295,7 +1299,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @return  True if at least one bit is set.
        */
       bool
-      any() const
+      any() const _GLIBCXX_NOEXCEPT
       { return this->_M_is_any(); }
 
       /**
@@ -1303,17 +1307,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @return  True if none of the bits are set.
        */
       bool
-      none() const
+      none() const _GLIBCXX_NOEXCEPT
       { return !this->_M_is_any(); }
 
       //@{
       /// Self-explanatory.
       bitset<_Nb>
-      operator<<(size_t __position) const
+      operator<<(size_t __position) const _GLIBCXX_NOEXCEPT
       { return bitset<_Nb>(*this) <<= __position; }
 
       bitset<_Nb>
-      operator>>(size_t __position) const
+      operator>>(size_t __position) const _GLIBCXX_NOEXCEPT
       { return bitset<_Nb>(*this) >>= __position; }
       //@}
       
@@ -1324,7 +1328,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @sa  _Find_next
        */
       size_t
-      _Find_first() const
+      _Find_first() const _GLIBCXX_NOEXCEPT
       { return this->_M_do_find_first(_Nb); }
 
       /**
@@ -1335,7 +1339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @sa  _Find_first
        */
       size_t
-      _Find_next(size_t __prev ) const
+      _Find_next(size_t __prev ) const _GLIBCXX_NOEXCEPT
       { return this->_M_do_find_next(__prev, _Nb); }
     };
 
@@ -1386,7 +1390,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   */
   template<size_t _Nb>
     inline bitset<_Nb>
-    operator&(const bitset<_Nb>& __x, const bitset<_Nb>& __y)
+    operator&(const bitset<_Nb>& __x, const bitset<_Nb>& __y) _GLIBCXX_NOEXCEPT
     {
       bitset<_Nb> __result(__x);
       __result &= __y;
@@ -1395,7 +1399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<size_t _Nb>
     inline bitset<_Nb>
-    operator|(const bitset<_Nb>& __x, const bitset<_Nb>& __y)
+    operator|(const bitset<_Nb>& __x, const bitset<_Nb>& __y) _GLIBCXX_NOEXCEPT
     {
       bitset<_Nb> __result(__x);
       __result |= __y;
@@ -1404,7 +1408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template <size_t _Nb>
     inline bitset<_Nb>
-    operator^(const bitset<_Nb>& __x, const bitset<_Nb>& __y)
+    operator^(const bitset<_Nb>& __x, const bitset<_Nb>& __y) _GLIBCXX_NOEXCEPT
     {
       bitset<_Nb> __result(__x);
       __result ^= __y;

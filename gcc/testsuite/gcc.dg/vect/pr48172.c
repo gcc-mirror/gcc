@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 extern void *memset(void *s, int c, __SIZE_TYPE__ n);
 extern void abort (void);
 

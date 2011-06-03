@@ -48,38 +48,42 @@
 
 namespace __gnu_pbds
 {
-  // A priority queue.
-  template<typename Value_Type, 
-	   typename Cmp_Fn = std::less<Value_Type>,
+  /**
+   *  @brief A priority queue composed of one specific heap policy.
+   *  @ingroup pbds
+   */
+  template<typename _Tv,
+	   typename Cmp_Fn = std::less<_Tv>,
 	   typename Tag = pairing_heap_tag,
-	   typename Allocator = std::allocator<char> >
-  class priority_queue 
-  : public detail::priority_queue_base_dispatch<Value_Type,
-						Cmp_Fn,Tag,Allocator>::type
+	   typename _Alloc = std::allocator<char> >
+  class priority_queue
+  : public detail::container_base_dispatch<_Tv, Cmp_Fn, _Alloc, Tag>::type
   {
-  private:
-    typedef typename
-    detail::priority_queue_base_dispatch<Value_Type, Cmp_Fn,
-					 Tag, Allocator>::type base_type;
-
   public:
-    typedef Value_Type 					value_type;
+    typedef _Tv 					value_type;
     typedef Cmp_Fn 					cmp_fn;
     typedef Tag 					container_category;
-    typedef Allocator 					allocator_type;
+    typedef _Alloc 					allocator_type;
     typedef typename allocator_type::size_type 		size_type;
     typedef typename allocator_type::difference_type 	difference_type;
 
-    typedef typename allocator_type::template rebind<value_type>::other value_rebind;
-    typedef typename value_rebind::reference 		reference;
-    typedef typename value_rebind::const_reference 	const_reference;
-    typedef typename value_rebind::pointer 	   	pointer;
-    typedef typename value_rebind::const_pointer 	const_pointer;
+  private:
+    typedef typename detail::container_base_dispatch<_Tv, Cmp_Fn, _Alloc,
+						     Tag>::type
+ 							base_type;
+    typedef typename _Alloc::template rebind<_Tv>   	__rebind_v;
+    typedef typename __rebind_v::other			__rebind_va;
 
-    typedef typename base_type::const_point_iterator const_point_iterator;
+ public:
+    typedef typename __rebind_va::reference 		reference;
+    typedef typename __rebind_va::const_reference 	const_reference;
+    typedef typename __rebind_va::pointer 	   	pointer;
+    typedef typename __rebind_va::const_pointer 	const_pointer;
+
     typedef typename base_type::point_iterator 		point_iterator;
-    typedef typename base_type::const_iterator 		const_iterator;
+    typedef typename base_type::point_const_iterator 	point_const_iterator;
     typedef typename base_type::iterator 		iterator;
+    typedef typename base_type::const_iterator 		const_iterator;
 
     priority_queue() { }
 
@@ -109,7 +113,7 @@ namespace __gnu_pbds
     virtual
     ~priority_queue() { }
 
-    priority_queue& 
+    priority_queue&
     operator=(const priority_queue& other)
     {
       if (this != &other)
@@ -126,4 +130,4 @@ namespace __gnu_pbds
   };
 } // namespace __gnu_pbds
 
-#endif 
+#endif

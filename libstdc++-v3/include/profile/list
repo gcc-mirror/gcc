@@ -1,6 +1,6 @@
 // Profiling list implementation -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,7 +67,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       explicit
       list(const _Allocator& __a = _Allocator())
       : _Base(__a) 
-      { 
+      {
         __profcxx_list_construct(this); 	// list2slist
         __profcxx_list_construct2(this); 	// list2vector
       }
@@ -76,7 +76,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       explicit
       list(size_type __n)
       : _Base(__n) 
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
@@ -84,7 +84,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       list(size_type __n, const _Tp& __value,
 	   const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) 
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
@@ -93,7 +93,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       list(size_type __n, const _Tp& __value = _Tp(),
 	   const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) 
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
@@ -103,29 +103,29 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       list(_InputIterator __first, _InputIterator __last,
 	   const _Allocator& __a = _Allocator())
       : _Base(__first, __last, __a)
-      {	 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
 
       list(const list& __x)
       : _Base(__x) 
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
 
       list(const _Base& __x)
       : _Base(__x) 
-      { 	
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-      list(list&& __x)
+      list(list&& __x) noexcept
       : _Base(std::move(__x))
-      { 
+      {
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
@@ -135,7 +135,8 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
         : _Base(__l, __a) { }
 #endif
 
-      ~list() { 
+      ~list() _GLIBCXX_NOEXCEPT
+      { 
         __profcxx_list_destruct(this); 
         __profcxx_list_destruct2(this); 
       }
@@ -183,64 +184,64 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
       // iterators:
       iterator
-      begin()
+      begin() _GLIBCXX_NOEXCEPT
       { return iterator(_Base::begin(), this); }
 
       const_iterator
-      begin() const
+      begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(_Base::begin(), this); }
 
       iterator
-      end()
+      end() _GLIBCXX_NOEXCEPT
       {
         __profcxx_list_rewind(this);
         return iterator(_Base::end(), this);
       }
 
       const_iterator
-      end() const
+      end() const _GLIBCXX_NOEXCEPT
       {
         __profcxx_list_rewind(this);
         return const_iterator(_Base::end(), this);
       }
 
       reverse_iterator
-      rbegin()
+      rbegin() _GLIBCXX_NOEXCEPT
       {
         __profcxx_list_rewind(this);
         return reverse_iterator(end());
       }
 
       const_reverse_iterator
-      rbegin() const
+      rbegin() const _GLIBCXX_NOEXCEPT
       { 
         __profcxx_list_rewind(this);
         return const_reverse_iterator(end());
       }
 
       reverse_iterator
-      rend()
+      rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
 
       const_reverse_iterator
-      rend() const
+      rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       const_iterator
-      cbegin() const
+      cbegin() const noexcept
       { return const_iterator(_Base::begin(), this); }
 
       const_iterator
-      cend() const
+      cend() const noexcept
       { return const_iterator(_Base::end(), this); }
 
       const_reverse_iterator
-      crbegin() const
+      crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
       const_reverse_iterator
-      crend() const
+      crend() const noexcept
       { return const_reverse_iterator(begin()); }
 #endif
 
@@ -388,7 +389,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       {	_Base::swap(__x); }
 
       void
-      clear()
+      clear() _GLIBCXX_NOEXCEPT
       {	_Base::clear(); }
 
       // 23.2.2.4 list operations:
@@ -564,15 +565,15 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       using _Base::reverse;
 
       _Base&
-      _M_base()       { return *this; }
+      _M_base() _GLIBCXX_NOEXCEPT       { return *this; }
 
       const _Base&
-      _M_base() const { return *this; }
+      _M_base() const _GLIBCXX_NOEXCEPT { return *this; }
 
-      inline void _M_profile_find() const 
+      void _M_profile_find() const
       { }
 
-      inline void _M_profile_iterate(int __rewind = 0) const 
+      void _M_profile_iterate(int __rewind = 0) const 
       {
         __profcxx_list_operation(this);
         __profcxx_list_iterate(this); 

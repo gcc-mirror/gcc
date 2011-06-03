@@ -34,16 +34,16 @@
 // warranty.
 
 /**
- * @file erase_fn_imps.hpp
+ * @file rb_tree_map_/erase_fn_imps.hpp
  * Contains an implementation for rb_tree_.
  */
 
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
-erase(const_key_reference r_key)
+erase(key_const_reference r_key)
 {
-  point_iterator it = find(r_key);
+  point_iterator it = this->find(r_key);
   if (it == base_type::end())
     return false;
   erase(it);
@@ -121,7 +121,7 @@ void
 PB_DS_CLASS_C_DEC::
 remove_node(node_pointer p_z)
 {
-  update_min_max_for_erased_node(p_z);
+  this->update_min_max_for_erased_node(p_z);
   node_pointer p_y = p_z;
   node_pointer p_x = 0;
   node_pointer p_new_x_parent = 0;
@@ -185,7 +185,7 @@ remove_node(node_pointer p_z)
       p_y = p_z;
     }
 
-  update_to_top(p_new_x_parent, (node_update* )this);
+  this->update_to_top(p_new_x_parent, (node_update* )this);
 
   if (p_y->m_red)
     return;
@@ -238,7 +238,7 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 	      p_w->m_p_right->m_red = false;
 
 	    base_type::rotate_left(p_new_x_parent);
-	    update_to_top(p_new_x_parent, (node_update* )this);
+	    this->update_to_top(p_new_x_parent, (node_update* )this);
 	    break;
 	  }
       }
@@ -279,7 +279,7 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 	      p_w->m_p_left->m_red = false;
 
 	    base_type::rotate_right(p_new_x_parent);
-	    update_to_top(p_new_x_parent, (node_update* )this);
+	    this->update_to_top(p_new_x_parent, (node_update* )this);
 	    break;
 	  }
       }

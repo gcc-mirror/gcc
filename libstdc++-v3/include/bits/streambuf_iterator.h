@@ -95,15 +95,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       ///  Construct end of input stream iterator.
-      _GLIBCXX_CONSTEXPR istreambuf_iterator() throw()
+      _GLIBCXX_CONSTEXPR istreambuf_iterator() _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(0), _M_c(traits_type::eof()) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      istreambuf_iterator(const istreambuf_iterator&) noexcept = default;
+
+      ~istreambuf_iterator() = default;
+#endif
+
       ///  Construct start of input stream iterator.
-      istreambuf_iterator(istream_type& __s) throw()
+      istreambuf_iterator(istream_type& __s) _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(__s.rdbuf()), _M_c(traits_type::eof()) { }
 
       ///  Construct start of streambuf iterator.
-      istreambuf_iterator(streambuf_type* __s) throw()
+      istreambuf_iterator(streambuf_type* __s) _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(__s), _M_c(traits_type::eof()) { }
 
       ///  Return the current character pointed to by iterator.  This returns
@@ -228,11 +234,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       ///  Construct output iterator from ostream.
-      ostreambuf_iterator(ostream_type& __s) throw ()
+      ostreambuf_iterator(ostream_type& __s) _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(__s.rdbuf()), _M_failed(!_M_sbuf) { }
 
       ///  Construct output iterator from streambuf.
-      ostreambuf_iterator(streambuf_type* __s) throw ()
+      ostreambuf_iterator(streambuf_type* __s) _GLIBCXX_USE_NOEXCEPT
       : _M_sbuf(__s), _M_failed(!_M_sbuf) { }
 
       ///  Write character to streambuf.  Calls streambuf.sputc().
@@ -262,7 +268,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// Return true if previous operator=() failed.
       bool
-      failed() const throw()
+      failed() const _GLIBCXX_USE_NOEXCEPT
       { return _M_failed; }
 
       ostreambuf_iterator&

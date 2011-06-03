@@ -7522,7 +7522,7 @@ alpha_expand_prologue (void)
   sa_size = alpha_sa_size ();
   frame_size = compute_frame_size (get_frame_size (), sa_size);
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     current_function_static_stack_size = frame_size;
 
   if (TARGET_ABI_OPEN_VMS)

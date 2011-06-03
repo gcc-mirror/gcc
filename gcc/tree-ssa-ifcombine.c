@@ -1,5 +1,5 @@
 /* Combining of if-expressions on trees.
-   Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -107,7 +107,7 @@ bb_no_side_effects_p (basic_block bb)
     {
       gimple stmt = gsi_stmt (gsi);
 
-      if (gimple_has_volatile_ops (stmt)
+      if (gimple_has_side_effects (stmt)
 	  || gimple_vuse (stmt))
 	return false;
     }
@@ -625,6 +625,7 @@ tree_ssa_ifcombine (void)
   int i;
 
   bbs = blocks_in_phiopt_order ();
+  calculate_dominance_info (CDI_DOMINATORS);
 
   for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; ++i)
     {

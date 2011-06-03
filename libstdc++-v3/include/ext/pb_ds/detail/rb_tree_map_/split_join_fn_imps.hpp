@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file split_join_fn_imps.hpp
+ * @file rb_tree_map_/split_join_fn_imps.hpp
  * Contains an implementation for rb_tree_.
  */
 
@@ -232,7 +232,7 @@ black_height(node_pointer p_nd)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
+split(key_const_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)
@@ -246,7 +246,7 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 
   PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
   PB_DS_STRUCT_ONLY_ASSERT_VALID(other)
-  node_pointer p_nd = upper_bound(r_key).m_p_nd;
+  node_pointer p_nd = this->upper_bound(r_key).m_p_nd;
   do
     {
       node_pointer p_next_nd = p_nd->m_p_parent;
@@ -292,7 +292,7 @@ split_at_node(node_pointer p_nd, PB_DS_CLASS_C_DEC& other)
       if (p_l != 0)
 	p_l->m_p_parent = p_parent;
 
-      update_to_top(p_parent, (node_update* )this);
+      this->update_to_top(p_parent, (node_update* )this);
 
       if (!p_nd->m_red)
 	remove_fixup(p_l, p_parent);

@@ -194,8 +194,8 @@ void	runtime_resetcpuprofiler(int32);
 void	runtime_setcpuprofilerate(void(*)(uintptr*, int32), int32);
 
 struct __go_func_type;
-void reflect_call(const struct __go_func_type *, const void *, _Bool, void **,
-		  void **)
+void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,
+		  void **, void **)
   asm ("libgo_reflect.reflect.call");
 
 #ifdef __rtems__

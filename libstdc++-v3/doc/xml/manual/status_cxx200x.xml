@@ -247,10 +247,9 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>18.9.3</entry>
       <entry>Initializer list range access</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -469,10 +468,9 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.4.2.8</entry>
       <entry>Tuple traits</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -530,11 +528,11 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.3</entry>
       <entry>Pointer traits</entry>
-      <entry>N</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing rebind</entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
@@ -563,11 +561,11 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.6.8</entry>
       <entry>Allocator traits</entry>
-      <entry>N</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing rebind_alloc and rebind_traits</entry>
     </row>
     <row>
       <entry>20.6.9</entry>
@@ -1619,10 +1617,9 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>24.6.5</entry>
       <entry>range access</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -2523,14 +2520,14 @@ particular release.
       <entry>30.6.6</entry>
       <entry>Class template <code>future</code></entry>
       <entry>Partial</entry>
-      <entry>Missing future_status and future::share()</entry>
+      <entry>Timed waiting functions do not return future_status</entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.6.7</entry>
       <entry>Class template <code>shared_future</code></entry>
       <entry>Partial</entry>
-      <entry>Missing future_status</entry>
+      <entry>Timed waiting functions do not return future_status</entry>
     </row>
     <row>
       <entry>30.6.8</entry>

@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file constructors_destructor_fn_imps.hpp
+ * @file detail/constructors_destructor_fn_imps.hpp
  * Contains constructors_destructor_fn_imps applicable to different containers.
  */
 

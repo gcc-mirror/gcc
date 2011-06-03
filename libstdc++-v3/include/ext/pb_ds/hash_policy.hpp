@@ -53,20 +53,10 @@
 
 namespace __gnu_pbds
 {
-  // A null hash function, indicating that the combining hash function
-  // is actually a ranged hash function.
-  struct null_hash_fn
-  { };
-
-  // A null probe function, indicating that the combining probe
-  // function is actually a ranged probe function.
-  struct null_probe_fn
-  { };
-
 #define PB_DS_CLASS_T_DEC template<typename Size_Type>
 #define PB_DS_CLASS_C_DEC linear_probe_fn<Size_Type>
 
-  // A probe sequence policy using fixed increments.
+  /// A probe sequence policy using fixed increments.
   template<typename Size_Type = std::size_t>
   class linear_probe_fn
   {
@@ -90,7 +80,7 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_T_DEC template<typename Size_Type>
 #define PB_DS_CLASS_C_DEC quadratic_probe_fn<Size_Type>
 
-  // A probe sequence policy using square increments.
+  /// A probe sequence policy using square increments.
   template<typename Size_Type = std::size_t>
   class quadratic_probe_fn
   {
@@ -114,7 +104,7 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_T_DEC template<typename Size_Type>
 #define PB_DS_CLASS_C_DEC direct_mask_range_hashing<Size_Type>
 
-  // A mask range-hashing class (uses a bit-mask).
+  /// A mask range-hashing class (uses a bit-mask).
   template<typename Size_Type = std::size_t>
   class direct_mask_range_hashing 
   : public detail::mask_based_range_hashing<Size_Type>
@@ -146,7 +136,7 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_T_DEC template<typename Size_Type>
 #define PB_DS_CLASS_C_DEC direct_mod_range_hashing<Size_Type>
 
-  // A mod range-hashing class (uses the modulo function).
+  /// A mod range-hashing class (uses the modulo function).
   template<typename Size_Type = std::size_t>
   class direct_mod_range_hashing 
   : public detail::mod_based_range_hashing<Size_Type>
@@ -179,8 +169,8 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_C_DEC hash_load_check_resize_trigger<External_Load_Access, Size_Type>
 #define PB_DS_SIZE_BASE_C_DEC detail::hash_load_check_resize_trigger_size_base<Size_Type, External_Load_Access>
 
-  // A resize trigger policy based on a load check. It keeps the
-  // load factor between some load factors load_min and load_max.
+  /// A resize trigger policy based on a load check. It keeps the
+  /// load factor between some load factors load_min and load_max.
   template<bool External_Load_Access = false, typename Size_Type = std::size_t>
   class hash_load_check_resize_trigger : private PB_DS_SIZE_BASE_C_DEC
   {
@@ -294,8 +284,8 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_T_DEC template<bool External_Load_Access, typename Size_Type>
 #define PB_DS_CLASS_C_DEC cc_hash_max_collision_check_resize_trigger<External_Load_Access, Size_Type>
 
-  // A resize trigger policy based on collision checks. It keeps the
-  // simulated load factor lower than some given load factor.
+  /// A resize trigger policy based on collision checks. It keeps the
+  /// simulated load factor lower than some given load factor.
   template<bool External_Load_Access = false, typename Size_Type = std::size_t>
   class cc_hash_max_collision_check_resize_trigger
   {
@@ -395,8 +385,8 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_T_DEC template<typename Size_Type>
 #define PB_DS_CLASS_C_DEC hash_exponential_size_policy<Size_Type>
 
-  // A size policy whose sequence of sizes form an exponential
-  // sequence (typically powers of 2.
+  /// A size policy whose sequence of sizes form an exponential
+  /// sequence (typically powers of 2.
   template<typename Size_Type = std::size_t>
   class hash_exponential_size_policy
   {
@@ -433,8 +423,8 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_T_DEC
 #define PB_DS_CLASS_C_DEC hash_prime_size_policy
 
-  // A size policy whose sequence of sizes form a nearly-exponential
-  // sequence of primes.
+  /// A size policy whose sequence of sizes form a nearly-exponential
+  /// sequence of primes.
   class hash_prime_size_policy
   {
   public:
@@ -469,7 +459,7 @@ namespace __gnu_pbds
 
 #define PB_DS_CLASS_C_DEC hash_standard_resize_policy<Size_Policy, Trigger_Policy, External_Size_Access, Size_Type>
 
-  // A resize policy which delegates operations to size and trigger policies.
+  /// A resize policy which delegates operations to size and trigger policies.
   template<typename Size_Policy = hash_exponential_size_policy<>,
 	   typename Trigger_Policy = hash_load_check_resize_trigger<>,
 	   bool External_Size_Access = false,

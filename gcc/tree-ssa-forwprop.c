@@ -387,6 +387,85 @@ combine_cond_expr_cond (location_t loc, enum tree_code code, tree type,
   return t;
 }
 
+/* Combine the comparison OP0 CODE OP1 at LOC with the defining statements
+   of its operand.  Return a new comparison tree or NULL_TREE if there
+   were no simplifying combines.  */
+
+static tree
+forward_propagate_into_comparison_1 (location_t loc,
+				     enum tree_code code, tree type,
+				     tree op0, tree op1)
+{
+  tree tmp = NULL_TREE;
+  tree rhs0 = NULL_TREE, rhs1 = NULL_TREE;
+  bool single_use0_p = false, single_use1_p = false;
+
+  /* For comparisons use the first operand, that is likely to
+     simplify comparisons against constants.  */
+  if (TREE_CODE (op0) == SSA_NAME)
+    {
+      gimple def_stmt = get_prop_source_stmt (op0, false, &single_use0_p);
+      if (def_stmt && can_propagate_from (def_stmt))
+	{
+	  rhs0 = rhs_to_tree (TREE_TYPE (op1), def_stmt);
+	  tmp = combine_cond_expr_cond (loc, code, type,
+					rhs0, op1, !single_use0_p);
+	  if (tmp)
+	    return tmp;
+	}
+    }
+
+  /* If that wasn't successful, try the second operand.  */
+  if (TREE_CODE (op1) == SSA_NAME)
+    {
+      gimple def_stmt = get_prop_source_stmt (op1, false, &single_use1_p);
+      if (def_stmt && can_propagate_from (def_stmt))
+	{
+	  rhs1 = rhs_to_tree (TREE_TYPE (op0), def_stmt);
+	  tmp = combine_cond_expr_cond (loc, code, type,
+					op0, rhs1, !single_use1_p);
+	  if (tmp)
+	    return tmp;
+	}
+    }
+
+  /* If that wasn't successful either, try both operands.  */
+  if (rhs0 != NULL_TREE
+      && rhs1 != NULL_TREE)
+    tmp = combine_cond_expr_cond (loc, code, type,
+				  rhs0, rhs1,
+				  !(single_use0_p && single_use1_p));
+
+  return tmp;
+}
+
+/* Propagate from the ssa name definition statements of the assignment
+   from a comparison at *GSI into the conditional if that simplifies it.
+   Returns true if the stmt was modified, false if not.  */
+
+static bool
+forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree tmp;
+
+  /* Combine the comparison with defining statements.  */
+  tmp = forward_propagate_into_comparison_1 (gimple_location (stmt),
+					     gimple_assign_rhs_code (stmt),
+					     TREE_TYPE
+					       (gimple_assign_lhs (stmt)),
+					     gimple_assign_rhs1 (stmt),
+					     gimple_assign_rhs2 (stmt));
+  if (tmp)
+    {
+      gimple_assign_set_rhs_from_tree (gsi, tmp);
+      update_stmt (stmt);
+      return true;
+    }
+
+  return false;
+}
+
 /* Propagate from the ssa name definition statements of COND_EXPR
    in GIMPLE_COND statement STMT into the conditional if that simplifies it.
    Returns zero if no statement was changed, one if there were
@@ -399,87 +478,41 @@ forward_propagate_into_gimple_cond (gimple stmt)
 {
   int did_something = 0;
   location_t loc = gimple_location (stmt);
+  tree tmp;
+  enum tree_code code = gimple_cond_code (stmt);
 
-  do {
-    tree tmp = NULL_TREE;
-    tree name = NULL_TREE, rhs0 = NULL_TREE, rhs1 = NULL_TREE;
-    gimple def_stmt;
-    bool single_use0_p = false, single_use1_p = false;
-    enum tree_code code = gimple_cond_code (stmt);
+  /* We can do tree combining on SSA_NAME and comparison expressions.  */
+  if (TREE_CODE_CLASS (gimple_cond_code (stmt)) != tcc_comparison)
+    return 0;
 
-    /* We can do tree combining on SSA_NAME and comparison expressions.  */
-    if (TREE_CODE_CLASS (gimple_cond_code (stmt)) == tcc_comparison)
-      {
-	/* For comparisons use the first operand, that is likely to
-	   simplify comparisons against constants.  */
-	if (TREE_CODE (gimple_cond_lhs (stmt)) == SSA_NAME)
-	  {
-	    name = gimple_cond_lhs (stmt);
-	    def_stmt = get_prop_source_stmt (name, false, &single_use0_p);
-	    if (def_stmt && can_propagate_from (def_stmt))
-	      {
-		tree op1 = gimple_cond_rhs (stmt);
-		rhs0 = rhs_to_tree (TREE_TYPE (op1), def_stmt);
-		tmp = combine_cond_expr_cond (loc, code, boolean_type_node,
-					      rhs0, op1, !single_use0_p);
-	      }
-	  }
-	/* If that wasn't successful, try the second operand.  */
-	if (tmp == NULL_TREE
-	    && TREE_CODE (gimple_cond_rhs (stmt)) == SSA_NAME)
-	  {
-	    tree op0 = gimple_cond_lhs (stmt);
-	    name = gimple_cond_rhs (stmt);
-	    def_stmt = get_prop_source_stmt (name, false, &single_use1_p);
-	    if (!def_stmt || !can_propagate_from (def_stmt))
-	      return did_something;
+  tmp = forward_propagate_into_comparison_1 (loc, code,
+					     boolean_type_node,
+					     gimple_cond_lhs (stmt),
+					     gimple_cond_rhs (stmt));
+  if (tmp)
+    {
+      if (dump_file && tmp)
+	{
+	  tree cond = build2 (gimple_cond_code (stmt),
+			      boolean_type_node,
+			      gimple_cond_lhs (stmt),
+			      gimple_cond_rhs (stmt));
+	  fprintf (dump_file, "  Replaced '");
+	  print_generic_expr (dump_file, cond, 0);
+	  fprintf (dump_file, "' with '");
+	  print_generic_expr (dump_file, tmp, 0);
+	  fprintf (dump_file, "'\n");
+	}
 
-	    rhs1 = rhs_to_tree (TREE_TYPE (op0), def_stmt);
-	    tmp = combine_cond_expr_cond (loc, code, boolean_type_node, op0,
-					  rhs1, !single_use1_p);
-	  }
-	/* If that wasn't successful either, try both operands.  */
-	if (tmp == NULL_TREE
-	    && rhs0 != NULL_TREE
-	    && rhs1 != NULL_TREE)
-	  tmp = combine_cond_expr_cond (loc, code, boolean_type_node, rhs0,
-					fold_convert_loc (loc,
-							  TREE_TYPE (rhs0),
-							  rhs1),
-					!(single_use0_p && single_use1_p));
-      }
+      gimple_cond_set_condition_from_tree (stmt, unshare_expr (tmp));
+      update_stmt (stmt);
 
-    if (tmp)
-      {
-	if (dump_file && tmp)
-	  {
-            tree cond = build2 (gimple_cond_code (stmt),
-				boolean_type_node,
-				gimple_cond_lhs (stmt),
-				gimple_cond_rhs (stmt));
-	    fprintf (dump_file, "  Replaced '");
-	    print_generic_expr (dump_file, cond, 0);
-	    fprintf (dump_file, "' with '");
-	    print_generic_expr (dump_file, tmp, 0);
-	    fprintf (dump_file, "'\n");
-	  }
-
-        gimple_cond_set_condition_from_tree (stmt, unshare_expr (tmp));
-	update_stmt (stmt);
-
-	/* Remove defining statements.  */
-	if (remove_prop_source_from_use (name)
-	    || is_gimple_min_invariant (tmp))
-	  did_something = 2;
-	else if (did_something == 0)
-	  did_something = 1;
-
-	/* Continue combining.  */
-	continue;
-      }
-
-    break;
-  } while (1);
+      /* Remove defining statements.  */
+      if (is_gimple_min_invariant (tmp))
+	did_something = 2;
+      else if (did_something == 0)
+	did_something = 1;
+    }
 
   return did_something;
 }
@@ -498,98 +531,49 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
   gimple stmt = gsi_stmt (*gsi_p);
   location_t loc = gimple_location (stmt);
   int did_something = 0;
+  tree tmp = NULL_TREE;
+  tree cond = gimple_assign_rhs1 (stmt);
 
-  do {
-    tree tmp = NULL_TREE;
-    tree cond = gimple_assign_rhs1 (stmt);
-    tree name, rhs0 = NULL_TREE, rhs1 = NULL_TREE;
-    gimple def_stmt;
-    bool single_use0_p = false, single_use1_p = false;
+  /* We can do tree combining on SSA_NAME and comparison expressions.  */
+  if (COMPARISON_CLASS_P (cond))
+    tmp = forward_propagate_into_comparison_1 (loc, TREE_CODE (cond),
+					       boolean_type_node,
+					       TREE_OPERAND (cond, 0),
+					       TREE_OPERAND (cond, 1));
+  else if (TREE_CODE (cond) == SSA_NAME)
+    {
+      tree name = cond, rhs0;
+      gimple def_stmt = get_prop_source_stmt (name, true, NULL);
+      if (!def_stmt || !can_propagate_from (def_stmt))
+	return did_something;
 
-    /* We can do tree combining on SSA_NAME and comparison expressions.  */
-    if (COMPARISON_CLASS_P (cond)
-	&& TREE_CODE (TREE_OPERAND (cond, 0)) == SSA_NAME)
-      {
-	/* For comparisons use the first operand, that is likely to
-	   simplify comparisons against constants.  */
-	name = TREE_OPERAND (cond, 0);
-	def_stmt = get_prop_source_stmt (name, false, &single_use0_p);
-	if (def_stmt && can_propagate_from (def_stmt))
-	  {
-	    tree op1 = TREE_OPERAND (cond, 1);
-	    rhs0 = rhs_to_tree (TREE_TYPE (op1), def_stmt);
-	    tmp = combine_cond_expr_cond (loc, TREE_CODE (cond),
-					  boolean_type_node,
-					  rhs0, op1, !single_use0_p);
-	  }
-	/* If that wasn't successful, try the second operand.  */
-	if (tmp == NULL_TREE
-	    && TREE_CODE (TREE_OPERAND (cond, 1)) == SSA_NAME)
-	  {
-	    tree op0 = TREE_OPERAND (cond, 0);
-	    name = TREE_OPERAND (cond, 1);
-	    def_stmt = get_prop_source_stmt (name, false, &single_use1_p);
-	    if (!def_stmt || !can_propagate_from (def_stmt))
-	      return did_something;
+      rhs0 = gimple_assign_rhs1 (def_stmt);
+      tmp = combine_cond_expr_cond (loc, NE_EXPR, boolean_type_node, rhs0,
+				    build_int_cst (TREE_TYPE (rhs0), 0),
+				    false);
+    }
 
-	    rhs1 = rhs_to_tree (TREE_TYPE (op0), def_stmt);
-	    tmp = combine_cond_expr_cond (loc, TREE_CODE (cond),
-					  boolean_type_node,
-					  op0, rhs1, !single_use1_p);
-	  }
-	/* If that wasn't successful either, try both operands.  */
-	if (tmp == NULL_TREE
-	    && rhs0 != NULL_TREE
-	    && rhs1 != NULL_TREE)
-	  tmp = combine_cond_expr_cond (loc, TREE_CODE (cond),
-					boolean_type_node,
-					rhs0,
-					fold_convert_loc (loc,
-							  TREE_TYPE (rhs0),
-							  rhs1),
-					!(single_use0_p && single_use1_p));
-      }
-    else if (TREE_CODE (cond) == SSA_NAME)
-      {
-	name = cond;
-	def_stmt = get_prop_source_stmt (name, true, NULL);
-	if (!def_stmt || !can_propagate_from (def_stmt))
-	  return did_something;
+  if (tmp)
+    {
+      if (dump_file && tmp)
+	{
+	  fprintf (dump_file, "  Replaced '");
+	  print_generic_expr (dump_file, cond, 0);
+	  fprintf (dump_file, "' with '");
+	  print_generic_expr (dump_file, tmp, 0);
+	  fprintf (dump_file, "'\n");
+	}
 
-	rhs0 = gimple_assign_rhs1 (def_stmt);
-	tmp = combine_cond_expr_cond (loc, NE_EXPR, boolean_type_node, rhs0,
-				      build_int_cst (TREE_TYPE (rhs0), 0),
-				      false);
-      }
+      gimple_assign_set_rhs_from_tree (gsi_p, unshare_expr (tmp));
+      stmt = gsi_stmt (*gsi_p);
+      update_stmt (stmt);
 
-    if (tmp)
-      {
-	if (dump_file && tmp)
-	  {
-	    fprintf (dump_file, "  Replaced '");
-	    print_generic_expr (dump_file, cond, 0);
-	    fprintf (dump_file, "' with '");
-	    print_generic_expr (dump_file, tmp, 0);
-	    fprintf (dump_file, "'\n");
-	  }
-
-	gimple_assign_set_rhs_from_tree (gsi_p, unshare_expr (tmp));
-	stmt = gsi_stmt (*gsi_p);
-	update_stmt (stmt);
-
-	/* Remove defining statements.  */
-	if (remove_prop_source_from_use (name)
-	    || is_gimple_min_invariant (tmp))
-	  did_something = 2;
-	else if (did_something == 0)
-	  did_something = 1;
-
-	/* Continue combining.  */
-	continue;
-      }
-
-    break;
-  } while (1);
+      /* Remove defining statements.  */
+      if (is_gimple_min_invariant (tmp))
+	did_something = 2;
+      else if (did_something == 0)
+	did_something = 1;
+    }
 
   return did_something;
 }
@@ -1115,6 +1099,7 @@ forward_propagate_addr_expr (tree name, tree rhs)
   return all && has_zero_uses (name);
 }
 
+
 /* Forward propagate the comparison defined in STMT like
    cond_1 = x CMP y to uses of the form
      a_1 = (T')cond_1
@@ -1223,6 +1208,7 @@ forward_propagate_comparison (gimple stmt)
   return false;
 }
 
+
 /* If we have lhs = ~x (STMT), look and see if earlier we had x = ~y.
    If so, we can change STMT into lhs = y which can later be copy
    propagated.  Similarly for negation.
@@ -1235,9 +1221,11 @@ forward_propagate_comparison (gimple stmt)
    there's less work to do for each NOT/NEG expression we find.
    Backwards propagation needs to look at the statement in a single
    backlink.  Forward propagation needs to look at potentially more
-   than one forward link.  */
+   than one forward link.
 
-static void
+   Returns true when the statement was changed.  */
+
+static bool 
 simplify_not_neg_expr (gimple_stmt_iterator *gsi_p)
 {
   gimple stmt = gsi_stmt (*gsi_p);
@@ -1257,14 +1245,17 @@ simplify_not_neg_expr (gimple_stmt_iterator *gsi_p)
 	  gimple_assign_set_rhs_from_tree (gsi_p, rhs_def_operand);
 	  stmt = gsi_stmt (*gsi_p);
 	  update_stmt (stmt);
+	  return true;
 	}
     }
+
+  return false;
 }
 
 /* STMT is a SWITCH_EXPR for which we attempt to find equivalent forms of
    the condition which we may be able to optimize better.  */
 
-static void
+static bool
 simplify_gimple_switch (gimple stmt)
 {
   tree cond = gimple_switch_index (stmt);
@@ -1310,10 +1301,13 @@ simplify_gimple_switch (gimple stmt)
 		{
 		  gimple_switch_set_index (stmt, def);
 		  update_stmt (stmt);
+		  return true;
 		}
 	    }
 	}
     }
+
+  return false;
 }
 
 /* For pointers p2 and p1 return p2 - p1 if the
@@ -2205,10 +2199,11 @@ combine_conversions (gimple_stmt_iterator *gsi)
   return false;
 }
 
-/* Main entry point for the forward propagation optimizer.  */
+/* Main entry point for the forward propagation and statement combine
+   optimizer.  */
 
 static unsigned int
-tree_ssa_forward_propagate_single_use_vars (void)
+ssa_forward_propagate_and_combine (void)
 {
   basic_block bb;
   unsigned int todoflags = 0;
@@ -2219,159 +2214,187 @@ tree_ssa_forward_propagate_single_use_vars (void)
     {
       gimple_stmt_iterator gsi;
 
-      /* Note we update GSI within the loop as necessary.  */
+      /* Apply forward propagation to all stmts in the basic-block.
+	 Note we update GSI within the loop as necessary.  */
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	{
 	  gimple stmt = gsi_stmt (gsi);
+	  tree lhs, rhs;
+	  enum tree_code code;
+
+	  if (!is_gimple_assign (stmt))
+	    {
+	      gsi_next (&gsi);
+	      continue;
+	    }
+
+	  lhs = gimple_assign_lhs (stmt);
+	  rhs = gimple_assign_rhs1 (stmt);
+	  code = gimple_assign_rhs_code (stmt);
+	  if (TREE_CODE (lhs) != SSA_NAME
+	      || has_zero_uses (lhs))
+	    {
+	      gsi_next (&gsi);
+	      continue;
+	    }
 
 	  /* If this statement sets an SSA_NAME to an address,
 	     try to propagate the address into the uses of the SSA_NAME.  */
-	  if (is_gimple_assign (stmt))
+	  if (code == ADDR_EXPR
+	      /* Handle pointer conversions on invariant addresses
+		 as well, as this is valid gimple.  */
+	      || (CONVERT_EXPR_CODE_P (code)
+		  && TREE_CODE (rhs) == ADDR_EXPR
+		  && POINTER_TYPE_P (TREE_TYPE (lhs))))
 	    {
-	      tree lhs = gimple_assign_lhs (stmt);
-	      tree rhs = gimple_assign_rhs1 (stmt);
-	      enum tree_code code = gimple_assign_rhs_code (stmt);
-
-	      if (TREE_CODE (lhs) != SSA_NAME
-		  || has_zero_uses (lhs))
+	      tree base = get_base_address (TREE_OPERAND (rhs, 0));
+	      if ((!base
+		   || !DECL_P (base)
+		   || decl_address_invariant_p (base))
+		  && !stmt_references_abnormal_ssa_name (stmt)
+		  && forward_propagate_addr_expr (lhs, rhs))
 		{
-		  gsi_next (&gsi);
-		  continue;
+		  release_defs (stmt);
+		  todoflags |= TODO_remove_unused_locals;
+		  gsi_remove (&gsi, true);
 		}
-
-	      if (code == ADDR_EXPR
-		  /* Handle pointer conversions on invariant addresses
-		     as well, as this is valid gimple.  */
-		  || (CONVERT_EXPR_CODE_P (code)
-		      && TREE_CODE (rhs) == ADDR_EXPR
-		      && POINTER_TYPE_P (TREE_TYPE (lhs))))
+	      else
+		gsi_next (&gsi);
+	    }
+	  else if (code == POINTER_PLUS_EXPR
+		   && can_propagate_from (stmt))
+	    {
+	      if (TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
+		  /* ???  Better adjust the interface to that function
+		     instead of building new trees here.  */
+		  && forward_propagate_addr_expr
+		  (lhs,
+		   build1 (ADDR_EXPR,
+			   TREE_TYPE (rhs),
+			   fold_build2 (MEM_REF,
+					TREE_TYPE (TREE_TYPE (rhs)),
+					rhs,
+					fold_convert
+					(ptr_type_node,
+					 gimple_assign_rhs2 (stmt))))))
 		{
-		  tree base = get_base_address (TREE_OPERAND (rhs, 0));
-		  if ((!base
-		       || !DECL_P (base)
-		       || decl_address_invariant_p (base))
-		      && !stmt_references_abnormal_ssa_name (stmt)
-		      && forward_propagate_addr_expr (lhs, rhs))
-		    {
-		      release_defs (stmt);
-		      todoflags |= TODO_remove_unused_locals;
-		      gsi_remove (&gsi, true);
-		    }
-		  else
-		    gsi_next (&gsi);
+		  release_defs (stmt);
+		  todoflags |= TODO_remove_unused_locals;
+		  gsi_remove (&gsi, true);
 		}
-	      else if (code == POINTER_PLUS_EXPR
-		       && can_propagate_from (stmt))
+	      else if (is_gimple_min_invariant (rhs))
 		{
-		  if (TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
-		      /* ???  Better adjust the interface to that function
-			 instead of building new trees here.  */
-		      && forward_propagate_addr_expr
-		           (lhs,
-			    build1 (ADDR_EXPR,
-				    TREE_TYPE (rhs),
-				    fold_build2 (MEM_REF,
-						 TREE_TYPE (TREE_TYPE (rhs)),
-						 rhs,
-						 fold_convert
-						   (ptr_type_node,
-						    gimple_assign_rhs2 (stmt))))))
-		    {
-		      release_defs (stmt);
-		      todoflags |= TODO_remove_unused_locals;
-		      gsi_remove (&gsi, true);
-		    }
-		  else if (is_gimple_min_invariant (rhs))
-		    {
-		      /* Make sure to fold &a[0] + off_1 here.  */
-		      fold_stmt_inplace (stmt);
-		      update_stmt (stmt);
-		      if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
-			gsi_next (&gsi);
-		    }
-		  else
-		    gsi_next (&gsi);
-		}
-	      else if ((code == BIT_NOT_EXPR
-		        || code == NEGATE_EXPR)
-		       && TREE_CODE (rhs) == SSA_NAME)
-		{
-		  simplify_not_neg_expr (&gsi);
-		  gsi_next (&gsi);
-		}
-	      else if (code == COND_EXPR)
-                {
-                  /* In this case the entire COND_EXPR is in rhs1. */
-		  int did_something;
-		  fold_defer_overflow_warnings ();
-                  did_something = forward_propagate_into_cond (&gsi);
-		  stmt = gsi_stmt (gsi);
-		  if (did_something == 2)
-		    cfg_changed = true;
-		  fold_undefer_overflow_warnings (!TREE_NO_WARNING (rhs)
-		    && did_something, stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
-		  gsi_next (&gsi);
-                }
-	      else if (TREE_CODE_CLASS (code) == tcc_comparison)
-		{
-		  if (forward_propagate_comparison (stmt))
-		    cfg_changed = true;
-		  gsi_next (&gsi);
-		}
-	      else if (code == BIT_AND_EXPR
-		       || code == BIT_IOR_EXPR
-		       || code == BIT_XOR_EXPR)
-		{
-		  if (!simplify_bitwise_binary (&gsi))
-		    gsi_next (&gsi);
-		}
-	      else if (code == PLUS_EXPR
-		       || code == MINUS_EXPR)
-		{
-		  cfg_changed |= associate_plusminus (stmt);
-		  gsi_next (&gsi);
-		}
-	      else if (CONVERT_EXPR_CODE_P (code)
-		       || code == FLOAT_EXPR
-		       || code == FIX_TRUNC_EXPR)
-		{
-		  if (!combine_conversions (&gsi))
+		  /* Make sure to fold &a[0] + off_1 here.  */
+		  fold_stmt_inplace (stmt);
+		  update_stmt (stmt);
+		  if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
 		    gsi_next (&gsi);
 		}
 	      else
 		gsi_next (&gsi);
 	    }
-	  else if (gimple_code (stmt) == GIMPLE_SWITCH)
+	  else if (TREE_CODE_CLASS (code) == tcc_comparison)
 	    {
-	      simplify_gimple_switch (stmt);
+	      forward_propagate_comparison (stmt);
 	      gsi_next (&gsi);
-	    }
-	  else if (gimple_code (stmt) == GIMPLE_COND)
-	    {
-	      int did_something;
-	      fold_defer_overflow_warnings ();
-	      did_something = forward_propagate_into_gimple_cond (stmt);
-	      if (did_something == 2)
-		cfg_changed = true;
-	      fold_undefer_overflow_warnings (did_something, stmt,
-					      WARN_STRICT_OVERFLOW_CONDITIONAL);
-	      gsi_next (&gsi);
-	    }
-	  else if (is_gimple_call (stmt))
-	    {
-	      tree callee = gimple_call_fndecl (stmt);
-	      if (callee == NULL_TREE
-		  || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
-		  || !simplify_builtin_call (&gsi, callee))
-		gsi_next (&gsi);
 	    }
 	  else
 	    gsi_next (&gsi);
+	}
+
+      /* Combine stmts with the stmts defining their operands.
+	 Note we update GSI within the loop as necessary.  */
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  bool changed = false;
+
+	  switch (gimple_code (stmt))
+	    {
+	    case GIMPLE_ASSIGN:
+	      {
+		tree rhs1 = gimple_assign_rhs1 (stmt);
+		enum tree_code code = gimple_assign_rhs_code (stmt);
+
+		if ((code == BIT_NOT_EXPR
+		     || code == NEGATE_EXPR)
+		    && TREE_CODE (rhs1) == SSA_NAME)
+		  changed = simplify_not_neg_expr (&gsi);
+		else if (code == COND_EXPR)
+		  {
+		    /* In this case the entire COND_EXPR is in rhs1. */
+		    int did_something;
+		    fold_defer_overflow_warnings ();
+		    did_something = forward_propagate_into_cond (&gsi);
+		    stmt = gsi_stmt (gsi);
+		    if (did_something == 2)
+		      cfg_changed = true;
+		    fold_undefer_overflow_warnings
+		      (!TREE_NO_WARNING (rhs1) && did_something, stmt,
+		       WARN_STRICT_OVERFLOW_CONDITIONAL);
+		    changed = did_something != 0;
+		  }
+		else if (TREE_CODE_CLASS (code) == tcc_comparison)
+		  {
+		    bool no_warning = gimple_no_warning_p (stmt);
+		    fold_defer_overflow_warnings ();
+		    changed = forward_propagate_into_comparison (&gsi);
+		    fold_undefer_overflow_warnings
+			(!no_warning && changed,
+			 stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
+		  }
+		else if (code == BIT_AND_EXPR
+			 || code == BIT_IOR_EXPR
+			 || code == BIT_XOR_EXPR)
+		  changed = simplify_bitwise_binary (&gsi);
+		else if (code == PLUS_EXPR
+			 || code == MINUS_EXPR)
+		  changed = associate_plusminus (stmt);
+		else if (CONVERT_EXPR_CODE_P (code)
+			 || code == FLOAT_EXPR
+			 || code == FIX_TRUNC_EXPR)
+		  changed = combine_conversions (&gsi);
+		break;
+	      }
+
+	    case GIMPLE_SWITCH:
+	      changed = simplify_gimple_switch (stmt);
+	      break;
+
+	    case GIMPLE_COND:
+	      {
+		int did_something;
+		fold_defer_overflow_warnings ();
+		did_something = forward_propagate_into_gimple_cond (stmt);
+		if (did_something == 2)
+		  cfg_changed = true;
+		fold_undefer_overflow_warnings
+		  (did_something, stmt, WARN_STRICT_OVERFLOW_CONDITIONAL);
+		changed = did_something != 0;
+		break;
+	      }
+
+	    case GIMPLE_CALL:
+	      {
+		tree callee = gimple_call_fndecl (stmt);
+		if (callee != NULL_TREE
+		    && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+		  changed = simplify_builtin_call (&gsi, callee);
+		break;
+	      }
+
+	    default:;
+	    }
+
+	  /* If the stmt changed try combining it again.  */
+	  if (!changed)
+	    gsi_prev (&gsi);
 	}
     }
 
   if (cfg_changed)
     todoflags |= TODO_cleanup_cfg;
+
   return todoflags;
 }
 
@@ -2388,7 +2411,7 @@ struct gimple_opt_pass pass_forwprop =
   GIMPLE_PASS,
   "forwprop",			/* name */
   gate_forwprop,		/* gate */
-  tree_ssa_forward_propagate_single_use_vars,	/* execute */
+  ssa_forward_propagate_and_combine,	/* execute */
   NULL,				/* sub */
   NULL,				/* next */
   0,				/* static_pass_number */

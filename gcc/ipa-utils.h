@@ -26,6 +26,9 @@ along with GCC; see the file COPYING3.  If not see
 struct ipa_dfs_info {
   int dfn_number;
   int low_link;
+  /* This field will have the samy value for any two nodes in the same strongly
+     connected component.  */
+  int scc_no;
   bool new_node;
   bool on_stack;
   struct cgraph_node* next_cycle;

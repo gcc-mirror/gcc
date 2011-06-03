@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file priority_queue_base_dispatch.hpp
+ * @file detail/priority_queue_base_dispatch.hpp
  * Contains an pqiative container dispatching base.
  */
 
@@ -61,43 +61,54 @@
 
 namespace __gnu_pbds
 {
-    namespace detail
-    {
-
-      template<typename Value_Type, typename Cmp_Fn, typename Tag, typename Allocator>
-      struct priority_queue_base_dispatch;
-
-      template<typename Value_Type, typename Cmp_Fn, typename Allocator>
-      struct priority_queue_base_dispatch<Value_Type, Cmp_Fn, pairing_heap_tag, Allocator>
+  namespace detail
+  {
+    /// Specialization for pairing_heap.
+    template<typename _VTp, typename Cmp_Fn, typename _Alloc>
+      struct container_base_dispatch<_VTp, Cmp_Fn, _Alloc, pairing_heap_tag,
+				     null_type>
       {
-	typedef pairing_heap_< Value_Type, Cmp_Fn, Allocator> type;
+	/// Dispatched type.
+	typedef pairing_heap<_VTp, Cmp_Fn, _Alloc> 		type;
       };
 
-      template<typename Value_Type, typename Cmp_Fn, typename Allocator>
-      struct priority_queue_base_dispatch<Value_Type, Cmp_Fn, binomial_heap_tag, Allocator>
+    /// Specialization for binomial_heap.
+    template<typename _VTp, typename Cmp_Fn, typename _Alloc>
+      struct container_base_dispatch<_VTp, Cmp_Fn, _Alloc, binomial_heap_tag,
+				     null_type>
       {
-	typedef binomial_heap_< Value_Type, Cmp_Fn, Allocator> type;
+	/// Dispatched type.
+	typedef binomial_heap<_VTp, Cmp_Fn, _Alloc> 		type;
       };
 
-      template<typename Value_Type, typename Cmp_Fn, typename Allocator>
-      struct priority_queue_base_dispatch<Value_Type, Cmp_Fn, rc_binomial_heap_tag, Allocator>
+    /// Specialization for rc_binary_heap.
+    template<typename _VTp, typename Cmp_Fn, typename _Alloc>
+      struct container_base_dispatch<_VTp, Cmp_Fn, _Alloc, rc_binomial_heap_tag,
+  				     null_type>
       {
-	typedef rc_binomial_heap_< Value_Type, Cmp_Fn, Allocator> type;
+	/// Dispatched type.
+	typedef rc_binomial_heap<_VTp, Cmp_Fn, _Alloc>	       	type;
       };
 
-      template<typename Value_Type, typename Cmp_Fn, typename Allocator>
-      struct priority_queue_base_dispatch<Value_Type, Cmp_Fn, binary_heap_tag, Allocator>
+    /// Specialization for binary_heap.
+    template<typename _VTp, typename Cmp_Fn, typename _Alloc>
+      struct container_base_dispatch<_VTp, Cmp_Fn, _Alloc, binary_heap_tag,
+  				     null_type>
       {
-	typedef binary_heap_< Value_Type, Cmp_Fn, Allocator> type;
+	/// Dispatched type.
+	typedef binary_heap<_VTp, Cmp_Fn, _Alloc> 		type;
       };
 
-      template<typename Value_Type, typename Cmp_Fn, typename Allocator>
-      struct priority_queue_base_dispatch<Value_Type, Cmp_Fn, thin_heap_tag, Allocator>
+    /// Specialization for thin_heap.
+    template<typename _VTp, typename Cmp_Fn, typename _Alloc>
+      struct container_base_dispatch<_VTp, Cmp_Fn, _Alloc, thin_heap_tag,
+  				     null_type>    
       {
-	typedef thin_heap_< Value_Type, Cmp_Fn, Allocator> type;
+	/// Dispatched type.
+	typedef thin_heap<_VTp, Cmp_Fn, _Alloc> 		type;
       };
-
-    } // namespace detail
+    // @} group pbds
+  } // namespace detail
 } // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_PRIORITY_QUEUE_BASE_DS_DISPATCHER_HPP

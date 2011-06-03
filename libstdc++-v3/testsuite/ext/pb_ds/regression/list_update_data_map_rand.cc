@@ -32,7 +32,7 @@
 // warranty.
 
 /**
- * @file lu_data_map_rand_regression_test.cpp
+ * @file list_update_data_map_rand.cc
  * Contains a random-operation test for maps and sets.
  */
 

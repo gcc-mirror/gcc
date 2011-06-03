@@ -294,7 +294,7 @@ static const char repl_chars[4][16] __attribute__((aligned(16))) = {
 /* A version of the fast scanner using MMX vectorized byte compare insns.
 
    This uses the PMOVMSKB instruction which was introduced with "MMX2",
-   which was packaged into SSE1; it is also present in the AMD 3dNOW-A
+   which was packaged into SSE1; it is also present in the AMD MMX
    extension.  Mark the function as using "sse" so that we emit a real
    "emms" instruction, rather than the 3dNOW "femms" instruction.  */
 
@@ -488,7 +488,7 @@ init_vectorized_lexer (void)
   minimum = 3;
 #elif defined(__SSE2__)
   minimum = 2;
-#elif defined(__SSE__) || defined(__3dNOW_A__)
+#elif defined(__SSE__)
   minimum = 1;
 #endif
 
@@ -505,7 +505,8 @@ init_vectorized_lexer (void)
     }
   else if (__get_cpuid (0x80000001, &dummy, &dummy, &dummy, &edx))
     {
-      if (minimum == 1 || edx & bit_3DNOWP)
+      if (minimum == 1
+	  || (edx & (bit_MMXEXT | bit_CMOV)) == (bit_MMXEXT | bit_CMOV))
 	impl = search_line_mmx;
     }
 

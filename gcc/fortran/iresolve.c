@@ -2895,6 +2895,22 @@ create_formal_for_intents (gfc_actual_arglist* actual, const sym_intent* ints)
 
 
 void
+gfc_resolve_atomic_def (gfc_code *c)
+{
+  const char *name = "atomic_define";
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_atomic_ref (gfc_code *c)
+{
+  const char *name = "atomic_ref";
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
 gfc_resolve_mvbits (gfc_code *c)
 {
   static const sym_intent INTENTS[] = {INTENT_IN, INTENT_IN, INTENT_IN,

@@ -1,4 +1,4 @@
-# Copyright (C) 2004, 2008, 2009, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,12 +25,15 @@ sol2-c.o: $(srcdir)/config/sol2-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 # Solaris-specific attributes
 sol2.o: $(srcdir)/config/sol2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  tree.h output.h $(TM_H) $(TM_P_H) $(GGC_H)
+  tree.h output.h $(TM_H) $(TARGET_H) $(TM_P_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/config/sol2.c
+
+# This is required by gcc/ada/gcc-interface/Makefile.in.
+TARGET_LIBGCC2_CFLAGS = -fPIC
 
 # Use unwind-dw2-fde-glibc.c.  Unless linker support and dl_iterate_phdr
 # are present, automatically falls back to unwind-dw2-fde.c.
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-glibc.c \
-  $(srcdir)/unwind-sjlj.c $(srcdir)/gthr-gnat.c $(srcdir)/unwind-c.c
+  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
 LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h unwind-dw2-fde.c

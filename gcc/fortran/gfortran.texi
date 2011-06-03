@@ -2718,16 +2718,15 @@ int main (int argc, char *argv[])
 
 
 @node _gfortran_set_fpe
-@subsection @code{_gfortran_set_fpe} --- Set when a Floating Point Exception should be raised
+@subsection @code{_gfortran_set_fpe} --- Enable floating point exception traps
 @fnindex _gfortran_set_fpe
 @cindex libgfortran initialization, set_fpe
 
 @table @asis
 @item @emph{Description}:
-@code{_gfortran_set_fpe} sets the IEEE exceptions for which a
-Floating Point Exception (FPE) should be raised.  On most systems,
-this will result in a SIGFPE signal being sent and the program
-being interrupted.
+@code{_gfortran_set_fpe} enables floating point exception traps for
+the specified exceptions.  On most systems, this will result in a
+SIGFPE signal being sent and the program being aborted.
 
 @item @emph{Syntax}:
 @code{void _gfortran_set_fpe (int val)}
@@ -2738,7 +2737,7 @@ being interrupted.
 (bitwise or-ed) zero (0, default) no trapping,
 @code{GFC_FPE_INVALID} (1), @code{GFC_FPE_DENORMAL} (2),
 @code{GFC_FPE_ZERO} (4), @code{GFC_FPE_OVERFLOW} (8),
-@code{GFC_FPE_UNDERFLOW} (16), and @code{GFC_FPE_PRECISION} (32).
+@code{GFC_FPE_UNDERFLOW} (16), and @code{GFC_FPE_INEXACT} (32).
 @end multitable
 
 @item @emph{Example}:

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This package implements the Adler-32 checksum.
+// Package adler32 implements the Adler-32 checksum.
 // Defined in RFC 1950:
 //	Adler-32 is composed of two sums accumulated per byte: s1 is
 //	the sum of all bytes, s2 is the sum of all s1 values. Both sums
@@ -43,8 +43,8 @@ func (d *digest) Size() int { return Size }
 
 // Add p to the running checksum a, b.
 func update(a, b uint32, p []byte) (aa, bb uint32) {
-	for i := 0; i < len(p); i++ {
-		a += uint32(p[i])
+	for _, pi := range p {
+		a += uint32(pi)
 		b += a
 		// invariant: a <= b
 		if b > (0xffffffff-255)/2 {

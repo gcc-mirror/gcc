@@ -34,14 +34,14 @@
 // warranty.
 
 /**
- * @file find_fn_imps.hpp
+ * @file list_update_map_/find_fn_imps.hpp
  * Contains implementations of lu_map_.
  */
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::entry_pointer
 PB_DS_CLASS_C_DEC::
-find_imp(const_key_reference r_key) const
+find_imp(key_const_reference r_key) const
 {
   if (m_p_l == 0)
     return 0;
@@ -85,6 +85,6 @@ apply_update(entry_pointer p_l, type_to_type<Metadata>)
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
-apply_update(entry_pointer, type_to_type<null_lu_metadata>)
-{ return s_update_policy(s_null_lu_metadata); }
+apply_update(entry_pointer, type_to_type<null_type>)
+{ return s_update_policy(s_null_type); }
 

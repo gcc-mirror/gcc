@@ -20,7 +20,8 @@
 
 cat <<EOF
 ; -*- buffer-read-only: t -*-
-; Generated automatically by genopt.sh from arm-cores.def and arm-arches.def.
+; Generated automatically by genopt.sh from arm-cores.def, arm-arches.def
+; and arm-fpus.def.
 
 ; Copyright (C) 2011 Free Software Foundation, Inc.
 ;
@@ -73,3 +74,22 @@ awk -F'[(, 	]+' 'BEGIN {
     print ""
     value++
 }' $1/arm-arches.def
+
+cat <<EOF
+Enum
+Name(arm_fpu) Type(int)
+Known ARM FPUs (for use with the -mfpu= option):
+
+EOF
+
+awk -F'[(, 	]+' 'BEGIN {
+    value = 0
+}
+/^ARM_FPU/ {
+    name = $2
+    gsub("\"", "", name)
+    print "EnumValue"
+    print "Enum(arm_fpu) String(" name ") Value(" value ")"
+    print ""
+    value++
+}' $1/arm-fpus.def

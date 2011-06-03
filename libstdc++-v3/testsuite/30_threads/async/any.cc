@@ -6,7 +6,7 @@
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@ void test01()
   int a = 1;
   int b = 10;
   int c = 100;
-  future<int> f1 = async(launch::any, sum(), a, ref(b), cref(c));
+  future<int> f1 = async(launch::async|launch::deferred, sum(), a, ref(b), cref(c));
   future<int> f2 = async(sum(), a, ref(b), cref(c));
 
   VERIFY( f1.valid() );

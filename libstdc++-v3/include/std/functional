@@ -62,6 +62,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  template<typename _MemberPointer>
+    class _Mem_fn;
+  template<typename _Tp, typename _Class>
+    _Mem_fn<_Tp _Class::*>
+    mem_fn(_Tp _Class::*);
+
 _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   /// If we have found a result_type, extract it.
@@ -495,9 +501,6 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     { return cref(__t.get()); }
 
   // @} group functors
-
-  template<typename _MemberPointer>
-    class _Mem_fn;
 
   /**
    * Derives from @c unary_function or @c binary_function, or perhaps
@@ -1207,7 +1210,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       // Call as const
       template<typename... _Args, typename _Result
-	= decltype( std::declval<const _Functor>()(
+	= decltype( std::declval<typename enable_if<(sizeof...(_Args) >= 0),
+		       typename add_const<_Functor>::type>::type>()(
 	      _Mu<_Bound_args>()( std::declval<const _Bound_args&>(),
 				  std::declval<tuple<_Args...>&>() )... ) )>
 	_Result
@@ -1220,7 +1224,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       // Call as volatile
       template<typename... _Args, typename _Result
-	= decltype( std::declval<volatile _Functor>()(
+	= decltype( std::declval<typename enable_if<(sizeof...(_Args) >= 0),
+                       typename add_volatile<_Functor>::type>::type>()(
 	      _Mu<_Bound_args>()( std::declval<volatile _Bound_args&>(),
 				  std::declval<tuple<_Args...>&>() )... ) )>
 	_Result
@@ -1233,7 +1238,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
       // Call as const volatile
       template<typename... _Args, typename _Result
-	= decltype( std::declval<const volatile _Functor>()(
+	= decltype( std::declval<typename enable_if<(sizeof...(_Args) >= 0),
+                       typename add_cv<_Functor>::type>::type>()(
 	      _Mu<_Bound_args>()( std::declval<const volatile _Bound_args&>(),
 				  std::declval<tuple<_Args...>&>() )... ) )>
 	_Result

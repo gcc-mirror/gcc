@@ -1,5 +1,7 @@
 // PR c++/47022
 // { dg-do compile }
+// Suppress a warning that is irrelevant to the purpose of this test.
+// { dg-options "-Wno-abi" { target arm_eabi } }
 
 #include <cstdarg>
 

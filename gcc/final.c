@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "cfgloop.h"
 #include "params.h"
+#include "tree-pretty-print.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -4360,20 +4361,7 @@ rest_of_clean_state (void)
 	}
       else
 	{
-	  const char *aname;
-	  struct cgraph_node *node = cgraph_get_node (current_function_decl);
-
-	  aname = (IDENTIFIER_POINTER
-		   (DECL_ASSEMBLER_NAME (current_function_decl)));
-	  fprintf (final_output, "\n;; Function (%s) %s\n\n", aname,
-	     node->frequency == NODE_FREQUENCY_HOT
-	     ? " (hot)"
-	     : node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
-	     ? " (unlikely executed)"
-	     : node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-	     ? " (executed once)"
-	     : "");
-
+	  dump_function_header (final_output, current_function_decl);
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  if (flag_compare_debug_opt || flag_compare_debug)
 	    dump_flags |= TDF_NOUID;

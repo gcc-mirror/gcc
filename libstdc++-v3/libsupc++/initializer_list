@@ -1,6 +1,6 @@
 // std::initializer_list support -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -61,19 +61,20 @@ namespace std
       : _M_array(__a), _M_len(__l) { }
 
     public:
-      constexpr initializer_list() : _M_array(0), _M_len(0) { }
+      constexpr initializer_list() noexcept
+      : _M_array(0), _M_len(0) { }
 
       // Number of elements.
       constexpr size_type
-      size() { return _M_len; }
+      size() const noexcept { return _M_len; }
 
       // First element.
       constexpr const_iterator
-      begin() { return _M_array; }
+      begin() const noexcept { return _M_array; }
 
       // One past the last element.
       constexpr const_iterator
-      end() { return begin() + size(); }
+      end() const noexcept { return begin() + size(); }
   };
 
   /**
@@ -83,7 +84,7 @@ namespace std
    */
   template<class _Tp>
     constexpr const _Tp*
-    begin(initializer_list<_Tp> __ils)
+    begin(initializer_list<_Tp> __ils) noexcept
     { return __ils.begin(); }
 
   /**
@@ -93,7 +94,7 @@ namespace std
    */
   template<class _Tp>
     constexpr const _Tp*
-    end(initializer_list<_Tp> __ils)
+    end(initializer_list<_Tp> __ils) noexcept
     { return __ils.end(); }
 }
 

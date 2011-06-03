@@ -875,6 +875,15 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
       return FAILURE;
     }
 
+  /* F2008, C1242.  */
+  if (attr1.pointer && gfc_is_coindexed (pointer))
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+		 "conindexed", gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &pointer->where);
+      return FAILURE;
+    }
+
   /* Target argument is optional.  */
   if (target == NULL)
     return SUCCESS;
@@ -898,6 +907,15 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be a POINTER "
 		 "or a TARGET", gfc_current_intrinsic_arg[1]->name,
+		 gfc_current_intrinsic, &target->where);
+      return FAILURE;
+    }
+
+  /* F2008, C1242.  */
+  if (attr1.pointer && gfc_is_coindexed (target))
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+		 "conindexed", gfc_current_intrinsic_arg[1]->name,
 		 gfc_current_intrinsic, &target->where);
       return FAILURE;
     }
@@ -952,6 +970,72 @@ gfc_check_atan2 (gfc_expr *y, gfc_expr *x)
     return FAILURE;
 
   return SUCCESS;
+}
+
+
+static gfc_try
+gfc_check_atomic (gfc_expr *atom, gfc_expr *value)
+{
+  if (!(atom->ts.type == BT_INTEGER && atom->ts.kind == gfc_atomic_int_kind)
+      && !(atom->ts.type == BT_LOGICAL
+	   && atom->ts.kind == gfc_atomic_logical_kind))
+    {
+      gfc_error ("ATOM argument at %L to intrinsic function %s shall be an "
+		 "integer of ATOMIC_INT_KIND or a logical of "
+		 "ATOMIC_LOGICAL_KIND", &atom->where, gfc_current_intrinsic);
+      return FAILURE;
+    }
+
+  if (!gfc_expr_attr (atom).codimension)
+    {
+      gfc_error ("ATOM argument at %L of the %s intrinsic function shall be a "
+		 "coarray or coindexed", &atom->where, gfc_current_intrinsic);
+      return FAILURE;
+    }
+
+  if (atom->ts.type != value->ts.type)
+    {
+      gfc_error ("ATOM and VALUE argument of the %s intrinsic function shall "
+		 "have the same type at %L", gfc_current_intrinsic,
+		 &value->where);
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_atomic_def (gfc_expr *atom, gfc_expr *value)
+{
+  if (scalar_check (atom, 0) == FAILURE || scalar_check (value, 1) == FAILURE)
+    return FAILURE;
+
+  if (gfc_check_vardef_context (atom, false, NULL) == FAILURE)
+    {
+      gfc_error ("ATOM argument of the %s intrinsic function at %L shall be "
+		 "definable", gfc_current_intrinsic, &atom->where);
+      return FAILURE;
+    }
+
+  return gfc_check_atomic (atom, value);
+}
+
+
+gfc_try
+gfc_check_atomic_ref (gfc_expr *value, gfc_expr *atom)
+{
+  if (scalar_check (value, 0) == FAILURE || scalar_check (atom, 1) == FAILURE)
+    return FAILURE;
+
+  if (gfc_check_vardef_context (value, false, NULL) == FAILURE)
+    {
+      gfc_error ("VALUE argument of the %s intrinsic function at %L shall be "
+		 "definable", gfc_current_intrinsic, &value->where);
+      return FAILURE;
+    }
+
+  return gfc_check_atomic (atom, value);
 }
 
 
@@ -2651,6 +2735,15 @@ gfc_check_null (gfc_expr *mold)
       return FAILURE;
     }
 
+  /* F2008, C1242.  */
+  if (gfc_is_coindexed (mold))
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L shall not be "
+		 "conindexed", gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &mold->where);
+      return FAILURE;
+    }
+
   return SUCCESS;
 }
 
@@ -2825,6 +2918,33 @@ gfc_check_range (gfc_expr *x)
 {
   if (numeric_check (x, 0) == FAILURE)
     return FAILURE;
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_rank (gfc_expr *a ATTRIBUTE_UNUSED)
+{
+  /* Any data object is allowed; a "data object" is a "constant (4.1.3),
+     variable (6), or subobject of a constant (2.4.3.2.3)" (F2008, 1.3.45).  */
+
+  bool is_variable = true;
+
+  /* Functions returning pointers are regarded as variable, cf. F2008, R602. */
+  if (a->expr_type == EXPR_FUNCTION) 
+    is_variable = a->value.function.esym
+		  ? a->value.function.esym->result->attr.pointer
+		  : a->symtree->n.sym->result->attr.pointer;
+
+  if (a->expr_type == EXPR_OP || a->expr_type == EXPR_NULL
+      || a->expr_type == EXPR_COMPCALL|| a->expr_type == EXPR_PPC
+      || !is_variable)
+    {
+      gfc_error ("The argument of the RANK intrinsic at %L must be a data "
+		 "object", &a->where);
+      return FAILURE;
+    }
 
   return SUCCESS;
 }

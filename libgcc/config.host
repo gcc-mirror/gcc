@@ -1,6 +1,6 @@
 # libgcc host-specific configuration file.
 # Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009, 2010 Free Software Foundation, Inc.
+# 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -168,6 +168,31 @@ case ${host} in
   ;;
 *-*-rtems*)
   ;;
+*-*-solaris2*)
+  tmake_file="$tmake_file t-sol2 t-slibgcc t-slibgcc-elf-ver"
+  if test $with_gnu_ld = yes; then
+    tmake_file="$tmake_file t-slibgcc-gld"
+  else
+    tmake_file="$tmake_file t-slibgcc-sld"
+  fi
+  # Add cpu-specific t-sol2 after t-slibgcc-* so it can augment SHLIB_MAPFILES.
+  tmake_file="$tmake_file $cpu_type/t-sol2"
+  extra_parts="gmon.o crtbegin.o crtend.o"
+  case ${host} in
+    i?86-*-solaris2.1[0-9]*)
+      # Solaris 10+/x86 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
+      # part of the base system.
+      ;;
+    sparc*-*-solaris2.1[0-9]*)
+      # Solaris 10+/SPARC lacks crt1.o and gcrt1.o.
+      extra_parts="$extra_parts crt1.o gcrt1.o"
+      ;;
+    *)
+      tmake_file="$tmake_file t-crtin"
+      extra_parts="$extra_parts crt1.o crti.o crtn.o gcrt1.o"
+      ;;
+  esac
+  ;;
 *-*-vxworks*)
   ;;
 *-*-elf)
@@ -309,19 +334,12 @@ i[3456x]86-*-netware*)
 i[34567]86-*-nto-qnx*)
 	;;
 i[34567]86-*-rtems*)
+	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
+	tmake_file="${tmake_file} t-crtin i386/t-softfp i386/t-crtstuff t-rtems"
 	;;
 i[34567]86-*-solaris2*)
-	tmake_file="${tmake_file} i386/t-sol2"
-	case ${host} in
-	*-*-solaris2.1[0-9]*)
-		# Solaris 2.10 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
-		# part of the base system.
-		extra_parts="gmon.o crtbegin.o crtend.o"
-		;;
-	*)
-		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
-		;;
-	esac
+	tmake_file="$tmake_file i386/t-crtfm"
+	extra_parts="$extra_parts crtfastmath.o"
 	;;
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	;;
@@ -519,18 +537,31 @@ sparc-*-netbsdelf*)
 sparc64-*-openbsd*)
 	;;
 sparc-*-elf*)
+	case ${host} in
+	*-leon[3-9]*)
+		;;
+	*)
+	  	tmake_file="sparc/t-softmul"
+	  	;;
+	esac
+	tmake_file="${tmake_file} sparc/t-softfp t-crtin t-crtfm"
+	extra_parts="crtbegin.o crtend.o crti.o crtn.o crtfastmath.o"
 	;;
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} sparc/t-crtfm"
+	tmake_file="${tmake_file} t-crtfm"
 	;;
 sparc-*-rtems* | sparc64-*-rtems* )
+	tmake_file="sparc/t-elf t-crtin t-crtfm t-rtems"
+	extra_parts="crtbegin.o crtend.o crti.o crtn.o crtfastmath.o"
 	;;
-sparc64-*-solaris2* | sparcv9-*-solaris2*)
-	;;
-sparc-*-solaris2*)
+sparc*-*-solaris2*)
+	tmake_file="$tmake_file t-crtfm"
+	extra_parts="$extra_parts crtfastmath.o"
 	;;
 sparc64-*-elf*)
+	tmake_file="${tmake_file} t-crtin t-crtfm"
+	extra_parts="crtbegin.o crtend.o crti.o crtn.o crtfastmath.o"
 	;;
 sparc-wrs-vxworks)
 	;;
@@ -538,7 +569,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	;;
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} sparc/t-crtfm"
+	tmake_file="${tmake_file} t-crtfm"
 	;;
 sparc64-*-netbsd*)
 	;;

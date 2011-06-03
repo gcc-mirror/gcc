@@ -34,6 +34,9 @@ type Conn struct {
 	cipherSuite       uint16
 	ocspResponse      []byte // stapled OCSP response
 	peerCertificates  []*x509.Certificate
+	// verifedChains contains the certificate chains that we built, as
+	// opposed to the ones presented by the server.
+	verifiedChains [][]*x509.Certificate
 
 	clientProtocol         string
 	clientProtocolFallback bool
@@ -765,6 +768,7 @@ func (c *Conn) ConnectionState() ConnectionState {
 		state.NegotiatedProtocolIsMutual = !c.clientProtocolFallback
 		state.CipherSuite = c.cipherSuite
 		state.PeerCertificates = c.peerCertificates
+		state.VerifiedChains = c.verifiedChains
 	}
 
 	return state

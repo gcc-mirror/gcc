@@ -1,6 +1,6 @@
 // Profiling unordered_map/unordered_multimap implementation -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -104,6 +104,8 @@ namespace __profile
       }
 
       unordered_map(unordered_map&& __x)
+      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
+	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x)) 
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
@@ -142,7 +144,7 @@ namespace __profile
 	return *this;
       }
 
-      ~unordered_map()
+      ~unordered_map() noexcept
       {
         __profcxx_hashtable_destruct(this, _Base::bucket_count(),
 				     _Base::size());
@@ -150,14 +152,13 @@ namespace __profile
       }
 
       _Base&
-      _M_base()       { return *this; }
+      _M_base() noexcept       { return *this; }
 
       const _Base&
-      _M_base() const { return *this; }
-
+      _M_base() const noexcept { return *this; }
 
       void
-      clear()
+      clear() noexcept
       {
         __profcxx_hashtable_destruct(this, _Base::bucket_count(),
 				     _Base::size());
@@ -373,6 +374,8 @@ namespace __profile
       }
 
       unordered_multimap(unordered_multimap&& __x)
+      noexcept(__and_<is_nothrow_copy_constructible<_Hash>,
+	              is_nothrow_copy_constructible<_Pred>>::value)
       : _Base(std::move(__x))
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
@@ -410,7 +413,7 @@ namespace __profile
 	return *this;
       }
 
-      ~unordered_multimap()
+      ~unordered_multimap() noexcept
       {
         __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
 				     _Base::size());
@@ -418,14 +421,13 @@ namespace __profile
       }
 
       _Base&
-      _M_base()       { return *this; }
+      _M_base() noexcept       { return *this; }
 
       const _Base&
-      _M_base() const { return *this; }
-
+      _M_base() const noexcept { return *this; }
 
       void
-      clear()
+      clear() noexcept
       {
         __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
 				     _Base::size());

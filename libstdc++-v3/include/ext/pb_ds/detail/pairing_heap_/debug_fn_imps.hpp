@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file pairing_heap_/debug_fn_imps.hpp
  * Contains an implementation class for a pairing heap.
  */
 

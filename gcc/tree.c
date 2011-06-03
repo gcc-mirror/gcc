@@ -368,6 +368,7 @@ initialize_tree_contains_struct (void)
       switch (ts_code)
 	{
 	case TS_TYPED:
+	case TS_BLOCK:
 	  MARK_TS_BASE (code);
 	  break;
 
@@ -380,6 +381,8 @@ initialize_tree_contains_struct (void)
 	case TS_COMPLEX:
 	case TS_SSA_NAME:
 	case TS_CONSTRUCTOR:
+	case TS_EXP:
+	case TS_STATEMENT_LIST:
 	  MARK_TS_TYPED (code);
 	  break;
 
@@ -388,10 +391,7 @@ initialize_tree_contains_struct (void)
 	case TS_TYPE_COMMON:
 	case TS_LIST:
 	case TS_VEC:
-	case TS_EXP:
-	case TS_BLOCK:
 	case TS_BINFO:
-	case TS_STATEMENT_LIST:
 	case TS_OMP_CLAUSE:
 	case TS_OPTIMIZATION:
 	case TS_TARGET_OPTION:
@@ -4905,7 +4905,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       fld_worklist_push (BLOCK_ABSTRACT_ORIGIN (t), fld);
     }
 
-  if (TREE_CODE (t) != IDENTIFIER_NODE)
+  if (TREE_CODE (t) != IDENTIFIER_NODE
+      && CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED))
     fld_worklist_push (TREE_TYPE (t), fld);
 
   return NULL_TREE;
@@ -5188,25 +5189,6 @@ free_lang_data (void)
   /* Create gimple variants for common types.  */
   ptrdiff_type_node = integer_type_node;
   fileptr_type_node = ptr_type_node;
-  if (TREE_CODE (boolean_type_node) != BOOLEAN_TYPE
-      || (TYPE_MODE (boolean_type_node)
-	  != mode_for_size (BOOL_TYPE_SIZE, MODE_INT, 0))
-      || TYPE_PRECISION (boolean_type_node) != 1
-      || !TYPE_UNSIGNED (boolean_type_node))
-    {
-      boolean_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
-      TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
-      TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
-      TYPE_PRECISION (boolean_type_node) = 1;
-      boolean_false_node = TYPE_MIN_VALUE (boolean_type_node);
-      boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
-    }
-
-  /* Unify char_type_node with its properly signed variant.  */
-  if (TYPE_UNSIGNED (char_type_node))
-    unsigned_char_type_node = char_type_node;
-  else
-    signed_char_type_node = char_type_node;
 
   /* Reset some langhooks.  Do not reset types_compatible_p, it may
      still be used indirectly via the get_alias_set langhook.  */
@@ -9580,6 +9562,10 @@ build_common_builtin_nodes (void)
 	const char *p;
 	enum built_in_function mcode, dcode;
 	tree type, inner_type;
+	const char *prefix = "__";
+
+	if (targetm.libfunc_gnu_prefix)
+	  prefix = "__gnu_";
 
 	type = lang_hooks.types.type_for_mode ((enum machine_mode) mode, 0);
 	if (type == NULL)
@@ -9598,13 +9584,17 @@ build_common_builtin_nodes (void)
 	  *q = TOLOWER (*p);
 	*q = '\0';
 
-	built_in_names[mcode] = concat ("__mul", mode_name_buf, "3", NULL);
+	built_in_names[mcode] = concat (prefix, "mul", mode_name_buf, "3",
+					NULL);
         local_define_builtin (built_in_names[mcode], ftype, mcode,
-			      built_in_names[mcode], ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+			      built_in_names[mcode],
+			      ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
-	built_in_names[dcode] = concat ("__div", mode_name_buf, "3", NULL);
+	built_in_names[dcode] = concat (prefix, "div", mode_name_buf, "3",
+					NULL);
         local_define_builtin (built_in_names[dcode], ftype, dcode,
-			      built_in_names[dcode], ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+			      built_in_names[dcode],
+			      ECF_CONST | ECF_NOTHROW | ECF_LEAF);
       }
   }
 }

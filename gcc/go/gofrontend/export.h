@@ -179,11 +179,6 @@ class Stream_to_section : public Export::Stream
  protected:
   void
   do_write(const char*, size_t);
-
- private:
-  // The section we are writing to; this is really union section
-  // defined in output.h.
-  void* section_;
 };
 
 #endif // !defined(GO_EXPORT_H)

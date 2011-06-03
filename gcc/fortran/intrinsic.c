@@ -51,7 +51,7 @@ sizing;
 
 enum klass
 { CLASS_IMPURE = 0, CLASS_PURE, CLASS_ELEMENTAL,
-  CLASS_INQUIRY, CLASS_TRANSFORMATIONAL };
+  CLASS_INQUIRY, CLASS_TRANSFORMATIONAL, CLASS_ATOMIC };
 
 #define ACTUAL_NO	0
 #define ACTUAL_YES	1
@@ -2433,6 +2433,11 @@ add_functions (void)
 
   make_generic ("range", GFC_ISYM_RANGE, GFC_STD_F95);
 
+  add_sym_1 ("rank", GFC_ISYM_RANK, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_F2008_TR, gfc_check_rank, gfc_simplify_rank, NULL,
+	     a, BT_REAL, dr, REQUIRED);
+  make_generic ("rank", GFC_ISYM_RANK, GFC_STD_F2008_TR);
+
   add_sym_2 ("real", GFC_ISYM_REAL, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_real, gfc_simplify_real, gfc_resolve_real,
 	     a, BT_UNKNOWN, dr, REQUIRED, kind, BT_INTEGER, di, OPTIONAL);
@@ -2874,6 +2879,18 @@ add_subroutines (void)
   add_sym_0s ("abort", GFC_ISYM_ABORT, GFC_STD_GNU, NULL);
 
   make_noreturn();
+
+  add_sym_2s ("atomic_define", GFC_ISYM_ATOMIC_DEF, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008,
+	      gfc_check_atomic_def, NULL, gfc_resolve_atomic_def,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_IN);
+
+  add_sym_2s ("atomic_ref", GFC_ISYM_ATOMIC_REF, CLASS_ATOMIC,
+	      BT_UNKNOWN, 0, GFC_STD_F2008,
+	      gfc_check_atomic_ref, NULL, gfc_resolve_atomic_ref,
+	      "value", BT_INTEGER, di, REQUIRED, INTENT_OUT,
+	      "atom", BT_INTEGER, di, REQUIRED, INTENT_IN);
 
   add_sym_1s ("cpu_time", GFC_ISYM_CPU_TIME, CLASS_IMPURE, BT_UNKNOWN, 0,
 	      GFC_STD_F95, gfc_check_cpu_time, NULL, gfc_resolve_cpu_time,
@@ -3970,6 +3987,10 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
 
     case GFC_STD_F2008:
       symstd_msg = "new in Fortran 2008";
+      break;
+
+    case GFC_STD_F2008_TR:
+      symstd_msg = "new in TR 29113";
       break;
 
     case GFC_STD_GNU:

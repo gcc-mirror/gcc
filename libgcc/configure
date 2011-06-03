@@ -555,6 +555,7 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 asm_hidden_op
 extra_parts
+cpu_type
 tmake_file
 set_use_emutls
 set_have_cc_tls
@@ -3742,6 +3743,23 @@ $as_echo "$libgcc_cv_fixed_point" >&6; }
 fixed_point=$libgcc_cv_fixed_point
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if the linker ($LD) is GNU ld" >&5
+$as_echo_n "checking if the linker ($LD) is GNU ld... " >&6; }
+if test "${acl_cv_prog_gnu_ld+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  # I'd rather use --version here, but apparently some GNU ld's only accept -v.
+if $LD -v 2>&1 </dev/null | egrep '(GNU|with BFD)' 1>&5; then
+  acl_cv_prog_gnu_ld=yes
+else
+  acl_cv_prog_gnu_ld=no
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acl_cv_prog_gnu_ld" >&5
+$as_echo "$acl_cv_prog_gnu_ld" >&6; }
+with_gnu_ld=$acl_cv_prog_gnu_ld
+
+
 # Check for assembler CFI support.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether assembler supports CFI directives" >&5
 $as_echo_n "checking whether assembler supports CFI directives... " >&6; }
@@ -3935,6 +3953,7 @@ tmake_file="${tmake_file_}"
 
 
 # Substitute configuration variables
+
 
 
 

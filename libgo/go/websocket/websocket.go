@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// The websocket package implements a client and server for the Web Socket protocol.
+// Package websocket implements a client and server for the Web Socket protocol.
 // The protocol is defined at http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol
 package websocket
 
@@ -13,6 +13,7 @@ import (
 	"bufio"
 	"crypto/md5"
 	"encoding/binary"
+	"http"
 	"io"
 	"net"
 	"os"
@@ -43,6 +44,8 @@ type Conn struct {
 	Location string
 	// The subprotocol for the Web Socket.
 	Protocol string
+	// The initial http Request (for the Server side only).
+	Request *http.Request
 
 	buf *bufio.ReadWriter
 	rwc io.ReadWriteCloser

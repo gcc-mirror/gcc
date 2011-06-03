@@ -38,9 +38,9 @@ along with GCC; see the file COPYING3.  If not see
      -- the standard that supports this type  */ 
 
 NAMED_INTCST (ISOFORTRANENV_FILE_ATOMIC_INT_KIND, "atomic_int_kind", \
-              gfc_default_integer_kind, GFC_STD_F2008)
+              gfc_atomic_int_kind, GFC_STD_F2008)
 NAMED_INTCST (ISOFORTRANENV_FILE_ATOMIC_LOGICAL_KIND, "atomic_logical_kind", \
-              gfc_default_logical_kind, GFC_STD_F2008)
+              gfc_atomic_logical_kind, GFC_STD_F2008)
 NAMED_INTCST (ISOFORTRANENV_CHARACTER_STORAGE_SIZE, "character_storage_size", \
               gfc_character_storage_size, GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_ERROR_UNIT, "error_unit", GFC_STDERR_UNIT_NUMBER, \

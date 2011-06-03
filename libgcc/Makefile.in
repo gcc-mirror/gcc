@@ -1,6 +1,6 @@
 # Makefile.in
 
-# Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation
+# Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation
 #
 # This file is part of GCC.
 #
@@ -35,6 +35,7 @@ shlib_slibdir = @slibdir@
 
 SHELL = @SHELL@
 
+cpu_type = @cpu_type@
 enable_shared = @enable_shared@
 decimal_float = @decimal_float@
 enable_decimal_float = @enable_decimal_float@
@@ -250,6 +251,10 @@ gcc_s_compile = $(gcc_compile) -DSHARED
 objects = $(filter %$(objext),$^)
 
 # Collect any host-specific information from Makefile fragments.
+
+LIBGCC_VER_GNU_PREFIX = __
+LIBGCC_VER_SYMBOLS_PREFIX =
+
 tmake_file = @tmake_file@
 include $(srcdir)/empty.mk $(tmake_file)
 
@@ -794,6 +799,9 @@ libgcc.map: $(SHLIB_MKMAP) $(SHLIB_MAPFILES) $(libgcc-s-objects)
 libgcc_s$(SHLIB_EXT): libgcc.map
 mapfile = libgcc.map
 endif
+
+libgcc-std.ver: $(srcdir)/libgcc-std.ver.in
+	sed -e 's/__PFX__/$(LIBGCC_VER_GNU_PREFIX)/g' < $< > $@
 
 libgcc_s$(SHLIB_EXT): $(libgcc-s-objects) $(extra-parts)
 	# @multilib_flags@ is still needed because this may use

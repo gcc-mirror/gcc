@@ -1,4 +1,4 @@
-/* Update the symbol table (the .T file) in a MIPS object to
+/* Update the symbol table (the .T file) in a ECOFF object to
    contain debugging information specified by the GNU compiler
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
@@ -633,12 +633,7 @@ extern void error (const char *format, ...) ATTRIBUTE_PRINTF_1;
 
 #undef index
 
-#ifndef CROSS_DIRECTORY_STRUCTURE
 #include <a.out.h>
-#else
-#include "mips/a.out.h"
-#endif /* CROSS_DIRECTORY_STRUCTURE */
-
 #include "gstab.h"
 
 #define IS_ASM_IDENT(ch) \

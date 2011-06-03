@@ -3204,6 +3204,61 @@ AC_DEFUN([AC_LC_MESSAGES], [
   ])
 ])
 
+dnl
+dnl Check whether get_nprocs is available in <sys/sysinfo.h>, and define _GLIBCXX_USE_GET_NPROCS.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_GET_NPROCS], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+
+  AC_MSG_CHECKING([for get_nprocs])
+  AC_CACHE_VAL(glibcxx_cv_GET_NPROCS, [
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <sys/sysinfo.h>],
+      [int n = get_nprocs();],
+      [glibcxx_cv_GET_NPROCS=yes],
+      [glibcxx_cv_GET_NPROCS=no])
+  ])
+  if test $glibcxx_cv_GET_NPROCS = yes; then
+    AC_DEFINE(_GLIBCXX_USE_GET_NPROCS, 1, [Define if get_nprocs is available in <sys/sysinfo.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_GET_NPROCS)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check whether sysconf(_SC_NPROCESSORS_ONLN) is available in <unistd.h>, and define _GLIBCXX_USE_SC_NPROCESSORS_ONLN.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_SC_NPROCESSORS_ONLN], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+
+  AC_MSG_CHECKING([for _SC_NPROCESSORS_ONLN])
+  AC_CACHE_VAL(glibcxx_cv_SC_NPROCESSORS_ONLN, [
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <unistd.h>],
+      [int n = sysconf(_SC_NPROCESSORS_ONLN);],
+      [glibcxx_cv_SC_NPROCESSORS_ONLN=yes],
+      [glibcxx_cv_SC_NPROCESSORS_ONLN=no])
+  ])
+  if test $glibcxx_cv_SC_NPROCESSORS_ONLN = yes; then
+    AC_DEFINE(_GLIBCXX_USE_SC_NPROCESSORS_ONLN, 1, [Define if _SC_NPROCESSORS_ONLN  is available in <unistd.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_SC_NPROCESSORS_ONLN)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])

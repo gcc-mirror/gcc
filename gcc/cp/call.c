@@ -3009,6 +3009,11 @@ splice_viable (struct z_candidate *cands,
   struct z_candidate **last_viable;
   struct z_candidate **cand;
 
+  /* Be strict inside templates, since build_over_call won't actually
+     do the conversions to get pedwarns.  */
+  if (processing_template_decl)
+    strict_p = true;
+
   viable = NULL;
   last_viable = &viable;
   *any_viable_p = false;
@@ -5900,10 +5905,13 @@ convert_arg_to_ellipsis (tree arg)
       /* In a template (or ill-formed code), we can have an incomplete type
 	 even after require_complete_type, in which case we don't know
 	 whether it has trivial copy or not.  */
-      && COMPLETE_TYPE_P (arg_type)
-      && (type_has_nontrivial_copy_init (arg_type)
-	  || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (arg_type)))
+      && COMPLETE_TYPE_P (arg_type))
     {
+      /* Build up a real lvalue-to-rvalue conversion in case the
+	 copy constructor is trivial but not callable.  */
+      if (CLASS_TYPE_P (arg_type))
+	force_rvalue (arg, tf_warning_or_error);
+
       /* [expr.call] 5.2.2/7:
 	 Passing a potentially-evaluated argument of class type (Clause 9)
 	 with a non-trivial copy constructor or a non-trivial destructor
@@ -5915,7 +5923,9 @@ convert_arg_to_ellipsis (tree arg)
 
 	 If the call appears in the context of a sizeof expression,
 	 it is not potentially-evaluated.  */
-      if (cp_unevaluated_operand == 0)
+      if (cp_unevaluated_operand == 0
+	  && (type_has_nontrivial_copy_init (arg_type)
+	      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (arg_type)))
 	error ("cannot pass objects of non-trivially-copyable "
 	       "type %q#T through %<...%>", arg_type);
     }
@@ -6477,8 +6487,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   gcc_assert (j <= nargs);
   nargs = j;
 
-  check_function_arguments (TYPE_ATTRIBUTES (TREE_TYPE (fn)),
-			    nargs, argarray, TYPE_ARG_TYPES (TREE_TYPE (fn)));
+  check_function_arguments (TREE_TYPE (fn), nargs, argarray);
 
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */

@@ -34,8 +34,8 @@
 // warranty.
 
 /**
- * @file iterators_fn_imps.hpp
- * Contains an implementation class for bin_search_tree_.
+ * @file pat_trie_/iterators_fn_imps.hpp
+ * Contains an implementation class for pat_trie.
  */
 
 PB_DS_CLASS_T_DEC
@@ -95,10 +95,10 @@ rend() const
 { return const_reverse_iterator(m_p_head); }
 
 PB_DS_CLASS_T_DEC
-inline typename PB_DS_CLASS_C_DEC::const_node_iterator
+inline typename PB_DS_CLASS_C_DEC::node_const_iterator
 PB_DS_CLASS_C_DEC::
 node_begin() const
-{ return const_node_iterator(m_p_head->m_p_parent, this); }
+{ return node_const_iterator(m_p_head->m_p_parent, this); }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::node_iterator
@@ -107,10 +107,10 @@ node_begin()
 { return node_iterator(m_p_head->m_p_parent, this); }
 
 PB_DS_CLASS_T_DEC
-inline typename PB_DS_CLASS_C_DEC::const_node_iterator
+inline typename PB_DS_CLASS_C_DEC::node_const_iterator
 PB_DS_CLASS_C_DEC::
 node_end() const
-{ return const_node_iterator(0, this); }
+{ return node_const_iterator(0, this); }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::node_iterator

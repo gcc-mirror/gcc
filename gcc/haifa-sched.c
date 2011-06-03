@@ -332,8 +332,6 @@ const struct common_sched_info_def haifa_common_sched_info =
     SCHED_PASS_UNKNOWN /* sched_pass_id */
   };
 
-const struct sched_scan_info_def *sched_scan_info;
-
 /* Mapping from instruction UID to its Logical UID.  */
 VEC (int, heap) *sched_luids = NULL;
 
@@ -3066,63 +3064,77 @@ schedule_block (basic_block *target_bb)
 	}
       while (advance > 0);
 
-      prune_ready_list (temp_state, true);
+      if (ready.n_ready > 0)
+	prune_ready_list (temp_state, true);
       if (ready.n_ready == 0)
-        continue;
-
-      if (sort_p)
-	{
-	  /* Sort the ready list based on priority.  */
-	  ready_sort (&ready);
-
-	  if (sched_verbose >= 2)
-	    {
-	      fprintf (sched_dump, ";;\t\tReady list after ready_sort:  ");
-	      debug_ready_list (&ready);
-	    }
-	}
-
-      /* We don't want md sched reorder to even see debug isns, so put
-	 them out right away.  */
-      if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
-	{
-	  while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
-	    {
-	      rtx insn = ready_remove_first (&ready);
-	      gcc_assert (DEBUG_INSN_P (insn));
-	      (*current_sched_info->begin_schedule_ready) (insn);
-	      VEC_safe_push (rtx, heap, scheduled_insns, insn);
-	      last_scheduled_insn = insn;
-	      advance = schedule_insn (insn);
-	      gcc_assert (advance == 0);
-	      if (ready.n_ready > 0)
-		ready_sort (&ready);
-	    }
-
-	  if (!ready.n_ready)
-	    continue;
-	}
-
-      /* Allow the target to reorder the list, typically for
-	 better instruction bundling.  */
-      if (sort_p && targetm.sched.reorder
-	  && (ready.n_ready == 0
-	      || !SCHED_GROUP_P (ready_element (&ready, 0))))
-	can_issue_more =
-	  targetm.sched.reorder (sched_dump, sched_verbose,
-				 ready_lastpos (&ready),
-				 &ready.n_ready, clock_var);
-      else
-	can_issue_more = issue_rate;
+	continue;
 
       first_cycle_insn_p = true;
       cycle_issued_insns = 0;
+      can_issue_more = issue_rate;
       for (;;)
 	{
 	  rtx insn;
 	  int cost;
 	  bool asm_p = false;
 
+	  if (sort_p && ready.n_ready > 0)
+	    {
+	      /* Sort the ready list based on priority.  This must be
+		 done every iteration through the loop, as schedule_insn
+		 may have readied additional insns that will not be
+		 sorted correctly.  */
+	      ready_sort (&ready);
+
+	      if (sched_verbose >= 2)
+		{
+		  fprintf (sched_dump, ";;\t\tReady list after ready_sort:  ");
+		  debug_ready_list (&ready);
+		}
+	    }
+
+	  /* We don't want md sched reorder to even see debug isns, so put
+	     them out right away.  */
+	  if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0))
+	      && (*current_sched_info->schedule_more_p) ())
+	    {
+	      while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
+		{
+		  rtx insn = ready_remove_first (&ready);
+		  gcc_assert (DEBUG_INSN_P (insn));
+		  (*current_sched_info->begin_schedule_ready) (insn);
+		  VEC_safe_push (rtx, heap, scheduled_insns, insn);
+		  last_scheduled_insn = insn;
+		  advance = schedule_insn (insn);
+		  gcc_assert (advance == 0);
+		  if (ready.n_ready > 0)
+		    ready_sort (&ready);
+		}
+	    }
+
+	  if (first_cycle_insn_p && !ready.n_ready)
+	    break;
+
+	  /* Allow the target to reorder the list, typically for
+	     better instruction bundling.  */
+	  if (sort_p
+	      && (ready.n_ready == 0
+		  || !SCHED_GROUP_P (ready_element (&ready, 0))))
+	    {
+	      if (first_cycle_insn_p && targetm.sched.reorder)
+		can_issue_more
+		  = targetm.sched.reorder (sched_dump, sched_verbose,
+					   ready_lastpos (&ready),
+					   &ready.n_ready, clock_var);
+	      else if (!first_cycle_insn_p && targetm.sched.reorder2)
+		can_issue_more
+		  = targetm.sched.reorder2 (sched_dump, sched_verbose,
+					    ready.n_ready
+					    ? ready_lastpos (&ready) : NULL,
+					    &ready.n_ready, clock_var);
+	    }
+
+	restart_choose_ready:
 	  if (sched_verbose >= 2)
 	    {
 	      fprintf (sched_dump, ";;\tReady list (t = %3d):  ",
@@ -3164,8 +3176,7 @@ schedule_block (basic_block *target_bb)
 		/* Finish cycle.  */
 		break;
 	      if (res > 0)
-		/* Restart choose_ready ().  */
-		continue;
+		goto restart_choose_ready;
 
 	      gcc_assert (insn != NULL_RTX);
 	    }
@@ -3207,7 +3218,7 @@ schedule_block (basic_block *target_bb)
 	       insn from the split block.  */
 	    {
 	      TODO_SPEC (insn) = (TODO_SPEC (insn) & ~SPECULATIVE) | HARD_DEP;
-	      continue;
+	      goto restart_choose_ready;
 	    }
 
 	  /* DECISION is made.  */
@@ -3256,45 +3267,8 @@ schedule_block (basic_block *target_bb)
 	    break;
 
 	  first_cycle_insn_p = false;
-
 	  if (ready.n_ready > 0)
-            prune_ready_list (temp_state, false);
-
-	  /* Sort the ready list based on priority.  This must be
-	     redone here, as schedule_insn may have readied additional
-	     insns that will not be sorted correctly.  */
-	  if (ready.n_ready > 0)
-	    ready_sort (&ready);
-
-	  /* Quickly go through debug insns such that md sched
-	     reorder2 doesn't have to deal with debug insns.  */
-	  if (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0))
-	      && (*current_sched_info->schedule_more_p) ())
-	    {
-	      while (ready.n_ready && DEBUG_INSN_P (ready_element (&ready, 0)))
-		{
-		  insn = ready_remove_first (&ready);
-		  gcc_assert (DEBUG_INSN_P (insn));
-		  (*current_sched_info->begin_schedule_ready) (insn);
-		  VEC_safe_push (rtx, heap, scheduled_insns, insn);
-		  advance = schedule_insn (insn);
-		  last_scheduled_insn = insn;
-		  gcc_assert (advance == 0);
-		  if (ready.n_ready > 0)
-		    ready_sort (&ready);
-		}
-	    }
-
-	  if (targetm.sched.reorder2
-	      && (ready.n_ready == 0
-		  || !SCHED_GROUP_P (ready_element (&ready, 0))))
-	    {
-	      can_issue_more =
-		targetm.sched.reorder2 (sched_dump, sched_verbose,
-					ready.n_ready
-					? ready_lastpos (&ready) : NULL,
-					&ready.n_ready, clock_var);
-	    }
+	    prune_ready_list (temp_state, false);
 	}
     }
 
@@ -3360,7 +3334,7 @@ schedule_block (basic_block *target_bb)
 	 in its md_finish () hook.  These new insns don't have any data
 	 initialized and to identify them we extend h_i_d so that they'll
 	 get zero luids.  */
-      sched_init_luids (NULL, NULL, NULL, NULL);
+      sched_extend_luids ();
     }
 
   if (sched_verbose)
@@ -3568,10 +3542,10 @@ haifa_sched_init (void)
 
     FOR_EACH_BB (bb)
       VEC_quick_push (basic_block, bbs, bb);
-    sched_init_luids (bbs, NULL, NULL, NULL);
+    sched_init_luids (bbs);
     sched_deps_init (true);
     sched_extend_target ();
-    haifa_init_h_i_d (bbs, NULL, NULL, NULL);
+    haifa_init_h_i_d (bbs);
 
     VEC_free (basic_block, heap, bbs);
   }
@@ -5359,105 +5333,9 @@ check_cfg (rtx head, rtx tail)
 
 #endif /* ENABLE_CHECKING */
 
-/* Extend per basic block data structures.  */
-static void
-extend_bb (void)
-{
-  if (sched_scan_info->extend_bb)
-    sched_scan_info->extend_bb ();
-}
-
-/* Init data for BB.  */
-static void
-init_bb (basic_block bb)
-{
-  if (sched_scan_info->init_bb)
-    sched_scan_info->init_bb (bb);
-}
-
-/* Extend per insn data structures.  */
-static void
-extend_insn (void)
-{
-  if (sched_scan_info->extend_insn)
-    sched_scan_info->extend_insn ();
-}
-
-/* Init data structures for INSN.  */
-static void
-init_insn (rtx insn)
-{
-  if (sched_scan_info->init_insn)
-    sched_scan_info->init_insn (insn);
-}
-
-/* Init all insns in BB.  */
-static void
-init_insns_in_bb (basic_block bb)
-{
-  rtx insn;
-
-  FOR_BB_INSNS (bb, insn)
-    init_insn (insn);
-}
-
-/* A driver function to add a set of basic blocks (BBS),
-   a single basic block (BB), a set of insns (INSNS) or a single insn (INSN)
-   to the scheduling region.  */
-void
-sched_scan (const struct sched_scan_info_def *ssi,
-	    bb_vec_t bbs, basic_block bb, insn_vec_t insns, rtx insn)
-{
-  sched_scan_info = ssi;
-
-  if (bbs != NULL || bb != NULL)
-    {
-      extend_bb ();
-
-      if (bbs != NULL)
-	{
-	  unsigned i;
-	  basic_block x;
-
-	  FOR_EACH_VEC_ELT (basic_block, bbs, i, x)
-	    init_bb (x);
-	}
-
-      if (bb != NULL)
-	init_bb (bb);
-    }
-
-  extend_insn ();
-
-  if (bbs != NULL)
-    {
-      unsigned i;
-      basic_block x;
-
-      FOR_EACH_VEC_ELT (basic_block, bbs, i, x)
-	init_insns_in_bb (x);
-    }
-
-  if (bb != NULL)
-    init_insns_in_bb (bb);
-
-  if (insns != NULL)
-    {
-      unsigned i;
-      rtx x;
-
-      FOR_EACH_VEC_ELT (rtx, insns, i, x)
-	init_insn (x);
-    }
-
-  if (insn != NULL)
-    init_insn (insn);
-}
-
-
 /* Extend data structures for logical insn UID.  */
-static void
-luids_extend_insn (void)
+void
+sched_extend_luids (void)
 {
   int new_luids_max_uid = get_max_uid () + 1;
 
@@ -5465,8 +5343,8 @@ luids_extend_insn (void)
 }
 
 /* Initialize LUID for INSN.  */
-static void
-luids_init_insn (rtx insn)
+void
+sched_init_insn_luid (rtx insn)
 {
   int i = INSN_P (insn) ? 1 : common_sched_info->luid_for_non_insn (insn);
   int luid;
@@ -5482,21 +5360,23 @@ luids_init_insn (rtx insn)
   SET_INSN_LUID (insn, luid);
 }
 
-/* Initialize luids for BBS, BB, INSNS and INSN.
+/* Initialize luids for BBS.
    The hook common_sched_info->luid_for_non_insn () is used to determine
    if notes, labels, etc. need luids.  */
 void
-sched_init_luids (bb_vec_t bbs, basic_block bb, insn_vec_t insns, rtx insn)
+sched_init_luids (bb_vec_t bbs)
 {
-  const struct sched_scan_info_def ssi =
-    {
-      NULL, /* extend_bb */
-      NULL, /* init_bb */
-      luids_extend_insn, /* extend_insn */
-      luids_init_insn /* init_insn */
-    };
+  int i;
+  basic_block bb;
 
-  sched_scan (&ssi, bbs, bb, insns, insn);
+  sched_extend_luids ();
+  FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
+    {
+      rtx insn;
+
+      FOR_BB_INSNS (bb, insn)
+	sched_init_insn_luid (insn);
+    }
 }
 
 /* Free LUIDs.  */
@@ -5553,19 +5433,21 @@ init_h_i_d (rtx insn)
     }
 }
 
-/* Initialize haifa_insn_data for BBS, BB, INSNS and INSN.  */
+/* Initialize haifa_insn_data for BBS.  */
 void
-haifa_init_h_i_d (bb_vec_t bbs, basic_block bb, insn_vec_t insns, rtx insn)
+haifa_init_h_i_d (bb_vec_t bbs)
 {
-  const struct sched_scan_info_def ssi =
-    {
-      NULL, /* extend_bb */
-      NULL, /* init_bb */
-      extend_h_i_d, /* extend_insn */
-      init_h_i_d /* init_insn */
-    };
+  int i;
+  basic_block bb;
 
-  sched_scan (&ssi, bbs, bb, insns, insn);
+  extend_h_i_d ();
+  FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
+    {
+      rtx insn;
+
+      FOR_BB_INSNS (bb, insn)
+	init_h_i_d (insn);
+    }
 }
 
 /* Finalize haifa_insn_data.  */
@@ -5594,10 +5476,12 @@ haifa_init_insn (rtx insn)
 {
   gcc_assert (insn != NULL);
 
-  sched_init_luids (NULL, NULL, NULL, insn);
+  sched_extend_luids ();
+  sched_init_insn_luid (insn);
   sched_extend_target ();
   sched_deps_init (false);
-  haifa_init_h_i_d (NULL, NULL, NULL, insn);
+  extend_h_i_d ();
+  init_h_i_d (insn);
 
   if (adding_bb_to_current_region_p)
     {

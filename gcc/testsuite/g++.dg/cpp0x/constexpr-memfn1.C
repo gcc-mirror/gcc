@@ -13,6 +13,6 @@ constexpr X X::g(X x) { return x; }
 struct Y
 {
   Y() { }
-  constexpr Y f(Y y);		// { dg-error "constexpr" }
-  static constexpr Y g(Y y);	// { dg-error "constexpr" }
+  constexpr Y f(Y y);		// { dg-error "not a literal type" }
+  static constexpr Y g(Y y) {}	// { dg-error "constexpr" }
 };

@@ -54,59 +54,62 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CAN_FORK (defined(HAVE_FORK) && defined(HAVE_EXECVP) \
 		  && defined(HAVE_WAIT))
 #define GLIBC_BACKTRACE (defined(HAVE_BACKTRACE) \
-			 && defined(HAVE_BACKTRACE_SYMBOLS))
+			 && defined(HAVE_BACKTRACE_SYMBOLS_FD))
 #define CAN_PIPE (CAN_FORK && defined(HAVE_PIPE) \
 		  && defined(HAVE_DUP2) && defined(HAVE_FDOPEN) \
 		  && defined(HAVE_CLOSE))
 
 
-#if GLIBC_BACKTRACE && CAN_PIPE
+/* GDB style #NUM index for each stack frame.  */
+
+static void 
+bt_header (int num)
+{
+  st_printf (" #%d  ", num);
+}
+
+
+/* fgets()-like function that reads a line from a fd, without
+   needing to malloc() a buffer, and does not use locks, hence should
+   be async-signal-safe.  */
+
 static char *
-local_strcasestr (const char *s1, const char *s2)
+fd_gets (char *s, int size, int fd)
 {
-#ifdef HAVE_STRCASESTR
-  return strcasestr (s1, s2);
-#else
-
-  const char *p = s1;
-  const size_t len = strlen (s2);
-  const char u = *s2, v = isupper((int) *s2) ? tolower((int) *s2)
-				  : (islower((int) *s2) ? toupper((int) *s2)
-							: *s2);
-
-  while (1)
+  for (int i = 0; i < size; i++)
     {
-      while (*p != u && *p != v && *p)
-	p++;
-      if (*p == 0)
-	return NULL;
-      if (strncasecmp (p, s2, len) == 0)
-	return (char *)p;
+      char c;
+      ssize_t nread = read (fd, &c, 1);
+      if (nread == 1)
+	{
+	  s[i] = c;
+	  if (c == '\n')
+	    {
+	      if (i + 1 < size)
+		s[i+1] = '\0';
+	      else
+		s[i] = '\0';
+	      break;
+	    }
+	}
+      else
+	{
+	  s[i] = '\0';
+	  if (i == 0)
+	    return NULL;
+	  break;
+	}
     }
-#endif
+  return s;
 }
-#endif
 
 
-#if GLIBC_BACKTRACE
-static void
-dump_glibc_backtrace (int depth, char *str[])
-{
-  int i;
+extern char *addr2line_path;
 
-  for (i = 0; i < depth; i++)
-    {
-      estr_write ("  + ");
-      estr_write (str[i]);
-      estr_write ("\n");
-    }
-
-  free (str);
-}
-#endif
 
 /* show_backtrace displays the backtrace, currently obtained by means of
    the glibc backtrace* functions.  */
+
 void
 show_backtrace (void)
 {
@@ -116,47 +119,30 @@ show_backtrace (void)
 #define BUFSIZE 1024
 
   void *trace[DEPTH];
-  char **str;
   int depth;
 
   depth = backtrace (trace, DEPTH);
   if (depth <= 0)
     return;
 
-  str = backtrace_symbols (trace, depth);
-
 #if CAN_PIPE
 
-#ifndef STDIN_FILENO
-#define STDIN_FILENO 0
-#endif
-
-#ifndef STDOUT_FILENO
-#define STDOUT_FILENO 1
-#endif
-
-#ifndef STDERR_FILENO
-#define STDERR_FILENO 2
-#endif
+  if (addr2line_path == NULL)
+    goto fallback_noerr;
 
   /* We attempt to extract file and line information from addr2line.  */
   do
   {
     /* Local variables.  */
-    int f[2], pid, line, i;
-    FILE *output;
-    char addr_buf[DEPTH][GFC_XTOA_BUF_SIZE], func[BUFSIZE], file[BUFSIZE];
-    char *p, *end;
-    const char *addr[DEPTH];
-
-    /* Write the list of addresses in hexadecimal format.  */
-    for (i = 0; i < depth; i++)
-      addr[i] = gfc_xtoa ((GFC_UINTEGER_LARGEST) (intptr_t) trace[i], addr_buf[i],
-		      sizeof (addr_buf[i]));
+    int f[2], pid, bt[2], inp[2];
+    char addr_buf[GFC_XTOA_BUF_SIZE], func[BUFSIZE], file[BUFSIZE];
+    char *p;
 
     /* Don't output an error message if something goes wrong, we'll simply
        fall back to the pstack and glibc backtraces.  */
     if (pipe (f) != 0)
+      break;
+    if (pipe (inp) != 0)
       break;
     if ((pid = fork ()) == -1)
       break;
@@ -164,128 +150,134 @@ show_backtrace (void)
     if (pid == 0)
       {
 	/* Child process.  */
-#define NUM_FIXEDARGS 5
-	char *arg[DEPTH+NUM_FIXEDARGS+1];
+#define NUM_FIXEDARGS 7
+	char *arg[NUM_FIXEDARGS];
+	char *newenv[] = { NULL };
 
 	close (f[0]);
-	close (STDIN_FILENO);
+
+	close (inp[1]);
+	if (dup2 (inp[0], STDIN_FILENO) == -1)
+	  _exit (1);
+	close (inp[0]);
+
 	close (STDERR_FILENO);
 
 	if (dup2 (f[1], STDOUT_FILENO) == -1)
-	  _exit (0);
+	  _exit (1);
 	close (f[1]);
 
-	arg[0] = (char *) "addr2line";
+	arg[0] = addr2line_path;
 	arg[1] = (char *) "-e";
 	arg[2] = full_exe_path ();
 	arg[3] = (char *) "-f";
 	arg[4] = (char *) "-s";
-	for (i = 0; i < depth; i++)
-	  arg[NUM_FIXEDARGS+i] = (char *) addr[i];
-	arg[NUM_FIXEDARGS+depth] = NULL;
-	execvp (arg[0], arg);
-	_exit (0);
+	arg[5] = (char *) "-C";
+	arg[6] = NULL;
+	execve (addr2line_path, arg, newenv);
+	_exit (1);
 #undef NUM_FIXEDARGS
       }
 
     /* Father process.  */
     close (f[1]);
-    wait (NULL);
-    output = fdopen (f[0], "r");
-    i = -1;
+    close (inp[0]);
+    if (pipe (bt) != 0)
+      break;
+    backtrace_symbols_fd (trace, depth, bt[1]);
+    close (bt[1]);
 
-    if (fgets (func, sizeof(func), output))
+    estr_write ("\nBacktrace for this error:\n");
+    for (int j = 0; j < depth; j++)
       {
-	estr_write ("\nBacktrace for this error:\n");
+	const char *addr = gfc_xtoa 
+	  ((GFC_UINTEGER_LARGEST) (intptr_t) trace[j], 
+	   addr_buf, sizeof (addr_buf));
 
-	do
+	write (inp[1], addr, strlen (addr));
+	write (inp[1], "\n", 1);
+	
+	if (! fd_gets (func, sizeof(func), f[0]))
+	  goto fallback;
+	if (! fd_gets (file, sizeof(file), f[0]))
+	  goto fallback;
+	    
+	for (p = func; *p != '\n' && *p != '\r'; p++)
+	  ;
+	*p = '\0';
+	
+	/* If we only have the address, use the glibc backtrace.  */
+	if (func[0] == '?' && func[1] == '?' && file[0] == '?'
+	    && file[1] == '?')
 	  {
-	    if (! fgets (file, sizeof(file), output))
-	      goto fallback;
-
-	    i++;
-
-	    for (p = func; *p != '\n' && *p != '\r'; p++)
-	      ;
-
-	    *p = '\0';
-
-	    /* Try to recognize the internal libgfortran functions.  */
-	    if (strncasecmp (func, "*_gfortran", 10) == 0
-		|| strncasecmp (func, "_gfortran", 9) == 0
-		|| strcmp (func, "main") == 0 || strcmp (func, "_start") == 0
-		|| strcmp (func, "_gfortrani_backtrace_handler") == 0)
-	      continue;
-
-	    if (local_strcasestr (str[i], "libgfortran.so") != NULL
-		|| local_strcasestr (str[i], "libgfortran.dylib") != NULL
-		|| local_strcasestr (str[i], "libgfortran.a") != NULL)
-	      continue;
-
-	    /* If we only have the address, use the glibc backtrace.  */
-	    if (func[0] == '?' && func[1] == '?' && file[0] == '?'
-		&& file[1] == '?')
+	    bt_header (j);
+	    while (1)
 	      {
-		estr_write ("  + ");
-		estr_write (str[i]);
-		estr_write ("\n");
-	        continue;
+		char bc;
+		ssize_t nread = read (bt[0], &bc, 1);
+		if (nread != 1 || bc == '\n')
+		  break;
+		write (STDERR_FILENO, &bc, 1);
 	      }
-
-	    /* Extract the line number.  */
-	    for (end = NULL, p = file; *p; p++)
-	      if (*p == ':')
-		end = p;
-	    if (end != NULL)
-	      {
-		*end = '\0';
-		line = atoi (++end);
-	      }
-	    else
-	      line = -1;
-
-	    if (strcmp (func, "MAIN__") == 0)
-	      estr_write ("  + in the main program\n");
-	    else
-	      {
-		estr_write ("  + function ");
-		estr_write (func);
-		estr_write (" (0x");
-		estr_write (addr[i]);
-		estr_write (")\n");
-	      }
-
-	    if (line <= 0 && strcmp (file, "??") == 0)
-	      continue;
-
-	    if (line <= 0)
-	      {
-		estr_write ("    from file ");
-		estr_write (file);
-		estr_write ("\n");
-	      }
-	    else
-	      st_printf ("    at line %d of file %s\n", line, file);
+	    estr_write ("\n");
+	    continue;
 	  }
-	while (fgets (func, sizeof(func), output));
+	else
+	  {
+	    /* Forward to the next entry in the backtrace. */
+	    while (1)
+	      {
+		char bc;
+		ssize_t nread = read (bt[0], &bc, 1);
+		if (nread != 1 || bc == '\n')
+		  break;
+	      }
+	  }
 
-	free (str);
-	return;
+	/* _start is a setup routine that calls main(), and main() is
+	   the frontend routine that calls some setup stuff and then
+	   calls MAIN__, so at this point we should stop.  */
+	if (strcmp (func, "_start") == 0 || strcmp (func, "main") == 0)
+	  break;
+	
+	bt_header (j);
+	estr_write (full_exe_path ());
+	estr_write ("[0x");
+	estr_write (addr);
+	estr_write ("] in ");
+	estr_write (func);
+	
+	if (strncmp (file, "??", 2) == 0)
+	  estr_write ("\n");
+	else
+	  {
+	    estr_write (" at ");
+	    estr_write (file);
+	  }
+      } /* Loop over each hex address.  */
+    close (inp[1]);
+    close (bt[0]);
+    wait (NULL);
+    return;
 
 fallback:
-	estr_write ("** Something went wrong while running addr2line. **\n"
-		    "** Falling back  to a simpler  backtrace scheme. **\n");
-      }
-    }
+    estr_write ("** Something went wrong while running addr2line. **\n"
+		"** Falling back  to a simpler  backtrace scheme. **\n");
+  }
   while (0);
 
 #undef DEPTH
 #undef BUFSIZE
 
-#endif
-#endif
+#endif /* CAN_PIPE */
 
-#if CAN_FORK && defined(HAVE_GETPPID)
+fallback_noerr:
+  /* Fallback to the glibc backtrace.  */
+  estr_write ("\nBacktrace for this error:\n");
+  backtrace_symbols_fd (trace, depth, STDERR_FILENO);
+  return;
+
+#elif defined(CAN_FORK) && defined(HAVE_GETPPID)
   /* Try to call pstack.  */
   do
   {
@@ -312,15 +304,9 @@ fallback:
 	execvp (arg[0], arg);
 #undef NUM_ARGS
 
-	/* pstack didn't work, so we fall back to dumping the glibc
-	   backtrace if we can.  */
-#if GLIBC_BACKTRACE
-	dump_glibc_backtrace (depth, str);
-#else
+	/* pstack didn't work.  */
 	estr_write ("  unable to produce a backtrace, sorry!\n");
-#endif
-
-	_exit (0);
+	_exit (1);
       }
 
     /* Father process.  */
@@ -328,13 +314,7 @@ fallback:
     return;
   }
   while(0);
-#endif
-
-#if GLIBC_BACKTRACE
-  /* Fallback to the glibc backtrace.  */
-  estr_write ("\nBacktrace for this error:\n");
-  dump_glibc_backtrace (depth, str);
-  return;
-#endif
+#else
   estr_write ("\nBacktrace not yet available on this platform, sorry!\n");
+#endif
 }

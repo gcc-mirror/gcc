@@ -495,11 +495,16 @@ proc check_profiling_available { test_what } {
     # These conditions depend on the argument so examine them before
     # looking at the cache variable.
 
+    # Tree profiling requires TLS runtime support.
+    if { $test_what == "-fprofile-generate" } {
+	return [check_effective_target_tls_runtime]
+    }
+
     # Support for -p on solaris2 relies on mcrt1.o which comes with the
     # vendor compiler.  We cannot reliably predict the directory where the
     # vendor compiler (and thus mcrt1.o) is installed so we can't
     # necessarily find mcrt1.o even if we have it.
-    if { [istarget *-*-solaris2*] && [lindex $test_what 1] == "-p" } {
+    if { [istarget *-*-solaris2*] && $test_what == "-p" } {
 	return 0
     }
 
@@ -508,32 +513,30 @@ proc check_profiling_available { test_what } {
     # Support for -pg on irix relies on gcrt1.o which doesn't exist yet.
     # See: http://gcc.gnu.org/ml/gcc/2002-10/msg00169.html
     if { [istarget mips*-*-irix*]
-    && ([lindex $test_what 1] == "-p" || [lindex $test_what 1] == "-pg") } {
+         && ($test_what == "-p" || $test_what == "-pg") } {
 	return 0
     }
 
     # We don't yet support profiling for MIPS16.
     if { [istarget mips*-*-*]
 	 && ![check_effective_target_nomips16]
-	 && ([lindex $test_what 1] == "-p"
-	     || [lindex $test_what 1] == "-pg") } {
+	 && ($test_what == "-p" || $test_what == "-pg") } {
 	return 0
     }
 
     # MinGW does not support -p.
-    if { [istarget *-*-mingw*] && [lindex $test_what 1] == "-p" } {
+    if { [istarget *-*-mingw*] && $test_what == "-p" } {
 	return 0
     }
 
     # cygwin does not support -p.
-    if { [istarget *-*-cygwin*] && [lindex $test_what 1] == "-p" } {
+    if { [istarget *-*-cygwin*] && $test_what == "-p" } {
 	return 0
     }
 
     # uClibc does not have gcrt1.o.
     if { [check_effective_target_uclibc]
-	 && ([lindex $test_what 1] == "-p"
-	     || [lindex $test_what 1] == "-pg") } {
+	 && ($test_what == "-p" || $test_what == "-pg") } {
 	return 0
     }
 
@@ -687,7 +690,7 @@ proc check_effective_target_tls_runtime {} {
     return [check_runtime tls_runtime {
 	__thread int thr = 0;
 	int main (void) { return thr; }
-    }]
+    } [add_options_for_tls ""]]
 }
 
 # Return 1 if -ffunction-sections is supported, 0 otherwise.

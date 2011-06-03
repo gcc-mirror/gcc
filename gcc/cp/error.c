@@ -307,13 +307,20 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
 
   FOR_EACH_VEC_ELT (tree, typenames, i, t)
     {
+      bool dependent = uses_template_parms (args);
       if (need_comma)
 	pp_separate_with_comma (cxx_pp);
       dump_type (t, TFF_PLAIN_IDENTIFIER);
       pp_cxx_whitespace (cxx_pp);
       pp_equal (cxx_pp);
       pp_cxx_whitespace (cxx_pp);
+      push_deferring_access_checks (dk_no_check);
+      if (dependent)
+	++processing_template_decl;
       t = tsubst (t, args, tf_none, NULL_TREE);
+      if (dependent)
+	--processing_template_decl;
+      pop_deferring_access_checks ();
       /* Strip typedefs.  We can't just use TFF_CHASE_TYPEDEF because
 	 pp_simple_type_specifier doesn't know about it.  */
       t = strip_typedefs (t);
@@ -1883,7 +1890,10 @@ dump_expr (tree t, int flags)
 		    && strcmp (IDENTIFIER_POINTER (DECL_NAME (ob)), "this")))
 	      {
 		dump_expr (ob, flags | TFF_EXPR_IN_PARENS);
-		pp_cxx_arrow (cxx_pp);
+		if (TREE_CODE (TREE_TYPE (ob)) == REFERENCE_TYPE)
+		  pp_cxx_dot (cxx_pp);
+		else
+		  pp_cxx_arrow (cxx_pp);
 	      }
 	  }
 	else

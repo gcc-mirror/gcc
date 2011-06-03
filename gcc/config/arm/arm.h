@@ -101,6 +101,8 @@ extern char arm_arch_name[];
 	      builtin_define ("__ARM_PCS");		\
 	    builtin_define ("__ARM_EABI__");		\
 	  }						\
+	if (TARGET_IDIV)				\
+	  builtin_define ("__ARM_ARCH_EXT_IDIV__");	\
     } while (0)
 
 #include "config/arm/arm-opts.h"
@@ -290,6 +292,10 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* Nonzero if this chip supports ldrex{bhd} and strex{bhd}.  */
 #define TARGET_HAVE_LDREXBHD	((arm_arch6k && TARGET_ARM) || arm_arch7)
 
+/* Nonzero if integer division instructions supported.  */
+#define TARGET_IDIV		((TARGET_ARM && arm_arch_arm_hwdiv) \
+				 || (TARGET_THUMB2 && arm_arch_thumb_hwdiv))
+
 /* True iff the full BPABI is being used.  If TARGET_BPABI is true,
    then TARGET_AAPCS_BASED must be true -- but the converse does not
    hold.  TARGET_BPABI implies the use of the BPABI runtime library,
@@ -349,58 +355,16 @@ extern const struct arm_fpu_desc
 /* Which floating point hardware to schedule for.  */
 extern int arm_fpu_attr;
 
-enum float_abi_type
-{
-  ARM_FLOAT_ABI_SOFT,
-  ARM_FLOAT_ABI_SOFTFP,
-  ARM_FLOAT_ABI_HARD
-};
-
-extern enum float_abi_type arm_float_abi;
-
 #ifndef TARGET_DEFAULT_FLOAT_ABI
 #define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_SOFT
 #endif
 
-/* Which __fp16 format to use.
-   The enumeration values correspond to the numbering for the
-   Tag_ABI_FP_16bit_format attribute.
- */
-enum arm_fp16_format_type
-{
-  ARM_FP16_FORMAT_NONE = 0,
-  ARM_FP16_FORMAT_IEEE = 1,
-  ARM_FP16_FORMAT_ALTERNATIVE = 2
-};
-
-extern enum arm_fp16_format_type arm_fp16_format;
 #define LARGEST_EXPONENT_IS_NORMAL(bits) \
     ((bits) == 16 && arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)
-
-/* Which ABI to use.  */
-enum arm_abi_type
-{
-  ARM_ABI_APCS,
-  ARM_ABI_ATPCS,
-  ARM_ABI_AAPCS,
-  ARM_ABI_IWMMXT,
-  ARM_ABI_AAPCS_LINUX
-};
-
-extern enum arm_abi_type arm_abi;
 
 #ifndef ARM_DEFAULT_ABI
 #define ARM_DEFAULT_ABI ARM_ABI_APCS
 #endif
-
-/* Which thread pointer access sequence to use.  */
-enum arm_tp_type {
-  TP_AUTO,
-  TP_SOFT,
-  TP_CP15
-};
-
-extern enum arm_tp_type target_thread_pointer;
 
 /* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
 extern int arm_arch3m;
@@ -472,8 +436,11 @@ extern int arm_cpp_interwork;
 /* Nonzero if chip supports Thumb 2.  */
 extern int arm_arch_thumb2;
 
-/* Nonzero if chip supports integer division instruction.  */
-extern int arm_arch_hwdiv;
+/* Nonzero if chip supports integer division instruction in ARM mode.  */
+extern int arm_arch_arm_hwdiv;
+
+/* Nonzero if chip supports integer division instruction in Thumb mode.  */
+extern int arm_arch_thumb_hwdiv;
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)
@@ -614,7 +581,6 @@ extern int arm_arch_hwdiv;
    0020D) page 2-20 says "Structures are aligned on word boundaries".
    The AAPCS specifies a value of 8.  */
 #define STRUCTURE_SIZE_BOUNDARY arm_structure_size_boundary
-extern int arm_structure_size_boundary;
 
 /* This is the value used to initialize arm_structure_size_boundary.  If a
    particular arm target wants to change the default value it should change

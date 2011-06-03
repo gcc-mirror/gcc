@@ -101,7 +101,7 @@ namespace detail
 
     // Only associative containers.
     typedef typename Cntnr::key_type key_type;
-    typedef typename Cntnr::const_key_reference const_key_reference;
+    typedef typename Cntnr::key_const_reference key_const_reference;
     typedef typename native_type::key_type native_key_type;
 
     enum
@@ -149,12 +149,12 @@ namespace detail
     generate_value(Gen& r_gen, size_t max)
     { return PB_DS_TYPE_TRAITS_C_DEC::generate_value(r_gen, max); }
 
-    static const_key_reference
+    static key_const_reference
     extract_key(const_reference r_val)
     { return type_traits_base::extract_key(r_val); }
 
     static native_key_type
-    native_key(const_key_reference r_key)
+    native_key(key_const_reference r_key)
     { return native_type_traits_base::native_key(r_key); }
 
     static native_value_type
@@ -174,7 +174,7 @@ namespace detail
     { return to_string(r_val); }
 
     static std::string
-    key_to_string(const_key_reference r_key)
+    key_to_string(key_const_reference r_key)
     { return to_string(r_key); }
 
     static std::string
@@ -182,7 +182,7 @@ namespace detail
     { return to_string(r_native_val); }
 
     static bool
-    prefix_match(const_key_reference r_key, const std::string& r_native_key)
+    prefix_match(key_const_reference r_key, const std::string& r_native_key)
     {
       const size_t len = std::min(r_key.length(), r_native_key.length());
       const std::string substr = r_native_key.substr(0, len);

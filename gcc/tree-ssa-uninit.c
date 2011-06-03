@@ -358,6 +358,8 @@ convert_control_dep_chain_into_preds (VEC(edge, heap) **dep_chains,
   for (i = 0; i < num_chains; i++)
     {
       VEC(edge, heap) *one_cd_chain = dep_chains[i];
+
+      has_valid_pred = false;
       for (j = 0; j < VEC_length (edge, one_cd_chain); j++)
         {
           gimple cond_stmt;

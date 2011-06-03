@@ -34,18 +34,18 @@
 // warranty.
 
 /**
- * @file split_fn_imps.hpp
- * Contains an implementation class for bin_search_tree_.
+ * @file pat_trie_/split_fn_imps.hpp
+ * Contains an implementation class for pat_trie.
  */
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
+split(key_const_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)
-  split_join_branch_bag bag;
+  branch_bag bag;
   leaf_pointer p_split_lf = split_prep(r_key, other, bag);
   if (p_split_lf == 0)
     {
@@ -57,18 +57,16 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 
   _GLIBCXX_DEBUG_ASSERT(!bag.empty());
   other.clear();
-  m_p_head->m_p_parent = rec_split(m_p_head->m_p_parent,
-				   pref_begin(p_split_lf),
-				   pref_end(p_split_lf),
-				   other,
-				   bag);
+
+  m_p_head->m_p_parent = rec_split(m_p_head->m_p_parent, pref_begin(p_split_lf),
+				   pref_end(p_split_lf), other, bag);
 
   m_p_head->m_p_parent->m_p_parent = m_p_head;
 
-  other.m_p_head->m_p_max = m_p_head->m_p_max;
+  head_pointer __ohead = other.m_p_head;
+  __ohead->m_p_max = m_p_head->m_p_max;
   m_p_head->m_p_max = rightmost_descendant(m_p_head->m_p_parent);
-  other.m_p_head->m_p_min =
-    other.leftmost_descendant(other.m_p_head->m_p_parent);
+  __ohead->m_p_min = other.leftmost_descendant(__ohead->m_p_parent);
 
   other.m_size = std::distance(other.PB_DS_CLASS_C_DEC::begin(),
 			       other.PB_DS_CLASS_C_DEC::end());
@@ -80,7 +78,8 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::leaf_pointer
 PB_DS_CLASS_C_DEC::
-split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, split_join_branch_bag& r_bag)
+split_prep(key_const_reference r_key, PB_DS_CLASS_C_DEC& other,
+	   branch_bag& r_bag)
 {
   _GLIBCXX_DEBUG_ASSERT(r_bag.empty());
   if (m_size == 0)
@@ -88,126 +87,122 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, split_join_branc
       other.clear();
       PB_DS_ASSERT_VALID((*this))
       PB_DS_ASSERT_VALID(other)
-      return (0);
+      return 0;
     }
 
-  if (synth_e_access_traits::cmp_keys(r_key,
-				      PB_DS_V2F(static_cast<const_leaf_pointer>(m_p_head->m_p_min)->value())))
+  if (synth_access_traits::cmp_keys(r_key,
+				    PB_DS_V2F(static_cast<leaf_const_pointer>(m_p_head->m_p_min)->value())))
     {
       other.clear();
       value_swap(other);
       PB_DS_ASSERT_VALID((*this))
       PB_DS_ASSERT_VALID(other)
-      return (0);
+      return 0;
     }
 
-  if (!synth_e_access_traits::cmp_keys(r_key,
-				       PB_DS_V2F(static_cast<const_leaf_pointer>(m_p_head->m_p_max)->value())))
+  if (!synth_access_traits::cmp_keys(r_key,
+				       PB_DS_V2F(static_cast<leaf_const_pointer>(m_p_head->m_p_max)->value())))
     {
       PB_DS_ASSERT_VALID((*this))
       PB_DS_ASSERT_VALID(other)
-      return (0);
+      return 0;
     }
 
   iterator it = lower_bound(r_key);
 
-  if (!synth_e_access_traits::equal_keys(PB_DS_V2F(*it), r_key))
+  if (!synth_access_traits::equal_keys(PB_DS_V2F(*it), r_key))
     --it;
 
   node_pointer p_nd = it.m_p_nd;
-  _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_leaf_node_type);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == leaf_node);
   leaf_pointer p_ret_l = static_cast<leaf_pointer>(p_nd);
-  while (p_nd->m_type != pat_trie_head_node_type)
+  while (p_nd->m_type != head_node)
     {
       r_bag.add_branch();
       p_nd = p_nd->m_p_parent;
     }
-  _GLIBCXX_DEBUG_ONLY(debug_base::split(r_key,(synth_e_access_traits& )(*this), other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::split(r_key,(synth_access_traits&)(*this), other);)
 
-  return (p_ret_l);
+  return p_ret_l;
 }
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
-rec_split(node_pointer p_nd, const_e_iterator b_it, const_e_iterator e_it, PB_DS_CLASS_C_DEC& other, split_join_branch_bag& r_bag)
+rec_split(node_pointer p_nd, a_const_iterator b_it, a_const_iterator e_it,
+	  PB_DS_CLASS_C_DEC& other, branch_bag& r_bag)
 {
-  if (p_nd->m_type == pat_trie_leaf_node_type)
+  if (p_nd->m_type == leaf_node)
     {
       _GLIBCXX_DEBUG_ASSERT(other.m_p_head->m_p_parent == 0);
-      return (p_nd);
+      return p_nd;
     }
 
-  _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_internal_node_type);
-  internal_node_pointer p_internal_nd = static_cast<internal_node_pointer>(p_nd);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == i_node);
+  inode_pointer p_ind = static_cast<inode_pointer>(p_nd);
 
-  node_pointer p_child_ret = rec_split(p_internal_nd->get_child_node(b_it, e_it, this), b_it, e_it, other, r_bag);
-
+  node_pointer pfirst = p_ind->get_child_node(b_it, e_it, this);
+  node_pointer p_child_ret = rec_split(pfirst, b_it, e_it, other, r_bag);
   PB_DS_ASSERT_NODE_VALID(p_child_ret)
-  p_internal_nd->replace_child(p_child_ret, b_it, e_it, this);
-  apply_update(p_internal_nd, (node_update* )this);
+  p_ind->replace_child(p_child_ret, b_it, e_it, this);
+  apply_update(p_ind, (node_update*)this);
 
-  typename internal_node::iterator child_it  =
-    p_internal_nd->get_child_it(b_it, e_it, this);
-
-  const size_type lhs_num_children =
-    std::distance(p_internal_nd->begin(), child_it) + 1;
-
+  inode_iterator child_it = p_ind->get_child_it(b_it, e_it, this);
+  const size_type lhs_dist = std::distance(p_ind->begin(), child_it);
+  const size_type lhs_num_children = lhs_dist + 1;
   _GLIBCXX_DEBUG_ASSERT(lhs_num_children > 0);
 
-  size_type rhs_num_children =
-    std::distance(p_internal_nd->begin(), p_internal_nd->end()) -
-    lhs_num_children;
-
+  const size_type rhs_dist =  std::distance(p_ind->begin(), p_ind->end());
+  size_type rhs_num_children = rhs_dist - lhs_num_children;
   if (rhs_num_children == 0)
     {
-      apply_update(p_internal_nd, (node_update* )this);
-      return (p_internal_nd);
+      apply_update(p_ind, (node_update*)this);
+      return p_ind;
     }
 
-  ++child_it;
-  other.split_insert_branch(p_internal_nd->get_e_ind(),
-			    b_it, child_it, rhs_num_children, r_bag);
+  other.split_insert_branch(p_ind->get_e_ind(), b_it, child_it,
+			    rhs_num_children, r_bag);
 
-  child_it = p_internal_nd->get_child_it(b_it, e_it, this);
-  ++child_it;
+  child_it = p_ind->get_child_it(b_it, e_it, this);
   while (rhs_num_children != 0)
     {
-      child_it = p_internal_nd->remove_child(child_it);
+      ++child_it;
+      p_ind->remove_child(child_it);
       --rhs_num_children;
     }
+  apply_update(p_ind, (node_update*)this);
 
-  apply_update(p_internal_nd, (node_update* )this);
-  _GLIBCXX_DEBUG_ASSERT(std::distance(p_internal_nd->begin(),
-				      p_internal_nd->end()) >= 1);
-
-  if (std::distance(p_internal_nd->begin(), p_internal_nd->end()) > 1)
+  const size_type int_dist = std::distance(p_ind->begin(), p_ind->end());
+  _GLIBCXX_DEBUG_ASSERT(int_dist >= 1);
+  if (int_dist > 1)
     {
-      p_internal_nd->update_prefixes(this);
-      PB_DS_ASSERT_NODE_VALID(p_internal_nd)
-      apply_update(p_internal_nd, (node_update* )this);
-      return (p_internal_nd);
+      p_ind->update_prefixes(this);
+      PB_DS_ASSERT_NODE_VALID(p_ind)
+      apply_update(p_ind, (node_update*)this);
+      return p_ind;
     }
 
-  node_pointer p_ret =* p_internal_nd->begin();
-  p_internal_nd->~internal_node();
-  s_internal_node_allocator.deallocate(p_internal_nd, 1);
-  apply_update(p_ret, (node_update* )this);
-  return (p_ret);
+  node_pointer p_ret = *p_ind->begin();
+  p_ind->~inode();
+  s_inode_allocator.deallocate(p_ind, 1);
+  apply_update(p_ret, (node_update*)this);
+  return p_ret;
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_node::iterator child_b_it, size_type num_children, split_join_branch_bag& r_bag)
+split_insert_branch(size_type e_ind, a_const_iterator b_it,
+		    inode_iterator child_b_it,
+		    size_type num_children, branch_bag& r_bag)
 {
 #ifdef _GLIBCXX_DEBUG
   if (m_p_head->m_p_parent != 0)
     PB_DS_ASSERT_NODE_VALID(m_p_head->m_p_parent)
-#endif 
+#endif
 
-  const size_type total_num_children =((m_p_head->m_p_parent == 0)? 0 : 1) + num_children;
-
+  const size_type start = m_p_head->m_p_parent == 0 ? 0 : 1;
+  const size_type total_num_children = start + num_children;
   if (total_num_children == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_parent == 0);
@@ -217,38 +212,39 @@ split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_no
   if (total_num_children == 1)
     {
       if (m_p_head->m_p_parent != 0)
-        {
+	{
 	  PB_DS_ASSERT_NODE_VALID(m_p_head->m_p_parent)
-          return;
-        }
+	  return;
+	}
 
       _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_parent == 0);
-      m_p_head->m_p_parent =* child_b_it;
+      ++child_b_it;
+      m_p_head->m_p_parent = *child_b_it;
       m_p_head->m_p_parent->m_p_parent = m_p_head;
-      apply_update(m_p_head->m_p_parent, (node_update* )this);
+      apply_update(m_p_head->m_p_parent, (node_update*)this);
       PB_DS_ASSERT_NODE_VALID(m_p_head->m_p_parent)
       return;
     }
 
   _GLIBCXX_DEBUG_ASSERT(total_num_children > 1);
-  internal_node_pointer p_new_root = r_bag.get_branch();
-  new (p_new_root) internal_node(e_ind, b_it);
+  inode_pointer p_new_root = r_bag.get_branch();
+  new (p_new_root) inode(e_ind, b_it);
   size_type num_inserted = 0;
   while (num_inserted++ < num_children)
     {
-      PB_DS_ASSERT_NODE_VALID((*child_b_it))
-        p_new_root->add_child(*child_b_it, pref_begin(*child_b_it),
-			      pref_end(*child_b_it), this);
       ++child_b_it;
+      PB_DS_ASSERT_NODE_VALID((*child_b_it))
+      p_new_root->add_child(*child_b_it, pref_begin(*child_b_it),
+			    pref_end(*child_b_it), this);
     }
 
   if (m_p_head->m_p_parent != 0)
-    p_new_root->add_child(m_p_head->m_p_parent, 
+    p_new_root->add_child(m_p_head->m_p_parent,
 			  pref_begin(m_p_head->m_p_parent),
 			  pref_end(m_p_head->m_p_parent), this);
 
   m_p_head->m_p_parent = p_new_root;
   p_new_root->m_p_parent = m_p_head;
-  apply_update(m_p_head->m_p_parent, (node_update* )this);
+  apply_update(m_p_head->m_p_parent, (node_update*)this);
   PB_DS_ASSERT_NODE_VALID(m_p_head->m_p_parent)
 }

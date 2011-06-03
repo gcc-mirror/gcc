@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -51,6 +51,7 @@ namespace __gnu_pbds
 {
   namespace detail
   {
+    /// Equivalence function.
     template<typename Key, class Cmp_Fn>
     struct eq_by_less : private Cmp_Fn
     {

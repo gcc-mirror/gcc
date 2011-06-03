@@ -248,8 +248,17 @@ typedef struct _loop_vec_info {
   /* Reduction cycles detected in the loop. Used in loop-aware SLP.  */
   VEC (gimple, heap) *reductions;
 
+  /* All reduction chains in the loop, represented by the first
+     stmt in the chain.  */
+  VEC (gimple, heap) *reduction_chains;
+
   /* Hash table used to choose the best peeling option.  */
   htab_t peeling_htab;
+
+  /* When we have strided data accesses with gaps, we may introduce invalid
+     memory accesses.  We peel the last iteration of the loop to prevent
+     this.  */
+  bool peeling_for_gaps;
 
 } *loop_vec_info;
 
@@ -277,7 +286,9 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_SLP_INSTANCES(L)        (L)->slp_instances
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
+#define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
 #define LOOP_VINFO_PEELING_HTAB(L)         (L)->peeling_htab
+#define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
 VEC_length (gimple, (L)->may_misalign_stmts) > 0
@@ -468,15 +479,15 @@ typedef struct _stmt_vec_info {
   /*  Whether the stmt is SLPed, loop-based vectorized, or both.  */
   enum slp_vect_type slp_type;
 
-  /* Interleaving info.  */
-  /* First data-ref in the interleaving group.  */
-  gimple first_dr;
-  /* Pointer to the next data-ref in the group.  */
-  gimple next_dr;
-  /* In case that two or more stmts share data-ref, this is the pointer to the
-     previously detected stmt with the same dr.  */
+  /* Interleaving and reduction chains info.  */
+  /* First element in the group.  */
+  gimple first_element;
+  /* Pointer to the next element in the group.  */
+  gimple next_element;
+  /* For data-refs, in case that two or more stmts share data-ref, this is the
+     pointer to the previously detected stmt with the same dr.  */
   gimple same_dr_stmt;
-  /* The size of the interleaving group.  */
+  /* The size of the group.  */
   unsigned int size;
   /* For stores, number of stores from this group seen. We vectorize the last
      one.  */
@@ -527,22 +538,22 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
 #define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs
 #define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
-#define STMT_VINFO_DR_GROUP_FIRST_DR(S)    (S)->first_dr
-#define STMT_VINFO_DR_GROUP_NEXT_DR(S)     (S)->next_dr
-#define STMT_VINFO_DR_GROUP_SIZE(S)        (S)->size
-#define STMT_VINFO_DR_GROUP_STORE_COUNT(S) (S)->store_count
-#define STMT_VINFO_DR_GROUP_GAP(S)         (S)->gap
-#define STMT_VINFO_DR_GROUP_SAME_DR_STMT(S)(S)->same_dr_stmt
-#define STMT_VINFO_DR_GROUP_READ_WRITE_DEPENDENCE(S)  (S)->read_write_dep
-#define STMT_VINFO_STRIDED_ACCESS(S)      ((S)->first_dr != NULL)
+#define STMT_VINFO_GROUP_FIRST_ELEMENT(S)  (S)->first_element
+#define STMT_VINFO_GROUP_NEXT_ELEMENT(S)   (S)->next_element
+#define STMT_VINFO_GROUP_SIZE(S)           (S)->size
+#define STMT_VINFO_GROUP_STORE_COUNT(S)    (S)->store_count
+#define STMT_VINFO_GROUP_GAP(S)            (S)->gap
+#define STMT_VINFO_GROUP_SAME_DR_STMT(S)   (S)->same_dr_stmt
+#define STMT_VINFO_GROUP_READ_WRITE_DEPENDENCE(S)  (S)->read_write_dep
+#define STMT_VINFO_STRIDED_ACCESS(S)      ((S)->first_element != NULL && (S)->data_ref_info)
 
-#define DR_GROUP_FIRST_DR(S)               (S)->first_dr
-#define DR_GROUP_NEXT_DR(S)                (S)->next_dr
-#define DR_GROUP_SIZE(S)                   (S)->size
-#define DR_GROUP_STORE_COUNT(S)            (S)->store_count
-#define DR_GROUP_GAP(S)                    (S)->gap
-#define DR_GROUP_SAME_DR_STMT(S)           (S)->same_dr_stmt
-#define DR_GROUP_READ_WRITE_DEPENDENCE(S)  (S)->read_write_dep
+#define GROUP_FIRST_ELEMENT(S)          (S)->first_element
+#define GROUP_NEXT_ELEMENT(S)           (S)->next_element
+#define GROUP_SIZE(S)                   (S)->size
+#define GROUP_STORE_COUNT(S)            (S)->store_count
+#define GROUP_GAP(S)                    (S)->gap
+#define GROUP_SAME_DR_STMT(S)           (S)->same_dr_stmt
+#define GROUP_READ_WRITE_DEPENDENCE(S)  (S)->read_write_dep
 
 #define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_scope)
 #define STMT_VINFO_OUTSIDE_OF_LOOP_COST(S) (S)->cost.outside_of_loop

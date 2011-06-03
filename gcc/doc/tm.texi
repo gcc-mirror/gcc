@@ -1582,6 +1582,15 @@ anyway.  If you don't define this and @code{LIBGCC2_LONG_DOUBLE_TYPE_SIZE}
 is 128 then the default is 1, otherwise it is 0.
 @end defmac
 
+@defmac LIBGCC2_GNU_PREFIX
+This macro corresponds to the @code{TARGET_LIBFUNC_GNU_PREFIX} target
+hook and should be defined if that hook is overriden to be true.  It
+causes function names in libgcc to be changed to use a @code{__gnu_}
+prefix for their name rather than the default @code{__}.  A port which
+uses this macro should also arrange to use @file{t-gnu-prefix} in
+the libgcc @file{config.host}.
+@end defmac
+
 @defmac SF_SIZE
 @defmacx DF_SIZE
 @defmacx XF_SIZE
@@ -5246,6 +5255,15 @@ library routines.
 The default is to do nothing.  Most ports don't need to define this hook.
 @end deftypefn
 
+@deftypevr {Target Hook} bool TARGET_LIBFUNC_GNU_PREFIX
+If false (the default), internal library routines start with two
+underscores.  If set to true, these routines start with @code{__gnu_}
+instead.  E.g., @code{__muldi3} changes to @code{__gnu_muldi3}.  This
+currently only affects functions defined in @file{libgcc2.c}.  If this
+is set to true, the @file{tm.h} file must also
+@code{#define LIBGCC2_GNU_PREFIX}.
+@end deftypevr
+
 @defmac FLOAT_LIB_COMPARE_RETURNS_BOOL (@var{mode}, @var{comparison})
 This macro should return @code{true} if the library routine that
 implements the floating point comparison operator @var{comparison} in
@@ -6776,6 +6794,12 @@ is supported in hardware and the condition specified in the parameter is true.
 This hook is called by Haifa Scheduler.  It performs the operation specified
 in its second parameter.
 @end deftypefn
+
+@deftypevr {Target Hook} bool TARGET_SCHED_EXPOSED_PIPELINE
+True if the processor has an exposed pipeline, which means that not just
+the order of instructions is important for correctness when scheduling, but
+also the latencies of operations.
+@end deftypevr
 
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})

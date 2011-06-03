@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "intl.h"
+#include "diagnostic.h"
 #include "obstack.h"
 
 int debug;				/* true if -save-temps.  */
@@ -627,7 +628,18 @@ cont:
 int
 main (int argc, char *argv[])
 {
+  const char *p;
+
+  p = argv[0] + strlen (argv[0]);
+  while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
+    --p;
+  progname = p;
+
+  xmalloc_set_program_name (progname);
+
   gcc_init_libintl ();
+
+  diagnostic_initialize (global_dc, 0);
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
     signal (SIGINT, fatal_signal);

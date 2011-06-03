@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -795,8 +795,538 @@ execute_cse_sincos_1 (tree name)
   return cfg_changed;
 }
 
+/* To evaluate powi(x,n), the floating point value x raised to the
+   constant integer exponent n, we use a hybrid algorithm that
+   combines the "window method" with look-up tables.  For an
+   introduction to exponentiation algorithms and "addition chains",
+   see section 4.6.3, "Evaluation of Powers" of Donald E. Knuth,
+   "Seminumerical Algorithms", Vol. 2, "The Art of Computer Programming",
+   3rd Edition, 1998, and Daniel M. Gordon, "A Survey of Fast Exponentiation
+   Methods", Journal of Algorithms, Vol. 27, pp. 129-146, 1998.  */
+
+/* Provide a default value for POWI_MAX_MULTS, the maximum number of
+   multiplications to inline before calling the system library's pow
+   function.  powi(x,n) requires at worst 2*bits(n)-2 multiplications,
+   so this default never requires calling pow, powf or powl.  */
+
+#ifndef POWI_MAX_MULTS
+#define POWI_MAX_MULTS  (2*HOST_BITS_PER_WIDE_INT-2)
+#endif
+
+/* The size of the "optimal power tree" lookup table.  All
+   exponents less than this value are simply looked up in the
+   powi_table below.  This threshold is also used to size the
+   cache of pseudo registers that hold intermediate results.  */
+#define POWI_TABLE_SIZE 256
+
+/* The size, in bits of the window, used in the "window method"
+   exponentiation algorithm.  This is equivalent to a radix of
+   (1<<POWI_WINDOW_SIZE) in the corresponding "m-ary method".  */
+#define POWI_WINDOW_SIZE 3
+
+/* The following table is an efficient representation of an
+   "optimal power tree".  For each value, i, the corresponding
+   value, j, in the table states than an optimal evaluation
+   sequence for calculating pow(x,i) can be found by evaluating
+   pow(x,j)*pow(x,i-j).  An optimal power tree for the first
+   100 integers is given in Knuth's "Seminumerical algorithms".  */
+
+static const unsigned char powi_table[POWI_TABLE_SIZE] =
+  {
+      0,   1,   1,   2,   2,   3,   3,   4,  /*   0 -   7 */
+      4,   6,   5,   6,   6,  10,   7,   9,  /*   8 -  15 */
+      8,  16,   9,  16,  10,  12,  11,  13,  /*  16 -  23 */
+     12,  17,  13,  18,  14,  24,  15,  26,  /*  24 -  31 */
+     16,  17,  17,  19,  18,  33,  19,  26,  /*  32 -  39 */
+     20,  25,  21,  40,  22,  27,  23,  44,  /*  40 -  47 */
+     24,  32,  25,  34,  26,  29,  27,  44,  /*  48 -  55 */
+     28,  31,  29,  34,  30,  60,  31,  36,  /*  56 -  63 */
+     32,  64,  33,  34,  34,  46,  35,  37,  /*  64 -  71 */
+     36,  65,  37,  50,  38,  48,  39,  69,  /*  72 -  79 */
+     40,  49,  41,  43,  42,  51,  43,  58,  /*  80 -  87 */
+     44,  64,  45,  47,  46,  59,  47,  76,  /*  88 -  95 */
+     48,  65,  49,  66,  50,  67,  51,  66,  /*  96 - 103 */
+     52,  70,  53,  74,  54, 104,  55,  74,  /* 104 - 111 */
+     56,  64,  57,  69,  58,  78,  59,  68,  /* 112 - 119 */
+     60,  61,  61,  80,  62,  75,  63,  68,  /* 120 - 127 */
+     64,  65,  65, 128,  66, 129,  67,  90,  /* 128 - 135 */
+     68,  73,  69, 131,  70,  94,  71,  88,  /* 136 - 143 */
+     72, 128,  73,  98,  74, 132,  75, 121,  /* 144 - 151 */
+     76, 102,  77, 124,  78, 132,  79, 106,  /* 152 - 159 */
+     80,  97,  81, 160,  82,  99,  83, 134,  /* 160 - 167 */
+     84,  86,  85,  95,  86, 160,  87, 100,  /* 168 - 175 */
+     88, 113,  89,  98,  90, 107,  91, 122,  /* 176 - 183 */
+     92, 111,  93, 102,  94, 126,  95, 150,  /* 184 - 191 */
+     96, 128,  97, 130,  98, 133,  99, 195,  /* 192 - 199 */
+    100, 128, 101, 123, 102, 164, 103, 138,  /* 200 - 207 */
+    104, 145, 105, 146, 106, 109, 107, 149,  /* 208 - 215 */
+    108, 200, 109, 146, 110, 170, 111, 157,  /* 216 - 223 */
+    112, 128, 113, 130, 114, 182, 115, 132,  /* 224 - 231 */
+    116, 200, 117, 132, 118, 158, 119, 206,  /* 232 - 239 */
+    120, 240, 121, 162, 122, 147, 123, 152,  /* 240 - 247 */
+    124, 166, 125, 214, 126, 138, 127, 153,  /* 248 - 255 */
+  };
+
+
+/* Return the number of multiplications required to calculate
+   powi(x,n) where n is less than POWI_TABLE_SIZE.  This is a
+   subroutine of powi_cost.  CACHE is an array indicating
+   which exponents have already been calculated.  */
+
+static int
+powi_lookup_cost (unsigned HOST_WIDE_INT n, bool *cache)
+{
+  /* If we've already calculated this exponent, then this evaluation
+     doesn't require any additional multiplications.  */
+  if (cache[n])
+    return 0;
+
+  cache[n] = true;
+  return powi_lookup_cost (n - powi_table[n], cache)
+	 + powi_lookup_cost (powi_table[n], cache) + 1;
+}
+
+/* Return the number of multiplications required to calculate
+   powi(x,n) for an arbitrary x, given the exponent N.  This
+   function needs to be kept in sync with powi_as_mults below.  */
+
+static int
+powi_cost (HOST_WIDE_INT n)
+{
+  bool cache[POWI_TABLE_SIZE];
+  unsigned HOST_WIDE_INT digit;
+  unsigned HOST_WIDE_INT val;
+  int result;
+
+  if (n == 0)
+    return 0;
+
+  /* Ignore the reciprocal when calculating the cost.  */
+  val = (n < 0) ? -n : n;
+
+  /* Initialize the exponent cache.  */
+  memset (cache, 0, POWI_TABLE_SIZE * sizeof (bool));
+  cache[1] = true;
+
+  result = 0;
+
+  while (val >= POWI_TABLE_SIZE)
+    {
+      if (val & 1)
+	{
+	  digit = val & ((1 << POWI_WINDOW_SIZE) - 1);
+	  result += powi_lookup_cost (digit, cache)
+		    + POWI_WINDOW_SIZE + 1;
+	  val >>= POWI_WINDOW_SIZE;
+	}
+      else
+	{
+	  val >>= 1;
+	  result++;
+	}
+    }
+
+  return result + powi_lookup_cost (val, cache);
+}
+
+/* Recursive subroutine of powi_as_mults.  This function takes the
+   array, CACHE, of already calculated exponents and an exponent N and
+   returns a tree that corresponds to CACHE[1]**N, with type TYPE.  */
+
+static tree
+powi_as_mults_1 (gimple_stmt_iterator *gsi, location_t loc, tree type,
+		 HOST_WIDE_INT n, tree *cache, tree target)
+{
+  tree op0, op1, ssa_target;
+  unsigned HOST_WIDE_INT digit;
+  gimple mult_stmt;
+
+  if (n < POWI_TABLE_SIZE && cache[n])
+    return cache[n];
+
+  ssa_target = make_ssa_name (target, NULL);
+
+  if (n < POWI_TABLE_SIZE)
+    {
+      cache[n] = ssa_target;
+      op0 = powi_as_mults_1 (gsi, loc, type, n - powi_table[n], cache, target);
+      op1 = powi_as_mults_1 (gsi, loc, type, powi_table[n], cache, target);
+    }
+  else if (n & 1)
+    {
+      digit = n & ((1 << POWI_WINDOW_SIZE) - 1);
+      op0 = powi_as_mults_1 (gsi, loc, type, n - digit, cache, target);
+      op1 = powi_as_mults_1 (gsi, loc, type, digit, cache, target);
+    }
+  else
+    {
+      op0 = powi_as_mults_1 (gsi, loc, type, n >> 1, cache, target);
+      op1 = op0;
+    }
+
+  mult_stmt = gimple_build_assign_with_ops (MULT_EXPR, ssa_target, op0, op1);
+  gimple_set_location (mult_stmt, loc);
+  gsi_insert_before (gsi, mult_stmt, GSI_SAME_STMT);
+
+  return ssa_target;
+}
+
+/* Convert ARG0**N to a tree of multiplications of ARG0 with itself.
+   This function needs to be kept in sync with powi_cost above.  */
+
+static tree
+powi_as_mults (gimple_stmt_iterator *gsi, location_t loc,
+	       tree arg0, HOST_WIDE_INT n)
+{
+  tree cache[POWI_TABLE_SIZE], result, type = TREE_TYPE (arg0), target;
+  gimple div_stmt;
+
+  if (n == 0)
+    return build_real (type, dconst1);
+
+  memset (cache, 0,  sizeof (cache));
+  cache[1] = arg0;
+
+  target = create_tmp_var (type, "powmult");
+  add_referenced_var (target);
+
+  result = powi_as_mults_1 (gsi, loc, type, (n < 0) ? -n : n, cache, target);
+
+  if (n >= 0)
+    return result;
+
+  /* If the original exponent was negative, reciprocate the result.  */
+  target = make_ssa_name (target, NULL);
+  div_stmt = gimple_build_assign_with_ops (RDIV_EXPR, target, 
+					   build_real (type, dconst1),
+					   result);
+  gimple_set_location (div_stmt, loc);
+  gsi_insert_before (gsi, div_stmt, GSI_SAME_STMT);
+
+  return target;
+}
+
+/* ARG0 and N are the two arguments to a powi builtin in GSI with
+   location info LOC.  If the arguments are appropriate, create an
+   equivalent sequence of statements prior to GSI using an optimal
+   number of multiplications, and return an expession holding the
+   result.  */
+
+static tree
+gimple_expand_builtin_powi (gimple_stmt_iterator *gsi, location_t loc, 
+			    tree arg0, HOST_WIDE_INT n)
+{
+  /* Avoid largest negative number.  */
+  if (n != -n
+      && ((n >= -1 && n <= 2)
+	  || (optimize_function_for_speed_p (cfun)
+	      && powi_cost (n) <= POWI_MAX_MULTS)))
+    return powi_as_mults (gsi, loc, arg0, n);
+
+  return NULL_TREE;
+}
+
+/* Build a gimple call statement that calls FN with argument ARG.
+   Set the lhs of the call statement to a fresh SSA name for
+   variable VAR.  If VAR is NULL, first allocate it.  Insert the
+   statement prior to GSI's current position, and return the fresh
+   SSA name.  */
+
+static tree
+build_and_insert_call (gimple_stmt_iterator *gsi, location_t loc,
+		       tree *var, tree fn, tree arg)
+{
+  gimple call_stmt;
+  tree ssa_target;
+
+  if (!*var)
+    {
+      *var = create_tmp_var (TREE_TYPE (arg), "powroot");
+      add_referenced_var (*var);
+    }
+
+  call_stmt = gimple_build_call (fn, 1, arg);
+  ssa_target = make_ssa_name (*var, NULL);
+  gimple_set_lhs (call_stmt, ssa_target);
+  gimple_set_location (call_stmt, loc);
+  gsi_insert_before (gsi, call_stmt, GSI_SAME_STMT);
+
+  return ssa_target;
+}
+
+/* Build a gimple binary operation with the given CODE and arguments
+   ARG0, ARG1, assigning the result to a new SSA name for variable
+   TARGET.  Insert the statement prior to GSI's current position, and
+   return the fresh SSA name.*/
+
+static tree
+build_and_insert_binop (gimple_stmt_iterator *gsi, location_t loc,
+			tree target, enum tree_code code, tree arg0, tree arg1)
+{
+  tree result = make_ssa_name (target, NULL);
+  gimple stmt = gimple_build_assign_with_ops (code, result, arg0, arg1);
+  gimple_set_location (stmt, loc);
+  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+  return result;
+}
+
+/* ARG0 and ARG1 are the two arguments to a pow builtin call in GSI
+   with location info LOC.  If possible, create an equivalent and
+   less expensive sequence of statements prior to GSI, and return an
+   expession holding the result.  */
+
+static tree
+gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc, 
+			   tree arg0, tree arg1)
+{
+  REAL_VALUE_TYPE c, cint, dconst1_4, dconst3_4, dconst1_3, dconst1_6;
+  REAL_VALUE_TYPE c2, dconst3;
+  HOST_WIDE_INT n;
+  tree type, sqrtfn, cbrtfn, sqrt_arg0, sqrt_sqrt, result, cbrt_x, powi_cbrt_x;
+  tree target = NULL_TREE;
+  enum machine_mode mode;
+  bool hw_sqrt_exists;
+
+  /* If the exponent isn't a constant, there's nothing of interest
+     to be done.  */
+  if (TREE_CODE (arg1) != REAL_CST)
+    return NULL_TREE;
+
+  /* If the exponent is equivalent to an integer, expand to an optimal
+     multiplication sequence when profitable.  */
+  c = TREE_REAL_CST (arg1);
+  n = real_to_integer (&c);
+  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+
+  if (real_identical (&c, &cint)
+      && ((n >= -1 && n <= 2)
+	  || (flag_unsafe_math_optimizations
+	      && optimize_insn_for_speed_p ()
+	      && powi_cost (n) <= POWI_MAX_MULTS)))
+    return gimple_expand_builtin_powi (gsi, loc, arg0, n);
+
+  /* Attempt various optimizations using sqrt and cbrt.  */
+  type = TREE_TYPE (arg0);
+  mode = TYPE_MODE (type);
+  sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
+
+  /* Optimize pow(x,0.5) = sqrt(x).  This replacement is always safe
+     unless signed zeros must be maintained.  pow(-0,0.5) = +0, while
+     sqrt(-0) = -0.  */
+  if (sqrtfn
+      && REAL_VALUES_EQUAL (c, dconsthalf)
+      && !HONOR_SIGNED_ZEROS (mode))
+    return build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
+
+  /* Optimize pow(x,0.25) = sqrt(sqrt(x)).  Assume on most machines that
+     a builtin sqrt instruction is smaller than a call to pow with 0.25,
+     so do this optimization even if -Os.  Don't do this optimization
+     if we don't have a hardware sqrt insn.  */
+  dconst1_4 = dconst1;
+  SET_REAL_EXP (&dconst1_4, REAL_EXP (&dconst1_4) - 2);
+  hw_sqrt_exists = optab_handler(sqrt_optab, mode) != CODE_FOR_nothing;
+
+  if (flag_unsafe_math_optimizations
+      && sqrtfn
+      && REAL_VALUES_EQUAL (c, dconst1_4)
+      && hw_sqrt_exists)
+    {
+      /* sqrt(x)  */
+      sqrt_arg0 = build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
+
+      /* sqrt(sqrt(x))  */
+      return build_and_insert_call (gsi, loc, &target, sqrtfn, sqrt_arg0);
+    }
+      
+  /* Optimize pow(x,0.75) = sqrt(x) * sqrt(sqrt(x)) unless we are
+     optimizing for space.  Don't do this optimization if we don't have
+     a hardware sqrt insn.  */
+  real_from_integer (&dconst3_4, VOIDmode, 3, 0, 0);
+  SET_REAL_EXP (&dconst3_4, REAL_EXP (&dconst3_4) - 2);
+
+  if (flag_unsafe_math_optimizations
+      && sqrtfn
+      && optimize_function_for_speed_p (cfun)
+      && REAL_VALUES_EQUAL (c, dconst3_4)
+      && hw_sqrt_exists)
+    {
+      /* sqrt(x)  */
+      sqrt_arg0 = build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
+
+      /* sqrt(sqrt(x))  */
+      sqrt_sqrt = build_and_insert_call (gsi, loc, &target, sqrtfn, sqrt_arg0);
+
+      /* sqrt(x) * sqrt(sqrt(x))  */
+      return build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+				     sqrt_arg0, sqrt_sqrt);
+    }
+
+  /* Optimize pow(x,1./3.) = cbrt(x).  This requires unsafe math
+     optimizations since 1./3. is not exactly representable.  If x
+     is negative and finite, the correct value of pow(x,1./3.) is
+     a NaN with the "invalid" exception raised, because the value
+     of 1./3. actually has an even denominator.  The correct value
+     of cbrt(x) is a negative real value.  */
+  cbrtfn = mathfn_built_in (type, BUILT_IN_CBRT);
+  dconst1_3 = real_value_truncate (mode, dconst_third ());
+
+  if (flag_unsafe_math_optimizations
+      && cbrtfn
+      /* FIXME: The following line was originally
+	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
+	 but since arg0 is a gimple value, the first predicate
+	 will always return false.  It needs to be replaced with a
+	 call to a similar gimple_val_nonnegative_p function to be
+         added in gimple-fold.c.  */
+      && !HONOR_NANS (mode)
+      && REAL_VALUES_EQUAL (c, dconst1_3))
+    return build_and_insert_call (gsi, loc, &target, cbrtfn, arg0);
+  
+  /* Optimize pow(x,1./6.) = cbrt(sqrt(x)).  Don't do this optimization
+     if we don't have a hardware sqrt insn.  */
+  dconst1_6 = dconst1_3;
+  SET_REAL_EXP (&dconst1_6, REAL_EXP (&dconst1_6) - 1);
+
+  if (flag_unsafe_math_optimizations
+      && sqrtfn
+      && cbrtfn
+      /* FIXME: The following line was originally
+	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
+	 but since arg0 is a gimple value, the first predicate
+	 will always return false.  It needs to be replaced with a
+	 call to a similar gimple_val_nonnegative_p function to be
+         added in gimple-fold.c.  */
+      && !HONOR_NANS (mode)
+      && optimize_function_for_speed_p (cfun)
+      && hw_sqrt_exists
+      && REAL_VALUES_EQUAL (c, dconst1_6))
+    {
+      /* sqrt(x)  */
+      sqrt_arg0 = build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
+
+      /* cbrt(sqrt(x))  */
+      return build_and_insert_call (gsi, loc, &target, cbrtfn, sqrt_arg0);
+    }
+
+  /* Optimize pow(x,c), where n = 2c for some nonzero integer n, into
+
+       sqrt(x) * powi(x, n/2),                n > 0;
+       1.0 / (sqrt(x) * powi(x, abs(n/2))),   n < 0.
+
+     Do not calculate the powi factor when n/2 = 0.  */
+  real_arithmetic (&c2, MULT_EXPR, &c, &dconst2);
+  n = real_to_integer (&c2);
+  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+
+  if (flag_unsafe_math_optimizations
+      && sqrtfn
+      && real_identical (&c2, &cint))
+    {
+      tree powi_x_ndiv2 = NULL_TREE;
+
+      /* Attempt to fold powi(arg0, abs(n/2)) into multiplies.  If not
+         possible or profitable, give up.  Skip the degenerate case when
+         n is 1 or -1, where the result is always 1.  */
+      if (abs (n) != 1)
+	{
+	  powi_x_ndiv2 = gimple_expand_builtin_powi (gsi, loc, arg0, abs(n/2));
+	  if (!powi_x_ndiv2)
+	    return NULL_TREE;
+	}
+
+      /* Calculate sqrt(x).  When n is not 1 or -1, multiply it by the
+	 result of the optimal multiply sequence just calculated.  */
+      sqrt_arg0 = build_and_insert_call (gsi, loc, &target, sqrtfn, arg0);
+
+      if (abs (n) == 1)
+	result = sqrt_arg0;
+      else
+	result = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+					 sqrt_arg0, powi_x_ndiv2);
+
+      /* If n is negative, reciprocate the result.  */
+      if (n < 0)
+	result = build_and_insert_binop (gsi, loc, target, RDIV_EXPR,
+					 build_real (type, dconst1), result);
+      return result;
+    }
+
+  /* Optimize pow(x,c), where 3c = n for some nonzero integer n, into
+
+     powi(x, n/3) * powi(cbrt(x), n%3),                    n > 0;
+     1.0 / (powi(x, abs(n)/3) * powi(cbrt(x), abs(n)%3)),  n < 0.
+
+     Do not calculate the first factor when n/3 = 0.  As cbrt(x) is
+     different from pow(x, 1./3.) due to rounding and behavior with
+     negative x, we need to constrain this transformation to unsafe
+     math and positive x or finite math.  */
+  real_from_integer (&dconst3, VOIDmode, 3, 0, 0);
+  real_arithmetic (&c2, MULT_EXPR, &c, &dconst3);
+  real_round (&c2, mode, &c2);
+  n = real_to_integer (&c2);
+  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+  real_arithmetic (&c2, RDIV_EXPR, &cint, &dconst3);
+  real_convert (&c2, mode, &c2);
+
+  if (flag_unsafe_math_optimizations
+      && cbrtfn
+      /* FIXME: The following line was originally
+	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
+	 but since arg0 is a gimple value, the first predicate
+	 will always return false.  It needs to be replaced with a
+	 call to a similar gimple_val_nonnegative_p function to be
+         added in gimple-fold.c.  */
+      && !HONOR_NANS (mode)
+      && real_identical (&c2, &c)
+      && optimize_function_for_speed_p (cfun)
+      && powi_cost (n / 3) <= POWI_MAX_MULTS)
+    {
+      tree powi_x_ndiv3 = NULL_TREE;
+
+      /* Attempt to fold powi(arg0, abs(n/3)) into multiplies.  If not
+         possible or profitable, give up.  Skip the degenerate case when
+         abs(n) < 3, where the result is always 1.  */
+      if (abs (n) >= 3)
+	{
+	  powi_x_ndiv3 = gimple_expand_builtin_powi (gsi, loc, arg0,
+						     abs (n / 3));
+	  if (!powi_x_ndiv3)
+	    return NULL_TREE;
+	}
+
+      /* Calculate powi(cbrt(x), n%3).  Don't use gimple_expand_builtin_powi
+         as that creates an unnecessary variable.  Instead, just produce
+         either cbrt(x) or cbrt(x) * cbrt(x).  */
+      cbrt_x = build_and_insert_call (gsi, loc, &target, cbrtfn, arg0);
+
+      if (abs (n) % 3 == 1)
+	powi_cbrt_x = cbrt_x;
+      else
+	powi_cbrt_x = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+					      cbrt_x, cbrt_x);
+
+      /* Multiply the two subexpressions, unless powi(x,abs(n)/3) = 1.  */
+      if (abs (n) < 3)
+	result = powi_cbrt_x;
+      else
+	result = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+					 powi_x_ndiv3, powi_cbrt_x);
+
+      /* If n is negative, reciprocate the result.  */
+      if (n < 0)
+	result = build_and_insert_binop (gsi, loc, target, RDIV_EXPR, 
+					 build_real (type, dconst1), result);
+
+      return result;
+    }
+
+  /* No optimizations succeeded.  */
+  return NULL_TREE;
+}
+
 /* Go through all calls to sin, cos and cexpi and call execute_cse_sincos_1
-   on the SSA_NAME argument of each of them.  */
+   on the SSA_NAME argument of each of them.  Also expand powi(x,n) into
+   an optimal number of multiplies, when n is a constant.  */
 
 static unsigned int
 execute_cse_sincos (void)
@@ -821,16 +1351,59 @@ execute_cse_sincos (void)
 	      && (fndecl = gimple_call_fndecl (stmt))
 	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
 	    {
-	      tree arg;
+	      tree arg, arg0, arg1, result;
+	      HOST_WIDE_INT n;
+	      location_t loc;
 
 	      switch (DECL_FUNCTION_CODE (fndecl))
 		{
 		CASE_FLT_FN (BUILT_IN_COS):
 		CASE_FLT_FN (BUILT_IN_SIN):
 		CASE_FLT_FN (BUILT_IN_CEXPI):
+		  /* Make sure we have either sincos or cexp.  */
+		  if (!TARGET_HAS_SINCOS && !TARGET_C99_FUNCTIONS)
+		    break;
+
 		  arg = gimple_call_arg (stmt, 0);
 		  if (TREE_CODE (arg) == SSA_NAME)
 		    cfg_changed |= execute_cse_sincos_1 (arg);
+		  break;
+
+		CASE_FLT_FN (BUILT_IN_POW):
+		  arg0 = gimple_call_arg (stmt, 0);
+		  arg1 = gimple_call_arg (stmt, 1);
+
+		  loc = gimple_location (stmt);
+		  result = gimple_expand_builtin_pow (&gsi, loc, arg0, arg1);
+
+		  if (result)
+		    {
+		      tree lhs = gimple_get_lhs (stmt);
+		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gimple_set_location (new_stmt, loc);
+		      unlink_stmt_vdef (stmt);
+		      gsi_replace (&gsi, new_stmt, true);
+		    }
+		  break;
+
+		CASE_FLT_FN (BUILT_IN_POWI):
+		  arg0 = gimple_call_arg (stmt, 0);
+		  arg1 = gimple_call_arg (stmt, 1);
+		  if (!host_integerp (arg1, 0))
+		    break;
+
+		  n = TREE_INT_CST_LOW (arg1);
+		  loc = gimple_location (stmt);
+		  result = gimple_expand_builtin_powi (&gsi, loc, arg0, n);
+
+		  if (result)
+		    {
+		      tree lhs = gimple_get_lhs (stmt);
+		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gimple_set_location (new_stmt, loc);
+		      unlink_stmt_vdef (stmt);
+		      gsi_replace (&gsi, new_stmt, true);
+		    }
 		  break;
 
 		default:;
@@ -849,10 +1422,9 @@ execute_cse_sincos (void)
 static bool
 gate_cse_sincos (void)
 {
-  /* Make sure we have either sincos or cexp.  */
-  return (TARGET_HAS_SINCOS
-	  || TARGET_C99_FUNCTIONS)
-	 && optimize;
+  /* We no longer require either sincos or cexp, since powi expansion
+     piggybacks on this pass.  */
+  return optimize;
 }
 
 struct gimple_opt_pass pass_cse_sincos =

@@ -6507,8 +6507,8 @@
 		      (const_int 4)))])
 
 ;; For __builtin_setjmp we need to flush register windows iff the function
-;; calls alloca as well, because otherwise the register window might be
-;; saved after %sp adjustment and thus setjmp would crash
+;; calls alloca as well, because otherwise the current register window might
+;; be saved after the %sp adjustment and thus setjmp would crash.
 (define_expand "builtin_setjmp_setup"
   [(match_operand 0 "register_operand" "r")]
   ""
@@ -6547,19 +6547,26 @@
                (eq_attr "pic" "true")
                  (const_int 4)] (const_int 3)))])
 
-;; Pattern for use after a setjmp to store FP and the return register
-;; into the stack area.
+;; Pattern for use after a setjmp to store registers into the save area.
 
 (define_expand "setjmp"
   [(const_int 0)]
   ""
 {
   rtx mem;
-  
+
+  if (flag_pic)
+    {
+      mem = gen_rtx_MEM (Pmode,
+			 plus_constant (stack_pointer_rtx,
+					SPARC_STACK_BIAS + 7 * UNITS_PER_WORD));
+      emit_insn (gen_rtx_SET (VOIDmode, mem, pic_offset_table_rtx));
+    }
+
   mem = gen_rtx_MEM (Pmode,
 		     plus_constant (stack_pointer_rtx,
 				    SPARC_STACK_BIAS + 14 * UNITS_PER_WORD));
-  emit_insn (gen_rtx_SET (VOIDmode, mem, frame_pointer_rtx));
+  emit_insn (gen_rtx_SET (VOIDmode, mem, hard_frame_pointer_rtx));
 
   mem = gen_rtx_MEM (Pmode,
 		     plus_constant (stack_pointer_rtx,

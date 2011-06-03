@@ -1616,6 +1616,10 @@ type_promotes_to (tree type)
   if (TREE_CODE (type) == BOOLEAN_TYPE)
     type = integer_type_node;
 
+  /* scoped enums don't promote.  */
+  else if (SCOPED_ENUM_P (type) && abi_version_at_least (6))
+    ;
+
   /* Normally convert enums to int, but convert wide enums to something
      wider.  */
   else if (TREE_CODE (type) == ENUMERAL_TYPE
@@ -1626,6 +1630,9 @@ type_promotes_to (tree type)
       int precision = MAX (TYPE_PRECISION (type),
 			   TYPE_PRECISION (integer_type_node));
       tree totype = c_common_type_for_size (precision, 0);
+      if (SCOPED_ENUM_P (type))
+	warning (OPT_Wabi, "scoped enum %qT will not promote to an integral "
+		 "type in a future version of GCC", type);
       if (TREE_CODE (type) == ENUMERAL_TYPE)
 	type = ENUM_UNDERLYING_TYPE (type);
       if (TYPE_UNSIGNED (type)

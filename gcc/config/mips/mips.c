@@ -1060,7 +1060,7 @@ static const struct mips_rtx_cost_data
   }
 };
 
-static rtx mips_find_pic_call_symbol (rtx, rtx);
+static rtx mips_find_pic_call_symbol (rtx, rtx, bool);
 static int mips_register_move_cost (enum machine_mode, reg_class_t,
 				    reg_class_t);
 static unsigned int mips_function_arg_boundary (enum machine_mode, const_tree);
@@ -10008,7 +10008,7 @@ mips_expand_prologue (void)
   frame = &cfun->machine->frame;
   size = frame->total_size;
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     current_function_static_stack_size = size;
 
   /* Save the registers.  Allocate up to MIPS_MAX_FIRST_STACK_STEP
@@ -14026,12 +14026,16 @@ mips_call_expr_from_insn (rtx insn, rtx *second_call)
 }
 
 /* REG is set in DEF.  See if the definition is one of the ways we load a
-   register with a symbol address for a mips_use_pic_fn_addr_reg_p call.  If
-   it is return the symbol reference of the function, otherwise return
-   NULL_RTX.  */
+   register with a symbol address for a mips_use_pic_fn_addr_reg_p call.
+   If it is, return the symbol reference of the function, otherwise return
+   NULL_RTX.
+
+   If RECURSE_P is true, use mips_find_pic_call_symbol to interpret
+   the values of source registers, otherwise treat such registers as
+   having an unknown value.  */
 
 static rtx
-mips_pic_call_symbol_from_set (df_ref def, rtx reg)
+mips_pic_call_symbol_from_set (df_ref def, rtx reg, bool recurse_p)
 {
   rtx def_insn, set;
 
@@ -14058,21 +14062,39 @@ mips_pic_call_symbol_from_set (df_ref def, rtx reg)
 	  return symbol;
 	}
 
-      /* Follow simple register copies.  */
-      if (REG_P (src))
-	return mips_find_pic_call_symbol (def_insn, src);
+      /* Follow at most one simple register copy.  Such copies are
+	 interesting in cases like:
+
+	     for (...)
+	       {
+	         locally_binding_fn (...);
+	       }
+
+	 and:
+
+	     locally_binding_fn (...);
+	     ...
+	     locally_binding_fn (...);
+
+	 where the load of locally_binding_fn can legitimately be
+	 hoisted or shared.  However, we do not expect to see complex
+	 chains of copies, so a full worklist solution to the problem
+	 would probably be overkill.  */
+      if (recurse_p && REG_P (src))
+	return mips_find_pic_call_symbol (def_insn, src, false);
     }
 
   return NULL_RTX;
 }
 
-/* Find the definition of the use of REG in INSN.  See if the definition is
-   one of the ways we load a register with a symbol address for a
-   mips_use_pic_fn_addr_reg_p call.  If it is return the symbol reference of
-   the function, otherwise return NULL_RTX.  */
+/* Find the definition of the use of REG in INSN.  See if the definition
+   is one of the ways we load a register with a symbol address for a
+   mips_use_pic_fn_addr_reg_p call.  If it is return the symbol reference
+   of the function, otherwise return NULL_RTX.  RECURSE_P is as for
+   mips_pic_call_symbol_from_set.  */
 
 static rtx
-mips_find_pic_call_symbol (rtx insn, rtx reg)
+mips_find_pic_call_symbol (rtx insn, rtx reg, bool recurse_p)
 {
   df_ref use;
   struct df_link *defs;
@@ -14084,7 +14106,7 @@ mips_find_pic_call_symbol (rtx insn, rtx reg)
   defs = DF_REF_CHAIN (use);
   if (!defs)
     return NULL_RTX;
-  symbol = mips_pic_call_symbol_from_set (defs->ref, reg);
+  symbol = mips_pic_call_symbol_from_set (defs->ref, reg, recurse_p);
   if (!symbol)
     return NULL_RTX;
 
@@ -14093,7 +14115,7 @@ mips_find_pic_call_symbol (rtx insn, rtx reg)
     {
       rtx other;
 
-      other = mips_pic_call_symbol_from_set (defs->ref, reg);
+      other = mips_pic_call_symbol_from_set (defs->ref, reg, recurse_p);
       if (!rtx_equal_p (symbol, other))
 	return NULL_RTX;
     }
@@ -14164,7 +14186,7 @@ mips_annotate_pic_calls (void)
       if (!REG_P (reg))
 	continue;
 
-      symbol = mips_find_pic_call_symbol (insn, reg);
+      symbol = mips_find_pic_call_symbol (insn, reg, true);
       if (symbol)
 	{
 	  mips_annotate_pic_call_expr (call, symbol);
@@ -15239,12 +15261,14 @@ mips_cpu_info_from_opt (int opt)
 static const struct mips_cpu_info *
 mips_default_arch (void)
 {
-#ifdef MIPS_CPU_STRING_DEFAULT
+#if defined (MIPS_CPU_STRING_DEFAULT)
   unsigned int i;
   for (i = 0; i < ARRAY_SIZE (mips_cpu_info_table); i++)
     if (strcmp (mips_cpu_info_table[i].name, MIPS_CPU_STRING_DEFAULT) == 0)
       return mips_cpu_info_table + i;
   gcc_unreachable ();
+#elif defined (MIPS_ISA_DEFAULT)
+  return mips_cpu_info_from_isa (MIPS_ISA_DEFAULT);
 #else
   /* 'from-abi' makes a good default: you get whatever the ABI
      requires.  */

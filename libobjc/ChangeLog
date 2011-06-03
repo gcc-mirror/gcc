@@ -1,3 +1,46 @@
+2011-05-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* sendmsg.c: Reindented part of the file.  No non-trivial changes
+	in code.
+
+2011-05-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* sendmsg.c (__objc_install_dtable_for_class): Use objc_getClass,
+	not objc_lookup_class.
+
+2011-05-25  Richard Frith-Macdonald <rfm@gnu.org>
+	    David Ayers  <ayers@fsfe.org>
+
+	PR libobjc/38307
+	* sendmsg.c: Include objc/hash.h.
+	(get_implementation): New function, mostly with code from get_imp
+	updated to support the new +initialize dispatch table logic.
+	(get_imp): Use get_implementation.
+	(__objc_responds_to): Updated to support the new +initialize
+	dispatch table logic.
+	(class_respondsToSelector): Likewise.
+	(objc_msg_lookup): Use get_implementation.
+	(__objc_init_install_dtable): Removed.
+	(__objc_install_methods_in_dtable): Updated arguments.
+	(__objc_install_dispatch_table_for_class): Renamed to
+	__objc_install_dtable_for_class and updated to support the new
+	+initialize dispatch table logic.
+	(__objc_update_dispatch_table_for_class): Updated to support the
+	new +initialize dispatch table logic.
+	(__objc_forward): Call get_implementation instead of get_imp.
+	(prepared_dtable_table): New.
+	(__objc_prepare_dtable_for_class): New.	
+	(__objc_prepared_dtable_for_class): New.
+	(__objc_get_prepared_imp): New.
+	(__objc_install_prepared_dtable_for_class): New.
+	
+2011-05-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/48177
+	* selector.c (__sel_register_typed_name): Use sel_types_match()
+	instead of strcmp() to compare selector types (Suggestion by
+	Richard Frith-Macdonald <rfm@gnu.org>).
+
 2011-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libobjc/32037

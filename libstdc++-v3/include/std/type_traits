@@ -59,8 +59,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, _Tp>
     struct integral_constant;
 
-  template<typename, typename, typename...>
+  template<typename...>
     struct __or_;
+
+  template<typename _B1>
+    struct __or_<_B1>
+    : public _B1
+    { };
 
   template<typename _B1, typename _B2>
     struct __or_<_B1, _B2>
@@ -72,8 +77,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public conditional<_B1::value, _B1, __or_<_B2, _B3, _Bn...>>::type
     { };
 
-  template<typename, typename, typename...>
+  template<typename...>
     struct __and_;
+
+  template<typename _B1>
+    struct __and_<_B1>
+    : public _B1
+    { };
 
   template<typename _B1, typename _B2>
     struct __and_<_B1, _B2>
@@ -988,10 +998,110 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_nothrow_move_constructible_impl<_Tp>
     { };
 
-  /// has_nothrow_copy_assign
+  template<typename _Tp, typename _Up>
+    class __is_assignable_helper
+    : public __sfinae_types
+    {
+      template<typename _Tp1, typename _Up1>
+        static decltype(declval<_Tp1>() = declval<_Up1>(), __one())
+	__test(int);
+
+      template<typename, typename>
+        static __two __test(...);
+
+    public:
+      static constexpr bool value = sizeof(__test<_Tp, _Up>(0)) == 1;
+    };
+
+  /// is_assignable
+  template<typename _Tp, typename _Up>
+    struct is_assignable
+    : public integral_constant<bool,
+                               __is_assignable_helper<_Tp, _Up>::value>
+    { };
+
+  template<typename _Tp, bool = is_void<_Tp>::value>
+    struct __is_copy_assignable_impl;
+
   template<typename _Tp>
-    struct has_nothrow_copy_assign
-    : public integral_constant<bool, __has_nothrow_assign(_Tp)>
+    struct __is_copy_assignable_impl<_Tp, true>
+    : public false_type { };
+
+  template<typename _Tp>
+    struct __is_copy_assignable_impl<_Tp, false>
+    : public is_assignable<_Tp&, const _Tp&&>
+    { };
+
+  /// is_copy_assignable
+  template<typename _Tp>
+    struct is_copy_assignable
+    : public __is_copy_assignable_impl<_Tp>
+    { };
+
+  template<typename _Tp, bool = is_void<_Tp>::value>
+    struct __is_move_assignable_impl;
+
+  template<typename _Tp>
+    struct __is_move_assignable_impl<_Tp, true>
+    : public false_type { };
+
+  template<typename _Tp>
+    struct __is_move_assignable_impl<_Tp, false>
+    : public is_assignable<_Tp&, _Tp&&>
+    { };
+
+  /// is_move_assignable
+  template<typename _Tp>
+    struct is_move_assignable
+    : public __is_move_assignable_impl<_Tp>
+    { };
+
+  template<typename _Tp, typename _Up>
+    struct __is_nt_assignable_impl
+    : public integral_constant<bool, noexcept(declval<_Tp>() = declval<_Up>())>
+    { };
+
+  /// is_nothrow_assignable
+  template<typename _Tp, typename _Up>
+    struct is_nothrow_assignable
+    : public __and_<is_assignable<_Tp, _Up>,
+		    __is_nt_assignable_impl<_Tp, _Up>>::type
+    { };
+
+  template<typename _Tp, bool = is_void<_Tp>::value>
+    struct __is_nt_copy_assignable_impl;
+
+  template<typename _Tp>
+    struct __is_nt_copy_assignable_impl<_Tp, true>
+    : public false_type { };
+
+  template<typename _Tp>
+    struct __is_nt_copy_assignable_impl<_Tp, false>
+    : public is_nothrow_assignable<_Tp&, const _Tp&&>
+    { };
+
+  /// is_nothrow_copy_assignable
+  template<typename _Tp>
+    struct is_nothrow_copy_assignable
+    : public __is_nt_copy_assignable_impl<_Tp>
+    { };
+
+  template<typename _Tp, bool = is_void<_Tp>::value>
+    struct __is_nt_move_assignable_impl;
+
+  template<typename _Tp>
+    struct __is_nt_move_assignable_impl<_Tp, true>
+    : public false_type { };
+
+  template<typename _Tp>
+    struct __is_nt_move_assignable_impl<_Tp, false>
+    : public is_nothrow_assignable<_Tp&, _Tp&&>
+    { };
+
+  /// is_nothrow_move_assignable
+  template<typename _Tp>
+    struct is_nothrow_move_assignable
+    : public __is_nt_move_assignable_impl<_Tp>
     { };
 
   /// has_trivial_default_constructor
@@ -1086,7 +1196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
     struct __is_convertible_helper
-    { static const bool __value = is_void<_To>::value; };
+    { static constexpr bool value = is_void<_To>::value; };
 
   template<typename _From, typename _To>
     class __is_convertible_helper<_From, _To, false>
@@ -1103,14 +1213,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static __two __test(...);
 
     public:
-      static const bool __value = sizeof(__test<_From, _To>(0)) == 1;
+      static constexpr bool value = sizeof(__test<_From, _To>(0)) == 1;
     };
 
   /// is_convertible
   template<typename _From, typename _To>
     struct is_convertible
     : public integral_constant<bool,
-			       __is_convertible_helper<_From, _To>::__value>
+			       __is_convertible_helper<_From, _To>::value>
     { };
 
   /// is_explicitly_convertible
@@ -1729,7 +1839,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static __two __test(...);                                \
                                                                  \
     public:                                                      \
-      static const bool value = sizeof(__test<_Tp>(0)) == 1;     \
+      static constexpr bool value = sizeof(__test<_Tp>(0)) == 1; \
     };                                                           \
                                                                  \
   template<typename _Tp>                                         \

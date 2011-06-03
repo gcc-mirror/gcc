@@ -34,14 +34,14 @@
 // warranty.
 
 /**
- * @file split_join_fn_imps.hpp
+ * @file ov_tree_map_/split_join_fn_imps.hpp
  * Contains an implementation class for ov_tree_.
  */
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
+split(key_const_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
   PB_DS_ASSERT_VALID((*this))
   PB_DS_ASSERT_VALID(other)
@@ -73,17 +73,15 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
       return;
     }
 
-  _GLIBCXX_DEBUG_ONLY(debug_base::join(other);)
   iterator it = upper_bound(r_key);
   PB_DS_CLASS_C_DEC new_other(other, other);
   new_other.copy_from_ordered_range(it, end());
-  PB_DS_CLASS_C_DEC new_this(*this, * this);
+  PB_DS_CLASS_C_DEC new_this(*this, *this);
   new_this.copy_from_ordered_range(begin(), it);
 
   // No exceptions from this point.
-  _GLIBCXX_DEBUG_ONLY(debug_base::split(r_key,(Cmp_Fn& )(*this), other);)
-  other.update(other.node_begin(), (node_update* )(&other));
-  update(node_begin(), (node_update* )this);
+  other.update(other.node_begin(), (node_update*)(&other));
+  update(node_begin(), (node_update*)this);
   other.value_swap(new_other);
   value_swap(new_this);
   PB_DS_ASSERT_VALID((*this))
@@ -120,14 +118,13 @@ join(PB_DS_CLASS_C_DEC& other)
   PB_DS_CLASS_C_DEC new_this(*this, *this);
 
   if (greater)
-    new_this.copy_from_ordered_range(begin(), end(), 
+    new_this.copy_from_ordered_range(begin(), end(),
 				     other.begin(), other.end());
   else
     new_this.copy_from_ordered_range(other.begin(), other.end(),
 				     begin(), end());
 
   // No exceptions from this point.
-  _GLIBCXX_DEBUG_ONLY(debug_base::join(other, false);)
   value_swap(new_this);
   other.clear();
   PB_DS_ASSERT_VALID((*this))

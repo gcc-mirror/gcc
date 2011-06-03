@@ -708,10 +708,10 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
 static int
 vect_cost_strided_group_size (stmt_vec_info stmt_info)
 {
-  gimple first_stmt = DR_GROUP_FIRST_DR (stmt_info);
+  gimple first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
 
   if (first_stmt == STMT_VINFO_STMT (stmt_info))
-    return DR_GROUP_SIZE (stmt_info);
+    return GROUP_SIZE (stmt_info);
 
   return 1;
 }
@@ -740,7 +740,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
     outside_cost = vect_get_stmt_cost (scalar_to_vec); 
 
   /* Strided access?  */
-  if (DR_GROUP_FIRST_DR (stmt_info))
+  if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
     {
       if (slp_node)
         {
@@ -749,7 +749,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
         }
       else
         {
-          first_stmt = DR_GROUP_FIRST_DR (stmt_info);
+          first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
           group_size = vect_cost_strided_group_size (stmt_info);
         }
 
@@ -855,8 +855,8 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
     return;
 
   /* Strided accesses?  */
-  first_stmt = DR_GROUP_FIRST_DR (stmt_info);
-  if (first_stmt && !slp_node)
+  first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+  if (STMT_VINFO_STRIDED_ACCESS (stmt_info) && first_stmt && !slp_node)
     {
       group_size = vect_cost_strided_group_size (stmt_info);
       first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
@@ -885,7 +885,8 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
 
   /* The loads themselves.  */
   vect_get_load_cost (first_dr, ncopies,
-         ((!DR_GROUP_FIRST_DR (stmt_info)) || group_size > 1 || slp_node),
+         ((!STMT_VINFO_STRIDED_ACCESS (stmt_info)) || group_size > 1
+          || slp_node),
          &inside_cost, &outside_cost);
 
   if (vect_print_dump_info (REPORT_COST))
@@ -3515,10 +3516,10 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
     {
       strided_store = true;
-      first_stmt = DR_GROUP_FIRST_DR (stmt_info);
+      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       if (!slp && !PURE_SLP_STMT (stmt_info))
 	{
-	  group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
+	  group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
 	  if (vect_store_lanes_supported (vectype, group_size))
 	    store_lanes_p = true;
 	  else if (!vect_strided_store_supported (vectype, group_size))
@@ -3529,7 +3530,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
           /* STMT is the leader of the group. Check the operands of all the
              stmts of the group.  */
-          next_stmt = DR_GROUP_NEXT_DR (stmt_info);
+          next_stmt = GROUP_NEXT_ELEMENT (stmt_info);
           while (next_stmt)
             {
 	      gcc_assert (gimple_assign_single_p (next_stmt));
@@ -3541,7 +3542,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
                     fprintf (vect_dump, "use not simple.");
                   return false;
                 }
-              next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
+              next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
             }
         }
     }
@@ -3558,17 +3559,17 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (strided_store)
     {
       first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-      group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
 
-      DR_GROUP_STORE_COUNT (vinfo_for_stmt (first_stmt))++;
+      GROUP_STORE_COUNT (vinfo_for_stmt (first_stmt))++;
 
       /* FORNOW */
       gcc_assert (!loop || !nested_in_vect_loop_p (loop, stmt));
 
       /* We vectorize all the stmts of the interleaving group when we
 	 reach the last stmt in the group.  */
-      if (DR_GROUP_STORE_COUNT (vinfo_for_stmt (first_stmt))
-	  < DR_GROUP_SIZE (vinfo_for_stmt (first_stmt))
+      if (GROUP_STORE_COUNT (vinfo_for_stmt (first_stmt))
+	  < GROUP_SIZE (vinfo_for_stmt (first_stmt))
 	  && !slp)
 	{
 	  *vec_stmt = NULL;
@@ -3695,7 +3696,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 							    NULL);
 		  VEC_quick_push(tree, dr_chain, vec_oprnd);
 		  VEC_quick_push(tree, oprnds, vec_oprnd);
-		  next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
+		  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
 		}
 	    }
 
@@ -3808,7 +3809,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      if (slp)
 		continue;
 
-	      next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
+	      next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
 	      if (!next_stmt)
 		break;
 	    }
@@ -4052,10 +4053,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       /* FORNOW */
       gcc_assert (! nested_in_vect_loop);
 
-      first_stmt = DR_GROUP_FIRST_DR (stmt_info);
+      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       if (!slp && !PURE_SLP_STMT (stmt_info))
 	{
-	  group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
+	  group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
 	  if (vect_load_lanes_supported (vectype, group_size))
 	    load_lanes_p = true;
 	  else if (!vect_strided_load_supported (vectype, group_size))
@@ -4096,7 +4097,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
   if (strided_load)
     {
-      first_stmt = DR_GROUP_FIRST_DR (stmt_info);
+      first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       /* Check if the chain of loads is already vectorized.  */
       if (STMT_VINFO_VEC_STMT (vinfo_for_stmt (first_stmt)))
 	{
@@ -4104,7 +4105,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  return true;
 	}
       first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-      group_size = DR_GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
 
       /* VEC_NUM is the number of vect stmts to be created for this group.  */
       if (slp)
@@ -5138,7 +5139,7 @@ vect_remove_stores (gimple first_stmt)
       /* Free the attached stmt_vec_info and remove the stmt.  */
       next_si = gsi_for_stmt (next);
       gsi_remove (&next_si, true);
-      tmp = DR_GROUP_NEXT_DR (vinfo_for_stmt (next));
+      tmp = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next));
       free_stmt_vec_info (next);
       next = tmp;
     }
@@ -5185,13 +5186,13 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
   STMT_VINFO_INSIDE_OF_LOOP_COST (res) = 0;
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (res) = 0;
   STMT_SLP_TYPE (res) = loop_vect;
-  DR_GROUP_FIRST_DR (res) = NULL;
-  DR_GROUP_NEXT_DR (res) = NULL;
-  DR_GROUP_SIZE (res) = 0;
-  DR_GROUP_STORE_COUNT (res) = 0;
-  DR_GROUP_GAP (res) = 0;
-  DR_GROUP_SAME_DR_STMT (res) = NULL;
-  DR_GROUP_READ_WRITE_DEPENDENCE (res) = false;
+  GROUP_FIRST_ELEMENT (res) = NULL;
+  GROUP_NEXT_ELEMENT (res) = NULL;
+  GROUP_SIZE (res) = 0;
+  GROUP_STORE_COUNT (res) = 0;
+  GROUP_GAP (res) = 0;
+  GROUP_SAME_DR_STMT (res) = NULL;
+  GROUP_READ_WRITE_DEPENDENCE (res) = false;
 
   return res;
 }

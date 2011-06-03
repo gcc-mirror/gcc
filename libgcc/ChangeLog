@@ -1,3 +1,93 @@
+2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (i[34567]86-*-solaris2*): Add i386/t-crtfm to
+	tmake_file.
+	Add crtfastmath.o to extra_parts.
+
+2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/gmon-sol2.c: Reindent.
+	Cleanup comments.
+	Remove, correct casts.
+	Use STDERR_FILENO, NULL.
+	(BASEADDRESS): Remove.
+	(minbrk): Remove.
+	(errno, sbrk): Remove declarations.
+	(monstartup) [hp300]: Remove.
+	(mcount): Remove.
+
+2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (cpu_type): Define.
+	* config.host (i[34567]86-*-rtems*): Handle it.
+	(i[34567]86-*-solaris2*): Move body ...
+	(*-*-solaris2*): ... here.
+	New case, generalize.
+	(sparc-*-elf*): Handle it.
+	(sparc-*-linux*, sparc64-*-linux*): Replace sparc/t-crtfm by t-crtfm.
+	(sparc-*-rtems*, sparc64-*-rtems*); Handle it.
+	(sparc64-*-solaris2*, sparcv9-*-solaris2*, sparc-*-solaris2*):
+	Fold into ...
+	(sparc*-*-solaris2*): ... this.
+	New case.
+	(sparc64-*-elf*): Handle it.
+	* config/gmon-sol2.c: Move from ../gcc/config/sparc.
+	Merge ../gcc/config/i386/gmon-sol2.c.
+	* config/i386/sol2-c1.S: Move from ../gcc/config/i386/sol2-c1.asm.
+	Use C comments.
+	Merge ../gcc/config/i386/sol2-gc1.asm.
+	* config/i386/sol2-ci.S: Move from ../gcc/config/i386/sol2-ci.asm.
+	Use C comments.
+	* config/i386/sol2-cn.S: Move from ../gcc/config/i386/sol2-cn.asm.
+	Use C comments.
+	* config/i386/t-crtfm (crtfastmath.o): Use $<.
+	* config/i386/t-crtstuff: New file.
+	* config/i386/t-softfp: New file.
+	* config/i386/t-sol2 ($(T)gmon.o, $(T)gcrt1.o, $(T)crt1.o),
+	$(T)crti.o, $(T)crtn.o): Remove.
+	(gcrt1.o): New rule.
+	(TARGET_LIBGCC2_CFLAGS): Remove.
+	* config/sparc/sol2-c1.S: Move from ../gcc/config/sparc/sol2-c1.asm.
+	* config/sparc/sol2-ci.S: Move from ../gcc/config/sparc/sol2-ci.asm.
+	* config/sparc/sol2-cn.S: Move from ../gcc/config/sparc/sol2-cn.asm.
+	* config/sparc/t-sol2: New file.
+	* config/sparc/t-crtfm: Move to ...
+	* config/t-crtfm: ... this.
+	Use $(cpu_type), $<.
+	* config/t-crtin: New file.
+	* config/sparc/t-softfp: New file.
+	* config/sparc/t-softmul: New file.
+	* config/t-rtems: New file.
+	* config/t-slibgcc: New file.
+	* config/t-slibgcc-elf-ver: New file.
+	* config/t-slibgcc-gld: New file.
+	* config/t-slibgcc-sld: New file.
+	* config/t-sol2: New file.
+	* configure.ac: Include ../config/lib-ld.m4.
+	Call AC_LIB_PROG_LD_GNU.
+	Substitute cpu_type.
+	* configure: Regenerate.
+
+2011-05-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/49173
+	* config/t-slibgcc-darwin (SHLIB_MAPFILES): Look for
+	libgcc-std.ver in the build directory.
+	* config/s390/t-linux (SHLIB_MAPFILES): Likewise.
+	* config/sh/t-linux (SHLIB_MAPFILES): Likewise.
+
+2011-05-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* libgcc-std.ver.in: New file.
+	* Makefile.in (LIBGCC_VER_GNU_PREFIX, LIBGCC_VER_SYMBOLS_PREFIX): New
+	variables.
+	(libgcc-std.ver): New rule.
+	* config/t-gnu-prefix: New file.
+
+2011-05-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/s390/t-tpf (LIB2ADDEH): Remove $(gcc_srcdir)/gthr-gnat.c.
+
 2011-05-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/darwin-lib.h: New file.

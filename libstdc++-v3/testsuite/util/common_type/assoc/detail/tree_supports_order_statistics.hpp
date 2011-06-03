@@ -56,7 +56,7 @@ namespace __gnu_pbds
 	    value = __gnu_pbds::detail::is_same<
             typename Tree_Cntnr::node_update,
             __gnu_pbds::tree_order_statistics_node_update<
-            typename Tree_Cntnr::const_node_iterator,
+            typename Tree_Cntnr::node_const_iterator,
             typename Tree_Cntnr::node_iterator,
             typename Tree_Cntnr::cmp_fn,
             typename Tree_Cntnr::allocator_type> >::value

@@ -43,7 +43,7 @@ set_fpu (void)
 #endif
 
   if (options.fpe & GFC_FPE_DENORMAL)
-    estr_write ("Fortran runtime warning: IEEE 'denormal number' "
+    estr_write ("Fortran runtime warning: Floating point 'denormal operand' "
 	        "exception not supported.\n");
 
   if (options.fpe & GFC_FPE_ZERO)
@@ -70,11 +70,11 @@ set_fpu (void)
 	        "exception not supported.\n");
 #endif
 
-  if (options.fpe & GFC_FPE_PRECISION)
-#ifdef TRP_UNDERFLOW
-    mode |= TRP_UNDERFLOW;
+  if (options.fpe & GFC_FPE_INEXACT)
+#ifdef TRP_INEXACT
+    mode |= TRP_INEXACT;
 #else
-    estr_write ("Fortran runtime warning: IEEE 'loss of precision' "
+    estr_write ("Fortran runtime warning: IEEE 'inexact' "
 	        "exception not supported.\n");
 #endif
 

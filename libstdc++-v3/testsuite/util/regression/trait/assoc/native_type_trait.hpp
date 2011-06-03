@@ -47,58 +47,58 @@ namespace __gnu_pbds
     namespace detail
     {
 
-      template<typename Key, class Allocator>
+      template<typename Key, typename _Alloc>
       struct native_key_type;
 
-      template<typename Allocator>
+      template<typename _Alloc>
       struct native_key_type<
 	basic_type,
-	Allocator>
+	_Alloc>
       {
 	typedef std::string type;
 
 	static type
-        native_key(typename Allocator::template rebind<
+        native_key(typename _Alloc::template rebind<
 		   basic_type>::other::const_reference r_key)
 	{
 	  return (std::string(r_key));
 	}
       };
 
-      template<typename Hd, class Tl, class Allocator>
+      template<typename Hd, class Tl, typename _Alloc>
       struct native_key_type<
 	std::pair<
         Hd,
         Tl>,
-	Allocator>
+	_Alloc>
       {
-	typedef typename native_key_type< Hd, Allocator>::type hd_type;
+	typedef typename native_key_type< Hd, _Alloc>::type hd_type;
 
-	typedef typename native_key_type< Tl, Allocator>::type tl_type;
+	typedef typename native_key_type< Tl, _Alloc>::type tl_type;
 
 	typedef std::pair< hd_type, tl_type> type;
 
 	static type
-        native_key(typename Allocator::template rebind<            std::pair<Hd, Tl> >::other::const_reference r_key)
+        native_key(typename _Alloc::template rebind<            std::pair<Hd, Tl> >::other::const_reference r_key)
 	{
 	  return (std::make_pair(
-				 native_key_type<Hd, Allocator>::native_key(r_key.first),
-				 native_key_type<Tl, Allocator>::native_key(r_key.second)));
+				 native_key_type<Hd, _Alloc>::native_key(r_key.first),
+				 native_key_type<Tl, _Alloc>::native_key(r_key.second)));
 	}
       };
 
       template<typename Native_Key_Type,
 	       class Key_Type,
 	       class Data_Type,
-	       class Allocator>
+	       typename _Alloc>
       struct native_type_traits_base;
 
-      template<typename Native_Key_Type, class Key_Type, class Allocator>
+      template<typename Native_Key_Type, class Key_Type, typename _Alloc>
       struct native_type_traits_base<
 	Native_Key_Type,
 	Key_Type,
 	basic_type,
-	Allocator>
+	_Alloc>
       {
       public:
 	typedef std::map< Native_Key_Type, std::string> type;
@@ -111,20 +111,20 @@ namespace __gnu_pbds
 	}
 
 	static typename type::value_type
-        native_value(typename Allocator::template rebind<            std::pair<Key_Type, basic_type> >::other::const_reference r_val)
+        native_value(typename _Alloc::template rebind<            std::pair<Key_Type, basic_type> >::other::const_reference r_val)
 	{
 	  return (std::make_pair(
-				 native_key_type<Key_Type, Allocator>::native_key(r_val.first),
+				 native_key_type<Key_Type, _Alloc>::native_key(r_val.first),
 				 std::string(r_val.second)));
 	}
       };
 
-      template<typename Native_Key_Type, class Key_Type, class Allocator>
+      template<typename Native_Key_Type, class Key_Type, typename _Alloc>
       struct native_type_traits_base<
 	Native_Key_Type,
 	Key_Type,
-	__gnu_pbds::null_mapped_type,
-	Allocator>
+	__gnu_pbds::null_type,
+	_Alloc>
       {
       public:
 	typedef std::set< Native_Key_Type> type;
@@ -137,10 +137,10 @@ namespace __gnu_pbds
 	}
 
 	static typename type::value_type
-        native_value(typename Allocator::template rebind<
+        native_value(typename _Alloc::template rebind<
 		     Key_Type>::other::const_reference r_val)
 	{
-	  return (native_key_type<Key_Type, Allocator>::native_key(
+	  return (native_key_type<Key_Type, _Alloc>::native_key(
 								   r_val));
 	}
       };
@@ -148,16 +148,16 @@ namespace __gnu_pbds
 #define PB_DS_NATIVE_KEY_TYPE_C_DEC				\
       native_key_type<						\
 						Key_Type,	\
-						Allocator>
+						_Alloc>
 
 #define PB_DS_BASE_C_DEC						\
       native_type_traits_base<						\
 									typename PB_DS_NATIVE_KEY_TYPE_C_DEC::type, \
 									Key_Type, \
 									Data_Type, \
-									Allocator>
+									_Alloc>
 
-      template<typename Key_Type, class Data_Type, class Allocator>
+      template<typename Key_Type, class Data_Type, typename _Alloc>
       struct native_type_traits : public PB_DS_BASE_C_DEC
       {
 	typedef typename PB_DS_BASE_C_DEC::type type;
@@ -165,7 +165,7 @@ namespace __gnu_pbds
 	typedef typename type::key_type key_type;
 
 	static typename PB_DS_NATIVE_KEY_TYPE_C_DEC::type
-        native_key(typename Allocator::template rebind<
+        native_key(typename _Alloc::template rebind<
 		   Key_Type>::other::const_reference r_key)
 	{
 	  return (PB_DS_NATIVE_KEY_TYPE_C_DEC::native_key(r_key));

@@ -52,6 +52,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _MemberPointer>
     class _Mem_fn;
+  template<typename _Tp, typename _Class>
+    _Mem_fn<_Tp _Class::*>
+    mem_fn(_Tp _Class::*);
 
   /**
    *  Actual implementation of _Has_result_type, which uses SFINAE to

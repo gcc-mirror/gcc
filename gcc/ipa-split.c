@@ -1196,11 +1196,31 @@ split_function (struct split_point *split_point)
 		    }
 		}
 	      if (DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
-	        gimple_call_set_lhs (call, build_simple_mem_ref (retval));
+		{
+		  gimple_call_set_lhs (call, build_simple_mem_ref (retval));
+		  gsi_insert_after (&gsi, call, GSI_NEW_STMT);
+		}
 	      else
-	        gimple_call_set_lhs (call, retval);
+		{
+		  tree restype;
+		  restype = TREE_TYPE (DECL_RESULT (current_function_decl));
+		  gsi_insert_after (&gsi, call, GSI_NEW_STMT);
+		  if (!useless_type_conversion_p (TREE_TYPE (retval), restype))
+		    {
+		      gimple cpy;
+		      tree tem = create_tmp_reg (restype, NULL);
+		      tem = make_ssa_name (tem, call);
+		      cpy = gimple_build_assign_with_ops (NOP_EXPR, retval,
+							  tem, NULL_TREE);
+		      gsi_insert_after (&gsi, cpy, GSI_NEW_STMT);
+		      retval = tem;
+		    }
+		  gimple_call_set_lhs (call, retval);
+		  update_stmt (call);
+		}
 	    }
-          gsi_insert_after (&gsi, call, GSI_NEW_STMT);
+	  else
+	    gsi_insert_after (&gsi, call, GSI_NEW_STMT);
 	}
       /* We don't use return block (there is either no return in function or
 	 multiple of them).  So create new basic block with return statement.

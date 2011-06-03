@@ -231,7 +231,7 @@ func TestMuxRedirectLeadingSlashes(t *testing.T) {
 
 func TestServerTimeouts(t *testing.T) {
 	// TODO(bradfitz): convert this to use httptest.Server
-	l, err := net.ListenTCP("tcp", &net.TCPAddr{Port: 0})
+	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatalf("listen error: %v", err)
 	}
@@ -247,7 +247,7 @@ func TestServerTimeouts(t *testing.T) {
 	server := &Server{Handler: handler, ReadTimeout: 0.25 * second, WriteTimeout: 0.25 * second}
 	go server.Serve(l)
 
-	url := fmt.Sprintf("http://localhost:%d/", addr.Port)
+	url := fmt.Sprintf("http://%s/", addr)
 
 	// Hit the HTTP server successfully.
 	tr := &Transport{DisableKeepAlives: true} // they interfere with this test
@@ -265,7 +265,7 @@ func TestServerTimeouts(t *testing.T) {
 
 	// Slow client that should timeout.
 	t1 := time.Nanoseconds()
-	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", addr.Port))
+	conn, err := net.Dial("tcp", addr.String())
 	if err != nil {
 		t.Fatalf("Dial: %v", err)
 	}
@@ -532,5 +532,164 @@ func TestTLSServer(t *testing.T) {
 	}
 	if e, g := "tls=true", string(body); e != g {
 		t.Errorf("expected body %q; got %q", e, g)
+	}
+}
+
+type serverExpectTest struct {
+	contentLength    int    // of request body
+	expectation      string // e.g. "100-continue"
+	readBody         bool   // whether handler should read the body (if false, sends StatusUnauthorized)
+	expectedResponse string // expected substring in first line of http response
+}
+
+var serverExpectTests = []serverExpectTest{
+	// Normal 100-continues, case-insensitive.
+	{100, "100-continue", true, "100 Continue"},
+	{100, "100-cOntInUE", true, "100 Continue"},
+
+	// No 100-continue.
+	{100, "", true, "200 OK"},
+
+	// 100-continue but requesting client to deny us,
+	// so it never eads the body.
+	{100, "100-continue", false, "401 Unauthorized"},
+	// Likewise without 100-continue:
+	{100, "", false, "401 Unauthorized"},
+
+	// Non-standard expectations are failures
+	{0, "a-pony", false, "417 Expectation Failed"},
+
+	// Expect-100 requested but no body
+	{0, "100-continue", true, "400 Bad Request"},
+}
+
+// Tests that the server responds to the "Expect" request header
+// correctly.
+func TestServerExpect(t *testing.T) {
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		// Note using r.FormValue("readbody") because for POST
+		// requests that would read from r.Body, which we only
+		// conditionally want to do.
+		if strings.Contains(r.URL.RawPath, "readbody=true") {
+			ioutil.ReadAll(r.Body)
+			w.Write([]byte("Hi"))
+		} else {
+			w.WriteHeader(StatusUnauthorized)
+		}
+	}))
+	defer ts.Close()
+
+	runTest := func(test serverExpectTest) {
+		conn, err := net.Dial("tcp", ts.Listener.Addr().String())
+		if err != nil {
+			t.Fatalf("Dial: %v", err)
+		}
+		defer conn.Close()
+		sendf := func(format string, args ...interface{}) {
+			_, err := fmt.Fprintf(conn, format, args...)
+			if err != nil {
+				t.Fatalf("On test %#v, error writing %q: %v", test, format, err)
+			}
+		}
+		go func() {
+			sendf("POST /?readbody=%v HTTP/1.1\r\n"+
+				"Connection: close\r\n"+
+				"Content-Length: %d\r\n"+
+				"Expect: %s\r\nHost: foo\r\n\r\n",
+				test.readBody, test.contentLength, test.expectation)
+			if test.contentLength > 0 && strings.ToLower(test.expectation) != "100-continue" {
+				body := strings.Repeat("A", test.contentLength)
+				sendf(body)
+			}
+		}()
+		bufr := bufio.NewReader(conn)
+		line, err := bufr.ReadString('\n')
+		if err != nil {
+			t.Fatalf("ReadString: %v", err)
+		}
+		if !strings.Contains(line, test.expectedResponse) {
+			t.Errorf("for test %#v got first line=%q", test, line)
+		}
+	}
+
+	for _, test := range serverExpectTests {
+		runTest(test)
+	}
+}
+
+func TestServerConsumesRequestBody(t *testing.T) {
+	conn := new(testConn)
+	body := strings.Repeat("x", 1<<20)
+	conn.readBuf.Write([]byte(fmt.Sprintf(
+		"POST / HTTP/1.1\r\n"+
+			"Host: test\r\n"+
+			"Content-Length: %d\r\n"+
+			"\r\n",len(body))))
+	conn.readBuf.Write([]byte(body))
+
+	done := make(chan bool)
+
+	ls := &oneConnListener{conn}
+	go Serve(ls, HandlerFunc(func(rw ResponseWriter, req *Request) {
+		if conn.readBuf.Len() < len(body)/2 {
+			t.Errorf("on request, read buffer length is %d; expected about 1MB", conn.readBuf.Len())
+		}
+		rw.WriteHeader(200)
+		if g, e := conn.readBuf.Len(), 0; g != e {
+			t.Errorf("after WriteHeader, read buffer length is %d; want %d", g, e)
+		}
+		done <- true
+	}))
+	<-done
+}
+
+func TestTimeoutHandler(t *testing.T) {
+	sendHi := make(chan bool, 1)
+	writeErrors := make(chan os.Error, 1)
+	sayHi := HandlerFunc(func(w ResponseWriter, r *Request) {
+		<-sendHi
+		_, werr := w.Write([]byte("hi"))
+		writeErrors <- werr
+	})
+	timeout := make(chan int64, 1) // write to this to force timeouts
+	ts := httptest.NewServer(NewTestTimeoutHandler(sayHi, timeout))
+	defer ts.Close()
+
+	// Succeed without timing out:
+	sendHi <- true
+	res, _, err := Get(ts.URL)
+	if err != nil {
+		t.Error(err)
+	}
+	if g, e := res.StatusCode, StatusOK; g != e {
+		t.Errorf("got res.StatusCode %d; expected %d", g, e)
+	}
+	body, _ := ioutil.ReadAll(res.Body)
+	if g, e := string(body), "hi"; g != e {
+		t.Errorf("got body %q; expected %q", g, e)
+	}
+	if g := <-writeErrors; g != nil {
+		t.Errorf("got unexpected Write error on first request: %v", g)
+	}
+
+	// Times out:
+	timeout <- 1
+	res, _, err = Get(ts.URL)
+	if err != nil {
+		t.Error(err)
+	}
+	if g, e := res.StatusCode, StatusServiceUnavailable; g != e {
+		t.Errorf("got res.StatusCode %d; expected %d", g, e)
+	}
+	body, _ = ioutil.ReadAll(res.Body)
+	if !strings.Contains(string(body), "<title>Timeout</title>") {
+		t.Errorf("expected timeout body; got %q", string(body))
+	}
+
+	// Now make the previously-timed out handler speak again,
+	// which verifies the panic is handled:
+	sendHi <- true
+	if g, e := <-writeErrors, ErrHandlerTimeout; g != e {
+		t.Errorf("expected Write error of %v; got %v", e, g)
 	}
 }

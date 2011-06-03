@@ -516,7 +516,8 @@ composite_pointer_type_r (tree t1, tree t2,
     {
       if (complain & tf_error)
 	composite_pointer_error (DK_PERMERROR, t1, t2, operation);
-
+      else
+	return error_mark_node;
       result_type = void_type_node;
     }
   result_type = cp_build_qualified_type (result_type,
@@ -527,9 +528,13 @@ composite_pointer_type_r (tree t1, tree t2,
   if (TYPE_PTR_TO_MEMBER_P (t1))
     {
       if (!same_type_p (TYPE_PTRMEM_CLASS_TYPE (t1),
-			TYPE_PTRMEM_CLASS_TYPE (t2))
-	  && (complain & tf_error))
-	composite_pointer_error (DK_PERMERROR, t1, t2, operation);
+			TYPE_PTRMEM_CLASS_TYPE (t2)))
+	{
+	  if (complain & tf_error)
+	    composite_pointer_error (DK_PERMERROR, t1, t2, operation);
+	  else
+	    return error_mark_node;
+	}
       result_type = build_ptrmem_type (TYPE_PTRMEM_CLASS_TYPE (t1),
 				       result_type);
     }
@@ -986,14 +991,14 @@ comp_except_specs (const_tree t1, const_tree t2, int exact)
   /* First handle noexcept.  */
   if (exact < ce_exact)
     {
-      /* noexcept(false) is compatible with any throwing dynamic-exc-spec
+      /* noexcept(false) is compatible with no exception-specification,
 	 and stricter than any spec.  */
       if (t1 == noexcept_false_spec)
-	return !nothrow_spec_p (t2) || exact == ce_derived;
-      /* Even a derived noexcept(false) is compatible with a throwing
-	 dynamic spec.  */
+	return t2 == NULL_TREE || exact == ce_derived;
+      /* Even a derived noexcept(false) is compatible with no
+	 exception-specification.  */
       if (t2 == noexcept_false_spec)
-	return !nothrow_spec_p (t1);
+	return t1 == NULL_TREE;
 
       /* Otherwise, if we aren't looking for an exact match, noexcept is
 	 equivalent to throw().  */
@@ -3266,8 +3271,7 @@ cp_build_function_call_vec (tree function, VEC(tree,gc) **params,
 
   /* Check for errors in format strings and inappropriately
      null parameters.  */
-  check_function_arguments (TYPE_ATTRIBUTES (fntype), nargs, argarray,
-			    parm_types);
+  check_function_arguments (fntype, nargs, argarray);
 
   ret = build_cxx_call (function, nargs, argarray);
 
@@ -5764,11 +5768,11 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       return convert_from_reference (rvalue (cp_fold_convert (type, expr)));
     }
 
-  /* "An lvalue of type cv1 T1 can be cast to type rvalue reference to
+  /* "A glvalue of type cv1 T1 can be cast to type rvalue reference to
      cv2 T2 if cv2 T2 is reference-compatible with cv1 T1 (8.5.3)."  */
   if (TREE_CODE (type) == REFERENCE_TYPE
       && TYPE_REF_IS_RVALUE (type)
-      && real_lvalue_p (expr)
+      && lvalue_or_rvalue_with_address_p (expr)
       && reference_related_p (TREE_TYPE (type), intype)
       && (c_cast_p || at_least_as_qualified_p (TREE_TYPE (type), intype)))
     {
@@ -6237,14 +6241,29 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
 
   /* [expr.const.cast]
 
-     An lvalue of type T1 can be explicitly converted to an lvalue of
-     type T2 using the cast const_cast<T2&> (where T1 and T2 are object
-     types) if a pointer to T1 can be explicitly converted to the type
-     pointer to T2 using a const_cast.  */
+     For two object types T1 and T2, if a pointer to T1 can be explicitly
+     converted to the type "pointer to T2" using a const_cast, then the
+     following conversions can also be made:
+
+     -- an lvalue of type T1 can be explicitly converted to an lvalue of
+     type T2 using the cast const_cast<T2&>;
+
+     -- a glvalue of type T1 can be explicitly converted to an xvalue of
+     type T2 using the cast const_cast<T2&&>; and
+
+     -- if T1 is a class type, a prvalue of type T1 can be explicitly
+     converted to an xvalue of type T2 using the cast const_cast<T2&&>.  */
+
   if (TREE_CODE (dst_type) == REFERENCE_TYPE)
     {
       reference_type = dst_type;
-      if (! real_lvalue_p (expr))
+      if (!TYPE_REF_IS_RVALUE (dst_type)
+	  ? real_lvalue_p (expr)
+	  : (CLASS_TYPE_P (TREE_TYPE (dst_type))
+	     ? lvalue_p (expr)
+	     : lvalue_or_rvalue_with_address_p (expr)))
+	/* OK.  */;
+      else
 	{
 	  if (complain & tf_error)
 	    error ("invalid const_cast of an rvalue of type %qT to type %qT",
@@ -6429,7 +6448,7 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
       if (!CLASS_TYPE_P (type))
 	type = TYPE_MAIN_VARIANT (type);
       result_type = TREE_TYPE (result);
-      if (!CLASS_TYPE_P (result_type))
+      if (!CLASS_TYPE_P (result_type) && TREE_CODE (type) != REFERENCE_TYPE)
 	result_type = TYPE_MAIN_VARIANT (result_type);
       /* If the type of RESULT does not match TYPE, perform a
 	 const_cast to make it match.  If the static_cast or
@@ -6729,7 +6748,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 
       /* Allow array assignment in compiler-generated code.  */
       else if (!current_function_decl
-	       || !DECL_ARTIFICIAL (current_function_decl))
+	       || !DECL_DEFAULTED_FN (current_function_decl))
 	{
           /* This routine is used for both initialization and assignment.
              Make sure the diagnostic message differentiates the context.  */

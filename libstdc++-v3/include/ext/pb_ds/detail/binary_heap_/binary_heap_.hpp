@@ -34,16 +34,12 @@
 // warranty.
 
 /**
- * @file binary_heap_.hpp
+ * @file binary_heap_/binary_heap_.hpp
  * Contains an implementation class for a binary heap.
  */
 
 #ifndef PB_DS_BINARY_HEAP_HPP
 #define PB_DS_BINARY_HEAP_HPP
-
-/*
- * Based on CLRS.
- */
 
 #include <queue>
 #include <algorithm>
@@ -53,7 +49,7 @@
 #include <ext/pb_ds/detail/binary_heap_/entry_cmp.hpp>
 #include <ext/pb_ds/detail/binary_heap_/entry_pred.hpp>
 #include <ext/pb_ds/detail/binary_heap_/resize_policy.hpp>
-#include <ext/pb_ds/detail/binary_heap_/const_point_iterator.hpp>
+#include <ext/pb_ds/detail/binary_heap_/point_const_iterator.hpp>
 #include <ext/pb_ds/detail/binary_heap_/const_iterator.hpp>
 #ifdef PB_DS_BINARY_HEAP_TRACE_
 #include <iostream>
@@ -66,126 +62,85 @@ namespace __gnu_pbds
   namespace detail
   {
 #define PB_DS_CLASS_T_DEC \
-    template<typename Value_Type, class Cmp_Fn, class Allocator>
+    template<typename Value_Type, typename Cmp_Fn, typename _Alloc>
 
 #define PB_DS_CLASS_C_DEC \
-    binary_heap_<Value_Type, Cmp_Fn, Allocator>
+    binary_heap<Value_Type, Cmp_Fn, _Alloc>
 
 #define PB_DS_ENTRY_CMP_DEC \
-    entry_cmp<Value_Type, Cmp_Fn, is_simple<Value_Type>::value, Allocator>::type
+    entry_cmp<Value_Type, Cmp_Fn, _Alloc, is_simple<Value_Type>::value>::type
 
 #define PB_DS_RESIZE_POLICY_DEC	\
-    __gnu_pbds::detail::resize_policy<typename Allocator::size_type>
+    __gnu_pbds::detail::resize_policy<typename _Alloc::size_type>
 
     /**
-     * class description = "Base class for some types of h3ap$">
-     **/
-    template<typename Value_Type, class Cmp_Fn, class Allocator>
-    class binary_heap_ : public PB_DS_ENTRY_CMP_DEC,
-			 public PB_DS_RESIZE_POLICY_DEC
+     *  @brief Binary heaps composed of resize and compare policies.
+     *
+     *  Based on CLRS.
+     */
+    template<typename Value_Type, typename Cmp_Fn, typename _Alloc>
+    class binary_heap
+    : public PB_DS_ENTRY_CMP_DEC, public PB_DS_RESIZE_POLICY_DEC
     {
+    public:
+      typedef Value_Type 				value_type;
+      typedef Cmp_Fn 					cmp_fn;
+      typedef _Alloc 					allocator_type;
+      typedef typename _Alloc::size_type 		size_type;
+      typedef typename _Alloc::difference_type 		difference_type;
+      typedef typename PB_DS_ENTRY_CMP_DEC 		entry_cmp;
+      typedef PB_DS_RESIZE_POLICY_DEC 			resize_policy;
+      typedef cond_dealtor<value_type, _Alloc> 		cond_dealtor_t;
 
     private:
       enum
 	{
-	  simple_value = is_simple<Value_Type>::value
+	  simple_value = is_simple<value_type>::value
 	};
 
-      typedef integral_constant<int, simple_value> no_throw_copies_t;
+      typedef integral_constant<int, simple_value> 	no_throw_copies_t;
 
-      typedef
-      typename Allocator::template rebind<
-	Value_Type>::other
-      value_allocator;
-
-      typedef
-      typename __conditional_type<
-	simple_value,
-	Value_Type,
-	typename value_allocator::pointer>::__type
-      entry;
-
-      typedef
-      typename Allocator::template rebind<
-	entry>::other
-      entry_allocator;
-
-      typedef typename entry_allocator::pointer entry_pointer;
-
-      typedef typename PB_DS_ENTRY_CMP_DEC entry_cmp;
-
-      typedef PB_DS_RESIZE_POLICY_DEC resize_policy;
-
-      typedef
-      cond_dealtor<
-	Value_Type,
-	Allocator>
-      cond_dealtor_t;
+      typedef typename _Alloc::template rebind<value_type>	__rebind_v;
+      typedef typename __rebind_v::other 		value_allocator;
 
     public:
+      typedef typename value_allocator::pointer		pointer;
+      typedef typename value_allocator::const_pointer	const_pointer;
+      typedef typename value_allocator::reference	reference;
+      typedef typename value_allocator::const_reference	const_reference;
 
-      typedef typename Allocator::size_type size_type;
+      typedef typename __conditional_type<simple_value,
+					  value_type, pointer>::__type
+      							entry;
 
-      typedef typename Allocator::difference_type difference_type;
+      typedef typename _Alloc::template rebind<entry>::other
+      							entry_allocator;
 
-      typedef Value_Type value_type;
+      typedef typename entry_allocator::pointer 	entry_pointer;
 
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::pointer
-      pointer;
+      typedef binary_heap_point_const_iterator_<value_type, entry,
+						simple_value, _Alloc>
+      							point_const_iterator;
 
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::const_pointer
-      const_pointer;
+      typedef point_const_iterator 			point_iterator;
 
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::reference
-      reference;
+      typedef binary_heap_const_iterator_<value_type, entry,
+					  simple_value, _Alloc>
+      							const_iterator;
 
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::const_reference
-      const_reference;
+      typedef const_iterator 				iterator;
 
-      typedef
-      binary_heap_const_point_iterator_<
-	value_type,
-	entry,
-	simple_value,
-	Allocator>
-      const_point_iterator;
 
-      typedef const_point_iterator point_iterator;
+      binary_heap();
 
-      typedef
-      binary_heap_const_iterator_<
-	value_type,
-	entry,
-	simple_value,
-	Allocator>
-      const_iterator;
+      binary_heap(const cmp_fn&);
 
-      typedef const_iterator iterator;
-
-      typedef Cmp_Fn cmp_fn;
-
-      typedef Allocator allocator_type;
-
-    public:
-
-      binary_heap_();
-
-      binary_heap_(const Cmp_Fn& r_cmp_fn);
-
-      binary_heap_(const PB_DS_CLASS_C_DEC& other);
+      binary_heap(const binary_heap&);
 
       void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(binary_heap&);
 
-      ~binary_heap_();
+      ~binary_heap();
 
       inline bool
       empty() const;
@@ -196,17 +151,17 @@ namespace __gnu_pbds
       inline size_type
       max_size() const;
 
-      Cmp_Fn& 
+      Cmp_Fn&
       get_cmp_fn();
 
-      const Cmp_Fn& 
+      const Cmp_Fn&
       get_cmp_fn() const;
 
       inline point_iterator
-      push(const_reference r_val);
+      push(const_reference);
 
       void
-      modify(point_iterator it, const_reference r_new_val);
+      modify(point_iterator, const_reference);
 
       inline const_reference
       top() const;
@@ -215,17 +170,17 @@ namespace __gnu_pbds
       pop();
 
       inline void
-      erase(point_iterator it);
+      erase(point_iterator);
 
       template<typename Pred>
-      typename PB_DS_CLASS_C_DEC::size_type
-      erase_if(Pred pred);
+	size_type
+	erase_if(Pred);
 
-      inline static void
-      erase_at(entry_pointer a_entries, size_type size, false_type);
+      inline void
+      erase_at(entry_pointer, size_type, false_type);
 
-      inline static void
-      erase_at(entry_pointer a_entries, size_type size, true_type);
+      inline void
+      erase_at(entry_pointer, size_type, true_type);
 
       inline iterator
       begin();
@@ -243,48 +198,43 @@ namespace __gnu_pbds
       clear();
 
       template<typename Pred>
-      void
-      split(Pred pred, PB_DS_CLASS_C_DEC& other);
+	void
+	split(Pred, binary_heap&);
 
       void
-      join(PB_DS_CLASS_C_DEC& other);
+      join(binary_heap&);
 
 #ifdef PB_DS_BINARY_HEAP_TRACE_
       void
       trace() const;
-#endif 
+#endif
 
     protected:
-
       template<typename It>
-      void
-      copy_from_range(It first_it, It last_it);
+	void
+	copy_from_range(It, It);
 
     private:
-
       void
-      value_swap(PB_DS_CLASS_C_DEC& other);
+      value_swap(binary_heap&);
 
       inline void
-      insert_value(const_reference r_val, false_type);
+      insert_value(const_reference, false_type);
 
       inline void
-      insert_value(value_type val, true_type);
-
-      inline void
-      insert_entry(entry e);
+      insert_value(value_type, true_type);
 
       inline void
       resize_for_insert_if_needed();
 
       inline void
-      swap_value_imp(entry_pointer p_e, value_type new_val, true_type);
+      swap_value_imp(entry_pointer, value_type, true_type);
 
       inline void
-      swap_value_imp(entry_pointer p_e, const_reference r_new_val, false_type);
+      swap_value_imp(entry_pointer, const_reference, false_type);
 
       void
-      fix(entry_pointer p_e);
+      fix(entry_pointer);
 
       inline const_reference
       top_imp(true_type) const;
@@ -293,47 +243,90 @@ namespace __gnu_pbds
       top_imp(false_type) const;
 
       inline static size_type
-      left_child(size_type i);
+      left_child(size_type);
 
       inline static size_type
-      right_child(size_type i);
+      right_child(size_type);
 
       inline static size_type
-      parent(size_type i);
+      parent(size_type);
 
       inline void
       resize_for_erase_if_needed();
 
       template<typename Pred>
       size_type
-      partition(Pred pred);
+      partition(Pred);
+
+      void
+      make_heap()
+      {
+	const entry_cmp& m_cmp = static_cast<entry_cmp&>(*this);
+	entry_pointer end = m_a_entries + m_size;
+	std::make_heap(m_a_entries, end, m_cmp);
+	_GLIBCXX_DEBUG_ASSERT(is_heap());
+      }
+
+      void
+      push_heap()
+      {
+	if (!is_heap())
+	  make_heap();
+	else
+	  {
+	    const entry_cmp& m_cmp = static_cast<entry_cmp&>(*this);
+	    entry_pointer end = m_a_entries + m_size;
+	    std::push_heap(m_a_entries, end, m_cmp);
+	  }
+      }
+
+      void
+      pop_heap()
+      {
+	const entry_cmp& m_cmp = static_cast<entry_cmp&>(*this);
+	entry_pointer end = m_a_entries + m_size;
+	std::pop_heap(m_a_entries, end, m_cmp);
+      }
+
+      bool
+      is_heap()
+      {
+	const entry_cmp& m_cmp = static_cast<entry_cmp&>(*this);
+	entry_pointer end = m_a_entries + m_size;
+	bool p = std::__is_heap(m_a_entries, end, m_cmp);
+	return p;
+      }
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid(const char* file, int line) const;
-#endif 
+      assert_valid(const char*, int) const;
+#endif
 
 #ifdef PB_DS_BINARY_HEAP_TRACE_
       void
-      trace_entry(const entry& r_e, false_type) const;
+      trace_entry(const entry&, false_type) const;
 
       void
-      trace_entry(const entry& r_e, true_type) const;
-#endif 
+      trace_entry(const entry&, true_type) const;
+#endif
 
-    private:
-      static entry_allocator s_entry_allocator;
+      static entry_allocator 	s_entry_allocator;
+      static value_allocator 	s_value_allocator;
+      static no_throw_copies_t 	s_no_throw_copies_ind;
 
-      static value_allocator s_value_allocator;
-
-      static no_throw_copies_t s_no_throw_copies_ind;
-
-      size_type m_size;
-
-      size_type m_actual_size;
-
-      entry_pointer m_a_entries;
+      size_type 		m_size;
+      size_type 		m_actual_size;
+      entry_pointer 		m_a_entries;
     };
+
+#define PB_DS_ASSERT_VALID(X) \
+  _GLIBCXX_DEBUG_ONLY(X.assert_valid(__FILE__, __LINE__);)
+
+#define PB_DS_DEBUG_VERIFY(_Cond)					\
+  _GLIBCXX_DEBUG_VERIFY_AT(_Cond,					\
+			   _M_message(#_Cond" assertion from %1;:%2;")	\
+			   ._M_string(__FILE__)._M_integer(__LINE__)	\
+			   ,__file,__line)
 
 #include <ext/pb_ds/detail/binary_heap_/insert_fn_imps.hpp>
 #include <ext/pb_ds/detail/binary_heap_/constructors_destructor_fn_imps.hpp>
@@ -354,4 +347,4 @@ namespace __gnu_pbds
   } // namespace detail
 } // namespace __gnu_pbds
 
-#endif 
+#endif

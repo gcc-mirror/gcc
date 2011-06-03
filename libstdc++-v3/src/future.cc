@@ -28,10 +28,10 @@ namespace
 {
   struct future_error_category : public std::error_category
   {
-    future_error_category() {}
+    future_error_category() noexcept {}
 
     virtual const char*
-    name() const 
+    name() const noexcept
     { return "future"; }
 
     virtual std::string message(int __ec) const
@@ -60,7 +60,7 @@ namespace
   };
 
   const future_error_category&
-  __future_category_instance()
+  __future_category_instance() noexcept
   {
     static const future_error_category __fec;
     return __fec;
@@ -71,13 +71,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  const error_category& future_category()
+  const error_category& future_category() noexcept
   { return __future_category_instance(); }
 
-  future_error::~future_error() throw() { }
+  future_error::~future_error() noexcept { }
 
-  const char* 
-  future_error::what() const throw() { return _M_code.message().c_str(); }
+  const char*
+  future_error::what() const noexcept { return _M_code.message().c_str(); }
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
   && defined(_GLIBCXX_ATOMIC_BUILTINS_4)

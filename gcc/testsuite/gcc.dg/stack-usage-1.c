@@ -2,7 +2,7 @@
 /* { dg-options "-fstack-usage" } */
 
 /* This is aimed at testing basic support for -fstack-usage in the back-ends.
-   See the SPARC back-end for an example (grep flag_stack_usage in sparc.c).
+   See the SPARC back-end for example (grep flag_stack_usage_info in sparc.c).
    Once it is implemented, adjust SIZE below so that the stack usage for the
    function FOO is reported as 256 or 264 in the stack usage (.su) file.
    Then check that this is the actual stack usage in the assembly file.  */

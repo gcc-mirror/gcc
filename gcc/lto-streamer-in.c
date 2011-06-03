@@ -132,19 +132,22 @@ eq_string_slot_node (const void *p1, const void *p2)
    IB.  Write the length to RLEN.  */
 
 static const char *
-input_string_internal (struct data_in *data_in, struct lto_input_block *ib,
-		       unsigned int *rlen)
+string_for_index (struct data_in *data_in,
+		  unsigned int loc,
+		  unsigned int *rlen)
 {
   struct lto_input_block str_tab;
   unsigned int len;
-  unsigned int loc;
   const char *result;
 
-  /* Read the location of the string from IB.  */
-  loc = lto_input_uleb128 (ib);
+  if (!loc)
+    {
+      *rlen = 0;
+      return NULL;
+    }
 
   /* Get the string stored at location LOC in DATA_IN->STRINGS.  */
-  LTO_INIT_INPUT_BLOCK (str_tab, data_in->strings, loc, data_in->strings_len);
+  LTO_INIT_INPUT_BLOCK (str_tab, data_in->strings, loc - 1, data_in->strings_len);
   len = lto_input_uleb128 (&str_tab);
   *rlen = len;
 
@@ -157,6 +160,17 @@ input_string_internal (struct data_in *data_in, struct lto_input_block *ib,
 }
 
 
+/* Read a string from the string table in DATA_IN using input block
+   IB.  Write the length to RLEN.  */
+
+static const char *
+input_string_internal (struct data_in *data_in, struct lto_input_block *ib,
+		       unsigned int *rlen)
+{
+  return string_for_index (data_in, lto_input_uleb128 (ib), rlen);
+}
+
+
 /* Read a STRING_CST from the string table in DATA_IN using input
    block IB.  */
 
@@ -165,13 +179,10 @@ input_string_cst (struct data_in *data_in, struct lto_input_block *ib)
 {
   unsigned int len;
   const char * ptr;
-  unsigned int is_null;
-
-  is_null = lto_input_uleb128 (ib);
-  if (is_null)
-    return NULL;
 
   ptr = input_string_internal (data_in, ib, &len);
+  if (!ptr)
+    return NULL;
   return build_string (len, ptr);
 }
 
@@ -184,13 +195,10 @@ input_identifier (struct data_in *data_in, struct lto_input_block *ib)
 {
   unsigned int len;
   const char *ptr;
-  unsigned int is_null;
-
-  is_null = lto_input_uleb128 (ib);
-  if (is_null)
-    return NULL;
 
   ptr = input_string_internal (data_in, ib, &len);
+  if (!ptr)
+    return NULL;
   return get_identifier_with_length (ptr, len);
 }
 
@@ -215,13 +223,10 @@ lto_input_string (struct data_in *data_in, struct lto_input_block *ib)
 {
   unsigned int len;
   const char *ptr;
-  unsigned int is_null;
-
-  is_null = lto_input_uleb128 (ib);
-  if (is_null)
-    return NULL;
 
   ptr = input_string_internal (data_in, ib, &len);
+  if (!ptr)
+    return NULL;
   if (ptr[len - 1] != '\0')
     internal_error ("bytecode stream: found non-null terminated string");
 
@@ -231,11 +236,10 @@ lto_input_string (struct data_in *data_in, struct lto_input_block *ib)
 
 /* Return the next tag in the input block IB.  */
 
-static enum LTO_tags
+static inline enum LTO_tags
 input_record_start (struct lto_input_block *ib)
 {
-  enum LTO_tags tag = (enum LTO_tags) lto_input_uleb128 (ib);
-  return tag;
+  return lto_input_enum (ib, LTO_tags, LTO_NUM_TAGS);
 }
 
 
@@ -285,37 +289,57 @@ clear_line_info (struct data_in *data_in)
 }
 
 
+/* Read a location bitpack from input block IB.  */
+
+static location_t
+lto_input_location_bitpack (struct data_in *data_in, struct bitpack_d *bp)
+{
+  bool file_change, line_change, column_change;
+  unsigned len;
+  bool prev_file = data_in->current_file != NULL;
+
+  if (bp_unpack_value (bp, 1))
+    return UNKNOWN_LOCATION;
+
+  file_change = bp_unpack_value (bp, 1);
+  if (file_change)
+    data_in->current_file = canon_file_name
+			      (string_for_index (data_in,
+						 bp_unpack_var_len_unsigned (bp),
+					         &len));
+
+  line_change = bp_unpack_value (bp, 1);
+  if (line_change)
+    data_in->current_line = bp_unpack_var_len_unsigned (bp);
+
+  column_change = bp_unpack_value (bp, 1);
+  if (column_change)
+    data_in->current_col = bp_unpack_var_len_unsigned (bp);
+
+  if (file_change)
+    {
+      if (prev_file)
+	linemap_add (line_table, LC_LEAVE, false, NULL, 0);
+
+      linemap_add (line_table, LC_ENTER, false, data_in->current_file,
+		   data_in->current_line);
+    }
+  else if (line_change)
+    linemap_line_start (line_table, data_in->current_line, data_in->current_col);
+
+  return linemap_position_for_column (line_table, data_in->current_col);
+}
+
+
 /* Read a location from input block IB.  */
 
 static location_t
 lto_input_location (struct lto_input_block *ib, struct data_in *data_in)
 {
-  expanded_location xloc;
+  struct bitpack_d bp;
 
-  xloc.file = lto_input_string (data_in, ib);
-  if (xloc.file == NULL)
-    return UNKNOWN_LOCATION;
-
-  xloc.file = canon_file_name (xloc.file);
-  xloc.line = lto_input_sleb128 (ib);
-  xloc.column = lto_input_sleb128 (ib);
-  xloc.sysp = lto_input_sleb128 (ib);
-
-  if (data_in->current_file != xloc.file)
-    {
-      if (data_in->current_file)
-	linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-
-      linemap_add (line_table, LC_ENTER, xloc.sysp, xloc.file, xloc.line);
-    }
-  else if (data_in->current_line != xloc.line)
-    linemap_line_start (line_table, xloc.line, xloc.column);
-
-  data_in->current_file = xloc.file;
-  data_in->current_line = xloc.line;
-  data_in->current_col = xloc.column;
-
-  return linemap_position_for_column (line_table, xloc.column);
+  bp = lto_input_bitpack (ib);
+  return lto_input_location_bitpack (data_in, &bp);
 }
 
 
@@ -774,8 +798,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
   init_empty_tree_cfg_for_function (fn);
   init_ssa_operands ();
 
-  profile_status_for_function (fn) =
-    (enum profile_status_d) lto_input_uleb128 (ib);
+  profile_status_for_function (fn) = lto_input_enum (ib, profile_status_d, PROFILE_LAST);
 
   bb_count = lto_input_uleb128 (ib);
 
@@ -936,13 +959,13 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 
   /* Read the tuple header.  */
   bp = lto_input_bitpack (ib);
-  num_ops = bp_unpack_value (&bp, sizeof (unsigned) * 8);
+  num_ops = bp_unpack_var_len_unsigned (&bp);
   stmt = gimple_alloc (code, num_ops);
   stmt->gsbase.no_warning = bp_unpack_value (&bp, 1);
   if (is_gimple_assign (stmt))
     stmt->gsbase.nontemporal_move = bp_unpack_value (&bp, 1);
   stmt->gsbase.has_volatile_ops = bp_unpack_value (&bp, 1);
-  stmt->gsbase.subcode = bp_unpack_value (&bp, 16);
+  stmt->gsbase.subcode = bp_unpack_var_len_unsigned (&bp);
 
   /* Read location information.  */
   gimple_set_location (stmt, lto_input_location (ib, data_in));
@@ -1066,7 +1089,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	{
 	  if (gimple_call_internal_p (stmt))
 	    gimple_call_set_internal_fn
-	      (stmt, (enum internal_fn) lto_input_sleb128 (ib));
+	      (stmt, lto_input_enum (ib, internal_fn, IFN_LAST));
 	  else
 	    gimple_call_set_fntype (stmt, lto_input_tree (ib, data_in));
 	}
@@ -1614,9 +1637,9 @@ unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
   struct fixed_value fv;
 
-  fv.data.low = (HOST_WIDE_INT) bp_unpack_value (bp, HOST_BITS_PER_WIDE_INT);
-  fv.data.high = (HOST_WIDE_INT) bp_unpack_value (bp, HOST_BITS_PER_WIDE_INT);
-  fv.mode = (enum machine_mode) bp_unpack_value (bp, HOST_BITS_PER_INT);
+  fv.mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
+  fv.data.low = bp_unpack_var_len_int (bp);
+  fv.data.high = bp_unpack_var_len_int (bp);
   TREE_FIXED_CST (expr) = fv;
 }
 
@@ -1627,7 +1650,7 @@ unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 {
-  DECL_MODE (expr) = (enum machine_mode) bp_unpack_value (bp, 8);
+  DECL_MODE (expr) = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
   DECL_NONLOCAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_VIRTUAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IGNORED_P (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -1638,12 +1661,12 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DEBUG_EXPR_IS_FROM (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_EXTERNAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_GIMPLE_REG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_ALIGN (expr) = (unsigned) bp_unpack_value (bp, HOST_BITS_PER_INT);
+  DECL_ALIGN (expr) = (unsigned) bp_unpack_var_len_unsigned (bp);
 
   if (TREE_CODE (expr) == LABEL_DECL)
     {
       DECL_ERROR_ISSUED (expr) = (unsigned) bp_unpack_value (bp, 1);
-      EH_LANDING_PAD_NR (expr) = (int) bp_unpack_value (bp, HOST_BITS_PER_INT);
+      EH_LANDING_PAD_NR (expr) = (int) bp_unpack_var_len_unsigned (bp);
 
       /* Always assume an initial value of -1 for LABEL_DECL_UID to
 	 force gimple_set_bb to recreate label_to_block_map.  */
@@ -1706,7 +1729,7 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
   if (VAR_OR_FUNCTION_DECL_P (expr))
     {
       priority_type p;
-      p = (priority_type) bp_unpack_value (bp, HOST_BITS_PER_SHORT);
+      p = (priority_type) bp_unpack_var_len_unsigned (bp);
       SET_DECL_INIT_PRIORITY (expr, p);
     }
 }
@@ -1718,8 +1741,8 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 {
-  DECL_FUNCTION_CODE (expr) = (enum built_in_function) bp_unpack_value (bp, 11);
-  DECL_BUILT_IN_CLASS (expr) = (enum built_in_class) bp_unpack_value (bp, 2);
+  DECL_BUILT_IN_CLASS (expr) = bp_unpack_enum (bp, built_in_class,
+					       BUILT_IN_LAST);
   DECL_STATIC_CONSTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_STATIC_DESTRUCTOR (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_UNINLINABLE (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -1737,10 +1760,24 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_DISREGARD_INLINE_LIMITS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_LOOPING_CONST_OR_PURE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (DECL_BUILT_IN_CLASS (expr) != NOT_BUILT_IN)
+    {
+      DECL_FUNCTION_CODE (expr) = (enum built_in_function) bp_unpack_value (bp, 11);
+      if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
+	  && DECL_FUNCTION_CODE (expr) >= END_BUILTINS)
+	fatal_error ("machine independent builtin code out of range");
+      else if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD)
+	{
+          tree result = targetm.builtin_decl (DECL_FUNCTION_CODE (expr), true);
+	  if (!result || result == error_mark_node)
+	    fatal_error ("target specific builtin not available");
+	}
+    }
   if (DECL_STATIC_DESTRUCTOR (expr))
     {
-       priority_type p = (priority_type) bp_unpack_value (bp, HOST_BITS_PER_SHORT);
-       SET_DECL_FINI_PRIORITY (expr, p);
+      priority_type p;
+      p = (priority_type) bp_unpack_var_len_unsigned (bp);
+      SET_DECL_FINI_PRIORITY (expr, p);
     }
 }
 
@@ -1753,8 +1790,7 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
   enum machine_mode mode;
 
-  TYPE_PRECISION (expr) = (unsigned) bp_unpack_value (bp, 10);
-  mode = (enum machine_mode) bp_unpack_value (bp, 8);
+  mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
   SET_TYPE_MODE (expr, mode);
   TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_NO_FORCE_BLK (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -1767,8 +1803,9 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     	= (unsigned) bp_unpack_value (bp, 2);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_ALIGN (expr) = (unsigned) bp_unpack_value (bp, HOST_BITS_PER_INT);
-  TYPE_ALIAS_SET (expr) = bp_unpack_value (bp, HOST_BITS_PER_INT);
+  TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
+  TYPE_ALIGN (expr) = bp_unpack_var_len_unsigned (bp);
+  TYPE_ALIAS_SET (expr) = bp_unpack_var_len_int (bp);
 }
 
 
@@ -1779,7 +1816,7 @@ static void
 unpack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
 {
   BLOCK_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
-  BLOCK_NUMBER (expr) = (unsigned) bp_unpack_value (bp, 31);
+  /* BLOCK_NUMBER is recomputed.  */
 }
 
 /* Unpack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL
@@ -2558,7 +2595,7 @@ lto_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
   enum LTO_tags expected_tag;
 
   ix = lto_input_uleb128 (ib);
-  expected_tag = (enum LTO_tags) lto_input_uleb128 (ib);
+  expected_tag = lto_input_enum (ib, LTO_tags, LTO_NUM_TAGS);
 
   result = lto_streamer_cache_get (data_in->reader_cache, ix);
   gcc_assert (result
@@ -2579,14 +2616,15 @@ lto_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
   const char *asmname;
   tree result;
 
-  fclass = (enum built_in_class) lto_input_uleb128 (ib);
+  fclass = lto_input_enum (ib, built_in_class, BUILT_IN_LAST);
   gcc_assert (fclass == BUILT_IN_NORMAL || fclass == BUILT_IN_MD);
 
   fcode = (enum built_in_function) lto_input_uleb128 (ib);
 
   if (fclass == BUILT_IN_NORMAL)
     {
-      gcc_assert (fcode < END_BUILTINS);
+      if (fcode >= END_BUILTINS)
+	fatal_error ("machine independent builtin code out of range");
       result = built_in_decls[fcode];
       gcc_assert (result);
     }

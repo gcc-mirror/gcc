@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file insert_fn_imps.hpp
+ * @file splay_tree_/insert_fn_imps.hpp
  * Contains an implementation class for splay_tree_.
  */
 
@@ -90,5 +90,5 @@ insert_leaf_imp(const_reference r_value)
   while (p_nd->m_p_right != 0)
     p_nd = p_nd->m_p_right;
 
-  return std::make_pair(insert_leaf_new(r_value, p_nd, false), true);
+  return std::make_pair(this->insert_leaf_new(r_value, p_nd, false), true);
 }

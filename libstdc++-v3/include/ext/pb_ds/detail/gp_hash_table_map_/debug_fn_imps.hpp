@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file debug_fn_imps.hpp
+ * @file gp_hash_table_map_/debug_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s debug-mode functions.
  */
 

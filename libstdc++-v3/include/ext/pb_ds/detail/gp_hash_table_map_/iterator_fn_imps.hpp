@@ -34,9 +34,9 @@
 // warranty.
 
 /**
- * @file iterator_fn_imps.hpp
+ * @file gp_hash_table_map_/iterator_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s iterators related functions, e.g.,
- *    begin().
+ * begin().
  */
 
 PB_DS_CLASS_T_DEC

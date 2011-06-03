@@ -390,52 +390,48 @@ Loop:
 // TODO(rsc): Move into generic library?
 // Pack a reflect.StructValue into msg.  Struct members can only be uint16, uint32, string,
 // [n]byte, and other (often anonymous) structs.
-func packStructValue(val *reflect.StructValue, msg []byte, off int) (off1 int, ok bool) {
+func packStructValue(val reflect.Value, msg []byte, off int) (off1 int, ok bool) {
 	for i := 0; i < val.NumField(); i++ {
-		f := val.Type().(*reflect.StructType).Field(i)
-		switch fv := val.Field(i).(type) {
+		f := val.Type().Field(i)
+		switch fv := val.Field(i); fv.Kind() {
 		default:
 		BadType:
 			fmt.Fprintf(os.Stderr, "net: dns: unknown packing type %v", f.Type)
 			return len(msg), false
-		case *reflect.StructValue:
+		case reflect.Struct:
 			off, ok = packStructValue(fv, msg, off)
-		case *reflect.UintValue:
-			i := fv.Get()
-			switch fv.Type().Kind() {
-			default:
-				goto BadType
-			case reflect.Uint16:
-				if off+2 > len(msg) {
-					return len(msg), false
-				}
-				msg[off] = byte(i >> 8)
-				msg[off+1] = byte(i)
-				off += 2
-			case reflect.Uint32:
-				if off+4 > len(msg) {
-					return len(msg), false
-				}
-				msg[off] = byte(i >> 24)
-				msg[off+1] = byte(i >> 16)
-				msg[off+2] = byte(i >> 8)
-				msg[off+3] = byte(i)
-				off += 4
+		case reflect.Uint16:
+			if off+2 > len(msg) {
+				return len(msg), false
 			}
-		case *reflect.ArrayValue:
-			if fv.Type().(*reflect.ArrayType).Elem().Kind() != reflect.Uint8 {
+			i := fv.Uint()
+			msg[off] = byte(i >> 8)
+			msg[off+1] = byte(i)
+			off += 2
+		case reflect.Uint32:
+			if off+4 > len(msg) {
+				return len(msg), false
+			}
+			i := fv.Uint()
+			msg[off] = byte(i >> 24)
+			msg[off+1] = byte(i >> 16)
+			msg[off+2] = byte(i >> 8)
+			msg[off+3] = byte(i)
+			off += 4
+		case reflect.Array:
+			if fv.Type().Elem().Kind() != reflect.Uint8 {
 				goto BadType
 			}
 			n := fv.Len()
 			if off+n > len(msg) {
 				return len(msg), false
 			}
-			reflect.Copy(reflect.NewValue(msg[off:off+n]).(*reflect.SliceValue), fv)
+			reflect.Copy(reflect.ValueOf(msg[off:off+n]), fv)
 			off += n
-		case *reflect.StringValue:
+		case reflect.String:
 			// There are multiple string encodings.
 			// The tag distinguishes ordinary strings from domain names.
-			s := fv.Get()
+			s := fv.String()
 			switch f.Tag {
 			default:
 				fmt.Fprintf(os.Stderr, "net: dns: unknown string tag %v", f.Tag)
@@ -459,8 +455,8 @@ func packStructValue(val *reflect.StructValue, msg []byte, off int) (off1 int, o
 	return off, true
 }
 
-func structValue(any interface{}) *reflect.StructValue {
-	return reflect.NewValue(any).(*reflect.PtrValue).Elem().(*reflect.StructValue)
+func structValue(any interface{}) reflect.Value {
+	return reflect.ValueOf(any).Elem()
 }
 
 func packStruct(any interface{}, msg []byte, off int) (off1 int, ok bool) {
@@ -471,46 +467,41 @@ func packStruct(any interface{}, msg []byte, off int) (off1 int, ok bool) {
 // TODO(rsc): Move into generic library?
 // Unpack a reflect.StructValue from msg.
 // Same restrictions as packStructValue.
-func unpackStructValue(val *reflect.StructValue, msg []byte, off int) (off1 int, ok bool) {
+func unpackStructValue(val reflect.Value, msg []byte, off int) (off1 int, ok bool) {
 	for i := 0; i < val.NumField(); i++ {
-		f := val.Type().(*reflect.StructType).Field(i)
-		switch fv := val.Field(i).(type) {
+		f := val.Type().Field(i)
+		switch fv := val.Field(i); fv.Kind() {
 		default:
 		BadType:
 			fmt.Fprintf(os.Stderr, "net: dns: unknown packing type %v", f.Type)
 			return len(msg), false
-		case *reflect.StructValue:
+		case reflect.Struct:
 			off, ok = unpackStructValue(fv, msg, off)
-		case *reflect.UintValue:
-			switch fv.Type().Kind() {
-			default:
-				goto BadType
-			case reflect.Uint16:
-				if off+2 > len(msg) {
-					return len(msg), false
-				}
-				i := uint16(msg[off])<<8 | uint16(msg[off+1])
-				fv.Set(uint64(i))
-				off += 2
-			case reflect.Uint32:
-				if off+4 > len(msg) {
-					return len(msg), false
-				}
-				i := uint32(msg[off])<<24 | uint32(msg[off+1])<<16 | uint32(msg[off+2])<<8 | uint32(msg[off+3])
-				fv.Set(uint64(i))
-				off += 4
+		case reflect.Uint16:
+			if off+2 > len(msg) {
+				return len(msg), false
 			}
-		case *reflect.ArrayValue:
-			if fv.Type().(*reflect.ArrayType).Elem().Kind() != reflect.Uint8 {
+			i := uint16(msg[off])<<8 | uint16(msg[off+1])
+			fv.SetUint(uint64(i))
+			off += 2
+		case reflect.Uint32:
+			if off+4 > len(msg) {
+				return len(msg), false
+			}
+			i := uint32(msg[off])<<24 | uint32(msg[off+1])<<16 | uint32(msg[off+2])<<8 | uint32(msg[off+3])
+			fv.SetUint(uint64(i))
+			off += 4
+		case reflect.Array:
+			if fv.Type().Elem().Kind() != reflect.Uint8 {
 				goto BadType
 			}
 			n := fv.Len()
 			if off+n > len(msg) {
 				return len(msg), false
 			}
-			reflect.Copy(fv, reflect.NewValue(msg[off:off+n]).(*reflect.SliceValue))
+			reflect.Copy(fv, reflect.ValueOf(msg[off:off+n]))
 			off += n
-		case *reflect.StringValue:
+		case reflect.String:
 			var s string
 			switch f.Tag {
 			default:
@@ -534,7 +525,7 @@ func unpackStructValue(val *reflect.StructValue, msg []byte, off int) (off1 int,
 				off += n
 				s = string(b)
 			}
-			fv.Set(s)
+			fv.SetString(s)
 		}
 	}
 	return off, true
@@ -550,23 +541,23 @@ func unpackStruct(any interface{}, msg []byte, off int) (off1 int, ok bool) {
 // but does look for an "ipv4" tag on uint32 variables
 // and the "ipv6" tag on array variables,
 // printing them as IP addresses.
-func printStructValue(val *reflect.StructValue) string {
+func printStructValue(val reflect.Value) string {
 	s := "{"
 	for i := 0; i < val.NumField(); i++ {
 		if i > 0 {
 			s += ", "
 		}
-		f := val.Type().(*reflect.StructType).Field(i)
+		f := val.Type().Field(i)
 		if !f.Anonymous {
 			s += f.Name + "="
 		}
 		fval := val.Field(i)
-		if fv, ok := fval.(*reflect.StructValue); ok {
+		if fv := fval; fv.Kind() == reflect.Struct {
 			s += printStructValue(fv)
-		} else if fv, ok := fval.(*reflect.UintValue); ok && f.Tag == "ipv4" {
-			i := fv.Get()
+		} else if fv := fval; (fv.Kind() == reflect.Uint || fv.Kind() == reflect.Uint8 || fv.Kind() == reflect.Uint16 || fv.Kind() == reflect.Uint32 || fv.Kind() == reflect.Uint64 || fv.Kind() == reflect.Uintptr) && f.Tag == "ipv4" {
+			i := fv.Uint()
 			s += IPv4(byte(i>>24), byte(i>>16), byte(i>>8), byte(i)).String()
-		} else if fv, ok := fval.(*reflect.ArrayValue); ok && f.Tag == "ipv6" {
+		} else if fv := fval; fv.Kind() == reflect.Array && f.Tag == "ipv6" {
 			i := fv.Interface().([]byte)
 			s += IP(i).String()
 		} else {
@@ -724,24 +715,35 @@ func (dns *dnsMsg) Unpack(msg []byte) bool {
 
 	// Arrays.
 	dns.question = make([]dnsQuestion, dh.Qdcount)
-	dns.answer = make([]dnsRR, dh.Ancount)
-	dns.ns = make([]dnsRR, dh.Nscount)
-	dns.extra = make([]dnsRR, dh.Arcount)
+	dns.answer = make([]dnsRR, 0, dh.Ancount)
+	dns.ns = make([]dnsRR, 0, dh.Nscount)
+	dns.extra = make([]dnsRR, 0, dh.Arcount)
+
+	var rec dnsRR
 
 	for i := 0; i < len(dns.question); i++ {
 		off, ok = unpackStruct(&dns.question[i], msg, off)
 	}
-	for i := 0; i < len(dns.answer); i++ {
-		dns.answer[i], off, ok = unpackRR(msg, off)
+	for i := 0; i < int(dh.Ancount); i++ {
+		rec, off, ok = unpackRR(msg, off)
+		if !ok {
+			return false
+		}
+		dns.answer = append(dns.answer, rec)
 	}
-	for i := 0; i < len(dns.ns); i++ {
-		dns.ns[i], off, ok = unpackRR(msg, off)
+	for i := 0; i < int(dh.Nscount); i++ {
+		rec, off, ok = unpackRR(msg, off)
+		if !ok {
+			return false
+		}
+		dns.ns = append(dns.ns, rec)
 	}
-	for i := 0; i < len(dns.extra); i++ {
-		dns.extra[i], off, ok = unpackRR(msg, off)
-	}
-	if !ok {
-		return false
+	for i := 0; i < int(dh.Arcount); i++ {
+		rec, off, ok = unpackRR(msg, off)
+		if !ok {
+			return false
+		}
+		dns.extra = append(dns.extra, rec)
 	}
 	//	if off != len(msg) {
 	//		println("extra bytes in dns packet", off, "<", len(msg));

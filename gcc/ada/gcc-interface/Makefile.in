@@ -180,7 +180,7 @@ LIBINTL_DEP = @LIBINTL_DEP@
 SYSLIBS = @GNAT_LIBEXC@
 
 # List of extra object files linked in with various programs.
-EXTRA_GNATTOOLS_OBJS = ../../prefix.o ../../version.o
+EXTRA_GNATTOOLS_OBJS = ../../libcommon-target.a ../../libcommon.a
 
 # List extra gnattools
 EXTRA_GNATTOOLS =

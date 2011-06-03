@@ -1580,7 +1580,7 @@ static tree cp_parser_lambda_expression
   (cp_parser *);
 static void cp_parser_lambda_introducer
   (cp_parser *, tree);
-static void cp_parser_lambda_declarator_opt
+static bool cp_parser_lambda_declarator_opt
   (cp_parser *, tree);
 static void cp_parser_lambda_body
   (cp_parser *, tree);
@@ -2534,7 +2534,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 		  "%qT is a dependent scope",
 		  parser->scope, id, parser->scope);
       else if (TYPE_P (parser->scope))
-	error_at (location, "%qE in class %qT does not name a type",
+	error_at (location, "%qE in %q#T does not name a type",
 		  id, parser->scope);
       else
 	gcc_unreachable ();
@@ -4069,7 +4069,8 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
 		!= CPP_LESS)
 	    && (token->u.value == TYPE_IDENTIFIER (scope)
-		|| constructor_name_p (token->u.value, scope)))
+		|| (CLASS_TYPE_P (scope)
+		    && constructor_name_p (token->u.value, scope))))
 	  {
 	    cp_lexer_consume_token (parser->lexer);
 	    return build_nt (BIT_NOT_EXPR, scope);
@@ -5019,7 +5020,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			if (!any_type_dependent_arguments_p (args))
 			  postfix_expression
 			    = perform_koenig_lookup (postfix_expression, args,
-						     /*include_std=*/false);
+						     /*include_std=*/false,
+						     tf_warning_or_error);
 		      }
 		    else
 		      postfix_expression
@@ -5044,7 +5046,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			if (!any_type_dependent_arguments_p (args))
 			  postfix_expression
 			    = perform_koenig_lookup (postfix_expression, args,
-						     /*include_std=*/false);
+						     /*include_std=*/false,
+						     tf_warning_or_error);
 		      }
 		  }
 	      }
@@ -5639,6 +5642,11 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
 
   /* Look for the `~'.  */
   cp_parser_require (parser, CPP_COMPL, RT_COMPL);
+
+  /* Once we see the ~, this has to be a pseudo-destructor.  */
+  if (!processing_template_decl && !cp_parser_error_occurred (parser))
+    cp_parser_commit_to_tentative_parse (parser);
+
   /* Look for the type-name again.  We are not responsible for
      checking that it matches the first type-name.  */
   *type = cp_parser_nonclass_name (parser);
@@ -7339,6 +7347,7 @@ cp_parser_lambda_expression (cp_parser* parser)
 {
   tree lambda_expr = build_lambda_expr ();
   tree type;
+  bool ok;
 
   LAMBDA_EXPR_LOCATION (lambda_expr)
     = cp_lexer_peek_token (parser->lexer)->location;
@@ -7374,9 +7383,12 @@ cp_parser_lambda_expression (cp_parser* parser)
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
-    cp_parser_lambda_declarator_opt (parser, lambda_expr);
+    ok = cp_parser_lambda_declarator_opt (parser, lambda_expr);
 
-    cp_parser_lambda_body (parser, lambda_expr);
+    if (ok)
+      cp_parser_lambda_body (parser, lambda_expr);
+    else if (cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
+      cp_parser_skip_to_end_of_block_or_statement (parser);
 
     /* The capture list was built up in reverse order; fix that now.  */
     {
@@ -7410,7 +7422,8 @@ cp_parser_lambda_expression (cp_parser* parser)
       LAMBDA_EXPR_CAPTURE_LIST (lambda_expr) = newlist;
     }
 
-    maybe_add_lambda_conv_op (type);
+    if (ok)
+      maybe_add_lambda_conv_op (type);
 
     type = finish_struct (type, /*attributes=*/NULL_TREE);
 
@@ -7419,7 +7432,10 @@ cp_parser_lambda_expression (cp_parser* parser)
 
   pop_deferring_access_checks ();
 
-  return build_lambda_object (lambda_expr);
+  if (ok)
+    return build_lambda_object (lambda_expr);
+  else
+    return error_mark_node;
 }
 
 /* Parse the beginning of a lambda expression.
@@ -7584,7 +7600,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
    LAMBDA_EXPR is the current representation of the lambda expression.  */
 
-static void
+static bool
 cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 {
   /* 5.1.1.4 of the standard says:
@@ -7680,12 +7696,17 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     fco = grokmethod (&return_type_specs,
 		      declarator,
 		      attributes);
-    DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
-    DECL_ARTIFICIAL (fco) = 1;
+    if (fco != error_mark_node)
+      {
+	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
+	DECL_ARTIFICIAL (fco) = 1;
+      }
 
     finish_member_declaration (fco);
 
     obstack_free (&declarator_obstack, p);
+
+    return (fco != error_mark_node);
   }
 }
 
@@ -8741,11 +8762,13 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 	  VEC_safe_push (tree, gc, vec, range);
 
 	  member_begin = perform_koenig_lookup (id_begin, vec,
-						/*include_std=*/true);
+						/*include_std=*/true,
+						tf_warning_or_error);
 	  *begin = finish_call_expr (member_begin, &vec, false, true,
 				     tf_warning_or_error);
 	  member_end = perform_koenig_lookup (id_end, vec,
-					      /*include_std=*/true);
+					      /*include_std=*/true,
+					      tf_warning_or_error);
 	  *end = finish_call_expr (member_end, &vec, false, true,
 				   tf_warning_or_error);
 
@@ -14897,6 +14920,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      parser->num_template_parameter_lists
 		= saved_num_template_parameter_lists;
 
+	      /* Consume the `)'.  */
+	      cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+
 	      /* If all went well, parse the cv-qualifier-seq and the
 		 exception-specification.  */
 	      if (member_p || cp_parser_parse_definitely (parser))
@@ -14911,8 +14937,6 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  if (ctor_dtor_or_conv_p)
 		    *ctor_dtor_or_conv_p = *ctor_dtor_or_conv_p < 0;
 		  first = false;
-		  /* Consume the `)'.  */
-		  cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 
 		  /* Parse the cv-qualifier-seq.  */
 		  cv_quals = cp_parser_cv_qualifier_seq_opt (parser);
@@ -16049,6 +16073,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	     of some object of type "char" to "int".  */
 	  && !parser->in_type_id_in_expr_p
 	  && cp_parser_uncommitted_to_tentative_parse_p (parser)
+	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
 	cp_parser_commit_to_tentative_parse (parser);
       /* Parse the declarator.  */
@@ -17752,9 +17777,10 @@ cp_parser_member_declaration (cp_parser* parser)
 	    {
 	      /* If the `friend' keyword was present, the friend must
 		 be introduced with a class-key.  */
-	       if (!declares_class_or_enum)
-		 error_at (decl_spec_token_start->location,
-			   "a class-key must be used when declaring a friend");
+	       if (!declares_class_or_enum && cxx_dialect < cxx0x)
+		 pedwarn (decl_spec_token_start->location, OPT_pedantic,
+			  "in C++03 a class-key must be used "
+			  "when declaring a friend");
 	       /* In this case:
 
 		    template <typename T> struct A {
@@ -17763,10 +17789,12 @@ cp_parser_member_declaration (cp_parser* parser)
 
 		  A<T>::B will be represented by a TYPENAME_TYPE, and
 		  therefore not recognized by check_tag_decl.  */
-	       if (!type
-		   && decl_specifiers.type
-		   && TYPE_P (decl_specifiers.type))
-		 type = decl_specifiers.type;
+	       if (!type)
+		 {
+		   type = decl_specifiers.type;
+		   if (type && TREE_CODE (type) == TYPE_DECL)
+		     type = TREE_TYPE (type);
+		 }
 	       if (!type || !TYPE_P (type))
 		 error_at (decl_spec_token_start->location,
 			   "friend declaration does not name a class or "
@@ -19585,7 +19613,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
   /* If we have a class scope, this is easy; DR 147 says that S::S always
      names the constructor, and no other qualified name could.  */
   if (constructor_p && nested_name_specifier
-      && TYPE_P (nested_name_specifier))
+      && CLASS_TYPE_P (nested_name_specifier))
     {
       tree id = cp_parser_unqualified_id (parser,
 					  /*template_keyword_p=*/false,
@@ -22490,7 +22518,8 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 			      NULL_TREE, attributes);
 
 	  /* Add the instance variable.  */
-	  objc_add_instance_variable (decl);
+	  if (decl != error_mark_node && decl != NULL_TREE)
+	    objc_add_instance_variable (decl);
 
 	  /* Reset PREFIX_ATTRIBUTES.  */
 	  while (attributes && TREE_CHAIN (attributes) != first_attribute)

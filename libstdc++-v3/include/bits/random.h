@@ -1544,12 +1544,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif
 
-    result_type
-    min() const
+    static constexpr result_type
+    min()
     { return std::numeric_limits<result_type>::min(); }
 
-    result_type
-    max() const
+    static constexpr result_type
+    max()
     { return std::numeric_limits<result_type>::max(); }
 
     double

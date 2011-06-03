@@ -35,7 +35,7 @@
 // warranty.
 
 /**
- * @file constructors_destructor_fn_imps.hpp
+ * @file bin_search_tree_/constructors_destructor_fn_imps.hpp
  * Contains an implementation class for bin_search_tree_.
  */
 
@@ -45,7 +45,7 @@ PB_DS_CLASS_C_DEC::s_node_allocator;
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME() : m_p_head(s_node_allocator.allocate(1)), m_size(0)
+PB_DS_BIN_TREE_NAME() : m_p_head(s_node_allocator.allocate(1)), m_size(0)
 {
   initialize();
   PB_DS_STRUCT_ONLY_ASSERT_VALID((*this))
@@ -53,7 +53,7 @@ PB_DS_CLASS_NAME() : m_p_head(s_node_allocator.allocate(1)), m_size(0)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn) :
+PB_DS_BIN_TREE_NAME(const Cmp_Fn& r_cmp_fn) :
   Cmp_Fn(r_cmp_fn), m_p_head(s_node_allocator.allocate(1)), m_size(0)
 {
   initialize();
@@ -62,7 +62,7 @@ PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn) :
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update) :
+PB_DS_BIN_TREE_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update) :
   Cmp_Fn(r_cmp_fn),
   node_update(r_node_update),
   m_p_head(s_node_allocator.allocate(1)),
@@ -74,7 +74,7 @@ PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update) :
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
+PB_DS_BIN_TREE_NAME(const PB_DS_CLASS_C_DEC& other) :
 #ifdef _GLIBCXX_DEBUG
   debug_base(other),
 #endif 
@@ -132,7 +132,7 @@ value_swap(PB_DS_CLASS_C_DEC& other)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-~PB_DS_CLASS_NAME()
+~PB_DS_BIN_TREE_NAME()
 {
   clear();
   s_node_allocator.deallocate(m_p_head, 1);

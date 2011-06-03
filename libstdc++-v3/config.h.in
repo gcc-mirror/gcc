@@ -380,6 +380,9 @@
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
+/* Define to 1 if you have the <sys/sysinfo.h> header file. */
+#undef HAVE_SYS_SYSINFO_H
+
 /* Define to 1 if you have the <sys/time.h> header file. */
 #undef HAVE_SYS_TIME_H
 
@@ -792,6 +795,9 @@
 /* Defined if gettimeofday is available. */
 #undef _GLIBCXX_USE_GETTIMEOFDAY
 
+/* Define if get_nprocs is available in <sys/sysinfo.h>. */
+#undef _GLIBCXX_USE_GET_NPROCS
+
 /* Define if LFS support is available. */
 #undef _GLIBCXX_USE_LFS
 
@@ -810,6 +816,9 @@
 
 /* Defined if sched_yield is available. */
 #undef _GLIBCXX_USE_SCHED_YIELD
+
+/* Define if _SC_NPROCESSORS_ONLN is available in <unistd.h>. */
+#undef _GLIBCXX_USE_SC_NPROCESSORS_ONLN
 
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T

@@ -53,35 +53,35 @@ namespace __gnu_pbds
 	{ return (static_cast<size_t>(i)); }
       };
 
-      template<typename Key, typename Allocator = std::allocator<char> >
+      template<typename Key, typename _Alloc = std::allocator<char> >
       struct hash_set_tl_t
       {
 	typedef
         typename __gnu_pbds::test::hash_common_types<
 	  Key,
-	  __gnu_pbds::null_mapped_type,
+	  __gnu_pbds::null_type,
 	  int_hash,
 	  std::equal_to<Key>,
-	  Allocator>::performance_min_tl
+	  _Alloc>::performance_min_tl
         type;
       };
 
-      template<typename Key, typename Allocator = std::allocator<char> >
+      template<typename Key, typename _Alloc = std::allocator<char> >
       struct lu_set_tl_t
       {
 	typedef
         typename __gnu_pbds::test::lu_common_types<
 	  Key,
-	  __gnu_pbds::null_mapped_type,
+	  __gnu_pbds::null_type,
 	  std::equal_to<
 	  Key>,
-	  Allocator>::performance_min_tl
+	  _Alloc>::performance_min_tl
         type;
       };
 
       template<typename Key,
 	       class Sec_Tl,
-	       typename Allocator = std::allocator<char> >
+	       typename _Alloc = std::allocator<char> >
       struct hash_mmap_tl_t
       {
       private:
@@ -104,7 +104,7 @@ namespace __gnu_pbds
 	    hash_fn_t,
 	    std::equal_to<
 	    Key>,
-	    Allocator>::performance_min_tl
+	    _Alloc>::performance_min_tl
 	  type;
 	};
 
@@ -119,7 +119,7 @@ namespace __gnu_pbds
 
       template<typename Key,
 	       class Sec_Tl,
-	       typename Allocator = std::allocator<char> >
+	       typename _Alloc = std::allocator<char> >
       struct tree_mmap_tl_t
       {
       private:
@@ -132,8 +132,8 @@ namespace __gnu_pbds
 	    Cntnr_T,
 	    std::less<
 	    Key>,
-	    __gnu_pbds::null_tree_node_update,
-	    Allocator>::performance_min_tl
+	    __gnu_pbds::null_node_update,
+	    _Alloc>::performance_min_tl
 	  type;
 	};
 
@@ -146,65 +146,65 @@ namespace __gnu_pbds
         type;
       };
 
-      template<typename Key, typename Mapped, typename Allocator>
+      template<typename Key, typename Mapped, typename _Alloc>
       struct hash_hash_mmap_tl_t
       {
       private:
-	typedef typename hash_set_tl_t<Mapped, Allocator>::type sec_tl_t;
+	typedef typename hash_set_tl_t<Mapped, _Alloc>::type sec_tl_t;
 
       public:
-	typedef typename hash_mmap_tl_t<Key, sec_tl_t, Allocator>::type type;
+	typedef typename hash_mmap_tl_t<Key, sec_tl_t, _Alloc>::type type;
       };
 
-      template<typename Key, typename Mapped, typename Allocator>
+      template<typename Key, typename Mapped, typename _Alloc>
       struct tree_hash_mmap_tl_t
       {
       private:
-	typedef typename hash_set_tl_t<Mapped, Allocator>::type sec_tl_t;
+	typedef typename hash_set_tl_t<Mapped, _Alloc>::type sec_tl_t;
 
       public:
-	typedef typename tree_mmap_tl_t<Key, sec_tl_t, Allocator>::type type;
+	typedef typename tree_mmap_tl_t<Key, sec_tl_t, _Alloc>::type type;
       };
 
-      template<typename Key, typename Mapped, typename Allocator>
+      template<typename Key, typename Mapped, typename _Alloc>
       struct tree_lu_mmap_tl_t
       {
       private:
-	typedef typename lu_set_tl_t<Mapped, Allocator>::type sec_tl_t;
+	typedef typename lu_set_tl_t<Mapped, _Alloc>::type sec_tl_t;
 
       public:
-	typedef typename tree_mmap_tl_t<Key, sec_tl_t, Allocator>::type type;
+	typedef typename tree_mmap_tl_t<Key, sec_tl_t, _Alloc>::type type;
       };
 
-      template<typename Key, typename Mapped, typename Allocator>
+      template<typename Key, typename Mapped, typename _Alloc>
       struct hash_lu_mmap_tl_t
       {
       private:
-	typedef typename lu_set_tl_t<Mapped, Allocator>::type sec_tl_t;
+	typedef typename lu_set_tl_t<Mapped, _Alloc>::type sec_tl_t;
 
       public:
-	typedef typename hash_mmap_tl_t<Key, sec_tl_t, Allocator>::type type;
+	typedef typename hash_mmap_tl_t<Key, sec_tl_t, _Alloc>::type type;
       };
     } // namespace detail
 
-    template<typename Key, typename Mapped, typename Allocator>
+    template<typename Key, typename Mapped, typename _Alloc>
     struct mmap_tl_t
     {
     private:
       typedef
-      typename detail::hash_hash_mmap_tl_t<Key, Mapped, Allocator>::type
+      typename detail::hash_hash_mmap_tl_t<Key, Mapped, _Alloc>::type
       hh_mmap_tl_t;
 
       typedef
-      typename detail::hash_lu_mmap_tl_t<Key, Mapped, Allocator>::type
+      typename detail::hash_lu_mmap_tl_t<Key, Mapped, _Alloc>::type
       hl_mmap_tl_t;
 
       typedef
-      typename detail::tree_hash_mmap_tl_t<Key, Mapped, Allocator>::type
+      typename detail::tree_hash_mmap_tl_t<Key, Mapped, _Alloc>::type
       th_mmap_tl_t;
 
       typedef
-      typename detail::tree_lu_mmap_tl_t<Key, Mapped, Allocator>::type
+      typename detail::tree_lu_mmap_tl_t<Key, Mapped, _Alloc>::type
       tl_mmap_tl_t;
 
     public:

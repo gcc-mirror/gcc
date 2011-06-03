@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// The json package implements encoding and decoding of JSON objects as
-// defined in RFC 4627.
+// Package json implements encoding and decoding of JSON objects as defined in
+// RFC 4627.
 package json
 
 import (
@@ -172,7 +172,7 @@ func (e *encodeState) marshal(v interface{}) (err os.Error) {
 			err = r.(os.Error)
 		}
 	}()
-	e.reflectValue(reflect.NewValue(v))
+	e.reflectValue(reflect.ValueOf(v))
 	return nil
 }
 
@@ -180,10 +180,10 @@ func (e *encodeState) error(err os.Error) {
 	panic(err)
 }
 
-var byteSliceType = reflect.Typeof([]byte(nil))
+var byteSliceType = reflect.TypeOf([]byte(nil))
 
 func (e *encodeState) reflectValue(v reflect.Value) {
-	if v == nil {
+	if !v.IsValid() {
 		e.WriteString("null")
 		return
 	}
@@ -200,30 +200,30 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 		return
 	}
 
-	switch v := v.(type) {
-	case *reflect.BoolValue:
-		x := v.Get()
+	switch v.Kind() {
+	case reflect.Bool:
+		x := v.Bool()
 		if x {
 			e.WriteString("true")
 		} else {
 			e.WriteString("false")
 		}
 
-	case *reflect.IntValue:
-		e.WriteString(strconv.Itoa64(v.Get()))
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		e.WriteString(strconv.Itoa64(v.Int()))
 
-	case *reflect.UintValue:
-		e.WriteString(strconv.Uitoa64(v.Get()))
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		e.WriteString(strconv.Uitoa64(v.Uint()))
 
-	case *reflect.FloatValue:
-		e.WriteString(strconv.FtoaN(v.Get(), 'g', -1, v.Type().Bits()))
+	case reflect.Float32, reflect.Float64:
+		e.WriteString(strconv.FtoaN(v.Float(), 'g', -1, v.Type().Bits()))
 
-	case *reflect.StringValue:
-		e.string(v.Get())
+	case reflect.String:
+		e.string(v.String())
 
-	case *reflect.StructValue:
+	case reflect.Struct:
 		e.WriteByte('{')
-		t := v.Type().(*reflect.StructType)
+		t := v.Type()
 		n := v.NumField()
 		first := true
 		for i := 0; i < n; i++ {
@@ -246,8 +246,8 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 		}
 		e.WriteByte('}')
 
-	case *reflect.MapValue:
-		if _, ok := v.Type().(*reflect.MapType).Key().(*reflect.StringType); !ok {
+	case reflect.Map:
+		if v.Type().Key().Kind() != reflect.String {
 			e.error(&UnsupportedTypeError{v.Type()})
 		}
 		if v.IsNil() {
@@ -255,19 +255,19 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 			break
 		}
 		e.WriteByte('{')
-		var sv stringValues = v.Keys()
+		var sv stringValues = v.MapKeys()
 		sort.Sort(sv)
 		for i, k := range sv {
 			if i > 0 {
 				e.WriteByte(',')
 			}
-			e.string(k.(*reflect.StringValue).Get())
+			e.string(k.String())
 			e.WriteByte(':')
-			e.reflectValue(v.Elem(k))
+			e.reflectValue(v.MapIndex(k))
 		}
 		e.WriteByte('}')
 
-	case reflect.ArrayOrSliceValue:
+	case reflect.Array, reflect.Slice:
 		if v.Type() == byteSliceType {
 			e.WriteByte('"')
 			s := v.Interface().([]byte)
@@ -292,11 +292,11 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 			if i > 0 {
 				e.WriteByte(',')
 			}
-			e.reflectValue(v.Elem(i))
+			e.reflectValue(v.Index(i))
 		}
 		e.WriteByte(']')
 
-	case interfaceOrPtrValue:
+	case reflect.Interface, reflect.Ptr:
 		if v.IsNil() {
 			e.WriteString("null")
 			return
@@ -328,7 +328,7 @@ type stringValues []reflect.Value
 func (sv stringValues) Len() int           { return len(sv) }
 func (sv stringValues) Swap(i, j int)      { sv[i], sv[j] = sv[j], sv[i] }
 func (sv stringValues) Less(i, j int) bool { return sv.get(i) < sv.get(j) }
-func (sv stringValues) get(i int) string   { return sv[i].(*reflect.StringValue).Get() }
+func (sv stringValues) get(i int) string   { return sv[i].String() }
 
 func (e *encodeState) string(s string) {
 	e.WriteByte('"')

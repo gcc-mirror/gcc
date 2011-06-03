@@ -2052,11 +2052,7 @@ gimple_dump_cfg (FILE *file, int flags)
 {
   if (flags & TDF_DETAILS)
     {
-      const char *funcname
-	= lang_hooks.decl_printable_name (current_function_decl, 2);
-
-      fputc ('\n', file);
-      fprintf (file, ";; Function %s\n\n", funcname);
+      dump_function_header (file, current_function_decl);
       fprintf (file, ";; \n%d basic blocks, %d edges, last basic block %d.\n\n",
 	       n_basic_blocks, n_edges, last_basic_block);
 
@@ -3350,12 +3346,15 @@ verify_gimple_assign_unary (gimple stmt)
       return false;
 
     case TRUTH_NOT_EXPR:
-      if (!useless_type_conversion_p (boolean_type_node,  rhs1_type))
+      /* We require two-valued operand types.  */
+      if (!(TREE_CODE (rhs1_type) == BOOLEAN_TYPE
+	    || (INTEGRAL_TYPE_P (rhs1_type)
+		&& TYPE_PRECISION (rhs1_type) == 1)))
         {
-	    error ("invalid types in truth not");
-	    debug_generic_expr (lhs_type);
-	    debug_generic_expr (rhs1_type);
-	    return true;
+	  error ("invalid types in truth not");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
         }
       break;
 
@@ -3552,26 +3551,11 @@ do_pointer_plus_expr_check:
 
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-      gcc_unreachable ();
-
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
-      {
-	/* We allow only boolean typed or compatible argument and result.  */
-	if (!useless_type_conversion_p (boolean_type_node,  rhs1_type)
-	    || !useless_type_conversion_p (boolean_type_node,  rhs2_type)
-	    || !useless_type_conversion_p (boolean_type_node,  lhs_type))
-	  {
-	    error ("type mismatch in binary truth expression");
-	    debug_generic_expr (lhs_type);
-	    debug_generic_expr (rhs1_type);
-	    debug_generic_expr (rhs2_type);
-	    return true;
-	  }
 
-	return false;
-      }
+      gcc_unreachable ();
 
     case LT_EXPR:
     case LE_EXPR:
@@ -7537,4 +7521,3 @@ struct gimple_opt_pass pass_warn_unused_result =
     0,					/* todo_flags_finish */
   }
 };
-

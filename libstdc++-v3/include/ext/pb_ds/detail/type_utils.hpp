@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file type_utils.hpp
+ * @file detail/type_utils.hpp
  * Contains utilities for handnling types. All of these classes are based on
  * Modern C++ by Andrei Alxandrescu.
  */

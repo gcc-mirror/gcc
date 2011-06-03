@@ -14,23 +14,24 @@ _Bool
 __go_receive_nonblocking_big (struct __go_channel* channel, void *val,
 			      _Bool *closed)
 {
+  uintptr_t element_size;
   size_t alloc_size;
   size_t offset;
 
-  alloc_size = ((channel->element_size + sizeof (uint64_t) - 1)
-		/ sizeof (uint64_t));
+  element_size = channel->element_type->__size;
+  alloc_size = (element_size + sizeof (uint64_t) - 1) / sizeof (uint64_t);
 
   int data = __go_receive_nonblocking_acquire (channel);
   if (data != RECEIVE_NONBLOCKING_ACQUIRE_DATA)
     {
-      __builtin_memset (val, 0, channel->element_size);
+      __builtin_memset (val, 0, element_size);
       if (closed != NULL)
 	*closed = data == RECEIVE_NONBLOCKING_ACQUIRE_CLOSED;
       return 0;
     }
 
   offset = channel->next_fetch * alloc_size;
-  __builtin_memcpy (val, &channel->data[offset], channel->element_size);
+  __builtin_memcpy (val, &channel->data[offset], element_size);
 
   __go_receive_release (channel);
 

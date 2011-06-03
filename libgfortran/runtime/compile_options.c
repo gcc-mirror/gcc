@@ -58,6 +58,15 @@ backtrace_handler (int signum)
 }
 
 
+/* Helper function for set_options because we need to access the
+   global variable options which is not seen in set_options.  */
+static void
+maybe_find_addr2line (void)
+{
+  if (options.backtrace == -1)
+    find_addr2line ();
+}
+
 /* Set the usual compile-time options.  */
 extern void set_options (int , int []);
 export_proto(set_options);
@@ -131,6 +140,8 @@ set_options (int num, int options[])
 #if defined(SIGXFSZ)
       signal (SIGXFSZ, backtrace_handler);
 #endif
+
+      maybe_find_addr2line ();
     }
 #endif
 

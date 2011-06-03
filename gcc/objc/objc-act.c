@@ -2420,6 +2420,8 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
      lenient than C or C++ on this.  */
   if (TREE_CODE (ltyp) == FUNCTION_TYPE && TREE_CODE (rtyp) == FUNCTION_TYPE)
     {
+      function_args_iterator liter, riter;
+
       /* Return types must be covariant.  */
       if (!comptypes (TREE_TYPE (ltyp), TREE_TYPE (rtyp))
 	  && !objc_compare_types (TREE_TYPE (ltyp), TREE_TYPE (rtyp),
@@ -2427,16 +2429,31 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
       return false;
 
       /* Argument types must be contravariant.  */
-      for (ltyp = TYPE_ARG_TYPES (ltyp), rtyp = TYPE_ARG_TYPES (rtyp);
-	   ltyp && rtyp; ltyp = TREE_CHAIN (ltyp), rtyp = TREE_CHAIN (rtyp))
-	{
-	  if (!comptypes (TREE_VALUE (rtyp), TREE_VALUE (ltyp))
-	      && !objc_compare_types (TREE_VALUE (rtyp), TREE_VALUE (ltyp),
-				      argno, callee))
-	    return false;
-      }
+      function_args_iter_init (&liter, ltyp);
+      function_args_iter_init (&riter, rtyp);
 
-      return (ltyp == rtyp);
+      while (1)
+	{
+	  ltyp = function_args_iter_cond (&liter);
+	  rtyp = function_args_iter_cond (&riter);
+
+	  /* If we've exhaused both lists simulateously, we're done.  */
+	  if (ltyp == NULL_TREE && rtyp == NULL_TREE)
+	    break;
+
+	  /* If one list is shorter than the other, they fail to match.  */
+	  if (ltyp == NULL_TREE || rtyp == NULL_TREE)
+	    return false;
+
+	  if (!comptypes (rtyp, ltyp)
+	      && !objc_compare_types (rtyp, ltyp, argno, callee))
+	    return false;
+
+	  function_args_iter_next (&liter);
+	  function_args_iter_next (&riter);
+	}
+
+      return true;
     }
 
   /* Past this point, we are only interested in ObjC class instances,
@@ -5022,6 +5039,48 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 					 TREE_INT_CST_LOW (number) + 2);
 		    }
 		}
+	      filtered_attributes = chainon (filtered_attributes,
+					     new_attribute);
+	    }
+	  else if (is_attribute_p ("nonnull", name))
+	    {
+	      /* We need to fixup all the argument indexes by adding 2
+		 for the two hidden arguments of an Objective-C method
+		 invocation, similat to what we do above for the
+		 "format" attribute.  */
+	      /* FIXME: This works great in terms of implementing the
+		 functionality, but the warnings that are produced by
+		 nonnull do mention the argument index (while the
+		 format ones don't).  For example, you could get
+		 "warning: null argument where non-null required
+		 (argument 3)".  Now in that message, "argument 3"
+		 includes the 2 hidden arguments; it would be much
+		 more friendly to call it "argument 1", as that would
+		 be consistent with __attribute__ ((nonnnull (1))).
+		 To do this, we'd need to have the C family code that
+		 checks the arguments know about adding/removing 2 to
+		 the argument index ... or alternatively we could
+		 maybe store the "printable" argument index in
+		 addition to the actual argument index ?  Some
+		 refactoring is needed to do this elegantly.  */
+	      tree new_attribute = copy_node (attribute);
+	      tree argument = TREE_VALUE (attribute);
+	      while (argument != NULL_TREE)
+		{
+		  /* Get the value of the argument and add 2.  */
+		  tree number = TREE_VALUE (argument);
+		  if (number
+		      && TREE_CODE (number) == INTEGER_CST
+		      && TREE_INT_CST_HIGH (number) == 0
+		      && TREE_INT_CST_LOW (number) != 0)
+		    {
+		      TREE_VALUE (argument)
+			= build_int_cst (integer_type_node,
+					 TREE_INT_CST_LOW (number) + 2);
+		    }
+		  argument = TREE_CHAIN (argument);
+		}
+
 	      filtered_attributes = chainon (filtered_attributes,
 					     new_attribute);
 	    }

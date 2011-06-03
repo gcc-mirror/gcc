@@ -2386,6 +2386,7 @@ walk_type (type_p t, struct walk_type_data *d)
   int maybe_undef_p = 0;
   int use_param_num = -1;
   int use_params_p = 0;
+  int atomic_p = 0;
   options_p oo;
   const struct nested_ptr_data *nested_ptr_d = NULL;
 
@@ -2415,6 +2416,8 @@ walk_type (type_p t, struct walk_type_data *d)
       ;
     else if (strcmp (oo->name, "skip") == 0)
       ;
+    else if (strcmp (oo->name, "atomic") == 0)
+      atomic_p = 1;
     else if (strcmp (oo->name, "default") == 0)
       ;
     else if (strcmp (oo->name, "param_is") == 0)
@@ -2480,6 +2483,12 @@ walk_type (type_p t, struct walk_type_data *d)
       return;
     }
 
+  if (atomic_p && (t->kind != TYPE_POINTER))
+    {
+      error_at_line (d->line, "field `%s' has invalid option `atomic'\n", d->val);
+      return;
+    }
+
   switch (t->kind)
     {
     case TYPE_SCALAR:
@@ -2492,6 +2501,25 @@ walk_type (type_p t, struct walk_type_data *d)
 	if (maybe_undef_p && t->u.p->u.s.line.file == NULL)
 	  {
 	    oprintf (d->of, "%*sgcc_assert (!%s);\n", d->indent, "", d->val);
+	    break;
+	  }
+
+	/* If a pointer type is marked as "atomic", we process the
+	   field itself, but we don't walk the data that they point to.
+	   
+	   There are two main cases where we walk types: to mark
+	   pointers that are reachable, and to relocate pointers when
+	   writing a PCH file.  In both cases, an atomic pointer is
+	   itself marked or relocated, but the memory that it points
+	   to is left untouched.  In the case of PCH, that memory will
+	   be read/written unchanged to the PCH file.  */
+	if (atomic_p)
+	  {
+	    oprintf (d->of, "%*sif (%s != NULL) {\n", d->indent, "", d->val);
+	    d->indent += 2;
+	    d->process_field (t, d);
+	    d->indent -= 2;
+	    oprintf (d->of, "%*s}\n", d->indent, "");
 	    break;
 	  }
 
@@ -4102,14 +4130,36 @@ write_roots (pair_p variables, bool emit_pch)
   finish_root_table (flp, "pch_rs", "LAST_GGC_ROOT_TAB", "ggc_root_tab",
 		     "gt_pch_scalar_rtab");
 }
+/* Record the definition of the vec_prefix structure, as defined in vec.h:
+
+   struct vec_prefix GTY(()) {
+   unsigned num;
+   unsigned alloc;
+   };  */
+static type_p
+vec_prefix_type (void)
+{
+  static type_p prefix_type = NULL;
+  if (prefix_type == NULL)
+    {
+      pair_p fields;
+      static struct fileloc pos = { NULL, 0 };
+      type_p len_ty = create_scalar_type ("unsigned");
+      pos.file = input_file_by_name (__FILE__); pos.line = __LINE__;
+      fields = create_field_at (0, len_ty, "alloc", 0, &pos);
+      fields = create_field_at (fields, len_ty, "num", 0, &pos);
+      prefix_type = new_structure ("vec_prefix", 0, &pos, fields, 0);
+      prefix_type->u.s.bitmap = -1;
+    }
+  return prefix_type;
+}
 
 /* Record the definition of a generic VEC structure, as if we had expanded
    the macros in vec.h:
 
    typedef struct VEC_<type>_base GTY(()) {
-   unsigned num;
-   unsigned alloc;
-   <type> GTY((length ("%h.num"))) vec[1];
+   struct vec_prefix prefix;
+   <type> GTY((length ("%h.prefix.num"))) vec[1];
    } VEC_<type>_base
 
    where the GTY(()) tags are only present if is_scalar is _false_.  */
@@ -4120,7 +4170,6 @@ note_def_vec (const char *type_name, bool is_scalar, struct fileloc *pos)
   pair_p fields;
   type_p t;
   options_p o;
-  type_p len_ty = create_scalar_type ("unsigned");
   const char *name = concat ("VEC_", type_name, "_base", (char *) 0);
 
   if (is_scalar)
@@ -4131,12 +4180,11 @@ note_def_vec (const char *type_name, bool is_scalar, struct fileloc *pos)
   else
     {
       t = resolve_typedef (type_name, pos);
-      o = create_string_option (0, "length", "%h.num");
+      o = create_string_option (0, "length", "%h.prefix.num");
     }
   /* We assemble the field list in reverse order.  */
   fields = create_field_at (0, create_array (t, "1"), "vec", o, pos);
-  fields = create_field_at (fields, len_ty, "alloc", 0, pos);
-  fields = create_field_at (fields, len_ty, "num", 0, pos);
+  fields = create_field_at (fields, vec_prefix_type (), "prefix", 0, pos);
 
   do_typedef (name, new_structure (name, 0, pos, fields, 0), pos);
 }

@@ -19,16 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* The Solaris 2.0 x86 linker botches alignment of code sections.
-   It tries to align to a 16 byte boundary by padding with 0x00000090
-   ints, rather than 0x90 bytes (nop).  This generates trash in the
-   ".init" section since the contribution from crtbegin.o is only 7
-   bytes.  The linker pads it to 16 bytes with a single 0x90 byte, and
-   two 0x00000090 ints, which generates a segmentation violation when
-   executed.  This macro forces the assembler to do the padding, since
-   it knows what it is doing.  */
-#define FORCE_CODE_SECTION_ALIGN  asm(ALIGN_ASM_OP "16");
-
 /* Old versions of the Solaris assembler can not handle the difference of
    labels in different sections, so force DW_EH_PE_datarel.  */
 #undef ASM_PREFERRED_EH_DATA_FORMAT
@@ -153,6 +143,9 @@ along with GCC; see the file COPYING3.  If not see
       fprintf (FILE, "\n");					\
     }								\
   while (0)
+
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION i386_solaris_elf_named_section
 
 /* We do not need NT_VERSION notes.  */
 #undef X86_FILE_START_VERSION_DIRECTIVE

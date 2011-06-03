@@ -1422,6 +1422,11 @@ common_handle_option (struct gcc_options *opts,
       opts->x_warn_frame_larger_than = value != -1;
       break;
 
+    case OPT_Wstack_usage_:
+      opts->x_warn_stack_usage = value;
+      opts->x_flag_stack_usage_info = value != -1;
+      break;
+
     case OPT_Wstrict_aliasing:
       set_Wstrict_aliasing (opts, value);
       break;
@@ -1641,6 +1646,11 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fstack_limit_register_:
     case OPT_fstack_limit_symbol_:
       /* Deferred.  */
+      break;
+
+    case OPT_fstack_usage:
+      opts->x_flag_stack_usage = value;
+      opts->x_flag_stack_usage_info = value != 0;
       break;
 
     case OPT_ftree_vectorizer_verbose_:

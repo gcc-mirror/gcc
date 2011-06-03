@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file pairing_heap_.hpp
+ * @file pairing_heap_/pairing_heap_.hpp
  * Contains an implementation class for a pairing heap.
  */
 
@@ -48,106 +48,69 @@
 #include <ext/pb_ds/detail/cond_dealtor.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/left_child_next_sibling_heap_.hpp>
-#include <ext/pb_ds/detail/left_child_next_sibling_heap_/null_metadata.hpp>
 #include <debug/debug.h>
 
 namespace __gnu_pbds
 {
   namespace detail
   {
-
 #define PB_DS_CLASS_T_DEC \
-  template<typename Value_Type, class Cmp_Fn, class Allocator>
+  template<typename Value_Type, typename Cmp_Fn, typename _Alloc>
 
 #define PB_DS_CLASS_C_DEC \
-  pairing_heap_<Value_Type, Cmp_Fn, Allocator>
+  pairing_heap<Value_Type, Cmp_Fn, _Alloc>
 
 #ifdef _GLIBCXX_DEBUG
-#define PB_DS_BASE_C_DEC \
-  left_child_next_sibling_heap_<Value_Type, \
-				Cmp_Fn,	\
-				null_left_child_next_sibling_heap_node_metadata, \
-				Allocator, \
-				false>
-#else 
-#define PB_DS_BASE_C_DEC						\
-  left_child_next_sibling_heap_<Value_Type, \
-				Cmp_Fn,	\
-				null_left_child_next_sibling_heap_node_metadata, \
-				Allocator>
-#endif 
+#define PB_DS_P_HEAP_BASE \
+  left_child_next_sibling_heap<Value_Type, Cmp_Fn, null_type, _Alloc, false>
+#else
+#define PB_DS_P_HEAP_BASE \
+  left_child_next_sibling_heap<Value_Type, Cmp_Fn, null_type, _Alloc>
+#endif
 
-    /**
-     * class description = "P4ri|\|g h3ap$">
-     **/
-    template<typename Value_Type, class Cmp_Fn, class Allocator>
-    class pairing_heap_ : public PB_DS_BASE_C_DEC
+    /// Pairing heap.
+    template<typename Value_Type, typename Cmp_Fn, typename _Alloc>
+    class pairing_heap : public PB_DS_P_HEAP_BASE
     {
-
     private:
-      typedef PB_DS_BASE_C_DEC base_type;
+      typedef PB_DS_P_HEAP_BASE				base_type;
+      typedef typename base_type::node_pointer 		node_pointer;
 
-      typedef typename base_type::node_pointer node_pointer;
+      typedef typename _Alloc::template rebind<Value_Type>::other __rebind_a;
 
     public:
+      typedef Value_Type 				value_type;
+      typedef Cmp_Fn 					cmp_fn;
+      typedef _Alloc 					allocator_type;
+      typedef typename _Alloc::size_type 		size_type;
+      typedef typename _Alloc::difference_type 		difference_type;
 
-      typedef typename Allocator::size_type size_type;
+      typedef typename __rebind_a::pointer 		pointer;
+      typedef typename __rebind_a::const_pointer 	const_pointer;
+      typedef typename __rebind_a::reference		reference;
+      typedef typename __rebind_a::const_reference 	const_reference;
 
-      typedef typename Allocator::difference_type difference_type;
+      typedef typename base_type::point_const_iterator	point_const_iterator;
+      typedef typename base_type::point_iterator 	point_iterator;
+      typedef typename base_type::const_iterator 	const_iterator;
+      typedef typename base_type::iterator 		iterator;
 
-      typedef Value_Type value_type;
+      pairing_heap();
 
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::pointer
-      pointer;
+      pairing_heap(const Cmp_Fn&);
 
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::const_pointer
-      const_pointer;
-
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::reference
-      reference;
-
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::const_reference
-      const_reference;
-
-      typedef
-      typename PB_DS_BASE_C_DEC::const_point_iterator
-      const_point_iterator;
-
-      typedef typename PB_DS_BASE_C_DEC::point_iterator point_iterator;
-
-      typedef typename PB_DS_BASE_C_DEC::const_iterator const_iterator;
-
-      typedef typename PB_DS_BASE_C_DEC::iterator iterator;
-
-      typedef Cmp_Fn cmp_fn;
-
-      typedef Allocator allocator_type;
-
-
-      pairing_heap_();
-
-      pairing_heap_(const Cmp_Fn& r_cmp_fn);
-
-      pairing_heap_(const PB_DS_CLASS_C_DEC& other);
+      pairing_heap(const pairing_heap&);
 
       void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(pairing_heap&);
 
-      ~pairing_heap_();
+      ~pairing_heap();
 
       inline point_iterator
-      push(const_reference r_val);
+      push(const_reference);
 
       void
-      modify(point_iterator it, const_reference r_new_val);
+      modify(point_iterator, const_reference);
 
       inline const_reference
       top() const;
@@ -156,51 +119,51 @@ namespace __gnu_pbds
       pop();
 
       void
-      erase(point_iterator it);
+      erase(point_iterator);
 
       template<typename Pred>
       size_type
-      erase_if(Pred pred);
+      erase_if(Pred);
 
       template<typename Pred>
       void
-      split(Pred pred, PB_DS_CLASS_C_DEC& other);
+      split(Pred, pairing_heap&);
 
       void
-      join(PB_DS_CLASS_C_DEC& other);
+      join(pairing_heap&);
 
     protected:
 
       template<typename It>
       void
-      copy_from_range(It first_it, It last_it);
+      copy_from_range(It, It);
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_valid(const char* file, int line) const;
+      assert_valid(const char*, int) const;
 #endif
 
     private:
 
       inline void
-      push_imp(node_pointer p_nd);
+      push_imp(node_pointer);
 
       node_pointer
-      join_node_children(node_pointer p_nd);
+      join_node_children(node_pointer);
 
       node_pointer
-      forward_join(node_pointer p_nd, node_pointer p_next);
+      forward_join(node_pointer, node_pointer);
 
       node_pointer
-      back_join(node_pointer p_nd, node_pointer p_next);
+      back_join(node_pointer, node_pointer);
 
       void
-      remove_node(node_pointer p_nd);
+      remove_node(node_pointer);
     };
 
-#define PB_DS_ASSERT_NODE_CONSISTENT(_Node, _Bool)			\
-  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(_Node, _Bool,		\
-					     __FILE__, __LINE__);)
+#define PB_DS_ASSERT_NODE_CONSISTENT(_Node, _Bool) \
+ _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(_Node, _Bool,	\
+						       __FILE__, __LINE__);)
 
 #include <ext/pb_ds/detail/pairing_heap_/constructors_destructor_fn_imps.hpp>
 #include <ext/pb_ds/detail/pairing_heap_/debug_fn_imps.hpp>
@@ -212,7 +175,7 @@ namespace __gnu_pbds
 #undef PB_DS_ASSERT_NODE_CONSISTENT
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_T_DEC
-#undef PB_DS_BASE_C_DEC
+#undef PB_DS_P_HEAP_BASE
 
   } // namespace detail
 } // namespace __gnu_pbds

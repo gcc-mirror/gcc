@@ -60,9 +60,10 @@ main(int argc, char* a_p_argv[])
   try
     {
       xml_test_performance_formatter fmt("Size", "Memory (bytes)");
-      typedef __gnu_test::tracker_allocator<char> callocator_type;
-      typedef __gnu_test::tracker_allocator<char> sallocator_type;
-      typedef std::basic_string<char, std::char_traits<char>, callocator_type> string_t;
+      typedef __gnu_test::tracker_allocator<char> allocator_type;
+      typedef std::char_traits<char> traits_type;
+      typedef std::basic_string<char, traits_type, allocator_type> string_t;
+      typedef std::less<string_t> cmp_type;
 
       typedef std::vector<std::pair<string_t, char> > vec_t;
       vec_t a_v(vm);
@@ -72,18 +73,20 @@ main(int argc, char* a_p_argv[])
       vec_t::const_iterator b = a_v.begin();
       test_t tst(b, vn, vs, vm);
       {
-	typedef pq_common_types<string_t, std::less<string_t>, callocator_type>::performance_tl pq_tl_t;
+	typedef pq_common_types<string_t, cmp_type, allocator_type>::performance_tl pq_tl_t;
 	pq_tl_t tl;
 	__gnu_cxx::typelist::apply(tst, tl);
       }
 
       {
-	typedef native_priority_queue<string_t, true, std::less<string_t>, sallocator_type> native_pq_t;
+	typedef native_priority_queue<string_t, true, cmp_type, 
+				      allocator_type> native_pq_t;
 	tst(native_pq_t());
       }
 
       {
-	typedef native_priority_queue<string_t, false, std::less<string_t>, sallocator_type> native_pq_t;
+	typedef native_priority_queue<string_t, false, cmp_type, 
+				      allocator_type> native_pq_t;
 	tst(native_pq_t());
       }
     }

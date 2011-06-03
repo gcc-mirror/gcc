@@ -4,6 +4,7 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
+#include "go-panic.h"
 #include "interface.h"
 
 /* Compare a non-empty interface value with an empty interface value.
@@ -16,6 +17,8 @@ __go_interface_empty_compare (struct __go_interface left,
 {
   const struct __go_type_descriptor *left_descriptor;
 
+  if (((uintptr_t) right.__type_descriptor & reflectFlags) != 0)
+    __go_panic_msg ("invalid interface value");
   if (left.__methods == NULL && right.__type_descriptor == NULL)
     return 0;
   if (left.__methods == NULL || right.__type_descriptor == NULL)

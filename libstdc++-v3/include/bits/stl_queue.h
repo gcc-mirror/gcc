@@ -243,6 +243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
       swap(queue& __q)
+      noexcept(noexcept(swap(c, __q.c)))
       {
 	using std::swap;
 	swap(c, __q.c);
@@ -312,6 +313,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Seq>
     inline void
     swap(queue<_Tp, _Seq>& __x, queue<_Tp, _Seq>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<typename _Tp, typename _Seq, typename _Alloc>
@@ -530,6 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
       swap(priority_queue& __pq)
+      noexcept(noexcept(swap(c, __pq.c)) && noexcept(swap(comp, __pq.comp)))
       {
 	using std::swap;
 	swap(c, __pq.c);
@@ -545,6 +548,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     swap(priority_queue<_Tp, _Sequence, _Compare>& __x,
 	 priority_queue<_Tp, _Sequence, _Compare>& __y)
+    noexcept(noexcept(__x.swap(__y)))
     { __x.swap(__y); }
 
   template<typename _Tp, typename _Sequence, typename _Compare,

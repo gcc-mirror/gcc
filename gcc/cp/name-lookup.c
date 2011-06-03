@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -319,33 +319,11 @@ new_class_binding (tree name, tree value, tree type, cxx_scope *scope)
   cp_class_binding *cb;
   cxx_binding *binding;
 
-  if (VEC_length (cp_class_binding, scope->class_shadowed))
-    {
-      cp_class_binding *old_base;
-      old_base = VEC_index (cp_class_binding, scope->class_shadowed, 0);
-      if (VEC_reserve (cp_class_binding, gc, scope->class_shadowed, 1))
-	{
-	  /* Fixup the current bindings, as they might have moved.  */
-	  size_t i;
-
-	  FOR_EACH_VEC_ELT (cp_class_binding, scope->class_shadowed, i, cb)
-	    {
-	      cxx_binding **b;
-	      b = &IDENTIFIER_BINDING (cb->identifier);
-	      while (*b != &old_base[i].base)
-		b = &((*b)->previous);
-	      *b = &cb->base;
-	    }
-	}
-      cb = VEC_quick_push (cp_class_binding, scope->class_shadowed, NULL);
-    }
-  else
     cb = VEC_safe_push (cp_class_binding, gc, scope->class_shadowed, NULL);
 
   cb->identifier = name;
-  binding = &cb->base;
+  cb->base = binding = cxx_binding_make (value, type);
   binding->scope = scope;
-  cxx_binding_init (binding, value, type);
   return binding;
 }
 
@@ -458,7 +436,9 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
 	       && DECL_ANTICIPATED (bval)
 	       && !DECL_HIDDEN_FRIEND_P (bval)))
     binding->value = decl;
-  else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval))
+  else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval)
+	   && (TREE_CODE (decl) != TYPE_DECL
+	       || same_type_p (TREE_TYPE (decl), TREE_TYPE (bval))))
     {
       /* The old binding was a type name.  It was placed in
 	 VALUE field because it was thought, at the point it was
@@ -957,8 +937,15 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
       else
 	{
 	  /* Here to install a non-global value.  */
-	  tree oldlocal = innermost_non_namespace_value (name);
 	  tree oldglobal = IDENTIFIER_NAMESPACE_VALUE (name);
+	  tree oldlocal = NULL_TREE;
+	  cxx_scope *oldscope = NULL;
+	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
+	  if (oldbinding)
+	    {
+	      oldlocal = oldbinding->value;
+	      oldscope = oldbinding->scope;
+	    }
 
 	  if (need_new_binding)
 	    {
@@ -1086,6 +1073,20 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 			 break;
 		       }
 		   }
+		}
+	      /* Error if redeclaring a local declared in a
+		 for-init-statement or in the condition of an if or
+		 switch statement when the new declaration is in the
+		 outermost block of the controlled statement.
+		 Redeclaring a variable from a for or while condition is
+		 detected elsewhere.  */
+	      else if (TREE_CODE (oldlocal) == VAR_DECL
+		       && oldscope == current_binding_level->level_chain
+		       && (oldscope->kind == sk_cond
+			   || oldscope->kind == sk_for))
+		{
+		  error ("redeclaration of %q#D", x);
+		  error ("%q+#D previously declared here", oldlocal);
 		}
 
 	      if (warn_shadow && !nowarn)
@@ -1446,6 +1447,7 @@ begin_scope (scope_kind kind, tree entity)
     case sk_try:
     case sk_catch:
     case sk_for:
+    case sk_cond:
     case sk_class:
     case sk_scoped_enum:
     case sk_function_parms:
@@ -2475,7 +2477,7 @@ do_local_using_decl (tree decl, tree scope, tree name)
   if (decl == NULL_TREE)
     return;
 
-  if (building_stmt_tree ()
+  if (building_stmt_list_p ()
       && at_function_scope_p ())
     add_decl_expr (decl);
 
@@ -2725,7 +2727,10 @@ poplevel_class (void)
   if (level->class_shadowed)
     {
       FOR_EACH_VEC_ELT (cp_class_binding, level->class_shadowed, i, cb)
-	IDENTIFIER_BINDING (cb->identifier) = cb->base.previous;
+	{
+	  IDENTIFIER_BINDING (cb->identifier) = cb->base->previous;
+	  cxx_binding_free (cb->base);
+	}
       ggc_free (level->class_shadowed);
       level->class_shadowed = NULL;
     }
@@ -3567,7 +3572,7 @@ do_namespace_alias (tree alias, tree name_space)
   pushdecl (alias);
 
   /* Emit debug info for namespace alias.  */
-  if (!building_stmt_tree ())
+  if (!building_stmt_list_p ())
     (*debug_hooks->global_decl) (alias);
 }
 
@@ -3715,7 +3720,7 @@ do_using_directive (tree name_space)
 
   gcc_assert (TREE_CODE (name_space) == NAMESPACE_DECL);
 
-  if (building_stmt_tree ())
+  if (building_stmt_list_p ())
     add_stmt (build_stmt (input_location, USING_STMT, name_space));
   name_space = ORIGINAL_NAMESPACE (name_space);
 
@@ -4469,7 +4474,7 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
   /* Conversion operators are handled specially because ordinary
      unqualified name lookup will not find template conversion
      operators.  */
-  if (IDENTIFIER_TYPENAME_P (name))
+  if (IDENTIFIER_TYPENAME_P (name) && current_class_type)
     {
       struct cp_binding_level *level;
 
@@ -5887,7 +5892,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
   for (t = OVL_CURRENT (t); t; t = OVL_NEXT (t))
     if (TREE_CODE (t) != TEMPLATE_DECL)
       {
-	if (building_stmt_tree ())
+	if (building_stmt_list_p ())
 	  add_stmt (build_stmt (input_location, USING_STMT, t));
 	else
 	  (*debug_hooks->imported_module_or_decl) (t, NULL_TREE, context, false);

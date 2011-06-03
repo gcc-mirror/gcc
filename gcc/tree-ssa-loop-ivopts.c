@@ -92,6 +92,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-ssa-propagate.h"
 
+/* FIXME: add_cost and zero_cost defined in exprmed.h conflict with local uses.
+ */
+#include "expmed.h"
+#undef add_cost
+#undef zero_cost
+
 /* FIXME: Expressions are expanded to RTL in this pass to determine the
    cost of different addressing modes.  This should be moved to a TBD
    interface between the GIMPLE and RTL worlds.  */
@@ -376,6 +382,8 @@ struct iv_ca_delta
    here.  */
 
 static VEC(tree,heap) *decl_rtl_to_reset;
+
+static comp_cost force_expr_to_var_cost (tree, bool);
 
 /* Number of uses recorded in DATA.  */
 
@@ -2745,7 +2753,7 @@ seq_cost (rtx seq, bool speed)
     {
       set = single_set (seq);
       if (set)
-	cost += rtx_cost (set, SET,speed);
+	cost += rtx_cost (SET_SRC (set), SET, speed);
       else
 	cost++;
     }
@@ -2866,6 +2874,8 @@ computation_cost (tree expr, bool speed)
   if (MEM_P (rslt))
     cost += address_cost (XEXP (rslt, 0), TYPE_MODE (type),
 			  TYPE_ADDR_SPACE (type), speed);
+  else if (!REG_P (rslt))
+    cost += rtx_cost (rslt, SET, speed);
 
   return cost;
 }
@@ -3504,6 +3514,42 @@ get_address_cost (bool symbol_present, bool var_present,
   return new_cost (cost + acost, complexity);
 }
 
+ /* Calculate the SPEED or size cost of shiftadd EXPR in MODE.  MULT is the
+    the EXPR operand holding the shift.  COST0 and COST1 are the costs for
+    calculating the operands of EXPR.  Returns true if successful, and returns
+    the cost in COST.  */
+
+static bool
+get_shiftadd_cost (tree expr, enum machine_mode mode, comp_cost cost0,
+                   comp_cost cost1, tree mult, bool speed, comp_cost *cost)
+{
+  comp_cost res;
+  tree op1 = TREE_OPERAND (expr, 1);
+  tree cst = TREE_OPERAND (mult, 1);
+  tree multop = TREE_OPERAND (mult, 0);
+  int m = exact_log2 (int_cst_value (cst));
+  int maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (mode));
+  int sa_cost;
+
+  if (!(m >= 0 && m < maxm))
+    return false;
+
+  sa_cost = (TREE_CODE (expr) != MINUS_EXPR
+             ? shiftadd_cost[speed][mode][m]
+             : (mult == op1
+                ? shiftsub1_cost[speed][mode][m]
+                : shiftsub0_cost[speed][mode][m]));
+  res = new_cost (sa_cost, 0);
+  res = add_costs (res, mult == op1 ? cost0 : cost1);
+
+  STRIP_NOPS (multop);
+  if (!is_gimple_val (multop))
+    res = add_costs (res, force_expr_to_var_cost (multop, speed));
+
+  *cost = res;
+  return true;
+}
+
 /* Estimates cost of forcing expression EXPR into a variable.  */
 
 static comp_cost
@@ -3629,6 +3675,21 @@ force_expr_to_var_cost (tree expr, bool speed)
     case MINUS_EXPR:
     case NEGATE_EXPR:
       cost = new_cost (add_cost (mode, speed), 0);
+      if (TREE_CODE (expr) != NEGATE_EXPR)
+        {
+          tree mult = NULL_TREE;
+          comp_cost sa_cost;
+          if (TREE_CODE (op1) == MULT_EXPR)
+            mult = op1;
+          else if (TREE_CODE (op0) == MULT_EXPR)
+            mult = op0;
+
+          if (mult != NULL_TREE
+              && cst_and_fits_in_hwi (TREE_OPERAND (mult, 1))
+              && get_shiftadd_cost (expr, mode, cost0, cost1, mult, speed,
+                                    &sa_cost))
+            return sa_cost;
+        }
       break;
 
     case MULT_EXPR:
@@ -3835,6 +3896,28 @@ compare_aff_trees (aff_tree *aff1, aff_tree *aff2)
   return true;
 }
 
+/* Stores EXPR in DATA->inv_expr_tab, and assigns it an inv_expr_id.  */
+
+static int
+get_expr_id (struct ivopts_data *data, tree expr)
+{
+  struct iv_inv_expr_ent ent;
+  struct iv_inv_expr_ent **slot;
+
+  ent.expr = expr;
+  ent.hash = iterative_hash_expr (expr, 0);
+  slot = (struct iv_inv_expr_ent **) htab_find_slot (data->inv_expr_tab,
+                                                     &ent, INSERT);
+  if (*slot)
+    return (*slot)->id;
+
+  *slot = XNEW (struct iv_inv_expr_ent);
+  (*slot)->expr = expr;
+  (*slot)->hash = ent.hash;
+  (*slot)->id = data->inv_expr_id++;
+  return (*slot)->id;
+}
+
 /* Returns the pseudo expr id if expression UBASE - RATIO * CBASE
    requires a new compiler generated temporary.  Returns -1 otherwise.
    ADDRESS_P is a flag indicating if the expression is for address
@@ -3847,8 +3930,6 @@ get_loop_invariant_expr_id (struct ivopts_data *data, tree ubase,
 {
   aff_tree ubase_aff, cbase_aff;
   tree expr, ub, cb;
-  struct iv_inv_expr_ent ent;
-  struct iv_inv_expr_ent **slot;
 
   STRIP_NOPS (ubase);
   STRIP_NOPS (cbase);
@@ -3936,18 +4017,7 @@ get_loop_invariant_expr_id (struct ivopts_data *data, tree ubase,
   aff_combination_scale (&cbase_aff, shwi_to_double_int (-1 * ratio));
   aff_combination_add (&ubase_aff, &cbase_aff);
   expr = aff_combination_to_tree (&ubase_aff);
-  ent.expr = expr;
-  ent.hash = iterative_hash_expr (expr, 0);
-  slot = (struct iv_inv_expr_ent **) htab_find_slot (data->inv_expr_tab,
-                                                     &ent, INSERT);
-  if (*slot)
-    return (*slot)->id;
-
-  *slot = XNEW (struct iv_inv_expr_ent);
-  (*slot)->expr = expr;
-  (*slot)->hash = ent.hash;
-  (*slot)->id = data->inv_expr_id++;
-  return  (*slot)->id;
+  return get_expr_id (data, expr);
 }
 
 
@@ -4412,6 +4482,23 @@ may_eliminate_iv (struct ivopts_data *data,
   return true;
 }
 
+ /* Calculates the cost of BOUND, if it is a PARM_DECL.  A PARM_DECL must
+    be copied, if is is used in the loop body and DATA->body_includes_call.  */
+
+static int
+parm_decl_cost (struct ivopts_data *data, tree bound)
+{
+  tree sbound = bound;
+  STRIP_NOPS (sbound);
+
+  if (TREE_CODE (sbound) == SSA_NAME
+      && TREE_CODE (SSA_NAME_VAR (sbound)) == PARM_DECL
+      && gimple_nop_p (SSA_NAME_DEF_STMT (sbound))
+      && data->body_includes_call)
+    return COSTS_N_INSNS (1);
+
+  return 0;
+}
 
 /* Determines cost of basing replacement of USE on CAND in a condition.  */
 
@@ -4422,9 +4509,9 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   tree bound = NULL_TREE;
   struct iv *cmp_iv;
   bitmap depends_on_elim = NULL, depends_on_express = NULL, depends_on;
-  comp_cost elim_cost, express_cost, cost;
+  comp_cost elim_cost, express_cost, cost, bound_cost;
   bool ok;
-  int inv_expr_id = -1;
+  int elim_inv_expr_id = -1, express_inv_expr_id = -1, inv_expr_id;
   tree *control_var, *bound_cst;
 
   /* Only consider real candidates.  */
@@ -4438,6 +4525,21 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
   if (may_eliminate_iv (data, use, cand, &bound))
     {
       elim_cost = force_var_cost (data, bound, &depends_on_elim);
+      if (elim_cost.cost == 0)
+        elim_cost.cost = parm_decl_cost (data, bound);
+      else if (TREE_CODE (bound) == INTEGER_CST)
+        elim_cost.cost = 0;
+      /* If we replace a loop condition 'i < n' with 'p < base + n',
+	 depends_on_elim will have 'base' and 'n' set, which implies
+	 that both 'base' and 'n' will be live during the loop.	 More likely,
+	 'base + n' will be loop invariant, resulting in only one live value
+	 during the loop.  So in that case we clear depends_on_elim and set
+        elim_inv_expr_id instead.  */
+      if (depends_on_elim && bitmap_count_bits (depends_on_elim) > 1)
+	{
+	  elim_inv_expr_id = get_expr_id (data, bound);
+	  bitmap_clear (depends_on_elim);
+	}
       /* The bound is a loop invariant, so it will be only computed
 	 once.  */
       elim_cost.cost = adjust_setup_cost (data, elim_cost.cost);
@@ -4465,9 +4567,17 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
 
   express_cost = get_computation_cost (data, use, cand, false,
 				       &depends_on_express, NULL,
-                                       &inv_expr_id);
+                                       &express_inv_expr_id);
   fd_ivopts_data = data;
   walk_tree (&cmp_iv->base, find_depends, &depends_on_express, NULL);
+
+  /* Count the cost of the original bound as well.  */
+  bound_cost = force_var_cost (data, *bound_cst, NULL);
+  if (bound_cost.cost == 0)
+    bound_cost.cost = parm_decl_cost (data, *bound_cst);
+  else if (TREE_CODE (*bound_cst) == INTEGER_CST)
+    bound_cost.cost = 0;
+  express_cost.cost += bound_cost.cost;
 
   /* Choose the better approach, preferring the eliminated IV. */
   if (compare_costs (elim_cost, express_cost) <= 0)
@@ -4475,6 +4585,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
       cost = elim_cost;
       depends_on = depends_on_elim;
       depends_on_elim = NULL;
+      inv_expr_id = elim_inv_expr_id;
     }
   else
     {
@@ -4482,6 +4593,7 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
       depends_on = depends_on_express;
       depends_on_express = NULL;
       bound = NULL_TREE;
+      inv_expr_id = express_inv_expr_id;
     }
 
   set_use_iv_cost (data, use, cand, cost, depends_on, bound, inv_expr_id);
@@ -4688,6 +4800,11 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
 
   base = cand->iv->base;
   cost_base = force_var_cost (data, base, NULL);
+  /* It will be exceptional that the iv register happens to be initialized with
+     the proper value at no cost.  In general, there will at least be a regcopy
+     or a const set.  */
+  if (cost_base.cost == 0)
+    cost_base.cost = COSTS_N_INSNS (1);
   cost_step = add_cost (TYPE_MODE (TREE_TYPE (base)), data->speed);
 
   cost = cost_step + adjust_setup_cost (data, cost_base.cost);

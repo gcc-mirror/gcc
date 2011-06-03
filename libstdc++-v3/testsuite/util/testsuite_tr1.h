@@ -204,6 +204,78 @@ namespace __gnu_test
   {
     ExceptMoveConsClass(ExceptMoveConsClass&&) noexcept(false);
   };
+
+  struct NoexceptCopyAssignClass
+  {
+    NoexceptCopyAssignClass&
+    operator=(const NoexceptCopyAssignClass&) noexcept(true);
+  };
+
+  struct ExceptCopyAssignClass
+  {
+    ExceptCopyAssignClass&
+    operator=(const ExceptCopyAssignClass&) noexcept(false);
+  };
+
+  struct NoexceptMoveAssignClass
+  {
+    NoexceptMoveAssignClass&
+    operator=(NoexceptMoveAssignClass&&) noexcept(true);
+  };
+
+  struct ExceptMoveAssignClass
+  {
+    ExceptMoveAssignClass&
+    operator=(ExceptMoveAssignClass&&) noexcept(false);
+  };
+
+  struct DeletedCopyAssignClass
+  {
+    DeletedCopyAssignClass&
+    operator=(const DeletedCopyAssignClass&) = delete;
+  };
+
+  struct DeletedMoveAssignClass
+  {
+    DeletedMoveAssignClass&
+    operator=(DeletedMoveAssignClass&&) = delete;
+  };
+
+  struct NoexceptMoveConsNoexceptMoveAssignClass
+  {
+    NoexceptMoveConsNoexceptMoveAssignClass
+    (NoexceptMoveConsNoexceptMoveAssignClass&&) noexcept(true);
+
+    NoexceptMoveConsNoexceptMoveAssignClass&
+    operator=(NoexceptMoveConsNoexceptMoveAssignClass&&) noexcept(true);
+  };
+
+  struct ExceptMoveConsNoexceptMoveAssignClass
+  {
+    ExceptMoveConsNoexceptMoveAssignClass
+    (ExceptMoveConsNoexceptMoveAssignClass&&) noexcept(false);
+
+    ExceptMoveConsNoexceptMoveAssignClass&
+    operator=(ExceptMoveConsNoexceptMoveAssignClass&&) noexcept(true);
+  };
+
+  struct NoexceptMoveConsExceptMoveAssignClass
+  {
+    NoexceptMoveConsExceptMoveAssignClass
+    (NoexceptMoveConsExceptMoveAssignClass&&) noexcept(true);
+
+    NoexceptMoveConsExceptMoveAssignClass&
+    operator=(NoexceptMoveConsExceptMoveAssignClass&&) noexcept(false);
+  };
+
+  struct ExceptMoveConsExceptMoveAssignClass
+  {
+    ExceptMoveConsExceptMoveAssignClass
+    (ExceptMoveConsExceptMoveAssignClass&&) noexcept(false);
+
+    ExceptMoveConsExceptMoveAssignClass&
+    operator=(ExceptMoveConsExceptMoveAssignClass&&) noexcept(false);
+  };
 #endif
 
   struct NType   // neither trivial nor standard-layout
@@ -448,6 +520,180 @@ namespace __gnu_test
     struct UnusualCopy
     {
       UnusualCopy(UnusualCopy&);
+    };
+  }
+
+  namespace assign
+  {
+    struct Empty {};
+
+    struct B { int i; B(){} };
+    struct D : B {};
+
+    enum E { ee1 };
+    enum E2 { ee2 };
+    enum class SE { e1 };
+    enum class SE2 { e2 };
+
+    enum OpE : int;
+    enum class OpSE : bool;
+
+    union U { int i; Empty b; };
+
+    union UAssignAll
+    {
+      bool b;
+      char c;
+      template<class T>
+      void operator=(T&&);
+    };
+
+    union UDelAssignAll
+    {
+      bool b;
+      char c;
+      template<class T>
+      void operator=(T&&) = delete;
+    };
+
+    struct Abstract
+    {
+      virtual ~Abstract() = 0;
+    };
+
+    struct AbstractDelDtor
+    {
+      ~AbstractDelDtor() = delete;
+      virtual void foo() = 0;
+    };
+
+    struct Ukn;
+
+    template<class To>
+      struct ImplicitTo
+      {
+	operator To();
+      };
+
+    template<class To>
+      struct ExplicitTo
+      {
+	explicit operator To();
+      };
+
+    template<class To>
+      struct DelImplicitTo
+      {
+	operator To() = delete;
+      };
+
+    template<class To>
+      struct DelExplicitTo
+      {
+	explicit operator To() = delete;
+      };
+
+    struct Ellipsis
+    {
+      Ellipsis(...){}
+    };
+
+    struct DelEllipsis
+    {
+      DelEllipsis(...) = delete;
+    };
+
+    struct Any
+    {
+      template<class T>
+        Any(T&&){}
+    };
+
+    struct nAny
+    {
+      template<class... T>
+        nAny(T&&...){}
+    };
+
+    struct DelnAny
+    {
+      template<class... T>
+        DelnAny(T&&...) = delete;
+    };
+
+    template<class... Args>
+      struct FromArgs
+      {
+	FromArgs(Args...);
+      };
+
+    template<class... Args>
+      struct DelFromArgs
+      {
+	DelFromArgs(Args...) = delete;
+      };
+
+    struct DelDef
+    {
+      DelDef() = delete;
+    };
+
+    struct DelCopy
+    {
+      DelCopy(const DelCopy&) = delete;
+    };
+
+    struct DelDtor
+    {
+      DelDtor() = default;
+      DelDtor(const DelDtor&) = default;
+      DelDtor(DelDtor&&) = default;
+      DelDtor(int);
+      DelDtor(int, B, U);
+      ~DelDtor() = delete;
+    };
+
+    struct Nontrivial
+    {
+      Nontrivial();
+      Nontrivial(const Nontrivial&);
+      Nontrivial& operator=(const Nontrivial&);
+      ~Nontrivial();
+    };
+
+    union NontrivialUnion
+    {
+      int i;
+      Nontrivial n;
+    };
+
+    struct UnusualCopy
+    {
+      UnusualCopy(UnusualCopy&);
+    };
+
+    struct AnyAssign
+    {
+      template<class T>
+        void operator=(T&&);
+    };
+
+    struct DelAnyAssign
+    {
+      template<class T>
+        void operator=(T&&) = delete;
+    };
+
+    struct DelCopyAssign
+    {
+      DelCopyAssign& operator=(const DelCopyAssign&) = delete;
+      DelCopyAssign& operator=(DelCopyAssign&&) = default;
+    };
+
+    struct MO
+    {
+      MO(MO&&) = default;
+      MO& operator=(MO&&) = default;
     };
   }
 #endif

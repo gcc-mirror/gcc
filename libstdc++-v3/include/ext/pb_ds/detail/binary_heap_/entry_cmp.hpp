@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file entry_cmp.hpp
+ * @file binary_heap_/entry_cmp.hpp
  * Contains an implementation class for a binary_heap.
  */
 
@@ -45,48 +45,40 @@ namespace __gnu_pbds
 {
   namespace detail
   {
+    /// Entry compare, primary template.
+    template<typename _VTp, typename Cmp_Fn, typename _Alloc, bool No_Throw>
+      struct entry_cmp;
 
-    template<typename Value_Type,
-	     class Cmp_Fn,
-	     bool No_Throw,
-	     class Allocator>
-    struct entry_cmp
-    {
-      typedef Cmp_Fn type;
-    };
-
-    template<typename Value_Type, class Cmp_Fn, class Allocator>
-    struct entry_cmp<
-      Value_Type,
-      Cmp_Fn,
-      false,
-      Allocator>
-    {
-    public:
-      typedef
-      typename Allocator::template rebind<
-      Value_Type>::other::const_pointer
-      entry;
-
-      struct type : public Cmp_Fn
+    /// Specialization, true.
+    template<typename _VTp, typename Cmp_Fn, typename _Alloc>
+      struct entry_cmp<_VTp, Cmp_Fn, _Alloc, true>
       {
-      public:
-	inline
-	type()
-	{ }
-
-	inline
-	type(const Cmp_Fn& other) : Cmp_Fn(other)
-	{ }
-
-	inline bool
-	operator()(entry p_lhs,  entry p_rhs) const
-	{
-	  return Cmp_Fn::operator()(*p_lhs, * p_rhs);
-	}
+	/// Compare.
+	typedef Cmp_Fn 						type;
       };
-    };
 
+    /// Specialization, false.
+    template<typename _VTp, typename Cmp_Fn, typename _Alloc>
+      struct entry_cmp<_VTp, Cmp_Fn, _Alloc, false>
+      {
+      private:
+	typedef typename _Alloc::template rebind<_VTp>		__rebind_v;
+
+      public:
+	typedef typename __rebind_v::other::const_pointer	entry;
+
+	/// Compare plus entry.
+	struct type : public Cmp_Fn
+	{
+	  type() { }
+
+	  type(const Cmp_Fn& other) : Cmp_Fn(other) { }
+
+	  bool
+	  operator()(entry lhs, entry rhs) const
+	  { return Cmp_Fn::operator()(*lhs, *rhs); }
+	};
+      };
   } // namespace detail
 } // namespace __gnu_pbds
 

@@ -7,6 +7,7 @@ package http
 import (
 	"bufio"
 	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -438,26 +439,39 @@ type body struct {
 	hdr     interface{}   // non-nil (Response or Request) value means read trailer
 	r       *bufio.Reader // underlying wire-format reader for the trailer
 	closing bool          // is the connection to be closed after reading body?
+	closed  bool
+}
+
+// ErrBodyReadAfterClose is returned when reading a Request Body after
+// the body has been closed. This typically happens when the body is
+// read after an HTTP Handler calls WriteHeader or Write on its
+// ResponseWriter.
+var ErrBodyReadAfterClose = os.NewError("http: invalid Read on closed request Body")
+
+func (b *body) Read(p []byte) (n int, err os.Error) {
+	if b.closed {
+		return 0, ErrBodyReadAfterClose
+	}
+	return b.Reader.Read(p)
 }
 
 func (b *body) Close() os.Error {
+	if b.closed {
+		return nil
+	}
+	defer func() {
+		b.closed = true
+	}()
 	if b.hdr == nil && b.closing {
 		// no trailer and closing the connection next.
 		// no point in reading to EOF.
 		return nil
 	}
 
-	trashBuf := make([]byte, 1024) // local for thread safety
-	for {
-		_, err := b.Read(trashBuf)
-		if err == nil {
-			continue
-		}
-		if err == os.EOF {
-			break
-		}
+	if _, err := io.Copy(ioutil.Discard, b); err != nil {
 		return err
 	}
+
 	if b.hdr == nil { // not reading trailer
 		return nil
 	}

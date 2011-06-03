@@ -108,7 +108,9 @@
  "@internal Any MMX register, when inter-unit moves are enabled.")
 
 (define_register_constraint "Yd"
- "TARGET_INTEGER_DFMODE_MOVES ? GENERAL_REGS : NO_REGS"
+ "(TARGET_64BIT
+   || (TARGET_INTEGER_DFMODE_MOVES && optimize_function_for_speed_p (cfun)))
+  ? GENERAL_REGS : NO_REGS"
  "@internal Any integer register when integer DFmode moves are enabled.")
 
 (define_register_constraint "Yx"

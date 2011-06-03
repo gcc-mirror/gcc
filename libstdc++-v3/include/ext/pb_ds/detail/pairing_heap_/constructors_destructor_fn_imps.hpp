@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file constructors_destructor_fn_imps.hpp
+ * @file pairing_heap_/constructors_destructor_fn_imps.hpp
  * Contains an implementation class for a pairing heap.
  */
 
@@ -46,32 +46,25 @@ copy_from_range(It first_it, It last_it)
 {
   while (first_it != last_it)
     push(*(first_it++));
-
   PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-pairing_heap_()
-{
-  PB_DS_ASSERT_VALID((*this))
-}
+pairing_heap()
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-pairing_heap_(const Cmp_Fn& r_cmp_fn) :
-  PB_DS_BASE_C_DEC(r_cmp_fn)
-{
-  PB_DS_ASSERT_VALID((*this))
-}
+pairing_heap(const Cmp_Fn& r_cmp_fn)
+: base_type(r_cmp_fn)
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-pairing_heap_(const PB_DS_CLASS_C_DEC& other) :
-  PB_DS_BASE_C_DEC(other)
-{
-  PB_DS_ASSERT_VALID((*this))
-}
+pairing_heap(const PB_DS_CLASS_C_DEC& other)
+: base_type(other)
+{ PB_DS_ASSERT_VALID((*this)) }
 
 PB_DS_CLASS_T_DEC
 void
@@ -79,13 +72,11 @@ PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
   PB_DS_ASSERT_VALID((*this))
-
-  PB_DS_BASE_C_DEC::swap(other);
-
+  base_type::swap(other);
   PB_DS_ASSERT_VALID((*this))
 }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-~pairing_heap_()
+~pairing_heap()
 { }

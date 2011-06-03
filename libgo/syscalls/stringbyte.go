@@ -6,6 +6,8 @@
 
 package syscall
 
+import "unsafe"
+
 // StringByteSlice returns a NUL-terminated slice of bytes
 // containing the text of s.
 func StringByteSlice(s string) []byte {
@@ -21,4 +23,15 @@ func StringByteSlice(s string) []byte {
 func StringBytePtr(s string) *byte {
 	p := StringByteSlice(s);
 	return &p[0];
+}
+
+// BytePtrToString takes a NUL-terminated array of bytes and convert
+// it to a Go string.
+func BytePtrToString(p *byte) string {
+	a := (*[10000]byte)(unsafe.Pointer(p))
+	i := 0
+	for a[i] != 0 {
+		i++
+	}
+	return string(a[:i])
 }

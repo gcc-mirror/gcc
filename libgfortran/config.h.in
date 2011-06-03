@@ -84,8 +84,8 @@
 /* Define to 1 if you have the `backtrace' function. */
 #undef HAVE_BACKTRACE
 
-/* Define to 1 if you have the `backtrace_symbols' function. */
-#undef HAVE_BACKTRACE_SYMBOLS
+/* Define to 1 if you have the `backtrace_symbols_fd' function. */
+#undef HAVE_BACKTRACE_SYMBOLS_FD
 
 /* Define if powf is broken. */
 #undef HAVE_BROKEN_POWF
@@ -638,6 +638,9 @@
 
 /* Define to 1 if you have the <pwd.h> header file. */
 #undef HAVE_PWD_H
+
+/* Define to 1 if you have the `readlink' function. */
+#undef HAVE_READLINK
 
 /* libm includes round */
 #undef HAVE_ROUND

@@ -1,10 +1,9 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
-// { dg-do run { xfail *-*-* } }
 
 // 2009-09-14  Benjamin Kosnik  <benjamin@redhat.com>
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +26,9 @@
 void
 value()
 {
-  typedef __gnu_cxx::throw_value_limit value_type;
+  // NB: Instantiating with __gnu_cxx::throw_value_limit would be illegal,
+  // isn't a POD type.
+  typedef char value_type;
   typedef __gnu_cxx::throw_allocator_limit<value_type> allocator_type;
   typedef std::char_traits<value_type> traits_type;
   typedef std::basic_string<value_type, traits_type, allocator_type> test_type;

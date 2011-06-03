@@ -94,9 +94,11 @@ __go_receive_nonblocking_acquire (struct __go_channel *channel)
 struct __go_receive_nonblocking_small
 __go_receive_nonblocking_small (struct __go_channel *channel)
 {
+  uintptr_t element_size;
   struct __go_receive_nonblocking_small ret;
 
-  __go_assert (channel->element_size <= sizeof (uint64_t));
+  element_size = channel->element_type->__size;
+  __go_assert (element_size <= sizeof (uint64_t));
 
   int data = __go_receive_nonblocking_acquire (channel);
   if (data != RECEIVE_NONBLOCKING_ACQUIRE_DATA)

@@ -757,9 +757,11 @@ new_loop_vec_info (struct loop *loop)
                PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
   LOOP_VINFO_STRIDED_STORES (res) = VEC_alloc (gimple, heap, 10);
   LOOP_VINFO_REDUCTIONS (res) = VEC_alloc (gimple, heap, 10);
+  LOOP_VINFO_REDUCTION_CHAINS (res) = VEC_alloc (gimple, heap, 10);
   LOOP_VINFO_SLP_INSTANCES (res) = VEC_alloc (slp_instance, heap, 10);
   LOOP_VINFO_SLP_UNROLLING_FACTOR (res) = 1;
   LOOP_VINFO_PEELING_HTAB (res) = NULL;
+  LOOP_VINFO_PEELING_FOR_GAPS (res) = false;
 
   return res;
 }
@@ -852,6 +854,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   VEC_free (slp_instance, heap, LOOP_VINFO_SLP_INSTANCES (loop_vinfo));
   VEC_free (gimple, heap, LOOP_VINFO_STRIDED_STORES (loop_vinfo));
   VEC_free (gimple, heap, LOOP_VINFO_REDUCTIONS (loop_vinfo));
+  VEC_free (gimple, heap, LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo));
 
   if (LOOP_VINFO_PEELING_HTAB (loop_vinfo))
     htab_delete (LOOP_VINFO_PEELING_HTAB (loop_vinfo));
@@ -1541,6 +1544,8 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
       /* Find stmts that need to be both vectorized and SLPed.  */
       vect_detect_hybrid_slp (loop_vinfo);
     }
+  else
+    return false;
 
   /* Scan all the operations in the loop and make sure they are
      vectorizable.  */
@@ -1670,6 +1675,196 @@ report_vect_op (gimple stmt, const char *msg)
 {
   fprintf (vect_dump, "%s", msg);
   print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+}
+
+
+/* Detect SLP reduction of the form:
+
+   #a1 = phi <a5, a0>
+   a2 = operation (a1)
+   a3 = operation (a2)
+   a4 = operation (a3)
+   a5 = operation (a4)
+
+   #a = phi <a5>
+
+   PHI is the reduction phi node (#a1 = phi <a5, a0> above)
+   FIRST_STMT is the first reduction stmt in the chain
+   (a2 = operation (a1)).
+
+   Return TRUE if a reduction chain was detected.  */
+
+static bool
+vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
+{
+  struct loop *loop = (gimple_bb (phi))->loop_father;
+  struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
+  enum tree_code code;
+  gimple current_stmt = NULL, use_stmt = NULL, first, next_stmt;
+  stmt_vec_info use_stmt_info, current_stmt_info;
+  tree lhs;
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  int nloop_uses, size = 0, nuses;
+  bool found = false;
+
+  if (loop != vect_loop)
+    return false;
+
+  lhs = PHI_RESULT (phi);
+  code = gimple_assign_rhs_code (first_stmt);
+  while (1)
+    {
+      nloop_uses = 0;
+      nuses = 0;
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+        {
+          use_stmt = USE_STMT (use_p);
+          nuses++;
+          if (is_gimple_debug (use_stmt))
+            continue;
+
+          /* Check if we got back to the reduction phi.  */
+          if (gimple_code (use_stmt) == GIMPLE_PHI
+              && use_stmt == phi)
+            {
+              found = true;
+              break;
+            }
+
+          if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
+              && vinfo_for_stmt (use_stmt)
+              && !is_pattern_stmt_p (vinfo_for_stmt (use_stmt))
+              && use_stmt != first_stmt)
+            nloop_uses++;
+
+          if (nloop_uses > 1)
+            return false;
+        }
+
+      /* We reached a statement with no uses.  */
+      if (nuses == 0)
+	return false;
+
+      if (found)
+        break;
+
+      /* This is a loop exit phi, and we haven't reached the reduction phi.  */
+      if (gimple_code (use_stmt) == GIMPLE_PHI)
+        return false;
+
+      if (!is_gimple_assign (use_stmt)
+          || code != gimple_assign_rhs_code (use_stmt)
+          || !flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+        return false;
+
+      /* Insert USE_STMT into reduction chain.  */
+      use_stmt_info = vinfo_for_stmt (use_stmt);
+      if (current_stmt)
+        {
+          current_stmt_info = vinfo_for_stmt (current_stmt);
+          GROUP_NEXT_ELEMENT (current_stmt_info) = use_stmt;
+          GROUP_FIRST_ELEMENT (use_stmt_info)
+            = GROUP_FIRST_ELEMENT (current_stmt_info);
+        }
+      else
+          GROUP_FIRST_ELEMENT (use_stmt_info) = use_stmt;
+
+      lhs = gimple_assign_lhs (use_stmt);
+      current_stmt = use_stmt;
+      size++;
+   }
+
+  if (!found || use_stmt != phi || size < 2)
+    return false;
+
+  /* Swap the operands, if needed, to make the reduction operand be the second
+     operand.  */
+  lhs = PHI_RESULT (phi);
+  next_stmt = GROUP_FIRST_ELEMENT (vinfo_for_stmt (current_stmt));
+  while (next_stmt)
+    {
+      if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS)
+	{
+          if (gimple_assign_rhs2 (next_stmt) == lhs)
+	    {
+	      tree op = gimple_assign_rhs1 (next_stmt);
+              gimple def_stmt = NULL;
+
+              if (TREE_CODE (op) == SSA_NAME)
+                def_stmt = SSA_NAME_DEF_STMT (op);
+
+	      /* Check that the other def is either defined in the loop
+		 ("vect_internal_def"), or it's an induction (defined by a
+		 loop-header phi-node).  */
+	      if (code == COND_EXPR
+                  || (def_stmt
+		      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
+                      && (is_gimple_assign (def_stmt)
+                          || is_gimple_call (def_stmt)
+                          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
+                              == vect_induction_def
+                          || (gimple_code (def_stmt) == GIMPLE_PHI
+                              && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
+                                  == vect_internal_def
+                              && !is_loop_header_bb_p (gimple_bb (def_stmt))))))
+		{
+		  lhs = gimple_assign_lhs (next_stmt);
+		  next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+ 		  continue;
+		}
+
+	      return false;
+	    }
+	  else
+	    {
+              tree op = gimple_assign_rhs2 (next_stmt);
+              gimple def_stmt = NULL;
+
+              if (TREE_CODE (op) == SSA_NAME)
+                def_stmt = SSA_NAME_DEF_STMT (op);
+
+              /* Check that the other def is either defined in the loop
+                 ("vect_internal_def"), or it's an induction (defined by a
+                 loop-header phi-node).  */
+              if (code == COND_EXPR
+                  || (def_stmt
+		      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
+                      && (is_gimple_assign (def_stmt)
+                          || is_gimple_call (def_stmt)
+                          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
+                              == vect_induction_def
+                          || (gimple_code (def_stmt) == GIMPLE_PHI
+                              && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
+                                  == vect_internal_def
+                              && !is_loop_header_bb_p (gimple_bb (def_stmt))))))
+		{
+		  if (vect_print_dump_info (REPORT_DETAILS))
+		    {
+		      fprintf (vect_dump, "swapping oprnds: ");
+		      print_gimple_stmt (vect_dump, next_stmt, 0, TDF_SLIM);
+		    }
+
+		  swap_tree_operands (next_stmt,
+			      gimple_assign_rhs1_ptr (next_stmt),
+                              gimple_assign_rhs2_ptr (next_stmt));
+		  mark_symbols_for_renaming (next_stmt);
+		}
+	      else
+		return false;
+	    }
+        }
+
+      lhs = gimple_assign_lhs (next_stmt);
+      next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+    }
+
+  /* Save the chain for further analysis in SLP detection.  */
+  first = GROUP_FIRST_ELEMENT (vinfo_for_stmt (current_stmt));
+  VEC_safe_push (gimple, heap, LOOP_VINFO_REDUCTION_CHAINS (loop_info), first);
+  GROUP_SIZE (vinfo_for_stmt (first)) = size;
+
+  return true;
 }
 
 
@@ -2033,17 +2228,18 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
 	report_vect_op (def_stmt, "detected reduction: ");
       return def_stmt;
     }
-  else if (def1 && def1 == phi
-	   && (code == COND_EXPR
-               || (def2 && flow_bb_inside_loop_p (loop, gimple_bb (def2))
- 	           && (is_gimple_assign (def2)
-		       || is_gimple_call (def2)
-	               || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
-                           == vect_induction_def
- 	               || (gimple_code (def2) == GIMPLE_PHI
-		           && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
-                               == vect_internal_def
-		           && !is_loop_header_bb_p (gimple_bb (def2)))))))
+
+  if (def1 && def1 == phi
+      && (code == COND_EXPR
+          || (def2 && flow_bb_inside_loop_p (loop, gimple_bb (def2))
+ 	      && (is_gimple_assign (def2)
+		  || is_gimple_call (def2)
+	          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
+                      == vect_induction_def
+ 	          || (gimple_code (def2) == GIMPLE_PHI
+		      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
+                          == vect_internal_def
+		      && !is_loop_header_bb_p (gimple_bb (def2)))))))
     {
       if (check_reduction)
         {
@@ -2065,13 +2261,20 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
 
       return def_stmt;
     }
-  else
+
+  /* Try to find SLP reduction chain.  */
+  if (vect_is_slp_reduction (loop_info, phi, def_stmt))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
-	report_vect_op (def_stmt, "reduction: unknown pattern: ");
+        report_vect_op (def_stmt, "reduction: detected reduction chain: ");
 
-      return NULL;
+      return def_stmt;
     }
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    report_vect_op (def_stmt, "reduction: unknown pattern: ");
+       
+  return NULL;
 }
 
 /* Wrapper around vect_is_simple_reduction_1, that won't modify code
@@ -2187,6 +2390,10 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
       peel_iters_prologue = niters < peel_iters_prologue ?
                             niters : peel_iters_prologue;
       *peel_iters_epilogue = (niters - peel_iters_prologue) % vf;
+      /* If we need to peel for gaps, but no peeling is required, we have to
+	 peel VF iterations.  */
+      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) && !*peel_iters_epilogue)
+        *peel_iters_epilogue = vf;
     }
 
    return (peel_iters_prologue * scalar_single_iter_cost)
@@ -2855,7 +3062,7 @@ get_initial_def_for_induction (gimple iv_phi)
 						   vec_def, vec_step);
 	  vec_def = make_ssa_name (vec_dest, new_stmt);
 	  gimple_assign_set_lhs (new_stmt, vec_def);
-
+ 
 	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
 	  if (!useless_type_conversion_p (resvectype, vectype))
 	    {
@@ -3216,6 +3423,8 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   unsigned int group_size = 1, k, ratio;
   VEC (tree, heap) *vec_initial_defs = NULL;
   VEC (gimple, heap) *phis;
+  bool slp_reduc = false;
+  tree new_phi_result;
 
   if (slp_node)
     group_size = VEC_length (gimple, SLP_TREE_SCALAR_STMTS (slp_node)); 
@@ -3425,10 +3634,48 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   if (nested_in_vect_loop && !double_reduc)
     goto vect_finalize_reduction;
 
+  /* SLP reduction without reduction chain, e.g.,
+     # a1 = phi <a2, a0>
+     # b1 = phi <b2, b0>
+     a2 = operation (a1)
+     b2 = operation (b1)  */
+  slp_reduc = (slp_node && !GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)));
+
+  /* In case of reduction chain, e.g.,
+     # a1 = phi <a3, a0>
+     a2 = operation (a1)
+     a3 = operation (a2),
+
+     we may end up with more than one vector result.  Here we reduce them to
+     one vector.  */
+  if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
+    {
+      tree first_vect = PHI_RESULT (VEC_index (gimple, new_phis, 0));
+      tree tmp;
+
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+      for (k = 1; k < VEC_length (gimple, new_phis); k++)
+        {
+          gimple next_phi = VEC_index (gimple, new_phis, k);
+          tree second_vect = PHI_RESULT (next_phi);
+          gimple new_vec_stmt;
+
+          tmp = build2 (code, vectype,  first_vect, second_vect);
+          new_vec_stmt = gimple_build_assign (vec_dest, tmp);
+          first_vect = make_ssa_name (vec_dest, new_vec_stmt);
+          gimple_assign_set_lhs (new_vec_stmt, first_vect);
+          gsi_insert_before (&exit_gsi, new_vec_stmt, GSI_SAME_STMT);
+        }
+
+      new_phi_result = first_vect;
+    }
+  else
+    new_phi_result = PHI_RESULT (VEC_index (gimple, new_phis, 0));
+ 
   /* 2.3 Create the reduction code, using one of the three schemes described
          above. In SLP we simply need to extract all the elements from the 
          vector (without reducing them), so we use scalar shifts.  */
-  if (reduc_code != ERROR_MARK && !slp_node)
+  if (reduc_code != ERROR_MARK && !slp_reduc)
     {
       tree tmp;
 
@@ -3439,8 +3686,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
         fprintf (vect_dump, "Reduce using direct vector reduction.");
 
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
-      new_phi = VEC_index (gimple, new_phis, 0);
-      tmp = build1 (reduc_code, vectype,  PHI_RESULT (new_phi));
+      tmp = build1 (reduc_code, vectype, new_phi_result);
       epilog_stmt = gimple_build_assign (vec_dest, tmp);
       new_temp = make_ssa_name (vec_dest, epilog_stmt);
       gimple_assign_set_lhs (epilog_stmt, new_temp);
@@ -3477,7 +3723,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
             have_whole_vector_shift = false;
         }
 
-      if (have_whole_vector_shift && !slp_node)
+      if (have_whole_vector_shift && !slp_reduc)
         {
           /*** Case 2: Create:
              for (offset = VS/2; offset >= element_size; offset/=2)
@@ -3490,8 +3736,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
             fprintf (vect_dump, "Reduce using vector shifts");
 
           vec_dest = vect_create_destination_var (scalar_dest, vectype);
-          new_phi = VEC_index (gimple, new_phis, 0);
-          new_temp = PHI_RESULT (new_phi);
+          new_temp = new_phi_result;
           for (bit_offset = vec_size_in_bits/2;
                bit_offset >= element_bitsize;
                bit_offset /= 2)
@@ -3543,7 +3788,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
 
               /* In SLP we don't need to apply reduction operation, so we just
                  collect s' values in SCALAR_RESULTS.  */
-              if (slp_node)
+              if (slp_reduc)
                 VEC_safe_push (tree, heap, scalar_results, new_temp);
 
               for (bit_offset = element_bitsize;
@@ -3559,7 +3804,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
                   gimple_assign_set_lhs (epilog_stmt, new_name);
                   gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 
-                  if (slp_node)
+                  if (slp_reduc)
                     {
                       /* In SLP we don't need to apply reduction operation, so 
                          we just collect s' values in SCALAR_RESULTS.  */
@@ -3581,7 +3826,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
              unrolling.  If the size of SCALAR_RESULTS is greater than
              GROUP_SIZE, we reduce them combining elements modulo 
              GROUP_SIZE.  */
-          if (slp_node)
+          if (slp_reduc)
             {
               tree res, first_res, new_res;
               gimple new_stmt;
@@ -3644,7 +3889,7 @@ vect_finalize_reduction:
 
   if (adjustment_def)
     {
-      gcc_assert (!slp_node);
+      gcc_assert (!slp_reduc);
       if (nested_in_vect_loop)
 	{
           new_phi = VEC_index (gimple, new_phis, 0);
@@ -3709,6 +3954,19 @@ vect_finalize_reduction:
           use <s_out4>  
           use <s_out4> */
 
+
+  /* In SLP reduction chain we reduce vector results into one vector if
+     necessary, hence we set here GROUP_SIZE to 1.  SCALAR_DEST is the LHS of
+     the last stmt in the reduction chain, since we are looking for the loop
+     exit phi node.  */
+  if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
+    {
+      scalar_dest = gimple_assign_lhs (VEC_index (gimple,
+                                       SLP_TREE_SCALAR_STMTS (slp_node),
+                                       group_size - 1));
+      group_size = 1;
+    }
+
   /* In SLP we may have several statements in NEW_PHIS and REDUCTION_PHIS (in 
      case that GROUP_SIZE is greater than vectorization factor).  Therefore, we
      need to match SCALAR_RESULTS with corresponding statements.  The first
@@ -3731,7 +3989,7 @@ vect_finalize_reduction:
           reduction_phi = VEC_index (gimple, reduction_phis, k / ratio);
         }
 
-      if (slp_node)
+      if (slp_reduc)
         {
           gimple current_stmt = VEC_index (gimple,
                                        SLP_TREE_SCALAR_STMTS (slp_node), k);
@@ -4000,6 +4258,12 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   int vec_num;
   tree def0, def1, tem;
 
+  /* In case of reduction chain we switch to the first stmt in the chain, but
+     we don't update STMT_INFO, since only the last stmt is marked as reduction
+     and has reduction properties.  */
+  if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
+    stmt = GROUP_FIRST_ELEMENT (stmt_info);
+
   if (nested_in_vect_loop_p (loop, stmt))
     {
       outer_loop = loop;
@@ -4008,8 +4272,10 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
     }
 
   /* 1. Is vectorizable reduction?  */
-  /* Not supportable if the reduction variable is used in the loop.  */
-  if (STMT_VINFO_RELEVANT (stmt_info) > vect_used_in_outer)
+  /* Not supportable if the reduction variable is used in the loop, unless
+     it's a reduction chain.  */
+  if (STMT_VINFO_RELEVANT (stmt_info) > vect_used_in_outer
+      && !GROUP_FIRST_ELEMENT (stmt_info))
     return false;
 
   /* Reductions that are not used even in an enclosing outer-loop,
@@ -4107,6 +4373,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       if (!vectype_in)
 	vectype_in = tem;
       gcc_assert (is_simple_use);
+
       if (dt != vect_internal_def
 	  && dt != vect_external_def
 	  && dt != vect_constant_def
@@ -4142,8 +4409,14 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
                                                        !nested_cycle,
                                                        &dummy));
   else
-    gcc_assert (stmt == vect_is_simple_reduction (loop_vinfo, reduc_def_stmt,
-                                                  !nested_cycle, &dummy));
+    {
+      gimple tmp = vect_is_simple_reduction (loop_vinfo, reduc_def_stmt,
+                                             !nested_cycle, &dummy);
+      /* We changed STMT to be the first stmt in reduction chain, hence we
+         check that in this case the first element in the chain is STMT.  */
+      gcc_assert (stmt == tmp
+                  || GROUP_FIRST_ELEMENT (vinfo_for_stmt (tmp)) == stmt);
+    }
 
   if (STMT_VINFO_LIVE_P (vinfo_for_stmt (reduc_def_stmt)))
     return false;
@@ -4505,6 +4778,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
           new_temp = make_ssa_name (vec_dest, new_stmt);
           gimple_assign_set_lhs (new_stmt, new_temp);
           vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
           if (slp_node)
             {
               VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), new_stmt);
@@ -4774,7 +5048,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   do_peeling_for_loop_bound
     = (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
        || (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-	   && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0));
+	   && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0)
+       || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo));
 
   if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
       || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
@@ -4924,7 +5199,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		  /* Interleaving. If IS_STORE is TRUE, the vectorization of the
 		     interleaving chain was completed - free all the stores in
 		     the chain.  */
-		  vect_remove_stores (DR_GROUP_FIRST_DR (stmt_info));
+		  vect_remove_stores (GROUP_FIRST_ELEMENT (stmt_info));
 		  gsi_remove (&si, true);
 		  continue;
 		}

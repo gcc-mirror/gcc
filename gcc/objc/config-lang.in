@@ -33,4 +33,7 @@ target_libs=target-libobjc
 # Most of the object files for cc1obj actually come from C.
 lang_requires="c"
 
-gtfiles="\$(srcdir)/objc/objc-act.h \$(srcdir)/objc/objc-act.c \$(srcdir)/objc/objc-runtime-shared-support.c \$(srcdir)/objc/objc-gnu-runtime-abi-01.c \$(srcdir)/objc/objc-next-runtime-abi-01.c \$(srcdir)/objc/objc-next-runtime-abi-02.c \$(srcdir)/c-parser.c \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-lang.h \$(srcdir)/c-objc-common.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-objc.h \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c"
+# Order is important.  If you change this list, make sure you test
+# building without C++ as well; that is, remove the gcc/cp directory,
+# and build with --enable-languages=c,objc.
+gtfiles="\$(srcdir)/c-family/c-objc.h \$(srcdir)/objc/objc-act.h \$(srcdir)/objc/objc-act.c \$(srcdir)/objc/objc-runtime-shared-support.c \$(srcdir)/objc/objc-gnu-runtime-abi-01.c \$(srcdir)/objc/objc-next-runtime-abi-01.c \$(srcdir)/objc/objc-next-runtime-abi-02.c \$(srcdir)/c-parser.c \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-lang.h \$(srcdir)/c-objc-common.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c"

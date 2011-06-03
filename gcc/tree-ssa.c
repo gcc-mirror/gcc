@@ -1319,6 +1319,13 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	  || TYPE_PRECISION (inner_type) != TYPE_PRECISION (outer_type))
 	return false;
 
+      /* Preserve conversions to BOOLEAN_TYPE if it is not of precision
+         one.  */
+      if (TREE_CODE (inner_type) != BOOLEAN_TYPE
+	  && TREE_CODE (outer_type) == BOOLEAN_TYPE
+	  && TYPE_PRECISION (outer_type) != 1)
+	return false;
+
       /* We don't need to preserve changes in the types minimum or
 	 maximum value in general as these do not generate code
 	 unless the types precisions are different.  */
@@ -2241,6 +2248,17 @@ execute_update_addresses_taken (void)
 		    tree link = gimple_asm_input_op (stmt, i);
 		    maybe_rewrite_mem_ref_base (&TREE_VALUE (link));
 		  }
+	      }
+
+	    else if (gimple_debug_bind_p (stmt)
+		     && gimple_debug_bind_has_value_p (stmt))
+	      {
+		tree *valuep = gimple_debug_bind_get_value_ptr (stmt);
+		tree decl;
+		maybe_rewrite_mem_ref_base (valuep);
+		decl = non_rewritable_mem_ref_base (*valuep);
+		if (decl && symbol_marked_for_renaming (decl))
+		  gimple_debug_bind_reset_value (stmt);
 	      }
 
 	    if (gimple_references_memory_p (stmt)

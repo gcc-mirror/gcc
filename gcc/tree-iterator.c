@@ -31,17 +31,16 @@ along with GCC; see the file COPYING3.  If not see
 /* This is a cache of STATEMENT_LIST nodes.  We create and destroy them
    fairly often during gimplification.  */
 
-static GTY ((deletable (""))) tree stmt_list_cache;
+static GTY ((deletable (""))) VEC(tree,gc) *stmt_list_cache;
 
 tree
 alloc_stmt_list (void)
 {
-  tree list = stmt_list_cache;
-  if (list)
+  tree list;
+  if (!VEC_empty (tree, stmt_list_cache))
     {
-      stmt_list_cache = TREE_CHAIN (list);
-      gcc_assert (stmt_list_cache != list);
-      memset (list, 0, sizeof(struct tree_common));
+      list = VEC_pop (tree, stmt_list_cache);
+      memset (list, 0, sizeof(struct tree_base));
       TREE_SET_CODE (list, STATEMENT_LIST);
     }
   else
@@ -55,11 +54,7 @@ free_stmt_list (tree t)
 {
   gcc_assert (!STATEMENT_LIST_HEAD (t));
   gcc_assert (!STATEMENT_LIST_TAIL (t));
-  /* If this triggers, it's a sign that the same list is being freed
-     twice.  */
-  gcc_assert (t != stmt_list_cache || stmt_list_cache == NULL);
-  TREE_CHAIN (t) = stmt_list_cache;
-  stmt_list_cache = t;
+  VEC_safe_push (tree, gc, stmt_list_cache, t);
 }
 
 /* A subroutine of append_to_statement_list{,_force}.  T is not NULL.  */

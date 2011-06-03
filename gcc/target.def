@@ -897,6 +897,13 @@ DEFHOOK
 bool, (rtx insn, int x),
 hook_bool_rtx_int_false)
 
+DEFHOOKPOD
+(exposed_pipeline,
+"True if the processor has an exposed pipeline, which means that not just\n\
+the order of instructions is important for correctness when scheduling, but\n\
+also the latencies of operations.",
+bool, false)
+
 HOOK_VECTOR_END (sched)
 
 /* Functions relating to vectorization.  */
@@ -1241,6 +1248,17 @@ DEFHOOK
  "",
  void, (void),
  hook_void_void)
+
+ /* Add a __gnu_ prefix to library functions rather than just __.  */
+DEFHOOKPOD
+(libfunc_gnu_prefix,
+ "If false (the default), internal library routines start with two\n\
+underscores.  If set to true, these routines start with @code{__gnu_}\n\
+instead.  E.g., @code{__muldi3} changes to @code{__gnu_muldi3}.  This\n\
+currently only affects functions defined in @file{libgcc2.c}.  If this\n\
+is set to true, the @file{tm.h} file must also\n\
+@code{#define LIBGCC2_GNU_PREFIX}.",
+  bool, false)
 
 /* Given a decl, a section name, and whether the decl initializer
    has relocs, choose attributes for the section.  */

@@ -680,7 +680,7 @@ CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
 
 # Additional sources to handle exceptions; overridden by targets as needed.
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
-   $(srcdir)/unwind-sjlj.c $(srcdir)/gthr-gnat.c $(srcdir)/unwind-c.c
+   $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
 LIB2ADDEHSTATIC = $(LIB2ADDEH)
 LIB2ADDEHSHARED = $(LIB2ADDEH)
 LIB2ADDEHDEP = $(UNWIND_H) unwind-pe.h unwind.inc unwind-dw2-fde.h unwind-dw2.h
@@ -1047,7 +1047,8 @@ LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
-LIBDEPS= $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) $(LIBDECNUMBER)
+LIBDEPS= libcommon.a $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) \
+	$(LIBDECNUMBER)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -1055,8 +1056,8 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = @LIBS@ $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(LIBDECNUMBER) \
-	$(HOST_LIBS)
+LIBS = @LIBS@ libcommon.a $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) \
+	$(LIBDECNUMBER) $(HOST_LIBS)
 BACKENDLIBS = $(CLOOGLIBS) $(PPLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
 	$(ZLIB)
 # Any system libraries needed just for GNAT.
@@ -1167,8 +1168,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 FORTRAN_TARGET_OBJS=@fortran_target_objs@
 
 # Object files for gcc driver.
-GCC_OBJS = gcc.o opts-common.o gcc-options.o diagnostic.o pretty-print.o \
-  input.o vec.o ggc-none.o
+GCC_OBJS = gcc.o vec.o ggc-none.o
 
 # Language-specific object files shared by all C-family front ends.
 C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
@@ -1190,7 +1190,7 @@ C_OBJS = c-lang.o $(C_STUB_OBJS) $(C_AND_OBJC_OBJS)
 # We put the insn-*.o files first so that a parallel make will build
 # them sooner, because they are large and otherwise tend to be the
 # last objects to finish building.
-OBJS-common = \
+OBJS = \
 	insn-attrtab.o \
 	insn-automata.o \
 	insn-emit.o \
@@ -1223,11 +1223,16 @@ OBJS-common = \
 	cfgloopanal.o \
 	cfgloopmanip.o \
 	cfgrtl.o \
+	cgraph.o \
+	cgraphbuild.o \
+	cgraphunit.o \
 	combine.o \
 	combine-stack-adj.o \
 	compare-elim.o \
 	convert.o \
 	coverage.o \
+	cppbuiltin.o \
+	cppdefault.o \
 	cprop.o \
 	cse.o \
 	cselib.o \
@@ -1240,7 +1245,6 @@ OBJS-common = \
 	df-problems.o \
 	df-scan.o \
 	dfp.o \
-	diagnostic.o \
 	dojump.o \
 	dominance.o \
 	domwalk.o \
@@ -1288,11 +1292,21 @@ OBJS-common = \
 	hwint.o \
 	ifcvt.o \
 	implicit-zee.o \
+	incpath.o \
 	init-regs.o \
-	input.o \
 	integrate.o \
 	internal-fn.o \
-	intl.o \
+	ipa-cp.o \
+	ipa-split.o \
+	ipa-inline.o \
+	ipa-inline-analysis.o \
+	ipa-inline-transform.o \
+	ipa-prop.o \
+	ipa-pure-const.o \
+	ipa-reference.o \
+	ipa-ref.o \
+	ipa-utils.o \
+	ipa.o \
 	ira.o \
 	ira-build.o \
 	ira-costs.o \
@@ -1320,14 +1334,14 @@ OBJS-common = \
 	lto-opts.o \
 	lto-streamer.o \
 	lto-compress.o \
+	matrix-reorg.o \
 	mcf.o \
 	mode-switching.o \
 	modulo-sched.o \
 	omega.o \
 	omp-low.o \
 	optabs.o \
-	options.o \
-	opts-common.o \
+	options-save.o \
 	opts-global.o \
 	opts.o \
 	params.o \
@@ -1337,7 +1351,6 @@ OBJS-common = \
 	postreload-gcse.o \
 	postreload.o \
 	predict.o \
-	pretty-print.o \
 	print-rtl.o \
 	print-tree.o \
 	profile.o \
@@ -1395,10 +1408,12 @@ OBJS-common = \
 	tree-eh.o \
 	tree-emutls.o \
 	tree-if-conv.o \
+	tree-inline.o \
 	tree-into-ssa.o \
 	tree-iterator.o \
 	tree-loop-distribution.o \
 	tree-nested.o \
+	tree-nomudflap.o \
 	tree-nrv.o \
 	tree-object-size.o \
 	tree-optimize.o \
@@ -1453,61 +1468,40 @@ OBJS-common = \
 	tree-tailcall.o \
 	tree-vect-generic.o \
 	tree-vect-patterns.o \
-        tree-vect-data-refs.o \
-        tree-vect-stmts.o \
-        tree-vect-loop.o \
-        tree-vect-loop-manip.o \
-        tree-vect-slp.o \
+	tree-vect-data-refs.o \
+	tree-vect-stmts.o \
+	tree-vect-loop.o \
+	tree-vect-loop-manip.o \
+	tree-vect-slp.o \
 	tree-vectorizer.o \
 	tree-vrp.o \
 	tree.o \
 	value-prof.o \
 	var-tracking.o \
 	varasm.o \
+	varpool.o \
 	vec.o \
-	version.o \
 	vmsdbgout.o \
 	web.o \
-	xcoffout.o
-
-# Target object files.
-OBJS-md = $(out_object_file)
-
-# Language independent object files which are not used by all languages.
-OBJS-archive = \
+	xcoffout.o \
+	$(out_object_file) \
 	$(EXTRA_OBJS) \
-	$(host_hook_obj) \
-	cgraph.o \
-	cgraphbuild.o \
-	cgraphunit.o \
-	cppbuiltin.o \
-	cppdefault.o \
-	incpath.o \
-	ipa-cp.o \
-        ipa-split.o \
-	ipa-inline.o \
-	ipa-inline-analysis.o \
-	ipa-inline-transform.o \
-	ipa-prop.o \
-	ipa-pure-const.o \
-	ipa-reference.o \
-	ipa-ref.o \
-	ipa-utils.o \
-	ipa.o \
-	matrix-reorg.o \
-	prefix.o \
-	tree-inline.o \
-	tree-nomudflap.o \
-	varpool.o
+	$(host_hook_obj)
 
-OBJS = $(OBJS-common) $(OBJS-md) $(OBJS-archive)
+# Objects in libcommon.a, potentially used by all host binaries and with
+# no target dependencies.
+OBJS-libcommon = diagnostic.o pretty-print.o intl.o input.o version.o
+
+# Objects in libcommon-target.a, used by drivers and by the core
+# compiler and containing target-dependent code.
+OBJS-libcommon-target = prefix.o opts-common.o options.o
 
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(C_OBJS) \
   $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 
-ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) \
-  @TREEBROWSER@ main.o gccspec.o version.o intl.o prefix.o cppspec.o \
+ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
+  $(OBJS-libcommon-target) @TREEBROWSER@ main.o gccspec.o cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) mips-tfile.o mips-tdump.o \
   $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
 
@@ -1515,7 +1509,8 @@ ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) \
 # compilation or not.
 ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
-BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIB) $(LIBDECNUMBER)
+BACKEND = main.o @TREEBROWSER@ libbackend.a libcommon-target.a libcommon.a \
+	$(CPPLIB) $(LIBDECNUMBER)
 
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
@@ -1527,7 +1522,8 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) lto-wrapper$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
- *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a libgcc.mk
+ *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a libcommon-target.a \
+ libcommon.a libgcc.mk
 
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
@@ -1839,21 +1835,31 @@ libbackend.a: $(OBJS)
 	$(AR) $(AR_FLAGS) libbackend.a $(OBJS)
 	-$(RANLIB) $(RANLIB_FLAGS) libbackend.a
 
+libcommon-target.a: $(OBJS-libcommon-target)
+	-rm -rf libcommon-target.a
+	$(AR) $(AR_FLAGS) libcommon-target.a $(OBJS-libcommon-target)
+	-$(RANLIB) $(RANLIB_FLAGS) libcommon-target.a
+
+libcommon.a: $(OBJS-libcommon)
+	-rm -rf libcommon.a
+	$(AR) $(AR_FLAGS) libcommon.a $(OBJS-libcommon)
+	-$(RANLIB) $(RANLIB_FLAGS) libcommon.a
+
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc$(exeext): $(GCC_OBJS) gccspec.o version.o intl.o prefix.o \
-   version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+xgcc$(exeext): $(GCC_OBJS) gccspec.o libcommon-target.a $(LIBDEPS) \
+	$(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  gccspec.o intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+	  gccspec.o $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
 
 # cpp is to cpp0 as gcc is to cc1.
 # The only difference from xgcc is that it's linked with cppspec.o
 # instead of gccspec.o.
-cpp$(exeext): $(GCC_OBJS) cppspec.o version.o intl.o prefix.o \
-   version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+cpp$(exeext): $(GCC_OBJS) cppspec.o libcommon-target.a $(LIBDEPS) \
+	$(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  cppspec.o intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+	  cppspec.o $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 $(SPECS): xgcc$(exeext)
@@ -1889,11 +1895,16 @@ cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
 LIB2ADD = $(LIB2FUNCS_EXTRA)
 LIB2ADD_ST = $(LIB2FUNCS_STATIC_EXTRA)
 
-# All source files for libgcc are either in the source directory (in
-# which case they will start with $(srcdir)), or generated into the build
-# directory (in which case they will be relative paths).
-srcdirify = $(patsubst $(srcdir)%,$$(gcc_srcdir)%,$(filter $(srcdir)%,$(1))) \
-            $(patsubst %,$$(gcc_objdir)/%,$(filter-out $(srcdir)%,$(1)))
+# All source files for libgcc are either generated in the libgcc build
+# directory which will be substituted for $$(libgcc_objdir), in the
+# source directory (in which case they will start with $(srcdir)), or
+# generated into the build directory (in which case they will be
+# relative paths).
+srcdirify = $(patsubst $$(libgcc_objdir)/%,%, \
+		$(filter $$(libgcc_objdir)%,$(1))) \
+	    $(patsubst $(srcdir)%,$$(gcc_srcdir)%,$(filter $(srcdir)%,$(1))) \
+	    $(patsubst %,$$(gcc_objdir)/%, \
+		$(filter-out $(srcdir)% $$(libgcc_objdir)%,$(1)))
 
 # The distinction between these two variables is no longer relevant,
 # so we combine them.  Sort removes duplicates.
@@ -2091,7 +2102,7 @@ sbitmap.o: sbitmap.c sbitmap.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(BASIC_BLOCK
 ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(EBITMAP_H)
 sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)
 
-COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o intl.o version.o
+COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
@@ -2100,7 +2111,8 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 	mv -f T$@ $@
 
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h \
-	$(OBSTACK_H) $(DEMANGLE_H) collect2.h collect2-aix.h version.h
+	$(OBSTACK_H) $(DEMANGLE_H) collect2.h collect2-aix.h version.h \
+	$(DIAGNOSTIC_H)
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS)  \
 	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
 	-c $(srcdir)/collect2.c $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
@@ -2109,14 +2121,14 @@ collect2-aix.o : collect2-aix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     collect2-aix.h
 
 tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-    $(OBSTACK_H) collect2.h intl.h
+    $(OBSTACK_H) collect2.h intl.h $(DIAGNOSTIC_CORE_H)
 
-lto-wrapper$(exeext): lto-wrapper.o intl.o $(LIBDEPS)
-	+$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ lto-wrapper.o intl.o $(LIBS)
+lto-wrapper$(exeext): lto-wrapper.o $(LIBDEPS)
+	+$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ lto-wrapper.o $(LIBS)
 	mv -f T$@ $@
 
 lto-wrapper.o: lto-wrapper.c $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h \
-	$(OBSTACK_H)
+	$(OBSTACK_H) $(DIAGNOSTIC_H)
 
 # Files used by all variants of C.
 c-family/c-common.o : c-family/c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -2271,24 +2283,32 @@ s-options: $(ALL_OPT_FILES) Makefile $(srcdir)/opt-gather.awk
 	$(SHELL) $(srcdir)/../move-if-change tmp-optionlist optionlist
 	$(STAMP) s-options
 
-options.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/optc-gen.awk
-	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/optc-gen.awk \
+options.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
+    $(srcdir)/optc-gen.awk
+	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
+	       -f $(srcdir)/optc-gen.awk \
+	       -v header_name="config.h system.h coretypes.h tm.h" < $< > $@
+
+options-save.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
+    $(srcdir)/optc-save-gen.awk
+	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
+	       -f $(srcdir)/optc-save-gen.awk \
 	       -v header_name="config.h system.h coretypes.h tm.h" < $< > $@
 
 options.h: s-options-h ; @true
-s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opth-gen.awk
-	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opth-gen.awk \
+s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
+    $(srcdir)/opth-gen.awk
+	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
+	       -f $(srcdir)/opth-gen.awk \
 	       < $< > tmp-options.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-options.h options.h
 	$(STAMP) $@
 
-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) $(FLAGS_H) \
+options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(OPTS_H) intl.h $(OPTIONS_C_EXTRA)
 
-gcc-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(OPTS_H) intl.h \
-	$(OPTIONS_C_EXTRA)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(OUTPUT_OPTION) \
-		-DGCC_DRIVER options.c
+options-save.o: options-save.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) $(FLAGS_H) \
+	$(TM_H) $(OPTS_H) intl.h $(OPTIONS_C_EXTRA)
 
 dumpvers: dumpvers.c
 
@@ -2961,7 +2981,8 @@ optabs.o : optabs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
 dbxout.o : dbxout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(FLAGS_H) $(REGS_H) debug.h $(TM_P_H) $(TARGET_H) $(FUNCTION_H) \
    langhooks.h insn-config.h reload.h $(GSTAB_H) xcoffout.h output.h dbxout.h \
-   toplev.h $(DIAGNOSTIC_CORE_H) $(GGC_H) $(OBSTACK_H) $(EXPR_H) gt-dbxout.h
+   toplev.h $(DIAGNOSTIC_CORE_H) $(GGC_H) $(OBSTACK_H) $(EXPR_H) $(CGRAPH_H) \
+   gt-dbxout.h
 debug.o : debug.c debug.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H)
 sdbout.o : sdbout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) debug.h \
    $(TREE_H) $(GGC_H) $(RTL_H) $(REGS_H) $(FLAGS_H) insn-config.h \
@@ -3508,7 +3529,6 @@ params.o : params.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(PARAMS_H) \
 pointer-set.o: pointer-set.c pointer-set.h $(CONFIG_H) $(SYSTEM_H)
 hooks.o: hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(HOOKS_H)
 pretty-print.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h $(PRETTY_PRINT_H)
-errors.o : errors.c $(CONFIG_H) $(SYSTEM_H) errors.h $(BCONFIG_H)
 dbgcnt.o: dbgcnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) $(DBGCNT_H) \
    $(TM_H) $(RTL_H) output.h
 lower-subreg.o : lower-subreg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -3530,16 +3550,16 @@ $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
 		$(out_file) $(OUTPUT_OPTION)
 
 # Build auxiliary files that support ecoff format.
-mips-tfile: mips-tfile.o version.o $(LIBDEPS)
+mips-tfile: mips-tfile.o $(LIBDEPS)
 	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
-		mips-tfile.o version.o $(LIBS)
+		mips-tfile.o $(LIBS)
 
 mips-tfile.o : mips-tfile.c $(CONFIG_H) $(SYSTEM_H) \
    version.h $(srcdir)/../include/getopt.h $(GSTAB_H) intl.h
 
-mips-tdump: mips-tdump.o version.o $(LIBDEPS)
+mips-tdump: mips-tdump.o $(LIBDEPS)
 	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
-		mips-tdump.o version.o $(LIBS)
+		mips-tdump.o $(LIBS)
 
 mips-tdump.o : mips-tdump.c $(CONFIG_H) $(SYSTEM_H) \
    version.h $(srcdir)/../include/getopt.h stab.def
@@ -3857,7 +3877,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gcov-iov.h
 
 # In order for parallel make to really start compiling the expensive
-# objects from $(OBJS-common) as early as possible, build all their
+# objects from $(OBJS) as early as possible, build all their
 # prerequisites strictly before all objects.
 $(ALL_HOST_OBJS) : | $(generated_files)
 
@@ -4063,14 +4083,14 @@ s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
 	$(STAMP) s-iov
 
 gcov.o: gcov.c gcov-io.c $(GCOV_IO_H) intl.h $(SYSTEM_H) coretypes.h $(TM_H) \
-   $(CONFIG_H) version.h
+   $(CONFIG_H) version.h $(DIAGNOSTIC_H)
 gcov-dump.o: gcov-dump.c gcov-io.c $(GCOV_IO_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(CONFIG_H) version.h
+   $(TM_H) $(CONFIG_H) version.h intl.h $(DIAGNOSTIC_H)
 
-GCOV_OBJS = gcov.o intl.o version.o errors.o
+GCOV_OBJS = gcov.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
-GCOV_DUMP_OBJS = gcov-dump.o version.o errors.o
+GCOV_DUMP_OBJS = gcov-dump.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
 		$(LIBS) -o $@
@@ -4447,7 +4467,7 @@ mostlyclean: lang.mostlyclean
 	-rm -f build/*
 	-rm -f mddeps.mk
 # Delete other built files.
-	-rm -f specs.h options.c options.h
+	-rm -f specs.h options.c options.h options-save.c
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*

@@ -109,6 +109,8 @@ typedef enum scope_kind {
   sk_catch,	     /* A catch-block.  */
   sk_for,	     /* The scope of the variable declared in a
 			for-init-statement.  */
+  sk_cond,	     /* The scope of the variable declared in the condition
+			of an if or switch statement.  */
   sk_function_parms, /* The scope containing function parameters.  */
   sk_class,	     /* The scope containing the members of a class.  */
   sk_scoped_enum,    /* The scope containing the enumertors of a C++0x
@@ -140,7 +142,7 @@ typedef enum tag_scope {
 } tag_scope;
 
 typedef struct GTY(()) cp_class_binding {
-  cxx_binding base;
+  cxx_binding *base;
   /* The bound name.  */
   tree identifier;
 } cp_class_binding;

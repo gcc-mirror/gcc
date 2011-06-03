@@ -1,3 +1,19 @@
+2011-06-01  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_decl_method_attributes): Implement nonnull
+	attribute for Objective-C methods.
+
+2011-05-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* config-lang.in (gtfiles): Updated order of files to fix building
+	when the gcc/cp directory is missing, as in the case of some
+	release tarballs.
+
+2011-05-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.c (objc_compare_types): Use function_args_iterator
+	instead of TYPE_ARG_TYPES to compare function argument types.
+
 2011-05-13  Toon Moene  <toon@moene.org>
 
 	* objc-next-runtime-abi-02.c (newabi_append_ro):

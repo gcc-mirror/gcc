@@ -67,8 +67,7 @@ stop_string (const char *string, GFC_INTEGER_4 len)
   if (string)
     {
       estr_write ("STOP ");
-      ssize_t w = write (STDERR_FILENO, string, len);
-      (void) sizeof (w); /* Avoid compiler warning about not using w.  */
+      (void) write (STDERR_FILENO, string, len);
       estr_write ("\n");
     }
   exit (0);
@@ -88,8 +87,7 @@ void
 error_stop_string (const char *string, GFC_INTEGER_4 len)
 {
   estr_write ("ERROR STOP ");
-  ssize_t w = write (STDERR_FILENO, string, len);
-  (void) sizeof (w); /* Avoid compiler warning about not using w.  */
+  (void) write (STDERR_FILENO, string, len);
   estr_write ("\n");
 
   exit (1);

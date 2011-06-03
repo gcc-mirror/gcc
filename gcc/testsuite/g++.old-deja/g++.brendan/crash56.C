@@ -253,7 +253,7 @@ void
 SetLD<T>::add(const T& item)
 {
     if ( ! contains(item) )
-	append(item);
+      this->append(item);
 }
 template<class T>
 void

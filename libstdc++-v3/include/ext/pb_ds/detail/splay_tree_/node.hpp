@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file node.hpp
+ * @file splay_tree_/node.hpp
  * Contains an implementation struct for splay_tree_'s node.
  */
 
@@ -45,7 +45,8 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-    template<typename Value_Type, class Metadata, class Allocator>
+    /// Node for splay tree.
+    template<typename Value_Type, class Metadata, typename _Alloc>
     struct splay_tree_node_
     {
     public:
@@ -53,17 +54,17 @@ namespace __gnu_pbds
       typedef Metadata metadata_type;
 
       typedef
-      typename Allocator::template rebind<
-      splay_tree_node_<Value_Type, Metadata, Allocator> >::other::pointer
+      typename _Alloc::template rebind<
+      splay_tree_node_<Value_Type, Metadata, _Alloc> >::other::pointer
       node_pointer;
 
       typedef
-      typename Allocator::template rebind<metadata_type>::other::reference
+      typename _Alloc::template rebind<metadata_type>::other::reference
       metadata_reference;
 
       typedef
-      typename Allocator::template rebind<metadata_type>::other::const_reference
-      const_metadata_reference;
+      typename _Alloc::template rebind<metadata_type>::other::const_reference
+      metadata_const_reference;
 
 #ifdef PB_DS_BIN_SEARCH_TREE_TRACE_
       void
@@ -75,7 +76,7 @@ namespace __gnu_pbds
       special() const
       { return m_special; }
 
-      inline const_metadata_reference
+      inline metadata_const_reference
       get_metadata() const
       { return m_metadata; }
 
@@ -91,16 +92,16 @@ namespace __gnu_pbds
       metadata_type m_metadata;
     };
 
-    template<typename Value_Type, typename Allocator>
-    struct splay_tree_node_<Value_Type, null_node_metadata, Allocator>
+    template<typename Value_Type, typename _Alloc>
+    struct splay_tree_node_<Value_Type, null_type, _Alloc>
     {
     public:
       typedef Value_Type value_type;
-      typedef null_node_metadata metadata_type;
+      typedef null_type metadata_type;
 
       typedef
-      typename Allocator::template rebind<
-      splay_tree_node_<Value_Type, null_node_metadata, Allocator> >::other::pointer
+      typename _Alloc::template rebind<
+      splay_tree_node_<Value_Type, null_type, _Alloc> >::other::pointer
       node_pointer;
 
       inline bool

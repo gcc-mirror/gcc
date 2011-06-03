@@ -1602,7 +1602,7 @@ extern bool sel_bb_empty_p (basic_block);
 extern bool in_current_region_p (basic_block);
 extern basic_block fallthru_bb_of_jump (rtx);
 
-extern void sel_init_bbs (bb_vec_t, basic_block);
+extern void sel_init_bbs (bb_vec_t);
 extern void sel_finish_bbs (void);
 
 extern struct succs_info * compute_succs_info (insn_t, short);

@@ -2636,7 +2636,9 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
 }
 
 static int
-rx_memory_move_cost (enum machine_mode mode, reg_class_t regclass, bool in)
+rx_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+		     reg_class_t regclass ATTRIBUTE_UNUSED,
+		     bool in)
 {
   return (in ? 2 : 0) + REGISTER_MOVE_COST (mode, regclass, regclass);
 }

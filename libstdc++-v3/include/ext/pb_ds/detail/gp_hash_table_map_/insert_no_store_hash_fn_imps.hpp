@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file insert_no_store_hash_fn_imps.hpp
+ * @file gp_hash_table_map_/insert_no_store_hash_fn_imps.hpp
  * Contains implementations of gp_ht_map_'s insert related functions,
  * when the hash value is not stored.
  */
@@ -42,7 +42,7 @@
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
-find_ins_pos(const_key_reference r_key, false_type)
+find_ins_pos(key_const_reference r_key, false_type)
 {
   size_type hash = ranged_probe_fn_base::operator()(r_key);
   size_type i;
@@ -95,7 +95,7 @@ inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
 insert_imp(const_reference r_val, false_type)
 {
-  const_key_reference r_key = PB_DS_V2F(r_val);
+  key_const_reference r_key = PB_DS_V2F(r_val);
   const size_type pos = find_ins_pos(r_key, 
 				     traits_base::m_store_extra_indicator);
 

@@ -6494,6 +6494,13 @@ resolve_deallocate_expr (gfc_expr *e)
       return FAILURE;
     }
 
+  /* F2008, C644.  */
+  if (gfc_is_coindexed (e))
+    {
+      gfc_error ("Coindexed allocatable object at %L", &e->where);
+      return FAILURE;
+    }
+
   if (pointer
       && gfc_check_vardef_context (e, true, _("DEALLOCATE object")) == FAILURE)
     return FAILURE;
@@ -10111,7 +10118,14 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 
       /* Also, they must not have the SAVE attribute.
 	 SAVE_IMPLICIT is checked below.  */
-      if (sym->attr.save == SAVE_EXPLICIT)
+      if (sym->as && sym->attr.codimension)
+	{
+	  int corank = sym->as->corank;
+	  sym->as->corank = 0;
+	  no_init_flag = automatic_flag = is_non_constant_shape_array (sym);
+	  sym->as->corank = corank;
+	}
+      if (automatic_flag && sym->attr.save == SAVE_EXPLICIT)
 	{
 	  gfc_error (auto_save_msg, sym->name, &sym->declared_at);
 	  return FAILURE;
@@ -12330,6 +12344,7 @@ resolve_symbol (gfc_symbol *sym)
   if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
        || sym->attr.codimension)
       && !(sym->attr.allocatable || sym->attr.dummy || sym->attr.save
+	   || sym->ns->save_all
 	   || sym->ns->proc_name->attr.flavor == FL_MODULE
 	   || sym->ns->proc_name->attr.is_main_program
 	   || sym->attr.function || sym->attr.result || sym->attr.use_assoc))

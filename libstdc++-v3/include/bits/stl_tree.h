@@ -352,15 +352,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Alloc allocator_type;
 
       _Node_allocator&
-      _M_get_Node_allocator()
+      _M_get_Node_allocator() _GLIBCXX_NOEXCEPT
       { return *static_cast<_Node_allocator*>(&this->_M_impl); }
       
       const _Node_allocator&
-      _M_get_Node_allocator() const
+      _M_get_Node_allocator() const _GLIBCXX_NOEXCEPT
       { return *static_cast<const _Node_allocator*>(&this->_M_impl); }
 
       allocator_type
-      get_allocator() const
+      get_allocator() const _GLIBCXX_NOEXCEPT
       { return allocator_type(_M_get_Node_allocator()); }
 
     protected:
@@ -449,6 +449,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  : _Node_allocator(__a), _M_key_compare(__comp), _M_header(),
 	    _M_node_count(0)
 	  { _M_initialize(); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	  _Rb_tree_impl(const _Key_compare& __comp, _Node_allocator&& __a)
+	  : _Node_allocator(std::move(__a)), _M_key_compare(__comp),
+	    _M_header(), _M_node_count(0)
+	  { _M_initialize(); }
+#endif
 
 	private:
 	  void
@@ -635,7 +642,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Rb_tree(_Rb_tree&& __x);
 #endif
 
-      ~_Rb_tree()
+      ~_Rb_tree() _GLIBCXX_NOEXCEPT
       { _M_erase(_M_begin()); }
 
       _Rb_tree&
@@ -647,56 +654,56 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_impl._M_key_compare; }
 
       iterator
-      begin()
+      begin() _GLIBCXX_NOEXCEPT
       { 
 	return iterator(static_cast<_Link_type>
 			(this->_M_impl._M_header._M_left));
       }
 
       const_iterator
-      begin() const
+      begin() const _GLIBCXX_NOEXCEPT
       { 
 	return const_iterator(static_cast<_Const_Link_type>
 			      (this->_M_impl._M_header._M_left));
       }
 
       iterator
-      end()
+      end() _GLIBCXX_NOEXCEPT
       { return iterator(static_cast<_Link_type>(&this->_M_impl._M_header)); }
 
       const_iterator
-      end() const
+      end() const _GLIBCXX_NOEXCEPT
       { 
 	return const_iterator(static_cast<_Const_Link_type>
 			      (&this->_M_impl._M_header));
       }
 
       reverse_iterator
-      rbegin()
+      rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(end()); }
 
       const_reverse_iterator
-      rbegin() const
+      rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(end()); }
 
       reverse_iterator
-      rend()
+      rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
 
       const_reverse_iterator
-      rend() const
+      rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
       bool
-      empty() const
+      empty() const _GLIBCXX_NOEXCEPT
       { return _M_impl._M_node_count == 0; }
 
       size_type
-      size() const
+      size() const _GLIBCXX_NOEXCEPT 
       { return _M_impl._M_node_count; }
 
       size_type
-      max_size() const
+      max_size() const _GLIBCXX_NOEXCEPT
       { return _M_get_Node_allocator().max_size(); }
 
       void
@@ -794,7 +801,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       erase(const key_type* __first, const key_type* __last);
 
       void
-      clear()
+      clear() _GLIBCXX_NOEXCEPT
       {
         _M_erase(_M_begin());
         _M_leftmost() = _M_end();
@@ -900,7 +907,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            typename _Compare, typename _Alloc>
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     _Rb_tree(_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&& __x)
-    : _M_impl(__x._M_impl._M_key_compare, __x._M_get_Node_allocator())
+    : _M_impl(__x._M_impl._M_key_compare,
+	      std::move(__x._M_get_Node_allocator()))
     {
       if (__x._M_root() != 0)
 	{

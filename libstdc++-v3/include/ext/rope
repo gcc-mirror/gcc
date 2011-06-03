@@ -729,7 +729,7 @@ protected:
         if (_M_data != this->_M_c_string)
 	  this->_M_free_c_string();
 	
-        __STL_FREE_STRING(_M_data, this->_M_size, this->_M_get_allocator());
+	this->__STL_FREE_STRING(_M_data, this->_M_size, this->_M_get_allocator());
       }
 #endif
 protected:
@@ -1170,7 +1170,7 @@ protected:
       operator*()
       {
         if (0 == this->_M_buf_ptr)
-	  _S_setcache(*this);
+	  this->_S_setcache(*this);
         return *this->_M_buf_ptr;
       }
 
@@ -1299,7 +1299,7 @@ protected:
         _M_root_rope(__r)
       { _RopeRep::_S_ref(this->_M_root);
         if (!(__r -> empty()))
-	  _S_setcache(*this);
+	  this->_S_setcache(*this);
       }
 
       void _M_check();

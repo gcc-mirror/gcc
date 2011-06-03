@@ -1,6 +1,6 @@
 // <mutex> -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -70,9 +70,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef __native_type* 			native_handle_type;
 
 #ifdef __GTHREAD_MUTEX_INIT
-    constexpr mutex() : _M_mutex(__GTHREAD_MUTEX_INIT) { }
+    constexpr mutex() noexcept : _M_mutex(__GTHREAD_MUTEX_INIT) { }
 #else
-    mutex()
+    mutex() noexcept
     {
       // XXX EAGAIN, ENOMEM, EPERM, EBUSY(may), EINVAL(may)
       __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex);
@@ -95,7 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     bool
-    try_lock()
+    try_lock() noexcept
     {
       // XXX EINVAL, EAGAIN, EBUSY
       return !__gthread_mutex_trylock(&_M_mutex);
@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     bool
-    try_lock()
+    try_lock() noexcept
     {
       // XXX EINVAL, EAGAIN, EBUSY
       return !__gthread_recursive_mutex_trylock(&_M_mutex);
@@ -247,7 +247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     bool
-    try_lock()
+    try_lock() noexcept
     {
       // XXX EINVAL, EAGAIN, EBUSY
       return !__gthread_mutex_trylock(&_M_mutex);
@@ -354,7 +354,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     bool
-    try_lock()
+    try_lock() noexcept
     {
       // XXX EINVAL, EAGAIN, EBUSY
       return !__gthread_recursive_mutex_trylock(&_M_mutex);
@@ -464,7 +464,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       typedef _Mutex mutex_type;
 
-      unique_lock()
+      unique_lock() noexcept
       : _M_device(0), _M_owns(false)
       { }
 
@@ -475,7 +475,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_owns = true;
       }
 
-      unique_lock(mutex_type& __m, defer_lock_t)
+      unique_lock(mutex_type& __m, defer_lock_t) noexcept
       : _M_device(&__m), _M_owns(false)
       { }
 
@@ -510,14 +510,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unique_lock(const unique_lock&) = delete;
       unique_lock& operator=(const unique_lock&) = delete;
 
-      unique_lock(unique_lock&& __u)
+      unique_lock(unique_lock&& __u) noexcept
       : _M_device(__u._M_device), _M_owns(__u._M_owns)
       {
 	__u._M_device = 0;
 	__u._M_owns = false;
       }
 
-      unique_lock& operator=(unique_lock&& __u)
+      unique_lock& operator=(unique_lock&& __u) noexcept
       {
 	if(_M_owns)
 	  unlock();
@@ -601,14 +601,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       void
-      swap(unique_lock& __u)
+      swap(unique_lock& __u) noexcept
       {
 	std::swap(_M_device, __u._M_device);
 	std::swap(_M_owns, __u._M_owns);
       }
 
       mutex_type*
-      release()
+      release() noexcept
       {
 	mutex_type* __ret = _M_device;
 	_M_device = 0;
@@ -617,14 +617,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      owns_lock() const
+      owns_lock() const noexcept
       { return _M_owns; }
 
-      explicit operator bool() const
+      explicit operator bool() const noexcept
       { return owns_lock(); }
 
       mutex_type*
-      mutex() const
+      mutex() const noexcept
       { return _M_device; }
 
     private:
@@ -632,9 +632,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool		_M_owns; // XXX use atomic_bool
     };
 
+  /// Partial specialization for unique_lock objects.
   template<typename _Mutex>
     inline void
-    swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>& __y)
+    swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>& __y) noexcept
     { __x.swap(__y); }
 
   template<int _Idx>
@@ -759,9 +760,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __native_type  _M_once;
 
   public:
-    constexpr once_flag() : _M_once(__GTHREAD_ONCE_INIT) { }
+    /// Constructor
+    constexpr once_flag() noexcept : _M_once(__GTHREAD_ONCE_INIT) { }
 
+    /// Deleted copy constructor
     once_flag(const once_flag&) = delete;
+    /// Deleted assignment operator
     once_flag& operator=(const once_flag&) = delete;
 
     template<typename _Callable, typename... _Args>

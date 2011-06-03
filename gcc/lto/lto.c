@@ -254,50 +254,20 @@ remember_with_vars (tree t)
 
 static void lto_fixup_types (tree);
 
+/* Fix up fields of a tree_typed T.  */
+
+static void
+lto_ft_typed (tree t)
+{
+  LTO_FIXUP_TREE (TREE_TYPE (t));
+}
+
 /* Fix up fields of a tree_common T.  */
 
 static void
 lto_ft_common (tree t)
 {
-  /* The following re-creates the TYPE_REFERENCE_TO and TYPE_POINTER_TO
-     lists.  We do not stream TYPE_REFERENCE_TO, TYPE_POINTER_TO or
-     TYPE_NEXT_PTR_TO and TYPE_NEXT_REF_TO.
-     First remove us from any pointer list we are on.  */
-  if (TREE_CODE (t) == POINTER_TYPE)
-    {
-      if (TYPE_POINTER_TO (TREE_TYPE (t)) == t)
-	TYPE_POINTER_TO (TREE_TYPE (t)) = TYPE_NEXT_PTR_TO (t);
-      else
-	{
-	  tree tem = TYPE_POINTER_TO (TREE_TYPE (t));
-	  while (tem && TYPE_NEXT_PTR_TO (tem) != t)
-	    tem = TYPE_NEXT_PTR_TO (tem);
-	  if (tem)
-	    TYPE_NEXT_PTR_TO (tem) = TYPE_NEXT_PTR_TO (t);
-	}
-      TYPE_NEXT_PTR_TO (t) = NULL_TREE;
-    }
-  else if (TREE_CODE (t) == REFERENCE_TYPE)
-    {
-      if (TYPE_REFERENCE_TO (TREE_TYPE (t)) == t)
-	TYPE_REFERENCE_TO (TREE_TYPE (t)) = TYPE_NEXT_REF_TO (t);
-      else
-	{
-	  tree tem = TYPE_REFERENCE_TO (TREE_TYPE (t));
-	  while (tem && TYPE_NEXT_REF_TO (tem) != t)
-	    tem = TYPE_NEXT_REF_TO (tem);
-	  if (tem)
-	    TYPE_NEXT_REF_TO (tem) = TYPE_NEXT_REF_TO (t);
-	}
-      TYPE_NEXT_REF_TO (t) = NULL_TREE;
-    }
-
-  /* Fixup our type.  */
-  LTO_FIXUP_TREE (TREE_TYPE (t));
-
-  /* Second put us on the list of pointers of the new pointed-to type
-     if we are a main variant.  This is done in lto_ft_type after
-     fixing up our main variant.  */
+  lto_ft_typed (t);
   LTO_FIXUP_TREE (TREE_CHAIN (t));
 }
 
@@ -374,8 +344,6 @@ lto_ft_field_decl (tree t)
 static void
 lto_ft_type (tree t)
 {
-  tree tem, mv;
-
   lto_ft_common (t);
   LTO_FIXUP_TREE (TYPE_CACHED_VALUES (t));
   LTO_FIXUP_TREE (TYPE_SIZE (t));
@@ -392,67 +360,6 @@ lto_ft_type (tree t)
   LTO_FIXUP_TREE (t->type_non_common.binfo);
 
   LTO_FIXUP_TREE (TYPE_CONTEXT (t));
-
-  /* Compute the canonical type of t and fix that up.  From this point
-     there are no longer any types with TYPE_STRUCTURAL_EQUALITY_P
-     and its type-based alias problems.  */
-  if (!TYPE_CANONICAL (t))
-    {
-      TYPE_CANONICAL (t) = gimple_register_canonical_type (t);
-      LTO_FIXUP_TREE (TYPE_CANONICAL (t));
-    }
-
-  /* The following re-creates proper variant lists while fixing up
-     the variant leaders.  We do not stream TYPE_NEXT_VARIANT so the
-     variant list state before fixup is broken.  */
-
-  /* Remove us from our main variant list if we are not the variant leader.  */
-  if (TYPE_MAIN_VARIANT (t) != t)
-    {
-      tem = TYPE_MAIN_VARIANT (t);
-      while (tem && TYPE_NEXT_VARIANT (tem) != t)
-	tem = TYPE_NEXT_VARIANT (tem);
-      if (tem)
-	TYPE_NEXT_VARIANT (tem) = TYPE_NEXT_VARIANT (t);
-      TYPE_NEXT_VARIANT (t) = NULL_TREE;
-    }
-
-  /* Query our new main variant.  */
-  mv = gimple_register_type (TYPE_MAIN_VARIANT (t));
-
-  /* If we were the variant leader and we get replaced ourselves drop
-     all variants from our list.  */
-  if (TYPE_MAIN_VARIANT (t) == t
-      && mv != t)
-    {
-      tem = t;
-      while (tem)
-	{
-	  tree tem2 = TYPE_NEXT_VARIANT (tem);
-	  TYPE_NEXT_VARIANT (tem) = NULL_TREE;
-	  tem = tem2;
-	}
-    }
-
-  /* Finally adjust our main variant and fix it up.  */
-  TYPE_MAIN_VARIANT (t) = mv;
-  LTO_FIXUP_TREE (TYPE_MAIN_VARIANT (t));
-
-  /* As the second step of reconstructing the pointer chains put us
-     on the list of pointers of the new pointed-to type
-     if we are a main variant.  See lto_ft_common for the first step.  */
-  if (TREE_CODE (t) == POINTER_TYPE
-      && TYPE_MAIN_VARIANT (t) == t)
-    {
-      TYPE_NEXT_PTR_TO (t) = TYPE_POINTER_TO (TREE_TYPE (t));
-      TYPE_POINTER_TO (TREE_TYPE (t)) = t;
-    }
-  else if (TREE_CODE (t) == REFERENCE_TYPE
-	   && TYPE_MAIN_VARIANT (t) == t)
-    {
-      TYPE_NEXT_REF_TO (t) = TYPE_REFERENCE_TO (TREE_TYPE (t));
-      TYPE_REFERENCE_TO (TREE_TYPE (t)) = t;
-    }
 }
 
 /* Fix up fields of a BINFO T.  */
@@ -497,7 +404,7 @@ lto_ft_constructor (tree t)
   unsigned HOST_WIDE_INT idx;
   constructor_elt *ce;
 
-  LTO_FIXUP_TREE (TREE_TYPE (t));
+  lto_ft_typed (t);
 
   for (idx = 0;
        VEC_iterate(constructor_elt, CONSTRUCTOR_ELTS (t), idx, ce);
@@ -514,7 +421,7 @@ static void
 lto_ft_expr (tree t)
 {
   int i;
-  lto_ft_common (t);
+  lto_ft_typed (t);
   for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
     LTO_FIXUP_TREE (TREE_OPERAND (t, i));
 }
@@ -605,8 +512,24 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
   struct lto_streamer_cache_d *cache = data_in->reader_cache;
   unsigned len = VEC_length (tree, cache->nodes);
   unsigned i;
+
   /* Go backwards because childs streamed for the first time come
      as part of their parents, and hence are created after them.  */
+
+  /* First register all types in the cache.
+     This makes sure to have the original structure in the type cycles
+     when registering them and computing hashes.  */
+  for (i = len; i-- > from;)
+    {
+      tree t = VEC_index (tree, cache->nodes, i);
+      if (!t
+	  || !TYPE_P (t))
+	continue;
+
+      gimple_register_type (t);
+    }
+
+  /* Second fixup all trees in the new cache entries.  */
   for (i = len; i-- > from;)
     {
       tree t = VEC_index (tree, cache->nodes, i);
@@ -617,19 +540,77 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
       /* First fixup the fields of T.  */
       lto_fixup_types (t);
 
+      if (!TYPE_P (t))
+	continue;
+
       /* Now try to find a canonical variant of T itself.  */
-      if (TYPE_P (t))
+      t = gimple_register_type (t);
+
+      if (t == oldt)
 	{
-	  t = gimple_register_type (t);
-	  if (t == oldt
-	      && TYPE_MAIN_VARIANT (t) != t)
+	  /* The following re-creates proper variant lists while fixing up
+	     the variant leaders.  We do not stream TYPE_NEXT_VARIANT so the
+	     variant list state before fixup is broken.  */
+	  tree tem, mv;
+
+	  /* Remove us from our main variant list if we are not the
+	     variant leader.  */
+	  if (TYPE_MAIN_VARIANT (t) != t)
 	    {
-	      /* If this is its own type, link it into the variant chain.  */
-	      TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (TYPE_MAIN_VARIANT (t));
-	      TYPE_NEXT_VARIANT (TYPE_MAIN_VARIANT (t)) = t;
+	      tem = TYPE_MAIN_VARIANT (t);
+	      while (tem && TYPE_NEXT_VARIANT (tem) != t)
+		tem = TYPE_NEXT_VARIANT (tem);
+	      if (tem)
+		TYPE_NEXT_VARIANT (tem) = TYPE_NEXT_VARIANT (t);
+	      TYPE_NEXT_VARIANT (t) = NULL_TREE;
+	    }
+
+	  /* Query our new main variant.  */
+	  mv = gimple_register_type (TYPE_MAIN_VARIANT (t));
+
+	  /* If we were the variant leader and we get replaced ourselves drop
+	     all variants from our list.  */
+	  if (TYPE_MAIN_VARIANT (t) == t
+	      && mv != t)
+	    {
+	      tem = t;
+	      while (tem)
+		{
+		  tree tem2 = TYPE_NEXT_VARIANT (tem);
+		  TYPE_NEXT_VARIANT (tem) = NULL_TREE;
+		  tem = tem2;
+		}
+	    }
+
+	  /* If we are not our own variant leader link us into our new leaders
+	     variant list.  */
+	  if (mv != t)
+	    {
+	      TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (mv);
+	      TYPE_NEXT_VARIANT (mv) = t;
+	    }
+
+	  /* Finally adjust our main variant and fix it up.  */
+	  TYPE_MAIN_VARIANT (t) = mv;
+
+	  /* The following reconstructs the pointer chains
+	     of the new pointed-to type if we are a main variant.  We do
+	     not stream those so they are broken before fixup.  */
+	  if (TREE_CODE (t) == POINTER_TYPE
+	      && TYPE_MAIN_VARIANT (t) == t)
+	    {
+	      TYPE_NEXT_PTR_TO (t) = TYPE_POINTER_TO (TREE_TYPE (t));
+	      TYPE_POINTER_TO (TREE_TYPE (t)) = t;
+	    }
+	  else if (TREE_CODE (t) == REFERENCE_TYPE
+		   && TYPE_MAIN_VARIANT (t) == t)
+	    {
+	      TYPE_NEXT_REF_TO (t) = TYPE_REFERENCE_TO (TREE_TYPE (t));
+	      TYPE_REFERENCE_TO (TREE_TYPE (t)) = t;
 	    }
 	}
-      if (t != oldt)
+
+      else
 	{
 	  if (RECORD_OR_UNION_TYPE_P (t))
 	    {
@@ -649,6 +630,11 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 		       as it could refer to e.g. integer_cst which we
 		       wouldn't reach via any other way, hence they
 		       (and their type) would stay uncollected.  */
+		    /* ???  We should rather make sure to replace all
+		       references to f2 with f1.  That means handling
+		       COMPONENT_REFs and CONSTRUCTOR elements in
+		       lto_fixup_types and special-case the field-decl
+		       operand handling.  */
 		    if (ix < i)
 		      lto_fixup_types (f2);
 		    lto_streamer_cache_insert_at (cache, f1, ix);
@@ -660,6 +646,22 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	     make use of it.  */
 	  lto_streamer_cache_insert_at (cache, t, i);
 	}
+    }
+
+  /* Finally compute the canonical type of t.  From this point
+     there are no longer any types with TYPE_STRUCTURAL_EQUALITY_P
+     and its type-based alias problems.  This step requires the
+     TYPE_POINTER_TO lists being present, so make sure it is done
+     last.  */
+  for (i = len; i-- > from;)
+    {
+      tree t = VEC_index (tree, cache->nodes, i);
+      if (!t
+	  || !TYPE_P (t))
+	continue;
+
+      if (!TYPE_CANONICAL (t))
+	TYPE_CANONICAL (t) = gimple_register_canonical_type (t);
     }
 }
 
@@ -2036,7 +2038,8 @@ lto_fixup_prevailing_decls (tree t)
 {
   enum tree_code code = TREE_CODE (t);
   LTO_NO_PREVAIL (TREE_TYPE (t));
-  LTO_NO_PREVAIL (TREE_CHAIN (t));
+  if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
+    LTO_NO_PREVAIL (TREE_CHAIN (t));
   if (DECL_P (t))
     {
       LTO_NO_PREVAIL (DECL_NAME (t));

@@ -205,6 +205,12 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	pt_var_size = size_int (sz);
     }
   else if (pt_var
+	   && DECL_P (pt_var)
+	   && host_integerp (DECL_SIZE_UNIT (pt_var), 1)
+	   && (unsigned HOST_WIDE_INT)
+	        tree_low_cst (DECL_SIZE_UNIT (pt_var), 1) < offset_limit)
+    pt_var_size = DECL_SIZE_UNIT (pt_var);
+  else if (pt_var
 	   && (SSA_VAR_P (pt_var) || TREE_CODE (pt_var) == STRING_CST)
 	   && TYPE_SIZE_UNIT (TREE_TYPE (pt_var))
 	   && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)), 1)

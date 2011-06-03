@@ -2,7 +2,7 @@
    them.
 
    Copyright (C) 1995, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GCC.
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "demangle.h"
 #include "collect2.h"
 #include "filenames.h"
+#include "diagnostic-core.h"
 
 /* TARGET_64BIT may be defined to use driver specific functionality. */
 #undef TARGET_64BIT
@@ -477,9 +478,9 @@ recompile_files (void)
 	 the new file name already exists.  Therefore, we explicitly
 	 remove the old file first.  */
       if (remove (f->key) == -1)
-	fatal_perror ("removing .rpo file");
+	fatal_error ("removing .rpo file: %m");
       if (rename (outname, f->key) == -1)
-	fatal_perror ("renaming .rpo file");
+	fatal_error ("renaming .rpo file: %m");
 
       if (!f->args)
 	{

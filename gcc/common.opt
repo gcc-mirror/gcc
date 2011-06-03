@@ -138,6 +138,10 @@ enum vect_verbosity_levels user_vect_verbosity_level = MAX_VERBOSITY_LEVEL
 Variable
 enum stack_check_type flag_stack_check = NO_STACK_CHECK
 
+; True if stack usage information needs to be computed.
+Variable
+bool flag_stack_usage_info = false
+
 ; -dA causes debug commentary information to be produced in
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the
@@ -575,6 +579,10 @@ Wstack-protector
 Common Var(warn_stack_protect) Warning
 Warn when not issuing stack smashing protection for some reason
 
+Wstack-usage=
+Common Joined RejectNegative UInteger Var(warn_stack_usage) Init(-1) Warning
+Warn if stack usage might be larger than specified amount
+
 Wstrict-aliasing
 Common Warning
 Warn about code which might break strict aliasing rules
@@ -758,6 +766,9 @@ Driver Undocumented
 ;    in function pointer mangling, and corrects mangling of decltype and
 ;    function parameters used in other parameters and the return type.
 ;    First selectable in G++ 4.6.
+;
+; 6: The version of the ABI that doesn't promote scoped enums to int.
+;    First selectable in G++ 4.7.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
@@ -973,6 +984,14 @@ Enum(diagnostic_prefixing_rule) String(every-line) Value(DIAGNOSTICS_SHOW_PREFIX
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them
+
+fdisable-
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fdisable-[tree|rtl|ipa]-<pass>=range1+range2 disables an optimization pass
+
+fenable-
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fenable-[tree|rtl|ipa]-<pass>=range1+range2 enables an optimization pass
 
 fdump-
 Common Joined RejectNegative Var(common_deferred_options) Defer

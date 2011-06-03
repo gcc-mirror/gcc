@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -62,7 +62,7 @@ some_op_sequence(Cntnr& r_c)
 
   typedef typename Cntnr::const_iterator const_iterator;
   for (const_iterator it = r_c.begin(); it != r_c.end();  ++it)
-    cout <<* it << endl;
+    cout << *it << endl;
   assert(!r_c.empty());
   assert(r_c.size() == 10);
 

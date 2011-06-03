@@ -705,7 +705,8 @@ vt_stack_adjustments (void)
 static rtx cfa_base_rtx;
 static HOST_WIDE_INT cfa_base_offset;
 
-/* Compute a CFA-based value for the stack pointer.  */
+/* Compute a CFA-based value for an ADJUSTMENT made to stack_pointer_rtx
+   or hard_frame_pointer_rtx.  */
 
 static inline rtx
 compute_cfa_pointer (HOST_WIDE_INT adjustment)
@@ -4836,7 +4837,7 @@ get_address_mode (rtx mem)
 static rtx
 replace_expr_with_values (rtx loc)
 {
-  if (REG_P (loc))
+  if (REG_P (loc) || GET_CODE (loc) == ENTRY_VALUE)
     return NULL;
   else if (MEM_P (loc))
     {
@@ -5051,6 +5052,7 @@ add_uses (rtx *ploc, void *data)
 	  if (MEM_P (vloc)
 	      && !REG_P (XEXP (vloc, 0))
 	      && !MEM_P (XEXP (vloc, 0))
+	      && GET_CODE (XEXP (vloc, 0)) != ENTRY_VALUE
 	      && (GET_CODE (XEXP (vloc, 0)) != PLUS
 		  || XEXP (XEXP (vloc, 0), 0) != cfa_base_rtx
 		  || !CONST_INT_P (XEXP (XEXP (vloc, 0), 1))))
@@ -5129,6 +5131,7 @@ add_uses (rtx *ploc, void *data)
 	  if (MEM_P (oloc)
 	      && !REG_P (XEXP (oloc, 0))
 	      && !MEM_P (XEXP (oloc, 0))
+	      && GET_CODE (XEXP (oloc, 0)) != ENTRY_VALUE
 	      && (GET_CODE (XEXP (oloc, 0)) != PLUS
 		  || XEXP (XEXP (oloc, 0), 0) != cfa_base_rtx
 		  || !CONST_INT_P (XEXP (XEXP (oloc, 0), 1))))
@@ -5214,6 +5217,8 @@ add_uses_1 (rtx *x, void *cui)
   for_each_rtx (x, add_uses, cui);
 }
 
+#define EXPR_DEPTH (PARAM_VALUE (PARAM_MAX_VARTRACK_EXPR_DEPTH))
+
 /* Attempt to reverse the EXPR operation in the debug info.  Say for
    reg1 = reg2 + 6 even when reg2 is no longer live we
    can express its value as VAL - 6.  */
@@ -5285,7 +5290,7 @@ reverse_op (rtx val, const_rtx expr)
       arg = XEXP (src, 1);
       if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
 	{
-	  arg = cselib_expand_value_rtx (arg, scratch_regs, 5);
+	  arg = cselib_expand_value_rtx (arg, scratch_regs, EXPR_DEPTH);
 	  if (arg == NULL_RTX)
 	    return NULL_RTX;
 	  if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
@@ -5380,6 +5385,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
       if (MEM_P (loc) && type == MO_VAL_SET
 	  && !REG_P (XEXP (loc, 0))
 	  && !MEM_P (XEXP (loc, 0))
+	  && GET_CODE (XEXP (loc, 0)) != ENTRY_VALUE
 	  && (GET_CODE (XEXP (loc, 0)) != PLUS
 	      || XEXP (XEXP (loc, 0), 0) != cfa_base_rtx
 	      || !CONST_INT_P (XEXP (XEXP (loc, 0), 1))))
@@ -7415,7 +7421,7 @@ vt_expand_loc (rtx loc, htab_t vars, bool ignore_cur_loc)
   data.dummy = false;
   data.cur_loc_changed = false;
   data.ignore_cur_loc = ignore_cur_loc;
-  loc = cselib_expand_value_rtx_cb (loc, scratch_regs, 8,
+  loc = cselib_expand_value_rtx_cb (loc, scratch_regs, EXPR_DEPTH,
 				    vt_expand_loc_callback, &data);
 
   if (loc && MEM_P (loc))
@@ -7437,7 +7443,7 @@ vt_expand_loc_dummy (rtx loc, htab_t vars, bool *pcur_loc_changed)
   data.dummy = true;
   data.cur_loc_changed = false;
   data.ignore_cur_loc = false;
-  ret = cselib_dummy_expand_value_rtx_cb (loc, scratch_regs, 8,
+  ret = cselib_dummy_expand_value_rtx_cb (loc, scratch_regs, EXPR_DEPTH,
 					  vt_expand_loc_callback, &data);
   *pcur_loc_changed = data.cur_loc_changed;
   return ret;
@@ -8375,6 +8381,39 @@ vt_get_decl_and_offset (rtx rtl, tree *declp, HOST_WIDE_INT *offsetp)
   return false;
 }
 
+/* Helper function for vt_add_function_parameter.  RTL is
+   the expression and VAL corresponding cselib_val pointer
+   for which ENTRY_VALUE should be created.  */
+
+static void
+create_entry_value (rtx rtl, cselib_val *val)
+{
+  cselib_val *val2;
+  struct elt_loc_list *el;
+  el = (struct elt_loc_list *) ggc_alloc_cleared_atomic (sizeof (*el));
+  el->next = val->locs;
+  el->loc = gen_rtx_ENTRY_VALUE (GET_MODE (rtl));
+  ENTRY_VALUE_EXP (el->loc) = rtl;
+  el->setting_insn = get_insns ();
+  val->locs = el;
+  val2 = cselib_lookup_from_insn (el->loc, GET_MODE (rtl), true,
+				  VOIDmode, get_insns ());
+  if (val2
+      && val2 != val
+      && val2->locs
+      && rtx_equal_p (val2->locs->loc, el->loc))
+    {
+      struct elt_loc_list *el2;
+
+      preserve_value (val2);
+      el2 = (struct elt_loc_list *) ggc_alloc_cleared_atomic (sizeof (*el2));
+      el2->next = val2->locs;
+      el2->loc = val->val_rtx;
+      el2->setting_insn = get_insns ();
+      val2->locs = el2;
+    }
+}
+
 /* Insert function parameter PARM in IN and OUT sets of ENTRY_BLOCK.  */
 
 static void
@@ -8396,6 +8435,28 @@ vt_add_function_parameter (tree parm)
 
   if (GET_MODE (decl_rtl) == BLKmode || GET_MODE (incoming) == BLKmode)
     return;
+
+  /* If there is a DRAP register, rewrite the incoming location of parameters
+     passed on the stack into MEMs based on the argument pointer, as the DRAP
+     register can be reused for other purposes and we do not track locations
+     based on generic registers.  But the prerequisite is that this argument
+     pointer be also the virtual CFA pointer, see vt_initialize.  */
+  if (MEM_P (incoming)
+      && stack_realign_drap
+      && arg_pointer_rtx == cfa_base_rtx
+      && (XEXP (incoming, 0) == crtl->args.internal_arg_pointer
+	  || (GET_CODE (XEXP (incoming, 0)) == PLUS
+	      && XEXP (XEXP (incoming, 0), 0)
+		 == crtl->args.internal_arg_pointer
+	      && CONST_INT_P (XEXP (XEXP (incoming, 0), 1)))))
+    {
+      HOST_WIDE_INT off = -FIRST_PARM_OFFSET (current_function_decl);
+      if (GET_CODE (XEXP (incoming, 0)) == PLUS)
+	off += INTVAL (XEXP (XEXP (incoming, 0), 1));
+      incoming
+	= replace_equiv_address_nv (incoming,
+				    plus_constant (arg_pointer_rtx, off));
+    }
 
   if (!vt_get_decl_and_offset (incoming, &decl, &offset))
     {
@@ -8476,32 +8537,8 @@ vt_add_function_parameter (tree parm)
 			 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
       if (dv_is_value_p (dv))
 	{
-	  cselib_val *val = CSELIB_VAL_PTR (dv_as_value (dv)), *val2;
-	  struct elt_loc_list *el;
-	  el = (struct elt_loc_list *)
-	    ggc_alloc_cleared_atomic (sizeof (*el));
-	  el->next = val->locs;
-	  el->loc = gen_rtx_ENTRY_VALUE (GET_MODE (incoming));
-	  ENTRY_VALUE_EXP (el->loc) = incoming;
-	  el->setting_insn = get_insns ();
-	  val->locs = el;
-	  val2 = cselib_lookup_from_insn (el->loc, GET_MODE (incoming),
-					  true, VOIDmode, get_insns ());
-	  if (val2
-	      && val2 != val
-	      && val2->locs
-	      && rtx_equal_p (val2->locs->loc, el->loc))
-	    {
-	      struct elt_loc_list *el2;
-
-	      preserve_value (val2);
-	      el2 = (struct elt_loc_list *)
-		ggc_alloc_cleared_atomic (sizeof (*el2));
-	      el2->next = val2->locs;
-	      el2->loc = dv_as_value (dv);
-	      el2->setting_insn = get_insns ();
-	      val2->locs = el2;
-	    }
+	  cselib_val *val = CSELIB_VAL_PTR (dv_as_value (dv));
+	  create_entry_value (incoming, val);
 	  if (TREE_CODE (TREE_TYPE (parm)) == REFERENCE_TYPE
 	      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (parm))))
 	    {
@@ -8513,31 +8550,7 @@ vt_add_function_parameter (tree parm)
 	      if (val)
 		{
 		  preserve_value (val);
-		  el = (struct elt_loc_list *)
-		    ggc_alloc_cleared_atomic (sizeof (*el));
-		  el->next = val->locs;
-		  el->loc = gen_rtx_ENTRY_VALUE (indmode);
-		  ENTRY_VALUE_EXP (el->loc) = mem;
-		  el->setting_insn = get_insns ();
-		  val->locs = el;
-		  val2 = cselib_lookup_from_insn (el->loc, GET_MODE (mem),
-						  true, VOIDmode,
-						  get_insns ());
-		  if (val2
-		      && val2 != val
-		      && val2->locs
-		      && rtx_equal_p (val2->locs->loc, el->loc))
-		    {
-		      struct elt_loc_list *el2;
-
-		      preserve_value (val2);
-		      el2 = (struct elt_loc_list *)
-			ggc_alloc_cleared_atomic (sizeof (*el2));
-		      el2->next = val2->locs;
-		      el2->loc = val->val_rtx;
-		      el2->setting_insn = get_insns ();
-		      val2->locs = el2;
-		    }
+		  create_entry_value (mem, val);
 		}
 	    }
 	}
@@ -8646,9 +8659,11 @@ vt_init_cfa_base (void)
 
   /* Tell alias analysis that cfa_base_rtx should share
      find_base_term value with stack pointer or hard frame pointer.  */
-  vt_equate_reg_base_value (cfa_base_rtx,
-			    frame_pointer_needed
-			    ? hard_frame_pointer_rtx : stack_pointer_rtx);
+  if (!frame_pointer_needed)
+    vt_equate_reg_base_value (cfa_base_rtx, stack_pointer_rtx);
+  else if (!crtl->stack_realign_tried)
+    vt_equate_reg_base_value (cfa_base_rtx, hard_frame_pointer_rtx);
+
   val = cselib_lookup_from_insn (cfa_base_rtx, GET_MODE (cfa_base_rtx), 1,
 				 VOIDmode, get_insns ());
   preserve_value (val);
@@ -8664,7 +8679,7 @@ vt_init_cfa_base (void)
 static bool
 vt_initialize (void)
 {
-  basic_block bb, prologue_bb = NULL;
+  basic_block bb, prologue_bb = single_succ (ENTRY_BLOCK_PTR);
   HOST_WIDE_INT fp_cfa_offset = -1;
 
   alloc_aux_for_blocks (sizeof (struct variable_tracking_info_def));
@@ -8722,6 +8737,16 @@ vt_initialize (void)
 
   CLEAR_HARD_REG_SET (argument_reg_set);
 
+  /* In order to factor out the adjustments made to the stack pointer or to
+     the hard frame pointer and thus be able to use DW_OP_fbreg operations
+     instead of individual location lists, we're going to rewrite MEMs based
+     on them into MEMs based on the CFA by de-eliminating stack_pointer_rtx
+     or hard_frame_pointer_rtx to the virtual CFA pointer frame_pointer_rtx
+     resp. arg_pointer_rtx.  We can do this either when there is no frame
+     pointer in the function and stack adjustments are consistent for all
+     basic blocks or when there is a frame pointer and no stack realignment.
+     But we first have to check that frame_pointer_rtx resp. arg_pointer_rtx
+     has been eliminated.  */
   if (!frame_pointer_needed)
     {
       rtx reg, elim;
@@ -8764,10 +8789,38 @@ vt_initialize (void)
 	    }
 	  if (elim != hard_frame_pointer_rtx)
 	    fp_cfa_offset = -1;
-	  else
-	    prologue_bb = single_succ (ENTRY_BLOCK_PTR);
+	}
+      else
+	fp_cfa_offset = -1;
+    }
+
+  /* If the stack is realigned and a DRAP register is used, we're going to
+     rewrite MEMs based on it representing incoming locations of parameters
+     passed on the stack into MEMs based on the argument pointer.  Although
+     we aren't going to rewrite other MEMs, we still need to initialize the
+     virtual CFA pointer in order to ensure that the argument pointer will
+     be seen as a constant throughout the function.
+
+     ??? This doesn't work if FRAME_POINTER_CFA_OFFSET is defined.  */
+  else if (stack_realign_drap)
+    {
+      rtx reg, elim;
+
+#ifdef FRAME_POINTER_CFA_OFFSET
+      reg = frame_pointer_rtx;
+#else
+      reg = arg_pointer_rtx;
+#endif
+      elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
+      if (elim != reg)
+	{
+	  if (GET_CODE (elim) == PLUS)
+	    elim = XEXP (elim, 0);
+	  if (elim == hard_frame_pointer_rtx)
+	    vt_init_cfa_base ();
 	}
     }
+
   if (frame_pointer_needed)
     {
       rtx insn;
@@ -8868,6 +8921,7 @@ vt_initialize (void)
 		    }
 
 		  if (bb == prologue_bb
+		      && fp_cfa_offset != -1
 		      && hard_frame_pointer_adjustment == -1
 		      && RTX_FRAME_RELATED_P (insn)
 		      && fp_setter (insn))

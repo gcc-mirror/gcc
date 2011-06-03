@@ -1,3 +1,7 @@
+2011-06-02  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 174558 into gupc branch.
+
 2011-05-30  Gary Funck  <gary@intrepid.com>
 
 	* configure.ac: Make the default order of the virtual

@@ -97,7 +97,9 @@ namespace std
       exception_ptr(exception_ptr&& __o) throw()
       : _M_exception_object(__o._M_exception_object)
       { __o._M_exception_object = 0; }
-#else
+#endif
+
+#if !defined (__GXX_EXPERIMENTAL_CXX0X__) || defined (_GLIBCXX_EH_PTR_COMPAT)
       typedef void (exception_ptr::*__safe_bool)();
 
       // For construction from nullptr or 0.

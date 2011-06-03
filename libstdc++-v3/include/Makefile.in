@@ -370,6 +370,7 @@ bits_headers = \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \
 	${bits_srcdir}/postypes.h \
+	${bits_srcdir}/ptr_traits.h \
 	${bits_srcdir}/random.h \
 	${bits_srcdir}/random.tcc \
 	${bits_srcdir}/range_access.h \
@@ -418,6 +419,7 @@ bits_headers = \
 	${bits_srcdir}/unique_ptr.h \
 	${bits_srcdir}/unordered_map.h \
 	${bits_srcdir}/unordered_set.h \
+	${bits_srcdir}/uses_allocator.h \
 	${bits_srcdir}/valarray_array.h \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \
@@ -451,7 +453,7 @@ pb_subdirs = \
 	${pb_builddir}/detail/pairing_heap_ \
 	${pb_builddir}/detail/splay_tree_ \
 	${pb_builddir}/detail/list_update_map_ \
-	${pb_builddir}/detail/basic_tree_policy \
+	${pb_builddir}/detail/branch_policy \
 	${pb_builddir}/detail/trie_policy \
 	${pb_builddir}/detail/gp_hash_table_map_ \
 	${pb_builddir}/detail/tree_policy \
@@ -486,13 +488,12 @@ pb_headers1 = \
 	${pb_srcdir}/tag_and_trait.hpp \
 	${pb_srcdir}/tree_policy.hpp \
 	${pb_srcdir}/trie_policy.hpp \
-	${pb_srcdir}/detail/basic_tree_policy/basic_tree_policy_base.hpp \
-	${pb_srcdir}/detail/basic_tree_policy/null_node_metadata.hpp \
-	${pb_srcdir}/detail/basic_tree_policy/traits.hpp \
-	${pb_srcdir}/detail/basic_types.hpp \
+	${pb_srcdir}/detail/branch_policy/branch_policy.hpp \
+	${pb_srcdir}/detail/branch_policy/null_node_metadata.hpp \
+	${pb_srcdir}/detail/branch_policy/traits.hpp \
 	${pb_srcdir}/detail/binary_heap_/binary_heap_.hpp \
 	${pb_srcdir}/detail/binary_heap_/const_iterator.hpp \
-	${pb_srcdir}/detail/binary_heap_/const_point_iterator.hpp \
+	${pb_srcdir}/detail/binary_heap_/point_const_iterator.hpp \
 	${pb_srcdir}/detail/binary_heap_/constructors_destructor_fn_imps.hpp \
 	${pb_srcdir}/detail/binary_heap_/debug_fn_imps.hpp \
 	${pb_srcdir}/detail/binary_heap_/entry_cmp.hpp \
@@ -516,9 +517,7 @@ pb_headers1 = \
 	${pb_srcdir}/detail/binomial_heap_/binomial_heap_.hpp \
 	${pb_srcdir}/detail/binomial_heap_/constructors_destructor_fn_imps.hpp \
 	${pb_srcdir}/detail/binomial_heap_/debug_fn_imps.hpp \
-	${pb_srcdir}/detail/bin_search_tree_/bin_search_tree_.hpp \
-	${pb_srcdir}/detail/bin_search_tree_/cond_dtor_entry_dealtor.hpp \
-	${pb_srcdir}/detail/bin_search_tree_/cond_key_dtor_entry_dealtor.hpp
+	${pb_srcdir}/detail/bin_search_tree_/bin_search_tree_.hpp 
 
 pb_headers2 = \
 	${pb_srcdir}/detail/bin_search_tree_/constructors_destructor_fn_imps.hpp \
@@ -609,7 +608,7 @@ pb_headers4 = \
 	${pb_srcdir}/detail/hash_fn/sample_ranged_probe_fn.hpp \
 	${pb_srcdir}/detail/hash_fn/sample_range_hashing.hpp \
 	${pb_srcdir}/detail/left_child_next_sibling_heap_/const_iterator.hpp \
-	${pb_srcdir}/detail/left_child_next_sibling_heap_/const_point_iterator.hpp \
+	${pb_srcdir}/detail/left_child_next_sibling_heap_/point_const_iterator.hpp \
 	${pb_srcdir}/detail/left_child_next_sibling_heap_/constructors_destructor_fn_imps.hpp \
 	${pb_srcdir}/detail/left_child_next_sibling_heap_/debug_fn_imps.hpp \
 	${pb_srcdir}/detail/left_child_next_sibling_heap_/erase_fn_imps.hpp \
@@ -618,7 +617,6 @@ pb_headers4 = \
 	${pb_srcdir}/detail/left_child_next_sibling_heap_/iterators_fn_imps.hpp \
 	${pb_srcdir}/detail/left_child_next_sibling_heap_/left_child_next_sibling_heap_.hpp \
 	${pb_srcdir}/detail/left_child_next_sibling_heap_/node.hpp \
-	${pb_srcdir}/detail/left_child_next_sibling_heap_/null_metadata.hpp \
 	${pb_srcdir}/detail/left_child_next_sibling_heap_/policy_access_fn_imps.hpp \
 	${pb_srcdir}/detail/left_child_next_sibling_heap_/trace_fn_imps.hpp \
 	${pb_srcdir}/detail/list_update_map_/constructor_destructor_fn_imps.hpp \
@@ -631,12 +629,9 @@ pb_headers4 = \
 	${pb_srcdir}/detail/list_update_map_/iterators_fn_imps.hpp \
 	${pb_srcdir}/detail/list_update_map_/lu_map_.hpp \
 	${pb_srcdir}/detail/list_update_map_/trace_fn_imps.hpp \
-	${pb_srcdir}/detail/list_update_policy/counter_lu_metadata.hpp \
-	${pb_srcdir}/detail/list_update_policy/counter_lu_policy_imp.hpp \
-	${pb_srcdir}/detail/list_update_policy/mtf_lu_policy_imp.hpp \
+	${pb_srcdir}/detail/list_update_policy/lu_counter_metadata.hpp \
 	${pb_srcdir}/detail/list_update_policy/sample_update_policy.hpp \
 	${pb_srcdir}/detail/debug_map_base.hpp \
-	${pb_srcdir}/detail/ov_tree_map_/cond_dtor.hpp \
 	${pb_srcdir}/detail/ov_tree_map_/constructors_destructor_fn_imps.hpp \
 	${pb_srcdir}/detail/ov_tree_map_/debug_fn_imps.hpp \
 	${pb_srcdir}/detail/ov_tree_map_/erase_fn_imps.hpp \
@@ -657,30 +652,20 @@ pb_headers5 = \
 	${pb_srcdir}/detail/pairing_heap_/insert_fn_imps.hpp \
 	${pb_srcdir}/detail/pairing_heap_/pairing_heap_.hpp \
 	${pb_srcdir}/detail/pairing_heap_/split_join_fn_imps.hpp \
-	${pb_srcdir}/detail/pat_trie_/child_iterator.hpp \
-	${pb_srcdir}/detail/pat_trie_/cond_dtor_entry_dealtor.hpp \
-	${pb_srcdir}/detail/pat_trie_/const_child_iterator.hpp \
 	${pb_srcdir}/detail/pat_trie_/constructors_destructor_fn_imps.hpp \
 	${pb_srcdir}/detail/pat_trie_/debug_fn_imps.hpp \
 	${pb_srcdir}/detail/pat_trie_/erase_fn_imps.hpp \
 	${pb_srcdir}/detail/pat_trie_/find_fn_imps.hpp \
-	${pb_srcdir}/detail/pat_trie_/head.hpp \
 	${pb_srcdir}/detail/pat_trie_/info_fn_imps.hpp \
 	${pb_srcdir}/detail/pat_trie_/insert_join_fn_imps.hpp \
-	${pb_srcdir}/detail/pat_trie_/internal_node.hpp \
 	${pb_srcdir}/detail/pat_trie_/iterators_fn_imps.hpp \
-	${pb_srcdir}/detail/pat_trie_/leaf.hpp \
-	${pb_srcdir}/detail/pat_trie_/node_base.hpp \
-	${pb_srcdir}/detail/pat_trie_/node_iterators.hpp \
-	${pb_srcdir}/detail/pat_trie_/node_metadata_base.hpp \
 	${pb_srcdir}/detail/pat_trie_/pat_trie_.hpp \
-	${pb_srcdir}/detail/pat_trie_/point_iterators.hpp \
+	${pb_srcdir}/detail/pat_trie_/pat_trie_base.hpp \
 	${pb_srcdir}/detail/pat_trie_/policy_access_fn_imps.hpp \
 	${pb_srcdir}/detail/pat_trie_/r_erase_fn_imps.hpp \
 	${pb_srcdir}/detail/pat_trie_/rotate_fn_imps.hpp \
 	${pb_srcdir}/detail/pat_trie_/split_fn_imps.hpp \
-	${pb_srcdir}/detail/pat_trie_/split_join_branch_bag.hpp \
-	${pb_srcdir}/detail/pat_trie_/synth_e_access_traits.hpp \
+	${pb_srcdir}/detail/pat_trie_/synth_access_traits.hpp \
 	${pb_srcdir}/detail/pat_trie_/trace_fn_imps.hpp \
 	${pb_srcdir}/detail/pat_trie_/traits.hpp \
 	${pb_srcdir}/detail/pat_trie_/update_fn_imps.hpp \
@@ -737,22 +722,20 @@ pb_headers7 = \
 	${pb_srcdir}/detail/thin_heap_/thin_heap_.hpp \
 	${pb_srcdir}/detail/thin_heap_/trace_fn_imps.hpp \
 	${pb_srcdir}/detail/tree_policy/node_metadata_selector.hpp \
-	${pb_srcdir}/detail/tree_policy/null_node_update_imp.hpp \
 	${pb_srcdir}/detail/tree_policy/order_statistics_imp.hpp \
 	${pb_srcdir}/detail/tree_policy/sample_tree_node_update.hpp \
 	${pb_srcdir}/detail/tree_trace_base.hpp \
 	${pb_srcdir}/detail/trie_policy/node_metadata_selector.hpp \
-	${pb_srcdir}/detail/trie_policy/null_node_update_imp.hpp \
 	${pb_srcdir}/detail/trie_policy/order_statistics_imp.hpp \
 	${pb_srcdir}/detail/trie_policy/prefix_search_node_update_imp.hpp \
-	${pb_srcdir}/detail/trie_policy/sample_trie_e_access_traits.hpp \
+	${pb_srcdir}/detail/trie_policy/sample_trie_access_traits.hpp \
 	${pb_srcdir}/detail/trie_policy/sample_trie_node_update.hpp \
-	${pb_srcdir}/detail/trie_policy/string_trie_e_access_traits_imp.hpp \
+	${pb_srcdir}/detail/trie_policy/trie_string_access_traits_imp.hpp \
 	${pb_srcdir}/detail/trie_policy/trie_policy_base.hpp \
 	${pb_srcdir}/detail/types_traits.hpp \
 	${pb_srcdir}/detail/type_utils.hpp \
 	${pb_srcdir}/detail/unordered_iterator/const_iterator.hpp \
-	${pb_srcdir}/detail/unordered_iterator/const_point_iterator.hpp \
+	${pb_srcdir}/detail/unordered_iterator/point_const_iterator.hpp \
 	${pb_srcdir}/detail/unordered_iterator/iterator.hpp \
 	${pb_srcdir}/detail/unordered_iterator/point_iterator.hpp
 

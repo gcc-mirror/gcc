@@ -8695,6 +8695,14 @@ __float128 __builtin_fabsq (__float128)
 __float128 __builtin_copysignq (__float128, __float128)
 @end smallexample
 
+The following built-in function is always available.
+
+@table @code
+@item void __builtin_ia32_pause (void)
+Generates the @code{pause} machine instruction with a compiler memory
+barrier.
+@end table
+
 The following floating point built-in functions are made available in the
 64-bit mode.
 

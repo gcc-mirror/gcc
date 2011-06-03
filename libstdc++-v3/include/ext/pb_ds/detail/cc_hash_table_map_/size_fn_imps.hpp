@@ -34,9 +34,9 @@
 // warranty.
 
 /**
- * @file size_fn_imps.hpp
+ * @file cc_hash_table_map_/size_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s entire container size related
- *    functions.
+ * functions.
  */
 
 PB_DS_CLASS_T_DEC

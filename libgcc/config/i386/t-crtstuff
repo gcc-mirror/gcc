@@ -1,0 +1,7 @@
+# The pushl in CTOR initialization interferes with frame pointer elimination.
+# crtend*.o cannot be compiled without -fno-asynchronous-unwind-tables,
+# because then __FRAME_END__ might not be the last thing in .eh_frame
+# section.  -fno-asynchronous-unwind-tables is off by default for i386
+# and is on by default for x86-64.  We turn it off for both i386 and
+# x86-64.
+CRTSTUFF_T_CFLAGS += -fno-omit-frame-pointer -fno-asynchronous-unwind-tables

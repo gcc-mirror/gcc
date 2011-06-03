@@ -36,10 +36,10 @@ gospec.o: $(srcdir)/go/gospec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/go/gospec.c)
 
-GCCGO_OBJS = $(GCC_OBJS) gospec.o intl.o prefix.o version.o
-gccgo$(exeext): $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) $(LIBDEPS)
+GCCGO_OBJS = $(GCC_OBJS) gospec.o
+gccgo$(exeext): $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	  $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) $(LIBS)
+	  $(GCCGO_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBS)
 
 # Use strict warnings.
 go-warn = $(STRICT_WARN)
@@ -224,7 +224,7 @@ GO_IMPORT_H = go/gofrontend/import.h go/gofrontend/export.h
 GO_RUNTIME_H = go/gofrontend/runtime.h go/gofrontend/runtime.def
 
 go/go-backend.o: go/go-backend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(TARGET_H)
+	$(TM_H) $(RTL_H) $(TREE_H) $(TM_P_H) output.h $(TARGET_H)
 
 go/go-lang.o: go/go-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 		$(TREE_H) $(GIMPLE_H) $(GGC_H) $(TOPLEV_H) debug.h options.h \
@@ -248,8 +248,8 @@ go/%.o: go/gofrontend/%.cc
 go/dataflow.o: go/gofrontend/dataflow.cc $(GO_SYSTEM_H) $(GO_GOGO_H) \
 	$(GO_EXPRESSIONS_H) $(GO_STATEMENTS_H) go/gofrontend/dataflow.h
 go/export.o: go/gofrontend/export.cc $(GO_SYSTEM_H) \
-	$(srcdir)/../include/sha1.h $(MACHMODE_H) output.h $(TARGET_H) \
-	$(GO_GOGO_H) $(GO_TYPES_H) $(GO_STATEMENTS_H) go/gofrontend/export.h
+	$(srcdir)/../include/sha1.h $(GO_C_H) $(GO_GOGO_H) $(GO_TYPES_H) \
+	$(GO_STATEMENTS_H) go/gofrontend/export.h
 go/expressions.o: go/gofrontend/expressions.cc $(GO_SYSTEM_H) $(TOPLEV_H) \
 	intl.h $(TREE_H) $(GIMPLE_H) tree-iterator.h convert.h $(REAL_H) \
 	realmpfr.h $(GO_C_H) $(GO_GOGO_H) $(GO_TYPES_H) \

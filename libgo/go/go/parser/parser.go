@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// A parser for Go source files. Input may be provided in a variety of
-// forms (see the various Parse* functions); the output is an abstract
-// syntax tree (AST) representing the Go source. The parser is invoked
-// through one of the Parse* functions.
+// Package parser implements a parser for Go source files. Input may be
+// provided in a variety of forms (see the various Parse* functions); the
+// output is an abstract syntax tree (AST) representing the Go source. The
+// parser is invoked through one of the Parse* functions.
 //
 package parser
 
@@ -1779,10 +1779,6 @@ func (p *parser) parseCommClause() *ast.CommClause {
 				}
 				rhs = lhs[0]
 				lhs = nil // there is no lhs
-			}
-			if x, isUnary := rhs.(*ast.UnaryExpr); !isUnary || x.Op != token.ARROW {
-				p.errorExpected(rhs.Pos(), "send or receive operation")
-				rhs = &ast.BadExpr{rhs.Pos(), rhs.End()}
 			}
 			if lhs != nil {
 				comm = &ast.AssignStmt{lhs, pos, tok, []ast.Expr{rhs}}

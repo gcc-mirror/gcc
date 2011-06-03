@@ -40,7 +40,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Used, in C++03 mode too, by allocators, etc.
   template<typename _Tp>
     inline _Tp*
-    __addressof(_Tp& __r)
+    __addressof(_Tp& __r) _GLIBCXX_NOEXCEPT
     {
       return reinterpret_cast<_Tp*>
 	(&const_cast<char&>(reinterpret_cast<const volatile char&>(__r)));
@@ -59,12 +59,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// forward (as per N3143)
   template<typename _Tp>
     inline _Tp&&
-    forward(typename std::remove_reference<_Tp>::type& __t) 
+    forward(typename std::remove_reference<_Tp>::type& __t) noexcept
     { return static_cast<_Tp&&>(__t); }
 
   template<typename _Tp>
     inline _Tp&&
-    forward(typename std::remove_reference<_Tp>::type&& __t) 
+    forward(typename std::remove_reference<_Tp>::type&& __t) noexcept
     {
       static_assert(!std::is_lvalue_reference<_Tp>::value, "template argument"
 		    " substituting _Tp is an lvalue reference type");
@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _Tp>
     inline typename std::remove_reference<_Tp>::type&&
-    move(_Tp&& __t)
+    move(_Tp&& __t) noexcept
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
 
   /**
@@ -108,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _Tp>
     inline _Tp*
-    addressof(_Tp& __r)
+    addressof(_Tp& __r) noexcept
     { return std::__addressof(__r); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
@@ -135,6 +135,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     inline void
     swap(_Tp& __a, _Tp& __b)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    noexcept(__and_<is_nothrow_move_constructible<_Tp>,
+	            is_nothrow_move_assignable<_Tp>>::value)
+#endif
     {
       // concept requirements
       __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
@@ -149,6 +153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, size_t _Nm>
     inline void
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
+    // noexcept waits for c++/49045
     {
       for (size_t __n = 0; __n < _Nm; ++__n)
 	swap(__a[__n], __b[__n]);

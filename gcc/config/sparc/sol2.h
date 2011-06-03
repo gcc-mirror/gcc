@@ -117,11 +117,6 @@ along with GCC; see the file COPYING3.  If not see
 #define NO_DBX_BNSYM_ENSYM 1
 
 
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
-   crtend.o%s crtn.o%s"
-
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
    true if the symbol may be affected by dynamic relocations.
@@ -188,9 +183,16 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION sparc_solaris_elf_asm_named_section
 
-/* And SPARC non-standard pushsection syntax.  */
-#undef PUSHSECTION_FORMAT
-#define PUSHSECTION_FORMAT "\t.pushsection\t\"%s\"\n"
+/* Emit COMDAT group signature symbols for Sun as.  */
+#undef TARGET_ASM_CODE_END
+#define TARGET_ASM_CODE_END solaris_code_end
+
+/* Solaris/SPARC as requires doublequoted section names.  While gas
+   supports that, too, we prefer the standard variant.  */
+#ifndef USE_GAS
+#undef SECTION_NAME_FORMAT
+#define SECTION_NAME_FORMAT	"\"%s\""
+#endif
 
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1

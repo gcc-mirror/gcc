@@ -340,7 +340,7 @@ GNAT_ADA_OBJS =	\
 # Object files for gnat executables
 GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o
 
-GNAT1_OBJS = $(GNAT1_C_OBJS) $(GNAT1_ADA_OBJS) $(EXTRA_GNAT1_OBJS)
+GNAT1_OBJS = $(GNAT1_C_OBJS) $(GNAT1_ADA_OBJS)
 
 GNATBIND_OBJS = \
  ada/adaint.o     \
@@ -464,12 +464,7 @@ GNATBIND_OBJS = \
  ada/uintp.o      \
  ada/uname.o      \
  ada/urealp.o     \
- ada/widechar.o   \
- $(EXTRA_GNATBIND_OBJS)
-
-# List of extra object files linked in with various programs.
-EXTRA_GNAT1_OBJS = prefix.o
-EXTRA_GNATBIND_OBJS = prefix.o version.o
+ ada/widechar.o
 
 # Language-independent object files.
 ADA_BACKEND = $(BACKEND) attribs.o
@@ -480,12 +475,12 @@ TARGET_ADA_SRCS =
 # Needs to be built with CC=gcc
 # Since the RTL should be built with the latest compiler, remove the
 #  stamp target in the parent directory whenever gnat1 is rebuilt
-gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) $(LIBDEPS)
-	$(GCC_LINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) $(LIBS) $(SYSLIBS) $(BACKENDLIBS) $(CFLAGS)
+gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a $(LIBDEPS)
+	$(GCC_LINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a $(LIBS) $(SYSLIBS) $(BACKENDLIBS) $(CFLAGS)
 	$(RM) stamp-gnatlib2-rts stamp-tools
 
-gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS)
-	$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) $(LIBS) $(SYSLIBS) $(CFLAGS)
+gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) libcommon-target.a $(LIBDEPS)
+	$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) libcommon-target.a $(LIBS) $(SYSLIBS) $(CFLAGS)
 
 # use cross-gcc
 gnat-cross: force

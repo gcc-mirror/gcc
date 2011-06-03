@@ -981,7 +981,7 @@ m68k_expand_prologue (void)
 
   m68k_compute_frame_layout ();
 
-  if (flag_stack_usage)
+  if (flag_stack_usage_info)
     current_function_static_stack_size
       = current_frame.size + current_frame.offset;
 

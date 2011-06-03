@@ -1,6 +1,6 @@
 // Debugging string implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -114,7 +114,7 @@ namespace __gnu_debug
       { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    basic_string(basic_string&& __str)
+    basic_string(basic_string&& __str) noexcept
     : _Base(std::move(__str))
     { }
 
@@ -124,7 +124,7 @@ namespace __gnu_debug
     { }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
-    ~basic_string() { }
+    ~basic_string() _GLIBCXX_NOEXCEPT { }
 
     basic_string&
     operator=(const basic_string& __str)
@@ -171,36 +171,54 @@ namespace __gnu_debug
 
     // 21.3.2 iterators:
     iterator
-    begin()
+    begin() _GLIBCXX_NOEXCEPT
     { return iterator(_Base::begin(), this); }
 
     const_iterator
-    begin() const
+    begin() const _GLIBCXX_NOEXCEPT
     { return const_iterator(_Base::begin(), this); }
 
     iterator
-    end()
+    end() _GLIBCXX_NOEXCEPT
     { return iterator(_Base::end(), this); }
 
     const_iterator
-    end() const
+    end() const _GLIBCXX_NOEXCEPT
     { return const_iterator(_Base::end(), this); }
 
     reverse_iterator
-    rbegin()
+    rbegin() _GLIBCXX_NOEXCEPT
     { return reverse_iterator(end()); }
 
     const_reverse_iterator
-    rbegin() const
+    rbegin() const _GLIBCXX_NOEXCEPT
     { return const_reverse_iterator(end()); }
 
     reverse_iterator
-    rend()
+    rend() _GLIBCXX_NOEXCEPT
     { return reverse_iterator(begin()); }
 
     const_reverse_iterator
-    rend() const
+    rend() const _GLIBCXX_NOEXCEPT
     { return const_reverse_iterator(begin()); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    const_iterator
+    cbegin() const noexcept
+    { return const_iterator(_Base::begin(), this); }
+
+    const_iterator
+    cend() const noexcept
+    { return const_iterator(_Base::end(), this); }
+
+    const_reverse_iterator
+    crbegin() const noexcept
+    { return const_reverse_iterator(end()); }
+
+    const_reverse_iterator
+    crend() const noexcept
+    { return const_reverse_iterator(begin()); }
+#endif
 
     // 21.3.3 capacity:
     using _Base::size;
@@ -226,7 +244,7 @@ namespace __gnu_debug
     using _Base::reserve;
 
     void
-    clear()
+    clear() _GLIBCXX_NOEXCEPT
     {
       _Base::clear();
       this->_M_invalidate_all();
@@ -672,7 +690,7 @@ namespace __gnu_debug
 
     // 21.3.6 string operations:
     const _CharT*
-    c_str() const
+    c_str() const _GLIBCXX_NOEXCEPT
     {
       const _CharT* __res = _Base::c_str();
       this->_M_invalidate_all();
@@ -680,7 +698,7 @@ namespace __gnu_debug
     }
 
     const _CharT*
-    data() const
+    data() const _GLIBCXX_NOEXCEPT
     {
       const _CharT* __res = _Base::data();
       this->_M_invalidate_all();
@@ -691,6 +709,7 @@ namespace __gnu_debug
 
     size_type
     find(const basic_string& __str, size_type __pos = 0) const
+      _GLIBCXX_NOEXCEPT
     { return _Base::find(__str, __pos); }
 
     size_type
@@ -708,11 +727,12 @@ namespace __gnu_debug
     }
 
     size_type
-    find(_CharT __c, size_type __pos = 0) const
+    find(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
     { return _Base::find(__c, __pos); }
 
     size_type
     rfind(const basic_string& __str, size_type __pos = _Base::npos) const
+      _GLIBCXX_NOEXCEPT
     { return _Base::rfind(__str, __pos); }
 
     size_type
@@ -730,11 +750,12 @@ namespace __gnu_debug
     }
 
     size_type
-    rfind(_CharT __c, size_type __pos = _Base::npos) const
+    rfind(_CharT __c, size_type __pos = _Base::npos) const _GLIBCXX_NOEXCEPT
     { return _Base::rfind(__c, __pos); }
 
     size_type
     find_first_of(const basic_string& __str, size_type __pos = 0) const
+      _GLIBCXX_NOEXCEPT
     { return _Base::find_first_of(__str, __pos); }
 
     size_type
@@ -752,12 +773,12 @@ namespace __gnu_debug
     }
 
     size_type
-    find_first_of(_CharT __c, size_type __pos = 0) const
+    find_first_of(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
     { return _Base::find_first_of(__c, __pos); }
 
     size_type
     find_last_of(const basic_string& __str, 
-		 size_type __pos = _Base::npos) const
+		 size_type __pos = _Base::npos) const _GLIBCXX_NOEXCEPT
     { return _Base::find_last_of(__str, __pos); }
 
     size_type
@@ -776,10 +797,12 @@ namespace __gnu_debug
 
     size_type
     find_last_of(_CharT __c, size_type __pos = _Base::npos) const
+      _GLIBCXX_NOEXCEPT
     { return _Base::find_last_of(__c, __pos); }
 
     size_type
     find_first_not_of(const basic_string& __str, size_type __pos = 0) const
+      _GLIBCXX_NOEXCEPT
     { return _Base::find_first_not_of(__str, __pos); }
 
     size_type
@@ -797,12 +820,13 @@ namespace __gnu_debug
     }
 
     size_type
-    find_first_not_of(_CharT __c, size_type __pos = 0) const
+    find_first_not_of(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
     { return _Base::find_first_not_of(__c, __pos); }
 
     size_type
     find_last_not_of(const basic_string& __str,
 				  size_type __pos = _Base::npos) const
+      _GLIBCXX_NOEXCEPT
     { return _Base::find_last_not_of(__str, __pos); }
 
     size_type
@@ -821,6 +845,7 @@ namespace __gnu_debug
 
     size_type
     find_last_not_of(_CharT __c, size_type __pos = _Base::npos) const
+      _GLIBCXX_NOEXCEPT
     { return _Base::find_last_not_of(__c, __pos); }
 
     basic_string
@@ -868,10 +893,10 @@ namespace __gnu_debug
     }
 
     _Base&
-    _M_base() { return *this; }
+    _M_base() _GLIBCXX_NOEXCEPT       { return *this; }
 
     const _Base&
-    _M_base() const { return *this; }
+    _M_base() const _GLIBCXX_NOEXCEPT { return *this; }
 
     using _Safe_base::_M_invalidate_all;
   };

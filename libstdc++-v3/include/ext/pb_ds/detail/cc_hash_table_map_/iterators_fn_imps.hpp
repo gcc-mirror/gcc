@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file iterators_fn_imps.hpp
+ * @file cc_hash_table_map_/iterators_fn_imps.hpp
  * Contains implementations of cc_ht_map_'s iterators related functions, e.g.,
  * begin().
  */

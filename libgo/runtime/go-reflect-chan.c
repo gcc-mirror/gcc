@@ -8,30 +8,54 @@
 #include <stdint.h>
 
 #include "config.h"
+#include "go-alloc.h"
+#include "go-assert.h"
+#include "go-panic.h"
 #include "go-type.h"
 #include "channel.h"
 
 /* This file implements support for reflection on channels.  These
    functions are called from reflect/value.go.  */
 
-extern unsigned char *makechan (const struct __go_type_descriptor *, uint32_t)
+extern uintptr_t makechan (const struct __go_type_descriptor *, uint32_t)
   asm ("libgo_reflect.reflect.makechan");
 
-unsigned char *
+uintptr_t
 makechan (const struct __go_type_descriptor *typ, uint32_t size)
 {
-  return (unsigned char *) __go_new_channel (typ->__size, size);
+  struct __go_channel *channel;
+  void *ret;
+
+  __go_assert (typ->__code == GO_CHAN);
+  typ = ((const struct __go_channel_type *) typ)->__element_type;
+
+  channel = __go_new_channel (typ, size);
+
+  ret = __go_alloc (sizeof (void *));
+  __builtin_memcpy (ret, &channel, sizeof (void *));
+  return (uintptr_t) ret;
 }
 
-extern void chansend (unsigned char *, unsigned char *, _Bool *)
+extern _Bool chansend (uintptr_t, uintptr_t, _Bool)
   asm ("libgo_reflect.reflect.chansend");
 
-void
-chansend (unsigned char *ch, unsigned char *val, _Bool *selected)
+_Bool
+chansend (uintptr_t ch, uintptr_t val_i, _Bool nb)
 {
   struct __go_channel *channel = (struct __go_channel *) ch;
+  uintptr_t element_size;
+  void *pv;
 
-  if (channel->element_size <= sizeof (uint64_t))
+  if (channel == NULL)
+    __go_panic_msg ("send to nil channel");
+
+  if (__go_is_pointer_type (channel->element_type))
+    pv = &val_i;
+  else
+    pv = (void *) val_i;
+
+  element_size = channel->element_type->__size;
+  if (element_size <= sizeof (uint64_t))
     {
       union
       {
@@ -41,35 +65,60 @@ chansend (unsigned char *ch, unsigned char *val, _Bool *selected)
 
       __builtin_memset (u.b, 0, sizeof (uint64_t));
 #ifndef WORDS_BIGENDIAN
-      __builtin_memcpy (u.b, val, channel->element_size);
+      __builtin_memcpy (u.b, pv, element_size);
 #else
-      __builtin_memcpy (u.b + sizeof (uint64_t) - channel->element_size, val,
-			channel->element_size);
+      __builtin_memcpy (u.b + sizeof (uint64_t) - element_size, pv,
+			element_size);
 #endif
-      if (selected == NULL)
-	__go_send_small (channel, u.v, 0);
+      if (nb)
+	return __go_send_nonblocking_small (channel, u.v);
       else
-	*selected = __go_send_nonblocking_small (channel, u.v);
+	{
+	  __go_send_small (channel, u.v, 0);
+	  return 1;
+	}
     }
   else
     {
-      if (selected == NULL)
-	__go_send_big (channel, val, 0);
+      if (nb)
+	return __go_send_nonblocking_big (channel, pv);
       else
-	*selected = __go_send_nonblocking_big (channel, val);
+	{
+	  __go_send_big (channel, pv, 0);
+	  return 1;
+	}
     }
 }
 
-extern void chanrecv (unsigned char *, unsigned char *, _Bool *, _Bool *)
+struct chanrecv_ret
+{
+  uintptr_t val;
+  _Bool selected;
+  _Bool received;
+};
+
+extern struct chanrecv_ret chanrecv (uintptr_t, _Bool)
   asm ("libgo_reflect.reflect.chanrecv");
 
-void
-chanrecv (unsigned char *ch, unsigned char *val, _Bool *selected,
-	  _Bool *received)
+struct chanrecv_ret
+chanrecv (uintptr_t ch, _Bool nb)
 {
   struct __go_channel *channel = (struct __go_channel *) ch;
+  void *pv;
+  uintptr_t element_size;
+  struct chanrecv_ret ret;
 
-  if (channel->element_size <= sizeof (uint64_t))
+  element_size = channel->element_type->__size;
+
+  if (__go_is_pointer_type (channel->element_type))
+    pv = &ret.val;
+  else
+    {
+      pv = __go_alloc (element_size);
+      ret.val = (uintptr_t) pv;
+    }
+
+  if (element_size <= sizeof (uint64_t))
     {
       union
       {
@@ -77,74 +126,73 @@ chanrecv (unsigned char *ch, unsigned char *val, _Bool *selected,
 	uint64_t v;
       } u;
 
-      if (selected == NULL)
-	u.v = __go_receive_small_closed (channel, 0, received);
+      if (!nb)
+	{
+	  u.v = __go_receive_small_closed (channel, 0, &ret.received);
+	  ret.selected = 1;
+	}
       else
 	{
 	  struct __go_receive_nonblocking_small s;
 
 	  s = __go_receive_nonblocking_small (channel);
-	  *selected = s.__success || s.__closed;
-	  if (received != NULL)
-	    *received = s.__success;
+	  ret.selected = s.__success || s.__closed;
+	  ret.received = s.__success;
 	  u.v = s.__val;
 	}
 
 #ifndef WORDS_BIGENDIAN
-      __builtin_memcpy (val, u.b, channel->element_size);
+      __builtin_memcpy (pv, u.b, element_size);
 #else
-      __builtin_memcpy (val, u.b + sizeof (uint64_t) - channel->element_size,
-			channel->element_size);
+      __builtin_memcpy (pv, u.b + sizeof (uint64_t) - element_size,
+			element_size);
 #endif
     }
   else
     {
-      if (selected == NULL)
+      if (!nb)
 	{
-	  _Bool success;
-
-	  success = __go_receive_big (channel, val, 0);
-	  if (received != NULL)
-	    *received = success;
+	  ret.received = __go_receive_big (channel, pv, 0);
+	  ret.selected = 1;
 	}
       else
 	{
 	  _Bool got;
 	  _Bool closed;
 
-	  got = __go_receive_nonblocking_big (channel, val, &closed);
-	  *selected = got || closed;
-	  if (received != NULL)
-	    *received = got;
+	  got = __go_receive_nonblocking_big (channel, pv, &closed);
+	  ret.selected = got || closed;
+	  ret.received = got;
 	}
     }
+
+  return ret;
 }
 
-extern void chanclose (unsigned char *)
-  asm ("libgo_reflect.reflect.chanclose");
+extern void chanclose (uintptr_t) asm ("libgo_reflect.reflect.chanclose");
 
 void
-chanclose (unsigned char *ch)
+chanclose (uintptr_t ch)
 {
   struct __go_channel *channel = (struct __go_channel *) ch;
 
   __go_builtin_close (channel);
 }
 
-extern int32_t chanlen (unsigned char *) asm ("libgo_reflect.reflect.chanlen");
+extern int32_t chanlen (uintptr_t) asm ("libgo_reflect.reflect.chanlen");
 
 int32_t
-chanlen (unsigned char *ch)
+chanlen (uintptr_t ch)
 {
   struct __go_channel *channel = (struct __go_channel *) ch;
 
   return (int32_t) __go_chan_len (channel);
 }
 
-extern int32_t chancap (unsigned char *) asm ("libgo_reflect.reflect.chancap");
+extern int32_t chancap (uintptr_t) asm ("libgo_reflect.reflect.chancap");
 
 int32_t
-chancap (unsigned char *ch)
+chancap (uintptr_t ch)
 {
   struct __go_channel *channel = (struct __go_channel *) ch;
 

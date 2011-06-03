@@ -22,8 +22,27 @@ HeaderInclude
 config/arm/arm-opts.h
 
 mabi=
-Target RejectNegative Joined Var(target_abi_name)
+Target RejectNegative Joined Enum(arm_abi_type) Var(arm_abi) Init(ARM_DEFAULT_ABI)
 Specify an ABI
+
+Enum
+Name(arm_abi_type) Type(enum arm_abi_type)
+Known ARM ABIs (for use with the -mabi= option):
+
+EnumValue
+Enum(arm_abi_type) String(apcs-gnu) Value(ARM_ABI_APCS)
+
+EnumValue
+Enum(arm_abi_type) String(atpcs) Value(ARM_ABI_ATPCS)
+
+EnumValue
+Enum(arm_abi_type) String(aapcs) Value(ARM_ABI_AAPCS)
+
+EnumValue
+Enum(arm_abi_type) String(iwmmxt) Value(ARM_ABI_IWMMXT)
+
+EnumValue
+Enum(arm_abi_type) String(aapcs-linux) Value(ARM_ABI_AAPCS_LINUX)
 
 mabort-on-noreturn
 Target Report Mask(ABORT_NORETURN)
@@ -76,25 +95,57 @@ Target RejectNegative Joined Enum(processor_type) Var(arm_cpu_option) Init(arm_n
 Specify the name of the target CPU
 
 mfloat-abi=
-Target RejectNegative Joined Var(target_float_abi_name)
+Target RejectNegative Joined Enum(float_abi_type) Var(arm_float_abi) Init(TARGET_DEFAULT_FLOAT_ABI)
 Specify if floating point hardware should be used
 
-mfp=
-Target RejectNegative Joined Undocumented Var(target_fpe_name)
+Enum
+Name(float_abi_type) Type(enum float_abi_type)
+Known floating-point ABIs (for use with the -mfloat-abi= option):
+
+EnumValue
+Enum(float_abi_type) String(soft) Value(ARM_FLOAT_ABI_SOFT)
+
+EnumValue
+Enum(float_abi_type) String(softfp) Value(ARM_FLOAT_ABI_SOFTFP)
+
+EnumValue
+Enum(float_abi_type) String(hard) Value(ARM_FLOAT_ABI_HARD)
+
+mfp=2
+Target RejectNegative Undocumented Alias(mfpu=, fpe2)
+
+mfp=3
+Target RejectNegative Undocumented Alias(mfpu=, fpe3)
 
 mfp16-format=
-Target RejectNegative Joined Var(target_fp16_format_name)
+Target RejectNegative Joined Enum(arm_fp16_format_type) Var(arm_fp16_format) Init(ARM_FP16_FORMAT_NONE)
 Specify the __fp16 floating-point format
+
+Enum
+Name(arm_fp16_format_type) Type(enum arm_fp16_format_type)
+Known __fp16 formats (for use with the -mfp16-format= option):
+
+EnumValue
+Enum(arm_fp16_format_type) String(none) Value(ARM_FP16_FORMAT_NONE)
+
+EnumValue
+Enum(arm_fp16_format_type) String(ieee) Value(ARM_FP16_FORMAT_IEEE)
+
+EnumValue
+Enum(arm_fp16_format_type) String(alternative) Value(ARM_FP16_FORMAT_ALTERNATIVE)
 
 ;; Now ignored.
 mfpe
 Target RejectNegative Mask(FPE) Undocumented
 
-mfpe=
-Target RejectNegative Joined Undocumented Var(target_fpe_name)
+mfpe=2
+Target RejectNegative Undocumented Alias(mfpu=, fpe2)
+
+mfpe=3
+Target RejectNegative Undocumented Alias(mfpu=, fpe3)
 
 mfpu=
-Target RejectNegative Joined Var(target_fpu_name)
+Target RejectNegative Joined Enum(arm_fpu) Var(arm_fpu_index)
 Specify the name of the target floating point hardware/format
 
 mhard-float
@@ -128,7 +179,7 @@ msoft-float
 Target RejectNegative Alias(mfloat-abi=, soft) Undocumented
 
 mstructure-size-boundary=
-Target RejectNegative Joined Var(structure_size_string)
+Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFAULT_STRUCTURE_SIZE_BOUNDARY)
 Specify the minimum bit alignment of structures
 
 mthumb
@@ -140,8 +191,21 @@ Target Report Mask(INTERWORK)
 Support calls between Thumb and ARM instruction sets
 
 mtp=
-Target RejectNegative Joined Var(target_thread_switch)
+Target RejectNegative Joined Enum(arm_tp_type) Var(target_thread_pointer) Init(TP_AUTO)
 Specify how to access the thread pointer
+
+Enum
+Name(arm_tp_type) Type(enum arm_tp_type)
+Valid arguments to -mtp=:
+
+EnumValue
+Enum(arm_tp_type) String(soft) Value(TP_SOFT)
+
+EnumValue
+Enum(arm_tp_type) String(auto) Value(TP_AUTO)
+
+EnumValue
+Enum(arm_tp_type) String(cp15) Value(TP_CP15)
 
 mtpcs-frame
 Target Report Mask(TPCS_FRAME)

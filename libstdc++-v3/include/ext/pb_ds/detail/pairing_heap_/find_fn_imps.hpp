@@ -34,7 +34,7 @@
 // warranty.
 
 /**
- * @file find_fn_imps.hpp
+ * @file pairing_heap_/find_fn_imps.hpp
  * Contains an implementation class for a pairing heap.
  */
 
@@ -45,6 +45,5 @@ top() const
 {
   PB_DS_ASSERT_VALID((*this))
   _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
-
   return base_type::m_p_root->m_value;
 }

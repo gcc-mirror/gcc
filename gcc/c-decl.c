@@ -553,6 +553,8 @@ add_stmt (tree t)
 
   /* Add T to the statement-tree.  Non-side-effect statements need to be
      recorded during statement expressions.  */
+  if (!building_stmt_list_p ())
+    push_stmt_list ();
   append_to_statement_list_force (t, &cur_stmt_list);
 
   return t;
@@ -3955,7 +3957,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
     return 0;
 
   if (expr)
-    add_stmt (expr);
+    add_stmt (fold_convert (void_type_node, expr));
 
   if (TREE_CODE (decl) != FUNCTION_DECL && MAIN_NAME_P (DECL_NAME (decl)))
     warning (OPT_Wmain, "%q+D is usually a function", decl);
@@ -7386,7 +7388,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   /* If we're inside a function proper, i.e. not file-scope and not still
      parsing parameters, then arrange for the size of a variable sized type
      to be bound now.  */
-  if (cur_stmt_list && variably_modified_type_p (t, NULL_TREE))
+  if (building_stmt_list_p () && variably_modified_type_p (t, NULL_TREE))
     add_stmt (build_stmt (loc,
 			  DECL_EXPR, build_decl (loc, TYPE_DECL, NULL, t)));
 
@@ -8623,6 +8625,8 @@ c_push_function_context (void)
   cfun->language = p;
 
   p->base.x_stmt_tree = c_stmt_tree;
+  c_stmt_tree.x_cur_stmt_list
+    = VEC_copy (tree, gc, c_stmt_tree.x_cur_stmt_list);
   p->x_break_label = c_break_label;
   p->x_cont_label = c_cont_label;
   p->x_switch_stack = c_switch_stack;

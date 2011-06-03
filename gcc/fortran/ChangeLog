@@ -1,3 +1,178 @@
+2011-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* intrinsic.c (klass): Add CLASS_ATOMIC.
+	(add_subroutines): Add atomic_ref/atomic_define.
+	* intrinsic.texi (ATOMIC_REF, ATOMIC_DEFINE): Document.
+	* intrinsic.h (gfc_check_atomic_def, gfc_check_atomic_ref,
+	gfc_resolve_atomic_def, gfc_resolve_atomic_ref): New prototypes.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_ATOMIC_DEF
+	and GFC_ISYM_ATOMIC_REF.
+	(gfc_atomic_int_kind, gfc_atomic_logical_kind): New global vars.
+	* iresolve.c (gfc_resolve_atomic_def, gfc_resolve_atomic_ref): New
+	functions.
+	* check.c (gfc_check_atomic, gfc_check_atomic_def,
+	gfc_check_atomic_ref): New functions.
+	* iso-fortran-env.def (ISOFORTRANENV_FILE_ATOMIC_INT_KIND,
+	ISOFORTRANENV_FILE_ATOMIC_LOGICAL_KIND): Change kind value.
+	* trans-intrinsic.c (conv_intrinsic_atomic_def,
+	conv_intrinsic_atomic_ref, gfc_conv_intrinsic_subroutine): New
+	functions.
+	(conv_intrinsic_move_alloc) Renamed from
+	gfc_conv_intrinsic_move_alloc - and made static.
+	* trans.h (gfc_conv_intrinsic_move_alloc): Remove.
+	(gfc_conv_intrinsic_subroutine) Add prototype.
+	* trans.c (trans_code): Call gfc_conv_intrinsic_subroutine.
+	* trans-types (gfc_atomic_int_kind, gfc_atomic_logical_kind): New
+	global vars.
+	(gfc_init_kinds): Set them.
+
+2011-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-array.c (gfc_trans_dummy_array_bias): Handle
+	cobounds of assumed-shape arrays.
+
+2011-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* resolve.c (resolve_fl_variable): Handle static coarrays
+	with non-constant cobounds.
+
+2011-05-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47601
+	* module.c (mio_component_ref): Handle components of extended types.
+	* symbol.c (gfc_find_component): Return is sym is NULL.
+
+2011-05-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* interface.c (compare_parameter): Add check for passing coarray
+	to allocatable noncoarray dummy.
+
+2011-05-29  Tobias Burnus  <burnus@net-b.de>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/18918
+	* trans-types.c (gfc_get_nodesc_array_type): Don't mess with
+	the type's TREE_TYPE.
+	* trans-array.c (gfc_conv_array_ref): Use TYPE_MAIN_VARIANT.
+	* trans.c (gfc_build_array_ref): Ditto.
+
+2011-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* check.c (gfc_check_associated, gfc_check_null): Add coindexed check.
+	* match.c (gfc_match_nullify): Ditto.
+	* resolve.c (resolve_deallocate_expr): Ditto.
+	* trans-types.c (gfc_get_nodesc_array_type): Don't set restricted
+	for nonpointers.
+
+2011-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_RANK.
+	* intrinsic.c (add_functions): Add rank intrinsic.
+	(gfc_check_intrinsic_standard): Handle GFC_STD_F2008_TR.
+	* intrinsic.h (gfc_simplify_rank, gfc_check_rank): Add prototypes.
+	* simplify.c (gfc_simplify_rank): New function.
+	* intrinsic.texi (RANK): Add description for rank intrinsic.
+	* check.c (gfc_check_rank): New function.
+
+2011-05-26  Paul Thomas  <pault@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48955
+	* trans-expr.c (gfc_trans_assignment_1): GFC_REVERSE_NOT_SET
+	changed to GFC_ENABLE_REVERSE.
+	* trans-array.c (gfc_init_loopinfo): GFC_CANNOT_REVERSE changed
+	to GFC_INHIBIT_REVERSE.
+	* gfortran.h : Enum gfc_reverse is now GFC_ENABLE_REVERSE,
+	GFC_FORWARD_SET, GFC_REVERSE_SET and GFC_INHIBIT_REVERSE.
+	* dependency.c (gfc_dep_resolver): Change names for elements of
+	gfc_reverse as necessary. Change the logic so that forward
+	dependences are remembered as well as backward ones. When both
+	have appeared, force a temporary.
+
+2011-05-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-array.c (gfc_conv_array_ref): Handle pointer coarrays.
+	* trans-decl.c (has_coarray_vars, caf_init_block,
+	gfor_fndecl_caf_register): New file-global variables.
+	(gfc_finish_var_decl): Make sure that coarrays in main are static.
+	(gfc_build_qualified_array): Generate coarray token variable.
+	(gfc_get_symbol_decl): Don't use a static initializer for coarrays.
+	(gfc_build_builtin_function_decls): Set gfor_fndecl_caf_register.
+	(gfc_trans_deferred_vars, gfc_emit_parameter_debug_info): Skip for
+	static coarrays.
+	(generate_local_decl): Check for local coarrays.
+	(create_main_function): SYNC ALL before calling MAIN.
+	(generate_coarray_sym_init): Register static coarray.
+	(generate_coarray_init): Generate CAF registering constructor
+	function.
+	(gfc_generate_function_code): Call it, if needed, do not create
+	cgraph twice.
+	(gfc_generate_module_vars, gfc_process_block_locals): Call
+	generate_coarray_init.
+	* trans-types.c (gfc_get_nodesc_array_type): Generate pointers for
+	-fcoarray=lib.
+	* trans.h (gfor_fndecl_caf_register): New variable.
+	(lang_type): New element caf_token.
+	(GFC_TYPE_ARRAY_CAF_TOKEN): New macro.
+
+2011-05-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (GFORTRAN_D_OBJS): Remove prefix.o.
+	(gfortran$(exeext)): Use libcommon-target.a.
+
+2011-05-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (cfe_register_funcs):  Also register
+	character functions if their charlens are known and constant.
+	Also register allocatable functions.
+
+2011-05-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48699
+	* match.c (select_type_set_tmp): Make the temporary ALLOCATABLE if the
+	selector is ALLOCATABLE.
+
+2011-05-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48706
+	* module.c (write_dt_extensions): Do not write extended types which
+	are local to a subroutine.
+
+2011-05-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (GFORTRAN_D_OBJS): Remove version.o and intl.o.
+
+2011-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.texi (set_fpe): Update documentation.
+	* invoke.texi (-ffpe-trap): Likewise.
+	* libgfortran.h (GFC_FPE_PRECISION): Rename to GFC_FPE_INEXACT.
+	* options.c (gfc_handle_fpe_trap_option): Handle inexact and make
+	precision an alias for it.
+
+2011-05-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* trans-types.c (gfc_get_element_type): Handle scalar coarrays.
+	(gfc_get_nodesc_array_type): Make a variant-type copy for scalar
+	coarrays.
+	* trans.c (gfc_build_array_ref): Return original type not variant
+	copy for scalar coarrays.
+	* trans-array.c (gfc_conv_array_ref): Ditto.
+
+2011-05-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48700
+	* trans-intrinsic.c (gfc_conv_intrinsic_move_alloc): Deallocate 'TO'
+	argument to avoid memory leaks.
+
 2011-05-16  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (_gfortran_set_options): Add GFC_STD_F2008_TR.

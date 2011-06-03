@@ -93,7 +93,7 @@
     or loading and unloading shared objects in memory. As such, using
     caching allocators on systems that do not support
     <code class="function">abi::__cxa_atexit</code> is not recommended.
-  </p></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.impl"/>Implementation</h4></div></div></div><div class="section" title="Interface Design"><div class="titlepage"><div><div><h5 class="title"><a id="id491549"/>Interface Design</h5></div></div></div><p>
+  </p></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.impl"/>Implementation</h4></div></div></div><div class="section" title="Interface Design"><div class="titlepage"><div><div><h5 class="title"><a id="id463369"/>Interface Design</h5></div></div></div><p>
      The only allocator interface that
      is supported is the standard C++ interface. As such, all STL
      containers have been adjusted, and all external allocators have
@@ -106,7 +106,7 @@
    </p><p>
      The base class that <code class="classname">allocator</code> is derived from
      may not be user-configurable.
-</p></div><div class="section" title="Selecting Default Allocation Policy"><div class="titlepage"><div><div><h5 class="title"><a id="id491579"/>Selecting Default Allocation Policy</h5></div></div></div><p>
+</p></div><div class="section" title="Selecting Default Allocation Policy"><div class="titlepage"><div><div><h5 class="title"><a id="id463399"/>Selecting Default Allocation Policy</h5></div></div></div><p>
      It's difficult to pick an allocation strategy that will provide
    maximum utility, without excessively penalizing some behavior. In
    fact, it's difficult just deciding which typical actions to measure
@@ -143,7 +143,7 @@
      The current default choice for
      <code class="classname">allocator</code> is
      <code class="classname">__gnu_cxx::new_allocator</code>.
-   </p></div><div class="section" title="Disabling Memory Caching"><div class="titlepage"><div><div><h5 class="title"><a id="id491690"/>Disabling Memory Caching</h5></div></div></div><p>
+   </p></div><div class="section" title="Disabling Memory Caching"><div class="titlepage"><div><div><h5 class="title"><a id="id463510"/>Disabling Memory Caching</h5></div></div></div><p>
       In use, <code class="classname">allocator</code> may allocate and
       deallocate using implementation-specified strategies and
       heuristics. Because of this, every call to an allocator object's
@@ -308,29 +308,29 @@
 	 A high-performance allocator that uses a bit-map to keep track
 	 of the used and unused memory locations. It has its own
 	 documentation, found <a class="link" href="bitmap_allocator.html" title="bitmap_allocator">here</a>.
-       </p></li></ol></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.biblio"/>Bibliography</h4></div></div></div><div class="biblioentry"><a id="id492140"/><p><span class="citetitle"><em class="citetitle">
+       </p></li></ol></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.biblio"/>Bibliography</h4></div></div></div><div class="biblioentry"><a id="id463960"/><p><span class="citetitle"><em class="citetitle">
     ISO/IEC 14882:1998 Programming languages - C++
     </em>. </span>
       isoc++_1998
-    <span class="pagenums">20.4 Memory. </span></p></div><div class="biblioentry"><a id="id492156"/><p><span class="biblioid">
+    <span class="pagenums">20.4 Memory. </span></p></div><div class="biblioentry"><a id="id463975"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       The Standard Librarian: What Are Allocators Good For?
     </em>. </span><span class="author"><span class="firstname">Matt</span> <span class="surname">Austern</span>. </span><span class="publisher"><span class="publishername">
 	C/C++ Users Journal
-      . </span></span></p></div><div class="biblioentry"><a id="id492189"/><p><span class="biblioid">
+      . </span></span></p></div><div class="biblioentry"><a id="id464009"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       The Hoard Memory Allocator
-    </em>. </span><span class="author"><span class="firstname">Emery</span> <span class="surname">Berger</span>. </span></p></div><div class="biblioentry"><a id="id492214"/><p><span class="biblioid">
+    </em>. </span><span class="author"><span class="firstname">Emery</span> <span class="surname">Berger</span>. </span></p></div><div class="biblioentry"><a id="id464034"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       Reconsidering Custom Memory Allocation
-    </em>. </span><span class="author"><span class="firstname">Emery</span> <span class="surname">Berger</span>. </span><span class="author"><span class="firstname">Ben</span> <span class="surname">Zorn</span>. </span><span class="author"><span class="firstname">Kathryn</span> <span class="surname">McKinley</span>. </span><span class="copyright">Copyright © 2002 OOPSLA. </span></p></div><div class="biblioentry"><a id="id492268"/><p><span class="biblioid">
+    </em>. </span><span class="author"><span class="firstname">Emery</span> <span class="surname">Berger</span>. </span><span class="author"><span class="firstname">Ben</span> <span class="surname">Zorn</span>. </span><span class="author"><span class="firstname">Kathryn</span> <span class="surname">McKinley</span>. </span><span class="copyright">Copyright © 2002 OOPSLA. </span></p></div><div class="biblioentry"><a id="id464088"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       Allocator Types
     </em>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="publisher"><span class="publishername">
 	C/C++ Users Journal
-      . </span></span></p></div><div class="biblioentry"><a id="id492310"/><p><span class="citetitle"><em class="citetitle">The C++ Programming Language</em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 . </span><span class="pagenums">19.4 Allocators. </span><span class="publisher"><span class="publishername">
+      . </span></span></p></div><div class="biblioentry"><a id="id464130"/><p><span class="citetitle"><em class="citetitle">The C++ Programming Language</em>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 . </span><span class="pagenums">19.4 Allocators. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="id492347"/><p><span class="citetitle"><em class="citetitle">Yalloc: A Recycling C++ Allocator</em>. </span><span class="author"><span class="firstname">Felix</span> <span class="surname">Yen</span>. </span></p></div></div></div><div class="section" title="auto_ptr"><div class="titlepage"><div><div><h3 class="title"><a id="std.util.memory.auto_ptr"/>auto_ptr</h3></div></div></div><div class="section" title="Limitations"><div class="titlepage"><div><div><h4 class="title"><a id="auto_ptr.limitations"/>Limitations</h4></div></div></div><p>Explaining all of the fun and delicious things that can
+      . </span></span></p></div><div class="biblioentry"><a id="id464166"/><p><span class="citetitle"><em class="citetitle">Yalloc: A Recycling C++ Allocator</em>. </span><span class="author"><span class="firstname">Felix</span> <span class="surname">Yen</span>. </span></p></div></div></div><div class="section" title="auto_ptr"><div class="titlepage"><div><div><h3 class="title"><a id="std.util.memory.auto_ptr"/>auto_ptr</h3></div></div></div><div class="section" title="Limitations"><div class="titlepage"><div><div><h4 class="title"><a id="auto_ptr.limitations"/>Limitations</h4></div></div></div><p>Explaining all of the fun and delicious things that can
    happen with misuse of the <code class="classname">auto_ptr</code> class
    template (called <acronym class="acronym">AP</acronym> here) would take some
    time. Suffice it to say that the use of <acronym class="acronym">AP</acronym>
@@ -446,7 +446,7 @@ drops to zero.
 Derived classes override those functions to destroy resources in a context
 where the correct dynamic type is known. This is an application of the
 technique known as type erasure.
-  </p></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="shared_ptr.impl"/>Implementation</h4></div></div></div><div class="section" title="Class Hierarchy"><div class="titlepage"><div><div><h5 class="title"><a id="id492707"/>Class Hierarchy</h5></div></div></div><p>
+  </p></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="shared_ptr.impl"/>Implementation</h4></div></div></div><div class="section" title="Class Hierarchy"><div class="titlepage"><div><div><h5 class="title"><a id="id464527"/>Class Hierarchy</h5></div></div></div><p>
 A <code class="classname">shared_ptr&lt;T&gt;</code> contains a pointer of
 type <span class="type">T*</span> and an object of type
 <code class="classname">__shared_count</code>. The shared_count contains a
@@ -488,7 +488,7 @@ be forwarded to <span class="type">Tp</span>'s constructor.
 Unlike the other <code class="classname">_Sp_counted_*</code> classes, this one is parameterized on the
 type of object, not the type of pointer; this is purely a convenience
 that simplifies the implementation slightly.
-    </p></dd></dl></div></div><div class="section" title="Thread Safety"><div class="titlepage"><div><div><h5 class="title"><a id="id492886"/>Thread Safety</h5></div></div></div><p>
+    </p></dd></dl></div></div><div class="section" title="Thread Safety"><div class="titlepage"><div><div><h5 class="title"><a id="id464706"/>Thread Safety</h5></div></div></div><p>
 C++0x-only features are: rvalue-ref/move support, allocator support,
 aliasing constructor, make_shared &amp; allocate_shared. Additionally,
 the constructors taking <code class="classname">auto_ptr</code> parameters are
@@ -538,7 +538,7 @@ compiler, standard library, platform etc. For the version of
 shared_ptr in libstdc++ the compiler and library are fixed, which
 makes things much simpler: we have an atomic CAS or we don't, see Lock
 Policy below for details.
-</p></div><div class="section" title="Selecting Lock Policy"><div class="titlepage"><div><div><h5 class="title"><a id="id492955"/>Selecting Lock Policy</h5></div></div></div><p>
+</p></div><div class="section" title="Selecting Lock Policy"><div class="titlepage"><div><div><h5 class="title"><a id="id464775"/>Selecting Lock Policy</h5></div></div></div><p>
     </p><p>
 There is a single <code class="classname">_Sp_counted_base</code> class,
 which is a template parameterized on the enum
@@ -579,7 +579,7 @@ used when libstdc++ is built without <code class="literal">--enable-threads</cod
        <code class="filename">ext/atomicity.h</code>, which detect if the program
        is multi-threaded.  If only one thread of execution exists in
        the program then less expensive non-atomic operations are used.
-     </p></div><div class="section" title="Dual C++0x and TR1 Implementation"><div class="titlepage"><div><div><h5 class="title"><a id="id493077"/>Dual C++0x and TR1 Implementation</h5></div></div></div><p>
+     </p></div><div class="section" title="Dual C++0x and TR1 Implementation"><div class="titlepage"><div><div><h5 class="title"><a id="id464897"/>Dual C++0x and TR1 Implementation</h5></div></div></div><p>
 The interface of <code class="classname">tr1::shared_ptr</code> was extended for C++0x
 with support for rvalue-references and the other features from N2351.
 The <code class="classname">_Sp_counted_base</code> base class is implemented in
@@ -596,7 +596,7 @@ change unless bug fixes require it.  If the code that is common to both
 C++0x and TR1 modes needs to diverge further then it might be necessary to
 duplicate <code class="classname">_Sp_counted_base</code> and only make changes to
 the C++0x version.
-</p></div><div class="section" title="Related functions and classes"><div class="titlepage"><div><div><h5 class="title"><a id="id493133"/>Related functions and classes</h5></div></div></div><div class="variablelist"><dl><dt><span class="term"><code class="code">dynamic_pointer_cast</code>, <code class="code">static_pointer_cast</code>,
+</p></div><div class="section" title="Related functions and classes"><div class="titlepage"><div><div><h5 class="title"><a id="id464953"/>Related functions and classes</h5></div></div></div><div class="variablelist"><dl><dt><span class="term"><code class="code">dynamic_pointer_cast</code>, <code class="code">static_pointer_cast</code>,
 <code class="code">const_pointer_cast</code></span></dt><dd><p>
 As noted in N2351, these functions can be implemented non-intrusively using
 the alias constructor.  However the aliasing constructor is only available
@@ -629,13 +629,13 @@ is called.  Users should not try to use this.
 As well as the extra constructors, this implementation also needs some
 members of _Sp_counted_deleter to be protected where they could otherwise
 be private.
-    </p></dd></dl></div></div></div><div class="section" title="Use"><div class="titlepage"><div><div><h4 class="title"><a id="shared_ptr.using"/>Use</h4></div></div></div><div class="section" title="Examples"><div class="titlepage"><div><div><h5 class="title"><a id="id493282"/>Examples</h5></div></div></div><p>
+    </p></dd></dl></div></div></div><div class="section" title="Use"><div class="titlepage"><div><div><h4 class="title"><a id="shared_ptr.using"/>Use</h4></div></div></div><div class="section" title="Examples"><div class="titlepage"><div><div><h5 class="title"><a id="id465102"/>Examples</h5></div></div></div><p>
       Examples of use can be found in the testsuite, under
       <code class="filename">testsuite/tr1/2_general_utilities/shared_ptr</code>,
       <code class="filename">testsuite/20_util/shared_ptr</code>
       and
       <code class="filename">testsuite/20_util/weak_ptr</code>.
-    </p></div><div class="section" title="Unresolved Issues"><div class="titlepage"><div><div><h5 class="title"><a id="id493312"/>Unresolved Issues</h5></div></div></div><p>
+    </p></div><div class="section" title="Unresolved Issues"><div class="titlepage"><div><div><h5 class="title"><a id="id465132"/>Unresolved Issues</h5></div></div></div><p>
       The <span class="emphasis"><em><code class="classname">shared_ptr</code> atomic access</em></span>
       clause in the C++0x working draft is not implemented in GCC.
     </p><p>
@@ -676,22 +676,22 @@ be private.
     code to work with, Peter Dimov in particular for his help and
     invaluable advice on thread safety.  Phillip Jordan and Paolo
     Carlini for the lock policy implementation.
-  </p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="shared_ptr.biblio"/>Bibliography</h4></div></div></div><div class="biblioentry"><a id="id493406"/><p><span class="biblioid">
+  </p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h4 class="title"><a id="shared_ptr.biblio"/>Bibliography</h4></div></div></div><div class="biblioentry"><a id="id465226"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       Improving shared_ptr for C++0x, Revision 2
     </em>. </span><span class="subtitle">
       N2351
-    . </span></p></div><div class="biblioentry"><a id="id493427"/><p><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id465247"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       C++ Standard Library Active Issues List
     </em>. </span><span class="subtitle">
       N2456
-    . </span></p></div><div class="biblioentry"><a id="id493448"/><p><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id465268"/><p><span class="biblioid">
     . </span><span class="citetitle"><em class="citetitle">
       Working Draft, Standard for Programming Language C++
     </em>. </span><span class="subtitle">
       N2461
-    . </span></p></div><div class="biblioentry"><a id="id493470"/><p><span class="biblioid">shared_ptr
+    . </span></p></div><div class="biblioentry"><a id="id465290"/><p><span class="biblioid">shared_ptr
     . </span><span class="citetitle"><em class="citetitle">
       Boost C++ Libraries documentation, shared_ptr
     </em>. </span><span class="subtitle">

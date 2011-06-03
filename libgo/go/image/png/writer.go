@@ -130,17 +130,28 @@ func (e *encoder) writePLTE(p image.PalettedColorModel) {
 		e.err = FormatError("bad palette length: " + strconv.Itoa(len(p)))
 		return
 	}
-	for i := 0; i < len(p); i++ {
-		r, g, b, a := p[i].RGBA()
-		if a != 0xffff {
-			e.err = UnsupportedError("non-opaque palette color")
-			return
-		}
+	for i, c := range p {
+		r, g, b, _ := c.RGBA()
 		e.tmp[3*i+0] = uint8(r >> 8)
 		e.tmp[3*i+1] = uint8(g >> 8)
 		e.tmp[3*i+2] = uint8(b >> 8)
 	}
 	e.writeChunk(e.tmp[0:3*len(p)], "PLTE")
+}
+
+func (e *encoder) maybeWritetRNS(p image.PalettedColorModel) {
+	last := -1
+	for i, c := range p {
+		_, _, _, a := c.RGBA()
+		if a != 0xffff {
+			last = i
+		}
+		e.tmp[i] = uint8(a >> 8)
+	}
+	if last == -1 {
+		return
+	}
+	e.writeChunk(e.tmp[:last+1], "tRNS")
 }
 
 // An encoder is an io.Writer that satisfies writes by writing PNG IDAT chunks,
@@ -263,7 +274,12 @@ func writeImage(w io.Writer, m image.Image, cb int) os.Error {
 	defer zw.Close()
 
 	bpp := 0 // Bytes per pixel.
+
+	// Used by fast paths for common image types
 	var paletted *image.Paletted
+	var rgba *image.RGBA
+	rgba, _ = m.(*image.RGBA)
+
 	switch cb {
 	case cbG8:
 		bpp = 1
@@ -303,12 +319,24 @@ func writeImage(w io.Writer, m image.Image, cb int) os.Error {
 				cr[0][x+1] = c.Y
 			}
 		case cbTC8:
-			for x := b.Min.X; x < b.Max.X; x++ {
-				// We have previously verified that the alpha value is fully opaque.
-				r, g, b, _ := m.At(x, y).RGBA()
-				cr[0][3*x+1] = uint8(r >> 8)
-				cr[0][3*x+2] = uint8(g >> 8)
-				cr[0][3*x+3] = uint8(b >> 8)
+			// We have previously verified that the alpha value is fully opaque.
+			cr0 := cr[0]
+			if rgba != nil {
+				yoff := y * rgba.Stride
+				xoff := 3*b.Min.X + 1
+				for _, color := range rgba.Pix[yoff+b.Min.X : yoff+b.Max.X] {
+					cr0[xoff] = color.R
+					cr0[xoff+1] = color.G
+					cr0[xoff+2] = color.B
+					xoff += 3
+				}
+			} else {
+				for x := b.Min.X; x < b.Max.X; x++ {
+					r, g, b, _ := m.At(x, y).RGBA()
+					cr0[3*x+1] = uint8(r >> 8)
+					cr0[3*x+2] = uint8(g >> 8)
+					cr0[3*x+3] = uint8(b >> 8)
+				}
 			}
 		case cbP8:
 			rowOffset := y * paletted.Stride
@@ -430,6 +458,7 @@ func Encode(w io.Writer, m image.Image) os.Error {
 	e.writeIHDR()
 	if pal != nil {
 		e.writePLTE(pal.Palette)
+		e.maybeWritetRNS(pal.Palette)
 	}
 	e.writeIDATs()
 	e.writeIEND()

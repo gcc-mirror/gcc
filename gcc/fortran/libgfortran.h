@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_FPE_ZERO       (1<<2)
 #define GFC_FPE_OVERFLOW   (1<<3)
 #define GFC_FPE_UNDERFLOW  (1<<4)
-#define GFC_FPE_PRECISION  (1<<5)
+#define GFC_FPE_INEXACT    (1<<5)
 
 
 /* Bitmasks for the various runtime checks that can be enabled.  */

@@ -12,6 +12,7 @@ import (
 
 func TestRequest(t *testing.T) {
 	env := map[string]string{
+		"SERVER_PROTOCOL": "HTTP/1.1",
 		"REQUEST_METHOD":  "GET",
 		"HTTP_HOST":       "example.com",
 		"HTTP_REFERER":    "elsewhere",
@@ -19,10 +20,13 @@ func TestRequest(t *testing.T) {
 		"HTTP_FOO_BAR":    "baz",
 		"REQUEST_URI":     "/path?a=b",
 		"CONTENT_LENGTH":  "123",
+		"CONTENT_TYPE":    "text/xml",
+		"HTTPS":           "1",
+		"REMOTE_ADDR":     "5.6.7.8",
 	}
-	req, err := requestFromEnvironment(env)
+	req, err := RequestFromMap(env)
 	if err != nil {
-		t.Fatalf("requestFromEnvironment: %v", err)
+		t.Fatalf("RequestFromMap: %v", err)
 	}
 	if g, e := req.UserAgent, "goclient"; e != g {
 		t.Errorf("expected UserAgent %q; got %q", e, g)
@@ -33,6 +37,9 @@ func TestRequest(t *testing.T) {
 	if g, e := req.Header.Get("User-Agent"), ""; e != g {
 		// Tests that we don't put recognized headers in the map
 		t.Errorf("expected User-Agent %q; got %q", e, g)
+	}
+	if g, e := req.Header.Get("Content-Type"), "text/xml"; e != g {
+		t.Errorf("expected Content-Type %q; got %q", e, g)
 	}
 	if g, e := req.ContentLength, int64(123); e != g {
 		t.Errorf("expected ContentLength %d; got %d", e, g)
@@ -58,18 +65,25 @@ func TestRequest(t *testing.T) {
 	if req.Trailer == nil {
 		t.Errorf("unexpected nil Trailer")
 	}
+	if req.TLS == nil {
+		t.Errorf("expected non-nil TLS")
+	}
+	if e, g := "5.6.7.8:0", req.RemoteAddr; e != g {
+		t.Errorf("RemoteAddr: got %q; want %q", g, e)
+	}
 }
 
 func TestRequestWithoutHost(t *testing.T) {
 	env := map[string]string{
-		"HTTP_HOST":      "",
-		"REQUEST_METHOD": "GET",
-		"REQUEST_URI":    "/path?a=b",
-		"CONTENT_LENGTH": "123",
+		"SERVER_PROTOCOL": "HTTP/1.1",
+		"HTTP_HOST":       "",
+		"REQUEST_METHOD":  "GET",
+		"REQUEST_URI":     "/path?a=b",
+		"CONTENT_LENGTH":  "123",
 	}
-	req, err := requestFromEnvironment(env)
+	req, err := RequestFromMap(env)
 	if err != nil {
-		t.Fatalf("requestFromEnvironment: %v", err)
+		t.Fatalf("RequestFromMap: %v", err)
 	}
 	if g, e := req.RawURL, "/path?a=b"; e != g {
 		t.Errorf("expected RawURL %q; got %q", e, g)

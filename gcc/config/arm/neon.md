@@ -794,8 +794,8 @@
 
 (define_insn "orn<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-	(ior:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
-		 (not:VDQ (match_operand:VDQ 2 "s_register_operand" "w"))))]
+	(ior:VDQ (not:VDQ (match_operand:VDQ 2 "s_register_operand" "w"))
+		 (match_operand:VDQ 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vorn\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "neon_type" "neon_int_1")]
@@ -803,8 +803,8 @@
 
 (define_insn "orndi3_neon"
   [(set (match_operand:DI 0 "s_register_operand" "=w,?=&r,?&r")
-	(ior:DI (match_operand:DI 1 "s_register_operand" "w,r,0")
-	         (not:DI (match_operand:DI 2 "s_register_operand" "w,0,r"))))]
+	(ior:DI (not:DI (match_operand:DI 2 "s_register_operand" "w,0,r"))
+		(match_operand:DI 1 "s_register_operand" "w,r,0")))]
   "TARGET_NEON"
   "@
    vorn\t%P0, %P1, %P2
@@ -816,8 +816,8 @@
 
 (define_insn "bic<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-	(and:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
-		  (not:VDQ (match_operand:VDQ 2 "s_register_operand" "w"))))]
+	(and:VDQ (not:VDQ (match_operand:VDQ 2 "s_register_operand" "w"))
+		 (match_operand:VDQ 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vbic\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "neon_type" "neon_int_1")]

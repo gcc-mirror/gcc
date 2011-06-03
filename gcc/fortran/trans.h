@@ -345,7 +345,8 @@ tree gfc_evaluate_now (tree, stmtblock_t *);
 /* Find the appropriate variant of a math intrinsic.  */
 tree gfc_builtin_decl_for_float_kind (enum built_in_function, int);
 
-/* Intrinsic function handling.  */
+/* Intrinsic procedure handling.  */
+tree gfc_conv_intrinsic_subroutine (gfc_code *);
 void gfc_conv_intrinsic_function (gfc_se *, gfc_expr *);
 
 /* Is the intrinsic expanded inline.  */
@@ -355,8 +356,6 @@ bool gfc_inline_intrinsic_function_p (gfc_expr *);
    This is true for array-returning intrinsics, unless
    gfc_inline_intrinsic_function_p returns true.  */
 int gfc_is_intrinsic_libcall (gfc_expr *);
-
-tree gfc_conv_intrinsic_move_alloc (gfc_code *);
 
 /* Used to call ordinary functions/subroutines
    and procedure pointer components.  */
@@ -617,6 +616,7 @@ extern GTY(()) tree gfor_fndecl_associated;
 /* Coarray run-time library function decls.  */
 extern GTY(()) tree gfor_fndecl_caf_init;
 extern GTY(()) tree gfor_fndecl_caf_finalize;
+extern GTY(()) tree gfor_fndecl_caf_register;
 extern GTY(()) tree gfor_fndecl_caf_critical;
 extern GTY(()) tree gfor_fndecl_caf_end_critical;
 extern GTY(()) tree gfor_fndecl_caf_sync_all;
@@ -722,6 +722,7 @@ struct GTY((variable_size))	lang_type	 {
   tree span;
   tree base_decl[2];
   tree nonrestricted_type;
+  tree caf_token;
 };
 
 struct GTY((variable_size)) lang_decl {
@@ -766,6 +767,7 @@ struct GTY((variable_size)) lang_decl {
   (TYPE_LANG_SPECIFIC(node)->stride[dim])
 #define GFC_TYPE_ARRAY_RANK(node) (TYPE_LANG_SPECIFIC(node)->rank)
 #define GFC_TYPE_ARRAY_CORANK(node) (TYPE_LANG_SPECIFIC(node)->corank)
+#define GFC_TYPE_ARRAY_CAF_TOKEN(node) (TYPE_LANG_SPECIFIC(node)->caf_token)
 #define GFC_TYPE_ARRAY_SIZE(node) (TYPE_LANG_SPECIFIC(node)->size)
 #define GFC_TYPE_ARRAY_OFFSET(node) (TYPE_LANG_SPECIFIC(node)->offset)
 #define GFC_TYPE_ARRAY_AKIND(node) (TYPE_LANG_SPECIFIC(node)->akind)

@@ -61,7 +61,7 @@ static int diagnose_uninitialized_cst_or_ref_member_1 (tree, tree, bool, bool);
 static bool
 begin_init_stmts (tree *stmt_expr_p, tree *compound_stmt_p)
 {
-  bool is_global = !building_stmt_tree ();
+  bool is_global = !building_stmt_list_p ();
 
   *stmt_expr_p = begin_stmt_expr ();
   *compound_stmt_p = begin_compound_stmt (BCS_NO_SCOPE);
@@ -79,7 +79,7 @@ finish_init_stmts (bool is_global, tree stmt_expr, tree compound_stmt)
 
   stmt_expr = finish_stmt_expr (stmt_expr, true);
 
-  gcc_assert (!building_stmt_tree () == is_global);
+  gcc_assert (!building_stmt_list_p () == is_global);
 
   return stmt_expr;
 }
@@ -501,6 +501,17 @@ perform_member_init (tree member, tree init)
   if (decl == error_mark_node)
     return;
 
+  if (warn_init_self && init && TREE_CODE (init) == TREE_LIST
+      && TREE_CHAIN (init) == NULL_TREE)
+    {
+      tree val = TREE_VALUE (init);
+      if (TREE_CODE (val) == COMPONENT_REF && TREE_OPERAND (val, 1) == member
+	  && TREE_OPERAND (val, 0) == current_class_ref)
+	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    OPT_Wuninitialized, "%qD is initialized with itself",
+		    member);
+    }
+
   if (init == void_type_node)
     {
       /* mem() means value-initialization.  */
@@ -538,6 +549,8 @@ perform_member_init (tree member, tree init)
 	    {
 	      gcc_assert (TREE_CHAIN (init) == NULL_TREE);
 	      init = TREE_VALUE (init);
+	      if (BRACE_ENCLOSED_INITIALIZER_P (init))
+		init = digest_init (type, init, tf_warning_or_error);
 	    }
 	  if (init == NULL_TREE
 	      || same_type_ignoring_top_level_qualifiers_p (type,
@@ -1539,7 +1552,7 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
   tree type = TREE_TYPE (exp);
 
   gcc_assert (init != error_mark_node && type != error_mark_node);
-  gcc_assert (building_stmt_tree ());
+  gcc_assert (building_stmt_list_p ());
 
   /* Use a function returning the desired type to initialize EXP for us.
      If the function is a constructor, and its first argument is

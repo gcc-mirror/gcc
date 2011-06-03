@@ -74,6 +74,7 @@ static void push_local_name (tree);
 static tree grok_reference_init (tree, tree, tree, tree *);
 static tree grokvardecl (tree, tree, const cp_decl_specifier_seq *,
 			 int, int, tree);
+static int check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (tree, tree, bool);
 static tree build_library_fn_1 (tree, enum tree_code, tree);
@@ -1688,6 +1689,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  error ("deleted definition of %qD", newdecl);
 	  error ("after previous declaration %q+D", olddecl);
 	}
+      DECL_DELETED_FN (newdecl) |= DECL_DELETED_FN (olddecl);
     }
 
   /* Deal with C++: must preserve virtual function table size.  */
@@ -2833,6 +2835,8 @@ check_omp_return (void)
 	error ("invalid exit from OpenMP structured block");
 	return false;
       }
+    else if (b->kind == sk_function_parms)
+      break;
   return true;
 }
 
@@ -2954,6 +2958,28 @@ pop_switch (void)
   free (cs);
 }
 
+/* Convert a case constant VALUE in a switch to the type TYPE of the switch
+   condition.  Note that if TYPE and VALUE are already integral we don't
+   really do the conversion because the language-independent
+   warning/optimization code will work better that way.  */
+
+static tree
+case_conversion (tree type, tree value)
+{
+  if (value == NULL_TREE)
+    return value;
+
+  if (cxx_dialect >= cxx0x
+      && (SCOPED_ENUM_P (type)
+	  || !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (value))))
+    {
+      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
+	type = type_promotes_to (type);
+      value = perform_implicit_conversion (type, value, tf_warning_or_error);
+    }
+  return cxx_constant_value (value);
+}
+
 /* Note that we've seen a definition of a case label, and complain if this
    is a bad place for one.  */
 
@@ -2962,6 +2988,7 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
 {
   tree cond, r;
   struct cp_binding_level *p;
+  tree type;
 
   if (processing_template_decl)
     {
@@ -2981,13 +3008,12 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
   if (!check_switch_goto (switch_stack->level))
     return error_mark_node;
 
-  if (low_value)
-    low_value = cxx_constant_value (low_value);
-  if (high_value)
-    high_value = cxx_constant_value (high_value);
+  type = SWITCH_STMT_TYPE (switch_stack->switch_stmt);
 
-  r = c_add_case_label (loc, switch_stack->cases, cond,
-			SWITCH_STMT_TYPE (switch_stack->switch_stmt),
+  low_value = case_conversion (type, low_value);
+  high_value = case_conversion (type, high_value);
+
+  r = c_add_case_label (loc, switch_stack->cases, cond, type,
 			low_value, high_value);
 
   /* After labels, make any new cleanups in the function go into their
@@ -5327,13 +5353,13 @@ build_aggr_init_full_exprs (tree decl, tree init, int flags)
      
 {
   int saved_stmts_are_full_exprs_p = 0;
-  if (building_stmt_tree ())
+  if (building_stmt_list_p ())
     {
       saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
       current_stmt_tree ()->stmts_are_full_exprs_p = 1;
     }
   init = build_aggr_init (decl, init, flags, tf_warning_or_error);
-  if (building_stmt_tree ())
+  if (building_stmt_list_p ())
     current_stmt_tree ()->stmts_are_full_exprs_p =
       saved_stmts_are_full_exprs_p;
   return init;
@@ -5726,7 +5752,7 @@ initialize_local_var (tree decl, tree init)
 	  if (cleanup && TREE_CODE (type) != ARRAY_TYPE)
 	    wrap_temporary_cleanups (init, cleanup);
 
-	  gcc_assert (building_stmt_tree ());
+	  gcc_assert (building_stmt_list_p ());
 	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  finish_expr_stmt (init);
@@ -5884,6 +5910,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (current_class_type
       && CP_DECL_CONTEXT (decl) == current_class_type
       && TYPE_BEING_DEFINED (current_class_type)
+      && !CLASSTYPE_TEMPLATE_INSTANTIATION (current_class_type)
       && (DECL_INITIAL (decl) || init))
     DECL_INITIALIZED_IN_CLASS_P (decl) = 1;
 
@@ -5913,6 +5940,11 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   if (!ensure_literal_type_for_constexpr_object (decl))
     DECL_DECLARED_CONSTEXPR_P (decl) = 0;
+
+  if (TREE_CODE (decl) == VAR_DECL
+      && DECL_CLASS_SCOPE_P (decl)
+      && DECL_INITIALIZED_IN_CLASS_P (decl))
+    check_static_variable_definition (decl, type);
 
   if (init && TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -6957,6 +6989,17 @@ build_this_parm (tree type, cp_cv_quals quals)
   return parm;
 }
 
+/* DECL is a static member function.  Complain if it was declared
+   with function-cv-quals.  */
+
+static void
+check_static_quals (tree decl, cp_cv_quals quals)
+{
+  if (quals != TYPE_UNQUALIFIED)
+    error ("static member function %q#D declared with type qualifiers",
+	   decl);
+}
+
 /* CTYPE is class type, or null if non-class.
    TYPE is type this FUNCTION_DECL should have, either FUNCTION_TYPE
    or METHOD_TYPE.
@@ -7200,10 +7243,7 @@ grokfndecl (tree ctype,
   if (inlinep)
     DECL_DECLARED_INLINE_P (decl) = 1;
   if (inlinep & 2)
-    {
-      DECL_DECLARED_CONSTEXPR_P (decl) = true;
-      validate_constexpr_fundecl (decl);
-    }
+    DECL_DECLARED_CONSTEXPR_P (decl) = true;
 
   DECL_EXTERNAL (decl) = 1;
   if (quals && TREE_CODE (type) == FUNCTION_TYPE)
@@ -7240,6 +7280,9 @@ grokfndecl (tree ctype,
 					4 * (friendp != 0));
   if (decl == error_mark_node)
     return NULL_TREE;
+
+  if (DECL_STATIC_FUNCTION_P (decl))
+    check_static_quals (decl, quals);
 
   if (attrlist)
     {
@@ -7290,9 +7333,11 @@ grokfndecl (tree ctype,
 
 	  if (DECL_STATIC_FUNCTION_P (old_decl)
 	      && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	    /* Remove the `this' parm added by grokclassfn.
-	       XXX Isn't this done in start_function, too?  */
-	    revert_static_member_fn (decl);
+	    {
+	      /* Remove the `this' parm added by grokclassfn.  */
+	      revert_static_member_fn (decl);
+	      check_static_quals (decl, quals);
+	    }
 	  if (DECL_ARTIFICIAL (old_decl))
 	    {
 	      error ("definition of implicitly-declared %qD", old_decl);
@@ -7602,9 +7647,12 @@ build_ptrmem_type (tree class_type, tree member_type)
    messages.  Return 1 if the definition is particularly bad, or 0
    otherwise.  */
 
-int
+static int
 check_static_variable_definition (tree decl, tree type)
 {
+  /* Can't check yet if we don't know the type.  */
+  if (dependent_type_p (type))
+    return 0;
   /* If DECL is declared constexpr, we'll do the appropriate checks
      in check_initializer.  */
   if (DECL_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl))
@@ -7935,6 +7983,12 @@ create_array_type_for_decl (tree name, tree type, tree size)
   /* If things have already gone awry, bail now.  */
   if (type == error_mark_node || size == error_mark_node)
     return error_mark_node;
+
+  /* 8.3.4/1: If the type of the identifier of D contains the auto
+     type-specifier, the program is ill-formed.  */
+  if (pedantic && type_uses_auto (type))
+    pedwarn (input_location, OPT_pedantic,
+	     "declaration of %qD as array of %<auto%>", name);
 
   /* If there are some types which cannot be array elements,
      issue an error-message and return.  */
@@ -8725,12 +8779,6 @@ grokdeclarator (const cp_declarator *declarator,
 	       || thread_p)
 	error ("storage class specifiers invalid in parameter declarations");
 
-      if (type_uses_auto (type))
-	{
-	  error ("parameter declared %<auto%>");
-	  type = error_mark_node;
-	}
-
       /* Function parameters cannot be constexpr.  If we saw one, moan
          and pretend it wasn't there.  */
       if (constexpr_p)
@@ -9168,13 +9216,18 @@ grokdeclarator (const cp_declarator *declarator,
 		 to create the type "rvalue reference to cv TD' creates the
 		 type TD."
               */
-	      if (!VOID_TYPE_P (type))
+	      if (VOID_TYPE_P (type))
+		/* We already gave an error.  */;
+	      else if (TREE_CODE (type) == REFERENCE_TYPE)
+		{
+		  if (declarator->u.reference.rvalue_ref)
+		    /* Leave type alone.  */;
+		  else
+		    type = cp_build_reference_type (TREE_TYPE (type), false);
+		}
+	      else
 		type = cp_build_reference_type
-		       ((TREE_CODE (type) == REFERENCE_TYPE
-			 ? TREE_TYPE (type) : type),
-			(declarator->u.reference.rvalue_ref
-			 && (TREE_CODE(type) != REFERENCE_TYPE
-			     || TYPE_REF_IS_RVALUE (type))));
+		  (type, declarator->u.reference.rvalue_ref);
 
 	      /* In C++0x, we need this check for direct reference to
 		 reference declarations, which are forbidden by
@@ -9356,12 +9409,6 @@ grokdeclarator (const cp_declarator *declarator,
   if (ctype == NULL_TREE && decl_context == FIELD && friendp == 0)
     ctype = current_class_type;
 
-  /* A constexpr non-static member function is implicitly const.  */
-  if (constexpr_p && ctype && staticp == 0
-      && TREE_CODE (type) == FUNCTION_TYPE
-      && sfk != sfk_constructor && sfk != sfk_destructor)
-    memfn_quals |= TYPE_QUAL_CONST;
-
   /* Now TYPE has the actual type.  */
 
   if (returned_attrs)
@@ -9476,6 +9523,12 @@ grokdeclarator (const cp_declarator *declarator,
           /* We have now dealt with these qualifiers.  */
           memfn_quals = TYPE_UNQUALIFIED;
         }
+
+      if (type_uses_auto (type))
+	{
+	  error ("typedef declared %<auto%>");
+	  type = error_mark_node;
+	}
 
       if (decl_context == FIELD)
 	decl = build_lang_decl (TYPE_DECL, unqualified_id, type);
@@ -9717,6 +9770,12 @@ grokdeclarator (const cp_declarator *declarator,
       if (ctype || in_namespace)
 	error ("cannot use %<::%> in parameter declaration");
 
+      if (type_uses_auto (type))
+	{
+	  error ("parameter declared %<auto%>");
+	  type = error_mark_node;
+	}
+
       /* A parameter declared as an array of T is really a pointer to T.
 	 One declared as a function is really a pointer to a function.
 	 One declared as a member is really a pointer to member.  */
@@ -9733,7 +9792,12 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (ctype && TREE_CODE (type) == FUNCTION_TYPE && staticp < 2
       && !NEW_DELETE_OPNAME_P (unqualified_id))
-    type = build_memfn_type (type, ctype, memfn_quals);
+    {
+      cp_cv_quals real_quals = memfn_quals;
+      if (constexpr_p && sfk != sfk_constructor && sfk != sfk_destructor)
+	real_quals |= TYPE_QUAL_CONST;
+      type = build_memfn_type (type, ctype, real_quals);
+    }
 
   {
     tree decl;
@@ -9895,7 +9959,7 @@ grokdeclarator (const cp_declarator *declarator,
 	       instantiation made the field's type be incomplete.  */
 	    if (current_class_type
 		&& TYPE_NAME (current_class_type)
-		&& IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (current_class_type))
+		&& IDENTIFIER_TEMPLATE (current_class_name)
 		&& declspecs->type
 		&& declspecs->type == type)
 	      error ("  in instantiation of template %qT",
@@ -9971,21 +10035,6 @@ grokdeclarator (const cp_declarator *declarator,
 			staticp = 1;
 		      }
 		  }
-
-		if (uses_template_parms (type))
-		  /* We'll check at instantiation time.  */
-		  ;
-		else if (constexpr_p)
-		  /* constexpr has the same requirements.  */
-		  ;
-		else if (check_static_variable_definition (unqualified_id,
-							   type))
-		  /* If we just return the declaration, crashes
-		     will sometimes occur.  We therefore return
-		     void_type_node, as if this was a friend
-		     declaration, to cause callers to completely
-		     ignore this declaration.  */
-		  return error_mark_node;
 	      }
 
 	    if (staticp)
@@ -10497,12 +10546,6 @@ grokparms (tree parmlist, tree *parms)
 	    init = check_default_argument (decl, init);
 	}
 
-      if (TREE_CODE (decl) == PARM_DECL
-          && FUNCTION_PARAMETER_PACK_P (decl)
-          && TREE_CHAIN (parm)
-          && TREE_CHAIN (parm) != void_list_node)
-        error ("parameter packs must be at the end of the parameter list");
-
       DECL_CHAIN (decl) = decls;
       decls = decl;
       result = tree_cons (init, type, result);
@@ -10681,9 +10724,6 @@ grok_special_member_properties (tree decl)
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
       if (DECL_DECLARED_CONSTEXPR_P (decl)
-	  /* It doesn't count if we can't tell yet whether or not
-	     the constructor is actually constexpr.  */
-	  && !DECL_DEFERRED_CONSTEXPR_CHECK (decl)
 	  && !copy_fn_p (decl) && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
@@ -12139,9 +12179,13 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 	      tree prev_value;
 	      bool overflowed;
 
-	      /* The next value is the previous value plus one.
-		 add_double doesn't know the type of the target expression,
-		 so we must check with int_fits_type_p as well.  */
+	      /* C++03 7.2/4: If no initializer is specified for the first
+		 enumerator, the type is an unspecified integral
+		 type. Otherwise the type is the same as the type of the
+		 initializing value of the preceding enumerator unless the
+		 incremented value is not representable in that type, in
+		 which case the type is an unspecified integral type
+		 sufficient to contain the incremented value.  */
 	      prev_value = DECL_INITIAL (TREE_VALUE (TYPE_VALUES (enumtype)));
 	      if (error_operand_p (prev_value))
 		value = error_mark_node;
@@ -12150,9 +12194,34 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 		  overflowed = add_double (TREE_INT_CST_LOW (prev_value),
 					   TREE_INT_CST_HIGH (prev_value),
 					   1, 0, &lo, &hi);
-		  value = build_int_cst_wide (TREE_TYPE (prev_value), lo, hi);
-		  overflowed
-		    |= !int_fits_type_p (value, TREE_TYPE (prev_value));
+		  if (!overflowed)
+		    {
+		      double_int di;
+		      tree type = TREE_TYPE (prev_value);
+		      bool pos = (TYPE_UNSIGNED (type) || hi >= 0);
+		      di.low = lo; di.high = hi;
+		      if (!double_int_fits_to_tree_p (type, di))
+			{
+			  unsigned int itk;
+			  for (itk = itk_int; itk != itk_none; itk++)
+			    {
+			      type = integer_types[itk];
+			      if (type != NULL_TREE
+				  && (pos || !TYPE_UNSIGNED (type))
+				  && double_int_fits_to_tree_p (type, di))
+				break;
+			    }
+			  if (type && cxx_dialect < cxx0x
+			      && itk > itk_unsigned_long)
+			    pedwarn (input_location, OPT_Wlong_long, pos ? "\
+incremented enumerator value is too large for %<unsigned long%>" :  "\
+incremented enumerator value is too large for %<long%>");
+			}
+		      if (type == NULL_TREE)
+			overflowed = true;
+		      else
+			value = double_int_to_tree (type, di);
+		    }
 
 		  if (overflowed)
 		    {
@@ -12376,12 +12445,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   /* Sometimes we don't notice that a function is a static member, and
      build a METHOD_TYPE for it.  Fix that up now.  */
-  if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1)
-      && TREE_CODE (TREE_TYPE (decl1)) == METHOD_TYPE)
-    {
-      revert_static_member_fn (decl1);
-      ctype = NULL_TREE;
-    }
+  gcc_assert (!(ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1)
+		&& TREE_CODE (TREE_TYPE (decl1)) == METHOD_TYPE));
 
   /* Set up current_class_type, and enter the scope of the class, if
      appropriate.  */
@@ -12524,6 +12589,10 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	maybe_apply_pragma_weak (decl1);
     }
 
+  /* constexpr functions must have literal argument types and
+     literal return type.  */
+  validate_constexpr_fundecl (decl1);
+
   /* Reset this in case the call to pushdecl changed it.  */
   current_function_decl = decl1;
 
@@ -12595,7 +12664,9 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 			compiler-generated functions.  */
 		     && !DECL_ARTIFICIAL (decl1));
 
-  if (DECL_INTERFACE_KNOWN (decl1))
+  if (processing_template_decl)
+    /* Don't mess with interface flags.  */;
+  else if (DECL_INTERFACE_KNOWN (decl1))
     {
       tree ctx = decl_function_context (decl1);
 
@@ -12614,8 +12685,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   else if (!finfo->interface_unknown && honor_interface)
     {
       if (DECL_DECLARED_INLINE_P (decl1)
-	  || DECL_TEMPLATE_INSTANTIATION (decl1)
-	  || processing_template_decl)
+	  || DECL_TEMPLATE_INSTANTIATION (decl1))
 	{
 	  DECL_EXTERNAL (decl1)
 	    = (finfo->interface_only
@@ -12747,7 +12817,7 @@ use_eh_spec_block (tree fn)
 	     not creating the EH_SPEC_BLOCK we save a little memory,
 	     and we avoid spurious warnings about unreachable
 	     code.  */
-	  && !DECL_ARTIFICIAL (fn));
+	  && !DECL_DEFAULTED_FN (fn));
 }
 
 /* Store the parameter declarations into the current function declaration.
@@ -12844,7 +12914,7 @@ save_function_data (tree decl)
   DECL_SAVED_FUNCTION_DATA (decl) = f;
 
   /* Clear out the bits we don't need.  */
-  f->base.x_stmt_tree.x_cur_stmt_list = NULL_TREE;
+  f->base.x_stmt_tree.x_cur_stmt_list = NULL;
   f->bindings = NULL;
   f->x_local_names = NULL;
 }
@@ -13089,7 +13159,7 @@ finish_function (int flags)
       This caused &foo to be of type ptr-to-const-function
       which then got a warning when stored in a ptr-to-function variable.  */
 
-  gcc_assert (building_stmt_tree ());
+  gcc_assert (building_stmt_list_p ());
   /* The current function is being defined, so its DECL_INITIAL should
      be set, and unless there's a multiple definition, it should be
      error_mark_node.  */
@@ -13574,12 +13644,11 @@ void
 revert_static_member_fn (tree decl)
 {
   tree stype = static_fn_type (decl);
+  cp_cv_quals quals = type_memfn_quals (stype);
 
-  if (type_memfn_quals (stype) != TYPE_UNQUALIFIED)
-    {
-      error ("static member function %q#D declared with type qualifiers", decl);
-      stype = apply_memfn_quals (stype, TYPE_UNQUALIFIED);
-    }
+  if (quals != TYPE_UNQUALIFIED)
+    stype = apply_memfn_quals (stype, TYPE_UNQUALIFIED);
+
   TREE_TYPE (decl) = stype;
 
   if (DECL_ARGUMENTS (decl))

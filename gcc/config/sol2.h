@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* We are compiling for Solaris 2 now.  */
+#define TARGET_SOLARIS 1
+
 /* We use stabs-in-elf for debugging, because that is what the native
    toolchain uses.  */
 #undef PREFERRED_DEBUGGING_TYPE
@@ -133,10 +136,14 @@ along with GCC; see the file COPYING3.  If not see
    %{!symbolic:\
      %{pthreads|pthread:" \
         LIB_THREAD_LDFLAGS_SPEC " -lpthread " LIB_TLS_SPEC "} \
+     %{fprofile-generate*:" \
+        LIB_THREAD_LDFLAGS_SPEC " " LIB_TLS_SPEC "} \
      %{p|pg:-ldl} -lc}"
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s crtn.o%s"
+#define ENDFILE_SPEC \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   crtend.o%s crtn.o%s"
 
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.  */
 #undef STARTFILE_SPEC
@@ -257,9 +264,8 @@ __enable_execute_stack (void *addr)					\
   { "init",      0, 0, true,  false,  false, NULL, false },		\
   { "fini",      0, 0, true,  false,  false, NULL, false }
 
-/* Solaris/x86 as and gas support the common ELF .section/.pushsection
-   syntax.  */
-#define PUSHSECTION_FORMAT	"\t.pushsection\t%s\n"
+/* Solaris/x86 as and gas support unquoted section names.  */
+#define SECTION_NAME_FORMAT	"%s"
 
 /* This is how to declare the size of a function.  For Solaris, we output
    any .init or .fini entries here.  */

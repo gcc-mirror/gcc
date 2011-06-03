@@ -2356,14 +2356,10 @@ mio_component_ref (gfc_component **cp, gfc_symbol *sym)
       if (sym->components != NULL && p->u.pointer == NULL)
 	{
 	  /* Symbol already loaded, so search by name.  */
-	  for (q = sym->components; q; q = q->next)
-	    if (strcmp (q->name, name) == 0)
-	      break;
+	  q = gfc_find_component (sym, name, true, true);
 
-	  if (q == NULL)
-	    gfc_internal_error ("mio_component_ref(): Component not found");
-
-	  associate_integer_pointer (p, q);
+	  if (q)
+	    associate_integer_pointer (p, q);
 	}
 
       /* Make sure this symbol will eventually be loaded.  */
@@ -4816,6 +4812,9 @@ static void
 write_dt_extensions (gfc_symtree *st)
 {
   if (!gfc_check_symbol_access (st->n.sym))
+    return;
+  if (!(st->n.sym->ns && st->n.sym->ns->proc_name
+	&& st->n.sym->ns->proc_name->attr.flavor == FL_MODULE))
     return;
 
   mio_lparen ();
