@@ -58,8 +58,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern "C" {
 #endif /* __cplusplus */
 
-#include "deprecated/METHOD_NULL.h"
-
 /* Method descriptor returned by introspective Object methods.
    This is really just the first part of the more complete objc_method
    structure defined below and used internally by the runtime.  */
