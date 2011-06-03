@@ -936,9 +936,12 @@ __objc_block_forward (id rcv, SEL op, ...)
 }
 
 
-/* This function is installed in the dispatch table for all methods
-   which are not implemented.  Thus, it is called when a selector is
-   not recognized.  */
+/* This function is called for methods which are not implemented,
+   unless a custom forwarding routine has been installed.  Please note
+   that most serious users of libobjc (eg, GNUstep base) do install
+   their own forwarding routines, and hence this is never actually
+   used.  But, if no custom forwarding routine is installed, this is
+   called when a selector is not recognized.  */
 static retval_t
 __objc_forward (id object, SEL sel, arglist_t args)
 {

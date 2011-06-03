@@ -1,5 +1,11 @@
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Object.m ([-forward::]): Removed.
+	* objc/deprecated/Object.h ([-forward::]): Removed.
+	* sendmsg.c (__objc_forward): Updated comments.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (OBJC_H): Removed objc-list.h.
 	(OBJC_DEPRECATED_H): Removed objc-list.h.
 	* objc/objc-list.h: File removed.
