@@ -1,3 +1,7 @@
+2011-06-02  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* config/arm/neon.md (orndi3_neon): Actually split it.
+
 2011-06-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* params.def (PARAM_MAX_VARTRACK_EXPR_DEPTH): Bump default to 10.
