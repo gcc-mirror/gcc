@@ -1,5 +1,15 @@
 2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.gcc (mips-sgi-irix6.5*): Set tmake_file to mips/t-irix6
+	t-slibgcc-dummy.
+	* config/mips/irix-crti.asm: Move to ../libgcc/config/mips/irix-crti.S.
+	* config/mips/irix-crtn.asm: Move to ../libgcc/config/mips/irix-crtn.S.
+	* config/mips/t-iris: Remove.
+	* config/mips/t-irix6: New file.
+	* config/mips/t-slibgcc-irix: Move to ../libgcc/config/mips.
+
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* Makefile.in (LIB2ADDEHDEP): Remove.
 	* config/arm/t-bpabi (LIB2ADDEHDEP): Remove.
 	* config/arm/t-symbian (LIB2ADDEHDEP): Remove.

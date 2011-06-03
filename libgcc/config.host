@@ -412,7 +412,9 @@ mcore-*-elf)
 microblaze*-*-*)
         tmake_file="microblaze/t-microblaze"
 	;;
-mips-sgi-irix[56]*)
+mips-sgi-irix6.5*)
+	tmake_file="mips/t-irix6 t-slibgcc mips/t-slibgcc-irix"
+	extra_parts="crtbegin.o crtend.o irix-crti.o irix-crtn.o"
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;

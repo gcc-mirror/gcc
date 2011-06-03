@@ -1,5 +1,16 @@
 2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.host (mips-sgi-irix[56]*): Restrict to mips-sgi-irix6.5*.
+	Set tmake_file, extra_parts.
+	* config/mips/irix-crti.S: Move from ../gcc/config/mips/irix-crti.asm.
+	Remove O32 support.
+	* config/mips/irix-crtn.S: Move from ../gcc/config/mips/irix-crtn.asm.
+	Remove O32 support.
+	* config/mips/t-irix6: New file.
+	* config/mips/t-slibgcc-irix: New file.
+
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/s390/t-tpf (LIB2ADDEHDEP): Remove.
 	* config/t-sol2 (LIB2ADDEH): Use gcc_srcdir, add emutls.c.
 
