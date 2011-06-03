@@ -1059,7 +1059,7 @@ proc check_sse_os_support_available { } {
 	    check_runtime_nocache sse_os_support_available {
 		int main ()
 		{
-		    __asm__ volatile ("movss %xmm2,%xmm1");
+		    __asm__ volatile ("movaps %xmm0,%xmm0");
 		    return 0;
 		}
 	    } "-msse"
