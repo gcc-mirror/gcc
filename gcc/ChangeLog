@@ -1,3 +1,60 @@
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/alpha/osf5.h (MD_UNWIND_SUPPORT): Remove.
+	* config/alpha/vms.h (MD_UNWIND_SUPPORT): Remove.
+	* config/bfin/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/bfin/uclinux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/i386/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/i386/linux64.h (MD_UNWIND_SUPPORT): Remove.
+	* config/i386/sol2.h (MD_UNWIND_SUPPORT): Remove.
+	* config/i386/mingw32.h (MD_UNWIND_SUPPORT): Remove.
+	* config/ia64/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/ia64/vms.h (MD_UNWIND_SUPPORT): Remove.
+	* config/m68k/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/mips/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/pa/pa-hpux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/pa/pa32-linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/rs6000/darwin.h (MD_UNWIND_SUPPORT): Remove.
+	* config/rs6000/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/rs6000/linux64.h (MD_UNWIND_SUPPORT): Remove.
+	* config/s390/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/s390/tpf.h (MD_UNWIND_SUPPORT): Remove.
+	* config/sh/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/sparc/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/sparc/linux64.h (MD_UNWIND_SUPPORT): Remove.
+	* config/sparc/sol2.h (MD_UNWIND_SUPPORT): Remove.
+	* config/xtensa/linux.h (MD_UNWIND_SUPPORT): Remove.
+	* config/alpha/linux-unwind.h: Move to ../libgcc/config/alpha.
+	* config/alpha/osf5-unwind.h: Move to ../libgcc/config/alpha.
+	* config/alpha/vms-unwind.h: Move to ../libgcc/config/alpha.
+	* config/bfin/linux-unwind.h: Move to ../libgcc/config/bfin.
+	* config/i386/linux-unwind.h: Move to ../libgcc/config/i386.
+	* config/i386/sol2-unwind.h: Move to ../libgcc/config/i386.
+	* config/i386/w32-unwind.h: Move to ../libgcc/config/i386.
+	* config/ia64/linux-unwind.h: Move to ../libgcc/config/ia64.
+	* config/ia64/vms-unwind.h: Move to ../libgcc/config/ia64.
+	* config/m68k/linux-unwind.h: Move to ../libgcc/config/m68k.
+	* config/mips/linux-unwind.h: Move to ../libgcc/config/mips.
+	* config/pa/hpux-unwind.h: Move to ../libgcc/config/pa.
+	* config/pa/linux-unwind.h: Move to ../libgcc/config/pa.
+	* config/rs6000/darwin-unwind.h: Move to ../libgcc/config/rs6000.
+	* config/rs6000/linux-unwind.h: Move to ../libgcc/config/rs6000.
+	* config/s390/linux-unwind.h: Move to ../libgcc/config/s390.
+	* config/s390/tpf-unwind.h: Move to ../libgcc/config/s390.
+	* config/sh/linux-unwind.h: Move to ../libgcc/config/sh.
+	* config/sparc/linux-unwind.h: Move to ../libgcc/config/sparc.
+	* config/sparc/sol2-unwind.h: Move to ../libgcc/config/sparc.
+	* config/xtensa/linux-unwind.h: Move to ../libgcc/config/xtensa.
+	* config/darwin9.h (DARWIN_LIBSYSTEM_HAS_UNWIND): Remove.
+	* system.h (MD_UNWIND_SUPPORT): Poison.
+	* doc/tm.texi.in (Exception Handling, MD_UNWIND_SUPPORT): Remove.
+	* doc/tm.texi: Regenerate.
+	* unwind-dw2.c: Include md-unwind-support.h instead of
+	MD_UNWIND_SUPPORT.
+	* config/ia64/unwind-ia64.c: Likewise.
+	* config/xtensa/unwind-dw2-xtensa.c: Likewise.
+
 2011-06-03  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* varpool.c (varpool_extra_name_alias): Return NULL, not false.

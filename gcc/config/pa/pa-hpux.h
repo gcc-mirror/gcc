@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for HP-UX.
-   Copyright (C) 1991, 1995, 1996, 2002, 2003, 2004, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1996, 2002, 2003, 2004, 2007, 2008, 2009,
+   2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -115,5 +115,3 @@ along with GCC; see the file COPYING3.  If not see
    compatibility with the HP-UX unwind library.  */
 #undef TARGET_HPUX_UNWIND_LIBRARY
 #define TARGET_HPUX_UNWIND_LIBRARY 1
-
-#define MD_UNWIND_SUPPORT "config/pa/hpux-unwind.h"

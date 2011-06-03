@@ -32,8 +32,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   %{mfast-fp:-lbffastfp} %G %L %{mfast-fp:-lbffastfp} %G \
 "
 
-#define MD_UNWIND_SUPPORT "config/bfin/linux-unwind.h"
-
 /* Like the definition in gcc.c, but for purposes of uClinux, every link is
    static.  */
 #define MFWRAP_SPEC " %{fmudflap|fmudflapth: \

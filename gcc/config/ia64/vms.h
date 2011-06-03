@@ -185,8 +185,6 @@ typedef struct crtl_name_spec
 /* Define this to be nonzero if static stack checking is supported.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
 
-#define MD_UNWIND_SUPPORT "config/ia64/vms-unwind.h"
-
 #define UNW_IVMS_MODE(HEADER) (((HEADER) >> 44) & 0x3L)
 #define MD_UNW_COMPATIBLE_PERSONALITY_P(HEADER) (!UNW_IVMS_MODE (HEADER))
 

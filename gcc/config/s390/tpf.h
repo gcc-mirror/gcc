@@ -118,8 +118,6 @@ along with GCC; see the file COPYING3.  If not see
    %{!shared:-shared} \
    %(entry_spec)"
 
-#define MD_UNWIND_SUPPORT "config/s390/tpf-unwind.h"
-
 /* IBM copies these libraries over with these names.  */
 #define MATH_LIBRARY "CLBM"
 #define LIBSTDCXX "CPP1"

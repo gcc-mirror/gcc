@@ -333,9 +333,7 @@ _Unwind_GetTextRelBase (struct _Unwind_Context *context)
 }
 #endif
 
-#ifdef MD_UNWIND_SUPPORT
-#include MD_UNWIND_SUPPORT
-#endif
+#include "md-unwind-support.h"
 
 /* Extract any interesting information from the CIE for the translation
    unit F belongs to.  Return a pointer to the byte after the augmentation,

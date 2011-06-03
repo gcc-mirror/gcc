@@ -241,12 +241,6 @@ __enable_execute_stack (void *addr)					\
 #include <windows.h>
 #endif
 
-/* For 64-bit Windows we can't use DW2 unwind info. Also for multilib
-   builds we can't use it, too.  */
-#if !TARGET_64BIT_DEFAULT && !defined (TARGET_BI_ARCH)
-#define MD_UNWIND_SUPPORT "config/i386/w32-unwind.h"
-#endif
-
 /* This matches SHLIB_SONAME and SHLIB_SOVERSION in t-cygming. */
 /* This matches SHLIB_SONAME and SHLIB_SOVERSION in t-cygwin. */
 #if DWARF2_UNWIND_INFO
