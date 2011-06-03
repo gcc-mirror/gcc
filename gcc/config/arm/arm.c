@@ -859,6 +859,7 @@ const struct tune_params arm_slowmul_tune =
   arm_slowmul_rtx_costs,
   NULL,
   3,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost
@@ -869,6 +870,21 @@ const struct tune_params arm_fastmul_tune =
   arm_fastmul_rtx_costs,
   NULL,
   1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
+};
+
+/* StrongARM has early execution of branches, so a sequence that is worth
+   skipping is shorter.  Set max_insns_skipped to a lower value.  */
+
+const struct tune_params arm_strongarm_tune =
+{
+  arm_fastmul_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  3,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost
@@ -879,6 +895,7 @@ const struct tune_params arm_xscale_tune =
   arm_xscale_rtx_costs,
   xscale_sched_adjust_cost,
   2,						/* Constant limit.  */
+  3,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost
@@ -889,6 +906,7 @@ const struct tune_params arm_9e_tune =
   arm_9e_rtx_costs,
   NULL,
   1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost
@@ -899,6 +917,7 @@ const struct tune_params arm_v6t2_tune =
   arm_9e_rtx_costs,
   NULL,
   1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost
@@ -910,16 +929,21 @@ const struct tune_params arm_cortex_tune =
   arm_9e_rtx_costs,
   NULL,
   1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost
 };
+
+/* Branches can be dual-issued on Cortex-A5, so conditional execution is
+   less appealing.  Set max_insns_skipped to a low value.  */
 
 const struct tune_params arm_cortex_a5_tune =
 {
   arm_9e_rtx_costs,
   NULL,
   1,						/* Constant limit.  */
+  1,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_cortex_a5_branch_cost
@@ -930,6 +954,7 @@ const struct tune_params arm_cortex_a9_tune =
   arm_9e_rtx_costs,
   cortex_a9_sched_adjust_cost,
   1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
   ARM_PREFETCH_BENEFICIAL(4,32,32),
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost
@@ -940,6 +965,7 @@ const struct tune_params arm_fa726te_tune =
   arm_9e_rtx_costs,
   fa726te_sched_adjust_cost,
   1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost
@@ -1735,12 +1761,7 @@ arm_option_override (void)
       max_insns_skipped = 6;
     }
   else
-    {
-      /* StrongARM has early execution of branches, so a sequence
-         that is worth skipping is shorter.  */
-      if (arm_tune_strongarm)
-        max_insns_skipped = 3;
-    }
+    max_insns_skipped = current_tune->max_insns_skipped;
 
   /* Hot/Cold partitioning is not currently supported, since we can't
      handle literal pool placement in that case.  */
