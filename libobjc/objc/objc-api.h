@@ -191,8 +191,6 @@ objc_EXPORT Class (*_objc_lookup_class)(const char *name);
 */
 objc_EXPORT void (*_objc_load_callback)(Class _class, Category* category);
 
-#include "deprecated/objc_object_alloc.h"
-
 /*
   Standard functions for memory allocation and disposal.  Users should
   use these functions in their ObjC programs so that they work so that

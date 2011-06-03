@@ -132,7 +132,6 @@ OBJC_DEPRECATED_H = \
   Protocol.h \
   objc_get_uninstalled_dtable.h \
   objc_msg_sendv.h \
-  objc_object_alloc.h \
   struct_objc_category.h \
   struct_objc_class.h \
   struct_objc_ivar.h \

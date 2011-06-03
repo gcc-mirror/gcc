@@ -1,5 +1,15 @@
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_object_alloc.h.
+	* objc/deprecated/objc_object_alloc.h: Removed.
+	* objc/objc-api.h: Do not include deprecated/objc_object_alloc.h.
+	* objects.c (_objc_object_alloc, _objc_object_dispose,
+	_objc_object_copy): Removed.
+	* libobjc.def (__objc_object_alloc, __objc_object_copy,
+	__objc_object_dispose): Removed.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (OBJC_DEPRECATED_H): Removed METHOD_NULL.h.
 	* objc/objc-api.h: Do not include deprecated/METHOD_NULL.h.
 	* objc/deprecated/METHOD_NULL.h: Removed.
