@@ -1,3 +1,13 @@
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (LIB2ADDEHDEP): Remove.
+	* config/arm/t-bpabi (LIB2ADDEHDEP): Remove.
+	* config/arm/t-symbian (LIB2ADDEHDEP): Remove.
+	* config/picochip/t-picochip (LIB2ADDEHDEP): Remove.
+	* config/t-darwin (LIB2ADDEHDEP): Remove.
+	* config/t-freebsd (LIB2ADDEHDEP): Remove.
+	* config/t-linux (LIB2ADDEHDEP): Remove.
+
 2011-06-03  Diego Novillo  <dnovillo@google.com>
 
 	* lto-streamer-in.c (get_resolution): Move to lto/lto.c.

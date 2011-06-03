@@ -1,5 +1,10 @@
 2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/s390/t-tpf (LIB2ADDEHDEP): Remove.
+	* config/t-sol2 (LIB2ADDEH): Use gcc_srcdir, add emutls.c.
+
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac (target_thread_file): Determine thread model.
 	* configure: Regenerate.
 	* config.host (alpha*-dec-osf5.1*): Set tmake_file, extra_parts.
