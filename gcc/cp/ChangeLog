@@ -1,3 +1,9 @@
+2011-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49276
+	* mangle.c (write_nested_name): Use CP_DECL_CONTEXT instead of
+	DECL_CONTEXT.
+
 2011-06-01  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (build_non_dependent_expr): Remove special handling of
