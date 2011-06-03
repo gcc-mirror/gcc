@@ -1,5 +1,11 @@
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/objc.h: Do not include deprecated/STR.h.
+	* objc/deprecated/STR.h: Removed.
+	* Makefile.in (OBJC_DEPRECATED_H): removed STR.h.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (OBJC_H): Removed hash.h and sarray.h.
 	(OBJC_DEPRECATED_H): Likewise.
 	* libobjc.def (objc_hash_new, objc_hash_delete, objc_hash_add,

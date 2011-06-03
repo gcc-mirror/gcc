@@ -125,8 +125,6 @@ typedef id (*IMP)(id, SEL, ...);
    compiler to do some type-checking.  */
 #define Nil (Class)0
 
-#include "deprecated/STR.h"
-
 /* TODO: Move the 'Protocol' declaration into objc/runtime.h.  A
    Protocol is simply an object, not a basic Objective-C type.  The
    Apple runtime defines Protocol in objc/runtime.h too, so it's good

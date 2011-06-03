@@ -131,7 +131,6 @@ OBJC_DEPRECATED_H = \
   MetaClass.h \
   Object.h \
   Protocol.h \
-  STR.h \
   objc_get_uninstalled_dtable.h \
   objc_malloc.h \
   objc_msg_sendv.h \
