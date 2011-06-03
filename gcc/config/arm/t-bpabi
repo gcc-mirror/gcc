@@ -1,4 +1,4 @@
-# Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -29,7 +29,6 @@ UNWIND_H = $(srcdir)/config/arm/unwind-arm.h
 LIB2ADDEH = $(srcdir)/config/arm/unwind-arm.c \
   $(srcdir)/config/arm/libunwind.S \
   $(srcdir)/config/arm/pr-support.c $(srcdir)/unwind-c.c
-LIB2ADDEHDEP = $(UNWIND_H) $(srcdir)/config/$(LIB1ASMSRC)
 
 # Add the BPABI names.
 SHLIB_MAPFILES += $(srcdir)/config/arm/libgcc-bpabi.ver
