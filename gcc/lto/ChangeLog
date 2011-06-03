@@ -1,3 +1,12 @@
+2011-06-03  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (get_resolution): Move from lto-streamer-in.c.
+	(lto_register_var_decl_in_symtab): Likewise.
+	(lto_register_function_decl_in_symtab): Likewise.
+	(uniquify_nodes): Call lto_register_var_decl and
+	lto_register_function_decl_in_symtab after reading a new
+	VAR_DECL or FUNCTION_DECL.
+
 2011-06-01  Richard Guenther  <rguenther@suse.de>
 
 	* lto-lang.c (lto_register_canonical_types): New function.
