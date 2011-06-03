@@ -122,10 +122,7 @@ OBJC_H = \
   objc-api.h \
   objc-decls.h \
   runtime.h \
-  thr.h \
-  \
-  hash.h \
-  sarray.h
+  thr.h
 
 # User-visible header files containing deprecated APIs, from the
 # objc/deprecated directory
@@ -135,14 +132,12 @@ OBJC_DEPRECATED_H = \
   Object.h \
   Protocol.h \
   STR.h \
-  hash.h \
   objc_get_uninstalled_dtable.h \
   objc_malloc.h \
   objc_msg_sendv.h \
   objc_object_alloc.h \
   objc_unexpected_exception.h \
   objc_valloc.h \
-  sarray.h \
   struct_objc_category.h \
   struct_objc_class.h \
   struct_objc_ivar.h \

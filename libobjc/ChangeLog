@@ -1,5 +1,25 @@
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (OBJC_H): Removed hash.h and sarray.h.
+	(OBJC_DEPRECATED_H): Likewise.
+	* libobjc.def (objc_hash_new, objc_hash_delete, objc_hash_add,
+	objc_hash_remove, objc_hash_next, objc_hash_value_for_key,
+	objc_hash_is_key_in_hash, hash_add, hash_delete, hash_new,
+	hash_next, hash_remove, hash_value_for_key, hash_is_key_in_hash,
+	sarray_at_put, sarray_at_put_safe, sarray_free, sarray_lazy_copy,
+	sarray_new, sarray_realloc, sarray_remove_garbage): Removed.
+	* objc/sarray.h: Removed.
+	* objc/hash.h: Removed.
+	* objc/deprecated/sarray.h: Removed.
+	* objc/deprecated/hash.h: Removed.
+	* objc/Object.h: Do not include objc/deprecated/hash.h
+	* Object.m: Include string.h.
+	* objc/objc-api.h: Do not include objc/deprecated/hash.h.
+	* objc-private/common.h (GNU_LIBOBJC_COMPILING_LIBOBJC_ITSELF):
+	Removed.
+
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Object.m ([-forward::]): Removed.
 	* objc/deprecated/Object.h ([-forward::]): Removed.
 	* sendmsg.c (__objc_forward): Updated comments.

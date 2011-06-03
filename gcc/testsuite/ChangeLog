@@ -1,3 +1,7 @@
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/headers.m: Do not include sarray.h and hash.h.
+
 2011-06-03  Richard Henderson  <rth@redhat.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

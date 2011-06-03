@@ -49,9 +49,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* TODO: A deprecation warning any time the file is included ? */
 
 #include "objc.h"
-#ifndef GNU_LIBOBJC_COMPILING_LIBOBJC_ITSELF
-# include "deprecated/hash.h"
-#endif
 #include "thr.h"
 #include "objc-decls.h"
 #include <stdio.h>
