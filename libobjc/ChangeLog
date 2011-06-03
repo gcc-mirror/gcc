@@ -1,5 +1,11 @@
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (OBJC_DEPRECATED_H): Removed METHOD_NULL.h.
+	* objc/objc-api.h: Do not include deprecated/METHOD_NULL.h.
+	* objc/deprecated/METHOD_NULL.h: Removed.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_valloc.h,
 	objc_malloc.h and objc_unexpected_exception.h.
 	(exception.lo): Do not use -Wno-deprecated-declarations.
