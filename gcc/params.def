@@ -845,7 +845,7 @@ DEFPARAM (PARAM_MAX_VARTRACK_SIZE,
 DEFPARAM (PARAM_MAX_VARTRACK_EXPR_DEPTH,
 	  "max-vartrack-expr-depth",
 	  "Max. recursion depth for expanding var tracking expressions",
-	  10, 0, 0)
+	  20, 0, 0)
 
 /* Set minimum insn uid for non-debug insns.  */
 
