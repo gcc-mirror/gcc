@@ -218,11 +218,6 @@ objc_calloc(size_t nelem, size_t size);
 objc_EXPORT void
 objc_free(void *mem);
 
-#include "deprecated/objc_valloc.h"
-#include "deprecated/objc_malloc.h"
-
-#include "deprecated/objc_unexpected_exception.h"
-
 objc_EXPORT Method_t class_get_class_method(MetaClass _class, SEL aSel);
 
 objc_EXPORT Method_t class_get_instance_method(Class _class, SEL aSel);

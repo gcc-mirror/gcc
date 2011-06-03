@@ -31,12 +31,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "unwind-pe.h"
 #include <string.h> /* For memcpy */
 
-/* This hook allows libraries to sepecify special actions when an
-   exception is thrown without a handler in place.  This is deprecated
-   in favour of objc_set_uncaught_exception_handler ().  */
-void (*_objc_unexpected_exception) (id exception); /* !T:SAFE */
-
-
 /* 'is_kind_of_exception_matcher' is our default exception matcher -
    it determines if the object 'exception' is of class 'catch_class',
    or of a subclass.  */
@@ -537,13 +531,6 @@ objc_exception_throw (id exception)
   if (__objc_uncaught_exception_handler != 0)
     {
       (*__objc_uncaught_exception_handler) (exception);
-    }
-
-  /* As a last resort support the old, deprecated way of setting an
-     uncaught exception handler.  */
-  if (_objc_unexpected_exception != 0)
-    {
-      (*_objc_unexpected_exception) (exception);
     }
 
   abort ();
