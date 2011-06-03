@@ -18,10 +18,6 @@
 #endif
 
 #include <objc/objc-api.h>
-#ifndef __NEXT_RUNTIME__
-#include <objc/objc-list.h>
-#endif
-
 #include <objc/objc.h>
 
 #ifndef __NEXT_RUNTIME__

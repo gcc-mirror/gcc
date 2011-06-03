@@ -1,5 +1,12 @@
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (OBJC_H): Removed objc-list.h.
+	(OBJC_DEPRECATED_H): Removed objc-list.h.
+	* objc/objc-list.h: File removed.
+	* objc/deprecated/objc-list.h: File removed.
+
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (OBJC_H): Removed typedstream.h.
 	(OBJC_DEPRECATED_H): Removed typedstream.h.
 	(C_SOURCE_FILES): Removed archive.c.
