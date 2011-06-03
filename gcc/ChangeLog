@@ -1,3 +1,11 @@
+2011-06-03  Diego Novillo  <dnovillo@google.com>
+
+	* lto-streamer-in.c (get_resolution): Move to lto/lto.c.
+	(lto_register_var_decl_in_symtab): Likewise.
+	(lto_register_function_decl_in_symtab): Likewise.
+	(lto_read_tree): Move VAR_DECL and FUNCTION_DECL registration
+	logic to lto_read_decls.
+
 2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/alpha/t-osf5: Remove.
