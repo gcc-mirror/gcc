@@ -1,3 +1,8 @@
+2011-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49276
+	* g++.dg/cpp0x/lambda/lambda-mangle2.C: New test.
+
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/headers.m: Do not include sarray.h and hash.h.
