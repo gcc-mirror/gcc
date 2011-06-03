@@ -60,11 +60,5 @@
 + (int)version;
 + setVersion:(int)aVersion;
 
-+ (int)streamVersion: (TypedStream*)aStream; /* __attribute__ ((deprecated)) */
-
-- read: (TypedStream*)aStream; /* __attribute__ ((deprecated)) */
-- write: (TypedStream*)aStream; /* __attribute__ ((deprecated)) */
-- awake; /* __attribute__ ((deprecated)) */
-
 @end
 
