@@ -1,0 +1,58 @@
+# Copyright (C) 2011 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Tru64 UNIX specific additions to libgcc-std.ver.
+
+GCC_4.7.0 {
+  __udiv_qrnnd
+  # Beware *not* to hide the POSIX threads related symbols provided by
+  # gthr-posix.c, as this would prevent their preemption by real symbols.
+  __pthread_cancel
+  __pthread_cond_broadcast
+  __pthread_cond_destroy
+  __pthread_cond_init
+  __pthread_cond_signal
+  __pthread_cond_timedwait
+  __pthread_cond_wait
+  __pthread_create
+  __pthread_detach
+  __pthread_exit
+  __pthread_getspecific
+  __pthread_join
+  __pthread_mutex_destroy
+  __pthread_mutex_init
+  __pthread_mutex_lock
+  __pthread_mutex_trylock
+  __pthread_mutex_unlock
+  __pthread_once
+  __pthread_self
+  __pthread_setspecific
+  pthread_attr_destroy
+  pthread_attr_init
+  pthread_attr_setdetachstate
+  pthread_getschedparam
+  pthread_key_create
+  pthread_key_delete
+  pthread_mutexattr_destroy
+  pthread_mutexattr_init
+  pthread_mutexattr_settype
+  pthread_setschedparam
+  sched_get_priority_max
+  sched_get_priority_min
+  sched_yield
+}

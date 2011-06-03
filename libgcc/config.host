@@ -218,6 +218,13 @@ alpha*-*-netbsd*)
 alpha*-*-openbsd*)
 	;;
 alpha*-dec-osf5.1*)
+	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee alpha/t-crtfm t-slibgcc alpha/t-slibgcc-osf"
+	case ${target_thread_file} in
+	  posix)
+	    tmake_file="${tmake_file} alpha/t-osf-pthread"
+	    ;;
+	esac
+	extra_parts="${extra_parts} qrnnd.o crtfastmath.o gthr-posix.o"
 	;;
 alpha64-dec-*vms*)
 	tmake_file="vms/t-vms vms/t-vms64 alpha/t-vms"
