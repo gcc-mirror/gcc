@@ -1,4 +1,4 @@
-/* Copyright (C) 2004, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2004, 2008, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,26 +52,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	.section .gcc_init,"ax",@progbits
 	.globl	__gcc_init
 __gcc_init:
-#if _MIPS_SIM == _ABIO32
-	addiu	$sp,$sp,-16
-	sw	$31,0($sp)
-#else
 	daddiu	$sp,$sp,-16
 	sd	$31,0($sp)
 	sd	$28,8($sp)
-#endif
 
 	.section .gcc_fini,"ax",@progbits
 	.globl	__gcc_fini
 __gcc_fini:
-#if _MIPS_SIM == _ABIO32
-	addiu	$sp,$sp,-16
-	sw	$31,0($sp)
-#else
 	daddiu	$sp,$sp,-16
 	sd	$31,0($sp)
 	sd	$28,8($sp)
-#endif
 
 /* This object will typically be included in the final link for both
    shared libraries and executable, and we need to hide the symbols to

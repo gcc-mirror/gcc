@@ -1,4 +1,4 @@
-/* Copyright (C) 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2004, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,25 +26,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	.set	nomacro
 
 	.section .gcc_init,"ax",@progbits
-#if _MIPS_SIM == _ABIO32
-	lw	$31,0($sp)
-	jr	$31
-	addiu	$sp,$sp,16
-#else
 	ld	$31,0($sp)
 	ld	$28,8($sp)
 	jr	$31
 	daddiu	$sp,$sp,16
-#endif
 
 	.section .gcc_fini,"ax",@progbits
-#if _MIPS_SIM == _ABIO32
-	lw	$31,0($sp)
-	jr	$31
-	addiu	$sp,$sp,16
-#else
 	ld	$31,0($sp)
 	ld	$28,8($sp)
 	jr	$31
 	daddiu	$sp,$sp,16
-#endif
