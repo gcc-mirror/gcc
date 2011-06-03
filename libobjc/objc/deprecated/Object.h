@@ -49,7 +49,6 @@
 - (struct objc_method_description *)descriptionForMethod:(SEL)aSel;
 
 /* Forwarding */
-- (retval_t)forward:(SEL)aSel :(arglist_t)argFrame;
 - (retval_t)performv:(SEL)aSel :(arglist_t)argFrame;
 
 /* Posing */

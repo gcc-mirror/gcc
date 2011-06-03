@@ -248,12 +248,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
             :class_get_class_method(self->isa, aSel)));
 }
 
-- (retval_t)forward:(SEL)aSel :(arglist_t)argFrame
-{
-  (void) argFrame; /* UNUSED */
-  return (retval_t)[self doesNotRecognize: aSel];
-}
-
 - (retval_t)performv:(SEL)aSel :(arglist_t)argFrame
 {
   return objc_msg_sendv(self, aSel, argFrame);
