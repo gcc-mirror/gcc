@@ -1,3 +1,16 @@
+2011-06-03  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm-cores.def (strongarm, strongarm110, strongarm1100)
+	(strongarm1110): Use strongarm tuning.
+	* config/arm/arm-protos.h (tune_params): Add max_insns_skipped
+	field.
+	* config/arm/arm.c (arm_strongarm_tune): New.
+	(arm_slowmul_tune, arm_fastmul_tune, arm_xscale_tune, arm_9e_tune)
+	(arm_v6t2_tune, arm_cortex_tune, arm_cortex_a5_tune)
+	(arm_cortex_a9_tune, arm_fa726te_tune): Add max_insns_skipped field
+	setting, using previous defaults or 1 for Cortex-A5.
+	(arm_option_override): Set max_insns_skipped from current tuning.
+
 2011-06-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/install.texi (Options specification): Document --with-specs.
