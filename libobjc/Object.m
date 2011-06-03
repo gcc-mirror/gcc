@@ -25,6 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "objc-private/common.h"
 #include <stdarg.h>
+#include <string.h> /* For strcmp.  */
 #include <errno.h>
 #include "objc/Object.h"
 #include "objc/Protocol.h"
