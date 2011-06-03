@@ -1,3 +1,15 @@
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (target_thread_file): Determine thread model.
+	* configure: Regenerate.
+	* config.host (alpha*-dec-osf5.1*): Set tmake_file, extra_parts.
+	* config/alpha/t-alpha: New file.
+	* config/alpha/t-crtfm: Use $<.
+	* config/alpha/t-ieee: New file.
+	* config/alpha/t-osf-pthread: New file.
+	* config/alpha/t-slibgcc-osf: New file.
+	* config/alpha/libgcc-osf5.ver: New file.
+
 2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (i[34567]86-*-solaris2*): Add i386/t-crtfm to

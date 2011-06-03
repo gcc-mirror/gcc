@@ -3760,6 +3760,12 @@ $as_echo "$acl_cv_prog_gnu_ld" >&6; }
 with_gnu_ld=$acl_cv_prog_gnu_ld
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for thread model used by GCC" >&5
+$as_echo_n "checking for thread model used by GCC... " >&6; }
+target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
+$as_echo "$target_thread_file" >&6; }
+
 # Check for assembler CFI support.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether assembler supports CFI directives" >&5
 $as_echo_n "checking whether assembler supports CFI directives... " >&6; }

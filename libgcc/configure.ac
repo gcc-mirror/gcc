@@ -169,6 +169,10 @@ AC_SUBST(fixed_point)
 
 AC_LIB_PROG_LD_GNU
 
+AC_MSG_CHECKING([for thread model used by GCC])
+target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+AC_MSG_RESULT([$target_thread_file]) 
+
 # Check for assembler CFI support.
 AC_CACHE_CHECK([whether assembler supports CFI directives], [libgcc_cv_cfi],
 	       [AC_COMPILE_IFELSE(

@@ -1,3 +1,10 @@
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/t-osf5: Remove.
+	* config/alpha/t-osf-pthread: Remove.
+	* config.gcc (alpha*-dec-osf5.1*): Set tmake_file to t-slibgcc-dummy.
+	* mkmap-flat.awk: Handle osf_export for Tru64 UNIX linker -input file.
+
 2011-06-03  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm-cores.def (strongarm, strongarm110, strongarm1100)
