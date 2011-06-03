@@ -5290,7 +5290,7 @@ reverse_op (rtx val, const_rtx expr)
       arg = XEXP (src, 1);
       if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
 	{
-	  arg = cselib_expand_value_rtx (arg, scratch_regs, EXPR_DEPTH);
+	  arg = cselib_expand_value_rtx (arg, scratch_regs, 5);
 	  if (arg == NULL_RTX)
 	    return NULL_RTX;
 	  if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
