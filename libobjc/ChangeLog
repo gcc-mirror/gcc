@@ -1,5 +1,14 @@
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (OBJC_DEPRECATED_H): Removed struct_objc_static_instances.h
+	and objc_get_uninstalled_dtable.h.
+	* objc/deprecated/struct_objc_static_instances.h: Removed.
+	* objc/deprecated/objc_get_uninstalled_dtable.h: Removed.	
+	* objc/objc-api.h: Do not include deprecated/objc_static_instances.h
+	and deprecated/objc_get_uninstalled_dtable.h.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_object_alloc.h.
 	* objc/deprecated/objc_object_alloc.h: Removed.
 	* objc/objc-api.h: Do not include deprecated/objc_object_alloc.h.
