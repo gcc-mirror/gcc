@@ -1,5 +1,5 @@
 /* Definitions for Dwarf2 EH unwind support for Windows32 targets
-   Copyright (C) 2007, 2009, 2010
+   Copyright (C) 2007, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Pascal Obry  <obry@adacore.com>
 
@@ -81,6 +81,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    Note that this implementation follows closely the same principles as the
    GNU/Linux and OSF ones.  */
+
+#ifndef __MINGW64__
 
 #define WIN32_MEAN_AND_LEAN
 #include <windows.h>
@@ -202,3 +204,5 @@ i386_w32_fallback_frame_state (struct _Unwind_Context *context,
   else
     return _URC_END_OF_STACK;
 }
+
+#endif /* !__MINGW64__ */

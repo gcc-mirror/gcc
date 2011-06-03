@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for Alpha Linux-based GNU systems.
    Copyright (C) 1996, 1997, 1998, 2002, 2003, 2004, 2005, 2006, 2007, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson.
 
 This file is part of GCC.
@@ -83,8 +83,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef HAVE_LD_AS_NEEDED
 #define USE_LD_AS_NEEDED 1
 #endif
-
-#define MD_UNWIND_SUPPORT "config/alpha/linux-unwind.h"
 
 /* Define if long doubles should be mangled as 'g'.  */
 #define TARGET_ALTERNATE_LONG_DOUBLE_MANGLING

@@ -77,8 +77,6 @@ do {						\
 #undef LINK_EH_SPEC
 #define LINK_EH_SPEC ""
 
-#define MD_UNWIND_SUPPORT "config/ia64/linux-unwind.h"
-
 /* Put all *tf routines in libgcc.  */
 #undef LIBGCC2_HAS_TF_MODE
 #define LIBGCC2_HAS_TF_MODE 1

@@ -114,8 +114,6 @@ along with GCC; see the file COPYING3.  If not see
       }									\
   } while (0)
 
-#define MD_UNWIND_SUPPORT "config/sh/linux-unwind.h"
-
 /* For SH3 and SH4, we use a slot of the unwind frame which correspond
    to a fake register number 16 as a placeholder for the return address
    in MD_FALLBACK_FRAME_STATE_FOR and its content will be read with

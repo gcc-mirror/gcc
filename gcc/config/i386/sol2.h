@@ -171,5 +171,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
-
-#define MD_UNWIND_SUPPORT "config/i386/sol2-unwind.h"

@@ -1,5 +1,5 @@
-/* DWARF2 EH unwinding support for Darwin.
-   Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+/* DWARF2 EH unwinding support for 32-bit PowerPC Darwin.
+   Copyright (C) 2004, 2009, 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -22,9 +22,13 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __LP64__
+
 extern bool _Unwind_fallback_frame_state_for
   (struct _Unwind_Context *context, _Unwind_FrameState *fs);
 
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS)	\
   (_Unwind_fallback_frame_state_for (CONTEXT, FS)	\
    ? _URC_NO_REASON : _URC_END_OF_STACK)
+
+#endif

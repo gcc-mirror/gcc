@@ -539,8 +539,6 @@ extern int dot_symbols;
 #define USE_LD_AS_NEEDED 1
 #endif
 
-#define MD_UNWIND_SUPPORT "config/rs6000/linux-unwind.h"
-
 #ifdef TARGET_LIBC_PROVIDES_SSP
 /* ppc32 glibc provides __stack_chk_guard in -0x7008(2),
    ppc64 glibc provides it at -0x7010(13).  */
