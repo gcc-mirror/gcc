@@ -676,7 +676,7 @@ varpool_extra_name_alias (tree alias, tree decl)
 
 #ifndef ASM_OUTPUT_DEF
   /* If aliases aren't supported by the assembler, fail.  */
-  return false;
+  return NULL;
 #endif
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
