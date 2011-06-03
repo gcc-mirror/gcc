@@ -1,3 +1,12 @@
+2011-06-03   Diego Novillo  <dnovillo@google.com>
+
+	* lto-streamer-in.c (unpack_value_fields): Remove unneeded asserts.
+	(lto_input_tree_pointers): Likewise.
+	* lto-streamer-out.c (pack_value_fields): Likewise.
+	(lto_output_tree_pointers): Likewise.
+	* lto-streamer.h (lto_is_streamable): Add check for OMP_CLAUSE
+	and OPTIMIZATION_NODE.
+
 2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/alpha/linux.h (MD_UNWIND_SUPPORT): Remove.
