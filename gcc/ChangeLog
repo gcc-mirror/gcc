@@ -1,3 +1,7 @@
+2011-06-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/install.texi (Options specification): Document --with-specs.
+
 2011-06-02  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* config/arm/neon.md (orndi3_neon): Actually split it.

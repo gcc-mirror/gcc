@@ -771,6 +771,19 @@ the installation directory for G++ header files.  The default depends
 on other configuration options, and differs between cross and native
 configurations.
 
+@item --with-specs=@var{specs}
+Specify additional command line driver SPECS.
+This can be useful if you need to turn on a non-standard feature by
+default without modifying the compiler's source code, for instance
+@option{--with-specs=%@{!fcommon:%@{!fno-common:-fno-common@}@}}.
+@ifnothtml
+@xref{Spec Files,, Specifying subprocesses and the switches to pass to them,
+gcc, Using the GNU Compiler Collection (GCC)},
+@end ifnothtml
+@ifhtml
+See ``Spec Files'' in the main manual
+@end ifhtml
+
 @end table
 
 @item --program-prefix=@var{prefix}
