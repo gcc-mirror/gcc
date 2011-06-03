@@ -132,11 +132,8 @@ OBJC_DEPRECATED_H = \
   Object.h \
   Protocol.h \
   objc_get_uninstalled_dtable.h \
-  objc_malloc.h \
   objc_msg_sendv.h \
   objc_object_alloc.h \
-  objc_unexpected_exception.h \
-  objc_valloc.h \
   struct_objc_category.h \
   struct_objc_class.h \
   struct_objc_ivar.h \
@@ -268,16 +265,14 @@ sendmsg_gc.lo: sendmsg.c runtime-info.h
 # These files have separate rules because they require special
 # compiler flags.
 
-# -Wno-deprecated-declarations is to silence warnings from using 
-# _objc_unexpected_exception.
 exception.lo: exception.c
 	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) -fexceptions -Wno-deprecated-declarations \
+	   $(ALL_CFLAGS) $(INCLUDES) -fexceptions \
 	   -o $@
 
 exception_gc.lo: exception.c
 	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) $(OBJC_GCFLAGS) -fexceptions -Wno-deprecated-declarations \
+	   $(ALL_CFLAGS) $(INCLUDES) $(OBJC_GCFLAGS) -fexceptions \
 	   -o $@
 
 doc: info dvi pdf html

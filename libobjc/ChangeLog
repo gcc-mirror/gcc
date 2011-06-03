@@ -1,5 +1,24 @@
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_valloc.h,
+	objc_malloc.h and objc_unexpected_exception.h.
+	(exception.lo): Do not use -Wno-deprecated-declarations.
+	(exception_gc.lo): Likewise.
+	* objc/objc-api.h: Do not include deprecated/objc_valloc.h,
+	deprecated/objc_malloc.h and
+	deprecated/objc_unexpected_exception.h.
+	* objc/deprecated/objc_valloc.h: Removed.
+	* objc/deprecated/objc_malloc.h: Removed.
+	* objc/deprecated/objc_unexpected_exception.h: Removed.
+	* exception.c (_objc_unexpected_exception): Removed.
+	(objc_exception_throw): Do not check for
+	_objc_unexpected_exception.
+	* memory.c (objc_valloc, _objc_malloc, _objc_atomic_malloc,
+	_objc_valloc, _objc_realloc, _objc_calloc, _objc_free): Removed.	
+	* libobjc.def (_objc_unexpected_exception, objc_valloc): Removed.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/objc.h: Do not include deprecated/STR.h.
 	* objc/deprecated/STR.h: Removed.
 	* Makefile.in (OBJC_DEPRECATED_H): removed STR.h.
