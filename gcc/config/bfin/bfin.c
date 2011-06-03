@@ -86,14 +86,6 @@ const char *byte_reg_names[]   =  BYTE_REGISTER_NAMES;
 static int arg_regs[] = FUNCTION_ARG_REGISTERS;
 static int ret_regs[] = FUNCTION_RETURN_REGISTERS;
 
-/* Nonzero if -fschedule-insns2 was given.  We override it and
-   call the scheduler ourselves during reorg.  */
-static int bfin_flag_schedule_insns2;
-
-/* Determines whether we run variable tracking in machine dependent
-   reorganization.  */
-static int bfin_flag_var_tracking;
-
 struct bfin_cpu
 {
   const char *name;
@@ -374,13 +366,6 @@ output_file_start (void)
 {
   FILE *file = asm_out_file;
   int i;
-
-  /* Variable tracking should be run after all optimizations which change order
-     of insns.  It also needs a valid CFG.  This can't be done in
-     bfin_option_override, because flag_var_tracking is finalized after
-     that.  */
-  bfin_flag_var_tracking = flag_var_tracking;
-  flag_var_tracking = 0;
 
   fprintf (file, ".file \"%s\";\n", input_filename);
   
@@ -2773,11 +2758,6 @@ bfin_option_override (void)
     error ("-mcorea and -mcoreb can%'t be used together");
 
   flag_schedule_insns = 0;
-
-  /* Passes after sched2 can break the helpful TImode annotations that
-     haifa-sched puts on every insn.  Just do scheduling in reorg.  */
-  bfin_flag_schedule_insns2 = flag_schedule_insns_after_reload;
-  flag_schedule_insns_after_reload = 0;
 
   init_machine_status = bfin_init_machine_status;
 }
@@ -5552,7 +5532,7 @@ bfin_reorg (void)
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn ();
 
-  if (bfin_flag_schedule_insns2)
+  if (flag_schedule_insns_after_reload)
     {
       splitting_for_sched = 1;
       split_all_insns ();
@@ -5581,7 +5561,7 @@ bfin_reorg (void)
 
   workaround_speculation ();
 
-  if (bfin_flag_var_tracking)
+  if (flag_var_tracking)
     {
       timevar_push (TV_VAR_TRACKING);
       variable_tracking_main ();
@@ -6766,5 +6746,15 @@ bfin_conditional_register_usage (void)
 
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY bfin_extra_live_on_entry
+
+/* Passes after sched2 can break the helpful TImode annotations that
+   haifa-sched puts on every insn.  Just do scheduling in reorg.  */
+#undef TARGET_DELAY_SCHED2
+#define TARGET_DELAY_SCHED2 true
+
+/* Variable tracking should be run after all optimizations which
+   change order of insns.  It also needs a valid CFG.  */
+#undef TARGET_DELAY_VARTRACK
+#define TARGET_DELAY_VARTRACK true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
