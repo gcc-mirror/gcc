@@ -130,7 +130,6 @@ OBJC_DEPRECATED_H = \
   MetaClass.h \
   Object.h \
   Protocol.h \
-  objc_get_uninstalled_dtable.h \
   objc_msg_sendv.h \
   struct_objc_category.h \
   struct_objc_class.h \
@@ -142,7 +141,6 @@ OBJC_DEPRECATED_H = \
   struct_objc_protocol.h \
   struct_objc_protocol_list.h \
   struct_objc_selector.h \
-  struct_objc_static_instances.h \
   struct_objc_symtab.h
 
 # Objective-C source files to compile

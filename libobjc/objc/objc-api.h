@@ -104,7 +104,6 @@ struct objc_method_description
    equivalent to "*".  */
 #define _C_ATOM     '%'
 
-#include "deprecated/struct_objc_static_instances.h"
 #include "deprecated/struct_objc_symtab.h"
 #include "deprecated/struct_objc_module.h"
 #include "deprecated/struct_objc_ivar.h"
@@ -384,8 +383,6 @@ object_is_meta_class (id object)
 	  &&  !object_is_instance (object)  
 	  &&  !object_is_class (object));
 }
-
-#include "deprecated/objc_get_uninstalled_dtable.h"
 
 #ifdef __cplusplus
 }
