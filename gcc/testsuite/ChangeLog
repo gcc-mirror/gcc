@@ -1,3 +1,8 @@
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/type-stream-1.m: Test removed.
+	* objc.dg/headers.m: Do not include typedstream.h.
+	
 2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/torture/forward-1.m (main): Updated testcase.

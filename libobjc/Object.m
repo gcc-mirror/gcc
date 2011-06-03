@@ -289,38 +289,4 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   return self;
 }
 
-+ (int)streamVersion: (TypedStream*)aStream
-{
-  if (aStream->mode == OBJC_READONLY)
-    return objc_get_stream_class_version (aStream, self);
-  else
-    return class_get_version (self);
-}
-
-// These are used to write or read the instance variables 
-// declared in this particular part of the object.  Subclasses
-// should extend these, by calling [super read/write: aStream]
-// before doing their own archiving.  These methods are private, in
-// the sense that they should only be called from subclasses.
-
-- read: (TypedStream*)aStream
-{
-  (void) aStream; /* UNUSED */
-  // [super read: aStream];  
-  return self;
-}
-
-- write: (TypedStream*)aStream
-{
-  (void) aStream; /* UNUSED */
-  // [super write: aStream];
-  return self;
-}
-
-- awake
-{
-  // [super awake];
-  return self;
-}
-
 @end

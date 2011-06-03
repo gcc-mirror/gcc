@@ -126,8 +126,7 @@ OBJC_H = \
   \
   hash.h \
   objc-list.h \
-  sarray.h \
-  typedstream.h
+  sarray.h
 
 # User-visible header files containing deprecated APIs, from the
 # objc/deprecated directory
@@ -157,8 +156,7 @@ OBJC_DEPRECATED_H = \
   struct_objc_protocol_list.h \
   struct_objc_selector.h \
   struct_objc_static_instances.h \
-  struct_objc_symtab.h \
-  typedstream.h 
+  struct_objc_symtab.h
 
 # Objective-C source files to compile
 OBJC_SOURCE_FILES = \
@@ -170,7 +168,6 @@ OBJC_SOURCE_FILES = \
 
 # C source files to compile
 C_SOURCE_FILES = \
-   archive.c \
    class.c \
    encoding.c \
    error.c \
@@ -278,27 +275,6 @@ sendmsg_gc.lo: sendmsg.c runtime-info.h
 
 # These files have separate rules because they require special
 # compiler flags.
-archive.lo: archive.c
-	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) -Wno-deprecated-declarations \
-	   -o $@
-
-archive_gc.lo: archive.c
-	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) $(OBJC_GCFLAGS) -Wno-deprecated-declarations \
-	   -o $@
-
-# -Wno-deprecated-declarations is for the objc/typedstream.h functions.
-Object.lo: Object.m
-	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) -fgnu-runtime -Wno-deprecated-declarations \
-	   -o $@
-
-# -Wno-deprecated-declarations is for the objc/typedstream.h functions.
-Object_gc.lo: Object.m
-	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) $(OBJC_GCFLAGS) -fgnu-runtime -Wno-deprecated-declarations \
-	   -o $@
 
 # -Wno-deprecated-declarations is to silence warnings from using 
 # _objc_unexpected_exception.

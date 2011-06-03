@@ -27,5 +27,4 @@
 #ifndef __NEXT_RUNTIME__
 #include <objc/sarray.h>
 #include <objc/thr.h>
-#include <objc/typedstream.h>
 #endif

@@ -1,3 +1,37 @@
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_H): Removed typedstream.h.
+	(OBJC_DEPRECATED_H): Removed typedstream.h.
+	(C_SOURCE_FILES): Removed archive.c.
+	(Object.lo): Rule removed.
+	(Object_gc.lo): Likewise.
+	(archive.lo): Likewise.
+	(archive_gc.lo): Likewise.
+	* objc/deprecated/Object.h ([+streamVersion:], [-read], [-write],
+	[-awake]): Removed.
+	Do not include deprecated/typedstream.h.
+	* Object.m: Removed the same methods.
+	* archive.c: File removed.
+	* objc/typedstream.h: File removed.
+	* objc/deprecated/typedstream.h: File removed.
+	* libobjc.def (__objc_read_nbyte_uint, __objc_read_nbyte_ulong,
+	__objc_write_class, __objc_write_object, __objc_write_selector,
+	objc_close_typed_stream, objc_end_of_typed_stream,
+	objc_flush_typed_stream, objc_get_stream_class_version,
+	objc_open_typed_stream, objc_open_typed_stream_for_file,
+	objc_read_array, objc_read_char, objc_read_int, objc_read_long,
+	objc_read_object, objc_read_selector, objc_read_short,
+	objc_read_string, objc_read_type, objc_read_types,
+	objc_read_unsigned_char, objc_read_unsigned_int,
+	objc_read_unsigned_long, objc_read_unsigned_short,
+	objc_write_array, objc_write_char, objc_write_int,
+	objc_write_long, objc_write_object, objc_write_object_reference,
+	objc_write_root_object, objc_write_selector, objc_write_short,
+	objc_write_string, objc_write_string_atomic, objc_write_type,
+	objc_write_types, objc_write_unsigned_char,
+	objc_write_unsigned_int, objc_write_unsigned_long,
+	objc_write_unsigned_short): Removed.
+	
 2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_error.h.
