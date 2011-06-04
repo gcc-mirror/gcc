@@ -138,6 +138,23 @@ namespace __gnu_test
     allocate(size_type n, const void* = 0)
     { return static_cast<pointer>(counter_type::allocate(n * sizeof(T))); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    template<typename U, typename... Args>
+      void
+      construct(U* p, Args&&... args) 
+      {
+	::new((void *)p) U(std::forward<Args>(args)...);
+	counter_type::construct();
+      }
+
+    template<typename U>
+      void
+      destroy(U* p)
+      {
+	p->~U();
+	counter_type::destroy();
+      }
+#else
     void
     construct(pointer p, const T& value)
     {
@@ -145,22 +162,13 @@ namespace __gnu_test
       counter_type::construct();
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      template<typename... Args>
-        void
-        construct(pointer p, Args&&... args) 
-	{
-	  ::new((void *)p) T(std::forward<Args>(args)...);
-	  counter_type::construct();
-	}
-#endif
-
     void
     destroy(pointer p)
     {
       p->~T();
       counter_type::destroy();
     }
+#endif
 
     void
     deallocate(pointer p, size_type num)
@@ -313,33 +321,34 @@ namespace __gnu_test
       max_size() const throw() 
       { return size_type(-1) / sizeof(Tp); }
       
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename U, typename... Args>
+        void
+        construct(U* p, Args&&... args) 
+	{ ::new((void *)p) U(std::forward<Args>(args)...); }
+
+      template<typename U>
+	void 
+	destroy(U* p) { p->~U(); }
+
+      // Not copy assignable...
+      uneq_allocator&
+      operator=(const uneq_allocator&) = delete;
+#else
       void 
       construct(pointer p, const Tp& val) 
       { ::new((void *)p) Tp(val); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      template<typename... Args>
-        void
-        construct(pointer p, Args&&... args) 
-	{ ::new((void *)p) Tp(std::forward<Args>(args)...); }
-#endif
-
       void 
       destroy(pointer p) { p->~Tp(); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      // Not copy assignable...
-      uneq_allocator&
-      operator=(const uneq_allocator&) = delete;
-#endif
-
     private:
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       // Not assignable...
       uneq_allocator&
       operator=(const uneq_allocator&);
 #endif
+
+    private:
 
       // ... yet swappable!
       friend inline void
