@@ -1598,14 +1598,24 @@ output_node_opt_summary (struct output_block *ob,
   int i;
   struct cgraph_edge *e;
 
-  lto_output_uleb128_stream (ob->main_stream,
-			     bitmap_count_bits (node->clone.args_to_skip));
-  EXECUTE_IF_SET_IN_BITMAP (node->clone.args_to_skip, 0, index, bi)
-    lto_output_uleb128_stream (ob->main_stream, index);
-  lto_output_uleb128_stream (ob->main_stream,
-			     bitmap_count_bits (node->clone.combined_args_to_skip));
-  EXECUTE_IF_SET_IN_BITMAP (node->clone.combined_args_to_skip, 0, index, bi)
-    lto_output_uleb128_stream (ob->main_stream, index);
+  if (node->clone.args_to_skip)
+    {
+      lto_output_uleb128_stream (ob->main_stream,
+				 bitmap_count_bits (node->clone.args_to_skip));
+      EXECUTE_IF_SET_IN_BITMAP (node->clone.args_to_skip, 0, index, bi)
+	lto_output_uleb128_stream (ob->main_stream, index);
+    }
+  else
+    lto_output_uleb128_stream (ob->main_stream, 0);
+  if (node->clone.combined_args_to_skip)
+    {
+      lto_output_uleb128_stream (ob->main_stream,
+				 bitmap_count_bits (node->clone.combined_args_to_skip));
+      EXECUTE_IF_SET_IN_BITMAP (node->clone.combined_args_to_skip, 0, index, bi)
+	lto_output_uleb128_stream (ob->main_stream, index);
+    }
+  else
+    lto_output_uleb128_stream (ob->main_stream, 0);
   lto_output_uleb128_stream (ob->main_stream,
 		             VEC_length (ipa_replace_map_p, node->clone.tree_map));
   FOR_EACH_VEC_ELT (ipa_replace_map_p, node->clone.tree_map, i, map)

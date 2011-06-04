@@ -1,3 +1,8 @@
+2011-06-04  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/48954
+	* lto-cgraph.c (output_node_opt_summary): Handle NULL skip args bitmaps.
+
 2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/invoke.texi: Document -Wdelete-non-virtual-dtor.
