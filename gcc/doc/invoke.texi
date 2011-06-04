@@ -2331,6 +2331,15 @@ Warn when a class seems unusable because all the constructors or
 destructors in that class are private, and it has neither friends nor
 public static member functions.
 
+@item -Wdelete-non-virtual-dtor @r{(C++ and Objective-C++ only)}
+@opindex Wdelete-non-virtual-dtor
+@opindex Wno-delete-non-virtual-dtor
+Warn when @samp{delete} is used to destroy an instance of a class which
+has virtual functions and non-virtual destructor. It is unsafe to delete
+an instance of a derived class through a pointer to a base class if the
+base class does not have a virtual destructor.  This warning is enabled
+by @option{-Wall}.
+
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
 @opindex Wno-noexcept

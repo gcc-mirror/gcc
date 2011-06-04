@@ -1,5 +1,9 @@
 2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* testsuite/g++.dg/warn/delete-non-virtual-dtor.C: New.
+
+2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR c++/33840
 	* g++.dg/diagnostic/bitfld2.C: New.
 

@@ -1,3 +1,8 @@
+2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* init.c (build_delete): Warn when deleting type with non-virtual
+	destructor.
+
 2011-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49276
