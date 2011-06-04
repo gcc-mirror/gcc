@@ -88,14 +88,6 @@ static int ret_regs[] = FUNCTION_RETURN_REGISTERS;
 /* Nonzero if -mshared-library-id was given.  */
 static int bfin_lib_id_given;
 
-/* Nonzero if -fschedule-insns2 was given.  We override it and
-   call the scheduler ourselves during reorg.  */
-static int bfin_flag_schedule_insns2;
-
-/* Determines whether we run variable tracking in machine dependent
-   reorganization.  */
-static int bfin_flag_var_tracking;
-
 /* -mcpu support */
 bfin_cpu_t bfin_cpu_type = BFIN_CPU_UNKNOWN;
 
@@ -355,13 +347,6 @@ output_file_start (void)
 {
   FILE *file = asm_out_file;
   int i;
-
-  /* Variable tracking should be run after all optimizations which change order
-     of insns.  It also needs a valid CFG.  This can't be done in
-     bfin_option_override, because flag_var_tracking is finalized after
-     that.  */
-  bfin_flag_var_tracking = flag_var_tracking;
-  flag_var_tracking = 0;
 
   fprintf (file, ".file \"%s\";\n", input_filename);
   
@@ -2724,11 +2709,6 @@ bfin_option_override (void)
     error ("-mcorea and -mcoreb can%'t be used together");
 
   flag_schedule_insns = 0;
-
-  /* Passes after sched2 can break the helpful TImode annotations that
-     haifa-sched puts on every insn.  Just do scheduling in reorg.  */
-  bfin_flag_schedule_insns2 = flag_schedule_insns_after_reload;
-  flag_schedule_insns_after_reload = 0;
 
   init_machine_status = bfin_init_machine_status;
 }
@@ -5502,7 +5482,7 @@ bfin_reorg (void)
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn ();
 
-  if (bfin_flag_schedule_insns2)
+  if (flag_schedule_insns_after_reload)
     {
       splitting_for_sched = 1;
       split_all_insns ();
@@ -5531,7 +5511,7 @@ bfin_reorg (void)
 
   workaround_speculation ();
 
-  if (bfin_flag_var_tracking)
+  if (flag_var_tracking)
     {
       timevar_push (TV_VAR_TRACKING);
       variable_tracking_main ();
@@ -6701,5 +6681,15 @@ bfin_conditional_register_usage (void)
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE bfin_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT bfin_trampoline_init
+
+/* Passes after sched2 can break the helpful TImode annotations that
+   haifa-sched puts on every insn.  Just do scheduling in reorg.  */
+#undef TARGET_DELAY_SCHED2
+#define TARGET_DELAY_SCHED2 true
+
+/* Variable tracking should be run after all optimizations which
+   change order of insns.  It also needs a valid CFG.  */
+#undef TARGET_DELAY_VARTRACK
+#define TARGET_DELAY_VARTRACK true
 
 struct gcc_target targetm = TARGET_INITIALIZER;

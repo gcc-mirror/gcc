@@ -1,3 +1,37 @@
+2011-06-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/47590
+	* target.def (delay_sched2, delay_vartrack): New.
+	* doc/tm.texi.in: Update.
+	* doc/tm.texi: Rebuild.
+	* sched-rgn.c (gate_handle_sched2): Fail if delay_sched2.
+	* var-tracking.c (gate_handle_var_tracking): Likewise.
+	* config/bfin/bfin.c (bfin_flag_schedule_insns2): Drop.
+	(bfin_flag_var_tracking): Drop.
+	(output_file_start): Don't save and override flag_var_tracking.
+	(bfin_option_override): Ditto flag_schedule_insns_after_reload.
+	(bfin_reorg): Test original variables.
+	(TARGET_DELAY_SCHED2, TARGET_DELAY_VARTRACK): Define.
+	* config/ia64/ia64.c (ia64_flag_schedule_insns2): Drop.
+	(ia64_flag_var_tracking): Drop.
+	(TARGET_DELAY_SCHED2, TARGET_DELAY_VARTRACK): Define.
+	(ia64_file_start): Don't save and override flag_var_tracking.
+	(ia64_override_options_after_change): Ditto
+	flag_schedule_insns_after_reload.
+	(ia64_reorg): Test original variables.
+	* config/picochip/picochip.c (picochip_flag_schedule_insns2): Drop.
+	(picochip_flag_var_tracking): Drop.
+	(TARGET_DELAY_SCHED2, TARGET_DELAY_VARTRACK): Define.
+	(picochip_option_override): Don't save and override
+	flag_schedule_insns_after_reload.
+	(picochip_asm_file_start): Ditto flag_var_tracking.
+	(picochip_reorg): Test original variables.
+	* config/spu/spu.c (spu_flag_var_tracking): Drop.
+	(TARGET_DELAY_VARTRACK): Define.
+	(spu_var_tracking): New.
+	(spu_machine_dependent_reorg): Call it.
+	(asm_file_start): Don't save and override flag_var_tracking.
+
 2011-06-04  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49038

@@ -105,14 +105,6 @@ static const char * const ia64_output_reg_names[8] =
 /* Which cpu are we scheduling for.  */
 enum processor_type ia64_tune = PROCESSOR_ITANIUM2;
 
-/* Determines whether we run our final scheduling pass or not.  We always
-   avoid the normal second scheduling pass.  */
-static int ia64_flag_schedule_insns2;
-
-/* Determines whether we run variable tracking in machine dependent
-   reorganization.  */
-static int ia64_flag_var_tracking;
-
 /* Variables which are this size or smaller are put in the sdata/sbss
    sections.  */
 
@@ -633,6 +625,14 @@ static const struct default_options ia64_option_optimization_table[] =
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS ia64_preferred_reload_class
+
+#undef TARGET_DELAY_SCHED2
+#define TARGET_DELAY_SCHED2 true
+
+/* Variable tracking should be run after all optimizations which
+   change order of insns.  It also needs a valid CFG.  */
+#undef TARGET_DELAY_VARTRACK
+#define TARGET_DELAY_VARTRACK true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2389,13 +2389,6 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
 static void
 ia64_file_start (void)
 {
-  /* Variable tracking should be run after all optimizations which change order
-     of insns.  It also needs a valid CFG.  This can't be done in
-     ia64_option_override, because flag_var_tracking is finalized after
-     that.  */
-  ia64_flag_var_tracking = flag_var_tracking;
-  flag_var_tracking = 0;
-
   default_file_start ();
   emit_safe_across_calls ();
 }
@@ -5733,9 +5726,6 @@ ia64_option_override (void)
 static void
 ia64_override_options_after_change (void)
 {
-  ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
-  flag_schedule_insns_after_reload = 0;
-
   if (optimize >= 3
       && !global_options_set.x_flag_selective_scheduling
       && !global_options_set.x_flag_selective_scheduling2)
@@ -9407,7 +9397,7 @@ ia64_reorg (void)
   if (optimize == 0)
     split_all_insns ();
 
-  if (optimize && ia64_flag_schedule_insns2
+  if (optimize && flag_schedule_insns_after_reload
       && dbg_cnt (ia64_sched2))
     {
       timevar_push (TV_SCHED2);
@@ -9537,7 +9527,7 @@ ia64_reorg (void)
 
   emit_predicate_relation_info ();
 
-  if (ia64_flag_var_tracking)
+  if (flag_var_tracking)
     {
       timevar_push (TV_VAR_TRACKING);
       variable_tracking_main ();

@@ -149,13 +149,6 @@ const char *picochip_regnames[] = REGISTER_NAMES;
 
 /* Target scheduling information. */
 
-/* Determine whether we run our final scheduling pass or not.  We always
-   avoid the normal second scheduling pass.  */
-int picochip_flag_schedule_insns2;
-
-/* Check if variable tracking needs to be run. */
-int picochip_flag_var_tracking;
-
 /* This flag indicates whether the next instruction to be output is a
    VLIW continuation instruction.  It is used to communicate between
    final_prescan_insn and asm_output_opcode. */
@@ -343,6 +336,17 @@ static const struct default_options picochip_option_optimization_table[] =
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
 
+/* The 2nd scheduling pass option is switched off, and a machine
+   dependent reorganisation ensures that it is run later on, after the
+   second jump optimisation.  */
+#undef TARGET_DELAY_SCHED2
+#define TARGET_DELAY_SCHED2 true
+
+/* Variable tracking should be run after all optimizations which
+   change order of insns.  It also needs a valid CFG.  */
+#undef TARGET_DELAY_VARTRACK
+#define TARGET_DELAY_VARTRACK true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
@@ -356,10 +360,7 @@ picochip_return_in_memory(const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   return ((unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 4);
 }
 
-/* Allow some options to be overriden.  In particular, the 2nd
-   scheduling pass option is switched off, and a machine dependent
-   reorganisation ensures that it is run later on, after the second
-   jump optimisation. */
+/* Allow some options to be overriden. */
 
 static void
 picochip_option_override (void)
@@ -396,18 +397,16 @@ picochip_option_override (void)
   if (optimize >= 1)
     flag_section_anchors = 1;
 
-  /* Turn off the second scheduling pass, and move it to
-     picochip_reorg, to avoid having the second jump optimisation
-     trash the instruction modes (e.g., instructions are changed to
-     TImode to mark the beginning of cycles). Two types of DFA
-     scheduling are possible: space and speed. In both cases,
-     instructions are reordered to avoid stalls (e.g., memory loads
-     stall for one cycle). Speed scheduling will also enable VLIW
-     instruction packing. VLIW instructions use more code space, so
-     VLIW scheduling is disabled when scheduling for size. */
-  picochip_flag_schedule_insns2 = flag_schedule_insns_after_reload;
-  flag_schedule_insns_after_reload = 0;
-  if (picochip_flag_schedule_insns2)
+  /* The second scheduling pass runs within picochip_reorg, to avoid
+     having the second jump optimisation trash the instruction modes
+     (e.g., instructions are changed to TImode to mark the beginning
+     of cycles).  Two types of DFA scheduling are possible: space and
+     speed.  In both cases, instructions are reordered to avoid stalls
+     (e.g., memory loads stall for one cycle).  Speed scheduling will
+     also enable VLIW instruction packing.  VLIW instructions use more
+     code space, so VLIW scheduling is disabled when scheduling for
+     size.  */
+  if (flag_schedule_insns_after_reload)
     {
       if (optimize_size)
 	picochip_schedule_type = DFA_TYPE_SPACE;
@@ -461,7 +460,6 @@ picochip_option_override (void)
 	error ("invalid mul type specified (%s) - expected mac, mul or none",
 	       picochip_mul_type_string);
     }
-
 }
 
 
@@ -1813,13 +1811,6 @@ picochip_asm_file_start (void)
     fprintf (asm_out_file, "// Has multiply: Yes (Mac unit)\n");
   else
     fprintf (asm_out_file, "// Has multiply: No\n");
-
-  /* Variable tracking should be run after all optimizations which change order
-     of insns.  It also needs a valid CFG.  This can't be done in
-     picochip_option_override, because flag_var_tracking is finalized after
-     that.  */
-  picochip_flag_var_tracking = flag_var_tracking;
-  flag_var_tracking = 0;
 }
 
 /* Output the end of an ASM file. */
@@ -3369,15 +3360,16 @@ picochip_reorg (void)
 	  delete_insn (prologue_end_note);
 	}
     }
-  if (picochip_flag_var_tracking)
-  {
-    timevar_push (TV_VAR_TRACKING);
-    variable_tracking_main ();
-    /* We also have to deal with variable tracking notes in the middle 
-       of VLIW packets. */
-    reorder_var_tracking_notes();
-    timevar_pop (TV_VAR_TRACKING);
-  }
+
+  if (flag_var_tracking)
+    {
+      timevar_push (TV_VAR_TRACKING);
+      variable_tracking_main ();
+      /* We also have to deal with variable tracking notes in the
+	 middle of VLIW packets. */
+      reorder_var_tracking_notes();
+      timevar_pop (TV_VAR_TRACKING);
+    }
 }
 
 /* Return the ALU character identifier for the current

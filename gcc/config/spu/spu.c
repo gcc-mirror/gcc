@@ -245,10 +245,6 @@ int spu_tune;
    inserted in pairs, so we round down. */
 int spu_hint_dist = (8*4) - (2*4);
 
-/* Determines whether we run variable tracking in machine dependent
-   reorganization.  */
-static int spu_flag_var_tracking;
-
 enum spu_immediate {
   SPU_NONE,
   SPU_IL,
@@ -494,6 +490,11 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_REF_MAY_ALIAS_ERRNO
 #define TARGET_REF_MAY_ALIAS_ERRNO spu_ref_may_alias_errno
+
+/* Variable tracking should be run after all optimizations which
+   change order of insns.  It also needs a valid CFG.  */
+#undef TARGET_DELAY_VARTRACK
+#define TARGET_DELAY_VARTRACK true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2686,6 +2687,19 @@ insert_hbrp (void)
 
 static int in_spu_reorg;
 
+static void
+spu_var_tracking (void)
+{
+  if (flag_var_tracking)
+    {
+      df_analyze ();
+      timevar_push (TV_VAR_TRACKING);
+      variable_tracking_main ();
+      timevar_pop (TV_VAR_TRACKING);
+      df_finish_pass (false);
+    }
+}
+
 /* Insert branch hints.  There are no branch optimizations after this
    pass, so it's safe to set our branch hints now. */
 static void
@@ -2705,6 +2719,7 @@ spu_machine_dependent_reorg (void)
          function might have hinted a call or return. */
       insert_hbrp ();
       pad_bb ();
+      spu_var_tracking ();
       return;
     }
 
@@ -2911,14 +2926,7 @@ spu_machine_dependent_reorg (void)
 	  XVECEXP (unspec, 0, 0) = plus_constant (label_ref, offset);
       }
 
-  if (spu_flag_var_tracking)
-    {
-      df_analyze ();
-      timevar_push (TV_VAR_TRACKING);
-      variable_tracking_main ();
-      timevar_pop (TV_VAR_TRACKING);
-      df_finish_pass (false);
-    }
+  spu_var_tracking ();
 
   free_bb_for_insn ();
 
@@ -7049,19 +7057,6 @@ spu_libgcc_shift_count_mode (void)
 static void
 asm_file_start (void)
 {
-  /* Variable tracking should be run after all optimizations which
-     change order of insns.  It also needs a valid CFG.  Therefore,
-     *if* we make nontrivial changes in machine-dependent reorg,
-     run variable tracking after those.  However, if we do not run
-     our machine-dependent reorg pass, we must still run the normal
-     variable tracking pass (or else we will ICE in final since
-     debug insns have not been removed).  */
-  if (TARGET_BRANCH_HINTS && optimize)
-    {
-      spu_flag_var_tracking = flag_var_tracking;
-      flag_var_tracking = 0;
-    }
-
   default_file_start ();
 }
 

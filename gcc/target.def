@@ -2723,6 +2723,16 @@ DEFHOOKPOD
  in particular GDB does not use them.",
  bool, false)
 
+DEFHOOKPOD
+(delay_sched2, "True if sched2 is not to be run at its normal place.  \
+This usually means it will be run as part of machine-specific reorg.",
+bool, false)
+
+DEFHOOKPOD
+(delay_vartrack, "True if vartrack is not to be run at its normal place.  \
+This usually means it will be run as part of machine-specific reorg.",
+bool, false)
+
 /* Leave the boolean fields at the end.  */
 
 /* Empty macro arguments are undefined in C90, so use an empty macro.  */

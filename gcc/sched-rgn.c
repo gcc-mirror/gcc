@@ -3518,7 +3518,7 @@ gate_handle_sched2 (void)
 {
 #ifdef INSN_SCHEDULING
   return optimize > 0 && flag_schedule_insns_after_reload
-    && dbg_cnt (sched2_func);
+    && !targetm.delay_sched2 && dbg_cnt (sched2_func);
 #else
   return 0;
 #endif

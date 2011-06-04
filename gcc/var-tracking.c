@@ -8615,7 +8615,7 @@ variable_tracking_main (void)
 static bool
 gate_handle_var_tracking (void)
 {
-  return (flag_var_tracking);
+  return (flag_var_tracking && !targetm.delay_vartrack);
 }
 
 

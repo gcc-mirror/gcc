@@ -9388,6 +9388,10 @@ tables, and hence is desirable if it works.
 
 @hook TARGET_WANT_DEBUG_PUB_SECTIONS
 
+@hook TARGET_DELAY_SCHED2
+
+@hook TARGET_DELAY_VARTRACK
+
 @defmac ASM_OUTPUT_DWARF_DELTA (@var{stream}, @var{size}, @var{label1}, @var{label2})
 A C statement to issue assembly directives that create a difference
 @var{lab1} minus @var{lab2}, using an integer of the given @var{size}.
