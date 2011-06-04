@@ -1,3 +1,7 @@
+2011-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/rotatetest.c (f5, f6): Fix up pastos.
+
 2011-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49276
