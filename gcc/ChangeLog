@@ -1,5 +1,13 @@
 2011-06-04  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimization/48893
+	PR tree-optimization/49091
+	PR tree-optimization/49179
+	* ipa-inline-analysis.c (evaluate_conditions_for_known_args):
+	Bounds check.
+
+2011-06-04  Jan Hubicka  <jh@suse.cz>
+
 	PR lto/48954
 	* lto-cgraph.c (output_node_opt_summary): Handle NULL skip args bitmaps.
 
