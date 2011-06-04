@@ -1,3 +1,8 @@
+2011-06-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* c.opt: Add -Wdelete-non-virtual-dtor.
+	* c-opts.c (c_common_handle_option): Include it in -Wall.
+
 2011-05-30  Nathan Froyd  <froydnj@gcc.gnu.org>
 
 	PR bootstrap/49190

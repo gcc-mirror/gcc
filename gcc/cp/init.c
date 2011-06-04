@@ -3421,6 +3421,25 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 		}
 	      complete_p = false;
 	    }
+	  else if (warn_delnonvdtor && MAYBE_CLASS_TYPE_P (type)
+		   && !CLASSTYPE_FINAL (type) && TYPE_POLYMORPHIC_P (type))
+	    {
+	      tree dtor;
+	      dtor = CLASSTYPE_DESTRUCTORS (type);
+	      if (!dtor || !DECL_VINDEX (dtor))
+		{
+		  if (CLASSTYPE_PURE_VIRTUALS (type))
+		    warning (OPT_Wdelete_non_virtual_dtor,
+			     "deleting object of abstract class type %qT"
+			     " which has non-virtual destructor"
+			     " will cause undefined behaviour", type);
+		  else
+		    warning (OPT_Wdelete_non_virtual_dtor,
+			     "deleting object of polymorphic class type %qT"
+			     " which has non-virtual destructor"
+			     " might cause undefined behaviour", type);
+		}
+	    }
 	}
       if (VOID_TYPE_P (type) || !complete_p || !MAYBE_CLASS_TYPE_P (type))
 	/* Call the builtin operator delete.  */

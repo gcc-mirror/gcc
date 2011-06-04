@@ -405,6 +405,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
           warn_sign_compare = value;
 	  warn_reorder = value;
           warn_cxx0x_compat = value;
+          warn_delnonvdtor = value;
 	}
 
       cpp_opts->warn_trigraphs = value;
