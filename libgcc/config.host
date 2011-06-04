@@ -298,7 +298,7 @@ h8300-*-elf*)
 hppa*64*-*-linux*)
 	;;
 hppa*-*-linux*)
-	md_unwind_header=pa/pa32-linux.h
+	md_unwind_header=pa/linux-unwind.h
 	;;
 hppa[12]*-*-hpux10*)
 	md_unwind_header=pa/hpux-unwind.h
