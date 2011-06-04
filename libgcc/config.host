@@ -574,7 +574,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	case ${host} in
 	sh*-*-linux*)
 		tmake_file="${tmake_file} sh/t-linux"
-		md_unwind_header=sh/unwind-linux.h
+		md_unwind_header=sh/linux-unwind.h
 		;;
 	esac
 	;;
