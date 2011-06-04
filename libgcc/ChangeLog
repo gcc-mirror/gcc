@@ -1,3 +1,7 @@
+2011-06-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.host (hppa*-*-linux*): Correct md_unwind_header name.
+
 2011-06-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config.host (sh*-*-linux*): Fix typo.
