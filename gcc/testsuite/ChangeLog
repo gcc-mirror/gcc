@@ -1,5 +1,12 @@
 2011-06-04  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimization/48893
+	PR tree-optimization/49091
+	PR tree-optimization/49179
+	* gfortran.dg/pr49179.f90: New testcase
+
+2011-06-04  Jan Hubicka  <jh@suse.cz>
+
 	PR lto/48954
 	* g++.dg/torture/pr48954.C: New testcase.
 
