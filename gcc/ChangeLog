@@ -1,3 +1,9 @@
+2011-06-04  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/48929
+	* ipa-inline-analysis.c (remap_edge_predicates): Fix handling
+	of empty predicate.
+
 2011-06-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/48333

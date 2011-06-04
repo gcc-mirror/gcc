@@ -1949,6 +1949,8 @@ remap_edge_predicates (struct cgraph_node *node,
       if (!e->inline_failed)
 	remap_edge_predicates (e->callee, info, callee_info, operand_map,
 			       possible_truths, toplev_predicate);
+      else
+	edge_set_predicate (e, toplev_predicate);
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
     {
@@ -1969,6 +1971,8 @@ remap_edge_predicates (struct cgraph_node *node,
 	      e->frequency = 0;
 	    }
 	}
+      else
+	edge_set_predicate (e, toplev_predicate);
     }
 }
 
