@@ -1,3 +1,9 @@
+2011-06-04  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49038
+	* gcc.dg/vect/vect-strided-u8-i8-gap4-unknown.c: New test.
+	* gcc.dg/vect/pr49038.c: New test.
+
 2011-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49276

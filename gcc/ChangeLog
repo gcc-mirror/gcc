@@ -1,3 +1,20 @@
+2011-06-04  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49038
+	* tree-vect-loop-manip.c (vect_generate_tmps_on_preheader):
+	Ensure at least one epilogue iteration if required by data
+	accesses with gaps.
+	* tree-vectorizer.h (struct _loop_vec_info): Add new field
+	to mark loops that require peeling for gaps.
+	* tree-vect-loop.c (new_loop_vec_info): Initialize new field.
+	(vect_get_known_peeling_cost): Take peeling for gaps into
+	account.
+	(vect_transform_loop): Generate epilogue if required by data
+	access with gaps.
+	* tree-vect-data-refs.c (vect_analyze_group_access): Mark the
+	loop as requiring an epilogue if there are gaps in the end of
+	the strided group.
+
 2011-06-02  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49093
