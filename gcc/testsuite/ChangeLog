@@ -1,3 +1,8 @@
+2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+        PR c++/33840
+	* g++.dg/diagnostic/bitfld2.C: New.
+
 2011-06-04  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49038
