@@ -272,7 +272,20 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 
   funmem = gen_rtx_MEM (FUNCTION_MODE, funexp);
   if (fndecl && TREE_CODE (fndecl) == FUNCTION_DECL)
-    set_mem_expr (funmem, fndecl);
+    {
+      tree t = fndecl;
+      /* Although a built-in FUNCTION_DECL and its non-__builtin
+	 counterpart compare equal and get a shared mem_attrs, they
+	 produce different dump output in compare-debug compilations,
+	 if an entry gets garbage collected in one compilation, then
+	 adds a different (but equivalent) entry, while the other
+	 doesn't run the garbage collector at the same spot and then
+	 shares the mem_attr with the equivalent entry. */
+      if (DECL_BUILT_IN_CLASS (t) == BUILT_IN_NORMAL
+	  && built_in_decls[DECL_FUNCTION_CODE (t)])
+	t = built_in_decls[DECL_FUNCTION_CODE (t)];
+      set_mem_expr (funmem, t);
+    }
   else if (fntree)
     set_mem_expr (funmem, build_simple_mem_ref (CALL_EXPR_FN (fntree)));
 
