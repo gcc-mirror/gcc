@@ -46,7 +46,7 @@ f4 (unsigned int x)
 __attribute__((noclone, noinline)) unsigned int
 f5 (unsigned int x, int y)
 {
-  unsigned int f = (x << y) | (x >> (64 - y));
+  unsigned int f = (x << y) | (x >> (32 - y));
   unsigned int g = f;
   asm volatile ("" : "+r" (f));
   vv++;		/* { dg-final { gdb-test 52 "g" "f" } } */
@@ -56,7 +56,7 @@ f5 (unsigned int x, int y)
 __attribute__((noclone, noinline)) unsigned int
 f6 (unsigned int x, int y)
 {
-  unsigned int f = (x >> y) | (x << (64 - y));
+  unsigned int f = (x >> y) | (x << (32 - y));
   unsigned int g = f;
   asm volatile ("" : "+r" (f));
   vv++;		/* { dg-final { gdb-test 62 "g" "f" } } */
