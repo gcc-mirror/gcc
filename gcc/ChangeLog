@@ -1,3 +1,9 @@
+2011-06-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/48333
+	* calls.c (emit_call_1): Prefer the __builtin declaration of
+	builtin functions.
+
 2011-06-03   Diego Novillo  <dnovillo@google.com>
 
 	* lto-streamer-in.c (unpack_value_fields): Remove unneeded asserts.
