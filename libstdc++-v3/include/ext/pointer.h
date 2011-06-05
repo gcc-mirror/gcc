@@ -42,6 +42,9 @@
 #include <bits/stl_iterator_base_types.h>
 #include <ext/cast.h>
 #include <ext/type_traits.h>
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+# include <bits/ptr_traits.h>
+#endif
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -566,5 +569,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Storage_policy>
+    struct pointer_traits<__gnu_cxx::_Pointer_adapter<_Storage_policy>>
+    {
+      /// The pointer type
+      typedef __gnu_cxx::_Pointer_adapter<_Storage_policy>         pointer;
+      /// The type pointed to
+      typedef typename pointer::element_type            element_type;
+      /// Type used to represent the difference between two pointers
+      typedef typename pointer::difference_type         difference_type;
+
+      /* TODO: replace __rebind<U> with alias template rebind<U> */
+      /*
+      template<typename _Up>
+        using rebind<_Up> = typename __gnu_cxx::_Pointer_adapter<
+          typename pointer_traits<_Storage_policy>::rebind<_Up>>
+      */
+      template<typename _Up>
+        class __rebind
+        {
+          typedef pointer_traits<_Storage_policy> _Policy_traits;
+          typedef typename _Policy_traits::template __rebind<_Up>::__type
+            _Rebound_policy;
+        public:
+          typedef typename __gnu_cxx::_Pointer_adapter<_Rebound_policy> __type;
+        };
+    };
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
+#endif
 
 #endif // _POINTER_H
