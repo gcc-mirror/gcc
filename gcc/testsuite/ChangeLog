@@ -1,5 +1,14 @@
 2011-06-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR testsuite/49287
+	* objc.dg/gnu-api-2-class.m: Updated testcase silencing compiler
+	warning.
+	* objc.dg/gnu-api-2-objc.m: Likewise.
+	* obj-c++.dg/gnu-api-2-class.mm: Likewise
+	* obj-c++.dg/gnu-api-2-objc.mm: Likewise.
+	
+2011-06-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc.dg/gnu-api-2-objc.m: Fixed testcase.  Use log2 of the
 	alignment, not the alignment, when calling class_addIvar().  Add
 	an 'isa' instance variable to the test root class.

@@ -1,3 +1,8 @@
+2011-06-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (receiver_is_class_object): Expanded comment.
+	(objc_finish_message_expr): Likewise.
+
 2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/48539
