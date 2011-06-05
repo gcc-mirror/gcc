@@ -1,3 +1,9 @@
+2011-06-05  Andreas Schmidt  <andreas.schmidt.42@gmx.net>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_symbol):  Don't dump namespace
+	for ENTRY to avoid infinite recursion.
+
 2011-06-02  Asher Langton  <langton2@llnl.gov>
 
 	PR fortran/49268
@@ -16,7 +22,7 @@
 	procedure statement.
 	* parse.c ( decode_statement): Deal with whitespace around :: in
 	gfc_match_modproc.
- 
+
 2011-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
