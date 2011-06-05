@@ -4763,18 +4763,20 @@ output_return (rtx insn)
 	     machinery occupies the delay slot.  */
 	  gcc_assert (! final_sequence);
 
-	  if (! flag_delayed_branch)
-	    fputs ("\tadd\t%fp, %g1, %fp\n", asm_out_file);
+          if (flag_delayed_branch)
+	    {
+	      if (TARGET_V9)
+		fputs ("\treturn\t%i7+8\n", asm_out_file);
+	      else
+		fputs ("\trestore\n\tjmp\t%o7+8\n", asm_out_file);
 
-	  if (TARGET_V9)
-	    fputs ("\treturn\t%i7+8\n", asm_out_file);
+	      fputs ("\t add\t%sp, %g1, %sp\n", asm_out_file);
+	    }
 	  else
-	    fputs ("\trestore\n\tjmp\t%o7+8\n", asm_out_file);
-
-	  if (flag_delayed_branch)
-	    fputs ("\t add\t%sp, %g1, %sp\n", asm_out_file);
-	  else
-	    fputs ("\t nop\n", asm_out_file);
+	    {
+	      fputs ("\trestore\n\tadd\t%sp, %g1, %sp\n", asm_out_file);
+	      fputs ("\tjmp\t%o7+8\n\t nop\n", asm_out_file);
+	    }
 	}
       else if (final_sequence)
 	{

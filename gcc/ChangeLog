@@ -1,3 +1,8 @@
+2011-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (output_return): Fix thinko in the output of an
+	EH return when delayed branches are disabled.
+
 2011-06-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline
