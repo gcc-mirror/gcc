@@ -2131,7 +2131,10 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 	  else if (op2h != CONST0_RTX (SImode))
 	    msw_taken = LTU;
 	  else
-	    break;
+	    {
+	      msw_skip = swap_condition (LTU);
+	      break;
+	    }
 	  msw_skip = swap_condition (msw_taken);
 	}
       break;

@@ -1,3 +1,12 @@
+2011-06-05  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline
+	2011-05-30  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/49186
+	* config/sh/sh.c (expand_cbranchdi4): Set msw_skip when the high
+	part of the second operand is 0.
+
 2011-06-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/47590
