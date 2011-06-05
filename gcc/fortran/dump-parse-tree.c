@@ -893,7 +893,8 @@ show_symbol (gfc_symbol *sym)
     }
 
   if (sym->formal_ns && (sym->formal_ns->proc_name != sym)
-      && sym->attr.proc != PROC_ST_FUNCTION)
+      && sym->attr.proc != PROC_ST_FUNCTION
+      && !sym->attr.entry)
     {
       show_indent ();
       fputs ("Formal namespace", dumpfile);
