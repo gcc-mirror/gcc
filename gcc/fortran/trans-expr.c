@@ -3269,6 +3269,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  else
 	    goto end_pointer_check;
 
+	  /*  In Fortran 2008 it's allowed to pass a NULL pointer/nonallocated
+	      allocatable to an optional dummy, cf. 12.5.2.12.  */
+	  if (fsym != NULL && fsym->attr.optional && !attr.proc_pointer
+	      && (gfc_option.allow_std & GFC_STD_F2008) != 0)
+	    goto end_pointer_check;
+
           if (attr.optional)
 	    {
               /* If the actual argument is an optional pointer/allocatable and
