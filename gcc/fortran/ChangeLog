@@ -1,3 +1,9 @@
+2011-06-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49255
+	* trans-expr.c (gfc_conv_procedure_call): Fix -fcheck=pointer
+	for F2008.
+
 2011-06-05  Andreas Schmidt  <andreas.schmidt.42@gmx.net>
 	Thomas Koenig  <tkoenig@gcc.gnu.org>
 
