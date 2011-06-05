@@ -93,7 +93,7 @@ int main ()
       abort ();
 
     {
-      MySubClass *o = [[objc_getClass ("MyNewSubClass") alloc] init];
+      MySubClass *o = [[(Class)objc_getClass ("MyNewSubClass") alloc] init];
       
       if (object_getClass (o) != objc_getClass ("MyNewSubClass"))
 	abort ();

@@ -5270,7 +5270,42 @@ receiver_is_class_object (tree receiver, int self, int super)
     return exp;
 
   /* The receiver is a function call that returns an id.  Check if
-     it is a call to objc_getClass, if so, pick up the class name.  */
+     it is a call to objc_getClass, if so, pick up the class name.
+
+     This is required by the GNU runtime, which compiles
+
+       [NSObject alloc]
+
+     into
+
+       [objc_get_class ("NSObject") alloc];
+
+     and then, to check that the receiver responds to the +alloc
+     method, needs to be able to determine that the objc_get_class()
+     call returns the NSObject class and not just a generic Class
+     pointer.
+
+     But, traditionally this is enabled for all runtimes, not just the
+     GNU one, which means that the compiler is smarter than you'd
+     expect when dealing with objc_getClass().  For example, with the
+     Apple runtime, in the code
+
+       [objc_getClass ("NSObject")  alloc];
+
+     the compiler will recognize the objc_getClass() call as special
+     (due to the code below) and so will know that +alloc is called on
+     the 'NSObject' class, and can perform the corresponding checks.
+
+     Programmers can disable this behaviour by casting the results of
+     objc_getClass() to 'Class' (this may seem weird because
+     objc_getClass() is already declared to return 'Class', but the
+     compiler treats it as a special function).  This may be useful if
+     the class is never declared, and the compiler would complain
+     about a missing @interface for it.  Then, you can do
+
+       [(Class)objc_getClass ("MyClassNeverDeclared")  alloc];
+
+     to silence the warnings.  */
   if (TREE_CODE (receiver) == CALL_EXPR
       && (exp = CALL_EXPR_FN (receiver))
       && TREE_CODE (exp) == ADDR_EXPR
@@ -5478,13 +5513,16 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
 	    {
 	      /* If 'rtype' is NULL_TREE at this point it means that
 		 we have seen no @interface corresponding to that
-		 class name, only a @class declaration.  So, we have a
-		 class name (class_tree) but no actual details of the
-		 class methods.  We won't be able to check that the
-		 class responds to the method, and we will have to
-		 guess the method prototype.  Emit a warning, then
-		 keep going (this will use any method with a matching
-		 name, as if the receiver was of type 'Class').  */
+		 class name, only a @class declaration (alternatively,
+		 this was a call such as [objc_getClass("SomeClass")
+		 alloc], where we've never seen the @interface of
+		 SomeClass).  So, we have a class name (class_tree)
+		 but no actual details of the class methods.  We won't
+		 be able to check that the class responds to the
+		 method, and we will have to guess the method
+		 prototype.  Emit a warning, then keep going (this
+		 will use any method with a matching name, as if the
+		 receiver was of type 'Class').  */
 	      warning (0, "@interface of class %qE not found", class_tree);
 	    }
 	}
