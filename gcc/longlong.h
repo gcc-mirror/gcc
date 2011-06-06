@@ -349,7 +349,7 @@ UDItype __umulsidi3 (USItype, USItype);
     __asm__ ("mr\t%%r0,%3"                                              \
              : "=r" (r0), "=r" (r1)                                     \
              : "r"  (r1),  "r" (m1));                                   \
-    (xh) = r1; (xl) = r0;                                               \
+    (xh) = r0; (xl) = r1;                                               \
   } while (0)
 #define sdiv_qrnnd(q, r, n1, n0, d) \
   do {									\
