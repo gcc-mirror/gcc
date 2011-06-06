@@ -438,19 +438,19 @@ microblaze*-*-*)
         tmake_file="microblaze/t-microblaze"
 	;;
 mips-sgi-irix6.5*)
-	tmake_file="mips/t-irix6 t-slibgcc mips/t-slibgcc-irix"
-	extra_parts="crtbegin.o crtend.o irix-crti.o irix-crtn.o"
+	tmake_file="mips/t-irix6 t-crtfm t-slibgcc mips/t-slibgcc-irix"
+	extra_parts="crtbegin.o crtend.o crtfastmath.o irix-crti.o irix-crtn.o"
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips64*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="{$tmake_file} mips/t-crtfm"
+	tmake_file="{$tmake_file} t-crtfm"
 	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="{$tmake_file} mips/t-crtfm"
+	tmake_file="{$tmake_file} t-crtfm"
 	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-openbsd*)

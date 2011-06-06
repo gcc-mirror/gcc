@@ -1,3 +1,11 @@
+2011-06-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (mips-sgi-irix6.5*): Add t-crtfm to tmake_file.
+	Add crtfastmath.o to extra_parts.
+	(mips64*-*-linux*, mips*-*-linux*): Use t-crtfm instead of
+	mips/t-crtfm.
+	* config/mips/t-crtfm: Remove.
+
 2011-06-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config.host (hppa*-*-linux*): Correct md_unwind_header name.

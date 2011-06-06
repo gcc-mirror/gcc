@@ -1,3 +1,8 @@
+2011-06-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/iris6.h (ENDFILE_SPEC): Use crtfastmath.o if
+	-ffast-math etc.
+
 2011-06-06  Richard Henderson  <rth@redhat.com>
 	    Georg-Johann Lay  <avr@gjlay.de>
 
