@@ -1,5 +1,10 @@
 2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/deferred_const4.ad[sb]: New test.
+	* gnat.dg/deferred_const4_pkg.ads: New helper.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/test_tamdt.adb: Rename to...
 	* gnat.dg/taft_type1.adb: ...this.
 	* gnat.dg/tamdt.ad[sb]: Rename to...
