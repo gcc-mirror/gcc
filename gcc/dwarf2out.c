@@ -14904,6 +14904,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       goto do_shift;
 
     do_shift:
+      if (GET_MODE_CLASS (mode) != MODE_INT)
+	break;
       op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
 				VAR_INIT_STATUS_INITIALIZED);
       {

@@ -1,5 +1,9 @@
 2011-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/49294
+	* dwarf2out.c (mem_loc_descriptor) <do_shift>: Give up for
+	non-MODE_INT modes.
+
 	PR c++/49264
 	* gimple-fold.c (fold_stmt_1): Don't try to fold *& on the lhs
 	if stmt folded into nothing.
