@@ -1,5 +1,10 @@
 2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (gnat_stabilize_reference) <COMPOUND_EXPR>:
+	Fix thinko.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Identifier_to_gnu): Also handle deferred
 	constants whose full view has discriminants specially.
 

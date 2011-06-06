@@ -1,5 +1,9 @@
 2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/cond_expr1.ads: New test.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/deferred_const4.ad[sb]: New test.
 	* gnat.dg/deferred_const4_pkg.ads: New helper.
 

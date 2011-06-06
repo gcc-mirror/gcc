@@ -2518,8 +2518,8 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
       result = build2 (COMPOUND_EXPR, type,
 		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
 						 success),
-		       gnat_stabilize_reference_1 (TREE_OPERAND (ref, 1),
-						   force));
+		       gnat_stabilize_reference (TREE_OPERAND (ref, 1), force,
+						 success));
       break;
 
     case CONSTRUCTOR:
