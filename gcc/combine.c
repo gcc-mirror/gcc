@@ -7881,7 +7881,20 @@ make_compound_operation (rtx x, enum rtx_code in_code)
       code = GET_CODE (x);
     }
 
-  /* Now recursively process each operand of this operation.  */
+  /* Now recursively process each operand of this operation.  We need to
+     handle ZERO_EXTEND specially so that we don't lose track of the
+     inner mode.  */
+  if (GET_CODE (x) == ZERO_EXTEND)
+    {
+      new_rtx = make_compound_operation (XEXP (x, 0), next_code);
+      tem = simplify_const_unary_operation (ZERO_EXTEND, GET_MODE (x),
+					    new_rtx, GET_MODE (XEXP (x, 0)));
+      if (tem)
+	return tem;
+      SUBST (XEXP (x, 0), new_rtx);
+      return x;
+    }
+
   fmt = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++)
     if (fmt[i] == 'e')
