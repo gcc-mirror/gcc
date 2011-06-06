@@ -3390,6 +3390,119 @@
    (set_attr "cc" "clobber")])
 
 
+;; Some combiner patterns dealing with bits.
+;; See PR42210
+
+;; Move bit $3.0 into bit $0.$4
+(define_insn "*movbitqi.1-6.a"
+  [(set (match_operand:QI 0 "register_operand"                               "=r")
+        (ior:QI (and:QI (match_operand:QI 1 "register_operand"                "0")
+                        (match_operand:QI 2 "single_zero_operand"             "n"))
+                (and:QI (ashift:QI (match_operand:QI 3 "register_operand"     "r")
+                                   (match_operand:QI 4 "const_0_to_7_operand" "n"))
+                        (match_operand:QI 5 "single_one_operand"              "n"))))]
+  "INTVAL(operands[4]) == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))
+   && INTVAL(operands[4]) == exact_log2 (INTVAL(operands[5]) & GET_MODE_MASK (QImode))"
+  "bst %3,0\;bld %0,%4"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+;; Move bit $3.0 into bit $0.$4
+;; Variation of above. Unfortunately, there is no canonicalized representation
+;; of moving around bits.  So what we see here depends on how user writes down
+;; bit manipulations.
+(define_insn "*movbitqi.1-6.b"
+  [(set (match_operand:QI 0 "register_operand"                            "=r")
+        (ior:QI (and:QI (match_operand:QI 1 "register_operand"             "0")
+                        (match_operand:QI 2 "single_zero_operand"          "n"))
+                (ashift:QI (and:QI (match_operand:QI 3 "register_operand"  "r")
+                                   (const_int 1))
+                           (match_operand:QI 4 "const_0_to_7_operand"      "n"))))]
+  "INTVAL(operands[4]) == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))"
+  "bst %3,0\;bld %0,%4"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+;; Move bit $3.0 into bit $0.0.
+;; For bit 0, combiner generates slightly different pattern.
+(define_insn "*movbitqi.0"
+  [(set (match_operand:QI 0 "register_operand"                     "=r")
+        (ior:QI (and:QI (match_operand:QI 1 "register_operand"      "0")
+                        (match_operand:QI 2 "single_zero_operand"   "n"))
+                (and:QI (match_operand:QI 3 "register_operand"      "r")
+                        (const_int 1))))]
+  "0 == exact_log2 (~INTVAL(operands[2]) & GET_MODE_MASK (QImode))"
+  "bst %3,0\;bld %0,0"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+;; Move bit $2.0 into bit $0.7.
+;; For bit 7, combiner generates slightly different pattern
+(define_insn "*movbitqi.7"
+  [(set (match_operand:QI 0 "register_operand"                      "=r")
+        (ior:QI (and:QI (match_operand:QI 1 "register_operand"       "0")
+                        (const_int 127))
+                (ashift:QI (match_operand:QI 2 "register_operand"    "r")
+                           (const_int 7))))]
+  ""
+  "bst %2,0\;bld %0,7"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+;; Combiner transforms above four pattern into ZERO_EXTRACT if it sees MEM
+;; and input/output match.  We provide a special pattern for this, because
+;; in contrast to a IN/BST/BLD/OUT sequence we need less registers and the
+;; operation on I/O is atomic.
+(define_insn "*insv.io"
+  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "n,n,n"))
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand"        "n,n,n"))
+        (match_operand:QI 2 "nonmemory_operand"                            "L,P,r"))]
+  ""
+  "@
+	cbi %m0-0x20,%1
+	sbi %m0-0x20,%1
+	sbrc %2,0\;sbi %m0-0x20,%1\;sbrs %2,0\;cbi %m0-0x20,%1"
+  [(set_attr "length" "1,1,4")
+   (set_attr "cc" "none")])
+
+(define_insn "*insv.not.io"
+  [(set (zero_extract:QI (mem:QI (match_operand 0 "low_io_address_operand" "n"))
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand"        "n"))
+        (not:QI (match_operand:QI 2 "register_operand"                     "r")))]
+  ""
+  "sbrs %2,0\;sbi %m0-0x20,%1\;sbrc %2,0\;cbi %m0-0x20,%1"
+  [(set_attr "length" "4")
+   (set_attr "cc" "none")])
+
+;; The insv expander.
+;; We only support 1-bit inserts
+(define_expand "insv"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand" "")
+                         (match_operand:QI 1 "const1_operand" "")        ; width
+                         (match_operand:QI 2 "const_0_to_7_operand" "")) ; pos
+        (match_operand:QI 3 "nonmemory_operand" ""))]
+  "optimize"
+  "")
+
+;; Insert bit $2.0 into $0.$1
+(define_insn "*insv.reg"
+  [(set (zero_extract:QI (match_operand:QI 0 "register_operand"    "+r,d,d,l,l")
+                         (const_int 1)
+                         (match_operand:QI 1 "const_0_to_7_operand" "n,n,n,n,n"))
+        (match_operand:QI 2 "nonmemory_operand"                     "r,L,P,L,P"))]
+  ""
+  "@
+	bst %2,0\;bld %0,%1
+	andi %0,lo8(~(1<<%1))
+	ori %0,lo8(1<<%1)
+	clt\;bld %0,%1
+	set\;bld %0,%1"
+  [(set_attr "length" "2,1,1,2,2")
+   (set_attr "cc" "none,set_zn,set_zn,none,none")])
+
+
 ;; Some combine patterns that try to fix bad code when a value is composed
 ;; from byte parts like in PR27663.
 ;; The patterns give some release but the code still is not optimal,
