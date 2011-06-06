@@ -1,3 +1,8 @@
+2011-06-06  Nenad Vukicevic <nenad@intrepid.com>
+
+	* smp/upc_config.h: Change default scheduling policy.
+	  Allow for kernel to schedule UPC threads on its own.
+
 2011-05-17  Gary Funck  <gary@intrepid.com>
 
 	* configure.ac (GUPCR_PTS_VADDR_FIELD,

@@ -178,8 +178,8 @@ typedef unsigned int upc_page_num_t;
 #define GUPCR_HEAP_ALLOC_TAG 0x0DDF00D
 //end lib_config_heap
 
-/* By default we schedule threads over CPUs */
-#define GUPCR_SCHED_POLICY_DEFAULT GUPCR_SCHED_POLICY_CPU
+/* By default we let kernel schedule threads */
+#define GUPCR_SCHED_POLICY_DEFAULT GUPCR_SCHED_POLICY_AUTO
 #define GUPCR_MEM_POLICY_DEFAULT GUPCR_MEM_POLICY_AUTO
 
 /* Enable GUM debug support via this environment variable.  */
