@@ -369,6 +369,19 @@ fix = {
     test_text = "#define _Complex_I	__I\n";
 };
 
+/*
+ * net/if_arp.h defines a variable fc_softc instead of adding a
+ * typedef for the struct on AIX 5.2, 5.3, 6.1 and 7.1
+ */
+fix = {
+    hackname  = aix_net_if_arp;
+    mach      = "*-*-aix*";
+    files     = "net/if_arp.h";
+    select    = "^struct  fc_softc \\{";
+    c_fix     = format;
+    c_fix_arg = "typedef struct _fc_softc {";
+    test_text = "struct  fc_softc {\n  int a;\n};";
+};
 
 /*
  *  pthread.h on AIX 4.3.3 tries to define a macro without whitspace
