@@ -1,5 +1,8 @@
 2011-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/49294
+	* gcc.dg/debug/pr49294.c: New test.
+
 	PR c++/49264
 	* g++.dg/opt/pr49264.C: New test.
 
