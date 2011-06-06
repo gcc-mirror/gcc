@@ -1,3 +1,9 @@
+2011-06-06  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/48532
+	* directives.c (do_pragma): Don't forget the invocation location
+	when parsing the pragma name of a namespaced pragma directive.
+
 2011-05-29  John Tytgat  <John.Tytgat@aaug.net>
 
 	* files.c (read_file_guts): Add test on non-zero value of S_ISREG.
