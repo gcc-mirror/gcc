@@ -1,3 +1,10 @@
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c: Include diagnostic.h.
+	(gnat_write_global_declarations): Output debug information for all
+	global type declarations before finalizing the compilation unit.
+	* gcc-interface/Make-lang.in (ada/utils.o): Add dependency.
+
 2011-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/utils.c (def_fn_type): Remove extra va_end.

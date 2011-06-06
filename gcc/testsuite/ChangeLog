@@ -1,3 +1,16 @@
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/test_tamdt.adb: Rename to...
+	* gnat.dg/taft_type1.adb: ...this.
+	* gnat.dg/tamdt.ad[sb]: Rename to...
+	* gnat.dg/taft_type1_pkg1.ad[sb]: ...this.
+	* gnat.dg/tamdt_aux.ads: Rename to...
+	* gnat.dg/taft_type1_pkg2.ads: ...this.
+	* gnat.dg/taft_type2.ad[sb]: New test.
+	* gnat.dg/taft_type2_pkg.ads: New helper.
+	* gnat.dg/taft_type3.adb: New test.
+	* gnat.dg/taft_type3_pkg.ads: New helper.
+
 2011-06-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49255

@@ -1,9 +1,8 @@
+with Taft_Type1_Pkg2;
 
-with Tamdt_Aux;
-
-package body TAMDT is
-   type TAMT1 is new Tamdt_Aux.Priv (X => 1);
-   type TAMT2 is new Tamdt_Aux.Priv;
+package body Taft_Type1_Pkg1 is
+   type TAMT1 is new Taft_Type1_Pkg2.Priv (X => 1);
+   type TAMT2 is new Taft_Type1_Pkg2.Priv;
 
    procedure Check is
       Ptr1 : TAMT1_Access := new TAMT1;
@@ -16,4 +15,4 @@ package body TAMDT is
          raise Program_Error;
       end if;
    end;
-end;
+end Taft_Type1_Pkg1;
