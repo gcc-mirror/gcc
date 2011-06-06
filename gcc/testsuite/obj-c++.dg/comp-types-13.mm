@@ -1,14 +1,14 @@
 /* When assigning function pointers, allow for covariant return types
    and contravariant argument types.  */
 /* { dg-do compile } */
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
 @class Derived;
 
-Object *ExternFunc (Object *filePath, Object *key);
-typedef id FuncSignature (Object *arg1, Derived *arg2);
+TestsuiteObject *ExternFunc (TestsuiteObject *filePath, TestsuiteObject *key);
+typedef id FuncSignature (TestsuiteObject *arg1, Derived *arg2);
 
-@interface Derived: Object
+@interface Derived: TestsuiteObject
 + (void)registerFunc:(FuncSignature *)function;
 @end
 

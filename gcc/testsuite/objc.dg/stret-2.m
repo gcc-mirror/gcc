@@ -6,7 +6,7 @@
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
 struct astruct {
   float a, b;
@@ -17,12 +17,12 @@ struct bstruct {
   float a, b, c, d, e, f;
 } globb = { 1, 2, 3, 4, 5, 6 };
 
-@interface foo : Object
+@interface foo : TestsuiteObject
 - (struct astruct) stret;
 - (struct bstruct) stretb;
 @end
 
-@implementation foo : Object
+@implementation foo : TestsuiteObject
 - (struct astruct) stret { return glob; }
 - (struct bstruct) stretb { return globb; }
 @end
@@ -46,4 +46,3 @@ struct astruct afunc(foo *foo_obj) {
 
 /* { dg-final { scan-assembler-not "objc_msgSend\[^_S\]" } } */
 /* { dg-final { scan-assembler-not "objc_msgSendSuper\[^_\]" } } */
-

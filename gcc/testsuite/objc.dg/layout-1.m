@@ -3,13 +3,13 @@
 /* { dg-do compile } */
 /* { dg-options "-Wpadded -Wpacked" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
-@interface Derived1: Object
+@interface Derived1: TestsuiteObject
 { }
 @end
 
-@interface Derived2: Object
+@interface Derived2: TestsuiteObject
 - (id) foo;
 @end
 

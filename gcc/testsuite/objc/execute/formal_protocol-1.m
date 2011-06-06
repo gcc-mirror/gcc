@@ -1,7 +1,7 @@
 /* Contributed by Nicola Pero - Fri Mar  9 21:35:47 CET 2001 */
 
 #include <stdlib.h>
-#import "../../objc-obj-c++-shared/Object1.h"
+#include "../../objc-obj-c++-shared/TestsuiteObject.m"
 
 /* Tests defining a protocol and a class adopting it */
 
@@ -10,7 +10,7 @@
 - (void) setEnabled: (BOOL)flag;
 @end
 
-@interface Feature : Object <Enabling>
+@interface Feature : TestsuiteObject <Enabling>
 {
   const char *name;
   BOOL isEnabled;
@@ -42,4 +42,4 @@ int main (void)
 
   return 0;
 }
-#include "../../objc-obj-c++-shared/Object1-implementation.h"
+

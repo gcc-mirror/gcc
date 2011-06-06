@@ -22,9 +22,7 @@ static int test (void)
   return test ();
 }
 
-#ifdef __NEXT_RUNTIME__                                   
 + initialize { return self; }
-#endif
 @end
 
 int main (void)

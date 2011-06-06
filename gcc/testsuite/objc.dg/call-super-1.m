@@ -5,7 +5,7 @@
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 
 extern void abort(void);
 
@@ -23,7 +23,7 @@ Point MakePoint ( float x , float y ) {
   return p; 
 } 
 
-@interface Base: Object 
+@interface Base: TestsuiteObject 
 - ( void ) translateOriginToPoint : ( Point ) translation ; 
 @end
 
@@ -75,4 +75,4 @@ int main(void) {
   return 0;
 }
 
-#include "../objc-obj-c++-shared/Object1-implementation.h"
+

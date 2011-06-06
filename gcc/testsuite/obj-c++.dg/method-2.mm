@@ -4,7 +4,8 @@
 
 /* { dg-do compile } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
+#include "../objc-obj-c++-shared/runtime.h"
 
 @class NSString;
 
@@ -13,19 +14,19 @@
 + (BOOL)usesUserKeyEquivalents;
 @end
 
-@interface NSMenuItem : Object <NSMenuItem> {
+@interface NSMenuItem : TestsuiteObject <NSMenuItem> {
   @private
   id _menu;
 }
 @end
 
-@interface NSResponder : Object <NSMenuItem>
+@interface NSResponder : TestsuiteObject <NSMenuItem>
 {
   id _nextResponder;
 }
 @end
 
-@interface Object(NSMenuValidation)
+@interface TestsuiteObject(NSMenuValidation)
 - (BOOL)validateMenuItem:(id <NSMenuItem>)menuItem;
 @end
 

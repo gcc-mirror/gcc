@@ -1,7 +1,7 @@
 /* Contributed by Nicola Pero - Fri Mar  9 21:35:47 CET 2001 */
 
 #include <stdlib.h>
-#import "../../objc-obj-c++-shared/Object1.h"
+#include "../../objc-obj-c++-shared/TestsuiteObject.m"
 
 /* Test defining two protocol, a class adopting both of them, 
    and using an object of type `id <Protocol1, Protocol2>' */ 
@@ -15,7 +15,7 @@
 - (int) importance;
 @end
 
-@interface Feature : Object <Enabling, Evaluating>
+@interface Feature : TestsuiteObject <Enabling, Evaluating>
 {
   const char *name;
   BOOL isEnabled;
@@ -56,4 +56,4 @@ int main (void)
 
   return 0;
 }
-#include "../../objc-obj-c++-shared/Object1-implementation.h"
+

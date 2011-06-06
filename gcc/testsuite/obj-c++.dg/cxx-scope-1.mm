@@ -3,7 +3,7 @@
 
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 #include <stdlib.h>
 
 @class Derived;
@@ -18,7 +18,7 @@ Derived *CxxClass::get_instance(int offs) {
   return inst[offs];
 }
 
-@interface Derived: Object {
+@interface Derived: TestsuiteObject {
   int value;
 }
 -(id)initWithValue:(int)val;
@@ -51,4 +51,4 @@ int main(void) {
 
   return 0;
 }
-#include "../objc-obj-c++-shared/Object1-implementation.h"
+

@@ -12,11 +12,11 @@
 #include <objc/Protocol.h>
 #ifdef __NEXT_RUNTIME__
 #include <objc/objc-runtime.h>
+#include <objc/objc-api.h>
 #else
-#include <objc/encoding.h>
+#include <objc/runtime.h>
 #endif
 
-#include <objc/objc-api.h>
 #include <objc/objc.h>
 
 #ifndef __NEXT_RUNTIME__

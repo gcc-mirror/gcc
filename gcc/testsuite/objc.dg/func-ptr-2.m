@@ -5,10 +5,9 @@
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #include <stdlib.h>
-/* provide an Object class for NeXT runtimes 10.5 and above */
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 
-@interface Func: Object
+@interface Func: TestsuiteObject
 + (int) processNumber:(int)a and:(int)b usingFunction:(int(int,int))func;
 @end
 
@@ -38,4 +37,3 @@ int main(void) {
   return 0;
 }
 
-#include "../objc-obj-c++-shared/Object1-implementation.h"

@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 
-#include "../../objc-obj-c++-shared/Object1.h"
+#include "../../objc-obj-c++-shared/TestsuiteObject.h"
 
-@interface obj : Object {
+@interface obj : TestsuiteObject {
 @public 
   int var;
 }

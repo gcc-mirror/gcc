@@ -1,9 +1,9 @@
 /* Allow for an optional semicolon following the ivar block.  */
 /* Contributed by: Ziemowit Laski <zlaski@apple.com>.  */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
-@interface Tink : Object {
+@interface Tink : TestsuiteObject {
 @private
  unsigned long mCode[4];
 };

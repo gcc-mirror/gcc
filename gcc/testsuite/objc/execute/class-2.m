@@ -1,8 +1,6 @@
 /* Contributed by Nicola Pero - Tue Mar  6 23:05:53 CET 2001 */
 
-#include "../../objc-obj-c++-shared/next-mapping.h"
 #include <objc/objc.h>
-#include <objc/objc-api.h>
 
 /* Tests creating a root class and a subclass */
 

@@ -4,10 +4,10 @@
 /* { dg-do compile } */
 /* { dg-options "-Wpadded" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
 /* Implement a class, so that the metadata generation happens.  */
-@interface MyClass : Object
+@interface MyClass : TestsuiteObject
 @end
 
 @implementation MyClass

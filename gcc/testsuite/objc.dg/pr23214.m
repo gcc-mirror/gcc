@@ -6,16 +6,13 @@
 
 #include <objc/Protocol.h>
  
-#ifdef __OBJC2__
-/* The ObjC V2 "Object" does not provide -class.  */
 @interface Object (TS_CAT)
-- class;
+- test;
 @end
 
 @implementation Object (TS_CAT)
-- class { return isa; }
+- test { return self; }
 @end
-#endif
 
 @protocol A
 @end
@@ -28,8 +25,8 @@
 
 int main ()
 {
-  [@protocol(A) class];
-  [@protocol(B) class];
+  [@protocol(A) test];
+  [@protocol(B) test];
 
   return 0;
 }

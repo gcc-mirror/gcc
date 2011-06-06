@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 #include <objc/Protocol.h>
-#include "../../objc-obj-c++-shared/next-mapping.h"
+#include "../../objc-obj-c++-shared/runtime.h"
 
 /* Test defining a protocol, and accessing it using @protocol */
 
@@ -17,11 +17,7 @@ int main (void)
 {
   Protocol *protocol = @protocol (Evaluating);
 
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
   if (strcmp (protocol_getName(protocol), "Evaluating"))
-#else
-  if (strcmp ([protocol name], "Evaluating"))
-#endif
     {
       abort ();
     }

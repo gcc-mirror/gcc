@@ -1,14 +1,11 @@
 /* Contributed by Nicola Pero - Tue Jul  3 10:55:21 BST 2001 */
-#ifdef __NEXT_RUNTIME__
-#  include "../../objc-obj-c++-shared/next-mapping.h"
-#else
-#  include <objc/objc-api.h>
-#endif
-#include "../../objc-obj-c++-shared/Object1.h"
+
+#include "../../objc-obj-c++-shared/runtime.h"
+#include "../../objc-obj-c++-shared/TestsuiteObject.m"
 
 /* This test demonstrate a failure in object_is_meta_class which was fixed */
 
-@interface EvilClass : Object
+@interface EvilClass : TestsuiteObject
 {
   Class super_class;
   const char* name;
@@ -33,7 +30,8 @@ int main (void)
   EvilClass *evilObject = [EvilClass new];
   
   /* Now check that the object is not a meta class object */
-  if (object_is_meta_class (evilObject))
+  if (class_isMetaClass (object_getClass (evilObject))
+      && class_isMetaClass (evilObject))
     {
       printf ("object_is_meta_class failed\n");
       abort ();
@@ -41,4 +39,4 @@ int main (void)
 
   return 0;
 }
-#include "../../objc-obj-c++-shared/Object1-implementation.h"
+

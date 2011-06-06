@@ -6,7 +6,8 @@
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-options "-mno-constant-cfstrings" { target *-*-darwin* } } */
 
-#include "../../../objc-obj-c++-shared/Object1.h"
+#include <objc/Object.h>
+#include "../../../objc-obj-c++-shared/runtime.h" /* For NEXT_OBJC_USE_NEW_INTERFACE.  */
 
 @interface NSString: Object
 @end

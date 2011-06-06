@@ -6,18 +6,18 @@
 /* { dg-do assemble { target *-*-darwin* } } */
 /* { dg-options "-mfix-and-continue" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
-@interface Foo: Object
-+ (Object *)indexableFileTypes;
+@interface Foo: TestsuiteObject
++ (TestsuiteObject *)indexableFileTypes;
 @end
 
 @implementation Foo
-+ (Object *)indexableFileTypes
++ (TestsuiteObject *)indexableFileTypes
 {
-  static Object *fileTypes = 0;
+  static TestsuiteObject *fileTypes = 0;
   if(!fileTypes) {
-    fileTypes = [Object new];
+    fileTypes = [TestsuiteObject new];
   }
   return fileTypes;
 }

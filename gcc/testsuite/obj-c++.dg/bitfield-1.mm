@@ -9,7 +9,7 @@
 
 /* Leave blank lines here to keep warnings on the same lines.  */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 #include <objc/objc.h>
 #include <stdlib.h>
 
@@ -17,7 +17,7 @@
 
 enum Enum { zero, one, two, three, four };
 
-@interface Base: Object {
+@interface Base: TestsuiteObject {
 @public
   unsigned a: 2;
   int b: 3;

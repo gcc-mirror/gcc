@@ -3,7 +3,7 @@
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 
 extern void abort(void);
 #define CHECK_IF(expr) if(!(expr)) abort()
@@ -16,12 +16,12 @@ struct bstruct {
   float a, b, c, d, e, f;
 } globb = { 1, 2, 3, 4, 5, 6 };
 
-@interface foo : Object
+@interface foo : TestsuiteObject
 - (struct astruct) stret;
 - (struct bstruct) stretb;
 @end
 
-@implementation foo : Object
+@implementation foo : TestsuiteObject
 - (struct astruct) stret { return globa; }
 - (struct bstruct) stretb { return globb; }
 @end
@@ -62,4 +62,3 @@ int main(void)
   return 0;
 }
 
-#include "../objc-obj-c++-shared/Object1-implementation.h"

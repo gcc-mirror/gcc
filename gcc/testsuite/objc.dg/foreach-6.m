@@ -1,8 +1,10 @@
 /* Test basic Objective-C foreach syntax.  This tests warnings and errors.  */
 /* { dg-do compile } */
 
-#import "../objc-obj-c++-shared/Object1.h"
-#import "../objc-obj-c++-shared/next-mapping.h"
+#import "../objc-obj-c++-shared/TestsuiteObject.h"
+#import <objc/objc.h>
+#undef  nil
+#define nil ((id)0)
 
 /*
 struct __objcFastEnumerationState
@@ -13,7 +15,7 @@ struct __objcFastEnumerationState
   unsigned long extra[5];
 };
 */
-@interface Object (NSFastEnumeration)
+@interface TestsuiteObject (NSFastEnumeration)
 - (unsigned long)countByEnumeratingWithState: (struct __objcFastEnumerationState *)state
                                      objects:(id *)stackbuf 
                                        count:(unsigned int)len;
@@ -46,7 +48,7 @@ int main (void)
     ;
 
   for (12 in array) /* { dg-error "invalid iterating variable in fast enumeration" } */
-    ;               /* { dg-error "iterating variable in fast enumeration is not an object" "" { target *-*-* } 48 } */
+    ;               /* { dg-error "iterating variable in fast enumeration is not an object" "" { target *-*-* } 50 } */
 
   for (object in 12) /* { dg-error "collection in fast enumeration is not an object" } */
     ;

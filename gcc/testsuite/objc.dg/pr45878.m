@@ -8,7 +8,17 @@ typedef unsigned char  BOOL;
 {
   Class isa;
 }
-- (BOOL)isEqual:anObject;
+@end
+
+@interface Object (Test)
+- (BOOL)testIsEqual:anObject;
+@end
+
+@implementation Object (Test)
+- (BOOL)testIsEqual:anObject
+{
+  return self == anObject;
+}
 @end
 
 #ifdef __NEXT_RUNTIME__
@@ -30,7 +40,7 @@ extern void *_NSConstantStringClassReference;
 
 void function (void)
 {
-  if ([@"strings" isEqual: (id)0])
+  if ([@"strings" testIsEqual: (id)0])
     {
       ;
     }

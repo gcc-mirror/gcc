@@ -51,9 +51,7 @@ struct d
 {
   return 4;
 }
-#ifdef __NEXT_RUNTIME__                                   
 + initialize { return self; }
-#endif
 @end
 
 

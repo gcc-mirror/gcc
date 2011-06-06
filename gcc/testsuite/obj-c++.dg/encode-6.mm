@@ -3,11 +3,8 @@
 /* { dg-options "" } */
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
-#include "../objc-obj-c++-shared/Object1.h"
-#include "../objc-obj-c++-shared/next-mapping.h"
-#ifndef __NEXT_RUNTIME__
-#include <objc/objc-api.h>
-#endif
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
+#include "../objc-obj-c++-shared/runtime.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +25,7 @@ struct Nested {
   struct Innermost innermost;
 };
 
-@interface Int1: Object {
+@interface Int1: TestsuiteObject {
   signed char a, b;
   Int2 *int2;
   struct Nested nested;
@@ -47,28 +44,28 @@ struct Nested {
 @implementation Int2
 @end
 
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-Ivar *ivar;
-#else
+#if defined(__NEXT_RUNTIME__) && !defined(NEXT_OBJC_USE_NEW_INTERFACE)
 struct objc_ivar *ivar;
+#else
+Ivar *ivar;
 #endif
 
 static void check_ivar(const char *name, const char *type) {
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-  CHECK_IF(!strcmp(ivar_getName(*ivar), name));
-  CHECK_IF(!strcmp(ivar_getTypeEncoding(*ivar), type));
-#else
+#if defined(__NEXT_RUNTIME__) && !defined(NEXT_OBJC_USE_NEW_INTERFACE)
   CHECK_IF(!strcmp(ivar->ivar_name, name));
   CHECK_IF(!strcmp(ivar->ivar_type, type));
+#else
+  CHECK_IF(!strcmp(ivar_getName(*ivar), name));
+  CHECK_IF(!strcmp(ivar_getTypeEncoding(*ivar), type));
 #endif
   ivar++;
 }
 
 int main(void) {
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-  ivar = class_copyIvarList ((Class)objc_get_class("Int1"), NULL);
+#if defined(__NEXT_RUNTIME__) && !defined(NEXT_OBJC_USE_NEW_INTERFACE)
+  ivar = ((Class)objc_getClass("Int1"))->ivars->ivar_list;
 #else
-  ivar = ((Class)objc_get_class("Int1"))->ivars->ivar_list;
+  ivar = class_copyIvarList ((Class)objc_getClass("Int1"), NULL);
 #endif
   check_ivar("a", "c");
   check_ivar("b", "c");
@@ -76,14 +73,14 @@ int main(void) {
   check_ivar("nested", 
     "{Nested=\"a\"f\"b\"f\"next\"@\"Int1\"\"innermost\"{Innermost=\"a\"C\"b\"C\"encl\"^{Nested}}}");
     
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-  ivar = class_copyIvarList ((Class)objc_get_class("Int2"), NULL);
+#if defined(__NEXT_RUNTIME__) && !defined(NEXT_OBJC_USE_NEW_INTERFACE)
+  ivar = ((Class)objc_getClass("Int2"))->ivars->ivar_list;
 #else
-  ivar = ((Class)objc_get_class("Int2"))->ivars->ivar_list;
+  ivar = class_copyIvarList ((Class)objc_getClass("Int2"), NULL);
 #endif
   check_ivar("innermost", "^{Innermost=CC^{Nested}}");
   check_ivar("base", "@\"Int1\"");
   
   return 0;
 }
-#include "../objc-obj-c++-shared/Object1-implementation.h"
+
