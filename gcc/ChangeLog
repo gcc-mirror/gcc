@@ -1,3 +1,16 @@
+2011-06-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/46728
+	* builtins.c (powi_table): Remove.
+	(powi_lookup_cost): Remove.
+	(powi_cost): Remove.
+	(expand_powi_1): Remove.
+	(expand_powi): Remove.
+	(expand_builtin_pow_root): Remove.
+	(expand_builtin_pow): Remove.
+	(expand_builtin_powi): Eliminate handling of constant exponent.
+	(expand_builtin): Use expand_builtin_mathfn_2 for BUILT_IN_POW.
+	
 2011-06-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cprop.c (local_cprop_pass): Don't set changed for debug insns.
