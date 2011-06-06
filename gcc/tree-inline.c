@@ -4117,6 +4117,14 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 		  if (fold_stmt (&gsi))
 		    {
 		      gimple new_stmt;
+		      /* If a builtin at the end of a bb folded into nothing,
+			 the following loop won't work.  */
+		      if (gsi_end_p (gsi))
+			{
+			  cgraph_update_edges_for_call_stmt (old_stmt,
+							     old_decl, NULL);
+			  break;
+			}
 		      if (gsi_end_p (i2))
 			i2 = gsi_start_bb (BASIC_BLOCK (first));
 		      else

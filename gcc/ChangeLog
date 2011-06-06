@@ -1,3 +1,14 @@
+2011-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49264
+	* gimple-fold.c (fold_stmt_1): Don't try to fold *& on the lhs
+	if stmt folded into nothing.
+	* tree-inline.c (fold_marked_statements): If a builtin at the
+	end of a bb folded into nothing, just update cgraph edges
+	and move to next bb.
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Allow new_stmt
+	to be NULL.  Don't compute count and frequency if new_call is NULL.
+
 2011-06-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* longlong.h (smul_ppmm): The resulting register pair contains the

@@ -1,3 +1,8 @@
+2011-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49264
+	* g++.dg/opt/pr49264.C: New test.
+
 2011-06-06  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR tree-optimization/49243

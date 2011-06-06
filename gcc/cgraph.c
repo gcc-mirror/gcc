@@ -1241,13 +1241,17 @@ cgraph_make_edge_direct (struct cgraph_edge *edge, struct cgraph_node *callee,
 
 /* Update or remove the corresponding cgraph edge if a GIMPLE_CALL
    OLD_STMT changed into NEW_STMT.  OLD_CALL is gimple_call_fndecl
-   of OLD_STMT if it was previously call statement.  */
+   of OLD_STMT if it was previously call statement.
+   If NEW_STMT is NULL, the call has been dropped without any
+   replacement.  */
 
 static void
 cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
-					gimple old_stmt, tree old_call, gimple new_stmt)
+					gimple old_stmt, tree old_call,
+					gimple new_stmt)
 {
-  tree new_call = (is_gimple_call (new_stmt)) ? gimple_call_fndecl (new_stmt) : 0;
+  tree new_call = (new_stmt && is_gimple_call (new_stmt))
+		  ? gimple_call_fndecl (new_stmt) : 0;
 
   /* We are seeing indirect calls, then there is nothing to update.  */
   if (!new_call && !old_call)
@@ -1287,7 +1291,7 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 	  loop_nest = e->loop_nest;
 	  cgraph_remove_edge (e);
 	}
-      else
+      else if (new_call)
 	{
 	  /* We are seeing new direct call; compute profile info based on BB.  */
 	  basic_block bb = gimple_bb (new_stmt);
