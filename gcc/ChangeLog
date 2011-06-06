@@ -1,5 +1,9 @@
 2011-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/49262
+	* dwarf2out.c (native_encode_initializer): Decrement count in each
+	iteration.
+
 	PR debug/49294
 	* dwarf2out.c (mem_loc_descriptor) <do_shift>: Give up for
 	non-MODE_INT modes.
