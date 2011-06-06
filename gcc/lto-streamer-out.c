@@ -591,6 +591,9 @@ pack_value_fields (struct bitpack_d *bp, tree expr)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     pack_ts_translation_unit_decl_value_fields (bp, expr);
+
+  if (streamer_hooks.pack_value_fields)
+    streamer_hooks.pack_value_fields (bp, expr);
 }
 
 
@@ -754,9 +757,22 @@ lto_output_tree_ref (struct output_block *ob, tree expr)
       break;
 
     default:
-      /* No other node is indexable, so it should have been handled
-	 by lto_output_tree.  */
-      gcc_unreachable ();
+      {
+	/* See if the streamer allows this node to be indexable
+	   like other global declarations.  */
+	if (streamer_hooks.indexable_with_decls_p
+	    && streamer_hooks.indexable_with_decls_p (expr))
+	  {
+	    output_record_start (ob, LTO_global_decl_ref);
+	    lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
+	  }
+	else
+	  {
+	    /* No other node is indexable, so it should have been
+	      handled by lto_output_tree.  */
+	    gcc_unreachable ();
+	  }
+      }
     }
 }
 
@@ -865,27 +881,11 @@ lto_output_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
   lto_output_tree_or_ref (ob, DECL_SIZE (expr), ref_p);
   lto_output_tree_or_ref (ob, DECL_SIZE_UNIT (expr), ref_p);
 
-  if (TREE_CODE (expr) != FUNCTION_DECL
-      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
-    {
-      tree initial = DECL_INITIAL (expr);
-      if (TREE_CODE (expr) == VAR_DECL
-	  && (TREE_STATIC (expr) || DECL_EXTERNAL (expr))
-	  && initial)
-	{
-	  lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
-	  struct varpool_node *vnode = varpool_get_node (expr);
-	  if (!vnode)
-	    initial = error_mark_node;
-	  else if (!lto_varpool_encoder_encode_initializer_p (varpool_encoder,
-							      vnode))
-	    initial = NULL;
-	}
-    
-      lto_output_tree_or_ref (ob, initial, ref_p);
-    }
+  /* Note, DECL_INITIAL is not handled here.  Since DECL_INITIAL needs
+     special handling in LTO, it must be handled by streamer hooks.  */
 
   lto_output_tree_or_ref (ob, DECL_ATTRIBUTES (expr), ref_p);
+
   /* Do not stream DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
      for early inlining so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
@@ -1261,11 +1261,11 @@ lto_output_tree_header (struct output_block *ob, tree expr)
   enum LTO_tags tag;
   enum tree_code code;
 
-  /* We should not see any non-GIMPLE tree nodes here.  */
+  /* We should not see any tree nodes not handled by the streamer.  */
   code = TREE_CODE (expr);
-  if (!lto_is_streamable (expr))
-    internal_error ("tree code %qs is not supported in gimple streams",
-		    tree_code_name[code]);
+  if (!streamer_hooks.is_streamable (expr))
+    internal_error ("tree code %qs is not supported in %s streams",
+		    tree_code_name[code], streamer_hooks.name);
 
   /* The header of a tree node consists of its tag, the size of
      the node, and any other information needed to instantiate
@@ -1294,6 +1294,11 @@ lto_output_tree_header (struct output_block *ob, tree expr)
     output_sleb128 (ob, TREE_VEC_LENGTH (expr));
   else if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
     output_uleb128 (ob, BINFO_N_BASE_BINFOS (expr));
+
+  /* Allow the streamer to write any streamer-specific information
+     needed to instantiate the node when reading.  */
+  if (streamer_hooks.output_tree_header)
+    streamer_hooks.output_tree_header (ob, expr);
 }
 
 
@@ -1355,8 +1360,46 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
   /* Write all the pointer fields in EXPR.  */
   lto_output_tree_pointers (ob, expr, ref_p);
 
+  /* Call back into the streaming module to see if it needs to write
+     anything that was not written by the common streamer.  */
+  if (streamer_hooks.write_tree)
+    streamer_hooks.write_tree (ob, expr, ref_p);
+
   /* Mark the end of EXPR.  */
   output_zero (ob);
+}
+
+
+/* GIMPLE hook for writing GIMPLE-specific parts of trees.  OB, EXPR
+   and REF_P are as in lto_write_tree.  */
+
+void
+lto_streamer_write_tree (struct output_block *ob, tree expr, bool ref_p)
+{
+  if (DECL_P (expr)
+      && TREE_CODE (expr) != FUNCTION_DECL
+      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
+    {
+      /* Handle DECL_INITIAL for symbols.  */
+      tree initial = DECL_INITIAL (expr);
+      if (TREE_CODE (expr) == VAR_DECL
+	  && (TREE_STATIC (expr) || DECL_EXTERNAL (expr))
+	  && initial)
+	{
+	  lto_varpool_encoder_t varpool_encoder;
+	  struct varpool_node *vnode;
+
+	  varpool_encoder = ob->decl_state->varpool_node_encoder;
+	  vnode = varpool_get_node (expr);
+	  if (!vnode)
+	    initial = error_mark_node;
+	  else if (!lto_varpool_encoder_encode_initializer_p (varpool_encoder,
+							      vnode))
+	    initial = NULL;
+	}
+
+      lto_output_tree_or_ref (ob, initial, ref_p);
+    }
 }
 
 
@@ -2188,15 +2231,6 @@ copy_function (struct cgraph_node *node)
 }
 
 
-/* Initialize the LTO writer.  */
-
-static void
-lto_writer_init (void)
-{
-  lto_streamer_init ();
-}
-
-
 /* Main entry point from the pass manager.  */
 
 static void
@@ -2210,7 +2244,8 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
   int i, n_nodes;
   lto_cgraph_encoder_t encoder = lto_get_out_decl_state ()->cgraph_node_encoder;
 
-  lto_writer_init ();
+  /* Initialize the streamer.  */
+  lto_streamer_init ();
 
   n_nodes = lto_cgraph_encoder_size (encoder);
   /* Process only the functions with bodies.  */
