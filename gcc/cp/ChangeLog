@@ -1,5 +1,9 @@
 2011-06-06  Jason Merrill  <jason@redhat.com>
 
+	PR objc++/49221
+	* decl.c (cp_finish_decl): Check DECL_FUNCTION_SCOPE_P rather than
+	at_function_scope_p.
+
 	PR c++/49134
 	* tree.c (build_target_expr): Deal with ARM ABI tweaks.
 
