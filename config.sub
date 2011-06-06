@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
 #   2011 Free Software Foundation, Inc.
 
-timestamp='2011-03-23'
+timestamp='2011-06-03'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -300,7 +300,7 @@ case $basic_machine in
 	| spu \
 	| tahoe | tic4x | tic54x | tic55x | tic6x | tic80 | tron \
 	| ubicom32 \
-	| v850 | v850e \
+	| v850 | v850e | v850e1 | v850e2 | v850es | v850e2v3 \
 	| we32k \
 	| x86 | xc16x | xstormy16 | xtensa \
 	| z8k | z80)
@@ -408,10 +408,11 @@ case $basic_machine in
 	| sparcv8-* | sparcv9-* | sparcv9b-* | sparcv9v-* | sv1-* | sx?-* \
 	| tahoe-* \
 	| tic30-* | tic4x-* | tic54x-* | tic55x-* | tic6x-* | tic80-* \
-	| tile-* | tilegx-* \
+	| tile*-* \
 	| tron-* \
 	| ubicom32-* \
-	| v850-* | v850e-* | vax-* \
+	| v850-* | v850e-* | v850e1-* | v850es-* | v850e2-* | v850e2v3-* \
+	| vax-* \
 	| we32k-* \
 	| x86-* | x86_64-* | xc16x-* | xps100-* \
 	| xstormy16-* | xtensa*-* \
@@ -1120,13 +1121,8 @@ case $basic_machine in
 		basic_machine=t90-cray
 		os=-unicos
 		;;
-	# This must be matched before tile*.
-	tilegx*)
-		basic_machine=tilegx-unknown
-		os=-linux-gnu
-		;;
 	tile*)
-		basic_machine=tile-unknown
+		basic_machine=$basic_machine-unknown
 		os=-linux-gnu
 		;;
 	tx39)
