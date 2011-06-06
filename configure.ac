@@ -515,7 +515,7 @@ case "${target}" in
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs target-libiberty"
     ;;
-  arm*-*-symbianelf*)
+  arm*-*-symbianelf*|arm*-*-linux-androideabi)
     noconfigdirs="$noconfigdirs target-libiberty"
     ;;
   avr-*-*)
