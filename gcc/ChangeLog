@@ -1,5 +1,16 @@
 2011-06-06  Alexandre Oliva  <aoliva@redhat.com>
 
+	* dce.c (reset_unmarked_insns_debug_uses): New.
+	(delete_unmarked_insns): Skip debug insns.
+	(prescan_insns_for_dce): Likewise.
+	(rest_of_handle_ud_dce): Reset debug uses of removed sets.
+	* reg-stack.c (subst_stack_regs_in_debug_insn): Signal when no
+	active reg can be found.
+	(subst_all_stack_regs_in_debug_insn): New.  Reset debug insn then.
+	(convert_regs_1): Use it.
+
+2011-06-06  Alexandre Oliva  <aoliva@redhat.com>
+
 	* tree-pretty-print.c (dump_function_header): Add flags.
 	Don't dump decl_uid with nouid.
 	* tree-pretty-print.h (dump_function_header): Adjust.
