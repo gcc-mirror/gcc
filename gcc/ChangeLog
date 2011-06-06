@@ -1,3 +1,11 @@
+2011-06-06  Pat Haugen <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2011-05-31  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.h (REG_CLASS_CONTENTS): Remove vr0..vr2 from
+	NON_FLOAT_REGS.
+
 2011-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49264
