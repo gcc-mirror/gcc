@@ -625,8 +625,8 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; define_expand with the old pattern as "anonymous".
 ;; FIXME: Perhaps with SECONDARY_MEMORY_NEEDED?
 (define_expand "truncdfsf2"
-  [(set (match_operand:SF 0 "memory_operand" "")
-	(float_truncate:SF (match_operand:DF 1 "register_operand" "")))]
+  [(set (match_operand:SF 0 "nonimmediate_operand")
+	(float_truncate:SF (match_operand:DF 1 "register_operand")))]
   ""
   "
 {
@@ -660,8 +660,8 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 
 ;; Same comment as for truncdfsf2.
 (define_expand "extendsfdf2"
-  [(set (match_operand:DF 0 "register_operand" "=r")
-	(float_extend:DF (match_operand:SF 1 "memory_operand" "m")))]
+  [(set (match_operand:DF 0 "register_operand")
+	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand")))]
   ""
   "
 {
