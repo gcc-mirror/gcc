@@ -1,3 +1,8 @@
+2011-06-04  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_init): New.
+	(lto_main): Call it.
+
 2011-06-03  Diego Novillo  <dnovillo@google.com>
 
 	* lto.c (get_resolution): Move from lto-streamer-in.c.

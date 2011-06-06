@@ -1841,6 +1841,9 @@ unpack_value_fields (struct bitpack_d *bp, tree expr)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     unpack_ts_translation_unit_decl_value_fields (bp, expr);
+
+  if (streamer_hooks.unpack_value_fields)
+    streamer_hooks.unpack_value_fields (bp, expr);
 }
 
 
@@ -1892,8 +1895,15 @@ lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
     }
   else
     {
-      /* All other nodes can be materialized with a raw make_node call.  */
-      result = make_node (code);
+      /* For all other nodes, see if the streamer knows how to allocate
+	 it.  */
+      if (streamer_hooks.alloc_tree)
+	result = streamer_hooks.alloc_tree (code, ib, data_in);
+
+      /* If the hook did not handle it, materialize the tree with a raw
+	 make_node call.  */
+      if (result == NULL_TREE)
+	result = make_node (code);
     }
 
 #ifdef LTO_STREAMER_DEBUG
@@ -1988,12 +1998,8 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
 {
   DECL_SIZE (expr) = lto_input_tree (ib, data_in);
   DECL_SIZE_UNIT (expr) = lto_input_tree (ib, data_in);
-
-  if (TREE_CODE (expr) != FUNCTION_DECL
-      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
-    DECL_INITIAL (expr) = lto_input_tree (ib, data_in);
-
   DECL_ATTRIBUTES (expr) = lto_input_tree (ib, data_in);
+
   /* Do not stream DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
      for early inlining so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
@@ -2484,6 +2490,11 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
   /* Read all the pointer fields in RESULT.  */
   lto_input_tree_pointers (ib, data_in, result);
 
+  /* Call back into the streaming module to read anything else it
+     may need.  */
+  if (streamer_hooks.read_tree)
+    streamer_hooks.read_tree (ib, data_in, result);
+
   /* We should never try to instantiate an MD or NORMAL builtin here.  */
   if (TREE_CODE (result) == FUNCTION_DECL)
     gcc_assert (!lto_stream_as_builtin_p (result));
@@ -2497,6 +2508,21 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
 #endif
 
   return result;
+}
+
+
+/* LTO streamer hook for reading GIMPLE trees.  IB and DATA_IN are as in
+   lto_read_tree.  EXPR is the tree was materialized by lto_read_tree and
+   needs GIMPLE specific data to be filled in.  */
+
+void
+lto_streamer_read_tree (struct lto_input_block *ib, struct data_in *data_in,
+			tree expr)
+{
+  if (DECL_P (expr)
+      && TREE_CODE (expr) != FUNCTION_DECL
+      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
+    DECL_INITIAL (expr) = lto_input_tree (ib, data_in);
 }
 
 
@@ -2581,17 +2607,11 @@ lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
 /* Initialization for the LTO reader.  */
 
 void
-lto_init_reader (void)
+lto_reader_init (void)
 {
   lto_streamer_init ();
-
-  memset (&lto_stats, 0, sizeof (lto_stats));
-  bitmap_obstack_initialize (NULL);
-
   file_name_hash_table = htab_create (37, hash_string_slot_node,
 				      eq_string_slot_node, free);
-
-  gimple_register_cfg_hooks ();
 }
 
 

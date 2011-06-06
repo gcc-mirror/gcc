@@ -37,6 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Statistics gathered during LTO, WPA and LTRANS.  */
 struct lto_stats_d lto_stats;
 
+/* Streamer hooks.  */
+struct streamer_hooks streamer_hooks;
+
 /* LTO uses bitmaps with different life-times.  So use a seperate
    obstack for all LTO bitmaps.  */
 static bitmap_obstack lto_obstack;
@@ -568,7 +571,7 @@ lto_streamer_cache_create (void)
   /* Load all the well-known tree nodes that are always created by
      the compiler on startup.  This prevents writing them out
      unnecessarily.  */
-  lto_preload_common_nodes (cache);
+  streamer_hooks.preload_common_nodes (cache);
 
   return cache;
 }
@@ -712,4 +715,53 @@ lto_check_version (int major, int minor)
 	         "of the expected %d.%d",
 		 major, minor,
 		 LTO_major_version, LTO_minor_version);
+}
+
+
+/* Return true if EXPR is a tree node that can be written to disk.  */
+static inline bool
+lto_is_streamable (tree expr)
+{
+  enum tree_code code = TREE_CODE (expr);
+
+  /* Notice that we reject SSA_NAMEs as well.  We only emit the SSA
+     name version in lto_output_tree_ref (see output_ssa_names).  */
+  return !is_lang_specific (expr)
+	 && code != SSA_NAME
+	 && code != CALL_EXPR
+	 && code != LANG_TYPE
+	 && code != MODIFY_EXPR
+	 && code != INIT_EXPR
+	 && code != TARGET_EXPR
+	 && code != BIND_EXPR
+	 && code != WITH_CLEANUP_EXPR
+	 && code != STATEMENT_LIST
+	 && code != OMP_CLAUSE
+	 && code != OPTIMIZATION_NODE
+	 && (code == CASE_LABEL_EXPR
+	     || code == DECL_EXPR
+	     || TREE_CODE_CLASS (code) != tcc_statement);
+}
+
+
+/* Initialize all the streamer hooks used for streaming GIMPLE.  */
+
+void
+lto_streamer_hooks_init (void)
+{
+  streamer_hooks_init ();
+  streamer_hooks.name = "gimple";
+  streamer_hooks.preload_common_nodes = lto_preload_common_nodes;
+  streamer_hooks.is_streamable = lto_is_streamable;
+  streamer_hooks.write_tree = lto_streamer_write_tree;
+  streamer_hooks.read_tree = lto_streamer_read_tree;
+}
+
+
+/* Initialize the current set of streamer hooks.  */
+
+void
+streamer_hooks_init (void)
+{
+  memset (&streamer_hooks, 0, sizeof (streamer_hooks));
 }

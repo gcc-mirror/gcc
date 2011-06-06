@@ -2348,7 +2348,7 @@ double-int.o: double-int.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
 lto-compress.o: lto-compress.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TREE_H) langhooks.h $(LTO_HEADER_H) $(LTO_SECTION_H) \
+	$(TREE_H) langhooks.h $(LTO_STREAMER_H) $(LTO_SECTION_H) \
 	lto-compress.h $(DIAGNOSTIC_CORE_H) $(DIAGNOSTIC_CORE_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(ZLIBINC) $< $(OUTPUT_OPTION)
 
@@ -3030,14 +3030,15 @@ cgraph.o : cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    gt-cgraph.h output.h intl.h $(BASIC_BLOCK_H) debug.h $(HASHTAB_H) \
    $(TREE_INLINE_H) $(TREE_DUMP_H) $(TREE_FLOW_H) cif-code.def \
    value-prof.h $(EXCEPT_H) $(IPA_UTILS_H) $(DIAGNOSTIC_CORE_H) \
-   ipa-inline.h
+   ipa-inline.h $(LTO_STREAMER_H)
 cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(GIMPLE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) debug.h $(DIAGNOSTIC_H) \
    $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(TIMEVAR_H) $(IPA_PROP_H) \
    gt-cgraphunit.h tree-iterator.h $(COVERAGE_H) $(TREE_DUMP_H) \
-   tree-pretty-print.h gimple-pretty-print.h ipa-inline.h $(IPA_UTILS_H)
+   tree-pretty-print.h gimple-pretty-print.h ipa-inline.h $(IPA_UTILS_H) \
+   $(LTO_STREAMER_H)
 cgraphbuild.o : cgraphbuild.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(CGRAPH_H) intl.h pointer-set.h $(GIMPLE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(IPA_UTILS_H) $(EXCEPT_H) \

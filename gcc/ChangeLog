@@ -1,3 +1,56 @@
+2011-06-04  Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (lto-compress.o): Add dependency on LTO_STREAMER_H.
+	(cgraph.o): Likewise.
+	(cgraphunit.o): Likewise.
+	* cgraphunit.c: Include lto-streamer.h
+	(cgraph_finalize_compilation_unit): Call lto_streamer_hooks_init
+	if LTO is enabled.
+	* lto-streamer-in.c (unpack_value_fields): Call
+	streamer_hooks.unpack_value_fields if set.
+	(lto_materialize_tree): For unhandled nodes, first try to
+	call lto_streamer_hooks.alloc_tree, if it exists.
+	(lto_input_ts_decl_common_tree_pointers): Move reading of
+	DECL_INITIAL to lto_streamer_read_tree.
+	(lto_read_tree): Call lto_streamer_hooks.read_tree if set.
+	(lto_streamer_read_tree): New.
+	(lto_reader_init): Rename from lto_init_reader.
+	Move initialization code to lto/lto.c.
+	* lto-streamer-out.c (pack_value_fields): Call
+	streamer_hooks.pack_value_fields if set.
+	(lto_output_tree_ref): For tree nodes that are not
+	normally indexable, call streamer_hooks.indexable_with_decls_p
+	before giving up.
+	(lto_output_ts_decl_common_tree_pointers): Move handling
+	for FUNCTION_DECL and TRANSLATION_UNIT_DECL to
+	lto_streamer_write_tree.
+	(lto_output_tree_header): Call streamer_hooks.is_streamable
+	instead of lto_is_streamable.
+	Call lto_streamer_hooks.output_tree_header if set.
+	(lto_write_tree): Call lto_streamer_hooks.write_tree if
+	set.
+	(lto_streamer_write_tree): New.
+	(lto_output): Call lto_streamer_init directly.
+	(lto_writer_init): Remove.
+	* lto-streamer.c (streamer_hooks): New.
+	(lto_streamer_cache_create): Call streamer_hooks.preload_common_nodes
+	instead of lto_preload_common_nodes.
+	(lto_is_streamable): Move from lto-streamer.h
+	(lto_streamer_hooks_init): New.
+	(streamer_hooks): New.
+	(streamer_hooks_init): New.
+	* lto-streamer.h (struct output_block): Forward declare.
+	(struct lto_input_block): Likewise.
+	(struct data_in): Likewise.
+	(struct bitpack_d): Likewise.
+	(struct streamer_hooks): Declare.
+	(streamer_hooks): Declare.
+	(lto_streamer_hooks_init): Declare.
+	(lto_streamer_write_tree): Declare.
+	(lto_streamer_read_tree): Declare.
+	(streamer_hooks_init): Declare.
+	(lto_is_streamable): Move to lto-streamer.c
+
 2011-06-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* longlong.h (smul_ppmm): The resulting register pair contains the

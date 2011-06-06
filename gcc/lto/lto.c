@@ -2732,6 +2732,21 @@ lto_process_name (void)
     setproctitle ("lto1-ltrans");
 }
 
+
+/* Initialize the LTO front end.  */
+
+static void
+lto_init (void)
+{
+  lto_process_name ();
+  lto_streamer_hooks_init ();
+  lto_reader_init ();
+  memset (&lto_stats, 0, sizeof (lto_stats));
+  bitmap_obstack_initialize (NULL);
+  gimple_register_cfg_hooks ();
+}
+
+
 /* Main entry point for the GIMPLE front end.  This front end has
    three main personalities:
 
@@ -2755,9 +2770,8 @@ lto_process_name (void)
 void
 lto_main (void)
 {
-  lto_process_name ();
-
-  lto_init_reader ();
+  /* Initialize the LTO front end.  */
+  lto_init ();
 
   /* Read all the symbols and call graph from all the files in the
      command line.  */
