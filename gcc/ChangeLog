@@ -1,5 +1,9 @@
 2011-06-06  Alexandre Oliva  <aoliva@redhat.com>
 
+	* cprop.c (local_cprop_pass): Don't set changed for debug insns.
+
+2011-06-06  Alexandre Oliva  <aoliva@redhat.com>
+
 	* dce.c (reset_unmarked_insns_debug_uses): New.
 	(delete_unmarked_insns): Skip debug insns.
 	(prescan_insns_for_dce): Likewise.
