@@ -90,8 +90,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp>
     inline typename
-    conditional<(!is_nothrow_move_constructible<_Tp>::value
-		 && is_copy_constructible<_Tp>::value),
+    conditional<__and_<__not_<is_nothrow_move_constructible<_Tp>>,
+                       is_copy_constructible<_Tp>>::value,
                 const _Tp&, _Tp&&>::type
     move_if_noexcept(_Tp& __x) noexcept
     { return std::move(__x); }
