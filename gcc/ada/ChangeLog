@@ -1,5 +1,10 @@
 2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (gnat_stabilize_reference): Propagate
+	TREE_THIS_NOTRAP flag.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (gnat_stabilize_reference) <COMPOUND_EXPR>:
 	Fix thinko.
 
