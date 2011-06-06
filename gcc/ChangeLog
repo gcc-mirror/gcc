@@ -1,3 +1,19 @@
+2011-06-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48702
+	* tree-ssa-address.c (create_mem_ref_raw): Create MEM_REFs
+	only when we know the base address is within bounds.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Do not
+	assume the base address of TARGET_MEM_REFs is in bounds.
+	(indirect_refs_may_alias_p): Fix TARGET_MEM_REF without index tests.
+
+	Backport from mainline
+	2011-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49235
+	* tree-ssa-address.c (gen_addr_rtx): Ignore base if it is const0_rtx.
+	(create_mem_ref_raw): Create MEM_REF even if base is INTEGER_CST.
+
 2011-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (output_return): Fix thinko in the output of an

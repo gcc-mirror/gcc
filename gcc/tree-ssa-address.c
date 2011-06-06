@@ -1,5 +1,5 @@
 /* Memory address lowering and addressing mode selection.
-   Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -129,7 +129,7 @@ gen_addr_rtx (enum machine_mode address_mode,
       *addr = act_elem;
     }
 
-  if (base)
+  if (base && base != const0_rtx)
     {
       if (*addr)
 	*addr = simplify_gen_binary (PLUS, address_mode, base, *addr);
@@ -361,8 +361,11 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr,
       index2 = addr->base;
     }
 
-  /* If possible use a plain MEM_REF instead of a TARGET_MEM_REF.  */
-  if (alias_ptr_type
+  /* If possible use a plain MEM_REF instead of a TARGET_MEM_REF.
+     ???  As IVOPTs does not follow restrictions to where the base
+     pointer may point to create a MEM_REF only if we know that
+     base is valid.  */
+  if ((TREE_CODE (base) == ADDR_EXPR || TREE_CODE (base) == INTEGER_CST)
       && (!index2 || integer_zerop (index2))
       && (!addr->index || integer_zerop (addr->index)))
     return fold_build2 (MEM_REF, type, base, addr->offset);

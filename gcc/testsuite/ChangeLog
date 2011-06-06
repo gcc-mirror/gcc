@@ -1,3 +1,14 @@
+2011-06-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48702
+	* gcc.dg/torture/pr48702.c: New testcase.
+
+	Backport from mainline
+	2011-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49235
+	* gcc.dg/pr49235.c: New test.
+
 2011-06-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline
