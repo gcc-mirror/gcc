@@ -1223,7 +1223,8 @@ local_cprop_pass (void)
 		    {
 		      if (do_local_cprop (reg_use_table[i], insn))
 			{
-			  changed = true;
+			  if (!DEBUG_INSN_P (insn))
+			    changed = true;
 			  break;
 			}
 		    }
