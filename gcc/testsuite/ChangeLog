@@ -1,3 +1,7 @@
+2011-06-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/regress/ptrmem1.C: New.
+
 2011-06-06  Asher Langton  <langton2@llnl.gov>
 
 	PR fortran/49268

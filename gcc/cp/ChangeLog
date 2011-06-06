@@ -1,5 +1,8 @@
 2011-06-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49298
+	* semantics.c (potential_constant_expression_1): Handle FIELD_DECL.
+
 	PR c++/49134
 	* tree.c (build_target_expr): Deal with ARM ABI tweaks.
 
