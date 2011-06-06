@@ -1,3 +1,11 @@
+2011-06-06  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/49285
+	* config/mmix/mmix.md ("truncdfsf2", "extendsfdf2"): Correct
+	predicate to nonimmediate_operand from memory_operand for the
+	operand that is to be forced to memory by the expander.  Lose
+	the constraints.
+
 2011-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (output_return): Fix thinko in the output of an
