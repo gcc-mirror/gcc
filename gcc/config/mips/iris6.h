@@ -256,7 +256,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "crtend.o%s irix-crtn.o%s \
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   crtend.o%s irix-crtn.o%s \
    %{!shared: \
      %{mabi=n32:%{mips4:/usr/lib32/mips4/crtn.o%s}\
        %{!mips4:/usr/lib32/mips3/crtn.o%s}}\
