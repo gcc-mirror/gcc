@@ -1,5 +1,14 @@
 2011-06-06  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree-pretty-print.c (dump_function_header): Add flags.
+	Don't dump decl_uid with nouid.
+	* tree-pretty-print.h (dump_function_header): Adjust.
+	* final.c (rest_of_clean_state): Pass dump_flags on, with nouid.
+	* passes.c (pass_init_dump_file): Pass dump_flags on.
+	* tree-cfg.c (gimple_dump_cfg): Pass flags on.
+
+2011-06-06  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR bootstrap/49270
 	* ipa-inline-analysis.c (read_predicate): Initialize all clauses.
 
