@@ -2,10 +2,10 @@
 
 // { dg-do compile }
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 #include <iostream>
 
-@interface Greeter : Object
+@interface Greeter : TestsuiteObject
 - (void) greet: (const char *)msg;
 @end
 

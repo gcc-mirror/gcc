@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 
 #include <objc/objc.h>
-#include <objc/objc-api.h>
+#include "../objc-obj-c++-shared/runtime.h"
 
 @protocol MyProto1
 +(void)doItClass1;

@@ -4,7 +4,7 @@
 /* { dg-do run } */
 /* { dg-options "-Wpadded" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +13,7 @@
 
 enum Enum { one, two, three, four };
 
-@interface Base: Object {
+@interface Base: TestsuiteObject {
   unsigned a: 2;
   int b: 3;
   enum Enum c: 4;

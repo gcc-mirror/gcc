@@ -1,5 +1,403 @@
 2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	Updated all testcases in the ObjC/ObjC++ testsuites to use the
+	Modern Objective-C runtime API.
+	* objc/execute/next_mapping.h: Removed.
+	* objc-obj-c++-shared/next-mapping.h: Removed.
+	* objc-obj-c++-shared/Object1.h: Removed.
+	* objc-obj-c++-shared/Object1.m: Removed.
+	* objc-obj-c++-shared/Object1.mm: Removed.
+	* objc-obj-c++-shared/Object1-implementation.h: Removed.
+	* objc-obj-c++-shared/Protocol1.h: Removed.
+	* objc-obj-c++-shared/objc-test-suite-types.h: Removed definition
+	of ProtoBool, IVAR_T and METHOD.
+	* objc-obj-c++-shared/runtime.h: New.
+	* objc-obj-c++-shared/TestsuiteObject.h: New.
+	* objc-obj-c++-shared/TestsuiteObject.m: New.
+	
+	* objc/compile/trivial.m: Use TestsuiteObject instead of Object.	
+	* objc/execute/IMP.m: Include ../../objc-obj-c++-shared/runtime.h.
+	Use the Modern Objective-C runtime API. ([TestClass -next:]): Made
+	it a class method.
+	* objc/execute/_cmd.m: Include
+	../../objc-obj-c++-shared/runtime.h.  Use the Modern Objective-C
+	runtime API.  ([TestClass +initialize]): Include this method also
+	with the GNU runtime.
+	* objc/execute/accessing_ivars.m: Use TestsuiteObject instead of
+	Object.  ([-setValue:]): Return void.
+	* objc/execute/bf-common.h: Do not include objc/objc-encoding.h
+	with the GNU runtime.  Include
+	../../objc-obj-c++-shared/runtime.h.  Do not define objc_get_class
+	for the NeXT runtime.  Use the existing print_ivars() and
+	compare_structures() implementations for the old NeXT runtime.
+	Added new implementations for the Modern GNU and NeXT runtimes.
+	Enable the testcase (and hence all the bf-* ones) for __OBJC2__ as
+	well.  (main): Use objc_getClass().  Use return instead of exit.
+	* objc/execute/bycopy-1.m: Include objc/objc.h instead of
+	../../objc-obj-c++-shared/Protocol1.h.  (main): Use return instead
+	of exit().
+	* objc/execute/bycopy-2.m: Include objc/objc.h instead of
+	../../objc-obj-c++-shared/Protocol1.h.  Use TestsuiteObject
+	instead of Object.  (main): Use return instead of exit().
+	* objc/execute/bycopy-3.m: Updated includes.  Use TestsuiteObject
+	instead of Object.  Removed prototype for exit().  (main): Use
+	return instead of exit().  Use the Modern Objective-C runtime API.
+	* objc/execute/cascading-1.m: Use TestsuiteObject instead of
+	Object.
+	* objc/execute/class-tests-1.h: Include
+	../../objc-obj-c++-shared/runtime.h.  Use the Modern Objective-C
+	runtime API.  (test_class_with_superclass): Do not call [Object
+	class].  There is no need to with the current libobjc.
+	* objc/execute/class-tests-2.h: Include
+	../../objc-obj-c++-shared/runtime.h.  Use the Modern Objective-C
+	runtime API.
+	* objc/execute/class-1.m: Do not include <objc/objc-api.h> and
+	../../objc-obj-c++-shared/next-mapping.h.
+	* objc/execute/class-2.m: Likewise.
+	* objc/execute/class-3.m: Likewise.
+	* objc/execute/class-4.m: Do not include <objc/objc-api.h> and
+	../../objc-obj-c++-shared/next-mapping.h.  ([RootClass
+	+initialize]): Include this method also with the GNU
+	runtime. (main): Use the Modern Objective-C runtime API.
+	* objc/execute/class-5.m: Likewise.
+	* objc/execute/class-6.m: Likewise.
+	* objc/execute/class-7.m: Likewise.
+	* objc/execute/class-8.m: Likewise.
+	* objc/execute/class-9.m: Likewise.
+	* objc/execute/class-10.m: Likewise.
+	* objc/execute/class-11.m: Likewise.
+	* objc/execute/class-12.m: Likewise.
+	* objc/execute/class-13.m: Likewise.
+	* objc/execute/class-14.m: Likewise.
+	* objc/execute/class_self-1.m ([TestClass +initialize]): Include
+	this method also with the GNU runtime.
+	* objc/execute/class_self-2.m: ([TestClass +initialize], [ClassA
+	+initialize]): Include this method also with the GNU runtime.
+	* objc/execute/compatibility_alias.m: Use TestsuiteObject instead
+	of Object.
+	* objc/execute/encode-1.m: Likewise.
+	* objc/execute/enumeration-1.m: Likewise.
+	* objc/execute/enumeration-2.m: Likewise.
+	* objc/execute/exceptions/catchall-1.m: Likewise.
+	* objc/execute/exceptions/finally-1.m: Likewise.
+	* objc/execute/exceptions/foward-1.m: Likewise.
+	* objc/execute/exceptions/local-variables-1.m: Likewise.	
+	* objc/execute/exceptions/throw-nil.m: Likewise.
+	* objc/execute/exceptions/trivial.m: Likewise.
+	* objc/execute/exceptions/handler-1.m: Use TestsuiteObject instead
+	of Object. Include objc/runtime.h instead of objc/objc-api.h.
+	* objc/execute/exceptions/matcher-1.m: Likewise.
+	* objc/execute/formal_protocol-1.m: Use TestsuiteObject instead of
+	Object.
+	* objc/execute/formal_protocol-2.m: Likewise.
+	* objc/execute/formal_protocol-3.m: Likewise.
+	* objc/execute/formal_protocol-4.m: Likewise.
+	* objc/execute/formal_protocol-5.m: Include
+	../../objc-obj-c++-shared/runtime.h. (main): Always use
+	protocol_getName().
+	* objc/execute/formal_protocol-6.m: Likewise.
+	* objc/execute/formal_protocol-7.m: Use TestsuiteObject instead of
+	Object.  Include <objc/Protocol.h> instead of
+	../../objc-obj-c++-shared/Protocol1.h.
+	* objc/execute/function-message-1.m: Use TestsuiteObject intead of
+	Object.
+	* objc/execute/informal_protocol.m: Likewise.
+	* objc/execute/load-3.m: Likewise.
+	* objc/execute/many_args_method.m ([TestClass +initialize]):
+	Include this method with the GNU runtime as well.
+	* objc/execute/nested-3.m ([Test +initialize]): Likewise.
+	* objc/execute/nested-func-1.m: Use TestsuiteObject
+	instead of Object.
+	* objc/execute/nil_method-1.m: Likewise.
+	* objc/execute/no_clash.m: Likewise.
+	* objc/execute/np-1.m: Do not include
+	../../objc-obj-c++-shared/Protocol1.h.
+	(main): Use return instead of exit().
+	* objc/execute/np-2.m: Do not include
+	../../objc-obj-c++-shared/Protocol1.h.
+	([MyObject +initialize]): Include this method also with the GNU
+	runtime.  (main): Use return instead of exit().
+	* objc/execute/object_is_class.m: Include
+	../../objc-obj-c++-shared/runtime.h.  Use TestsuiteObject instead
+	of Object.  (main): Use the Modern Objective-C runtime API.
+	* objc/execute/object_is_meta_class.m: Likewise.
+	* objc/execute/private.m: Use TestsuiteObject instead of Object.
+	* objc/execute/protocol-isEqual-1.m: Include objc/Protocol.h
+	instead of ../objc-obj-c++-shared/Protocol1.h.  Include
+	../../objc-obj-c++-shared/runtime.h.  (main): Use the Modern
+	Objective-C runtime API.
+	* objc/execute/protocol-isEqual-2.m: Likewise.
+	* objc/execute/protocol-isEqual-3.m: Likewise.
+	* objc/execute/protocol-isEqual-4.m: Likewise.
+	* objc/execute/redefining_self.m ([TestClass +initialize]):
+	Include this method with the GNU runtime as well.
+	* objc/execute/root_methods.m: Include
+	../../objc-obj-c++-shared/runtime.h.  ([RootClass +initialize]):
+	Include this method with the GNU runtime as well.
+	(main): Use the Modern Objective-C runtime API.
+	* objc/execute/selector-1.m: Include
+	../../objc-obj-c++-shared/runtime.h.  Use TestsuiteObject instead
+	of Object.  (main): Use the Modern Objective-C runtime API.
+	* objc/execute/static-1.m ([Test +initialize]): Include this
+	method with the GNU runtime as well.
+	* objc/execute/static-2.m: Likewise.
+	* objc/execute/trivial.m: Use TestsuiteObject instead of Object.
+	* objc/execute/va_method.m: Do not include objc/objc-api.h.
+	([MathClass +initialize]): Include this method with the GNU
+	runtime as well.
+	* objc.dg/attributes/categ-attribute-1.m: Use TestsuiteObject
+	instead of Object.
+	* obj-c++.dg/attributes/categ-attribute-1.mm: Likewise.	
+	* objc.dg/attributes/categ-attributes-2.m: Likewise.
+	* obj-c++.dg/attributes/categ-attributes-2.mm: Likewise.
+	* objc.dg/attributes/method-attribute-1.m: Likewise.
+	* obj-c++.dg/attributes/method-attribute-1.mm: Likewise.	
+	* objc.dg/attributes/method-attribute-2.m: Likewise.
+	* obj-c++.dg/attributes/method-attribute-2.mm: Likewise.	
+	* objc.dg/attributes/method-attribute-3.m: Likewise.
+	* obj-c++.dg/attributes/method-attribute-3.mm: Likewise.	
+	* obj-c++.dg/basic.mm: Use TestsuiteObject instead of Object.
+	* objc.dg/bitfield-1.m: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/bitfield-1.mm: Likewise.
+	* obj-c++.dg/bitfield-2.mm: Likewise
+	* objc.dg/bitfield-3.m: Likewise.
+	* obj-c++.dg/bitfield-4.mm: Likewise.
+	* objc.dg/bitfield-5.m: Likewise
+	* objc.dg/call-super-1.m: Likewise.
+	* objc.dg/call-super-2.m: Use TestsuiteObject instead of Object.
+	Use objc_getClass() instead of objc_get_class(), but for the GNU
+	runtime redefine objc_getClass as objc_get_class.  Include
+	../objc-obj-c++-shared/runtime.h.
+	* objc.dg/call-super-3.m: Use TestsuiteObject instead of Object.
+	* objc.dg/category-1.m: Use TestsuiteObject instead of Object.
+	Use the Modern Objective-C runtime API.	
+	* objc.dg/class-protocol-1.m: Include
+	../objc-obj-c++-shared/runtime.h instead of objc/objc-api.h.
+	* obj-c++.dg/class-protocol-1.mm: Likewise.	
+	* objc.dg/comp-types-8.m: Use TestsuiteObject instead of Object.
+	* objc.dg/comp-types-10.m: Likewise.
+	* objc.dg/comp-types-11.m: Likewise.
+	* objc.dg/comp-types-12.m: Likewise.
+	* obj-c++.dg/comp-types-9.mm: Likewise.
+	* obj-c++.dg/comp-types-11.mm: Likewise.
+	* obj-c++.dg/comp-types-12.mm: Likewise.
+	* obj-c++.dg/comp-types-13.mm: Likewise.
+	* obj-c++.dg/cxx-ivars-1.mm: Likewise.
+	* obj-c++.dg/cxx-ivars-2.mm: Likewise.
+	* obj-c++.dg/cxx-scope-1.mm: Likewise.
+	* obj-c++.dg/cxx-scope-2.mm: Likewise.
+	* objc.dg/defs.m: Use TestsuiteObject instead of Object.
+	* objc.dg/desig-init-1.m: Likewise.
+	* obj-c++.dg/defs.mm: Likewise.
+	* objc.dg/exceptions-2.m: Likewise.
+	* obj-c++.dg/except-1.mm: Likewise.
+	* obj-c++.dg/exceptions-2.mm: Likewise.
+	* objc.dg/encode-2.m: Use TestsuiteObject instead of Object.
+	Use the Modern Objective-C runtime API.
+	* objc.dg/encode-3.m: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API.  Do not include
+	../objc-obj-c++-shared/objc-test-suite-types.h.  Define ProtoBool.
+	* objc.dg/encode-4.m: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API except when using an older NeXT
+	runtime.
+	* objc.dg/encode-5.m: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API.
+	* objc.dg/encode-7.m: Include objc/runtime.h instead of
+	objc/encoding.h.	
+	* objc.dg/encode-7-next.m: Use TestsuiteObject instead of Object.
+	* objc.dg/encode-7-next-64bit.m: Updated include.
+	* objc.dg/encode-8.m: Include objc/runtime.h instead of
+	objc/encoding.h.
+	* obj-c++.dg/encode-4.mm: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API.
+	* obj-c++.dg/encode-5.mm: Use TestsuiteObject instead of Object.
+	Use the Modern Objective-C runtime API.  Include objc/Protocol.h
+	instead of ../objc-obj-c++-shared/Protocol1.h.
+	* obj-c++.dg/encode-6.mm: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API except when using an older NeXT
+	runtime.
+	* obj-c++.dg/encode-7.mm:  Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API.	
+	* objc.dg/fix-and-continue-1.m: Use TestsuiteObject instead of
+	Object.
+	* obj-c++.dg/fix-and-continue-2.mm: Likewise.
+	* objc.dg/fix-and-continue-2.m: Likewise.
+	* objc.dg/foreach-1.m: Likewise.
+	* objc.dg/foreach-2.m: Likewise.
+	* objc.dg/foreach-3.m: Likewise.
+	* objc.dg/foreach-4.m: Likewise.
+	* objc.dg/foreach-5.m: Likewise.
+	* objc.dg/foreach-6.m: Likewise.
+	* objc.dg/foreach-7.m: Likewise.
+	* objc.dg/func-ptr-1.m:  Use TestsuiteObject instead of
+	Object.
+	* objc.dg/func-ptr-2.m: Likewise.
+	* objc.dg/fsf-package-0.m: Use TestsuiteObject instead of Object.
+	Do not include objc/objc-api.h.
+	* obj-c++.dg/fsf-package-0.mm: Likewise.
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c (switchfiles):
+	Include objc/runtime.h instead of objc/encoding.h.	
+	* objc.dg/gnu-runtime-1.m: Updated to use TestsuiteObject instead
+	of Object.
+	* obj-c++.dg/gnu-runtime-1.mm: Likewise.
+	* objc.dg/gnu-runtime-3.m: Likewise.
+	* obj-c++.dg/gnu-runtime-3.mm: Likewise.
+	* objc.dg/headers.m: Include objc/runtime.h instead of
+	objc/encoding.h for the GNU runtime.  Include objc/objc-api.h only
+	for the NeXT runtime.
+	* objc.dg/isa-field-1.m: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/isa-field-1.mm: Likewise.
+	* obj-c++.dg/ivar-list-semi.mm: Likewise.
+	* objc.dg/layout-1.m: Likewise.
+	* objc.dg/layout-2.m: Likewise.
+	* objc.dg/local-decl-2.m: Likewise.
+	* objc.dg/lookup-1.m: Use TestsuiteObject instead of
+	Object.  ([Container +elementForView:]): Use
+	class_conformsToProtocol().
+	* obj-c++.dg/lookup-2.mm: Likewise.
+	* obj-c++.dg/layout-1.mm: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/local-decl-1.mm: Likewise.
+	* objc.dg/method-3.m: Likewise.
+	* objc.dg/method-4.m: Likewise.
+	* objc.dg/method-6.m: Include objc/Protocol.h instead of
+	../objc-obj-c++-shared/Protocol1.h.
+	* objc.dg/method-7.m: Use TestsuiteObject instead of Object.
+	* objc.dg/method-9.m: Likewise.
+	* objc.dg/method-10.m: Likewise.
+	* objc.dg/method-13.m ([Root +initialize]): Include this method
+	also for the GNU runtime.  (main): Use objc_getClass() also for
+	the GNU runtime.
+	* objc.dg/method-15.m: Use TestsuiteObject instead of Object.
+	* objc.dg/method-17.m: Likewise.
+	* objc.dg/method-19.m: Likewise.
+	* objc.dg/method-20b.m: Likewise.
+	* obj-c++.dg/method-2.mm: Likewise.
+	* obj-c++.dg/method-6.mm: Likewise.
+	* obj-c++.dg/method-10.mm: Likewise.
+	* obj-c++.dg/method-11.mm: Likewise.
+	* obj-c++.dg/method-12.mm: Include objc/Protocol.h instead of
+	../objc-obj-c++-shared/Protocol1.h.
+	* obj-c++.dg/method-13.mm: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/method-15.mm: Likewise.
+	* obj-c++.dg/method-17.mm: Likewise.
+	* obj-c++.dg/method-19.mm: Updated includes.  ([Root
+	+initialize]): Include this method also for the GNU
+	runtime.  (main): Use objc_getClass() also for the GNU runtime.
+	* obj-c++.dg/method-21.mm: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/method-22.mm: Likewise.
+	* obj-c++.dg/method-23.mm: Likewise.
+	* obj-c++.dg/no-extra-load.mm: Likewise.
+	* objc.dg/objc-fast-4.m: Likewise.
+	* objc.dg/objc-gc-4.m: Likewise.
+	* obj-c++.dg/objc-gc-3.mm: Likewise.
+	* objc.dg/pr18255.m: Include objc/runtime.h.  (main): Use
+	protocol_getMethodDescription() instead of [Protocol
+	-descriptionForInstanceMethod].
+	* objc.dg/pr23214.m ([Object(TS_CAT) -class]): Renamed to test.
+	Made it available with all runtimes.  (main): Call -test instead
+	of -class.
+	* objc.dg/pr45878.m ([Object -isEqual:]): Renamed to testIsEqual,
+	and put into a category.
+	* objc.dg/proto-lossage-2.m: Use TestsuiteObject instead of
+	Object.  Include objc/objc.h.
+	* obj-c++.dg/proto-lossage-2.mm: Likewise.
+	* objc.dg/proto-lossage-3.m: Updated includes.  (MyClass):
+	New. (main): Use protocol_getMethodDescription() instead
+	of [Protocol -descriptionForInstanceMethod] and [Protocol
+	-descriptionForClassMethod].
+	* obj-c++.dg/proto-lossage-3.mm: Likewise.
+	* objc.dg/proto-qual-1.m: Updated includes.  Use the Modern
+	Objective-C runtime API.
+	* obj-c++.dg/proto-qual-1.mm: Likewise.	
+	* objc.dg/property/property-1.m: Use TestsuiteObject instead of
+	Object.
+	* obj-c++.dg/property/property-1.mm: Likewise.
+	* obj-c++.dg/qual-types-1.mm: Likewise.
+	* objc.dg/selector-2.m: Include objc/objc.h instead of
+	../objc-obj-c++-shared/Object1.h.
+	* obj-c++.dg/selector-2.mm: Likewise.
+	* obj-c++.dg/selector-5.mm: Likewise.
+	* obj-c++.dg/selector-6.mm: Likewise.
+	* objc.dg/set-not-used-1.m: Use TestsuiteObject instead of
+	Object.  Do not include objc/objc-api.h.
+	* obj-c++.dg/set-not-used-1.mm: Likewise.
+	* objc.dg/sizeof-1.m: Use TestsuiteObject instead of Object.
+	* objc.dg/stret-1.m: Likewise.
+	* objc.dg/stret-2.m: Likewise.
+	* obj-c++.dg/super-class-2.mm: Likewise.
+	* objc.dg/super-class-3.m: Likewise.
+	* objc.dg/super-class-4.m: Likewise.
+	* objc.dg/sync-2.m: Likewise.
+	* obj-c++.dg/sync-2.mm: Likewise.
+	* objc.dg/sync-1.m: Include objc/objc.h instead of
+	../objc-obj-c++-shared/Object1.h.
+	* objc.dg/special/unclaimed-category-1.h (TestClass): Always use
+	'Class' as the type of 'isa'.
+	* objc.dg/special/unclaimed-category-1.m: Use the Modern
+	Objective-C runtime API.  ([TestClass +initialize]): Include this
+	method with the GNU runtime as well.
+	* objc.dg/strings/strings-1.m: Updated includes.
+	* obj-c++.dg/strings/strings-1.mm: Likewise.
+	* obj-c++.dg/strings/const-str-12.mm: Updated to be identical to
+	objc.dg/strings/const-str-12b.m.
+	* obj-c++.dg/template-1.mm: Use TestsuiteObject intead of Object.
+	* obj-c++.dg/template-3.mm: Likewise.
+	* obj-c++.dg/template-4.mm: Likewise.
+	* objc.dg/threedotthree-abi-1.m: Updated includes.  Use Modern
+	Objective-C runtime API.
+	* obj-c++.dg/threedotthree-abi-1.mm: Likewise.
+	* objc.dg/try-catch-1.m: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/try-catch-1.mm: Likewise.
+	* obj-c++.dg/try-catch-2.mm: Likewise.
+	* objc.dg/try-catch-3.m: Likewise.
+	* obj-c++.dg/try-catch-3.mm: Likewise.
+	* objc.dg/try-catch-6.m: Likewise.
+	* objc.dg/try-catch-7.m: Likewise.
+	* obj-c++.dg/try-catch-7.mm: Likewise.
+	* obj-c++.dg/try-catch-8.mm: Likewise.
+	* obj-c++.dg/try-catch-9.mm: Likewise.
+	* objc.dg/try-catch-10.m: Likewise.
+	* obj-c++.dg/try-catch-11.mm: Likewise.
+	* objc.dg/typedef-alias-1.m: Use TestsuiteObject instead of
+	Object.  Include objc/objc.h.
+	* obj-c++.dg/typedef-alias-1.mm: Likewise.
+	* objc.dg/type-size-2.m: Use the Modern Objective-C runtime API.
+	* objc.dg/torture/forward-1.m: Use TestsuiteObject intead of
+	Object.  Use Modern Objective-C runtime API.  Do not use
+	performv::.
+	* objc.dg/torture/trivial.m: Use TestsuiteObject intead of Object.
+	* obj-c++.dg/torture/trivial.mm: Likewise.	
+	* objc.dg/torture/strings/const-str-10.m: Include objc/Object.h
+	instead of ../objc-obj-c++-shared/Object1.h.  Include
+	../objc-obj-c++-shared/runtime.h.
+	* obj-c++.dg/torture/strings/const-str-10.mm: Likewise.
+	* objc.dg/torture/strings/const-str-11.m: Likewise.
+	* obj-c++.dg/torture/strings/const-str-11.mm: Likewise.
+	* objc.dg/torture/strings/const-str-9.m: Likewise.
+	* obj-c++.dg/torture/strings/const-str-9.mm: Likewise.
+	* objc.dg/torture/strings/const-str-7.m: Use TestsuiteObject
+	instead of Object. Only add _FooClassReference if
+	__NEXT_RUNTIME__.
+	* obj-c++.dg/torture/strings/const-str-7.mm: Likewise.
+	* objc.dg/torture/strings/const-str-8.m: Likewise.
+	* obj-c++.dg/torture/strings/const-str-8.mm: Likewise.
+	* obj-c++.dg/torture/strings/string1.mm: Updated includes and
+	additional sources.
+	* objc.dg/torture/tls/thr-init-3.m: Use TestsuiteObject instead of
+	Object.
+	* obj-c++.dg/torture/tls/thr-init-3.mm: Likewise.
+	* objc.dg/va-meth-1.m: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/va-meth-1.mm: Likewise.
+	* objc.dg/zero-link-1.m: Include objc/Object.h instead of
+	../objc-obj-c++-shared/Object1.h.
+	* objc.dg/zero-link-3.m: Likewise.	
+	
+2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* obj-c++.dg/try-catch-2.mm: Fixed unterminated comment.
+	
+2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR objc-++/48275
 	* obj-c++.dg/property/cxx-property-1.mm: New.	
 	* obj-c++.dg/property/cxx-property-2.mm: New.

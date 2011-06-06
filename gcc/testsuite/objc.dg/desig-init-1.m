@@ -5,11 +5,11 @@
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 #include <stdio.h> 
 #include <stdlib.h>
 
-@interface Cls : Object
+@interface Cls : TestsuiteObject
 + (int) meth1;
 + (int) meth2;
 + (void) doTests;
@@ -48,4 +48,4 @@ int main(void) {
 /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 0 } */
 /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 0 } */
 
-#include "../objc-obj-c++-shared/Object1-implementation.h"
+

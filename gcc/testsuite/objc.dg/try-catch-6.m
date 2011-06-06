@@ -1,10 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-fobjc-exceptions" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
 int main (int argc, const char * argv[]) {
-  Object * pool = [Object new];
+  TestsuiteObject * pool = [TestsuiteObject new];
   int a;
 
   if ( 1 ) {
@@ -12,7 +12,7 @@ int main (int argc, const char * argv[]) {
     @try {
       a = 1;
     }
-    @catch (Object *e) {
+    @catch (TestsuiteObject *e) {
       a = 2;
     }
     @finally {

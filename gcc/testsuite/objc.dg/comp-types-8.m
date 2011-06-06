@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* Another gimplifier ICE... */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
-@interface MyView: Object {
+@interface MyView: TestsuiteObject {
   int _frame;
 }
 - (void)_finalize;

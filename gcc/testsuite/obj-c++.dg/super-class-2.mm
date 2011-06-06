@@ -4,11 +4,11 @@
 
 /* { dg-do compile } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
 @class MyWpModule;
 
-@compatibility_alias MyObject Object;
+@compatibility_alias MyObject TestsuiteObject;
 @compatibility_alias FictitiousModule MyWpModule;
 
 @protocol MySelTarget

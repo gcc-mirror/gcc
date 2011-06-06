@@ -13,9 +13,9 @@ int main(void)
 
 #else
 
-#include <objc/objc-api.h>
+#include <objc/runtime.h>
 #include <objc/objc-exception.h>
-#include <objc/Object.h>
+#include "../../../objc-obj-c++-shared/TestsuiteObject.m"
 #include <stdlib.h>
 
 static unsigned int handlerExpected = 0;
@@ -37,14 +37,14 @@ main(int argc, char *argv[])
 
   @try
     {
-      @throw [Object new];
+      @throw [TestsuiteObject new];
     }
   @catch (id exc)
     {
       handlerExpected = 1;
     }
 
-  @throw [Object new];
+  @throw [TestsuiteObject new];
   abort();
   return 0;
 }

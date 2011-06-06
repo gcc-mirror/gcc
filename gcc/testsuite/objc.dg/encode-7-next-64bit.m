@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <objc/Object.h>
-#include "../objc-obj-c++-shared/next-mapping.h"
+#include "../objc-obj-c++-shared/runtime.h"
 
 #define CHECK_IF(E) if (!(E)) abort ()
 

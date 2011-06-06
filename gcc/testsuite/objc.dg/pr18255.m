@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
+#include <objc/runtime.h>
 #include <objc/Protocol.h>
 #include <stdlib.h>
 
@@ -17,7 +18,15 @@
 
 int main (int argc, char **argv)
 {
-  if ([@protocol(b) descriptionForInstanceMethod: @selector(aMethod)] == NULL)
+  struct objc_method_description m;
+  m = protocol_getMethodDescription (@protocol(b), @selector(aMethod), YES, YES);
+
+  if (m.name != NULL)
+    abort ();
+
+  m = protocol_getMethodDescription (@protocol(a), @selector(aMethod), YES, YES);
+
+  if (m.name == NULL)
     abort ();
 
   return 0;

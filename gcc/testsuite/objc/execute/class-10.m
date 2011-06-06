@@ -1,8 +1,6 @@
 /* Contributed by Nicola Pero - Tue Mar  6 23:05:53 CET 2001 */
 
-#include "../../objc-obj-c++-shared/next-mapping.h"
 #include <objc/objc.h>
-#include <objc/objc-api.h>
 
 /* Tests creating a root class and a subclass with an ivar and
    accessor methods and a subclass overriding the superclass'
@@ -15,9 +13,7 @@
 @end
 
 @implementation RootClass
-#ifdef __NEXT_RUNTIME__                                   
 + initialize { return self; }
-#endif
 @end
 
 @interface SubClass : RootClass
@@ -72,10 +68,10 @@ int main (void)
   test_that_class_has_instance_method ("SubSubClass", @selector (state));
   test_that_class_has_instance_method ("SubSubClass", @selector (shift));
   
-  object = class_create_instance (objc_lookup_class ("SubClass"));
+  object = class_createInstance (objc_getClass ("SubClass"), 0);
   test_accessor_method (object, 0, -1, -1, 1, 1);
 
-  sub_object = class_create_instance (objc_lookup_class ("SubSubClass"));
+  sub_object = class_createInstance (objc_getClass ("SubSubClass"), 0);
   test_accessor_method (sub_object, 1, -1, 0, 1, 2);
 
   return 0;

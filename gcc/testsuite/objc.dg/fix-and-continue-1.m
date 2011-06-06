@@ -6,14 +6,14 @@
 /* { dg-options "-mfix-and-continue" } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 #include <stdlib.h>
 
 @class MyTarget, MySet;
 
 int global_value = 0;
 
-@interface MyTargetBuildContext : Object
+@interface MyTargetBuildContext : TestsuiteObject
 {
   MyTarget * _target;
   unsigned _cacheInvalDisableCount;
@@ -31,7 +31,7 @@ int global_value = 0;
 + (MySet *)_headerFileExtensions;
 @end
 
-@interface MyCountedSet: Object {
+@interface MyCountedSet: TestsuiteObject {
 @public
   int cardinality;
 }
@@ -52,7 +52,7 @@ int global_value = 0;
 }  
 @end
 
-@implementation MyTargetBuildContext : Object
+@implementation MyTargetBuildContext : TestsuiteObject
 - (id)initWithTarget:(MyTarget *)target
 {
   self = [super init];
@@ -90,4 +90,3 @@ int main(void) {
   return 0;
 }
 
-#include "../objc-obj-c++-shared/Object1-implementation.h"

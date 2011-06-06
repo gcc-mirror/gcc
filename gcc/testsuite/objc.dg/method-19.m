@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
 @class NotKnown;
 

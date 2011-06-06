@@ -1,7 +1,6 @@
 /* Contributed by Nicola Pero -  Wed Dec  5 17:12:40 GMT 2001 */
 #include <stdlib.h>
-#import "../../objc-obj-c++-shared/Object1.h"
-#include <objc/objc.h>
+#import "../../objc-obj-c++-shared/TestsuiteObject.m"
 
 typedef enum { black, white } color;
 
@@ -11,7 +10,7 @@ typedef struct
   color b:2;
 } color_couple;
 
-@interface TestClass: Object
+@interface TestClass: TestsuiteObject
 {
   color_couple *c;
 }
@@ -50,4 +49,4 @@ int main (void)
 
   return 0;
 }
-#include "../../objc-obj-c++-shared/Object1-implementation.h"
+
