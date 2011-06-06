@@ -1,3 +1,13 @@
+2011-06-06  Richard Henderson  <rth@redhat.com>
+	    Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/42210
+	* config/avr/predicates.md (const1_operand, const_0_to_7_operand):
+	New predicates.
+	* config/avr/avr.md ("insv"): New insn expander.
+	("*movbitqi.1-6.a", "*movbitqi.1-6.b", "*movbitqi.0", "*insv.io",
+	"*insv.not.io", "*insv.reg"): New insns.
+
 2011-06-06  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/49285
