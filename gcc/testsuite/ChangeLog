@@ -1,5 +1,9 @@
 2011-06-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/49288
+	* g++.dg/debug/dwarf2/cdtor-1.C: Add -fno-merge-debug-strings
+	to dg-options, match also DW_AT_linkage_name.
+
 	PR debug/49294
 	* gcc.dg/debug/pr49294.c: New test.
 
