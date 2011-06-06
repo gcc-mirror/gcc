@@ -906,9 +906,11 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      attribute Position, generated for dispatching code (see Make_DT in
      exp_disp,adb). In that case we need the type itself, not is parent,
      in particular if it is a derived type  */
-  if (Is_Private_Type (gnat_temp_type)
-      && Has_Unknown_Discriminants (gnat_temp_type)
-      && Ekind (gnat_temp) == E_Constant
+  if (Ekind (gnat_temp) == E_Constant
+      && Is_Private_Type (gnat_temp_type)
+      && (Has_Unknown_Discriminants (gnat_temp_type)
+	  || (Present (Full_View (gnat_temp_type))
+ 	      && Has_Discriminants (Full_View (gnat_temp_type))))
       && Present (Full_View (gnat_temp)))
     {
       gnat_temp = Full_View (gnat_temp);

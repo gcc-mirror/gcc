@@ -1,5 +1,10 @@
 2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Identifier_to_gnu): Also handle deferred
+	constants whose full view has discriminants specially.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c: Include diagnostic.h.
 	(gnat_write_global_declarations): Output debug information for all
 	global type declarations before finalizing the compilation unit.
