@@ -1,3 +1,8 @@
+2011-06-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* longlong.h (smul_ppmm): The resulting register pair contains the
+	higher order word first.
+
 2011-06-06  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR tree-optimization/49243
