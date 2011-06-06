@@ -1,3 +1,8 @@
+2011-06-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR bootstrap/49270
+	* ipa-inline-analysis.c (read_predicate): Initialize all clauses.
+
 2011-06-06  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR tree-optimization/49243

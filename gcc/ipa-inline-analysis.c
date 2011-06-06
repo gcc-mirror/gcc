@@ -2301,6 +2301,11 @@ read_predicate (struct lto_input_block *ib)
       clause = out.clause[k++] = lto_input_uleb128 (ib);
     }
   while (clause);
+
+  /* Zero-initialize the remaining clauses in OUT.  */
+  while (k <= MAX_CLAUSES)
+    out.clause[k++] = 0;
+
   return out;
 }
 
