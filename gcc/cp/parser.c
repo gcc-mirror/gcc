@@ -23187,7 +23187,7 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
 		  break;
 		}
 	      cp_lexer_consume_token (parser->lexer); /* eat the = */
-	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
+	      if (!cp_parser_objc_selector_p (cp_lexer_peek_token (parser->lexer)->type))
 		{
 		  cp_parser_error (parser, "expected identifier");
 		  syntax_error = true;
@@ -23196,10 +23196,12 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
 	      if (keyword == RID_SETTER)
 		{
 		  if (property_setter_ident != NULL_TREE)
-		    cp_parser_error (parser, "the %<setter%> attribute may only be specified once");
+		    {
+		      cp_parser_error (parser, "the %<setter%> attribute may only be specified once");
+		      cp_lexer_consume_token (parser->lexer);
+		    }
 		  else
-		    property_setter_ident = cp_lexer_peek_token (parser->lexer)->u.value;
-		  cp_lexer_consume_token (parser->lexer);
+		    property_setter_ident = cp_parser_objc_selector (parser);
 		  if (cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
 		    cp_parser_error (parser, "setter name must terminate with %<:%>");
 		  else
@@ -23208,10 +23210,12 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
 	      else
 		{
 		  if (property_getter_ident != NULL_TREE)
-		    cp_parser_error (parser, "the %<getter%> attribute may only be specified once");
+		    {
+		      cp_parser_error (parser, "the %<getter%> attribute may only be specified once");
+		      cp_lexer_consume_token (parser->lexer);
+		    }
 		  else
-		    property_getter_ident = cp_lexer_peek_token (parser->lexer)->u.value;
-		  cp_lexer_consume_token (parser->lexer);
+		    property_getter_ident = cp_parser_objc_selector (parser);
 		}
 	      break;
 	    default:
