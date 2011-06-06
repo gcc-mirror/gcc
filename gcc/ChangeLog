@@ -1,3 +1,9 @@
+2011-06-06  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR tree-optimization/49243
+	* calls.c (setjmp_call_p): Also check if fndecl has the
+	returns_twice attribute.
+
 2011-06-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48702

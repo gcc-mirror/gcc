@@ -1,3 +1,8 @@
+2011-06-06  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR tree-optimization/49243
+	* gcc.dg/pr49243.c: New.
+
 2011-06-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48702
