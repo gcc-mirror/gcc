@@ -6190,7 +6190,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   /* Add this declaration to the statement-tree.  This needs to happen
      after the call to check_initializer so that the DECL_EXPR for a
      reference temp is added before the DECL_EXPR for the reference itself.  */
-  if (at_function_scope_p ())
+  if (DECL_FUNCTION_SCOPE_P (decl))
     add_decl_expr (decl);
 
   /* Let the middle end know about variables and functions -- but not
