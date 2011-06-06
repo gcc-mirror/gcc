@@ -1,3 +1,8 @@
+2011-06-06  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/49268
+	* gfortran.dg/PR49268.f90: New test.
+
 2011-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49264
