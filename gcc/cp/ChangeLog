@@ -1,3 +1,9 @@
+2011-06-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48780
+	* typeck.c (perform_integral_promotions): Don't promote scoped enums.
+	* call.c (convert_arg_to_ellipsis): Promote them here in old ABI.
+
 2011-06-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49298

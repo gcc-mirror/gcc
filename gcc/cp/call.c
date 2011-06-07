@@ -5724,7 +5724,15 @@ convert_arg_to_ellipsis (tree arg)
   else if (NULLPTR_TYPE_P (arg_type))
     arg = null_pointer_node;
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (arg_type))
-    arg = perform_integral_promotions (arg);
+    {
+      if (SCOPED_ENUM_P (arg_type) && !abi_version_at_least (6))
+	{
+	  warning (OPT_Wabi, "scoped enum %qT will not promote to an "
+		   "integral type in a future version of GCC", arg_type);
+	  arg = cp_convert (ENUM_UNDERLYING_TYPE (arg_type), arg);
+	}
+      arg = perform_integral_promotions (arg);
+    }
 
   arg = require_complete_type (arg);
   arg_type = TREE_TYPE (arg);

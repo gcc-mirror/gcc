@@ -1,3 +1,7 @@
+2011-06-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/enum19.C: New.
+
 2011-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/49299

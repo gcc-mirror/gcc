@@ -1946,6 +1946,9 @@ perform_integral_promotions (tree expr)
   if (!type || TREE_CODE (type) != ENUMERAL_TYPE)
     type = TREE_TYPE (expr);
   gcc_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type));
+  /* Scoped enums don't promote.  */
+  if (SCOPED_ENUM_P (type))
+    return expr;
   promoted_type = type_promotes_to (type);
   if (type != promoted_type)
     expr = cp_convert (promoted_type, expr);
