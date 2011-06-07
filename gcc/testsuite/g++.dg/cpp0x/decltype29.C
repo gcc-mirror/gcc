@@ -10,7 +10,7 @@ ft() {}
 
 template<class F, int N>
 decltype (ft<F> (F()))
-ft() {}
+ft() {}				// { dg-error "depth" }
 
 int main() {
     ft<struct a*, 0>();		// { dg-error "no match" }

@@ -54,16 +54,16 @@ void test01(void) {
   A_pointer aptr( &a );
 
   // Can't implicitly cast from A* to B*
-  B_pointer bptr1(aptr); // { dg-error "instantiated from here" 31 }
-  B_pointer bptr2(&a); // { dg-error "instantiated from here" 32 }
+  B_pointer bptr1(aptr); // { dg-error "required from here" 31 }
+  B_pointer bptr2(&a); // { dg-error "required from here" 32 }
 
   // but explicit cast/conversion is OK.
   B_pointer bptr3(__static_pointer_cast<B_pointer>(aptr)); // ok
   B_pointer bptr4(__static_pointer_cast<B_pointer>(&a)); // ok
 
   // Can't implicitly cast from A* to B*
-  bptr1 = aptr; // { dg-error "instantiated from here" 39 }
-  bptr1 = &a; // { dg-error "instantiated from here" 40 }
+  bptr1 = aptr; // { dg-error "required from here" 39 }
+  bptr1 = &a; // { dg-error "required from here" 40 }
 
   // but explicit cast/conversion is OK.
   bptr1 = __static_pointer_cast<B_pointer>(aptr); // ok
@@ -71,21 +71,21 @@ void test01(void) {
 
   // Similarly, can't shed constness via implicit cast
   const_A_pointer captr(&a);
-  A_pointer aptr2(captr); // { dg-error "instantiated from here" 48 }
+  A_pointer aptr2(captr); // { dg-error "required from here" 48 }
 
   // but explicit cast/conversion is OK.
   A_pointer aptr3(__const_pointer_cast<A_pointer>(captr)); // ok
 
   // Similarly, can't shed constness via implicit cast
-  aptr2 = captr; // { dg-error "instantiated from here" 54 }
+  aptr2 = captr; // { dg-error "required from here" 54 }
 
   // but explicit cast/conversion is OK.
   aptr3 = __const_pointer_cast<A_pointer>(captr); // ok
 
   // Combine explicit const cast with implicit downcast.
   const_B_pointer cbptr(&b);
-  A_pointer aptr4(cbptr); // { dg-error "instantiated from here" 61 }
-  aptr4 = cbptr; // { dg-error "instantiated from here" 62 }
+  A_pointer aptr4(cbptr); // { dg-error "required from here" 61 }
+  aptr4 = cbptr; // { dg-error "required from here" 62 }
 
   A_pointer aptr5(__const_pointer_cast<B_pointer>(cbptr)); // ok
   aptr5 = __const_pointer_cast<B_pointer>(cbptr);  // ok

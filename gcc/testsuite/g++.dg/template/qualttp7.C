@@ -9,4 +9,4 @@ template <class T> struct D {
 	C<T::template B> c; // { dg-error "no class template" }
 };
 
-D<int> d; // { dg-message "instantiated" }
+D<int> d; // { dg-message "required" }

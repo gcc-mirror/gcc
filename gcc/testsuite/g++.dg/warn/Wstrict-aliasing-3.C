@@ -9,6 +9,6 @@ T *foo(void)
   return (T *)&x; /* { dg-warning "strict-aliasing" } */
 }
 
-template int *foo<int>(void); /* { dg-message "instantiated from here" } */
-template char *foo<char>(void); /* { dg-bogus "instantiated from here" } */
+template int *foo<int>(void); /* { dg-message "required from here" } */
+template char *foo<char>(void); /* { dg-bogus "required from here" } */
 

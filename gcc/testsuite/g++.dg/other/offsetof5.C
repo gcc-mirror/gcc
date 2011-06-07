@@ -19,4 +19,4 @@ struct S
   static const int j = offsetof (S, i);	// { dg-warning "invalid access|offsetof" }
 };
 
-int k = S<int>::j;			// { dg-message "instantiated from here" }
+int k = S<int>::j;			// { dg-message "required from here" }

@@ -30,5 +30,5 @@ template<class T> template <class U> void A<T>::B2<U>::f()
 int main()
 {
   A<int>::B2<int> b1;
-  b1.f();	// { dg-message "instantiated" }
+  b1.f();	// { dg-message "required" }
 }

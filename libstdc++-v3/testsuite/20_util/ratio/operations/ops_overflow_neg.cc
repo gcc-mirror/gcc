@@ -36,9 +36,9 @@ test02()
   std::ratio_multiply<std::ratio<INTMAX_MAX>, std::ratio<INTMAX_MAX>>::type r2;
 }
 
-// { dg-error "instantiated from here" "" { target *-*-* } 29 }
-// { dg-error "instantiated from here" "" { target *-*-* } 35 }
-// { dg-error "instantiated from here" "" { target *-*-* } 36 }
+// { dg-error "required from here" "" { target *-*-* } 29 }
+// { dg-error "required from here" "" { target *-*-* } 35 }
+// { dg-error "required from here" "" { target *-*-* } 36 }
 // { dg-error "overflow in addition" "" { target *-*-* } 432 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 104 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 100 }

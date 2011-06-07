@@ -32,4 +32,4 @@ void test01()
 }
 
 // { dg-error "rep cannot be a duration" "" { target *-*-* } 226 }
-// { dg-error "instantiated from here" "" { target *-*-* } 31 }
+// { dg-error "required from here" "" { target *-*-* } 31 }

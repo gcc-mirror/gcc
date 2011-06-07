@@ -14,4 +14,4 @@ template<typename> struct B
   template<typename T> B(T, Y);
 };
 
-B<int> b(0,0); // { dg-message "instantiated from here" }
+B<int> b(0,0); // { dg-message "required from here" }

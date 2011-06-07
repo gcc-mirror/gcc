@@ -9,5 +9,5 @@ public:
 };
 
 int main() {
-  GCD< 1, 0 >::val; // { dg-message "instantiated" }
+  GCD< 1, 0 >::val; // { dg-message "required" }
 }

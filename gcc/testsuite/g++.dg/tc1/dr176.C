@@ -15,7 +15,7 @@ namespace N1 {
     typename Derived::Base* p3;   // { dg-bogus "" "injected class name in derived classes" }
   };
 
-  template struct Derived<void>;  // { dg-bogus "instantiated from here" "everything should be looked up at parsing time (after DR224)" }
+  template struct Derived<void>;  // { dg-bogus "required from here" "everything should be looked up at parsing time (after DR224)" }
 }
 
 

@@ -22,6 +22,6 @@ int f (int i)
   switch (i) {
     case 1 ... 10: return i + 1;       // { dg-error "first entry" }
     case 3 ... 5 : return i + 3;       // { dg-error "duplicate" }
-    default: return f2 (i);            // { dg-message "instantiated" }
+    default: return f2 (i);            // { dg-message "required" }
   }
 }

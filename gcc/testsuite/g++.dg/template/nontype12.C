@@ -9,7 +9,7 @@ template<typename T> struct A
 };
 
 A<char>   a1;
-A<double> a2;                                   // { dg-message "instantiated" }
+A<double> a2;                                   // { dg-message "required" }
 
 template<typename T> struct B
 {
@@ -27,9 +27,9 @@ template<typename T> struct C
   template<T> int foo();                        // { dg-error "double" }
 };
 
-template<typename T> int baz(T) { C<T> c; }     // { dg-message "instantiated" }
+template<typename T> int baz(T) { C<T> c; }     // { dg-message "required" }
 
 void foobar()
 {
-  baz(1.2);                                     // { dg-message "instantiated" }
+  baz(1.2);                                     // { dg-message "required" }
 }

@@ -22,4 +22,4 @@ template <typename T> struct C
   // { dg-message "candidate" "candidate note" { target *-*-* } 21 }
 };
 
-C<B> c;				// { dg-message "instantiated" }
+C<B> c;				// { dg-message "required" }

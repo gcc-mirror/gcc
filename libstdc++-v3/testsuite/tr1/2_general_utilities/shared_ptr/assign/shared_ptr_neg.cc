@@ -48,4 +48,4 @@ main()
 }
 // { dg-error "In member function" "" { target *-*-* } 0 }
 // { dg-error "cannot convert" "" { target *-*-* } 0 }
-// { dg-error "instantiated from" "" { target *-*-* } 0 }
+// { dg-error "required from" "" { target *-*-* } 0 }

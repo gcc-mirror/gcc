@@ -8,4 +8,4 @@ template<typename T> struct A
   B<C> b;
 };
 
-A<void> a;			// { dg-message "instantiated" }
+A<void> a;			// { dg-message "required" }

@@ -17,7 +17,7 @@ template <class T>  void Foo(T i)
  
 void Bar ()
 { 
-  Foo (1);  // { dg-message "instantiated" }
+  Foo (1);  // { dg-message "required" }
 }
 
 struct M {};

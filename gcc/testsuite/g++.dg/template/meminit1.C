@@ -5,4 +5,4 @@ struct S
   S() : S() {} // { dg-error "base" }
 };
 
-S<int> s; // { dg-message "instantiated" }
+S<int> s; // { dg-message "required" }

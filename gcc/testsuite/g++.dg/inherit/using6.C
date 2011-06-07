@@ -12,4 +12,4 @@ template <typename T> struct TPL : A
 };
 
 TPL<int> i;
-TPL<float> j; // { dg-message "instantiated" }
+TPL<float> j; // { dg-message "required" }

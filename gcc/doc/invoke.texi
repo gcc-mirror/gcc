@@ -2069,7 +2069,8 @@ Set the maximum instantiation depth for template classes to @var{n}.
 A limit on the template instantiation depth is needed to detect
 endless recursions during template class instantiation.  ANSI/ISO C++
 conforming programs must not rely on a maximum depth greater than 17
-(changed to 1024 in C++0x).
+(changed to 1024 in C++0x).  The default value is 900, as the compiler
+can run out of stack space before hitting 1024 in some situations.
 
 @item -fno-threadsafe-statics
 @opindex fno-threadsafe-statics

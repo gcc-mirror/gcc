@@ -30,4 +30,4 @@ struct D4: Base<T>, Base<T*> {
   typename D4::Base* p1;	// { dg-error "" }
   typename D4::template Base<double>* p2;
 };
-template struct D4<void>;	// { dg-message "instantiated" }
+template struct D4<void>;	// { dg-message "required" }

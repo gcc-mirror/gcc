@@ -43,8 +43,8 @@ f4 ()
 void
 bar ()
 {
-  f1<0> ();			// { dg-message "instantiated from here" }
-  f2<1> ();			// { dg-message "instantiated from here" }
-  f3<int> ();			// { dg-message "instantiated from here" }
-  f4<int> ();			// { dg-message "instantiated from here" }
+  f1<0> ();			// { dg-message "required from here" }
+  f2<1> ();			// { dg-message "required from here" }
+  f3<int> ();			// { dg-message "required from here" }
+  f4<int> ();			// { dg-message "required from here" }
 }

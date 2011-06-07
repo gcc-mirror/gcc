@@ -49,4 +49,4 @@ template<int I> void f2()
   A::template B<I>::template b2<double>(0);
 }
 
-template void f2<0>(); // { dg-message "instantiated" }
+template void f2<0>(); // { dg-message "required" }

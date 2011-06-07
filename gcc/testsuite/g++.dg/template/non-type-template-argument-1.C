@@ -9,4 +9,4 @@ template <typename T> struct D
    C<T::X> c;                   // { dg-error "parsed as a non-type|if a type is meant" }
 };
 
-D<B> d;                         // { dg-message "instantiated from here" }
+D<B> d;                         // { dg-message "required from here" }

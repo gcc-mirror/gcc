@@ -18,5 +18,5 @@ foo (T t)
 void
 bar ()
 {
-  foo (B ());	// { dg-bogus "instantiated from here" "" { xfail *-*-* } }
+  foo (B ());	// { dg-bogus "required from here" "" { xfail *-*-* } }
 }

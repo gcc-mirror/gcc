@@ -1,5 +1,5 @@
 // The call to f is not potentially evaluated (3.2), so f<int> is not used,
-// so it should not be instantiated.
+// so it should not be required.
 
 template <class T>
 T f (T)

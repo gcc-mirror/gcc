@@ -25,6 +25,6 @@ struct Bar : public Foo<T>, Baz {
 
 void foo (Bar<int> &bar)
 {
-  bar.foo(); // { dg-message "instantiated" }
+  bar.foo(); // { dg-message "required" }
 }
 

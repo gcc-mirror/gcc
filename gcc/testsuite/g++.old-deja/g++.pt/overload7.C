@@ -17,5 +17,5 @@ template<class T> void foo(moo_t<T>) {
 
 int main() {
   moo_t<int> x;
-  foo(x); // { dg-bogus "" "" { xfail *-*-* } }  - instantiated from here - 
+  foo(x); // { dg-bogus "" "" { xfail *-*-* } }  - required from here -
 }
