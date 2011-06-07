@@ -1087,17 +1087,6 @@ lto_init (void)
   /* Create the basic integer types.  */
   build_common_tree_nodes (flag_signed_char);
 
-  /* Tell the middle end what type to use for the size of objects.  */
-  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
-    size_type_node = unsigned_type_node;
-  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
-    size_type_node = long_unsigned_type_node;
-  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
-    size_type_node = long_long_unsigned_type_node;
-  else
-    gcc_unreachable ();
-  set_sizetype (size_type_node);
-
   /* The global tree for the main identifier is filled in by
      language-specific front-end initialization that is not run in the
      LTO back-end.  It appears that all languages that perform such

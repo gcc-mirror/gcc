@@ -9142,6 +9142,7 @@ build_common_tree_nodes (bool signed_char)
         int128_unsigned_type_node = make_unsigned_type (128);
       }
 #endif
+
   /* Define a boolean type.  This type only represents boolean values but
      may be larger than char depending on the value of BOOL_TYPE_SIZE.
      Front ends which want to override this size (i.e. Java) can redefine
@@ -9150,6 +9151,17 @@ build_common_tree_nodes (bool signed_char)
   TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
   TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
   TYPE_PRECISION (boolean_type_node) = 1;
+
+  /* Define what type to use for size_t.  */
+  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+    size_type_node = unsigned_type_node;
+  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+    size_type_node = long_unsigned_type_node;
+  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+    size_type_node = long_long_unsigned_type_node;
+  else
+    gcc_unreachable ();
+  set_sizetype (size_type_node);
 
   /* Fill in the rest of the sized types.  Reuse existing type nodes
      when possible.  */

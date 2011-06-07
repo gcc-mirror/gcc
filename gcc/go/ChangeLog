@@ -1,3 +1,8 @@
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* go-lang.c (go_langhook_init): Do not set
+	size_type_node or call set_sizetype.
+
 2011-05-27  Ian Lance Taylor  <iant@google.com>
 
 	* go-backend.c: Include "output.h".

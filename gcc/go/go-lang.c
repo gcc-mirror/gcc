@@ -87,15 +87,6 @@ go_langhook_init (void)
 {
   build_common_tree_nodes (false);
 
-  /* The sizetype may be "unsigned long" or "unsigned long long".  */
-  if (TYPE_MODE (long_unsigned_type_node) == ptr_mode)
-    size_type_node = long_unsigned_type_node;
-  else if (TYPE_MODE (long_long_unsigned_type_node) == ptr_mode)
-    size_type_node = long_long_unsigned_type_node;
-  else
-    size_type_node = long_unsigned_type_node;
-  set_sizetype (size_type_node);
-
   build_common_tree_nodes_2 (0);
 
   /* We must create the gogo IR after calling build_common_tree_nodes

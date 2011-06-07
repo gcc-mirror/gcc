@@ -1,3 +1,8 @@
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* f95-lang.c (gfc_init_decl_processing): Do not set
+	size_type_node or call set_sizetype.
+
 2011-06-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49255
