@@ -3232,6 +3232,33 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
 	fprintf (vect_dump, "use not simple.");
       return false;
     }
+
+  op_type = TREE_CODE_LENGTH (code);
+  if (op_type == binary_op)
+    {
+      bool ok;
+
+      op1 = gimple_assign_rhs2 (stmt);
+      if (code == WIDEN_MULT_EXPR)
+        {
+	  /* For WIDEN_MULT_EXPR, if OP0 is a constant, use the type of
+	     OP1.  */
+          if (CONSTANT_CLASS_P (op0))
+            ok = vect_is_simple_use_1 (op1, loop_vinfo, NULL,
+                             &def_stmt, &def, &dt[1], &vectype_in);
+          else
+            ok = vect_is_simple_use (op1, loop_vinfo, NULL, &def_stmt, &def,
+                                     &dt[1]);
+
+          if (!ok)
+            {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+	        fprintf (vect_dump, "use not simple.");
+              return false;
+            }
+        }        
+    }
+
   /* If op0 is an external or constant def use a vector type with
      the same size as the output vector type.  */
   if (!vectype_in)
@@ -3264,18 +3291,6 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
 
   gcc_assert (ncopies >= 1);
 
-  op_type = TREE_CODE_LENGTH (code);
-  if (op_type == binary_op)
-    {
-      op1 = gimple_assign_rhs2 (stmt);
-      if (!vect_is_simple_use (op1, loop_vinfo, NULL, &def_stmt, &def, &dt[1]))
-        {
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "use not simple.");
-          return false;
-        }
-    }
-
   /* Supportable by target?  */
   if (!supportable_widening_operation (code, stmt, vectype_out, vectype_in,
 				       &decl1, &decl2, &code1, &code2,
@@ -3300,6 +3315,14 @@ vectorizable_type_promotion (gimple stmt, gimple_stmt_iterator *gsi,
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform type promotion operation. ncopies = %d.",
                         ncopies);
+
+  if (code == WIDEN_MULT_EXPR)
+    {
+      if (CONSTANT_CLASS_P (op0))
+	op0 = fold_convert (TREE_TYPE (op1), op0);
+      else if (CONSTANT_CLASS_P (op1))
+	op1 = fold_convert (TREE_TYPE (op0), op1);
+    }
 
   /* Handle def.  */
   /* In case of multi-step promotion, we first generate promotion operations

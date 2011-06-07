@@ -1,3 +1,22 @@
+2011-06-07  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vectorizer.h (vect_recog_func_ptr): Make last argument to be
+	a pointer.
+	* tree-vect-patterns.c (vect_recog_widen_sum_pattern,
+	vect_recog_widen_mult_pattern, vect_recog_dot_prod_pattern,
+	vect_recog_pow_pattern): Likewise.
+	(vect_pattern_recog_1): Remove declaration.
+	(widened_name_p): Remove declaration.  Add new argument to specify
+	whether to check that both types are either signed or unsigned.
+	(vect_recog_widen_mult_pattern): Update documentation.  Handle
+	unsigned patterns and multiplication by constants.
+	(vect_pattern_recog_1): Update vect_recog_func references.  Use
+	statement information from the statement returned from pattern
+	detection functions.
+	(vect_pattern_recog): Update vect_recog_func reference.
+	* tree-vect-stmts.c (vectorizable_type_promotion): For widening
+	multiplication by a constant use the type of the other operand.
+
 2011-06-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/49145
