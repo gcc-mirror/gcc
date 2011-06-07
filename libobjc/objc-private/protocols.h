@@ -33,6 +33,6 @@ __objc_protocols_init (void);
    protocols by name, which allows objc_getProtocol(name) to be
    implemented efficiently.  */
 void
-__objc_protocols_add_protocol (const char *name, Protocol *object);
+__objc_protocols_add_protocol (const char *name, struct objc_protocol *object);
 
 #endif /* not __objc_private_protocols_INCLUDE_GNU */

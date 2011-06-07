@@ -31,9 +31,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "tconfig.h"
 #include <assert.h>
+#include <ctype.h> /* For isdigit.  */
 #include <string.h>
 #include <stdlib.h>
-#include "objc/encoding.h"
+#include "objc/runtime.h"
+#include "objc-private/module-abi-8.h"
 
 #include <gc.h>
 #include <limits.h>

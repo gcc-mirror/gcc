@@ -469,28 +469,8 @@ objc_msg_lookup_super (struct objc_super *super, SEL sel)
     return (IMP)nil_method;
 }
 
-/* Temporarily defined here until objc_msg_sendv() goes away.  */
-char *method_get_first_argument (struct objc_method *,
-				 arglist_t argframe, 
-				 const char **type);
-char *method_get_next_argument (arglist_t argframe, 
-				const char **type);
-int method_get_sizeof_arguments (struct objc_method *);
-
 struct objc_method *
 class_get_instance_method (Class class, SEL op);
-
-retval_t
-objc_msg_sendv (id object, SEL op, arglist_t arg_frame)
-{
-  struct objc_method *m = class_get_instance_method (object->class_pointer, op);
-  const char *type;
-  *((id *) method_get_first_argument (m, arg_frame, &type)) = object;
-  *((SEL *) method_get_next_argument (arg_frame, &type)) = op;
-  return __builtin_apply ((apply_t) m->method_imp, 
-			  arg_frame,
-			  method_get_sizeof_arguments (m));
-}
 
 void
 __objc_init_dispatch_tables ()
@@ -671,7 +651,7 @@ class_get_instance_method (Class class, SEL op)
 }
 
 struct objc_method *
-class_get_class_method (MetaClass class, SEL op)
+class_get_class_method (Class class, SEL op)
 {
   return search_for_method_in_hierarchy (class, op);
 }
@@ -882,6 +862,9 @@ search_for_method_in_list (struct objc_method_list * list, SEL op)
 
   return NULL;
 }
+
+typedef void * retval_t;
+typedef void * arglist_t;
 
 static retval_t __objc_forward (id object, SEL sel, arglist_t args);
 

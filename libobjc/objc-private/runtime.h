@@ -32,10 +32,7 @@ The original list was:
 #include "objc/hash.h"
 #include "objc/objc-list.h"
 
-but can almost certainly be shrinked down.
-
-Note that you can use this file both with objc/objc-api.h and with
-objc/runtime.h.  */
+but can almost certainly be shrinked down.  */
 
 #ifndef __objc_private_runtime_INCLUDE_GNU
 #define __objc_private_runtime_INCLUDE_GNU

@@ -28,23 +28,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /*
   This file declares the "modern" GNU Objective-C Runtime API.
-  Include this file to use it.
 
-  This API is replacing the "traditional" GNU Objective-C Runtime API
-  (declared in objc/objc-api.h) which is the one supported by older
-  versions of the GNU Objective-C Runtime.  The "modern" API is very
-  similar to the API used by the modern Apple/NeXT runtime.
-
-  Because the two APIs have some conflicting definitions (in
-  particular, Method and Category are defined differently) you should
-  include either objc/objc-api.h (to use the traditional GNU
-  Objective-C Runtime API) or objc/runtime.h (to use the modern GNU
-  Objective-C Runtime API), but not both.
+  This API replaced the "traditional" GNU Objective-C Runtime API
+  (which used to be declared in objc/objc-api.h) which is the one
+  supported by older versions of the GNU Objective-C Runtime.  The
+  "modern" API is very similar to the API used by the modern
+  Apple/NeXT runtime.
 */
-#ifdef __objc_api_INCLUDE_GNU
-# error You can not include both objc/objc-api.h and objc/runtime.h.  Include objc/objc-api.h for the traditional GNU Objective-C Runtime API and objc/runtime.h for the modern one.
-#endif
-
 #include "objc.h"
 #include "objc-decls.h"
 
