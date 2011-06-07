@@ -303,10 +303,18 @@ extern const char *pp_base_last_position_in_text (const pretty_printer *);
 extern void pp_base_emit_prefix (pretty_printer *);
 extern void pp_base_append_text (pretty_printer *, const char *, const char *);
 
+/* If we haven't already defined a front-end-specific diagnostics
+   style, use the generic one.  */
+#ifdef GCC_DIAG_STYLE
+#define GCC_PPDIAG_STYLE GCC_DIAG_STYLE
+#else
+#define GCC_PPDIAG_STYLE __gcc_diag__
+#endif
+
 /* This header may be included before diagnostics-core.h, hence the duplicate
    definitions to allow for GCC-specific formats.  */
 #if GCC_VERSION >= 3005
-#define ATTRIBUTE_GCC_PPDIAG(m, n) __attribute__ ((__format__ (__gcc_diag__, m ,n))) ATTRIBUTE_NONNULL(m)
+#define ATTRIBUTE_GCC_PPDIAG(m, n) __attribute__ ((__format__ (GCC_PPDIAG_STYLE, m ,n))) ATTRIBUTE_NONNULL(m)
 #else
 #define ATTRIBUTE_GCC_PPDIAG(m, n) ATTRIBUTE_NONNULL(m)
 #endif
