@@ -111,6 +111,8 @@ static GTY(()) VEC(tree,gc) *canonical_template_parms;
 
 static void push_access_scope (tree);
 static void pop_access_scope (tree);
+static void push_deduction_access_scope (tree);
+static void pop_deduction_access_scope (tree);
 static bool resolve_overloaded_unification (tree, tree, tree, tree,
 					    unification_kind_t, int);
 static int try_one_overload (tree, tree, tree, tree, tree,
@@ -13633,7 +13635,12 @@ deduction_tsubst_fntype (tree fn, tree targs)
 
   /* We don't need to worry about this in C++98.  */
   if (cxx_dialect < cxx0x)
-    return tsubst (fntype, targs, tf_none, NULL_TREE);
+    {
+      push_deduction_access_scope (fn);
+      r = tsubst (fntype, targs, tf_none, NULL_TREE);
+      pop_deduction_access_scope (fn);
+      return r;
+    }
 
   /* If we're seeing a lot of recursion, switch over to a hash table.  The
      constant 40 is fairly arbitrary.  */
@@ -13698,7 +13705,9 @@ deduction_tsubst_fntype (tree fn, tree targs)
       VEC_safe_push (spec_entry, gc, current_deduction_vec, &elt);
     }
 
+  push_deduction_access_scope (fn);
   r = tsubst (fntype, targs, tf_none, NULL_TREE);
+  pop_deduction_access_scope (fn);
 
   /* After doing the substitution, make sure we didn't hit it again.  Note
      that we might have switched to a hash table during tsubst.  */
@@ -14017,9 +14026,7 @@ fn_type_unification (tree fn,
         incomplete = NUM_TMPL_ARGS (explicit_targs) != NUM_TMPL_ARGS (targs);
 
       processing_template_decl += incomplete;
-      push_deduction_access_scope (fn);
       fntype = deduction_tsubst_fntype (fn, converted_args);
-      pop_deduction_access_scope (fn);
       processing_template_decl -= incomplete;
 
       if (fntype == error_mark_node)
@@ -14090,10 +14097,7 @@ fn_type_unification (tree fn,
        substitution results in an invalid type, as described above,
        type deduction fails.  */
     {
-      tree substed;
-      push_deduction_access_scope (fn);
-      substed = deduction_tsubst_fntype (fn, targs);
-      pop_deduction_access_scope (fn);
+      tree substed = deduction_tsubst_fntype (fn, targs);
       if (substed == error_mark_node)
 	return 1;
 
