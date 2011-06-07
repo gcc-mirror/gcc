@@ -1,3 +1,8 @@
+2011-06-07  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* config/arm/arm.c (coproc_secondary_reload_class): Return NO_REGS for
+	constant vectors.
+
 2011-06-07  Richard Guenther  <rguenther@suse.de>
 
 	* stor-layout.c (initialize_sizetypes): Initialize all
