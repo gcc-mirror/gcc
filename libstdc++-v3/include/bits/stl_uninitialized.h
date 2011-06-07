@@ -269,6 +269,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					 __result, __alloc);
     }
 
+  template<typename _InputIterator, typename _ForwardIterator,
+	   typename _Allocator>
+    inline _ForwardIterator
+    __uninitialized_move_if_noexcept_a(_InputIterator __first,
+				       _InputIterator __last,
+				       _ForwardIterator __result,
+				       _Allocator& __alloc)
+    {
+      return std::__uninitialized_copy_a
+	(_GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(__first),
+	 _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(__last), __result, __alloc);
+    }
+
   template<typename _ForwardIterator, typename _Tp, typename _Allocator>
     void
     __uninitialized_fill_a(_ForwardIterator __first, _ForwardIterator __last,

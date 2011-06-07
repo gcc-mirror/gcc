@@ -1,5 +1,23 @@
 2011-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/move.h (struct __move_if_noexcept_cond): Add.
+	(move_if_noexcept): Use the latter.
+	* include/bits/stl_iterator.h (__make_move_if_noexcept_iterator,
+	_GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR): Add.
+	* include/bits/stl_uninitialized.h
+	(__uninitialized_move_if_noexcept_a): Add.
+	* include/bits/vector.tcc (vector<>::reserve): Use
+	_GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR.
+	(vector<>::_M_insert_aux, _M_fill_insert, _M_default_append,
+	_M_range_insert): Use __uninitialized_move_if_noexcept_a.
+	* testsuite/23_containers/vector/modifiers/moveable2.cc: New.
+	* testsuite/23_containers/vector/capacity/resize/moveable2.cc:
+	Likewise.
+	* testsuite/23_containers/vector/capacity/reserve/moveable2.cc:
+	Likewise.
+
+2011-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/49293
 	* testsuite/22_locale/time_get/get_weekday/char/38081-1.cc: Tweak
 	for glibc 2.14.

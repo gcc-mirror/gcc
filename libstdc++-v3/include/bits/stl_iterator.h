@@ -1118,14 +1118,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_move_iterator(const _Iterator& __i)
     { return move_iterator<_Iterator>(__i); }
 
+  template<typename _Iterator, typename _ReturnType
+    = typename conditional<__move_if_noexcept_cond
+      <typename iterator_traits<_Iterator>::value_type>::value,
+                _Iterator, move_iterator<_Iterator>>::type>
+    inline _ReturnType
+    __make_move_if_noexcept_iterator(_Iterator __i)
+    { return _ReturnType(__i); }
+
   // @} group iterators
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) std::make_move_iterator(_Iter)
+#define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) \
+  std::__make_move_if_noexcept_iterator(_Iter)
 #else
 #define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) (_Iter)
+#define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) (_Iter)
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif
