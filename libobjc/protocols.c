@@ -55,7 +55,7 @@ __objc_protocols_init (void)
 
 /* Add a protocol to the hashtable.  */
 void
-__objc_protocols_add_protocol (const char *name, Protocol *object)
+__objc_protocols_add_protocol (const char *name, struct objc_protocol *object)
 {
   objc_mutex_lock (__protocols_hashtable_lock);
 
@@ -153,7 +153,7 @@ class_addProtocol (Class class_, Protocol *protocol)
   /* Create the objc_protocol_list.  */
   protocols = malloc (sizeof (struct objc_protocol_list));
   protocols->count = 1;
-  protocols->list[0] = protocol;
+  protocols->list[0] = (struct objc_protocol *)protocol;
 
   /* Attach it to the list of class protocols.  */
   protocols->next = class_->protocols;
@@ -189,8 +189,8 @@ class_conformsToProtocol (Class class_, Protocol *protocol)
       size_t i;
       for (i = 0; i < proto_list->count; i++)
 	{
-	  if (proto_list->list[i] == protocol
-	      || protocol_conformsToProtocol (proto_list->list[i],
+	  if (proto_list->list[i] == (struct objc_protocol *)protocol
+	      || protocol_conformsToProtocol ((Protocol *)proto_list->list[i],
 					      protocol))
 	    {
 	      objc_mutex_unlock (__objc_runtime_mutex);
@@ -246,7 +246,7 @@ class_copyProtocolList (Class class_, unsigned int *numberOfReturnedProtocols)
 	  size_t j;
 	  for (j = 0; j < proto_list->count; j++)
 	    {
-	      returnValue[i] = proto_list->list[j];
+	      returnValue[i] = (Protocol *)proto_list->list[j];
 	      i++;
 	    }
 	  proto_list = proto_list->next;
@@ -294,7 +294,7 @@ protocol_conformsToProtocol (Protocol *protocol, Protocol *anotherProtocol)
       
       for (i = 0; i < proto_list->count; i++)
 	{
-	  if (protocol_conformsToProtocol (proto_list->list[i], anotherProtocol))
+	  if (protocol_conformsToProtocol ((Protocol *)proto_list->list[i], anotherProtocol))
 	    return YES;
 	}
       proto_list = proto_list->next;
@@ -541,7 +541,7 @@ Protocol **protocol_copyProtocolList (Protocol *protocol, unsigned int *numberOf
 	  size_t j;
 	  for (j = 0; j < proto_list->count; j++)
 	    {
-	      returnValue[i] = proto_list->list[j];
+	      returnValue[i] = (Protocol *)proto_list->list[j];
 	      i++;
 	    }
 	  proto_list = proto_list->next;

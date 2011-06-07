@@ -92,6 +92,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/module-abi-8.h"  /* For CLS_ISCLASS and similar.  */
 #include "objc-private/runtime.h"       /* the kitchen sink */
 #include "objc-private/sarray.h"        /* For sarray_put_at_safe.  */
+#include "objc-private/selector.h"      /* For sarray_put_at_safe.  */
 #include <string.h>                     /* For memset */
 
 /* We use a table which maps a class name to the corresponding class
@@ -801,7 +802,7 @@ objc_get_class (const char *name)
   return 0;
 }
 
-MetaClass
+Class
 objc_get_meta_class (const char *name)
 {
   return objc_get_class (name)->class_pointer;

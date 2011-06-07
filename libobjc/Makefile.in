@@ -117,31 +117,10 @@ OBJC_H = \
   NXConstStr.h \
   Object.h \
   Protocol.h \
-  encoding.h \
   message.h \
-  objc-api.h \
   objc-decls.h \
   runtime.h \
   thr.h
-
-# User-visible header files containing deprecated APIs, from the
-# objc/deprecated directory
-OBJC_DEPRECATED_H = \
-  MetaClass.h \
-  Object.h \
-  Protocol.h \
-  objc_msg_sendv.h \
-  struct_objc_category.h \
-  struct_objc_class.h \
-  struct_objc_ivar.h \
-  struct_objc_ivar_list.h \
-  struct_objc_method.h \
-  struct_objc_method_list.h \
-  struct_objc_module.h \
-  struct_objc_protocol.h \
-  struct_objc_protocol_list.h \
-  struct_objc_selector.h \
-  struct_objc_symtab.h
 
 # Objective-C source files to compile
 OBJC_SOURCE_FILES = \
@@ -344,11 +323,6 @@ install-headers:
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/objc/$${file}; \
 	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/$(includedirname)/objc; \
-	done
-	$(multi_basedir)/mkinstalldirs $(DESTDIR)$(libsubdir)/$(includedirname)/objc/deprecated
-	for file in $(OBJC_DEPRECATED_H); do \
-	  realfile=$(srcdir)/objc/deprecated/$${file}; \
-	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/$(includedirname)/objc/deprecated; \
 	done
 
 check uninstall install-strip dist installcheck installdirs:

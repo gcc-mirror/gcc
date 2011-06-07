@@ -31,6 +31,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 void __objc_linking (void)
 {
-  [Object name];
+  [Object class];
 }
 

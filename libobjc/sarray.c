@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/sarray.h"
 #include "objc/runtime.h" /* For objc_malloc */
 #include "objc/thr.h"     /* For objc_mutex_lock */
+#include "objc-private/module-abi-8.h"
 #include "objc-private/runtime.h"
 #include <stdio.h>
 #include <string.h> /* For memset */
