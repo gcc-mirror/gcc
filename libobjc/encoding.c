@@ -993,22 +993,6 @@ method_getNumberOfArguments (struct objc_method *method)
     }
 }
 
-int
-method_get_number_of_arguments (struct objc_method *mth)
-{
-  return method_getNumberOfArguments (mth);
-}
-
-/* Return the size of the argument block needed on the stack to invoke
-   the method MTH.  This may be zero, if all arguments are passed in
-   registers.  */
-int
-method_get_sizeof_arguments (struct objc_method *mth)
-{
-  const char *type = objc_skip_typespec (mth->method_types);
-  return atoi (type);
-}
-
 unsigned
 objc_get_type_qualifiers (const char *type)
 {

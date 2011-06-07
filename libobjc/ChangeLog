@@ -1,5 +1,10 @@
 2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* encoding.c (method_get_number_of_arguments): Removed.
+	(method_get_sizeof_arguments): Removed.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* class.c (objc_next_class): Removed.
 	(class_pose_as): Removed.
 	(CLASSOF): Removed.
