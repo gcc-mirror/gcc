@@ -41,9 +41,14 @@ along with GCC; see the file COPYING3.  If not see
 {
   return self;
 }
-- (void) free
+/* We return 'id' to have the same signature as [Object -free] in
+   older runtimes and avoid warnings about conflicting signatures.  */
+- (id) free
 {
-  object_dispose (self);
+  /* Cast 'self' to 'id' because the NeXT runtime in darwin8 (Apple
+     Mac OS X 10.4) declares object_dispose to take an "Object *"
+     argument.  */
+  return object_dispose ((id)self);
 }
 + (Class) class
 {

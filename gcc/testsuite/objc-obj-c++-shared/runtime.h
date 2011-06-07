@@ -93,14 +93,16 @@ struct objc_method_description protocol_getMethodDescription (Protocol *protocol
   struct objc_method_description result;
 
   if (instanceMethod)
-    {
-      tmp = [protocol descriptionForInstanceMethod: selector];
-      result = *tmp;
-    }
+    tmp = [protocol descriptionForInstanceMethod: selector];
+  else
+    tmp = [protocol descriptionForClassMethod: selector];
+
+  if (tmp)
+    result = *tmp;
   else
     {
-      tmp = [protocol descriptionForClassMethod: selector];
-      result = *tmp;      
+      result.name = (SEL)0;
+      result.types = (char *)0;
     }
 
   return result;
