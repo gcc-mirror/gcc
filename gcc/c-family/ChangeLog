@@ -1,3 +1,7 @@
+2011-06-07  Jason Merrill  <jason@redhat.com>
+
+	* c-format.c (gcc_cxxdiag_char_table): Add 'S' format.
+
 2011-06-07  Richard Guenther  <rguenther@suse.de>
 
 	* c-common.c (c_common_nodes_and_builtins): Do not set
