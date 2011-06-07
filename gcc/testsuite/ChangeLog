@@ -1,3 +1,17 @@
+2011-06-07  Ira Rosen  <ira.rosen@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_widen_mult_qi_to_hi):
+	Add NEON as supporting target.
+	(check_effective_target_vect_widen_mult_hi_to_si): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi_pattern): New.
+	(check_effective_target_vect_widen_mult_hi_to_si_pattern): New.
+	* gcc.dg/vect/vect-widen-mult-u8.c: Expect to be vectorized
+	using widening multiplication on targets that support it.
+	* gcc.dg/vect/vect-widen-mult-u16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: New test.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: New test.
+
 2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Updated all testcases in the ObjC/ObjC++ testsuites to use the
