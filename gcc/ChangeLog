@@ -1,3 +1,9 @@
+2011-06-07  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc: Unify V850 architecture options and add support for
+	newer V850 architectures.
+	* config/v850/t-v850e: Delete.
+
 2011-06-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (build_common_tree_nodes): Also initialize size_type_node.

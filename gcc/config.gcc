@@ -2559,46 +2559,32 @@ spu-*-elf*)
 	c_target_objs="${c_target_objs} spu-c.o"
 	cxx_target_objs="${cxx_target_objs} spu-c.o"
 	;;
-v850e1-*-*)
-	target_cpu_default="TARGET_CPU_v850e1"
+
+v850*-*-*)
+	case ${target} in
+	v850e2v3-*-*)
+		target_cpu_default="TARGET_CPU_v850e2v3"
+		;;
+	v850e2-*-*)
+		target_cpu_default="TARGET_CPU_v850e2"
+		;;
+	v850e1-*-* | v850es-*-*)
+		target_cpu_default="TARGET_CPU_v850e1"
+		;;
+	v850e-*-*)
+		target_cpu_default="TARGET_CPU_v850e"
+		;;
+	v850-*-*)
+		target_cpu_default="TARGET_CPU_generic"
+		;;
+	esac
 	tm_file="dbxelf.h elfos.h newlib-stdint.h v850/v850.h"
 	tm_p_file=v850/v850-protos.h
-	tmake_file=v850/t-v850e
-	md_file=v850/v850.md
-	extra_modes=v850/v850-modes.def
-	out_file=v850/v850.c
-	extra_options="${extra_options} v850/v850.opt"
-	if test x$stabs = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
-	use_collect2=no
-	c_target_objs="v850-c.o"
-	cxx_target_objs="v850-c.o"
-	use_gcc_stdint=wrap
-	;;
-v850e-*-*)
-	target_cpu_default="TARGET_CPU_v850e"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h v850/v850.h"
-	tm_p_file=v850/v850-protos.h
-	tmake_file=v850/t-v850e
-	md_file=v850/v850.md
-	extra_modes=v850/v850-modes.def
-	out_file=v850/v850.c
-	extra_options="${extra_options} v850/v850.opt"
-	if test x$stabs = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
-	use_collect2=no
-	c_target_objs="v850-c.o"
-	cxx_target_objs="v850-c.o"
-	use_gcc_stdint=wrap
-	;;
-v850-*-*)
-	target_cpu_default="TARGET_CPU_generic"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file=v850/t-v850
+	md_file=v850/v850.md
+	extra_modes=v850/v850-modes.def
+	out_file=v850/v850.c
+	extra_options="${extra_options} v850/v850.opt"
 	if test x$stabs = xyes
 	then
 		tm_file="${tm_file} dbx.h"
@@ -3493,7 +3479,7 @@ case "${target}" in
 	v850*-*-*)
 		supported_defaults=cpu
 		case ${with_cpu} in
-		"" | v850e | v850e1)
+		"" | v850e | v850e1 | v850e2 | v850es | v850e2v3)
 			# OK
 			;;
 		*)
@@ -3621,13 +3607,14 @@ case ${target} in
 		;;
 
 	v850*-*-*)
-		# FIXME: The v850 is "special" in that it does not support
-		# runtime CPU selection, only --with-cpu.
 		case "x$with_cpu" in
 		x)
 			;;
-		xv850e)
+		xv850e | xv850e1 | xv850e2 | xv850e2v3)
 			target_cpu_default2="TARGET_CPU_$with_cpu"
+			;;
+		xv850es)
+			target_cpu_default2="TARGET_CPU_v850e1"
 			;;
 		esac
 		;;

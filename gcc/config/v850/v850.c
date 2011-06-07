@@ -118,7 +118,16 @@ v850_handle_option (struct gcc_options *opts,
 
     case OPT_mv850e:
     case OPT_mv850e1:
+    case OPT_mv850es:
       opts->x_target_flags &= ~(MASK_CPU ^ MASK_V850E);
+      return true;
+
+    case OPT_mv850e2:
+      opts->x_target_flags &= ~(MASK_CPU ^ MASK_V850E2);
+      return true;
+
+    case OPT_mv850e2v3:
+      opts->x_target_flags &= ~(MASK_CPU ^ MASK_V850E2V3);
       return true;
 
     case OPT_mtda_:
@@ -3130,6 +3139,23 @@ v850_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	       && !CONST_OK_FOR_K (INTVAL (XEXP (XEXP (x, 0), 1)))));
 }
+
+static int
+v850_memory_move_cost (enum machine_mode mode, bool in)
+{
+  switch (GET_MODE_SIZE (mode))
+    {
+    case 0:
+      return in ? 24 : 8;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+      return in ? 6 : 2;
+    default:
+      return (GET_MODE_SIZE (mode) / 2) * (in ? 3 : 1);
+    }
+}
 
 /* V850 specific attributes.  */
 
@@ -3151,6 +3177,10 @@ static const struct attribute_spec v850_attribute_table[] =
 };
 
 /* Initialize the GCC target structure.  */
+
+#undef  TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST v850_memory_move_cost
+
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 
