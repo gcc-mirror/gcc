@@ -5840,6 +5840,23 @@ Equality comparisons of a group of bits (usually a single bit) with zero
 will be written using @code{zero_extract} rather than the equivalent
 @code{and} or @code{sign_extract} operations.
 
+@cindex @code{mult}, canonicalization of
+@item
+@code{(sign_extend:@var{m1} (mult:@var{m2} (sign_extend:@var{m2} @var{x})
+(sign_extend:@var{m2} @var{y})))} is converted to @code{(mult:@var{m1}
+(sign_extend:@var{m1} @var{x}) (sign_extend:@var{m1} @var{y}))}, and likewise
+for @code{zero_extend}.
+
+@item
+@code{(sign_extend:@var{m1} (mult:@var{m2} (ashiftrt:@var{m2}
+@var{x} @var{s}) (sign_extend:@var{m2} @var{y})))} is converted
+to @code{(mult:@var{m1} (sign_extend:@var{m1} (ashiftrt:@var{m2}
+@var{x} @var{s})) (sign_extend:@var{m1} @var{y}))}, and likewise for
+patterns using @code{zero_extend} and @code{lshiftrt}.  If the second
+operand of @code{mult} is also a shift, then that is extended also.
+This transformation is only applied when it can be proven that the
+original operation had sufficient precision to prevent overflow.
+
 @end itemize
 
 Further canonicalization rules are defined in the function
