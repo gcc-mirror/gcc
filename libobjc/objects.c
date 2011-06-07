@@ -67,12 +67,6 @@ class_createInstance (Class class, size_t extraBytes)
 
 /* Traditional GNU Objective-C Runtime API.  */
 id
-class_create_instance (Class class)
-{
-  return class_createInstance (class, 0);
-}
-
-id
 object_copy (id object, size_t extraBytes)
 {
   if ((object != nil) && CLS_ISCLASS (object->class_pointer))
@@ -122,4 +116,3 @@ object_setClass (id object, Class class_)
       return old_class;
     }
 }
-

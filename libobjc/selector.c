@@ -227,7 +227,7 @@ sel_isEqual (SEL s1, SEL s2)
 
 /* Return YES iff t1 and t2 have same method types.  Ignore the
    argframe layout.  */
-BOOL
+static BOOL
 sel_types_match (const char *t1, const char *t2)
 {
   if (! t1 || ! t2)
@@ -250,83 +250,6 @@ sel_types_match (const char *t1, const char *t2)
       t2++;
     }
   return NO;
-}
-
-/* Return selector representing name.  In the Modern API, you'd
-   normally use sel_registerTypedName() for this, which does the same
-   but would register the selector with the runtime if not registered
-   yet (if you only want to check for selectors without registering,
-   use sel_copyTypedSelectorList()).  */
-SEL
-sel_get_typed_uid (const char *name, const char *types)
-{
-  struct objc_list *l;
-  sidx i;
-
-  objc_mutex_lock (__objc_runtime_mutex);
-
-  i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
-  if (i == 0)
-    {
-      objc_mutex_unlock (__objc_runtime_mutex);
-      return 0;
-    }
-
-  for (l = (struct objc_list *) sarray_get_safe (__objc_selector_array, i);
-       l; l = l->tail)
-    {
-      SEL s = (SEL) l->head;
-      if (types == 0 || s->sel_types == 0)
-	{
-	  if (s->sel_types == types)
-	    {
-	      objc_mutex_unlock (__objc_runtime_mutex);
-	      return s;
-	    }
-	}
-      else if (sel_types_match (s->sel_types, types))
-	{
-	  objc_mutex_unlock (__objc_runtime_mutex);
-	  return s;
-	}
-    }
-
-  objc_mutex_unlock (__objc_runtime_mutex);
-  return 0;
-}
-
-/* Return selector representing name; prefer a selector with non-NULL
-   type.  In the Modern API, sel_getTypedSelector() is similar but
-   returns NULL if a typed selector couldn't be found.  */
-SEL
-sel_get_any_typed_uid (const char *name)
-{
-  struct objc_list *l;
-  sidx i;
-  SEL s = NULL;
-
-  objc_mutex_lock (__objc_runtime_mutex);
-
-  i = (sidx) objc_hash_value_for_key (__objc_selector_hash, name);
-  if (i == 0)
-    {
-      objc_mutex_unlock (__objc_runtime_mutex);
-      return 0;
-    }
-
-  for (l = (struct objc_list *) sarray_get_safe (__objc_selector_array, i);
-       l; l = l->tail)
-    {
-      s = (SEL) l->head;
-      if (s->sel_types)
-	{
-	  objc_mutex_unlock (__objc_runtime_mutex);
-	  return s;
-	}
-    }
-
-  objc_mutex_unlock (__objc_runtime_mutex);
-  return s;
 }
 
 /* Return selector representing name.  */
@@ -493,15 +416,6 @@ const char *sel_getName (SEL selector)
   return ret;
 }
 
-/* Traditional GNU Objective-C Runtime API.  */
-const char *sel_get_name (SEL selector)
-{
-  if (selector == NULL)
-    return 0;
-
-  return sel_getName (selector);
-}
-
 BOOL
 sel_is_mapped (SEL selector)
 {
@@ -515,12 +429,6 @@ const char *sel_getTypeEncoding (SEL selector)
     return selector->sel_types;
   else
     return 0;
-}
-
-/* Traditional GNU Objective-C Runtime API.  */
-const char *sel_get_type (SEL selector)
-{
-  return sel_getTypeEncoding (selector);
 }
 
 /* The uninstalled dispatch table.  */
@@ -707,13 +615,6 @@ sel_registerName (const char *name)
   return ret;
 }
 
-/* Traditional GNU Objective-C Runtime API.  */
-SEL
-sel_register_name (const char *name)
-{
-  return sel_registerName (name);
-}
-
 SEL
 sel_registerTypedName (const char *name, const char *type)
 {
@@ -732,22 +633,9 @@ sel_registerTypedName (const char *name, const char *type)
   return ret;
 }
 
-SEL
-sel_register_typed_name (const char *name, const char *type)
-{
-  return sel_registerTypedName (name, type);
-}
-
 /* Return the selector representing name.  */
 SEL
 sel_getUid (const char *name)
 {
   return sel_registerTypedName (name, 0);
-}
-
-/* Traditional GNU Objective-C Runtime API.  */
-SEL
-sel_get_uid (const char *name)
-{
-  return sel_getUid (name);
 }

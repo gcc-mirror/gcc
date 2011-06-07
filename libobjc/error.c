@@ -26,10 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/common.h"
 #include "objc-private/error.h"
 
-/* __USE_FIXED_PROTOTYPES__ used to be required to get prototypes for
-   malloc, free, etc. on some platforms.  It is unclear if we still
-   need it, but it can't hurt.  */
-#define __USE_FIXED_PROTOTYPES__
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>

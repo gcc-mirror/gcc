@@ -277,12 +277,6 @@ struct objc_class {
      (cls)->info >>= (HOST_BITS_PER_LONG/2); \
      __CLS_SETINFO(cls, (((unsigned long)num) << (HOST_BITS_PER_LONG/2))); })
 
-static inline long
-class_get_instance_size(Class _class)
-{
-  return CLS_ISCLASS(_class)?_class->instance_size:0;
-}
-
 /* The compiler generates one of these structures for each category.
    A class may have many categories and contain both instance and
    factory methods.  */
