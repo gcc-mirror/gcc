@@ -1,3 +1,7 @@
+2011-06-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/mla-2.c: New test.
+
 2011-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/49299
