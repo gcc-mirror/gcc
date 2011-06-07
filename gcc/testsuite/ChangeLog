@@ -1,3 +1,7 @@
+2011-06-07  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* gcc.target/arm/neon-reload-class.c: New test.
+
 2011-06-07  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/49130

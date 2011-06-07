@@ -9079,7 +9079,7 @@ coproc_secondary_reload_class (enum machine_mode mode, rtx x, bool wb)
   /* The neon move patterns handle all legitimate vector and struct
      addresses.  */
   if (TARGET_NEON
-      && MEM_P (x)
+      && (MEM_P (x) || GET_CODE (x) == CONST_VECTOR)
       && (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 	  || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
 	  || VALID_NEON_STRUCT_MODE (mode)))
