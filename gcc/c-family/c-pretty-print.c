@@ -1,5 +1,5 @@
 /* Subroutines common to both C and C++ pretty-printers.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -901,7 +901,12 @@ pp_c_string_literal (c_pretty_printer *pp, tree s)
 static void
 pp_c_integer_constant (c_pretty_printer *pp, tree i)
 {
-  tree type = TREE_TYPE (i);
+  /* We are going to compare the type of I to other types using
+     pointer comparison so we need to use its canonical type.  */
+  tree type =
+    TYPE_CANONICAL (TREE_TYPE (i))
+    ? TYPE_CANONICAL (TREE_TYPE (i))
+    : TREE_TYPE (i);
 
   if (TREE_INT_CST_HIGH (i) == 0)
     pp_wide_integer (pp, TREE_INT_CST_LOW (i));

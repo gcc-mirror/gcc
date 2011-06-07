@@ -1,3 +1,9 @@
+2011-06-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/49130
+	* c-pretty-print.c (pp_c_integer_constant): Consider the canonical
+    	type when using pointer comparison to compare types.
+
 2011-06-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* c.opt: Add -Wdelete-non-virtual-dtor.

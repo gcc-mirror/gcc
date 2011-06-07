@@ -1,3 +1,8 @@
+2011-06-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/49130
+	* g++.dg/debug/dwarf2/integer-typedef.C: New test.
+
 2011-06-07  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.target/arm/smlatb-1.c: New file.
