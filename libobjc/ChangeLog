@@ -1,5 +1,11 @@
 2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* sendmsg.c (class_get_instance_method): Removed.
+	(class_get_class_method): Removed.
+	(objc_get_uninstalled_dtable): Removed.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-private/module-abi-8.h (class_get_instance_size): Removed.
 	* objects.c (class_create_instance): Removed.
 	* error.c (__USE_FIXED_PROTOTYPES__): Removed.
