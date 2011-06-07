@@ -1,3 +1,8 @@
+2011-06-07  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (deduction_tsubst_fntype): Use push_deduction_access_scope.
+	(fn_type_unification): Don't call push_deduction_access_scope here.
+
 2011-06-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48780
