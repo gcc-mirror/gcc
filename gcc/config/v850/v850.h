@@ -113,7 +113,7 @@ extern GTY(()) rtx v850_compare_op1;
     builtin_define ("__EP__");			\
 } while(0)
 
-#define MASK_CPU (MASK_V850 | MASK_V850E)
+#define MASK_CPU (MASK_V850 | MASK_V850E | MASK_V850E1 | MASK_V850E2 | MASK_V850E2V3)
 
 /* Target machine storage layout */
 
@@ -156,7 +156,7 @@ extern GTY(()) rtx v850_compare_op1;
 
 /* Allocation boundary (in *bits*) for the code of a function.
    16 is the minimum boundary; 32 would give better performance.  */
-#define FUNCTION_BOUNDARY 16
+#define FUNCTION_BOUNDARY (optimize_size ? 16 : 32)
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT	32
