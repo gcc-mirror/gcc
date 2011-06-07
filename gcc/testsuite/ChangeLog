@@ -1,5 +1,12 @@
 2011-06-07  Andrew Stubbs  <ams@codesourcery.com>
 
+	* gcc.target/arm/smlatb-1.c: New file.
+	* gcc.target/arm/smlatt-1.c: New file.
+	* gcc.target/arm/smlaltb-1.c: New file.
+	* gcc.target/arm/smlaltt-1.c: New file.
+
+2011-06-07  Andrew Stubbs  <ams@codesourcery.com>
+
 	* gcc.target/arm/mla-2.c: New test.
 
 2011-06-07  Jakub Jelinek  <jakub@redhat.com>
