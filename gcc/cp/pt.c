@@ -7490,16 +7490,15 @@ push_tinst_level (tree d)
 
   if (tinst_depth >= max_tinst_depth)
     {
-      /* If the instantiation in question still has unbound template parms,
-	 we don't really care if we can't instantiate it, so just return.
-	 This happens with base instantiation for implicit `typename'.  */
-      if (uses_template_parms (d))
-	return 0;
-
       last_template_error_tick = tinst_level_tick;
-      error ("template instantiation depth exceeds maximum of %d (use "
-	     "-ftemplate-depth= to increase the maximum) instantiating %qD",
-	     max_tinst_depth, d);
+      if (TREE_CODE (d) == TREE_LIST)
+	error ("template instantiation depth exceeds maximum of %d (use "
+	       "-ftemplate-depth= to increase the maximum) substituting %qS",
+	       max_tinst_depth, d);
+      else
+	error ("template instantiation depth exceeds maximum of %d (use "
+	       "-ftemplate-depth= to increase the maximum) instantiating %qD",
+	       max_tinst_depth, d);
 
       print_instantiation_context ();
 
@@ -13594,11 +13593,6 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
   return result;
 }
 
-DEF_VEC_O (spec_entry);
-DEF_VEC_ALLOC_O (spec_entry,gc);
-static GTY(()) VEC(spec_entry,gc) *current_deduction_vec;
-static GTY((param_is (spec_entry))) htab_t current_deduction_htab;
-
 /* In C++0x, it's possible to have a function template whose type depends
    on itself recursively.  This is most obvious with decltype, but can also
    occur with enumeration scope (c++/48969).  So we need to catch infinite
@@ -13609,133 +13603,48 @@ static GTY((param_is (spec_entry))) htab_t current_deduction_htab;
    f<N-1> across all integers, and returns error_mark_node for all the
    substitutions back up to the initial one.
 
-   This is, of course, not reentrant.
-
-   Use of a VEC here is O(n^2) in the depth of function template argument
-   deduction substitution, but using a hash table creates a lot of constant
-   overhead for the typical case of very low depth.  So to make the typical
-   case fast we start out with a VEC and switch to a hash table only if
-   depth gets to be significant; in one metaprogramming testcase, even at
-   depth 80 the overhead of the VEC relative to a hash table was only about
-   0.5% of compile time.  */
+   This is, of course, not reentrant.  */
 
 static tree
 deduction_tsubst_fntype (tree fn, tree targs)
 {
   static bool excessive_deduction_depth;
-
-  unsigned i;
-  spec_entry **slot;
-  spec_entry *p;
-  spec_entry elt;
-  tree r;
-  hashval_t hash;
+  static int deduction_depth;
+  location_t save_loc = input_location;
 
   tree fntype = TREE_TYPE (fn);
+  tree tinst;
+  tree r;
 
-  /* We don't need to worry about this in C++98.  */
-  if (cxx_dialect < cxx0x)
+  if (excessive_deduction_depth)
+    return error_mark_node;
+
+  tinst = build_tree_list (fn, targs);
+  if (!push_tinst_level (tinst))
     {
-      push_deduction_access_scope (fn);
-      r = tsubst (fntype, targs, tf_none, NULL_TREE);
-      pop_deduction_access_scope (fn);
-      return r;
+      excessive_deduction_depth = true;
+      ggc_free (tinst);
+      return error_mark_node;
     }
 
-  /* If we're seeing a lot of recursion, switch over to a hash table.  The
-     constant 40 is fairly arbitrary.  */
-  if (!current_deduction_htab
-      && VEC_length (spec_entry, current_deduction_vec) > 40)
-    {
-      current_deduction_htab = htab_create_ggc (40*2, hash_specialization,
-						eq_specializations, ggc_free);
-      FOR_EACH_VEC_ELT (spec_entry, current_deduction_vec, i, p)
-	{
-	  slot = (spec_entry **) htab_find_slot (current_deduction_htab,
-						 p, INSERT);
-	  *slot = ggc_alloc_spec_entry ();
-	  **slot = *p;
-	}
-      VEC_free (spec_entry, gc, current_deduction_vec);
-    }
-
-  /* Now check everything in the vector, if any.  */
-  FOR_EACH_VEC_ELT (spec_entry, current_deduction_vec, i, p)
-    if (p->tmpl == fn && comp_template_args (p->args, targs))
-      {
-	p->spec = error_mark_node;
-	return error_mark_node;
-      }
-
-  elt.tmpl = fn;
-  elt.args = targs;
-  elt.spec = NULL_TREE;
-
-  /* If we've created a hash table, look there.  */
-  if (current_deduction_htab)
-    {
-      if (htab_elements (current_deduction_htab)
-	  > (unsigned) max_tinst_depth)
-	{
-	  /* Trying to recurse across all integers or some such.  */
-	  excessive_deduction_depth = true;
-	  return error_mark_node;
-	}
-
-      hash = hash_specialization (&elt);
-      slot = (spec_entry **)
-	htab_find_slot_with_hash (current_deduction_htab, &elt, hash, INSERT);
-      if (*slot)
-	{
-	  /* We already have an entry for this.  */
-	  (*slot)->spec = error_mark_node;
-	  return error_mark_node;
-	}
-      else
-	{
-	  /* Create a new entry.  */
-	  *slot = ggc_alloc_spec_entry ();
-	  **slot = elt;
-	}
-    }
-  else
-    {
-      /* No hash table, so add it to the VEC.  */
-      hash = 0;
-      VEC_safe_push (spec_entry, gc, current_deduction_vec, &elt);
-    }
-
+  input_location = DECL_SOURCE_LOCATION (fn);
+  ++deduction_depth;
   push_deduction_access_scope (fn);
   r = tsubst (fntype, targs, tf_none, NULL_TREE);
   pop_deduction_access_scope (fn);
+  --deduction_depth;
+  input_location = save_loc;
 
-  /* After doing the substitution, make sure we didn't hit it again.  Note
-     that we might have switched to a hash table during tsubst.  */
-  if (current_deduction_htab)
-    {
-      if (hash == 0)
-	hash = hash_specialization (&elt);
-      slot = (spec_entry **)
-	htab_find_slot_with_hash (current_deduction_htab, &elt, hash,
-				  NO_INSERT);
-      if ((*slot)->spec == error_mark_node)
-	r = error_mark_node;
-      htab_clear_slot (current_deduction_htab, (void**)slot);
-    }
-  else
-    {
-      if (VEC_last (spec_entry, current_deduction_vec)->spec
-	  == error_mark_node)
-	r = error_mark_node;
-      VEC_pop (spec_entry, current_deduction_vec);
-    }
   if (excessive_deduction_depth)
     {
       r = error_mark_node;
-      if (htab_elements (current_deduction_htab) == 0)
+      if (deduction_depth == 0)
 	/* Reset once we're all the way out.  */
 	excessive_deduction_depth = false;
     }
+
+  pop_tinst_level ();
+  ggc_free (tinst);
   return r;
 }
 
@@ -19562,11 +19471,6 @@ print_template_statistics (void)
 	   "%f collisions\n", (long) htab_size (type_specializations),
 	   (long) htab_elements (type_specializations),
 	   htab_collisions (type_specializations));
-  if (current_deduction_htab)
-    fprintf (stderr, "current_deduction_htab: size %ld, %ld elements, "
-	     "%f collisions\n", (long) htab_size (current_deduction_htab),
-	     (long) htab_elements (current_deduction_htab),
-	     htab_collisions (current_deduction_htab));
 }
 
 #include "gt-cp-pt.h"

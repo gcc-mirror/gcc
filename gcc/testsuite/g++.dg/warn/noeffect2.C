@@ -12,9 +12,9 @@ extern "C" void FormatDisk();
   struct C {
     C(){ FormatDisk(), 0; }  // { dg-warning "right operand of comma" "" }
   };
-  template struct C<int>; // { dg-message "instantiated" }
+  template struct C<int>; // { dg-message "required" }
   template <class T>
   void f() { FormatDisk(), 0; } // { dg-warning "right operand of comma" "" }
-  template void f<int> (); // { dg-message "instantiated" }
+  template void f<int> (); // { dg-message "required" }
 void g() { FormatDisk(), 0; } // { dg-warning "right operand of comma" "" }
 

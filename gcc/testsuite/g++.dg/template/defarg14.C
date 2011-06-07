@@ -1,5 +1,5 @@
 // PR c++/46129
-// The default argument for A<int>::B::operator() should not be instantiated
+// The default argument for A<int>::B::operator() should not be required
 
 template <class T>
 struct A {

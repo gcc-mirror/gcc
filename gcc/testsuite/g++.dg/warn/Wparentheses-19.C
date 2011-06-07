@@ -119,4 +119,4 @@ bar (T a, T b, T c)
   foo (1 ^ (2 < 3));
 }
 
-template void bar<int> (int, int, int); // { dg-message "instantiated" }
+template void bar<int> (int, int, int); // { dg-message "required" }

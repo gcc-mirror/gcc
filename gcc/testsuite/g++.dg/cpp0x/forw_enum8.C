@@ -15,7 +15,7 @@ template<typename T> struct S2
     enum E : int;   // { dg-error "previous definition" }
     enum E : T;     // { dg-error "different underlying type" }
 };
-template struct S2<short>; // { dg-message "instantiated from here" }
+template struct S2<short>; // { dg-message "required from here" }
 
 //This error is diagnosed at compilation time
 template<typename T> struct S3

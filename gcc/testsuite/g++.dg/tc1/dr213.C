@@ -23,5 +23,5 @@ int main()
 {
   A<B> ab;
   B b;
-  ab.h(b);   // { dg-message "instantiated" }
+  ab.h(b);   // { dg-message "required" }
 }

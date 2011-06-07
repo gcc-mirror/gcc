@@ -1,5 +1,7 @@
 2011-06-07  Jason Merrill  <jason@redhat.com>
 
+	* c-common.c (max_tinst_depth): Lower default to 900.
+
 	* c-format.c (gcc_cxxdiag_char_table): Add 'S' format.
 
 2011-06-07  Richard Guenther  <rguenther@suse.de>

@@ -30,9 +30,9 @@ template<typename T>
 
 int main()
 {
-  check_remove_unsigned<float>();  // { dg-error "instantiated from" }
+  check_remove_unsigned<float>();  // { dg-error "required from" }
   return 0;
 }
 
-// { dg-error "instantiated from" "" { target *-*-* } 28 }
+// { dg-error "required from" "" { target *-*-* } 28 }
 // { dg-error "no type" "" { target *-*-* } 112 }

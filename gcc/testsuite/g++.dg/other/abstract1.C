@@ -35,7 +35,7 @@ template <class T> struct K {
   T (*a)[2];   // { dg-error "abstract class type" }
 };
 
-template struct K<Abstract>;  // { dg-message "instantiated" }
+template struct K<Abstract>;  // { dg-message "required" }
 
 
 

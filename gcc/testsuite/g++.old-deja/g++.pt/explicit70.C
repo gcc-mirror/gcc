@@ -41,4 +41,4 @@ template <class T>
 void g(T);
 
 template void g(int); // { dg-error "no definition available" "no def" }
-// { dg-message "instantiated" "inst" { target *-*-* } 43 }
+// { dg-message "required" "inst" { target *-*-* } 43 }

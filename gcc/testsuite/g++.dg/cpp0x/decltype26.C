@@ -3,7 +3,7 @@
 struct A { };
 
 template <class T>
-decltype(f(T())) f(T t)
+decltype(f(T())) f(T t)		// { dg-error "depth" }
 {
   return f(t);
 }

@@ -22,4 +22,4 @@ template <> struct X<int> {
   X();
 };
 
-X<float> i; // { dg-message "instantiated from" "" }
+X<float> i; // { dg-message "required from" "" }

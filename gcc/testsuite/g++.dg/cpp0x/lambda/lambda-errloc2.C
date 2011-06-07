@@ -15,5 +15,5 @@ void f()
 
 int main()
 {
-  f<A>();			// { dg-message "instantiated" }
+  f<A>();			// { dg-message "required" }
 }

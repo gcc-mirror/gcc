@@ -11,4 +11,4 @@ template <int I> struct A
     };
 };
 
-A<0>::B<0> a; // { dg-message "instantiated" }
+A<0>::B<0> a; // { dg-message "required" }

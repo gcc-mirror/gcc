@@ -13,7 +13,7 @@ template<typename T> struct a
 void
 foo ()
 {
-    a<int> v; // { dg-message "instantiated from here" }
+    a<int> v; // { dg-message "required from here" }
 }
 
 

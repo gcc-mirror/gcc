@@ -23,7 +23,7 @@ template struct T<int>;   /* T<int> is instantiated here */
 template int f<int>();
 
 #pragma pack(4)
-template struct T<float>; /* T<float> is instantiated here */
+template struct T<float>; /* T<float> is required here */
 template int f<double>();
 
 int main()

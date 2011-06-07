@@ -33,5 +33,5 @@ void test01()
 }
 
 // { dg-error "must be a specialization of ratio" "" { target *-*-* } 227 }
-// { dg-error "instantiated from here" "" { target *-*-* } 32 }
+// { dg-error "required from here" "" { target *-*-* } 32 }
 // { dg-excess-errors "In instantiation of" }

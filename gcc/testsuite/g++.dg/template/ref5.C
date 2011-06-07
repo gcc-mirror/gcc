@@ -8,4 +8,4 @@ template<typename T> struct B
   A<t> a;			// { dg-error "reference variable" }
 };
 
-B<int&> b;			// { dg-message "instantiated" }
+B<int&> b;			// { dg-message "required" }

@@ -22,6 +22,6 @@ int main (void)
 {
 A dummy;
 PrintArgs (dummy, dummy); // { dg-error "cannot pass" } cannot pass non-POD
-// { dg-message "instantiated" "inst" { target *-*-* } 24 }
+// { dg-message "required" "inst" { target *-*-* } 24 }
 return 0;
 }

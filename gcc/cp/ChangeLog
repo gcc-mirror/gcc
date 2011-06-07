@@ -1,5 +1,14 @@
 2011-06-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48969
+	PR c++/44175
+	* error.c (subst_to_string): New.
+	(cp_printer): Use it for 'S'.
+	(print_instantiation_partial_context_line): Handle subst context.
+	* pt.c (push_tinst_level): Handle subst context.
+	(deduction_tsubst_fntype): Don't track specific substitutions.
+	Use push_tinst_level.
+
 	* pt.c (deduction_tsubst_fntype): Use push_deduction_access_scope.
 	(fn_type_unification): Don't call push_deduction_access_scope here.
 

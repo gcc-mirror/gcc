@@ -16,5 +16,5 @@ void findIntersection( PCVector2<double>& p0, PCVector2<double>& p1);
 
 void findIntersection( PCVector2<double>& p0, PCVector2<double>& p1)
 {
-    PCVector2<double> e = p1 - p0;	// { dg-message "instantiated" }
+    PCVector2<double> e = p1 - p0;	// { dg-message "required" }
 }

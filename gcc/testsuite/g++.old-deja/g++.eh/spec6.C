@@ -25,7 +25,7 @@ template<class T> void fnx(T *) throw(T){}  // { dg-error "" } invalid use of vo
 void fx()
 {
   fnx((int *)0);
-  fnx((void *)0);		// { dg-message "instantiated from here" }
+  fnx((void *)0);		// { dg-message "required from here" }
 }
 
 // [except.spec] 2, exception specifiers must be the same set of types (but
