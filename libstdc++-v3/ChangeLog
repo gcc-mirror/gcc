@@ -12,7 +12,7 @@
 	_M_range_insert): Use __uninitialized_move_if_noexcept_a.
 	* testsuite/util/testsuite_rvalref.h (throwing_move_constructor):
 	Add.
-	(copycounter::copycounter(copycounter&&)): Use noexcept
+	(copycounter::copycounter(copycounter&&)): Use noexcept.
 	* testsuite/23_containers/vector/modifiers/moveable2.cc: New.
 	* testsuite/23_containers/vector/capacity/resize/moveable2.cc:
 	Likewise.
