@@ -1,3 +1,9 @@
+2011-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/49299
+	* value-prof.c (gimple_ic): Don't assume icall has
+	a fallthru edge.
+
 2011-06-06  Pat Haugen <pthaugen@us.ibm.com>
 
 	Backport from mainline
