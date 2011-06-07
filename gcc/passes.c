@@ -531,6 +531,7 @@ struct uid_range
 {
   unsigned int start;
   unsigned int last;
+  const char *assem_name;
   struct uid_range *next;
 };
 
@@ -541,6 +542,7 @@ DEF_VEC_ALLOC_P(uid_range_p, heap);
 
 static VEC(uid_range_p, heap) *enabled_pass_uid_range_tab = NULL;
 static VEC(uid_range_p, heap) *disabled_pass_uid_range_tab = NULL;
+
 
 /* Parse option string for -fdisable- and -fenable-
    The syntax of the options:
@@ -628,6 +630,7 @@ enable_disable_pass (const char *arg, bool is_enable)
 	  uid_range_p new_range;
 	  char *invalid = NULL;
 	  long start;
+	  char *func_name = NULL;
 
 	  next_range = strchr (one_range, ',');
 	  if (next_range)
@@ -645,17 +648,31 @@ enable_disable_pass (const char *arg, bool is_enable)
 	  start = strtol (one_range, &invalid, 10);
 	  if (*invalid || start < 0)
 	    {
-	      error ("Invalid range %s in option %s",
-		     one_range,
-		     is_enable ? "-fenable" : "-fdisable");
-	      free (argstr);
-	      return;
+              if (end_val || (one_range[0] >= '0'
+			      && one_range[0] <= '9'))
+                {
+                  error ("Invalid range %s in option %s",
+                         one_range,
+                         is_enable ? "-fenable" : "-fdisable");
+                  free (argstr);
+                  return;
+                }
+	      func_name = one_range;
 	    }
 	  if (!end_val)
 	    {
 	      new_range = XCNEW (struct uid_range);
-	      new_range->start = (unsigned) start;
-	      new_range->last = (unsigned) start;
+              if (!func_name)
+                {
+                  new_range->start = (unsigned) start;
+                  new_range->last = (unsigned) start;
+                }
+              else
+                {
+                  new_range->start = (unsigned) -1;
+                  new_range->last = (unsigned) -1;
+                  new_range->assem_name = xstrdup (func_name);
+                }
 	    }
 	  else
 	    {
@@ -677,15 +694,28 @@ enable_disable_pass (const char *arg, bool is_enable)
           new_range->next = slot;
           VEC_replace (uid_range_p, *tab, pass->static_pass_number,
                        new_range);
-
           if (is_enable)
-            inform (UNKNOWN_LOCATION,
-                    "enable pass %s for functions in the range of [%u, %u]",
-                    phase_name, new_range->start, new_range->last);
+            {
+              if (new_range->assem_name)
+                inform (UNKNOWN_LOCATION,
+                        "enable pass %s for function %s",
+                        phase_name, new_range->assem_name);
+              else
+                inform (UNKNOWN_LOCATION,
+                        "enable pass %s for functions in the range of [%u, %u]",
+                        phase_name, new_range->start, new_range->last);
+            }
           else
-            inform (UNKNOWN_LOCATION,
-                    "disable pass %s for functions in the range of [%u, %u]",
-                    phase_name, new_range->start, new_range->last);
+            {
+              if (new_range->assem_name)
+                inform (UNKNOWN_LOCATION,
+                        "disable pass %s for function %s",
+                        phase_name, new_range->assem_name);
+              else
+                inform (UNKNOWN_LOCATION,
+                        "disable pass %s for functions in the range of [%u, %u]",
+                        phase_name, new_range->start, new_range->last);
+            }
 
 	  one_range = next_range;
 	} while (next_range);
@@ -719,6 +749,7 @@ is_pass_explicitly_enabled_or_disabled (struct opt_pass *pass,
 {
   uid_range_p slot, range;
   int cgraph_uid;
+  const char *aname = NULL;
 
   if (!tab
       || (unsigned) pass->static_pass_number >= VEC_length (uid_range_p, tab)
@@ -730,6 +761,8 @@ is_pass_explicitly_enabled_or_disabled (struct opt_pass *pass,
     return false;
 
   cgraph_uid = func ? cgraph_get_node (func)->uid : 0;
+  if (func && DECL_ASSEMBLER_NAME_SET_P (func))
+    aname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (func));
 
   range = slot;
   while (range)
@@ -737,6 +770,9 @@ is_pass_explicitly_enabled_or_disabled (struct opt_pass *pass,
       if ((unsigned) cgraph_uid >= range->start
 	  && (unsigned) cgraph_uid <= range->last)
 	return true;
+      if (range->assem_name && aname
+          && !strcmp (range->assem_name, aname))
+        return true;
       range = range->next;
     }
 

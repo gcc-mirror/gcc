@@ -1,3 +1,14 @@
+2011-06-07  Xinliang David Li  <davidxl@google.com>
+
+	* testsuite/gcc.dg/inline_2.c: New test.
+	* testsuite/gcc.dg/unroll_2.c: New test.
+	* testsuite/gcc.dg/inline_3.c: New test.
+	* testsuite/gcc.dg/unroll_3.c: New test.
+	* testsuite/gcc.dg/inline_4.c: New test.
+	* testsuite/gcc.dg/unroll_4.c: New test.
+	* testsuite/gcc.dg/inline_1.c: New test.
+	* testsuite/gcc.dg/unroll_1.c: New test.
+
 2011-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	gcc/testsuite:

@@ -1,3 +1,7 @@
+2011-06-07  Xinliang David Li  <davidxl@google.com>
+	* passes.c (enable_disable_pass): Handle assembler name.
+	(is_pass_explicitly_enabled_or_disabled): Ditto.
+
 2011-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR tree-optimization/48497
