@@ -1,5 +1,13 @@
 2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* class.c (objc_next_class): Removed.
+	(class_pose_as): Removed.
+	(CLASSOF): Removed.
+	(class_table_replace): Removed.
+	(objc_lookup_class): Removed.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Removed the Traditional Objective-C runtime public API.
 	* Makefile.in (OBJC_DEPRECATED_H): Variable removed.
 	(install-headers): Do not create the objc/deprecated directory and
