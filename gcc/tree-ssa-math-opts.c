@@ -1172,13 +1172,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 
   if (flag_unsafe_math_optimizations
       && cbrtfn
-      /* FIXME: The following line was originally
-	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
-	 but since arg0 is a gimple value, the first predicate
-	 will always return false.  It needs to be replaced with a
-	 call to a similar gimple_val_nonnegative_p function to be
-         added in gimple-fold.c.  */
-      && !HONOR_NANS (mode)
+      && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
       && REAL_VALUES_EQUAL (c, dconst1_3))
     return build_and_insert_call (gsi, loc, &target, cbrtfn, arg0);
   
@@ -1190,13 +1184,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   if (flag_unsafe_math_optimizations
       && sqrtfn
       && cbrtfn
-      /* FIXME: The following line was originally
-	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
-	 but since arg0 is a gimple value, the first predicate
-	 will always return false.  It needs to be replaced with a
-	 call to a similar gimple_val_nonnegative_p function to be
-         added in gimple-fold.c.  */
-      && !HONOR_NANS (mode)
+      && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
       && optimize_function_for_speed_p (cfun)
       && hw_sqrt_exists
       && REAL_VALUES_EQUAL (c, dconst1_6))
@@ -1270,13 +1258,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 
   if (flag_unsafe_math_optimizations
       && cbrtfn
-      /* FIXME: The following line was originally
-	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
-	 but since arg0 is a gimple value, the first predicate
-	 will always return false.  It needs to be replaced with a
-	 call to a similar gimple_val_nonnegative_p function to be
-         added in gimple-fold.c.  */
-      && !HONOR_NANS (mode)
+      && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
       && real_identical (&c2, &c)
       && optimize_function_for_speed_p (cfun)
       && powi_cost (n / 3) <= POWI_MAX_MULTS)

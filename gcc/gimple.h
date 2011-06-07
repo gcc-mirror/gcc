@@ -4988,4 +4988,5 @@ extern tree maybe_fold_and_comparisons (enum tree_code, tree, tree,
 extern tree maybe_fold_or_comparisons (enum tree_code, tree, tree,
 				       enum tree_code, tree, tree);
 
+bool gimple_val_nonnegative_real_p (tree);
 #endif  /* GCC_GIMPLE_H */
