@@ -1,3 +1,9 @@
+2011-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/49299
+	* value-prof.c (gimple_ic): Don't assume icall has
+	a fallthru edge.
+
 2011-06-07  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vectorizer.h (vect_recog_func_ptr): Make last argument to be

@@ -1,3 +1,9 @@
+2011-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/49299
+	* gcc.dg/tree-prof/pr49299-1.c: New test.
+	* gcc.dg/tree-prof/pr49299-2.c: New test.
+
 2011-06-07  Ira Rosen  <ira.rosen@linaro.org>
 
 	* lib/target-supports.exp
