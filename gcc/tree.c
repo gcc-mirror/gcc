@@ -9098,8 +9098,7 @@ make_or_reuse_accum_type (unsigned size, int unsignedp, int satp)
 }
 
 /* Create nodes for all integer types (and error_mark_node) using the sizes
-   of C datatypes.  The caller should call set_sizetype soon after calling
-   this function to select one of the types as sizetype.  */
+   of C datatypes.  */
 
 void
 build_common_tree_nodes (bool signed_char)
@@ -9161,7 +9160,6 @@ build_common_tree_nodes (bool signed_char)
     size_type_node = long_long_unsigned_type_node;
   else
     gcc_unreachable ();
-  set_sizetype (size_type_node);
 
   /* Fill in the rest of the sized types.  Reuse existing type nodes
      when possible.  */
@@ -9182,7 +9180,7 @@ build_common_tree_nodes (bool signed_char)
   access_private_node = get_identifier ("private");
 }
 
-/* Call this function after calling build_common_tree_nodes and set_sizetype.
+/* Call this function after calling build_common_tree_nodes.
    It will create several other common tree nodes.  */
 
 void

@@ -1,3 +1,11 @@
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* stor-layout.c (initialize_sizetypes): Initialize all
+	sizetypes based on target definitions.
+	(set_sizetype): Remove.
+	* tree.c (build_common_tree_nodes): Do not call set_sizetype.
+	* tree.h (set_sizetype): Remove.
+
 2011-06-07  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc: Unify V850 architecture options and add support for
