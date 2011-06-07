@@ -1,5 +1,21 @@
 2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-private/module-abi-8.h (class_get_instance_size): Removed.
+	* objects.c (class_create_instance): Removed.
+	* error.c (__USE_FIXED_PROTOTYPES__): Removed.
+	* gc.c (__objc_generate_gc_type_description): Use
+	class_getInstanceSize() instead of class_get_instance_size().
+	* selector.c (sel_types_match): Made static.
+	(sel_get_typed_uid): Removed.
+	(sel_get_any_typed_uid): Removed.
+	(sel_get_name): Removed.
+	(sel_get_type): Removed.
+	(sel_register_name): Removed.
+	(sel_register_typed_name): Removed.
+	(sel_get_uid): Removed.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* encoding.c (method_get_number_of_arguments): Removed.
 	(method_get_sizeof_arguments): Removed.
 
