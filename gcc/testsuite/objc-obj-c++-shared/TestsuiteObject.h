@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 + (id) new;
 + (id) alloc;
 - (id) init;
-- (void) free;
+- (id) free;
 
 /* Auxiliary methods.  */
 + (Class) class;

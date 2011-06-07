@@ -1,3 +1,18 @@
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/runtime.h (protocol_getMethodDescription):
+	Added code to deal with the case when [Protocol
+	-descriptionForInstanceMethod:] or [Protocol
+	-descriptionForClassMethod:] returns NULL.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/TestsuiteObject.h ([-free]): Return 'id'.
+	* objc-obj-c++-shared/TestsuiteObject.m ([-free]): Return 'id'.
+	Added cast.
+	
 2011-06-07  Xinliang David Li  <davidxl@google.com>
 
 	* testsuite/gcc.dg/inline_2.c: New test.
