@@ -1016,6 +1016,11 @@ This directive does nothing on targets that enable the features by
 default, or that don't provide them at all.  It must come after
 all @code{dg-options} directives.
 For supported values of @var{feature} see @ref{Add Options, ,}.
+
+@item @{ dg-additional-options @var{options} [@{ target @var{selector} @}] @}
+This directive provides a list of compiler options, to be used
+if the target system matches @var{selector}, that are added to the default
+options used for this set of tests.
 @end table
 
 @subsubsection Modify the test timeout value

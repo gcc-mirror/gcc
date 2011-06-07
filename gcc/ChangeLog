@@ -1,3 +1,8 @@
+2011-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/48497
+	* doc/sourcebuild.texi (Directives, dg-additional-options): Document.
+
 2011-06-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/46728

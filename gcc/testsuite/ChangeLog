@@ -1,3 +1,11 @@
+2011-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	gcc/testsuite:
+	PR tree-optimization/48497
+	* lib/gcc-defs.exp (dg-additional-options): New proc.
+	* gfortran.dg/graphite/vect-pr40979.f90: Use dg-additional-options
+	-msse2 on 32-bit x86.
+
 2011-06-06  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/enum19.C: New.
