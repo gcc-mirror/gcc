@@ -1,3 +1,7 @@
+2011-06-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*movsf_internal): Optimize AVX check.
+
 2011-06-07  Sergey Grechanik  <mouseentity@ispras.ru>
 
 	* config/arm/arm.c (coproc_secondary_reload_class): Return NO_REGS for
