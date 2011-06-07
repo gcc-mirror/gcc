@@ -1,3 +1,8 @@
+2011-06-07  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (uniquify_nodes): Move code to register decls to
+	the loop that computes canonical types.
+
 2011-06-07  Richard Guenther  <rguenther@suse.de>
 
 	* lto-lang.c (lto_init): Do not set

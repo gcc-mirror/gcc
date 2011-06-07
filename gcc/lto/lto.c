@@ -651,21 +651,13 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
   /* Go backwards because children streamed for the first time come
      as part of their parents, and hence are created after them.  */
 
-  /* First register all declarations and types in the cache.
-     This makes sure to have the original structure in the type cycles
-     when registering them and computing hashes.  */
+  /* First register all the types in the cache.  This makes sure to
+     have the original structure in the type cycles when registering
+     them and computing hashes.  */
   for (i = len; i-- > from;)
     {
       tree t = VEC_index (tree, cache->nodes, i);
-
-      if (t == NULL_TREE)
-	continue;
-
-      if (TREE_CODE (t) == VAR_DECL)
-	lto_register_var_decl_in_symtab (data_in, t);
-      else if (TREE_CODE (t) == FUNCTION_DECL && !DECL_BUILT_IN (t))
-	lto_register_function_decl_in_symtab (data_in, t);
-      else if (TYPE_P (t))
+      if (t && TYPE_P (t))
 	gimple_register_type (t);
     }
 
@@ -788,19 +780,23 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	}
     }
 
-  /* Finally compute the canonical type of t.  From this point
-     there are no longer any types with TYPE_STRUCTURAL_EQUALITY_P
-     and its type-based alias problems.  This step requires the
-     TYPE_POINTER_TO lists being present, so make sure it is done
-     last.  */
+  /* Finally compute the canonical type of all TREE_TYPEs and register
+     VAR_DECL and FUNCTION_DECL nodes in the symbol table.
+     From this point there are no longer any types with
+     TYPE_STRUCTURAL_EQUALITY_P and its type-based alias problems.
+     This step requires the TYPE_POINTER_TO lists being present, so
+     make sure it is done last.  */
   for (i = len; i-- > from;)
     {
       tree t = VEC_index (tree, cache->nodes, i);
-      if (!t
-	  || !TYPE_P (t))
+      if (t == NULL_TREE)
 	continue;
 
-      if (!TYPE_CANONICAL (t))
+      if (TREE_CODE (t) == VAR_DECL)
+	lto_register_var_decl_in_symtab (data_in, t);
+      else if (TREE_CODE (t) == FUNCTION_DECL && !DECL_BUILT_IN (t))
+	lto_register_function_decl_in_symtab (data_in, t);
+      else if (TYPE_P (t) && !TYPE_CANONICAL (t))
 	TYPE_CANONICAL (t) = gimple_register_canonical_type (t);
     }
 }
