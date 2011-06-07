@@ -1,3 +1,8 @@
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* lto-lang.c (lto_init): Do not set
+	size_type_node or call set_sizetype.
+
 2011-06-04  Diego Novillo  <dnovillo@google.com>
 
 	* lto.c (lto_init): New.

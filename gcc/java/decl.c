@@ -606,7 +606,14 @@ java_init_decl_processing (void)
 
   /* This is not a java type, however tree-dfa requires a definition for
      size_type_node.  */
-  size_type_node = make_unsigned_type (POINTER_SIZE);
+  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+    size_type_node = make_unsigned_type (INT_TYPE_SIZE);
+  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+    size_type_node = make_unsigned_type (LONG_TYPE_SIZE);
+  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+    size_type_node = make_unsigned_type (LONG_LONG_TYPE_SIZE);
+  else
+    gcc_unreachable ();
   set_sizetype (size_type_node);
 
   /* Define these next since types below may used them.  */

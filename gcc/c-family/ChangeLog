@@ -1,3 +1,8 @@
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (c_common_nodes_and_builtins): Do not set
+	size_type_node or call set_sizetype.
+
 2011-06-07  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/49130
