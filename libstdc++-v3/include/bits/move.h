@@ -82,6 +82,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     move(_Tp&& __t) noexcept
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
 
+
+  template<typename _Tp>
+    struct __move_if_noexcept_cond
+    : public __and_<__not_<is_nothrow_move_constructible<_Tp>>,
+                    is_copy_constructible<_Tp>>::type { };
+
   /**
    *  @brief Move unless it could throw and the type is copyable.
    *  @ingroup utilities
@@ -90,9 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp>
     inline typename
-    conditional<__and_<__not_<is_nothrow_move_constructible<_Tp>>,
-                       is_copy_constructible<_Tp>>::value,
-                const _Tp&, _Tp&&>::type
+    conditional<__move_if_noexcept_cond<_Tp>::value, const _Tp&, _Tp&&>::type
     move_if_noexcept(_Tp& __x) noexcept
     { return std::move(__x); }
 

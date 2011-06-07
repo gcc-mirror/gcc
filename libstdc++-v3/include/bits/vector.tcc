@@ -72,8 +72,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  const size_type __old_size = size();
 	  pointer __tmp = _M_allocate_and_copy(__n,
-		 _GLIBCXX_MAKE_MOVE_ITERATOR(this->_M_impl._M_start),
-		 _GLIBCXX_MAKE_MOVE_ITERATOR(this->_M_impl._M_finish));
+	    _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(this->_M_impl._M_start),
+	    _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(this->_M_impl._M_finish));
 	  std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
 			_M_get_Tp_allocator());
 	  _M_deallocate(this->_M_impl._M_start,
@@ -337,17 +337,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 	      __new_finish = 0;
 
-	      __new_finish =
-		std::__uninitialized_move_a(this->_M_impl._M_start,
-					    __position.base(), __new_start,
-					    _M_get_Tp_allocator());
+	      __new_finish
+		= std::__uninitialized_move_if_noexcept_a
+		(this->_M_impl._M_start, __position.base(),
+		 __new_start, _M_get_Tp_allocator());
+
 	      ++__new_finish;
 
-	      __new_finish =
-		std::__uninitialized_move_a(__position.base(),
-					    this->_M_impl._M_finish,
-					    __new_finish,
-					    _M_get_Tp_allocator());
+	      __new_finish
+		= std::__uninitialized_move_if_noexcept_a
+		(__position.base(), this->_M_impl._M_finish,
+		 __new_finish, _M_get_Tp_allocator());
 	    }
           __catch(...)
 	    {
@@ -423,18 +423,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 						_M_get_Tp_allocator());
 		  __new_finish = 0;
 
-		  __new_finish =
-		    std::__uninitialized_move_a(this->_M_impl._M_start,
-						__position.base(),
-						__new_start,
-						_M_get_Tp_allocator());
+		  __new_finish
+		    = std::__uninitialized_move_if_noexcept_a
+		    (this->_M_impl._M_start, __position.base(),
+		     __new_start, _M_get_Tp_allocator());
+
 		  __new_finish += __n;
 
-		  __new_finish =
-		    std::__uninitialized_move_a(__position.base(),
-						this->_M_impl._M_finish,
-						__new_finish,
-						_M_get_Tp_allocator());
+		  __new_finish
+		    = std::__uninitialized_move_if_noexcept_a
+		    (__position.base(), this->_M_impl._M_finish,
+		     __new_finish, _M_get_Tp_allocator());
 		}
 	      __catch(...)
 		{
@@ -484,11 +483,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      pointer __new_finish(__new_start);
 	      __try
 		{
-		  __new_finish =
-		    std::__uninitialized_move_a(this->_M_impl._M_start,
-						this->_M_impl._M_finish,
-						__new_start,
-						_M_get_Tp_allocator());
+		  __new_finish
+		    = std::__uninitialized_move_if_noexcept_a
+		    (this->_M_impl._M_start, this->_M_impl._M_finish,
+		     __new_start, _M_get_Tp_allocator());
 		  std::__uninitialized_default_n_a(__new_finish, __n,
 						   _M_get_Tp_allocator());
 		  __new_finish += __n;
@@ -577,20 +575,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		pointer __new_finish(__new_start);
 		__try
 		  {
-		    __new_finish =
-		      std::__uninitialized_move_a(this->_M_impl._M_start,
-						  __position.base(),
-						  __new_start,
-						  _M_get_Tp_allocator());
-		    __new_finish =
-		      std::__uninitialized_copy_a(__first, __last,
-						  __new_finish,
-						  _M_get_Tp_allocator());
-		    __new_finish =
-		      std::__uninitialized_move_a(__position.base(),
-						  this->_M_impl._M_finish,
-						  __new_finish,
-						  _M_get_Tp_allocator());
+		    __new_finish
+		      = std::__uninitialized_move_if_noexcept_a
+		      (this->_M_impl._M_start, __position.base(),
+		       __new_start, _M_get_Tp_allocator());
+		    __new_finish
+		      = std::__uninitialized_copy_a(__first, __last,
+						    __new_finish,
+						    _M_get_Tp_allocator());
+		    __new_finish
+		      = std::__uninitialized_move_if_noexcept_a
+		      (__position.base(), this->_M_impl._M_finish,
+		       __new_finish, _M_get_Tp_allocator());
 		  }
 		__catch(...)
 		  {
