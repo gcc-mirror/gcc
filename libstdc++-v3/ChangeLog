@@ -1,3 +1,10 @@
+2011-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49293
+	* testsuite/22_locale/time_get/get_weekday/char/38081-1.cc: Tweak
+	for glibc 2.14.
+	* testsuite/22_locale/time_get/get_weekday/char/38081-2.cc: Likewise.
+
 2011-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/move.h (move_if_noexcept): Use __and_ and __not_.
