@@ -10180,10 +10180,11 @@ Generate reentrant, position independent code.  The default is
 @item -mthumb-interwork
 @opindex mthumb-interwork
 Generate code which supports calling between the ARM and Thumb
-instruction sets.  Without this option the two instruction sets cannot
-be reliably used inside one program.  The default is
-@option{-mno-thumb-interwork}, since slightly larger code is generated
-when @option{-mthumb-interwork} is specified.
+instruction sets.  Without this option, on pre-v5 architectures, the
+two instruction sets cannot be reliably used inside one program.  The
+default is @option{-mno-thumb-interwork}, since slightly larger code
+is generated when @option{-mthumb-interwork} is specified.  In AAPCS
+configurations this option is meaningless.
 
 @item -mno-sched-prolog
 @opindex mno-sched-prolog
