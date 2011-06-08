@@ -1,3 +1,10 @@
+2011-06-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-flow-inline.h (op_iter_init): Reject GIMPLE_PHI stmts.
+	(num_ssa_operands): Likewise.
+	(op_iter_init_phiuse): Forward-declare.
+	(delink_stmt_imm_use): Iterate with FOR_EACH_PHI_OR_STMT_USE.
+
 2011-06-08  Nick Clifton  <nickc@redhat.com>
 
 	* doc/invoke.texi (ARM Options): Update description of
