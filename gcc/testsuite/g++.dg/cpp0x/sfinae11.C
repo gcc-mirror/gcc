@@ -6,7 +6,7 @@ template<class T>
 T&& declval() noexcept;
 
 template< class T >
-inline void f1( T& x ) noexcept( noexcept( declval<T&>().foo() ) )
+inline void f1( T& x ) noexcept( noexcept( declval<T&>().foo() ) ) // { dg-error "Z" }
 {
   x.foo();
 }
@@ -21,7 +21,7 @@ inline void f2( T& x ) noexcept( Noexcept )
 
 // a common and trivial mistake
 template< class T >
-inline void f3( T& x ) noexcept( declval<T&>().foo() )
+inline void f3( T& x ) noexcept( declval<T&>().foo() ) // { dg-error "Z" }
 {
   x.foo();
 }
@@ -50,7 +50,7 @@ int main()
   static_assert(  noexcept( f2(y) ), "OK." );
   // static_assert(  noexcept( f3(y) ), "shall be ill-formed(OK)." );
 
-  static_assert(  noexcept( f1(z) ), "shall be ill-formed." ); // { dg-error "no match" }
+  noexcept( f1(z) );		// { dg-message "required" }
   static_assert(  noexcept( f2(z) ), "shall be ill-formed." ); // { dg-error "no match" }
-  static_assert( !noexcept( f3(z) ), "shall be ill-formed." ); // { dg-error "no match" }
+  noexcept( f3(z) );		// { dg-message "required" }
 }

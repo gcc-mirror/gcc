@@ -923,7 +923,9 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
 
   if (spec_p)
     {
-      tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+      tree raises;
+      maybe_instantiate_noexcept (fn);
+      raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
       *spec_p = merge_exception_specifiers (*spec_p, raises);
     }
 
@@ -1558,7 +1560,9 @@ defaulted_late_check (tree fn)
      it had been implicitly declared.  */
   if (DECL_DEFAULTED_IN_CLASS_P (fn))
     {
-      tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
+      tree eh_spec;
+      maybe_instantiate_noexcept (fn);
+      eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
       if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn))
 	  && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
 				 eh_spec, ce_normal))

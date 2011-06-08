@@ -1438,7 +1438,10 @@ dump_exception_spec (tree t, int flags)
       pp_cxx_ws_string (cxx_pp, "noexcept");
       pp_cxx_whitespace (cxx_pp);
       pp_cxx_left_paren (cxx_pp);
-      dump_expr (TREE_PURPOSE (t), flags);
+      if (DEFERRED_NOEXCEPT_SPEC_P (t))
+	pp_cxx_ws_string (cxx_pp, "<uninstantiated>");
+      else
+	dump_expr (TREE_PURPOSE (t), flags);
       pp_cxx_right_paren (cxx_pp);
     }
   else if (t)

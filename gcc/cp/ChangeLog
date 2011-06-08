@@ -1,5 +1,32 @@
 2011-06-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49107
+	* cp-tree.def (DEFERRED_NOEXCEPT): New.
+	* cp-tree.h (struct tree_deferred_noexcept): New.
+	(DEFERRED_NOEXCEPT_PATTERN, DEFERRED_NOEXCEPT_ARGS): New.
+	(DEFERRED_NOEXCEPT_SPEC_P): New.
+	(enum cp_tree_node_structure_enum): Add TS_CP_DEFERRED_NOEXCEPT.
+	(union lang_tree_node): Add tree_deferred_noexcept.
+	(maybe_instantiate_noexcept): Declare.
+	* cp-objcp-common.c (cp_tree_size): Handle DEFERRED_NOEXCEPT.
+	* error.c (dump_exception_spec): Likewise.
+	* cxx-pretty-print.c (pp_cxx_exception_specification): Likewise.
+	* ptree.c (cxx_print_xnode): Likewise.
+	* tree.c (cp_tree_equal): Likewise.
+	* decl.c (cp_tree_node_structure): Likewise.
+	(duplicate_decls): Call maybe_instantiate_noexcept.
+	* except.c (build_noexcept_spec): Handle DEFERRED_NOEXCEPT.
+	(nothrow_spec_p, type_noexcept_p, type_throw_all_p): Check
+	DEFERRED_NOEXCEPT_SPEC_P.
+	* typeck2.c (merge_exception_specifiers): Likewise.
+	* decl2.c (mark_used): Call maybe_instantiate_noexcept.
+	* method.c (process_subob_fn, defaulted_late_check): Likewise.
+	* pt.c (tsubst_exception_specification): Add defer_ok parm.
+	Build DEFERRED_NOEXCEPT.
+	(maybe_instantiate_noexcept): New.
+	(tsubst, regenerate_decl_from_template, instantiate_decl): Adjust.
+	* search.c (check_final_overrider): Call maybe_instantiate_noexcept.
+
 	* semantics.c (potential_constant_expression_1): Handle destructor
 	call.
 

@@ -1769,10 +1769,15 @@ merge_exception_specifiers (tree list, tree add)
     return list;
   else if (!add || add == noexcept_false_spec)
     return add;
+
+  /* We need to instantiate deferred noexcept before we get here.  */
+  gcc_assert (!DEFERRED_NOEXCEPT_SPEC_P (list)
+	      && !DEFERRED_NOEXCEPT_SPEC_P (add));
+
   /* For merging noexcept(true) and throw(), take the more recent one (LIST).
      Any other noexcept-spec should only be merged with an equivalent one.
      So the !TREE_VALUE code below is correct for all cases.  */
-  else if (!TREE_VALUE (add))
+  if (!TREE_VALUE (add))
     return list;
   else if (!TREE_VALUE (list))
     return add;

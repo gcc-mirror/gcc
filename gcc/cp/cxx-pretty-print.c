@@ -1446,7 +1446,10 @@ pp_cxx_exception_specification (cxx_pretty_printer *pp, tree t)
       pp_cxx_ws_string (pp, "noexcept");
       pp_cxx_whitespace (pp);
       pp_cxx_left_paren (pp);
-      pp_cxx_expression (pp, TREE_PURPOSE (ex_spec));
+      if (DEFERRED_NOEXCEPT_SPEC_P (ex_spec))
+	pp_cxx_ws_string (pp, "<uninstantiated>");
+      else
+	pp_cxx_expression (pp, TREE_PURPOSE (ex_spec));
       pp_cxx_right_paren (pp);
       return;
     }

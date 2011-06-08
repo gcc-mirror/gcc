@@ -2340,6 +2340,13 @@ cp_tree_equal (tree t1, tree t2)
       /* Now compare operands as usual.  */
       break;
 
+    case DEFERRED_NOEXCEPT:
+      return (cp_tree_equal (DEFERRED_NOEXCEPT_PATTERN (t1),
+			     DEFERRED_NOEXCEPT_PATTERN (t2))
+	      && comp_template_args (DEFERRED_NOEXCEPT_ARGS (t1),
+				     DEFERRED_NOEXCEPT_ARGS (t2)));
+      break;
+
     default:
       break;
     }
