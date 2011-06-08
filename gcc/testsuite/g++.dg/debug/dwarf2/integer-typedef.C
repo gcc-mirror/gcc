@@ -1,5 +1,5 @@
 // Origin: PR debug/49130
-// { dg-options "-g -dA" }
+// { dg-options "-g -dA -fno-merge-debug-strings" }
 
 typedef long unsigned int size_t;
 static const size_t foo = 2048;
@@ -24,5 +24,5 @@ main()
   s1.f(10);
 }
 
-// { dg-final {scan-assembler-times "\[^\n\r\]*DW_AT_name: \"S<2048ul>\"" 1 } }
-// { dg-final {scan-assembler-times "\[^\n\r\]*DW_AT_MIPS_linkage_name: \"_ZN1SILm2048EE1fEm\"" 1 } }
+// { dg-final {scan-assembler-times "\"S<2048ul>.0\"\[^\n\r\]* DW_AT_name" 1 } }
+// { dg-final {scan-assembler-times "\"_ZN1SILm2048EE1fEm.0\"\[^\n\r\]* DW_AT_\[MIPS_\]*linkage_name" 1 } }

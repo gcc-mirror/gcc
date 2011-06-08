@@ -1,3 +1,9 @@
+2011-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49323
+	* g++.dg/debug/dwarf2/integer-typedef.C: Add -fno-merge-debug-strings
+	to dg-options, match also DW_AT_linkage_name.
+
 2011-06-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR middle-end/21953
