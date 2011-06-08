@@ -1,3 +1,9 @@
+2011-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49322
+	* pt.c (deduction_tsubst_fntype): Don't free the tinst entry
+	if a pending_template entry is pointing at it.
+
 2011-06-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48969
