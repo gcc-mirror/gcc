@@ -1,3 +1,9 @@
+2011-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (prepare_move_operands): Set pic register
+	appropriately for global and local dynamic tls models even
+	if flag_pic is unset.
+
 2011-06-07  Jason Merrill  <jason@redhat.com>
 
 	* pretty-print.h (ATTRIBUTE_GCC_PPDIAG): Use GCC_DIAG_STYLE if set.
