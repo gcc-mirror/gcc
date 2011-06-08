@@ -28,16 +28,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Private runtime functions that may go away or be rewritten or
    replaced.  */
 
-/*
-** Definition of a selector.  Selectors themselves are not unique, but
-** the sel_id is a unique identifier.
-*/
+/* Definition of a selector.  Selectors themselves are not unique, but
+   the sel_id is a unique identifier.  */
 struct objc_selector
 {
   void *sel_id;
   const char *sel_types;
 };
 
+/* An inline, fast version of sel_isEqual().  */
 inline static BOOL
 sel_eq (SEL s1, SEL s2)
 {
