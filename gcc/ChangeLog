@@ -1,3 +1,9 @@
+2011-06-08  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (mark_rw_status): Removed.
+	(analyze_access_subtree): New parameter parent instead of
+	mark_read and mark_write, propagate from that.
+
 2011-06-08  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (arm_libcall_uses_aapcs_base): Use correct ABI
