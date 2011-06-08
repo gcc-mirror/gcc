@@ -1196,7 +1196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**  A non-binding request to reduce memory use.  */
       void
       shrink_to_fit()
-      { std::__shrink_to_fit<deque>::_S_do_it(*this); }
+      { std::__shrink_to_fit(*this); }
 #endif
 
       /**
