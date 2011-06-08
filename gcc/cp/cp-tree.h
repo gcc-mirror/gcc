@@ -507,6 +507,22 @@ struct GTY (()) tree_default_arg {
   VEC(tree,gc) *instantiations;
 };
 
+
+#define DEFERRED_NOEXCEPT_PATTERN(NODE) \
+  (((struct tree_deferred_noexcept *)DEFERRED_NOEXCEPT_CHECK (NODE))->pattern)
+#define DEFERRED_NOEXCEPT_ARGS(NODE) \
+  (((struct tree_deferred_noexcept *)DEFERRED_NOEXCEPT_CHECK (NODE))->args)
+#define DEFERRED_NOEXCEPT_SPEC_P(NODE)				\
+  ((NODE) && (TREE_PURPOSE (NODE))				\
+   && TREE_CODE (TREE_PURPOSE (NODE)) == DEFERRED_NOEXCEPT)
+
+struct GTY (()) tree_deferred_noexcept {
+  struct tree_base base;
+  tree pattern;
+  tree args;
+};
+
+
 /* The condition associated with the static assertion.  This must be
    an integral constant expression.  */
 #define STATIC_ASSERT_CONDITION(NODE) \
@@ -693,6 +709,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_BASELINK,
   TS_CP_WRAPPER,
   TS_CP_DEFAULT_ARG,
+  TS_CP_DEFERRED_NOEXCEPT,
   TS_CP_STATIC_ASSERT,
   TS_CP_ARGUMENT_PACK_SELECT,
   TS_CP_TRAIT_EXPR,
@@ -711,6 +728,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
   struct tree_default_arg GTY ((tag ("TS_CP_DEFAULT_ARG"))) default_arg;
+  struct tree_deferred_noexcept GTY ((tag ("TS_CP_DEFERRED_NOEXCEPT"))) deferred_noexcept;
   struct lang_identifier GTY ((tag ("TS_CP_IDENTIFIER"))) identifier;
   struct tree_static_assert GTY ((tag ("TS_CP_STATIC_ASSERT"))) 
     static_assertion;
@@ -5130,6 +5148,7 @@ extern int more_specialized_fn			(tree, tree, int);
 extern void do_decl_instantiation		(tree, tree);
 extern void do_type_instantiation		(tree, tree, tsubst_flags_t);
 extern bool always_instantiate_p		(tree);
+extern void maybe_instantiate_noexcept		(tree);
 extern tree instantiate_decl			(tree, int, bool);
 extern int comp_template_parms			(const_tree, const_tree);
 extern bool uses_parameter_packs                (tree);

@@ -4228,6 +4228,9 @@ mark_used (tree decl)
       return;
     }
 
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    maybe_instantiate_noexcept (decl);
+
   /* Normally, we can wait until instantiation-time to synthesize DECL.
      However, if DECL is a static data member initialized with a constant
      or a constexpr function, we need it right now because a reference to

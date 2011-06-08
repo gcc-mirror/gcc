@@ -1803,8 +1803,8 @@ check_final_overrider (tree overrider, tree basefn)
   tree base_type = TREE_TYPE (basefn);
   tree over_return = TREE_TYPE (over_type);
   tree base_return = TREE_TYPE (base_type);
-  tree over_throw = TYPE_RAISES_EXCEPTIONS (over_type);
-  tree base_throw = TYPE_RAISES_EXCEPTIONS (base_type);
+  tree over_throw, base_throw;
+
   int fail = 0;
 
   if (DECL_INVALID_OVERRIDER_P (overrider))
@@ -1888,6 +1888,11 @@ check_final_overrider (tree overrider, tree basefn)
     }
 
   /* Check throw specifier is at least as strict.  */
+  maybe_instantiate_noexcept (basefn);
+  maybe_instantiate_noexcept (overrider);
+  base_throw = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (basefn));
+  over_throw = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (overrider));
+
   if (!comp_except_specs (base_throw, over_throw, ce_derived))
     {
       error ("looser throw specifier for %q+#F", overrider);
