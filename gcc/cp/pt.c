@@ -13611,6 +13611,7 @@ deduction_tsubst_fntype (tree fn, tree targs)
   static bool excessive_deduction_depth;
   static int deduction_depth;
   location_t save_loc = input_location;
+  struct pending_template *old_last_pend = last_pending_template;
 
   tree fntype = TREE_TYPE (fn);
   tree tinst;
@@ -13644,7 +13645,9 @@ deduction_tsubst_fntype (tree fn, tree targs)
     }
 
   pop_tinst_level ();
-  ggc_free (tinst);
+  /* We can't free this if a pending_template entry is pointing at it.  */
+  if (last_pending_template == old_last_pend)
+    ggc_free (tinst);
   return r;
 }
 
