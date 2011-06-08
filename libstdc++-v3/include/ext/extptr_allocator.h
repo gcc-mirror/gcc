@@ -1,6 +1,6 @@
 // <extptr_allocator.h> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,7 @@
 #define _EXTPTR_ALLOCATOR_H 1
 
 #include <memory>
-#include <limits>
+#include <ext/numeric_traits.h>
 #include <ext/pointer.h>
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
@@ -98,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _M_real_alloc.deallocate(__p.get(), __n); }
 
       size_type max_size() const throw()
-      { return std::numeric_limits<size_type>::max() / sizeof(_Tp); }
+      { return __numeric_traits<size_type>::__max / sizeof(_Tp); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _Up, typename... _Args>
@@ -111,6 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         destroy(_Up* __p)
         { __p->~_Up(); }
 #else
+
       void construct(pointer __p, const _Tp& __val)
       { ::new(__p.get()) _Tp(__val); }
 
