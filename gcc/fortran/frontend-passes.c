@@ -1190,6 +1190,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  WALK_SUBEXPR (co->expr1);
 	  WALK_SUBEXPR (co->expr2);
 	  WALK_SUBEXPR (co->expr3);
+	  WALK_SUBEXPR (co->expr4);
 	  for (b = co->block; b; b = b->block)
 	    {
 	      WALK_SUBEXPR (b->expr1);
