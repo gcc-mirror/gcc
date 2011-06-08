@@ -6,6 +6,7 @@ AC_CONFIG_AUX_DIR(..)
 m4_sinclude(../libtool.m4)
 AC_CANONICAL_SYSTEM
 AC_PROG_CC
+AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_SED
 
 # Figure out what compiler warnings we can enable.
