@@ -2187,6 +2187,13 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 	{
 	  operands[1] = op1h;
 	  operands[2] = op2h;
+	  if (reload_completed
+	      && ! arith_reg_or_0_operand (op2h, SImode)
+	      && (true_regnum (op1h) || (comparison != EQ && comparison != NE)))
+	    {
+	      emit_move_insn (scratch, operands[2]);
+	      operands[2] = scratch;
+	    }
 	}
 
       operands[3] = skip_label = gen_label_rtx ();
