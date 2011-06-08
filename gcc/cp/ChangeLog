@@ -1,3 +1,8 @@
+2011-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (struct tinst_level): Add chain_next GTY
+	markup.
+
 2011-06-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49322
