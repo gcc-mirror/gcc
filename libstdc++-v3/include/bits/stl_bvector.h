@@ -844,7 +844,7 @@ template<typename _Alloc>
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     void
     shrink_to_fit()
-    { std::__shrink_to_fit<vector>::_S_do_it(*this); }
+    { std::__shrink_to_fit(*this); }
 #endif
 
     void

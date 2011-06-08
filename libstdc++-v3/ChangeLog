@@ -1,3 +1,10 @@
+2011-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/allocator.h (__shrink_to_fit): Simplify.
+	* include/bits/stl_vector.h (vector<>::shrink_to_fit): Adjust.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+
 2011-06-07  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/lib/prune.exp: s/required/instantiated/.
@@ -7,7 +14,8 @@
 	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
 	* testsuite/20_util/forward/1_neg.cc: Likewise.
 	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Likewise.
-	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
 	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Likewise.
 	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
 	* testsuite/20_util/shared_ptr/assign/shared_ptr_neg.cc: Likewise.
@@ -17,7 +25,8 @@
 	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc: Likewise.
 	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: Likewise.
 	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc: Likewise.
-	* testsuite/tr1/2_general_utilities/shared_ptr/assign/shared_ptr_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/
+	shared_ptr_neg.cc: Likewise.
 
 2011-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
