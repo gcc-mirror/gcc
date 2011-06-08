@@ -6675,7 +6675,7 @@ move_op (insn_t insn, av_set_t orig_ops, expr_t expr_vliw,
 {
   struct moveop_static_params sparams;
   struct cmpd_local_params lparams;
-  bool res;
+  int res;
 
   /* Init params for code_motion_path_driver.  */
   sparams.dest = dest;
@@ -6693,6 +6693,8 @@ move_op (insn_t insn, av_set_t orig_ops, expr_t expr_vliw,
   /* Set appropriate hooks and data.  */
   code_motion_path_driver_info = &move_op_hooks;
   res = code_motion_path_driver (insn, orig_ops, NULL, &lparams, &sparams);
+
+  gcc_assert (res != -1);
 
   if (sparams.was_renamed)
     EXPR_WAS_RENAMED (expr_vliw) = true;
@@ -7269,6 +7271,7 @@ sel_region_finish (bool reset_sched_cycles_p)
 
   finish_deps_global ();
   sched_finish_luids ();
+  VEC_free (haifa_deps_insn_data_def, heap, h_d_i_d);
 
   sel_finish_bbs ();
   BITMAP_FREE (blocks_to_reschedule);

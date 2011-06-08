@@ -1,5 +1,16 @@
 2011-06-02  Gary Funck  <gary@intrepid.com>
 
+	* sel-sched.c (move_op): Incorporate the following
+	patch to eliminate ICE at -O3 on IA64/Atlix.
+
+2011-06-07  Alexander Monakov  <amonakov@ispras.ru>
+
+        * sel-sched.c (move_op): Use correct type for 'res'.  Verify that
+        code_motion_path_driver returned 0 or 1.
+        (sel_region_finish): Clear h_d_i_d.
+
+2011-06-02  Gary Funck  <gary@intrepid.com>
+
 	Merge trunk version 174558 into gupc branch.
 
 2011-05-30  Gary Funck  <gary@intrepid.com>
