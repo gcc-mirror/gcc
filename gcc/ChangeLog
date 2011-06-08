@@ -1,3 +1,11 @@
+2011-06-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2011-06-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	unknown Intel family 0x6 CPUs.
+
 2011-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline
