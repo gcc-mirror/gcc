@@ -587,9 +587,22 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	default:
 	  if (arch)
 	    {
-	      if (has_ssse3)
-		/* If it is an unknown CPU with SSSE3, assume Core 2.  */
-		cpu = "core2";
+	      /* This is unknown family 0x6 CPU.  */
+	      if (has_avx)
+		/* Assume Sandy Bridge.  */
+		cpu = "corei7-avx";
+	      else if (has_sse4_2)
+		/* Assume Core i7.  */
+		cpu = "corei7";
+	      else if (has_ssse3)
+		{
+		  if (has_movbe)
+		    /* Assume Atom.  */
+		    cpu = "atom";
+		  else
+		    /* Assume Core 2.  */
+		    cpu = "core2";
+		}
 	      else if (has_sse3)
 		/* It is Core Duo.  */
 		cpu = "pentium-m";
