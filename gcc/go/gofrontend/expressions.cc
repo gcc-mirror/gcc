@@ -754,8 +754,13 @@ Expression::check_bounds(tree val, tree bound_type, tree sofar,
 	ret = NULL_TREE;
     }
 
-  if ((TYPE_UNSIGNED(val_type) && !TYPE_UNSIGNED(bound_type))
-      || TYPE_SIZE(val_type) > TYPE_SIZE(bound_type))
+  HOST_WIDE_INT val_type_size = int_size_in_bytes(val_type);
+  HOST_WIDE_INT bound_type_size = int_size_in_bytes(bound_type);
+  go_assert(val_type_size != -1 && bound_type_size != -1);
+  if (val_type_size > bound_type_size
+      || (val_type_size == bound_type_size
+	  && TYPE_UNSIGNED(val_type)
+	  && !TYPE_UNSIGNED(bound_type)))
     {
       tree max = TYPE_MAX_VALUE(bound_type);
       tree big = fold_build2_loc(loc, GT_EXPR, boolean_type_node, val,
