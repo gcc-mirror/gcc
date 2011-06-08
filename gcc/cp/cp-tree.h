@@ -4635,7 +4635,7 @@ struct cp_declarator {
 };
 
 /* A level of template instantiation.  */
-struct GTY(()) tinst_level {
+struct GTY((chain_next ("%h.next"))) tinst_level {
   /* The immediately deeper level in the chain.  */
   struct tinst_level *next;
 
