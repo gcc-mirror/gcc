@@ -1,3 +1,8 @@
+2011-06-09  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* doc/objc.texi (Traditional GNU Objective-C runtime API):
+	Updated.
+
 2011-06-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-flow-inline.h (op_iter_init): Reject GIMPLE_PHI stmts.
