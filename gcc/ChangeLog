@@ -1,3 +1,8 @@
+2011-06-08  Nick Clifton  <nickc@redhat.com>
+
+	* doc/invoke.texi (ARM Options): Update description of
+	-mthumb-interwork.
+
 2011-06-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Support
@@ -48,7 +53,7 @@
 	to use gimple_val_nonnegative_real_p.
 	* gimple-fold.c (gimple_val_nonnegative_real_p): New function.
 	* gimple.h (gimple_val_nonnegative_real_p): New declaration.
-	
+
 2011-06-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (*movsf_internal): Optimize AVX check.
