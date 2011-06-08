@@ -1,5 +1,13 @@
 2011-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/ext/extptr_allocator.h: Include <ext/numeric_traits.h>
+	instead of <limits>.
+	* include/bits/allocator.h: Likewise.
+
+	* include/std/chrono (duration_values<>::min): Call lowest, not min.
+
+2011-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/allocator.h (__shrink_to_fit): Simplify.
 	* include/bits/stl_vector.h (vector<>::shrink_to_fit): Adjust.
 	* include/bits/stl_deque.h: Likewise.
