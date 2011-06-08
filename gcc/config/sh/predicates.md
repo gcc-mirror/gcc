@@ -395,6 +395,7 @@
     }
 
   if ((mode == QImode || mode == HImode)
+      && mode == GET_MODE (op)
       && (MEM_P (op)
 	  || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))))
     {
@@ -432,6 +433,7 @@
     return 0;
 
   if ((mode == QImode || mode == HImode)
+      && mode == GET_MODE (op)
       && (MEM_P (op)
 	  || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))))
     {
