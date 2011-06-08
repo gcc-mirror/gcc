@@ -1864,8 +1864,6 @@ expr_with_var_bounded_array_refs_p (tree expr)
   return false;
 }
 
-enum mark_rw_status { SRA_MRRW_NOTHING, SRA_MRRW_DIRECT, SRA_MRRW_ASSIGN};
-
 /* Analyze the subtree of accesses rooted in ROOT, scheduling replacements when
    both seeming beneficial and when ALLOW_REPLACEMENTS allows it.  Also set all
    sorts of access flags appropriately along the way, notably always set
@@ -1905,9 +1903,8 @@ enum mark_rw_status { SRA_MRRW_NOTHING, SRA_MRRW_DIRECT, SRA_MRRW_ASSIGN};
    1	1	1	1	Yes		Any of the above yeses  */
 
 static bool
-analyze_access_subtree (struct access *root, bool allow_replacements,
-			enum mark_rw_status mark_read,
-			enum mark_rw_status mark_write)
+analyze_access_subtree (struct access *root, struct access *parent,
+			bool allow_replacements)
 {
   struct access *child;
   HOST_WIDE_INT limit = root->offset + root->size;
@@ -1915,29 +1912,17 @@ analyze_access_subtree (struct access *root, bool allow_replacements,
   bool scalar = is_gimple_reg_type (root->type);
   bool hole = false, sth_created = false;
 
-  if (root->grp_assignment_read)
-    mark_read = SRA_MRRW_ASSIGN;
-  else if (mark_read == SRA_MRRW_ASSIGN)
+  if (parent)
     {
-      root->grp_read = 1;
-      root->grp_assignment_read = 1;
+      if (parent->grp_read)
+	root->grp_read = 1;
+      if (parent->grp_assignment_read)
+	root->grp_assignment_read = 1;
+      if (parent->grp_write)
+	root->grp_write = 1;
+      if (parent->grp_assignment_write)
+	root->grp_assignment_write = 1;
     }
-  else if (mark_read == SRA_MRRW_DIRECT)
-    root->grp_read = 1;
-  else if (root->grp_read)
-    mark_read = SRA_MRRW_DIRECT;
-
-  if (root->grp_assignment_write)
-    mark_write = SRA_MRRW_ASSIGN;
-  else if (mark_write == SRA_MRRW_ASSIGN)
-    {
-      root->grp_write = 1;
-      root->grp_assignment_write = 1;
-    }
-  else if (mark_write == SRA_MRRW_DIRECT)
-    root->grp_write = 1;
-  else if (root->grp_write)
-    mark_write = SRA_MRRW_DIRECT;
 
   if (root->grp_unscalarizable_region)
     allow_replacements = false;
@@ -1952,9 +1937,8 @@ analyze_access_subtree (struct access *root, bool allow_replacements,
       else
 	covered_to += child->size;
 
-      sth_created |= analyze_access_subtree (child,
-					     allow_replacements && !scalar,
-					     mark_read, mark_write);
+      sth_created |= analyze_access_subtree (child, root,
+					     allow_replacements && !scalar);
 
       root->grp_unscalarized_data |= child->grp_unscalarized_data;
       hole |= !child->grp_covered;
@@ -2002,8 +1986,7 @@ analyze_access_trees (struct access *access)
 
   while (access)
     {
-      if (analyze_access_subtree (access, true,
-				  SRA_MRRW_NOTHING, SRA_MRRW_NOTHING))
+      if (analyze_access_subtree (access, NULL, true))
 	ret = true;
       access = access->next_grp;
     }
