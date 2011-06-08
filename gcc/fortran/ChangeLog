@@ -1,3 +1,21 @@
+2011-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.h (gfc_statement): Add ST_LOCK and ST_UNLOCK.
+	(gfc_exec_op): Add EXEC_LOCK and EXEC_UNLOCK.
+	(gfc_code): Add expr4.
+	* match.h (gfc_match_lock, gfc_match_unlock): New prototypes.
+	* match.c (gfc_match_lock, gfc_match_unlock,
+	lock_unlock_statement): New functions.
+	(sync_statement): Bug fix, avoiding double freeing.
+	(gfc_match_if): Handle LOCK/UNLOCK statement.
+	* parse.c (decode_statement, next_statement,
+	gfc_ascii_statement): Ditto.
+	* st.c (gfc_free_statement): Handle LOCK and UNLOCK.
+	* resolve.c (resolve_lock_unlock): New function.
+	(resolve_code): Call it.
+	* dump-parse-tree.c (show_code_node): Handle LOCK/UNLOCK.
+
 2011-06-07  Richard Guenther  <rguenther@suse.de>
 
 	* f95-lang.c (gfc_init_decl_processing): Do not set

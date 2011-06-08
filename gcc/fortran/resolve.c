@@ -8199,6 +8199,40 @@ find_reachable_labels (gfc_code *block)
 
 
 static void
+resolve_lock_unlock (gfc_code *code)
+{
+  /* FIXME: Add more lock-variable checks. For now, always reject it.
+     Note that ISO_FORTRAN_ENV's LOCK_TYPE is not yet available.  */
+  /* if (code->expr2->ts.type != BT_DERIVED
+	 || code->expr2->rank != 0
+	 || code->expr2->expr_type != EXPR_VARIABLE)  */
+  gfc_error ("Lock variable at %L must be a scalar of type LOCK_TYPE",
+	     &code->expr1->where);
+
+  /* Check STAT.  */
+  if (code->expr2
+      && (code->expr2->ts.type != BT_INTEGER || code->expr2->rank != 0
+	  || code->expr2->expr_type != EXPR_VARIABLE))
+    gfc_error ("STAT= argument at %L must be a scalar INTEGER variable",
+	       &code->expr2->where);
+
+  /* Check ERRMSG.  */
+  if (code->expr3
+      && (code->expr3->ts.type != BT_CHARACTER || code->expr3->rank != 0
+	  || code->expr3->expr_type != EXPR_VARIABLE))
+    gfc_error ("ERRMSG= argument at %L must be a scalar CHARACTER variable",
+	       &code->expr3->where);
+
+  /* Check ACQUIRED_LOCK.  */
+  if (code->expr4
+      && (code->expr4->ts.type != BT_LOGICAL || code->expr4->rank != 0
+	  || code->expr4->expr_type != EXPR_VARIABLE))
+    gfc_error ("ACQUIRED_LOCK= argument at %L must be a scalar LOGICAL "
+	       "variable", &code->expr4->where);
+}
+
+
+static void
 resolve_sync (gfc_code *code)
 {
   /* Check imageset. The * case matches expr1 == NULL.  */
@@ -9063,6 +9097,11 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_SYNC_IMAGES:
 	case EXEC_SYNC_MEMORY:
 	  resolve_sync (code);
+	  break;
+
+	case EXEC_LOCK:
+	case EXEC_UNLOCK:
+	  resolve_lock_unlock (code);
 	  break;
 
 	case EXEC_ENTRY:
