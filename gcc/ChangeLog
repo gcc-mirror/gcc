@@ -1,3 +1,10 @@
+2011-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/49305
+	* config/sh/predicates.md (general_movsrc_operand): Check
+	mode for memory with indexed address for QI and HImode.
+	(general_movdst_operand): Likewise.
+
 2011-06-09  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* doc/objc.texi (Traditional GNU Objective-C runtime API):
