@@ -1,5 +1,9 @@
 2011-06-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/objc.h (__GNU_LIBOBJC__): Bumped to 20110608.
+
+2011-06-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* configure.ac (VERSION): Bumped to 4:0:0.
 	* configure (VERSION): Likewise.
 

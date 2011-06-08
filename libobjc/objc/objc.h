@@ -43,7 +43,7 @@ extern "C" {
    release).  This macro is only defined starting with the GNU
    Objective-C Runtime shipped with GCC 4.6.0.  If it is not defined,
    it is either an older version of the runtime, or another runtime.  */
-#define __GNU_LIBOBJC__ 20100911
+#define __GNU_LIBOBJC__ 20110608
 
 /* Definition of the boolean type.
 
