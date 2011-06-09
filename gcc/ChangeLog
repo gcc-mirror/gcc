@@ -1,6 +1,11 @@
 2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/49154
+	* ira-costs.c (setup_regno_cost_classes_by_mode): If there
+	already is a matching slot in the hashtable, assign it to
+	classes_ptr.
+
+	PR rtl-optimization/49154
 	* doc/tm.texi.in (Register Classes): Document rule for the narrowest
 	register classes.
 	* doc/tm.texi: Regenerate.

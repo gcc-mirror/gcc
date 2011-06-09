@@ -299,6 +299,8 @@ setup_regno_cost_classes_by_mode (int regno, enum machine_mode mode)
 	  classes_ptr = setup_cost_classes (&classes);
 	  *slot = classes_ptr;
 	}
+      else
+	classes_ptr = *slot;
       cost_classes_mode_cache[mode] = (cost_classes_t) *slot;
     }
   regno_cost_classes[regno] = classes_ptr;
