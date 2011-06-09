@@ -514,11 +514,11 @@ reset_unmarked_insns_debug_uses (void)
 	      struct df_link *defs;
 	      for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
 		{
-		  rtx insn;
+		  rtx ref_insn;
 		  if (DF_REF_IS_ARTIFICIAL (defs->ref))
 		    continue;
-		  insn = DF_REF_INSN (defs->ref);
-		  if (!marked_insn_p (insn))
+		  ref_insn = DF_REF_INSN (defs->ref);
+		  if (!marked_insn_p (ref_insn))
 		    break;
 		}
 	      if (!defs)
@@ -527,6 +527,7 @@ reset_unmarked_insns_debug_uses (void)
 		 each of the DEFs?  */
 	      INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
 	      df_insn_rescan_debug_internal (insn);
+	      break;
 	    }
 	}
 }
