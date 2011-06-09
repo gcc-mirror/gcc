@@ -1,3 +1,8 @@
+2011-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29003
+	* decl.c (grokdeclarator): Reject operator names in typedefs.
+
 2011-06-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49107
