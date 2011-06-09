@@ -1,5 +1,10 @@
 2011-06-08  Andi Kleen  <ak@linux.intel.com>
 
+	* config/i386/driver-i386.c (host_detect_local_cpu):
+	Add model 0x2d Intel CPU.
+
+2011-06-08  Andi Kleen  <ak@linux.intel.com>
+
 	* reginfo.c (global_regs_decl): Add.
 	(globalize_reg): Add decl parameter. Compute location.
 	Pass location to warnings and add inform. Store decl
