@@ -1035,9 +1035,10 @@ Variable::get_init_tree(Gogo* gogo, Named_object* function)
   if (this->init_ == NULL)
     {
       go_assert(!this->is_parameter_);
-      return this->type_->get_init_tree(gogo,
-					(this->is_global_
-					 || this->is_in_heap()));
+      if (this->is_global_ || this->is_in_heap())
+	return NULL;
+      Btype* btype = this->type_->get_backend(gogo);
+      return expr_to_tree(gogo->backend()->zero_expression(btype));
     }
   else
     {
@@ -1286,7 +1287,8 @@ Function::make_receiver_parm_decl(Gogo* gogo, Named_object* no, tree var_decl)
 						null_pointer_node));
   tree ind = build_fold_indirect_ref_loc(loc, parm_decl);
   TREE_THIS_NOTRAP(ind) = 1;
-  tree zero_init = no->var_value()->type()->get_init_tree(gogo, false);
+  Btype* btype = no->var_value()->type()->get_backend(gogo);
+  tree zero_init = expr_to_tree(gogo->backend()->zero_expression(btype));
   tree init = fold_build3_loc(loc, COND_EXPR, TREE_TYPE(ind),
 			      check, ind, zero_init);
 
@@ -1423,7 +1425,10 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 	  Type* type = (*p)->result_var_value()->type();
 	  tree init;
 	  if (!(*p)->result_var_value()->is_in_heap())
-	    init = type->get_init_tree(gogo, false);
+	    {
+	      Btype* btype = type->get_backend(gogo);
+	      init = expr_to_tree(gogo->backend()->zero_expression(btype));
+	    }
 	  else
 	    {
 	      source_location loc = (*p)->location();
@@ -1432,20 +1437,7 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 						 TYPE_SIZE_UNIT(type_tree),
 						 loc);
 	      tree ptr_type_tree = build_pointer_type(type_tree);
-	      tree subinit = type->get_init_tree(gogo, true);
-	      if (subinit == NULL_TREE)
-		init = fold_convert_loc(loc, ptr_type_tree, space);
-	      else
-		{
-		  space = save_expr(space);
-		  space = fold_convert_loc(loc, ptr_type_tree, space);
-		  tree spaceref = build_fold_indirect_ref_loc(loc, space);
-		  TREE_THIS_NOTRAP(spaceref) = 1;
-		  tree set = fold_build2_loc(loc, MODIFY_EXPR, void_type_node,
-					     spaceref, subinit);
-		  init = fold_build2_loc(loc, COMPOUND_EXPR, TREE_TYPE(space),
-					 set, space);
-		}
+	      init = fold_convert_loc(loc, ptr_type_tree, space);
 	    }
 
 	  if (var_decl != error_mark_node)

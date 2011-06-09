@@ -194,6 +194,11 @@ class Gcc_backend : public Backend
   bool
   is_circular_pointer_type(Btype*);
 
+  // Expressions.
+
+  Bexpression*
+  zero_expression(Btype*);
+
   // Statements.
 
   Bstatement*
@@ -698,6 +703,20 @@ bool
 Gcc_backend::is_circular_pointer_type(Btype* btype)
 {
   return btype->get_tree() == ptr_type_node;
+}
+
+// Return the zero value for a type.
+
+Bexpression*
+Gcc_backend::zero_expression(Btype* btype)
+{
+  tree t = btype->get_tree();
+  tree ret;
+  if (t == error_mark_node)
+    ret = error_mark_node;
+  else
+    ret = build_zero_cst(t);
+  return tree_to_expr(ret);
 }
 
 // An expression as a statement.
