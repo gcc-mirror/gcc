@@ -985,6 +985,17 @@
 		      (const_string "alu_shift_reg")))]
 )
 
+(define_insn "*addsi3_carryin_clobercc_<optab>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "%r")
+			  (match_operand:SI 2 "arm_rhs_operand" "rI"))
+		 (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))))
+   (clobber (reg:CC CC_REGNUM))]
+   "TARGET_32BIT"
+   "adc%.\\t%0, %1, %2"
+   [(set_attr "conds" "set")]
+)
+
 (define_expand "incscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
         (plus:SI (match_operator:SI 2 "arm_comparison_operator"
@@ -8873,14 +8884,19 @@
 	      (set (match_dup 0) (const_int 1)))
    (match_scratch:SI 3 "r")]
   "TARGET_32BIT"
-  [(set (match_dup 3) (minus:SI (match_dup 1) (match_dup 2)))
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (match_dup 1) (match_dup 2)))
+     (set (match_dup 3) (minus:SI (match_dup 1) (match_dup 2)))])
    (parallel
     [(set (reg:CC CC_REGNUM)
 	  (compare:CC (const_int 0) (match_dup 3)))
      (set (match_dup 0) (minus:SI (const_int 0) (match_dup 3)))])
-   (set (match_dup 0)
-	(plus:SI (plus:SI (match_dup 0) (match_dup 3))
-		 (geu:SI (reg:CC CC_REGNUM) (const_int 0))))])
+   (parallel
+    [(set (match_dup 0)
+	  (plus:SI (plus:SI (match_dup 0) (match_dup 3))
+		   (geu:SI (reg:CC CC_REGNUM) (const_int 0))))
+     (clobber (reg:CC CC_REGNUM))])])
 
 (define_insn "*cond_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
