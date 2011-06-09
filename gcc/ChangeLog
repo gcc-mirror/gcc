@@ -1,3 +1,10 @@
+2011-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/49308
+	* dce.c (reset_unmarked_insns_debug_uses): Avoid shadowing insn
+	variable.  After resetting and rescanning insn continue with previous
+	statement.
+
 2011-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_as_hidden): Enable on *-*-darwin*.
