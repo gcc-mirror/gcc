@@ -2192,6 +2192,12 @@ EOF
     gcc_cv_as_hidden=yes
     ;;
 esac])
+case "${target}" in
+  *-*-darwin*)
+    # Darwin as has some visibility support, though with a different syntax.
+    gcc_cv_as_hidden=yes
+    ;;
+esac
 
 # gnu_indirect_function type is an extension proposed at
 # http://groups.google/com/group/generic-abi/files. It allows dynamic runtime
@@ -2291,6 +2297,10 @@ else
     fi
   else
     case "${target}" in
+      *-*-darwin*)
+	# Darwin ld has some visibility support.
+	gcc_cv_ld_hidden=yes
+        ;;
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
