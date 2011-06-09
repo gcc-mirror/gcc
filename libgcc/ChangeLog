@@ -1,3 +1,10 @@
+2011-06-09  David S. Miller  <davem@davemloft.net>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (sparc-*-linux*): Correct md_unwind_header
+	filename.
+	(s390x-ibm-tpf*): Fix typo.
+
 2011-06-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (mips-sgi-irix6.5*): Add t-crtfm to tmake_file.

@@ -563,7 +563,7 @@ s390x-*-linux*)
 	;;
 s390x-ibm-tpf*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-tpf"
-	md_unwind_header-s390/tpf-unwind.h
+	md_unwind_header=s390/tpf-unwind.h
 	;;
 score-*-elf)
         ;;
@@ -600,7 +600,7 @@ sparc-*-elf*)
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} t-crtfm"
-	md_unwind_header=sparc/linux.h
+	md_unwind_header=sparc/linux-unwind.h
 	;;
 sparc-*-rtems* | sparc64-*-rtems* )
 	tmake_file="sparc/t-elf t-crtin t-crtfm t-rtems"
