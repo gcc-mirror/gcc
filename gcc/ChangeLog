@@ -1,3 +1,8 @@
+2011-06-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal_rex64): Merge
+	alternatives 6 and 8.
+
 2011-06-09  David Li  <davidxl@google.com>
 
 	* cgraphunit.c (cgraph_finalize_compilation_unit): Pass dump.
@@ -21,7 +26,6 @@
 	* except.c (finish_eh_generation): Ditto.
 	(convert_to_eh_region_ranges): Ditto.
 	* cprop.c (one_cprop_pass): Ditto.
-
 
 2011-06-09  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -86,8 +90,7 @@
 	(TARGET_STACK_PROTECT_FAIL): Likewise.
 	(rs6000_stack_protect_fail): Mark unused.
 	* dwarf2asm.c (dw2_output_indirect_constant_1): Mark decl hidden if
-	USE_LINKONCE_INDIRECT.
-	Don't emit .hidden expicitly.
+	USE_LINKONCE_INDIRECT.  Don't emit .hidden expicitly.
 
 2011-06-08  Andi Kleen  <ak@linux.intel.com>
 
@@ -102,9 +105,8 @@
 2011-06-08  Andi Kleen  <ak@linux.intel.com>
 
 	* reginfo.c (global_regs_decl): Add.
-	(globalize_reg): Add decl parameter. Compute location.
-	Pass location to warnings and add inform. Store decl
-	in global_regs_decl.
+	(globalize_reg): Add decl parameter. Compute location.  Pass location
+	to warnings and add inform. Store decl in global_regs_decl.
 	* rtl.h (globalize_reg): Update prototype.
 	* varasm.c (make_decl_rtl): Pass decl to globalize_reg().
 
@@ -121,8 +123,7 @@
 
 2011-06-09  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-	* doc/objc.texi (Traditional GNU Objective-C runtime API):
-	Updated.
+	* doc/objc.texi (Traditional GNU Objective-C runtime API): Updated.
 
 2011-06-08  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -231,8 +232,7 @@
 2011-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/49299
-	* value-prof.c (gimple_ic): Don't assume icall has
-	a fallthru edge.
+	* value-prof.c (gimple_ic): Don't assume icall has a fallthru edge.
 
 2011-06-07  Ira Rosen  <ira.rosen@linaro.org>
 
@@ -271,9 +271,8 @@
 	PR c++/49264
 	* gimple-fold.c (fold_stmt_1): Don't try to fold *& on the lhs
 	if stmt folded into nothing.
-	* tree-inline.c (fold_marked_statements): If a builtin at the
-	end of a bb folded into nothing, just update cgraph edges
-	and move to next bb.
+	* tree-inline.c (fold_marked_statements): If a builtin at the end of
+	a bb folded into nothing, just update cgraph edges and move to next bb.
 	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Allow new_stmt
 	to be NULL.  Don't compute count and frequency if new_call is NULL.
 
@@ -297,17 +296,13 @@
 	Move initialization code to lto/lto.c.
 	* lto-streamer-out.c (pack_value_fields): Call
 	streamer_hooks.pack_value_fields if set.
-	(lto_output_tree_ref): For tree nodes that are not
-	normally indexable, call streamer_hooks.indexable_with_decls_p
-	before giving up.
+	(lto_output_tree_ref): For tree nodes that are not normally indexable,
+	call streamer_hooks.indexable_with_decls_p before giving up.
 	(lto_output_ts_decl_common_tree_pointers): Move handling
-	for FUNCTION_DECL and TRANSLATION_UNIT_DECL to
-	lto_streamer_write_tree.
-	(lto_output_tree_header): Call streamer_hooks.is_streamable
-	instead of lto_is_streamable.
-	Call lto_streamer_hooks.output_tree_header if set.
-	(lto_write_tree): Call lto_streamer_hooks.write_tree if
-	set.
+	for FUNCTION_DECL and TRANSLATION_UNIT_DECL to lto_streamer_write_tree.
+	(lto_output_tree_header): Call streamer_hooks.is_streamable instead of
+	lto_is_streamable.  Call lto_streamer_hooks.output_tree_header if set.
+	(lto_write_tree): Call lto_streamer_hooks.write_tree if set.
 	(lto_streamer_write_tree): New.
 	(lto_output): Call lto_streamer_init directly.
 	(lto_writer_init): Remove.
@@ -347,7 +342,7 @@
 	(expand_builtin_pow): Remove.
 	(expand_builtin_powi): Eliminate handling of constant exponent.
 	(expand_builtin): Use expand_builtin_mathfn_2 for BUILT_IN_POW.
-	
+
 2011-06-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cprop.c (local_cprop_pass): Don't set changed for debug insns.
@@ -401,10 +396,9 @@
 2011-06-06  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/49285
-	* config/mmix/mmix.md ("truncdfsf2", "extendsfdf2"): Correct
-	predicate to nonimmediate_operand from memory_operand for the
-	operand that is to be forced to memory by the expander.  Lose
-	the constraints.
+	* config/mmix/mmix.md ("truncdfsf2", "extendsfdf2"): Correct predicate
+	to nonimmediate_operand from memory_operand for the operand that is to
+	be forced to memory by the expander.  Lose the constraints.
 
 2011-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -432,7 +426,8 @@
 2011-06-04  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/48954
-	* lto-cgraph.c (output_node_opt_summary): Handle NULL skip args bitmaps.
+	* lto-cgraph.c (output_node_opt_summary): Handle NULL skip args
+	bitmaps.
 
 2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -12007,7 +12002,7 @@
 	(avr_function_value): Make static. Rename 'func' argument to
 	'fn_decl_or_type', forward it to avr_libcall_value. Call
 	avr_ret_register function instead of RET_REGISTER macro.
- 	(TARGET_LIBCALL_VALUE, TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	(TARGET_LIBCALL_VALUE, TARGET_FUNCTION_VALUE_REGNO_P): Define.
 
 2011-03-18  Jason Merrill  <jason@redhat.com>
 
