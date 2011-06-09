@@ -9394,8 +9394,14 @@ ia64_reorg (void)
   if (optimize && flag_schedule_insns_after_reload
       && dbg_cnt (ia64_sched2))
     {
+      basic_block bb;
       timevar_push (TV_SCHED2);
       ia64_final_schedule = 1;
+
+      /* We can't let modulo-sched prevent us from scheduling any bbs,
+	 since we need the final schedule to produce bundle information.  */
+      FOR_EACH_BB (bb)
+	bb->flags &= ~BB_DISABLE_SCHEDULE;
 
       initiate_bundle_states ();
       ia64_nop = make_insn_raw (gen_nop ());
