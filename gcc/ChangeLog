@@ -1,5 +1,6 @@
 2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR rtl-optimization/49154
 	* doc/tm.texi.in (Register Classes): Document rule for the narrowest
 	register classes.
 	* doc/tm.texi: Regenerate.
