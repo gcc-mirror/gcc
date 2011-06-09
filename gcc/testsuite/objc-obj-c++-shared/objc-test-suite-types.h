@@ -45,11 +45,6 @@ typedef void * TNS_STRING_REF_T;
 
 /* Where there are equivalent interfaces between APIs we substitute
    a macro or typedef.  */
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-typedef void * PMETH;
-#else
-typedef struct objc_method * PMETH;
-#endif
 
 #ifdef __OBJC2__
 /* Const String Class ref.  */
