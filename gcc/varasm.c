@@ -1237,7 +1237,7 @@ make_decl_rtl (tree decl)
 #endif
 	      nregs = hard_regno_nregs[reg_number][DECL_MODE (decl)];
 	      while (nregs > 0)
-		globalize_reg (reg_number + --nregs);
+		globalize_reg (decl, reg_number + --nregs);
 	    }
 
 	  /* As a register variable, it has no section.  */

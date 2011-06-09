@@ -1,3 +1,12 @@
+2011-06-08  Andi Kleen  <ak@linux.intel.com>
+
+	* reginfo.c (global_regs_decl): Add.
+	(globalize_reg): Add decl parameter. Compute location.
+	Pass location to warnings and add inform. Store decl
+	in global_regs_decl.
+	* rtl.h (globalize_reg): Update prototype.
+	* varasm.c (make_decl_rtl): Pass decl to globalize_reg().
+
 2011-06-09  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* treestruct.def (TS_TYPE_DECL): Fix the printable name typo.
