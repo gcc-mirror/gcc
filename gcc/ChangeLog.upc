@@ -1,7 +1,17 @@
-2011-06-02  Gary Funck  <gary@intrepid.com>
+2011-06-09  Gary Funck  <gary@intrepid.com>
+
+	* c-parser.c (upc_localsizeof_type): Fix an ICE when compiling for a 32-bit
+	target, the size expression overflowed, the result was error_mark_node,
+	and an ICE was triggered on an attempt to evaluate
+	C_TYPE_VARIABLE_SIZE() on the error node.
+	(upc_blocksizeof_expr, upc_blocksizeof_type,
+	upc_elemsizeof_expr, upc_elemsizeof_type, upc_localsizeof_expr);
+	Make similar changes to avoid further processing of error_mark_node.
+ 
+2011-06-07  Gary Funck  <gary@intrepid.com>
 
 	* sel-sched.c (move_op): Incorporate the following
-	patch to eliminate ICE at -O3 on IA64/Atlix.
+	patch to eliminate ICE at -O3 on IA64/Altix.
 
 2011-06-07  Alexander Monakov  <amonakov@ispras.ru>
 
