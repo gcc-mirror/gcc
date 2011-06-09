@@ -1,3 +1,7 @@
+2011-06-09  David Li  <davidxl@google.com>
+
+	* testsuite/gcc.dg/dump-pass.c: New test.
+
 2011-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/29003

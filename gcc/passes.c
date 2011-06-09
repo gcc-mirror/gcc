@@ -478,7 +478,7 @@ passr_eq (const void *p1, const void *p2)
   return !strcmp (s1->unique_name, s2->unique_name);
 }
 
-static htab_t pass_name_tab = NULL;
+static htab_t name_to_pass_map = NULL;
 
 /* Register PASS with NAME.  */
 
@@ -488,11 +488,11 @@ register_pass_name (struct opt_pass *pass, const char *name)
   struct pass_registry **slot;
   struct pass_registry pr;
 
-  if (!pass_name_tab)
-    pass_name_tab = htab_create (256, passr_hash, passr_eq, NULL);
+  if (!name_to_pass_map)
+    name_to_pass_map = htab_create (256, passr_hash, passr_eq, NULL);
 
   pr.unique_name = name;
-  slot = (struct pass_registry **) htab_find_slot (pass_name_tab, &pr, INSERT);
+  slot = (struct pass_registry **) htab_find_slot (name_to_pass_map, &pr, INSERT);
   if (!*slot)
     {
       struct pass_registry *new_pr;
@@ -506,6 +506,101 @@ register_pass_name (struct opt_pass *pass, const char *name)
     return; /* Ignore plugin passes.  */
 }
 
+/* Map from pass id to canonicalized pass name.  */
+
+typedef const char *char_ptr;
+DEF_VEC_P(char_ptr);
+DEF_VEC_ALLOC_P(char_ptr, heap);
+static VEC(char_ptr, heap) *pass_tab = NULL;
+
+/* Callback function for traversing NAME_TO_PASS_MAP.  */
+
+static int
+pass_traverse (void **slot, void *data ATTRIBUTE_UNUSED)
+{
+  struct pass_registry **p = (struct pass_registry **)slot;
+  struct opt_pass *pass = (*p)->pass;
+
+  gcc_assert (pass->static_pass_number > 0);
+  gcc_assert (pass_tab);
+
+  VEC_replace (char_ptr, pass_tab, pass->static_pass_number,
+               (*p)->unique_name);
+
+  return 1;
+}
+
+/* The function traverses NAME_TO_PASS_MAP and creates a pass info
+   table for dumping purpose.  */
+
+static void
+create_pass_tab (void)
+{
+  if (!flag_dump_passes)
+    return;
+
+  VEC_safe_grow_cleared (char_ptr, heap,
+                         pass_tab, passes_by_id_size + 1);
+  htab_traverse (name_to_pass_map, pass_traverse, NULL);
+}
+
+static bool override_gate_status (struct opt_pass *, tree, bool);
+
+/* Dump the instantiated name for PASS. IS_ON indicates if PASS
+   is turned on or not.  */
+
+static void
+dump_one_pass (struct opt_pass *pass, int pass_indent)
+{
+  int indent = 3 * pass_indent;
+  const char *pn;
+  bool is_on, is_really_on;
+
+  is_on = (pass->gate == NULL) ? true : pass->gate();
+  is_really_on = override_gate_status (pass, NULL, is_on);
+
+  if (pass->static_pass_number <= 0)
+    pn = pass->name;
+  else
+    pn = VEC_index (char_ptr, pass_tab, pass->static_pass_number);
+
+  fprintf (stderr, "%*s%-40s%*s:%s%s\n", indent, " ", pn,
+           (15 - indent < 0 ? 0 : 15 - indent), " ",
+           is_on ? "  ON" : "  OFF",
+           ((!is_on) == (!is_really_on) ? ""
+            : (is_really_on ? " (FORCED_ON)" : " (FORCED_OFF)")));
+}
+
+/* Dump pass list PASS with indentation INDENT.  */
+
+static void
+dump_pass_list (struct opt_pass *pass, int indent)
+{
+  do
+    {
+      dump_one_pass (pass, indent);
+      if (pass->sub)
+        dump_pass_list (pass->sub, indent + 1);
+      pass = pass->next;
+    }
+  while (pass);
+}
+
+/* Dump all optimization passes.  */
+
+void
+dump_passes (void)
+{
+  create_pass_tab();
+
+  dump_pass_list (all_lowering_passes, 1);
+  dump_pass_list (all_small_ipa_passes, 1);
+  dump_pass_list (all_regular_ipa_passes, 1);
+  dump_pass_list (all_lto_gen_passes, 1);
+  dump_pass_list (all_passes, 1);
+}
+
+
 /* Returns the pass with NAME.  */
 
 static struct opt_pass *
@@ -513,9 +608,8 @@ get_pass_by_name (const char *name)
 {
   struct pass_registry **slot, pr;
 
-  gcc_assert (pass_name_tab);
   pr.unique_name = name;
-  slot = (struct pass_registry **) htab_find_slot (pass_name_tab,
+  slot = (struct pass_registry **) htab_find_slot (name_to_pass_map,
                                                    &pr, NO_INSERT);
 
   if (!slot || !*slot)
