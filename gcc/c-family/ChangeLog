@@ -1,3 +1,10 @@
+2011-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (fbuilding-libgcc): New option.
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__LIBGCC_TRAMPOLINE_SIZE__ if flag_building_libgcc.
+
 2011-06-07  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (max_tinst_depth): Lower default to 900.

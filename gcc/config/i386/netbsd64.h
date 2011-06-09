@@ -66,5 +66,4 @@ along with GCC; see the file COPYING3.  If not see
     fprintf (FILE, "\tcall __mcount\n");				\
 }
 
-/* Attempt to enable execute permissions on the stack.  */
-#define ENABLE_EXECUTE_STACK NETBSD_ENABLE_EXECUTE_STACK
+#define HAVE_ENABLE_EXECUTE_STACK

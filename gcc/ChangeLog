@@ -1,3 +1,39 @@
+2011-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/netbsd.h (ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/alpha/osf5.h (ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/darwin.h (ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/i386/mingw32.h (MINGW_ENABLE_EXECUTE_STACK): Remove.
+	(ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	[IN_LIBGCC2]: Don't include <windows.h>.
+	* config/i386/netbsd-elf.h (ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/i386/netbsd64.h (ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/netbsd.h (NETBSD_ENABLE_EXECUTE_STACK): Remove.
+	* config/openbsd.h (ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/sol2.h (ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/sparc/freebsd.h (ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/sparc/netbsd-elf.h (ENABLE_EXECUTE_STACK): Remove.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/alpha/alpha.c (alpha_trampoline_init): Test
+	HAVE_ENABLE_EXECUTE_STACK.
+	* config/i386/i386.c (ix86_trampoline_init): Likewise.
+	* config/sparc/sparc.c (sparc32_initialize_trampoline): Likewise.
+	(sparc64_initialize_trampoline): Likewise.
+	* libgcc2.c [L_enable_execute_stack]: Remove.
+	* system.h (ENABLE_EXECUTE_STACK): Poison.
+	* doc/tm.texi.in (Trampolines, ENABLE_EXECUTE_STACK): Remove.
+	* doc/tm.texi: Regenerate.
+	* Makefile.in (LIBGCC2_CFLAGS): Add -fbuilding-libgcc.
+
 2011-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49308

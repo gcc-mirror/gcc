@@ -1,7 +1,7 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2026,19 +2026,6 @@ __clear_cache (char *beg __attribute__((__unused__)),
 }
 
 #endif /* L_clear_cache */
-
-#ifdef L_enable_execute_stack
-/* Attempt to turn on execute permission for the stack.  */
-
-#ifdef ENABLE_EXECUTE_STACK
-  ENABLE_EXECUTE_STACK
-#else
-void
-__enable_execute_stack (void *addr __attribute__((__unused__)))
-{}
-#endif /* ENABLE_EXECUTE_STACK */
-
-#endif /* L_enable_execute_stack */
 
 #ifdef L_trampoline
 

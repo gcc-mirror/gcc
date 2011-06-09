@@ -1,3 +1,16 @@
+2011-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* enable-execute-stack-empty.c: New file.
+	* enable-execute-stack-mprotect.c: New file.
+	* config/i386/enable-execute-stack-mingw32.c: New file.
+	* config.host (enable_execute_stack): New variable.
+	Select appropriate variants.
+	* configure.ac: Link enable-execute-stack.c to
+	$enable_execute_stack.
+	* configure: Regenerate.
+	* Makefile.in (LIB2ADD): Add enable-execute-stack.c.
+	(lib2funcs): Remove _enable_execute_stack.
+
 2011-06-09  David S. Miller  <davem@davemloft.net>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

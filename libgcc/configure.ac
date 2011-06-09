@@ -278,6 +278,7 @@ AC_SUBST(tmake_file)
 AC_SUBST(cpu_type)
 AC_SUBST(extra_parts)
 AC_SUBST(asm_hidden_op)
+AC_CONFIG_LINKS([enable-execute-stack.c:$enable_execute_stack])
 AC_CONFIG_LINKS([md-unwind-support.h:config/$md_unwind_header])
 
 # We need multilib support.

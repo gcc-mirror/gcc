@@ -44,6 +44,8 @@
 #			The default is ".hidden".
 #  cpu_type		The name of the cpu, if different from the first
 #			chunk of the canonical host name.
+#  enable_execute_stack The name of a source file implementing
+#			__enable_execute_stack.
 #  extra_parts		List of extra object files that should be compiled
 #			for this target machine.  This may be overridden
 #			by setting EXTRA_PARTS in a tmake_file fragment.
@@ -57,6 +59,7 @@
 #			"$cpu_type/t-$cpu_type".
 
 asm_hidden_op=.hidden
+enable_execute_stack=
 extra_parts=
 tmake_file=
 md_unwind_header=no-unwind.h
@@ -199,6 +202,19 @@ case ${host} in
 *-*-vxworks*)
   ;;
 *-*-elf)
+  ;;
+esac
+
+case ${host} in
+*-*-darwin* | *-*-freebsd* | *-*-netbsd* | *-*-openbsd* | *-*-solaris2* | \
+  alpha*-dec-osf5.1*)
+  enable_execute_stack=enable-execute-stack-mprotect.c
+  ;;
+i[34567]86-*-mingw* | x86_64-*-mingw*)
+  enable_execute_stack=config/i386/enable-execute-stack-mingw32.c
+  ;;
+*)
+  enable_execute_stack=enable-execute-stack-empty.c;
   ;;
 esac
 

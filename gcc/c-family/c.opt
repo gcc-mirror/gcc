@@ -700,6 +700,10 @@ fasm
 C ObjC C++ ObjC++ Var(flag_no_asm, 0)
 Recognize the \"asm\" keyword
 
+; Define extra predefined macros for use in libgcc.
+fbuilding-libgcc
+C ObjC C++ ObjC++ Undocumented Var(flag_building_libgcc)
+
 fbuiltin
 C ObjC C++ ObjC++ Var(flag_no_builtin, 0)
 Recognize built-in functions

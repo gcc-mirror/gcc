@@ -1,5 +1,5 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -726,6 +726,12 @@ c_cpp_builtins (cpp_reader *pfile)
       builtin_define_fixed_point_constants ("UDA", "", uda_type_node);
       builtin_define_fixed_point_constants ("UTA", "", uta_type_node);
     }
+
+  /* For libgcc-internal use only.  */
+  if (flag_building_libgcc)
+    /* For libgcc enable-execute-stack.c.  */
+    builtin_define_with_int_value ("__LIBGCC_TRAMPOLINE_SIZE__",
+				   TRAMPOLINE_SIZE);
 
   /* For use in assembly language.  */
   builtin_define_with_value ("__REGISTER_PREFIX__", REGISTER_PREFIX, 0);
