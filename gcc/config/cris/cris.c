@@ -1360,24 +1360,11 @@ static int
 cris_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 			 reg_class_t from, reg_class_t to)
 {
-  if (!TARGET_V32)
-    {
-      /* Pretend that classes that we don't support are ALL_REGS, so
-	 we give them the highest cost.  */
-      if (from != SPECIAL_REGS && from != MOF_REGS
-	  && from != GENERAL_REGS && from != GENNONACR_REGS)
-	from = ALL_REGS;
-
-      if (to != SPECIAL_REGS && to != MOF_REGS
-	  && to != GENERAL_REGS && to != GENNONACR_REGS)
-	to = ALL_REGS;
-    }
-
   /* Can't move to and from a SPECIAL_REGS register, so we have to say
      their move cost within that class is higher.  How about 7?  That's 3
      for a move to a GENERAL_REGS register, 3 for the move from the
      GENERAL_REGS register, and 1 for the increased register pressure.
-     Also, it's higher than the memory move cost, which is in order.  
+     Also, it's higher than the memory move cost, as it should.
      We also do this for ALL_REGS, since we don't want that class to be
      preferred (even to memory) at all where GENERAL_REGS doesn't fit.
      Whenever it's about to be used, it's for SPECIAL_REGS.  If we don't
@@ -1386,13 +1373,15 @@ cris_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
      GENERAL_REGS left to allocate.  This is because the fall-back when
      the most preferred register class isn't available, isn't the next
      (or next good) wider register class, but the *most widest* register
-     class.  */
+     class.  FIXME: pre-IRA comment, perhaps obsolete now.  */
 
   if ((reg_classes_intersect_p (from, SPECIAL_REGS)
        && reg_classes_intersect_p (to, SPECIAL_REGS))
       || from == ALL_REGS || to == ALL_REGS)
     return 7;
 
+  /* Make moves to/from SPECIAL_REGS slightly more expensive, as we
+     generally prefer GENERAL_REGS.  */
   if (reg_classes_intersect_p (from, SPECIAL_REGS)
       || reg_classes_intersect_p (to, SPECIAL_REGS))
     return 3;

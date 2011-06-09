@@ -1,3 +1,13 @@
+2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/49154
+	* config/cris/cris.h (FIXED_REGISTERS): Include CRIS_CC0_REGNUM.
+	(enum reg_class): Add SRP_REGS and MOF_SRP_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS, REGNO_REG_CLASS)
+	(PREFERRED_RELOAD_CLASS, SECONDARY_RELOAD_CLASS): Adjust to fit.
+	* config/cris/cris.h (cris_register_move_cost): Remove
+	!TARGET_V32 code.  Tweak comments.
+
 2011-06-09  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphbuild.c (record_eh_tables): Mark personality function as having
