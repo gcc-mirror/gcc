@@ -8441,6 +8441,13 @@ grokdeclarator (const cp_declarator *declarator,
       return error_mark_node;
     }
 
+  if (dname && IDENTIFIER_OPNAME_P (dname)
+      && declspecs->specs[(int)ds_typedef])
+    {
+      error ("declaration of %qD as %<typedef%>", dname);
+      return error_mark_node;
+    }
+
   /* Anything declared one level down from the top level
      must be one of the parameters of a function
      (because the body is at least two levels down).  */
