@@ -207,52 +207,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define STDC_0_IN_SYSTEM_HEADERS 1
 
-/*
- * Attempt to turn on access permissions for the stack.
- *
- * _SC_STACK_PROT is only defined for post 2.6, but we want this code
- * to run always.  2.6 can change the stack protection but has no way to
- * query it.
- *
- */
-
-/* sys/mman.h is not present on some non-Solaris configurations
-   that use sol2.h, so ENABLE_EXECUTE_STACK must use a magic
-   number instead of the appropriate PROT_* flags.  */
-
-#define ENABLE_EXECUTE_STACK					\
-									\
-/* #define STACK_PROT_RWX (PROT_READ | PROT_WRITE | PROT_EXEC) */	\
-									\
-static int need_enable_exec_stack;					\
-									\
-static void check_enabling(void) __attribute__ ((constructor));		\
-static void check_enabling(void)					\
-{									\
-  extern long sysconf(int);						\
-									\
-  int prot = (int) sysconf(515 /* _SC_STACK_PROT */);			\
-  if (prot != 7 /* STACK_PROT_RWX */)					\
-    need_enable_exec_stack = 1;						\
-}									\
-									\
-extern void __enable_execute_stack (void *);				\
-void									\
-__enable_execute_stack (void *addr)					\
-{									\
-  extern int mprotect(void *, size_t, int);				\
-  if (!need_enable_exec_stack)						\
-    return;								\
-  else {								\
-    long size = getpagesize ();						\
-    long mask = ~(size-1);						\
-    char *page = (char *) (((long) addr) & mask); 			\
-    char *end  = (char *) ((((long) (addr + TRAMPOLINE_SIZE)) & mask) + size); \
-									\
-    if (mprotect (page, end - page, 7 /* STACK_PROT_RWX */) < 0)	\
-      perror ("mprotect of trampoline code");				\
-  }									\
-}
+#define HAVE_ENABLE_EXECUTE_STACK
 
 /* Support Solaris-specific format checking for cmn_err.  */
 #define TARGET_N_FORMAT_TYPES 1

@@ -23387,7 +23387,7 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       gcc_assert (offset <= TRAMPOLINE_SIZE);
     }
 
-#ifdef ENABLE_EXECUTE_STACK
+#ifdef HAVE_ENABLE_EXECUTE_STACK
 #ifdef CHECK_EXECUTE_STACK_ENABLED
   if (CHECK_EXECUTE_STACK_ENABLED)
 #endif

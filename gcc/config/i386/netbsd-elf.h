@@ -118,5 +118,4 @@ along with GCC; see the file COPYING3.  If not see
    we don't care about compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
-/* Attempt to enable execute permissions on the stack.  */
-#define ENABLE_EXECUTE_STACK NETBSD_ENABLE_EXECUTE_STACK
+#define HAVE_ENABLE_EXECUTE_STACK

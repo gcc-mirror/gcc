@@ -98,31 +98,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef  SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL	CM_MEDLOW
 
-#define ENABLE_EXECUTE_STACK						\
-  static int need_enable_exec_stack;					\
-  static void check_enabling(void) __attribute__ ((constructor));	\
-  static void check_enabling(void)					\
-  {									\
-    extern int sysctlbyname(const char *, void *, size_t *, void *, size_t);\
-    int prot = 0;							\
-    size_t len = sizeof(prot);						\
-									\
-    sysctlbyname ("kern.stackprot", &prot, &len, NULL, 0);		\
-    if (prot != 7)							\
-      need_enable_exec_stack = 1;					\
-  }									\
-  extern void __enable_execute_stack (void *);				\
-  void __enable_execute_stack (void *addr)				\
-  {									\
-    if (!need_enable_exec_stack)					\
-      return;								\
-    else {								\
-      /* 7 is PROT_READ | PROT_WRITE | PROT_EXEC */ 			\
-      if (mprotect (addr, TRAMPOLINE_SIZE, 7) < 0)			\
-        perror ("mprotect of trampoline code");				\
-    }									\
-  }
-
+#define HAVE_ENABLE_EXECUTE_STACK
 
 /************************[  Assembler stuff  ]********************************/
 

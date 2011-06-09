@@ -8004,7 +8004,7 @@ sparc32_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
      the stack address is accessible.  */
-#ifdef ENABLE_EXECUTE_STACK
+#ifdef HAVE_ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
                      LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 #endif
@@ -8047,7 +8047,7 @@ sparc64_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
 
   /* Call __enable_execute_stack after writing onto the stack to make sure
      the stack address is accessible.  */
-#ifdef ENABLE_EXECUTE_STACK
+#ifdef HAVE_ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
                      LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 #endif

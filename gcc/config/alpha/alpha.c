@@ -5395,7 +5395,7 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   if (TARGET_ABI_OSF)
     {
       emit_insn (gen_imb ());
-#ifdef ENABLE_EXECUTE_STACK
+#ifdef HAVE_ENABLE_EXECUTE_STACK
       emit_library_call (init_one_libfunc ("__enable_execute_stack"),
 			 LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 #endif

@@ -3962,6 +3962,8 @@ tmake_file="${tmake_file_}"
 
 
 
+ac_config_links="$ac_config_links enable-execute-stack.c:$enable_execute_stack"
+
 ac_config_links="$ac_config_links md-unwind-support.h:config/$md_unwind_header"
 
 
@@ -4689,6 +4691,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
+    "enable-execute-stack.c") CONFIG_LINKS="$CONFIG_LINKS enable-execute-stack.c:$enable_execute_stack" ;;
     "md-unwind-support.h") CONFIG_LINKS="$CONFIG_LINKS md-unwind-support.h:config/$md_unwind_header" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
