@@ -1117,9 +1117,6 @@ cgraph_finalize_compilation_unit (void)
       fflush (stderr);
     }
 
-  if (flag_dump_passes)
-    dump_passes ();
-
   /* Gimplify and lower all functions, compute reachability and
      remove unreachable nodes.  */
   cgraph_analyze_functions ();
