@@ -1,3 +1,8 @@
+2011-06-09  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c (record_eh_tables): Mark personality function as having
+	address taken.
+
 2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/49154
