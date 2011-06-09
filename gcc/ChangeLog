@@ -1,3 +1,20 @@
+2011-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_hidden): Enable on *-*-darwin*.
+	(gcc_cv_ld_hidden): Likewise.
+	* configure: Regenerate.
+	* config/i386/i386.c (USE_HIDDEN_LINKONCE): Remove TARGET_MACHO.
+	(ix86_stack_protect_fail): Mark unused.
+	(TARGET_STACK_PROTECT_FAIL) [TARGET_MACHO]: Don't redefine.
+	* config/rs6000/rs6000.c (rs6000_assemble_visibility)
+	[TARGET_MACHO]: Don't define.
+	(TARGET_ASM_ASSEMBLE_VISIBILITY): Likewise.
+	(TARGET_STACK_PROTECT_FAIL): Likewise.
+	(rs6000_stack_protect_fail): Mark unused.
+	* dwarf2asm.c (dw2_output_indirect_constant_1): Mark decl hidden if
+	USE_LINKONCE_INDIRECT.
+	Don't emit .hidden expicitly.
+
 2011-06-08  Andi Kleen  <ak@linux.intel.com>
 
 	* varasm.c (get_section): Print location of other conflict

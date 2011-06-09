@@ -884,7 +884,7 @@ static bool legitimate_lo_sum_address_p (enum machine_mode, rtx, int);
 static struct machine_function * rs6000_init_machine_status (void);
 static bool rs6000_assemble_integer (rtx, unsigned int, int);
 static bool no_global_regs_above (int, bool);
-#ifdef HAVE_GAS_HIDDEN
+#if defined (HAVE_GAS_HIDDEN) && !defined (TARGET_MACHO)
 static void rs6000_assemble_visibility (tree, int);
 #endif
 static int rs6000_ra_ever_killed (void);
@@ -1349,7 +1349,7 @@ static const struct default_options rs6000_option_optimization_table[] =
 #undef TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER rs6000_assemble_integer
 
-#ifdef HAVE_GAS_HIDDEN
+#if defined (HAVE_GAS_HIDDEN) && !defined (TARGET_MACHO)
 #undef TARGET_ASM_ASSEMBLE_VISIBILITY
 #define TARGET_ASM_ASSEMBLE_VISIBILITY rs6000_assemble_visibility
 #endif
@@ -1558,8 +1558,10 @@ static const struct default_options rs6000_option_optimization_table[] =
 #define TARGET_DEFAULT_TARGET_FLAGS \
   (TARGET_DEFAULT)
 
+#ifndef TARGET_MACHO
 #undef TARGET_STACK_PROTECT_FAIL
 #define TARGET_STACK_PROTECT_FAIL rs6000_stack_protect_fail
+#endif
 
 /* MPC604EUM 3.5.2 Weak Consistency between Multiple Processors
    The PowerPC architecture requires only weak consistency among
@@ -16390,7 +16392,7 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
-#ifdef HAVE_GAS_HIDDEN
+#if defined (HAVE_GAS_HIDDEN) && !defined (TARGET_MACHO)
 /* Emit an assembler directive to set symbol visibility for DECL to
    VISIBILITY_TYPE.  */
 
@@ -27323,7 +27325,7 @@ invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, const
    calling __stack_chk_fail directly.  Otherwise it is better to call
    __stack_chk_fail directly.  */
 
-static tree
+static tree ATTRIBUTE_UNUSED
 rs6000_stack_protect_fail (void)
 {
   return (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)

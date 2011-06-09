@@ -8725,7 +8725,7 @@ ix86_setup_frame_addresses (void)
 }
 
 #ifndef USE_HIDDEN_LINKONCE
-# if (defined(HAVE_GAS_HIDDEN) && (SUPPORTS_ONE_ONLY - 0)) || TARGET_MACHO
+# if defined(HAVE_GAS_HIDDEN) && (SUPPORTS_ONE_ONLY - 0)
 #  define USE_HIDDEN_LINKONCE 1
 # else
 #  define USE_HIDDEN_LINKONCE 0
@@ -32207,7 +32207,7 @@ ix86_mangle_type (const_tree type)
    __stack_chk_fail directly.  64-bit code doesn't need to setup any PIC
    register, so it is better to call __stack_chk_fail directly.  */
 
-static tree
+static tree ATTRIBUTE_UNUSED
 ix86_stack_protect_fail (void)
 {
   return TARGET_64BIT
@@ -35407,8 +35407,10 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE ix86_mangle_type
 
+#ifndef TARGET_MACHO
 #undef TARGET_STACK_PROTECT_FAIL
 #define TARGET_STACK_PROTECT_FAIL ix86_stack_protect_fail
+#endif
 
 #undef TARGET_SUPPORTS_SPLIT_STACK
 #define TARGET_SUPPORTS_SPLIT_STACK ix86_supports_split_stack
