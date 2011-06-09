@@ -2337,6 +2337,12 @@ constraints is through machine-dependent operand constraint letters.
 You can define such letters to correspond to various classes, then use
 them in operand constraints.
 
+You must define the narrowest register classes for allocatable
+registers, so that each class either has no subclasses, or that for
+some mode, the move cost between registers within the class is
+cheaper than moving a register in the class to or from memory
+(@pxref{Costs}).
+
 You should define a class for the union of two classes whenever some
 instruction allows both classes.  For example, if an instruction allows
 either a floating point (coprocessor) register or a general register for a
