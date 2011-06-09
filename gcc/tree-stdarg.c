@@ -627,7 +627,8 @@ check_all_va_list_escapes (struct stdarg_info *si)
 static bool
 gate_optimize_stdarg (void)
 {
-  return true;
+  /* This optimization is only for stdarg functions.  */
+  return cfun->stdarg != 0;
 }
 
 
@@ -643,10 +644,6 @@ execute_optimize_stdarg (void)
   struct walk_stmt_info wi;
   const char *funcname = NULL;
   tree cfun_va_list;
-
-  /* This optimization is only for stdarg functions.  */
-  if (cfun->stdarg == 0)
-    return 0;
 
   cfun->va_list_gpr_size = 0;
   cfun->va_list_fpr_size = 0;

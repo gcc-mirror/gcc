@@ -1569,11 +1569,6 @@ tree_lower_complex (void)
   gimple_stmt_iterator gsi;
   basic_block bb;
 
-  /* With errors, normal optimization passes are not run.  If we don't
-     lower complex operations at all, rtl expansion will abort.  */
-  if (cfun->curr_properties & PROP_gimple_lcx)
-    return 0;
-
   if (!init_dont_simulate_again ())
     return 0;
 
@@ -1639,7 +1634,9 @@ struct gimple_opt_pass pass_lower_complex =
 static bool
 gate_no_optimization (void)
 {
-  return true;
+  /* With errors, normal optimization passes are not run.  If we don't
+     lower complex operations at all, rtl expansion will abort.  */
+  return !(cfun->curr_properties & PROP_gimple_lcx);
 }
 
 struct gimple_opt_pass pass_lower_complex_O0 =

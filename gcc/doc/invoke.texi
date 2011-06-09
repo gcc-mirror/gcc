@@ -291,7 +291,6 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-ipa-all -fdump-ipa-cgraph -fdump-ipa-inline @gol
--fdump-passes @gol
 -fdump-statistics @gol
 -fdump-tree-all @gol
 -fdump-tree-original@r{[}-@var{n}@r{]}  @gol
@@ -5072,8 +5071,7 @@ pair seperated by a colon.  The range is inclusive in both ends.  If the range
 is trivial, the number pair can be simplified as a single number.  If the
 function's cgraph node's @var{uid} is falling within one of the specified ranges,
 the @var{pass} is disabled for that function.  The @var{uid} is shown in the
-function header of a dump file, and pass names can be dumped by using option
-@option{-fdump-passes}.
+function header of a dump file.
 
 @item -fdisable-tree-@var{pass}
 @item -fdisable-tree-@var{pass}=@var{range-list}
@@ -5496,11 +5494,6 @@ and inlining decisions.
 Dump after function inlining.
 
 @end table
-
-@item -fdump-passes
-@opindex fdump-passes
-Dump the list of optimization passes that are turned on and off by
-the current command line options.
 
 @item -fdump-statistics-@var{option}
 @opindex fdump-statistics
