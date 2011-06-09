@@ -1029,7 +1029,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_copy_assignable_impl<_Tp, false>
-    : public is_assignable<_Tp&, const _Tp&&>
+    : public is_assignable<_Tp&, const _Tp&>
     { };
 
   /// is_copy_assignable
@@ -1077,7 +1077,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_nt_copy_assignable_impl<_Tp, false>
-    : public is_nothrow_assignable<_Tp&, const _Tp&&>
+    : public is_nothrow_assignable<_Tp&, const _Tp&>
     { };
 
   /// is_nothrow_copy_assignable

@@ -1,3 +1,8 @@
+2011-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (__is_copy_assignable_impl,
+	__is_nt_copy_assignable_impl): Fix typo.
+
 2011-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/extptr_allocator.h: Include <ext/numeric_traits.h>
