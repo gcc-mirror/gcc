@@ -1843,15 +1843,17 @@ one_cprop_pass (void)
 static bool
 gate_rtl_cprop (void)
 {
-  return optimize > 0 && flag_gcse
-    && !cfun->calls_setjmp
-    && dbg_cnt (cprop);
+  return optimize > 0 && flag_gcse;
 }
 
 static unsigned int
 execute_rtl_cprop (void)
 {
   int changed;
+
+  if (cfun->calls_setjmp || !dbg_cnt (cprop))
+    return 0;
+
   delete_unreachable_blocks ();
   df_set_flags (DF_LR_RUN_DCE);
   df_analyze ();
@@ -1882,4 +1884,3 @@ struct rtl_opt_pass pass_rtl_cprop =
   TODO_verify_flow | TODO_ggc_collect   /* todo_flags_finish */
  }
 };
-

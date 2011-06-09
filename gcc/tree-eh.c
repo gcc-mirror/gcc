@@ -3234,6 +3234,9 @@ execute_lower_eh_dispatch (void)
   bool any_rewritten = false;
   bool redirected = false;
 
+  if (cfun->eh->region_tree == NULL)
+    return 0;
+
   assign_filter_values ();
 
   FOR_EACH_BB (bb)
@@ -3254,7 +3257,7 @@ execute_lower_eh_dispatch (void)
 static bool
 gate_lower_eh_dispatch (void)
 {
-  return cfun->eh->region_tree != NULL;
+  return true;
 }
 
 struct gimple_opt_pass pass_lower_eh_dispatch =
@@ -3983,8 +3986,12 @@ execute_cleanup_eh_1 (void)
 static unsigned int
 execute_cleanup_eh (void)
 {
-  int ret = execute_cleanup_eh_1 ();
+  int ret;
 
+  if (cfun->eh == NULL || cfun->eh->region_tree == NULL)
+    return 0;
+
+  ret = execute_cleanup_eh_1 ();
   /* If the function no longer needs an EH personality routine
      clear it.  This exposes cross-language inlining opportunities
      and avoids references to a never defined personality routine.  */
@@ -3998,7 +4005,7 @@ execute_cleanup_eh (void)
 static bool
 gate_cleanup_eh (void)
 {
-  return cfun->eh != NULL && cfun->eh->region_tree != NULL;
+  return true;
 }
 
 struct gimple_opt_pass pass_cleanup_eh = {

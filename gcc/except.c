@@ -1440,14 +1440,17 @@ finish_eh_generation (void)
 static bool
 gate_handle_eh (void)
 {
-  /* Nothing to do if no regions created.  */
-  return cfun->eh->region_tree != NULL;
+  return true;
 }
 
 /* Complete generation of exception handling code.  */
 static unsigned int
 rest_of_handle_eh (void)
 {
+  /* Nothing to do if no regions created.  */
+  if (cfun->eh->region_tree == NULL)
+    return 0;
+
   finish_eh_generation ();
   cleanup_cfg (CLEANUP_NO_INSN_DEL);
   return 0;
@@ -2392,6 +2395,9 @@ convert_to_eh_region_ranges (void)
   int min_labelno = 0, max_labelno = 0;
   int saved_call_site_base = call_site_base;
 
+  if (cfun->eh->region_tree == NULL)
+    return 0;
+
   crtl->eh.action_record_data = VEC_alloc (uchar, gc, 64);
 
   ar_hash = htab_create (31, action_record_hash, action_record_eq, free);
@@ -2643,8 +2649,6 @@ static bool
 gate_convert_to_eh_region_ranges (void)
 {
   /* Nothing to do for SJLJ exceptions or if no regions created.  */
-  if (cfun->eh->region_tree == NULL)
-    return false;
   if (targetm.except_unwind_info (&global_options) == UI_SJLJ)
     return false;
   return true;
