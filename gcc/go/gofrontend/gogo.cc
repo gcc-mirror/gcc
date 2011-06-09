@@ -1498,6 +1498,10 @@ Check_types_traverse::variable(Named_object* named_object)
   if (named_object->is_variable())
     {
       Variable* var = named_object->var_value();
+
+      // Give error if variable type is not defined.
+      var->type()->base();
+
       Expression* init = var->init();
       std::string reason;
       if (init != NULL

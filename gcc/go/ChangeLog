@@ -1,3 +1,7 @@
+2011-06-09  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::zero_expression): New function.
+
 2011-06-07  Richard Guenther  <rguenther@suse.de>
 
 	* go-lang.c (go_langhook_init): Do not set

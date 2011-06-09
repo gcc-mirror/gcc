@@ -198,6 +198,14 @@ class Backend
   virtual bool
   is_circular_pointer_type(Btype*) = 0;
 
+  // Expressions.
+
+  // Return an expression for a zero value of the given type.  This is
+  // used for cases such as local variable initialization and
+  // converting nil to other types.
+  virtual Bexpression*
+  zero_expression(Btype*) = 0;
+
   // Statements.
 
   // Create an error statement.  This is used for cases which should

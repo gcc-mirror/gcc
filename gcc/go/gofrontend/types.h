@@ -825,19 +825,6 @@ class Type
   Btype*
   get_backend(Gogo*);
 
-  // Return a tree representing a zero initialization for this type.
-  // This will be something like an INTEGER_CST or a CONSTRUCTOR.  If
-  // IS_CLEAR is true, then the memory is known to be zeroed; in that
-  // case, this will return NULL if there is nothing to be done.
-  tree
-  get_init_tree(Gogo*, bool is_clear);
-
-  // Like get_init_tree, but passing in the type to use for the
-  // initializer.
-  tree
-  get_typed_init_tree(Gogo* gogo, tree type_tree, bool is_clear)
-  { return this->do_get_init_tree(gogo, type_tree, is_clear); }
-
   // Return a tree for a make expression applied to this type.
   tree
   make_expression_tree(Translate_context* context, Expression_list* args,
@@ -894,9 +881,6 @@ class Type
 
   virtual Btype*
   do_get_backend(Gogo*) = 0;
-
-  virtual tree
-  do_get_init_tree(Gogo*, tree, bool) = 0;
 
   virtual tree
   do_make_expression_tree(Translate_context*, Expression_list*,
@@ -1334,9 +1318,6 @@ class Integer_type : public Type
   Btype*
   do_get_backend(Gogo*);
 
-  tree
-  do_get_init_tree(Gogo*, tree, bool);
-
   Expression*
   do_type_descriptor(Gogo*, Named_type*);
 
@@ -1406,9 +1387,6 @@ class Float_type : public Type
   Btype*
   do_get_backend(Gogo*);
 
-  tree
-  do_get_init_tree(Gogo*, tree, bool);
-
   Expression*
   do_type_descriptor(Gogo*, Named_type*);
 
@@ -1474,9 +1452,6 @@ class Complex_type : public Type
   Btype*
   do_get_backend(Gogo*);
 
-  tree
-  do_get_init_tree(Gogo*, tree, bool);
-
   Expression*
   do_type_descriptor(Gogo*, Named_type*);
 
@@ -1529,9 +1504,6 @@ class String_type : public Type
 
   Btype*
   do_get_backend(Gogo*);
-
-  tree
-  do_get_init_tree(Gogo* gogo, tree, bool);
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*);
@@ -1650,9 +1622,6 @@ class Function_type : public Type
   Btype*
   do_get_backend(Gogo*);
 
-  tree
-  do_get_init_tree(Gogo*, tree, bool);
-
   Expression*
   do_type_descriptor(Gogo*, Named_type*);
 
@@ -1733,9 +1702,6 @@ class Pointer_type : public Type
 
   Btype*
   do_get_backend(Gogo*);
-
-  tree
-  do_get_init_tree(Gogo*, tree, bool);
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*);
@@ -1988,9 +1954,6 @@ class Struct_type : public Type
   Btype*
   do_get_backend(Gogo*);
 
-  tree
-  do_get_init_tree(Gogo*, tree, bool);
-
   Expression*
   do_type_descriptor(Gogo*, Named_type*);
 
@@ -2106,9 +2069,6 @@ class Array_type : public Type
   do_get_backend(Gogo*);
 
   tree
-  do_get_init_tree(Gogo*, tree, bool);
-
-  tree
   do_make_expression_tree(Translate_context*, Expression_list*,
 			  source_location);
 
@@ -2197,9 +2157,6 @@ class Map_type : public Type
   do_get_backend(Gogo*);
 
   tree
-  do_get_init_tree(Gogo*, tree, bool);
-
-  tree
   do_make_expression_tree(Translate_context*, Expression_list*,
 			  source_location);
 
@@ -2279,9 +2236,6 @@ class Channel_type : public Type
 
   Btype*
   do_get_backend(Gogo*);
-
-  tree
-  do_get_init_tree(Gogo*, tree, bool);
 
   tree
   do_make_expression_tree(Translate_context*, Expression_list*,
@@ -2397,9 +2351,6 @@ class Interface_type : public Type
 
   Btype*
   do_get_backend(Gogo*);
-
-  tree
-  do_get_init_tree(Gogo* gogo, tree, bool);
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*);
@@ -2630,10 +2581,6 @@ class Named_type : public Type
   do_get_backend(Gogo*);
 
   tree
-  do_get_init_tree(Gogo* gogo, tree type_tree, bool is_clear)
-  { return this->type_->get_typed_init_tree(gogo, type_tree, is_clear); }
-
-  tree
   do_make_expression_tree(Translate_context* context, Expression_list* args,
 			  source_location location)
   { return this->type_->make_expression_tree(context, args, location); }
@@ -2772,10 +2719,6 @@ class Forward_declaration_type : public Type
 
   Btype*
   do_get_backend(Gogo* gogo);
-
-  tree
-  do_get_init_tree(Gogo* gogo, tree type_tree, bool is_clear)
-  { return this->base()->get_typed_init_tree(gogo, type_tree, is_clear); }
 
   tree
   do_make_expression_tree(Translate_context* context, Expression_list* args,
