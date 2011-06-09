@@ -1,3 +1,9 @@
+2011-06-09  Wei Guozhi  <carrot@google.com>
+
+	PR target/46975
+	* config/arm/arm.md (*addsi3_carryin_compare0_<optab>): New pattern.
+	(peephole2 for conditional move): Generate 16 bit instructions.
+
 2011-06-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*movdi_internal_rex64): Merge
