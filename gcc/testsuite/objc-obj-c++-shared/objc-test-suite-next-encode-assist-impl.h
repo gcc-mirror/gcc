@@ -7,10 +7,8 @@
 #include "next-abi.h"
 #ifdef NEXT_OBJC_USE_NEW_INTERFACE
 #include <objc/runtime.h>
-typedef void * PMETH;
 #else
 #include <objc/objc-runtime.h>
-typedef struct objc_method * PMETH;
 #endif
 
 /* ---- */
@@ -485,135 +483,6 @@ objc_skip_argspec (const char *type)
   type = objc_skip_typespec (type);
   type = objc_skip_offset (type);
   return type;
-}
-/*
-  Return the number of arguments that the method MTH expects.
-  Note that all methods need two implicit arguments `self' and
-  `_cmd'.
-*/
-int
-method_get_number_of_arguments (PMETH mth)
-{
-  int i = 0;
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-  const char *type = method_getTypeEncoding((Method)mth);
-#else
-  const char *type = mth->method_types;
-#endif
-  while (*type)
-    {
-      type = objc_skip_argspec (type);
-      i += 1;
-    }
-  return i - 1;
-}
-
-/*
-  Return the size of the argument block needed on the stack to invoke
-  the method MTH.  This may be zero, if all arguments are passed in
-  registers.
-*/
-
-int
-method_get_sizeof_arguments (PMETH mth)
-{
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-  const char *type = objc_skip_typespec (method_getTypeEncoding((Method)mth));
-#else
-  const char *type = objc_skip_typespec (mth->method_types);
-#endif
-  return atoi (type);
-}
-
-/*
-  Return a pointer to the next argument of ARGFRAME.  type points to
-  the last argument.  Typical use of this look like:
-
-  {
-    char *datum, *type;
-    for (datum = method_get_first_argument (method, argframe, &type);
-         datum; datum = method_get_next_argument (argframe, &type))
-      {
-        unsigned flags = objc_get_type_qualifiers (type);
-        type = objc_skip_type_qualifiers (type);
-	if (*type != _C_PTR)
-          [portal encodeData: datum ofType: type];
-	else
-	  {
-	    if ((flags & _F_IN) == _F_IN)
-              [portal encodeData: *(char **) datum ofType: ++type];
-	  }
-      }
-  }
-*/
-
-char *
-method_get_next_argument (arglist_t argframe, const char **type)
-{
-  const char *t = objc_skip_argspec (*type);
-
-  if (*t == '\0')
-    return 0;
-
-  *type = t;
-  t = objc_skip_typespec (t);
-
-  if (*t == '+')
-    return argframe->arg_regs + atoi (++t);
-  else
-    return argframe->arg_ptr + atoi (t);
-}
-
-/*
-  Return a pointer to the value of the first argument of the method
-  described in M with the given argumentframe ARGFRAME.  The type
-  is returned in TYPE.  type must be passed to successive calls of
-  method_get_next_argument.
-*/
-char *
-method_get_first_argument (PMETH m,
-			   arglist_t argframe,
-			   const char **type)
-{
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-  *type = method_getTypeEncoding((Method)m);
-#else
-  *type = m->method_types;
-#endif
-
-  return method_get_next_argument (argframe, type);
-}
-
-/*
-   Return a pointer to the ARGth argument of the method
-   M from the frame ARGFRAME.  The type of the argument
-   is returned in the value-result argument TYPE
-*/
-
-char *
-method_get_nth_argument (PMETH m,
-			 arglist_t argframe, int arg,
-			 const char **type)
-{
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-  const char *t = objc_skip_argspec (method_getTypeEncoding((Method)m));
-#else
-  const char *t = objc_skip_argspec (m->method_types);
-#endif
-
-  if (arg > method_get_number_of_arguments (m))
-    return 0;
-
-  while (arg--)
-    t = objc_skip_argspec (t);
-
-  *type = t;
-  t = objc_skip_typespec (t);
-
-  if (*t == '+')
-    return argframe->arg_regs + atoi (++t);
-  else
-    return argframe->arg_ptr + atoi (t);
 }
 
 unsigned

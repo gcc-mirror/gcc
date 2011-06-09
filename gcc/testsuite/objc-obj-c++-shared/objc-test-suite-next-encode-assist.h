@@ -6,10 +6,8 @@
 #include "next-abi.h"
 #ifdef NEXT_OBJC_USE_NEW_INTERFACE
 #include <objc/runtime.h>
-typedef void * PMETH;
 #else
 #include <objc/objc-runtime.h>
-typedef struct objc_method * PMETH;
 
 /* Missing from old NeXT objc headers... */
 #define _C_LNG_LNG  'q'
@@ -54,11 +52,6 @@ struct objc_struct_layout
   unsigned int record_align;
 };
 
-typedef union arglist {
-  char *arg_ptr;
-  char arg_regs[sizeof (char*)];
-} *arglist_t;                   /* argument frame */
-
 void objc_layout_structure_get_info (struct objc_struct_layout *,unsigned int *,
 				     unsigned int *, const char **);
 void objc_layout_structure (const char *, struct objc_struct_layout *);
@@ -76,12 +69,6 @@ const char *objc_skip_type_qualifiers (const char *);
 const char *objc_skip_typespec (const char *);
 const char *objc_skip_offset (const char *);
 const char *objc_skip_argspec (const char *);
-
-int method_get_number_of_arguments (PMETH);
-int method_get_sizeof_arguments (PMETH);
-char *method_get_next_argument (arglist_t , const char **);
-char *method_get_first_argument (PMETH, arglist_t, const char **);
-char *method_get_nth_argument (PMETH, arglist_t, int, const char **);
 
 #endif /* __NEXT_RUNTIME__ */
 #endif /* _OBJC_TEST_SUITE_NEXT_ENCODE_ASSIST_H_ */
