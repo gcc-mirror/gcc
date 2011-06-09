@@ -1,3 +1,18 @@
+2011-06-09  David Li  <davidxl@google.com>
+
+	* tree-complex.c (tree_lower_complex): Gate cleanup.
+	* tree-stdarg.c (check_all_va_list_escapes): Ditto.
+	(execute_optimize_stdarg): Ditto.
+	* tree-eh.c (execute_lower_eh_dispatch): Ditto.
+	(execute_cleanup_eh_1): Ditto.
+	(execute_cleanup_eh): Ditto.
+	* gcse.c (gate_rtl_pre): Ditto.
+	(execute_rtl_pre): Ditto.
+	* except.c (finish_eh_generation): Ditto.
+	(convert_to_eh_region_ranges): Ditto.
+	* cprop.c (one_cprop_pass): Ditto.
+
+
 2011-06-09  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/48673
