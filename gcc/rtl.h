@@ -2451,7 +2451,7 @@ extern void mark_elimination (int, int);
 /* In reginfo.c */
 extern int reg_classes_intersect_p (reg_class_t, reg_class_t);
 extern int reg_class_subset_p (reg_class_t, reg_class_t);
-extern void globalize_reg (int);
+extern void globalize_reg (tree, int);
 extern void init_reg_modes_target (void);
 extern void init_regs (void);
 extern void reinit_regs (void);
