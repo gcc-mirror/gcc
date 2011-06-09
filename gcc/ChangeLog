@@ -1,3 +1,7 @@
+2011-06-09  Kai Tietz  <ktietz@redhat.com>
+
+	* libgcc2.c (L_trampoline): Include windows.h for mingw targets.
+
 2011-06-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (return_internal): Adjust 'length' attribute.
