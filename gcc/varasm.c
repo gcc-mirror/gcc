@@ -313,7 +313,11 @@ get_section (const char *name, unsigned int flags, tree decl)
 	  if (decl == 0)
 	    decl = sect->named.decl;
 	  gcc_assert (decl);
-	  error ("%+D causes a section type conflict", decl);
+	  error ("%+D causes a section type conflict with %D", 
+			decl, sect->named.decl);
+	  if (decl != sect->named.decl)
+            inform (DECL_SOURCE_LOCATION (sect->named.decl), 
+		    "%qD was declared here", sect->named.decl);
 	  /* Make sure we don't error about one section multiple times.  */
 	  sect->common.flags |= SECTION_OVERRIDE;
 	}

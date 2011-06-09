@@ -1,5 +1,10 @@
 2011-06-08  Andi Kleen  <ak@linux.intel.com>
 
+	* varasm.c (get_section): Print location of other conflict
+	for section conflicts.
+
+2011-06-08  Andi Kleen  <ak@linux.intel.com>
+
 	* config/i386/driver-i386.c (host_detect_local_cpu):
 	Add model 0x2d Intel CPU.
 
