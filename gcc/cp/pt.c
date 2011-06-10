@@ -19124,7 +19124,7 @@ build_non_dependent_expr (tree expr)
   /* Try to get a constant value for all non-type-dependent expressions in
       order to expose bugs in *_dependent_expression_p and constexpr.  */
   if (cxx_dialect >= cxx0x)
-    maybe_constant_value (fold_non_dependent_expr (expr));
+    maybe_constant_value (fold_non_dependent_expr_sfinae (expr, tf_none));
 #endif
 
   /* Preserve OVERLOADs; the functions must be available to resolve
