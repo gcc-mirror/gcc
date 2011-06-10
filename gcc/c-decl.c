@@ -565,7 +565,7 @@ add_stmt (tree t)
 static bool
 decl_jump_unsafe (tree decl)
 {
-  if (decl == error_mark_node || TREE_TYPE (decl) == error_mark_node)
+  if (error_operand_p (decl))
     return false;
 
   /* Always warn about crossing variably modified types.  */
