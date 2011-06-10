@@ -1,3 +1,15 @@
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-utils.c (searchc): Use cgraph_function_or_thunk_node.
+	* ipa-pure-const.c (analyze_function): Aliases don't need analysis.
+	(self_recursive_p): Use cgraph_function_node.
+	(propagate_pure_const): Likewise.
+	(propagate_nothrow): Likewise.
+	* ipa-reference.c (ipa_reference_get_not_read_global): Use
+	cgraph_function_node.
+	(propagate_bits): Likewise.
+	(propagate): Likewise.
+
 2011-06-10  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 	    Richard Earnshaw  <rearnsha@arm.com>
 
