@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,10 +29,10 @@ int inc(int& i) { return ++i; }
 void test01()
 {
   const int dummy = 0;
-  std::bind(&inc, _1)(0);               // { dg-error  ""}
-  std::bind(&inc, std::ref(dummy))();  // { dg-error  ""}
-  std::bind(&inc, dummy)();  // { dg-error  ""}
-  std::bind(&inc, 0)();  // { dg-error  ""}
+  std::bind(&inc, _1)(0);               // { dg-error "" }
+  std::bind(&inc, std::ref(dummy))();  // { dg-error "" }
+  std::bind(&inc, dummy)();
+  std::bind(&inc, 0)();
 }
 
 struct Inc
@@ -46,8 +46,8 @@ struct Inc
 void test02()
 {
   const int dummy = 0;
-  std::bind(Inc(), _1)(dummy);                  // { dg-error  ""}
-  std::bind(&Inc::f, Inc(), std::ref(dummy))(); // { dg-error  ""}
+  std::bind(Inc(), _1)(dummy);                  // { dg-error "" }
+  std::bind(&Inc::f, Inc(), std::ref(dummy))(); // { dg-error "" }
 }
 
 int main()
@@ -55,5 +55,3 @@ int main()
   test01();
   test02();
 }
-
-// { dg-excess-errors "" }
