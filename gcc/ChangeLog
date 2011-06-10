@@ -1,3 +1,9 @@
+2011-06-10  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/49344
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Use
+	FOR_EACH_PHI_OR_STMT_USE.
+
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-transform.c (can_remove_node_now_p): Move out of...
