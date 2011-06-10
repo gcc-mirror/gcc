@@ -345,7 +345,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
       break;
 
     case IDENTIFIER_NODE:
-      pp_c_tree_decl_identifier (pp, t);
+      pp_c_identifier (pp, IDENTIFIER_POINTER (t));
       break;
 
     case VOID_TYPE:
