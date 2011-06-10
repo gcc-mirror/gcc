@@ -68,7 +68,11 @@ namespace __gnu_pbds
   left_child_next_sibling_heap<Value_Type, Cmp_Fn, null_type, _Alloc>
 #endif
 
-    /// Pairing heap.
+    /**
+     *  Pairing heap.
+     *
+     *  @ingroup heap-detail
+     */
     template<typename Value_Type, typename Cmp_Fn, typename _Alloc>
     class pairing_heap : public PB_DS_P_HEAP_BASE
     {

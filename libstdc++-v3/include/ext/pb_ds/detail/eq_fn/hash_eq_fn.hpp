@@ -49,6 +49,7 @@ namespace __gnu_pbds
 {
   namespace detail
   {
+    /// Primary template.
     template<typename Key, typename Eq_Fn, typename _Alloc, bool Store_Hash>
       struct hash_eq_fn;
 

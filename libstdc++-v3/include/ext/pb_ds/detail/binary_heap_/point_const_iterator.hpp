@@ -49,7 +49,7 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-    // Const point-type iterator.
+    /// Const point-type iterator.
     template<typename Value_Type, typename Entry, bool Simple, 
 	     typename _Alloc>
     class binary_heap_point_const_iterator_
@@ -58,30 +58,30 @@ namespace __gnu_pbds
       typedef typename _Alloc::template rebind<Entry>::other::pointer entry_pointer;
 
     public:
-      // Category.
+      /// Category.
       typedef trivial_iterator_tag iterator_category;
 
-      // Difference type.
+      /// Difference type.
       typedef trivial_iterator_difference_type difference_type;
 
-      // Iterator's value type.
+      /// Iterator's value type.
       typedef Value_Type value_type;
 
-      // Iterator's pointer type.
+      /// Iterator's pointer type.
       typedef typename _Alloc::template rebind<value_type>::other::pointer
       pointer;
 
-      // Iterator's const pointer type.
+      /// Iterator's const pointer type.
       typedef
       typename _Alloc::template rebind<value_type>::other::const_pointer
       const_pointer;
 
-      // Iterator's reference type.
+      /// Iterator's reference type.
       typedef
       typename _Alloc::template rebind<value_type>::other::reference
       reference;
 
-      // Iterator's const reference type.
+      /// Iterator's const reference type.
       typedef
       typename _Alloc::template rebind<value_type>::other::const_reference
       const_reference;
@@ -90,17 +90,17 @@ namespace __gnu_pbds
       binary_heap_point_const_iterator_(entry_pointer p_e) : m_p_e(p_e)
       { }
 
-      // Default constructor.
+      /// Default constructor.
       inline
       binary_heap_point_const_iterator_() : m_p_e(0) { }
 
-      // Copy constructor.
+      /// Copy constructor.
       inline
       binary_heap_point_const_iterator_(const binary_heap_point_const_iterator_& other)
       : m_p_e(other.m_p_e)
       { }
 
-      // Access.
+      /// Access.
       inline const_pointer
       operator->() const
       {
@@ -108,7 +108,7 @@ namespace __gnu_pbds
 	return to_ptr(integral_constant<int, Simple>());
       }
 
-      // Access.
+      /// Access.
       inline const_reference
       operator*() const
       {
@@ -116,12 +116,12 @@ namespace __gnu_pbds
 	return *to_ptr(integral_constant<int, Simple>());
       }
 
-      // Compares content to a different iterator object.
+      /// Compares content to a different iterator object.
       inline bool
       operator==(const binary_heap_point_const_iterator_& other) const
       { return m_p_e == other.m_p_e; }
 
-      // Compares content (negatively) to a different iterator object.
+      /// Compares content (negatively) to a different iterator object.
       inline bool
       operator!=(const binary_heap_point_const_iterator_& other) const
       { return m_p_e != other.m_p_e; }

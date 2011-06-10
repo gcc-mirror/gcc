@@ -48,6 +48,7 @@ namespace __gnu_pbds
   namespace detail
   {
     /// Specialization.
+    /// @ingroup traits
     template<typename Key,
 	     typename Mapped,
 	     typename Cmp_Fn,
@@ -68,6 +69,7 @@ namespace __gnu_pbds
     { };
 
     /// Specialization.
+    /// @ingroup traits
     template<typename Key,
 	     class Cmp_Fn,
 	     template<typename Node_CItr,

@@ -67,7 +67,7 @@ namespace __gnu_pbds
     swap(PB_DS_CLASS_C_DEC& other);
 
   protected:
-    // Returns the i-th offset from the hash value.
+    /// Returns the i-th offset from the hash value.
     inline size_type
     operator()(size_type i) const;
   };
@@ -91,7 +91,7 @@ namespace __gnu_pbds
     swap(PB_DS_CLASS_C_DEC& other);
 
   protected:
-    // Returns the i-th offset from the hash value.
+    /// Returns the i-th offset from the hash value.
     inline size_type
     operator()(size_type i) const;
   };
@@ -104,9 +104,9 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_T_DEC template<typename Size_Type>
 #define PB_DS_CLASS_C_DEC direct_mask_range_hashing<Size_Type>
 
-  /// A mask range-hashing class (uses a bit-mask).
+  /// A mask range-hashing class (uses a bitmask).
   template<typename Size_Type = std::size_t>
-  class direct_mask_range_hashing 
+  class direct_mask_range_hashing
   : public detail::mask_based_range_hashing<Size_Type>
   {
   private:
@@ -122,8 +122,8 @@ namespace __gnu_pbds
     void
     notify_resized(size_type size);
 
-    // Transforms the __hash value hash into a ranged-hash value
-    // (using a bit-mask).
+    /// Transforms the __hash value hash into a ranged-hash value
+    /// (using a bit-mask).
     inline size_type
     operator()(size_type hash) const;
   };
@@ -138,24 +138,24 @@ namespace __gnu_pbds
 
   /// A mod range-hashing class (uses the modulo function).
   template<typename Size_Type = std::size_t>
-  class direct_mod_range_hashing 
+  class direct_mod_range_hashing
   : public detail::mod_based_range_hashing<Size_Type>
   {
   public:
     typedef Size_Type size_type;
-      
+
     void
     swap(PB_DS_CLASS_C_DEC& other);
 
   protected:
     void
     notify_resized(size_type size);
-      
-    // Transforms the __hash value hash into a ranged-hash value
-    // (using a modulo operation).
+
+    /// Transforms the __hash value hash into a ranged-hash value
+    /// (using a modulo operation).
     inline size_type
     operator()(size_type hash) const;
-      
+
   private:
     typedef detail::mod_based_range_hashing<size_type> mod_based_base;
   };
@@ -179,12 +179,15 @@ namespace __gnu_pbds
 
     enum
       {
+	/// Specifies whether the load factor can be accessed
+	/// externally. The two options have different trade-offs in
+	/// terms of flexibility, genericity, and encapsulation.
 	external_load_access = External_Load_Access
       };
 
-    // Default constructor, or constructor taking load_min and
-    // load_max load factors between which this policy will keep the
-    // actual load.
+    /// Default constructor, or constructor taking load_min and
+    /// load_max load factors between which this policy will keep the
+    /// actual load.
     hash_load_check_resize_trigger(float load_min = 0.125,
 				   float load_max = 0.5);
 
@@ -194,12 +197,12 @@ namespace __gnu_pbds
     virtual
     ~hash_load_check_resize_trigger();
 
-    // Returns a pair of the minimal and maximal loads, respectively.
+    /// Returns a pair of the minimal and maximal loads, respectively.
     inline std::pair<float, float>
     get_loads() const;
 
-    // Sets the loads through a pair of the minimal and maximal
-    // loads, respectively.
+    /// Sets the loads through a pair of the minimal and maximal
+    /// loads, respectively.
     void
     set_loads(std::pair<float, float> load_pair);
 
@@ -231,20 +234,20 @@ namespace __gnu_pbds
     inline void
     notify_erase_search_end();
 
-    // Notifies an element was inserted. The total number of entries
-    // in the table is num_entries.
+    /// Notifies an element was inserted. The total number of entries
+    /// in the table is num_entries.
     inline void
     notify_inserted(size_type num_entries);
 
     inline void
     notify_erased(size_type num_entries);
 
-    // Notifies the table was cleared.
+    /// Notifies the table was cleared.
     void
     notify_cleared();
 
-    // Notifies the table was resized as a result of this object's
-    // signifying that a resize is needed.
+    /// Notifies the table was resized as a result of this object's
+    /// signifying that a resize is needed.
     void
     notify_resized(size_type new_size);
 
@@ -266,7 +269,7 @@ namespace __gnu_pbds
 #ifdef _GLIBCXX_DEBUG
     void
     assert_valid(const char* file, int line) const;
-#endif 
+#endif
 
     float 	m_load_min;
     float 	m_load_max;
@@ -290,76 +293,95 @@ namespace __gnu_pbds
   class cc_hash_max_collision_check_resize_trigger
   {
   public:
-    typedef Size_Type size_type;
+    typedef Size_Type 	size_type;
 
     enum
       {
+	/// Specifies whether the load factor can be accessed
+	/// externally. The two options have different trade-offs in
+	/// terms of flexibility, genericity, and encapsulation.
 	external_load_access = External_Load_Access
       };
 
-    // Default constructor, or constructor taking load, a __load
-    // factor which it will attempt to maintain.
+    /// Default constructor, or constructor taking load, a __load
+    /// factor which it will attempt to maintain.
     cc_hash_max_collision_check_resize_trigger(float load = 0.5);
 
     void
     swap(PB_DS_CLASS_C_DEC& other);
 
-    // Returns the current load.
+    /// Returns the current load.
     inline float
     get_load() const;
 
-    // Sets the load; does not resize the container.
+    /// Sets the load; does not resize the container.
     void
     set_load(float load);
 
   protected:
+    /// Notifies an insert search started.
     inline void
     notify_insert_search_start();
 
+    /// Notifies a search encountered a collision.
     inline void
     notify_insert_search_collision();
 
+    /// Notifies a search ended.
     inline void
     notify_insert_search_end();
 
+    /// Notifies a find search started.
     inline void
     notify_find_search_start();
 
+    /// Notifies a search encountered a collision.
     inline void
     notify_find_search_collision();
 
+    /// Notifies a search ended.
     inline void
     notify_find_search_end();
 
+    /// Notifies an erase search started.
     inline void
     notify_erase_search_start();
 
+    /// Notifies a search encountered a collision.
     inline void
     notify_erase_search_collision();
 
+    /// Notifies a search ended.
     inline void
     notify_erase_search_end();
 
+    /// Notifies an element was inserted.
     inline void
     notify_inserted(size_type num_entries);
 
+    /// Notifies an element was erased.
     inline void
     notify_erased(size_type num_entries);
 
+    /// Notifies the table was cleared.
     void
     notify_cleared();
 
-    // Notifies the table was resized as a result of this object's
-    // signifying that a resize is needed.
+    /// Notifies the table was resized as a result of this object's
+    /// signifying that a resize is needed.
     void
     notify_resized(size_type new_size);
 
+    /// Notifies the table was resized externally.
     void
     notify_externally_resized(size_type new_size);
 
+    /// Queries whether a resize is needed.
     inline bool
     is_resize_needed() const;
 
+    /// Queries whether a grow is needed. This method is called only
+    /// if this object indicated is needed.
     inline bool
     is_grow_needed(size_type size, size_type num_entries) const;
 
@@ -393,10 +415,10 @@ namespace __gnu_pbds
   public:
     typedef Size_Type size_type;
 
-    // Default constructor, or onstructor taking a start_size, or
-    // constructor taking a start size and grow_factor. The policy
-    // will use the sequence of sizes start_size, start_size*
-    // grow_factor, start_size* grow_factor^2, ...
+    /// Default constructor, or onstructor taking a start_size, or
+    /// constructor taking a start size and grow_factor. The policy
+    /// will use the sequence of sizes start_size, start_size*
+    /// grow_factor, start_size* grow_factor^2, ...
     hash_exponential_size_policy(size_type start_size = 8,
 				 size_type grow_factor = 2);
 
@@ -428,12 +450,12 @@ namespace __gnu_pbds
   class hash_prime_size_policy
   {
   public:
-    // Size type.
+    /// Size type.
     typedef std::size_t size_type;
 
-    // Default constructor, or onstructor taking a start_size The
-    // policy will use the sequence of sizes approximately
-    // start_size, start_size* 2, start_size* 2^2, ...
+    /// Default constructor, or onstructor taking a start_size The
+    /// policy will use the sequence of sizes approximately
+    /// start_size, start_size* 2, start_size* 2^2, ...
     hash_prime_size_policy(size_type start_size = 8);
 
     inline void
@@ -464,7 +486,7 @@ namespace __gnu_pbds
 	   typename Trigger_Policy = hash_load_check_resize_trigger<>,
 	   bool External_Size_Access = false,
 	   typename Size_Type = std::size_t>
-  class hash_standard_resize_policy 
+  class hash_standard_resize_policy
   : public Size_Policy, public Trigger_Policy
   {
   public:
@@ -477,18 +499,18 @@ namespace __gnu_pbds
 	external_size_access = External_Size_Access
       };
 
-    // Default constructor.
+    /// Default constructor.
     hash_standard_resize_policy();
 
-    // constructor taking some policies r_size_policy will be copied
-    // by the Size_Policy object of this object.
+    /// constructor taking some policies r_size_policy will be copied
+    /// by the Size_Policy object of this object.
     hash_standard_resize_policy(const Size_Policy& r_size_policy);
 
-    // constructor taking some policies. r_size_policy will be
-    // copied by the Size_Policy object of this
-    // object. r_trigger_policy will be copied by the Trigger_Policy
-    // object of this object.
-    hash_standard_resize_policy(const Size_Policy& r_size_policy, 
+    /// constructor taking some policies. r_size_policy will be
+    /// copied by the Size_Policy object of this
+    /// object. r_trigger_policy will be copied by the Trigger_Policy
+    /// object of this object.
+    hash_standard_resize_policy(const Size_Policy& r_size_policy,
 				const Trigger_Policy& r_trigger_policy);
 
     virtual
@@ -497,29 +519,29 @@ namespace __gnu_pbds
     inline void
     swap(PB_DS_CLASS_C_DEC& other);
 
-    // Access to the Size_Policy object used.
-    Size_Policy& 
+    /// Access to the Size_Policy object used.
+    Size_Policy&
     get_size_policy();
 
-    // Const access to the Size_Policy object used.
-    const Size_Policy& 
+    /// Const access to the Size_Policy object used.
+    const Size_Policy&
     get_size_policy() const;
 
-    // Access to the Trigger_Policy object used.
-    Trigger_Policy& 
+    /// Access to the Trigger_Policy object used.
+    Trigger_Policy&
     get_trigger_policy();
 
-    // Access to the Trigger_Policy object used.
-    const Trigger_Policy& 
+    /// Access to the Trigger_Policy object used.
+    const Trigger_Policy&
     get_trigger_policy() const;
 
-    // Returns the actual size of the container.
+    /// Returns the actual size of the container.
     inline size_type
     get_actual_size() const;
 
-    // Resizes the container to suggested_new_size, a suggested size
-    // (the actual size will be determined by the Size_Policy
-    // object).
+    /// Resizes the container to suggested_new_size, a suggested size
+    /// (the actual size will be determined by the Size_Policy
+    /// object).
     void
     resize(size_type suggested_new_size);
 
@@ -566,15 +588,15 @@ namespace __gnu_pbds
     inline bool
     is_resize_needed() const;
 
-    // Queries what the new size should be, when the container is
-    // resized naturally. The current __size of the container is
-    // size, and the number of used entries within the container is
-    // num_used_e.
+    /// Queries what the new size should be, when the container is
+    /// resized naturally. The current __size of the container is
+    /// size, and the number of used entries within the container is
+    /// num_used_e.
     size_type
     get_new_size(size_type size, size_type num_used_e) const;
 
   private:
-    // Resizes to new_size.
+    /// Resizes to new_size.
     virtual void
     do_resize(size_type new_size);
 
@@ -592,4 +614,4 @@ namespace __gnu_pbds
 
 } // namespace __gnu_pbds
 
-#endif 
+#endif

@@ -49,6 +49,7 @@ namespace __gnu_pbds
   namespace detail
   {
     /// Specialization.
+    /// @ingroup traits
     template<typename Key,
 	     typename Mapped,
 	     typename _ATraits,
@@ -69,6 +70,7 @@ namespace __gnu_pbds
       typedef base_type::_Metadata<metadata_type, _Alloc>      	metadata;
       typedef _ATraits 		       			       	access_traits;
 
+      /// Type for synthesized traits.
       typedef __gnu_pbds::detail::synth_access_traits<type_traits, false, access_traits>   synth_access_traits;
 
       typedef base_type::_Node_base<synth_access_traits, metadata>     	node;
@@ -81,17 +83,21 @@ namespace __gnu_pbds
       typedef base_type::_Iter<node, leaf, head, inode, false> 		reverse_iterator;
       typedef base_type::_CIter<node, leaf, head, inode, false>	 	const_reverse_iterator;
 
-
+      /// This is an iterator to an iterator: it iterates over nodes,
+      /// and de-referencing it returns one of the tree's iterators.
       typedef base_type::_Node_citer<node, leaf, head, inode, const_iterator, iterator, _Alloc> node_const_iterator;
 
       typedef base_type::_Node_iter<node, leaf, head, inode, const_iterator, iterator, _Alloc> node_iterator;
 
+      /// Type for node update.
       typedef Node_Update<node_const_iterator, node_iterator, _ATraits, _Alloc> 		node_update;
 
       typedef null_node_update<node_const_iterator, node_iterator, _ATraits, _Alloc>* 		null_node_update_pointer;
     };
 
+
     /// Specialization.
+    /// @ingroup traits
     template<typename Key,
 	     typename _ATraits,
 	     template<typename Node_CItr,
@@ -110,6 +116,8 @@ namespace __gnu_pbds
       typedef typename trie_node_metadata_dispatch<Key, null_type, _ATraits, Node_Update, _Alloc>::type metadata_type;
       typedef base_type::_Metadata<metadata_type, _Alloc>				metadata;
       typedef _ATraits 				     					access_traits;
+
+      /// Type for synthesized traits.
       typedef __gnu_pbds::detail::synth_access_traits<type_traits, true, access_traits> synth_access_traits;
 
       typedef base_type::_Node_base<synth_access_traits, metadata>     	node;
@@ -122,11 +130,13 @@ namespace __gnu_pbds
       typedef base_type::_CIter<node, leaf, head, inode, false>	       	const_reverse_iterator;
       typedef const_reverse_iterator 			       		reverse_iterator;
 
-
+      /// This is an iterator to an iterator: it iterates over nodes,
+      /// and de-referencing it returns one of the tree's iterators.
       typedef base_type::_Node_citer<node, leaf, head, inode, const_iterator, iterator, _Alloc> node_const_iterator;
 
       typedef node_const_iterator 								node_iterator;
 
+      /// Type for node update.
       typedef Node_Update<node_const_iterator, node_iterator, _ATraits, _Alloc> 		node_update;
 
       typedef null_node_update<node_const_iterator, node_const_iterator, _ATraits, _Alloc>* 	null_node_update_pointer;

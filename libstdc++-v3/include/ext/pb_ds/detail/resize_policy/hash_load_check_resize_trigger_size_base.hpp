@@ -45,11 +45,11 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-    // Primary template.
+    /// Primary template.
     template<typename Size_Type, bool Hold_Size>
     class hash_load_check_resize_trigger_size_base;
 
-    // Specializations.
+    /// Specializations.
     template<typename Size_Type>
     class hash_load_check_resize_trigger_size_base<Size_Type, true>
     {

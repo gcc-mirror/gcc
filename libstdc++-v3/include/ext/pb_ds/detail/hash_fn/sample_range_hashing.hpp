@@ -47,26 +47,26 @@ namespace __gnu_pbds
   class sample_range_hashing
   {
   public:
-    // Size type.
+    /// Size type.
     typedef std::size_t size_type;
 
-    // Default constructor.
+    /// Default constructor.
     sample_range_hashing();
 
-    // Copy constructor.
+    /// Copy constructor.
     sample_range_hashing(const sample_range_hashing& other);
 
-    // Swaps content.
+    /// Swaps content.
     inline void
     swap(sample_range_hashing& other);
 
   protected:
-    // Notifies the policy object that the container's __size has
-    // changed to size.
+    /// Notifies the policy object that the container's size has
+    /// changed to argument's size.
     void
     notify_resized(size_type);
 
-    // Transforms the __hash value hash into a ranged-hash value.
+    /// Transforms the __hash value hash into a ranged-hash value.
     inline size_type
     operator()(size_type ) const;
   };

@@ -74,7 +74,9 @@ namespace __gnu_pbds
     __gnu_pbds::detail::resize_policy<typename _Alloc::size_type>
 
     /**
-     *  @brief Binary heaps composed of resize and compare policies.
+     *  Binary heaps composed of resize and compare policies.
+     *
+     *  @ingroup heap-detail
      *
      *  Based on CLRS.
      */

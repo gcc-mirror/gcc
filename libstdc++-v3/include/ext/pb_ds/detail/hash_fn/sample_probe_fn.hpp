@@ -49,18 +49,18 @@ namespace __gnu_pbds
   public:
     typedef std::size_t size_type;
 
-    // Default constructor.
+    /// Default constructor.
     sample_probe_fn();
 
-    // Copy constructor.
+    /// Copy constructor.
     sample_probe_fn(const sample_probe_fn&);
 
-    // Swaps content.
+    /// Swaps content.
     inline void
     swap(sample_probe_fn&);
 
   protected:
-    // Returns the i-th offset from the hash value of some key r_key.
+    /// Returns the i-th offset from the hash value of some key r_key.
     inline size_type
     operator()(key_const_reference r_key, size_type i) const;
   };

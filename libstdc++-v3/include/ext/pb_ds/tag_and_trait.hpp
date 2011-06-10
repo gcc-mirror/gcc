@@ -72,7 +72,7 @@ namespace __gnu_pbds
    *  @{   
    */
   /// A trivial iterator tag. Signifies that the iterators has none of
-  /// the STL's movement abilities.
+  /// std::iterators's movement abilities.
   struct trivial_iterator_tag
   { };
 
@@ -81,7 +81,7 @@ namespace __gnu_pbds
 
 
   /**
-   *  @defgroup invalidation_tags  Invalidation Guarantees.
+   *  @defgroup invalidation_tags  Invalidation Guarantees
    *  @ingroup tags
    *  @{
    */
@@ -118,7 +118,7 @@ namespace __gnu_pbds
 
 
   /**
-   *  @defgroup ds_tags Data Structure Tag Hierarchy.
+   *  @defgroup ds_tags Data Structure Type
    *  @ingroup tags
    *  @{
    */
@@ -147,7 +147,7 @@ namespace __gnu_pbds
   /// Basic branch structure.
   struct basic_branch_tag : public associative_tag { };
 
-  /// tree.
+  /// Basic tree structure.
   struct tree_tag : public basic_branch_tag { };
 
   /// Red-black tree.
@@ -159,7 +159,7 @@ namespace __gnu_pbds
   /// Ordered-vector tree.
   struct ov_tree_tag : public tree_tag { };
 
-  /// trie.
+  /// Basic trie structure.
   struct trie_tag : public basic_branch_tag { };
 
   /// PATRICIA trie.
@@ -210,6 +210,11 @@ namespace __gnu_pbds
    */
   struct null_type { };
 
+  /// A null node updator, indicating that no node updates are required.
+  template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
+    struct null_node_update : public null_type
+    { };
+
 
   /// Primary template, container traits base.
   template<typename _Tag>
@@ -219,8 +224,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<cc_hash_tag>
   {
-    typedef cc_hash_tag 			container_category;
-    typedef point_invalidation_guarantee 	invalidation_guarantee;
+    typedef cc_hash_tag 				container_category;
+    typedef point_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -235,8 +240,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<gp_hash_tag>
   {
-    typedef gp_hash_tag 			container_category;
-    typedef basic_invalidation_guarantee 	invalidation_guarantee;
+    typedef gp_hash_tag 				container_category;
+    typedef basic_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -251,8 +256,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<rb_tree_tag>
   {
-    typedef rb_tree_tag 			container_category;
-    typedef range_invalidation_guarantee 	invalidation_guarantee;
+    typedef rb_tree_tag 				container_category;
+    typedef range_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -267,8 +272,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<splay_tree_tag>
   {
-    typedef splay_tree_tag 			container_category;
-    typedef range_invalidation_guarantee 	invalidation_guarantee;
+    typedef splay_tree_tag 				container_category;
+    typedef range_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -283,8 +288,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<ov_tree_tag>
   {
-    typedef ov_tree_tag 			container_category;
-    typedef basic_invalidation_guarantee 	invalidation_guarantee;
+    typedef ov_tree_tag 				container_category;
+    typedef basic_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -299,8 +304,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<pat_trie_tag>
   {
-    typedef pat_trie_tag 			container_category;
-    typedef range_invalidation_guarantee 	invalidation_guarantee;
+    typedef pat_trie_tag 				container_category;
+    typedef range_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -315,8 +320,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<list_update_tag>
   {
-    typedef list_update_tag 			container_category;
-    typedef point_invalidation_guarantee 	invalidation_guarantee;
+    typedef list_update_tag 				container_category;
+    typedef point_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -331,8 +336,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<pairing_heap_tag>
   {
-    typedef pairing_heap_tag 			container_category;
-    typedef point_invalidation_guarantee 	invalidation_guarantee;
+    typedef pairing_heap_tag 				container_category;
+    typedef point_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -347,8 +352,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<thin_heap_tag>
   {
-    typedef thin_heap_tag 			container_category;
-    typedef point_invalidation_guarantee 	invalidation_guarantee;
+    typedef thin_heap_tag 				container_category;
+    typedef point_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -363,8 +368,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<binomial_heap_tag>
   {
-    typedef binomial_heap_tag 			container_category;
-    typedef point_invalidation_guarantee 	invalidation_guarantee;
+    typedef binomial_heap_tag 				container_category;
+    typedef point_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -379,8 +384,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<rc_binomial_heap_tag>
   {
-    typedef rc_binomial_heap_tag 		container_category;
-    typedef point_invalidation_guarantee 	invalidation_guarantee;
+    typedef rc_binomial_heap_tag 			container_category;
+    typedef point_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -395,8 +400,8 @@ namespace __gnu_pbds
   template<>
   struct container_traits_base<binary_heap_tag>
   {
-    typedef binary_heap_tag 			container_category;
-    typedef basic_invalidation_guarantee 	invalidation_guarantee;
+    typedef binary_heap_tag 				container_category;
+    typedef basic_invalidation_guarantee 		invalidation_guarantee;
 
     enum
       {
@@ -421,9 +426,16 @@ namespace __gnu_pbds
 
     enum
       {
+	/// True only if Cntnr objects guarantee storing  keys by order.
 	order_preserving = base_type::order_preserving,
+
+	/// True only if erasing a key can throw.
 	erase_can_throw = base_type::erase_can_throw,
+
+	/// True only if split or join operations can throw.
 	split_join_can_throw = base_type::split_join_can_throw,
+
+	/// True only reverse iterators are supported.
 	reverse_iteration = base_type::reverse_iteration
       };
   };

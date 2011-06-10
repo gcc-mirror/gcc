@@ -91,7 +91,44 @@ namespace __gnu_pbds
 		  typename _Alloc::template rebind<Key>::other::const_reference>
 #endif
 
-    /// Collision chaining hash.
+
+    /**
+     *  A collision-chaining hash-based container.
+     *
+     *
+     *  @ingroup hash-detail
+     *
+     *  @tparam Key 	    	Key type.
+     *
+     *  @tparam Mapped 	    	Map type.
+     *
+     *  @tparam Hash_Fn	      	Hashing functor.
+     *                          Default is __gnu_cxx::hash.
+     *
+     *  @tparam Eq_Fn	      	Equal functor.
+     *                          Default std::equal_to<Key>
+     *
+     *  @tparam _Alloc 	    	Allocator type.
+     *
+     *  @tparam Store_Hash    	If key type stores extra metadata.
+     *                          Defaults to false.
+     *
+     *  @tparam Comb_Hash_Fn	Combining hash functor.
+     *                          If Hash_Fn is not null_type, then this
+     *                          is the ranged-hash functor; otherwise,
+     *                          this is the range-hashing functor.
+     *                    XXX(See Design::Hash-Based Containers::Hash Policies.)
+     *                          Default direct_mask_range_hashing.
+     *
+     *  @tparam Resize_Policy 	Resizes hash.
+     *                          Defaults to hash_standard_resize_policy,
+     *                          using hash_exponential_size_policy and
+     *                          hash_load_check_resize_trigger.
+     *
+     *
+     *  Bases are: detail::hash_eq_fn, Resize_Policy, detail::ranged_hash_fn,
+     *             detail::types_traits. (Optional: detail::debug_map_base.)
+     */
     template<typename Key,
 	     typename Mapped,
 	     typename Hash_Fn,
@@ -160,6 +197,7 @@ namespace __gnu_pbds
       typedef Comb_Hash_Fn 			comb_hash_fn;
       typedef Resize_Policy 			resize_policy;
 
+      /// Value stores hash, true or false.
       enum
 	{
 	  store_hash = Store_Hash
@@ -233,30 +271,39 @@ namespace __gnu_pbds
       inline size_type
       max_size() const;
 
+      /// True if size() == 0.
       inline bool
       empty() const;
 
+      /// Return current hash_fn.
       Hash_Fn&
       get_hash_fn();
 
+      /// Return current const hash_fn.
       const Hash_Fn&
       get_hash_fn() const;
 
+      /// Return current eq_fn.
       Eq_Fn&
       get_eq_fn();
 
+      /// Return current const eq_fn.
       const Eq_Fn&
       get_eq_fn() const;
 
+      /// Return current comb_hash_fn.
       Comb_Hash_Fn&
       get_comb_hash_fn();
 
+      /// Return current const comb_hash_fn.
       const Comb_Hash_Fn&
       get_comb_hash_fn() const;
 
+      /// Return current resize_policy.
       Resize_Policy&
       get_resize_policy();
 
+      /// Return current const resize_policy.
       const Resize_Policy&
       get_resize_policy() const;
 

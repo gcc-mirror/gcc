@@ -48,6 +48,7 @@ namespace __gnu_pbds
   namespace detail
   {
     /// Tree traits.
+    /// @ingroup traits
     template<typename Key,
 	     typename Mapped,
 	     class Cmp_Fn,
@@ -84,6 +85,8 @@ namespace __gnu_pbds
       _Alloc>::type
       metadata_type;
 
+      /// This is an iterator to an iterator: it iterates over nodes,
+      /// and de-referencing it returns one of the tree's iterators.
       typedef
       ov_tree_node_const_it_<
 	value_type,
@@ -115,7 +118,9 @@ namespace __gnu_pbds
       null_node_update_pointer;
     };
 
+
     /// Specialization.
+    /// @ingroup traits
     template<typename Key,
 	     class Cmp_Fn,
 	     template<typename Node_CItr,
@@ -151,6 +156,8 @@ namespace __gnu_pbds
       _Alloc>::type
       metadata_type;
 
+      /// This is an iterator to an iterator: it iterates over nodes,
+      /// and de-referencing it returns one of the tree's iterators.
       typedef
       ov_tree_node_const_it_<
 	value_type,

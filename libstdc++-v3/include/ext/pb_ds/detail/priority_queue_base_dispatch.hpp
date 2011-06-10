@@ -107,7 +107,7 @@ namespace __gnu_pbds
 	/// Dispatched type.
 	typedef thin_heap<_VTp, Cmp_Fn, _Alloc> 		type;
       };
-    // @} group pbds
+    //@} group pbds
   } // namespace detail
 } // namespace __gnu_pbds
 
