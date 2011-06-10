@@ -486,6 +486,7 @@ static const struct default_options default_options_table[] =
     /* Inlining of functions reducing size is a good idea with -Os
        regardless of them being declared inline.  */
     { OPT_LEVELS_3_PLUS_AND_SIZE, OPT_finline_functions, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_finline_functions_called_once, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_vectorize, NULL, 1 },
