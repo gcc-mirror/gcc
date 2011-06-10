@@ -1941,7 +1941,7 @@ proc add_options_for_arm_neon_fp16 { flags } {
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=neon-fp16
-# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
+# -mfloat-abi=softfp or equivalent options.  Skip multilibs that are
 # incompatible with these options.  Also set et_arm_neon_flags to the
 # best options to add.
 
@@ -1949,6 +1949,9 @@ proc check_effective_target_arm_neon_fp16_ok_nocache { } {
     global et_arm_neon_fp16_flags
     set et_arm_neon_fp16_flags ""
     if { [check_effective_target_arm32] } {
+	if [check-flags [list "" { *-*-* } { "-mfpu=*" } { "-mfpu=neon-fp16*" } ]] {
+	    return 0
+	}
 	# Always add -mfpu=neon-fp16, since there is no preprocessor
 	# macro for FP16 support.
 	foreach flags {"-mfpu=neon-fp16" "-mfpu=neon-fp16 -mfloat-abi=softfp"} {

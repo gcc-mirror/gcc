@@ -1,3 +1,9 @@
+2011-06-10  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_fp16_ok_nocache): Return 0 if
+	multilib flags use -mfpu with a value other than neon-fp16.
+
 2011-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline
