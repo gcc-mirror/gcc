@@ -1,3 +1,8 @@
+2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/41769
+	* g++.dg/parse/error39.C: New.
+
 2011-06-10  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc/testsuite/gcc.target/arm/20090811-1.c: Skip for incompatible
@@ -86,7 +91,7 @@
 
 	* objc-obj-c++-shared/objc-test-suite-next-encode-assist.h
 	(PMETH, arglist_t): Removed.
-	(method_get_number_of_arguments): Removed.	
+	(method_get_number_of_arguments): Removed.
 	(method_get_nth_argument): Removed.
 	(method_get_first_argument): Removed.
 	(method_get_next_argument): Removed.
@@ -97,9 +102,9 @@
 	(method_get_nth_argument): Removed.
 	(method_get_first_argument): Removed.
 	(method_get_next_argument): Removed.
-	(method_get_sizeof_arguments): Removed.	
+	(method_get_sizeof_arguments): Removed.
 	* objc-obj-c++-shared/objc-test-suite-types.h (PMETH): Removed.
-	
+
 2011-06-09  David Li  <davidxl@google.com>
 
 	* testsuite/gcc.dg/dump-pass.c: New test.
@@ -286,7 +291,7 @@
 	* objc-obj-c++-shared/TestsuiteObject.h ([-free]): Return 'id'.
 	* objc-obj-c++-shared/TestsuiteObject.m ([-free]): Return 'id'.
 	Added cast.
-	
+
 2011-06-07  Xinliang David Li  <davidxl@google.com>
 
 	* testsuite/gcc.dg/inline_2.c: New test.
@@ -366,8 +371,8 @@
 	* objc-obj-c++-shared/runtime.h: New.
 	* objc-obj-c++-shared/TestsuiteObject.h: New.
 	* objc-obj-c++-shared/TestsuiteObject.m: New.
-	
-	* objc/compile/trivial.m: Use TestsuiteObject instead of Object.	
+
+	* objc/compile/trivial.m: Use TestsuiteObject instead of Object.
 	* objc/execute/IMP.m: Include ../../objc-obj-c++-shared/runtime.h.
 	Use the Modern Objective-C runtime API. ([TestClass -next:]): Made
 	it a class method.
@@ -433,7 +438,7 @@
 	* objc/execute/exceptions/catchall-1.m: Likewise.
 	* objc/execute/exceptions/finally-1.m: Likewise.
 	* objc/execute/exceptions/foward-1.m: Likewise.
-	* objc/execute/exceptions/local-variables-1.m: Likewise.	
+	* objc/execute/exceptions/local-variables-1.m: Likewise.
 	* objc/execute/exceptions/throw-nil.m: Likewise.
 	* objc/execute/exceptions/trivial.m: Likewise.
 	* objc/execute/exceptions/handler-1.m: Use TestsuiteObject instead
@@ -499,15 +504,15 @@
 	runtime as well.
 	* objc.dg/attributes/categ-attribute-1.m: Use TestsuiteObject
 	instead of Object.
-	* obj-c++.dg/attributes/categ-attribute-1.mm: Likewise.	
+	* obj-c++.dg/attributes/categ-attribute-1.mm: Likewise.
 	* objc.dg/attributes/categ-attributes-2.m: Likewise.
 	* obj-c++.dg/attributes/categ-attributes-2.mm: Likewise.
 	* objc.dg/attributes/method-attribute-1.m: Likewise.
-	* obj-c++.dg/attributes/method-attribute-1.mm: Likewise.	
+	* obj-c++.dg/attributes/method-attribute-1.mm: Likewise.
 	* objc.dg/attributes/method-attribute-2.m: Likewise.
-	* obj-c++.dg/attributes/method-attribute-2.mm: Likewise.	
+	* obj-c++.dg/attributes/method-attribute-2.mm: Likewise.
 	* objc.dg/attributes/method-attribute-3.m: Likewise.
-	* obj-c++.dg/attributes/method-attribute-3.mm: Likewise.	
+	* obj-c++.dg/attributes/method-attribute-3.mm: Likewise.
 	* obj-c++.dg/basic.mm: Use TestsuiteObject instead of Object.
 	* objc.dg/bitfield-1.m: Use TestsuiteObject instead of Object.
 	* obj-c++.dg/bitfield-1.mm: Likewise.
@@ -522,10 +527,10 @@
 	../objc-obj-c++-shared/runtime.h.
 	* objc.dg/call-super-3.m: Use TestsuiteObject instead of Object.
 	* objc.dg/category-1.m: Use TestsuiteObject instead of Object.
-	Use the Modern Objective-C runtime API.	
+	Use the Modern Objective-C runtime API.
 	* objc.dg/class-protocol-1.m: Include
 	../objc-obj-c++-shared/runtime.h instead of objc/objc-api.h.
-	* obj-c++.dg/class-protocol-1.mm: Likewise.	
+	* obj-c++.dg/class-protocol-1.mm: Likewise.
 	* objc.dg/comp-types-8.m: Use TestsuiteObject instead of Object.
 	* objc.dg/comp-types-10.m: Likewise.
 	* objc.dg/comp-types-11.m: Likewise.
@@ -555,7 +560,7 @@
 	* objc.dg/encode-5.m: Use TestsuiteObject instead of Object.  Use
 	the Modern Objective-C runtime API.
 	* objc.dg/encode-7.m: Include objc/runtime.h instead of
-	objc/encoding.h.	
+	objc/encoding.h.
 	* objc.dg/encode-7-next.m: Use TestsuiteObject instead of Object.
 	* objc.dg/encode-7-next-64bit.m: Updated include.
 	* objc.dg/encode-8.m: Include objc/runtime.h instead of
@@ -569,7 +574,7 @@
 	the Modern Objective-C runtime API except when using an older NeXT
 	runtime.
 	* obj-c++.dg/encode-7.mm:  Use TestsuiteObject instead of Object.  Use
-	the Modern Objective-C runtime API.	
+	the Modern Objective-C runtime API.
 	* objc.dg/fix-and-continue-1.m: Use TestsuiteObject instead of
 	Object.
 	* obj-c++.dg/fix-and-continue-2.mm: Likewise.
@@ -587,8 +592,8 @@
 	* objc.dg/fsf-package-0.m: Use TestsuiteObject instead of Object.
 	Do not include objc/objc-api.h.
 	* obj-c++.dg/fsf-package-0.mm: Likewise.
-	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c (switchfiles):
-	Include objc/runtime.h instead of objc/encoding.h.	
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c
+	(switchfiles): Include objc/runtime.h instead of objc/encoding.h.
 	* objc.dg/gnu-runtime-1.m: Updated to use TestsuiteObject instead
 	of Object.
 	* obj-c++.dg/gnu-runtime-1.mm: Likewise.
@@ -660,7 +665,7 @@
 	* obj-c++.dg/proto-lossage-3.mm: Likewise.
 	* objc.dg/proto-qual-1.m: Updated includes.  Use the Modern
 	Objective-C runtime API.
-	* obj-c++.dg/proto-qual-1.mm: Likewise.	
+	* obj-c++.dg/proto-qual-1.mm: Likewise.
 	* objc.dg/property/property-1.m: Use TestsuiteObject instead of
 	Object.
 	* obj-c++.dg/property/property-1.mm: Likewise.
@@ -718,7 +723,7 @@
 	Object.  Use Modern Objective-C runtime API.  Do not use
 	performv::.
 	* objc.dg/torture/trivial.m: Use TestsuiteObject intead of Object.
-	* obj-c++.dg/torture/trivial.mm: Likewise.	
+	* obj-c++.dg/torture/trivial.mm: Likewise.
 	* objc.dg/torture/strings/const-str-10.m: Include objc/Object.h
 	instead of ../objc-obj-c++-shared/Object1.h.  Include
 	../objc-obj-c++-shared/runtime.h.
@@ -742,16 +747,16 @@
 	* obj-c++.dg/va-meth-1.mm: Likewise.
 	* objc.dg/zero-link-1.m: Include objc/Object.h instead of
 	../objc-obj-c++-shared/Object1.h.
-	* objc.dg/zero-link-3.m: Likewise.	
-	
+	* objc.dg/zero-link-3.m: Likewise.
+
 2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* obj-c++.dg/try-catch-2.mm: Fixed unterminated comment.
-	
+
 2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc-++/48275
-	* obj-c++.dg/property/cxx-property-1.mm: New.	
+	* obj-c++.dg/property/cxx-property-1.mm: New.
 	* obj-c++.dg/property/cxx-property-2.mm: New.
 
 2011-06-06  Jason Merrill  <jason@redhat.com>
@@ -817,14 +822,14 @@
 	* objc.dg/gnu-api-2-objc.m: Likewise.
 	* obj-c++.dg/gnu-api-2-class.mm: Likewise
 	* obj-c++.dg/gnu-api-2-objc.mm: Likewise.
-	
+
 2011-06-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-objc.m: Fixed testcase.  Use log2 of the
 	alignment, not the alignment, when calling class_addIvar().  Add
 	an 'isa' instance variable to the test root class.
 	* obj-c++.dg/gnu-api-2-objc.mm: Likewise.
-	
+
 2011-06-04  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/48893
@@ -883,7 +888,7 @@
 
 	* objc.dg/type-stream-1.m: Test removed.
 	* objc.dg/headers.m: Do not include typedstream.h.
-	
+
 2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/torture/forward-1.m (main): Updated testcase.
@@ -906,12 +911,12 @@
 2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/48539
-	* objc.dg/method-5.m: Updated.	
+	* objc.dg/method-5.m: Updated.
 	* objc.dg/method-19.m: Updated.
-	* objc.dg/method-lookup-1.m: New.	
+	* objc.dg/method-lookup-1.m: New.
 	* obj-c++.dg/method-6.mm: Updated.
 	* obj-c++.dg/method-7.mm: Updated.
-	* obj-c++.dg/method-lookup-1.mm: New.	
+	* obj-c++.dg/method-lookup-1.mm: New.
 
 2011-06-02  DJ Delorie  <dj@redhat.com>
 
@@ -985,7 +990,7 @@
 2011-06-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/attributes/method-nonnull-1.m: New test.
-	* obj-c++.dg/attributes/method-nonnull-1.mm: New test.	
+	* obj-c++.dg/attributes/method-nonnull-1.mm: New test.
 
 2011-05-31  Tobias Burnus  <burnus@net-b.de>
 
