@@ -1,5 +1,7 @@
 2011-06-09  Jason Merrill  <jason@redhat.com>
 
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust.
+
 	* testsuite/lib/prune.exp (libstdc++-dg-prune): Prune notes.
 	* testsuite/20_util/duration/cons/1_neg.cc: Remove dg-excess-errors.
 	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.

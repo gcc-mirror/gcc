@@ -51,4 +51,5 @@ test04()
 // { dg-error "required from here" "" { target *-*-* } 46 }
 // { dg-error "denominator cannot be zero" "" { target *-*-* } 268 }
 // { dg-error "out of range" "" { target *-*-* } 269 }
-// { dg-error "overflow in constant expression" "" { target *-*-* } 109 }
+// { dg-error "overflow in constant expression" "" { target *-*-* } 61 }
+// { dg-prune-output "not a member" }

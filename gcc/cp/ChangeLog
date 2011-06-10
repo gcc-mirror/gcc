@@ -1,5 +1,8 @@
 2011-06-09  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (maybe_constant_value): Handle overflowed input.
+	(non_const_var_error): Handle non-constant DECL_INITIAL.
+
 	* pt.c (build_non_dependent_expr): Use fold_non_dependent_expr_sfinae.
 
 	* parser.c (cp_parser_constant_expression): Just return the
