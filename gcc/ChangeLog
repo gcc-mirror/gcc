@@ -1,3 +1,13 @@
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
+	* tree-sra.c (all_callers_have_enough_arguments_p): Rename to ...
+	(not_all_callers_have_enough_arguments_p): ... this one; turn into
+	worker for cgraph_for_node_and_aliases.
+	(convert_callers_for_node): Break out from ...
+	(convert_callers): ... here.
+	(modify_function): Use collect_callers_of_node.
+	(ipa_early_sra): Use cgraph_for_node_and_aliases.
+
 2011-06-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49361
