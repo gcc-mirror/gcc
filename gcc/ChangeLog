@@ -1,3 +1,13 @@
+2011-06-10  David Li  <davidxl@google.com>
+
+	* cgraphunit.c (cgraph_finalize_compilation_unit): Pass dump.
+	* passes.c (passr_eq): New function.
+	(create_pass_tab): New function.
+	(pass_traverse): New function.
+	(dump_one_pass): New function.
+	(dump_pass_list): New function.
+	(dump_passes): New function.
+
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_set_nothrow_flag_1): Update cgraph after
@@ -331,6 +341,7 @@
 	register classes.
 	* doc/tm.texi: Regenerate.
 
+>>>>>>> .r174929
 2011-06-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/49307
