@@ -93,7 +93,7 @@ ipa_init_func_list (void)
 
   wl = NULL;
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
+    if (node->analyzed && !node->alias)
       {
 	struct ipa_node_params *info = IPA_NODE_REF (node);
 	/* Unreachable nodes should have been eliminated before ipcp and
@@ -1096,6 +1096,7 @@ ipa_compute_jump_functions (struct cgraph_node *node,
 
   for (cs = node->callees; cs; cs = cs->next_callee)
     {
+      struct cgraph_node *callee = cgraph_function_or_thunk_node (cs->callee, NULL);
       /* We do not need to bother analyzing calls to unknown
 	 functions unless they may become known during lto/whopr.  */
       if (!cs->callee->analyzed && !flag_lto)
@@ -1103,11 +1104,11 @@ ipa_compute_jump_functions (struct cgraph_node *node,
       ipa_count_arguments (cs);
       /* If the descriptor of the callee is not initialized yet, we have to do
 	 it now. */
-      if (cs->callee->analyzed)
-	ipa_initialize_node_params (cs->callee);
+      if (callee->analyzed)
+	ipa_initialize_node_params (callee);
       if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
-	  != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
-	ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
+	  != ipa_get_param_count (IPA_NODE_REF (callee)))
+	ipa_set_called_with_variable_arg (IPA_NODE_REF (callee));
       ipa_compute_jump_functions_for_edge (parms_info, cs);
     }
 

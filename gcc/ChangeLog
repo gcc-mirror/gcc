@@ -1,3 +1,16 @@
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipcp_versionable_function_p): Aliases are not versionable.
+	(ipcp_cloning_candidate_p): Aliases are not clonning candidates.
+	(ipcp_initialize_node_lattices): We don't propagate through an aliases.
+	(ipcp_propagate_stage): Skip aliases when propagating.
+	(ipcp_need_redirect_p): Skip aliases.
+	(ipcp_insert_stage): Use FOR_EACH_FUNCTION_WITH_GIMPLE_BODY and
+	collect_callers_of_node.
+	* ipa-prop.c (ipa_init_func_list): Do not analyze datastructures
+	for aliases.
+	(ipa_compute_jump_functions): Look through aliases.
+
 2011-06-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, pie): Document it.
