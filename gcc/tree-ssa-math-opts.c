@@ -2174,7 +2174,7 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
       if (use_code == NEGATE_EXPR)
 	{
 	  ssa_op_iter iter;
-	  tree use;
+	  use_operand_p usep;
 
 	  result = gimple_assign_lhs (use_stmt);
 
@@ -2185,8 +2185,8 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 	    return false;
 
 	  /* Make sure the multiplication isn't also used on that stmt.  */
-	  FOR_EACH_SSA_TREE_OPERAND (use, neguse_stmt, iter, SSA_OP_USE)
-	    if (use == mul_result)
+	  FOR_EACH_PHI_OR_STMT_USE (usep, neguse_stmt, iter, SSA_OP_USE)
+	    if (USE_FROM_PTR (usep) == mul_result)
 	      return false;
 
 	  /* Re-validate.  */
