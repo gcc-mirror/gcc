@@ -1,5 +1,10 @@
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
+	* opts.c (default_options): Enlist OPT_finline_functions_called_once.
+	* common.opt (flag_inline_functions_called_once):Do not initialize to 1.
+
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-cp.c (ipcp_versionable_function_p): Thunks are not versionable.
 	(ipcp_initialize_node_lattices): Do not deal with aliases; Do not try to
 	propagate through thunks.
