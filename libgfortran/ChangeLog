@@ -1,3 +1,15 @@
+2011-06-10  Daniel Carrera  <dcarrera@gmail.com>
+
+	* caf/mpi.c (_gfortran_caf_sync_all,
+	_gfortran_caf_sync_images): Functions have void return type
+	and move status into parameter list.
+	* caf/single.c (_gfortran_caf_sync_all,
+	_gfortran_caf_sync_images): Functions have void return type
+	and move status into parameter list.
+	* caf/libcaf.h (_gfortran_caf_sync_all,
+	_gfortran_caf_sync_images): Functions have void return type
+	and move status into parameter list.
+
 2011-06-03  Richard Henderson  <rth@redhat.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -7,15 +19,15 @@
 
 2011-05-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR libfortran/48931
-        * libgfortran.h (find_addr2line): New prototype.
-        * runtime/backtrace.c (show_backtrace): Use async-signal-safe
-        execve and stored path of addr2line.
-        * runtime/compile_options.c (maybe_find_addr2line): New function.
-        (set_options): Call maybe_find_addr2line if backtracing is enabled.
-        * runtime/main.c (find_addr2line): New function.
-        (init): Call find_addr2line if backtracing is enabled.
-        (cleanup): Free addr2line_path.
+	PR libfortran/48931
+	* libgfortran.h (find_addr2line): New prototype.
+	* runtime/backtrace.c (show_backtrace): Use async-signal-safe
+	execve and stored path of addr2line.
+	* runtime/compile_options.c (maybe_find_addr2line): New function.
+	(set_options): Call maybe_find_addr2line if backtracing is enabled.
+	* runtime/main.c (find_addr2line): New function.
+	(init): Call find_addr2line if backtracing is enabled.
+	(cleanup): Free addr2line_path.
 
 2011-05-29  Janne Blomqvist  <jb@gcc.gnu.org>
 

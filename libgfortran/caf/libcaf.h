@@ -54,8 +54,8 @@ void * _gfortran_caf_register (ptrdiff_t, caf_register_t, void **);
 int _gfortran_caf_deregister (void **);
 
 
-int _gfortran_caf_sync_all (char *, int);
-int _gfortran_caf_sync_images (int, int[], char *, int);
+void _gfortran_caf_sync_all (int *, char *, int);
+void _gfortran_caf_sync_images (int, int[], int *, char *, int);
 
 /* FIXME: The CRITICAL functions should be removed;
    the functionality is better represented using Coarray's lock feature.  */

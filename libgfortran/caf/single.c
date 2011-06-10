@@ -69,16 +69,19 @@ _gfortran_caf_deregister (void **token __attribute__ ((unused)))
 }
 
 
-int
-_gfortran_caf_sync_all (char *errmsg __attribute__ ((unused)),
+void
+_gfortran_caf_sync_all (int *stat,
+			char *errmsg __attribute__ ((unused)),
 			int errmsg_len __attribute__ ((unused)))
 {
-  return 0;
+  if (stat)
+    *stat = 0;
 }
 
-int
+void
 _gfortran_caf_sync_images (int count __attribute__ ((unused)),
 			   int images[] __attribute__ ((unused)),
+			   int *stat,
 			   char *errmsg __attribute__ ((unused)),
 			   int errmsg_len __attribute__ ((unused)))
 {
@@ -94,7 +97,8 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
       }
 #endif
 
-  return 0;
+  if (stat)
+    *stat = 0;
 }
 
 

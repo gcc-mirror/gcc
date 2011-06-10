@@ -683,6 +683,8 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
       gfc_conv_expr_val (&argse, code->expr2);
       stat = argse.expr;
     }
+  else
+    stat = null_pointer_node;
 
   if (code->expr3 && gfc_option.coarray == GFC_FCOARRAY_LIB
       && type != EXEC_SYNC_MEMORY)
@@ -691,7 +693,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
       gfc_init_se (&argse, NULL);
       gfc_conv_expr (&argse, code->expr3);
       gfc_conv_string_parameter (&argse);
-      errmsg = argse.expr;
+      errmsg = gfc_build_addr_expr (NULL, argse.expr);
       errmsglen = argse.string_length;
     }
   else if (gfc_option.coarray == GFC_FCOARRAY_LIB && type != EXEC_SYNC_MEMORY)
@@ -743,12 +745,32 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
     }
   else if (type == EXEC_SYNC_ALL)
     {
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
-				 2, errmsg, errmsglen);
-      if (code->expr2)
-	gfc_add_modify (&se.pre, stat, fold_convert (TREE_TYPE (stat), tmp));
+      /* SYNC ALL           =>   stat == null_pointer_node
+	 SYNC ALL(stat=s)   =>   stat has an integer type
+
+	 If "stat" has the wrong integer type, use a temp variable of
+	 the right type and later cast the result back into "stat".  */
+      if (stat == null_pointer_node || TREE_TYPE (stat) == integer_type_node)
+	{
+	  if (TREE_TYPE (stat) == integer_type_node)
+	    stat = gfc_build_addr_expr (NULL, stat);
+	  
+	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
+				     3, stat, errmsg, errmsglen);
+	  gfc_add_expr_to_block (&se.pre, tmp);
+	}
       else
-	gfc_add_expr_to_block (&se.pre, tmp);
+	{
+	  tree tmp_stat = gfc_create_var (integer_type_node, "stat");
+
+	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_all,
+				     3, gfc_build_addr_expr (NULL, tmp_stat),
+				     errmsg, errmsglen);
+	  gfc_add_expr_to_block (&se.pre, tmp);
+	  
+	  gfc_add_modify (&se.pre, stat,
+			  fold_convert (TREE_TYPE (stat), tmp_stat));
+	}
     }
   else
     {
@@ -790,13 +812,34 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
           len = fold_convert (integer_type_node, len);
 	}
 
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_images, 4,
-				 fold_convert (integer_type_node, len), images,
-				 errmsg, errmsglen);
-      if (code->expr2)
-	gfc_add_modify (&se.pre, stat, fold_convert (TREE_TYPE (stat), tmp));
+      /* SYNC IMAGES(imgs)        => stat == null_pointer_node
+	 SYNC IMAGES(imgs,stat=s) => stat has an integer type
+
+	 If "stat" has the wrong integer type, use a temp variable of
+	 the right type and later cast the result back into "stat".  */
+      if (stat == null_pointer_node || TREE_TYPE (stat) == integer_type_node)
+	{
+	  if (TREE_TYPE (stat) == integer_type_node)
+	    stat = gfc_build_addr_expr (NULL, stat);
+
+	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_images, 
+				     5, fold_convert (integer_type_node, len),
+				     images, stat, errmsg, errmsglen);
+	  gfc_add_expr_to_block (&se.pre, tmp);
+	}
       else
-	gfc_add_expr_to_block (&se.pre, tmp);
+	{
+	  tree tmp_stat = gfc_create_var (integer_type_node, "stat");
+
+	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_images, 
+				     5, fold_convert (integer_type_node, len),
+				     images, gfc_build_addr_expr (NULL, tmp_stat),
+				     errmsg, errmsglen);
+	  gfc_add_expr_to_block (&se.pre, tmp);
+
+	  gfc_add_modify (&se.pre, stat, 
+			  fold_convert (TREE_TYPE (stat), tmp_stat));
+	}
     }
 
   return gfc_finish_block (&se.pre);

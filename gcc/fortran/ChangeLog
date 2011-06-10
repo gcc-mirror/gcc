@@ -1,3 +1,11 @@
+2011-06-10  Daniel Carrera  <dcarrera@gmail.com>
+
+	* trans-decl.c (gfc_build_builtin_function_decls):
+	Updated declaration of caf_sync_all and caf_sync_images.
+	* trans-stmt.c (gfc_trans_sync): Function
+	can now handle a "stat" variable that has an integer type
+	different from integer_type_node.
+
 2011-06-09  Richard Guenther  <rguenther@suse.de>
 
 	* trans.c (gfc_allocate_array_with_status): Mark error path
