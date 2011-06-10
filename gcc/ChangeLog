@@ -1,3 +1,9 @@
+2011-06-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine):
+	Scan stmts forward when combining, visit inserted stmts when
+	a stmt was changed.
+
 2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* tree.h (error_operand_p): Add.
