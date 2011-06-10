@@ -661,11 +661,12 @@ upc_set_block_factor (const enum tree_code decl_kind,
       return type;
     }
 
-  if (tree_low_cst (block_factor, 1) > (HOST_WIDE_INT) UPC_MAX_BLOCK_SIZE)
+  if (TREE_OVERFLOW_P (block_factor)
+      || tree_low_cst (block_factor, 1) > (HOST_WIDE_INT) UPC_MAX_BLOCK_SIZE)
     {
       error ("the maximum UPC block size in this implementation is %ld",
 	     (long int) UPC_MAX_BLOCK_SIZE);
-      return type;
+      block_factor = size_one_node;
     }
 
   block_factor = convert (sizetype, block_factor);

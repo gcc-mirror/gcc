@@ -1,8 +1,13 @@
+2011-06-10  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c (upc_set_block_factor): Handle the case where
+	the UPC blocking factor expression overflowed.
+
 2011-06-02  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 174558 into gupc branch.
 
-	upc-lang.c (upc_check_decl_init): Use recently defined
+	* upc-lang.c (upc_check_decl_init): Use recently defined
 	'append_to_statement_list_force' function to add UPC
 	initialization statements to the UPC initialization
 	statement list ('upc_init_stmt_list').
