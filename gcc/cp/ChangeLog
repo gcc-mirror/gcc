@@ -1,3 +1,16 @@
+2011-06-09  David Krauss  <potswa@mac.com>
+
+	PR c++/49118
+	* typeck2.c (build_x_arrow): Push fake template context
+	to produce diagnostic on acyclic endless operator-> drill-down.
+	* call.c (build_new_op): Change Boolean overload status
+	value to a pointer to the overload function.
+	* cp-tree.h: Likewise.
+	* typeck.c: Likewise.
+	* parser.c: Likewise.
+	* decl2.c: Likewise.
+	* pt.c: Likewise.
+
 2011-06-09  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (maybe_constant_value): Handle overflowed input.
