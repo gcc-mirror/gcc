@@ -2833,7 +2833,15 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
 	ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
-    ipa_write_indirect_edge_info (ob, e);
+    {
+      struct ipa_edge_args *args = IPA_EDGE_REF (e);
+
+      lto_output_uleb128_stream (ob->main_stream,
+				 ipa_get_cs_argument_count (args));
+      for (j = 0; j < ipa_get_cs_argument_count (args); j++)
+	ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
+      ipa_write_indirect_edge_info (ob, e);
+    }
 }
 
 /* Stream in NODE info from IB.  */
@@ -2871,7 +2879,20 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
 	ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), data_in);
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
-    ipa_read_indirect_edge_info (ib, data_in, e);
+    {
+      struct ipa_edge_args *args = IPA_EDGE_REF (e);
+      int count = lto_input_uleb128 (ib);
+
+      ipa_set_cs_argument_count (args, count);
+      if (count)
+	{
+          args->jump_functions = ggc_alloc_cleared_vec_ipa_jump_func
+	    (ipa_get_cs_argument_count (args));
+          for (k = 0; k < ipa_get_cs_argument_count (args); k++)
+	    ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), data_in);
+	}
+      ipa_read_indirect_edge_info (ib, data_in, e);
+    }
 }
 
 /* Write jump functions for nodes in SET.  */

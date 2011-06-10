@@ -1,3 +1,9 @@
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-prop.c (ipa_write_node_info): Stream jump functions for indirect
+	calls.
+	(ipa_read_node_info): Likewise.
+
 2011-06-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR lto/49302
