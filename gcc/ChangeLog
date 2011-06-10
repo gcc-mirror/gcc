@@ -1,3 +1,9 @@
+2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* ira-costs.c: Remove #ifdefs on dead FORBIDDEN_INC_DEC_CLASSES.
+	Adjust comments.
+	* system.h (FORBIDDEN_INC_DEC_CLASSES): Poison.
+
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_process_devirtualization_opportunities):
