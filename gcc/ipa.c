@@ -113,17 +113,43 @@ process_references (struct ipa_ref_list *list,
     }
 }
 
+
+/* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
+
+static bool
+cgraph_non_local_node_p_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+   return !(cgraph_only_called_directly_or_aliased_p (node)
+	    && node->analyzed
+	    && !DECL_EXTERNAL (node->decl)
+	    && !node->local.externally_visible
+	    && !node->reachable_from_other_partition
+	    && !node->in_other_partition);
+}
+
 /* Return true when function can be marked local.  */
 
 static bool
 cgraph_local_node_p (struct cgraph_node *node)
 {
-   return (cgraph_only_called_directly_p (node)
-	   && node->analyzed
-	   && !DECL_EXTERNAL (node->decl)
-	   && !node->local.externally_visible
-	   && !node->reachable_from_other_partition
-	   && !node->in_other_partition);
+   return !cgraph_for_node_and_aliases (cgraph_function_or_thunk_node (node, NULL),
+					cgraph_non_local_node_p_1, NULL, true);
+					
+}
+
+/* Return true when NODE has ADDR reference.  */
+
+static bool
+has_addr_references_p (struct cgraph_node *node,
+		       void *data ATTRIBUTE_UNUSED)
+{
+  int i;
+  struct ipa_ref *ref;
+
+  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ADDR)
+      return true;
+  return false;
 }
 
 /* Perform reachability analysis and reclaim all unreachable nodes.
@@ -417,16 +443,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
     if (node->address_taken
 	&& !node->reachable_from_other_partition)
       {
-	int i;
-        struct ipa_ref *ref;
-	bool found = false;
-        for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref)
-		    && !found; i++)
-	  {
-	    gcc_assert (ref->use == IPA_REF_ADDR);
-	    found = true;
-	  }
-	if (!found)
+	if (!cgraph_for_node_and_aliases (node, has_addr_references_p, NULL, true))
 	  {
 	    if (file)
 	      fprintf (file, " %s", cgraph_node_name (node));

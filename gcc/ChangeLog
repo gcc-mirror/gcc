@@ -1,5 +1,12 @@
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
+	* ipa.c (cgraph_non_local_node_p_1): Break out from ...;
+	(cgraph_local_node_p): ... here; handle aliases.
+	(has_addr_references_p): Break out from ...;
+	(cgraph_remove_unreachable_nodes) ... here.
+
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
 	* opts.c (default_options): Enlist OPT_finline_functions_called_once.
 	* common.opt (flag_inline_functions_called_once):Do not initialize to 1.
 
