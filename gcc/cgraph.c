@@ -2681,7 +2681,13 @@ cgraph_make_node_local (struct cgraph_node *node)
 static bool
 cgraph_set_nothrow_flag_1 (struct cgraph_node *node, void *data)
 {
+  struct cgraph_edge *e;
+
   TREE_NOTHROW (node->decl) = data != NULL;
+
+  if (data != NULL)
+    for (e = node->callers; e; e = e->next_caller)
+      e->can_throw_external = false;
   return false;
 }
 
