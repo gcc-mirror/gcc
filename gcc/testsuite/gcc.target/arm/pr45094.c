@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "incompatible options" { arm*-*-* } { "-march=*" } { "-march=armv7-a" } } */
 /* { dg-require-effective-target arm_neon_hw } */
 /* { dg-options "-O2 -mcpu=cortex-a8" } */
 /* { dg-add-options arm_neon } */

@@ -1,4 +1,7 @@
 /* { dg-do compile } */
+/* { dg-skip-if "incompatible options" { arm*-*-* } { "-march=*" } { "-march=armv7-a" } } */
+/* { dg-skip-if "do not override -mcpu" { *-*-* } { "-mcpu=*" } { "-mcpu=cortex-a8" } } */
+/* { dg-skip-if "do not override -mfloat-abi" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=softfp" } } */
 /* { dg-options "-O3 -mcpu=cortex-a8 -mfpu=vfp3 -mfloat-abi=softfp" } */
 
 typedef struct cb
