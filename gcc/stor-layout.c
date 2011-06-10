@@ -2215,8 +2215,7 @@ initialize_sizetypes (void)
 
   /* Create stubs for sizetype and bitsizetype so we can create constants.  */
   sizetype = make_node (INTEGER_TYPE);
-  /* ???  We can't set a name for sizetype because it appears in C diagnostics
-     and pp_c_type_specifier doesn't deal with IDENTIFIER_NODE TYPE_NAMEs.  */
+  TYPE_NAME (sizetype) = get_identifier ("sizetype");
   TYPE_PRECISION (sizetype) = precision;
   TYPE_UNSIGNED (sizetype) = 1;
   TYPE_IS_SIZETYPE (sizetype) = 1;
@@ -2250,8 +2249,10 @@ initialize_sizetypes (void)
 
   /* Create the signed variants of *sizetype.  */
   ssizetype = make_signed_type (TYPE_PRECISION (sizetype));
+  TYPE_NAME (ssizetype) = get_identifier ("ssizetype");
   TYPE_IS_SIZETYPE (ssizetype) = 1;
   sbitsizetype = make_signed_type (TYPE_PRECISION (bitsizetype));
+  TYPE_NAME (sbitsizetype) = get_identifier ("sbitsizetype");
   TYPE_IS_SIZETYPE (sbitsizetype) = 1;
 }
 
