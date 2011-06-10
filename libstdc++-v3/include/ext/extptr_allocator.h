@@ -72,23 +72,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         struct rebind
         { typedef _ExtPtr_allocator<_Up> other; };
 
-      _ExtPtr_allocator() throw() 
+      _ExtPtr_allocator() _GLIBCXX_USE_NOEXCEPT 
       : _M_real_alloc() { }
 
-      _ExtPtr_allocator(const _ExtPtr_allocator &__rarg) throw()
+      _ExtPtr_allocator(const _ExtPtr_allocator& __rarg) _GLIBCXX_USE_NOEXCEPT
       : _M_real_alloc(__rarg._M_real_alloc) { }
 
       template<typename _Up>
-        _ExtPtr_allocator(const _ExtPtr_allocator<_Up>& __rarg) throw()
+        _ExtPtr_allocator(const _ExtPtr_allocator<_Up>& __rarg)
+	_GLIBCXX_USE_NOEXCEPT
         : _M_real_alloc(__rarg._M_getUnderlyingImp()) { }
 
-      ~_ExtPtr_allocator() throw()
+      ~_ExtPtr_allocator() _GLIBCXX_USE_NOEXCEPT
       { }
 
-      pointer address(reference __x) const
+      pointer address(reference __x) const _GLIBCXX_NOEXCEPT
       { return std::__addressof(__x); }
 
-      const_pointer address(const_reference __x) const
+      const_pointer address(const_reference __x) const _GLIBCXX_NOEXCEPT
       { return std::__addressof(__x); }
 
       pointer allocate(size_type __n, void* __hint = 0)
@@ -97,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void deallocate(pointer __p, size_type __n)
       { _M_real_alloc.deallocate(__p.get(), __n); }
 
-      size_type max_size() const throw()
+      size_type max_size() const _GLIBCXX_USE_NOEXCEPT
       { return __numeric_traits<size_type>::__max / sizeof(_Tp); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__

@@ -66,20 +66,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         struct rebind
         { typedef new_allocator<_Tp1> other; };
 
-      new_allocator() throw() { }
+      new_allocator() _GLIBCXX_USE_NOEXCEPT { }
 
-      new_allocator(const new_allocator&) throw() { }
+      new_allocator(const new_allocator&) _GLIBCXX_USE_NOEXCEPT { }
 
       template<typename _Tp1>
-        new_allocator(const new_allocator<_Tp1>&) throw() { }
+        new_allocator(const new_allocator<_Tp1>&) _GLIBCXX_USE_NOEXCEPT { }
 
-      ~new_allocator() throw() { }
+      ~new_allocator() _GLIBCXX_USE_NOEXCEPT { }
 
       pointer
-      address(reference __x) const { return std::__addressof(__x); }
+      address(reference __x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(__x); }
 
       const_pointer
-      address(const_reference __x) const { return std::__addressof(__x); }
+      address(const_reference __x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(__x); }
 
       // NB: __n is permitted to be 0.  The C++ standard says nothing
       // about what the return value is when __n == 0.
@@ -98,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { ::operator delete(__p); }
 
       size_type
-      max_size() const throw() 
+      max_size() const _GLIBCXX_USE_NOEXCEPT
       { return size_t(-1) / sizeof(_Tp); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__

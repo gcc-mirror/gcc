@@ -1,3 +1,16 @@
+2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/throw_allocator.h: Use noexcept.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/extptr_allocator.h: Likewise.
+	* testsuite/util/testsuite_allocator.h: Likewise; do not include
+	<cassert> directly, include <testsuite_hooks.h> instead.
+
 2011-06-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pb_ds/*: Doxygen markup redo.

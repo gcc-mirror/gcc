@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -618,14 +618,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       size_type
-      max_size() const throw()
+      max_size() const _GLIBCXX_USE_NOEXCEPT
       { return _M_allocator.max_size(); }
 
       pointer
-      address(reference __x) const { return std::__addressof(__x); }
+      address(reference __x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(__x); }
 
       const_pointer
-      address(const_reference __x) const { return std::__addressof(__x); }
+      address(const_reference __x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(__x); }
 
       pointer
       allocate(size_type __n, std::allocator<void>::const_pointer hint = 0)
@@ -699,14 +701,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	struct rebind
 	{ typedef throw_allocator_limit<_Tp1> other; };
 
-      throw_allocator_limit() throw() { }
+      throw_allocator_limit() _GLIBCXX_USE_NOEXCEPT { }
 
-      throw_allocator_limit(const throw_allocator_limit&) throw() { }
+      throw_allocator_limit(const throw_allocator_limit&)
+      _GLIBCXX_USE_NOEXCEPT { }
 
       template<typename _Tp1>
-	throw_allocator_limit(const throw_allocator_limit<_Tp1>&) throw() { }
+	throw_allocator_limit(const throw_allocator_limit<_Tp1>&)
+	_GLIBCXX_USE_NOEXCEPT { }
 
-      ~throw_allocator_limit() throw() { }
+      ~throw_allocator_limit() _GLIBCXX_USE_NOEXCEPT { }
     };
 
   /// Allocator throwing via random condition.
@@ -718,14 +722,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	struct rebind
 	{ typedef throw_allocator_random<_Tp1> other; };
 
-      throw_allocator_random() throw() { }
+      throw_allocator_random() _GLIBCXX_USE_NOEXCEPT { }
 
-      throw_allocator_random(const throw_allocator_random&) throw() { }
+      throw_allocator_random(const throw_allocator_random&)
+      _GLIBCXX_USE_NOEXCEPT { }
 
       template<typename _Tp1>
-	throw_allocator_random(const throw_allocator_random<_Tp1>&) throw() { }
+	throw_allocator_random(const throw_allocator_random<_Tp1>&)
+	_GLIBCXX_USE_NOEXCEPT { }
 
-      ~throw_allocator_random() throw() { }
+      ~throw_allocator_random() _GLIBCXX_USE_NOEXCEPT { }
     };
 
 _GLIBCXX_END_NAMESPACE_VERSION
