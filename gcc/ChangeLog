@@ -1,3 +1,32 @@
+2011-06-09  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_only_called_directly_or_aliased_p): Rename from ...
+	(cgraph_only_called_directly_p): ... this one; bring offline.
+	(resolution_used_from_other_file_p, cgraph_used_from_object_file_p,
+	varpool_used_from_object_file_p): Drop names from the declaratoin.
+	(cgraph_for_node_thunks_and_aliases, cgraph_for_node_and_aliases,
+	collect_callers_of_node): New.
+	(cgraph_function_node, cgraph_function_or_thunk_node): New functions.
+	(cgraph_edge_recursive_p): Use cgraph_function_node.
+	* cgraph.c (cgraph_add_thunk): Check that thunk is not already alias.
+	(cgraph_node_cannot_be_local_p_1): Break out from ...
+	(cgraph_node_can_be_local_p): ... here; walk aliases.
+	(cgraph_for_node_thunks_and_aliases): New function.
+	(cgraph_for_node_and_aliases): New function.
+	(cgraph_make_node_local_1): Break out from ...
+	(cgraph_make_node_local) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_set_nothrow_flag_1): Break out from ...
+	(cgraph_set_nothrow_flag) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_set_const_flag_1): Break out from ...
+	(cgraph_set_const_flag) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_set_pure_flag_1): Break out from ...
+	(cgraph_set_pure_flag) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_propagate_frequency_1): Break out from ...
+	(cgraph_propagate_frequency) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_used_from_object_file_p): Do not care about aliases.
+	(cgraph_not_only_called_directly_p_1, cgraph_only_called_directly_p): New functions.
+	(collect_callers_of_node_1, collect_callers_of_node): New functions.
+
 2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/49154

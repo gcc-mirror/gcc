@@ -512,6 +512,7 @@ struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *,
 			      HOST_WIDE_INT);
+bool cgraph_only_called_directly_p (struct cgraph_node *);
 
 struct cgraph_asm_node *cgraph_add_asm_node (tree);
 
@@ -537,9 +538,18 @@ bool cgraph_will_be_removed_from_program_if_no_direct_calls
   (struct cgraph_node *node);
 bool cgraph_can_remove_if_no_direct_calls_and_refs_p
   (struct cgraph_node *node);
-bool resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution);
-bool cgraph_used_from_object_file_p (struct cgraph_node *node);
-bool varpool_used_from_object_file_p (struct varpool_node *node);
+bool resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution);
+bool cgraph_used_from_object_file_p (struct cgraph_node *);
+bool varpool_used_from_object_file_p (struct varpool_node *);
+bool cgraph_for_node_thunks_and_aliases (struct cgraph_node *,
+			                 bool (*) (struct cgraph_node *, void *),
+			                 void *,
+					 bool);
+bool cgraph_for_node_and_aliases (struct cgraph_node *,
+		                  bool (*) (struct cgraph_node *, void *),
+			          void *, bool);
+VEC (cgraph_edge_p, heap) * collect_callers_of_node (struct cgraph_node *node);
+
 
 /* In cgraphunit.c  */
 extern FILE *cgraph_dump_file;
@@ -899,12 +909,12 @@ varpool_node_set_nonempty_p (varpool_node_set set)
   return !VEC_empty (varpool_node_ptr, set->nodes);
 }
 
-/* Return true when function NODE is only called directly.
+/* Return true when function NODE is only called directly or it has alias.
    i.e. it is not externally visible, address was not taken and
    it is not used in any other non-standard way.  */
 
 static inline bool
-cgraph_only_called_directly_p (struct cgraph_node *node)
+cgraph_only_called_directly_or_aliased_p (struct cgraph_node *node)
 {
   gcc_assert (!node->global.inlined_to);
   return (!node->needed && !node->address_taken
@@ -923,7 +933,8 @@ cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
   /* Extern inlines can always go, we will use the external definition.  */
   if (DECL_EXTERNAL (node->decl))
     return true;
-  return !node->address_taken && cgraph_can_remove_if_no_direct_calls_and_refs_p (node);
+  return (!node->address_taken
+	  && cgraph_can_remove_if_no_direct_calls_and_refs_p (node));
 }
 
 /* Return true when function NODE can be removed from callgraph
@@ -954,17 +965,56 @@ varpool_all_refs_explicit_p (struct varpool_node *vnode)
 /* Constant pool accessor function.  */
 htab_t constant_pool_htab (void);
 
+/* FIXME: inappropriate dependency of cgraph on IPA.  */
+#include "ipa-ref-inline.h"
+
+/* Given NODE, walk the alias chain to return the function NODE is alias of.
+   Walk through thunk, too.
+   When AVAILABILITY is non-NULL, get minimal availablity in the chain.  */
+
+static inline struct cgraph_node *
+cgraph_function_node (struct cgraph_node *node, enum availability *availability)
+{
+  if (availability)
+    *availability = cgraph_function_body_availability (node);
+  while (node)
+    {
+      if (node->thunk.thunk_p)
+	node = node->callees->callee;
+      else
+	return node;
+      if (availability)
+	{
+	  enum availability a;
+	  a = cgraph_function_body_availability (node);
+	  if (a < *availability)
+	    *availability = a;
+	}
+    }
+  return NULL;
+}
+
+/* Given NODE, walk the alias chain to return the function NODE is alias of.
+   Do not walk through thunks.
+   When AVAILABILITY is non-NULL, get minimal availablity in the chain.  */
+
+static inline struct cgraph_node *
+cgraph_function_or_thunk_node (struct cgraph_node *node, enum availability *availability)
+{
+  if (availability)
+    *availability = cgraph_function_body_availability (node);
+  return node;
+  return NULL;
+}
+
 /* Return true when the edge E represents a direct recursion.  */
 static inline bool
 cgraph_edge_recursive_p (struct cgraph_edge *e)
 {
+  struct cgraph_node *callee = cgraph_function_or_thunk_node (e->callee, NULL);
   if (e->caller->global.inlined_to)
-    return e->caller->global.inlined_to->decl == e->callee->decl;
+    return e->caller->global.inlined_to->decl == callee->decl;
   else
-    return e->caller->decl == e->callee->decl;
+    return e->caller->decl == callee->decl;
 }
-
-/* FIXME: inappropriate dependency of cgraph on IPA.  */
-#include "ipa-ref-inline.h"
-
 #endif  /* GCC_CGRAPH_H  */

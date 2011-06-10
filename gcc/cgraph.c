@@ -608,7 +608,8 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
   if (node)
     {
       gcc_assert (node->local.finalized);
-      gcc_assert (!node->same_body);
+      gcc_assert (!node->alias);
+      gcc_assert (!node->thunk.thunk_p);
       cgraph_remove_node (node);
     }
   
@@ -2508,6 +2509,16 @@ cgraph_add_new_function (tree fndecl, bool lowered)
     DECL_FUNCTION_PERSONALITY (fndecl) = lang_hooks.eh_personality ();
 }
 
+/* Worker for cgraph_node_can_be_local_p.  */
+static bool
+cgraph_node_cannot_be_local_p_1 (struct cgraph_node *node,
+				 void *data ATTRIBUTE_UNUSED)
+{
+  return !(!node->needed
+	   && ((DECL_COMDAT (node->decl) && !node->same_comdat_group)
+	       || !node->local.externally_visible));
+}
+
 /* Return true if NODE can be made local for API change.
    Extern inline functions and C++ COMDAT functions can be made local
    at the expense of possible code size growth if function is used in multiple
@@ -2515,9 +2526,10 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 bool
 cgraph_node_can_be_local_p (struct cgraph_node *node)
 {
-  return (!node->needed && !node->address_taken
-	  && ((DECL_COMDAT (node->decl) && !node->same_comdat_group)
-	      || !node->local.externally_visible));
+  return (!node->address_taken
+	  && !cgraph_for_node_and_aliases (node,
+					   cgraph_node_cannot_be_local_p_1,
+					   NULL, true));
 }
 
 /* Make DECL local.  FIXME: We shouldn't need to mess with rtl this early,
@@ -2591,119 +2603,191 @@ cgraph_make_decl_local (tree decl)
   SYMBOL_REF_WEAK (symbol) = DECL_WEAK (decl);
 }
 
-/* Bring NODE local.  */
-void
-cgraph_make_node_local (struct cgraph_node *node)
+/* Call calback on NODE, thunks and aliases asociated to NODE. 
+   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+   skipped. */
+
+bool
+cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
+			            bool (*callback) (struct cgraph_node *, void *),
+			            void *data,
+				    bool include_overwritable)
 {
-  gcc_assert (cgraph_node_can_be_local_p (node));
+  struct cgraph_edge *e;
+  struct cgraph_node *alias;
+
+  if (callback (node, data))
+    return true;
+  for (alias = node->same_body; alias; alias = alias->next)
+    if (callback (alias, data))
+      return true;
+  for (e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk.thunk_p
+	&& (include_overwritable
+	    || cgraph_function_body_availability (e->caller) > AVAIL_OVERWRITABLE))
+      cgraph_for_node_thunks_and_aliases (e->caller, callback, data, include_overwritable);
+  return false;
+}
+
+/* Call calback on NODE and aliases asociated to NODE. 
+   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+   skipped. */
+
+bool
+cgraph_for_node_and_aliases (struct cgraph_node *node,
+			     bool (*callback) (struct cgraph_node *, void *),
+			     void *data,
+			     bool include_overwritable ATTRIBUTE_UNUSED)
+{
+  struct cgraph_node *alias;
+
+  if (callback (node, data))
+    return true;
+  for (alias = node->same_body; alias; alias = alias->next)
+    if (callback (alias, data))
+      return true;
+  return false;
+}
+
+/* Worker to bring NODE local.  */
+
+static bool
+cgraph_make_node_local_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  gcc_checking_assert (cgraph_node_can_be_local_p (node));
   if (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))
     {
-      struct cgraph_node *alias;
       cgraph_make_decl_local (node->decl);
-
-      for (alias = node->same_body; alias; alias = alias->next)
-	cgraph_make_decl_local (alias->decl);
 
       node->local.externally_visible = false;
       node->local.local = true;
       node->resolution = LDPR_PREVAILING_DEF_IRONLY;
       gcc_assert (cgraph_function_body_availability (node) == AVAIL_LOCAL);
     }
+  return false;
 }
 
-/* Set TREE_NOTHROW on NODE's decl and on same_body aliases of NODE
+/* Bring NODE local.  */
+
+void
+cgraph_make_node_local (struct cgraph_node *node)
+{
+  cgraph_for_node_thunks_and_aliases (node, cgraph_make_node_local_1,
+				      NULL, true);
+}
+
+/* Worker to set nothrow flag.  */
+
+static bool
+cgraph_set_nothrow_flag_1 (struct cgraph_node *node, void *data)
+{
+  TREE_NOTHROW (node->decl) = data != NULL;
+  return false;
+}
+
+/* Set TREE_NOTHROW on NODE's decl and on aliases of NODE
    if any to NOTHROW.  */
 
 void
 cgraph_set_nothrow_flag (struct cgraph_node *node, bool nothrow)
 {
-  struct cgraph_node *alias;
-  TREE_NOTHROW (node->decl) = nothrow;
-  for (alias = node->same_body; alias; alias = alias->next)
-    TREE_NOTHROW (alias->decl) = nothrow;
+  cgraph_for_node_thunks_and_aliases (node, cgraph_set_nothrow_flag_1,
+			              (void *)(size_t)nothrow, false);
 }
 
-/* Set TREE_READONLY on NODE's decl and on same_body aliases of NODE
+/* Worker to set const flag.  */
+
+static bool
+cgraph_set_const_flag_1 (struct cgraph_node *node, void *data)
+{
+  /* Static constructors and destructors without a side effect can be
+     optimized out.  */
+  if (data && !((size_t)data & 2))
+    {
+      if (DECL_STATIC_CONSTRUCTOR (node->decl))
+	DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
+      if (DECL_STATIC_DESTRUCTOR (node->decl))
+	DECL_STATIC_DESTRUCTOR (node->decl) = 0;
+    }
+  TREE_READONLY (node->decl) = data != NULL;
+  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = ((size_t)data & 2) != 0;
+  return false;
+}
+
+/* Set TREE_READONLY on NODE's decl and on aliases of NODE
    if any to READONLY.  */
 
 void
 cgraph_set_const_flag (struct cgraph_node *node, bool readonly, bool looping)
 {
-  struct cgraph_node *alias;
-  /* Static constructors and destructors without a side effect can be
+  cgraph_for_node_thunks_and_aliases (node, cgraph_set_const_flag_1,
+			              (void *)(size_t)(readonly + (int)looping * 2),
+				      false);
+}
+
+/* Worker to set pure flag.  */
+
+static bool
+cgraph_set_pure_flag_1 (struct cgraph_node *node, void *data)
+{
+  /* Static pureructors and destructors without a side effect can be
      optimized out.  */
-  if (!looping && readonly)
+  if (data && !((size_t)data & 2))
     {
       if (DECL_STATIC_CONSTRUCTOR (node->decl))
 	DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
       if (DECL_STATIC_DESTRUCTOR (node->decl))
 	DECL_STATIC_DESTRUCTOR (node->decl) = 0;
     }
-  TREE_READONLY (node->decl) = readonly;
-  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = looping;
-  for (alias = node->same_body; alias; alias = alias->next)
-    {
-      TREE_READONLY (alias->decl) = readonly;
-      DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping;
-    }
+  DECL_PURE_P (node->decl) = data != NULL;
+  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = ((size_t)data & 2) != 0;
+  return false;
 }
 
-/* Set DECL_PURE_P on NODE's decl and on same_body aliases of NODE
+/* Set DECL_PURE_P on NODE's decl and on aliases of NODE
    if any to PURE.  */
 
 void
 cgraph_set_pure_flag (struct cgraph_node *node, bool pure, bool looping)
 {
-  struct cgraph_node *alias;
-  /* Static constructors and destructors without a side effect can be
-     optimized out.  */
-  if (!looping && pure)
-    {
-      if (DECL_STATIC_CONSTRUCTOR (node->decl))
-	DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
-      if (DECL_STATIC_DESTRUCTOR (node->decl))
-	DECL_STATIC_DESTRUCTOR (node->decl) = 0;
-    }
-  DECL_PURE_P (node->decl) = pure;
-  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = looping;
-  for (alias = node->same_body; alias; alias = alias->next)
-    {
-      DECL_PURE_P (alias->decl) = pure;
-      DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping;
-    }
+  cgraph_for_node_thunks_and_aliases (node, cgraph_set_pure_flag_1,
+			              (void *)(size_t)(pure + (int)looping * 2),
+				      false);
 }
 
-/* See if the frequency of NODE can be updated based on frequencies of its
-   callers.  */
-bool
-cgraph_propagate_frequency (struct cgraph_node *node)
+/* Data used by cgraph_propagate_frequency.  */
+
+struct cgraph_propagate_frequency_data
 {
-  bool maybe_unlikely_executed = true, maybe_executed_once = true;
-  bool only_called_at_startup = true;
-  bool only_called_at_exit = true;
-  bool changed = false;
+  bool maybe_unlikely_executed;
+  bool maybe_executed_once;
+  bool only_called_at_startup;
+  bool only_called_at_exit;
+};
+
+/* Worker for cgraph_propagate_frequency_1.  */
+
+static bool
+cgraph_propagate_frequency_1 (struct cgraph_node *node, void *data)
+{
+  struct cgraph_propagate_frequency_data *d;
   struct cgraph_edge *edge;
 
-  if (!node->local.local)
-    return false;
-  gcc_assert (node->analyzed);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Processing frequency %s\n", cgraph_node_name (node));
-
+  d = (struct cgraph_propagate_frequency_data *)data;
   for (edge = node->callers;
-       edge && (maybe_unlikely_executed || maybe_executed_once
-	        || only_called_at_startup || only_called_at_exit);
+       edge && (d->maybe_unlikely_executed || d->maybe_executed_once
+	        || d->only_called_at_startup || d->only_called_at_exit);
        edge = edge->next_caller)
     {
       if (edge->caller != node)
 	{
-          only_called_at_startup &= edge->caller->only_called_at_startup;
+          d->only_called_at_startup &= edge->caller->only_called_at_startup;
 	  /* It makes sense to put main() together with the static constructors.
 	     It will be executed for sure, but rest of functions called from
 	     main are definitely not at startup only.  */
 	  if (MAIN_NAME_P (DECL_NAME (edge->caller->decl)))
-	    only_called_at_startup = 0;
-          only_called_at_exit &= edge->caller->only_called_at_exit;
+	    d->only_called_at_startup = 0;
+          d->only_called_at_exit &= edge->caller->only_called_at_exit;
 	}
       if (!edge->frequency)
 	continue;
@@ -2715,10 +2799,10 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Called by %s that is executed once\n",
 		     cgraph_node_name (edge->caller));
-	  maybe_unlikely_executed = false;
+	  d->maybe_unlikely_executed = false;
 	  if (inline_edge_summary (edge)->loop_depth)
 	    {
-	      maybe_executed_once = false;
+	      d->maybe_executed_once = false;
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 	        fprintf (dump_file, "  Called in loop\n");
 	    }
@@ -2728,12 +2812,31 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Called by %s that is normal or hot\n",
 		     cgraph_node_name (edge->caller));
-	  maybe_unlikely_executed = false;
-	  maybe_executed_once = false;
+	  d->maybe_unlikely_executed = false;
+	  d->maybe_executed_once = false;
 	  break;
 	}
     }
-  if ((only_called_at_startup && !only_called_at_exit)
+  return edge != NULL;
+}
+
+/* See if the frequency of NODE can be updated based on frequencies of its
+   callers.  */
+bool
+cgraph_propagate_frequency (struct cgraph_node *node)
+{
+  struct cgraph_propagate_frequency_data d = {true, true, true, true};
+  bool changed = false;
+
+  if (!node->local.local)
+    return false;
+  gcc_assert (node->analyzed);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Processing frequency %s\n", cgraph_node_name (node));
+
+  cgraph_for_node_and_aliases (node, cgraph_propagate_frequency_1, &d, true);
+
+  if ((d.only_called_at_startup && !d.only_called_at_exit)
       && !node->only_called_at_startup)
     {
        node->only_called_at_startup = true;
@@ -2742,7 +2845,7 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 		  cgraph_node_name (node));
        changed = true;
     }
-  if ((only_called_at_exit && !only_called_at_startup)
+  if ((d.only_called_at_exit && !d.only_called_at_startup)
       && !node->only_called_at_exit)
     {
        node->only_called_at_exit = true;
@@ -2755,7 +2858,7 @@ cgraph_propagate_frequency (struct cgraph_node *node)
   if (node->frequency == NODE_FREQUENCY_HOT
       || node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
     return changed;
-  if (maybe_unlikely_executed)
+  if (d.maybe_unlikely_executed)
     {
       node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
       if (dump_file)
@@ -2763,7 +2866,7 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 		 cgraph_node_name (node));
       changed = true;
     }
-  else if (maybe_executed_once && node->frequency != NODE_FREQUENCY_EXECUTED_ONCE)
+  else if (d.maybe_executed_once && node->frequency != NODE_FREQUENCY_EXECUTED_ONCE)
     {
       node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
       if (dump_file)
@@ -2877,24 +2980,70 @@ resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution)
           || resolution == LDPR_RESOLVED_DYN);
 }
 
+
 /* Return true when NODE is known to be used from other (non-LTO) object file.
    Known only when doing LTO via linker plugin.  */
 
 bool
 cgraph_used_from_object_file_p (struct cgraph_node *node)
 {
-  struct cgraph_node *alias;
-
   gcc_assert (!node->global.inlined_to);
   if (!TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl))
     return false;
   if (resolution_used_from_other_file_p (node->resolution))
     return true;
-  for (alias = node->same_body; alias; alias = alias->next)
-    if (TREE_PUBLIC (alias->decl)
-	&& resolution_used_from_other_file_p (alias->resolution))
-      return true;
   return false;
+}
+
+/* Worker for cgraph_only_called_directly_p.  */
+
+static bool
+cgraph_not_only_called_directly_p_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  return !cgraph_only_called_directly_or_aliased_p (node);
+}
+
+/* Return true when function NODE and all its aliases are only called
+   directly.
+   i.e. it is not externally visible, address was not taken and
+   it is not used in any other non-standard way.  */
+
+bool
+cgraph_only_called_directly_p (struct cgraph_node *node)
+{
+  gcc_assert (cgraph_function_or_thunk_node (node, NULL) == node);
+  return !cgraph_for_node_and_aliases (node, cgraph_not_only_called_directly_p_1,
+				       NULL, true);
+}
+
+
+/* Collect all callers of NODE.  Worker for collect_callers_of_node.  */
+
+static bool
+collect_callers_of_node_1 (struct cgraph_node *node, void *data)
+{
+  VEC (cgraph_edge_p, heap) ** redirect_callers = (VEC (cgraph_edge_p, heap) **)data;
+  struct cgraph_edge *cs;
+  enum availability avail;
+  cgraph_function_or_thunk_node (node, &avail);
+
+  if (avail > AVAIL_OVERWRITABLE)
+    for (cs = node->callers; cs != NULL; cs = cs->next_caller)
+      if (!cs->indirect_inlining_edge)
+        VEC_safe_push (cgraph_edge_p, heap, *redirect_callers, cs);
+  return false;
+}
+
+/* Collect all callers of NODE and its aliases that are known to lead to NODE
+   (i.e. are not overwritable).  */
+
+VEC (cgraph_edge_p, heap) *
+collect_callers_of_node (struct cgraph_node *node)
+{
+  VEC (cgraph_edge_p, heap) * redirect_callers = NULL;
+  cgraph_for_node_and_aliases (node, collect_callers_of_node_1,
+			       &redirect_callers, false);
+  return redirect_callers;
 }
 
 #include "gt-cgraph.h"
