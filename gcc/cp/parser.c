@@ -7050,8 +7050,6 @@ cp_parser_constant_expression (cp_parser* parser,
     }
   if (allow_non_constant_p)
     *non_constant_p = parser->non_integral_constant_expression_p;
-  else if (parser->non_integral_constant_expression_p)
-    expression = error_mark_node;
   parser->non_integral_constant_expression_p
     = saved_non_integral_constant_expression_p;
 
