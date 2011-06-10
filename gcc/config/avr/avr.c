@@ -1784,7 +1784,8 @@ avr_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
      a function must not pass arguments in call-saved regs in order to get
      tail-called. */
   
-  if (cum->regno >= 0
+  if (cum->regno >= 8
+      && cum->nregs >= 0
       && !call_used_regs[cum->regno])
     {
       /* FIXME: We ship info on failing tail-call in struct machine_function.
@@ -1800,7 +1801,8 @@ avr_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
      user has fixed a GPR needed to pass an argument, an (implicit) function
      call would clobber that fixed register.  See PR45099 for an example.  */
   
-  if (cum->regno >= 0)
+  if (cum->regno >= 8
+      && cum->nregs >= 0)
     {
       int regno;
 
