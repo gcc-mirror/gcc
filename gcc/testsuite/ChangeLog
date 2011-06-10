@@ -1,3 +1,8 @@
+2011-06-10  Daniel Carrera  <dcarrera@gmail.com>
+
+	* gfortran.dg/coarray/sync_1.f90: New test for
+	"SYNC ALL", "SYNC MEMORY" and "SYNC IMAGES".
+
 2011-06-10  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49318

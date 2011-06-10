@@ -92,41 +92,49 @@ _gfortran_caf_deregister (void **token __attribute__ ((unused)))
 }
 
 
-/* SYNC ALL - the return value matches Fortran's STAT argument.  */
-
-int
-_gfortran_caf_sync_all (char *errmsg, int errmsg_len)
+void
+_gfortran_caf_sync_all (int *stat, char *errmsg, int errmsg_len)
 {
-  int ierr;
-  ierr = MPI_Barrier (MPI_COMM_WORLD);
+  /* TODO: Is ierr correct? When should STAT_STOPPED_IMAGE be used?  */
+  int ierr = MPI_Barrier (MPI_COMM_WORLD);
 
-  if (ierr && errmsg_len > 0)
+  if (stat)
+    *stat = ierr;
+
+  if (ierr)
     {
       const char msg[] = "SYNC ALL failed";
-      int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
-						  : (int) sizeof (msg);
-      memcpy (errmsg, msg, len);
-      if (errmsg_len > len)
-	memset (&errmsg[len], ' ', errmsg_len-len);
+      if (errmsg_len > 0)
+	{
+	  int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
+						      : (int) sizeof (msg);
+	  memcpy (errmsg, msg, len);
+	  if (errmsg_len > len)
+	    memset (&errmsg[len], ' ', errmsg_len-len);
+	}
+      else
+	{
+	  fprintf (stderr, "SYNC ALL failed\n");
+	  error_stop (ierr);
+	}
     }
-
-  /* TODO: Is ierr correct? When should STAT_STOPPED_IMAGE be used?  */
-  return ierr;
 }
 
 
 /* SYNC IMAGES. Note: SYNC IMAGES(*) is passed as count == -1 while
    SYNC IMAGES([]) has count == 0. Note further that SYNC IMAGES(*)
-   is not equivalent to SYNC ALL.  The return value matches Fortran's
-   STAT argument.  */
-int
-_gfortran_caf_sync_images (int count, int images[], char *errmsg,
+   is not equivalent to SYNC ALL. */
+void
+_gfortran_caf_sync_images (int count, int images[], int *stat, char *errmsg,
 			   int errmsg_len)
 {
   int ierr;
-
   if (count == 0 || (count == 1 && images[0] == caf_this_image))
-    return 0;
+    {
+      if (stat)
+	*stat = 0;
+      return;
+    }
 
 #ifdef GFC_CAF_CHECK
   {
@@ -151,20 +159,28 @@ _gfortran_caf_sync_images (int count, int images[], char *errmsg,
     }
 
   /* Handle SYNC IMAGES(*).  */
+  /* TODO: Is ierr correct? When should STAT_STOPPED_IMAGE be used?  */
   ierr = MPI_Barrier (MPI_COMM_WORLD);
+  if (stat)
+    *stat = ierr;
 
-  if (ierr && errmsg_len > 0)
+  if (ierr)
     {
       const char msg[] = "SYNC IMAGES failed";
-      int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
-						  : (int) sizeof (msg);
-      memcpy (errmsg, msg, len);
-      if (errmsg_len > len)
-	memset (&errmsg[len], ' ', errmsg_len-len);
+      if (errmsg_len > 0)
+	{
+	  int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
+						      : (int) sizeof (msg);
+	  memcpy (errmsg, msg, len);
+	  if (errmsg_len > len)
+	    memset (&errmsg[len], ' ', errmsg_len-len);
+	}
+      else
+	{
+	  fprintf (stderr, "SYNC IMAGES failed\n");
+	  error_stop (ierr);
+	}
     }
-
-  /* TODO: Is ierr correct? When should STAT_STOPPED_IMAGE be used?  */
-  return ierr;
 }
 
 
