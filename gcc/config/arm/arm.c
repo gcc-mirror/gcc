@@ -2231,7 +2231,8 @@ const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
       if (arm_arch_thumb2 && (i & 0xffff0000) == 0)
 	return 1;
       else
-	return 0;
+	/* Otherwise, try mvn.  */
+	return const_ok_for_arm (ARM_SIGN_EXTEND (~i));
 
     case PLUS:
     case COMPARE:
