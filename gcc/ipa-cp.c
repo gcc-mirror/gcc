@@ -1190,8 +1190,7 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
 	  binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);
 	  if (!binfo)
 	    continue;
-	  target = gimple_get_virt_method_for_binfo (token, binfo, &delta,
-						     false);
+	  target = gimple_get_virt_method_for_binfo (token, binfo, &delta);
 	}
       else
 	{
@@ -1214,7 +1213,7 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
 		  break;
 		}
 
-	      t = gimple_get_virt_method_for_binfo (token, binfo, &d, true);
+	      t = gimple_get_virt_method_for_binfo (token, binfo, &d);
 	      if (!t)
 		{
 		  target = NULL_TREE;
