@@ -1,7 +1,7 @@
 // Test for doing the right thing with injected-class-name used as template
 // type argument.  This is an extension from DR 176.
 
-// { dg-options "-pedantic" }
+// { dg-options "-pedantic -std=c++98" }
 
 template <class T>
 struct A { };

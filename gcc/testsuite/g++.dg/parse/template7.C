@@ -1,3 +1,5 @@
+// { dg-options -std=c++98 }
+
 template <int I>
 void f();			// { dg-message "note" }
 

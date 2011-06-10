@@ -1,5 +1,29 @@
 2011-06-09  Jason Merrill  <jason@redhat.com>
 
+	* lib/prune.exp: Prune "note"s.
+	* g++.dg/uninit-pred-3_b.C: Remove dg-excess-errors.
+
+	* g++.dg/ext/injected-ttp.C: Specify -std=c++98.
+	* g++.dg/template/dependent-expr3.C: Likewise.
+	* g++.dg/parse/template7.C: Likewise.
+	* g++.old-deja/g++.bugs/900119_01.C: Likewise.
+	* g++.old-deja/g++.jason/rfg10.C: Likewise.
+	* g++.old-deja/g++.pt/friend38.C: Likewise.
+	* g++.old-deja/g++.pt/crash32.C: Likewise.
+	* g++.old-deja/g++.other/init4.C: Likewise.
+	* g++.old-deja/g++.other/friend8.C: Likewise.
+
+	* g++.dg/ext/complex7.C: Adjust expected output.
+	* g++.dg/diagnostic/method1.C: Likewise.
+	* g++.dg/parse/parameter-declaration-2.C: Likewise.
+	* g++.dg/parse/crash33.C: Likewise.
+	* g++.dg/other/warning1.C: Likewise.
+	* g++.dg/init/pr29571.C: Likewise.
+	* g++.dg/warn/overflow-warn-1.C: Likewise.
+	* g++.dg/warn/overflow-warn-3.C: Likewise.
+	* g++.dg/warn/overflow-warn-4.C: Likewise.
+	* g++.old-deja/g++.oliva/template1.C: Likewise.
+
 	* g++.dg/cpp0x/regress/error-recovery1.C: Adjust.
 	* g++.dg/parse/template7.C: Adjust.
 

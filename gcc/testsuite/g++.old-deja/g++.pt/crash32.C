@@ -1,3 +1,4 @@
+// { dg-options "-std=c++98 -pedantic-errors" }
 // { dg-do assemble  }
 // Origin: Jason Merrill <jason@cygnus.com>
 

@@ -13,7 +13,7 @@ enum e {
      in the standard).  */
   E2 = 2 || 1 / 0, /* { dg-bogus "warning: division by zero" "" { xfail *-*-* } 14 } */
   E3 = 1 / 0, /* { dg-warning "division by zero" } */
-  /* { dg-error "enumerator value for 'E3' is not an integer constant|not a constant expression" "enum error" { target *-*-* } 15 } */
+  /* { dg-error "enumerator value for 'E3' is not an integer constant|not a constant.expression" "enum error" { target *-*-* } 15 } */
   /* But as in DR#031, the 1/0 in an evaluated subexpression means the
      whole expression violates the constraints.  */
   E4 = 0 * (1 / 0), /* { dg-warning "division by zero" } */

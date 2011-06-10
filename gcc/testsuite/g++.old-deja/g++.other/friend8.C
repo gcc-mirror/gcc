@@ -1,3 +1,4 @@
+// { dg-options "-std=c++98 -pedantic-errors" }
 // { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
