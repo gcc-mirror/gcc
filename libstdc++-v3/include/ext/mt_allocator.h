@@ -1,6 +1,6 @@
 // MT-optimized allocator -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -577,15 +577,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp                       value_type;
 
       pointer
-      address(reference __x) const
+      address(reference __x) const _GLIBCXX_NOEXCEPT
       { return std::__addressof(__x); }
 
       const_pointer
-      address(const_reference __x) const
+      address(const_reference __x) const _GLIBCXX_NOEXCEPT
       { return std::__addressof(__x); }
 
       size_type
-      max_size() const throw() 
+      max_size() const _GLIBCXX_USE_NOEXCEPT 
       { return size_t(-1) / sizeof(_Tp); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -648,14 +648,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  typedef __mt_alloc<_Tp1, pol_type> other;
 	};
 
-      __mt_alloc() throw() { }
+      __mt_alloc() _GLIBCXX_USE_NOEXCEPT { }
 
-      __mt_alloc(const __mt_alloc&) throw() { }
+      __mt_alloc(const __mt_alloc&) _GLIBCXX_USE_NOEXCEPT { }
 
       template<typename _Tp1, typename _Poolp1>
-        __mt_alloc(const __mt_alloc<_Tp1, _Poolp1>&) throw() { }
+        __mt_alloc(const __mt_alloc<_Tp1, _Poolp1>&) _GLIBCXX_USE_NOEXCEPT { }
 
-      ~__mt_alloc() throw() { }
+      ~__mt_alloc() _GLIBCXX_USE_NOEXCEPT { }
 
       pointer
       allocate(size_type __n, const void* = 0);
