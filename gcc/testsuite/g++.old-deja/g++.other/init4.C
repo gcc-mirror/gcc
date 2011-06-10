@@ -1,3 +1,4 @@
+// { dg-options -std=c++98 }
 // { dg-do assemble  }
 
 class error {

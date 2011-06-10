@@ -18,3 +18,5 @@ baz ()
 {
   bar <int> ();
 }
+
+// { dg-prune-output "without object" }

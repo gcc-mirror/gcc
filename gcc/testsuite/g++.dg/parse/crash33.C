@@ -4,5 +4,8 @@
 template<int>
 void foo()
 [
-  throw;	// { dg-error "expected" }
-}		// { dg-error "expected" }
+  throw;
+}
+
+// { dg-prune-output "expected" }
+// { dg-prune-output "array bound" }

@@ -1,3 +1,4 @@
+// { dg-options "-pedantic-errors -std=c++98" }
 // { dg-do assemble  }
 // g++ 1.36.1 bug 900119_01
 
@@ -8,7 +9,7 @@
 
 // keywords: member declaration, member initialization
 
-// { dg-prune-output "non-static data member initializers" }
+// { dg-prune-output "is a static data member" }
 
 int global_int;
 
@@ -18,7 +19,7 @@ public:
   static int class0_member_1 = 99;		/* { dg-error "" }  */
   int &class0_member_2 = global_int;		/* { dg-error "" }  */
 
-  class0 () : class0_member_2 (global_int) { }  /* { dg-error "" }  */
+  class0 () : class0_member_2 (global_int) { }
 };
 
 
@@ -27,7 +28,7 @@ struct struct0 {
   static int struct0_member_1 = 99;		/* { dg-error "" }  */
   int &struct0_member_2 = global_int;		/* { dg-error "" }  */
 
-  struct0 () : struct0_member_2 (global_int) { } /* { dg-error "" }  */
+  struct0 () : struct0_member_2 (global_int) { }
 };
 
 // g++ does not allow unions to have more than one member with an initializer
@@ -43,7 +44,7 @@ union union1 {
 union union2 {
   int &union2_member_0 = global_int;		/* { dg-error "" }  */
 
-  union2 () : union2_member_0 (global_int) { }  /* { dg-error "" }  */
+  union2 () : union2_member_0 (global_int) { }
 };
 
 int main () { return 0; }
