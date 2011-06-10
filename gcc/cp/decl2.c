@@ -3635,6 +3635,15 @@ collect_all_refs (const char *source_file)
   collect_ada_namespace (global_namespace, source_file);
 }
 
+/* Clear DECL_EXTERNAL for NODE.  */
+
+static bool
+clear_decl_external (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  DECL_EXTERNAL (node->decl) = 0;
+  return false;
+}
+
 /* This routine is called at the end of compilation.
    Its job is to create all the code needed to initialize and
    destroy the global aggregates.  We do the destruction
@@ -3857,17 +3866,12 @@ cp_write_global_declarations (void)
 	      && DECL_INITIAL (decl)
 	      && decl_needed_p (decl))
 	    {
-	      struct cgraph_node *node = cgraph_get_node (decl), *alias, *next;
+	      struct cgraph_node *node, *next;
 
-	      DECL_EXTERNAL (decl) = 0;
-	      /* If we mark !DECL_EXTERNAL one of the same body aliases,
-		 we need to mark all of them that way.  */
-	      if (node && node->same_body)
-		{
-		  DECL_EXTERNAL (node->decl) = 0;
-		  for (alias = node->same_body; alias; alias = alias->next)
-		    DECL_EXTERNAL (alias->decl) = 0;
-		}
+	      node = cgraph_get_node (decl);
+
+	      cgraph_for_node_and_aliases (node, clear_decl_external,
+					   NULL, true);
 	      /* If we mark !DECL_EXTERNAL one of the symbols in some comdat
 		 group, we need to mark all symbols in the same comdat group
 		 that way.  */
@@ -3875,16 +3879,8 @@ cp_write_global_declarations (void)
 		for (next = node->same_comdat_group;
 		     next != node;
 		     next = next->same_comdat_group)
-		  {
-		    DECL_EXTERNAL (next->decl) = 0;
-		    if (next->same_body)
-		      {
-			for (alias = next->same_body;
-			     alias;
-			     alias = alias->next)
-			  DECL_EXTERNAL (alias->decl) = 0;
-		      }
-		  }
+	          cgraph_for_node_and_aliases (next, clear_decl_external,
+					       NULL, true);
 	    }
 
 	  /* If we're going to need to write this function out, and
