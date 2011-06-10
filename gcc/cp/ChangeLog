@@ -1,3 +1,7 @@
+2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (error_operand_p): Remove.
+
 2011-06-09  David Krauss  <potswa@mac.com>
 
 	PR c++/49118

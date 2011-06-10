@@ -1510,7 +1510,7 @@ dbxout_type_fields (tree type)
     {
       /* If one of the nodes is an error_mark or its type is then
 	 return early.  */
-      if (tem == error_mark_node || TREE_TYPE (tem) == error_mark_node)
+      if (error_operand_p (tem))
 	return;
 
       /* Omit here local type decls until we know how to support them.  */

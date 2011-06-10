@@ -5448,7 +5448,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
   unsigned int nflags;
   tree t;
 
-  if (decl == error_mark_node || TREE_TYPE (decl) == error_mark_node)
+  if (error_operand_p (decl))
     return;
 
   /* Never elide decls whose type has TREE_ADDRESSABLE set.  This means
@@ -5573,7 +5573,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
   unsigned flags = in_code ? GOVD_SEEN : 0;
   bool ret = false, shared;
 
-  if (decl == error_mark_node || TREE_TYPE (decl) == error_mark_node)
+  if (error_operand_p (decl))
     return false;
 
   /* Threadprivate variables are predetermined.  */
@@ -5830,7 +5830,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
 	do_add:
 	  decl = OMP_CLAUSE_DECL (c);
-	  if (decl == error_mark_node || TREE_TYPE (decl) == error_mark_node)
+	  if (error_operand_p (decl))
 	    {
 	      remove = true;
 	      break;
@@ -5889,7 +5889,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COPYPRIVATE:
 	  decl = OMP_CLAUSE_DECL (c);
-	  if (decl == error_mark_node || TREE_TYPE (decl) == error_mark_node)
+	  if (error_operand_p (decl))
 	    {
 	      remove = true;
 	      break;

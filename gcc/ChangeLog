@@ -1,5 +1,13 @@
+2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* tree.h (error_operand_p): Add.
+	* dbxout.c (dbxout_type_fields): Use the latter.
+	* c-decl.c (add_stmt): Likewise.
+	* gimplify.c (omp_add_variable, omp_notice_variable,
+	gimplify_scan_omp_clauses): Likewise.
+
 2011-06-10  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.c (avr_function_arg_advance): Fix thinko about
 	when a value is actually passed in regs.
 
