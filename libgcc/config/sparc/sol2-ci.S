@@ -1,6 +1,6 @@
 ! crti.s for solaris 2.0.
 
-!   Copyright (C) 1992, 2008, 2009 Free Software Foundation, Inc.
+!   Copyright (C) 1992, 2008, 2009, 2011 Free Software Foundation, Inc.
 !   Written By David Vinayak Henkel-Wallace, June 1992
 ! 
 ! This file is free software; you can redistribute it and/or modify it
@@ -35,10 +35,21 @@
 	.type	_init,#function
 	.align	4
 _init:
+#ifdef _FLAT
+#ifdef __sparcv9
+	stx     %i7, [%sp+2167]
+	add	%sp, -176, %sp
+#else
+	st	%i7, [%sp+60]
+	add	%sp, -96, %sp
+#endif
+	mov	%o7, %i7
+#else
 #ifdef __sparcv9
 	save	%sp, -176, %sp
 #else
 	save	%sp, -96, %sp
+#endif
 #endif
 
 
@@ -48,8 +59,19 @@ _init:
 	.type	_fini,#function
 	.align	4
 _fini:
+#ifdef _FLAT
+#ifdef __sparcv9
+	stx     %i7, [%sp+2167]
+	add	%sp, -176, %sp
+#else
+	st      %i7, [%sp+60]
+	add	%sp, -96, %sp
+#endif
+	mov	%o7, %i7
+#else
 #ifdef __sparcv9
 	save	%sp, -176, %sp
 #else
 	save	%sp, -96, %sp
+#endif
 #endif

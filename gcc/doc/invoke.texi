@@ -863,7 +863,7 @@ See RS/6000 and PowerPC Options.
 -mtune=@var{cpu-type} @gol
 -mcmodel=@var{code-model} @gol
 -m32  -m64  -mapp-regs  -mno-app-regs @gol
--mfaster-structs  -mno-faster-structs @gol
+-mfaster-structs  -mno-faster-structs  -mflat  -mno-flat @gol
 -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
 -mhard-quad-float  -msoft-quad-float @gol
 -mlittle-endian @gol
@@ -17042,6 +17042,19 @@ is the default.
 To be fully SVR4 ABI compliant at the cost of some performance loss,
 specify @option{-mno-app-regs}.  You should compile libraries and system
 software with this option.
+
+@item -mflat
+@itemx -mno-flat
+@opindex mflat
+@opindex mno-flat
+With @option{-mflat}, the compiler does not generate save/restore instructions
+and uses a ``flat'' or single register window model.  This model is compatible
+with the regular register window model.  The local registers and the input
+registers (0--5) are still treated as ``call-saved'' registers and will be
+saved on the stack as needed.
+
+With @option{-mno-flat} (the default), the compiler generates save/restore
+instructions (except for leaf functions).  This is the normal operating mode.
 
 @item -mfpu
 @itemx -mhard-float
