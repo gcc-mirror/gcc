@@ -60,23 +60,23 @@ namespace __gnu_pbds
    public:
      typedef _Alloc 					allocator_type;
 
-     // Metadata on which this functor operates.
+     /// Metadata on which this functor operates.
      typedef null_type 					metadata_type;
 
    private:
      typedef typename _Alloc::template rebind<metadata_type> __rebind_m;
 
    public:
-     // Reference to metadata on which this functor operates.
+     /// Reference to metadata on which this functor operates.
      typedef typename __rebind_m::other::reference 	metadata_reference;
 
-     // Creates a metadata object.
+     /// Creates a metadata object.
      metadata_type
      operator()() const
      { return s_metadata; }
 
-     // Decides whether a metadata object should be moved to the front
-     // of the list.
+     /// Decides whether a metadata object should be moved to the front
+     /// of the list.
      inline bool
      operator()(metadata_reference r_metadata) const
      { return true; }
@@ -99,10 +99,12 @@ namespace __gnu_pbds
 
       enum
 	{
+	  /// When some element is accessed this number of times, it
+	  /// will be moved to the front of the list.
 	  max_count = Max_Count
 	};
 
-      // Metadata on which this functor operates.
+      /// Metadata on which this functor operates.
       typedef detail::lu_counter_metadata<size_type> 	metadata_type;
 
     private:
@@ -110,16 +112,16 @@ namespace __gnu_pbds
       typedef typename _Alloc::template rebind<metadata_type> __rebind_m;
 
     public:
-      // Reference to metadata on which this functor operates.
+      /// Reference to metadata on which this functor operates.
       typedef typename __rebind_m::other::reference 	metadata_reference;
 
-      // Creates a metadata object.
+      /// Creates a metadata object.
       metadata_type
       operator()() const
       { return base_type::operator()(max_count); }
 
-      // Decides whether a metadata object should be moved to the front
-      // of the list.
+      /// Decides whether a metadata object should be moved to the front
+      /// of the list.
       bool
       operator()(metadata_reference r_data) const
       { return base_type::operator()(r_data, max_count); }

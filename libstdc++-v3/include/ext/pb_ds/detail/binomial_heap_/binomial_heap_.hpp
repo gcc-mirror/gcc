@@ -59,7 +59,11 @@ namespace __gnu_pbds
 #define PB_DS_CLASS_C_DEC \
     binomial_heap<Value_Type, Cmp_Fn, _Alloc>
 
-    /// Binomial heap.
+    /**
+     *  Binomial heap.
+     *
+     *  @ingroup heap-detail
+     */
     template<typename Value_Type, typename Cmp_Fn, typename _Alloc>
     class binomial_heap
     : public binomial_heap_base<Value_Type, Cmp_Fn, _Alloc>

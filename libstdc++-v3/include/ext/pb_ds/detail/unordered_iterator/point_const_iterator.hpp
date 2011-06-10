@@ -41,105 +41,87 @@
 
 class point_iterator_;
 
-// Const point-type iterator.
+/// Const point-type iterator.
 class point_const_iterator_
 {
-
 public:
-
-  // Category.
+  /// Category.
   typedef trivial_iterator_tag iterator_category;
 
-  // Difference type.
+  /// Difference type.
   typedef trivial_iterator_difference_type difference_type;
 
-  // Iterator's value type.
+  /// Iterator's value type.
   typedef value_type_ value_type;
 
-  // Iterator's pointer type.
+  /// Iterator's pointer type.
   typedef pointer_ pointer;
 
-  // Iterator's const pointer type.
+  /// Iterator's const pointer type.
   typedef const_pointer_ const_pointer;
 
-  // Iterator's reference type.
+  /// Iterator's reference type.
   typedef reference_ reference;
 
-  // Iterator's const reference type.
+  /// Iterator's const reference type.
   typedef const_reference_ const_reference;
-
-public:
 
   inline
   point_const_iterator_(const_pointer p_value) : m_p_value(p_value)
   { }
 
-  // Default constructor.
+  /// Default constructor.
   inline
-  point_const_iterator_()
-
-    : m_p_value(0)
+  point_const_iterator_() : m_p_value(0)
   { }
 
-  // Copy constructor.
+  /// Copy constructor.
   inline
   point_const_iterator_(const point_const_iterator_& other)
-
-    : m_p_value(other.m_p_value)
+  : m_p_value(other.m_p_value)
   { }
 
-  // Copy constructor.
+  /// Copy constructor.
   inline
   point_const_iterator_(const point_iterator_& other)
-
-    : m_p_value(other.m_p_value)
+  : m_p_value(other.m_p_value)
   { }
 
-  // Access.
-  inline const_pointer
+  /// Access.
+  const_pointer
   operator->() const
   {
     _GLIBCXX_DEBUG_ASSERT(m_p_value != 0);
-
-    return (m_p_value);
+    return m_p_value;
   }
 
-  // Access.
-  inline const_reference
+  /// Access.
+  const_reference
   operator*() const
   {
     _GLIBCXX_DEBUG_ASSERT(m_p_value != 0);
-
-    return (*m_p_value);
+    return *m_p_value;
   }
 
-  // Compares content to a different iterator object.
-  inline bool
+  /// Compares content to a different iterator object.
+  bool
   operator==(const point_iterator_& other) const
-  {
-    return (m_p_value == other.m_p_value);
-  }
+  { return m_p_value == other.m_p_value; }
 
-  // Compares content to a different iterator object.
-  inline bool
+  /// Compares content to a different iterator object.
+  bool
   operator==(const point_const_iterator_& other) const
-  {
-    return (m_p_value == other.m_p_value);
-  }
+  { return m_p_value == other.m_p_value; }
 
-  // Compares content (negatively) to a different iterator object.
-  inline bool
+  /// Compares content (negatively) to a different iterator object.
+  bool
   operator!=(const point_iterator_& other) const
-  {
-    return (m_p_value != other.m_p_value);
-  }
+  { return m_p_value != other.m_p_value; }
 
-  // Compares content (negatively) to a different iterator object.
-  inline bool
+  /// Compares content (negatively) to a different iterator object.
+  bool
   operator!=(const point_const_iterator_& other) const
-  {
-    return (m_p_value != other.m_p_value);
-  }
+  { return m_p_value != other.m_p_value; }
 
 protected:
   const_pointer m_p_value;

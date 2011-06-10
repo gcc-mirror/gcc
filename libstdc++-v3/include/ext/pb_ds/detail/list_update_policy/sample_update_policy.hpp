@@ -46,29 +46,29 @@ namespace __gnu_pbds
   /// A sample list-update policy.
   struct sample_update_policy
   {
-    // Default constructor.
+    /// Default constructor.
     sample_update_policy();
 
-    // Copy constructor.
+    /// Copy constructor.
     sample_update_policy(const sample_update_policy&);
 
-    // Swaps content.
+    /// Swaps content.
     inline void
     swap(sample_update_policy& other);
 
   protected:
-    // Metadata on which this functor operates.
+    /// Metadata on which this functor operates.
     typedef some_metadata_type metadata_type;
 
-    // Creates a metadata object.
+    /// Creates a metadata object.
     metadata_type
     operator()() const;
 
-    // Decides whether a metadata object should be moved to the front of
-    // the list. A list-update based containers object will call this
-    // method to decide whether to move a node to the front of the
-    // list. The method shoule return true if the node should be moved
-    // to the front of the list.
+    /// Decides whether a metadata object should be moved to the front
+    /// of the list. A list-update based containers object will call
+    /// this method to decide whether to move a node to the front of
+    /// the list. The method shoule return true if the node should be
+    /// moved to the front of the list.
     bool
     operator()(metadata_reference) const;
   };

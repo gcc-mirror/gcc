@@ -65,9 +65,11 @@ namespace __gnu_pbds
     <Value_Type, Cmp_Fn, typename _Alloc::size_type, _Alloc>
 #endif
 
+
     /**
      *  Thin heap.
-     *  Base class for @ref priority_queue.
+     *
+     *  @ingroup heap-detail
      *
      *  See Tarjan and Kaplan.
      */

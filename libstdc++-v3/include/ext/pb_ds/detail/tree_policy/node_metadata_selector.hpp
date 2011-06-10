@@ -48,16 +48,23 @@ namespace __gnu_pbds
 {
   namespace detail
   {
+    /**
+     *  @addtogroup traits Traits
+     *  @{
+     */
+
     /// Tree metadata helper.
     template<typename Node_Update, bool _BTp>
       struct tree_metadata_helper;
 
+    /// Specialization, false.
     template<typename Node_Update>
       struct tree_metadata_helper<Node_Update, false>
       {
 	typedef typename Node_Update::metadata_type 	type;
       };
 
+    /// Specialization, true.
     template<typename Node_Update>
       struct tree_metadata_helper<Node_Update, true>
       {
@@ -89,6 +96,7 @@ namespace __gnu_pbds
     public:
       typedef typename tree_metadata_helper<__node_u, null_update>::type type;
     };
+    //@}
   } // namespace detail
 } // namespace __gnu_pbds
 

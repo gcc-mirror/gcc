@@ -35,7 +35,7 @@
 
 /**
  * @file ov_tree_map_/ov_tree_map_.hpp
- * Contains an implementation class for ov_tree_.
+ * Contains an implementation class for ov_tree.
  */
 
 #include <map>
@@ -97,7 +97,10 @@ namespace __gnu_pbds
 #  error Missing definition
 #endif
 
-    /// Ordered-vector tree associative-container.
+    /**
+     *  @brief Ordered-vector tree associative-container.
+     *  @ingroup branch-detail
+     */
     template<typename Key, typename Mapped, typename Cmp_Fn,
 	     typename Node_And_It_Traits, typename _Alloc>
     class PB_DS_OV_TREE_NAME :
@@ -377,15 +380,23 @@ namespace __gnu_pbds
       end() const
       { return m_end_it; }
 
+      /// Returns a const node_iterator corresponding to the node at the
+      /// root of the tree.
       inline node_const_iterator
       node_begin() const;
 
-      inline node_const_iterator
-      node_end() const;
-
+      /// Returns a node_iterator corresponding to the node at the
+      /// root of the tree.
       inline node_iterator
       node_begin();
 
+      /// Returns a const node_iterator corresponding to a node just
+      /// after a leaf of the tree.
+      inline node_const_iterator
+      node_end() const;
+
+      /// Returns a node_iterator corresponding to a node just
+      /// after a leaf of the tree.
       inline node_iterator
       node_end();
 

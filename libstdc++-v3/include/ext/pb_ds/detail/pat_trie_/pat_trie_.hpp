@@ -90,11 +90,12 @@ namespace __gnu_pbds
 
     /**
      *  @brief PATRICIA trie.
+     *  @ingroup branch-detail
      *
-     * This implementation loosely borrows ideas from:
-     * 1) Fast Mergeable Integer Maps, Okasaki, Gill 1998
-     * 2) Ptset: Sets of integers implemented as Patricia trees,
-     *    Jean-Christophe Filliatr, 2000
+     *  This implementation loosely borrows ideas from:
+     *  1) Fast Mergeable Integer Maps, Okasaki, Gill 1998
+     *  2) Ptset: Sets of integers implemented as Patricia trees,
+     *     Jean-Christophe Filliatr, 2000
      */
     template<typename Key, typename Mapped, typename Node_And_It_Traits,
 	     typename _Alloc>
@@ -388,15 +389,23 @@ namespace __gnu_pbds
       inline const_reverse_iterator
       rend() const;
 
+      /// Returns a const node_iterator corresponding to the node at the
+      /// root of the tree.
       inline node_const_iterator
       node_begin() const;
 
+      /// Returns a node_iterator corresponding to the node at the
+      /// root of the tree.
       inline node_iterator
       node_begin();
 
+      /// Returns a const node_iterator corresponding to a node just
+      /// after a leaf of the tree.
       inline node_const_iterator
       node_end() const;
 
+      /// Returns a node_iterator corresponding to a node just
+      /// after a leaf of the tree.
       inline node_iterator
       node_end();
 

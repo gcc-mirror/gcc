@@ -98,7 +98,10 @@ namespace __gnu_pbds
     PB_DS_S_TREE_BASE_NAME<Key, Mapped, Cmp_Fn, Node_And_It_Traits, _Alloc>
 
 
-    /// Splay Tree.
+    /**
+     *  @brief Splay tree.
+     *  @ingroup branch-detail
+     */
     template<typename Key, typename Mapped, typename Cmp_Fn,
 	     typename Node_And_It_Traits, typename _Alloc>
     class PB_DS_S_TREE_NAME : public PB_DS_S_TREE_BASE

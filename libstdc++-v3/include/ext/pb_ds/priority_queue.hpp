@@ -49,10 +49,34 @@
 namespace __gnu_pbds
 {
   /**
-   *  @brief A priority queue composed of one specific heap policy.
-   *  @ingroup pbds
+   *  @defgroup heap-based
+   *  @ingroup containers-pbds
+   *  @{
    */
-  template<typename _Tv,
+
+  /**
+   *  @defgroup heap-detail Base and Policy Classes
+   *  @ingroup heap-based
+   */
+
+  /**
+   *  A priority queue composed of one specific heap policy.
+   *
+   *  @tparam _Tv 	    	Value type.
+   *  @tparam Cmp_Fn	    	Comparison functor.
+   *  @tparam Tag 	    	Instantiating data structure type,
+   *			    	see container_tag.
+   *  @tparam _Alloc 	    	Allocator type.
+   *
+   *  Base is dispatched at compile time via Tag, from the following
+   *  choices: binary_heap_tag, binomial_heap_tag, pairing_heap_tag,
+   *           rc_binomial_heap_tag, thin_heap_tag
+   *
+   *  Base choices are: detail::binary_heap, detail::binomial_heap,
+   *                    detail::pairing_heap, detail::rc_binomial_heap,
+   *                    detail::thin_heap.
+   */
+   template<typename _Tv,
 	   typename Cmp_Fn = std::less<_Tv>,
 	   typename Tag = pairing_heap_tag,
 	   typename _Alloc = std::allocator<char> >
@@ -87,21 +111,21 @@ namespace __gnu_pbds
 
     priority_queue() { }
 
-    // Constructor taking some policy objects. r_cmp_fn will be copied
-    // by the Cmp_Fn object of the container object.
+    /// Constructor taking some policy objects. r_cmp_fn will be
+    /// copied by the Cmp_Fn object of the container object.
     priority_queue(const cmp_fn& r_cmp_fn) : base_type(r_cmp_fn) { }
 
-    // Constructor taking __iterators to a range of value_types. The
-    // value_types between first_it and last_it will be inserted into
-    // the container object.
+    /// Constructor taking __iterators to a range of value_types. The
+    /// value_types between first_it and last_it will be inserted into
+    /// the container object.
     template<typename It>
     priority_queue(It first_it, It last_it)
     { base_type::copy_from_range(first_it, last_it); }
 
-    // Constructor taking __iterators to a range of value_types and
-    // some policy objects The value_types between first_it and
-    // last_it will be inserted into the container object. r_cmp_fn
-    // will be copied by the cmp_fn object of the container object.
+    /// Constructor taking __iterators to a range of value_types and
+    /// some policy objects The value_types between first_it and
+    /// last_it will be inserted into the container object. r_cmp_fn
+    /// will be copied by the cmp_fn object of the container object.
     template<typename It>
     priority_queue(It first_it, It last_it, const cmp_fn& r_cmp_fn)
     : base_type(r_cmp_fn)
@@ -129,5 +153,5 @@ namespace __gnu_pbds
     { base_type::swap(other); }
   };
 } // namespace __gnu_pbds
-
+ //@} heap-based
 #endif

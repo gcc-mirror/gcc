@@ -69,8 +69,9 @@ namespace __gnu_pbds
     PB_DS_RB_TREE_BASE_NAME<Key, Mapped, Cmp_Fn, Node_And_It_Traits, _Alloc>
 
 
-    /*
+    /**
      *  @brief Red-Black tree.
+     *  @ingroup branch-detail
      *
      *  This implementation uses an idea from the SGI STL (using a
      *  @a header node which is needed for efficient iteration).

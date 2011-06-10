@@ -45,11 +45,6 @@
 
 namespace __gnu_pbds
 {
-  /// A null node updator, indicating that no node updates are required.
-  template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
-    struct null_node_update : public null_type
-    { };
-
   namespace detail
   {
     /// Primary template, base class for branch structure policies.

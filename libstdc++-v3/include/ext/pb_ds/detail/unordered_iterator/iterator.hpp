@@ -39,102 +39,82 @@
  *    table.
  */
 
-// Range-type iterator.
-class iterator_ : 
-  public const_iterator_
-
+/// Range-type iterator.
+class iterator_
+: public const_iterator_
 {
-
 public:
-
-  // Category.
+  /// Category.
   typedef std::forward_iterator_tag iterator_category;
 
-  // Difference type.
+  /// Difference type.
   typedef typename _Alloc::difference_type difference_type;
 
-  // Iterator's value type.
+  /// Iterator's value type.
   typedef value_type_ value_type;
 
-  // Iterator's pointer type.
+  /// Iterator's pointer type.
   typedef pointer_ pointer;
 
-  // Iterator's const pointer type.
+  /// Iterator's const pointer type.
   typedef const_pointer_ const_pointer;
 
-  // Iterator's reference type.
+  /// Iterator's reference type.
   typedef reference_ reference;
 
-  // Iterator's const reference type.
+  /// Iterator's const reference type.
   typedef const_reference_ const_reference;
 
-public:
-
-  // Default constructor.
+  /// Default constructor.
   inline
   iterator_()
+  : const_iterator_(0, PB_DS_GEN_POS(), 0) { }
 
-    : const_iterator_(0, PB_DS_GEN_POS(), 0)
-  { }
-
-  // Conversion to a point-type iterator.
+  /// Conversion to a point-type iterator.
   inline
   operator point_iterator_()
-  {
-    return (point_iterator_(
-			    const_cast<pointer>(const_iterator_::m_p_value)));
-  }
+  { return point_iterator_(const_cast<pointer>(const_iterator_::m_p_value)); }
 
-  // Conversion to a point-type iterator.
+  /// Conversion to a point-type iterator.
   inline
   operator const point_iterator_() const
-  {
-    return (point_iterator_(
-			    const_cast<pointer>(const_iterator_::m_p_value)));
-  }
+  { return point_iterator_(const_cast<pointer>(const_iterator_::m_p_value)); }
 
-  // Access.
-  inline pointer
+  /// Access.
+  pointer
   operator->() const
   {
     _GLIBCXX_DEBUG_ASSERT(base_type::m_p_value != 0);
-
     return (const_cast<pointer>(base_type::m_p_value));
   }
 
-  // Access.
-  inline reference
+  /// Access.
+  reference
   operator*() const
   {
     _GLIBCXX_DEBUG_ASSERT(base_type::m_p_value != 0);
-
     return (const_cast<reference>(*base_type::m_p_value));
   }
 
-  // Increments.
-  inline iterator_& 
+  /// Increments.
+  iterator_&
   operator++()
   {
     base_type::m_p_tbl->inc_it_state(base_type::m_p_value, base_type::m_pos);
-
-    return (*this);
+    return *this;
   }
 
-  // Increments.
-  inline iterator_
+  /// Increments.
+  iterator_
   operator++(int)
   {
     iterator_ ret =* this;
-
     base_type::m_p_tbl->inc_it_state(base_type::m_p_value, base_type::m_pos);
-
-    return (ret);
+    return ret;
   }
 
 protected:
   typedef const_iterator_ base_type;
-
-protected:
 
   /**
    *  Constructor used by the table to initiate the generalized
@@ -142,9 +122,9 @@ protected:
    *      of a table.
    * */
   inline
-  iterator_(pointer p_value, PB_DS_GEN_POS pos, PB_DS_CLASS_C_DEC* p_tbl) : const_iterator_(p_value, pos, p_tbl)
+  iterator_(pointer p_value, PB_DS_GEN_POS pos, PB_DS_CLASS_C_DEC* p_tbl)
+  : const_iterator_(p_value, pos, p_tbl)
   { }
 
   friend class PB_DS_CLASS_C_DEC;
 };
-

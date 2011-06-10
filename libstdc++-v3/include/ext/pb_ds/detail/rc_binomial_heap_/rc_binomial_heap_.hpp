@@ -57,7 +57,11 @@ namespace __gnu_pbds
 #define PB_DS_RC_C_DEC \
     rc<typename binomial_heap_base<Value_Type, Cmp_Fn, _Alloc>::node, _Alloc>
 
-    /// Base class for redundant-counter binomial heap.
+    /**
+     *  Redundant-counter binomial heap.
+     *
+     *  @ingroup heap-detail
+     */
     template<typename Value_Type, typename Cmp_Fn, typename _Alloc>
     class rc_binomial_heap
     : public binomial_heap_base<Value_Type, Cmp_Fn, _Alloc>

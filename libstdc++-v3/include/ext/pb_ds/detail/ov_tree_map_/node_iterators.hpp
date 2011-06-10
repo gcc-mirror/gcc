@@ -137,6 +137,7 @@ namespace __gnu_pbds
 	return *m_p_metadata;
       }
 
+      /// Returns the node iterator associated with the left node.
       inline this_type
       get_l_child() const
       {
@@ -152,11 +153,12 @@ namespace __gnu_pbds
 			  mid_pointer(p_begin_metadata, m_p_metadata)));
       }
 
+      /// Returns the node iterator associated with the right node.
       inline this_type
       get_r_child() const
       {
 	if (m_p_value == m_p_end_value)
-	  return (this_type(m_p_end_value,  m_p_end_value,  m_p_end_value));
+	  return (this_type(m_p_end_value, m_p_end_value, m_p_end_value));
 
 	const_metadata_pointer p_end_metadata =
 	  m_p_metadata + (m_p_end_value - m_p_value);
@@ -201,7 +203,6 @@ namespace __gnu_pbds
     template<typename Value_Type, typename Metadata_Type, typename _Alloc>
     class ov_tree_node_it_ : public PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC
     {
-
     private:
       typedef PB_DS_OV_TREE_NODE_ITERATOR_C_DEC this_type;
 
@@ -216,7 +217,6 @@ namespace __gnu_pbds
       const_metadata_pointer;
 
     public:
-
       typedef trivial_iterator_tag iterator_category;
 
       typedef trivial_iterator_difference_type difference_type;
@@ -238,17 +238,16 @@ namespace __gnu_pbds
 	Value_Type>::type>::other::pointer
       const_reference;
 
-    public:
       inline
       ov_tree_node_it_(const_pointer p_nd = 0,  const_pointer p_begin_nd = 0,  const_pointer p_end_nd = 0,  const_metadata_pointer p_metadata = 0) : base_type(p_nd,  p_begin_nd,  p_end_nd,  p_metadata)
       { }
 
-      // Access.
+      /// Access.
       inline reference
       operator*() const
       { return reference(base_type::m_p_value); }
 
-      // Returns the node reference associated with the left node.
+      /// Returns the node reference associated with the left node.
       inline ov_tree_node_it_
       get_l_child() const
       {
@@ -264,13 +263,12 @@ namespace __gnu_pbds
 			  base_type::mid_pointer(p_begin_metadata, base_type::m_p_metadata)));
       }
 
-      // Returns the node reference associated with the right node.
+      /// Returns the node reference associated with the right node.
       inline ov_tree_node_it_
       get_r_child() const
       {
 	if (base_type::m_p_value == base_type::m_p_end_value)
-	  return this_type(base_type::m_p_end_value,
-			   base_type::m_p_end_value,  
+	  return this_type(base_type::m_p_end_value, base_type::m_p_end_value,  
 			   base_type::m_p_end_value);
 
 	const_metadata_pointer p_end_metadata =

@@ -50,11 +50,11 @@ namespace __gnu_pbds
   {
     typedef std::size_t metadata_type;
 
-    // Default constructor.
+    /// Default constructor.
     sample_tree_node_update();
 
-    // Updates the rank of a node through a node_iterator node_it;
-    // end_nd_it is the end node iterator.
+    /// Updates the rank of a node through a node_iterator node_it;
+    /// end_nd_it is the end node iterator.
     inline void
     operator()(node_iterator node_it, node_const_iterator end_nd_it) const;
   };

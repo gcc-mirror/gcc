@@ -92,7 +92,7 @@ namespace __gnu_pbds
     protected:
       typedef
       typename _Alloc::template rebind<
-      left_child_next_sibling_heap_node_<Value_Type, Node_Metadata, 
+      left_child_next_sibling_heap_node_<Value_Type, Node_Metadata,
 					 _Alloc> >::other
       node_allocator;
 
@@ -134,8 +134,6 @@ namespace __gnu_pbds
       typedef const_iterator 				iterator;
       typedef Cmp_Fn 					cmp_fn;
       typedef _Alloc 					allocator_type;
-
-    public:
 
       left_child_next_sibling_heap();
       left_child_next_sibling_heap(const Cmp_Fn&);
@@ -182,7 +180,6 @@ namespace __gnu_pbds
 #endif
 
     protected:
-
       inline node_pointer
       get_new_node_for_insert(const_reference);
 
@@ -260,16 +257,15 @@ namespace __gnu_pbds
       trace_node_metadata(node_const_pointer, type_to_type<Metadata_>);
 
       static void
-      trace_node_metadata(node_const_pointer,
-			  type_to_type<null_type>);
+      trace_node_metadata(node_const_pointer, type_to_type<null_type>);
 #endif
+
+      static node_allocator 	s_node_allocator;
+      static no_throw_copies_t 	s_no_throw_copies_ind;
+
     protected:
       node_pointer 		m_p_root;
       size_type 		m_size;
-
-    private:
-      static node_allocator 	s_node_allocator;
-      static no_throw_copies_t 	s_no_throw_copies_ind;
     };
 
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/constructors_destructor_fn_imps.hpp>

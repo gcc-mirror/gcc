@@ -43,64 +43,30 @@
 
 namespace __gnu_pbds
 {
-
   namespace detail
   {
-
-#define PB_DS_CLASS_T_DEC			\
-    template<typename Size_Type>
-
-#define PB_DS_CLASS_C_DEC					\
-    mod_based_range_hashing<					\
-						Size_Type>
-
+    /// Mod based range hashing.
     template<typename Size_Type>
     class mod_based_range_hashing
     {
     protected:
-      typedef Size_Type size_type;
-
-    protected:
-      void
-      swap(PB_DS_CLASS_C_DEC& other);
+      typedef Size_Type 	size_type;
 
       void
-      notify_resized(size_type size);
+      swap(mod_based_range_hashing& other)
+      { std::swap(m_size, other.m_size); }
+
+      void
+      notify_resized(size_type s)
+      { m_size = s; }
 
       inline size_type
-      range_hash(size_type hash) const;
+      range_hash(size_type s) const
+      { return s % m_size; }
 
     private:
       size_type m_size;
     };
-
-    PB_DS_CLASS_T_DEC
-    void
-    PB_DS_CLASS_C_DEC::
-    swap(PB_DS_CLASS_C_DEC& other)
-    {
-      std::swap(m_size, other.m_size);
-    }
-
-    PB_DS_CLASS_T_DEC
-    void
-    PB_DS_CLASS_C_DEC::
-    notify_resized(size_type size)
-    {
-      m_size = size;
-    }
-
-    PB_DS_CLASS_T_DEC
-    inline typename PB_DS_CLASS_C_DEC::size_type
-    PB_DS_CLASS_C_DEC::
-    range_hash(size_type hash) const
-    {
-      return (hash % m_size);
-    }
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace detail
 
 } // namespace __gnu_pbds

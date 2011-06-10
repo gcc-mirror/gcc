@@ -49,24 +49,24 @@ namespace __gnu_pbds
   public:
     typedef std::size_t size_type;
 
-    // Default constructor.
+    /// Default constructor.
     sample_ranged_hash_fn();
 
-    // Copy constructor.
+    /// Copy constructor.
     sample_ranged_hash_fn(const sample_ranged_hash_fn&);
 
-    // Swaps content.
+    /// Swaps content.
     inline void
     swap(sample_ranged_hash_fn&);
 
   protected:
 
-    // Notifies the policy object that the container's __size has
-    // changed to size.
+    /// Notifies the policy object that the container's __size has
+    /// changed to size.
     void
     notify_resized(size_type);
 
-    // Transforms key_const_reference into a position within the table.
+    /// Transforms key_const_reference into a position within the table.
     inline size_type
     operator()(key_const_reference) const;
 

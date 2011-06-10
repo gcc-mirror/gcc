@@ -90,7 +90,47 @@ namespace __gnu_pbds
 #endif
 
 
-    /// General probing hash.
+    /**
+     *  A general-probing hash-based container.
+     *
+     *
+     *  @ingroup hash-detail
+     *
+     *  @tparam Key 	    	Key type.
+     *
+     *  @tparam Mapped 	    	Map type.
+     *
+     *  @tparam Hash_Fn	      	Hashing functor.
+     *                          Default is __gnu_cxx::hash.
+     *
+     *  @tparam Eq_Fn	      	Equal functor.
+     *                          Default std::equal_to<Key>
+     *
+     *  @tparam _Alloc 	    	Allocator type.
+     *
+     *  @tparam Store_Hash    	If key type stores extra metadata.
+     *                          Defaults to false.
+     *
+     *  @tparam Comb_Probe_Fn	Combining probe functor.
+     *                          If Hash_Fn is not null_type, then this
+     *                          is the ranged-probe functor; otherwise,
+     *                          this is the range-hashing functor.
+     *                    XXX See Design::Hash-Based Containers::Hash Policies.
+     *                          Default direct_mask_range_hashing.
+     *
+     *  @tparam Probe_Fn       	Probe functor.
+     *                          Defaults to linear_probe_fn,
+     *                          also quadratic_probe_fn.
+     *
+     *  @tparam Resize_Policy 	Resizes hash.
+     *                          Defaults to hash_standard_resize_policy,
+     *                          using hash_exponential_size_policy and
+     *                          hash_load_check_resize_trigger.
+     *
+     *
+     *  Bases are: detail::hash_eq_fn, Resize_Policy, detail::ranged_probe_fn,
+     *             detail::types_traits. (Optional: detail::debug_map_base.)
+     */
     template<typename Key,
 	     typename Mapped,
 	     typename Hash_Fn,
@@ -165,6 +205,7 @@ namespace __gnu_pbds
       typedef Comb_Probe_Fn 			comb_probe_fn;
       typedef Resize_Policy 			resize_policy;
 
+      /// Value stores hash, true or false.
       enum
 	{
 	  store_hash = Store_Hash
@@ -217,10 +258,10 @@ namespace __gnu_pbds
       PB_DS_GP_HASH_NAME(const Hash_Fn&, const Eq_Fn&, const Comb_Probe_Fn&);
 
       PB_DS_GP_HASH_NAME(const Hash_Fn&, const Eq_Fn&, const Comb_Probe_Fn&,
-		       const Probe_Fn&);
+			 const Probe_Fn&);
 
       PB_DS_GP_HASH_NAME(const Hash_Fn&, const Eq_Fn&, const Comb_Probe_Fn&,
-		       const Probe_Fn&, const Resize_Policy&);
+			 const Probe_Fn&, const Resize_Policy&);
 
       template<typename It>
       void
@@ -238,36 +279,47 @@ namespace __gnu_pbds
       inline size_type
       max_size() const;
 
+      /// True if size() == 0.
       inline bool
       empty() const;
 
+      /// Return current hash_fn.
       Hash_Fn&
       get_hash_fn();
 
+      /// Return current const hash_fn.
       const Hash_Fn&
       get_hash_fn() const;
 
+      /// Return current eq_fn.
       Eq_Fn&
       get_eq_fn();
 
+      /// Return current const eq_fn.
       const Eq_Fn&
       get_eq_fn() const;
 
+      /// Return current probe_fn.
       Probe_Fn&
       get_probe_fn();
 
+      /// Return current const probe_fn.
       const Probe_Fn&
       get_probe_fn() const;
 
+      /// Return current comb_probe_fn.
       Comb_Probe_Fn&
       get_comb_probe_fn();
 
+      /// Return current const comb_probe_fn.
       const Comb_Probe_Fn&
       get_comb_probe_fn() const;
 
+      /// Return current resize_policy.
       Resize_Policy&
       get_resize_policy();
 
+      /// Return current const resize_policy.
       const Resize_Policy&
       get_resize_policy() const;
 
@@ -305,8 +357,8 @@ namespace __gnu_pbds
       erase(key_const_reference);
 
       template<typename Pred>
-      inline size_type
-      erase_if(Pred);
+        inline size_type
+        erase_if(Pred);
 
       void
       clear();
@@ -319,7 +371,7 @@ namespace __gnu_pbds
 
       inline iterator
       end();
-
+      
       inline const_iterator
       end() const;
 
@@ -406,7 +458,7 @@ namespace __gnu_pbds
       insert_new_imp(const_reference r_val, comp_hash& r_pos_hash_pair)
       {
 	_GLIBCXX_DEBUG_ASSERT(m_entries[r_pos_hash_pair.first].m_stat !=
-			 valid_entry_status);
+			      valid_entry_status);
 
 	if (do_resize_if_needed())
 	  r_pos_hash_pair = find_ins_pos(PB_DS_V2F(r_val),

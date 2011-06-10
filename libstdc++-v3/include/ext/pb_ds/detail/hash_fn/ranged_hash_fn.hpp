@@ -49,6 +49,7 @@ namespace __gnu_pbds
 {
   namespace detail
   {
+    /// Primary template.
     template<typename Key, typename Hash_Fn, typename _Alloc, 
 	     typename Comb_Hash_Fn, bool Store_Hash>
     class ranged_hash_fn;

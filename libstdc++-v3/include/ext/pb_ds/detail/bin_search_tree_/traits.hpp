@@ -48,7 +48,8 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-    /// Binary search tree traits, primary template.
+    /// Binary search tree traits, primary template
+    /// @ingroup traits
     template<typename Key,
 	     typename Mapped,
 	     class Cmp_Fn,
@@ -56,7 +57,7 @@ namespace __gnu_pbds
 		      class Node_Itr,
 		      class Cmp_Fn,
 		      typename _Alloc>
-    class Node_Update,
+	     class Node_Update,
 	     class Node,
 	     typename _Alloc>
     struct bin_search_tree_traits
@@ -119,6 +120,8 @@ namespace __gnu_pbds
 	_Alloc>
       reverse_iterator;
 
+      /// This is an iterator to an iterator: it iterates over nodes,
+      /// and de-referencing it returns one of the tree's iterators.
       typedef
       bin_search_tree_const_node_it_<
 	Node,
@@ -153,13 +156,14 @@ namespace __gnu_pbds
     };
 
     /// Specialization.
+    /// @ingroup traits
     template<typename Key,
 	     class Cmp_Fn,
 	     template<typename Node_CItr,
 		      class Node_Itr,
 		      class Cmp_Fn,
 		      typename _Alloc>
-    class Node_Update,
+	     class Node_Update,
 	     class Node,
 	     typename _Alloc>
     struct bin_search_tree_traits<
@@ -206,6 +210,8 @@ namespace __gnu_pbds
 
       typedef const_reverse_iterator reverse_iterator;
 
+      /// This is an iterator to an iterator: it iterates over nodes,
+      /// and de-referencing it returns one of the tree's iterators.
       typedef
       bin_search_tree_const_node_it_<
 	Node,
