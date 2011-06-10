@@ -1,3 +1,13 @@
+2011-06-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR lto/49302
+	* tree-ssa-math-opts.c (powi_as_mults): Minor cleanup.
+	(build_and_insert_call): Likewise.
+	(build_and_insert_ref): New.
+	(gimple_expand_builtin_pow): Minor cleanup.
+	(gimple_expand_builtin_cabs): New.
+	(execute_cse_sincos): Add case for BUILT_IN_CABS.
+	
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_versionable_function_p): Aliases are not versionable.
