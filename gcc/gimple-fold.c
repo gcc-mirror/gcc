@@ -1373,11 +1373,10 @@ gimple_fold_builtin (gimple stmt)
 
 tree
 gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
-				  tree *delta, bool refuse_thunks)
+				  tree *delta)
 {
   HOST_WIDE_INT i;
   tree v, fndecl;
-  struct cgraph_node *node;
 
   v = BINFO_VIRTUALS (known_binfo);
   /* If there is no virtual methods leave the OBJ_TYPE_REF alone.  */
@@ -1396,18 +1395,6 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
     return NULL_TREE;
 
   fndecl = TREE_VALUE (v);
-  node = cgraph_get_node_or_alias (fndecl);
-  if (refuse_thunks
-      && (!node
-    /* Bail out if it is a thunk declaration.  Since simple this_adjusting
-       thunks are represented by a constant in TREE_PURPOSE of items in
-       BINFO_VIRTUALS, this is a more complicate type which we cannot handle as
-       yet.
-
-       FIXME: Remove the following condition once we are able to represent
-       thunk information on call graph edges.  */
-	  || (node->same_body_alias && node->thunk.thunk_p)))
-    return NULL_TREE;
 
   /* When cgraph node is missing and function is not public, we cannot
      devirtualize.  This can happen in WHOPR when the actual method
@@ -1557,7 +1544,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
       if (!binfo)
 	return false;
       token = TREE_INT_CST_LOW (OBJ_TYPE_REF_TOKEN (callee));
-      fndecl = gimple_get_virt_method_for_binfo (token, binfo, &delta, false);
+      fndecl = gimple_get_virt_method_for_binfo (token, binfo, &delta);
       if (!fndecl)
 	return false;
       gcc_assert (integer_zerop (delta));

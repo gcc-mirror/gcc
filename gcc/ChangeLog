@@ -1,5 +1,14 @@
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-cp.c (ipcp_process_devirtualization_opportunities):
+	Update call of gimple_get_virt_method_for_binfo.
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Remove
+	refuse_thunks parameter.
+	(gimple_fold_call): Update.
+	* ipa-prop.c (try_make_edge_direct_virtual_call): Update.
+
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
 	* tree-sra.c (all_callers_have_enough_arguments_p): Rename to ...
 	(not_all_callers_have_enough_arguments_p): ... this one; turn into
 	worker for cgraph_for_node_and_aliases.
