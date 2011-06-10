@@ -1,3 +1,7 @@
+2011-06-09  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (finish_compound_literal): Set TREE_HAS_CONSTRUCTOR.
+
 2011-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/29003
