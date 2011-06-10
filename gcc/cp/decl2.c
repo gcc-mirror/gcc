@@ -361,7 +361,7 @@ grok_array_decl (tree array_expr, tree index_exp)
   if (MAYBE_CLASS_TYPE_P (type) || MAYBE_CLASS_TYPE_P (TREE_TYPE (index_exp)))
     expr = build_new_op (ARRAY_REF, LOOKUP_NORMAL,
 			 array_expr, index_exp, NULL_TREE,
-			 /*overloaded_p=*/NULL, tf_warning_or_error);
+			 /*overload=*/NULL, tf_warning_or_error);
   else
     {
       tree p1, p2, i1, i2;

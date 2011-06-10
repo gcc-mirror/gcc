@@ -4717,7 +4717,7 @@ extern tree build_new_method_call		(tree, tree, VEC(tree,gc) **,
 extern tree build_special_member_call		(tree, tree, VEC(tree,gc) **,
 						 tree, int, tsubst_flags_t);
 extern tree build_new_op			(enum tree_code, int, tree, 
-						 tree, tree, bool *,
+						 tree, tree, tree *,
 						 tsubst_flags_t);
 extern tree build_op_call			(tree, VEC(tree,gc) **,
 						 tsubst_flags_t);
@@ -5611,7 +5611,7 @@ extern tree cp_build_function_call_vec		(tree, VEC(tree,gc) **,
 						 tsubst_flags_t);
 extern tree build_x_binary_op			(enum tree_code, tree,
 						 enum tree_code, tree,
-						 enum tree_code, bool *,
+						 enum tree_code, tree *,
 						 tsubst_flags_t);
 extern tree build_x_array_ref			(tree, tree, tsubst_flags_t);
 extern tree build_x_unary_op			(enum tree_code, tree,

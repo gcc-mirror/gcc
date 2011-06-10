@@ -1429,13 +1429,19 @@ build_x_arrow (tree expr)
 
   if (MAYBE_CLASS_TYPE_P (type))
     {
+      struct tinst_level *actual_inst = current_instantiation ();
+      tree fn = NULL;
+
       while ((expr = build_new_op (COMPONENT_REF, LOOKUP_NORMAL, expr,
 				   NULL_TREE, NULL_TREE,
-				   /*overloaded_p=*/NULL, 
-				   tf_warning_or_error)))
+				   &fn, tf_warning_or_error)))
 	{
 	  if (expr == error_mark_node)
 	    return error_mark_node;
+
+	  if (fn && DECL_USE_TEMPLATE (fn))
+	    push_tinst_level (fn);
+	  fn = NULL;
 
 	  if (vec_member (TREE_TYPE (expr), types_memoized))
 	    {
@@ -1446,6 +1452,9 @@ build_x_arrow (tree expr)
 	  VEC_safe_push (tree, gc, types_memoized, TREE_TYPE (expr));
 	  last_rval = expr;
 	}
+
+      while (current_instantiation () != actual_inst)
+	pop_tinst_level ();
 
       if (last_rval == NULL_TREE)
 	{

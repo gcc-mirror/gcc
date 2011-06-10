@@ -12753,7 +12753,7 @@ tsubst_copy_and_build (tree t,
 	 (TREE_NO_WARNING (TREE_OPERAND (t, 1))
 	  ? ERROR_MARK
 	  : TREE_CODE (TREE_OPERAND (t, 1))),
-	 /*overloaded_p=*/NULL,
+	 /*overload=*/NULL,
 	 complain);
 
     case SCOPE_REF:

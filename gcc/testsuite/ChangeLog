@@ -1,3 +1,7 @@
+2011-06-09  David Krauss  <potswa@mac.com>
+
+	* g++.dg/template/arrow1.C: New.
+
 2011-06-09  Jason Merrill  <jason@redhat.com>
 
 	* lib/prune.exp: Prune "note"s.
