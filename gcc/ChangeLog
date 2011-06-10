@@ -1,5 +1,15 @@
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_set_nothrow_flag_1): Update cgraph after
+	setting the nothrow flag.
+	* ipa-reference.c (propagate): Skip aliases.
+	* ipa-pure-const.c (propagate_pure_const): Skip aliases.
+	(propagate_nothrow): Skip aliases; do not update cgraph.
+	(local_pure_const): Do not update cgraph.
+	* tree-profile.c (tree_profiling): Do fixup_cfg.
+
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
 	* ipa.c (cgraph_non_local_node_p_1): Break out from ...;
 	(cgraph_local_node_p): ... here; handle aliases.
 	(has_addr_references_p): Break out from ...;

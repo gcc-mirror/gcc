@@ -1116,6 +1116,9 @@ propagate_pure_const (void)
       int count = 0;
       node = order[i];
 
+      if (node->alias)
+	continue;
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Starting cycle\n");
 
@@ -1383,6 +1386,9 @@ propagate_nothrow (void)
       bool can_throw = false;
       node = order[i];
 
+      if (node->alias)
+	continue;
+
       /* Find the worst state for any node in the cycle.  */
       w = node;
       while (w)
@@ -1430,10 +1436,7 @@ propagate_nothrow (void)
 	  funct_state w_l = get_function_state (w);
 	  if (!can_throw && !TREE_NOTHROW (w->decl))
 	    {
-	      struct cgraph_edge *e;
 	      cgraph_set_nothrow_flag (w, true);
-	      for (e = w->callers; e; e = e->next_caller)
-	        e->can_throw_external = false;
 	      if (dump_file)
 		fprintf (dump_file, "Function found to be nothrow: %s\n",
 			 cgraph_node_name (w));
@@ -1640,11 +1643,7 @@ local_pure_const (void)
     }
   if (!l->can_throw && !TREE_NOTHROW (current_function_decl))
     {
-      struct cgraph_edge *e;
-
       cgraph_set_nothrow_flag (node, true);
-      for (e = node->callers; e; e = e->next_caller)
-	e->can_throw_external = false;
       changed = true;
       if (dump_file)
 	fprintf (dump_file, "Function found to be nothrow: %s\n",

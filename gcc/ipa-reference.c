@@ -645,6 +645,8 @@ propagate (void)
       struct ipa_dfs_info * w_info;
 
       node = order[i];
+      if (node->alias)
+	continue;
       node_info = get_reference_vars_info (node);
       gcc_assert (node_info);
 
@@ -802,6 +804,8 @@ propagate (void)
 	  struct ipa_dfs_info * w_info;
 
 	  node = order[i];
+	  if (node->alias)
+	    continue;
 	  node_info = get_reference_vars_info (node);
 	  node_g = &node_info->global;
 	  node_l = &node_info->local;
@@ -885,7 +889,7 @@ propagate (void)
       ipa_reference_global_vars_info_t node_g;
       ipa_reference_optimization_summary_t opt;
 
-      if (!node->analyzed)
+      if (!node->analyzed || node->alias)
         continue;
 
       node_info = get_reference_vars_info (node);
