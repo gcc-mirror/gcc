@@ -1,5 +1,7 @@
 2011-06-10  Jason Merrill  <jason@redhat.com>
 
+	* testsuite/20_util/bind/ref_neg.cc: Remove wrong test lines.
+
 	* testsuite/20_util/bind/ref_neg.cc: Remove dg-excess-errors,
 	fix dg-error markup.
 
