@@ -1,3 +1,9 @@
+2011-06-10  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49318
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Remove
+	irrelevant pattern statements.
+
 2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	* system.h (SETJMP_VIA_SAVE_AREA): Poison.

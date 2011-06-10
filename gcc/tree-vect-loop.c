@@ -255,10 +255,20 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
 	  gcc_assert (stmt_info);
 
-	  /* skip stmts which do not need to be vectorized.  */
+	  /* Skip stmts which do not need to be vectorized.  */
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && !STMT_VINFO_LIVE_P (stmt_info))
 	    {
+              if (is_pattern_stmt_p (stmt_info))
+                {
+                   /* We are not going to vectorize this pattern statement,
+                      therefore, remove it.  */
+                  gimple_stmt_iterator tmp_gsi = gsi_for_stmt (stmt);
+                  STMT_VINFO_RELATED_STMT (stmt_info) = NULL;
+                  gsi_remove (&tmp_gsi, true);
+                  free_stmt_vec_info (stmt);
+                }
+
 	      if (vect_print_dump_info (REPORT_DETAILS))
 	        fprintf (vect_dump, "skip.");
 	      continue;
