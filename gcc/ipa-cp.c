@@ -354,6 +354,10 @@ ipcp_versionable_function_p (struct cgraph_node *node)
   if (node->alias)
     return false;
 
+  /* We don't know how to clone thunks.  */
+  if (node->thunk.thunk_p)
+    return false;
+
   /* There are a number of generic reasons functions cannot be versioned.  We
      also cannot remove parameters if there are type attributes such as fnspec
      present.  */
@@ -507,9 +511,11 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
   struct ipa_node_params *info = IPA_NODE_REF (node);
   enum ipa_lattice_type type;
 
-  if (ipa_is_called_with_var_arguments (info) || node->alias)
+  if (ipa_is_called_with_var_arguments (info))
     type = IPA_BOTTOM;
-  else if (node->local.local)
+  /* We don't know how to clone thunks even when they are local.  */
+  else if (node->local.local
+	   && !node->thunk.thunk_p)
     type = IPA_TOP;
   /* When cloning is allowed, we can assume that externally visible functions
      are not called.  We will compensate this by cloning later.  */
@@ -592,40 +598,41 @@ ipcp_change_tops_to_bottom (void)
 
   prop_again = false;
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      struct ipa_node_params *info = IPA_NODE_REF (node);
-      count = ipa_get_param_count (info);
-      for (i = 0; i < count; i++)
-	{
-	  struct ipcp_lattice *lat = ipa_get_lattice (info, i);
-	  if (lat->type == IPA_TOP)
-	    {
-	      prop_again = true;
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Forcing param ");
-		  print_generic_expr (dump_file, ipa_get_param (info, i), 0);
-		  fprintf (dump_file, " of node %s to bottom.\n",
-			   cgraph_node_name (node));
-		}
-	      lat->type = IPA_BOTTOM;
-	    }
-	  if (!ipa_param_cannot_devirtualize_p (info, i)
-	      && ipa_param_types_vec_empty (info, i))
-	    {
-	      prop_again = true;
-	      ipa_set_param_cannot_devirtualize (info, i);
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Marking param ");
-		  print_generic_expr (dump_file, ipa_get_param (info, i), 0);
-		  fprintf (dump_file, " of node %s as unusable for "
-			   "devirtualization.\n",
-			   cgraph_node_name (node));
-		}
-	    }
-	}
-    }
+    if (!node->alias)
+      {
+	struct ipa_node_params *info = IPA_NODE_REF (node);
+	count = ipa_get_param_count (info);
+	for (i = 0; i < count; i++)
+	  {
+	    struct ipcp_lattice *lat = ipa_get_lattice (info, i);
+	    if (lat->type == IPA_TOP)
+	      {
+		prop_again = true;
+		if (dump_file)
+		  {
+		    fprintf (dump_file, "Forcing param ");
+		    print_generic_expr (dump_file, ipa_get_param (info, i), 0);
+		    fprintf (dump_file, " of node %s to bottom.\n",
+			     cgraph_node_name (node));
+		  }
+		lat->type = IPA_BOTTOM;
+	      }
+	    if (!ipa_param_cannot_devirtualize_p (info, i)
+		&& ipa_param_types_vec_empty (info, i))
+	      {
+		prop_again = true;
+		ipa_set_param_cannot_devirtualize (info, i);
+		if (dump_file)
+		  {
+		    fprintf (dump_file, "Marking param ");
+		    print_generic_expr (dump_file, ipa_get_param (info, i), 0);
+		    fprintf (dump_file, " of node %s as unusable for "
+			     "devirtualization.\n",
+			     cgraph_node_name (node));
+		  }
+	      }
+	  }
+      }
   return prop_again;
 }
 
@@ -813,10 +820,11 @@ ipcp_iterate_stage (void)
     ipa_update_after_lto_read ();
 
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      ipcp_initialize_node_lattices (node);
-      ipcp_compute_node_scale (node);
-    }
+    if (!node->alias)
+      {
+	ipcp_initialize_node_lattices (node);
+	ipcp_compute_node_scale (node);
+      }
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       ipcp_print_all_lattices (dump_file);

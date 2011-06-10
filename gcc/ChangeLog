@@ -1,5 +1,12 @@
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-cp.c (ipcp_versionable_function_p): Thunks are not versionable.
+	(ipcp_initialize_node_lattices): Do not deal with aliases; Do not try to
+	propagate through thunks.
+	(ipcp_change_tops_to_bottom): Do not deal with aliases.
+
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-prop.c (ipa_write_node_info): Stream jump functions for indirect
 	calls.
 	(ipa_read_node_info): Likewise.
