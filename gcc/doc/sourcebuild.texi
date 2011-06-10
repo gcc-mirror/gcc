@@ -1787,6 +1787,9 @@ Target defines @code{PCC_BITFIELD_TYPE_MATTERS}.
 @item pe_aligned_commons
 Target supports @option{-mpe-aligned-commons}.
 
+@item pie
+Target supports @option{-pie}, @option{-fpie} and @option{-fPIE}.
+
 @item section_anchors
 Target supports section anchors.
 
