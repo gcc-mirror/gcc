@@ -8441,11 +8441,18 @@ grokdeclarator (const cp_declarator *declarator,
       return error_mark_node;
     }
 
-  if (dname && IDENTIFIER_OPNAME_P (dname)
-      && declspecs->specs[(int)ds_typedef])
+  if (dname && IDENTIFIER_OPNAME_P (dname))
     {
-      error ("declaration of %qD as %<typedef%>", dname);
-      return error_mark_node;
+      if (declspecs->specs[(int)ds_typedef])
+	{
+	  error ("declaration of %qD as %<typedef%>", dname);
+	  return error_mark_node;
+	}
+      else if (decl_context == PARM || decl_context == CATCHPARM)
+	{
+	  error ("declaration of %qD as parameter", dname);
+	  return error_mark_node;
+	}
     }
 
   /* Anything declared one level down from the top level

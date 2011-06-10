@@ -1,3 +1,8 @@
+2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/41769
+	* decl.c (grokdeclarator): Reject operator names in parameters.
+
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (clear_decl_external): New functoin.
