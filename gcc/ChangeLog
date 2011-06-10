@@ -1,3 +1,23 @@
+2011-06-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-transform.c (can_remove_node_now_p): Move out of...
+	(clone_inlined_nodes): ... here.
+	(inline_call): Use cgraph_function_or_thunk_node; redirect edge
+	to real destination prior inlining.
+	* ipa-inline.c (caller_growth_limits, can_inline_edge_p,
+	can_early_inline_edge_p, want_early_inline_function_p,
+	want_early_inline_function_p, want_inline_small_function_p,
+	want_inline_self_recursive_call_p, want_inline_function_called_once_p,
+	edge_badness, update_all_callee_keys, lookup_recursive_calls,
+	add_new_edges_to_heap, inline_small_functions, flatten_function,
+	inline_always_inline_functions, early_inline_small_functions): Use
+	cgraph_function_or_thunk_node.
+	* ipa-inline-analysis.c (evaluate_conditions_for_edge,
+	dump_inline_edge_summary, estimate_function_body_sizes): Likewise.
+	(do_estimate_edge_growth_1): Break out from ...
+	(do_estimate_growth) ... here; walk aliases.
+	(inline_generate_summary): Skip aliases.
+
 2011-06-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine):

@@ -76,6 +76,35 @@ update_noncloned_frequencies (struct cgraph_node *node,
     }
 }
 
+/* We removed or are going to remove the last call to NODE.
+   Return true if we can and want proactively remove the NODE now.
+   This is important to do, since we want inliner to know when offline
+   copy of function was removed.  */
+
+static bool
+can_remove_node_now_p (struct cgraph_node *node)
+{
+  /* FIXME: When address is taken of DECL_EXTERNAL function we still
+     can remove its offline copy, but we would need to keep unanalyzed node in
+     the callgraph so references can point to it.  */
+  return (!node->address_taken
+	  && cgraph_can_remove_if_no_direct_calls_p (node)
+	  /* Inlining might enable more devirtualizing, so we want to remove
+	     those only after all devirtualizable virtual calls are processed.
+	     Lacking may edges in callgraph we just preserve them post
+	     inlining.  */
+	  && (!DECL_VIRTUAL_P (node->decl)
+	      || (!DECL_COMDAT (node->decl)
+		  && !DECL_EXTERNAL (node->decl)))
+	  /* Don't reuse if more than one function shares a comdat group.
+	     If the other function(s) are needed, we need to emit even
+	     this function out of line.  */
+	  && !node->same_comdat_group
+	  /* During early inlining some unanalyzed cgraph nodes might be in the
+	     callgraph and they might reffer the function in question.  */
+	  && !cgraph_new_nodes);
+}
+
 
 /* E is expected to be an edge being inlined.  Clone destination node of
    the edge and redirect it to the new clone.
@@ -97,25 +126,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  /* Recursive inlining never wants the master clone to
 	     be overwritten.  */
 	  && update_original
-	  /* FIXME: When address is taken of DECL_EXTERNAL function we still
-	     can remove its offline copy, but we would need to keep unanalyzed
-	     node in the callgraph so references can point to it.  */
-	  && !e->callee->address_taken
-	  && cgraph_can_remove_if_no_direct_calls_p (e->callee)
-	  /* Inlining might enable more devirtualizing, so we want to remove
-	     those only after all devirtualizable virtual calls are processed.
-	     Lacking may edges in callgraph we just preserve them post
-	     inlining.  */
-	  && (!DECL_VIRTUAL_P (e->callee->decl)
-	      || (!DECL_COMDAT (e->callee->decl)
-		  && !DECL_EXTERNAL (e->callee->decl)))
-	  /* Don't reuse if more than one function shares a comdat group.
-	     If the other function(s) are needed, we need to emit even
-	     this function out of line.  */
-	  && !e->callee->same_comdat_group
-	  /* During early inlining some unanalyzed cgraph nodes might be in the
-	     callgraph and they might reffer the function in question.  */
-	  && !cgraph_new_nodes)
+	  && can_remove_node_now_p (e->callee))
 	{
 	  gcc_assert (!e->callee->global.inlined_to);
 	  if (e->callee->analyzed && !DECL_EXTERNAL (e->callee->decl))
@@ -164,18 +175,24 @@ inline_call (struct cgraph_edge *e, bool update_original,
   int old_size = 0, new_size = 0;
   struct cgraph_node *to = NULL;
   struct cgraph_edge *curr = e;
+  struct cgraph_node *callee = cgraph_function_or_thunk_node (e->callee, NULL);
 
   /* Don't inline inlined edges.  */
   gcc_assert (e->inline_failed);
   /* Don't even think of inlining inline clone.  */
-  gcc_assert (!e->callee->global.inlined_to);
+  gcc_assert (!callee->global.inlined_to);
 
   e->inline_failed = CIF_OK;
-  DECL_POSSIBLY_INLINED (e->callee->decl) = true;
+  DECL_POSSIBLY_INLINED (callee->decl) = true;
 
   to = e->caller;
   if (to->global.inlined_to)
     to = to->global.inlined_to;
+
+  /* If aliases are involved, redirect edge to the actual destination and
+     possibly remove the aliases.  */
+  if (e->callee != callee)
+    cgraph_redirect_edge_callee (e, callee);
 
   clone_inlined_nodes (e, true, update_original, overall_size);
 
