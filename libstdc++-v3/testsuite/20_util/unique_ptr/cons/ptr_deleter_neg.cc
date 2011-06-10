@@ -25,7 +25,7 @@
 
 using std::unique_ptr;
 
-// { dg-excess-errors "static assertion failed" }
+// { dg-prune-output "static assertion failed" }
 
 void
 test01()

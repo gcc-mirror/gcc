@@ -1,7 +1,6 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 // { dg-error "no matching" "" { target *-*-* } 1210 }
-// { dg-excess-errors "" }
 
 // Copyright (C) 2009, 2010, 2011 Free Software Foundation
 //

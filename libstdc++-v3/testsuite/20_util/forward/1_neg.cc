@@ -41,4 +41,3 @@ void g()
   std::shared_ptr<A> sp1 = factory<A>(2, 1.414); // { dg-error "required from here" }
 }
 
-// { dg-excess-errors "" }

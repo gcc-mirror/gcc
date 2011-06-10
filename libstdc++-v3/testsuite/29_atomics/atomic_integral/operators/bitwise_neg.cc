@@ -27,7 +27,10 @@ int main()
   return 0;
 }
 
+// { dg-error "deleted" "" { target *-*-* } 426 }
+// { dg-error "deleted" "" { target *-*-* } 427 }
 // { dg-error "operator" "" { target *-*-* } 428 }
 // { dg-error "operator" "" { target *-*-* } 429 }
 // { dg-error "operator" "" { target *-*-* } 430 }
-// { dg-excess-errors "In file included from" }
+
+// { dg-prune-output "declared here" }

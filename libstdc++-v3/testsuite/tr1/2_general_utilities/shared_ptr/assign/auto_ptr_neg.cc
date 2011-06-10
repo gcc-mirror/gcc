@@ -46,4 +46,5 @@ main()
   test01();
   return 0;
 }
-// { dg-excess-errors "In constructor" }
+
+// { dg-prune-output "cannot convert" }

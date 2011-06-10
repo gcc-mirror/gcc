@@ -29,4 +29,4 @@ void test01()
   if ( t1 < t2 ) {}   // { dg-error "here" }
   if ( t1 == t2 ) {}  // { dg-error "here" }
 }
-// { dg-excess-errors "incomplete type" }
+// { dg-prune-output "incomplete type" }

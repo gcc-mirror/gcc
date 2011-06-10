@@ -43,5 +43,5 @@ test02()
 // { dg-error "overflow in multiplication" "" { target *-*-* } 104 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 100 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 102 }
-// { dg-excess-errors "In instantiation of" }
-// { dg-excess-errors "out of range" }
+// { dg-prune-output "out of range" }
+// { dg-prune-output "not usable in a constant expression" }

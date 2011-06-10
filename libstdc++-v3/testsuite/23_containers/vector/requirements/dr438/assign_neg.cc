@@ -19,7 +19,6 @@
 
 // { dg-do compile }
 // { dg-error "no matching" "" { target *-*-* } 1157 }
-// { dg-excess-errors "" }
 
 #include <vector>
 
