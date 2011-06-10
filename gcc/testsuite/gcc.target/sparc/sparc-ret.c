@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "no register windows" { *-*-* } { "-mflat" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-mcpu=ultrasparc -O" } */
 
@@ -11,7 +12,7 @@ int bar (int a, int b, int c, int d, int e, int f, int g, int h)
   toto (&res);
   return h;
 }
-/* { dg-final { global compiler_flags; if ![string match "*-m64 *" $compiler_flags] { scan-assembler "return\[ \t\]*%i7\\+8\n\[^\n\]*ld\[ \t\]*\\\[%sp\\+96\\\]" } } } */
+/* { dg-final { scan-assembler "return\[ \t\]*%i7\\+8\n\[^\n\]*ld\[ \t\]*\\\[%sp\\+96\\\]" } } */
 
 int bar2 ()
 {
@@ -20,4 +21,4 @@ int bar2 ()
   toto (&res);
   return res;
 }
-/* { dg-final { global compiler_flags; if ![string match "*-m64 *" $compiler_flags] { scan-assembler "return\[ \t\]*%i7\\+8\n\[^\n\]*nop" } } } */
+/* { dg-final { scan-assembler "return\[ \t\]*%i7\\+8\n\[^\n\]*nop" } } */

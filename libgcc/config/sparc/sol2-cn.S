@@ -1,6 +1,6 @@
 ! crtn.s for solaris 2.0.
 
-!   Copyright (C) 1992, 2008, 2009 Free Software Foundation, Inc.
+!   Copyright (C) 1992, 2008, 2009, 2011 Free Software Foundation, Inc.
 !   Written By David Vinayak Henkel-Wallace, June 1992
 ! 
 ! This file is free software; you can redistribute it and/or modify it
@@ -28,14 +28,36 @@
 
 	.section	".init"
 	.align		4
-
-	ret
+#ifdef _FLAT
+	mov 	%i7, %o7
+#ifdef __sparcv9
+	ldx     [%sp+2343], %i7
+	sub	%sp, -176, %sp
+#else
+	ld	[%sp+156], %i7
+	sub	%sp, -96, %sp
+#endif
+#else
 	restore
+#endif
+	jmp	%o7+8
+	 nop
 
 	.section	".fini"
 	.align		4
-
-	ret
+#ifdef _FLAT
+	mov 	%i7, %o7
+#ifdef __sparcv9
+	ldx     [%sp+2343], %i7
+	sub	%sp, -176, %sp
+#else
+	ld      [%sp+156], %i7
+	sub	%sp, -96, %sp
+#endif
+#else
 	restore
+#endif
+	jmp	%o7+8
+	 nop
 
 ! Th-th-th-that is all folks!

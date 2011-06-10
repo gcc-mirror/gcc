@@ -33,6 +33,10 @@ msoft-float
 Target RejectNegative InverseMask(FPU)
 Do not use hardware FP
 
+mflat
+Target Report Mask(FLAT)
+Use flat register window model
+
 munaligned-doubles
 Target Report Mask(UNALIGNED_DOUBLES)
 Assume possible double misalignment

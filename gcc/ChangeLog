@@ -1,3 +1,93 @@
+2011-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+	    Laurent Rougé  <laurent.rouge@menta.fr>
+
+	* doc/invoke.texi (SPARC options): Add -mflat.
+	* config/sparc/sparc.opt: Likewise.
+	* config/sparc/sparc-protos.h (sparc_expand_epilogue): Add parameter.
+	(sparc_flat_expand_prologue): Declare.
+	(sparc_flat_expand_epilogue): Likewise.
+	* config/sparc/sparc.h (CPP_CPU_SPEC): Do not handle -msoft-float.
+	(CPP_ENDIAN_SPEC): Replace with...
+	(CPP_OTHER_SPEC): ...this.  Also handle -mflat and -msoft-float.
+	(CPP_SPEC): Adjust to above change.
+	(EXTRA_SPECS): Likewise.
+	(SPARC_INCOMING_INT_ARG_FIRST): Add TARGET_FLAT handling.
+	(INCOMING_REGNO): Likewise.
+	(OUTGOING_REGNO): Likewise.
+	(LOCAL_REGNO): Likewise.
+	(SETUP_FRAME_ADDRESSES): Likewise.
+	(FIXED_REGISTERS): Set 0 for %fp.
+	(CALL_USED_REGISTERS): Likewise.
+	(INITIAL_ELIMINATION_OFFSET): Pass current_function_is_leaf.
+	(EXIT_IGNORE_STACK): Define to 1 unconditionally.
+	(RETURN_ADDR_REGNUM): Define.
+	(RETURN_ADDR_RTX): Use it.
+	(INCOMING_RETURN_ADDR_REGNUM): Define.
+	(INCOMING_RETURN_ADDR_RTX): Use it.
+	(DWARF_FRAME_RETURN_COLUMN): Likewise.
+	(EH_RETURN_REGNUM): Define.
+	(EH_RETURN_STACKADJ_RTX): Use it.
+	(EH_RETURN_HANDLER_RTX): Delete.
+	(EPILOGUE_USES): Use them and add TARGET_FLAT handling.
+	* config/sparc/sparc.c (apparent_fsize, actual_fsize, num_gfregs):
+	Delete.
+	(struct machine_function): Add frame_size, apparent_frame_size,
+	frame_base_reg, frame_base_offset, n_global_fp_regs and
+	save_local_in_regs_p fields.
+	(sparc_frame_size, sparc_apparent_frame_size, sparc_frame_base_reg,
+	sparc_frame_base_offset, sparc_n_global_fp_regs,
+	sparc_save_local_in_regs_p): New macros.
+	(sparc_option_override): Error out if -fcall-saved-REG is specified
+	for Out registers.
+	(eligible_for_restore_insn): Fix formatting.
+	(eligible_for_return_delay): Likewise.  Add TARGET_FLAT handling.
+	(eligible_for_sibcall_delay): Likewise.
+	(RTX_OK_FOR_OFFSET_P, RTX_OK_FOR_OLO10_P): Add MODE parameter.
+	(sparc_legitimate_address_p): Adjust to above change.
+	(save_global_or_fp_reg_p): New predicate.
+	(return_addr_reg_needed_p): Likewise.
+	(save_local_or_in_reg_p): Likewise.
+	(sparc_compute_frame_size): Use them.  Add TARGET_FLAT handling.
+	(SORR_SAVE, SORR_RESTORE): Delete.
+	(sorr_pred_t): New typedef.
+	(sorr_act_t): New enum.
+	(save_or_restore_regs): Rename to...
+	(emit_save_or_restore_regs): ...this.  Change type of LOW and HIGH
+	parameters, remove ACTION parameter, add LEAF_FUNCTION_P, SAVE_P,
+	ACTION_TRUE and ACTION_FALSE parameters.  Implement more general
+	mechanism.  Add CFI information for double-word saves in 32-bit mode.
+	(emit_adjust_base_to_offset): New function extracted from...
+	(emit_save_or_restore_regs): ...this.  Rename the rest to...
+	(emit_save_or_restore_regs_global_fp_regs): ...this.
+	(emit_save_or_restore_regs_local_in_regs): New function.
+	(gen_create_flat_frame_[123]): New functions.
+	(sparc_expand_prologue): Use SIZE local variable.  Adjust.
+	(sparc_flat_expand_prologue): New function.
+	(sparc_asm_function_prologue): Add TARGET_FLAT handling.
+	(sparc_expand_epilogue): Use SIZE local variable.  Adjust.
+	(sparc_flat_expand_epilogue): New function.
+	(sparc_can_use_return_insn_p): Add TARGET_FLAT handling.
+	(output_return): Likewise.
+	(output_sibcall): Likewise.
+	(sparc_output_mi_thunk): Likewise.
+	(sparc_frame_pointer_required): Likewise.
+	(sparc_conditional_register_usage): If TARGET_FLAT, disable the leaf
+	function optimization.
+	* config/sparc/sparc.md (flat): New attribute.
+	(prologue): Add TARGET_FLAT handling.
+	(save_register_window): Disable if TARGET_FLAT.
+	(create_flat_frame_[123]): New patterns.
+	(epilogue): Add TARGET_FLAT handling.
+	(sibcall_epilogue): Likewise.
+	(eh_return): New expander.
+	(eh_return_internal): New insn and splitter.
+	(return_internal): Add TARGET_FLAT handling.
+	(untyped_return): Remove bogus test and use RETURN_ADDR_REGNUM.
+	(save_stack_nonlocal): Use RETURN_ADDR_REGNUM.
+	(nonlocal_goto): Add TARGET_FLAT handling.
+	* config/sparc/t-elf: Add -mflat multilib.
+	* config/sparc/t-leon: Likewise.
+
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-utils.c (searchc): Use cgraph_function_or_thunk_node.

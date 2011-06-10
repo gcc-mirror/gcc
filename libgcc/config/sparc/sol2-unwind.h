@@ -164,7 +164,16 @@ sparc64_frob_update_context (struct _Unwind_Context *context,
       && fs->regs.cfa_how == CFA_REG_OFFSET
       && fs->regs.cfa_offset != 0
       && !fs->signal_frame)
-    context->cfa -= STACK_BIAS;
+    {
+      long i;
+
+      context->cfa -= STACK_BIAS;
+
+      for (i = 0; i < DWARF_FRAME_REGISTERS + 1; ++i)
+	if (fs->regs.reg[i].how == REG_SAVED_OFFSET)
+	  _Unwind_SetGRPtr (context, i,
+			    _Unwind_GetGRPtr (context, i) - STACK_BIAS);
+    }
 }
 
 #else

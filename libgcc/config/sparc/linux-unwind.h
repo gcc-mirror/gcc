@@ -27,6 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined(__arch64__)
 
+#undef STACK_BIAS
+#define STACK_BIAS 2047
+
 /* 64-bit SPARC version */
 #define MD_FALLBACK_FRAME_STATE_FOR sparc64_fallback_frame_state
 
@@ -49,7 +52,8 @@ sparc64_fallback_frame_state (struct _Unwind_Context *context,
   fpu_save_off = regs_off + (16 * 8) + (3 * 8) + (2 * 4);
 
   new_cfa = *(long *)(this_cfa + regs_off + (14 * 8));
-  new_cfa += 2047; /* Stack bias */
+  /* The frame address is %sp + STACK_BIAS in 64-bit mode.  */
+  new_cfa += STACK_BIAS;
   fpu_save = *(long *)(this_cfa + fpu_save_off);
   fs->regs.cfa_how = CFA_REG_OFFSET;
   fs->regs.cfa_reg = __builtin_dwarf_sp_column ();
@@ -112,7 +116,16 @@ sparc64_frob_update_context (struct _Unwind_Context *context,
       && fs->regs.cfa_how == CFA_REG_OFFSET
       && fs->regs.cfa_offset != 0
       && !fs->signal_frame)
-    context->cfa -= 2047;
+    {
+      long i;
+
+      context->cfa -= STACK_BIAS;
+
+      for (i = 0; i < DWARF_FRAME_REGISTERS + 1; ++i)
+	if (fs->regs.reg[i].how == REG_SAVED_OFFSET)
+	  _Unwind_SetGRPtr (context, i,
+			    _Unwind_GetGRPtr (context, i) - STACK_BIAS);
+    }
 }
 
 #else
