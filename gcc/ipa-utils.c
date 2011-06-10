@@ -101,10 +101,10 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
   for (edge = v->callees; edge; edge = edge->next_callee)
     {
       struct ipa_dfs_info * w_info;
-      struct cgraph_node *w = edge->callee;
-      enum availability avail = cgraph_function_body_availability (w);
+      enum availability avail;
+      struct cgraph_node *w = cgraph_function_or_thunk_node (edge->callee, &avail);
 
-      if (ignore_edge && ignore_edge (edge))
+      if (!w || (ignore_edge && ignore_edge (edge)))
         continue;
 
       if (w->aux

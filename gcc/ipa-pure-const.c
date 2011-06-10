@@ -735,7 +735,7 @@ analyze_function (struct cgraph_node *fn, bool ipa)
 		    flags_from_decl_or_type (fn->decl),
 		    cgraph_node_cannot_return (fn));
 
-  if (fn->thunk.thunk_p)
+  if (fn->thunk.thunk_p || fn->alias)
     {
       /* Thunk gets propagated through, so nothing interesting happens.  */
       gcc_assert (ipa);
@@ -1070,14 +1070,16 @@ ignore_edge (struct cgraph_edge *e)
   return (!e->can_throw_external);
 }
 
-/* Return true if NODE is self recursive function.  */
+/* Return true if NODE is self recursive function.
+   ??? self recursive and indirectly recursive funcions should
+   be the same, so this function seems unnecesary.  */
 
 static bool
 self_recursive_p (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_callee)
-    if (e->callee == node)
+    if (cgraph_function_node (e->callee, NULL) == node)
       return true;
   return false;
 }
@@ -1167,7 +1169,8 @@ propagate_pure_const (void)
 	  /* Now walk the edges and merge in callee properties.  */
 	  for (e = w->callees; e; e = e->next_callee)
 	    {
-	      struct cgraph_node *y = e->callee;
+	      enum availability avail;
+	      struct cgraph_node *y = cgraph_function_node (e->callee, &avail);
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
 
@@ -1178,7 +1181,7 @@ propagate_pure_const (void)
 			   cgraph_node_name (e->callee),
 			   e->callee->uid);
 		}
-	      if (cgraph_function_body_availability (y) > AVAIL_OVERWRITABLE)
+	      if (avail > AVAIL_OVERWRITABLE)
 		{
 		  funct_state y_l = get_function_state (y);
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1396,9 +1399,10 @@ propagate_nothrow (void)
 
 	  for (e = w->callees; e; e = e->next_callee)
 	    {
-	      struct cgraph_node *y = e->callee;
+	      enum availability avail;
+	      struct cgraph_node *y = cgraph_function_node (e->callee, &avail);
 
-	      if (cgraph_function_body_availability (y) > AVAIL_OVERWRITABLE)
+	      if (avail > AVAIL_OVERWRITABLE)
 		{
 		  funct_state y_l = get_function_state (y);
 
