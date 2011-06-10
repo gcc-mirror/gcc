@@ -1,3 +1,44 @@
+2011-06-09  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Prune notes.
+	* testsuite/20_util/duration/cons/1_neg.cc: Remove dg-excess-errors.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/forward/1_neg.cc: Likewise.
+	* testsuite/20_util/function/cmp/cmp_neg.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/ref_neg.cc: Likewise.
+	* testsuite/20_util/tuple/comparison_operators/35480_neg.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/comparison_operators/35480_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/unique_ptr_lvalue_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/ptr_deleter_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr_rvalue_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/assign_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/insert_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc: Likewise.
+	* testsuite/23_containers/map/operators/1_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc: Likewise.
+	* testsuite/decimal/mixed-mode-arith_neg.cc: Likewise.
+	* testsuite/decimal/mixed-mode-cmp_neg.cc: Likewise.
+	* testsuite/decimal/operator_neg.cc: Likewise.
+
 2011-06-09  Simon Baldwin  <simonb@google.com>
 
 	* scripts/extract_symvers.in: Handle processor/OS specific or

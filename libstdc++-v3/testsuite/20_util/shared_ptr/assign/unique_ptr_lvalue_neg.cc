@@ -46,4 +46,4 @@ main()
   test01();
   return 0;
 }
-// { dg-excess-errors "initializing argument" }
+// { dg-prune-output "initializing argument" }

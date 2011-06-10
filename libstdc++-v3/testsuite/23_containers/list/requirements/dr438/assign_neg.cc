@@ -19,7 +19,6 @@
 
 // { dg-do compile }
 // { dg-error "no matching" "" { target *-*-* } 1497 }
-// { dg-excess-errors "" }
 
 #include <list>
 
