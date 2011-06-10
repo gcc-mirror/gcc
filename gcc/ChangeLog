@@ -1,5 +1,7 @@
 2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
 
+	* system.h (SETJMP_VIA_SAVE_AREA): Poison.
+
 	PR bootstrap/49354
 	* ira-costs.c (setup_regno_cost_classes_by_mode): Add missing cast
 	to last assignment.
