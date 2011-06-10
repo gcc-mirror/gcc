@@ -1,3 +1,7 @@
+2011-06-09  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (finish_compound_literal): Set TREE_HAS_CONSTRUCTOR.
+
 2011-06-08  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (potential_constant_expression_1): Handle destructor
