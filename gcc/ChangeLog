@@ -1,3 +1,8 @@
+2011-06-10  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.c (avr_function_arg_advance): Fix thinko about
+	when a value is actually passed in regs.
+
 2011-06-10  Eric Botcazou  <ebotcazou@adacore.com>
 	    Laurent Rougé  <laurent.rouge@menta.fr>
 
