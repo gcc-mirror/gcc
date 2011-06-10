@@ -29,10 +29,8 @@ int inc(int& i) { return ++i; }
 void test01()
 {
   const int dummy = 0;
-  std::bind(&inc, _1)(0);               // { dg-error "" }
-  std::bind(&inc, std::ref(dummy))();  // { dg-error "" }
-  std::bind(&inc, dummy)();
-  std::bind(&inc, 0)();
+  std::bind(&inc, _1)(0);               // { dg-error  "no match" }
+  std::bind(&inc, std::ref(dummy))();	// { dg-error  "no match" }
 }
 
 struct Inc
@@ -46,8 +44,8 @@ struct Inc
 void test02()
 {
   const int dummy = 0;
-  std::bind(Inc(), _1)(dummy);                  // { dg-error "" }
-  std::bind(&Inc::f, Inc(), std::ref(dummy))(); // { dg-error "" }
+  std::bind(Inc(), _1)(dummy);                  // { dg-error  "no match" }
+  std::bind(&Inc::f, Inc(), std::ref(dummy))(); // { dg-error  "no match" }
 }
 
 int main()
