@@ -1,3 +1,9 @@
+2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR bootstrap/49354
+	* ira-costs.c (setup_regno_cost_classes_by_mode): Add missing cast
+	to last assignment.
+
 2011-06-09  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_reset_node): Do not set redefined_extern_inline;
