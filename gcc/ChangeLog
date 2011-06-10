@@ -1,5 +1,12 @@
 2011-06-09  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c (cgraph_reset_node): Do not set redefined_extern_inline;
+	do not recompute reachable flag.
+	(cgraph_finalize_function, cgraph_analyze_functions): Set
+	redefined_extern_inline here.
+
+2011-06-09  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (cgraph_only_called_directly_or_aliased_p): Rename from ...
 	(cgraph_only_called_directly_p): ... this one; bring offline.
 	(resolution_used_from_other_file_p, cgraph_used_from_object_file_p,
