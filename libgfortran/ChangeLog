@@ -1,3 +1,8 @@
+2011-06-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.c (fd_to_stream): Figure out if a fd is seekable by
+	trying lseek().
+
 2011-06-10  Daniel Carrera  <dcarrera@gmail.com>
 
 	* caf/mpi.c (_gfortran_caf_sync_all,

@@ -952,15 +952,15 @@ fd_to_stream (int fd)
 
   if (S_ISREG (statbuf.st_mode))
     s->file_length = statbuf.st_size;
-  else if (S_ISBLK (statbuf.st_mode))
-    {
-      /* Hopefully more portable than ioctl(fd, BLKGETSIZE64, &size)?  */
-      gfc_offset cur = lseek (fd, 0, SEEK_CUR);
-      s->file_length = lseek (fd, 0, SEEK_END);
-      lseek (fd, cur, SEEK_SET);
-    }
   else
-    s->file_length = -1;
+    {
+      /* Some character special files are seekable but most are not,
+	 so figure it out by trying to seek.  On Linux, /dev/null is
+	 an example of such a special file.  */
+      s->file_length = lseek (fd, 0, SEEK_END);
+      if (s->file_length > 0)
+	lseek (fd, 0, SEEK_SET);
+    }
 
   if (!(S_ISREG (statbuf.st_mode) || S_ISBLK (statbuf.st_mode))
       || options.all_unbuffered
