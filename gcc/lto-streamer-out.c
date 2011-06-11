@@ -2582,7 +2582,7 @@ produce_symtab (struct output_block *ob,
       if (DECL_COMDAT (node->decl)
 	  && cgraph_comdat_can_be_unshared_p (node))
 	continue;
-      if (node->alias || node->global.inlined_to)
+      if ((node->alias && !node->thunk.alias) || node->global.inlined_to)
 	continue;
       write_symbol (cache, &stream, node->decl, seen, false);
     }
@@ -2594,7 +2594,7 @@ produce_symtab (struct output_block *ob,
       if (DECL_COMDAT (node->decl)
 	  && cgraph_comdat_can_be_unshared_p (node))
 	continue;
-      if (node->alias || node->global.inlined_to)
+      if ((node->alias && !node->thunk.alias) || node->global.inlined_to)
 	continue;
       write_symbol (cache, &stream, node->decl, seen, false);
     }

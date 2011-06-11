@@ -1,5 +1,10 @@
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
+	* lto-streamer-out.c (produce_symtab): Stream out the newly represented
+	aliases.
+
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-prop.c (ipa_make_edge_direct_to_target): Fix code setting varying args.
 	(ipa_update_after_lto_read): Likewise.
 	(ipa_write_node_info): Do not sream call_with_var_arguments.
