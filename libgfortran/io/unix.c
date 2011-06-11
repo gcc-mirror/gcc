@@ -560,6 +560,11 @@ buf_write (unix_stream * s, const void * buf, ssize_t nbyte)
 static gfc_offset
 buf_seek (unix_stream * s, gfc_offset offset, int whence)
 {
+  if (s->file_length == -1)
+    {
+      errno = ESPIPE;
+      return -1;
+    }
   switch (whence)
     {
     case SEEK_SET:
@@ -585,7 +590,7 @@ buf_seek (unix_stream * s, gfc_offset offset, int whence)
 static gfc_offset
 buf_tell (unix_stream * s)
 {
-  return s->logical_offset;
+  return buf_seek (s, 0, SEEK_CUR);
 }
 
 static int
