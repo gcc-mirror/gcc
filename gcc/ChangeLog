@@ -1,5 +1,9 @@
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
+	* ipa.c (cgraph_comdat_can_be_unshared_p): Fix pasto.
+
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
 	* lto-symtab.c (lto_cgraph_replace_node): Kill same body alias code.
 	(lto_symtab_resolve_can_prevail_p): Likewise.
 	(lto_symtab_merge_cgraph_nodes): Update merging of aliases.

@@ -571,7 +571,7 @@ cgraph_comdat_can_be_unshared_p (struct cgraph_node *node)
          address taken.  */
       for (next = node->same_comdat_group;
 	   next != node; next = next->same_comdat_group)
-	if (cgraph_address_taken_from_non_vtable_p (node)
+	if (cgraph_address_taken_from_non_vtable_p (next)
 	    && !DECL_VIRTUAL_P (next->decl))
 	  return false;
     }
