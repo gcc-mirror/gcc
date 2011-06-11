@@ -1,3 +1,11 @@
+2011-06-10  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc: Include "toplev.h".
+	(Gcc_backend::immutable_struct): New function.
+	(Gcc_backend::immutable_struct_set_init): New function.
+	(Gcc_backend::immutable_struct_reference): New function.
+	* Make-lang.in (go/go-gcc.o): Depend on toplev.h.
+
 2011-06-09  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::zero_expression): New function.
