@@ -5049,7 +5049,8 @@ Map_type::do_make_expression_tree(Translate_context* context,
 					   location);
     }
 
-  tree map_type = type_to_tree(this->get_backend(context->gogo()));
+  Gogo* gogo = context->gogo();
+  tree map_type = type_to_tree(this->get_backend(gogo));
 
   static tree new_map_fndecl;
   tree ret = Gogo::call_builtin(&new_map_fndecl,
@@ -5058,7 +5059,7 @@ Map_type::do_make_expression_tree(Translate_context* context,
 				2,
 				map_type,
 				TREE_TYPE(TYPE_FIELDS(TREE_TYPE(map_type))),
-				context->gogo()->map_descriptor(this),
+				this->map_descriptor_pointer(gogo, location),
 				sizetype,
 				expr_tree);
   if (ret == error_mark_node)
@@ -5134,6 +5135,129 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   go_assert(p == fields->end());
 
   return Expression::make_struct_composite_literal(mtdt, vals, bloc);
+}
+
+// A mapping from map types to map descriptors.
+
+Map_type::Map_descriptors Map_type::map_descriptors;
+
+// Build a map descriptor for this type.  Return a pointer to it.
+
+tree
+Map_type::map_descriptor_pointer(Gogo* gogo, source_location location)
+{
+  Bvariable* bvar = this->map_descriptor(gogo);
+  tree var_tree = var_to_tree(bvar);
+  if (var_tree == error_mark_node)
+    return error_mark_node;
+  return build_fold_addr_expr_loc(location, var_tree);
+}
+
+// Build a map descriptor for this type.
+
+Bvariable*
+Map_type::map_descriptor(Gogo* gogo)
+{
+  std::pair<Map_type*, Bvariable*> val(this, NULL);
+  std::pair<Map_type::Map_descriptors::iterator, bool> ins =
+    Map_type::map_descriptors.insert(val);
+  if (!ins.second)
+    return ins.first->second;
+
+  Type* key_type = this->key_type_;
+  Type* val_type = this->val_type_;
+
+  // The map entry type is a struct with three fields.  Build that
+  // struct so that we can get the offsets of the key and value within
+  // a map entry.  The first field should technically be a pointer to
+  // this type itself, but since we only care about field offsets we
+  // just use pointer to bool.
+  Type* pbool = Type::make_pointer_type(Type::make_boolean_type());
+  Struct_type* map_entry_type =
+    Type::make_builtin_struct_type(3,
+				   "__next", pbool,
+				   "__key", key_type,
+				   "__val", val_type);
+
+  Type* map_descriptor_type = Map_type::make_map_descriptor_type();
+
+  const Struct_field_list* fields =
+    map_descriptor_type->struct_type()->fields();
+
+  Expression_list* vals = new Expression_list();
+  vals->reserve(4);
+
+  source_location bloc = BUILTINS_LOCATION;
+
+  Struct_field_list::const_iterator p = fields->begin();
+
+  go_assert(p->field_name() == "__map_descriptor");
+  vals->push_back(Expression::make_type_descriptor(this, bloc));
+
+  ++p;
+  go_assert(p->field_name() == "__entry_size");
+  Expression::Type_info type_info = Expression::TYPE_INFO_SIZE;
+  vals->push_back(Expression::make_type_info(map_entry_type, type_info));
+
+  Struct_field_list::const_iterator pf = map_entry_type->fields()->begin();
+  ++pf;
+  go_assert(pf->field_name() == "__key");
+
+  ++p;
+  go_assert(p->field_name() == "__key_offset");
+  vals->push_back(Expression::make_struct_field_offset(map_entry_type, &*pf));
+
+  ++pf;
+  go_assert(pf->field_name() == "__val");
+
+  ++p;
+  go_assert(p->field_name() == "__val_offset");
+  vals->push_back(Expression::make_struct_field_offset(map_entry_type, &*pf));
+
+  ++p;
+  go_assert(p == fields->end());
+
+  Expression* initializer =
+    Expression::make_struct_composite_literal(map_descriptor_type, vals, bloc);
+
+  std::string mangled_name = "__go_map_" + this->mangled_name(gogo);
+  Btype* map_descriptor_btype = map_descriptor_type->get_backend(gogo);
+  Bvariable* bvar = gogo->backend()->immutable_struct(mangled_name, true,
+						      map_descriptor_btype,
+						      bloc);
+
+  Translate_context context(gogo, NULL, NULL, NULL);
+  context.set_is_const();
+  Bexpression* binitializer = tree_to_expr(initializer->get_tree(&context));
+
+  gogo->backend()->immutable_struct_set_init(bvar, mangled_name, true,
+					     map_descriptor_btype, bloc,
+					     binitializer);
+
+  ins.first->second = bvar;
+  return bvar;
+}
+
+// Build the type of a map descriptor.  This must match the struct
+// __go_map_descriptor in libgo/runtime/map.h.
+
+Type*
+Map_type::make_map_descriptor_type()
+{
+  static Type* ret;
+  if (ret == NULL)
+    {
+      Type* ptdt = Type::make_type_descriptor_ptr_type();
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+      Struct_type* sf =
+	Type::make_builtin_struct_type(4,
+				       "__map_descriptor", ptdt,
+				       "__entry_size", uintptr_type,
+				       "__key_offset", uintptr_type,
+				       "__val_offset", uintptr_type);
+      ret = Type::make_builtin_named_type("__go_map_descriptor", sf);
+    }
+  return ret;
 }
 
 // Reflection string for a map.

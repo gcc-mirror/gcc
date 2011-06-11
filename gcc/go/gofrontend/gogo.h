@@ -473,16 +473,6 @@ class Gogo
   slice_constructor(tree slice_type_tree, tree values, tree count,
 		    tree capacity);
 
-  // Build a map descriptor.
-  tree
-  map_descriptor(Map_type*);
-
-  // Return a tree for the type of a map descriptor.  This is struct
-  // __go_map_descriptor in libgo/runtime/map.h.  This is the same for
-  // all map types.
-  tree
-  map_descriptor_type();
-
   // Build required interface method tables.
   void
   build_interface_method_tables();
@@ -599,10 +589,6 @@ class Gogo
   // Type used to map special names in the sys package.
   typedef std::map<std::string, std::string> Sys_names;
 
-  // Hash table mapping map types to map descriptor decls.
-  typedef Unordered_map_hash(const Map_type*, tree, Type_hash_identical,
-			     Type_identical) Map_descriptors;
-
   // The backend generator.
   Backend* backend_;
   // The package we are compiling.
@@ -619,8 +605,6 @@ class Gogo
   // Mapping from package names we have seen to packages.  This does
   // not include the package we are compiling.
   Packages packages_;
-  // Mapping from map types to map descriptors.
-  Map_descriptors* map_descriptors_;
   // The functions named "init", if there are any.
   std::vector<Named_object*> init_functions_;
   // Whether we need a magic initialization function.

@@ -22,15 +22,15 @@ struct __go_map_descriptor
        key_type key;
        value_type value;
      This is the size of that struct.  */
-  size_t __entry_size;
+  uintptr_t __entry_size;
 
   /* The offset of the key field in a map entry struct.  */
-  size_t __key_offset;
+  uintptr_t __key_offset;
 
   /* The offset of the value field in a map entry struct (the value
      field immediately follows the key field, but there may be some
      bytes inserted for alignment).  */
-  size_t __val_offset;
+  uintptr_t __val_offset;
 };
 
 struct __go_map

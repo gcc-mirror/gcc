@@ -11747,7 +11747,7 @@ Map_construction_expression::do_get_tree(Translate_context* context)
       valaddr = build_fold_addr_expr(tmp);
     }
 
-  tree descriptor = gogo->map_descriptor(mt);
+  tree descriptor = mt->map_descriptor_pointer(gogo, loc);
 
   tree type_tree = type_to_tree(this->type_->get_backend(gogo));
   if (type_tree == error_mark_node)
