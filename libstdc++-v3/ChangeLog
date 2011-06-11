@@ -1,5 +1,10 @@
 2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* testsuite/20_util/allocator_traits/requirements/
+	explicit_instantiation.cc: Add another instantiation.
+
+2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* testsuite/20_util/allocator_traits/requirements/typedefs.cc: Check
 	for allocator_type and value_type.
 
