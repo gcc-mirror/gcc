@@ -3672,6 +3672,8 @@ cp_write_global_declarations (void)
   if (pch_file)
     c_common_write_pch ();
 
+  cgraph_process_same_body_aliases ();
+
   /* Handle -fdump-ada-spec[-slim] */
   if (dump_enabled_p (TDI_ada))
     {
@@ -3869,6 +3871,8 @@ cp_write_global_declarations (void)
 	      struct cgraph_node *node, *next;
 
 	      node = cgraph_get_node (decl);
+	      if (node->same_body_alias)
+		node = cgraph_alias_aliased_node (node);
 
 	      cgraph_for_node_and_aliases (node, clear_decl_external,
 					   NULL, true);

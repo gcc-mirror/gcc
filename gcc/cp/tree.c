@@ -3363,9 +3363,8 @@ cp_fix_function_decl_p (tree decl)
 
       /* Don't fix same_body aliases.  Although they don't have their own
 	 CFG, they share it with what they alias to.  */
-      if (!node
-	  || node->decl == decl
-	  || !node->same_body)
+      if (!node || !node->alias
+	  || !VEC_length (ipa_ref_t, node->ref_list.references))
 	return true;
     }
 

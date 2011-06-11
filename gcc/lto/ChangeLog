@@ -1,3 +1,12 @@
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (add_cgraph_node_to_partition_1): Break out from ...
+	(add_cgraph_node_to_partition) ... here; walk aliases.
+	(lto_1_to_1_map): Remove same body alias code.
+	(promote_fn): Likewise.
+	(lto_promote_cross_file_statics): Update comment.
+
+
 2011-06-07  Diego Novillo  <dnovillo@google.com>
 
 	* lto.c (uniquify_nodes): Move code to register decls to

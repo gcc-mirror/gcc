@@ -88,6 +88,7 @@ can_remove_node_now_p (struct cgraph_node *node)
      can remove its offline copy, but we would need to keep unanalyzed node in
      the callgraph so references can point to it.  */
   return (!node->address_taken
+	  && !ipa_ref_has_aliases_p (&node->ref_list)
 	  && cgraph_can_remove_if_no_direct_calls_p (node)
 	  /* Inlining might enable more devirtualizing, so we want to remove
 	     those only after all devirtualizable virtual calls are processed.
@@ -192,7 +193,22 @@ inline_call (struct cgraph_edge *e, bool update_original,
   /* If aliases are involved, redirect edge to the actual destination and
      possibly remove the aliases.  */
   if (e->callee != callee)
-    cgraph_redirect_edge_callee (e, callee);
+    {
+      struct cgraph_node *alias = e->callee, *next_alias;
+      cgraph_redirect_edge_callee (e, callee);
+      while (alias && alias != callee)
+	{
+	  if (!alias->callers
+	      && can_remove_node_now_p (alias))
+	    {
+	      next_alias = cgraph_alias_aliased_node (alias);
+	      cgraph_remove_node (alias);
+	      alias = next_alias;
+	    }
+	  else
+	    break;
+	}
+    }
 
   clone_inlined_nodes (e, true, update_original, overall_size);
 
