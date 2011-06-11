@@ -2157,6 +2157,15 @@ class Map_type : public Type
   static Type*
   make_map_type_descriptor_type();
 
+  static Type*
+  make_map_descriptor_type();
+
+  // Build a map descriptor for this type.  Return a pointer to it.
+  // The location is the location which causes us to need the
+  // descriptor.
+  tree
+  map_descriptor_pointer(Gogo* gogo, source_location);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2194,6 +2203,14 @@ class Map_type : public Type
   do_export(Export*) const;
 
  private:
+  // Mapping from map types to map descriptors.
+  typedef Unordered_map_hash(const Map_type*, Bvariable*, Type_hash_identical,
+			     Type_identical) Map_descriptors;
+  static Map_descriptors map_descriptors;
+
+  Bvariable*
+  map_descriptor(Gogo*);
+
   // The key type.
   Type* key_type_;
   // The value type.
