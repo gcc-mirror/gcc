@@ -1,3 +1,11 @@
+2011-06-12  Tobias Burnus
+
+	PR fortran/49324
+	* trans-expr.c (gfc_trans_assignment_1): Tell
+	gfc_trans_scalar_assign to also deep-copy RHS nonvariables
+	with allocatable components.
+	* trans-array.c (gfc_conv_expr_descriptor): Ditto.
+
 2011-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (optimize_assignment): Follow chains
