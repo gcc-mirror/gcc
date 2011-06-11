@@ -185,7 +185,6 @@
 
 ;; Mix-n-match
 (define_mode_iterator AVX256MODE2P [V8SI V8SF V4DF])
-(define_mode_iterator AVX256MODE24P [V8SI V8SF V4DI V4DF])
 
 (define_mode_iterator FMAMODE [SF DF V4SF V2DF V8SF V4DF])
 
@@ -3281,7 +3280,7 @@
   "TARGET_SSE"
 {
   if (!TARGET_AVX)
-    operands[1] = force_reg (V4SFmode, operands[1]);
+    operands[1] = force_reg (SFmode, operands[1]);
 })
 
 (define_insn "*vec_dupv4sf_avx"
@@ -4378,6 +4377,16 @@
    (set_attr "prefix" "orig,vex,orig,vex,maybe_vex,orig,orig,vex,maybe_vex")
    (set_attr "mode" "DF,DF,V1DF,V1DF,V1DF,V2DF,V1DF,V1DF,V1DF")])
 
+(define_expand "vec_dupv2df"
+  [(set (match_operand:V2DF 0 "register_operand" "")
+	(vec_duplicate:V2DF
+	  (match_operand:DF 1 "nonimmediate_operand" "")))]
+  "TARGET_SSE2"
+{
+  if (!TARGET_SSE3)
+    operands[1] = force_reg (DFmode, operands[1]);
+})
+
 (define_insn "*vec_dupv2df_sse3"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_duplicate:V2DF
@@ -4388,7 +4397,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "DF")])
 
-(define_insn "vec_dupv2df"
+(define_insn "*vec_dupv2df"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_duplicate:V2DF
 	  (match_operand:DF 1 "register_operand" "0")))]
@@ -9757,9 +9766,13 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
+;; Modes handled by AVX vec_dup patterns.
+(define_mode_iterator AVX_VEC_DUP_MODE
+  [V8SI V8SF V4DI V4DF])
+
 (define_insn "vec_dup<mode>"
-  [(set (match_operand:AVX256MODE24P 0 "register_operand" "=x,x")
-	(vec_duplicate:AVX256MODE24P
+  [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand" "=x,x")
+	(vec_duplicate:AVX_VEC_DUP_MODE
 	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,?x")))]
   "TARGET_AVX"
   "@
@@ -9771,12 +9784,14 @@
    (set_attr "mode" "V8SF")])
 
 (define_split
-  [(set (match_operand:AVX256MODE24P 0 "register_operand" "")
-	(vec_duplicate:AVX256MODE24P
+  [(set (match_operand:AVX_VEC_DUP_MODE 0 "register_operand" "")
+	(vec_duplicate:AVX_VEC_DUP_MODE
 	  (match_operand:<ssescalarmode> 1 "register_operand" "")))]
   "TARGET_AVX && reload_completed"
-  [(set (match_dup 2) (vec_duplicate:<ssehalfvecmode> (match_dup 1)))
-   (set (match_dup 0) (vec_concat:AVX256MODE24P (match_dup 2) (match_dup 2)))]
+  [(set (match_dup 2)
+	(vec_duplicate:<ssehalfvecmode> (match_dup 1)))
+   (set (match_dup 0)
+	(vec_concat:AVX_VEC_DUP_MODE (match_dup 2) (match_dup 2)))]
   "operands[2] = gen_rtx_REG (<ssehalfvecmode>mode, REGNO (operands[0]));")
 
 (define_insn "avx_vbroadcastf128_<mode>"

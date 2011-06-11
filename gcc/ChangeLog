@@ -1,3 +1,19 @@
+2011-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vec_dupv4sf): Correct mode of forced register.
+	(*vec_dupv2df): Rename from vec_dupv2df.
+	(vec_dupv2df): New expander.
+
+2011-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (AVX_VEC_DUP_MODE): Rename from AVX256MODE24P.
+
+2011-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Use default value in "isa" attribute.
+	* config/i386/sse.md: Ditto.
+	* config/i386/mmx.md: Ditto.
+
 2011-06-10  Wei Guozhi  <carrot@google.com>
 
 	PR target/45335
@@ -44,19 +60,20 @@
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* opts.c (default_options): Enlist OPT_finline_functions_called_once.
-	* common.opt (flag_inline_functions_called_once):Do not initialize to 1.
+	* common.opt (flag_inline_functions_called_once): Do not
+	initialize to 1.
 
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_versionable_function_p): Thunks are not versionable.
-	(ipcp_initialize_node_lattices): Do not deal with aliases; Do not try to
-	propagate through thunks.
+	(ipcp_initialize_node_lattices): Do not deal with aliases;
+	Do not try to propagate through thunks.
 	(ipcp_change_tops_to_bottom): Do not deal with aliases.
 
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-prop.c (ipa_write_node_info): Stream jump functions for indirect
-	calls.
+	* ipa-prop.c (ipa_write_node_info): Stream jump functions
+	for indirect calls.
 	(ipa_read_node_info): Likewise.
 
 2011-06-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
@@ -68,7 +85,7 @@
 	(gimple_expand_builtin_pow): Minor cleanup.
 	(gimple_expand_builtin_cabs): New.
 	(execute_cse_sincos): Add case for BUILT_IN_CABS.
-	
+
 2011-06-10  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_versionable_function_p): Aliases are not versionable.
@@ -145,9 +162,8 @@
 
 2011-06-10  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine):
-	Scan stmts forward when combining, visit inserted stmts when
-	a stmt was changed.
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine): Scan stmts
+	forward when combining, visit inserted stmts when a stmt was changed.
 
 2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -267,8 +283,7 @@
 2011-06-10  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 	    Richard Earnshaw  <rearnsha@arm.com>
 
-	* config/arm/arm.c (const_ok_for_op): Check to see
-	if mvn can be used.
+	* config/arm/arm.c (const_ok_for_op): Check to see if mvn can be used.
 	* config/arm/vfp.md (*arm_movdi_vfp): Delete.
 	(*thumb2_movdi_vfp): Delete.
 	(*arm_movdi_vfp_cortexa8): Delete.
@@ -317,17 +332,23 @@
 	(cgraph_for_node_thunks_and_aliases): New function.
 	(cgraph_for_node_and_aliases): New function.
 	(cgraph_make_node_local_1): Break out from ...
-	(cgraph_make_node_local) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_make_node_local) ... here; use
+	cgraph_for_node_thunks_and_aliases.
 	(cgraph_set_nothrow_flag_1): Break out from ...
-	(cgraph_set_nothrow_flag) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_set_nothrow_flag) ... here;
+	use cgraph_for_node_thunks_and_aliases.
 	(cgraph_set_const_flag_1): Break out from ...
-	(cgraph_set_const_flag) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_set_const_flag) ... here;
+	use cgraph_for_node_thunks_and_aliases.
 	(cgraph_set_pure_flag_1): Break out from ...
-	(cgraph_set_pure_flag) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_set_pure_flag) ... here;
+	use cgraph_for_node_thunks_and_aliases.
 	(cgraph_propagate_frequency_1): Break out from ...
-	(cgraph_propagate_frequency) ... here; use cgraph_for_node_thunks_and_aliases.
+	(cgraph_propagate_frequency) ... here; use
+	cgraph_for_node_thunks_and_aliases.
 	(cgraph_used_from_object_file_p): Do not care about aliases.
-	(cgraph_not_only_called_directly_p_1, cgraph_only_called_directly_p): New functions.
+	(cgraph_not_only_called_directly_p_1, cgraph_only_called_directly_p):
+	New functions.
 	(collect_callers_of_node_1, collect_callers_of_node): New functions.
 
 2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
@@ -348,16 +369,14 @@
 2011-06-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/49154
-	* ira-costs.c (setup_regno_cost_classes_by_mode): If there
-	already is a matching slot in the hashtable, assign it to
-	classes_ptr.
+	* ira-costs.c (setup_regno_cost_classes_by_mode): If there already
+	is a matching slot in the hashtable, assign it to classes_ptr.
 
 	PR rtl-optimization/49154
 	* doc/tm.texi.in (Register Classes): Document rule for the narrowest
 	register classes.
 	* doc/tm.texi: Regenerate.
 
->>>>>>> .r174929
 2011-06-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/49307
