@@ -1,5 +1,10 @@
 2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* testsuite/20_util/allocator_traits/requirements/typedefs.cc: Check
+	for allocator_type and value_type.
+
+2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* testsuite/30_threads/packaged_task/uses_allocator.cc: New.
 	* testsuite/30_threads/promise/uses_allocator.cc: Likewise.
 

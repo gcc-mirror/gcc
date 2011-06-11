@@ -29,6 +29,8 @@ void test01()
 {
   // Check for required typedefs
   typedef std::allocator_traits<T>                  test_type;
+  typedef typename test_type::allocator_type        allocator_type;
+  typedef typename test_type::value_type            value_type;
   typedef typename test_type::pointer               pointer;
   typedef typename test_type::const_pointer         const_pointer;
   typedef typename test_type::void_pointer          void_pointer;
