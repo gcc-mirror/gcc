@@ -965,6 +965,8 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
 		    struct cgraph_edge *check_inlinablity_for)
 {
   struct cgraph_edge *edge;
+  int i;
+  struct ipa_ref *ref;
 
   if (!inline_summary (node)->inlinable
       || cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE
@@ -972,6 +974,13 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
     return;
   if (!bitmap_set_bit (updated_nodes, node->uid))
     return;
+
+  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      {
+	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+        update_caller_keys (heap, alias, updated_nodes, check_inlinablity_for);
+      }
 
   for (edge = node->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
@@ -1451,7 +1460,7 @@ inline_small_functions (void)
 	  where = edge->caller;
 	  while (where->global.inlined_to)
 	    {
-	      if (where->decl == edge->callee->decl)
+	      if (where->decl == callee->decl)
 		outer_node = where, depth++;
 	      where = where->callers->caller;
 	    }

@@ -208,6 +208,9 @@ static GTY(()) struct cgraph_node *free_nodes;
    Do not GTY((delete)) this list so UIDs gets reliably recycled.  */
 static GTY(()) struct cgraph_edge *free_edges;
 
+/* Did procss_same_body_aliases run?  */
+bool same_body_aliases_done;
+
 /* Macros to access the next item in the list of free cgraph nodes and
    edges. */
 #define NEXT_FREE_NODE(NODE) (NODE)->next
@@ -542,33 +545,23 @@ cgraph_get_create_node (tree decl)
 /* Mark ALIAS as an alias to DECL.  DECL_NODE is cgraph node representing
    the function body is associated with (not neccesarily cgraph_node (DECL).  */
 
-static struct cgraph_node *
-cgraph_same_body_alias_1 (struct cgraph_node *decl_node, tree alias, tree decl)
+struct cgraph_node *
+cgraph_create_function_alias (tree alias, tree decl)
 {
-  struct cgraph_node key, *alias_node, **slot;
+  struct cgraph_node *alias_node;
 
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   gcc_assert (TREE_CODE (alias) == FUNCTION_DECL);
-
-  key.decl = alias;
-
-  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key, INSERT);
-
-  /* If the cgraph_node has been already created, fail.  */
-  if (*slot)
-    return NULL;
-
-  alias_node = cgraph_allocate_node ();
-  alias_node->decl = alias;
-  alias_node->same_body_alias = 1;
-  alias_node->same_body = decl_node;
-  alias_node->previous = NULL;
-  if (decl_node->same_body)
-    decl_node->same_body->previous = alias_node;
-  alias_node->next = decl_node->same_body;
+  alias_node = cgraph_get_create_node (alias);
+  gcc_assert (!alias_node->local.finalized);
   alias_node->thunk.alias = decl;
-  decl_node->same_body = alias_node;
-  *slot = alias_node;
+  alias_node->local.finalized = true;
+  alias_node->alias = 1;
+
+  if ((TREE_PUBLIC (alias) && !DECL_COMDAT (alias) && !DECL_EXTERNAL (alias))
+      || (DECL_VIRTUAL_P (alias)
+	  && (DECL_COMDAT (alias) || DECL_EXTERNAL (alias))))
+    cgraph_mark_reachable_node (alias_node);
   return alias_node;
 }
 
@@ -578,16 +571,24 @@ cgraph_same_body_alias_1 (struct cgraph_node *decl_node, tree alias, tree decl)
    and cgraph_get_node (ALIAS) transparently returns cgraph_get_node (DECL).  */
 
 struct cgraph_node *
-cgraph_same_body_alias (struct cgraph_node *decl_node, tree alias, tree decl)
+cgraph_same_body_alias (struct cgraph_node *decl_node ATTRIBUTE_UNUSED, tree alias, tree decl)
 {
+  struct cgraph_node *n;
 #ifndef ASM_OUTPUT_DEF
   /* If aliases aren't supported by the assembler, fail.  */
   return NULL;
 #endif
+  /* Langhooks can create same body aliases of symbols not defined.
+     Those are useless. Drop them on the floor.  */
+  if (cgraph_global_info_ready)
+    return NULL;
 
-  /*gcc_assert (!assembler_name_hash);*/
-
-  return cgraph_same_body_alias_1 (decl_node, alias, decl);
+  n = cgraph_create_function_alias (alias, decl);
+  n->same_body_alias = true;
+  if (same_body_aliases_done)
+    ipa_record_reference (n, NULL, cgraph_get_node (decl), NULL, IPA_REF_ALIAS,
+			  NULL);
+  return n;
 }
 
 /* Add thunk alias into callgraph.  The alias declaration is ALIAS and it
@@ -633,6 +634,7 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
       || (DECL_VIRTUAL_P (decl)
 	  && (DECL_COMDAT (decl) || DECL_EXTERNAL (decl))))
     cgraph_mark_reachable_node (node);
+
   return node;
 }
 
@@ -678,11 +680,7 @@ cgraph_get_node (const_tree decl)
 						 NO_INSERT);
 
   if (slot && *slot)
-    {
-      node = *slot;
-      if (node->same_body_alias)
-	node = node->same_body;
-    }
+    node = *slot;
   return node;
 }
 
@@ -745,21 +743,6 @@ cgraph_node_for_asm (tree asmname)
 	       so lets hope for the best.  */
 	    if (!*slot)
 	      *slot = node;
-	    if (node->same_body)
-	      {
-		struct cgraph_node *alias;
-
-		for (alias = node->same_body; alias; alias = alias->next)
-		  {
-		    hashval_t hash;
-		    name = DECL_ASSEMBLER_NAME (alias->decl);
-		    hash = decl_assembler_name_hash (name);
-		    slot = htab_find_slot_with_hash (assembler_name_hash, name,
-						     hash,  INSERT);
-		    if (!*slot)
-		      *slot = alias;
-		  }
-	      }
 	  }
     }
 
@@ -770,8 +753,6 @@ cgraph_node_for_asm (tree asmname)
   if (slot)
     {
       node = (struct cgraph_node *) *slot;
-      if (node->same_body_alias)
-	node = node->same_body;
       return node;
     }
   return NULL;
@@ -1432,44 +1413,6 @@ cgraph_release_function_body (struct cgraph_node *node)
     DECL_INITIAL (node->decl) = error_mark_node;
 }
 
-/* Remove same body alias node.  */
-
-void
-cgraph_remove_same_body_alias (struct cgraph_node *node)
-{
-  void **slot;
-  int uid = node->uid;
-
-  gcc_assert (node->same_body_alias);
-  if (node->previous)
-    node->previous->next = node->next;
-  else
-    node->same_body->same_body = node->next;
-  if (node->next)
-    node->next->previous = node->previous;
-  node->next = NULL;
-  node->previous = NULL;
-  slot = htab_find_slot (cgraph_hash, node, NO_INSERT);
-  if (*slot == node)
-    htab_clear_slot (cgraph_hash, slot);
-  if (assembler_name_hash)
-    {
-      tree name = DECL_ASSEMBLER_NAME (node->decl);
-      slot = htab_find_slot_with_hash (assembler_name_hash, name,
-				       decl_assembler_name_hash (name),
-				       NO_INSERT);
-      if (slot && *slot == node)
-	htab_clear_slot (assembler_name_hash, slot);
-    }
-
-  /* Clear out the node to NULL all pointers and add the node to the free
-     list.  */
-  memset (node, 0, sizeof(*node));
-  node->uid = uid;
-  NEXT_FREE_NODE (node) = free_nodes;
-  free_nodes = node;
-}
-
 /* Remove the node from cgraph.  */
 
 void
@@ -1631,9 +1574,6 @@ cgraph_remove_node (struct cgraph_node *node)
 	}
     }
 
-  while (node->same_body)
-    cgraph_remove_same_body_alias (node->same_body);
-
   if (node->same_comdat_group)
     {
       struct cgraph_node *prev;
@@ -1747,6 +1687,14 @@ cgraph_mark_address_taken_node (struct cgraph_node *node)
 {
   gcc_assert (!node->global.inlined_to);
   cgraph_mark_reachable_node (node);
+  /* FIXME: address_taken flag is used both as a shortcut for testing whether
+     IPA_REF_ADDR reference exists (and thus it should be set on node
+     representing alias we take address of) and as a test whether address
+     of the object was taken (and thus it should be set on node alias is
+     referring to).  We should remove the first use and the remove the
+     following set.  */
+  node->address_taken = 1;
+  node = cgraph_function_or_thunk_node (node, NULL);
   node->address_taken = 1;
 }
 
@@ -1902,6 +1850,15 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	       (int)node->thunk.virtual_value,
 	       (int)node->thunk.virtual_offset_p);
     }
+  if (node->alias && node->thunk.alias)
+    {
+      fprintf (f, "  alias of %s",
+	       lang_hooks.decl_printable_name (node->thunk.alias, 2));
+      if (DECL_ASSEMBLER_NAME_SET_P (node->thunk.alias))
+        fprintf (f, " (asm: %s)",
+		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->thunk.alias)));
+      fprintf (f, "\n");
+    }
   
   fprintf (f, "  called by: ");
 
@@ -1952,19 +1909,6 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   if (indirect_calls_count)
     fprintf (f, "  has %i outgoing edges for indirect calls.\n",
 	     indirect_calls_count);
-
-  if (node->same_body)
-    {
-      struct cgraph_node *n;
-      fprintf (f, "  aliases:");
-      for (n = node->same_body; n; n = n->next)
-        {
-          fprintf (f, " %s/%i", cgraph_node_name (n), n->uid);
-	  if (DECL_ASSEMBLER_NAME_SET_P (n->decl))
-	    fprintf (f, " (asm: %s)", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->decl)));
-	}
-      fprintf (f, "\n");
-    }
 }
 
 
@@ -2614,18 +2558,24 @@ cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
 				    bool include_overwritable)
 {
   struct cgraph_edge *e;
-  struct cgraph_node *alias;
+  int i;
+  struct ipa_ref *ref;
 
   if (callback (node, data))
     return true;
-  for (alias = node->same_body; alias; alias = alias->next)
-    if (callback (alias, data))
-      return true;
   for (e = node->callers; e; e = e->next_caller)
     if (e->caller->thunk.thunk_p
 	&& (include_overwritable
-	    || cgraph_function_body_availability (e->caller) > AVAIL_OVERWRITABLE))
+	    || cgraph_function_body_availability (e->caller)))
       cgraph_for_node_thunks_and_aliases (e->caller, callback, data, include_overwritable);
+  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      {
+	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+	if (include_overwritable
+	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
+          cgraph_for_node_thunks_and_aliases (alias, callback, data, include_overwritable);
+      }
   return false;
 }
 
@@ -2637,15 +2587,21 @@ bool
 cgraph_for_node_and_aliases (struct cgraph_node *node,
 			     bool (*callback) (struct cgraph_node *, void *),
 			     void *data,
-			     bool include_overwritable ATTRIBUTE_UNUSED)
+			     bool include_overwritable)
 {
-  struct cgraph_node *alias;
+  int i;
+  struct ipa_ref *ref;
 
   if (callback (node, data))
     return true;
-  for (alias = node->same_body; alias; alias = alias->next)
-    if (callback (alias, data))
-      return true;
+  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      {
+	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+	if (include_overwritable
+	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
+          cgraph_for_node_and_aliases (alias, callback, data, include_overwritable);
+      }
   return false;
 }
 

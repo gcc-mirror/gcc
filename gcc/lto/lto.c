@@ -1319,7 +1319,7 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
   for (i = 0; ipa_ref_list_reference_iterate (refs, i, ref); i++)
     {
       if (ref->refered_type == IPA_REF_CGRAPH
-	  && DECL_COMDAT (ipa_ref_node (ref)->decl)
+	  && DECL_COMDAT (cgraph_function_node (ipa_ref_node (ref), NULL)->decl)
 	  && !cgraph_node_in_set_p (ipa_ref_node (ref), part->cgraph_set))
 	add_cgraph_node_to_partition (part, ipa_ref_node (ref));
       else
@@ -1330,20 +1330,21 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
     }
 }
 
-/* Add NODE to partition as well as the inline callees and referred comdats into partition PART. */
+/* Worker for add_cgraph_node_to_partition.  */
 
-static void
-add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
+static bool
+add_cgraph_node_to_partition_1 (struct cgraph_node *node, void *data)
 {
-  struct cgraph_edge *e;
-  cgraph_node_set_iterator csi;
+  ltrans_partition part = (ltrans_partition) data;
 
-  /* If NODE is already there, we have nothing to do.  */
-  csi = cgraph_node_set_find (part->cgraph_set, node);
-  if (!csi_end_p (csi))
-    return;
-
-  part->insns += inline_summary (node)->self_size;
+  /* non-COMDAT aliases of COMDAT functions needs to be output just once.  */
+  if (!DECL_COMDAT (node->decl)
+      && !node->global.inlined_to
+      && node->aux)
+    {
+      gcc_assert (node->thunk.thunk_p || node->alias);
+      return false;
+    }
 
   if (node->aux)
     {
@@ -1353,26 +1354,45 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
 		 cgraph_node_name (node), node->uid);
     }
   node->aux = (void *)((size_t)node->aux + 1);
+  cgraph_node_set_add (part->cgraph_set, node);
+  return false;
+}
+
+/* Add NODE to partition as well as the inline callees and referred comdats into partition PART. */
+
+static void
+add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
+{
+  struct cgraph_edge *e;
+  cgraph_node_set_iterator csi;
+  struct cgraph_node *n;
+
+  /* We always decide on functions, not associated thunks and aliases.  */
+  node = cgraph_function_node (node, NULL);
+
+  /* If NODE is already there, we have nothing to do.  */
+  csi = cgraph_node_set_find (part->cgraph_set, node);
+  if (!csi_end_p (csi))
+    return;
+
+  cgraph_for_node_thunks_and_aliases (node, add_cgraph_node_to_partition_1, part, true);
+
+  part->insns += inline_summary (node)->self_size;
+
 
   cgraph_node_set_add (part->cgraph_set, node);
 
-  /* Thunks always must go along with function they reffer to.  */
-  if (node->thunk.thunk_p)
-    add_cgraph_node_to_partition (part, node->callees->callee);
-  for (e = node->callers; e; e = e->next_caller)
-    if (e->caller->thunk.thunk_p)
-      add_cgraph_node_to_partition (part, e->caller);
-
   for (e = node->callees; e; e = e->next_callee)
-    if ((!e->inline_failed || DECL_COMDAT (e->callee->decl))
+    if ((!e->inline_failed
+	 || DECL_COMDAT (cgraph_function_node (e->callee, NULL)->decl))
 	&& !cgraph_node_in_set_p (e->callee, part->cgraph_set))
       add_cgraph_node_to_partition (part, e->callee);
 
   add_references_to_partition (part, &node->ref_list);
 
-  if (node->same_comdat_group
-      && !cgraph_node_in_set_p (node->same_comdat_group, part->cgraph_set))
-    add_cgraph_node_to_partition (part, node->same_comdat_group);
+  if (node->same_comdat_group)
+    for (n = node->same_comdat_group; n != node; n = n->same_comdat_group)
+      add_cgraph_node_to_partition (part, n);
 }
 
 /* Add VNODE to partition as well as comdat references partition PART. */
@@ -1500,7 +1520,6 @@ lto_1_to_1_map (void)
 	continue;
 
       file_data = node->local.lto_file_data;
-      gcc_assert (!node->same_body_alias);
 
       if (file_data)
 	{
@@ -1900,17 +1919,6 @@ promote_fn (struct cgraph_node *node)
   TREE_PUBLIC (node->decl) = 1;
   DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (node->decl) = true;
-  if (node->same_body)
-    {
-      struct cgraph_node *alias;
-      for (alias = node->same_body;
-	   alias; alias = alias->next)
-	{
-	  TREE_PUBLIC (alias->decl) = 1;
-	  DECL_VISIBILITY (alias->decl) = VISIBILITY_HIDDEN;
-	  DECL_VISIBILITY_SPECIFIED (alias->decl) = true;
-	}
-    }
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file,
 	     "Promoting function as hidden: %s/%i\n",
@@ -1944,8 +1952,8 @@ lto_promote_cross_file_statics (void)
       set = part->cgraph_set;
       vset = part->varpool_set;
 
-      /* If node has either address taken (and we have no clue from where)
-	 or it is called from other partition, it needs to be globalized.  */
+      /* If node called or referred to from other partition, it needs to be
+	 globalized.  */
       for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
 	{
 	  struct cgraph_node *node = csi_node (csi);

@@ -234,7 +234,8 @@ ipa_free_postorder_info (void)
 }
 
 /* Fill array order with all nodes with output flag set in the reverse
-   topological order.  Return the number of elements in the array.  */
+   topological order.  Return the number of elements in the array.
+   FIXME: While walking, consider aliases, too.  */
 
 int
 ipa_reverse_postorder (struct cgraph_node **order)
@@ -260,7 +261,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
 	  && (pass
 	      || (!node->address_taken
 		  && !node->global.inlined_to
-		  && !cgraph_only_called_directly_p (node))))
+		  && !cgraph_only_called_directly_or_aliased_p (node))))
 	{
 	  node2 = node;
 	  if (!node->callers)

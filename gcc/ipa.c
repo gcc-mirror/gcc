@@ -581,9 +581,9 @@ cgraph_comdat_can_be_unshared_p (struct cgraph_node *node)
 /* Return true when function NODE should be considered externally visible.  */
 
 static bool
-cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool aliased)
+cgraph_externally_visible_p (struct cgraph_node *node,
+			     bool whole_program, bool aliased)
 {
-  struct cgraph_node *alias;
   if (!node->local.finalized)
     return false;
   if (!DECL_COMDAT (node->decl)
@@ -628,18 +628,6 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
   if ((in_lto_p || whole_program)
       && DECL_COMDAT (node->decl)
       && cgraph_comdat_can_be_unshared_p (node))
-    return false;
-
-  /* See if we have linker information about symbol not being used or
-     if we need to make guess based on the declaration.
-
-     Even if the linker clams the symbol is unused, never bring internal
-     symbols that are declared by user as used or externally visible.
-     This is needed for i.e. references from asm statements.   */
-  for (alias = node->same_body; alias; alias = alias->next)
-    if (alias->resolution != LDPR_PREVAILING_DEF_IRONLY)
-      break;
-  if (!alias && node->resolution == LDPR_PREVAILING_DEF_IRONLY)
     return false;
 
   /* When doing link time optimizations, hidden symbols become local.  */
@@ -881,12 +869,9 @@ function_and_variable_visibility (bool whole_program)
       if (!node->local.externally_visible && node->analyzed
 	  && !DECL_EXTERNAL (node->decl))
 	{
-          struct cgraph_node *alias;
 	  gcc_assert (whole_program || in_lto_p || !TREE_PUBLIC (node->decl));
 	  cgraph_make_decl_local (node->decl);
 	  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
-	  for (alias = node->same_body; alias; alias = alias->next)
-	    cgraph_make_decl_local (alias->decl);
 	  if (node->same_comdat_group)
 	    /* cgraph_externally_visible_p has already checked all other nodes
 	       in the group and they will all be made local.  We need to
@@ -900,8 +885,7 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  struct cgraph_node *decl_node = node;
 
-	  while (decl_node->thunk.thunk_p)
-	    decl_node = decl_node->callees->callee;
+	  decl_node = cgraph_function_node (decl_node->callees->callee, NULL);
 
 	  /* Thunks have the same visibility as function they are attached to.
 	     For some reason C++ frontend don't seem to care. I.e. in 
@@ -933,9 +917,9 @@ function_and_variable_visibility (bool whole_program)
 	  if (DECL_EXTERNAL (decl_node->decl))
 	    DECL_EXTERNAL (node->decl) = 1;
 	}
-      node->local.local = cgraph_local_node_p (node);
-
     }
+  for (node = cgraph_nodes; node; node = node->next)
+    node->local.local = cgraph_local_node_p (node);
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     {
       /* weak flag makes no sense on local variables.  */

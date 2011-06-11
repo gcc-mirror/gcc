@@ -1,3 +1,71 @@
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Kill same body alias code.
+	(lto_symtab_resolve_can_prevail_p): Likewise.
+	(lto_symtab_merge_cgraph_nodes): Update merging of aliases.
+	* cgraph.c (same_body_aliases_done): New global var.
+	(cgraph_same_body_alias_1): Rename to ...
+	(cgraph_create_function_alias): ... this one; reorg to new
+	representation.
+	(cgraph_same_body_alias): Use cgraph_create_function_alias;
+	record references when asked to.
+	(cgraph_add_thunk): Fix formating.
+	(cgraph_get_node): Kill same body alias code.
+	(cgraph_node_for_asm): Likewise.
+	(cgraph_remove_same_body_alias): Remove.
+	(cgraph_remove_node): Kill same body alias code.
+	(cgraph_mark_address_taken_node): Mark also the aliased function
+	as having address taken.
+	(dump_cgraph_node): Dump same body aliases.
+	(cgraph_for_node_thunks_and_aliases): Update for new alias
+	representation.
+	(cgraph_for_node_and_aliases): Likewise.
+	* cgraph.h (same_body): Kll pointer.
+	(same_body_alias): Update comment.
+	(same_body_aliases_done): Declare.
+	(cgraph_remove_same_body_alias): Remove declaration.
+	(cgraph_create_function_alias): Declare.
+	(cgraph_process_same_body_aliases): Declare.
+	(cgraph_function_with_gimple_body_p): Check for alias.
+	(cgraph_can_remove_if_no_direct_calls_p): Look for aliases.
+	(cgraph_alias_aliased_node): New function.
+	(cgraph_function_node): Update for new aliases.
+	(cgraph_function_or_thunk_node): Likewise.
+	* ipa-inline-transform.c (can_remove_node_now_p): Look for aliases.
+	(inline_call): Remove dead aliases.
+	* cgraphunit.c (cgraph_decide_is_function_needed): Disable assembler name
+	hack for same body aliases.
+	(clone_of_p): Look through aliases.
+	(verify_cgraph_node): Verify aliases.
+	(cgraph_analyze_function): Analyze aliases; fixup C++ bugs.
+	(cgraph_process_same_body_aliases): New function.
+	(process_function_and_variable_attributes): Disable weakref warning on
+	alias.
+	(cgraph_analyze_functions): Handle aliases.
+	(cgraph_mark_functions_to_output): Handle aliases same way as thunks.
+	(assemble_thunks): Rename to ...
+	(assemble_thunks_and_aliases): ... this one; handle aliases, too.
+	(cgraph_expand_function): Remove alias output code.
+	(cgraph_output_in_order): Skip aliases.
+	(cgraph_preserve_function_body_p): Aliases don't need preserving.
+	* ipa-ref.c (ipa_ref_use_name): Add alias reference.
+	(ipa_record_reference): Do not assert on alias references.
+	(ipa_ref_has_aliases_p): New function.
+	* ipa-ref.h (enum ipa_ref_use): Add IPA_REF_ALIAS.
+	(ipa_ref_has_aliases_p): Declare.
+	* lto-cgraph.c (lto_output_node): Handle aliases.
+	(input_node): Likewise.
+	* lto-streamer-out.c (lto_output): Skip aliases.
+	(produce_symtab): Kill same_body_alias code.
+	* ipa-utils.c (ipa_reverse_postorder): Add FIXME.
+	(ipa_reverse_postorder): Use cgraph_only_called_directly_or_aliased_p.
+	* ipa-inline.c (update_caller_keys): Walk aliases.
+	(inline_small_functions): Fix thinko in previous patch.
+	* ipa.c (cgraph_externally_visible_p): Do not walk aliases.
+	(function_and_variable_visibility): Do not walk same body aliases.
+	* tree-ssa-structalias.c (associate_varinfo_to_alias): New function.
+	(ipa_pta_execute): Use it.
+
 2011-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (vec_dupv4sf): Correct mode of forced register.

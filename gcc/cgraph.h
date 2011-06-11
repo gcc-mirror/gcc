@@ -165,9 +165,6 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   struct cgraph_node *prev_sibling_clone;
   struct cgraph_node *clones;
   struct cgraph_node *clone_of;
-  /* For normal nodes pointer to the list of alias and thunk nodes,
-     in alias/thunk nodes pointer to the normal node.  */
-  struct cgraph_node *same_body;
   /* Circular list of nodes in the same comdat group if non-NULL.  */
   struct cgraph_node *same_comdat_group;
   /* For functions with many calls sites it holds map from call expression
@@ -236,8 +233,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   unsigned process : 1;
   /* Set for aliases once they got through assemble_alias.  */
   unsigned alias : 1;
-  /* Set for alias and thunk nodes, same_body points to the node they are alias
-     of and they are linked through the next/previous pointers.  */
+  /* Set for aliases created as C++ same body aliases.  */
   unsigned same_body_alias : 1;
   /* How commonly executed the node is.  Initialized during branch
      probabilities pass.  */
@@ -463,6 +459,7 @@ extern GTY(()) struct cgraph_node *cgraph_new_nodes;
 
 extern GTY(()) struct cgraph_asm_node *cgraph_asm_nodes;
 extern GTY(()) int cgraph_order;
+extern bool same_body_aliases_done;
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -488,7 +485,6 @@ struct cgraph_node * cgraph_get_create_node (tree);
 struct cgraph_node * cgraph_same_body_alias (struct cgraph_node *, tree, tree);
 struct cgraph_node * cgraph_add_thunk (struct cgraph_node *, tree, tree, bool, HOST_WIDE_INT,
 				       HOST_WIDE_INT, tree, tree);
-void cgraph_remove_same_body_alias (struct cgraph_node *);
 struct cgraph_node *cgraph_node_for_asm (tree);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, gimple);
 void cgraph_set_call_stmt (struct cgraph_edge *, gimple);
@@ -508,6 +504,7 @@ struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
 					int, bool, VEC(cgraph_edge_p,heap) *,
 					bool);
+struct cgraph_node *cgraph_create_function_alias (tree, tree);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *,
@@ -577,6 +574,7 @@ void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*, bool, bi
 			       bitmap, basic_block);
 void record_references_in_initializer (tree, bool);
 bool cgraph_process_new_functions (void);
+void cgraph_process_same_body_aliases (void);
 
 bool cgraph_decide_is_function_needed (struct cgraph_node *, tree);
 
@@ -746,7 +744,7 @@ cgraph_next_defined_function (struct cgraph_node *node)
 static inline bool
 cgraph_function_with_gimple_body_p (struct cgraph_node *node)
 {
-  return node->analyzed && !node->thunk.thunk_p;
+  return node->analyzed && !node->thunk.thunk_p && !node->alias;
 }
 
 /* Return first function with body defined.  */
@@ -934,7 +932,8 @@ cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
   if (DECL_EXTERNAL (node->decl))
     return true;
   return (!node->address_taken
-	  && cgraph_can_remove_if_no_direct_calls_and_refs_p (node));
+	  && cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
+	  && !ipa_ref_has_aliases_p (&node->ref_list));
 }
 
 /* Return true when function NODE can be removed from callgraph
@@ -968,6 +967,20 @@ htab_t constant_pool_htab (void);
 /* FIXME: inappropriate dependency of cgraph on IPA.  */
 #include "ipa-ref-inline.h"
 
+/* Return node that alias N is aliasing.  */
+
+static inline struct cgraph_node *
+cgraph_alias_aliased_node (struct cgraph_node *n)
+{
+  struct ipa_ref *ref;
+
+  ipa_ref_list_reference_iterate (&n->ref_list, 0, ref);
+  gcc_checking_assert (ref->use == IPA_REF_ALIAS);
+  if (ref->refered_type == IPA_REF_CGRAPH)
+    return ipa_ref_node (ref);
+  return NULL;
+}
+
 /* Given NODE, walk the alias chain to return the function NODE is alias of.
    Walk through thunk, too.
    When AVAILABILITY is non-NULL, get minimal availablity in the chain.  */
@@ -979,11 +992,13 @@ cgraph_function_node (struct cgraph_node *node, enum availability *availability)
     *availability = cgraph_function_body_availability (node);
   while (node)
     {
-      if (node->thunk.thunk_p)
+      if (node->alias && node->analyzed)
+	node = cgraph_alias_aliased_node (node);
+      else if (node->thunk.thunk_p)
 	node = node->callees->callee;
       else
 	return node;
-      if (availability)
+      if (node && availability)
 	{
 	  enum availability a;
 	  a = cgraph_function_body_availability (node);
@@ -991,6 +1006,8 @@ cgraph_function_node (struct cgraph_node *node, enum availability *availability)
 	    *availability = a;
 	}
     }
+  if (*availability)
+    *availability = AVAIL_NOT_AVAILABLE;
   return NULL;
 }
 
@@ -1003,7 +1020,22 @@ cgraph_function_or_thunk_node (struct cgraph_node *node, enum availability *avai
 {
   if (availability)
     *availability = cgraph_function_body_availability (node);
-  return node;
+  while (node)
+    {
+      if (node->alias && node->analyzed)
+	node = cgraph_alias_aliased_node (node);
+      else
+	return node;
+      if (node && availability)
+	{
+	  enum availability a;
+	  a = cgraph_function_body_availability (node);
+	  if (a < *availability)
+	    *availability = a;
+	}
+    }
+  if (*availability)
+    *availability = AVAIL_NOT_AVAILABLE;
   return NULL;
 }
 

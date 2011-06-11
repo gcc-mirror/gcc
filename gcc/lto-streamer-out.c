@@ -2253,6 +2253,7 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
     {
       node = lto_cgraph_encoder_deref (encoder, i);
       if (lto_cgraph_encoder_encode_body_p (encoder, node)
+	  && !node->alias
 	  && !node->thunk.thunk_p)
 	{
 #ifdef ENABLE_CHECKING
@@ -2551,7 +2552,7 @@ produce_symtab (struct output_block *ob,
   struct lto_streamer_cache_d *cache = ob->writer_cache;
   char *section_name = lto_get_section_name (LTO_section_symtab, NULL, NULL);
   struct pointer_set_t *seen;
-  struct cgraph_node *node, *alias;
+  struct cgraph_node *node;
   struct varpool_node *vnode, *valias;
   struct lto_output_stream stream;
   lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
@@ -2584,8 +2585,6 @@ produce_symtab (struct output_block *ob,
       if (node->alias || node->global.inlined_to)
 	continue;
       write_symbol (cache, &stream, node->decl, seen, false);
-      for (alias = node->same_body; alias; alias = alias->next)
-        write_symbol (cache, &stream, alias->decl, seen, true);
     }
   for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
     {
@@ -2598,8 +2597,6 @@ produce_symtab (struct output_block *ob,
       if (node->alias || node->global.inlined_to)
 	continue;
       write_symbol (cache, &stream, node->decl, seen, false);
-      for (alias = node->same_body; alias; alias = alias->next)
-        write_symbol (cache, &stream, alias->decl, seen, true);
     }
 
   /* Write all variables.  */

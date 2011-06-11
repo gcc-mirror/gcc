@@ -27,7 +27,8 @@ enum GTY(()) ipa_ref_use
 {
   IPA_REF_LOAD,
   IPA_REF_STORE,
-  IPA_REF_ADDR
+  IPA_REF_ADDR,
+  IPA_REF_ALIAS
 };
 
 /* Type of refering or refered type.  */
@@ -89,4 +90,4 @@ void ipa_dump_refering (FILE *, struct ipa_ref_list *);
 void ipa_clone_references (struct cgraph_node *, struct varpool_node *, struct ipa_ref_list *);
 void ipa_clone_refering (struct cgraph_node *, struct varpool_node *, struct ipa_ref_list *);
 bool ipa_ref_cannot_lead_to_return (struct ipa_ref *);
-
+bool ipa_ref_has_aliases_p (struct ipa_ref_list *);

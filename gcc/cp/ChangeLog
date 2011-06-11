@@ -1,3 +1,8 @@
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (cp_write_global_declarations): Process aliases; look trhough
+	same body aliases.
+
 2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/41769

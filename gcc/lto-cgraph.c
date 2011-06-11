@@ -504,7 +504,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 		     || referenced_from_other_partition_p (&node->ref_list, set, vset)), 1);
   bp_pack_value (&bp, node->lowered, 1);
   bp_pack_value (&bp, in_other_partition, 1);
-  bp_pack_value (&bp, node->alias, 1);
+  bp_pack_value (&bp, node->alias && !boundary_p, 1);
   bp_pack_value (&bp, node->frequency, 2);
   bp_pack_value (&bp, node->only_called_at_startup, 1);
   bp_pack_value (&bp, node->only_called_at_exit, 1);
@@ -523,32 +523,15 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 				 node->thunk.fixed_offset);
       lto_output_uleb128_stream (ob->main_stream,
 				 node->thunk.virtual_value);
-      lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
-				node->thunk.alias);
     }
-
-  if (node->same_body)
+  if ((node->alias || node->thunk.thunk_p) && !boundary_p)
     {
-      struct cgraph_node *alias;
-      unsigned long alias_count = 1;
-      for (alias = node->same_body; alias->next; alias = alias->next)
-	alias_count++;
-      lto_output_uleb128_stream (ob->main_stream, alias_count);
-      do
-	{
-	  lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
-				    alias->decl);
-	  lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
-				    alias->thunk.alias);
-	  gcc_assert (cgraph_get_node (alias->thunk.alias) == node);
-	  lto_output_enum (ob->main_stream, ld_plugin_symbol_resolution,
-			   LDPR_NUM_KNOWN, alias->resolution);
-	  alias = alias->previous;
-	}
-      while (alias);
+      lto_output_int_in_range (ob->main_stream, 0, 1,
+			       node->thunk.alias != NULL);
+      if (node->thunk.alias != NULL)
+        lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
+			          node->thunk.alias);
     }
-  else
-    lto_output_uleb128_stream (ob->main_stream, 0);
 }
 
 /* Output the varpool NODE to OB. 
@@ -997,7 +980,6 @@ input_node (struct lto_file_decl_data *file_data,
   struct bitpack_d bp;
   unsigned decl_index;
   int ref = LCC_NOT_FOUND, ref2 = LCC_NOT_FOUND;
-  unsigned long same_body_count = 0;
   int clone_ref;
 
   clone_ref = lto_input_sleb128 (ib);
@@ -1043,31 +1025,20 @@ input_node (struct lto_file_decl_data *file_data,
       int type = lto_input_uleb128 (ib);
       HOST_WIDE_INT fixed_offset = lto_input_uleb128 (ib);
       HOST_WIDE_INT virtual_value = lto_input_uleb128 (ib);
-      tree real_alias;
 
-      decl_index = lto_input_uleb128 (ib);
-      real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
       node->thunk.fixed_offset = fixed_offset;
       node->thunk.this_adjusting = (type & 2);
       node->thunk.virtual_value = virtual_value;
       node->thunk.virtual_offset_p = (type & 4);
-      node->thunk.alias = real_alias;
     }
-
-  same_body_count = lto_input_uleb128 (ib);
-  while (same_body_count-- > 0)
+  if (node->thunk.thunk_p || node->alias)
     {
-      tree alias_decl, real_alias;
-      struct cgraph_node *alias;
-
-      decl_index = lto_input_uleb128 (ib);
-      alias_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-      decl_index = lto_input_uleb128 (ib);
-      real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-      alias = cgraph_same_body_alias (node, alias_decl, real_alias);
-      gcc_assert (alias);
-      alias->resolution = lto_input_enum (ib, ld_plugin_symbol_resolution,
-					  LDPR_NUM_KNOWN);
+      if (lto_input_int_in_range (ib, "alias nonzero flag", 0, 1))
+	{
+          decl_index = lto_input_uleb128 (ib);
+          node->thunk.alias = lto_file_decl_data_get_fn_decl (file_data,
+							      decl_index);
+	}
     }
   return node;
 }
