@@ -1,5 +1,12 @@
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Fix code setting varying args.
+	(ipa_update_after_lto_read): Likewise.
+	(ipa_write_node_info): Do not sream call_with_var_arguments.
+	(ipa_read_node_info): Likewise.
+
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
 	* ipa.c (cgraph_comdat_can_be_unshared_p): Fix pasto.
 
 2011-06-11  Jan Hubicka  <jh@suse.cz>

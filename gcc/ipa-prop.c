@@ -1719,6 +1719,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
 	  fprintf (dump_file, "\n");
 	}
     }
+  callee = cgraph_function_or_thunk_node (callee, NULL);
 
   if (ipa_get_cs_argument_count (IPA_EDGE_REF (ie))
       != ipa_get_param_count (IPA_NODE_REF (callee)))
@@ -2815,7 +2816,6 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   lto_output_uleb128_stream (ob->main_stream, node_ref);
 
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, info->called_with_var_arguments, 1);
   gcc_assert (info->uses_analysis_done
 	      || ipa_get_param_count (info) == 0);
   gcc_assert (!info->node_enqueued);
@@ -2858,7 +2858,6 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   ipa_initialize_node_params (node);
 
   bp = lto_input_bitpack (ib);
-  info->called_with_var_arguments = bp_unpack_value (&bp, 1);
   if (ipa_get_param_count (info) != 0)
     info->uses_analysis_done = true;
   info->node_enqueued = false;
@@ -3015,9 +3014,12 @@ ipa_update_after_lto_read (void)
     if (node->analyzed)
       for (cs = node->callees; cs; cs = cs->next_callee)
 	{
+	  struct cgraph_node *callee;
+
+	  callee = cgraph_function_or_thunk_node (cs->callee, NULL);
 	  if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
-	      != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
-	    ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
+	      != ipa_get_param_count (IPA_NODE_REF (callee)))
+	    ipa_set_called_with_variable_arg (IPA_NODE_REF (callee));
 	}
 }
 
