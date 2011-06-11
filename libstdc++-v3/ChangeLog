@@ -1,3 +1,8 @@
+2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/30_threads/packaged_task/uses_allocator.cc: New.
+	* testsuite/30_threads/promise/uses_allocator.cc: Likewise.
+
 2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/throw_allocator.h: Use noexcept.
