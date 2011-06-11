@@ -3816,7 +3816,7 @@
   "TARGET_SSE"
 {
   if (!TARGET_AVX)
-    operands[1] = force_reg (V4SFmode, operands[1]);
+    operands[1] = force_reg (SFmode, operands[1]);
 })
 
 (define_insn "*vec_dupv4sf_avx"
@@ -5117,6 +5117,16 @@
    (set_attr "length_immediate" "*,*,*,1,*,*")
    (set_attr "mode" "DF,V1DF,V1DF,V2DF,V1DF,V1DF")])
 
+(define_expand "vec_dupv2df"
+  [(set (match_operand:V2DF 0 "register_operand" "")
+	(vec_duplicate:V2DF
+	  (match_operand:DF 1 "nonimmediate_operand" "")))]
+  "TARGET_SSE2"
+{
+  if (!TARGET_SSE3)
+    operands[1] = force_reg (DFmode, operands[1]);
+})
+
 (define_insn "*vec_dupv2df_sse3"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_duplicate:V2DF
@@ -5127,7 +5137,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "DF")])
 
-(define_insn "vec_dupv2df"
+(define_insn "*vec_dupv2df"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_duplicate:V2DF
 	  (match_operand:DF 1 "register_operand" "0")))]
