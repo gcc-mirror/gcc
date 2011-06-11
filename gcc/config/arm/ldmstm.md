@@ -852,7 +852,7 @@
      (set (match_operand:SI 2 "arm_hard_register_operand" "")
           (mem:SI (plus:SI (match_dup 3)
                   (const_int 4))))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
+  "TARGET_32BIT && !arm_arch7 && XVECLEN (operands[0], 0) == 2"
   "ldm%(ia%)\t%3, {%1, %2}"
   [(set_attr "type" "load2")
    (set_attr "predicable" "yes")])
@@ -901,7 +901,7 @@
           (match_operand:SI 1 "arm_hard_register_operand" ""))
      (set (mem:SI (plus:SI (match_dup 3) (const_int 4)))
           (match_operand:SI 2 "arm_hard_register_operand" ""))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
+  "TARGET_32BIT && !arm_arch7 && XVECLEN (operands[0], 0) == 2"
   "stm%(ia%)\t%3, {%1, %2}"
   [(set_attr "type" "store2")
    (set_attr "predicable" "yes")])
@@ -939,7 +939,7 @@
      (set (match_operand:SI 2 "arm_hard_register_operand" "")
           (mem:SI (plus:SI (match_dup 3)
                   (const_int 8))))])]
-  "TARGET_ARM && XVECLEN (operands[0], 0) == 2"
+  "TARGET_ARM && !arm_arch7 && XVECLEN (operands[0], 0) == 2"
   "ldm%(ib%)\t%3, {%1, %2}"
   [(set_attr "type" "load2")
    (set_attr "predicable" "yes")])
@@ -965,7 +965,7 @@
           (match_operand:SI 1 "arm_hard_register_operand" ""))
      (set (mem:SI (plus:SI (match_dup 3) (const_int 8)))
           (match_operand:SI 2 "arm_hard_register_operand" ""))])]
-  "TARGET_ARM && XVECLEN (operands[0], 0) == 2"
+  "TARGET_ARM && !arm_arch7 && XVECLEN (operands[0], 0) == 2"
   "stm%(ib%)\t%3, {%1, %2}"
   [(set_attr "type" "store2")
    (set_attr "predicable" "yes")])
@@ -990,7 +990,7 @@
                   (const_int -4))))
      (set (match_operand:SI 2 "arm_hard_register_operand" "")
           (mem:SI (match_dup 3)))])]
-  "TARGET_ARM && XVECLEN (operands[0], 0) == 2"
+  "TARGET_ARM && !arm_arch7 && XVECLEN (operands[0], 0) == 2"
   "ldm%(da%)\t%3, {%1, %2}"
   [(set_attr "type" "load2")
    (set_attr "predicable" "yes")])
@@ -1015,7 +1015,7 @@
           (match_operand:SI 1 "arm_hard_register_operand" ""))
      (set (mem:SI (match_dup 3))
           (match_operand:SI 2 "arm_hard_register_operand" ""))])]
-  "TARGET_ARM && XVECLEN (operands[0], 0) == 2"
+  "TARGET_ARM && !arm_arch7 && XVECLEN (operands[0], 0) == 2"
   "stm%(da%)\t%3, {%1, %2}"
   [(set_attr "type" "store2")
    (set_attr "predicable" "yes")])
@@ -1041,7 +1041,7 @@
      (set (match_operand:SI 2 "arm_hard_register_operand" "")
           (mem:SI (plus:SI (match_dup 3)
                   (const_int -4))))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
+  "TARGET_32BIT && !arm_arch7 && XVECLEN (operands[0], 0) == 2"
   "ldm%(db%)\t%3, {%1, %2}"
   [(set_attr "type" "load2")
    (set_attr "predicable" "yes")])
@@ -1067,7 +1067,7 @@
           (match_operand:SI 1 "arm_hard_register_operand" ""))
      (set (mem:SI (plus:SI (match_dup 3) (const_int -4)))
           (match_operand:SI 2 "arm_hard_register_operand" ""))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
+  "TARGET_32BIT && !arm_arch7 && XVECLEN (operands[0], 0) == 2"
   "stm%(db%)\t%3, {%1, %2}"
   [(set_attr "type" "store2")
    (set_attr "predicable" "yes")])
@@ -1189,3 +1189,207 @@
     FAIL;
 })
 
+(define_insn "*ldrd"
+  [(set (match_operand:SI 0 "arm_hard_register_operand" "")
+	(mem:SI (plus:SI (match_operand:SI 2 "s_register_operand" "rk")
+			 (match_operand:SI 3 "const_int_operand" ""))))
+   (set (match_operand:SI 1 "arm_hard_register_operand" "")
+	(mem:SI (plus:SI (match_dup 2)
+			 (match_operand:SI 4 "const_int_operand" ""))))]
+  "TARGET_32BIT && arm_arch7
+   && arm_check_ldrd_operands (operands[0], operands[1],
+			       operands[3], operands[4])"
+  "*
+  arm_output_ldrd (operands[0], operands[1],
+		   operands[2], operands[3], operands[4], true);
+  return \"\";
+  "
+  [(set (attr "length")
+	(symbol_ref ("arm_output_ldrd (operands[0], operands[1], operands[2],
+				       operands[3], operands[4], false)")))]
+)
+
+(define_insn "*ldrd_reg1"
+  [(set (match_operand:SI 0 "arm_hard_register_operand" "")
+	(mem:SI (match_operand:SI 2 "s_register_operand" "rk")))
+   (set (match_operand:SI 1 "arm_hard_register_operand" "")
+	(mem:SI (plus:SI (match_dup 2)
+			 (match_operand:SI 3 "const_int_operand" ""))))]
+  "TARGET_32BIT && arm_arch7
+   && arm_check_ldrd_operands (operands[0], operands[1], NULL_RTX, operands[3])"
+  "*
+  arm_output_ldrd (operands[0], operands[1],
+		   operands[2], NULL_RTX, operands[3], true);
+  return \"\";
+  "
+  [(set (attr "length")
+	(symbol_ref ("arm_output_ldrd (operands[0], operands[1], operands[2],
+				       NULL_RTX, operands[3], false)")))]
+)
+
+(define_insn "*ldrd_reg2"
+  [(set (match_operand:SI 0 "arm_hard_register_operand" "")
+	(mem:SI (plus:SI (match_operand:SI 2 "s_register_operand" "rk")
+			 (match_operand:SI 3 "const_int_operand" ""))))
+   (set (match_operand:SI 1 "arm_hard_register_operand" "")
+	(mem:SI (match_dup 2)))]
+  "TARGET_32BIT && arm_arch7
+   && arm_check_ldrd_operands (operands[0], operands[1], operands[3], NULL_RTX)"
+  "*
+  arm_output_ldrd (operands[0], operands[1],
+		   operands[2], operands[3], NULL_RTX, true);
+  return \"\";
+  "
+  [(set (attr "length")
+	(symbol_ref ("arm_output_ldrd (operands[0], operands[1], operands[2],
+				       operands[3], NULL_RTX, false)")))]
+)
+
+(define_peephole2
+  [(set (match_operand:SI 0 "arm_general_register_operand" "")
+	(match_operand:SI 2 "memory_operand" ""))
+   (set (match_operand:SI 1 "arm_general_register_operand" "")
+	(match_operand:SI 3 "memory_operand" ""))]
+  "TARGET_32BIT && arm_arch7
+   && arm_legitimate_ldrd_p (operands[0], operands[1],
+			     operands[2], operands[3], true)"
+  [(parallel [(set (match_operand:SI 0 "arm_general_register_operand" "")
+		   (match_operand:SI 2 "memory_operand" ""))
+	      (set (match_operand:SI 1 "arm_general_register_operand" "")
+		   (match_operand:SI 3 "memory_operand" ""))])]
+  ""
+)
+
+(define_insn "*strd"
+  [(set (mem:SI (plus:SI (match_operand:SI 2 "s_register_operand" "rk")
+			 (match_operand:SI 3 "const_int_operand" "")))
+	(match_operand:SI 0 "arm_hard_register_operand" ""))
+   (set (mem:SI (plus:SI (match_dup 2)
+			 (match_operand:SI 4 "const_int_operand" "")))
+	(match_operand:SI 1 "arm_hard_register_operand" ""))]
+  "TARGET_32BIT && arm_arch7
+   && arm_check_ldrd_operands (operands[0], operands[1],
+			       operands[3], operands[4])"
+  "*
+  {
+    HOST_WIDE_INT offset1 = INTVAL (operands[3]);
+    HOST_WIDE_INT offset2 = INTVAL (operands[4]);
+    if (offset1 > offset2)
+      {
+	rtx tmp = operands[0];  operands[0] = operands[1];  operands[1] = tmp;
+	tmp = operands[3];  operands[3] = operands[4];  operands[4] = tmp;
+	offset1 = INTVAL (operands[3]);
+	offset2 = INTVAL (operands[4]);
+      }
+    if (TARGET_THUMB2)
+      return \"strd\\t%0, %1, [%2, %3]\";
+    else          /* TARGET_ARM  */
+      {
+	if ((REGNO (operands[1]) == (REGNO (operands[0]) + 1))
+	    && ((REGNO (operands[0]) & 1) == 0))
+	  return \"strd\\t%0, %1, [%2, %3]\";
+	else if (offset1 == -8)
+	  return \"stm%(db%)\\t%2, {%0, %1}\";
+	else      /* offset1 == 4  */
+	  return \"stm%(ib%)\\t%2, {%0, %1}\";
+      }
+  }"
+  [(set_attr "length" "4")]
+)
+
+(define_insn "*strd_reg1"
+  [(set (mem:SI (match_operand:SI 2 "s_register_operand" "rk"))
+	(match_operand:SI 0 "arm_hard_register_operand" ""))
+   (set (mem:SI (plus:SI (match_dup 2)
+			 (match_operand:SI 3 "const_int_operand" "")))
+	(match_operand:SI 1 "arm_hard_register_operand" ""))]
+  "TARGET_32BIT && arm_arch7
+   && arm_check_ldrd_operands (operands[0], operands[1], NULL_RTX, operands[3])"
+  "*
+  {
+    HOST_WIDE_INT offset2 = INTVAL (operands[3]);
+    if (TARGET_THUMB2)
+      {
+	if (offset2 == 4)
+	  return \"strd\\t%0, %1, [%2]\";
+	else
+	  return \"strd\\t%1, %0, [%2, %3]\";
+      }
+    else           /* TARGET_ARM  */
+      {
+	if (offset2 == 4)
+	  {
+	    if ((REGNO (operands[1]) == (REGNO (operands[0]) + 1))
+		&& ((REGNO (operands[0]) & 1) == 0))
+	      return \"strd\\t%0, %1, [%2]\";
+	    else
+	      return \"stm%(ia%)\\t%2, {%0, %1}\";
+	  }
+	else      /* offset2 == -4  */
+	  {
+	    if ((REGNO (operands[0]) == (REGNO (operands[1]) + 1))
+		&& ((REGNO (operands[1]) & 1) == 0))
+	      return \"strd\\t%1, %0, [%2, %3]\";
+	    else
+	      return \"stm%(da%)\\t%2, {%1, %0}\";
+	  }
+      }
+  }"
+  [(set_attr "length" "4")]
+)
+
+(define_insn "*strd_reg2"
+  [(set (mem:SI (plus:SI (match_operand:SI 2 "s_register_operand" "rk")
+			 (match_operand:SI 3 "const_int_operand" "")))
+	(match_operand:SI 0 "arm_hard_register_operand" ""))
+   (set (mem:SI (match_dup 2))
+	(match_operand:SI 1 "arm_hard_register_operand" ""))]
+  "TARGET_32BIT && arm_arch7
+   && arm_check_ldrd_operands (operands[0], operands[1], operands[3], NULL_RTX)"
+  "*
+  {
+    HOST_WIDE_INT offset1 = INTVAL (operands[3]);
+    if (TARGET_THUMB2)
+      {
+	if (offset1 == -4)
+	  return \"strd\\t%0, %1, [%2, %3]\";
+	else
+	  return \"strd\\t%1, %0, [%2]\";
+      }
+    else           /* TARGET_ARM  */
+      {
+	if (offset1 == -4)
+	  {
+	    if ((REGNO (operands[1]) == (REGNO (operands[0]) + 1))
+		&& ((REGNO (operands[0]) & 1) == 0))
+	      return \"strd\\t%0, %1, [%2, %3]\";
+	    else
+	      return \"stm%(da%)\\t%2, {%0, %1}\";
+	  }
+	else
+	  {
+	    if ((REGNO (operands[0]) == (REGNO (operands[1]) + 1))
+		&& ((REGNO (operands[1]) & 1) == 0))
+	      return \"strd\\t%1, %0, [%2]\";
+	    else
+	      return \"stm%(ia%)\\t%2, {%1, %0}\";
+	  }
+      }
+  }"
+  [(set_attr "length" "4")]
+)
+
+(define_peephole2
+  [(set (match_operand:SI 2 "memory_operand" "")
+	(match_operand:SI 0 "arm_general_register_operand" ""))
+   (set (match_operand:SI 3 "memory_operand" "")
+	(match_operand:SI 1 "arm_general_register_operand" ""))]
+  "TARGET_32BIT && arm_arch7
+   && arm_legitimate_ldrd_p (operands[0], operands[1],
+				operands[2], operands[3], false)"
+  [(parallel [(set (match_operand:SI 2 "memory_operand" "")
+		   (match_operand:SI 0 "arm_general_register_operand" ""))
+	      (set (match_operand:SI 3 "memory_operand" "")
+		   (match_operand:SI 1 "arm_general_register_operand" ""))])]
+  ""
+)
