@@ -1,3 +1,7 @@
+2011-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/trim_optimize_7.f90:  New test.
+
 2011-06-10  Wei Guozhi  <carrot@google.com>
 
 	PR target/45335
