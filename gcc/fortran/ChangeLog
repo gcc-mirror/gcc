@@ -1,3 +1,9 @@
+2011-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (optimize_assignment): Follow chains
+	of concatenation operators to the end for removing trailing
+	TRIMS for assignments.
+
 2011-06-10  Daniel Carrera  <dcarrera@gmail.com>
 
 	* trans-decl.c (gfc_build_builtin_function_decls):
