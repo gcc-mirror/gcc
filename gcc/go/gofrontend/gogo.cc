@@ -30,7 +30,6 @@ Gogo::Gogo(Backend* backend, int int_type_size, int pointer_size)
     imported_unsafe_(false),
     packages_(),
     map_descriptors_(NULL),
-    type_descriptor_decls_(NULL),
     init_functions_(),
     need_init_fn_(false),
     init_fn_name_(),

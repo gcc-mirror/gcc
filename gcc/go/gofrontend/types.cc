@@ -37,8 +37,7 @@ extern "C"
 // Class Type.
 
 Type::Type(Type_classification classification)
-  : classification_(classification), btype_(NULL),
-    type_descriptor_decl_(NULL_TREE)
+  : classification_(classification), btype_(NULL), type_descriptor_var_(NULL)
 {
 }
 
@@ -926,20 +925,179 @@ Type::do_make_expression_tree(Translate_context*, Expression_list*,
 // Return a pointer to the type descriptor for this type.
 
 tree
-Type::type_descriptor_pointer(Gogo* gogo)
+Type::type_descriptor_pointer(Gogo* gogo, source_location location)
 {
   Type* t = this->forwarded();
-  if (t->type_descriptor_decl_ == NULL_TREE)
+  if (t->type_descriptor_var_ == NULL)
     {
-      Expression* e = t->do_type_descriptor(gogo, NULL);
-      gogo->build_type_descriptor_decl(t, e, &t->type_descriptor_decl_);
-      go_assert(t->type_descriptor_decl_ != NULL_TREE
-		 && (t->type_descriptor_decl_ == error_mark_node
-		     || DECL_P(t->type_descriptor_decl_)));
+      t->make_type_descriptor_var(gogo);
+      go_assert(t->type_descriptor_var_ != NULL);
     }
-  if (t->type_descriptor_decl_ == error_mark_node)
+  tree var_tree = var_to_tree(t->type_descriptor_var_);
+  if (var_tree == error_mark_node)
     return error_mark_node;
-  return build_fold_addr_expr(t->type_descriptor_decl_);
+  return build_fold_addr_expr_loc(location, var_tree);
+}
+
+// A mapping from unnamed types to type descriptor variables.
+
+Type::Type_descriptor_vars Type::type_descriptor_vars;
+
+// Build the type descriptor for this type.
+
+void
+Type::make_type_descriptor_var(Gogo* gogo)
+{
+  go_assert(this->type_descriptor_var_ == NULL);
+
+  Named_type* nt = this->named_type();
+
+  // We can have multiple instances of unnamed types, but we only want
+  // to emit the type descriptor once.  We use a hash table.  This is
+  // not necessary for named types, as they are unique, and we store
+  // the type descriptor in the type itself.
+  Bvariable** phash = NULL;
+  if (nt == NULL)
+    {
+      Bvariable* bvnull = NULL;
+      std::pair<Type_descriptor_vars::iterator, bool> ins =
+	Type::type_descriptor_vars.insert(std::make_pair(this, bvnull));
+      if (!ins.second)
+	{
+	  // We've already build a type descriptor for this type.
+	  this->type_descriptor_var_ = ins.first->second;
+	  return;
+	}
+      phash = &ins.first->second;
+    }
+
+  std::string var_name;
+  if (nt == NULL)
+    var_name = this->unnamed_type_descriptor_var_name(gogo);
+  else
+    var_name = this->type_descriptor_var_name(gogo);
+
+  // Build the contents of the type descriptor.
+  Expression* initializer = this->do_type_descriptor(gogo, NULL);
+
+  Btype* initializer_btype = initializer->type()->get_backend(gogo);
+
+  // See if this type descriptor is defined in a different package.
+  bool is_defined_elsewhere = false;
+  if (nt != NULL)
+    {
+      if (nt->named_object()->package() != NULL)
+	{
+	  // This is a named type defined in a different package.  The
+	  // type descriptor should be defined in that package.
+	  is_defined_elsewhere = true;
+	}
+    }
+  else
+    {
+      if (this->points_to() != NULL
+	  && this->points_to()->named_type() != NULL
+	  && this->points_to()->named_type()->named_object()->package() != NULL)
+	{
+	  // This is an unnamed pointer to a named type defined in a
+	  // different package.  The descriptor should be defined in
+	  // that package.
+	  is_defined_elsewhere = true;
+	}
+    }
+
+  source_location loc = nt == NULL ? BUILTINS_LOCATION : nt->location();
+
+  if (is_defined_elsewhere)
+    {
+      this->type_descriptor_var_ =
+	gogo->backend()->immutable_struct_reference(var_name,
+						    initializer_btype,
+						    loc);
+      if (phash != NULL)
+	*phash = this->type_descriptor_var_;
+      return;
+    }
+
+  // See if this type descriptor can appear in multiple packages.
+  bool is_common = false;
+  if (nt != NULL)
+    {
+      // We create the descriptor for a builtin type whenever we need
+      // it.
+      is_common = nt->is_builtin();
+    }
+  else
+    {
+      // This is an unnamed type.  The descriptor could be defined in
+      // any package where it is needed, and the linker will pick one
+      // descriptor to keep.
+      is_common = true;
+    }
+
+  // We are going to build the type descriptor in this package.  We
+  // must create the variable before we convert the initializer to the
+  // backend representation, because the initializer may refer to the
+  // type descriptor of this type.  By setting type_descriptor_var_ we
+  // ensure that type_descriptor_pointer will work if called while
+  // converting INITIALIZER.
+
+  this->type_descriptor_var_ =
+    gogo->backend()->immutable_struct(var_name, is_common, initializer_btype,
+				      loc);
+  if (phash != NULL)
+    *phash = this->type_descriptor_var_;
+
+  Translate_context context(gogo, NULL, NULL, NULL);
+  context.set_is_const();
+  Bexpression* binitializer = tree_to_expr(initializer->get_tree(&context));
+
+  gogo->backend()->immutable_struct_set_init(this->type_descriptor_var_,
+					     var_name, is_common,
+					     initializer_btype, loc,
+					     binitializer);
+}
+
+// Return the name of the type descriptor variable for an unnamed
+// type.
+
+std::string
+Type::unnamed_type_descriptor_var_name(Gogo* gogo)
+{
+  return "__go_td_" + this->mangled_name(gogo);
+}
+
+// Return the name of the type descriptor variable for a named type.
+
+std::string
+Type::type_descriptor_var_name(Gogo* gogo)
+{
+  Named_type* nt = this->named_type();
+  Named_object* no = nt->named_object();
+  const Named_object* in_function = nt->in_function();
+  std::string ret = "__go_tdn_";
+  if (nt->is_builtin())
+    go_assert(in_function == NULL);
+  else
+    {
+      const std::string& unique_prefix(no->package() == NULL
+				       ? gogo->unique_prefix()
+				       : no->package()->unique_prefix());
+      const std::string& package_name(no->package() == NULL
+				      ? gogo->package_name()
+				      : no->package()->name());
+      ret.append(unique_prefix);
+      ret.append(1, '.');
+      ret.append(package_name);
+      ret.append(1, '.');
+      if (in_function != NULL)
+	{
+	  ret.append(Gogo::unpack_hidden_name(in_function->name()));
+	  ret.append(1, '.');
+	}
+    }
+  ret.append(no->name());
+  return ret;
 }
 
 // Return a composite literal for a type descriptor.
@@ -5114,7 +5272,7 @@ Channel_type::do_make_expression_tree(Translate_context* context,
 
   Type* ptdt = Type::make_type_descriptor_ptr_type();
   tree element_type_descriptor =
-    this->element_type_->type_descriptor_pointer(gogo);
+    this->element_type_->type_descriptor_pointer(gogo, location);
 
   tree bad_index = NULL_TREE;
 

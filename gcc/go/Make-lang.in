@@ -239,7 +239,8 @@ go/go-lang.o: go/go-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 GOINCLUDES = -I $(srcdir)/go -I $(srcdir)/go/gofrontend
 
 go/go-gcc.o: go/go-gcc.cc $(GO_SYSTEM_H) $(TREE_H) tree-iterator.h \
-		$(GIMPLE_H) $(GO_C_H) $(GO_GOGO_H) go/gofrontend/backend.h
+		$(GIMPLE_H) toplev.h $(GO_C_H) $(GO_GOGO_H) \
+		go/gofrontend/backend.h
 	$(CXX) -c $(GOINCLUDES) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $< $(OUTPUT_OPTION)
 
 go/%.o: go/gofrontend/%.cc

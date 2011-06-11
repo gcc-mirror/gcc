@@ -483,12 +483,6 @@ class Gogo
   tree
   map_descriptor_type();
 
-  // Build a type descriptor for TYPE using INITIALIZER as the type
-  // descriptor.  This builds a new decl stored in *PDECL.
-  void
-  build_type_descriptor_decl(const Type*, Expression* initializer,
-			     tree* pdecl);
-
   // Build required interface method tables.
   void
   build_interface_method_tables();
@@ -592,32 +586,6 @@ class Gogo
   tree
   ptr_go_string_constant_tree(const std::string&);
 
-  // Return the name to use for a type descriptor decl for an unnamed
-  // type.
-  std::string
-  unnamed_type_descriptor_decl_name(const Type* type);
-
-  // Return the name to use for a type descriptor decl for a type
-  // named NO, defined in IN_FUNCTION.
-  std::string
-  type_descriptor_decl_name(const Named_object* no,
-			    const Named_object* in_function);
-
-  // Where a type descriptor should be defined.
-  enum Type_descriptor_location
-    {
-      // Defined in this file.
-      TYPE_DESCRIPTOR_DEFINED,
-      // Defined in some other file.
-      TYPE_DESCRIPTOR_UNDEFINED,
-      // Common definition which may occur in multiple files.
-      TYPE_DESCRIPTOR_COMMON
-    };
-
-  // Return where the decl for TYPE should be defined.
-  Type_descriptor_location
-  type_descriptor_location(const Type* type);
-
   // Return the type of a trampoline.
   static tree
   trampoline_type_tree();
@@ -634,10 +602,6 @@ class Gogo
   // Hash table mapping map types to map descriptor decls.
   typedef Unordered_map_hash(const Map_type*, tree, Type_hash_identical,
 			     Type_identical) Map_descriptors;
-
-  // Map unnamed types to type descriptor decls.
-  typedef Unordered_map_hash(const Type*, tree, Type_hash_identical,
-			     Type_identical) Type_descriptor_decls;
 
   // The backend generator.
   Backend* backend_;
@@ -657,8 +621,6 @@ class Gogo
   Packages packages_;
   // Mapping from map types to map descriptors.
   Map_descriptors* map_descriptors_;
-  // Mapping from unnamed types to type descriptor decls.
-  Type_descriptor_decls* type_descriptor_decls_;
   // The functions named "init", if there are any.
   std::vector<Named_object*> init_functions_;
   // Whether we need a magic initialization function.

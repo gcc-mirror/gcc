@@ -44,6 +44,7 @@ class Export;
 class Import;
 class Btype;
 class Bexpression;
+class Bvariable;
 
 // Type codes used in type descriptors.  These must match the values
 // in libgo/runtime/go-type.h.  They also match the values in the gc
@@ -832,9 +833,10 @@ class Type
   { return this->do_make_expression_tree(context, args, location); }
 
   // Build a type descriptor entry for this type.  Return a pointer to
-  // it.
+  // it.  The location is the location which causes us to need the
+  // entry.
   tree
-  type_descriptor_pointer(Gogo* gogo);
+  type_descriptor_pointer(Gogo* gogo, source_location);
 
   // Return the type reflection string for this type.
   std::string
@@ -1010,6 +1012,25 @@ class Type
   are_assignable_check_hidden(const Type* lhs, const Type* rhs,
 			      bool check_hidden_fields, std::string* reason);
 
+  // Map unnamed types to type descriptor decls.
+  typedef Unordered_map_hash(const Type*, Bvariable*, Type_hash_identical,
+			     Type_identical) Type_descriptor_vars;
+
+  static Type_descriptor_vars type_descriptor_vars;
+
+  // Build the type descriptor variable for this type.
+  void
+  make_type_descriptor_var(Gogo*);
+
+  // Return the name of the type descriptor variable for an unnamed
+  // type.
+  std::string
+  unnamed_type_descriptor_var_name(Gogo*);
+
+  // Return the name of the type descriptor variable for a named type.
+  std::string
+  type_descriptor_var_name(Gogo*);
+
   // Get the hash and equality functions for a type.
   void
   type_functions(const char** hash_fn, const char** equal_fn) const;
@@ -1101,9 +1122,9 @@ class Type
   // The backend representation of the type, once it has been
   // determined.
   Btype* btype_;
-  // The decl for the type descriptor for this type.  This starts out
-  // as NULL and is filled in as needed.
-  tree type_descriptor_decl_;
+  // The type descriptor for this type.  This starts out as NULL and
+  // is filled in as needed.
+  Bvariable* type_descriptor_var_;
 };
 
 // Type hash table operations.
