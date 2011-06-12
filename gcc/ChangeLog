@@ -1,5 +1,10 @@
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/49373
+	* ipa.c (cgraph_externally_visible_p): Check resolution info.
+
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/48836
 	* ipa-inline-transform.c: Include tree-pass.h
 	(inline_transform): Set TODO_update_ssa_only_virtuals.
