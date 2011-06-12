@@ -308,7 +308,7 @@
          (match_operand:SI 1 "general_operand" "")
          (match_operand:SI 2 "general_operand" "")))
    (set (pc)
-        (if_then_else (match_operator:CC 0 "comparison_operator"
+        (if_then_else (match_operator 0 "comparison_operator"
                        [(reg:CC CC_REG) (const_int 0)])
                       (label_ref (match_operand 3 "" ""))
                       (pc)))]
