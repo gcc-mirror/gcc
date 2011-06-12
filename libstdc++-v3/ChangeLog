@@ -1,3 +1,32 @@
+2011-06-12  François Dumont  <francois.cppdevs@free.fr>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/allocator.h (__shrink_to_fit): Rename to
+	__shrink_to_fit_aux, fix.
+	* include/bits/stl_vector.h (_M_shrink_to_fit): Declare.
+	(shrink_to_fit): Use the latter.
+	* include/debug/vector (shrink_to_fit): Likewise.
+	* include/bits/vector.tcc (_M_shrink_to_fit): Define.
+	* include/bits/stl_deque.h (_M_shrink_to_fit): Declare.
+	(shrink_to_fit): Use the latter.
+	* include/debug/deque (shrink_to_fit): Likewise.
+	* include/bits/deque.tcc (_M_shrink_to_fit): Define.
+	* include/bits/vector.tcc (vector<bool>::_M_reallocate): Add.
+	* include/bits/stl_bvector.h (_M_shrink_to_fit): Declare.
+	(shrink_to_fit): Use the latter.
+	(reserve): Use _M_reallocate, move inline.
+	(_Bvector_base<>::_S_nword): Add, use it throughout.
+	* include/debug/string (shrink_to_fit): Redo.
+	* include/ext/vstring.h (shrink_to_fit): Optimize.
+	* include/bits/basic_string.h (shrink_to_fit): Likewise.
+	* testsuite/21_strings/debug/shrink_to_fit.cc: New.
+	* testsuite/23_containers/vector/debug/shrink_to_fit.cc: Likewise.
+	* testsuite/23_containers/vector/debug/bool/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/capacity/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/23_containers/deque/debug/shrink_to_fit.cc: Likewise.
+
 2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/ext/extptr_allocator.h (construct, destroy): Fix for C++0x

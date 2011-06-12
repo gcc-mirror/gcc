@@ -646,7 +646,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**  A non-binding request to reduce capacity() to size().  */
       void
       shrink_to_fit()
-      { std::__shrink_to_fit(*this); }
+      { _M_shrink_to_fit(); }
 #endif
 
       /**
@@ -1229,6 +1229,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // Called by resize(n).
       void
       _M_default_append(size_type __n);
+
+      bool
+      _M_shrink_to_fit();
 #endif
 
       // Called by insert(p,x)

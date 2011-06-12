@@ -325,6 +325,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    }
 	}
     }
+
+  template <typename _Tp, typename _Alloc>
+    bool
+    deque<_Tp, _Alloc>::
+    _M_shrink_to_fit()
+    {
+      const difference_type __front_capacity
+	= (this->_M_impl._M_start._M_cur - this->_M_impl._M_start._M_first);
+      if (__front_capacity == 0)
+	return false;
+
+      const difference_type __back_capacity
+	= (this->_M_impl._M_finish._M_last - this->_M_impl._M_finish._M_cur);
+      if (__front_capacity + __back_capacity < _S_buffer_size())
+	return false;
+
+      return std::__shrink_to_fit_aux<deque>::_S_do_it(*this);
+    }
 #endif
 
   template <typename _Tp, typename _Alloc>
