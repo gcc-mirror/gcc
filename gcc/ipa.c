@@ -119,7 +119,9 @@ process_references (struct ipa_ref_list *list,
 static bool
 cgraph_non_local_node_p_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
+   /* FIXME: Aliases can be local, but i386 gets thunks wrong then.  */
    return !(cgraph_only_called_directly_or_aliased_p (node)
+	    && !ipa_ref_has_aliases_p (&node->ref_list)
 	    && node->analyzed
 	    && !DECL_EXTERNAL (node->decl)
 	    && !node->local.externally_visible
@@ -132,7 +134,13 @@ cgraph_non_local_node_p_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED
 static bool
 cgraph_local_node_p (struct cgraph_node *node)
 {
-   return !cgraph_for_node_and_aliases (cgraph_function_or_thunk_node (node, NULL),
+   struct cgraph_node *n = cgraph_function_or_thunk_node (node, NULL);
+
+   /* FIXME: thunks can be considered local, but we need prevent i386
+      from attempting to change calling convention of them.  */
+   if (n->thunk.thunk_p)
+     return false;
+   return !cgraph_for_node_and_aliases (n,
 					cgraph_non_local_node_p_1, NULL, true);
 					
 }

@@ -1,3 +1,9 @@
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/49378
+	* ipa.c (cgraph_non_local_node_p_1, cgraph_local_node_p): Rule out
+	aliases and thunks.
+
 2011-06-12  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vect-data-refs.c (vect_peeling_hash_get_most_frequent):
