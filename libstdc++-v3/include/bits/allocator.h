@@ -184,18 +184,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, bool
+    = __or_<is_copy_constructible<typename _Tp::value_type>,
+            is_nothrow_move_constructible<typename _Tp::value_type>>::value>
+    struct __shrink_to_fit_aux
+    { static bool _S_do_it(_Tp&) { return false; } };
+
   template<typename _Tp>
-    bool
-    __shrink_to_fit(_Tp& __v)
+    struct __shrink_to_fit_aux<_Tp, true>
     {
-      __try
-	{
-	  _Tp(__v).swap(__v);
-	  return true;
-	}
-      __catch(...)
-	{ return false; }
-    }
+      static bool
+      _S_do_it(_Tp& __c)
+      {
+	__try
+	  {
+	    _Tp(__make_move_if_noexcept_iterator(__c.begin()),
+		__make_move_if_noexcept_iterator(__c.end())).swap(__c);
+	    return true;
+	  }
+	__catch(...)
+	  { return false; }
+      }
+    };
 
   template<typename _Alloc, typename _Tp>
     class __alloctr_rebind_helper

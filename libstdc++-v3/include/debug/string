@@ -237,7 +237,20 @@ namespace __gnu_debug
     { this->resize(__n, _CharT()); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    using _Base::shrink_to_fit;
+    void
+    shrink_to_fit()
+    {
+      if (capacity() > size())
+	{
+	  __try
+	    {
+	      reserve(0);
+	      this->_M_invalidate_all();
+	    }
+	  __catch(...)
+	    { }
+	}
+    }
 #endif
 
     using _Base::capacity;
