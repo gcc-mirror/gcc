@@ -1,5 +1,12 @@
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/48836
+	* ipa-inline-transform.c: Include tree-pass.h
+	(inline_transform): Set TODO_update_ssa_only_virtuals.
+	* Makefile.in (ipa-inline-transform.o): Add tree-pass.h.
+
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/49378
 	* ipa.c (cgraph_non_local_node_p_1, cgraph_local_node_p): Rule out
 	aliases and thunks.

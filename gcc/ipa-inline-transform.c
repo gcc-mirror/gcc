@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "ipa-inline.h"
 #include "tree-inline.h"
+#include "tree-pass.h"
 
 int ncalls_inlined;
 int nfunctions_inlined;
@@ -338,6 +339,8 @@ inline_transform (struct cgraph_node *node)
       cgraph_redirect_edge_call_stmt_to_callee (e);
       if (!e->inline_failed || warn_inline)
         inline_p = true;
+      /* Redirecting edges might lead to a need for vops to be recomputed.  */
+      todo |= TODO_update_ssa_only_virtuals;
     }
 
   if (inline_p)
