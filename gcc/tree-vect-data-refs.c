@@ -1248,7 +1248,9 @@ vect_peeling_hash_get_most_frequent (void **slot, void *data)
   vect_peel_info elem = (vect_peel_info) *slot;
   vect_peel_extended_info max = (vect_peel_extended_info) data;
 
-  if (elem->count > max->peel_info.count)
+  if (elem->count > max->peel_info.count
+      || (elem->count == max->peel_info.count
+          && max->peel_info.npeel > elem->npeel))
     {
       max->peel_info.npeel = elem->npeel;
       max->peel_info.count = elem->count;

@@ -1,3 +1,9 @@
+2011-06-12  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vect-data-refs.c (vect_peeling_hash_get_most_frequent):
+	Take number of iterations to peel into account for equally frequent
+	misalignment values.
+
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-out.c (produce_symtab): Stream out the newly represented
