@@ -1,5 +1,17 @@
 2011-06-13  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-utils.c (postorder_stack): New structure.
+	(ipa_reverse_postorder): Handle aliases.
+
+2011-06-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (reset_edge_caches): Walk aliases.
+	(update_caller_keys): Do not test inlinability of aliases.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Look through alias.
+	(do_estimate_growth): Fix typo.
+
+2011-06-13  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline-transform.c (+can_remove_node_now_p_1): Break out from...
 	(can_remove_node_now_p): ... here; handle same comdat groups.
 	(clone_inlined_nodes): Update use of can_remove_node_now_p add TODO.
