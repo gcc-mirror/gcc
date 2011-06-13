@@ -535,6 +535,7 @@ bool cgraph_will_be_removed_from_program_if_no_direct_calls
   (struct cgraph_node *node);
 bool cgraph_can_remove_if_no_direct_calls_and_refs_p
   (struct cgraph_node *node);
+bool cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node);
 bool resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution);
 bool cgraph_used_from_object_file_p (struct cgraph_node *);
 bool varpool_used_from_object_file_p (struct varpool_node *);
@@ -920,20 +921,6 @@ cgraph_only_called_directly_or_aliased_p (struct cgraph_node *node)
 	  && !DECL_STATIC_CONSTRUCTOR (node->decl)
 	  && !DECL_STATIC_DESTRUCTOR (node->decl)
 	  && !node->local.externally_visible);
-}
-
-/* Return true when function NODE can be removed from callgraph
-   if all direct calls are eliminated.  */
-
-static inline bool
-cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
-{
-  /* Extern inlines can always go, we will use the external definition.  */
-  if (DECL_EXTERNAL (node->decl))
-    return true;
-  return (!node->address_taken
-	  && cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
-	  && !ipa_ref_has_aliases_p (&node->ref_list));
 }
 
 /* Return true when function NODE can be removed from callgraph
