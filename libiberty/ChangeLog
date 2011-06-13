@@ -1,5 +1,13 @@
 2011-06-13  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
+	* cp-demangle.c (d_print_comp) <DEMANGLE_COMPONENT_FUNCTION_TYPE>: Do
+	not pass DMGL_RET_POSTFIX or DMGL_RET_DROP.  Support DMGL_RET_DROP.
+	* testsuite/demangle-expected: New testcases for --ret-drop.
+	* testsuite/test-demangle.c: Document --ret-drop in a comment.
+	(main): New variable ret_drop, fill it, call cplus_demangle with it.
+
+2011-06-13  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
 	* cp-demangle.c (struct d_print_info): Remove field options.
 	(d_print_init): Remove parameter options.
 	(cplus_demangle_print_callback): Update all the callers.
