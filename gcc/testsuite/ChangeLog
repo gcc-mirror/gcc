@@ -1,3 +1,7 @@
+2011-06-13  Edmar Wienskoski  <edmar@freescale.com>
+
+	* gcc.target/powerpc/outofline_rnreg.c: New testcase.
+
 2011-06-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/h8300-bit-insn-ice2.c: Remove duplicated lines.
