@@ -1,3 +1,11 @@
+2011-06-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/h8300-bit-insn-ice2.2: Remove duplicated lines.
+
+2011-06-13  Kaushik Phatak <kaushik.phatak@kpitcummins.com>
+
+	* gcc.dg/h8300-bit-insn-ice2.2: New testcase.
+
 2011-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/trim_optimize_8.f90:  New test case.

@@ -4,7 +4,6 @@
 	condition to disallow non-identical memory locations.
 	(*andqi3_2, andqi3_1, iorqi3_1, xorqi3_1): Reorder insn to give
 	preference to bit manipulation instructions.
-	* gcc.dg/h8300-bit-insn-ice2.2: New testcase.
 
 2011-06-13  Jan Hubicka  <jh@suse.cz>
 
