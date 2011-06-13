@@ -3922,7 +3922,10 @@ d_print_comp (struct d_print_info *dpi, int options,
 				 dc, dpi->modifiers);
 
 	/* Print return type if present */
-	if (d_left (dc) != NULL && (options & DMGL_RET_DROP) == 0)
+	if (d_left (dc) != NULL && (options & DMGL_RET_POSTFIX) != 0)
+	  d_print_comp (dpi, options & ~(DMGL_RET_POSTFIX | DMGL_RET_DROP),
+			d_left (dc));
+	else if (d_left (dc) != NULL && (options & DMGL_RET_DROP) == 0)
 	  {
 	    struct d_print_mod dpm;
 

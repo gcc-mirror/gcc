@@ -3968,6 +3968,15 @@ outer(short (*)(int), long)
 --format=gnu-v3
 _Z6outer2IsEPFilES1_
 int (*outer2<short>(int (*)(long)))(long)
+--format=gnu-v3 --ret-postfix
+_Z5outerIsEcPFilE
+outer<short>(int (*)(long))char
+--format=gnu-v3 --ret-postfix
+_Z5outerPFsiEl
+outer(short (*)(int), long)
+--format=gnu-v3 --ret-postfix
+_Z6outer2IsEPFilES1_
+outer2<short>(int (*)(long))int (*)(long)
 --format=gnu-v3 --ret-drop
 _Z5outerIsEcPFilE
 outer<short>(int (*)(long))
