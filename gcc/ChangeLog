@@ -1,3 +1,10 @@
+2011-06-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-transform.c (+can_remove_node_now_p_1): Break out from...
+	(can_remove_node_now_p): ... here; handle same comdat groups.
+	(clone_inlined_nodes): Update use of can_remove_node_now_p add TODO.
+	(inline_call): Update use of can_remove_node_now_p.
+
 2011-06-13  Kaushik Phatak <kaushik.phatak@kpitcummins.com>
 
 	* config/h8300/h8300.md (bsetqi_msx, bclrqi_msx, bnotqi_msx): Added 
