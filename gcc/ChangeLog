@@ -1,3 +1,11 @@
+2011-06-13  Kaushik Phatak <kaushik.phatak@kpitcummins.com>
+
+	* config/h8300/h8300.md (bsetqi_msx, bclrqi_msx, bnotqi_msx): Added 
+	condition to disallow non-identical memory locations.
+	(*andqi3_2, andqi3_1, iorqi3_1, xorqi3_1): Reorder insn to give
+	preference to bit manipulation instructions.
+	* gcc.dg/h8300-bit-insn-ice2.2: New testcase.
+
 2011-06-13  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_for_node_thunks_and_aliases,
