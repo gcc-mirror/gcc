@@ -1,3 +1,14 @@
+2011-06-13 Jakub Jelinek  <jakub@redhat.com>
+	   Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49352
+	* tree-vect-loop.c (vect_is_slp_reduction): Don't count debug uses at
+	all, make sure loop_use_stmt after the loop is a def stmt of a used
+	SSA_NAME that is the only one defined inside of the loop.  Don't
+	check for COND_EXPR and GIMPLE_BINARY_RHS.
+	(vect_is_simple_reduction_1): Call vect_is_slp_reduction only if
+	check_reduction is true.
+
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/49373

@@ -1,3 +1,9 @@
+2011-06-13 Jakub Jelinek  <jakub@redhat.com>
+	   Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49352
+	* gcc.dg/vect/pr49352.c: New test.
+
 2011-06-12  Tobias Burnus
 
 	PR fortran/49324
