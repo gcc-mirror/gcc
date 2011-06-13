@@ -3917,10 +3917,12 @@ d_print_comp (struct d_print_info *dpi, int options,
     case DEMANGLE_COMPONENT_FUNCTION_TYPE:
       {
 	if ((options & DMGL_RET_POSTFIX) != 0)
-	  d_print_function_type (dpi, options, dc, dpi->modifiers);
+	  d_print_function_type (dpi,
+				 options & ~(DMGL_RET_POSTFIX | DMGL_RET_DROP),
+				 dc, dpi->modifiers);
 
 	/* Print return type if present */
-	if (d_left (dc) != NULL)
+	if (d_left (dc) != NULL && (options & DMGL_RET_DROP) == 0)
 	  {
 	    struct d_print_mod dpm;
 
@@ -3932,7 +3934,8 @@ d_print_comp (struct d_print_info *dpi, int options,
 	    dpm.printed = 0;
 	    dpm.templates = dpi->templates;
 
-	    d_print_comp (dpi, options, d_left (dc));
+	    d_print_comp (dpi, options & ~(DMGL_RET_POSTFIX | DMGL_RET_DROP),
+			  d_left (dc));
 
 	    dpi->modifiers = dpm.next;
 
@@ -3946,7 +3949,9 @@ d_print_comp (struct d_print_info *dpi, int options,
 	  }
 
 	if ((options & DMGL_RET_POSTFIX) == 0)
-	  d_print_function_type (dpi, options, dc, dpi->modifiers);
+	  d_print_function_type (dpi,
+				 options & ~(DMGL_RET_POSTFIX | DMGL_RET_DROP),
+				 dc, dpi->modifiers);
 
 	return;
       }
