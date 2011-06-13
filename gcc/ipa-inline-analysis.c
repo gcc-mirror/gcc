@@ -2079,7 +2079,7 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   struct inline_edge_summary *es = inline_edge_summary (edge);
 
   gcc_checking_assert (edge->inline_failed);
-  estimate_node_size_and_time (edge->callee,
+  estimate_node_size_and_time (cgraph_function_or_thunk_node (edge->callee, NULL),
 			       evaluate_conditions_for_edge (edge, true),
 			       &size, &time);
 
@@ -2226,7 +2226,7 @@ do_estimate_growth (struct cgraph_node *node)
   else
     {
       if (!DECL_EXTERNAL (node->decl)
-	  && !cgraph_will_be_removed_from_program_if_no_direct_calls (node))
+	  && cgraph_will_be_removed_from_program_if_no_direct_calls (node))
 	d.growth -= info->size;
       /* COMDAT functions are very often not shared across multiple units since they
 	 come from various template instantiations.  Take this into account.  */
