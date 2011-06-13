@@ -1,8 +1,16 @@
+2011-06-13  Gary Funck  <gary@intrepid.com>
+
+libcpp/
+	* include/cpplib.h (enum c_lang):
+	Move the entry for CLK_UPC so that it follows CLK_STDC1X.
+	This keeps all the "C" variants together.
+	* init.c (lang_defaults): Add an entry for UPC.
+
 2011-06-09  Gary Funck  <gary@intrepid.com>
 
-	* c-parser.c (upc_localsizeof_type): Fix an ICE when compiling for a 32-bit
-	target, the size expression overflowed, the result was error_mark_node,
-	and an ICE was triggered on an attempt to evaluate
+	* c-parser.c (upc_localsizeof_type): Fix an ICE when compiling for
+	a 32-bit target, the size expression overflowed, the result was
+	error_mark_node, and an ICE was triggered on an attempt to evaluate
 	C_TYPE_VARIABLE_SIZE() on the error node.
 	(upc_blocksizeof_expr, upc_blocksizeof_type,
 	upc_elemsizeof_expr, upc_elemsizeof_type, upc_localsizeof_expr);
