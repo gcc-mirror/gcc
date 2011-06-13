@@ -1,3 +1,9 @@
+2011-06-13  Walter Lee <walt@tilera.com>
+
+	* configure.ac (tilepro-*-*) New case.
+	(tilegx-*-*): Likewise.
+	* configure: Regenerate.
+
 2011-06-06  Jing Yu  <jingyu@google.com>
 
 	* configure.ac: Skip target-libiberty for
