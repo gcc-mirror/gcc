@@ -1,3 +1,20 @@
+2011-06-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.md (movdi_mfpgpr): Remove POWER mnemonic.
+	(movdi_internal64): Same.
+
+2011-06-13  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config/rs6000/rs6000.md (save_gpregs_<mode>): Replaced pattern
+	with a set of similar patterns, where the MATCH_OPERAND for the
+	function argument is replaced with individual references to hardware
+	registers.
+	(save_fpregs_<mode>): Ditto
+	(restore_gpregs_<mode>): Ditto
+	(return_and_restore_gpregs_<mode>): Ditto
+	(return_and_restore_fpregs_<mode>): Ditto
+	(return_and_restore_fpregs_aix_<mode>): Ditto
+
 2011-06-13  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-utils.c (postorder_stack): New structure.
