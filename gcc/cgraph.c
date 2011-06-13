@@ -2567,14 +2567,18 @@ cgraph_for_node_thunks_and_aliases (struct cgraph_node *node,
     if (e->caller->thunk.thunk_p
 	&& (include_overwritable
 	    || cgraph_function_body_availability (e->caller)))
-      cgraph_for_node_thunks_and_aliases (e->caller, callback, data, include_overwritable);
+      if (cgraph_for_node_thunks_and_aliases (e->caller, callback, data,
+					      include_overwritable))
+	return true;
   for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       {
 	struct cgraph_node *alias = ipa_ref_refering_node (ref);
 	if (include_overwritable
 	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
-          cgraph_for_node_thunks_and_aliases (alias, callback, data, include_overwritable);
+	  if (cgraph_for_node_thunks_and_aliases (alias, callback, data,
+						  include_overwritable))
+	    return true;
       }
   return false;
 }
@@ -2600,7 +2604,9 @@ cgraph_for_node_and_aliases (struct cgraph_node *node,
 	struct cgraph_node *alias = ipa_ref_refering_node (ref);
 	if (include_overwritable
 	    || cgraph_function_body_availability (alias) > AVAIL_OVERWRITABLE)
-          cgraph_for_node_and_aliases (alias, callback, data, include_overwritable);
+          if (cgraph_for_node_and_aliases (alias, callback, data,
+					   include_overwritable))
+	    return true;
       }
   return false;
 }
@@ -2900,6 +2906,36 @@ cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
   return true;
 }
 
+/* Worker for cgraph_can_remove_if_no_direct_calls_p.  */
+
+static bool
+nonremovable_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  return !cgraph_can_remove_if_no_direct_calls_and_refs_p (node);
+}
+
+/* Return true when function NODE and its aliases can be removed from callgraph
+   if all direct calls are eliminated.  */
+
+bool
+cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
+{
+  /* Extern inlines can always go, we will use the external definition.  */
+  if (DECL_EXTERNAL (node->decl))
+    return true;
+  if (node->address_taken)
+    return false;
+  return !cgraph_for_node_and_aliases (node, nonremovable_p, NULL, true);
+}
+
+/* Worker for cgraph_can_remove_if_no_direct_calls_p.  */
+
+static bool
+used_from_object_file_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  return cgraph_used_from_object_file_p (node);
+}
+
 /* Return true when function NODE can be expected to be removed
    from program when direct calls in this compilation unit are removed.
 
@@ -2918,7 +2954,7 @@ bool
 cgraph_will_be_removed_from_program_if_no_direct_calls (struct cgraph_node *node)
 {
   gcc_assert (!node->global.inlined_to);
-  if (cgraph_used_from_object_file_p (node))
+  if (cgraph_for_node_and_aliases (node, used_from_object_file_p, NULL, true))
     return false;
   if (!in_lto_p && !flag_whole_program)
     return cgraph_only_called_directly_p (node);

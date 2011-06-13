@@ -1,3 +1,17 @@
+2011-06-13  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_for_node_thunks_and_aliases,
+	cgraph_for_node_and_aliases): Fix thinko in recursive walking.
+	(nonremovable_p): New function.
+	(cgraph_can_remove_if_no_direct_calls_p): New function.
+	(used_from_object_file_p): New functoin.
+	(cgraph_will_be_removed_from_program_if_no_direct_calls): Look for references
+	from aliases.
+	* cgraph.h (cgraph_can_remove_if_no_direct_calls_p): Bring offline.
+	* ipa-inline.c (check_caller_edge): New function.
+	(want_inline_function_called_once_p): Use it; accept aliases called once, too.
+	* ipa-inline-analysis.c (do_estimate_growth): Remove FIXME.
+
 2011-06-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/48454

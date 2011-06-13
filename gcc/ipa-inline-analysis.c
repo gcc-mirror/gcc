@@ -2229,8 +2229,7 @@ do_estimate_growth (struct cgraph_node *node)
 	  && !cgraph_will_be_removed_from_program_if_no_direct_calls (node))
 	d.growth -= info->size;
       /* COMDAT functions are very often not shared across multiple units since they
-	 come from various template instantiations.  Take this into account.
-         FIXME: allow also COMDATs with COMDAT aliases.  */
+	 come from various template instantiations.  Take this into account.  */
       else  if (DECL_COMDAT (node->decl)
 		&& cgraph_can_remove_if_no_direct_calls_p (node))
 	d.growth -= (info->size
