@@ -929,6 +929,8 @@ reset_edge_caches (struct cgraph_node *node)
   struct cgraph_edge *edge;
   struct cgraph_edge *e = node->callees;
   struct cgraph_node *where = node;
+  int i;
+  struct ipa_ref *ref;
 
   if (where->global.inlined_to)
     where = where->global.inlined_to;
@@ -939,6 +941,9 @@ reset_edge_caches (struct cgraph_node *node)
   for (edge = where->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
       reset_edge_growth_cache (edge);
+  for (i = 0; ipa_ref_list_refering_iterate (&where->ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      reset_edge_caches (ipa_ref_refering_node (ref));
 
   if (!e)
     return;
@@ -980,7 +985,7 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   int i;
   struct ipa_ref *ref;
 
-  if (!inline_summary (node)->inlinable
+  if ((!node->alias && !inline_summary (node)->inlinable)
       || cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE
       || node->global.inlined_to)
     return;
