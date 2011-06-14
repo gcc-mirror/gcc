@@ -1,3 +1,9 @@
+2011-06-14  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/pr45701-1.c: Ignore warnings about conflicting switches.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+	* gcc.target/arm/thumb-branch1.c: Likewise.
+
 2011-06-14  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/48727
