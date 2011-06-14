@@ -1,5 +1,13 @@
 2011-06-14  Richard Henderson  <rth@redhat.com>
 
+	PR debug/48459
+	* dwarf2out.c (frame_pointer_fb_offset_valid): New.
+	(based_loc_descr): Assert it's true.
+	(compute_frame_pointer_to_fb_displacement): Set it,
+	rather than aborting immediately.
+
+2011-06-14  Richard Henderson  <rth@redhat.com>
+
 	Backport from mainline
 	2011-03-22  Richard Henderson  <rth@redhat.com>
 
