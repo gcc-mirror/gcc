@@ -1,3 +1,24 @@
+2011-06-14  Richard Henderson  <rth@redhat.com>
+
+	Backport from mainline
+	2011-03-22  Richard Henderson  <rth@redhat.com>
+
+	* config/avr/avr.c (TARGET_EXCEPT_UNWIND_INFO): New.
+	(avr_incoming_return_addr_rtx): New.
+	(emit_push_byte): New.
+	(expand_prologue): Use it.  Remove incorrect dwarf annotation for
+	SREG, RAMPZ, zero register.  Push frame pointer by bytes.  Add dwarf
+	annotation for __prologue_saves__.  Fixup dwarf annotation for CFA.
+	(emit_pop_byte): New.
+	(expand_epilogue): Use it.  Pop frame pointer by bytes.
+	* config/avr/avr.h (FRAME_POINTER_CFA_OFFSET): Remove.
+	(INCOMING_RETURN_ADDR_RTX): New.
+	(INCOMING_FRAME_SP_OFFSET): New.
+	(ARG_POINTER_CFA_OFFSET): New.
+	* config/avr/avr.md (*pushqi): Fix mode of auto-inc.
+	(*pushhi, *pushsi, *pushsf, popqi): Likewise.
+	(pophi): Remove.
+
 2011-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/49103

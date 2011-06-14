@@ -109,6 +109,7 @@ extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
 extern int compare_eq_p (rtx insn);
 extern void out_shift_with_cnt (const char *templ, rtx insn,
 				rtx operands[], int *len, int t_len);
+extern rtx avr_incoming_return_addr_rtx (void);
 #endif /* RTX_CODE */
 
 #ifdef HAVE_MACHINE_MODES

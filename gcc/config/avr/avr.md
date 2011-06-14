@@ -181,7 +181,7 @@
 
 
 (define_insn "*pushqi"
-  [(set (mem:QI (post_dec (reg:HI REG_SP)))
+  [(set (mem:QI (post_dec:HI (reg:HI REG_SP)))
         (match_operand:QI 0 "reg_or_0_operand" "r,L"))]
   ""
   "@
@@ -189,9 +189,8 @@
 	push __zero_reg__"
   [(set_attr "length" "1,1")])
 
-
 (define_insn "*pushhi"
-  [(set (mem:HI (post_dec (reg:HI REG_SP)))
+  [(set (mem:HI (post_dec:HI (reg:HI REG_SP)))
         (match_operand:HI 0 "reg_or_0_operand" "r,L"))]
   ""
   "@
@@ -200,7 +199,7 @@
   [(set_attr "length" "2,2")])
 
 (define_insn "*pushsi"
-  [(set (mem:SI (post_dec (reg:HI REG_SP)))
+  [(set (mem:SI (post_dec:HI (reg:HI REG_SP)))
         (match_operand:SI 0 "reg_or_0_operand" "r,L"))]
   ""
   "@
@@ -209,7 +208,7 @@
   [(set_attr "length" "4,4")])
 
 (define_insn "*pushsf"
-  [(set (mem:SF (post_dec (reg:HI REG_SP)))
+  [(set (mem:SF (post_dec:HI (reg:HI REG_SP)))
         (match_operand:SF 0 "register_operand" "r"))]
   ""
   "push %D0
@@ -3126,19 +3125,11 @@
 
 (define_insn "popqi"
   [(set (match_operand:QI 0 "register_operand" "=r")
-        (mem:QI (post_inc (reg:HI REG_SP))))]
+        (mem:QI (pre_inc:HI (reg:HI REG_SP))))]
   ""
   "pop %0"
   [(set_attr "cc" "none")
    (set_attr "length" "1")])
-
-(define_insn "pophi"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-        (mem:HI (post_inc (reg:HI REG_SP))))]
-  ""
-  "pop %A0\;pop %B0"
-  [(set_attr "cc" "none")
-   (set_attr "length" "2")])
 
 ;; Enable Interrupts
 (define_insn "enable_interrupt"

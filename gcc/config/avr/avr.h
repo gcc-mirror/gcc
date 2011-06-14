@@ -351,9 +351,6 @@ enum reg_class {
 
 #define STATIC_CHAIN_REGNUM 2
 
-/* Offset from the frame pointer register value to the top of the stack.  */
-#define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
-
 #define ELIMINABLE_REGS {					\
       {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
 	{FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}		\
@@ -799,6 +796,13 @@ mmcu=*:-mmcu=%*}"
 #define DWARF2_ADDR_SIZE 4
 
 #define OBJECT_FORMAT_ELF
+
+#define INCOMING_RETURN_ADDR_RTX   avr_incoming_return_addr_rtx ()
+#define INCOMING_FRAME_SP_OFFSET   (AVR_3_BYTE_PC ? 3 : 2)
+
+/* The caller's stack pointer value immediately before the call
+   is one byte below the first argument.  */
+#define ARG_POINTER_CFA_OFFSET(FNDECL)  -1
 
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   avr_hard_regno_rename_ok (OLD_REG, NEW_REG)
