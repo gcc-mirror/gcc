@@ -1,3 +1,7 @@
+2011-06-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/torture/pr48954.C: Use dg-require-effective-target lto.
+
 2011-06-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.c-torture/execute/cmpsi-2.c: Undo 172757.

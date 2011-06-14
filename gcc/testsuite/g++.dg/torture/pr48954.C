@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -flto -fno-early-inlining -fkeep-inline-functions" } */
+/* { dg-require-effective-target lto } */
+
 struct A
 {
   virtual void foo () = 0;
