@@ -1,3 +1,8 @@
+2011-06-14  Sanjin Liu	<scliu@faraday-tech.com>
+	    Mingfeng Wu  <mingfeng@faraday-tech.com>
+
+	* doc/invoke.texi: Re-add missing -mcpu docs for Faraday cores.
+
 2011-06-13  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_iterate_stage): Revert accidental commit.
