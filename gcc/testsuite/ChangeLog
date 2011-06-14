@@ -1,3 +1,10 @@
+2011-06-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/45098
+	* gcc.target/arm/ivopts-3.c: New test.
+	* gcc.target/arm/ivopts-4.c: New test.
+	* gcc.target/arm/ivopts-5.c: New test.
+
 2011-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/49390
