@@ -16,13 +16,13 @@ int main1 ()
   /* Don't peel keeping one load and the store aligned.  */
   for (i = 0; i <= N; i++)
     {
-      ia[i] = ib[i] + ib[i+6];
+      ia[i] = ib[i] + ib[i+5];
     }
 
   /* check results:  */
   for (i = 1; i <= N; i++)
     {
-      if (ia[i] != ib[i] + ib[i+6])
+      if (ia[i] != ib[i] + ib[i+5])
         abort ();
     }
 

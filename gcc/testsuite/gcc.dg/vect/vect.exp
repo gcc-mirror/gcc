@@ -107,6 +107,12 @@ lappend DEFAULT_VECTCFLAGS "-ffast-math"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
+# -fno-fast-math tests
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-fno-fast-math"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-fast-math-*.\[cS\]]]  \
+        "" $DEFAULT_VECTCFLAGS
+
 # -fno-math-errno tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-fno-math-errno"

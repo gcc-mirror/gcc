@@ -4,9 +4,7 @@
 #include "tree-vect.h"
 
 #define N 128
-#define RES 21888 
-
-/* unaligned store.  */
+#define RES 21640 
 
 int ib[N+10];
 int ia[N+10];
@@ -18,11 +16,11 @@ int main1 ()
   int i, suma = 0, sumb = 0, sumc = 0;
 
   /* ib and ic have same misalignment, we peel to align them.  */
-  for (i = 1; i <= N; i++)
+  for (i = 0; i <= N; i++)
     {
       suma += ia[i];
-      sumb += ib[i+6];
-      sumc += ic[i+2];
+      sumb += ib[i+5];
+      sumc += ic[i+1];
     }
 
   /* check results:  */
