@@ -994,7 +994,7 @@ predict_loops (void)
 	     the loop, use it to predict this exit.  */
 	  else if (n_exits == 1)
 	    {
-	      nitercst = estimated_loop_iterations_int (loop, false);
+	      nitercst = max_stmt_executions_int (loop, false);
 	      if (nitercst < 0)
 		continue;
 	      if (nitercst > max)

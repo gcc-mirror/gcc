@@ -1,3 +1,36 @@
+2011-06-14  Zdenek Dvorak  <ook@ucw.cz>
+	    Tom de Vries  <tom@codesourcery.com>
+
+	PR target/45098
+	* cfgloop.h (nb_iterations_upper_bound, nb_iterations_estimate):
+	Document changed semantics.
+	(max_stmt_executions, max_stmt_executions_int): Declare.
+	* tree-data-ref.c (estimated_loop_iterations)
+	(estimated_loop_iterations_int): Move functions...
+	* tree-ssa-loop-niter.c (estimated_loop_iterations)
+	(estimated_loop_iterations_int): here.
+	(record_estimate): Change nb_iterations_upper_bound and
+	nb_iterations_estimate semantics.
+	(max_stmt_executions, max_stmt_executions_int): New function.
+	* tree-data-ref.c (estimated_loop_iterations_tree): Rename to ...
+	(max_stmt_executions_tree): this.
+	(analyze_miv_subscript): Use max_stmt_executions_tree instead of
+	estimated_loop_iterations_tree.
+	tree-ssa-loop-ivopts.c (avg_loop_niter): Use
+	max_stmt_executions_int instead of estimated_loop_iterations_int.
+	* predict.c (predict_loops): Idem.
+	* tree-parloops.c (parallelize_loops): Idem.
+	* tree-data-ref.c (analyze_siv_subscript_cst_affine)
+	(compute_overlap_steps_for_affine_1_2, analyze_subscript_affine_affine)
+	(init_omega_for_ddr_1): Idem.
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse)
+	(loop_prefetch_arrays): Idem
+	* graphite-sese-to-poly.c (build_loop_iteration_domains): Use
+	max_stmt_executions instead of estimated_loop_iterations.
+	* tree-data-ref.c (estimated_loop_iterations_tree): Idem.
+	* tree-vrp.c (adjust_range_with_scev): Use estimated_loop_iterations
+	instead of nb_iterations_upper_bound.
+
 2011-06-13  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (cgraph_address_taken_from_non_vtable_p): Check the ref type.

@@ -2134,7 +2134,7 @@ parallelize_loops (void)
 	  /* FIXME: the check for vector phi nodes could be removed.  */
 	  || loop_has_vector_phi_nodes (loop))
 	continue;
-      estimated = estimated_loop_iterations_int (loop, false);
+      estimated = max_stmt_executions_int (loop, false);
       /* FIXME: Bypass this check as graphite doesn't update the
       count and frequency correctly now.  */
       if (!flag_loop_parallelize_all

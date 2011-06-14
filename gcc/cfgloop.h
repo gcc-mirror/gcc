@@ -143,11 +143,13 @@ struct GTY ((chain_next ("%h.next"))) loop {
      computes and caches the computed information in this field.  */
   tree nb_iterations;
 
-  /* An integer guaranteed to bound the number of iterations of the loop
-     from above.  */
+  /* An integer guaranteed to be greater or equal to nb_iterations.  Only
+     valid if any_upper_bound is true.  */
   double_int nb_iterations_upper_bound;
 
-  /* An integer giving the expected number of iterations of the loop.  */
+  /* An integer giving an estimate on nb_iterations.  Unlike
+     nb_iterations_upper_bound, there is no guarantee that it is at least
+     nb_iterations.  */
   double_int nb_iterations_estimate;
 
   bool any_upper_bound;
@@ -278,7 +280,9 @@ extern rtx doloop_condition_get (rtx);
 
 void estimate_numbers_of_iterations_loop (struct loop *, bool);
 HOST_WIDE_INT estimated_loop_iterations_int (struct loop *, bool);
+HOST_WIDE_INT max_stmt_executions_int (struct loop *, bool);
 bool estimated_loop_iterations (struct loop *, bool, double_int *);
+bool max_stmt_executions (struct loop *, bool, double_int *);
 
 /* Loop manipulation.  */
 extern bool can_duplicate_loop_p (const struct loop *loop);

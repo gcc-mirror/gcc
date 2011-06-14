@@ -115,7 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 static inline HOST_WIDE_INT
 avg_loop_niter (struct loop *loop)
 {
-  HOST_WIDE_INT niter = estimated_loop_iterations_int (loop, false);
+  HOST_WIDE_INT niter = max_stmt_executions_int (loop, false);
   if (niter == -1)
     return AVG_LOOP_NITER (loop);
 
