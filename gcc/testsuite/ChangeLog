@@ -1,3 +1,18 @@
+2011-06-14  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/mla-1.c: Ignore warnings about conflicting switches.
+	* gcc.target/arm/pr39839.c: Likewise.
+	* gcc.target/arm/pr40657-2.c: Likewise.
+	* gcc.target/arm/pr40956.c: Likewise.
+	* gcc.target/arm/pr41679.c: Likewise.
+	* gcc.target/arm/pr42235.c: Likewise.
+	* gcc.target/arm/pr42495.c: Likewise.
+	* gcc.target/arm/pr42505.c: Likewise.
+	* gcc.target/arm/pr42574.c: Likewise.
+	* gcc.target/arm/pr46883.c: Likewise.
+	* gcc.target/arm/pr46934.c: Likewise.
+	* gcc.target/arm/xor-and.c: Likewise.
+
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/other/error23.C: Adjust error message.
