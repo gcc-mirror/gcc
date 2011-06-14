@@ -768,68 +768,6 @@ Type::hash_string(const std::string& s, unsigned int h)
   return h;
 }
 
-// Default check for the expression passed to make.  Any type which
-// may be used with make implements its own version of this.
-
-bool
-Type::do_check_make_expression(Expression_list*, source_location)
-{
-  go_unreachable();
-}
-
-// Return whether an expression has an integer value.  Report an error
-// if not.  This is used when handling calls to the predeclared make
-// function.
-
-bool
-Type::check_int_value(Expression* e, const char* errmsg,
-		      source_location location)
-{
-  if (e->type()->integer_type() != NULL)
-    return true;
-
-  // Check for a floating point constant with integer value.
-  mpfr_t fval;
-  mpfr_init(fval);
-
-  Type* dummy;
-  if (e->float_constant_value(fval, &dummy) && mpfr_integer_p(fval))
-    {
-      mpz_t ival;
-      mpz_init(ival);
-
-      bool ok = false;
-
-      mpfr_clear_overflow();
-      mpfr_clear_erangeflag();
-      mpfr_get_z(ival, fval, GMP_RNDN);
-      if (!mpfr_overflow_p()
-	  && !mpfr_erangeflag_p()
-	  && mpz_sgn(ival) >= 0)
-	{
-	  Named_type* ntype = Type::lookup_integer_type("int");
-	  Integer_type* inttype = ntype->integer_type();
-	  mpz_t max;
-	  mpz_init_set_ui(max, 1);
-	  mpz_mul_2exp(max, max, inttype->bits() - 1);
-	  ok = mpz_cmp(ival, max) < 0;
-	  mpz_clear(max);
-	}
-      mpz_clear(ival);
-
-      if (ok)
-	{
-	  mpfr_clear(fval);
-	  return true;
-	}
-    }
-
-  mpfr_clear(fval);
-
-  error_at(location, "%s", errmsg);
-  return false;
-}
-
 // A hash table mapping unnamed types to the backend representation of
 // those types.
 
@@ -910,16 +848,6 @@ Type::get_btype_without_hash(Gogo* gogo)
       this->btype_ = bt;
     }
   return this->btype_;
-}
-
-// Any type which supports the builtin make function must implement
-// this.
-
-tree
-Type::do_make_expression_tree(Translate_context*, Expression_list*,
-			      source_location)
-{
-  go_unreachable();
 }
 
 // Return a pointer to the type descriptor for this type.
@@ -1366,6 +1294,8 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   Expression_list* vals = new Expression_list();
   vals->reserve(9);
 
+  if (!this->has_pointer())
+    runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
   Struct_field_list::const_iterator p = fields->begin();
   go_assert(p->field_name() == "Kind");
   mpz_t iv;
@@ -4341,43 +4271,6 @@ Array_type::do_hash_for_method(Gogo* gogo) const
   return this->element_type_->hash_for_method(gogo) + 1;
 }
 
-// See if the expression passed to make is suitable.  The first
-// argument is required, and gives the length.  An optional second
-// argument is permitted for the capacity.
-
-bool
-Array_type::do_check_make_expression(Expression_list* args,
-				     source_location location)
-{
-  go_assert(this->length_ == NULL);
-  if (args == NULL || args->empty())
-    {
-      error_at(location, "length required when allocating a slice");
-      return false;
-    }
-  else if (args->size() > 2)
-    {
-      error_at(location, "too many expressions passed to make");
-      return false;
-    }
-  else
-    {
-      if (!Type::check_int_value(args->front(),
-				 _("bad length when making slice"), location))
-	return false;
-
-      if (args->size() > 1)
-	{
-	  if (!Type::check_int_value(args->back(),
-				     _("bad capacity when making slice"),
-				     location))
-	    return false;
-	}
-
-      return true;
-    }
-}
-
 // Get a tree for the length of a fixed array.  The length may be
 // computed using a function call, so we must only evaluate it once.
 
@@ -4489,129 +4382,6 @@ Bexpression*
 Array_type::get_backend_length(Gogo* gogo)
 {
   return tree_to_expr(this->get_length_tree(gogo));
-}
-
-// Handle the builtin make function for a slice.
-
-tree
-Array_type::do_make_expression_tree(Translate_context* context,
-				    Expression_list* args,
-				    source_location location)
-{
-  go_assert(this->length_ == NULL);
-
-  Gogo* gogo = context->gogo();
-  tree type_tree = type_to_tree(this->get_backend(gogo));
-  if (type_tree == error_mark_node)
-    return error_mark_node;
-
-  tree values_field = TYPE_FIELDS(type_tree);
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(values_field)),
-		    "__values") == 0);
-
-  tree count_field = DECL_CHAIN(values_field);
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(count_field)),
-		    "__count") == 0);
-
-  tree element_type_tree = type_to_tree(this->element_type_->get_backend(gogo));
-  if (element_type_tree == error_mark_node)
-    return error_mark_node;
-  tree element_size_tree = TYPE_SIZE_UNIT(element_type_tree);
-
-  // The first argument is the number of elements, the optional second
-  // argument is the capacity.
-  go_assert(args != NULL && args->size() >= 1 && args->size() <= 2);
-
-  tree length_tree = args->front()->get_tree(context);
-  if (length_tree == error_mark_node)
-    return error_mark_node;
-  if (!DECL_P(length_tree))
-    length_tree = save_expr(length_tree);
-  if (!INTEGRAL_TYPE_P(TREE_TYPE(length_tree)))
-    length_tree = convert_to_integer(TREE_TYPE(count_field), length_tree);
-
-  tree bad_index = Expression::check_bounds(length_tree,
-					    TREE_TYPE(count_field),
-					    NULL_TREE, location);
-
-  length_tree = fold_convert_loc(location, TREE_TYPE(count_field), length_tree);
-  tree capacity_tree;
-  if (args->size() == 1)
-    capacity_tree = length_tree;
-  else
-    {
-      capacity_tree = args->back()->get_tree(context);
-      if (capacity_tree == error_mark_node)
-	return error_mark_node;
-      if (!DECL_P(capacity_tree))
-	capacity_tree = save_expr(capacity_tree);
-      if (!INTEGRAL_TYPE_P(TREE_TYPE(capacity_tree)))
-	capacity_tree = convert_to_integer(TREE_TYPE(count_field),
-					   capacity_tree);
-
-      bad_index = Expression::check_bounds(capacity_tree,
-					   TREE_TYPE(count_field),
-					   bad_index, location);
-
-      tree chktype = (((TYPE_SIZE(TREE_TYPE(capacity_tree))
-			> TYPE_SIZE(TREE_TYPE(length_tree)))
-		       || ((TYPE_SIZE(TREE_TYPE(capacity_tree))
-			    == TYPE_SIZE(TREE_TYPE(length_tree)))
-			   && TYPE_UNSIGNED(TREE_TYPE(capacity_tree))))
-		      ? TREE_TYPE(capacity_tree)
-		      : TREE_TYPE(length_tree));
-      tree chk = fold_build2_loc(location, LT_EXPR, boolean_type_node,
-				 fold_convert_loc(location, chktype,
-						  capacity_tree),
-				 fold_convert_loc(location, chktype,
-						  length_tree));
-      if (bad_index == NULL_TREE)
-	bad_index = chk;
-      else
-	bad_index = fold_build2_loc(location, TRUTH_OR_EXPR, boolean_type_node,
-				    bad_index, chk);
-
-      capacity_tree = fold_convert_loc(location, TREE_TYPE(count_field),
-				       capacity_tree);
-    }
-
-  tree size_tree = fold_build2_loc(location, MULT_EXPR, sizetype,
-				   element_size_tree,
-				   fold_convert_loc(location, sizetype,
-						    capacity_tree));
-
-  tree chk = fold_build2_loc(location, TRUTH_AND_EXPR, boolean_type_node,
-			     fold_build2_loc(location, GT_EXPR,
-					     boolean_type_node,
-					     fold_convert_loc(location,
-							      sizetype,
-							      capacity_tree),
-					     size_zero_node),
-			     fold_build2_loc(location, LT_EXPR,
-					     boolean_type_node,
-					     size_tree, element_size_tree));
-  if (bad_index == NULL_TREE)
-    bad_index = chk;
-  else
-    bad_index = fold_build2_loc(location, TRUTH_OR_EXPR, boolean_type_node,
-				bad_index, chk);
-
-  tree space = context->gogo()->allocate_memory(this->element_type_,
-						size_tree, location);
-
-  space = fold_convert(TREE_TYPE(values_field), space);
-
-  if (bad_index != NULL_TREE && bad_index != boolean_false_node)
-    {
-      tree crash = Gogo::runtime_error(RUNTIME_ERROR_MAKE_SLICE_OUT_OF_BOUNDS,
-				       location);
-      space = build2(COMPOUND_EXPR, TREE_TYPE(space),
-		     build3(COND_EXPR, void_type_node,
-			    bad_index, crash, NULL_TREE),
-		     space);
-    }
-
-  return gogo->slice_constructor(type_tree, space, length_tree, capacity_tree);
 }
 
 // Return a tree for a pointer to the values in ARRAY.
@@ -4962,28 +4732,6 @@ Map_type::do_hash_for_method(Gogo* gogo) const
 	  + 2);
 }
 
-// Check that a call to the builtin make function is valid.  For a map
-// the optional argument is the number of spaces to preallocate for
-// values.
-
-bool
-Map_type::do_check_make_expression(Expression_list* args,
-				   source_location location)
-{
-  if (args != NULL && !args->empty())
-    {
-      if (!Type::check_int_value(args->front(), _("bad size when making map"),
-				 location))
-	return false;
-      else if (args->size() > 1)
-	{
-	  error_at(location, "too many arguments when making map");
-	  return false;
-	}
-    }
-  return true;
-}
-
 // Get the backend representation for a map type.  A map type is
 // represented as a pointer to a struct.  The struct is __go_map in
 // libgo/map.h.
@@ -5022,62 +4770,6 @@ Map_type::do_get_backend(Gogo* gogo)
       backend_map_type = gogo->backend()->pointer_type(bt);
     }
   return backend_map_type;
-}
-
-// Return an expression for a newly allocated map.
-
-tree
-Map_type::do_make_expression_tree(Translate_context* context,
-				  Expression_list* args,
-				  source_location location)
-{
-  tree bad_index = NULL_TREE;
-
-  tree expr_tree;
-  if (args == NULL || args->empty())
-    expr_tree = size_zero_node;
-  else
-    {
-      expr_tree = args->front()->get_tree(context);
-      if (expr_tree == error_mark_node)
-	return error_mark_node;
-      if (!DECL_P(expr_tree))
-	expr_tree = save_expr(expr_tree);
-      if (!INTEGRAL_TYPE_P(TREE_TYPE(expr_tree)))
-	expr_tree = convert_to_integer(sizetype, expr_tree);
-      bad_index = Expression::check_bounds(expr_tree, sizetype, bad_index,
-					   location);
-    }
-
-  Gogo* gogo = context->gogo();
-  tree map_type = type_to_tree(this->get_backend(gogo));
-
-  static tree new_map_fndecl;
-  tree ret = Gogo::call_builtin(&new_map_fndecl,
-				location,
-				"__go_new_map",
-				2,
-				map_type,
-				TREE_TYPE(TYPE_FIELDS(TREE_TYPE(map_type))),
-				this->map_descriptor_pointer(gogo, location),
-				sizetype,
-				expr_tree);
-  if (ret == error_mark_node)
-    return error_mark_node;
-  // This can panic if the capacity is out of range.
-  TREE_NOTHROW(new_map_fndecl) = 0;
-
-  if (bad_index == NULL_TREE)
-    return ret;
-  else
-    {
-      tree crash = Gogo::runtime_error(RUNTIME_ERROR_MAKE_MAP_OUT_OF_BOUNDS,
-				       location);
-      return build2(COMPOUND_EXPR, TREE_TYPE(ret),
-		    build3(COND_EXPR, void_type_node,
-			   bad_index, crash, NULL_TREE),
-		    ret);
-    }
 }
 
 // The type of a map type descriptor.
@@ -5343,29 +5035,6 @@ Channel_type::is_identical(const Channel_type* t,
 	  && this->may_receive_ == t->may_receive_);
 }
 
-// Check whether the parameters for a call to the builtin function
-// make are OK for a channel.  A channel can take an optional single
-// parameter which is the buffer size.
-
-bool
-Channel_type::do_check_make_expression(Expression_list* args,
-				      source_location location)
-{
-  if (args != NULL && !args->empty())
-    {
-      if (!Type::check_int_value(args->front(),
-				 _("bad buffer size when making channel"),
-				 location))
-	return false;
-      else if (args->size() > 1)
-	{
-	  error_at(location, "too many arguments when making channel");
-	  return false;
-	}
-    }
-  return true;
-}
-
 // Return the tree for a channel type.  A channel is a pointer to a
 // __go_channel struct.  The __go_channel struct is defined in
 // libgo/runtime/channel.h.
@@ -5382,66 +5051,6 @@ Channel_type::do_get_backend(Gogo* gogo)
       backend_channel_type = gogo->backend()->pointer_type(bt);
     }
   return backend_channel_type;
-}
-
-// Handle the builtin function make for a channel.
-
-tree
-Channel_type::do_make_expression_tree(Translate_context* context,
-				      Expression_list* args,
-				      source_location location)
-{
-  Gogo* gogo = context->gogo();
-  tree channel_type = type_to_tree(this->get_backend(gogo));
-
-  Type* ptdt = Type::make_type_descriptor_ptr_type();
-  tree element_type_descriptor =
-    this->element_type_->type_descriptor_pointer(gogo, location);
-
-  tree bad_index = NULL_TREE;
-
-  tree expr_tree;
-  if (args == NULL || args->empty())
-    expr_tree = size_zero_node;
-  else
-    {
-      expr_tree = args->front()->get_tree(context);
-      if (expr_tree == error_mark_node)
-	return error_mark_node;
-      if (!DECL_P(expr_tree))
-	expr_tree = save_expr(expr_tree);
-      if (!INTEGRAL_TYPE_P(TREE_TYPE(expr_tree)))
-	expr_tree = convert_to_integer(sizetype, expr_tree);
-      bad_index = Expression::check_bounds(expr_tree, sizetype, bad_index,
-					   location);
-    }
-
-  static tree new_channel_fndecl;
-  tree ret = Gogo::call_builtin(&new_channel_fndecl,
-				location,
-				"__go_new_channel",
-				2,
-				channel_type,
-				type_to_tree(ptdt->get_backend(gogo)),
-				element_type_descriptor,
-				sizetype,
-				expr_tree);
-  if (ret == error_mark_node)
-    return error_mark_node;
-  // This can panic if the capacity is out of range.
-  TREE_NOTHROW(new_channel_fndecl) = 0;
-
-  if (bad_index == NULL_TREE)
-    return ret;
-  else
-    {
-      tree crash = Gogo::runtime_error(RUNTIME_ERROR_MAKE_CHAN_OUT_OF_BOUNDS,
-				       location);
-      return build2(COMPOUND_EXPR, TREE_TYPE(ret),
-		    build3(COND_EXPR, void_type_node,
-			   bad_index, crash, NULL_TREE),
-		    ret);
-    }
 }
 
 // Build a type descriptor for a channel type.

@@ -1,3 +1,7 @@
+2011-06-13  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (go/expressions.o): Depend on $(GO_RUNTIME_H).
+
 2011-06-10  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc: Include "toplev.h".
