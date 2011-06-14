@@ -1,3 +1,11 @@
+2011-06-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libffi.call/huge_struct.c (test_large_fn): Use PRIu8,
+	PRId8 instead of %hhu, %hhd.
+	* testsuite/libffi.call/ffitest.h [__alpha__ && __osf__] (PRId8,
+	PRIu8): Define.
+	[__sgi__] (PRId8, PRIu8): Define.
+
 2011-04-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* src/alpha/osf.S (UA_SI, FDE_ENCODING, FDE_ENCODE, FDE_ARANGE):
