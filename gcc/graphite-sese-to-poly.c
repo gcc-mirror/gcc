@@ -1092,7 +1092,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
       scan_tree_for_params (SCOP_REGION (scop), nb_iters, ub_expr, one);
       mpz_clear (one);
 
-      if (estimated_loop_iterations (loop, true, &nit))
+      if (max_stmt_executions (loop, true, &nit))
 	add_upper_bounds_from_estimated_nit (scop, nit, dim, ub_expr);
 
       /* loop_i <= expr_nb_iters */

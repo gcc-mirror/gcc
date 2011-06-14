@@ -1621,66 +1621,18 @@ analyze_ziv_subscript (tree chrec_a,
     fprintf (dump_file, ")\n");
 }
 
-/* Sets NIT to the estimated number of executions of the statements in
-   LOOP.  If CONSERVATIVE is true, we must be sure that NIT is at least as
-   large as the number of iterations.  If we have no reliable estimate,
-   the function returns false, otherwise returns true.  */
-
-bool
-estimated_loop_iterations (struct loop *loop, bool conservative,
-			   double_int *nit)
-{
-  estimate_numbers_of_iterations_loop (loop, true);
-  if (conservative)
-    {
-      if (!loop->any_upper_bound)
-	return false;
-
-      *nit = loop->nb_iterations_upper_bound;
-    }
-  else
-    {
-      if (!loop->any_estimate)
-	return false;
-
-      *nit = loop->nb_iterations_estimate;
-    }
-
-  return true;
-}
-
-/* Similar to estimated_loop_iterations, but returns the estimate only
-   if it fits to HOST_WIDE_INT.  If this is not the case, or the estimate
-   on the number of iterations of LOOP could not be derived, returns -1.  */
-
-HOST_WIDE_INT
-estimated_loop_iterations_int (struct loop *loop, bool conservative)
-{
-  double_int nit;
-  HOST_WIDE_INT hwi_nit;
-
-  if (!estimated_loop_iterations (loop, conservative, &nit))
-    return -1;
-
-  if (!double_int_fits_in_shwi_p (nit))
-    return -1;
-  hwi_nit = double_int_to_shwi (nit);
-
-  return hwi_nit < 0 ? -1 : hwi_nit;
-}
-
-/* Similar to estimated_loop_iterations, but returns the estimate as a tree,
+/* Similar to max_stmt_executions_int, but returns the bound as a tree,
    and only if it fits to the int type.  If this is not the case, or the
-   estimate on the number of iterations of LOOP could not be derived, returns
+   bound  on the number of iterations of LOOP could not be derived, returns
    chrec_dont_know.  */
 
 static tree
-estimated_loop_iterations_tree (struct loop *loop, bool conservative)
+max_stmt_executions_tree (struct loop *loop)
 {
   double_int nit;
   tree type;
 
-  if (!estimated_loop_iterations (loop, conservative, &nit))
+  if (!max_stmt_executions (loop, true, &nit))
     return chrec_dont_know;
 
   type = lang_hooks.types.type_for_size (INT_TYPE_SIZE, true);
@@ -1763,7 +1715,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 
 		      /* Perform weak-zero siv test to see if overlap is
 			 outside the loop bounds.  */
-		      numiter = estimated_loop_iterations_int (loop, false);
+		      numiter = max_stmt_executions_int (loop, true);
 
 		      if (numiter >= 0
 			  && compare_tree_int (tmp, numiter) > 0)
@@ -1841,7 +1793,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 
 		      /* Perform weak-zero siv test to see if overlap is
 			 outside the loop bounds.  */
-		      numiter = estimated_loop_iterations_int (loop, false);
+		      numiter = max_stmt_executions_int (loop, true);
 
 		      if (numiter >= 0
 			  && compare_tree_int (tmp, numiter) > 0)
@@ -2022,10 +1974,9 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
   step_z = int_cst_value (CHREC_RIGHT (chrec_b));
 
   niter_x =
-    estimated_loop_iterations_int (get_chrec_loop (CHREC_LEFT (chrec_a)),
-				   false);
-  niter_y = estimated_loop_iterations_int (get_chrec_loop (chrec_a), false);
-  niter_z = estimated_loop_iterations_int (get_chrec_loop (chrec_b), false);
+    max_stmt_executions_int (get_chrec_loop (CHREC_LEFT (chrec_a)), true);
+  niter_y = max_stmt_executions_int (get_chrec_loop (chrec_a), true);
+  niter_z = max_stmt_executions_int (get_chrec_loop (chrec_b), true);
 
   if (niter_x < 0 || niter_y < 0 || niter_z < 0)
     {
@@ -2350,10 +2301,8 @@ analyze_subscript_affine_affine (tree chrec_a,
 	  HOST_WIDE_INT niter, niter_a, niter_b;
 	  affine_fn ova, ovb;
 
-	  niter_a = estimated_loop_iterations_int (get_chrec_loop (chrec_a),
-						   false);
-	  niter_b = estimated_loop_iterations_int (get_chrec_loop (chrec_b),
-						   false);
+	  niter_a = max_stmt_executions_int (get_chrec_loop (chrec_a), true);
+	  niter_b = max_stmt_executions_int (get_chrec_loop (chrec_b), true);
 	  niter = MIN (niter_a, niter_b);
 	  step_a = int_cst_value (CHREC_RIGHT (chrec_a));
 	  step_b = int_cst_value (CHREC_RIGHT (chrec_b));
@@ -2460,10 +2409,10 @@ analyze_subscript_affine_affine (tree chrec_a,
 
 	  if (i1 > 0 && j1 > 0)
 	    {
-	      HOST_WIDE_INT niter_a = estimated_loop_iterations_int
-		(get_chrec_loop (chrec_a), false);
-	      HOST_WIDE_INT niter_b = estimated_loop_iterations_int
-		(get_chrec_loop (chrec_b), false);
+	      HOST_WIDE_INT niter_a = max_stmt_executions_int
+		(get_chrec_loop (chrec_a), true);
+	      HOST_WIDE_INT niter_b = max_stmt_executions_int
+		(get_chrec_loop (chrec_b), true);
 	      HOST_WIDE_INT niter = MIN (niter_a, niter_b);
 
 	      /* (X0, Y0) is a solution of the Diophantine equation:
@@ -2740,8 +2689,7 @@ analyze_miv_subscript (tree chrec_a,
 	 in the same order.  */
       *overlaps_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
       *overlaps_b = conflict_fn (1, affine_fn_cst (integer_zero_node));
-      *last_conflicts = estimated_loop_iterations_tree
-				(get_chrec_loop (chrec_a), true);
+      *last_conflicts = max_stmt_executions_tree (get_chrec_loop (chrec_a));
       dependence_stats.num_miv_dependent++;
     }
 
@@ -3754,7 +3702,7 @@ init_omega_for_ddr_1 (struct data_reference *dra, struct data_reference *drb,
   for (i = 0; i <= DDR_INNER_LOOP (ddr)
 	 && VEC_iterate (loop_p, DDR_LOOP_NEST (ddr), i, loopi); i++)
     {
-      HOST_WIDE_INT nbi = estimated_loop_iterations_int (loopi, false);
+      HOST_WIDE_INT nbi = max_stmt_executions_int (loopi, true);
 
       /* 0 <= loop_x */
       ineq = omega_add_zero_geq (pb, omega_black);
