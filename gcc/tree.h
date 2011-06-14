@@ -1330,6 +1330,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define DECL_READ_P(NODE) \
   (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)->decl_common.decl_read_flag)
 
+#define DECL_NONSHAREABLE(NODE) \
+  (TREE_CHECK2 (NODE, VAR_DECL, \
+		RESULT_DECL)->decl_common.decl_nonshareable_flag)
+
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
@@ -2787,8 +2791,9 @@ struct GTY(()) tree_decl_common {
      being set.  */
   unsigned decl_read_flag : 1;
 
-  /* Padding so that 'off_align' can be on a 32-bit boundary.  */
-  unsigned decl_common_unused : 1;
+  /* In VAR_DECL or RESULT_DECL set when significant code movement precludes
+     attempting to share the stack slot with some other variable.  */
+  unsigned decl_nonshareable_flag : 1;
 
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */
   unsigned int off_align : 8;

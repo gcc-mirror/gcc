@@ -1,5 +1,8 @@
 2011-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/49103
+	* gfortran.dg/pr49103.f90: New test.
+
 	PR rtl-optimization/49390
 	* gcc.c-torture/execute/pr49390.c: New test.
 
