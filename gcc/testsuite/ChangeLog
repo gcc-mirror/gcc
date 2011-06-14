@@ -1,5 +1,8 @@
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49369
+	* g++.dg/cpp0x/decltype30.C: New.
+
 	* g++.dg/cpp0x/constexpr-array-ptr7.C: New.
 
 2011-06-14  Jakub Jelinek  <jakub@redhat.com>
