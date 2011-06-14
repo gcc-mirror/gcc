@@ -1,5 +1,9 @@
 2011-06-13  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-cp.c (ipcp_iterate_stage): Revert accidental commit.
+
+2011-06-13  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_make_decl_local): Handle DECL_ONE_ONLY
 	similarly to DECL_COMDAT.
 	* cgraphunit.c (cgraph_analyze_function): Likewise.

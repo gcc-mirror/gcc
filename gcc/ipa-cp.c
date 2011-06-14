@@ -836,7 +836,7 @@ ipcp_iterate_stage (void)
     /* Some lattices have changed from IPA_TOP to IPA_BOTTOM.
        This change should be propagated.  */
     {
-      /*gcc_assert (n_cloning_candidates);*/
+      gcc_assert (n_cloning_candidates);
       ipcp_propagate_stage ();
     }
   if (dump_file)
