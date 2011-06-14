@@ -1,0 +1,39 @@
+/* Target hook definitions for common hooks.
+   Copyright (C) 2011
+   Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 3, or (at your option) any
+   later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* See target-hooks-macros.h for details of macros that should be
+   provided by the including file, and how to use them here.  */
+#include "target-hooks-macros.h"
+
+#undef HOOK_TYPE
+#define HOOK_TYPE "Common Target Hook"
+
+HOOK_VECTOR (TARGETM_COMMON_INITIALIZER, gcc_targetm_common)
+
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_"
+
+DEFHOOKPOD
+(always_strip_dotdot,
+ "True if @file{..} components should always be removed from directory names\
+ computed relative to GCC's internal directories, false (default) if such\
+ components should be preserved and directory names containing them passed\
+ to other tools such as the linker.",
+ bool, false)
+ 
+HOOK_VECTOR_END (C90_EMPTY_HACK)

@@ -34,6 +34,7 @@ static struct hook_desc hook_array[] = {
   { "*", #TYPE, HOOK_PREFIX #NAME, #PARAMS, #INIT, HOOK_TYPE },
 #include "target.def"
 #include "c-family/c-target.def"
+#include "common/common-target.def"
 #undef DEFHOOK
 };
 

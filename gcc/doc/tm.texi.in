@@ -99,6 +99,16 @@ initializer @code{TARGETCM_INITIALIZER} in
 themselves, they should set @code{target_has_targetcm=yes} in
 @file{config.gcc}; otherwise a default definition is used.
 
+Similarly, there is a @code{targetm_common} variable for hooks that
+are shared between the compiler driver and the compilers proper,
+documented as ``Common Target Hook''.  This is declared in
+@file{common/common-target.h}, the initializer
+@code{TARGETM_COMMON_INITIALIZER} in
+@file{common/common-target-def.h}.  If targets initialize
+@code{targetm_common} themselves, they should set
+@code{target_has_targetm_common=yes} in @file{config.gcc}; otherwise a
+default definition is used.
+
 @node Driver
 @section Controlling the Compilation Driver, @file{gcc}
 @cindex driver
@@ -382,6 +392,8 @@ A nonzero value causes @command{collect2} to remove duplicate @option{-L@var{dir
 directories from linking commands.  Do not give it a nonzero value if
 removing duplicate search directories changes the linker's semantics.
 @end defmac
+
+@hook TARGET_ALWAYS_STRIP_DOTDOT
 
 @defmac MULTILIB_DEFAULTS
 Define this macro as a C expression for the initializer of an array of

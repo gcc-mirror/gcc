@@ -96,6 +96,9 @@
 #  out_file		The name of the machine description C support
 #			file, if different from "$cpu_type/$cpu_type.c".
 #
+#  common_out_file	The name of the source file for code shared between
+#			the compiler proper and the driver.
+#
 #  md_file		The name of the machine-description file, if
 #			different from "$cpu_type/$cpu_type.md".
 #
@@ -192,8 +195,12 @@
 #
 #  target_has_targetcm	Set to yes or no depending on whether the target
 #			has its own definition of targetcm.
+#
+#  target_has_targetm_common	Set to yes or no depending on whether the
+#			target has its own definition of targetm_common.
 
 out_file=
+common_out_file=
 tmake_file=
 extra_headers=
 user_headers_inc_next_pre=
@@ -210,6 +217,7 @@ c_target_objs=
 cxx_target_objs=
 fortran_target_objs=
 target_has_targetcm=no
+target_has_targetm_common=no
 tm_defines=
 xm_defines=
 libgcc_tm_file=
@@ -359,6 +367,7 @@ ia64-*-*)
 	;;
 hppa*-*-*)
 	cpu_type=pa
+	target_has_targetm_common=yes
 	;;
 lm32*)
 	extra_options="${extra_options} g.opt"
@@ -2665,6 +2674,14 @@ esac
 if [ "$target_has_targetcm" = "no" ]; then
   c_target_objs="$c_target_objs default-c.o"
   cxx_target_objs="$cxx_target_objs default-c.o"
+fi
+
+if [ "$common_out_file" = "" ]; then
+  if [ "$target_has_targetm_common" = "yes" ]; then
+    common_out_file="$cpu_type/$cpu_type-common.c"
+  else
+    common_out_file="default-common.c"
+  fi
 fi
 
 # Support for --with-cpu and related options (and a few unrelated options,
