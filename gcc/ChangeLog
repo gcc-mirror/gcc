@@ -1,3 +1,31 @@
+2011-06-14  Easwaran Raman  <eraman@google.com>
+
+	PR rtl-optimization/44194
+	* dse.c: Include tree-flow.h
+	(insn_info): Add new field non_frame_wild_read.
+	(group_info): Add new fields escaped_n and escaped_p.
+	(kill_on_calls): New variable.
+	(get_group_info): Initialize gi->escaped_n and gi->escaped_p.
+	(dse_step0): Initialize kill_on_calls.
+	(can_escape): New function.
+	(set_usage_bits): Add additional parameter; record information
+	about escaped locations.
+	(record_store): Pass EXPR corresponding to MEM to
+	set_usage_bits.
+	(dse_step2_nospill): Set kill_on_calls based on
+	group->escaped_n and group->escaped_n.
+	(add_wild_read): Refactor into...
+	(reset_active_stores): ... New function, and
+	(free_read_records): ... New function.
+	(add_non_frame_wild_read): New function.
+	(scan_insn): Call add_non_frame_wild_read on non-const calls.
+	(scan_reads_nospill): Handle instructions with
+	non_frame_wild_read.
+	(dse_step5_nospill): Call scan_reads_nospill for instructions
+	marked as non_frame_wild_read.
+	(dse_step7): Free escaped_n, escaped_p and kill_on_calls
+	bitmaps.
+
 2011-06-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* common/common-target-def.h, common/common-target.def,
