@@ -1,3 +1,9 @@
+2011-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/47364
+	* builtins.c (expand_builtin_strlen): Expand strlen to Pmode
+	and properly handle result not in Pmode.
+
 2011-06-14  Robert Millan  <rmh@gnu.org>
 
 	* config/i386/kfreebsd-gnu.h: Resync with `config/i386/linux.h'.
