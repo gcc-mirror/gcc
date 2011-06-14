@@ -830,9 +830,9 @@ cgraph_analyze_function (struct cgraph_node *node)
       if (TREE_PUBLIC (node->decl) && node->same_body_alias)
 	{
           DECL_EXTERNAL (node->decl) = DECL_EXTERNAL (node->thunk.alias);
-	  if (DECL_COMDAT (node->thunk.alias))
+	  if (DECL_ONE_ONLY (node->thunk.alias))
 	    {
-	      DECL_COMDAT (node->decl) = 1;
+	      DECL_COMDAT (node->decl) = DECL_COMDAT (node->thunk.alias);
 	      DECL_COMDAT_GROUP (node->decl) = DECL_COMDAT_GROUP (node->thunk.alias);
 	      if (DECL_ONE_ONLY (node->thunk.alias) && !node->same_comdat_group)
 		{

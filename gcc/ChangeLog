@@ -1,5 +1,12 @@
 2011-06-13  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_make_decl_local): Handle DECL_ONE_ONLY
+	similarly to DECL_COMDAT.
+	* cgraphunit.c (cgraph_analyze_function): Likewise.
+	* ipa.c (function_and_variable_visibility): Likewise.
+
+2011-06-13  Jan Hubicka  <jh@suse.cz>
+
 	* lto-streamer-out.c (lto_output_ts_binfo_tree_pointers): Do not output
 	BINFO_VIRTUALS when streaming for ltrans unit.
 
