@@ -1,5 +1,7 @@
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
+	* error.c (type_to_string): Print typedef-stripped version too.
+
 	PR c++/49117
 	* call.c (perform_implicit_conversion_flags): Print source type as
 	well as expression.
