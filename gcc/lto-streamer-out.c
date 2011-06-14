@@ -1117,7 +1117,11 @@ lto_output_ts_binfo_tree_pointers (struct output_block *ob, tree expr,
 
   lto_output_tree_or_ref (ob, BINFO_OFFSET (expr), ref_p);
   lto_output_tree_or_ref (ob, BINFO_VTABLE (expr), ref_p);
-  lto_output_tree_or_ref (ob, BINFO_VIRTUALS (expr), ref_p);
+  /* BINFO_VIRTUALS is used to drive type based devirtualizatoin.  It often links
+     together large portions of programs making it harder to partition.  Becuase
+     devirtualization is interesting before inlining, only, there is no real
+     need to ship it into ltrans partition.  */
+  lto_output_tree_or_ref (ob, flag_wpa ? NULL : BINFO_VIRTUALS (expr), ref_p);
   lto_output_tree_or_ref (ob, BINFO_VPTR_FIELD (expr), ref_p);
 
   output_uleb128 (ob, VEC_length (tree, BINFO_BASE_ACCESSES (expr)));
