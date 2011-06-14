@@ -1,3 +1,12 @@
+2011-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49390
+	Revert:
+	2010-06-29  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* cse.c (exp_equiv_p): For MEMs, if for_gcse, only compare
+	MEM_ALIAS_SET.
+
 2011-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (vec_dupv4sf): Correct mode of forced register.

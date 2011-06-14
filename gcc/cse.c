@@ -2670,15 +2670,25 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
     case MEM:
       if (for_gcse)
 	{
-	  /* Can't merge two expressions in different alias sets, since we
-	     can decide that the expression is transparent in a block when
-	     it isn't, due to it being set with the different alias set.  */
-	  if (MEM_ALIAS_SET (x) != MEM_ALIAS_SET (y))
-	    return 0;
-
 	  /* A volatile mem should not be considered equivalent to any
 	     other.  */
 	  if (MEM_VOLATILE_P (x) || MEM_VOLATILE_P (y))
+	    return 0;
+
+	  /* Can't merge two expressions in different alias sets, since we
+	     can decide that the expression is transparent in a block when
+	     it isn't, due to it being set with the different alias set.
+
+	     Also, can't merge two expressions with different MEM_ATTRS.
+	     They could e.g. be two different entities allocated into the
+	     same space on the stack (see e.g. PR25130).  In that case, the
+	     MEM addresses can be the same, even though the two MEMs are
+	     absolutely not equivalent.
+
+	     But because really all MEM attributes should be the same for
+	     equivalent MEMs, we just use the invariant that MEMs that have
+	     the same attributes share the same mem_attrs data structure.  */
+	  if (MEM_ATTRS (x) != MEM_ATTRS (y))
 	    return 0;
 	}
       break;
