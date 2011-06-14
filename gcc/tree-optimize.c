@@ -208,8 +208,7 @@ struct gimple_opt_pass pass_cleanup_cfg_post_optimizing =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
-    | TODO_remove_unused_locals
+  TODO_remove_unused_locals             /* todo_flags_finish */
  }
 };
 

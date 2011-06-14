@@ -2277,7 +2277,6 @@ struct gimple_opt_pass pass_update_address_taken =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_update_address_taken
-  | TODO_dump_func			/* todo_flags_finish */
+  TODO_update_address_taken             /* todo_flags_finish */
  }
 };

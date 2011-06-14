@@ -6634,7 +6634,7 @@ struct gimple_opt_pass pass_build_alias =
   0,			    /* properties_provided */
   0,                        /* properties_destroyed */
   0,                        /* todo_flags_start */
-  TODO_rebuild_alias | TODO_dump_func  /* todo_flags_finish */
+  TODO_rebuild_alias        /* todo_flags_finish */
  }
 };
 
@@ -6656,7 +6656,7 @@ struct gimple_opt_pass pass_build_ealias =
   0,			    /* properties_provided */
   0,                        /* properties_destroyed */
   0,                        /* todo_flags_start */
-  TODO_rebuild_alias | TODO_dump_func  /* todo_flags_finish */
+  TODO_rebuild_alias        /* todo_flags_finish */
  }
 };
 

@@ -1953,7 +1953,7 @@ struct gimple_opt_pass pass_ccp =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_ssa
+  TODO_verify_ssa
   | TODO_verify_stmts | TODO_ggc_collect/* todo_flags_finish */
  }
 };
@@ -2256,8 +2256,7 @@ struct gimple_opt_pass pass_fold_builtins =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func
-    | TODO_verify_ssa
+  TODO_verify_ssa
     | TODO_update_ssa			/* todo_flags_finish */
  }
 };

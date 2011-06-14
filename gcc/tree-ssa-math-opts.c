@@ -645,7 +645,7 @@ struct gimple_opt_pass pass_cse_reciprocals =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+  TODO_update_ssa | TODO_verify_ssa
     | TODO_verify_stmts                /* todo_flags_finish */
  }
 };
@@ -1491,7 +1491,7 @@ struct gimple_opt_pass pass_cse_sincos =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+  TODO_update_ssa | TODO_verify_ssa
     | TODO_verify_stmts                 /* todo_flags_finish */
  }
 };
@@ -1918,7 +1918,7 @@ execute_optimize_bswap (void)
   statistics_counter_event (cfun, "64-bit bswap implementations found",
 			    bswap_stats.found_64bit);
 
-  return (changed ? TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+  return (changed ? TODO_update_ssa | TODO_verify_ssa
 	  | TODO_verify_stmts : 0);
 }
 
@@ -2471,7 +2471,6 @@ struct gimple_opt_pass pass_optimize_widening_mul =
   0,					/* todo_flags_start */
   TODO_verify_ssa
   | TODO_verify_stmts
-  | TODO_dump_func
   | TODO_update_ssa                     /* todo_flags_finish */
  }
 };

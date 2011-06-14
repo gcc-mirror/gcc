@@ -2390,6 +2390,6 @@ struct simple_ipa_opt_pass pass_ipa_matrix_reorg =
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_dump_cgraph | TODO_dump_func	/* todo_flags_finish */
+  TODO_dump_cgraph      	/* todo_flags_finish */
  }
 };

@@ -1602,6 +1602,37 @@ do_per_function_toporder (void (*callback) (void *data), void *data)
   nnodes = 0;
 }
 
+/* Helper function to perform function body dump.  */
+
+static void
+execute_function_dump (void *data ATTRIBUTE_UNUSED)
+{
+  if (dump_file && current_function_decl)
+    {
+      if (cfun->curr_properties & PROP_trees)
+        dump_function_to_file (current_function_decl, dump_file, dump_flags);
+      else
+	{
+	  if (dump_flags & TDF_SLIM)
+	    print_rtl_slim_with_bb (dump_file, get_insns (), dump_flags);
+	  else if ((cfun->curr_properties & PROP_cfg)
+		   && (dump_flags & TDF_BLOCKS))
+	    print_rtl_with_bb (dump_file, get_insns ());
+          else
+	    print_rtl (dump_file, get_insns ());
+
+	  if ((cfun->curr_properties & PROP_cfg)
+	      && graph_dump_format != no_graph
+	      && (dump_flags & TDF_GRAPH))
+	    print_rtl_graph_with_bb (dump_file_name, get_insns ());
+	}
+
+      /* Flush the file.  If verification fails, we won't be able to
+	 close the file before aborting.  */
+      fflush (dump_file);
+    }
+}
+
 /* Perform all TODO actions that ought to be done on each function.  */
 
 static void
@@ -1647,31 +1678,6 @@ execute_function_todo (void *data)
 
   if (flags & TODO_remove_unused_locals)
     remove_unused_locals ();
-
-  if ((flags & TODO_dump_func) && dump_file && current_function_decl)
-    {
-      if (cfun->curr_properties & PROP_trees)
-        dump_function_to_file (current_function_decl, dump_file, dump_flags);
-      else
-	{
-	  if (dump_flags & TDF_SLIM)
-	    print_rtl_slim_with_bb (dump_file, get_insns (), dump_flags);
-	  else if ((cfun->curr_properties & PROP_cfg)
-		   && (dump_flags & TDF_BLOCKS))
-	    print_rtl_with_bb (dump_file, get_insns ());
-          else
-	    print_rtl (dump_file, get_insns ());
-
-	  if ((cfun->curr_properties & PROP_cfg)
-	      && graph_dump_format != no_graph
-	      && (dump_flags & TDF_GRAPH))
-	    print_rtl_graph_with_bb (dump_file_name, get_insns ());
-	}
-
-      /* Flush the file.  If verification fails, we won't be able to
-	 close the file before aborting.  */
-      fflush (dump_file);
-    }
 
   if (flags & TODO_rebuild_frequencies)
     rebuild_frequencies ();
@@ -1898,6 +1904,7 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   execute_todo (todo_after);
   verify_interpass_invariants ();
 
+  do_per_function (execute_function_dump, NULL);
   pass_fini_dump_file (pass);
 
   current_pass = NULL;
@@ -2038,6 +2045,7 @@ execute_one_pass (struct opt_pass *pass)
   /* Run post-pass cleanup and verification.  */
   execute_todo (todo_after | pass->todo_flags_finish);
   verify_interpass_invariants ();
+  do_per_function (execute_function_dump, NULL);
   if (pass->type == IPA_PASS)
     {
       struct cgraph_node *node;

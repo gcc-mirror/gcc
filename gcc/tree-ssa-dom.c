@@ -816,8 +816,7 @@ struct gimple_opt_pass pass_dominator =
   TODO_cleanup_cfg
     | TODO_update_ssa
     | TODO_verify_ssa
-    | TODO_verify_flow
-    | TODO_dump_func			/* todo_flags_finish */
+    | TODO_verify_flow			/* todo_flags_finish */
  }
 };
 
@@ -2969,7 +2968,6 @@ struct gimple_opt_pass pass_phi_only_cprop =
   0,		                        /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_cleanup_cfg
-    | TODO_dump_func
     | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_verify_stmts

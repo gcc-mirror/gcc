@@ -393,8 +393,7 @@ struct gimple_opt_pass pass_tracer =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func
-    | TODO_update_ssa
+  TODO_update_ssa
     | TODO_verify_ssa                   /* todo_flags_finish */
  }
 };

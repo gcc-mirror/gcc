@@ -378,7 +378,7 @@ struct rtl_opt_pass pass_into_cfg_layout_mode =
   PROP_cfglayout,                       /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -397,7 +397,7 @@ struct rtl_opt_pass pass_outof_cfg_layout_mode =
   0,                                    /* properties_provided */
   PROP_cfglayout,                       /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 

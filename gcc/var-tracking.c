@@ -9131,6 +9131,6 @@ struct rtl_opt_pass pass_variable_tracking =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func | TODO_verify_rtl_sharing/* todo_flags_finish */
+  TODO_verify_rtl_sharing               /* todo_flags_finish */
  }
 };

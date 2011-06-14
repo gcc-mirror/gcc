@@ -1,3 +1,100 @@
+2011-06-14  David Li  <davidxl@google.com>
+
+	* passes.c (execute_function_todo): Remove TODO_dump_func.
+	(execute_one_pass): Remove TODO_dump_func.
+	(execute_function_dump): New function.
+	* tree-vrp.c: Remove TODO_dump_func.
+	* regrename.c: Remove TODO_dump_func.
+	* fwprop.c: Remove TODO_dump_func.
+	* tree-into-ssa.c: Remove TODO_dump_func.
+	* tree-complex.c: Remove TODO_dump_func.
+	* tracer.c: Remove TODO_dump_func.
+	* tree-loop-distribution.c: Remove TODO_dump_func.
+	* postreload-gcse.c: Remove TODO_dump_func.
+	* postreload.c: Remove TODO_dump_func.
+	* tree-ssa-loop-ch.c: Remove TODO_dump_func.
+	* tree-tailcall.c: Remove TODO_dump_func.
+	* ipa-cp.c: Remove TODO_dump_func.
+	* final.c: Remove TODO_dump_func.
+	* tree-emutls.c: Remove TODO_dump_func.
+	* omp-low.c: Remove TODO_dump_func.
+	* tree-ssa-dse.c: Remove TODO_dump_func.
+	* tree-ssa-uncprop.c: Remove TODO_dump_func.
+	* auto-inc-dec.c: Remove TODO_dump_func.
+	* reorg.c: Remove TODO_dump_func.
+	* tree-ssa-copyrename.c: Remove TODO_dump_func.
+	* tree-ssa-ccp.c: Remove TODO_dump_func.
+	* compare-elim.c: Remove TODO_dump_func.
+	* mode-switching.c: Remove TODO_dump_func.
+	* modulo-sched.c: Remove TODO_dump_func.
+	* tree-call-cdce.c: Remove TODO_dump_func.
+	* cse.c: Remove TODO_dump_func.
+	* web.c: Remove TODO_dump_func.
+	* tree-stdarg.c: Remove TODO_dump_func.
+	* lto-streamer-out.c: Remove TODO_dump_func.
+	* tree-ssa-math-opts.c: Remove TODO_dump_func.
+	* tree-ssa-dom.c: Remove TODO_dump_func.
+	* tree-nrv.c: Remove TODO_dump_func.
+	* loop-init.c: Remove TODO_dump_func.
+	* gimple-low.c: Remove TODO_dump_func.
+	* ipa-inline.c: Remove TODO_dump_func.
+	* tree-ssa-sink.c: Remove TODO_dump_func.
+	* jump.c: Remove TODO_dump_func.
+	* ifcvt.c: Remove TODO_dump_func.
+	* tree-ssa-loop.c: Remove TODO_dump_func.
+	* recog.c: Remove TODO_dump_func.
+	* dse.c: Remove TODO_dump_func.
+	* tree-ssa-ifcombine.c: Remove TODO_dump_func.
+	* matrix-reorg.c: Remove TODO_dump_func.
+	* tree-eh.c: Remove TODO_dump_func.
+	* regmove.c: Remove TODO_dump_func.
+	* function.c: Remove TODO_dump_func.
+	* tree-vectorizer.c: Remove TODO_dump_func.
+	* ipa-split.c: Remove TODO_dump_func.
+	* gcse.c: Remove TODO_dump_func.
+	* tree-if-conv.c: Remove TODO_dump_func.
+	* init-regs.c: Remove TODO_dump_func.
+	* tree-ssa-phiopt.c: Remove TODO_dump_func.
+	* implicit-zee.c: Remove TODO_dump_func.
+	* lower-subreg.c: Remove TODO_dump_func.
+	* bt-load.c: Remove TODO_dump_func.
+	* tree-dfa.c: Remove TODO_dump_func.
+	* except.c: Remove TODO_dump_func.
+	* emit-rtl.c: Remove TODO_dump_func.
+	* store-motion.c: Remove TODO_dump_func.
+	* cfgexpand.c: Remove TODO_dump_func.
+	* tree-cfgcleanup.c: Remove TODO_dump_func.
+	* cfgcleanup.c: Remove TODO_dump_func.
+	* tree-ssa-pre.c: Remove TODO_dump_func.
+	* tree-sra.c: Remove TODO_dump_func.
+	* tree-mudflap.c: Remove TODO_dump_func.
+	* tree-ssa-copy.c: Remove TODO_dump_func.
+	* cfglayout.c: Remove TODO_dump_func.
+	* tree-ssa-forwprop.c: Remove TODO_dump_func.
+	* tree-ssa-dce.c: Remove TODO_dump_func.
+	* ira.c: Remove TODO_dump_func.
+	* tree-ssa.c: Remove TODO_dump_func.
+	* integrate.c: Remove TODO_dump_func.
+	* tree-optimize.c: Remove TODO_dump_func.
+	* tree-ssa-phiprop.c: Remove TODO_dump_func.
+	* tree-object-size.c: Remove TODO_dump_func.
+	* combine.c: Remove TODO_dump_func.
+	* bb-reorder.c: Remove TODO_dump_func.
+	* cprop.c: Remove TODO_dump_func.
+	* var-tracking.c: Remove TODO_dump_func.
+	* tree-profile.c: Remove TODO_dump_func.
+	* tree-vect-generic.c: Remove TODO_dump_func.
+	* reg-stack.c: Remove TODO_dump_func.
+	* sched-rgn.c: Remove TODO_dump_func.
+	* tree-ssa-structalias.c: Remove TODO_dump_func.
+	* tree-switch-conversion.c: Remove TODO_dump_func.
+	* tree-cfg.c: Remove TODO_dump_func.
+	* tree-ssa-reassoc.c: Remove TODO_dump_func.
+	* combine-stack-adj.c: Remove TODO_dump_func.
+	* dce.c: Remove TODO_dump_func.
+	* tree-ssanames.c: Remove TODO_dump_func.
+	* regcprop.c: Remove TODO_dump_func.
+
 2011-06-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47364

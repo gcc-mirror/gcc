@@ -2302,7 +2302,7 @@ struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,            			/* todo_flags_start */
-  TODO_dump_func                        /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  },
  NULL,		                        /* generate_summary */
  lto_output,           			/* write_summary */

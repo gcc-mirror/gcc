@@ -1955,7 +1955,7 @@ struct rtl_opt_pass pass_instantiate_virtual_regs =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func                        /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -5949,7 +5949,6 @@ struct rtl_opt_pass pass_thread_prologue_and_epilogue =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   TODO_verify_flow,                     /* todo_flags_start */
-  TODO_dump_func |
   TODO_df_verify |
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_ggc_collect                      /* todo_flags_finish */
@@ -6151,7 +6150,7 @@ struct rtl_opt_pass pass_match_asm_constraints =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func                       /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 

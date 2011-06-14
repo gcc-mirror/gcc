@@ -2299,8 +2299,6 @@ struct gimple_opt_pass pass_reassoc =
   0,					/* todo_flags_start */
   TODO_verify_ssa
     | TODO_verify_flow
-    | TODO_dump_func
     | TODO_ggc_collect			/* todo_flags_finish */
  }
 };
-
