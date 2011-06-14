@@ -1,5 +1,8 @@
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/other/error23.C: Adjust error message.
+	* g++.dg/other/error32.C: Likewise.
+
 	PR c++/49389
 	* g++.dg/cpp0x/rv-dotstar.C: New.
 
