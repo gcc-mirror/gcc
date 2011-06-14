@@ -1,5 +1,14 @@
 2011-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/49103
+	* tree.h (DECL_NONSHAREABLE): Define.
+	(struct tree_decl_common): Change decl_common_unused to
+	decl_nonshareable_flag.
+	* cfgexpand.c (expand_used_vars_for_block, clear_tree_used):
+	Ignore vars with DECL_NONSHAREABLE bit set.
+	* tree-cfg.c (gimple_duplicate_bb): Set DECL_NONSHAREABLE
+	on stores to automatic aggregate vars.
+
 	PR rtl-optimization/49390
 	Revert:
 	2010-06-29  Bernd Schmidt  <bernds@codesourcery.com>
