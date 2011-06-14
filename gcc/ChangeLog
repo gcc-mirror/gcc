@@ -476,7 +476,7 @@
 	when a value is actually passed in regs.
 
 2011-06-10  Eric Botcazou  <ebotcazou@adacore.com>
-	    Laurent Rougé  <laurent.rouge@menta.fr>
+	    Laurent RougÃ©  <laurent.rouge@menta.fr>
 
 	* doc/invoke.texi (SPARC options): Add -mflat.
 	* config/sparc/sparc.opt: Likewise.
