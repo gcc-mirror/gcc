@@ -1,5 +1,17 @@
 2011-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/valarray (~valarray): Use noexcept.
+	* include/bits/unique_ptr.h (~unique_ptr): Likewise.
+	* testsuite/26_numerics/valarray/noexcept_move_construct.cc: New.
+	* testsuite/20_util/shared_ptr/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/20_util/weak_ptr/cons/noexcept_move_construct.cc:
+	Likewise.
+
+2011-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/functional: Use noexcept.
 	* include/bits/stl_tempbuf.h: Likewise.
 
