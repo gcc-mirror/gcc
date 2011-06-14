@@ -1468,7 +1468,7 @@ struct rtl_opt_pass pass_rtl_eh =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func                        /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -1910,7 +1910,7 @@ struct rtl_opt_pass pass_set_nothrow_function_flags =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -2665,7 +2665,7 @@ struct rtl_opt_pass pass_convert_to_eh_region_ranges =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
+  0              			/* todo_flags_finish */
  }
 };
 

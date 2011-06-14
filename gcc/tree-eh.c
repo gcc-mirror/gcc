@@ -2052,7 +2052,7 @@ struct gimple_opt_pass pass_lower_eh =
   PROP_gimple_leh,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
+  0             			/* todo_flags_finish */
  }
 };
 
@@ -2865,7 +2865,7 @@ struct gimple_opt_pass pass_refactor_eh =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
+  0             			/* todo_flags_finish */
  }
 };
 
@@ -3071,7 +3071,7 @@ struct gimple_opt_pass pass_lower_resx =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_flow	/* todo_flags_finish */
+  TODO_verify_flow	                /* todo_flags_finish */
  }
 };
 
@@ -3272,7 +3272,7 @@ struct gimple_opt_pass pass_lower_eh_dispatch =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_flow	/* todo_flags_finish */
+  TODO_verify_flow	                /* todo_flags_finish */
  }
 };
 
@@ -4015,7 +4015,7 @@ struct gimple_opt_pass pass_cleanup_eh = {
    0,				/* properties_provided */
    0,				/* properties_destroyed */
    0,				/* todo_flags_start */
-   TODO_dump_func		/* todo_flags_finish */
+   0             		/* todo_flags_finish */
    }
 };
 

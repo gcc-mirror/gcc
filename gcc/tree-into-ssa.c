@@ -2413,8 +2413,7 @@ struct gimple_opt_pass pass_build_ssa =
   PROP_ssa,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func
-    | TODO_update_ssa_only_virtuals
+  TODO_update_ssa_only_virtuals
     | TODO_verify_ssa
     | TODO_remove_unused_locals		/* todo_flags_finish */
  }

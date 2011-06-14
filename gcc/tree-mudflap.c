@@ -1389,7 +1389,7 @@ struct gimple_opt_pass pass_mudflap_1 =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func                        /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -1409,7 +1409,7 @@ struct gimple_opt_pass pass_mudflap_2 =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_verify_flow | TODO_verify_stmts
-  | TODO_dump_func | TODO_update_ssa    /* todo_flags_finish */
+  | TODO_update_ssa                     /* todo_flags_finish */
  }
 };
 

@@ -7816,7 +7816,6 @@ struct gimple_opt_pass pass_vrp =
     | TODO_update_ssa
     | TODO_verify_ssa
     | TODO_verify_flow
-    | TODO_dump_func
     | TODO_ggc_collect			/* todo_flags_finish */
  }
 };

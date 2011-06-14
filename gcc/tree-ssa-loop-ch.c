@@ -278,7 +278,6 @@ struct gimple_opt_pass pass_ch =
   0,					/* todo_flags_start */
   TODO_cleanup_cfg
     | TODO_verify_ssa
-    | TODO_verify_flow
-    | TODO_dump_func			/* todo_flags_finish */
+    | TODO_verify_flow			/* todo_flags_finish */
  }
 };

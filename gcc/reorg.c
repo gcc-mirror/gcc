@@ -4086,7 +4086,6 @@ struct rtl_opt_pass pass_delay_slots =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
   TODO_ggc_collect                      /* todo_flags_finish */
  }
 };
@@ -4121,7 +4120,6 @@ struct rtl_opt_pass pass_machine_reorg =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
   TODO_ggc_collect                      /* todo_flags_finish */
  }
 };

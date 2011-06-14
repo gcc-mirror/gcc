@@ -783,7 +783,7 @@ ipa_lower_emutls (void)
   VEC_free (tree, heap, access_vars);
   free_varpool_node_set (tls_vars);
 
-  return TODO_dump_func | TODO_ggc_collect | TODO_verify_all;
+  return TODO_ggc_collect | TODO_verify_all;
 }
 
 /* If the target supports TLS natively, we need do nothing here.  */

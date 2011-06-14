@@ -1583,7 +1583,7 @@ struct ipa_opt_pass_d pass_ipa_cp =
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_dump_cgraph | TODO_dump_func |
+  TODO_dump_cgraph |
   TODO_remove_functions | TODO_ggc_collect /* todo_flags_finish */
  },
  ipcp_generate_summary,			/* generate_summary */

@@ -261,8 +261,7 @@ struct gimple_opt_pass pass_build_cfg =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts | TODO_cleanup_cfg
-  | TODO_dump_func			/* todo_flags_finish */
+  TODO_verify_stmts | TODO_cleanup_cfg  /* todo_flags_finish */
  }
 };
 
@@ -7253,7 +7252,7 @@ struct gimple_opt_pass pass_split_crit_edges =
   PROP_no_crit_edges,            /* properties_provided */
   0,                             /* properties_destroyed */
   0,                             /* todo_flags_start */
-  TODO_dump_func | TODO_verify_flow  /* todo_flags_finish */
+  TODO_verify_flow               /* todo_flags_finish */
  }
 };
 

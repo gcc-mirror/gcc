@@ -113,8 +113,8 @@ struct gimple_opt_pass pass_referenced_vars =
   PROP_gimple_leh | PROP_cfg,		/* properties_required */
   PROP_referenced_vars,			/* properties_provided */
   0,					/* properties_destroyed */
-  TODO_dump_func,			/* todo_flags_start */
-  TODO_dump_func                        /* todo_flags_finish */
+  0,                     		/* todo_flags_start */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -1000,4 +1000,3 @@ stmt_references_abnormal_ssa_name (gimple stmt)
 
   return false;
 }
-

@@ -2969,12 +2969,10 @@ struct rtl_opt_pass pass_sms =
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
-  TODO_dump_func,                       /* todo_flags_start */
+  0,                                    /* todo_flags_start */
   TODO_df_finish
     | TODO_verify_flow
     | TODO_verify_rtl_sharing
-    | TODO_dump_func
     | TODO_ggc_collect                  /* todo_flags_finish */
  }
 };
-
