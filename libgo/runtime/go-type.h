@@ -53,13 +53,17 @@
 #define GO_STRUCT 25
 #define GO_UNSAFE_POINTER 26
 
+#define GO_NO_POINTERS (1 << 7)
+
+#define GO_CODE_MASK 0x7f
+
 /* For each Go type the compiler constructs one of these structures.
    This is used for type reflectin, interfaces, maps, and reference
    counting.  */
 
 struct __go_type_descriptor
 {
-  /* The type code for this type, a value in enum __go_type_codes.
+  /* The type code for this type, one of the type kind values above.
      This is used by unsafe.Reflect and unsafe.Typeof to determine the
      type descriptor to return for this type itself.  It is also used
      by reflect.toType when mapping to a reflect Type structure.  */

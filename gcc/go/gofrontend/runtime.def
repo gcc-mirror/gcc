@@ -65,8 +65,14 @@ DEF_GO_RUNTIME(STRING_TO_INT_ARRAY, "__go_string_to_int_array",
 	       P1(STRING), R1(SLICE))
 
 
+// Make a slice.
+DEF_GO_RUNTIME(MAKESLICE1, "__go_make_slice1", P2(TYPE, UINTPTR), R1(SLICE))
+DEF_GO_RUNTIME(MAKESLICE2, "__go_make_slice2", P3(TYPE, UINTPTR, UINTPTR),
+	       R1(SLICE))
+
+
 // Make a map.
-DEF_GO_RUNTIME(NEW_MAP, "__go_new_map", P2(TYPE, UINTPTR), R1(MAP))
+DEF_GO_RUNTIME(MAKEMAP, "__go_new_map", P2(MAPDESCRIPTOR, UINTPTR), R1(MAP))
 
 // Build a map from a composite literal.
 DEF_GO_RUNTIME(CONSTRUCT_MAP, "__go_construct_map",
@@ -103,7 +109,7 @@ DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(MAPITER), R0())
 
 
 // Make a channel.
-DEF_GO_RUNTIME(NEW_CHANNEL, "__go_new_channel", P2(UINTPTR, UINTPTR), R1(CHAN))
+DEF_GO_RUNTIME(MAKECHAN, "__go_new_channel", P2(TYPE, UINTPTR), R1(CHAN))
 
 // Get the length of a channel (the number of unread values).
 DEF_GO_RUNTIME(CHAN_LEN, "__go_chan_len", P1(CHAN), R1(INT))

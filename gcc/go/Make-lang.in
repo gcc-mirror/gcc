@@ -255,7 +255,7 @@ go/expressions.o: go/gofrontend/expressions.cc $(GO_SYSTEM_H) $(TOPLEV_H) \
 	intl.h $(TREE_H) $(GIMPLE_H) tree-iterator.h convert.h $(REAL_H) \
 	realmpfr.h $(GO_C_H) $(GO_GOGO_H) $(GO_TYPES_H) \
 	go/gofrontend/export.h $(GO_IMPORT_H) $(GO_STATEMENTS_H) $(GO_LEX_H) \
-	go/gofrontend/backend.h $(GO_EXPRESSIONS_H)
+	$(GO_RUNTIME_H) go/gofrontend/backend.h $(GO_EXPRESSIONS_H)
 go/go.o: go/gofrontend/go.cc $(GO_SYSTEM_H) $(GO_C_H) $(GO_LEX_H) \
 	$(GO_PARSE_H) go/gofrontend/backend.h $(GO_GOGO_H)
 go/go-dump.o: go/gofrontend/go-dump.cc $(GO_SYSTEM_H) $(GO_C_H) \

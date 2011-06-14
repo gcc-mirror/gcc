@@ -381,6 +381,7 @@ runtime_files = \
 	runtime/go-interface-eface-compare.c \
 	runtime/go-interface-val-compare.c \
 	runtime/go-lock-os-thread.c \
+	runtime/go-make-slice.c \
 	runtime/go-map-delete.c \
 	runtime/go-map-index.c \
 	runtime/go-map-len.c \

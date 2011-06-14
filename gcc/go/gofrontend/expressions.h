@@ -78,7 +78,6 @@ class Expression
     EXPRESSION_FIELD_REFERENCE,
     EXPRESSION_INTERFACE_FIELD_REFERENCE,
     EXPRESSION_ALLOCATION,
-    EXPRESSION_MAKE,
     EXPRESSION_TYPE_GUARD,
     EXPRESSION_CONVERSION,
     EXPRESSION_UNSAFE_CONVERSION,
@@ -92,6 +91,7 @@ class Expression
     EXPRESSION_TYPE_DESCRIPTOR,
     EXPRESSION_TYPE_INFO,
     EXPRESSION_STRUCT_FIELD_OFFSET,
+    EXPRESSION_MAP_DESCRIPTOR,
     EXPRESSION_LABEL_ADDR
   };
 
@@ -236,10 +236,6 @@ class Expression
   static Expression*
   make_allocation(Type*, source_location);
 
-  // Make a call to the builtin function make.
-  static Expression*
-  make_make(Type*, Expression_list*, source_location);
-
   // Make a type guard expression.
   static Expression*
   make_type_guard(Expression*, Type*, source_location);
@@ -276,8 +272,8 @@ class Expression
   static Receive_expression*
   make_receive(Expression* channel, source_location);
 
-  // Make an expression which evaluates to the type descriptor of a
-  // type.
+  // Make an expression which evaluates to the address of the type
+  // descriptor for TYPE.
   static Expression*
   make_type_descriptor(Type* type, source_location);
 
@@ -303,6 +299,11 @@ class Expression
   // location parameter.
   static Expression*
   make_struct_field_offset(Struct_type*, const Struct_field*);
+
+  // Make an expression which evaluates to the address of the map
+  // descriptor for TYPE.
+  static Expression*
+  make_map_descriptor(Map_type* type, source_location);
 
   // Make an expression which evaluates to the address of an unnamed
   // label.
