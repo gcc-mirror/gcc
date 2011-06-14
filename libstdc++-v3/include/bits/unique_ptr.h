@@ -166,7 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       // Destructor.
-      ~unique_ptr() { reset(); }
+      ~unique_ptr() noexcept { reset(); }
 
       // Assignment.
       unique_ptr&
