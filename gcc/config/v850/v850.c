@@ -3141,7 +3141,9 @@ v850_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 }
 
 static int
-v850_memory_move_cost (enum machine_mode mode, bool in)
+v850_memory_move_cost (enum machine_mode mode,
+		       reg_class_t reg_class ATTRIBUTE_UNUSED,
+		       bool in)
 {
   switch (GET_MODE_SIZE (mode))
     {

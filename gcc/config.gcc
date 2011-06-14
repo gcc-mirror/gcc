@@ -2584,7 +2584,7 @@ v850*-*-*)
 	md_file=v850/v850.md
 	extra_modes=v850/v850-modes.def
 	out_file=v850/v850.c
-	extra_options="${extra_options} v850/v850.opt"
+	extra_options="v850/v850.opt"
 	if test x$stabs = xyes
 	then
 		tm_file="${tm_file} dbx.h"
