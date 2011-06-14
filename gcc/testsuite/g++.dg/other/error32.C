@@ -3,6 +3,6 @@
 
 void foo()
 {
-  if (throw 0) // { dg-error "could not convert .\\<throw-expression\\>. to .bool." }
+  if (throw 0) // { dg-error "could not convert .\\<throw-expression\\>. from .void. to .bool." }
     ;
 }

@@ -1,5 +1,10 @@
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/other/error23.C: Adjust error message.
+	* g++.dg/other/error32.C: Likewise.
+
+2011-06-14  Jason Merrill  <jason@redhat.com>
+
 	PR c++/49369
 	* g++.dg/cpp0x/decltype30.C: New.
 
