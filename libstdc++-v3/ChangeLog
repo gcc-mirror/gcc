@@ -1,3 +1,8 @@
+2011-06-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/ptr_traits.h (pointer_traits<T*>::pointer_to): Use
+	noexcept.
+
 2011-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/valarray (~valarray): Use noexcept.
@@ -43,6 +48,13 @@
 	* testsuite/23_containers/vector/bool/capacity/shrink_to_fit.cc:
 	Likewise.
 	* testsuite/23_containers/deque/debug/shrink_to_fit.cc: Likewise.
+
+2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: Fix for
+	C++0x mode.
+	* testsuite/25_algorithms/sort/35588.cc: Likewise.
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Likewise.
 
 2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 

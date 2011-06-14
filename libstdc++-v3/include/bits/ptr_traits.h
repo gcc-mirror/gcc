@@ -211,7 +211,7 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
        *  @return @c addressof(r)
       */
       static pointer
-      pointer_to(typename __ptrtr_not_void<element_type>::__type& __r)
+      pointer_to(typename __ptrtr_not_void<element_type>::__type& __r) noexcept
       { return std::addressof(__r); }
     };
 
