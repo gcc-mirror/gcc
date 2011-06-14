@@ -1,5 +1,8 @@
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49389
+	* typeck2.c (build_m_component_ref): Preserve rvalueness.
+
 	PR c++/49369
 	* class.c (build_base_path): Fix cv-quals in unevaluated context.
 

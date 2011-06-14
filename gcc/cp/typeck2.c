@@ -1551,6 +1551,7 @@ build_m_component_ref (tree datum, tree component)
 
   if (TYPE_PTRMEM_P (ptrmem_type))
     {
+      bool is_lval = real_lvalue_p (datum);
       tree ptype;
 
       /* Compute the type of the field, as described in [expr.ref].
@@ -1573,7 +1574,11 @@ build_m_component_ref (tree datum, tree component)
       datum = build2 (POINTER_PLUS_EXPR, ptype,
 		      fold_convert (ptype, datum),
 		      build_nop (sizetype, component));
-      return cp_build_indirect_ref (datum, RO_NULL, tf_warning_or_error);
+      datum = cp_build_indirect_ref (datum, RO_NULL, tf_warning_or_error);
+      /* If the object expression was an rvalue, return an rvalue.  */
+      if (!is_lval)
+	datum = move (datum);
+      return datum;
     }
   else
     return build2 (OFFSET_REF, type, datum, component);

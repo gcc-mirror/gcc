@@ -1,5 +1,8 @@
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49389
+	* g++.dg/cpp0x/rv-dotstar.C: New.
+
 	PR c++/49369
 	* g++.dg/cpp0x/decltype30.C: New.
 
