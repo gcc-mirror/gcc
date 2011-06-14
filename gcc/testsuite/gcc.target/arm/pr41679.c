@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=armv5te -g -O2" } */
+/* { dg-prune-output "switch .* conflicts with" } */
 
 extern int a;
 extern char b;

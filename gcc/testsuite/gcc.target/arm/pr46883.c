@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -march=armv5te" } */
+/* { dg-prune-output "switch .* conflicts with" } */
 
 void bar (unsigned char *q, unsigned short *data16s, int len)
 {
