@@ -1,3 +1,9 @@
+2011-06-14  Olivier Hainque  <hainque@adacore.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/irix6-unwind.h: New file.
+	* config.host (mips-sgi-irix6.5*): Set md_unwind_header.
+
 2011-06-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/linux-unwind.h (STACK_BIAS): Define.
