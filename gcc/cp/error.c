@@ -2618,6 +2618,15 @@ type_to_string (tree typ, int verbose)
 
   reinit_cxx_pp ();
   dump_type (typ, flags);
+  if (typ && TYPE_P (typ) && typ != TYPE_CANONICAL (typ)
+      && !uses_template_parms (typ))
+    {
+      tree aka = strip_typedefs (typ);
+      pp_string (cxx_pp, " {aka");
+      pp_cxx_whitespace (cxx_pp);
+      dump_type (aka, flags);
+      pp_character (cxx_pp, '}');
+    }
   return pp_formatted_text (cxx_pp);
 }
 
