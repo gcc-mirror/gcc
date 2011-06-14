@@ -289,6 +289,12 @@ build_base_path (enum tree_code code,
   offset = BINFO_OFFSET (binfo);
   fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
   target_type = code == PLUS_EXPR ? BINFO_TYPE (binfo) : BINFO_TYPE (d_binfo);
+  /* TARGET_TYPE has been extracted from BINFO, and, is therefore always
+     cv-unqualified.  Extract the cv-qualifiers from EXPR so that the
+     expression returned matches the input.  */
+  target_type = cp_build_qualified_type
+    (target_type, cp_type_quals (TREE_TYPE (TREE_TYPE (expr))));
+  ptr_target_type = build_pointer_type (target_type);
 
   /* Do we need to look in the vtable for the real offset?  */
   virtual_access = (v_binfo && fixed_type_p <= 0);
@@ -297,7 +303,7 @@ build_base_path (enum tree_code code,
      source type is incomplete and the pointer value doesn't matter.  */
   if (cp_unevaluated_operand != 0)
     {
-      expr = build_nop (build_pointer_type (target_type), expr);
+      expr = build_nop (ptr_target_type, expr);
       if (!want_pointer)
 	expr = build_indirect_ref (EXPR_LOCATION (expr), expr, RO_NULL);
       return expr;
@@ -312,18 +318,7 @@ build_base_path (enum tree_code code,
 	 field, because other parts of the compiler know that such
 	 expressions are always non-NULL.  */
       if (!virtual_access && integer_zerop (offset))
-	{
-	  tree class_type;
-	  /* TARGET_TYPE has been extracted from BINFO, and, is
-	     therefore always cv-unqualified.  Extract the
-	     cv-qualifiers from EXPR so that the expression returned
-	     matches the input.  */
-	  class_type = TREE_TYPE (TREE_TYPE (expr));
-	  target_type
-	    = cp_build_qualified_type (target_type,
-				       cp_type_quals (class_type));
-	  return build_nop (build_pointer_type (target_type), expr);
-	}
+	return build_nop (ptr_target_type, expr);
       null_test = error_mark_node;
     }
 
@@ -407,9 +402,6 @@ build_base_path (enum tree_code code,
 	offset = v_offset;
     }
 
-  target_type = cp_build_qualified_type
-    (target_type, cp_type_quals (TREE_TYPE (TREE_TYPE (expr))));
-  ptr_target_type = build_pointer_type (target_type);
   if (want_pointer)
     target_type = ptr_target_type;
 

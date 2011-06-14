@@ -1,5 +1,8 @@
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49369
+	* class.c (build_base_path): Fix cv-quals in unevaluated context.
+
 	PR c++/49290
 	* semantics.c (cxx_eval_indirect_ref): Remove assert.
 
