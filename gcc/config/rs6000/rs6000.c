@@ -48,6 +48,7 @@
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "common/common-target.h"
 #include "langhooks.h"
 #include "reload.h"
 #include "cfglayout.h"
@@ -1044,11 +1045,7 @@ static rtx altivec_expand_vec_set_builtin (tree);
 static rtx altivec_expand_vec_ext_builtin (tree, rtx);
 static int get_element_number (tree, tree);
 static void rs6000_option_override (void);
-static void rs6000_option_init_struct (struct gcc_options *);
 static void rs6000_option_default_params (void);
-static bool rs6000_handle_option (struct gcc_options *, struct gcc_options *,
-				  const struct cl_decoded_option *,
-				  location_t);
 static int rs6000_loop_align_max_skip (rtx);
 static int first_altivec_reg_to_save (void);
 static unsigned int compute_vrsave_mask (void);
@@ -1290,13 +1287,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #endif
   { NULL,        0, 0, false, false, false, NULL, false }
 };
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options rs6000_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 #ifndef MASK_STRICT_ALIGN
 #define MASK_STRICT_ALIGN 0
@@ -1532,31 +1522,18 @@ static const struct default_options rs6000_option_optimization_table[] =
 #undef TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN
 #define TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN invalid_arg_for_unprototyped_fn
 
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION rs6000_handle_option
-
 #undef TARGET_ASM_LOOP_ALIGN_MAX_SKIP
 #define TARGET_ASM_LOOP_ALIGN_MAX_SKIP rs6000_loop_align_max_skip
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE rs6000_option_override
 
-#undef TARGET_OPTION_INIT_STRUCT
-#define TARGET_OPTION_INIT_STRUCT rs6000_option_init_struct
-
 #undef TARGET_OPTION_DEFAULT_PARAMS
 #define TARGET_OPTION_DEFAULT_PARAMS rs6000_option_default_params
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE rs6000_option_optimization_table
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
   rs6000_builtin_vectorized_function
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS \
-  (TARGET_DEFAULT)
 
 #ifndef TARGET_MACHO
 #undef TARGET_STACK_PROTECT_FAIL
@@ -3701,21 +3678,6 @@ rs6000_preferred_simd_mode (enum machine_mode mode)
   return word_mode;
 }
 
-/* Implement TARGET_OPTION_INIT_STRUCT.  */
-
-static void
-rs6000_option_init_struct (struct gcc_options *opts)
-{
-  if (DEFAULT_ABI == ABI_DARWIN)
-    /* The Darwin libraries never set errno, so we might as well
-       avoid calling them when that's the only reason we would.  */
-    opts->x_flag_errno_math = 0;
-
-  /* Enable section anchors by default.  */
-  if (!TARGET_MACHO)
-    opts->x_flag_section_anchors = 1;
-}
-
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
 
 static void
@@ -4050,259 +4012,6 @@ rs6000_builtin_vectorized_function (tree fndecl, tree type_out,
     return rs6000_veclib_handler (fndecl, type_out, type_in);
 
   return NULL_TREE;
-}
-
-
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
-		      const struct cl_decoded_option *decoded,
-		      location_t loc)
-{
-  enum fpu_type_t fpu_type = FPU_NONE;
-  char *p, *q;
-  size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mno_power:
-      opts->x_target_flags &= ~(MASK_POWER | MASK_POWER2
-				| MASK_MULTIPLE | MASK_STRING);
-      opts_set->x_target_flags |= (MASK_POWER | MASK_POWER2
-				   | MASK_MULTIPLE | MASK_STRING);
-      break;
-    case OPT_mno_powerpc:
-      opts->x_target_flags &= ~(MASK_POWERPC | MASK_PPC_GPOPT
-				| MASK_PPC_GFXOPT | MASK_POWERPC64);
-      opts_set->x_target_flags |= (MASK_POWERPC | MASK_PPC_GPOPT
-				   | MASK_PPC_GFXOPT | MASK_POWERPC64);
-      break;
-    case OPT_mfull_toc:
-      opts->x_target_flags &= ~MASK_MINIMAL_TOC;
-      opts->x_TARGET_NO_FP_IN_TOC = 0;
-      opts->x_TARGET_NO_SUM_IN_TOC = 0;
-      opts_set->x_target_flags |= MASK_MINIMAL_TOC;
-#ifdef TARGET_USES_SYSV4_OPT
-      /* Note, V.4 no longer uses a normal TOC, so make -mfull-toc, be
-	 just the same as -mminimal-toc.  */
-      opts->x_target_flags |= MASK_MINIMAL_TOC;
-      opts_set->x_target_flags |= MASK_MINIMAL_TOC;
-#endif
-      break;
-
-#ifdef TARGET_USES_SYSV4_OPT
-    case OPT_mtoc:
-      /* Make -mtoc behave like -mminimal-toc.  */
-      opts->x_target_flags |= MASK_MINIMAL_TOC;
-      opts_set->x_target_flags |= MASK_MINIMAL_TOC;
-      break;
-#endif
-
-#ifdef TARGET_USES_AIX64_OPT
-    case OPT_maix64:
-#else
-    case OPT_m64:
-#endif
-      opts->x_target_flags |= MASK_POWERPC64 | MASK_POWERPC;
-      opts->x_target_flags |= ~opts_set->x_target_flags & MASK_PPC_GFXOPT;
-      opts_set->x_target_flags |= MASK_POWERPC64 | MASK_POWERPC;
-      break;
-
-#ifdef TARGET_USES_AIX64_OPT
-    case OPT_maix32:
-#else
-    case OPT_m32:
-#endif
-      opts->x_target_flags &= ~MASK_POWERPC64;
-      opts_set->x_target_flags |= MASK_POWERPC64;
-      break;
-
-    case OPT_mminimal_toc:
-      if (value == 1)
-	{
-	  opts->x_TARGET_NO_FP_IN_TOC = 0;
-	  opts->x_TARGET_NO_SUM_IN_TOC = 0;
-	}
-      break;
-
-    case OPT_mpower:
-      if (value == 1)
-	{
-	  opts->x_target_flags |= (MASK_MULTIPLE | MASK_STRING);
-	  opts_set->x_target_flags |= (MASK_MULTIPLE | MASK_STRING);
-	}
-      break;
-
-    case OPT_mpower2:
-      if (value == 1)
-	{
-	  opts->x_target_flags |= (MASK_POWER | MASK_MULTIPLE | MASK_STRING);
-	  opts_set->x_target_flags |= (MASK_POWER
-				       | MASK_MULTIPLE
-				       | MASK_STRING);
-	}
-      break;
-
-    case OPT_mpowerpc_gpopt:
-    case OPT_mpowerpc_gfxopt:
-      if (value == 1)
-	{
-	  opts->x_target_flags |= MASK_POWERPC;
-	  opts_set->x_target_flags |= MASK_POWERPC;
-	}
-      break;
-
-    case OPT_mdebug_:
-      p = ASTRDUP (arg);
-      opts->x_rs6000_debug = 0;
-
-      while ((q = strtok (p, ",")) != NULL)
-	{
-	  unsigned mask = 0;
-	  bool invert;
-
-	  p = NULL;
-	  if (*q == '!')
-	    {
-	      invert = true;
-	      q++;
-	    }
-	  else
-	    invert = false;
-
-	  if (! strcmp (q, "all"))
-	    mask = MASK_DEBUG_ALL;
-	  else if (! strcmp (q, "stack"))
-	    mask = MASK_DEBUG_STACK;
-	  else if (! strcmp (q, "arg"))
-	    mask = MASK_DEBUG_ARG;
-	  else if (! strcmp (q, "reg"))
-	    mask = MASK_DEBUG_REG;
-	  else if (! strcmp (q, "addr"))
-	    mask = MASK_DEBUG_ADDR;
-	  else if (! strcmp (q, "cost"))
-	    mask = MASK_DEBUG_COST;
-	  else if (! strcmp (q, "target"))
-	    mask = MASK_DEBUG_TARGET;
-	  else
-	    error_at (loc, "unknown -mdebug-%s switch", q);
-
-	  if (invert)
-	    opts->x_rs6000_debug &= ~mask;
-	  else	
-	    opts->x_rs6000_debug |= mask;
-	}
-      break;
-
-#ifdef TARGET_USES_SYSV4_OPT
-    case OPT_mrelocatable:
-      if (value == 1)
-	{
-	  opts->x_target_flags |= MASK_MINIMAL_TOC;
-	  opts_set->x_target_flags |= MASK_MINIMAL_TOC;
-	  opts->x_TARGET_NO_FP_IN_TOC = 1;
-	}
-      break;
-
-    case OPT_mrelocatable_lib:
-      if (value == 1)
-	{
-	  opts->x_target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC;
-	  opts_set->x_target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC;
-	  opts->x_TARGET_NO_FP_IN_TOC = 1;
-	}
-      else
-	{
-	  opts->x_target_flags &= ~MASK_RELOCATABLE;
-	  opts_set->x_target_flags |= MASK_RELOCATABLE;
-	}
-      break;
-#endif
-
-    case OPT_mabi_altivec:
-      /* Enabling the AltiVec ABI turns off the SPE ABI.  */
-      opts->x_rs6000_spe_abi = 0;
-      break;
-
-    case OPT_mabi_spe:
-      opts->x_rs6000_altivec_abi = 0;
-      break;
-
-    case OPT_mlong_double_:
-      if (value != 64 && value != 128)
-	{
-	  error_at (loc, "unknown switch -mlong-double-%s", arg);
-	  opts->x_rs6000_long_double_type_size
-	    = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
-	  return false;
-	}
-      break;
-
-    case OPT_msingle_float:
-      if (!TARGET_SINGLE_FPU) 
-	warning_at (loc, 0,
-		    "-msingle-float option equivalent to -mhard-float");
-      /* -msingle-float implies -mno-double-float and TARGET_HARD_FLOAT. */
-      opts->x_rs6000_double_float = 0;
-      opts->x_target_flags &= ~MASK_SOFT_FLOAT;
-      opts_set->x_target_flags |= MASK_SOFT_FLOAT;
-      break;
-
-    case OPT_mdouble_float:
-      /* -mdouble-float implies -msingle-float and TARGET_HARD_FLOAT. */
-      opts->x_rs6000_single_float = 1;
-      opts->x_target_flags &= ~MASK_SOFT_FLOAT;
-      opts_set->x_target_flags |= MASK_SOFT_FLOAT;
-      break;
-
-    case OPT_msimple_fpu:
-      if (!TARGET_SINGLE_FPU) 
-	warning_at (loc, 0, "-msimple-fpu option ignored");
-      break;
-
-    case OPT_mhard_float:
-      /* -mhard_float implies -msingle-float and -mdouble-float. */
-      opts->x_rs6000_single_float = opts->x_rs6000_double_float = 1;
-      break;
-
-    case OPT_msoft_float:
-      /* -msoft_float implies -mnosingle-float and -mnodouble-float. */
-      opts->x_rs6000_single_float = opts->x_rs6000_double_float = 0;
-      break;
-
-    case OPT_mfpu_:
-      fpu_type = (enum fpu_type_t) value;
-      if (fpu_type != FPU_NONE)
-	{
-	  /* If -mfpu is not none, then turn off SOFT_FLOAT, turn on
-	     HARD_FLOAT. */
-	  opts->x_target_flags &= ~MASK_SOFT_FLOAT;
-	  opts_set->x_target_flags |= MASK_SOFT_FLOAT;
-	  opts->x_rs6000_xilinx_fpu = 1;
-	  if (fpu_type == FPU_SF_LITE || fpu_type == FPU_SF_FULL) 
-	    opts->x_rs6000_single_float = 1;
-	  if (fpu_type == FPU_DF_LITE || fpu_type == FPU_DF_FULL) 
-	    opts->x_rs6000_single_float = opts->x_rs6000_double_float = 1;
-	  if (fpu_type == FPU_SF_LITE || fpu_type == FPU_DF_LITE) 
-	    opts->x_rs6000_simple_fpu = 1;
-	}
-      else
-	{
-	  /* -mfpu=none is equivalent to -msoft-float.  */
-	  opts->x_target_flags |= MASK_SOFT_FLOAT;
-	  opts_set->x_target_flags |= MASK_SOFT_FLOAT;
-	  opts->x_rs6000_single_float = opts->x_rs6000_double_float = 0;
-	}
-      break;
-
-    case OPT_mrecip:
-      opts->x_rs6000_recip_name = (value) ? "default" : "none";
-      break;
-    }
-  return true;
 }
 
 /* Default CPU string for rs6000*_file_start functions.  */

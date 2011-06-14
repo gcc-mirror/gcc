@@ -1,3 +1,304 @@
+2011-06-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* target-def.h (TARGET_HAVE_NAMED_SECTIONS): Move to
+	common/common-target-def.h.
+	* target.def (default_target_flags, handle_option,
+	supports_split_stack, optimization_table, init_struct,
+	except_unwind_info, unwind_tables_default, have_named_sections):
+	Move to common/common-target.def.
+	* target.h (enum opt_levels, struct default_options): Move to
+	common/common-target.h.
+	* targhooks.c (default_except_unwind_info,
+	dwarf2_except_unwind_info, sjlj_except_unwind_info,
+	default_target_handle_option, empty_optimization_table): Move to
+	common/common-targhooks.c.
+	* targhooks.h (default_except_unwind_info,
+	dwarf2_except_unwind_info, sjlj_except_unwind_info,
+	default_target_handle_option, empty_optimization_table): Move to
+	common/common-targhooks.h.
+	* common/common-target-def.h: Include common/common-targhooks.h.
+	(TARGET_HAVE_NAMED_SECTIONS): Define if TARGET_ASM_NAMED_SECTION
+	defined.
+	* common/common-target.def (handle_option, option_init_struct,
+	option_optimization_table, default_target_flags,
+	except_unwind_info, supports_split_stack, unwind_tables_default,
+	have_named_sections): Move from target.def.
+	(HOOK_PREFIX): Undefine at end of file.
+	* common/common-target.h: Include input.h.
+	(enum opt_levels, struct default_options): Move from target.h.
+	* common/common-targhooks.c, common/common-targhooks.h: New.
+	* config.gcc (target_has_targetm_common): Default to yes.
+	(moxie*): Set target_has_targetm_common=no.
+	(hppa*-*-*): Don't set target_has_targetm_common=yes.
+	* doc/tm.texi: Regenerate.
+	* Makefile.in (COMMON_TARGET_H): Add $(INPUT_H).
+	(C_TARGET_DEF_H): Add common/common-targhooks.h.
+	(GCC_OBJS): Remove vec.o.
+	(OBJS): Remove hooks.o and vec.o.
+	(OBJS-libcommon-target): Add vec.o, hooks.o and
+	common/common-targhooks.o.
+	(c-family/c-common.o, c-family/c-cppbuiltin.o, lto-opts.o, tree.o,
+	tree-tailcall.o, opts.o, toplev.o, varasm.o, function.o, except.o,
+	expr.o, explow.o, dbxout.o, dwarf2out.o, cfgrtl.o, haifa-sched.o,
+	cfglayout.o, $(out_object_file), $(common_out_object_file)):
+	Update dependencies.
+	(common/common-targhooks.o): New.
+	* common/config/default-common.c: Include tm.h.  Add FIXME
+	comment.
+	* common/config/pa/pa-common.c: Include more headers.  Take
+	copyright dates from pa.c.
+	(pa_option_optimization_table, pa_handle_option,
+	TARGET_OPTION_OPTIMIZATION_TABLE, TARGET_DEFAULT_TARGET_FLAGS,
+	TARGET_HANDLE_OPTION): Move from pa.c.
+	* common/config/alpha/alpha-common.c,
+	common/config/arm/arm-common.c, common/config/avr/avr-common.c,
+	common/config/bfin/bfin-common.c,
+	common/config/cris/cris-common.c,
+	common/config/fr30/fr30-common.c, common/config/frv/frv-common.c,
+	common/config/h8300/h8300-common.c,
+	common/config/i386/i386-common.c,
+	common/config/ia64/ia64-common.c,
+	common/config/iq2000/iq2000-common.c,
+	common/config/lm32/lm32-common.c,
+	common/config/m32c/m32c-common.c,
+	common/config/m32r/m32r-common.c,
+	common/config/m68k/m68k-common.c,
+	common/config/mcore/mcore-common.c,
+	common/config/mep/mep-common.c,
+	common/config/microblaze/microblaze-common.c,
+	common/config/mips/mips-common.c,
+	common/config/mmix/mmix-common.c,
+	common/config/mn10300/mn10300-common.c,
+	common/config/pdp11/pdp11-common.c,
+	common/config/picochip/picochip-common.c,
+	common/config/rs6000/rs6000-common.c,
+	common/config/rx/rx-common.c, common/config/s390/s390-common.c,
+	common/config/score/score-common.c, common/config/sh/sh-common.c,
+	common/config/sparc/sparc-common.c,
+	common/config/spu/spu-common.c, common/config/v850/v850-common.c,
+	common/config/vax/vax-common.c,
+	common/config/xstormy16/xstormy16-common.c,
+	common/config/xtensa/xtensa-common.c: New.
+	* config/alpha/alpha.c: Include common/common-target.h.
+	(alpha_option_optimization_table, alpha_handle_option,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION,
+	TARGET_OPTION_OPTIMIZATION_TABLE): Move to alpha-common.c.
+	* config/arm/arm-protos.h (arm_except_unwind_info): Declare.
+	* config/arm/arm.c (arm_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_EXCEPT_UNWIND_INFO, arm_except_unwind_info): Move to
+	arm-common.c.
+	* config/avr/avr.c (avr_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE, TARGET_EXCEPT_UNWIND_INFO): Move
+	to avr-common.c.
+	* config/bfin/bfin.c (struct bfin_cpu): Move to bfin.h.
+	(bfin_cpus, bfin_handle_option, TARGET_HANDLE_OPTION,
+	TARGET_DEFAULT_TARGET_FLAGS): Move to bfin-common.c.
+	* config/bfin/bfin.h struct bfin_cpu): Move from bfin.c.
+	* config/cris/cris.c (cris_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION,
+	TARGET_OPTION_OPTIMIZATION_TABLE, cris_handle_option): Move to
+	cris-common.c.
+	* config/fr30/fr30.c (fr30_option_optimization_table,
+	TARGET_EXCEPT_UNWIND_INFO, TARGET_OPTION_OPTIMIZATION_TABLE): Move
+	to fr30-common.c.
+	* config/frv/frv.c (frv_option_optimization_table,
+	MASK_DEFAULT_ALLOC_CC, TARGET_DEFAULT_TARGET_FLAGS,
+	TARGET_OPTION_OPTIMIZATION_TABLE): Move to frv-common.c.
+	* config/h8300/h8300.c (h8300_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_EXCEPT_UNWIND_INFO): Move to h8300-common.c.
+	* config/i386/i386-protos.h (ix86_handle_option): Declare.
+	* config/i386/i386.c: Include common/common-target.h.
+	(OPTION_MASK_ISA_MMX_SET, OPTION_MASK_ISA_3DNOW_SET,
+	OPTION_MASK_ISA_SSE_SET, OPTION_MASK_ISA_SSE2_SET,
+	OPTION_MASK_ISA_SSE3_SET, OPTION_MASK_ISA_SSSE3_SET,
+	OPTION_MASK_ISA_SSE4_1_SET, OPTION_MASK_ISA_SSE4_2_SET,
+	OPTION_MASK_ISA_AVX_SET, OPTION_MASK_ISA_FMA_SET,
+	OPTION_MASK_ISA_SSE4_SET, OPTION_MASK_ISA_SSE4A_SET,
+	OPTION_MASK_ISA_FMA4_SET, OPTION_MASK_ISA_XOP_SET,
+	OPTION_MASK_ISA_LWP_SET, OPTION_MASK_ISA_AES_SET,
+	OPTION_MASK_ISA_PCLMUL_SET, OPTION_MASK_ISA_ABM_SET,
+	OPTION_MASK_ISA_BMI_SET, OPTION_MASK_ISA_TBM_SET,
+	OPTION_MASK_ISA_POPCNT_SET, OPTION_MASK_ISA_CX16_SET,
+	OPTION_MASK_ISA_SAHF_SET, OPTION_MASK_ISA_MOVBE_SET,
+	OPTION_MASK_ISA_CRC32_SET, OPTION_MASK_ISA_FSGSBASE_SET,
+	OPTION_MASK_ISA_RDRND_SET, OPTION_MASK_ISA_F16C_SET,
+	OPTION_MASK_ISA_MMX_UNSET, OPTION_MASK_ISA_3DNOW_UNSET,
+	OPTION_MASK_ISA_3DNOW_A_UNSET, OPTION_MASK_ISA_SSE_UNSET,
+	OPTION_MASK_ISA_SSE2_UNSET, OPTION_MASK_ISA_SSE3_UNSET,
+	OPTION_MASK_ISA_SSSE3_UNSET, OPTION_MASK_ISA_SSE4_1_UNSET,
+	OPTION_MASK_ISA_SSE4_2_UNSET, OPTION_MASK_ISA_AVX_UNSET,
+	OPTION_MASK_ISA_FMA_UNSET, OPTION_MASK_ISA_SSE4_UNSET,
+	OPTION_MASK_ISA_SSE4A_UNSET, OPTION_MASK_ISA_FMA4_UNSET,
+	OPTION_MASK_ISA_XOP_UNSET, OPTION_MASK_ISA_LWP_UNSET,
+	OPTION_MASK_ISA_AES_UNSET, OPTION_MASK_ISA_PCLMUL_UNSET,
+	OPTION_MASK_ISA_ABM_UNSET, OPTION_MASK_ISA_BMI_UNSET,
+	OPTION_MASK_ISA_TBM_UNSET, OPTION_MASK_ISA_POPCNT_UNSET,
+	OPTION_MASK_ISA_CX16_UNSET, OPTION_MASK_ISA_SAHF_UNSET,
+	OPTION_MASK_ISA_MOVBE_UNSET, OPTION_MASK_ISA_CRC32_UNSET,
+	OPTION_MASK_ISA_FSGSBASE_UNSET, OPTION_MASK_ISA_RDRND_UNSET,
+	OPTION_MASK_ISA_F16C_UNSET, ix86_handle_option,
+	ix86_option_optimization_table, ix86_option_init_struct,
+	ix86_supports_split_stack, TARGET_DEFAULT_TARGET_FLAGS,
+	TARGET_HANDLE_OPTION, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_OPTION_INIT_STRUCT, TARGET_SUPPORTS_SPLIT_STACK): Move to
+	i386-common.c.
+	* config/i386/t-i386 (i386.o): Update dependencies.
+	* config/ia64/ia64-protos.h (ia64_except_unwind_info): Declare.
+	* config/ia64/ia64.c (ia64_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE, TARGET_EXCEPT_UNWIND_INFO,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION,
+	ia64_handle_option): Move to ia64-common.c.
+	* config/iq2000/iq2000.c (iq2000_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): Move to iq2000-common.c.
+	* config/lm32/lm32.c (lm32_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE, TARGET_EXCEPT_UNWIND_INFO): Move
+	to lm32-common.c.
+	* config/m32c/m32c.c (TARGET_HAVE_NAMED_SECTIONS): Move to
+	m32c-common.c.
+	* config/m32r/m32r.c (m32r_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION,
+	TARGET_OPTION_OPTIMIZATION_TABLE, TARGET_EXCEPT_UNWIND_INFO,
+	m32r_handle_option): Move to m32r-common.c.
+	(m32r_memory_move_cost): Remove comment referring to
+	TARGET_HANDLE_OPTION.
+	* config/m68k/m68k.c (TARGET_HANDLE_OPTION, m68k_handle_option):
+	Move to m68k-common.c.
+	* config/mcore/mcore.c (mcore_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_EXCEPT_UNWIND_INFO): Move to mcore-common.c.
+	* config/mep/mep.c (mep_option_optimization_table,
+	mep_handle_option, TARGET_HANDLE_OPTION,
+	TARGET_OPTION_OPTIMIZATION_TABLE, TARGET_DEFAULT_TARGET_FLAGS):
+	Move to mep-common.c.
+	* config/microblaze/microblaze.c
+	(microblaze_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_EXCEPT_UNWIND_INFO): Move to microblaze-common.c.
+	* config/mips/mips.c (mips_handle_option,
+	mips_option_optimization_table, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Move to
+	mips-common.c.
+	* config/mmix/mmix.c (mmix_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_OPTION_OPTIMIZATION_TABLE):
+	Move to mmix-common.c.
+	* config/mn10300/mn10300.c (mn10300_option_optimization_table,
+	mn10300_handle_option, TARGET_EXCEPT_UNWIND_INFO,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION,
+	TARGET_OPTION_OPTIMIZATION_TABLE): Move to mn10300-common.c.
+	* config/pa/pa.c: Include common/common-target.h.
+	(pa_option_optimization_table, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION,
+	pa_handle_option): Move to pa-common.c.
+	(pa_option_override): Use targetm_common.except_unwind_info.
+	(pa_asm_output_mi_thunk, pa_function_section): Use
+	targetm_common.have_named_sections.
+	* config/pdp11/pdp11.c (pdp11_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION,
+	TARGET_OPTION_OPTIMIZATION_TABLE, TARGET_OPTION_INIT_STRUCT,
+	pdp11_handle_option, pdp11_option_init_struct): Move to
+	pdp11-common.c.
+	* config/picochip/picochip.c (picochip_option_optimization_table,
+	TARGET_HAVE_NAMED_SECTIONS, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_EXCEPT_UNWIND_INFO): Move to picochip-common.c.
+	* config/rs6000/rs6000.c: Include common/common-target.h.
+	(rs6000_option_optimization_table, TARGET_HANDLE_OPTION,
+	TARGET_OPTION_INIT_STRUCT, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_DEFAULT_TARGET_FLAGS, rs6000_option_init_struct,
+	rs6000_handle_option): Move to rs6000-common.c.
+	* config/rs6000/t-rs6000 (rs6000.o): Update dependencies.
+	* config/rx/rx.c (rx_handle_option, rx_option_optimization_table,
+	TARGET_HANDLE_OPTION, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_EXCEPT_UNWIND_INFO): Move to rx-common.c.
+	* config/s390/s390.c (processor_flags_table,
+	s390_option_optimization_table, s390_option_init_struct,
+	s390_handle_option, TARGET_DEFAULT_TARGET_FLAGS,
+	TARGET_HANDLE_OPTION, TARGET_OPTION_OPTIMIZATION_TABLE,
+	TARGET_OPTION_INIT_STRUCT): Move to s390-common.c.
+	* config/s390/s390.h (processor_flags_table): Declare.
+	* config/score/score.c (score_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION,
+	TARGET_OPTION_OPTIMIZATION_TABLE, MASK_ALL_CPU_BITS,
+	score_handle_option): Move to score-common.c.
+	* config/sh/sh.c (sh_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE, TARGET_OPTION_INIT_STRUCT,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION,
+	sh_handle_option, sh_option_init_struct): Move to sh-common.c.
+	* config/sparc/sparc.c: Include common/common-target.h.
+	(sparc_option_optimization_table, TARGET_DEFAULT_TARGET_FLAGS,
+	TARGET_OPTION_OPTIMIZATION_TABLE): Move to sparc-common.c.
+	* config/spu/spu.c (TARGET_DEFAULT_TARGET_FLAGS,
+	TARGET_OPTION_INIT_STRUCT, TARGET_EXCEPT_UNWIND_INFO,
+	spu_option_init_struct): Move to spu-common.c.
+	* config/stormy16/stormy16.c (xstorym16_option_optimization_table,
+	TARGET_OPTION_OPTIMIZATION_TABLE): Move to xstormy16-common.c.
+	* config/v850/v850.c (small_memory_physical_max,
+	v850_handle_memory_optionn v850_handle_option,
+	v850_option_optimization_table, TARGET_DEFAULT_TARGET_FLAGS,
+	TARGET_HANDLE_OPTION, TARGET_OPTION_OPTIMIZATION_TABLE): Move to
+	v850-common.c.
+	* config/vax/vax.c (TARGET_DEFAULT_TARGET_FLAGS): Move to
+	vax-common.c.
+	* config/xtensa/xtensa.c (xtensa_option_optimization_table,
+	TARGET_DEFAULT_TARGET_FLAGS, TARGET_OPTION_OPTIMIZATION_TABLE):
+	Move to xtensa-common.c.
+	* cfglayout.c: Include common/common-target.h.
+	(fixup_reorder_chain): Use targetm_common.have_named_sections.
+	* cfgrtl.c: Include common/common-target.h.
+	(force_nonfallthru_and_redirect, commit_one_edge_insertion): Use
+	targetm_common.have_named_sections.
+	* dbxout.c: Include common/common-target.h.
+	(dbxout_function_end): Use targetm_common.have_named_sections.
+	* defaults.h (STACK_OLD_CHECK_PROTECT, STACK_CHECK_PROTECT): Use
+	targetm_common.except_unwind_info.
+	* dwarf2out.c: Include common/common-target.h.
+	(dwarf2out_do_frame, dwarf2out_do_cfi_asm,
+	dwarf2out_begin_prologue, dwarf2out_frame_init,
+	dwarf2out_frame_finish, dwarf2out_assembly_start): Use
+	targetm_common.except_unwind_info.
+	* except.c: Include common/common-target.h.
+	(init_eh, finish_eh_generation,
+	output_one_function_exception_table): Use
+	targetm_common.except_unwind_info.
+	(switch_to_exception_section): Use
+	targetm_common.have_named_sections.
+	* explow.c: Include common/common-target.h.
+	* expr.c: Include common/common-target.h.
+	(build_personality_function): Use
+	targetm_common.except_unwind_info.
+	* function.c: Include common/common-target.h.
+	(expand_function_end): Use targetm_common.except_unwind_info.
+	* haifa-sched.c: Include common/common-target.h.
+	(sched_create_recovery_edges): Use
+	targetm_common.have_named_sections.
+	* lto-opts.c: Include common/common-target.h instead of target.h.
+	(lto_reissue_options): Use targetm_common.handle_option.
+	* opts.c: Include common/common-target.h.
+	(target_handle_option): Use targetm_common.handle_option.
+	(init_options_struct): Update comment referring to
+	targetm.target_option.optimization.  Use
+	targetm_common.default_target_flags,
+	targetm_common.unwind_tables_default and
+	targetm_common.option_init_struct.
+	(default_options_optimization): Use
+	targetm_common.option_optimization_table.
+	(finish_options): Use targetm_common.except_unwind_info,
+	targetm_common.unwind_tables_default,
+	targetm_common.have_named_sections and
+	targetm_common.supports_split_stack.
+	* toplev.c: Include common/common-target.h.
+	(process_options): Use targetm_common.have_named_sections.
+	* tree-tailcall.c: Include common/common-target.h.
+	(suitable_for_tail_call_opt_p): Use
+	targetm_common.except_unwind_info.
+	* tree.c: Include common/common-target.h.
+	(build_common_builtin_nodes): Use
+	targetm_common.except_unwind_info.
+	* varasm.c: Include common/common-target.h.
+	(resolve_unique_section, hot_function_section,
+	default_function_section): Use targetm_common.have_named_sections.
+
 2011-06-14  Easwaran Raman  <eraman@google.com>
 
 	PR rtl-optimization/44194

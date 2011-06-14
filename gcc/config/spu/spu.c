@@ -149,7 +149,6 @@ char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 
 /*  Prototypes and external defs.  */
 static void spu_option_override (void);
-static void spu_option_init_struct (struct gcc_options *opts);
 static void spu_option_default_params (void);
 static void spu_init_builtins (void);
 static tree spu_builtin_decl (unsigned, bool);
@@ -422,9 +421,6 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR spu_gimplify_va_arg_expr
 
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT)
-
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS spu_init_libfuncs
 
@@ -485,14 +481,8 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE spu_option_override
 
-#undef TARGET_OPTION_INIT_STRUCT
-#define TARGET_OPTION_INIT_STRUCT spu_option_init_struct
-
 #undef TARGET_OPTION_DEFAULT_PARAMS
 #define TARGET_OPTION_DEFAULT_PARAMS spu_option_default_params
-
-#undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO  sjlj_except_unwind_info
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE spu_conditional_register_usage
@@ -511,13 +501,6 @@ static const struct attribute_spec spu_attribute_table[] =
 #define TARGET_DELAY_VARTRACK true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
-
-static void
-spu_option_init_struct (struct gcc_options *opts)
-{
-  /* With so many registers this is better on by default. */
-  opts->x_flag_rename_registers = 1;
-}
 
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
 static void

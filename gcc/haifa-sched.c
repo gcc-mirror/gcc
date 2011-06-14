@@ -141,6 +141,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "sched-int.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "output.h"
 #include "params.h"
 #include "vecprim.h"
@@ -4503,7 +4504,7 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
     {
       /* Rewritten from cfgrtl.c.  */
       if (flag_reorder_blocks_and_partition
-	  && targetm.have_named_sections)
+	  && targetm_common.have_named_sections)
 	{
 	  /* We don't need the same note for the check because
 	     any_condjump_p (check) == true.  */

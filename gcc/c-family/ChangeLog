@@ -1,3 +1,11 @@
+2011-06-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c: Include common/common-target.h.
+	(handle_section_attribute): Use
+	targetm_common.have_named_sections.
+	* c-cppbuiltin.c: Include common/common-target.h.
+	(c_cpp_builtins): Use targetm_common.except_unwind_info.
+
 2011-06-10  Richard Guenther  <rguenther@suse.de>
 
 	* c-pretty-print.c (pp_c_type_specifier): Use pp_c_identifier

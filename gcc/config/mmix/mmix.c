@@ -161,15 +161,6 @@ static void mmix_asm_trampoline_template (FILE *);
 static void mmix_trampoline_init (rtx, tree, rtx);
 static void mmix_conditional_register_usage (void);
 
-/* TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options mmix_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fregmove, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
    for a general description.  */
 
@@ -248,8 +239,6 @@ static const struct default_options mmix_option_optimization_table[] =
 #define TARGET_PASS_BY_REFERENCE mmix_pass_by_reference
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mmix_legitimate_address_p
@@ -266,8 +255,6 @@ static const struct default_options mmix_option_optimization_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mmix_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE mmix_option_optimization_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -139,9 +139,6 @@ decode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
 /* This is where the condition code register lives.  */
 /* rtx cc0_reg_rtx; - no longer needed? */
 
-static bool pdp11_handle_option (struct gcc_options *, struct gcc_options *,
-				 const struct cl_decoded_option *, location_t);
-static void pdp11_option_init_struct (struct gcc_options *);
 static const char *singlemove_string (rtx *);
 static bool pdp11_assemble_integer (rtx, unsigned int, int);
 static void pdp11_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -158,14 +155,6 @@ static void pdp11_function_arg_advance (CUMULATIVE_ARGS *,
 					enum machine_mode, const_tree, bool);
 static void pdp11_conditional_register_usage (void);
 static bool pdp11_legitimate_constant_p (enum machine_mode, rtx);
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options pdp11_option_optimization_table[] =
-  {
-    { OPT_LEVELS_3_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -186,16 +175,6 @@ static const struct default_options pdp11_option_optimization_table[] =
 #define TARGET_ASM_OPEN_PAREN "["
 #undef TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN "]"
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS \
-  (MASK_FPU | MASK_45 | TARGET_UNIX_ASM_DEFAULT)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION pdp11_handle_option
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE pdp11_option_optimization_table
-#undef TARGET_OPTION_INIT_STRUCT
-#define TARGET_OPTION_INIT_STRUCT pdp11_option_init_struct
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pdp11_rtx_costs
@@ -248,37 +227,6 @@ static const struct default_options pdp11_option_optimization_table[] =
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P pdp11_legitimate_constant_p
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-pdp11_handle_option (struct gcc_options *opts,
-		     struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		     const struct cl_decoded_option *decoded,
-		     location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-
-  switch (code)
-    {
-    case OPT_m10:
-      opts->x_target_flags &= ~(MASK_40 | MASK_45);
-      return true;
-
-    default:
-      return true;
-    }
-}
-
-/* Implement TARGET_OPTION_INIT_STRUCT.  */
-
-static void
-pdp11_option_init_struct (struct gcc_options *opts)
-{
-  opts->x_flag_finite_math_only = 0;
-  opts->x_flag_trapping_math = 0;
-  opts->x_flag_signaling_nans = 0;
-}
-
 /*
    stream is a stdio stream to output the code to.
    size is an int: how many units of temporary storage to allocate.

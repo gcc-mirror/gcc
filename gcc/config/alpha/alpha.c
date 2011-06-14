@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "common/common-target.h"
 #include "debug.h"
 #include "langhooks.h"
 #include "splay-tree.h"
@@ -199,46 +200,6 @@ static void alpha_write_linkage (FILE *, const char *, tree);
 static bool vms_valid_pointer_mode (enum machine_mode);
 #endif
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options alpha_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-alpha_handle_option (struct gcc_options *opts,
-		     struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		     const struct cl_decoded_option *decoded,
-		     location_t loc)
-{
-  size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mfp_regs:
-      if (value == 0)
-	opts->x_target_flags |= MASK_SOFT_FP;
-      break;
-
-    case OPT_mieee:
-    case OPT_mieee_with_inexact:
-      opts->x_target_flags |= MASK_IEEE_CONFORMANT;
-      break;
-
-    case OPT_mtls_size_:
-      if (value != 16 && value != 32 && value != 64)
-	error_at (loc, "bad value %qs for -mtls-size switch", arg);
-      break;
-    }
-
-  return true;
-}
-
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 /* Implement TARGET_MANGLE_TYPE.  */
 
@@ -9932,17 +9893,8 @@ alpha_conditional_register_usage (void)
 #undef TARGET_RELAXED_ORDERING
 #define TARGET_RELAXED_ORDERING true
 
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS \
-  (TARGET_DEFAULT | TARGET_CPU_DEFAULT | TARGET_DEFAULT_EXPLICIT_RELOCS)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION alpha_handle_option
-
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE alpha_option_override
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE alpha_option_optimization_table
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 #undef TARGET_MANGLE_TYPE

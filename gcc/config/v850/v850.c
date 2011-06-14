@@ -50,14 +50,6 @@
 
 static void v850_print_operand_address (FILE *, rtx);
 
-/* Information about the various small memory areas.  */
-static const int small_memory_physical_max[(int) SMALL_MEMORY_max] =
-{
-  256,
-  65536,
-  32768,
-};
-
 /* Names of the various data areas used on the v850.  */
 tree GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
 tree GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
@@ -81,93 +73,6 @@ static GTY(()) section * tdata_section;
 static GTY(()) section * zdata_section;
 static GTY(()) section * zbss_section;
 
-/* Set the maximum size of small memory area TYPE to the value given
-   by SIZE in structure OPTS (option text OPT passed at location LOC).  */
-
-static void
-v850_handle_memory_option (enum small_memory_type type,
-			   struct gcc_options *opts, const char *opt,
-			   int size, location_t loc)
-{
-  if (size > small_memory_physical_max[type])
-    error_at (loc, "value passed in %qs is too large", opt);
-  else
-    opts->x_small_memory_max[type] = size;
-}
-
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-v850_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mspace:
-      opts->x_target_flags |= MASK_EP | MASK_PROLOG_FUNCTION;
-      return true;
-
-    case OPT_mv850:
-      opts->x_target_flags &= ~(MASK_CPU ^ MASK_V850);
-      return true;
-
-    case OPT_mv850e:
-    case OPT_mv850e1:
-    case OPT_mv850es:
-      opts->x_target_flags &= ~(MASK_CPU ^ MASK_V850E);
-      return true;
-
-    case OPT_mv850e2:
-      opts->x_target_flags &= ~(MASK_CPU ^ MASK_V850E2);
-      return true;
-
-    case OPT_mv850e2v3:
-      opts->x_target_flags &= ~(MASK_CPU ^ MASK_V850E2V3);
-      return true;
-
-    case OPT_mtda_:
-      v850_handle_memory_option (SMALL_MEMORY_TDA, opts,
-				 decoded->orig_option_with_args_text,
-				 value, loc);
-      return true;
-
-    case OPT_msda_:
-      v850_handle_memory_option (SMALL_MEMORY_SDA, opts,
-				 decoded->orig_option_with_args_text,
-				 value, loc);
-      return true;
-
-    case OPT_mzda_:
-      v850_handle_memory_option (SMALL_MEMORY_ZDA, opts,
-				 decoded->orig_option_with_args_text,
-				 value, loc);
-      return true;
-
-    default:
-      return true;
-    }
-}
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options v850_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    /* Note - we no longer enable MASK_EP when optimizing.  This is
-       because of a hardware bug which stops the SLD and SST instructions
-       from correctly detecting some hazards.  If the user is sure that
-       their hardware is fixed or that their program will not encounter
-       the conditions that trigger the bug then they can enable -mep by
-       hand.  */
-    { OPT_LEVELS_1_PLUS, OPT_mprolog_function, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 /* Handle the TARGET_PASS_BY_REFERENCE target hook.
    Specify whether to pass the argument by reference.  */
 
@@ -3216,11 +3121,6 @@ static const struct attribute_spec v850_attribute_table[] =
 #undef  TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
-#undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (MASK_DEFAULT | MASK_APP_REGS)
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION v850_handle_option
-
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS v850_rtx_costs
 
@@ -3275,9 +3175,6 @@ static const struct attribute_spec v850_attribute_table[] =
 
 #undef  TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING v850_strict_argument_naming
-
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE v850_option_optimization_table
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P v850_legitimate_constant_p

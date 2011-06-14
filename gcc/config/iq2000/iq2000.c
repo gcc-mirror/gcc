@@ -176,13 +176,6 @@ static void iq2000_print_operand      (FILE *, rtx, int);
 static void iq2000_print_operand_address (FILE *, rtx);
 static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options iq2000_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
 #undef  TARGET_EXPAND_BUILTIN
@@ -191,8 +184,6 @@ static const struct default_options iq2000_option_optimization_table[] =
 #define TARGET_ASM_SELECT_RTX_SECTION	iq2000_select_rtx_section
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		iq2000_option_override
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE iq2000_option_optimization_table
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS		iq2000_rtx_costs
 #undef  TARGET_ADDRESS_COST

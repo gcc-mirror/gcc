@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on picoChip processors.
-   Copyright (C) 2001, 2008, 2009, 2010   Free Software Foundation, Inc.
+   Copyright (C) 2001, 2008, 2009, 2010, 2011   Free Software Foundation, Inc.
    Contributed by Picochip Ltd. (http://www.picochip.com)
    Maintained by Daniel Towner (daniel.towner@picochip.com) and
    Hariharan Sandanagobalane (hariharan@picochip.com)
@@ -192,13 +192,6 @@ static struct recog_data picochip_saved_recog_data;
 /* Determine which ALU to use for the instruction in
    picochip_current_prescan_insn. */
 static char picochip_get_vliw_alu_id (void);
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options picochip_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Initialize the GCC target structure.  */
 
@@ -249,9 +242,6 @@ static const struct default_options picochip_option_optimization_table[] =
 
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION picochip_asm_named_section
-
-#undef TARGET_HAVE_NAMED_SECTIONS
-#define TARGET_HAVE_NAMED_SECTIONS 1
 
 #undef TARGET_HAVE_SWITCHABLE_BSS_SECTIONS
 #define TARGET_HAVE_SWITCHABLE_BSS_SECTIONS 1
@@ -329,12 +319,6 @@ static const struct default_options picochip_option_optimization_table[] =
 
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE picochip_option_override
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE picochip_option_optimization_table
-
-#undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
 
 /* The 2nd scheduling pass option is switched off, and a machine
    dependent reorganisation ensures that it is run later on, after the

@@ -217,7 +217,7 @@ c_target_objs=
 cxx_target_objs=
 fortran_target_objs=
 target_has_targetcm=no
-target_has_targetm_common=no
+target_has_targetm_common=yes
 tm_defines=
 xm_defines=
 libgcc_tm_file=
@@ -329,6 +329,7 @@ frv*)	cpu_type=frv
 	extra_options="${extra_options} g.opt"
 	;;
 moxie*)	cpu_type=moxie
+	target_has_targetm_common=no
 	;;
 fido-*-*)
 	cpu_type=m68k
@@ -367,7 +368,6 @@ ia64-*-*)
 	;;
 hppa*-*-*)
 	cpu_type=pa
-	target_has_targetm_common=yes
 	;;
 lm32*)
 	extra_options="${extra_options} g.opt"

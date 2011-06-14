@@ -400,20 +400,6 @@ static bool frv_can_eliminate			(const int, const int);
 static void frv_conditional_register_usage	(void);
 static void frv_trampoline_init			(rtx, tree, rtx);
 static bool frv_class_likely_spilled_p 		(reg_class_t);
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options frv_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
-/* Allow us to easily change the default for -malloc-cc.  */
-#ifndef DEFAULT_NO_ALLOC_CC
-#define MASK_DEFAULT_ALLOC_CC	MASK_ALLOC_CC
-#else
-#define MASK_DEFAULT_ALLOC_CC	0
-#endif
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_PRINT_OPERAND
@@ -428,19 +414,8 @@ static const struct default_options frv_option_optimization_table[] =
 #define TARGET_ASM_FUNCTION_EPILOGUE frv_function_epilogue
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER frv_assemble_integer
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS		\
-  (MASK_DEFAULT_ALLOC_CC			\
-   | MASK_COND_MOVE				\
-   | MASK_SCC					\
-   | MASK_COND_EXEC				\
-   | MASK_VLIW_BRANCH				\
-   | MASK_MULTI_CE				\
-   | MASK_NESTED_CE)
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE frv_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE frv_option_optimization_table
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS frv_init_builtins
 #undef TARGET_EXPAND_BUILTIN

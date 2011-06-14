@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for VAX.
    Copyright (C) 1987, 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002,
-   2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -85,9 +85,6 @@ static int vax_return_pops_args (tree, tree, int);
 #define TARGET_ASM_OUTPUT_MI_THUNK vax_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS vax_rtx_costs

@@ -53,13 +53,6 @@
 
 static void score_option_override (void);
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options score_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START           score_asm_file_start
 
@@ -72,17 +65,8 @@ static const struct default_options score_option_optimization_table[] =
 #undef  TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE    score_function_epilogue
 
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS     TARGET_DEFAULT
-
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION            score_handle_option
-
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE          score_option_override
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE score_option_optimization_table
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS	score_legitimize_address
@@ -277,35 +261,6 @@ score_asm_file_end (void)
     score7_asm_file_end ();
   else
     gcc_unreachable ();
-}
-
-#define MASK_ALL_CPU_BITS	(MASK_SCORE7 | MASK_SCORE7D)
-
-/* Implement TARGET_HANDLE_OPTION.  */
-static bool
-score_handle_option (struct gcc_options *opts,
-		     struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		     const struct cl_decoded_option *decoded,
-		     location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mscore7d:
-      opts->x_target_flags &= ~(MASK_ALL_CPU_BITS);
-      opts->x_target_flags |= MASK_SCORE7 | MASK_SCORE7D;
-      return true;
-
-    case OPT_march_:
-      opts->x_target_flags &= ~(MASK_ALL_CPU_BITS);
-      opts->x_target_flags |= value;
-      return true;
-
-    default:
-      return true;
-    }
 }
 
 /* Implement TARGET_OPTION_OVERRIDE hook.  */

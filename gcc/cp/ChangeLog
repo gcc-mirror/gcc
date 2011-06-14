@@ -1,3 +1,9 @@
+2011-06-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (cp/method.o): Update dependencies.
+	* method.c: Include common/common-target.h.
+	(use_thunk): Use targetm_common.have_named_sections.
+
 2011-06-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* decl.c (cxx_init_decl_processing): Use ptr_mode instead of Pmode.

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -18,6 +18,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+/* In i386-common.c.  */
+extern bool ix86_handle_option (struct gcc_options *opts,
+				struct gcc_options *opts_set ATTRIBUTE_UNUSED,
+				const struct cl_decoded_option *decoded,
+				location_t loc);
 
 /* Functions in i386.c */
 extern bool ix86_target_stack_probe (void);

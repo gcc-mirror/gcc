@@ -221,8 +221,6 @@ static int ia64_memory_move_cost (enum machine_mode mode, reg_class_t,
 static bool ia64_rtx_costs (rtx, int, int, int *, bool);
 static int ia64_unspec_may_trap_p (const_rtx, unsigned);
 static void fix_range (const char *);
-static bool ia64_handle_option (struct gcc_options *, struct gcc_options *,
-				const struct cl_decoded_option *, location_t);
 static struct machine_function * ia64_init_machine_status (void);
 static void emit_insn_group_barriers (FILE *);
 static void emit_all_insn_group_barriers (FILE *);
@@ -253,7 +251,6 @@ static void ia64_asm_emit_except_personality (rtx);
 static void ia64_asm_init_sections (void);
 
 static enum unwind_info_type ia64_debug_unwind_info (void);
-static enum unwind_info_type ia64_except_unwind_info (struct gcc_options *);
 
 static struct bundle_state *get_free_bundle_state (void);
 static void free_bundle_state (struct bundle_state *);
@@ -348,16 +345,6 @@ static const struct attribute_spec ia64_attribute_table[] =
   { NULL,	       0, 0, false, false, false, NULL, false }
 };
 
-/* Implement overriding of the optimization options.  */
-static const struct default_options ia64_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-#ifdef SUBTARGET_OPTIMIZATION_OPTIONS
-    SUBTARGET_OPTIMIZATION_OPTIONS,
-#endif
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ia64_attribute_table
@@ -390,8 +377,6 @@ static const struct default_options ia64_option_optimization_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE ia64_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE ia64_option_optimization_table
 #undef TARGET_OPTION_DEFAULT_PARAMS
 #define TARGET_OPTION_DEFAULT_PARAMS ia64_option_default_params
 
@@ -580,8 +565,6 @@ static const struct default_options ia64_option_optimization_table[] =
 
 #undef TARGET_DEBUG_UNWIND_INFO
 #define TARGET_DEBUG_UNWIND_INFO  ia64_debug_unwind_info
-#undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO  ia64_except_unwind_info
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P ia64_scalar_mode_supported_p
@@ -592,11 +575,6 @@ static const struct default_options ia64_option_optimization_table[] =
    in an order different from the specified program order.  */
 #undef TARGET_RELAXED_ORDERING
 #define TARGET_RELAXED_ORDERING true
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | TARGET_CPU_DEFAULT)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION ia64_handle_option
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P ia64_legitimate_constant_p
@@ -5641,30 +5619,6 @@ fix_range (const char *const_str)
     }
 }
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-ia64_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc)
-{
-  size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mtls_size_:
-      if (value != 14 && value != 22 && value != 64)
-	error_at (loc, "bad value %<%s%> for -mtls-size= switch", arg);
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 /* Implement TARGET_OPTION_OVERRIDE.  */
 
 static void
@@ -10093,25 +10047,6 @@ ia64_asm_init_sections (void)
 static enum unwind_info_type
 ia64_debug_unwind_info (void)
 {
-  return UI_TARGET;
-}
-
-/* Implement TARGET_EXCEPT_UNWIND_INFO.  */
-
-static enum unwind_info_type
-ia64_except_unwind_info (struct gcc_options *opts)
-{
-  /* Honor the --enable-sjlj-exceptions configure switch.  */
-#ifdef CONFIG_UNWIND_EXCEPTIONS
-  if (CONFIG_UNWIND_EXCEPTIONS)
-    return UI_SJLJ;
-#endif
-
-  /* For simplicity elsewhere in this file, indicate that all unwind
-     info is disabled if we're not emitting unwind tables.  */
-  if (!opts->x_flag_exceptions && !opts->x_flag_unwind_tables)
-    return UI_NONE;
-
   return UI_TARGET;
 }
 

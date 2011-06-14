@@ -1,3 +1,7 @@
+2011-06-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Handle common/ directory and subdirectories.
+
 2011-05-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* EXCLUDES: Remove gthr-gnat.c, gthr-gnat.h.

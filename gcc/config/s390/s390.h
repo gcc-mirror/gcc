@@ -904,4 +904,6 @@ do {									\
 
 /* Reads can reuse write prefetches, used by tree-ssa-prefetch-loops.c.  */
 #define READ_CAN_USE_WRITE_PREFETCH 1
+
+extern const int processor_flags_table[];
 #endif

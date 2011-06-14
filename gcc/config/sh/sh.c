@@ -168,8 +168,6 @@ int assembler_dialect;
 
 static bool shmedia_space_reserved_for_target_registers;
 
-static bool sh_handle_option (struct gcc_options *, struct gcc_options *,
-			      const struct cl_decoded_option *, location_t);
 static void split_branches (rtx);
 static int branch_dest (rtx);
 static void force_into (rtx, rtx);
@@ -184,7 +182,6 @@ static int noncall_uses_reg (rtx, rtx, rtx *);
 static rtx gen_block_redirect (rtx, int, int);
 static void sh_reorg (void);
 static void sh_option_override (void);
-static void sh_option_init_struct (struct gcc_options *);
 static void sh_option_default_params (void);
 static void output_stack_adjust (int, rtx, int, HARD_REG_SET *, bool);
 static rtx frame_insn (rtx);
@@ -329,23 +326,6 @@ static const struct attribute_spec sh_attribute_table[] =
     sh2a_handle_function_vector_handler_attribute, false },
   { NULL,                0, 0, false, false, false, NULL, false }
 };
-
-/* Set default optimization options.  */
-static const struct default_options sh_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_SPEED_ONLY, OPT_mdiv_, "inv:minlat", 1 },
-    { OPT_LEVELS_SIZE, OPT_mdiv_, SH_DIV_STR_FOR_SIZE, 1 },
-    { OPT_LEVELS_0_ONLY, OPT_mdiv_, "", 1 },
-    { OPT_LEVELS_SIZE, OPT_mcbranchdi, NULL, 0 },
-    /* We can't meaningfully test TARGET_SHMEDIA here, because -m
-       options haven't been parsed yet, hence we'd read only the
-       default.  sh_target_reg_class will return NO_REGS if this is
-       not SHMEDIA, so it's OK to always set
-       flag_branch_target_load_optimize.  */
-    { OPT_LEVELS_2_PLUS, OPT_fbranch_target_load_optimize, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -365,10 +345,6 @@ static const struct default_options sh_option_optimization_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE sh_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE sh_option_optimization_table
-#undef TARGET_OPTION_INIT_STRUCT
-#define TARGET_OPTION_INIT_STRUCT sh_option_init_struct
 #undef TARGET_OPTION_DEFAULT_PARAMS
 #define TARGET_OPTION_DEFAULT_PARAMS sh_option_default_params
 
@@ -394,11 +370,6 @@ static const struct default_options sh_option_optimization_table[] =
 #define TARGET_ASM_FILE_START sh_file_start
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION sh_handle_option
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST sh_register_move_cost
@@ -607,157 +578,7 @@ static const struct default_options sh_option_optimization_table[] =
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-sh_handle_option (struct gcc_options *opts,
-		  struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		  const struct cl_decoded_option *decoded,
-		  location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-
-  switch (code)
-    {
-    case OPT_m1:
-      opts->x_target_flags = (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH1;
-      return true;
-
-    case OPT_m2:
-      opts->x_target_flags = (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH2;
-      return true;
-
-    case OPT_m2a:
-      opts->x_target_flags = (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH2A;
-      return true;
-
-    case OPT_m2a_nofpu:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH2A_NOFPU;
-      return true;
-
-    case OPT_m2a_single:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH2A_SINGLE;
-      return true;
-
-    case OPT_m2a_single_only:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH2A_SINGLE_ONLY;
-      return true;
-
-    case OPT_m2e:
-      opts->x_target_flags = (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH2E;
-      return true;
-
-    case OPT_m3:
-      opts->x_target_flags = (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH3;
-      return true;
-
-    case OPT_m3e:
-      opts->x_target_flags = (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH3E;
-      return true;
-
-    case OPT_m4:
-    case OPT_m4_100:
-    case OPT_m4_200:
-    case OPT_m4_300:
-      opts->x_target_flags = (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH4;
-      return true;
-
-    case OPT_m4_nofpu:
-    case OPT_m4_100_nofpu:
-    case OPT_m4_200_nofpu:
-    case OPT_m4_300_nofpu:
-    case OPT_m4_340:
-    case OPT_m4_400:
-    case OPT_m4_500:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH4_NOFPU;
-      return true;
-
-    case OPT_m4_single:
-    case OPT_m4_100_single:
-    case OPT_m4_200_single:
-    case OPT_m4_300_single:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH4_SINGLE;
-      return true;
-
-    case OPT_m4_single_only:
-    case OPT_m4_100_single_only:
-    case OPT_m4_200_single_only:
-    case OPT_m4_300_single_only:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH4_SINGLE_ONLY;
-      return true;
-
-    case OPT_m4a:
-      opts->x_target_flags = (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH4A;
-      return true;
-
-    case OPT_m4a_nofpu:
-    case OPT_m4al:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH4A_NOFPU;
-      return true;
-
-    case OPT_m4a_single:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH4A_SINGLE;
-      return true;
-
-    case OPT_m4a_single_only:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH4A_SINGLE_ONLY;
-      return true;
-
-    case OPT_m5_32media:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH5_32MEDIA;
-      return true;
-
-    case OPT_m5_32media_nofpu:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH5_32MEDIA_NOFPU;
-      return true;
-
-    case OPT_m5_64media:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH5_64MEDIA;
-      return true;
-
-    case OPT_m5_64media_nofpu:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH5_64MEDIA_NOFPU;
-      return true;
-
-    case OPT_m5_compact:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH5_COMPACT;
-      return true;
-
-    case OPT_m5_compact_nofpu:
-      opts->x_target_flags
-	= (opts->x_target_flags & ~MASK_ARCH) | SELECT_SH5_COMPACT_NOFPU;
-      return true;
-
-    default:
-      return true;
-    }
-}
 
-/* Implement TARGET_OPTION_INIT_STRUCT.  */
-static void
-sh_option_init_struct (struct gcc_options *opts)
-{
-  /* We can't meaningfully test TARGET_SH2E / TARGET_IEEE
-     here, so leave it to TARGET_OPTION_OVERRIDE to set
-     flag_finite_math_only.  We set it to 2 here so we know if the user
-     explicitly requested this to be on or off.  */
-  opts->x_flag_finite_math_only = 2;
-}
-
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
 static void
 sh_option_default_params (void)
