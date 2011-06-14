@@ -1,3 +1,7 @@
+2011-06-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-array-ptr7.C: New.
+
 2011-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/49103

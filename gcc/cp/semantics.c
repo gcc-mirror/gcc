@@ -6755,28 +6755,16 @@ cxx_eval_vec_init (const constexpr_call *call, tree t,
    because we're dealing with things like ADDR_EXPR of INTEGER_CST which
    don't really make sense outside of constant expression evaluation.  Also
    we want to allow folding to COMPONENT_REF, which could cause trouble
-   with TBAA in fold_indirect_ref_1.  */
+   with TBAA in fold_indirect_ref_1.
+
+   Try to keep this function synced with fold_indirect_ref_1.  */
 
 static tree
-cxx_eval_indirect_ref (const constexpr_call *call, tree t,
-		       bool allow_non_constant, bool addr,
-		       bool *non_constant_p)
+cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 {
-  tree orig_op0 = TREE_OPERAND (t, 0);
-  tree op0 = cxx_eval_constant_expression (call, orig_op0, allow_non_constant,
-					   /*addr*/false, non_constant_p);
-  tree type, sub, subtype, r;
-  bool empty_base;
+  tree sub, subtype;
 
-  /* Don't VERIFY_CONSTANT here.  */
-  if (*non_constant_p)
-    return t;
-
-  type = TREE_TYPE (t);
   sub = op0;
-  r = NULL_TREE;
-  empty_base = false;
-
   STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
   gcc_assert (POINTER_TYPE_P (subtype));
@@ -6786,16 +6774,52 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
       tree op = TREE_OPERAND (sub, 0);
       tree optype = TREE_TYPE (op);
 
+      /* *&CONST_DECL -> to the value of the const decl.  */
+      if (TREE_CODE (op) == CONST_DECL)
+	return DECL_INITIAL (op);
+      /* *&p => p;  make sure to handle *&"str"[cst] here.  */
       if (same_type_ignoring_top_level_qualifiers_p (optype, type))
-	r = op;
+	{
+	  tree fop = fold_read_from_constant_string (op);
+	  if (fop)
+	    return fop;
+	  else
+	    return op;
+	}
+      /* *(foo *)&fooarray => fooarray[0] */
+      else if (TREE_CODE (optype) == ARRAY_TYPE
+	       && (same_type_ignoring_top_level_qualifiers_p
+		   (type, TREE_TYPE (optype))))
+	{
+	  tree type_domain = TYPE_DOMAIN (optype);
+	  tree min_val = size_zero_node;
+	  if (type_domain && TYPE_MIN_VALUE (type_domain))
+	    min_val = TYPE_MIN_VALUE (type_domain);
+	  return build4_loc (loc, ARRAY_REF, type, op, min_val,
+			     NULL_TREE, NULL_TREE);
+	}
+      /* *(foo *)&complexfoo => __real__ complexfoo */
+      else if (TREE_CODE (optype) == COMPLEX_TYPE
+	       && (same_type_ignoring_top_level_qualifiers_p
+		   (type, TREE_TYPE (optype))))
+	return fold_build1_loc (loc, REALPART_EXPR, type, op);
+      /* *(foo *)&vectorfoo => BIT_FIELD_REF<vectorfoo,...> */
+      else if (TREE_CODE (optype) == VECTOR_TYPE
+	       && (same_type_ignoring_top_level_qualifiers_p
+		   (type, TREE_TYPE (optype))))
+	{
+	  tree part_width = TYPE_SIZE (type);
+	  tree index = bitsize_int (0);
+	  return fold_build3_loc (loc, BIT_FIELD_REF, type, op, part_width, index);
+	}
       /* Also handle conversion to an empty base class, which
 	 is represented with a NOP_EXPR.  */
-      else if (!addr && is_empty_class (type)
+      else if (is_empty_class (type)
 	       && CLASS_TYPE_P (optype)
 	       && DERIVED_FROM_P (type, optype))
 	{
-	  r = op;
-	  empty_base = true;
+	  *empty_base = true;
+	  return op;
 	}
       /* *(foo *)&struct_with_foo_field => COMPONENT_REF */
       else if (RECORD_OR_UNION_TYPE_P (optype))
@@ -6807,7 +6831,7 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
 		&& (same_type_ignoring_top_level_qualifiers_p
 		    (TREE_TYPE (field), type)))
 	      {
-		r = fold_build3 (COMPONENT_REF, type, op, field, NULL_TREE);
+		return fold_build3 (COMPONENT_REF, type, op, field, NULL_TREE);
 		break;
 	      }
 	}
@@ -6825,8 +6849,49 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
 	  op00 = TREE_OPERAND (op00, 0);
 	  op00type = TREE_TYPE (op00);
 
+	  /* ((foo*)&vectorfoo)[1] => BIT_FIELD_REF<vectorfoo,...> */
+	  if (TREE_CODE (op00type) == VECTOR_TYPE
+	      && (same_type_ignoring_top_level_qualifiers_p
+		  (type, TREE_TYPE (op00type))))
+	    {
+	      HOST_WIDE_INT offset = tree_low_cst (op01, 0);
+	      tree part_width = TYPE_SIZE (type);
+	      unsigned HOST_WIDE_INT part_widthi = tree_low_cst (part_width, 0)/BITS_PER_UNIT;
+	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
+	      tree index = bitsize_int (indexi);
+
+	      if (offset/part_widthi <= TYPE_VECTOR_SUBPARTS (op00type))
+		return fold_build3_loc (loc,
+					BIT_FIELD_REF, type, op00,
+					part_width, index);
+
+	    }
+	  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
+	  else if (TREE_CODE (op00type) == COMPLEX_TYPE
+		   && (same_type_ignoring_top_level_qualifiers_p
+		       (type, TREE_TYPE (op00type))))
+	    {
+	      tree size = TYPE_SIZE_UNIT (type);
+	      if (tree_int_cst_equal (size, op01))
+		return fold_build1_loc (loc, IMAGPART_EXPR, type, op00);
+	    }
+	  /* ((foo *)&fooarray)[1] => fooarray[1] */
+	  else if (TREE_CODE (op00type) == ARRAY_TYPE
+		   && (same_type_ignoring_top_level_qualifiers_p
+		       (type, TREE_TYPE (op00type))))
+	    {
+	      tree type_domain = TYPE_DOMAIN (op00type);
+	      tree min_val = size_zero_node;
+	      if (type_domain && TYPE_MIN_VALUE (type_domain))
+		min_val = TYPE_MIN_VALUE (type_domain);
+	      op01 = size_binop_loc (loc, EXACT_DIV_EXPR, op01,
+				     TYPE_SIZE_UNIT (type));
+	      op01 = size_binop_loc (loc, PLUS_EXPR, op01, min_val);
+	      return build4_loc (loc, ARRAY_REF, type, op00, op01,
+				 NULL_TREE, NULL_TREE);
+	    }
 	  /* ((foo *)&struct_with_foo_field)[1] => COMPONENT_REF */
-	  if (RECORD_OR_UNION_TYPE_P (op00type))
+	  else if (RECORD_OR_UNION_TYPE_P (op00type))
 	    {
 	      tree field = TYPE_FIELDS (op00type);
 	      for (; field; field = DECL_CHAIN (field))
@@ -6835,32 +6900,71 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
 		    && (same_type_ignoring_top_level_qualifiers_p
 			(TREE_TYPE (field), type)))
 		  {
-		    r = fold_build3 (COMPONENT_REF, type, op00,
+		    return fold_build3 (COMPONENT_REF, type, op00,
 				     field, NULL_TREE);
 		    break;
 		  }
 	    }
 	}
     }
+  /* *(foo *)fooarrptreturn> (*fooarrptr)[0] */
+  else if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
+	   && (same_type_ignoring_top_level_qualifiers_p
+	       (type, TREE_TYPE (TREE_TYPE (subtype)))))
+    {
+      tree type_domain;
+      tree min_val = size_zero_node;
+      sub = cxx_fold_indirect_ref (loc, TREE_TYPE (subtype), sub, NULL);
+      if (!sub)
+	sub = build1_loc (loc, INDIRECT_REF, TREE_TYPE (subtype), sub);
+      type_domain = TYPE_DOMAIN (TREE_TYPE (sub));
+      if (type_domain && TYPE_MIN_VALUE (type_domain))
+	min_val = TYPE_MIN_VALUE (type_domain);
+      return build4_loc (loc, ARRAY_REF, type, sub, min_val, NULL_TREE,
+			 NULL_TREE);
+    }
 
-  /* Let build_fold_indirect_ref handle the cases it does fine with.  */
-  if (r == NULL_TREE)
-    r = build_fold_indirect_ref (op0);
-  if (TREE_CODE (r) != INDIRECT_REF)
+  return NULL_TREE;
+}
+
+static tree
+cxx_eval_indirect_ref (const constexpr_call *call, tree t,
+		       bool allow_non_constant, bool addr,
+		       bool *non_constant_p)
+{
+  tree orig_op0 = TREE_OPERAND (t, 0);
+  tree op0 = cxx_eval_constant_expression (call, orig_op0, allow_non_constant,
+					   /*addr*/false, non_constant_p);
+  bool empty_base = false;
+  tree r;
+
+  /* Don't VERIFY_CONSTANT here.  */
+  if (*non_constant_p)
+    return t;
+
+  r = cxx_fold_indirect_ref (EXPR_LOCATION (t), TREE_TYPE (t), op0,
+			     &empty_base);
+
+  if (r)
     r = cxx_eval_constant_expression (call, r, allow_non_constant,
 				      addr, non_constant_p);
-  else if (TREE_CODE (sub) == ADDR_EXPR
-	   || TREE_CODE (sub) == POINTER_PLUS_EXPR)
+  else
     {
-      gcc_assert (!same_type_ignoring_top_level_qualifiers_p
-		  (TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
-      /* FIXME Mike Miller wants this to be OK.  */
-      if (!allow_non_constant)
-	error ("accessing value of %qE through a %qT glvalue in a "
-	       "constant expression", build_fold_indirect_ref (sub),
-	       TREE_TYPE (t));
-      *non_constant_p = true;
-      return t;
+      tree sub = op0;
+      STRIP_NOPS (sub);
+      if (TREE_CODE (sub) == ADDR_EXPR
+	  || TREE_CODE (sub) == POINTER_PLUS_EXPR)
+	{
+	  gcc_assert (!same_type_ignoring_top_level_qualifiers_p
+		      (TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
+	  /* FIXME Mike Miller wants this to be OK.  */
+	  if (!allow_non_constant)
+	    error ("accessing value of %qE through a %qT glvalue in a "
+		   "constant expression", build_fold_indirect_ref (sub),
+		   TREE_TYPE (t));
+	  *non_constant_p = true;
+	  return t;
+	}
     }
 
   /* If we're pulling out the value of an empty base, make sure
@@ -6873,7 +6977,7 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
       TREE_CONSTANT (r) = true;
     }
 
-  if (TREE_CODE (r) == INDIRECT_REF && TREE_OPERAND (r, 0) == orig_op0)
+  if (r == NULL_TREE)
     return t;
   return r;
 }
