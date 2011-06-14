@@ -437,28 +437,28 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     public:
       typedef _Tp type;
 
-      reference_wrapper(_Tp& __indata)
+      reference_wrapper(_Tp& __indata) noexcept
       : _M_data(std::__addressof(__indata))
       { }
 
       reference_wrapper(_Tp&&) = delete;
 
-      reference_wrapper(const reference_wrapper<_Tp>& __inref):
-      _M_data(__inref._M_data)
+      reference_wrapper(const reference_wrapper<_Tp>& __inref) noexcept
+      : _M_data(__inref._M_data)
       { }
 
       reference_wrapper&
-      operator=(const reference_wrapper<_Tp>& __inref)
+      operator=(const reference_wrapper<_Tp>& __inref) noexcept
       {
 	_M_data = __inref._M_data;
 	return *this;
       }
 
-      operator _Tp&() const
+      operator _Tp&() const noexcept
       { return this->get(); }
 
       _Tp&
-      get() const
+      get() const noexcept
       { return *_M_data; }
 
       template<typename... _Args>
@@ -473,13 +473,13 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   /// Denotes a reference should be taken to a variable.
   template<typename _Tp>
     inline reference_wrapper<_Tp>
-    ref(_Tp& __t)
+    ref(_Tp& __t) noexcept
     { return reference_wrapper<_Tp>(__t); }
 
   /// Denotes a const reference should be taken to a variable.
   template<typename _Tp>
     inline reference_wrapper<const _Tp>
-    cref(const _Tp& __t)
+    cref(const _Tp& __t) noexcept
     { return reference_wrapper<const _Tp>(__t); }
 
   template<typename _Tp>
@@ -491,13 +491,13 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   /// Partial specialization.
   template<typename _Tp>
     inline reference_wrapper<_Tp>
-    ref(reference_wrapper<_Tp> __t)
+    ref(reference_wrapper<_Tp> __t) noexcept
     { return ref(__t.get()); }
 
   /// Partial specialization.
   template<typename _Tp>
     inline reference_wrapper<const _Tp>
-    cref(reference_wrapper<_Tp> __t)
+    cref(reference_wrapper<_Tp> __t) noexcept
     { return cref(__t.get()); }
 
   // @} group functors
@@ -1913,13 +1913,15 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
        *  @brief Default construct creates an empty function call wrapper.
        *  @post @c !(bool)*this
        */
-      function() : _Function_base() { }
+      function() noexcept
+      : _Function_base() { }
 
       /**
        *  @brief Creates an empty function call wrapper.
        *  @post @c !(bool)*this
        */
-      function(nullptr_t) : _Function_base() { }
+      function(nullptr_t) noexcept
+      : _Function_base() { }
 
       /**
        *  @brief %Function copy constructor.
@@ -2050,7 +2052,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       /// @overload
       template<typename _Functor>
 	typename enable_if<!is_integral<_Functor>::value, function&>::type
-	operator=(reference_wrapper<_Functor> __f)
+	operator=(reference_wrapper<_Functor> __f) noexcept
 	{
 	  function(__f).swap(*this);
 	  return *this;
@@ -2093,7 +2095,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
        *
        *  This function will not throw an %exception.
        */
-      explicit operator bool() const
+      explicit operator bool() const noexcept
       { return !_M_empty(); }
 
       // [3.7.2.4] function invocation
@@ -2119,7 +2121,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
        *
        *  This function will not throw an %exception.
        */
-      const type_info& target_type() const;
+      const type_info& target_type() const noexcept;
 
       /**
        *  @brief Access the stored target function object.
@@ -2130,10 +2132,10 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
        *
        * This function will not throw an %exception.
        */
-      template<typename _Functor>       _Functor* target();
+      template<typename _Functor>       _Functor* target() noexcept;
 
       /// @overload
-      template<typename _Functor> const _Functor* target() const;
+      template<typename _Functor> const _Functor* target() const noexcept;
 #endif
 
     private:
@@ -2187,7 +2189,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   template<typename _Res, typename... _ArgTypes>
     const type_info&
     function<_Res(_ArgTypes...)>::
-    target_type() const
+    target_type() const noexcept
     {
       if (_M_manager)
 	{
@@ -2203,7 +2205,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     template<typename _Functor>
       _Functor*
       function<_Res(_ArgTypes...)>::
-      target()
+      target() noexcept
       {
 	if (typeid(_Functor) == target_type() && _M_manager)
 	  {
@@ -2222,7 +2224,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     template<typename _Functor>
       const _Functor*
       function<_Res(_ArgTypes...)>::
-      target() const
+      target() const noexcept
       {
 	if (typeid(_Functor) == target_type() && _M_manager)
 	  {
@@ -2246,13 +2248,13 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    */
   template<typename _Res, typename... _Args>
     inline bool
-    operator==(const function<_Res(_Args...)>& __f, nullptr_t)
+    operator==(const function<_Res(_Args...)>& __f, nullptr_t) noexcept
     { return !static_cast<bool>(__f); }
 
   /// @overload
   template<typename _Res, typename... _Args>
     inline bool
-    operator==(nullptr_t, const function<_Res(_Args...)>& __f)
+    operator==(nullptr_t, const function<_Res(_Args...)>& __f) noexcept
     { return !static_cast<bool>(__f); }
 
   /**
@@ -2264,13 +2266,13 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    */
   template<typename _Res, typename... _Args>
     inline bool
-    operator!=(const function<_Res(_Args...)>& __f, nullptr_t)
+    operator!=(const function<_Res(_Args...)>& __f, nullptr_t) noexcept
     { return static_cast<bool>(__f); }
 
   /// @overload
   template<typename _Res, typename... _Args>
     inline bool
-    operator!=(nullptr_t, const function<_Res(_Args...)>& __f)
+    operator!=(nullptr_t, const function<_Res(_Args...)>& __f) noexcept
     { return static_cast<bool>(__f); }
 
   // [20.7.15.2.7] specialized algorithms
