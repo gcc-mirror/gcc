@@ -1,3 +1,7 @@
+2011-06-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (cgraph_address_taken_from_non_vtable_p): Check the ref type.
+
 2011-06-14  Richard Henderson  <rth@redhat.com>
 
 	PR debug/48459
