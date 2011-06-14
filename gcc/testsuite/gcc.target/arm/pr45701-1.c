@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
 /* { dg-options "-march=armv7-a -mthumb -Os" }  */
 /* { dg-final { scan-assembler "push\t\{r3" } } */
 /* { dg-final { scan-assembler-not "r8" } } */

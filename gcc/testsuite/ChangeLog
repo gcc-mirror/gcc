@@ -1,5 +1,9 @@
 2011-06-14  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr45701-1.c: Require thumb support.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+	* gcc.target/arm/thumb-branch1.c: Likewise.
+
 	* gcc.target/arm/mla-1.c: Ignore warnings about conflicting switches.
 	* gcc.target/arm/pr39839.c: Likewise.
 	* gcc.target/arm/pr40657-2.c: Likewise.
