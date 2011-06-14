@@ -1,3 +1,11 @@
+2011-06-14  Nick Clifton  <nickc@redhat.com>
+
+	PR target/49403
+	* config/v850/v850.c (v850_memory_move_cost): Add reg_class_t parameter.
+
+	PR target/49402
+	* config.gcc(v850*-*-*): Avoid duplication of v850.opt.
+
 2011-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/49103
