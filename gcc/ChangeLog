@@ -1,3 +1,8 @@
+2011-06-13  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (lto_output_ts_binfo_tree_pointers): Do not output
+	BINFO_VIRTUALS when streaming for ltrans unit.
+
 2011-06-13  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.md (movdi_mfpgpr): Remove POWER mnemonic.
