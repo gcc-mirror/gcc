@@ -34,9 +34,9 @@
 	(clone_inlined_nodes): Update use of can_remove_node_now_p add TODO.
 	(inline_call): Update use of can_remove_node_now_p.
 
-2011-06-13  Kaushik Phatak <kaushik.phatak@kpitcummins.com>
+2011-06-13  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
-	* config/h8300/h8300.md (bsetqi_msx, bclrqi_msx, bnotqi_msx): Added 
+	* config/h8300/h8300.md (bsetqi_msx, bclrqi_msx, bnotqi_msx): Added
 	condition to disallow non-identical memory locations.
 	(*andqi3_2, andqi3_1, iorqi3_1, xorqi3_1): Reorder insn to give
 	preference to bit manipulation instructions.
@@ -48,11 +48,12 @@
 	(nonremovable_p): New function.
 	(cgraph_can_remove_if_no_direct_calls_p): New function.
 	(used_from_object_file_p): New functoin.
-	(cgraph_will_be_removed_from_program_if_no_direct_calls): Look for references
-	from aliases.
+	(cgraph_will_be_removed_from_program_if_no_direct_calls): Look for
+	references from aliases.
 	* cgraph.h (cgraph_can_remove_if_no_direct_calls_p): Bring offline.
 	* ipa-inline.c (check_caller_edge): New function.
-	(want_inline_function_called_once_p): Use it; accept aliases called once, too.
+	(want_inline_function_called_once_p): Use it; accept aliases called
+	once, too.
 	* ipa-inline-analysis.c (do_estimate_growth): Remove FIXME.
 
 2011-06-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
@@ -103,7 +104,8 @@
 
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-prop.c (ipa_make_edge_direct_to_target): Fix code setting varying args.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Fix code setting varying
+	args.
 	(ipa_update_after_lto_read): Likewise.
 	(ipa_write_node_info): Do not sream call_with_var_arguments.
 	(ipa_read_node_info): Likewise.
@@ -147,8 +149,8 @@
 	(cgraph_function_or_thunk_node): Likewise.
 	* ipa-inline-transform.c (can_remove_node_now_p): Look for aliases.
 	(inline_call): Remove dead aliases.
-	* cgraphunit.c (cgraph_decide_is_function_needed): Disable assembler name
-	hack for same body aliases.
+	* cgraphunit.c (cgraph_decide_is_function_needed): Disable assembler
+	name hack for same body aliases.
 	(clone_of_p): Look through aliases.
 	(verify_cgraph_node): Verify aliases.
 	(cgraph_analyze_function): Analyze aliases; fixup C++ bugs.
@@ -1099,7 +1101,7 @@
 	* config/ia64/unwind-ia64.c: Likewise.
 	* config/xtensa/unwind-dw2-xtensa.c: Likewise.
 
-2011-06-03  Jack Howarth <howarth@bromo.med.uc.edu>
+2011-06-03  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* varpool.c (varpool_extra_name_alias): Return NULL, not false.
 
