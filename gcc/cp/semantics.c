@@ -6793,8 +6793,6 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
   else if (TREE_CODE (sub) == ADDR_EXPR
 	   || TREE_CODE (sub) == POINTER_PLUS_EXPR)
     {
-      gcc_assert (!same_type_ignoring_top_level_qualifiers_p
-		  (TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
       /* FIXME Mike Miller wants this to be OK.  */
       if (!allow_non_constant)
 	error ("accessing value of %qE through a %qT glvalue in a "

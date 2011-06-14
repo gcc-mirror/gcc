@@ -1,3 +1,8 @@
+2011-06-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49290
+	* semantics.c (cxx_eval_indirect_ref): Remove assert.
+
 2011-06-09  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_compound_literal): Set TREE_HAS_CONSTRUCTOR.
