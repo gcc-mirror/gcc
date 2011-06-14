@@ -1,5 +1,9 @@
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49117
+	* call.c (perform_implicit_conversion_flags): Print source type as
+	well as expression.
+
 	PR c++/49389
 	* typeck2.c (build_m_component_ref): Preserve rvalueness.
 
