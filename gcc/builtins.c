@@ -2939,9 +2939,16 @@ expand_builtin_strlen (tree exp, rtx target,
 
       /* Now that we are assured of success, expand the source.  */
       start_sequence ();
-      pat = expand_expr (src, src_reg, ptr_mode, EXPAND_NORMAL);
+      pat = expand_expr (src, src_reg, Pmode, EXPAND_NORMAL);
       if (pat != src_reg)
-	emit_move_insn (src_reg, pat);
+	{
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (pat) != Pmode)
+	    pat = convert_to_mode (Pmode, pat,
+				   POINTERS_EXTEND_UNSIGNED);
+#endif
+	  emit_move_insn (src_reg, pat);
+	}
       pat = get_insns ();
       end_sequence ();
 
