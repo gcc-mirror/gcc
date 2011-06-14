@@ -1169,4 +1169,14 @@ extern int splitting_for_sched, splitting_loops;
 #define TARGET_SUPPORTS_SYNC_CALLS 0
 #endif
 
+struct bfin_cpu
+{
+  const char *name;
+  bfin_cpu_t type;
+  int si_revision;
+  unsigned int workarounds;
+};
+
+extern const struct bfin_cpu bfin_cpus[];
+
 #endif /*  _BFIN_CONFIG */

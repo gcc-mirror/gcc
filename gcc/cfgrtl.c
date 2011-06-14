@@ -1,6 +1,6 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfglayout.h"
 #include "expr.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "cfgloop.h"
 #include "ggc.h"
 #include "tree-pass.h"
@@ -1224,7 +1225,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
 
       BB_COPY_PARTITION (jump_block, e->src);
       if (flag_reorder_blocks_and_partition
-	  && targetm.have_named_sections
+	  && targetm_common.have_named_sections
 	  && JUMP_P (BB_END (jump_block))
 	  && !any_condjump_p (BB_END (jump_block))
 	  && (EDGE_SUCC (jump_block, 0)->flags & EDGE_CROSSING))
@@ -1524,7 +1525,7 @@ commit_one_edge_insertion (edge e)
       after = BB_END (bb);
 
       if (flag_reorder_blocks_and_partition
-	  && targetm.have_named_sections
+	  && targetm_common.have_named_sections
 	  && e->src != ENTRY_BLOCK_PTR
 	  && BB_PARTITION (e->src) == BB_COLD_PARTITION
 	  && !(e->flags & EDGE_CROSSING)

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "langhooks.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "output.h"
 
 static rtx break_out_memory_refs (rtx);

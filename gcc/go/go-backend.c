@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "output.h"
 #include "target.h"
+#include "common/common-target.h"
 
 #include "go-c.h"
 
@@ -103,7 +104,7 @@ go_write_export_data (const char *bytes, unsigned int size)
 
   if (sec == NULL)
     {
-      gcc_assert (targetm.have_named_sections);
+      gcc_assert (targetm_common.have_named_sections);
       sec = get_section (".go_export", SECTION_DEBUG, NULL);
     }
 

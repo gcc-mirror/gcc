@@ -309,17 +309,6 @@ enum h8_cpu
   H8_S
 };
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options h8300_option_optimization_table[] =
-  {
-    /* Basic block reordering is only beneficial on targets with cache
-       and/or variable-cycle branches where (cycle count taken !=
-       cycle count not taken).  */
-    { OPT_LEVELS_ALL, OPT_freorder_blocks, NULL, 0 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 /* Initialize various cpu specific globals at start up.  */
 
 static void
@@ -5987,9 +5976,6 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	h8300_legitimate_address_p
 
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
-
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE h8300_can_eliminate
 
@@ -6001,12 +5987,6 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE h8300_option_override
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE h8300_option_optimization_table
-
-#undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
 
 #undef TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P h8300_mode_dependent_address_p

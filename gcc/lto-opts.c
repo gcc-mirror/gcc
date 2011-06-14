@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "opts.h"
 #include "options.h"
-#include "target.h"
+#include "common/common-target.h"
 #include "diagnostic.h"
 #include "lto-streamer.h"
 
@@ -405,8 +405,8 @@ lto_reissue_options (void)
 	{
 	  struct cl_decoded_option decoded;
 	  generate_option (o->code, o->arg, o->value, CL_TARGET, &decoded);
-	  targetm.handle_option (&global_options, &global_options_set,
-				 &decoded, UNKNOWN_LOCATION);
+	  targetm_common.handle_option (&global_options, &global_options_set,
+					&decoded, UNKNOWN_LOCATION);
 	}
       else if (o->type == CL_COMMON)
 	gcc_assert (flag_var);

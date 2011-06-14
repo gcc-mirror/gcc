@@ -224,13 +224,14 @@ GO_IMPORT_H = go/gofrontend/import.h go/gofrontend/export.h
 GO_RUNTIME_H = go/gofrontend/runtime.h go/gofrontend/runtime.def
 
 go/go-backend.o: go/go-backend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(RTL_H) $(TREE_H) $(TM_P_H) output.h $(TARGET_H)
+	$(TM_H) $(RTL_H) $(TREE_H) $(TM_P_H) output.h $(TARGET_H) \
+	$(COMMON_TARGET_H)
 
 go/go-lang.o: go/go-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 		$(TREE_H) $(GIMPLE_H) $(GGC_H) $(TOPLEV_H) debug.h options.h \
 		$(FLAGS_H) convert.h $(DIAGNOSTIC_H) langhooks.h \
 		$(LANGHOOKS_DEF_H) $(EXCEPT_H) $(TARGET_H) $(GO_C_H) \
-		gt-go-go-lang.h gtype-go.h
+		gt-go-go-lang.h gtype-go.h $(COMMON_TARGET_H)
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  -DDEFAULT_TARGET_VERSION=\"$(version)\" \
 	  -DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\" \

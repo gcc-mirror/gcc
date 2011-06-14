@@ -137,8 +137,6 @@ static void cris_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static tree cris_md_asm_clobbers (tree, tree, tree);
 
-static bool cris_handle_option (struct gcc_options *, struct gcc_options *,
-				const struct cl_decoded_option *, location_t);
 static void cris_option_override (void);
 
 static bool cris_frame_pointer_required (void);
@@ -155,14 +153,6 @@ int cris_max_stackframe = 0;
 
 /* This is the parsed result of the "-march=" option, if given.  */
 int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options cris_option_optimization_table[] =
-  {
-    { OPT_LEVELS_2_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -232,17 +222,11 @@ static const struct default_options cris_option_optimization_table[] =
 #define TARGET_FUNCTION_ARG_ADVANCE cris_function_arg_advance
 #undef TARGET_MD_ASM_CLOBBERS
 #define TARGET_MD_ASM_CLOBBERS cris_md_asm_clobbers
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | CRIS_SUBTARGET_DEFAULT)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION cris_handle_option
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED cris_frame_pointer_required
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE cris_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE cris_option_optimization_table
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE cris_asm_trampoline_template
@@ -2322,66 +2306,6 @@ cris_asm_output_case_end (FILE *stream, int num, rtx table)
 				    2), 0)),
 	       num,
 	       (TARGET_PDEBUG ? "; default" : ""));
-}
-
-/* TARGET_HANDLE_OPTION worker.  We just store the values into local
-   variables here.  Checks for correct semantics are in
-   cris_option_override.  */
-
-static bool
-cris_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-
-  switch (code)
-    {
-    case OPT_metrax100:
-      opts->x_target_flags
-	|= (MASK_SVINTO
-	    + MASK_ETRAX4_ADD
-	    + MASK_ALIGN_BY_32);
-      break;
-
-    case OPT_mno_etrax100:
-      opts->x_target_flags
-	&= ~(MASK_SVINTO
-	     + MASK_ETRAX4_ADD
-	     + MASK_ALIGN_BY_32);
-      break;
-
-    case OPT_m32_bit:
-    case OPT_m32bit:
-      opts->x_target_flags
-	|= (MASK_STACK_ALIGN
-	    + MASK_CONST_ALIGN
-	    + MASK_DATA_ALIGN
-	    + MASK_ALIGN_BY_32);
-      break;
-
-    case OPT_m16_bit:
-    case OPT_m16bit:
-      opts->x_target_flags
-	|= (MASK_STACK_ALIGN
-	    + MASK_CONST_ALIGN
-	    + MASK_DATA_ALIGN);
-      break;
-
-    case OPT_m8_bit:
-    case OPT_m8bit:
-      opts->x_target_flags
-	&= ~(MASK_STACK_ALIGN
-	     + MASK_CONST_ALIGN
-	     + MASK_DATA_ALIGN);
-      break;
-
-    default:
-      break;
-    }
-
-  return true;
 }
 
 /* The TARGET_OPTION_OVERRIDE worker.

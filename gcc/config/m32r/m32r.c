@@ -56,8 +56,6 @@ static char m32r_punct_chars[256];
 #define LIT_NAME_P(NAME) ((NAME)[0] == '*' && (NAME)[1] == '.')
 
 /* Forward declaration.  */
-static bool  m32r_handle_option (struct gcc_options *, struct gcc_options *,
-				 const struct cl_decoded_option *, location_t);
 static void  m32r_option_override (void);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
@@ -112,13 +110,6 @@ static const struct attribute_spec m32r_attribute_table[] =
     false },
   { NULL,        0, 0, false, false, false, NULL, false }
 };
-
-static const struct default_options m32r_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fregmove, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -156,14 +147,8 @@ static const struct default_options m32r_option_optimization_table[] =
 #undef  TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE m32r_issue_rate
 
-#undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS TARGET_CPU_DEFAULT
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION m32r_handle_option
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE m32r_option_override
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE m32r_option_optimization_table
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
@@ -215,40 +200,8 @@ static const struct default_options m32r_option_optimization_table[] =
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P m32r_legitimate_constant_p
 
-#undef  TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO		sjlj_except_unwind_info
-
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-m32r_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_m32r:
-      opts->x_target_flags &= ~(MASK_M32R2 | MASK_M32RX);
-      return true;
-
-    case OPT_mno_flush_func:
-      opts->x_m32r_cache_flush_func = NULL;
-      return true;
-
-    case OPT_mflush_trap_:
-      return value <= 15;
-
-    default:
-      return true;
-    }
-}
-
 /* Called by m32r_option_override to initialize various things.  */
 
 void
@@ -1380,10 +1333,7 @@ m32r_issue_rate (void)
 }
 
 /* Cost functions.  */
-
-/* Implement TARGET_HANDLE_OPTION.
-
-   Memory is 3 times as expensive as registers.
+/* Memory is 3 times as expensive as registers.
    ??? Is that the right way to look at it?  */
 
 static int

@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "targhooks.h"
 #include "tree-mudflap.h"
 #include "cgraph.h"
@@ -416,7 +417,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 			int flag_function_or_data_sections)
 {
   if (DECL_SECTION_NAME (decl) == NULL_TREE
-      && targetm.have_named_sections
+      && targetm_common.have_named_sections
       && (flag_function_or_data_sections
 	  || DECL_ONE_ONLY (decl)))
     {
@@ -464,7 +465,7 @@ hot_function_section (tree decl)
 {
   if (decl != NULL_TREE
       && DECL_SECTION_NAME (decl) != NULL_TREE
-      && targetm.have_named_sections)
+      && targetm_common.have_named_sections)
     return get_named_section (decl, NULL, 0);
   else
     return text_section;
@@ -536,7 +537,7 @@ default_function_section (tree decl, enum node_frequency freq,
 #endif
 
   if (!flag_reorder_functions
-      || !targetm.have_named_sections)
+      || !targetm_common.have_named_sections)
     return NULL;
   /* Startup code should go to startup subsection unless it is
      unlikely executed (this happens especially with function splitting

@@ -2549,11 +2549,6 @@ m32c_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
 
 /* Defining the Output Assembler Language */
 
-/* The Overall Framework of an Assembler File */
-
-#undef TARGET_HAVE_NAMED_SECTIONS
-#define TARGET_HAVE_NAMED_SECTIONS true
-
 /* Output of Data */
 
 /* We may have 24 bit sizes, which is the native address size.

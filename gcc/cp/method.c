@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "tree-pass.h"
 #include "diagnostic.h"
 #include "cgraph.h"
@@ -353,7 +354,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   push_to_top_level ();
 
   if (TARGET_USE_LOCAL_THUNK_ALIAS_P (function)
-      && targetm.have_named_sections)
+      && targetm_common.have_named_sections)
     {
       resolve_unique_section (function, 0, flag_function_sections);
 
