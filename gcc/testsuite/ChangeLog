@@ -1,3 +1,8 @@
+2011-06-14  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/48727
+	* g++.dg/opt/devirt2.C: Fix scan rules for ia64*-*-hpux* and hppa*-*-*.
+
 2011-06-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr45701-1.c: Require thumb support.
