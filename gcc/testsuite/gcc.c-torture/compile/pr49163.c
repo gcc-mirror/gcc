@@ -1,4 +1,5 @@
 /* PR target/49163 */
+/* { dg-require-effective-target int32plus } */
 struct S1
 {
  unsigned f0:18;
