@@ -904,9 +904,9 @@ function_and_variable_visibility (bool whole_program)
 
 	     We also need to arrange the thunk into the same comdat group as
 	     the function it reffers to.  */
-	  if (DECL_COMDAT (decl_node->decl))
+	  if (DECL_ONE_ONLY (decl_node->decl))
 	    {
-	      DECL_COMDAT (node->decl) = 1;
+	      DECL_COMDAT (node->decl) = DECL_COMDAT (decl_node->decl);
 	      DECL_COMDAT_GROUP (node->decl) = DECL_COMDAT_GROUP (decl_node->decl);
 	      if (DECL_ONE_ONLY (decl_node->decl) && !node->same_comdat_group)
 		{

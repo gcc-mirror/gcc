@@ -2487,7 +2487,7 @@ cgraph_make_decl_local (tree decl)
     DECL_COMMON (decl) = 0;
   else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
-  if (DECL_COMDAT (decl))
+  if (DECL_ONE_ONLY (decl) || DECL_COMDAT (decl))
     {
       /* It is possible that we are linking against library defining same COMDAT
 	 function.  To avoid conflict we need to rename our local name of the
