@@ -1,3 +1,19 @@
+2011-06-14  Robert Millan  <rmh@gnu.org>
+
+	* config/i386/kfreebsd-gnu.h: Resync with `config/i386/linux.h'.
+	* config/kfreebsd-gnu.h (GNU_USER_DYNAMIC_LINKER): Resync with
+	`config/linux.h'.
+
+	* config/i386/kfreebsd-gnu64.h: New file.
+	* config.gcc (x86_64-*-kfreebsd*-gnu): Replace `i386/kfreebsd-gnu.h'
+	with `i386/kfreebsd-gnu64.h'.
+
+	* config/i386/linux64.h (GNU_USER_LINK_EMULATION32)
+	(GNU_USER_LINK_EMULATION64): New macros.
+	* config/i386/gnu-user64.h (LINK_SPEC): Rely on
+	`GNU_USER_LINK_EMULATION32' and `GNU_USER_LINK_EMULATION64' instead
+	of hardcoding `elf_i386' and `elf_x86_64'.
+
 2011-06-14  Nick Clifton  <nickc@redhat.com>
 
 	PR target/49403
@@ -97,10 +113,9 @@
 
 2011-06-13  Edmar Wienskoski  <edmar@freescale.com>
 
-	* config/rs6000/rs6000.md (save_gpregs_<mode>): Replaced pattern
-	with a set of similar patterns, where the MATCH_OPERAND for the
-	function argument is replaced with individual references to hardware
-	registers.
+	* config/rs6000/rs6000.md (save_gpregs_<mode>): Replaced pattern with
+	a set of similar patterns, where the MATCH_OPERAND for the function
+	argument is replaced with individual references to hardware registers.
 	(save_fpregs_<mode>): Ditto
 	(restore_gpregs_<mode>): Ditto
 	(return_and_restore_gpregs_<mode>): Ditto
