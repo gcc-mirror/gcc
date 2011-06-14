@@ -1,3 +1,8 @@
+2011-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/functional: Use noexcept.
+	* include/bits/stl_tempbuf.h: Likewise.
+
 2011-06-12  François Dumont  <francois.cppdevs@free.fr>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

@@ -1,6 +1,7 @@
 // Temporary buffer implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+// 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -83,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp>
     pair<_Tp*, ptrdiff_t>
-    get_temporary_buffer(ptrdiff_t __len)
+    get_temporary_buffer(ptrdiff_t __len) _GLIBCXX_NOEXCEPT
     {
       const ptrdiff_t __max =
 	__gnu_cxx::__numeric_traits<ptrdiff_t>::__max / sizeof(_Tp);
