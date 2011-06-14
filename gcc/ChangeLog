@@ -1,3 +1,34 @@
+2011-06-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* common/common-target-def.h, common/common-target.def,
+	common/common-target.h, common/config/default-common.c,
+	common/config/pa/pa-common.c: New files.
+	* Makefile.in (common_out_file, common_out_object_file,
+	COMMON_TARGET_H, COMMON_TARGET_DEF_H): New.
+	(OBJS-libcommon-target): Include $(common_out_object_file).
+	(prefix.o): Update dependencies.
+	($(common_out_object_file), common/common-target-hooks-def.h,
+	s-common-target-hooks-def-h): New.
+	(s-tm-texi): Also check timestamp on common-target.def.
+	(build/genhooks.o): Update dependencies.
+	* config.gcc (common_out_file, target_has_targetm_common): Define.
+	* config/pa/som.h (ALWAYS_STRIP_DOTDOT): Replace with
+	TARGET_ALWAYS_STRIP_DOTDOT.
+	* configure.ac (common_out_object_file): Define.
+	(common_out_file, common_out_object_file): Substitute.
+	(common): Create directory.
+	* configure: Regenerate.
+	* doc/tm.texi.in (targetm_common): Document.
+	(TARGET_ALWAYS_STRIP_DOTDOT): Add @hook entry.
+	* doc/tm.texi: Regenerate.
+	* genhooks.c (hook_array): Also include common/common-target.def.
+	* prefix.c (tm.h): Don't include.
+	(common/common-target.h): Include.
+	(ALWAYS_STRIP_DOTDOT): Don't define.
+	(update_path): Use targetm_common.always_strip_dotdot instead of
+	ALWAYS_STRIP_DOTDOT.
+	* system.h (ALWAYS_STRIP_DOTDOT): Poison.
+
 2011-06-14  David Li  <davidxl@google.com>
 
 	* passes.c (execute_function_todo): Remove TODO_dump_func.

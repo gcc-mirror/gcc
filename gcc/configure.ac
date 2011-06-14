@@ -1628,6 +1628,7 @@ done
 tmake_file="${tmake_file_}"
 
 out_object_file=`basename $out_file .c`.o
+common_out_object_file=`basename $common_out_file .c`.o
 
 tm_file_list="options.h"
 tm_include_list="options.h insn-constants.h"
@@ -4877,6 +4878,8 @@ AC_SUBST(md_file)
 AC_SUBST(objc_boehm_gc)
 AC_SUBST(out_file)
 AC_SUBST(out_object_file)
+AC_SUBST(common_out_file)
+AC_SUBST(common_out_object_file)
 AC_SUBST(thread_file)
 AC_SUBST(tm_file_list)
 AC_SUBST(tm_include_list)
@@ -5081,7 +5084,7 @@ case ${CONFIG_HEADERS} in
   echo > cstamp-h ;;
 esac
 # Make sure all the subdirs exist.
-for d in $subdirs doc build c-family
+for d in $subdirs doc build common c-family
 do
     test -d $d || mkdir $d
 done
