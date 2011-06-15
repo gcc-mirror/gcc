@@ -1,3 +1,9 @@
+2011-06-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/49412
+	* decl.c (get_dso_handle_node): Mark __dso_handle hidden if
+	assembler supports hidden visibility.
+
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49107
