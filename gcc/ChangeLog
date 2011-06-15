@@ -1,3 +1,9 @@
+2011-06-15  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (expand_expr_real_2): Reduce all integral types to
+	bitfield precision.
+	(expand_expr_real_1): Likewise.
+
 2011-06-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/48613
