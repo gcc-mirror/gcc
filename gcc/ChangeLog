@@ -1,3 +1,9 @@
+2011-06-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/48613
+	* ipa-prop.c (ipa_prop_write_jump_functions): Return immediately if
+	ipa_node_params_vector is NULL.
+	
 2011-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/49382
