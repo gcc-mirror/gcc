@@ -514,7 +514,8 @@ struct GTY (()) tree_default_arg {
   (((struct tree_deferred_noexcept *)DEFERRED_NOEXCEPT_CHECK (NODE))->args)
 #define DEFERRED_NOEXCEPT_SPEC_P(NODE)				\
   ((NODE) && (TREE_PURPOSE (NODE))				\
-   && TREE_CODE (TREE_PURPOSE (NODE)) == DEFERRED_NOEXCEPT)
+  && (TREE_CODE (TREE_PURPOSE (NODE)) == DEFERRED_NOEXCEPT	\
+      || is_overloaded_fn (TREE_PURPOSE (NODE))))
 
 struct GTY (()) tree_deferred_noexcept {
   struct tree_base base;
@@ -1792,7 +1793,10 @@ struct GTY((variable_size)) lang_type {
    this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE
    will be NULL_TREE to indicate a throw specification of `()', or
    no exceptions allowed.  For a noexcept specification, TREE_VALUE
-   is NULL_TREE and TREE_PURPOSE is the constant-expression. */
+   is NULL_TREE and TREE_PURPOSE is the constant-expression.  For
+   a deferred noexcept-specification, TREE_PURPOSE is a DEFERRED_NOEXCEPT
+   (for templates) or an OVERLOAD list of functions (for implicitly
+   declared functions).  */
 #define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_LANG_SLOT_1 (NODE)
 
 /* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'
@@ -5698,7 +5702,7 @@ extern tree build_x_arrow			(tree);
 extern tree build_m_component_ref		(tree, tree);
 extern tree build_functional_cast		(tree, tree, tsubst_flags_t);
 extern tree add_exception_specifier		(tree, tree, int);
-extern tree merge_exception_specifiers		(tree, tree);
+extern tree merge_exception_specifiers		(tree, tree, tree);
 
 /* in mangle.c */
 extern void init_mangle				(void);

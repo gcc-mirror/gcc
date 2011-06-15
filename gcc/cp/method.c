@@ -924,10 +924,8 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
 
   if (spec_p)
     {
-      tree raises;
-      maybe_instantiate_noexcept (fn);
-      raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
-      *spec_p = merge_exception_specifiers (*spec_p, raises);
+      tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
+      *spec_p = merge_exception_specifiers (*spec_p, raises, fn);
     }
 
   if (!trivial_fn_p (fn))
@@ -1561,15 +1559,16 @@ defaulted_late_check (tree fn)
      it had been implicitly declared.  */
   if (DECL_DEFAULTED_IN_CLASS_P (fn))
     {
-      tree eh_spec;
-      maybe_instantiate_noexcept (fn);
-      eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
-      if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn))
-	  && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
-				 eh_spec, ce_normal))
-	error ("function %q+D defaulted on its first declaration "
-	       "with an exception-specification that differs from "
-	       "the implicit declaration %q#D", fn, implicit_fn);
+      tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
+      if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
+	{
+	  maybe_instantiate_noexcept (fn);
+	  if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
+				  eh_spec, ce_normal))
+	    error ("function %q+D defaulted on its first declaration "
+		   "with an exception-specification that differs from "
+		   "the implicit declaration %q#D", fn, implicit_fn);
+	}
       TREE_TYPE (fn) = build_exception_variant (TREE_TYPE (fn), eh_spec);
       if (DECL_DECLARED_CONSTEXPR_P (implicit_fn))
 	/* Hmm...should we do this for out-of-class too? Should it be OK to
