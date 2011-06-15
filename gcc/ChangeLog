@@ -1,3 +1,31 @@
+2011-06-15  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vect-loop-manip.c (remove_dead_stmts_from_loop): Remove.
+	(slpeel_tree_peel_loop_to_edge): Don't call
+	remove_dead_stmts_from_loop.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Don't
+	remove irrelevant pattern statements.  For irrelevant statements
+	check if it is the last statement of a detected pattern, use
+	corresponding pattern statement instead.
+	(destroy_loop_vec_info): No need to remove pattern statements,
+	only free stmt_vec_info.
+	(vect_transform_loop): For irrelevant statements check if it is
+	the last statement of a detected pattern, use corresponding
+	pattern statement instead.
+	* tree-vect-patterns.c (vect_pattern_recog_1): Don't insert
+	pattern statements.  Set basic block for the new statement.
+	(vect_pattern_recog): Update documentation.
+	* tree-vect-stmts.c (vect_mark_stmts_to_be_vectorized): Scan
+	operands of pattern statements.
+	(vectorizable_call): Fix printing.  In case of a pattern statement
+	use the lhs of the original statement when creating a dummy
+	statement to replace the original call.
+	(vect_analyze_stmt): For irrelevant statements check if it is
+	the last statement of a detected pattern, use corresponding
+	pattern statement instead.
+	* tree-vect-slp.c (vect_schedule_slp_instance): For pattern
+	statements use gsi of the original statement.
+
 2011-06-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* target-def.h (TARGET_HAVE_NAMED_SECTIONS): Move to

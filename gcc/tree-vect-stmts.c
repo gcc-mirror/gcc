@@ -605,15 +605,49 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
             break;
         }
 
-      FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
-	{
-	  tree op = USE_FROM_PTR (use_p);
-	  if (!process_use (stmt, op, loop_vinfo, live_p, relevant, &worklist))
-	    {
-	      VEC_free (gimple, heap, worklist);
-	      return false;
-	    }
-	}
+      if (is_pattern_stmt_p (vinfo_for_stmt (stmt)))
+        {
+          /* Pattern statements are not inserted into the code, so
+             FOR_EACH_PHI_OR_STMT_USE optimizes their operands out, and we
+             have to scan the RHS or function arguments instead.  */
+          if (is_gimple_assign (stmt))
+            {
+              for (i = 1; i < gimple_num_ops (stmt); i++)
+                {
+                  tree op = gimple_op (stmt, i);
+                  if (!process_use (stmt, op, loop_vinfo, live_p, relevant,
+                                    &worklist))
+                    {
+                      VEC_free (gimple, heap, worklist);
+                      return false;
+                    }
+                 }
+            }
+          else if (is_gimple_call (stmt))
+            {
+              for (i = 0; i < gimple_call_num_args (stmt); i++)
+                {
+                  tree arg = gimple_call_arg (stmt, i);
+                  if (!process_use (stmt, arg, loop_vinfo, live_p, relevant,
+                                    &worklist))
+                    {
+                      VEC_free (gimple, heap, worklist);
+                      return false;
+                    }
+                }
+            }
+        }
+      else
+        FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_USE)
+          {
+            tree op = USE_FROM_PTR (use_p);
+            if (!process_use (stmt, op, loop_vinfo, live_p, relevant,
+                              &worklist))
+              {
+                VEC_free (gimple, heap, worklist);
+                return false;
+              }
+          }
     } /* while worklist */
 
   VEC_free (gimple, heap, worklist);
@@ -1406,6 +1440,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   VEC(tree, heap) *vargs = NULL;
   enum { NARROW, NONE, WIDEN } modifier;
   size_t i, nargs;
+  tree lhs;
 
   /* FORNOW: unsupported in basic block SLP.  */
   gcc_assert (loop_vinfo);
@@ -1543,7 +1578,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   /** Transform.  **/
 
   if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "transform operation.");
+    fprintf (vect_dump, "transform call.");
 
   /* Handle def.  */
   scalar_dest = gimple_call_lhs (stmt);
@@ -1662,8 +1697,11 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
      rhs of the statement with something harmless.  */
 
   type = TREE_TYPE (scalar_dest);
-  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-				  build_zero_cst (type));
+  if (is_pattern_stmt_p (stmt_info))
+    lhs = gimple_call_lhs (STMT_VINFO_RELATED_STMT (stmt_info));
+  else
+    lhs = gimple_call_lhs (stmt);
+  new_stmt = gimple_build_assign (lhs, build_zero_cst (type));
   set_vinfo_for_stmt (new_stmt, stmt_info);
   set_vinfo_for_stmt (stmt, NULL);
   STMT_VINFO_STMT (stmt_info) = new_stmt;
@@ -4846,10 +4884,26 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
   if (!STMT_VINFO_RELEVANT_P (stmt_info)
       && !STMT_VINFO_LIVE_P (stmt_info))
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "irrelevant.");
+      gimple pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+      if (STMT_VINFO_IN_PATTERN_P (stmt_info)
+          && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
+              || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
+        {
+          stmt = pattern_stmt;
+          stmt_info = vinfo_for_stmt (pattern_stmt);
+          if (vect_print_dump_info (REPORT_DETAILS))
+            {
+              fprintf (vect_dump, "==> examining pattern statement: ");
+              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+            }
+        }
+      else
+        {
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "irrelevant.");
 
-      return true;
+          return true;
+        }
     }
 
   switch (STMT_VINFO_DEF_TYPE (stmt_info))
