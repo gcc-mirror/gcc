@@ -1175,6 +1175,49 @@ cgraph_analyze_functions (void)
   ggc_collect ();
 }
 
+/* Translate the ugly representation of aliases as alias pairs into nice
+   representation in callgraph.  We don't handle all cases yet,
+   unforutnately.  */
+
+static void
+handle_alias_pairs (void)
+{
+  alias_pair *p;
+  unsigned i;
+  struct cgraph_node *target_node;
+  struct cgraph_node *src_node;
+  
+  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p);)
+    {
+      if (TREE_CODE (p->decl) == FUNCTION_DECL
+	   && !lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
+	  && (target_node = cgraph_node_for_asm (p->target)) != NULL)
+	{
+	  src_node = cgraph_get_node (p->decl);
+	  if (src_node && src_node->local.finalized)
+            cgraph_reset_node (src_node);
+	  /* Normally EXTERNAL flag is used to mark external inlines,
+	     however for aliases it seems to be allowed to use it w/o
+	     any meaning. See gcc.dg/attr-alias-3.c  
+	     However for weakref we insist on EXTERNAL flag being set.
+	     See gcc.dg/attr-alias-5.c  */
+	  if (DECL_EXTERNAL (p->decl))
+	    DECL_EXTERNAL (p->decl) = 0;
+	  cgraph_create_function_alias (p->decl, target_node->decl);
+	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	}
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Unhandled alias %s->%s\n",
+		     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p->decl)),
+		     IDENTIFIER_POINTER (p->target));
+
+	  i++;
+	}
+    }
+}
+
 
 /* Analyze the whole compilation unit once it is parsed completely.  */
 
@@ -1200,6 +1243,7 @@ cgraph_finalize_compilation_unit (void)
 
   /* Mark alias targets necessary and emit diagnostics.  */
   finish_aliases_1 ();
+  handle_alias_pairs ();
 
   if (!quiet_flag)
     {
@@ -1216,6 +1260,7 @@ cgraph_finalize_compilation_unit (void)
 
   /* Mark alias targets necessary and emit diagnostics.  */
   finish_aliases_1 ();
+  handle_alias_pairs ();
 
   /* Gimplify and lower thunks.  */
   cgraph_analyze_functions ();

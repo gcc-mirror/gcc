@@ -612,14 +612,6 @@ cgraph_externally_visible_p (struct cgraph_node *node,
   if (DECL_BUILT_IN (node->decl))
     return true;
 
-  /* FIXME: We get wrong symbols with asm aliases in callgraph and LTO.
-     This is because very little of code knows that assembler name needs to
-     mangled.  Avoid touching declarations with user asm name set to mask
-     some of the problems.  */
-  if (DECL_ASSEMBLER_NAME_SET_P (node->decl)
-      && IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl))[0]=='*')
-    return true;
-
   /* If linker counts on us, we must preserve the function.  */
   if (cgraph_used_from_object_file_p (node))
     return true;
