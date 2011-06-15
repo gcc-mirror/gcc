@@ -831,9 +831,9 @@ vect_pattern_recog_1 (
     }
 
   /* Mark the stmts that are involved in the pattern. */
-  gsi_insert_before (&si, pattern_stmt, GSI_SAME_STMT);
   set_vinfo_for_stmt (pattern_stmt,
 		      new_stmt_vec_info (pattern_stmt, loop_vinfo, NULL));
+  gimple_set_bb (pattern_stmt, gimple_bb (stmt));
   pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
 
   STMT_VINFO_RELATED_STMT (pattern_stmt_info) = stmt;
@@ -856,8 +856,8 @@ vect_pattern_recog_1 (
    LOOP_VINFO - a struct_loop_info of a loop in which we want to look for
         computation idioms.
 
-   Output - for each computation idiom that is detected we insert a new stmt
-        that provides the same functionality and that can be vectorized. We
+   Output - for each computation idiom that is detected we create a new stmt
+        that provides the same functionality and that can be vectorized.  We
         also record some information in the struct_stmt_info of the relevant
         stmts, as explained below:
 
@@ -872,52 +872,48 @@ vect_pattern_recog_1 (
          S5: ... = ..use(a_0)..         -       -               -
 
    Say the sequence {S1,S2,S3,S4} was detected as a pattern that can be
-   represented by a single stmt. We then:
-   - create a new stmt S6 that will replace the pattern.
-   - insert the new stmt S6 before the last stmt in the pattern
+   represented by a single stmt.  We then:
+   - create a new stmt S6 equivalent to the pattern (the stmt is not
+     inserted into the code)
    - fill in the STMT_VINFO fields as follows:
 
                                   in_pattern_p  related_stmt    vec_stmt
          S1: a_i = ....                 -       -               -
          S2: a_2 = ..use(a_i)..         -       -               -
          S3: a_1 = ..use(a_2)..         -       -               -
-       > S6: a_new = ....               -       S4              -
          S4: a_0 = ..use(a_1)..         true    S6              -
+          '---> S6: a_new = ....        -       S4              -
          S5: ... = ..use(a_0)..         -       -               -
 
    (the last stmt in the pattern (S4) and the new pattern stmt (S6) point
-    to each other through the RELATED_STMT field).
+   to each other through the RELATED_STMT field).
 
    S6 will be marked as relevant in vect_mark_stmts_to_be_vectorized instead
    of S4 because it will replace all its uses.  Stmts {S1,S2,S3} will
    remain irrelevant unless used by stmts other than S4.
 
    If vectorization succeeds, vect_transform_stmt will skip over {S1,S2,S3}
-   (because they are marked as irrelevant). It will vectorize S6, and record
+   (because they are marked as irrelevant).  It will vectorize S6, and record
    a pointer to the new vector stmt VS6 both from S6 (as usual), and also
-   from S4. We do that so that when we get to vectorizing stmts that use the
+   from S4.  We do that so that when we get to vectorizing stmts that use the
    def of S4 (like S5 that uses a_0), we'll know where to take the relevant
-   vector-def from. S4 will be skipped, and S5 will be vectorized as usual:
+   vector-def from.  S4 will be skipped, and S5 will be vectorized as usual:
 
                                   in_pattern_p  related_stmt    vec_stmt
          S1: a_i = ....                 -       -               -
          S2: a_2 = ..use(a_i)..         -       -               -
          S3: a_1 = ..use(a_2)..         -       -               -
        > VS6: va_new = ....             -       -               -
-         S6: a_new = ....               -       S4              VS6
          S4: a_0 = ..use(a_1)..         true    S6              VS6
+          '---> S6: a_new = ....        -       S4              VS6
        > VS5: ... = ..vuse(va_new)..    -       -               -
          S5: ... = ..use(a_0)..         -       -               -
 
-   DCE could then get rid of {S1,S2,S3,S4,S5,S6} (if their defs are not used
+   DCE could then get rid of {S1,S2,S3,S4,S5} (if their defs are not used
    elsewhere), and we'll end up with:
 
         VS6: va_new = ....
-        VS5: ... = ..vuse(va_new)..
-
-   If vectorization does not succeed, DCE will clean S6 away (its def is
-   not used), and we'll end up with the original sequence.
-*/
+        VS5: ... = ..vuse(va_new)..  */
 
 void
 vect_pattern_recog (loop_vec_info loop_vinfo)

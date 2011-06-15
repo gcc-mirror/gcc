@@ -2546,6 +2546,8 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
       && STMT_VINFO_STRIDED_ACCESS (stmt_info)
       && !REFERENCE_CLASS_P (gimple_get_lhs (stmt)))
     si = gsi_for_stmt (SLP_INSTANCE_FIRST_LOAD_STMT (instance));
+  else if (is_pattern_stmt_p (stmt_info))
+     si = gsi_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
   else
     si = gsi_for_stmt (stmt);
 
