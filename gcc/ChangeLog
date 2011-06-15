@@ -1,3 +1,14 @@
+2011-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49382
+	* dwarf2out.c (dw_loc_list_node): Add force field.
+	(add_var_loc_to_decl): For PARM_DECL, attempt to keep
+	the incoming location in the list, even if it is modified
+	before first real insn.
+	(output_loc_list): Emit empty ranges with force flag set.
+	(dw_loc_list): If first range of a PARM_DECL is empty,
+	set force flag.
+
 2011-06-15  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/49349
