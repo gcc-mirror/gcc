@@ -7265,7 +7265,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
   /* An operation in what may be a bit-field type needs the
      result to be reduced to the precision of the bit-field type,
      which is narrower than that of the type's mode.  */
-  reduce_bit_field = (TREE_CODE (type) == INTEGER_TYPE
+  reduce_bit_field = (INTEGRAL_TYPE_P (type)
 		      && GET_MODE_PRECISION (mode) > TYPE_PRECISION (type));
 
   if (reduce_bit_field && modifier == EXPAND_STACK_PARM)
@@ -8334,7 +8334,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
      result to be reduced to the precision of the bit-field type,
      which is narrower than that of the type's mode.  */
   reduce_bit_field = (!ignore
-		      && TREE_CODE (type) == INTEGER_TYPE
+		      && INTEGRAL_TYPE_P (type)
 		      && GET_MODE_PRECISION (mode) > TYPE_PRECISION (type));
 
   /* If we are going to ignore this result, we need only do something
