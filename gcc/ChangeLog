@@ -1,3 +1,10 @@
+2011-06-13  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (handle_alias_pairs): New function.
+	(cgraph_finalize_compilation_unit): Use it.
+	* ipa.c (cgraph_externally_visible_p): Remove hack marking asm names
+	as externally visible.
+
 2011-06-15  Richard Guenther  <rguenther@suse.de>
 
 	* expr.c (expand_expr_real_2): Reduce all integral types to
