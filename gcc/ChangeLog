@@ -1,3 +1,12 @@
+2011-06-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/49349
+	* sel-sched.c (find_place_for_bookkeeping): Add new parameter
+	(fence_to_rewind).  Use it to notice when bookkeeping will be placed
+	above a fence.  Update comments.
+	(generate_bookkeeping_insn): Rewind fence when bookkeeping code is
+	placed just above it.  Do not allow NULL place_to_insert.
+
 2011-06-15  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vect-loop-manip.c (remove_dead_stmts_from_loop): Remove.
