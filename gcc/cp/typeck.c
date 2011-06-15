@@ -830,7 +830,8 @@ merge_types (tree t1, tree t2)
 	gcc_assert (type_memfn_quals (t1) == type_memfn_quals (t2));
 	rval = apply_memfn_quals (rval, type_memfn_quals (t1));
 	raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
-					     TYPE_RAISES_EXCEPTIONS (t2));
+					     TYPE_RAISES_EXCEPTIONS (t2),
+					     NULL_TREE);
 	t1 = build_exception_variant (rval, raises);
 	break;
       }
@@ -841,7 +842,8 @@ merge_types (tree t1, tree t2)
 	   is just the main variant of this.  */
 	tree basetype = class_of_this_parm (t2);
 	tree raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
-						  TYPE_RAISES_EXCEPTIONS (t2));
+						  TYPE_RAISES_EXCEPTIONS (t2),
+						  NULL_TREE);
 	tree t3;
 
 	/* If this was a member function type, get back to the

@@ -1,5 +1,15 @@
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49107
+	* cp-tree.h (DEFERRED_NOEXCEPT_SPEC_P): Handle overload.
+	* method.c (defaulted_late_check): Only maybe_instantiate_noexcept
+	if the declaration had an exception-specifier.
+	(process_subob_fn): Don't maybe_instantiate_noexcept.
+	* pt.c (maybe_instantiate_noexcept): Handle overload.
+	* typeck2.c (nothrow_spec_p_uninst): New.
+	(merge_exception_specifiers): Add 'fn' parm.  Build up overload.
+	* typeck.c (merge_types): Adjust.
+
 	* pt.c (deduction_tsubst_fntype): Don't save input_location.
 	(maybe_instantiate_noexcept): Likewise.
 
