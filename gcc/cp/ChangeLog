@@ -1,3 +1,8 @@
+2011-06-14  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (deduction_tsubst_fntype): Don't save input_location.
+	(maybe_instantiate_noexcept): Likewise.
+
 2011-06-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (cp/method.o): Update dependencies.

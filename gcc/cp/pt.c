@@ -13635,7 +13635,6 @@ deduction_tsubst_fntype (tree fn, tree targs)
 {
   static bool excessive_deduction_depth;
   static int deduction_depth;
-  location_t save_loc = input_location;
   struct pending_template *old_last_pend = last_pending_template;
 
   tree fntype = TREE_TYPE (fn);
@@ -13659,7 +13658,6 @@ deduction_tsubst_fntype (tree fn, tree targs)
   r = tsubst (fntype, targs, tf_none, NULL_TREE);
   pop_deduction_access_scope (fn);
   --deduction_depth;
-  input_location = save_loc;
 
   if (excessive_deduction_depth)
     {
@@ -17359,7 +17357,6 @@ maybe_instantiate_noexcept (tree fn)
   tree fntype = TREE_TYPE (fn);
   tree spec = TYPE_RAISES_EXCEPTIONS (fntype);
   tree noex = NULL_TREE;
-  location_t saved_loc = input_location;
   tree clone;
 
   if (!DEFERRED_NOEXCEPT_SPEC_P (spec))
@@ -17373,7 +17370,6 @@ maybe_instantiate_noexcept (tree fn)
 				DEFERRED_NOEXCEPT_ARGS (noex),
 				tf_warning_or_error, fn, /*function_p=*/false,
 				/*integral_constant_expression_p=*/true);
-  input_location = saved_loc;
   pop_access_scope (fn);
   pop_tinst_level ();
   spec = build_noexcept_spec (noex, tf_warning_or_error);
