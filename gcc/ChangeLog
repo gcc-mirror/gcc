@@ -1,3 +1,13 @@
+2011-06-16  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport form main line
+	2011-06-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/49307
+	* config/sh/sh.md (UNSPEC_CHKADD): New.
+	(chk_guard_add): New define_insn_and_split.
+	(symGOT_load): Use chk_guard_add instead of blockage.
+
 2011-06-16  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from mainline
