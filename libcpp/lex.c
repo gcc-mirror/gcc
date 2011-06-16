@@ -1270,7 +1270,6 @@ static void
 lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 		const uchar *cur)
 {
-  source_location saw_NUL = 0;
   const uchar *raw_prefix;
   unsigned int raw_prefix_len = 0;
   enum cpp_ttype type;
@@ -1476,15 +1475,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 	  cur = base = pfile->buffer->cur;
 	  note = &pfile->buffer->notes[pfile->buffer->cur_note];
 	}
-      else if (c == '\0' && !saw_NUL)
-	LINEMAP_POSITION_FOR_COLUMN (saw_NUL, pfile->line_table,
-				     CPP_BUF_COLUMN (pfile->buffer, cur));
     }
  break_outer_loop:
-
-  if (saw_NUL && !pfile->state.skipping)
-    cpp_error_with_line (pfile, CPP_DL_WARNING, saw_NUL, 0,
-	       "null character(s) preserved in literal");
 
   pfile->buffer->cur = cur;
   if (first_buff == NULL)
