@@ -1,3 +1,18 @@
+2011-06-17  Daniel Carrera  <dcarrera@gmail.com>
+
+	* caf/single.c (_gfortran_caf_register): Store the address
+	of all static coarrays in a linked list.
+	(_gfortran_caf_finalize): Free memory of staic coarrays.
+	* caf/mpi.c (_gfortran_caf_register): Store the address
+	of all static coarrays in a linked list. Initialize MPI
+	if necessary.
+	(_gfortran_caf_finalize): Free memory of staic coarrays.
+	(_gfortran_caf_init): Check if MPI is already initialized
+	before initializing again.
+	* caf/libcaf.h: Add a type to caf_register_t to distinguish
+	static coarrays and add the type caf_static_t to make the
+	linked list of static coarrays.
+
 2011-06-11  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/unix.c (buf_seek): Return error if file is not seekable.
