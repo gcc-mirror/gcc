@@ -8,14 +8,8 @@ tr1 (int array[], unsigned int n)
 {
   int sum = 0;
   unsigned int x;
-  x = 0;
-  while (1)
-    {
-      sum += foo (&array[x]);
-      if (!(x < n))
-        break;
-      x++;
-    }
+  for (x = 0; x < n; ++x)
+    sum += foo (&array[x]);
   return sum;
 }
 
