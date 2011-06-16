@@ -1421,12 +1421,16 @@ build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 {
   if (TREE_CODE (model->expr) == COMPONENT_REF)
     {
-      tree t, exp_type;
-      offset -= int_bit_position (TREE_OPERAND (model->expr, 1));
+      tree t, exp_type, fld = TREE_OPERAND (model->expr, 1);
+      tree cr_offset = component_ref_field_offset (model->expr);
+
+      gcc_assert (cr_offset && host_integerp (cr_offset, 1));
+      offset -= TREE_INT_CST_LOW (cr_offset) * BITS_PER_UNIT;
+      offset -= TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (fld));
       exp_type = TREE_TYPE (TREE_OPERAND (model->expr, 0));
       t = build_ref_for_offset (loc, base, offset, exp_type, gsi, insert_after);
-      return fold_build3_loc (loc, COMPONENT_REF, model->type, t,
-			      TREE_OPERAND (model->expr, 1), NULL_TREE);
+      return fold_build3_loc (loc, COMPONENT_REF, model->type, t, fld,
+			      TREE_OPERAND (model->expr, 2));
     }
   else
     return build_ref_for_offset (loc, base, offset, model->type,
