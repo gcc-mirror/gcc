@@ -7,4 +7,4 @@ int bar(int* p)
   return x;
 }
 
-/* { dg-final { scan-assembler "ldm|ldrd" } } */
+/* { dg-final { scan-assembler "ldm" } } */
