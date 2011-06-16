@@ -1,3 +1,11 @@
+2011-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49419
+	* tree-vrp.c (execute_vrp): Call init_range_assertions
+	before estimate_numbers_of_iterations, call
+	free_number_of_iterations_estimates before calling
+	remove_range_assertions.
+
 2011-06-16  Revital Eres  <revital.eres@linaro.org>
 
 	* modulo-sched.c (struct ps_insn): Remove row_rest_count field.
