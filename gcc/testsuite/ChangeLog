@@ -1,3 +1,8 @@
+2011-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49420
+	* g++.dg/cpp0x/variadic112.C: New.
+
 2011-06-16  Jeff Law <law@redhat.com>
 
 	* gcc.dg/builtin-object-size-1.c: Update to handle chances from
