@@ -678,6 +678,7 @@
 
 2011-06-13  Edmar Wienskoski  <edmar@freescale.com>
 
+	PR target/44618
 	* config/rs6000/rs6000.md (save_gpregs_<mode>): Replaced pattern with
 	a set of similar patterns, where the MATCH_OPERAND for the function
 	argument is replaced with individual references to hardware registers.

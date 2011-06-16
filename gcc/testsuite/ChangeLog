@@ -111,6 +111,7 @@
 
 2011-06-13  Edmar Wienskoski  <edmar@freescale.com>
 
+	PR target/44618
 	* gcc.target/powerpc/outofline_rnreg.c: New testcase.
 
 2011-06-13  H.J. Lu  <hongjiu.lu@intel.com>
