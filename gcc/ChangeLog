@@ -1,3 +1,8 @@
+2011-06-16  Revital Eres  <revital.eres@linaro.org>
+
+	* ddg.c (add_intra_loop_mem_dep): New function.
+	(build_intra_loop_deps): Call it.
+
 2011-05-06  Jeff Law  <law@redhat.com>
 
 	* df-problems.c (df_lr_local_compute): Manually CSE
