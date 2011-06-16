@@ -1,3 +1,7 @@
+2011-06-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/debug/pr49032.c: Prune mips-tfile warning.
+
 2011-06-16  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/45098
