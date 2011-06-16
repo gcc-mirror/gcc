@@ -1,3 +1,7 @@
+2011-06-16  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: New test.
+
 2011-06-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49417
