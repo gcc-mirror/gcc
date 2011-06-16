@@ -40,6 +40,8 @@ extern rtx machopic_legitimize_pic_address (rtx, enum machine_mode, rtx);
 
 extern void machopic_asm_out_constructor (rtx, int);
 extern void machopic_asm_out_destructor (rtx, int);
+extern section *machopic_select_rtx_section (enum machine_mode, rtx,
+					     unsigned HOST_WIDE_INT);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
@@ -54,8 +56,6 @@ extern void machopic_finish (FILE *);
 
 extern int machopic_reloc_rw_mask (void);
 extern section *machopic_select_section (tree, int, unsigned HOST_WIDE_INT);
-extern section *machopic_select_rtx_section (enum machine_mode, rtx,
-					     unsigned HOST_WIDE_INT);
 
 extern section *darwin_function_section (tree, enum node_frequency, bool, bool); 
 extern void darwin_function_switched_text_sections (FILE *, tree, bool);
