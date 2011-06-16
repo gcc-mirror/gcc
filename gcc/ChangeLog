@@ -1,5 +1,10 @@
 2011-06-16  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/libgcc.S (__ashldi3, __ashrdi3, __lshrdi3): Set shift
+	truncation mask to 63.
+
+2011-06-16  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/49313
 	PR target/29524
 	* longlong.h: Add AVR support:
