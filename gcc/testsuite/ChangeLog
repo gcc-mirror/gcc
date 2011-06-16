@@ -1,3 +1,11 @@
+2011-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2011-06-13  Edmar Wienskoski  <edmar@freescale.com>
+
+	PR target/44618
+	* gcc.target/powerpc/outofline_rnreg.c: New testcase.
+
 2011-06-14  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/other/error23.C: Adjust error message.
