@@ -29,6 +29,7 @@
 	(__paritydi2): New function.
 	(__paritysi2): New function.
 	(__parityhi2): New function.
+	(__parityqi2): New function.
 	(__popcounthi2): New function.
 	(__popcountsi2): New function.
 	(__popcountdi2): New function.
