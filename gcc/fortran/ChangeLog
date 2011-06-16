@@ -1,3 +1,11 @@
+2011-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49417
+	* module.c (mio_component): Make sure the 'class_ok' attribute is set
+	for use-associated CLASS components.
+	* parse.c (parse_derived): Check for 'class_ok' attribute.
+	* resolve.c (resolve_fl_derived): Ditto.
+
 2011-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (remove_trim):  New function.

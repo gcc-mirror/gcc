@@ -2403,6 +2403,8 @@ mio_component (gfc_component *c, int vtype)
   mio_array_spec (&c->as);
 
   mio_symbol_attribute (&c->attr);
+  if (c->ts.type == BT_CLASS)
+    c->attr.class_ok = 1;
   c->attr.access = MIO_NAME (gfc_access) (c->attr.access, access_types); 
 
   if (!vtype)
