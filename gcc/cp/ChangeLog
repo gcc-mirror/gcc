@@ -1,3 +1,9 @@
+2011-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49420
+	* error.c (dump_template_argument): Don't try to omit default
+	template args from an argument pack.
+
 2011-06-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/49412
