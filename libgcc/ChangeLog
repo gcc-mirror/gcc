@@ -1,3 +1,11 @@
+2011-06-16  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/49313
+	PR target/29524
+	* config/avr/t-avr: Fix line endings.
+	(intfuncs16): Remove _ffsXX2,  _clzXX2, _ctzXX2, _popcountXX2,
+	_parityXX2.
+
 2011-06-14  Olivier Hainque  <hainque@adacore.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
