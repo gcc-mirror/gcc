@@ -436,7 +436,7 @@ static rtx sparc_struct_value_rtx (tree, int);
 static enum machine_mode sparc_promote_function_mode (const_tree, enum machine_mode,
 						      int *, const_tree, int);
 static bool sparc_return_in_memory (const_tree, const_tree);
-static bool sparc_strict_argument_naming (CUMULATIVE_ARGS *);
+static bool sparc_strict_argument_naming (cumulative_args_t);
 static void sparc_va_start (tree, rtx);
 static tree sparc_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool sparc_vector_mode_supported_p (enum machine_mode);
@@ -446,19 +446,19 @@ static rtx sparc_legitimize_pic_address (rtx, rtx);
 static rtx sparc_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx sparc_delegitimize_address (rtx);
 static bool sparc_mode_dependent_address_p (const_rtx);
-static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
+static bool sparc_pass_by_reference (cumulative_args_t,
 				     enum machine_mode, const_tree, bool);
-static void sparc_function_arg_advance (CUMULATIVE_ARGS *,
+static void sparc_function_arg_advance (cumulative_args_t,
 					enum machine_mode, const_tree, bool);
-static rtx sparc_function_arg_1 (const CUMULATIVE_ARGS *,
+static rtx sparc_function_arg_1 (cumulative_args_t,
 				 enum machine_mode, const_tree, bool, bool);
-static rtx sparc_function_arg (CUMULATIVE_ARGS *,
+static rtx sparc_function_arg (cumulative_args_t,
 			       enum machine_mode, const_tree, bool);
-static rtx sparc_function_incoming_arg (CUMULATIVE_ARGS *,
+static rtx sparc_function_incoming_arg (cumulative_args_t,
 					enum machine_mode, const_tree, bool);
 static unsigned int sparc_function_arg_boundary (enum machine_mode,
 						 const_tree);
-static int sparc_arg_partial_bytes (CUMULATIVE_ARGS *,
+static int sparc_arg_partial_bytes (cumulative_args_t,
 				    enum machine_mode, tree, bool);
 static void sparc_dwarf_handle_frame_unspec (const char *, rtx, int);
 static void sparc_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
@@ -5429,7 +5429,7 @@ sparc_promote_function_mode (const_tree type,
 /* Handle the TARGET_STRICT_ARGUMENT_NAMING target hook.  */
 
 static bool
-sparc_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
+sparc_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
 {
   return TARGET_ARCH64 ? true : false;
 }
@@ -6075,9 +6075,11 @@ function_arg_vector_value (int size, int regno)
     TARGET_FUNCTION_INCOMING_ARG.  */
 
 static rtx
-sparc_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+sparc_function_arg_1 (cumulative_args_t cum_v, enum machine_mode mode,
 		      const_tree type, bool named, bool incoming_p)
 {
+  const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   int regbase = (incoming_p
 		 ? SPARC_INCOMING_INT_ARG_FIRST
 		 : SPARC_OUTGOING_INT_ARG_FIRST);
@@ -6211,7 +6213,7 @@ sparc_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Handle the TARGET_FUNCTION_ARG target hook.  */
 
 static rtx
-sparc_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+sparc_function_arg (cumulative_args_t cum, enum machine_mode mode,
 		    const_tree type, bool named)
 {
   return sparc_function_arg_1 (cum, mode, type, named, false);
@@ -6220,7 +6222,7 @@ sparc_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Handle the TARGET_FUNCTION_INCOMING_ARG target hook.  */
 
 static rtx
-sparc_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+sparc_function_incoming_arg (cumulative_args_t cum, enum machine_mode mode,
 			     const_tree type, bool named)
 {
   return sparc_function_arg_1 (cum, mode, type, named, true);
@@ -6249,14 +6251,14 @@ sparc_function_arg_boundary (enum machine_mode mode, const_tree type)
    mode] will be split between that reg and memory.  */
 
 static int
-sparc_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+sparc_arg_partial_bytes (cumulative_args_t cum, enum machine_mode mode,
 			 tree type, bool named)
 {
   int slotno, regno, padding;
 
   /* We pass false for incoming_p here, it doesn't matter.  */
-  slotno = function_arg_slotno (cum, mode, type, named, false,
-				&regno, &padding);
+  slotno = function_arg_slotno (get_cumulative_args (cum), mode, type, named,
+				false, &regno, &padding);
 
   if (slotno == -1)
     return 0;
@@ -6307,7 +6309,7 @@ sparc_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    Specify whether to pass the argument by reference.  */
 
 static bool
-sparc_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+sparc_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 			 enum machine_mode mode, const_tree type,
 			 bool named ATTRIBUTE_UNUSED)
 {
@@ -6360,9 +6362,10 @@ sparc_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
    TYPE is null for libcalls where that information may not be available.  */
 
 static void
-sparc_function_arg_advance (struct sparc_args *cum, enum machine_mode mode,
+sparc_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			    const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int regno, padding;
 
   /* We pass false for incoming_p here, it doesn't matter.  */

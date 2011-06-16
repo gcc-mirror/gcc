@@ -1031,9 +1031,11 @@ h8300_pr_saveall (struct cpp_reader *pfile ATTRIBUTE_UNUSED)
    case the first 3 arguments are passed in registers.  */
 
 static rtx
-h8300_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+h8300_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		    const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   static const char *const hand_list[] = {
     "__main",
     "__cmpsi2",
@@ -1102,9 +1104,11 @@ h8300_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-h8300_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+h8300_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   cum->nbytes += (mode != BLKmode
 		  ? (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD
 		  : (int_size_in_bytes (type) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD);

@@ -98,7 +98,7 @@ static struct machine_function * cris_init_machine_status (void);
 
 static rtx cris_struct_value_rtx (tree, int);
 
-static void cris_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+static void cris_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					 tree type, int *, int);
 
 static int cris_initial_frame_pointer_offset (void);
@@ -125,15 +125,15 @@ static int cris_register_move_cost (enum machine_mode, reg_class_t, reg_class_t)
 static int cris_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, int, int, int *, bool);
 static int cris_address_cost (rtx, bool);
-static bool cris_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+static bool cris_pass_by_reference (cumulative_args_t, enum machine_mode,
 				    const_tree, bool);
-static int cris_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int cris_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				   tree, bool);
-static rtx cris_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx cris_function_arg (cumulative_args_t, enum machine_mode,
 			      const_tree, bool);
-static rtx cris_function_incoming_arg (CUMULATIVE_ARGS *,
+static rtx cris_function_incoming_arg (cumulative_args_t,
 				       enum machine_mode, const_tree, bool);
-static void cris_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void cris_function_arg_advance (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
 static tree cris_md_asm_clobbers (tree, tree, tree);
 
@@ -3676,12 +3676,14 @@ cris_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-cris_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
+cris_setup_incoming_varargs (cumulative_args_t ca_v,
 			     enum machine_mode mode ATTRIBUTE_UNUSED,
 			     tree type ATTRIBUTE_UNUSED,
 			     int *pretend_arg_size,
 			     int second_time)
 {
+  CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+
   if (ca->regs < CRIS_MAX_ARGS_IN_REGS)
     {
       int stdarg_regs = CRIS_MAX_ARGS_IN_REGS - ca->regs;
@@ -3699,7 +3701,7 @@ cris_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
    For cris, we pass <= 8 bytes by value, others by reference.  */
 
 static bool
-cris_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+cris_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
@@ -3757,10 +3759,10 @@ cris_function_value_regno_p (const unsigned int regno)
 }
 
 static int
-cris_arg_partial_bytes (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+cris_arg_partial_bytes (cumulative_args_t ca, enum machine_mode mode,
 			tree type, bool named ATTRIBUTE_UNUSED)
 {
-  if (ca->regs == CRIS_MAX_ARGS_IN_REGS - 1
+  if (get_cumulative_args (ca)->regs == CRIS_MAX_ARGS_IN_REGS - 1
       && !targetm.calls.must_pass_in_stack (mode, type)
       && CRIS_FUNCTION_ARG_SIZE (mode, type) > 4
       && CRIS_FUNCTION_ARG_SIZE (mode, type) <= 8)
@@ -3770,11 +3772,13 @@ cris_arg_partial_bytes (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 }
 
 static rtx
-cris_function_arg_1 (const CUMULATIVE_ARGS *ca,
+cris_function_arg_1 (cumulative_args_t ca_v,
 		     enum machine_mode mode ATTRIBUTE_UNUSED,
 		     const_tree type ATTRIBUTE_UNUSED,
 		     bool named, bool incoming)
 {
+  const CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+
   if ((!incoming || named) && ca->regs < CRIS_MAX_ARGS_IN_REGS)
     return gen_rtx_REG (mode, CRIS_FIRST_ARG_REG + ca->regs);
   else
@@ -3785,7 +3789,7 @@ cris_function_arg_1 (const CUMULATIVE_ARGS *ca,
    The void_type_node is sent as a "closing" call.  */
 
 static rtx
-cris_function_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+cris_function_arg (cumulative_args_t ca, enum machine_mode mode,
 		   const_tree type, bool named)
 {
   return cris_function_arg_1 (ca, mode, type, named, false);
@@ -3799,7 +3803,7 @@ cris_function_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
    void_type_node TYPE parameter.  */
 
 static rtx
-cris_function_incoming_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+cris_function_incoming_arg (cumulative_args_t ca, enum machine_mode mode,
 			    const_tree type, bool named)
 {
   return cris_function_arg_1 (ca, mode, type, named, true);
@@ -3808,9 +3812,11 @@ cris_function_incoming_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 /* Worker function for TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-cris_function_arg_advance (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+cris_function_arg_advance (cumulative_args_t ca_v, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+
   ca->regs += (3 + CRIS_FUNCTION_ARG_SIZE (mode, type)) / 4;
 }
 

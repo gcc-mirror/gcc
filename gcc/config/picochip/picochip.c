@@ -77,16 +77,16 @@ void picochip_asm_file_end (void);
 void picochip_init_libfuncs (void);
 void picochip_reorg (void);
 
-int picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum,
+int picochip_arg_partial_bytes (cumulative_args_t p_cum,
 				       enum machine_mode mode,
 				       tree type, bool named);
-rtx picochip_function_arg (CUMULATIVE_ARGS * p_cum,
+rtx picochip_function_arg (cumulative_args_t p_cum,
 			   enum machine_mode mode,
 			   const_tree type, bool named);
-rtx picochip_incoming_function_arg (CUMULATIVE_ARGS * p_cum,
+rtx picochip_incoming_function_arg (cumulative_args_t p_cum,
 				    enum machine_mode mode,
 				    const_tree type, bool named);
-void picochip_arg_advance (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
+void picochip_arg_advance (cumulative_args_t p_cum, enum machine_mode mode,
 			   const_tree type, bool named);
 unsigned int picochip_function_arg_boundary (enum machine_mode mode,
 					     const_tree type);
@@ -821,9 +821,10 @@ picochip_compute_arg_size (const_tree type, enum machine_mode mode)
 
 /* Determine where the next outgoing arg should be placed. */
 rtx
-picochip_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+picochip_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int reg = 0;
   int type_align_in_units = 0;
   int type_size_in_units;
@@ -919,7 +920,7 @@ picochip_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    passed in registers, which are then pushed onto the stack by the
    function prologue). */
 rtx
-picochip_incoming_function_arg (CUMULATIVE_ARGS *cum,
+picochip_incoming_function_arg (cumulative_args_t cum,
 				enum machine_mode mode,
 				const_tree type, bool named)
 {
@@ -953,7 +954,7 @@ picochip_function_arg_boundary (enum machine_mode mode,
 
 /* Compute partial registers. */
 int
-picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
+picochip_arg_partial_bytes (cumulative_args_t p_cum, enum machine_mode mode,
 			    tree type, bool named ATTRIBUTE_UNUSED)
 {
   int type_align_in_units = 0;
@@ -961,7 +962,7 @@ picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
   int new_offset = 0;
   int offset_overflow = 0;
 
-  unsigned cum = *((unsigned *) p_cum);
+  unsigned cum = *get_cumulative_args (p_cum);
 
   /* VOIDmode is passed when computing the second argument to a `call'
      pattern. This can be ignored. */
@@ -1009,9 +1010,10 @@ picochip_arg_partial_bytes (CUMULATIVE_ARGS * p_cum, enum machine_mode mode,
 
 /* Advance the cumulative args counter CUM. */
 void
-picochip_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+picochip_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 		      const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int type_align_in_units = 0;
   int type_size_in_units;
   int new_offset = 0;

@@ -166,11 +166,11 @@ static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static tree arm_builtin_decl (unsigned, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx emit_set_insn (rtx, rtx);
-static int arm_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int arm_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				  tree, bool);
-static rtx arm_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx arm_function_arg (cumulative_args_t, enum machine_mode,
 			     const_tree, bool);
-static void arm_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void arm_function_arg_advance (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
 static unsigned int arm_function_arg_boundary (enum machine_mode, const_tree);
 static rtx aapcs_allocate_return_reg (enum machine_mode, const_tree,
@@ -188,9 +188,9 @@ static void arm_encode_section_info (tree, rtx, int);
 static void arm_file_end (void);
 static void arm_file_start (void);
 
-static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+static void arm_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					tree, int *, int);
-static bool arm_pass_by_reference (CUMULATIVE_ARGS *,
+static bool arm_pass_by_reference (cumulative_args_t,
 				   enum machine_mode, const_tree, bool);
 static bool arm_promote_prototypes (const_tree);
 static bool arm_default_short_enums (void);
@@ -4389,9 +4389,10 @@ arm_needs_doubleword_align (enum machine_mode mode, const_tree type)
    indeed make it pass in the stack if necessary).  */
 
 static rtx
-arm_function_arg (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+arm_function_arg (cumulative_args_t pcum_v, enum machine_mode mode,
 		  const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   int nregs;
 
   /* Handle the special case quickly.  Pick an arbitrary value for op2 of
@@ -4449,9 +4450,10 @@ arm_function_arg_boundary (enum machine_mode mode, const_tree type)
 }
 
 static int
-arm_arg_partial_bytes (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+arm_arg_partial_bytes (cumulative_args_t pcum_v, enum machine_mode mode,
 		       tree type, bool named)
 {
+  CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   int nregs = pcum->nregs;
 
   if (pcum->pcs_variant <= ARM_PCS_AAPCS_LOCAL)
@@ -4476,9 +4478,11 @@ arm_arg_partial_bytes (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-arm_function_arg_advance (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+arm_function_arg_advance (cumulative_args_t pcum_v, enum machine_mode mode,
 			  const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
+
   if (pcum->pcs_variant <= ARM_PCS_AAPCS_LOCAL)
     {
       aapcs_layout_arg (pcum, mode, type, named);
@@ -4512,7 +4516,7 @@ arm_function_arg_advance (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
    extension to the ARM ABI.  */
 
 static bool
-arm_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+arm_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		       enum machine_mode mode ATTRIBUTE_UNUSED,
 		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
@@ -21933,12 +21937,13 @@ arm_output_load_gr (rtx *operands)
    that way.  */
 
 static void
-arm_setup_incoming_varargs (CUMULATIVE_ARGS *pcum,
+arm_setup_incoming_varargs (cumulative_args_t pcum_v,
 			    enum machine_mode mode,
 			    tree type,
 			    int *pretend_size,
 			    int second_time ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   int nregs;
   
   cfun->machine->uses_anonymous_args = 1;

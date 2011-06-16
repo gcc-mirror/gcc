@@ -5452,7 +5452,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 	 passed by reference.  Pass them by explicit reference, this will
 	 generate more debuggable code at -O0.  */
       if (TYPE_IS_FAT_POINTER_P (gnu_param_type)
-	  && targetm.calls.pass_by_reference (NULL,
+	  && targetm.calls.pass_by_reference (pack_cumulative_args (NULL),
 					      TYPE_MODE (gnu_param_type),
 					      gnu_param_type,
 					      true))

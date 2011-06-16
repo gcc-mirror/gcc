@@ -96,7 +96,7 @@ static int        calc_live_regs                (int *);
 static int        try_constant_tricks           (long, HOST_WIDE_INT *, HOST_WIDE_INT *);
 static const char *     output_inline_const     (enum machine_mode, rtx *);
 static void       layout_mcore_frame            (struct mcore_frame *);
-static void       mcore_setup_incoming_varargs	(CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
+static void       mcore_setup_incoming_varargs	(cumulative_args_t, enum machine_mode, tree, int *, int);
 static cond_type  is_cond_candidate             (rtx);
 static rtx        emit_new_cond_insn            (rtx, int);
 static rtx        conditionalize_block          (rtx);
@@ -124,13 +124,13 @@ static int        mcore_ior_cost               	(rtx);
 static bool       mcore_rtx_costs		(rtx, int, int, int *, bool);
 static void       mcore_external_libcall	(rtx);
 static bool       mcore_return_in_memory	(const_tree, const_tree);
-static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
+static int        mcore_arg_partial_bytes       (cumulative_args_t,
 						 enum machine_mode,
 						 tree, bool);
-static rtx        mcore_function_arg            (CUMULATIVE_ARGS *,
+static rtx        mcore_function_arg            (cumulative_args_t,
 						 enum machine_mode,
 						 const_tree, bool);
-static void       mcore_function_arg_advance    (CUMULATIVE_ARGS *,
+static void       mcore_function_arg_advance    (cumulative_args_t,
 						 enum machine_mode,
 						 const_tree, bool);
 static unsigned int mcore_function_arg_boundary (enum machine_mode,
@@ -1911,11 +1911,13 @@ mcore_initial_elimination_offset (int from, int to)
 /* Keep track of some information about varargs for the prolog.  */
 
 static void
-mcore_setup_incoming_varargs (CUMULATIVE_ARGS *args_so_far,
+mcore_setup_incoming_varargs (cumulative_args_t args_so_far_v,
 			      enum machine_mode mode, tree type,
 			      int * ptr_pretend_size ATTRIBUTE_UNUSED,
 			      int second_time ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *args_so_far = get_cumulative_args (args_so_far_v);
+
   current_function_anonymous_args = 1;
 
   /* We need to know how many argument registers are used before
@@ -2783,7 +2785,7 @@ mcore_function_value (const_tree valtype, const_tree func)
    its data type forbids.  */
 
 static rtx
-mcore_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mcore_function_arg (cumulative_args_t cum, enum machine_mode mode,
 		    const_tree type, bool named)
 {
   int arg_reg;
@@ -2794,7 +2796,7 @@ mcore_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (targetm.calls.must_pass_in_stack (mode, type))
     return 0;
 
-  arg_reg = ROUND_REG (*cum, mode);
+  arg_reg = ROUND_REG (*get_cumulative_args (cum), mode);
   
   if (arg_reg < NPARM_REGS)
     return handle_structs_in_regs (mode, type, FIRST_PARM_REG + arg_reg);
@@ -2803,9 +2805,11 @@ mcore_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static void
-mcore_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mcore_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   *cum = (ROUND_REG (*cum, mode)
 	  + (int)named * mcore_num_arg_regs (mode, type));
 }
@@ -2828,10 +2832,10 @@ mcore_function_arg_boundary (enum machine_mode mode,
    the function.  */
 
 static int
-mcore_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mcore_arg_partial_bytes (cumulative_args_t cum, enum machine_mode mode,
 			 tree type, bool named)
 {
-  int reg = ROUND_REG (*cum, mode);
+  int reg = ROUND_REG (*get_cumulative_args (cum), mode);
 
   if (named == 0)
     return 0;

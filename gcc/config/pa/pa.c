@@ -158,13 +158,13 @@ static void pa_hpux_file_end (void);
 static void pa_hpux_init_libfuncs (void);
 #endif
 static rtx pa_struct_value_rtx (tree, int);
-static bool pa_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+static bool pa_pass_by_reference (cumulative_args_t, enum machine_mode,
 				  const_tree, bool);
-static int pa_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int pa_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				 tree, bool);
-static void pa_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void pa_function_arg_advance (cumulative_args_t, enum machine_mode,
 				     const_tree, bool);
-static rtx pa_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx pa_function_arg (cumulative_args_t, enum machine_mode,
 			    const_tree, bool);
 static unsigned int pa_function_arg_boundary (enum machine_mode, const_tree);
 static struct machine_function * pa_init_machine_status (void);
@@ -5948,7 +5948,7 @@ pa_eh_return_handler_rtx (void)
    or updates the ABI.  */
 
 static bool
-pa_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+pa_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 		      enum machine_mode mode, const_tree type,
 		      bool named ATTRIBUTE_UNUSED)
 {
@@ -9386,9 +9386,10 @@ pa_function_value_regno_p (const unsigned int regno)
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-pa_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+pa_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int arg_size = FUNCTION_ARG_SIZE (mode, type);
 
   cum->nargs_prototype--;
@@ -9407,9 +9408,10 @@ pa_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    ??? We might want to restructure this so that it looks more like other
    ports.  */
 static rtx
-pa_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+pa_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int max_arg_words = (TARGET_64BIT ? 8 : 4);
   int alignment = 0;
   int arg_size;
@@ -9617,9 +9619,10 @@ pa_function_arg_boundary (enum machine_mode mode, const_tree type)
    then this routine should return zero.  */
 
 static int
-pa_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+pa_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 		      tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   unsigned int max_arg_words = 8;
   unsigned int offset = 0;
 

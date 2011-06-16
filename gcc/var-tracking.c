@@ -5589,9 +5589,11 @@ prepare_call_arguments (basic_block bb, rtx insn)
   rtx this_arg = NULL_RTX;
   tree type = NULL_TREE, t, fndecl = NULL_TREE;
   tree obj_type_ref = NULL_TREE;
-  CUMULATIVE_ARGS args_so_far;
+  CUMULATIVE_ARGS args_so_far_v;
+  cumulative_args_t args_so_far;
 
-  memset (&args_so_far, 0, sizeof (args_so_far));
+  memset (&args_so_far_v, 0, sizeof (args_so_far_v));
+  args_so_far = pack_cumulative_args (&args_so_far_v);
   if (GET_CODE (call) == PARALLEL)
     call = XVECEXP (call, 0, 0);
   if (GET_CODE (call) == SET)
@@ -5639,11 +5641,11 @@ prepare_call_arguments (basic_block bb, rtx insn)
 		  tree struct_addr = build_pointer_type (TREE_TYPE (type));
 		  enum machine_mode mode = TYPE_MODE (struct_addr);
 		  rtx reg;
-		  INIT_CUMULATIVE_ARGS (args_so_far, type, NULL_RTX, fndecl,
+		  INIT_CUMULATIVE_ARGS (args_so_far_v, type, NULL_RTX, fndecl,
 					nargs + 1);
-		  reg = targetm.calls.function_arg (&args_so_far, mode,
+		  reg = targetm.calls.function_arg (args_so_far, mode,
 						    struct_addr, true);
-		  targetm.calls.function_arg_advance (&args_so_far, mode,
+		  targetm.calls.function_arg_advance (args_so_far, mode,
 						      struct_addr, true);
 		  if (reg == NULL_RTX)
 		    {
@@ -5658,14 +5660,14 @@ prepare_call_arguments (basic_block bb, rtx insn)
 		}
 	      else
 #endif
-		INIT_CUMULATIVE_ARGS (args_so_far, type, NULL_RTX, fndecl,
+		INIT_CUMULATIVE_ARGS (args_so_far_v, type, NULL_RTX, fndecl,
 				      nargs);
 	      if (obj_type_ref && TYPE_ARG_TYPES (type) != void_list_node)
 		{
 		  enum machine_mode mode;
 		  t = TYPE_ARG_TYPES (type);
 		  mode = TYPE_MODE (TREE_VALUE (t));
-		  this_arg = targetm.calls.function_arg (&args_so_far, mode,
+		  this_arg = targetm.calls.function_arg (args_so_far, mode,
 							 TREE_VALUE (t), true);
 		  if (this_arg && !REG_P (this_arg))
 		    this_arg = NULL_RTX;
@@ -5745,12 +5747,12 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	    tree argtype = TREE_VALUE (t);
 	    enum machine_mode mode = TYPE_MODE (argtype);
 	    rtx reg;
-	    if (pass_by_reference (&args_so_far, mode, argtype, true))
+	    if (pass_by_reference (&args_so_far_v, mode, argtype, true))
 	      {
 		argtype = build_pointer_type (argtype);
 		mode = TYPE_MODE (argtype);
 	      }
-	    reg = targetm.calls.function_arg (&args_so_far, mode,
+	    reg = targetm.calls.function_arg (args_so_far, mode,
 					      argtype, true);
 	    if (TREE_CODE (argtype) == REFERENCE_TYPE
 		&& INTEGRAL_TYPE_P (TREE_TYPE (argtype))
@@ -5804,7 +5806,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 			}
 		  }
 	      }
-	    targetm.calls.function_arg_advance (&args_so_far, mode,
+	    targetm.calls.function_arg_advance (args_so_far, mode,
 						argtype, true);
 	    t = TREE_CHAIN (t);
 	  }

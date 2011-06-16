@@ -5380,9 +5380,10 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
    and the rest are pushed.  */
 
 static rtx
-alpha_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+alpha_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int basereg;
   int num_args;
 
@@ -5441,9 +5442,10 @@ alpha_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-alpha_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+alpha_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   bool onstack = targetm.calls.must_pass_in_stack (mode, type);
   int increment = onstack ? 6 : ALPHA_ARG_SIZE (mode, type, named);
 
@@ -5457,12 +5459,13 @@ alpha_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static int
-alpha_arg_partial_bytes (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+alpha_arg_partial_bytes (cumulative_args_t cum_v,
 			 enum machine_mode mode ATTRIBUTE_UNUSED,
 			 tree type ATTRIBUTE_UNUSED,
 			 bool named ATTRIBUTE_UNUSED)
 {
   int words = 0;
+  CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED = get_cumulative_args (cum_v);
 
 #if TARGET_ABI_OPEN_VMS
   if (cum->num_args < 6
@@ -5537,7 +5540,7 @@ alpha_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 /* Return true if TYPE should be passed by invisible reference.  */
 
 static bool
-alpha_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+alpha_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			 enum machine_mode mode,
 			 const_tree type ATTRIBUTE_UNUSED,
 			 bool named ATTRIBUTE_UNUSED)
@@ -5875,13 +5878,14 @@ escapes:
    variable number of arguments.  */
 
 static void
-alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+alpha_setup_incoming_varargs (cumulative_args_t pcum, enum machine_mode mode,
 			      tree type, int *pretend_size, int no_rtl)
 {
-  CUMULATIVE_ARGS cum = *pcum;
+  CUMULATIVE_ARGS cum = *get_cumulative_args (pcum);
 
   /* Skip the current argument.  */
-  targetm.calls.function_arg_advance (&cum, mode, type, true);
+  targetm.calls.function_arg_advance (pack_cumulative_args (&cum), mode, type,
+				      true);
 
 #if TARGET_ABI_OPEN_VMS
   /* For VMS, we allocate space for all 6 arg registers plus a count.

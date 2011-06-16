@@ -65,7 +65,7 @@ static rtx emit_add (rtx dest, rtx src0, rtx src1);
 static void expand_save_restore (struct lm32_frame_info *info, int op);
 static void stack_adjust (HOST_WIDE_INT amount);
 static bool lm32_in_small_data_p (const_tree);
-static void lm32_setup_incoming_varargs (CUMULATIVE_ARGS * cum,
+static void lm32_setup_incoming_varargs (cumulative_args_t cum,
 					 enum machine_mode mode, tree type,
 					 int *pretend_size, int no_rtl);
 static bool lm32_rtx_costs (rtx x, int code, int outer_code, int *total,
@@ -75,10 +75,10 @@ static bool
 lm32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict);
 static HOST_WIDE_INT lm32_compute_frame_size (int size);
 static void lm32_option_override (void);
-static rtx lm32_function_arg (CUMULATIVE_ARGS * cum,
+static rtx lm32_function_arg (cumulative_args_t cum,
 			      enum machine_mode mode, const_tree type,
 			      bool named);
-static void lm32_function_arg_advance (CUMULATIVE_ARGS * cum,
+static void lm32_function_arg_advance (cumulative_args_t cum,
 				       enum machine_mode mode,
 				       const_tree type, bool named);
 static bool lm32_legitimate_constant_p (enum machine_mode, rtx);
@@ -623,9 +623,11 @@ lm32_print_operand_address (FILE * file, rtx addr)
     (otherwise it is an extra parameter matching an ellipsis).  */
 
 static rtx
-lm32_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+lm32_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		   const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (mode == VOIDmode)
     /* Compute operand 2 of the call insn.  */
     return GEN_INT (0);
@@ -640,10 +642,10 @@ lm32_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static void
-lm32_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+lm32_function_arg_advance (cumulative_args_t cum, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
-  *cum += LM32_NUM_REGS2 (mode, type);
+  *get_cumulative_args (cum) += LM32_NUM_REGS2 (mode, type);
 }
 
 HOST_WIDE_INT
@@ -676,9 +678,10 @@ lm32_compute_initial_elimination_offset (int from, int to)
 }
 
 static void
-lm32_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+lm32_setup_incoming_varargs (cumulative_args_t cum_v, enum machine_mode mode,
 			     tree type, int *pretend_size, int no_rtl)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int first_anon_arg;
   tree fntype;
 

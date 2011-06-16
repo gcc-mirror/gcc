@@ -1201,9 +1201,11 @@ xstormy16_function_profiler (void)
    the word count.  */
 
 static void
-xstormy16_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+xstormy16_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 				const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   /* If an argument would otherwise be passed partially in registers,
      and partially on the stack, the whole of it is passed on the
      stack.  */
@@ -1215,9 +1217,11 @@ xstormy16_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static rtx
-xstormy16_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+xstormy16_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (mode == VOIDmode)
     return const0_rtx;
   if (targetm.calls.must_pass_in_stack (mode, type)

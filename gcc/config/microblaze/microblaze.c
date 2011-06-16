@@ -1091,9 +1091,12 @@ init_cumulative_args (CUMULATIVE_ARGS * cum, tree fntype,
 /* Advance the argument to the next argument position.  */
 
 static void
-microblaze_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+microblaze_function_arg_advance (cumulative_args_t cum_v,
+				 enum machine_mode mode,
 				 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   cum->arg_number++;
   switch (mode)
     {
@@ -1146,10 +1149,12 @@ microblaze_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
    or 0 if the argument is to be passed on the stack.  */
 
 static rtx
-microblaze_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode, 
+microblaze_function_arg (cumulative_args_t cum_v, enum machine_mode mode, 
 			 const_tree type ATTRIBUTE_UNUSED,
 			 bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   rtx ret;
   int regbase = -1;
   int *arg_words = &cum->arg_words;
@@ -1197,9 +1202,11 @@ microblaze_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
 
 /* Return number of bytes of argument to put in registers. */
 static int
-function_arg_partial_bytes (CUMULATIVE_ARGS * cum, enum machine_mode mode,	
+function_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,	
 			    tree type, bool named ATTRIBUTE_UNUSED)	
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if ((mode == BLKmode
        || GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
        || GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
@@ -2220,7 +2227,8 @@ microblaze_expand_prologue (void)
   int i;
   tree next_arg;
   tree cur_arg;
-  CUMULATIVE_ARGS args_so_far;
+  CUMULATIVE_ARGS args_so_far_v;
+  cumulative_args_t args_so_far;
   rtx mem_rtx, reg_rtx;
 
   /* If struct value address is treated as the first argument, make it so.  */
@@ -2238,7 +2246,8 @@ microblaze_expand_prologue (void)
 
   /* Determine the last argument, and get its name.  */
 
-  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, 0, 0);
+  INIT_CUMULATIVE_ARGS (args_so_far_v, fntype, NULL_RTX, 0, 0);
+  args_so_far = pack_cumulative_args (&args_so_far_v);
   regno = GP_ARG_FIRST;
 
   for (cur_arg = fnargs; cur_arg != 0; cur_arg = next_arg)
@@ -2253,7 +2262,7 @@ microblaze_expand_prologue (void)
 	  passed_mode = Pmode;
 	}
 
-      entry_parm = targetm.calls.function_arg (&args_so_far, passed_mode,
+      entry_parm = targetm.calls.function_arg (args_so_far, passed_mode,
 					       passed_type, true);
 
       if (entry_parm)
@@ -2274,7 +2283,7 @@ microblaze_expand_prologue (void)
 	  break;
 	}
 
-      targetm.calls.function_arg_advance (&args_so_far, passed_mode,
+      targetm.calls.function_arg_advance (args_so_far, passed_mode,
 					  passed_type, true);
 
       next_arg = TREE_CHAIN (cur_arg);
@@ -2289,7 +2298,7 @@ microblaze_expand_prologue (void)
 
   /* Split parallel insn into a sequence of insns.  */
 
-  next_arg_reg = targetm.calls.function_arg (&args_so_far, VOIDmode,
+  next_arg_reg = targetm.calls.function_arg (args_so_far, VOIDmode,
 					     void_type_node, true);
   if (next_arg_reg != 0 && GET_CODE (next_arg_reg) == PARALLEL)
     {

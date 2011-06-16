@@ -1,3 +1,175 @@
+2010-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR middle-end/46500
+	* doc/tm.texi.in: Update Copyright date.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_setup_incoming_varargs): Replace
+	CUMULATIVE_ARGS* argument type with cumulative_args_t.
+	(default_pretend_outgoing_varargs_named): Likewise.
+	(hook_pass_by_reference_must_pass_in_stack): Likewise.
+	(hook_callee_copies_named): Likewise.
+	(default_function_arg_advance): Likewise.
+	(default_function_arg): Likewise.
+	(default_function_incoming_arg): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_false): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_true): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true): Likewise.
+	(hook_int_CUMULATIVE_ARGS_mode_tree_bool_0): Likewise.
+	* targhooks.h (default_setup_incoming_varargs): Likewise.
+	(default_pretend_outgoing_varargs_named): Likewise.
+	(hook_pass_by_reference_must_pass_in_stack): Likewise.
+	(hook_callee_copies_named): Likewise.
+	(default_function_arg_advance): Likewise.
+	(default_function_arg): Likewise.
+	(default_function_incoming_arg): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_false): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_true): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false): Likewise.
+	(hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true): Likewise.
+	(hook_int_CUMULATIVE_ARGS_mode_tree_bool_0): Likewise.
+	* target.def (pass_by_reference): Likewise.
+	(setup_incoming_varargs, strict_argument_naming): Likewise.
+	(pretend_outgoing_varargs_named, callee_copies): Likewise.
+	(arg_partial_bytes, function_arg_advance, function_arg): Likewise.
+	(function_incoming_arg): Likewise.
+	* target.h: Don't include "tm.h" .
+	(cumulative_args_t): New typedef.
+	[GCC_TM_H] (get_cumulative_args): New static inline function.
+	[GCC_TM_H] (pack_cumulative_args): Likewise.
+	* config/alpha/alpha.c (alpha_function_arg): Replace CUMULATIVE_ARGS*
+	argument type with cumulative_args_t.
+	(alpha_function_arg_advance, alpha_arg_partial_bytes): Likewise.
+	(alpha_pass_by_reference, alpha_setup_incoming_varargs): Likewise.
+	* config/frv/frv.c (frv_setup_incoming_varargs): Likewise.
+	(frv_arg_partial_bytes, frv_function_arg): Likewise.
+	(frv_function_incoming_arg, frv_function_arg_advance): Likewise.
+	(frv_function_arg_1): Likewise.
+	* config/s390/s390.c (s390_pass_by_reference): Likewise.
+	(s390_function_arg_advance, s390_function_arg): Likewise.
+	* config/m32c/m32c.c (m32c_function_arg): Likewise.
+	(m32c_pass_by_reference, m32c_function_arg_advance): Likewise.
+	(m32c_strict_argument_naming): Likewise.
+	* config/spu/spu.c (spu_pass_by_reference, spu_function_arg): Likewise.
+	(spu_function_arg_advance): Likewise.
+	(spu_setup_incoming_varargs): Likewise.  Make static.
+	* config/spu/spu-protos.h (spu_setup_incoming_varargs):
+	Remove prototype.
+	* config/sparc/sparc.c (sparc_strict_argument_naming): Replace
+	CUMULATIVE_ARGS* argument type with cumulative_args_t.
+	(sparc_pass_by_reference, sparc_function_arg_advance): Likewise.
+	(sparc_function_arg, sparc_function_incoming_arg): Likewise.
+	(sparc_arg_partial_bytes, sparc_function_arg_1): Likewise.
+	* config/mep/mep.c (mep_setup_incoming_varargs): Likewise.
+	(mep_pass_by_reference, mep_function_arg): Likewise.
+	(mep_function_arg_advance): Likewise.
+	* config/m32r/m32r.c (m32r_setup_incoming_varargs): Likewise.
+	(m32r_pass_by_reference, m32r_arg_partial_bytes): Likewise.
+	(m32r_function_arg, m32r_function_arg_advance): Likewise.
+	* config/rx/rx.c (rx_function_arg, rx_function_arg_advance): Likewise.
+	* config/i386/i386.c (ix86_function_arg_advance): Likewise.
+	(ix86_function_arg, ix86_pass_by_reference): Likewise.
+	(ix86_setup_incoming_varargs): Likewise.
+	* config/sh/sh.c (sh_setup_incoming_varargs): Likewise.
+	(sh_strict_argument_naming): Likewise.
+	(sh_pretend_outgoing_varargs_named, sh_pass_by_reference): Likewise.
+	(sh_callee_copies, sh_arg_partial_bytes): Likewise.
+	(sh_function_arg_advance, sh_function_arg): Likewise.
+	* config/pdp11/pdp11.c (pdp11_function_arg): Likewise.
+	(pdp11_function_arg_advance): Likewise.
+	* config/microblaze/microblaze.c (microblaze_function_arg_advance):
+	Likewise.
+	(microblaze_function_arg, function_arg_partial_bytes): Likewise.
+	* config/avr/avr.c (avr_function_arg): Likewise.
+	(avr_function_arg_advance): Likewise.
+	* config/xtensa/xtensa.c (xtensa_function_arg_advance): Likewise.
+	(xtensa_function_arg, xtensa_function_incoming_arg): Likewise.
+	(xtensa_function_arg_1): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_function_arg_advance): Likewise.
+	(xstormy16_function_arg): Likewise.
+	* config/fr30/fr30.c (fr30_setup_incoming_varargs): Likewise.
+	(fr30_arg_partial_bytes, fr30_function_arg): Likewise.
+	(fr30_function_arg_advance): Likewise.
+	* config/lm32/lm32.c (lm32_setup_incoming_varargs): Likewise.
+	(lm32_function_arg, lm32_function_arg_advance): Likewise.
+	* config/moxie/moxie.c (moxie_setup_incoming_varargs): Likewise.
+	(moxie_function_arg, moxie_function_arg_advance): Likewise.
+	(moxie_pass_by_reference, moxie_arg_partial_bytes): Likewise.
+	* config/cris/cris.c (cris_setup_incoming_varargs): Likewise.
+	(cris_pass_by_reference, cris_arg_partial_bytes): Likewise.
+	(cris_function_arg, cris_function_incoming_arg): Likewise.
+	(cris_function_arg_advance, cris_function_arg_1): Likewise.
+	* config/iq2000/iq2000.c (iq2000_setup_incoming_varargs): Likewise.
+	(iq2000_pass_by_reference, iq2000_arg_partial_bytes): Likewise.
+	(iq2000_function_arg, iq2000_function_arg_advance): Likewise.
+	* config/mn10300/mn10300.c (mn10300_pass_by_reference): Likewise.
+	(mn10300_function_arg, mn10300_function_arg_advance): Likewise.
+	(mn10300_arg_partial_bytes): Likewise.
+	* config/ia64/ia64.c (ia64_setup_incoming_varargs): Likewise.
+	(ia64_arg_partial_bytes, ia64_function_arg): Likewise.
+	(ia64_function_incoming_arg, ia64_function_arg_advance): Likewise.
+	(ia64_function_arg_1): Likewise.
+	* config/m68k/m68k.c (m68k_function_arg_advance): Likewise.
+	(m68k_function_arg): Likewise.
+	* config/rs6000/rs6000.c (rs6000_function_arg_advance): Likewise.
+	(rs6000_function_arg, setup_incoming_varargs): Likewise.
+	(rs6000_pass_by_reference, rs6000_arg_partial_bytes): Likewise.
+	* config/picochip/picochip.c (picochip_arg_partial_bytes): Likewise.
+	(picochip_function_arg, picochip_incoming_function_arg): Likewise.
+	(picochip_arg_advance): Likewise.
+	* config/mcore/mcore.c (mcore_setup_incoming_varargs): Likewise.
+	(mcore_arg_partial_bytes, mcore_function_arg): Likewise.
+	(mcore_function_arg_advance): Likewise.
+	* config/score/score.c (score_pass_by_reference): Likewise.
+	(score_function_arg_advance): Likewise.
+	(score_arg_partial_bytes): Likewise.  Make static.
+	* config/score/score-protos.h (score_arg_partial_bytes): Don't declare.
+	* config/arm/arm.c (arm_arg_partial_bytes): Replace
+	CUMULATIVE_ARGS* argument type with cumulative_args_t.
+	(arm_function_arg, arm_function_arg_advance): Likewise.
+	(arm_setup_incoming_varargs, arm_pass_by_reference): Likewise.
+	* config/pa/pa.c (pa_pass_by_reference): Likewise.
+	(pa_arg_partial_bytes, pa_function_arg_advance): Likewise.
+	(pa_function_arg): Likewise.
+	* config/mips/mips.c (mips_strict_argument_naming): Likewise.
+	(mips_function_arg, mips_function_arg_advance): Likewise.
+	(mips_arg_partial_bytes, mips_pass_by_reference): Likewise.
+	(mips_callee_copies, mips_setup_incoming_varargs): Likewise.
+	* config/vax/vax.c (vax_function_arg): Likewise.
+	(vax_function_arg_advance): Likewise.
+	* config/h8300/h8300.c (h8300_function_arg): Likewise.
+	(h8300_function_arg_advance): Likewise.
+	* config/v850/v850.c (v850_pass_by_reference): Likewise.
+	(v850_strict_argument_naming, v850_function_arg): Likewise.
+	(v850_arg_partial_bytes, v850_function_arg_advance): Likewise.
+	(v850_setup_incoming_varargs): Likewise.
+	* config/mmix/mmix.c (mmix_setup_incoming_varargs): Likewise.
+	(mmix_function_arg_advance, mmix_function_incoming_arg): Likewise.
+	(mmix_function_arg, mmix_pass_by_reference): Likewise.
+	(mmix_function_arg_1): Replace const CUMULATIVE_ARGS* argument type
+	with const void *.
+	* config/bfin/bfin.c (setup_incoming_varargs): Replace
+	CUMULATIVE_ARGS* argument type with cumulative_args_t.
+	(bfin_function_arg_advance, bfin_function_arg): Likewise.
+	(bfin_arg_partial_bytes, bfin_pass_by_reference): Likewise.
+	* calls.c (emit_call_1): Change type of args_so_far to
+	cumulative_args_t.  Changed all callers.
+	(initialize_argument_information): Likewise.
+	(expand_call, emit_library_call_value_1): Use pack_cumulative_args.
+	* dse.c (get_call_args): Likewise.
+	* expr.c (block_move_libcall_safe_for_call_parm): Likewise.
+	* function.c (pass_by_reference, reference_callee_copied): Likewise.
+	(struct assign_parm_data_all): Rename args_so_far to args_so_far_v.
+	New member args_so_far_v.  Changed all users.
+	* var-tracking.c (prepare_call_arguments): Use pack_cumulative_args.
+	* config/iq2000/iq2000.c (iq2000_expand_prologue): Likewise.
+	* config/mips/mips.c (mips_output_args_xfer): Likewise.
+	* config/s390/s390.c (s390_call_saved_register_used): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+	* config/microblaze/microblaze.c (microblaze_expand_prologue): Likewise.
+	* config/m32r/m32r.c (m32r_return_in_memory): Adjust for changed
+	m32r_pass_by_reference.
+
 2011-06-16  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vectorizer.h (vect_recog_func_ptr): Change the first

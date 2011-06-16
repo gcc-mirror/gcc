@@ -195,17 +195,17 @@ static void ia64_option_override (void);
 static void ia64_option_default_params (void);
 static bool ia64_can_eliminate (const int, const int);
 static enum machine_mode hfa_element_mode (const_tree, bool);
-static void ia64_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+static void ia64_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					 tree, int *, int);
-static int ia64_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int ia64_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				   tree, bool);
-static rtx ia64_function_arg_1 (const CUMULATIVE_ARGS *, enum machine_mode,
+static rtx ia64_function_arg_1 (cumulative_args_t, enum machine_mode,
 				const_tree, bool, bool);
-static rtx ia64_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx ia64_function_arg (cumulative_args_t, enum machine_mode,
 			      const_tree, bool);
-static rtx ia64_function_incoming_arg (CUMULATIVE_ARGS *,
+static rtx ia64_function_incoming_arg (cumulative_args_t,
 				       enum machine_mode, const_tree, bool);
-static void ia64_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void ia64_function_arg_advance (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
 static unsigned int ia64_function_arg_boundary (enum machine_mode,
 						const_tree);
@@ -4157,14 +4157,14 @@ ia64_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
    We generate the actual spill instructions during prologue generation.  */
 
 static void
-ia64_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+ia64_setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
 			     tree type, int * pretend_size,
 			     int second_time ATTRIBUTE_UNUSED)
 {
-  CUMULATIVE_ARGS next_cum = *cum;
+  CUMULATIVE_ARGS next_cum = *get_cumulative_args (cum);
 
   /* Skip the current argument.  */
-  ia64_function_arg_advance (&next_cum, mode, type, 1);
+  ia64_function_arg_advance (pack_cumulative_args (&next_cum), mode, type, 1);
 
   if (next_cum.words < MAX_ARGUMENT_SLOTS)
     {
@@ -4312,9 +4312,11 @@ ia64_function_arg_offset (const CUMULATIVE_ARGS *cum,
    registers.  */
 
 static rtx
-ia64_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+ia64_function_arg_1 (cumulative_args_t cum_v, enum machine_mode mode,
 		     const_tree type, bool named, bool incoming)
 {
+  const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   int basereg = (incoming ? GR_ARG_FIRST : AR_ARG_FIRST);
   int words = ia64_function_arg_words (type, mode);
   int offset = ia64_function_arg_offset (cum, type, words);
@@ -4505,7 +4507,7 @@ ia64_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Implement TARGET_FUNCION_ARG target hook.  */
 
 static rtx
-ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+ia64_function_arg (cumulative_args_t cum, enum machine_mode mode,
 		   const_tree type, bool named)
 {
   return ia64_function_arg_1 (cum, mode, type, named, false);
@@ -4514,7 +4516,7 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Implement TARGET_FUNCION_INCOMING_ARG target hook.  */
 
 static rtx
-ia64_function_incoming_arg (CUMULATIVE_ARGS *cum,
+ia64_function_incoming_arg (cumulative_args_t cum,
 			    enum machine_mode mode,
 			    const_tree type, bool named)
 {
@@ -4526,9 +4528,11 @@ ia64_function_incoming_arg (CUMULATIVE_ARGS *cum,
    in memory.  */
 
 static int
-ia64_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+ia64_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 			tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   int words = ia64_function_arg_words (type, mode);
   int offset = ia64_function_arg_offset (cum, type, words);
 
@@ -4567,9 +4571,10 @@ ia64_arg_type (enum machine_mode mode)
    ia64_function_arg.  */
 
 static void
-ia64_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+ia64_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			   const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int words = ia64_function_arg_words (type, mode);
   int offset = ia64_function_arg_offset (cum, type, words);
   enum machine_mode hfa_mode = VOIDmode;

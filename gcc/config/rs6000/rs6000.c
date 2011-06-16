@@ -1081,19 +1081,19 @@ static void rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *,
 						rtx[], int *);
 static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree, bool, bool);
 static rtx rs6000_mixed_function_arg (enum machine_mode, const_tree, int);
-static void rs6000_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void rs6000_function_arg_advance (cumulative_args_t, enum machine_mode,
 					 const_tree, bool);
-static rtx rs6000_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx rs6000_function_arg (cumulative_args_t, enum machine_mode,
 				const_tree, bool);
 static unsigned int rs6000_function_arg_boundary (enum machine_mode,
 						  const_tree);
 static void rs6000_move_block_from_reg (int regno, rtx x, int nregs);
-static void setup_incoming_varargs (CUMULATIVE_ARGS *,
+static void setup_incoming_varargs (cumulative_args_t,
 				    enum machine_mode, tree,
 				    int *, int);
-static bool rs6000_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+static bool rs6000_pass_by_reference (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
-static int rs6000_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int rs6000_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				     tree, bool);
 static const char *invalid_arg_for_unprototyped_fn (const_tree, const_tree, const_tree);
 #if TARGET_MACHO
@@ -8040,10 +8040,11 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static void
-rs6000_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+rs6000_function_arg_advance (cumulative_args_t cum, enum machine_mode mode,
 			     const_tree type, bool named)
 {
-  rs6000_function_arg_advance_1 (cum, mode, type, named, 0);
+  rs6000_function_arg_advance_1 (get_cumulative_args (cum), mode, type, named,
+				 0);
 }
 
 static rtx
@@ -8407,9 +8408,10 @@ rs6000_mixed_function_arg (enum machine_mode mode, const_tree type,
    itself.  */
 
 static rtx
-rs6000_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+rs6000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		     const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   enum rs6000_abi abi = DEFAULT_ABI;
 
   /* Return a marker to indicate whether CR1 needs to set or clear the
@@ -8679,9 +8681,10 @@ rs6000_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    returns the number of bytes used by the first element of the PARALLEL.  */
 
 static int
-rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+rs6000_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 			  tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int ret = 0;
   int align_words;
 
@@ -8742,7 +8745,7 @@ rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    reference.  */
 
 static bool
-rs6000_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 			  enum machine_mode mode, const_tree type,
 			  bool named ATTRIBUTE_UNUSED)
 {
@@ -8842,7 +8845,7 @@ rs6000_move_block_from_reg (int regno, rtx x, int nregs)
    stack and set PRETEND_SIZE to the length of the registers pushed.  */
 
 static void
-setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
 			tree type, int *pretend_size ATTRIBUTE_UNUSED,
 			int no_rtl)
 {
@@ -8853,7 +8856,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   alias_set_type set;
 
   /* Skip the last named argument.  */
-  next_cum = *cum;
+  next_cum = *get_cumulative_args (cum);
   rs6000_function_arg_advance_1 (&next_cum, mode, type, true, 0);
 
   if (DEFAULT_ABI == ABI_V4)

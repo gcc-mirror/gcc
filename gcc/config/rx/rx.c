@@ -832,11 +832,11 @@ rx_function_arg_size (enum machine_mode mode, const_tree type)
    variable parameter list.  */
 
 static rtx
-rx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+rx_function_arg (cumulative_args_t cum, enum machine_mode mode,
 		 const_tree type, bool named)
 {
   unsigned int next_reg;
-  unsigned int bytes_so_far = *cum;
+  unsigned int bytes_so_far = *get_cumulative_args (cum);
   unsigned int size;
   unsigned int rounded_size;
 
@@ -870,10 +870,10 @@ rx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
 }
 
 static void
-rx_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+rx_function_arg_advance (cumulative_args_t cum, enum machine_mode mode,
 			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
-  *cum += rx_function_arg_size (mode, type);
+  *get_cumulative_args (cum) += rx_function_arg_size (mode, type);
 }
 
 static unsigned int
