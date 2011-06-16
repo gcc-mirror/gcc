@@ -2875,6 +2875,16 @@ infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple stmt)
   low = lower_bound_in_type (type, type);
   high = upper_bound_in_type (type, type);
 
+  /* In C, pointer arithmetic p + 1 cannot use a NULL pointer, and p - 1 cannot
+     produce a NULL pointer.  The contrary would mean NULL points to an object,
+     while NULL is supposed to compare unequal with the address of all objects.
+     Furthermore, p + 1 cannot produce a NULL pointer and p - 1 cannot use a
+     NULL pointer since that would mean wrapping, which we assume here not to
+     happen.  So, we can exclude NULL from the valid range of pointer
+     arithmetic.  */
+  if (flag_delete_null_pointer_checks && int_cst_value (low) == 0)
+    low = build_int_cstu (TREE_TYPE (low), TYPE_ALIGN_UNIT (TREE_TYPE (type)));
+
   record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
 }
 
