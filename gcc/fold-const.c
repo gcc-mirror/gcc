@@ -12357,14 +12357,6 @@ fold_binary_loc (location_t loc,
 	    }
 	}
 
-      /* If this is an NE comparison of zero with an AND of one, remove the
-	 comparison since the AND will give the correct value.  */
-      if (code == NE_EXPR
-	  && integer_zerop (arg1)
-	  && TREE_CODE (arg0) == BIT_AND_EXPR
-	  && integer_onep (TREE_OPERAND (arg0, 1)))
-	return fold_convert_loc (loc, type, arg0);
-
       /* If we have (A & C) == C where C is a power of 2, convert this into
 	 (A & C) != 0.  Similarly for NE_EXPR.  */
       if (TREE_CODE (arg0) == BIT_AND_EXPR

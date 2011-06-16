@@ -1347,7 +1347,8 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
   if (!branch || gimple_code (branch) != GIMPLE_COND)
     return;
 
-  if (gimple_cond_code (branch) != NE_EXPR
+  if ((gimple_cond_code (branch) != NE_EXPR
+       && gimple_cond_code (branch) != EQ_EXPR)
       || !integer_zerop (gimple_cond_rhs (branch)))
     return;
 

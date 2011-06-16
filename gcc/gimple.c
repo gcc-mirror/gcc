@@ -3139,16 +3139,8 @@ canonicalize_cond_expr_cond (tree t)
       && truth_value_p (TREE_CODE (TREE_OPERAND (t, 0))))
     t = TREE_OPERAND (t, 0);
 
-  /* For (bool)x use x != 0.  */
-  if (CONVERT_EXPR_P (t)
-      && TREE_CODE (TREE_TYPE (t)) == BOOLEAN_TYPE)
-    {
-      tree top0 = TREE_OPERAND (t, 0);
-      t = build2 (NE_EXPR, TREE_TYPE (t),
-		  top0, build_int_cst (TREE_TYPE (top0), 0));
-    }
   /* For !x use x == 0.  */
-  else if (TREE_CODE (t) == TRUTH_NOT_EXPR)
+  if (TREE_CODE (t) == TRUTH_NOT_EXPR)
     {
       tree top0 = TREE_OPERAND (t, 0);
       t = build2 (EQ_EXPR, TREE_TYPE (t),
