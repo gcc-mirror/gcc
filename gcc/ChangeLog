@@ -1,5 +1,20 @@
 2011-06-16  Revital Eres  <revital.eres@linaro.org>
 
+	* modulo-sched.c (struct ps_insn): Remove row_rest_count field.
+	(struct partial_schedule): Add rows_length field.
+	(verify_partial_schedule): Check rows_length.
+	(ps_insert_empty_row): Handle rows_length.
+	(create_partial_schedule): Likewise.
+	(free_partial_schedule): Likewise.
+	(reset_partial_schedule): Likewise.
+	(create_ps_insn): Remove rest_count argument.
+	(remove_node_from_ps): Update rows_length.
+	(add_node_to_ps): Update rows_length and call create_ps_insn
+	without passing row_rest_count.
+	(rotate_partial_schedule): Update rows_length.
+
+2011-06-16  Revital Eres  <revital.eres@linaro.org>
+
 	* ddg.c (add_intra_loop_mem_dep): New function.
 	(build_intra_loop_deps): Call it.
 
