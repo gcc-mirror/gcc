@@ -2,7 +2,7 @@
 // { dg-options "-O2" }
 // The IA64 and HPPA compilers generate external declarations in addition
 // to the call so those scans need to be more specific.
-// { dg-final { scan-assembler-times "xyzzy" 2 { xfail hppa*-*-* ia64*-*-hpux* } } }
+// { dg-final { scan-assembler-times "xyzzy" 2 { target { ! { hppa*-*-* ia64*-*-hpux* } } } } }
 // { dg-final { scan-assembler-times "br\[^\n\]*xyzzy"  2 { target ia64*-*-hpux* } } }
 // { dg-final { scan-assembler-times "xyzzy\[^\n\]*,%r"  2 { target hppa*-*-* } } }
 

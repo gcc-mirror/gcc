@@ -1,3 +1,8 @@
+2011-06-16  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/48727
+	* g++.dg/opt/devirt2.C: Change xfail rule to target.
+
 2011-06-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/49343
