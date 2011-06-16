@@ -2830,12 +2830,15 @@ void
 ipa_prop_write_jump_functions (cgraph_node_set set)
 {
   struct cgraph_node *node;
-  struct output_block *ob = create_output_block (LTO_section_jump_functions);
+  struct output_block *ob;
   unsigned int count = 0;
   cgraph_node_set_iterator csi;
 
-  ob->cgraph_node = NULL;
+  if (!ipa_node_params_vector)
+    return;
 
+  ob = create_output_block (LTO_section_jump_functions);
+  ob->cgraph_node = NULL;
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
