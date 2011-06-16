@@ -5464,7 +5464,11 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 	      init = error_mark_node;
 	    }
 	  else
-	    init = reshape_init (type, init, tf_warning_or_error);	    
+	    {
+	      init = reshape_init (type, init, tf_warning_or_error);
+	      if (cxx_dialect >= cxx0x && SCALAR_TYPE_P (type))
+		check_narrowing (type, init);
+	    }
 	}
 
       /* If DECL has an array type without a specific bound, deduce the
