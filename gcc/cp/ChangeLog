@@ -1,5 +1,9 @@
 2011-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49251
+	* semantics.c (finish_id_expression): Mark even dependent
+	variables as used.
+
 	PR c++/49420
 	* error.c (dump_template_argument): Don't try to omit default
 	template args from an argument pack.
