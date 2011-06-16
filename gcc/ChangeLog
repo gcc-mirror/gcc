@@ -1,3 +1,45 @@
+2011-06-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49313
+	PR target/29524
+	* longlong.h: Add AVR support:
+	(count_leading_zeros): New macro.
+	(count_trailing_zeros): New macro.
+	(COUNT_LEADING_ZEROS_0): New macro.
+	* config/avr/t-avr (LIB1ASMFUNCS): Add
+	_ffssi2, _ffshi2, _loop_ffsqi2,
+	_ctzsi2, _ctzhi2, _clzdi2, _clzsi2, _clzhi2, 
+	_paritydi2, _paritysi2, _parityhi2,
+	_popcounthi2,_popcountsi2, _popcountdi2, _popcountqi2,
+	_bswapsi2, _bswapdi2,
+	_ashldi3, _ashrdi3, _lshrdi3
+	(LIB2FUNCS_EXCLUDE): Add _clz.
+	* config/avr/libgcc.S (XCALL): Move up in file.
+	(XJMP): New C Macro.
+	(DEFUN): New asm macro.
+	(ENDF): New asm macro.
+	(__ffssi2): New function.
+	(__ffshi2): New function.
+	(__loop_ffsqi2): New function.
+	(__ctzsi2): New function.
+	(__ctzhi2): New function.
+	(__clzdi2): New function.
+	(__clzsi2): New function.
+	(__clzhi2): New function.
+	(__paritydi2): New function.
+	(__paritysi2): New function.
+	(__parityhi2): New function.
+	(__popcounthi2): New function.
+	(__popcountsi2): New function.
+	(__popcountdi2): New function.
+	(__popcountqi2): New function.
+	(__bswapsi2): New function.
+	(__bswapdi2): New function.
+	(__ashldi3): New function.
+	(__ashrdi3): New function.
+	(__lshrdi3): New function.
+	Fix suspicous lines.
+
 2011-06-16  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (canonicalize_cond_expr_cond): (bool)x is not

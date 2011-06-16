@@ -250,6 +250,12 @@ UDItype __umulsidi3 (USItype, USItype);
 #define COUNT_LEADING_ZEROS_0 32
 #endif
 
+#if defined (__AVR__) && W_TYPE_SIZE == 32
+#define count_leading_zeros(COUNT,X)  ((COUNT) = __builtin_clzl (X))
+#define count_trailing_zeros(COUNT,X) ((COUNT) = __builtin_ctzl (X))
+#define COUNT_LEADING_ZEROS_0 32
+#endif /* defined (__AVR__) && W_TYPE_SIZE == 32 */
+
 #if defined (__CRIS__) && __CRIS_arch_version >= 3
 #define count_leading_zeros(COUNT, X) ((COUNT) = __builtin_clz (X))
 #if __CRIS_arch_version >= 8
