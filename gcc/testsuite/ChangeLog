@@ -1,3 +1,8 @@
+2011-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49074
+	* gfortran.dg/typebound_assignment_3.f03: New.
+
 2011-06-16  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/48727

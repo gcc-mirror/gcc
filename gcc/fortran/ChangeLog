@@ -1,5 +1,11 @@
 2011-06-16  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/49074
+	* interface.c (gfc_extend_assign): Propagate the locus from the
+	assignment to the type-bound procedure call.
+
+2011-06-16  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/49417
 	* module.c (mio_component): Make sure the 'class_ok' attribute is set
 	for use-associated CLASS components.
