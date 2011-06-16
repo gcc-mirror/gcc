@@ -1,3 +1,8 @@
+2011-06-16  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin-protos.h (machopic_select_rtx_section): Move to
+	inside RTX_CODE ifdef.
+
 2011-06-16  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/45098
