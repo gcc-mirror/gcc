@@ -1,3 +1,8 @@
+2011-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45399
+	* lex.c (lex_raw_string): Don't check for embedded NUL.
+
 2011-06-06  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/48532
