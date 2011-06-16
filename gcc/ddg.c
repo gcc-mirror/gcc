@@ -390,6 +390,33 @@ insns_may_alias_p (rtx insn1, rtx insn2)
 			 &PATTERN (insn2));
 }
 
+/* Given two nodes, analyze their RTL insns and add intra-loop mem deps
+   to ddg G.  */
+static void
+add_intra_loop_mem_dep (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to)
+{
+
+  if ((from->cuid == to->cuid)
+      || !insns_may_alias_p (from->insn, to->insn))
+    /* Do not create edge if memory references have disjoint alias sets
+       or 'to' and 'from' are the same instruction.  */
+    return;
+
+  if (mem_write_insn_p (from->insn))
+    {
+      if (mem_read_insn_p (to->insn))
+	create_ddg_dep_no_link (g, from, to,
+				DEBUG_INSN_P (to->insn)
+				? ANTI_DEP : TRUE_DEP, MEM_DEP, 0);
+      else
+	create_ddg_dep_no_link (g, from, to,
+				DEBUG_INSN_P (to->insn)
+				? ANTI_DEP : OUTPUT_DEP, MEM_DEP, 0);
+    }
+  else if (!mem_read_insn_p (to->insn))
+    create_ddg_dep_no_link (g, from, to, ANTI_DEP, MEM_DEP, 0);
+}
+
 /* Given two nodes, analyze their RTL insns and add inter-loop mem deps
    to ddg G.  */
 static void
@@ -477,10 +504,22 @@ build_intra_loop_deps (ddg_ptr g)
 	      if (DEBUG_INSN_P (j_node->insn))
 		continue;
 	      if (mem_access_insn_p (j_node->insn))
- 		/* Don't bother calculating inter-loop dep if an intra-loop dep
-		   already exists.  */
+		{
+		  /* Don't bother calculating inter-loop dep if an intra-loop dep
+		     already exists.  */
 	      	  if (! TEST_BIT (dest_node->successors, j))
 		    add_inter_loop_mem_dep (g, dest_node, j_node);
+		  /* If -fmodulo-sched-allow-regmoves
+		     is set certain anti-dep edges are not created.
+		     It might be that these anti-dep edges are on the
+		     path from one memory instruction to another such that
+		     removing these edges could cause a violation of the
+		     memory dependencies.  Thus we add intra edges between
+		     every two memory instructions in this case.  */
+		  if (flag_modulo_sched_allow_regmoves
+		      && !TEST_BIT (dest_node->predecessors, j))
+		    add_intra_loop_mem_dep (g, j_node, dest_node);
+		}
             }
         }
     }
