@@ -1,5 +1,8 @@
 2011-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45378
+	* g++.dg/cpp0x/initlist52.C New.
+
 	PR c++/45399
 	* c-c++-common/raw-string-12.c: New.
 

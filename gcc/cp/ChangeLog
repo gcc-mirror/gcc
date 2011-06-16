@@ -1,5 +1,8 @@
 2011-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45378
+	* decl.c (check_initializer): Check narrowing.
+
 	PR c++/49229
 	* pt.c (tsubst_decl) [FUNCTION_DECL]: Handle substitution failure.
 
