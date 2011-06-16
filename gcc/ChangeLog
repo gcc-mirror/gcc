@@ -1,3 +1,23 @@
+2011-06-16  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/49398
+	Revert.
+	2011-06-10  Wei Guozhi  <carrot@google.com>
+
+	PR target/45335
+	* config/arm/ldmstm.md (ldm2_ia, stm2_ia, ldm2_ib, stm2_ib, ldm2_da,
+	stm2_da, ldm2_db, stm2_db): Add condition !arm_arch7 to these insns.
+	(ldrd, ldrd_reg1, ldrd_reg2 and peephole2): New insn patterns and
+	related peephole2.
+	(strd, strd_reg1, strd_reg2 and peephole2): New insn patterns and
+	related peephole2.
+	* config/arm/arm-protos.h (arm_check_ldrd_operands): New prototype.
+	(arm_legitimate_ldrd_p): New prototype.
+	(arm_output_ldrd): New prototype.
+	* config/arm/arm.c (arm_check_ldrd_operands): New function.
+	(arm_legitimate_ldrd_p): New function.
+	(arm_output_ldrd): New function.
+
 2010-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR middle-end/46500
