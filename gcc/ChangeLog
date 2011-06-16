@@ -1,3 +1,9 @@
+2011-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/49343
+	* tree-sra.c (build_ref_for_model): Use component_ref_field_offset to
+	calculate offset, provide 2nd operand for the new COMPONENT_REF.
+
 2011-06-16  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin-protos.h (machopic_select_rtx_section): Move to
