@@ -1,5 +1,9 @@
 2011-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44160
+	* parser.c (cp_parser_lambda_body): Share code between
+	simple and complex cases instead of using cp_parser_function_body.
+
 	PR c++/45378
 	* decl.c (check_initializer): Check narrowing.
 

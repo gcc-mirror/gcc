@@ -7731,6 +7731,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
     tree fco = lambda_function (lambda_expr);
     tree body;
     bool done = false;
+    tree compound_stmt;
 
     /* Let the front end know that we are going to be defining this
        function.  */
@@ -7740,6 +7741,11 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 
     start_lambda_scope (fco);
     body = begin_function_body ();
+
+    if (!cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
+      goto out;
+
+    compound_stmt = begin_compound_stmt (0);
 
     /* 5.1.1.4 of the standard says:
          If a lambda-expression does not include a trailing-return-type, it
@@ -7757,11 +7763,9 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
        in the body.  Since we used void as the placeholder return type, parsing
        the body as usual will give such desired behavior.  */
     if (!LAMBDA_EXPR_RETURN_TYPE (lambda_expr)
-        && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)
-        && cp_lexer_peek_nth_token (parser->lexer, 2)->keyword == RID_RETURN
-        && cp_lexer_peek_nth_token (parser->lexer, 3)->type != CPP_SEMICOLON)
+        && cp_lexer_peek_nth_token (parser->lexer, 1)->keyword == RID_RETURN
+        && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_SEMICOLON)
       {
-	tree compound_stmt;
 	tree expr = NULL_TREE;
 	cp_id_kind idk = CP_ID_KIND_NONE;
 
@@ -7769,7 +7773,6 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 	   statement.  */
 	cp_parser_parse_tentatively (parser);
 
-	cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
 	cp_parser_require_keyword (parser, RID_RETURN, RT_RETURN);
 
 	expr = cp_parser_expression (parser, /*cast_p=*/false, &idk);
@@ -7781,10 +7784,8 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 	  {
 	    apply_lambda_return_type (lambda_expr, lambda_return_type (expr));
 
-	    compound_stmt = begin_compound_stmt (0);
 	    /* Will get error here if type not deduced yet.  */
 	    finish_return_stmt (expr);
-	    finish_compound_stmt (compound_stmt);
 
 	    done = true;
 	  }
@@ -7794,12 +7795,16 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
       {
 	if (!LAMBDA_EXPR_RETURN_TYPE (lambda_expr))
 	  LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (lambda_expr) = true;
-	/* TODO: does begin_compound_stmt want BCS_FN_BODY?
-	   cp_parser_compound_stmt does not pass it.  */
-	cp_parser_function_body (parser);
+	while (cp_lexer_next_token_is_keyword (parser->lexer, RID_LABEL))
+	  cp_parser_label_declaration (parser);
+	cp_parser_statement_seq_opt (parser, NULL_TREE);
+	cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
 	LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (lambda_expr) = false;
       }
 
+    finish_compound_stmt (compound_stmt);
+
+  out:
     finish_function_body (body);
     finish_lambda_scope ();
 
