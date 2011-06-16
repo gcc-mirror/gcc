@@ -35,9 +35,9 @@ extern enum machine_mode default_cc_modes_compatible (enum machine_mode,
 extern bool default_return_in_memory (const_tree, const_tree);
 
 extern rtx default_expand_builtin_saveregs (void);
-extern void default_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
+extern void default_setup_incoming_varargs (cumulative_args_t, enum machine_mode, tree, int *, int);
 extern rtx default_builtin_setjmp_frame_value (void);
-extern bool default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
+extern bool default_pretend_outgoing_varargs_named (cumulative_args_t);
 
 extern enum machine_mode default_eh_return_filter_mode (void);
 extern enum machine_mode default_libgcc_cmp_return_mode (void);
@@ -58,9 +58,9 @@ extern tree default_cxx_guard_type (void);
 extern tree default_cxx_get_cookie_size (tree);
 
 extern bool hook_pass_by_reference_must_pass_in_stack
-  (CUMULATIVE_ARGS *, enum machine_mode mode, const_tree, bool);
+  (cumulative_args_t, enum machine_mode mode, const_tree, bool);
 extern bool hook_callee_copies_named
-  (CUMULATIVE_ARGS *ca, enum machine_mode, const_tree, bool);
+  (cumulative_args_t ca, enum machine_mode, const_tree, bool);
 
 extern void default_print_operand (FILE *, rtx, int);
 extern void default_print_operand_address (FILE *, rtx);
@@ -96,23 +96,23 @@ extern unsigned int default_autovectorize_vector_sizes (void);
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */
 
-extern bool hook_bool_CUMULATIVE_ARGS_false (CUMULATIVE_ARGS *);
-extern bool hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS *);
+extern bool hook_bool_CUMULATIVE_ARGS_false (cumulative_args_t);
+extern bool hook_bool_CUMULATIVE_ARGS_true (cumulative_args_t);
 
 extern bool hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false
-  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+  (cumulative_args_t, enum machine_mode, const_tree, bool);
 extern bool hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
-  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+  (cumulative_args_t, enum machine_mode, const_tree, bool);
 extern int hook_int_CUMULATIVE_ARGS_mode_tree_bool_0
-  (CUMULATIVE_ARGS *, enum machine_mode, tree, bool);
+  (cumulative_args_t, enum machine_mode, tree, bool);
 extern const char *hook_invalid_arg_for_unprototyped_fn
   (const_tree, const_tree, const_tree);
 extern void default_function_arg_advance
-  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+  (cumulative_args_t, enum machine_mode, const_tree, bool);
 extern rtx default_function_arg
-  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+  (cumulative_args_t, enum machine_mode, const_tree, bool);
 extern rtx default_function_incoming_arg
-  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+  (cumulative_args_t, enum machine_mode, const_tree, bool);
 extern unsigned int default_function_arg_boundary (enum machine_mode,
 						   const_tree);
 extern bool hook_bool_const_rtx_commutative_p (const_rtx, int);

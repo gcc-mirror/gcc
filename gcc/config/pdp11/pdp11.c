@@ -149,9 +149,9 @@ static rtx pdp11_function_value (const_tree, const_tree, bool);
 static rtx pdp11_libcall_value (enum machine_mode, const_rtx);
 static bool pdp11_function_value_regno_p (const unsigned int);
 static void pdp11_trampoline_init (rtx, tree, rtx);
-static rtx pdp11_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx pdp11_function_arg (cumulative_args_t, enum machine_mode,
 			       const_tree, bool);
-static void pdp11_function_arg_advance (CUMULATIVE_ARGS *,
+static void pdp11_function_arg_advance (cumulative_args_t,
 					enum machine_mode, const_tree, bool);
 static void pdp11_conditional_register_usage (void);
 static bool pdp11_legitimate_constant_p (enum machine_mode, rtx);
@@ -1813,7 +1813,7 @@ pdp11_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
     (otherwise it is an extra parameter matching an ellipsis).  */
 
 static rtx
-pdp11_function_arg (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+pdp11_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		    enum machine_mode mode ATTRIBUTE_UNUSED,
 		    const_tree type ATTRIBUTE_UNUSED,
 		    bool named ATTRIBUTE_UNUSED)
@@ -1828,9 +1828,11 @@ pdp11_function_arg (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
    may not be available.)  */
 
 static void
-pdp11_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+pdp11_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   *cum += (mode != BLKmode
 	   ? GET_MODE_SIZE (mode)
 	   : int_size_in_bytes (type));

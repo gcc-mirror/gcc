@@ -213,13 +213,13 @@ static rtx mep_make_bundle (rtx, rtx);
 static void mep_bundle_insns (rtx);
 static bool mep_rtx_cost (rtx, int, int, int *, bool);
 static int mep_address_cost (rtx, bool);
-static void mep_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+static void mep_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					tree, int *, int);
-static bool mep_pass_by_reference (CUMULATIVE_ARGS * cum, enum machine_mode,
+static bool mep_pass_by_reference (cumulative_args_t cum, enum machine_mode,
 				   const_tree, bool);
-static rtx mep_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx mep_function_arg (cumulative_args_t, enum machine_mode,
 			     const_tree, bool);
-static void mep_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void mep_function_arg_advance (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
 static bool mep_vector_mode_supported_p (enum machine_mode);
 static rtx  mep_allocate_initial_value (rtx);
@@ -3494,12 +3494,12 @@ mep_final_prescan_insn (rtx insn, rtx *operands ATTRIBUTE_UNUSED,
 /* Function args in registers.  */
 
 static void
-mep_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
+mep_setup_incoming_varargs (cumulative_args_t cum,
 			    enum machine_mode mode ATTRIBUTE_UNUSED,
 			    tree type ATTRIBUTE_UNUSED, int *pretend_size,
 			    int second_time ATTRIBUTE_UNUSED)
 {
-  int nsave = 4 - (cum->nregs + 1);
+  int nsave = 4 - (get_cumulative_args (cum)->nregs + 1);
 
   if (nsave > 0)
     cfun->machine->arg_regs_to_save = nsave;
@@ -3770,10 +3770,12 @@ mep_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
    first arg.  For varargs, we copy $1..$4 to the stack.  */
 
 static rtx
-mep_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mep_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		  const_tree type ATTRIBUTE_UNUSED,
 		  bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   /* VOIDmode is a signal for the backend to pass data to the call
      expander via the second operand to the call pattern.  We use
      this to determine whether to use "jsr" or "jsrv".  */
@@ -3794,7 +3796,7 @@ mep_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static bool
-mep_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
+mep_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		       enum machine_mode mode,
 		       const_tree        type,
 		       bool              named ATTRIBUTE_UNUSED)
@@ -3810,18 +3812,19 @@ mep_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
     return true;
   if (size <= 4)
     return false;
-  if (TARGET_IVC2 && cum->nregs < 4 && type != NULL_TREE && VECTOR_TYPE_P (type))
+  if (TARGET_IVC2 && get_cumulative_args (cum)->nregs < 4
+      && type != NULL_TREE && VECTOR_TYPE_P (type))
     return false;
   return true;
 }
 
 static void
-mep_function_arg_advance (CUMULATIVE_ARGS *pcum,
+mep_function_arg_advance (cumulative_args_t pcum,
 			  enum machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type ATTRIBUTE_UNUSED,
 			  bool named ATTRIBUTE_UNUSED)
 {
-  pcum->nregs += 1;
+  get_cumulative_args (pcum)->nregs += 1;
 }
 
 bool

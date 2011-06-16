@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010
+   2010, 2011
    Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
@@ -135,7 +135,7 @@ static void mmix_reorg (void);
 static void mmix_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 static void mmix_setup_incoming_varargs
-  (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
+  (cumulative_args_t, enum machine_mode, tree, int *, int);
 static void mmix_file_start (void);
 static void mmix_file_end (void);
 static bool mmix_rtx_costs (rtx, int, int, int *, bool);
@@ -143,18 +143,18 @@ static rtx mmix_struct_value_rtx (tree, int);
 static enum machine_mode mmix_promote_function_mode (const_tree,
 						     enum machine_mode,
 	                                             int *, const_tree, int);
-static void mmix_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void mmix_function_arg_advance (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
-static rtx mmix_function_arg_1 (const CUMULATIVE_ARGS *, enum machine_mode,
+static rtx mmix_function_arg_1 (const cumulative_args_t, enum machine_mode,
 				const_tree, bool, bool);
-static rtx mmix_function_incoming_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx mmix_function_incoming_arg (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
-static rtx mmix_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx mmix_function_arg (cumulative_args_t, enum machine_mode,
 			      const_tree, bool);
 static rtx mmix_function_value (const_tree, const_tree, bool);
 static rtx mmix_libcall_value (enum machine_mode, const_rtx);
 static bool mmix_function_value_regno_p (const unsigned int);
-static bool mmix_pass_by_reference (CUMULATIVE_ARGS *,
+static bool mmix_pass_by_reference (cumulative_args_t,
 				    enum machine_mode, const_tree, bool);
 static bool mmix_frame_pointer_required (void);
 static void mmix_asm_trampoline_template (FILE *);
@@ -627,9 +627,10 @@ mmix_initial_elimination_offset (int fromreg, int toreg)
 }
 
 static void
-mmix_function_arg_advance (CUMULATIVE_ARGS *argsp, enum machine_mode mode,
+mmix_function_arg_advance (cumulative_args_t argsp_v, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *argsp = get_cumulative_args (argsp_v);
   int arg_size = MMIX_FUNCTION_ARG_SIZE (mode, type);
 
   argsp->regs = ((targetm.calls.must_pass_in_stack (mode, type)
@@ -643,12 +644,14 @@ mmix_function_arg_advance (CUMULATIVE_ARGS *argsp, enum machine_mode mode,
 /* Helper function for mmix_function_arg and mmix_function_incoming_arg.  */
 
 static rtx
-mmix_function_arg_1 (const CUMULATIVE_ARGS *argsp,
+mmix_function_arg_1 (const cumulative_args_t argsp_v,
 		     enum machine_mode mode,
 		     const_tree type,
 		     bool named ATTRIBUTE_UNUSED,
 		     bool incoming)
 {
+  CUMULATIVE_ARGS *argsp = get_cumulative_args (argsp_v);
+
   /* Last-argument marker.  */
   if (type == void_type_node)
     return (argsp->regs < MMIX_MAX_ARGS_IN_REGS)
@@ -675,7 +678,7 @@ mmix_function_arg_1 (const CUMULATIVE_ARGS *argsp,
    one that must go on stack.  */
 
 static rtx
-mmix_function_arg (CUMULATIVE_ARGS *argsp,
+mmix_function_arg (cumulative_args_t argsp,
 		   enum machine_mode mode,
 		   const_tree type,
 		   bool named)
@@ -684,7 +687,7 @@ mmix_function_arg (CUMULATIVE_ARGS *argsp,
 }
 
 static rtx
-mmix_function_incoming_arg (CUMULATIVE_ARGS *argsp,
+mmix_function_incoming_arg (cumulative_args_t argsp,
 			    enum machine_mode mode,
 			    const_tree type,
 			    bool named)
@@ -696,9 +699,11 @@ mmix_function_incoming_arg (CUMULATIVE_ARGS *argsp,
    everything that goes by value.  */
 
 static bool
-mmix_pass_by_reference (CUMULATIVE_ARGS *argsp, enum machine_mode mode,
+mmix_pass_by_reference (cumulative_args_t argsp_v, enum machine_mode mode,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *argsp = get_cumulative_args (argsp_v);
+
   /* FIXME: Check: I'm not sure the must_pass_in_stack check is
      necessary.  */
   if (targetm.calls.must_pass_in_stack (mode, type))
@@ -961,12 +966,14 @@ mmix_function_profiler (FILE *stream ATTRIBUTE_UNUSED,
    can parse all arguments in registers, to improve performance.  */
 
 static void
-mmix_setup_incoming_varargs (CUMULATIVE_ARGS *args_so_farp,
+mmix_setup_incoming_varargs (cumulative_args_t args_so_farp_v,
 			     enum machine_mode mode,
 			     tree vartype,
 			     int *pretend_sizep,
 			     int second_time ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *args_so_farp = get_cumulative_args (args_so_farp_v);
+
   /* The last named variable has been handled, but
      args_so_farp has not been advanced for it.  */
   if (args_so_farp->regs + 1 < MMIX_MAX_ARGS_IN_REGS)

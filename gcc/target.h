@@ -1,5 +1,6 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -49,8 +50,23 @@
 #ifndef GCC_TARGET_H
 #define GCC_TARGET_H
 
-#include "tm.h"
 #include "insn-modes.h"
+
+#ifdef ENABLE_CHECKING
+
+typedef struct { void *magic; void *p; } cumulative_args_t;
+
+#else /* !ENABLE_CHECKING */
+
+/* When using a GCC build compiler, we could use
+   __attribute__((transparent_union)) to get cumulative_args_t function
+   arguments passed like scalars where the ABI would mandate a less
+   efficient way of argument passing otherwise.  However, that would come
+   at the cost of less type-safe !ENABLE_CHECKING compilation.  */
+
+typedef union { void *p; } cumulative_args_t;
+
+#endif /* !ENABLE_CHECKING */
 
 /* Types used by the record_gcc_switches() target function.  */
 typedef enum
@@ -140,5 +156,33 @@ enum vect_cost_for_stmt
 #include "target.def"
 
 extern struct gcc_target targetm;
+
+#ifdef GCC_TM_H
+
+#ifndef CUMULATIVE_ARGS_MAGIC
+#define CUMULATIVE_ARGS_MAGIC ((void *) &targetm.calls)
+#endif
+
+static inline CUMULATIVE_ARGS *
+get_cumulative_args (cumulative_args_t arg)
+{
+#ifdef ENABLE_CHECKING
+  gcc_assert (arg.magic == CUMULATIVE_ARGS_MAGIC);
+#endif /* ENABLE_CHECKING */
+  return (CUMULATIVE_ARGS *) arg.p;
+}
+
+static inline cumulative_args_t
+pack_cumulative_args (CUMULATIVE_ARGS *arg)
+{
+  cumulative_args_t ret;
+
+#ifdef ENABLE_CHECKING
+  ret.magic = CUMULATIVE_ARGS_MAGIC;
+#endif /* ENABLE_CHECKING */
+  ret.p = (void *) arg;
+  return ret;
+}
+#endif /* GCC_TM_H */
 
 #endif /* GCC_TARGET_H */

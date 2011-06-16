@@ -359,7 +359,7 @@ static void frv_init_libfuncs			(void);
 static bool frv_in_small_data_p			(const_tree);
 static void frv_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
-static void frv_setup_incoming_varargs		(CUMULATIVE_ARGS *,
+static void frv_setup_incoming_varargs		(cumulative_args_t,
 						 enum machine_mode,
 						 tree, int *, int);
 static rtx frv_expand_builtin_saveregs		(void);
@@ -380,13 +380,13 @@ static void frv_output_const_unspec		(FILE *,
 static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
 static bool frv_must_pass_in_stack (enum machine_mode mode, const_tree type);
-static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int frv_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				  tree, bool);
-static rtx frv_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx frv_function_arg (cumulative_args_t, enum machine_mode,
 			     const_tree, bool);
-static rtx frv_function_incoming_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx frv_function_incoming_arg (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
-static void frv_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void frv_function_arg_advance (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
 static unsigned int frv_function_arg_boundary	(enum machine_mode,
 						 const_tree);
@@ -2110,12 +2110,14 @@ frv_initial_elimination_offset (int from, int to)
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-frv_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
+frv_setup_incoming_varargs (cumulative_args_t cum_v,
                             enum machine_mode mode,
                             tree type ATTRIBUTE_UNUSED,
                             int *pretend_size,
                             int second_time)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
 	     "setup_vararg: words = %2d, mode = %4s, pretend_size = %d, second_time = %d\n",
@@ -3102,10 +3104,12 @@ frv_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 static rtx
-frv_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+frv_function_arg_1 (cumulative_args_t cum_v, enum machine_mode mode,
 		    const_tree type ATTRIBUTE_UNUSED, bool named,
 		    bool incoming ATTRIBUTE_UNUSED)
 {
+  const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   enum machine_mode xmode = (mode == BLKmode) ? SImode : mode;
   int arg_num = *cum;
   rtx ret;
@@ -3139,14 +3143,14 @@ frv_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static rtx
-frv_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+frv_function_arg (cumulative_args_t cum, enum machine_mode mode,
 		  const_tree type, bool named)
 {
   return frv_function_arg_1 (cum, mode, type, named, false);
 }
 
 static rtx
-frv_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+frv_function_incoming_arg (cumulative_args_t cum, enum machine_mode mode,
 			   const_tree type, bool named)
 {
   return frv_function_arg_1 (cum, mode, type, named, true);
@@ -3163,11 +3167,13 @@ frv_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    for arguments without any special help.  */
 
 static void
-frv_function_arg_advance (CUMULATIVE_ARGS *cum,
+frv_function_arg_advance (cumulative_args_t cum_v,
                           enum machine_mode mode,
                           const_tree type ATTRIBUTE_UNUSED,
                           bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   enum machine_mode xmode = (mode == BLKmode) ? SImode : mode;
   int bytes = GET_MODE_SIZE (xmode);
   int words = (bytes + UNITS_PER_WORD  - 1) / UNITS_PER_WORD;
@@ -3199,13 +3205,14 @@ frv_function_arg_advance (CUMULATIVE_ARGS *cum,
    the called function.  */
 
 static int
-frv_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+frv_arg_partial_bytes (cumulative_args_t cum, enum machine_mode mode,
 		       tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
+
   enum machine_mode xmode = (mode == BLKmode) ? SImode : mode;
   int bytes = GET_MODE_SIZE (xmode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-  int arg_num = *cum;
+  int arg_num = *get_cumulative_args (cum);
   int ret;
 
   ret = ((arg_num <= LAST_ARG_REGNUM && arg_num + words > LAST_ARG_REGNUM+1)

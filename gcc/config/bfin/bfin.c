@@ -560,7 +560,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
    - now, the vastart pointer can access all arguments from the stack.  */
 
 static void
-setup_incoming_varargs (CUMULATIVE_ARGS *cum,
+setup_incoming_varargs (cumulative_args_t cum,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			tree type ATTRIBUTE_UNUSED, int *pretend_size,
 			int no_rtl)
@@ -576,7 +576,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum,
      if they are in the first 3 words.  We assume at least 1 named argument
      exists, so we never generate [ARGP] = R0 here.  */
 
-  for (i = cum->words + 1; i < max_arg_registers; i++)
+  for (i = get_cumulative_args (cum)->words + 1; i < max_arg_registers; i++)
     {
       mem = gen_rtx_MEM (Pmode,
 			 plus_constant (arg_pointer_rtx, (i * UNITS_PER_WORD)));
@@ -1647,9 +1647,10 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-bfin_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+bfin_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int count, bytes, words;
 
   bytes = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
@@ -1686,9 +1687,10 @@ bfin_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     (otherwise it is an extra parameter matching an ellipsis).  */
 
 static rtx
-bfin_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+bfin_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes
     = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
 
@@ -1715,13 +1717,13 @@ bfin_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    stack.   */
 
 static int
-bfin_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+bfin_arg_partial_bytes (cumulative_args_t cum, enum machine_mode mode,
 			tree type ATTRIBUTE_UNUSED,
 			bool named ATTRIBUTE_UNUSED)
 {
   int bytes
     = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
-  int bytes_left = cum->nregs * UNITS_PER_WORD;
+  int bytes_left = get_cumulative_args (cum)->nregs * UNITS_PER_WORD;
   
   if (bytes == -1)
     return 0;
@@ -1736,7 +1738,7 @@ bfin_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Variable sized types are passed by reference.  */
 
 static bool
-bfin_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+bfin_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {

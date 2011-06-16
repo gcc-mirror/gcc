@@ -1,3 +1,8 @@
+2010-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR middle-end/46500
+	* gcc-interface/decl.c (gnat_to_gnu_param): Use pack_cumulative_args.
+
 2011-06-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/Make-lang.in (gnatbind$(exeext)): Use ggc-none.o.
