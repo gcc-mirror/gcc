@@ -1241,7 +1241,7 @@ ENDF __bswapdi2
 ;; r25:r18 = ashr64 (r25:r18, r17:r16)
 DEFUN __ashrdi3
     push r16
-    andi r16, 31
+    andi r16, 63
     breq 2f
 1:  asr  r25
     ror  r24
@@ -1263,7 +1263,7 @@ ENDF __ashrdi3
 ;; r25:r18 = lshr64 (r25:r18, r17:r16)
 DEFUN __lshrdi3
     push r16
-    andi r16, 31
+    andi r16, 63
     breq 2f
 1:  lsr  r25
     ror  r24
@@ -1285,7 +1285,7 @@ ENDF __lshrdi3
 ;; r25:r18 = ashl64 (r25:r18, r17:r16)
 DEFUN __ashldi3
     push r16
-    andi r16, 31
+    andi r16, 63
     breq 2f
 1:  lsl  r18
     rol  r19
