@@ -1,5 +1,8 @@
 2011-06-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/49419
+	* gcc.c-torture/execute/pr49419.c: New test.
+
 	Backported from mainline
 	2011-06-13  Edmar Wienskoski  <edmar@freescale.com>
 

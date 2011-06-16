@@ -7708,13 +7708,13 @@ execute_vrp (void)
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   scev_initialize ();
 
+  insert_range_assertions ();
+
   /* Estimate number of iterations - but do not use undefined behavior
      for this.  We can't do this lazily as other functions may compute
      this using undefined behavior.  */
   free_numbers_of_iterations_estimates ();
   estimate_numbers_of_iterations (false);
-
-  insert_range_assertions ();
 
   to_remove_edges = VEC_alloc (edge, heap, 10);
   to_update_switch_stmts = VEC_alloc (switch_update, heap, 5);
@@ -7723,6 +7723,8 @@ execute_vrp (void)
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
   vrp_finalize ();
+
+  free_numbers_of_iterations_estimates ();
 
   /* ASSERT_EXPRs must be removed before finalizing jump threads
      as finalizing jump threads calls the CFG cleanup code which

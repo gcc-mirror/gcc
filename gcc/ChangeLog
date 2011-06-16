@@ -1,5 +1,11 @@
 2011-06-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/49419
+	* tree-vrp.c (execute_vrp): Call init_range_assertions
+	before estimate_numbers_of_iterations, call
+	free_number_of_iterations_estimates before calling
+	remove_range_assertions.
+
 	Backported from mainline
 	2011-06-13  Edmar Wienskoski  <edmar@freescale.com>
 
