@@ -311,9 +311,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	    }
 	  else
 	    {
-	      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info)
-			  && !is_pattern_stmt_p (stmt_info));
-
+	      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
 	      scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
 	      if (vect_print_dump_info (REPORT_DETAILS))
 		{

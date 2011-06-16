@@ -1,3 +1,23 @@
+2011-06-16  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vectorizer.h (vect_recog_func_ptr): Change the first
+	argument to be a VEC of statements.
+	* tree-vect-loop.c (vect_determine_vectorization_factor):
+	Remove the assert that pattern statements have to have their
+	vector type set.
+	* tree-vect-patterns.c (vect_recog_widen_sum_pattern):
+	Change the first argument to be a VEC of statements.  Update
+	documentation.
+	(vect_recog_dot_prod_pattern, vect_recog_pow_pattern): Likewise.
+	(vect_handle_widen_mult_by_const): New function.
+	(vect_recog_widen_mult_pattern):  Change the first argument to
+	be a VEC of statements.  Update documentation.  Check that the
+	constant is INTEGER_CST.  Support multiplication by a constant
+	that fits an intermediate type - call
+	vect_handle_widen_mult_by_const.
+	(vect_pattern_recog_1): Update vect_recog_func_ptr and its
+	call.  Handle additional pattern statements if necessary.
+
 2011-06-16  Nick Clifton  <nickc@redhat.com>
 
 	PR target/49427
