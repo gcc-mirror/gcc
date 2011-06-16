@@ -1,3 +1,12 @@
+2011-06-16  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (canonicalize_cond_expr_cond): (bool)x is not
+	the same as x != 0.
+	* fold-const.c (fold_binary_loc): Do not fold X & 1 != 0 to
+	(bool) X & 1.
+	* ipa-prop.c (ipa_analyze_indirect_call_uses): Also allow
+	equality compares against zero for the lower bit.
+
 2011-06-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49419
