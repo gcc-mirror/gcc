@@ -1,3 +1,30 @@
+2011-06-16  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (struct redirection_data): New field
+	intermediate_edge.
+	(THREAD_TARGET2): Define.
+	(redirection_data_eq): Also check that the intermediate edge is
+	equal.
+	(lookup_redirection_data): Drop useless argument.  Extract the
+	outgoing_edge and intermediate edge from E.  Callers updated.
+	(copy_phi_args, update_destination_phis): New functions.
+	(fix_duplicate_block_edges): Likewise.
+	(create_edge_and_update_destination_phis): Duplicate all the edges
+	hung off e->aux.  Use copy_phi_args.
+	(create_duplicates): Use fix_duplicate_block_edges.
+	(fixup_template_block): Likewise.
+	(redirect_edges): If necessary, redirect the joiner block's incoming
+	edge to the duplicate of the joiner block.
+	(thread_block): Don't muck up loops when threading through a joiner
+	block.
+	(thread_through_loop_header): Handle threading through a joiner
+	block.
+	(mark_threaded_blocks, register_jump_thread): Likewise.
+	* tree-flow.h (register_jump_thread): Add new argument.  Callers
+	updated.
+	* tree-ssa-threadedge.c (phi_args_equal_on_edges): New function.
+	(thread_across_edge): Handle threading through a joiner block.
+	
 2011-06-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/49343
@@ -320,7 +347,7 @@
 	* ddg.c (add_intra_loop_mem_dep): New function.
 	(build_intra_loop_deps): Call it.
 
-2011-05-06  Jeff Law  <law@redhat.com>
+2011-06-13  Jeff Law  <law@redhat.com>
 
 	* df-problems.c (df_lr_local_compute): Manually CSE
 	PIC_OFFSET_TABLE_REGNUM.
