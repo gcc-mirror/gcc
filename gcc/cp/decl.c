@@ -5387,6 +5387,14 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
      type.  */
   TREE_TYPE (decl) = type = complete_type (TREE_TYPE (decl));
 
+  if (DECL_HAS_VALUE_EXPR_P (decl))
+    {
+      /* A variable with DECL_HAS_VALUE_EXPR_P set is just a placeholder,
+	 it doesn't have storage to be initialized.  */
+      gcc_assert (init == NULL_TREE);
+      return NULL_TREE;
+    }
+
   if (type == error_mark_node)
     /* We will have already complained.  */
     return NULL_TREE;
