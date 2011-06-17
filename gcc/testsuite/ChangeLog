@@ -1,5 +1,8 @@
 2011-06-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49229
+	* g++.dg/cpp0x/sfinae26.C: New.
+
 	PR c++/49251
 	* g++.dg/cpp0x/variadic113.C: New.
 
