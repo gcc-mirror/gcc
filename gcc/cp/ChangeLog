@@ -1,5 +1,9 @@
 2011-06-17  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_lambda_expression): Clear
+	LAMBDA_EXPR_THIS_CAPTURE after parsing.
+	* pt.c (tsubst_copy_and_build): Make sure it isn't set.
+
 	* cp-tree.h (struct tree_lambda_expr): Change common to typed.
 	Move non-pointers to end of struct.
 
