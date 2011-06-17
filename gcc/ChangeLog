@@ -1,3 +1,10 @@
+2011-06-17  Richard Henderson  <rth@redhat.com>
+
+	Backport from mainline
+	2011-03-22  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr) [rule 11]: Handle post_dec.
+
 2011-06-17  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

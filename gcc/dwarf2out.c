@@ -2234,7 +2234,7 @@ dwarf2out_frame_debug_cfa_restore (rtx reg, const char *label)
 	   cfa.base_offset = -cfa_store.offset
 
   Rule 11:
-  (set (mem ({pre_inc,pre_dec} sp:cfa_store.reg)) <reg>)
+  (set (mem ({pre_inc,pre_dec,post_dec} sp:cfa_store.reg)) <reg>)
   effects: cfa_store.offset += -/+ mode_size(mem)
 	   cfa.offset = cfa_store.offset if cfa.reg == sp
 	   cfa.reg = sp
@@ -2253,7 +2253,7 @@ dwarf2out_frame_debug_cfa_restore (rtx reg, const char *label)
 	   cfa.base_offset = -{cfa_store,cfa_temp}.offset
 
   Rule 14:
-  (set (mem (postinc <reg1>:cfa_temp <const_int>)) <reg2>)
+  (set (mem (post_inc <reg1>:cfa_temp <const_int>)) <reg2>)
   effects: cfa.reg = <reg1>
 	   cfa.base_offset = -cfa_temp.offset
 	   cfa_temp.offset -= mode_size(mem)
@@ -2586,6 +2586,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  /* Rule 11 */
 	case PRE_INC:
 	case PRE_DEC:
+	case POST_DEC:
 	  offset = GET_MODE_SIZE (GET_MODE (dest));
 	  if (GET_CODE (XEXP (dest, 0)) == PRE_INC)
 	    offset = -offset;
@@ -2610,7 +2611,10 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	  if (cfa.reg == STACK_POINTER_REGNUM)
 	    cfa.offset = cfa_store.offset;
 
-	  offset = -cfa_store.offset;
+	  if (GET_CODE (XEXP (dest, 0)) == POST_DEC)
+	    offset += -cfa_store.offset;
+	  else
+	    offset = -cfa_store.offset;
 	  break;
 
 	  /* Rule 12 */
