@@ -1,3 +1,9 @@
+2011-06-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48699
+	* check.c (gfc_check_move_alloc): If 'TO' argument is polymorphic,
+	make sure the vtab is present.
+
 2011-06-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49074
