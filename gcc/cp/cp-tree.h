@@ -662,13 +662,13 @@ enum cp_lambda_default_capture_mode_type {
 
 struct GTY (()) tree_lambda_expr
 {
-  struct tree_common common;
-  location_t locus;
-  enum cp_lambda_default_capture_mode_type default_capture_mode;
+  struct tree_typed typed;
   tree capture_list;
   tree this_capture;
   tree return_type;
   tree extra_scope;
+  location_t locus;
+  enum cp_lambda_default_capture_mode_type default_capture_mode;
   int discriminator;
 };
 
