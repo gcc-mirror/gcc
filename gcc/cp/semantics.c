@@ -1557,7 +1557,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       tree type = TREE_TYPE (decl);
 
       if (TREE_CODE (type) == REFERENCE_TYPE)
-	type = TREE_TYPE (type);
+	/* Quals on the object don't matter.  */;
       else
 	{
 	  /* Set the cv qualifiers.  */
@@ -1572,7 +1572,8 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 	  type = cp_build_qualified_type (type, quals);
 	}
 
-      return build_min (COMPONENT_REF, type, object, decl, NULL_TREE);
+      return (convert_from_reference
+	      (build_min (COMPONENT_REF, type, object, decl, NULL_TREE)));
     }
   /* If PROCESSING_TEMPLATE_DECL is nonzero here, then
      QUALIFYING_SCOPE is also non-null.  Wrap this in a SCOPE_REF
