@@ -1,3 +1,11 @@
+2011-06-17  Tobias Burnus
+
+	PR fortran/49324
+	* trans-expr.c (gfc_trans_assignment_1): Tell
+	gfc_trans_scalar_assign to also deep-copy RHS nonvariables
+	with allocatable components.
+	* trans-array.c (gfc_conv_expr_descriptor): Ditto.
+
 2011-06-06  Asher Langton  <langton2@llnl.gov>
 
 	PR fortran/49268
@@ -11,7 +19,7 @@
 	procedure statement.
 	* parse.c ( decode_statement): Deal with whitespace around :: in
 	gfc_match_modproc.
- 
+
 2011-05-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

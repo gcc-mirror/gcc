@@ -6147,8 +6147,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
 				 l_is_temp || init_flag,
-				 expr_is_variable (expr2) || scalar_to_array,
-				 dealloc);
+				 expr_is_variable (expr2) || scalar_to_array
+				 || expr2->expr_type == EXPR_ARRAY, dealloc);
   gfc_add_expr_to_block (&body, tmp);
 
   if (lss == gfc_ss_terminator)

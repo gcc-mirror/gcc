@@ -5669,7 +5669,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       lse.string_length = rse.string_length;
       tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, true,
-				     expr->expr_type == EXPR_VARIABLE, true);
+				     expr->expr_type == EXPR_VARIABLE
+				     || expr->expr_type == EXPR_ARRAY, true);
       gfc_add_expr_to_block (&block, tmp);
 
       /* Finish the copying loops.  */
