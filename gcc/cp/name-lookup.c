@@ -2066,7 +2066,12 @@ push_using_decl (tree scope, tree name)
 }
 
 /* Same as pushdecl, but define X in binding-level LEVEL.  We rely on the
-   caller to set DECL_CONTEXT properly.  */
+   caller to set DECL_CONTEXT properly.
+
+   Note that this must only be used when X will be the new innermost
+   binding for its name, as we tack it onto the front of IDENTIFIER_BINDING
+   without checking to see if the current IDENTIFIER_BINDING comes from a
+   closer binding level than LEVEL.  */
 
 static tree
 pushdecl_with_scope_1 (tree x, cxx_scope *level, bool is_friend)
