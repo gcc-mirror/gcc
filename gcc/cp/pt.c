@@ -10061,6 +10061,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		tree ve = DECL_VALUE_EXPR (t);
 		ve = tsubst_expr (ve, args, complain, in_decl,
 				  /*constant_expression_p=*/false);
+		if (REFERENCE_REF_P (ve))
+		  {
+		    gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+		    ve = TREE_OPERAND (ve, 0);
+		  }
 		SET_DECL_VALUE_EXPR (r, ve);
 	      }
 	  }

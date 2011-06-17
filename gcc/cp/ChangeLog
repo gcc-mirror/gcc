@@ -1,5 +1,8 @@
 2011-06-17  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_decl): Handle DECL_VALUE_EXPR on reference.
+	* decl.c (check_initializer): Handle DECL_VALUE_EXPR_P.
+
 	* semantics.c (finish_non_static_data_member): Preserve dereference
 	in template.
 
