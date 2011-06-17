@@ -1652,7 +1652,14 @@ static bool
 stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 {
   if (gimple_has_lhs (stmt)
-      && TREE_CODE (gimple_get_lhs (stmt)) != SSA_NAME)
+      && TREE_CODE (gimple_get_lhs (stmt)) != SSA_NAME
+      /* The assignment is not necessarily carried out if it can throw
+	 and we can catch it in the current function where we could inspect
+	 the previous value.
+	 ???  We only need to care about the RHS throwing.  For aggregate
+	 assignments or similar calls and non-call exceptions the LHS
+	 might throw as well.  */
+      && !stmt_can_throw_internal (stmt))
     {
       tree base, lhs = gimple_get_lhs (stmt);
       HOST_WIDE_INT size, offset, max_size;

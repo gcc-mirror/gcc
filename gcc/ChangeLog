@@ -1,3 +1,13 @@
+2011-06-17  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-05-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49115
+	* tree-ssa-alias.c (stmt_kills_ref_p_1): If the assignment
+	is not necessarily carried out, do not claim it kills the ref.
+	* tree-ssa-dce.c (mark_aliased_reaching_defs_necessary_1): Likewise.
+
 2011-06-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	Backport from mainline
