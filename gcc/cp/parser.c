@@ -7430,6 +7430,9 @@ cp_parser_lambda_expression (cp_parser* parser)
 
   pop_deferring_access_checks ();
 
+  /* This field is only used during parsing of the lambda.  */
+  LAMBDA_EXPR_THIS_CAPTURE (lambda_expr) = NULL_TREE;
+
   if (ok)
     return build_lambda_object (lambda_expr);
   else

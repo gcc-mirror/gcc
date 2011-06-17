@@ -13498,10 +13498,9 @@ tsubst_copy_and_build (tree t,
 	  = (LAMBDA_EXPR_DISCRIMINATOR (t));
 	LAMBDA_EXPR_CAPTURE_LIST (r)
 	  = RECUR (LAMBDA_EXPR_CAPTURE_LIST (t));
-	LAMBDA_EXPR_THIS_CAPTURE (r)
-	  = RECUR (LAMBDA_EXPR_THIS_CAPTURE (t));
 	LAMBDA_EXPR_EXTRA_SCOPE (r)
 	  = RECUR (LAMBDA_EXPR_EXTRA_SCOPE (t));
+	gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE);
 
 	/* Do this again now that LAMBDA_EXPR_EXTRA_SCOPE is set.  */
 	determine_visibility (TYPE_NAME (type));
