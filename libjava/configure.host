@@ -274,7 +274,10 @@ EOF
 	  rm -f conftest conftest.c
 	fi
 	;;
-   i[34567]86*-kfreebsd*-gnu | x86_64*-kfreebsd*-gnu)
+  alpha*-dec-osf*)
+	can_unwind_signal=yes
+	;;
+  i[34567]86*-kfreebsd*-gnu | x86_64*-kfreebsd*-gnu)
         libgcj_ld_symbolic='-Wl,-Bsymbolic'
         slow_pthread_self=
         ;;
@@ -283,6 +286,7 @@ EOF
 	DIVIDESPEC=-f%{m32:no-}%{!m32:%{!m64:no-}}%{m64:}use-divide-subroutine
 	;;
   mips-sgi-irix6* )
+	can_unwind_signal=yes
 	sysdeps_dir=mips
 	;;
   arm*-linux* )

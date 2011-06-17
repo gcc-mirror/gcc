@@ -1,7 +1,7 @@
 /* aix-signal.h - Catch runtime signals and turn them into exceptions,
-   on a Darwin system.  */
+   on a AIX system.  */
 
-/* Copyright (C) 2008  Free Software Foundation
+/* Copyright (C) 2008, 2011  Free Software Foundation
 
    This file is part of libgcj.
 
