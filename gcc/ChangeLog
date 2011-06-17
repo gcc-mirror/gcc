@@ -1,3 +1,14 @@
+2011-06-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	Backport from mainline
+	2011-06-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/48542
+	* reload.c (find_equiv_reg): Stop looking when finding a
+	setjmp-type call.
+	* reload1.c (reload_as_needed): Invalidate all reload
+	registers when crossing a setjmp-type call.
+
 2011-06-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport form main line
