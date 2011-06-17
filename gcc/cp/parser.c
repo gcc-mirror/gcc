@@ -7396,26 +7396,9 @@ cp_parser_lambda_expression (cp_parser* parser)
       for (elt = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr);
 	   elt; elt = next)
 	{
-	  tree field = TREE_PURPOSE (elt);
-	  char *buf;
-
 	  next = TREE_CHAIN (elt);
 	  TREE_CHAIN (elt) = newlist;
 	  newlist = elt;
-
-	  /* Also add __ to the beginning of the field name so that code
-	     outside the lambda body can't see the captured name.  We could
-	     just remove the name entirely, but this is more useful for
-	     debugging.  */
-	  if (field == LAMBDA_EXPR_THIS_CAPTURE (lambda_expr))
-	    /* The 'this' capture already starts with __.  */
-	    continue;
-
-	  buf = (char *) alloca (IDENTIFIER_LENGTH (DECL_NAME (field)) + 3);
-	  buf[1] = buf[0] = '_';
-	  memcpy (buf + 2, IDENTIFIER_POINTER (DECL_NAME (field)),
-		  IDENTIFIER_LENGTH (DECL_NAME (field)) + 1);
-	  DECL_NAME (field) = get_identifier (buf);
 	}
       LAMBDA_EXPR_CAPTURE_LIST (lambda_expr) = newlist;
     }
@@ -7432,6 +7415,11 @@ cp_parser_lambda_expression (cp_parser* parser)
 
   /* This field is only used during parsing of the lambda.  */
   LAMBDA_EXPR_THIS_CAPTURE (lambda_expr) = NULL_TREE;
+
+  /* This lambda shouldn't have any proxies left at this point.  */
+  gcc_assert (LAMBDA_EXPR_PENDING_PROXIES (lambda_expr) == NULL);
+  /* And now that we're done, push proxies for an enclosing lambda.  */
+  insert_pending_capture_proxies ();
 
   if (ok)
     return build_lambda_object (lambda_expr);
@@ -7499,7 +7487,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  add_capture (lambda_expr,
-		       /*id=*/get_identifier ("__this"),
+		       /*id=*/this_identifier,
 		       /*initializer=*/finish_this_expr(),
 		       /*by_reference_p=*/false,
 		       explicit_init_p);
@@ -7701,6 +7689,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       {
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
 	DECL_ARTIFICIAL (fco) = 1;
+	/* Give the object parameter a different name.  */
+	DECL_NAME (DECL_ARGUMENTS (fco)) = get_identifier ("__closure");
       }
 
     finish_member_declaration (fco);
@@ -7735,6 +7725,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
     tree body;
     bool done = false;
     tree compound_stmt;
+    tree cap;
 
     /* Let the front end know that we are going to be defining this
        function.  */
@@ -7747,6 +7738,11 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 
     if (!cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
       goto out;
+
+    /* Push the proxies for any explicit captures.  */
+    for (cap = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr); cap;
+	 cap = TREE_CHAIN (cap))
+      build_capture_proxy (TREE_PURPOSE (cap));
 
     compound_stmt = begin_compound_stmt (0);
 

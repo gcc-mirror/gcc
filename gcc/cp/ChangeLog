@@ -1,5 +1,30 @@
 2011-06-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43912
+	Generate proxy VAR_DECLs for better lambda debug info.
+	* cp-tree.h (FUNCTION_NEEDS_BODY_BLOCK): Add lambda operator().
+	(LAMBDA_EXPR_PENDING_PROXIES): New.
+	(struct tree_lambda_expr): Add pending_proxies.
+	* name-lookup.c (pushdecl_maybe_friend_1): Handle capture shadowing.
+	(qualify_lookup): Use is_lambda_ignored_entity.
+	* parser.c (cp_parser_lambda_expression): Don't adjust field names.
+	Call insert_pending_capture_proxies.
+	(cp_parser_lambda_introducer): Use this_identifier.
+	(cp_parser_lambda_declarator_opt): Call the object parameter
+	of the op() "__closure" instead of "this".
+	(cp_parser_lambda_body): Call build_capture_proxy.
+	* semantics.c (build_capture_proxy, is_lambda_ignored_entity): New.
+	(insert_pending_capture_proxies, insert_capture_proxy): New.
+	(is_normal_capture_proxy, is_capture_proxy): New.
+	(add_capture): Add __ to field names here, return capture proxy.
+	(add_default_capture): Use this_identifier, adjust to expect
+	add_capture to return a capture proxy.
+	(outer_lambda_capture_p, thisify_lambda_field): Remove.
+	(finish_id_expression, lambda_expr_this_capture): Adjust.
+	(build_lambda_expr): Initialize LAMBDA_EXPR_PENDING_PROXIES.
+	* pt.c (tsubst_copy_and_build): Check that LAMBDA_EXPR_PENDING_PROXIES
+	is null.
+
 	* name-lookup.c (pushdecl_maybe_friend_1): Do check for shadowing
 	of artificial locals.
 
