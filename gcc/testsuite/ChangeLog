@@ -1,3 +1,8 @@
+2011-06-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48699
+	* gfortran.dg/move_alloc_5.f90: New.
+
 2011-06-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/48542
