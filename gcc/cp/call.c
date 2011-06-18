@@ -1362,6 +1362,8 @@ convert_class_to_reference_1 (tree reference_type, tree s, tree expr, int flags)
 
               /* Don't allow binding of lvalues to rvalue references.  */
               if (TYPE_REF_IS_RVALUE (reference_type)
+                  /* Function lvalues are OK, though.  */
+                  && TREE_CODE (TREE_TYPE (reference_type)) != FUNCTION_TYPE
                   && !TYPE_REF_IS_RVALUE (TREE_TYPE (TREE_TYPE (cand->fn))))
                 cand->second_conv->bad_p = true;
 	    }
