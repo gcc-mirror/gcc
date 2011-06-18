@@ -1,3 +1,35 @@
+2011-06-18  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_varpool_replace_node): Remove code handling
+	extra name aliases.
+	(lto_symtab_resolve_can_prevail_p): Likewise.
+	(lto_symtab_merge_cgraph_nodes): Update alias_of pointers.
+	* cgraphbuild.c (record_reference): Remove extra body alias code.
+	(mark_load): Likewise.
+	(mark_store): Likewise.
+	* cgraph.h (varpool_node): Remove extra_name filed;
+	add alias_of and extraname_alias.
+	(varpool_create_variable_alias, varpool_for_node_and_aliases): Declare.
+	(varpool_alias_aliased_node): New inline function.
+	(varpool_variable_node): New function.
+	* cgraphunit.c (handle_alias_pairs): Handle also variable aliases.
+	* ipa-ref.c (ipa_record_reference): Allow aliases on variables.
+	* lto-cgraph.c (lto_output_varpool_node): Update streaming.
+	(input_varpool_node): Likewise.
+	* lto-streamer-out.c (produce_symtab): Remove extra name aliases.
+	(varpool_externally_visible_p): Remove extra body alias code.
+	(function_and_variable_visibility): Likewise.
+	* tree-ssa-structalias.c (associate_varinfo_to_alias_1): New function.
+	(ipa_pta_execute): Use it.
+	* varpool.c (varpool_remove_node): Remove extra name alias code.
+	(varpool_mark_needed_node): Likewise.
+	(varpool_analyze_pending_decls): Analyze aliases.
+	(assemble_aliases): New functoin.
+	(varpool_assemble_decl): Use it.
+	(varpool_create_variable_alias): New function.
+	(varpool_extra_name_alias): Rewrite.
+	(varpool_for_node_and_aliases): New function.
+
 2011-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/49411

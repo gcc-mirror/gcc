@@ -544,8 +544,6 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
 {
   bool boundary_p = !varpool_node_in_set_p (node, vset) && node->analyzed;
   struct bitpack_d bp;
-  struct varpool_node *alias;
-  int count = 0;
   int ref;
 
   lto_output_var_decl_index (ob->decl_state, ob->main_stream, node->decl);
@@ -554,7 +552,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   bp_pack_value (&bp, node->force_output, 1);
   bp_pack_value (&bp, node->finalized, 1);
   bp_pack_value (&bp, node->alias, 1);
-  gcc_assert (!node->alias || !node->extra_name);
+  bp_pack_value (&bp, node->alias_of != NULL, 1);
   gcc_assert (node->finalized || !node->analyzed);
   gcc_assert (node->needed);
   /* Constant pool initializers can be de-unified into individual ltrans units.
@@ -573,11 +571,9 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
 							   set, vset), 1);
       bp_pack_value (&bp, boundary_p, 1);  /* in_other_partition.  */
     }
-  /* Also emit any extra name aliases.  */
-  for (alias = node->extra_name; alias; alias = alias->next)
-    count++;
-  bp_pack_value (&bp, count != 0, 1);
   lto_output_bitpack (&bp);
+  if (node->alias_of)
+    lto_output_var_decl_index (ob->decl_state, ob->main_stream, node->alias_of);
   if (node->same_comdat_group && !boundary_p)
     {
       ref = lto_varpool_encoder_lookup (varpool_encoder, node->same_comdat_group);
@@ -588,17 +584,6 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   lto_output_sleb128_stream (ob->main_stream, ref);
   lto_output_enum (ob->main_stream, ld_plugin_symbol_resolution,
 		   LDPR_NUM_KNOWN, node->resolution);
-
-  if (count)
-    {
-      lto_output_uleb128_stream (ob->main_stream, count);
-      for (alias = node->extra_name; alias; alias = alias->next)
-	{
-	  lto_output_var_decl_index (ob->decl_state, ob->main_stream, alias->decl);
-	  lto_output_enum (ob->main_stream, ld_plugin_symbol_resolution,
-			   LDPR_NUM_KNOWN, alias->resolution);
-	}
-    }
 }
 
 /* Output the varpool NODE to OB. 
@@ -780,7 +765,7 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
   for (vsi = vsi_start (vset); !vsi_end_p (vsi); vsi_next (&vsi))
     {
       struct varpool_node *vnode = vsi_node (vsi);
-      gcc_assert (!vnode->alias);
+      gcc_assert (!vnode->alias || vnode->alias_of);
       lto_varpool_encoder_encode (varpool_encoder, vnode);
       lto_set_varpool_encoder_encode_initializer (varpool_encoder, vnode);
       add_references (encoder, varpool_encoder, &vnode->ref_list);
@@ -1054,9 +1039,8 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   tree var_decl;
   struct varpool_node *node;
   struct bitpack_d bp;
-  bool aliases_p;
-  int count;
   int ref = LCC_NOT_FOUND;
+  bool non_null_aliasof;
 
   decl_index = lto_input_uleb128 (ib);
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
@@ -1068,6 +1052,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->force_output = bp_unpack_value (&bp, 1);
   node->finalized = bp_unpack_value (&bp, 1);
   node->alias = bp_unpack_value (&bp, 1);
+  non_null_aliasof = bp_unpack_value (&bp, 1);
   node->analyzed = node->finalized; 
   node->used_from_other_partition = bp_unpack_value (&bp, 1);
   node->in_other_partition = bp_unpack_value (&bp, 1);
@@ -1076,27 +1061,19 @@ input_varpool_node (struct lto_file_decl_data *file_data,
       DECL_EXTERNAL (node->decl) = 1;
       TREE_STATIC (node->decl) = 0;
     }
-  aliases_p = bp_unpack_value (&bp, 1);
   if (node->finalized)
     varpool_mark_needed_node (node);
+  if (non_null_aliasof)
+    {
+      decl_index = lto_input_uleb128 (ib);
+      node->alias_of = lto_file_decl_data_get_var_decl (file_data, decl_index);
+    }
   ref = lto_input_sleb128 (ib);
   /* Store a reference for now, and fix up later to be a pointer.  */
   node->same_comdat_group = (struct varpool_node *) (intptr_t) ref;
   node->resolution = lto_input_enum (ib, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
-  if (aliases_p)
-    {
-      count = lto_input_uleb128 (ib);
-      for (; count > 0; count --)
-	{
-	  tree decl = lto_file_decl_data_get_var_decl (file_data,
-						       lto_input_uleb128 (ib));
-	  struct varpool_node *alias;
-	  alias = varpool_extra_name_alias (decl, var_decl);
-	  alias->resolution = lto_input_enum (ib, ld_plugin_symbol_resolution,
-					      LDPR_NUM_KNOWN);
-	}
-    }
+
   return node;
 }
 
