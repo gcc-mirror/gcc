@@ -1,5 +1,12 @@
 2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/volatile6.adb: New test.
+	* gnat.dg/volatile7.adb: Likewise.
+	* gnat.dg/volatile8.adb: Likewise.
+	* gnat.dg/volatile9.adb: Likewise.
+
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/constant3.adb: New test.
 
 2011-06-18  Janne Blomqvist  <jb@gcc.gnu.org>

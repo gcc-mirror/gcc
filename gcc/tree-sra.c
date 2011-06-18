@@ -671,8 +671,7 @@ type_internals_preclude_sra_p (tree type)
 		    && int_bit_position (fld) % BITS_PER_UNIT != 0))
 	      return true;
 
-	    if (AGGREGATE_TYPE_P (ft)
-		&& type_internals_preclude_sra_p (ft))
+	    if (AGGREGATE_TYPE_P (ft) && type_internals_preclude_sra_p (ft))
 	      return true;
 	  }
 
@@ -681,10 +680,13 @@ type_internals_preclude_sra_p (tree type)
     case ARRAY_TYPE:
       et = TREE_TYPE (type);
 
-      if (AGGREGATE_TYPE_P (et))
-	return type_internals_preclude_sra_p (et);
-      else
-	return false;
+      if (TYPE_VOLATILE (et))
+	return true;
+
+      if (AGGREGATE_TYPE_P (et) && type_internals_preclude_sra_p (et))
+	return true;
+
+      return false;
 
     default:
       return false;
