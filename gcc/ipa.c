@@ -655,7 +655,6 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 static bool
 varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
 {
-  struct varpool_node *alias;
   if (!DECL_COMDAT (vnode->decl) && !TREE_PUBLIC (vnode->decl))
     return false;
 
@@ -666,14 +665,6 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
 
   /* If linker counts on us, we must preserve the function.  */
   if (varpool_used_from_object_file_p (vnode))
-    return true;
-
-  /* FIXME: We get wrong symbols with asm aliases in callgraph and LTO.
-     This is because very little of code knows that assembler name needs to
-     mangled.  Avoid touching declarations with user asm name set to mask
-     some of the problems.  */
-  if (DECL_ASSEMBLER_NAME_SET_P (vnode->decl)
-      && IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (vnode->decl))[0]=='*')
     return true;
 
   if (DECL_PRESERVE_P (vnode->decl))
@@ -694,11 +685,6 @@ varpool_externally_visible_p (struct varpool_node *vnode, bool aliased)
      This is needed for i.e. references from asm statements.   */
   if (varpool_used_from_object_file_p (vnode))
     return true;
-  for (alias = vnode->extra_name; alias; alias = alias->next)
-    if (alias->resolution != LDPR_PREVAILING_DEF_IRONLY)
-      break;
-  if (!alias && vnode->resolution == LDPR_PREVAILING_DEF_IRONLY)
-    return false;
 
   /* As a special case, the COMDAT virutal tables can be unshared.
      In LTO mode turn vtables into static variables.  The variable is readonly,
@@ -782,13 +768,7 @@ function_and_variable_visibility (bool whole_program)
         {
 	  if (!node->analyzed)
 	    continue;
-	  /* Weakrefs alias symbols from other compilation unit.  In the case
-	     the destination of weakref became available because of LTO, we must
-	     mark it as needed.  */
-	  if (in_lto_p
-	      && lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
-	      && !node->needed)
-	    cgraph_mark_needed_node (node);
+	  cgraph_mark_needed_node (node);
 	  gcc_assert (node->needed);
 	  pointer_set_insert (aliased_nodes, node);
 	  if (dump_file)
@@ -798,13 +778,7 @@ function_and_variable_visibility (bool whole_program)
       else if ((vnode = varpool_node_for_asm (p->target)) != NULL
 	       && !DECL_EXTERNAL (vnode->decl))
         {
-	  /* Weakrefs alias symbols from other compilation unit.  In the case
-	     the destination of weakref became available because of LTO, we must
-	     mark it as needed.  */
-	  if (in_lto_p
-	      && lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
-	      && !vnode->needed)
-	    varpool_mark_needed_node (vnode);
+	  varpool_mark_needed_node (vnode);
 	  gcc_assert (vnode->needed);
 	  pointer_set_insert (aliased_vnodes, vnode);
 	  if (dump_file)
