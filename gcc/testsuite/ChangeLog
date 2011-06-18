@@ -1,3 +1,8 @@
+2011-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49432
+	* obj-c++.dg/invalid-type-1.mm: Adjust for new error wording.
+
 2011-06-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49400
