@@ -1,5 +1,13 @@
 2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_component_type): Use GNAT_TYPE
+	local variable throughout.  Remove useless call to Base_Type.
+	(gnat_to_gnu_field): Use GNAT_FIELD_TYPE local variable throughout.
+	Take it also into account for the volatileness of the field.  Set the
+	TREE_SIDE_EFFECTS flag as well in this case.  Reorder some warnings.
+
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Identifier_to_gnu): Don't set TREE_THIS_NOTRAP
 	on a dereference built for a by-ref object if it has an address clause.
 

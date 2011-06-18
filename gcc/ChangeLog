@@ -1,3 +1,8 @@
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (type_internals_preclude_sra_p) <ARRAY_TYPE>: Return true
+	if the element type is volatile.
+
 2011-06-18  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_varpool_replace_node): Remove code handling
@@ -123,7 +128,7 @@
 	(arm_legitimate_ldrd_p): New function.
 	(arm_output_ldrd): New function.
 
-2010-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+2011-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR middle-end/46500
 	* doc/tm.texi.in: Update Copyright date.
