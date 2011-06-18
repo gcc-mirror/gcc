@@ -268,32 +268,9 @@ lto_varpool_replace_node (struct varpool_node *vnode,
       gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
       varpool_mark_needed_node (prevailing_node);
     }
-  /* Relink aliases.  */
-  if (vnode->extra_name && !vnode->alias)
-    {
-      struct varpool_node *alias, *last;
-      for (alias = vnode->extra_name;
-	   alias; alias = alias->next)
-	{
-	  last = alias;
-	  alias->extra_name = prevailing_node;
-	}
-
-      if (prevailing_node->extra_name)
-	{
-	  last->next = prevailing_node->extra_name;
-	  prevailing_node->extra_name->prev = last;
-	}
-      prevailing_node->extra_name = vnode->extra_name;
-      vnode->extra_name = NULL;
-    }
   gcc_assert (!vnode->finalized || prevailing_node->finalized);
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
 
-  /* When replacing by an alias, the references goes to the original
-     variable.  */
-  if (prevailing_node->alias && prevailing_node->extra_name)
-    prevailing_node = prevailing_node->extra_name;
   ipa_clone_refering (NULL, prevailing_node, &vnode->ref_list);
 
   /* Be sure we can garbage collect the initializer.  */
@@ -438,14 +415,11 @@ lto_symtab_resolve_can_prevail_p (lto_symtab_entry_t e)
   if (TREE_CODE (e->decl) == FUNCTION_DECL)
     return (e->node && e->node->analyzed);
 
-  /* A variable should have a size.  */
   else if (TREE_CODE (e->decl) == VAR_DECL)
     {
       if (!e->vnode)
 	return false;
-      if (e->vnode->finalized)
-	return true;
-      return e->vnode->alias && e->vnode->extra_name->finalized;
+      return e->vnode->finalized;
     }
 
   gcc_unreachable ();
@@ -779,6 +753,7 @@ void
 lto_symtab_merge_cgraph_nodes (void)
 {
   struct cgraph_node *node;
+  struct varpool_node *vnode;
   lto_symtab_maybe_init_hash_table ();
   htab_traverse (lto_symtab_identifiers, lto_symtab_merge_cgraph_nodes_1, NULL);
 
@@ -786,6 +761,9 @@ lto_symtab_merge_cgraph_nodes (void)
     if ((node->thunk.thunk_p || node->alias)
 	&& node->thunk.alias)
       node->thunk.alias = lto_symtab_prevailing_decl (node->thunk.alias);
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    if (vnode->alias_of)
+      vnode->alias_of = lto_symtab_prevailing_decl (vnode->alias_of);
 }
 
 /* Given the decl DECL, return the prevailing decl with the same name. */

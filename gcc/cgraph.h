@@ -380,13 +380,12 @@ DEF_VEC_ALLOC_P(cgraph_edge_p,heap);
 
 struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
   tree decl;
+  /* For aliases points to declaration DECL is alias of.  */
+  tree alias_of;
   /* Pointer to the next function in varpool_nodes.  */
   struct varpool_node *next, *prev;
   /* Pointer to the next function in varpool_nodes_queue.  */
   struct varpool_node *next_needed, *prev_needed;
-  /* For normal nodes a pointer to the first extra name alias.  For alias
-     nodes a pointer to the normal node.  */
-  struct varpool_node *extra_name;
   /* Circular list of nodes in the same comdat group if non-NULL.  */
   struct varpool_node *same_comdat_group;
   struct ipa_ref_list ref_list;
@@ -415,6 +414,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
   /* Set for aliases once they got through assemble_alias.  Also set for
      extra name aliases in varpool_extra_name_alias.  */
   unsigned alias : 1;
+  unsigned extra_name_alias : 1;
   /* Set when variable is used from other LTRANS partition.  */
   unsigned used_from_other_partition : 1;
   /* Set when variable is available in the other LTRANS partition.
@@ -665,9 +665,13 @@ bool varpool_analyze_pending_decls (void);
 void varpool_remove_unreferenced_decls (void);
 void varpool_empty_needed_queue (void);
 struct varpool_node * varpool_extra_name_alias (tree, tree);
+struct varpool_node * varpool_create_variable_alias (tree, tree);
 const char * varpool_node_name (struct varpool_node *node);
 void varpool_reset_queue (void);
 bool const_value_known_p (tree);
+bool varpool_for_node_and_aliases (struct varpool_node *,
+		                   bool (*) (struct varpool_node *, void *),
+			           void *, bool);
 
 /* Walk all reachable static variables.  */
 #define FOR_EACH_STATIC_VARIABLE(node) \
@@ -968,6 +972,20 @@ cgraph_alias_aliased_node (struct cgraph_node *n)
   return NULL;
 }
 
+/* Return node that alias N is aliasing.  */
+
+static inline struct varpool_node *
+varpool_alias_aliased_node (struct varpool_node *n)
+{
+  struct ipa_ref *ref;
+
+  ipa_ref_list_reference_iterate (&n->ref_list, 0, ref);
+  gcc_checking_assert (ref->use == IPA_REF_ALIAS);
+  if (ref->refered_type == IPA_REF_CGRAPH)
+    return ipa_ref_varpool_node (ref);
+  return NULL;
+}
+
 /* Given NODE, walk the alias chain to return the function NODE is alias of.
    Walk through thunk, too.
    When AVAILABILITY is non-NULL, get minimal availablity in the chain.  */
@@ -1017,6 +1035,34 @@ cgraph_function_or_thunk_node (struct cgraph_node *node, enum availability *avai
 	{
 	  enum availability a;
 	  a = cgraph_function_body_availability (node);
+	  if (a < *availability)
+	    *availability = a;
+	}
+    }
+  if (*availability)
+    *availability = AVAIL_NOT_AVAILABLE;
+  return NULL;
+}
+
+/* Given NODE, walk the alias chain to return the function NODE is alias of.
+   Do not walk through thunks.
+   When AVAILABILITY is non-NULL, get minimal availablity in the chain.  */
+
+static inline struct varpool_node *
+varpool_variable_node (struct varpool_node *node, enum availability *availability)
+{
+  if (availability)
+    *availability = cgraph_variable_initializer_availability (node);
+  while (node)
+    {
+      if (node->alias && node->analyzed)
+	node = varpool_alias_aliased_node (node);
+      else
+	return node;
+      if (node && availability)
+	{
+	  enum availability a;
+	  a = cgraph_variable_initializer_availability (node);
 	  if (a < *availability)
 	    *availability = a;
 	}

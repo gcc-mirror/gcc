@@ -68,7 +68,7 @@ ipa_record_reference (struct cgraph_node *refering_node,
     {
       ref->refering.varpool_node = refering_varpool_node;
       ref->refering_type = IPA_REF_VARPOOL;
-      gcc_assert (use_type == IPA_REF_ADDR);
+      gcc_assert (use_type == IPA_REF_ADDR || use_type == IPA_REF_ALIAS);
     }
   if (refered_node)
     {

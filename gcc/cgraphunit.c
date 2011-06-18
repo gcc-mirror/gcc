@@ -1186,6 +1186,7 @@ handle_alias_pairs (void)
   unsigned i;
   struct cgraph_node *target_node;
   struct cgraph_node *src_node;
+  struct varpool_node *target_vnode;
   
   for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p);)
     {
@@ -1204,6 +1205,20 @@ handle_alias_pairs (void)
 	  if (DECL_EXTERNAL (p->decl))
 	    DECL_EXTERNAL (p->decl) = 0;
 	  cgraph_create_function_alias (p->decl, target_node->decl);
+	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	}
+      else if (TREE_CODE (p->decl) == VAR_DECL
+	       && !lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
+	       && (target_vnode = varpool_node_for_asm (p->target)) != NULL)
+	{
+	  /* Normally EXTERNAL flag is used to mark external inlines,
+	     however for aliases it seems to be allowed to use it w/o
+	     any meaning. See gcc.dg/attr-alias-3.c  
+	     However for weakref we insist on EXTERNAL flag being set.
+	     See gcc.dg/attr-alias-5.c  */
+	  if (DECL_EXTERNAL (p->decl))
+	    DECL_EXTERNAL (p->decl) = 0;
+	  varpool_create_variable_alias (p->decl, target_vnode->decl);
 	  VEC_unordered_remove (alias_pair, alias_pairs, i);
 	}
       else

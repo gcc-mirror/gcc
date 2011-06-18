@@ -2557,7 +2557,7 @@ produce_symtab (struct output_block *ob,
   char *section_name = lto_get_section_name (LTO_section_symtab, NULL, NULL);
   struct pointer_set_t *seen;
   struct cgraph_node *node;
-  struct varpool_node *vnode, *valias;
+  struct varpool_node *vnode;
   struct lto_output_stream stream;
   lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
   lto_cgraph_encoder_t encoder = ob->decl_state->cgraph_node_encoder;
@@ -2617,11 +2617,9 @@ produce_symtab (struct output_block *ob,
 	  && vnode->finalized 
 	  && DECL_VIRTUAL_P (vnode->decl))
 	continue;
-      if (vnode->alias)
+      if (vnode->alias && !vnode->alias_of)
 	continue;
       write_symbol (cache, &stream, vnode->decl, seen, false);
-      for (valias = vnode->extra_name; valias; valias = valias->next)
-        write_symbol (cache, &stream, valias->decl, seen, true);
     }
   for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
     {
@@ -2633,11 +2631,9 @@ produce_symtab (struct output_block *ob,
 	  && vnode->finalized 
 	  && DECL_VIRTUAL_P (vnode->decl))
 	continue;
-      if (vnode->alias)
+      if (vnode->alias && !vnode->alias_of)
 	continue;
       write_symbol (cache, &stream, vnode->decl, seen, false);
-      for (valias = vnode->extra_name; valias; valias = valias->next)
-        write_symbol (cache, &stream, valias->decl, seen, true);
     }
 
   /* Write all aliases.  */
