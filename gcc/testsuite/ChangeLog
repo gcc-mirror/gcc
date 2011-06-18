@@ -1,5 +1,8 @@
 2011-06-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/49432
+	* obj-c++.dg/invalid-type-1.mm: Adjust for new error wording.
+
 	PR target/49411
 	* gcc.target/i386/testimm-1.c: New test.
 	* gcc.target/i386/testimm-2.c: New test.
