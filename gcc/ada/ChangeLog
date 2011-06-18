@@ -1,5 +1,10 @@
 2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Identifier_to_gnu): Don't set TREE_THIS_NOTRAP
+	on a dereference built for a by-ref object if it has an address clause.
+
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads (Address_Taken): Document use for the second argument of
 	Asm_Input and Asm_Output attributes.
 	* sem_attr.adb (Analyze_Attribute) <Attribute_Asm_Input>: If the second
