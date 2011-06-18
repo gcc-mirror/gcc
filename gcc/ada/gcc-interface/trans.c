@@ -1037,7 +1037,8 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
       else
 	{
 	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
-	  if (TREE_CODE (gnu_result) == INDIRECT_REF)
+	  if (TREE_CODE (gnu_result) == INDIRECT_REF
+	      && No (Address_Clause (gnat_temp)))
 	    TREE_THIS_NOTRAP (gnu_result) = 1;
 	}
 

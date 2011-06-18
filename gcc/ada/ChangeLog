@@ -1,3 +1,8 @@
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Don't set TREE_THIS_NOTRAP
+	on a dereference built for a by-ref object if it has an address clause.
+
 2011-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/48844
