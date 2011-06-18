@@ -1,4 +1,16 @@
-2010-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Address_Taken): Document use for the second argument of
+	Asm_Input and Asm_Output attributes.
+	* sem_attr.adb (Analyze_Attribute) <Attribute_Asm_Input>: If the second
+	argument is an entity name, then set Address_Taken on it.
+	<Attribute_Asm_Output>: Likewise.
+	* gcc-interface/trans.c (lvalue_required_for_attribute_p): Handle the
+	Attr_Asm_Input and Attr_Asm_Output attributes explicitly.
+	(gnat_to_gnu) <N_Code_Statement>: If an operand is going to end up in
+	memory and is a CONST_DECL, retrieve its corresponding VAR_DECL.
+
+2011-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR middle-end/46500
 	* gcc-interface/decl.c (gnat_to_gnu_param): Use pack_cumulative_args.
