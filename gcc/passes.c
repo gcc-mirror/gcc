@@ -2190,7 +2190,7 @@ ipa_write_summaries (void)
   vset = varpool_node_set_new ();
 
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-    if (vnode->needed && !vnode->alias)
+    if (vnode->needed && (!vnode->alias || vnode->alias_of))
       varpool_node_set_add (vset, vnode);
 
   ipa_write_summaries_1 (set, vset);
