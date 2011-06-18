@@ -1,3 +1,9 @@
+2011-06-17  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/49461
+	* libjava/configure.ac (SYSTEMSPEC): Pass -no_pie for darwin11.
+	* libjava/configure: Regenerate.
+
 2011-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libgcj/49315
