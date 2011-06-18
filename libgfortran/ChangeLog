@@ -1,3 +1,9 @@
+2011-06-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/49296
+        * io/list_read.c (read_character): Accept EOF as a separator when
+        reading string.
+
 2011-06-17  Daniel Carrera  <dcarrera@gmail.com>
 
 	* caf/single.c (_gfortran_caf_register): Store the address
