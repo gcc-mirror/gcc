@@ -1,5 +1,11 @@
 2011-06-18  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* longlong.h (count_leading_zeros): Use long long builtin for
+	x86-64.
+	(count_trailing_zeros): Likewise.
+
+2011-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR other/49325
 	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Properly check if
 	.init_array can be used with .ctors on targets.
