@@ -1,5 +1,9 @@
 2011-06-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49458
+	* call.c (convert_class_to_reference_1): Allow binding function
+	lvalue to rvalue reference.
+
 	PR c++/43912
 	Generate proxy VAR_DECLs for better lambda debug info.
 	* cp-tree.h (FUNCTION_NEEDS_BODY_BLOCK): Add lambda operator().

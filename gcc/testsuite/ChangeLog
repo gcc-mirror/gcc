@@ -1,5 +1,7 @@
 2011-06-17  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/rv-func2.C: New.
+
 	* g++.dg/debug/dwarf2/lambda1.C: New.
 	* g++.dg/warn/Wshadow-6.C: Adjust.
 
