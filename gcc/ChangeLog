@@ -1,3 +1,16 @@
+2011-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49411
+	* config/i386/i386.c (ix86_expand_multi_arg_builtins): If
+	last_arg_constant and last argument doesn't match its predicate,
+	for xop_vpermil2<mode>3 error out and for xop_rotl<mode>3
+	if it is CONST_INT, mask it, otherwise expand using rotl<mode>3.
+	(ix86_expand_sse_pcmpestr, ix86_expand_sse_pcmpistr): Fix
+	spelling of error message.
+	* config/i386/sse.md (sse4a_extrqi, sse4a_insertqi,
+	vcvtps2ph, *vcvtps2ph, *vcvtps2ph_store, vcvtps2ph256): Use
+	const_0_to_255_operand instead of const_int_operand.
+
 2011-06-17  Richard Henderson  <rth@redhat.com>
 
 	Backport from mainline
