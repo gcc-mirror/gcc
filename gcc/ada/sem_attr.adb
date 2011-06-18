@@ -2243,6 +2243,13 @@ package body Sem_Attr is
 
       when Attribute_Asm_Input =>
          Check_Asm_Attribute;
+
+         --  The back-end may need to take the address of E2
+
+         if Is_Entity_Name (E2) then
+            Set_Address_Taken (Entity (E2));
+         end if;
+
          Set_Etype (N, RTE (RE_Asm_Input_Operand));
 
       ----------------
@@ -2263,6 +2270,13 @@ package body Sem_Attr is
          end if;
 
          Note_Possible_Modification (E2, Sure => True);
+
+         --  The back-end may need to take the address of E2
+
+         if Is_Entity_Name (E2) then
+            Set_Address_Taken (Entity (E2));
+         end if;
+
          Set_Etype (N, RTE (RE_Asm_Output_Operand));
 
       ---------------

@@ -706,6 +706,8 @@ lvalue_required_for_attribute_p (Node_Id gnat_node)
     case Attr_First_Bit:
     case Attr_Last_Bit:
     case Attr_Bit:
+    case Attr_Asm_Input:
+    case Attr_Asm_Output:
     default:
       return 1;
     }
@@ -5489,9 +5491,15 @@ gnat_to_gnu (Node_Id gnat_node)
 		     mark it addressable.  Note that we don't test
 		     allows_mem like in the input case below; this
 		     is modelled on the C front-end.  */
-		  if (!allows_reg
-		      && !gnat_mark_addressable (output))
-		    output = error_mark_node;
+		  if (!allows_reg)
+		    {
+		      STRIP_NOPS (output);
+		      if (TREE_CODE (output) == CONST_DECL
+			  && DECL_CONST_CORRESPONDING_VAR (output))
+			output = DECL_CONST_CORRESPONDING_VAR (output);
+		      if (!gnat_mark_addressable (output))
+			output = error_mark_node;
+		    }
 		}
 	      else
 		output = error_mark_node;
@@ -5511,9 +5519,15 @@ gnat_to_gnu (Node_Id gnat_node)
 		{
 		  /* If the operand is going to end up in memory,
 		     mark it addressable.  */
-		  if (!allows_reg && allows_mem
-		      && !gnat_mark_addressable (input))
-		    input = error_mark_node;
+		  if (!allows_reg && allows_mem)
+		    {
+		      STRIP_NOPS (input);
+		      if (TREE_CODE (input) == CONST_DECL
+			  && DECL_CONST_CORRESPONDING_VAR (input))
+			input = DECL_CONST_CORRESPONDING_VAR (input);
+		      if (!gnat_mark_addressable (input))
+			input = error_mark_node;
+		    }
 		}
 	      else
 		input = error_mark_node;
