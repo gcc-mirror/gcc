@@ -1,3 +1,8 @@
+2011-06-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49400
+	* gfortran.dg/proc_ptr_31.f90: New.
+
 2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/volatile6.adb: New test.
