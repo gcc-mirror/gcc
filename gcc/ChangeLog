@@ -1,3 +1,10 @@
+2011-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/49325
+	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): Properly check if
+	.init_array can be used with .ctors on targets.
+	* configure: Regenerated.
+
 2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (type_internals_preclude_sra_p) <ARRAY_TYPE>: Return true
