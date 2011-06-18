@@ -1,5 +1,11 @@
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
+	PR lto/23754
+	* lto.c (lto_1_to_1_map): Don't create empty partitions.
+	(lto_balanced_map): Likewise.
+
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
 	* lto.c (add_cgraph_node_to_partition_1): Break out from ...
 	(add_cgraph_node_to_partition) ... here; walk aliases.
 	(lto_1_to_1_map): Remove same body alias code.
