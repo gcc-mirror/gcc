@@ -11704,7 +11704,8 @@ resolve_fl_derived (gfc_symbol *sym)
 	  return FAILURE;
 	}
 
-      if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.class_pointer
+      if (c->ts.type == BT_CLASS && c->attr.class_ok
+	  && CLASS_DATA (c)->attr.class_pointer
 	  && CLASS_DATA (c)->ts.u.derived->components == NULL
 	  && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp)
 	{
@@ -11715,9 +11716,10 @@ resolve_fl_derived (gfc_symbol *sym)
 	}
 
       /* C437.  */
-      if (c->ts.type == BT_CLASS
-	  && !(CLASS_DATA (c)->attr.class_pointer
-	       || CLASS_DATA (c)->attr.allocatable))
+      if (c->ts.type == BT_CLASS && c->attr.flavor != FL_PROCEDURE
+	  && (!c->attr.class_ok
+	      || !(CLASS_DATA (c)->attr.class_pointer
+		   || CLASS_DATA (c)->attr.allocatable)))
 	{
 	  gfc_error ("Component '%s' with CLASS at %L must be allocatable "
 		     "or pointer", c->name, &c->loc);

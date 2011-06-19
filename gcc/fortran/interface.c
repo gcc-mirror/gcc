@@ -3232,6 +3232,7 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
 	  c->expr1 = gfc_get_expr ();
 	  build_compcall_for_operator (c->expr1, actual, tb_base, tbo, gname);
 	  c->expr1->value.compcall.assign = 1;
+	  c->expr1->where = c->loc;
 	  c->expr2 = NULL;
 	  c->op = EXEC_COMPCALL;
 

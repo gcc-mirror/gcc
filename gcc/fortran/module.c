@@ -2351,14 +2351,10 @@ mio_component_ref (gfc_component **cp, gfc_symbol *sym)
       if (sym->components != NULL && p->u.pointer == NULL)
 	{
 	  /* Symbol already loaded, so search by name.  */
-	  for (q = sym->components; q; q = q->next)
-	    if (strcmp (q->name, name) == 0)
-	      break;
+	  q = gfc_find_component (sym, name, true, true);
 
-	  if (q == NULL)
-	    gfc_internal_error ("mio_component_ref(): Component not found");
-
-	  associate_integer_pointer (p, q);
+	  if (q)
+	    associate_integer_pointer (p, q);
 	}
 
       /* Make sure this symbol will eventually be loaded.  */
@@ -2402,6 +2398,8 @@ mio_component (gfc_component *c, int vtype)
   mio_array_spec (&c->as);
 
   mio_symbol_attribute (&c->attr);
+  if (c->ts.type == BT_CLASS)
+    c->attr.class_ok = 1;
   c->attr.access = MIO_NAME (gfc_access) (c->attr.access, access_types); 
 
   if (!vtype)

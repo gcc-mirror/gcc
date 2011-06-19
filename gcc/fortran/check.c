@@ -2582,6 +2582,10 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
       return FAILURE;
     }
 
+  /* CLASS arguments: Make sure the vtab is present.  */
+  if (to->ts.type == BT_CLASS)
+    gfc_find_derived_vtab (from->ts.u.derived);
+
   return SUCCESS;
 }
 

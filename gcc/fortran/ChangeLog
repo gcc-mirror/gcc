@@ -1,3 +1,23 @@
+2011-06-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47601
+	* module.c (mio_component_ref): Handle components of extended types.
+	* symbol.c (gfc_find_component): Return if sym is NULL.
+
+	PR fortran/48699
+	* check.c (gfc_check_move_alloc): If 'TO' argument is polymorphic,
+	make sure the vtab is present.
+
+	PR fortran/49074
+	* interface.c (gfc_extend_assign): Propagate the locus from the
+	assignment to the type-bound procedure call.
+
+	PR fortran/49417
+	* module.c (mio_component): Make sure the 'class_ok' attribute is set
+	for use-associated CLASS components.
+	* parse.c (parse_derived): Check for 'class_ok' attribute.
+	* resolve.c (resolve_fl_derived): Ditto.
+
 2011-06-17  Tobias Burnus
 
 	PR fortran/49324

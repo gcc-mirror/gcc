@@ -1996,7 +1996,7 @@ gfc_find_component (gfc_symbol *sym, const char *name,
 {
   gfc_component *p;
 
-  if (name == NULL)
+  if (name == NULL || sym == NULL)
     return NULL;
 
   sym = gfc_use_derived (sym);
