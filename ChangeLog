@@ -1,10 +1,8 @@
-2011-06-18  Jack Howarth <howarth@bromo.med.uc.edu>
+2011-06-19  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/49461
 	* configure.ac: Use mh-x86-darwin.
 	* configure: Regenerate.
-	* config/mh-x86-darwin: Add file and pass -no_pie on BOOT_LDFLAGS
-	for darwin11.
 
 2011-04-28  Release Manager
 
