@@ -1135,6 +1135,9 @@ case "${host}" in
     tentative_cc="/usr/cygnus/progressive/bin/gcc"
     host_makefile_frag="config/mh-lynxrs6k"
     ;;
+  i[[3456789]]86-*-darwin* | x86_64-*-darwin*)
+    host_makefile_frag="config/mh-x86-darwin"
+    ;;
   powerpc-*-darwin*)
     host_makefile_frag="config/mh-ppc-darwin"
     ;;

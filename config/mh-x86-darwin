@@ -1,0 +1,2 @@
+# Ensure we don't try and use -pie, as it is incompatible with pch.
+BOOT_LDFLAGS += `case ${host} in *-*-darwin[1][1-9]*) echo -Wl,-no_pie ;; esac;`
