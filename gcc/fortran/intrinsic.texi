@@ -12963,6 +12963,16 @@ Scalar default-integer constant used as STAT= return value by @code{UNLOCK} to
 denote that the lock variable is unlocked. (Fortran 2008 or later.)
 @end table
 
+The module provides the following derived type:
+
+@table @asis
+@item @code{LOCK_TYPE}:
+Derived type with private components to be use with the @code{LOCK} and
+@code{UNLOCK} statement. A variable of its type has to be always declared
+as coarray and may not appear in a variable-definition context.
+(Fortran 2008 or later.)
+@end table
+
 The module also provides the following intrinsic procedures:
 @ref{COMPILER_OPTIONS} and @ref{COMPILER_VERSION}.
 
