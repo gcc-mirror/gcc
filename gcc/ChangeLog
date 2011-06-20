@@ -1,3 +1,9 @@
+2011-06-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/47725
+	* combine.c (cant_combine_insn_p): Don't check zero/sign
+	extended hard registers.
+
 2011-06-21  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_cannot_force_const_mem): Match
