@@ -10866,13 +10866,19 @@ fold_binary_loc (location_t loc,
       if (operand_equal_p (arg0, arg1, 0))
 	return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
 
-      /* ~X & X is always zero.  */
-      if (TREE_CODE (arg0) == BIT_NOT_EXPR
+      /* ~X & X, (X == 0) & X, and !X & X are always zero.  */
+      if ((TREE_CODE (arg0) == BIT_NOT_EXPR
+	   || TREE_CODE (arg0) == TRUTH_NOT_EXPR
+	   || (TREE_CODE (arg0) == EQ_EXPR
+	       && integer_zerop (TREE_OPERAND (arg0, 1))))
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg1);
 
-      /* X & ~X is always zero.  */
-      if (TREE_CODE (arg1) == BIT_NOT_EXPR
+      /* X & ~X , X & (X == 0), and X & !X are always zero.  */
+      if ((TREE_CODE (arg1) == BIT_NOT_EXPR
+	   || TREE_CODE (arg1) == TRUTH_NOT_EXPR
+	   || (TREE_CODE (arg1) == EQ_EXPR
+	       && integer_zerop (TREE_OPERAND (arg1, 1))))
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	return omit_one_operand_loc (loc, type, integer_zero_node, arg0);
 
@@ -10932,6 +10938,14 @@ fold_binary_loc (location_t loc,
 			      fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (tem), tem,
 					   build_int_cst (TREE_TYPE (tem), 1)),
 			      build_int_cst (TREE_TYPE (tem), 0));
+	}
+      /* Fold !X & 1 as X == 0.  */
+      if (TREE_CODE (arg0) == TRUTH_NOT_EXPR
+	  && integer_onep (arg1))
+	{
+	  tem = TREE_OPERAND (arg0, 0);
+	  return fold_build2_loc (loc, EQ_EXPR, type, tem,
+				  build_int_cst (TREE_TYPE (tem), 0));
 	}
 
       /* Fold (X ^ Y) & Y as ~X & Y.  */
