@@ -1,3 +1,15 @@
+2011-06-20  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (create_TOC_reference): Wrap high part
+	of toc-relative address in CONST.
+	(rs6000_delegitimize_address): Recognize changed address.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_emit_move): Don't force these constants to memory.
+	* config/rs6000/rs6000.md (tls_gd, tls_gd_high): Wrap high part of
+	toc-relative address in CONST.
+	(tls_ld, tls_ld_high, tls_got_dtprel, tls_got_dtprel_high): Likewise.
+	(tls_got_tprel, tls_got_tprel_high, largetoc_high): Likewise.
+
 2011-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/49411
