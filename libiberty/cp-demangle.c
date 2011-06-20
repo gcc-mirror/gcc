@@ -3554,6 +3554,10 @@ static void
 d_print_comp (struct d_print_info *dpi, int options,
               const struct demangle_component *dc)
 {
+  /* Magic variable to let reference smashing skip over the next modifier
+     without needing to modify *dc.  */
+  const struct demangle_component *mod_inner = NULL;
+
   if (dc == NULL)
     {
       d_print_error (dpi);
@@ -3869,16 +3873,37 @@ d_print_comp (struct d_print_info *dpi, int options,
 	      }
 	  }
       }
+      goto modifier;
+
+    case DEMANGLE_COMPONENT_REFERENCE:
+    case DEMANGLE_COMPONENT_RVALUE_REFERENCE:
+      {
+	/* Handle reference smashing: & + && = &.  */
+	const struct demangle_component *sub = d_left (dc);
+	if (sub->type == DEMANGLE_COMPONENT_TEMPLATE_PARAM)
+	  {
+	    struct demangle_component *a = d_lookup_template_argument (dpi, sub);
+	    if (a && a->type == DEMANGLE_COMPONENT_TEMPLATE_ARGLIST)
+	      a = d_index_template_argument (a, dpi->pack_index);
+	    sub = a;
+	  }
+
+	if (sub->type == DEMANGLE_COMPONENT_REFERENCE
+	    || sub->type == dc->type)
+	  dc = sub;
+	else if (sub->type == DEMANGLE_COMPONENT_RVALUE_REFERENCE)
+	  mod_inner = d_left (sub);
+      }
       /* Fall through.  */
+
     case DEMANGLE_COMPONENT_RESTRICT_THIS:
     case DEMANGLE_COMPONENT_VOLATILE_THIS:
     case DEMANGLE_COMPONENT_CONST_THIS:
     case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
     case DEMANGLE_COMPONENT_POINTER:
-    case DEMANGLE_COMPONENT_REFERENCE:
-    case DEMANGLE_COMPONENT_RVALUE_REFERENCE:
     case DEMANGLE_COMPONENT_COMPLEX:
     case DEMANGLE_COMPONENT_IMAGINARY:
+    modifier:
       {
 	/* We keep a list of modifiers on the stack.  */
 	struct d_print_mod dpm;
@@ -3889,7 +3914,10 @@ d_print_comp (struct d_print_info *dpi, int options,
 	dpm.printed = 0;
 	dpm.templates = dpi->templates;
 
-	d_print_comp (dpi, options, d_left (dc));
+	if (!mod_inner)
+	  mod_inner = d_left (dc);
+
+	d_print_comp (dpi, options, mod_inner);
 
 	/* If the modifier didn't get printed by the type, print it
 	   now.  */
