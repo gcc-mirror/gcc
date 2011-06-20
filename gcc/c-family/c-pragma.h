@@ -84,10 +84,40 @@ extern bool pop_visibility (int);
 extern void init_pragma (void);
 
 /* Front-end wrappers for pragma registration.  */
-typedef void (*pragma_handler)(struct cpp_reader *);
-extern void c_register_pragma (const char *, const char *, pragma_handler);
-extern void c_register_pragma_with_expansion (const char *, const char *,
-					      pragma_handler);
+typedef void (*pragma_handler_1arg)(struct cpp_reader *);
+/* A second pragma handler, which adds a void * argument allowing to pass extra
+   data to the handler.  */
+typedef void (*pragma_handler_2arg)(struct cpp_reader *, void *);
+
+/* This union allows to abstract the different handlers.  */
+union gen_pragma_handler {
+  pragma_handler_1arg handler_1arg;
+  pragma_handler_2arg handler_2arg;
+};
+/* Internally used to keep the data of the handler.  */
+struct internal_pragma_handler_d {
+  union gen_pragma_handler handler;
+  /* Permits to know if handler is a pragma_handler_1arg (extra_data is false)
+     or a pragma_handler_2arg (extra_data is true).  */
+  bool extra_data;
+  /* A data field which can be used when extra_data is true.  */
+  void * data;
+};
+typedef struct internal_pragma_handler_d internal_pragma_handler;
+
+extern void c_register_pragma (const char *space, const char *name,
+                               pragma_handler_1arg handler);
+extern void c_register_pragma_with_data (const char *space, const char *name,
+                                         pragma_handler_2arg handler,
+                                         void *data);
+
+extern void c_register_pragma_with_expansion (const char *space,
+                                              const char *name,
+                                              pragma_handler_1arg handler);
+extern void c_register_pragma_with_expansion_and_data (const char *space,
+                                                       const char *name,
+                                                   pragma_handler_2arg handler,
+                                                       void *data);
 extern void c_invoke_pragma_handler (unsigned int);
 
 extern void maybe_apply_pragma_weak (tree);
