@@ -432,7 +432,6 @@ do_replace (struct du_head *head, int reg)
 {
   struct du_chain *chain;
   unsigned int base_regno = head->regno;
-  bool found_note = false;
 
   gcc_assert (! DEBUG_INSN_P (head->first->insn));
 
@@ -446,45 +445,14 @@ do_replace (struct du_head *head, int reg)
 	INSN_VAR_LOCATION_LOC (chain->insn) = gen_rtx_UNKNOWN_VAR_LOC ();
       else
 	{
-	  rtx note;
-
 	  *chain->loc = gen_raw_REG (GET_MODE (*chain->loc), reg);
 	  if (regno >= FIRST_PSEUDO_REGISTER)
 	    ORIGINAL_REGNO (*chain->loc) = regno;
 	  REG_ATTRS (*chain->loc) = attr;
 	  REG_POINTER (*chain->loc) = reg_ptr;
-
-	  for (note = REG_NOTES (chain->insn); note; note = XEXP (note, 1))
-	    {
-	      enum reg_note kind = REG_NOTE_KIND (note);
-	      if (kind == REG_DEAD || kind == REG_UNUSED)
-		{
-		  rtx reg = XEXP (note, 0);
-		  gcc_assert (HARD_REGISTER_P (reg));
-
-		  if (REGNO (reg) == base_regno)
-		    {
-		      found_note = true;
-		      if (kind == REG_DEAD
-			  && reg_set_p (*chain->loc, chain->insn))
-			remove_note (chain->insn, note);
-		      else
-			XEXP (note, 0) = *chain->loc;
-		      break;
-		    }
-		}
-	    }
 	}
 
       df_insn_rescan (chain->insn);
-    }
-  if (!found_note)
-    {
-      /* If the chain's first insn is the same as the last, we should have
-	 found a REG_UNUSED note.  */
-      gcc_assert (head->first->insn != head->last->insn);
-      if (!reg_set_p (*head->last->loc, head->last->insn))
-	add_reg_note (head->last->insn, REG_DEAD, *head->last->loc);
     }
 }
 
