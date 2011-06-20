@@ -1,5 +1,12 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47080
+	* call.c (rejection_reason_code): Add rr_explicit_conversion.
+	(print_z_candidate): Handle it.
+	(explicit_conversion_rejection): New.
+	(build_user_type_conversion_1): Reject an explicit conversion
+	function that requires more than a qualification conversion.
+
 	PR c++/47635
 	* decl.c (grokdeclarator): Don't set ctype to an ENUMERAL_TYPE.
 
