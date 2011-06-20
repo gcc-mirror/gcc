@@ -1,3 +1,14 @@
+2011-06-20  Daniel Krugler  <daniel.kruegler@googlemail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/tuple (__conv_types, __one_by_one_convertible,
+	__all_convertible): Add.
+	(tuple): Use the latter.
+	(tuple<_T1>): Remove.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+
 2011-06-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/ptr_traits.h (pointer_traits<T*>::pointer_to): Use

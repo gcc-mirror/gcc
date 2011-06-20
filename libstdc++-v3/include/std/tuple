@@ -69,6 +69,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __add_r_ref<_Tp&>
     { typedef _Tp& type; };
 
+  // To work around c++/49225 aka c++/48322.
+  template<typename...>
+    struct __conv_types { };
+
+  template<typename _Tuple1, typename _Tuple2>
+    struct __one_by_one_convertible
+    : public false_type { };
+
+  template<typename _Tp, typename _Up>
+    struct __one_by_one_convertible<__conv_types<_Tp>, __conv_types<_Up>>
+    : public is_convertible<_Tp, _Up>::type { };
+
+  template<typename _T1, typename... _TR, typename _U1, typename... _UR>
+    struct __one_by_one_convertible<__conv_types<_T1, _TR...>,
+                                    __conv_types<_U1, _UR...>>
+    : public __and_<is_convertible<_T1, _U1>,
+                    __one_by_one_convertible<__conv_types<_TR...>,
+                                             __conv_types<_UR...>>>::type
+    { };
+
+  template<typename _Tuple1, typename _Tuple2>
+    struct __all_convertible;
+
+  template<typename... _TTypes, typename... _UTypes>
+    struct __all_convertible<__conv_types<_TTypes...>,
+                             __conv_types<_UTypes...>>
+    : public __one_by_one_convertible<__conv_types<_TTypes...>,
+                                      __conv_types<_UTypes...>>::type { };
+
   template<std::size_t _Idx, typename _Head, bool _IsEmpty>
     struct _Head_base;
 
@@ -359,8 +388,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename... _UElements, typename = typename
 	enable_if<__and_<integral_constant<bool, sizeof...(_UElements)
 					   == sizeof...(_Elements)>,
-			 __and_<is_convertible<_UElements,
-					       _Elements>...>>::value>::type>
+			 __all_convertible<__conv_types<_UElements...>,
+					   __conv_types<_Elements...>>
+			 >::value>::type>
 	explicit
         tuple(_UElements&&... __elements)
 	: _Inherited(std::forward<_UElements>(__elements)...) {	}
@@ -371,8 +401,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename... _UElements, typename = typename
 	enable_if<__and_<integral_constant<bool, sizeof...(_UElements)
 					   == sizeof...(_Elements)>,
-			 __and_<is_convertible<const _UElements&,
-					       _Elements>...>>::value>::type>
+			 __all_convertible<__conv_types<const _UElements&...>,
+					   __conv_types<_Elements...>>
+                         >::value>::type>
         tuple(const tuple<_UElements...>& __in)
         : _Inherited(static_cast<const _Tuple_impl<0, _UElements...>&>(__in))
         { }
@@ -380,8 +411,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename... _UElements, typename = typename
 	enable_if<__and_<integral_constant<bool, sizeof...(_UElements)
 					   == sizeof...(_Elements)>,
-			 __and_<is_convertible<_UElements,
-					       _Elements>...>>::value>::type>
+			 __all_convertible<__conv_types<_UElements...>,
+					   __conv_types<_Elements...>>
+			 >::value>::type>
         tuple(tuple<_UElements...>&& __in)
         : _Inherited(static_cast<_Tuple_impl<0, _UElements...>&&>(__in)) { }
 
@@ -619,111 +651,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
 	  this->_M_head() = std::forward<_U1>(__in.first);
 	  this->_M_tail()._M_head() = std::forward<_U2>(__in.second);
-	  return *this;
-	}
-
-      void
-      swap(tuple& __in)
-      noexcept(noexcept(__in._M_swap(__in)))
-      { _Inherited::_M_swap(__in); }
-    };
-
-  /// tuple (1-element).
-  // TODO: Should be simply removed when c++/49225 is fixed, worst case
-  //       together with a different way to constrain the constructors
-  //       of the primary template.
-  template<typename _T1>
-    class tuple<_T1> : public _Tuple_impl<0, _T1>
-    {
-      typedef _Tuple_impl<0, _T1> _Inherited;
-
-    public:
-      constexpr tuple()
-      : _Inherited() { }
-
-      explicit
-      constexpr tuple(const _T1& __a1)
-      : _Inherited(__a1) { }
-
-      template<typename _U1, typename = typename
-	       enable_if<is_convertible<_U1, _T1>::value>::type>
-        explicit
-        tuple(_U1&& __a1)
-	: _Inherited(std::forward<_U1>(__a1)) { }
-
-      constexpr tuple(const tuple&) = default;
-      tuple(tuple&&) = default;
-
-      template<typename _U1, typename = typename
-	       enable_if<is_convertible<const _U1&, _T1>::value>::type>
-        tuple(const tuple<_U1>& __in)
-	: _Inherited(static_cast<const _Tuple_impl<0, _U1>&>(__in)) { }
-
-      template<typename _U1, typename = typename
-	       enable_if<is_convertible<_U1, _T1>::value>::type>
-        tuple(tuple<_U1>&& __in)
-	: _Inherited(static_cast<_Tuple_impl<0, _U1>&&>(__in)) { }
-
-      // allocator-extended constructors
-
-      template<typename _Alloc>
-	tuple(allocator_arg_t __tag, const _Alloc& __a)
-	: _Inherited(__tag, __a) { }
-
-      template<typename _Alloc>
-	tuple(allocator_arg_t __tag, const _Alloc& __a, const _T1& __a1)
-	: _Inherited(__tag, __a, __a1) { }
-
-      // TODO: constrain for is_uses_allocator_constructible<_T1, _U1&&, _Alloc>
-      template<typename _Alloc, typename _U1>
-	tuple(allocator_arg_t __tag, const _Alloc& __a, _U1&& __a1)
-	: _Inherited(__tag, __a, std::forward<_U1>(__a1)) { }
-
-      template<typename _Alloc>
-	tuple(allocator_arg_t __tag, const _Alloc& __a, const tuple& __in)
-	: _Inherited(__tag, __a, static_cast<const _Inherited&>(__in)) { }
-
-      template<typename _Alloc>
-	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple&& __in)
-	: _Inherited(__tag, __a, static_cast<_Inherited&&>(__in)) { }
-
-      template<typename _Alloc, typename _U1>
-	tuple(allocator_arg_t __tag, const _Alloc& __a, const tuple<_U1>& __in)
-	: _Inherited(__tag, __a, static_cast<const _Tuple_impl<0, _U1>&>(__in))
-       	{ }
-
-      template<typename _Alloc, typename _U1>
-	tuple(allocator_arg_t __tag, const _Alloc& __a, tuple<_U1>&& __in)
-	: _Inherited(__tag, __a, static_cast<_Tuple_impl<0, _U1>&&>(__in)) { }
-
-      tuple&
-      operator=(const tuple& __in)
-      {
-	static_cast<_Inherited&>(*this) = __in;
-	return *this;
-      }
-
-      tuple&
-      operator=(tuple&& __in)
-      noexcept(is_nothrow_move_assignable<_Inherited>::value)
-      {
-	static_cast<_Inherited&>(*this) = std::move(__in);
-	return *this;
-      }
-
-      template<typename _U1>
-        tuple&
-        operator=(const tuple<_U1>& __in)
-        {
-	  static_cast<_Inherited&>(*this) = __in;
-	  return *this;
-	}
-
-      template<typename _U1>
-        tuple&
-        operator=(tuple<_U1>&& __in)
-        {
-	  static_cast<_Inherited&>(*this) = std::move(__in);
 	  return *this;
 	}
 
