@@ -1,3 +1,11 @@
+2011-06-20  Changpeng Fang <changpeng.fang@amd.com>
+
+        PR i386/49089
+	* config/i386/i386.c (avx256_split_unaligned_load): New definition.
+	(avx256_split_unaligned_store): New definition.
+	(ix86_option_override_internal): Enable avx256 unaligned load/store
+	splitting only when avx256_split_unaligned_load/store is set.
+
 2011-06-20  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* regrename.c (scan_rtx_reg): Handle the case where we write to an
