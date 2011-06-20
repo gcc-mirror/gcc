@@ -1,5 +1,8 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49205
+	* call.c (sufficient_parms_p): Allow parameter packs too.
+
 	PR c++/43321
 	* semantics.c (describable_type): Remove.
 	* cp-tree.h: Likewise.
