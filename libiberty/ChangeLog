@@ -1,3 +1,9 @@
+2011-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37089
+	* cp-demangle.c (d_print_comp): Handle reference smashing.
+	* testsuite/demangle-expected: Test it.
+
 2011-06-13  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* cp-demangle.c (d_print_comp) <DEMANGLE_COMPONENT_FUNCTION_TYPE>:
