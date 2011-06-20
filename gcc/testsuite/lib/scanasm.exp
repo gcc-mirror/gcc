@@ -350,11 +350,35 @@ proc object-size { args } {
 
     upvar 2 name testcase
     set testcase [lindex $testcase 0]
+
+    set what [lindex $args 0]
+    set where [lsearch { text data bss total } $what]
+    if { $where == -1 } {
+        error "object-size: illegal argument: $what"
+        return
+    }
+    set cmp [lindex $args 1]
+    if { [lsearch { < > <= >= == != } $cmp] == -1 } {
+        error "object-size: illegal argument: $cmp"
+        return
+    }
+    set with [lindex $args 2]
+    if ![string is integer $with ] {
+        error "object-size: illegal argument: $with"
+        return
+    }
+
     set output_file "[file rootname [file tail $testcase]].o"
+    if ![file_on_host exists $output_file] {
+	verbose -log "$testcase: $output_file does not exist"
+	unresolved "$testcase object-size $what $cmp $with"
+	return
+    }
     set output [remote_exec host "$size" "$output_file"]
     set status [lindex $output 0]
     if { $status != 0 } {
-        error "object-size: $size failed"
+        verbose -log "$testcase object-size: $size failed"
+        unresolved "$testcase object-size $what $cmp $with"
         return
     }
 
@@ -363,36 +387,20 @@ proc object-size { args } {
 
     set line0 [lindex $lines 0]
     if ![regexp {^\s*text\s+data\s+bss\s+dec\s+hex\s+filename\s*$} $line0] {
-        error "object-size: $size did not produce expected first line: $line0"
+        verbose -log "$testcase object-size: $size did not produce expected first line: $line0"
+        unresolved "$testcase object-size $what $cmp $with"
         return
     }
 
     set line1 [lindex $lines 1]
     if ![regexp {^\s*\d+\s+\d+\s+\d+\s+\d+\s+[\da-fA-F]+\s+} $line1] {
-        error "object-size: $size did not produce expected second line: $line1"
+        verbose -log "$testcase object-size: $size did not produce expected second line: $line1"
+        unresolved "$testcase object-size $what $cmp $with"
         return
     }
 
-    set what [lindex $args 0]
-    set where [lsearch { text data bss total } $what]
-    if { $where == -1 } {
-        error "object-size: illegal argument: $what"
-        return
-    }
     set actual [lindex $line1 $where]
     verbose -log "$what size is $actual"
-
-    set cmp [lindex $args 1]
-    if { [lsearch { < > <= >= == != } $cmp] == -1 } {
-        error "object-size: illegal argument: $cmp"
-        return
-    }
-
-    set with [lindex $args 2]
-    if ![string is integer $with ] {
-        error "object-size: illegal argument: $with"
-        return
-    }
 
     if [expr $actual $cmp $with] {
 	pass "$testcase object-size $what $cmp $with"
