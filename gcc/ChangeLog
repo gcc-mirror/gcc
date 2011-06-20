@@ -1,3 +1,9 @@
+2011-06-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/47725
+	* combine.c (cant_combine_insn_p): Check zero/sign extended
+	hard registers.
+
 2011-06-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/49385
