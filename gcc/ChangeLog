@@ -1,3 +1,8 @@
+2011-06-20  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* regrename.c (scan_rtx_reg): Handle the case where we write to an
+	open chain in a smaller mode without failing the entire block.
+
 2011-06-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47725

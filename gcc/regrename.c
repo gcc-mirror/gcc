@@ -721,25 +721,34 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	 In either case, we remove this element from open_chains.  */
 
       if ((action == terminate_dead || action == terminate_write)
-	  && superset)
+	  && (superset || subset))
 	{
 	  unsigned nregs;
 
 	  head->terminated = 1;
+	  if (subset && !superset)
+	    head->cannot_rename = 1;
 	  head->next_chain = closed_chains;
 	  closed_chains = head;
 	  bitmap_clear_bit (&open_chains_set, head->id);
 
 	  nregs = head->nregs;
 	  while (nregs-- > 0)
-	    CLEAR_HARD_REG_BIT (live_in_chains, head->regno + nregs);
+	    {
+	      CLEAR_HARD_REG_BIT (live_in_chains, head->regno + nregs);
+	      if (subset && !superset
+		  && (head->regno + nregs < this_regno
+		      || head->regno + nregs >= this_regno + this_nregs))
+		SET_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
+	    }
 
 	  *p = next;
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "Closing chain %s (%d) at insn %d (%s)\n",
+		     "Closing chain %s (%d) at insn %d (%s%s)\n",
 		     reg_names[head->regno], head->id, INSN_UID (insn),
-		     scan_actions_name[(int) action]);
+		     scan_actions_name[(int) action],
+		     superset ? ", superset" : subset ? ", subset" : "");
 	}
       else if (action == terminate_dead || action == terminate_write)
 	{
