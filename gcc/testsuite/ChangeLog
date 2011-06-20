@@ -1,3 +1,12 @@
+2011-06-20  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/binop-notand1.c: New test.
+	* gcc.dg/binop-notand2.c: New test.
+	* gcc.dg/binop-notand3.c: New test.
+	* gcc.dg/binop-notand4.c: New test.
+	* gcc.dg/binop-notand5.c: New test.
+	* gcc.dg/binop-notand6.c: New test.
+
 2011-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/49432
