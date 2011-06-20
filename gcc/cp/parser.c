@@ -24504,7 +24504,7 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 						    &is_direct_init,
 						    &is_non_constant_init);
 
-		      if (auto_node && describable_type (init))
+		      if (auto_node)
 			{
 			  TREE_TYPE (decl)
 			    = do_auto_deduction (TREE_TYPE (decl), init,
