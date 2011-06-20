@@ -1,3 +1,10 @@
+2011-06-21  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_cannot_force_const_mem): Match
+	CONST high part large-toc address.
+	(rs6000_tls_referenced_p): Make static.
+	* config/rs6000/rs6000-protos.h (rs6000_tls_referenced_p): Delete.
+
 2011-06-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47725

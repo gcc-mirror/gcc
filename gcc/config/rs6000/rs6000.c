@@ -6045,7 +6045,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 
 /* Return 1 if X contains a thread-local symbol.  */
 
-bool
+static bool
 rs6000_tls_referenced_p (rtx x)
 {
   if (! TARGET_HAVE_TLS)
@@ -6059,6 +6059,11 @@ rs6000_tls_referenced_p (rtx x)
 static bool
 rs6000_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
+  if (GET_CODE (x) == CONST
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == HIGH)
+    return true;
+
   return rs6000_tls_referenced_p (x);
 }
 
