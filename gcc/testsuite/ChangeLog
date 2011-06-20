@@ -1,3 +1,8 @@
+2011-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43831
+	* g++.dg/cpp0x/lambda/lambda-capture-reduncancy.C: New.
+
 2011-06-20  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.dg/binop-notand1.c: New test.
