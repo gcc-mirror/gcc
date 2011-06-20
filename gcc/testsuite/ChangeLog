@@ -1,5 +1,9 @@
 2011-06-20  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/scandump.exp (scan-dump, scan-dump-times, scan-dump-not,
+	scan-dump-dem, scan-dump-dem-not): Treat a missing dump file as
+	unresolved and report the reason to the log file.
+
 	* lib/scanasm.exp (object-size): Move argument processing earlier
 	to report errors before verifying that the file exists.  Report
 	problems detected at runtime as unresolved instead of error and
