@@ -1,5 +1,8 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48138
+	* tree.c (strip_typedefs): Use build_aligned_type.
+
 	PR c++/49205
 	* call.c (sufficient_parms_p): Allow parameter packs too.
 
