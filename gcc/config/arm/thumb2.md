@@ -207,7 +207,9 @@
 (define_insn "*thumb2_movhi_insn"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")
 	(match_operand:HI 1 "general_operand"      "rI,n,r,m"))]
-  "TARGET_THUMB2"
+  "TARGET_THUMB2
+  && (register_operand (operands[0], HImode)
+     || register_operand (operands[1], HImode))"
   "@
    mov%?\\t%0, %1\\t%@ movhi
    movw%?\\t%0, %L1\\t%@ movhi
