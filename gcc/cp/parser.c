@@ -7485,6 +7485,10 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
       /* Possibly capture `this'.  */
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_THIS))
 	{
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) == CPLD_COPY)
+	    pedwarn (loc, 0, "explicit by-copy capture of %<this%> redundant "
+		     "with by-copy capture default");
 	  cp_lexer_consume_token (parser->lexer);
 	  add_capture (lambda_expr,
 		       /*id=*/this_identifier,
@@ -7567,6 +7571,21 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
       if (TREE_CODE (capture_init_expr) == IDENTIFIER_NODE)
 	capture_init_expr
 	  = unqualified_name_lookup_error (capture_init_expr);
+
+      if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
+	  && !explicit_init_p)
+	{
+	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) == CPLD_COPY
+	      && capture_kind == BY_COPY)
+	    pedwarn (capture_token->location, 0, "explicit by-copy capture "
+		     "of %qD redundant with by-copy capture default",
+		     capture_id);
+	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) == CPLD_REFERENCE
+	      && capture_kind == BY_REFERENCE)
+	    pedwarn (capture_token->location, 0, "explicit by-reference "
+		     "capture of %qD redundant with by-reference capture "
+		     "default", capture_id);
+	}
 
       add_capture (lambda_expr,
 		   capture_id,

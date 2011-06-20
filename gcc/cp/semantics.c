@@ -8516,8 +8516,8 @@ tree
 add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
 	     bool explicit_init_p)
 {
-  tree type;
-  tree member;
+  char *buf;
+  tree type, member, name;
 
   type = lambda_capture_field_type (initializer);
   if (by_reference_p)
@@ -8527,18 +8527,31 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
 	error ("cannot capture %qE by reference", initializer);
     }
 
+  /* Add __ to the beginning of the field name so that user code
+     won't find the field with name lookup.  We can't just leave the name
+     unset because template instantiation uses the name to find
+     instantiated fields.  */
+  buf = (char *) alloca (IDENTIFIER_LENGTH (id) + 3);
+  buf[1] = buf[0] = '_';
+  memcpy (buf + 2, IDENTIFIER_POINTER (id),
+	  IDENTIFIER_LENGTH (id) + 1);
+  name = get_identifier (buf);
+
+  /* If TREE_TYPE isn't set, we're still in the introducer, so check
+     for duplicates.  */
+  if (!TREE_TYPE (lambda))
+    {
+      if (IDENTIFIER_MARKED (name))
+	{
+	  pedwarn (input_location, 0,
+		   "already captured %qD in lambda expression", id);
+	  return NULL_TREE;
+	}
+      IDENTIFIER_MARKED (name) = true;
+    }
+
   /* Make member variable.  */
-  {
-    /* Add __ to the beginning of the field name so that user code
-       won't find the field with name lookup.  We can't just leave the name
-       unset because template instantiation uses the name to find
-       instantiated fields.  */
-    char *buf = (char *) alloca (IDENTIFIER_LENGTH (id) + 3);
-    buf[1] = buf[0] = '_';
-    memcpy (buf + 2, IDENTIFIER_POINTER (id),
-	    IDENTIFIER_LENGTH (id) + 1);
-    member = build_lang_decl (FIELD_DECL, get_identifier (buf), type);
-  }
+  member = build_lang_decl (FIELD_DECL, name, type);
 
   if (!explicit_init_p)
     /* Normal captures are invisible to name lookup but uses are replaced
@@ -8548,19 +8561,15 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
        always visible.  */
     DECL_NORMAL_CAPTURE_P (member) = true;
 
+  if (id == this_identifier)
+    LAMBDA_EXPR_THIS_CAPTURE (lambda) = member;
+
   /* Add it to the appropriate closure class if we've started it.  */
   if (current_class_type && current_class_type == TREE_TYPE (lambda))
     finish_member_declaration (member);
 
   LAMBDA_EXPR_CAPTURE_LIST (lambda)
     = tree_cons (member, initializer, LAMBDA_EXPR_CAPTURE_LIST (lambda));
-
-  if (id == this_identifier)
-    {
-      if (LAMBDA_EXPR_CAPTURES_THIS_P (lambda))
-        error ("already captured %<this%> in lambda expression");
-      LAMBDA_EXPR_THIS_CAPTURE (lambda) = member;
-    }
 
   if (TREE_TYPE (lambda))
     return build_capture_proxy (member);
@@ -8572,13 +8581,16 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
 /* Register all the capture members on the list CAPTURES, which is the
    LAMBDA_EXPR_CAPTURE_LIST for the lambda after the introducer.  */
 
-void register_capture_members (tree captures)
+void
+register_capture_members (tree captures)
 {
-  if (captures)
-    {
-      register_capture_members (TREE_CHAIN (captures));
-      finish_member_declaration (TREE_PURPOSE (captures));
-    }
+  if (captures == NULL_TREE)
+    return;
+
+  register_capture_members (TREE_CHAIN (captures));
+  /* We set this in add_capture to avoid duplicates.  */
+  IDENTIFIER_MARKED (DECL_NAME (TREE_PURPOSE (captures))) = false;
+  finish_member_declaration (TREE_PURPOSE (captures));
 }
 
 /* Similar to add_capture, except this works on a stack of nested lambdas.
