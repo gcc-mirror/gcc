@@ -1,5 +1,8 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47080
+	* g++.dg/cpp0x/explicit6.C: New.
+
 	PR c++/47635
 	* g++.dg/cpp0x/enum20.C: New.
 
