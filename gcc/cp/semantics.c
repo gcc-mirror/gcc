@@ -4803,65 +4803,6 @@ finish_static_assert (tree condition, tree message, location_t location,
     }
 }
 
-/* Returns the type of EXPR for cases where we can determine it even though
-   EXPR is a type-dependent expression.  */
-
-tree
-describable_type (tree expr)
-{
-  tree type = NULL_TREE;
-
-  if (! type_dependent_expression_p (expr)
-      && ! type_unknown_p (expr))
-    {
-      type = unlowered_expr_type (expr);
-      if (real_lvalue_p (expr))
-	type = build_reference_type (type);
-    }
-
-  if (type)
-    return type;
-
-  switch (TREE_CODE (expr))
-    {
-    case VAR_DECL:
-    case PARM_DECL:
-    case RESULT_DECL:
-    case FUNCTION_DECL:
-      return TREE_TYPE (expr);
-      break;
-
-    case NEW_EXPR:
-    case CONST_DECL:
-    case TEMPLATE_PARM_INDEX:
-    case CAST_EXPR:
-    case STATIC_CAST_EXPR:
-    case REINTERPRET_CAST_EXPR:
-    case CONST_CAST_EXPR:
-    case DYNAMIC_CAST_EXPR:
-      type = TREE_TYPE (expr);
-      break;
-
-    case INDIRECT_REF:
-      {
-	tree ptrtype = describable_type (TREE_OPERAND (expr, 0));
-	if (ptrtype && POINTER_TYPE_P (ptrtype))
-	  type = build_reference_type (TREE_TYPE (ptrtype));
-      }
-      break;
-
-    default:
-      if (TREE_CODE_CLASS (TREE_CODE (expr)) == tcc_constant)
-	type = TREE_TYPE (expr);
-      break;
-    }
-
-  if (type && type_uses_auto (type))
-    return NULL_TREE;
-  else
-    return type;
-}
-
 /* Implements the C++0x decltype keyword. Returns the type of EXPR,
    suitable for use as a type-specifier.
 

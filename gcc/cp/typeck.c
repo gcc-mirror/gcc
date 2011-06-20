@@ -2681,8 +2681,7 @@ build_x_indirect_ref (tree expr, ref_operator errorstring,
 
   if (processing_template_decl)
     {
-      /* Retain the type if we know the operand is a pointer so that
-	 describable_type doesn't make auto deduction break.  */
+      /* Retain the type if we know the operand is a pointer.  */
       if (TREE_TYPE (expr) && POINTER_TYPE_P (TREE_TYPE (expr)))
 	return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
       if (type_dependent_expression_p (expr))

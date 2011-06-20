@@ -10122,11 +10122,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    if (auto_node && init)
 	      {
 		init = resolve_nondeduced_context (init);
-		if (describable_type (init))
-		  {
-		    type = do_auto_deduction (type, init, auto_node);
-		    TREE_TYPE (r) = type;
-		  }
+		TREE_TYPE (r) = type
+		  = do_auto_deduction (type, init, auto_node);
 	      }
 	  }
 	else
@@ -19302,6 +19299,12 @@ do_auto_deduction (tree type, tree init, tree auto_node)
   tree decl;
   int val;
 
+  if (processing_template_decl
+      && (TREE_TYPE (init) == NULL_TREE
+	  || BRACE_ENCLOSED_INITIALIZER_P (init)))
+    /* Not enough information to try this yet.  */
+    return type;
+
   /* The name of the object being declared shall not appear in the
      initializer expression.  */
   decl = cp_walk_tree_without_duplicates (&init, contains_auto_r, type);
@@ -19331,6 +19334,9 @@ do_auto_deduction (tree type, tree init, tree auto_node)
 			       DEDUCE_CALL, LOOKUP_NORMAL);
   if (val > 0)
     {
+      if (processing_template_decl)
+	/* Try again at instantiation time.  */
+	return type;
       if (type && type != error_mark_node)
 	/* If type is error_mark_node a diagnostic must have been
 	   emitted by now.  Also, having a mention to '<type error>'

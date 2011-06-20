@@ -1,5 +1,8 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43321
+	* g++.dg/cpp0x/auto26.C: New.
+
 	PR c++/43831
 	* g++.dg/cpp0x/lambda/lambda-capture-reduncancy.C: New.
 

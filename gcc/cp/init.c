@@ -2600,8 +2600,7 @@ build_new (VEC(tree,gc) **placement, tree type, tree nelts,
 	{
 	  tree d_init = VEC_index (tree, *init, 0);
 	  d_init = resolve_nondeduced_context (d_init);
-	  if (describable_type (d_init))
-	    type = do_auto_deduction (type, d_init, auto_node);
+	  type = do_auto_deduction (type, d_init, auto_node);
 	}
     }
 

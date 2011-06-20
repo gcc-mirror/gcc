@@ -1,5 +1,15 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43321
+	* semantics.c (describable_type): Remove.
+	* cp-tree.h: Likewise.
+	* decl.c (cp_finish_decl): Don't call it.
+	* init.c (build_new): Likewise.
+	* parser.c (cp_parser_omp_for_loop): Likewise.
+	* pt.c (tsubst_decl): Likewise.
+	(do_auto_deduction): If we fail in a template, try again
+	at instantiation time.
+
 	PR c++/43831
 	* parser.c (cp_parser_lambda_introducer): Complain about redundant
 	captures.
