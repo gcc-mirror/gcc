@@ -1,3 +1,12 @@
+2011-06-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	Backport from mainline.
+        2011-06-13  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/48454
+	* config/arm/neon.md (vec_pack_trunc): Set the lengths
+	correctly for the case with Quad vectors.
+
 2011-06-20  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (create_TOC_reference): Wrap high part

@@ -5438,6 +5438,7 @@
  }
 )
 
+;; The case when using all quad registers.
 (define_insn "vec_pack_trunc_<mode>"
  [(set (match_operand:<V_narrow_pack> 0 "register_operand" "=&w")
        (vec_concat:<V_narrow_pack> 
@@ -5446,8 +5447,9 @@
 		(truncate:<V_narrow>
 			(match_operand:VN 2 "register_operand" "w"))))]
  "TARGET_NEON"
- "vmovn.i<V_sz_elem>\t%e0, %q1\n\tvmovn.i<V_sz_elem>\t%f0, %q2"
- [(set_attr "neon_type" "neon_shift_1")]
+ "vmovn.i<V_sz_elem>\t%e0, %q1\;vmovn.i<V_sz_elem>\t%f0, %q2"
+ [(set_attr "neon_type" "neon_shift_1")
+  (set_attr "length" "8")]
 )
 
 ;; For the non-quad case.
