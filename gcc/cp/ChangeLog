@@ -1,5 +1,8 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47635
+	* decl.c (grokdeclarator): Don't set ctype to an ENUMERAL_TYPE.
+
 	PR c++/48138
 	* tree.c (strip_typedefs): Use build_aligned_type.
 

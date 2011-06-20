@@ -1,5 +1,8 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47635
+	* g++.dg/cpp0x/enum20.C: New.
+
 	PR c++/48138
 	* g++.dg/ext/attr-aligned01.C: New.
 

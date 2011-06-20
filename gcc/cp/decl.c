@@ -8338,10 +8338,15 @@ grokdeclarator (const cp_declarator *declarator,
 		else if (TYPE_P (qualifying_scope))
 		  {
 		    ctype = qualifying_scope;
-		    if (innermost_code != cdk_function
-			&& current_class_type
-			&& !UNIQUELY_DERIVED_FROM_P (ctype,
-						     current_class_type))
+		    if (!MAYBE_CLASS_TYPE_P (ctype))
+		      {
+			error ("%q#T is not a class or a namespace", ctype);
+			ctype = NULL_TREE;
+		      }
+		    else if (innermost_code != cdk_function
+			     && current_class_type
+			     && !UNIQUELY_DERIVED_FROM_P (ctype,
+							  current_class_type))
 		      {
 			error ("type %qT is not derived from type %qT",
 			       ctype, current_class_type);
@@ -9350,7 +9355,7 @@ grokdeclarator (const cp_declarator *declarator,
      would not have exited the loop above.  */
   if (declarator
       && declarator->u.id.qualifying_scope
-      && TYPE_P (declarator->u.id.qualifying_scope))
+      && MAYBE_CLASS_TYPE_P (declarator->u.id.qualifying_scope))
     {
       tree t;
 
@@ -10154,13 +10159,6 @@ grokdeclarator (const cp_declarator *declarator,
 	      pedwarn (input_location, OPT_pedantic, 
 		       "%<inline%> specifier invalid for function %qs "
 		       "declared out of global scope", name);
-	  }
-
-	if (ctype != NULL_TREE
-	    && TREE_CODE (ctype) != NAMESPACE_DECL && !MAYBE_CLASS_TYPE_P (ctype))
-	  {
-	    error ("%q#T is not a class or a namespace", ctype);
-	    ctype = NULL_TREE;
 	  }
 
 	if (ctype == NULL_TREE)
