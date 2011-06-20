@@ -1318,6 +1318,11 @@ trans_code (gfc_code * code, tree cond)
 	  res = gfc_trans_sync (code, code->op);
 	  break;
 
+	case EXEC_LOCK:
+	case EXEC_UNLOCK:
+	  res = gfc_trans_lock_unlock (code, code->op);
+	  break;
+
 	case EXEC_FORALL:
 	  res = gfc_trans_forall (code);
 	  break;

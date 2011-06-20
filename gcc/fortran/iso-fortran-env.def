@@ -110,7 +110,14 @@ NAMED_FUNCTION (ISOFORTRAN_COMPILER_OPTIONS, "compiler_options", \
 NAMED_FUNCTION (ISOFORTRAN_COMPILER_VERSION, "compiler_version", \
                 GFC_ISYM_COMPILER_VERSION, GFC_STD_F2008)
 
+#ifndef NAMED_DERIVED_TYPE
+# define NAMED_DERIVED_TYPE(a,b,c,d)
+#endif
+
+NAMED_DERIVED_TYPE (ISOFORTRAN_LOCK_TYPE, "lock_type", \
+              get_int_kind_from_node (ptr_type_node), GFC_STD_F2008)
 
 #undef NAMED_INTCST
 #undef NAMED_KINDARRAY
 #undef NAMED_FUNCTION
+#undef NAMED_DERIVED_TYPE

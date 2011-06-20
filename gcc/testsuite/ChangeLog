@@ -1,3 +1,10 @@
+2011-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_lock_1.f90: Update dg-error.
+	* gfortran.dg/coarray_lock_3.f90: New.
+	* gfortran.dg/coarray/lock_1.f90: New.
+
 2011-06-20  Janis Johnson  <janisjo@codesourcery.com>
 
 	* lib/scandump.exp (scan-dump, scan-dump-times, scan-dump-not,

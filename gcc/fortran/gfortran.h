@@ -596,6 +596,7 @@ gfc_reverse;
 #define NAMED_INTCST(a,b,c,d) a,
 #define NAMED_KINDARRAY(a,b,c,d) a,
 #define NAMED_FUNCTION(a,b,c,d) a,
+#define NAMED_DERIVED_TYPE(a,b,c,d) a,
 typedef enum
 {
   ISOFORTRANENV_INVALID = -1,
@@ -606,6 +607,7 @@ iso_fortran_env_symbol;
 #undef NAMED_INTCST
 #undef NAMED_KINDARRAY
 #undef NAMED_FUNCTION
+#undef NAMED_DERIVED_TYPE
 
 #define NAMED_INTCST(a,b,c,d) a,
 #define NAMED_REALCST(a,b,c) a,
@@ -774,7 +776,7 @@ typedef struct
      possibly nested.  zero_comp is true if the derived type has no
      component at all.  */
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
-	   private_comp:1, zero_comp:1, coarray_comp:1;
+	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1;
 
   /* This is a temporary selector for SELECT TYPE.  */
   unsigned select_type_temporary:1;
@@ -2735,7 +2737,7 @@ bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
 
 gfc_expr* gfc_build_intrinsic_call (const char*, locus, unsigned, ...);
-gfc_try gfc_check_vardef_context (gfc_expr*, bool, const char*);
+gfc_try gfc_check_vardef_context (gfc_expr*, bool, bool, const char*);
 
 
 /* st.c */

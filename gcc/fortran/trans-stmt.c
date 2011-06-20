@@ -653,6 +653,48 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
 
 
 tree
+gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op type ATTRIBUTE_UNUSED)
+{
+  gfc_se se, argse;
+  tree stat = NULL_TREE, lock_acquired = NULL_TREE;
+
+  /* Short cut: For single images without STAT= or LOCK_ACQUIRED
+     return early. (ERRMSG= is always untouched for -fcoarray=single.)  */
+  if (!code->expr2 && !code->expr4 && gfc_option.coarray != GFC_FCOARRAY_LIB)
+    return NULL_TREE; 
+
+  gfc_init_se (&se, NULL);
+  gfc_start_block (&se.pre);
+
+  if (code->expr2)
+    {
+      gcc_assert (code->expr2->expr_type == EXPR_VARIABLE);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr2);
+      stat = argse.expr;
+    }
+
+  if (code->expr4)
+    {
+      gcc_assert (code->expr4->expr_type == EXPR_VARIABLE);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, code->expr4);
+      lock_acquired = argse.expr;
+    }
+
+  if (stat != NULL_TREE)
+    gfc_add_modify (&se.pre, stat, build_int_cst (TREE_TYPE (stat), 0));
+
+  if (lock_acquired != NULL_TREE)
+    gfc_add_modify (&se.pre, lock_acquired,
+		    fold_convert (TREE_TYPE (lock_acquired),
+				  boolean_true_node));
+
+  return gfc_finish_block (&se.pre);
+}
+
+
+tree
 gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 {
   gfc_se se, argse;

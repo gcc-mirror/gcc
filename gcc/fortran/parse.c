@@ -2143,6 +2143,13 @@ endType:
 	  || (c->attr.coarray_comp && !c->attr.pointer && !c->attr.allocatable))
 	sym->attr.coarray_comp = 1;
 
+      /* Looking for lock_type components.  */
+      if (c->attr.lock_comp
+	  || (sym->ts.type == BT_DERIVED
+	      && c->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	      && c->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE))
+	sym->attr.lock_comp = 1;
+
       /* Look for private components.  */
       if (sym->component_access == ACCESS_PRIVATE
 	  || c->attr.access == ACCESS_PRIVATE
