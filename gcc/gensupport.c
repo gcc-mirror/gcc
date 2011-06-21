@@ -368,6 +368,25 @@ queue_pattern (rtx pattern, struct queue_elem ***list_tail,
   return e;
 }
 
+/* Build a define_attr for an binary attribute with name NAME and
+   possible values "yes" and "no", and queue it.  */
+static void
+add_define_attr (const char *name)
+{
+  struct queue_elem *e = XNEW(struct queue_elem);
+  rtx t1 = rtx_alloc (DEFINE_ATTR);
+  XSTR (t1, 0) = name;
+  XSTR (t1, 1) = "no,yes";
+  XEXP (t1, 2) = rtx_alloc (CONST_STRING);
+  XSTR (XEXP (t1, 2), 0) = "yes";
+  e->data = t1;
+  e->filename = "built-in";
+  e->lineno = -1;
+  e->next = define_attr_queue;
+  define_attr_queue = e;
+
+}
+
 /* Recursively remove constraints from an rtx.  */
 
 static void
@@ -547,17 +566,10 @@ is_predicable (struct queue_elem *elem)
   return predicable_default;
 
  found:
-  /* Verify that predicability does not vary on the alternative.  */
-  /* ??? It should be possible to handle this by simply eliminating
-     the non-predicable alternatives from the insn.  FRV would like
-     to do this.  Delay this until we've got the basics solid.  */
+  /* Find out which value we're looking at.  Multiple alternatives means at
+     least one is predicable.  */
   if (strchr (value, ',') != NULL)
-    {
-      error_with_line (elem->lineno, "multiple alternatives for `predicable'");
-      return 0;
-    }
-
-  /* Find out which value we're looking at.  */
+    return 1;
   if (strcmp (value, predicable_true) == 0)
     return 1;
   if (strcmp (value, predicable_false) == 0)
@@ -798,6 +810,146 @@ alter_test_for_insn (struct queue_elem *ce_elem,
 			    XSTR (insn_elem->data, 2));
 }
 
+/* Modify VAL, which is an attribute expression for the "enabled" attribute,
+   to take "ce_enabled" into account.  Return the new expression.  */
+static rtx
+modify_attr_enabled_ce (rtx val)
+{
+  rtx eq_attr, str;
+  rtx ite;
+  eq_attr = rtx_alloc (EQ_ATTR);
+  ite = rtx_alloc (IF_THEN_ELSE);
+  str = rtx_alloc (CONST_STRING);
+
+  XSTR (eq_attr, 0) = "ce_enabled";
+  XSTR (eq_attr, 1) = "yes";
+  XSTR (str, 0) = "no";
+  XEXP (ite, 0) = eq_attr;
+  XEXP (ite, 1) = val;
+  XEXP (ite, 2) = str;
+
+  return ite;
+}
+
+/* Alter the attribute vector of INSN, which is a COND_EXEC variant created
+   from a define_insn pattern.  We must modify the "predicable" attribute
+   to be named "ce_enabled", and also change any "enabled" attribute that's
+   present so that it takes ce_enabled into account.
+   We rely on the fact that INSN was created with copy_rtx, and modify data
+   in-place.  */
+
+static void
+alter_attrs_for_insn (rtx insn)
+{
+  static bool global_changes_made = false;
+  rtvec vec = XVEC (insn, 4);
+  rtvec new_vec;
+  rtx val, set;
+  int num_elem;
+  int predicable_idx = -1;
+  int enabled_idx = -1;
+  int i;
+
+  if (! vec)
+    return;
+
+  num_elem = GET_NUM_ELEM (vec);
+  for (i = num_elem - 1; i >= 0; --i)
+    {
+      rtx sub = RTVEC_ELT (vec, i);
+      switch (GET_CODE (sub))
+	{
+	case SET_ATTR:
+	  if (strcmp (XSTR (sub, 0), "predicable") == 0)
+	    {
+	      predicable_idx = i;
+	      XSTR (sub, 0) = "ce_enabled";
+	    }
+	  else if (strcmp (XSTR (sub, 0), "enabled") == 0)
+	    {
+	      enabled_idx = i;
+	      XSTR (sub, 0) = "nonce_enabled";
+	    }
+	  break;
+
+	case SET_ATTR_ALTERNATIVE:
+	  if (strcmp (XSTR (sub, 0), "predicable") == 0)
+	    /* We already give an error elsewhere.  */
+	    return;
+	  else if (strcmp (XSTR (sub, 0), "enabled") == 0)
+	    {
+	      enabled_idx = i;
+	      XSTR (sub, 0) = "nonce_enabled";
+	    }
+	  break;
+
+	case SET:
+	  if (GET_CODE (SET_DEST (sub)) != ATTR)
+	    break;
+	  if (strcmp (XSTR (SET_DEST (sub), 0), "predicable") == 0)
+	    {
+	      sub = SET_SRC (sub);
+	      if (GET_CODE (sub) == CONST_STRING)
+		{
+		  predicable_idx = i;
+		  XSTR (sub, 0) = "ce_enabled";
+		}
+	      else
+		/* We already give an error elsewhere.  */
+		return;
+	      break;
+	    }
+	  if (strcmp (XSTR (SET_DEST (sub), 0), "enabled") == 0)
+	    {
+	      enabled_idx = i;
+	      XSTR (SET_DEST (sub), 0) = "nonce_enabled";
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  if (predicable_idx == -1)
+    return;
+
+  if (!global_changes_made)
+    {
+      struct queue_elem *elem;
+      
+      global_changes_made = true;
+      add_define_attr ("ce_enabled");
+      add_define_attr ("nonce_enabled");
+
+      for (elem = define_attr_queue; elem ; elem = elem->next)
+	if (strcmp (XSTR (elem->data, 0), "enabled") == 0)
+	  {
+	    XEXP (elem->data, 2)
+	      = modify_attr_enabled_ce (XEXP (elem->data, 2));
+	  }
+    }
+  if (enabled_idx == -1)
+    return;
+
+  new_vec = rtvec_alloc (num_elem + 1);
+  for (i = 0; i < num_elem; i++)
+    RTVEC_ELT (new_vec, i) = RTVEC_ELT (vec, i);
+  val = rtx_alloc (IF_THEN_ELSE);
+  XEXP (val, 0) = rtx_alloc (EQ_ATTR);
+  XEXP (val, 1) = rtx_alloc (CONST_STRING);
+  XEXP (val, 2) = rtx_alloc (CONST_STRING);
+  XSTR (XEXP (val, 0), 0) = "nonce_enabled";
+  XSTR (XEXP (val, 0), 1) = "yes";
+  XSTR (XEXP (val, 1), 0) = "yes";
+  XSTR (XEXP (val, 2), 0) = "no";
+  set = rtx_alloc (SET);
+  SET_DEST (set) = rtx_alloc (ATTR);
+  XSTR (SET_DEST (set), 0) = "enabled";
+  SET_SRC (set) = modify_attr_enabled_ce (val);
+  RTVEC_ELT (new_vec, i) = set;
+  XVEC (insn, 4) = new_vec;
+}
+
 /* Adjust all of the operand numbers in SRC to match the shift they'll
    get from an operand displacement of DISP.  Return a pointer after the
    adjusted string.  */
@@ -943,9 +1095,7 @@ process_one_cond_exec (struct queue_elem *ce_elem)
       XSTR (insn, 2) = alter_test_for_insn (ce_elem, insn_elem);
       XTMPL (insn, 3) = alter_output_for_insn (ce_elem, insn_elem,
 					      alternatives, max_operand);
-
-      /* ??? Set `predicable' to false.  Not crucial since it's really
-         only used here, and we won't reprocess this new pattern.  */
+      alter_attrs_for_insn (insn);
 
       /* Put the new pattern on the `other' list so that it
 	 (a) is not reprocessed by other define_cond_exec patterns

@@ -1,5 +1,13 @@
 2011-06-21  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* gensupport.c (add_define_attr): New static function.
+	(is_predicable): Allow multi-alternative lists for the "predicable"
+	attribute.
+	(modify_attr_enabled_ce, alter_attrs_for_insn): New static functions.
+	(process_one_cond_exec): Call alter_attrs_for_insn.
+	* doc/md.texi (Defining Attributes): Mention some standard names.
+	(Conditional Execution): Update documentation for "predicable".
+
 	* doc/extend.texi (__builtin_clrsb, __builtin_clrsbl,
 	__builtin_clrsbll): Document.
 	* doc/rtl.texi (clrsb): New entry.
