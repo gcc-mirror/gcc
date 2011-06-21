@@ -1,3 +1,9 @@
+2011-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* shared-object.mk (c_flags-$o): Save c_flags.
+	($(base)$(objext)): Use it.
+	($(base)_s$(objext)): Likewise.
+
 2011-06-21  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* Makefile.in (lib2funcs): Add _clrsbsi2 and _clrsbdi2.
