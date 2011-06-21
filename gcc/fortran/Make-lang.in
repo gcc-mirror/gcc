@@ -171,9 +171,12 @@ check-fortran-subtargets : check-gfortran-subtargets
 lang_checks += check-gfortran
 lang_checks_parallelized += check-gfortran
 # For description see comment above check_gcc_parallelize in gcc/Makefile.in.
-check_gfortran_parallelize = dg.exp=gfortran.dg/\[a-cA-C\]* \
-			     dg.exp=gfortran.dg/\[d-mD-M\]* \
-			     dg.exp=gfortran.dg/\[n-zN-Z0-9\]*
+check_gfortran_parallelize = dg.exp=gfortran.dg/\[adAD\]* \
+			     dg.exp=gfortran.dg/\[bcBC\]* \
+			     dg.exp=gfortran.dg/\[nopNOP\]* \
+			     dg.exp=gfortran.dg/\[isuvISUV\]* \
+			     dg.exp=gfortran.dg/\[efhkqrxzEFHKQRXZ\]* \
+			     dg.exp=gfortran.dg/\[0-9gjlmtwyGJLMTWY\]*
 
 # GFORTRAN documentation.
 GFORTRAN_TEXI = \
