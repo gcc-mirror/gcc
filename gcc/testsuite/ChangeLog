@@ -1,3 +1,8 @@
+2011-06-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49112
+	* gfortran.dg/class_44.f03: New.
+
 2011-06-21  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49478
