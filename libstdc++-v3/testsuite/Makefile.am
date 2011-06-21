@@ -100,7 +100,7 @@ new-abi-baseline:
 	@test ! -f $*/site.exp || mv $*/site.exp $*/site.bak
 	@mv $*/site.exp.tmp $*/site.exp
 
-check_DEJAGNU_normal_targets = $(patsubst %,check-DEJAGNUnormal%,0 1 2 3)
+check_DEJAGNU_normal_targets = $(patsubst %,check-DEJAGNUnormal%,0 1 2 3 4 5 6 7 8 9)
 $(check_DEJAGNU_normal_targets): check-DEJAGNUnormal%: normal%/site.exp
 
 # Run the testsuite in normal mode.
@@ -109,22 +109,17 @@ check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
 	RANLIB="$(RANLIB)"; export RANLIB; \
 	if [ -z "$*$(filter-out --target_board=%, $(RUNTESTFLAGS))" ] \
 	    && [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
-	  $(MAKE) $(AM_MAKEFLAGS) check-DEJAGNUnormal0 check-DEJAGNUnormal1 \
-		  check-DEJAGNUnormal2 check-DEJAGNUnormal3; \
-	  for idx in 0 1 2 3; do \
+	  $(MAKE) $(AM_MAKEFLAGS) $(check_DEJAGNU_normal_targets); \
+	  for idx in 0 1 2 3 4 5 6 7 8 9; do \
 	    mv -f normal$$idx/libstdc++.sum normal$$idx/libstdc++.sum.sep; \
 	    mv -f normal$$idx/libstdc++.log normal$$idx/libstdc++.log.sep; \
 	  done; \
 	  mv -f libstdc++.sum libstdc++.sum.sep; \
 	  mv -f libstdc++.log libstdc++.log.sep; \
 	  $(SHELL) $(srcdir)/../../contrib/dg-extract-results.sh \
-	    libstdc++.sum.sep normal0/libstdc++.sum.sep \
-	    normal1/libstdc++.sum.sep normal2/libstdc++.sum.sep \
-	    normal3/libstdc++.sum.sep > libstdc++.sum; \
+	    libstdc++.sum.sep normal[0-9]/libstdc++.sum.sep > libstdc++.sum; \
 	  $(SHELL) $(srcdir)/../../contrib/dg-extract-results.sh -L \
-	    libstdc++.log.sep normal0/libstdc++.log.sep \
-	    normal1/libstdc++.log.sep normal2/libstdc++.log.sep \
-	    normal3/libstdc++.log.sep > libstdc++.log; \
+	    libstdc++.log.sep normal[0-9]/libstdc++.log.sep > libstdc++.log; \
 	  exit 0; \
 	fi; \
 	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
@@ -140,13 +135,25 @@ check-DEJAGNU $(check_DEJAGNU_normal_targets): check-DEJAGNU%: site.exp
 			$(RUNTESTFLAGS) abi.exp; \
 	    else echo "WARNING: could not find \`runtest'" 1>&2; :;\
 	    fi; \
-	    dirs="`cd $$srcdir; echo [013-9][0-9]_*/* [ab]* de* [ep]*/*`";; \
+	    dirs="`cd $$srcdir; echo [013-9][0-9]_*/*`";; \
 	  normal1) \
-	    dirs="`cd $$srcdir; echo 2[0-2]_*/*`";; \
+	    dirs="`cd $$srcdir; echo [ab]* de* [ep]*/*`";; \
 	  normal2) \
-	    dirs="`cd $$srcdir; echo 2[4-9]_*/*`";; \
+	    dirs="`cd $$srcdir; echo 2[01]_*/*`";; \
 	  normal3) \
-	    dirs="`cd $$srcdir; echo 23_*/* t*/*`";; \
+	    dirs="`cd $$srcdir; echo 22_*/*`";; \
+	  normal4) \
+	    dirs="`cd $$srcdir; echo 23_*/[a-km-tw-z]*`";; \
+	  normal5) \
+	    dirs="`cd $$srcdir; echo 23_*/[luv]*`";; \
+	  normal6) \
+	    dirs="`cd $$srcdir; echo 2[459]_*/*`";; \
+	  normal7) \
+	    dirs="`cd $$srcdir; echo 2[68]_*/*`";; \
+	  normal8) \
+	    dirs="`cd $$srcdir; echo 27_*/*`";; \
+	  normal9) \
+	    dirs="`cd $$srcdir; echo t*/*`";; \
 	esac; \
 	if [ -n "$*" ]; then cd "$*"; fi; \
 	if $(SHELL) -c "$$runtest --version" > /dev/null 2>&1; then \

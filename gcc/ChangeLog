@@ -1,4 +1,10 @@
-2011-06-20  Changpeng Fang <changpeng.fang@amd.com>
+2011-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (dg_target_exps): Set.
+	(check_gcc_parallelize): Parallelize gcc testing into 10 jobs
+	instead of 7, try to divide it more evenly.
+
+2011-06-20  Changpeng Fang  <changpeng.fang@amd.com>
 
         PR i386/49089
 	* config/i386/i386.c (avx256_split_unaligned_load): New definition.
