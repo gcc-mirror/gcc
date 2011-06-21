@@ -1,3 +1,80 @@
+2011-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/usegld.h: New file.
+	* config/sol2.h (PREFERRED_DEBUGGING_TYPE): Remove.
+	(CPP_SUBTARGET_SPEC): Remove -compat-bsd support.
+	(LIB_SPEC): Likewise.
+	Search /lib.
+	(LINK_ARCH32_SPEC_BASE): Remove -compat-bsd support.
+	(RDYNAMIC_SPEC): Handle GNU ld.
+	[HAVE_LD_EH_FRAME_HDR && TARGET_DL_ITERATE_PHDR] (LINK_EH_SPEC): Define.
+	(SUPPORTS_INIT_PRIORITY): Only disable for Sun ld.
+	(SUBTARGET_INSERT_ATTRIBUTES, SUBTARGET_ATTRIBUTE_TABLE): Define.
+	[!USE_GAS] (NO_DBX_BNSYM_ENSYM): Redefine.
+	(STACK_CHECK_STATIC_BUILTIN): Define.
+	* config/sol2.opt (compat-bsd): Remove.
+	* config/sol2-10.h (TARGET_C99_FUNCTIONS): Remove undef.
+	* config/sol2-bi.h: New file.
+	* config/sol2-gld.h: Remove.
+	* config/i386/sol2.h (TLS_COMMON_ASM_OP): Only define if !USE_GAS.
+	(NO_DBX_BNSYM_ENSYM): Remove.
+	(SUBTARGET_INSERT_ATTRIBUTES, SUBTARGET_ATTRIBUTE_TABLE): Remove.
+	(STACK_CHECK_STATIC_BUILTIN): Remove.
+	Test USE_GLD instead of TARGET_GNU_LD.
+	* config/i386/sol2-10.h: Rename to ...
+	* config/i386/sol2-bi.h .. this.
+	(SUBTARGET_EXTRA_SPECS): Redefine.
+	(WCHAR_TYPE, WCHAR_TYPE_SIZE, WINT_TYPE, WINT_TYPE_SIZE): Remove.
+	(MULTILIB_DEFAULTS): Remove.
+	(DEFAULT_ARCH32_P): Define.
+	(LINK_ARCH64_SPEC_BASE, LINK_ARCH64_SPEC): Remove.
+	(ARCH64_SUBDIR): Define.
+	Test USE_GLD instead of TARGET_GNU_LD.
+	(I386_EMULATION): Rename to ...
+	(ARCH32_EMULATION): ... this.
+	(X86_64_EMULATION): Rename to ...
+	(ARCH64_EMULATION): ... this.
+	(TARGET_LD_EMULATION): Remove.
+	(LINK_ARCH_SPEC): Remove.
+	* config/i386/sol2-gas.h: Remove.
+	* config/i386/t-sol2-10: Rename to ...
+	* config/i386/t-sol2-64: ... this.
+	* config/sparc/sol2.h (SPARC_DEFAULT_CMODEL): Redefine.
+	(AS_SPARC64_FLAG): Define.
+	(ASM_CPU32_DEFAULT_SPEC, ASM_CPU64_DEFAULT_SPEC): Redefine.
+	(CPP_CPU64_DEFAULT_SPEC, ASM_CPU32_DEFAULT_SPEC): Redefine
+	depending on TARGET_CPU_DEFAULT.
+	(CPP_CPU_SPEC): Redefine.
+	(ASM_CPU_SPEC): Handle DEFAULT_ARCH32_P.
+	(CPP_CPU_DEFAULT_SPEC, ASM_CPU_DEFAULT_SPEC): Redefine.
+	(CPP_ARCH32_SPEC, CPP_ARCH64_SPEC, CPP_ARCH_SPEC): Redefine.
+	(ASM_ARCH_SPEC, ASM_ARCH32_SPEC, ASM_ARCH64_SPEC,
+	ASM_ARCH_DEFAULT_SPEC): Redefine.
+	(SUBTARGET_EXTRA_SPECS): Add LINK_ARCH32_SPEC, LINK_ARCH64_SPEC,
+	LINK_ARCH_DEFAULT_SPEC.
+	[USE_GLD] (ARCH32_EMULATION, ARCH64_EMULATION): Define.
+	[USE_GLD] (LINK_ARCH32_SPEC, LINK_ARCH64_SPEC): Redefine.
+	(ARCH64_SUBDIR): Define.
+	(LINK_ARCH64_SPEC): Redefine.
+	(CC1_SPEC): Redefine.
+	(OPTION_DEFAULT_SPECS): Redefine.
+	(MULTILIB_DEFAULTS): Define.
+	(WCHAR_TYPE, WCHAR_TYPE_SIZE, WINT_TYPE, WINT_TYPE_SIZE): Redefine.
+	[USE_GAS && HAVE_AS_TLS] (TARGET_SUN_TLS, TARGET_GNU_TLS): Redefine.
+	[USE_GLD] (CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): Undef.
+	(NO_DBX_BNSYM_ENSYM): Remove.
+	(SUBTARGET_INSERT_ATTRIBUTES, SUBTARGET_ATTRIBUTE_TABLE): Remove.
+	(ASM_OUTPUT_ALIGN_WITH_NOP): Only define if !USE_GAS.
+	(TARGET_ASM_NAMED_SECTION): Likewise.
+	(STACK_CHECK_STATIC_BUILTIN): Remove.
+	* config/sparc/sol2-bi.h: Remove.
+	* config/sparc/sol2-gas-bi.h: Remove.
+	* config/sparc/sol2-gas.h: Remove.
+	* config/sparc/sol2-gld-bi.h: Remove.
+	* config.gcc (i[34567]86-*-solaris2*, sparc*-*-solaris2*): Move
+	common parts ...
+	(*-*-solaris2*): ... here.
+
 2011-06-21  Christian Bruel  <christian.bruel@st.com>
 	
 	PR other/43564

@@ -1,4 +1,4 @@
-/* Solaris 10 configuration.
+/* Definitions of target machine for GCC, for bi-arch Solaris 2/x86.
    Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
@@ -19,10 +19,17 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef ASM_COMMENT_START
-#define ASM_COMMENT_START "/"
+/* Override i386/sol2.h version: return 8-byte vectors in MMX registers if
+   possible, matching Sun Studio 12 Update 1+ compilers and other x86
+   targets.  */
+#undef TARGET_SUBTARGET_DEFAULT
+#define TARGET_SUBTARGET_DEFAULT \
+	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
 
-/* binutils' GNU as understands --32 and --64, but the native Solaris
+#define SUBTARGET_OPTIMIZATION_OPTIONS				\
+  { OPT_LEVELS_1_PLUS, OPT_momit_leaf_frame_pointer, NULL, 1 }
+
+/* GNU as understands --32 and --64, but the native Solaris
    assembler requires -xarch=generic or -xarch=generic64 instead.  */
 #undef ASM_SPEC
 #ifdef USE_GAS
@@ -32,6 +39,29 @@ along with GCC; see the file COPYING3.  If not see
 		 "%{m32:-xarch=generic} %{m64:-xarch=generic64} " \
 		 "-s %(asm_cpu)"
 #endif
+
+/* We do not need to search a special directory for startup files.  */
+#undef MD_STARTFILE_PREFIX
+
+/* No 64-bit default configurations.  */
+#define DEFAULT_ARCH32_P 1
+
+#define ARCH64_SUBDIR "amd64"
+
+#ifdef USE_GLD
+/* Since binutils 2.21, GNU ld supports new *_sol2 emulations to strictly
+   follow the Solaris 2 ABI.  Prefer them if present.  */
+#ifdef HAVE_LD_SOL2_EMULATION
+#define ARCH32_EMULATION "elf_i386_sol2"
+#define ARCH64_EMULATION "elf_x86_64_sol2"
+#else
+#define ARCH32_EMULATION "elf_i386"
+#define ARCH64_EMULATION "elf_x86_64"
+#endif
+#endif
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "/"
 
 /* The native Solaris assembler can't calculate the difference between
    symbols in different sections, which causes problems for -fPIC jump
@@ -64,72 +94,10 @@ along with GCC; see the file COPYING3.  If not see
     }									\
   while  (0)
 
+#define USE_IX86_FRAME_POINTER 1
+#define USE_X86_64_FRAME_POINTER 1
+
 #undef NO_PROFILE_COUNTERS
 
 #undef MCOUNT_NAME
 #define MCOUNT_NAME "_mcount"
-
-#undef WCHAR_TYPE
-#define WCHAR_TYPE (TARGET_64BIT ? "int" : "long int")
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE 32
-
-#undef WINT_TYPE
-#define WINT_TYPE (TARGET_64BIT ? "int" : "long int")
-#undef WINT_TYPE_SIZE
-#define WINT_TYPE_SIZE 32
-
-#define USE_IX86_FRAME_POINTER 1
-#define USE_X86_64_FRAME_POINTER 1
-
-/* Override i386/sol2.h version: return 8-byte vectors in MMX registers if
-   possible, matching Sun Studio 12 Update 1+ compilers and other x86
-   targets.  */
-#undef TARGET_SUBTARGET_DEFAULT
-#define TARGET_SUBTARGET_DEFAULT \
-	(MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
-
-#define SUBTARGET_OPTIMIZATION_OPTIONS				\
-  { OPT_LEVELS_1_PLUS, OPT_momit_leaf_frame_pointer, NULL, 1 }
-
-#define MULTILIB_DEFAULTS { "m32" }
-
-#undef LINK_ARCH64_SPEC_BASE
-#define LINK_ARCH64_SPEC_BASE \
-  "%{G:-G} \
-   %{YP,*} \
-   %{R*} \
-   %{compat-bsd: \
-     %{!YP,*:%{p|pg:-Y P,/usr/ucblib/64:/usr/lib/libp/64:/lib/64:/usr/lib/64} \
-             %{!p:%{!pg:-Y P,/usr/ucblib/64:/lib:/usr/lib/64}}} \
-             -R /usr/ucblib/64} \
-   %{!compat-bsd: \
-     %{!YP,*:%{p|pg:-Y P,/usr/lib/libp/64:/lib/64:/usr/lib/64} \
-             %{!p:%{!pg:-Y P,/lib/64:/usr/lib/64}}}}"
-
-#undef LINK_ARCH64_SPEC
-#define LINK_ARCH64_SPEC LINK_ARCH64_SPEC_BASE
-
-#ifdef TARGET_GNU_LD
-/* Since binutils 2.21, GNU ld supports new *_sol2 emulations to strictly
-   follow the Solaris 2 ABI.  Prefer them if present.  */
-#ifdef HAVE_LD_SOL2_EMULATION
-#define I386_EMULATION "elf_i386_sol2"
-#define X86_64_EMULATION "elf_x86_64_sol2"
-#else
-#define I386_EMULATION "elf_i386"
-#define X86_64_EMULATION "elf_x86_64"
-#endif
-
-#define TARGET_LD_EMULATION "%{m64:-m " X86_64_EMULATION "}" \
-			    "%{!m64:-m " I386_EMULATION "} "
-#else
-#define TARGET_LD_EMULATION ""
-#endif
-
-#undef LINK_ARCH_SPEC
-#define LINK_ARCH_SPEC TARGET_LD_EMULATION \
-		       "%{m64:" LINK_ARCH64_SPEC "}%{!m64:" LINK_ARCH32_SPEC "}"
-
-/* We do not need to search a special directory for startup files.  */
-#undef MD_STARTFILE_PREFIX
