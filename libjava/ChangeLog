@@ -1,3 +1,8 @@
+2011-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcj/49314
+	* gnu/gcj/convert/natIconv.cc (iconv_init): Pad in[] with NUL byte.
+
 2011-06-17  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/49461
