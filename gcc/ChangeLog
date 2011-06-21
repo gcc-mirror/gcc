@@ -1,3 +1,8 @@
+2011-06-21  Richard Guenther  <rguenther@suse.de>
+
+	* ipa-inline-transform.c (inline_transform): Fix previous
+	change.
+
 2011-06-21  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49478
