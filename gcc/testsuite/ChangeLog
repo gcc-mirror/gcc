@@ -376,14 +376,14 @@
 
 2011-06-10  Janis Johnson  <janisjo@codesourcery.com>
 
-	* gcc/testsuite/gcc.target/arm/20090811-1.c: Skip for incompatible
+	* gcc.target/arm/20090811-1.c: Skip for incompatible
 	options, do not override other options.
-	* gcc/testsuite/gcc.target/arm/combine-cmp-shift.c: Skip for
+	* gcc.target/arm/combine-cmp-shift.c: Skip for
 	incompatible options.
-	* gcc/testsuite/gcc.target/arm/pr45094.c: Likewise.
-	* gcc/testsuite/gcc.target/arm/scd42-1.c: Likewise.
-	* gcc/testsuite/gcc.target/arm/scd42-3.c: Likewise.
-	* gcc/testsuite/gcc.target/arm/thumb-ltu.c: Likewise.
+	* gcc.target/arm/pr45094.c: Likewise.
+	* gcc.target/arm/scd42-1.c: Likewise.
+	* gcc.target/arm/scd42-3.c: Likewise.
+	* gcc.target/arm/thumb-ltu.c: Likewise.
 
 	* lib/target-supports.exp
 	(check_effective_target_arm_neon_fp16_ok_nocache): Return 0 if
@@ -478,7 +478,7 @@
 
 2011-06-09  David Li  <davidxl@google.com>
 
-	* testsuite/gcc.dg/dump-pass.c: New test.
+	* gcc.dg/dump-pass.c: New test.
 
 2011-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -665,18 +665,17 @@
 
 2011-06-07  Xinliang David Li  <davidxl@google.com>
 
-	* testsuite/gcc.dg/inline_2.c: New test.
-	* testsuite/gcc.dg/unroll_2.c: New test.
-	* testsuite/gcc.dg/inline_3.c: New test.
-	* testsuite/gcc.dg/unroll_3.c: New test.
-	* testsuite/gcc.dg/inline_4.c: New test.
-	* testsuite/gcc.dg/unroll_4.c: New test.
-	* testsuite/gcc.dg/inline_1.c: New test.
-	* testsuite/gcc.dg/unroll_1.c: New test.
+	* gcc.dg/inline_2.c: New test.
+	* gcc.dg/unroll_2.c: New test.
+	* gcc.dg/inline_3.c: New test.
+	* gcc.dg/unroll_3.c: New test.
+	* gcc.dg/inline_4.c: New test.
+	* gcc.dg/unroll_4.c: New test.
+	* gcc.dg/inline_1.c: New test.
+	* gcc.dg/unroll_1.c: New test.
 
 2011-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	gcc/testsuite:
 	PR tree-optimization/48497
 	* lib/gcc-defs.exp (dg-additional-options): New proc.
 	* gfortran.dg/graphite/vect-pr40979.f90: Use dg-additional-options
@@ -1215,7 +1214,7 @@
 
 2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-	* testsuite/g++.dg/warn/delete-non-virtual-dtor.C: New.
+	* g++.dg/warn/delete-non-virtual-dtor.C: New.
 
 2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -1339,24 +1338,24 @@
 
 2011-06-01  David Li  <davidxl@google.com>
 
-	* testsuite/gcc.dg/profile-dir-1.c: Change pass name.
-	* testsuite/gcc.dg/profile-dir-2.c: Ditto.
-	* testsuite/gcc.dg/tree-ssa/dump-1.c: Ditto.
-	* testsuite/gcc.dg/tree-ssa/loop-25.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/stringop-1.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/update-loopch.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/stringop-2.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/ic-misattribution-1.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/ic-misattribution-1a.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/indir-call-prof.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-1.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-2.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-3.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-4.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-5.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-7.c: Ditto.
-	* testsuite/gcc.dg/profile-dir-3.c: Ditto.
-	* testsuite/g++.dg/tree-prof/indir-call-prof.C: Ditto.
+	* gcc.dg/profile-dir-1.c: Change pass name.
+	* gcc.dg/profile-dir-2.c: Ditto.
+	* gcc.dg/tree-ssa/dump-1.c: Ditto.
+	* gcc.dg/tree-ssa/loop-25.c: Ditto.
+	* gcc.dg/tree-prof/stringop-1.c: Ditto.
+	* gcc.dg/tree-prof/update-loopch.c: Ditto.
+	* gcc.dg/tree-prof/stringop-2.c: Ditto.
+	* gcc.dg/tree-prof/ic-misattribution-1.c: Ditto.
+	* gcc.dg/tree-prof/ic-misattribution-1a.c: Ditto.
+	* gcc.dg/tree-prof/indir-call-prof.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-1.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-2.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-3.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-4.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-5.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-7.c: Ditto.
+	* gcc.dg/profile-dir-3.c: Ditto.
+	* g++.dg/tree-prof/indir-call-prof.C: Ditto.
 
 2011-06-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
@@ -1573,7 +1572,7 @@
 2011-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42056
-	* testsuite/g++.dg/cpp0x/auto25.C: New.
+	* g++.dg/cpp0x/auto25.C: New.
 
 2011-05-27  Richard Guenther  <rguenther@suse.de>
 
@@ -2756,8 +2755,8 @@
 
 2011-04-28  Xinliang David Li  <davidxl@google.com>
 
-	* testsuite/gcc.dg/tree-prof/prof-robust-1.c: New test.
-	* testsuite/g++.dg/prof-robust-1.C: New test.
+	* gcc.dg/tree-prof/prof-robust-1.c: New test.
+	* g++.dg/prof-robust-1.C: New test.
 
 2011-04-28  Ira Rosen  <ira.rosen@linaro.org>
 
@@ -4308,11 +4307,11 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/sfinae6.C: New.
-	* gcc/testsuite/g++.dg/cpp0x/initlist38.C: Adjust expected error.
-	* gcc/testsuite/g++.dg/cpp0x/pr45908.C: Likewise.
-	* gcc/testsuite/g++.dg/cpp0x/sfinae6.C: Likewise.
-	* gcc/testsuite/g++.old-deja/g++.jason/conversion11.C: Likewise.
-	* gcc/testsuite/g++.old-deja/g++.law/arg11.C: Likewise.
+	* g++.dg/cpp0x/initlist38.C: Adjust expected error.
+	* g++.dg/cpp0x/pr45908.C: Likewise.
+	* g++.dg/cpp0x/sfinae6.C: Likewise.
+	* g++.old-deja/g++.jason/conversion11.C: Likewise.
+	* g++.old-deja/g++.law/arg11.C: Likewise.
 
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
@@ -6837,8 +6836,8 @@
 
 	PR lto/45721
 	PR lto/45375
-	* testsuite/gcc.dg/lto/pr45721_1.c: New file.
-	* testsuite/gcc.dg/lto/pr45721_0.c: New file.
+	* gcc.dg/lto/pr45721_1.c: New file.
+	* gcc.dg/lto/pr45721_0.c: New file.
 
 2011-01-11  Richard Guenther  <rguenther@suse.de>
 
@@ -7134,8 +7133,8 @@
 
 2011-01-06  Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/gcc.dg/lto/pr47188_0.c: New testcase.
-	* testsuite/gcc.dg/lto/pr47188_1.c: New testcase.
+	* gcc.dg/lto/pr47188_0.c: New testcase.
+	* gcc.dg/lto/pr47188_1.c: New testcase.
 
 2011-01-06  Daniel Franke  <franke.daniel@gmail.com>
 
