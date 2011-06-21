@@ -10,6 +10,7 @@
 	* gcc.dg/inline_3.c: Likewise.
 	* gcc.dg/inline_4.c: Likewise.
 	* gcc.dg/20051201-1.c: Likewise.
+	* gcc.dg/pr40087.c: Likewise.
 	* gcc.dg/torture/pta-structcopy-1.c: Likewise.
 	* gcc.dg/inline-22.c: Likewise.
 	* gcc.dg/lto/20090218-1_0.c: Set inline keyword.
