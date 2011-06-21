@@ -1,3 +1,9 @@
+2011-06-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49483
+	* tree-vect-stmts.c (vectorizable_assignment): Also handle
+	VIEW_CONVERT_EXPR conversions.
+
 2011-06-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/avr/avr-mcus.def, config/avr/genopt.sh: New files.
