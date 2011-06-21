@@ -6745,6 +6745,14 @@ by the target machine.  It looks like:
 @end smallexample
 
 @var{name} is a string specifying the name of the attribute being defined.
+Some attributes are used in a special way by the rest of the compiler. The
+@code{enabled} attribute can be used to conditionally enable or disable
+insn alternatives (@pxref{Disable Insn Alternatives}). The @code{predicable}
+attribute, together with a suitable @code{define_cond_exec}
+(@pxref{Conditional Execution}), can be used to automatically generate
+conditional variants of instruction patterns. The compiler internally uses
+the names @code{ce_enabled} and @code{nonce_enabled}, so they should not be
+used elsewhere as alternative names.
 
 @var{list-of-values} is either a string that specifies a comma-separated
 list of values that can be assigned to the attribute, or a null string to
@@ -7954,11 +7962,14 @@ if the current insn is predicated, and will otherwise be @code{NULL}.
 
 When @code{define_cond_exec} is used, an implicit reference to
 the @code{predicable} instruction attribute is made.
-@xref{Insn Attributes}.  This attribute must be boolean (i.e.@: have
-exactly two elements in its @var{list-of-values}).  Further, it must
-not be used with complex expressions.  That is, the default and all
-uses in the insns must be a simple constant, not dependent on the
-alternative or anything else.
+@xref{Insn Attributes}.  This attribute must be a boolean (i.e.@: have
+exactly two elements in its @var{list-of-values}), with the possible
+values being @code{no} and @code{yes}.  The default and all uses in
+the insns must be a simple constant, not a complex expressions.  It
+may, however, depend on the alternative, by using a comma-separated
+list of values.  If that is the case, the port should also define an
+@code{enabled} attribute (@pxref{Disable Insn Alternatives}), which
+should also allow only @code{no} and @code{yes} as its values.
 
 For each @code{define_insn} for which the @code{predicable}
 attribute is true, a new @code{define_insn} pattern will be
