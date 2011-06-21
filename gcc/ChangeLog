@@ -66,7 +66,6 @@
 
 	* regrename.c (do_replace): Don't update notes.
 
->>>>>>> .r175238
 2011-06-20  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (create_TOC_reference): Wrap high part
