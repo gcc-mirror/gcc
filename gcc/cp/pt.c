@@ -5916,6 +5916,28 @@ template_template_parm_bindings_ok_p (tree tparms, tree targs)
   return ret;
 }
 
+/* Since type attributes aren't mangled, we need to strip them from
+   template type arguments.  */
+
+static tree
+canonicalize_type_argument (tree arg, tsubst_flags_t complain)
+{
+  tree mv;
+  if (!arg || arg == error_mark_node || arg == TYPE_CANONICAL (arg))
+    return arg;
+  mv = TYPE_MAIN_VARIANT (arg);
+  arg = strip_typedefs (arg);
+  if (TYPE_ALIGN (arg) != TYPE_ALIGN (mv)
+      || TYPE_ATTRIBUTES (arg) != TYPE_ATTRIBUTES (mv))
+    {
+      if (complain & tf_warning)
+	warning (0, "ignoring attributes on template argument %qT", arg);
+      arg = build_aligned_type (arg, TYPE_ALIGN (mv));
+      arg = cp_build_type_attribute_variant (arg, TYPE_ATTRIBUTES (mv));
+    }
+  return arg;
+}
+
 /* Convert the indicated template ARG as necessary to match the
    indicated template PARM.  Returns the converted ARG, or
    error_mark_node if the conversion was unsuccessful.  Error and
@@ -6092,7 +6114,7 @@ convert_template_argument (tree parm,
 	 the typedef, which is confusing if those future uses do not
 	 themselves also use the typedef.  */
       if (TYPE_P (val))
-	val = strip_typedefs (val);
+	val = canonicalize_type_argument (val, complain);
     }
   else
     {
@@ -6136,8 +6158,9 @@ convert_template_argument (tree parm,
       if (TREE_CODE (val) == SCOPE_REF)
 	{
 	  /* Strip typedefs from the SCOPE_REF.  */
-	  tree type = strip_typedefs (TREE_TYPE (val));
-	  tree scope = strip_typedefs (TREE_OPERAND (val, 0));
+	  tree type = canonicalize_type_argument (TREE_TYPE (val), complain);
+	  tree scope = canonicalize_type_argument (TREE_OPERAND (val, 0),
+						   complain);
 	  val = build_qualified_name (type, scope, TREE_OPERAND (val, 1),
 				      QUALIFIED_NAME_IS_TEMPLATE (val));
 	}
@@ -15479,7 +15502,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	    return 1;
 
 	  /* Strip typedefs as in convert_template_argument.  */
-	  arg = strip_typedefs (arg);
+	  arg = canonicalize_type_argument (arg, tf_none);
 	}
 
       /* If ARG is a parameter pack or an expansion, we cannot unify

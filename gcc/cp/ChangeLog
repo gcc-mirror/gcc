@@ -1,5 +1,9 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48138
+	* pt.c (canonicalize_type_argument): New.
+	(convert_template_argument, unify): Use it.
+
 	PR c++/47080
 	* call.c (rejection_reason_code): Add rr_explicit_conversion.
 	(print_z_candidate): Handle it.
