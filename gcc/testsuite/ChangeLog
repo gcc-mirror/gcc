@@ -1,3 +1,10 @@
+2011-06-21  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR testsuite/49443
+	* gcc.dg/vect/vect-peel-3.c: Expect to fail on vect_no_align
+	targets.
+	* gcc.dg/vect/vect-peel-4.c: Likewise.
+
 2011-06-22  Christian Bruel  <christian.bruel@st.com>
 	
 	PR middle-end/49139
