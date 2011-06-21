@@ -1,3 +1,12 @@
+2011-06-21  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/33049
+	* config/avr/avr.md (extzv): New expander.
+	(*extzv): New insn.
+	(*extzv.qihi1, *extzv.qihi2): New insn-and-split.
+	* config/avr/constraints.md (C04): New constraint.
+	* doc/md.texi (Machine Constraints): Document it.
+
 2011-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49489
