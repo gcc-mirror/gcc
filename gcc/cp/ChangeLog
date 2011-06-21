@@ -1,5 +1,12 @@
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49216
+	* init.c (build_vec_init): Don't try to use a CONSTRUCTOR when
+	base is a pointer.
+	* typeck2.c (process_init_constructor_array): Use {} for classes,
+	too.
+	* call.c (convert_like_real): Handle substitution failure.
+
 	PR c++/48138
 	* pt.c (canonicalize_type_argument): New.
 	(convert_template_argument, unify): Use it.

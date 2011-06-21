@@ -5621,7 +5621,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    expr = build_cplus_new (totype, expr, complain);
 
 	    /* Remember that this was list-initialization.  */
-	    if (convs->check_narrowing)
+	    if (convs->check_narrowing && expr != error_mark_node)
 	      TARGET_EXPR_LIST_INIT_P (expr) = true;
 	  }
 
