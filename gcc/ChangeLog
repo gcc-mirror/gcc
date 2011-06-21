@@ -1,3 +1,16 @@
+2011-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/49489
+	* builtins.c (expand_builtin_unop): Call expand_unop with 0 as
+	unsignedp argument instead of 1 for clrsb_optab.
+	(fold_builtin_bitop): Fix masking for width > HOST_BITS_PER_WIDE_INT
+	and < 2 * HOST_BITS_PER_WIDE_INT.  Optimize BUILT_IN_CLRSB*.
+	(fold_builtin_1): Call fold_builtin_binop for BUILT_IN_CLRSB*.
+	* optabs.c (widen_leading): Call widen_operand and expand_unop
+	with 0 as unsignedp argument instead of 1 for clrsb_optab.
+	(expand_unop): Subtract difference of mode sizes also for
+	clrsb_optab.
+
 2011-06-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (*jcindirect_jump): Fix build warning.

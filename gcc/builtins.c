@@ -4578,7 +4578,7 @@ expand_builtin_unop (enum machine_mode target_mode, tree exp, rtx target,
   /* Compute op, into TARGET if possible.
      Set TARGET to wherever the result comes back.  */
   target = expand_unop (TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (exp, 0))),
-			op_optab, op0, target, 1);
+			op_optab, op0, target, op_optab != clrsb_optab);
   gcc_assert (target);
 
   return convert_to_mode (target_mode, target, 0);
@@ -7265,7 +7265,8 @@ fold_builtin_bitop (tree fndecl, tree arg)
 	{
 	  hi = TREE_INT_CST_HIGH (arg);
 	  if (width < 2 * HOST_BITS_PER_WIDE_INT)
-	    hi &= ~((HOST_WIDE_INT) (-1) >> (width - HOST_BITS_PER_WIDE_INT));
+	    hi &= ~((unsigned HOST_WIDE_INT) (-1)
+		    << (width - HOST_BITS_PER_WIDE_INT));
 	}
       else
 	{
@@ -7301,6 +7302,26 @@ fold_builtin_bitop (tree fndecl, tree arg)
 	    result = HOST_BITS_PER_WIDE_INT + ctz_hwi (hi);
 	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
 	    result = width;
+	  break;
+
+	CASE_INT_FN (BUILT_IN_CLRSB):
+	  if (width > HOST_BITS_PER_WIDE_INT
+	      && (hi & ((unsigned HOST_WIDE_INT) 1
+			<< (width - HOST_BITS_PER_WIDE_INT - 1))) != 0)
+	    {
+	      hi = ~hi & ~((unsigned HOST_WIDE_INT) (-1)
+			   << (width - HOST_BITS_PER_WIDE_INT - 1));
+	      lo = ~lo;
+	    }
+	  else if (width <= HOST_BITS_PER_WIDE_INT
+		   && (lo & ((unsigned HOST_WIDE_INT) 1 << (width - 1))) != 0)
+	    lo = ~lo & ~((unsigned HOST_WIDE_INT) (-1) << (width - 1));
+	  if (hi != 0)
+	    result = width - floor_log2 (hi) - 2 - HOST_BITS_PER_WIDE_INT;
+	  else if (lo != 0)
+	    result = width - floor_log2 (lo) - 2;
+	  else
+	    result = width - 1;
 	  break;
 
 	CASE_INT_FN (BUILT_IN_POPCOUNT):
@@ -9737,6 +9758,7 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
     CASE_INT_FN (BUILT_IN_FFS):
     CASE_INT_FN (BUILT_IN_CLZ):
     CASE_INT_FN (BUILT_IN_CTZ):
+    CASE_INT_FN (BUILT_IN_CLRSB):
     CASE_INT_FN (BUILT_IN_POPCOUNT):
     CASE_INT_FN (BUILT_IN_PARITY):
       return fold_builtin_bitop (fndecl, arg0);

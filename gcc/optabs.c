@@ -1,7 +1,7 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2350,8 +2350,10 @@ widen_leading (enum machine_mode mode, rtx op0, rtx target, optab unoptab)
 
 	      if (target == 0)
 		target = gen_reg_rtx (mode);
-	      xop0 = widen_operand (op0, wider_mode, mode, true, false);
-	      temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX, true);
+	      xop0 = widen_operand (op0, wider_mode, mode,
+				    unoptab != clrsb_optab, false);
+	      temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX,
+				  unoptab != clrsb_optab);
 	      if (temp != 0)
 		temp = expand_binop (wider_mode, sub_optab, temp,
 				     GEN_INT (GET_MODE_BITSIZE (wider_mode)
@@ -3075,8 +3077,9 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 				  unsignedp);
 
 	      /* If we are generating clz using wider mode, adjust the
-		 result.  */
-	      if (unoptab == clz_optab && temp != 0)
+		 result.  Similarly for clrsb.  */
+	      if ((unoptab == clz_optab || unoptab == clrsb_optab)
+		  && temp != 0)
 		temp = expand_binop (wider_mode, sub_optab, temp,
 				     GEN_INT (GET_MODE_BITSIZE (wider_mode)
 					      - GET_MODE_BITSIZE (mode)),
