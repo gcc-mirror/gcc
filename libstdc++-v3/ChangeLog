@@ -1,3 +1,11 @@
+2011-06-22  Daniel Krugler  <daniel.kruegler@googlemail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (__is_nothrow_swappable): Add.
+	(swap(_Tp(&)[_Nm], _Tp(&)[_Nm])): Use noexcept.
+	* include/bits/algorithmfwd.h: Adjust.
+	* testsuite/25_algorithms/swap/noexcept.cc: New.
+
 2011-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/Makefile.am (check_DEJAGNU_normal_targets): Add
