@@ -1,3 +1,7 @@
+2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-common.c: Add sync_ or SYNC__ to builtin names.
+	* c-omp.c: Add sync_ or SYNC__ to builtin names.
 
 2011-06-20  Pierre Vittet  <piervit@pvittet.com>
 

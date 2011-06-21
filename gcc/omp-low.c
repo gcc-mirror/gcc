@@ -4973,23 +4973,23 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
     {
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
-      base = BUILT_IN_FETCH_AND_ADD_N;
+      base = BUILT_IN_SYNC_FETCH_AND_ADD_N;
       optab = sync_add_optab;
       break;
     case MINUS_EXPR:
-      base = BUILT_IN_FETCH_AND_SUB_N;
+      base = BUILT_IN_SYNC_FETCH_AND_SUB_N;
       optab = sync_add_optab;
       break;
     case BIT_AND_EXPR:
-      base = BUILT_IN_FETCH_AND_AND_N;
+      base = BUILT_IN_SYNC_FETCH_AND_AND_N;
       optab = sync_and_optab;
       break;
     case BIT_IOR_EXPR:
-      base = BUILT_IN_FETCH_AND_OR_N;
+      base = BUILT_IN_SYNC_FETCH_AND_OR_N;
       optab = sync_ior_optab;
       break;
     case BIT_XOR_EXPR:
-      base = BUILT_IN_FETCH_AND_XOR_N;
+      base = BUILT_IN_SYNC_FETCH_AND_XOR_N;
       optab = sync_xor_optab;
       break;
     default:
@@ -5057,7 +5057,7 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   gimple phi, stmt;
   edge e;
 
-  cmpxchg = built_in_decls[BUILT_IN_VAL_COMPARE_AND_SWAP_N + index + 1];
+  cmpxchg = built_in_decls[BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N + index + 1];
   if (cmpxchg == NULL_TREE)
     return false;
   type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (addr)));

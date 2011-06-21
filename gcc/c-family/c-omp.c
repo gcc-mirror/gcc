@@ -169,7 +169,7 @@ c_finish_omp_flush (location_t loc)
 {
   tree x;
 
-  x = built_in_decls[BUILT_IN_SYNCHRONIZE];
+  x = built_in_decls[BUILT_IN_SYNC_SYNCHRONIZE];
   x = build_call_expr_loc (loc, x, 0);
   add_stmt (x);
 }
