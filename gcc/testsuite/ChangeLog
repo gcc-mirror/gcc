@@ -1,5 +1,8 @@
 2011-06-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49482
+	* g++.dg/cpp0x/lambda/lambda-warn3.C: New.
+
 	PR c++/49418
 	* g++.dg/template/param3.C: New.
 
