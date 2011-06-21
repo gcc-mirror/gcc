@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wuninitialized -O2" } */
+/* { dg-options "-Wuninitialized -Wno-attributes -O2" } */
 
 int g;
 int bar();

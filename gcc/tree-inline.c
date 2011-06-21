@@ -3192,7 +3192,7 @@ tree_inlinable_function_p (tree fn)
 	 As a bonus we can now give more details about the reason why a
 	 function is not inlinable.  */
       if (always_inline)
-	sorry (inline_forbidden_reason, fn);
+	error (inline_forbidden_reason, fn);
       else if (do_warning)
 	warning (OPT_Winline, inline_forbidden_reason, fn);
 
@@ -3742,11 +3742,13 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn))
 	  /* Avoid warnings during early inline pass. */
-	  && cgraph_global_info_ready)
+	  && cgraph_global_info_ready
+	  /* PR 20090218-1_0.c. Body can be provided by another module. */
+	  && (reason != CIF_BODY_NOT_AVAILABLE || !flag_generate_lto))
 	{
-	  sorry ("inlining failed in call to %q+F: %s", fn,
-		 _(cgraph_inline_failed_string (reason)));
-	  sorry ("called from here");
+	  error ("inlining failed in call to always_inline %q+F: %s", fn,
+		 cgraph_inline_failed_string (reason));
+	  error ("called from here");
 	}
       else if (warn_inline
 	       && DECL_DECLARED_INLINE_P (fn)

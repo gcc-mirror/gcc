@@ -4,6 +4,6 @@ int main(void)
 }
 static void  __attribute__ ((noinline)) get_mem_attrs () {
 }
-void  __attribute__ ((always_inline)) set_mem_alias_set () {
+void  inline __attribute__ ((always_inline)) set_mem_alias_set () {
   get_mem_attrs ();
 }
