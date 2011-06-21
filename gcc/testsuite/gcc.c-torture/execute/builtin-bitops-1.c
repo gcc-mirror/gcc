@@ -62,6 +62,16 @@ int my_clz##suffix(type x) {						\
     return i;								\
 }									\
 									\
+int my_clrsb##suffix(type x) {						\
+    int i;								\
+    int leading = (x >> CHAR_BIT * sizeof (type) - 1) & 1;		\
+    for (i = 1; i < CHAR_BIT * sizeof (type); i++)			\
+	if (((x >> ((CHAR_BIT * sizeof (type)) - i - 1)) & 1)		\
+	    != leading)							\
+	    break;							\
+    return i - 1;							\
+}									\
+									\
 int my_popcount##suffix(type x) {					\
     int i;								\
     int count = 0;							\
@@ -176,6 +186,8 @@ main (void)
       if (ints[i] != 0
 	  && __builtin_ctz (ints[i]) != my_ctz (ints[i]))
 	abort ();
+      if (__builtin_clrsb (ints[i]) != my_clrsb (ints[i]))
+	abort ();
       if (__builtin_popcount (ints[i]) != my_popcount (ints[i]))
 	abort ();
       if (__builtin_parity (ints[i]) != my_parity (ints[i]))
@@ -191,6 +203,8 @@ main (void)
 	abort ();
       if (longs[i] != 0
 	  && __builtin_ctzl (longs[i]) != my_ctzl (longs[i]))
+	abort ();
+      if (__builtin_clrsbl (longs[i]) != my_clrsbl (longs[i]))
 	abort ();
       if (__builtin_popcountl (longs[i]) != my_popcountl (longs[i]))
 	abort ();
@@ -208,6 +222,8 @@ main (void)
       if (longlongs[i] != 0
 	  && __builtin_ctzll (longlongs[i]) != my_ctzll (longlongs[i]))
 	abort ();
+      if (__builtin_clrsbll (longlongs[i]) != my_clrsbll (longlongs[i]))
+	abort ();
       if (__builtin_popcountll (longlongs[i]) != my_popcountll (longlongs[i]))
 	abort ();
       if (__builtin_parityll (longlongs[i]) != my_parityll (longlongs[i]))
@@ -222,6 +238,8 @@ main (void)
   if (x != 0 && __builtin_clz##suffix (x) != my_clz##suffix (x))	\
     abort ();								\
   if (x != 0 && __builtin_ctz##suffix (x) != my_ctz##suffix (x))	\
+    abort ();								\
+  if (__builtin_clrsb##suffix (x) != my_clrsb##suffix (x))		\
     abort ();								\
   if (__builtin_popcount##suffix (x) != my_popcount##suffix (x))	\
     abort ();								\

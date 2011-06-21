@@ -7828,6 +7828,12 @@ Returns the number of trailing 0-bits in @var{x}, starting at the least
 significant bit position.  If @var{x} is 0, the result is undefined.
 @end deftypefn
 
+@deftypefn {Built-in Function} int __builtin_clrsb (int x)
+Returns the number of leading redundant sign bits in @var{x}, i.e. the
+number of bits following the most significant bit which are identical
+to it.  There are no special cases for 0 or other values. 
+@end deftypefn
+
 @deftypefn {Built-in Function} int __builtin_popcount (unsigned int x)
 Returns the number of 1-bits in @var{x}.
 @end deftypefn
@@ -7850,6 +7856,11 @@ Similar to @code{__builtin_clz}, except the argument type is
 @deftypefn {Built-in Function} int __builtin_ctzl (unsigned long)
 Similar to @code{__builtin_ctz}, except the argument type is
 @code{unsigned long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_clrsbl (long)
+Similar to @code{__builtin_clrsb}, except the argument type is
+@code{long}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_popcountl (unsigned long)
@@ -7875,6 +7886,11 @@ Similar to @code{__builtin_clz}, except the argument type is
 @deftypefn {Built-in Function} int __builtin_ctzll (unsigned long long)
 Similar to @code{__builtin_ctz}, except the argument type is
 @code{unsigned long long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_clrsbll (long long)
+Similar to @code{__builtin_clrsb}, except the argument type is
+@code{long long}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_popcountll (unsigned long long)

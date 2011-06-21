@@ -1,3 +1,8 @@
+2011-06-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* Makefile.in (lib2funcs): Add _clrsbsi2 and _clrsbdi2.
+	* libgcc-std.ver.in (GCC_4.7.0): New section.
+
 2011-06-16  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/49313

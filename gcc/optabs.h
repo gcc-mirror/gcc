@@ -220,6 +220,7 @@ enum optab_index
   OTI_ffs,
   OTI_clz,
   OTI_ctz,
+  OTI_clrsb,
   OTI_popcount,
   OTI_parity,
   /* Square root */
@@ -456,6 +457,7 @@ enum optab_index
 #define ffs_optab (&optab_table[OTI_ffs])
 #define clz_optab (&optab_table[OTI_clz])
 #define ctz_optab (&optab_table[OTI_ctz])
+#define clrsb_optab (&optab_table[OTI_clrsb])
 #define popcount_optab (&optab_table[OTI_popcount])
 #define parity_optab (&optab_table[OTI_parity])
 #define sqrt_optab (&optab_table[OTI_sqrt])

@@ -1,3 +1,31 @@
+2011-06-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* doc/extend.texi (__builtin_clrsb, __builtin_clrsbl,
+	__builtin_clrsbll): Document.
+	* doc/rtl.texi (clrsb): New entry.
+	* optabs.c (widen_leading): Renamed from widen_clz.  New argument
+	UNOPTAB.  All callers changed.  Use UNOPTAB instead of clz_optab.
+	(expand_unop): Handle clrsb_optab.
+	(init_optabs): Initialize it.
+	* optabs.h (enum optab_index): New entry OTI_clrsb.
+	(clrsb_optab): Define.
+	* genopinit.c (optabs): Add an entry for it.
+	* builtins.c (expand_builtin): Handle clrsb builtin functions.
+	* builtins.def (BUILT_IN_CLRSB, BUILT_IN_CLRSBIMAX, BUILT_IN_CLRSBL,
+	BUILT_IN_CLRSBLL): New.
+	* rtl.def (CLRSB): New code.
+	* dwarf2out.c (mem_loc_descriptor): Handle it.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	Use op_mode rather than mode when optimizing ffs, clz, ctz, parity
+	and popcount.
+	* libgcc2.c (__clrsbSI2, __clrsbDI2): New functions.
+	* libgcc2.h (__clrsbSI2, __clrsbDI2): Define and declare.
+	(__ctzDI2): Move declaration.
+	* config/bfin/bfin.md (clrsbsi2): New expander.
+	(signbitssi2): Use the CLRSB rtx.
+	(clrsbhi2): Renamed from signbitshi2.  Use the CLRSB rtx.
+	* config/bfin/bfin.c (bdesc_1arg): Changed accordingly.
+
 2011-06-21  Richard Guenther  <rguenther@suse.de>
 
 	* ipa-inline-transform.c (inline_transform): Fix previous

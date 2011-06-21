@@ -5580,6 +5580,14 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
+    CASE_INT_FN (BUILT_IN_CLRSB):
+    case BUILT_IN_CLRSBIMAX:
+      target = expand_builtin_unop (target_mode, exp, target,
+				    subtarget, clrsb_optab);
+      if (target)
+	return target;
+      break;
+
     CASE_INT_FN (BUILT_IN_POPCOUNT):
     case BUILT_IN_POPCOUNTIMAX:
       target = expand_builtin_unop (target_mode, exp, target,

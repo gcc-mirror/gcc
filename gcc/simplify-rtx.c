@@ -1211,6 +1211,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 				rtx op, enum machine_mode op_mode)
 {
   unsigned int width = GET_MODE_BITSIZE (mode);
+  unsigned int op_width = GET_MODE_BITSIZE (op_mode);
 
   if (code == VEC_DUPLICATE)
     {
@@ -1321,7 +1322,8 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
     }
 
   if (CONST_INT_P (op)
-      && width <= HOST_BITS_PER_WIDE_INT && width > 0)
+      && width <= HOST_BITS_PER_WIDE_INT
+      && op_width <= HOST_BITS_PER_WIDE_INT && op_width > 0)
     {
       HOST_WIDE_INT arg0 = INTVAL (op);
       HOST_WIDE_INT val;
@@ -1341,40 +1343,50 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case FFS:
-	  arg0 &= GET_MODE_MASK (mode);
+	  arg0 &= GET_MODE_MASK (op_mode);
 	  val = ffs_hwi (arg0);
 	  break;
 
 	case CLZ:
-	  arg0 &= GET_MODE_MASK (mode);
-	  if (arg0 == 0 && CLZ_DEFINED_VALUE_AT_ZERO (mode, val))
+	  arg0 &= GET_MODE_MASK (op_mode);
+	  if (arg0 == 0 && CLZ_DEFINED_VALUE_AT_ZERO (op_mode, val))
 	    ;
 	  else
-	    val = GET_MODE_BITSIZE (mode) - floor_log2 (arg0) - 1;
+	    val = GET_MODE_BITSIZE (op_mode) - floor_log2 (arg0) - 1;
+	  break;
+
+	case CLRSB:
+	  arg0 &= GET_MODE_MASK (op_mode);
+	  if (arg0 == 0)
+	    val = GET_MODE_BITSIZE (op_mode) - 1;
+	  else if (arg0 >= 0)
+	    val = GET_MODE_BITSIZE (op_mode) - floor_log2 (arg0) - 2;
+	  else if (arg0 < 0)
+	    val = GET_MODE_BITSIZE (op_mode) - floor_log2 (~arg0) - 2;
 	  break;
 
 	case CTZ:
-	  arg0 &= GET_MODE_MASK (mode);
+	  arg0 &= GET_MODE_MASK (op_mode);
 	  if (arg0 == 0)
 	    {
 	      /* Even if the value at zero is undefined, we have to come
 		 up with some replacement.  Seems good enough.  */
-	      if (! CTZ_DEFINED_VALUE_AT_ZERO (mode, val))
-		val = GET_MODE_BITSIZE (mode);
+	      if (! CTZ_DEFINED_VALUE_AT_ZERO (op_mode, val))
+		val = GET_MODE_BITSIZE (op_mode);
 	    }
 	  else
 	    val = ctz_hwi (arg0);
 	  break;
 
 	case POPCOUNT:
-	  arg0 &= GET_MODE_MASK (mode);
+	  arg0 &= GET_MODE_MASK (op_mode);
 	  val = 0;
 	  while (arg0)
 	    val++, arg0 &= arg0 - 1;
 	  break;
 
 	case PARITY:
-	  arg0 &= GET_MODE_MASK (mode);
+	  arg0 &= GET_MODE_MASK (op_mode);
 	  val = 0;
 	  while (arg0)
 	    val++, arg0 &= arg0 - 1;
