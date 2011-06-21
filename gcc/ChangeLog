@@ -1,5 +1,9 @@
 2011-06-21  Richard Guenther  <rguenther@suse.de>
 
+	* ipa-inline-transform.c (inline_transform): Fix typo.
+ 
+2011-06-21  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/49483
 	* tree-vect-stmts.c (vectorizable_assignment): Also handle
 	VIEW_CONVERT_EXPR conversions.
