@@ -1,5 +1,10 @@
 2011-06-21  Christian Bruel  <christian.bruel@st.com>
 	
+	PR other/43564
+	* ipa-inline.c (can_inline_edge_p): Check !DECL_DISREGARD_INLINE_LIMITS.
+	
+2011-06-21  Christian Bruel  <christian.bruel@st.com>
+	
 	PR middle-end/49139
 	* cgraphunit.c (process_function_and_variable_attributes): warn when
 	always_inline functions that are not inline.
