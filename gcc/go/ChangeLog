@@ -1,3 +1,8 @@
+2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gogo-tree.cc (Gogo::define_builtin_function_trees): Change
+	BUILT_IN_ADD_AND_FETCH to BUILT_IN_SYNC_ADD_AND_FETCH.
+
 2011-06-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (go/go-lang.o, go/go-backend.o): Update
