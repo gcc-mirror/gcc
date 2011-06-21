@@ -365,9 +365,9 @@ inline_transform (struct cgraph_node *node)
   timevar_push (TV_INTEGRATION);
   if (node->callees)
     {
+      todo = optimize_inline_calls (current_function_decl);
       /* Redirecting edges might lead to a need for vops to be recomputed.  */
       todo |= TODO_update_ssa_only_virtuals;
-      todo = optimize_inline_calls (current_function_decl);
     }
   timevar_pop (TV_INTEGRATION);
 
