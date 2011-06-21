@@ -1,3 +1,12 @@
+2011-06-21  Christian Bruel  <christian.bruel@st.com>
+	
+	PR middle-end/49139
+	* cgraphunit.c (process_function_and_variable_attributes): warn when
+	always_inline functions that are not inline.
+	* ipa-inline-transform.c (inline_transform): Always call optimize_inline.
+	* tree-inline.c (tree_inlinable_function_p): Use error instead of sorry.
+	(expand_call_inline): Likewise.
+	
 2011-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (dg_target_exps): Set.
@@ -52,6 +61,7 @@
 
 	* regrename.c (do_replace): Don't update notes.
 
+>>>>>>> .r175238
 2011-06-20  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (create_TOC_reference): Wrap high part
