@@ -2400,6 +2400,14 @@ zero if @var{x} is zero.)  The mode of @var{x} need not be @var{m};
 depending on the target machine, various mode combinations may be
 valid.
 
+@findex clrsb
+@item (clrsb:@var{m} @var{x})
+Represents the number of redundant leading sign bits in @var{x},
+represented as an integer of mode @var{m}, starting at the most
+significant bit position.  This is one less than the number of leading
+sign bits (either 0 or 1), with no special cases.  The mode of @var{x}
+will usually be an integer mode and may differ from @var{m}.
+
 @findex clz
 @item (clz:@var{m} @var{x})
 Represents the number of leading 0-bits in @var{x}, represented as an

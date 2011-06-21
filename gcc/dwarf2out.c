@@ -15377,6 +15377,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
     case STRICT_LOW_PART:
     case CONST_VECTOR:
     case CONST_FIXED:
+    case CLRSB:
       /* If delegitimize_address couldn't do anything with the UNSPEC, we
 	 can't express it in the debug info.  This can happen e.g. with some
 	 TLS UNSPECs.  */

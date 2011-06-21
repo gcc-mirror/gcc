@@ -1920,3 +1920,10 @@ GCC_4.6.0 {
   __morestack_initial_sp
   __splitstack_find
 }
+
+%inherit GCC_4.7.0 GCC_4.6.0
+GCC_4.7.0 {
+  __PFX__clrsbsi2
+  __PFX__clrsbdi2
+  __PFX__clrsbti2
+}

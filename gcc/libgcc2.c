@@ -762,7 +762,50 @@ __ctzDI2 (UDWtype x)
   return ret + add;
 }
 #endif
+
+#ifdef L_clrsbsi2
+#undef int
+int
+__clrsbSI2 (Wtype x)
+{
+  Wtype ret;
 
+  if (x < 0)
+    x = ~x;
+  if (x == 0)
+    return W_TYPE_SIZE - 1;
+  count_leading_zeros (ret, x);
+  return ret - 1;
+}
+#endif
+
+#ifdef L_clrsbdi2
+#undef int
+int
+__clrsbDI2 (DWtype x)
+{
+  const DWunion uu = {.ll = x};
+  UWtype word;
+  Wtype ret, add;
+
+  if (uu.s.high == 0)
+    word = uu.s.low, add = W_TYPE_SIZE;
+  else if (uu.s.high == -1)
+    word = ~uu.s.low, add = W_TYPE_SIZE;
+  else if (uu.s.high >= 0)
+    word = uu.s.high, add = 0;
+  else
+    word = ~uu.s.high, add = 0;
+
+  if (word == 0)
+    ret = W_TYPE_SIZE;
+  else
+    count_leading_zeros (ret, word);
+
+  return ret + add - 1;
+}
+#endif
+
 #ifdef L_popcount_tab
 const UQItype __popcount_tab[256] =
 {

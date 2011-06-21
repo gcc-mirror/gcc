@@ -1,3 +1,13 @@
+2011-06-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/excute/builtin-bitops-1.c (MAKE_FUNS): Make
+	my_clrsb test functions.
+	(main): Test clrsb.
+	* gcc.dg/builtin-protos-1.c (test_s, test_u, test_sl, test_ul,
+	test_sll, test_ull): Add clrsb tests.
+	* gcc.dg/torture/builtin-attr-1.c: Add tests for clrsb, clrsbl,
+	clrsbll.
+
 2011-06-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49112
@@ -21,7 +31,7 @@
 	* gcc.dg/vect/vect-peel-4.c: Likewise.
 
 2011-06-22  Christian Bruel  <christian.bruel@st.com>
-	
+
 	PR middle-end/49139
 	* gcc.dg/always_inline.c: Removed -Winline. Update checks
 	* gcc.dg/always_inline2.c: Likewise.
@@ -41,7 +51,7 @@
 	* gcc.dg/uninit-pred-5_a.c: Likewise.
 	* gcc.dg/uninit-pred-5_b.c: Likewise.
 	* gcc.dg/fail_always_inline.c: New.
-	
+
 2011-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (check_gfortran_parallelize): Parallelize dg.exp

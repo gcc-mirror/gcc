@@ -2327,9 +2327,12 @@ expand_simple_unop (enum machine_mode mode, enum rtx_code code, rtx op0,
 /* Try calculating
 	(clz:narrow x)
    as
-	(clz:wide (zero_extend:wide x)) - ((width wide) - (width narrow)).  */
+	(clz:wide (zero_extend:wide x)) - ((width wide) - (width narrow)).
+
+   A similar operation can be used for clrsb.  UNOPTAB says which operation
+   we are trying to expand.  */
 static rtx
-widen_clz (enum machine_mode mode, rtx op0, rtx target)
+widen_leading (enum machine_mode mode, rtx op0, rtx target, optab unoptab)
 {
   enum mode_class mclass = GET_MODE_CLASS (mode);
   if (CLASS_HAS_WIDER_MODES_P (mclass))
@@ -2339,7 +2342,7 @@ widen_clz (enum machine_mode mode, rtx op0, rtx target)
 	   wider_mode != VOIDmode;
 	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	{
-	  if (optab_handler (clz_optab, wider_mode) != CODE_FOR_nothing)
+	  if (optab_handler (unoptab, wider_mode) != CODE_FOR_nothing)
 	    {
 	      rtx xop0, temp, last;
 
@@ -2348,7 +2351,7 @@ widen_clz (enum machine_mode mode, rtx op0, rtx target)
 	      if (target == 0)
 		target = gen_reg_rtx (mode);
 	      xop0 = widen_operand (op0, wider_mode, mode, true, false);
-	      temp = expand_unop (wider_mode, clz_optab, xop0, NULL_RTX, true);
+	      temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX, true);
 	      if (temp != 0)
 		temp = expand_binop (wider_mode, sub_optab, temp,
 				     GEN_INT (GET_MODE_BITSIZE (wider_mode)
@@ -2844,7 +2847,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
   /* Widening (or narrowing) clz needs special treatment.  */
   if (unoptab == clz_optab)
     {
-      temp = widen_clz (mode, op0, target);
+      temp = widen_leading (mode, op0, target, unoptab);
       if (temp)
 	return temp;
 
@@ -2856,7 +2859,15 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	    return temp;
 	}
 
-	goto try_libcall;
+      goto try_libcall;
+    }
+
+  if (unoptab == clrsb_optab)
+    {
+      temp = widen_leading (mode, op0, target, unoptab);
+      if (temp)
+	return temp;
+      goto try_libcall;
     }
 
   /* Widening (or narrowing) bswap needs special treatment.  */
@@ -3011,7 +3022,8 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
       /* All of these functions return small values.  Thus we choose to
 	 have them return something that isn't a double-word.  */
       if (unoptab == ffs_optab || unoptab == clz_optab || unoptab == ctz_optab
-	  || unoptab == popcount_optab || unoptab == parity_optab)
+	  || unoptab == clrsb_optab || unoptab == popcount_optab
+	  || unoptab == parity_optab)
 	outmode
 	  = GET_MODE (hard_libcall_value (TYPE_MODE (integer_type_node),
 					  optab_libfunc (unoptab, mode)));
@@ -5958,6 +5970,7 @@ init_optabs (void)
   init_optab (ffs_optab, FFS);
   init_optab (clz_optab, CLZ);
   init_optab (ctz_optab, CTZ);
+  init_optab (clrsb_optab, CLRSB);
   init_optab (popcount_optab, POPCOUNT);
   init_optab (parity_optab, PARITY);
   init_optab (sqrt_optab, SQRT);
@@ -6188,6 +6201,9 @@ init_optabs (void)
   ctz_optab->libcall_basename = "ctz";
   ctz_optab->libcall_suffix = '2';
   ctz_optab->libcall_gen = gen_int_libfunc;
+  clrsb_optab->libcall_basename = "clrsb";
+  clrsb_optab->libcall_suffix = '2';
+  clrsb_optab->libcall_gen = gen_int_libfunc;
   popcount_optab->libcall_basename = "popcount";
   popcount_optab->libcall_suffix = '2';
   popcount_optab->libcall_gen = gen_int_libfunc;
