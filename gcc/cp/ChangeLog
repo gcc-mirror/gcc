@@ -1,3 +1,9 @@
+2011-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49482
+	* semantics.c (maybe_add_lambda_conv_op): Call mark_exp_read for
+	static fn parameters.
+
 2011-06-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49229

@@ -1,3 +1,8 @@
+2011-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49482
+	* g++.dg/cpp0x/lambda/lambda-warn3.C: New.
+
 2011-06-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49112
