@@ -1,3 +1,9 @@
+2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* builtins.c: Add sync_ or SYNC__ to builtin names.
+	* sync-builtins.def: Add sync_ or SYNC__ to builtin names.
+	* omp-low.c: Add sync_ or SYNC__ to builtin names.
+
 2011-06-21  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/33049

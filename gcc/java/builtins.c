@@ -331,8 +331,9 @@ compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
       (void) value_type; /* Avoid set but not used warning.  */
 
       addr = build_addr_sum (int_type_node, obj_arg, offset_arg);
-      stmt = build_call_expr (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_4],
-			      3, addr, expected_arg, value_arg);
+      stmt = build_call_expr 
+			(built_in_decls[BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_4],
+			 3, addr, expected_arg, value_arg);
 
       return build_check_this (stmt, this_arg);
     }
@@ -357,8 +358,9 @@ compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
       (void) value_type; /* Avoid set but not used warning.  */
 
       addr = build_addr_sum (long_type_node, obj_arg, offset_arg);
-      stmt = build_call_expr (built_in_decls[BUILT_IN_BOOL_COMPARE_AND_SWAP_8],
-			      3, addr, expected_arg, value_arg);
+      stmt = build_call_expr 
+			(built_in_decls[BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_8],
+			 3, addr, expected_arg, value_arg);
 
       return build_check_this (stmt, this_arg);
     }
@@ -378,8 +380,8 @@ compareAndSwapObject_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 
     UNMARSHAL5 (orig_call);
     builtin = (POINTER_SIZE == 32 
-	       ? BUILT_IN_BOOL_COMPARE_AND_SWAP_4 
-	       : BUILT_IN_BOOL_COMPARE_AND_SWAP_8);
+	       ? BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_4 
+	       : BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_8);
 
     addr = build_addr_sum (value_type, obj_arg, offset_arg);
     stmt = build_call_expr (built_in_decls[builtin],
@@ -402,7 +404,7 @@ putVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED,
     = fold_convert (build_pointer_type (build_type_variant (value_type, 0, 1)),
 		    addr);
   
-  stmt = build_call_expr (built_in_decls[BUILT_IN_SYNCHRONIZE], 0);
+  stmt = build_call_expr (built_in_decls[BUILT_IN_SYNC_SYNCHRONIZE], 0);
   modify_stmt = fold_build2 (MODIFY_EXPR, value_type,
 			     build_java_indirect_ref (value_type, addr,
 						      flag_check_references),
@@ -426,7 +428,7 @@ getVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED,
     = fold_convert (build_pointer_type (build_type_variant 
 					(method_return_type, 0, 1)), addr);
   
-  stmt = build_call_expr (built_in_decls[BUILT_IN_SYNCHRONIZE], 0);
+  stmt = build_call_expr (built_in_decls[BUILT_IN_SYNC_SYNCHRONIZE], 0);
   
   tmp = build_decl (BUILTINS_LOCATION, VAR_DECL, NULL, method_return_type);
   DECL_IGNORED_P (tmp) = 1;
@@ -573,21 +575,21 @@ initialize_builtins (void)
 		  boolean_ftype_boolean_boolean,
 		  "__builtin_expect",
 		  BUILTIN_CONST | BUILTIN_NOTHROW);
-  define_builtin (BUILT_IN_BOOL_COMPARE_AND_SWAP_4, 
+  define_builtin (BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_4, 
 		  "__sync_bool_compare_and_swap_4",
 		  build_function_type_list (boolean_type_node,
 					    int_type_node, 
 					    build_pointer_type (int_type_node),
 					    int_type_node, NULL_TREE), 
 		  "__sync_bool_compare_and_swap_4", 0);
-  define_builtin (BUILT_IN_BOOL_COMPARE_AND_SWAP_8, 
+  define_builtin (BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_8, 
 		  "__sync_bool_compare_and_swap_8",
 		  build_function_type_list (boolean_type_node,
 					    long_type_node, 
 					    build_pointer_type (long_type_node),
 					    int_type_node, NULL_TREE), 
 		  "__sync_bool_compare_and_swap_8", 0);
-  define_builtin (BUILT_IN_SYNCHRONIZE, "__sync_synchronize",
+  define_builtin (BUILT_IN_SYNC_SYNCHRONIZE, "__sync_synchronize",
 		  build_function_type_list (void_type_node, NULL_TREE),
 		  "__sync_synchronize", BUILTIN_NOTHROW);
   

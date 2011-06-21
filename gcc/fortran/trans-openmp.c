@@ -1430,7 +1430,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 static tree
 gfc_trans_omp_flush (void)
 {
-  tree decl = built_in_decls [BUILT_IN_SYNCHRONIZE];
+  tree decl = built_in_decls [BUILT_IN_SYNC_SYNCHRONIZE];
   return build_call_expr_loc (input_location, decl, 0);
 }
 

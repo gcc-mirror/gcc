@@ -2940,7 +2940,7 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
 
       if (TREE_THIS_VOLATILE (field_decl))
 	java_add_stmt
-	  (build_call_expr (built_in_decls[BUILT_IN_SYNCHRONIZE], 0));
+	  (build_call_expr (built_in_decls[BUILT_IN_SYNC_SYNCHRONIZE], 0));
       	  
       java_add_stmt (modify_expr);
     }
@@ -2959,7 +2959,7 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
 
       if (TREE_THIS_VOLATILE (field_decl))
 	java_add_stmt 
-	  (build_call_expr (built_in_decls[BUILT_IN_SYNCHRONIZE], 0));
+	  (build_call_expr (built_in_decls[BUILT_IN_SYNC_SYNCHRONIZE], 0));
 
       push_value (temp);
     }      

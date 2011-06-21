@@ -1,3 +1,7 @@
+2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* semantics.c: Add sync_ or SYNC__ to builtin names.
+
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49216
