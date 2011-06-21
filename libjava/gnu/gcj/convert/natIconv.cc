@@ -1,6 +1,6 @@
 // natIconv.cc -- Java side of iconv() reader.
 
-/* Copyright (C) 2000, 2001, 2003, 2006  Free Software Foundation
+/* Copyright (C) 2000, 2001, 2003, 2006, 2011  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -264,17 +264,19 @@ gnu::gcj::convert::IOConverter::iconv_init (void)
   if (handle != (iconv_t) -1)
     {
       jchar c;
-      unsigned char in[3];
+      unsigned char in[4];
       char *inp, *outp;
       size_t inc, outc, r;
 
-      // This is the UTF-8 encoding of \ufeff.
+      // This is the UTF-8 encoding of \ufeff.  At least Tru64 UNIX libiconv
+      // needs the trailing NUL byte, otherwise iconv fails with EINVAL.
       in[0] = 0xef;
       in[1] = 0xbb;
       in[2] = 0xbf;
+      in[3] = 0x00;
 
       inp = (char *) in;
-      inc = 3;
+      inc = 4;
       outp = (char *) &c;
       outc = 2;
 
