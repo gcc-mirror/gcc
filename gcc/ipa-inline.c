@@ -318,8 +318,10 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
 			     ? callee_tree
 			     : optimization_default_node);
 
-      if ((caller_opt->x_optimize > callee_opt->x_optimize)
-	  || (caller_opt->x_optimize_size != callee_opt->x_optimize_size))
+      if (((caller_opt->x_optimize > callee_opt->x_optimize)
+	   || (caller_opt->x_optimize_size != callee_opt->x_optimize_size))
+	  /* gcc.dg/pr43564.c.  Look at forced inline even in -O0.  */
+	  && !DECL_DISREGARD_INLINE_LIMITS (e->callee->decl))
 	{
           e->inline_failed = CIF_TARGET_OPTIMIZATION_MISMATCH;
 	  inlinable = false;
