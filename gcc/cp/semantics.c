@@ -8177,7 +8177,7 @@ lambda_return_type (tree expr)
       SET_TYPE_STRUCTURAL_EQUALITY (type);
     }
   else
-    type = type_decays_to (unlowered_expr_type (expr));
+    type = cv_unqualified (type_decays_to (unlowered_expr_type (expr)));
   return type;
 }
 

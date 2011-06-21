@@ -1,3 +1,8 @@
+2011-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49418
+	* g++.dg/template/param3.C: New.
+
 2011-06-21  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* gcc.c-torture/excute/builtin-bitops-1.c (MAKE_FUNS): Make
