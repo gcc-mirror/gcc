@@ -2089,6 +2089,9 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
   else
     return false;
 
+  if (code == VIEW_CONVERT_EXPR)
+    op = TREE_OPERAND (op, 0);
+
   if (!vect_is_simple_use_1 (op, loop_vinfo, bb_vinfo,
 			     &def_stmt, &def, &dt[0], &vectype_in))
     {
@@ -2099,7 +2102,8 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
 
   /* We can handle NOP_EXPR conversions that do not change the number
      of elements or the vector size.  */
-  if (CONVERT_EXPR_CODE_P (code)
+  if ((CONVERT_EXPR_CODE_P (code)
+       || code == VIEW_CONVERT_EXPR)
       && (!vectype_in
 	  || TYPE_VECTOR_SUBPARTS (vectype_in) != nunits
 	  || (GET_MODE_SIZE (TYPE_MODE (vectype))
@@ -2134,7 +2138,8 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
       /* Arguments are ready. create the new vector stmt.  */
       FOR_EACH_VEC_ELT (tree, vec_oprnds, i, vop)
        {
-	 if (CONVERT_EXPR_CODE_P (code))
+	 if (CONVERT_EXPR_CODE_P (code)
+	     || code == VIEW_CONVERT_EXPR)
 	   vop = build1 (VIEW_CONVERT_EXPR, vectype, vop);
          new_stmt = gimple_build_assign (vec_dest, vop);
          new_temp = make_ssa_name (vec_dest, new_stmt);
