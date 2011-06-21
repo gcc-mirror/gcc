@@ -318,6 +318,7 @@ avr-*-*)
 	cpu_type=avr
 	c_target_objs="avr-c.o"
 	cxx_target_objs="avr-c.o"
+	extra_options="${extra_options} avr/avr-tables.opt"
 	;;
 bfin*-*)
 	cpu_type=bfin

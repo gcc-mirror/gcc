@@ -106,7 +106,6 @@ static rtx avr_function_arg (cumulative_args_t , enum machine_mode,
 			     const_tree, bool);
 static void avr_function_arg_advance (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
-static void avr_help (void);
 static bool avr_function_ok_for_sibcall (tree, tree);
 static void avr_asm_named_section (const char *name, unsigned int flags, tree decl);
 
@@ -250,9 +249,6 @@ static const struct attribute_spec avr_attribute_table[] =
 #undef TARGET_CANNOT_MODIFY_JUMPS_P
 #define TARGET_CANNOT_MODIFY_JUMPS_P avr_cannot_modify_jumps_p
 
-#undef TARGET_HELP
-#define TARGET_HELP avr_help
-
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL avr_function_ok_for_sibcall
 
@@ -268,21 +264,9 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 static void
 avr_option_override (void)
 {
-  const struct mcu_type_s *t;
-
   flag_delete_null_pointer_checks = 0;
 
-  for (t = avr_mcu_types; t->name; t++)
-    if (strcmp (t->name, avr_mcu_name) == 0)
-      break;
-
-  if (!t->name)
-    {
-      error ("unrecognized argument to -mmcu= option: %qs", avr_mcu_name);
-      inform (input_location,  "See --target-help for supported MCUs");
-    }
-
-  avr_current_device = t;
+  avr_current_device = &avr_mcu_types[avr_mcu_index];
   avr_current_arch = &avr_arch_types[avr_current_device->arch];
   avr_extra_arch_macro = avr_current_device->macro;
 
@@ -290,42 +274,6 @@ avr_option_override (void)
   zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
 
   init_machine_status = avr_init_machine_status;
-}
-
-/* Implement TARGET_HELP */
-/* Report extra information for --target-help */
-
-static void
-avr_help (void)
-{
-  const struct mcu_type_s *t;
-  const char * const indent = "  ";
-  int len;
-
-  /* Give a list of MCUs that are accepted by -mmcu=* .
-     Note that MCUs supported by the compiler might differ from
-     MCUs supported by binutils. */
-
-  len = strlen (indent);
-  printf ("Known MCU names:\n%s", indent);
-
-  /* Print a blank-separated list of all supported MCUs */
-
-  for (t = avr_mcu_types; t->name; t++)
-    {
-      printf ("%s ", t->name);
-      len += 1 + strlen (t->name);
-
-      /* Break long lines */
-      
-      if (len > 66 && (t+1)->name)
-        {
-          printf ("\n%s", indent);
-          len = strlen (indent);
-        }
-    }
-
-  printf ("\n\n");
 }
 
 /*  return register class from register number.  */
@@ -5320,11 +5268,11 @@ static void
 avr_file_start (void)
 {
   if (avr_current_arch->asm_only)
-    error ("MCU %qs supported for assembler only", avr_mcu_name);
+    error ("MCU %qs supported for assembler only", avr_current_device->name);
 
   default_file_start ();
 
-/*  fprintf (asm_out_file, "\t.arch %s\n", avr_mcu_name);*/
+/*  fprintf (asm_out_file, "\t.arch %s\n", avr_current_device->name);*/
   fputs ("__SREG__ = 0x3f\n"
 	 "__SP_H__ = 0x3e\n"
 	 "__SP_L__ = 0x3d\n", asm_out_file);

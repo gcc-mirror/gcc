@@ -754,13 +754,6 @@ options are changed via @code{#pragma GCC optimize} or by using the
 
 @hook TARGET_OPTION_DEFAULT_PARAMS
 
-@hook TARGET_HELP
-This hook is called in response to the user invoking
-@option{--target-help} on the command line.  It gives the target a
-chance to display extra information on the target specific command
-line options found in its @file{.opt} file.
-@end deftypefn
-
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for

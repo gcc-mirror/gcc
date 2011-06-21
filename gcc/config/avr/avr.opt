@@ -1,6 +1,6 @@
 ; Options for the ATMEL AVR port of the compiler.
 
-; Copyright (C) 2005, 2007, 2008, 2010 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -23,7 +23,7 @@ Target Report Mask(CALL_PROLOGUES)
 Use subroutines for function prologues and epilogues
 
 mmcu=
-Target RejectNegative Joined Var(avr_mcu_name) Init("avr2")
+Target RejectNegative Joined Var(avr_mcu_index) Init(0) Enum(avr_mcu)
 -mmcu=MCU	Select the target MCU
 
 mdeb

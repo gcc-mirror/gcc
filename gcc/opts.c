@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "opts-diagnostic.h"
 #include "insn-attr.h"		/* For INSN_SCHEDULING and DELAY_SLOTS.  */
-#include "target.h"
 #include "common/common-target.h"
 
 /* Parse the -femit-struct-debug-detailed option value
@@ -1269,10 +1268,6 @@ common_handle_option (struct gcc_options *opts,
     case OPT__target_help:
       print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0, opts, lang_mask);
       opts->x_exit_after_options = true;
-
-      /* Allow the target a chance to give the user some additional information.  */
-      if (targetm.help)
-	targetm.help ();
       break;
 
     case OPT__help_:

@@ -1,5 +1,5 @@
 # Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-# 2009, 2010 Free Software Foundation, Inc.
+# 2009, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,6 +22,7 @@ driver-avr.o: $(srcdir)/config/avr/driver-avr.c \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 avr-devices.o: $(srcdir)/config/avr/avr-devices.c \
+  $(srcdir)/config/avr/avr-mcus.def \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
@@ -29,6 +30,10 @@ avr-c.o: $(srcdir)/config/avr/avr-c.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
+$(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh \
+  $(srcdir)/config/avr/avr-mcus.def
+	$(SHELL) $(srcdir)/config/avr/genopt.sh $(srcdir)/config/avr > \
+		$(srcdir)/config/avr/avr-tables.opt
 
 LIB1ASMSRC = avr/libgcc.S
 LIB1ASMFUNCS = \

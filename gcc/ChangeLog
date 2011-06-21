@@ -1,3 +1,26 @@
+2011-06-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/avr/avr-mcus.def, config/avr/genopt.sh: New files.
+	* config/avr/avr-tables.opt: New file (generated).
+	* config.gcc (avr-*-*): Use avr/avr-tables.opt.
+	* config/avr/avr-devices.c (avr_mcu_types): Move contents to
+	avr-mcus.def.
+	* config/avr/avr.c (avr_help, TARGET_HELP): Remove.
+	(avr_option_override): Don't process -mmcu= argument here.  Set
+	avr_current_device using avr_mcu_index.
+	(avr_file_start): Use avr_current_device->name instead of
+	avr_mcu_name.
+	* config/avr/avr.opt (mmcu=): Use Enum.
+	* config/avr/t-avr (avr-devices.o): Update dependencies.
+	($(srcdir)/config/avr/avr-tables.opt): New.
+	* target.def (help): Remove.
+	* doc/tm.texi.in (TARGET_HELP): Remove.
+	* doc/tm.texi: Regenerate.
+	* opts.c: Don't include target.h.
+	(common_handle_option): Don't call targetm.help.
+	* system.h (TARGET_HELP): Poison.
+	* Makefile.in (opts.o): Update dependencies.
+
 2011-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/usegld.h: New file.
