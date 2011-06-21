@@ -2773,7 +2773,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	      type = non_reference (type);
 	      if (i != 0 || ! ref1)
 		{
-		  type = TYPE_MAIN_VARIANT (type_decays_to (type));
+		  type = cv_unqualified (type_decays_to (type));
 		  if (enum_p && TREE_CODE (type) == ENUMERAL_TYPE)
 		    VEC_safe_push (tree, gc, types[i], type);
 		  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
@@ -2792,7 +2792,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	  type = non_reference (argtypes[i]);
 	  if (i != 0 || ! ref1)
 	    {
-	      type = TYPE_MAIN_VARIANT (type_decays_to (type));
+	      type = cv_unqualified (type_decays_to (type));
 	      if (enum_p && UNSCOPED_ENUM_P (type))
 		VEC_safe_push (tree, gc, types[i], type);
 	      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))

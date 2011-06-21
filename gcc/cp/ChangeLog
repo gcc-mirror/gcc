@@ -1,5 +1,10 @@
 2011-06-21  Jason Merrill  <jason@redhat.com>
 
+	* call.c (add_builtin_candidates): Use cv_unqualified rather than
+	TYPE_MAIN_VARIANT.
+	* pt.c (tsubst_arg_types): Likewise.
+	* except.c (build_throw): Use cv_unqualified.
+
 	PR c++/49418
 	* call.c (cxx_type_promotes_to): Don't strip cv-quals.
 	* semantics.c (lambda_return_type): Strip them here.
