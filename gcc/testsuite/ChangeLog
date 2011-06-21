@@ -1,3 +1,8 @@
+2011-06-21  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49478
+	* gcc.dg/vect/pr49478.c
+
 2011-06-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49483
