@@ -91,22 +91,22 @@ Gogo::define_builtin_function_trees()
      for ++ and --.  */
   tree t = go_type_for_size(BITS_PER_UNIT, 1);
   tree p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
-  define_builtin(BUILT_IN_ADD_AND_FETCH_1, "__sync_fetch_and_add_1", NULL,
+  define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_1, "__sync_fetch_and_add_1", NULL,
 		 build_function_type_list(t, p, t, NULL_TREE), false);
 
   t = go_type_for_size(BITS_PER_UNIT * 2, 1);
   p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
-  define_builtin (BUILT_IN_ADD_AND_FETCH_2, "__sync_fetch_and_add_2", NULL,
+  define_builtin (BUILT_IN_SYNC_ADD_AND_FETCH_2, "__sync_fetch_and_add_2", NULL,
 		  build_function_type_list(t, p, t, NULL_TREE), false);
 
   t = go_type_for_size(BITS_PER_UNIT * 4, 1);
   p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
-  define_builtin(BUILT_IN_ADD_AND_FETCH_4, "__sync_fetch_and_add_4", NULL,
+  define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_4, "__sync_fetch_and_add_4", NULL,
 		 build_function_type_list(t, p, t, NULL_TREE), false);
 
   t = go_type_for_size(BITS_PER_UNIT * 8, 1);
   p = build_pointer_type(build_qualified_type(t, TYPE_QUAL_VOLATILE));
-  define_builtin(BUILT_IN_ADD_AND_FETCH_8, "__sync_fetch_and_add_8", NULL,
+  define_builtin(BUILT_IN_SYNC_ADD_AND_FETCH_8, "__sync_fetch_and_add_8", NULL,
 		 build_function_type_list(t, p, t, NULL_TREE), false);
 
   // We use __builtin_expect for magic import functions.
