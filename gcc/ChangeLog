@@ -1,3 +1,7 @@
+2011-06-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*jcindirect_jump): Fix build warning.
+
 2011-06-21  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* gensupport.c (add_define_attr): New static function.

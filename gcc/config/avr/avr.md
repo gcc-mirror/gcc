@@ -2763,8 +2763,7 @@
 (define_insn "*jcindirect_jump"
   [(set (pc) (match_operand:HI 0 "immediate_operand" "i"))]
   ""
-  "@
-  	%~jmp %x0"
+  "%~jmp %x0"
   [(set_attr "length" "2")
    (set_attr "cc" "none")])
 
