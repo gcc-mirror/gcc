@@ -1021,13 +1021,6 @@ DEFHOOK
  void, (void),
  hook_void_void)
 
-/* Display extra, target specific information in response to a
-   --target-help switch.  */
-DEFHOOK
-(help,
- "",
- void, (void), NULL)
-
 DEFHOOK_UNDOC
 (eh_return_filter_mode,
  "Return machine mode for filter value.",
