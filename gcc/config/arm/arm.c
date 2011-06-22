@@ -1009,7 +1009,8 @@ enum tls_reloc {
   TLS_LDM32,
   TLS_LDO32,
   TLS_IE32,
-  TLS_LE32
+  TLS_LE32,
+  TLS_DESCSEQ	/* GNU scheme */
 };
 
 /* The maximum number of insns to be used when loading a constant.  */
@@ -5881,6 +5882,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 {
   rtx insns, label, labelno, sum;
 
+  gcc_assert (reloc != TLS_DESCSEQ);
   start_sequence ();
 
   labelno = GEN_INT (pic_labelno++);
@@ -5895,18 +5897,40 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 
   if (TARGET_ARM)
     emit_insn (gen_pic_add_dot_plus_eight (reg, reg, labelno));
-  else if (TARGET_THUMB2)
+  else
     emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
-  else /* TARGET_THUMB1 */
-    emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
-
-  *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX, LCT_PURE, /* LCT_CONST?  */
+  
+  *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX,
+				     LCT_PURE, /* LCT_CONST?  */
 				     Pmode, 1, reg, Pmode);
-
+  
   insns = get_insns ();
   end_sequence ();
 
   return insns;
+}
+
+static rtx
+arm_tls_descseq_addr (rtx x, rtx reg)
+{
+  rtx labelno = GEN_INT (pic_labelno++);
+  rtx label = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+  rtx sum = gen_rtx_UNSPEC (Pmode,
+			    gen_rtvec (4, x, GEN_INT (TLS_DESCSEQ),
+				       gen_rtx_CONST (VOIDmode, label),
+				       GEN_INT (!TARGET_ARM)),
+			    UNSPEC_TLS);
+  rtx reg0 = load_tls_operand (sum, gen_rtx_REG (SImode, 0));
+  
+  emit_insn (gen_tlscall (x, labelno));
+  if (!reg)
+    reg = gen_reg_rtx (SImode);
+  else
+    gcc_assert (REGNO (reg) != 0);
+
+  emit_move_insn (reg, reg0);
+
+  return reg;
 }
 
 rtx
@@ -5918,26 +5942,51 @@ legitimize_tls_address (rtx x, rtx reg)
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
-      insns = arm_call_tls_get_addr (x, reg, &ret, TLS_GD32);
-      dest = gen_reg_rtx (Pmode);
-      emit_libcall_block (insns, dest, ret, x);
+      if (TARGET_GNU2_TLS)
+	{
+	  reg = arm_tls_descseq_addr (x, reg);
+
+	  tp = arm_load_tp (NULL_RTX);
+	  
+	  dest = gen_rtx_PLUS (Pmode, tp, reg);
+	}
+      else
+	{
+	  /* Original scheme */
+	  insns = arm_call_tls_get_addr (x, reg, &ret, TLS_GD32);
+	  dest = gen_reg_rtx (Pmode);
+	  emit_libcall_block (insns, dest, ret, x);
+	}
       return dest;
 
     case TLS_MODEL_LOCAL_DYNAMIC:
-      insns = arm_call_tls_get_addr (x, reg, &ret, TLS_LDM32);
+      if (TARGET_GNU2_TLS)
+	{
+	  reg = arm_tls_descseq_addr (x, reg);
 
-      /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
-	 share the LDM result with other LD model accesses.  */
-      eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const1_rtx),
-			    UNSPEC_TLS);
-      dest = gen_reg_rtx (Pmode);
-      emit_libcall_block (insns, dest, ret, eqv);
-
-      /* Load the addend.  */
-      addend = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, x, GEN_INT (TLS_LDO32)),
-			       UNSPEC_TLS);
-      addend = force_reg (SImode, gen_rtx_CONST (SImode, addend));
-      return gen_rtx_PLUS (Pmode, dest, addend);
+	  tp = arm_load_tp (NULL_RTX);
+	  
+	  dest = gen_rtx_PLUS (Pmode, tp, reg);
+	}
+      else
+	{
+	  insns = arm_call_tls_get_addr (x, reg, &ret, TLS_LDM32);
+	  
+	  /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+	     share the LDM result with other LD model accesses.  */
+	  eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const1_rtx),
+				UNSPEC_TLS);
+	  dest = gen_reg_rtx (Pmode);
+	  emit_libcall_block (insns, dest, ret, eqv);
+	  
+	  /* Load the addend.  */
+	  addend = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, x,
+						     GEN_INT (TLS_LDO32)),
+				   UNSPEC_TLS);
+	  addend = force_reg (SImode, gen_rtx_CONST (SImode, addend));
+	  dest = gen_rtx_PLUS (Pmode, dest, addend);
+	}
+      return dest;
 
     case TLS_MODEL_INITIAL_EXEC:
       labelno = GEN_INT (pic_labelno++);
@@ -9384,6 +9433,11 @@ arm_note_pic_base (rtx *x, void *date ATTRIBUTE_UNUSED)
 static bool
 arm_cannot_copy_insn_p (rtx insn)
 {
+  /* The tls call insn cannot be copied, as it is paired with a data
+     word.  */
+  if (recog_memoized (insn) == CODE_FOR_tlscall)
+    return true;
+  
   return for_each_rtx (&PATTERN (insn), arm_note_pic_base, NULL);
 }
 
@@ -22912,6 +22966,9 @@ arm_emit_tls_decoration (FILE *fp, rtx x)
     case TLS_LE32:
       fputs ("(tpoff)", fp);
       break;
+    case TLS_DESCSEQ:
+      fputs ("(tlsdesc)", fp);
+      break;
     default:
       gcc_unreachable ();
     }
@@ -22921,9 +22978,11 @@ arm_emit_tls_decoration (FILE *fp, rtx x)
     case TLS_GD32:
     case TLS_LDM32:
     case TLS_IE32:
+    case TLS_DESCSEQ:
       fputs (" + (. - ", fp);
       output_addr_const (fp, XVECEXP (x, 0, 2));
-      fputs (" - ", fp);
+      /* For DESCSEQ the 3rd operand encodes thumbness, and is added */
+      fputs (reloc == TLS_DESCSEQ ? " + " : " - ", fp);
       output_addr_const (fp, XVECEXP (x, 0, 3));
       fputc (')', fp);
       break;

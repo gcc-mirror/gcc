@@ -1,3 +1,7 @@
+2011-06-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.target/arm/tlscall.c: New.
+
 2011-06-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49172

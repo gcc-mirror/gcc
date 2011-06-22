@@ -1,3 +1,24 @@
+2011-06-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke.texi (ARM Options): Document -mtls-dialect option.
+	* doc/install.texi (Configuration): Document --with-tls.
+	* config.gcc (arm*-*-linux*): Default to gnu tls.
+	(arm*-*-*): Add --with-tls option.
+	(all_defaults): Add 'tls'.
+	* config/arm/arm.c (enum tls_reloc): Add TLS_DESCSEQ.
+	(arm_call_tls_get_addr): Clean up. Assert not tls descriptor.
+	(arm_tls_descseq_addr): New.
+	(legitimize_tls_address): Add tlsdesc support.
+	(arm_cannot_copy_insn_p): Check for tlscall.
+	(arm_emit_tls_decoration): Likewise.
+	* config/arm/arm.h (TARGET_GNU2_TLS): New.
+	(OPTION_DEFAULT_SPECS): Add with-tls support.
+	* config/arm/arm.md (R1_REGNUM): Define.
+	(tlscall): New.
+	* config/arm/arm.opt (tls_type): New enumeration type and values.
+	(mtls-dialect): New switch.
+	* config/arm/arm-opts.h (enum tls_type): New.
+
 2011-06-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* attribs.c (register_attribute): Added assert to check that all

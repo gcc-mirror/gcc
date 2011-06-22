@@ -477,7 +477,7 @@ Objective-C and Objective-C++ Dialects}.
 -mthumb  -marm @gol
 -mtpcs-frame  -mtpcs-leaf-frame @gol
 -mcaller-super-interworking  -mcallee-super-interworking @gol
--mtp=@var{name} @gol
+-mtp=@var{name} -mtls-dialect=@var{dialect} @gol
 -mword-relocations @gol
 -mfix-cortex-m3-ldrd}
 
@@ -10470,6 +10470,18 @@ models are @option{soft}, which generates calls to @code{__aeabi_read_tp},
 (supported in the arm6k architecture), and @option{auto}, which uses the
 best available method for the selected processor.  The default setting is
 @option{auto}.
+
+@item -mtls-dialect=@var{dialect}
+@opindex mtls-dialect
+Specify the dialect to use for accessing thread local storage.  Two
+dialects are supported --- @option{gnu} and @option{gnu2}.  The
+@option{gnu} dialect selects the original GNU scheme for supporting
+local and global dynamic TLS models.  The @option{gnu2} dialect
+selects the GNU descriptor scheme, which provides better performance
+for shared libraries.  The GNU descriptor scheme is compatible with
+the original scheme, but does require new assembler, linker and
+library support.  Initial and local exec TLS models are unaffected by
+this option and always use the original scheme.
 
 @item -mword-relocations
 @opindex mword-relocations
