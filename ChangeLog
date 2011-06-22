@@ -1,3 +1,18 @@
+2011-06-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR47836
+	PR23656
+	PR47733
+	PR49247
+	* configure.ac (target_libraries): Remove target-libiberty.
+	Remove case-statement setting skipdirs=target-libiberty for
+	multiple targets.  Remove checking target_configdirs and
+	removing target-libiberty but keeping target-libgcc if
+	otherwise empty.
+	* Makefile.def (target_modules): Don't add libiberty.
+	(dependencies): Remove all traces of target-libiberty.
+	* configure, Makefile.in: Regenerate.
+
 2011-06-13  Walter Lee <walt@tilera.com>
 
 	* configure.ac (tilepro-*-*) New case.
