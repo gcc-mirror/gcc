@@ -1,5 +1,23 @@
 2011-06-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-ssa-ccp.c (evaluate_stmt): Try bitwise tracking for
+	builtin calls even if likelyvalue is not CONSTANT.
+	Handle BUILT_IN_STRDUP and BUILT_IN_STRNDUP like BUILT_IN_MALLOC.
+	Return get_value_for_expr of first operand
+	for BUILT_IN_{MEM{CPY,MOVE,SET},STR{,N}CPY}{,_CHK}.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
+	BUILT_IN_{MEM{{,P}CPY,MOVE,SET},STR{,N}C{PY,AT},STPCPY}_CHK like
+	their non-checking counterparts.
+	(call_may_clobber_ref_p_1): Likewise.
+	(stmt_kills_ref_p_1): Handle BUILT_IN_MEM{{,P}CPY,MOVE,SET}_CHK
+	like their non-checking counterparts.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Handle BUILT_IN_{MEM{{,P}CPY,MOVE,SET},STR{,N}C{PY,AT},STPCPY}_CHK
+	like their non-checking counterparts.
+	(find_func_clobbers): Likewise.
+	* tree-ssa-dce.c (propagate_necessity): Handle BUILT_IN_MEMSET_CHK
+	like BUILT_IN_MEMSET and BUILT_IN_CALLOC like BUILT_IN_MALLOC.
+
 	* dwarf2out.c (size_of_loc_descr, output_loc_operands,
 	mark_base_types, hash_loc_operands, compare_loc_operands): Allow
 	DW_OP_GNU_convert and DW_OP_GNU_reinterpret to use constant instead

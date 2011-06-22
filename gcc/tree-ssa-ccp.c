@@ -1556,7 +1556,7 @@ evaluate_stmt (gimple stmt)
 
   /* Resort to simplification for bitwise tracking.  */
   if (flag_tree_bit_ccp
-      && likelyvalue == CONSTANT
+      && (likelyvalue == CONSTANT || is_gimple_call (stmt))
       && !is_constant)
     {
       enum gimple_code code = gimple_code (stmt);
@@ -1616,6 +1616,8 @@ evaluate_stmt (gimple stmt)
 	    case BUILT_IN_MALLOC:
 	    case BUILT_IN_REALLOC:
 	    case BUILT_IN_CALLOC:
+	    case BUILT_IN_STRDUP:
+	    case BUILT_IN_STRNDUP:
 	      val.lattice_val = CONSTANT;
 	      val.value = build_int_cst (TREE_TYPE (gimple_get_lhs (stmt)), 0);
 	      val.mask = shwi_to_double_int
@@ -1629,6 +1631,20 @@ evaluate_stmt (gimple stmt)
 	      val.mask = shwi_to_double_int
 		  	   (~(((HOST_WIDE_INT) BIGGEST_ALIGNMENT)
 			      / BITS_PER_UNIT - 1));
+	      break;
+
+	    /* These builtins return their first argument, unmodified.  */
+	    case BUILT_IN_MEMCPY:
+	    case BUILT_IN_MEMMOVE:
+	    case BUILT_IN_MEMSET:
+	    case BUILT_IN_STRCPY:
+	    case BUILT_IN_STRNCPY:
+	    case BUILT_IN_MEMCPY_CHK:
+	    case BUILT_IN_MEMMOVE_CHK:
+	    case BUILT_IN_MEMSET_CHK:
+	    case BUILT_IN_STRCPY_CHK:
+	    case BUILT_IN_STRNCPY_CHK:
+	      val = get_value_for_expr (gimple_call_arg (stmt, 0), true);
 	      break;
 
 	    default:;
