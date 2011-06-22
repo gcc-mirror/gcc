@@ -1,3 +1,17 @@
+2011-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/49490
+	* iter.c (gomp_iter_static_next): For chunk size 0
+	only use n ceil/ nthreads size for the first
+	n % nthreads threads in the team instead of
+	all threads except for the last few ones which
+	get less work or none at all.
+	* iter_ull.c (gomp_iter_ull_static_next): Likewise.
+	* env.c (parse_schedule): If OMP_SCHEDULE doesn't have
+	chunk argument, set run_sched_modifier to 0 for static
+	resp. 1 for other kinds.  If chunk argument is 0
+	and not static, set value to 1.
+
 2011-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49043

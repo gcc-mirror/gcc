@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+/* Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
@@ -108,7 +108,11 @@ parse_schedule (void)
   while (isspace ((unsigned char) *env))
     ++env;
   if (*env == '\0')
-    return;
+    {
+      gomp_global_icv.run_sched_modifier
+	= gomp_global_icv.run_sched_var != GFS_STATIC;
+      return;
+    }
   if (*env++ != ',')
     goto unknown;
   while (isspace ((unsigned char) *env))
@@ -129,6 +133,8 @@ parse_schedule (void)
   if ((int)value != value)
     goto invalid;
 
+  if (value == 0 && gomp_global_icv.run_sched_var != GFS_STATIC)
+    value = 1;
   gomp_global_icv.run_sched_modifier = value;
   return;
 

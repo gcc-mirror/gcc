@@ -1,5 +1,12 @@
 2011-06-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libgomp/49490
+	* omp-low.c (expand_omp_for_static_nochunk): Only
+	use n ceil/ nthreads size for the first
+	n % nthreads threads in the team instead of
+	all threads except for the last few ones which
+	get less work or none at all.
+
 	PR debug/49496
 	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Ignore debug
 	uses.
