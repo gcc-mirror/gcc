@@ -31,6 +31,7 @@
 ;; Register numbers
 (define_constants
   [(R0_REGNUM        0)		; First CORE register
+   (R1_REGNUM	     1)		; Second CORE register
    (IP_REGNUM	    12)		; Scratch register
    (SP_REGNUM	    13)		; Stack pointer
    (LR_REGNUM       14)		; Return address register
@@ -10718,6 +10719,27 @@
   "bl\\t__aeabi_read_tp\\t@ load_tp_soft"
   [(set_attr "conds" "clob")]
 )
+
+;; tls descriptor call
+(define_insn "tlscall"
+  [(set (reg:SI R0_REGNUM)
+        (unspec:SI [(reg:SI R0_REGNUM)
+                    (match_operand:SI 0 "" "X")
+	            (match_operand 1 "" "")] UNSPEC_TLS))
+   (clobber (reg:SI R1_REGNUM))
+   (clobber (reg:SI LR_REGNUM))
+   (clobber (reg:SI CC_REGNUM))]
+  "TARGET_GNU2_TLS"
+  {
+    targetm.asm_out.internal_label (asm_out_file, "LPIC",
+				    INTVAL (operands[1]));
+    return "bl\\t%c0(tlscall)";
+  }
+  [(set_attr "conds" "clob")
+   (set_attr "length" "4")]
+)
+
+;;
 
 ;; We only care about the lower 16 bits of the constant 
 ;; being inserted into the upper 16 bits of the register.

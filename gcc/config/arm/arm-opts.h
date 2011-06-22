@@ -68,4 +68,9 @@ enum arm_tp_type {
   TP_CP15
 };
 
+/* Which TLS scheme to use.  */
+enum arm_tls_type {
+  TLS_GNU,
+  TLS_GNU2
+};
 #endif

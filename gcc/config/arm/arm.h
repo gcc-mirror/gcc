@@ -220,6 +220,7 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 
 #define TARGET_HARD_TP			(target_thread_pointer == TP_CP15)
 #define TARGET_SOFT_TP			(target_thread_pointer == TP_SOFT)
+#define TARGET_GNU2_TLS			(target_tls_dialect == TLS_GNU2)
 
 /* Only 16-bit thumb code.  */
 #define TARGET_THUMB1			(TARGET_THUMB && !arm_arch_thumb2)
@@ -313,7 +314,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
      by -march).
    --with-float is ignored if -mfloat-abi is specified.
    --with-fpu is ignored if -mfpu is specified.
-   --with-abi is ignored is -mabi is specified.  */
+   --with-abi is ignored if -mabi is specified.
+   --with-tls is ignored if -mtls-dialect is specified. */
 #define OPTION_DEFAULT_SPECS \
   {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" }, \
   {"cpu", "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
@@ -321,7 +323,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
   {"float", "%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}" }, \
   {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"}, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}"}, \
-  {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"},
+  {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"}, \
+  {"tls", "%{!mtls-dialect:-mtls-dialect=%(VALUE)}"},
 
 /* Which floating point model to use.  */
 enum arm_fp_model
