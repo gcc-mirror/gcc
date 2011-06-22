@@ -4,6 +4,7 @@
 	PR bootstrap/23656
 	PR other/47733
 	PR bootstrap/49247
+	PR c/48825
 	* configure.ac (target_libraries): Remove target-libiberty.
 	Remove case-statement setting skipdirs=target-libiberty for
 	multiple targets.  Remove checking target_configdirs and
