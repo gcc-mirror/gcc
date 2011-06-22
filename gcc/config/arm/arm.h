@@ -324,7 +324,7 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
   {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"}, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}"}, \
   {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"}, \
-  {"tls", "%{!mtls-dialect:-mtls-dialect=%(VALUE)}"},
+  {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},
 
 /* Which floating point model to use.  */
 enum arm_fp_model
