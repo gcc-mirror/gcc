@@ -1,5 +1,10 @@
 2011-06-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49172
+	* g++.dg/cpp0x/constexpr-ref1.C: New.
+	* g++.dg/cpp0x/constexpr-ref2.C: New.
+	* g++.dg/cpp0x/constexpr-ice2.C: Remove dg-error tag.
+
 	PR c++/49482
 	* g++.dg/cpp0x/lambda/lambda-warn3.C: New.
 

@@ -8629,6 +8629,8 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
       tree var;
       tree base_conv_type;
 
+      gcc_assert (complain == tf_warning_or_error);
+
       /* Skip over the REF_BIND.  */
       conv = conv->u.next;
       /* If the next conversion is a BASE_CONV, skip that too -- but
@@ -8646,7 +8648,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
 				/*inner=*/-1,
 				/*issue_conversion_warnings=*/true,
 				/*c_cast_p=*/false,
-				tf_warning_or_error);
+				complain);
       if (error_operand_p (expr))
 	expr = error_mark_node;
       else
@@ -8667,18 +8669,24 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
 	    }
 	  else
 	    /* Take the address of EXPR.  */
-	    expr = cp_build_addr_expr (expr, tf_warning_or_error);
+	    expr = cp_build_addr_expr (expr, complain);
 	  /* If a BASE_CONV was required, perform it now.  */
 	  if (base_conv_type)
 	    expr = (perform_implicit_conversion
 		    (build_pointer_type (base_conv_type), expr,
-		     tf_warning_or_error));
+		     complain));
 	  expr = build_nop (type, expr);
+	  if (DECL_DECLARED_CONSTEXPR_P (decl))
+	    {
+	      expr = cxx_constant_value (expr);
+	      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
+		= reduced_constant_expression_p (expr);
+	    }
 	}
     }
   else
     /* Perform the conversion.  */
-    expr = convert_like (conv, expr, tf_warning_or_error);
+    expr = convert_like (conv, expr, complain);
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
