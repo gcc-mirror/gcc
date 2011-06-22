@@ -1581,10 +1581,11 @@ assemble_thunk (struct cgraph_node *node)
     {
       const char *fnname;
       tree fn_block;
+      tree restype = TREE_TYPE (TREE_TYPE (thunk_fndecl));
       
       DECL_RESULT (thunk_fndecl)
 	= build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
-		      RESULT_DECL, 0, integer_type_node);
+		      RESULT_DECL, 0, restype);
       fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
 
       /* The back end expects DECL_INITIAL to contain a BLOCK, so we
