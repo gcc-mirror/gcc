@@ -1,3 +1,15 @@
+2011-06-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/Makefile.am: Add alloc_traits.h headers.
+	* include/Makefile.in: Regenerate.
+	* include/std/memory: Include uses_allocator.h explicitly.
+	* include/bits/allocator.h (allocator_traits): Move to ...
+	* include/bits/alloc_traits.h: New header.
+	* include/ext/alloc_traits.h (__alloc_traits): Extension to provide
+	a common allocator interface for C++98 and C++0x.
+	* include/bits/stl_construct.h: Use __alloc_traits.
+	* include/bits/stl_uninitialized.h: Likewise.
+
 2011-06-22  Daniel Krugler  <daniel.kruegler@googlemail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

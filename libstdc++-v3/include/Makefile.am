@@ -79,6 +79,7 @@ bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits
 bits_headers = \
         ${bits_srcdir}/algorithmfwd.h \
+	${bits_srcdir}/alloc_traits.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
 	${bits_srcdir}/atomic_0.h \
@@ -493,6 +494,7 @@ ext_srcdir = ${glibcxx_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
+	${ext_srcdir}/alloc_traits.h \
 	${ext_srcdir}/atomicity.h \
 	${ext_srcdir}/array_allocator.h \
 	${ext_srcdir}/bitmap_allocator.h \
