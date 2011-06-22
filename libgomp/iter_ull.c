@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -60,7 +60,7 @@ gomp_iter_ull_static_next (gomp_ull *pstart, gomp_ull *pend)
      trip through the outer loop.  */
   if (ws->chunk_size_ull == 0)
     {
-      gomp_ull n, q, i, s0, e0, s, e;
+      gomp_ull n, q, i, t, s0, e0, s, e;
 
       if (thr->ts.static_trip > 0)
 	return 1;
@@ -75,11 +75,14 @@ gomp_iter_ull_static_next (gomp_ull *pstart, gomp_ull *pend)
       /* Compute the "zero-based" start and end points.  That is, as
 	 if the loop began at zero and incremented by one.  */
       q = n / nthreads;
-      q += (q * nthreads != n);
-      s0 = q * i;
+      t = n % nthreads;
+      if (i < t)
+	{
+	  t = 0;
+	  q++;
+	}
+      s0 = q * i + t;
       e0 = s0 + q;
-      if (e0 > n)
-	e0 = n;
 
       /* Notice when no iterations allocated for this thread.  */
       if (s0 >= e0)
