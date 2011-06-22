@@ -4811,6 +4811,8 @@ dwarf_stack_op_name (unsigned int op)
       return "DW_OP_GNU_convert";
     case DW_OP_GNU_reinterpret:
       return "DW_OP_GNU_reinterpret";
+    case DW_OP_GNU_parameter_ref:
+      return "DW_OP_GNU_parameter_ref";
 
     default:
       return "OP_<unknown>";
@@ -5085,6 +5087,10 @@ size_of_loc_descr (dw_loc_descr_ref loc)
 	  = get_base_type_offset (loc->dw_loc_oprnd1.v.val_die_ref.die);
 	size += size_of_uleb128 (o);
       }
+      break;
+    case DW_OP_GNU_parameter_ref:
+      size += 4;
+      break;
     default:
       break;
     }
@@ -5122,6 +5128,7 @@ size_of_locs (dw_loc_descr_ref loc)
 
 static HOST_WIDE_INT extract_int (const unsigned char *, unsigned);
 static void get_ref_die_offset_label (char *, dw_die_ref);
+static unsigned long int get_ref_die_offset (dw_die_ref);
 static void output_loc_sequence (dw_loc_descr_ref, int);
 
 /* Output location description stack opcode's operands (if any).
@@ -5467,6 +5474,15 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
       }
       break;
 
+    case DW_OP_GNU_parameter_ref:
+      {
+	unsigned long o;
+	gcc_assert (val1->val_class == dw_val_class_die_ref);
+	o = get_ref_die_offset (val1->v.val_die_ref.die);
+	dw2_asm_output_data (4, o, NULL);
+      }
+      break;
+
     default:
       /* Other codes have no operands.  */
       break;
@@ -5649,6 +5665,7 @@ output_loc_operands_raw (dw_loc_descr_ref loc)
     case DW_OP_GNU_deref_type:
     case DW_OP_GNU_convert:
     case DW_OP_GNU_reinterpret:
+    case DW_OP_GNU_parameter_ref:
       gcc_unreachable ();
       break;
 
@@ -6962,6 +6979,15 @@ get_base_type_offset (dw_die_ref ref)
       calc_base_type_die_sizes ();
       gcc_assert (ref->die_offset);
     }
+  return ref->die_offset;
+}
+
+/* Return die_offset of a DIE reference other than base type.  */
+
+static unsigned long int
+get_ref_die_offset (dw_die_ref ref)
+{
+  gcc_assert (ref->die_offset);
   return ref->die_offset;
 }
 
@@ -14507,6 +14533,34 @@ rotate_loc_descriptor (rtx rtl, enum machine_mode mode,
   return ret;
 }
 
+/* Helper function for mem_loc_descriptor.  Return DW_OP_GNU_parameter_ref
+   for DEBUG_PARAMETER_REF RTL.  */
+
+static dw_loc_descr_ref
+parameter_ref_descriptor (rtx rtl)
+{
+  dw_loc_descr_ref ret;
+  dw_die_ref ref;
+
+  if (dwarf_strict)
+    return NULL;
+  gcc_assert (TREE_CODE (DEBUG_PARAMETER_REF_DECL (rtl)) == PARM_DECL);
+  ref = lookup_decl_die (DEBUG_PARAMETER_REF_DECL (rtl));
+  ret = new_loc_descr (DW_OP_GNU_parameter_ref, 0, 0);
+  if (ref)
+    {
+      ret->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+      ret->dw_loc_oprnd1.v.val_die_ref.die = ref;
+      ret->dw_loc_oprnd1.v.val_die_ref.external = 0;
+    }
+  else
+    {
+      ret->dw_loc_oprnd1.val_class = dw_val_class_decl_ref;
+      ret->dw_loc_oprnd1.v.val_decl_ref = DEBUG_PARAMETER_REF_DECL (rtl);
+    }
+  return ret;
+}
+
 /* The following routine converts the RTL for a variable or parameter
    (resident in memory) into an equivalent Dwarf representation of a
    mechanism for getting the address of that same variable onto the top of a
@@ -14853,7 +14907,11 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       mem_loc_result = new_loc_descr (DW_OP_GNU_entry_value, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_loc;
       mem_loc_result->dw_loc_oprnd1.v.val_loc = op0;
-      return mem_loc_result;
+      break;
+
+    case DEBUG_PARAMETER_REF:
+      mem_loc_result = parameter_ref_descriptor (rtl);
+      break;
 
     case PRE_MODIFY:
       /* Extract the PLUS expression nested inside and fall into
@@ -20571,7 +20629,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		{
 		  dw_loc_descr_ref reg, val;
 		  enum machine_mode mode = GET_MODE (XEXP (XEXP (arg, 0), 1));
-		  dw_die_ref cdie;
+		  dw_die_ref cdie, tdie = NULL;
 
 		  next_arg = XEXP (arg, 1);
 		  if (REG_P (XEXP (XEXP (arg, 0), 0))
@@ -20602,6 +20660,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		      tlocc = XEXP (XEXP (arg, 0), 1);
 		      continue;
 		    }
+		  reg = NULL;
 		  if (REG_P (XEXP (XEXP (arg, 0), 0)))
 		    reg = reg_loc_descriptor (XEXP (XEXP (arg, 0), 0),
 					      VAR_INIT_STATUS_INITIALIZED);
@@ -20613,9 +20672,20 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 						GET_MODE (mem),
 						VAR_INIT_STATUS_INITIALIZED);
 		    }
+		  else if (GET_CODE (XEXP (XEXP (arg, 0), 0))
+			   == DEBUG_PARAMETER_REF)
+		    {
+		      tree tdecl
+			= DEBUG_PARAMETER_REF_DECL (XEXP (XEXP (arg, 0), 0));
+		      tdie = lookup_decl_die (tdecl);
+		      if (tdie == NULL)
+			continue;
+		    }
 		  else
 		    continue;
-		  if (reg == NULL)
+		  if (reg == NULL
+		      && GET_CODE (XEXP (XEXP (arg, 0), 0))
+			 != DEBUG_PARAMETER_REF)
 		    continue;
 		  val = mem_loc_descriptor (XEXP (XEXP (arg, 0), 1), mode,
 					    VOIDmode,
@@ -20625,8 +20695,11 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		  if (die == NULL)
 		    die = gen_call_site_die (decl, subr_die, ca_loc);
 		  cdie = new_die (DW_TAG_GNU_call_site_parameter, die,
-				  NULL_TREE);		
-		  add_AT_loc (cdie, DW_AT_location, reg);
+				  NULL_TREE);
+		  if (reg != NULL)
+		    add_AT_loc (cdie, DW_AT_location, reg);
+		  else if (tdie != NULL)
+		    add_AT_die_ref (cdie, DW_AT_abstract_origin, tdie);
 		  add_AT_loc (cdie, DW_AT_GNU_call_site_value, val);
 		  if (next_arg != XEXP (arg, 1))
 		    {
@@ -24208,6 +24281,7 @@ resolve_addr_in_expr (dw_loc_descr_ref loc)
 	  return false;
 	break;
       case DW_OP_GNU_implicit_pointer:
+      case DW_OP_GNU_parameter_ref:
 	if (loc->dw_loc_oprnd1.val_class == dw_val_class_decl_ref)
 	  {
 	    dw_die_ref ref
@@ -24748,6 +24822,10 @@ compare_loc_operands (dw_loc_descr_ref x, dw_loc_descr_ref y)
     case DW_OP_GNU_convert:
     case DW_OP_GNU_reinterpret:
       return valx1->v.val_die_ref.die == valy1->v.val_die_ref.die;
+    case DW_OP_GNU_parameter_ref:
+      return valx1->val_class == dw_val_class_die_ref
+	     && valx1->val_class == valy1->val_class
+	     && valx1->v.val_die_ref.die == valy1->v.val_die_ref.die;
     default:
       /* Other codes have no operands.  */
       return true;

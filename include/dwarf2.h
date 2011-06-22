@@ -563,6 +563,8 @@ enum dwarf_location_atom
     DW_OP_GNU_deref_type = 0xf6,
     DW_OP_GNU_convert = 0xf7,
     DW_OP_GNU_reinterpret = 0xf9,
+    /* The GNU parameter ref extension.  */
+    DW_OP_GNU_parameter_ref = 0xfa,
     /* HP extensions.  */
     DW_OP_HP_unknown     = 0xe0, /* Ouch, the same as GNU_push_tls_address.  */
     DW_OP_HP_is_value    = 0xe1,

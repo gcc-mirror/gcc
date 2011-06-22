@@ -1,5 +1,5 @@
 /* Single entry single exit control flow regions.
-   Copyright (C) 2008, 2009, 2010
+   Copyright (C) 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jan Sjodin <jan.sjodin@amd.com> and
    Sebastian Pop <sebastian.pop@amd.com>.
@@ -472,6 +472,8 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
     {
       if (gimple_debug_bind_p (copy))
 	gimple_debug_bind_reset_value (copy);
+      else if (gimple_debug_source_bind_p (copy))
+	return false;
       else
 	gcc_unreachable ();
 

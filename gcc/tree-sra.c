@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -4282,28 +4282,87 @@ static void
 sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
 {
   int i, len;
+  gimple_stmt_iterator *gsip = NULL, gsi;
 
+  if (MAY_HAVE_DEBUG_STMTS && single_succ_p (ENTRY_BLOCK_PTR))
+    {
+      gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
+      gsip = &gsi;
+    }
   len = VEC_length (ipa_parm_adjustment_t, adjustments);
   for (i = 0; i < len; i++)
     {
       struct ipa_parm_adjustment *adj;
       imm_use_iterator ui;
-      gimple stmt;
-      tree name;
+      gimple stmt, def_temp;
+      tree name, vexpr, copy = NULL_TREE;
+      use_operand_p use_p;
 
       adj = VEC_index (ipa_parm_adjustment_t, adjustments, i);
       if (adj->copy_param || !is_gimple_reg (adj->base))
 	continue;
       name = gimple_default_def (cfun, adj->base);
-      if (!name)
-	continue;
-      FOR_EACH_IMM_USE_STMT (stmt, ui, name)
+      vexpr = NULL;
+      if (name)
+	FOR_EACH_IMM_USE_STMT (stmt, ui, name)
+	  {
+	    /* All other users must have been removed by
+	       ipa_sra_modify_function_body.  */
+	    gcc_assert (is_gimple_debug (stmt));
+	    if (vexpr == NULL && gsip != NULL)
+	      {
+		gcc_assert (TREE_CODE (adj->base) == PARM_DECL);
+		vexpr = make_node (DEBUG_EXPR_DECL);
+		def_temp = gimple_build_debug_source_bind (vexpr, adj->base,
+							   NULL);
+		DECL_ARTIFICIAL (vexpr) = 1;
+		TREE_TYPE (vexpr) = TREE_TYPE (name);
+		DECL_MODE (vexpr) = DECL_MODE (adj->base);
+		gsi_insert_before (gsip, def_temp, GSI_SAME_STMT);
+	      }
+	    if (vexpr)
+	      {
+		FOR_EACH_IMM_USE_ON_STMT (use_p, ui)
+		  SET_USE (use_p, vexpr);
+	      }
+	    else
+	      gimple_debug_bind_reset_value (stmt);
+	    update_stmt (stmt);
+	  }
+      /* Create a VAR_DECL for debug info purposes.  */
+      if (!DECL_IGNORED_P (adj->base))
 	{
-	  /* All other users must have been removed by
-	     ipa_sra_modify_function_body.  */
-	  gcc_assert (is_gimple_debug (stmt));
-	  gimple_debug_bind_reset_value (stmt);
-	  update_stmt (stmt);
+	  copy = build_decl (DECL_SOURCE_LOCATION (current_function_decl),
+			     VAR_DECL, DECL_NAME (adj->base),
+			     TREE_TYPE (adj->base));
+	  if (DECL_PT_UID_SET_P (adj->base))
+	    SET_DECL_PT_UID (copy, DECL_PT_UID (adj->base));
+	  TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (adj->base);
+	  TREE_READONLY (copy) = TREE_READONLY (adj->base);
+	  TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (adj->base);
+	  DECL_GIMPLE_REG_P (copy) = DECL_GIMPLE_REG_P (adj->base);
+	  DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (adj->base);
+	  DECL_IGNORED_P (copy) = DECL_IGNORED_P (adj->base);
+	  DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (adj->base);
+	  DECL_SEEN_IN_BIND_EXPR_P (copy) = 1;
+	  SET_DECL_RTL (copy, 0);
+	  TREE_USED (copy) = 1;
+	  DECL_CONTEXT (copy) = current_function_decl;
+	  add_referenced_var (copy);
+	  add_local_decl (cfun, copy);
+	  DECL_CHAIN (copy) =
+	    BLOCK_VARS (DECL_INITIAL (current_function_decl));
+	  BLOCK_VARS (DECL_INITIAL (current_function_decl)) = copy;
+	}
+      if (gsip != NULL && copy && target_for_debug_bind (adj->base))
+	{
+	  gcc_assert (TREE_CODE (adj->base) == PARM_DECL);
+	  if (vexpr)
+	    def_temp = gimple_build_debug_bind (copy, vexpr, NULL);
+	  else
+	    def_temp = gimple_build_debug_source_bind (copy, adj->base,
+						       NULL);
+	  gsi_insert_before (gsip, def_temp, GSI_SAME_STMT);
 	}
     }
 }

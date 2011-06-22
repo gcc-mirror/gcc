@@ -727,6 +727,10 @@ DEF_RTL_EXPR(DEBUG_IMPLICIT_PTR, "debug_implicit_ptr", "t", RTX_OBJ)
    parameter.  */
 DEF_RTL_EXPR(ENTRY_VALUE, "entry_value", "0", RTX_OBJ)
 
+/* Used in VAR_LOCATION for a reference to a parameter that has
+   been optimized away completely.  */
+DEF_RTL_EXPR(DEBUG_PARAMETER_REF, "debug_parameter_ref", "t", RTX_OBJ)
+
 /* All expressions from this point forward appear only in machine
    descriptions.  */
 #ifdef GENERATOR_FILE

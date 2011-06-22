@@ -941,6 +941,9 @@ extern const char * const reg_note_name[];
 /* VAR_DECL/PARM_DECL DEBUG_IMPLICIT_PTR takes address of.  */
 #define DEBUG_IMPLICIT_PTR_DECL(RTX) XCTREE (RTX, 0, DEBUG_IMPLICIT_PTR)
 
+/* PARM_DECL DEBUG_PARAMETER_REF references.  */
+#define DEBUG_PARAMETER_REF_DECL(RTX) XCTREE (RTX, 0, DEBUG_PARAMETER_REF)
+
 /* Possible initialization status of a variable.   When requested
    by the user, this information is tracked and recorded in the DWARF
    debug information, along with the variable's location.  */

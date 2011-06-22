@@ -1,3 +1,70 @@
+2011-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47858
+	* gimple.h (enum gimple_debug_subcode): Add GIMPLE_DEBUG_SOURCE_BIND.
+	(gimple_build_debug_source_bind_stat): New prototype.
+	(gimple_build_debug_source_bind): Define.
+	(gimple_debug_source_bind_p, gimple_debug_source_bind_get_var,
+	gimple_debug_source_bind_get_value,
+	gimple_debug_source_bind_get_value_ptr,
+	gimple_debug_source_bind_set_var,
+	gimple_debug_source_bind_set_value): New inlines.
+	* gimple.c (gimple_build_debug_source_bind_stat): New function.
+	* gimple-pretty-print.c (dump_gimple_debug): Handle
+	GIMPLE_DEBUG_SOURCE_BIND.
+	* sese.c (rename_uses): Handle gimple_debug_source_bind_p.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Likewise.
+	* tree-parloops.c (eliminate_local_variables,
+	separate_decls_in_region): Likewise.
+	(separate_decls_in_region_debug): Renamed from
+	separate_decls_in_region_debug_bind.  Handle
+	gimple_debug_source_bind_p.
+	* tree.h (decl_debug_args_lookup, decl_debug_args_insert): New
+	prototypes.
+	(DECL_HAS_DEBUG_ARGS_P): Define.
+	(struct tree_function_decl): Add has_debug_args_flag field.
+	* tree.c (debug_args_for_decl): New variable.
+	(decl_debug_args_lookup, decl_debug_args_insert): New functions.
+	* tree-into-ssa.c (mark_def_sites): Handle uses in debug stmts.
+	(rewrite_debug_stmt_uses): New function.
+	(rewrite_stmt): Use it to rewrite debug stmt uses.
+	* rtl.def (DEBUG_PARAMETER_REF): New.
+	* rtl.h (DEBUG_PARAMETER_REF_DECL): Define.
+	* cselib.c (rtx_equal_for_cselib_1, cselib_hash_rtx): Handle
+	DEBUG_PARAMETER_REF.
+	* rtl.c (rtx_equal_p_cb, rtx_equal_p, iterative_hash_rtx): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* tree-sra.c (sra_ipa_reset_debug_stmts): Prefer replacing of
+	SSA_NAMEs with DEBUG_EXPR_DECLs initialized in source bind
+	debug stmts in the first bb.
+	* tree-inline.c (remap_ssa_name): If remapping default def
+	of a PARM_DECL fails, map to a DEBUG_EXPR_DECL set in
+	a source bind debug stmt.
+	(remap_gimple_stmt): Handle gimple_debug_source_bind_p.
+	(maybe_move_debug_stmts_to_successors): Likewise.
+	(copy_debug_stmt): Likewise.  Avoid shadowing a variable.
+	(tree_function_versioning): If DECL_HAS_DEBUG_ARGS_P, copy
+	debug args vector from old_decl to new_decl.
+	* ipa-prop.c (ipa_modify_call_arguments): For optimized away
+	or modified parameters, add debug bind stmts before call
+	setting DEBUG_EXPR_DECL which is remembered in debug args
+	vector.
+	* cfgexpand.c (expand_call_stmt): Call expand_debug_expr
+	on DECL_DEBUG_EXPRs from debug args vector.
+	(expand_debug_source_expr): New function.
+	(expand_debug_locations): Use it for source bind insns.
+	(expand_gimple_basic_block): Handle gimple_debug_source_bind_p.
+	* var-tracking.c (prepare_call_arguments): Add debug args
+	to call_arguments if any.
+	* dwarf2out.c (dwarf_stack_op_name, size_of_loc_descr,
+	output_loc_operands, output_loc_operands_raw,
+	resolve_addr_in_expr, compare_loc_operands): Handle
+	DW_OP_GNU_parameter_ref.
+	(get_ref_die_offset, parameter_ref_descriptor): New functions.
+	(mem_loc_descriptor): Handle DEBUG_PARAMETER_REF.
+	(gen_subprogram_die): Handle parameters identified by
+	DEBUG_PARAMETER_REF.
+
 2011-06-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke.texi (ARM Options): Document -mtls-dialect option.
