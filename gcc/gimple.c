@@ -1,6 +1,6 @@
 /* Gimple IR support functions.
 
-   Copyright 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -856,6 +856,30 @@ gimple_build_debug_bind_stat (tree var, tree value, gimple stmt MEM_STAT_DECL)
 
   gimple_debug_bind_set_var (p, var);
   gimple_debug_bind_set_value (p, value);
+  if (stmt)
+    {
+      gimple_set_block (p, gimple_block (stmt));
+      gimple_set_location (p, gimple_location (stmt));
+    }
+
+  return p;
+}
+
+
+/* Build a new GIMPLE_DEBUG_SOURCE_BIND statement.
+
+   VAR is bound to VALUE; block and location are taken from STMT.  */
+
+gimple
+gimple_build_debug_source_bind_stat (tree var, tree value,
+				     gimple stmt MEM_STAT_DECL)
+{
+  gimple p = gimple_build_with_ops_stat (GIMPLE_DEBUG,
+					 (unsigned)GIMPLE_DEBUG_SOURCE_BIND, 2
+					 PASS_MEM_STAT);
+
+  gimple_debug_source_bind_set_var (p, var);
+  gimple_debug_source_bind_set_value (p, value);
   if (stmt)
     {
       gimple_set_block (p, gimple_block (stmt));

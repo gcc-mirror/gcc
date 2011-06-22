@@ -812,6 +812,10 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
       return DEBUG_IMPLICIT_PTR_DECL (x)
 	     == DEBUG_IMPLICIT_PTR_DECL (y);
 
+    case DEBUG_PARAMETER_REF:
+      return DEBUG_PARAMETER_REF_DECL (x)
+	     == DEBUG_PARAMETER_REF_DECL (y);
+
     case ENTRY_VALUE:
       /* ENTRY_VALUEs are function invariant, it is thus undesirable to
 	 use rtx_equal_for_cselib_1 to compare the operands.  */
@@ -962,6 +966,11 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
       hash += ((unsigned) DEBUG_IMPLICIT_PTR << 7)
 	      + DECL_UID (DEBUG_IMPLICIT_PTR_DECL (x));
       return hash ? hash : (unsigned int) DEBUG_IMPLICIT_PTR;
+
+    case DEBUG_PARAMETER_REF:
+      hash += ((unsigned) DEBUG_PARAMETER_REF << 7)
+	      + DECL_UID (DEBUG_PARAMETER_REF_DECL (x));
+      return hash ? hash : (unsigned int) DEBUG_PARAMETER_REF;
 
     case ENTRY_VALUE:
       /* ENTRY_VALUEs are function invariant, thus try to avoid

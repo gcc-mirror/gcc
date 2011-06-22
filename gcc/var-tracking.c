@@ -5812,6 +5812,29 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	  }
       }
 
+  /* Add debug arguments.  */
+  if (fndecl
+      && TREE_CODE (fndecl) == FUNCTION_DECL
+      && DECL_HAS_DEBUG_ARGS_P (fndecl))
+    {
+      VEC(tree, gc) **debug_args = decl_debug_args_lookup (fndecl);
+      if (debug_args)
+	{
+	  unsigned int ix;
+	  tree param;
+	  for (ix = 0; VEC_iterate (tree, *debug_args, ix, param); ix += 2)
+	    {
+	      rtx item;
+	      tree dtemp = VEC_index (tree, *debug_args, ix + 1);
+	      enum machine_mode mode = DECL_MODE (dtemp);
+	      item = gen_rtx_DEBUG_PARAMETER_REF (mode, param);
+	      item = gen_rtx_CONCAT (mode, item, DECL_RTL (dtemp));
+	      call_arguments = gen_rtx_EXPR_LIST (VOIDmode, item,
+						  call_arguments);
+	    }
+	}
+    }
+
   /* Reverse call_arguments chain.  */
   prev = NULL_RTX;
   for (cur = call_arguments; cur; cur = next)

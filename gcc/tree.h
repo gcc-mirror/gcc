@@ -1,6 +1,6 @@
 /* Front-end tree definitions for GNU compiler.
    Copyright (C) 1989, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -3431,6 +3431,13 @@ struct GTY(())
 #define DECL_DISREGARD_INLINE_LIMITS(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.disregard_inline_limits)
 
+extern VEC(tree, gc) **decl_debug_args_lookup (tree);
+extern VEC(tree, gc) **decl_debug_args_insert (tree);
+
+/* Nonzero if a FUNCTION_DECL has DEBUG arguments attached to it.  */
+#define DECL_HAS_DEBUG_ARGS_P(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.has_debug_args_flag)
+
 /* For FUNCTION_DECL, this holds a pointer to a structure ("struct function")
    that describes the status of this function.  */
 #define DECL_STRUCT_FUNCTION(NODE) \
@@ -3496,16 +3503,16 @@ struct GTY(()) tree_function_decl {
   unsigned operator_new_flag : 1;
   unsigned declared_inline_flag : 1;
   unsigned regdecl_flag : 1;
-
   unsigned no_inline_warning_flag : 1;
+
   unsigned no_instrument_function_entry_exit : 1;
   unsigned no_limit_stack : 1;
   unsigned disregard_inline_limits : 1;
   unsigned pure_flag : 1;
   unsigned looping_const_or_pure_flag : 1;
+  unsigned has_debug_args_flag : 1;
 
-
-  /* 3 bits left */
+  /* 2 bits left */
 };
 
 /* The source language of the translation-unit.  */
@@ -5741,6 +5748,17 @@ struct GTY(()) tree_priority_map {
 #define tree_priority_map_eq tree_map_base_eq
 #define tree_priority_map_hash tree_map_base_hash
 #define tree_priority_map_marked_p tree_map_base_marked_p
+
+/* Map from a decl tree to a tree vector.  */
+
+struct GTY(()) tree_vec_map {
+  struct tree_map_base base;
+  VEC(tree,gc) *to;
+};
+
+#define tree_vec_map_eq tree_map_base_eq
+#define tree_vec_map_hash tree_decl_map_hash
+#define tree_vec_map_marked_p tree_map_base_marked_p
 
 /* In tree-ssa.c */
 

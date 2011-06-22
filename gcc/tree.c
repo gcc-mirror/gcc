@@ -203,6 +203,9 @@ static GTY ((if_marked ("tree_decl_map_marked_p"), param_is (struct tree_decl_ma
 static GTY ((if_marked ("tree_decl_map_marked_p"), param_is (struct tree_decl_map)))
      htab_t value_expr_for_decl;
 
+static GTY ((if_marked ("tree_vec_map_marked_p"), param_is (struct tree_vec_map)))
+     htab_t debug_args_for_decl;
+
 static GTY ((if_marked ("tree_priority_map_marked_p"),
 	     param_is (struct tree_priority_map)))
   htab_t init_priority_for_decl;
@@ -6014,6 +6017,49 @@ decl_value_expr_insert (tree from, tree to)
   loc = htab_find_slot_with_hash (value_expr_for_decl, h, DECL_UID (from),
 				  INSERT);
   *(struct tree_decl_map **) loc = h;
+}
+
+/* Lookup a vector of debug arguments for FROM, and return it if we
+   find one.  */
+
+VEC(tree, gc) **
+decl_debug_args_lookup (tree from)
+{
+  struct tree_vec_map *h, in;
+
+  if (!DECL_HAS_DEBUG_ARGS_P (from))
+    return NULL;
+  gcc_checking_assert (debug_args_for_decl != NULL);
+  in.base.from = from;
+  h = (struct tree_vec_map *)
+      htab_find_with_hash (debug_args_for_decl, &in, DECL_UID (from));
+  if (h)
+    return &h->to;
+  return NULL;
+}
+
+/* Insert a mapping FROM->empty vector of debug arguments in the value
+   expression hashtable.  */
+
+VEC(tree, gc) **
+decl_debug_args_insert (tree from)
+{
+  struct tree_vec_map *h;
+  void **loc;
+
+  if (DECL_HAS_DEBUG_ARGS_P (from))
+    return decl_debug_args_lookup (from);
+  if (debug_args_for_decl == NULL)
+    debug_args_for_decl = htab_create_ggc (64, tree_vec_map_hash,
+					   tree_vec_map_eq, 0);
+  h = ggc_alloc_tree_vec_map ();
+  h->base.from = from;
+  h->to = NULL;
+  loc = htab_find_slot_with_hash (debug_args_for_decl, h, DECL_UID (from),
+				  INSERT);
+  *(struct tree_vec_map **) loc = h;
+  DECL_HAS_DEBUG_ARGS_P (from) = 1;
+  return &h->to;
 }
 
 /* Hashing of types so that we don't make duplicates.
