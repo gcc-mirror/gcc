@@ -1,5 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
@@ -3982,6 +3982,14 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_STPNCPY:
       case BUILT_IN_STRCAT:
       case BUILT_IN_STRNCAT:
+      case BUILT_IN_STRCPY_CHK:
+      case BUILT_IN_STRNCPY_CHK:
+      case BUILT_IN_MEMCPY_CHK:
+      case BUILT_IN_MEMMOVE_CHK:
+      case BUILT_IN_MEMPCPY_CHK:
+      case BUILT_IN_STPCPY_CHK:
+      case BUILT_IN_STRCAT_CHK:
+      case BUILT_IN_STRNCAT_CHK:
 	{
 	  tree res = gimple_call_lhs (t);
 	  tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
@@ -4011,6 +4019,7 @@ find_func_aliases_for_builtin_call (gimple t)
 	  return true;
 	}
       case BUILT_IN_MEMSET:
+      case BUILT_IN_MEMSET_CHK:
 	{
 	  tree res = gimple_call_lhs (t);
 	  tree dest = gimple_call_arg (t, 0);
@@ -4627,6 +4636,14 @@ find_func_clobbers (gimple origt)
 	  case BUILT_IN_STPNCPY:
 	  case BUILT_IN_STRCAT:
 	  case BUILT_IN_STRNCAT:
+	  case BUILT_IN_STRCPY_CHK:
+	  case BUILT_IN_STRNCPY_CHK:
+	  case BUILT_IN_MEMCPY_CHK:
+	  case BUILT_IN_MEMMOVE_CHK:
+	  case BUILT_IN_MEMPCPY_CHK:
+	  case BUILT_IN_STPCPY_CHK:
+	  case BUILT_IN_STRCAT_CHK:
+	  case BUILT_IN_STRNCAT_CHK:
 	    {
 	      tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (decl)
 					       == BUILT_IN_BCOPY ? 1 : 0));
@@ -4649,6 +4666,7 @@ find_func_clobbers (gimple origt)
 	  /* The following function clobbers memory pointed to by
 	     its argument.  */
 	  case BUILT_IN_MEMSET:
+	  case BUILT_IN_MEMSET_CHK:
 	    {
 	      tree dest = gimple_call_arg (t, 0);
 	      unsigned i;

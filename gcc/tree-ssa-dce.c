@@ -831,7 +831,9 @@ propagate_necessity (struct edge_list *el)
 	      if (callee != NULL_TREE
 		  && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
 		  && (DECL_FUNCTION_CODE (callee) == BUILT_IN_MEMSET
+		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_MEMSET_CHK
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_MALLOC
+		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_CALLOC
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_FREE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_SAVE
