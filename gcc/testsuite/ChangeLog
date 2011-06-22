@@ -1,3 +1,9 @@
+2011-06-22  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/20031108-1.c: Require thumb1 or thumb2.
+	* gcc.target/arm/pr40482.c: Likewise.
+	* gcc.target/arm/stack-corruption.c: Likewise.
+
 2011-06-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49493

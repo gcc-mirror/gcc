@@ -1,5 +1,6 @@
 /* PR optimization/10467  */
 /* { dg-do compile } */
+/* { dg-skip-if "" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
 /* { dg-options "-O2 -mthumb" } */
 
 typedef enum {Ident_1} Enumeration;
