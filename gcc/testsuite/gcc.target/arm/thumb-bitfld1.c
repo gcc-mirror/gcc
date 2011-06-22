@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -mthumb -march=armv5t" }  */
+/* { dg-require-effective-target arm_thumb1_ok } */
+/* { dg-options "-O1 -mthumb" }  */
 
 struct foo
 {
