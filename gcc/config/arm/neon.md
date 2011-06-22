@@ -969,15 +969,57 @@
 ; SImode elements.
 
 (define_insn "vashl<mode>3"
-  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
-	(ashift:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")
-		      (match_operand:VDQIW 2 "s_register_operand" "w")))]
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w,w")
+	(ashift:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w,w")
+		      (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "w,Dn")))]
   "TARGET_NEON"
-  "vshl.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  {
+    switch (which_alternative)
+      {
+        case 0: return "vshl.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2";
+        case 1: return neon_output_shift_immediate ("vshl", 'i', &operands[2],
+                         			    <MODE>mode,
+						    VALID_NEON_QREG_MODE (<MODE>mode),
+						    true);
+        default: gcc_unreachable ();
+      }
+  }
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
                     (const_string "neon_vshl_ddd")
                     (const_string "neon_shift_3")))]
+)
+
+(define_insn "vashr<mode>3_imm"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")
+			(match_operand:VDQIW 2 "imm_for_neon_rshift_operand" "Dn")))]
+  "TARGET_NEON"
+  {
+    return neon_output_shift_immediate ("vshr", 's', &operands[2],
+					<MODE>mode, VALID_NEON_QREG_MODE (<MODE>mode),
+					false);
+  }
+  [(set (attr "neon_type")
+      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+                    (const_string "neon_vshl_ddd")
+                    (const_string "neon_shift_3")))]
+)
+
+(define_insn "vlshr<mode>3_imm"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")
+			(match_operand:VDQIW 2 "imm_for_neon_rshift_operand" "Dn")))]
+  "TARGET_NEON"
+  {
+    return neon_output_shift_immediate ("vshr", 'u', &operands[2],
+					<MODE>mode, VALID_NEON_QREG_MODE (<MODE>mode),
+					false);
+  }              
+  [(set (attr "neon_type")
+	(if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
+		      (const_string "neon_vshl_ddd")
+		      (const_string "neon_shift_3")))]
 )
 
 ; Used for implementing logical shift-right, which is a left-shift by a negative
@@ -1017,28 +1059,34 @@
 (define_expand "vashr<mode>3"
   [(set (match_operand:VDQIW 0 "s_register_operand" "")
 	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand" "")
-			(match_operand:VDQIW 2 "s_register_operand" "")))]
+			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon" "")))]
   "TARGET_NEON"
 {
   rtx neg = gen_reg_rtx (<MODE>mode);
-
-  emit_insn (gen_neg<mode>2 (neg, operands[2]));
-  emit_insn (gen_ashl<mode>3_signed (operands[0], operands[1], neg));
-
+  if (REG_P (operands[2]))
+    {
+      emit_insn (gen_neg<mode>2 (neg, operands[2]));
+      emit_insn (gen_ashl<mode>3_signed (operands[0], operands[1], neg));
+    }
+  else
+    emit_insn (gen_vashr<mode>3_imm (operands[0], operands[1], operands[2]));
   DONE;
 })
 
 (define_expand "vlshr<mode>3"
   [(set (match_operand:VDQIW 0 "s_register_operand" "")
 	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand" "")
-			(match_operand:VDQIW 2 "s_register_operand" "")))]
+			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon" "")))]
   "TARGET_NEON"
 {
   rtx neg = gen_reg_rtx (<MODE>mode);
-
-  emit_insn (gen_neg<mode>2 (neg, operands[2]));
-  emit_insn (gen_ashl<mode>3_unsigned (operands[0], operands[1], neg));
-
+  if (REG_P (operands[2]))
+    {
+      emit_insn (gen_neg<mode>2 (neg, operands[2]));
+      emit_insn (gen_ashl<mode>3_unsigned (operands[0], operands[1], neg));
+    }
+  else
+    emit_insn (gen_vlshr<mode>3_imm (operands[0], operands[1], operands[2]));
   DONE;
 })
 

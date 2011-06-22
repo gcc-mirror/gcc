@@ -1,3 +1,24 @@
+2011-06-22  Dmitry Plotnikov  <dplotnikov@ispras.ru>
+	Dmitry Melnik  <dm@ispras.ru>
+
+	* config/arm/arm.c (neon_immediate_valid_for_shift): New function.
+	(neon_output_shift_immediate): Ditto.
+	* config/arm/arm-protos.h (neon_immediate_valid_for_shift): New
+	prototype.
+	(neon_output_shift_immediate): Ditto.
+	* config/arm/neon.md (vashl<mode>3): Modified constraint.
+	(vashr<mode>3_imm): New insn pattern.
+	(vlshr<mode>3_imm): Ditto.
+	(vashr<mode>3): Modified constraint.
+	(vlshr<mode>3): Ditto.
+	* config/arm/predicates.md (imm_for_neon_lshift_operand): New
+	predicate.
+	(imm_for_neon_rshift_operand): Ditto.
+	(imm_lshift_or_reg_neon): Ditto.
+	(imm_rshift_or_reg_neon): Ditto.
+
+	* optabs.c (init_optabs): Init optab codes for vashl, vashr, vlshr.
+
 2011-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-ccp.c (evaluate_stmt): Try bitwise tracking for
