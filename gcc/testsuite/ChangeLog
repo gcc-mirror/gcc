@@ -1,3 +1,8 @@
+2011-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49260
+	* g++.dg/cpp0x/lambda/lambda-eh2.C: Change options.
+
 2011-06-22  Dmitry Plotnikov  <dplotnikov@ispras.ru>
 	Dmitry Melnik  <dm@ispras.ru>
 
