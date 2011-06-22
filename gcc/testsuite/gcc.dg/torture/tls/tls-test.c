@@ -2,6 +2,7 @@
 /* { dg-require-effective-target tls  }  */
 /* { dg-require-effective-target pthread } */
 /* { dg-options "-pthread" } */
+/* { dg-skip-if "TLS local exec code cannot be linked into shared objects" { alpha*-*-linux* } { "-pie" } { "" } } */
 
 #include <pthread.h>
 extern int printf (char *,...);
