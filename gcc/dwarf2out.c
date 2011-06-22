@@ -5082,11 +5082,14 @@ size_of_loc_descr (dw_loc_descr_ref loc)
       break;
     case DW_OP_GNU_convert:
     case DW_OP_GNU_reinterpret:
-      {
-	unsigned long o
-	  = get_base_type_offset (loc->dw_loc_oprnd1.v.val_die_ref.die);
-	size += size_of_uleb128 (o);
-      }
+      if (loc->dw_loc_oprnd1.val_class == dw_val_class_unsigned_const)
+	size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
+      else
+	{
+	  unsigned long o
+	    = get_base_type_offset (loc->dw_loc_oprnd1.v.val_die_ref.die);
+	  size += size_of_uleb128 (o);
+	}
       break;
     case DW_OP_GNU_parameter_ref:
       size += 4;
@@ -5467,11 +5470,14 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
       break;
     case DW_OP_GNU_convert:
     case DW_OP_GNU_reinterpret:
-      {
-	unsigned long o = get_base_type_offset (val1->v.val_die_ref.die);
-	gcc_assert (o);
-	dw2_asm_output_data_uleb128 (o, NULL);
-      }
+      if (loc->dw_loc_oprnd1.val_class == dw_val_class_unsigned_const)
+	dw2_asm_output_data_uleb128 (val1->v.val_unsigned, NULL);
+      else
+	{
+	  unsigned long o = get_base_type_offset (val1->v.val_die_ref.die);
+	  gcc_assert (o);
+	  dw2_asm_output_data_uleb128 (o, NULL);
+	}
       break;
 
     case DW_OP_GNU_parameter_ref:
@@ -13881,27 +13887,24 @@ base_type_for_mode (enum machine_mode mode, bool unsignedp)
   return type_die;
 }
 
-/* For OP descriptor assumed to be in unsigned MODE, convert it to a signed
-   type matching MODE, or, if MODE is narrower than DWARF2_ADDR_SIZE, signed
-   type matching DWARF2_ADDR_SIZE.  Return NULL if the conversion is not
+/* For OP descriptor assumed to be in unsigned MODE, convert it to a unsigned
+   type matching MODE, or, if MODE is narrower than or as wide as
+   DWARF2_ADDR_SIZE, untyped.  Return NULL if the conversion is not
    possible.  */
 
 static dw_loc_descr_ref
-convert_descriptor_to_signed (enum machine_mode mode, dw_loc_descr_ref op)
+convert_descriptor_to_mode (enum machine_mode mode, dw_loc_descr_ref op)
 {
   enum machine_mode outer_mode = mode;
   dw_die_ref type_die;
   dw_loc_descr_ref cvt;
 
-  if (GET_MODE_SIZE (mode) < DWARF2_ADDR_SIZE)
+  if (GET_MODE_SIZE (mode) <= DWARF2_ADDR_SIZE)
     {
-      outer_mode = mode_for_size (DWARF2_ADDR_SIZE * BITS_PER_UNIT,
-				  MODE_INT, 0);
-      if (outer_mode == BLKmode
-	  || GET_MODE_SIZE (outer_mode) != DWARF2_ADDR_SIZE)
-	return NULL;
+      add_loc_descr (&op, new_loc_descr (DW_OP_GNU_convert, 0, 0));
+      return op;
     }
-  type_die = base_type_for_mode (outer_mode, 0);
+  type_die = base_type_for_mode (outer_mode, 1);
   if (type_die == NULL)
     return NULL;
   cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
@@ -13958,8 +13961,28 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
     return NULL;
 
   if (GET_MODE_CLASS (op_mode) != MODE_INT
-      || GET_MODE_SIZE (op_mode) >= DWARF2_ADDR_SIZE)
+      || GET_MODE_SIZE (op_mode) == DWARF2_ADDR_SIZE)
     return compare_loc_descriptor (op, op0, op1);
+
+  if (GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE)
+    {
+      dw_die_ref type_die = base_type_for_mode (op_mode, 0);
+      dw_loc_descr_ref cvt;
+
+      if (type_die == NULL)
+	return NULL;
+      cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
+      cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+      cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+      cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+      add_loc_descr (&op0, cvt);
+      cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
+      cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+      cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+      cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+      add_loc_descr (&op1, cvt);
+      return compare_loc_descriptor (op, op0, op1);
+    }
 
   shift = (DWARF2_ADDR_SIZE - GET_MODE_SIZE (op_mode)) * BITS_PER_UNIT;
   /* For eq/ne, if the operands are known to be zero-extended,
@@ -14016,9 +14039,6 @@ ucompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
   if (dwarf_strict && GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE)
     return NULL;
 
-  if (op_mode != VOIDmode && GET_MODE_CLASS (op_mode) != MODE_INT)
-    return NULL;
-
   op0 = mem_loc_descriptor (XEXP (rtl, 0), op_mode, mem_mode,
 			    VAR_INIT_STATUS_INITIALIZED);
   op1 = mem_loc_descriptor (XEXP (rtl, 1), op_mode, mem_mode,
@@ -14066,24 +14086,6 @@ ucompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
 	add_loc_descr (&op1, new_loc_descr (DW_OP_plus_uconst,
 					    bias, 0));
     }
-  else
-    {
-      dw_die_ref type_die = base_type_for_mode (op_mode, 1);
-      dw_loc_descr_ref cvt;
-
-      if (type_die == NULL)
-	return NULL;
-      cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
-      cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-      cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
-      cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
-      add_loc_descr (&op0, cvt);
-      cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
-      cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-      cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
-      cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
-      add_loc_descr (&op1, cvt);
-    }
   return compare_loc_descriptor (op, op0, op1);
 }
 
@@ -14130,23 +14132,6 @@ minmax_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  add_loc_descr (&op0, new_loc_descr (DW_OP_plus_uconst, bias, 0));
 	  add_loc_descr (&op1, new_loc_descr (DW_OP_plus_uconst, bias, 0));
 	}
-      else
-	{
-	  dw_die_ref type_die = base_type_for_mode (mode, 1);
-	  dw_loc_descr_ref cvt;
-	  if (type_die == NULL)
-	    return NULL;
-	  cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
-	  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-	  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
-	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
-	  add_loc_descr (&op0, cvt);
-	  cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
-	  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-	  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
-	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
-	  add_loc_descr (&op1, cvt);
-	}
     }
   else if (GET_MODE_CLASS (mode) == MODE_INT
 	   && GET_MODE_SIZE (mode) < DWARF2_ADDR_SIZE)
@@ -14156,6 +14141,24 @@ minmax_loc_descriptor (rtx rtl, enum machine_mode mode,
       add_loc_descr (&op0, new_loc_descr (DW_OP_shl, 0, 0));
       add_loc_descr (&op1, int_loc_descriptor (shift));
       add_loc_descr (&op1, new_loc_descr (DW_OP_shl, 0, 0));
+    }
+  else if (GET_MODE_CLASS (mode) == MODE_INT
+	   && GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
+    {
+      dw_die_ref type_die = base_type_for_mode (mode, 0);
+      dw_loc_descr_ref cvt;
+      if (type_die == NULL)
+	return NULL;
+      cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
+      cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+      cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+      cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+      add_loc_descr (&op0, cvt);
+      cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
+      cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+      cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+      cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+      add_loc_descr (&op1, cvt);
     }
 
   if (GET_CODE (rtl) == SMIN || GET_CODE (rtl) == UMIN)
@@ -14172,7 +14175,44 @@ minmax_loc_descriptor (rtx rtl, enum machine_mode mode,
   add_loc_descr (&ret, drop_node);
   bra_node->dw_loc_oprnd1.val_class = dw_val_class_loc;
   bra_node->dw_loc_oprnd1.v.val_loc = drop_node;
+  if ((GET_CODE (rtl) == SMIN || GET_CODE (rtl) == SMAX)
+      && GET_MODE_CLASS (mode) == MODE_INT
+      && GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
+    ret = convert_descriptor_to_mode (mode, ret);
   return ret;
+}
+
+/* Helper function for mem_loc_descriptor.  Perform OP binary op,
+   but after converting arguments to type_die, afterwards
+   convert back to unsigned.  */
+
+static dw_loc_descr_ref
+typed_binop (enum dwarf_location_atom op, rtx rtl, dw_die_ref type_die,
+	     enum machine_mode mode, enum machine_mode mem_mode)
+{
+  dw_loc_descr_ref cvt, op0, op1;
+
+  if (type_die == NULL)
+    return NULL;
+  op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
+			    VAR_INIT_STATUS_INITIALIZED);
+  op1 = mem_loc_descriptor (XEXP (rtl, 1), mode, mem_mode,
+			    VAR_INIT_STATUS_INITIALIZED);
+  if (op0 == NULL || op1 == NULL)
+    return NULL;
+  cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
+  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+  add_loc_descr (&op0, cvt);
+  cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
+  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+  add_loc_descr (&op1, cvt);
+  add_loc_descr (&op0, op1);
+  add_loc_descr (&op0, new_loc_descr (op, 0, 0));
+  return convert_descriptor_to_mode (mode, op0);
 }
 
 /* CLZ (where constV is CLZ_DEFINED_VALUE_AT_ZERO computed value,
@@ -14647,7 +14687,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 					       mem_mode, initialized);
 	  if (mem_loc_result == NULL)
 	    break;
-	  type_die = base_type_for_mode (mode, 0);
+	  type_die = base_type_for_mode (mode,
+					 GET_MODE_CLASS (mode) == MODE_INT);
 	  if (type_die == NULL)
 	    {
 	      mem_loc_result = NULL;
@@ -14679,7 +14720,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	    break;
 	  if (REGNO (rtl) > FIRST_PSEUDO_REGISTER)
 	    break;
-	  type_die = base_type_for_mode (mode, 0);
+	  type_die = base_type_for_mode (mode,
+					 GET_MODE_CLASS (mode) == MODE_INT);
 	  if (type_die == NULL)
 	    break;
 	  mem_loc_result = new_loc_descr (DW_OP_GNU_regval_type,
@@ -14762,7 +14804,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 					  GET_CODE (rtl) == ZERO_EXTEND);
 	  if (type_die1 == NULL)
 	    break;
-	  type_die2 = base_type_for_mode (mode, 0);
+	  type_die2 = base_type_for_mode (mode, 1);
 	  if (type_die2 == NULL)
 	    break;
 	  mem_loc_result = op0;
@@ -14795,7 +14837,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 
 	      if (dwarf_strict)
 		return NULL;
-	      type_die = base_type_for_mode (mode, 0);
+	      type_die
+		= base_type_for_mode (mode, GET_MODE_CLASS (mode) == MODE_INT);
 	      if (type_die == NULL)
 		return NULL;
 	      deref = new_loc_descr (DW_OP_GNU_deref_type,
@@ -14950,12 +14993,11 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	    loc_descr_plus_const (&mem_loc_result, INTVAL (XEXP (rtl, 1)));
 	  else
 	    {
-	      dw_loc_descr_ref mem_loc_result2
-		= mem_loc_descriptor (XEXP (rtl, 1), mode, mem_mode,
-				      VAR_INIT_STATUS_INITIALIZED);
-	      if (mem_loc_result2 == 0)
+	      op1 = mem_loc_descriptor (XEXP (rtl, 1), mode, mem_mode,
+					VAR_INIT_STATUS_INITIALIZED);
+	      if (op1 == 0)
 		break;
-	      add_loc_descr (&mem_loc_result, mem_loc_result2);
+	      add_loc_descr (&mem_loc_result, op1);
 	      add_loc_descr (&mem_loc_result,
 			     new_loc_descr (DW_OP_plus, 0, 0));
 	    }
@@ -14973,6 +15015,15 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       goto do_binop;
 
     case DIV:
+      if (!dwarf_strict
+	  && GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
+	{
+	  mem_loc_result = typed_binop (DW_OP_div, rtl,
+					base_type_for_mode (mode, 0),
+					mode, mem_mode);
+	  break;
+	}
       op = DW_OP_div;
       goto do_binop;
 
@@ -15044,12 +15095,10 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
     case MOD:
       if (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE && !dwarf_strict)
 	{
-	  /* If MODE is wider than DWARF2_ADDR_SIZE, mem_loc_descriptor
-	     should return signed typed values and therefore DW_OP_mod
-	     won't be unsigned as it defaults for untyped stack values,
-	     but signed.  */
-	  op = DW_OP_mod;
-	  goto do_binop;
+	  mem_loc_result = typed_binop (DW_OP_mod, rtl,
+					base_type_for_mode (mode, 0),
+					mode, mem_mode);
+	  break;
 	}
 
       op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
@@ -15072,32 +15121,14 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
     case UDIV:
       if (!dwarf_strict && GET_MODE_CLASS (mode) == MODE_INT)
 	{
-	  dw_die_ref type_die;
-	  dw_loc_descr_ref cvt;
-
-	  type_die = base_type_for_mode (mode, 1);
-	  if (type_die == NULL)
-	    break;
-	  op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
-				    VAR_INIT_STATUS_INITIALIZED);
-	  op1 = mem_loc_descriptor (XEXP (rtl, 1), mode, mem_mode,
-				    VAR_INIT_STATUS_INITIALIZED);
-	  if (op0 == 0 || op1 == 0)
-	    break;
-	  cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
-	  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-	  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
-	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
-	  add_loc_descr (&op0, cvt);
-	  cvt = new_loc_descr (DW_OP_GNU_convert, 0, 0);
-	  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-	  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
-	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
-	  add_loc_descr (&op1, cvt);
-	  mem_loc_result = op0;
-	  add_loc_descr (&mem_loc_result, op1);
-	  add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_div, 0, 0));
-	  mem_loc_result = convert_descriptor_to_signed (mode, mem_loc_result);
+	  if (GET_MODE_CLASS (mode) > DWARF2_ADDR_SIZE)
+	    {
+	      op = DW_OP_div;
+	      goto do_binop;
+	    }
+	  mem_loc_result = typed_binop (DW_OP_div, rtl,
+					base_type_for_mode (mode, 1),
+					mode, mem_mode);
 	}
       break;
 
@@ -15140,7 +15171,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  && (GET_MODE_BITSIZE (mode) == HOST_BITS_PER_WIDE_INT
 	      || GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT))
 	{
-	  dw_die_ref type_die = base_type_for_mode (mode, 0);
+	  dw_die_ref type_die = base_type_for_mode (mode, 1);
 	  if (type_die == NULL)
 	    return NULL;
 	  mem_loc_result = new_loc_descr (DW_OP_GNU_const_type, 0,
@@ -15173,7 +15204,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	      || (GET_MODE (rtl) == VOIDmode
 		  && GET_MODE_BITSIZE (mode) != 2 * HOST_BITS_PER_WIDE_INT))
 	    break;
-	  type_die = base_type_for_mode (mode, 0);
+	  type_die = base_type_for_mode (mode,
+					 GET_MODE_CLASS (mode) == MODE_INT);
 	  if (type_die == NULL)
 	    return NULL;
 	  mem_loc_result = new_loc_descr (DW_OP_GNU_const_type, 0, 0);
@@ -15337,7 +15369,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  if (op0 == NULL)
 	    break;
 	  if (GET_MODE_CLASS (GET_MODE (XEXP (rtl, 0))) == MODE_INT
-	      && (GET_CODE (rtl) == UNSIGNED_FLOAT
+	      && (GET_CODE (rtl) == FLOAT
 		  || GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0)))
 		     <= DWARF2_ADDR_SIZE))
 	    {
@@ -15360,10 +15392,10 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
 	  add_loc_descr (&op0, cvt);
 	  if (GET_MODE_CLASS (mode) == MODE_INT
-	      && (GET_CODE (rtl) == UNSIGNED_FIX
+	      && (GET_CODE (rtl) == FIX
 		  || GET_MODE_SIZE (mode) < DWARF2_ADDR_SIZE))
 	    {
-	      op0 = convert_descriptor_to_signed (mode, op0);
+	      op0 = convert_descriptor_to_mode (mode, op0);
 	      if (op0 == NULL)
 		break;
 	    }
@@ -24115,9 +24147,12 @@ mark_base_types (dw_loc_descr_ref loc)
 	case DW_OP_GNU_deref_type:
 	  base_type = loc->dw_loc_oprnd2.v.val_die_ref.die;
 	  break;
-	case DW_OP_GNU_const_type:
 	case DW_OP_GNU_convert:
 	case DW_OP_GNU_reinterpret:
+	  if (loc->dw_loc_oprnd1.val_class == dw_val_class_unsigned_const)
+	    continue;
+	  /* FALLTHRU */
+	case DW_OP_GNU_const_type:
 	  base_type = loc->dw_loc_oprnd1.v.val_die_ref.die;
 	  break;
 	case DW_OP_GNU_entry_value:
@@ -24306,8 +24341,14 @@ resolve_addr_in_expr (dw_loc_descr_ref loc)
 	    if (loc->dw_loc_opc == DW_OP_GNU_regval_type
 		|| loc->dw_loc_opc == DW_OP_GNU_deref_type)
 	      base1 = loc->dw_loc_oprnd2.v.val_die_ref.die;
+	    else if (loc->dw_loc_oprnd1.val_class
+		     == dw_val_class_unsigned_const)
+	      break;
 	    else
 	      base1 = loc->dw_loc_oprnd1.v.val_die_ref.die;
+	    if (loc->dw_loc_next->dw_loc_oprnd1.val_class
+		== dw_val_class_unsigned_const)
+	      break;
 	    base2 = loc->dw_loc_next->dw_loc_oprnd1.v.val_die_ref.die;
 	    gcc_assert (base1->die_tag == DW_TAG_base_type
 			&& base2->die_tag == DW_TAG_base_type);
@@ -24334,7 +24375,7 @@ resolve_addr_in_expr (dw_loc_descr_ref loc)
 	    /* Don't change integer DW_OP_GNU_convert after e.g. floating
 	       point typed stack entry.  */
 	    else if (enc1 != DW_ATE_unsigned && enc1 != DW_ATE_signed)
-	      keep = loc;
+	      keep = loc->dw_loc_next;
 	    break;
 	  }
 	break;
@@ -24600,6 +24641,12 @@ hash_loc_operands (dw_loc_descr_ref loc, hashval_t hash)
       break;
     case DW_OP_GNU_convert:
     case DW_OP_GNU_reinterpret:
+      if (val1->val_class == dw_val_class_unsigned_const)
+	{
+	  hash = iterative_hash_object (val1->v.val_unsigned, hash);
+	  break;
+	}
+      /* FALLTHRU */
     case DW_OP_GNU_const_type:
       {
 	unsigned int byte_size
@@ -24821,6 +24868,10 @@ compare_loc_operands (dw_loc_descr_ref x, dw_loc_descr_ref y)
 	     && valx2->v.val_die_ref.die == valy2->v.val_die_ref.die;
     case DW_OP_GNU_convert:
     case DW_OP_GNU_reinterpret:
+      if (valx1->val_class != valy1->val_class)
+	return false;
+      if (valx1->val_class == dw_val_class_unsigned_const)
+	return valx1->v.val_unsigned == valy1->v.val_unsigned;
       return valx1->v.val_die_ref.die == valy1->v.val_die_ref.die;
     case DW_OP_GNU_parameter_ref:
       return valx1->val_class == dw_val_class_die_ref
