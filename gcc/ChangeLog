@@ -1,3 +1,11 @@
+2011-06-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/arm/arm.h (OPTION_DEFAULT_SPECS): Fix -mtls-dialect
+	typo.
+	* config.gcc (arm*-*-linux*): Default to gnu tls.
+	(arm*-*-*): Add --with-tls option.
+	(all_defaults): Add 'tls'.
+
 2011-06-22  Richard Henderson  <rth@redhat.com>
 
 	* reg-notes.def (REG_CFA_WINDOW_SAVE): New.
@@ -152,9 +160,6 @@
 
 	* doc/invoke.texi (ARM Options): Document -mtls-dialect option.
 	* doc/install.texi (Configuration): Document --with-tls.
-	* config.gcc (arm*-*-linux*): Default to gnu tls.
-	(arm*-*-*): Add --with-tls option.
-	(all_defaults): Add 'tls'.
 	* config/arm/arm.c (enum tls_reloc): Add TLS_DESCSEQ.
 	(arm_call_tls_get_addr): Clean up. Assert not tls descriptor.
 	(arm_tls_descseq_addr): New.
