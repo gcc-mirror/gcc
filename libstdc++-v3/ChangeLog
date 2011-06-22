@@ -1,3 +1,7 @@
+2011-06-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/bind/socket.cc: Use variable and remove attribute.
+
 2011-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/pb_ds/detail/pat_trie_/pat_trie_base.hpp: Avoid -Wall
