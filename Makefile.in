@@ -917,7 +917,6 @@ configure-target:  \
     maybe-configure-target-libtermcap \
     maybe-configure-target-winsup \
     maybe-configure-target-libgloss \
-    maybe-configure-target-libiberty \
     maybe-configure-target-libffi \
     maybe-configure-target-libjava \
     maybe-configure-target-zlib \
@@ -1062,7 +1061,6 @@ all-target: maybe-all-target-libgo
 all-target: maybe-all-target-libtermcap
 all-target: maybe-all-target-winsup
 all-target: maybe-all-target-libgloss
-all-target: maybe-all-target-libiberty
 all-target: maybe-all-target-libffi
 all-target: maybe-all-target-libjava
 all-target: maybe-all-target-zlib
@@ -1147,7 +1145,6 @@ info-target: maybe-info-target-libgo
 info-target: maybe-info-target-libtermcap
 info-target: maybe-info-target-winsup
 info-target: maybe-info-target-libgloss
-info-target: maybe-info-target-libiberty
 info-target: maybe-info-target-libffi
 info-target: maybe-info-target-libjava
 info-target: maybe-info-target-zlib
@@ -1225,7 +1222,6 @@ dvi-target: maybe-dvi-target-libgo
 dvi-target: maybe-dvi-target-libtermcap
 dvi-target: maybe-dvi-target-winsup
 dvi-target: maybe-dvi-target-libgloss
-dvi-target: maybe-dvi-target-libiberty
 dvi-target: maybe-dvi-target-libffi
 dvi-target: maybe-dvi-target-libjava
 dvi-target: maybe-dvi-target-zlib
@@ -1303,7 +1299,6 @@ pdf-target: maybe-pdf-target-libgo
 pdf-target: maybe-pdf-target-libtermcap
 pdf-target: maybe-pdf-target-winsup
 pdf-target: maybe-pdf-target-libgloss
-pdf-target: maybe-pdf-target-libiberty
 pdf-target: maybe-pdf-target-libffi
 pdf-target: maybe-pdf-target-libjava
 pdf-target: maybe-pdf-target-zlib
@@ -1381,7 +1376,6 @@ html-target: maybe-html-target-libgo
 html-target: maybe-html-target-libtermcap
 html-target: maybe-html-target-winsup
 html-target: maybe-html-target-libgloss
-html-target: maybe-html-target-libiberty
 html-target: maybe-html-target-libffi
 html-target: maybe-html-target-libjava
 html-target: maybe-html-target-zlib
@@ -1459,7 +1453,6 @@ TAGS-target: maybe-TAGS-target-libgo
 TAGS-target: maybe-TAGS-target-libtermcap
 TAGS-target: maybe-TAGS-target-winsup
 TAGS-target: maybe-TAGS-target-libgloss
-TAGS-target: maybe-TAGS-target-libiberty
 TAGS-target: maybe-TAGS-target-libffi
 TAGS-target: maybe-TAGS-target-libjava
 TAGS-target: maybe-TAGS-target-zlib
@@ -1537,7 +1530,6 @@ install-info-target: maybe-install-info-target-libgo
 install-info-target: maybe-install-info-target-libtermcap
 install-info-target: maybe-install-info-target-winsup
 install-info-target: maybe-install-info-target-libgloss
-install-info-target: maybe-install-info-target-libiberty
 install-info-target: maybe-install-info-target-libffi
 install-info-target: maybe-install-info-target-libjava
 install-info-target: maybe-install-info-target-zlib
@@ -1615,7 +1607,6 @@ install-pdf-target: maybe-install-pdf-target-libgo
 install-pdf-target: maybe-install-pdf-target-libtermcap
 install-pdf-target: maybe-install-pdf-target-winsup
 install-pdf-target: maybe-install-pdf-target-libgloss
-install-pdf-target: maybe-install-pdf-target-libiberty
 install-pdf-target: maybe-install-pdf-target-libffi
 install-pdf-target: maybe-install-pdf-target-libjava
 install-pdf-target: maybe-install-pdf-target-zlib
@@ -1693,7 +1684,6 @@ install-html-target: maybe-install-html-target-libgo
 install-html-target: maybe-install-html-target-libtermcap
 install-html-target: maybe-install-html-target-winsup
 install-html-target: maybe-install-html-target-libgloss
-install-html-target: maybe-install-html-target-libiberty
 install-html-target: maybe-install-html-target-libffi
 install-html-target: maybe-install-html-target-libjava
 install-html-target: maybe-install-html-target-zlib
@@ -1771,7 +1761,6 @@ installcheck-target: maybe-installcheck-target-libgo
 installcheck-target: maybe-installcheck-target-libtermcap
 installcheck-target: maybe-installcheck-target-winsup
 installcheck-target: maybe-installcheck-target-libgloss
-installcheck-target: maybe-installcheck-target-libiberty
 installcheck-target: maybe-installcheck-target-libffi
 installcheck-target: maybe-installcheck-target-libjava
 installcheck-target: maybe-installcheck-target-zlib
@@ -1849,7 +1838,6 @@ mostlyclean-target: maybe-mostlyclean-target-libgo
 mostlyclean-target: maybe-mostlyclean-target-libtermcap
 mostlyclean-target: maybe-mostlyclean-target-winsup
 mostlyclean-target: maybe-mostlyclean-target-libgloss
-mostlyclean-target: maybe-mostlyclean-target-libiberty
 mostlyclean-target: maybe-mostlyclean-target-libffi
 mostlyclean-target: maybe-mostlyclean-target-libjava
 mostlyclean-target: maybe-mostlyclean-target-zlib
@@ -1927,7 +1915,6 @@ clean-target: maybe-clean-target-libgo
 clean-target: maybe-clean-target-libtermcap
 clean-target: maybe-clean-target-winsup
 clean-target: maybe-clean-target-libgloss
-clean-target: maybe-clean-target-libiberty
 clean-target: maybe-clean-target-libffi
 clean-target: maybe-clean-target-libjava
 clean-target: maybe-clean-target-zlib
@@ -2005,7 +1992,6 @@ distclean-target: maybe-distclean-target-libgo
 distclean-target: maybe-distclean-target-libtermcap
 distclean-target: maybe-distclean-target-winsup
 distclean-target: maybe-distclean-target-libgloss
-distclean-target: maybe-distclean-target-libiberty
 distclean-target: maybe-distclean-target-libffi
 distclean-target: maybe-distclean-target-libjava
 distclean-target: maybe-distclean-target-zlib
@@ -2083,7 +2069,6 @@ maintainer-clean-target: maybe-maintainer-clean-target-libgo
 maintainer-clean-target: maybe-maintainer-clean-target-libtermcap
 maintainer-clean-target: maybe-maintainer-clean-target-winsup
 maintainer-clean-target: maybe-maintainer-clean-target-libgloss
-maintainer-clean-target: maybe-maintainer-clean-target-libiberty
 maintainer-clean-target: maybe-maintainer-clean-target-libffi
 maintainer-clean-target: maybe-maintainer-clean-target-libjava
 maintainer-clean-target: maybe-maintainer-clean-target-zlib
@@ -2216,7 +2201,6 @@ check-target:  \
     maybe-check-target-libtermcap \
     maybe-check-target-winsup \
     maybe-check-target-libgloss \
-    maybe-check-target-libiberty \
     maybe-check-target-libffi \
     maybe-check-target-libjava \
     maybe-check-target-zlib \
@@ -2366,7 +2350,6 @@ install-target:  \
     maybe-install-target-libtermcap \
     maybe-install-target-winsup \
     maybe-install-target-libgloss \
-    maybe-install-target-libiberty \
     maybe-install-target-libffi \
     maybe-install-target-libjava \
     maybe-install-target-zlib \
@@ -2463,7 +2446,6 @@ install-strip-target:  \
     maybe-install-strip-target-libtermcap \
     maybe-install-strip-target-winsup \
     maybe-install-strip-target-libgloss \
-    maybe-install-strip-target-libiberty \
     maybe-install-strip-target-libffi \
     maybe-install-strip-target-libjava \
     maybe-install-strip-target-zlib \
@@ -36413,463 +36395,6 @@ maintainer-clean-target-libgloss:
 
 
 
-.PHONY: configure-target-libiberty maybe-configure-target-libiberty
-maybe-configure-target-libiberty:
-@if gcc-bootstrap
-configure-target-libiberty: stage_current
-@endif gcc-bootstrap
-@if target-libiberty
-maybe-configure-target-libiberty: configure-target-libiberty
-configure-target-libiberty: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for libiberty..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libiberty ; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libiberty/multilib.tmp 2> /dev/null ; \
-	if test -r $(TARGET_SUBDIR)/libiberty/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libiberty/multilib.tmp $(TARGET_SUBDIR)/libiberty/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libiberty/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libiberty/Makefile; \
-	    mv $(TARGET_SUBDIR)/libiberty/multilib.tmp $(TARGET_SUBDIR)/libiberty/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libiberty/multilib.tmp $(TARGET_SUBDIR)/libiberty/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libiberty/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libiberty ; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	echo Configuring in $(TARGET_SUBDIR)/libiberty; \
-	cd "$(TARGET_SUBDIR)/libiberty" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libiberty/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	srcdiroption="--srcdir=$${topdir}/libiberty"; \
-	libsrcdir="$$s/libiberty"; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
-	  || exit 1
-@endif target-libiberty
-
-
-
-
-
-.PHONY: all-target-libiberty maybe-all-target-libiberty
-maybe-all-target-libiberty:
-@if gcc-bootstrap
-all-target-libiberty: stage_current
-@endif gcc-bootstrap
-@if target-libiberty
-TARGET-target-libiberty=all
-maybe-all-target-libiberty: all-target-libiberty
-all-target-libiberty: configure-target-libiberty
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
-		$(TARGET-target-libiberty))
-@endif target-libiberty
-
-
-
-
-
-.PHONY: check-target-libiberty maybe-check-target-libiberty
-maybe-check-target-libiberty:
-@if target-libiberty
-maybe-check-target-libiberty: check-target-libiberty
-
-check-target-libiberty:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
-
-@endif target-libiberty
-
-.PHONY: install-target-libiberty maybe-install-target-libiberty
-maybe-install-target-libiberty:
-@if target-libiberty
-maybe-install-target-libiberty: install-target-libiberty
-
-install-target-libiberty: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
-
-@endif target-libiberty
-
-.PHONY: install-strip-target-libiberty maybe-install-strip-target-libiberty
-maybe-install-strip-target-libiberty:
-@if target-libiberty
-maybe-install-strip-target-libiberty: install-strip-target-libiberty
-
-install-strip-target-libiberty: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
-
-@endif target-libiberty
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-target-libiberty info-target-libiberty
-maybe-info-target-libiberty:
-@if target-libiberty
-maybe-info-target-libiberty: info-target-libiberty
-
-info-target-libiberty: \
-    configure-target-libiberty 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           info) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-dvi-target-libiberty dvi-target-libiberty
-maybe-dvi-target-libiberty:
-@if target-libiberty
-maybe-dvi-target-libiberty: dvi-target-libiberty
-
-dvi-target-libiberty: \
-    configure-target-libiberty 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           dvi) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-pdf-target-libiberty pdf-target-libiberty
-maybe-pdf-target-libiberty:
-@if target-libiberty
-maybe-pdf-target-libiberty: pdf-target-libiberty
-
-pdf-target-libiberty: \
-    configure-target-libiberty 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing pdf in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           pdf) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-html-target-libiberty html-target-libiberty
-maybe-html-target-libiberty:
-@if target-libiberty
-maybe-html-target-libiberty: html-target-libiberty
-
-html-target-libiberty: \
-    configure-target-libiberty 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           html) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-TAGS-target-libiberty TAGS-target-libiberty
-maybe-TAGS-target-libiberty:
-@if target-libiberty
-maybe-TAGS-target-libiberty: TAGS-target-libiberty
-
-TAGS-target-libiberty: \
-    configure-target-libiberty 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           TAGS) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-install-info-target-libiberty install-info-target-libiberty
-maybe-install-info-target-libiberty:
-@if target-libiberty
-maybe-install-info-target-libiberty: install-info-target-libiberty
-
-install-info-target-libiberty: \
-    configure-target-libiberty \
-    info-target-libiberty 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-info) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-install-pdf-target-libiberty install-pdf-target-libiberty
-maybe-install-pdf-target-libiberty:
-@if target-libiberty
-maybe-install-pdf-target-libiberty: install-pdf-target-libiberty
-
-install-pdf-target-libiberty: \
-    configure-target-libiberty \
-    pdf-target-libiberty 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-pdf in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-pdf) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-install-html-target-libiberty install-html-target-libiberty
-maybe-install-html-target-libiberty:
-@if target-libiberty
-maybe-install-html-target-libiberty: install-html-target-libiberty
-
-install-html-target-libiberty: \
-    configure-target-libiberty \
-    html-target-libiberty 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-html) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-installcheck-target-libiberty installcheck-target-libiberty
-maybe-installcheck-target-libiberty:
-@if target-libiberty
-maybe-installcheck-target-libiberty: installcheck-target-libiberty
-
-installcheck-target-libiberty: \
-    configure-target-libiberty 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           installcheck) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-mostlyclean-target-libiberty mostlyclean-target-libiberty
-maybe-mostlyclean-target-libiberty:
-@if target-libiberty
-maybe-mostlyclean-target-libiberty: mostlyclean-target-libiberty
-
-mostlyclean-target-libiberty: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           mostlyclean) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-clean-target-libiberty clean-target-libiberty
-maybe-clean-target-libiberty:
-@if target-libiberty
-maybe-clean-target-libiberty: clean-target-libiberty
-
-clean-target-libiberty: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           clean) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-distclean-target-libiberty distclean-target-libiberty
-maybe-distclean-target-libiberty:
-@if target-libiberty
-maybe-distclean-target-libiberty: distclean-target-libiberty
-
-distclean-target-libiberty: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           distclean) \
-	  || exit 1
-
-@endif target-libiberty
-
-.PHONY: maybe-maintainer-clean-target-libiberty maintainer-clean-target-libiberty
-maybe-maintainer-clean-target-libiberty:
-@if target-libiberty
-maybe-maintainer-clean-target-libiberty: maintainer-clean-target-libiberty
-
-maintainer-clean-target-libiberty: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libiberty/Makefile ] || exit 0 ; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libiberty" ; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           maintainer-clean) \
-	  || exit 1
-
-@endif target-libiberty
-
-
-
-
-
 .PHONY: configure-target-libffi maybe-configure-target-libffi
 maybe-configure-target-libffi:
 @if gcc-bootstrap
@@ -42665,7 +42190,6 @@ configure-target-libgo: stage_last
 configure-target-libtermcap: stage_last
 configure-target-winsup: stage_last
 configure-target-libgloss: stage_last
-configure-target-libiberty: stage_last
 configure-target-libffi: stage_last
 configure-target-libjava: stage_last
 configure-target-zlib: stage_last
@@ -42693,7 +42217,6 @@ configure-target-libgo: maybe-all-gcc
 configure-target-libtermcap: maybe-all-gcc
 configure-target-winsup: maybe-all-gcc
 configure-target-libgloss: maybe-all-gcc
-configure-target-libiberty: maybe-all-gcc
 configure-target-libffi: maybe-all-gcc
 configure-target-libjava: maybe-all-gcc
 configure-target-zlib: maybe-all-gcc
@@ -43400,7 +42923,6 @@ all-m4: maybe-all-build-texinfo
 configure-target-boehm-gc: maybe-all-target-libstdc++-v3
 configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib
-all-target-fastjar: maybe-all-target-libiberty
 configure-target-libgo: maybe-configure-target-libffi
 configure-target-libgo: maybe-all-target-libstdc++-v3
 all-target-libgo: maybe-all-target-libffi
@@ -43412,9 +42934,7 @@ all-target-libjava: maybe-all-target-zlib
 all-target-libjava: maybe-all-target-boehm-gc
 all-target-libjava: maybe-all-target-libffi
 configure-target-libobjc: maybe-configure-target-boehm-gc
-all-target-libobjc: maybe-all-target-libiberty
 all-target-libobjc: maybe-all-target-boehm-gc
-all-target-libstdc++-v3: maybe-all-target-libiberty
 configure-target-libstdc++-v3: maybe-configure-target-libgomp
 
 configure-stage1-target-libstdc++-v3: maybe-configure-stage1-target-libgomp
@@ -43432,10 +42952,7 @@ all-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
 all-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
 all-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
 all-target-libgloss: maybe-all-target-newlib
-all-target-winsup: maybe-all-target-libiberty
 all-target-winsup: maybe-all-target-libtermcap
-configure-target-libiberty: maybe-all-binutils
-configure-target-libiberty: maybe-all-ld
 configure-target-newlib: maybe-all-binutils
 configure-target-newlib: maybe-all-ld
 configure-target-libgfortran: maybe-all-target-libquadmath
@@ -43473,7 +42990,6 @@ configure-target-libgo: maybe-all-target-libgcc
 configure-target-libtermcap: maybe-all-target-libgcc
 configure-target-winsup: maybe-all-target-libgcc
 configure-target-libgloss: maybe-all-target-libgcc
-configure-target-libiberty: maybe-all-target-libgcc
 configure-target-libffi: maybe-all-target-libgcc
 configure-target-libjava: maybe-all-target-libgcc
 configure-target-zlib: maybe-all-target-libgcc
@@ -43503,7 +43019,6 @@ configure-target-libgo: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libtermcap: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-winsup: maybe-all-target-newlib maybe-all-target-libgloss
-
 
 
 configure-target-libffi: maybe-all-target-newlib maybe-all-target-libgloss
