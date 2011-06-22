@@ -32,7 +32,7 @@ struct Ptr
 void test01()
 {
   bool test = true;
-  Ptr p{&test};
+  Ptr p __attribute__((unused)) {&test};
 
   VERIFY( std::pointer_traits<Ptr>::pointer_to(test).value == &test );
 }

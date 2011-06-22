@@ -26,19 +26,22 @@
 void
 test01()
 {
-  std::ratio_add<std::ratio<INTMAX_MAX, 1>, std::ratio<1>>::type r1;
+  std::ratio_add<std::ratio<INTMAX_MAX, 1>, std::ratio<1>>::type r1
+    __attribute__((unused));
 }
 
 void
 test02()
 {  
-  std::ratio_multiply<std::ratio<-INTMAX_MAX, 2>, std::ratio<3, 2>>::type r1;
-  std::ratio_multiply<std::ratio<INTMAX_MAX>, std::ratio<INTMAX_MAX>>::type r2;
+  std::ratio_multiply<std::ratio<-INTMAX_MAX, 2>, std::ratio<3, 2>>::type r1
+    __attribute__((unused));
+  std::ratio_multiply<std::ratio<INTMAX_MAX>, std::ratio<INTMAX_MAX>>::type r2
+    __attribute__((unused));
 }
 
 // { dg-error "required from here" "" { target *-*-* } 29 }
-// { dg-error "required from here" "" { target *-*-* } 35 }
 // { dg-error "required from here" "" { target *-*-* } 36 }
+// { dg-error "required from here" "" { target *-*-* } 38 }
 // { dg-error "overflow in addition" "" { target *-*-* } 432 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 104 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 100 }

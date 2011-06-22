@@ -36,8 +36,8 @@ void test01()
   X x = { };
   std::ref(m)(x, 1);
   std::ref(m)(&x, 1);
-  int& i1 = std::ref(m2)(x);
-  int& i2 = std::ref(m2)(&x);
+  int& i1 __attribute__((unused)) = std::ref(m2)(x);
+  int& i2 __attribute__((unused)) = std::ref(m2)(&x);
 }
 
 int main()
