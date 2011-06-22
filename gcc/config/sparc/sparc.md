@@ -6276,24 +6276,18 @@
   DONE;
 })
 
-;; The "save register window" insn is modelled as follows so that the DWARF-2
-;; backend automatically emits the required call frame debugging information
-;; while it is parsing it.  Therefore, the pattern should not be modified
-;; without first studying the impact of the changes on the debug info.
-;; [(set (%fp) (%sp))
-;;  (set (%sp) (unspec_volatile [(%sp) (-frame_size)] UNSPECV_SAVEW))
-;;  (set (%i7) (%o7))]
+;; The "save register window" insn is modelled as follows.  The dwarf2
+;; information is manually added in emit_save_register_window in sparc.c.
 
-(define_insn "save_register_window<P:mode>"
-  [(set (reg:P 30) (reg:P 14))
-   (set (reg:P 14) (unspec_volatile:P [(reg:P 14)
-				       (match_operand:P 0 "arith_operand" "rI")] UNSPECV_SAVEW))
-   (set (reg:P 31) (reg:P 15))]
+(define_insn "save_register_window_1"
+  [(unspec_volatile
+	[(match_operand 0 "arith_operand" "rI")]
+	UNSPECV_SAVEW)]
   "!TARGET_FLAT"
   "save\t%%sp, %0, %%sp"
   [(set_attr "type" "savew")])
 
-;; Likewise for the "create flat frame" insns.  We need to use special insns
+;; For the "create flat frame" insns, we need to use special insns
 ;; because %fp cannot be clobbered until after the frame is established (so
 ;; that it contains the live register window save area) and %i7 changed with
 ;; a simple move as it is a fixed register and the move would be eliminated.

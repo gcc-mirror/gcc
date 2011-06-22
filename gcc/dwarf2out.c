@@ -1232,22 +1232,6 @@ reg_save (const char *label, unsigned int reg, unsigned int sreg, HOST_WIDE_INT 
   add_fde_cfi (label, cfi);
 }
 
-/* Add the CFI for saving a register window.  LABEL is passed to reg_save.
-   This CFI tells the unwinder that it needs to restore the window registers
-   from the previous frame's window save area.
-
-   ??? Perhaps we should note in the CIE where windows are saved (instead of
-   assuming 0(cfa)) and what registers are in the window.  */
-
-void
-dwarf2out_window_save (const char *label)
-{
-  dw_cfi_ref cfi = new_cfi ();
-
-  cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
-  add_fde_cfi (label, cfi);
-}
-
 /* Entry point for saving a register to the stack.  REG is the GCC register
    number.  LABEL and OFFSET are passed to reg_save.  */
 
@@ -2104,6 +2088,19 @@ dwarf2out_frame_debug_cfa_restore (rtx reg, const char *label)
   add_fde_cfi (label, cfi);
 }
 
+/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_WINDOW_SAVE.
+   ??? Perhaps we should note in the CIE where windows are saved (instead of
+   assuming 0(cfa)) and what registers are in the window.  */
+
+static void
+dwarf2out_frame_debug_cfa_window_save (const char *label)
+{
+  dw_cfi_ref cfi = new_cfi ();
+
+  cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
+  add_fde_cfi (label, cfi);
+}
+
 /* Record call frame debugging information for an expression EXPR,
    which either sets SP or FP (adjusting how we calculate the frame
    address) or saves a register to the stack or another register.
@@ -2897,6 +2894,11 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 		  fde->vdrap_reg = REGNO (n);
 	      }
 	  }
+	handled_one = true;
+	break;
+
+      case REG_CFA_WINDOW_SAVE:
+	dwarf2out_frame_debug_cfa_window_save (label);
 	handled_one = true;
 	break;
 

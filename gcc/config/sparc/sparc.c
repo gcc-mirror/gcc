@@ -460,7 +460,6 @@ static unsigned int sparc_function_arg_boundary (enum machine_mode,
 						 const_tree);
 static int sparc_arg_partial_bytes (cumulative_args_t,
 				    enum machine_mode, tree, bool);
-static void sparc_dwarf_handle_frame_unspec (const char *, rtx, int);
 static void sparc_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void sparc_file_end (void);
 static bool sparc_frame_pointer_required (void);
@@ -610,9 +609,6 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE sparc_preferred_simd_mode
-
-#undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
-#define TARGET_DWARF_HANDLE_FRAME_UNSPEC sparc_dwarf_handle_frame_unspec
 
 #ifdef SUBTARGET_INSERT_ATTRIBUTES
 #undef TARGET_INSERT_ATTRIBUTES
@@ -4597,12 +4593,28 @@ emit_save_or_restore_local_in_regs (rtx base, int offset, sorr_act_t action)
 /* Generate a save_register_window insn.  */
 
 static rtx
-gen_save_register_window (rtx increment)
+emit_save_register_window (rtx increment)
 {
-  if (TARGET_ARCH64)
-    return gen_save_register_windowdi (increment);
-  else
-    return gen_save_register_windowsi (increment);
+  rtx insn;
+
+  insn = emit_insn (gen_save_register_window_1 (increment));
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  /* The return address (%i7) is saved in %o7.  */
+  add_reg_note (insn, REG_CFA_REGISTER,
+		gen_rtx_SET (VOIDmode,
+			     gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM),
+			     gen_rtx_REG (Pmode, INCOMING_RETURN_ADDR_REGNUM)));
+
+  /* The window save event.  */
+  add_reg_note (insn, REG_CFA_WINDOW_SAVE, const0_rtx);
+
+  /* The CFA is %fp, the hard frame pointer.  */
+  add_reg_note (insn, REG_CFA_DEF_CFA,
+		plus_constant (hard_frame_pointer_rtx,
+			       INCOMING_FRAME_SP_OFFSET));
+
+  return insn;
 }
 
 /* Generate a create_flat_frame_1 insn.  */
@@ -4671,7 +4683,6 @@ sparc_expand_prologue (void)
 {
   HOST_WIDE_INT size;
   rtx insn;
-  int i;
 
   /* Compute a snapshot of current_function_uses_only_leaf_regs.  Relying
      on the final value of the flag means deferring the prologue/epilogue
@@ -4733,10 +4744,10 @@ sparc_expand_prologue (void)
   else
     {
       if (size <= 4096)
-	insn = emit_insn (gen_save_register_window (GEN_INT (-size)));
+	emit_save_register_window (GEN_INT (-size));
       else if (size <= 8192)
 	{
-	  insn = emit_insn (gen_save_register_window (GEN_INT (-4096)));
+	  emit_save_register_window (GEN_INT (-4096));
 	  /* %sp is not the CFA register anymore.  */
 	  emit_insn (gen_stack_pointer_inc (GEN_INT (4096 - size)));
 	}
@@ -4744,12 +4755,8 @@ sparc_expand_prologue (void)
 	{
 	  rtx reg = gen_rtx_REG (Pmode, 1);
 	  emit_move_insn (reg, GEN_INT (-size));
-	  insn = emit_insn (gen_save_register_window (reg));
+	  emit_save_register_window (reg);
 	}
-
-      RTX_FRAME_RELATED_P (insn) = 1;
-      for (i=0; i < XVECLEN (PATTERN (insn), 0); i++)
-        RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, i)) = 1;
     }
 
   if (sparc_leaf_function_p)
@@ -9998,20 +10005,6 @@ get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
     }
 
   return 0;
-}
-
-/* Handle the TARGET_DWARF_HANDLE_FRAME_UNSPEC hook.
-
-   This is called from dwarf2out.c to emit call frame instructions
-   for frame-related insns containing UNSPECs and UNSPEC_VOLATILEs.  */
-
-static void
-sparc_dwarf_handle_frame_unspec (const char *label,
-				 rtx pattern ATTRIBUTE_UNUSED,
-				 int index ATTRIBUTE_UNUSED)
-{
-  gcc_assert (index == UNSPECV_SAVEW);
-  dwarf2out_window_save (label);
 }
 
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.

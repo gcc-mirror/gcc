@@ -160,6 +160,11 @@ REG_NOTE (CFA_RESTORE)
    to the argument, if it is a MEM, it is ignored.  */
 REG_NOTE (CFA_SET_VDRAP)
 
+/* Attached to insn that are RTX_FRAME_RELATED_P, indicating a window
+   save operation, i.e. will result in a DW_CFA_GNU_window_save.
+   The argument is ignored.  */
+REG_NOTE (CFA_WINDOW_SAVE)
+
 /* Indicates that REG holds the exception context for the function.
    This context is shared by inline functions, so the code to acquire
    the real exception context is delayed until after inlining.  */
