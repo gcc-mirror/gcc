@@ -1,5 +1,19 @@
 2011-06-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (size_of_loc_descr, output_loc_operands,
+	mark_base_types, hash_loc_operands, compare_loc_operands): Allow
+	DW_OP_GNU_convert and DW_OP_GNU_reinterpret to use constant instead
+	of base type reference as argument.
+	(resolve_addr_in_expr): Likewise.  Fix keep computation.
+	(convert_descriptor_to_signed): Renamed to...
+	(convert_descriptor_to_mode): ... this.  For wider types convert
+	to unsigned instead of signed, for <= DWARF2_ADDR_SIZE convert to
+	untyped.
+	(typed_binop): New function.
+	(scompare_loc_descriptor, ucompare_loc_descriptor,
+	minmax_loc_descriptor, mem_loc_descriptor): For wider integer modes
+	default to unsigned type instead of signed.
+
 	PR debug/47858
 	* gimple.h (enum gimple_debug_subcode): Add GIMPLE_DEBUG_SOURCE_BIND.
 	(gimple_build_debug_source_bind_stat): New prototype.
