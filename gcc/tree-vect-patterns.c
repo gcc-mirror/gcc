@@ -1,5 +1,6 @@
 /* Analysis Utilities for Loop Vectorization.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Dorit Nuzman <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -557,6 +558,8 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
 
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
         {
+	  if (is_gimple_debug (USE_STMT (use_p)))
+	    continue;
           use_stmt = USE_STMT (use_p);
           nuses++;
         }

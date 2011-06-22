@@ -1,3 +1,9 @@
+2011-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49496
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Ignore debug
+	uses.
+
 2011-06-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49493
