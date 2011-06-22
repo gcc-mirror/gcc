@@ -1,5 +1,12 @@
 2011-06-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49172
+	* decl.c (cp_finish_decl): Adjust init_const_expr_p for refs.
+	(grokdeclarator): constexpr doesn't apply const for refs.
+	* parser.c (cp_parser_initializer_clause): Don't call
+	maybe_constant_value here.
+	* call.c (initialize_reference): Handle constexpr.
+
 	PR c++/49482
 	* semantics.c (maybe_add_lambda_conv_op): Call mark_exp_read for
 	static fn parameters.
