@@ -1,3 +1,8 @@
+2011-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49496
+	* gcc.dg/pr49496.c: New test.
+
 2011-06-22  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/scd42-3.c: Allow -march-xscale; skip if -mcpu
