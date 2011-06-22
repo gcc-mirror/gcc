@@ -1,5 +1,10 @@
 2011-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_base.hpp: Avoid -Wall
+	warning.
+
+2011-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/20_util/reference_wrapper/invoke.cc: Avoid -Wall warnings.
 	* testsuite/20_util/reference_wrapper/typedefs-3.cc: Likewise.
 	* testsuite/20_util/reference_wrapper/invoke-2.cc: Likewise.

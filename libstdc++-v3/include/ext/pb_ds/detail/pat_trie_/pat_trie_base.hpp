@@ -1318,7 +1318,7 @@ namespace __gnu_pbds
     get_begin_pos() const
     {
       size_type i = 0;
-      for (i; i < arr_size && m_a_p_children[i] == 0; ++i)
+      for (; i < arr_size && m_a_p_children[i] == 0; ++i)
 	;
       return i;
     }
