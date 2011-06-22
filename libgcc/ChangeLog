@@ -1,3 +1,7 @@
+2011-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* enable-execute-stack-empty.c (__enable_execute_stack): Add prototype.
+
 2011-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* shared-object.mk (c_flags-$o): Save c_flags.
@@ -10,7 +14,7 @@
 	* libgcc-std.ver.in (GCC_4.7.0): New section.
 
 2011-06-16  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/49313
 	PR target/29524
 	* config/avr/t-avr: Fix line endings.
@@ -379,7 +383,7 @@
 2010-09-09  Gerald Pfeifer  <gerald@pfeifer.com>
 	    Andrew Pinski  <pinskia@gmail.com>
 
-	PR target/40959	
+	PR target/40959
 	* config.host (ia64*-*-freebsd*): Set extra_parts.  Set tmake_file.
 
 2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
