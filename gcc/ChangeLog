@@ -1,3 +1,15 @@
+2011-06-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49493
+	* tree-ssa-structalias.c (get_constraint_for_ssa_var):
+	Refer to the alias target of variables.
+	(associate_varinfo_to_alias_1): Remove.
+	(ipa_pta_execute): Do not associate aliases with anything.
+	* cgraph.h (varpool_alias_aliased_node): Fix cut&paste errors.
+	(cgraph_function_node): Likewise.
+	(cgraph_function_or_thunk_node): Likewise.
+	(varpool_variable_node): Likewise.
+
 2011-06-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/arm/arm.h (OPTION_DEFAULT_SPECS): Fix -mtls-dialect
