@@ -2746,6 +2746,18 @@ get_constraint_for_ssa_var (tree t, VEC(ce_s, heap) **results, bool address_p)
       return;
     }
 
+  /* For global variables resort to the alias target.  */
+  if (TREE_CODE (t) == VAR_DECL
+      && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
+    {
+      struct varpool_node *node = varpool_get_node (t);
+      if (node && node->alias)
+	{
+	  node = varpool_variable_node (node, NULL);
+	  t = node->decl;
+	}
+    }
+
   vi = get_vi_for_tree (t);
   cexpr.var = vi->id;
   cexpr.type = SCALAR;
@@ -6703,16 +6715,6 @@ associate_varinfo_to_alias (struct cgraph_node *node, void *data)
   return false;
 }
 
-/* Associate node with varinfo DATA. Worker for
-   varpool_for_node_and_aliases.  */
-static bool
-associate_varinfo_to_alias_1 (struct varpool_node *node, void *data)
-{
-  if (node->alias)
-    insert_vi_for_tree (node->decl, (varinfo_t)data);
-  return false;
-}
-
 /* Execute the driver for IPA PTA.  */
 static unsigned int
 ipa_pta_execute (void)
@@ -6744,12 +6746,10 @@ ipa_pta_execute (void)
   /* Create constraints for global variables and their initializers.  */
   for (var = varpool_nodes; var; var = var->next)
     {
-      varinfo_t vi;
       if (var->alias)
 	continue;
 
-      vi = get_vi_for_tree (var->decl);
-      varpool_for_node_and_aliases (var, associate_varinfo_to_alias_1, vi, true);
+      get_vi_for_tree (var->decl);
     }
 
   if (dump_file)
