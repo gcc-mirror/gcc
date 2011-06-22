@@ -585,6 +585,26 @@
   return neon_immediate_valid_for_move (op, mode, NULL, NULL);
 })
 
+(define_predicate "imm_for_neon_lshift_operand"
+  (match_code "const_vector")
+{
+  return neon_immediate_valid_for_shift (op, mode, NULL, NULL, true);
+})
+
+(define_predicate "imm_for_neon_rshift_operand"
+  (match_code "const_vector")
+{
+  return neon_immediate_valid_for_shift (op, mode, NULL, NULL, false);
+})
+
+(define_predicate "imm_lshift_or_reg_neon"
+  (ior (match_operand 0 "s_register_operand")
+       (match_operand 0 "imm_for_neon_lshift_operand")))
+
+(define_predicate "imm_rshift_or_reg_neon"
+  (ior (match_operand 0 "s_register_operand")
+       (match_operand 0 "imm_for_neon_rshift_operand")))
+
 (define_predicate "imm_for_neon_logic_operand"
   (match_code "const_vector")
 {

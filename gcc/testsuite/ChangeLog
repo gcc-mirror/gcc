@@ -1,3 +1,10 @@
+2011-06-22  Dmitry Plotnikov  <dplotnikov@ispras.ru>
+	Dmitry Melnik  <dm@ispras.ru>
+
+	* gcc.target/arm/neon-vshr-imm-1.c: New testcase.
+	* gcc.target/arm/neon-vshl-imm-1.c: New testcase.
+	* gcc.target/arm/neon-vlshr-imm-1.c: New testcase.
+
 2011-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/torture/tls/run-le.c: Skip for -pie on alpha*-*-linux*.

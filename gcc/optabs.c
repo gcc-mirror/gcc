@@ -5925,6 +5925,9 @@ init_optabs (void)
   init_optab (usashl_optab, US_ASHIFT);
   init_optab (ashr_optab, ASHIFTRT);
   init_optab (lshr_optab, LSHIFTRT);
+  init_optabv (vashl_optab, ASHIFT);
+  init_optabv (vashr_optab, ASHIFTRT);
+  init_optabv (vlshr_optab, LSHIFTRT);
   init_optab (rotl_optab, ROTATE);
   init_optab (rotr_optab, ROTATERT);
   init_optab (smin_optab, SMIN);
