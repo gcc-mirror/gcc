@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm32 } */
-/* { dg-options "-O2 -march=armv6t2" } */
+/* { dg-require-effective-target arm_thumb2_ok } */
+/* { dg-options "-O2" } */
 
 unsigned int functest(unsigned int x)
 {
