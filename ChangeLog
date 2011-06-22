@@ -1,9 +1,9 @@
 2011-06-22  Hans-Peter Nilsson  <hp@axis.com>
 
-	PR47836
-	PR23656
-	PR47733
-	PR49247
+	PR regression/47836
+	PR bootstrap/23656
+	PR other/47733
+	PR bootstrap/49247
 	* configure.ac (target_libraries): Remove target-libiberty.
 	Remove case-statement setting skipdirs=target-libiberty for
 	multiple targets.  Remove checking target_configdirs and
