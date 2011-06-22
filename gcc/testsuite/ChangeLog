@@ -1,3 +1,10 @@
+2011-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/torture/tls/run-le.c: Skip for -pie on alpha*-*-linux*.
+	* gcc.dg/torture/tls/tls-test.c: Ditto.
+	* gcc.dg/torture/tls/thr-init-1.c: Ditto.
+	* gcc.dg/torture/tls/thr-init-2.c: Ditto.
+
 2011-06-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.target/arm/tlscall.c: New.
