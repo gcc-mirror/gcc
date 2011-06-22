@@ -5607,10 +5607,6 @@ extern char *dwarf2out_cfi_label (bool);
 
 extern void dwarf2out_def_cfa (const char *, unsigned, HOST_WIDE_INT);
 
-/* Add the CFI for saving a register window.  */
-
-extern void dwarf2out_window_save (const char *);
-
 /* Entry point for saving a register to the stack.  */
 
 extern void dwarf2out_reg_save (const char *, unsigned, HOST_WIDE_INT);

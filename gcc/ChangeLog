@@ -1,3 +1,19 @@
+2011-06-22  Richard Henderson  <rth@redhat.com>
+
+	* reg-notes.def (REG_CFA_WINDOW_SAVE): New.
+	* dwarf2out.c (dwarf2out_frame_debug): Handle it.
+	(dwarf2out_frame_debug_cfa_window_save): Rename from
+	dwarf2out_window_save; make static.
+	* tree.h (dwarf2out_window_save): Don't declare.
+
+	* config/sparc/sparc.c (sparc_dwarf_handle_frame_unspec): Remove.
+	(TARGET_DWARF_HANDLE_FRAME_UNSPEC): Remove.
+	(emit_save_register_window): Rename from gen_save_register_window;
+	emit the insn and add REG_CFA_* notes.
+	(sparc_expand_prologue): Update to match.
+	* config/sparc/sparc.md (save_register_window_1): Simplify from
+	save_register_window<P:mode>.
+
 2011-06-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/49497
