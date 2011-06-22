@@ -1,3 +1,32 @@
+2011-06-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* attribs.c (register_attribute): Added assert to check that all
+	attribute specs are registered with a name that is not empty and
+	does not start with '_'.
+	(decl_attributes): Avoid the lookup of the "naked" attribute spec
+	if the function has no attributes.
+	* tree.c (is_attribute_with_length_p): Removed.
+	(is_attribute_p): Removed.
+	(private_is_attribute_p): New.  
+	(private_lookup_attribute): New.
+	(lookup_attribute): Removed.
+	(lookup_ident_attribute): New.
+	(remove_attribute): Require the first argument to be in the form
+	'text', not '__text__'.  Updated asserts.
+	(merge_attributes): Use lookup_ident_attributes instead of
+	lookup_attribute.
+	(merge_dllimport_decl_attributes): Use remove_attribute.
+	(attribute_list_contained): Likewise.
+	(attribute_list_equal): Immediately return 1 if the arguments are
+	identical pointers.
+	* tree.h (is_attribute_p): Made inline.  Return a 'bool', not an
+	'int'.  Require the first argument to be in the form 'text', not
+	'__text__'.  Require the second argument to be an identifier.
+	(lookup_attribute): Made inline.  Require the first argument to be
+	in the form 'text', not '__text__'.
+	(private_is_attribute_p, private_lookup_attribute): New.
+	Updated comments.
+	
 2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	* builtins.c: Add sync_ or SYNC__ to builtin names.

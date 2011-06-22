@@ -4498,18 +4498,54 @@ enum attribute_flags
 extern tree merge_decl_attributes (tree, tree);
 extern tree merge_type_attributes (tree, tree);
 
-/* Given a tree node and a string, return nonzero if the tree node is
-   a valid attribute name for the string.  */
+/* This function is a private implementation detail of lookup_attribute()
+   and you should never call it directly.  */
+extern tree private_lookup_attribute (const char *, size_t, tree);
 
-extern int is_attribute_p (const char *, const_tree);
+/* Given an attribute name ATTR_NAME and a list of attributes LIST,
+   return a pointer to the attribute's list element if the attribute
+   is part of the list, or NULL_TREE if not found.  If the attribute
+   appears more than once, this only returns the first occurrence; the
+   TREE_CHAIN of the return value should be passed back in if further
+   occurrences are wanted.  ATTR_NAME must be in the form 'text' (not
+   '__text__').  */
 
-/* Given an attribute name and a list of attributes, return the list element
-   of the attribute or NULL_TREE if not found.  */
+static inline tree
+lookup_attribute (const char *attr_name, tree list)
+{
+  gcc_checking_assert (attr_name[0] != '_');  
+  /* In most cases, list is NULL_TREE.  */
+  if (list == NULL_TREE)
+    return NULL_TREE;
+  else
+    /* Do the strlen() before calling the out-of-line implementation.
+       In most cases attr_name is a string constant, and the compiler
+       will optimize the strlen() away.  */
+    return private_lookup_attribute (attr_name, strlen (attr_name), list);
+}
 
-extern tree lookup_attribute (const char *, tree);
+/* This function is a private implementation detail of
+   is_attribute_p() and you should never call it directly.  */
+extern bool private_is_attribute_p (const char *, size_t, const_tree);
+
+/* Given an identifier node IDENT and a string ATTR_NAME, return true
+   if the identifier node is a valid attribute name for the string.
+   ATTR_NAME must be in the form 'text' (not '__text__').  IDENT could
+   be the identifier for 'text' or for '__text__'.  */
+
+static inline bool
+is_attribute_p (const char *attr_name, const_tree ident)
+{
+  gcc_checking_assert (attr_name[0] != '_');
+  /* Do the strlen() before calling the out-of-line implementation.
+     In most cases attr_name is a string constant, and the compiler
+     will optimize the strlen() away.  */
+  return private_is_attribute_p (attr_name, strlen (attr_name), ident);
+}
 
 /* Remove any instances of attribute ATTR_NAME in LIST and return the
-   modified list.  */
+   modified list.  ATTR_NAME must be in the form 'text' (not
+   '__text__').  */
 
 extern tree remove_attribute (const char *, tree);
 

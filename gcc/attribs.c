@@ -198,6 +198,11 @@ register_attribute (const struct attribute_spec *attr)
 
   str.str = attr->name;
   str.length = strlen (str.str);
+
+  /* Attribute names in the table must be in the form 'text' and not
+     in the form '__text__'.  */
+  gcc_assert (str.length > 0 && str.str[0] != '_');
+
   slot = htab_find_slot_with_hash (attribute_hash, &str,
 				   substring_hash (str.str, str.length),
 				   INSERT);
@@ -279,6 +284,7 @@ decl_attributes (tree *node, tree attributes, int flags)
   /* A "naked" function attribute implies "noinline" and "noclone" for
      those targets that support it.  */
   if (TREE_CODE (*node) == FUNCTION_DECL
+      && attributes
       && lookup_attribute_spec (get_identifier ("naked"))
       && lookup_attribute ("naked", attributes) != NULL)
     {
