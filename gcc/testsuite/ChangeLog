@@ -39,8 +39,7 @@
 2011-06-21  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR testsuite/49443
-	* gcc.dg/vect/vect-peel-3.c: Expect to fail on vect_no_align
-	targets.
+	* gcc.dg/vect/vect-peel-3.c: Expect to fail on vect_no_align targets.
 	* gcc.dg/vect/vect-peel-4.c: Likewise.
 
 2011-06-22  Christian Bruel  <christian.bruel@st.com>
@@ -234,7 +233,7 @@
 
 2011-06-16  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-	Revert 
+	Revert:
 	2011-06-10  Wei Guozhi  <carrot@google.com>
 
 	PR target/45335
@@ -280,7 +279,8 @@
 
 2011-06-14  Janis Johnson  <janisjo@codesourcery.com>
 
-	* gcc.target/arm/pr45701-1.c: Ignore warnings about conflicting switches.
+	* gcc.target/arm/pr45701-1.c: Ignore warnings about conflicting
+	switches.
 	* gcc.target/arm/pr45701-2.c: Likewise.
 	* gcc.target/arm/thumb-branch1.c: Likewise.
 
@@ -1285,8 +1285,7 @@
 2011-06-03  Richard Henderson  <rth@redhat.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* lib/target-supports.exp (check_sse_os_support_available): Use
-	movaps.
+	* lib/target-supports.exp (check_sse_os_support_available): Use movaps.
 
 2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
 

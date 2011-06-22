@@ -5,7 +5,7 @@
 	* omp-low.c: Add sync_ or SYNC__ to builtin names.
 
 2011-06-21  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/33049
 	* config/avr/avr.md (extzv): New expander.
 	(*extzv): New insn.
@@ -23,8 +23,7 @@
 	(fold_builtin_1): Call fold_builtin_binop for BUILT_IN_CLRSB*.
 	* optabs.c (widen_leading): Call widen_operand and expand_unop
 	with 0 as unsignedp argument instead of 1 for clrsb_optab.
-	(expand_unop): Subtract difference of mode sizes also for
-	clrsb_optab.
+	(expand_unop): Subtract difference of mode sizes also for clrsb_optab.
 
 2011-06-21  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -68,8 +67,7 @@
 
 2011-06-21  Richard Guenther  <rguenther@suse.de>
 
-	* ipa-inline-transform.c (inline_transform): Fix previous
-	change.
+	* ipa-inline-transform.c (inline_transform): Fix previous change.
 
 2011-06-21  Ira Rosen  <ira.rosen@linaro.org>
 
@@ -80,7 +78,7 @@
 2011-06-21  Richard Guenther  <rguenther@suse.de>
 
 	* ipa-inline-transform.c (inline_transform): Fix typo.
- 
+
 2011-06-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49483
@@ -97,8 +95,7 @@
 	* config/avr/avr.c (avr_help, TARGET_HELP): Remove.
 	(avr_option_override): Don't process -mmcu= argument here.  Set
 	avr_current_device using avr_mcu_index.
-	(avr_file_start): Use avr_current_device->name instead of
-	avr_mcu_name.
+	(avr_file_start): Use avr_current_device->name instead of avr_mcu_name.
 	* config/avr/avr.opt (mmcu=): Use Enum.
 	* config/avr/t-avr (avr-devices.o): Update dependencies.
 	($(srcdir)/config/avr/avr-tables.opt): New.
@@ -115,11 +112,11 @@
 	* config/usegld.h: New file.
 	* config/sol2.h (PREFERRED_DEBUGGING_TYPE): Remove.
 	(CPP_SUBTARGET_SPEC): Remove -compat-bsd support.
-	(LIB_SPEC): Likewise.
-	Search /lib.
+	(LIB_SPEC): Likewise.  Search /lib.
 	(LINK_ARCH32_SPEC_BASE): Remove -compat-bsd support.
 	(RDYNAMIC_SPEC): Handle GNU ld.
-	[HAVE_LD_EH_FRAME_HDR && TARGET_DL_ITERATE_PHDR] (LINK_EH_SPEC): Define.
+	[HAVE_LD_EH_FRAME_HDR && TARGET_DL_ITERATE_PHDR] (LINK_EH_SPEC):
+	Define.
 	(SUPPORTS_INIT_PRIORITY): Only disable for Sun ld.
 	(SUBTARGET_INSERT_ATTRIBUTES, SUBTARGET_ATTRIBUTE_TABLE): Define.
 	[!USE_GAS] (NO_DBX_BNSYM_ENSYM): Redefine.
@@ -188,19 +185,22 @@
 	(*-*-solaris2*): ... here.
 
 2011-06-21  Christian Bruel  <christian.bruel@st.com>
-	
+
 	PR other/43564
-	* ipa-inline.c (can_inline_edge_p): Check !DECL_DISREGARD_INLINE_LIMITS.
-	
+	* ipa-inline.c (can_inline_edge_p): Check
+	!DECL_DISREGARD_INLINE_LIMITS.
+
 2011-06-21  Christian Bruel  <christian.bruel@st.com>
-	
+
 	PR middle-end/49139
 	* cgraphunit.c (process_function_and_variable_attributes): warn when
 	always_inline functions that are not inline.
-	* ipa-inline-transform.c (inline_transform): Always call optimize_inline.
-	* tree-inline.c (tree_inlinable_function_p): Use error instead of sorry.
+	* ipa-inline-transform.c (inline_transform): Always call
+	optimize_inline.
+	* tree-inline.c (tree_inlinable_function_p): Use error instead
+	of sorry.
 	(expand_call_inline): Likewise.
-	
+
 2011-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (dg_target_exps): Set.
@@ -247,9 +247,8 @@
 
 2011-06-20  Kai Tietz  <ktietz@redhat.com>
 
-	* fold-const.c (fold_binary_loc): Add missing
-	folding for truth-not operations in combination
-	with binary and.
+	* fold-const.c (fold_binary_loc): Add missing folding for truth-not
+	operations in combination with binary and.
 
 2011-06-20  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -269,8 +268,7 @@
 
 2011-06-18  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* longlong.h (count_leading_zeros): Use long long builtin for
-	x86-64.
+	* longlong.h (count_leading_zeros): Use long long builtin for x86-64.
 	(count_trailing_zeros): Likewise.
 
 2011-06-18  H.J. Lu  <hongjiu.lu@intel.com>
@@ -351,8 +349,7 @@
 	* tree-ssa-threadupdate.c (struct redirection_data): New field
 	intermediate_edge.
 	(THREAD_TARGET2): Define.
-	(redirection_data_eq): Also check that the intermediate edge is
-	equal.
+	(redirection_data_eq): Also check that the intermediate edge is equal.
 	(lookup_redirection_data): Drop useless argument.  Extract the
 	outgoing_edge and intermediate edge from E.  Callers updated.
 	(copy_phi_args, update_destination_phis): New functions.
@@ -365,14 +362,13 @@
 	edge to the duplicate of the joiner block.
 	(thread_block): Don't muck up loops when threading through a joiner
 	block.
-	(thread_through_loop_header): Handle threading through a joiner
-	block.
+	(thread_through_loop_header): Handle threading through a joiner block.
 	(mark_threaded_blocks, register_jump_thread): Likewise.
 	* tree-flow.h (register_jump_thread): Add new argument.  Callers
 	updated.
 	* tree-ssa-threadedge.c (phi_args_equal_on_edges): New function.
 	(thread_across_edge): Handle threading through a joiner block.
-	
+
 2011-06-16  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/49343
@@ -387,8 +383,8 @@
 2011-06-16  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/45098
-	* tree-ssa-loop-niter.c (infer_loop_bounds_from_pointer_arith): Disallow
-	NULL pointer for pointer arithmetic.
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_pointer_arith):
+	Disallow NULL pointer for pointer arithmetic.
 
 2011-06-16  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
@@ -497,7 +493,8 @@
 	* config/xtensa/xtensa.c (xtensa_function_arg_advance): Likewise.
 	(xtensa_function_arg, xtensa_function_incoming_arg): Likewise.
 	(xtensa_function_arg_1): Likewise.
-	* config/stormy16/stormy16.c (xstormy16_function_arg_advance): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_function_arg_advance):
+	Likewise.
 	(xstormy16_function_arg): Likewise.
 	* config/fr30/fr30.c (fr30_setup_incoming_varargs): Likewise.
 	(fr30_arg_partial_bytes, fr30_function_arg): Likewise.
@@ -578,7 +575,8 @@
 	* config/mips/mips.c (mips_output_args_xfer): Likewise.
 	* config/s390/s390.c (s390_call_saved_register_used): Likewise.
 	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
-	* config/microblaze/microblaze.c (microblaze_expand_prologue): Likewise.
+	* config/microblaze/microblaze.c (microblaze_expand_prologue):
+	Likewise.
 	* config/m32r/m32r.c (m32r_return_in_memory): Adjust for changed
 	m32r_pass_by_reference.
 
@@ -586,19 +584,17 @@
 
 	* tree-vectorizer.h (vect_recog_func_ptr): Change the first
 	argument to be a VEC of statements.
-	* tree-vect-loop.c (vect_determine_vectorization_factor):
-	Remove the assert that pattern statements have to have their
-	vector type set.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Remove the
+	assert that pattern statements have to have their vector type set.
 	* tree-vect-patterns.c (vect_recog_widen_sum_pattern):
 	Change the first argument to be a VEC of statements.  Update
 	documentation.
 	(vect_recog_dot_prod_pattern, vect_recog_pow_pattern): Likewise.
 	(vect_handle_widen_mult_by_const): New function.
-	(vect_recog_widen_mult_pattern):  Change the first argument to
-	be a VEC of statements.  Update documentation.  Check that the
-	constant is INTEGER_CST.  Support multiplication by a constant
-	that fits an intermediate type - call
-	vect_handle_widen_mult_by_const.
+	(vect_recog_widen_mult_pattern):  Change the first argument to be a
+	VEC of statements.  Update documentation.  Check that the constant is
+	INTEGER_CST.  Support multiplication by a constant that fits an
+	intermediate type - call vect_handle_widen_mult_by_const.
 	(vect_pattern_recog_1): Update vect_recog_func_ptr and its
 	call.  Handle additional pattern statements if necessary.
 
@@ -623,13 +619,10 @@
 	(count_leading_zeros): New macro.
 	(count_trailing_zeros): New macro.
 	(COUNT_LEADING_ZEROS_0): New macro.
-	* config/avr/t-avr (LIB1ASMFUNCS): Add
-	_ffssi2, _ffshi2, _loop_ffsqi2,
-	_ctzsi2, _ctzhi2, _clzdi2, _clzsi2, _clzhi2,
-	_paritydi2, _paritysi2, _parityhi2,
-	_popcounthi2,_popcountsi2, _popcountdi2, _popcountqi2,
-	_bswapsi2, _bswapdi2,
-	_ashldi3, _ashrdi3, _lshrdi3
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _ffssi2, _ffshi2, _loop_ffsqi2,
+	_ctzsi2, _ctzhi2, _clzdi2, _clzsi2, _clzhi2, _paritydi2, _paritysi2,
+	_parityhi2, _popcounthi2,_popcountsi2, _popcountdi2, _popcountqi2,
+	_bswapsi2, _bswapdi2, _ashldi3, _ashrdi3, _lshrdi3.
 	(LIB2FUNCS_EXCLUDE): Add _clz.
 	* config/avr/libgcc.S (XCALL): Move up in file.
 	(XJMP): New C Macro.
@@ -662,8 +655,8 @@
 
 	* gimple.c (canonicalize_cond_expr_cond): (bool)x is not
 	the same as x != 0.
-	* fold-const.c (fold_binary_loc): Do not fold X & 1 != 0 to
-	(bool) X & 1.
+	* fold-const.c (fold_binary_loc): Do not fold X & 1 != 0
+	to (bool) X & 1.
 	* ipa-prop.c (ipa_analyze_indirect_call_uses): Also allow
 	equality compares against zero for the lower bit.
 
@@ -725,12 +718,10 @@
 
 	PR debug/49382
 	* dwarf2out.c (dw_loc_list_node): Add force field.
-	(add_var_loc_to_decl): For PARM_DECL, attempt to keep
-	the incoming location in the list, even if it is modified
-	before first real insn.
+	(add_var_loc_to_decl): For PARM_DECL, attempt to keep the incoming
+	location in the list, even if it is modified before first real insn.
 	(output_loc_list): Emit empty ranges with force flag set.
-	(dw_loc_list): If first range of a PARM_DECL is empty,
-	set force flag.
+	(dw_loc_list): If first range of a PARM_DECL is empty, set force flag.
 
 2011-06-15  Alexander Monakov  <amonakov@ispras.ru>
 
@@ -814,8 +805,7 @@
 	cfglayout.o, $(out_object_file), $(common_out_object_file)):
 	Update dependencies.
 	(common/common-targhooks.o): New.
-	* common/config/default-common.c: Include tm.h.  Add FIXME
-	comment.
+	* common/config/default-common.c: Include tm.h.  Add FIXME comment.
 	* common/config/pa/pa-common.c: Include more headers.  Take
 	copyright dates from pa.c.
 	(pa_option_optimization_table, pa_handle_option,
@@ -1009,8 +999,7 @@
 	v850_option_optimization_table, TARGET_DEFAULT_TARGET_FLAGS,
 	TARGET_HANDLE_OPTION, TARGET_OPTION_OPTIMIZATION_TABLE): Move to
 	v850-common.c.
-	* config/vax/vax.c (TARGET_DEFAULT_TARGET_FLAGS): Move to
-	vax-common.c.
+	* config/vax/vax.c (TARGET_DEFAULT_TARGET_FLAGS): Move to vax-common.c.
 	* config/xtensa/xtensa.c (xtensa_option_optimization_table,
 	TARGET_DEFAULT_TARGET_FLAGS, TARGET_OPTION_OPTIMIZATION_TABLE):
 	Move to xtensa-common.c.
@@ -1032,17 +1021,14 @@
 	(init_eh, finish_eh_generation,
 	output_one_function_exception_table): Use
 	targetm_common.except_unwind_info.
-	(switch_to_exception_section): Use
-	targetm_common.have_named_sections.
+	(switch_to_exception_section): Use targetm_common.have_named_sections.
 	* explow.c: Include common/common-target.h.
 	* expr.c: Include common/common-target.h.
-	(build_personality_function): Use
-	targetm_common.except_unwind_info.
+	(build_personality_function): Use targetm_common.except_unwind_info.
 	* function.c: Include common/common-target.h.
 	(expand_function_end): Use targetm_common.except_unwind_info.
 	* haifa-sched.c: Include common/common-target.h.
-	(sched_create_recovery_edges): Use
-	targetm_common.have_named_sections.
+	(sched_create_recovery_edges): Use targetm_common.have_named_sections.
 	* lto-opts.c: Include common/common-target.h instead of target.h.
 	(lto_reissue_options): Use targetm_common.handle_option.
 	* opts.c: Include common/common-target.h.
@@ -1061,11 +1047,9 @@
 	* toplev.c: Include common/common-target.h.
 	(process_options): Use targetm_common.have_named_sections.
 	* tree-tailcall.c: Include common/common-target.h.
-	(suitable_for_tail_call_opt_p): Use
-	targetm_common.except_unwind_info.
+	(suitable_for_tail_call_opt_p): Use targetm_common.except_unwind_info.
 	* tree.c: Include common/common-target.h.
-	(build_common_builtin_nodes): Use
-	targetm_common.except_unwind_info.
+	(build_common_builtin_nodes): Use targetm_common.except_unwind_info.
 	* varasm.c: Include common/common-target.h.
 	(resolve_unique_section, hot_function_section,
 	default_function_section): Use targetm_common.have_named_sections.
@@ -1082,8 +1066,7 @@
 	(can_escape): New function.
 	(set_usage_bits): Add additional parameter; record information
 	about escaped locations.
-	(record_store): Pass EXPR corresponding to MEM to
-	set_usage_bits.
+	(record_store): Pass EXPR corresponding to MEM to set_usage_bits.
 	(dse_step2_nospill): Set kill_on_calls based on
 	group->escaped_n and group->escaped_n.
 	(add_wild_read): Refactor into...
@@ -1091,12 +1074,10 @@
 	(free_read_records): ... New function.
 	(add_non_frame_wild_read): New function.
 	(scan_insn): Call add_non_frame_wild_read on non-const calls.
-	(scan_reads_nospill): Handle instructions with
-	non_frame_wild_read.
+	(scan_reads_nospill): Handle instructions with non_frame_wild_read.
 	(dse_step5_nospill): Call scan_reads_nospill for instructions
 	marked as non_frame_wild_read.
-	(dse_step7): Free escaped_n, escaped_p and kill_on_calls
-	bitmaps.
+	(dse_step7): Free escaped_n, escaped_p and kill_on_calls bitmaps.
 
 2011-06-14  Joseph Myers  <joseph@codesourcery.com>
 
@@ -1441,13 +1422,13 @@
 
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
-	* lto-streamer-out.c (produce_symtab): Stream out the newly represented
-	aliases.
+	* lto-streamer-out.c (produce_symtab): Stream out the newly
+	represented aliases.
 
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-prop.c (ipa_make_edge_direct_to_target): Fix code setting varying
-	args.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Fix code setting
+	varying args.
 	(ipa_update_after_lto_read): Likewise.
 	(ipa_write_node_info): Do not sream call_with_var_arguments.
 	(ipa_read_node_info): Likewise.
