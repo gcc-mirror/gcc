@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target tls_runtime } */
 /* { dg-add-options tls } */
-/* { dg-skip-if "TLS local exec code cannot be linked into shared objects" { alpha*-*-linux* } { "-pie" } { "" } } */
 
 extern void abort (void);
 
