@@ -1,5 +1,9 @@
 2011-06-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49507
+	* decl2.c (mark_used): Don't call synthesize_method for
+	functions defaulted outside the class.
+
 	* optimize.c (maybe_clone_body): Set linkage flags before
 	cgraph_same_body_alias.
 
