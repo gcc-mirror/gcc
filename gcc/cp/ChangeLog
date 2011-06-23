@@ -1,5 +1,9 @@
 2011-06-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49440
+	* class.c (set_linkage_according_to_type): Just check TREE_PUBLIC
+	on the type's name.
+
 	PR c++/49395
 	* init.c (build_zero_init_1): Strip cv-quals from scalar types.
 
