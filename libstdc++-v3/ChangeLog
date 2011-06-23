@@ -1,3 +1,10 @@
+2011-06-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: Fix for
+	C++0x mode.
+	* testsuite/25_algorithms/sort/35588.cc: Likewise.
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Likewise.
+
 2011-06-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/bind/socket.cc: Use variable and remove attribute.

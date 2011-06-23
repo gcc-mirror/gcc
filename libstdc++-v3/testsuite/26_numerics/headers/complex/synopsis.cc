@@ -44,15 +44,20 @@ namespace std {
   template<class T> complex<T> operator/(const T&, const complex<T>&);
   template<class T> complex<T> operator+(const complex<T>&);
   template<class T> complex<T> operator-(const complex<T>&);
-  template<class T> bool operator==
+  template<class T> _GLIBCXX_CONSTEXPR bool operator==
     (const complex<T>&, const complex<T>&);
-  template<class T> bool operator==(const complex<T>&, const T&);
-  template<class T> bool operator==(const T&, const complex<T>&);
+  template<class T> _GLIBCXX_CONSTEXPR bool operator==
+    (const complex<T>&, const T&);
+  template<class T> _GLIBCXX_CONSTEXPR bool operator==
+    (const T&, const complex<T>&);
 
 
-  template<class T> bool operator!=(const complex<T>&, const complex<T>&);
-  template<class T> bool operator!=(const complex<T>&, const T&);
-  template<class T> bool operator!=(const T&, const complex<T>&);
+  template<class T> _GLIBCXX_CONSTEXPR bool operator!=
+    (const complex<T>&, const complex<T>&);
+  template<class T> _GLIBCXX_CONSTEXPR bool operator!=
+    (const complex<T>&, const T&);
+  template<class T> _GLIBCXX_CONSTEXPR bool operator!=
+    (const T&, const complex<T>&);
   template<class T, class charT, class traits>
   basic_istream<charT, traits>&
   operator>>(basic_istream<charT, traits>&, complex<T>&);
@@ -61,8 +66,8 @@ namespace std {
   operator<<(basic_ostream<charT, traits>&, const complex<T>&);
 
   // 26.2.7 values:
-  template<class T> T real(const complex<T>&);
-  template<class T> T imag(const complex<T>&);
+  template<class T> _GLIBCXX_CONSTEXPR T real(const complex<T>&);
+  template<class T> _GLIBCXX_CONSTEXPR T imag(const complex<T>&);
   template<class T> T abs(const complex<T>&);
   template<class T> T arg(const complex<T>&);
   template<class T> T norm(const complex<T>&);
