@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-03-24 16:45+0000\n"
-"PO-Revision-Date: 2011-04-25 19:50+0100\n"
+"PO-Revision-Date: 2011-06-23 18:05+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -22763,154 +22763,154 @@ msgid "duplicate address region attribute %qE in declaration of %qE on line %d"
 msgstr "doppeltes Attribut %qE für Adressregion in Deklaration von %qE in Zeile %d"
 
 #: config/mep/mep.c:3996
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot inline interrupt function %qE"
-msgstr "va_start in Unterbrechungsfunktion kann nicht verwendet werden"
+msgstr "Interruptfunktion %qE kann nicht »inline« sein"
 
 #: config/mep/mep.c:4002
 #, gcc-internal-format
 msgid "interrupt function must have return type of void"
-msgstr ""
+msgstr "Interruptfunktion muss Rückgabetyp »void« haben"
 
 #: config/mep/mep.c:4007
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "interrupt function must have no arguments"
-msgstr "Die Option »-%c« muss ein Argument haben"
+msgstr "Interruptfunktion darf keine Argumente haben"
 
 #: config/mep/mep.c:4028
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute allows only an integer constant argument"
-msgstr "Attribut %qs benötigt eine Ganzzahlkonstante als Argument"
+msgstr "Attribut %qE erlaubt nur eine Ganzzahlkonstante als Argument"
 
 #: config/mep/mep.c:4061
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to functions, not %s"
-msgstr "Attribut %qs gilt nur für Funktionen"
+msgstr "Attribut %qE gilt nur für Funktionen, nicht %s"
 
 #: config/mep/mep.c:4071
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "to describe a pointer to a VLIW function, use syntax like this:"
-msgstr "Zeiger auf Funktion in Arithmetik verwendet"
+msgstr "um Zeiger auf VLIW-Funktion zu beschreiben, folgende Syntax verwenden:"
 
 #: config/mep/mep.c:4072
 #, gcc-internal-format
 msgid "  typedef int (__vliw *vfuncptr) ();"
-msgstr ""
+msgstr "  typedef int (__vliw *vfuncptr) ();"
 
 #: config/mep/mep.c:4079
 #, gcc-internal-format
 msgid "to describe an array of VLIW function pointers, use syntax like this:"
-msgstr ""
+msgstr "um Feld von VLIW-Funktionszeigern zu beschreiben, folgende Syntax verwenden:"
 
 #: config/mep/mep.c:4080
 #, gcc-internal-format
 msgid "  typedef int (__vliw *vfuncptr[]) ();"
-msgstr ""
+msgstr "  typedef int (__vliw *vfuncptr[]) ();"
 
 #: config/mep/mep.c:4085
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "VLIW functions are not allowed without a VLIW configuration"
-msgstr "bei einer Funktionsdefinition sind keine Attribute erlaubt"
+msgstr "VLIW-Funktionen ohne VLIW-Konfiguration sind nicht erlaubt"
 
 #: config/mep/mep.c:4233
 #, gcc-internal-format, gfc-internal-format
 msgid "\"#pragma disinterrupt %s\" not used"
-msgstr ""
+msgstr "»#pragma disinterrupt %s« nicht verwendet"
 
 #: config/mep/mep.c:4399
 #, gcc-internal-format
 msgid "__io address 0x%x is the same for %qE and %qE"
-msgstr ""
+msgstr "__io-Adresse 0x%x ist die selbe für %qE und %qE"
 
 #: config/mep/mep.c:4547
 #, gcc-internal-format, gfc-internal-format
 msgid "variable %s (%ld bytes) is too large for the %s section (%d bytes)"
-msgstr ""
+msgstr "Variable %s (%ld Bytes) ist zu groß für Abschnitt %s (%d Bytes)"
 
 #: config/mep/mep.c:4645
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %D of type %<io%> must be uninitialized"
-msgstr "Objekt variabler Größe vom Typ %qT kann nicht initialisiert sein"
+msgstr "Variable %D des Typs %<io%> muss uninitialisiert sein"
 
 #: config/mep/mep.c:4650
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %D of type %<cb%> must be uninitialized"
-msgstr "Objekt variabler Größe vom Typ %qT kann nicht initialisiert sein"
+msgstr "Variable %D des Typs %<cb%> muss uninitialisiert sein"
 
 #: config/mep/mep.c:6100
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "coprocessor intrinsic %qs is not available in this configuration"
-msgstr "Kommandozeilenoption %qs wird von dieser Konfiguration nicht unterstützt"
+msgstr "Koprozessor-eigenes %qs ist in dieser Konfiguration nicht verfügbar"
 
 #: config/mep/mep.c:6103
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not available in VLIW functions"
-msgstr "%qD ist keine Templatefunktion"
+msgstr "%qs ist in VLIW-Funktionen nicht verfügbar"
 
 #: config/mep/mep.c:6106
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not available in non-VLIW functions"
-msgstr "%q+D ist normalerweise eine Nicht-static-Funktion"
+msgstr "%qs ist in Nicht-VLIW-Funktionen nicht verfügbar"
 
 #: config/mep/mep.c:6268 config/mep/mep.c:6385
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %d of %qE must be in the range %d...%d"
-msgstr "Argument von ATANH bei %L muss im Bereich -1 bis 1 liegen"
+msgstr "Argument %d von %qE muss im Bereich %d...%d liegen"
 
 #: config/mep/mep.c:6271
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %d of %qE must be a multiple of %d"
-msgstr "Ausrichtung für %q+D muss mindestens %d sein"
+msgstr "Argument %d von %qE muss ein Vielfaches von %d sein"
 
 #: config/mep/mep.c:6324
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to %qE"
-msgstr "zu wenige Argumente für %s %q+#D"
+msgstr "zu wenige Argumente für %qE"
 
 #: config/mep/mep.c:6329
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to %qE"
-msgstr "zu viele Argumente für %s %q+#D"
+msgstr "zu viele Argumente für %qE"
 
 #: config/mep/mep.c:6347
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %d of %qE must be an address"
-msgstr "Argument dim bei %L muss skalar sein"
+msgstr "Argument %d von %qE muss eine Adresse sein"
 
 #: config/mep/mep.c:7143
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "2 byte cop instructions are not allowed in 64-bit VLIW mode"
-msgstr "Angeben, wann Befehle zum Codezugriff erlaubt sind"
+msgstr "2-Byte-Cop-Anweisungen sind im 64-Bit VLIW-Modus nicht erlaubt"
 
 #: config/mep/mep.c:7149
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unexpected %d byte cop instruction"
-msgstr "angegebene Thumb-Anweisung"
+msgstr "unerwartete %d-Byte-Cop-Anweisung"
 
 #: config/microblaze/microblaze.c:1283
 #, gcc-internal-format
 msgid "-mno-clearbss is deprecated; use -fno-zero-initialized-in-bss"
-msgstr ""
+msgstr "-mno-clearbss ist veraltet; stattdessen -fno-zero-initialized-in-bss verwenden"
 
 #: config/microblaze/microblaze.c:1286
 #, gcc-internal-format
 msgid "-mxl_stack_check is deprecated; use -fstack-check"
-msgstr ""
+msgstr "-mxl_stack_check ist veraltet; stattdessen -fstack-check verwenden"
 
 #: config/microblaze/microblaze.c:1311
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is an invalid argument to -mcpu="
-msgstr "ungültiges Argument für eingebaute Funktion"
+msgstr "%qs ist ein ungültiges Argument für -mcpu="
 
 #: config/microblaze/microblaze.c:1360
 #, gcc-internal-format
 msgid "-mxl-multiply-high can be used only with -mcpu=v6.00.a or greater"
-msgstr ""
+msgstr "-mxl-multiply-high kann nur mit -mcpu=v6.00.a oder höher verwendet werden"
 
 #: config/microblaze/microblaze.c:1364
 #, gcc-internal-format
 msgid "-mxl-multiply-high requires -mno-xl-soft-mul"
-msgstr ""
+msgstr "-mxl-multiply-high erfordert -mno-xl-soft-mul"
 
 #: config/mips/mips.c:1370 config/mips/mips.c:1372
 #, gcc-internal-format
@@ -22918,14 +22918,14 @@ msgid "%qs attribute only applies to functions"
 msgstr "Attribut %qs gilt nur für Funktionen"
 
 #: config/mips/mips.c:1382
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE cannot have both %<mips16%> and %<nomips16%> attributes"
-msgstr "%qs kann nicht gleichzeitig die Attribute %<mips16%> und %<nomips16%> haben"
+msgstr "%qE kann nicht gleichzeitig die Attribute %<mips16%> und %<nomips16%> haben"
 
 #: config/mips/mips.c:1404 config/mips/mips.c:1407
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE redeclared with conflicting %qs attributes"
-msgstr "%qs mit in Konflikt stehenden Attributen %qs redeklariert"
+msgstr "%qE mit in Konflikt stehenden Attributen %qs redeklariert"
 
 #: config/mips/mips.c:2921
 #, gcc-internal-format
@@ -23674,9 +23674,9 @@ msgid "use of decimal floating point types in AltiVec types is invalid"
 msgstr "Verwendung dezimaler Gleitkommatypen in AltiVec-Typen ist ungültig"
 
 #: config/rs6000/rs6000.c:25073
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is invalid for 64-bit code without -mvsx"
-msgstr "Verwendung von %<long%> in AltiVec-Typen ist für 64-Bit-Code ungültig"
+msgstr "Verwendung von %<long%> in AltiVec-Typen ist für 64-Bit-Code ohne -mvsx ungültig"
 
 #: config/rs6000/rs6000.c:25076
 #, gcc-internal-format
@@ -23684,39 +23684,39 @@ msgid "use of %<long%> in AltiVec types is deprecated; use %<int%>"
 msgstr "Verwendung von %<long%> in AltiVec-Typen ist veraltet; %<int%> verwenden"
 
 #: config/rs6000/rs6000.c:25081
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of %<long long%> in AltiVec types is invalid without -mvsx"
-msgstr "Verwendung von %<long long%> in AltiVec-Typen ist ungültig"
+msgstr "Verwendung von %<long long%> in AltiVec-Typen ist ohne -mvsx ungültig"
 
 #: config/rs6000/rs6000.c:25084
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of %<double%> in AltiVec types is invalid without -mvsx"
-msgstr "Verwendung von %<double%> in AltiVec-Typen ist ungültig"
+msgstr "Verwendung von %<double%> in AltiVec-Typen ist ohne -mvsx ungültig"
 
 #: config/rs6000/rs6000.c:27560
 #, gcc-internal-format, gfc-internal-format
 msgid "emitting microcode insn %s\t[%s] #%d"
-msgstr ""
+msgstr "Ausgabe der Mikrocode-Anweisung %s\t[%s] #%d"
 
 #: config/rs6000/rs6000.c:27564
 #, gcc-internal-format, gfc-internal-format
 msgid "emitting conditional microcode insn %s\t[%s] #%d"
-msgstr ""
+msgstr "Ausgabe der bedingten Mikrocode-Anweisung %s\t[%s] #%d"
 
 #: config/rs6000/rs6000.c:27767
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid cpu \"%s\" for %s\"%s\"%s"
-msgstr "ungültige Verwendung von »%%%c«"
+msgstr "ungültige CPU »%s« für %s\"%s\"%s"
 
 #: config/rs6000/rs6000.c:27770
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s\"%s\"%s is not allowed"
-msgstr "»%s« ist nicht definiert"
+msgstr "%s\"%s\"%s ist nicht erlaubt"
 
 #: config/rs6000/rs6000.c:27772
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s\"%s\"%s is invalid"
-msgstr "Spezifikation »%s« ist ungültig"
+msgstr "%s\"%s\"%s ist ungültig"
 
 #: config/rs6000/aix43.h:32 config/rs6000/aix51.h:32 config/rs6000/aix52.h:32
 #: config/rs6000/aix53.h:32 config/rs6000/aix61.h:32
@@ -23748,9 +23748,9 @@ msgid "AltiVec and E500 instructions cannot coexist"
 msgstr "AltiVec- und E500-Befehle können nicht koexistieren"
 
 #: config/rs6000/e500.h:42
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "VSX and E500 instructions cannot coexist"
-msgstr "AltiVec- und E500-Befehle können nicht koexistieren"
+msgstr "VSX- und E500-Befehle können nicht koexistieren"
 
 #: config/rs6000/e500.h:44
 #, gcc-internal-format
@@ -23773,9 +23773,9 @@ msgid "-m64 requires a PowerPC64 cpu"
 msgstr "-m64 benötigt eine PowerPC64-CPU"
 
 #: config/rs6000/linux64.h:130
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mcmodel incompatible with other toc options"
-msgstr "Mit TI-Werkzeugen kompatiblen Code erzeugen"
+msgstr "-mcmodel unverträglich mit anderen TOC-Optionen"
 
 #. Definitions for __builtin_return_address and __builtin_frame_address.
 #. __builtin_return_address (0) should give link register (65), enable
@@ -23852,19 +23852,19 @@ msgid "-m%s not supported in this configuration"
 msgstr "-m%s wird in dieser Konfiguration nicht unterstützt"
 
 #: config/rx/rx.c:508
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unreocgnized control register number: %d - using 'psw'"
-msgstr "unbekannter Registername: \"%s\""
+msgstr "unbekannte Steuerregisterzahl: %d - 'psw' wird verwendet"
 
 #: config/rx/rx.c:2106
 #, gcc-internal-format, gfc-internal-format
 msgid "__builtin_rx_%s takes 'C', 'Z', 'S', 'O', 'I', or 'U'"
-msgstr ""
+msgstr "__builtin_rx_%s benötigt 'C', 'Z', 'S', 'O', 'I' oder 'U'"
 
 #: config/rx/rx.c:2108
 #, gcc-internal-format
 msgid "use __builtin_rx_mvtc (0, ... ) to write arbitrary values to PSW"
-msgstr ""
+msgstr "__builtin_rx_mvtc (0, ... ) verwenden, um beliebige Werte in PSW zu schreiben"
 
 #: config/rx/rx.c:2163 config/xtensa/xtensa.c:3129 config/xtensa/xtensa.c:3169
 #, gcc-internal-format
@@ -23872,19 +23872,19 @@ msgid "bad builtin code"
 msgstr "Falscher eingebauter Code"
 
 #: config/rx/rx.c:2289
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "unrecognized argument '%s' to -mcpu= option"
-msgstr "belangloses Argument für »%s«-Option"
+msgstr "unbekanntes Argument »%s« für Option -mcpu="
 
 #: config/rx/rx.c:2294
 #, gcc-internal-format
 msgid "the RX200 cpu does not have FPU hardware"
-msgstr ""
+msgstr "Die RX200-CPU hat keine FPU-Hardware"
 
 #: config/rx/rx.c:2327
 #, gcc-internal-format
 msgid "RX FPU instructions do not support NaNs and infinities"
-msgstr ""
+msgstr "RX-FPU-Befehle unterstützen keine NaNs und Unendlichkeiten"
 
 #: config/s390/s390.c:1602
 #, gcc-internal-format
@@ -23907,17 +23907,17 @@ msgid "64-bit ABI not supported in ESA/390 mode"
 msgstr "64-Bit-ABI nicht unterstützt im ESA/390-Modus"
 
 #: config/s390/s390.c:1669
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "hardware decimal floating point instructions not available on %s"
 msgstr "Dezimale Hardware-Gleitkomma-Befehle sind auf %s nicht verfügbar"
 
 #: config/s390/s390.c:1672
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "hardware decimal floating point instructions not available in ESA/390 mode"
 msgstr "Dezimale Hardware-Gleitkomma-Befehle sind im ESA/390-Modus nicht verfügbar"
 
 #: config/s390/s390.c:1682
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mhard-dfp can%'t be used in conjunction with -msoft-float"
 msgstr "-mhard-dfp kann nicht in Verbindung mit -msoft-float verwendet werden"
 
@@ -23977,14 +23977,14 @@ msgid "__builtin_saveregs not supported by this subtarget"
 msgstr "__builtin_saveregs wird für dieses Teilziel nicht unterstützt"
 
 #: config/sh/sh.c:8945
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to interrupt functions"
-msgstr "Attribut %qs bezieht sich nur auf Unterbrechungsfunktionen"
+msgstr "Attribut %qE bezieht sich nur auf Interruptfunktionen"
 
 #: config/sh/sh.c:9003
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute is supported only for SH2A"
-msgstr "Attribut %qE wird auf dieser Plattform nicht unterstützt"
+msgstr "Attribut %qE wird nur auf SH2A unterstützt"
 
 #: config/sh/sh.c:9033
 #, gcc-internal-format
@@ -23992,20 +23992,20 @@ msgid "attribute interrupt_handler is not compatible with -m5-compact"
 msgstr "Attribut interrupt_handler ist mit -m5-compact unverträglich"
 
 #: config/sh/sh.c:9050
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to SH2A"
-msgstr "Attribut %qs gilt nur für Funktionen"
+msgstr "Attribut %qE gilt nur für SH2A"
 
 #: config/sh/sh.c:9072
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute argument should be between 0 to 255"
-msgstr "Argument des Attributs »%s« sollte zwischen 18 und 255 sein"
+msgstr "Argument des Attributs %qE sollte zwischen 0 und 255 sein"
 
 #. The argument must be a constant string.
 #: config/sh/sh.c:9145
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute argument not a string constant"
-msgstr "Attributargument %qs ist keine Zeichenkettenkonstante"
+msgstr "Argument des Attributs %qE ist keine Zeichenkettenkonstante"
 
 #: config/sh/sh.c:11709
 #, gcc-internal-format
@@ -24013,22 +24013,22 @@ msgid "r0 needs to be available as a call-clobbered register"
 msgstr "r0 muss als aufrufzerstörtes Register verfügbar sein"
 
 #: config/sh/sh.c:11730
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "need a second call-clobbered general purpose register"
-msgstr "Ein zweites aufrufzerstörtes Mehrzweckregister wird benötigt"
+msgstr "ein zweites aufrufzerstörtes Mehrzweckregister wird benötigt"
 
 #: config/sh/sh.c:11738
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "need a call-clobbered target register"
-msgstr "Aufrufzerstörtes Zielregister erforderlich"
+msgstr "aufrufzerstörtes Zielregister erforderlich"
 
 #: config/sh/symbian-base.c:112
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE declared as both exported to and imported from a DLL"
-msgstr "%qs sowohl als »exportiert in« als auch als »importiert aus DLL« deklariert"
+msgstr "%qE sowohl als »exportiert in« als auch als »importiert aus DLL« deklariert"
 
 #: config/sh/symbian-base.c:119
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "failure in redeclaration of %q+D: dllimport%'d symbol lacks external linkage"
 msgstr "Fehler in Redeklaration von %q+D: »dllimport«-iertem Symbol fehlt externe Bindung"
 
@@ -24103,39 +24103,39 @@ msgid "parameter list does not match a valid signature for %s()"
 msgstr "Parameterliste passt zu keiner gültigen Signatur für %s()"
 
 #: config/spu/spu.c:548
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "bad value (%s) for -march= switch"
-msgstr "Falscher Wert (%s) für Schalter -masm="
+msgstr "falscher Wert (%s) für Schalter -march="
 
 #: config/spu/spu.c:559
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "bad value (%s) for -mtune= switch"
-msgstr "Falscher Wert (%s) für Schalter -mtune="
+msgstr "falscher Wert (%s) für Schalter -mtune="
 
 #: config/spu/spu.c:5388 config/spu/spu.c:5391
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "creating run-time relocation for %qD"
-msgstr "Schnittstellendeklaration für %qs kann nicht gefunden werden"
+msgstr "Laufzeit-Relocation für %qD wird erzeugt"
 
 #: config/spu/spu.c:5396 config/spu/spu.c:5398
 #, gcc-internal-format
 msgid "creating run-time relocation"
-msgstr ""
+msgstr "Laufzeit-Relocation wird erzeugt"
 
 #: config/spu/spu.c:6470
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s expects an integer literal in the range [%d, %d]"
-msgstr "%s erwartet ein Ganzzahlliteral im Bereich [%d, %d]."
+msgstr "%s erwartet ein Ganzzahlliteral im Bereich [%d, %d]"
 
 #: config/spu/spu.c:6490
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s expects an integer literal in the range [%d, %d]. (%wd)"
-msgstr "%s erwartet ein Ganzzahlliteral im Bereich [%d, %d]. ("
+msgstr "%s erwartet ein Ganzzahlliteral im Bereich [%d, %d]. (%wd)"
 
 #: config/spu/spu.c:6519
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%d least significant bits of %s are ignored"
-msgstr "%d niederwertigste Bits von %s werden ignoriert."
+msgstr "%d niederwertigste Bits von %s werden ignoriert"
 
 #: config/stormy16/stormy16.c:1035
 #, gcc-internal-format
@@ -24193,9 +24193,9 @@ msgid "junk at end of #pragma ghs section"
 msgstr "Ausschuss am Ende von #pragma ghs section"
 
 #: config/v850/v850-c.c:170
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized section name %qE"
-msgstr "nicht erkannter Abschnittsname »%s«"
+msgstr "nicht erkannter Abschnittsname %qE"
 
 #: config/v850/v850-c.c:185
 #, gcc-internal-format
@@ -24243,14 +24243,14 @@ msgid "value passed to %<-m%s%> is too large"
 msgstr "an %<-m%s%> übergebener Wert ist zu groß"
 
 #: config/v850/v850.c:2171
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "data area attributes cannot be specified for local variables"
-msgstr "%JDatenabschnittsattribute können nicht für lokale Variablen angegeben werden"
+msgstr "Datenbereichsattribute können nicht für lokale Variablen angegeben werden"
 
 #: config/v850/v850.c:2182
 #, gcc-internal-format
 msgid "data area of %q+D conflicts with previous declaration"
-msgstr "Datenabschnitt von %q+D in Konflikt mit vorheriger Deklaration"
+msgstr "Datenbereich von %q+D in Konflikt mit vorheriger Deklaration"
 
 #: config/v850/v850.c:2313
 #, gcc-internal-format, gfc-internal-format
@@ -24263,9 +24263,9 @@ msgid "bad amount of stack space removal: %d"
 msgstr "Falscher Betrag der Stapelspeicherentfernung: %d"
 
 #: config/v850/v850.c:2418
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "bogus JARL construction: %d"
-msgstr "nur simulierte JARL-Konstruktion: %d\n"
+msgstr "falsche JARL-Konstruktion: %d"
 
 #: config/v850/v850.c:2715
 #, gcc-internal-format, gfc-internal-format
@@ -24318,87 +24318,87 @@ msgid "-fexcess-precision=standard for Ada"
 msgstr ""
 
 #: ada/gcc-interface/utils.c:5164
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs attribute requires prototypes with named arguments"
-msgstr "Attribut %qE benötigt Prototypen mit benannten Argumenten"
+msgstr "Attribut %qs benötigt Prototypen mit benannten Argumenten"
 
 #: ada/gcc-interface/utils.c:5176
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs attribute only applies to variadic functions"
-msgstr "Attribut %qE gilt nur für variadische Funktionen"
+msgstr "Attribut %qs gilt nur für variadische Funktionen"
 
 #: ada/gcc-interface/utils.c:5247
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute has no effect"
-msgstr "Attribut %qE wird ignoriert"
+msgstr "Attribut %qE hat keinen Effekt"
 
 #: ada/gcc-interface/utils.c:5359
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid vector type for attribute %qs"
-msgstr "Ungültiger Vektortyp für Attribut %qE"
+msgstr "ungültiger Vektortyp für Attribut %qs"
 
 #: ada/gcc-interface/utils.c:5422
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "attribute %qs applies to array types only"
-msgstr "Attribut %qs bezieht sich nur auf Variablen"
+msgstr "Attribut %qs bezieht sich nur auf Feldtypen"
 
 #: ada/gcc-interface/utils.c:5449
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid element type for attribute %qs"
-msgstr "Ungültiger Vektortyp für Attribut %qE"
+msgstr "ungültiger Elementtyp für Attribut %qs"
 
 #. Conversion of implicit `this' argument failed.
 #: cp/call.c:2960
 #, gcc-internal-format
 msgid "  no known conversion for implicit %<this%> parameter from %qT to %qT"
-msgstr ""
+msgstr "  keine bekannte Umwandlung für impliziten %<this%>-Parameter von %qT nach %qT"
 
 #: cp/call.c:2964
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  no known conversion for argument %d from %qT to %qT"
-msgstr "  für Umwandlung von %qT in %qT"
+msgstr "  keine bekannte Umwandlung für Argument %d von %qT nach %qT"
 
 #: cp/call.c:2986
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%D(%T, %T, %T) <built-in>"
-msgstr "%s %D(%T, %T, %T) <eingebaut>"
+msgstr "%s%D(%T, %T, %T) <eingebaut>"
 
 #: cp/call.c:2991
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%D(%T, %T) <built-in>"
-msgstr "%s %D(%T, %T) <eingebaut>"
+msgstr "%s%D(%T, %T) <eingebaut>"
 
 #: cp/call.c:2995
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%D(%T) <built-in>"
-msgstr "%s %D(%T) <eingebaut>"
+msgstr "%s%D(%T) <eingebaut>"
 
 #: cp/call.c:2999
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%T <conversion>"
-msgstr "%s %T <Umformung>"
+msgstr "%s%T <Umformung>"
 
 #: cp/call.c:3001
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%#D <near match>"
-msgstr "%s %+#D <nahe Übereinstimmung>"
+msgstr "%s%#D <nahe Übereinstimmung>"
 
 #: cp/call.c:3003
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%#D <deleted>"
-msgstr "%s %+#D <nahe Übereinstimmung>"
+msgstr "%s%#D <gelöscht>"
 
 #: cp/call.c:3005
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s%#D"
-msgstr "%s %+#D"
+msgstr "%s%#D"
 
 #: cp/call.c:3015
 #, gcc-internal-format, gfc-internal-format
 msgid "  candidate expects %d argument, %d provided"
 msgid_plural "  candidate expects %d arguments, %d provided"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "  Kandidat erwartet %d Argument, %d angegeben"
+msgstr[1] "  Kandidat erwartet %d Argumente, %d angegeben"
 
 #: cp/call.c:3349
 #, gcc-internal-format
@@ -24406,9 +24406,9 @@ msgid "conversion from %qT to %qT is ambiguous"
 msgstr "Umformung von %qT in %qT ist nicht eindeutig"
 
 #: cp/call.c:3454
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion from %qT to %qT not considered for non-type template argument"
-msgstr "Umwandlung von %qT in nicht-skalaren Typen %qT angefordert"
+msgstr "Umwandlung von %qT in %qT für Nicht-Typ-Templateargument nicht betrachtet"
 
 #: cp/call.c:3564
 #, gcc-internal-format
