@@ -1,3 +1,8 @@
+2011-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/36435
+	* pt.c (most_specialized_instantiation): Do check return types.
+
 2011-06-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49260
