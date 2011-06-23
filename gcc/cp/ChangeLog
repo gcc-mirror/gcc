@@ -1,3 +1,9 @@
+2011-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49507
+	* decl2.c (mark_used): Don't call synthesize_method for
+	functions defaulted outside the class.
+
 2011-06-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49482
