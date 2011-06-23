@@ -250,6 +250,10 @@ static char *reload_insn_firstobj;
    examine.  */
 struct insn_chain *reload_insn_chain;
 
+/* TRUE if we potentially left dead insns in the insn stream and want to
+   run DCE immediately after reload, FALSE otherwise.  */
+static bool need_dce;
+
 /* List of all insns needing reloads.  */
 static struct insn_chain *insns_need_reload;
 
@@ -695,10 +699,11 @@ static int *temp_pseudo_reg_arr;
    If GLOBAL is zero, we do not have enough information to do that,
    so any pseudo reg that is spilled must go to the stack.
 
-   Return value is nonzero if reload failed
-   and we must not do any more for this function.  */
+   Return value is TRUE if reload likely left dead insns in the
+   stream and a DCE pass should be run to elimiante them.  Else the
+   return value is FALSE.  */
 
-int
+bool
 reload (rtx first, int global)
 {
   int i, n;
@@ -1329,7 +1334,9 @@ reload (rtx first, int global)
 
   gcc_assert (bitmap_empty_p (&spilled_pseudos));
 
-  return failure;
+  reload_completed = !failure;
+
+  return need_dce;
 }
 
 /* Yet another special case.  Unfortunately, reg-stack forces people to
@@ -2123,14 +2130,19 @@ delete_dead_insn (rtx insn)
   rtx prev = prev_active_insn (insn);
   rtx prev_dest;
 
-  /* If the previous insn sets a register that dies in our insn, delete it
-     too.  */
+  /* If the previous insn sets a register that dies in our insn make
+     a note that we want to run DCE immediately after reload.
+
+     We used to delete the previous insn & recurse, but that's wrong for
+     block local equivalences.  Instead of trying to figure out the exact
+     circumstances where we can delete the potentially dead insns, just
+     let DCE do the job.  */
   if (prev && GET_CODE (PATTERN (prev)) == SET
       && (prev_dest = SET_DEST (PATTERN (prev)), REG_P (prev_dest))
       && reg_mentioned_p (prev_dest, PATTERN (insn))
       && find_regno_note (insn, REG_DEAD, REGNO (prev_dest))
       && ! side_effects_p (SET_SRC (PATTERN (prev))))
-    delete_dead_insn (prev);
+    need_dce = 1;
 
   SET_INSN_DELETED (insn);
 }

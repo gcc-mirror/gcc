@@ -420,7 +420,7 @@ extern void reload_cse_regs (rtx);
 extern void init_reload (void);
 
 /* The reload pass itself.  */
-extern int reload (rtx, int);
+extern bool reload (rtx, int);
 
 /* Mark the slots in regs_ever_live for the hard regs
    used by pseudo-reg number REGNO.  */
