@@ -1,5 +1,8 @@
 2011-06-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49395
+	* g++.dg/init/ref18.C: New.
+
 	PR c++/36435
 	* g++.dg/template/partial9.C: New.
 
