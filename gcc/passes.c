@@ -332,7 +332,7 @@ struct rtl_opt_pass pass_postreload =
 
 /* The root of the compilation pass tree, once constructed.  */
 struct opt_pass *all_passes, *all_small_ipa_passes, *all_lowering_passes,
-  *all_regular_ipa_passes, *all_lto_gen_passes;
+  *all_regular_ipa_passes, *all_late_ipa_passes, *all_lto_gen_passes;
 
 /* This is used by plugins, and should also be used in register_pass.  */
 #define DEF_PASS_LIST(LIST) &LIST,
@@ -617,6 +617,7 @@ dump_passes (void)
   dump_pass_list (all_small_ipa_passes, 1);
   dump_pass_list (all_regular_ipa_passes, 1);
   dump_pass_list (all_lto_gen_passes, 1);
+  dump_pass_list (all_late_ipa_passes, 1);
   dump_pass_list (all_passes, 1);
 
   pop_cfun ();
@@ -1103,6 +1104,8 @@ register_pass (struct register_pass_info *pass_info)
   if (!success || all_instances)
     success |= position_pass (pass_info, &all_lto_gen_passes);
   if (!success || all_instances)
+    success |= position_pass (pass_info, &all_late_ipa_passes);
+  if (!success || all_instances)
     success |= position_pass (pass_info, &all_passes);
   if (!success)
     fatal_error
@@ -1249,7 +1252,6 @@ init_optimization_passes (void)
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
   NEXT_PASS (pass_ipa_reference);
-  NEXT_PASS (pass_ipa_pta);
   *p = NULL;
 
   p = &all_lto_gen_passes;
@@ -1257,9 +1259,16 @@ init_optimization_passes (void)
   NEXT_PASS (pass_ipa_lto_finish_out);  /* This must be the last LTO pass.  */
   *p = NULL;
 
+  /* Simple IPA passes executed after the regular passes.  In WHOPR mode the
+     passes are executed after partitioning and thus see just parts of the
+     compiled unit.  */
+  p = &all_late_ipa_passes;
+  NEXT_PASS (pass_ipa_pta);
+  *p = NULL;
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
   p = &all_passes;
+  NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
   NEXT_PASS (pass_all_optimizations);
     {
@@ -1515,6 +1524,9 @@ init_optimization_passes (void)
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
   register_dump_files (all_lto_gen_passes,
+		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
+		       | PROP_cfg);
+  register_dump_files (all_late_ipa_passes,
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
   register_dump_files (all_passes,
@@ -1935,6 +1947,20 @@ execute_all_ipa_transforms (void)
     }
 }
 
+/* Callback for do_per_function to apply all IPA transforms.  */
+
+static void
+apply_ipa_transforms (void *data)
+{
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  if (!node->global.inlined_to && node->ipa_transforms_to_apply)
+    {
+      *(bool *)data = true;
+      execute_all_ipa_transforms();
+      rebuild_cgraph_edges ();
+    }
+}
+
 /* Check if PASS is explicitly disabled or enabled and return
    the gate status.  FUNC is the function to be processed, and
    GATE_STATUS is the gate status determined by pass manager by
@@ -1995,6 +2021,16 @@ execute_one_pass (struct opt_pass *pass)
   /* Pass execution event trigger: useful to identify passes being
      executed.  */
   invoke_plugin_callbacks (PLUGIN_PASS_EXECUTION, pass);
+
+  /* SIPLE IPA passes do not handle callgraphs with IPA transforms in it.
+     Apply all trnasforms first.  */
+  if (pass->type == SIMPLE_IPA_PASS)
+    {
+      bool applied = false;
+      do_per_function (apply_ipa_transforms, (void *)&applied);
+      if (applied)
+        cgraph_remove_unreachable_nodes (true, dump_file);
+    }
 
   if (!quiet_flag && !cfun)
     fprintf (stderr, " <%s>", pass->name ? pass->name : "");

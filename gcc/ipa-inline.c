@@ -1972,17 +1972,15 @@ struct gimple_opt_pass pass_early_inline =
 
 
 /* When to run IPA inlining.  Inlining of always-inline functions
-   happens during early inlining.  */
+   happens during early inlining.
+
+   Enable inlining unconditoinally at -flto.  We need size estimates to
+   drive partitioning.  */
 
 static bool
 gate_ipa_inline (void)
 {
-  /* ???  We'd like to skip this if not optimizing or not inlining as
-     all always-inline functions have been processed by early
-     inlining already.  But this at least breaks EH with C++ as
-     we need to unconditionally run fixup_cfg even at -O0.
-     So leave it on unconditionally for now.  */
-  return 1;
+  return optimize || flag_lto || flag_wpa;
 }
 
 struct ipa_opt_pass_d pass_ipa_inline =

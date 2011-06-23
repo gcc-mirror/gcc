@@ -1420,7 +1420,7 @@ init_lowered_empty_function (tree decl)
   DECL_SAVED_TREE (decl) = error_mark_node;
   cfun->curr_properties |=
     (PROP_gimple_lcf | PROP_gimple_leh | PROP_cfg | PROP_referenced_vars |
-     PROP_ssa);
+     PROP_ssa | PROP_gimple_any);
 
   /* Create BB for body of the function and connect it properly.  */
   bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR);
@@ -2102,6 +2102,13 @@ cgraph_optimize (void)
 #endif
 
   cgraph_materialize_all_clones ();
+  bitmap_obstack_initialize (NULL);
+  execute_ipa_pass_list (all_late_ipa_passes);
+  cgraph_remove_unreachable_nodes (true, dump_file);
+#ifdef ENABLE_CHECKING
+  verify_cgraph ();
+#endif
+  bitmap_obstack_release (NULL);
   cgraph_mark_functions_to_output ();
 
   cgraph_state = CGRAPH_STATE_EXPANSION;
