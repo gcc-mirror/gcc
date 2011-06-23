@@ -1,3 +1,8 @@
+2011-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Use
+	get_pointer_alignment to see if base isn't sufficiently aligned.
+
 2011-06-23  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/49373
