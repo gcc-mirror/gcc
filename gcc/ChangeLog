@@ -1,5 +1,14 @@
 2011-06-23  Jeff Law  <law@redhat.com>
 
+	PR middle-end/48770
+	* reload.h (reload): Change to return a bool.
+	* ira.c (ira): If requested by reload, run a fast DCE pass after
+	reload has completed.  Fix comment typo.
+	* reload1.c (need_dce): New file scoped static.
+	(reload): Set reload_completed here.  Return whether or not a DCE
+	pass after reload is needed.
+	(delete_dead_insn): Set need_dce as needed.
+
 	PR middle-end/49465
 	* tree-ssa-threadupate.c (fix_duplicate_block_edges): Fix condition
 	to detect threading through joiner block.  If there was already
