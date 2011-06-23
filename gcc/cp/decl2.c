@@ -1327,7 +1327,10 @@ build_anon_union_vars (tree type, tree object)
   /* Rather than write the code to handle the non-union case,
      just give an error.  */
   if (TREE_CODE (type) != UNION_TYPE)
-    error ("anonymous struct not inside named type");
+    {
+      error ("anonymous struct not inside named type");
+      return error_mark_node;
+    }
 
   for (field = TYPE_FIELDS (type);
        field != NULL_TREE;
