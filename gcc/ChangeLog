@@ -1,3 +1,18 @@
+2011-06-23  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/49373
+	* tree-pass.h (all_late_ipa_passes): Declare.
+	* cgraphunit.c (init_lowered_empty_function): Fix properties.
+	(cgraph_optimize): Execute late passes; remove unreachable funcions after
+	materialization.
+	* ipa-inline.c (gate_ipa_inline): Enable only when optimizing or LTOing.
+	* passes.c (all_late_ipa_passes): Declare.
+	(dump_passes, register_pass): Handle late ipa passes.
+	(init_optimization_passes): Move ipa_pta to late passes; schedule fixup_cfg
+	at beggining of all_passes.
+	(apply_ipa_transforms): New function.
+	(execute_one_pass): When doing simple ipa pass, apply all transforms.
+
 2011-06-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* params.c: Include common/common-target.h.  Don't include tm.h.
