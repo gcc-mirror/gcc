@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
+#include "params.h"
 
 /* Set default optimization options.  */
 static const struct default_options sh_option_optimization_table[] =
@@ -196,10 +197,19 @@ sh_option_init_struct (struct gcc_options *opts)
   opts->x_flag_finite_math_only = 2;
 }
 
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+static void
+sh_option_default_params (void)
+{
+  set_default_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 2);
+}
+
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE sh_option_optimization_table
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT sh_option_init_struct
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS sh_option_default_params
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 #undef TARGET_HANDLE_OPTION

@@ -1,3 +1,40 @@
+2011-06-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* params.c: Include common/common-target.h.  Don't include tm.h.
+	(lang_independent_params): Move from toplev.c.
+	(global_init_params): New.
+	* params.h (global_init_params): Declare.
+	* target.def (default_params): Move to common-target.def.
+	* toplev.c (lang_independent_options): Remove.
+	(lang_independent_params): Move to params.c.
+	(general_init): Use global_init_params.
+	* common/common-target.def (option_default_params): Move from
+	target.def.
+	* common/config/ia64/ia64-common.c: Include params.h.
+	(ia64_option_default_params, TARGET_OPTION_DEFAULT_PARAMS): Move
+	from ia64.c.
+	* common/config/rs6000/rs6000-common.c: Include params.h.
+	(rs6000_option_default_params, TARGET_OPTION_DEFAULT_PARAMS): Move
+	from rs6000.c.
+	* common/config/sh/sh-common.c: Include params.h.
+	(sh_option_default_params, TARGET_OPTION_DEFAULT_PARAMS): Move
+	from sh.c.
+	* common/config/spu/spu-common.c: Include params.h.
+	(spu_option_default_params, TARGET_OPTION_DEFAULT_PARAMS): Move
+	from spu.c.
+	* config/ia64/ia64.c (ia64_option_default_params,
+	TARGET_OPTION_DEFAULT_PARAMS): Move to ia64-common.c.
+	* config/rs6000/rs6000.c (rs6000_option_default_params,
+	TARGET_OPTION_DEFAULT_PARAMS): Move to rs6000-common.c.
+	* config/sh/sh.c (sh_option_default_params,
+	TARGET_OPTION_DEFAULT_PARAMS): Move to sh-common.c.
+	* config/spu/spu.c (spu_option_default_params,
+	TARGET_OPTION_DEFAULT_PARAMS): Move to spu-common.c.
+	* Makefile.in (OBJS): Remove params.o.
+	(OBJS-libcommon-target): Add params.o.
+	(params.o, $(common_out_object_file)): Update dependencies.
+	* doc/tm.texi: Regenerate.
+
 2011-06-23  Alan Modra  <amodra@gmail.com>
 
 	PR bootstrap/49383

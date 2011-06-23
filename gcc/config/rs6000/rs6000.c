@@ -1045,7 +1045,6 @@ static rtx altivec_expand_vec_set_builtin (tree);
 static rtx altivec_expand_vec_ext_builtin (tree, rtx);
 static int get_element_number (tree, tree);
 static void rs6000_option_override (void);
-static void rs6000_option_default_params (void);
 static int rs6000_loop_align_max_skip (rtx);
 static int first_altivec_reg_to_save (void);
 static unsigned int compute_vrsave_mask (void);
@@ -1527,9 +1526,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE rs6000_option_override
-
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS rs6000_option_default_params
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
@@ -3676,15 +3672,6 @@ rs6000_preferred_simd_mode (enum machine_mode mode)
       && mode == SFmode)
     return V2SFmode;
   return word_mode;
-}
-
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-
-static void
-rs6000_option_default_params (void)
-{
-  /* Double growth factor to counter reduced min jump length.  */
-  set_default_param_value (PARAM_MAX_GROW_COPY_BB_INSNS, 16);
 }
 
 /* Handler for the Mathematical Acceleration Subsystem (mass) interface to a

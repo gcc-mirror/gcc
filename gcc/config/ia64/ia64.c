@@ -192,7 +192,6 @@ static rtx gen_fr_spill_x (rtx, rtx, rtx);
 static rtx gen_fr_restore_x (rtx, rtx, rtx);
 
 static void ia64_option_override (void);
-static void ia64_option_default_params (void);
 static bool ia64_can_eliminate (const int, const int);
 static enum machine_mode hfa_element_mode (const_tree, bool);
 static void ia64_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
@@ -377,8 +376,6 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE ia64_option_override
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS ia64_option_default_params
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE ia64_output_function_prologue
@@ -10857,20 +10854,6 @@ ia64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
   if (TYPE_MODE (type1) == RFmode || TYPE_MODE (type2) == RFmode)
     return N_("invalid operation on %<__fpreg%>");
   return NULL;
-}
-
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-static void
-ia64_option_default_params (void)
-{
-  /* Let the scheduler form additional regions.  */
-  set_default_param_value (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS, 2);
-
-  /* Set the default values for cache-related parameters.  */
-  set_default_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6);
-  set_default_param_value (PARAM_L1_CACHE_LINE_SIZE, 32);
-
-  set_default_param_value (PARAM_SCHED_MEM_TRUE_DEP_COST, 4);
 }
 
 /* HP-UX version_id attribute.

@@ -105,6 +105,11 @@ extern void maybe_set_param_value (compiler_param num, int value,
 
 extern void set_default_param_value (compiler_param num, int value);
 
+/* Add all parameters and default values that can be set in both the
+   driver and the compiler proper.  */
+
+extern void global_init_params (void);
+
 /* Note that all parameters have been added and all default values
    set.  */
 extern void finish_params (void);

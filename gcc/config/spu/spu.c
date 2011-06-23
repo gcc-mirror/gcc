@@ -149,7 +149,6 @@ char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 
 /*  Prototypes and external defs.  */
 static void spu_option_override (void);
-static void spu_option_default_params (void);
 static void spu_init_builtins (void);
 static tree spu_builtin_decl (unsigned, bool);
 static bool spu_scalar_mode_supported_p (enum machine_mode mode);
@@ -487,9 +486,6 @@ static void spu_setup_incoming_varargs (cumulative_args_t cum,
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE spu_option_override
 
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS spu_option_default_params
-
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE spu_conditional_register_usage
 
@@ -507,15 +503,6 @@ static void spu_setup_incoming_varargs (cumulative_args_t cum,
 #define TARGET_DELAY_VARTRACK true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
-
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-static void
-spu_option_default_params (void)
-{
-  /* Override some of the default param values.  With so many registers
-     larger values are better for these params.  */
-  set_default_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 128);
-}
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
 static void
