@@ -1,3 +1,9 @@
+2011-06-23  Alan Modra  <amodra@gmail.com>
+
+	PR bootstrap/49383
+	* config/rs6000/rs6000.c (call_ABI_of_interest): Adjust cgraph
+	invocation for 2011-06-09 changes.
+
 2011-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/49490
