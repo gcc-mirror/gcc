@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fipa-pta" } */
 /* { dg-additional-sources "pr43879-1_0.C" } */
-/* { dg-xfail-run-if "PR49373" { *-*-* } { -O1 -O2 -O3 -Os } { -flto } } */
 
 struct A {
     int *i;
