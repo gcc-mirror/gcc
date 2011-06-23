@@ -1,3 +1,10 @@
+2011-06-16  Jeff Law  <law@redhat.com>
+
+	PR middle-end/49465
+	* tree-ssa-threadupate.c (fix_duplicate_block_edges): Fix condition
+	to detect threading through joiner block.  If there was already
+	an edge to the new target, then do not change the PHI nodes.
+
 2011-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Use

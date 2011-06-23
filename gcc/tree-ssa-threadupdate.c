@@ -385,7 +385,7 @@ fix_duplicate_block_edges (struct redirection_data *rd,
      to keep its control statement and redirect an outgoing edge.
      Else we want to remove the control statement & edges, then create
      a new outgoing edge.  In both cases we may need to update PHIs.  */
-  if (THREAD_TARGET2 (rd->incoming_edges->e) == rd->outgoing_edge)
+  if (THREAD_TARGET2 (rd->incoming_edges->e))
     {
       edge victim;
       edge e2;
@@ -400,8 +400,11 @@ fix_duplicate_block_edges (struct redirection_data *rd,
       victim = find_edge (rd->dup_block, THREAD_TARGET (e)->dest);
       e2 = redirect_edge_and_branch (victim, THREAD_TARGET2 (e)->dest);
 
-      /* This updates the PHI at the target of the threaded edge.  */
-      copy_phi_args (e2->dest, THREAD_TARGET2 (e), e2);
+      /* If we redirected the edge, then we need to copy PHI arguments
+	 at the target.  If the edge already existed (e2 != victim case),
+	 then the PHIs in the target already have the correct arguments.  */
+      if (e2 == victim)
+	copy_phi_args (e2->dest, THREAD_TARGET2 (e), e2);
     }
   else
     {
