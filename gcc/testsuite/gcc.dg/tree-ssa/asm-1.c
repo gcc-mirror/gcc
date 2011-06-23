@@ -2,7 +2,7 @@
    as a def.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-optimized" } */
+/* { dg-options "-O -fdump-tree-optimized-nouid" } */
 
 void f()
 {
