@@ -1,5 +1,8 @@
 2011-06-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49395
+	* init.c (build_zero_init_1): Strip cv-quals from scalar types.
+
 	PR c++/36435
 	* pt.c (most_specialized_instantiation): Do check return types.
 
