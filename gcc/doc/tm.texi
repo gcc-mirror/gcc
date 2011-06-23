@@ -762,7 +762,7 @@ options are changed via @code{#pragma GCC optimize} or by using the
 Set target-dependent initial values of fields in @var{opts}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_OPTION_DEFAULT_PARAMS (void)
+@deftypefn {Common Target Hook} void TARGET_OPTION_DEFAULT_PARAMS (void)
 Set target-dependent default values for @option{--param} settings, using calls to @code{set_default_param_value}.
 @end deftypefn
 

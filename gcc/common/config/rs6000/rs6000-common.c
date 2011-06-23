@@ -28,6 +28,7 @@
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
+#include "params.h"
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options rs6000_option_optimization_table[] =
@@ -49,6 +50,15 @@ rs6000_option_init_struct (struct gcc_options *opts)
   /* Enable section anchors by default.  */
   if (!TARGET_MACHO)
     opts->x_flag_section_anchors = 1;
+}
+
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+
+static void
+rs6000_option_default_params (void)
+{
+  /* Double growth factor to counter reduced min jump length.  */
+  set_default_param_value (PARAM_MAX_GROW_COPY_BB_INSNS, 16);
 }
 
 /* If not otherwise specified by a target, make 'long double' equivalent to
@@ -315,6 +325,9 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT rs6000_option_init_struct
+
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS rs6000_option_default_params
 
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE rs6000_option_optimization_table

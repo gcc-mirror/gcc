@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
+#include "params.h"
 
 /* Implement overriding of the optimization options.  */
 static const struct default_options ia64_option_optimization_table[] =
@@ -83,8 +84,25 @@ ia64_except_unwind_info (struct gcc_options *opts)
   return UI_TARGET;
 }
 
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+
+static void
+ia64_option_default_params (void)
+{
+  /* Let the scheduler form additional regions.  */
+  set_default_param_value (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS, 2);
+
+  /* Set the default values for cache-related parameters.  */
+  set_default_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6);
+  set_default_param_value (PARAM_L1_CACHE_LINE_SIZE, 32);
+
+  set_default_param_value (PARAM_SCHED_MEM_TRUE_DEP_COST, 4);
+}
+
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE ia64_option_optimization_table
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS ia64_option_default_params
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO  ia64_except_unwind_info

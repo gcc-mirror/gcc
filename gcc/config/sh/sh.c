@@ -182,7 +182,6 @@ static int noncall_uses_reg (rtx, rtx, rtx *);
 static rtx gen_block_redirect (rtx, int, int);
 static void sh_reorg (void);
 static void sh_option_override (void);
-static void sh_option_default_params (void);
 static void output_stack_adjust (int, rtx, int, HARD_REG_SET *, bool);
 static rtx frame_insn (rtx);
 static rtx push (int);
@@ -345,8 +344,6 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE sh_option_override
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS sh_option_default_params
 
 #undef TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND sh_print_operand
@@ -578,14 +575,6 @@ static const struct attribute_spec sh_attribute_table[] =
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-static void
-sh_option_default_params (void)
-{
-  set_default_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 2);
-}
-
 /* Implement TARGET_OPTION_OVERRIDE macro.  Validate and override 
    various options, and do some machine dependent initialization.  */
 static void

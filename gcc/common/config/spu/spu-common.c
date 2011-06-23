@@ -24,6 +24,7 @@
 #include "common/common-target-def.h"
 #include "opts.h"
 #include "flags.h"
+#include "params.h"
 
 static void
 spu_option_init_struct (struct gcc_options *opts)
@@ -32,11 +33,23 @@ spu_option_init_struct (struct gcc_options *opts)
   opts->x_flag_rename_registers = 1;
 }
 
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+static void
+spu_option_default_params (void)
+{
+  /* Override some of the default param values.  With so many registers
+     larger values are better for these params.  */
+  set_default_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 128);
+}
+
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT)
 
 #undef TARGET_OPTION_INIT_STRUCT
 #define TARGET_OPTION_INIT_STRUCT spu_option_init_struct
+
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS spu_option_default_params
 
 #undef TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO  sjlj_except_unwind_info
