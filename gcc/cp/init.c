@@ -176,7 +176,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
        initialized are initialized to zero.  */
     ;
   else if (SCALAR_TYPE_P (type))
-    init = convert (cv_unqualified (type), integer_zero_node);
+    init = convert (type, integer_zero_node);
   else if (CLASS_TYPE_P (type))
     {
       tree field;
