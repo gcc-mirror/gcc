@@ -1,3 +1,12 @@
+2011-06-24  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sparc.md (create_flat_frame_1<P:mode>): Remove.
+	(create_flat_frame_2<P:mode>, create_flat_frame_3<P:mode>): Remove.
+	* config/sparc/sparc.c (gen_create_flat_frame_1): Remove.
+	(gen_create_flat_frame_2, gen_create_flat_frame_3): Remove.
+	(sparc_flat_expand_prologue): Emit individual instructions
+	instead of one of the above.
+
 2011-06-24  Easwaran Raman  <eraman@google.com>
 
 	PR rtl-optimization/49429
