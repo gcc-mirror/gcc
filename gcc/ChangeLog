@@ -1,3 +1,9 @@
+2011-06-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/49504
+	* rtlanal.c (nonzero_bits1): Properly handle addition or
+	subtraction a pointer in Pmode if pointers extend unsigned.
+
 2011-06-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimizations/49516
