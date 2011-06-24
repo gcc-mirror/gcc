@@ -1,3 +1,9 @@
+2011-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46400
+	* cp-tree.h (union lang_tree_node): Use TYPE_NEXT_VARIANT
+	instead of TYPE_CHAIN for chain_next for types.
+
 2011-06-23  Gabriel Charette  <gchare@google.com>
 
 	* name-lookup.h (cp_binding_level): Removed unused

@@ -729,7 +729,7 @@ enum cp_tree_node_structure_enum {
 
 /* The resulting tree type.  */
 union GTY((desc ("cp_tree_node_structure (&%h)"),
-       chain_next ("CODE_CONTAINS_STRUCT (TREE_CODE (&%h.generic), TS_COMMON) ? ((union lang_tree_node *) TREE_CHAIN (&%h.generic)) : NULL"))) lang_tree_node {
+       chain_next ("CODE_CONTAINS_STRUCT (TREE_CODE (&%h.generic), TS_TYPE_COMMON) ? ((union lang_tree_node *) TYPE_NEXT_VARIANT (&%h.generic)) : CODE_CONTAINS_STRUCT (TREE_CODE (&%h.generic), TS_COMMON) ? ((union lang_tree_node *) TREE_CHAIN (&%h.generic)) : NULL"))) lang_tree_node {
   union tree_node GTY ((tag ("TS_CP_GENERIC"),
 			desc ("tree_node_structure (&%h)"))) generic;
   struct template_parm_index_s GTY ((tag ("TS_CP_TPI"))) tpi;

@@ -1,3 +1,9 @@
+2011-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/46400
+	* c-decl.c (union lang_tree_node): Use TYPE_NEXT_VARIANT
+	instead of TYPE_CHAIN for chain_next for types.
+
 2011-06-24  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.md (create_flat_frame_1<P:mode>): Remove.
