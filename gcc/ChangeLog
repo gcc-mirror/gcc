@@ -1,3 +1,13 @@
+2011-06-24  Andi Kleen  <ak@linux.intel.com>
+
+	* tree-sra.c (type_internals_preclude_sra_p): Add msg
+	parameter. Split up ifs and report reason in *msg.
+	(reject): Add.
+	(find_var_candiate): Add msg variable.
+	Split up ifs and report reason to reject.
+	(find_param_candidates): Add msg variable.
+	Pass msg to type_internals_preclude_sra_p.
+
 2011-06-23  Jeff Law  <law@redhat.com>
 
 	PR middle-end/48770

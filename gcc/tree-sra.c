@@ -648,7 +648,7 @@ disqualify_candidate (tree decl, const char *reason)
    scalarization.  */
 
 static bool
-type_internals_preclude_sra_p (tree type)
+type_internals_preclude_sra_p (tree type, const char **msg)
 {
   tree fld;
   tree et;
@@ -663,15 +663,39 @@ type_internals_preclude_sra_p (tree type)
 	  {
 	    tree ft = TREE_TYPE (fld);
 
-	    if (TREE_THIS_VOLATILE (fld)
-		|| !DECL_FIELD_OFFSET (fld) || !DECL_SIZE (fld)
-		|| !host_integerp (DECL_FIELD_OFFSET (fld), 1)
-		|| !host_integerp (DECL_SIZE (fld), 1)
-		|| (AGGREGATE_TYPE_P (ft)
-		    && int_bit_position (fld) % BITS_PER_UNIT != 0))
-	      return true;
+	    if (TREE_THIS_VOLATILE (fld))
+	      {
+		*msg = "volatile structure field";
+		return true;
+	      }
+	    if (!DECL_FIELD_OFFSET (fld))
+	      {
+		*msg = "no structure field offset";
+		return true;
+	      }
+	    if (!DECL_SIZE (fld))
+	      {
+		*msg = "zero structure field size";
+	        return true;
+	      }
+	    if (!host_integerp (DECL_FIELD_OFFSET (fld), 1))
+	      {
+		*msg = "structure field offset not fixed";
+		return true;
+	      }
+	    if (!host_integerp (DECL_SIZE (fld), 1))
+	      {
+	        *msg = "structure field size not fixed";
+		return true;
+	      }	      
+	    if (AGGREGATE_TYPE_P (ft)
+		    && int_bit_position (fld) % BITS_PER_UNIT != 0)
+	      {
+		*msg = "structure field is bit field";
+	        return true;
+	      }
 
-	    if (AGGREGATE_TYPE_P (ft) && type_internals_preclude_sra_p (ft))
+	    if (AGGREGATE_TYPE_P (ft) && type_internals_preclude_sra_p (ft, msg))
 	      return true;
 	  }
 
@@ -681,9 +705,12 @@ type_internals_preclude_sra_p (tree type)
       et = TREE_TYPE (type);
 
       if (TYPE_VOLATILE (et))
-	return true;
+	{
+	  *msg = "element type is volatile";
+	  return true;
+	}
 
-      if (AGGREGATE_TYPE_P (et) && type_internals_preclude_sra_p (et))
+      if (AGGREGATE_TYPE_P (et) && type_internals_preclude_sra_p (et, msg))
 	return true;
 
       return false;
@@ -1538,6 +1565,19 @@ is_va_list_type (tree type)
   return TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (va_list_type_node);
 }
 
+/* Print message to dump file why a variable was rejected. */
+
+static void
+reject (tree var, const char *msg)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Rejected (%d): %s: ", DECL_UID (var), msg);
+      print_generic_expr (dump_file, var, 0);
+      fprintf (dump_file, "\n");
+    }
+}
+
 /* The very first phase of intraprocedural SRA.  It marks in candidate_bitmap
    those with type which is suitable for scalarization.  */
 
@@ -1547,6 +1587,7 @@ find_var_candidates (void)
   tree var, type;
   referenced_var_iterator rvi;
   bool ret = false;
+  const char *msg;
 
   FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
@@ -1554,19 +1595,50 @@ find_var_candidates (void)
         continue;
       type = TREE_TYPE (var);
 
-      if (!AGGREGATE_TYPE_P (type)
-	  || needs_to_live_in_memory (var)
-	  || TREE_THIS_VOLATILE (var)
-	  || !COMPLETE_TYPE_P (type)
-	  || !host_integerp (TYPE_SIZE (type), 1)
-          || tree_low_cst (TYPE_SIZE (type), 1) == 0
-	  || type_internals_preclude_sra_p (type)
-	  /* Fix for PR 41089.  tree-stdarg.c needs to have va_lists intact but
+      if (!AGGREGATE_TYPE_P (type)) 
+        {
+          reject (var, "not aggregate");
+          continue;
+	}
+      if (needs_to_live_in_memory (var))
+        {
+          reject (var, "needs to live in memory");
+          continue;
+        }
+      if (TREE_THIS_VOLATILE (var))
+        {
+          reject (var, "is volatile");
+	  continue;
+        }
+      if (!COMPLETE_TYPE_P (type))
+        {
+          reject (var, "has incomplete type");
+	  continue;
+        }
+      if (!host_integerp (TYPE_SIZE (type), 1))
+        {
+          reject (var, "type size not fixed");
+	  continue;
+        }
+      if (tree_low_cst (TYPE_SIZE (type), 1) == 0)
+        {
+          reject (var, "type size is zero");
+          continue;
+        }
+      if (type_internals_preclude_sra_p (type, &msg))
+	{
+	  reject (var, msg);
+	  continue;
+	}
+      if (/* Fix for PR 41089.  tree-stdarg.c needs to have va_lists intact but
 	      we also want to schedule it rather late.  Thus we ignore it in
 	      the early pass. */
-	  || (sra_mode == SRA_MODE_EARLY_INTRA
+	  (sra_mode == SRA_MODE_EARLY_INTRA
 	      && is_va_list_type (type)))
-	continue;
+        {
+	  reject (var, "is va_list");
+	  continue;
+	}
 
       bitmap_set_bit (candidate_bitmap, DECL_UID (var));
 
@@ -3228,6 +3300,7 @@ find_param_candidates (void)
   tree parm;
   int count = 0;
   bool ret = false;
+  const char *msg;
 
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm;
@@ -3268,7 +3341,7 @@ find_param_candidates (void)
 	  || !host_integerp (TYPE_SIZE (type), 1)
           || tree_low_cst (TYPE_SIZE (type), 1) == 0
 	  || (AGGREGATE_TYPE_P (type)
-	      && type_internals_preclude_sra_p (type)))
+	      && type_internals_preclude_sra_p (type, &msg)))
 	continue;
 
       bitmap_set_bit (candidate_bitmap, DECL_UID (parm));
