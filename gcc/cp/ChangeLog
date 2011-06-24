@@ -1,3 +1,8 @@
+2011-06-23  Gabriel Charette  <gchare@google.com>
+
+	* name-lookup.h (cp_binding_level): Removed unused
+	member names_size. Update all users.
+
 2011-06-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49519

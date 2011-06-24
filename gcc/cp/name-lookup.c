@@ -541,7 +541,6 @@ add_decl_to_level (tree decl, cxx_scope *b)
 	 necessary.  */
       TREE_CHAIN (decl) = b->names;
       b->names = decl;
-      b->names_size++;
 
       /* If appropriate, add decl to separate list of statics.  We
 	 include extern variables because they might turn out to be
