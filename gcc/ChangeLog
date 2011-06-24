@@ -1,3 +1,15 @@
+2011-06-24  Easwaran Raman  <eraman@google.com>
+
+	PR rtl-optimization/49429
+	PR target/49454
+	* expr.c (emit_block_move_hints):  Mark MEM_EXPR(x) and
+	MEM_EXPR(y) addressable if emit_block_move_via_libcall is
+	used to copy y into x.
+	* calls.c (initialize_argument_information): Mark
+	an argument addressable if it is passed by invisible reference.
+	(emit_library_call_value_1): Mark  MEM_EXPR (val) addressable
+	if it is passed by reference.
+
 2011-06-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/49504
