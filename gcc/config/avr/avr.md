@@ -3558,7 +3558,7 @@
 	andi %0,1
 	mov %0,%1\;andi %0,1
 	lsr %0\;andi %0,1
-        swap %0\;andi %0,1
+	swap %0\;andi %0,1
 	bst %1,%2\;clr %0\;bld %0,0"
   [(set_attr "length" "1,2,2,2,3")
    (set_attr "cc" "set_zn,set_zn,set_zn,set_zn,clobber")])
