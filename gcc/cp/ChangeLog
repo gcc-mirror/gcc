@@ -1,5 +1,9 @@
 2011-06-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49519
+	* typeck2.c (build_functional_cast): Strip cv-quals for value init.
+	* init.c (build_zero_init_1): Not here.
+
 	PR c++/35255
 	* pt.c (resolve_overloaded_unification): Fix DR 115 handling.
 
