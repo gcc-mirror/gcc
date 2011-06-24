@@ -6287,39 +6287,6 @@
   "save\t%%sp, %0, %%sp"
   [(set_attr "type" "savew")])
 
-;; For the "create flat frame" insns, we need to use special insns
-;; because %fp cannot be clobbered until after the frame is established (so
-;; that it contains the live register window save area) and %i7 changed with
-;; a simple move as it is a fixed register and the move would be eliminated.
-
-(define_insn "create_flat_frame_1<P:mode>"
-  [(set (reg:P 30) (reg:P 14))
-   (set (reg:P 14) (plus:P (reg:P 14)
-			   (match_operand:P 0 "arith_operand" "rI")))
-   (set (reg:P 31) (reg:P 15))]
-  "TARGET_FLAT"
-  "add\t%%sp, %0, %%sp\n\tsub\t%%sp, %0, %%fp\n\tmov\t%%o7, %%i7"
-  [(set_attr "type" "multi")
-   (set_attr "length" "3")])
-
-(define_insn "create_flat_frame_2<P:mode>"
-  [(set (reg:P 30) (reg:P 14))
-   (set (reg:P 14) (plus:P (reg:P 14)
-		           (match_operand:P 0 "arith_operand" "rI")))]
-  "TARGET_FLAT"
-  "add\t%%sp, %0, %%sp\n\tsub\t%%sp, %0, %%fp"
-  [(set_attr "type" "multi")
-   (set_attr "length" "2")])
-
-(define_insn "create_flat_frame_3<P:mode>"
-  [(set (reg:P 14) (plus:P (reg:P 14)
-		           (match_operand:P 0 "arith_operand" "rI")))
-   (set (reg:P 31) (reg:P 15))]
-  "TARGET_FLAT"
-  "add\t%%sp, %0, %%sp\n\tmov\t%%o7, %%i7"
-  [(set_attr "type" "multi")
-   (set_attr "length" "2")])
-
 (define_expand "epilogue"
   [(return)]
   ""
