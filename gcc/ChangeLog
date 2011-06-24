@@ -2,7 +2,8 @@
 
 	PR rtl-optimization/49504
 	* rtlanal.c (nonzero_bits1): Properly handle addition or
-	subtraction a pointer in Pmode if pointers extend unsigned.
+	subtraction of a pointer in Pmode if pointers extend unsigned.
+	(num_sign_bit_copies1): Likewise.
 
 2011-06-24  Martin Jambor  <mjambor@suse.cz>
 
