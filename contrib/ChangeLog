@@ -1,3 +1,7 @@
+2011-06-24  Diego Novillo  <dnovillo@google.com>
+
+	* repro_fail: New.
+
 2011-06-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc_update (gcc/config/avr/avr-tables.opt): New dependencies.
