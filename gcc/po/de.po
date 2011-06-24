@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-03-24 16:45+0000\n"
-"PO-Revision-Date: 2011-06-23 18:05+0100\n"
+"PO-Revision-Date: 2011-06-24 13:27+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -24438,64 +24438,64 @@ msgid "call of %<(%T) (%A)%> is ambiguous"
 msgstr "Aufruf von %<(%T) (%A)%> ist nicht eindeutig"
 
 #: cp/call.c:3884
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguous overload for ternary %<operator?:%> in %<%E ? %E : %E%>"
-msgstr "%s für ternären %<operator?:%> in %<%E ? %E : %E%>"
+msgstr "mehrdeutiges Überladen für ternären %<operator?:%> in %<%E ? %E : %E%>"
 
 #: cp/call.c:3887
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no match for ternary %<operator?:%> in %<%E ? %E : %E%>"
-msgstr "%s für ternären %<operator?:%> in %<%E ? %E : %E%>"
+msgstr "keine Übereinstimmung für ternären %<operator?:%> in %<%E ? %E : %E%>"
 
 #: cp/call.c:3894
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguous overload for %<operator%s%> in %<%E%s%>"
-msgstr "%s für %<operator%s%> in %<%E%s%>"
+msgstr "mehrdeutiges Überladen für %<operator%s%> in %<%E%s%>"
 
 #: cp/call.c:3897
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no match for %<operator%s%> in %<%E%s%>"
-msgstr "%s für %<operator%s%> in %<%E%s%>"
+msgstr "keine Übereinstimmung für %<operator%s%> in %<%E%s%>"
 
 #: cp/call.c:3903
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguous overload for %<operator[]%> in %<%E[%E]%>"
-msgstr "%s für %<operator[]%> in %<%E[%E]%>"
+msgstr "mehrdeutiges Überladen für %<operator[]%> in %<%E[%E]%>"
 
 #: cp/call.c:3906
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no match for %<operator[]%> in %<%E[%E]%>"
-msgstr "%s für %<operator[]%> in %<%E[%E]%>"
+msgstr "keine Übereinstimmung für %<operator[]%> in %<%E[%E]%>"
 
 #: cp/call.c:3913
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguous overload for %qs in %<%s %E%>"
-msgstr "%s für %qs in %<%s %E%>"
+msgstr "mehrdeutiges Überladen für %qs in %<%s %E%>"
 
 #: cp/call.c:3916
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no match for %qs in %<%s %E%>"
-msgstr "%s für %qs in %<%s %E%>"
+msgstr "keine Übereinstimmung für %qs in %<%s %E%>"
 
 #: cp/call.c:3923
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguous overload for %<operator%s%> in %<%E %s %E%>"
-msgstr "%s für %<operator%s%> in %<%E %s %E%>"
+msgstr "mehrdeutiges Überladen für %<operator%s%> in %<%E %s %E%>"
 
 #: cp/call.c:3926
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no match for %<operator%s%> in %<%E %s %E%>"
-msgstr "%s für %<operator%s%> in %<%E %s %E%>"
+msgstr "keine Übereinstimmung für %<operator%s%> in %<%E %s %E%>"
 
 #: cp/call.c:3930
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguous overload for %<operator%s%> in %<%s%E%>"
-msgstr "%s für %<operator%s%> in %<%s%E%>"
+msgstr "mehrdeutiges Überladen für %<operator%s%> in %<%s%E%>"
 
 #: cp/call.c:3933
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no match for %<operator%s%> in %<%s%E%>"
-msgstr "%s für %<operator%s%> in %<%s%E%>"
+msgstr "keine Übereinstimmung für %<operator%s%> in %<%s%E%>"
 
 #: cp/call.c:4027
 #, gcc-internal-format
@@ -24533,9 +24533,9 @@ msgid "no %<%D(int)%> declared for postfix %qs, trying prefix operator instead"
 msgstr "kein %<%D(int)%> für Suffix %qs deklariert, stattdessen wird Präfixoperator versucht"
 
 #: cp/call.c:4753
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no %<%D(int)%> declared for postfix %qs"
-msgstr "kein %<%D(int)%> für Suffix %qs deklariert, stattdessen wird Präfixoperator versucht"
+msgstr "kein %<%D(int)%> für Suffix %qs deklariert"
 
 #: cp/call.c:4847
 #, gcc-internal-format
@@ -24543,19 +24543,19 @@ msgid "comparison between %q#T and %q#T"
 msgstr "Vergleich zwischen %q#T und %q#T"
 
 #: cp/call.c:5091
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-placement deallocation function %q+D"
-msgstr "keine passende Freigabefunktion für »%D«"
+msgstr "nicht-platzierende Freigabefunktion %q+D"
 
 #: cp/call.c:5092
 #, gcc-internal-format
 msgid "selected for placement delete"
-msgstr ""
+msgstr "für Platzierungs-Löschen ausgewählt"
 
 #: cp/call.c:5171
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no corresponding deallocation function for %qD"
-msgstr "keine passende Freigabefunktion für »%D«"
+msgstr "keine passende Freigabefunktion für %qD"
 
 #: cp/call.c:5176
 #, gcc-internal-format
@@ -24598,9 +24598,9 @@ msgid "converting %<false%> to pointer type for argument %P of %qD"
 msgstr "%<false%> wird für Argument %P von %qD in Zeigertyp umgewandelt"
 
 #: cp/call.c:5295
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many braces around initializer for %qT"
-msgstr "geschweifte Klammern fehlen um Initialisierung für %qT"
+msgstr "zu viele geschweifte Klammern um Initialisierung für %qT"
 
 #: cp/call.c:5317 cp/cvt.c:217
 #, gcc-internal-format
@@ -24615,17 +24615,17 @@ msgstr "  Argument %P von %qD wird initialisiert"
 #: cp/call.c:5349
 #, gcc-internal-format
 msgid "converting to %qT from initializer list would use explicit constructor %qD"
-msgstr ""
+msgstr "Umwandlung in %qT von Initialisierungsliste würde expliziten Konstruktor %qD verwenden"
 
 #: cp/call.c:5409 cp/call.c:5525
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  initializing argument %P of %q+D"
-msgstr "  Argument %P von %qD wird initialisiert"
+msgstr "  Argument %P von %q+D wird initialisiert"
 
 #: cp/call.c:5522
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot bind %qT lvalue to %qT"
-msgstr "der R-Wert %qE kann nicht mit %qT verbunden werden"
+msgstr "L-Wert %qT kann nicht mit %qT verbunden werden"
 
 #: cp/call.c:5557
 #, gcc-internal-format
@@ -24643,15 +24643,15 @@ msgid "cannot bind rvalue %qE to %qT"
 msgstr "der R-Wert %qE kann nicht mit %qT verbunden werden"
 
 #: cp/call.c:5699
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot pass objects of non-trivially-copyable type %q#T through %<...%>"
-msgstr "Objekte des Nicht-POD-Typs %q#T können nicht über %<...%> übergeben werden; Aufruf wird zur Laufzeit abbrechen"
+msgstr "Objekte des nicht trivial kopierbaren Typs %q#T können nicht über %<...%> übergeben werden"
 
 #. conditionally-supported behavior [expr.call] 5.2.2/7.
 #: cp/call.c:5728
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot receive objects of non-trivially-copyable type %q#T through %<...%>; "
-msgstr "Objekte des Nicht-POD-Typs %q#T können nicht über %<...%> empfangen werden; Aufruf wird zur Laufzeit abbrechen"
+msgstr "Objekte des nicht trivial kopierbaren Typs %q#T können nicht über %<...%> empfangen werden; "
 
 #: cp/call.c:5774
 #, gcc-internal-format
@@ -24679,19 +24679,19 @@ msgid "%qT is not an accessible base of %qT"
 msgstr "%qT ist keine erreichbare Basis von %qT"
 
 #: cp/call.c:6190
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "deducing %qT as %qT"
-msgstr "Deklaration von %qD als %s"
+msgstr "%qT ermittelt als %qT"
 
 #: cp/call.c:6193
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  in call to %q+D"
-msgstr "  in Aufruf von %qD"
+msgstr "  in Aufruf von %q+D"
 
 #: cp/call.c:6195
 #, gcc-internal-format
 msgid "  (you can disable this with -fno-deduce-init-list)"
-msgstr ""
+msgstr "  (dies kann mit -fno-deduce-init-list abgeschaltet werden)"
 
 #: cp/call.c:6465
 #, gcc-internal-format
@@ -24706,17 +24706,17 @@ msgstr "Aufruf der Nicht-Funktion %qD"
 #: cp/call.c:6768 cp/typeck.c:2543
 #, gcc-internal-format
 msgid "cannot call constructor %<%T::%D%> directly"
-msgstr ""
+msgstr "Konstruktor %<%T::%D%> kann nicht direkt aufgerufen werden"
 
 #: cp/call.c:6770
 #, gcc-internal-format
 msgid "  for a function-style cast, remove the redundant %<::%D%>"
-msgstr ""
+msgstr "  für Umwandlung im Funktions-Stil muss das überflüssige %<::%D%> entfernt werden"
 
 #: cp/call.c:6854
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no matching function for call to %<%T::operator %T(%A)%#V%>"
-msgstr "keine passende Funktion für Aufruf von %<%T::%s(%A)%#V%>"
+msgstr "keine passende Funktion für Aufruf von %<%T::operator %T(%A)%#V%>"
 
 #: cp/call.c:6867
 #, gcc-internal-format
@@ -24759,19 +24759,19 @@ msgid "  because conversion sequence for the argument is better"
 msgstr "  denn die Umwandlungsfolge für das Argument ist besser"
 
 #: cp/call.c:7810
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default argument mismatch in overload resolution"
-msgstr "Standardargument in expliziter Spezialisierung angegeben"
+msgstr "Zuordnungsfehler der Standardargumente in Überladungsauflösung"
 
 #: cp/call.c:7813
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid " candidate 1: %q+#F"
-msgstr "Kandidat ist: %+#D"
+msgstr " Kandidat 1: %q+#F"
 
 #: cp/call.c:7815
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid " candidate 2: %q+#F"
-msgstr "Kandidat ist: %+#D"
+msgstr " Kandidat 2: %q+#F"
 
 #: cp/call.c:7856
 #, gcc-internal-format
@@ -24784,9 +24784,9 @@ msgid "could not convert %qE to %qT"
 msgstr "%qE konnte nicht nach %qT konvertiert werden"
 
 #: cp/call.c:8251
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid initialization of non-const reference of type %qT from an rvalue of type %qT"
-msgstr "ungültige Initialisierung einer nicht-konstanten Referenz des Typs %qT von temporärem Wert des Typs %qT"
+msgstr "ungültige Initialisierung einer nicht-konstanten Referenz des Typs %qT von R-Wert des Typs %qT"
 
 #: cp/call.c:8255
 #, gcc-internal-format
@@ -25040,9 +25040,9 @@ msgid "initializer specified for non-virtual method %q+D"
 msgstr "Initialisierung für nicht-virtuelle Methode %q+D angegeben"
 
 #: cp/class.c:4568
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "enclosing class of %q+D is not a literal type"
-msgstr "%qE in Klasse %qT bezeichnet keinen Typen"
+msgstr "umschließende Klasse von %q+D ist kein Literaltyp"
 
 #: cp/class.c:4677
 #, gcc-internal-format
@@ -25187,7 +25187,7 @@ msgid "%qE implicitly determined as %<firstprivate%> has reference type"
 msgstr ""
 
 #: cp/cvt.c:90
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t convert from incomplete type %qT to %qT"
 msgstr "unvollständiger Typ %qT kann nicht nach %qT umgewandelt werden"
 
@@ -25202,24 +25202,24 @@ msgid "cannot convert %qE from type %qT to type %qT"
 msgstr "%qE kann nicht vom Typ %qT in den Typ %qT umgewandelt werden"
 
 #: cp/cvt.c:370
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialization of volatile reference type %q#T from rvalue of type %qT"
-msgstr "ungültige Initialisierung einer Referenz des Typs %qT von Ausdruck des Typs %qT"
+msgstr "Initialisierung des »volatile« Referenztyps %q#T von R-Wert des Typs %qT"
 
 #: cp/cvt.c:373
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to volatile reference type %q#T from rvalue of type %qT"
-msgstr "ungültige Initialisierung einer Referenz des Typs %qT von Ausdruck des Typs %qT"
+msgstr "Umwandlung in »volatile« Referenztyp %q#T von R-Wert des Typs %qT"
 
 #: cp/cvt.c:376
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialization of non-const reference type %q#T from rvalue of type %qT"
-msgstr "ungültige Initialisierung einer nicht-konstanten Referenz des Typs %qT von temporärem Wert des Typs %qT"
+msgstr "Initialisierung eines nicht-konstanten Referenztyps %q#T von R-Wert des Typs %qT"
 
 #: cp/cvt.c:379
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to non-const reference type %q#T from rvalue of type %qT"
-msgstr "ungültige Initialisierung einer nicht-konstanten Referenz des Typs %qT von temporärem Wert des Typs %qT"
+msgstr "Umwandlung in nicht-konstanten Referenztyp %q#T von R-Wert des Typs %qT"
 
 #: cp/cvt.c:452
 #, gcc-internal-format
@@ -25244,7 +25244,7 @@ msgstr "Umwandlung von %q#T nach %q#T"
 #: cp/cvt.c:715
 #, gcc-internal-format
 msgid "the result of the conversion is unspecified because %qE is outside the range of type %qT"
-msgstr ""
+msgstr "das Ergebnis der Umwandlung ist nicht spezifiziert, da %qE außerhalb des Wertebereichs des Typs %qT liegt"
 
 #: cp/cvt.c:726 cp/cvt.c:751
 #, gcc-internal-format
@@ -25267,9 +25267,9 @@ msgid "pseudo-destructor is not called"
 msgstr "Pseudo-Destruktor wird nicht aufgerufen"
 
 #: cp/cvt.c:961
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to void will not access object of incomplete type %qT"
-msgstr "Konvertierung in unvollständigen Typen"
+msgstr "Umwandlung in void greift nicht auf Objekt des unvollständigen Typs %qT zu"
 
 #: cp/cvt.c:965
 #, gcc-internal-format
