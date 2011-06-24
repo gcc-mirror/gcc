@@ -1,0 +1,82 @@
+#!/bin/bash -eu
+#
+# Script to reproduce a test failure from a dejagnu .log file.
+#
+# Contributed by Diego Novillo <dnovillo@google.com>
+#
+# Copyright (C) 2011 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+# This script will search a line starting with 'spawn' that includes the
+# pattern you are looking for (typically a source file name).
+#
+# Once it finds that pattern, it re-executes the whole command
+# in the spawn line.  If the pattern matches more than one spawn
+# command, it asks which one you want.
+
+if [ $# -lt 2 ] ; then
+    echo "usage: $0 pattern file.log [additional-args]"
+    echo
+    echo "Finds the 'spawn' line matching PATTERN in FILE.LOG and executes"
+    echo "the command with any arguments in ADDITIONAL-ARGS."
+    echo
+    exit 1
+fi
+
+pattern="$1"
+logf="$2"
+shift 2
+
+# Find the commands in LOGF that reference PATTERN.
+lines=$(grep -E "^spawn .*$pattern" $logf | sed -e 's/^spawn //')
+if [ -z "$lines" ] ; then
+    echo "Could not find a spawn command for pattern $pattern"
+    exit 1
+fi
+
+# Collect all the command lines into the COMMANDS array.
+old_IFS="$IFS"
+IFS=""
+num_lines=0
+for line in $lines ; do
+    num_lines=$[$num_lines + 1]
+    echo "[$num_lines] $line"
+    commands[$num_lines]=$line
+done
+
+# If we found more than one line for PATTERN, ask which one we should run.
+cmds_to_run='0'
+if [ $num_lines -gt 1 ] ; then
+    echo
+    echo
+    echo -n "Enter the list of commands to run or '0' to run them all: "
+    read cmds_to_run
+fi
+if [ "$cmds_to_run" = "0" ] ; then
+    cmds_to_run=$(seq 1 $num_lines)
+fi
+IFS="$old_IFS"
+
+# Finally, execute all the commands we were told to execute.
+for cmd_num in $cmds_to_run ; do
+    cmd=${commands[$cmd_num]}
+    set -x +e
+    $cmd "$@"
+    set +x -e
+done
