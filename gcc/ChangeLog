@@ -1,3 +1,11 @@
+2011-06-25  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR driver/49371
+	* config/darwin.c (darwin_override_options): Improve warning when
+	mdynamic-no-pic is given together with fPIC/fpic, also warn when it
+	is given with fpie/fPIE.
+	* config/darwin.h (PIE_SPEC): New, (LINK_SPEC): Use PIE_SPEC.
+	* config/darwin9.h (PIE_SPEC): New.
 
 2011-06-25  Basile Starynkevitch  <basile@starynkevitch.net>
 
