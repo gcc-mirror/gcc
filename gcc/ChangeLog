@@ -1,3 +1,9 @@
+
+2011-06-25  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* timevar.c (timevar_print): Increase width for display of timevar
+	name.
+
 2011-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/46400
