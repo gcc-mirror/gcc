@@ -478,7 +478,7 @@ timevar_print (FILE *fp)
 	continue;
 
       /* The timing variable name.  */
-      fprintf (fp, " %-22s:", tv->name);
+      fprintf (fp, " %-24s:", tv->name);
 
 #ifdef HAVE_USER_TIME
       /* Print user-mode time for this process.  */
