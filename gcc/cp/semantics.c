@@ -7020,6 +7020,16 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
       break;
 
     case TARGET_EXPR:
+      /* A cleanup isn't constant.  */
+      if (TARGET_EXPR_CLEANUP (t))
+	{
+	  if (!allow_non_constant)
+	    error ("temporary of type %qT needing destruction in a "
+		   "constant expression", TREE_TYPE (t));
+	  *non_constant_p = true;
+	  break;
+	}
+      /* else fall through.  */
     case INIT_EXPR:
       /* Pass false for 'addr' because these codes indicate
 	 initialization of a temporary.  */
@@ -7840,8 +7850,16 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       return potential_constant_expression_1 (TREE_OPERAND (t, 1),
 					      want_rval, flags);
 
-    case INIT_EXPR:
     case TARGET_EXPR:
+      /* A cleanup isn't constant.  */
+      if (TARGET_EXPR_CLEANUP (t))
+	{
+	  if (flags & tf_error)
+	    error ("temporary of type %qT needing destruction in a "
+		   "constant expression", TREE_TYPE (t));
+	  return false;
+	}
+    case INIT_EXPR:
       return potential_constant_expression_1 (TREE_OPERAND (t, 1),
 					      rval, flags);
 
