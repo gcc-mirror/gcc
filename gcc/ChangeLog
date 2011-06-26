@@ -1,4 +1,4 @@
-2011-06-25  Iain Sandoe  <iains@gcc.gnu.org>
+2011-06-26  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/47997
 	* config/darwin.c (darwin_mergeable_string_section): Place string
