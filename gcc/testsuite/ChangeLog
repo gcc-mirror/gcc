@@ -1,3 +1,16 @@
+2011-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48377
+	* gcc.dg/vect/pr48377.c: Add dg-require-effective-target
+	non_strict_align.
+
+2011-06-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/49191
+	* lib/target-supports.exp (check_effective_target_non_strict_align):
+	New.
+	* gcc.dg/memcpy-3.c: Add dg-require-effective-target non_strict_align.
+
 2011-06-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimizations/49516
