@@ -4149,7 +4149,7 @@ save_local_or_in_reg_p (unsigned int regno, int leaf_function)
   if (regno == RETURN_ADDR_REGNUM && return_addr_reg_needed_p (leaf_function))
     return true;
 
-  /* PIC register (%l7) if needed.  */
+  /* GOT register (%l7) if needed.  */
   if (regno == PIC_OFFSET_TABLE_REGNUM && crtl->uses_pic_offset_table)
     return true;
 
@@ -4600,11 +4600,12 @@ emit_save_register_window (rtx increment)
   insn = emit_insn (gen_save_register_window_1 (increment));
   RTX_FRAME_RELATED_P (insn) = 1;
 
-  /* The return address (%i7) is saved in %o7.  */
+  /* The incoming return address (%o7) is saved in %i7.  */
   add_reg_note (insn, REG_CFA_REGISTER,
 		gen_rtx_SET (VOIDmode,
 			     gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM),
-			     gen_rtx_REG (Pmode, INCOMING_RETURN_ADDR_REGNUM)));
+			     gen_rtx_REG (Pmode,
+					  INCOMING_RETURN_ADDR_REGNUM)));
 
   /* The window save event.  */
   add_reg_note (insn, REG_CFA_WINDOW_SAVE, const0_rtx);
@@ -4688,8 +4689,10 @@ sparc_expand_prologue (void)
     ; /* do nothing.  */
   else if (sparc_leaf_function_p)
     {
+      rtx size_int_rtx = GEN_INT (-size);
+
       if (size <= 4096)
-	insn = emit_insn (gen_stack_pointer_inc (GEN_INT (-size)));
+	insn = emit_insn (gen_stack_pointer_inc (size_int_rtx));
       else if (size <= 8192)
 	{
 	  insn = emit_insn (gen_stack_pointer_inc (GEN_INT (-4096)));
@@ -4699,19 +4702,21 @@ sparc_expand_prologue (void)
 	}
       else
 	{
-	  rtx reg = gen_rtx_REG (Pmode, 1);
-	  emit_move_insn (reg, GEN_INT (-size));
-	  insn = emit_insn (gen_stack_pointer_inc (reg));
+	  rtx size_rtx = gen_rtx_REG (Pmode, 1);
+	  emit_move_insn (size_rtx, size_int_rtx);
+	  insn = emit_insn (gen_stack_pointer_inc (size_rtx));
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_stack_pointer_inc (GEN_INT (-size)));
+			gen_stack_pointer_inc (size_int_rtx));
 	}
 
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
     {
+      rtx size_int_rtx = GEN_INT (-size);
+
       if (size <= 4096)
-	emit_save_register_window (GEN_INT (-size));
+	emit_save_register_window (size_int_rtx);
       else if (size <= 8192)
 	{
 	  emit_save_register_window (GEN_INT (-4096));
@@ -4720,9 +4725,9 @@ sparc_expand_prologue (void)
 	}
       else
 	{
-	  rtx reg = gen_rtx_REG (Pmode, 1);
-	  emit_move_insn (reg, GEN_INT (-size));
-	  emit_save_register_window (reg);
+	  rtx size_rtx = gen_rtx_REG (Pmode, 1);
+	  emit_move_insn (size_rtx, size_int_rtx);
+	  emit_save_register_window (size_rtx);
 	}
     }
 
@@ -4783,6 +4788,10 @@ sparc_flat_expand_prologue (void)
 
       size_rtx = size_int_rtx = GEN_INT (-size);
 
+      /* We establish the frame (i.e. decrement the stack pointer) first, even
+	 if we use a frame pointer, because we cannot clobber any call-saved
+	 registers, including the frame pointer, if we haven't created a new
+	 register save area, for the sake of compatibility with the ABI.  */
       if (size <= 4096)
 	insn = emit_insn (gen_stack_pointer_inc (size_int_rtx));
       else if (size <= 8192 && !frame_pointer_needed)
@@ -4801,6 +4810,9 @@ sparc_flat_expand_prologue (void)
 	}
       RTX_FRAME_RELATED_P (insn) = 1;
 
+      /* Ensure nothing is scheduled until after the frame is established.  */
+      emit_insn (gen_blockage ());
+
       if (frame_pointer_needed)
 	{
 	  insn = emit_insn (gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
@@ -4813,26 +4825,22 @@ sparc_flat_expand_prologue (void)
 			gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
 				     plus_constant (stack_pointer_rtx,
 						    size)));
-
-	  /* Make sure nothing is scheduled until after the frame
-	     is established.  */
-	  emit_insn (gen_blockage ());
 	}
 
       if (return_addr_reg_needed_p (sparc_leaf_function_p))
 	{
-	  rtx i7 = gen_rtx_REG (Pmode, INCOMING_RETURN_ADDR_REGNUM);
-	  rtx o7 = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+	  rtx o7 = gen_rtx_REG (Pmode, INCOMING_RETURN_ADDR_REGNUM);
+	  rtx i7 = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
 
-	  insn = emit_move_insn (o7, i7);
+	  insn = emit_move_insn (i7, o7);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 
 	  add_reg_note (insn, REG_CFA_REGISTER,
-			gen_rtx_SET (VOIDmode, o7, i7));
+			gen_rtx_SET (VOIDmode, i7, o7));
 
 	  /* Prevent this instruction from ever being considered dead,
 	     even if this function has no epilogue.  */
-	  emit_insn (gen_rtx_USE (VOIDmode, o7));
+	  emit_insn (gen_rtx_USE (VOIDmode, i7));
 	}
     }
 
