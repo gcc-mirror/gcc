@@ -11,7 +11,6 @@
 
 2011-06-23  Jason Merrill  <jason@redhat.com>
 
-	PR c++/49519
 	* typeck2.c (build_functional_cast): Strip cv-quals for value init.
 	* init.c (build_zero_init_1): Not here.
 
@@ -34,8 +33,8 @@
 	cgraph_same_body_alias.
 
 	PR c++/49440
-	* class.c (set_linkage_according_to_type): Just check TREE_PUBLIC
-	on the type's name.
+	* class.c (set_linkage_according_to_type): Hand off to
+	determine_visibility.
 
 	PR c++/49395
 	* init.c (build_zero_init_1): Strip cv-quals from scalar types.
