@@ -1,3 +1,11 @@
+2011-06-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (save_local_or_in_reg_p): Adjust comment.
+	(emit_save_register_window): Likewise.
+	(sparc_expand_prologue): Use SIZE_INT_RTX and SIZE_RTX variables.
+	(sparc_flat_expand_prologue): Add comment.  Always emit blockage.
+	Swap back %o7/%i7 in register naming.
+
 2011-06-25  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR driver/49371
@@ -7,7 +15,7 @@
 	* config/darwin.h (PIE_SPEC): New, (LINK_SPEC): Use PIE_SPEC.
 	* config/darwin9.h (PIE_SPEC): New.
 
-2011-06-25  Basile Starynkevitch  <basile@starynkevitch.net>
+2011-06-25  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* timevar.c (timevar_print): Increase width for display of timevar
 	name.
