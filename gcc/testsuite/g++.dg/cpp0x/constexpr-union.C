@@ -1,5 +1,5 @@
 // Test that we don't have to deal with type punning
-// FIXME Mike Miller thinks it should work
+// DR 1188 says this is ill-formed
 // { dg-options -std=c++0x }
 
 union U

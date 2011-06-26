@@ -6357,7 +6357,7 @@ cxx_eval_component_reference (const constexpr_call *call, tree t,
     }
   if (TREE_CODE (TREE_TYPE (whole)) == UNION_TYPE)
     {
-      /* FIXME Mike Miller wants this to be OK.  */
+      /* DR 1188 says we don't have to deal with this.  */
       if (!allow_non_constant)
 	error ("accessing %qD member instead of initialized %qD member in "
 	       "constant expression", part, CONSTRUCTOR_ELT (whole, 0)->index);
@@ -6881,7 +6881,7 @@ cxx_eval_indirect_ref (const constexpr_call *call, tree t,
 	{
 	  gcc_assert (!same_type_ignoring_top_level_qualifiers_p
 		      (TREE_TYPE (TREE_TYPE (sub)), TREE_TYPE (t)));
-	  /* FIXME Mike Miller wants this to be OK.  */
+	  /* DR 1188 says we don't have to deal with this.  */
 	  if (!allow_non_constant)
 	    error ("accessing value of %qE through a %qT glvalue in a "
 		   "constant expression", build_fold_indirect_ref (sub),
