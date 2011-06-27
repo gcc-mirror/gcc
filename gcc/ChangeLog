@@ -1,3 +1,9 @@
+2011-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/48492
+	* dwarf2out.c (dwarf2out_finish): Do not attach a DIE on the limbo list
+	to a NULL parent.
+
 2011-06-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49394

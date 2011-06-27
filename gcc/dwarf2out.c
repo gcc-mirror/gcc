@@ -25017,7 +25017,7 @@ dwarf2out_finish (const char *filename)
 	{
 	  dw_die_ref origin = get_AT_ref (die, DW_AT_abstract_origin);
 
-	  if (origin)
+	  if (origin && origin->die_parent)
 	    add_child_die (origin->die_parent, die);
 	  else if (is_cu_die (die))
 	    ;
