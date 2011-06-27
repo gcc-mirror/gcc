@@ -10153,6 +10153,11 @@ sparc_frame_pointer_required (void)
   if (cfun->calls_alloca)
     return true;
 
+  /* If the function receives nonlocal gotos, it needs to save the frame
+     pointer in the nonlocal_goto_save_area object.  */
+  if (cfun->has_nonlocal_label)
+    return true;
+
   /* In flat mode, that's it.  */
   if (TARGET_FLAT)
     return false;
