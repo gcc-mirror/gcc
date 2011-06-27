@@ -1,3 +1,9 @@
+2011-06-27  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (vms_patch_builtins): Provide dummy definition.
+	* config/ia64/ia64.c (ia64_init_builtins): Call vms_patch_builtins
+	inside ifdef.
+
 2011-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (union lang_tree_node): Use it in chain_next expression.

@@ -198,6 +198,8 @@ static rtx alpha_emit_xfloating_compare (enum rtx_code *, rtx, rtx);
 #if TARGET_ABI_OPEN_VMS
 static void alpha_write_linkage (FILE *, const char *, tree);
 static bool vms_valid_pointer_mode (enum machine_mode);
+#else
+#define vms_patch_builtins()  gcc_unreachable()
 #endif
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
