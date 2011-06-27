@@ -132,52 +132,6 @@ STATIC func_ptr __CTOR_LIST__[1]                                             \
 /* Maybe same as HPUX?  Needs to be checked.  */
 #define JMP_BUF_SIZE  (8 * 76)
 
-typedef struct crtl_name_spec
-{
-  const char *const name;
-  const char *deccname;
-  int referenced;
-} crtl_name_spec;
-
-#include "config/vms/vms-crtl.h"
-
-/* Alias CRTL names to 32/64bit DECCRTL functions.
-   Fixme: This should do a binary search.  */
-#define DO_CRTL_NAMES                                                      \
-  do                                                                       \
-    {                                                                      \
-      int i;                                                               \
-      static crtl_name_spec vms_crtl_names[] = CRTL_NAMES;                 \
-      static int malloc64_init = 0;                                        \
-                                                                           \
-      if ((malloc64_init == 0) && TARGET_MALLOC64)                         \
-	{                                                                  \
-          for (i=0; vms_crtl_names [i].name; i++)                          \
-            {                                                              \
-	      if (strcmp ("calloc", vms_crtl_names [i].name) == 0)         \
-                vms_crtl_names [i].deccname = "decc$_calloc64";            \
-              else                                                         \
-	      if (strcmp ("malloc", vms_crtl_names [i].name) == 0)         \
-                vms_crtl_names [i].deccname = "decc$_malloc64";            \
-              else                                                         \
-	      if (strcmp ("realloc", vms_crtl_names [i].name) == 0)        \
-                vms_crtl_names [i].deccname = "decc$_realloc64";           \
-              else                                                         \
-	      if (strcmp ("strdup", vms_crtl_names [i].name) == 0)         \
-                vms_crtl_names [i].deccname = "decc$_strdup64";            \
-	    }                                                              \
-            malloc64_init = 1;                                             \
-        }                                                                  \
-      for (i=0; vms_crtl_names [i].name; i++)                              \
-	if (!vms_crtl_names [i].referenced &&                              \
-	    (strcmp (name, vms_crtl_names [i].name) == 0))                 \
-	  {                                                                \
-	    fprintf (file, "\t.alias %s, \"%s\"\n",                        \
-		     name, vms_crtl_names [i].deccname);                   \
-	    vms_crtl_names [i].referenced = 1;                             \
-	  }                                                                \
-    } while (0)
-
 #undef SUBTARGET_OPTIMIZATION_OPTIONS
 #define SUBTARGET_OPTIMIZATION_OPTIONS			\
   { OPT_LEVELS_ALL, OPT_fmerge_constants, NULL, 0 }

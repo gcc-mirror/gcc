@@ -1,5 +1,31 @@
 2011-06-27  Tristan Gingold  <gingold@adacore.com>
 
+	PR target/44241
+	* config/vms/vms-protos.h: New file.
+	* config/vms/vms-crtlmap.map: New file.
+	* config/vms/vms.c: New file.
+	* config/vms/make-crtlmap.awk: New file.
+	* config/vms/vms-crtl.h: File removed.
+	* config/vms/vms-crtl-64.h: File removed.
+	* config/vms/t-vms (vms-crtlmap.h, vms.o): New targets.
+	* config/alpha/vms64.h: Do not include vms-crtl-64.h
+	* config/alpha/alpha.c (alpha_init_builtins): Remove code to
+	clear some builtins on VMS.  Calls vms_patch_builtins.
+	(avms_asm_output_external): Remove.
+	* config/alpha/vms.h (ASM_OUTPUT_EXTERNAL): Remove.
+	(struct crtl_name_spec): Remove
+	(DO_CTRL_NAMES): Remove.
+	* config/ia64/vms.h (struct crtl_name_spec): Remove
+	(DO_CTRL_NAMES): Remove.
+	* config/ia64/ia64.c (alpha_init_builtins): Remove code to
+	clear some builtins on VMS.  Calls vms_patch_builtins.
+	(ia64_asm_output_external): Remove DO_CRTL_NAME.
+	* config/ia64/vms64.h: Do not include vms-crtl-64.h
+	* config.gcc (*-*-*vms*): Define extra_objs, target_gtfiles,
+	tm_p_file.
+
+2011-06-27  Tristan Gingold  <gingold@adacore.com>
+
 	* config/alpha/alpha.c (alpha_end_function): Always generate .end
 	directive on VMS.
 

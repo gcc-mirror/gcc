@@ -1,0 +1,200 @@
+# Standard C names to DEC-C names map table.
+# All names in the DEC-C shared image (shared library) are prefixed
+# with decc$ (this is the standard vms convention for names in public
+# shared libraries).  This conversion is done by the compiler for all
+# languages.
+#
+# Currently contains only a partial list, e.g. those functions use
+# in GNAT and GCC.
+#
+# File format:
+# - Empty lines are ignored.
+# - Comment lines start with '#' in the first column.
+# - map lines consist in an identifier optionnaly followed by at most 2
+#   space-separated flags.
+# Flags are:
+#  FLOAT: will be prefixed by 'x'
+#  64: There is a 64-bit variant
+#  BSD44: name will be prefixed by __bsd44__
+#  PRNTF: a 't' prefix will be added.
+#  MALLOC: malloc related function.
+#
+# Keep entries alpha-sorted - this is enforced by the awk script.
+#
+__32_signal
+__32_ssignal
+__64_signal
+__64_ssignal
+__utc_localtime
+__utc_localtime_t
+__utc_stat
+__utc_time
+__utctz_gmtime
+__utctz_localtime
+__utctz_localtime_t
+abort
+abs
+accept
+access
+acos          FLOAT
+alarm
+asin          FLOAT
+atan          FLOAT
+atan2         FLOAT
+atexit
+atoi
+atoll
+atoq
+basename      64
+bcmp
+bcopy
+bsearch       64
+bzero
+calloc        64 MALLOC
+ceil          FLOAT
+chdir
+chown
+clearerr
+clock
+close
+connect
+cos           FLOAT
+ctermid       64
+ctime
+dup
+dup2
+exit
+exp           FLOAT
+fabs          FLOAT
+fclose
+fdopen
+fflush
+ffs
+fgetc
+fgets         64
+floor         FLOAT
+fopen
+fprintf       FLOAT PRNTF
+fputc
+fputs
+fread
+free
+freopen
+fseek
+ftell
+fwrite
+getc
+getcwd        64
+getegid
+getenv
+geteuid
+getgid
+gethostbyaddr
+gethostbyname
+getpagesize
+getpid
+getservbyname
+getservbyport
+gettimeofday
+getuid
+gmtime
+htons
+iconv
+index         64
+ioctl
+isatty
+isdigit
+islower
+isprint
+isspace
+isupper
+kill
+localtime
+log           FLOAT
+log1          FLOAT
+lseek
+malloc        64 MALLOC
+mbstowcs      64
+memchr        64
+memcmp
+memcpy        64
+memmove       64
+memset        64
+mkdir
+mkstemp
+mktemp        64
+mmap          64
+munmap
+nl_langinfo
+open
+pclose
+perror
+popen
+pow           FLOAT
+printf        FLOAT PRNTF
+putc
+putchar
+putenv
+puts
+qsort         64
+random
+read
+realloc       64 MALLOC
+recv
+recvfrom
+recvmsg       BSD44 64
+rename
+rewind
+rindex        64
+rmdir
+send
+sendmsg       BSD44 64
+sendto
+setenv
+setlocale
+setvbuf
+signal
+sigsetmask
+sin           FLOAT
+snprintf      FLOAT PRNTF
+socket
+sprintf	      FLOAT PRNTF
+sqrt          FLOAT
+stat
+strcasecmp
+strcat        64
+strchr        64
+strcmp
+strcpy        64
+strdup        64 MALLOC
+strerror
+strlen
+strncasecmp
+strncmp
+strncpy       64
+strrchr       64
+strstr        64
+strtod        64 FLOAT
+strtol        64
+strtoul       64
+sysconf
+system
+tan           FLOAT
+time
+times
+tmpfile
+tmpnam        64
+tolower
+toupper
+umask
+ungetc
+unlink
+utime
+vfprintf      FLOAT PRNTF
+vprintf       FLOAT PRNTF
+vsnprintf     FLOAT PRNTF
+vsprintf      FLOAT PRNTF
+wait
+waitpid
+wcswidth
+write

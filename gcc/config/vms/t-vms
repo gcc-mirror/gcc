@@ -35,3 +35,11 @@ $(T)pcrt0.o: $(srcdir)/config/vms/vms-ucrt0.c $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
 	-c -o $(T)pcrt0.o -DCRT0_POSIX_EXIT $(srcdir)/config/vms/vms-ucrt0.c
 
+vms-crtlmap.h: $(srcdir)/config/vms/vms-crtlmap.map  \
+  $(srcdir)/config/vms/make-crtlmap.awk
+	$(AWK) -f $(srcdir)/config/vms/make-crtlmap.awk \
+	  $(srcdir)/config/vms/vms-crtlmap.map > $@
+
+vms.o: $(srcdir)/config/vms/vms.c $(TREE_H) $(CONFIG_H) $(SYSTEM_H) \
+  coretypes.h $(TM_P_H) vms-crtlmap.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

@@ -49,5 +49,3 @@ along with GCC; see the file COPYING3.  If not see
 /* Defaults to "long int" */
 #undef SIZE_TYPE
 #undef PTRDIFF_TYPE
-
-# include "config/vms/vms-crtl-64.h"
