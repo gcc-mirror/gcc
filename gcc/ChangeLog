@@ -1,3 +1,10 @@
+2011-06-27  Kai Tietz  <ktietz@redhat.com>
+
+	* tree-ssa-math-opts.c (do_shift_rotate): Zero bits
+	out of type precision after operation.
+	(find_bswap): Take for limit value the integer auto-
+	promotion into account.
+
 2011-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reorg.c (fill_simple_delay_slots): Use stop_search_p to stop the

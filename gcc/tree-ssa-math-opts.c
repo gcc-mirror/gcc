@@ -1543,6 +1543,9 @@ do_shift_rotate (enum tree_code code,
     default:
       return false;
     }
+  /* Zero unused bits for size.  */
+  if (n->size < (int)sizeof (HOST_WIDEST_INT))
+    n->n &= ((unsigned HOST_WIDEST_INT)1 << (n->size * BITS_PER_UNIT)) - 1;
   return true;
 }
 
@@ -1740,15 +1743,16 @@ find_bswap (gimple stmt)
 
   struct symbolic_number n;
   tree source_expr;
+  int limit;
 
   /* The last parameter determines the depth search limit.  It usually
      correlates directly to the number of bytes to be touched.  We
-     increase that number by one here in order to also cover signed ->
-     unsigned conversions of the src operand as can be seen in
-     libgcc.  */
-  source_expr =  find_bswap_1 (stmt, &n,
-			       TREE_INT_CST_LOW (
-				 TYPE_SIZE_UNIT (gimple_expr_type (stmt))) + 1);
+     increase that number by three  here in order to also
+     cover signed -> unsigned converions of the src operand as can be seen
+     in libgcc, and for initial shift/and operation of the src operand.  */
+  limit = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
+  limit += 1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit);
+  source_expr =  find_bswap_1 (stmt, &n, limit);
 
   if (!source_expr)
     return NULL_TREE;
