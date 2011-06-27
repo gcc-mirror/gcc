@@ -1,3 +1,10 @@
+2011-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49544
+	* cselib.c (promote_debug_loc): If cselib_preserve_constants
+	and l has two DEBUG_INSN owned locs instead of just one, adjust
+	the second location's setting_insn too.
+
 2011-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libmudflap/38738
