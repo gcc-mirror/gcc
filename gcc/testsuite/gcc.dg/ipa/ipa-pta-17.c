@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-alias "" } */
 /* { dg-options "-O -fipa-pta" } */
 
 static int i;
