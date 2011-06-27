@@ -1,3 +1,14 @@
+2011-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libmudflap/38738
+	* configure.ac: Check for sys/mnttab.h.
+	Check for library containing connect.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* mf-hooks2.c [HAVE_SYS_MNTTAB_H]: Include <sys/mnttab.h>.
+	* testsuite/libmudflap.c/pass-stratcliff.c (main) [__sun__ &&
+	__svr4__]: Disable rawmemchr, stpcpy, mempcpy tests.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
