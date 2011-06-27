@@ -1,6 +1,11 @@
 2011-06-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49528
+	* semantics.c (potential_constant_expression_1): Check
+	for non-literality rather than cleanup.
+	(cxx_eval_constant_expression): Likewise.
+
+	PR c++/49528
 	* semantics.c (potential_constant_expression_1): A TARGET_EXPR
 	with a cleanup isn't constant.
 	(cxx_eval_constant_expression): Likewise.

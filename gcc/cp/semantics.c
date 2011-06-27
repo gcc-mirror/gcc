@@ -7020,11 +7020,10 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
       break;
 
     case TARGET_EXPR:
-      /* A cleanup isn't constant.  */
-      if (TARGET_EXPR_CLEANUP (t))
+      if (!literal_type_p (TREE_TYPE (t)))
 	{
 	  if (!allow_non_constant)
-	    error ("temporary of type %qT needing destruction in a "
+	    error ("temporary of non-literal type %qT in a "
 		   "constant expression", TREE_TYPE (t));
 	  *non_constant_p = true;
 	  break;
@@ -7851,11 +7850,10 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 					      want_rval, flags);
 
     case TARGET_EXPR:
-      /* A cleanup isn't constant.  */
-      if (TARGET_EXPR_CLEANUP (t))
+      if (!literal_type_p (TREE_TYPE (t)))
 	{
 	  if (flags & tf_error)
-	    error ("temporary of type %qT needing destruction in a "
+	    error ("temporary of non-literal type %qT in a "
 		   "constant expression", TREE_TYPE (t));
 	  return false;
 	}
