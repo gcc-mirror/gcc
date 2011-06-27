@@ -1,5 +1,10 @@
 2011-06-27  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/49365
+	* params.def (min-insn-to-prefetch-ratio): Reduce from 10 to 9.
+
+2011-06-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/49169
 	* fold-const.c (get_pointer_modulus_and_residue): Don't rely on
 	the alignment of function decls.
