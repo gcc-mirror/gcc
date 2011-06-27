@@ -1,5 +1,9 @@
 2011-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* dwarf2out.c (TYPE_DECL_IS_STUB): Extend mechanism to all types.
+
+2011-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR lto/48492
 	* dwarf2out.c (dwarf2out_finish): Do not attach a DIE on the limbo list
 	to a NULL parent.
