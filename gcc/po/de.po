@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-03-24 16:45+0000\n"
-"PO-Revision-Date: 2011-06-24 13:27+0100\n"
+"PO-Revision-Date: 2011-06-26 15:01+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -25274,227 +25274,227 @@ msgstr "Umwandlung in void greift nicht auf Objekt des unvollständigen Typs %qT
 #: cp/cvt.c:965
 #, gcc-internal-format
 msgid "indirection will not access object of incomplete type %qT in second operand of conditional expression"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt unvollständigen Typs %qT in zweitem Operanden des bedingten Ausdrucks zu"
 
 #: cp/cvt.c:970
 #, gcc-internal-format
 msgid "indirection will not access object of incomplete type %qT in third operand of conditional expression"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt unvollständigen Typs %qT in drittem Operanden des bedingten Ausdrucks zu"
 
 #: cp/cvt.c:975
 #, gcc-internal-format
 msgid "indirection will not access object of incomplete type %qT in right operand of comma operator"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt unvollständigen Typs %qT in rechtem Operanden des Kommaoperators zu"
 
 #: cp/cvt.c:980
 #, gcc-internal-format
 msgid "indirection will not access object of incomplete type %qT in left operand of comma operator"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt unvollständigen Typs %qT in linkem Operanden des Kommaoperators zu"
 
 #: cp/cvt.c:985
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "indirection will not access object of incomplete type %qT in statement"
-msgstr "Ungültige Anwendung von %qs auf unvollständigen Typen %qT"
+msgstr "Indirektion greift nicht auf Objekt unvollständigen Typs %qT in Anweisung zu"
 
 #: cp/cvt.c:989
 #, gcc-internal-format
 msgid "indirection will not access object of incomplete type %qT in for increment expression"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt unvollständigen Typs %qT in Erhöhungsausdruck zu"
 
 #: cp/cvt.c:1005
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to void will not access object of type %qT"
-msgstr "Konvertierung in unvollständigen Typen"
+msgstr "Umwandlung in void greift nicht auf Objekt des Typs %qT zu"
 
 #: cp/cvt.c:1009
 #, gcc-internal-format
 msgid "implicit dereference will not access object of type %qT in second operand of conditional expression"
-msgstr ""
+msgstr "implizite Dereferenzierung greift nicht auf Objekt des Typs %qT in zweitem Operanden des bedingten Ausdrucks zu"
 
 #: cp/cvt.c:1014
 #, gcc-internal-format
 msgid "implicit dereference will not access object of type %qT in third operand of conditional expression"
-msgstr ""
+msgstr "implizite Dereferenzierung greift nicht auf Objekt des Typs %qT in drittem Operanden des bedingten Ausdrucks zu"
 
 #: cp/cvt.c:1019
 #, gcc-internal-format
 msgid "implicit dereference will not access object of type %qT in right operand of comma operator"
-msgstr ""
+msgstr "implizite Dereferenzierung greift nicht auf Objekt des Typs %qT in rechtem Operanden des Kommaoperators zu"
 
 #: cp/cvt.c:1024
 #, gcc-internal-format
 msgid "implicit dereference will not access object of type %qT in left operand of comma operator"
-msgstr ""
+msgstr "implizite Dereferenzierung greift nicht auf Objekt des Typs %qT in linkem Operanden des Kommaoperators zu"
 
 #: cp/cvt.c:1029
 #, gcc-internal-format
 msgid "implicit dereference will not access object of type %qT in statement"
-msgstr ""
+msgstr "implizite Dereferenzierung greift nicht auf Objekt des Typs %qT in Anweisung zu"
 
 #: cp/cvt.c:1033
 #, gcc-internal-format
 msgid "implicit dereference will not access object of type %qT in for increment expression"
-msgstr ""
+msgstr "implizite Dereferenzierung greift nicht auf Objekt des Typs %qT in Erhöhungsausdruck zu"
 
 #: cp/cvt.c:1047
 #, gcc-internal-format
 msgid "conversion to void will not access object of non-trivially-copyable type %qT"
-msgstr ""
+msgstr "Umwandlung in void greift nicht auf Objekt des nicht trivial kopierbaren Typs %qT zu"
 
 #: cp/cvt.c:1052
 #, gcc-internal-format
 msgid "indirection will not access object of non-trivially-copyable type %qT in second operand of conditional expression"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt des nicht trivial kopierbaren Typs %qT im zweiten Operanden des bedingten Ausdrucks zu"
 
 #: cp/cvt.c:1057
 #, gcc-internal-format
 msgid "indirection will not access object of non-trivially-copyable type %qT in third operand of conditional expression"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt des nicht trivial kopierbaren Typs %qT im dritten Operanden des bedingten Ausdrucks zu"
 
 #: cp/cvt.c:1062
 #, gcc-internal-format
 msgid "indirection will not access object of non-trivially-copyable type %qT in right operand of comma operator"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt des nicht trivial kopierbaren Typs %qT im rechten Operanden des Kommaoperators zu"
 
 #: cp/cvt.c:1067
 #, gcc-internal-format
 msgid "indirection will not access object of non-trivially-copyable type %qT in left operand of comma operator"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt des nicht trivial kopierbaren Typs %qT im linken Operanden des Kommaoperators zu"
 
 #: cp/cvt.c:1072
 #, gcc-internal-format
 msgid "indirection will not access object of non-trivially-copyable type %qT in statement"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt des nicht trivial kopierbaren Typs %qT in Anweisung zu"
 
 #: cp/cvt.c:1077
 #, gcc-internal-format
 msgid "indirection will not access object of non-trivially-copyable type %qT in for increment expression"
-msgstr ""
+msgstr "Indirektion greift nicht auf Objekt des nicht trivial kopierbaren Typs %qT in Erhöhungsausdruck zu"
 
 #: cp/cvt.c:1115
 #, gcc-internal-format
 msgid "conversion to void will not access object %qE of incomplete type %qT"
-msgstr ""
+msgstr "Umwandlung in void greift nicht auf Objekt %qE des unvollständigen Typs %qT zu"
 
 #: cp/cvt.c:1119
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %qE of incomplete type %qT will not be accessed in second operand of conditional expression"
-msgstr "auf Objekt %qE des unvollständigen Typs %qT wird in %s nicht zugegriffen"
+msgstr "auf Variable %qE des unvollständigen Typs %qT wird nicht im zweiten Operanden des bedingten Ausdrucks zugegriffen"
 
 #: cp/cvt.c:1124
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %qE of incomplete type %qT will not be accessed in third operand of conditional expression"
-msgstr "auf Objekt %qE des unvollständigen Typs %qT wird in %s nicht zugegriffen"
+msgstr "auf Variable %qE des unvollständigen Typs %qT wird nicht im dritten Operanden des bedingten Ausdrucks zugegriffen"
 
 #: cp/cvt.c:1129
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %qE of incomplete type %qT will not be accessed in right operand of comma operator"
-msgstr "auf Objekt %qE des unvollständigen Typs %qT wird in %s nicht zugegriffen"
+msgstr "auf Variable %qE des unvollständigen Typs %qT wird nicht im rechten Operanden des Kommaoperators zugegriffen"
 
 #: cp/cvt.c:1134
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %qE of incomplete type %qT will not be accessed in left operand of comma operator"
-msgstr "auf Objekt %qE des unvollständigen Typs %qT wird in %s nicht zugegriffen"
+msgstr "auf Variable %qE des unvollständigen Typs %qT wird nicht im linken Operanden des Kommaoperators zugegriffen"
 
 #: cp/cvt.c:1139
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %qE of incomplete type %qT will not be accessed in statement"
-msgstr "auf Objekt %qE des unvollständigen Typs %qT wird in %s nicht zugegriffen"
+msgstr "auf Variable %qE des unvollständigen Typs %qT wird in Anweisung nicht zugegriffen"
 
 #: cp/cvt.c:1143
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %qE of incomplete type %qT will not be accessed in for increment expression"
-msgstr "auf Objekt %qE des unvollständigen Typs %qT wird in %s nicht zugegriffen"
+msgstr "auf Variable %qE des unvollständigen Typs %qT wird in Erhöhungsausdruck nicht zugegriffen"
 
 #: cp/cvt.c:1192
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion to void cannot resolve address of overloaded function"
-msgstr "%s kann die Adresse der überladenen Funktion nicht auflösen"
+msgstr "Umwandlung in void kann die Adresse der überladenen Funktion nicht auflösen"
 
 #: cp/cvt.c:1196
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "second operand of conditional expression cannot resolve address of overloaded function"
-msgstr "%s kann die Adresse der überladenen Funktion nicht auflösen"
+msgstr "zweiter Operand des bedingten Ausdrucks kann die Adresse der überladenen Funktion nicht auflösen"
 
 #: cp/cvt.c:1200
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "third operand of conditional expression cannot resolve address of overloaded function"
-msgstr "%s kann die Adresse der überladenen Funktion nicht auflösen"
+msgstr "dritter Operand des bedingten Ausdrucks kann die Adresse der überladenen Funktion nicht auflösen"
 
 #: cp/cvt.c:1204
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "right operand of comma operator cannot resolve address of overloaded function"
-msgstr "%s kann die Adresse der überladenen Funktion nicht auflösen"
+msgstr "rechter Operand des Komma-Operators kann die Adresse der überladenen Funktion nicht auflösen"
 
 #: cp/cvt.c:1208
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "left operand of comma operator cannot resolve address of overloaded function"
-msgstr "%s kann die Adresse der überladenen Funktion nicht auflösen"
+msgstr "linker Operand des Komma-Operators kann die Adresse der überladenen Funktion nicht auflösen"
 
 #: cp/cvt.c:1212
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "statement cannot resolve address of overloaded function"
-msgstr "%s kann die Adresse der überladenen Funktion nicht auflösen"
+msgstr "Anweisung kann die Adresse der überladenen Funktion nicht auflösen"
 
 #: cp/cvt.c:1216
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "for increment expression cannot resolve address of overloaded function"
-msgstr "%s kann die Adresse der überladenen Funktion nicht auflösen"
+msgstr "Erhöhungsausdruck kann die Adresse der überladenen Funktion nicht auflösen"
 
 #: cp/cvt.c:1232
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "second operand of conditional expression is a reference, not call, to function %qE"
-msgstr "%s ist eine Referenz, kein Aufruf, zur Funktion %qE"
+msgstr "zweiter Operand des bedingten Ausdrucks ist eine Referenz, kein Aufruf, zur Funktion %qE"
 
 #: cp/cvt.c:1237
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "third operand of conditional expression is a reference, not call, to function %qE"
-msgstr "%s ist eine Referenz, kein Aufruf, zur Funktion %qE"
+msgstr "dritter Operand des bedingten Ausdrucks ist eine Referenz, kein Aufruf, zur Funktion %qE"
 
 #: cp/cvt.c:1242
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "right operand of comma operator is a reference, not call, to function %qE"
-msgstr "%s ist eine Referenz, kein Aufruf, zur Funktion %qE"
+msgstr "rechter Operand des Komma-Operators ist eine Referenz, kein Aufruf, zur Funktion %qE"
 
 #: cp/cvt.c:1247
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "left operand of comma operator is a reference, not call, to function %qE"
-msgstr "%s ist eine Referenz, kein Aufruf, zur Funktion %qE"
+msgstr "linker Operand des Komma-Operators ist eine Referenz, kein Aufruf, zur Funktion %qE"
 
 #: cp/cvt.c:1252
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "statement is a reference, not call, to function %qE"
-msgstr "%s ist eine Referenz, kein Aufruf, zur Funktion %qE"
+msgstr "Anweisung ist eine Referenz, kein Aufruf, zur Funktion %qE"
 
 #: cp/cvt.c:1257
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "for increment expression is a reference, not call, to function %qE"
-msgstr "%s ist eine Referenz, kein Aufruf, zur Funktion %qE"
+msgstr "Erhöhungsausdruck ist eine Referenz, kein Aufruf, zur Funktion %qE"
 
 #: cp/cvt.c:1284
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "second operand of conditional expression has no effect"
-msgstr "linker Operand des Komma-Ausdrucks hat keinen Effekt"
+msgstr "zweiter Operand des bedingten Ausdrucks hat keinen Effekt"
 
 #: cp/cvt.c:1288
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "third operand of conditional expression has no effect"
-msgstr "linker Operand des Komma-Ausdrucks hat keinen Effekt"
+msgstr "dritter Operand des bedingten Ausdrucks hat keinen Effekt"
 
 #: cp/cvt.c:1292
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "right operand of comma operator has no effect"
-msgstr "linker Operand des Komma-Ausdrucks hat keinen Effekt"
+msgstr "rechter Operand des Komma-Operators hat keinen Effekt"
 
 #: cp/cvt.c:1296
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "left operand of comma operator has no effect"
-msgstr "linker Operand des Komma-Ausdrucks hat keinen Effekt"
+msgstr "linker Operand des Komma-Operators hat keinen Effekt"
 
 #: cp/cvt.c:1300
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "statement has no effect"
-msgstr "Anweisung ohne Effekt"
+msgstr "Anweisung hat keinen Effekt"
 
 #: cp/cvt.c:1304
 #, fuzzy, gcc-internal-format
