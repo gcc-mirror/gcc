@@ -1,5 +1,6 @@
 /* PR debug/49294 */
 /* { dg-do compile } */
+/* { dg-options "-fno-common" { target hppa*-*-hpux* } } */
 
 typedef __attribute__ ((vector_size ((8) * sizeof (short)))) short V;
 
