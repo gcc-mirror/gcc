@@ -1,3 +1,7 @@
+2011-06-27  Release Manager
+
+	* GCC 4.6.1 released.
+
 2011-06-21  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_cannot_force_const_mem): New func.
