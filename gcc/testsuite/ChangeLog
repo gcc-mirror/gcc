@@ -1,5 +1,7 @@
 2011-06-26  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-cleanup.C: Tweak error message.
+
 	PR c++/49528
 	* g++.dg/init/ref19.C: New.
 	* g++.dg/cpp0x/constexpr-cleanup.C: New.

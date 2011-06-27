@@ -6,4 +6,4 @@ struct A
   ~A();
 };
 
-constexpr int i = A().i;	// { dg-error "destruction" }
+constexpr int i = A().i;	// { dg-error "non-literal" }
