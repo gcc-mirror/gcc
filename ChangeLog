@@ -1,3 +1,19 @@
+2011-06-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR regression/47836
+	PR bootstrap/23656
+	PR other/47733
+	PR bootstrap/49247
+	PR c/48825
+	* configure.ac (target_libraries): Remove target-libiberty.
+	Remove all target-specific settings adding target-libiberty to
+	skipdirs and noconfigdirs.  Remove checking target_configdirs
+	and removing target-libiberty but keeping target-libgcc if
+	otherwise empty.
+	* Makefile.def (target_modules): Don't add libiberty.
+	(dependencies): Remove all traces of target-libiberty.
+	* configure, Makefile.in: Regenerate.
+
 2011-06-27  Release Manager
 
 	* GCC 4.6.1 released.
