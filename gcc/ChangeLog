@@ -1,5 +1,12 @@
 2011-06-27  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/49536
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
+	For non-scalar inner types use a scalar type according to
+	the scalar inner mode.
+
+2011-06-27  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/49365
 	* params.def (min-insn-to-prefetch-ratio): Reduce from 10 to 9.
 
