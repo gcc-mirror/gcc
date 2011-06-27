@@ -1,3 +1,18 @@
+2011-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2011-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48377
+	* gcc.dg/vect/pr48377.c: Add dg-require-effective-target
+	non_strict_align.
+
+	2011-06-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/49191
+	* lib/target-supports.exp (check_effective_target_non_strict_align):
+	New.
+
 2011-06-27  Release Manager
 
 	* GCC 4.6.1 released.

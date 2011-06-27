@@ -1,5 +1,6 @@
 /* PR tree-optimization/48377 */
 /* { dg-do run } */
+/* { dg-require-effective-target non_strict_align } */
 
 typedef unsigned int U __attribute__((__aligned__ (1), __may_alias__));
 
