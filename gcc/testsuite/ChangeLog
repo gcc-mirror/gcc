@@ -1,5 +1,8 @@
 2011-06-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR testsuite/49529
+	* gcc.dg/ipa/ipa-pta-17.c: Use dg-require-alias.
+
 	* gcc.dg/debug/pr49294.c (dg-options): Add -fno-common to options on
 	hppa*-*-hpux*.
 
