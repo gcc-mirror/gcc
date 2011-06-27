@@ -1,3 +1,8 @@
+2011-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (cgraph_address_taken_from_non_vtable_p): Walk references of node
+	instead of references in node.
+
 2011-06-27  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (vms_patch_builtins): Provide dummy definition.

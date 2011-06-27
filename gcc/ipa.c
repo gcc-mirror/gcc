@@ -542,13 +542,13 @@ cgraph_address_taken_from_non_vtable_p (struct cgraph_node *node)
 {
   int i;
   struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
     if (ref->use == IPA_REF_ADDR)
       {
 	struct varpool_node *node;
-	if (ref->refered_type == IPA_REF_CGRAPH)
+	if (ref->refering_type == IPA_REF_CGRAPH)
 	  return true;
-	node = ipa_ref_varpool_node (ref);
+	node = ipa_ref_refering_varpool_node (ref);
 	if (!DECL_VIRTUAL_P (node->decl))
 	  return true;
       }
