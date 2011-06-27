@@ -1,3 +1,9 @@
+2011-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49394
+	* passes.c (execute_one_pass): Restore current_pass after
+	applying IPA transforms.
+
 2011-06-27  Kai Tietz  <ktietz@redhat.com>
 
 	* tree-ssa-math-opts.c (do_shift_rotate): Zero bits
