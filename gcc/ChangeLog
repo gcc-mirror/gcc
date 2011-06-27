@@ -1,3 +1,8 @@
+2011-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_frame_pointer_required): Return true if
+	the function receives nonlocal gotos.
+
 2011-06-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49536
