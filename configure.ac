@@ -612,6 +612,7 @@ case "${target}" in
     ;;
   cris-*-* | crisv32-*-*)
     unsupported_languages="$unsupported_languages java"
+    skipdirs="$skipdirs target-libiberty"
     case "${target}" in
       *-*-aout)
 	unsupported_languages="$unsupported_languages fortran"
@@ -783,6 +784,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libstdc++-v3"
     ;;
   mmix-*-*)
+    skipdirs="$skipdirs target-libiberty"
     noconfigdirs="$noconfigdirs target-libffi target-boehm-gc gdb libgloss"
     unsupported_languages="$unsupported_languages fortran java"
     ;;
