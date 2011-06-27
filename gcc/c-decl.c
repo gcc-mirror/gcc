@@ -238,7 +238,7 @@ extern char C_SIZEOF_STRUCT_LANG_IDENTIFIER_isnt_accurate
 /* The resulting tree type.  */
 
 union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
-       chain_next ("CODE_CONTAINS_STRUCT (TREE_CODE (&%h.generic), TS_TYPE_COMMON) ? (union lang_tree_node *) TYPE_NEXT_VARIANT (&%h.generic) : CODE_CONTAINS_STRUCT (TREE_CODE (&%h.generic), TS_COMMON) ? ((union lang_tree_node *) TREE_CHAIN (&%h.generic)) : NULL")))  lang_tree_node
+       chain_next ("(union lang_tree_node *) c_tree_chain_next (&%h.generic)"))) lang_tree_node
  {
   union tree_node GTY ((tag ("0"),
 			desc ("tree_node_structure (&%h)")))

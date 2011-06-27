@@ -1016,4 +1016,19 @@ extern bool c_omp_sharing_predetermined (tree);
 extern tree c_omp_remap_decl (tree, bool);
 extern void record_types_used_by_current_var_decl (tree);
 
+/* Return next tree in the chain for chain_next walking of tree nodes.  */
+static inline tree
+c_tree_chain_next (tree t)
+{
+  /* TREE_CHAIN of a type is TYPE_STUB_DECL, which is different
+     kind of object, never a long chain of nodes.  Prefer
+     TYPE_NEXT_VARIANT for types.  */
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+    return TYPE_NEXT_VARIANT (t);
+  /* Otherwise, if there is TREE_CHAIN, return it.  */
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_COMMON))
+    return TREE_CHAIN (t);
+  return NULL;
+}
+
 #endif /* ! GCC_C_COMMON_H */

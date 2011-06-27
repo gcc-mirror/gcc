@@ -1,3 +1,7 @@
+2011-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (union lang_tree_node): Use it in chain_next expression.
+
 2011-06-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49528
