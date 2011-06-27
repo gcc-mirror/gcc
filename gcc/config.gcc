@@ -721,6 +721,9 @@ case ${target} in
   extra_options="${extra_options} vms/vms.opt"
   xmake_file=vms/x-vms
   tmake_file="vms/t-vms"
+  extra_objs="vms.o"
+  target_gtfiles="$target_gtfiles \$(srcdir)/config/vms/vms.c"
+  tm_p_file="${tm_p_file} vms/vms-protos.h"
   if test x$gnu_ld != xyes; then
     # Build wrappers for native case.
     extra_programs="ld\$(exeext) ar\$(exeext)"

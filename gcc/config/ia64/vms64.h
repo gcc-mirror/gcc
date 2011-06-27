@@ -37,5 +37,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_GNU_AS | MASK_MALLOC64)
-
-#include "config/vms/vms-crtl-64.h"
