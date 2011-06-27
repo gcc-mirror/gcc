@@ -16242,8 +16242,17 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  output_addr_const (stream, x);
 	  break;
 
+	case CONST:
+	  if (GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF)
+	    {
+	      output_addr_const (stream, x);
+	      break;
+	    }
+	  /* Fall through.  */
+
 	default:
-	  gcc_unreachable ();
+	  output_operand_lossage ("Unsupported operand for code '%c'", code);
 	}
       return;
 

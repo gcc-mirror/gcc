@@ -1,3 +1,9 @@
+2011-06-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/48637
+	* arm.c (arm_print_operand): Allow sym+offset.  Don't abort on invalid
+	asm operands.
+
 2011-06-27  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (cgraph_address_taken_from_non_vtable_p): Walk references of node
