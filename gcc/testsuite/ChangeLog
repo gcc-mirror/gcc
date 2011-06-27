@@ -1,5 +1,9 @@
 2011-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/builtin-assume-aligned-1.c: New test.
+	* gcc.dg/builtin-assume-aligned-2.c: New test.
+	* gcc.target/i386/builtin-assume-aligned-1.c: New test.
+
 	PR debug/49544
 	* gcc.dg/pr49544.c: New test.
 
