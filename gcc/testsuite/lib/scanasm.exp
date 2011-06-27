@@ -50,15 +50,21 @@ proc dg-scan { name positive testcase output_file orig_args } {
 	}
     }
 
+    set pattern [lindex $orig_args 0]
+    set printable_pattern [make_pattern_printable $pattern]
+
     if { [is_remote host] } {
 	remote_upload host "$output_file"
     } 
+    set files [glob -nocomplain $output_file]
+    if { $files == "" } {
+	verbose -log "$testcase: output file does not exist"
+	unresolved "$testcase $name $printable_pattern"
+	return
+    }
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
-
-    set pattern [lindex $orig_args 0]
-    set printable_pattern [make_pattern_printable $pattern]
 
     set match [regexp -- $pattern $text]
     if { $match == $positive } {
@@ -202,15 +208,23 @@ proc scan-assembler-times { args } {
     upvar 2 name testcase
     set testcase [lindex $testcase 0]
 
+    set pattern [lindex $args 0]
+    set pp_pattern [make_pattern_printable $pattern]
+
     # This must match the rule in gcc-dg.exp.
     set output_file "[file rootname [file tail $testcase]].s"
+
+    set files [glob -nocomplain $output_file]
+    if { $files == "" } {
+	verbose -log "$testcase: output file does not exist"
+	unresolved "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
+	return
+    }
 
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
 
-    set pattern [lindex $args 0]
-    set pp_pattern [make_pattern_printable $pattern]
     if { [llength [regexp -inline -all -- $pattern $text]] == [lindex $args 1]} {
 	pass "$testcase scan-assembler-times $pp_pattern [lindex $args 1]"
     } else {
@@ -253,13 +267,20 @@ proc scan-assembler-dem { args } {
 
     upvar 2 name testcase
     set testcase [lindex $testcase 0]
+    set pattern [lindex $args 0]
+    set pp_pattern [make_pattern_printable $pattern]
     set output_file "[file rootname [file tail $testcase]].s"
+
+    set files [glob -nocomplain $output_file]
+    if { $files == "" } {
+	verbose -log "$testcase: output file does not exist"
+	unresolved "$testcase scan-assembler-dem $pp_pattern"
+	return
+    }
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
 
-    set pattern [lindex $args 0]
-    set pp_pattern [make_pattern_printable $pattern]
     if [regexp -- $pattern $text] {
 	pass "$testcase scan-assembler-dem $pp_pattern"
     } else {
@@ -301,13 +322,20 @@ proc scan-assembler-dem-not { args } {
 
     upvar 2 name testcase
     set testcase [lindex $testcase 0]
+    set pattern [lindex $args 0]
+    set pp_pattern [make_pattern_printable $pattern]
     set output_file "[file rootname [file tail $testcase]].s"
+
+    set files [glob -nocomplain $output_file]
+    if { $files == "" } {
+	verbose -log "$testcase: output file does not exist"
+	unresolved "$testcase scan-assembler-dem-not $pp_pattern"
+	return
+    }
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
 
-    set pattern [lindex $args 0]
-    set pp_pattern [make_pattern_printable $pattern]
     if ![regexp -- $pattern $text] {
 	pass "$testcase scan-assembler-dem-not $pp_pattern"
     } else {

@@ -1,5 +1,9 @@
 2011-06-27  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/scanasm.exp (dg-scan, scan-assembler-times, scan-assembler-dem,
+	scan-assembler-dem-not): For missing file, report unresolved with
+	same message as for pass/fail, with reason reported in log file.
+
 	* lib/target-supports.exp (add_options_for_arm_fp16): Renamed
 	from add_options_for_arm_neon_fp16.
 	(check_effective_target_arm_fp16_ok_nocache): Renamed from
