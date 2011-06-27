@@ -1,3 +1,8 @@
+2011-06-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/debug/pr49294.c (dg-options): Add -fno-common to options on
+	hppa*-*-hpux*.
+
 2011-06-26  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-cleanup.C: Tweak error message.
