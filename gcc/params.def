@@ -825,7 +825,7 @@ DEFPARAM (PARAM_MIN_INSN_TO_PREFETCH_RATIO,
 	  "min-insn-to-prefetch-ratio",
 	  "Min. ratio of insns to prefetches to enable prefetching for "
           "a loop with an unknown trip count",
-	  10, 0, 0)
+	  9, 0, 0)
 
 DEFPARAM (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO,
 	  "prefetch-min-insn-to-mem-ratio",
