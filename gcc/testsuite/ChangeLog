@@ -1,3 +1,8 @@
+2011-06-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49418
+	* g++.dg/template/param3.C: New.
+
 2011-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
