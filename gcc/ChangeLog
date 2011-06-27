@@ -1,5 +1,7 @@
 2011-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-decl.c (union lang_tree_node): Use it in chain_next expression.
+
 	* builtin-types.def (BT_FN_PTR_CONST_PTR_SIZE_VAR): New.
 	* builtins.def (BUILT_IN_ASSUME_ALIGNED): New builtin.
 	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call,
