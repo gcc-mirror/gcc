@@ -1,5 +1,8 @@
 2011-06-27  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/target-supports-dg.exp (dg-require-effective-target): Return
+	early if the test is already being skipped.
+
 	* lib/scanasm.exp (dg-scan, scan-assembler-times, scan-assembler-dem,
 	scan-assembler-dem-not): For missing file, report unresolved with
 	same message as for pass/fail, with reason reported in log file.
