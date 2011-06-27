@@ -1,3 +1,9 @@
+2011-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49169
+	* fold-const.c (get_pointer_modulus_and_residue): Don't rely on
+	the alignment of function decls.
+
 2011-06-26  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/47997

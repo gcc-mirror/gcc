@@ -1,3 +1,9 @@
+2011-06-27  Michael Hope  <michael.hope@linaro.org>
+	    Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/49169
+	* gcc.dg/torture/pr49169.c: New test.
+
 2011-06-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/49529
