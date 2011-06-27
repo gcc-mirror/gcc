@@ -1,3 +1,8 @@
+2011-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reorg.c (fill_simple_delay_slots): Use stop_search_p to stop the
+	forward scan as well.
+
 2011-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 4.6.2.
