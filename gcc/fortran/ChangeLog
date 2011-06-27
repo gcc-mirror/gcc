@@ -1,3 +1,7 @@
+2011-06-27  Release Manager
+
+	* GCC 4.3.6 released.
+
 2010-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/45081
