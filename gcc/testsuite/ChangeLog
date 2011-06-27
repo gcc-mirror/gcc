@@ -1,3 +1,8 @@
+2011-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49394
+	* g++.dg/torture/pr49394.C: New testcase.
+
 2011-06-27  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.dg/optimize-bswapdi-2.c: New test.

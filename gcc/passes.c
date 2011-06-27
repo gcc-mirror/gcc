@@ -2030,6 +2030,8 @@ execute_one_pass (struct opt_pass *pass)
       do_per_function (apply_ipa_transforms, (void *)&applied);
       if (applied)
         cgraph_remove_unreachable_nodes (true, dump_file);
+      /* Restore current_pass.  */
+      current_pass = pass;
     }
 
   if (!quiet_flag && !cfun)
