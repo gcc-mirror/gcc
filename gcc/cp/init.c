@@ -1492,7 +1492,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       tree fn = get_callee_fndecl (rval);
       if (fn && DECL_DECLARED_CONSTEXPR_P (fn))
 	{
-	  tree e = maybe_constant_value (rval);
+	  tree e = maybe_constant_init (rval);
 	  if (TREE_CONSTANT (e))
 	    rval = build2 (INIT_EXPR, type, exp, e);
 	}
