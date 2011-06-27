@@ -257,7 +257,15 @@ promote_debug_loc (struct elt_loc_list *l)
     {
       n_debug_values--;
       l->setting_insn = cselib_current_insn;
-      gcc_assert (!l->next || cselib_preserve_constants);
+      if (cselib_preserve_constants && l->next)
+	{
+	  gcc_assert (l->next->setting_insn
+		      && DEBUG_INSN_P (l->next->setting_insn)
+		      && !l->next->next);
+	  l->next->setting_insn = cselib_current_insn;
+	}
+      else
+	gcc_assert (!l->next);
     }
 }
 
