@@ -1,5 +1,19 @@
 2011-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* builtin-types.def (BT_FN_PTR_CONST_PTR_SIZE_VAR): New.
+	* builtins.def (BUILT_IN_ASSUME_ALIGNED): New builtin.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call,
+	find_func_clobbers): Handle BUILT_IN_ASSUME_ALIGNED.
+	* tree-ssa-ccp.c (bit_value_assume_aligned): New function.
+	(evaluate_stmt, execute_fold_all_builtins): Handle
+	BUILT_IN_ASSUME_ALIGNED.
+	* tree-ssa-dce.c (propagate_necessity): Likewise.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1,
+	call_may_clobber_ref_p_1): Likewise.
+	* builtins.c (is_simple_builtin, expand_builtin): Likewise.
+	(expand_builtin_assume_aligned): New function.
+	* doc/extend.texi (__builtin_assume_aligned): Document.
+
 	PR debug/49544
 	* cselib.c (promote_debug_loc): If cselib_preserve_constants
 	and l has two DEBUG_INSN owned locs instead of just one, adjust

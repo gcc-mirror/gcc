@@ -4002,6 +4002,7 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_STPCPY_CHK:
       case BUILT_IN_STRCAT_CHK:
       case BUILT_IN_STRNCAT_CHK:
+      case BUILT_IN_ASSUME_ALIGNED:
 	{
 	  tree res = gimple_call_lhs (t);
 	  tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
@@ -4726,6 +4727,7 @@ find_func_clobbers (gimple origt)
 	      return;
 	    }
 	  /* The following functions neither read nor clobber memory.  */
+	  case BUILT_IN_ASSUME_ALIGNED:
 	  case BUILT_IN_FREE:
 	    return;
 	  /* Trampolines are of no interest to us.  */

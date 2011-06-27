@@ -837,7 +837,8 @@ propagate_necessity (struct edge_list *el)
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_FREE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_SAVE
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE))
+		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE
+		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ASSUME_ALIGNED))
 		continue;
 
 	      /* Calls implicitly load from memory, their arguments

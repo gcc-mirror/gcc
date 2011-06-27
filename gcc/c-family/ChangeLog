@@ -1,3 +1,8 @@
+2011-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (check_builtin_function_arguments): Handle
+	BUILT_IN_ASSUME_ALIGNED.
+
 2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-common.c: Add sync_ or SYNC__ to builtin names.
