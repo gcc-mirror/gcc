@@ -1,3 +1,7 @@
+2011-06-27  Release Manager
+
+	* GCC 4.6.1 released.
+
 2011-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49043
