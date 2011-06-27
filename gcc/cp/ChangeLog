@@ -1,5 +1,9 @@
 2011-06-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49440
+	* class.c (set_linkage_according_to_type): Hand off to
+	determine_visibility.
+
 	PR c++/49418
 	* call.c (cxx_type_promotes_to): Don't strip cv-quals.
 	* semantics.c (lambda_return_type): Strip them here.

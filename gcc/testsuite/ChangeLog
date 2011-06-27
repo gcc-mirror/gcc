@@ -1,5 +1,8 @@
 2011-06-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49440
+	* g++.dg/rtti/anon-ns1.C: New.
+
 	PR c++/49418
 	* g++.dg/template/param3.C: New.
 
