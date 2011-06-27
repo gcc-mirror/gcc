@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_neon_fp16_ok } */
+/* { dg-require-effective-target arm_fp16_ok } */
 /* { dg-options "-mfp16-format=ieee" } */
-/* { dg-add-options arm_neon_fp16 } */
+/* { dg-add-options arm_fp16 } */
 
 /* Test generation of VFP __fp16 instructions.  */
 
