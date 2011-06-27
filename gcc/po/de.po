@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-03-24 16:45+0000\n"
-"PO-Revision-Date: 2011-06-26 15:01+0100\n"
+"PO-Revision-Date: 2011-06-27 21:21+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -25497,9 +25497,9 @@ msgid "statement has no effect"
 msgstr "Anweisung hat keinen Effekt"
 
 #: cp/cvt.c:1304
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "for increment expression has no effect"
-msgstr "linker Operand des Komma-Ausdrucks hat keinen Effekt"
+msgstr "Erhöhungsausdruck hat keinen Effekt"
 
 #: cp/cvt.c:1453
 #, gcc-internal-format
@@ -25517,9 +25517,9 @@ msgid "  candidate conversions include %qD and %qD"
 msgstr "  in Frage kommende Umwandlungen beziehen %qD und %qD ein"
 
 #: cp/decl.c:636
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %q+D set but not used"
-msgstr "Marke %q+D definiert, aber nicht verwendet"
+msgstr "Variable %q+D gesetzt, aber nicht verwendet"
 
 #: cp/decl.c:1101
 #, gcc-internal-format
@@ -25532,9 +25532,9 @@ msgid "previous declaration of %q+D"
 msgstr "vorherige Deklaration von %q+D"
 
 #: cp/decl.c:1134
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qF has a different exception specifier"
-msgstr "Deklaration von %qF wirft andere Ausnahmen"
+msgstr "Deklaration von %qF hat eine andere Ausnahmen-Spezifikation"
 
 #: cp/decl.c:1136
 #, gcc-internal-format
@@ -25542,14 +25542,14 @@ msgid "from previous declaration %q+F"
 msgstr "von vorheriger Deklaration %q+F"
 
 #: cp/decl.c:1161
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclaration %qD differs in %<constexpr%>"
-msgstr "Redeklaration von %qT als Nicht-Template"
+msgstr "Redeklaration %qD unterscheidet sich in %<constexpr%>"
 
 #: cp/decl.c:1162
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "from previous declaration %q+D"
-msgstr "von vorheriger Deklaration %q+F"
+msgstr "von vorheriger Deklaration %q+D"
 
 #: cp/decl.c:1218
 #, gcc-internal-format
@@ -25572,14 +25572,14 @@ msgid "previous declaration of %q+D was inline"
 msgstr "vorherige Deklaration von %q+D war inline"
 
 #: cp/decl.c:1253 cp/decl.c:1327
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "shadowing built-in function %q#D"
-msgstr "%Jeingebaute Funktion »%D« überdeckt"
+msgstr "eingebaute Funktion %q#D wird überdeckt"
 
 #: cp/decl.c:1254 cp/decl.c:1328
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "shadowing library function %q#D"
-msgstr "Bibliotheksfunktion »%s« überdeckt"
+msgstr "Bibliotheksfunktion %q#D wird überdeckt"
 
 #: cp/decl.c:1261
 #, gcc-internal-format
@@ -25676,9 +25676,9 @@ msgid "prototype for %q+#D"
 msgstr "Prototyp für %q+#D"
 
 #: cp/decl.c:1549
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "follows non-prototype definition here"
-msgstr "%Jfolgt Nicht-Prototyp-Definition hier"
+msgstr "folgt Nicht-Prototyp-Definition hier"
 
 #: cp/decl.c:1589
 #, gcc-internal-format
@@ -25706,14 +25706,14 @@ msgid "redundant redeclaration of %qD in same scope"
 msgstr "redundante Redeklaration von %qD im selben Gültigkeitsbereich"
 
 #: cp/decl.c:1686
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "deleted definition of %qD"
-msgstr "Redefinition von %q+D"
+msgstr "Definition von %qD gelöscht"
 
 #: cp/decl.c:1687
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "after previous declaration %q+D"
-msgstr "vorherige Deklaration %q+D"
+msgstr "nach vorheriger Deklaration %q+D"
 
 #. From [temp.expl.spec]:
 #.
@@ -25734,58 +25734,58 @@ msgid "%q+D: visibility attribute ignored because it"
 msgstr "%q+D: Sichtbarkeitsattribut ignoriert, da es"
 
 #: cp/decl.c:2141
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicts with previous declaration here"
-msgstr "%Jin Konflikt mit vorheriger Deklaration (hier) steht"
+msgstr "in Konflikt mit vorheriger Deklaration hier"
 
 #. Reject two definitions.
 #: cp/decl.c:2303 cp/decl.c:2332 cp/decl.c:2361 cp/decl.c:2378 cp/decl.c:2450
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redefinition of %q#D"
-msgstr "Redefinition von %q+D"
+msgstr "Redefinition von %q#D"
 
 #: cp/decl.c:2319
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD conflicts with used function"
-msgstr "%q#D steht mit vorheriger %<using%>-Deklaration %q#D in Konflikt"
+msgstr "%qD steht mit verwendeter Funktion in Konflikt"
 
 #: cp/decl.c:2329
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#D not declared in class"
-msgstr "%qD in %qD nicht deklariert"
+msgstr "%q#D nicht in Klasse deklariert"
 
 #: cp/decl.c:2343 cp/decl.c:2388
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D redeclared inline with %<gnu_inline%> attribute"
-msgstr "%qs mit in Konflikt stehenden Attributen %qs redeklariert"
+msgstr "%q+D mit Attribut %<gnu_inline%> »inline« redeklariert"
 
 #: cp/decl.c:2346 cp/decl.c:2391
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D redeclared inline without %<gnu_inline%> attribute"
-msgstr "%qs mit in Konflikt stehenden Attributen %qs redeklariert"
+msgstr "%q+D ohne Attribut %<gnu_inline%> »inline« redeklariert"
 
 #. is_primary=
 #. is_partial=
 #. is_friend_decl=
 #: cp/decl.c:2407
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclaration of friend %q#D may not have default template arguments"
-msgstr "%qD kann keine Standardargumente haben"
+msgstr "Redeklaration des »friend« %q#D kann keine Standardtemplateargumente haben"
 
 #: cp/decl.c:2421
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "thread-local declaration of %q#D follows non-thread-local declaration"
-msgstr "Thread-lokale Deklaration von %q+D folgt nicht-Thread-lokaler Deklaration"
+msgstr "Thread-lokale Deklaration von %q#D folgt nicht-Thread-lokaler Deklaration"
 
 #: cp/decl.c:2424
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-thread-local declaration of %q#D follows thread-local declaration"
-msgstr "Nicht-Thread-lokale Deklaration von %q+D folgt Thread-lokaler Deklaration"
+msgstr "Nicht-Thread-lokale Deklaration von %q#D folgt Thread-lokaler Deklaration"
 
 #: cp/decl.c:2439 cp/decl.c:2458
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclaration of %q#D"
-msgstr "Deklaration von %q#D"
+msgstr "Redeklaration von %q#D"
 
 #: cp/decl.c:2602
 #, gcc-internal-format
@@ -25813,9 +25813,9 @@ msgid "  crosses initialization of %q+#D"
 msgstr "  überschneidet Initialisierung von %q+#D"
 
 #: cp/decl.c:2648 cp/decl.c:2764
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  enters scope of %q+#D which has non-trivial destructor"
-msgstr "Basisklasse %q#T hat einen nicht-virtuellen Destruktor"
+msgstr "  Eintritt in Gültigkeitsbereich von %q+#D mit nicht-trivialem Destruktor"
 
 #: cp/decl.c:2662 cp/decl.c:2769
 #, gcc-internal-format
@@ -25869,9 +25869,9 @@ msgid "no class template named %q#T in %q#T"
 msgstr "kein Klassentemplate namens %q#T in %q#T"
 
 #: cp/decl.c:3164
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "lookup of %qT in %qT is ambiguous"
-msgstr "Umformung von %qT in %qT ist nicht eindeutig"
+msgstr "Nachschlagen von %qT in %qT ist nicht eindeutig"
 
 #: cp/decl.c:3173
 #, gcc-internal-format
@@ -25894,14 +25894,14 @@ msgid "%q+D declared here"
 msgstr "%q+D hier deklariert"
 
 #: cp/decl.c:3957
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "an anonymous struct cannot have function members"
-msgstr "%Jeine anonyme struct kann keine Funktionselemente haben"
+msgstr "eine anonyme struct kann keine Funktionselemente haben"
 
 #: cp/decl.c:3960
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "an anonymous union cannot have function members"
-msgstr "%Jeine anonyme Union kann keine Funktionselemente haben"
+msgstr "eine anonyme Union kann keine Funktionselemente haben"
 
 #: cp/decl.c:3978
 #, gcc-internal-format
@@ -25969,9 +25969,9 @@ msgid "%<typedef%> was ignored in this declaration"
 msgstr "%<typedef%> wurde in dieser Deklaration ignoriert"
 
 #: cp/decl.c:4085
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<constexpr%> cannot be used for type declarations"
-msgstr "%<register%> in leerer Deklaration im Datei-Gültigkeitsbereich"
+msgstr "%<constexpr%> kann nicht für Typdeklarationen verwendet werden"
 
 #: cp/decl.c:4114
 #, gcc-internal-format
@@ -25995,9 +25995,9 @@ msgid "ignoring attributes applied to dependent type %qT without an associated d
 msgstr "auf abhängigen Typ %qT angewandte Attribute ohne zugehörige Deklaration werden ignoriert"
 
 #: cp/decl.c:4231 cp/decl2.c:813
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "typedef %qD is initialized (use decltype instead)"
-msgstr "typedef %qD ist initialisiert (stattdessen lieber __typeof__ verwenden)"
+msgstr "typedef %qD ist initialisiert (stattdessen decltype verwenden)"
 
 #: cp/decl.c:4249
 #, gcc-internal-format
@@ -26030,9 +26030,9 @@ msgid "duplicate initialization of %qD"
 msgstr "doppelte Initialisierung von %qD"
 
 #: cp/decl.c:4325
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared %<constexpr%> outside its class"
-msgstr "%qE nach erster Benutzung als %<threadprivate%> deklariert"
+msgstr "%qD außerhalb seiner Klasse als %<constexpr%> deklariert"
 
 #: cp/decl.c:4364
 #, gcc-internal-format
@@ -26050,9 +26050,9 @@ msgid "elements of array %q#D have incomplete type"
 msgstr "Elemente des Feldes %q#D haben unvollständigen Typ"
 
 #: cp/decl.c:4472 cp/decl.c:5778
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %q#D has no initializer"
-msgstr "Deklaration von %q#D hat %<extern%> und ist initialisiert"
+msgstr "Deklaration von %q#D hat keine Initialisierung"
 
 #: cp/decl.c:4474
 #, gcc-internal-format
@@ -26070,9 +26070,9 @@ msgid "cannot initialize %qT from %qT"
 msgstr "%qT kann nicht von %qT initialisiert werden"
 
 #: cp/decl.c:4597
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "name used in a GNU-style designated initializer for an array"
-msgstr "Name %qD in benannter Initialisierung im GNU-Stil für ein Feld verwendet"
+msgstr "Name in benannter Initialisierung im GNU-Stil für ein Feld verwendet"
 
 #: cp/decl.c:4605
 #, gcc-internal-format
@@ -26098,24 +26098,24 @@ msgstr "Feld %qD der Größe null"
 #. Don't talk about array types here, since we took care of that
 #. message in grokdeclarator.
 #: cp/decl.c:4715
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "storage size of %qD isn%'t known"
-msgstr "Speichergröße von %q+D ist unbekannt"
+msgstr "Speichergröße von %qD ist unbekannt"
 
 #: cp/decl.c:4738
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "storage size of %qD isn%'t constant"
-msgstr "Speichergröße von %q+D ist nicht konstant"
+msgstr "Speichergröße von %qD ist nicht konstant"
 
 #: cp/decl.c:4784
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "sorry: semantics of inline function static data %q+#D are wrong (you%'ll wind up with multiple copies)"
 msgstr "Entschuldigung: Semantik der statischen Daten %q+#D der inline-Funktion ist falsch (mehrere Kopien wären die Folge)"
 
 #: cp/decl.c:4788
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  you can work around this by removing the initializer"
-msgstr "%J  dies kann durch das Löschen des Initialisierers umgangen werden"
+msgstr "  dies kann durch das Löschen der Initialisierung umgangen werden"
 
 #: cp/decl.c:4817
 #, gcc-internal-format
@@ -26123,14 +26123,14 @@ msgid "uninitialized const %qD"
 msgstr "nicht initialisiertes const %qD"
 
 #: cp/decl.c:4825
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#T has no user-provided default constructor"
-msgstr "Typ %qs hat einen benutzerdefinierten Konstruktor"
+msgstr "%q#T hat keinen benutzerdefinierten Default-Konstruktor"
 
 #: cp/decl.c:4829
 #, gcc-internal-format
 msgid "constructor is not user-provided because it is explicitly defaulted in the class body"
-msgstr ""
+msgstr "Konstruktor ist nicht benutzerdefiniert, da er im Klassenkörper ausdrücklich standardisiert ist"
 
 #: cp/decl.c:4943
 #, gcc-internal-format
@@ -26164,9 +26164,9 @@ msgid "too many initializers for %qT"
 msgstr "zu viele Initialisierer für %qT"
 
 #: cp/decl.c:5227
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "elements of array %q#T have incomplete type"
-msgstr "Elemente des Feldes %q#D haben unvollständigen Typ"
+msgstr "Elemente des Feldes %q#T haben unvollständigen Typ"
 
 #: cp/decl.c:5236
 #, gcc-internal-format
@@ -26174,9 +26174,9 @@ msgid "variable-sized object %qD may not be initialized"
 msgstr "Objekt %qD variabler Größe kann nicht initialisiert werden"
 
 #: cp/decl.c:5238
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable-sized compound literal"
-msgstr "%HISO-C90 verbietet zusammengesetzte Literale"
+msgstr "zusammengesetztes Literal variabler Größe"
 
 #: cp/decl.c:5294
 #, gcc-internal-format
@@ -26189,9 +26189,9 @@ msgid "scalar object %qD requires one element in initializer"
 msgstr "skalares Objekt %qD erfordert ein Element in Initialisierung"
 
 #: cp/decl.c:5350
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "in C++98 %qD must be initialized by constructor, not by %<{...}%>"
-msgstr "%qD muss mit Konstruktor initialisiert werden, nicht mit %<{...}%>"
+msgstr "in C++98 muss %qD mit Konstruktor initialisiert werden, nicht mit %<{...}%>"
 
 #: cp/decl.c:5418
 #, gcc-internal-format
@@ -26204,9 +26204,9 @@ msgid "initializer invalid for static member with constructor"
 msgstr "Initialisierung ungültig für statisches Element mit Konstruktor"
 
 #: cp/decl.c:5447
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-constant in-class initialization invalid for static member %qD"
-msgstr "ISO-C++ verbietet Initialisierung des nicht konstanten statischen Elements %qD in der Klasse"
+msgstr "Initialisierung des nicht konstanten statischen Elements %qD in der Klasse ist ungültig"
 
 #: cp/decl.c:5451
 #, gcc-internal-format
@@ -26224,9 +26224,9 @@ msgid "shadowing previous type declaration of %q#D"
 msgstr "vorherige Typdeklaration von %q#D wird überschattet"
 
 #: cp/decl.c:5935
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD cannot be thread-local because it has non-trivial type %qT"
-msgstr "%qD kann nicht Thread-lokal sein, weil es Nicht-POD-Typen %qT hat"
+msgstr "%qD kann nicht Thread-lokal sein, weil es nichttrivialen Typen %qT hat"
 
 #: cp/decl.c:5977
 #, gcc-internal-format
@@ -26264,64 +26264,64 @@ msgid "constructor for alien class %qT cannot be a member"
 msgstr "Konstruktor für fremde Klasse %qT kann kein Element sein"
 
 #: cp/decl.c:6722
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared as a %<virtual%> variable"
-msgstr "%qD als %<virtuelles%> %s deklariert"
+msgstr "%qD als eine %<virtual%> Variable deklariert"
 
 #: cp/decl.c:6724
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared as an %<inline%> variable"
-msgstr "%qD als %<inline%> %s deklariert"
+msgstr "%qD als eine %<inline%> Variable deklariert"
 
 #: cp/decl.c:6726
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<const%> and %<volatile%> function specifiers on %qD invalid in variable declaration"
-msgstr "Funktionsspezifizierer %<const%> und %<volatile%> an %qD ungültig in %s-Deklaration"
+msgstr "Funktionsspezifizierer %<const%> und %<volatile%> an %qD ungültig in Variablendeklaration"
 
 #: cp/decl.c:6731
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared as a %<virtual%> parameter"
-msgstr "%qD als %<virtuelles%> %s deklariert"
+msgstr "%qD als ein %<virtual%> Parameter deklariert"
 
 #: cp/decl.c:6733
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared as an %<inline%> parameter"
-msgstr "%qD als %<inline%> %s deklariert"
+msgstr "%qD als ein %<inline%> Parameter deklariert"
 
 #: cp/decl.c:6735
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<const%> and %<volatile%> function specifiers on %qD invalid in parameter declaration"
-msgstr "Funktionsspezifizierer %<const%> und %<volatile%> an %qD ungültig in %s-Deklaration"
+msgstr "Funktionsspezifizierer %<const%> und %<volatile%> an %qD ungültig in Parameterdeklaration"
 
 #: cp/decl.c:6740
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared as a %<virtual%> type"
-msgstr "%qD als %<virtuelles%> %s deklariert"
+msgstr "%qD als ein %<virtual%> Typ deklariert"
 
 #: cp/decl.c:6742
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared as an %<inline%> type"
-msgstr "%qD als %<inline%> %s deklariert"
+msgstr "%qD als ein %<inline%> Typ deklariert"
 
 #: cp/decl.c:6744
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<const%> and %<volatile%> function specifiers on %qD invalid in type declaration"
-msgstr "Funktionsspezifizierer %<const%> und %<volatile%> an %qD ungültig in %s-Deklaration"
+msgstr "Funktionsspezifizierer %<const%> und %<volatile%> an %qD ungültig in Typdeklaration"
 
 #: cp/decl.c:6749
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared as a %<virtual%> field"
-msgstr "%qD als %<virtuelles%> %s deklariert"
+msgstr "%qD als ein %<virtual%> Feld deklariert"
 
 #: cp/decl.c:6751
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared as an %<inline%> field"
-msgstr "%qD als %<inline%> %s deklariert"
+msgstr "%qD als ein %<inline%> Feld deklariert"
 
 #: cp/decl.c:6753
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<const%> and %<volatile%> function specifiers on %qD invalid in field declaration"
-msgstr "Funktionsspezifizierer %<const%> und %<volatile%> an %qD ungültig in %s-Deklaration"
+msgstr "Funktionsspezifizierer %<const%> und %<volatile%> an %qD ungültig in Felddeklaration"
 
 #: cp/decl.c:6760
 #, gcc-internal-format
@@ -26385,9 +26385,9 @@ msgid "%q+#D does not refer to the unqualified type, so it is not used for linka
 msgstr "%q+#D verweist nicht auf den unqualifizierten Typen, also wird es nicht zum Binden verwendet"
 
 #: cp/decl.c:7053
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type %qT with no linkage used to declare function %q#D with linkage"
-msgstr "vorherige Deklaration von %q+#D mit %qL-Bindung"
+msgstr "Typ %qT ohne Bindung für Funktionsdeklaration %q#D mit Bindung deklariert"
 
 #: cp/decl.c:7075
 #, gcc-internal-format
