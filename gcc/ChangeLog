@@ -1,5 +1,10 @@
 2011-06-28  Richard Henderson  <rth@redhat.com>
 
+	* config/arm/arm.c (thumb_pop): Rename from thumb_pushpop.  Delete
+	all code and arguments that handled pushes.  Update all callers.
+
+2011-06-28  Richard Henderson  <rth@redhat.com>
+
 	* config/arm/arm.c (arm_output_function_prologue): Don't call
 	thumb1_output_function_prologue.
 	(arm_expand_prologue): Avoid dead store.
