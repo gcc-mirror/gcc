@@ -1,3 +1,7 @@
+2011-06-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (LIBGCC2_CFLAGS): Remove -D__GCC_FLOAT_NOT_NEEDED.
+
 2011-06-28  Richard Henderson  <rth@redhat.com>
 
 	* config/arm/arm.c (thumb_pop): Rename from thumb_pushpop.  Delete
