@@ -2482,7 +2482,7 @@ sparc*-*-solaris2*)
 	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sol2-bi.h"
 	case ${target} in
 	    sparc64-*-* | sparcv9-*-*)
-		tm_file="${tm_file} sparc/sol2-64.h"
+		tm_file="sparc/sol2-64.h ${tm_file}"
 		;;
 	    *)
 		test x$with_cpu != x || with_cpu=v9

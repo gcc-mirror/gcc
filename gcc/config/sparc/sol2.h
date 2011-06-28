@@ -20,11 +20,17 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#undef TARGET_DEFAULT
+#ifdef TARGET_64BIT_DEFAULT
+#define TARGET_DEFAULT \
+  (MASK_V9 + MASK_PTR64 + MASK_64BIT /* + MASK_HARD_QUAD */ + \
+   MASK_STACK_BIAS + MASK_APP_REGS + MASK_FPU + MASK_LONG_DOUBLE_128)
+#else
 /* Solaris allows 64 bit out and global registers in 32 bit mode.
    sparc_override_options will disable V8+ if not generating V9 code.  */
-#undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_V8PLUS + MASK_APP_REGS + MASK_FPU \
 			+ MASK_LONG_DOUBLE_128)
+#endif
 
 /* The default code model used to be CM_MEDANY on Solaris
    but even Sun eventually found it to be quite wasteful

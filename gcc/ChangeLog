@@ -1,3 +1,11 @@
+2011-06-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sol2-64.h (TARGET_DEFAULT): Remove.
+	(TARGET_64BIT_DEFAULT): Define.
+	* config.gcc (sparc*-*-solaris2*): Move sparc/sol2-64.h to front
+	of tm_file.
+	* config/sparc/sol2.h [TARGET_64BIT_DEFAULT] (TARGET_DEFAULT): Define.
+
 2011-06-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (in_lto_p): New Variable entry.
