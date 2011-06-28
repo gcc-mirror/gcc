@@ -1,3 +1,8 @@
+2011-06-28  Kai Tietz  <ktietz@redhat.com>
+
+	* tree-ssa-forwprop.c (simplify_bitwise_binary): Improve
+	type sinking.
+
 2011-06-28  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* config/arm/vfp.md ("*divsf3_vfp"): Replace '+' constraint modifier
