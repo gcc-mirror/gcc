@@ -176,6 +176,7 @@ extern void arm_init_expanders (void);
 extern const char *thumb_unexpanded_epilogue (void);
 extern void thumb1_expand_prologue (void);
 extern void thumb1_expand_epilogue (void);
+extern const char *thumb1_output_interwork (void);
 #ifdef TREE_CODE
 extern int is_called_in_ARM_mode (tree);
 #endif

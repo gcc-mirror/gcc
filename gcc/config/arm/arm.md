@@ -116,6 +116,8 @@
                         ;   instruction epilogue sequence that isn't expanded
                         ;   into normal RTL.  Used for both normal and sibcall
                         ;   epilogues.
+  VUNSPEC_THUMB1_INTERWORK ; `prologue_thumb1_interwork' insn, used to swap
+			;   modes from arm to thumb.
   VUNSPEC_ALIGN         ; `align' insn.  Used at the head of a minipool table
                         ;   for inlined constants.
   VUNSPEC_POOL_END      ; `end-of-table'.  Used to mark the end of a minipool
@@ -10121,6 +10123,13 @@
   "
 )
 
+(define_insn "prologue_thumb1_interwork"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_THUMB1_INTERWORK)]
+  "TARGET_THUMB1"
+  "* return thumb1_output_interwork ();"
+  [(set_attr "length" "8")]
+)
+
 ;; Note - although unspec_volatile's USE all hard registers,
 ;; USEs are ignored after relaod has completed.  Thus we need
 ;; to add an unspec of the link register to ensure that flow
@@ -10365,10 +10374,10 @@
 ;; in a C function arm_attr_length_push_multi.
 (define_insn "*push_multi"
   [(match_parallel 2 "multi_register_push"
-    [(set (match_operand:BLK 0 "memory_operand" "=m")
+    [(set (match_operand:BLK 0 "push_mult_memory_operand" "")
 	  (unspec:BLK [(match_operand:SI 1 "s_register_operand" "")]
 		      UNSPEC_PUSH_MULT))])]
-  "TARGET_32BIT"
+  ""
   "*
   {
     int num_saves = XVECLEN (operands[2], 0);

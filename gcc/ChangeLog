@@ -1,3 +1,21 @@
+2011-06-28  Richard Henderson  <rth@redhat.com>
+
+	* config/arm/arm.c (arm_output_function_prologue): Don't call
+	thumb1_output_function_prologue.
+	(arm_expand_prologue): Avoid dead store.
+	(number_of_first_bit_set): Use ctz_hwi.
+	(thumb1_emit_multi_reg_push): New.
+	(thumb1_expand_prologue): Merge thumb1_output_function_prologue
+	to emit the entire prologue as rtl.
+	(thumb1_output_interwork): Split out from
+	thumb1_output_function_prologue.
+	(thumb1_output_function_prologue): Remove.
+	(arm_attr_length_push_multi): Handle thumb1.
+	* config/arm/arm.md (VUNSPEC_THUMB1_INTERWORK): New.
+	(prologue_thumb1_interwork): New.
+	(*push_multi): Allow thumb1; use push_mult_memory_operand.
+	* config/arm/predicates.md (push_mult_memory_operand): New.
+
 2011-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sync.md (*stbar): Delete.
@@ -863,7 +881,7 @@
 
 2011-06-20  Changpeng Fang  <changpeng.fang@amd.com>
 
-        PR i386/49089
+	PR i386/49089
 	* config/i386/i386.c (avx256_split_unaligned_load): New definition.
 	(avx256_split_unaligned_store): New definition.
 	(ix86_option_override_internal): Enable avx256 unaligned load/store
