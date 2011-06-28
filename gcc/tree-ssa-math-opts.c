@@ -1821,7 +1821,11 @@ execute_optimize_bswap (void)
     {
       gimple_stmt_iterator gsi;
 
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      /* We do a reverse scan for bswap patterns to make sure we get the
+	 widest match. As bswap pattern matching doesn't handle
+	 previously inserted smaller bswap replacements as sub-
+	 patterns, the wider variant wouldn't be detected.  */
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
         {
 	  gimple stmt = gsi_stmt (gsi);
 	  tree bswap_src, bswap_type;

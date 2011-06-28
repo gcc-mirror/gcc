@@ -1,3 +1,8 @@
+2011-06-28  Kai Tietz  <ktietz@redhat.com>
+
+	* tree-ssa-math-opts.c (execute_optimize_bswap): Search
+	within BB from last to first.
+
 2011-06-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* genattr-common.c: New.  Based on genattr.c.
