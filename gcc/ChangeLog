@@ -1,3 +1,18 @@
+2011-06-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* genattr-common.c: New.  Based on genattr.c.
+	* Makefile.in (INSN_ATTR_H): Include insn-attr-common.h.
+	(MOSTLYCLEANFILES): Add insn-attr-common.h.
+	(opts.o): Update dependencies.
+	(.PRECIOUS): Add insn-attr-common.h.
+	(simple_rtl_generated_h): Add insn-attr-common.h.
+	(build/genattr-common.o): New.
+	(genprogrtl): Add attr-common.
+	* genattr.c (main): Include insn-attr-common.h.  Don't generate
+	definitions of DELAY_SLOTS or INSN_SCHEDULING.
+	* opts.c: Include insn-attr-common.h instead of rtl.h and
+	insn-attr.h.
+
 2011-06-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config.gcc (tm_file): Add elfos.h and avr/elf.h for 

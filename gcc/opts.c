@@ -23,17 +23,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "intl.h"
 #include "coretypes.h"
-#include "tm.h" /* Needed by rtl.h and used for STACK_CHECK_BUILTIN,
+#include "tm.h" /* For STACK_CHECK_BUILTIN,
 		   STACK_CHECK_STATIC_BUILTIN, DEFAULT_GDB_EXTENSIONS,
 		   DWARF2_DEBUGGING_INFO and DBX_DEBUGGING_INFO.  */
-#include "rtl.h" /* Needed by insn-attr.h.  */
 #include "opts.h"
 #include "options.h"
 #include "flags.h"
 #include "params.h"
 #include "diagnostic.h"
 #include "opts-diagnostic.h"
-#include "insn-attr.h"		/* For INSN_SCHEDULING and DELAY_SLOTS.  */
+#include "insn-attr-common.h"
 #include "common/common-target.h"
 
 /* Parse the -femit-struct-debug-detailed option value
