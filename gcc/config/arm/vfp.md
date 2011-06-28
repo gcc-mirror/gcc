@@ -719,7 +719,7 @@
 ;; Division insns
 
 (define_insn "*divsf3_vfp"
-  [(set (match_operand:SF	  0 "s_register_operand" "+t")
+  [(set (match_operand:SF	  0 "s_register_operand" "=t")
 	(div:SF (match_operand:SF 1 "s_register_operand" "t")
 		(match_operand:SF 2 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
@@ -729,7 +729,7 @@
 )
 
 (define_insn "*divdf3_vfp"
-  [(set (match_operand:DF	  0 "s_register_operand" "+w")
+  [(set (match_operand:DF	  0 "s_register_operand" "=w")
 	(div:DF (match_operand:DF 1 "s_register_operand" "w")
 		(match_operand:DF 2 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
@@ -742,7 +742,7 @@
 ;; Multiplication insns
 
 (define_insn "*mulsf3_vfp"
-  [(set (match_operand:SF	   0 "s_register_operand" "+t")
+  [(set (match_operand:SF	   0 "s_register_operand" "=t")
 	(mult:SF (match_operand:SF 1 "s_register_operand" "t")
 		 (match_operand:SF 2 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
@@ -752,7 +752,7 @@
 )
 
 (define_insn "*muldf3_vfp"
-  [(set (match_operand:DF	   0 "s_register_operand" "+w")
+  [(set (match_operand:DF	   0 "s_register_operand" "=w")
 	(mult:DF (match_operand:DF 1 "s_register_operand" "w")
 		 (match_operand:DF 2 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
@@ -761,9 +761,8 @@
    (set_attr "type" "fmuld")]
 )
 
-
 (define_insn "*mulsf3negsf_vfp"
-  [(set (match_operand:SF		   0 "s_register_operand" "+t")
+  [(set (match_operand:SF		   0 "s_register_operand" "=t")
 	(mult:SF (neg:SF (match_operand:SF 1 "s_register_operand" "t"))
 		 (match_operand:SF	   2 "s_register_operand" "t")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
@@ -773,7 +772,7 @@
 )
 
 (define_insn "*muldf3negdf_vfp"
-  [(set (match_operand:DF		   0 "s_register_operand" "+w")
+  [(set (match_operand:DF		   0 "s_register_operand" "=w")
 	(mult:DF (neg:DF (match_operand:DF 1 "s_register_operand" "w"))
 		 (match_operand:DF	   2 "s_register_operand" "w")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
