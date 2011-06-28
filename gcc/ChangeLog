@@ -1,5 +1,15 @@
 2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
 	Backport from mainline
+	2011-06-20  Changpeng Fang  <changpeng.fang@amd.com>
+
+	PR i386/49089
+        * config/i386/i386.c (avx256_split_unaligned_load): New definition.
+        (avx256_split_unaligned_store): New definition.
+        (ix86_option_override_internal): Enable avx256 unaligned load/store
+        splitting only when avx256_split_unaligned_load/store is set.
+
+2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
+	Backport from mainline
 	2011-03-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (flag_opts): Fix a typo in

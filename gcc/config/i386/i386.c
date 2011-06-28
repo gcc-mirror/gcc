@@ -2114,6 +2114,12 @@ static const unsigned int x86_arch_always_fancy_math_387
   = m_PENT | m_ATOM | m_PPRO | m_AMD_MULTIPLE | m_PENT4
     | m_NOCONA | m_CORE2I7 | m_GENERIC;
 
+static const unsigned int x86_avx256_split_unaligned_load
+  = m_COREI7 | m_GENERIC;
+
+static const unsigned int x86_avx256_split_unaligned_store
+  = m_COREI7 | m_BDVER1 | m_GENERIC;
+
 static enum stringop_alg stringop_alg = no_stringop;
 
 /* In case the average insn count for single function invocation is
@@ -4281,9 +4287,11 @@ ix86_option_override_internal (bool main_args_p)
 	  if (flag_expensive_optimizations
 	      && !(target_flags_explicit & MASK_VZEROUPPER))
 	    target_flags |= MASK_VZEROUPPER;
-	  if (!(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
+	  if ((x86_avx256_split_unaligned_load & ix86_tune_mask)
+	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
 	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
-	  if (!(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
+	  if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
+	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
 	}
     }
