@@ -1,3 +1,13 @@
+2011-06-28  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* config/arm/vfp.md ("*divsf3_vfp"): Replace '+' constraint modifier
+	with '=' constraint modifier.
+	(*divdf3_vfp): Likewise.
+	("*mulsf3_vfp"): Likewise.
+	("*muldf3_vfp"): Likewise.
+	("*mulsf3negsf_vfp"): Likewise.
+	("*muldf3negdf_vfp"): Likewise.
+
 2011-06-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.h (LINK_SPEC): Do not use linker
