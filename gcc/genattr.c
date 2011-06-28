@@ -1,6 +1,6 @@
 /* Generate attribute information (insn-attr.h) from machine description.
    Copyright (C) 1991, 1994, 1996, 1998, 1999, 2000, 2003, 2004, 2007, 2008,
-   2010  Free Software Foundation, Inc.
+   2010, 2011  Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -180,6 +180,8 @@ main (int argc, char **argv)
   puts ("#ifndef GCC_INSN_ATTR_H");
   puts ("#define GCC_INSN_ATTR_H\n");
 
+  puts ("#include \"insn-attr-common.h\"\n");
+
   /* For compatibility, define the attribute `alternative', which is just
      a reference to the variable `which_alternative'.  */
 
@@ -204,7 +206,6 @@ main (int argc, char **argv)
         {
 	  if (! have_delay)
 	    {
-	      printf ("#define DELAY_SLOTS\n");
 	      printf ("extern int num_delay_slots (rtx);\n");
 	      printf ("extern int eligible_for_delay (rtx, int, rtx, int);\n\n");
 	      printf ("extern int const_num_delay_slots (rtx);\n\n");
@@ -242,7 +243,6 @@ main (int argc, char **argv)
 	= find_tune_attr (XEXP (VEC_index (rtx, reservations, 0), 2));
       /* Output interface for pipeline hazards recognition based on
 	 DFA (deterministic finite state automata.  */
-      printf ("\n#define INSN_SCHEDULING\n");
       printf ("\n/* DFA based pipeline interface.  */");
       printf ("\n#ifndef AUTOMATON_ALTS\n");
       printf ("#define AUTOMATON_ALTS 0\n");

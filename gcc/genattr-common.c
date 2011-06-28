@@ -1,0 +1,83 @@
+/* Generate attribute information shared between driver and core
+   compilers (insn-attr-common.h) from machine description.  Split out
+   of genattr.c.
+   Copyright (C) 1991, 1994, 1996, 1998, 1999, 2000, 2003, 2004, 2007, 2008,
+   2010, 2011  Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+
+#include "bconfig.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
+#include "rtl.h"
+#include "errors.h"
+#include "read-md.h"
+#include "gensupport.h"
+
+int
+main (int argc, char **argv)
+{
+  rtx desc;
+  bool have_delay = false;
+  bool have_sched = false;
+
+  progname = "genattr-common";
+
+  if (!init_rtx_reader_args (argc, argv))
+    return (FATAL_EXIT_CODE);
+
+  puts ("/* Generated automatically by the program `genattr-common'");
+  puts ("   from the machine description file `md'.  */\n");
+  puts ("#ifndef GCC_INSN_ATTR_COMMON_H");
+  puts ("#define GCC_INSN_ATTR_COMMON_H\n");
+
+  /* Read the machine description.  */
+
+  while (1)
+    {
+      int line_no, insn_code_number;
+
+      desc = read_md_rtx (&line_no, &insn_code_number);
+      if (desc == NULL)
+	break;
+
+      if (GET_CODE (desc) == DEFINE_DELAY)
+        {
+	  if (!have_delay)
+	    {
+	      printf ("#define DELAY_SLOTS\n");
+	      have_delay = true;
+	    }
+	}
+      else if (GET_CODE (desc) == DEFINE_INSN_RESERVATION)
+	{
+	  if (!have_sched)
+	    {
+	      printf ("#define INSN_SCHEDULING\n");
+	      have_sched = true;
+	    }
+	}
+    }
+  puts ("\n#endif /* GCC_INSN_ATTR_COMMON_H */");
+
+  if (ferror (stdout) || fflush (stdout) || fclose (stdout))
+    return FATAL_EXIT_CODE;
+
+  return SUCCESS_EXIT_CODE;
+}
