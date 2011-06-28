@@ -1,3 +1,10 @@
+2011-06-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/47997
+	* config/darwin.c (darwin_mergeable_string_section): Place string
+	constants in '.cstring' rather than '.const' when CF/NSStrings are
+	active.
+
 2011-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reorg.c (fill_simple_delay_slots): Use stop_search_p to stop the

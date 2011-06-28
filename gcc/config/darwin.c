@@ -1195,7 +1195,11 @@ static section *
 darwin_mergeable_string_section (tree exp,
 				 unsigned HOST_WIDE_INT align)
 {
-  if (flag_merge_constants
+  /* Darwin's ld expects to see non-writable string literals in the .cstring 
+     section.  Later versions of ld check and complain when CFStrings are 
+     enabled.  Therefore we shall force the strings into .cstring since we
+     don't support writable ones anyway.  */
+  if ((darwin_constant_cfstrings || flag_merge_constants)
       && TREE_CODE (exp) == STRING_CST
       && TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
       && align <= 256
