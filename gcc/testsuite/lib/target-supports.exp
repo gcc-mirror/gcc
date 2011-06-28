@@ -1862,6 +1862,15 @@ proc check_effective_target_arm32 { } {
     }]
 }
 
+# Return 1 is this is an arm target not using Thumb
+proc check_effective_target_arm_nothumb { } {
+    return [check_no_compiler_messages arm_nothumb assembly {
+	#if (defined(__thumb__) || defined(__thumb2__))
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if this is an ARM target that only supports aligned vector accesses
 proc check_effective_target_arm_vect_no_misalign { } {
     return [check_no_compiler_messages arm_vect_no_misalign assembly {
@@ -2016,6 +2025,16 @@ proc check_effective_target_arm_thumb2_ok { } {
 	#error FOO
 	#endif
     } "-mthumb"]
+}
+
+# Return 1 is this is an ARM target where is Thumb-2 used.
+
+proc check_effective_target_arm_thumb2 { } {
+    return [check_no_compiler_messages arm_thumb2 assembly {
+	#if !defined(__thumb2__)
+	#error FOO
+	#endif
+    } ""]
 }
 
 # Return 1 if the target supports executing NEON instructions, 0
