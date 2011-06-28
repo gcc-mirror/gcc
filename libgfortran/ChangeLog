@@ -1,3 +1,21 @@
+2011-06-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/49479
+	* m4/reshape.m4: If source allocation is smaller than one, set it
+	to one.
+	* intrinsics/reshape_generic.c:  Likewise.
+	* generated/reshape_r16.c: Regenerated.
+	* generated/reshape_c4.c: Regenerated.
+	* generated/reshape_c16.c: Regenerated.
+	* generated/reshape_c8.c: Regenerated.
+	* generated/reshape_r4.c: Regenerated.
+	* generated/reshape_i4.c: Regenerated.
+	* generated/reshape_r10.c: Regenerated.
+	* generated/reshape_r8.c: Regenerated.
+	* generated/reshape_c10.c: Regenerated.
+	* generated/reshape_i8.c: Regenerated.
+	* generated/reshape_i16.c: Regenerated.
+
 2011-06-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
         PR libfortran/49296

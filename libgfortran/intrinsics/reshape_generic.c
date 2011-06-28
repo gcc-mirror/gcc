@@ -85,6 +85,8 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 
   if (ret->data == NULL)
     {
+      index_type alloc_size;
+
       rs = 1;
       for (n = 0; n < rdim; n++)
 	{
@@ -95,7 +97,14 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
 	  rs *= rex;
 	}
       ret->offset = 0;
-      ret->data = internal_malloc_size ( rs * size );
+
+      if (unlikely (rs < 1))
+	alloc_size = 1;
+      else
+	alloc_size = rs * size;
+
+      ret->data = internal_malloc_size (alloc_size);
+
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }
 

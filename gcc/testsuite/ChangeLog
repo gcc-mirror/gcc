@@ -1,3 +1,8 @@
+2011-06-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/49479
+	* gfortran.dg/reshape_zerosize_3.f90:  New test.
+
 2011-06-28  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/vfp-ldmdbs.c: Skip for soft float.
