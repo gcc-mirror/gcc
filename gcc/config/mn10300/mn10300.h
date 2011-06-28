@@ -24,7 +24,7 @@
 #undef LIB_SPEC
 #undef ENDFILE_SPEC
 #undef  LINK_SPEC
-#define LINK_SPEC "%{mrelax:--relax}"
+#define LINK_SPEC "%{mrelax:%{!r:--relax}}"
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!mno-crt0:%{!shared:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}"
 

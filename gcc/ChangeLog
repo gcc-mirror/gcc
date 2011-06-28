@@ -1,3 +1,8 @@
+2011-06-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.h (LINK_SPEC): Do not use linker
+	relaxation when performing an incremental link.
+
 2011-06-28  Kai Tietz  <ktietz@redhat.com>
 
 	* tree-ssa-math-opts.c (execute_optimize_bswap): Search
@@ -20,9 +25,9 @@
 
 2011-06-28  Georg-Johann Lay  <avr@gjlay.de>
 
-	* config.gcc (tm_file): Add elfos.h and avr/elf.h for 
+	* config.gcc (tm_file): Add elfos.h and avr/elf.h for
 	avr-*-* and avr-*-rtems* targets.
-	
+
 	* config/avr/elf.h: New file.
 	(ASM_OUTPUT_BEFORE_CASE_LABEL): Define.
 	(TARGET_ASM_SELECT_SECTION): Define.
