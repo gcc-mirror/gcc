@@ -508,6 +508,34 @@
   return true;
 })
 
+(define_predicate "push_mult_memory_operand"
+  (match_code "mem")
+{
+  /* ??? Given how PUSH_MULT is generated in the prologues, is there
+     any point in testing for thumb1 specially?  All of the variants
+     use the same form.  */
+  if (TARGET_THUMB1)
+    {
+      /* ??? No attempt is made to represent STMIA, or validate that
+	 the stack adjustment matches the register count.  This is
+	 true of the ARM/Thumb2 path as well.  */
+      rtx x = XEXP (op, 0);
+      if (GET_CODE (x) != PRE_MODIFY)
+	return false;
+      if (XEXP (x, 0) != stack_pointer_rtx)
+	return false;
+      x = XEXP (x, 1);
+      if (GET_CODE (x) != PLUS)
+	return false;
+      if (XEXP (x, 0) != stack_pointer_rtx)
+	return false;
+      return CONST_INT_P (XEXP (x, 1));
+    }
+
+  /* ARM and Thumb2 handle pre-modify in their legitimate_address.  */
+  return memory_operand (op, mode);
+})
+
 ;;-------------------------------------------------------------------------
 ;;
 ;; Thumb predicates
