@@ -49,6 +49,7 @@ static tree build_string_ref (const char *string);
 
 /* Build a reference to a literal string.
    (cribbed from mf_build_string in tree-mudflap.c) */
+
 static tree
 build_string_ref (const char *string)
 {
@@ -64,6 +65,7 @@ build_string_ref (const char *string)
 }
 
 /* Add source args to the argument list.  */
+
 tree
 upc_gasp_add_src_args (tree args, const char *filename, int lineno)
 {
@@ -76,6 +78,7 @@ upc_gasp_add_src_args (tree args, const char *filename, int lineno)
 
 /* Instrument `upc_forall' statement begin/end.
    Return a call to the profiling function.  */
+
 tree
 upc_instrument_forall (location_t loc, int start)
 {
@@ -93,6 +96,11 @@ upc_instrument_forall (location_t loc, int start)
 			  build_string_ref (filename),
 			  build_int_cst (NULL_TREE, lineno));
 }
+
+/* If UPC function profiling has been enabled, rewrite the
+   body of FNDECL so that the GASP intrumentation function
+   is called before the body of the function is executed,
+   and then after it is executed (as a TRY_FINALLY_EXPR).  */
 
 void
 upc_instrument_func (tree fndecl)

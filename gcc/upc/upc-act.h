@@ -32,8 +32,6 @@ extern bool upc_handle_option (size_t, const char *, int, int, location_t,
                               const struct cl_option_handlers *);
 extern bool upc_lang_init (void);
 extern void upc_finish (void);
-extern void upc_write_init_func (void);
-extern void upc_free_unshared_var_table (void);
 extern int upc_types_compatible_p (tree, tree);
 extern int upc_inner_shared_ref_p (tree);
 extern int upc_pts_is_valid_p (tree);

@@ -57,19 +57,20 @@ along with GCC; see the file COPYING3.  If not see
    operations on expressions which refer to UPC pointers-to-shared,
    where their implementation varies with the representation
    of a pointer-to-shared value.  ('packed' or 'struct')  */
+
 upc_pts_ops_t upc_pts;
 
 static int contains_pts_refs_p (tree);
 static int recursive_count_upc_threads_refs (tree);
-static void upc_lang_layout_decl (tree, tree);
+static void upc_build_init_func (const tree);
 static int upc_lang_layout_decl_p (tree, tree);
+static void upc_lang_layout_decl (tree, tree);
 static void upc_parse_init (void);
 static int upc_sizeof_type_check (const char *, tree);
-static void upc_build_init_func (const tree);
-
+static void upc_write_init_func (void);
 
 /* Given a shared variable's VAR_DECL node, map to another
-   VAR_DECL that has same external symbol name, with
+   VAR_DECL that has a similar external symbol name, with
    the "shared" qualifier removed from its type.  This
    "shadow variable" is used to generate conventional
    address constants when referring to a shared variable.  */
@@ -81,23 +82,22 @@ struct GTY (()) uid_tree_map
 };
 
 /* Hash the UID of a shared variable to its unshared shadow variable.  */
+
 static
-GTY ((param_is (struct uid_tree_map)))
-     htab_t unshared_vars;
+GTY ((param_is (struct uid_tree_map))) htab_t unshared_vars;
 
-     static hashval_t uid_tree_map_hash (const void *);
-     static int uid_tree_map_eq (const void *, const void *);
+static hashval_t uid_tree_map_hash (const void *);
+static int uid_tree_map_eq (const void *, const void *);
 
-     static GTY (())
-     tree upc_init_stmt_list;
-     static GTY (())
-     section *upc_init_array_section;
+static GTY (()) tree upc_init_stmt_list;
+static GTY (()) section *upc_init_array_section;
 
-     static tree lookup_unshared_var (const tree);
-     static tree unshared_var_name (const tree);
-     static tree create_unshared_var (location_t, const tree);
-     static void map_unshared_var (const tree, const tree);
-     static tree unshared_var_addr (location_t, const tree);
+static tree create_unshared_var (location_t, const tree);
+static tree lookup_unshared_var (const tree);
+static void map_unshared_var (const tree, const tree);
+static tree unshared_var_addr (location_t, const tree);
+static tree unshared_var_name (const tree);
+static void upc_free_unshared_var_table (void);
 
 
 
@@ -172,6 +172,8 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
   return result;
 }
 
+/* UPC language-specific initialization ('init' hook).  */
+
 bool
 upc_lang_init (void)
 {
@@ -181,20 +183,24 @@ upc_lang_init (void)
 		   "the target linker does not support separately "
 		   "linked sections");
     }
+
   /* c_obj_common_init is also called from regular 'C'
      It will return 'false' if we're pre-processing only. */
+
   if (c_objc_common_init () == false)
     return false;
   upc_parse_init ();
   return true;
 }
 
+/* UPC Language-specific 'finish' hook (currently unused).  */
+
 void
 upc_finish (void)
 {
 }
 
-/* UPC specific initialization */
+/* Generate UPC specific pre-defined macros. */
 
 void
 upc_cpp_builtins (cpp_reader * pfile)
@@ -275,6 +281,10 @@ upc_cpp_builtins (cpp_reader * pfile)
     }
 }
 
+/*  Initialize the handler table for the UPC pointer-to-shared
+    representation that was selected when the compiler
+    was configured.  */
+
 static void
 upc_pts_init (void)
 {
@@ -290,6 +300,10 @@ upc_pts_init (void)
   (*upc_pts.init) ();
 }
 
+/* Initialize the UPC-specific parts of the compiler.
+   This is called from upc_lang_init(), which in turn
+   called via the LANG_HOOKS_INIT per-language hook.  */
+
 static void
 upc_parse_init (void)
 {
@@ -301,11 +315,34 @@ upc_parse_init (void)
   upc_init_stmt_list = NULL;
 }
 
+/* For the given kind of UPC synchronization statement given
+   by SYNC_KIND (UPC_SYNC_NOTIFY_OP, UPC_SYNC_WAIT_OP,
+   or UPC_SYNC_BARRIER_OP), build a UPC_SYNC_STMT tree node,
+   and add it to the current statement list.  The value of
+   SYNC_EXPR will be non-null if an expression is present
+   in the UPC statement being compiled.  */
+
 tree
 upc_build_sync_stmt (location_t loc, tree sync_kind, tree sync_expr)
 {
   return add_stmt (build_stmt (loc, UPC_SYNC_STMT, sync_kind, sync_expr));
 }
+
+/* Check the type of the operand passed to a
+   upc_*sizeof () operator.
+   
+   The type must *not* be:
+   - an error mark node
+   - an imcomplete type
+   - a function type
+   - a void type
+
+   The type *must* be a UPC 'shared' type.
+
+   UPC defines the following flavors of sizeof operators:
+   upc_blocksizeof, upc_elemsizeof, and upc_localsizeof.
+   These operations have similar syntax and constraints
+   as the "C" language sizeof operator.  */
 
 static int
 upc_sizeof_type_check (const char *op_name, tree type)
@@ -338,7 +375,16 @@ upc_sizeof_type_check (const char *op_name, tree type)
   return 1;
 }
 
-/* Compute the value of the `upc_blocksizeof' operator.  */
+/* Compute the value of the `upc_blocksizeof' operator.
+   The UPC block size is the value of UPC's "layout qualifier".
+   For example:
+
+   Declaration				upc_blocksizef()
+   ----------- 				----------------
+   shared int A[5*THREADS];     	1 (default) 
+   shared [5] int A[5*THREADS];    	5
+   shared [] int A[5*100];      	0 (indefinite)
+   shared [*] int A[5*THREADS];     	5 (distributed by compiler) */
 
 tree
 upc_blocksizeof (location_t ARG_UNUSED (loc), tree type)
@@ -366,12 +412,12 @@ upc_elemsizeof (location_t loc, tree type)
 
 /* Compute the value of the `upc_localsizeof' operator.
    Per the language spec:
-   The upc localsizeof operator returns the size, in bytes, of the
+   The upc_localsizeof operator returns the size, in bytes, of the
    local portion of its operand, which may be a shared object or a
    shared-qualified type.  It returns the same value on all threads; the
    value is an upper bound of the size allocated with affinity to any
    single thread and may include an unspecified amount of padding. The
-   result of upc localsizeof is an integer constant.  */
+   result of upc_localsizeof is an integer constant.  */
 
 tree
 upc_localsizeof (location_t loc, tree type)
@@ -393,7 +439,12 @@ upc_localsizeof (location_t loc, tree type)
   if (integer_zerop (block_factor))
     {
       /* local size is total size, because the entire
-         object lives on a single thread. */
+         object lives on a single thread.  This is the
+	 case for declarations of types with an "indefinite"
+	 layout qualifier.  For example, given:
+	   shared [] int A[100];
+         the value returned for upc_localszieof (A)
+	 will be: 100 * sizeof (int).  */
       local_size = total_size;
     }
   else
@@ -441,7 +492,9 @@ upc_localsizeof (location_t loc, tree type)
 /****** UPC tree-related checks, and operations **************/
 
 /* Traverse the expression and return the number of times
-   THREADS is referenced.  */
+   THREADS is referenced.  This is used to check the restriction
+   on UPC shared array declarations, that the predefined THREADS
+   variable can be mentioned only once.  */
 
 static int
 recursive_count_upc_threads_refs (tree expr)
@@ -481,9 +534,9 @@ count_upc_threads_refs (tree expr)
   return recursive_count_upc_threads_refs (expr);
 }
 
-/* Test that `expr' an expression tree where THREADS appears on
-   the left or the right hand side of a multply, in a series
-   of zero or more mulitplies.  For proper operation, the caller
+/* Test that EXPR is an expression tree where THREADS appears on
+   the left or the right hand side of a multiply, in a series
+   of zero or more multiplies.  For proper operation, the caller
    should ensure that THREADS is referenced only once,
    by calling count_upc_threads_refs () prior to calling this routine. */
 
@@ -507,7 +560,7 @@ is_multiple_of_upc_threads (tree expr)
 
 /* Find all references to THREADS and change them into the constant `1'.
    This is done so that fold () when applied to the dimension of a
-   shared array will yield the local size of the array */
+   UPC shared array will yield the local size of the array.  */
 
 void
 set_upc_threads_refs_to_one (tree * expr)
@@ -539,7 +592,7 @@ set_upc_threads_refs_to_one (tree * expr)
 }
 
 /* Return the blocking factor of the UPC shared type, 'type'.
-   If the blocking factor is NULL, then return default blocking
+   If the blocking factor is NULL, then return the default blocking
    factor of 1.  */
 
 tree
@@ -553,10 +606,10 @@ upc_get_block_factor (const tree type)
   return block_factor;
 }
 
-/* Given a UPC layout specifier, calculate the blocking factor
-   add this into the type field of `type'.  Caller is responsible
+/* Given a UPC layout qualifier, calculate the blocking factor
+   and the TYPE_BLOCK_FACTOR field of `type'.  The caller is responsible
    for checking that the block factor is being applied to a
-   shared type.  Return the new, augmented type. */
+   UPC shared type.  Return the new, augmented type. */
 
 tree
 upc_set_block_factor (const enum tree_code decl_kind,
@@ -576,7 +629,8 @@ upc_set_block_factor (const enum tree_code decl_kind,
       return type;
     }
 
-  /* Layout qualifier is given as the subscript operand of an array ref. */
+  /* The layout qualifier is given as the subscript operand
+     of an array ref. */
 
   if (TREE_CODE (layout_qualifier) != ARRAY_REF)
     abort ();
@@ -584,14 +638,17 @@ upc_set_block_factor (const enum tree_code decl_kind,
 
   if (layout_qualifier == NULL_TREE)
     {
-      /* layout qualifier is [], equivalent to specifying [0] */
+      /* The layout qualifier is [], which is
+         equivalent to specifying [0].  */
       block_factor = size_zero_node;
     }
   else if ((TREE_CODE (layout_qualifier) == INDIRECT_REF)
 	   && ((TREE_OPERAND (layout_qualifier, 0)) == NULL_TREE))
     {
       tree elt_size, elt_type, n_threads;
-      /* layout qualifier is [*] */
+      /* The layout qualifier is [*].  The compiler must calculate
+         a blocking factor that evenly distributes the array's
+	 elements over all the UPC threads.  */
       if (!COMPLETE_TYPE_P (type))
 	{
 	  error
@@ -626,9 +683,10 @@ upc_set_block_factor (const enum tree_code decl_kind,
 	  else
 	    {
 	      block_factor = size_binop (CEIL_DIV_EXPR,
-					 size_binop (FLOOR_DIV_EXPR,
-						     TYPE_SIZE (type),
-						     elt_size), n_threads);
+				 size_binop (FLOOR_DIV_EXPR,
+					     TYPE_SIZE (type),
+					     elt_size),
+				 n_threads);
 	    }
 	}
     }
@@ -647,7 +705,7 @@ upc_set_block_factor (const enum tree_code decl_kind,
   gcc_assert (TREE_CODE (block_factor) == INTEGER_CST);
 
   /* If the blocking factor is 1, leave TYPE_BLOCK_FACTOR()
-     as NULL to normalize the representation. The UPC spec
+     as NULL to normalize the representation.  The UPC spec
      says all objects have a blocking factor of 1 if none
      is specified, so we always represent a blocking factor
      of 1 as a NULL. */
@@ -690,11 +748,12 @@ upc_set_block_factor (const enum tree_code decl_kind,
   return type;
 }
 
+/* If DECL is a UPC shared variable, make sure that it ends up
+   in the executable file.  */
+
 void
 upc_check_decl (tree decl)
 {
-  /* If this is a shared variable, make sure that it ends up
-     in the executable file.  */
   if (decl
       && TREE_CODE (decl) == VAR_DECL
       && TREE_TYPE (decl) && upc_shared_type_p (TREE_TYPE (decl)))
@@ -716,7 +775,7 @@ upc_check_decl (tree decl)
     }
 }
 
-/* Return 1 if type TYPE contains any pointers-to-shared.  */
+/* Return TRUE if TYPE contains any references to UPC pointers-to-shared.  */
 
 static int
 contains_pts_refs_p (tree type)
@@ -750,6 +809,12 @@ contains_pts_refs_p (tree type)
     }
 }
 
+/* Return TRUE if either DECL's type is a UPC shared type, or if
+   the value on the right-hand-side of the initialization has a
+   type that is a UPC shared type.  Initializations that meet
+   this criteria generally need to be actively initialized
+   at runtime.  */
+
 int
 upc_check_decl_init (tree decl, tree init)
 {
@@ -774,6 +839,15 @@ upc_check_decl_init (tree decl, tree init)
   return is_upc_decl;
 }
 
+/* Add the initialization statement:
+     DECL = INIT;
+   onto a list, `upc_init_stmt_list', which collects
+   initializations that must be made at runtime.
+
+   This runtime initialization necessary because, in general, UPC
+   shared addresses are not known, or cannot be easily generated
+   at compile-time.  */
+
 void
 upc_decl_init (tree decl, tree init)
 {
@@ -790,7 +864,8 @@ upc_decl_init (tree decl, tree init)
   append_to_statement_list_force (init_stmt, &upc_init_stmt_list);
 }
 
-/* Return TRUE if DECL's size is zero, and DECL is a shared array. */
+/* Return TRUE if DECL's size is zero,
+   and DECL is a UPC shared array. */
 
 static int
 upc_lang_layout_decl_p (tree decl, tree type)
@@ -812,9 +887,10 @@ upc_lang_layout_decl_p (tree decl, tree type)
 }
 
 
-/* Shared variables are given their own link section on
-   most target platforms, and if compiling in pthreads mode
-   regular local file scope variables are made thread local. */
+/* Assign DECL to a specific linker section, if required.
+   UPC shared variables are given their own link section on
+   most target platforms, and if compiling in "pthreads mode"
+   regular local file scope variables are made thread local.  */
 
 void
 upc_set_decl_section (tree decl)
@@ -822,7 +898,7 @@ upc_set_decl_section (tree decl)
   if (TREE_SHARED (decl))
     {
 #ifdef UPC_SHARED_SECTION_NAME
-      /* shared variables are placed in their own shared section */
+      /* UPC shared variables are placed in their own shared section */
       int slen = strlen (UPC_SHARED_SECTION_NAME);
       DECL_SECTION_NAME (decl) = build_string (slen, UPC_SHARED_SECTION_NAME);
 #endif
@@ -831,12 +907,12 @@ upc_set_decl_section (tree decl)
 	   && ((TREE_STATIC (decl) && (DECL_SECTION_NAME (decl) == NULL_TREE))
 	       || DECL_EXTERNAL (decl)))
     {
-      /* If we're compiling with -fupc-pthreads asserted
-         and this is a static scoped object which
+      /* If we're compiling with -fupc-pthreads-model-tls asserted
+         and this is a regular "C" static scoped object which
          is either declared in a system header file,
          or is being compiled in a UPC setting,
-         then assign the object to the
-         thread local storage (TLS) section. */
+         then assign the object to the thread local storage
+	 (TLS) section.  */
       extern int c_header_level;	/* in c-lex.c */
       if (compiling_upc && (c_header_level <= 0))
 	{
@@ -847,13 +923,14 @@ upc_set_decl_section (tree decl)
 	    }
 	  else
 	    /* Only the TLS model is currently implemented. */
-	    abort ();
+	    gcc_unreachable ();
 	}
     }
 }
 
-/* Given that TYPE describes a shared array, and that DECL's size hasn't
-   been calculated, size the type and adust the size attributes in DECL. */
+/* Given that TYPE describes a UPC shared array, and that DECL's size hasn't
+   been calculated, calculate the size of the type and adjust the size
+   attributes in DECL.  */
 
 static void
 upc_lang_layout_decl (tree decl, tree type)
@@ -873,7 +950,7 @@ upc_lang_layout_decl (tree decl, tree type)
 	? convert (bitsizetype, TYPE_BLOCK_FACTOR (elt_type)) : NULL;
       if (block_factor && integer_zerop (block_factor))
 	{
-	  /* Allocate the entire array on thread 0. */
+	  /* Allocate the entire UPC shared array on thread 0. */
 	  if (UPC_TYPE_HAS_THREADS_FACTOR (type))
 	    {
 	      const tree n_threads =
@@ -903,11 +980,12 @@ upc_lang_layout_decl (tree decl, tree type)
 	    }
 	  else
 	    {
-	      /* We want to allocate ceiling of n_elem/n_threads elements per
-	         thread, where n_elem is the total number of elements in
-	         the array.  If the array is blocked, then we allocate
-	         ((ceiling of (ceiling of n_elem/block_factor)/n_threads) *
-	         block_factor) elements per thread. */
+	      /* We want to allocate ceiling (N_ELEM / N_THREADS)
+	         elements per thread, where N_ELEM is the total number of
+		 elements in the array.  If the array is blocked,
+		 then we allocate (ceiling (ceiling
+		   (N_ELEM / BLOCK_FACTOR) / N_THREADS)
+		   * block_factor) * N_ELEM_PER_THREAD.  */
 	      tree n_elem_per_thread;
 	      if (block_factor)
 		{
@@ -925,9 +1003,10 @@ upc_lang_layout_decl (tree decl, tree type)
 						n_elem, n_threads);
 
 	      /* In the special case of an array of size 1, we know that
-	         we want a constant size no matter what n_threads is.  Make
-	         the size a constant so that declarations of shared int x[1]
-	         will work for runtime specification of threads. */
+	         we want a constant size no matter what N_THREADS is.  Make
+	         the size a constant so that declarations of the form:
+		   shared int x[1];
+	         will work in a dynamic THREADS compilation environment. */
 	      if (integer_onep (n_elem))
 		DECL_SIZE (decl) = elt_size;
 	      else
@@ -953,9 +1032,13 @@ upc_lang_layout_decl (tree decl, tree type)
 					    bitsize_unit_node));
 }
 
-/* Implement UPC's upc_forall 'affinity' test, by augmenting
-   the 'for' statement.  Rewrite 'for_body' into:
-     if (affinity == MYTHREAD) for_body;  */
+/* Implement UPC's upc_forall 'affinity' test.
+   If the type of AFFINITY is a UPC pointer-to-shared type,
+   rewrite it into:
+     upc_threadof (AFFINITY) == MYTHREAD
+   If AFFINITY is an integer expression, then
+   rewrite it into:
+     (AFFINITY % THREADS) == MYTHREAD   */
 
 tree
 upc_affinity_test (location_t loc, tree affinity)
@@ -968,8 +1051,8 @@ upc_affinity_test (location_t loc, tree affinity)
   if (TREE_CODE (TREE_TYPE (affinity)) == POINTER_TYPE
       && upc_shared_type_p (TREE_TYPE (TREE_TYPE (affinity))))
     {
-      /* then we have a pointer to a shared object and the affinity is
-         determined by the thread component of the address */
+      /* We have a pointer to a UPC shared object and the affinity is
+         determined by the thread component of the address.  */
       const tree pts_rep = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node,
 				   save_expr (affinity));
       affinity = (*upc_pts.threadof) (loc, pts_rep);
@@ -988,27 +1071,32 @@ upc_affinity_test (location_t loc, tree affinity)
       return error_mark_node;
     }
 
-
-  /* Generate an external reference to the "MYTHREAD" indentifier.  */
+  /* Generate an external reference to the "MYTHREAD" identifier.  */
 
   mythread = lookup_name (get_identifier ("MYTHREAD"));
   gcc_assert (mythread != NULL_TREE);
   assemble_external (mythread);
   TREE_USED (mythread) = 1;
 
-  /* Affinity now contains an integer value that can be compared to MY_THREAD.
-     Create an expression that tests if affinity is equal to MY_THREAD. */
+  /* AFFINITY now contains an integer value that can be compared to MY_THREAD.
+     Create an expression that tests if AFFINITY is equal to MYTHREAD. */
 
   if (!c_types_compatible_p (TREE_TYPE (affinity), TREE_TYPE (mythread)))
     affinity = convert (TREE_TYPE (mythread), affinity);
   affinity_test = c_objc_common_truthvalue_conversion (loc,
 				   build_binary_op (loc, EQ_EXPR,
 						    affinity, mythread, 1));
-  /* remove the MAYBE_CONST_EXPR's.  */
+  /* Remove any MAYBE_CONST_EXPR's.  */
+
   affinity_test = c_fully_fold (affinity_test, false, NULL);
 
   return affinity_test;
 }
+
+/* Return an external reference to an integer variable maintained
+   by the compiler and runtime to track the dynamic nesting
+   of 'upc_forall' statements.  The variable's name is given by
+   UPC_FORALL_DEPTH_NAME.  */
 
 tree
 upc_rts_forall_depth_var (void)
@@ -1031,7 +1119,7 @@ upc_rts_forall_depth_var (void)
 int
 upc_types_compatible_p (tree x, tree y)
 {
-  /* If C doesn't think they're compatible neither does UPC.  */
+  /* If "C" doesn't think they're compatible neither does UPC.  */
   if (!c_types_compatible_p (x, y))
     return 0;
   if (POINTER_TYPE_P (x) && POINTER_TYPE_P (y))
@@ -1043,16 +1131,19 @@ upc_types_compatible_p (tree x, tree y)
 	  tree bx, by, sx, sy;
 	  int x_has_zero_phase, y_has_zero_phase;
 	  int result;
-	  /* If both types are generic pointer-to-shared,
+	  /* If both types are generic UPC pointers-to-shared,
 	     then they're compatible.  */
 	  if (VOID_TYPE_P (ttx) && VOID_TYPE_P (tty))
 	    return 1;
-	  /* Intermediate conversions to (shared void *) cannot
-	     always be optimized away.  For example,
-	     p1 = (shared void *)p2;
+	  /* Intermediate conversions to (shared void *) (defined
+	     to be a "generic pointer-to-shared" the UPC
+	     specification) cannot always be optimized away.
+	     For example,
+	       p1 = (shared void *) p2;
 	     preserves the phase of p2, when assigning to p1.
 	     We need to be conservative, and not consider conversions
-	     with generic pointer-to-shared to be equivalent.  */
+	     involving a generic UPC pointer-to-shared value to be
+	     equivalent.  */
 	  if (VOID_TYPE_P (ttx) != VOID_TYPE_P (tty))
 	    return 0;
 	  bx = upc_get_block_factor (ttx);
@@ -1066,17 +1157,18 @@ upc_types_compatible_p (tree x, tree y)
 	    sx = NULL_TREE;
 	  if (sy && integer_zerop (sy))
 	    sy = NULL_TREE;
-	  /* If the target types have the same blocksize
+	  /* If the target types have the same UPC block size
 	     (or they both have a phase value of zero) 
 	     and the same size and the target types are
 	     otherwise compatible, then the pointer-to-shared
 	     types are compatible. */
 	  result = (tree_int_cst_equal (bx, by)
 		    || (x_has_zero_phase && y_has_zero_phase))
-	    && tree_int_cst_equal (sx, sy);
+	           && tree_int_cst_equal (sx, sy);
 	  return result;
 	}
-      /* If one is shared, and the other is local,
+      /* If one operand has a UPC shared type,
+         and the other operand's type is not a UPC shared type,
          then they aren't equivalent.  */
       else if (upc_shared_type_p (ttx) != upc_shared_type_p (tty))
 	return 0;
@@ -1099,6 +1191,24 @@ upc_types_compatible_p (tree x, tree y)
 
 /************* UPC SUPPORT *************/
 
+/* Return the value of THREADS.
+
+   UPC defines a reserved variable, THREADS, which returns the
+   number of threads that will be created when the UPC program
+   executes.  The value of threads can be specified at runtime via
+   the -fupc-threads-N switch, where N is an integer specifying
+   the number of threads.  When the value of THREADS is specified
+   at compile-time, this is called the "static threads compilation
+   environment".
+
+   In the static threads compilation environment, THREADS is a
+   pre-defined preprocessor macro with the value, N.
+
+   If no value for threads is given at compile-time, then the value
+   must be specified when the application program is executed.
+   This is method of establishing the value of THREADS is called
+   the "dynamic threads compilation environment".  */
+
 tree
 upc_num_threads (void)
 {
@@ -1108,7 +1218,7 @@ upc_num_threads (void)
   if (!n)
     {
       error ("the UPC-required THREADS variable is undefined; "
-	     "when compiling preprocessd source, "
+	     "when compiling pre-processed source, "
 	     "all -fupc-* switches must be passed on the command line, "
 	     "asserting the same values as supplied when the "
 	     "original source file was preprocessed");
@@ -1117,6 +1227,10 @@ upc_num_threads (void)
 
   return n;
 }
+
+/* Diagnose instances of UPC statements that were
+   defined in very early UPC language specifications and that
+   have since been deprecated.  */
 
 int
 upc_diagnose_deprecated_stmt (location_t loc, tree id)
@@ -1128,10 +1242,11 @@ upc_diagnose_deprecated_stmt (location_t loc, tree id)
     const char *correct_id;
   };
   static const struct deprecated_stmt_entry deprecated_stmts[] =
-    { {"barrier", "upc_barrier"}, {"barrier_wait", "upc_wait"},
-  {"barrier_notify", "upc_notify"}, {"fence", "upc_fence"},
-  {"forall", "upc_forall"}
-  };
+    { {"barrier", "upc_barrier"},
+      {"barrier_wait", "upc_wait"},
+      {"barrier_notify", "upc_notify"},
+      {"fence", "upc_fence"},
+      {"forall", "upc_forall"} };
   const int n_deprecated_stmts = sizeof (deprecated_stmts)
     / sizeof (struct deprecated_stmt_entry);
   int i;
@@ -1141,12 +1256,17 @@ upc_diagnose_deprecated_stmt (location_t loc, tree id)
 	{
 	  error_at (loc, "%qs was supported in version 1.0 of the UPC "
 		    "specification, it has been deprecated, "
-		    "use %qs instead", name, deprecated_stmts[i].correct_id);
+		    "use %qs instead",
+		    name, deprecated_stmts[i].correct_id);
 	  return 1;
 	}
     }
   return 0;
 }
+
+/* Return a hash value given the argument P, which
+   is a pointer to a uid_tree_map.  The pointer
+   value is used directly to yield a hash value.  */
 
 static hashval_t
 uid_tree_map_hash (const void *p)
@@ -1155,6 +1275,11 @@ uid_tree_map_hash (const void *p)
   return map->uid;
 }
 
+/* Return TRUE if the UID fields of two uid_tree_map
+   structures are equal.  This function is called by
+   the `htab_find_with_hash function' to match entries
+   in the `unshared_vars' hash table.  */
+
 static int
 uid_tree_map_eq (const void *va, const void *vb)
 {
@@ -1162,6 +1287,10 @@ uid_tree_map_eq (const void *va, const void *vb)
   const struct uid_tree_map *const b = (const struct uid_tree_map *) vb;
   return a->uid == b->uid;
 }
+
+/* Return the "shadow variable" created for VAR that
+   has the same type as VAR, but with the UPC shared
+   qualifiers removed.  */
 
 static tree
 lookup_unshared_var (const tree var)
@@ -1179,6 +1308,12 @@ lookup_unshared_var (const tree var)
 
 #define UNSHARE_PREFIX "_u_"
 
+/* Return an identifier that will be used to declare the "shadow variable"
+   which has the same type as VAR, but with all UPC shared qualfiers
+   removed from the type.  The identifier has the same name as
+   that of VAR, prefixed with the string given by the
+   value of `UNSHARE_PREFIX'.  */
+
 static tree
 unshared_var_name (const tree var)
 {
@@ -1189,6 +1324,11 @@ unshared_var_name (const tree var)
   strcat (tmp_name, IDENTIFIER_POINTER (name));
   return get_identifier (tmp_name);
 }
+
+/* Create and return a "shadow variable" that has the same type as VAR,
+   but with all UPC shared qualifiers removed from the type.
+   The assembler name of this shadow variable is the same
+   as that of the original variable, VAR.  */
 
 static tree
 create_unshared_var (location_t loc, const tree var)
@@ -1207,9 +1347,13 @@ create_unshared_var (location_t loc, const tree var)
   DECL_EXTERNAL (u) = DECL_EXTERNAL (var);
   DECL_SECTION_NAME (u) = DECL_SECTION_NAME (var);
   DECL_CONTEXT (u) = DECL_CONTEXT (var);
+
   /* Alias the unshared variable to the shared variable.  */
+
   SET_DECL_ASSEMBLER_NAME (u, DECL_ASSEMBLER_NAME (var));
+
   /* Make sure the variable is referenced.  */
+
   mark_decl_referenced (var);
   return u;
 }
@@ -1229,6 +1373,18 @@ map_unshared_var (const tree var, const tree u_var)
   loc = htab_find_slot_with_hash (unshared_vars, h, uid, INSERT);
   *(struct uid_tree_map **) loc = h;
 }
+
+/* Return a tree node that evaluates to the address that the
+   linker assigns to the UPC shared variable, VAR.  This is not
+   the final location of the UPC shared variable.  The linker is
+   used only to lay out a given UPC thread's contribution to the
+   UPC shared global memory region.
+
+   The address expression returned will point to a "shadow
+   variable" declaration that is created from the UPC shared
+   variable declaration, VAR.  This shadow variable has the same
+   type and other attributes as VAR, with the UPS shared type
+   qualifiers removed.  */
 
 static tree
 unshared_var_addr (location_t loc, const tree var)
@@ -1314,13 +1470,25 @@ upc_pts_increment (location_t location ATTRIBUTE_UNUSED,
   return result;
 }
 
+/* Return an expression that calculates the sum of a UPC
+   pointer-to-shared value and an integer value.  The sum
+   operator may be PLUS_EXPR or MINUS_EXPR.  The result is a
+   POINTER_PLUS_EXPR with a properly scaled integer operand.
+   This POINTER_PLUS_EXPR will be translated by the UPC lowering
+   pass into the sequence of operations dictated both by the
+   properties of the UPC pointer-to-shared type, and the UPC
+   pointer-to-shared representation.  */
+
 tree
 upc_pts_int_sum (location_t loc,
 		 enum tree_code resultcode, tree ptrop, tree intop)
 {
+
   /* The result type is a pointer of the same type that is being added,
-     after dropping the shared qualifier (for PTS's that happen
-     to live in shared memory). */
+     after dropping the UPC shared qualifier.  For example, this would
+     apply to UPC pointers-to-shared that happen to live in shared memory;
+     the result of the expression must not be UPC shared qualified.  */
+
   const tree ttype = TREE_TYPE (ptrop);
   const int shared_quals =
     (TYPE_QUAL_SHARED | TYPE_QUAL_STRICT | TYPE_QUAL_RELAXED);
@@ -1330,51 +1498,51 @@ upc_pts_int_sum (location_t loc,
   const tree base_type = strip_array_types (result_targ_type);
   tree result;
 
-
   if (TREE_CODE (result_targ_type) == VOID_TYPE)
-    error_at (loc, "UPC does not a pointer of type %<shared void *%> "
+    error_at (loc, "UPC does not allow a pointer of type %<shared void *%> "
 	      "to be used in arithmetic");
 
-  /* We have a pointer to a shared object.  For pointers to
+  /* We have a pointer to a UPC shared object.  For pointers to
      simple objects, just build a "resultcode" tree with the intop and
-     let upc_genricize() handle the arithmetic correctly.  For pointers to
+     let upc_genericize() handle the arithmetic correctly.  For pointers to
      arrays, compute the number of elements represented by the intop
      and build a "resultcode" tree with the ptrop and that number. */
+
   if (result_targ_type != base_type)
     {
+      tree elt_cnt;
       gcc_assert (TREE_CODE (result_targ_type) == ARRAY_TYPE);
       if (TREE_CODE (TYPE_SIZE (result_targ_type)) == INTEGER_CST)
 	{
-	  tree elt_cnt;
 	  tree n_threads = convert (sizetype, upc_num_threads ());
 	  int size = TREE_INT_CST_LOW (TYPE_SIZE (result_targ_type));
 	  int elt_size = TREE_INT_CST_LOW (TYPE_SIZE (base_type));
 	  elt_cnt = size_int (size / elt_size);
 	  if (UPC_TYPE_HAS_THREADS_FACTOR (result_targ_type))
 	    elt_cnt = size_binop (MULT_EXPR, n_threads, elt_cnt);
-	  intop = convert (sizetype, intop);
-	  intop = size_binop (MULT_EXPR, intop, elt_cnt);
 	}
       else
 	{
-	  tree elt_cnt;
 	  tree size = TYPE_SIZE (result_targ_type);
 	  tree elt_size = TYPE_SIZE (base_type);
 	  elt_cnt = build2 (EXACT_DIV_EXPR, sizetype, size, elt_size);
-	  intop = convert (sizetype, intop);
-	  intop = build2 (MULT_EXPR, sizetype, intop, elt_cnt);
 	}
+      intop = convert (sizetype, intop);
+      intop = size_binop (MULT_EXPR, intop, elt_cnt);
     }
   gcc_assert (resultcode == PLUS_EXPR || resultcode == MINUS_EXPR);
   if (resultcode == MINUS_EXPR)
     intop = build1 (NEGATE_EXPR, TREE_TYPE (intop), intop);
   intop = fold (intop);
+
   /* POINTER_PLUS expects the operand to be sizetype, which
      is potentially unsigned.  This will have to be dealt
      with later, when expanding the UPC pointer-to-shared arithmetic.  */
+
   intop = convert (sizetype, intop);
   result = build2 (POINTER_PLUS_EXPR, result_type, ptrop, intop);
-  /* Althoough there may be some specific cases where the
+
+  /* Although there may be some specific cases where the
      addition of a constant integer to a UPC pointer-to-shared can
      be calculated at compile-time, in the more general
      cases the calculation must be made at runtime, so
@@ -1382,16 +1550,22 @@ upc_pts_int_sum (location_t loc,
      avoid situations where the compiler attempts to convert
      things like &A[14] where A is a shared array into a
      compile-time constant. */
+
   TREE_CONSTANT (result) = 0;
   return result;
 }
+
+/* Return an expression that calculates the difference between
+   two UPC pointers-to-shared values.  */
 
 tree
 upc_pts_diff (tree op0, tree op1)
 {
   const tree target_type = TREE_TYPE (TREE_TYPE (op0));
   tree result;
+
   /* The two pointers must both point to shared objects.  */
+
   if ((upc_shared_type_p (target_type)
        && !upc_shared_type_p (TREE_TYPE (TREE_TYPE (op1))))
       || (upc_shared_type_p (TREE_TYPE (TREE_TYPE (op1)))
@@ -1405,11 +1579,17 @@ upc_pts_diff (tree op0, tree op1)
   return result;
 }
 
+/* Return TRUE if EXP is a null UPC pointer-to-shared value.
+   (Call the representation-specific hook routine to
+   perform the check.)  */
+
 int
 upc_is_null_pts_p (tree exp)
 {
   return (*upc_pts.is_null_p) (exp);
 }
+
+/* Return TRUE if the type of EXP is a UPC pointer-to-shared type.  */
 
 int
 upc_pts_is_valid_p (tree exp)
@@ -1457,19 +1637,17 @@ upc_build_init_func (const tree stmt_list)
   gcc_assert (DECL_RTL (init_func));
   mark_decl_referenced (init_func);
   DECL_PRESERVE_P (init_func) = 1;
-  upc_init_array_section = get_section (UPC_INIT_ARRAY_SECTION_NAME, 0, NULL);
+  upc_init_array_section =
+    get_section (UPC_INIT_ARRAY_SECTION_NAME, 0, NULL);
   init_func_symbol = XEXP (DECL_RTL (init_func), 0);
   assemble_addr_to_section (init_func_symbol, upc_init_array_section);
 }
 
-void
-upc_write_global_declarations (void)
-{
-  upc_write_init_func ();
-  upc_free_unshared_var_table ();
-}
+/* If the accumulated UPC initialization statement list is
+   not empty, then build (and define) the per-file UPC
+   global initialization function.  */
 
-void
+static void
 upc_write_init_func (void)
 {
   if (upc_init_stmt_list)
@@ -1479,7 +1657,13 @@ upc_write_init_func (void)
     }
 }
 
-void
+/* Free the hash table used to map UPC VAR_DECL's
+   into the "unshared" shadow variables that were created
+   in order to establish the offset of a UPC shared
+   variable with the special linker section that is
+   created to collect the UPC shared variables.  */
+
+static void
 upc_free_unshared_var_table (void)
 {
   if (unshared_vars)
@@ -1487,6 +1671,20 @@ upc_free_unshared_var_table (void)
       htab_delete (unshared_vars);
       unshared_vars = NULL;
     }
+}
+
+/* Write out the UPC global initialization function, if required
+   and free the hash table used to track the "shadow" variables
+   that are created to generate addresses of UPC shared variables.
+
+   This function is called from c_common_parse_file(), just after
+   parsing the main source file.  */
+
+void
+upc_write_global_declarations (void)
+{
+  upc_write_init_func ();
+  upc_free_unshared_var_table ();
 }
 
 #include "gt-upc-upc-act.h"

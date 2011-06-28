@@ -75,7 +75,7 @@ const upc_pts_ops_t upc_pts_struct_ops =
   };
 
 /*
- * Build the internal representation of UPC's UPC pointer-to-shared type.
+ * Build the internal representation of UPC's pointer-to-shared type.
  */
 static void
 upc_pts_struct_init_type (void)
@@ -145,7 +145,7 @@ upc_pts_struct_init_type (void)
 						  integer_zero_node);
 }
 
-/* Called to expand a UPC specific constant into somethng the
+/* Called to expand a UPC specific constant into something the
    backend can handle.  Upon return a UPC pointer-to-shared will be
    seen as the representation type of a UPC pointer-to-shared, with
    individual (thread, phase, and virtual address) fields.  */
@@ -210,7 +210,7 @@ upc_pts_struct_build_value (location_t loc ATTRIBUTE_UNUSED, tree type,
   return result;
 }
 
-/* return TRUE if EXP is a null pointer to shared. */
+/* Return TRUE if EXP is a null UPC pointer-to-shared. */
 
 static int
 upc_pts_struct_is_null_p (tree exp)
@@ -240,6 +240,11 @@ upc_pts_struct_is_null_p (tree exp)
   return result;
 }
 
+/* Given, EXP, whose type must be the UPC pointer-to-shared
+   representation type, isolate the thread field,
+   and return it.  Caller must insure that EXP is a
+   stable reference, if required.  */
+
 static tree
 upc_pts_struct_build_threadof (location_t loc ATTRIBUTE_UNUSED, tree exp)
 {
@@ -251,6 +256,12 @@ upc_pts_struct_build_threadof (location_t loc ATTRIBUTE_UNUSED, tree exp)
   affinity = fold_convert (sizetype, affinity);
   return affinity;
 }
+
+
+/* Given, EXP, whose type must be the UPC pointer-to-shared
+   representation type, isolate the phase field,
+   and return it.  Caller must insure that EXP is a
+   stable reference, if required.  */
 
 static tree
 upc_pts_struct_build_sum (location_t loc, tree exp)
@@ -299,7 +310,7 @@ upc_pts_struct_build_sum (location_t loc, tree exp)
   else
     {
       /* Make sure n_threads is a signed integer to ensure
-         that the FlOOR_MOD and FLOOR_DIV operations below are performed
+         that the FLOOR_MOD and FLOOR_DIV operations below are performed
          with signed operations. */
       if (TYPE_UNSIGNED (TREE_TYPE (n_threads)))
 	n_threads = convert (integer_type_node, n_threads);
@@ -371,6 +382,9 @@ upc_pts_struct_build_sum (location_t loc, tree exp)
   return result;
 }
 
+/* Expand the expression EXP, which calculates the difference
+   between two UPC pointers-to-shared.  */
+
 static tree
 upc_pts_struct_build_diff (location_t loc, tree exp)
 {
@@ -397,9 +411,8 @@ upc_pts_struct_build_diff (location_t loc, tree exp)
       || (upc_shared_type_p (TREE_TYPE (TREE_TYPE (op1)))
 	  && !upc_shared_type_p (target_type)))
     {
-      error
-	("attempt to take the difference of a UPC pointer-to-shared "
-	 "and a local pointers");
+      error ("attempt to take the difference of a UPC pointer-to-shared "
+	 "and a local pointer");
       return error_mark_node;
     }
   op0 = save_expr (op0);
@@ -455,7 +468,8 @@ upc_pts_struct_build_diff (location_t loc, tree exp)
   return result;
 }
 
-/* Add OFFSET into the address filed of UPC pointer-to-shared, PTR.  */
+/* Return a tree that implements the Addition OFFSET into the address field
+   of the pointer-to-shared value, PTR.  */
 
 static tree
 upc_pts_struct_build_add_offset (location_t loc, tree ptr, tree offset)
@@ -482,8 +496,8 @@ upc_pts_struct_build_add_offset (location_t loc, tree ptr, tree offset)
   return result;
 }
 
-/* Handle conversions between pointers to shared objects and
-   local pointers, or between pointers to shared objects which
+/* Handle conversions between UPC pointers-to-shared and
+   local pointers, or between UPC pointers-to-shared which
    have differing block factors.  */
 
 static tree
@@ -536,7 +550,7 @@ upc_pts_struct_build_cvt (location_t loc, tree exp)
          safely use the source value directly. */
       tree s1 = TYPE_SIZE (tt1);
       tree s2 = TYPE_SIZE (tt2);
-      /* normalize blocksizes, so that [0] => NULL */
+      /* normalize block sizes, so that [0] => NULL */
       if (integer_zerop (b1))
 	b1 = NULL;
       if (integer_zerop (b2))

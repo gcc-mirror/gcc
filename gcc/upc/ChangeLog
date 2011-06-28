@@ -1,3 +1,13 @@
+2011-06-28  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.h (upc_write_init_func, upc_free_unshared_var_table):
+	Remove extern definitions. Now declared as 'static'.
+
+	* upc-gimplify.c, upc-lang.c,
+	upc-pts-struct.c, upc-gasp.c, upc-pts-packed.c,
+	upc-cmd.c, upc-act.c: Improve/add comments, fix
+	typos and spelling errors.
+
 2011-06-10  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.c (upc_set_block_factor): Handle the case where

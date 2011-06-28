@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/types.h>
 
 /* The UPC driver program invokes the GCC compiler, passing along
-   the swtiches on the command line. If the user does not supply
+   the switches on the command line. If the user does not supply
    switches (such -c, -S, or -E) that would disable linking,
    then add the additional link switches that are required to
    link a UPC program. */
@@ -211,7 +211,7 @@ shell_escape (const char *s)
   return result;
 }
 
-/* Using the arg. list we've built up so far, tack on
+/* Using the argument list we've built up so far, tack on
    the PRINT_CMD argument, and return the result.  */
 
 static const char *
@@ -250,10 +250,10 @@ get_print_cmd (const char *exec_args[], int n_args, const char *print_cmd)
 
 /* Return the path of the library directory,
    where libupc can be found.  LIB_PATH will be defined
-   when the development version of the upc command is
+   when the development version of the 'upc' command is
    being built; use that path, and add the multilib
    suffix if required.  Otherwise, for the installed
-   upc command, use -print-file-name to find the "libupc.a"
+   'upc' command, use -print-file-name to find the "libupc.a"
    library file, and return the containing directory.  */
 
 static const char *
@@ -381,11 +381,11 @@ main (int argc, char *argv[])
 	  if (((arg[2] == '\0') && GCC_SWITCH_TAKES_ARG (arg[1]))
 	      || GCC_WORD_SWITCH_TAKES_ARG (&arg[1])
 	      || ((arg[1] == '-') && GCC_WORD_SWITCH_TAKES_ARG (&arg[2])))
-	    /* skip the following arg */
+	    /* skip the following argument */
 	    ++i;
 	}
       else
-	/* an arg. that is not a switch implies that we'll do something. */
+	/* an argument that is not a switch implies that we'll do something. */
 	info_only = FALSE;
     }
   invoke_linker = invoke_linker && !info_only;
@@ -400,7 +400,7 @@ main (int argc, char *argv[])
      yield an invocation of the form:
      <full_pathname_of_gcc_or_xgcc> -B<compiler_dir>/
 
-     If the UPC_EXEC_PREFIX env. variable is set, this value overrides
+     If the UPC_EXEC_PREFIX environment variable is set, this value overrides
      the compiled-in COMPILER_DIR setting. */
 
   GET_ENV_PATH_LIST (upc_exec_prefix, "UPC_EXEC_PREFIX");
@@ -552,7 +552,7 @@ main (int argc, char *argv[])
       if (!no_default_libs && lib_dir)
 	{
 	  const char *link_lib_dir = lib_dir;
-	  /* If we're building the development version of the upc
+	  /* If we're building the development version of the UPC
 	     driver ("xupc"), then we need to add the .libs suffix
 	     because that's where libtool hides libupc.a */
 	  if (is_dev_compiler)
@@ -577,7 +577,7 @@ main (int argc, char *argv[])
   exec_args[nargs++] = 0;
 
   /* The 'execv' prototype indicates that the strings
-     pointed to by the argument pointers are not const
+     pointed to by the argument pointers are not 'const'
      qualified.  Make a copy to be on the safe side.  */
   for (i = 0; i < nargs; ++i)
     {

@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Non-zero if the current compilation context is UPC */
 int compiling_upc;
 
-/* Non-zero if dwarf2 debugging info. should
+/* Non-zero if dwarf2 debugging information should
    encode UPC specific information. */
 int use_upc_dwarf2_extensions;
 
@@ -160,7 +160,7 @@ upc_init_options (unsigned int decoded_options_count,
   flag_upc = 1;
   flag_upc_threads = 0;
   flag_upc_pthreads = 0;
-  /* We begin in the state where we assume that we're compiling upc 
+  /* We begin in the state where we assume that we're compiling UPC 
      The 'compiling_upc' flag is queried when compiling for a
      pthreads environment to determine whether global static
      variables should be allocated to thread local storage. */
@@ -190,7 +190,7 @@ upc_get_alias_set (tree t)
   /* For the time being, make UPC pointers-to-shared conflict
      with everything else. Ideally, UPC pointers-to-shared should
      only conflict with the internal type used to represent
-     the UPC pointer-to-shared (i.e., upc_pts_rep_type_node) */
+     the UPC pointer-to-shared (i.e., upc_pts_rep_type_node).  */
 
   if (TYPE_P (t) ? (TREE_CODE (t) == POINTER_TYPE
 		    && upc_shared_type_p (TREE_TYPE (t)))

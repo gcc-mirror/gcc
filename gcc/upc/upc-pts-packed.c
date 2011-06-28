@@ -74,9 +74,9 @@ const upc_pts_ops_t upc_pts_packed_ops =
     upc_pts_packed_build_threadof
   };
 
-/*
- * Build the internal representation of UPC's UPC pointer-to-shared type.
- */
+/* Build the internal representation of UPC's packed
+   pointer-to-shared type.  */
+
 static void
 upc_pts_packed_init_type (void)
 {
@@ -106,7 +106,7 @@ upc_pts_packed_init_type (void)
 				integer_zero_node);
 }
 
-/* Called to expand a UPC specific constant into somethng the
+/* Called to expand a UPC specific constant into something the
    backend can handle.  Upon return a UPC pointer-to-shared will be
    seen as the representation type of a UPC pointer-to-shared, with
    individual (thread, phase, and virtual address) fields.  */
@@ -183,7 +183,7 @@ upc_pts_packed_build_value (location_t loc, tree type, tree vaddr,
   return result;
 }
 
-/* return TRUE if EXP is a null pointer to shared. */
+/* Return TRUE if EXP is a null UPC pointer-to-shared.  */
 
 static int
 upc_pts_packed_is_null_p (tree exp)
@@ -204,7 +204,7 @@ upc_pts_packed_is_null_p (tree exp)
   return 0;
 }
 
-/* Given, EXP, whose type must be the UPC UPC pointer-to-shared
+/* Given EXP, whose type must be the UPC pointer-to-shared
    representation type, isolate the virtual address field,
    and return it.  Caller must insure that EXP is a
    stable reference, if required.  */
@@ -222,7 +222,7 @@ upc_pts_packed_build_addrfield (location_t loc, tree exp)
   return vaddr;
 }
 
-/* Given, EXP, whose type must be the UPC UPC pointer-to-shared
+/* Given, EXP, whose type must be the UPC pointer-to-shared
    representation type, isolate the thread field,
    and return it.  Caller must insure that EXP is a
    stable reference, if required.  */
@@ -240,7 +240,7 @@ upc_pts_packed_build_threadof (location_t loc, tree exp)
   return affinity;
 }
 
-/* Given, EXP, whose type must be the UPC UPC pointer-to-shared
+/* Given, EXP, whose type must be the UPC pointer-to-shared
    representation type, isolate the phase field,
    and return it.  Caller must insure that EXP is a
    stable reference, if required.  */
@@ -257,6 +257,10 @@ upc_pts_packed_build_phaseof (location_t loc, tree exp)
   phase = fold_convert (sizetype, phase);
   return phase;
 }
+
+/* Rewrite EXP, an expression involving addition of an
+   integer to a UPC pointer-to-shared, into representation-specific
+   lower level operations.  */
 
 static tree
 upc_pts_packed_build_sum (location_t loc, tree exp)
@@ -388,6 +392,9 @@ upc_pts_packed_build_sum (location_t loc, tree exp)
   return result;
 }
 
+/* Expand the expression EXP, which calculates the difference
+   between two UPC pointers-to-shared.  */
+
 static tree
 upc_pts_packed_build_diff (location_t loc, tree exp)
 {
@@ -403,7 +410,7 @@ upc_pts_packed_build_diff (location_t loc, tree exp)
   tree off0, off1, offset_diff, elem_diff;
   tree result;
 
-  /* The two pointers must both point to shared objects, and we
+  /* The two pointers must both point to UPC shared objects, and we
      have to perform the reverse of addition on UPC pointers-to-shared */
 
   if ((upc_shared_type_p (target_type)
@@ -411,8 +418,8 @@ upc_pts_packed_build_diff (location_t loc, tree exp)
       || (upc_shared_type_p (TREE_TYPE (TREE_TYPE (op1)))
 	  && !upc_shared_type_p (target_type)))
     {
-      error ("Attempt to take the difference of shared"
-	     " and nonUPC pointers-to-shared");
+      error ("attempt to take the difference of a UPC pointer-to-shared "
+	 "and a local pointer");
       return error_mark_node;
     }
   op0 = save_expr (op0);
@@ -463,8 +470,8 @@ upc_pts_packed_build_diff (location_t loc, tree exp)
   return result;
 }
 
-/* Add OFFSET into the address field of pointer-to-shared, PTR.  */
-
+/* Return a tree that implements the Addition OFFSET into the address field
+   of the pointer-to-shared value, PTR.  */
 
 static tree
 upc_pts_packed_build_add_offset (location_t loc, tree ptr, tree offset)
@@ -486,8 +493,8 @@ upc_pts_packed_build_add_offset (location_t loc, tree ptr, tree offset)
   return result;
 }
 
-/* Handle conversions between pointers to shared objects and
-   local pointers, or between pointers to shared objects which
+/* Handle conversions between UPC pointers-to-shared and
+   local pointers, or between UPC pointers-to-shared which
    have differing block factors.  */
 
 static tree
@@ -535,7 +542,7 @@ upc_pts_packed_build_cvt (location_t loc, tree exp)
          shared types.  */
       tree s1 = TYPE_SIZE (tt1);
       tree s2 = TYPE_SIZE (tt2);
-      /* normalize blocksizes, so that [0] => NULL */
+      /* normalize block sizes, so that [0] => NULL */
       if (integer_zerop (b1))
 	b1 = NULL;
       if (integer_zerop (b2))
@@ -581,10 +588,14 @@ upc_pts_packed_build_cvt (location_t loc, tree exp)
   return result;
 }
 
-/* When a PTS is represented as (vaddr, thered, phase)
+/* Expand the expression EXP, which is a comparison between two
+   UPC pointers-to-shared.
+
+   When a UPC pointer-to-shared is represented as (vaddr, thread, phase)
    the comparison can be done all at once, when comparing
-   for equality.  For packed representation, we can
-   use a straight integer compare/extract.  */
+   for equality.  For the 'packed' representation, we can
+   use a straight integer comparison of the representation types.  */
+
 static tree
 upc_pts_packed_build_cond_expr (location_t loc, tree exp)
 {
