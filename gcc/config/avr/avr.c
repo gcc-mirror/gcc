@@ -169,8 +169,6 @@ static const struct attribute_spec avr_attribute_table[] =
 #define TARGET_ASM_INTEGER avr_assemble_integer
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START avr_file_start
-#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
-#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END avr_file_end
 
@@ -4897,99 +4895,6 @@ avr_asm_declare_function_name (FILE *file, const char *name, tree decl)
   ASM_OUTPUT_LABEL (file, name);
 }
 
-/* The routine used to output NUL terminated strings.  We use a special
-   version of this for most svr4 targets because doing so makes the
-   generated assembly code more compact (and thus faster to assemble)
-   as well as more readable, especially for targets like the i386
-   (where the only alternative is to output character sequences as
-   comma separated lists of numbers).  */
-
-void
-gas_output_limited_string(FILE *file, const char *str)
-{
-  const unsigned char *_limited_str = (const unsigned char *) str;
-  unsigned ch;
-  fprintf (file, "%s\"", STRING_ASM_OP);
-  for (; (ch = *_limited_str); _limited_str++)
-    {
-      int escape;
-      switch (escape = ESCAPES[ch])
-	{
-	case 0:
-	  putc (ch, file);
-	  break;
-	case 1:
-	  fprintf (file, "\\%03o", ch);
-	  break;
-	default:
-	  putc ('\\', file);
-	  putc (escape, file);
-	  break;
-	}
-    }
-  fprintf (file, "\"\n");
-}
-
-/* The routine used to output sequences of byte values.  We use a special
-   version of this for most svr4 targets because doing so makes the
-   generated assembly code more compact (and thus faster to assemble)
-   as well as more readable.  Note that if we find subparts of the
-   character sequence which end with NUL (and which are shorter than
-   STRING_LIMIT) we output those using ASM_OUTPUT_LIMITED_STRING.  */
-
-void
-gas_output_ascii(FILE *file, const char *str, size_t length)
-{
-  const unsigned char *_ascii_bytes = (const unsigned char *) str;
-  const unsigned char *limit = _ascii_bytes + length;
-  unsigned bytes_in_chunk = 0;
-  for (; _ascii_bytes < limit; _ascii_bytes++)
-    {
-      const unsigned char *p;
-      if (bytes_in_chunk >= 60)
-	{
-	  fprintf (file, "\"\n");
-	  bytes_in_chunk = 0;
-	}
-      for (p = _ascii_bytes; p < limit && *p != '\0'; p++)
-	continue;
-      if (p < limit && (p - _ascii_bytes) <= (signed)STRING_LIMIT)
-	{
-	  if (bytes_in_chunk > 0)
-	    {
-	      fprintf (file, "\"\n");
-	      bytes_in_chunk = 0;
-	    }
-	  gas_output_limited_string (file, (const char*)_ascii_bytes);
-	  _ascii_bytes = p;
-	}
-      else
-	{
-	  int escape;
-	  unsigned ch;
-	  if (bytes_in_chunk == 0)
-	    fprintf (file, "\t.ascii\t\"");
-	  switch (escape = ESCAPES[ch = *_ascii_bytes])
-	    {
-	    case 0:
-	      putc (ch, file);
-	      bytes_in_chunk++;
-	      break;
-	    case 1:
-	      fprintf (file, "\\%03o", ch);
-	      bytes_in_chunk += 4;
-	      break;
-	    default:
-	      putc ('\\', file);
-	      putc (escape, file);
-	      bytes_in_chunk += 2;
-	      break;
-	    }
-	}
-    }
-  if (bytes_in_chunk > 0)
-    fprintf (file, "\"\n");
-}
 
 /* Return value is nonzero if pseudos that have been
    assigned to registers of class CLASS would likely be spilled
@@ -5169,17 +5074,9 @@ avr_asm_output_aligned_decl_common (FILE * stream, const_tree decl ATTRIBUTE_UNU
   avr_need_clear_bss_p = true;
 
   if (local_p)
-    {
-      fputs ("\t.local\t", stream);
-      assemble_name (stream, name);
-      fputs ("\n", stream);
-    }
-  
-  fputs ("\t.comm\t", stream);
-  assemble_name (stream, name);
-  fprintf (stream,
-           "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",
-           size, align / BITS_PER_UNIT);
+    ASM_OUTPUT_ALIGNED_LOCAL (stream, name, size, align);
+  else
+    ASM_OUTPUT_ALIGNED_COMMON (stream, name, size, align);
 }
 
 
