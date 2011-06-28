@@ -1,3 +1,7 @@
+2011-06-28  Nick Clifton  <nickc@redhat.com>
+
+	* config.host: Recognize all V850 variants.
+
 2011-06-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* enable-execute-stack-empty.c (__enable_execute_stack): Add prototype.

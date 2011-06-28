@@ -143,6 +143,9 @@ s390*-*-*)
 sh[123456789lbe]*-*-*)
 	cpu_type=sh
 	;;
+v850*-*-*)
+	cpu_type=v850
+	;;
 esac
 
 # Common parts for widely ported systems.
@@ -645,11 +648,7 @@ sparc64-*-netbsd*)
 	;;
 spu-*-elf*)
 	;;
-v850e1-*-*)
-	;;
-v850e-*-*)
-	;;
-v850-*-*)
+v850*-*-*)
 	;;
 vax-*-linux*)
 	;;
