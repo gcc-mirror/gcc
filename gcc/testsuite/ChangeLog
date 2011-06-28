@@ -1,3 +1,11 @@
+2011-06-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	Backport from mainline
+	2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/48273
+	* g++.dg/opt/pr48273.C: New.
+
 2011-06-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49528

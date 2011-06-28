@@ -443,6 +443,14 @@ loop_outer (const struct loop *loop)
   return VEC_index (loop_p, loop->superloops, n - 1);
 }
 
+/* Returns true if LOOP has at least one exit edge.  */
+
+static inline bool
+loop_has_exit_edges (const struct loop *loop)
+{
+  return loop->exits->next->e != NULL;
+}
+
 /* Returns the list of loops in current_loops.  */
 
 static inline VEC (loop_p, gc) *

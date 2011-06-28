@@ -1,3 +1,15 @@
+2011-06-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	Backport from mainline
+	2011-04-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/48273
+	* cfgloop.h (loop_has_exit_edges): New helper.
+	* sel-sched-ir.c (init_global_and_expr_for_insn): Make CALLs
+	non-clonable.
+	* sel-sched.c (sel_setup_region_sched_flags): Don't pipeline loops
+	that have no exit edges.
+
 2011-06-28  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/47997

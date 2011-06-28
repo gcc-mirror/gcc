@@ -6778,7 +6778,8 @@ sel_setup_region_sched_flags (void)
   bookkeeping_p = 1;
   pipelining_p = (bookkeeping_p
                   && (flag_sel_sched_pipelining != 0)
-		  && current_loop_nest != NULL);
+		  && current_loop_nest != NULL
+		  && loop_has_exit_edges (current_loop_nest));
   max_insns_to_rename = PARAM_VALUE (PARAM_SELSCHED_INSNS_TO_RENAME);
   max_ws = MAX_WS;
 }

@@ -2904,6 +2904,7 @@ init_global_and_expr_for_insn (insn_t insn)
       if (CANT_MOVE (insn)
           || INSN_ASM_P (insn)
           || SCHED_GROUP_P (insn)
+	  || CALL_P (insn)
           /* Exception handling insns are always unique.  */
           || (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
           /* TRAP_IF though have an INSN code is control_flow_insn_p ().  */
