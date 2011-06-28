@@ -415,3 +415,11 @@ Emit profiling counter call at function entry before prologue.
 m8bit-idiv
 Target Report Mask(USE_8BIT_IDIV) Save
 Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check
+
+mavx256-split-unaligned-load
+Target Report Mask(AVX256_SPLIT_UNALIGNED_LOAD) Save
+Split 32-byte AVX unaligned load
+
+mavx256-split-unaligned-store
+Target Report Mask(AVX256_SPLIT_UNALIGNED_STORE) Save
+Split 32-byte AVX unaligned store

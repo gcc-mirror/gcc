@@ -3127,6 +3127,8 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-mvect8-ret-in-mem",		MASK_VECT8_RETURNS },
     { "-m8bit-idiv",			MASK_USE_8BIT_IDIV },
     { "-mvzeroupper",			MASK_VZEROUPPER },
+    { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD},
+    { "-mavx256-split-unaligned-stroe",	MASK_AVX256_SPLIT_UNALIGNED_STORE},
   };
 
   const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (flag_opts) + 6][2];
@@ -4272,11 +4274,18 @@ ix86_option_override_internal (bool main_args_p)
   if (TARGET_AVX)
     {
       /* When not optimize for size, enable vzeroupper optimization for
-	 TARGET_AVX with -fexpensive-optimizations.  */
-      if (!optimize_size
-	  && flag_expensive_optimizations
-	  && !(target_flags_explicit & MASK_VZEROUPPER))
-	target_flags |= MASK_VZEROUPPER;
+	 TARGET_AVX with -fexpensive-optimizations and split 32-byte
+	 AVX unaligned load/store.  */
+      if (!optimize_size)
+	{
+	  if (flag_expensive_optimizations
+	      && !(target_flags_explicit & MASK_VZEROUPPER))
+	    target_flags |= MASK_VZEROUPPER;
+	  if (!(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
+	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
+	  if (!(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
+	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
+	}
     }
   else 
     {
@@ -15591,6 +15600,57 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
   emit_insn (gen_rtx_SET (VOIDmode, op0, op1));
 }
 
+/* Split 32-byte AVX unaligned load and store if needed.  */
+
+static void
+ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
+{
+  rtx m;
+  rtx (*extract) (rtx, rtx, rtx);
+  rtx (*move_unaligned) (rtx, rtx);
+  enum machine_mode mode;
+
+  switch (GET_MODE (op0))
+    {
+    default:
+      gcc_unreachable ();
+    case V32QImode:
+      extract = gen_avx_vextractf128v32qi;
+      move_unaligned = gen_avx_movdqu256;
+      mode = V16QImode;
+      break;
+    case V8SFmode:
+      extract = gen_avx_vextractf128v8sf;
+      move_unaligned = gen_avx_movups256;
+      mode = V4SFmode;
+      break;
+    case V4DFmode:
+      extract = gen_avx_vextractf128v4df;
+      move_unaligned = gen_avx_movupd256;
+      mode = V2DFmode;
+      break;
+    }
+
+  if (MEM_P (op1) && TARGET_AVX256_SPLIT_UNALIGNED_LOAD)
+    {
+      rtx r = gen_reg_rtx (mode);
+      m = adjust_address (op1, mode, 0);
+      emit_move_insn (r, m);
+      m = adjust_address (op1, mode, 16);
+      r = gen_rtx_VEC_CONCAT (GET_MODE (op0), r, m);
+      emit_move_insn (op0, r);
+    }
+  else if (MEM_P (op0) && TARGET_AVX256_SPLIT_UNALIGNED_STORE)
+    {
+      m = adjust_address (op0, mode, 0);
+      emit_insn (extract (m, op1, const0_rtx));
+      m = adjust_address (op0, mode, 16);
+      emit_insn (extract (m, op1, const1_rtx));
+    }
+  else
+    emit_insn (move_unaligned (op0, op1));
+}
+
 /* Implement the movmisalign patterns for SSE.  Non-SSE modes go
    straight to ix86_expand_vector_move.  */
 /* Code generation for scalar reg-reg moves of single and double precision data:
@@ -15675,7 +15735,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	    case 32:
 	      op0 = gen_lowpart (V32QImode, op0);
 	      op1 = gen_lowpart (V32QImode, op1);
-	      emit_insn (gen_avx_movdqu256 (op0, op1));
+	      ix86_avx256_split_vector_move_misalign (op0, op1);
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -15691,7 +15751,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	      emit_insn (gen_avx_movups (op0, op1));
 	      break;
 	    case V8SFmode:
-	      emit_insn (gen_avx_movups256 (op0, op1));
+	      ix86_avx256_split_vector_move_misalign (op0, op1);
 	      break;
 	    case V2DFmode:
 	      if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
@@ -15704,7 +15764,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	      emit_insn (gen_avx_movupd (op0, op1));
 	      break;
 	    case V4DFmode:
-	      emit_insn (gen_avx_movupd256 (op0, op1));
+	      ix86_avx256_split_vector_move_misalign (op0, op1);
 	      break;
 	    default:
 	      gcc_unreachable ();

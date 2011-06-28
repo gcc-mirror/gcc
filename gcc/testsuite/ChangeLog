@@ -1,3 +1,22 @@
+2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
+	Backport from mainline
+	2011-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/avx256-unaligned-load-1.c: New.
+	* gcc.target/i386/avx256-unaligned-load-2.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-load-3.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-load-4.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-load-5.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-load-6.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-load-7.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-4.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-5.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-6.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-7.c: Likewise.
+
 2011-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt17.ad[sb]: New test.

@@ -1,3 +1,28 @@
+2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
+	Backport from mainline
+	2011-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (flag_opts): Add -mavx256-split-unaligned-load
+	and -mavx256-split-unaligned-store.
+	(ix86_option_override_internal): Split 32-byte AVX unaligned
+	load/store by default.
+	(ix86_avx256_split_vector_move_misalign): New.
+	(ix86_expand_vector_move_misalign): Use it.
+
+	* config/i386/i386.opt: Add -mavx256-split-unaligned-load and
+	-mavx256-split-unaligned-store.
+
+	* config/i386/sse.md (*avx_mov<mode>_internal): Verify unaligned
+	256bit load/store.  Generate unaligned store on misaligned memory
+	operand.
+	(*avx_movu<ssemodesuffix><avxmodesuffix>): Verify unaligned
+	256bit load/store.
+	(*avx_movdqu<avxmodesuffix>): Likewise.
+
+	* doc/invoke.texi: Document -mavx256-split-unaligned-load and
+	-mavx256-split-unaligned-store.
+	
+
 2011-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-dom.c (initialize_hash_element): Fix oversight.

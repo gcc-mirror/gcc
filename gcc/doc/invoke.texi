@@ -611,7 +611,8 @@ Objective-C and Objective-C++ Dialects}.
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} -mabi=@var{name} @gol
 -m32  -m64 -mlarge-data-threshold=@var{num} @gol
--msse2avx -mfentry -m8bit-idiv}
+-msse2avx -mfentry -m8bit-idiv @gol
+-mavx256-split-unaligned-load -mavx256-split-unaligned-store}
 
 @emph{i386 and x86-64 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll
@@ -12768,6 +12769,12 @@ much faster than 32bit/64bit integer divide.  This option will generate a
 runt-time check.  If both dividend and divisor are within range of 0
 to 255, 8bit unsigned integer divide will be used instead of
 32bit/64bit integer divide.
+
+@item -mavx256-split-unaligned-load
+@item -mavx256-split-unaligned-store
+@opindex avx256-split-unaligned-load
+@opindex avx256-split-unaligned-store
+Split 32-byte AVX unaligned load and store.
 
 @end table
 
