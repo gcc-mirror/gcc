@@ -1,6 +1,6 @@
 /* Compilation switch flag definitions for GCC.
    Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -33,13 +33,6 @@ extern const char *const debug_type_names[];
 
 extern void strip_off_ending (char *, int);
 extern int base_of_path (const char *path, const char **base_out);
-
-/* True if this is the LTO front end (lto1).  This is used to disable
-   gimple generation and lowering passes that are normally run on the
-   output of a front end.  These passes must be bypassed for lto since
-   they have already been done before the gimple was written.  */
-
-extern bool in_lto_p;
 
 /* Return true iff flags are set as if -ffast-math.  */
 extern bool fast_math_flags_set_p (const struct gcc_options *);

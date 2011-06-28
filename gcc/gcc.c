@@ -43,6 +43,7 @@ compilation is specified by a string called a "spec".  */
 #include "diagnostic.h"
 #include "flags.h"
 #include "opts.h"
+#include "params.h"
 #include "vec.h"
 #include "filenames.h"
 
@@ -3532,9 +3533,13 @@ set_option_handlers (struct cl_option_handlers *handlers)
   handlers->unknown_option_callback = driver_unknown_option_callback;
   handlers->wrong_lang_callback = driver_wrong_lang_callback;
   handlers->post_handling_callback = driver_post_handling_callback;
-  handlers->num_handlers = 1;
+  handlers->num_handlers = 3;
   handlers->handlers[0].handler = driver_handle_option;
   handlers->handlers[0].mask = CL_DRIVER;
+  handlers->handlers[1].handler = common_handle_option;
+  handlers->handlers[1].mask = CL_COMMON;
+  handlers->handlers[2].handler = target_handle_option;
+  handlers->handlers[2].mask = CL_TARGET;
 }
 
 /* Create the vector `switches' and its contents.
@@ -6156,7 +6161,11 @@ main (int argc, char **argv)
   if (argv != old_argv)
     at_file_supplied = true;
 
-  global_options = global_options_init;
+  /* Register the language-independent parameters.  */
+  global_init_params ();
+  finish_params ();
+
+  init_options_struct (&global_options, &global_options_set);
 
   decode_cmdline_options_to_array (argc, CONST_CAST2 (const char **, char **,
 						      argv),

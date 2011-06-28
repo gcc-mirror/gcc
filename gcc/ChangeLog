@@ -1,3 +1,23 @@
+2011-06-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (in_lto_p): New Variable entry.
+	* flags.h (in_lto_p): Move to common.opt.
+	* gcc.c: Include params.h.
+	(set_option_handlers): Also use common_handle_option and
+	target_handle_option.
+	(main): Call global_init_params, finish_params and
+	init_options_struct.
+	* opts.c (debug_type_names): Move from toplev.c.
+	(print_filtered_help): Access quiet_flag through opts pointer.
+	(common_handle_option): Return early in the driver for some
+	options.  Access in_lto_p, dwarf_version and
+	warn_maybe_uninitialized through opts pointer.
+	* toplev.c (in_lto_p): Move to common.opt.
+	(debug_type_names): Move to opts.c.
+	* Makefile.in (OBJS): Remove opts.o.
+	(OBJS-libcommon-target): Add opts.o.
+	(gcc.o): Update dependencies.
+
 2011-06-28  Kai Tietz  <ktietz@redhat.com>
 
 	* tree-ssa-forwprop.c (simplify_bitwise_binary): Improve
