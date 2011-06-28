@@ -1354,7 +1354,6 @@ OBJS = \
 	optabs.o \
 	options-save.o \
 	opts-global.o \
-	opts.o \
 	passes.o \
 	plugin.o \
 	pointer-set.o \
@@ -1504,7 +1503,7 @@ OBJS-libcommon = diagnostic.o pretty-print.o intl.o input.o version.o
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
-	opts-common.o options.o vec.o hooks.o common/common-targhooks.o
+	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o
 
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(C_OBJS) \
@@ -2260,7 +2259,7 @@ DRIVER_DEFINES = \
 
 gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h multilib.h \
     Makefile $(lang_specs_files) specs.h prefix.h $(GCC_H) $(FLAGS_H) \
-    configargs.h $(OBSTACK_H) $(OPTS_H) $(DIAGNOSTIC_H) $(VEC_H)
+    configargs.h $(OBSTACK_H) $(OPTS_H) $(DIAGNOSTIC_H) $(VEC_H) $(PARAMS_H)
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
