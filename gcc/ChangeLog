@@ -1,4 +1,9 @@
+2011-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-dom.c (initialize_hash_element): Fix oversight.
+
 2011-06-28  Andrey Belevantsev  <abel@ispras.ru>
+
 	Backport from mainline
 	2011-05-25  Andrey Belevantsev  <abel@ispras.ru>
 

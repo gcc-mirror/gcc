@@ -214,6 +214,7 @@ initialize_hash_element (gimple stmt, tree lhs,
         {
         case GIMPLE_SINGLE_RHS:
 	  expr->kind = EXPR_SINGLE;
+	  expr->type = TREE_TYPE (gimple_assign_lhs (stmt));
 	  expr->ops.single.rhs = gimple_assign_rhs1 (stmt);
 	  break;
         case GIMPLE_UNARY_RHS:
