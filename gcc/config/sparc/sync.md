@@ -30,15 +30,20 @@
 {
   operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
   MEM_VOLATILE_P (operands[0]) = 1;
-
 })
 
-(define_insn "*stbar"
+;; In V8, loads are blocking and ordered wrt earlier loads, i.e. every load
+;; is virtually followed by a load barrier (membar #LoadStore | #LoadLoad).
+;; In PSO, stbar orders the stores (membar #StoreStore).
+;; In TSO, ldstub orders the stores wrt subsequent loads (membar #StoreLoad).
+;; The combination of the three yields a full memory barrier in all cases.
+(define_insn "*membar_v8"
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0)] UNSPEC_MEMBAR))]
   "TARGET_V8"
-  "stbar"
-  [(set_attr "type" "multi")])
+  "stbar\n\tldstub\t[%%sp-1], %%g0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "2")])
 
 ;; membar #StoreStore | #LoadStore | #StoreLoad | #LoadLoad
 (define_insn "*membar"
