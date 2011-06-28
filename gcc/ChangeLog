@@ -1,3 +1,7 @@
+2011-06-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-dom.c (initialize_hash_element): Fix oversight.
+
 2011-06-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/sol2-64.h (TARGET_DEFAULT): Remove.
@@ -122,8 +126,8 @@
 
 2011-06-27  Jan Hubicka  <jh@suse.cz>
 
-	* ipa.c (cgraph_address_taken_from_non_vtable_p): Walk references of node
-	instead of references in node.
+	* ipa.c (cgraph_address_taken_from_non_vtable_p): Walk references of
+	node instead of references in node.
 
 2011-06-27  Richard Henderson  <rth@redhat.com>
 
@@ -359,13 +363,14 @@
 	PR tree-optimize/49373
 	* tree-pass.h (all_late_ipa_passes): Declare.
 	* cgraphunit.c (init_lowered_empty_function): Fix properties.
-	(cgraph_optimize): Execute late passes; remove unreachable funcions after
-	materialization.
-	* ipa-inline.c (gate_ipa_inline): Enable only when optimizing or LTOing.
+	(cgraph_optimize): Execute late passes; remove unreachable funcions
+	after materialization.
+	* ipa-inline.c (gate_ipa_inline): Enable only when optimizing or
+	LTOing.
 	* passes.c (all_late_ipa_passes): Declare.
 	(dump_passes, register_pass): Handle late ipa passes.
-	(init_optimization_passes): Move ipa_pta to late passes; schedule fixup_cfg
-	at beggining of all_passes.
+	(init_optimization_passes): Move ipa_pta to late passes; schedule
+	fixup_cfg at beggining of all_passes.
 	(apply_ipa_transforms): New function.
 	(execute_one_pass): When doing simple ipa pass, apply all transforms.
 
