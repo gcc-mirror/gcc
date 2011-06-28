@@ -1,5 +1,12 @@
 2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
 	Backport from mainline
+	2011-03-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (flag_opts): Fix a typo in
+	-mavx256-split-unaligned-store.
+
+2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
+	Backport from mainline
 	2011-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (*avx_mov<mode>_internal): Don't assert
