@@ -1,3 +1,14 @@
+2011-06-28  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/vfp-ldmdbs.c: Skip for soft float.
+	* gcc.target/arm/vfp-ldmias.c: Likewise.
+	* gcc.target/arm/vfp-ldmdbd.c: Likewise.
+	* gcc.target/arm/vfp-stmdbs.c: Likewise.
+	* gcc.target/arm/vfp-ldmiad.c: Likewise.
+	* gcc.target/arm/vfp-stmias.c: Likewise.
+	* gcc.target/arm/vfp-stmdbd.c: Likewise.
+	* gcc.target/arm/vfp-stmiad.c: Likewise.
+
 2011-06-27  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr45701-1.c: Don't specify -march; remove
