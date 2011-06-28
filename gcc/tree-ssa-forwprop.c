@@ -1676,16 +1676,39 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 	}
     }
 
+  /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST)).  */
+  if (TREE_CODE (arg2) == INTEGER_CST
+      && CONVERT_EXPR_CODE_P (def1_code)
+      && INTEGRAL_TYPE_P (def1_arg1)
+      && int_fits_type_p (arg2, TREE_TYPE (def1_arg1)))
+    {
+      gimple newop;
+      tree tem = create_tmp_reg (TREE_TYPE (def1_arg1), NULL);
+      newop =
+        gimple_build_assign_with_ops (code, tem, def1_arg1,
+				      fold_convert_loc (gimple_location (stmt),
+							TREE_TYPE (def1_arg1),
+							arg2));
+      tem = make_ssa_name (tem, newop);
+      gimple_assign_set_lhs (newop, tem);
+      gsi_insert_before (gsi, newop, GSI_SAME_STMT);
+      gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
+					tem, NULL_TREE, NULL_TREE);
+      update_stmt (gsi_stmt (*gsi));
+      return true;
+    }
+
   /* For bitwise binary operations apply operand conversions to the
      binary operation result instead of to the operands.  This allows
      to combine successive conversions and bitwise binary operations.  */
   if (CONVERT_EXPR_CODE_P (def1_code)
       && CONVERT_EXPR_CODE_P (def2_code)
       && types_compatible_p (TREE_TYPE (def1_arg1), TREE_TYPE (def2_arg1))
-      /* Make sure that the conversion widens the operands or that it
-	 changes the operation to a bitfield precision.  */
+      /* Make sure that the conversion widens the operands, or has same
+	 precision,  or that it changes the operation to a bitfield
+	 precision.  */
       && ((TYPE_PRECISION (TREE_TYPE (def1_arg1))
-	   < TYPE_PRECISION (TREE_TYPE (arg1)))
+	   <= TYPE_PRECISION (TREE_TYPE (arg1)))
 	  || (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (arg1)))
 	      != MODE_INT)
 	  || (TYPE_PRECISION (TREE_TYPE (arg1))
