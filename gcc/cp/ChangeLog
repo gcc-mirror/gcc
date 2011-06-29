@@ -1,5 +1,8 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	* method.c (maybe_explain_implicit_delete): Use pointer_set
+	instead of htab.
+
 	* class.c (finalize_literal_type_property): Update conditions.
 	* method.c (defaulted_late_check): Set TYPE_HAS_CONSTEXPR_CTOR.
 

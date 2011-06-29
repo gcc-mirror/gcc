@@ -1320,21 +1320,17 @@ maybe_explain_implicit_delete (tree decl)
   if (DECL_DEFAULTED_FN (decl))
     {
       /* Not marked GTY; it doesn't need to be GC'd or written to PCH.  */
-      static htab_t explained_htab;
-      void **slot;
+      static struct pointer_set_t *explained;
 
       special_function_kind sfk;
       location_t loc;
       bool informed;
       tree ctype;
 
-      if (!explained_htab)
-	explained_htab = htab_create (37, htab_hash_pointer,
-				      htab_eq_pointer, NULL);
-      slot = htab_find_slot (explained_htab, decl, INSERT);
-      if (*slot)
+      if (!explained)
+	explained = pointer_set_create ();
+      if (pointer_set_insert (explained, decl))
 	return true;
-      *slot = decl;
 
       sfk = special_function_p (decl);
       ctype = DECL_CONTEXT (decl);
