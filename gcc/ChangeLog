@@ -1,3 +1,11 @@
+2011-06-29  Richard Guenther  <rguenther@suse.de>
+
+	* doc/invoke.texi: Document -scev dump modifier.
+	* tree-pass.h (TDF_SCEV): New dump flag.
+	* tree-dump.c (dump_option_value_in): Add scev.
+	* tree-chrec.c: Replace all TDF_DETAILS checks with TDF_SCEV.
+	* tree-scalar-evolution.c: Likewise.
+
 2011-06-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/arm/unwind-arm.c (enum __cxa_type_match_result): New.
