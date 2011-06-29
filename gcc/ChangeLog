@@ -1,3 +1,11 @@
+2011-06-29  Harsha Jagasia <harsha.jagasia@amd.com>
+
+	Backport from mainline
+	2011-05-31  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/i386/i386.c (ix86_rtx_costs): Drop NEG from sub for FMA.
+	* config/i386/sse.md: Add n to negated FMA pattern names.
+
 2011-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/49539

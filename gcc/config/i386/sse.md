@@ -2130,7 +2130,7 @@
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*fma_fmadd_<mode>"
+(define_insn "*fma_fnmadd_<mode>"
   [(set (match_operand:FMAMODE 0 "register_operand" "=x,x,x")
 	(fma:FMAMODE
 	  (neg:FMAMODE
@@ -2145,7 +2145,7 @@
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*fma_fmsub_<mode>"
+(define_insn "*fma_fnmsub_<mode>"
   [(set (match_operand:FMAMODE 0 "register_operand" "=x,x,x")
 	(fma:FMAMODE
 	  (neg:FMAMODE
