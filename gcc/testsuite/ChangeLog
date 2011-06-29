@@ -1,5 +1,10 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49216
+	* g++.dg/cpp0x/initlist53.C: Use placement new.
+	* g++.dg/cpp0x/initlist-value.C: Use placement new.
+	* g++.old-deja/g++.ext/arrnew2.C: Remove xfail.
+
 	PR c++/49003
 	* g++.dg/cpp0x/trailing6.C: New.
 	* g++.dg/cpp0x/pr45908.C: No error.
