@@ -1,5 +1,8 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	* class.c (finalize_literal_type_property): Update conditions.
+	* method.c (defaulted_late_check): Set TYPE_HAS_CONSTEXPR_CTOR.
+
 	* tree.c (build_vec_init_expr): Don't add TARGET_EXPR.
 	* typeck2.c (digest_init_r): Handle VEC_INIT_EXPR.
 	* semantics.c (cxx_eval_vec_init_1): Correct type.
