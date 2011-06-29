@@ -1,5 +1,7 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/initlist-value2.C: New.
+
 	* g++.dg/cpp0x/constexpr-initlist4.C: New.
 	* g++.dg/cpp0x/initlist-value.C: New.
 

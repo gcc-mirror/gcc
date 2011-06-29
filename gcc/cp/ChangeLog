@@ -1,5 +1,9 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	* init.c (build_value_init): Decide whether or not to zero-initialize
+	based on user-providedness of default ctor, not any ctor.
+	(build_value_init_noctor): Adjust assert.
+
 	DR 990
 	* call.c (convert_like_real) [ck_user]: Handle value-initialization.
 	(build_new_method_call_1): Likewise.
