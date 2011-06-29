@@ -1,5 +1,9 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49216
+	* init.c (build_new_1): Pass {} down to build_vec_init.
+	(build_vec_init): Handle it.
+
 	DR 1207
 	PR c++/49003
 	* cp-tree.h (struct saved_scope): Add x_current_class_ptr,

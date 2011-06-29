@@ -2396,24 +2396,31 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	      && BRACE_ENCLOSED_INITIALIZER_P (VEC_index (tree, *init, 0))
 	      && CONSTRUCTOR_IS_DIRECT_INIT (VEC_index (tree, *init, 0)))
 	    {
-	      tree arraytype, domain;
 	      vecinit = VEC_index (tree, *init, 0);
-	      if (TREE_CONSTANT (nelts))
-		domain = compute_array_index_type (NULL_TREE, nelts, complain);
+	      if (CONSTRUCTOR_NELTS (vecinit) == 0)
+		/* List-value-initialization, leave it alone.  */;
 	      else
 		{
-		  domain = NULL_TREE;
-		  if (CONSTRUCTOR_NELTS (vecinit) > 0)
-		    warning (0, "non-constant array size in new, unable to "
-			     "verify length of initializer-list");
+		  tree arraytype, domain;
+		  if (TREE_CONSTANT (nelts))
+		    domain = compute_array_index_type (NULL_TREE, nelts,
+						       complain);
+		  else
+		    {
+		      domain = NULL_TREE;
+		      if (CONSTRUCTOR_NELTS (vecinit) > 0)
+			warning (0, "non-constant array size in new, unable "
+				 "to verify length of initializer-list");
+		    }
+		  arraytype = build_cplus_array_type (type, domain);
+		  vecinit = digest_init (arraytype, vecinit, complain);
 		}
-	      arraytype = build_cplus_array_type (type, domain);
-	      vecinit = digest_init (arraytype, vecinit, complain);
 	    }
 	  else if (*init)
             {
               if (complain & tf_error)
-                permerror (input_location, "ISO C++ forbids initialization in array new");
+                permerror (input_location,
+			   "parenthesized initializer in array new");
               else
                 return error_mark_node;
 	      vecinit = build_tree_list_vec (*init);
@@ -3090,9 +3097,23 @@ build_vec_init (tree base, tree maxindex, tree init,
       try_block = begin_try_block ();
     }
 
+  /* If the initializer is {}, then all elements are initialized from {}.
+     But for non-classes, that's the same as value-initialization.  */
+  if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
+      && CONSTRUCTOR_NELTS (init) == 0)
+    {
+      if (CLASS_TYPE_P (type))
+	/* Leave init alone.  */;
+      else
+	{
+	  init = NULL_TREE;
+	  explicit_value_init_p = true;
+	}
+    }
+
   /* Maybe pull out constant value when from_array? */
 
-  if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR)
+  else if (init != NULL_TREE && TREE_CODE (init) == CONSTRUCTOR)
     {
       /* Do non-default initialization of non-trivial arrays resulting from
 	 brace-enclosed initializers.  */
@@ -3210,7 +3231,7 @@ build_vec_init (tree base, tree maxindex, tree init,
      We do need to keep going if we're copying an array.  */
 
   if (from_array
-      || ((type_build_ctor_call (type) || explicit_value_init_p)
+      || ((type_build_ctor_call (type) || init || explicit_value_init_p)
 	  && ! (host_integerp (maxindex, 0)
 		&& (num_initialized_elts
 		    == tree_low_cst (maxindex, 0) + 1))))
@@ -3276,8 +3297,16 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
       else
 	{
-	  gcc_assert (type_build_ctor_call (type));
-	  elt_init = build_aggr_init (to, init, 0, complain);
+	  gcc_assert (type_build_ctor_call (type) || init);
+	  if (CLASS_TYPE_P (type))
+	    elt_init = build_aggr_init (to, init, 0, complain);
+	  else
+	    {
+	      if (TREE_CODE (init) == TREE_LIST)
+		init = build_x_compound_expr_from_list (init, ELK_INIT,
+							complain);
+	      elt_init = build2 (INIT_EXPR, type, to, init);
+	    }
 	}
 
       if (elt_init == error_mark_node)

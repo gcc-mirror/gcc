@@ -4,6 +4,7 @@
 
 #include <initializer_list>
 extern "C" void abort();
+void * operator new[] (__SIZE_TYPE__, void *p) { return p; }
 
 bool constructed;
 
@@ -14,7 +15,8 @@ struct A
 
 int main() {
   new A[1]{};
-  int *p = new int[1]{};
+  int space[1] = { 42 };
+  int *p = new (space) int[1]{};
   if (p[0] != 0 || !constructed)
     abort();
 }
