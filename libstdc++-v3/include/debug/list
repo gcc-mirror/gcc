@@ -45,7 +45,6 @@ namespace __debug
       public __gnu_debug::_Safe_sequence<list<_Tp, _Allocator> >
     {
       typedef _GLIBCXX_STD_C::list<_Tp, _Allocator> _Base;
-      typedef __gnu_debug::_Safe_sequence<list>  _Safe_base;
 
       typedef typename _Base::iterator       _Base_iterator;
       typedef typename _Base::const_iterator _Base_const_iterator;
@@ -100,19 +99,19 @@ namespace __debug
 
 
       list(const list& __x)
-      : _Base(__x), _Safe_base() { }
+      : _Base(__x) { }
 
       list(const _Base& __x)
-      : _Base(__x), _Safe_base() { }
+      : _Base(__x) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       list(list&& __x) noexcept
-      : _Base(std::move(__x)), _Safe_base()
+      : _Base(std::move(__x))
       { this->_M_swap(__x); }
 
       list(initializer_list<value_type> __l,
            const allocator_type& __a = allocator_type())
-        : _Base(__l, __a), _Safe_base() { }
+        : _Base(__l, __a) { }
 #endif
 
       ~list() _GLIBCXX_NOEXCEPT { }
@@ -395,7 +394,7 @@ namespace __debug
       insert(iterator __p, initializer_list<value_type> __l)
       {
 	__glibcxx_check_insert(__p);
-	_Base::insert(__p, __l);
+	_Base::insert(__p.base(), __l);
       }
 #endif
 

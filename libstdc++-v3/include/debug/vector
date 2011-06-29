@@ -47,7 +47,6 @@ namespace __debug
       public __gnu_debug::_Safe_sequence<vector<_Tp, _Allocator> >
     {
       typedef _GLIBCXX_STD_C::vector<_Tp, _Allocator> _Base;
-      typedef __gnu_debug::_Safe_sequence<vector>              _Safe_base;
 
       typedef typename _Base::iterator _Base_iterator;
       typedef typename _Base::const_iterator _Base_const_iterator;
@@ -102,15 +101,15 @@ namespace __debug
         { _M_update_guaranteed_capacity(); }
 
       vector(const vector& __x)
-      : _Base(__x), _Safe_base(), _M_guaranteed_capacity(__x.size()) { }
+      : _Base(__x), _M_guaranteed_capacity(__x.size()) { }
 
       /// Construction from a release-mode vector
       vector(const _Base& __x)
-      : _Base(__x), _Safe_base(), _M_guaranteed_capacity(__x.size()) { }
+      : _Base(__x), _M_guaranteed_capacity(__x.size()) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       vector(vector&& __x) noexcept
-      : _Base(std::move(__x)), _Safe_base(),
+      : _Base(std::move(__x)),
 	_M_guaranteed_capacity(this->size())
       {
 	this->_M_swap(__x);
@@ -119,7 +118,7 @@ namespace __debug
 
       vector(initializer_list<value_type> __l,
 	     const allocator_type& __a = allocator_type())
-      : _Base(__l, __a), _Safe_base(),
+      : _Base(__l, __a),
 	_M_guaranteed_capacity(__l.size()) { }
 #endif
 
