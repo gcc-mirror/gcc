@@ -14762,7 +14762,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
-      gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
+      if (GET_MODE_CLASS (mode) != MODE_INT)
+	break;
       op0 = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (XEXP (rtl, 0)),
 				mem_mode, VAR_INIT_STATUS_INITIALIZED);
       if (op0 == 0)
