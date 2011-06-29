@@ -1,5 +1,9 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (build_vec_init_expr): Don't add TARGET_EXPR.
+	* typeck2.c (digest_init_r): Handle VEC_INIT_EXPR.
+	* semantics.c (cxx_eval_vec_init_1): Correct type.
+
 	* init.c (build_value_init): Decide whether or not to zero-initialize
 	based on user-providedness of default ctor, not any ctor.
 	(build_value_init_noctor): Adjust assert.
