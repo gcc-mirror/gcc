@@ -4566,12 +4566,10 @@ finalize_literal_type_property (tree t)
   tree fn;
 
   if (cxx_dialect < cxx0x
-      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
-      /* FIXME These constraints seem unnecessary; remove from standard.
-	 || !TYPE_HAS_TRIVIAL_COPY_CTOR (t)
-	 || TYPE_HAS_COMPLEX_MOVE_CTOR (t)*/ )
+      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
+	   && CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
 
