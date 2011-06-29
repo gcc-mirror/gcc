@@ -1443,6 +1443,17 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
   tree rval;
   VEC(tree,gc) *parms;
 
+  /* If we have direct-initialization from an initializer list, pull
+     it out of the TREE_LIST so the code below can see it.  */
+  if (init && TREE_CODE (init) == TREE_LIST
+      && BRACE_ENCLOSED_INITIALIZER_P (TREE_VALUE (init))
+      && CONSTRUCTOR_IS_DIRECT_INIT (TREE_VALUE (init)))
+    {
+      gcc_checking_assert ((flags & LOOKUP_ONLYCONVERTING) == 0
+			   && TREE_CHAIN (init) == NULL_TREE);
+      init = TREE_VALUE (init);
+    }
+
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CP_AGGREGATE_TYPE_P (type))
     {
