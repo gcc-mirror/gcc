@@ -1,5 +1,15 @@
 2011-06-29  Georg-Johann Lay  <avr@gjlay.de>
 	
+	PR target/34734
+	* config/avr/avr.c (avr_handle_progmem_attribute): Move warning 
+	about uninitialized data attributed 'progmem' from here...
+	(avr_encode_section_info): ...to this new function.
+	(TARGET_ENCODE_SECTION_INFO): New define.
+	(avr_section_type_flags): For data in ".progmem.data", remove
+	section flag SECTION_WRITE.
+
+2011-06-29  Georg-Johann Lay  <avr@gjlay.de>
+	
 	* config/avr/t-avr (LIB1ASMFUNCS): Add _mulhisi3, _umulhisi3,
 	_xmulhisi3_exit.
 	* config/avr/libgcc.S (_xmulhisi3_exit): New Function.
