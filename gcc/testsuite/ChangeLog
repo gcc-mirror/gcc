@@ -1,5 +1,14 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45923
+	* g++.dg/cpp0x/constexpr-diag3.C: New.
+	* g++.dg/cpp0x/constexpr-diag1.C: Adjust error message.
+	* g++.dg/cpp0x/constexpr-ex1.C: Adjust error message.
+	* g++.dg/cpp0x/constexpr-friend.C: Adjust error message.
+	* g++.dg/cpp0x/constexpr-incomplete2.C: Adjust error message.
+
+2011-06-29  Jason Merrill  <jason@redhat.com>
+
 	* g++.dg/cpp0x/constexpr-is_literal.C: Adjust.
 
 2011-06-29  Richard Guenther  <rguenther@suse.de>

@@ -1,5 +1,25 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45923
+	* class.c (explain_non_literal_class): New.
+	(finalize_literal_type_property): Call it.
+	* cp-tree.h: Declare it.
+	* semantics.c (ensure_literal_type_for_constexpr_object): Call it.
+	(is_valid_constexpr_fn): Likewise.
+	(massage_constexpr_body): Split out from...
+	(register_constexpr_fundef): ...here.
+	(is_instantiation_of_constexpr): New.
+	(expand_or_defer_fn_1): Leave DECL_SAVED_TREE alone in that case.
+	(explain_invalid_constexpr_fn): New.
+	(cxx_eval_call_expression): Call it.
+	(potential_constant_expression_1): Likewise.  Avoid redundant errors.
+	* method.c (process_subob_fn): Diagnose non-constexpr.
+	(walk_field_subobs): Likewise.
+	(synthesized_method_walk): Don't shortcut if we want diagnostics.
+	(explain_implicit_non_constexpr): New.
+	(defaulted_late_check): Use it.
+	* call.c (build_cxx_call): Remember location.
+
 	* method.c (maybe_explain_implicit_delete): Use pointer_set
 	instead of htab.
 

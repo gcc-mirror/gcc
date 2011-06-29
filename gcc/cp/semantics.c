@@ -3538,6 +3538,17 @@ emit_associated_thunks (tree fn)
     }
 }
 
+/* Returns true iff FUN is an instantiation of a constexpr function
+   template.  */
+
+static inline bool
+is_instantiation_of_constexpr (tree fun)
+{
+  return (DECL_TEMPLATE_INFO (fun)
+	  && DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT
+					(DECL_TI_TEMPLATE (fun))));
+}
+
 /* Generate RTL for FN.  */
 
 bool
@@ -3567,7 +3578,10 @@ expand_or_defer_fn_1 (tree fn)
       /* We don't want to process FN again, so pretend we've written
 	 it out, even though we haven't.  */
       TREE_ASM_WRITTEN (fn) = 1;
-      DECL_SAVED_TREE (fn) = NULL_TREE;
+      /* If this is an instantiation of a constexpr function, keep
+	 DECL_SAVED_TREE for explain_invalid_constexpr_fn.  */
+      if (!is_instantiation_of_constexpr (fn))
+	DECL_SAVED_TREE (fn) = NULL_TREE;
       return false;
     }
 
@@ -5299,6 +5313,7 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	{
 	  error ("the type %qT of constexpr variable %qD is not literal",
 		 type, decl);
+	  explain_non_literal_class (type);
 	  return NULL;
 	}
     }
@@ -5365,8 +5380,11 @@ is_valid_constexpr_fn (tree fun, bool complain)
       {
 	ret = false;
 	if (complain)
-	  error ("invalid type for parameter %d of constexpr "
-		 "function %q+#D", DECL_PARM_INDEX (parm), fun);
+	  {
+	    error ("invalid type for parameter %d of constexpr "
+		   "function %q+#D", DECL_PARM_INDEX (parm), fun);
+	    explain_non_literal_class (TREE_TYPE (parm));
+	  }
       }
 
   if (!DECL_CONSTRUCTOR_P (fun))
@@ -5376,8 +5394,11 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	{
 	  ret = false;
 	  if (complain)
-	    error ("invalid return type %qT of constexpr function %q+D",
-		   rettype, fun);
+	    {
+	      error ("invalid return type %qT of constexpr function %q+D",
+		     rettype, fun);
+	      explain_non_literal_class (rettype);
+	    }
 	}
 
       /* Check this again here for cxx_eval_call_expression.  */
@@ -5386,7 +5407,11 @@ is_valid_constexpr_fn (tree fun, bool complain)
 	{
 	  ret = false;
 	  if (complain)
-	    error ("enclosing class of %q+#D is not a literal type", fun);
+	    {
+	      error ("enclosing class of constexpr non-static member "
+		     "function %q+#D is not a literal type", fun);
+	      explain_non_literal_class (DECL_CONTEXT (fun));
+	    }
 	}
     }
 
@@ -5640,18 +5665,13 @@ constexpr_fn_retval (tree body)
     }
 }
 
-/* We are processing the definition of the constexpr function FUN.
-   Check that its BODY fulfills the propriate requirements and
-   enter it in the constexpr function definition table.
-   For constructor BODY is actually the TREE_LIST of the
-   member-initializer list.  */
+/* Subroutine of register_constexpr_fundef.  BODY is the DECL_SAVED_TREE of
+   FUN; do the necessary transformations to turn it into a single expression
+   that we can store in the hash table.  */
 
-tree
-register_constexpr_fundef (tree fun, tree body)
+static tree
+massage_constexpr_body (tree fun, tree body)
 {
-  constexpr_fundef entry;
-  constexpr_fundef **slot;
-
   if (DECL_CONSTRUCTOR_P (fun))
     body = build_constexpr_constructor_member_initializers
       (DECL_CONTEXT (fun), body);
@@ -5666,12 +5686,28 @@ register_constexpr_fundef (tree fun, tree body)
       if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
         body = TREE_OPERAND (body, 0);
       body = constexpr_fn_retval (body);
-      if (body == NULL_TREE || body == error_mark_node)
-        {
-          error ("body of constexpr function %qD not a return-statement", fun);
-          DECL_DECLARED_CONSTEXPR_P (fun) = false;
-          return NULL;
-        }
+    }
+  return body;
+}
+
+/* We are processing the definition of the constexpr function FUN.
+   Check that its BODY fulfills the propriate requirements and
+   enter it in the constexpr function definition table.
+   For constructor BODY is actually the TREE_LIST of the
+   member-initializer list.  */
+
+tree
+register_constexpr_fundef (tree fun, tree body)
+{
+  constexpr_fundef entry;
+  constexpr_fundef **slot;
+
+  body = massage_constexpr_body (fun, body);
+  if (body == NULL_TREE || body == error_mark_node)
+    {
+      error ("body of constexpr function %qD not a return-statement", fun);
+      DECL_DECLARED_CONSTEXPR_P (fun) = false;
+      return NULL;
     }
 
   if (!potential_rvalue_constant_expression (body))
@@ -5698,6 +5734,44 @@ register_constexpr_fundef (tree fun, tree body)
   **slot = entry;
 
   return fun;
+}
+
+/* FUN is a non-constexpr function called in a context that requires a
+   constant expression.  If it comes from a constexpr template, explain why
+   the instantiation isn't constexpr.  */
+
+void
+explain_invalid_constexpr_fn (tree fun)
+{
+  static struct pointer_set_t *diagnosed;
+  tree body;
+  location_t save_loc;
+  /* Only diagnose instantiations of constexpr templates.  */
+  if (!is_instantiation_of_constexpr (fun))
+    return;
+  if (diagnosed == NULL)
+    diagnosed = pointer_set_create ();
+  if (pointer_set_insert (diagnosed, fun) != 0)
+    /* Already explained.  */
+    return;
+
+  save_loc = input_location;
+  input_location = DECL_SOURCE_LOCATION (fun);
+  inform (0, "%q+D is not constexpr because it does not satisfy the "
+	  "requirements:", fun);
+  /* First check the declaration.  */
+  if (is_valid_constexpr_fn (fun, true))
+    {
+      /* Then if it's OK, the body.  */
+      if (DECL_DEFAULTED_FN (fun))
+	explain_implicit_non_constexpr (fun);
+      else
+	{
+	  body = massage_constexpr_body (fun, DECL_SAVED_TREE (fun));
+	  require_potential_rvalue_constant_expression (body);
+	}
+    }
+  input_location = save_loc;
 }
 
 /* Objects of this type represent calls to constexpr functions
@@ -6005,7 +6079,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
     }
   if (TREE_CODE (fun) != FUNCTION_DECL)
     {
-      if (!allow_non_constant)
+      if (!allow_non_constant && !*non_constant_p)
 	error_at (loc, "expression %qE does not designate a constexpr "
 		  "function", fun);
       *non_constant_p = true;
@@ -6020,11 +6094,8 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
     {
       if (!allow_non_constant)
 	{
-	  error_at (loc, "%qD is not a constexpr function", fun);
-	  if (DECL_TEMPLATE_INFO (fun)
-	      && DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT
-					    (DECL_TI_TEMPLATE (fun))))
-	    is_valid_constexpr_fn (fun, true);
+	  error_at (loc, "call to non-constexpr function %qD", fun);
+	  explain_invalid_constexpr_fn (fun);
 	}
       *non_constant_p = true;
       return t;
@@ -7023,8 +7094,11 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
       if (!literal_type_p (TREE_TYPE (t)))
 	{
 	  if (!allow_non_constant)
-	    error ("temporary of non-literal type %qT in a "
-		   "constant expression", TREE_TYPE (t));
+	    {
+	      error ("temporary of non-literal type %qT in a "
+		     "constant expression", TREE_TYPE (t));
+	      explain_non_literal_class (TREE_TYPE (t));
+	    }
 	  *non_constant_p = true;
 	  break;
 	}
@@ -7574,7 +7648,11 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 		    && !morally_constexpr_builtin_function_p (fun))
 		  {
 		    if (flags & tf_error)
-		      error ("%qD is not %<constexpr%>", fun);
+		      {
+			error_at (EXPR_LOC_OR_HERE (t),
+				  "call to non-constexpr function %qD", fun);
+			explain_invalid_constexpr_fn (fun);
+		      }
 		    return false;
 		  }
 		/* A call to a non-static member function takes the address
@@ -7588,12 +7666,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 		    if (is_this_parameter (x))
 		      /* OK.  */;
 		    else if (!potential_constant_expression_1 (x, rval, flags))
-		      {
-			if (flags & tf_error)
-			  error ("object argument is not a potential "
-				 "constant expression");
-			return false;
-		      }
+		      return false;
 		    i = 1;
 		  }
 	      }
@@ -7609,22 +7682,13 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	    if (potential_constant_expression_1 (fun, rval, flags))
 	      /* Might end up being a constant function pointer.  */;
 	    else
-	      {
-		if (flags & tf_error)
-		  error ("%qE is not a function name", fun);
-		return false;
-	      }
+	      return false;
           }
         for (; i < nargs; ++i)
           {
             tree x = get_nth_callarg (t, i);
 	    if (!potential_constant_expression_1 (x, rval, flags))
-	      {
-		if (flags & tf_error)
-		  error ("argument in position %qP is not a "
-			 "potential constant expression", i);
-		return false;
-              }
+	      return false;
           }
         return true;
       }
@@ -7853,8 +7917,11 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       if (!literal_type_p (TREE_TYPE (t)))
 	{
 	  if (flags & tf_error)
-	    error ("temporary of non-literal type %qT in a "
-		   "constant expression", TREE_TYPE (t));
+	    {
+	      error ("temporary of non-literal type %qT in a "
+		     "constant expression", TREE_TYPE (t));
+	      explain_non_literal_class (TREE_TYPE (t));
+	    }
 	  return false;
 	}
     case INIT_EXPR:

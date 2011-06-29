@@ -6721,7 +6721,10 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
 {
   tree fndecl;
 
+  /* Remember roughly where this call is.  */
+  location_t loc = EXPR_LOC_OR_HERE (fn);
   fn = build_call_a (fn, nargs, argarray);
+  SET_EXPR_LOCATION (fn, loc);
 
   /* If this call might throw an exception, note that fact.  */
   fndecl = get_callee_fndecl (fn);
