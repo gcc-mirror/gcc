@@ -3418,11 +3418,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* These flags indicate that we want different semantics from normal
    decltype: lambda capture just drops references, lambda return also does
-   type decay.  */
+   type decay, lambda proxies look through implicit dereference.  */
 #define DECLTYPE_FOR_LAMBDA_CAPTURE(NODE) \
   TREE_LANG_FLAG_0 (DECLTYPE_TYPE_CHECK (NODE))
 #define DECLTYPE_FOR_LAMBDA_RETURN(NODE) \
   TREE_LANG_FLAG_1 (DECLTYPE_TYPE_CHECK (NODE))
+#define DECLTYPE_FOR_LAMBDA_PROXY(NODE) \
+  TREE_LANG_FLAG_2 (DECLTYPE_TYPE_CHECK (NODE))
 
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `extern' was
    specified in its declaration.  This can also be set for an
@@ -5455,6 +5457,7 @@ extern tree build_lambda_object			(tree);
 extern tree begin_lambda_type                   (tree);
 extern tree lambda_capture_field_type		(tree);
 extern tree lambda_return_type			(tree);
+extern tree lambda_proxy_type			(tree);
 extern tree lambda_function			(tree);
 extern void apply_lambda_return_type            (tree, tree);
 extern tree add_capture                         (tree, tree, tree, bool, bool);

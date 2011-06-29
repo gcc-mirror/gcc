@@ -8489,6 +8489,27 @@ insert_pending_capture_proxies (void)
   LAMBDA_EXPR_PENDING_PROXIES (lam) = NULL;
 }
 
+/* Given REF, a COMPONENT_REF designating a field in the lambda closure,
+   return the type we want the proxy to have: the type of the field itself,
+   with added const-qualification if the lambda isn't mutable and the
+   capture is by value.  */
+
+tree
+lambda_proxy_type (tree ref)
+{
+  tree type;
+  if (REFERENCE_REF_P (ref))
+    ref = TREE_OPERAND (ref, 0);
+  type = TREE_TYPE (ref);
+  if (!dependent_type_p (type))
+    return type;
+  type = cxx_make_type (DECLTYPE_TYPE);
+  DECLTYPE_TYPE_EXPR (type) = ref;
+  DECLTYPE_FOR_LAMBDA_PROXY (type) = true;
+  SET_TYPE_STRUCTURAL_EQUALITY (type);
+  return type;
+}
+
 /* MEMBER is a capture field in a lambda closure class.  Now that we're
    inside the operator(), build a placeholder var for future lookups and
    debugging.  */
@@ -8496,7 +8517,7 @@ insert_pending_capture_proxies (void)
 tree
 build_capture_proxy (tree member)
 {
-  tree var, object, fn, closure, name, lam;
+  tree var, object, fn, closure, name, lam, type;
 
   closure = DECL_CONTEXT (member);
   fn = lambda_function (closure);
@@ -8511,7 +8532,8 @@ build_capture_proxy (tree member)
   /* Remove the __ inserted by add_capture.  */
   name = get_identifier (IDENTIFIER_POINTER (DECL_NAME (member)) + 2);
 
-  var = build_decl (input_location, VAR_DECL, name, TREE_TYPE (object));
+  type = lambda_proxy_type (object);
+  var = build_decl (input_location, VAR_DECL, name, type);
   SET_DECL_VALUE_EXPR (var, object);
   DECL_HAS_VALUE_EXPR_P (var) = 1;
   DECL_ARTIFICIAL (var) = 1;
