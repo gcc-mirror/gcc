@@ -82,6 +82,15 @@
 #   define l_addr	lm_addr
 #   define l_name	lm_name
 #endif
+#ifdef IRIX5
+#   include <elf.h>
+#   if _MIPS_SIM == _MIPS_SIM_ABI32 /* O32 ABI */
+     /* Don't include <obj_list.h> here. */
+#     include <obj.h>
+#   else /* N32 or N64 ABIs */
+#     include <objlist.h>
+#   endif
+#endif
 
 #if defined(NETBSD)
 #   include <machine/elf_machdep.h>
@@ -139,6 +148,8 @@ GC_register_has_static_roots_callback
     Elf32_Dyn _DYNAMIC;
 #endif
 
+#define obj_offset(lm) ((unsigned long)(lm->l_addr))
+
 static struct link_map *
 GC_FirstDLOpenedLinkMap()
 {
@@ -192,6 +203,8 @@ GC_FirstDLOpenedLinkMap()
     struct link_dynamic _DYNAMIC;
 #endif
 
+#define obj_offset(lm) ((unsigned long)(lm->l_addr))
+
 static struct link_map *
 GC_FirstDLOpenedLinkMap()
 {
@@ -226,9 +239,59 @@ static ptr_t GC_first_common()
 
 #endif  /* SUNOS4 ... */
 
-# if defined(SUNOS4) || defined(SUNOS5DL)
+#if defined(IRIX5) && !defined(USE_PROC_FOR_LIBRARIES)
+
+/* Provide struct link map. */
+#  if _MIPS_SIM == _MIPS_SIM_ABI32 /* O32 ABI */
+/* Provide our own version of struct obj_list in <obj_list.h> with
+   correctly typed data member.  */
+struct obj_list {
+    struct obj *data;
+    struct obj_list *next;
+    struct obj_list *prev;
+} objList;
+
+struct link_map {
+    objList l_ol;
+};
+
+extern objList *__rld_obj_head;
+
+/* Map field names */
+#    define l_next	l_ol.next
+#    define l_addr	l_ol.data->o_pelfhdr	
+
+#    define obj_offset(lm) \
+	((unsigned long)(lm->l_ol.o_praw - (char *)lm->l_ol.o_base_address))
+#  else /* N32 or N64 ABIs */
+struct link_map {
+    ElfW(Obj_Info) l_oi;
+};
+
+extern ElfW(Obj_Info) *__rld_obj_head;
+
+/* Map field names */
+#    define l_next	l_oi.oi_next
+#    define l_addr	l_oi.oi_ehdr
+
+/* See gdb/solib-irix.c (fetch_lm_info).  */
+#    define obj_offset(lm) \
+	 ((unsigned long)(lm->l_oi.oi_ehdr - lm->l_oi.oi_orig_ehdr))
+#  endif
+
+static struct link_map *
+GC_FirstDLOpenedLinkMap()
+{
+    return (struct link_map *)__rld_obj_head;
+}
+
+#endif /* IRIX5 ... */
+
+# if defined(SUNOS4) || defined(SUNOS5DL) || defined(IRIX5)
 /* Add dynamic library data sections to the root set.		*/
-# if !defined(PCR) && !defined(GC_SOLARIS_PTHREADS) && defined(THREADS)
+# if !defined(PCR) \
+     && !defined(GC_SOLARIS_PTHREADS) && !defined(GC_IRIX_THREADS) \
+     && defined(THREADS)
 #   ifndef SRC_M3
 	--> fix mutual exclusion with dlopen
 #   endif  /* We assume M3 programs don't call dlopen for now */
@@ -241,7 +304,7 @@ void GC_register_dynamic_libraries()
   
 
   for (lm = GC_FirstDLOpenedLinkMap();
-       lm != (struct link_map *) 0;  lm = lm->l_next)
+       lm != (struct link_map *) 0;  lm = (struct link_map *) lm->l_next)
     {
 #     ifdef SUNOS4
 	struct exec *e;
@@ -252,7 +315,7 @@ void GC_register_dynamic_libraries()
 		    ((char *) (N_BSSADDR(*e) + e->a_bss + lm->lm_addr)),
 		    TRUE);
 #     endif
-#     ifdef SUNOS5DL
+#     if defined(SUNOS5DL) || defined(IRIX5)
 	ElfW(Ehdr) * e;
         ElfW(Phdr) * p;
         unsigned long offset;
@@ -261,7 +324,7 @@ void GC_register_dynamic_libraries()
         
 	e = (ElfW(Ehdr) *) lm->l_addr;
         p = ((ElfW(Phdr) *)(((char *)(e)) + e->e_phoff));
-        offset = ((unsigned long)(lm->l_addr));
+        offset = obj_offset(lm);
         for( i = 0; i < (int)(e->e_phnum); ((i++),(p++)) ) {
           switch( p->p_type ) {
             case PT_LOAD:
@@ -589,7 +652,7 @@ void GC_register_dynamic_libraries()
 
 #endif /* LINUX */
 
-#if defined(IRIX5) || (defined(USE_PROC_FOR_LIBRARIES) && !defined(LINUX))
+#if defined(USE_PROC_FOR_LIBRARIES) && !defined(LINUX)
 
 #include <sys/procfs.h>
 #include <sys/stat.h>
@@ -718,7 +781,7 @@ void GC_register_dynamic_libraries()
 	fd = -1;
 }
 
-# endif /* USE_PROC || IRIX5 */
+# endif /* USE_PROC */
 
 # if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
 
