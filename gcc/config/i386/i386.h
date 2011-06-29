@@ -322,6 +322,7 @@ enum ix86_tune_indices {
   X86_TUNE_FUSE_CMP_AND_BRANCH,
   X86_TUNE_OPT_AGU,
   X86_TUNE_VECTORIZE_DOUBLE,
+  X86_TUNE_AVX128_OPTIMAL,
 
   X86_TUNE_LAST
 };
@@ -418,6 +419,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_OPT_AGU ix86_tune_features[X86_TUNE_OPT_AGU]
 #define TARGET_VECTORIZE_DOUBLE \
 	ix86_tune_features[X86_TUNE_VECTORIZE_DOUBLE]
+#define TARGET_AVX128_OPTIMAL \
+	ix86_tune_features[X86_TUNE_AVX128_OPTIMAL]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {

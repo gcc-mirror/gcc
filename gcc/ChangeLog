@@ -1,3 +1,17 @@
+2011-06-29  Changpeng Fang  <changpeng.fang@amd.com>
+	Backport from mainline
+	2011-06-29  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* config/i386/i386.opt (mprefer-avx128): Redefine the flag as a Mask option.
+	* config/i386/i386.h (ix86_tune_indices): Add X86_TUNE_AVX128_OPTIMAL entry.
+	(TARGET_AVX128_OPTIMAL): New definition.
+	* config/i386/i386.c (initial_ix86_tune_features): Initialize
+	X86_TUNE_AVX128_OPTIMAL entry.
+	(ix86_option_override_internal): Enable the generation
+	of the 128-bit instructions when TARGET_AVX128_OPTIMAL is set.
+	(ix86_preferred_simd_mode): Use TARGET_PREFER_AVX128.
+	(ix86_autovectorize_vector_sizes): Use TARGET_PREFER_AVX128.
+
 2011-06-29  Harsha Jagasia <harsha.jagasia@amd.com>
 
 	Backport from mainline

@@ -267,7 +267,7 @@ Do dispatch scheduling if processor is bdver1 and Haifa scheduling
 is selected.
 
 mprefer-avx128
-Target Report Var(flag_prefer_avx128) Init(0)
+Target Report Mask(PREFER_AVX128) SAVE
 Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer.
 
 ;; ISA support

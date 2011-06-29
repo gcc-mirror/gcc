@@ -2082,6 +2082,10 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_VECTORIZE_DOUBLE: Enable double precision vector
      instructions.  */
   ~m_ATOM,
+
+  /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
+     the auto-vectorizer.  */
+  m_BDVER1,
 };
 
 /* Feature tests against the various architecture variations.  */
@@ -3135,6 +3139,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-mvzeroupper",			MASK_VZEROUPPER },
     { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD},
     { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE},
+    { "-mprefer-avx128",		MASK_PREFER_AVX128},
   };
 
   const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (flag_opts) + 6][2];
@@ -4293,6 +4298,9 @@ ix86_option_override_internal (bool main_args_p)
 	  if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
 	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
+	  /* Enable 128-bit AVX instruction generation for the auto-vectorizer.  */
+	  if (TARGET_AVX128_OPTIMAL && !(target_flags_explicit & MASK_PREFER_AVX128))
+	    target_flags |= MASK_PREFER_AVX128;
 	}
     }
   else 
@@ -34898,9 +34906,9 @@ ix86_preferred_simd_mode (enum machine_mode mode)
   switch (mode)
     {
     case SFmode:
-      return (TARGET_AVX && !flag_prefer_avx128) ? V8SFmode : V4SFmode;
+      return (TARGET_AVX && !TARGET_PREFER_AVX128) ?  V8SFmode : V4SFmode;
     case DFmode:
-      return (TARGET_AVX && !flag_prefer_avx128) ? V4DFmode : V2DFmode;
+      return (TARGET_AVX && !TARGET_PREFER_AVX128) ? V4DFmode : V2DFmode;
     case DImode:
       return V2DImode;
     case SImode:
@@ -34922,7 +34930,7 @@ ix86_preferred_simd_mode (enum machine_mode mode)
 static unsigned int
 ix86_autovectorize_vector_sizes (void)
 {
-  return TARGET_AVX ? 32 | 16 : 0;
+  return (TARGET_AVX && !TARGET_PREFER_AVX128) ? 32 | 16 : 0;
 }
 
 /* Initialize the GCC target structure.  */
