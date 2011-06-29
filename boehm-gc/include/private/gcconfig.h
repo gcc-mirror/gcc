@@ -1445,6 +1445,9 @@
 #	  if CPP_WORDSZ != 64
 #	    define ALIGN_DOUBLE
 #	  endif
+#	  if _MIPS_SZPTR == 64
+#	    define ELF_CLASS ELFCLASS64
+#	  endif
 #	else
 #         define ALIGNMENT 4
 #	  define ALIGN_DOUBLE
