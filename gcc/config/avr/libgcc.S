@@ -178,10 +178,58 @@ __mulhi3_exit:
 #endif /* defined (L_mulhi3) */
 #endif /* !defined (__AVR_HAVE_MUL__) */
 
+/*******************************************************
+      Widening Multiplication  32 = 16 x 16
+*******************************************************/
+                              
 #if defined (L_mulhisi3)
-	.global	__mulhisi3
-	.func	__mulhisi3
-__mulhisi3:
+DEFUN __mulhisi3
+#if defined (__AVR_HAVE_MUL__)
+
+;; r25:r22 = r19:r18 * r21:r20
+
+#define A0 18
+#define B0 20
+#define C0 22
+
+#define A1 A0+1
+#define B1 B0+1
+#define C1 C0+1
+#define C2 C0+2
+#define C3 C0+3
+ 
+    ; C = (signed)A1 * (signed)B1
+    muls  A1, B1
+    movw  C2, R0
+
+    ; C += A0 * B0
+    mul   A0, B0
+    movw  C0, R0
+
+    ; C += (signed)A1 * B0
+    mulsu A1, B0
+    sbci  C3, 0
+    add   C1, R0
+    adc   C2, R1
+    clr   __zero_reg__
+    adc   C3, __zero_reg__
+
+    ; C += (signed)B1 * A0
+    mulsu B1, A0
+    sbci  C3, 0
+    XJMP  __xmulhisi3_exit
+
+#undef A0
+#undef A1
+#undef B0
+#undef B1
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+
+#else /* !__AVR_HAVE_MUL__ */
+;;; FIXME: This is dead code (noone calls it)
 	mov_l	r18, r24
 	mov_h	r19, r25
 	clr	r24
@@ -192,23 +240,91 @@ __mulhisi3:
 	sbrc	r19, 7
 	dec	r20
 	mov	r21, r20
-	rjmp	__mulsi3
-	.endfunc
+	XJMP	__mulsi3
+#endif /* __AVR_HAVE_MUL__ */
+ENDF __mulhisi3
 #endif /* defined (L_mulhisi3) */
 
 #if defined (L_umulhisi3)
-	.global	__umulhisi3
-	.func	__umulhisi3
-__umulhisi3:
+DEFUN __umulhisi3
+#if defined (__AVR_HAVE_MUL__)
+
+;; r25:r22 = r19:r18 * r21:r20
+
+#define A0 18
+#define B0 20
+#define C0 22
+
+#define A1 A0+1
+#define B1 B0+1
+#define C1 C0+1
+#define C2 C0+2
+#define C3 C0+3
+
+    ; C = A1 * B1
+    mul   A1, B1
+    movw  C2, R0
+
+    ; C += A0 * B0
+    mul   A0, B0
+    movw  C0, R0
+
+    ; C += A1 * B0
+    mul   A1, B0
+    add   C1, R0
+    adc   C2, R1
+    clr   __zero_reg__
+    adc   C3, __zero_reg__
+
+    ; C += B1 * A0
+    mul   B1, A0
+    XJMP  __xmulhisi3_exit
+
+#undef A0
+#undef A1
+#undef B0
+#undef B1
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+
+#else /* !__AVR_HAVE_MUL__ */
+;;; FIXME: This is dead code (noone calls it)
 	mov_l	r18, r24
 	mov_h	r19, r25
 	clr	r24
 	clr	r25
 	clr	r20
 	clr	r21
-	rjmp	__mulsi3
-	.endfunc
+	XJMP	__mulsi3
+#endif /* __AVR_HAVE_MUL__ */
+ENDF __umulhisi3
 #endif /* defined (L_umulhisi3) */
+
+#if defined (L_xmulhisi3_exit)
+
+;;; Helper for __mulhisi3 resp. __umulhisi3.
+
+#define C0 22
+#define C1 C0+1
+#define C2 C0+2
+#define C3 C0+3
+
+DEFUN __xmulhisi3_exit
+    add   C1, R0
+    adc   C2, R1
+    clr   __zero_reg__
+    adc   C3, __zero_reg__
+    ret
+ENDF __xmulhisi3_exit
+
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+
+#endif /* defined (L_xmulhisi3_exit) */
 
 #if defined (L_mulsi3)
 /*******************************************************
