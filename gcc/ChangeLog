@@ -1,3 +1,12 @@
+2011-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/49539
+	* tree-ssa-forwprop.c (can_propagate_from): Check for abnormal SSA
+	names by means of stmt_references_abnormal_ssa_name.
+	(associate_plusminus): Call can_propagate_from before propagating
+	from definition statements.
+	(ssa_forward_propagate_and_combine): Remove superfluous newline.
+
 2011-06-29  Richard Guenther  <rguenther@suse.de>
 
 	* doc/invoke.texi: Document -scev dump modifier.
@@ -963,7 +972,7 @@
 
 2011-06-20  Changpeng Fang  <changpeng.fang@amd.com>
 
-	PR i386/49089
+	PR target/49089
 	* config/i386/i386.c (avx256_split_unaligned_load): New definition.
 	(avx256_split_unaligned_store): New definition.
 	(ix86_option_override_internal): Enable avx256 unaligned load/store
