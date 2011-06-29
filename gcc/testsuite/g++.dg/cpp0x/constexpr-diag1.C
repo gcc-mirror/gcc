@@ -13,7 +13,7 @@ struct B { B(); operator int(); };
 constexpr A<int> ai = { 42 };
 constexpr int i = ai.f();
 
-constexpr int b = A<B>().f();	// { dg-error "not a constexpr function" }
+constexpr int b = A<B>().f();	// { dg-error "non-constexpr function" }
 
 template <class T>
 constexpr int f (T t) { return 42; } // { dg-error "parameter" }

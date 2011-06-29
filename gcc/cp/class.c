@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-dump.h"
 #include "splay-tree.h"
+#include "pointer-set.h"
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */
@@ -4582,8 +4583,71 @@ finalize_literal_type_property (tree t)
 	{
 	  DECL_DECLARED_CONSTEXPR_P (fn) = false;
 	  if (!DECL_TEMPLATE_INFO (fn))
-	    error ("enclosing class of %q+#D is not a literal type", fn);
+	    {
+	      error ("enclosing class of constexpr non-static member "
+		     "function %q+#D is not a literal type", fn);
+	      explain_non_literal_class (t);
+	    }
 	}
+}
+
+/* T is a non-literal type used in a context which requires a constant
+   expression.  Explain why it isn't literal.  */
+
+void
+explain_non_literal_class (tree t)
+{
+  static struct pointer_set_t *diagnosed;
+
+  if (!CLASS_TYPE_P (t))
+    return;
+  t = TYPE_MAIN_VARIANT (t);
+
+  if (diagnosed == NULL)
+    diagnosed = pointer_set_create ();
+  if (pointer_set_insert (diagnosed, t) != 0)
+    /* Already explained.  */
+    return;
+
+  inform (0, "%q+T is not literal because:", t);
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+    inform (0, "  %q+T has a non-trivial destructor", t);
+  else if (CLASSTYPE_NON_AGGREGATE (t)
+	   && !TYPE_HAS_TRIVIAL_DFLT (t)
+	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
+    inform (0, "  %q+T is not an aggregate, does not have a trivial "
+	    "default constructor, and has no constexpr constructor that "
+	    "is not a copy or move constructor", t);
+  else
+    {
+      tree binfo, base_binfo, field; int i;
+      for (binfo = TYPE_BINFO (t), i = 0;
+	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	{
+	  tree basetype = TREE_TYPE (base_binfo);
+	  if (!CLASSTYPE_LITERAL_P (basetype))
+	    {
+	      inform (0, "  base class %qT of %q+T is non-literal",
+		      basetype, t);
+	      explain_non_literal_class (basetype);
+	      return;
+	    }
+	}
+      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+	{
+	  tree ftype;
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+	  ftype = TREE_TYPE (field);
+	  if (!literal_type_p (ftype))
+	    {
+	      inform (0, "  non-static data member %q+D has "
+		      "non-literal type", field);
+	      if (CLASS_TYPE_P (ftype))
+		explain_non_literal_class (ftype);
+	    }
+	}
+    }
 }
 
 /* Check the validity of the bases and members declared in T.  Add any

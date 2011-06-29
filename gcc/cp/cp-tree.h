@@ -4816,6 +4816,7 @@ extern bool type_has_virtual_destructor		(tree);
 extern bool type_has_move_constructor		(tree);
 extern bool type_has_move_assign		(tree);
 extern bool type_build_ctor_call		(tree);
+extern void explain_non_literal_class		(tree);
 extern void defaulted_late_check		(tree);
 extern bool defaultable_fn_check		(tree);
 extern void fixup_type_variants			(tree);
@@ -5094,6 +5095,7 @@ extern void finish_thunk			(tree);
 extern void use_thunk				(tree, bool);
 extern bool trivial_fn_p			(tree);
 extern bool maybe_explain_implicit_delete	(tree);
+extern void explain_implicit_non_constexpr	(tree);
 extern void synthesize_method			(tree);
 extern tree lazily_declare_fn			(special_function_kind,
 						 tree);
@@ -5364,6 +5366,7 @@ extern tree maybe_constant_value (tree);
 extern tree maybe_constant_init (tree);
 extern bool is_sub_constant_expr (tree);
 extern bool reduced_constant_expression_p (tree);
+extern void explain_invalid_constexpr_fn (tree);
 extern VEC(tree,heap)* cx_error_context (void);
 
 enum {
