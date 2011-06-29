@@ -541,9 +541,6 @@ build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
     VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
 
-  init = build_target_expr (slot, init, complain);
-  TARGET_EXPR_IMPLICIT_P (init) = 1;
-
   return init;
 }
 
