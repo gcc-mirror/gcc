@@ -1,5 +1,8 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_decl) [VAR_DECL]: In unevaluated operand,
+	don't tsubst DECL_INITIAL unless our type use auto.
+
 	PR c++/49520
 	* semantics.c (constexpr_fn_retval): Handle CLEANUP_POINT_EXPR here.
 	(massage_constexpr_body): Not here.
