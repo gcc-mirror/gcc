@@ -334,14 +334,20 @@ build_value_init (tree type, tsubst_flags_t complain)
 
   if (CLASS_TYPE_P (type))
     {
-      if (type_has_user_provided_constructor (type))
+      /* Instead of the above, only consider the user-providedness of the
+	 default constructor itself so value-initializing a class with an
+	 explicitly defaulted default constructor and another user-provided
+	 constructor works properly (c++std-core-19883).  */
+      if (type_has_user_provided_default_constructor (type)
+	  || (!TYPE_HAS_DEFAULT_CONSTRUCTOR (type)
+	      && type_has_user_provided_constructor (type)))
 	return build_aggr_init_expr
 	  (type,
 	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				      NULL, type, LOOKUP_NORMAL,
 				      complain),
 	   complain);
-      else if (type_build_ctor_call (type))
+      else if (TYPE_HAS_COMPLEX_DFLT (type))
 	{
 	  /* This is a class that needs constructing, but doesn't have
 	     a user-provided constructor.  So we need to zero-initialize
@@ -371,7 +377,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
      SFINAE-enabled.  */
   if (CLASS_TYPE_P (type))
     {
-      gcc_assert (!type_build_ctor_call (type));
+      gcc_assert (!TYPE_HAS_COMPLEX_DFLT (type));
 	
       if (TREE_CODE (type) != UNION_TYPE)
 	{
