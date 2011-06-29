@@ -52,11 +52,11 @@ namespace __gnu_pbds
     typedef std::size_t 		metadata_type;
 
   protected:
-    // Default constructor.
+    /// Default constructor.
     sample_trie_node_update();
 
-    // Updates the rank of a node through a node_iterator node_it;
-    // end_nd_it is the end node iterator.
+    /// Updates the rank of a node through a node_iterator node_it;
+    /// end_nd_it is the end node iterator.
     inline void
     operator()(node_iterator, node_const_iterator) const;
   };

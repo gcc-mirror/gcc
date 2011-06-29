@@ -21,6 +21,16 @@
 HeaderInclude
 config/arm/arm-opts.h
 
+Enum
+Name(tls_type) Type(enum arm_tls_type)
+TLS dialect to use:
+
+EnumValue
+Enum(tls_type) String(gnu) Value(TLS_GNU)
+
+EnumValue
+Enum(tls_type) String(gnu2) Value(TLS_GNU2)
+
 mabi=
 Target RejectNegative Joined Enum(arm_abi_type) Var(arm_abi) Init(ARM_DEFAULT_ABI)
 Specify an ABI
@@ -189,6 +199,10 @@ Generate code for Thumb state
 mthumb-interwork
 Target Report Mask(INTERWORK)
 Support calls between Thumb and ARM instruction sets
+
+mtls-dialect=
+Target RejectNegative Joined Enum(tls_type) Var(target_tls_dialect) Init(TLS_GNU)
+Specify thread local storage scheme
 
 mtp=
 Target RejectNegative Joined Enum(arm_tp_type) Var(target_thread_pointer) Init(TP_AUTO)

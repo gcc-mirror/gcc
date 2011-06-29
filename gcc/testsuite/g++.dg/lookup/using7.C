@@ -9,4 +9,4 @@ template <typename T> struct B : A<T> // { dg-error "incomplete" }
                  // { dg-error "using" "using" { target *-*-* } 8 }
 };
 
-B<void> b; // { dg-message "instantiated" }
+B<void> b; // { dg-message "required" }

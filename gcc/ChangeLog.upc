@@ -1,3 +1,7 @@
+2011-06-29  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 175584 into gupc branch.
+
 2011-06-13  Gary Funck  <gary@intrepid.com>
 
 libcpp/
@@ -13,7 +17,7 @@ libcpp/
 	error_mark_node, and an ICE was triggered on an attempt to evaluate
 	C_TYPE_VARIABLE_SIZE() on the error node.
 	(upc_blocksizeof_expr, upc_blocksizeof_type,
-	upc_elemsizeof_expr, upc_elemsizeof_type, upc_localsizeof_expr);
+	upc_elemsizeof_expr, upc_elemsizeof_type, upc_localsizeof_expr):
 	Make similar changes to avoid further processing of error_mark_node.
  
 2011-06-07  Gary Funck  <gary@intrepid.com>

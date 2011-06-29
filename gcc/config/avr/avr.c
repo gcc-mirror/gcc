@@ -102,11 +102,10 @@ static unsigned int avr_case_values_threshold (void);
 static bool avr_frame_pointer_required_p (void);
 static bool avr_can_eliminate (const int, const int);
 static bool avr_class_likely_spilled_p (reg_class_t c);
-static rtx avr_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx avr_function_arg (cumulative_args_t , enum machine_mode,
 			     const_tree, bool);
-static void avr_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void avr_function_arg_advance (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
-static void avr_help (void);
 static bool avr_function_ok_for_sibcall (tree, tree);
 static void avr_asm_named_section (const char *name, unsigned int flags, tree decl);
 
@@ -156,13 +155,6 @@ static const struct attribute_spec avr_attribute_table[] =
     false },
   { NULL,        0, 0, false, false, false, NULL, false }
 };
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options avr_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -177,8 +169,6 @@ static const struct default_options avr_option_optimization_table[] =
 #define TARGET_ASM_INTEGER avr_assemble_integer
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START avr_file_start
-#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
-#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END avr_file_end
 
@@ -254,17 +244,8 @@ static const struct default_options avr_option_optimization_table[] =
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE avr_option_override
 
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE avr_option_optimization_table
-
 #undef TARGET_CANNOT_MODIFY_JUMPS_P
 #define TARGET_CANNOT_MODIFY_JUMPS_P avr_cannot_modify_jumps_p
-
-#undef TARGET_HELP
-#define TARGET_HELP avr_help
-
-#undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL avr_function_ok_for_sibcall
@@ -281,21 +262,9 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 static void
 avr_option_override (void)
 {
-  const struct mcu_type_s *t;
-
   flag_delete_null_pointer_checks = 0;
 
-  for (t = avr_mcu_types; t->name; t++)
-    if (strcmp (t->name, avr_mcu_name) == 0)
-      break;
-
-  if (!t->name)
-    {
-      error ("unrecognized argument to -mmcu= option: %qs", avr_mcu_name);
-      inform (input_location,  "See --target-help for supported MCUs");
-    }
-
-  avr_current_device = t;
+  avr_current_device = &avr_mcu_types[avr_mcu_index];
   avr_current_arch = &avr_arch_types[avr_current_device->arch];
   avr_extra_arch_macro = avr_current_device->macro;
 
@@ -303,42 +272,6 @@ avr_option_override (void)
   zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
 
   init_machine_status = avr_init_machine_status;
-}
-
-/* Implement TARGET_HELP */
-/* Report extra information for --target-help */
-
-static void
-avr_help (void)
-{
-  const struct mcu_type_s *t;
-  const char * const indent = "  ";
-  int len;
-
-  /* Give a list of MCUs that are accepted by -mmcu=* .
-     Note that MCUs supported by the compiler might differ from
-     MCUs supported by binutils. */
-
-  len = strlen (indent);
-  printf ("Known MCU names:\n%s", indent);
-
-  /* Print a blank-separated list of all supported MCUs */
-
-  for (t = avr_mcu_types; t->name; t++)
-    {
-      printf ("%s ", t->name);
-      len += 1 + strlen (t->name);
-
-      /* Break long lines */
-      
-      if (len > 66 && (t+1)->name)
-        {
-          printf ("\n%s", indent);
-          len = strlen (indent);
-        }
-    }
-
-  printf ("\n\n");
 }
 
 /*  return register class from register number.  */
@@ -1756,9 +1689,10 @@ avr_num_arg_regs (enum machine_mode mode, const_tree type)
    in a register, and which register.  */
 
 static rtx
-avr_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+avr_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes = avr_num_arg_regs (mode, type);
 
   if (cum->nregs && bytes <= cum->nregs)
@@ -1771,9 +1705,10 @@ avr_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    in the argument list.  */
    
 static void
-avr_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+avr_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes = avr_num_arg_regs (mode, type);
 
   cum->nregs -= bytes;
@@ -1784,7 +1719,8 @@ avr_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
      a function must not pass arguments in call-saved regs in order to get
      tail-called. */
   
-  if (cum->regno >= 0
+  if (cum->regno >= 8
+      && cum->nregs >= 0
       && !call_used_regs[cum->regno])
     {
       /* FIXME: We ship info on failing tail-call in struct machine_function.
@@ -1800,7 +1736,8 @@ avr_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
      user has fixed a GPR needed to pass an argument, an (implicit) function
      call would clobber that fixed register.  See PR45099 for an example.  */
   
-  if (cum->regno >= 0)
+  if (cum->regno >= 8
+      && cum->nregs >= 0)
     {
       int regno;
 
@@ -4958,99 +4895,6 @@ avr_asm_declare_function_name (FILE *file, const char *name, tree decl)
   ASM_OUTPUT_LABEL (file, name);
 }
 
-/* The routine used to output NUL terminated strings.  We use a special
-   version of this for most svr4 targets because doing so makes the
-   generated assembly code more compact (and thus faster to assemble)
-   as well as more readable, especially for targets like the i386
-   (where the only alternative is to output character sequences as
-   comma separated lists of numbers).  */
-
-void
-gas_output_limited_string(FILE *file, const char *str)
-{
-  const unsigned char *_limited_str = (const unsigned char *) str;
-  unsigned ch;
-  fprintf (file, "%s\"", STRING_ASM_OP);
-  for (; (ch = *_limited_str); _limited_str++)
-    {
-      int escape;
-      switch (escape = ESCAPES[ch])
-	{
-	case 0:
-	  putc (ch, file);
-	  break;
-	case 1:
-	  fprintf (file, "\\%03o", ch);
-	  break;
-	default:
-	  putc ('\\', file);
-	  putc (escape, file);
-	  break;
-	}
-    }
-  fprintf (file, "\"\n");
-}
-
-/* The routine used to output sequences of byte values.  We use a special
-   version of this for most svr4 targets because doing so makes the
-   generated assembly code more compact (and thus faster to assemble)
-   as well as more readable.  Note that if we find subparts of the
-   character sequence which end with NUL (and which are shorter than
-   STRING_LIMIT) we output those using ASM_OUTPUT_LIMITED_STRING.  */
-
-void
-gas_output_ascii(FILE *file, const char *str, size_t length)
-{
-  const unsigned char *_ascii_bytes = (const unsigned char *) str;
-  const unsigned char *limit = _ascii_bytes + length;
-  unsigned bytes_in_chunk = 0;
-  for (; _ascii_bytes < limit; _ascii_bytes++)
-    {
-      const unsigned char *p;
-      if (bytes_in_chunk >= 60)
-	{
-	  fprintf (file, "\"\n");
-	  bytes_in_chunk = 0;
-	}
-      for (p = _ascii_bytes; p < limit && *p != '\0'; p++)
-	continue;
-      if (p < limit && (p - _ascii_bytes) <= (signed)STRING_LIMIT)
-	{
-	  if (bytes_in_chunk > 0)
-	    {
-	      fprintf (file, "\"\n");
-	      bytes_in_chunk = 0;
-	    }
-	  gas_output_limited_string (file, (const char*)_ascii_bytes);
-	  _ascii_bytes = p;
-	}
-      else
-	{
-	  int escape;
-	  unsigned ch;
-	  if (bytes_in_chunk == 0)
-	    fprintf (file, "\t.ascii\t\"");
-	  switch (escape = ESCAPES[ch = *_ascii_bytes])
-	    {
-	    case 0:
-	      putc (ch, file);
-	      bytes_in_chunk++;
-	      break;
-	    case 1:
-	      fprintf (file, "\\%03o", ch);
-	      bytes_in_chunk += 4;
-	      break;
-	    default:
-	      putc ('\\', file);
-	      putc (escape, file);
-	      bytes_in_chunk += 2;
-	      break;
-	    }
-	}
-    }
-  if (bytes_in_chunk > 0)
-    fprintf (file, "\"\n");
-}
 
 /* Return value is nonzero if pseudos that have been
    assigned to registers of class CLASS would likely be spilled
@@ -5230,17 +5074,9 @@ avr_asm_output_aligned_decl_common (FILE * stream, const_tree decl ATTRIBUTE_UNU
   avr_need_clear_bss_p = true;
 
   if (local_p)
-    {
-      fputs ("\t.local\t", stream);
-      assemble_name (stream, name);
-      fputs ("\n", stream);
-    }
-  
-  fputs ("\t.comm\t", stream);
-  assemble_name (stream, name);
-  fprintf (stream,
-           "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",
-           size, align / BITS_PER_UNIT);
+    ASM_OUTPUT_ALIGNED_LOCAL (stream, name, size, align);
+  else
+    ASM_OUTPUT_ALIGNED_COMMON (stream, name, size, align);
 }
 
 
@@ -5329,11 +5165,11 @@ static void
 avr_file_start (void)
 {
   if (avr_current_arch->asm_only)
-    error ("MCU %qs supported for assembler only", avr_mcu_name);
+    error ("MCU %qs supported for assembler only", avr_current_device->name);
 
   default_file_start ();
 
-/*  fprintf (asm_out_file, "\t.arch %s\n", avr_mcu_name);*/
+/*  fprintf (asm_out_file, "\t.arch %s\n", avr_current_device->name);*/
   fputs ("__SREG__ = 0x3f\n"
 	 "__SP_H__ = 0x3e\n"
 	 "__SP_L__ = 0x3d\n", asm_out_file);

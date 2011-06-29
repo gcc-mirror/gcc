@@ -10,4 +10,4 @@ private:
   template <typename U> friend class X; // { dg-error "redeclared with 1 template parameter" }
 };
 
-X<int, int> i;		// { dg-message "instantiated" }
+X<int, int> i;		// { dg-message "required" }

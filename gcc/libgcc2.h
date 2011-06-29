@@ -315,11 +315,13 @@ typedef int shift_count_type __attribute__((mode (__libgcc_shift_count__)));
 #define __ffsSI2	__NW(ffs,2)
 #define __clzSI2	__NW(clz,2)
 #define __ctzSI2	__NW(ctz,2)
+#define __clrsbSI2	__NW(clrsb,2)
 #define __popcountSI2	__NW(popcount,2)
 #define __paritySI2	__NW(parity,2)
 #define __ffsDI2	__NDW(ffs,2)
 #define __clzDI2	__NDW(clz,2)
 #define __ctzDI2	__NDW(ctz,2)
+#define __clrsbDI2	__NDW(clrsb,2)
 #define __popcountDI2	__NDW(popcount,2)
 #define __parityDI2	__NDW(parity,2)
 
@@ -508,9 +510,11 @@ extern const UQItype __clz_tab[256];
 extern int __clzDI2 (UDWtype);
 extern int __clzSI2 (UWtype);
 extern int __ctzSI2 (UWtype);
+extern int __ctzDI2 (UDWtype);
+extern int __clrsbSI2 (Wtype);
+extern int __clrsbDI2 (DWtype);
 extern int __ffsSI2 (UWtype);
 extern int __ffsDI2 (DWtype);
-extern int __ctzDI2 (UDWtype);
 extern int __popcountSI2 (UWtype);
 extern int __popcountDI2 (UDWtype);
 extern int __paritySI2 (UWtype);

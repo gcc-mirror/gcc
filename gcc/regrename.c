@@ -432,7 +432,6 @@ do_replace (struct du_head *head, int reg)
 {
   struct du_chain *chain;
   unsigned int base_regno = head->regno;
-  bool found_note = false;
 
   gcc_assert (! DEBUG_INSN_P (head->first->insn));
 
@@ -446,45 +445,14 @@ do_replace (struct du_head *head, int reg)
 	INSN_VAR_LOCATION_LOC (chain->insn) = gen_rtx_UNKNOWN_VAR_LOC ();
       else
 	{
-	  rtx note;
-
 	  *chain->loc = gen_raw_REG (GET_MODE (*chain->loc), reg);
 	  if (regno >= FIRST_PSEUDO_REGISTER)
 	    ORIGINAL_REGNO (*chain->loc) = regno;
 	  REG_ATTRS (*chain->loc) = attr;
 	  REG_POINTER (*chain->loc) = reg_ptr;
-
-	  for (note = REG_NOTES (chain->insn); note; note = XEXP (note, 1))
-	    {
-	      enum reg_note kind = REG_NOTE_KIND (note);
-	      if (kind == REG_DEAD || kind == REG_UNUSED)
-		{
-		  rtx reg = XEXP (note, 0);
-		  gcc_assert (HARD_REGISTER_P (reg));
-
-		  if (REGNO (reg) == base_regno)
-		    {
-		      found_note = true;
-		      if (kind == REG_DEAD
-			  && reg_set_p (*chain->loc, chain->insn))
-			remove_note (chain->insn, note);
-		      else
-			XEXP (note, 0) = *chain->loc;
-		      break;
-		    }
-		}
-	    }
 	}
 
       df_insn_rescan (chain->insn);
-    }
-  if (!found_note)
-    {
-      /* If the chain's first insn is the same as the last, we should have
-	 found a REG_UNUSED note.  */
-      gcc_assert (head->first->insn != head->last->insn);
-      if (!reg_set_p (*head->last->loc, head->last->insn))
-	add_reg_note (head->last->insn, REG_DEAD, *head->last->loc);
     }
 }
 
@@ -753,25 +721,34 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	 In either case, we remove this element from open_chains.  */
 
       if ((action == terminate_dead || action == terminate_write)
-	  && superset)
+	  && (superset || subset))
 	{
 	  unsigned nregs;
 
 	  head->terminated = 1;
+	  if (subset && !superset)
+	    head->cannot_rename = 1;
 	  head->next_chain = closed_chains;
 	  closed_chains = head;
 	  bitmap_clear_bit (&open_chains_set, head->id);
 
 	  nregs = head->nregs;
 	  while (nregs-- > 0)
-	    CLEAR_HARD_REG_BIT (live_in_chains, head->regno + nregs);
+	    {
+	      CLEAR_HARD_REG_BIT (live_in_chains, head->regno + nregs);
+	      if (subset && !superset
+		  && (head->regno + nregs < this_regno
+		      || head->regno + nregs >= this_regno + this_nregs))
+		SET_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
+	    }
 
 	  *p = next;
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "Closing chain %s (%d) at insn %d (%s)\n",
+		     "Closing chain %s (%d) at insn %d (%s%s)\n",
 		     reg_names[head->regno], head->id, INSN_UID (insn),
-		     scan_actions_name[(int) action]);
+		     scan_actions_name[(int) action],
+		     superset ? ", superset" : subset ? ", subset" : "");
 	}
       else if (action == terminate_dead || action == terminate_write)
 	{
@@ -1453,7 +1430,6 @@ struct rtl_opt_pass pass_regrename =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func                        /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
-

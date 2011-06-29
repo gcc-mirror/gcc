@@ -22,8 +22,21 @@
 
 #include <memory>
 
+typedef short test_type;
+
+template<typename T>
+  struct minimal_allocator
+  {
+    typedef T value_type;
+    minimal_allocator();
+    template <typename U>
+      minimal_allocator(const minimal_allocator<U>&);
+    T* allocate(std::size_t);
+    void deallocate(T*, std::size_t);
+  };
+
 namespace std
 {
-  typedef short test_type;
   template struct allocator_traits<std::allocator<test_type>>;
+  template struct allocator_traits<minimal_allocator<test_type>>;
 }

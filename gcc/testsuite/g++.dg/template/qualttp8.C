@@ -14,4 +14,4 @@ struct E {
 	template <class T> class B {}; // { dg-error "private" }
 };
 
-D<E> d; // { dg-message "instantiated" }
+D<E> d; // { dg-message "required" }

@@ -1,5 +1,5 @@
 /* params.c - Run-time parameters.
-   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "common/common-target.h"
 #include "params.h"
 #include "diagnostic-core.h"
 
@@ -37,6 +37,14 @@ static size_t num_compiler_params;
 /* Whether the parameters have all been initialized and had their
    default values determined.  */
 static bool params_finished;
+
+static const param_info lang_independent_params[] = {
+#define DEFPARAM(ENUM, OPTION, HELP, DEFAULT, MIN, MAX) \
+  { OPTION, DEFAULT, MIN, MAX, HELP },
+#include "params.def"
+#undef DEFPARAM
+  { NULL, 0, 0, 0, NULL }
+};
 
 /* Add the N PARAMS to the current list of compiler parameters.  */
 
@@ -54,6 +62,16 @@ add_params (const param_info params[], size_t n)
 	  n * sizeof (param_info));
   /* Keep track of how many parameters we have.  */
   num_compiler_params += n;
+}
+
+/* Add all parameters and default values that can be set in both the
+   driver and the compiler proper.  */
+
+void
+global_init_params (void)
+{
+  add_params (lang_independent_params, LAST_PARAM);
+  targetm_common.option_default_params ();
 }
 
 /* Note that all parameters have been added and all default values

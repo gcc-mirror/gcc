@@ -2518,8 +2518,8 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
       result = build2 (COMPOUND_EXPR, type,
 		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
 						 success),
-		       gnat_stabilize_reference_1 (TREE_OPERAND (ref, 1),
-						   force));
+		       gnat_stabilize_reference (TREE_OPERAND (ref, 1), force,
+						 success));
       break;
 
     case CONSTRUCTOR:
@@ -2569,6 +2569,9 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
   TREE_READONLY (result) = TREE_READONLY (ref);
   TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (ref);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (ref);
+
+  if (code == INDIRECT_REF || code == ARRAY_REF || code == ARRAY_RANGE_REF)
+    TREE_THIS_NOTRAP (result) = TREE_THIS_NOTRAP (ref);
 
   return result;
 }

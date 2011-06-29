@@ -2,7 +2,7 @@
 
 // 2010-01-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
-// Copyright (C) 2010 Free Software Foundation
+// Copyright (C) 2010, 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,6 +50,15 @@ void test01()
   // get_weekday(iter_type, iter_type, ios_base&, 
   //             ios_base::iostate&, tm*) const
 
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 14)
+  const char* awdays[7] = { "\u0412\u0441\u002E",
+			    "\u041F\u043D\u002E",
+			    "\u0412\u0442\u002E",
+			    "\u0421\u0440\u002E",
+			    "\u0427\u0442\u002E",
+			    "\u041F\u0442\u002E",
+			    "\u0421\u0431\u002E" };
+#else
   const char* awdays[7] = { "\u0412\u0441\u043A",
 			    "\u041F\u043D\u0434",
 			    "\u0412\u0442\u0440",
@@ -57,6 +66,7 @@ void test01()
 			    "\u0427\u0442\u0432",
 			    "\u041F\u0442\u043D",
 			    "\u0421\u0431\u0442" };
+#endif
 
   for (int i = 0; i < 7; ++i)
     {

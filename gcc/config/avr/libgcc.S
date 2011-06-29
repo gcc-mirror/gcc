@@ -52,6 +52,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 	.endm
 
+#if defined (__AVR_HAVE_JMP_CALL__)
+#define XCALL call
+#define XJMP  jmp
+#else
+#define XCALL rcall
+#define XJMP  rjmp
+#endif
+
+.macro DEFUN name
+.global \name
+.func \name
+\name:
+.endm
+
+.macro ENDF name
+.size \name, .-\name
+.endfunc
+.endm
+
+
 /* Note: mulqi3, mulhi3 are open-coded on the enhanced core.  */
 #if !defined (__AVR_HAVE_MUL__)
 /*******************************************************
@@ -779,12 +799,6 @@ __do_clear_bss:
 /* __do_global_ctors and __do_global_dtors are only necessary
    if there are any constructors/destructors.  */
 
-#if defined (__AVR_HAVE_JMP_CALL__)
-#define XCALL call
-#else
-#define XCALL rcall
-#endif
-
 #ifdef L_ctors
 	.section .init6,"ax",@progbits
 	.global	__do_global_ctors
@@ -897,3 +911,393 @@ __tablejump_elpm__:
 	.endfunc
 #endif /* defined (L_tablejump_elpm) */
 
+
+/**********************************
+ * Find first set Bit (ffs)
+ **********************************/
+
+#if defined (L_ffssi2)
+;; find first set bit
+;; r25:r24 = ffs32 (r25:r22)
+;; clobbers: r22, r26
+DEFUN __ffssi2
+    clr  r26
+    tst  r22
+    brne 1f
+    subi r26, -8
+    or   r22, r23
+    brne 1f
+    subi r26, -8
+    or   r22, r24
+    brne 1f
+    subi r26, -8
+    or   r22, r25
+    brne 1f
+    ret
+1:  mov  r24, r22
+    XJMP __loop_ffsqi2
+ENDF __ffssi2
+#endif /* defined (L_ffssi2) */
+
+#if defined (L_ffshi2)
+;; find first set bit
+;; r25:r24 = ffs16 (r25:r24)
+;; clobbers: r26
+DEFUN __ffshi2
+    clr  r26
+    cpse r24, __zero_reg__
+1:  XJMP __loop_ffsqi2
+    ldi  r26, 8
+    or   r24, r25
+    brne 1b
+    ret
+ENDF __ffshi2
+#endif /* defined (L_ffshi2) */
+
+#if defined (L_loop_ffsqi2)
+;; Helper for ffshi2, ffssi2
+;; r25:r24 = r26 + zero_extend16 (ffs8(r24))
+;; r24 must be != 0
+;; clobbers: r26
+DEFUN __loop_ffsqi2
+    inc  r26
+    lsr  r24
+    brcc __loop_ffsqi2
+    mov  r24, r26
+    clr  r25
+    ret    
+ENDF __loop_ffsqi2
+#endif /* defined (L_loop_ffsqi2) */
+
+
+/**********************************
+ * Count trailing Zeros (ctz)
+ **********************************/
+
+#if defined (L_ctzsi2)
+;; count trailing zeros
+;; r25:r24 = ctz32 (r25:r22)
+;; ctz(0) = 32
+DEFUN __ctzsi2
+    XCALL __ffssi2
+    dec  r24
+    sbrc r24, 7
+    ldi  r24, 32
+    ret
+ENDF __ctzsi2
+#endif /* defined (L_ctzsi2) */
+
+#if defined (L_ctzhi2)
+;; count trailing zeros
+;; r25:r24 = ctz16 (r25:r24)
+;; ctz(0) = 16
+DEFUN __ctzhi2
+    XCALL __ffshi2
+    dec  r24
+    sbrc r24, 7
+    ldi  r24, 16
+    ret
+ENDF __ctzhi2
+#endif /* defined (L_ctzhi2) */
+
+
+/**********************************
+ * Count leading Zeros (clz)
+ **********************************/
+
+#if defined (L_clzdi2)
+;; count leading zeros
+;; r25:r24 = clz64 (r25:r18)
+;; clobbers: r22, r23, r26
+DEFUN __clzdi2
+    XCALL __clzsi2
+    sbrs r24, 5
+    ret
+    mov_l r22, r18
+    mov_h r23, r19
+    mov_l r24, r20
+    mov_h r25, r21
+    XCALL __clzsi2
+    subi r24, -32
+    ret
+ENDF __clzdi2
+#endif /* defined (L_clzdi2) */
+
+#if defined (L_clzsi2)
+;; count leading zeros
+;; r25:r24 = clz32 (r25:r22)
+;; clobbers: r26
+DEFUN __clzsi2
+    XCALL __clzhi2
+    sbrs r24, 4
+    ret
+    mov_l r24, r22
+    mov_h r25, r23
+    XCALL __clzhi2
+    subi r24, -16
+    ret
+ENDF __clzsi2
+#endif /* defined (L_clzsi2) */
+
+#if defined (L_clzhi2)
+;; count leading zeros
+;; r25:r24 = clz16 (r25:r24)
+;; clobbers: r26
+DEFUN __clzhi2
+    clr  r26
+    tst  r25
+    brne 1f
+    subi r26, -8
+    or   r25, r24
+    brne 1f
+    ldi  r24, 16
+    ret
+1:  cpi  r25, 16
+    brsh 3f
+    subi r26, -3
+    swap r25
+2:  inc  r26
+3:  lsl  r25
+    brcc 2b
+    mov  r24, r26
+    clr  r25
+    ret
+ENDF __clzhi2
+#endif /* defined (L_clzhi2) */
+
+
+/**********************************
+ * Parity 
+ **********************************/
+
+#if defined (L_paritydi2)
+;; r25:r24 = parity64 (r25:r18)
+;; clobbers: __tmp_reg__
+DEFUN __paritydi2
+    eor  r24, r18
+    eor  r24, r19
+    eor  r24, r20
+    eor  r24, r21
+    XJMP __paritysi2
+ENDF __paritydi2
+#endif /* defined (L_paritydi2) */
+
+#if defined (L_paritysi2)
+;; r25:r24 = parity32 (r25:r22)
+;; clobbers: __tmp_reg__
+DEFUN __paritysi2
+    eor  r24, r22
+    eor  r24, r23
+    XJMP __parityhi2
+ENDF __paritysi2
+#endif /* defined (L_paritysi2) */
+
+#if defined (L_parityhi2)
+;; r25:r24 = parity16 (r25:r24)
+;; clobbers: __tmp_reg__
+DEFUN __parityhi2
+    eor  r24, r25
+;; FALLTHRU
+ENDF __parityhi2
+
+;; r25:r24 = parity8 (r24)
+;; clobbers: __tmp_reg__
+DEFUN __parityqi2
+    ;; parity is in r24[0..7]
+    mov  __tmp_reg__, r24
+    swap __tmp_reg__
+    eor  r24, __tmp_reg__
+    ;; parity is in r24[0..3]
+    subi r24, -4
+    andi r24, -5
+    subi r24, -6
+    ;; parity is in r24[0,3]
+    sbrc r24, 3
+    inc  r24
+    ;; parity is in r24[0]
+    andi r24, 1
+    clr  r25
+    ret
+ENDF __parityqi2
+#endif /* defined (L_parityhi2) */
+
+
+/**********************************
+ * Population Count
+ **********************************/
+
+#if defined (L_popcounthi2)
+;; population count
+;; r25:r24 = popcount16 (r25:r24)
+;; clobbers: r30, __tmp_reg__
+DEFUN __popcounthi2
+    XCALL __popcountqi2
+    mov  r30, r24
+    mov  r24, r25
+    XCALL __popcountqi2
+    add  r24, r30
+    clr  r25
+    ret
+ENDF __popcounthi2
+#endif /* defined (L_popcounthi2) */
+
+#if defined (L_popcountsi2)
+;; population count
+;; r25:r24 = popcount32 (r25:r22)
+;; clobbers: r26, r30, __tmp_reg__
+DEFUN __popcountsi2
+    XCALL __popcounthi2
+    mov   r26, r24
+    mov_l r24, r22
+    mov_h r25, r23
+    XCALL __popcounthi2
+    add   r24, r26
+    ret
+ENDF __popcountsi2
+#endif /* defined (L_popcountsi2) */
+
+#if defined (L_popcountdi2)
+;; population count
+;; r25:r24 = popcount64 (r25:r18)
+;; clobbers: r22, r23, r26, r27, r30, __tmp_reg__
+DEFUN __popcountdi2
+    XCALL __popcountsi2
+    mov   r27, r24
+    mov_l r22, r18
+    mov_h r23, r19
+    mov_l r24, r20
+    mov_h r25, r21
+    XCALL __popcountsi2
+    add   r24, r27
+    ret
+ENDF __popcountdi2
+#endif /* defined (L_popcountdi2) */
+
+#if defined (L_popcountqi2)
+;; population count
+;; r24 = popcount8 (r24)
+;; clobbers: __tmp_reg__
+DEFUN __popcountqi2
+    mov  __tmp_reg__, r24
+    andi r24, 1
+    lsr  __tmp_reg__    
+    lsr  __tmp_reg__    
+    adc  r24, __zero_reg__
+    lsr  __tmp_reg__    
+    adc  r24, __zero_reg__
+    lsr  __tmp_reg__    
+    adc  r24, __zero_reg__
+    lsr  __tmp_reg__    
+    adc  r24, __zero_reg__
+    lsr  __tmp_reg__    
+    adc  r24, __zero_reg__
+    lsr  __tmp_reg__    
+    adc  r24, __tmp_reg__    
+    ret    
+ENDF __popcountqi2
+#endif /* defined (L_popcountqi2) */
+
+
+/**********************************
+ * Swap bytes
+ **********************************/
+
+;; swap two registers with different register number
+.macro bswap a, b
+    eor \a, \b
+    eor \b, \a
+    eor \a, \b
+.endm
+
+#if defined (L_bswapsi2)
+;; swap bytes
+;; r25:r22 = bswap32 (r25:r22)
+DEFUN __bswapsi2
+    bswap r22, r25
+    bswap r23, r24
+    ret
+ENDF __bswapsi2
+#endif /* defined (L_bswapsi2) */
+
+#if defined (L_bswapdi2)
+;; swap bytes
+;; r25:r18 = bswap64 (r25:r18)
+DEFUN __bswapdi2
+    bswap r18, r25
+    bswap r19, r24
+    bswap r20, r23
+    bswap r21, r22
+    ret
+ENDF __bswapdi2
+#endif /* defined (L_bswapdi2) */
+
+
+/**********************************
+ * 64-bit shifts
+ **********************************/
+
+#if defined (L_ashrdi3)
+;; Arithmetic shift right
+;; r25:r18 = ashr64 (r25:r18, r17:r16)
+DEFUN __ashrdi3
+    push r16
+    andi r16, 63
+    breq 2f
+1:  asr  r25
+    ror  r24
+    ror  r23
+    ror  r22
+    ror  r21
+    ror  r20
+    ror  r19
+    ror  r18
+    dec  r16
+    brne 1b
+2:  pop  r16
+    ret
+ENDF __ashrdi3
+#endif /* defined (L_ashrdi3) */
+
+#if defined (L_lshrdi3)
+;; Logic shift right
+;; r25:r18 = lshr64 (r25:r18, r17:r16)
+DEFUN __lshrdi3
+    push r16
+    andi r16, 63
+    breq 2f
+1:  lsr  r25
+    ror  r24
+    ror  r23
+    ror  r22
+    ror  r21
+    ror  r20
+    ror  r19
+    ror  r18
+    dec  r16
+    brne 1b
+2:  pop  r16
+    ret
+ENDF __lshrdi3
+#endif /* defined (L_lshrdi3) */
+
+#if defined (L_ashldi3)
+;; Shift left
+;; r25:r18 = ashl64 (r25:r18, r17:r16)
+DEFUN __ashldi3
+    push r16
+    andi r16, 63
+    breq 2f
+1:  lsl  r18
+    rol  r19
+    rol  r20
+    rol  r21
+    rol  r22
+    rol  r23
+    rol  r24
+    rol  r25
+    dec  r16
+    brne 1b
+2:  pop  r16
+    ret
+ENDF __ashldi3
+#endif /* defined (L_ashldi3) */

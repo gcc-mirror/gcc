@@ -6235,7 +6235,7 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok)
       == FAILURE)
     return FAILURE;
 
-  if (gfc_check_vardef_context (iter->var, false, _("iterator variable"))
+  if (gfc_check_vardef_context (iter->var, false, false, _("iterator variable"))
       == FAILURE)
     return FAILURE;
 
@@ -6502,9 +6502,11 @@ resolve_deallocate_expr (gfc_expr *e)
     }
 
   if (pointer
-      && gfc_check_vardef_context (e, true, _("DEALLOCATE object")) == FAILURE)
+      && gfc_check_vardef_context (e, true, true, _("DEALLOCATE object"))
+	 == FAILURE)
     return FAILURE;
-  if (gfc_check_vardef_context (e, false, _("DEALLOCATE object")) == FAILURE)
+  if (gfc_check_vardef_context (e, false, true, _("DEALLOCATE object"))
+      == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -6796,6 +6798,21 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 		      &e->where, &code->expr3->where);
 	  goto failure;
 	}
+
+      /* Check F2008, C642.  */
+      if (code->expr3->ts.type == BT_DERIVED
+	  && ((codimension &&  gfc_expr_attr (code->expr3).lock_comp)
+	      || (code->expr3->ts.u.derived->from_intmod
+		     == INTMOD_ISO_FORTRAN_ENV
+		  && code->expr3->ts.u.derived->intmod_sym_id
+		     == ISOFORTRAN_LOCK_TYPE)))
+	{
+	  gfc_error ("The source-expr at %L shall neither be of type "
+		     "LOCK_TYPE nor have a LOCK_TYPE component if "
+		      "allocate-object at %L is a coarray",
+		      &code->expr3->where, &e->where);
+	  goto failure;
+	}
     }
 
   /* Check F08:C629.  */
@@ -6814,9 +6831,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   e2 = remove_last_array_ref (e);
   t = SUCCESS;
   if (t == SUCCESS && pointer)
-    t = gfc_check_vardef_context (e2, true, _("ALLOCATE object"));
+    t = gfc_check_vardef_context (e2, true, true, _("ALLOCATE object"));
   if (t == SUCCESS)
-    t = gfc_check_vardef_context (e2, false, _("ALLOCATE object"));
+    t = gfc_check_vardef_context (e2, false, true, _("ALLOCATE object"));
   gfc_free_expr (e2);
   if (t == FAILURE)
     goto failure;
@@ -6992,7 +7009,7 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
   /* Check the stat variable.  */
   if (stat)
     {
-      gfc_check_vardef_context (stat, false, _("STAT variable"));
+      gfc_check_vardef_context (stat, false, false, _("STAT variable"));
 
       if ((stat->ts.type != BT_INTEGER
 	   && !(stat->ref && (stat->ref->type == REF_ARRAY
@@ -7035,7 +7052,7 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
 	gfc_warning ("ERRMSG at %L is useless without a STAT tag",
 		     &errmsg->where);
 
-      gfc_check_vardef_context (errmsg, false, _("ERRMSG variable"));
+      gfc_check_vardef_context (errmsg, false, false, _("ERRMSG variable"));
 
       if ((errmsg->ts.type != BT_CHARACTER
 	   && !(errmsg->ref
@@ -8100,7 +8117,8 @@ resolve_transfer (gfc_code *code)
      code->ext.dt may be NULL if the TRANSFER is related to
      an INQUIRE statement -- but in this case, we are not reading, either.  */
   if (code->ext.dt && code->ext.dt->dt_io_kind->value.iokind == M_READ
-      && gfc_check_vardef_context (exp, false, _("item in READ")) == FAILURE)
+      && gfc_check_vardef_context (exp, false, false, _("item in READ"))
+	 == FAILURE)
     return;
 
   sym = exp->symtree->n.sym;
@@ -8195,6 +8213,57 @@ find_reachable_labels (gfc_code *block)
       bitmap_ior_into (cs_base->reachable_labels,
 		       cs_base->prev->reachable_labels);
     }
+}
+
+
+static void
+resolve_lock_unlock (gfc_code *code)
+{
+  if (code->expr1->ts.type != BT_DERIVED
+      || code->expr1->expr_type != EXPR_VARIABLE
+      || code->expr1->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
+      || code->expr1->ts.u.derived->intmod_sym_id != ISOFORTRAN_LOCK_TYPE
+      || code->expr1->rank != 0
+      || !(gfc_expr_attr (code->expr1).codimension
+	   || gfc_is_coindexed (code->expr1)))
+    gfc_error ("Lock variable at %L must be a scalar coarray of type "
+	       "LOCK_TYPE", &code->expr1->where);
+
+  /* Check STAT.  */
+  if (code->expr2
+      && (code->expr2->ts.type != BT_INTEGER || code->expr2->rank != 0
+	  || code->expr2->expr_type != EXPR_VARIABLE))
+    gfc_error ("STAT= argument at %L must be a scalar INTEGER variable",
+	       &code->expr2->where);
+
+  if (code->expr2
+      && gfc_check_vardef_context (code->expr2, false, false,
+				   _("STAT variable")) == FAILURE)
+    return;
+
+  /* Check ERRMSG.  */
+  if (code->expr3
+      && (code->expr3->ts.type != BT_CHARACTER || code->expr3->rank != 0
+	  || code->expr3->expr_type != EXPR_VARIABLE))
+    gfc_error ("ERRMSG= argument at %L must be a scalar CHARACTER variable",
+	       &code->expr3->where);
+
+  if (code->expr3
+      && gfc_check_vardef_context (code->expr3, false, false,
+				   _("ERRMSG variable")) == FAILURE)
+    return;
+
+  /* Check ACQUIRED_LOCK.  */
+  if (code->expr4
+      && (code->expr4->ts.type != BT_LOGICAL || code->expr4->rank != 0
+	  || code->expr4->expr_type != EXPR_VARIABLE))
+    gfc_error ("ACQUIRED_LOCK= argument at %L must be a scalar LOGICAL "
+	       "variable", &code->expr4->where);
+
+  if (code->expr4
+      && gfc_check_vardef_context (code->expr4, false, false,
+				   _("ACQUIRED_LOCK variable")) == FAILURE)
+    return;
 }
 
 
@@ -9065,6 +9134,11 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  resolve_sync (code);
 	  break;
 
+	case EXEC_LOCK:
+	case EXEC_UNLOCK:
+	  resolve_lock_unlock (code);
+	  break;
+
 	case EXEC_ENTRY:
 	  /* Keep track of which entry we are up to.  */
 	  current_entry_id = code->ext.entry->id;
@@ -9104,8 +9178,8 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  if (t == FAILURE)
 	    break;
 
-	  if (gfc_check_vardef_context (code->expr1, false, _("assignment"))
-		== FAILURE)
+	  if (gfc_check_vardef_context (code->expr1, false, false,
+					_("assignment")) == FAILURE)
 	    break;
 
 	  if (resolve_ordinary_assign (code, ns))
@@ -9143,9 +9217,11 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	       array ref may be present on the LHS and fool gfc_expr_attr
 	       used in gfc_check_vardef_context.  Remove it.  */
 	    e = remove_last_array_ref (code->expr1);
-	    t = gfc_check_vardef_context (e, true, _("pointer assignment"));
+	    t = gfc_check_vardef_context (e, true, false,
+					  _("pointer assignment"));
 	    if (t == SUCCESS)
-	      t = gfc_check_vardef_context (e, false, _("pointer assignment"));
+	      t = gfc_check_vardef_context (e, false, false,
+					    _("pointer assignment"));
 	    gfc_free_expr (e);
 	    if (t == FAILURE)
 	      break;
@@ -11750,7 +11826,8 @@ resolve_fl_derived (gfc_symbol *sym)
 	  return FAILURE;
 	}
 
-      if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.class_pointer
+      if (c->ts.type == BT_CLASS && c->attr.class_ok
+	  && CLASS_DATA (c)->attr.class_pointer
 	  && CLASS_DATA (c)->ts.u.derived->components == NULL
 	  && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp)
 	{
@@ -11761,9 +11838,10 @@ resolve_fl_derived (gfc_symbol *sym)
 	}
 
       /* C437.  */
-      if (c->ts.type == BT_CLASS
-	  && !(CLASS_DATA (c)->attr.class_pointer
-	       || CLASS_DATA (c)->attr.allocatable))
+      if (c->ts.type == BT_CLASS && c->attr.flavor != FL_PROCEDURE
+	  && (!c->attr.class_ok
+	      || !(CLASS_DATA (c)->attr.class_pointer
+		   || CLASS_DATA (c)->attr.allocatable)))
 	{
 	  gfc_error ("Component '%s' with CLASS at %L must be allocatable "
 		     "or pointer", c->name, &c->loc);
@@ -12299,6 +12377,17 @@ resolve_symbol (gfc_symbol *sym)
 			 sym->ts.u.derived->name) == FAILURE)
     return;
 
+  /* F2008, C1302.  */
+  if (sym->ts.type == BT_DERIVED
+      && sym->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+      && sym->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE
+      && !sym->attr.codimension)
+    {
+      gfc_error ("Variable '%s' at %L of type LOCK_TYPE must be a coarray",
+		 sym->name, &sym->declared_at);
+      return;
+    }
+
   /* An assumed-size array with INTENT(OUT) shall not be of a type for which
      default initialization is defined (5.1.2.4.4).  */
   if (sym->ts.type == BT_DERIVED
@@ -12318,6 +12407,12 @@ resolve_symbol (gfc_symbol *sym)
 	    }
 	}
     }
+
+  /* F2008, C542.  */
+  if (sym->ts.type == BT_DERIVED && sym->attr.dummy
+      && sym->attr.intent == INTENT_OUT && sym->attr.lock_comp)
+    gfc_error ("Dummy argument '%s' at %L of LOCK_TYPE shall not be "
+	       "INTENT(OUT)", sym->name, &sym->declared_at);
 
   /* F2008, C526.  */
   if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)

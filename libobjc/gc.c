@@ -31,9 +31,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "tconfig.h"
 #include <assert.h>
+#include <ctype.h> /* For isdigit.  */
 #include <string.h>
 #include <stdlib.h>
-#include "objc/encoding.h"
+#include "objc/runtime.h"
+#include "objc-private/module-abi-8.h"
 
 #include <gc.h>
 #include <limits.h>
@@ -302,7 +304,7 @@ __objc_generate_gc_type_description (Class class)
 
   /* The number of bits in the mask is the size of an instance in bytes divided
      by the size of a pointer. */
-  bits_no = (ROUND (class_get_instance_size (class), sizeof (void *))
+  bits_no = (ROUND (class_getInstanceSize (class), sizeof (void *))
              / sizeof (void *));
   size = ROUND (bits_no, BITS_PER_WORD) / BITS_PER_WORD;
   mask = objc_atomic_malloc (size * sizeof (int));

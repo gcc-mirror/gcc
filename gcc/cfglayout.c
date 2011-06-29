@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfglayout.h"
 #include "cfgloop.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "ggc.h"
 #include "alloc-pool.h"
 #include "flags.h"
@@ -378,7 +379,7 @@ struct rtl_opt_pass pass_into_cfg_layout_mode =
   PROP_cfglayout,                       /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -397,7 +398,7 @@ struct rtl_opt_pass pass_outof_cfg_layout_mode =
   0,                                    /* properties_provided */
   PROP_cfglayout,                       /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -912,7 +913,7 @@ fixup_reorder_chain (void)
 	     section boundaries).  */
 	  BB_COPY_PARTITION (src_bb, single_pred (bb));
 	  if (flag_reorder_blocks_and_partition
-	      && targetm.have_named_sections
+	      && targetm_common.have_named_sections
 	      && JUMP_P (BB_END (bb))
 	      && !any_condjump_p (BB_END (bb))
 	      && (EDGE_SUCC (bb, 0)->flags & EDGE_CROSSING))

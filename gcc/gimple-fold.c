@@ -1378,11 +1378,10 @@ gimple_fold_builtin (gimple stmt)
 
 tree
 gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
-				  tree *delta, bool refuse_thunks)
+				  tree *delta)
 {
   HOST_WIDE_INT i;
   tree v, fndecl;
-  struct cgraph_node *node;
 
   v = BINFO_VIRTUALS (known_binfo);
   /* If there is no virtual methods leave the OBJ_TYPE_REF alone.  */
@@ -1401,18 +1400,6 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
     return NULL_TREE;
 
   fndecl = TREE_VALUE (v);
-  node = cgraph_get_node_or_alias (fndecl);
-  if (refuse_thunks
-      && (!node
-    /* Bail out if it is a thunk declaration.  Since simple this_adjusting
-       thunks are represented by a constant in TREE_PURPOSE of items in
-       BINFO_VIRTUALS, this is a more complicate type which we cannot handle as
-       yet.
-
-       FIXME: Remove the following condition once we are able to represent
-       thunk information on call graph edges.  */
-	  || (node->same_body_alias && node->thunk.thunk_p)))
-    return NULL_TREE;
 
   /* When cgraph node is missing and function is not public, we cannot
      devirtualize.  This can happen in WHOPR when the actual method
@@ -1562,7 +1549,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
       if (!binfo)
 	return false;
       token = TREE_INT_CST_LOW (OBJ_TYPE_REF_TOKEN (callee));
-      fndecl = gimple_get_virt_method_for_binfo (token, binfo, &delta, false);
+      fndecl = gimple_get_virt_method_for_binfo (token, binfo, &delta);
       if (!fndecl)
 	return false;
       gcc_assert (integer_zerop (delta));
@@ -1582,6 +1569,11 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
   bool changed = false;
   gimple stmt = gsi_stmt (*gsi);
   unsigned i;
+  gimple_stmt_iterator gsinext = *gsi;
+  gimple next_stmt;
+
+  gsi_next (&gsinext);
+  next_stmt = gsi_end_p (gsinext) ? NULL : gsi_stmt (gsinext);
 
   /* Fold the main computation performed by the statement.  */
   switch (gimple_code (stmt))
@@ -1670,10 +1662,19 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
     default:;
     }
 
+  /* If stmt folds into nothing and it was the last stmt in a bb,
+     don't call gsi_stmt.  */
+  if (gsi_end_p (*gsi))
+    {
+      gcc_assert (next_stmt == NULL);
+      return changed;
+    }
+
   stmt = gsi_stmt (*gsi);
 
-  /* Fold *& on the lhs.  */
-  if (gimple_has_lhs (stmt))
+  /* Fold *& on the lhs.  Don't do this if stmt folded into nothing,
+     as we'd changing the next stmt.  */
+  if (gimple_has_lhs (stmt) && stmt != next_stmt)
     {
       tree lhs = gimple_get_lhs (stmt);
       if (lhs && REFERENCE_CLASS_P (lhs))
@@ -3437,4 +3438,135 @@ tree
 fold_const_aggregate_ref (tree t)
 {
   return fold_const_aggregate_ref_1 (t, NULL);
+}
+
+/* Return true iff VAL is a gimple expression that is known to be
+   non-negative.  Restricted to floating-point inputs.  */
+
+bool
+gimple_val_nonnegative_real_p (tree val)
+{
+  gimple def_stmt;
+
+  gcc_assert (val && SCALAR_FLOAT_TYPE_P (TREE_TYPE (val)));
+
+  /* Use existing logic for non-gimple trees.  */
+  if (tree_expr_nonnegative_p (val))
+    return true;
+
+  if (TREE_CODE (val) != SSA_NAME)
+    return false;
+
+  /* Currently we look only at the immediately defining statement
+     to make this determination, since recursion on defining 
+     statements of operands can lead to quadratic behavior in the
+     worst case.  This is expected to catch almost all occurrences
+     in practice.  It would be possible to implement limited-depth
+     recursion if important cases are lost.  Alternatively, passes
+     that need this information (such as the pow/powi lowering code
+     in the cse_sincos pass) could be revised to provide it through
+     dataflow propagation.  */
+
+  def_stmt = SSA_NAME_DEF_STMT (val);
+
+  if (is_gimple_assign (def_stmt))
+    {
+      tree op0, op1;
+
+      /* See fold-const.c:tree_expr_nonnegative_p for additional
+	 cases that could be handled with recursion.  */
+
+      switch (gimple_assign_rhs_code (def_stmt))
+	{
+	case ABS_EXPR:
+	  /* Always true for floating-point operands.  */
+	  return true;
+
+	case MULT_EXPR:
+	  /* True if the two operands are identical (since we are
+	     restricted to floating-point inputs).  */
+	  op0 = gimple_assign_rhs1 (def_stmt);
+	  op1 = gimple_assign_rhs2 (def_stmt);
+
+	  if (op0 == op1
+	      || operand_equal_p (op0, op1, 0))
+	    return true;
+
+	default:
+	  return false;
+	}
+    }
+  else if (is_gimple_call (def_stmt))
+    {
+      tree fndecl = gimple_call_fndecl (def_stmt);
+      if (fndecl
+	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	{
+	  tree arg1;
+
+	  switch (DECL_FUNCTION_CODE (fndecl))
+	    {
+	    CASE_FLT_FN (BUILT_IN_ACOS):
+	    CASE_FLT_FN (BUILT_IN_ACOSH):
+	    CASE_FLT_FN (BUILT_IN_CABS):
+	    CASE_FLT_FN (BUILT_IN_COSH):
+	    CASE_FLT_FN (BUILT_IN_ERFC):
+	    CASE_FLT_FN (BUILT_IN_EXP):
+	    CASE_FLT_FN (BUILT_IN_EXP10):
+	    CASE_FLT_FN (BUILT_IN_EXP2):
+	    CASE_FLT_FN (BUILT_IN_FABS):
+	    CASE_FLT_FN (BUILT_IN_FDIM):
+	    CASE_FLT_FN (BUILT_IN_HYPOT):
+	    CASE_FLT_FN (BUILT_IN_POW10):
+	      return true;
+
+	    CASE_FLT_FN (BUILT_IN_SQRT):
+	      /* sqrt(-0.0) is -0.0, and sqrt is not defined over other
+		 nonnegative inputs.  */
+	      if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (val))))
+		return true;
+
+	      break;
+
+	    CASE_FLT_FN (BUILT_IN_POWI):
+	      /* True if the second argument is an even integer.  */
+	      arg1 = gimple_call_arg (def_stmt, 1);
+
+	      if (TREE_CODE (arg1) == INTEGER_CST
+		  && (TREE_INT_CST_LOW (arg1) & 1) == 0)
+		return true;
+
+	      break;
+	      
+	    CASE_FLT_FN (BUILT_IN_POW):
+	      /* True if the second argument is an even integer-valued
+		 real.  */
+	      arg1 = gimple_call_arg (def_stmt, 1);
+
+	      if (TREE_CODE (arg1) == REAL_CST)
+		{
+		  REAL_VALUE_TYPE c;
+		  HOST_WIDE_INT n;
+
+		  c = TREE_REAL_CST (arg1);
+		  n = real_to_integer (&c);
+
+		  if ((n & 1) == 0)
+		    {
+		      REAL_VALUE_TYPE cint;
+		      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+		      if (real_identical (&c, &cint))
+			return true;
+		    }
+		}
+
+	      break;
+
+	    default:
+	      return false;
+	    }
+	}
+    }
+
+  return false;
 }

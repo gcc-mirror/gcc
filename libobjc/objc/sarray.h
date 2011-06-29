@@ -1,2 +1,0 @@
-#include "deprecated/sarray.h"
-

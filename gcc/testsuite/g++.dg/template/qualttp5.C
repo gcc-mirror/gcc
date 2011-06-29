@@ -16,11 +16,11 @@ template <template <class> class TT> void f()
 
 template <class T> struct C
 {
-	void g() { f<A<T>::template B>(); } // { dg-message "instantiated" }
+	void g() { f<A<T>::template B>(); } // { dg-message "required" }
 };
 
 int main()
 {
 	C<int> c;
-	c.g(); // { dg-message "instantiated" }
+	c.g(); // { dg-message "required" }
 }

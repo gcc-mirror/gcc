@@ -169,6 +169,10 @@ AC_SUBST(fixed_point)
 
 AC_LIB_PROG_LD_GNU
 
+AC_MSG_CHECKING([for thread model used by GCC])
+target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+AC_MSG_RESULT([$target_thread_file]) 
+
 # Check for assembler CFI support.
 AC_CACHE_CHECK([whether assembler supports CFI directives], [libgcc_cv_cfi],
 	       [AC_COMPILE_IFELSE(
@@ -274,6 +278,8 @@ AC_SUBST(tmake_file)
 AC_SUBST(cpu_type)
 AC_SUBST(extra_parts)
 AC_SUBST(asm_hidden_op)
+AC_CONFIG_LINKS([enable-execute-stack.c:$enable_execute_stack])
+AC_CONFIG_LINKS([md-unwind-support.h:config/$md_unwind_header])
 
 # We need multilib support.
 AC_CONFIG_FILES([Makefile])

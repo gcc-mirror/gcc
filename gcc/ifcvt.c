@@ -4368,7 +4368,7 @@ struct rtl_opt_pass pass_rtl_ifcvt =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func                        /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -4405,7 +4405,6 @@ struct rtl_opt_pass pass_if_after_combine =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func |
   TODO_ggc_collect                      /* todo_flags_finish */
  }
 };
@@ -4442,7 +4441,6 @@ struct rtl_opt_pass pass_if_after_reload =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func |
   TODO_ggc_collect                      /* todo_flags_finish */
  }
 };

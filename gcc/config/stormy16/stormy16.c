@@ -1201,9 +1201,11 @@ xstormy16_function_profiler (void)
    the word count.  */
 
 static void
-xstormy16_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+xstormy16_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 				const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   /* If an argument would otherwise be passed partially in registers,
      and partially on the stack, the whole of it is passed on the
      stack.  */
@@ -1215,9 +1217,11 @@ xstormy16_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static rtx
-xstormy16_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+xstormy16_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (mode == VOIDmode)
     return const0_rtx;
   if (targetm.calls.must_pass_in_stack (mode, type)
@@ -2602,13 +2606,6 @@ xstormy16_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   return (size == -1 || size > UNITS_PER_WORD * NUM_ARGUMENT_REGISTERS);
 }
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options xstorym16_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 #undef  TARGET_ASM_ALIGNED_SI_OP
@@ -2681,9 +2678,6 @@ static const struct default_options xstorym16_option_optimization_table[] =
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT xstormy16_trampoline_init
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE xstorym16_option_optimization_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

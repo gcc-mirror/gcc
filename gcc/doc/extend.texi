@@ -7646,6 +7646,28 @@ int g (int c)
 
 @end deftypefn
 
+@deftypefn {Built-in Function} void *__builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)
+This function returns its first argument, and allows the compiler
+to assume that the returned pointer is at least @var{align} bytes
+aligned.  This built-in can have either two or three arguments,
+if it has three, the third argument should have integer type, and
+if it is non-zero means misalignment offset.  For example:
+
+@smallexample
+void *x = __builtin_assume_aligned (arg, 16);
+@end smallexample
+
+means that the compiler can assume x, set to arg, is at least
+16 byte aligned, while:
+
+@smallexample
+void *x = __builtin_assume_aligned (arg, 32, 8);
+@end smallexample
+
+means that the compiler can assume for x, set to arg, that
+(char *) x - 8 is 32 byte aligned.
+@end deftypefn
+
 @deftypefn {Built-in Function} void __builtin___clear_cache (char *@var{begin}, char *@var{end})
 This function is used to flush the processor's instruction cache for
 the region of memory between @var{begin} inclusive and @var{end}
@@ -7828,6 +7850,12 @@ Returns the number of trailing 0-bits in @var{x}, starting at the least
 significant bit position.  If @var{x} is 0, the result is undefined.
 @end deftypefn
 
+@deftypefn {Built-in Function} int __builtin_clrsb (int x)
+Returns the number of leading redundant sign bits in @var{x}, i.e. the
+number of bits following the most significant bit which are identical
+to it.  There are no special cases for 0 or other values. 
+@end deftypefn
+
 @deftypefn {Built-in Function} int __builtin_popcount (unsigned int x)
 Returns the number of 1-bits in @var{x}.
 @end deftypefn
@@ -7850,6 +7878,11 @@ Similar to @code{__builtin_clz}, except the argument type is
 @deftypefn {Built-in Function} int __builtin_ctzl (unsigned long)
 Similar to @code{__builtin_ctz}, except the argument type is
 @code{unsigned long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_clrsbl (long)
+Similar to @code{__builtin_clrsb}, except the argument type is
+@code{long}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_popcountl (unsigned long)
@@ -7875,6 +7908,11 @@ Similar to @code{__builtin_clz}, except the argument type is
 @deftypefn {Built-in Function} int __builtin_ctzll (unsigned long long)
 Similar to @code{__builtin_ctz}, except the argument type is
 @code{unsigned long long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_clrsbll (long long)
+Similar to @code{__builtin_clrsb}, except the argument type is
+@code{long long}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_popcountll (unsigned long long)

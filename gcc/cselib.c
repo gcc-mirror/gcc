@@ -257,7 +257,15 @@ promote_debug_loc (struct elt_loc_list *l)
     {
       n_debug_values--;
       l->setting_insn = cselib_current_insn;
-      gcc_assert (!l->next || cselib_preserve_constants);
+      if (cselib_preserve_constants && l->next)
+	{
+	  gcc_assert (l->next->setting_insn
+		      && DEBUG_INSN_P (l->next->setting_insn)
+		      && !l->next->next);
+	  l->next->setting_insn = cselib_current_insn;
+	}
+      else
+	gcc_assert (!l->next);
     }
 }
 
@@ -812,6 +820,10 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
       return DEBUG_IMPLICIT_PTR_DECL (x)
 	     == DEBUG_IMPLICIT_PTR_DECL (y);
 
+    case DEBUG_PARAMETER_REF:
+      return DEBUG_PARAMETER_REF_DECL (x)
+	     == DEBUG_PARAMETER_REF_DECL (y);
+
     case ENTRY_VALUE:
       /* ENTRY_VALUEs are function invariant, it is thus undesirable to
 	 use rtx_equal_for_cselib_1 to compare the operands.  */
@@ -962,6 +974,11 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
       hash += ((unsigned) DEBUG_IMPLICIT_PTR << 7)
 	      + DECL_UID (DEBUG_IMPLICIT_PTR_DECL (x));
       return hash ? hash : (unsigned int) DEBUG_IMPLICIT_PTR;
+
+    case DEBUG_PARAMETER_REF:
+      hash += ((unsigned) DEBUG_PARAMETER_REF << 7)
+	      + DECL_UID (DEBUG_PARAMETER_REF_DECL (x));
+      return hash ? hash : (unsigned int) DEBUG_PARAMETER_REF;
 
     case ENTRY_VALUE:
       /* ENTRY_VALUEs are function invariant, thus try to avoid

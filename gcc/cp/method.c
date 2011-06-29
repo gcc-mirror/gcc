@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "tree-pass.h"
 #include "diagnostic.h"
 #include "cgraph.h"
@@ -353,7 +354,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   push_to_top_level ();
 
   if (TARGET_USE_LOCAL_THUNK_ALIAS_P (function)
-      && targetm.have_named_sections)
+      && targetm_common.have_named_sections)
     {
       resolve_unique_section (function, 0, flag_function_sections);
 
@@ -924,7 +925,7 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
   if (spec_p)
     {
       tree raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn));
-      *spec_p = merge_exception_specifiers (*spec_p, raises);
+      *spec_p = merge_exception_specifiers (*spec_p, raises, fn);
     }
 
   if (!trivial_fn_p (fn))
@@ -1559,12 +1560,15 @@ defaulted_late_check (tree fn)
   if (DECL_DEFAULTED_IN_CLASS_P (fn))
     {
       tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
-      if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn))
-	  && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
-				 eh_spec, ce_normal))
-	error ("function %q+D defaulted on its first declaration "
-	       "with an exception-specification that differs from "
-	       "the implicit declaration %q#D", fn, implicit_fn);
+      if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
+	{
+	  maybe_instantiate_noexcept (fn);
+	  if (!comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)),
+				  eh_spec, ce_normal))
+	    error ("function %q+D defaulted on its first declaration "
+		   "with an exception-specification that differs from "
+		   "the implicit declaration %q#D", fn, implicit_fn);
+	}
       TREE_TYPE (fn) = build_exception_variant (TREE_TYPE (fn), eh_spec);
       if (DECL_DECLARED_CONSTEXPR_P (implicit_fn))
 	/* Hmm...should we do this for out-of-class too? Should it be OK to

@@ -5229,7 +5229,8 @@ static tree
 gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 			    bool debug_info_p)
 {
-  tree gnu_type = gnat_to_gnu_type (Component_Type (gnat_array));
+  const Entity_Id gnat_type = Component_Type (gnat_array);
+  tree gnu_type = gnat_to_gnu_type (gnat_type);
   tree gnu_comp_size;
 
   /* Try to get a smaller form of the component if needed.  */
@@ -5237,7 +5238,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
        || Has_Component_Size_Clause (gnat_array))
       && !Is_Bit_Packed_Array (gnat_array)
       && !Has_Aliased_Components (gnat_array)
-      && !Strict_Alignment (Component_Type (gnat_array))
+      && !Strict_Alignment (gnat_type)
       && TREE_CODE (gnu_type) == RECORD_TYPE
       && !TYPE_FAT_POINTER_P (gnu_type)
       && host_integerp (TYPE_SIZE (gnu_type), 1))
@@ -5301,7 +5302,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 			  debug_info_p, gnat_array);
     }
 
-  if (Has_Volatile_Components (Base_Type (gnat_array)))
+  if (Has_Volatile_Components (gnat_array))
     gnu_type
       = build_qualified_type (gnu_type,
 			      TYPE_QUALS (gnu_type) | TYPE_QUAL_VOLATILE);
@@ -5452,7 +5453,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 	 passed by reference.  Pass them by explicit reference, this will
 	 generate more debuggable code at -O0.  */
       if (TYPE_IS_FAT_POINTER_P (gnu_param_type)
-	  && targetm.calls.pass_by_reference (NULL,
+	  && targetm.calls.pass_by_reference (pack_cumulative_args (NULL),
 					      TYPE_MODE (gnu_param_type),
 					      gnu_param_type,
 					      true))
@@ -6716,12 +6717,16 @@ static tree
 gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   bool definition, bool debug_info_p)
 {
+  const Entity_Id gnat_field_type = Etype (gnat_field);
+  tree gnu_field_type = gnat_to_gnu_type (gnat_field_type);
   tree gnu_field_id = get_entity_name (gnat_field);
-  tree gnu_field_type = gnat_to_gnu_type (Etype (gnat_field));
   tree gnu_field, gnu_size, gnu_pos;
+  bool is_volatile
+    = (Treat_As_Volatile (gnat_field) || Treat_As_Volatile (gnat_field_type));
   bool needs_strict_alignment
-    = (Is_Aliased (gnat_field) || Strict_Alignment (Etype (gnat_field))
-       || Treat_As_Volatile (gnat_field));
+    = (is_volatile
+       || Is_Aliased (gnat_field)
+       || Strict_Alignment (gnat_field_type));
 
   /* If this field requires strict alignment, we cannot pack it because
      it would very likely be under-aligned in the record.  */
@@ -6737,7 +6742,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     gnu_size = validate_size (Esize (gnat_field), gnu_field_type,
 			      gnat_field, FIELD_DECL, false, true);
   else if (packed == 1)
-    gnu_size = validate_size (RM_Size (Etype (gnat_field)), gnu_field_type,
+    gnu_size = validate_size (RM_Size (gnat_field_type), gnu_field_type,
 			      gnat_field, FIELD_DECL, false, true);
   else
     gnu_size = NULL_TREE;
@@ -6829,7 +6834,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	  if (gnu_size
 	      && !operand_equal_p (gnu_size, TYPE_SIZE (gnu_field_type), 0))
 	    {
-	      if (Is_Atomic (gnat_field) || Is_Atomic (Etype (gnat_field)))
+	      if (Is_Atomic (gnat_field) || Is_Atomic (gnat_field_type))
 		post_error_ne_tree
 		  ("atomic field& must be natural size of type{ (^)}",
 		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
@@ -6841,7 +6846,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
 		   TYPE_SIZE (gnu_field_type));
 
-	      else if (Strict_Alignment (Etype (gnat_field)))
+	      else if (Strict_Alignment (gnat_field_type))
 		post_error_ne_tree
 		  ("size of & with aliased or tagged components not ^ bits",
 		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
@@ -6854,19 +6859,19 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 			      (TRUNC_MOD_EXPR, gnu_pos,
 			       bitsize_int (TYPE_ALIGN (gnu_field_type)))))
 	    {
-	      if (Is_Aliased (gnat_field))
-		post_error_ne_num
-		  ("position of aliased field& must be multiple of ^ bits",
-		   First_Bit (Component_Clause (gnat_field)), gnat_field,
-		   TYPE_ALIGN (gnu_field_type));
-
-	      else if (Treat_As_Volatile (gnat_field))
+	      if (is_volatile)
 		post_error_ne_num
 		  ("position of volatile field& must be multiple of ^ bits",
 		   First_Bit (Component_Clause (gnat_field)), gnat_field,
 		   TYPE_ALIGN (gnu_field_type));
 
-	      else if (Strict_Alignment (Etype (gnat_field)))
+	      else if (Is_Aliased (gnat_field))
+		post_error_ne_num
+		  ("position of aliased field& must be multiple of ^ bits",
+		   First_Bit (Component_Clause (gnat_field)), gnat_field,
+		   TYPE_ALIGN (gnu_field_type));
+
+	      else if (Strict_Alignment (gnat_field_type))
 		post_error_ne_num
   ("position of & with aliased or tagged components not multiple of ^ bits",
 		   First_Bit (Component_Clause (gnat_field)), gnat_field,
@@ -6901,7 +6906,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (TREE_CODE (gnu_field_type) == RECORD_TYPE
       && !gnu_size
       && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_field_type))
-      && !Is_Constrained (Underlying_Type (Etype (gnat_field))))
+      && !Is_Constrained (Underlying_Type (gnat_field_type)))
     {
       gnu_size = max_size (TYPE_SIZE (gnu_field_type), true);
       packed = 0;
@@ -6953,7 +6958,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     = create_field_decl (gnu_field_id, gnu_field_type, gnu_record_type,
 			 gnu_size, gnu_pos, packed, Is_Aliased (gnat_field));
   Sloc_to_locus (Sloc (gnat_field), &DECL_SOURCE_LOCATION (gnu_field));
-  TREE_THIS_VOLATILE (gnu_field) = Treat_As_Volatile (gnat_field);
+  TREE_THIS_VOLATILE (gnu_field) = TREE_SIDE_EFFECTS (gnu_field) = is_volatile;
 
   if (Ekind (gnat_field) == E_Discriminant)
     DECL_DISCRIMINANT_NUMBER (gnu_field)

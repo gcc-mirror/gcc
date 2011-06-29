@@ -261,8 +261,7 @@ struct gimple_opt_pass pass_build_cfg =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts | TODO_cleanup_cfg
-  | TODO_dump_func			/* todo_flags_finish */
+  TODO_verify_stmts | TODO_cleanup_cfg  /* todo_flags_finish */
  }
 };
 
@@ -2052,7 +2051,7 @@ gimple_dump_cfg (FILE *file, int flags)
 {
   if (flags & TDF_DETAILS)
     {
-      dump_function_header (file, current_function_decl);
+      dump_function_header (file, current_function_decl, flags);
       fprintf (file, ";; \n%d basic blocks, %d edges, last basic block %d.\n\n",
 	       n_basic_blocks, n_edges, last_basic_block);
 
@@ -5090,6 +5089,7 @@ gimple_duplicate_bb (basic_block bb)
     {
       def_operand_p def_p;
       ssa_op_iter op_iter;
+      tree lhs;
 
       stmt = gsi_stmt (gsi);
       if (gimple_code (stmt) == GIMPLE_LABEL)
@@ -5102,6 +5102,24 @@ gimple_duplicate_bb (basic_block bb)
 
       maybe_duplicate_eh_stmt (copy, stmt);
       gimple_duplicate_stmt_histograms (cfun, copy, cfun, stmt);
+
+      /* When copying around a stmt writing into a local non-user
+	 aggregate, make sure it won't share stack slot with other
+	 vars.  */
+      lhs = gimple_get_lhs (stmt);
+      if (lhs && TREE_CODE (lhs) != SSA_NAME)
+	{
+	  tree base = get_base_address (lhs);
+	  if (base
+	      && (TREE_CODE (base) == VAR_DECL
+		  || TREE_CODE (base) == RESULT_DECL)
+	      && DECL_IGNORED_P (base)
+	      && !TREE_STATIC (base)
+	      && !DECL_EXTERNAL (base)
+	      && (TREE_CODE (base) != VAR_DECL
+		  || !DECL_HAS_VALUE_EXPR_P (base)))
+	    DECL_NONSHAREABLE (base) = 1;
+	}
 
       /* Create new names for all the definitions created by COPY and
 	 add replacement mappings for each new name.  */
@@ -7234,7 +7252,7 @@ struct gimple_opt_pass pass_split_crit_edges =
   PROP_no_crit_edges,            /* properties_provided */
   0,                             /* properties_destroyed */
   0,                             /* todo_flags_start */
-  TODO_dump_func | TODO_verify_flow  /* todo_flags_finish */
+  TODO_verify_flow               /* todo_flags_finish */
  }
 };
 

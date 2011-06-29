@@ -350,6 +350,14 @@ ipcp_versionable_function_p (struct cgraph_node *node)
 {
   struct cgraph_edge *edge;
 
+  /* We always version the actual function and redirect through the aliases.  */
+  if (node->alias)
+    return false;
+
+  /* We don't know how to clone thunks.  */
+  if (node->thunk.thunk_p)
+    return false;
+
   /* There are a number of generic reasons functions cannot be versioned.  We
      also cannot remove parameters if there are type attributes such as fnspec
      present.  */
@@ -358,7 +366,8 @@ ipcp_versionable_function_p (struct cgraph_node *node)
     return false;
 
   /* Removing arguments doesn't work if the function takes varargs
-     or use __builtin_apply_args. */
+     or use __builtin_apply_args. 
+     FIXME: handle this together with can_change_signature flag.  */
   for (edge = node->callees; edge; edge = edge->next_callee)
     {
       tree t = edge->callee->decl;
@@ -379,6 +388,10 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   int n_hot_calls = 0;
   gcov_type direct_call_sum = 0;
   struct cgraph_edge *e;
+
+  /* We look through aliases, so we clone the aliased function instead.  */
+  if (node->alias)
+    return false;
 
   /* We never clone functions that are not visible from outside.
      FIXME: in future we should clone such functions when they are called with
@@ -500,7 +513,9 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
 
   if (ipa_is_called_with_var_arguments (info))
     type = IPA_BOTTOM;
-  else if (node->local.local)
+  /* We don't know how to clone thunks even when they are local.  */
+  else if (node->local.local
+	   && !node->thunk.thunk_p)
     type = IPA_TOP;
   /* When cloning is allowed, we can assume that externally visible functions
      are not called.  We will compensate this by cloning later.  */
@@ -583,40 +598,41 @@ ipcp_change_tops_to_bottom (void)
 
   prop_again = false;
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      struct ipa_node_params *info = IPA_NODE_REF (node);
-      count = ipa_get_param_count (info);
-      for (i = 0; i < count; i++)
-	{
-	  struct ipcp_lattice *lat = ipa_get_lattice (info, i);
-	  if (lat->type == IPA_TOP)
-	    {
-	      prop_again = true;
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Forcing param ");
-		  print_generic_expr (dump_file, ipa_get_param (info, i), 0);
-		  fprintf (dump_file, " of node %s to bottom.\n",
-			   cgraph_node_name (node));
-		}
-	      lat->type = IPA_BOTTOM;
-	    }
-	  if (!ipa_param_cannot_devirtualize_p (info, i)
-	      && ipa_param_types_vec_empty (info, i))
-	    {
-	      prop_again = true;
-	      ipa_set_param_cannot_devirtualize (info, i);
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Marking param ");
-		  print_generic_expr (dump_file, ipa_get_param (info, i), 0);
-		  fprintf (dump_file, " of node %s as unusable for "
-			   "devirtualization.\n",
-			   cgraph_node_name (node));
-		}
-	    }
-	}
-    }
+    if (!node->alias)
+      {
+	struct ipa_node_params *info = IPA_NODE_REF (node);
+	count = ipa_get_param_count (info);
+	for (i = 0; i < count; i++)
+	  {
+	    struct ipcp_lattice *lat = ipa_get_lattice (info, i);
+	    if (lat->type == IPA_TOP)
+	      {
+		prop_again = true;
+		if (dump_file)
+		  {
+		    fprintf (dump_file, "Forcing param ");
+		    print_generic_expr (dump_file, ipa_get_param (info, i), 0);
+		    fprintf (dump_file, " of node %s to bottom.\n",
+			     cgraph_node_name (node));
+		  }
+		lat->type = IPA_BOTTOM;
+	      }
+	    if (!ipa_param_cannot_devirtualize_p (info, i)
+		&& ipa_param_types_vec_empty (info, i))
+	      {
+		prop_again = true;
+		ipa_set_param_cannot_devirtualize (info, i);
+		if (dump_file)
+		  {
+		    fprintf (dump_file, "Marking param ");
+		    print_generic_expr (dump_file, ipa_get_param (info, i), 0);
+		    fprintf (dump_file, " of node %s as unusable for "
+			     "devirtualization.\n",
+			     cgraph_node_name (node));
+		  }
+	      }
+	  }
+      }
   return prop_again;
 }
 
@@ -759,7 +775,8 @@ ipcp_propagate_stage (void)
 
       for (cs = node->callees; cs; cs = cs->next_callee)
 	{
-	  struct ipa_node_params *callee_info = IPA_NODE_REF (cs->callee);
+	  struct cgraph_node *callee = cgraph_function_or_thunk_node (cs->callee, NULL);
+	  struct ipa_node_params *callee_info = IPA_NODE_REF (callee);
 	  struct ipa_edge_args *args = IPA_EDGE_REF (cs);
 
 	  if (ipa_is_called_with_var_arguments (callee_info)
@@ -778,11 +795,11 @@ ipcp_propagate_stage (void)
 		{
 		  dest_lat->type = new_lat.type;
 		  dest_lat->constant = new_lat.constant;
-		  ipa_push_func_to_list (&wl, cs->callee);
+		  ipa_push_func_to_list (&wl, callee);
 		}
 
 	      if (ipcp_propagate_types (info, callee_info, jump_func, i))
-		ipa_push_func_to_list (&wl, cs->callee);
+		ipa_push_func_to_list (&wl, callee);
 	    }
 	}
     }
@@ -803,10 +820,11 @@ ipcp_iterate_stage (void)
     ipa_update_after_lto_read ();
 
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      ipcp_initialize_node_lattices (node);
-      ipcp_compute_node_scale (node);
-    }
+    if (!node->alias)
+      {
+	ipcp_initialize_node_lattices (node);
+	ipcp_compute_node_scale (node);
+      }
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       ipcp_print_all_lattices (dump_file);
@@ -946,7 +964,8 @@ ipcp_need_redirect_p (struct cgraph_edge *cs)
 {
   struct ipa_node_params *orig_callee_info;
   int i, count;
-  struct cgraph_node *node = cs->callee, *orig;
+  struct cgraph_node *node = cgraph_function_or_thunk_node (cs->callee, NULL);
+  struct cgraph_node *orig;
 
   if (!n_cloning_candidates)
     return false;
@@ -1190,8 +1209,7 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
 	  binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);
 	  if (!binfo)
 	    continue;
-	  target = gimple_get_virt_method_for_binfo (token, binfo, &delta,
-						     false);
+	  target = gimple_get_virt_method_for_binfo (token, binfo, &delta);
 	}
       else
 	{
@@ -1214,7 +1232,7 @@ ipcp_process_devirtualization_opportunities (struct cgraph_node *node)
 		  break;
 		}
 
-	      t = gimple_get_virt_method_for_binfo (token, binfo, &d, true);
+	      t = gimple_get_virt_method_for_binfo (token, binfo, &d);
 	      if (!t)
 		{
 		  target = NULL_TREE;
@@ -1294,7 +1312,7 @@ ipcp_insert_stage (void)
   int i;
   VEC (cgraph_edge_p, heap) * redirect_callers;
   VEC (ipa_replace_map_p,gc)* replace_trees;
-  int node_callers, count;
+  int count;
   tree parm_tree;
   struct ipa_replace_map *replace_param;
   fibheap_t heap;
@@ -1308,13 +1326,12 @@ ipcp_insert_stage (void)
 
   dead_nodes = BITMAP_ALLOC (NULL);
 
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
-      {
-	if (node->count > max_count)
-	  max_count = node->count;
-	overall_size += inline_summary (node)->self_size;
-      }
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    {
+      if (node->count > max_count)
+	max_count = node->count;
+      overall_size += inline_summary (node)->self_size;
+    }
 
   max_new_size = overall_size;
   if (max_new_size < PARAM_VALUE (PARAM_LARGE_UNIT_INSNS))
@@ -1414,14 +1431,7 @@ ipcp_insert_stage (void)
       if (!cs && cgraph_will_be_removed_from_program_if_no_direct_calls (node))
 	bitmap_set_bit (dead_nodes, node->uid);
 
-      /* Compute how many callers node has.  */
-      node_callers = 0;
-      for (cs = node->callers; cs != NULL; cs = cs->next_caller)
-	node_callers++;
-      redirect_callers = VEC_alloc (cgraph_edge_p, heap, node_callers);
-      for (cs = node->callers; cs != NULL; cs = cs->next_caller)
-	if (!cs->indirect_inlining_edge)
-	  VEC_quick_push (cgraph_edge_p, redirect_callers, cs);
+      redirect_callers = collect_callers_of_node (node);
 
       /* Redirecting all the callers of the node to the
          new versioned node.  */
@@ -1453,13 +1463,16 @@ ipcp_insert_stage (void)
 	dump_function_to_file (node1->decl, dump_file, dump_flags);
 
       for (cs = node->callees; cs; cs = cs->next_callee)
-        if (cs->callee->aux)
-	  {
-	    fibheap_delete_node (heap, (fibnode_t) cs->callee->aux);
-	    cs->callee->aux = fibheap_insert (heap,
-	    				      ipcp_estimate_cloning_cost (cs->callee),
-					      cs->callee);
-	  }
+	{
+	  struct cgraph_node *callee = cgraph_function_or_thunk_node (cs->callee, NULL);
+	  if (callee->aux)
+	    {
+	      fibheap_delete_node (heap, (fibnode_t) callee->aux);
+	      callee->aux = fibheap_insert (heap,
+					    ipcp_estimate_cloning_cost (callee),
+					    callee);
+	    }
+	}
     }
 
   while (!fibheap_empty (heap))
@@ -1570,7 +1583,7 @@ struct ipa_opt_pass_d pass_ipa_cp =
   0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
-  TODO_dump_cgraph | TODO_dump_func |
+  TODO_dump_cgraph |
   TODO_remove_functions | TODO_ggc_collect /* todo_flags_finish */
  },
  ipcp_generate_summary,			/* generate_summary */

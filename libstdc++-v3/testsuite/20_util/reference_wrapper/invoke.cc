@@ -75,7 +75,8 @@ void test01()
   int (::X::* p_foo_c)(float) const = &::X::foo_c;
   int (::X::* p_foo_v)(float) volatile = &::X::foo_v;
   int (::X::* p_foo_cv)(float) const volatile = &::X::foo_cv;
-  int (::X::* p_foo_varargs)(float, ...) = &::X::foo_varargs;
+  int (::X::* p_foo_varargs)(float, ...) __attribute__((unused))
+    = &::X::foo_varargs;
   int ::X::* p_bar = &::X::bar;
 
   const float pi = 3.14;

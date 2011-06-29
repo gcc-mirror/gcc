@@ -214,6 +214,11 @@ DEFTREECODE (USING_STMT, "using_directive", tcc_statement, 1)
    parsing had occurred.  */
 DEFTREECODE (DEFAULT_ARG, "default_arg", tcc_exceptional, 0)
 
+/* An uninstantiated noexcept-specification.  DEFERRED_NOEXCEPT_PATTERN is
+   the pattern from the template, and DEFERRED_NOEXCEPT_ARGS are the
+   template arguments to substitute into the pattern when needed.  */
+DEFTREECODE (DEFERRED_NOEXCEPT, "deferred_noexcept", tcc_exceptional, 0)
+
 /* A template-id, like foo<int>.  The first operand is the template.
    The second is NULL if there are no explicit arguments, or a
    TREE_VEC of arguments.  The template will be a FUNCTION_DECL,
@@ -437,6 +442,8 @@ DEFTREECODE (TRAIT_EXPR, "trait_expr", tcc_exceptional, 0)
    none.
    LAMBDA_EXPR_CAPTURE_LIST holds the capture-list, including `this'.
    LAMBDA_EXPR_THIS_CAPTURE goes straight to the capture of `this', if it exists.
+   LAMBDA_EXPR_PENDING_PROXIES is a vector of capture proxies which need to
+   be pushed once scope returns to the lambda.
    LAMBDA_EXPR_MUTABLE_P signals whether this lambda was declared mutable.
    LAMBDA_EXPR_RETURN_TYPE holds the return type, if it was specified.  */
 DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)

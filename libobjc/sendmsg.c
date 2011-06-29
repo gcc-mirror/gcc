@@ -62,7 +62,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define INVISIBLE_STRUCT_RETURN 0
 #endif
 
-/* The uninstalled dispatch table.  */
+/* The uninstalled dispatch table.  If a class' dispatch table points
+   to __objc_uninstalled_dtable then that means it needs its dispatch
+   table to be installed.  */
 struct sarray *__objc_uninstalled_dtable = 0;   /* !T:MUTEX */
 
 /* Two hooks for method forwarding. If either is set, it is invoked to
@@ -469,29 +471,6 @@ objc_msg_lookup_super (struct objc_super *super, SEL sel)
     return (IMP)nil_method;
 }
 
-/* Temporarily defined here until objc_msg_sendv() goes away.  */
-char *method_get_first_argument (struct objc_method *,
-				 arglist_t argframe, 
-				 const char **type);
-char *method_get_next_argument (arglist_t argframe, 
-				const char **type);
-int method_get_sizeof_arguments (struct objc_method *);
-
-struct objc_method *
-class_get_instance_method (Class class, SEL op);
-
-retval_t
-objc_msg_sendv (id object, SEL op, arglist_t arg_frame)
-{
-  struct objc_method *m = class_get_instance_method (object->class_pointer, op);
-  const char *type;
-  *((id *) method_get_first_argument (m, arg_frame, &type)) = object;
-  *((SEL *) method_get_next_argument (arg_frame, &type)) = op;
-  return __builtin_apply ((apply_t) m->method_imp, 
-			  arg_frame,
-			  method_get_sizeof_arguments (m));
-}
-
 void
 __objc_init_dispatch_tables ()
 {
@@ -662,18 +641,6 @@ class_add_method_list (Class class, struct objc_method_list * list)
 
   /* Update the dispatch table of class.  */
   __objc_update_dispatch_table_for_class (class);
-}
-
-struct objc_method *
-class_get_instance_method (Class class, SEL op)
-{
-  return search_for_method_in_hierarchy (class, op);
-}
-
-struct objc_method *
-class_get_class_method (MetaClass class, SEL op)
-{
-  return search_for_method_in_hierarchy (class, op);
 }
 
 struct objc_method *
@@ -883,6 +850,9 @@ search_for_method_in_list (struct objc_method_list * list, SEL op)
   return NULL;
 }
 
+typedef void * retval_t;
+typedef void * arglist_t;
+
 static retval_t __objc_forward (id object, SEL sel, arglist_t args);
 
 /* Forwarding pointers/integers through the normal registers.  */
@@ -936,9 +906,12 @@ __objc_block_forward (id rcv, SEL op, ...)
 }
 
 
-/* This function is installed in the dispatch table for all methods
-   which are not implemented.  Thus, it is called when a selector is
-   not recognized.  */
+/* This function is called for methods which are not implemented,
+   unless a custom forwarding routine has been installed.  Please note
+   that most serious users of libobjc (eg, GNUstep base) do install
+   their own forwarding routines, and hence this is never actually
+   used.  But, if no custom forwarding routine is installed, this is
+   called when a selector is not recognized.  */
 static retval_t
 __objc_forward (id object, SEL sel, arglist_t args)
 {
@@ -977,16 +950,8 @@ __objc_forward (id object, SEL sel, arglist_t args)
 	      : "instance" ),
              object->class_pointer->name, sel_getName (sel));
 
-    /* TODO: support for error: is surely deprecated ? */
-    err_sel = sel_get_any_uid ("error:");
-    if (__objc_responds_to (object, err_sel))
-      {
-	imp = get_implementation (object, object->class_pointer, err_sel);
-	return (*imp) (object, sel_get_any_uid ("error:"), msg);
-      }
-
-    /* The object doesn't respond to doesNotRecognize: or error:;
-       Therefore, a default action is taken.  */
+    /* The object doesn't respond to doesNotRecognize:.  Therefore, a
+       default action is taken.  */
     _objc_abort ("%s\n", msg);
 
     return 0;
@@ -1021,15 +986,6 @@ __objc_print_dtable_stats (void)
   printf ("===================================\n");
 
   objc_mutex_unlock (__objc_runtime_mutex);
-}
-
-/* Returns the uninstalled dispatch table indicator.  If a class'
-   dispatch table points to __objc_uninstalled_dtable then that means
-   it needs its dispatch table to be installed.  */
-struct sarray *
-objc_get_uninstalled_dtable (void)
-{
-  return __objc_uninstalled_dtable;
 }
 
 static cache_ptr prepared_dtable_table = 0;

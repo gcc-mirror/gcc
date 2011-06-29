@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "integrate.h"
 #include "langhooks.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "cfglayout.h"
 #include "gimple.h"
 #include "tree-pass.h"
@@ -1937,17 +1938,6 @@ instantiate_virtual_regs (void)
      frame_pointer_rtx.  */
   virtuals_instantiated = 1;
 
-  /* See allocate_dynamic_stack_space for the rationale.  */
-#ifdef SETJMP_VIA_SAVE_AREA
-  if (flag_stack_usage_info && cfun->calls_setjmp)
-    {
-      int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-      dynamic_offset = (dynamic_offset + align - 1) / align * align;
-      current_function_dynamic_stack_size
-	+= current_function_dynamic_alloc_count * dynamic_offset;
-    }
-#endif
-
   return 0;
 }
 
@@ -1966,7 +1956,7 @@ struct rtl_opt_pass pass_instantiate_virtual_regs =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func                        /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -2149,7 +2139,8 @@ pass_by_reference (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 	}
     }
 
-  return targetm.calls.pass_by_reference (ca, mode, type, named_arg);
+  return targetm.calls.pass_by_reference (pack_cumulative_args (ca), mode,
+					  type, named_arg);
 }
 
 /* Return true if TYPE, which is passed by reference, should be callee
@@ -2161,7 +2152,8 @@ reference_callee_copied (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 {
   if (type && TREE_ADDRESSABLE (type))
     return false;
-  return targetm.calls.callee_copies (ca, mode, type, named_arg);
+  return targetm.calls.callee_copies (pack_cumulative_args (ca), mode, type,
+				      named_arg);
 }
 
 /* Structures to communicate between the subroutines of assign_parms.
@@ -2170,7 +2162,10 @@ reference_callee_copied (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 
 struct assign_parm_data_all
 {
-  CUMULATIVE_ARGS args_so_far;
+  /* When INIT_CUMULATIVE_ARGS gets revamped, allocating CUMULATIVE_ARGS
+     should become a job of the target or otherwise encapsulated.  */
+  CUMULATIVE_ARGS args_so_far_v;
+  cumulative_args_t args_so_far;
   struct args_size stack_args_size;
   tree function_result_decl;
   tree orig_fnargs;
@@ -2210,11 +2205,12 @@ assign_parms_initialize_all (struct assign_parm_data_all *all)
   fntype = TREE_TYPE (current_function_decl);
 
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
-  INIT_CUMULATIVE_INCOMING_ARGS (all->args_so_far, fntype, NULL_RTX);
+  INIT_CUMULATIVE_INCOMING_ARGS (all->args_so_far_v, fntype, NULL_RTX);
 #else
-  INIT_CUMULATIVE_ARGS (all->args_so_far, fntype, NULL_RTX,
+  INIT_CUMULATIVE_ARGS (all->args_so_far_v, fntype, NULL_RTX,
 			current_function_decl, -1);
 #endif
+  all->args_so_far = pack_cumulative_args (&all->args_so_far_v);
 
 #ifdef REG_PARM_STACK_SPACE
   all->reg_parm_stack_space = REG_PARM_STACK_SPACE (current_function_decl);
@@ -2335,7 +2331,7 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
     data->named_arg = 1;  /* No variadic parms.  */
   else if (DECL_CHAIN (parm))
     data->named_arg = 1;  /* Not the last non-variadic parm. */
-  else if (targetm.calls.strict_argument_naming (&all->args_so_far))
+  else if (targetm.calls.strict_argument_naming (all->args_so_far))
     data->named_arg = 1;  /* Only variadic ones are unnamed.  */
   else
     data->named_arg = 0;  /* Treat as variadic.  */
@@ -2371,7 +2367,7 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
     passed_type = TREE_TYPE (first_field (passed_type));
 
   /* See if this arg was passed by invisible reference.  */
-  if (pass_by_reference (&all->args_so_far, passed_mode,
+  if (pass_by_reference (&all->args_so_far_v, passed_mode,
 			 passed_type, data->named_arg))
     {
       passed_type = nominal_type = build_pointer_type (passed_type);
@@ -2400,7 +2396,7 @@ assign_parms_setup_varargs (struct assign_parm_data_all *all,
 {
   int varargs_pretend_bytes = 0;
 
-  targetm.calls.setup_incoming_varargs (&all->args_so_far,
+  targetm.calls.setup_incoming_varargs (all->args_so_far,
 					data->promoted_mode,
 					data->passed_type,
 					&varargs_pretend_bytes, no_rtl);
@@ -2429,7 +2425,7 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
       return;
     }
 
-  entry_parm = targetm.calls.function_incoming_arg (&all->args_so_far,
+  entry_parm = targetm.calls.function_incoming_arg (all->args_so_far,
 						    data->promoted_mode,
 						    data->passed_type,
 						    data->named_arg);
@@ -2453,10 +2449,10 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
 #endif
   if (!in_regs && !data->named_arg)
     {
-      if (targetm.calls.pretend_outgoing_varargs_named (&all->args_so_far))
+      if (targetm.calls.pretend_outgoing_varargs_named (all->args_so_far))
 	{
 	  rtx tem;
-	  tem = targetm.calls.function_incoming_arg (&all->args_so_far,
+	  tem = targetm.calls.function_incoming_arg (all->args_so_far,
 						     data->promoted_mode,
 						     data->passed_type, true);
 	  in_regs = tem != NULL;
@@ -2473,7 +2469,7 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
     {
       int partial;
 
-      partial = targetm.calls.arg_partial_bytes (&all->args_so_far,
+      partial = targetm.calls.arg_partial_bytes (all->args_so_far,
 						 data->promoted_mode,
 						 data->passed_type,
 						 data->named_arg);
@@ -3409,7 +3405,7 @@ assign_parms (tree fndecl)
 	set_decl_incoming_rtl (parm, data.entry_parm, false);
 
       /* Update info on where next arg arrives in registers.  */
-      targetm.calls.function_arg_advance (&all.args_so_far, data.promoted_mode,
+      targetm.calls.function_arg_advance (all.args_so_far, data.promoted_mode,
 					  data.passed_type, data.named_arg);
 
       assign_parm_adjust_stack_rtl (&data);
@@ -3519,7 +3515,7 @@ assign_parms (tree fndecl)
   /* For stdarg.h function, save info about
      regs and stack space used by the named args.  */
 
-  crtl->args.info = all.args_so_far;
+  crtl->args.info = all.args_so_far_v;
 
   /* Set the rtx used for the function return value.  Put this in its
      own variable so any optimizers that need this information don't have
@@ -3608,7 +3604,7 @@ gimplify_parameters (void)
 	continue;
 
       /* Update info on where next arg arrives in registers.  */
-      targetm.calls.function_arg_advance (&all.args_so_far, data.promoted_mode,
+      targetm.calls.function_arg_advance (all.args_so_far, data.promoted_mode,
 					  data.passed_type, data.named_arg);
 
       /* ??? Once upon a time variable_size stuffed parameter list
@@ -3627,7 +3623,7 @@ gimplify_parameters (void)
       if (data.passed_pointer)
 	{
           tree type = TREE_TYPE (data.passed_type);
-	  if (reference_callee_copied (&all.args_so_far, TYPE_MODE (type),
+	  if (reference_callee_copied (&all.args_so_far_v, TYPE_MODE (type),
 				       type, data.named_arg))
 	    {
 	      tree local, t;
@@ -4990,7 +4986,7 @@ expand_function_end (void)
   /* Output the label for the actual return from the function.  */
   emit_label (return_label);
 
-  if (targetm.except_unwind_info (&global_options) == UI_SJLJ)
+  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
     {
       /* Let except.c know where it should emit the call to unregister
 	 the function context for sjlj exceptions.  */
@@ -5149,7 +5145,7 @@ expand_function_end (void)
      may trap are not moved into the epilogue by scheduling, because
      we don't always emit unwind information for the epilogue.  */
   if (cfun->can_throw_non_call_exceptions
-      && targetm.except_unwind_info (&global_options) != UI_SJLJ)
+      && targetm_common.except_unwind_info (&global_options) != UI_SJLJ)
     emit_insn (gen_blockage ());
 
   /* If stack protection is enabled for this function, check the guard.  */
@@ -5971,7 +5967,6 @@ struct rtl_opt_pass pass_thread_prologue_and_epilogue =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   TODO_verify_flow,                     /* todo_flags_start */
-  TODO_dump_func |
   TODO_df_verify |
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_ggc_collect                      /* todo_flags_finish */
@@ -6173,7 +6168,7 @@ struct rtl_opt_pass pass_match_asm_constraints =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func                       /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 

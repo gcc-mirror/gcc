@@ -1,3 +1,8 @@
+2011-06-15  Mike Stump  <mikestump@comcast.net>
+
+	PR target/49461
+	* mh-darwin: Turn off -pie on darwin11 and later.
+
 2011-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* bootstrap-lto.mk: Remove obsolete requirement.

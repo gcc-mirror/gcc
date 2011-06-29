@@ -3,13 +3,14 @@
 
 /* { dg-do compile } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
 @class NotKnown;
 
 void foo(NotKnown *n) {
-  [NotKnown new];
-  [n nonexistent_method]; /* { dg-warning "no .\\-nonexistent_method. method found" } */
+  [NotKnown new];         /* { dg-warning ".interface of class .NotKnown. not found" } */
+  [n nonexistent_method]; /* { dg-warning ".interface of class .NotKnown. not found" } */
+                          /* { dg-warning "no .\\-nonexistent_method. method found" "" { target *-*-* } 12 } */
 }
 
 /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 0 } */

@@ -153,7 +153,6 @@ struct rtl_opt_pass pass_initialize_regs =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
   TODO_df_finish                        /* todo_flags_finish */
  }
 };

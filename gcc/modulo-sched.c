@@ -134,8 +134,6 @@ struct ps_insn
   ps_insn_ptr next_in_row,
 	      prev_in_row;
 
-  /* The number of nodes in the same row that come after this node.  */
-  int row_rest_count;
 };
 
 /* Holds the partial schedule as an array of II rows.  Each entry of the
@@ -149,6 +147,12 @@ struct partial_schedule
   /* rows[i] points to linked list of insns scheduled in row i (0<=i<ii).  */
   ps_insn_ptr *rows;
 
+  /*  rows_length[i] holds the number of instructions in the row.
+      It is used only (as an optimization) to back off quickly from
+      trying to schedule a node in a full row; that is, to avoid running
+      through futile DFA state transitions.  */
+  int *rows_length;
+  
   /* The earliest absolute cycle of an insn in the partial schedule.  */
   int min_cycle;
 
@@ -1908,6 +1912,7 @@ ps_insert_empty_row (partial_schedule_ptr ps, int split_row,
   int ii = ps->ii;
   int new_ii = ii + 1;
   int row;
+  int *rows_length_new;
 
   verify_partial_schedule (ps, sched_nodes);
 
@@ -1922,9 +1927,11 @@ ps_insert_empty_row (partial_schedule_ptr ps, int split_row,
   rotate_partial_schedule (ps, PS_MIN_CYCLE (ps));
 
   rows_new = (ps_insn_ptr *) xcalloc (new_ii, sizeof (ps_insn_ptr));
+  rows_length_new = (int *) xcalloc (new_ii, sizeof (int));
   for (row = 0; row < split_row; row++)
     {
       rows_new[row] = ps->rows[row];
+      rows_length_new[row] = ps->rows_length[row];
       ps->rows[row] = NULL;
       for (crr_insn = rows_new[row];
 	   crr_insn; crr_insn = crr_insn->next_in_row)
@@ -1945,6 +1952,7 @@ ps_insert_empty_row (partial_schedule_ptr ps, int split_row,
   for (row = split_row; row < ii; row++)
     {
       rows_new[row + 1] = ps->rows[row];
+      rows_length_new[row + 1] = ps->rows_length[row];
       ps->rows[row] = NULL;
       for (crr_insn = rows_new[row + 1];
 	   crr_insn; crr_insn = crr_insn->next_in_row)
@@ -1966,6 +1974,8 @@ ps_insert_empty_row (partial_schedule_ptr ps, int split_row,
     + (SMODULO (ps->max_cycle, ii) >= split_row ? 1 : 0);
   free (ps->rows);
   ps->rows = rows_new;
+  free (ps->rows_length);
+  ps->rows_length = rows_length_new;
   ps->ii = new_ii;
   gcc_assert (ps->min_cycle >= 0);
 
@@ -2041,16 +2051,23 @@ verify_partial_schedule (partial_schedule_ptr ps, sbitmap sched_nodes)
   ps_insn_ptr crr_insn;
 
   for (row = 0; row < ps->ii; row++)
-    for (crr_insn = ps->rows[row]; crr_insn; crr_insn = crr_insn->next_in_row)
-      {
-	ddg_node_ptr u = crr_insn->node;
-
-	gcc_assert (TEST_BIT (sched_nodes, u->cuid));
-	/* ??? Test also that all nodes of sched_nodes are in ps, perhaps by
-	   popcount (sched_nodes) == number of insns in ps.  */
-	gcc_assert (SCHED_TIME (u) >= ps->min_cycle);
-	gcc_assert (SCHED_TIME (u) <= ps->max_cycle);
-      }
+    {
+      int length = 0;
+      
+      for (crr_insn = ps->rows[row]; crr_insn; crr_insn = crr_insn->next_in_row)
+	{
+	  ddg_node_ptr u = crr_insn->node;
+	  
+	  length++;
+	  gcc_assert (TEST_BIT (sched_nodes, u->cuid));
+	  /* ??? Test also that all nodes of sched_nodes are in ps, perhaps by
+	     popcount (sched_nodes) == number of insns in ps.  */
+	  gcc_assert (SCHED_TIME (u) >= ps->min_cycle);
+	  gcc_assert (SCHED_TIME (u) <= ps->max_cycle);
+	}
+      
+      gcc_assert (ps->rows_length[row] == length);
+    }
 }
 
 
@@ -2456,6 +2473,7 @@ create_partial_schedule (int ii, ddg_ptr g, int history)
 {
   partial_schedule_ptr ps = XNEW (struct partial_schedule);
   ps->rows = (ps_insn_ptr *) xcalloc (ii, sizeof (ps_insn_ptr));
+  ps->rows_length = (int *) xcalloc (ii, sizeof (int));
   ps->ii = ii;
   ps->history = history;
   ps->min_cycle = INT_MAX;
@@ -2494,6 +2512,7 @@ free_partial_schedule (partial_schedule_ptr ps)
     return;
   free_ps_insns (ps);
   free (ps->rows);
+  free (ps->rows_length);
   free (ps);
 }
 
@@ -2511,6 +2530,8 @@ reset_partial_schedule (partial_schedule_ptr ps, int new_ii)
   ps->rows = (ps_insn_ptr *) xrealloc (ps->rows, new_ii
 						 * sizeof (ps_insn_ptr));
   memset (ps->rows, 0, new_ii * sizeof (ps_insn_ptr));
+  ps->rows_length = (int *) xrealloc (ps->rows_length, new_ii * sizeof (int));
+  memset (ps->rows_length, 0, new_ii * sizeof (int));
   ps->ii = new_ii;
   ps->min_cycle = INT_MAX;
   ps->max_cycle = INT_MIN;
@@ -2539,14 +2560,13 @@ print_partial_schedule (partial_schedule_ptr ps, FILE *dump)
 
 /* Creates an object of PS_INSN and initializes it to the given parameters.  */
 static ps_insn_ptr
-create_ps_insn (ddg_node_ptr node, int rest_count, int cycle)
+create_ps_insn (ddg_node_ptr node, int cycle)
 {
   ps_insn_ptr ps_i = XNEW (struct ps_insn);
 
   ps_i->node = node;
   ps_i->next_in_row = NULL;
   ps_i->prev_in_row = NULL;
-  ps_i->row_rest_count = rest_count;
   ps_i->cycle = cycle;
 
   return ps_i;
@@ -2579,6 +2599,8 @@ remove_node_from_ps (partial_schedule_ptr ps, ps_insn_ptr ps_i)
       if (ps_i->next_in_row)
 	ps_i->next_in_row->prev_in_row = ps_i->prev_in_row;
     }
+   
+  ps->rows_length[row] -= 1; 
   free (ps_i);
   return true;
 }
@@ -2735,17 +2757,12 @@ add_node_to_ps (partial_schedule_ptr ps, ddg_node_ptr node, int cycle,
 		sbitmap must_precede, sbitmap must_follow)
 {
   ps_insn_ptr ps_i;
-  int rest_count = 1;
   int row = SMODULO (cycle, ps->ii);
 
-  if (ps->rows[row]
-      && ps->rows[row]->row_rest_count >= issue_rate)
+  if (ps->rows_length[row] >= issue_rate)
     return NULL;
 
-  if (ps->rows[row])
-    rest_count += ps->rows[row]->row_rest_count;
-
-  ps_i = create_ps_insn (node, rest_count, cycle);
+  ps_i = create_ps_insn (node, cycle);
 
   /* Finds and inserts PS_I according to MUST_FOLLOW and
      MUST_PRECEDE.  */
@@ -2755,6 +2772,7 @@ add_node_to_ps (partial_schedule_ptr ps, ddg_node_ptr node, int cycle,
       return NULL;
     }
 
+  ps->rows_length[row] += 1;
   return ps_i;
 }
 
@@ -2910,11 +2928,16 @@ rotate_partial_schedule (partial_schedule_ptr ps, int start_cycle)
   for (i = 0; i < backward_rotates; i++)
     {
       ps_insn_ptr first_row = ps->rows[0];
+      int first_row_length = ps->rows_length[0];
 
       for (row = 0; row < last_row; row++)
-	ps->rows[row] = ps->rows[row+1];
+	{
+	  ps->rows[row] = ps->rows[row + 1];
+	  ps->rows_length[row] = ps->rows_length[row + 1]; 
+	}
 
       ps->rows[last_row] = first_row;
+      ps->rows_length[last_row] = first_row_length;
     }
 
   ps->max_cycle -= start_cycle;
@@ -2969,12 +2992,10 @@ struct rtl_opt_pass pass_sms =
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
-  TODO_dump_func,                       /* todo_flags_start */
+  0,                                    /* todo_flags_start */
   TODO_df_finish
     | TODO_verify_flow
     | TODO_verify_rtl_sharing
-    | TODO_dump_func
     | TODO_ggc_collect                  /* todo_flags_finish */
  }
 };
-

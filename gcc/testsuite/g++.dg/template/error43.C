@@ -6,4 +6,4 @@ template<int> void foo()
   struct A {} a;
 }
 
-template void foo<0>();		// { dg-message "instantiated" }
+template void foo<0>();		// { dg-message "required" }

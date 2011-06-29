@@ -29,9 +29,8 @@ void test01()
   typedef int rep_type;
   typedef int period_type;
   typedef std::chrono::duration<rep_type, period_type> test_type;
-  test_type d;
+  test_type d;			// { dg-error "required from here" }
 }
 
 // { dg-error "must be a specialization of ratio" "" { target *-*-* } 227 }
-// { dg-error "instantiated from here" "" { target *-*-* } 32 }
-// { dg-excess-errors "In instantiation of" }
+// { dg-prune-output "not a member" }

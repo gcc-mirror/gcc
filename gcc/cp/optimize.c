@@ -310,8 +310,11 @@ maybe_clone_body (tree fn)
 	      || (HAVE_COMDAT_GROUP
 		  && DECL_WEAK (fns[0])))
 	  && (flag_syntax_only
-	      || cgraph_same_body_alias (cgraph_get_node (fns[0]), clone,
-					 fns[0])))
+	      /* Set linkage flags appropriately before
+		 cgraph_create_function_alias looks at them.  */
+	      || (expand_or_defer_fn_1 (clone)
+		  && cgraph_same_body_alias (cgraph_get_node (fns[0]),
+					     clone, fns[0]))))
 	{
 	  alias = true;
 	  if (DECL_ONE_ONLY (fns[0]))

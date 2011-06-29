@@ -3403,44 +3403,42 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
     tmax = TYPE_MAX_VALUE (type);
 
   /* Try to use estimated number of iterations for the loop to constrain the
-     final value in the evolution.
-     We are interested in the number of executions of the latch, while
-     nb_iterations_upper_bound includes the last execution of the exit test.  */
+     final value in the evolution.  */
   if (TREE_CODE (step) == INTEGER_CST
-      && loop->any_upper_bound
-      && !double_int_zero_p (loop->nb_iterations_upper_bound)
       && is_gimple_val (init)
       && (TREE_CODE (init) != SSA_NAME
 	  || get_value_range (init)->type == VR_RANGE))
     {
-      value_range_t maxvr = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
-      double_int dtmp;
-      bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (step));
-      int overflow = 0;
+      double_int nit;
 
-      dtmp = double_int_mul_with_sign (tree_to_double_int (step),
-                                       double_int_sub (
-                                           loop->nb_iterations_upper_bound,
-                                           double_int_one),
-                                       unsigned_p, &overflow);
-      /* If the multiplication overflowed we can't do a meaningful
-	 adjustment.  Likewise if the result doesn't fit in the type
-	 of the induction variable.  For a signed type we have to
-	 check whether the result has the expected signedness which
-	 is that of the step as nb_iterations_upper_bound is unsigned.  */
-      if (!overflow
-	  && double_int_fits_to_tree_p (TREE_TYPE (init), dtmp)
-	  && (unsigned_p
-	      || ((dtmp.high ^ TREE_INT_CST_HIGH (step)) >= 0)))
+      if (estimated_loop_iterations (loop, true, &nit))
 	{
-	  tem = double_int_to_tree (TREE_TYPE (init), dtmp);
-	  extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
-					  TREE_TYPE (init), init, tem);
-	  /* Likewise if the addition did.  */
-	  if (maxvr.type == VR_RANGE)
+	  value_range_t maxvr = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+	  double_int dtmp;
+	  bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (step));
+	  int overflow = 0;
+
+	  dtmp = double_int_mul_with_sign (tree_to_double_int (step), nit,
+					   unsigned_p, &overflow);
+	  /* If the multiplication overflowed we can't do a meaningful
+	     adjustment.  Likewise if the result doesn't fit in the type
+	     of the induction variable.  For a signed type we have to
+	     check whether the result has the expected signedness which
+	     is that of the step as number of iterations is unsigned.  */
+	  if (!overflow
+	      && double_int_fits_to_tree_p (TREE_TYPE (init), dtmp)
+	      && (unsigned_p
+		  || ((dtmp.high ^ TREE_INT_CST_HIGH (step)) >= 0)))
 	    {
-	      tmin = maxvr.min;
-	      tmax = maxvr.max;
+	      tem = double_int_to_tree (TREE_TYPE (init), dtmp);
+	      extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
+					      TREE_TYPE (init), init, tem);
+	      /* Likewise if the addition did.  */
+	      if (maxvr.type == VR_RANGE)
+		{
+		  tmin = maxvr.min;
+		  tmax = maxvr.max;
+		}
 	    }
 	}
     }
@@ -7730,13 +7728,13 @@ execute_vrp (void)
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   scev_initialize ();
 
+  insert_range_assertions ();
+
   /* Estimate number of iterations - but do not use undefined behavior
      for this.  We can't do this lazily as other functions may compute
      this using undefined behavior.  */
   free_numbers_of_iterations_estimates ();
   estimate_numbers_of_iterations (false);
-
-  insert_range_assertions ();
 
   to_remove_edges = VEC_alloc (edge, heap, 10);
   to_update_switch_stmts = VEC_alloc (switch_update, heap, 5);
@@ -7745,6 +7743,8 @@ execute_vrp (void)
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
   vrp_finalize ();
+
+  free_numbers_of_iterations_estimates ();
 
   /* ASSERT_EXPRs must be removed before finalizing jump threads
      as finalizing jump threads calls the CFG cleanup code which
@@ -7818,7 +7818,6 @@ struct gimple_opt_pass pass_vrp =
     | TODO_update_ssa
     | TODO_verify_ssa
     | TODO_verify_flow
-    | TODO_dump_func
     | TODO_ggc_collect			/* todo_flags_finish */
  }
 };

@@ -98,7 +98,7 @@ static struct machine_function * cris_init_machine_status (void);
 
 static rtx cris_struct_value_rtx (tree, int);
 
-static void cris_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+static void cris_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					 tree type, int *, int);
 
 static int cris_initial_frame_pointer_offset (void);
@@ -125,20 +125,18 @@ static int cris_register_move_cost (enum machine_mode, reg_class_t, reg_class_t)
 static int cris_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, int, int, int *, bool);
 static int cris_address_cost (rtx, bool);
-static bool cris_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+static bool cris_pass_by_reference (cumulative_args_t, enum machine_mode,
 				    const_tree, bool);
-static int cris_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int cris_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				   tree, bool);
-static rtx cris_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx cris_function_arg (cumulative_args_t, enum machine_mode,
 			      const_tree, bool);
-static rtx cris_function_incoming_arg (CUMULATIVE_ARGS *,
+static rtx cris_function_incoming_arg (cumulative_args_t,
 				       enum machine_mode, const_tree, bool);
-static void cris_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void cris_function_arg_advance (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
 static tree cris_md_asm_clobbers (tree, tree, tree);
 
-static bool cris_handle_option (struct gcc_options *, struct gcc_options *,
-				const struct cl_decoded_option *, location_t);
 static void cris_option_override (void);
 
 static bool cris_frame_pointer_required (void);
@@ -155,14 +153,6 @@ int cris_max_stackframe = 0;
 
 /* This is the parsed result of the "-march=" option, if given.  */
 int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options cris_option_optimization_table[] =
-  {
-    { OPT_LEVELS_2_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -232,17 +222,11 @@ static const struct default_options cris_option_optimization_table[] =
 #define TARGET_FUNCTION_ARG_ADVANCE cris_function_arg_advance
 #undef TARGET_MD_ASM_CLOBBERS
 #define TARGET_MD_ASM_CLOBBERS cris_md_asm_clobbers
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | CRIS_SUBTARGET_DEFAULT)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION cris_handle_option
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED cris_frame_pointer_required
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE cris_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE cris_option_optimization_table
 
 #undef TARGET_ASM_TRAMPOLINE_TEMPLATE
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE cris_asm_trampoline_template
@@ -1360,24 +1344,11 @@ static int
 cris_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 			 reg_class_t from, reg_class_t to)
 {
-  if (!TARGET_V32)
-    {
-      /* Pretend that classes that we don't support are ALL_REGS, so
-	 we give them the highest cost.  */
-      if (from != SPECIAL_REGS && from != MOF_REGS
-	  && from != GENERAL_REGS && from != GENNONACR_REGS)
-	from = ALL_REGS;
-
-      if (to != SPECIAL_REGS && to != MOF_REGS
-	  && to != GENERAL_REGS && to != GENNONACR_REGS)
-	to = ALL_REGS;
-    }
-
   /* Can't move to and from a SPECIAL_REGS register, so we have to say
      their move cost within that class is higher.  How about 7?  That's 3
      for a move to a GENERAL_REGS register, 3 for the move from the
      GENERAL_REGS register, and 1 for the increased register pressure.
-     Also, it's higher than the memory move cost, which is in order.  
+     Also, it's higher than the memory move cost, as it should.
      We also do this for ALL_REGS, since we don't want that class to be
      preferred (even to memory) at all where GENERAL_REGS doesn't fit.
      Whenever it's about to be used, it's for SPECIAL_REGS.  If we don't
@@ -1386,13 +1357,15 @@ cris_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
      GENERAL_REGS left to allocate.  This is because the fall-back when
      the most preferred register class isn't available, isn't the next
      (or next good) wider register class, but the *most widest* register
-     class.  */
+     class.  FIXME: pre-IRA comment, perhaps obsolete now.  */
 
   if ((reg_classes_intersect_p (from, SPECIAL_REGS)
        && reg_classes_intersect_p (to, SPECIAL_REGS))
       || from == ALL_REGS || to == ALL_REGS)
     return 7;
 
+  /* Make moves to/from SPECIAL_REGS slightly more expensive, as we
+     generally prefer GENERAL_REGS.  */
   if (reg_classes_intersect_p (from, SPECIAL_REGS)
       || reg_classes_intersect_p (to, SPECIAL_REGS))
     return 3;
@@ -2333,66 +2306,6 @@ cris_asm_output_case_end (FILE *stream, int num, rtx table)
 				    2), 0)),
 	       num,
 	       (TARGET_PDEBUG ? "; default" : ""));
-}
-
-/* TARGET_HANDLE_OPTION worker.  We just store the values into local
-   variables here.  Checks for correct semantics are in
-   cris_option_override.  */
-
-static bool
-cris_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-
-  switch (code)
-    {
-    case OPT_metrax100:
-      opts->x_target_flags
-	|= (MASK_SVINTO
-	    + MASK_ETRAX4_ADD
-	    + MASK_ALIGN_BY_32);
-      break;
-
-    case OPT_mno_etrax100:
-      opts->x_target_flags
-	&= ~(MASK_SVINTO
-	     + MASK_ETRAX4_ADD
-	     + MASK_ALIGN_BY_32);
-      break;
-
-    case OPT_m32_bit:
-    case OPT_m32bit:
-      opts->x_target_flags
-	|= (MASK_STACK_ALIGN
-	    + MASK_CONST_ALIGN
-	    + MASK_DATA_ALIGN
-	    + MASK_ALIGN_BY_32);
-      break;
-
-    case OPT_m16_bit:
-    case OPT_m16bit:
-      opts->x_target_flags
-	|= (MASK_STACK_ALIGN
-	    + MASK_CONST_ALIGN
-	    + MASK_DATA_ALIGN);
-      break;
-
-    case OPT_m8_bit:
-    case OPT_m8bit:
-      opts->x_target_flags
-	&= ~(MASK_STACK_ALIGN
-	     + MASK_CONST_ALIGN
-	     + MASK_DATA_ALIGN);
-      break;
-
-    default:
-      break;
-    }
-
-  return true;
 }
 
 /* The TARGET_OPTION_OVERRIDE worker.
@@ -3763,12 +3676,14 @@ cris_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-cris_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
+cris_setup_incoming_varargs (cumulative_args_t ca_v,
 			     enum machine_mode mode ATTRIBUTE_UNUSED,
 			     tree type ATTRIBUTE_UNUSED,
 			     int *pretend_arg_size,
 			     int second_time)
 {
+  CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+
   if (ca->regs < CRIS_MAX_ARGS_IN_REGS)
     {
       int stdarg_regs = CRIS_MAX_ARGS_IN_REGS - ca->regs;
@@ -3786,7 +3701,7 @@ cris_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
    For cris, we pass <= 8 bytes by value, others by reference.  */
 
 static bool
-cris_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+cris_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
@@ -3844,10 +3759,10 @@ cris_function_value_regno_p (const unsigned int regno)
 }
 
 static int
-cris_arg_partial_bytes (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+cris_arg_partial_bytes (cumulative_args_t ca, enum machine_mode mode,
 			tree type, bool named ATTRIBUTE_UNUSED)
 {
-  if (ca->regs == CRIS_MAX_ARGS_IN_REGS - 1
+  if (get_cumulative_args (ca)->regs == CRIS_MAX_ARGS_IN_REGS - 1
       && !targetm.calls.must_pass_in_stack (mode, type)
       && CRIS_FUNCTION_ARG_SIZE (mode, type) > 4
       && CRIS_FUNCTION_ARG_SIZE (mode, type) <= 8)
@@ -3857,11 +3772,13 @@ cris_arg_partial_bytes (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 }
 
 static rtx
-cris_function_arg_1 (const CUMULATIVE_ARGS *ca,
+cris_function_arg_1 (cumulative_args_t ca_v,
 		     enum machine_mode mode ATTRIBUTE_UNUSED,
 		     const_tree type ATTRIBUTE_UNUSED,
 		     bool named, bool incoming)
 {
+  const CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+
   if ((!incoming || named) && ca->regs < CRIS_MAX_ARGS_IN_REGS)
     return gen_rtx_REG (mode, CRIS_FIRST_ARG_REG + ca->regs);
   else
@@ -3872,7 +3789,7 @@ cris_function_arg_1 (const CUMULATIVE_ARGS *ca,
    The void_type_node is sent as a "closing" call.  */
 
 static rtx
-cris_function_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+cris_function_arg (cumulative_args_t ca, enum machine_mode mode,
 		   const_tree type, bool named)
 {
   return cris_function_arg_1 (ca, mode, type, named, false);
@@ -3886,7 +3803,7 @@ cris_function_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
    void_type_node TYPE parameter.  */
 
 static rtx
-cris_function_incoming_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+cris_function_incoming_arg (cumulative_args_t ca, enum machine_mode mode,
 			    const_tree type, bool named)
 {
   return cris_function_arg_1 (ca, mode, type, named, true);
@@ -3895,9 +3812,11 @@ cris_function_incoming_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 /* Worker function for TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-cris_function_arg_advance (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+cris_function_arg_advance (cumulative_args_t ca_v, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+
   ca->regs += (3 + CRIS_FUNCTION_ARG_SIZE (mode, type)) / 4;
 }
 

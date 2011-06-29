@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -march=armv6" } */
+/* { dg-prune-output "switch .* conflicts with" } */
 
 unsigned short foo (unsigned short x)
 {

@@ -291,6 +291,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-ipa-all -fdump-ipa-cgraph -fdump-ipa-inline @gol
+-fdump-passes @gol
 -fdump-statistics @gol
 -fdump-tree-all @gol
 -fdump-tree-original@r{[}-@var{n}@r{]}  @gol
@@ -476,7 +477,7 @@ Objective-C and Objective-C++ Dialects}.
 -mthumb  -marm @gol
 -mtpcs-frame  -mtpcs-leaf-frame @gol
 -mcaller-super-interworking  -mcallee-super-interworking @gol
--mtp=@var{name} @gol
+-mtp=@var{name} -mtls-dialect=@var{dialect} @gol
 -mword-relocations @gol
 -mfix-cortex-m3-ldrd}
 
@@ -863,7 +864,7 @@ See RS/6000 and PowerPC Options.
 -mtune=@var{cpu-type} @gol
 -mcmodel=@var{code-model} @gol
 -m32  -m64  -mapp-regs  -mno-app-regs @gol
--mfaster-structs  -mno-faster-structs @gol
+-mfaster-structs  -mno-faster-structs  -mflat  -mno-flat @gol
 -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
 -mhard-quad-float  -msoft-quad-float @gol
 -mlittle-endian @gol
@@ -2069,7 +2070,8 @@ Set the maximum instantiation depth for template classes to @var{n}.
 A limit on the template instantiation depth is needed to detect
 endless recursions during template class instantiation.  ANSI/ISO C++
 conforming programs must not rely on a maximum depth greater than 17
-(changed to 1024 in C++0x).
+(changed to 1024 in C++0x).  The default value is 900, as the compiler
+can run out of stack space before hitting 1024 in some situations.
 
 @item -fno-threadsafe-statics
 @opindex fno-threadsafe-statics
@@ -2330,6 +2332,15 @@ union U @{
 Warn when a class seems unusable because all the constructors or
 destructors in that class are private, and it has neither friends nor
 public static member functions.
+
+@item -Wdelete-non-virtual-dtor @r{(C++ and Objective-C++ only)}
+@opindex Wdelete-non-virtual-dtor
+@opindex Wno-delete-non-virtual-dtor
+Warn when @samp{delete} is used to destroy an instance of a class which
+has virtual functions and non-virtual destructor. It is unsafe to delete
+an instance of a derived class through a pointer to a base class if the
+base class does not have a virtual destructor.  This warning is enabled
+by @option{-Wall}.
 
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
@@ -5056,11 +5067,13 @@ appended with a sequential number starting from 1.
 Disable rtl pass @var{pass}.  @var{pass} is the pass name.  If the same pass is
 statically invoked in the compiler multiple times, the pass name should be
 appended with a sequential number starting from 1.  @var{range-list} is a comma
-seperated list of function ranges.  Each range is a number pair seperated by a colon.
-The range is inclusive in both ends.  If the range is trivial, the number pair can be
-simplified a a single number.  If the function's cgraph node's @var{uid} is falling
-within one of the specified ranges, the @var{pass} is disabled for that function.
-The @var{uid} is shown in the function header of a dump file.
+seperated list of function ranges or assembler names.  Each range is a number
+pair seperated by a colon.  The range is inclusive in both ends.  If the range
+is trivial, the number pair can be simplified as a single number.  If the
+function's cgraph node's @var{uid} is falling within one of the specified ranges,
+the @var{pass} is disabled for that function.  The @var{uid} is shown in the
+function header of a dump file, and the pass names can be dumped by using
+option @option{-fdump-passes}.
 
 @item -fdisable-tree-@var{pass}
 @item -fdisable-tree-@var{pass}=@var{range-list}
@@ -5090,7 +5103,8 @@ of option arguments.
    -fenable-tree-cunroll=1
 # disable gcse2 for functions at the following ranges [1,1],
 # [300,400], and [400,1000]
-   -fdisable-rtl-gcse2=1:100,300,400:1000
+# disable gcse2 for functions foo and foo2
+   -fdisable-rtl-gcse2=foo,foo2
 # disable early inlining
    -fdisable-tree-einline
 # disable ipa inlining
@@ -5482,6 +5496,11 @@ and inlining decisions.
 Dump after function inlining.
 
 @end table
+
+@item -fdump-passes
+@opindex fdump-passes
+Dump the list of optimization passes that are turned on and off by
+the current command line options.
 
 @item -fdump-statistics-@var{option}
 @opindex fdump-statistics
@@ -10168,10 +10187,11 @@ Generate reentrant, position independent code.  The default is
 @item -mthumb-interwork
 @opindex mthumb-interwork
 Generate code which supports calling between the ARM and Thumb
-instruction sets.  Without this option the two instruction sets cannot
-be reliably used inside one program.  The default is
-@option{-mno-thumb-interwork}, since slightly larger code is generated
-when @option{-mthumb-interwork} is specified.
+instruction sets.  Without this option, on pre-v5 architectures, the
+two instruction sets cannot be reliably used inside one program.  The
+default is @option{-mno-thumb-interwork}, since slightly larger code
+is generated when @option{-mthumb-interwork} is specified.  In AAPCS
+configurations this option is meaningless.
 
 @item -mno-sched-prolog
 @opindex mno-sched-prolog
@@ -10245,7 +10265,9 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{cortex-m4}, @samp{cortex-m3},
 @samp{cortex-m1},
 @samp{cortex-m0},
-@samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
+@samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
+@samp{fa526}, @samp{fa626},
+@samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.
 
 @item -mtune=@var{name}
 @opindex mtune
@@ -10448,6 +10470,18 @@ models are @option{soft}, which generates calls to @code{__aeabi_read_tp},
 (supported in the arm6k architecture), and @option{auto}, which uses the
 best available method for the selected processor.  The default setting is
 @option{auto}.
+
+@item -mtls-dialect=@var{dialect}
+@opindex mtls-dialect
+Specify the dialect to use for accessing thread local storage.  Two
+dialects are supported --- @option{gnu} and @option{gnu2}.  The
+@option{gnu} dialect selects the original GNU scheme for supporting
+local and global dynamic TLS models.  The @option{gnu2} dialect
+selects the GNU descriptor scheme, which provides better performance
+for shared libraries.  The GNU descriptor scheme is compatible with
+the original scheme, but does require new assembler, linker and
+library support.  Initial and local exec TLS models are unaffected by
+this option and always use the original scheme.
 
 @item -mword-relocations
 @opindex mword-relocations
@@ -17029,6 +17063,19 @@ is the default.
 To be fully SVR4 ABI compliant at the cost of some performance loss,
 specify @option{-mno-app-regs}.  You should compile libraries and system
 software with this option.
+
+@item -mflat
+@itemx -mno-flat
+@opindex mflat
+@opindex mno-flat
+With @option{-mflat}, the compiler does not generate save/restore instructions
+and uses a ``flat'' or single register window model.  This model is compatible
+with the regular register window model.  The local registers and the input
+registers (0--5) are still treated as ``call-saved'' registers and will be
+saved on the stack as needed.
+
+With @option{-mno-flat} (the default), the compiler generates save/restore
+instructions (except for leaf functions).  This is the normal operating mode.
 
 @item -mfpu
 @itemx -mhard-float

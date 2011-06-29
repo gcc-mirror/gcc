@@ -36,11 +36,6 @@ extern "C" {
 
 #include <stddef.h>
 
-/* objc-decls.h is included because deprecated/objc_msg_sendv.h needs
-   it.  When that goes away, the include of objc-decls.h should be
-   removed.  */
-#include "objc-decls.h"
-
 /* The current version of the GNU Objective-C Runtime library in
    compressed ISO date format.  This should be updated any time a new
    version is released with changes to the public API (there is no
@@ -48,7 +43,7 @@ extern "C" {
    release).  This macro is only defined starting with the GNU
    Objective-C Runtime shipped with GCC 4.6.0.  If it is not defined,
    it is either an older version of the runtime, or another runtime.  */
-#define __GNU_LIBOBJC__ 20100911
+#define __GNU_LIBOBJC__ 20110608
 
 /* Definition of the boolean type.
 
@@ -76,15 +71,12 @@ typedef unsigned char  BOOL;
    selector and know that the class implements it, you can use it to
    call the method for an object in the class.  */
 typedef const struct objc_selector *SEL;
-#include "deprecated/struct_objc_selector.h"
 
 /* A Class is a class (in the object-oriented sense).  In Objective-C
    there is the complication that each Class is an object itself, and
    so belongs to a class too.  This class that a class belongs to is
    called its 'meta class'.  */
 typedef struct objc_class *Class;
-#include "deprecated/MetaClass.h"
-#include "deprecated/struct_objc_class.h"
 
 /* An 'id' is an object of an unknown class.  The way the object data
    is stored inside the object is private and what you see here is
@@ -125,8 +117,6 @@ typedef id (*IMP)(id, SEL, ...);
    compiler to do some type-checking.  */
 #define Nil (Class)0
 
-#include "deprecated/STR.h"
-
 /* TODO: Move the 'Protocol' declaration into objc/runtime.h.  A
    Protocol is simply an object, not a basic Objective-C type.  The
    Apple runtime defines Protocol in objc/runtime.h too, so it's good
@@ -142,17 +132,10 @@ typedef id (*IMP)(id, SEL, ...);
      there is no reason to even define a 'struct objc_protocol'.  As
      all the structure details will be hidden, a Protocol basically is
      simply an object (as it should be).  */
-  /* typedef struct objc_object Protocol; */
-  #include "deprecated/struct_objc_protocol.h"
+  typedef struct objc_object Protocol;
 #else /* __OBJC__ */
   @class Protocol;
 #endif 
-
-/* Deprecated include - here temporarily, for backwards-compatibility
-   as reval_t, apply_t, arglist_t and objc_msg_lookup() used to be
-   defined here.  objc_msg_lookup() is now defined in message.h,
-   included by objc-api.h or runtime.h.  */
-#include "deprecated/objc_msg_sendv.h"
 
 /* Compatibility note: the Apple/NeXT runtime defines sel_getName(),
    sel_registerName(), object_getClassName(), object_getIndexedIvars()

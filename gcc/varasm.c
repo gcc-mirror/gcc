@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "targhooks.h"
 #include "tree-mudflap.h"
 #include "cgraph.h"
@@ -313,7 +314,11 @@ get_section (const char *name, unsigned int flags, tree decl)
 	  if (decl == 0)
 	    decl = sect->named.decl;
 	  gcc_assert (decl);
-	  error ("%+D causes a section type conflict", decl);
+	  error ("%+D causes a section type conflict with %D", 
+			decl, sect->named.decl);
+	  if (decl != sect->named.decl)
+            inform (DECL_SOURCE_LOCATION (sect->named.decl), 
+		    "%qD was declared here", sect->named.decl);
 	  /* Make sure we don't error about one section multiple times.  */
 	  sect->common.flags |= SECTION_OVERRIDE;
 	}
@@ -412,7 +417,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 			int flag_function_or_data_sections)
 {
   if (DECL_SECTION_NAME (decl) == NULL_TREE
-      && targetm.have_named_sections
+      && targetm_common.have_named_sections
       && (flag_function_or_data_sections
 	  || DECL_ONE_ONLY (decl)))
     {
@@ -460,7 +465,7 @@ hot_function_section (tree decl)
 {
   if (decl != NULL_TREE
       && DECL_SECTION_NAME (decl) != NULL_TREE
-      && targetm.have_named_sections)
+      && targetm_common.have_named_sections)
     return get_named_section (decl, NULL, 0);
   else
     return text_section;
@@ -532,7 +537,7 @@ default_function_section (tree decl, enum node_frequency freq,
 #endif
 
   if (!flag_reorder_functions
-      || !targetm.have_named_sections)
+      || !targetm_common.have_named_sections)
     return NULL;
   /* Startup code should go to startup subsection unless it is
      unlikely executed (this happens especially with function splitting
@@ -1237,7 +1242,7 @@ make_decl_rtl (tree decl)
 #endif
 	      nregs = hard_regno_nregs[reg_number][DECL_MODE (decl)];
 	      while (nregs > 0)
-		globalize_reg (reg_number + --nregs);
+		globalize_reg (decl, reg_number + --nregs);
 	    }
 
 	  /* As a register variable, it has no section.  */

@@ -352,6 +352,9 @@ build_call_a (tree function, int n, tree *argarray)
   nothrow = ((decl && TREE_NOTHROW (decl))
 	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (function))));
 
+  if (!nothrow && cfun && cp_function_chain)
+    cp_function_chain->can_throw = 1;
+
   if (decl && TREE_THIS_VOLATILE (decl) && cfun && cp_function_chain)
     current_function_returns_abnormally = 1;
 
@@ -429,6 +432,7 @@ struct candidate_warning {
 enum rejection_reason_code {
   rr_none,
   rr_arity,
+  rr_explicit_conversion,
   rr_arg_conversion,
   rr_bad_arg_conversion
 };
@@ -534,15 +538,16 @@ null_ptr_cst_p (tree t)
   return false;
 }
 
-/* Returns nonzero if PARMLIST consists of only default parms and/or
-   ellipsis.  */
+/* Returns nonzero if PARMLIST consists of only default parms,
+   ellipsis, and/or undeduced parameter packs.  */
 
 bool
 sufficient_parms_p (const_tree parmlist)
 {
   for (; parmlist && parmlist != void_list_node;
        parmlist = TREE_CHAIN (parmlist))
-    if (!TREE_PURPOSE (parmlist))
+    if (!TREE_PURPOSE (parmlist)
+	&& !PACK_EXPANSION_P (TREE_VALUE (parmlist)))
       return false;
   return true;
 }
@@ -604,6 +609,16 @@ bad_arg_conversion_rejection (tree first_arg, int n_arg, tree from, tree to)
   r->u.bad_conversion.n_arg = n_arg - adjust;
   r->u.bad_conversion.from_type = from;
   r->u.bad_conversion.to_type = to;
+  return r;
+}
+
+static struct rejection_reason *
+explicit_conversion_rejection (tree from, tree to)
+{
+  struct rejection_reason *r = alloc_rejection (rr_explicit_conversion);
+  r->u.conversion.n_arg = 0;
+  r->u.conversion.from_type = from;
+  r->u.conversion.to_type = to;
   return r;
 }
 
@@ -1362,6 +1377,8 @@ convert_class_to_reference_1 (tree reference_type, tree s, tree expr, int flags)
 
               /* Don't allow binding of lvalues to rvalue references.  */
               if (TYPE_REF_IS_RVALUE (reference_type)
+                  /* Function lvalues are OK, though.  */
+                  && TREE_CODE (TREE_TYPE (reference_type)) != FUNCTION_TYPE
                   && !TYPE_REF_IS_RVALUE (TREE_TYPE (TREE_TYPE (cand->fn))))
                 cand->second_conv->bad_p = true;
 	    }
@@ -2626,8 +2643,6 @@ type_decays_to (tree type)
     return build_pointer_type (TREE_TYPE (type));
   if (TREE_CODE (type) == FUNCTION_TYPE)
     return build_pointer_type (type);
-  if (!MAYBE_CLASS_TYPE_P (type))
-    type = cv_unqualified (type);
   return type;
 }
 
@@ -2761,7 +2776,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	      type = non_reference (type);
 	      if (i != 0 || ! ref1)
 		{
-		  type = TYPE_MAIN_VARIANT (type_decays_to (type));
+		  type = cv_unqualified (type_decays_to (type));
 		  if (enum_p && TREE_CODE (type) == ENUMERAL_TYPE)
 		    VEC_safe_push (tree, gc, types[i], type);
 		  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
@@ -2780,7 +2795,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	  type = non_reference (argtypes[i]);
 	  if (i != 0 || ! ref1)
 	    {
-	      type = TYPE_MAIN_VARIANT (type_decays_to (type));
+	      type = cv_unqualified (type_decays_to (type));
 	      if (enum_p && UNSCOPED_ENUM_P (type))
 		VEC_safe_push (tree, gc, types[i], type);
 	      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
@@ -3150,6 +3165,12 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
 	case rr_bad_arg_conversion:
 	  print_conversion_rejection (loc, &r->u.bad_conversion);
 	  break;
+	case rr_explicit_conversion:
+	  inform (loc, "  return type %qT of explicit conversion function "
+		  "cannot be converted to %qT with a qualification "
+		  "conversion", r->u.conversion.from_type,
+		  r->u.conversion.to_type);
+	  break;
 	case rr_none:
 	default:
 	  /* This candidate didn't have any issues or we failed to
@@ -3426,9 +3447,10 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 
       for (cand = candidates; cand != old_candidates; cand = cand->next)
 	{
+	  tree rettype = TREE_TYPE (TREE_TYPE (cand->fn));
 	  conversion *ics
 	    = implicit_conversion (totype,
-				   TREE_TYPE (TREE_TYPE (cand->fn)),
+				   rettype,
 				   0,
 				   /*c_cast_p=*/false, convflags);
 
@@ -3450,14 +3472,23 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 
 	  if (!ics)
 	    {
-	      tree rettype = TREE_TYPE (TREE_TYPE (cand->fn));
 	      cand->viable = 0;
 	      cand->reason = arg_conversion_rejection (NULL_TREE, -1,
 						       rettype, totype);
 	    }
+	  else if (DECL_NONCONVERTING_P (cand->fn)
+		   && ics->rank > cr_exact)
+	    {
+	      /* 13.3.1.5: For direct-initialization, those explicit
+		 conversion functions that are not hidden within S and
+		 yield type T or a type that can be converted to type T
+		 with a qualification conversion (4.4) are also candidate
+		 functions.  */
+	      cand->viable = -1;
+	      cand->reason = explicit_conversion_rejection (rettype, totype);
+	    }
 	  else if (cand->viable == 1 && ics->bad_p)
 	    {
-	      tree rettype = TREE_TYPE (TREE_TYPE (cand->fn));
 	      cand->viable = -1;
 	      cand->reason
 		= bad_arg_conversion_rejection (NULL_TREE, -1,
@@ -4791,7 +4822,7 @@ avoid_sign_compare_warnings (tree orig_arg, tree arg)
 
 static tree
 build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
-	      bool *overloaded_p, tsubst_flags_t complain)
+		tree *overload, tsubst_flags_t complain)
 {
   tree orig_arg1 = arg1;
   tree orig_arg2 = arg2;
@@ -4958,7 +4989,7 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	  else
 	    code = PREDECREMENT_EXPR;
 	  result = build_new_op_1 (code, flags, arg1, NULL_TREE, NULL_TREE,
-				   overloaded_p, complain);
+				   overload, complain);
 	  break;
 
 	  /* The caller will deal with these.  */
@@ -5005,8 +5036,8 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	}
       else if (TREE_CODE (cand->fn) == FUNCTION_DECL)
 	{
-	  if (overloaded_p)
-	    *overloaded_p = true;
+	  if (overload)
+	    *overload = cand->fn;
 
 	  if (resolve_args (arglist, complain) == NULL)
 	    result = error_mark_node;
@@ -5165,11 +5196,11 @@ build_new_op_1 (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 
 tree
 build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
-	      bool *overloaded_p, tsubst_flags_t complain)
+	      tree *overload, tsubst_flags_t complain)
 {
   tree ret;
   bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_new_op_1 (code, flags, arg1, arg2, arg3, overloaded_p, complain);
+  ret = build_new_op_1 (code, flags, arg1, arg2, arg3, overload, complain);
   timevar_cond_stop (TV_OVERLOAD, subtime);
   return ret;
 }
@@ -5510,7 +5541,18 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
       for (; t; t = convs->u.next)
 	{
-	  if (t->kind == ck_user || !t->bad_p)
+	  if (t->kind == ck_user && t->cand->reason)
+	    {
+	      permerror (input_location, "invalid user-defined conversion "
+			 "from %qT to %qT", TREE_TYPE (expr), totype);
+	      print_z_candidate ("candidate is:", t->cand);
+	      expr = convert_like_real (t, expr, fn, argnum, 1,
+					/*issue_conversion_warnings=*/false,
+					/*c_cast_p=*/false,
+					complain);
+	      return cp_convert (totype, expr);
+	    }
+	  else if (t->kind == ck_user || !t->bad_p)
 	    {
 	      expr = convert_like_real (t, expr, fn, argnum, 1,
 					/*issue_conversion_warnings=*/false,
@@ -5580,7 +5622,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    expr = build_cplus_new (totype, expr, complain);
 
 	    /* Remember that this was list-initialization.  */
-	    if (convs->check_narrowing)
+	    if (convs->check_narrowing && expr != error_mark_node)
 	      TARGET_EXPR_LIST_INIT_P (expr) = true;
 	  }
 
@@ -5896,7 +5938,15 @@ convert_arg_to_ellipsis (tree arg)
   else if (NULLPTR_TYPE_P (arg_type))
     arg = null_pointer_node;
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (arg_type))
-    arg = perform_integral_promotions (arg);
+    {
+      if (SCOPED_ENUM_P (arg_type) && !abi_version_at_least (6))
+	{
+	  warning (OPT_Wabi, "scoped enum %qT will not promote to an "
+		   "integral type in a future version of GCC", arg_type);
+	  arg = cp_convert (ENUM_UNDERLYING_TYPE (arg_type), arg);
+	}
+      arg = perform_integral_promotions (arg);
+    }
 
   arg = require_complete_type (arg);
   arg_type = TREE_TYPE (arg);
@@ -6663,11 +6713,6 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
 
   /* If this call might throw an exception, note that fact.  */
   fndecl = get_callee_fndecl (fn);
-  if ((!fndecl || !TREE_NOTHROW (fndecl))
-      && at_function_scope_p ()
-      && cfun
-      && cp_function_chain)
-    cp_function_chain->can_throw = 1;
 
   /* Check that arguments to builtin functions match the expectations.  */
   if (fndecl
@@ -8288,7 +8333,8 @@ perform_implicit_conversion_flags (tree type, tree expr, tsubst_flags_t complain
 	  else if (invalid_nonstatic_memfn_p (expr, complain))
 	    /* We gave an error.  */;
 	  else
-	    error ("could not convert %qE to %qT", expr, type);
+	    error ("could not convert %qE from %qT to %qT", expr,
+		   TREE_TYPE (expr), type);
 	}
       expr = error_mark_node;
     }
@@ -8581,6 +8627,8 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
       tree var;
       tree base_conv_type;
 
+      gcc_assert (complain == tf_warning_or_error);
+
       /* Skip over the REF_BIND.  */
       conv = conv->u.next;
       /* If the next conversion is a BASE_CONV, skip that too -- but
@@ -8598,7 +8646,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
 				/*inner=*/-1,
 				/*issue_conversion_warnings=*/true,
 				/*c_cast_p=*/false,
-				tf_warning_or_error);
+				complain);
       if (error_operand_p (expr))
 	expr = error_mark_node;
       else
@@ -8619,18 +8667,24 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
 	    }
 	  else
 	    /* Take the address of EXPR.  */
-	    expr = cp_build_addr_expr (expr, tf_warning_or_error);
+	    expr = cp_build_addr_expr (expr, complain);
 	  /* If a BASE_CONV was required, perform it now.  */
 	  if (base_conv_type)
 	    expr = (perform_implicit_conversion
 		    (build_pointer_type (base_conv_type), expr,
-		     tf_warning_or_error));
+		     complain));
 	  expr = build_nop (type, expr);
+	  if (DECL_DECLARED_CONSTEXPR_P (decl))
+	    {
+	      expr = cxx_constant_value (expr);
+	      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
+		= reduced_constant_expression_p (expr);
+	    }
 	}
     }
   else
     /* Perform the conversion.  */
-    expr = convert_like (conv, expr, tf_warning_or_error);
+    expr = convert_like (conv, expr, complain);
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);

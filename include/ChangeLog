@@ -1,3 +1,13 @@
+2011-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47858
+	* dwarf2.h (enum dwarf_location_atom): Add DW_OP_GNU_parameter_ref.
+
+2011-06-13  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* demangle.h (DMGL_RET_POSTFIX): Extend the comment.
+	(DMGL_RET_DROP): New.
+
 2011-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (DW_OP_GNU_const_type, DW_OP_GNU_regval_type,

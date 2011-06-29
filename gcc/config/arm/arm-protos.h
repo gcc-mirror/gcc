@@ -23,6 +23,7 @@
 #ifndef GCC_ARM_PROTOS_H
 #define GCC_ARM_PROTOS_H
 
+extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
 extern enum reg_class arm_regno_class (int);
 extern void arm_load_pic_register (unsigned long);
@@ -65,8 +66,12 @@ extern int vfp3_const_double_rtx (rtx);
 extern int neon_immediate_valid_for_move (rtx, enum machine_mode, rtx *, int *);
 extern int neon_immediate_valid_for_logic (rtx, enum machine_mode, int, rtx *,
 					   int *);
+extern int neon_immediate_valid_for_shift (rtx, enum machine_mode, rtx *,
+					   int *, bool);
 extern char *neon_output_logic_immediate (const char *, rtx *,
 					  enum machine_mode, int, int);
+extern char *neon_output_shift_immediate (const char *, char, rtx *,
+					  enum machine_mode, int, bool);
 extern void neon_pairwise_reduce (rtx, rtx, enum machine_mode,
 				  rtx (*) (rtx, rtx, rtx));
 extern rtx neon_make_constant (rtx);
@@ -221,9 +226,14 @@ struct tune_params
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
   bool (*sched_adjust_cost) (rtx, rtx, rtx, int *);
   int constant_limit;
+  /* Maximum number of instructions to conditionalise in
+     arm_final_prescan_insn.  */
+  int max_insns_skipped;
   int num_prefetch_slots;
   int l1_cache_size;
   int l1_cache_line_size;
+  bool prefer_constant_pool;
+  int (*branch_cost) (bool, bool);
 };
 
 extern const struct tune_params *current_tune;

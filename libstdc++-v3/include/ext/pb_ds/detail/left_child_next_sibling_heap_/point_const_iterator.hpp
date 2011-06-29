@@ -60,88 +60,83 @@ namespace __gnu_pbds
     template<typename Node, typename _Alloc>
     class left_child_next_sibling_heap_node_point_const_iterator_
     {
-
     protected:
       typedef typename _Alloc::template rebind<Node>::other::pointer node_pointer;
 
     public:
-
-      // Category.
+      /// Category.
       typedef trivial_iterator_tag iterator_category;
 
-      // Difference type.
+      /// Difference type.
       typedef trivial_iterator_difference_type difference_type;
 
-      // Iterator's value type.
+      /// Iterator's value type.
       typedef typename Node::value_type value_type;
 
-      // Iterator's pointer type.
+      /// Iterator's pointer type.
       typedef
       typename _Alloc::template rebind<
 	value_type>::other::pointer
       pointer;
 
-      // Iterator's const pointer type.
+      /// Iterator's const pointer type.
       typedef
       typename _Alloc::template rebind<
 	value_type>::other::const_pointer
       const_pointer;
 
-      // Iterator's reference type.
+      /// Iterator's reference type.
       typedef
       typename _Alloc::template rebind<
 	value_type>::other::reference
       reference;
 
-      // Iterator's const reference type.
+      /// Iterator's const reference type.
       typedef
       typename _Alloc::template rebind<
 	value_type>::other::const_reference
       const_reference;
 
-    public:
-
       inline
       left_child_next_sibling_heap_node_point_const_iterator_(node_pointer p_nd) : m_p_nd(p_nd)
       { }
 
-      // Default constructor.
+      /// Default constructor.
       inline
       left_child_next_sibling_heap_node_point_const_iterator_() : m_p_nd(0)
       { }
 
-      // Copy constructor.
+      /// Copy constructor.
       inline
       left_child_next_sibling_heap_node_point_const_iterator_(const PB_DS_CLASS_C_DEC& other) : m_p_nd(other.m_p_nd)
       { }
 
-      // Access.
-      inline const_pointer
+      /// Access.
+      const_pointer
       operator->() const
       {
 	_GLIBCXX_DEBUG_ASSERT(m_p_nd != 0);
 	return &m_p_nd->m_value;
       }
 
-      // Access.
-      inline const_reference
+      /// Access.
+      const_reference
       operator*() const
       {
 	_GLIBCXX_DEBUG_ASSERT(m_p_nd != 0);
 	return m_p_nd->m_value;
       }
 
-      // Compares content to a different iterator object.
-      inline bool
+      /// Compares content to a different iterator object.
+      bool
       operator==(const PB_DS_CLASS_C_DEC& other) const
       { return m_p_nd == other.m_p_nd; }
 
-      // Compares content (negatively) to a different iterator object.
-      inline bool
+      /// Compares content (negatively) to a different iterator object.
+      bool
       operator!=(const PB_DS_CLASS_C_DEC& other) const
       { return m_p_nd != other.m_p_nd; }
 
-    public:
       node_pointer m_p_nd;
     };
 
@@ -151,4 +146,4 @@ namespace __gnu_pbds
   } // namespace detail
 } // namespace __gnu_pbds
 
-#endif 
+#endif

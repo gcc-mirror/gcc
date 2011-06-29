@@ -10,7 +10,7 @@
 template <int I> void f(int (*)[2]) {} // { dg-warning "mangled name" }
 template <int I> void g(int (*)[I+2]) {}
 
-template void f<1>(int (*)[2]);  // { dg-message "instantiated" }
+template void f<1>(int (*)[2]);  // { dg-message "required" }
 //  { dg-final { scan-assembler "\n_?_Z1fILi1EEvPALi2E_i\[: \t\n\]" } }
 template void g<1>(int (*)[3]);
 //  { dg-final { scan-assembler "\n_?_Z1gILi1EEvPAplT_Li2E_i\[: \t\n\]" } }

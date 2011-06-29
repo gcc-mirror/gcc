@@ -51,6 +51,11 @@ namespace __gnu_pbds
 {
   namespace detail
   {
+    /**
+     *  @addtogroup traits Traits
+     *  @{
+     */
+
     /// Primary template.
     template<typename Key, typename Mapped>
       struct no_throw_copies
@@ -67,11 +72,6 @@ namespace __gnu_pbds
 	typedef integral_constant<int, is_simple<Key>::value> 	indicator;
       };
 
-
-    //@{
-    /**
-     *  Data properties computation.
-     */
 
     /// Stored value.
     template<typename _Tv>

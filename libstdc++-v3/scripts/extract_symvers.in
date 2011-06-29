@@ -52,6 +52,9 @@ SunOS)
   ${readelf} ${lib} |\
   sed -e 's/ \[<other>: [A-Fa-f0-9]*\] //' -e '/\.dynsym/,/^$/p;d' |\
   egrep -v ' (LOCAL|UND) ' |\
+  sed -e 's/ <processor specific>: / <processor_specific>:_/g' |\
+  sed -e 's/ <OS specific>: / <OS_specific>:_/g' |\
+  sed -e 's/ <unknown>: / <unknown>:_/g' |\
   awk '{ if ($4 == "FUNC" || $4 == "NOTYPE")
            printf "%s:%s\n", $4, $8;
          else if ($4 == "OBJECT" || $4 == "TLS")

@@ -4715,7 +4715,7 @@ mips_arg_regno (const struct mips_arg_info *info, bool hard_float_p)
 /* Implement TARGET_STRICT_ARGUMENT_NAMING.  */
 
 static bool
-mips_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
+mips_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
 {
   return !TARGET_OLDABI;
 }
@@ -4723,9 +4723,10 @@ mips_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 /* Implement TARGET_FUNCTION_ARG.  */
 
 static rtx
-mips_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mips_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		   const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   struct mips_arg_info info;
 
   /* We will be called with a mode of VOIDmode after the last argument
@@ -4849,9 +4850,10 @@ mips_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
 static void
-mips_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mips_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			   const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   struct mips_arg_info info;
 
   mips_get_arg_info (&info, cum, mode, type, named);
@@ -4885,12 +4887,12 @@ mips_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Implement TARGET_ARG_PARTIAL_BYTES.  */
 
 static int
-mips_arg_partial_bytes (CUMULATIVE_ARGS *cum,
+mips_arg_partial_bytes (cumulative_args_t cum,
 			enum machine_mode mode, tree type, bool named)
 {
   struct mips_arg_info info;
 
-  mips_get_arg_info (&info, cum, mode, type, named);
+  mips_get_arg_info (&info, get_cumulative_args (cum), mode, type, named);
   return info.stack_words > 0 ? info.reg_words * UNITS_PER_WORD : 0;
 }
 
@@ -4969,7 +4971,7 @@ mips_pad_reg_upward (enum machine_mode mode, tree type)
 /* Return nonzero when an argument must be passed by reference.  */
 
 static bool
-mips_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+mips_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
@@ -4996,7 +4998,7 @@ mips_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 /* Implement TARGET_CALLEE_COPIES.  */
 
 static bool
-mips_callee_copies (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+mips_callee_copies (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		    enum machine_mode mode ATTRIBUTE_UNUSED,
 		    const_tree type ATTRIBUTE_UNUSED, bool named)
 {
@@ -5263,7 +5265,7 @@ mips_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 /* Implement TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mips_setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
 			     tree type, int *pretend_size ATTRIBUTE_UNUSED,
 			     int no_rtl)
 {
@@ -5273,8 +5275,9 @@ mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   /* The caller has advanced CUM up to, but not beyond, the last named
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
-  local_cum = *cum;
-  mips_function_arg_advance (&local_cum, mode, type, true);
+  local_cum = *get_cumulative_args (cum);
+  mips_function_arg_advance (pack_cumulative_args (&local_cum), mode, type,
+			     true);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
@@ -5925,7 +5928,7 @@ mips_output_args_xfer (int fp_code, char direction)
       else
 	mips_output_64bit_xfer (direction, gparg, fparg);
 
-      mips_function_arg_advance (&cum, mode, NULL, true);
+      mips_function_arg_advance (pack_cumulative_args (&cum), mode, NULL, true);
     }
 }
 
@@ -15302,27 +15305,6 @@ mips_set_tune (const struct mips_cpu_info *info)
     }
 }
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-mips_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-
-  switch (code)
-    {
-    case OPT_mno_flush_func:
-      opts->x_mips_cache_flush_func = NULL;
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 /* Implement TARGET_OPTION_OVERRIDE.  */
 
 static void
@@ -15696,13 +15678,6 @@ mips_option_override (void)
      MIPS16 mode afterwards if need be.  */
   mips_set_mips16_mode (false);
 }
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options mips_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Swap the register information for registers I and I + 1, which
    currently have the wrong endianness.  Note that the registers'
@@ -16216,8 +16191,6 @@ mips_shift_truncation_mask (enum machine_mode mode)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mips_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE mips_option_optimization_table
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS mips_legitimize_address
@@ -16253,17 +16226,6 @@ mips_shift_truncation_mask (enum machine_mode mode)
 #undef TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   mips_small_register_classes_for_mode_p
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS		\
-  (TARGET_DEFAULT				\
-   | TARGET_CPU_DEFAULT				\
-   | TARGET_ENDIAN_DEFAULT			\
-   | TARGET_FP_EXCEPTIONS_DEFAULT		\
-   | MASK_CHECK_ZERO_DIV			\
-   | MASK_FUSED_MADD)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION mips_handle_option
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL mips_function_ok_for_sibcall

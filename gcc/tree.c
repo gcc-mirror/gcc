@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "filenames.h"
 #include "output.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"
@@ -201,6 +202,9 @@ static GTY ((if_marked ("tree_decl_map_marked_p"), param_is (struct tree_decl_ma
 
 static GTY ((if_marked ("tree_decl_map_marked_p"), param_is (struct tree_decl_map)))
      htab_t value_expr_for_decl;
+
+static GTY ((if_marked ("tree_vec_map_marked_p"), param_is (struct tree_vec_map)))
+     htab_t debug_args_for_decl;
 
 static GTY ((if_marked ("tree_priority_map_marked_p"),
 	     param_is (struct tree_priority_map)))
@@ -5230,82 +5234,119 @@ struct simple_ipa_opt_pass pass_ipa_free_lang_data =
  }
 };
 
-/* Return nonzero if IDENT is a valid name for attribute ATTR,
-   or zero if not.
-
-   We try both `text' and `__text__', ATTR may be either one.  */
-/* ??? It might be a reasonable simplification to require ATTR to be only
-   `text'.  One might then also require attribute lists to be stored in
-   their canonicalized form.  */
-
-static int
-is_attribute_with_length_p (const char *attr, int attr_len, const_tree ident)
+/* The backbone of is_attribute_p().  ATTR_LEN is the string length of
+   ATTR_NAME.  Also used internally by remove_attribute().  */
+bool
+private_is_attribute_p (const char *attr_name, size_t attr_len, const_tree ident)
 {
-  int ident_len;
-  const char *p;
+  size_t ident_len = IDENTIFIER_LENGTH (ident);
 
-  if (TREE_CODE (ident) != IDENTIFIER_NODE)
-    return 0;
-
-  p = IDENTIFIER_POINTER (ident);
-  ident_len = IDENTIFIER_LENGTH (ident);
-
-  if (ident_len == attr_len
-      && strcmp (attr, p) == 0)
-    return 1;
-
-  /* If ATTR is `__text__', IDENT must be `text'; and vice versa.  */
-  if (attr[0] == '_')
+  if (ident_len == attr_len)
     {
-      gcc_assert (attr[1] == '_');
-      gcc_assert (attr[attr_len - 2] == '_');
-      gcc_assert (attr[attr_len - 1] == '_');
-      if (ident_len == attr_len - 4
-	  && strncmp (attr + 2, p, attr_len - 4) == 0)
-	return 1;
+      if (strcmp (attr_name, IDENTIFIER_POINTER (ident)) == 0)
+	return true;
     }
-  else
+  else if (ident_len == attr_len + 4)
     {
-      if (ident_len == attr_len + 4
-	  && p[0] == '_' && p[1] == '_'
+      /* There is the possibility that ATTR is 'text' and IDENT is
+	 '__text__'.  */
+      const char *p = IDENTIFIER_POINTER (ident);      
+      if (p[0] == '_' && p[1] == '_'
 	  && p[ident_len - 2] == '_' && p[ident_len - 1] == '_'
-	  && strncmp (attr, p + 2, attr_len) == 0)
-	return 1;
+	  && strncmp (attr_name, p + 2, attr_len) == 0)
+	return true;
     }
 
-  return 0;
+  return false;
 }
 
-/* Return nonzero if IDENT is a valid name for attribute ATTR,
-   or zero if not.
-
-   We try both `text' and `__text__', ATTR may be either one.  */
-
-int
-is_attribute_p (const char *attr, const_tree ident)
-{
-  return is_attribute_with_length_p (attr, strlen (attr), ident);
-}
-
-/* Given an attribute name and a list of attributes, return a pointer to the
-   attribute's list element if the attribute is part of the list, or NULL_TREE
-   if not found.  If the attribute appears more than once, this only
-   returns the first occurrence; the TREE_CHAIN of the return value should
-   be passed back in if further occurrences are wanted.  */
-
+/* The backbone of lookup_attribute().  ATTR_LEN is the string length
+   of ATTR_NAME, and LIST is not NULL_TREE.  */
 tree
-lookup_attribute (const char *attr_name, tree list)
+private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
 {
-  tree l;
-  size_t attr_len = strlen (attr_name);
-
-  for (l = list; l; l = TREE_CHAIN (l))
+  while (list)
     {
-      gcc_assert (TREE_CODE (TREE_PURPOSE (l)) == IDENTIFIER_NODE);
-      if (is_attribute_with_length_p (attr_name, attr_len, TREE_PURPOSE (l)))
-	return l;
+      size_t ident_len = IDENTIFIER_LENGTH (TREE_PURPOSE (list));
+
+      if (ident_len == attr_len)
+	{
+	  if (strcmp (attr_name, IDENTIFIER_POINTER (TREE_PURPOSE (list))) == 0)
+	    break;
+	}
+      /* TODO: If we made sure that attributes were stored in the
+	 canonical form without '__...__' (ie, as in 'text' as opposed
+	 to '__text__') then we could avoid the following case.  */
+      else if (ident_len == attr_len + 4)
+	{
+	  const char *p = IDENTIFIER_POINTER (TREE_PURPOSE (list));
+	  if (p[0] == '_' && p[1] == '_'
+	      && p[ident_len - 2] == '_' && p[ident_len - 1] == '_'
+	      && strncmp (attr_name, p + 2, attr_len) == 0)
+	    break;
+	}
+      list = TREE_CHAIN (list);
     }
-  return NULL_TREE;
+
+  return list;
+}
+
+/* A variant of lookup_attribute() that can be used with an identifier
+   as the first argument, and where the identifier can be either
+   'text' or '__text__'.
+
+   Given an attribute ATTR_IDENTIFIER, and a list of attributes LIST,
+   return a pointer to the attribute's list element if the attribute
+   is part of the list, or NULL_TREE if not found.  If the attribute
+   appears more than once, this only returns the first occurrence; the
+   TREE_CHAIN of the return value should be passed back in if further
+   occurrences are wanted.  ATTR_IDENTIFIER must be an identifier but
+   can be in the form 'text' or '__text__'.  */
+static tree
+lookup_ident_attribute (tree attr_identifier, tree list)
+{
+  gcc_checking_assert (TREE_CODE (attr_identifier) == IDENTIFIER_NODE);
+
+  while (list)
+    {
+      gcc_checking_assert (TREE_CODE (TREE_PURPOSE (list)) == IDENTIFIER_NODE);
+
+      /* Identifiers can be compared directly for equality.  */
+      if (attr_identifier == TREE_PURPOSE (list))
+	break;
+
+      /* If they are not equal, they may still be one in the form
+	 'text' while the other one is in the form '__text__'.  TODO:
+	 If we were storing attributes in normalized 'text' form, then
+	 this could all go away and we could take full advantage of
+	 the fact that we're comparing identifiers. :-)  */
+      {
+	size_t attr_len = IDENTIFIER_LENGTH (attr_identifier);
+	size_t ident_len = IDENTIFIER_LENGTH (TREE_PURPOSE (list));
+
+	if (ident_len == attr_len + 4)
+	  {
+	    const char *p = IDENTIFIER_POINTER (TREE_PURPOSE (list));
+	    const char *q = IDENTIFIER_POINTER (attr_identifier);
+	    if (p[0] == '_' && p[1] == '_'
+		&& p[ident_len - 2] == '_' && p[ident_len - 1] == '_'
+		&& strncmp (q, p + 2, attr_len) == 0)
+	      break;
+	  }
+	else if (ident_len + 4 == attr_len)
+	  {
+	    const char *p = IDENTIFIER_POINTER (TREE_PURPOSE (list));
+	    const char *q = IDENTIFIER_POINTER (attr_identifier);
+	    if (q[0] == '_' && q[1] == '_'
+		&& q[attr_len - 2] == '_' && q[attr_len - 1] == '_'
+		&& strncmp (q + 2, p, ident_len) == 0)
+	      break;
+	  }
+      }
+      list = TREE_CHAIN (list);
+    }
+
+  return list;
 }
 
 /* Remove any instances of attribute ATTR_NAME in LIST and return the
@@ -5317,11 +5358,14 @@ remove_attribute (const char *attr_name, tree list)
   tree *p;
   size_t attr_len = strlen (attr_name);
 
+  gcc_checking_assert (attr_name[0] != '_');
+
   for (p = &list; *p; )
     {
       tree l = *p;
-      gcc_assert (TREE_CODE (TREE_PURPOSE (l)) == IDENTIFIER_NODE);
-      if (is_attribute_with_length_p (attr_name, attr_len, TREE_PURPOSE (l)))
+      /* TODO: If we were storing attributes in normalized form, here
+	 we could use a simple strcmp().  */
+      if (private_is_attribute_p (attr_name, attr_len, TREE_PURPOSE (l)))
 	*p = TREE_CHAIN (l);
       else
 	p = &TREE_CHAIN (l);
@@ -5358,11 +5402,9 @@ merge_attributes (tree a1, tree a2)
 	  for (; a2 != 0; a2 = TREE_CHAIN (a2))
 	    {
 	      tree a;
-	      for (a = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
-					 attributes);
+	      for (a = lookup_ident_attribute (TREE_PURPOSE (a2), attributes);
 		   a != NULL_TREE && !attribute_value_equal (a, a2);
-		   a = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
-					 TREE_CHAIN (a)))
+		   a = lookup_ident_attribute (TREE_PURPOSE (a2), TREE_CHAIN (a)))
 		;
 	      if (a == NULL_TREE)
 		{
@@ -5461,24 +5503,7 @@ merge_dllimport_decl_attributes (tree old, tree new_tree)
   a = merge_attributes (DECL_ATTRIBUTES (old), DECL_ATTRIBUTES (new_tree));
 
   if (delete_dllimport_p)
-    {
-      tree prev, t;
-      const size_t attr_len = strlen ("dllimport");
-
-      /* Scan the list for dllimport and delete it.  */
-      for (prev = NULL_TREE, t = a; t; prev = t, t = TREE_CHAIN (t))
-	{
-	  if (is_attribute_with_length_p ("dllimport", attr_len,
-					  TREE_PURPOSE (t)))
-	    {
-	      if (prev == NULL_TREE)
-		a = TREE_CHAIN (a);
-	      else
-		TREE_CHAIN (prev) = TREE_CHAIN (t);
-	      break;
-	    }
-	}
-    }
+    a = remove_attribute ("dllimport", a);
 
   return a;
 }
@@ -6047,6 +6072,49 @@ decl_value_expr_insert (tree from, tree to)
   *(struct tree_decl_map **) loc = h;
 }
 
+/* Lookup a vector of debug arguments for FROM, and return it if we
+   find one.  */
+
+VEC(tree, gc) **
+decl_debug_args_lookup (tree from)
+{
+  struct tree_vec_map *h, in;
+
+  if (!DECL_HAS_DEBUG_ARGS_P (from))
+    return NULL;
+  gcc_checking_assert (debug_args_for_decl != NULL);
+  in.base.from = from;
+  h = (struct tree_vec_map *)
+      htab_find_with_hash (debug_args_for_decl, &in, DECL_UID (from));
+  if (h)
+    return &h->to;
+  return NULL;
+}
+
+/* Insert a mapping FROM->empty vector of debug arguments in the value
+   expression hashtable.  */
+
+VEC(tree, gc) **
+decl_debug_args_insert (tree from)
+{
+  struct tree_vec_map *h;
+  void **loc;
+
+  if (DECL_HAS_DEBUG_ARGS_P (from))
+    return decl_debug_args_lookup (from);
+  if (debug_args_for_decl == NULL)
+    debug_args_for_decl = htab_create_ggc (64, tree_vec_map_hash,
+					   tree_vec_map_eq, 0);
+  h = ggc_alloc_tree_vec_map ();
+  h->base.from = from;
+  h->to = NULL;
+  loc = htab_find_slot_with_hash (debug_args_for_decl, h, DECL_UID (from),
+				  INSERT);
+  *(struct tree_vec_map **) loc = h;
+  DECL_HAS_DEBUG_ARGS_P (from) = 1;
+  return &h->to;
+}
+
 /* Hashing of types so that we don't make duplicates.
    The entry point is `type_hash_canon'.  */
 
@@ -6306,6 +6374,9 @@ attribute_hash_list (const_tree list, hashval_t hashcode)
 int
 attribute_list_equal (const_tree l1, const_tree l2)
 {
+  if (l1 == l2)
+    return 1;
+
   return attribute_list_contained (l1, l2)
 	 && attribute_list_contained (l2, l1);
 }
@@ -6344,11 +6415,9 @@ attribute_list_contained (const_tree l1, const_tree l2)
       /* This CONST_CAST is okay because lookup_attribute does not
 	 modify its argument and the return value is assigned to a
 	 const_tree.  */
-      for (attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				    CONST_CAST_TREE(l1));
+      for (attr = lookup_ident_attribute (TREE_PURPOSE (t2), CONST_CAST_TREE(l1));
 	   attr != NULL_TREE && !attribute_value_equal (t2, attr);
-	   attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				    TREE_CHAIN (attr)))
+	   attr = lookup_ident_attribute (TREE_PURPOSE (t2), TREE_CHAIN (attr)))
 	;
 
       if (attr == NULL_TREE)
@@ -9153,8 +9222,7 @@ make_or_reuse_accum_type (unsigned size, int unsignedp, int satp)
 }
 
 /* Create nodes for all integer types (and error_mark_node) using the sizes
-   of C datatypes.  The caller should call set_sizetype soon after calling
-   this function to select one of the types as sizetype.  */
+   of C datatypes.  */
 
 void
 build_common_tree_nodes (bool signed_char)
@@ -9197,6 +9265,7 @@ build_common_tree_nodes (bool signed_char)
         int128_unsigned_type_node = make_unsigned_type (128);
       }
 #endif
+
   /* Define a boolean type.  This type only represents boolean values but
      may be larger than char depending on the value of BOOL_TYPE_SIZE.
      Front ends which want to override this size (i.e. Java) can redefine
@@ -9205,6 +9274,16 @@ build_common_tree_nodes (bool signed_char)
   TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
   TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
   TYPE_PRECISION (boolean_type_node) = 1;
+
+  /* Define what type to use for size_t.  */
+  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+    size_type_node = unsigned_type_node;
+  else if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+    size_type_node = long_unsigned_type_node;
+  else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
+    size_type_node = long_long_unsigned_type_node;
+  else
+    gcc_unreachable ();
 
   /* Fill in the rest of the sized types.  Reuse existing type nodes
      when possible.  */
@@ -9225,7 +9304,7 @@ build_common_tree_nodes (bool signed_char)
   access_private_node = get_identifier ("private");
 }
 
-/* Call this function after calling build_common_tree_nodes and set_sizetype.
+/* Call this function after calling build_common_tree_nodes.
    It will create several other common tree nodes.  */
 
 void
@@ -9521,7 +9600,7 @@ build_common_builtin_nodes (void)
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   local_define_builtin ("__builtin_unwind_resume", ftype,
 			BUILT_IN_UNWIND_RESUME,
-			((targetm.except_unwind_info (&global_options)
+			((targetm_common.except_unwind_info (&global_options)
 			  == UI_SJLJ)
 			 ? "_Unwind_SjLj_Resume" : "_Unwind_Resume"),
 			ECF_NORETURN);

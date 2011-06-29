@@ -4,7 +4,7 @@
 /* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
 @protocol Proto1
 - (int)meth1;
@@ -14,11 +14,11 @@
 - (int)meth2;
 @end
 
-@interface MyClass: Object <Proto2> {
+@interface MyClass: TestsuiteObject <Proto2> {
   int a;
 }
 - (int)meth2;
-- (Object *)parm1: (id)p1 parm2: (id<Proto1>)p2;
+- (TestsuiteObject *)parm1: (id)p1 parm2: (id<Proto1>)p2;
 @end
 
 MyClass *mc1, *mc2;
@@ -27,7 +27,7 @@ MyClass *mc1, *mc2;
 - (int)meth2 {
   return a;
 }
-- (Object *)parm1: (id)p1 parm2: (id<Proto1>)p2 {
+- (TestsuiteObject *)parm1: (id)p1 parm2: (id<Proto1>)p2 {
   @try {
     mc2 = p2;   /* { dg-warning "type .id <Proto1>. does not conform to the .Proto2. protocol" } */
   }

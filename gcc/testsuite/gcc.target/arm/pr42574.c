@@ -1,6 +1,7 @@
 /* { dg-options "-mthumb -Os -fpic -march=armv5te" }  */
 /* { dg-require-effective-target arm_thumb1_ok } */
 /* { dg-require-effective-target fpic } */
+/* { dg-prune-output "switch .* conflicts with" } */
 /* Make sure the address of glob.c is calculated only once and using
    a logical shift for the offset (200<<1).  */
 /* { dg-final { scan-assembler-times "lsl" 1 } } */

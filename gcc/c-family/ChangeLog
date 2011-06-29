@@ -1,3 +1,73 @@
+2011-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_tree_chain_next): New static inline function.
+
+	* c-common.c (check_builtin_function_arguments): Handle
+	BUILT_IN_ASSUME_ALIGNED.
+
+2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-common.c: Add sync_ or SYNC__ to builtin names.
+	* c-omp.c: Add sync_ or SYNC__ to builtin names.
+
+2011-06-20  Pierre Vittet  <piervit@pvittet.com>
+
+	* c-pragma.h (pragma_handler_1arg, pragma_handler_2arg): New
+	handler.
+	(gen_pragma_handler): New union.
+	(internal_pragma_handler): New type.
+	(c_register_pragma_with_data)
+	(c_register_pragma_with_expansion_and_data): New functions.
+
+	* c-pragma.c (registered_pragmas, c_register_pragma_1)
+	(c_register_pragma, c_register_pragma_with_expansion)
+	(c_invoke_pragma_handler): Changed to work with
+	internal_pragma_handler.
+	(c_register_pragma_with_data)
+	(c_register_pragma_with_expansion_and_data): New functions.
+
+2011-06-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c: Include common/common-target.h.
+	(handle_section_attribute): Use
+	targetm_common.have_named_sections.
+	* c-cppbuiltin.c: Include common/common-target.h.
+	(c_cpp_builtins): Use targetm_common.except_unwind_info.
+
+2011-06-10  Richard Guenther  <rguenther@suse.de>
+
+	* c-pretty-print.c (pp_c_type_specifier): Use pp_c_identifier
+	to print a IDENTIFIER_NODE.
+
+2011-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (fbuilding-libgcc): New option.
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__LIBGCC_TRAMPOLINE_SIZE__ if flag_building_libgcc.
+
+2011-06-07  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (max_tinst_depth): Lower default to 900.
+
+	* c-format.c (gcc_cxxdiag_char_table): Add 'S' format.
+
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (c_common_nodes_and_builtins): Do not set
+	size_type_node or call set_sizetype.
+
+2011-06-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/49130
+	* c-pretty-print.c (pp_c_integer_constant): Consider the canonical
+    	type when using pointer comparison to compare types.
+
+2011-06-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* c.opt: Add -Wdelete-non-virtual-dtor.
+	* c-opts.c (c_common_handle_option): Include it in -Wall.
+
 2011-05-30  Nathan Froyd  <froydnj@gcc.gnu.org>
 
 	PR bootstrap/49190

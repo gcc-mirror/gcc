@@ -1,5 +1,5 @@
 /* Target Code for moxie
-   Copyright (C) 2008, 2009, 2010  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011  Free Software Foundation
    Contributed by Anthony Green.
 
    This file is part of GCC.
@@ -370,11 +370,12 @@ moxie_initial_elimination_offset (int from, int to)
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-moxie_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
+moxie_setup_incoming_varargs (cumulative_args_t cum_v,
 			      enum machine_mode mode ATTRIBUTE_UNUSED,
 			      tree type ATTRIBUTE_UNUSED,
 			      int *pretend_size, int no_rtl)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int regno;
   int regs = 8 - *cum;
   
@@ -409,10 +410,12 @@ moxie_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
    NULL_RTX if there's no more space.  */
 
 static rtx
-moxie_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+moxie_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		    const_tree type ATTRIBUTE_UNUSED,
 		    bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (*cum < 8)
     return gen_rtx_REG (mode, *cum);
   else 
@@ -424,9 +427,11 @@ moxie_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    : (unsigned) int_size_in_bytes (TYPE))
 
 static void
-moxie_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+moxie_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			    const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   *cum = (*cum < MOXIE_R6
 	  ? *cum + ((3 + MOXIE_FUNCTION_ARG_SIZE (mode, type)) / 4)
 	  : *cum);
@@ -436,7 +441,7 @@ moxie_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    passed by reference.  */
 
 static bool
-moxie_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+moxie_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 			 enum machine_mode mode, const_tree type,
 			 bool named ATTRIBUTE_UNUSED)
 {
@@ -459,16 +464,17 @@ moxie_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
    that fit in argument passing registers.  */
 
 static int
-moxie_arg_partial_bytes (CUMULATIVE_ARGS *cum,
+moxie_arg_partial_bytes (cumulative_args_t cum_v,
 			 enum machine_mode mode,
 			 tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes_left, size;
 
   if (*cum >= 8)
     return 0;
 
-  if (moxie_pass_by_reference (cum, mode, type, named))
+  if (moxie_pass_by_reference (cum_v, mode, type, named))
     size = 4;
   else if (type)
     {

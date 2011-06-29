@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for any
    Solaris 2 system starting from Solaris 10.
-   Copyright 2006, 2007 Free Software Foundation, Inc.
+   Copyright 2006, 2007, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,5 +19,4 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Solaris 10 has the float and long double forms of math functions.  */
-#undef TARGET_C99_FUNCTIONS
 #define TARGET_C99_FUNCTIONS 1

@@ -4663,9 +4663,10 @@ create_block_for_bookkeeping (edge e1, edge e2)
 }
 
 /* Return insn after which we must insert bookkeeping code for path(s) incoming
-   into E2->dest, except from E1->src.  */
+   into E2->dest, except from E1->src.  If the returned insn immediately
+   precedes a fence, assign that fence to *FENCE_TO_REWIND.  */
 static insn_t
-find_place_for_bookkeeping (edge e1, edge e2)
+find_place_for_bookkeeping (edge e1, edge e2, fence_t *fence_to_rewind)
 {
   insn_t place_to_insert;
   /* Find a basic block that can hold bookkeeping.  If it can be found, do not
@@ -4707,9 +4708,14 @@ find_place_for_bookkeeping (edge e1, edge e2)
 	sel_print ("Pre-existing bookkeeping block is %i\n", book_block->index);
     }
 
-  /* If basic block ends with a jump, insert bookkeeping code right before it.  */
+  *fence_to_rewind = NULL;
+  /* If basic block ends with a jump, insert bookkeeping code right before it.
+     Notice if we are crossing a fence when taking PREV_INSN.  */
   if (INSN_P (place_to_insert) && control_flow_insn_p (place_to_insert))
-    place_to_insert = PREV_INSN (place_to_insert);
+    {
+      *fence_to_rewind = flist_lookup (fences, place_to_insert);
+      place_to_insert = PREV_INSN (place_to_insert);
+    }
 
   return place_to_insert;
 }
@@ -4784,20 +4790,22 @@ generate_bookkeeping_insn (expr_t c_expr, edge e1, edge e2)
   insn_t join_point, place_to_insert, new_insn;
   int new_seqno;
   bool need_to_exchange_data_sets;
+  fence_t fence_to_rewind;
 
   if (sched_verbose >= 4)
     sel_print ("Generating bookkeeping insn (%d->%d)\n", e1->src->index,
 	       e2->dest->index);
 
   join_point = sel_bb_head (e2->dest);
-  place_to_insert = find_place_for_bookkeeping (e1, e2);
-  if (!place_to_insert)
-    return NULL;
+  place_to_insert = find_place_for_bookkeeping (e1, e2, &fence_to_rewind);
   new_seqno = find_seqno_for_bookkeeping (place_to_insert, join_point);
   need_to_exchange_data_sets
     = sel_bb_empty_p (BLOCK_FOR_INSN (place_to_insert));
 
   new_insn = emit_bookkeeping_insn (place_to_insert, c_expr, new_seqno);
+
+  if (fence_to_rewind)
+    FENCE_INSN (fence_to_rewind) = new_insn;
 
   /* When inserting bookkeeping insn in new block, av sets should be
      following: old basic block (that now holds bookkeeping) data sets are

@@ -336,6 +336,10 @@ Wdeclaration-after-statement
 C UPC ObjC Var(warn_declaration_after_statement) Warning
 Warn when a declaration is found after a statement
 
+Wdelete-non-virtual-dtor
+C++ ObjC++ Var(warn_delnonvdtor) Warning
+Warn about deleting polymorphic objects with non-virtual destructors
+
 Wdeprecated
 C UPC C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used
@@ -704,6 +708,10 @@ No longer supported
 fasm
 C UPC ObjC C++ ObjC++ Var(flag_no_asm, 0)
 Recognize the \"asm\" keyword
+
+; Define extra predefined macros for use in libgcc.
+fbuilding-libgcc
+C ObjC C++ ObjC++ Undocumented Var(flag_building_libgcc)
 
 fbuiltin
 C UPC ObjC C++ ObjC++ Var(flag_no_builtin, 0)

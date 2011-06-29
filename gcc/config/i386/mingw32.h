@@ -219,33 +219,9 @@ do {						         \
 /* Let defaults.h definition of TARGET_USE_JCR_SECTION apply. */
 #undef TARGET_USE_JCR_SECTION
 
-#undef MINGW_ENABLE_EXECUTE_STACK
-#define MINGW_ENABLE_EXECUTE_STACK     \
-extern void __enable_execute_stack (void *);    \
-void         \
-__enable_execute_stack (void *addr)					\
-{									\
-  MEMORY_BASIC_INFORMATION b;						\
-  if (!VirtualQuery (addr, &b, sizeof(b)))				\
-    abort ();								\
-  VirtualProtect (b.BaseAddress, b.RegionSize, PAGE_EXECUTE_READWRITE,	\
-		  &b.Protect);						\
-}
-
-#undef ENABLE_EXECUTE_STACK
-#define ENABLE_EXECUTE_STACK MINGW_ENABLE_EXECUTE_STACK
+#define HAVE_ENABLE_EXECUTE_STACK
 #undef  CHECK_EXECUTE_STACK_ENABLED
 #define CHECK_EXECUTE_STACK_ENABLED flag_setstackexecutable
-
-#ifdef IN_LIBGCC2
-#include <windows.h>
-#endif
-
-/* For 64-bit Windows we can't use DW2 unwind info. Also for multilib
-   builds we can't use it, too.  */
-#if !TARGET_64BIT_DEFAULT && !defined (TARGET_BI_ARCH)
-#define MD_UNWIND_SUPPORT "config/i386/w32-unwind.h"
-#endif
 
 /* This matches SHLIB_SONAME and SHLIB_SOVERSION in t-cygming. */
 /* This matches SHLIB_SONAME and SHLIB_SOVERSION in t-cygwin. */

@@ -213,17 +213,15 @@ static rtx mep_make_bundle (rtx, rtx);
 static void mep_bundle_insns (rtx);
 static bool mep_rtx_cost (rtx, int, int, int *, bool);
 static int mep_address_cost (rtx, bool);
-static void mep_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+static void mep_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					tree, int *, int);
-static bool mep_pass_by_reference (CUMULATIVE_ARGS * cum, enum machine_mode,
+static bool mep_pass_by_reference (cumulative_args_t cum, enum machine_mode,
 				   const_tree, bool);
-static rtx mep_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx mep_function_arg (cumulative_args_t, enum machine_mode,
 			     const_tree, bool);
-static void mep_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void mep_function_arg_advance (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
 static bool mep_vector_mode_supported_p (enum machine_mode);
-static bool mep_handle_option (struct gcc_options *, struct gcc_options *,
-			       const struct cl_decoded_option *, location_t);
 static rtx  mep_allocate_initial_value (rtx);
 static void mep_asm_init_sections (void);
 static int mep_comp_type_attributes (const_tree, const_tree);
@@ -295,21 +293,6 @@ mep_conditional_register_usage (void)
   for (i = FIRST_SHADOW_REGISTER; i <= LAST_SHADOW_REGISTER; i++)
     global_regs[i] = 1;
 }
-
-
-static const struct default_options mep_option_optimization_table[] =
-  {
-    /* The first scheduling pass often increases register pressure and
-       tends to result in more spill code.  Only run it when
-       specifically asked.  */
-    { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
-
-    /* Using $fp doesn't gain us much, even when debugging is
-       important.  */
-    { OPT_LEVELS_ALL, OPT_fomit_frame_pointer, NULL, 1 },
-
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 static void
 mep_option_override (void)
@@ -3511,12 +3494,12 @@ mep_final_prescan_insn (rtx insn, rtx *operands ATTRIBUTE_UNUSED,
 /* Function args in registers.  */
 
 static void
-mep_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
+mep_setup_incoming_varargs (cumulative_args_t cum,
 			    enum machine_mode mode ATTRIBUTE_UNUSED,
 			    tree type ATTRIBUTE_UNUSED, int *pretend_size,
 			    int second_time ATTRIBUTE_UNUSED)
 {
-  int nsave = 4 - (cum->nregs + 1);
+  int nsave = 4 - (get_cumulative_args (cum)->nregs + 1);
 
   if (nsave > 0)
     cfun->machine->arg_regs_to_save = nsave;
@@ -3787,10 +3770,12 @@ mep_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
    first arg.  For varargs, we copy $1..$4 to the stack.  */
 
 static rtx
-mep_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mep_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		  const_tree type ATTRIBUTE_UNUSED,
 		  bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   /* VOIDmode is a signal for the backend to pass data to the call
      expander via the second operand to the call pattern.  We use
      this to determine whether to use "jsr" or "jsrv".  */
@@ -3811,7 +3796,7 @@ mep_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static bool
-mep_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
+mep_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		       enum machine_mode mode,
 		       const_tree        type,
 		       bool              named ATTRIBUTE_UNUSED)
@@ -3827,18 +3812,19 @@ mep_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
     return true;
   if (size <= 4)
     return false;
-  if (TARGET_IVC2 && cum->nregs < 4 && type != NULL_TREE && VECTOR_TYPE_P (type))
+  if (TARGET_IVC2 && get_cumulative_args (cum)->nregs < 4
+      && type != NULL_TREE && VECTOR_TYPE_P (type))
     return false;
   return true;
 }
 
 static void
-mep_function_arg_advance (CUMULATIVE_ARGS *pcum,
+mep_function_arg_advance (cumulative_args_t pcum,
 			  enum machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type ATTRIBUTE_UNUSED,
 			  bool named ATTRIBUTE_UNUSED)
 {
-  pcum->nregs += 1;
+  get_cumulative_args (pcum)->nregs += 1;
 }
 
 bool
@@ -7312,45 +7298,6 @@ mep_address_cost (rtx addr ATTRIBUTE_UNUSED, bool ATTRIBUTE_UNUSED speed_p)
   return 1;
 }
 
-static bool
-mep_handle_option (struct gcc_options *opts,
-		   struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		   const struct cl_decoded_option *decoded,
-		   location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-
-  switch (code)
-    {
-    case OPT_mall_opts:
-      opts->x_target_flags |= MEP_ALL_OPTS;
-      break;
-
-    case OPT_mno_opts:
-      opts->x_target_flags &= ~ MEP_ALL_OPTS;
-      break;
-
-    case OPT_mcop64:
-      opts->x_target_flags |= MASK_COP;
-      opts->x_target_flags |= MASK_64BIT_CR_REGS;
-      break;
-
-    case OPT_mivc2:
-      opts->x_target_flags |= MASK_COP;
-      opts->x_target_flags |= MASK_64BIT_CR_REGS;
-      opts->x_target_flags |= MASK_VLIW;
-      opts->x_target_flags |= MASK_OPT_VL64;
-      opts->x_target_flags |= MASK_IVC2;
-
-      /* Remaining handling of this option deferred.  */
-      break;
-
-    default:
-      break;
-    }
-  return TRUE;
-}
-
 static void
 mep_asm_init_sections (void)
 {
@@ -7450,14 +7397,8 @@ mep_asm_init_sections (void)
 #define TARGET_FUNCTION_ARG_ADVANCE     mep_function_arg_advance
 #undef  TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P	mep_vector_mode_supported_p
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION            mep_handle_option
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		mep_option_override
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE	mep_option_optimization_table
-#undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS	TARGET_DEFAULT
 #undef  TARGET_ALLOCATE_INITIAL_VALUE
 #define TARGET_ALLOCATE_INITIAL_VALUE   mep_allocate_initial_value
 #undef  TARGET_ASM_INIT_SECTIONS

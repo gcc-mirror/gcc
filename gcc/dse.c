@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "target.h"
 #include "params.h"
+#include "tree-flow.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).
@@ -326,6 +327,11 @@ struct insn_info
      contains a wild read, the use_rec will be null.  */
   bool wild_read;
 
+  /* This is true only for CALL instructions which could potentially read
+     any non-frame memory location. This field is used by the global
+     algorithm.  */
+  bool non_frame_wild_read;
+
   /* This field is only used for the processing of const functions.
      These functions cannot read memory, but they can read the stack
      because that is where they may get their parms.  We need to be
@@ -501,6 +507,11 @@ struct group_info
      deleted.  */
   bitmap store1_n, store1_p, store2_n, store2_p;
 
+  /* These bitmaps keep track of offsets in this group escape this function.
+     An offset escapes if it corresponds to a named variable whose
+     addressable flag is set.  */
+  bitmap escaped_n, escaped_p;
+
   /* The positions in this bitmap have the same assignments as the in,
      out, gen and kill bitmaps.  This bitmap is all zeros except for
      the positions that are occupied by stores for this group.  */
@@ -587,6 +598,9 @@ static int locally_deleted;
 static int spill_deleted;
 
 static bitmap all_blocks;
+
+/* Locations that are killed by calls in the global phase.  */
+static bitmap kill_on_calls;
 
 /* The number of bits used in the global bitmaps.  */
 static unsigned int current_position;
@@ -692,6 +706,8 @@ get_group_info (rtx base)
 	  gi->store1_p = BITMAP_ALLOC (NULL);
 	  gi->store2_n = BITMAP_ALLOC (NULL);
 	  gi->store2_p = BITMAP_ALLOC (NULL);
+	  gi->escaped_p = BITMAP_ALLOC (NULL);
+	  gi->escaped_n = BITMAP_ALLOC (NULL);
 	  gi->group_kill = BITMAP_ALLOC (NULL);
 	  gi->process_globally = false;
 	  gi->offset_map_size_n = 0;
@@ -714,6 +730,8 @@ get_group_info (rtx base)
       gi->store1_p = BITMAP_ALLOC (NULL);
       gi->store2_n = BITMAP_ALLOC (NULL);
       gi->store2_p = BITMAP_ALLOC (NULL);
+      gi->escaped_p = BITMAP_ALLOC (NULL);
+      gi->escaped_n = BITMAP_ALLOC (NULL);
       gi->group_kill = BITMAP_ALLOC (NULL);
       gi->process_globally = false;
       gi->frame_related =
@@ -739,6 +757,7 @@ dse_step0 (void)
   spill_deleted = 0;
 
   scratch = BITMAP_ALLOC (NULL);
+  kill_on_calls = BITMAP_ALLOC (NULL);
 
   rtx_store_info_pool
     = create_alloc_pool ("rtx_store_info_pool",
@@ -881,31 +900,48 @@ delete_dead_store_insn (insn_info_t insn_info)
   insn_info->wild_read = false;
 }
 
+/* Check if EXPR can possibly escape the current function scope.  */
+static bool
+can_escape (tree expr)
+{
+  tree base;
+  if (!expr)
+    return true;
+  base = get_base_address (expr);
+  if (DECL_P (base)
+      && !may_be_aliased (base))
+    return false;
+  return true;
+}
 
 /* Set the store* bitmaps offset_map_size* fields in GROUP based on
    OFFSET and WIDTH.  */
 
 static void
-set_usage_bits (group_info_t group, HOST_WIDE_INT offset, HOST_WIDE_INT width)
+set_usage_bits (group_info_t group, HOST_WIDE_INT offset, HOST_WIDE_INT width,
+                tree expr)
 {
   HOST_WIDE_INT i;
-
+  bool expr_escapes = can_escape (expr);
   if (offset > -MAX_OFFSET && offset + width < MAX_OFFSET)
     for (i=offset; i<offset+width; i++)
       {
 	bitmap store1;
 	bitmap store2;
+        bitmap escaped;
 	int ai;
 	if (i < 0)
 	  {
 	    store1 = group->store1_n;
 	    store2 = group->store2_n;
+	    escaped = group->escaped_n;
 	    ai = -i;
 	  }
 	else
 	  {
 	    store1 = group->store1_p;
 	    store2 = group->store2_p;
+	    escaped = group->escaped_p;
 	    ai = i;
 	  }
 
@@ -924,18 +960,25 @@ set_usage_bits (group_info_t group, HOST_WIDE_INT offset, HOST_WIDE_INT width)
 		  group->offset_map_size_p = ai;
 	      }
 	  }
+        if (expr_escapes)
+          bitmap_set_bit (escaped, ai);
       }
 }
 
+static void
+reset_active_stores (void)
+{
+  active_local_stores = NULL;
+  active_local_stores_len = 0;
+}
 
-/* Set the BB_INFO so that the last insn is marked as a wild read.  */
+/* Free all READ_REC of the LAST_INSN of BB_INFO.  */
 
 static void
-add_wild_read (bb_info_t bb_info)
+free_read_records (bb_info_t bb_info)
 {
   insn_info_t insn_info = bb_info->last_insn;
   read_info_t *ptr = &insn_info->read_rec;
-
   while (*ptr)
     {
       read_info_t next = (*ptr)->next;
@@ -943,15 +986,34 @@ add_wild_read (bb_info_t bb_info)
         {
           pool_free (read_info_pool, *ptr);
           *ptr = next;
-	}
+        }
       else
-	ptr = &(*ptr)->next;
+        ptr = &(*ptr)->next;
     }
-  insn_info->wild_read = true;
-  active_local_stores = NULL;
-  active_local_stores_len = 0;
 }
 
+/* Set the BB_INFO so that the last insn is marked as a wild read.  */
+
+static void
+add_wild_read (bb_info_t bb_info)
+{
+  insn_info_t insn_info = bb_info->last_insn;
+  insn_info->wild_read = true;
+  free_read_records (bb_info);
+  reset_active_stores ();
+}
+
+/* Set the BB_INFO so that the last insn is marked as a wild read of
+   non-frame locations.  */
+
+static void
+add_non_frame_wild_read (bb_info_t bb_info)
+{
+  insn_info_t insn_info = bb_info->last_insn;
+  insn_info->non_frame_wild_read = true;
+  free_read_records (bb_info);
+  reset_active_stores ();
+}
 
 /* Return true if X is a constant or one of the registers that behave
    as a constant over the life of a function.  This is equivalent to
@@ -1355,9 +1417,10 @@ record_store (rtx body, bb_info_t bb_info)
 
       group_info_t group
 	= VEC_index (group_info_t, rtx_group_vec, group_id);
+      tree expr = MEM_EXPR (mem);
 
       store_info = (store_info_t) pool_alloc (rtx_store_info_pool);
-      set_usage_bits (group, offset, width);
+      set_usage_bits (group, offset, width, expr);
 
       if (dump_file)
 	fprintf (dump_file, " processing const base store gid=%d[%d..%d)\n",
@@ -2258,11 +2321,13 @@ check_mem_read_use (rtx *loc, void *data)
 static bool
 get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
 {
-  CUMULATIVE_ARGS args_so_far;
+  CUMULATIVE_ARGS args_so_far_v;
+  cumulative_args_t args_so_far;
   tree arg;
   int idx;
 
-  INIT_CUMULATIVE_ARGS (args_so_far, TREE_TYPE (fn), NULL_RTX, 0, 3);
+  INIT_CUMULATIVE_ARGS (args_so_far_v, TREE_TYPE (fn), NULL_RTX, 0, 3);
+  args_so_far = pack_cumulative_args (&args_so_far_v);
 
   arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
   for (idx = 0;
@@ -2271,7 +2336,7 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
     {
       enum machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
       rtx reg, link, tmp;
-      reg = targetm.calls.function_arg (&args_so_far, mode, NULL_TREE, true);
+      reg = targetm.calls.function_arg (args_so_far, mode, NULL_TREE, true);
       if (!reg || !REG_P (reg) || GET_MODE (reg) != mode
 	  || GET_MODE_CLASS (mode) != MODE_INT)
 	return false;
@@ -2305,7 +2370,7 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
       if (tmp)
 	args[idx] = tmp;
 
-      targetm.calls.function_arg_advance (&args_so_far, mode, NULL_TREE, true);
+      targetm.calls.function_arg_advance (args_so_far, mode, NULL_TREE, true);
     }
   if (arg != void_list_node || idx != nargs)
     return false;
@@ -2474,8 +2539,9 @@ scan_insn (bb_info_t bb_info, rtx insn)
 	}
 
       else
-	/* Every other call, including pure functions, may read memory.  */
-	add_wild_read (bb_info);
+	/* Every other call, including pure functions, may read any memory
+           that is not relative to the frame.  */
+        add_non_frame_wild_read (bb_info);
 
       return;
     }
@@ -2788,7 +2854,6 @@ dse_step2_nospill (void)
   /* Position 0 is unused because 0 is used in the maps to mean
      unused.  */
   current_position = 1;
-
   FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
     {
       bitmap_iterator bi;
@@ -2804,12 +2869,16 @@ dse_step2_nospill (void)
       EXECUTE_IF_SET_IN_BITMAP (group->store2_n, 0, j, bi)
 	{
 	  bitmap_set_bit (group->group_kill, current_position);
+          if (bitmap_bit_p (group->escaped_n, j))
+	    bitmap_set_bit (kill_on_calls, current_position);
 	  group->offset_map_n[j] = current_position++;
 	  group->process_globally = true;
 	}
       EXECUTE_IF_SET_IN_BITMAP (group->store2_p, 0, j, bi)
 	{
 	  bitmap_set_bit (group->group_kill, current_position);
+          if (bitmap_bit_p (group->escaped_p, j))
+	    bitmap_set_bit (kill_on_calls, current_position);
 	  group->offset_map_p[j] = current_position++;
 	  group->process_globally = true;
 	}
@@ -3040,7 +3109,21 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
 	    bitmap_and_compl_into (gen, group->group_kill);
 	  }
     }
-
+  if (insn_info->non_frame_wild_read)
+    {
+      /* Kill all non-frame related stores.  Kill all stores of variables that
+         escape.  */
+      if (kill)
+        bitmap_ior_into (kill, kill_on_calls);
+      bitmap_and_compl_into (gen, kill_on_calls);
+      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
+	if (group->process_globally && !group->frame_related)
+	  {
+	    if (kill)
+	      bitmap_ior_into (kill, group->group_kill);
+	    bitmap_and_compl_into (gen, group->group_kill);
+	  }
+    }
   while (read_info)
     {
       FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
@@ -3564,10 +3647,13 @@ dse_step5_nospill (void)
 		    fprintf (dump_file, "wild read\n");
 		  bitmap_clear (v);
 		}
-	      else if (insn_info->read_rec)
+	      else if (insn_info->read_rec
+                       || insn_info->non_frame_wild_read)
 		{
-		  if (dump_file)
+		  if (dump_file && !insn_info->non_frame_wild_read)
 		    fprintf (dump_file, "regular read\n");
+                  else if (dump_file)
+		    fprintf (dump_file, "non-frame wild read\n");
 		  scan_reads_nospill (insn_info, v, NULL);
 		}
 	    }
@@ -3716,6 +3802,8 @@ dse_step7 (bool global_done)
       BITMAP_FREE (group->store1_p);
       BITMAP_FREE (group->store2_n);
       BITMAP_FREE (group->store2_p);
+      BITMAP_FREE (group->escaped_n);
+      BITMAP_FREE (group->escaped_p);
       BITMAP_FREE (group->group_kill);
     }
 
@@ -3746,6 +3834,7 @@ dse_step7 (bool global_done)
   VEC_free (group_info_t, heap, rtx_group_vec);
   BITMAP_FREE (all_blocks);
   BITMAP_FREE (scratch);
+  BITMAP_FREE (kill_on_calls);
 
   free_alloc_pool (rtx_store_info_pool);
   free_alloc_pool (read_info_pool);
@@ -3853,7 +3942,6 @@ struct rtl_opt_pass pass_rtl_dse1 =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_ggc_collect                      /* todo_flags_finish */
  }
@@ -3874,7 +3962,6 @@ struct rtl_opt_pass pass_rtl_dse2 =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_ggc_collect                      /* todo_flags_finish */
  }

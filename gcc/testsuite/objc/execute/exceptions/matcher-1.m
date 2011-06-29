@@ -13,9 +13,9 @@ int main(void)
 
 #else
 
-#include <objc/objc-api.h>
+#include <objc/runtime.h>
 #include <objc/objc-exception.h>
-#include <objc/Object.h>
+#include "../../../objc-obj-c++-shared/TestsuiteObject.m"
 #include <stdlib.h>
 
 static unsigned int handlerExpected = 0;
@@ -27,13 +27,13 @@ my_exception_matcher(Class match_class, id exception)
   return 1;
 }
 
-@interface A : Object
+@interface A : TestsuiteObject
 @end
 
 @implementation A
 @end
 
-@interface B : Object
+@interface B : TestsuiteObject
 @end
 
 @implementation B

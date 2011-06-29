@@ -57,7 +57,7 @@ int main()
   // The following line won't compile. The resize policy needs to be
   // configured to allow external resize (by default, this is not
   // available).
-  h.resize(20); // { dg-error "instantiated from" }
+  h.resize(20); // { dg-error "required from" }
 }
 
 // { dg-error "invalid" "" { target *-*-* } 187 } 

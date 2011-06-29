@@ -30,8 +30,8 @@ template<typename T>
 
 int main()
 {
-  check_add_unsigned<bool>();  // { dg-error "instantiated from" }
-  check_add_unsigned<wchar_t>();  // { dg-error "instantiated from" }
+  check_add_unsigned<bool>();  // { dg-error "required from" }
+  check_add_unsigned<wchar_t>();  // { dg-error "required from" }
   return 0;
 }
 

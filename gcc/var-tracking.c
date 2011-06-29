@@ -5290,7 +5290,7 @@ reverse_op (rtx val, const_rtx expr)
       arg = XEXP (src, 1);
       if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
 	{
-	  arg = cselib_expand_value_rtx (arg, scratch_regs, EXPR_DEPTH);
+	  arg = cselib_expand_value_rtx (arg, scratch_regs, 5);
 	  if (arg == NULL_RTX)
 	    return NULL_RTX;
 	  if (!CONST_INT_P (arg) && GET_CODE (arg) != SYMBOL_REF)
@@ -5589,9 +5589,11 @@ prepare_call_arguments (basic_block bb, rtx insn)
   rtx this_arg = NULL_RTX;
   tree type = NULL_TREE, t, fndecl = NULL_TREE;
   tree obj_type_ref = NULL_TREE;
-  CUMULATIVE_ARGS args_so_far;
+  CUMULATIVE_ARGS args_so_far_v;
+  cumulative_args_t args_so_far;
 
-  memset (&args_so_far, 0, sizeof (args_so_far));
+  memset (&args_so_far_v, 0, sizeof (args_so_far_v));
+  args_so_far = pack_cumulative_args (&args_so_far_v);
   if (GET_CODE (call) == PARALLEL)
     call = XVECEXP (call, 0, 0);
   if (GET_CODE (call) == SET)
@@ -5639,11 +5641,11 @@ prepare_call_arguments (basic_block bb, rtx insn)
 		  tree struct_addr = build_pointer_type (TREE_TYPE (type));
 		  enum machine_mode mode = TYPE_MODE (struct_addr);
 		  rtx reg;
-		  INIT_CUMULATIVE_ARGS (args_so_far, type, NULL_RTX, fndecl,
+		  INIT_CUMULATIVE_ARGS (args_so_far_v, type, NULL_RTX, fndecl,
 					nargs + 1);
-		  reg = targetm.calls.function_arg (&args_so_far, mode,
+		  reg = targetm.calls.function_arg (args_so_far, mode,
 						    struct_addr, true);
-		  targetm.calls.function_arg_advance (&args_so_far, mode,
+		  targetm.calls.function_arg_advance (args_so_far, mode,
 						      struct_addr, true);
 		  if (reg == NULL_RTX)
 		    {
@@ -5658,14 +5660,14 @@ prepare_call_arguments (basic_block bb, rtx insn)
 		}
 	      else
 #endif
-		INIT_CUMULATIVE_ARGS (args_so_far, type, NULL_RTX, fndecl,
+		INIT_CUMULATIVE_ARGS (args_so_far_v, type, NULL_RTX, fndecl,
 				      nargs);
 	      if (obj_type_ref && TYPE_ARG_TYPES (type) != void_list_node)
 		{
 		  enum machine_mode mode;
 		  t = TYPE_ARG_TYPES (type);
 		  mode = TYPE_MODE (TREE_VALUE (t));
-		  this_arg = targetm.calls.function_arg (&args_so_far, mode,
+		  this_arg = targetm.calls.function_arg (args_so_far, mode,
 							 TREE_VALUE (t), true);
 		  if (this_arg && !REG_P (this_arg))
 		    this_arg = NULL_RTX;
@@ -5745,12 +5747,12 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	    tree argtype = TREE_VALUE (t);
 	    enum machine_mode mode = TYPE_MODE (argtype);
 	    rtx reg;
-	    if (pass_by_reference (&args_so_far, mode, argtype, true))
+	    if (pass_by_reference (&args_so_far_v, mode, argtype, true))
 	      {
 		argtype = build_pointer_type (argtype);
 		mode = TYPE_MODE (argtype);
 	      }
-	    reg = targetm.calls.function_arg (&args_so_far, mode,
+	    reg = targetm.calls.function_arg (args_so_far, mode,
 					      argtype, true);
 	    if (TREE_CODE (argtype) == REFERENCE_TYPE
 		&& INTEGRAL_TYPE_P (TREE_TYPE (argtype))
@@ -5804,11 +5806,34 @@ prepare_call_arguments (basic_block bb, rtx insn)
 			}
 		  }
 	      }
-	    targetm.calls.function_arg_advance (&args_so_far, mode,
+	    targetm.calls.function_arg_advance (args_so_far, mode,
 						argtype, true);
 	    t = TREE_CHAIN (t);
 	  }
       }
+
+  /* Add debug arguments.  */
+  if (fndecl
+      && TREE_CODE (fndecl) == FUNCTION_DECL
+      && DECL_HAS_DEBUG_ARGS_P (fndecl))
+    {
+      VEC(tree, gc) **debug_args = decl_debug_args_lookup (fndecl);
+      if (debug_args)
+	{
+	  unsigned int ix;
+	  tree param;
+	  for (ix = 0; VEC_iterate (tree, *debug_args, ix, param); ix += 2)
+	    {
+	      rtx item;
+	      tree dtemp = VEC_index (tree, *debug_args, ix + 1);
+	      enum machine_mode mode = DECL_MODE (dtemp);
+	      item = gen_rtx_DEBUG_PARAMETER_REF (mode, param);
+	      item = gen_rtx_CONCAT (mode, item, DECL_RTL (dtemp));
+	      call_arguments = gen_rtx_EXPR_LIST (VOIDmode, item,
+						  call_arguments);
+	    }
+	}
+    }
 
   /* Reverse call_arguments chain.  */
   prev = NULL_RTX;
@@ -9111,7 +9136,7 @@ variable_tracking_main (void)
 static bool
 gate_handle_var_tracking (void)
 {
-  return (flag_var_tracking);
+  return (flag_var_tracking && !targetm.delay_vartrack);
 }
 
 
@@ -9131,6 +9156,6 @@ struct rtl_opt_pass pass_variable_tracking =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func | TODO_verify_rtl_sharing/* todo_flags_finish */
+  TODO_verify_rtl_sharing               /* todo_flags_finish */
  }
 };

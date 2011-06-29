@@ -56,7 +56,7 @@ int __attribute__ ((noinline,noclone)) get_input(void)
   return 1;
 }
 
-int __attribute__ ((always_inline))
+int inline __attribute__ ((always_inline))
 A::middleman_1 (int i)
 {
   return this->foo (i);

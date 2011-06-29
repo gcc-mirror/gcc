@@ -1,6 +1,6 @@
 /* DWARF2 exception handling and frame unwinding for Xtensa.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009
+   2007, 2008, 2009, 2011
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -208,9 +208,7 @@ _Unwind_GetTextRelBase (struct _Unwind_Context *context)
   return (_Unwind_Ptr) context->bases.tbase;
 }
 
-#ifdef MD_UNWIND_SUPPORT
-#include MD_UNWIND_SUPPORT
-#endif
+#include "md-unwind-support.h"
 
 /* Extract any interesting information from the CIE for the translation
    unit F belongs to.  Return a pointer to the byte after the augmentation,

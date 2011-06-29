@@ -34,5 +34,5 @@ namespace N2 {
     // { dg-message "candidate" "candidate note" { target *-*-* } 33 }
   }
 
-  template int foo<float>();  // { dg-message "instantiated from here" }
+  template int foo<float>();  // { dg-message "required from here" }
 }

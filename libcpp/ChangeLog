@@ -1,3 +1,18 @@
+2011-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45399
+	* lex.c (lex_raw_string): Don't check for embedded NUL.
+
+2011-06-06  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/48532
+	* directives.c (do_pragma): Don't forget the invocation location
+	when parsing the pragma name of a namespaced pragma directive.
+
+2011-05-29  John Tytgat  <John.Tytgat@aaug.net>
+
+	* files.c (read_file_guts): Add test on non-zero value of S_ISREG.
+
 2011-05-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49104

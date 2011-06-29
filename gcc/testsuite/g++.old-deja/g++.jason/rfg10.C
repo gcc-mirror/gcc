@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-pedantic-errors" }
+// { dg-options "-pedantic-errors -std=c++98" }
 // Bug: g++ doesn't notice the overflow in the enum values.
 
 #include <limits.h>

@@ -1,5 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -745,7 +745,17 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
   set_rewrite_uses (stmt, false);
 
   if (is_gimple_debug (stmt))
-    return;
+    {
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	{
+	  tree sym = USE_FROM_PTR (use_p);
+	  gcc_assert (DECL_P (sym));
+	  set_rewrite_uses (stmt, true);
+	}
+      if (rewrite_uses_p (stmt))
+	SET_BIT (interesting_blocks, bb->index);
+      return;
+    }
 
   /* If a variable is used before being set, then the variable is live
      across a block boundary, so mark it live-on-entry to BB.  */
@@ -1279,6 +1289,73 @@ get_reaching_def (tree var)
 }
 
 
+/* Helper function for rewrite_stmt.  Rewrite uses in a debug stmt.  */
+
+static void
+rewrite_debug_stmt_uses (gimple stmt)
+{
+  use_operand_p use_p;
+  ssa_op_iter iter;
+  bool update = false;
+
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+    {
+      tree var = USE_FROM_PTR (use_p), def = NULL_TREE;
+      gcc_assert (DECL_P (var));
+      if (var_ann (var) == NULL)
+	{
+	  if (TREE_CODE (var) == PARM_DECL && single_succ_p (ENTRY_BLOCK_PTR))
+	    {
+	      gimple_stmt_iterator gsi
+		= gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
+	      int lim;
+	      /* Search a few source bind stmts at the start of first bb to
+		 see if a DEBUG_EXPR_DECL can't be reused.  */
+	      for (lim = 32;
+		   !gsi_end_p (gsi) && lim > 0;
+		   gsi_next (&gsi), lim--)
+		{
+		  gimple gstmt = gsi_stmt (gsi);
+		  if (!gimple_debug_source_bind_p (gstmt))
+		    break;
+		  if (gimple_debug_source_bind_get_value (gstmt) == var)
+		    {
+		      def = gimple_debug_source_bind_get_var (gstmt);
+		      if (TREE_CODE (def) == DEBUG_EXPR_DECL)
+			break;
+		      else
+			def = NULL_TREE;
+		    }
+		}
+	      /* If not, add a new source bind stmt.  */
+	      if (def == NULL_TREE)
+		{
+		  gimple def_temp;
+		  def = make_node (DEBUG_EXPR_DECL);
+		  def_temp = gimple_build_debug_source_bind (def, var, NULL);
+		  DECL_ARTIFICIAL (def) = 1;
+		  TREE_TYPE (def) = TREE_TYPE (var);
+		  DECL_MODE (def) = DECL_MODE (var);
+		  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
+		  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
+		}
+	      update = true;
+	    }
+	}
+      else
+	def = get_current_def (var);
+      if (def == NULL)
+	{
+	  gimple_debug_bind_reset_value (stmt);
+	  update_stmt (stmt);
+	  return;
+	}
+      SET_USE (use_p, def);
+    }
+  if (update)
+    update_stmt (stmt);
+}
+
 /* SSA Rewriting Step 2.  Rewrite every variable used in each statement in
    the block with its immediate reaching definitions.  Update the current
    definition of a variable when a new real or virtual definition is found.  */
@@ -1306,12 +1383,17 @@ rewrite_stmt (gimple_stmt_iterator si)
 
   /* Step 1.  Rewrite USES in the statement.  */
   if (rewrite_uses_p (stmt))
-    FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
-      {
-	tree var = USE_FROM_PTR (use_p);
-	gcc_assert (DECL_P (var));
-	SET_USE (use_p, get_reaching_def (var));
-      }
+    {
+      if (is_gimple_debug (stmt))
+	rewrite_debug_stmt_uses (stmt);
+      else
+	FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	  {
+	    tree var = USE_FROM_PTR (use_p);
+	    gcc_assert (DECL_P (var));
+	    SET_USE (use_p, get_reaching_def (var));
+	  }
+    }
 
   /* Step 2.  Register the statement's DEF operands.  */
   if (register_defs_p (stmt))
@@ -2413,8 +2495,7 @@ struct gimple_opt_pass pass_build_ssa =
   PROP_ssa,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func
-    | TODO_update_ssa_only_virtuals
+  TODO_update_ssa_only_virtuals
     | TODO_verify_ssa
     | TODO_remove_unused_locals		/* todo_flags_finish */
  }

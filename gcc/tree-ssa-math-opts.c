@@ -645,7 +645,7 @@ struct gimple_opt_pass pass_cse_reciprocals =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+  TODO_update_ssa | TODO_verify_ssa
     | TODO_verify_stmts                /* todo_flags_finish */
  }
 };
@@ -987,7 +987,7 @@ powi_as_mults (gimple_stmt_iterator *gsi, location_t loc,
   memset (cache, 0,  sizeof (cache));
   cache[1] = arg0;
 
-  target = create_tmp_var (type, "powmult");
+  target = create_tmp_reg (type, "powmult");
   add_referenced_var (target);
 
   result = powi_as_mults_1 (gsi, loc, type, (n < 0) ? -n : n, cache, target);
@@ -1041,7 +1041,7 @@ build_and_insert_call (gimple_stmt_iterator *gsi, location_t loc,
 
   if (!*var)
     {
-      *var = create_tmp_var (TREE_TYPE (arg), "powroot");
+      *var = create_tmp_reg (TREE_TYPE (arg), "powroot");
       add_referenced_var (*var);
     }
 
@@ -1065,6 +1065,22 @@ build_and_insert_binop (gimple_stmt_iterator *gsi, location_t loc,
 {
   tree result = make_ssa_name (target, NULL);
   gimple stmt = gimple_build_assign_with_ops (code, result, arg0, arg1);
+  gimple_set_location (stmt, loc);
+  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+  return result;
+}
+
+/* Build a gimple reference operation with the given CODE and argument
+   ARG, assigning the result to a new SSA name for variable TARGET.  
+   Insert the statement prior to GSI's current position, and return
+   the fresh SSA name.  */
+
+static inline tree
+build_and_insert_ref (gimple_stmt_iterator *gsi, location_t loc, tree type,
+		      tree target, enum tree_code code, tree arg0)
+{
+  tree result = make_ssa_name (target, NULL);
+  gimple stmt = gimple_build_assign (result, build1 (code, type, arg0));
   gimple_set_location (stmt, loc);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
   return result;
@@ -1124,7 +1140,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
      if we don't have a hardware sqrt insn.  */
   dconst1_4 = dconst1;
   SET_REAL_EXP (&dconst1_4, REAL_EXP (&dconst1_4) - 2);
-  hw_sqrt_exists = optab_handler(sqrt_optab, mode) != CODE_FOR_nothing;
+  hw_sqrt_exists = optab_handler (sqrt_optab, mode) != CODE_FOR_nothing;
 
   if (flag_unsafe_math_optimizations
       && sqrtfn
@@ -1172,13 +1188,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 
   if (flag_unsafe_math_optimizations
       && cbrtfn
-      /* FIXME: The following line was originally
-	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
-	 but since arg0 is a gimple value, the first predicate
-	 will always return false.  It needs to be replaced with a
-	 call to a similar gimple_val_nonnegative_p function to be
-         added in gimple-fold.c.  */
-      && !HONOR_NANS (mode)
+      && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
       && REAL_VALUES_EQUAL (c, dconst1_3))
     return build_and_insert_call (gsi, loc, &target, cbrtfn, arg0);
   
@@ -1190,13 +1200,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   if (flag_unsafe_math_optimizations
       && sqrtfn
       && cbrtfn
-      /* FIXME: The following line was originally
-	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
-	 but since arg0 is a gimple value, the first predicate
-	 will always return false.  It needs to be replaced with a
-	 call to a similar gimple_val_nonnegative_p function to be
-         added in gimple-fold.c.  */
-      && !HONOR_NANS (mode)
+      && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
       && optimize_function_for_speed_p (cfun)
       && hw_sqrt_exists
       && REAL_VALUES_EQUAL (c, dconst1_6))
@@ -1270,13 +1274,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 
   if (flag_unsafe_math_optimizations
       && cbrtfn
-      /* FIXME: The following line was originally
-	 && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)),
-	 but since arg0 is a gimple value, the first predicate
-	 will always return false.  It needs to be replaced with a
-	 call to a similar gimple_val_nonnegative_p function to be
-         added in gimple-fold.c.  */
-      && !HONOR_NANS (mode)
+      && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
       && real_identical (&c2, &c)
       && optimize_function_for_speed_p (cfun)
       && powi_cost (n / 3) <= POWI_MAX_MULTS)
@@ -1322,6 +1320,42 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 
   /* No optimizations succeeded.  */
   return NULL_TREE;
+}
+
+/* ARG is the argument to a cabs builtin call in GSI with location info
+   LOC.  Create a sequence of statements prior to GSI that calculates
+   sqrt(R*R + I*I), where R and I are the real and imaginary components
+   of ARG, respectively.  Return an expression holding the result.  */
+
+static tree
+gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, location_t loc, tree arg)
+{
+  tree target, real_part, imag_part, addend1, addend2, sum, result;
+  tree type = TREE_TYPE (TREE_TYPE (arg));
+  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
+  enum machine_mode mode = TYPE_MODE (type);
+
+  if (!flag_unsafe_math_optimizations
+      || !optimize_bb_for_speed_p (gimple_bb (gsi_stmt (*gsi)))
+      || !sqrtfn
+      || optab_handler (sqrt_optab, mode) == CODE_FOR_nothing)
+    return NULL_TREE;
+
+  target = create_tmp_reg (type, "cabs");
+  add_referenced_var (target);
+
+  real_part = build_and_insert_ref (gsi, loc, type, target,
+				    REALPART_EXPR, arg);
+  addend1 = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+				    real_part, real_part);
+  imag_part = build_and_insert_ref (gsi, loc, type, target, 
+				    IMAGPART_EXPR, arg);
+  addend2 = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
+				    imag_part, imag_part);
+  sum = build_and_insert_binop (gsi, loc, target, PLUS_EXPR, addend1, addend2);
+  result = build_and_insert_call (gsi, loc, &target, sqrtfn, sum);
+
+  return result;
 }
 
 /* Go through all calls to sin, cos and cexpi and call execute_cse_sincos_1
@@ -1406,6 +1440,21 @@ execute_cse_sincos (void)
 		    }
 		  break;
 
+		CASE_FLT_FN (BUILT_IN_CABS):
+		  arg0 = gimple_call_arg (stmt, 0);
+		  loc = gimple_location (stmt);
+		  result = gimple_expand_builtin_cabs (&gsi, loc, arg0);
+
+		  if (result)
+		    {
+		      tree lhs = gimple_get_lhs (stmt);
+		      gimple new_stmt = gimple_build_assign (lhs, result);
+		      gimple_set_location (new_stmt, loc);
+		      unlink_stmt_vdef (stmt);
+		      gsi_replace (&gsi, new_stmt, true);
+		    }
+		  break;
+
 		default:;
 		}
 	    }
@@ -1442,7 +1491,7 @@ struct gimple_opt_pass pass_cse_sincos =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+  TODO_update_ssa | TODO_verify_ssa
     | TODO_verify_stmts                 /* todo_flags_finish */
  }
 };
@@ -1494,6 +1543,9 @@ do_shift_rotate (enum tree_code code,
     default:
       return false;
     }
+  /* Zero unused bits for size.  */
+  if (n->size < (int)sizeof (HOST_WIDEST_INT))
+    n->n &= ((unsigned HOST_WIDEST_INT)1 << (n->size * BITS_PER_UNIT)) - 1;
   return true;
 }
 
@@ -1691,15 +1743,16 @@ find_bswap (gimple stmt)
 
   struct symbolic_number n;
   tree source_expr;
+  int limit;
 
   /* The last parameter determines the depth search limit.  It usually
      correlates directly to the number of bytes to be touched.  We
-     increase that number by one here in order to also cover signed ->
-     unsigned conversions of the src operand as can be seen in
-     libgcc.  */
-  source_expr =  find_bswap_1 (stmt, &n,
-			       TREE_INT_CST_LOW (
-				 TYPE_SIZE_UNIT (gimple_expr_type (stmt))) + 1);
+     increase that number by three  here in order to also
+     cover signed -> unsigned converions of the src operand as can be seen
+     in libgcc, and for initial shift/and operation of the src operand.  */
+  limit = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
+  limit += 1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit);
+  source_expr =  find_bswap_1 (stmt, &n, limit);
 
   if (!source_expr)
     return NULL_TREE;
@@ -1768,7 +1821,11 @@ execute_optimize_bswap (void)
     {
       gimple_stmt_iterator gsi;
 
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      /* We do a reverse scan for bswap patterns to make sure we get the
+	 widest match. As bswap pattern matching doesn't handle
+	 previously inserted smaller bswap replacements as sub-
+	 patterns, the wider variant wouldn't be detected.  */
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
         {
 	  gimple stmt = gsi_stmt (gsi);
 	  tree bswap_src, bswap_type;
@@ -1869,7 +1926,7 @@ execute_optimize_bswap (void)
   statistics_counter_event (cfun, "64-bit bswap implementations found",
 			    bswap_stats.found_64bit);
 
-  return (changed ? TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+  return (changed ? TODO_update_ssa | TODO_verify_ssa
 	  | TODO_verify_stmts : 0);
 }
 
@@ -2192,7 +2249,7 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
       if (use_code == NEGATE_EXPR)
 	{
 	  ssa_op_iter iter;
-	  tree use;
+	  use_operand_p usep;
 
 	  result = gimple_assign_lhs (use_stmt);
 
@@ -2203,8 +2260,8 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 	    return false;
 
 	  /* Make sure the multiplication isn't also used on that stmt.  */
-	  FOR_EACH_SSA_TREE_OPERAND (use, neguse_stmt, iter, SSA_OP_USE)
-	    if (use == mul_result)
+	  FOR_EACH_PHI_OR_STMT_USE (usep, neguse_stmt, iter, SSA_OP_USE)
+	    if (USE_FROM_PTR (usep) == mul_result)
 	      return false;
 
 	  /* Re-validate.  */
@@ -2422,7 +2479,6 @@ struct gimple_opt_pass pass_optimize_widening_mul =
   0,					/* todo_flags_start */
   TODO_verify_ssa
   | TODO_verify_stmts
-  | TODO_dump_func
   | TODO_update_ssa                     /* todo_flags_finish */
  }
 };

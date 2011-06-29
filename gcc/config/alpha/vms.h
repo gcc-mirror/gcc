@@ -225,63 +225,6 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 #define LINK_EH_SPEC "vms-dwarf2eh.o%s "
 #define LINK_GCC_C_SEQUENCE_SPEC "%G"
 
-#ifdef IN_LIBGCC2
-/* Get the definition for MD_FALLBACK_FRAME_STATE_FOR from a separate
-   file. This avoids having to recompile the world instead of libgcc only
-   when changes to this macro are exercised.  */
-
-#define MD_UNWIND_SUPPORT "config/alpha/vms-unwind.h"
-#endif
-
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
-  avms_asm_output_external (FILE, DECL, NAME)
-
-typedef struct crtl_name_spec
-{
-  const char *const name;
-  const char *deccname;
-  int referenced;
-} crtl_name_spec;
-
-#include "config/vms/vms-crtl.h"
-
-/* Alias CRTL names to 32/64bit DECCRTL functions. 
-   Fixme: This should do a binary search.  */
-#define DO_CRTL_NAMES                                                      \
-  do                                                                       \
-    {                                                                      \
-      int i;                                                               \
-      static crtl_name_spec vms_crtl_names[] = CRTL_NAMES;                 \
-      static int malloc64_init = 0;                                        \
-                                                                           \
-      if ((malloc64_init == 0) && TARGET_MALLOC64)          		   \
-	{                                                                  \
-          for (i=0; vms_crtl_names [i].name; i++)                          \
-            {                                                              \
-	      if (strcmp ("calloc", vms_crtl_names [i].name) == 0)         \
-                vms_crtl_names [i].deccname = "decc$_calloc64";            \
-              else                                                         \
-	      if (strcmp ("malloc", vms_crtl_names [i].name) == 0)         \
-                vms_crtl_names [i].deccname = "decc$_malloc64";            \
-              else                                                         \
-	      if (strcmp ("realloc", vms_crtl_names [i].name) == 0)        \
-                vms_crtl_names [i].deccname = "decc$_realloc64";           \
-              else                                                         \
-	      if (strcmp ("strdup", vms_crtl_names [i].name) == 0)         \
-                vms_crtl_names [i].deccname = "decc$_strdup64";            \
-	    }                                                              \
-            malloc64_init = 1;                                             \
-        }                                                                  \
-      for (i=0; vms_crtl_names [i].name; i++)                              \
-	if (!vms_crtl_names [i].referenced &&                              \
-	    (strcmp (name, vms_crtl_names [i].name) == 0))                 \
-	  {                                                                \
-	    fprintf (file, "\t%s=%s\n",                        \
-		     name, vms_crtl_names [i].deccname);                   \
-	    vms_crtl_names [i].referenced = 1;                             \
-	  }                                                                \
-    } while (0)
-
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */

@@ -268,7 +268,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define BIND_EXPR_BODY_BLOCK(NODE) \
   TREE_LANG_FLAG_3 (BIND_EXPR_CHECK (NODE))
 #define FUNCTION_NEEDS_BODY_BLOCK(NODE) \
-  (DECL_CONSTRUCTOR_P (NODE) || DECL_DESTRUCTOR_P (NODE))
+  (DECL_CONSTRUCTOR_P (NODE) || DECL_DESTRUCTOR_P (NODE) \
+   || LAMBDA_FUNCTION_P (NODE))
 
 #define STATEMENT_LIST_NO_SCOPE(NODE) \
   TREE_LANG_FLAG_0 (STATEMENT_LIST_CHECK (NODE))
@@ -507,6 +508,23 @@ struct GTY (()) tree_default_arg {
   VEC(tree,gc) *instantiations;
 };
 
+
+#define DEFERRED_NOEXCEPT_PATTERN(NODE) \
+  (((struct tree_deferred_noexcept *)DEFERRED_NOEXCEPT_CHECK (NODE))->pattern)
+#define DEFERRED_NOEXCEPT_ARGS(NODE) \
+  (((struct tree_deferred_noexcept *)DEFERRED_NOEXCEPT_CHECK (NODE))->args)
+#define DEFERRED_NOEXCEPT_SPEC_P(NODE)				\
+  ((NODE) && (TREE_PURPOSE (NODE))				\
+  && (TREE_CODE (TREE_PURPOSE (NODE)) == DEFERRED_NOEXCEPT	\
+      || is_overloaded_fn (TREE_PURPOSE (NODE))))
+
+struct GTY (()) tree_deferred_noexcept {
+  struct tree_base base;
+  tree pattern;
+  tree args;
+};
+
+
 /* The condition associated with the static assertion.  This must be
    an integral constant expression.  */
 #define STATIC_ASSERT_CONDITION(NODE) \
@@ -608,7 +626,8 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_CAPTURE_LIST(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->capture_list)
 
-/* The node in the capture-list that holds the 'this' capture.  */
+/* During parsing of the lambda, the node in the capture-list that holds
+   the 'this' capture.  */
 #define LAMBDA_EXPR_THIS_CAPTURE(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->this_capture)
 
@@ -643,15 +662,21 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_DISCRIMINATOR(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->discriminator)
 
+/* During parsing of the lambda, a vector of capture proxies which need
+   to be pushed once we're done processing a nested lambda.  */
+#define LAMBDA_EXPR_PENDING_PROXIES(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->pending_proxies)
+
 struct GTY (()) tree_lambda_expr
 {
-  struct tree_common common;
-  location_t locus;
-  enum cp_lambda_default_capture_mode_type default_capture_mode;
+  struct tree_typed typed;
   tree capture_list;
   tree this_capture;
   tree return_type;
   tree extra_scope;
+  VEC(tree,gc)* pending_proxies;
+  location_t locus;
+  enum cp_lambda_default_capture_mode_type default_capture_mode;
   int discriminator;
 };
 
@@ -693,6 +718,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_BASELINK,
   TS_CP_WRAPPER,
   TS_CP_DEFAULT_ARG,
+  TS_CP_DEFERRED_NOEXCEPT,
   TS_CP_STATIC_ASSERT,
   TS_CP_ARGUMENT_PACK_SELECT,
   TS_CP_TRAIT_EXPR,
@@ -703,7 +729,7 @@ enum cp_tree_node_structure_enum {
 
 /* The resulting tree type.  */
 union GTY((desc ("cp_tree_node_structure (&%h)"),
-       chain_next ("CODE_CONTAINS_STRUCT (TREE_CODE (&%h.generic), TS_COMMON) ? ((union lang_tree_node *) TREE_CHAIN (&%h.generic)) : NULL"))) lang_tree_node {
+       chain_next ("(union lang_tree_node *) c_tree_chain_next (&%h.generic)"))) lang_tree_node {
   union tree_node GTY ((tag ("TS_CP_GENERIC"),
 			desc ("tree_node_structure (&%h)"))) generic;
   struct template_parm_index_s GTY ((tag ("TS_CP_TPI"))) tpi;
@@ -711,6 +737,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
   struct tree_default_arg GTY ((tag ("TS_CP_DEFAULT_ARG"))) default_arg;
+  struct tree_deferred_noexcept GTY ((tag ("TS_CP_DEFERRED_NOEXCEPT"))) deferred_noexcept;
   struct lang_identifier GTY ((tag ("TS_CP_IDENTIFIER"))) identifier;
   struct tree_static_assert GTY ((tag ("TS_CP_STATIC_ASSERT"))) 
     static_assertion;
@@ -1105,12 +1132,6 @@ struct GTY(()) language_function {
 #define ansi_assopname(CODE) \
   (assignment_operator_name_info[(int) (CODE)].identifier)
 
-/* True if NODE is an erroneous expression.  */
-
-#define error_operand_p(NODE)					\
-  ((NODE) == error_mark_node					\
-   || ((NODE) && TREE_TYPE ((NODE)) == error_mark_node))
-
 /* TRUE if a tree code represents a statement.  */
 extern bool statement_code_p[MAX_TREE_CODES];
 
@@ -1780,7 +1801,10 @@ struct GTY((variable_size)) lang_type {
    this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE
    will be NULL_TREE to indicate a throw specification of `()', or
    no exceptions allowed.  For a noexcept specification, TREE_VALUE
-   is NULL_TREE and TREE_PURPOSE is the constant-expression. */
+   is NULL_TREE and TREE_PURPOSE is the constant-expression.  For
+   a deferred noexcept-specification, TREE_PURPOSE is a DEFERRED_NOEXCEPT
+   (for templates) or an OVERLOAD list of functions (for implicitly
+   declared functions).  */
 #define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_LANG_SLOT_1 (NODE)
 
 /* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'
@@ -4635,7 +4659,7 @@ struct cp_declarator {
 };
 
 /* A level of template instantiation.  */
-struct GTY(()) tinst_level {
+struct GTY((chain_next ("%h.next"))) tinst_level {
   /* The immediately deeper level in the chain.  */
   struct tinst_level *next;
 
@@ -4699,7 +4723,7 @@ extern tree build_new_method_call		(tree, tree, VEC(tree,gc) **,
 extern tree build_special_member_call		(tree, tree, VEC(tree,gc) **,
 						 tree, int, tsubst_flags_t);
 extern tree build_new_op			(enum tree_code, int, tree, 
-						 tree, tree, bool *,
+						 tree, tree, tree *,
 						 tsubst_flags_t);
 extern tree build_op_call			(tree, VEC(tree,gc) **,
 						 tsubst_flags_t);
@@ -5130,6 +5154,7 @@ extern int more_specialized_fn			(tree, tree, int);
 extern void do_decl_instantiation		(tree, tree);
 extern void do_type_instantiation		(tree, tree, tsubst_flags_t);
 extern bool always_instantiate_p		(tree);
+extern void maybe_instantiate_noexcept		(tree);
 extern tree instantiate_decl			(tree, int, bool);
 extern int comp_template_parms			(const_tree, const_tree);
 extern bool uses_parameter_packs                (tree);
@@ -5420,7 +5445,6 @@ extern bool cxx_omp_create_clause_info		(tree, tree, bool, bool, bool);
 extern tree baselink_for_fns                    (tree);
 extern void finish_static_assert                (tree, tree, location_t,
                                                  bool);
-extern tree describable_type			(tree);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
 extern tree finish_trait_expr			(enum cp_trait_kind, tree, tree);
 extern tree build_lambda_expr                   (void);
@@ -5432,10 +5456,15 @@ extern tree lambda_function			(tree);
 extern void apply_lambda_return_type            (tree, tree);
 extern tree add_capture                         (tree, tree, tree, bool, bool);
 extern tree add_default_capture                 (tree, tree, tree);
+extern tree build_capture_proxy			(tree);
+extern void insert_pending_capture_proxies	(void);
+extern bool is_capture_proxy			(tree);
+extern bool is_normal_capture_proxy             (tree);
 extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree);
 extern tree nonlambda_method_basetype		(void);
 extern void maybe_add_lambda_conv_op            (tree);
+extern bool is_lambda_ignored_entity            (tree);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
@@ -5592,7 +5621,7 @@ extern tree cp_build_function_call_vec		(tree, VEC(tree,gc) **,
 						 tsubst_flags_t);
 extern tree build_x_binary_op			(enum tree_code, tree,
 						 enum tree_code, tree,
-						 enum tree_code, bool *,
+						 enum tree_code, tree *,
 						 tsubst_flags_t);
 extern tree build_x_array_ref			(tree, tree, tsubst_flags_t);
 extern tree build_x_unary_op			(enum tree_code, tree,
@@ -5685,7 +5714,7 @@ extern tree build_x_arrow			(tree);
 extern tree build_m_component_ref		(tree, tree);
 extern tree build_functional_cast		(tree, tree, tsubst_flags_t);
 extern tree add_exception_specifier		(tree, tree, int);
-extern tree merge_exception_specifiers		(tree, tree);
+extern tree merge_exception_specifiers		(tree, tree, tree);
 
 /* in mangle.c */
 extern void init_mangle				(void);

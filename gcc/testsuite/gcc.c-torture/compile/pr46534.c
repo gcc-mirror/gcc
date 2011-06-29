@@ -1,4 +1,4 @@
-/* { dg-skip-if "too big" { pdp11-*-* } { "*" } { "" } } */
+/* { dg-skip-if "too big" { avr-*-* pdp11-*-* } { "*" } { "" } } */
 /* PR middle-end/46534 */
 
 extern int printf (const char *, ...);

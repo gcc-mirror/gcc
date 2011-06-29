@@ -170,7 +170,7 @@ default_expand_builtin_saveregs (void)
 }
 
 void
-default_setup_incoming_varargs (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+default_setup_incoming_varargs (cumulative_args_t ca ATTRIBUTE_UNUSED,
 				enum machine_mode mode ATTRIBUTE_UNUSED,
 				tree type ATTRIBUTE_UNUSED,
 				int *pretend_arg_size ATTRIBUTE_UNUSED,
@@ -189,13 +189,13 @@ default_builtin_setjmp_frame_value (void)
 /* Generic hook that takes a CUMULATIVE_ARGS pointer and returns false.  */
 
 bool
-hook_bool_CUMULATIVE_ARGS_false (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
+hook_bool_CUMULATIVE_ARGS_false (cumulative_args_t ca ATTRIBUTE_UNUSED)
 {
   return false;
 }
 
 bool
-default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
+default_pretend_outgoing_varargs_named (cumulative_args_t ca ATTRIBUTE_UNUSED)
 {
   return (targetm.calls.setup_incoming_varargs
 	  != default_setup_incoming_varargs);
@@ -253,7 +253,7 @@ default_mode_rep_extended (enum machine_mode mode ATTRIBUTE_UNUSED,
 /* Generic hook that takes a CUMULATIVE_ARGS pointer and returns true.  */
 
 bool
-hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS * a ATTRIBUTE_UNUSED)
+hook_bool_CUMULATIVE_ARGS_true (cumulative_args_t a ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -302,7 +302,7 @@ default_cxx_get_cookie_size (tree type)
    of the TARGET_PASS_BY_REFERENCE hook uses just MUST_PASS_IN_STACK.  */
 
 bool
-hook_pass_by_reference_must_pass_in_stack (CUMULATIVE_ARGS *c ATTRIBUTE_UNUSED,
+hook_pass_by_reference_must_pass_in_stack (cumulative_args_t c ATTRIBUTE_UNUSED,
 	enum machine_mode mode ATTRIBUTE_UNUSED, const_tree type ATTRIBUTE_UNUSED,
 	bool named_arg ATTRIBUTE_UNUSED)
 {
@@ -313,7 +313,7 @@ hook_pass_by_reference_must_pass_in_stack (CUMULATIVE_ARGS *c ATTRIBUTE_UNUSED,
    version of the hook is true for all named arguments.  */
 
 bool
-hook_callee_copies_named (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+hook_callee_copies_named (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			  enum machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type ATTRIBUTE_UNUSED, bool named)
 {
@@ -555,7 +555,7 @@ default_builtin_reciprocal (unsigned int fn ATTRIBUTE_UNUSED,
 
 bool
 hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
-	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+	cumulative_args_t ca ATTRIBUTE_UNUSED,
 	enum machine_mode mode ATTRIBUTE_UNUSED,
 	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
@@ -564,7 +564,7 @@ hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
 
 bool
 hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
-	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+	cumulative_args_t ca ATTRIBUTE_UNUSED,
 	enum machine_mode mode ATTRIBUTE_UNUSED,
 	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
@@ -573,7 +573,7 @@ hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
 
 int
 hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
-	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+	cumulative_args_t ca ATTRIBUTE_UNUSED,
 	enum machine_mode mode ATTRIBUTE_UNUSED,
 	tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
@@ -581,7 +581,7 @@ hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
 }
 
 void
-default_function_arg_advance (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			      enum machine_mode mode ATTRIBUTE_UNUSED,
 			      const_tree type ATTRIBUTE_UNUSED,
 			      bool named ATTRIBUTE_UNUSED)
@@ -590,7 +590,7 @@ default_function_arg_advance (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 }
 
 rtx
-default_function_arg (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+default_function_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
 		      enum machine_mode mode ATTRIBUTE_UNUSED,
 		      const_tree type ATTRIBUTE_UNUSED,
 		      bool named ATTRIBUTE_UNUSED)
@@ -599,7 +599,7 @@ default_function_arg (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 }
 
 rtx
-default_function_incoming_arg (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+default_function_incoming_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			       enum machine_mode mode ATTRIBUTE_UNUSED,
 			       const_tree type ATTRIBUTE_UNUSED,
 			       bool named ATTRIBUTE_UNUSED)
@@ -1323,48 +1323,6 @@ default_debug_unwind_info (void)
   return UI_NONE;
 }
 
-/* Determine the exception handling mechanism for the target.  */
-
-enum unwind_info_type
-default_except_unwind_info (struct gcc_options *opts ATTRIBUTE_UNUSED)
-{
-  /* Obey the configure switch to turn on sjlj exceptions.  */
-#ifdef CONFIG_SJLJ_EXCEPTIONS
-  if (CONFIG_SJLJ_EXCEPTIONS)
-    return UI_SJLJ;
-#endif
-
-  /* ??? Change all users to the hook, then poison this.  */
-#ifdef DWARF2_UNWIND_INFO
-  if (DWARF2_UNWIND_INFO)
-    return UI_DWARF2;
-#endif
-
-  return UI_SJLJ;
-}
-
-/* To be used by targets that force dwarf2 unwind enabled.  */
-
-enum unwind_info_type
-dwarf2_except_unwind_info (struct gcc_options *opts ATTRIBUTE_UNUSED)
-{
-  /* Obey the configure switch to turn on sjlj exceptions.  */
-#ifdef CONFIG_SJLJ_EXCEPTIONS
-  if (CONFIG_SJLJ_EXCEPTIONS)
-    return UI_SJLJ;
-#endif
-
-  return UI_DWARF2;
-}
-
-/* To be used by targets that force sjlj unwind enabled.  */
-
-enum unwind_info_type
-sjlj_except_unwind_info (struct gcc_options *opts ATTRIBUTE_UNUSED)
-{
-  return UI_SJLJ;
-}
-
 /* To be used by targets where reg_raw_mode doesn't return the right
    mode for registers used in apply_builtin_return and apply_builtin_arg.  */
 
@@ -1482,21 +1440,5 @@ default_pch_valid_p (const void *data_p, size_t len)
 
   return NULL;
 }
-
-/* Default version of TARGET_HANDLE_OPTION.  */
-
-bool
-default_target_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
-			      struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-			      const struct cl_decoded_option *decoded ATTRIBUTE_UNUSED,
-			      location_t loc ATTRIBUTE_UNUSED)
-{
-  return true;
-}
-
-const struct default_options empty_optimization_table[] =
-  {
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 #include "gt-targhooks.h"

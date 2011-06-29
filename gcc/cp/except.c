@@ -722,7 +722,7 @@ build_throw (tree exp)
 	 respectively.  */
       temp_type = is_bitfield_expr_with_lowered_type (exp);
       if (!temp_type)
-	temp_type = type_decays_to (TREE_TYPE (exp));
+	temp_type = cv_unqualified (type_decays_to (TREE_TYPE (exp)));
 
       /* OK, this is kind of wacky.  The standard says that we call
 	 terminate when the exception handling mechanism, after
@@ -1160,6 +1160,7 @@ finish_noexcept_expr (tree expr, tsubst_flags_t complain)
 bool
 nothrow_spec_p (const_tree spec)
 {
+  gcc_assert (!DEFERRED_NOEXCEPT_SPEC_P (spec));
   if (spec == NULL_TREE
       || TREE_VALUE (spec) != NULL_TREE
       || spec == noexcept_false_spec)
@@ -1180,6 +1181,7 @@ bool
 type_noexcept_p (const_tree type)
 {
   tree spec = TYPE_RAISES_EXCEPTIONS (type);
+  gcc_assert (!DEFERRED_NOEXCEPT_SPEC_P (spec));
   if (flag_nothrow_opt)
     return nothrow_spec_p (spec);
   else
@@ -1193,6 +1195,7 @@ bool
 type_throw_all_p (const_tree type)
 {
   tree spec = TYPE_RAISES_EXCEPTIONS (type);
+  gcc_assert (!DEFERRED_NOEXCEPT_SPEC_P (spec));
   return spec == NULL_TREE || spec == noexcept_false_spec;
 }
 
@@ -1204,7 +1207,7 @@ build_noexcept_spec (tree expr, int complain)
 {
   /* This isn't part of the signature, so don't bother trying to evaluate
      it until instantiation.  */
-  if (!processing_template_decl)
+  if (!processing_template_decl && TREE_CODE (expr) != DEFERRED_NOEXCEPT)
     {
       expr = perform_implicit_conversion_flags (boolean_type_node, expr,
 						complain,
@@ -1219,7 +1222,8 @@ build_noexcept_spec (tree expr, int complain)
     return error_mark_node;
   else
     {
-      gcc_assert (processing_template_decl || expr == error_mark_node);
+      gcc_assert (processing_template_decl || expr == error_mark_node
+		  || TREE_CODE (expr) == DEFERRED_NOEXCEPT);
       return build_tree_list (expr, NULL_TREE);
     }
 }

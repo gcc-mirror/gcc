@@ -55,22 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "opts.h"
 
-static const int processor_flags_table[] =
-  {
-    /* g5 */     PF_IEEE_FLOAT,
-    /* g6 */     PF_IEEE_FLOAT,
-    /* z900 */   PF_IEEE_FLOAT | PF_ZARCH,
-    /* z990 */   PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT,
-    /* z9-109 */ PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM,
-    /* z9-ec */  PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM | PF_DFP,
-    /* z10 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM | PF_DFP | PF_Z10,
-    /* z196 */   PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
-                 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196
-  };
-
 /* Define the specific costs for a given cpu.  */
 
 struct processor_costs
@@ -1517,74 +1501,6 @@ static struct machine_function *
 s390_init_machine_status (void)
 {
   return ggc_alloc_cleared_machine_function ();
-}
-
-/* Change optimizations to be performed, depending on the
-   optimization level.  */
-
-static const struct default_options s390_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-
-    /* ??? There are apparently still problems with -fcaller-saves.  */
-    { OPT_LEVELS_ALL, OPT_fcaller_saves, NULL, 0 },
-
-    /* Use MVCLE instructions to decrease code size if requested.  */
-    { OPT_LEVELS_SIZE, OPT_mmvcle, NULL, 1 },
-
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
-/* Implement TARGET_OPTION_INIT_STRUCT.  */
-
-static void
-s390_option_init_struct (struct gcc_options *opts)
-{
-  /* By default, always emit DWARF-2 unwind info.  This allows debugging
-     without maintaining a stack frame back-chain.  */
-  opts->x_flag_asynchronous_unwind_tables = 1;
-}
-
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-s390_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-  		    const struct cl_decoded_option *decoded,
-		    location_t loc)
-{
-  size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_march_:
-      opts->x_s390_arch_flags = processor_flags_table[value];
-      opts->x_s390_arch_string = arg;
-      return true;
-
-    case OPT_mstack_guard_:
-      if (exact_log2 (value) == -1)
-	error_at (loc, "stack guard value must be an exact power of 2");
-      return true;
-
-    case OPT_mstack_size_:
-      if (exact_log2 (value) == -1)
-	error_at (loc, "stack size must be an exact power of 2");
-      return true;
-
-    case OPT_mtune_:
-      opts->x_s390_tune_flags = processor_flags_table[value];
-      return true;
-
-    case OPT_mwarn_framesize_:
-      return sscanf (arg, HOST_WIDE_INT_PRINT_DEC,
-		     &opts->x_s390_warn_framesize) == 1;
-
-    default:
-      return true;
-    }
 }
 
 static void
@@ -8595,7 +8511,7 @@ s390_function_arg_integer (enum machine_mode mode, const_tree type)
    reference.  */
 
 static bool
-s390_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+s390_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
@@ -8623,9 +8539,11 @@ s390_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
    matching an ellipsis).  */
 
 static void
-s390_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+s390_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (s390_function_arg_float (mode, type))
     {
       cum->fprs += 1;
@@ -8659,9 +8577,11 @@ s390_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    are pushed to the stack.  */
 
 static rtx
-s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+s390_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (s390_function_arg_float (mode, type))
     {
       if (cum->fprs + 1 > FP_ARG_NUM_REG)
@@ -9706,14 +9626,16 @@ s390_valid_pointer_mode (enum machine_mode mode)
 static bool
 s390_call_saved_register_used (tree call_expr)
 {
-  CUMULATIVE_ARGS cum;
+  CUMULATIVE_ARGS cum_v;
+  cumulative_args_t cum;
   tree parameter;
   enum machine_mode mode;
   tree type;
   rtx parm_rtx;
   int reg, i;
 
-  INIT_CUMULATIVE_ARGS (cum, NULL, NULL, 0, 0);
+  INIT_CUMULATIVE_ARGS (cum_v, NULL, NULL, 0, 0);
+  cum = pack_cumulative_args (&cum_v);
 
   for (i = 0; i < call_expr_nargs (call_expr); i++)
     {
@@ -9731,15 +9653,15 @@ s390_call_saved_register_used (tree call_expr)
       mode = TYPE_MODE (type);
       gcc_assert (mode);
 
-      if (pass_by_reference (&cum, mode, type, true))
+      if (pass_by_reference (&cum_v, mode, type, true))
  	{
  	  mode = Pmode;
  	  type = build_pointer_type (type);
  	}
 
-       parm_rtx = s390_function_arg (&cum, mode, type, 0);
+       parm_rtx = s390_function_arg (cum, mode, type, 0);
 
-       s390_function_arg_advance (&cum, mode, type, 0);
+       s390_function_arg_advance (cum, mode, type, 0);
 
        if (!parm_rtx)
 	 continue;
@@ -10688,20 +10610,8 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 #undef  TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN ""
 
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT)
-
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION s390_handle_option
-
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE s390_option_override
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE s390_option_optimization_table
-
-#undef TARGET_OPTION_INIT_STRUCT
-#define TARGET_OPTION_INIT_STRUCT s390_option_init_struct
 
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info

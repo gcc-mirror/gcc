@@ -58,10 +58,10 @@ namespace __gnu_pbds
 	  factor = 2
 	};
 
-      // Next shrink size.
+      /// Next shrink size.
       _Tp 		m_shrink_size;
 
-      // Next grow size.
+      /// Next grow size.
       _Tp 		m_grow_size;
 
     public:

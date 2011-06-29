@@ -140,6 +140,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "ipa-inline.h"
 #include "ipa-utils.h"
+#include "lto-streamer.h"
 
 static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
@@ -166,6 +167,7 @@ cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
      the name later after finalizing the function and the fact is noticed
      in assemble_name then.  This is arguably a bug.  */
   if (DECL_ASSEMBLER_NAME_SET_P (decl)
+      && (!node->thunk.thunk_p && !node->same_body_alias)
       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
     return true;
 
@@ -305,24 +307,9 @@ cgraph_reset_node (struct cgraph_node *node)
   memset (&node->global, 0, sizeof (node->global));
   memset (&node->rtl, 0, sizeof (node->rtl));
   node->analyzed = false;
-  node->local.redefined_extern_inline = true;
   node->local.finalized = false;
 
   cgraph_node_remove_callees (node);
-
-  /* We may need to re-queue the node for assembling in case
-     we already proceeded it and ignored as not needed or got
-     a re-declaration in IMA mode.  */
-  if (node->reachable)
-    {
-      struct cgraph_node *n;
-
-      for (n = cgraph_nodes_queue; n; n = n->next_needed)
-	if (n == node)
-	  break;
-      if (!n)
-	node->reachable = 0;
-    }
 }
 
 static void
@@ -350,7 +337,10 @@ cgraph_finalize_function (tree decl, bool nested)
   struct cgraph_node *node = cgraph_get_create_node (decl);
 
   if (node->local.finalized)
-    cgraph_reset_node (node);
+    {
+      cgraph_reset_node (node);
+      node->local.redefined_extern_inline = true;
+    }
 
   notice_global_symbol (decl);
   node->local.finalized = true;
@@ -402,6 +392,8 @@ cgraph_mark_if_needed (tree decl)
 static bool
 clone_of_p (struct cgraph_node *node, struct cgraph_node *node2)
 {
+  node = cgraph_function_or_thunk_node (node, NULL);
+  node2 = cgraph_function_or_thunk_node (node2, NULL);
   while (node != node2 && node2)
     node2 = node2->clone_of;
   return node2 != NULL;
@@ -630,6 +622,36 @@ verify_cgraph_node (struct cgraph_node *node)
       while (n != node);
     }
 
+  if (node->analyzed && node->alias)
+    {
+      bool ref_found = false;
+      int i;
+      struct ipa_ref *ref;
+
+      if (node->callees)
+	{
+	  error ("Alias has call edges");
+          error_found = true;
+	}
+      for (i = 0; ipa_ref_list_reference_iterate (&node->ref_list, i, ref); i++)
+	if (ref->use != IPA_REF_ALIAS)
+	  {
+	    error ("Alias has non-alias refernece");
+	    error_found = true;
+	  }
+	else if (ref_found)
+	  {
+	    error ("Alias has more than one alias reference");
+	    error_found = true;
+	  }
+	else
+	  ref_found = true;
+	if (!ref_found)
+	  {
+	    error ("Analyzed alias has no reference");
+	    error_found = true;
+	  }
+    }
   if (node->analyzed && node->thunk.thunk_p)
     {
       if (!node->callees)
@@ -680,19 +702,17 @@ verify_cgraph_node (struct cgraph_node *node)
 			  }
 			if (!e->indirect_unknown_callee)
 			  {
-			    if (e->callee->same_body_alias)
-			      {
-				error ("edge points to same body alias:");
-				debug_tree (e->callee->decl);
-				error_found = true;
-			      }
-			    else if (!e->callee->global.inlined_to
-				     && decl
-				     && cgraph_get_node (decl)
-				     && (e->callee->former_clone_of
-					 != cgraph_get_node (decl)->decl)
-				     && !clone_of_p (cgraph_get_node (decl),
-						     e->callee))
+			    if (!e->callee->global.inlined_to
+			        && decl
+			        && cgraph_get_node (decl)
+			        && (e->callee->former_clone_of
+				    != cgraph_get_node (decl)->decl)
+				/* IPA-CP sometimes redirect edge to clone and then back to the former
+				   function.  This ping-pong has to go, eventaully.  */
+				&& (cgraph_function_or_thunk_node (cgraph_get_node (decl), NULL)
+				    != cgraph_function_or_thunk_node (e->callee, NULL))
+				&& !clone_of_p (cgraph_get_node (decl),
+					        e->callee))
 			      {
 				error ("edge points to wrong declaration:");
 				debug_tree (e->callee->decl);
@@ -792,7 +812,53 @@ cgraph_analyze_function (struct cgraph_node *node)
   tree save = current_function_decl;
   tree decl = node->decl;
 
-  if (node->thunk.thunk_p)
+  if (node->alias && node->thunk.alias)
+    {
+      struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
+      if (!VEC_length (ipa_ref_t, node->ref_list.references))
+        ipa_record_reference (node, NULL, tgt, NULL, IPA_REF_ALIAS, NULL);
+      if (node->same_body_alias)
+	{ 
+	  DECL_VIRTUAL_P (node->decl) = DECL_VIRTUAL_P (node->thunk.alias);
+	  DECL_DECLARED_INLINE_P (node->decl)
+	     = DECL_DECLARED_INLINE_P (node->thunk.alias);
+	  DECL_DISREGARD_INLINE_LIMITS (node->decl)
+	     = DECL_DISREGARD_INLINE_LIMITS (node->thunk.alias);
+	}
+
+      /* Fixup visibility nonsences C++ frontend produce on same body aliases.  */
+      if (TREE_PUBLIC (node->decl) && node->same_body_alias)
+	{
+          DECL_EXTERNAL (node->decl) = DECL_EXTERNAL (node->thunk.alias);
+	  if (DECL_ONE_ONLY (node->thunk.alias))
+	    {
+	      DECL_COMDAT (node->decl) = DECL_COMDAT (node->thunk.alias);
+	      DECL_COMDAT_GROUP (node->decl) = DECL_COMDAT_GROUP (node->thunk.alias);
+	      if (DECL_ONE_ONLY (node->thunk.alias) && !node->same_comdat_group)
+		{
+		  struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
+		  node->same_comdat_group = tgt;
+		  if (!tgt->same_comdat_group)
+		    tgt->same_comdat_group = node;
+		  else
+		    {
+		      struct cgraph_node *n;
+		      for (n = tgt->same_comdat_group;
+			   n->same_comdat_group != tgt;
+			   n = n->same_comdat_group)
+			;
+		      n->same_comdat_group = node;
+		    }
+		}
+	    }
+	}
+      cgraph_mark_reachable_node (cgraph_alias_aliased_node (node));
+      if (node->address_taken)
+	cgraph_mark_address_taken_node (cgraph_alias_aliased_node (node));
+      if (cgraph_decide_is_function_needed (node, node->decl))
+	cgraph_mark_needed_node (node);
+    }
+  else if (node->thunk.thunk_p)
     {
       cgraph_create_edge (node, cgraph_get_node (node->thunk.alias),
 			  NULL, 0, CGRAPH_FREQ_BASE);
@@ -818,6 +884,26 @@ cgraph_analyze_function (struct cgraph_node *node)
   node->analyzed = true;
 
   current_function_decl = save;
+}
+
+/* C++ frontend produce same body aliases all over the place, even before PCH
+   gets streamed out. It relies on us linking the aliases with their function
+   in order to do the fixups, but ipa-ref is not PCH safe.  Consequentely we
+   first produce aliases without links, but once C++ FE is sure he won't sream
+   PCH we build the links via this function.  */
+
+void
+cgraph_process_same_body_aliases (void)
+{
+  struct cgraph_node *node;
+  for (node = cgraph_nodes; node; node = node->next)
+    if (node->same_body_alias
+	&& !VEC_length (ipa_ref_t, node->ref_list.references))
+      {
+        struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
+        ipa_record_reference (node, NULL, tgt, NULL, IPA_REF_ALIAS, NULL);
+      }
+  same_body_aliases_done = true;
 }
 
 /* Process attributes common for vars and functions.  */
@@ -891,7 +977,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	     cgraph_mark_needed_node (node);
 	}
       if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl))
-	  && node->local.finalized)
+	  && (node->local.finalized && !node->alias))
 	{
 	  warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
 		      "%<weakref%> attribute ignored"
@@ -900,6 +986,14 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	  DECL_ATTRIBUTES (decl) = remove_attribute ("weakref",
 						     DECL_ATTRIBUTES (decl));
 	}
+
+      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (decl))
+	  && !DECL_DECLARED_INLINE_P (decl)
+	  /* redefining extern inline function makes it DECL_UNINLINABLE.  */
+	  && !DECL_UNINLINABLE (decl))
+	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		    "always_inline function might not be inlinable");
+     
       process_common_attributes (decl);
     }
   for (vnode = varpool_nodes; vnode != first_var; vnode = vnode->next)
@@ -990,9 +1084,11 @@ cgraph_analyze_functions (void)
 	 weak alias attribute to kill its body. See
 	 gcc.c-torture/compile/20011119-1.c  */
       if (!DECL_STRUCT_FUNCTION (decl)
+	  && (!node->alias || !node->thunk.alias)
 	  && !node->thunk.thunk_p)
 	{
 	  cgraph_reset_node (node);
+          node->local.redefined_extern_inline = true;
 	  continue;
 	}
 
@@ -1056,11 +1152,13 @@ cgraph_analyze_functions (void)
       next = node->next;
 
       if (node->local.finalized && !gimple_has_body_p (decl)
+	  && (!node->alias || !node->thunk.alias)
 	  && !node->thunk.thunk_p)
 	cgraph_reset_node (node);
 
       if (!node->reachable
-	  && (gimple_has_body_p (decl) || node->thunk.thunk_p))
+	  && (gimple_has_body_p (decl) || node->thunk.thunk_p
+	      || (node->alias && node->thunk.alias)))
 	{
 	  if (cgraph_dump_file)
 	    fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
@@ -1070,6 +1168,7 @@ cgraph_analyze_functions (void)
       else
 	node->next_needed = NULL;
       gcc_assert (!node->local.finalized || node->thunk.thunk_p
+		  || node->alias
 		  || gimple_has_body_p (decl));
       gcc_assert (node->analyzed == node->local.finalized);
     }
@@ -1084,6 +1183,64 @@ cgraph_analyze_functions (void)
   ggc_collect ();
 }
 
+/* Translate the ugly representation of aliases as alias pairs into nice
+   representation in callgraph.  We don't handle all cases yet,
+   unforutnately.  */
+
+static void
+handle_alias_pairs (void)
+{
+  alias_pair *p;
+  unsigned i;
+  struct cgraph_node *target_node;
+  struct cgraph_node *src_node;
+  struct varpool_node *target_vnode;
+  
+  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p);)
+    {
+      if (TREE_CODE (p->decl) == FUNCTION_DECL
+	   && !lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
+	  && (target_node = cgraph_node_for_asm (p->target)) != NULL)
+	{
+	  src_node = cgraph_get_node (p->decl);
+	  if (src_node && src_node->local.finalized)
+            cgraph_reset_node (src_node);
+	  /* Normally EXTERNAL flag is used to mark external inlines,
+	     however for aliases it seems to be allowed to use it w/o
+	     any meaning. See gcc.dg/attr-alias-3.c  
+	     However for weakref we insist on EXTERNAL flag being set.
+	     See gcc.dg/attr-alias-5.c  */
+	  if (DECL_EXTERNAL (p->decl))
+	    DECL_EXTERNAL (p->decl) = 0;
+	  cgraph_create_function_alias (p->decl, target_node->decl);
+	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	}
+      else if (TREE_CODE (p->decl) == VAR_DECL
+	       && !lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl))
+	       && (target_vnode = varpool_node_for_asm (p->target)) != NULL)
+	{
+	  /* Normally EXTERNAL flag is used to mark external inlines,
+	     however for aliases it seems to be allowed to use it w/o
+	     any meaning. See gcc.dg/attr-alias-3.c  
+	     However for weakref we insist on EXTERNAL flag being set.
+	     See gcc.dg/attr-alias-5.c  */
+	  if (DECL_EXTERNAL (p->decl))
+	    DECL_EXTERNAL (p->decl) = 0;
+	  varpool_create_variable_alias (p->decl, target_vnode->decl);
+	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	}
+      else
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Unhandled alias %s->%s\n",
+		     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p->decl)),
+		     IDENTIFIER_POINTER (p->target));
+
+	  i++;
+	}
+    }
+}
+
 
 /* Analyze the whole compilation unit once it is parsed completely.  */
 
@@ -1091,6 +1248,10 @@ void
 cgraph_finalize_compilation_unit (void)
 {
   timevar_push (TV_CGRAPH);
+
+  /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
+  if (flag_lto)
+    lto_streamer_hooks_init ();
 
   /* If we're here there's no current function anymore.  Some frontends
      are lazy in clearing these.  */
@@ -1105,6 +1266,7 @@ cgraph_finalize_compilation_unit (void)
 
   /* Mark alias targets necessary and emit diagnostics.  */
   finish_aliases_1 ();
+  handle_alias_pairs ();
 
   if (!quiet_flag)
     {
@@ -1112,12 +1274,16 @@ cgraph_finalize_compilation_unit (void)
       fflush (stderr);
     }
 
+  if (flag_dump_passes)
+    dump_passes ();
+
   /* Gimplify and lower all functions, compute reachability and
      remove unreachable nodes.  */
   cgraph_analyze_functions ();
 
   /* Mark alias targets necessary and emit diagnostics.  */
   finish_aliases_1 ();
+  handle_alias_pairs ();
 
   /* Gimplify and lower thunks.  */
   cgraph_analyze_functions ();
@@ -1160,9 +1326,11 @@ cgraph_mark_functions_to_output (void)
 	 outside the current compilation unit.  */
       if (node->analyzed
 	  && !node->thunk.thunk_p
+	  && !node->alias
 	  && !node->global.inlined_to
 	  && (!cgraph_only_called_directly_p (node)
-	      || (e && node->reachable))
+	      || ((e || ipa_ref_has_aliases_p (&node->ref_list))
+		  && node->reachable))
 	  && !TREE_ASM_WRITTEN (decl)
 	  && !DECL_EXTERNAL (decl))
 	{
@@ -1173,7 +1341,7 @@ cgraph_mark_functions_to_output (void)
 	      for (next = node->same_comdat_group;
 		   next != node;
 		   next = next->same_comdat_group)
-		if (!next->thunk.thunk_p)
+		if (!next->thunk.thunk_p && !next->alias)
 		  next->process = 1;
 	    }
 	}
@@ -1193,6 +1361,7 @@ cgraph_mark_functions_to_output (void)
 		 are inside partition, we can end up not removing the body since we no longer
 		 have analyzed node pointing to it.  */
 	      && !node->in_other_partition
+	      && !node->alias
 	      && !DECL_EXTERNAL (decl))
 	    {
 	      dump_cgraph_node (stderr, node);
@@ -1222,7 +1391,7 @@ cgraph_mark_functions_to_output (void)
 	      && !DECL_EXTERNAL (decl))
 	    {
 	      dump_cgraph_node (stderr, node);
-	      internal_error ("failed to reclaim unneeded function");
+	      internal_error ("failed to reclaim unneeded functionin same comdat group");
 	    }
 	}
 #endif
@@ -1251,7 +1420,7 @@ init_lowered_empty_function (tree decl)
   DECL_SAVED_TREE (decl) = error_mark_node;
   cfun->curr_properties |=
     (PROP_gimple_lcf | PROP_gimple_leh | PROP_cfg | PROP_referenced_vars |
-     PROP_ssa);
+     PROP_ssa | PROP_gimple_any);
 
   /* Create BB for body of the function and connect it properly.  */
   bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR);
@@ -1412,10 +1581,11 @@ assemble_thunk (struct cgraph_node *node)
     {
       const char *fnname;
       tree fn_block;
+      tree restype = TREE_TYPE (TREE_TYPE (thunk_fndecl));
       
       DECL_RESULT (thunk_fndecl)
 	= build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
-		      RESULT_DECL, 0, integer_type_node);
+		      RESULT_DECL, 0, restype);
       fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
 
       /* The back end expects DECL_INITIAL to contain a BLOCK, so we
@@ -1572,23 +1742,35 @@ assemble_thunk (struct cgraph_node *node)
 }
 
 
-/* Assemble thunks asociated to NODE.  */
+
+/* Assemble thunks and aliases asociated to NODE.  */
 
 static void
-assemble_thunks (struct cgraph_node *node)
+assemble_thunks_and_aliases (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
+  int i;
+  struct ipa_ref *ref;
+
   for (e = node->callers; e;)
     if (e->caller->thunk.thunk_p)
       {
 	struct cgraph_node *thunk = e->caller;
 
 	e = e->next_caller;
-	assemble_thunks (thunk);
+	assemble_thunks_and_aliases (thunk);
         assemble_thunk (thunk);
       }
     else
       e = e->next_caller;
+  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      {
+	struct cgraph_node *alias = ipa_ref_refering_node (ref);
+	assemble_alias (alias->decl,
+			DECL_ASSEMBLER_NAME (alias->thunk.alias));
+	assemble_thunks_and_aliases (alias);
+      }
 }
 
 /* Expand function specified by NODE.  */
@@ -1603,27 +1785,7 @@ cgraph_expand_function (struct cgraph_node *node)
 
   announce_function (decl);
   node->process = 0;
-  if (node->same_body)
-    {
-      struct cgraph_node *alias, *next;
-      bool saved_alias = node->alias;
-      for (alias = node->same_body;
-      	   alias && alias->next; alias = alias->next)
-        ;
-      /* Walk aliases in the order they were created; it is possible that
-         thunks refers to the aliases made earlier.  */
-      for (; alias; alias = next)
-        {
-	  next = alias->previous;
-	  if (!alias->thunk.thunk_p)
-	    assemble_alias (alias->decl,
-			    DECL_ASSEMBLER_NAME (alias->thunk.alias));
-	}
-      node->alias = saved_alias;
-      cgraph_process_new_functions ();
-    }
-
-  assemble_thunks (node);
+  assemble_thunks_and_aliases (node);
   gcc_assert (node->lowered);
 
   /* Generate RTL for the body of DECL.  */
@@ -1739,7 +1901,7 @@ cgraph_output_in_order (void)
 
   for (pf = cgraph_nodes; pf; pf = pf->next)
     {
-      if (pf->process && !pf->thunk.thunk_p)
+      if (pf->process && !pf->thunk.thunk_p && !pf->alias)
 	{
 	  i = pf->order;
 	  gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
@@ -1813,7 +1975,7 @@ bool
 cgraph_preserve_function_body_p (struct cgraph_node *node)
 {
   gcc_assert (cgraph_global_info_ready);
-  gcc_assert (!node->same_body_alias);
+  gcc_assert (!node->alias && !node->thunk.thunk_p);
 
   /* Look if there is any clone around.  */
   if (node->clones)
@@ -1940,6 +2102,13 @@ cgraph_optimize (void)
 #endif
 
   cgraph_materialize_all_clones ();
+  bitmap_obstack_initialize (NULL);
+  execute_ipa_pass_list (all_late_ipa_passes);
+  cgraph_remove_unreachable_nodes (true, dump_file);
+#ifdef ENABLE_CHECKING
+  verify_cgraph ();
+#endif
+  bitmap_obstack_release (NULL);
   cgraph_mark_functions_to_output ();
 
   cgraph_state = CGRAPH_STATE_EXPANSION;

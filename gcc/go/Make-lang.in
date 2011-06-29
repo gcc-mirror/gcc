@@ -224,13 +224,14 @@ GO_IMPORT_H = go/gofrontend/import.h go/gofrontend/export.h
 GO_RUNTIME_H = go/gofrontend/runtime.h go/gofrontend/runtime.def
 
 go/go-backend.o: go/go-backend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(RTL_H) $(TREE_H) $(TM_P_H) output.h $(TARGET_H)
+	$(TM_H) $(RTL_H) $(TREE_H) $(TM_P_H) output.h $(TARGET_H) \
+	$(COMMON_TARGET_H)
 
 go/go-lang.o: go/go-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 		$(TREE_H) $(GIMPLE_H) $(GGC_H) $(TOPLEV_H) debug.h options.h \
 		$(FLAGS_H) convert.h $(DIAGNOSTIC_H) langhooks.h \
 		$(LANGHOOKS_DEF_H) $(EXCEPT_H) $(TARGET_H) $(GO_C_H) \
-		gt-go-go-lang.h gtype-go.h
+		gt-go-go-lang.h gtype-go.h $(COMMON_TARGET_H)
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  -DDEFAULT_TARGET_VERSION=\"$(version)\" \
 	  -DDEFAULT_TARGET_MACHINE=\"$(target_noncanonical)\" \
@@ -239,7 +240,8 @@ go/go-lang.o: go/go-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 GOINCLUDES = -I $(srcdir)/go -I $(srcdir)/go/gofrontend
 
 go/go-gcc.o: go/go-gcc.cc $(GO_SYSTEM_H) $(TREE_H) tree-iterator.h \
-		$(GIMPLE_H) $(GO_C_H) $(GO_GOGO_H) go/gofrontend/backend.h
+		$(GIMPLE_H) toplev.h $(GO_C_H) $(GO_GOGO_H) \
+		go/gofrontend/backend.h
 	$(CXX) -c $(GOINCLUDES) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $< $(OUTPUT_OPTION)
 
 go/%.o: go/gofrontend/%.cc
@@ -254,7 +256,7 @@ go/expressions.o: go/gofrontend/expressions.cc $(GO_SYSTEM_H) $(TOPLEV_H) \
 	intl.h $(TREE_H) $(GIMPLE_H) tree-iterator.h convert.h $(REAL_H) \
 	realmpfr.h $(GO_C_H) $(GO_GOGO_H) $(GO_TYPES_H) \
 	go/gofrontend/export.h $(GO_IMPORT_H) $(GO_STATEMENTS_H) $(GO_LEX_H) \
-	go/gofrontend/backend.h $(GO_EXPRESSIONS_H)
+	$(GO_RUNTIME_H) go/gofrontend/backend.h $(GO_EXPRESSIONS_H)
 go/go.o: go/gofrontend/go.cc $(GO_SYSTEM_H) $(GO_C_H) $(GO_LEX_H) \
 	$(GO_PARSE_H) go/gofrontend/backend.h $(GO_GOGO_H)
 go/go-dump.o: go/gofrontend/go-dump.cc $(GO_SYSTEM_H) $(GO_C_H) \

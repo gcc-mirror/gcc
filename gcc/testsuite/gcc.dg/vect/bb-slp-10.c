@@ -49,7 +49,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "unsupported alignment in basic block." 1 "slp" { xfail vect_hw_misalign } } } */
-/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 1 "slp" { target vect_hw_misalign } } } */
+/* { dg-final { scan-tree-dump-times "unsupported alignment in basic block." 1 "slp" { xfail vect_element_align } } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 1 "slp" { target vect_element_align } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   

@@ -1000,6 +1000,48 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && GET_CODE (XEXP (XEXP (op, 0), 1)) == LABEL_REF)
 	return XEXP (op, 0);
 
+      /* Extending a widening multiplication should be canonicalized to
+	 a wider widening multiplication.  */
+      if (GET_CODE (op) == MULT)
+	{
+	  rtx lhs = XEXP (op, 0);
+	  rtx rhs = XEXP (op, 1);
+	  enum rtx_code lcode = GET_CODE (lhs);
+	  enum rtx_code rcode = GET_CODE (rhs);
+
+	  /* Widening multiplies usually extend both operands, but sometimes
+	     they use a shift to extract a portion of a register.  */
+	  if ((lcode == SIGN_EXTEND
+	       || (lcode == ASHIFTRT && CONST_INT_P (XEXP (lhs, 1))))
+	      && (rcode == SIGN_EXTEND
+		  || (rcode == ASHIFTRT && CONST_INT_P (XEXP (rhs, 1)))))
+	    {
+	      enum machine_mode lmode = GET_MODE (lhs);
+	      enum machine_mode rmode = GET_MODE (rhs);
+	      int bits;
+
+	      if (lcode == ASHIFTRT)
+		/* Number of bits not shifted off the end.  */
+		bits = GET_MODE_PRECISION (lmode) - INTVAL (XEXP (lhs, 1));
+	      else /* lcode == SIGN_EXTEND */
+		/* Size of inner mode.  */
+		bits = GET_MODE_PRECISION (GET_MODE (XEXP (lhs, 0)));
+
+	      if (rcode == ASHIFTRT)
+		bits += GET_MODE_PRECISION (rmode) - INTVAL (XEXP (rhs, 1));
+	      else /* rcode == SIGN_EXTEND */
+		bits += GET_MODE_PRECISION (GET_MODE (XEXP (rhs, 0)));
+
+	      /* We can only widen multiplies if the result is mathematiclly
+		 equivalent.  I.e. if overflow was impossible.  */
+	      if (bits <= GET_MODE_PRECISION (GET_MODE (op)))
+		return simplify_gen_binary
+			 (MULT, mode,
+			  simplify_gen_unary (SIGN_EXTEND, mode, lhs, lmode),
+			  simplify_gen_unary (SIGN_EXTEND, mode, rhs, rmode));
+	    }
+	}
+
       /* Check for a sign extension of a subreg of a promoted
 	 variable, where the promotion is sign-extended, and the
 	 target mode is the same as the variable's promotion.  */
@@ -1071,6 +1113,48 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (XEXP (op, 0))))
 	return rtl_hooks.gen_lowpart_no_emit (mode, op);
 
+      /* Extending a widening multiplication should be canonicalized to
+	 a wider widening multiplication.  */
+      if (GET_CODE (op) == MULT)
+	{
+	  rtx lhs = XEXP (op, 0);
+	  rtx rhs = XEXP (op, 1);
+	  enum rtx_code lcode = GET_CODE (lhs);
+	  enum rtx_code rcode = GET_CODE (rhs);
+
+	  /* Widening multiplies usually extend both operands, but sometimes
+	     they use a shift to extract a portion of a register.  */
+	  if ((lcode == ZERO_EXTEND
+	       || (lcode == LSHIFTRT && CONST_INT_P (XEXP (lhs, 1))))
+	      && (rcode == ZERO_EXTEND
+		  || (rcode == LSHIFTRT && CONST_INT_P (XEXP (rhs, 1)))))
+	    {
+	      enum machine_mode lmode = GET_MODE (lhs);
+	      enum machine_mode rmode = GET_MODE (rhs);
+	      int bits;
+
+	      if (lcode == LSHIFTRT)
+		/* Number of bits not shifted off the end.  */
+		bits = GET_MODE_PRECISION (lmode) - INTVAL (XEXP (lhs, 1));
+	      else /* lcode == ZERO_EXTEND */
+		/* Size of inner mode.  */
+		bits = GET_MODE_PRECISION (GET_MODE (XEXP (lhs, 0)));
+
+	      if (rcode == LSHIFTRT)
+		bits += GET_MODE_PRECISION (rmode) - INTVAL (XEXP (rhs, 1));
+	      else /* rcode == ZERO_EXTEND */
+		bits += GET_MODE_PRECISION (GET_MODE (XEXP (rhs, 0)));
+
+	      /* We can only widen multiplies if the result is mathematiclly
+		 equivalent.  I.e. if overflow was impossible.  */
+	      if (bits <= GET_MODE_PRECISION (GET_MODE (op)))
+		return simplify_gen_binary
+			 (MULT, mode,
+			  simplify_gen_unary (ZERO_EXTEND, mode, lhs, lmode),
+			  simplify_gen_unary (ZERO_EXTEND, mode, rhs, rmode));
+	    }
+	}
+
       /* (zero_extend:M (zero_extend:N <X>)) is (zero_extend:M <X>).  */
       if (GET_CODE (op) == ZERO_EXTEND)
 	return simplify_gen_unary (ZERO_EXTEND, mode, XEXP (op, 0),
@@ -1127,6 +1211,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 				rtx op, enum machine_mode op_mode)
 {
   unsigned int width = GET_MODE_BITSIZE (mode);
+  unsigned int op_width = GET_MODE_BITSIZE (op_mode);
 
   if (code == VEC_DUPLICATE)
     {
@@ -1237,7 +1322,8 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
     }
 
   if (CONST_INT_P (op)
-      && width <= HOST_BITS_PER_WIDE_INT && width > 0)
+      && width <= HOST_BITS_PER_WIDE_INT
+      && op_width <= HOST_BITS_PER_WIDE_INT && op_width > 0)
     {
       HOST_WIDE_INT arg0 = INTVAL (op);
       HOST_WIDE_INT val;
@@ -1257,40 +1343,50 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case FFS:
-	  arg0 &= GET_MODE_MASK (mode);
+	  arg0 &= GET_MODE_MASK (op_mode);
 	  val = ffs_hwi (arg0);
 	  break;
 
 	case CLZ:
-	  arg0 &= GET_MODE_MASK (mode);
-	  if (arg0 == 0 && CLZ_DEFINED_VALUE_AT_ZERO (mode, val))
+	  arg0 &= GET_MODE_MASK (op_mode);
+	  if (arg0 == 0 && CLZ_DEFINED_VALUE_AT_ZERO (op_mode, val))
 	    ;
 	  else
-	    val = GET_MODE_BITSIZE (mode) - floor_log2 (arg0) - 1;
+	    val = GET_MODE_BITSIZE (op_mode) - floor_log2 (arg0) - 1;
+	  break;
+
+	case CLRSB:
+	  arg0 &= GET_MODE_MASK (op_mode);
+	  if (arg0 == 0)
+	    val = GET_MODE_BITSIZE (op_mode) - 1;
+	  else if (arg0 >= 0)
+	    val = GET_MODE_BITSIZE (op_mode) - floor_log2 (arg0) - 2;
+	  else if (arg0 < 0)
+	    val = GET_MODE_BITSIZE (op_mode) - floor_log2 (~arg0) - 2;
 	  break;
 
 	case CTZ:
-	  arg0 &= GET_MODE_MASK (mode);
+	  arg0 &= GET_MODE_MASK (op_mode);
 	  if (arg0 == 0)
 	    {
 	      /* Even if the value at zero is undefined, we have to come
 		 up with some replacement.  Seems good enough.  */
-	      if (! CTZ_DEFINED_VALUE_AT_ZERO (mode, val))
-		val = GET_MODE_BITSIZE (mode);
+	      if (! CTZ_DEFINED_VALUE_AT_ZERO (op_mode, val))
+		val = GET_MODE_BITSIZE (op_mode);
 	    }
 	  else
 	    val = ctz_hwi (arg0);
 	  break;
 
 	case POPCOUNT:
-	  arg0 &= GET_MODE_MASK (mode);
+	  arg0 &= GET_MODE_MASK (op_mode);
 	  val = 0;
 	  while (arg0)
 	    val++, arg0 &= arg0 - 1;
 	  break;
 
 	case PARITY:
-	  arg0 &= GET_MODE_MASK (mode);
+	  arg0 &= GET_MODE_MASK (op_mode);
 	  val = 0;
 	  while (arg0)
 	    val++, arg0 &= arg0 - 1;

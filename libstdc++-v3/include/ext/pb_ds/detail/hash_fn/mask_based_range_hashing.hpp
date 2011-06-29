@@ -45,14 +45,12 @@ namespace __gnu_pbds
 {
   namespace detail
   {
-#define PB_DS_CLASS_T_DEC template<typename Size_Type>
-#define PB_DS_CLASS_C_DEC mask_based_range_hashing<Size_Type>
-
+    /// Range hashing policy.
     template<typename Size_Type>
     class mask_based_range_hashing
     {
     protected:
-      typedef Size_Type size_type;
+      typedef Size_Type 	size_type;
 
       void
       swap(mask_based_range_hashing& other)
@@ -71,18 +69,18 @@ namespace __gnu_pbds
       const static size_type 	s_highest_bit_1;
     };
 
-    PB_DS_CLASS_T_DEC
-    const typename PB_DS_CLASS_C_DEC::size_type
-    PB_DS_CLASS_C_DEC::s_num_bits_in_size_type =
-      sizeof(typename PB_DS_CLASS_C_DEC::size_type) << 3;
+    template<typename Size_Type>
+    const typename mask_based_range_hashing<Size_Type>::size_type
+    mask_based_range_hashing<Size_Type>::s_num_bits_in_size_type =
+      sizeof(typename mask_based_range_hashing<Size_Type>::size_type) << 3;
 
-    PB_DS_CLASS_T_DEC
-    const typename PB_DS_CLASS_C_DEC::size_type PB_DS_CLASS_C_DEC::s_highest_bit_1 = static_cast<typename PB_DS_CLASS_C_DEC::size_type>(1) << (s_num_bits_in_size_type - 1);
+    template<typename Size_Type>
+    const typename mask_based_range_hashing<Size_Type>::size_type mask_based_range_hashing<Size_Type>::s_highest_bit_1 = static_cast<typename mask_based_range_hashing<Size_Type>::size_type>(1) << (s_num_bits_in_size_type - 1);
 
  
-    PB_DS_CLASS_T_DEC
+    template<typename Size_Type>
     void
-    PB_DS_CLASS_C_DEC::
+    mask_based_range_hashing<Size_Type>::
     notify_resized(size_type size)
     {
       size_type i = 0;
@@ -97,10 +95,6 @@ namespace __gnu_pbds
       while (i++ < s_num_bits_in_size_type)
         m_mask = (m_mask << 1) ^ 1;
     }
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace detail
 } // namespace __gnu_pbds
 

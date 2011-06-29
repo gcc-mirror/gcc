@@ -2,14 +2,14 @@
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 
 #include <stdarg.h>
 #include <stdlib.h>
 
 /* Test methods with "C-style" trailing arguments, with or without ellipsis. */
 
-@interface MathClass: Object
+@interface MathClass: TestsuiteObject
 /* sum positive numbers; -1 ends the list */
 + (int) sum: (int)firstNumber, int secondNumber, ...;
 + (int) prod: (int) firstNumber, int secondNumber, int thirdNumber;
@@ -70,4 +70,3 @@ int main (void)
   return 0;
 }
 
-#include "../objc-obj-c++-shared/Object1-implementation.h"

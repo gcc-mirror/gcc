@@ -832,11 +832,11 @@ rx_function_arg_size (enum machine_mode mode, const_tree type)
    variable parameter list.  */
 
 static rtx
-rx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+rx_function_arg (cumulative_args_t cum, enum machine_mode mode,
 		 const_tree type, bool named)
 {
   unsigned int next_reg;
-  unsigned int bytes_so_far = *cum;
+  unsigned int bytes_so_far = *get_cumulative_args (cum);
   unsigned int size;
   unsigned int rounded_size;
 
@@ -870,10 +870,10 @@ rx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
 }
 
 static void
-rx_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+rx_function_arg_advance (cumulative_args_t cum, enum machine_mode mode,
 			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
-  *cum += rx_function_arg_size (mode, type);
+  *get_cumulative_args (cum) += rx_function_arg_size (mode, type);
 }
 
 static unsigned int
@@ -2283,46 +2283,6 @@ const struct attribute_spec rx_attribute_table[] =
   { NULL,             0, 0, false, false, false, NULL, false }
 };
 
-/* Extra processing for target specific command line options.  */
-
-static bool
-rx_handle_option (struct gcc_options *opts,
-		  struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		  const struct cl_decoded_option *decoded,
-		  location_t loc)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mint_register_:
-      /* Make sure that the -mint-register option is in range.  Other
-	 handling in rx_option_override.  */
-      return value >= 0 && value <= 4;
-      break;
-
-    case OPT_mmax_constant_size_:
-      /* Make sure that the -mmax-constant_size option is in range.  */
-      return value >= 0 && value <= 4;
-
-    case OPT_mcpu_:
-      if ((enum rx_cpu_types) value == RX200)
-	opts->x_target_flags |= MASK_NO_USE_FPU;
-      break;
-      
-    case OPT_fpu:
-      if (opts->x_rx_cpu_type == RX200)
-	error_at (loc, "the RX200 cpu does not have FPU hardware");
-      break;
-
-    default:
-      break;
-    }
-
-  return true;
-}
-
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
 
 static void
@@ -2404,13 +2364,6 @@ rx_option_override (void)
   if (align_labels == 0 && ! optimize_size)
     align_labels = 3;
 }
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options rx_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 
 static bool
@@ -3027,9 +2980,6 @@ rx_adjust_insn_length (rtx insn, int current_length)
 #undef  TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION		rx_set_current_function
 
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION			rx_handle_option
-
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER			rx_assemble_integer
 
@@ -3069,17 +3019,11 @@ rx_adjust_insn_length (rtx insn, int current_length)
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE			rx_option_override
 
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE	rx_option_optimization_table
-
 #undef  TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE		rx_promote_function_mode
 
 #undef  TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE	rx_override_options_after_change
-
-#undef  TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO		sjlj_except_unwind_info
 
 #undef  TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM			CC_REG

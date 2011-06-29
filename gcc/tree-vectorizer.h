@@ -896,7 +896,7 @@ extern void vect_slp_transform_bb (basic_block);
 /* Pattern recognition functions.
    Additional pattern recognition functions can (and will) be added
    in the future.  */
-typedef gimple (* vect_recog_func_ptr) (gimple, tree *, tree *);
+typedef gimple (* vect_recog_func_ptr) (VEC (gimple, heap) **, tree *, tree *);
 #define NUM_PATTERNS 4
 void vect_pattern_recog (loop_vec_info);
 

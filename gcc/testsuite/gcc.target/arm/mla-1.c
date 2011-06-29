@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=armv5te" } */
+/* { dg-prune-output "switch .* conflicts with" } */
 
 
 int

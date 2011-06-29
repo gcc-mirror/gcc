@@ -203,7 +203,7 @@ struct gimple_opt_pass pass_lower_cf =
   PROP_gimple_lcf,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
+  0             			/* todo_flags_finish */
  }
 };
 

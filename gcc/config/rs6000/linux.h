@@ -113,8 +113,6 @@
 
 #define TARGET_POSIX_IO
 
-#define MD_UNWIND_SUPPORT "config/rs6000/linux-unwind.h"
-
 #ifdef TARGET_LIBC_PROVIDES_SSP
 /* ppc32 glibc provides __stack_chk_guard in -0x7008(2).  */
 #define TARGET_THREAD_SSP_OFFSET	-0x7008

@@ -428,7 +428,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	                      &gfc_current_locus) == FAILURE)
 	    goto cleanup;
 	  vtab->attr.target = 1;
-	  vtab->attr.save = SAVE_EXPLICIT;
+	  vtab->attr.save = SAVE_IMPLICIT;
 	  vtab->attr.vtab = 1;
 	  vtab->attr.access = ACCESS_PUBLIC;
 	  gfc_set_sym_referenced (vtab);
@@ -516,7 +516,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  sprintf (name, "__def_init_%s", tname);
 		  gfc_get_symbol (name, ns, &def_init);
 		  def_init->attr.target = 1;
-		  def_init->attr.save = SAVE_EXPLICIT;
+		  def_init->attr.save = SAVE_IMPLICIT;
 		  def_init->attr.access = ACCESS_PUBLIC;
 		  def_init->attr.flavor = FL_VARIABLE;
 		  gfc_set_sym_referenced (def_init);

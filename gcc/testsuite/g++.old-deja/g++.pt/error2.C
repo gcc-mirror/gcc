@@ -9,7 +9,7 @@ public:
 
 void f ()
 {
-  Test<void> c; // { dg-message "instantiated" }
+  Test<void> c; // { dg-message "required" }
 }
 
 

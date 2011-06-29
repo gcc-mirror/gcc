@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "cpplib.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "toplev.h"
@@ -274,10 +275,13 @@ int flag_use_repository;
 enum cxx_dialect cxx_dialect = cxx98;
 
 /* Maximum template instantiation depth.  This limit exists to limit the
-   time it takes to notice excessively recursive template instantiations;
-   the default value of 1024 is likely to be in the next C++ standard.  */
+   time it takes to notice excessively recursive template instantiations.
 
-int max_tinst_depth = 1024;
+   The default is lower than the 1024 recommended by the C++0x standard
+   because G++ runs out of stack before 1024 with highly recursive template
+   argument deduction substitution (g++.dg/cpp0x/enum11.C).  */
+
+int max_tinst_depth = 900;
 
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
@@ -4729,13 +4733,7 @@ c_common_nodes_and_builtins (void)
 					 TYPE_DECL, NULL_TREE,
 					 widest_unsigned_literal_type_node));
 
-  /* `unsigned long' is the standard type for sizeof.
-     Note that stddef.h uses `unsigned long',
-     and this must agree, even if long and int are the same size.  */
-  size_type_node =
-    TREE_TYPE (identifier_global_value (get_identifier (SIZE_TYPE)));
   signed_size_type_node = c_common_signed_type (size_type_node);
-  set_sizetype (size_type_node);
 
   pid_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (PID_TYPE)));
@@ -6629,7 +6627,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 {
   tree decl = *node;
 
-  if (targetm.have_named_sections)
+  if (targetm_common.have_named_sections)
     {
       user_defined_section_attribute = true;
 
@@ -8231,6 +8229,18 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
 	}
       return false;
 
+    case BUILT_IN_ASSUME_ALIGNED:
+      if (builtin_function_validate_nargs (fndecl, nargs, 2 + (nargs > 2)))
+	{
+	  if (nargs >= 3 && TREE_CODE (TREE_TYPE (args[2])) != INTEGER_TYPE)
+	    {
+	      error ("non-integer argument 3 in call to function %qE", fndecl);
+	      return false;
+	    }
+	  return true;
+	}
+      return false;
+
     default:
       return true;
     }
@@ -9116,22 +9126,22 @@ resolve_overloaded_builtin (location_t loc, tree function, VEC(tree,gc) *params)
   /* Handle BUILT_IN_NORMAL here.  */
   switch (orig_code)
     {
-    case BUILT_IN_FETCH_AND_ADD_N:
-    case BUILT_IN_FETCH_AND_SUB_N:
-    case BUILT_IN_FETCH_AND_OR_N:
-    case BUILT_IN_FETCH_AND_AND_N:
-    case BUILT_IN_FETCH_AND_XOR_N:
-    case BUILT_IN_FETCH_AND_NAND_N:
-    case BUILT_IN_ADD_AND_FETCH_N:
-    case BUILT_IN_SUB_AND_FETCH_N:
-    case BUILT_IN_OR_AND_FETCH_N:
-    case BUILT_IN_AND_AND_FETCH_N:
-    case BUILT_IN_XOR_AND_FETCH_N:
-    case BUILT_IN_NAND_AND_FETCH_N:
-    case BUILT_IN_BOOL_COMPARE_AND_SWAP_N:
-    case BUILT_IN_VAL_COMPARE_AND_SWAP_N:
-    case BUILT_IN_LOCK_TEST_AND_SET_N:
-    case BUILT_IN_LOCK_RELEASE_N:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_N:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_N:
+    case BUILT_IN_SYNC_FETCH_AND_OR_N:
+    case BUILT_IN_SYNC_FETCH_AND_AND_N:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_N:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_N:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_N:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_N:
+    case BUILT_IN_SYNC_OR_AND_FETCH_N:
+    case BUILT_IN_SYNC_AND_AND_FETCH_N:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_N:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_N:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_N:
+    case BUILT_IN_SYNC_LOCK_RELEASE_N:
       {
 	int n = sync_resolve_size (function, params);
 	tree new_function, first_param, result;
@@ -9145,8 +9155,8 @@ resolve_overloaded_builtin (location_t loc, tree function, VEC(tree,gc) *params)
 
 	first_param = VEC_index (tree, params, 0);
 	result = build_function_call_vec (loc, new_function, params, NULL);
-	if (orig_code != BUILT_IN_BOOL_COMPARE_AND_SWAP_N
-	    && orig_code != BUILT_IN_LOCK_RELEASE_N)
+	if (orig_code != BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N
+	    && orig_code != BUILT_IN_SYNC_LOCK_RELEASE_N)
 	  result = sync_resolve_return (first_param, result);
 
 	return result;

@@ -771,6 +771,19 @@ the installation directory for G++ header files.  The default depends
 on other configuration options, and differs between cross and native
 configurations.
 
+@item --with-specs=@var{specs}
+Specify additional command line driver SPECS.
+This can be useful if you need to turn on a non-standard feature by
+default without modifying the compiler's source code, for instance
+@option{--with-specs=%@{!fcommon:%@{!fno-common:-fno-common@}@}}.
+@ifnothtml
+@xref{Spec Files,, Specifying subprocesses and the switches to pass to them,
+gcc, Using the GNU Compiler Collection (GCC)},
+@end ifnothtml
+@ifhtml
+See ``Spec Files'' in the main manual
+@end ifhtml
+
 @end table
 
 @item --program-prefix=@var{prefix}
@@ -1002,6 +1015,12 @@ C++ compiler currently (2.6.0) does not support the DWARF debugging
 information normally used on 386 SVR4 platforms; stabs provide a
 workable alternative.  This requires gas and gdb, as the normal SVR4
 tools can not generate or interpret stabs.
+
+@item --with-tls=@var{dialect}
+Specify the default TLS dialect, for systems were there is a choice.
+For ARM targets, possible values for @var{dialect} are @code{gnu} or
+@code{gnu2}, which select between the original GNU dialect and the GNU TLS
+descriptor-based dialect.
 
 @item --disable-multilib
 Specify that multiple target

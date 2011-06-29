@@ -161,7 +161,7 @@ go_complex_to_ffi (ffi_type *float_type)
 static ffi_type *
 go_type_to_ffi (const struct __go_type_descriptor *descriptor)
 {
-  switch (descriptor->__code)
+  switch (descriptor->__code & GO_CODE_MASK)
     {
     case GO_BOOL:
       if (sizeof (_Bool) == 1)

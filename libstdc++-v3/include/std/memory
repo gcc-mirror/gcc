@@ -76,6 +76,7 @@
 #  include <ext/concurrence.h>
 #  include <bits/functexcept.h>
 #  include <bits/stl_function.h>  // std::less
+#  include <bits/uses_allocator.h>
 #  include <type_traits>
 #  include <functional>
 #  include <debug/debug.h>

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "function.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "upc-act.h"
 #include "upc-pts.h"
 #include "upc-rts-names.h"
@@ -177,7 +178,7 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
 bool
 upc_lang_init (void)
 {
-  if (!targetm.have_named_sections)
+  if (!targetm_common.have_named_sections)
     {
       fatal_error ("UPC is not implemented on this target; "
 		   "the target linker does not support separately "

@@ -1,5 +1,5 @@
 # Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-# 2009, 2010 Free Software Foundation, Inc.
+# 2009, 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,15 +22,18 @@ driver-avr.o: $(srcdir)/config/avr/driver-avr.c \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 avr-devices.o: $(srcdir)/config/avr/avr-devices.c \
+  $(srcdir)/config/avr/avr-mcus.def \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
-	
 
 avr-c.o: $(srcdir)/config/avr/avr-c.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
-	
 
+$(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh \
+  $(srcdir)/config/avr/avr-mcus.def
+	$(SHELL) $(srcdir)/config/avr/genopt.sh $(srcdir)/config/avr > \
+		$(srcdir)/config/avr/avr-tables.opt
 
 LIB1ASMSRC = avr/libgcc.S
 LIB1ASMFUNCS = \
@@ -52,7 +55,30 @@ LIB1ASMFUNCS = \
 	_copy_data \
 	_clear_bss \
 	_ctors \
-	_dtors
+	_dtors \
+	_ffssi2 \
+	_ffshi2 \
+	_loop_ffsqi2 \
+	_ctzsi2 \
+	_ctzhi2 \
+	_clzdi2 \
+	_clzsi2 \
+	_clzhi2 \
+	_paritydi2 \
+	_paritysi2 \
+	_parityhi2 \
+	_popcounthi2 \
+	_popcountsi2 \
+	_popcountdi2 \
+	_popcountqi2 \
+	_bswapsi2 \
+	_bswapdi2 \
+	_ashldi3 \
+	_ashrdi3 \
+	_lshrdi3
+
+LIB2FUNCS_EXCLUDE = \
+	_clz
 
 # We do not have the DF type.
 # Most of the C functions in libgcc2 use almost all registers,
@@ -216,8 +242,8 @@ MULTILIB_MATCHES = \
 	mmcu?avr51=mmcu?at90can128 \
 	mmcu?avr51=mmcu?at90usb1286 \
 	mmcu?avr51=mmcu?at90usb1287 \
- 	mmcu?avr6=mmcu?atmega2560 \
- 	mmcu?avr6=mmcu?atmega2561
+	mmcu?avr6=mmcu?atmega2560 \
+	mmcu?avr6=mmcu?atmega2561
 
 MULTILIB_EXCEPTIONS =
 

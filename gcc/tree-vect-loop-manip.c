@@ -1105,35 +1105,6 @@ set_prologue_iterations (basic_block bb_before_first_loop,
   first_niters = PHI_RESULT (newphi);
 }
 
-
-/* Remove dead assignments from loop NEW_LOOP.  */
-
-static void
-remove_dead_stmts_from_loop (struct loop *new_loop)
-{
-  basic_block *bbs = get_loop_body (new_loop);
-  unsigned i;
-  for (i = 0; i < new_loop->num_nodes; ++i)
-    {
-      gimple_stmt_iterator gsi;
-      for (gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi);)
-	{
-	  gimple stmt = gsi_stmt (gsi);
-	  if (is_gimple_assign (stmt)
-	      && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-	      && has_zero_uses (gimple_assign_lhs (stmt)))
-	    {
-	      gsi_remove (&gsi, true);
-	      release_defs (stmt);
-	    }
-	  else
-	    gsi_next (&gsi);
-	}
-    }
-  free (bbs);
-}
-
-
 /* Function slpeel_tree_peel_loop_to_edge.
 
    Peel the first (last) iterations of LOOP into a new prolog (epilog) loop
@@ -1444,13 +1415,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 
   BITMAP_FREE (definitions);
   delete_update_ssa ();
-
-  /* Remove all pattern statements from the loop copy.  They will confuse
-     the expander if DCE is disabled.
-     ???  The pattern recognizer should be split into an analysis and
-     a transformation phase that is then run only on the loop that is
-     going to be transformed.  */
-  remove_dead_stmts_from_loop (new_loop);
 
   adjust_vec_debug_stmts ();
 

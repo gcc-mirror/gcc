@@ -169,13 +169,13 @@ STATIC_ASSERT((has_postdecrement<X>::value));
 STATIC_ASSERT((!has_postdecrement<Y>::value));
 
 // Check for private members
-STATIC_ASSERT((has_unary_plus<Z>::value)); // { dg-message "instantiated from here" }
-STATIC_ASSERT((is_negatable<Z>::value)); // { dg-message "instantiated from here" }
-STATIC_ASSERT((is_dereferenceable<Z>::value)); // { dg-message "instantiated from here" }
-STATIC_ASSERT((has_bitwise_not<Z>::value)); // { dg-message "instantiated from here" }
-STATIC_ASSERT((has_truth_not<Z>::value)); // { dg-message "instantiated from here" }
-STATIC_ASSERT((has_preincrement<Z>::value)); // { dg-message "instantiated from here" }
-STATIC_ASSERT((has_predecrement<Z>::value)); // { dg-message "instantiated from here" }
-STATIC_ASSERT((has_postincrement<Z>::value)); // { dg-message "instantiated from here" }
-STATIC_ASSERT((has_postdecrement<Z>::value)); // { dg-message "instantiated from here" }
+STATIC_ASSERT((has_unary_plus<Z>::value)); // { dg-message "required from here" }
+STATIC_ASSERT((is_negatable<Z>::value)); // { dg-message "required from here" }
+STATIC_ASSERT((is_dereferenceable<Z>::value)); // { dg-message "required from here" }
+STATIC_ASSERT((has_bitwise_not<Z>::value)); // { dg-message "required from here" }
+STATIC_ASSERT((has_truth_not<Z>::value)); // { dg-message "required from here" }
+STATIC_ASSERT((has_preincrement<Z>::value)); // { dg-message "required from here" }
+STATIC_ASSERT((has_predecrement<Z>::value)); // { dg-message "required from here" }
+STATIC_ASSERT((has_postincrement<Z>::value)); // { dg-message "required from here" }
+STATIC_ASSERT((has_postdecrement<Z>::value)); // { dg-message "required from here" }
 

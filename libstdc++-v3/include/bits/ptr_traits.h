@@ -106,8 +106,8 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
 
   /* TODO: remove second bool when alias templates are supported */
   template<typename _Tp, typename _Up,
-           bool = __ptrtr_rebind_helper<_Tp, _Up>::value,
-           bool = __ptrtr_rebind_helper2<_Tp, _Up>::value>
+           bool = __ptrtr_rebind_helper<_Tp, _Up>::__value,
+           bool = __ptrtr_rebind_helper2<_Tp, _Up>::__value>
     struct __ptrtr_rebind;
 
   template<typename _Tp, typename _Up, bool _B2>
@@ -178,8 +178,9 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
         { typedef typename __ptrtr_rebind<_Ptr, _Up>::__type __type; };
 
       // allocator_traits needs to use __rebind
-      template<typename> struct allocator_traits;
-      template<typename, typename> class __ptrtr_rebind_helper2;
+      template<typename> friend struct allocator_traits;
+      template<typename> friend struct pointer_traits;
+      template<typename, typename> friend class __ptrtr_rebind_helper2;
     };
 
   /**
@@ -210,7 +211,7 @@ _GLIBCXX_HAS_NESTED_TYPE(difference_type)
        *  @return @c addressof(r)
       */
       static pointer
-      pointer_to(typename __ptrtr_not_void<element_type>::__type& __r)
+      pointer_to(typename __ptrtr_not_void<element_type>::__type& __r) noexcept
       { return std::addressof(__r); }
     };
 

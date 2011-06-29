@@ -35,7 +35,7 @@ int test01()
 {
   int fd = 1;
   my_sockaddr sa;           // N.B. non-const
-  size_t len = sizeof(sa);  // N.B. size_t not socklen_t
-  return bind(fd, &sa, sizeof(sa));
+  size_t len = sizeof(sa);  // N.B. size_t not my_socklen_t
+  return bind(fd, &sa, len);
 }
 

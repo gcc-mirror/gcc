@@ -23,9 +23,8 @@
 int main()
 {
   using namespace std;
-  using namespace tr1;
   using namespace std::tr1::placeholders;
 
   int t[10];
-  sort(t, t+10, bind(less<int>(), _1, _2));
+  sort(t, t+10, tr1::bind(less<int>(), _1, _2));
 }

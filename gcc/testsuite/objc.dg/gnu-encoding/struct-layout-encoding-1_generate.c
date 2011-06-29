@@ -261,7 +261,7 @@ switchfiles (int fields)
 /* { dg-do run } */\n\
 /* { dg-options \"-w -I%s -fgnu-runtime\" } */\n", srcdir);
     }
-  fprintf(outfile, "#include <objc/encoding.h> \n\
+  fprintf(outfile, "#include <objc/runtime.h> \n\
 #include \"struct-layout-1.h\"\n\
 \n\
 int fails; \n\

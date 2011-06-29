@@ -1223,7 +1223,8 @@ local_cprop_pass (void)
 		    {
 		      if (do_local_cprop (reg_use_table[i], insn))
 			{
-			  changed = true;
+			  if (!DEBUG_INSN_P (insn))
+			    changed = true;
 			  break;
 			}
 		    }
@@ -1877,8 +1878,6 @@ struct rtl_opt_pass pass_rtl_cprop =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func |
   TODO_verify_flow | TODO_ggc_collect   /* todo_flags_finish */
  }
 };
-

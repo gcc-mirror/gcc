@@ -86,278 +86,6 @@ const char *byte_reg_names[]   =  BYTE_REGISTER_NAMES;
 static int arg_regs[] = FUNCTION_ARG_REGISTERS;
 static int ret_regs[] = FUNCTION_RETURN_REGISTERS;
 
-/* Nonzero if -fschedule-insns2 was given.  We override it and
-   call the scheduler ourselves during reorg.  */
-static int bfin_flag_schedule_insns2;
-
-/* Determines whether we run variable tracking in machine dependent
-   reorganization.  */
-static int bfin_flag_var_tracking;
-
-struct bfin_cpu
-{
-  const char *name;
-  bfin_cpu_t type;
-  int si_revision;
-  unsigned int workarounds;
-};
-
-static const struct bfin_cpu bfin_cpus[] =
-{
-
-  {"bf512", BFIN_CPU_BF512, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf512", BFIN_CPU_BF512, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf512", BFIN_CPU_BF512, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-
-  {"bf514", BFIN_CPU_BF514, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf514", BFIN_CPU_BF514, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf514", BFIN_CPU_BF514, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-
-  {"bf516", BFIN_CPU_BF516, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf516", BFIN_CPU_BF516, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf516", BFIN_CPU_BF516, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-
-  {"bf518", BFIN_CPU_BF518, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf518", BFIN_CPU_BF518, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf518", BFIN_CPU_BF518, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-
-  {"bf522", BFIN_CPU_BF522, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf522", BFIN_CPU_BF522, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-  {"bf522", BFIN_CPU_BF522, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-
-  {"bf523", BFIN_CPU_BF523, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf523", BFIN_CPU_BF523, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-  {"bf523", BFIN_CPU_BF523, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-
-  {"bf524", BFIN_CPU_BF524, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf524", BFIN_CPU_BF524, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-  {"bf524", BFIN_CPU_BF524, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-
-  {"bf525", BFIN_CPU_BF525, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf525", BFIN_CPU_BF525, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-  {"bf525", BFIN_CPU_BF525, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-
-  {"bf526", BFIN_CPU_BF526, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf526", BFIN_CPU_BF526, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-  {"bf526", BFIN_CPU_BF526, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-
-  {"bf527", BFIN_CPU_BF527, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf527", BFIN_CPU_BF527, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-  {"bf527", BFIN_CPU_BF527, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000074},
-
-  {"bf531", BFIN_CPU_BF531, 0x0006,
-   WA_SPECULATIVE_LOADS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf531", BFIN_CPU_BF531, 0x0005,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000283 | WA_05000315
-   | WA_LOAD_LCREGS | WA_05000074},
-  {"bf531", BFIN_CPU_BF531, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-  {"bf531", BFIN_CPU_BF531, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf532", BFIN_CPU_BF532, 0x0006,
-   WA_SPECULATIVE_LOADS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf532", BFIN_CPU_BF532, 0x0005,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000283 | WA_05000315
-   | WA_LOAD_LCREGS | WA_05000074},
-  {"bf532", BFIN_CPU_BF532, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-  {"bf532", BFIN_CPU_BF532, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf533", BFIN_CPU_BF533, 0x0006,
-   WA_SPECULATIVE_LOADS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf533", BFIN_CPU_BF533, 0x0005,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_05000283 | WA_05000315
-   | WA_LOAD_LCREGS | WA_05000074},
-  {"bf533", BFIN_CPU_BF533, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-  {"bf533", BFIN_CPU_BF533, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf534", BFIN_CPU_BF534, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf534", BFIN_CPU_BF534, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-  {"bf534", BFIN_CPU_BF534, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf536", BFIN_CPU_BF536, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf536", BFIN_CPU_BF536, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-  {"bf536", BFIN_CPU_BF536, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf537", BFIN_CPU_BF537, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf537", BFIN_CPU_BF537, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-  {"bf537", BFIN_CPU_BF537, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf538", BFIN_CPU_BF538, 0x0005,
-   WA_SPECULATIVE_LOADS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf538", BFIN_CPU_BF538, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf538", BFIN_CPU_BF538, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_RETS
-   | WA_05000283 | WA_05000315 | WA_LOAD_LCREGS | WA_05000074},
-  {"bf538", BFIN_CPU_BF538, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf539", BFIN_CPU_BF539, 0x0005,
-   WA_SPECULATIVE_LOADS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf539", BFIN_CPU_BF539, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_LOAD_LCREGS | WA_05000074},
-  {"bf539", BFIN_CPU_BF539, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_RETS
-   | WA_05000283 | WA_05000315 | WA_LOAD_LCREGS | WA_05000074},
-  {"bf539", BFIN_CPU_BF539, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf542m", BFIN_CPU_BF542M, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-
-  {"bf542", BFIN_CPU_BF542, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf542", BFIN_CPU_BF542, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf542", BFIN_CPU_BF542, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf542", BFIN_CPU_BF542, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf544m", BFIN_CPU_BF544M, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-
-  {"bf544", BFIN_CPU_BF544, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf544", BFIN_CPU_BF544, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf544", BFIN_CPU_BF544, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf544", BFIN_CPU_BF544, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf547m", BFIN_CPU_BF547M, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-
-  {"bf547", BFIN_CPU_BF547, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf547", BFIN_CPU_BF547, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf547", BFIN_CPU_BF547, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf547", BFIN_CPU_BF547, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf548m", BFIN_CPU_BF548M, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-
-  {"bf548", BFIN_CPU_BF548, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf548", BFIN_CPU_BF548, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf548", BFIN_CPU_BF548, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf548", BFIN_CPU_BF548, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf549m", BFIN_CPU_BF549M, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-
-  {"bf549", BFIN_CPU_BF549, 0x0004,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf549", BFIN_CPU_BF549, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf549", BFIN_CPU_BF549, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_05000074},
-  {"bf549", BFIN_CPU_BF549, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_RETS | WA_INDIRECT_CALLS | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf561", BFIN_CPU_BF561, 0x0005, WA_RETS
-   | WA_05000283 | WA_05000315 | WA_LOAD_LCREGS | WA_05000074},
-  {"bf561", BFIN_CPU_BF561, 0x0003,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-  {"bf561", BFIN_CPU_BF561, 0x0002,
-   WA_SPECULATIVE_LOADS | WA_SPECULATIVE_SYNCS | WA_RETS
-   | WA_05000283 | WA_05000257 | WA_05000315 | WA_LOAD_LCREGS
-   | WA_05000074},
-
-  {"bf592", BFIN_CPU_BF592, 0x0001,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-  {"bf592", BFIN_CPU_BF592, 0x0000,
-   WA_SPECULATIVE_LOADS | WA_05000074},
-
-  {NULL, BFIN_CPU_UNKNOWN, 0, 0}
-};
-
 int splitting_for_sched, splitting_loops;
 
 static void
@@ -374,13 +102,6 @@ output_file_start (void)
 {
   FILE *file = asm_out_file;
   int i;
-
-  /* Variable tracking should be run after all optimizations which change order
-     of insns.  It also needs a valid CFG.  This can't be done in
-     bfin_option_override, because flag_var_tracking is finalized after
-     that.  */
-  bfin_flag_var_tracking = flag_var_tracking;
-  flag_var_tracking = 0;
 
   fprintf (file, ".file \"%s\";\n", input_filename);
   
@@ -839,7 +560,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
    - now, the vastart pointer can access all arguments from the stack.  */
 
 static void
-setup_incoming_varargs (CUMULATIVE_ARGS *cum,
+setup_incoming_varargs (cumulative_args_t cum,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			tree type ATTRIBUTE_UNUSED, int *pretend_size,
 			int no_rtl)
@@ -855,7 +576,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum,
      if they are in the first 3 words.  We assume at least 1 named argument
      exists, so we never generate [ARGP] = R0 here.  */
 
-  for (i = cum->words + 1; i < max_arg_registers; i++)
+  for (i = get_cumulative_args (cum)->words + 1; i < max_arg_registers; i++)
     {
       mem = gen_rtx_MEM (Pmode,
 			 plus_constant (arg_pointer_rtx, (i * UNITS_PER_WORD)));
@@ -1926,9 +1647,10 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-bfin_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+bfin_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int count, bytes, words;
 
   bytes = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
@@ -1965,9 +1687,10 @@ bfin_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     (otherwise it is an extra parameter matching an ellipsis).  */
 
 static rtx
-bfin_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+bfin_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes
     = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
 
@@ -1994,13 +1717,13 @@ bfin_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    stack.   */
 
 static int
-bfin_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+bfin_arg_partial_bytes (cumulative_args_t cum, enum machine_mode mode,
 			tree type ATTRIBUTE_UNUSED,
 			bool named ATTRIBUTE_UNUSED)
 {
   int bytes
     = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
-  int bytes_left = cum->nregs * UNITS_PER_WORD;
+  int bytes_left = get_cumulative_args (cum)->nregs * UNITS_PER_WORD;
   
   if (bytes == -1)
     return 0;
@@ -2015,7 +1738,7 @@ bfin_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Variable sized types are passed by reference.  */
 
 static bool
-bfin_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+bfin_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
@@ -2110,6 +1833,8 @@ bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
  
   this_func = cgraph_local_info (current_function_decl);
   called_func = cgraph_local_info (decl);
+  if (!called_func)
+    return false;
   return !called_func->local || this_func->local;
 }
 
@@ -2585,101 +2310,6 @@ bfin_class_likely_spilled_p (reg_class_t rclass)
   return false;
 }
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-bfin_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc)
-{
-  size_t code = decoded->opt_index;
-  const char *arg = decoded->arg;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mshared_library_id_:
-      if (value > MAX_LIBRARY_ID)
-	error_at (loc, "-mshared-library-id=%s is not between 0 and %d",
-		  arg, MAX_LIBRARY_ID);
-      return true;
-
-    case OPT_mcpu_:
-      {
-	const char *p, *q;
-	int i;
-
-	i = 0;
-	while ((p = bfin_cpus[i].name) != NULL)
-	  {
-	    if (strncmp (arg, p, strlen (p)) == 0)
-	      break;
-	    i++;
-	  }
-
-	if (p == NULL)
-	  {
-	    error_at (loc, "-mcpu=%s is not valid", arg);
-	    return false;
-	  }
-
-	opts->x_bfin_cpu_type = bfin_cpus[i].type;
-
-	q = arg + strlen (p);
-
-	if (*q == '\0')
-	  {
-	    opts->x_bfin_si_revision = bfin_cpus[i].si_revision;
-	    opts->x_bfin_workarounds |= bfin_cpus[i].workarounds;
-	  }
-	else if (strcmp (q, "-none") == 0)
-	  opts->x_bfin_si_revision = -1;
-      	else if (strcmp (q, "-any") == 0)
-	  {
-	    opts->x_bfin_si_revision = 0xffff;
-	    while (bfin_cpus[i].type == opts->x_bfin_cpu_type)
-	      {
-		opts->x_bfin_workarounds |= bfin_cpus[i].workarounds;
-		i++;
-	      }
-	  }
-	else
-	  {
-	    unsigned int si_major, si_minor;
-	    int rev_len, n;
-
-	    rev_len = strlen (q);
-
-	    if (sscanf (q, "-%u.%u%n", &si_major, &si_minor, &n) != 2
-		|| n != rev_len
-		|| si_major > 0xff || si_minor > 0xff)
-	      {
-	      invalid_silicon_revision:
-		error_at (loc, "-mcpu=%s has invalid silicon revision", arg);
-		return false;
-	      }
-
-	    opts->x_bfin_si_revision = (si_major << 8) | si_minor;
-
-	    while (bfin_cpus[i].type == opts->x_bfin_cpu_type
-		   && bfin_cpus[i].si_revision != opts->x_bfin_si_revision)
-	      i++;
-
-	    if (bfin_cpus[i].type != opts->x_bfin_cpu_type)
-	      goto invalid_silicon_revision;
-
-	    opts->x_bfin_workarounds |= bfin_cpus[i].workarounds;
-	  }
-
-	return true;
-      }
-
-    default:
-      return true;
-    }
-}
-
 static struct machine_function *
 bfin_init_machine_status (void)
 {
@@ -2771,11 +2401,6 @@ bfin_option_override (void)
     error ("-mcorea and -mcoreb can%'t be used together");
 
   flag_schedule_insns = 0;
-
-  /* Passes after sched2 can break the helpful TImode annotations that
-     haifa-sched puts on every insn.  Just do scheduling in reorg.  */
-  bfin_flag_schedule_insns2 = flag_schedule_insns_after_reload;
-  flag_schedule_insns_after_reload = 0;
 
   init_machine_status = bfin_init_machine_status;
 }
@@ -5550,7 +5175,7 @@ bfin_reorg (void)
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn ();
 
-  if (bfin_flag_schedule_insns2)
+  if (flag_schedule_insns_after_reload)
     {
       splitting_for_sched = 1;
       split_all_insns ();
@@ -5579,7 +5204,7 @@ bfin_reorg (void)
 
   workaround_speculation ();
 
-  if (bfin_flag_var_tracking)
+  if (flag_var_tracking)
     {
       timevar_push (TV_VAR_TRACKING);
       variable_tracking_main ();
@@ -6254,11 +5879,11 @@ static const struct builtin_description bdesc_1arg[] =
 
   { CODE_FOR_ones, "__builtin_bfin_ones", BFIN_BUILTIN_ONES, 0 },
 
-  { CODE_FOR_signbitshi2, "__builtin_bfin_norm_fr1x16", BFIN_BUILTIN_NORM_1X16, 0 },
+  { CODE_FOR_clrsbhi2, "__builtin_bfin_norm_fr1x16", BFIN_BUILTIN_NORM_1X16, 0 },
   { CODE_FOR_ssneghi2, "__builtin_bfin_negate_fr1x16", BFIN_BUILTIN_NEG_1X16, 0 },
   { CODE_FOR_abshi2, "__builtin_bfin_abs_fr1x16", BFIN_BUILTIN_ABS_1X16, 0 },
 
-  { CODE_FOR_signbitssi2, "__builtin_bfin_norm_fr1x32", BFIN_BUILTIN_NORM_1X32, 0 },
+  { CODE_FOR_clrsbsi2, "__builtin_bfin_norm_fr1x32", BFIN_BUILTIN_NORM_1X32, 0 },
   { CODE_FOR_ssroundsi2, "__builtin_bfin_round_fr1x32", BFIN_BUILTIN_ROUND_1X32, 0 },
   { CODE_FOR_ssnegsi2, "__builtin_bfin_negate_fr1x32", BFIN_BUILTIN_NEG_1X32, 0 },
   { CODE_FOR_ssabssi2, "__builtin_bfin_abs_fr1x32", BFIN_BUILTIN_ABS_1X32, 0 },
@@ -6718,14 +6343,8 @@ bfin_conditional_register_usage (void)
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P bfin_vector_mode_supported_p
 
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION bfin_handle_option
-
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE bfin_option_override
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD bfin_secondary_reload
@@ -6764,5 +6383,15 @@ bfin_conditional_register_usage (void)
 
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY bfin_extra_live_on_entry
+
+/* Passes after sched2 can break the helpful TImode annotations that
+   haifa-sched puts on every insn.  Just do scheduling in reorg.  */
+#undef TARGET_DELAY_SCHED2
+#define TARGET_DELAY_SCHED2 true
+
+/* Variable tracking should be run after all optimizations which
+   change order of insns.  It also needs a valid CFG.  */
+#undef TARGET_DELAY_VARTRACK
+#define TARGET_DELAY_VARTRACK true
 
 struct gcc_target targetm = TARGET_INITIALIZER;

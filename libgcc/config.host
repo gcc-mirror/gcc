@@ -44,19 +44,25 @@
 #			The default is ".hidden".
 #  cpu_type		The name of the cpu, if different from the first
 #			chunk of the canonical host name.
+#  enable_execute_stack The name of a source file implementing
+#			__enable_execute_stack.
 #  extra_parts		List of extra object files that should be compiled
 #			for this target machine.  This may be overridden
 #			by setting EXTRA_PARTS in a tmake_file fragment.
 #			If either is set, EXTRA_PARTS and
 #			EXTRA_MULTILIB_PARTS inherited from the GCC
 #			subdirectory will be ignored.
+#  md_unwind_header	The name of a header file defining
+#			MD_FALLBACK_FRAME_STATE_FOR.
 #  tmake_file		A list of machine-description-specific
 #			makefile-fragments, if different from
 #			"$cpu_type/t-$cpu_type".
 
 asm_hidden_op=.hidden
+enable_execute_stack=
 extra_parts=
 tmake_file=
+md_unwind_header=no-unwind.h
 
 # Set default cpu_type so it can be updated in each machine entry.
 cpu_type=`echo ${host} | sed 's/-.*$//'`
@@ -137,6 +143,9 @@ s390*-*-*)
 sh[123456789lbe]*-*-*)
 	cpu_type=sh
 	;;
+v850*-*-*)
+	cpu_type=v850
+	;;
 esac
 
 # Common parts for widely ported systems.
@@ -200,6 +209,19 @@ case ${host} in
 esac
 
 case ${host} in
+*-*-darwin* | *-*-freebsd* | *-*-netbsd* | *-*-openbsd* | *-*-solaris2* | \
+  alpha*-dec-osf5.1*)
+  enable_execute_stack=enable-execute-stack-mprotect.c
+  ;;
+i[34567]86-*-mingw* | x86_64-*-mingw*)
+  enable_execute_stack=config/i386/enable-execute-stack-mingw32.c
+  ;;
+*)
+  enable_execute_stack=enable-execute-stack-empty.c;
+  ;;
+esac
+
+case ${host} in
 # Support site-specific machine types.
 *local*)
 	rest=`echo ${host} | sed -e "s/$cpu_type-//"`
@@ -210,6 +232,7 @@ case ${host} in
 alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-crtfm"
 	extra_parts="$extra_parts crtfastmath.o"
+	md_unwind_header=alpha/linux-unwind.h
 	;;
 alpha*-*-freebsd*)
 	;;
@@ -218,12 +241,22 @@ alpha*-*-netbsd*)
 alpha*-*-openbsd*)
 	;;
 alpha*-dec-osf5.1*)
+	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee alpha/t-crtfm t-slibgcc alpha/t-slibgcc-osf"
+	case ${target_thread_file} in
+	  posix)
+	    tmake_file="${tmake_file} alpha/t-osf-pthread"
+	    ;;
+	esac
+	extra_parts="${extra_parts} qrnnd.o crtfastmath.o gthr-posix.o"
+	md_unwind_header=alpha/osf5-unwind.h
 	;;
 alpha64-dec-*vms*)
 	tmake_file="vms/t-vms vms/t-vms64 alpha/t-vms"
+	md_unwind_header=alpha/vms-unwind.h
 	;;
 alpha*-dec-*vms*)
 	tmake_file="vms/t-vms alpha/t-vms"
+	md_unwind_header=alpha/vms-unwind.h
 	;;
 arm-wrs-vxworks)
 	;;
@@ -254,11 +287,13 @@ avr-*-*)
 bfin*-elf*)
         ;;
 bfin*-uclinux*)
+	md_unwind_header=bfin/linux-unwind.h
         ;;
 bfin*-linux-uclibc*)
 	# No need to build crtbeginT.o on uClibc systems.  Should probably
 	# be moved to the OS specific section above.
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	md_unwind_header=bfin/linux-unwind.h
 	;;
 bfin*-*)
         ;;
@@ -282,12 +317,16 @@ h8300-*-elf*)
 hppa*64*-*-linux*)
 	;;
 hppa*-*-linux*)
+	md_unwind_header=pa/linux-unwind.h
 	;;
 hppa[12]*-*-hpux10*)
+	md_unwind_header=pa/hpux-unwind.h
 	;;
 hppa*64*-*-hpux11*)
+	md_unwind_header=pa/hpux-unwind.h
 	;;
 hppa[12]*-*-hpux11*)
+	md_unwind_header=pa/hpux-unwind.h
 	;;
 i[34567]86-*-darwin*)
 	;;
@@ -312,13 +351,15 @@ i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
 	;;
 i[34567]86-*-openbsd*)
 	;;
-i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu*)
+i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
+	md_unwind_header=i386/linux-unwind.h
 	;;
 x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
+	md_unwind_header=i386/linux-unwind.h
 	;;
 i[34567]86-pc-msdosdjgpp*)
 	;;
@@ -340,12 +381,18 @@ i[34567]86-*-rtems*)
 i[34567]86-*-solaris2*)
 	tmake_file="$tmake_file i386/t-crtfm"
 	extra_parts="$extra_parts crtfastmath.o"
+	md_unwind_header=i386/sol2-unwind.h
 	;;
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	;;
-i[34567]86-*-cygwin* | i[34567]86-*-mingw*)
+i[34567]86-*-cygwin*)
 	extra_parts="crtbegin.o crtend.o crtfastmath.o"
 	tmake_file="i386/t-cygming i386/t-crtfm"
+	;;
+i[34567]86-*-mingw*)
+	extra_parts="crtbegin.o crtend.o crtfastmath.o"
+	tmake_file="i386/t-cygming i386/t-crtfm"
+	md_unwind_header=i386/w32-unwind.h
 	;;
 x86_64-*-mingw*)
 	;;
@@ -362,11 +409,13 @@ ia64*-*-freebsd*)
 ia64*-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	tmake_file="ia64/t-ia64 t-softfp ia64/t-fprules-softfp ia64/t-softfp-compat"
+	md_unwind_header=ia64/linux-unwind.h
 	;;
 ia64*-*-hpux*)
 	;;
 ia64-hp-*vms*)
 	tmake_file="vms/t-vms vms/t-vms64 ia64/t-vms"
+	md_unwind_header=ia64/vms-unwind.h
 	;;
 iq2000*-*-elf*)
         ;;
@@ -393,10 +442,12 @@ m68k*-*-netbsdelf*)
 m68k*-*-openbsd*)
 	;;
 m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux with uClibc
+	md_unwind_header=m68k/linux-unwind.h
 	;;
-m68k-*-linux*)		# Motorola m68k's running GNU/Linux
+m68k-*-linux*)			# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
+	md_unwind_header=m68k/linux-unwind.h
 	;;
 m68k-*-rtems*)
 	;;
@@ -405,17 +456,22 @@ mcore-*-elf)
 microblaze*-*-*)
         tmake_file="microblaze/t-microblaze"
 	;;
-mips-sgi-irix[56]*)
+mips-sgi-irix6.5*)
+	tmake_file="mips/t-irix6 t-crtfm t-slibgcc mips/t-slibgcc-irix"
+	extra_parts="crtbegin.o crtend.o crtfastmath.o irix-crti.o irix-crtn.o"
+	md_unwind_header=mips/irix6-unwind.h
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips64*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="{$tmake_file} mips/t-crtfm"
+	tmake_file="{$tmake_file} t-crtfm"
+	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="{$tmake_file} mips/t-crtfm"
+	tmake_file="{$tmake_file} t-crtfm"
+	md_unwind_header=mips/linux-unwind.h
 	;;
 mips*-*-openbsd*)
 	;;
@@ -460,6 +516,15 @@ pdp11-*-*)
 picochip-*-*)
         ;;
 powerpc-*-darwin*)
+	case ${host} in
+	*-*-darwin9* | *-*-darwin[12][0-9]*)
+	  # libSystem contains unwind information for signal frames since
+	  # Darwin 9.
+	  ;;
+	*)
+	  md_unwind_header=rs6000/darwin-unwind.h
+	  ;;
+	esac
 	;;
 powerpc64-*-darwin*)
 	;;
@@ -486,6 +551,7 @@ powerpc-*-rtems*)
 	;;
 powerpc-*-linux* | powerpc64-*-linux*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp"
+	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
 	;;
@@ -509,12 +575,15 @@ rx-*-elf)
 	;;
 s390-*-linux*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi"
+	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-*-linux*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux"
+	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-ibm-tpf*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-tpf"
+	md_unwind_header=s390/tpf-unwind.h
 	;;
 score-*-elf)
         ;;
@@ -525,6 +594,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	case ${host} in
 	sh*-*-linux*)
 		tmake_file="${tmake_file} sh/t-linux"
+		md_unwind_header=sh/linux-unwind.h
 		;;
 	esac
 	;;
@@ -550,6 +620,7 @@ sparc-*-elf*)
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} t-crtfm"
+	md_unwind_header=sparc/linux-unwind.h
 	;;
 sparc-*-rtems* | sparc64-*-rtems* )
 	tmake_file="sparc/t-elf t-crtin t-crtfm t-rtems"
@@ -558,6 +629,7 @@ sparc-*-rtems* | sparc64-*-rtems* )
 sparc*-*-solaris2*)
 	tmake_file="$tmake_file t-crtfm"
 	extra_parts="$extra_parts crtfastmath.o"
+	md_unwind_header=sparc/sol2-unwind.h
 	;;
 sparc64-*-elf*)
 	tmake_file="${tmake_file} t-crtin t-crtfm"
@@ -570,16 +642,13 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} t-crtfm"
+	md_unwind_header=sparc/linux-unwind.h
 	;;
 sparc64-*-netbsd*)
 	;;
 spu-*-elf*)
 	;;
-v850e1-*-*)
-	;;
-v850e-*-*)
-	;;
-v850-*-*)
+v850*-*-*)
 	;;
 vax-*-linux*)
 	;;
@@ -592,6 +661,7 @@ xstormy16-*-elf)
 xtensa*-*-elf*)
 	;;
 xtensa*-*-linux*)
+	md_unwind_header=xtensa/linux-unwind.h
 	;;
 am33_2.0-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"

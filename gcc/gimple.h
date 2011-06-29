@@ -1,6 +1,6 @@
 /* Gimple IR definitions.
 
-   Copyright 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -117,12 +117,13 @@ enum gf_mask {
     GF_PREDICT_TAKEN		= 1 << 15
 };
 
-/* Currently, there's only one type of gimple debug stmt.  Others are
+/* Currently, there are only two types of gimple debug stmt.  Others are
    envisioned, for example, to enable the generation of is_stmt notes
    in line number information, to mark sequence points, etc.  This
    subcode is to be used to tell them apart.  */
 enum gimple_debug_subcode {
-  GIMPLE_DEBUG_BIND = 0
+  GIMPLE_DEBUG_BIND = 0,
+  GIMPLE_DEBUG_SOURCE_BIND = 1
 };
 
 /* Masks for selecting a pass local flag (PLF) to work on.  These
@@ -823,6 +824,9 @@ gimple gimple_build_assign_with_ops_stat (enum tree_code, tree, tree,
 gimple gimple_build_debug_bind_stat (tree, tree, gimple MEM_STAT_DECL);
 #define gimple_build_debug_bind(var,val,stmt)			\
   gimple_build_debug_bind_stat ((var), (val), (stmt) MEM_STAT_INFO)
+gimple gimple_build_debug_source_bind_stat (tree, tree, gimple MEM_STAT_DECL);
+#define gimple_build_debug_source_bind(var,val,stmt)			\
+  gimple_build_debug_source_bind_stat ((var), (val), (stmt) MEM_STAT_INFO)
 
 gimple gimple_build_call_vec (tree, VEC(tree, heap) *);
 gimple gimple_build_call (tree, unsigned, ...);
@@ -904,7 +908,7 @@ unsigned get_gimple_rhs_num_ops (enum tree_code);
 gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 const char *gimple_decl_printable_name (tree, int);
 bool gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace);
-tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree, tree *, bool);
+tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree, tree *);
 void gimple_adjust_this_by_delta (gimple_stmt_iterator *, tree);
 tree gimple_extract_devirt_binfo_from_cst (tree);
 /* Returns true iff T is a valid GIMPLE statement.  */
@@ -3584,6 +3588,70 @@ gimple_debug_bind_has_value_p (gimple dbg)
 
 #undef GIMPLE_DEBUG_BIND_NOVALUE
 
+/* Return true if S is a GIMPLE_DEBUG SOURCE BIND statement.  */
+
+static inline bool
+gimple_debug_source_bind_p (const_gimple s)
+{
+  if (is_gimple_debug (s))
+    return s->gsbase.subcode == GIMPLE_DEBUG_SOURCE_BIND;
+
+  return false;
+}
+
+/* Return the variable bound in a GIMPLE_DEBUG source bind statement.  */
+
+static inline tree
+gimple_debug_source_bind_get_var (gimple dbg)
+{
+  GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
+  gcc_gimple_checking_assert (gimple_debug_source_bind_p (dbg));
+  return gimple_op (dbg, 0);
+}
+
+/* Return the value bound to the variable in a GIMPLE_DEBUG source bind
+   statement.  */
+
+static inline tree
+gimple_debug_source_bind_get_value (gimple dbg)
+{
+  GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
+  gcc_gimple_checking_assert (gimple_debug_source_bind_p (dbg));
+  return gimple_op (dbg, 1);
+}
+
+/* Return a pointer to the value bound to the variable in a
+   GIMPLE_DEBUG source bind statement.  */
+
+static inline tree *
+gimple_debug_source_bind_get_value_ptr (gimple dbg)
+{
+  GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
+  gcc_gimple_checking_assert (gimple_debug_source_bind_p (dbg));
+  return gimple_op_ptr (dbg, 1);
+}
+
+/* Set the variable bound in a GIMPLE_DEBUG source bind statement.  */
+
+static inline void
+gimple_debug_source_bind_set_var (gimple dbg, tree var)
+{
+  GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
+  gcc_gimple_checking_assert (gimple_debug_source_bind_p (dbg));
+  gimple_set_op (dbg, 0, var);
+}
+
+/* Set the value bound to the variable in a GIMPLE_DEBUG source bind
+   statement.  */
+
+static inline void
+gimple_debug_source_bind_set_value (gimple dbg, tree value)
+{
+  GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
+  gcc_gimple_checking_assert (gimple_debug_source_bind_p (dbg));
+  gimple_set_op (dbg, 1, value);
+}
+
 /* Return the body for the OMP statement GS.  */
 
 static inline gimple_seq
@@ -4989,4 +5057,5 @@ extern tree maybe_fold_and_comparisons (enum tree_code, tree, tree,
 extern tree maybe_fold_or_comparisons (enum tree_code, tree, tree,
 				       enum tree_code, tree, tree);
 
+bool gimple_val_nonnegative_real_p (tree);
 #endif  /* GCC_GIMPLE_H */

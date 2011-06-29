@@ -1,5 +1,5 @@
 /* Definitions for SOM assembler support.
-   Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2010
+   Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -269,7 +269,8 @@ do {						\
    must be removed from library prefixes to prevent binaries from depending
    on the location of the GCC tool directory.  The downside is GCC
    cannot be moved after installation using a symlink.  */
-#define ALWAYS_STRIP_DOTDOT 1
+#undef TARGET_ALWAYS_STRIP_DOTDOT
+#define TARGET_ALWAYS_STRIP_DOTDOT true
 
 /* If GAS supports weak, we can support weak when we have working linker
    support for secondary definitions and are generating code for GAS.

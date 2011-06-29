@@ -36,8 +36,10 @@
 #include "debug.h"
 #include "convert.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "langhooks.h"
 #include "cgraph.h"
+#include "diagnostic.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"
@@ -1719,7 +1721,7 @@ process_attributes (tree decl, struct attrib *attr_list)
 	break;
 
       case ATTR_LINK_SECTION:
-	if (targetm.have_named_sections)
+	if (targetm_common.have_named_sections)
 	  {
 	    DECL_SECTION_NAME (decl)
 	      = build_string (IDENTIFIER_LENGTH (attr_list->name),
@@ -4756,6 +4758,9 @@ static GTY (()) tree dummy_global;
 void
 gnat_write_global_declarations (void)
 {
+  unsigned int i;
+  tree iter;
+
   /* If we have declared types as used at the global level, insert them in
      the global hash table.  We use a dummy variable for this purpose.  */
   if (!VEC_empty (tree, types_used_by_cur_var_decl))
@@ -4773,13 +4778,28 @@ gnat_write_global_declarations (void)
 	}
     }
 
+  /* Output debug information for all global type declarations first.  This
+     ensures that global types whose compilation hasn't been finalized yet,
+     for example pointers to Taft amendment types, have their compilation
+     finalized in the right context.  */
+  FOR_EACH_VEC_ELT (tree, global_decls, i, iter)
+    if (TREE_CODE (iter) == TYPE_DECL)
+      debug_hooks->global_decl (iter);
+
   /* Proceed to optimize and emit assembly.
      FIXME: shouldn't be the front end's responsibility to call this.  */
   cgraph_finalize_compilation_unit ();
 
-  /* Emit debug info for all global declarations.  */
-  emit_debug_global_declarations (VEC_address (tree, global_decls),
-				  VEC_length (tree, global_decls));
+  /* After cgraph has had a chance to emit everything that's going to
+     be emitted, output debug information for the rest of globals.  */
+  if (!seen_error ())
+    {
+      timevar_push (TV_SYMOUT);
+      FOR_EACH_VEC_ELT (tree, global_decls, i, iter)
+	if (TREE_CODE (iter) != TYPE_DECL)
+	  debug_hooks->global_decl (iter);
+      timevar_pop (TV_SYMOUT);
+    }
 }
 
 /* ************************************************************************

@@ -38,4 +38,3 @@ test02()
   duration<int, std::milli> d2_copy(d2); // { dg-error "no matching" }
 }
 
-// { dg-excess-errors "candidates are" }

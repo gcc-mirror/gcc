@@ -1,5 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
@@ -2746,6 +2746,18 @@ get_constraint_for_ssa_var (tree t, VEC(ce_s, heap) **results, bool address_p)
       return;
     }
 
+  /* For global variables resort to the alias target.  */
+  if (TREE_CODE (t) == VAR_DECL
+      && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
+    {
+      struct varpool_node *node = varpool_get_node (t);
+      if (node && node->alias)
+	{
+	  node = varpool_variable_node (node, NULL);
+	  t = node->decl;
+	}
+    }
+
   vi = get_vi_for_tree (t);
   cexpr.var = vi->id;
   cexpr.type = SCALAR;
@@ -3982,6 +3994,15 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_STPNCPY:
       case BUILT_IN_STRCAT:
       case BUILT_IN_STRNCAT:
+      case BUILT_IN_STRCPY_CHK:
+      case BUILT_IN_STRNCPY_CHK:
+      case BUILT_IN_MEMCPY_CHK:
+      case BUILT_IN_MEMMOVE_CHK:
+      case BUILT_IN_MEMPCPY_CHK:
+      case BUILT_IN_STPCPY_CHK:
+      case BUILT_IN_STRCAT_CHK:
+      case BUILT_IN_STRNCAT_CHK:
+      case BUILT_IN_ASSUME_ALIGNED:
 	{
 	  tree res = gimple_call_lhs (t);
 	  tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
@@ -4011,6 +4032,7 @@ find_func_aliases_for_builtin_call (gimple t)
 	  return true;
 	}
       case BUILT_IN_MEMSET:
+      case BUILT_IN_MEMSET_CHK:
 	{
 	  tree res = gimple_call_lhs (t);
 	  tree dest = gimple_call_arg (t, 0);
@@ -4627,6 +4649,14 @@ find_func_clobbers (gimple origt)
 	  case BUILT_IN_STPNCPY:
 	  case BUILT_IN_STRCAT:
 	  case BUILT_IN_STRNCAT:
+	  case BUILT_IN_STRCPY_CHK:
+	  case BUILT_IN_STRNCPY_CHK:
+	  case BUILT_IN_MEMCPY_CHK:
+	  case BUILT_IN_MEMMOVE_CHK:
+	  case BUILT_IN_MEMPCPY_CHK:
+	  case BUILT_IN_STPCPY_CHK:
+	  case BUILT_IN_STRCAT_CHK:
+	  case BUILT_IN_STRNCAT_CHK:
 	    {
 	      tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (decl)
 					       == BUILT_IN_BCOPY ? 1 : 0));
@@ -4649,6 +4679,7 @@ find_func_clobbers (gimple origt)
 	  /* The following function clobbers memory pointed to by
 	     its argument.  */
 	  case BUILT_IN_MEMSET:
+	  case BUILT_IN_MEMSET_CHK:
 	    {
 	      tree dest = gimple_call_arg (t, 0);
 	      unsigned i;
@@ -4696,6 +4727,7 @@ find_func_clobbers (gimple origt)
 	      return;
 	    }
 	  /* The following functions neither read nor clobber memory.  */
+	  case BUILT_IN_ASSUME_ALIGNED:
 	  case BUILT_IN_FREE:
 	    return;
 	  /* Trampolines are of no interest to us.  */
@@ -6634,7 +6666,7 @@ struct gimple_opt_pass pass_build_alias =
   0,			    /* properties_provided */
   0,                        /* properties_destroyed */
   0,                        /* todo_flags_start */
-  TODO_rebuild_alias | TODO_dump_func  /* todo_flags_finish */
+  TODO_rebuild_alias        /* todo_flags_finish */
  }
 };
 
@@ -6656,7 +6688,7 @@ struct gimple_opt_pass pass_build_ealias =
   0,			    /* properties_provided */
   0,                        /* properties_destroyed */
   0,                        /* todo_flags_start */
-  TODO_rebuild_alias | TODO_dump_func  /* todo_flags_finish */
+  TODO_rebuild_alias        /* todo_flags_finish */
  }
 };
 
@@ -6675,6 +6707,16 @@ gate_ipa_pta (void)
 struct pt_solution ipa_escaped_pt
   = { true, false, false, false, false, false, false, NULL };
 
+/* Associate node with varinfo DATA. Worker for
+   cgraph_for_node_and_aliases.  */
+static bool
+associate_varinfo_to_alias (struct cgraph_node *node, void *data)
+{
+  if (node->alias || node->thunk.thunk_p)
+    insert_vi_for_tree (node->decl, (varinfo_t)data);
+  return false;
+}
+
 /* Execute the driver for IPA PTA.  */
 static unsigned int
 ipa_pta_execute (void)
@@ -6690,35 +6732,26 @@ ipa_pta_execute (void)
   /* Build the constraints.  */
   for (node = cgraph_nodes; node; node = node->next)
     {
-      struct cgraph_node *alias;
       varinfo_t vi;
-
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
-      if (!gimple_has_body_p (node->decl)
+      if (!cgraph_function_with_gimple_body_p (node)
 	  || node->clone_of)
 	continue;
 
       vi = create_function_info_for (node->decl,
-				     alias_get_name (node->decl));
-
-      /* Associate the varinfo node with all aliases.  */
-      for (alias = node->same_body; alias; alias = alias->next)
-	insert_vi_for_tree (alias->decl, vi);
+			             alias_get_name (node->decl));
+      cgraph_for_node_and_aliases (node, associate_varinfo_to_alias, vi, true);
     }
 
   /* Create constraints for global variables and their initializers.  */
   for (var = varpool_nodes; var; var = var->next)
     {
-      struct varpool_node *alias;
-      varinfo_t vi;
+      if (var->alias)
+	continue;
 
-      vi = get_vi_for_tree (var->decl);
-
-      /* Associate the varinfo node with all aliases.  */
-      for (alias = var->extra_name; alias; alias = alias->next)
-	insert_vi_for_tree (alias->decl, vi);
+      get_vi_for_tree (var->decl);
     }
 
   if (dump_file)
@@ -6737,7 +6770,7 @@ ipa_pta_execute (void)
       tree old_func_decl;
 
       /* Nodes without a body are not interesting.  */
-      if (!gimple_has_body_p (node->decl)
+      if (!cgraph_function_with_gimple_body_p (node)
 	  || node->clone_of)
 	continue;
 
@@ -6846,7 +6879,7 @@ ipa_pta_execute (void)
       struct cgraph_edge *e;
 
       /* Nodes without a body are not interesting.  */
-      if (!gimple_has_body_p (node->decl)
+      if (!cgraph_function_with_gimple_body_p (node)
 	  || node->clone_of)
 	continue;
 

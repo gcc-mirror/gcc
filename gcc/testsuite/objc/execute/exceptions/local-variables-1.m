@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#import "../../../objc-obj-c++-shared/Object1.h"
+#import "../../../objc-obj-c++-shared/TestsuiteObject.m"
 
 int gi1 = 9, gi2 = 19;
 float gf1 = 9.0, gf2 = 19.0;
@@ -29,13 +29,13 @@ void foo (int arg1, float *arg2)
     local6 = 18.0;
     pi = &gi2;
     pf = &gf2;
-    obj2 = obj1 = [Object new];
+    obj2 = obj1 = [TestsuiteObject new];
     arg1 = 17;
     arg2 = &gf2;
     
-    @throw [Object new];
+    @throw [TestsuiteObject new];
   }
-  @catch (Object *obj) {
+  @catch (TestsuiteObject *obj) {
     if (local1 != 123 || local2 != 345 || local3 != 5.0 || local4 != 6.0
        || local5 != 17 || local6 != 18.0) {
       printf("Abort 1\n");
@@ -60,4 +60,4 @@ int main(void) {
   foo(15, &gf1);
   return 0;
 }
-#import "../../../objc-obj-c++-shared/Object1-implementation.h"
+

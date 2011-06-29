@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jeff Law  <law@redhat.com>
 
@@ -652,6 +652,27 @@ thread_around_empty_block (edge taken_edge,
   return NULL;
 }
       
+/* E1 and E2 are edges into the same basic block.  Return TRUE if the
+   PHI arguments associated with those edges are equal or there are no
+   PHI arguments, otherwise return FALSE.  */
+
+static bool
+phi_args_equal_on_edges (edge e1, edge e2)
+{
+  gimple_stmt_iterator gsi;
+  int indx1 = e1->dest_idx;
+  int indx2 = e2->dest_idx;
+
+  for (gsi = gsi_start_phis (e1->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple phi = gsi_stmt (gsi);
+
+      if (!operand_equal_p (gimple_phi_arg_def (phi, indx1),
+			    gimple_phi_arg_def (phi, indx2), 0))
+	return false;
+    }
+  return true;
+}
 
 /* We are exiting E->src, see if E->dest ends with a conditional
    jump which has a known value when reached via E.
@@ -770,10 +791,72 @@ thread_across_edge (gimple dummy_cond,
 	    }
 
 	  remove_temporary_equivalences (stack);
-	  register_jump_thread (e, taken_edge);
+	  register_jump_thread (e, taken_edge, NULL);
 	  return;
 	}
     }
+
+ /* We were unable to determine what out edge from E->dest is taken.  However,
+    we might still be able to thread through successors of E->dest.  This
+    often occurs when E->dest is a joiner block which then fans back out
+    based on redundant tests.
+
+    If so, we'll copy E->dest and redirect the appropriate predecessor to
+    the copy.  Within the copy of E->dest, we'll thread one or more edges
+    to points deeper in the CFG.
+
+    This is a stopgap until we have a more structured approach to path
+    isolation.  */
+  {
+    edge e2, e3, taken_edge;
+    edge_iterator ei;
+    bool found = false;
+    bitmap visited = BITMAP_ALLOC (NULL);
+
+    /* Look at each successor of E->dest to see if we can thread through it.  */
+    FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)
+      {
+	/* Avoid threading to any block we have already visited.  */
+	bitmap_clear (visited);
+	bitmap_set_bit (visited, taken_edge->dest->index);
+	bitmap_set_bit (visited, e->dest->index);
+
+	/* Record whether or not we were able to thread through a successor
+	   of E->dest.  */
+	found = false;
+	e3 = taken_edge;
+	do
+	  {
+	    e2 = thread_around_empty_block (e3,
+				            dummy_cond,
+				            handle_dominating_asserts,
+				            simplify,
+				            visited);
+	    if (e2)
+	      {
+	        e3 = e2;
+		found = true;
+	      }
+	  }
+        while (e2);
+
+	/* If we were able to thread through a successor of E->dest, then
+	   record the jump threading opportunity.  */
+	if (found)
+	  {
+	    edge tmp;
+	    /* If there is already an edge from the block to be duplicated
+	       (E2->src) to the final target (E3->dest), then make sure that
+	       the PHI args associated with the edges E2 and E3 are the
+	       same.  */
+	    tmp = find_edge (taken_edge->src, e3->dest);
+	    if (!tmp || phi_args_equal_on_edges (tmp, e3))
+	      register_jump_thread (e, taken_edge, e3);
+	  }
+
+      }
+    BITMAP_FREE (visited);
+  }
 
  fail:
   remove_temporary_equivalences (stack);

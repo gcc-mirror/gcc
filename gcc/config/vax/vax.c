@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for VAX.
    Copyright (C) 1987, 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002,
-   2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -56,9 +56,9 @@ static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 static int vax_address_cost_1 (rtx);
 static int vax_address_cost (rtx, bool);
 static bool vax_rtx_costs (rtx, int, int, int *, bool);
-static rtx vax_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx vax_function_arg (cumulative_args_t, enum machine_mode,
 			     const_tree, bool);
-static void vax_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void vax_function_arg_advance (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
 static rtx vax_struct_value_rtx (tree, int);
 static rtx vax_builtin_setjmp_frame_value (void);
@@ -85,9 +85,6 @@ static int vax_return_pops_args (tree, tree, int);
 #define TARGET_ASM_OUTPUT_MI_THUNK vax_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS vax_rtx_costs
@@ -2109,7 +2106,7 @@ vax_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
 /* On the VAX all args are pushed.  */
 
 static rtx
-vax_function_arg (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+vax_function_arg (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		  enum machine_mode mode ATTRIBUTE_UNUSED,
 		  const_tree type ATTRIBUTE_UNUSED,
 		  bool named ATTRIBUTE_UNUSED)
@@ -2122,9 +2119,11 @@ vax_function_arg (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
    may not be available.)  */
 
 static void
-vax_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+vax_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   *cum += (mode != BLKmode
 	   ? (GET_MODE_SIZE (mode) + 3) & ~3
 	   : (int_size_in_bytes (type) + 3) & ~3);

@@ -398,8 +398,12 @@ decode_statement (void)
       match ("intrinsic", gfc_match_intrinsic, ST_ATTR_DECL);
       break;
 
+    case 'l':
+      match ("lock", gfc_match_lock, ST_LOCK);
+      break;
+
     case 'm':
-      match ("module% procedure% ", gfc_match_modproc, ST_MODULE_PROC);
+      match ("module% procedure", gfc_match_modproc, ST_MODULE_PROC);
       match ("module", gfc_match_module, ST_MODULE);
       break;
 
@@ -449,6 +453,7 @@ decode_statement (void)
       break;
 
     case 'u':
+      match ("unlock", gfc_match_unlock, ST_UNLOCK);
       match ("use", gfc_match_use, ST_USE);
       break;
 
@@ -953,7 +958,8 @@ next_statement (void)
   case ST_ASSIGNMENT: case ST_ARITHMETIC_IF: case ST_WHERE: case ST_FORALL: \
   case ST_LABEL_ASSIGNMENT: case ST_FLUSH: case ST_OMP_FLUSH: \
   case ST_OMP_BARRIER: case ST_OMP_TASKWAIT: case ST_ERROR_STOP: \
-  case ST_SYNC_ALL: case ST_SYNC_IMAGES: case ST_SYNC_MEMORY
+  case ST_SYNC_ALL: case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: \
+  case ST_LOCK: case ST_UNLOCK
 
 /* Statements that mark other executable statements.  */
 
@@ -1334,6 +1340,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_INTERFACE:
       p = "INTERFACE";
       break;
+    case ST_LOCK:
+      p = "LOCK";
+      break;
     case ST_PARAMETER:
       p = "PARAMETER";
       break;
@@ -1393,6 +1402,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_TYPE:
       p = "TYPE";
+      break;
+    case ST_UNLOCK:
+      p = "UNLOCK";
       break;
     case ST_USE:
       p = "USE";
@@ -2108,13 +2120,15 @@ endType:
     {
       /* Look for allocatable components.  */
       if (c->attr.allocatable
-	  || (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.allocatable)
+	  || (c->ts.type == BT_CLASS && c->attr.class_ok
+	      && CLASS_DATA (c)->attr.allocatable)
 	  || (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.alloc_comp))
 	sym->attr.alloc_comp = 1;
 
       /* Look for pointer components.  */
       if (c->attr.pointer
-	  || (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.class_pointer)
+	  || (c->ts.type == BT_CLASS && c->attr.class_ok
+	      && CLASS_DATA (c)->attr.class_pointer)
 	  || (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.pointer_comp))
 	sym->attr.pointer_comp = 1;
 
@@ -2128,6 +2142,13 @@ endType:
       if (c->attr.codimension
 	  || (c->attr.coarray_comp && !c->attr.pointer && !c->attr.allocatable))
 	sym->attr.coarray_comp = 1;
+
+      /* Looking for lock_type components.  */
+      if (c->attr.lock_comp
+	  || (sym->ts.type == BT_DERIVED
+	      && c->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	      && c->ts.u.derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE))
+	sym->attr.lock_comp = 1;
 
       /* Look for private components.  */
       if (sym->component_access == ACCESS_PRIVATE

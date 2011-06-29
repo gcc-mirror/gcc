@@ -72,8 +72,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  const size_type __old_size = size();
 	  pointer __tmp = _M_allocate_and_copy(__n,
-		 _GLIBCXX_MAKE_MOVE_ITERATOR(this->_M_impl._M_start),
-		 _GLIBCXX_MAKE_MOVE_ITERATOR(this->_M_impl._M_finish));
+	    _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(this->_M_impl._M_start),
+	    _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(this->_M_impl._M_finish));
 	  std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
 			_M_get_Tp_allocator());
 	  _M_deallocate(this->_M_impl._M_start,
@@ -337,17 +337,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 	      __new_finish = 0;
 
-	      __new_finish =
-		std::__uninitialized_move_a(this->_M_impl._M_start,
-					    __position.base(), __new_start,
-					    _M_get_Tp_allocator());
+	      __new_finish
+		= std::__uninitialized_move_if_noexcept_a
+		(this->_M_impl._M_start, __position.base(),
+		 __new_start, _M_get_Tp_allocator());
+
 	      ++__new_finish;
 
-	      __new_finish =
-		std::__uninitialized_move_a(__position.base(),
-					    this->_M_impl._M_finish,
-					    __new_finish,
-					    _M_get_Tp_allocator());
+	      __new_finish
+		= std::__uninitialized_move_if_noexcept_a
+		(__position.base(), this->_M_impl._M_finish,
+		 __new_finish, _M_get_Tp_allocator());
 	    }
           __catch(...)
 	    {
@@ -423,18 +423,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 						_M_get_Tp_allocator());
 		  __new_finish = 0;
 
-		  __new_finish =
-		    std::__uninitialized_move_a(this->_M_impl._M_start,
-						__position.base(),
-						__new_start,
-						_M_get_Tp_allocator());
+		  __new_finish
+		    = std::__uninitialized_move_if_noexcept_a
+		    (this->_M_impl._M_start, __position.base(),
+		     __new_start, _M_get_Tp_allocator());
+
 		  __new_finish += __n;
 
-		  __new_finish =
-		    std::__uninitialized_move_a(__position.base(),
-						this->_M_impl._M_finish,
-						__new_finish,
-						_M_get_Tp_allocator());
+		  __new_finish
+		    = std::__uninitialized_move_if_noexcept_a
+		    (__position.base(), this->_M_impl._M_finish,
+		     __new_finish, _M_get_Tp_allocator());
 		}
 	      __catch(...)
 		{
@@ -484,11 +483,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      pointer __new_finish(__new_start);
 	      __try
 		{
-		  __new_finish =
-		    std::__uninitialized_move_a(this->_M_impl._M_start,
-						this->_M_impl._M_finish,
-						__new_start,
-						_M_get_Tp_allocator());
+		  __new_finish
+		    = std::__uninitialized_move_if_noexcept_a
+		    (this->_M_impl._M_start, this->_M_impl._M_finish,
+		     __new_start, _M_get_Tp_allocator());
 		  std::__uninitialized_default_n_a(__new_finish, __n,
 						   _M_get_Tp_allocator());
 		  __new_finish += __n;
@@ -510,6 +508,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      this->_M_impl._M_end_of_storage = __new_start + __len;
 	    }
 	}
+    }
+
+  template<typename _Tp, typename _Alloc>
+    bool
+    vector<_Tp, _Alloc>::
+    _M_shrink_to_fit()
+    {
+      if (capacity() == size())
+	return false;
+      return std::__shrink_to_fit_aux<vector>::_S_do_it(*this);
     }
 #endif
 
@@ -577,20 +585,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		pointer __new_finish(__new_start);
 		__try
 		  {
-		    __new_finish =
-		      std::__uninitialized_move_a(this->_M_impl._M_start,
-						  __position.base(),
-						  __new_start,
-						  _M_get_Tp_allocator());
-		    __new_finish =
-		      std::__uninitialized_copy_a(__first, __last,
-						  __new_finish,
-						  _M_get_Tp_allocator());
-		    __new_finish =
-		      std::__uninitialized_move_a(__position.base(),
-						  this->_M_impl._M_finish,
-						  __new_finish,
-						  _M_get_Tp_allocator());
+		    __new_finish
+		      = std::__uninitialized_move_if_noexcept_a
+		      (this->_M_impl._M_start, __position.base(),
+		       __new_start, _M_get_Tp_allocator());
+		    __new_finish
+		      = std::__uninitialized_copy_a(__first, __last,
+						    __new_finish,
+						    _M_get_Tp_allocator());
+		    __new_finish
+		      = std::__uninitialized_move_if_noexcept_a
+		      (__position.base(), this->_M_impl._M_finish,
+		       __new_finish, _M_get_Tp_allocator());
 		  }
 		__catch(...)
 		  {
@@ -613,24 +619,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 
   // vector<bool>
-
   template<typename _Alloc>
     void
     vector<bool, _Alloc>::
-    reserve(size_type __n)
+    _M_reallocate(size_type __n)
     {
-      if (__n > this->max_size())
-	__throw_length_error(__N("vector::reserve"));
-      if (this->capacity() < __n)
-	{
-	  _Bit_type* __q = this->_M_allocate(__n);
-	  this->_M_impl._M_finish = _M_copy_aligned(begin(), end(),
-						    iterator(__q, 0));
-	  this->_M_deallocate();
-	  this->_M_impl._M_start = iterator(__q, 0);
-	  this->_M_impl._M_end_of_storage = (__q + (__n + int(_S_word_bit) - 1)
-					     / int(_S_word_bit));
-	}
+      _Bit_type* __q = this->_M_allocate(__n);
+      this->_M_impl._M_finish = _M_copy_aligned(begin(), end(),
+						iterator(__q, 0));
+      this->_M_deallocate();
+      this->_M_impl._M_start = iterator(__q, 0);
+      this->_M_impl._M_end_of_storage = __q + _S_nword(__n);
     }
 
   template<typename _Alloc>
@@ -658,9 +657,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  this->_M_impl._M_finish = std::copy(__position, end(),
 					      __i + difference_type(__n));
 	  this->_M_deallocate();
-	  this->_M_impl._M_end_of_storage = (__q + ((__len
-						     + int(_S_word_bit) - 1)
-						    / int(_S_word_bit)));
+	  this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
 	  this->_M_impl._M_start = iterator(__q, 0);
 	}
     }
@@ -693,10 +690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		__i = std::copy(__first, __last, __i);
 		this->_M_impl._M_finish = std::copy(__position, end(), __i);
 		this->_M_deallocate();
-		this->_M_impl._M_end_of_storage = (__q
-						   + ((__len
-						       + int(_S_word_bit) - 1)
-						      / int(_S_word_bit)));
+		this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
 		this->_M_impl._M_start = iterator(__q, 0);
 	      }
 	  }
@@ -724,12 +718,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  *__i++ = __x;
 	  this->_M_impl._M_finish = std::copy(__position, end(), __i);
 	  this->_M_deallocate();
-	  this->_M_impl._M_end_of_storage = (__q + ((__len
-						     + int(_S_word_bit) - 1)
-						    / int(_S_word_bit)));
+	  this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
 	  this->_M_impl._M_start = iterator(__q, 0);
 	}
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Alloc>
+    bool
+    vector<bool, _Alloc>::
+    _M_shrink_to_fit()
+    {
+      if (capacity() - size() < int(_S_word_bit))
+	return false;
+      __try
+	{
+	  _M_reallocate(size());
+	  return true;
+	}
+      __catch(...)
+	{ return false; }
+    }
+#endif
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
 } // namespace std

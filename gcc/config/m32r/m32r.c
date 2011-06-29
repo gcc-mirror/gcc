@@ -56,8 +56,6 @@ static char m32r_punct_chars[256];
 #define LIT_NAME_P(NAME) ((NAME)[0] == '*' && (NAME)[1] == '.')
 
 /* Forward declaration.  */
-static bool  m32r_handle_option (struct gcc_options *, struct gcc_options *,
-				 const struct cl_decoded_option *, location_t);
 static void  m32r_option_override (void);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
@@ -83,18 +81,18 @@ static bool m32r_return_in_memory (const_tree, const_tree);
 static rtx m32r_function_value (const_tree, const_tree, bool);
 static rtx m32r_libcall_value (enum machine_mode, const_rtx);
 static bool m32r_function_value_regno_p (const unsigned int);
-static void m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+static void m32r_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
 static bool m32r_rtx_costs (rtx, int, int, int *, bool speed);
 static int m32r_memory_move_cost (enum machine_mode, reg_class_t, bool);
-static bool m32r_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+static bool m32r_pass_by_reference (cumulative_args_t, enum machine_mode,
 				    const_tree, bool);
-static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int m32r_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				   tree, bool);
-static rtx m32r_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx m32r_function_arg (cumulative_args_t, enum machine_mode,
 			      const_tree, bool);
-static void m32r_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void m32r_function_arg_advance (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
 static bool m32r_can_eliminate (const int, const int);
 static void m32r_conditional_register_usage (void);
@@ -112,13 +110,6 @@ static const struct attribute_spec m32r_attribute_table[] =
     false },
   { NULL,        0, 0, false, false, false, NULL, false }
 };
-
-static const struct default_options m32r_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fregmove, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -156,14 +147,8 @@ static const struct default_options m32r_option_optimization_table[] =
 #undef  TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE m32r_issue_rate
 
-#undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS TARGET_CPU_DEFAULT
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION m32r_handle_option
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE m32r_option_override
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE m32r_option_optimization_table
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
@@ -215,40 +200,8 @@ static const struct default_options m32r_option_optimization_table[] =
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P m32r_legitimate_constant_p
 
-#undef  TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO		sjlj_except_unwind_info
-
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-m32r_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_m32r:
-      opts->x_target_flags &= ~(MASK_M32R2 | MASK_M32RX);
-      return true;
-
-    case OPT_mno_flush_func:
-      opts->x_m32r_cache_flush_func = NULL;
-      return true;
-
-    case OPT_mflush_trap_:
-      return value <= 15;
-
-    default:
-      return true;
-    }
-}
-
 /* Called by m32r_option_override to initialize various things.  */
 
 void
@@ -695,7 +648,7 @@ memreg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 /* Return nonzero if TYPE must be passed by indirect reference.  */
 
 static bool
-m32r_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+m32r_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
@@ -1185,9 +1138,11 @@ gen_split_move_double (rtx operands[])
 
 
 static int
-m32r_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+m32r_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 			tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   int words;
   unsigned int size =
     (((mode == BLKmode && type)
@@ -1243,10 +1198,12 @@ m32r_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    and the rest are pushed.  */
 
 static rtx
-m32r_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+m32r_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		   const_tree type ATTRIBUTE_UNUSED,
 		   bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   return (PASS_IN_REG_P (*cum, mode, type)
 	  ? gen_rtx_REG (mode, ROUND_ADVANCE_CUM (*cum, mode, type))
 	  : NULL_RTX);
@@ -1257,9 +1214,11 @@ m32r_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-m32r_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+m32r_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   *cum = (ROUND_ADVANCE_CUM (*cum, mode, type)
 	  + ROUND_ADVANCE_ARG (mode, type));
 }
@@ -1269,7 +1228,9 @@ m32r_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 static bool
 m32r_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  return m32r_pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  cumulative_args_t dummy = pack_cumulative_args (NULL);
+
+  return m32r_pass_by_reference (dummy, TYPE_MODE (type), type, false);
 }
 
 /* Worker function for TARGET_FUNCTION_VALUE.  */
@@ -1309,7 +1270,7 @@ m32r_function_value_regno_p (const unsigned int regno)
    and mode MODE, and we rely on this fact.  */
 
 static void
-m32r_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+m32r_setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
 			     tree type, int *pretend_size, int no_rtl)
 {
   int first_anon_arg;
@@ -1320,7 +1281,7 @@ m32r_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   /* All BLKmode values are passed by reference.  */
   gcc_assert (mode != BLKmode);
 
-  first_anon_arg = (ROUND_ADVANCE_CUM (*cum, mode, type)
+  first_anon_arg = (ROUND_ADVANCE_CUM (*get_cumulative_args (cum), mode, type)
 		    + ROUND_ADVANCE_ARG (mode, type));
 
   if (first_anon_arg < M32R_MAX_PARM_REGS)
@@ -1380,10 +1341,7 @@ m32r_issue_rate (void)
 }
 
 /* Cost functions.  */
-
-/* Implement TARGET_HANDLE_OPTION.
-
-   Memory is 3 times as expensive as registers.
+/* Memory is 3 times as expensive as registers.
    ??? Is that the right way to look at it?  */
 
 static int

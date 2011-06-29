@@ -27,6 +27,6 @@ void operator delete(void *p,Pool<T>& pool)
 int main ()
 {
   Pool<int> pool;
-  new (pool) A();		// { dg-message "instantiated" }
+  new (pool) A();		// { dg-message "required" }
   return 0;
 }

@@ -26,10 +26,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/common.h"
 #include "objc-private/error.h"
 
-/* __USE_FIXED_PROTOTYPES__ used to be required to get prototypes for
-   malloc, free, etc. on some platforms.  It is unclear if we still
-   need it, but it can't hurt.  */
-#define __USE_FIXED_PROTOTYPES__
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -44,54 +40,4 @@ _objc_abort (const char *fmt, ...)
   vfprintf (stderr, fmt, ap);
   abort ();
   va_end (ap);
-}
-
-/* The rest of the file is deprecated.  */
-#include "objc/objc-api.h" /* For objc_error_handler.  */
-
-/*
-** Error handler function
-** NULL so that default is to just print to stderr
-*/
-static objc_error_handler _objc_error_handler = NULL;
-
-/* Trigger an objc error */
-void
-objc_error (id object, int code, const char *fmt, ...)
-{
-  va_list ap;
-
-  va_start (ap, fmt);
-  objc_verror (object, code, fmt, ap);
-  va_end (ap);
-}
-
-/* Trigger an objc error */
-void
-objc_verror (id object, int code, const char *fmt, va_list ap)
-{
-  BOOL result = NO;
-
-  /* Call the error handler if its there
-     Otherwise print to stderr */
-  if (_objc_error_handler)
-    result = (*_objc_error_handler) (object, code, fmt, ap);
-  else
-    vfprintf (stderr, fmt, ap);
-
-  /* Continue if the error handler says its ok
-     Otherwise abort the program */
-  if (result)
-    return;
-  else
-    abort ();
-}
-
-/* Set the error handler */
-objc_error_handler
-objc_set_error_handler (objc_error_handler func)
-{
-  objc_error_handler temp = _objc_error_handler;
-  _objc_error_handler = func;
-  return temp;
 }

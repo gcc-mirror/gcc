@@ -107,3 +107,8 @@
   "A memory address based on Y or Z pointer with displacement."
   (and (match_code "mem")
        (match_test "extra_constraint_Q (op)")))
+
+(define_constraint "C04"
+  "Constant integer 4."
+  (and (match_code "const_int")
+       (match_test "ival == 4")))

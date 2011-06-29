@@ -8,9 +8,9 @@ class X {
 	class Y : public T	// { dg-error "base type .* fails to be" }
 	{
 	};
-	Y y;			// { dg-message "instantiated" }
+	Y y;			// { dg-message "required" }
 };
 int main() {
-	X<int> x;		// { dg-message "instantiated" }
+	X<int> x;		// { dg-message "required" }
 }
 

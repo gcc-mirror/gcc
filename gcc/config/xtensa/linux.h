@@ -64,5 +64,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef DBX_REGISTER_NUMBER
 
-#define MD_UNWIND_SUPPORT "config/xtensa/linux-unwind.h"
-

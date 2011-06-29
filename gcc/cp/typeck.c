@@ -830,7 +830,8 @@ merge_types (tree t1, tree t2)
 	gcc_assert (type_memfn_quals (t1) == type_memfn_quals (t2));
 	rval = apply_memfn_quals (rval, type_memfn_quals (t1));
 	raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
-					     TYPE_RAISES_EXCEPTIONS (t2));
+					     TYPE_RAISES_EXCEPTIONS (t2),
+					     NULL_TREE);
 	t1 = build_exception_variant (rval, raises);
 	break;
       }
@@ -841,7 +842,8 @@ merge_types (tree t1, tree t2)
 	   is just the main variant of this.  */
 	tree basetype = class_of_this_parm (t2);
 	tree raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
-						  TYPE_RAISES_EXCEPTIONS (t2));
+						  TYPE_RAISES_EXCEPTIONS (t2),
+						  NULL_TREE);
 	tree t3;
 
 	/* If this was a member function type, get back to the
@@ -1953,6 +1955,9 @@ perform_integral_promotions (tree expr)
   if (!type || TREE_CODE (type) != ENUMERAL_TYPE)
     type = TREE_TYPE (expr);
   gcc_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type));
+  /* Scoped enums don't promote.  */
+  if (SCOPED_ENUM_P (type))
+    return expr;
   promoted_type = type_promotes_to (type);
   if (type != promoted_type)
     expr = cp_convert (promoted_type, expr);
@@ -2032,7 +2037,7 @@ rationalize_conditional_expr (enum tree_code code, tree t,
 						    ? LE_EXPR : GE_EXPR),
 						   op0, TREE_CODE (op0),
 						   op1, TREE_CODE (op1),
-						   /*overloaded_p=*/NULL,
+						   /*overload=*/NULL,
 						   complain),
                                 cp_build_unary_op (code, op0, 0, complain),
                                 cp_build_unary_op (code, op1, 0, complain),
@@ -2676,8 +2681,7 @@ build_x_indirect_ref (tree expr, ref_operator errorstring,
 
   if (processing_template_decl)
     {
-      /* Retain the type if we know the operand is a pointer so that
-	 describable_type doesn't make auto deduction break.  */
+      /* Retain the type if we know the operand is a pointer.  */
       if (TREE_TYPE (expr) && POINTER_TYPE_P (TREE_TYPE (expr)))
 	return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
       if (type_dependent_expression_p (expr))
@@ -2686,7 +2690,7 @@ build_x_indirect_ref (tree expr, ref_operator errorstring,
     }
 
   rval = build_new_op (INDIRECT_REF, LOOKUP_NORMAL, expr, NULL_TREE,
-		       NULL_TREE, /*overloaded_p=*/NULL, complain);
+		       NULL_TREE, /*overload=*/NULL, complain);
   if (!rval)
     rval = cp_build_indirect_ref (expr, errorstring, complain);
 
@@ -3494,7 +3498,7 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
 
 tree
 build_x_binary_op (enum tree_code code, tree arg1, enum tree_code arg1_code,
-		   tree arg2, enum tree_code arg2_code, bool *overloaded_p,
+		   tree arg2, enum tree_code arg2_code, tree *overload,
 		   tsubst_flags_t complain)
 {
   tree orig_arg1;
@@ -3517,7 +3521,7 @@ build_x_binary_op (enum tree_code code, tree arg1, enum tree_code arg1_code,
     expr = build_m_component_ref (arg1, arg2);
   else
     expr = build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE,
-			 overloaded_p, complain);
+			 overload, complain);
 
   /* Check for cases such as x+y<<z which users are likely to
      misinterpret.  But don't warn about obj << x + y, since that is a
@@ -3557,7 +3561,7 @@ build_x_array_ref (tree arg1, tree arg2, tsubst_flags_t complain)
     }
 
   expr = build_new_op (ARRAY_REF, LOOKUP_NORMAL, arg1, arg2, NULL_TREE,
-		       /*overloaded_p=*/NULL, complain);
+		       /*overload=*/NULL, complain);
 
   if (processing_template_decl && expr != error_mark_node)
     return build_min_non_dep (ARRAY_REF, expr, orig_arg1, orig_arg2,
@@ -4555,7 +4559,7 @@ build_x_unary_op (enum tree_code code, tree xarg, tsubst_flags_t complain)
     /* Don't look for a function.  */;
   else
     exp = build_new_op (code, LOOKUP_NORMAL, xarg, NULL_TREE, NULL_TREE,
-			/*overloaded_p=*/NULL, complain);
+			/*overload=*/NULL, complain);
   if (!exp && code == ADDR_EXPR)
     {
       if (is_overloaded_fn (xarg))
@@ -5542,7 +5546,7 @@ build_x_compound_expr (tree op1, tree op2, tsubst_flags_t complain)
     }
 
   result = build_new_op (COMPOUND_EXPR, LOOKUP_NORMAL, op1, op2, NULL_TREE,
-			 /*overloaded_p=*/NULL, complain);
+			 /*overload=*/NULL, complain);
   if (!result)
     result = cp_build_compound_expr (op1, op2, complain);
 
@@ -6647,7 +6651,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	    {
 	      result = build_new_op (MODIFY_EXPR, LOOKUP_NORMAL,
 				     lhs, rhs, make_node (NOP_EXPR),
-				     /*overloaded_p=*/NULL, 
+				     /*overload=*/NULL,
 				     complain);
 	      if (result == NULL_TREE)
 		return error_mark_node;
@@ -6830,7 +6834,7 @@ build_x_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
     {
       tree rval = build_new_op (MODIFY_EXPR, LOOKUP_NORMAL, lhs, rhs,
 				make_node (modifycode),
-				/*overloaded_p=*/NULL,
+				/*overload=*/NULL,
 				complain);
       if (rval)
 	{

@@ -837,7 +837,7 @@ struct rtl_opt_pass pass_compute_alignments =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func | TODO_verify_rtl_sharing
+  TODO_verify_rtl_sharing
   | TODO_ggc_collect                    /* todo_flags_finish */
  }
 };
@@ -4337,7 +4337,7 @@ struct rtl_opt_pass pass_shorten_branches =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func                        /* todo_flags_finish */
+  0                                     /* todo_flags_finish */
  }
 };
 
@@ -4361,10 +4361,11 @@ rest_of_clean_state (void)
 	}
       else
 	{
-	  dump_function_header (final_output, current_function_decl);
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  if (flag_compare_debug_opt || flag_compare_debug)
 	    dump_flags |= TDF_NOUID;
+	  dump_function_header (final_output, current_function_decl,
+				dump_flags);
 	  final_insns_dump_p = true;
 
 	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))

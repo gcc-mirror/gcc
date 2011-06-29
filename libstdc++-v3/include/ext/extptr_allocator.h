@@ -1,6 +1,6 @@
 // <extptr_allocator.h> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,7 @@
 #define _EXTPTR_ALLOCATOR_H 1
 
 #include <memory>
-#include <limits>
+#include <ext/numeric_traits.h>
 #include <ext/pointer.h>
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
@@ -72,23 +72,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         struct rebind
         { typedef _ExtPtr_allocator<_Up> other; };
 
-      _ExtPtr_allocator() throw() 
+      _ExtPtr_allocator() _GLIBCXX_USE_NOEXCEPT 
       : _M_real_alloc() { }
 
-      _ExtPtr_allocator(const _ExtPtr_allocator &__rarg) throw()
+      _ExtPtr_allocator(const _ExtPtr_allocator& __rarg) _GLIBCXX_USE_NOEXCEPT
       : _M_real_alloc(__rarg._M_real_alloc) { }
 
       template<typename _Up>
-        _ExtPtr_allocator(const _ExtPtr_allocator<_Up>& __rarg) throw()
+        _ExtPtr_allocator(const _ExtPtr_allocator<_Up>& __rarg)
+	_GLIBCXX_USE_NOEXCEPT
         : _M_real_alloc(__rarg._M_getUnderlyingImp()) { }
 
-      ~_ExtPtr_allocator() throw()
+      ~_ExtPtr_allocator() _GLIBCXX_USE_NOEXCEPT
       { }
 
-      pointer address(reference __x) const
+      pointer address(reference __x) const _GLIBCXX_NOEXCEPT
       { return std::__addressof(__x); }
 
-      const_pointer address(const_reference __x) const
+      const_pointer address(const_reference __x) const _GLIBCXX_NOEXCEPT
       { return std::__addressof(__x); }
 
       pointer allocate(size_type __n, void* __hint = 0)
@@ -97,8 +98,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void deallocate(pointer __p, size_type __n)
       { _M_real_alloc.deallocate(__p.get(), __n); }
 
-      size_type max_size() const throw()
-      { return std::numeric_limits<size_type>::max() / sizeof(_Tp); }
+      size_type max_size() const _GLIBCXX_USE_NOEXCEPT
+      { return __numeric_traits<size_type>::__max / sizeof(_Tp); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _Up, typename... _Args>
@@ -106,11 +107,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         construct(_Up* __p, _Args&&... __args)
 	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
 
+      template<typename... _Args>
+        void
+        construct(pointer __p, _Args&&... __args)
+	{ construct(__p.get(), std::forward<_Args>(__args)...); }
+
       template<typename _Up>
         void 
         destroy(_Up* __p)
         { __p->~_Up(); }
+
+      void destroy(pointer __p)
+      { destroy(__p.get()); }
+
 #else
+
       void construct(pointer __p, const _Tp& __val)
       { ::new(__p.get()) _Tp(__val); }
 

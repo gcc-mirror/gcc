@@ -165,9 +165,6 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   struct cgraph_node *prev_sibling_clone;
   struct cgraph_node *clones;
   struct cgraph_node *clone_of;
-  /* For normal nodes pointer to the list of alias and thunk nodes,
-     in alias/thunk nodes pointer to the normal node.  */
-  struct cgraph_node *same_body;
   /* Circular list of nodes in the same comdat group if non-NULL.  */
   struct cgraph_node *same_comdat_group;
   /* For functions with many calls sites it holds map from call expression
@@ -236,8 +233,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   unsigned process : 1;
   /* Set for aliases once they got through assemble_alias.  */
   unsigned alias : 1;
-  /* Set for alias and thunk nodes, same_body points to the node they are alias
-     of and they are linked through the next/previous pointers.  */
+  /* Set for aliases created as C++ same body aliases.  */
   unsigned same_body_alias : 1;
   /* How commonly executed the node is.  Initialized during branch
      probabilities pass.  */
@@ -384,13 +380,12 @@ DEF_VEC_ALLOC_P(cgraph_edge_p,heap);
 
 struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
   tree decl;
+  /* For aliases points to declaration DECL is alias of.  */
+  tree alias_of;
   /* Pointer to the next function in varpool_nodes.  */
   struct varpool_node *next, *prev;
   /* Pointer to the next function in varpool_nodes_queue.  */
   struct varpool_node *next_needed, *prev_needed;
-  /* For normal nodes a pointer to the first extra name alias.  For alias
-     nodes a pointer to the normal node.  */
-  struct varpool_node *extra_name;
   /* Circular list of nodes in the same comdat group if non-NULL.  */
   struct varpool_node *same_comdat_group;
   struct ipa_ref_list ref_list;
@@ -419,6 +414,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
   /* Set for aliases once they got through assemble_alias.  Also set for
      extra name aliases in varpool_extra_name_alias.  */
   unsigned alias : 1;
+  unsigned extra_name_alias : 1;
   /* Set when variable is used from other LTRANS partition.  */
   unsigned used_from_other_partition : 1;
   /* Set when variable is available in the other LTRANS partition.
@@ -463,6 +459,7 @@ extern GTY(()) struct cgraph_node *cgraph_new_nodes;
 
 extern GTY(()) struct cgraph_asm_node *cgraph_asm_nodes;
 extern GTY(()) int cgraph_order;
+extern bool same_body_aliases_done;
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -488,7 +485,6 @@ struct cgraph_node * cgraph_get_create_node (tree);
 struct cgraph_node * cgraph_same_body_alias (struct cgraph_node *, tree, tree);
 struct cgraph_node * cgraph_add_thunk (struct cgraph_node *, tree, tree, bool, HOST_WIDE_INT,
 				       HOST_WIDE_INT, tree, tree);
-void cgraph_remove_same_body_alias (struct cgraph_node *);
 struct cgraph_node *cgraph_node_for_asm (tree);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, gimple);
 void cgraph_set_call_stmt (struct cgraph_edge *, gimple);
@@ -508,10 +504,12 @@ struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
 					int, bool, VEC(cgraph_edge_p,heap) *,
 					bool);
+struct cgraph_node *cgraph_create_function_alias (tree, tree);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *,
 			      HOST_WIDE_INT);
+bool cgraph_only_called_directly_p (struct cgraph_node *);
 
 struct cgraph_asm_node *cgraph_add_asm_node (tree);
 
@@ -537,9 +535,19 @@ bool cgraph_will_be_removed_from_program_if_no_direct_calls
   (struct cgraph_node *node);
 bool cgraph_can_remove_if_no_direct_calls_and_refs_p
   (struct cgraph_node *node);
-bool resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution);
-bool cgraph_used_from_object_file_p (struct cgraph_node *node);
-bool varpool_used_from_object_file_p (struct varpool_node *node);
+bool cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node);
+bool resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution);
+bool cgraph_used_from_object_file_p (struct cgraph_node *);
+bool varpool_used_from_object_file_p (struct varpool_node *);
+bool cgraph_for_node_thunks_and_aliases (struct cgraph_node *,
+			                 bool (*) (struct cgraph_node *, void *),
+			                 void *,
+					 bool);
+bool cgraph_for_node_and_aliases (struct cgraph_node *,
+		                  bool (*) (struct cgraph_node *, void *),
+			          void *, bool);
+VEC (cgraph_edge_p, heap) * collect_callers_of_node (struct cgraph_node *node);
+
 
 /* In cgraphunit.c  */
 extern FILE *cgraph_dump_file;
@@ -567,6 +575,7 @@ void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*, bool, bi
 			       bitmap, basic_block);
 void record_references_in_initializer (tree, bool);
 bool cgraph_process_new_functions (void);
+void cgraph_process_same_body_aliases (void);
 
 bool cgraph_decide_is_function_needed (struct cgraph_node *, tree);
 
@@ -656,9 +665,13 @@ bool varpool_analyze_pending_decls (void);
 void varpool_remove_unreferenced_decls (void);
 void varpool_empty_needed_queue (void);
 struct varpool_node * varpool_extra_name_alias (tree, tree);
+struct varpool_node * varpool_create_variable_alias (tree, tree);
 const char * varpool_node_name (struct varpool_node *node);
 void varpool_reset_queue (void);
 bool const_value_known_p (tree);
+bool varpool_for_node_and_aliases (struct varpool_node *,
+		                   bool (*) (struct varpool_node *, void *),
+			           void *, bool);
 
 /* Walk all reachable static variables.  */
 #define FOR_EACH_STATIC_VARIABLE(node) \
@@ -736,7 +749,7 @@ cgraph_next_defined_function (struct cgraph_node *node)
 static inline bool
 cgraph_function_with_gimple_body_p (struct cgraph_node *node)
 {
-  return node->analyzed && !node->thunk.thunk_p;
+  return node->analyzed && !node->thunk.thunk_p && !node->alias;
 }
 
 /* Return first function with body defined.  */
@@ -899,12 +912,12 @@ varpool_node_set_nonempty_p (varpool_node_set set)
   return !VEC_empty (varpool_node_ptr, set->nodes);
 }
 
-/* Return true when function NODE is only called directly.
+/* Return true when function NODE is only called directly or it has alias.
    i.e. it is not externally visible, address was not taken and
    it is not used in any other non-standard way.  */
 
 static inline bool
-cgraph_only_called_directly_p (struct cgraph_node *node)
+cgraph_only_called_directly_or_aliased_p (struct cgraph_node *node)
 {
   gcc_assert (!node->global.inlined_to);
   return (!node->needed && !node->address_taken
@@ -912,18 +925,6 @@ cgraph_only_called_directly_p (struct cgraph_node *node)
 	  && !DECL_STATIC_CONSTRUCTOR (node->decl)
 	  && !DECL_STATIC_DESTRUCTOR (node->decl)
 	  && !node->local.externally_visible);
-}
-
-/* Return true when function NODE can be removed from callgraph
-   if all direct calls are eliminated.  */
-
-static inline bool
-cgraph_can_remove_if_no_direct_calls_p (struct cgraph_node *node)
-{
-  /* Extern inlines can always go, we will use the external definition.  */
-  if (DECL_EXTERNAL (node->decl))
-    return true;
-  return !node->address_taken && cgraph_can_remove_if_no_direct_calls_and_refs_p (node);
 }
 
 /* Return true when function NODE can be removed from callgraph
@@ -954,17 +955,131 @@ varpool_all_refs_explicit_p (struct varpool_node *vnode)
 /* Constant pool accessor function.  */
 htab_t constant_pool_htab (void);
 
+/* FIXME: inappropriate dependency of cgraph on IPA.  */
+#include "ipa-ref-inline.h"
+
+/* Return node that alias N is aliasing.  */
+
+static inline struct cgraph_node *
+cgraph_alias_aliased_node (struct cgraph_node *n)
+{
+  struct ipa_ref *ref;
+
+  ipa_ref_list_reference_iterate (&n->ref_list, 0, ref);
+  gcc_checking_assert (ref->use == IPA_REF_ALIAS);
+  if (ref->refered_type == IPA_REF_CGRAPH)
+    return ipa_ref_node (ref);
+  return NULL;
+}
+
+/* Return node that alias N is aliasing.  */
+
+static inline struct varpool_node *
+varpool_alias_aliased_node (struct varpool_node *n)
+{
+  struct ipa_ref *ref;
+
+  ipa_ref_list_reference_iterate (&n->ref_list, 0, ref);
+  gcc_checking_assert (ref->use == IPA_REF_ALIAS);
+  if (ref->refered_type == IPA_REF_VARPOOL)
+    return ipa_ref_varpool_node (ref);
+  return NULL;
+}
+
+/* Given NODE, walk the alias chain to return the function NODE is alias of.
+   Walk through thunk, too.
+   When AVAILABILITY is non-NULL, get minimal availablity in the chain.  */
+
+static inline struct cgraph_node *
+cgraph_function_node (struct cgraph_node *node, enum availability *availability)
+{
+  if (availability)
+    *availability = cgraph_function_body_availability (node);
+  while (node)
+    {
+      if (node->alias && node->analyzed)
+	node = cgraph_alias_aliased_node (node);
+      else if (node->thunk.thunk_p)
+	node = node->callees->callee;
+      else
+	return node;
+      if (node && availability)
+	{
+	  enum availability a;
+	  a = cgraph_function_body_availability (node);
+	  if (a < *availability)
+	    *availability = a;
+	}
+    }
+  if (availability)
+    *availability = AVAIL_NOT_AVAILABLE;
+  return NULL;
+}
+
+/* Given NODE, walk the alias chain to return the function NODE is alias of.
+   Do not walk through thunks.
+   When AVAILABILITY is non-NULL, get minimal availablity in the chain.  */
+
+static inline struct cgraph_node *
+cgraph_function_or_thunk_node (struct cgraph_node *node, enum availability *availability)
+{
+  if (availability)
+    *availability = cgraph_function_body_availability (node);
+  while (node)
+    {
+      if (node->alias && node->analyzed)
+	node = cgraph_alias_aliased_node (node);
+      else
+	return node;
+      if (node && availability)
+	{
+	  enum availability a;
+	  a = cgraph_function_body_availability (node);
+	  if (a < *availability)
+	    *availability = a;
+	}
+    }
+  if (availability)
+    *availability = AVAIL_NOT_AVAILABLE;
+  return NULL;
+}
+
+/* Given NODE, walk the alias chain to return the function NODE is alias of.
+   Do not walk through thunks.
+   When AVAILABILITY is non-NULL, get minimal availablity in the chain.  */
+
+static inline struct varpool_node *
+varpool_variable_node (struct varpool_node *node, enum availability *availability)
+{
+  if (availability)
+    *availability = cgraph_variable_initializer_availability (node);
+  while (node)
+    {
+      if (node->alias && node->analyzed)
+	node = varpool_alias_aliased_node (node);
+      else
+	return node;
+      if (node && availability)
+	{
+	  enum availability a;
+	  a = cgraph_variable_initializer_availability (node);
+	  if (a < *availability)
+	    *availability = a;
+	}
+    }
+  if (availability)
+    *availability = AVAIL_NOT_AVAILABLE;
+  return NULL;
+}
+
 /* Return true when the edge E represents a direct recursion.  */
 static inline bool
 cgraph_edge_recursive_p (struct cgraph_edge *e)
 {
+  struct cgraph_node *callee = cgraph_function_or_thunk_node (e->callee, NULL);
   if (e->caller->global.inlined_to)
-    return e->caller->global.inlined_to->decl == e->callee->decl;
+    return e->caller->global.inlined_to->decl == callee->decl;
   else
-    return e->caller->decl == e->callee->decl;
+    return e->caller->decl == callee->decl;
 }
-
-/* FIXME: inappropriate dependency of cgraph on IPA.  */
-#include "ipa-ref-inline.h"
-
 #endif  /* GCC_CGRAPH_H  */

@@ -1,3 +1,31 @@
+2011-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcj/49314
+	* gnu/gcj/convert/natIconv.cc (iconv_init): Pad in[] with NUL byte.
+
+2011-06-17  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/49461
+	* libjava/configure.ac (SYSTEMSPEC): Pass -no_pie for darwin11.
+	* libjava/configure: Regenerate.
+
+2011-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcj/49315
+	* include/solaris-signal.h: Rename to ...
+	* include/posix-signal.h: ... this.
+	(SA_FLAGS): Define.
+	(SIGNAL_HANDLER): Handle non-SA_SIGINFO case.
+	(sa_signal_handler): Define.
+	(_INIT_SIG_HANDLER): New macro.
+	(INIT_SEGV, INIT_FPE): Use it.
+	* configure.ac (SIGNAL_HANDLER): Use it on alpha*-dec-osf*,
+	mips-sgi-irix*, *-*-solaris2*
+	* configure: Regenerate.
+	* include/aix-signal.h: Refer to AIX.
+	* configure.host (alpha*-dec-osf*): Enable can_unwind_signal.
+	(mips-sgi-irix6*): Likewise.
+
 2011-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libgcj/49193

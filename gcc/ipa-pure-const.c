@@ -735,7 +735,7 @@ analyze_function (struct cgraph_node *fn, bool ipa)
 		    flags_from_decl_or_type (fn->decl),
 		    cgraph_node_cannot_return (fn));
 
-  if (fn->thunk.thunk_p)
+  if (fn->thunk.thunk_p || fn->alias)
     {
       /* Thunk gets propagated through, so nothing interesting happens.  */
       gcc_assert (ipa);
@@ -1070,14 +1070,16 @@ ignore_edge (struct cgraph_edge *e)
   return (!e->can_throw_external);
 }
 
-/* Return true if NODE is self recursive function.  */
+/* Return true if NODE is self recursive function.
+   ??? self recursive and indirectly recursive funcions should
+   be the same, so this function seems unnecesary.  */
 
 static bool
 self_recursive_p (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_callee)
-    if (e->callee == node)
+    if (cgraph_function_node (e->callee, NULL) == node)
       return true;
   return false;
 }
@@ -1113,6 +1115,9 @@ propagate_pure_const (void)
       bool looping = false;
       int count = 0;
       node = order[i];
+
+      if (node->alias)
+	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Starting cycle\n");
@@ -1167,7 +1172,8 @@ propagate_pure_const (void)
 	  /* Now walk the edges and merge in callee properties.  */
 	  for (e = w->callees; e; e = e->next_callee)
 	    {
-	      struct cgraph_node *y = e->callee;
+	      enum availability avail;
+	      struct cgraph_node *y = cgraph_function_node (e->callee, &avail);
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
 
@@ -1178,7 +1184,7 @@ propagate_pure_const (void)
 			   cgraph_node_name (e->callee),
 			   e->callee->uid);
 		}
-	      if (cgraph_function_body_availability (y) > AVAIL_OVERWRITABLE)
+	      if (avail > AVAIL_OVERWRITABLE)
 		{
 		  funct_state y_l = get_function_state (y);
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1380,6 +1386,9 @@ propagate_nothrow (void)
       bool can_throw = false;
       node = order[i];
 
+      if (node->alias)
+	continue;
+
       /* Find the worst state for any node in the cycle.  */
       w = node;
       while (w)
@@ -1396,9 +1405,10 @@ propagate_nothrow (void)
 
 	  for (e = w->callees; e; e = e->next_callee)
 	    {
-	      struct cgraph_node *y = e->callee;
+	      enum availability avail;
+	      struct cgraph_node *y = cgraph_function_node (e->callee, &avail);
 
-	      if (cgraph_function_body_availability (y) > AVAIL_OVERWRITABLE)
+	      if (avail > AVAIL_OVERWRITABLE)
 		{
 		  funct_state y_l = get_function_state (y);
 
@@ -1426,10 +1436,7 @@ propagate_nothrow (void)
 	  funct_state w_l = get_function_state (w);
 	  if (!can_throw && !TREE_NOTHROW (w->decl))
 	    {
-	      struct cgraph_edge *e;
 	      cgraph_set_nothrow_flag (w, true);
-	      for (e = w->callers; e; e = e->next_caller)
-	        e->can_throw_external = false;
 	      if (dump_file)
 		fprintf (dump_file, "Function found to be nothrow: %s\n",
 			 cgraph_node_name (w));
@@ -1636,11 +1643,7 @@ local_pure_const (void)
     }
   if (!l->can_throw && !TREE_NOTHROW (current_function_decl))
     {
-      struct cgraph_edge *e;
-
       cgraph_set_nothrow_flag (node, true);
-      for (e = node->callers; e; e = e->next_caller)
-	e->can_throw_external = false;
       changed = true;
       if (dump_file)
 	fprintf (dump_file, "Function found to be nothrow: %s\n",

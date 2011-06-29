@@ -124,14 +124,14 @@ struct test_1st_2nd_arg_types<T, true>
 template<typename T>
   void test()
   {
-    test_arg_type<T> t;
-    test_arg_type<const T> tc;
-    test_arg_type<volatile T> tv;
-    test_arg_type<const volatile T> tcv;
-    test_1st_2nd_arg_types<T> t12;
-    test_1st_2nd_arg_types<const T> t12c;
-    test_1st_2nd_arg_types<volatile T> t12v;
-    test_1st_2nd_arg_types<const volatile T> t12cv;
+    test_arg_type<T> t __attribute__((unused));
+    test_arg_type<const T> tc __attribute__((unused));
+    test_arg_type<volatile T> tv __attribute__((unused));
+    test_arg_type<const volatile T> tcv __attribute__((unused));
+    test_1st_2nd_arg_types<T> t12 __attribute__((unused));
+    test_1st_2nd_arg_types<const T> t12c __attribute__((unused));
+    test_1st_2nd_arg_types<volatile T> t12v __attribute__((unused));
+    test_1st_2nd_arg_types<const volatile T> t12cv __attribute__((unused));
   }
 
 int main()

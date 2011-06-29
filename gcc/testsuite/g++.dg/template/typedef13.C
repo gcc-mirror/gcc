@@ -12,5 +12,5 @@ template <class T> class B : public A
   mytype mem; // { dg-error "within this context"  }
 };
 
-B<int> b; // { dg-message "instantiated from here" }
+B<int> b; // { dg-message "required from here" }
 

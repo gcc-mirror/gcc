@@ -941,6 +941,9 @@ extern const char * const reg_note_name[];
 /* VAR_DECL/PARM_DECL DEBUG_IMPLICIT_PTR takes address of.  */
 #define DEBUG_IMPLICIT_PTR_DECL(RTX) XCTREE (RTX, 0, DEBUG_IMPLICIT_PTR)
 
+/* PARM_DECL DEBUG_PARAMETER_REF references.  */
+#define DEBUG_PARAMETER_REF_DECL(RTX) XCTREE (RTX, 0, DEBUG_PARAMETER_REF)
+
 /* Possible initialization status of a variable.   When requested
    by the user, this information is tracked and recorded in the DWARF
    debug information, along with the variable's location.  */
@@ -2451,7 +2454,7 @@ extern void mark_elimination (int, int);
 /* In reginfo.c */
 extern int reg_classes_intersect_p (reg_class_t, reg_class_t);
 extern int reg_class_subset_p (reg_class_t, reg_class_t);
-extern void globalize_reg (int);
+extern void globalize_reg (tree, int);
 extern void init_reg_modes_target (void);
 extern void init_regs (void);
 extern void reinit_regs (void);

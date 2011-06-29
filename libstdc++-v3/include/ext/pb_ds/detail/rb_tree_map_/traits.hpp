@@ -48,6 +48,7 @@ namespace __gnu_pbds
   namespace detail
   {
     /// Specialization.
+    /// @ingroup traits
     template<typename Key,
 	     typename Mapped,
 	     typename Cmp_Fn,
@@ -57,7 +58,7 @@ namespace __gnu_pbds
 		      typename _Alloc_>
 	     class Node_Update,
 	     typename _Alloc>
-    struct tree_traits<Key, Mapped, Cmp_Fn, Node_Update, rb_tree_tag, _Alloc> 
+    struct tree_traits<Key, Mapped, Cmp_Fn, Node_Update, rb_tree_tag,_Alloc> 
     : public bin_search_tree_traits<
       Key,
       Mapped,
@@ -72,6 +73,7 @@ namespace __gnu_pbds
     { };
 
     /// Specialization.
+    /// @ingroup traits
     template<typename Key,
 	     typename Cmp_Fn,
 	     template<typename Node_CItr,
@@ -80,7 +82,7 @@ namespace __gnu_pbds
 		      typename _Alloc_>
 	     class Node_Update,
 	     typename _Alloc>
-    struct tree_traits<Key, null_type, Cmp_Fn, Node_Update, rb_tree_tag, _Alloc> 
+    struct tree_traits<Key, null_type, Cmp_Fn, Node_Update, rb_tree_tag,_Alloc> 
     : public bin_search_tree_traits<
       Key,
       null_type,

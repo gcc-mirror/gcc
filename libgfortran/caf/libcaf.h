@@ -38,13 +38,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STAT_LOCKED_OTHER_IMAGE	2
 #define STAT_STOPPED_IMAGE 	3
 
-
+/* Describes what type of array we are registerring.  */
 typedef enum caf_register_t {
-  CAF_REGTYPE_COARRAY,
+  CAF_REGTYPE_COARRAY_STATIC,
+  CAF_REGTYPE_COARRAY_ALLOC,
   CAF_REGTYPE_LOCK,
-  CAF_REGTYPE_LOCK_COMP 
+  CAF_REGTYPE_LOCK_COMP
 }
 caf_register_t;
+
+/* Linked list of static coarrays registered.  */
+typedef struct caf_static_t {
+  void **token;
+  struct caf_static_t *prev;
+}
+caf_static_t;
 
 
 void _gfortran_caf_init (int *, char ***, int *, int *);
@@ -54,8 +62,8 @@ void * _gfortran_caf_register (ptrdiff_t, caf_register_t, void **);
 int _gfortran_caf_deregister (void **);
 
 
-int _gfortran_caf_sync_all (char *, int);
-int _gfortran_caf_sync_images (int, int[], char *, int);
+void _gfortran_caf_sync_all (int *, char *, int);
+void _gfortran_caf_sync_images (int, int[], int *, char *, int);
 
 /* FIXME: The CRITICAL functions should be removed;
    the functionality is better represented using Coarray's lock feature.  */

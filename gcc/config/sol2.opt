@@ -27,9 +27,6 @@ Driver Joined
 Ym,
 Driver Joined
 
-compat-bsd
-Driver
-
 mimpure-text
 Target Report
 Pass -z text to linker

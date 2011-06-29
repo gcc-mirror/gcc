@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "integrate.h"
 #include "debug.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "langhooks.h"
 #include "cfglayout.h"
 #include "cfgloop.h"
@@ -182,24 +183,8 @@ struct target_flag_state *this_target_flag_state = &default_target_flag_state;
 #define this_target_flag_state (&default_target_flag_state)
 #endif
 
-typedef struct
-{
-  const char *const string;
-  int *const variable;
-  const int on_value;
-}
-lang_independent_options;
-
 /* The user symbol prefix after having resolved same.  */
 const char *user_label_prefix;
-
-static const param_info lang_independent_params[] = {
-#define DEFPARAM(ENUM, OPTION, HELP, DEFAULT, MIN, MAX) \
-  { OPTION, DEFAULT, MIN, MAX, HELP },
-#include "params.def"
-#undef DEFPARAM
-  { NULL, 0, 0, 0, NULL }
-};
 
 /* Output files for assembler code (real compiler output)
    and debugging dumps.  */
@@ -1212,10 +1197,10 @@ general_init (const char *argv0)
   init_reg_sets ();
 
   /* Register the language-independent parameters.  */
-  add_params (lang_independent_params, LAST_PARAM);
-  targetm.target_option.default_params ();
+  global_init_params ();
 
-  /* This must be done after add_params but before argument processing.  */
+  /* This must be done after global_init_params but before argument
+     processing.  */
   init_ggc_heuristics();
   init_optimization_passes ();
   statistics_early_init ();
@@ -1512,7 +1497,7 @@ process_options (void)
 	fatal_error ("can%'t open %s: %m", aux_info_file_name);
     }
 
-  if (! targetm.have_named_sections)
+  if (!targetm_common.have_named_sections)
     {
       if (flag_function_sections)
 	{

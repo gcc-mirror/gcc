@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -28,11 +28,8 @@
 #define _GLIBCXX_TESTSUITE_ALLOCATOR_H
 
 #include <tr1/unordered_map>
-#include <cassert>
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <bits/move.h>
-#endif
+#include <testsuite_hooks.h>
 
 namespace __gnu_test
 {
@@ -110,34 +107,51 @@ namespace __gnu_test
     template<class U> struct rebind { typedef tracker_allocator<U> other; };
     
     pointer
-    address(reference value) const
-    { return &value; }
-    
+    address(reference value) const _GLIBCXX_NOEXCEPT
+    { return std::__addressof(value); }
+
     const_pointer
-    address(const_reference value) const
-    { return &value; }
-    
-    tracker_allocator() throw()
+    address(const_reference value) const _GLIBCXX_NOEXCEPT
+    { return std::__addressof(value); }
+
+    tracker_allocator() _GLIBCXX_USE_NOEXCEPT
     { }
 
-    tracker_allocator(const tracker_allocator&) throw()
+    tracker_allocator(const tracker_allocator&) _GLIBCXX_USE_NOEXCEPT
     { }
 
     template<class U>
-      tracker_allocator(const tracker_allocator<U>&) throw()
+      tracker_allocator(const tracker_allocator<U>&) _GLIBCXX_USE_NOEXCEPT
       { }
 
-    ~tracker_allocator() throw()
+    ~tracker_allocator() _GLIBCXX_USE_NOEXCEPT
     { }
 
     size_type
-    max_size() const throw()
+    max_size() const _GLIBCXX_USE_NOEXCEPT
     { return size_type(-1) / sizeof(T); }
 
     pointer
     allocate(size_type n, const void* = 0)
     { return static_cast<pointer>(counter_type::allocate(n * sizeof(T))); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    template<typename U, typename... Args>
+      void
+      construct(U* p, Args&&... args) 
+      {
+	::new((void *)p) U(std::forward<Args>(args)...);
+	counter_type::construct();
+      }
+
+    template<typename U>
+      void
+      destroy(U* p)
+      {
+	p->~U();
+	counter_type::destroy();
+      }
+#else
     void
     construct(pointer p, const T& value)
     {
@@ -145,22 +159,13 @@ namespace __gnu_test
       counter_type::construct();
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      template<typename... Args>
-        void
-        construct(pointer p, Args&&... args) 
-	{
-	  ::new((void *)p) T(std::forward<Args>(args)...);
-	  counter_type::construct();
-	}
-#endif
-
     void
     destroy(pointer p)
     {
       p->~T();
       counter_type::destroy();
     }
+#endif
 
     void
     deallocate(pointer p, size_type num)
@@ -255,24 +260,29 @@ namespace __gnu_test
         struct rebind
 	{ typedef uneq_allocator<Tp1> other; };
 
-      uneq_allocator() throw()
+      uneq_allocator() _GLIBCXX_USE_NOEXCEPT
       : personality(0) { }
 
-      uneq_allocator(int person) throw()
+      uneq_allocator(int person) _GLIBCXX_USE_NOEXCEPT
       : personality(person) { }
       
       template<typename Tp1>
-        uneq_allocator(const uneq_allocator<Tp1>& b) throw()
+        uneq_allocator(const uneq_allocator<Tp1>& b) _GLIBCXX_USE_NOEXCEPT
 	: personality(b.get_personality()) { }
+
+      ~uneq_allocator() _GLIBCXX_USE_NOEXCEPT
+      { }
 
       int get_personality() const { return personality; }
       
       pointer
-      address(reference x) const { return &x; }
+      address(reference x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(x); }
     
       const_pointer
-      address(const_reference x) const { return &x; }
-    
+      address(const_reference x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(x); }
+
       pointer
       allocate(size_type n, const void* = 0)
       { 
@@ -292,54 +302,57 @@ namespace __gnu_test
 	  }
 	return p;
       }
-      
+
       void
       deallocate(pointer p, size_type)
       {
-	assert( p );
-	
+	bool test __attribute__((unused)) = true;
+
+	VERIFY( p );
+
 	map_type::iterator it = get_map().find(reinterpret_cast<void*>(p));
-	assert( it != get_map().end() );
+	VERIFY( it != get_map().end() );
 
 	// Enforce requirements in Table 32 about deallocation vs
 	// allocator equality.
-	assert( it->second == personality );
-	
+	VERIFY( it->second == personality );
+
 	get_map().erase(it);
 	::operator delete(p);
       }
-      
+
       size_type
-      max_size() const throw() 
+      max_size() const _GLIBCXX_USE_NOEXCEPT 
       { return size_type(-1) / sizeof(Tp); }
-      
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename U, typename... Args>
+        void
+        construct(U* p, Args&&... args) 
+	{ ::new((void *)p) U(std::forward<Args>(args)...); }
+
+      template<typename U>
+	void 
+	destroy(U* p) { p->~U(); }
+
+      // Not copy assignable...
+      uneq_allocator&
+      operator=(const uneq_allocator&) = delete;
+#else
       void 
       construct(pointer p, const Tp& val) 
       { ::new((void *)p) Tp(val); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      template<typename... Args>
-        void
-        construct(pointer p, Args&&... args) 
-	{ ::new((void *)p) Tp(std::forward<Args>(args)...); }
-#endif
-
       void 
       destroy(pointer p) { p->~Tp(); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      // Not copy assignable...
-      uneq_allocator&
-      operator=(const uneq_allocator&) = delete;
-#endif
-
     private:
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
       // Not assignable...
       uneq_allocator&
       operator=(const uneq_allocator&);
 #endif
+
+    private:
 
       // ... yet swappable!
       friend inline void

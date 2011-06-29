@@ -1,3 +1,1532 @@
+2011-06-27  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/pr45701-1.c: Don't specify -march; remove
+	dg-prune-output.
+	* gcc.target/arm/pr45701-2.c: Ditto.
+
+2011-06-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49466
+	* gfortran.dg/allocatable_scalar_9.f90: Modified.
+	* gfortran.dg/extends_14.f03: Modified.
+
+2011-06-27  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports-dg.exp (dg-require-effective-target): Return
+	early if the test is already being skipped.
+
+	* lib/scanasm.exp (dg-scan, scan-assembler-times, scan-assembler-dem,
+	scan-assembler-dem-not): For missing file, report unresolved with
+	same message as for pass/fail, with reason reported in log file.
+
+	* lib/target-supports.exp (add_options_for_arm_fp16): Renamed
+	from add_options_for_arm_neon_fp16.
+	(check_effective_target_arm_fp16_ok_nocache): Renamed from
+	check_effective_target_arm_neon_fp16_ok_nocache.
+	Check -mfpu and -mfloat-abi options from current multilib.
+	Do not require neon support.
+	(check_effective_target_arm_fp16_ok): Renamed from
+	check_effecitve_target_arm_neon_fp16_ok.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-5.C: Use new names for
+	arm_neon_fp16_ok and arm_fp16.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-6.C: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-5.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-6.c: Likewise.
+	* gcc.target/arm/fp16-compile-vcvt.c: Likewise.
+
+2011-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-assume-aligned-1.c: New test.
+	* gcc.dg/builtin-assume-aligned-2.c: New test.
+	* gcc.target/i386/builtin-assume-aligned-1.c: New test.
+
+	PR debug/49544
+	* gcc.dg/pr49544.c: New test.
+
+2011-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49394
+	* g++.dg/torture/pr49394.C: New testcase.
+
+2011-06-27  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/optimize-bswapdi-2.c: New test.
+
+2011-06-27  Michael Hope  <michael.hope@linaro.org>
+	    Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/49169
+	* gcc.dg/torture/pr49169.c: New test.
+
+2011-06-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/49529
+	* gcc.dg/ipa/ipa-pta-17.c: Use dg-require-alias.
+
+	* gcc.dg/debug/pr49294.c (dg-options): Add -fno-common to options on
+	hppa*-*-hpux*.
+
+2011-06-26  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-cleanup.C: Tweak error message.
+
+	PR c++/49528
+	* g++.dg/init/ref19.C: New.
+	* g++.dg/cpp0x/constexpr-cleanup.C: New.
+
+2011-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48377
+	* gcc.dg/vect/pr48377.c: Add dg-require-effective-target
+	non_strict_align.
+
+2011-06-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/49191
+	* lib/target-supports.exp (check_effective_target_non_strict_align):
+	New.
+	* gcc.dg/memcpy-3.c: Add dg-require-effective-target non_strict_align.
+
+2011-06-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimizations/49516
+	* g++.dg/tree-ssa/pr49516.C: New test.
+
+2011-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35255
+	* g++.dg/template/partial10.C: New.
+	* g++.dg/template/partial11.C: New.
+
+2011-06-23  Jeff Law <law@redhat.com>
+
+	PR middle-end/48770
+	* gcc.dg/pr48770.c: New test.
+
+2011-06-23  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/49373
+	* g++.dg/torture/pr43879-1_1.C: Revert the xfail introduced yesterday.
+
+2011-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49512
+	* gcc.dg/tree-ssa/asm-1.c: Use -fdump-tree-optimized-nouid
+	instead of -fdump-tree-optimized.
+
+2011-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44625
+	* g++.dg/template/crash107.C: New.
+	* g++.dg/template/error17.C: Adjust.
+
+2011-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49507
+	* g++.dg/cpp0x/defaulted30.C: New.
+
+	PR c++/49440
+	* g++.dg/rtti/anon-ns1.C: New.
+
+	PR c++/49395
+	* g++.dg/init/ref18.C: New.
+
+	PR c++/36435
+	* g++.dg/template/partial9.C: New.
+
+2011-06-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/49373
+	* g++.dg/torture/pr43879-1_1.C: Xfail for -O1 and above, except -flto.
+
+2011-06-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49496
+	* gcc.dg/pr49496.c: New test.
+
+2011-06-22  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/scd42-3.c: Allow -march-xscale; skip if -mcpu
+	is not xscale.
+
+	* gcc.target/arm/thumb-bitfld1.c: Don't specify -march, require thumb1.
+
+	* gcc.target/arm/ctz.c: Don't specify -march, require thumb2.
+	* gcc.target/arm/pr42879.c: Likewise.
+	* gcc.target/arm/pr45701-3.c: Likewise.
+
+	* gcc.target/arm/20031108-1.c: Require thumb1 or thumb2.
+	* gcc.target/arm/pr40482.c: Likewise.
+	* gcc.target/arm/stack-corruption.c: Likewise.
+
+2011-06-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49493
+	* gcc.dg/ipa/ipa-pta-17.c: New testcase.
+
+2011-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49260
+	* g++.dg/cpp0x/lambda/lambda-eh2.C: Change options.
+
+2011-06-22  Dmitry Plotnikov  <dplotnikov@ispras.ru>
+	    Dmitry Melnik  <dm@ispras.ru>
+
+	* gcc.target/arm/neon-vshr-imm-1.c: New testcase.
+	* gcc.target/arm/neon-vshl-imm-1.c: New testcase.
+	* gcc.target/arm/neon-vlshr-imm-1.c: New testcase.
+
+2011-06-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.target/arm/tlscall.c: New.
+
+2011-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49172
+	* g++.dg/cpp0x/constexpr-ref1.C: New.
+	* g++.dg/cpp0x/constexpr-ref2.C: New.
+	* g++.dg/cpp0x/constexpr-ice2.C: Remove dg-error tag.
+
+	PR c++/49482
+	* g++.dg/cpp0x/lambda/lambda-warn3.C: New.
+
+	PR c++/49418
+	* g++.dg/template/param3.C: New.
+
+2011-06-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/excute/builtin-bitops-1.c (MAKE_FUNS): Make
+	my_clrsb test functions.
+	(main): Test clrsb.
+	* gcc.dg/builtin-protos-1.c (test_s, test_u, test_sl, test_ul,
+	test_sll, test_ull): Add clrsb tests.
+	* gcc.dg/torture/builtin-attr-1.c: Add tests for clrsb, clrsbl,
+	clrsbll.
+
+2011-06-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49112
+	* gfortran.dg/class_44.f03: New.
+
+2011-06-21  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49478
+	* gcc.dg/vect/pr49478.c
+
+2011-06-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49483
+	* gcc.dg/vect/vect-120.c: New testcase.
+
+2011-06-21  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR testsuite/49443
+	* gcc.dg/vect/vect-peel-3.c: Expect to fail on vect_no_align targets.
+	* gcc.dg/vect/vect-peel-4.c: Likewise.
+
+2011-06-22  Christian Bruel  <christian.bruel@st.com>
+
+	PR middle-end/49139
+	* gcc.dg/always_inline.c: Removed -Winline. Update checks
+	* gcc.dg/always_inline2.c: Likewise.
+	* gcc.dg/always_inline3.c: Likewise.
+	* gcc.dg/debug/pr41264-1.c: Add -Wno-attributes.
+	* gcc.dg/inline_1.c: Likewise.
+	* gcc.dg/inline_2.c: Likewise.
+	* gcc.dg/inline_3.c: Likewise.
+	* gcc.dg/inline_4.c: Likewise.
+	* gcc.dg/20051201-1.c: Likewise.
+	* gcc.dg/pr40087.c: Likewise.
+	* gcc.dg/torture/pta-structcopy-1.c: Likewise.
+	* gcc.dg/inline-22.c: Likewise.
+	* gcc.dg/lto/20090218-1_0.c: Set inline keyword.
+	* gcc.dg/lto/20090218-1_1.c: Likewise.
+	* g++.dg/ipa/devirt-7.C: Likewise.
+	* gcc.dg/uninit-pred-5_a.c: Likewise.
+	* gcc.dg/uninit-pred-5_b.c: Likewise.
+	* gcc.dg/fail_always_inline.c: New.
+
+2011-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (check_gfortran_parallelize): Parallelize dg.exp
+	into 6 jobs instead of 3.
+
+2011-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49216
+	* g++.dg/cpp0x/initlist53.C: New.
+
+2011-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_lock_1.f90: Update dg-error.
+	* gfortran.dg/coarray_lock_3.f90: New.
+	* gfortran.dg/coarray/lock_1.f90: New.
+
+2011-06-20  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/scandump.exp (scan-dump, scan-dump-times, scan-dump-not,
+	scan-dump-dem, scan-dump-dem-not): Treat a missing dump file as
+	unresolved and report the reason to the log file.
+
+	* lib/scanasm.exp (object-size): Move argument processing earlier
+	to report errors before verifying that the file exists.  Report
+	problems detected at runtime as unresolved instead of error and
+	report their reasons to the log file.
+
+2011-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47080
+	* g++.dg/cpp0x/explicit6.C: New.
+
+	PR c++/47635
+	* g++.dg/cpp0x/enum20.C: New.
+
+	PR c++/48138
+	* g++.dg/ext/attr-aligned01.C: New.
+
+	PR c++/49205
+	* g++.dg/cpp0x/variadic-default.C: New.
+
+	PR c++/43321
+	* g++.dg/cpp0x/auto26.C: New.
+
+	PR c++/43831
+	* g++.dg/cpp0x/lambda/lambda-capture-reduncancy.C: New.
+
+2011-06-20  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/binop-notand1.c: New test.
+	* gcc.dg/binop-notand2.c: New test.
+	* gcc.dg/binop-notand3.c: New test.
+	* gcc.dg/binop-notand4.c: New test.
+	* gcc.dg/binop-notand5.c: New test.
+	* gcc.dg/binop-notand6.c: New test.
+
+2011-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49432
+	* obj-c++.dg/invalid-type-1.mm: Adjust for new error wording.
+
+2011-06-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49400
+	* gfortran.dg/proc_ptr_31.f90: New.
+
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile6.adb: New test.
+	* gnat.dg/volatile7.adb: Likewise.
+	* gnat.dg/volatile8.adb: Likewise.
+	* gnat.dg/volatile9.adb: Likewise.
+
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/constant3.adb: New test.
+
+2011-06-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/48296
+	* gfortran.dg/read_list_eof_1.f90: New test.
+
+2011-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49411
+	* gcc.target/i386/testimm-1.c: New test.
+	* gcc.target/i386/testimm-2.c: New test.
+	* gcc.target/i386/testimm-3.c: New test.
+	* gcc.target/i386/testimm-4.c: New test.
+	* gcc.target/i386/testimm-5.c: New test.
+	* gcc.target/i386/testimm-6.c: New test.
+	* gcc.target/i386/testimm-7.c: New test.
+	* gcc.target/i386/testimm-8.c: New test.
+	* gcc.target/i386/xop-vpermil2px-2.c: New test.
+	* gcc.target/i386/xop-rotate1-int.c: New test.
+	* gcc.target/i386/xop-rotate2-int.c: New test.
+
+2011-06-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/rv-func2.C: New.
+
+	* g++.dg/debug/dwarf2/lambda1.C: New.
+	* g++.dg/warn/Wshadow-6.C: Adjust.
+
+2011-06-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48699
+	* gfortran.dg/move_alloc_5.f90: New.
+
+2011-06-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/48542
+	* gcc.dg/torture/pr48542.c: New test.
+
+2011-06-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44160
+	* g++.dg/cpp0x/lambda/lambda-__func__.C: New.
+
+	PR c++/45378
+	* g++.dg/cpp0x/initlist52.C New.
+
+	PR c++/45399
+	* c-c++-common/raw-string-12.c: New.
+
+	PR c++/49229
+	* g++.dg/cpp0x/sfinae26.C: New.
+
+	PR c++/49251
+	* g++.dg/cpp0x/variadic113.C: New.
+
+	PR c++/49420
+	* g++.dg/cpp0x/variadic112.C: New.
+
+2011-06-16  Jeff Law <law@redhat.com>
+
+	* gcc.dg/builtin-object-size-1.c: Update to handle chances from
+	improved jump threading.
+	* gcc.dg/builtin-object-size-2.c: Likewise.
+	* gcc.dg/tree-ssa/20030728-1.c: Likewise.
+
+2011-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49074
+	* gfortran.dg/typebound_assignment_3.f03: New.
+
+2011-06-16  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/48727
+	* g++.dg/opt/devirt2.C: Change xfail rule to target.
+
+2011-06-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/49343
+	* gnat.dg/discr31.ad[sb]: New test.
+
+2011-06-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/debug/pr49032.c: Prune mips-tfile warning.
+
+2011-06-16  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/45098
+	* gcc.target/arm/ivopts-3.c: Update test.
+	* gcc.target/arm/ivopts-5.c: Same.
+
+2011-06-16  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	Revert:
+	2011-06-10  Wei Guozhi  <carrot@google.com>
+
+	PR target/45335
+	* gcc.target/arm/pr45335.c: New test.
+	* gcc.target/arm/pr45335-2.c: New test.
+	* gcc.target/arm/pr45335-3.c: New test.
+	* gcc.target/arm/pr40457-1.c: Add another possible output "ldrd".
+	* gcc.target/arm/pr40457-2.c: Changed to store 3 words.
+	* gcc.target/arm/pr40457-3.c: Changed to store 3 words.
+
+2011-06-16  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: New test.
+
+2011-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49417
+	* gfortran.dg/class_43.f03: New.
+
+2011-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49419
+	* gcc.c-torture/execute/pr49419.c: New test.
+
+2011-06-16  Revital Eres  <revital.eres@linaro.org>
+
+	* gcc.dg/sms-9.c: New file.
+
+2011-06-15  Easwaran Raman  <eraman@google.com>
+
+	PR rtl-optimization/49414
+	* gcc.dg/pr44194-1.c: Restrict test to 64-bit targets.
+
+2011-06-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/noexcept13.C: New.
+
+2011-06-14  Easwaran Raman  <eraman@google.com>
+
+	PR rtl-optimization/44194
+	* gcc.dg/pr44194-1.c: New test.
+	* gcc.dg/pr44194-2.c: New test.
+
+2011-06-14  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/pr45701-1.c: Ignore warnings about conflicting
+	switches.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+	* gcc.target/arm/thumb-branch1.c: Likewise.
+
+2011-06-14  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/48727
+	* g++.dg/opt/devirt2.C: Fix scan rules for ia64*-*-hpux* and hppa*-*-*.
+
+2011-06-14  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/pr45701-1.c: Require thumb support.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+	* gcc.target/arm/thumb-branch1.c: Likewise.
+
+	* gcc.target/arm/mla-1.c: Ignore warnings about conflicting switches.
+	* gcc.target/arm/pr39839.c: Likewise.
+	* gcc.target/arm/pr40657-2.c: Likewise.
+	* gcc.target/arm/pr40956.c: Likewise.
+	* gcc.target/arm/pr41679.c: Likewise.
+	* gcc.target/arm/pr42235.c: Likewise.
+	* gcc.target/arm/pr42495.c: Likewise.
+	* gcc.target/arm/pr42505.c: Likewise.
+	* gcc.target/arm/pr42574.c: Likewise.
+	* gcc.target/arm/pr46883.c: Likewise.
+	* gcc.target/arm/pr46934.c: Likewise.
+	* gcc.target/arm/xor-and.c: Likewise.
+
+2011-06-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/other/error23.C: Adjust error message.
+	* g++.dg/other/error32.C: Likewise.
+
+	PR c++/49389
+	* g++.dg/cpp0x/rv-dotstar.C: New.
+
+	PR c++/49369
+	* g++.dg/cpp0x/decltype30.C: New.
+
+	* g++.dg/cpp0x/constexpr-array-ptr7.C: New.
+
+2011-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/49103
+	* gfortran.dg/pr49103.f90: New test.
+
+2011-06-14  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/45098
+	* gcc.target/arm/ivopts-3.c: New test.
+	* gcc.target/arm/ivopts-4.c: New test.
+	* gcc.target/arm/ivopts-5.c: New test.
+
+2011-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49390
+	* gcc.c-torture/execute/pr49390.c: New test.
+
+2011-06-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/torture/pr48954.C: Use dg-require-effective-target lto.
+
+2011-06-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.c-torture/execute/cmpsi-2.c: Undo 172757.
+	* gcc.c-torture/execute/cmpsi-2.x: New file.
+	* gcc.c-torture/execute/pr45262.c: Undo 172757.
+	* gcc.c-torture/execute/pr45262.x: New file.
+	* gcc.c-torture/compile/pr46534.c: Skip for AVR.
+	* gcc.c-torture/compile/pr49029.c: Add dg-require-effective-target
+	int32plus
+	* gcc.c-torture/compile/pr49163.c: Ditto.
+
+2011-06-14  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/vect-16.c: Rename to...
+	* gcc.dg/vect/no-fast-math-vect16.c: ...this.
+	* gcc.dg/vect/vect-peel-3.c: Adjust misalignment values
+	for double-word vectors.
+	* gcc.dg/vect/vect-peel-4.c: Likewise.
+	* gcc.dg/vect/bb-slp-10.c: Replace vect_hw_misalign with
+	vect_element_align.
+	* gcc.dg/vect/vect.exp: Run no-fast-math-* tests with
+	-fno-fast-math.
+
+2011-06-13  Edmar Wienskoski  <edmar@freescale.com>
+
+	PR target/44618
+	* gcc.target/powerpc/outofline_rnreg.c: New testcase.
+
+2011-06-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/h8300-bit-insn-ice2.c: Remove duplicated lines.
+
+2011-06-13  Kaushik Phatak <kaushik.phatak@kpitcummins.com>
+
+	* gcc.dg/h8300-bit-insn-ice2.c: New testcase.
+
+2011-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/trim_optimize_8.f90:  New test case.
+
+2011-06-13 Jakub Jelinek  <jakub@redhat.com>
+	   Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49352
+	* gcc.dg/vect/pr49352.c: New test.
+
+2011-06-12  Tobias Burnus
+
+	PR fortran/49324
+	* gfortran.dg/alloc_comp_assign_11.f90: New.
+
+2011-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/trim_optimize_7.f90:  New test.
+
+2011-06-10  Wei Guozhi  <carrot@google.com>
+
+	PR target/45335
+	* gcc.target/arm/pr45335.c: New test.
+	* gcc.target/arm/pr45335-2.c: New test.
+	* gcc.target/arm/pr45335-3.c: New test.
+	* gcc.target/arm/pr40457-1.c: Add another possible output "ldrd".
+	* gcc.target/arm/pr40457-2.c: Changed to store 3 words.
+	* gcc.target/arm/pr40457-3.c: Changed to store 3 words.
+
+2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/41769
+	* g++.dg/parse/error39.C: New.
+
+2011-06-10  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/20090811-1.c: Skip for incompatible
+	options, do not override other options.
+	* gcc.target/arm/combine-cmp-shift.c: Skip for
+	incompatible options.
+	* gcc.target/arm/pr45094.c: Likewise.
+	* gcc.target/arm/scd42-1.c: Likewise.
+	* gcc.target/arm/scd42-3.c: Likewise.
+	* gcc.target/arm/thumb-ltu.c: Likewise.
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_fp16_ok_nocache): Return 0 if
+	multilib flags use -mfpu with a value other than neon-fp16.
+
+2011-06-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/tls/tls.exp: Load torture-options.exp.
+	Run tests with -fpic/-fPIC, -pie -fpie/-fPIE if supported.
+
+2011-06-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_effective_target_pie): New proc.
+	* gcc.dg/pie-link.c: Use target pie.
+
+2011-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+	    Laurent Rougé  <laurent.rouge@menta.fr>
+
+	* gcc.dg/20020503-1.c: Add back -mflat option on the SPARC.
+	* gcc.target/sparc/sparc-ret.c: Skip if -mflat is passed.
+
+2011-06-10  Daniel Carrera  <dcarrera@gmail.com>
+
+	* gfortran.dg/coarray/sync_1.f90: New test for
+	"SYNC ALL", "SYNC MEMORY" and "SYNC IMAGES".
+
+2011-06-10  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49318
+	* gcc.dg/vect/pr49318.c: New test.
+
+2011-06-09  David Krauss  <potswa@mac.com>
+
+	* g++.dg/template/arrow1.C: New.
+
+2011-06-09  Jason Merrill  <jason@redhat.com>
+
+	* lib/prune.exp: Prune "note"s.
+	* g++.dg/uninit-pred-3_b.C: Remove dg-excess-errors.
+
+	* g++.dg/ext/injected-ttp.C: Specify -std=c++98.
+	* g++.dg/template/dependent-expr3.C: Likewise.
+	* g++.dg/parse/template7.C: Likewise.
+	* g++.old-deja/g++.bugs/900119_01.C: Likewise.
+	* g++.old-deja/g++.jason/rfg10.C: Likewise.
+	* g++.old-deja/g++.pt/friend38.C: Likewise.
+	* g++.old-deja/g++.pt/crash32.C: Likewise.
+	* g++.old-deja/g++.other/init4.C: Likewise.
+	* g++.old-deja/g++.other/friend8.C: Likewise.
+
+	* g++.dg/ext/complex7.C: Adjust expected output.
+	* g++.dg/diagnostic/method1.C: Likewise.
+	* g++.dg/parse/parameter-declaration-2.C: Likewise.
+	* g++.dg/parse/crash33.C: Likewise.
+	* g++.dg/other/warning1.C: Likewise.
+	* g++.dg/init/pr29571.C: Likewise.
+	* g++.dg/warn/overflow-warn-1.C: Likewise.
+	* g++.dg/warn/overflow-warn-3.C: Likewise.
+	* g++.dg/warn/overflow-warn-4.C: Likewise.
+	* g++.old-deja/g++.oliva/template1.C: Likewise.
+
+	* g++.dg/cpp0x/regress/error-recovery1.C: Adjust.
+	* g++.dg/parse/template7.C: Adjust.
+
+2011-06-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/49307
+	* gcc.dg/pr49307.c: New.
+
+2011-06-09  Wei Guozhi  <carrot@google.com>
+
+	PR target/46975
+	* gcc.target/arm/pr46975.c: New testcase.
+
+2011-06-09  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-obj-c++-shared/objc-test-suite-next-encode-assist.h
+	(PMETH, arglist_t): Removed.
+	(method_get_number_of_arguments): Removed.
+	(method_get_nth_argument): Removed.
+	(method_get_first_argument): Removed.
+	(method_get_next_argument): Removed.
+	(method_get_sizeof_arguments): Removed.
+	* objc-obj-c++-shared/objc-test-suite-next-encode-assist-impl.h
+	(PMETH): Removed.
+	(method_get_number_of_arguments): Removed.
+	(method_get_nth_argument): Removed.
+	(method_get_first_argument): Removed.
+	(method_get_next_argument): Removed.
+	(method_get_sizeof_arguments): Removed.
+	* objc-obj-c++-shared/objc-test-suite-types.h (PMETH): Removed.
+
+2011-06-09  David Li  <davidxl@google.com>
+
+	* gcc.dg/dump-pass.c: New test.
+
+2011-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29003
+	* g++.dg/parse/error38.C: New.
+
+2011-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/49308
+	* gfortran.dg/pr49308.f90: New test.
+
+2011-06-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/noexcept11.C: New.
+	* g++.dg/cpp0x/noexcept12.C: New.
+	* g++.dg/cpp0x/sfinae11.C: Adjust.
+
+2011-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49323
+	* g++.dg/debug/dwarf2/integer-typedef.C: Add -fno-merge-debug-strings
+	to dg-options, match also DW_AT_linkage_name.
+
+2011-06-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR middle-end/21953
+	* gcc.dg/compat/struct-layout-1_generate.c (dg-options): Use
+	-fno-common on alpha*-dec-osf*.
+	* g++.dg/compat/struct-layout-1_generate.c (dg-options): Likewise.
+
+2011-06-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/49303
+	* gcc.target/ia64/pr49303.c: New test.
+
+2011-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_lock_1.f90: New.
+	* gfortran.dg/coarray_lock_2.f90: New.
+
+2011-06-07  Jason Merrill  <jason@redhat.com>
+
+	* lib/prune.exp: Look for "required" rather than "instantiated".
+	* g++.dg/abi/mangle11.C: Likewise.
+	* g++.dg/abi/mangle12.C: Likewise.
+	* g++.dg/abi/mangle17.C: Likewise.
+	* g++.dg/abi/mangle20-2.C: Likewise.
+	* g++.dg/abi/pragma-pack1.C: Likewise.
+	* g++.dg/cpp0x/decltype26.C: Likewise.
+	* g++.dg/cpp0x/decltype28.C: Likewise.
+	* g++.dg/cpp0x/decltype29.C: Likewise.
+	* g++.dg/cpp0x/enum11.C: Likewise.
+	* g++.dg/cpp0x/forw_enum8.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-errloc2.C: Likewise.
+	* g++.dg/cpp0x/pr47416.C: Likewise.
+	* g++.dg/ext/case-range2.C: Likewise.
+	* g++.dg/ext/case-range3.C: Likewise.
+	* g++.dg/gomp/for-19.C: Likewise.
+	* g++.dg/gomp/pr37533.C: Likewise.
+	* g++.dg/gomp/pr38639.C: Likewise.
+	* g++.dg/gomp/tpl-parallel-2.C: Likewise.
+	* g++.dg/inherit/base3.C: Likewise.
+	* g++.dg/inherit/using6.C: Likewise.
+	* g++.dg/init/placement4.C: Likewise.
+	* g++.dg/init/reference3.C: Likewise.
+	* g++.dg/lookup/scoped6.C: Likewise.
+	* g++.dg/lookup/using7.C: Likewise.
+	* g++.dg/other/abstract1.C: Likewise.
+	* g++.dg/other/error10.C: Likewise.
+	* g++.dg/other/error5.C: Likewise.
+	* g++.dg/other/field1.C: Likewise.
+	* g++.dg/other/offsetof5.C: Likewise.
+	* g++.dg/parse/bitfield2.C: Likewise.
+	* g++.dg/parse/constant4.C: Likewise.
+	* g++.dg/parse/crash20.C: Likewise.
+	* g++.dg/parse/invalid-op1.C: Likewise.
+	* g++.dg/parse/non-dependent2.C: Likewise.
+	* g++.dg/parse/template18.C: Likewise.
+	* g++.dg/tc1/dr152.C: Likewise.
+	* g++.dg/tc1/dr166.C: Likewise.
+	* g++.dg/tc1/dr176.C: Likewise.
+	* g++.dg/tc1/dr213.C: Likewise.
+	* g++.dg/template/access11.C: Likewise.
+	* g++.dg/template/access2.C: Likewise.
+	* g++.dg/template/access3.C: Likewise.
+	* g++.dg/template/access7.C: Likewise.
+	* g++.dg/template/arg7.C: Likewise.
+	* g++.dg/template/cond2.C: Likewise.
+	* g++.dg/template/crash13.C: Likewise.
+	* g++.dg/template/crash40.C: Likewise.
+	* g++.dg/template/crash7.C: Likewise.
+	* g++.dg/template/crash84.C: Likewise.
+	* g++.dg/template/ctor5.C: Likewise.
+	* g++.dg/template/defarg13.C: Likewise.
+	* g++.dg/template/defarg14.C: Likewise.
+	* g++.dg/template/dtor7.C: Likewise.
+	* g++.dg/template/eh2.C: Likewise.
+	* g++.dg/template/error2.C: Likewise.
+	* g++.dg/template/error43.C: Likewise.
+	* g++.dg/template/friend32.C: Likewise.
+	* g++.dg/template/injected1.C: Likewise.
+	* g++.dg/template/instantiate1.C: Likewise.
+	* g++.dg/template/instantiate3.C: Likewise.
+	* g++.dg/template/instantiate5.C: Likewise.
+	* g++.dg/template/instantiate7.C: Likewise.
+	* g++.dg/template/local6.C: Likewise.
+	* g++.dg/template/lookup2.C: Likewise.
+	* g++.dg/template/member5.C: Likewise.
+	* g++.dg/template/memfriend15.C: Likewise.
+	* g++.dg/template/memfriend16.C: Likewise.
+	* g++.dg/template/memfriend17.C: Likewise.
+	* g++.dg/template/memfriend7.C: Likewise.
+	* g++.dg/template/meminit1.C: Likewise.
+	* g++.dg/template/nested3.C: Likewise.
+	* g++.dg/template/non-type-template-argument-1.C: Likewise.
+	* g++.dg/template/nontype12.C: Likewise.
+	* g++.dg/template/nontype13.C: Likewise.
+	* g++.dg/template/nontype6.C: Likewise.
+	* g++.dg/template/pr23510.C: Likewise.
+	* g++.dg/template/pr35240.C: Likewise.
+	* g++.dg/template/ptrmem15.C: Likewise.
+	* g++.dg/template/ptrmem6.C: Likewise.
+	* g++.dg/template/qualified-id1.C: Likewise.
+	* g++.dg/template/qualttp20.C: Likewise.
+	* g++.dg/template/qualttp3.C: Likewise.
+	* g++.dg/template/qualttp4.C: Likewise.
+	* g++.dg/template/qualttp5.C: Likewise.
+	* g++.dg/template/qualttp6.C: Likewise.
+	* g++.dg/template/qualttp7.C: Likewise.
+	* g++.dg/template/qualttp8.C: Likewise.
+	* g++.dg/template/recurse.C: Likewise.
+	* g++.dg/template/recurse2.C: Likewise.
+	* g++.dg/template/ref5.C: Likewise.
+	* g++.dg/template/scope2.C: Likewise.
+	* g++.dg/template/sfinae10.C: Likewise.
+	* g++.dg/template/sfinae3.C: Likewise.
+	* g++.dg/template/sizeof3.C: Likewise.
+	* g++.dg/template/static9.C: Likewise.
+	* g++.dg/template/template-id-2.C: Likewise.
+	* g++.dg/template/typedef13.C: Likewise.
+	* g++.dg/template/typename4.C: Likewise.
+	* g++.dg/template/using14.C: Likewise.
+	* g++.dg/template/using2.C: Likewise.
+	* g++.dg/template/warn1.C: Likewise.
+	* g++.dg/warn/Wparentheses-13.C: Likewise.
+	* g++.dg/warn/Wparentheses-15.C: Likewise.
+	* g++.dg/warn/Wparentheses-16.C: Likewise.
+	* g++.dg/warn/Wparentheses-17.C: Likewise.
+	* g++.dg/warn/Wparentheses-18.C: Likewise.
+	* g++.dg/warn/Wparentheses-19.C: Likewise.
+	* g++.dg/warn/Wparentheses-20.C: Likewise.
+	* g++.dg/warn/Wparentheses-23.C: Likewise.
+	* g++.dg/warn/Wstrict-aliasing-3.C: Likewise.
+	* g++.dg/warn/noeffect2.C: Likewise.
+	* g++.dg/warn/noeffect4.C: Likewise.
+	* g++.dg/warn/pr8570.C: Likewise.
+	* g++.old-deja/g++.brendan/init2.C: Likewise.
+	* g++.old-deja/g++.eh/spec6.C: Likewise.
+	* g++.old-deja/g++.pt/crash10.C: Likewise.
+	* g++.old-deja/g++.pt/crash36.C: Likewise.
+	* g++.old-deja/g++.pt/derived3.C: Likewise.
+	* g++.old-deja/g++.pt/error2.C: Likewise.
+	* g++.old-deja/g++.pt/explicit70.C: Likewise.
+	* g++.old-deja/g++.pt/infinite1.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp89.C: Likewise.
+	* g++.old-deja/g++.pt/overload7.C: Likewise.
+	* g++.old-deja/g++.pt/vaarg3.C: Likewise.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/runtime.h (protocol_getMethodDescription):
+	Added code to deal with the case when [Protocol
+	-descriptionForInstanceMethod:] or [Protocol
+	-descriptionForClassMethod:] returns NULL.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/TestsuiteObject.h ([-free]): Return 'id'.
+	* objc-obj-c++-shared/TestsuiteObject.m ([-free]): Return 'id'.
+	Added cast.
+
+2011-06-07  Xinliang David Li  <davidxl@google.com>
+
+	* gcc.dg/inline_2.c: New test.
+	* gcc.dg/unroll_2.c: New test.
+	* gcc.dg/inline_3.c: New test.
+	* gcc.dg/unroll_3.c: New test.
+	* gcc.dg/inline_4.c: New test.
+	* gcc.dg/unroll_4.c: New test.
+	* gcc.dg/inline_1.c: New test.
+	* gcc.dg/unroll_1.c: New test.
+
+2011-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/48497
+	* lib/gcc-defs.exp (dg-additional-options): New proc.
+	* gfortran.dg/graphite/vect-pr40979.f90: Use dg-additional-options
+	-msse2 on 32-bit x86.
+
+2011-06-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/enum19.C: New.
+
+2011-06-07  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* gcc.target/arm/neon-reload-class.c: New test.
+
+2011-06-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/49130
+	* g++.dg/debug/dwarf2/integer-typedef.C: New test.
+
+2011-06-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/smlatb-1.c: New file.
+	* gcc.target/arm/smlatt-1.c: New file.
+	* gcc.target/arm/smlaltb-1.c: New file.
+	* gcc.target/arm/smlaltt-1.c: New file.
+
+2011-06-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/arm/mla-2.c: New test.
+
+2011-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/49299
+	* gcc.dg/tree-prof/pr49299-1.c: New test.
+	* gcc.dg/tree-prof/pr49299-2.c: New test.
+
+2011-06-07  Ira Rosen  <ira.rosen@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_widen_mult_qi_to_hi):
+	Add NEON as supporting target.
+	(check_effective_target_vect_widen_mult_hi_to_si): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi_pattern): New.
+	(check_effective_target_vect_widen_mult_hi_to_si_pattern): New.
+	* gcc.dg/vect/vect-widen-mult-u8.c: Expect to be vectorized
+	using widening multiplication on targets that support it.
+	* gcc.dg/vect/vect-widen-mult-u16.c: Likewise.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: New test.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: New test.
+
+2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Updated all testcases in the ObjC/ObjC++ testsuites to use the
+	Modern Objective-C runtime API.
+	* objc/execute/next_mapping.h: Removed.
+	* objc-obj-c++-shared/next-mapping.h: Removed.
+	* objc-obj-c++-shared/Object1.h: Removed.
+	* objc-obj-c++-shared/Object1.m: Removed.
+	* objc-obj-c++-shared/Object1.mm: Removed.
+	* objc-obj-c++-shared/Object1-implementation.h: Removed.
+	* objc-obj-c++-shared/Protocol1.h: Removed.
+	* objc-obj-c++-shared/objc-test-suite-types.h: Removed definition
+	of ProtoBool, IVAR_T and METHOD.
+	* objc-obj-c++-shared/runtime.h: New.
+	* objc-obj-c++-shared/TestsuiteObject.h: New.
+	* objc-obj-c++-shared/TestsuiteObject.m: New.
+
+	* objc/compile/trivial.m: Use TestsuiteObject instead of Object.
+	* objc/execute/IMP.m: Include ../../objc-obj-c++-shared/runtime.h.
+	Use the Modern Objective-C runtime API. ([TestClass -next:]): Made
+	it a class method.
+	* objc/execute/_cmd.m: Include
+	../../objc-obj-c++-shared/runtime.h.  Use the Modern Objective-C
+	runtime API.  ([TestClass +initialize]): Include this method also
+	with the GNU runtime.
+	* objc/execute/accessing_ivars.m: Use TestsuiteObject instead of
+	Object.  ([-setValue:]): Return void.
+	* objc/execute/bf-common.h: Do not include objc/objc-encoding.h
+	with the GNU runtime.  Include
+	../../objc-obj-c++-shared/runtime.h.  Do not define objc_get_class
+	for the NeXT runtime.  Use the existing print_ivars() and
+	compare_structures() implementations for the old NeXT runtime.
+	Added new implementations for the Modern GNU and NeXT runtimes.
+	Enable the testcase (and hence all the bf-* ones) for __OBJC2__ as
+	well.  (main): Use objc_getClass().  Use return instead of exit.
+	* objc/execute/bycopy-1.m: Include objc/objc.h instead of
+	../../objc-obj-c++-shared/Protocol1.h.  (main): Use return instead
+	of exit().
+	* objc/execute/bycopy-2.m: Include objc/objc.h instead of
+	../../objc-obj-c++-shared/Protocol1.h.  Use TestsuiteObject
+	instead of Object.  (main): Use return instead of exit().
+	* objc/execute/bycopy-3.m: Updated includes.  Use TestsuiteObject
+	instead of Object.  Removed prototype for exit().  (main): Use
+	return instead of exit().  Use the Modern Objective-C runtime API.
+	* objc/execute/cascading-1.m: Use TestsuiteObject instead of
+	Object.
+	* objc/execute/class-tests-1.h: Include
+	../../objc-obj-c++-shared/runtime.h.  Use the Modern Objective-C
+	runtime API.  (test_class_with_superclass): Do not call [Object
+	class].  There is no need to with the current libobjc.
+	* objc/execute/class-tests-2.h: Include
+	../../objc-obj-c++-shared/runtime.h.  Use the Modern Objective-C
+	runtime API.
+	* objc/execute/class-1.m: Do not include <objc/objc-api.h> and
+	../../objc-obj-c++-shared/next-mapping.h.
+	* objc/execute/class-2.m: Likewise.
+	* objc/execute/class-3.m: Likewise.
+	* objc/execute/class-4.m: Do not include <objc/objc-api.h> and
+	../../objc-obj-c++-shared/next-mapping.h.  ([RootClass
+	+initialize]): Include this method also with the GNU
+	runtime. (main): Use the Modern Objective-C runtime API.
+	* objc/execute/class-5.m: Likewise.
+	* objc/execute/class-6.m: Likewise.
+	* objc/execute/class-7.m: Likewise.
+	* objc/execute/class-8.m: Likewise.
+	* objc/execute/class-9.m: Likewise.
+	* objc/execute/class-10.m: Likewise.
+	* objc/execute/class-11.m: Likewise.
+	* objc/execute/class-12.m: Likewise.
+	* objc/execute/class-13.m: Likewise.
+	* objc/execute/class-14.m: Likewise.
+	* objc/execute/class_self-1.m ([TestClass +initialize]): Include
+	this method also with the GNU runtime.
+	* objc/execute/class_self-2.m: ([TestClass +initialize], [ClassA
+	+initialize]): Include this method also with the GNU runtime.
+	* objc/execute/compatibility_alias.m: Use TestsuiteObject instead
+	of Object.
+	* objc/execute/encode-1.m: Likewise.
+	* objc/execute/enumeration-1.m: Likewise.
+	* objc/execute/enumeration-2.m: Likewise.
+	* objc/execute/exceptions/catchall-1.m: Likewise.
+	* objc/execute/exceptions/finally-1.m: Likewise.
+	* objc/execute/exceptions/foward-1.m: Likewise.
+	* objc/execute/exceptions/local-variables-1.m: Likewise.
+	* objc/execute/exceptions/throw-nil.m: Likewise.
+	* objc/execute/exceptions/trivial.m: Likewise.
+	* objc/execute/exceptions/handler-1.m: Use TestsuiteObject instead
+	of Object. Include objc/runtime.h instead of objc/objc-api.h.
+	* objc/execute/exceptions/matcher-1.m: Likewise.
+	* objc/execute/formal_protocol-1.m: Use TestsuiteObject instead of
+	Object.
+	* objc/execute/formal_protocol-2.m: Likewise.
+	* objc/execute/formal_protocol-3.m: Likewise.
+	* objc/execute/formal_protocol-4.m: Likewise.
+	* objc/execute/formal_protocol-5.m: Include
+	../../objc-obj-c++-shared/runtime.h. (main): Always use
+	protocol_getName().
+	* objc/execute/formal_protocol-6.m: Likewise.
+	* objc/execute/formal_protocol-7.m: Use TestsuiteObject instead of
+	Object.  Include <objc/Protocol.h> instead of
+	../../objc-obj-c++-shared/Protocol1.h.
+	* objc/execute/function-message-1.m: Use TestsuiteObject intead of
+	Object.
+	* objc/execute/informal_protocol.m: Likewise.
+	* objc/execute/load-3.m: Likewise.
+	* objc/execute/many_args_method.m ([TestClass +initialize]):
+	Include this method with the GNU runtime as well.
+	* objc/execute/nested-3.m ([Test +initialize]): Likewise.
+	* objc/execute/nested-func-1.m: Use TestsuiteObject
+	instead of Object.
+	* objc/execute/nil_method-1.m: Likewise.
+	* objc/execute/no_clash.m: Likewise.
+	* objc/execute/np-1.m: Do not include
+	../../objc-obj-c++-shared/Protocol1.h.
+	(main): Use return instead of exit().
+	* objc/execute/np-2.m: Do not include
+	../../objc-obj-c++-shared/Protocol1.h.
+	([MyObject +initialize]): Include this method also with the GNU
+	runtime.  (main): Use return instead of exit().
+	* objc/execute/object_is_class.m: Include
+	../../objc-obj-c++-shared/runtime.h.  Use TestsuiteObject instead
+	of Object.  (main): Use the Modern Objective-C runtime API.
+	* objc/execute/object_is_meta_class.m: Likewise.
+	* objc/execute/private.m: Use TestsuiteObject instead of Object.
+	* objc/execute/protocol-isEqual-1.m: Include objc/Protocol.h
+	instead of ../objc-obj-c++-shared/Protocol1.h.  Include
+	../../objc-obj-c++-shared/runtime.h.  (main): Use the Modern
+	Objective-C runtime API.
+	* objc/execute/protocol-isEqual-2.m: Likewise.
+	* objc/execute/protocol-isEqual-3.m: Likewise.
+	* objc/execute/protocol-isEqual-4.m: Likewise.
+	* objc/execute/redefining_self.m ([TestClass +initialize]):
+	Include this method with the GNU runtime as well.
+	* objc/execute/root_methods.m: Include
+	../../objc-obj-c++-shared/runtime.h.  ([RootClass +initialize]):
+	Include this method with the GNU runtime as well.
+	(main): Use the Modern Objective-C runtime API.
+	* objc/execute/selector-1.m: Include
+	../../objc-obj-c++-shared/runtime.h.  Use TestsuiteObject instead
+	of Object.  (main): Use the Modern Objective-C runtime API.
+	* objc/execute/static-1.m ([Test +initialize]): Include this
+	method with the GNU runtime as well.
+	* objc/execute/static-2.m: Likewise.
+	* objc/execute/trivial.m: Use TestsuiteObject instead of Object.
+	* objc/execute/va_method.m: Do not include objc/objc-api.h.
+	([MathClass +initialize]): Include this method with the GNU
+	runtime as well.
+	* objc.dg/attributes/categ-attribute-1.m: Use TestsuiteObject
+	instead of Object.
+	* obj-c++.dg/attributes/categ-attribute-1.mm: Likewise.
+	* objc.dg/attributes/categ-attributes-2.m: Likewise.
+	* obj-c++.dg/attributes/categ-attributes-2.mm: Likewise.
+	* objc.dg/attributes/method-attribute-1.m: Likewise.
+	* obj-c++.dg/attributes/method-attribute-1.mm: Likewise.
+	* objc.dg/attributes/method-attribute-2.m: Likewise.
+	* obj-c++.dg/attributes/method-attribute-2.mm: Likewise.
+	* objc.dg/attributes/method-attribute-3.m: Likewise.
+	* obj-c++.dg/attributes/method-attribute-3.mm: Likewise.
+	* obj-c++.dg/basic.mm: Use TestsuiteObject instead of Object.
+	* objc.dg/bitfield-1.m: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/bitfield-1.mm: Likewise.
+	* obj-c++.dg/bitfield-2.mm: Likewise
+	* objc.dg/bitfield-3.m: Likewise.
+	* obj-c++.dg/bitfield-4.mm: Likewise.
+	* objc.dg/bitfield-5.m: Likewise
+	* objc.dg/call-super-1.m: Likewise.
+	* objc.dg/call-super-2.m: Use TestsuiteObject instead of Object.
+	Use objc_getClass() instead of objc_get_class(), but for the GNU
+	runtime redefine objc_getClass as objc_get_class.  Include
+	../objc-obj-c++-shared/runtime.h.
+	* objc.dg/call-super-3.m: Use TestsuiteObject instead of Object.
+	* objc.dg/category-1.m: Use TestsuiteObject instead of Object.
+	Use the Modern Objective-C runtime API.
+	* objc.dg/class-protocol-1.m: Include
+	../objc-obj-c++-shared/runtime.h instead of objc/objc-api.h.
+	* obj-c++.dg/class-protocol-1.mm: Likewise.
+	* objc.dg/comp-types-8.m: Use TestsuiteObject instead of Object.
+	* objc.dg/comp-types-10.m: Likewise.
+	* objc.dg/comp-types-11.m: Likewise.
+	* objc.dg/comp-types-12.m: Likewise.
+	* obj-c++.dg/comp-types-9.mm: Likewise.
+	* obj-c++.dg/comp-types-11.mm: Likewise.
+	* obj-c++.dg/comp-types-12.mm: Likewise.
+	* obj-c++.dg/comp-types-13.mm: Likewise.
+	* obj-c++.dg/cxx-ivars-1.mm: Likewise.
+	* obj-c++.dg/cxx-ivars-2.mm: Likewise.
+	* obj-c++.dg/cxx-scope-1.mm: Likewise.
+	* obj-c++.dg/cxx-scope-2.mm: Likewise.
+	* objc.dg/defs.m: Use TestsuiteObject instead of Object.
+	* objc.dg/desig-init-1.m: Likewise.
+	* obj-c++.dg/defs.mm: Likewise.
+	* objc.dg/exceptions-2.m: Likewise.
+	* obj-c++.dg/except-1.mm: Likewise.
+	* obj-c++.dg/exceptions-2.mm: Likewise.
+	* objc.dg/encode-2.m: Use TestsuiteObject instead of Object.
+	Use the Modern Objective-C runtime API.
+	* objc.dg/encode-3.m: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API.  Do not include
+	../objc-obj-c++-shared/objc-test-suite-types.h.  Define ProtoBool.
+	* objc.dg/encode-4.m: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API except when using an older NeXT
+	runtime.
+	* objc.dg/encode-5.m: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API.
+	* objc.dg/encode-7.m: Include objc/runtime.h instead of
+	objc/encoding.h.
+	* objc.dg/encode-7-next.m: Use TestsuiteObject instead of Object.
+	* objc.dg/encode-7-next-64bit.m: Updated include.
+	* objc.dg/encode-8.m: Include objc/runtime.h instead of
+	objc/encoding.h.
+	* obj-c++.dg/encode-4.mm: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API.
+	* obj-c++.dg/encode-5.mm: Use TestsuiteObject instead of Object.
+	Use the Modern Objective-C runtime API.  Include objc/Protocol.h
+	instead of ../objc-obj-c++-shared/Protocol1.h.
+	* obj-c++.dg/encode-6.mm: Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API except when using an older NeXT
+	runtime.
+	* obj-c++.dg/encode-7.mm:  Use TestsuiteObject instead of Object.  Use
+	the Modern Objective-C runtime API.
+	* objc.dg/fix-and-continue-1.m: Use TestsuiteObject instead of
+	Object.
+	* obj-c++.dg/fix-and-continue-2.mm: Likewise.
+	* objc.dg/fix-and-continue-2.m: Likewise.
+	* objc.dg/foreach-1.m: Likewise.
+	* objc.dg/foreach-2.m: Likewise.
+	* objc.dg/foreach-3.m: Likewise.
+	* objc.dg/foreach-4.m: Likewise.
+	* objc.dg/foreach-5.m: Likewise.
+	* objc.dg/foreach-6.m: Likewise.
+	* objc.dg/foreach-7.m: Likewise.
+	* objc.dg/func-ptr-1.m:  Use TestsuiteObject instead of
+	Object.
+	* objc.dg/func-ptr-2.m: Likewise.
+	* objc.dg/fsf-package-0.m: Use TestsuiteObject instead of Object.
+	Do not include objc/objc-api.h.
+	* obj-c++.dg/fsf-package-0.mm: Likewise.
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c
+	(switchfiles): Include objc/runtime.h instead of objc/encoding.h.
+	* objc.dg/gnu-runtime-1.m: Updated to use TestsuiteObject instead
+	of Object.
+	* obj-c++.dg/gnu-runtime-1.mm: Likewise.
+	* objc.dg/gnu-runtime-3.m: Likewise.
+	* obj-c++.dg/gnu-runtime-3.mm: Likewise.
+	* objc.dg/headers.m: Include objc/runtime.h instead of
+	objc/encoding.h for the GNU runtime.  Include objc/objc-api.h only
+	for the NeXT runtime.
+	* objc.dg/isa-field-1.m: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/isa-field-1.mm: Likewise.
+	* obj-c++.dg/ivar-list-semi.mm: Likewise.
+	* objc.dg/layout-1.m: Likewise.
+	* objc.dg/layout-2.m: Likewise.
+	* objc.dg/local-decl-2.m: Likewise.
+	* objc.dg/lookup-1.m: Use TestsuiteObject instead of
+	Object.  ([Container +elementForView:]): Use
+	class_conformsToProtocol().
+	* obj-c++.dg/lookup-2.mm: Likewise.
+	* obj-c++.dg/layout-1.mm: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/local-decl-1.mm: Likewise.
+	* objc.dg/method-3.m: Likewise.
+	* objc.dg/method-4.m: Likewise.
+	* objc.dg/method-6.m: Include objc/Protocol.h instead of
+	../objc-obj-c++-shared/Protocol1.h.
+	* objc.dg/method-7.m: Use TestsuiteObject instead of Object.
+	* objc.dg/method-9.m: Likewise.
+	* objc.dg/method-10.m: Likewise.
+	* objc.dg/method-13.m ([Root +initialize]): Include this method
+	also for the GNU runtime.  (main): Use objc_getClass() also for
+	the GNU runtime.
+	* objc.dg/method-15.m: Use TestsuiteObject instead of Object.
+	* objc.dg/method-17.m: Likewise.
+	* objc.dg/method-19.m: Likewise.
+	* objc.dg/method-20b.m: Likewise.
+	* obj-c++.dg/method-2.mm: Likewise.
+	* obj-c++.dg/method-6.mm: Likewise.
+	* obj-c++.dg/method-10.mm: Likewise.
+	* obj-c++.dg/method-11.mm: Likewise.
+	* obj-c++.dg/method-12.mm: Include objc/Protocol.h instead of
+	../objc-obj-c++-shared/Protocol1.h.
+	* obj-c++.dg/method-13.mm: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/method-15.mm: Likewise.
+	* obj-c++.dg/method-17.mm: Likewise.
+	* obj-c++.dg/method-19.mm: Updated includes.  ([Root
+	+initialize]): Include this method also for the GNU
+	runtime.  (main): Use objc_getClass() also for the GNU runtime.
+	* obj-c++.dg/method-21.mm: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/method-22.mm: Likewise.
+	* obj-c++.dg/method-23.mm: Likewise.
+	* obj-c++.dg/no-extra-load.mm: Likewise.
+	* objc.dg/objc-fast-4.m: Likewise.
+	* objc.dg/objc-gc-4.m: Likewise.
+	* obj-c++.dg/objc-gc-3.mm: Likewise.
+	* objc.dg/pr18255.m: Include objc/runtime.h.  (main): Use
+	protocol_getMethodDescription() instead of [Protocol
+	-descriptionForInstanceMethod].
+	* objc.dg/pr23214.m ([Object(TS_CAT) -class]): Renamed to test.
+	Made it available with all runtimes.  (main): Call -test instead
+	of -class.
+	* objc.dg/pr45878.m ([Object -isEqual:]): Renamed to testIsEqual,
+	and put into a category.
+	* objc.dg/proto-lossage-2.m: Use TestsuiteObject instead of
+	Object.  Include objc/objc.h.
+	* obj-c++.dg/proto-lossage-2.mm: Likewise.
+	* objc.dg/proto-lossage-3.m: Updated includes.  (MyClass):
+	New. (main): Use protocol_getMethodDescription() instead
+	of [Protocol -descriptionForInstanceMethod] and [Protocol
+	-descriptionForClassMethod].
+	* obj-c++.dg/proto-lossage-3.mm: Likewise.
+	* objc.dg/proto-qual-1.m: Updated includes.  Use the Modern
+	Objective-C runtime API.
+	* obj-c++.dg/proto-qual-1.mm: Likewise.
+	* objc.dg/property/property-1.m: Use TestsuiteObject instead of
+	Object.
+	* obj-c++.dg/property/property-1.mm: Likewise.
+	* obj-c++.dg/qual-types-1.mm: Likewise.
+	* objc.dg/selector-2.m: Include objc/objc.h instead of
+	../objc-obj-c++-shared/Object1.h.
+	* obj-c++.dg/selector-2.mm: Likewise.
+	* obj-c++.dg/selector-5.mm: Likewise.
+	* obj-c++.dg/selector-6.mm: Likewise.
+	* objc.dg/set-not-used-1.m: Use TestsuiteObject instead of
+	Object.  Do not include objc/objc-api.h.
+	* obj-c++.dg/set-not-used-1.mm: Likewise.
+	* objc.dg/sizeof-1.m: Use TestsuiteObject instead of Object.
+	* objc.dg/stret-1.m: Likewise.
+	* objc.dg/stret-2.m: Likewise.
+	* obj-c++.dg/super-class-2.mm: Likewise.
+	* objc.dg/super-class-3.m: Likewise.
+	* objc.dg/super-class-4.m: Likewise.
+	* objc.dg/sync-2.m: Likewise.
+	* obj-c++.dg/sync-2.mm: Likewise.
+	* objc.dg/sync-1.m: Include objc/objc.h instead of
+	../objc-obj-c++-shared/Object1.h.
+	* objc.dg/special/unclaimed-category-1.h (TestClass): Always use
+	'Class' as the type of 'isa'.
+	* objc.dg/special/unclaimed-category-1.m: Use the Modern
+	Objective-C runtime API.  ([TestClass +initialize]): Include this
+	method with the GNU runtime as well.
+	* objc.dg/strings/strings-1.m: Updated includes.
+	* obj-c++.dg/strings/strings-1.mm: Likewise.
+	* obj-c++.dg/strings/const-str-12.mm: Updated to be identical to
+	objc.dg/strings/const-str-12b.m.
+	* obj-c++.dg/template-1.mm: Use TestsuiteObject intead of Object.
+	* obj-c++.dg/template-3.mm: Likewise.
+	* obj-c++.dg/template-4.mm: Likewise.
+	* objc.dg/threedotthree-abi-1.m: Updated includes.  Use Modern
+	Objective-C runtime API.
+	* obj-c++.dg/threedotthree-abi-1.mm: Likewise.
+	* objc.dg/try-catch-1.m: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/try-catch-1.mm: Likewise.
+	* obj-c++.dg/try-catch-2.mm: Likewise.
+	* objc.dg/try-catch-3.m: Likewise.
+	* obj-c++.dg/try-catch-3.mm: Likewise.
+	* objc.dg/try-catch-6.m: Likewise.
+	* objc.dg/try-catch-7.m: Likewise.
+	* obj-c++.dg/try-catch-7.mm: Likewise.
+	* obj-c++.dg/try-catch-8.mm: Likewise.
+	* obj-c++.dg/try-catch-9.mm: Likewise.
+	* objc.dg/try-catch-10.m: Likewise.
+	* obj-c++.dg/try-catch-11.mm: Likewise.
+	* objc.dg/typedef-alias-1.m: Use TestsuiteObject instead of
+	Object.  Include objc/objc.h.
+	* obj-c++.dg/typedef-alias-1.mm: Likewise.
+	* objc.dg/type-size-2.m: Use the Modern Objective-C runtime API.
+	* objc.dg/torture/forward-1.m: Use TestsuiteObject intead of
+	Object.  Use Modern Objective-C runtime API.  Do not use
+	performv::.
+	* objc.dg/torture/trivial.m: Use TestsuiteObject intead of Object.
+	* obj-c++.dg/torture/trivial.mm: Likewise.
+	* objc.dg/torture/strings/const-str-10.m: Include objc/Object.h
+	instead of ../objc-obj-c++-shared/Object1.h.  Include
+	../objc-obj-c++-shared/runtime.h.
+	* obj-c++.dg/torture/strings/const-str-10.mm: Likewise.
+	* objc.dg/torture/strings/const-str-11.m: Likewise.
+	* obj-c++.dg/torture/strings/const-str-11.mm: Likewise.
+	* objc.dg/torture/strings/const-str-9.m: Likewise.
+	* obj-c++.dg/torture/strings/const-str-9.mm: Likewise.
+	* objc.dg/torture/strings/const-str-7.m: Use TestsuiteObject
+	instead of Object. Only add _FooClassReference if
+	__NEXT_RUNTIME__.
+	* obj-c++.dg/torture/strings/const-str-7.mm: Likewise.
+	* objc.dg/torture/strings/const-str-8.m: Likewise.
+	* obj-c++.dg/torture/strings/const-str-8.mm: Likewise.
+	* obj-c++.dg/torture/strings/string1.mm: Updated includes and
+	additional sources.
+	* objc.dg/torture/tls/thr-init-3.m: Use TestsuiteObject instead of
+	Object.
+	* obj-c++.dg/torture/tls/thr-init-3.mm: Likewise.
+	* objc.dg/va-meth-1.m: Use TestsuiteObject instead of Object.
+	* obj-c++.dg/va-meth-1.mm: Likewise.
+	* objc.dg/zero-link-1.m: Include objc/Object.h instead of
+	../objc-obj-c++-shared/Object1.h.
+	* objc.dg/zero-link-3.m: Likewise.
+
+2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* obj-c++.dg/try-catch-2.mm: Fixed unterminated comment.
+
+2011-06-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc-++/48275
+	* obj-c++.dg/property/cxx-property-1.mm: New.
+	* obj-c++.dg/property/cxx-property-2.mm: New.
+
+2011-06-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/regress/ptrmem1.C: New.
+
+2011-06-06  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/49145
+	From Ryan Mansfield
+	* gcc.c-torture/compile/pr49145.c: New test.
+
+2011-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49288
+	* g++.dg/debug/dwarf2/cdtor-1.C: Add -fno-merge-debug-strings
+	to dg-options, match also DW_AT_linkage_name.
+
+	PR debug/49294
+	* gcc.dg/debug/pr49294.c: New test.
+
+	PR c++/49264
+	* g++.dg/opt/pr49264.C: New test.
+
+2011-06-06  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR tree-optimization/49243
+	* gcc.dg/pr49243.c: New.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/cond_expr1.ads: New test.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/deferred_const4.ad[sb]: New test.
+	* gnat.dg/deferred_const4_pkg.ads: New helper.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/test_tamdt.adb: Rename to...
+	* gnat.dg/taft_type1.adb: ...this.
+	* gnat.dg/tamdt.ad[sb]: Rename to...
+	* gnat.dg/taft_type1_pkg1.ad[sb]: ...this.
+	* gnat.dg/tamdt_aux.ads: Rename to...
+	* gnat.dg/taft_type1_pkg2.ads: ...this.
+	* gnat.dg/taft_type2.ad[sb]: New test.
+	* gnat.dg/taft_type2_pkg.ads: New helper.
+	* gnat.dg/taft_type3.adb: New test.
+	* gnat.dg/taft_type3_pkg.ads: New helper.
+
+2011-06-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49255
+	* trans-expr.c (gfc_conv_procedure_call): Fix -fcheck=pointer
+	for F2008.
+
+2011-06-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR testsuite/49287
+	* objc.dg/gnu-api-2-class.m: Updated testcase silencing compiler
+	warning.
+	* objc.dg/gnu-api-2-objc.m: Likewise.
+	* obj-c++.dg/gnu-api-2-class.mm: Likewise
+	* obj-c++.dg/gnu-api-2-objc.mm: Likewise.
+
+2011-06-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-objc.m: Fixed testcase.  Use log2 of the
+	alignment, not the alignment, when calling class_addIvar().  Add
+	an 'isa' instance variable to the test root class.
+	* obj-c++.dg/gnu-api-2-objc.mm: Likewise.
+
+2011-06-04  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/48893
+	PR tree-optimization/49091
+	PR tree-optimization/49179
+	* gfortran.dg/pr49179.f90: New testcase
+
+2011-06-04  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/48954
+	* g++.dg/torture/pr48954.C: New testcase.
+
+2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* g++.dg/warn/delete-non-virtual-dtor.C: New.
+
+2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/33840
+	* g++.dg/diagnostic/bitfld2.C: New.
+
+2011-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49281
+	* gcc.c-torture/execute/pr49281.c: New test.
+
+2011-06-04  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/48929
+	* gcc.c-torture/compile/pr48929.c: New testcase.
+
+2011-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/rotatetest.c (f5, f6): Fix up pastos.
+
+2011-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49276
+	* g++.dg/cpp0x/lambda/lambda-mangle2.C: New test.
+
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/headers.m: Do not include sarray.h and hash.h.
+
+2011-06-03  Richard Henderson  <rth@redhat.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_sse_os_support_available): Use movaps.
+
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/headers.m: Do not include objc-list.h.
+
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/type-stream-1.m: Test removed.
+	* objc.dg/headers.m: Do not include typedstream.h.
+
+2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/torture/forward-1.m (main): Updated testcase.
+
+2011-06-02  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/49163
+	* gcc.c-torture/compile/pr49163.c: New.
+
+2011-06-02  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/49268
+	* gfortran.dg/PR49268.f90: New test.
+
+2011-06-02  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/37039
+	* gfortran.dg/PR37039.f90: New test.
+
+2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/48539
+	* objc.dg/method-5.m: Updated.
+	* objc.dg/method-19.m: Updated.
+	* objc.dg/method-lookup-1.m: New.
+	* obj-c++.dg/method-6.mm: Updated.
+	* obj-c++.dg/method-7.mm: Updated.
+	* obj-c++.dg/method-lookup-1.mm: New.
+
+2011-06-02  DJ Delorie  <dj@redhat.com>
+
+	* lib/timeout.exp (timeout): Add board_info support.
+
+2011-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-init-v2di-2: Update scan-assembler-times string.
+
+2011-06-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/49265
+	* gfortran.dg/module_procedure_double_colon_1.f90: New test.
+	* gfortran.dg/module_procedure_double_colon_2.f90: New test.
+
+2011-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+	    Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/48840
+	* gcc.target/sparc/ultrasp13.c: New test.
+
 2011-06-01  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/49238
@@ -28,29 +1557,29 @@
 
 2011-06-01  David Li  <davidxl@google.com>
 
-	* testsuite/gcc.dg/profile-dir-1.c: Change pass name.
-	* testsuite/gcc.dg/profile-dir-2.c: Ditto.
-	* testsuite/gcc.dg/tree-ssa/dump-1.c: Ditto.
-	* testsuite/gcc.dg/tree-ssa/loop-25.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/stringop-1.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/update-loopch.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/stringop-2.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/ic-misattribution-1.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/ic-misattribution-1a.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/indir-call-prof.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-1.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-2.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-3.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-4.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-5.c: Ditto.
-	* testsuite/gcc.dg/tree-prof/val-prof-7.c: Ditto.
-	* testsuite/gcc.dg/profile-dir-3.c: Ditto.
-	* testsuite/g++.dg/tree-prof/indir-call-prof.C: Ditto.
+	* gcc.dg/profile-dir-1.c: Change pass name.
+	* gcc.dg/profile-dir-2.c: Ditto.
+	* gcc.dg/tree-ssa/dump-1.c: Ditto.
+	* gcc.dg/tree-ssa/loop-25.c: Ditto.
+	* gcc.dg/tree-prof/stringop-1.c: Ditto.
+	* gcc.dg/tree-prof/update-loopch.c: Ditto.
+	* gcc.dg/tree-prof/stringop-2.c: Ditto.
+	* gcc.dg/tree-prof/ic-misattribution-1.c: Ditto.
+	* gcc.dg/tree-prof/ic-misattribution-1a.c: Ditto.
+	* gcc.dg/tree-prof/indir-call-prof.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-1.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-2.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-3.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-4.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-5.c: Ditto.
+	* gcc.dg/tree-prof/val-prof-7.c: Ditto.
+	* gcc.dg/profile-dir-3.c: Ditto.
+	* g++.dg/tree-prof/indir-call-prof.C: Ditto.
 
 2011-06-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/attributes/method-nonnull-1.m: New test.
-	* obj-c++.dg/attributes/method-nonnull-1.mm: New test.	
+	* obj-c++.dg/attributes/method-nonnull-1.mm: New test.
 
 2011-05-31  Tobias Burnus  <burnus@net-b.de>
 
@@ -262,7 +1791,7 @@
 2011-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42056
-	* testsuite/g++.dg/cpp0x/auto25.C: New.
+	* g++.dg/cpp0x/auto25.C: New.
 
 2011-05-27  Richard Guenther  <rguenther@suse.de>
 
@@ -1445,8 +2974,8 @@
 
 2011-04-28  Xinliang David Li  <davidxl@google.com>
 
-	* testsuite/gcc.dg/tree-prof/prof-robust-1.c: New test.
-	* testsuite/g++.dg/prof-robust-1.C: New test.
+	* gcc.dg/tree-prof/prof-robust-1.c: New test.
+	* g++.dg/prof-robust-1.C: New test.
 
 2011-04-28  Ira Rosen  <ira.rosen@linaro.org>
 
@@ -2997,11 +4526,11 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/sfinae6.C: New.
-	* gcc/testsuite/g++.dg/cpp0x/initlist38.C: Adjust expected error.
-	* gcc/testsuite/g++.dg/cpp0x/pr45908.C: Likewise.
-	* gcc/testsuite/g++.dg/cpp0x/sfinae6.C: Likewise.
-	* gcc/testsuite/g++.old-deja/g++.jason/conversion11.C: Likewise.
-	* gcc/testsuite/g++.old-deja/g++.law/arg11.C: Likewise.
+	* g++.dg/cpp0x/initlist38.C: Adjust expected error.
+	* g++.dg/cpp0x/pr45908.C: Likewise.
+	* g++.dg/cpp0x/sfinae6.C: Likewise.
+	* g++.old-deja/g++.jason/conversion11.C: Likewise.
+	* g++.old-deja/g++.law/arg11.C: Likewise.
 
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
@@ -5526,8 +7055,8 @@
 
 	PR lto/45721
 	PR lto/45375
-	* testsuite/gcc.dg/lto/pr45721_1.c: New file.
-	* testsuite/gcc.dg/lto/pr45721_0.c: New file.
+	* gcc.dg/lto/pr45721_1.c: New file.
+	* gcc.dg/lto/pr45721_0.c: New file.
 
 2011-01-11  Richard Guenther  <rguenther@suse.de>
 
@@ -5823,8 +7352,8 @@
 
 2011-01-06  Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/gcc.dg/lto/pr47188_0.c: New testcase.
-	* testsuite/gcc.dg/lto/pr47188_1.c: New testcase.
+	* gcc.dg/lto/pr47188_0.c: New testcase.
+	* gcc.dg/lto/pr47188_1.c: New testcase.
 
 2011-01-06  Daniel Franke  <franke.daniel@gmail.com>
 

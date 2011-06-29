@@ -53,7 +53,7 @@ namespace __gnu_pbds
     typedef typename __rebind_k::other::const_reference	key_const_reference;
     typedef std::string::const_iterator 		const_iterator;
 
-    // Element type.
+    /// Element type.
     typedef char 				       	e_type;
 
     enum
@@ -61,15 +61,15 @@ namespace __gnu_pbds
 	max_size = 4
       };
 
-    // Returns a const_iterator to the first element of r_key.
+    /// Returns a const_iterator to the first element of r_key.
     inline static const_iterator
     begin(key_const_reference);
 
-    // Returns a const_iterator to the after-last element of r_key.
+    /// Returns a const_iterator to the after-last element of r_key.
     inline static const_iterator
     end(key_const_reference);
 
-    // Maps an element to a position.
+    /// Maps an element to a position.
     inline static size_type
     e_pos(e_type);
   };

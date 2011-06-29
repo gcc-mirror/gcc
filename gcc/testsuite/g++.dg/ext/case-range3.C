@@ -18,6 +18,6 @@ int f (int i)
 {
   switch (i) {
     case 1 ... 10: return i + 1;      // { dg-warning "non-standard" }
-    default: return f2 (i);           // { dg-message "instantiated" }
+    default: return f2 (i);           // { dg-message "required" }
   }
 }

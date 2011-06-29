@@ -4,24 +4,18 @@
 /* { dg-do run } */
 /* { dg-xfail-run-if "need OBJC2 ABI" { *-*-darwin* && { lp64 &&  { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 extern int strcmp(const char *s1, const char *s2);
 extern void abort(void);
 
-#ifdef __NEXT_RUNTIME__
-#define SUPERCLASS superclass
-#else
-#define SUPERCLASS superClass
-#endif
-
 #define CHECK_IF(expr) if(!(expr)) abort()
 
-@interface MyObject: Object
+@interface MyObject: TestsuiteObject
 + (Class)whatever1;
 @end
 
 @implementation MyObject
-+ (Class)whatever1 { return [super SUPERCLASS]; }
++ (Class)whatever1 { return [super superclass]; }
 @end
 
 @interface MyObject (ThisWontCompile)
@@ -29,7 +23,7 @@ extern void abort(void);
 @end
  
 @implementation MyObject (ThisWontCompile)
-+(Class)whatever2 { return [super SUPERCLASS]; }
++(Class)whatever2 { return [super superclass]; }
 @end
 
 int main (int argc, const char * argv[])
@@ -37,15 +31,9 @@ int main (int argc, const char * argv[])
   Class w1 = [MyObject whatever1];
   Class w2 = [MyObject whatever2];
 
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-  CHECK_IF(!strcmp( object_getClassName( w1 ), "Object"));
-  CHECK_IF(!strcmp( object_getClassName( w2 ), "Object"));
-#else
-  CHECK_IF(!strcmp(w1->name, "Object"));
-  CHECK_IF(!strcmp(w2->name, "Object"));
-#endif
+  CHECK_IF(!strcmp( object_getClassName( w1 ), "TestsuiteObject"));
+  CHECK_IF(!strcmp( object_getClassName( w2 ), "TestsuiteObject"));
 
   return 0;
 }
 
-#include "../objc-obj-c++-shared/Object1-implementation.h"

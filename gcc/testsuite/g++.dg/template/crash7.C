@@ -10,5 +10,5 @@ template <typename> struct A	// { dg-message "A.void.::A.const A" }
     template <typename> A(typename A::X) {} // { dg-error "no type" }
 };
 
-A<void> a;	// { dg-error "instantiated|no match" }
+A<void> a;	// { dg-error "required|no match" }
 // { dg-prune-output "note" }

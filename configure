@@ -2677,9 +2677,8 @@ libgcj="target-libffi \
 
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
-#
+# Note that libiberty is not a target library.
 target_libraries="target-libgcc \
-		target-libiberty \
 		target-libgloss \
 		target-newlib \
 		target-libgomp \
@@ -3060,51 +3059,6 @@ case "${target}" in
     ;;
   powerpc-*-aix* | rs6000-*-aix*)
     noconfigdirs="$noconfigdirs target-libssp"
-    ;;
-esac
-
-# Disable target libiberty for some systems.
-case "${target}" in
-  *-*-kaos*)
-    # Remove unsupported stuff on all kaOS configurations.
-    skipdirs="target-libiberty"
-    ;;
-  *-*-netbsd*)
-    # Skip some stuff on all NetBSD configurations.
-    noconfigdirs="$noconfigdirs target-libiberty"
-    ;;
-  *-*-netware*)
-    noconfigdirs="$noconfigdirs target-libiberty"
-    ;;
-  *-*-rtems*)
-    skipdirs="${skipdirs} target-libiberty"
-    ;;
-  *-*-tpf*)
-    noconfigdirs="$noconfigdirs target-libiberty"
-    ;;
-  *-*-vxworks*)
-    noconfigdirs="$noconfigdirs target-libiberty"
-    ;;
-  sh*-*-pe|mips*-*-pe|*arm-wince-pe)
-    noconfigdirs="$noconfigdirs target-libiberty"
-    ;;
-  arm*-*-symbianelf*)
-    noconfigdirs="$noconfigdirs target-libiberty"
-    ;;
-  avr-*-*)
-    noconfigdirs="$noconfigdirs target-libiberty"
-    ;;
-  m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
-    noconfigdirs="$noconfigdirs target-libiberty"
-    ;;
-  picochip-*-*)
-    noconfigdirs="$noconfigdirs target-libiberty"
-    ;;
-  mips*-sde-elf*)
-    skipdirs="$skipdirs target-libiberty"
-    ;;
-  ip2k-*-*)
-    noconfigdirs="$noconfigdirs target-libiberty"
     ;;
 esac
 
@@ -3626,6 +3580,9 @@ case "${target}" in
     ;;
   tic6x-*-*)
     noconfigdirs="$noconfigdirs gdb sim"
+    ;;
+  tilepro-*-* | tilegx-*-*)
+    noconfigdirs="$noconfigdirs sim"
     ;;
   v810-*-*)
     noconfigdirs="$noconfigdirs bfd binutils gas gdb ld opcodes target-libgloss"
@@ -6468,27 +6425,6 @@ for dir in . $skipdirs $noconfigdirs ; do
     fi
   fi
 done
-
-# Sometimes the tools are distributed with libiberty but with no other
-# libraries.  In that case, we don't want to build target-libiberty.
-# Don't let libgcc imply libiberty either.
-if test -n "${target_configdirs}" ; then
-  libgcc=
-  others=
-  for i in `echo ${target_configdirs} | sed -e s/target-//g` ; do
-    if test "$i" = "libgcc"; then
-      libgcc=target-libgcc
-    elif test "$i" != "libiberty" ; then
-      if test -r $srcdir/$i/configure ; then
-	others=yes;
-	break;
-      fi
-    fi
-  done
-  if test -z "${others}" ; then
-    target_configdirs=$libgcc
-  fi
-fi
 
 # Quietly strip out all directories which aren't configurable in this tree.
 # This relies on all configurable subdirectories being autoconfiscated, which

@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#undef GNU_USER_TARGET_OS_CPP_BUILTINS    
 #define GNU_USER_TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
@@ -31,5 +30,6 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#undef GNU_USER_DYNAMIC_LINKER
-#define GNU_USER_DYNAMIC_LINKER "/lib/ld.so.1"
+#define GNU_USER_DYNAMIC_LINKER                GLIBC_DYNAMIC_LINKER
+#define GNU_USER_DYNAMIC_LINKER32      GLIBC_DYNAMIC_LINKER32
+#define GNU_USER_DYNAMIC_LINKER64      GLIBC_DYNAMIC_LINKER64

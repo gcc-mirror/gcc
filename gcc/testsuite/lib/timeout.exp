@@ -46,6 +46,8 @@ proc timeout_value { args } {
 	set val $tool_timeout
     } elseif [target_info exists gcc,timeout] {
 	set val [target_info gcc,timeout]
+    } elseif [board_info target exists gcc,timeout] {
+	set val [board_info target gcc,timeout]
     } else {
 	# This is really, REALLY ugly, but this is the default from
 	# remote.exp deep within DejaGnu.

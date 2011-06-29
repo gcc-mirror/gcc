@@ -1,3 +1,34 @@
+2011-06-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (go/go-lang.o, go/go-backend.o): Update
+	dependencies.
+	* go-backend.c: Include common/common-target.h.
+	(go_write_export_data): Use targetm_common.have_named_sections.
+	* go-lang.c: Include common/common-target.h.
+	(go_langhook_init_options_struct): Use
+	targetm_common.supports_split_stack.
+
+2011-06-13  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (go/expressions.o): Depend on $(GO_RUNTIME_H).
+
+2011-06-10  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc: Include "toplev.h".
+	(Gcc_backend::immutable_struct): New function.
+	(Gcc_backend::immutable_struct_set_init): New function.
+	(Gcc_backend::immutable_struct_reference): New function.
+	* Make-lang.in (go/go-gcc.o): Depend on toplev.h.
+
+2011-06-09  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::zero_expression): New function.
+
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* go-lang.c (go_langhook_init): Do not set
+	size_type_node or call set_sizetype.
+
 2011-05-27  Ian Lance Taylor  <iant@google.com>
 
 	* go-backend.c: Include "output.h".

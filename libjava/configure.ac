@@ -898,8 +898,13 @@ case "${host}" in
         SYSTEMSPEC="-lunicows $SYSTEMSPEC"
       fi
     ;;
-    *-*-darwin[[912]]*)
+    *-*-darwin9*)
       SYSTEMSPEC="%{!Zdynamiclib:%{!Zbundle:-allow_stack_execute}}"
+    ;;
+    *-*-darwin[[12]]*)
+      # Something is incompatible with pie, would be nice to fix it and
+      # remove -no_pie.  PR49461
+      SYSTEMSPEC="-no_pie %{!Zdynamiclib:%{!Zbundle:-allow_stack_execute}}"
     ;;
     *)
       SYSTEMSPEC=
@@ -1727,11 +1732,11 @@ SYSDEP_SOURCES=
 SIGNAL_HANDLER_AUX=
 
 case "${host}" in
+ alpha*-dec-osf* | mips-sgi-irix* | *-*-solaris2*)
+    SIGNAL_HANDLER=include/posix-signal.h
+    ;;
  i?86-*-linux*)
     SIGNAL_HANDLER=include/i386-signal.h
-    ;;
- *-*-solaris2*)
-    SIGNAL_HANDLER=include/solaris-signal.h
     ;;
 # ia64-*)
 #    SYSDEP_SOURCES=sysdep/ia64.c

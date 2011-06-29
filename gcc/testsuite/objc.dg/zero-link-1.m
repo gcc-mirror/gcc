@@ -5,7 +5,7 @@
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-options "-fzero-link" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include <objc/Object.h>
 #include <objc/objc.h>
 
 extern void abort(void);

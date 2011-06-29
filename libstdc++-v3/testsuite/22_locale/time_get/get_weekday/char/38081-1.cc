@@ -1,6 +1,6 @@
 // { dg-require-namedlocale "ru_RU.ISO-8859-5" }
 
-// Copyright (C) 2010 Free Software Foundation
+// Copyright (C) 2010, 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +49,11 @@ void test01()
   // get_weekday(iter_type, iter_type, ios_base&, 
   //             ios_base::iostate&, tm*) const
 
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 14)
+  iss.str("\xbf\xdd\x2e");
+#else
   iss.str("\xbf\xdd\xd4");
+#endif
   iterator_type is_it01(iss);
   tm time01;
   memset(&time01, -1, sizeof(tm));
@@ -67,7 +71,11 @@ void test01()
   VERIFY( time02.tm_wday == 1 );
   VERIFY( errorstate == ios_base::eofbit );
 
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 14)
+  iss.str("\xbf\xdd\x2e\xd5\xd4\xd5\xdb\xec\xdd\xd8\xda");
+#else
   iss.str("\xbf\xdd\xd4\xd5\xd4\xd5\xdb\xec\xdd\xd8\xda");
+#endif
   iterator_type is_it03(iss);
   tm time03;
   memset(&time03, -1, sizeof(tm));

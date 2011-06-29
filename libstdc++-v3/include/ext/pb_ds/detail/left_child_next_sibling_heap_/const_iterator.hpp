@@ -65,25 +65,25 @@ namespace __gnu_pbds
       typedef typename base_type::node_pointer		node_pointer;
 
     public:
-      // Category.
+      /// Category.
       typedef std::forward_iterator_tag 		iterator_category;
 
-      // Difference type.
+      /// Difference type.
       typedef typename _Alloc::difference_type 		difference_type;
 
-      // Iterator's value type.
+      /// Iterator's value type.
       typedef typename base_type::value_type 		value_type;
 
-      // Iterator's pointer type.
+      /// Iterator's pointer type.
       typedef typename base_type::pointer 		pointer;
 
-      // Iterator's const pointer type.
+      /// Iterator's const pointer type.
       typedef typename base_type::const_pointer 	const_pointer;
 
-      // Iterator's reference type.
+      /// Iterator's reference type.
       typedef typename base_type::reference 		reference;
 
-      // Iterator's const reference type.
+      /// Iterator's const reference type.
       typedef typename base_type::const_reference 	const_reference;
 
       inline
@@ -91,27 +91,27 @@ namespace __gnu_pbds
       : base_type(p_nd)
       { }
 
-      // Default constructor.
+      /// Default constructor.
       inline
       left_child_next_sibling_heap_const_iterator_()
       { }
 
-      // Copy constructor.
+      /// Copy constructor.
       inline
       left_child_next_sibling_heap_const_iterator_(const PB_DS_CLASS_C_DEC& other) : base_type(other)
       { }
 
-      // Compares content to a different iterator object.
-      inline bool
+      /// Compares content to a different iterator object.
+      bool
       operator==(const PB_DS_CLASS_C_DEC& other) const
       { return (base_type::m_p_nd == other.m_p_nd); }
 
-      // Compares content (negatively) to a different iterator object.
-      inline bool
+      /// Compares content (negatively) to a different iterator object.
+      bool
       operator!=(const PB_DS_CLASS_C_DEC& other) const
       { return (base_type::m_p_nd != other.m_p_nd); }
 
-      inline PB_DS_CLASS_C_DEC&
+      PB_DS_CLASS_C_DEC&
       operator++()
       {
 	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_nd != 0);
@@ -119,7 +119,7 @@ namespace __gnu_pbds
 	return (*this);
       }
 
-      inline PB_DS_CLASS_C_DEC
+      PB_DS_CLASS_C_DEC
       operator++(int)
       {
 	PB_DS_CLASS_C_DEC ret_it(base_type::m_p_nd);

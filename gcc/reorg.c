@@ -2152,7 +2152,7 @@ fill_simple_delay_slots (int non_jumps_p)
 	      /* This must be an INSN or CALL_INSN.  */
 	      pat = PATTERN (trial);
 
-	      /* USE and CLOBBER at this level was just for flow; ignore it.  */
+	      /* Stand-alone USE and CLOBBER are just for flow.  */
 	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 		continue;
 
@@ -2271,15 +2271,12 @@ fill_simple_delay_slots (int non_jumps_p)
 	    }
 
 	  if (target == 0)
-	    for (trial = next_nonnote_insn (insn); trial; trial = next_trial)
+	    for (trial = next_nonnote_insn (insn); !stop_search_p (trial, 1);
+		 trial = next_trial)
 	      {
 		next_trial = next_nonnote_insn (trial);
 
-		if (LABEL_P (trial)
-		    || BARRIER_P (trial))
-		  break;
-
-		/* We must have an INSN, JUMP_INSN, or CALL_INSN.  */
+		/* This must be an INSN or CALL_INSN.  */
 		pat = PATTERN (trial);
 
 		/* Stand-alone USE and CLOBBER are just for flow.  */
@@ -2293,7 +2290,7 @@ fill_simple_delay_slots (int non_jumps_p)
 		else
 		  trial_delay = trial;
 
-		/* Stop our search when seeing an unconditional jump.  */
+		/* Stop our search when seeing a jump.  */
 		if (JUMP_P (trial_delay))
 		  break;
 
@@ -4086,7 +4083,6 @@ struct rtl_opt_pass pass_delay_slots =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
   TODO_ggc_collect                      /* todo_flags_finish */
  }
 };
@@ -4121,7 +4117,6 @@ struct rtl_opt_pass pass_machine_reorg =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
   TODO_ggc_collect                      /* todo_flags_finish */
  }
 };

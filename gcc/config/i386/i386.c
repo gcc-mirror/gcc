@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
+#include "common/common-target.h"
 #include "langhooks.h"
 #include "cgraph.h"
 #include "gimple.h"
@@ -2121,6 +2122,12 @@ static const unsigned int x86_arch_always_fancy_math_387
   = m_PENT | m_ATOM | m_PPRO | m_AMD_MULTIPLE | m_PENT4
     | m_NOCONA | m_CORE2I7 | m_GENERIC;
 
+static const unsigned int x86_avx256_split_unaligned_load
+  = m_COREI7 | m_GENERIC;
+
+static const unsigned int x86_avx256_split_unaligned_store
+  = m_COREI7 | m_BDVER1 | m_GENERIC;
+
 /* In case the average insn count for single function invocation is
    lower than this constant, emit fast (but longer) prologue and
    epilogue code.  */
@@ -2461,120 +2468,6 @@ static enum calling_abi ix86_function_abi (const_tree);
 static int ix86_tune_defaulted;
 static int ix86_arch_specified;
 
-/* Define a set of ISAs which are available when a given ISA is
-   enabled.  MMX and SSE ISAs are handled separately.  */
-
-#define OPTION_MASK_ISA_MMX_SET OPTION_MASK_ISA_MMX
-#define OPTION_MASK_ISA_3DNOW_SET \
-  (OPTION_MASK_ISA_3DNOW | OPTION_MASK_ISA_MMX_SET)
-
-#define OPTION_MASK_ISA_SSE_SET OPTION_MASK_ISA_SSE
-#define OPTION_MASK_ISA_SSE2_SET \
-  (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_SSE_SET)
-#define OPTION_MASK_ISA_SSE3_SET \
-  (OPTION_MASK_ISA_SSE3 | OPTION_MASK_ISA_SSE2_SET)
-#define OPTION_MASK_ISA_SSSE3_SET \
-  (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_SSE3_SET)
-#define OPTION_MASK_ISA_SSE4_1_SET \
-  (OPTION_MASK_ISA_SSE4_1 | OPTION_MASK_ISA_SSSE3_SET)
-#define OPTION_MASK_ISA_SSE4_2_SET \
-  (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_SSE4_1_SET)
-#define OPTION_MASK_ISA_AVX_SET \
-  (OPTION_MASK_ISA_AVX | OPTION_MASK_ISA_SSE4_2_SET)
-#define OPTION_MASK_ISA_FMA_SET \
-  (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_AVX_SET)
-
-/* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
-   as -msse4.2.  */
-#define OPTION_MASK_ISA_SSE4_SET OPTION_MASK_ISA_SSE4_2_SET
-
-#define OPTION_MASK_ISA_SSE4A_SET \
-  (OPTION_MASK_ISA_SSE4A | OPTION_MASK_ISA_SSE3_SET)
-#define OPTION_MASK_ISA_FMA4_SET \
-  (OPTION_MASK_ISA_FMA4 | OPTION_MASK_ISA_SSE4A_SET \
-   | OPTION_MASK_ISA_AVX_SET)
-#define OPTION_MASK_ISA_XOP_SET \
-  (OPTION_MASK_ISA_XOP | OPTION_MASK_ISA_FMA4_SET)
-#define OPTION_MASK_ISA_LWP_SET \
-  OPTION_MASK_ISA_LWP
-
-/* AES and PCLMUL need SSE2 because they use xmm registers */
-#define OPTION_MASK_ISA_AES_SET \
-  (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2_SET)
-#define OPTION_MASK_ISA_PCLMUL_SET \
-  (OPTION_MASK_ISA_PCLMUL | OPTION_MASK_ISA_SSE2_SET)
-
-#define OPTION_MASK_ISA_ABM_SET \
-  (OPTION_MASK_ISA_ABM | OPTION_MASK_ISA_POPCNT)
-
-#define OPTION_MASK_ISA_BMI_SET OPTION_MASK_ISA_BMI
-#define OPTION_MASK_ISA_TBM_SET OPTION_MASK_ISA_TBM
-#define OPTION_MASK_ISA_POPCNT_SET OPTION_MASK_ISA_POPCNT
-#define OPTION_MASK_ISA_CX16_SET OPTION_MASK_ISA_CX16
-#define OPTION_MASK_ISA_SAHF_SET OPTION_MASK_ISA_SAHF
-#define OPTION_MASK_ISA_MOVBE_SET OPTION_MASK_ISA_MOVBE
-#define OPTION_MASK_ISA_CRC32_SET OPTION_MASK_ISA_CRC32
-
-#define OPTION_MASK_ISA_FSGSBASE_SET OPTION_MASK_ISA_FSGSBASE
-#define OPTION_MASK_ISA_RDRND_SET OPTION_MASK_ISA_RDRND
-#define OPTION_MASK_ISA_F16C_SET \
-  (OPTION_MASK_ISA_F16C | OPTION_MASK_ISA_AVX_SET)
-
-/* Define a set of ISAs which aren't available when a given ISA is
-   disabled.  MMX and SSE ISAs are handled separately.  */
-
-#define OPTION_MASK_ISA_MMX_UNSET \
-  (OPTION_MASK_ISA_MMX | OPTION_MASK_ISA_3DNOW_UNSET)
-#define OPTION_MASK_ISA_3DNOW_UNSET \
-  (OPTION_MASK_ISA_3DNOW | OPTION_MASK_ISA_3DNOW_A_UNSET)
-#define OPTION_MASK_ISA_3DNOW_A_UNSET OPTION_MASK_ISA_3DNOW_A
-
-#define OPTION_MASK_ISA_SSE_UNSET \
-  (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_SSE2_UNSET)
-#define OPTION_MASK_ISA_SSE2_UNSET \
-  (OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_SSE3_UNSET)
-#define OPTION_MASK_ISA_SSE3_UNSET \
-  (OPTION_MASK_ISA_SSE3 \
-   | OPTION_MASK_ISA_SSSE3_UNSET \
-   | OPTION_MASK_ISA_SSE4A_UNSET )
-#define OPTION_MASK_ISA_SSSE3_UNSET \
-  (OPTION_MASK_ISA_SSSE3 | OPTION_MASK_ISA_SSE4_1_UNSET)
-#define OPTION_MASK_ISA_SSE4_1_UNSET \
-  (OPTION_MASK_ISA_SSE4_1 | OPTION_MASK_ISA_SSE4_2_UNSET)
-#define OPTION_MASK_ISA_SSE4_2_UNSET \
-  (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_AVX_UNSET )
-#define OPTION_MASK_ISA_AVX_UNSET \
-  (OPTION_MASK_ISA_AVX | OPTION_MASK_ISA_FMA_UNSET \
-   | OPTION_MASK_ISA_FMA4_UNSET | OPTION_MASK_ISA_F16C_UNSET)
-#define OPTION_MASK_ISA_FMA_UNSET OPTION_MASK_ISA_FMA
-
-/* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
-   as -mno-sse4.1. */
-#define OPTION_MASK_ISA_SSE4_UNSET OPTION_MASK_ISA_SSE4_1_UNSET
-
-#define OPTION_MASK_ISA_SSE4A_UNSET \
-  (OPTION_MASK_ISA_SSE4A | OPTION_MASK_ISA_FMA4_UNSET)
-
-#define OPTION_MASK_ISA_FMA4_UNSET \
-  (OPTION_MASK_ISA_FMA4 | OPTION_MASK_ISA_XOP_UNSET)
-#define OPTION_MASK_ISA_XOP_UNSET OPTION_MASK_ISA_XOP
-#define OPTION_MASK_ISA_LWP_UNSET OPTION_MASK_ISA_LWP
-
-#define OPTION_MASK_ISA_AES_UNSET OPTION_MASK_ISA_AES
-#define OPTION_MASK_ISA_PCLMUL_UNSET OPTION_MASK_ISA_PCLMUL
-#define OPTION_MASK_ISA_ABM_UNSET OPTION_MASK_ISA_ABM
-#define OPTION_MASK_ISA_BMI_UNSET OPTION_MASK_ISA_BMI
-#define OPTION_MASK_ISA_TBM_UNSET OPTION_MASK_ISA_TBM
-#define OPTION_MASK_ISA_POPCNT_UNSET OPTION_MASK_ISA_POPCNT
-#define OPTION_MASK_ISA_CX16_UNSET OPTION_MASK_ISA_CX16
-#define OPTION_MASK_ISA_SAHF_UNSET OPTION_MASK_ISA_SAHF
-#define OPTION_MASK_ISA_MOVBE_UNSET OPTION_MASK_ISA_MOVBE
-#define OPTION_MASK_ISA_CRC32_UNSET OPTION_MASK_ISA_CRC32
-
-#define OPTION_MASK_ISA_FSGSBASE_UNSET OPTION_MASK_ISA_FSGSBASE
-#define OPTION_MASK_ISA_RDRND_UNSET OPTION_MASK_ISA_RDRND
-#define OPTION_MASK_ISA_F16C_UNSET OPTION_MASK_ISA_F16C
-
 /* Vectorization library interface and handlers.  */
 static tree (*ix86_veclib_handler) (enum built_in_function, tree, tree);
 
@@ -2655,427 +2548,6 @@ static inline bool
 ix86_using_red_zone (void)
 {
   return TARGET_RED_ZONE && !TARGET_64BIT_MS_ABI;
-}
-
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-ix86_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mmmx:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MMX_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MMX_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_MMX_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MMX_UNSET;
-	}
-      return true;
-
-    case OPT_m3dnow:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_3DNOW_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_3DNOW_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_3DNOW_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_3DNOW_UNSET;
-	}
-      return true;
-
-    case OPT_m3dnowa:
-      return false;
-
-    case OPT_msse:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE_UNSET;
-	}
-      return true;
-
-    case OPT_msse2:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE2_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE2_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE2_UNSET;
-	}
-      return true;
-
-    case OPT_msse3:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE3_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE3_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE3_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE3_UNSET;
-	}
-      return true;
-
-    case OPT_mssse3:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSSE3_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSSE3_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSSE3_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSSE3_UNSET;
-	}
-      return true;
-
-    case OPT_msse4_1:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE4_1_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_1_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_1_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_1_UNSET;
-	}
-      return true;
-
-    case OPT_msse4_2:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE4_2_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_2_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_2_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_2_UNSET;
-	}
-      return true;
-
-    case OPT_mavx:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AVX_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX_UNSET;
-	}
-      return true;
-
-    case OPT_mfma:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_FMA_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_FMA_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA_UNSET;
-	}
-      return true;
-
-    case OPT_msse4:
-      opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE4_SET;
-      opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_SET;
-      return true;
-
-    case OPT_mno_sse4:
-      opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_UNSET;
-      opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_UNSET;
-      return true;
-
-    case OPT_msse4a:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE4A_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4A_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4A_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4A_UNSET;
-	}
-      return true;
-
-    case OPT_mfma4:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_FMA4_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA4_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_FMA4_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA4_UNSET;
-	}
-      return true;
-
-   case OPT_mxop:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XOP_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_XOP_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_XOP_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_XOP_UNSET;
-	}
-      return true;
-
-   case OPT_mlwp:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_LWP_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_LWP_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_LWP_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_LWP_UNSET;
-	}
-      return true;
-
-    case OPT_mabm:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_ABM_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_ABM_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_ABM_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_ABM_UNSET;
-	}
-      return true;
-
-    case OPT_mbmi:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_BMI_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_BMI_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_BMI_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_BMI_UNSET;
-	}
-      return true;
-
-    case OPT_mtbm:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_TBM_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_TBM_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_TBM_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_TBM_UNSET;
-	}
-      return true;
-
-    case OPT_mpopcnt:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_POPCNT_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_POPCNT_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_POPCNT_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_POPCNT_UNSET;
-	}
-      return true;
-
-    case OPT_msahf:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SAHF_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SAHF_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SAHF_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SAHF_UNSET;
-	}
-      return true;
-
-    case OPT_mcx16:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CX16_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CX16_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_UNSET;
-	}
-      return true;
-
-    case OPT_mmovbe:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVBE_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVBE_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_MOVBE_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVBE_UNSET;
-	}
-      return true;
-
-    case OPT_mcrc32:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CRC32_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CRC32_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CRC32_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CRC32_UNSET;
-	}
-      return true;
-
-    case OPT_maes:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AES_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AES_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AES_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AES_UNSET;
-	}
-      return true;
-
-    case OPT_mpclmul:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PCLMUL_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCLMUL_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_PCLMUL_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_PCLMUL_UNSET;
-	}
-      return true;
-
-    case OPT_mfsgsbase:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_FSGSBASE_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FSGSBASE_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_FSGSBASE_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_FSGSBASE_UNSET;
-	}
-      return true;
-
-    case OPT_mrdrnd:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_RDRND_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_RDRND_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_RDRND_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_RDRND_UNSET;
-	}
-      return true;
-
-    case OPT_mf16c:
-      if (value)
-	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_F16C_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_F16C_SET;
-	}
-      else
-	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_F16C_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_F16C_UNSET;
-	}
-      return true;
-
-  /* Comes from final.c -- no real reason to change it.  */
-#define MAX_CODE_ALIGN 16
-
-    case OPT_malign_loops_:
-      warning_at (loc, 0, "-malign-loops is obsolete, use -falign-loops");
-      if (value > MAX_CODE_ALIGN)
-	error_at (loc, "-malign-loops=%d is not between 0 and %d",
-		  value, MAX_CODE_ALIGN);
-      else
-	opts->x_align_loops = 1 << value;
-      return true;
-
-    case OPT_malign_jumps_:
-      warning_at (loc, 0, "-malign-jumps is obsolete, use -falign-jumps");
-      if (value > MAX_CODE_ALIGN)
-	error_at (loc, "-malign-jumps=%d is not between 0 and %d",
-		  value, MAX_CODE_ALIGN);
-      else
-	opts->x_align_jumps = 1 << value;
-      return true;
-
-    case OPT_malign_functions_:
-      warning_at (loc, 0,
-		  "-malign-functions is obsolete, use -falign-functions");
-      if (value > MAX_CODE_ALIGN)
-	error_at (loc, "-malign-functions=%d is not between 0 and %d",
-		  value, MAX_CODE_ALIGN);
-      else
-	opts->x_align_functions = 1 << value;
-      return true;
-
-    case OPT_mbranch_cost_:
-      if (value > 5)
-	{
-	  error_at (loc, "-mbranch-cost=%d is not between 0 and 5", value);
-	  opts->x_ix86_branch_cost = 5;
-	}
-      return true;
-
-    default:
-      return true;
-    }
 }
 
 /* Return a string that documents the current -m options.  The caller is
@@ -4194,9 +3666,11 @@ ix86_option_override_internal (bool main_args_p)
 	  if (flag_expensive_optimizations
 	      && !(target_flags_explicit & MASK_VZEROUPPER))
 	    target_flags |= MASK_VZEROUPPER;
-	  if (!(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
+	  if ((x86_avx256_split_unaligned_load & ix86_tune_mask)
+	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
 	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
-	  if (!(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
+	  if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
+	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
 	}
     }
@@ -5092,35 +4566,6 @@ x86_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
   ASM_OUTPUT_SKIP (file, size ? size : 1);
 }
 
-static const struct default_options ix86_option_optimization_table[] =
-  {
-    /* Turn off -fschedule-insns by default.  It tends to make the
-       problem with not enough registers even worse.  */
-#ifdef INSN_SCHEDULING
-    { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
-#endif
-
-#ifdef SUBTARGET_OPTIMIZATION_OPTIONS
-    SUBTARGET_OPTIMIZATION_OPTIONS,
-#endif
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
-/* Implement TARGET_OPTION_INIT_STRUCT.  */
-
-static void
-ix86_option_init_struct (struct gcc_options *opts)
-{
-  if (TARGET_MACHO)
-    /* The Darwin libraries never set errno, so we might as well
-       avoid calling them when that's the only reason we would.  */
-    opts->x_flag_errno_math = 0;
-
-  opts->x_flag_pcc_struct_return = 2;
-  opts->x_flag_asynchronous_unwind_tables = 2;
-  opts->x_flag_vect_cost_model = 1;
-}
-
 /* Decide whether we must probe the stack before any space allocation
    on this target.  It's essentially TARGET_STACK_PROBE except when
    -fstack-check causes the stack to be already probed differently.  */
@@ -6910,9 +6355,10 @@ function_arg_advance_ms_64 (CUMULATIVE_ARGS *cum, HOST_WIDE_INT bytes,
    may not be available.)  */
 
 static void
-ix86_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+ix86_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			   const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   HOST_WIDE_INT bytes, words;
 
   if (mode == BLKmode)
@@ -7157,9 +6603,10 @@ function_arg_ms_64 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
    ellipsis).  */
 
 static rtx
-ix86_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
+ix86_function_arg (cumulative_args_t cum_v, enum machine_mode omode,
 		   const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   enum machine_mode mode = omode;
   HOST_WIDE_INT bytes, words;
   rtx arg;
@@ -7201,10 +6648,12 @@ ix86_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
    appropriate for passing a pointer to that type.  */
 
 static bool
-ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+ix86_pass_by_reference (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   /* See Windows x64 Software Convention.  */
   if (TARGET_64BIT && (cum ? cum->call_abi : ix86_abi) == MS_ABI)
     {
@@ -7952,10 +7401,11 @@ setup_incoming_varargs_ms_64 (CUMULATIVE_ARGS *cum)
 }
 
 static void
-ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+ix86_setup_incoming_varargs (cumulative_args_t cum_v, enum machine_mode mode,
 			     tree type, int *pretend_size ATTRIBUTE_UNUSED,
 			     int no_rtl)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   CUMULATIVE_ARGS next_cum;
   tree fntype;
 
@@ -7972,7 +7422,8 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
      For stdargs, we do want to skip the last named argument.  */
   next_cum = *cum;
   if (stdarg_p (fntype))
-    ix86_function_arg_advance (&next_cum, mode, type, true);
+    ix86_function_arg_advance (pack_cumulative_args (&next_cum), mode, type,
+			       true);
 
   if (cum->call_abi == MS_ABI)
     setup_incoming_varargs_ms_64 (&next_cum);
@@ -8610,33 +8061,28 @@ standard_sse_constant_opcode (rtx insn, rtx x)
     case 1:
       switch (get_attr_mode (insn))
 	{
+	case MODE_TI:
+	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "%vpxor\t%0, %d0";
+	case MODE_V2DF:
+	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "%vxorpd\t%0, %d0";
 	case MODE_V4SF:
 	  return "%vxorps\t%0, %d0";
-	case MODE_V2DF:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "%vxorps\t%0, %d0";
-	  else
-	    return "%vxorpd\t%0, %d0";
-	case MODE_TI:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "%vxorps\t%0, %d0";
-	  else
-	    return "%vpxor\t%0, %d0";
+
+	case MODE_OI:
+	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "vpxor\t%x0, %x0, %x0";
+	case MODE_V4DF:
+	  if (!TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
+	    return "vxorpd\t%x0, %x0, %x0";
 	case MODE_V8SF:
 	  return "vxorps\t%x0, %x0, %x0";
-	case MODE_V4DF:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "vxorps\t%x0, %x0, %x0";
-	  else
-	    return "vxorpd\t%x0, %x0, %x0";
-	case MODE_OI:
-	  if (TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL)
-	    return "vxorps\t%x0, %x0, %x0";
-	  else
-	    return "vpxor\t%x0, %x0, %x0";
+
 	default:
 	  break;
 	}
+
     case 2:
       return "%vpcmpeqd\t%0, %d0";
     default:
@@ -8739,7 +8185,7 @@ ix86_setup_frame_addresses (void)
 }
 
 #ifndef USE_HIDDEN_LINKONCE
-# if (defined(HAVE_GAS_HIDDEN) && (SUPPORTS_ONE_ONLY - 0)) || TARGET_MACHO
+# if defined(HAVE_GAS_HIDDEN) && (SUPPORTS_ONE_ONLY - 0)
 #  define USE_HIDDEN_LINKONCE 1
 # else
 #  define USE_HIDDEN_LINKONCE 0
@@ -9154,32 +8600,6 @@ static rtx
 ix86_builtin_setjmp_frame_value (void)
 {
   return stack_realign_fp ? hard_frame_pointer_rtx : virtual_stack_vars_rtx;
-}
-
-/* On the x86 -fsplit-stack and -fstack-protector both use the same
-   field in the TCB, so they can not be used together.  */
-
-static bool
-ix86_supports_split_stack (bool report ATTRIBUTE_UNUSED,
-			   struct gcc_options *opts ATTRIBUTE_UNUSED)
-{
-  bool ret = true;
-
-#ifndef TARGET_THREAD_SPLIT_STACK_OFFSET
-  if (report)
-    error ("%<-fsplit-stack%> currently only supported on GNU/Linux");
-  ret = false;
-#else
-  if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
-    {
-      if (report)
-	error ("%<-fsplit-stack%> requires "
-	       "assembler support for CFI directives");
-      ret = false;
-    }
-#endif
-
-  return ret;
 }
 
 /* When using -fsplit-stack, the allocation routines set a field in
@@ -23401,7 +22821,7 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       gcc_assert (offset <= TRAMPOLINE_SIZE);
     }
 
-#ifdef ENABLE_EXECUTE_STACK
+#ifdef HAVE_ENABLE_EXECUTE_STACK
 #ifdef CHECK_EXECUTE_STACK_ENABLED
   if (CHECK_EXECUTE_STACK_ENABLED)
 #endif
@@ -26163,16 +25583,61 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
       int adjust = (comparison_p) ? 1 : 0;
       enum machine_mode mode = insn_data[icode].operand[i+adjust+1].mode;
 
-      if (last_arg_constant && i == nargs-1)
+      if (last_arg_constant && i == nargs - 1)
 	{
-	  if (!CONST_INT_P (op))
+	  if (!insn_data[icode].operand[i + 1].predicate (op, mode))
 	    {
-	      error ("last argument must be an immediate");
-	      return gen_reg_rtx (tmode);
+	      enum insn_code new_icode = icode;
+	      switch (icode)
+		{
+		case CODE_FOR_xop_vpermil2v2df3:
+		case CODE_FOR_xop_vpermil2v4sf3:
+		case CODE_FOR_xop_vpermil2v4df3:
+		case CODE_FOR_xop_vpermil2v8sf3:
+		  error ("the last argument must be a 2-bit immediate");
+		  return gen_reg_rtx (tmode);
+		case CODE_FOR_xop_rotlv2di3:
+		  new_icode = CODE_FOR_rotlv2di3;
+		  goto xop_rotl;
+		case CODE_FOR_xop_rotlv4si3:
+		  new_icode = CODE_FOR_rotlv4si3;
+		  goto xop_rotl;
+		case CODE_FOR_xop_rotlv8hi3:
+		  new_icode = CODE_FOR_rotlv8hi3;
+		  goto xop_rotl;
+		case CODE_FOR_xop_rotlv16qi3:
+		  new_icode = CODE_FOR_rotlv16qi3;
+		xop_rotl:
+		  if (CONST_INT_P (op))
+		    {
+		      int mask = GET_MODE_BITSIZE (GET_MODE_INNER (tmode)) - 1;
+		      op = GEN_INT (INTVAL (op) & mask);
+		      gcc_checking_assert
+			(insn_data[icode].operand[i + 1].predicate (op, mode));
+		    }
+		  else
+		    {
+		      gcc_checking_assert
+			(nargs == 2
+			 && insn_data[new_icode].operand[0].mode == tmode
+			 && insn_data[new_icode].operand[1].mode == tmode
+			 && insn_data[new_icode].operand[2].mode == mode
+			 && insn_data[new_icode].operand[0].predicate
+			    == insn_data[icode].operand[0].predicate
+			 && insn_data[new_icode].operand[1].predicate
+			    == insn_data[icode].operand[1].predicate);
+		      icode = new_icode;
+		      goto non_constant;
+		    }
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
 	    }
 	}
       else
 	{
+	non_constant:
 	  if (VECTOR_MODE_P (mode))
 	    op = safe_vector_operand (op, mode);
 
@@ -26497,7 +25962,7 @@ ix86_expand_sse_pcmpestr (const struct builtin_description *d,
 
   if (!insn_data[d->icode].operand[6].predicate (op4, modeimm))
     {
-      error ("the fifth argument must be a 8-bit immediate");
+      error ("the fifth argument must be an 8-bit immediate");
       return const0_rtx;
     }
 
@@ -26592,7 +26057,7 @@ ix86_expand_sse_pcmpistr (const struct builtin_description *d,
 
   if (!insn_data[d->icode].operand[4].predicate (op2, modeimm))
     {
-      error ("the third argument must be a 8-bit immediate");
+      error ("the third argument must be an 8-bit immediate");
       return const0_rtx;
     }
 
@@ -32221,7 +31686,7 @@ ix86_mangle_type (const_tree type)
    __stack_chk_fail directly.  64-bit code doesn't need to setup any PIC
    register, so it is better to call __stack_chk_fail directly.  */
 
-static tree
+static tree ATTRIBUTE_UNUSED
 ix86_stack_protect_fail (void)
 {
   return TARGET_64BIT
@@ -35311,21 +34776,8 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START x86_file_start
 
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS	\
-  (TARGET_DEFAULT			\
-   | TARGET_SUBTARGET_DEFAULT		\
-   | TARGET_TLS_DIRECT_SEG_REFS_DEFAULT)
-
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION ix86_handle_option
-
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE ix86_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE ix86_option_optimization_table
-#undef TARGET_OPTION_INIT_STRUCT
-#define TARGET_OPTION_INIT_STRUCT ix86_option_init_struct
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST ix86_register_move_cost
@@ -35421,11 +34873,10 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE ix86_mangle_type
 
+#ifndef TARGET_MACHO
 #undef TARGET_STACK_PROTECT_FAIL
 #define TARGET_STACK_PROTECT_FAIL ix86_stack_protect_fail
-
-#undef TARGET_SUPPORTS_SPLIT_STACK
-#define TARGET_SUPPORTS_SPLIT_STACK ix86_supports_split_stack
+#endif
 
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE ix86_function_value

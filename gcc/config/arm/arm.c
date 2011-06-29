@@ -166,11 +166,11 @@ static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static tree arm_builtin_decl (unsigned, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx emit_set_insn (rtx, rtx);
-static int arm_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int arm_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				  tree, bool);
-static rtx arm_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx arm_function_arg (cumulative_args_t, enum machine_mode,
 			     const_tree, bool);
-static void arm_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void arm_function_arg_advance (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
 static unsigned int arm_function_arg_boundary (enum machine_mode, const_tree);
 static rtx aapcs_allocate_return_reg (enum machine_mode, const_tree,
@@ -188,9 +188,9 @@ static void arm_encode_section_info (tree, rtx, int);
 static void arm_file_end (void);
 static void arm_file_start (void);
 
-static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+static void arm_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					tree, int *, int);
-static bool arm_pass_by_reference (CUMULATIVE_ARGS *,
+static bool arm_pass_by_reference (cumulative_args_t,
 				   enum machine_mode, const_tree, bool);
 static bool arm_promote_prototypes (const_tree);
 static bool arm_default_short_enums (void);
@@ -204,7 +204,6 @@ static bool arm_output_ttype (rtx);
 static void arm_asm_emit_except_personality (rtx);
 static void arm_asm_init_sections (void);
 #endif
-static enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 static void arm_dwarf_handle_frame_unspec (const char *, rtx, int);
 static rtx arm_dwarf_register_span (rtx);
 
@@ -255,6 +254,8 @@ static bool arm_builtin_support_vector_misalignment (enum machine_mode mode,
 static void arm_conditional_register_usage (void);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
 static unsigned int arm_autovectorize_vector_sizes (void);
+static int arm_default_branch_cost (bool, bool);
+static int arm_cortex_a5_branch_cost (bool, bool);
 
 
 /* Table of machine attributes.  */
@@ -301,15 +302,6 @@ static const struct attribute_spec arm_attribute_table[] =
 #endif
   { NULL,           0, 0, false, false, false, NULL, false }
 };
-
-/* Set default optimization options.  */
-static const struct default_options arm_option_optimization_table[] =
-  {
-    /* Enable section anchors by default at -O1 or higher.  */
-    { OPT_LEVELS_1_PLUS, OPT_fsection_anchors, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Initialize the GCC target structure.  */
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -349,12 +341,8 @@ static const struct default_options arm_option_optimization_table[] =
 #undef  TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE arm_output_function_epilogue
 
-#undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_SCHED_PROLOG)
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE arm_option_override
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE arm_option_optimization_table
 
 #undef  TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES arm_comp_type_attributes
@@ -513,9 +501,6 @@ static const struct default_options arm_option_optimization_table[] =
 #undef TARGET_ASM_INIT_SECTIONS
 #define TARGET_ASM_INIT_SECTIONS arm_asm_init_sections
 #endif /* ARM_UNWIND_INFO */
-
-#undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO  arm_except_unwind_info
 
 #undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
 #define TARGET_DWARF_HANDLE_FRAME_UNSPEC arm_dwarf_handle_frame_unspec
@@ -856,48 +841,117 @@ const struct tune_params arm_slowmul_tune =
 {
   arm_slowmul_rtx_costs,
   NULL,
-  3,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  3,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_fastmul_tune =
 {
   arm_fastmul_rtx_costs,
   NULL,
-  1,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
+};
+
+/* StrongARM has early execution of branches, so a sequence that is worth
+   skipping is shorter.  Set max_insns_skipped to a lower value.  */
+
+const struct tune_params arm_strongarm_tune =
+{
+  arm_fastmul_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  3,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_xscale_tune =
 {
   arm_xscale_rtx_costs,
   xscale_sched_adjust_cost,
-  2,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  2,						/* Constant limit.  */
+  3,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_9e_tune =
 {
   arm_9e_rtx_costs,
   NULL,
-  1,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
+};
+
+const struct tune_params arm_v6t2_tune =
+{
+  arm_9e_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost
+};
+
+/* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
+const struct tune_params arm_cortex_tune =
+{
+  arm_9e_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost
+};
+
+/* Branches can be dual-issued on Cortex-A5, so conditional execution is
+   less appealing.  Set max_insns_skipped to a low value.  */
+
+const struct tune_params arm_cortex_a5_tune =
+{
+  arm_9e_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  1,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  false,					/* Prefer constant pool.  */
+  arm_cortex_a5_branch_cost
 };
 
 const struct tune_params arm_cortex_a9_tune =
 {
   arm_9e_rtx_costs,
   cortex_a9_sched_adjust_cost,
-  1,
-  ARM_PREFETCH_BENEFICIAL(4,32,32)
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_BENEFICIAL(4,32,32),
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 const struct tune_params arm_fa726te_tune =
 {
   arm_9e_rtx_costs,
   fa726te_sched_adjust_cost,
-  1,
-  ARM_PREFETCH_NOT_BENEFICIAL
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost
 };
 
 
@@ -955,7 +1009,8 @@ enum tls_reloc {
   TLS_LDM32,
   TLS_LDO32,
   TLS_IE32,
-  TLS_LE32
+  TLS_LE32,
+  TLS_DESCSEQ	/* GNU scheme */
 };
 
 /* The maximum number of insns to be used when loading a constant.  */
@@ -1690,12 +1745,7 @@ arm_option_override (void)
       max_insns_skipped = 6;
     }
   else
-    {
-      /* StrongARM has early execution of branches, so a sequence
-         that is worth skipping is shorter.  */
-      if (arm_tune_strongarm)
-        max_insns_skipped = 3;
-    }
+    max_insns_skipped = current_tune->max_insns_skipped;
 
   /* Hot/Cold partitioning is not currently supported, since we can't
      handle literal pool placement in that case.  */
@@ -2165,7 +2215,8 @@ const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
       if (arm_arch_thumb2 && (i & 0xffff0000) == 0)
 	return 1;
       else
-	return 0;
+	/* Otherwise, try mvn.  */
+	return const_ok_for_arm (ARM_SIGN_EXTEND (~i));
 
     case PLUS:
     case COMPARE:
@@ -3279,6 +3330,28 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
 		   convert_optab_libfunc (sfix_optab, DImode, SFmode));
       add_libcall (libcall_htab,
 		   convert_optab_libfunc (ufix_optab, DImode, SFmode));
+
+      /* Values from double-precision helper functions are returned in core
+	 registers if the selected core only supports single-precision
+	 arithmetic, even if we are using the hard-float ABI.  The same is
+	 true for single-precision helpers, but we will never be using the
+	 hard-float ABI on a CPU which doesn't support single-precision
+	 operations in hardware.  */
+      add_libcall (libcall_htab, optab_libfunc (add_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (sdiv_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (smul_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (neg_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (sub_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (eq_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (lt_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (le_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (ge_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (gt_optab, DFmode));
+      add_libcall (libcall_htab, optab_libfunc (unord_optab, DFmode));
+      add_libcall (libcall_htab, convert_optab_libfunc (sext_optab, DFmode,
+							SFmode));
+      add_libcall (libcall_htab, convert_optab_libfunc (trunc_optab, SFmode,
+							DFmode));
     }
 
   return libcall && htab_find (libcall_htab, libcall) != NULL;
@@ -4317,9 +4390,10 @@ arm_needs_doubleword_align (enum machine_mode mode, const_tree type)
    indeed make it pass in the stack if necessary).  */
 
 static rtx
-arm_function_arg (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+arm_function_arg (cumulative_args_t pcum_v, enum machine_mode mode,
 		  const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   int nregs;
 
   /* Handle the special case quickly.  Pick an arbitrary value for op2 of
@@ -4377,9 +4451,10 @@ arm_function_arg_boundary (enum machine_mode mode, const_tree type)
 }
 
 static int
-arm_arg_partial_bytes (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+arm_arg_partial_bytes (cumulative_args_t pcum_v, enum machine_mode mode,
 		       tree type, bool named)
 {
+  CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   int nregs = pcum->nregs;
 
   if (pcum->pcs_variant <= ARM_PCS_AAPCS_LOCAL)
@@ -4404,9 +4479,11 @@ arm_arg_partial_bytes (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-arm_function_arg_advance (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
+arm_function_arg_advance (cumulative_args_t pcum_v, enum machine_mode mode,
 			  const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
+
   if (pcum->pcs_variant <= ARM_PCS_AAPCS_LOCAL)
     {
       aapcs_layout_arg (pcum, mode, type, named);
@@ -4440,7 +4517,7 @@ arm_function_arg_advance (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
    extension to the ARM ABI.  */
 
 static bool
-arm_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+arm_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		       enum machine_mode mode ATTRIBUTE_UNUSED,
 		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
@@ -5805,6 +5882,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 {
   rtx insns, label, labelno, sum;
 
+  gcc_assert (reloc != TLS_DESCSEQ);
   start_sequence ();
 
   labelno = GEN_INT (pic_labelno++);
@@ -5819,18 +5897,40 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 
   if (TARGET_ARM)
     emit_insn (gen_pic_add_dot_plus_eight (reg, reg, labelno));
-  else if (TARGET_THUMB2)
+  else
     emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
-  else /* TARGET_THUMB1 */
-    emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
-
-  *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX, LCT_PURE, /* LCT_CONST?  */
+  
+  *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX,
+				     LCT_PURE, /* LCT_CONST?  */
 				     Pmode, 1, reg, Pmode);
-
+  
   insns = get_insns ();
   end_sequence ();
 
   return insns;
+}
+
+static rtx
+arm_tls_descseq_addr (rtx x, rtx reg)
+{
+  rtx labelno = GEN_INT (pic_labelno++);
+  rtx label = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+  rtx sum = gen_rtx_UNSPEC (Pmode,
+			    gen_rtvec (4, x, GEN_INT (TLS_DESCSEQ),
+				       gen_rtx_CONST (VOIDmode, label),
+				       GEN_INT (!TARGET_ARM)),
+			    UNSPEC_TLS);
+  rtx reg0 = load_tls_operand (sum, gen_rtx_REG (SImode, 0));
+  
+  emit_insn (gen_tlscall (x, labelno));
+  if (!reg)
+    reg = gen_reg_rtx (SImode);
+  else
+    gcc_assert (REGNO (reg) != 0);
+
+  emit_move_insn (reg, reg0);
+
+  return reg;
 }
 
 rtx
@@ -5842,26 +5942,51 @@ legitimize_tls_address (rtx x, rtx reg)
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:
-      insns = arm_call_tls_get_addr (x, reg, &ret, TLS_GD32);
-      dest = gen_reg_rtx (Pmode);
-      emit_libcall_block (insns, dest, ret, x);
+      if (TARGET_GNU2_TLS)
+	{
+	  reg = arm_tls_descseq_addr (x, reg);
+
+	  tp = arm_load_tp (NULL_RTX);
+	  
+	  dest = gen_rtx_PLUS (Pmode, tp, reg);
+	}
+      else
+	{
+	  /* Original scheme */
+	  insns = arm_call_tls_get_addr (x, reg, &ret, TLS_GD32);
+	  dest = gen_reg_rtx (Pmode);
+	  emit_libcall_block (insns, dest, ret, x);
+	}
       return dest;
 
     case TLS_MODEL_LOCAL_DYNAMIC:
-      insns = arm_call_tls_get_addr (x, reg, &ret, TLS_LDM32);
+      if (TARGET_GNU2_TLS)
+	{
+	  reg = arm_tls_descseq_addr (x, reg);
 
-      /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
-	 share the LDM result with other LD model accesses.  */
-      eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const1_rtx),
-			    UNSPEC_TLS);
-      dest = gen_reg_rtx (Pmode);
-      emit_libcall_block (insns, dest, ret, eqv);
-
-      /* Load the addend.  */
-      addend = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, x, GEN_INT (TLS_LDO32)),
-			       UNSPEC_TLS);
-      addend = force_reg (SImode, gen_rtx_CONST (SImode, addend));
-      return gen_rtx_PLUS (Pmode, dest, addend);
+	  tp = arm_load_tp (NULL_RTX);
+	  
+	  dest = gen_rtx_PLUS (Pmode, tp, reg);
+	}
+      else
+	{
+	  insns = arm_call_tls_get_addr (x, reg, &ret, TLS_LDM32);
+	  
+	  /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+	     share the LDM result with other LD model accesses.  */
+	  eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const1_rtx),
+				UNSPEC_TLS);
+	  dest = gen_reg_rtx (Pmode);
+	  emit_libcall_block (insns, dest, ret, eqv);
+	  
+	  /* Load the addend.  */
+	  addend = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, x,
+						     GEN_INT (TLS_LDO32)),
+				   UNSPEC_TLS);
+	  addend = force_reg (SImode, gen_rtx_CONST (SImode, addend));
+	  dest = gen_rtx_PLUS (Pmode, dest, addend);
+	}
+      return dest;
 
     case TLS_MODEL_INITIAL_EXEC:
       labelno = GEN_INT (pic_labelno++);
@@ -8011,6 +8136,21 @@ arm_adjust_cost (rtx insn, rtx link, rtx dep, int cost)
   return cost;
 }
 
+static int
+arm_default_branch_cost (bool speed_p, bool predictable_p ATTRIBUTE_UNUSED)
+{
+  if (TARGET_32BIT)
+    return (TARGET_THUMB2 && !speed_p) ? 1 : 4;
+  else
+    return (optimize > 0) ? 2 : 0;
+}
+
+static int
+arm_cortex_a5_branch_cost (bool speed_p, bool predictable_p)
+{
+  return speed_p ? 0 : arm_default_branch_cost (speed_p, predictable_p);
+}
+
 static int fp_consts_inited = 0;
 
 /* Only zero is valid for VFP.  Other values are also valid for FPA.  */
@@ -8468,6 +8608,66 @@ neon_immediate_valid_for_logic (rtx op, enum machine_mode mode, int inverse,
   return 1;
 }
 
+/* Return TRUE if rtx OP is legal for use in a VSHR or VSHL instruction.  If
+   the immediate is valid, write a constant suitable for using as an operand
+   to VSHR/VSHL to *MODCONST and the corresponding element width to
+   *ELEMENTWIDTH. ISLEFTSHIFT is for determine left or right shift,
+   because they have different limitations.  */
+
+int
+neon_immediate_valid_for_shift (rtx op, enum machine_mode mode,
+				rtx *modconst, int *elementwidth,
+				bool isleftshift)
+{
+  unsigned int innersize = GET_MODE_SIZE (GET_MODE_INNER (mode));
+  unsigned int n_elts = CONST_VECTOR_NUNITS (op), i;
+  unsigned HOST_WIDE_INT last_elt = 0;
+  unsigned HOST_WIDE_INT maxshift;
+
+  /* Split vector constant out into a byte vector.  */
+  for (i = 0; i < n_elts; i++)
+    {
+      rtx el = CONST_VECTOR_ELT (op, i);
+      unsigned HOST_WIDE_INT elpart;
+
+      if (GET_CODE (el) == CONST_INT)
+        elpart = INTVAL (el);
+      else if (GET_CODE (el) == CONST_DOUBLE)
+        return 0;
+      else
+        gcc_unreachable ();
+
+      if (i != 0 && elpart != last_elt)
+        return 0;
+
+      last_elt = elpart;
+    }
+
+  /* Shift less than element size.  */
+  maxshift = innersize * 8;
+
+  if (isleftshift)
+    {
+      /* Left shift immediate value can be from 0 to <size>-1.  */
+      if (last_elt >= maxshift)
+        return 0;
+    }
+  else
+    {
+      /* Right shift immediate value can be from 1 to <size>.  */
+      if (last_elt == 0 || last_elt > maxshift)
+	return 0;
+    }
+
+  if (elementwidth)
+    *elementwidth = innersize * 8;
+
+  if (modconst)
+    *modconst = CONST_VECTOR_ELT (op, 0);
+
+  return 1;
+}
+
 /* Return a string suitable for output of Neon immediate logic operation
    MNEM.  */
 
@@ -8486,6 +8686,28 @@ neon_output_logic_immediate (const char *mnem, rtx *op2, enum machine_mode mode,
     sprintf (templ, "%s.i%d\t%%q0, %%2", mnem, width);
   else
     sprintf (templ, "%s.i%d\t%%P0, %%2", mnem, width);
+
+  return templ;
+}
+
+/* Return a string suitable for output of Neon immediate shift operation
+   (VSHR or VSHL) MNEM.  */
+
+char *
+neon_output_shift_immediate (const char *mnem, char sign, rtx *op2,
+			     enum machine_mode mode, int quad,
+			     bool isleftshift)
+{
+  int width, is_valid;
+  static char templ[40];
+
+  is_valid = neon_immediate_valid_for_shift (*op2, mode, op2, &width, isleftshift);
+  gcc_assert (is_valid != 0);
+
+  if (quad)
+    sprintf (templ, "%s.%c%d\t%%q0, %%q1, %%2", mnem, sign, width);
+  else
+    sprintf (templ, "%s.%c%d\t%%P0, %%P1, %%2", mnem, sign, width);
 
   return templ;
 }
@@ -8998,7 +9220,7 @@ coproc_secondary_reload_class (enum machine_mode mode, rtx x, bool wb)
   /* The neon move patterns handle all legitimate vector and struct
      addresses.  */
   if (TARGET_NEON
-      && MEM_P (x)
+      && (MEM_P (x) || GET_CODE (x) == CONST_VECTOR)
       && (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 	  || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
 	  || VALID_NEON_STRUCT_MODE (mode)))
@@ -9293,6 +9515,11 @@ arm_note_pic_base (rtx *x, void *date ATTRIBUTE_UNUSED)
 static bool
 arm_cannot_copy_insn_p (rtx insn)
 {
+  /* The tls call insn cannot be copied, as it is paired with a data
+     word.  */
+  if (recog_memoized (insn) == CODE_FOR_tlscall)
+    return true;
+  
   return for_each_rtx (&PATTERN (insn), arm_note_pic_base, NULL);
 }
 
@@ -16015,8 +16242,17 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  output_addr_const (stream, x);
 	  break;
 
+	case CONST:
+	  if (GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF)
+	    {
+	      output_addr_const (stream, x);
+	      break;
+	    }
+	  /* Fall through.  */
+
 	default:
-	  gcc_unreachable ();
+	  output_operand_lossage ("Unsupported operand for code '%c'", code);
 	}
       return;
 
@@ -21846,12 +22082,13 @@ arm_output_load_gr (rtx *operands)
    that way.  */
 
 static void
-arm_setup_incoming_varargs (CUMULATIVE_ARGS *pcum,
+arm_setup_incoming_varargs (cumulative_args_t pcum_v,
 			    enum machine_mode mode,
 			    tree type,
 			    int *pretend_size,
 			    int second_time ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   int nregs;
   
   cfun->machine->uses_anonymous_args = 1;
@@ -22744,33 +22981,6 @@ arm_asm_init_sections (void)
 }
 #endif /* ARM_UNWIND_INFO */
 
-/* Implement TARGET_EXCEPT_UNWIND_INFO.  */
-
-static enum unwind_info_type
-arm_except_unwind_info (struct gcc_options *opts)
-{
-  /* Honor the --enable-sjlj-exceptions configure switch.  */
-#ifdef CONFIG_SJLJ_EXCEPTIONS
-  if (CONFIG_SJLJ_EXCEPTIONS)
-    return UI_SJLJ;
-#endif
-
-  /* If not using ARM EABI unwind tables... */
-  if (ARM_UNWIND_INFO)
-    {
-      /* For simplicity elsewhere in this file, indicate that all unwind
-	 info is disabled if we're not emitting unwind tables.  */
-      if (!opts->x_flag_exceptions && !opts->x_flag_unwind_tables)
-	return UI_NONE;
-      else
-	return UI_TARGET;
-    }
-
-  /* ... we use sjlj exceptions for backwards compatibility.  */
-  return UI_SJLJ;
-}
-
-
 /* Handle UNSPEC DWARF call frame instructions.  These are needed for dynamic
    stack alignment.  */
 
@@ -22847,6 +23057,9 @@ arm_emit_tls_decoration (FILE *fp, rtx x)
     case TLS_LE32:
       fputs ("(tpoff)", fp);
       break;
+    case TLS_DESCSEQ:
+      fputs ("(tlsdesc)", fp);
+      break;
     default:
       gcc_unreachable ();
     }
@@ -22856,9 +23069,11 @@ arm_emit_tls_decoration (FILE *fp, rtx x)
     case TLS_GD32:
     case TLS_LDM32:
     case TLS_IE32:
+    case TLS_DESCSEQ:
       fputs (" + (. - ", fp);
       output_addr_const (fp, XVECEXP (x, 0, 2));
-      fputs (" - ", fp);
+      /* For DESCSEQ the 3rd operand encodes thumbness, and is added */
+      fputs (reloc == TLS_DESCSEQ ? " + " : " - ", fp);
       output_addr_const (fp, XVECEXP (x, 0, 3));
       fputc (')', fp);
       break;

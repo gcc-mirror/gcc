@@ -25,5 +25,5 @@
 
 void test01()
 {
-  std::declval<int>();		// { dg-error "instantiated from here" }
+  std::declval<int>();		// { dg-error "required from here" }
 }

@@ -697,8 +697,9 @@ gfc_allocate_array_with_status (stmtblock_t * block, tree mem, tree size,
 
   /* Create a variable to hold the result.  */
   res = gfc_create_var (type, NULL);
-  null_mem = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, mem,
-			      build_int_cst (type, 0));
+  null_mem = gfc_unlikely (fold_build2_loc (input_location, NE_EXPR,
+					    boolean_type_node, mem,
+					    build_int_cst (type, 0)));
 
   /* If mem is NULL, we call gfc_allocate_with_status.  */
   gfc_start_block (&alloc_block);
@@ -751,7 +752,7 @@ gfc_allocate_array_with_status (stmtblock_t * block, tree mem, tree size,
     }
 
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, null_mem,
-			 alloc, error);
+			 error, alloc);
   gfc_add_expr_to_block (block, tmp);
 
   return res;
@@ -1315,6 +1316,11 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_SYNC_IMAGES:
 	case EXEC_SYNC_MEMORY:
 	  res = gfc_trans_sync (code, code->op);
+	  break;
+
+	case EXEC_LOCK:
+	case EXEC_UNLOCK:
+	  res = gfc_trans_lock_unlock (code, code->op);
 	  break;
 
 	case EXEC_FORALL:

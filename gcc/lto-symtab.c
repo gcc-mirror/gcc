@@ -209,7 +209,6 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 			 struct cgraph_node *prevailing_node)
 {
   struct cgraph_edge *e, *next;
-  bool no_aliases_please = false;
   bool compatible_p;
 
   if (cgraph_dump_file)
@@ -221,13 +220,6 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	       prevailing_node->uid,
 	       IDENTIFIER_POINTER ((*targetm.asm_out.mangle_assembler_name)
 		 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)))));
-    }
-
-  if (prevailing_node->same_body_alias)
-    {
-      if (prevailing_node->thunk.thunk_p)
-	no_aliases_please = true;
-      prevailing_node = prevailing_node->same_body;
     }
 
   /* Merge node flags.  */
@@ -259,36 +251,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   /* Redirect incomming references.  */
   ipa_clone_refering (prevailing_node, NULL, &node->ref_list);
 
-  /* If we have aliases, redirect them to the prevailing node.  */
-  if (!node->same_body_alias && node->same_body)
-    {
-      struct cgraph_node *alias, *last;
-      /* We prevail aliases/tunks by a thunk.  This is doable but
-         would need thunk combination.  Hopefully no ABI changes will
-         every be crazy enough.  */
-      gcc_assert (!no_aliases_please);
-
-      for (alias = node->same_body; alias; alias = alias->next)
-	{
-	  last = alias;
-	  gcc_assert (alias->same_body_alias);
-	  alias->same_body = prevailing_node;
-	}
-      last->next = prevailing_node->same_body;
-      /* Node with aliases is prevailed by alias.
-	 We could handle this, but combining thunks together will be tricky.
-	 Hopefully this does not happen.  */
-      if (prevailing_node->same_body)
-	prevailing_node->same_body->previous = last;
-      prevailing_node->same_body = node->same_body;
-      node->same_body = NULL;
-    }
-
   /* Finally remove the replaced node.  */
-  if (node->same_body_alias)
-    cgraph_remove_same_body_alias (node);
-  else
-    cgraph_remove_node (node);
+  cgraph_remove_node (node);
 }
 
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
@@ -304,32 +268,9 @@ lto_varpool_replace_node (struct varpool_node *vnode,
       gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
       varpool_mark_needed_node (prevailing_node);
     }
-  /* Relink aliases.  */
-  if (vnode->extra_name && !vnode->alias)
-    {
-      struct varpool_node *alias, *last;
-      for (alias = vnode->extra_name;
-	   alias; alias = alias->next)
-	{
-	  last = alias;
-	  alias->extra_name = prevailing_node;
-	}
-
-      if (prevailing_node->extra_name)
-	{
-	  last->next = prevailing_node->extra_name;
-	  prevailing_node->extra_name->prev = last;
-	}
-      prevailing_node->extra_name = vnode->extra_name;
-      vnode->extra_name = NULL;
-    }
   gcc_assert (!vnode->finalized || prevailing_node->finalized);
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
 
-  /* When replacing by an alias, the references goes to the original
-     variable.  */
-  if (prevailing_node->alias && prevailing_node->extra_name)
-    prevailing_node = prevailing_node->extra_name;
   ipa_clone_refering (NULL, prevailing_node, &vnode->ref_list);
 
   /* Be sure we can garbage collect the initializer.  */
@@ -472,18 +413,13 @@ lto_symtab_resolve_can_prevail_p (lto_symtab_entry_t e)
 
   /* For functions we need a non-discarded body.  */
   if (TREE_CODE (e->decl) == FUNCTION_DECL)
-    return (e->node
-	    && (e->node->analyzed
-	        || (e->node->same_body_alias && e->node->same_body->analyzed)));
+    return (e->node && e->node->analyzed);
 
-  /* A variable should have a size.  */
   else if (TREE_CODE (e->decl) == VAR_DECL)
     {
       if (!e->vnode)
 	return false;
-      if (e->vnode->finalized)
-	return true;
-      return e->vnode->alias && e->vnode->extra_name->finalized;
+      return e->vnode->finalized;
     }
 
   gcc_unreachable ();
@@ -816,20 +752,18 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 void
 lto_symtab_merge_cgraph_nodes (void)
 {
-  struct cgraph_node *node, *alias, *next;
+  struct cgraph_node *node;
+  struct varpool_node *vnode;
   lto_symtab_maybe_init_hash_table ();
   htab_traverse (lto_symtab_identifiers, lto_symtab_merge_cgraph_nodes_1, NULL);
 
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      if (node->thunk.thunk_p)
-        node->thunk.alias = lto_symtab_prevailing_decl (node->thunk.alias);
-      for (alias = node->same_body; alias; alias = next)
-	{
-	  next = alias->next;
-	  alias->thunk.alias = lto_symtab_prevailing_decl (alias->thunk.alias);
-	}
-    }
+    if ((node->thunk.thunk_p || node->alias)
+	&& node->thunk.alias)
+      node->thunk.alias = lto_symtab_prevailing_decl (node->thunk.alias);
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    if (vnode->alias_of)
+      vnode->alias_of = lto_symtab_prevailing_decl (vnode->alias_of);
 }
 
 /* Given the decl DECL, return the prevailing decl with the same name. */

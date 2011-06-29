@@ -1,24 +1,18 @@
 /* { dg-do run } */
-/* See if -forward::/-performv:: is able to work. */
+/* See if -forward:: is able to work. */
 /* { dg-xfail-run-if "PR36610" { ! { { i?86-*-* x86_64-*-* } && ilp32 } } { "-fgnu-runtime" } { "" } } */
 /* { dg-skip-if "Needs OBJC2 Implementation" { *-*-darwin* && { lp64 } } { "-fnext-runtime" } { "" } } */
-/* There is no implementation of forward: in the NeXT m64 libobjc/Object
-   neither have we implemented this in our extensions - so we have to skip it
-   for now.  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef __NEXT_RUNTIME__
-#  include <objc/objc-api.h>
-#endif
-#include <objc/Object.h>
+#include "../../objc-obj-c++-shared/TestsuiteObject.m"
 
 #define VALUETOUSE 1234567890
 
 id forwarder, receiver;
 
-@interface Forwarder: Object
+@interface Forwarder: TestsuiteObject
 {
     id receiver;
 }
@@ -27,7 +21,7 @@ id forwarder, receiver;
 
 @end
 
-@interface Receiver:Object
+@interface Receiver:TestsuiteObject
 {
     int foo;
 }
@@ -44,6 +38,7 @@ id forwarder, receiver;
 
 -display
 {
+  printf ("Executing display\n");
     /* Check to see if we are really the reciever. */
     if (self != receiver)
         abort ();
@@ -62,16 +57,24 @@ id forwarder, receiver;
     receiver = theReceiver;
     return self;
 }
-#ifdef __NEXT_RUNTIME__
-- forward: (SEL)theSel: (marg_list)theArgFrame
-#else
--(retval_t) forward: (SEL)theSel: (arglist_t)theArgFrame
-#endif
+-(void *) forward: (SEL)theSel: (void *)theArgFrame
 {
   /* If we have a reciever try to perform on that object */
     if (receiver)
-        return [receiver performv: theSel: theArgFrame];
-    return [self doesNotRecognize:theSel];
+      {
+	/* Simple forward that works for methods with no
+	   arguments.  */
+	typedef id (*method_with_no_args) (id receiver, SEL _cmd);
+	Method method = class_getInstanceMethod (object_getClass (receiver),
+						 theSel);
+	method_with_no_args imp = (method_with_no_args)(method_getImplementation
+							(method));
+	return (*imp)(receiver, theSel);
+      }
+
+    /* Normally you'd emit an error here.  */
+    printf ("Unrecognized selector\n");
+    return NULL;
 }
 @end
 int main()

@@ -8,7 +8,7 @@
 /* { dg-prune-output ".*internal compiler error.*" } */
 /* { dg-options "-fobjc-exceptions -O2" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -35,13 +35,13 @@ void foo (int arg1, float *arg2)
     local6 = 18.0;
     pi = &gi2;
     pf = &gf2;
-    obj2 = obj1 = [Object new];
+    obj2 = obj1 = [TestsuiteObject new];
     arg1 = 17;
     arg2 = &gf2;
     
-    @throw [Object new];
+    @throw [TestsuiteObject new];
   }
-  @catch (Object *obj) {
+  @catch (TestsuiteObject *obj) {
    if (local1 != 123 || local2 != 345 || local3 != 5.0
        || local4 != 6.0 || local5 != 17 || local6 != 18.0) {
      printf("Abort 1\n");
@@ -66,4 +66,4 @@ int main(void) {
   foo(15, &gf1);
   return 0;
 }
-#include "../objc-obj-c++-shared/Object1-implementation.h"
+

@@ -117,49 +117,10 @@ OBJC_H = \
   NXConstStr.h \
   Object.h \
   Protocol.h \
-  encoding.h \
   message.h \
-  objc-api.h \
   objc-decls.h \
   runtime.h \
-  thr.h \
-  \
-  hash.h \
-  objc-list.h \
-  sarray.h \
-  typedstream.h
-
-# User-visible header files containing deprecated APIs, from the
-# objc/deprecated directory
-OBJC_DEPRECATED_H = \
-  METHOD_NULL.h \
-  MetaClass.h \
-  Object.h \
-  Protocol.h \
-  STR.h \
-  hash.h \
-  objc-list.h \
-  objc_error.h \
-  objc_get_uninstalled_dtable.h \
-  objc_malloc.h \
-  objc_msg_sendv.h \
-  objc_object_alloc.h \
-  objc_unexpected_exception.h \
-  objc_valloc.h \
-  sarray.h \
-  struct_objc_category.h \
-  struct_objc_class.h \
-  struct_objc_ivar.h \
-  struct_objc_ivar_list.h \
-  struct_objc_method.h \
-  struct_objc_method_list.h \
-  struct_objc_module.h \
-  struct_objc_protocol.h \
-  struct_objc_protocol_list.h \
-  struct_objc_selector.h \
-  struct_objc_static_instances.h \
-  struct_objc_symtab.h \
-  typedstream.h 
+  thr.h
 
 # Objective-C source files to compile
 OBJC_SOURCE_FILES = \
@@ -171,7 +132,6 @@ OBJC_SOURCE_FILES = \
 
 # C source files to compile
 C_SOURCE_FILES = \
-   archive.c \
    class.c \
    encoding.c \
    error.c \
@@ -279,38 +239,15 @@ sendmsg_gc.lo: sendmsg.c runtime-info.h
 
 # These files have separate rules because they require special
 # compiler flags.
-archive.lo: archive.c
-	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) -Wno-deprecated-declarations \
-	   -o $@
 
-archive_gc.lo: archive.c
-	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) $(OBJC_GCFLAGS) -Wno-deprecated-declarations \
-	   -o $@
-
-# -Wno-deprecated-declarations is for the objc/typedstream.h functions.
-Object.lo: Object.m
-	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) -fgnu-runtime -Wno-deprecated-declarations \
-	   -o $@
-
-# -Wno-deprecated-declarations is for the objc/typedstream.h functions.
-Object_gc.lo: Object.m
-	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) $(OBJC_GCFLAGS) -fgnu-runtime -Wno-deprecated-declarations \
-	   -o $@
-
-# -Wno-deprecated-declarations is to silence warnings from using 
-# _objc_unexpected_exception.
 exception.lo: exception.c
 	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) -fexceptions -Wno-deprecated-declarations \
+	   $(ALL_CFLAGS) $(INCLUDES) -fexceptions \
 	   -o $@
 
 exception_gc.lo: exception.c
 	$(LIBTOOL_COMPILE) $(CC) $< -c \
-	   $(ALL_CFLAGS) $(INCLUDES) $(OBJC_GCFLAGS) -fexceptions -Wno-deprecated-declarations \
+	   $(ALL_CFLAGS) $(INCLUDES) $(OBJC_GCFLAGS) -fexceptions \
 	   -o $@
 
 doc: info dvi pdf html
@@ -386,11 +323,6 @@ install-headers:
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/objc/$${file}; \
 	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/$(includedirname)/objc; \
-	done
-	$(multi_basedir)/mkinstalldirs $(DESTDIR)$(libsubdir)/$(includedirname)/objc/deprecated
-	for file in $(OBJC_DEPRECATED_H); do \
-	  realfile=$(srcdir)/objc/deprecated/$${file}; \
-	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/$(includedirname)/objc/deprecated; \
 	done
 
 check uninstall install-strip dist installcheck installdirs:

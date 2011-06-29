@@ -198,6 +198,14 @@ class Backend
   virtual bool
   is_circular_pointer_type(Btype*) = 0;
 
+  // Expressions.
+
+  // Return an expression for a zero value of the given type.  This is
+  // used for cases such as local variable initialization and
+  // converting nil to other types.
+  virtual Bexpression*
+  zero_expression(Btype*) = 0;
+
   // Statements.
 
   // Create an error statement.  This is used for cases which should
@@ -352,6 +360,52 @@ class Backend
   temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression* init,
 		     bool address_is_taken, source_location location,
 		     Bstatement** pstatement) = 0;
+
+  // Create a named immutable initialized data structure.  This is
+  // used for type descriptors and map descriptors.  This returns a
+  // Bvariable because it corresponds to an initialized const global
+  // variable in C.
+  //
+  // NAME is the name to use for the initialized global variable which
+  // this call will create.
+  //
+  // IS_COMMON is true if NAME may be defined by several packages, and
+  // the linker should merge all such definitions.  If IS_COMMON is
+  // false, NAME should be defined in only one file.  In general
+  // IS_COMMON will be true for the type descriptor of an unnamed type
+  // or a builtin type.
+  //
+  // TYPE will be a struct type; the type of the returned expression
+  // must be a pointer to this struct type.
+  // 
+  // We must create the named structure before we know its
+  // initializer, because the initializer refer to its own address.
+  // After calling this the frontend will call
+  // set_immutable_struct_initializer.
+  virtual Bvariable*
+  immutable_struct(const std::string& name, bool is_common, Btype* type,
+		   source_location) = 0;
+
+  // Set the initial value of a variable created by immutable_struct.
+  // The NAME, IS_COMMON, TYPE, and location parameters are the same
+  // ones passed to immutable_struct.  INITIALIZER will be a composite
+  // literal of type TYPE.  It will not contain any function calls or
+  // anything else which can not be put into a read-only data section.
+  // It may contain the address of variables created by
+  // immutable_struct.
+  virtual void
+  immutable_struct_set_init(Bvariable*, const std::string& name,
+			    bool is_common, Btype* type, source_location,
+			    Bexpression* initializer) = 0;
+
+  // Create a reference to a named immutable initialized data
+  // structure defined in some other package.  This will be a
+  // structure created by a call to immutable_struct_expression with
+  // the same NAME and TYPE and with IS_COMMON passed as false.  This
+  // corresponds to an extern const global variable in C.
+  virtual Bvariable*
+  immutable_struct_reference(const std::string& name, Btype* type,
+			     source_location) = 0;
 
   // Labels.
   

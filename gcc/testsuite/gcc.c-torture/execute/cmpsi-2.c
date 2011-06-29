@@ -1,5 +1,3 @@
-/* { dg-require-effective-target int32plus } */
-
 #define F 140
 #define T 13
 

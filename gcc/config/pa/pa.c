@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "tm_p.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "target-def.h"
 #include "langhooks.h"
 #include "df.h"
@@ -88,8 +89,6 @@ hppa_fpstore_bypass_p (rtx out_insn, rtx in_insn)
 static void pa_option_override (void);
 static void copy_reg_pointer (rtx, rtx);
 static void fix_range (const char *);
-static bool pa_handle_option (struct gcc_options *, struct gcc_options *,
-			      const struct cl_decoded_option *, location_t);
 static int hppa_register_move_cost (enum machine_mode mode, reg_class_t,
 				    reg_class_t);
 static int hppa_address_cost (rtx, bool);
@@ -159,13 +158,13 @@ static void pa_hpux_file_end (void);
 static void pa_hpux_init_libfuncs (void);
 #endif
 static rtx pa_struct_value_rtx (tree, int);
-static bool pa_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+static bool pa_pass_by_reference (cumulative_args_t, enum machine_mode,
 				  const_tree, bool);
-static int pa_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int pa_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				 tree, bool);
-static void pa_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void pa_function_arg_advance (cumulative_args_t, enum machine_mode,
 				     const_tree, bool);
-static rtx pa_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx pa_function_arg (cumulative_args_t, enum machine_mode,
 			    const_tree, bool);
 static unsigned int pa_function_arg_boundary (enum machine_mode, const_tree);
 static struct machine_function * pa_init_machine_status (void);
@@ -224,21 +223,11 @@ struct GTY(()) deferred_plabel
 static GTY((length ("n_deferred_plabels"))) struct deferred_plabel *
   deferred_plabels;
 static size_t n_deferred_plabels = 0;
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options pa_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 
 /* Initialize the GCC target structure.  */
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE pa_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE pa_option_optimization_table
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -309,11 +298,6 @@ static const struct default_options pa_option_optimization_table[] =
 #undef TARGET_ASM_DESTRUCTOR
 #define TARGET_ASM_DESTRUCTOR pa_asm_out_destructor
 #endif
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | TARGET_CPU_DEFAULT)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION pa_handle_option
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS pa_init_builtins
@@ -476,41 +460,6 @@ fix_range (const char *const_str)
     target_flags |= MASK_DISABLE_FPREGS;
 }
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-pa_handle_option (struct gcc_options *opts,
-		  struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		  const struct cl_decoded_option *decoded,
-		  location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-
-  switch (code)
-    {
-    case OPT_mnosnake:
-    case OPT_mpa_risc_1_0:
-    case OPT_march_1_0:
-      opts->x_target_flags &= ~(MASK_PA_11 | MASK_PA_20);
-      return true;
-
-    case OPT_msnake:
-    case OPT_mpa_risc_1_1:
-    case OPT_march_1_1:
-      opts->x_target_flags &= ~MASK_PA_20;
-      opts->x_target_flags |= MASK_PA_11;
-      return true;
-
-    case OPT_mpa_risc_2_0:
-    case OPT_march_2_0:
-      opts->x_target_flags |= MASK_PA_11 | MASK_PA_20;
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 /* Implement the TARGET_OPTION_OVERRIDE hook.  */
 
 static void
@@ -538,7 +487,7 @@ pa_option_override (void)
      call frame information.  There is no benefit in using this optimization
      on PA8000 and later processors.  */
   if (pa_cpu >= PROCESSOR_8000
-      || (targetm.except_unwind_info (&global_options) == UI_DWARF2
+      || (targetm_common.except_unwind_info (&global_options) == UI_DWARF2
 	  && flag_exceptions)
       || flag_unwind_tables)
     target_flags &= ~MASK_JUMP_IN_DELAY;
@@ -5999,7 +5948,7 @@ pa_eh_return_handler_rtx (void)
    or updates the ABI.  */
 
 static bool
-pa_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+pa_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 		      enum machine_mode mode, const_tree type,
 		      bool named ATTRIBUTE_UNUSED)
 {
@@ -8205,7 +8154,7 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
        && !(flag_pic && TREE_PUBLIC (function))
        && (TARGET_GAS || last_address < 262132))
       || (!TARGET_LONG_CALLS && !TARGET_SOM && !TARGET_PORTABLE_RUNTIME
-	  && ((targetm.have_named_sections
+	  && ((targetm_common.have_named_sections
 	       && DECL_SECTION_NAME (thunk_fndecl) != NULL
 	       /* The GNU 64-bit linker has rather poor stub management.
 		  So, we use a long branch from thunks that aren't in
@@ -8216,11 +8165,12 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 		   || ((DECL_SECTION_NAME (thunk_fndecl)
 			== DECL_SECTION_NAME (function))
 		       && last_address < 262132)))
-	      || (targetm.have_named_sections
+	      || (targetm_common.have_named_sections
 		  && DECL_SECTION_NAME (thunk_fndecl) == NULL
 		  && DECL_SECTION_NAME (function) == NULL
 		  && last_address < 262132)
-	      || (!targetm.have_named_sections && last_address < 262132))))
+	      || (!targetm_common.have_named_sections
+		  && last_address < 262132))))
     {
       if (!val_14)
 	output_asm_insn ("addil L'%2,%%r26", xoperands);
@@ -9436,9 +9386,10 @@ pa_function_value_regno_p (const unsigned int regno)
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-pa_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+pa_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int arg_size = FUNCTION_ARG_SIZE (mode, type);
 
   cum->nargs_prototype--;
@@ -9457,9 +9408,10 @@ pa_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    ??? We might want to restructure this so that it looks more like other
    ports.  */
 static rtx
-pa_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+pa_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int max_arg_words = (TARGET_64BIT ? 8 : 4);
   int alignment = 0;
   int arg_size;
@@ -9667,9 +9619,10 @@ pa_function_arg_boundary (enum machine_mode mode, const_tree type)
    then this routine should return zero.  */
 
 static int
-pa_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+pa_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 		      tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   unsigned int max_arg_words = 8;
   unsigned int offset = 0;
 
@@ -10264,7 +10217,7 @@ pa_function_section (tree decl, enum node_frequency freq,
 		     bool startup, bool exit)
 {
   /* Put functions in text section if target doesn't have named sections.  */
-  if (!targetm.have_named_sections)
+  if (!targetm_common.have_named_sections)
     return text_section;
 
   /* Force nested functions into the same section as the containing

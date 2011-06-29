@@ -579,7 +579,7 @@ extern struct gimple_opt_pass pass_convert_switch;
 
 /* The root of the compilation pass tree, once constructed.  */
 extern struct opt_pass *all_passes, *all_small_ipa_passes, *all_lowering_passes,
-                       *all_regular_ipa_passes, *all_lto_gen_passes;
+                       *all_regular_ipa_passes, *all_lto_gen_passes, *all_late_ipa_passes;
 
 /* Define a list of pass lists so that both passes.c and plugins can easily
    find all the pass lists.  */
@@ -641,5 +641,6 @@ extern void do_per_function_toporder (void (*) (void *), void *);
 
 extern void disable_pass (const char *);
 extern void enable_pass (const char *);
+extern void dump_passes (void);
 
 #endif /* GCC_TREE_PASS_H */

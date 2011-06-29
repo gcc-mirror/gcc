@@ -68,13 +68,6 @@ enum processor_type mn10300_tune_cpu = PROCESSOR_DEFAULT;
 				|| df_regs_ever_live_p (16)	\
 				|| df_regs_ever_live_p (17)))
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options mn10300_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 #define CC_FLAG_Z	1
 #define CC_FLAG_N	2
 #define CC_FLAG_C	4
@@ -83,38 +76,6 @@ static const struct default_options mn10300_option_optimization_table[] =
 static int cc_flags_for_mode(enum machine_mode);
 static int cc_flags_for_code(enum rtx_code);
 
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-mn10300_handle_option (struct gcc_options *opts,
-		       struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		       const struct cl_decoded_option *decoded,
-		       location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mam33:
-      opts->x_mn10300_processor = value ? PROCESSOR_AM33 : PROCESSOR_MN10300;
-      return true;
-
-    case OPT_mam33_2:
-      opts->x_mn10300_processor = (value
-				   ? PROCESSOR_AM33_2
-				   : MIN (PROCESSOR_AM33, PROCESSOR_DEFAULT));
-      return true;
-
-    case OPT_mam34:
-      opts->x_mn10300_processor = (value ? PROCESSOR_AM34 : PROCESSOR_DEFAULT);
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 /* Implement TARGET_OPTION_OVERRIDE.  */
 
 static void
@@ -1531,7 +1492,7 @@ mn10300_va_start (tree valist, rtx nextarg)
 /* Return true when a parameter should be passed by reference.  */
 
 static bool
-mn10300_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+mn10300_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 			   enum machine_mode mode, const_tree type,
 			   bool named ATTRIBUTE_UNUSED)
 {
@@ -1549,9 +1510,10 @@ mn10300_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
    from a function.  If the result is NULL_RTX, the argument is pushed.  */
 
 static rtx
-mn10300_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mn10300_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		      const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   rtx result = NULL_RTX;
   int size;
 
@@ -1597,9 +1559,11 @@ mn10300_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-mn10300_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mn10300_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			      const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   cum->nbytes += (mode != BLKmode
 		  ? (GET_MODE_SIZE (mode) + 3) & ~3
 		  : (int_size_in_bytes (type) + 3) & ~3);
@@ -1609,9 +1573,10 @@ mn10300_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    partially in registers and partially in memory.  */
 
 static int
-mn10300_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+mn10300_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 			   tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int size;
 
   /* We only support using 2 data registers as argument registers.  */
@@ -3320,9 +3285,6 @@ mn10300_reorg (void)
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG mn10300_reorg
 
-#undef  TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
-
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 
@@ -3346,14 +3308,8 @@ mn10300_reorg (void)
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA mn10300_asm_output_addr_const_extra
 
-#undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS MASK_MULT_BUG | MASK_PTR_A0D0 | MASK_ALLOW_LIW | MASK_ALLOW_SETLB
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION mn10300_handle_option
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE mn10300_option_override
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE mn10300_option_optimization_table
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mn10300_encode_section_info

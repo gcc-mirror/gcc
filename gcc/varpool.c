@@ -131,7 +131,7 @@ varpool_node (tree decl)
   struct varpool_node key, *node, **slot;
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL
-	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
+	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl) || in_lto_p));
 
   if (!varpool_hash)
     varpool_hash = htab_create_ggc (10, hash_varpool_node,
@@ -162,25 +162,14 @@ varpool_remove_node (struct varpool_node *node)
   gcc_assert (*slot == node);
   htab_clear_slot (varpool_hash, slot);
   gcc_assert (!varpool_assembled_nodes_queue);
-  if (!node->alias)
-    while (node->extra_name)
-      varpool_remove_node (node->extra_name);
   if (node->next)
     node->next->prev = node->prev;
   if (node->prev)
     node->prev->next = node->next;
   else
     {
-      if (node->alias && node->extra_name)
-	{
-          gcc_assert (node->extra_name->extra_name == node);
-	  node->extra_name->extra_name = node->next;
-	}
-      else
-	{
-          gcc_assert (varpool_nodes == node);
-          varpool_nodes = node->next;
-	}
+      gcc_assert (varpool_nodes == node);
+      varpool_nodes = node->next;
     }
   if (varpool_first_unanalyzed_node == node)
     varpool_first_unanalyzed_node = node->next_needed;
@@ -311,8 +300,6 @@ varpool_enqueue_needed_node (struct varpool_node *node)
 void
 varpool_mark_needed_node (struct varpool_node *node)
 {
-  if (node->alias && node->extra_name)
-    node = node->extra_name;
   if (!node->needed && node->finalized
       && !TREE_ASM_WRITTEN (node->decl))
     varpool_enqueue_needed_node (node);
@@ -473,7 +460,40 @@ varpool_analyze_pending_decls (void)
 	     already informed about increased alignment.  */
           align_variable (decl, 0);
 	}
-      if (DECL_INITIAL (decl))
+      if (node->alias && node->alias_of)
+	{
+	  struct varpool_node *tgt = varpool_node (node->alias_of);
+	  if (!VEC_length (ipa_ref_t, node->ref_list.references))
+	    ipa_record_reference (NULL, node, NULL, tgt, IPA_REF_ALIAS, NULL);
+	  /* C++ FE sometimes change linkage flags after producing same body aliases.  */
+	  if (node->extra_name_alias)
+	    {
+	      DECL_WEAK (node->decl) = DECL_WEAK (node->alias_of);
+	      TREE_PUBLIC (node->decl) = TREE_PUBLIC (node->alias_of);
+	      DECL_VISIBILITY (node->decl) = DECL_VISIBILITY (node->alias_of);
+	      if (TREE_PUBLIC (node->decl))
+		{
+		  DECL_COMDAT (node->decl) = DECL_COMDAT (node->alias_of);
+		  DECL_COMDAT_GROUP (node->decl) = DECL_COMDAT_GROUP (node->alias_of);
+		  if (DECL_ONE_ONLY (node->alias_of) && !node->same_comdat_group)
+		    {
+		      node->same_comdat_group = tgt;
+		      if (!tgt->same_comdat_group)
+			tgt->same_comdat_group = node;
+		      else
+			{
+			  struct varpool_node *n;
+			  for (n = tgt->same_comdat_group;
+			       n->same_comdat_group != tgt;
+			       n = n->same_comdat_group)
+			    ;
+			  n->same_comdat_group = node;
+			}
+		    }
+		}
+	    }
+	}
+      else if (DECL_INITIAL (decl))
 	record_references_in_initializer (decl, analyzed);
       if (node->same_comdat_group)
 	{
@@ -486,6 +506,23 @@ varpool_analyze_pending_decls (void)
     }
   timevar_pop (TV_VARPOOL);
   return changed;
+}
+
+/* Assemble thunks and aliases asociated to NODE.  */
+
+static void
+assemble_aliases (struct varpool_node *node)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      {
+	struct varpool_node *alias = ipa_ref_refering_varpool_node (ref);
+	assemble_alias (alias->decl,
+			DECL_ASSEMBLER_NAME (alias->alias_of));
+	assemble_aliases (alias);
+      }
 }
 
 /* Output one variable, if necessary.  Return whether we output it.  */
@@ -503,25 +540,13 @@ varpool_assemble_decl (struct varpool_node *node)
       assemble_variable (decl, 0, 1, 0);
       if (TREE_ASM_WRITTEN (decl))
 	{
-	  struct varpool_node *alias;
-
 	  node->next_needed = varpool_assembled_nodes_queue;
 	  node->prev_needed = NULL;
 	  if (varpool_assembled_nodes_queue)
 	    varpool_assembled_nodes_queue->prev_needed = node;
 	  varpool_assembled_nodes_queue = node;
 	  node->finalized = 1;
-
-	  /* Also emit any extra name aliases.  */
-	  for (alias = node->extra_name; alias; alias = alias->next)
-	    {
-	      /* Update linkage fields in case they've changed.  */
-	      DECL_WEAK (alias->decl) = DECL_WEAK (decl);
-	      TREE_PUBLIC (alias->decl) = TREE_PUBLIC (decl);
-	      DECL_VISIBILITY (alias->decl) = DECL_VISIBILITY (decl);
-	      assemble_alias (alias->decl, DECL_ASSEMBLER_NAME (decl));
-	    }
-
+	  assemble_aliases (node);
 	  return true;
 	}
     }
@@ -670,38 +695,36 @@ add_new_static_var (tree type)
    Extra name aliases are output whenever DECL is output.  */
 
 struct varpool_node *
-varpool_extra_name_alias (tree alias, tree decl)
+varpool_create_variable_alias (tree alias, tree decl)
 {
-  struct varpool_node key, *alias_node, *decl_node, **slot;
-
-#ifndef ASM_OUTPUT_DEF
-  /* If aliases aren't supported by the assembler, fail.  */
-  return false;
-#endif
+  struct varpool_node *alias_node;
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
   gcc_assert (TREE_CODE (alias) == VAR_DECL);
-  /* Make sure the hash table has been created.  */
-  decl_node = varpool_node (decl);
-
-  key.decl = alias;
-
-  slot = (struct varpool_node **) htab_find_slot (varpool_hash, &key, INSERT);
-
-  /* If the varpool_node has been already created, fail.  */
-  if (*slot)
-    return NULL;
-
-  alias_node = ggc_alloc_cleared_varpool_node ();
-  alias_node->decl = alias;
+  alias_node = varpool_node (alias);
   alias_node->alias = 1;
-  alias_node->extra_name = decl_node;
-  alias_node->next = decl_node->extra_name;
-  ipa_empty_ref_list (&alias_node->ref_list);
-  if (decl_node->extra_name)
-    decl_node->extra_name->prev = alias_node;
-  decl_node->extra_name = alias_node;
-  *slot = alias_node;
+  alias_node->finalized = 1;
+  alias_node->alias_of = decl;
+  if (decide_is_variable_needed (alias_node, alias)
+      || alias_node->needed)
+    varpool_mark_needed_node (alias_node);
+  return alias_node;
+}
+
+/* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
+   Extra name aliases are output whenever DECL is output.  */
+
+struct varpool_node *
+varpool_extra_name_alias (tree alias, tree decl)
+{
+  struct varpool_node *alias_node;
+
+#ifndef ASM_OUTPUT_DEF
+  /* If aliases aren't supported by the assembler, fail.  */
+  return NULL;
+#endif
+  alias_node = varpool_create_variable_alias (alias, decl);
+  alias_node->extra_name_alias = true;
   return alias_node;
 }
 
@@ -711,17 +734,38 @@ varpool_extra_name_alias (tree alias, tree decl)
 bool
 varpool_used_from_object_file_p (struct varpool_node *node)
 {
-  struct varpool_node *alias;
-
   if (!TREE_PUBLIC (node->decl))
     return false;
   if (resolution_used_from_other_file_p (node->resolution))
     return true;
-  for (alias = node->extra_name; alias; alias = alias->next)
-    if (TREE_PUBLIC (alias->decl)
-	&& resolution_used_from_other_file_p (alias->resolution))
-      return true;
   return false;
 }
 
+/* Call calback on NODE and aliases asociated to NODE. 
+   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+   skipped. */
+
+bool
+varpool_for_node_and_aliases (struct varpool_node *node,
+			      bool (*callback) (struct varpool_node *, void *),
+			      void *data,
+			      bool include_overwritable)
+{
+  int i;
+  struct ipa_ref *ref;
+
+  if (callback (node, data))
+    return true;
+  for (i = 0; ipa_ref_list_refering_iterate (&node->ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      {
+	struct varpool_node *alias = ipa_ref_refering_varpool_node (ref);
+	if (include_overwritable
+	    || cgraph_variable_initializer_availability (alias) > AVAIL_OVERWRITABLE)
+          if (varpool_for_node_and_aliases (alias, callback, data,
+					   include_overwritable))
+	    return true;
+      }
+  return false;
+}
 #include "gt-varpool.h"

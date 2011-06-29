@@ -1763,15 +1763,16 @@ variable_decl (int elem)
 
   /* Now we could see the optional array spec. or character length.  */
   m = gfc_match_array_spec (&as, true, true);
-  if (gfc_option.flag_cray_pointer && m == MATCH_YES)
-    cp_as = gfc_copy_array_spec (as);
-  else if (m == MATCH_ERROR)
+  if (m == MATCH_ERROR)
     goto cleanup;
 
   if (m == MATCH_NO)
     as = gfc_copy_array_spec (current_as);
   else if (current_as)
     merge_array_spec (current_as, as, true);
+
+  if (gfc_option.flag_cray_pointer)
+    cp_as = gfc_copy_array_spec (as);
 
   /* At this point, we know for sure if the symbol is PARAMETER and can thus
      determine (and check) whether it can be implied-shape.  If it
@@ -4969,6 +4970,7 @@ gfc_match_procedure (void)
     case COMP_MODULE:
     case COMP_SUBROUTINE:
     case COMP_FUNCTION:
+    case COMP_BLOCK:
       m = match_procedure_decl ();
       break;
     case COMP_INTERFACE:
@@ -7016,6 +7018,7 @@ gfc_match_modproc (void)
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *sym;
   match m;
+  locus old_locus;
   gfc_namespace *module_ns;
   gfc_interface *old_interface_head, *interface;
 
@@ -7044,10 +7047,23 @@ gfc_match_modproc (void)
      end up with a syntax error and need to recover.  */
   old_interface_head = gfc_current_interface_head ();
 
+  /* Check if the F2008 optional double colon appears.  */
+  gfc_gobble_whitespace ();
+  old_locus = gfc_current_locus;
+  if (gfc_match ("::") == MATCH_YES)
+    {
+      if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: double colon in "
+			 "MODULE PROCEDURE statement at %L", &old_locus)
+	  == FAILURE)
+	return MATCH_ERROR;
+    }
+  else
+    gfc_current_locus = old_locus;
+      
   for (;;)
     {
-      locus old_locus = gfc_current_locus;
       bool last = false;
+      old_locus = gfc_current_locus;
 
       m = gfc_match_name (name);
       if (m == MATCH_NO)
@@ -7059,6 +7075,7 @@ gfc_match_modproc (void)
 	 current namespace.  */
       if (gfc_match_eos () == MATCH_YES)
 	last = true;
+
       if (!last && gfc_match_char (',') != MATCH_YES)
 	goto syntax;
 

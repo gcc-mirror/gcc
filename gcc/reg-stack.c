@@ -1333,11 +1333,33 @@ subst_stack_regs_in_debug_insn (rtx *loc, void *data)
     return 0;
 
   hard_regno = get_hard_regnum (regstack, *loc);
+
+  /* If we can't find an active register, reset this debug insn.  */
+  if (hard_regno == -1)
+    return 1;
+
   gcc_assert (hard_regno >= FIRST_STACK_REG);
 
   replace_reg (loc, hard_regno);
 
   return -1;
+}
+
+/* Substitute hardware stack regs in debug insn INSN, using stack
+   layout REGSTACK.  If we can't find a hardware stack reg for any of
+   the REGs in it, reset the debug insn.  */
+
+static void
+subst_all_stack_regs_in_debug_insn (rtx insn, struct stack_def *regstack)
+{
+  int ret = for_each_rtx (&INSN_VAR_LOCATION_LOC (insn),
+			  subst_stack_regs_in_debug_insn,
+			  regstack);
+
+  if (ret == 1)
+    INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+  else
+    gcc_checking_assert (ret == 0);
 }
 
 /* Substitute new registers in PAT, which is part of INSN.  REGSTACK
@@ -2947,8 +2969,7 @@ convert_regs_1 (basic_block block)
 	    debug_insns_with_starting_stack++;
 	  else
 	    {
-	      for_each_rtx (&PATTERN (insn), subst_stack_regs_in_debug_insn,
-			    &regstack);
+	      subst_all_stack_regs_in_debug_insn (insn, &regstack);
 
 	      /* Nothing must ever die at a debug insn.  If something
 		 is referenced in it that becomes dead, it should have
@@ -2986,8 +3007,7 @@ convert_regs_1 (basic_block block)
 	    continue;
 
 	  debug_insns_with_starting_stack--;
-	  for_each_rtx (&PATTERN (insn), subst_stack_regs_in_debug_insn,
-			&bi->stack_in);
+	  subst_all_stack_regs_in_debug_insn (insn, &bi->stack_in);
 	}
     }
 
@@ -3332,7 +3352,6 @@ struct rtl_opt_pass pass_stack_regs_run =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func |
   TODO_ggc_collect                      /* todo_flags_finish */
  }
 };

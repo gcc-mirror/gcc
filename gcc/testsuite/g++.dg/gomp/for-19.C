@@ -34,8 +34,8 @@ f3 (void)
 int
 main (void)
 {
-  f1 <int> ();		// { dg-message "instantiated from here" }
+  f1 <int> ();		// { dg-message "required from here" }
   f2 <int> ();
   f3 <const char *> ();
-  f3 <void *> ();	// { dg-message "instantiated from here" }
+  f3 <void *> ();	// { dg-message "required from here" }
 }

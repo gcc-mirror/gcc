@@ -13,5 +13,5 @@ foo ()
 void
 bar ()
 {
-  foo<0> ();				// { dg-message "instantiated from here" }
+  foo<0> ();				// { dg-message "required from here" }
 }

@@ -9,5 +9,5 @@ T f()
   T a = T();  // { dg-error "value-initialization of reference" }
 }
 
-int &a = f<int&>(); // { dg-message "instantiated from here" }
+int &a = f<int&>(); // { dg-message "required from here" }
 

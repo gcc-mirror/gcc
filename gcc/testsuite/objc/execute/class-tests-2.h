@@ -1,8 +1,7 @@
 /* Contributed by Nicola Pero on Tue Mar  6 23:05:53 CET 2001 */
-#include <objc/objc.h>
-#include <objc/objc-api.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../../objc-obj-c++-shared/runtime.h"
 
 /*
  * Standard Tests For Methods of Classes and Objects - abort upon
@@ -13,9 +12,9 @@
 void test_that_class_has_instance_method (const char *class_name, 
 					  SEL selector)
 {
-  Class class = objc_lookup_class (class_name);
+  Class class = objc_getClass (class_name);
 
-  if (class_get_instance_method (class, selector) == NULL)
+  if (class_getInstanceMethod (class, selector) == NULL)
     {
       printf ("test_class_has_instance_method failed\n");
       abort ();
@@ -26,9 +25,9 @@ void test_that_class_has_instance_method (const char *class_name,
 void test_that_class_has_class_method (const char *class_name, 
 				       SEL selector)
 {
-  Class meta_class = objc_get_meta_class (class_name);
+  Class class = objc_getClass (class_name);
 
-  if (class_get_class_method (meta_class, selector) == NULL)
+  if (class_getClassMethod (class, selector) == NULL)
     {
       printf ("test_class_has_class_method failed\n");
       abort ();

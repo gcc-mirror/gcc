@@ -1,0 +1,5 @@
+# Compile libgcc2 with POSIX threads supports
+HOST_LIBGCC2_CFLAGS += -pthread
+
+# Provide dummy POSIX threads functions
+LIB2ADD += $(gcc_srcdir)/gthr-posix.c

@@ -2,7 +2,7 @@
 /* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include <objc/objc.h>
 
 void foo(id sem)
 {

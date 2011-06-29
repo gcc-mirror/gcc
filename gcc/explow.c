@@ -1,6 +1,6 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 1991, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 1987, 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "langhooks.h"
 #include "target.h"
+#include "common/common-target.h"
 #include "output.h"
 
 static rtx break_out_memory_refs (rtx);
@@ -1250,38 +1251,6 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       if (extra && size_align > extra_align)
 	size_align = extra_align;
     }
-
-#ifdef SETJMP_VIA_SAVE_AREA
-  /* If setjmp restores regs from a save area in the stack frame,
-     avoid clobbering the reg save area.  Note that the offset of
-     virtual_incoming_args_rtx includes the preallocated stack args space.
-     It would be no problem to clobber that, but it's on the wrong side
-     of the old save area.
-
-     What used to happen is that, since we did not know for sure
-     whether setjmp() was invoked until after RTL generation, we
-     would use reg notes to store the "optimized" size and fix things
-     up later.  These days we know this information before we ever
-     start building RTL so the reg notes are unnecessary.  */
-  if (cfun->calls_setjmp)
-    {
-      rtx dynamic_offset
-	= expand_binop (Pmode, sub_optab, virtual_stack_dynamic_rtx,
-			stack_pointer_rtx, NULL_RTX, 1, OPTAB_LIB_WIDEN);
-
-      size = expand_binop (Pmode, add_optab, size, dynamic_offset,
-			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
-
-      /* The above dynamic offset cannot be computed statically at this
-	 point, but it will be possible to do so after RTL expansion is
-	 done.  Record how many times we will need to add it.  */
-      if (flag_stack_usage_info)
-	current_function_dynamic_alloc_count++;
-
-      /* ??? Can we infer a minimum of STACK_BOUNDARY here?  */
-      size_align = BITS_PER_UNIT;
-    }
-#endif /* SETJMP_VIA_SAVE_AREA */
 
   /* Round the size to a multiple of the required stack alignment.
      Since the stack if presumed to be rounded before this allocation,

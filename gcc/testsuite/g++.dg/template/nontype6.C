@@ -16,4 +16,4 @@ void func(void)
 // { dg-message "if a type" "note" { target *-*-* } 15 }
 }
 
-template void func<float>(void);    // { dg-message "instantiated from here" }
+template void func<float>(void);    // { dg-message "required from here" }

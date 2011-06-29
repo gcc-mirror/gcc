@@ -3,7 +3,7 @@
 // Copyright (C) 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 15 Aug 2003 <nathan@codesourcery.com>
 
-// checked instantiated bases in wrong scope.
+// checked required bases in wrong scope.
 
 class Helper {};
 

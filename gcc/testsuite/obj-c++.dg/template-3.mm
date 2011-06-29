@@ -4,12 +4,12 @@
 
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
 #include <stdlib.h>
 
 #define CHECK_IF(expr) if(!(expr)) abort()
 
-@interface ObjCClass : Object
+@interface ObjCClass : TestsuiteObject
 {
 @public
   int info;
@@ -78,4 +78,4 @@ int main(void) {
   
   return 0;
 }
-#include "../objc-obj-c++-shared/Object1-implementation.h"
+

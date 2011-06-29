@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003, 2004, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
 
@@ -89,6 +89,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #ifdef HAVE_MNTENT_H
 #include <mntent.h>
+#endif
+#ifdef HAVE_SYS_MNTTAB_H
+#include <sys/mnttab.h>
 #endif
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -2063,6 +2066,7 @@ WRAPPER2(const char *, gai_strerror, int errcode)
 
 
 #ifdef HAVE_GETMNTENT
+#ifdef HAVE_MNTENT_H
 WRAPPER2(struct mntent *, getmntent, FILE *filep)
 {
   struct mntent *m;
@@ -2097,6 +2101,9 @@ WRAPPER2(struct mntent *, getmntent, FILE *filep)
 
   return m;
 }
+#elif defined HAVE_SYS_MNTTAB_H
+/* FIXME: Implement.  */
+#endif
 #endif
 
 

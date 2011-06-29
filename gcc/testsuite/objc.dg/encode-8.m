@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
-#include <objc/encoding.h>
+#include <objc/runtime.h>
 #include <stdlib.h>
 
 union f

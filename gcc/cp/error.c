@@ -147,7 +147,9 @@ static void
 dump_template_argument (tree arg, int flags)
 {
   if (ARGUMENT_PACK_P (arg))
-    dump_template_argument_list (ARGUMENT_PACK_ARGS (arg), flags);
+    dump_template_argument_list (ARGUMENT_PACK_ARGS (arg),
+				 /* No default args in argument packs.  */
+				 flags|TFF_NO_OMIT_DEFAULT_TEMPLATE_ARGUMENTS);
   else if (TYPE_P (arg) || TREE_CODE (arg) == TEMPLATE_DECL)
     dump_type (arg, flags & ~TFF_CLASS_KEY_OR_ENUM);
   else
@@ -1438,7 +1440,10 @@ dump_exception_spec (tree t, int flags)
       pp_cxx_ws_string (cxx_pp, "noexcept");
       pp_cxx_whitespace (cxx_pp);
       pp_cxx_left_paren (cxx_pp);
-      dump_expr (TREE_PURPOSE (t), flags);
+      if (DEFERRED_NOEXCEPT_SPEC_P (t))
+	pp_cxx_ws_string (cxx_pp, "<uninstantiated>");
+      else
+	dump_expr (TREE_PURPOSE (t), flags);
       pp_cxx_right_paren (cxx_pp);
     }
   else if (t)
@@ -2629,6 +2634,15 @@ type_to_string (tree typ, int verbose)
 
   reinit_cxx_pp ();
   dump_type (typ, flags);
+  if (typ && TYPE_P (typ) && typ != TYPE_CANONICAL (typ)
+      && !uses_template_parms (typ))
+    {
+      tree aka = strip_typedefs (typ);
+      pp_string (cxx_pp, " {aka");
+      pp_cxx_whitespace (cxx_pp);
+      dump_type (aka, flags);
+      pp_character (cxx_pp, '}');
+    }
   return pp_formatted_text (cxx_pp);
 }
 
@@ -2662,6 +2676,32 @@ args_to_string (tree p, int verbose)
       if (TREE_CHAIN (p))
 	pp_separate_with_comma (cxx_pp);
     }
+  return pp_formatted_text (cxx_pp);
+}
+
+/* Pretty-print a deduction substitution (from deduction_tsubst_fntype).  P
+   is a TREE_LIST with purpose the TEMPLATE_DECL, value the template
+   arguments.  */
+
+static const char *
+subst_to_string (tree p)
+{
+  tree decl = TREE_PURPOSE (p);
+  tree targs = TREE_VALUE (p);
+  tree tparms = DECL_TEMPLATE_PARMS (decl);
+  int flags = TFF_DECL_SPECIFIERS|TFF_TEMPLATE_HEADER;
+
+  if (p == NULL_TREE)
+    return "";
+
+  reinit_cxx_pp ();
+  dump_template_decl (TREE_PURPOSE (p), flags);
+  pp_cxx_whitespace (cxx_pp);
+  pp_cxx_left_bracket (cxx_pp);
+  pp_cxx_ws_string (cxx_pp, M_("with"));
+  pp_cxx_whitespace (cxx_pp);
+  dump_template_bindings (tparms, targs, NULL);
+  pp_cxx_right_bracket (cxx_pp);
   return pp_formatted_text (cxx_pp);
 }
 
@@ -2888,38 +2928,34 @@ print_instantiation_partial_context_line (diagnostic_context *context,
   expanded_location xloc;
   xloc = expand_location (loc);
 
-  if (t != NULL) 
+  if (context->show_column)
+    pp_verbatim (context->printer, _("%s:%d:%d:   "),
+		 xloc.file, xloc.line, xloc.column);
+  else
+    pp_verbatim (context->printer, _("%s:%d:   "),
+		 xloc.file, xloc.line);
+
+  if (t != NULL)
     {
-      const char *str;
-      str = decl_as_string_translate (t->decl,
-				      TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE);
-      if (context->show_column)
+      if (TREE_CODE (t->decl) == TREE_LIST)
 	pp_verbatim (context->printer,
 		     recursive_p
-		     ? _("%s:%d:%d:   recursively instantiated from %qs\n")
-		     : _("%s:%d:%d:   instantiated from %qs\n"),
-		     xloc.file, xloc.line, xloc.column, str);
+		     ? _("recursively required by substitution of %qS\n")
+		     : _("required by substitution of %qS\n"),
+		     t->decl);
       else
 	pp_verbatim (context->printer,
 		     recursive_p
-		     ? _("%s:%d:   recursively instantiated from %qs\n")
-		     : _("%s:%d:   recursively instantiated from %qs\n"),
-		     xloc.file, xloc.line, str);
+		     ? _("recursively required from %q#D\n")
+		     : _("required from %q#D\n"),
+		     t->decl);
     }
   else
     {
-      if (context->show_column)
-	pp_verbatim (context->printer, 
-		     recursive_p
-		     ? _("%s:%d:%d:   recursively instantiated from here")
-		     : _("%s:%d:%d:   instantiated from here"),
-		     xloc.file, xloc.line, xloc.column);
-      else
-	pp_verbatim (context->printer,
-		     recursive_p
-		     ? _("%s:%d:   recursively instantiated from here")
-		     : _("%s:%d:   instantiated from here"),
-		     xloc.file, xloc.line);
+      pp_verbatim (context->printer,
+		   recursive_p
+		   ? _("recursively required from here")
+		   : _("required from here"));
     }
 }
 
@@ -3093,6 +3129,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'O': result = op_to_string (next_tcode);		break;
     case 'P': result = parm_to_string (next_int);		break;
     case 'Q': result = assop_to_string (next_tcode);		break;
+    case 'S': result = subst_to_string (next_tree);		break;
     case 'T': result = type_to_string (next_tree, verbose);	break;
     case 'V': result = cv_to_string (next_tree, verbose);	break;
 

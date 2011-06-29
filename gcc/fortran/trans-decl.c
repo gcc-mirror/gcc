@@ -3059,13 +3059,13 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("caf_end_critical")), void_type_node, 0);
 
       gfor_fndecl_caf_sync_all = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_sync_all")), ".W", integer_type_node,
-	2, build_pointer_type (pchar_type_node), integer_type_node);
+	get_identifier (PREFIX("caf_sync_all")), ".WW", void_type_node,
+	3, pint_type, build_pointer_type (pchar_type_node), integer_type_node);
 
       gfor_fndecl_caf_sync_images = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_sync_images")), ".RRW", integer_type_node,
-	4, integer_type_node, pint_type, build_pointer_type (pchar_type_node),
-	integer_type_node);
+	get_identifier (PREFIX("caf_sync_images")), ".RRWW", void_type_node,
+	5, integer_type_node, pint_type, pint_type,
+	build_pointer_type (pchar_type_node), integer_type_node);
 
       gfor_fndecl_caf_error_stop = gfc_build_library_function_decl (
 	get_identifier (PREFIX("caf_error_stop")),
@@ -3465,7 +3465,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
       if (sym->attr.dimension || sym->attr.codimension)
 	{
-	  switch (sym->as->type)
+          /* Assumed-size Cray pointees need to be treated as AS_EXPLICIT.  */
+          array_type tmp = sym->as->type;
+          if (tmp == AS_ASSUMED_SIZE && sym->as->cp_was_assumed)
+            tmp = AS_EXPLICIT;
+          switch (tmp)
 	    {
 	    case AS_EXPLICIT:
 	      if (sym->attr.dummy || sym->attr.result)
@@ -4900,7 +4904,7 @@ create_main_function (tree fndecl)
     { 
       /* Per F2008, 8.5.1 END of the main program implies a
 	 SYNC MEMORY.  */ 
-      tmp = built_in_decls [BUILT_IN_SYNCHRONIZE];
+      tmp = built_in_decls [BUILT_IN_SYNC_SYNCHRONIZE];
       tmp = build_call_expr_loc (input_location, tmp, 0);
       gfc_add_expr_to_block (&body, tmp);
 

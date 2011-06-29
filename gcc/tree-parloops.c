@@ -1,5 +1,5 @@
 /* Loop autoparallelization.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr> and
    Zdenek Dvorak <dvorakz@suse.cz>.
@@ -716,8 +716,11 @@ eliminate_local_variables (edge entry, edge exit)
   FOR_EACH_VEC_ELT (basic_block, body, i, bb)
     if (bb != entry_bb && bb != exit_bb)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	if (gimple_debug_bind_p (gsi_stmt (gsi)))
-	  has_debug_stmt = true;
+	if (is_gimple_debug (gsi_stmt (gsi)))
+	  {
+	    if (gimple_debug_bind_p (gsi_stmt (gsi)))
+	      has_debug_stmt = true;
+	  }
 	else
 	  eliminate_local_variables_stmt (entry, &gsi, decl_address);
 
@@ -883,8 +886,8 @@ separate_decls_in_region_stmt (edge entry, edge exit, gimple stmt,
    replacement decls are stored in DECL_COPIES.  */
 
 static bool
-separate_decls_in_region_debug_bind (gimple stmt,
-				     htab_t name_copies, htab_t decl_copies)
+separate_decls_in_region_debug (gimple stmt, htab_t name_copies,
+				htab_t decl_copies)
 {
   use_operand_p use;
   ssa_op_iter oi;
@@ -893,7 +896,12 @@ separate_decls_in_region_debug_bind (gimple stmt,
   struct name_to_copy_elt elt;
   void **slot, **dslot;
 
-  var = gimple_debug_bind_get_var (stmt);
+  if (gimple_debug_bind_p (stmt))
+    var = gimple_debug_bind_get_var (stmt);
+  else if (gimple_debug_source_bind_p (stmt))
+    var = gimple_debug_source_bind_get_var (stmt);
+  else
+    return true;
   if (TREE_CODE (var) == DEBUG_EXPR_DECL)
     return true;
   gcc_assert (DECL_P (var) && SSA_VAR_P (var));
@@ -901,7 +909,10 @@ separate_decls_in_region_debug_bind (gimple stmt,
   dslot = htab_find_slot_with_hash (decl_copies, &ielt, ielt.uid, NO_INSERT);
   if (!dslot)
     return true;
-  gimple_debug_bind_set_var (stmt, ((struct int_tree_map *) *dslot)->to);
+  if (gimple_debug_bind_p (stmt))
+    gimple_debug_bind_set_var (stmt, ((struct int_tree_map *) *dslot)->to);
+  else if (gimple_debug_source_bind_p (stmt))
+    gimple_debug_source_bind_set_var (stmt, ((struct int_tree_map *) *dslot)->to);
 
   FOR_EACH_PHI_OR_STMT_USE (use, stmt, oi, SSA_OP_USE)
   {
@@ -1295,11 +1306,10 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
 	    {
 	      gimple stmt = gsi_stmt (gsi);
 
-	      if (gimple_debug_bind_p (stmt))
+	      if (is_gimple_debug (stmt))
 		{
-		  if (separate_decls_in_region_debug_bind (stmt,
-							   name_copies,
-							   decl_copies))
+		  if (separate_decls_in_region_debug (stmt, name_copies,
+						      decl_copies))
 		    {
 		      gsi_remove (&gsi, true);
 		      continue;
@@ -2134,7 +2144,7 @@ parallelize_loops (void)
 	  /* FIXME: the check for vector phi nodes could be removed.  */
 	  || loop_has_vector_phi_nodes (loop))
 	continue;
-      estimated = estimated_loop_iterations_int (loop, false);
+      estimated = max_stmt_executions_int (loop, false);
       /* FIXME: Bypass this check as graphite doesn't update the
       count and frequency correctly now.  */
       if (!flag_loop_parallelize_all

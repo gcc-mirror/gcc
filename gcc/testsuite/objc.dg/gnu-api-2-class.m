@@ -109,7 +109,7 @@ int main(int argc, void **args)
     objc_registerClassPair (new_class);    
 
     {
-      MySubClass *o = [[objc_getClass ("MySubSubClass") alloc] init];
+      MySubClass *o = [[(Class)objc_getClass ("MySubSubClass") alloc] init];
       Ivar variable2 = class_getInstanceVariable (objc_getClass ("MySubSubClass"), "variable2_ivar");
       Ivar variable3 = class_getInstanceVariable (objc_getClass ("MySubSubClass"), "variable3_ivar");
       Ivar variable4 = class_getInstanceVariable (objc_getClass ("MySubSubClass"), "variable4_ivar");
@@ -178,7 +178,7 @@ int main(int argc, void **args)
     /* Now, MySubClass2 is basically the same as MySubClass!  We'll
        use the variable and setVariable: methods on it.  */
     {
-      MySubClass *o = (MySubClass *)[[objc_getClass ("MySubClass2") alloc] init];
+      MySubClass *o = (MySubClass *)[[(Class)objc_getClass ("MySubClass2") alloc] init];
 
       [o setVariable: o];
 

@@ -806,10 +806,6 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
     emit_insn (gen_builtin_setjmp_setup (buf_addr));
 #endif
 
-  /* Tell optimize_save_area_alloca that extra work is going to
-     need to go on during alloca.  */
-  cfun->calls_setjmp = 1;
-
   /* We have a nonlocal label.   */
   cfun->has_nonlocal_label = 1;
 }
@@ -992,8 +988,8 @@ expand_builtin_nonlocal_goto (tree exp)
   r_label = convert_memory_address (Pmode, r_label);
   r_save_area = expand_normal (t_save_area);
   r_save_area = convert_memory_address (Pmode, r_save_area);
-  /* Copy the address of the save location to a register just in case it was based
-    on the frame pointer.   */
+  /* Copy the address of the save location to a register just in case it was
+     based on the frame pointer.   */
   r_save_area = copy_to_reg (r_save_area);
   r_fp = gen_rtx_MEM (Pmode, r_save_area);
   r_sp = gen_rtx_MEM (STACK_SAVEAREA_MODE (SAVE_NONLOCAL),
@@ -1013,11 +1009,7 @@ expand_builtin_nonlocal_goto (tree exp)
       emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
       emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
-      /* Restore frame pointer for containing function.
-	 This sets the actual hard register used for the frame pointer
-	 to the location of the function's incoming static chain info.
-	 The non-local goto handler will then adjust it to contain the
-	 proper value and reload the argument pointer, if needed.  */
+      /* Restore frame pointer for containing function.  */
       emit_move_insn (hard_frame_pointer_rtx, r_fp);
       emit_stack_restore (SAVE_NONLOCAL, r_sp);
 
@@ -1066,28 +1058,12 @@ expand_builtin_nonlocal_goto (tree exp)
 static void
 expand_builtin_update_setjmp_buf (rtx buf_addr)
 {
-  enum machine_mode sa_mode = Pmode;
-  rtx stack_save;
-
-
-#ifdef HAVE_save_stack_nonlocal
-  if (HAVE_save_stack_nonlocal)
-    sa_mode = insn_data[(int) CODE_FOR_save_stack_nonlocal].operand[0].mode;
-#endif
-#ifdef STACK_SAVEAREA_MODE
-  sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
-#endif
-
-  stack_save
+  enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
+  rtx stack_save
     = gen_rtx_MEM (sa_mode,
 		   memory_address
 		   (sa_mode,
 		    plus_constant (buf_addr, 2 * GET_MODE_SIZE (Pmode))));
-
-#ifdef HAVE_setjmp
-  if (HAVE_setjmp)
-    emit_insn (gen_setjmp ());
-#endif
 
   emit_stack_save (SAVE_NONLOCAL, &stack_save);
 }
@@ -2847,451 +2823,6 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
   return target;
 }
 
-/* To evaluate powi(x,n), the floating point value x raised to the
-   constant integer exponent n, we use a hybrid algorithm that
-   combines the "window method" with look-up tables.  For an
-   introduction to exponentiation algorithms and "addition chains",
-   see section 4.6.3, "Evaluation of Powers" of Donald E. Knuth,
-   "Seminumerical Algorithms", Vol. 2, "The Art of Computer Programming",
-   3rd Edition, 1998, and Daniel M. Gordon, "A Survey of Fast Exponentiation
-   Methods", Journal of Algorithms, Vol. 27, pp. 129-146, 1998.  */
-
-/* Provide a default value for POWI_MAX_MULTS, the maximum number of
-   multiplications to inline before calling the system library's pow
-   function.  powi(x,n) requires at worst 2*bits(n)-2 multiplications,
-   so this default never requires calling pow, powf or powl.  */
-
-#ifndef POWI_MAX_MULTS
-#define POWI_MAX_MULTS  (2*HOST_BITS_PER_WIDE_INT-2)
-#endif
-
-/* The size of the "optimal power tree" lookup table.  All
-   exponents less than this value are simply looked up in the
-   powi_table below.  This threshold is also used to size the
-   cache of pseudo registers that hold intermediate results.  */
-#define POWI_TABLE_SIZE 256
-
-/* The size, in bits of the window, used in the "window method"
-   exponentiation algorithm.  This is equivalent to a radix of
-   (1<<POWI_WINDOW_SIZE) in the corresponding "m-ary method".  */
-#define POWI_WINDOW_SIZE 3
-
-/* The following table is an efficient representation of an
-   "optimal power tree".  For each value, i, the corresponding
-   value, j, in the table states than an optimal evaluation
-   sequence for calculating pow(x,i) can be found by evaluating
-   pow(x,j)*pow(x,i-j).  An optimal power tree for the first
-   100 integers is given in Knuth's "Seminumerical algorithms".  */
-
-static const unsigned char powi_table[POWI_TABLE_SIZE] =
-  {
-      0,   1,   1,   2,   2,   3,   3,   4,  /*   0 -   7 */
-      4,   6,   5,   6,   6,  10,   7,   9,  /*   8 -  15 */
-      8,  16,   9,  16,  10,  12,  11,  13,  /*  16 -  23 */
-     12,  17,  13,  18,  14,  24,  15,  26,  /*  24 -  31 */
-     16,  17,  17,  19,  18,  33,  19,  26,  /*  32 -  39 */
-     20,  25,  21,  40,  22,  27,  23,  44,  /*  40 -  47 */
-     24,  32,  25,  34,  26,  29,  27,  44,  /*  48 -  55 */
-     28,  31,  29,  34,  30,  60,  31,  36,  /*  56 -  63 */
-     32,  64,  33,  34,  34,  46,  35,  37,  /*  64 -  71 */
-     36,  65,  37,  50,  38,  48,  39,  69,  /*  72 -  79 */
-     40,  49,  41,  43,  42,  51,  43,  58,  /*  80 -  87 */
-     44,  64,  45,  47,  46,  59,  47,  76,  /*  88 -  95 */
-     48,  65,  49,  66,  50,  67,  51,  66,  /*  96 - 103 */
-     52,  70,  53,  74,  54, 104,  55,  74,  /* 104 - 111 */
-     56,  64,  57,  69,  58,  78,  59,  68,  /* 112 - 119 */
-     60,  61,  61,  80,  62,  75,  63,  68,  /* 120 - 127 */
-     64,  65,  65, 128,  66, 129,  67,  90,  /* 128 - 135 */
-     68,  73,  69, 131,  70,  94,  71,  88,  /* 136 - 143 */
-     72, 128,  73,  98,  74, 132,  75, 121,  /* 144 - 151 */
-     76, 102,  77, 124,  78, 132,  79, 106,  /* 152 - 159 */
-     80,  97,  81, 160,  82,  99,  83, 134,  /* 160 - 167 */
-     84,  86,  85,  95,  86, 160,  87, 100,  /* 168 - 175 */
-     88, 113,  89,  98,  90, 107,  91, 122,  /* 176 - 183 */
-     92, 111,  93, 102,  94, 126,  95, 150,  /* 184 - 191 */
-     96, 128,  97, 130,  98, 133,  99, 195,  /* 192 - 199 */
-    100, 128, 101, 123, 102, 164, 103, 138,  /* 200 - 207 */
-    104, 145, 105, 146, 106, 109, 107, 149,  /* 208 - 215 */
-    108, 200, 109, 146, 110, 170, 111, 157,  /* 216 - 223 */
-    112, 128, 113, 130, 114, 182, 115, 132,  /* 224 - 231 */
-    116, 200, 117, 132, 118, 158, 119, 206,  /* 232 - 239 */
-    120, 240, 121, 162, 122, 147, 123, 152,  /* 240 - 247 */
-    124, 166, 125, 214, 126, 138, 127, 153,  /* 248 - 255 */
-  };
-
-
-/* Return the number of multiplications required to calculate
-   powi(x,n) where n is less than POWI_TABLE_SIZE.  This is a
-   subroutine of powi_cost.  CACHE is an array indicating
-   which exponents have already been calculated.  */
-
-static int
-powi_lookup_cost (unsigned HOST_WIDE_INT n, bool *cache)
-{
-  /* If we've already calculated this exponent, then this evaluation
-     doesn't require any additional multiplications.  */
-  if (cache[n])
-    return 0;
-
-  cache[n] = true;
-  return powi_lookup_cost (n - powi_table[n], cache)
-	 + powi_lookup_cost (powi_table[n], cache) + 1;
-}
-
-/* Return the number of multiplications required to calculate
-   powi(x,n) for an arbitrary x, given the exponent N.  This
-   function needs to be kept in sync with expand_powi below.  */
-
-static int
-powi_cost (HOST_WIDE_INT n)
-{
-  bool cache[POWI_TABLE_SIZE];
-  unsigned HOST_WIDE_INT digit;
-  unsigned HOST_WIDE_INT val;
-  int result;
-
-  if (n == 0)
-    return 0;
-
-  /* Ignore the reciprocal when calculating the cost.  */
-  val = (n < 0) ? -n : n;
-
-  /* Initialize the exponent cache.  */
-  memset (cache, 0, POWI_TABLE_SIZE * sizeof (bool));
-  cache[1] = true;
-
-  result = 0;
-
-  while (val >= POWI_TABLE_SIZE)
-    {
-      if (val & 1)
-	{
-	  digit = val & ((1 << POWI_WINDOW_SIZE) - 1);
-	  result += powi_lookup_cost (digit, cache)
-		    + POWI_WINDOW_SIZE + 1;
-	  val >>= POWI_WINDOW_SIZE;
-	}
-      else
-	{
-	  val >>= 1;
-	  result++;
-	}
-    }
-
-  return result + powi_lookup_cost (val, cache);
-}
-
-/* Recursive subroutine of expand_powi.  This function takes the array,
-   CACHE, of already calculated exponents and an exponent N and returns
-   an RTX that corresponds to CACHE[1]**N, as calculated in mode MODE.  */
-
-static rtx
-expand_powi_1 (enum machine_mode mode, unsigned HOST_WIDE_INT n, rtx *cache)
-{
-  unsigned HOST_WIDE_INT digit;
-  rtx target, result;
-  rtx op0, op1;
-
-  if (n < POWI_TABLE_SIZE)
-    {
-      if (cache[n])
-	return cache[n];
-
-      target = gen_reg_rtx (mode);
-      cache[n] = target;
-
-      op0 = expand_powi_1 (mode, n - powi_table[n], cache);
-      op1 = expand_powi_1 (mode, powi_table[n], cache);
-    }
-  else if (n & 1)
-    {
-      target = gen_reg_rtx (mode);
-      digit = n & ((1 << POWI_WINDOW_SIZE) - 1);
-      op0 = expand_powi_1 (mode, n - digit, cache);
-      op1 = expand_powi_1 (mode, digit, cache);
-    }
-  else
-    {
-      target = gen_reg_rtx (mode);
-      op0 = expand_powi_1 (mode, n >> 1, cache);
-      op1 = op0;
-    }
-
-  result = expand_mult (mode, op0, op1, target, 0);
-  if (result != target)
-    emit_move_insn (target, result);
-  return target;
-}
-
-/* Expand the RTL to evaluate powi(x,n) in mode MODE.  X is the
-   floating point operand in mode MODE, and N is the exponent.  This
-   function needs to be kept in sync with powi_cost above.  */
-
-static rtx
-expand_powi (rtx x, enum machine_mode mode, HOST_WIDE_INT n)
-{
-  rtx cache[POWI_TABLE_SIZE];
-  rtx result;
-
-  if (n == 0)
-    return CONST1_RTX (mode);
-
-  memset (cache, 0, sizeof (cache));
-  cache[1] = x;
-
-  result = expand_powi_1 (mode, (n < 0) ? -n : n, cache);
-
-  /* If the original exponent was negative, reciprocate the result.  */
-  if (n < 0)
-    result = expand_binop (mode, sdiv_optab, CONST1_RTX (mode),
-			   result, NULL_RTX, 0, OPTAB_LIB_WIDEN);
-
-  return result;
-}
-
-/* Fold a builtin function call to pow, powf, or powl into a series of sqrts or
-   cbrts.  Return NULL_RTX if no simplification can be made or expand the tree
-   if we can simplify it.  */
-static rtx
-expand_builtin_pow_root (location_t loc, tree arg0, tree arg1, tree type,
-			 rtx subtarget)
-{
-  if (TREE_CODE (arg1) == REAL_CST
-      && !TREE_OVERFLOW (arg1)
-      && flag_unsafe_math_optimizations)
-    {
-      enum machine_mode mode = TYPE_MODE (type);
-      tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
-      tree cbrtfn = mathfn_built_in (type, BUILT_IN_CBRT);
-      REAL_VALUE_TYPE c = TREE_REAL_CST (arg1);
-      tree op = NULL_TREE;
-
-      if (sqrtfn)
-	{
-	  /* Optimize pow (x, 0.5) into sqrt.  */
-	  if (REAL_VALUES_EQUAL (c, dconsthalf))
-	    op = build_call_nofold_loc (loc, sqrtfn, 1, arg0);
-
-	  /* Don't do this optimization if we don't have a sqrt insn.  */
-	  else if (optab_handler (sqrt_optab, mode) != CODE_FOR_nothing)
-	    {
-	      REAL_VALUE_TYPE dconst1_4 = dconst1;
-	      REAL_VALUE_TYPE dconst3_4;
-	      SET_REAL_EXP (&dconst1_4, REAL_EXP (&dconst1_4) - 2);
-
-	      real_from_integer (&dconst3_4, VOIDmode, 3, 0, 0);
-	      SET_REAL_EXP (&dconst3_4, REAL_EXP (&dconst3_4) - 2);
-
-	      /* Optimize pow (x, 0.25) into sqrt (sqrt (x)).  Assume on most
-		 machines that a builtin sqrt instruction is smaller than a
-		 call to pow with 0.25, so do this optimization even if
-		 -Os.  */
-	      if (REAL_VALUES_EQUAL (c, dconst1_4))
-		{
-		  op = build_call_nofold_loc (loc, sqrtfn, 1, arg0);
-		  op = build_call_nofold_loc (loc, sqrtfn, 1, op);
-		}
-
-	      /* Optimize pow (x, 0.75) = sqrt (x) * sqrt (sqrt (x)) unless we
-		 are optimizing for space.  */
-	      else if (optimize_insn_for_speed_p ()
-		       && !TREE_SIDE_EFFECTS (arg0)
-		       && REAL_VALUES_EQUAL (c, dconst3_4))
-		{
-		  tree sqrt1 = build_call_expr_loc (loc, sqrtfn, 1, arg0);
-		  tree sqrt2 = builtin_save_expr (sqrt1);
-		  tree sqrt3 = build_call_expr_loc (loc, sqrtfn, 1, sqrt1);
-		  op = fold_build2_loc (loc, MULT_EXPR, type, sqrt2, sqrt3);
-		}
-	    }
-	}
-
-      /* Check whether we can do cbrt insstead of pow (x, 1./3.) and
-	 cbrt/sqrts instead of pow (x, 1./6.).  */
-      if (cbrtfn && ! op
-	  && (tree_expr_nonnegative_p (arg0) || !HONOR_NANS (mode)))
-	{
-	  /* First try 1/3.  */
-	  REAL_VALUE_TYPE dconst1_3
-	    = real_value_truncate (mode, dconst_third ());
-
-	  if (REAL_VALUES_EQUAL (c, dconst1_3))
-	    op = build_call_nofold_loc (loc, cbrtfn, 1, arg0);
-
-	      /* Now try 1/6.  */
-	  else if (optimize_insn_for_speed_p ()
-		   && optab_handler (sqrt_optab, mode) != CODE_FOR_nothing)
-	    {
-	      REAL_VALUE_TYPE dconst1_6 = dconst1_3;
-	      SET_REAL_EXP (&dconst1_6, REAL_EXP (&dconst1_6) - 1);
-
-	      if (REAL_VALUES_EQUAL (c, dconst1_6))
-		{
-		  op = build_call_nofold_loc (loc, sqrtfn, 1, arg0);
-		  op = build_call_nofold_loc (loc, cbrtfn, 1, op);
-		}
-	    }
-	}
-
-      if (op)
-	return expand_expr (op, subtarget, mode, EXPAND_NORMAL);
-    }
-
-  return NULL_RTX;
-}
-
-/* Expand a call to the pow built-in mathematical function.  Return NULL_RTX if
-   a normal call should be emitted rather than expanding the function
-   in-line.  EXP is the expression that is a call to the builtin
-   function; if convenient, the result should be placed in TARGET.  */
-
-static rtx
-expand_builtin_pow (tree exp, rtx target, rtx subtarget)
-{
-  tree arg0, arg1;
-  tree fn, narg0;
-  tree type = TREE_TYPE (exp);
-  REAL_VALUE_TYPE cint, c, c2;
-  HOST_WIDE_INT n;
-  rtx op, op2;
-  enum machine_mode mode = TYPE_MODE (type);
-
-  if (! validate_arglist (exp, REAL_TYPE, REAL_TYPE, VOID_TYPE))
-    return NULL_RTX;
-
-  arg0 = CALL_EXPR_ARG (exp, 0);
-  arg1 = CALL_EXPR_ARG (exp, 1);
-
-  if (TREE_CODE (arg1) != REAL_CST
-      || TREE_OVERFLOW (arg1))
-    return expand_builtin_mathfn_2 (exp, target, subtarget);
-
-  /* Handle constant exponents.  */
-
-  /* For integer valued exponents we can expand to an optimal multiplication
-     sequence using expand_powi.  */
-  c = TREE_REAL_CST (arg1);
-  n = real_to_integer (&c);
-  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
-  if (real_identical (&c, &cint)
-      && ((n >= -1 && n <= 2)
-	  || (flag_unsafe_math_optimizations
-	      && optimize_insn_for_speed_p ()
-	      && powi_cost (n) <= POWI_MAX_MULTS)))
-    {
-      op = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
-      if (n != 1)
-	{
-	  op = force_reg (mode, op);
-	  op = expand_powi (op, mode, n);
-	}
-      return op;
-    }
-
-  narg0 = builtin_save_expr (arg0);
-
-  /* If the exponent is not integer valued, check if it is half of an integer.
-     In this case we can expand to sqrt (x) * x**(n/2).  */
-  fn = mathfn_built_in (type, BUILT_IN_SQRT);
-  if (fn != NULL_TREE)
-    {
-      real_arithmetic (&c2, MULT_EXPR, &c, &dconst2);
-      n = real_to_integer (&c2);
-      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
-      if (real_identical (&c2, &cint)
-	  && ((flag_unsafe_math_optimizations
-	       && optimize_insn_for_speed_p ()
-	       && powi_cost (n/2) <= POWI_MAX_MULTS)
-	      /* Even the c == 0.5 case cannot be done unconditionally
-	         when we need to preserve signed zeros, as
-		 pow (-0, 0.5) is +0, while sqrt(-0) is -0.  */
-	      || (!HONOR_SIGNED_ZEROS (mode) && n == 1)
-	      /* For c == 1.5 we can assume that x * sqrt (x) is always
-	         smaller than pow (x, 1.5) if sqrt will not be expanded
-		 as a call.  */
-	      || (n == 3
-		  && optab_handler (sqrt_optab, mode) != CODE_FOR_nothing)))
-	{
-	  tree call_expr = build_call_nofold_loc (EXPR_LOCATION (exp), fn, 1,
-						  narg0);
-	  /* Use expand_expr in case the newly built call expression
-	     was folded to a non-call.  */
-	  op = expand_expr (call_expr, subtarget, mode, EXPAND_NORMAL);
-	  if (n != 1)
-	    {
-	      op2 = expand_expr (narg0, subtarget, VOIDmode, EXPAND_NORMAL);
-	      op2 = force_reg (mode, op2);
-	      op2 = expand_powi (op2, mode, abs (n / 2));
-	      op = expand_simple_binop (mode, MULT, op, op2, NULL_RTX,
-					0, OPTAB_LIB_WIDEN);
-	      /* If the original exponent was negative, reciprocate the
-		 result.  */
-	      if (n < 0)
-		op = expand_binop (mode, sdiv_optab, CONST1_RTX (mode),
-				   op, NULL_RTX, 0, OPTAB_LIB_WIDEN);
-	    }
-	  return op;
-	}
-    }
-
-  /* Check whether we can do a series of sqrt or cbrt's instead of the pow
-     call.  */
-  op = expand_builtin_pow_root (EXPR_LOCATION (exp), arg0, arg1, type,
-				subtarget);
-  if (op)
-    return op;
-
-  /* Try if the exponent is a third of an integer.  In this case
-     we can expand to x**(n/3) * cbrt(x)**(n%3).  As cbrt (x) is
-     different from pow (x, 1./3.) due to rounding and behavior
-     with negative x we need to constrain this transformation to
-     unsafe math and positive x or finite math.  */
-  fn = mathfn_built_in (type, BUILT_IN_CBRT);
-  if (fn != NULL_TREE
-      && flag_unsafe_math_optimizations
-      && (tree_expr_nonnegative_p (arg0)
-	  || !HONOR_NANS (mode)))
-    {
-      REAL_VALUE_TYPE dconst3;
-      real_from_integer (&dconst3, VOIDmode, 3, 0, 0);
-      real_arithmetic (&c2, MULT_EXPR, &c, &dconst3);
-      real_round (&c2, mode, &c2);
-      n = real_to_integer (&c2);
-      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
-      real_arithmetic (&c2, RDIV_EXPR, &cint, &dconst3);
-      real_convert (&c2, mode, &c2);
-      if (real_identical (&c2, &c)
-	  && ((optimize_insn_for_speed_p ()
-	       && powi_cost (n/3) <= POWI_MAX_MULTS)
-	      || n == 1))
-	{
-	  tree call_expr = build_call_nofold_loc (EXPR_LOCATION (exp), fn, 1,
-						  narg0);
-	  op = expand_builtin (call_expr, NULL_RTX, subtarget, mode, 0);
-	  if (abs (n) % 3 == 2)
-	    op = expand_simple_binop (mode, MULT, op, op, op,
-				      0, OPTAB_LIB_WIDEN);
-	  if (n != 1)
-	    {
-	      op2 = expand_expr (narg0, subtarget, VOIDmode, EXPAND_NORMAL);
-	      op2 = force_reg (mode, op2);
-	      op2 = expand_powi (op2, mode, abs (n / 3));
-	      op = expand_simple_binop (mode, MULT, op, op2, NULL_RTX,
-					0, OPTAB_LIB_WIDEN);
-	      /* If the original exponent was negative, reciprocate the
-		 result.  */
-	      if (n < 0)
-		op = expand_binop (mode, sdiv_optab, CONST1_RTX (mode),
-				   op, NULL_RTX, 0, OPTAB_LIB_WIDEN);
-	    }
-	  return op;
-	}
-    }
-
-  /* Fall back to optab expansion.  */
-  return expand_builtin_mathfn_2 (exp, target, subtarget);
-}
-
 /* Expand a call to the powi built-in mathematical function.  Return NULL_RTX if
    a normal call should be emitted rather than expanding the function
    in-line.  EXP is the expression that is a call to the builtin
@@ -3311,27 +2842,6 @@ expand_builtin_powi (tree exp, rtx target)
   arg0 = CALL_EXPR_ARG (exp, 0);
   arg1 = CALL_EXPR_ARG (exp, 1);
   mode = TYPE_MODE (TREE_TYPE (exp));
-
-  /* Handle constant power.  */
-
-  if (TREE_CODE (arg1) == INTEGER_CST
-      && !TREE_OVERFLOW (arg1))
-    {
-      HOST_WIDE_INT n = TREE_INT_CST_LOW (arg1);
-
-      /* If the exponent is -1, 0, 1 or 2, then expand_powi is exact.
-	 Otherwise, check the number of multiplications required.  */
-      if ((TREE_INT_CST_HIGH (arg1) == 0
-	   || TREE_INT_CST_HIGH (arg1) == -1)
-	  && ((n >= -1 && n <= 2)
-	      || (optimize_insn_for_speed_p ()
-		  && powi_cost (n) <= POWI_MAX_MULTS)))
-	{
-	  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-	  op0 = force_reg (mode, op0);
-	  return expand_powi (op0, mode, n);
-	}
-    }
 
   /* Emit a libcall to libgcc.  */
 
@@ -3429,9 +2939,16 @@ expand_builtin_strlen (tree exp, rtx target,
 
       /* Now that we are assured of success, expand the source.  */
       start_sequence ();
-      pat = expand_expr (src, src_reg, ptr_mode, EXPAND_NORMAL);
+      pat = expand_expr (src, src_reg, Pmode, EXPAND_NORMAL);
       if (pat != src_reg)
-	emit_move_insn (src_reg, pat);
+	{
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (pat) != Pmode)
+	    pat = convert_to_mode (Pmode, pat,
+				   POINTERS_EXTEND_UNSIGNED);
+#endif
+	  emit_move_insn (src_reg, pat);
+	}
       pat = get_insns ();
       end_sequence ();
 
@@ -5061,7 +4578,7 @@ expand_builtin_unop (enum machine_mode target_mode, tree exp, rtx target,
   /* Compute op, into TARGET if possible.
      Set TARGET to wherever the result comes back.  */
   target = expand_unop (TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (exp, 0))),
-			op_optab, op0, target, 1);
+			op_optab, op0, target, op_optab != clrsb_optab);
   gcc_assert (target);
 
   return convert_to_mode (target_mode, target, 0);
@@ -5084,6 +4601,23 @@ expand_builtin_expect (tree exp, rtx target)
   /* When guessing was done, the hints should be already stripped away.  */
   gcc_assert (!flag_guess_branch_prob
 	      || optimize == 0 || seen_error ());
+  return target;
+}
+
+/* Expand a call to __builtin_assume_aligned.  We just return our first
+   argument as the builtin_assume_aligned semantic should've been already
+   executed by CCP.  */
+
+static rtx
+expand_builtin_assume_aligned (tree exp, rtx target)
+{
+  if (call_expr_nargs (exp) < 2)
+    return const0_rtx;
+  target = expand_expr (CALL_EXPR_ARG (exp, 0), target, VOIDmode,
+			EXPAND_NORMAL);
+  gcc_assert (!TREE_SIDE_EFFECTS (CALL_EXPR_ARG (exp, 1))
+	      && (call_expr_nargs (exp) < 3
+		  || !TREE_SIDE_EFFECTS (CALL_EXPR_ARG (exp, 2))));
   return target;
 }
 
@@ -5566,30 +5100,30 @@ expand_builtin_sync_operation (enum machine_mode mode, tree exp,
 
       switch (fcode)
 	{
-	case BUILT_IN_FETCH_AND_NAND_1:
-	case BUILT_IN_FETCH_AND_NAND_2:
-	case BUILT_IN_FETCH_AND_NAND_4:
-	case BUILT_IN_FETCH_AND_NAND_8:
-	case BUILT_IN_FETCH_AND_NAND_16:
+	case BUILT_IN_SYNC_FETCH_AND_NAND_1:
+	case BUILT_IN_SYNC_FETCH_AND_NAND_2:
+	case BUILT_IN_SYNC_FETCH_AND_NAND_4:
+	case BUILT_IN_SYNC_FETCH_AND_NAND_8:
+	case BUILT_IN_SYNC_FETCH_AND_NAND_16:
 
 	  if (warned_f_a_n)
 	    break;
 
-	  fndecl = implicit_built_in_decls[BUILT_IN_FETCH_AND_NAND_N];
+	  fndecl = implicit_built_in_decls[BUILT_IN_SYNC_FETCH_AND_NAND_N];
 	  inform (loc, "%qD changed semantics in GCC 4.4", fndecl);
 	  warned_f_a_n = true;
 	  break;
 
-	case BUILT_IN_NAND_AND_FETCH_1:
-	case BUILT_IN_NAND_AND_FETCH_2:
-	case BUILT_IN_NAND_AND_FETCH_4:
-	case BUILT_IN_NAND_AND_FETCH_8:
-	case BUILT_IN_NAND_AND_FETCH_16:
+	case BUILT_IN_SYNC_NAND_AND_FETCH_1:
+	case BUILT_IN_SYNC_NAND_AND_FETCH_2:
+	case BUILT_IN_SYNC_NAND_AND_FETCH_4:
+	case BUILT_IN_SYNC_NAND_AND_FETCH_8:
+	case BUILT_IN_SYNC_NAND_AND_FETCH_16:
 
 	  if (warned_n_a_f)
 	    break;
 
-	  fndecl = implicit_built_in_decls[BUILT_IN_NAND_AND_FETCH_N];
+	  fndecl = implicit_built_in_decls[BUILT_IN_SYNC_NAND_AND_FETCH_N];
 	  inform (loc, "%qD changed semantics in GCC 4.4", fndecl);
 	  warned_n_a_f = true;
 	  break;
@@ -5663,7 +5197,7 @@ expand_builtin_compare_and_swap (enum machine_mode mode, tree exp,
    the results.  */
 
 static rtx
-expand_builtin_lock_test_and_set (enum machine_mode mode, tree exp,
+expand_builtin_sync_lock_test_and_set (enum machine_mode mode, tree exp,
 				  rtx target)
 {
   rtx val, mem;
@@ -5685,7 +5219,7 @@ expand_builtin_lock_test_and_set (enum machine_mode mode, tree exp,
 /* Expand the __sync_synchronize intrinsic.  */
 
 static void
-expand_builtin_synchronize (void)
+expand_builtin_sync_synchronize (void)
 {
   gimple x;
   VEC (tree, gc) *v_clobbers;
@@ -5717,7 +5251,7 @@ expand_builtin_synchronize (void)
 /* Expand the __sync_lock_release intrinsic.  EXP is the CALL_EXPR.  */
 
 static void
-expand_builtin_lock_release (enum machine_mode mode, tree exp)
+expand_builtin_sync_lock_release (enum machine_mode mode, tree exp)
 {
   struct expand_operand ops[2];
   enum insn_code icode;
@@ -5738,7 +5272,7 @@ expand_builtin_lock_release (enum machine_mode mode, tree exp)
 
   /* Otherwise we can implement this operation by emitting a barrier
      followed by a store of zero.  */
-  expand_builtin_synchronize ();
+  expand_builtin_sync_synchronize ();
   emit_move_insn (mem, const0_rtx);
 }
 
@@ -5886,12 +5420,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
-    CASE_FLT_FN (BUILT_IN_POW):
-      target = expand_builtin_pow (exp, target, subtarget);
-      if (target)
-	return target;
-      break;
-
     CASE_FLT_FN (BUILT_IN_POWI):
       target = expand_builtin_powi (exp, target);
       if (target)
@@ -5909,6 +5437,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_FMOD):
     CASE_FLT_FN (BUILT_IN_REMAINDER):
     CASE_FLT_FN (BUILT_IN_DREM):
+    CASE_FLT_FN (BUILT_IN_POW):
       target = expand_builtin_mathfn_2 (exp, target, subtarget);
       if (target)
 	return target;
@@ -6064,6 +5593,14 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_CTZIMAX:
       target = expand_builtin_unop (target_mode, exp, target,
 				    subtarget, ctz_optab);
+      if (target)
+	return target;
+      break;
+
+    CASE_INT_FN (BUILT_IN_CLRSB):
+    case BUILT_IN_CLRSBIMAX:
+      target = expand_builtin_unop (target_mode, exp, target,
+				    subtarget, clrsb_optab);
       if (target)
 	return target;
       break;
@@ -6303,6 +5840,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       return expand_builtin_va_copy (exp);
     case BUILT_IN_EXPECT:
       return expand_builtin_expect (exp, target);
+    case BUILT_IN_ASSUME_ALIGNED:
+      return expand_builtin_assume_aligned (exp, target);
     case BUILT_IN_PREFETCH:
       expand_builtin_prefetch (exp);
       return const0_rtx;
@@ -6324,199 +5863,201 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
-    case BUILT_IN_FETCH_AND_ADD_1:
-    case BUILT_IN_FETCH_AND_ADD_2:
-    case BUILT_IN_FETCH_AND_ADD_4:
-    case BUILT_IN_FETCH_AND_ADD_8:
-    case BUILT_IN_FETCH_AND_ADD_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_FETCH_AND_ADD_1);
+    case BUILT_IN_SYNC_FETCH_AND_ADD_1:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_2:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_4:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_8:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_FETCH_AND_ADD_1);
       target = expand_builtin_sync_operation (mode, exp, PLUS,
 					      false, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_FETCH_AND_SUB_1:
-    case BUILT_IN_FETCH_AND_SUB_2:
-    case BUILT_IN_FETCH_AND_SUB_4:
-    case BUILT_IN_FETCH_AND_SUB_8:
-    case BUILT_IN_FETCH_AND_SUB_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_FETCH_AND_SUB_1);
+    case BUILT_IN_SYNC_FETCH_AND_SUB_1:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_2:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_4:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_8:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_FETCH_AND_SUB_1);
       target = expand_builtin_sync_operation (mode, exp, MINUS,
 					      false, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_FETCH_AND_OR_1:
-    case BUILT_IN_FETCH_AND_OR_2:
-    case BUILT_IN_FETCH_AND_OR_4:
-    case BUILT_IN_FETCH_AND_OR_8:
-    case BUILT_IN_FETCH_AND_OR_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_FETCH_AND_OR_1);
+    case BUILT_IN_SYNC_FETCH_AND_OR_1:
+    case BUILT_IN_SYNC_FETCH_AND_OR_2:
+    case BUILT_IN_SYNC_FETCH_AND_OR_4:
+    case BUILT_IN_SYNC_FETCH_AND_OR_8:
+    case BUILT_IN_SYNC_FETCH_AND_OR_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_FETCH_AND_OR_1);
       target = expand_builtin_sync_operation (mode, exp, IOR,
 					      false, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_FETCH_AND_AND_1:
-    case BUILT_IN_FETCH_AND_AND_2:
-    case BUILT_IN_FETCH_AND_AND_4:
-    case BUILT_IN_FETCH_AND_AND_8:
-    case BUILT_IN_FETCH_AND_AND_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_FETCH_AND_AND_1);
+    case BUILT_IN_SYNC_FETCH_AND_AND_1:
+    case BUILT_IN_SYNC_FETCH_AND_AND_2:
+    case BUILT_IN_SYNC_FETCH_AND_AND_4:
+    case BUILT_IN_SYNC_FETCH_AND_AND_8:
+    case BUILT_IN_SYNC_FETCH_AND_AND_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_FETCH_AND_AND_1);
       target = expand_builtin_sync_operation (mode, exp, AND,
 					      false, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_FETCH_AND_XOR_1:
-    case BUILT_IN_FETCH_AND_XOR_2:
-    case BUILT_IN_FETCH_AND_XOR_4:
-    case BUILT_IN_FETCH_AND_XOR_8:
-    case BUILT_IN_FETCH_AND_XOR_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_FETCH_AND_XOR_1);
+    case BUILT_IN_SYNC_FETCH_AND_XOR_1:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_2:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_4:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_8:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_FETCH_AND_XOR_1);
       target = expand_builtin_sync_operation (mode, exp, XOR,
 					      false, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_FETCH_AND_NAND_1:
-    case BUILT_IN_FETCH_AND_NAND_2:
-    case BUILT_IN_FETCH_AND_NAND_4:
-    case BUILT_IN_FETCH_AND_NAND_8:
-    case BUILT_IN_FETCH_AND_NAND_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_FETCH_AND_NAND_1);
+    case BUILT_IN_SYNC_FETCH_AND_NAND_1:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_2:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_4:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_8:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_FETCH_AND_NAND_1);
       target = expand_builtin_sync_operation (mode, exp, NOT,
 					      false, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_ADD_AND_FETCH_1:
-    case BUILT_IN_ADD_AND_FETCH_2:
-    case BUILT_IN_ADD_AND_FETCH_4:
-    case BUILT_IN_ADD_AND_FETCH_8:
-    case BUILT_IN_ADD_AND_FETCH_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_ADD_AND_FETCH_1);
+    case BUILT_IN_SYNC_ADD_AND_FETCH_1:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_2:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_4:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_8:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_ADD_AND_FETCH_1);
       target = expand_builtin_sync_operation (mode, exp, PLUS,
 					      true, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_SUB_AND_FETCH_1:
-    case BUILT_IN_SUB_AND_FETCH_2:
-    case BUILT_IN_SUB_AND_FETCH_4:
-    case BUILT_IN_SUB_AND_FETCH_8:
-    case BUILT_IN_SUB_AND_FETCH_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_SUB_AND_FETCH_1);
+    case BUILT_IN_SYNC_SUB_AND_FETCH_1:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_2:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_4:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_8:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_SUB_AND_FETCH_1);
       target = expand_builtin_sync_operation (mode, exp, MINUS,
 					      true, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_OR_AND_FETCH_1:
-    case BUILT_IN_OR_AND_FETCH_2:
-    case BUILT_IN_OR_AND_FETCH_4:
-    case BUILT_IN_OR_AND_FETCH_8:
-    case BUILT_IN_OR_AND_FETCH_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_OR_AND_FETCH_1);
+    case BUILT_IN_SYNC_OR_AND_FETCH_1:
+    case BUILT_IN_SYNC_OR_AND_FETCH_2:
+    case BUILT_IN_SYNC_OR_AND_FETCH_4:
+    case BUILT_IN_SYNC_OR_AND_FETCH_8:
+    case BUILT_IN_SYNC_OR_AND_FETCH_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_OR_AND_FETCH_1);
       target = expand_builtin_sync_operation (mode, exp, IOR,
 					      true, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_AND_AND_FETCH_1:
-    case BUILT_IN_AND_AND_FETCH_2:
-    case BUILT_IN_AND_AND_FETCH_4:
-    case BUILT_IN_AND_AND_FETCH_8:
-    case BUILT_IN_AND_AND_FETCH_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_AND_AND_FETCH_1);
+    case BUILT_IN_SYNC_AND_AND_FETCH_1:
+    case BUILT_IN_SYNC_AND_AND_FETCH_2:
+    case BUILT_IN_SYNC_AND_AND_FETCH_4:
+    case BUILT_IN_SYNC_AND_AND_FETCH_8:
+    case BUILT_IN_SYNC_AND_AND_FETCH_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_AND_AND_FETCH_1);
       target = expand_builtin_sync_operation (mode, exp, AND,
 					      true, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_XOR_AND_FETCH_1:
-    case BUILT_IN_XOR_AND_FETCH_2:
-    case BUILT_IN_XOR_AND_FETCH_4:
-    case BUILT_IN_XOR_AND_FETCH_8:
-    case BUILT_IN_XOR_AND_FETCH_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_XOR_AND_FETCH_1);
+    case BUILT_IN_SYNC_XOR_AND_FETCH_1:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_2:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_4:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_8:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_XOR_AND_FETCH_1);
       target = expand_builtin_sync_operation (mode, exp, XOR,
 					      true, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_NAND_AND_FETCH_1:
-    case BUILT_IN_NAND_AND_FETCH_2:
-    case BUILT_IN_NAND_AND_FETCH_4:
-    case BUILT_IN_NAND_AND_FETCH_8:
-    case BUILT_IN_NAND_AND_FETCH_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_NAND_AND_FETCH_1);
+    case BUILT_IN_SYNC_NAND_AND_FETCH_1:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_2:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_4:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_8:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_NAND_AND_FETCH_1);
       target = expand_builtin_sync_operation (mode, exp, NOT,
 					      true, target, ignore);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_BOOL_COMPARE_AND_SWAP_1:
-    case BUILT_IN_BOOL_COMPARE_AND_SWAP_2:
-    case BUILT_IN_BOOL_COMPARE_AND_SWAP_4:
-    case BUILT_IN_BOOL_COMPARE_AND_SWAP_8:
-    case BUILT_IN_BOOL_COMPARE_AND_SWAP_16:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_1:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_2:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_4:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_8:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_16:
       if (mode == VOIDmode)
 	mode = TYPE_MODE (boolean_type_node);
       if (!target || !register_operand (target, mode))
 	target = gen_reg_rtx (mode);
 
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_BOOL_COMPARE_AND_SWAP_1);
+      mode = get_builtin_sync_mode 
+				(fcode - BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_1);
       target = expand_builtin_compare_and_swap (mode, exp, true, target);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_VAL_COMPARE_AND_SWAP_1:
-    case BUILT_IN_VAL_COMPARE_AND_SWAP_2:
-    case BUILT_IN_VAL_COMPARE_AND_SWAP_4:
-    case BUILT_IN_VAL_COMPARE_AND_SWAP_8:
-    case BUILT_IN_VAL_COMPARE_AND_SWAP_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_VAL_COMPARE_AND_SWAP_1);
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_1:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_2:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_4:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_8:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_16:
+      mode = get_builtin_sync_mode 
+				(fcode - BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_1);
       target = expand_builtin_compare_and_swap (mode, exp, false, target);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_LOCK_TEST_AND_SET_1:
-    case BUILT_IN_LOCK_TEST_AND_SET_2:
-    case BUILT_IN_LOCK_TEST_AND_SET_4:
-    case BUILT_IN_LOCK_TEST_AND_SET_8:
-    case BUILT_IN_LOCK_TEST_AND_SET_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_LOCK_TEST_AND_SET_1);
-      target = expand_builtin_lock_test_and_set (mode, exp, target);
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_1:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_2:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_4:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_8:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_LOCK_TEST_AND_SET_1);
+      target = expand_builtin_sync_lock_test_and_set (mode, exp, target);
       if (target)
 	return target;
       break;
 
-    case BUILT_IN_LOCK_RELEASE_1:
-    case BUILT_IN_LOCK_RELEASE_2:
-    case BUILT_IN_LOCK_RELEASE_4:
-    case BUILT_IN_LOCK_RELEASE_8:
-    case BUILT_IN_LOCK_RELEASE_16:
-      mode = get_builtin_sync_mode (fcode - BUILT_IN_LOCK_RELEASE_1);
-      expand_builtin_lock_release (mode, exp);
+    case BUILT_IN_SYNC_LOCK_RELEASE_1:
+    case BUILT_IN_SYNC_LOCK_RELEASE_2:
+    case BUILT_IN_SYNC_LOCK_RELEASE_4:
+    case BUILT_IN_SYNC_LOCK_RELEASE_8:
+    case BUILT_IN_SYNC_LOCK_RELEASE_16:
+      mode = get_builtin_sync_mode (fcode - BUILT_IN_SYNC_LOCK_RELEASE_1);
+      expand_builtin_sync_lock_release (mode, exp);
       return const0_rtx;
 
-    case BUILT_IN_SYNCHRONIZE:
-      expand_builtin_synchronize ();
+    case BUILT_IN_SYNC_SYNCHRONIZE:
+      expand_builtin_sync_synchronize ();
       return const0_rtx;
 
     case BUILT_IN_OBJECT_SIZE:
@@ -7745,7 +7286,8 @@ fold_builtin_bitop (tree fndecl, tree arg)
 	{
 	  hi = TREE_INT_CST_HIGH (arg);
 	  if (width < 2 * HOST_BITS_PER_WIDE_INT)
-	    hi &= ~((HOST_WIDE_INT) (-1) >> (width - HOST_BITS_PER_WIDE_INT));
+	    hi &= ~((unsigned HOST_WIDE_INT) (-1)
+		    << (width - HOST_BITS_PER_WIDE_INT));
 	}
       else
 	{
@@ -7781,6 +7323,26 @@ fold_builtin_bitop (tree fndecl, tree arg)
 	    result = HOST_BITS_PER_WIDE_INT + ctz_hwi (hi);
 	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
 	    result = width;
+	  break;
+
+	CASE_INT_FN (BUILT_IN_CLRSB):
+	  if (width > HOST_BITS_PER_WIDE_INT
+	      && (hi & ((unsigned HOST_WIDE_INT) 1
+			<< (width - HOST_BITS_PER_WIDE_INT - 1))) != 0)
+	    {
+	      hi = ~hi & ~((unsigned HOST_WIDE_INT) (-1)
+			   << (width - HOST_BITS_PER_WIDE_INT - 1));
+	      lo = ~lo;
+	    }
+	  else if (width <= HOST_BITS_PER_WIDE_INT
+		   && (lo & ((unsigned HOST_WIDE_INT) 1 << (width - 1))) != 0)
+	    lo = ~lo & ~((unsigned HOST_WIDE_INT) (-1) << (width - 1));
+	  if (hi != 0)
+	    result = width - floor_log2 (hi) - 2 - HOST_BITS_PER_WIDE_INT;
+	  else if (lo != 0)
+	    result = width - floor_log2 (lo) - 2;
+	  else
+	    result = width - 1;
 	  break;
 
 	CASE_INT_FN (BUILT_IN_POPCOUNT):
@@ -10217,6 +9779,7 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
     CASE_INT_FN (BUILT_IN_FFS):
     CASE_INT_FN (BUILT_IN_CLZ):
     CASE_INT_FN (BUILT_IN_CTZ):
+    CASE_INT_FN (BUILT_IN_CLRSB):
     CASE_INT_FN (BUILT_IN_POPCOUNT):
     CASE_INT_FN (BUILT_IN_PARITY):
       return fold_builtin_bitop (fndecl, arg0);
@@ -13917,6 +13480,7 @@ is_simple_builtin (tree decl)
       case BUILT_IN_OBJECT_SIZE:
       case BUILT_IN_UNREACHABLE:
 	/* Simple register moves or loads from stack.  */
+      case BUILT_IN_ASSUME_ALIGNED:
       case BUILT_IN_RETURN_ADDRESS:
       case BUILT_IN_EXTRACT_RETURN_ADDR:
       case BUILT_IN_FROB_RETURN_ADDR:

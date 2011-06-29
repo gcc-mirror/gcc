@@ -5270,7 +5270,42 @@ receiver_is_class_object (tree receiver, int self, int super)
     return exp;
 
   /* The receiver is a function call that returns an id.  Check if
-     it is a call to objc_getClass, if so, pick up the class name.  */
+     it is a call to objc_getClass, if so, pick up the class name.
+
+     This is required by the GNU runtime, which compiles
+
+       [NSObject alloc]
+
+     into
+
+       [objc_get_class ("NSObject") alloc];
+
+     and then, to check that the receiver responds to the +alloc
+     method, needs to be able to determine that the objc_get_class()
+     call returns the NSObject class and not just a generic Class
+     pointer.
+
+     But, traditionally this is enabled for all runtimes, not just the
+     GNU one, which means that the compiler is smarter than you'd
+     expect when dealing with objc_getClass().  For example, with the
+     Apple runtime, in the code
+
+       [objc_getClass ("NSObject")  alloc];
+
+     the compiler will recognize the objc_getClass() call as special
+     (due to the code below) and so will know that +alloc is called on
+     the 'NSObject' class, and can perform the corresponding checks.
+
+     Programmers can disable this behaviour by casting the results of
+     objc_getClass() to 'Class' (this may seem weird because
+     objc_getClass() is already declared to return 'Class', but the
+     compiler treats it as a special function).  This may be useful if
+     the class is never declared, and the compiler would complain
+     about a missing @interface for it.  Then, you can do
+
+       [(Class)objc_getClass ("MyClassNeverDeclared")  alloc];
+
+     to silence the warnings.  */
   if (TREE_CODE (receiver) == CALL_EXPR
       && (exp = CALL_EXPR_FN (receiver))
       && TREE_CODE (exp) == ADDR_EXPR
@@ -5432,15 +5467,21 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
      from the implementation context).  */
   rtype = receiver;
   while (TREE_CODE (rtype) == COMPOUND_EXPR
-	      || TREE_CODE (rtype) == MODIFY_EXPR
-	      || CONVERT_EXPR_P (rtype)
-	      || TREE_CODE (rtype) == COMPONENT_REF)
+	 || TREE_CODE (rtype) == MODIFY_EXPR
+	 || CONVERT_EXPR_P (rtype)
+	 || TREE_CODE (rtype) == COMPONENT_REF)
     rtype = TREE_OPERAND (rtype, 0);
 
+  /* self is 1 if this is a message to self, 0 otherwise  */
   self = (rtype == self_decl);
+
+  /* super is 1 if this is a message to super, 0 otherwise.  */
   super = (rtype == UOBJC_SUPER_decl);
+
+  /* rtype is the type of the receiver.  */
   rtype = TREE_TYPE (receiver);
 
+  /* have_cast is 1 if the receiver is casted.  */
   have_cast = (TREE_CODE (receiver) == NOP_EXPR
 	       || (TREE_CODE (receiver) == COMPOUND_EXPR
 		   && !IS_SUPER (rtype)));
@@ -5450,7 +5491,10 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
     should_call_super_dealloc = 0;
 
   /* If the receiver is a class object, retrieve the corresponding
-     @interface, if one exists. */
+     @interface, if one exists.  class_tree is the class name
+     identifier, or NULL_TREE if this is not a class method or the
+     class name could not be determined (as in the case "Class c; [c
+     method];").  */
   class_tree = receiver_is_class_object (receiver, self, super);
 
   /* Now determine the receiver type (if an explicit cast has not been
@@ -5458,7 +5502,30 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
   if (!have_cast)
     {
       if (class_tree)
-	rtype = lookup_interface (class_tree);
+	{
+	  /* We are here when we have no cast, and we have a class
+	     name.  So, this is a plain method to a class object, as
+	     in [NSObject alloc].  Find the interface corresponding to
+	     the class name.  */
+	  rtype = lookup_interface (class_tree);
+
+	  if (rtype == NULL_TREE)
+	    {
+	      /* If 'rtype' is NULL_TREE at this point it means that
+		 we have seen no @interface corresponding to that
+		 class name, only a @class declaration (alternatively,
+		 this was a call such as [objc_getClass("SomeClass")
+		 alloc], where we've never seen the @interface of
+		 SomeClass).  So, we have a class name (class_tree)
+		 but no actual details of the class methods.  We won't
+		 be able to check that the class responds to the
+		 method, and we will have to guess the method
+		 prototype.  Emit a warning, then keep going (this
+		 will use any method with a matching name, as if the
+		 receiver was of type 'Class').  */
+	      warning (0, "@interface of class %qE not found", class_tree);
+	    }
+	}
       /* Handle `self' and `super'.  */
       else if (super)
 	{
@@ -5474,28 +5541,41 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
 	rtype = lookup_interface (CLASS_NAME (implementation_template));
     }
 
-  /* If receiver is of type `id' or `Class' (or if the @interface for a
-     class is not visible), we shall be satisfied with the existence of
-     any instance or class method. */
   if (objc_is_id (rtype))
     {
+      /* The receiver is of type 'id' or 'Class' (with or without some
+	 protocols attached to it).  */
+
+      /* We set class_tree to the identifier for 'Class' if this is a
+	 class method, and to NULL_TREE if not.  */
       class_tree = (IS_CLASS (rtype) ? objc_class_name : NULL_TREE);
+      
+      /* 'rprotos' is the list of protocols that the receiver
+	 supports.  */
       rprotos = (TYPE_HAS_OBJC_INFO (TREE_TYPE (rtype))
 		 ? TYPE_OBJC_PROTOCOL_LIST (TREE_TYPE (rtype))
 		 : NULL_TREE);
+
+      /* We have no information on the type, and we set it to
+	 NULL_TREE.  */
       rtype = NULL_TREE;
 
+      /* If there are any protocols, check that the method we are
+	 calling appears in the protocol list.  If there are no
+	 protocols, this is a message to 'id' or 'Class' and we accept
+	 any method that exists.  */
       if (rprotos)
 	{
-	  /* If messaging 'id <Protos>' or 'Class <Proto>', first search
-	     in protocols themselves for the method prototype.  */
+	  /* If messaging 'id <Protos>' or 'Class <Proto>', first
+	     search in protocols themselves for the method
+	     prototype.  */
 	  method_prototype
 	    = lookup_method_in_protocol_list (rprotos, sel_name,
 					      class_tree != NULL_TREE);
 
-	  /* If messaging 'Class <Proto>' but did not find a class method
-	     prototype, search for an instance method instead, and warn
-	     about having done so.  */
+	  /* If messaging 'Class <Proto>' but did not find a class
+	     method prototype, search for an instance method instead,
+	     and warn about having done so.  */
 	  if (!method_prototype && !rtype && class_tree != NULL_TREE)
 	    {
 	      method_prototype
@@ -5509,6 +5589,8 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
     }
   else if (rtype)
     {
+      /* We have a receiver type which is more specific than 'id' or
+	 'Class'.  */
       tree orig_rtype = rtype;
 
       if (TREE_CODE (rtype) == POINTER_TYPE)
@@ -5523,25 +5605,70 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
 	  rprotos = TYPE_OBJC_PROTOCOL_LIST (rtype);
 	  rtype = TYPE_OBJC_INTERFACE (rtype);
 	}
-      /* If we could not find an @interface declaration, we must have
-	 only seen a @class declaration; so, we cannot say anything
-	 more intelligent about which methods the receiver will
-	 understand. */
       if (!rtype || TREE_CODE (rtype) == IDENTIFIER_NODE)
 	{
+	  /* If we could not find an @interface declaration, we must
+	     have only seen a @class declaration; so, we cannot say
+	     anything more intelligent about which methods the
+	     receiver will understand.  Note that this only happens
+	     for instance methods; for class methods to a class where
+	     we have only seen a @class declaration,
+	     lookup_interface() above would have set rtype to
+	     NULL_TREE.  */
+	  if (rprotos)
+	    {
+	      /* We could not find an @interface declaration, yet, if
+		 there are protocols attached to the type, we can
+		 still look up the method in the protocols.  Ie, we
+		 are in the following case:
+	     
+		 @class MyClass;
+		 MyClass<MyProtocol> *x;
+		 [x method];
+		 
+		 If 'MyProtocol' has the method 'method', we can check
+		 and retrieve the method prototype.  */
+	      method_prototype
+		= lookup_method_in_protocol_list (rprotos, sel_name, 0);
+
+	      /* At this point, if we have found the method_prototype,
+		 we are quite happy.  The details of the class are
+		 irrelevant.  If we haven't found it, a warning will
+		 have been produced that the method could not be found
+		 in the protocol, and we won't produce further
+		 warnings (please note that this means that "@class
+		 MyClass; MyClass <MyProtocol> *x;" is exactly
+		 equivalent to "id <MyProtocol> x", which isn't too
+		 satisfactory but it's not easy to see how to do
+		 better).  */
+	    }
+	  else
+	    {
+	      if (rtype)
+		{
+		  /* We could not find an @interface declaration, and
+		     there are no protocols attached to the receiver,
+		     so we can't complete the check that the receiver
+		     responds to the method, and we can't retrieve the
+		     method prototype.  But, because the receiver has
+		     a well-specified class, the programmer did want
+		     this check to be performed.  Emit a warning, then
+		     keep going as if it was an 'id'.  To remove the
+		     warning, either include an @interface for the
+		     class, or cast the receiver to 'id'.  Note that
+		     rtype is an IDENTIFIER_NODE at this point.  */
+		  warning (0, "@interface of class %qE not found", rtype);
+		}
+	    }
+
 	  rtype = NULL_TREE;
-	  /* We could not find an @interface declaration, yet Message maybe in a
-	     @class's protocol. */
-	  if (!method_prototype && rprotos)
-	    method_prototype
-	      = lookup_method_in_protocol_list (rprotos, sel_name, 0);
 	}
       else if (TREE_CODE (rtype) == CLASS_INTERFACE_TYPE
 	  || TREE_CODE (rtype) == CLASS_IMPLEMENTATION_TYPE)
 	{
-	  /* We have a valid ObjC class name.  Look up the method name
-	     in the published @interface for the class (and its
-	     superclasses). */
+	  /* We have a valid ObjC class name with an associated
+	     @interface.  Look up the method name in the published
+	     @interface for the class (and its superclasses).  */
 	  method_prototype
 	    = lookup_method_static (rtype, sel_name, class_tree != NULL_TREE);
 
@@ -5566,6 +5693,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
 	}
       else
 	{
+	  /* We have a type, but it's not an Objective-C type (!).  */
 	  warning (0, "invalid receiver type %qs",
 		   identifier_to_locale (gen_type_name (orig_rtype)));
 	  /* After issuing the "invalid receiver" warning, perform method
@@ -5573,11 +5701,13 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
 	  rtype = rprotos = NULL_TREE;
 	}
     }
+  /* Note that rtype could also be NULL_TREE.  This happens if we are
+     messaging a class by name, but the class was only
+     forward-declared using @class.  */
 
-
-  /* For 'id' or 'Class' receivers, search in the global hash table
-     as a last resort.  For all receivers, warn if protocol searches
-     have failed.  */
+  /* For 'id' or 'Class' receivers, search in the global hash table as
+     a last resort.  For all receivers, warn if protocol searches have
+     failed.  */
   if (!method_prototype)
     {
       if (rprotos)

@@ -92,6 +92,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/module-abi-8.h"  /* For CLS_ISCLASS and similar.  */
 #include "objc-private/runtime.h"       /* the kitchen sink */
 #include "objc-private/sarray.h"        /* For sarray_put_at_safe.  */
+#include "objc-private/selector.h"      /* For sarray_put_at_safe.  */
 #include <string.h>                     /* For memset */
 
 /* We use a table which maps a class name to the corresponding class
@@ -201,41 +202,6 @@ class_table_insert (const char *class_name, Class class_pointer)
   
   objc_mutex_unlock (__class_table_lock);
 }
-
-/* Replace a class in the table (used only by poseAs:).  */
-static void 
-class_table_replace (Class old_class_pointer, Class new_class_pointer)
-{
-  int hash;
-  class_node_ptr node;
-
-  objc_mutex_lock (__class_table_lock);
-  
-  hash = 0;
-  node = class_table_array[hash];
-  
-  while (hash < CLASS_TABLE_SIZE)
-    {
-      if (node == NULL)
-        {
-          hash++;
-          if (hash < CLASS_TABLE_SIZE)
-	    node = class_table_array[hash];
-        }
-      else
-        {
-          Class class1 = node->pointer;
-
-          if (class1 == old_class_pointer)
-	    node->pointer = new_class_pointer;
-
-          node = node->next;
-        }
-    }
-
-  objc_mutex_unlock (__class_table_lock);
-}
-
 
 /* Get a class from the table.  This does not need mutex protection.
    Currently, this function is called each time you call a static
@@ -759,16 +725,6 @@ objc_disposeClassPair (Class class_)
   objc_free (class_);
 }
 
-/* Traditional GNU Objective-C Runtime API.  */
-/* Get the class object for the class named NAME.  If NAME does not
-   identify a known class, the hook _objc_lookup_class is called.  If
-   this fails, nil is returned.  */
-Class
-objc_lookup_class (const char *name)
-{
-  return objc_getClass (name);
-}
-
 /* Traditional GNU Objective-C Runtime API.  Important: this method is
    called automatically by the compiler while messaging (if using the
    traditional ABI), so it is worth keeping it fast; don't make it
@@ -801,36 +757,11 @@ objc_get_class (const char *name)
   return 0;
 }
 
-MetaClass
+/* This is used by the compiler too.  */
+Class
 objc_get_meta_class (const char *name)
 {
   return objc_get_class (name)->class_pointer;
-}
-
-/* This function provides a way to enumerate all the classes in the
-   executable.  Pass *ENUM_STATE == NULL to start the enumeration.  The
-   function will return 0 when there are no more classes.  
-   For example: 
-       id class; 
-       void *es = NULL;
-       while ((class = objc_next_class (&es)))
-         ... do something with class; 
-*/
-Class
-objc_next_class (void **enum_state)
-{
-  Class class;
-
-  objc_mutex_lock (__objc_runtime_mutex);
-  
-  /* Make sure the table is there.  */
-  assert (__class_table_lock);
-
-  class = class_table_next ((struct class_table_enumerator **) enum_state);
-
-  objc_mutex_unlock (__objc_runtime_mutex);
-  
-  return class;
 }
 
 /* This is used when the implementation of a method changes.  It goes
@@ -1034,83 +965,3 @@ class_getInstanceSize (Class class_)
   return class_->instance_size;
 }
 
-#define CLASSOF(c) ((c)->class_pointer)
-
-Class
-class_pose_as (Class impostor, Class super_class)
-{
-  if (! CLS_ISRESOLV (impostor))
-    __objc_resolve_class_links ();
-
-  /* Preconditions */
-  assert (impostor);
-  assert (super_class);
-  assert (impostor->super_class == super_class);
-  assert (CLS_ISCLASS (impostor));
-  assert (CLS_ISCLASS (super_class));
-  assert (impostor->instance_size == super_class->instance_size);
-
-  {
-    Class *subclass = &(super_class->subclass_list);
-
-    /* Move subclasses of super_class to impostor.  */
-    while (*subclass)
-      {
-        Class nextSub = (*subclass)->sibling_class;
-
-        if (*subclass != impostor)
-          {
-            Class sub = *subclass;
-
-            /* Classes */
-            sub->sibling_class = impostor->subclass_list;
-            sub->super_class = impostor;
-            impostor->subclass_list = sub;
-
-            /* It will happen that SUB is not a class object if it is
-               the top of the meta class hierarchy chain (root
-               meta-class objects inherit their class object).  If
-               that is the case... don't mess with the meta-meta
-               class.  */
-            if (CLS_ISCLASS (sub))
-              {
-                /* Meta classes */
-                CLASSOF (sub)->sibling_class = 
-                  CLASSOF (impostor)->subclass_list;
-                CLASSOF (sub)->super_class = CLASSOF (impostor);
-                CLASSOF (impostor)->subclass_list = CLASSOF (sub);
-              }
-          }
-
-        *subclass = nextSub;
-      }
-
-    /* Set subclasses of superclass to be impostor only.  */
-    super_class->subclass_list = impostor;
-    CLASSOF (super_class)->subclass_list = CLASSOF (impostor);
-    
-    /* Set impostor to have no sibling classes.  */
-    impostor->sibling_class = 0;
-    CLASSOF (impostor)->sibling_class = 0;
-  }
-  
-  /* Check relationship of impostor and super_class is kept.  */
-  assert (impostor->super_class == super_class);
-  assert (CLASSOF (impostor)->super_class == CLASSOF (super_class));
-
-  /* This is how to update the lookup table.  Regardless of what the
-     keys of the hashtable is, change all values that are superclass
-     into impostor.  */
-
-  objc_mutex_lock (__objc_runtime_mutex);
-
-  class_table_replace (super_class, impostor);
-
-  objc_mutex_unlock (__objc_runtime_mutex);
-
-  /* Next, we update the dispatch tables...  */
-  __objc_update_dispatch_table_for_class (CLASSOF (impostor));
-  __objc_update_dispatch_table_for_class (impostor);
-
-  return impostor;
-}

@@ -74,6 +74,7 @@ match gfc_match_associate (void);
 match gfc_match_do (void);
 match gfc_match_cycle (void);
 match gfc_match_exit (void);
+match gfc_match_lock (void);
 match gfc_match_pause (void);
 match gfc_match_stop (void);
 match gfc_match_error_stop (void);
@@ -83,6 +84,7 @@ match gfc_match_goto (void);
 match gfc_match_sync_all (void);
 match gfc_match_sync_images (void);
 match gfc_match_sync_memory (void);
+match gfc_match_unlock (void);
 
 match gfc_match_allocate (void);
 match gfc_match_nullify (void);

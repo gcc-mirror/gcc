@@ -32,6 +32,7 @@ extern "C"
 #include "tree.h"
 #include "tree-iterator.h"
 #include "gimple.h"
+#include "toplev.h"
 
 #ifndef ENABLE_BUILD_WITH_CXX
 }
@@ -194,6 +195,11 @@ class Gcc_backend : public Backend
   bool
   is_circular_pointer_type(Btype*);
 
+  // Expressions.
+
+  Bexpression*
+  zero_expression(Btype*);
+
   // Statements.
 
   Bstatement*
@@ -270,6 +276,16 @@ class Gcc_backend : public Backend
   Bvariable*
   temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression*, bool,
 		     source_location, Bstatement**);
+
+  Bvariable*
+  immutable_struct(const std::string&, bool, Btype*, source_location);
+
+  void
+  immutable_struct_set_init(Bvariable*, const std::string&, bool, Btype*,
+			    source_location, Bexpression*);
+
+  Bvariable*
+  immutable_struct_reference(const std::string&, Btype*, source_location);
 
   // Labels.
 
@@ -698,6 +714,20 @@ bool
 Gcc_backend::is_circular_pointer_type(Btype* btype)
 {
   return btype->get_tree() == ptr_type_node;
+}
+
+// Return the zero value for a type.
+
+Bexpression*
+Gcc_backend::zero_expression(Btype* btype)
+{
+  tree t = btype->get_tree();
+  tree ret;
+  if (t == error_mark_node)
+    ret = error_mark_node;
+  else
+    ret = build_zero_cst(t);
+  return tree_to_expr(ret);
 }
 
 // An expression as a statement.
@@ -1177,6 +1207,83 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
   *pstatement = this->make_statement(build1_loc(location, DECL_EXPR,
 						void_type_node, var));
   return new Bvariable(var);
+}
+
+// Create a named immutable initialized data structure.
+
+Bvariable*
+Gcc_backend::immutable_struct(const std::string& name, bool, Btype* btype,
+			      source_location location)
+{
+  tree type_tree = btype->get_tree();
+  if (type_tree == error_mark_node)
+    return this->error_variable();
+  gcc_assert(TREE_CODE(type_tree) == RECORD_TYPE);
+  tree decl = build_decl(location, VAR_DECL,
+			 get_identifier_from_string(name),
+			 build_qualified_type(type_tree, TYPE_QUAL_CONST));
+  TREE_STATIC(decl) = 1;
+  TREE_READONLY(decl) = 1;
+  TREE_CONSTANT(decl) = 1;
+  TREE_USED(decl) = 1;
+  DECL_ARTIFICIAL(decl) = 1;
+
+  // We don't call rest_of_decl_compilation until we have the
+  // initializer.
+
+  go_preserve_from_gc(decl);
+  return new Bvariable(decl);
+}
+
+// Set the initializer for a variable created by immutable_struct.
+// This is where we finish compiling the variable.
+
+void
+Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
+				       bool is_common, Btype*,
+				       source_location,
+				       Bexpression* initializer)
+{
+  tree decl = var->get_tree();
+  tree init_tree = initializer->get_tree();
+  if (decl == error_mark_node || init_tree == error_mark_node)
+    return;
+
+  DECL_INITIAL(decl) = init_tree;
+
+  // We can't call make_decl_one_only until we set DECL_INITIAL.
+  if (!is_common)
+    TREE_PUBLIC(decl) = 1;
+  else
+    {
+      make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
+      resolve_unique_section(decl, 1, 0);
+    }
+
+  rest_of_decl_compilation(decl, 1, 0);
+}
+
+// Return a reference to an immutable initialized data structure
+// defined in another package.
+
+Bvariable*
+Gcc_backend::immutable_struct_reference(const std::string& name, Btype* btype,
+					source_location location)
+{
+  tree type_tree = btype->get_tree();
+  if (type_tree == error_mark_node)
+    return this->error_variable();
+  gcc_assert(TREE_CODE(type_tree) == RECORD_TYPE);
+  tree decl = build_decl(location, VAR_DECL,
+			 get_identifier_from_string(name),
+			 build_qualified_type(type_tree, TYPE_QUAL_CONST));
+  TREE_READONLY(decl) = 1;
+  TREE_CONSTANT(decl) = 1;
+  DECL_ARTIFICIAL(decl) = 1;
+  TREE_PUBLIC(decl) = 1;
+  DECL_EXTERNAL(decl) = 1;
+  go_preserve_from_gc(decl);
+  return new Bvariable(decl);
 }
 
 // Make a label.

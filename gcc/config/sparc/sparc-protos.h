@@ -38,7 +38,9 @@ extern enum direction function_arg_padding (enum machine_mode, const_tree);
 extern void order_regs_for_local_alloc (void);
 extern HOST_WIDE_INT sparc_compute_frame_size (HOST_WIDE_INT, int);
 extern void sparc_expand_prologue (void);
-extern void sparc_expand_epilogue (void);
+extern void sparc_flat_expand_prologue (void);
+extern void sparc_expand_epilogue (bool);
+extern void sparc_flat_expand_epilogue (bool);
 extern bool sparc_can_use_return_insn_p (void);
 extern int check_pic (int);
 extern int short_branch (int, int);
@@ -60,6 +62,7 @@ extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
 extern rtx sparc_legitimize_reload_address (rtx, enum machine_mode, int, int,
 					    int, int *win);
+extern void load_got_register (void);
 extern void sparc_emit_call_insn (rtx, rtx);
 extern void sparc_defer_case_vector (rtx, rtx, int);
 extern bool sparc_expand_move (enum machine_mode, rtx *);

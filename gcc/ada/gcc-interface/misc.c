@@ -309,17 +309,6 @@ gnat_init (void)
      matter since we'll use the explicit `unsigned char' for Character.  */
   build_common_tree_nodes (flag_signed_char);
 
-  /* In Ada, we use the unsigned type corresponding to the width of Pmode as
-     SIZETYPE.  In most cases when ptr_mode and Pmode differ, C will use the
-     width of ptr_mode for SIZETYPE, but we get better code using the width
-     of Pmode.  Note that, although we manipulate negative offsets for some
-     internal constructs and rely on compile time overflow detection in size
-     computations, using unsigned types for SIZETYPEs is fine since they are
-     treated specially by the middle-end, in particular sign-extended.  */
-  size_type_node = gnat_type_for_mode (Pmode, 1);
-  set_sizetype (size_type_node);
-  TYPE_NAME (sizetype) = get_identifier ("size_type");
-
   /* In Ada, we use an unsigned 8-bit type for the default boolean type.  */
   boolean_type_node = make_unsigned_type (8);
   TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);

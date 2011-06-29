@@ -3508,7 +3508,7 @@ gate_handle_sched2 (void)
 {
 #ifdef INSN_SCHEDULING
   return optimize > 0 && flag_schedule_insns_after_reload
-    && dbg_cnt (sched2_func);
+    && !targetm.delay_sched2 && dbg_cnt (sched2_func);
 #else
   return 0;
 #endif
@@ -3551,7 +3551,6 @@ struct rtl_opt_pass pass_sched =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func |
   TODO_verify_flow |
   TODO_ggc_collect                      /* todo_flags_finish */
  }
@@ -3573,7 +3572,6 @@ struct rtl_opt_pass pass_sched2 =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_dump_func |
   TODO_verify_flow |
   TODO_ggc_collect                      /* todo_flags_finish */
  }

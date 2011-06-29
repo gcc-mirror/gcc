@@ -1,6 +1,6 @@
 /* Utility to update paths from internal to external forms.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007  Free Software Foundation, Inc.
+   2007, 2011  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -67,11 +67,11 @@ License along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #if defined(_WIN32) && defined(ENABLE_WIN32_REGISTRY)
 #include <windows.h>
 #endif
 #include "prefix.h"
+#include "common/common-target.h"
 
 static const char *std_prefix = PREFIX;
 
@@ -271,10 +271,6 @@ update_path (const char *path, const char *key)
   else
     result = xstrdup (path);
 
-#ifndef ALWAYS_STRIP_DOTDOT
-#define ALWAYS_STRIP_DOTDOT 0
-#endif
-
   p = result;
   while (1)
     {
@@ -289,7 +285,8 @@ update_path (const char *path, const char *key)
 	  && (p != result && IS_DIR_SEPARATOR (p[-1])))
 	{
 	  *p = 0;
-	  if (!ALWAYS_STRIP_DOTDOT && access (result, X_OK) == 0)
+	  if (!targetm_common.always_strip_dotdot
+	      && access (result, X_OK) == 0)
 	    {
 	      *p = '.';
 	      break;

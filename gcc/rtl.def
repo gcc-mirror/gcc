@@ -613,6 +613,10 @@ DEF_RTL_EXPR(BSWAP, "bswap", "e", RTX_UNARY)
    or 0 if arg is 0.  */
 DEF_RTL_EXPR(FFS, "ffs", "e", RTX_UNARY)
 
+/* Count number of leading redundant sign bits (number of leading
+   sign bits minus one).  */
+DEF_RTL_EXPR(CLRSB, "clrsb", "e", RTX_UNARY)
+
 /* Count leading zeros.  */
 DEF_RTL_EXPR(CLZ, "clz", "e", RTX_UNARY)
 
@@ -722,6 +726,10 @@ DEF_RTL_EXPR(DEBUG_IMPLICIT_PTR, "debug_implicit_ptr", "t", RTX_OBJ)
    single argument is the DECL_INCOMING_RTL of the corresponding
    parameter.  */
 DEF_RTL_EXPR(ENTRY_VALUE, "entry_value", "0", RTX_OBJ)
+
+/* Used in VAR_LOCATION for a reference to a parameter that has
+   been optimized away completely.  */
+DEF_RTL_EXPR(DEBUG_PARAMETER_REF, "debug_parameter_ref", "t", RTX_OBJ)
 
 /* All expressions from this point forward appear only in machine
    descriptions.  */

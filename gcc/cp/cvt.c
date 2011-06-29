@@ -1616,7 +1616,8 @@ type_promotes_to (tree type)
   if (TREE_CODE (type) == BOOLEAN_TYPE)
     type = integer_type_node;
 
-  /* scoped enums don't promote.  */
+  /* Scoped enums don't promote, but pretend they do for backward ABI bug
+     compatibility wrt varargs.  */
   else if (SCOPED_ENUM_P (type) && abi_version_at_least (6))
     ;
 

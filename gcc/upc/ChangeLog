@@ -1,3 +1,10 @@
+2011-06-29  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 175584 into gupc branch.
+	* upc-act.c (upc_handle_option): Change reference to
+	have_named_sections so that it refers to the
+	targetm_common structure.
+
 2011-06-28  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.h (upc_write_init_func, upc_free_unshared_var_table):

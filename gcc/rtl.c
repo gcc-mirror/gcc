@@ -413,6 +413,10 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
       return DEBUG_IMPLICIT_PTR_DECL (x)
 	     == DEBUG_IMPLICIT_PTR_DECL (y);
 
+    case DEBUG_PARAMETER_REF:
+      return DEBUG_PARAMETER_REF_DECL (x)
+	     == DEBUG_PARAMETER_REF_DECL (x);
+
     case ENTRY_VALUE:
       return rtx_equal_p_cb (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y), cb);
 
@@ -548,6 +552,10 @@ rtx_equal_p (const_rtx x, const_rtx y)
       return DEBUG_IMPLICIT_PTR_DECL (x)
 	     == DEBUG_IMPLICIT_PTR_DECL (y);
 
+    case DEBUG_PARAMETER_REF:
+      return DEBUG_PARAMETER_REF_DECL (x)
+	     == DEBUG_PARAMETER_REF_DECL (y);
+
     case ENTRY_VALUE:
       return rtx_equal_p (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y));
 
@@ -660,6 +668,7 @@ iterative_hash_rtx (const_rtx x, hashval_t hash)
     case CONST_DOUBLE:
     case CONST_FIXED:
     case DEBUG_IMPLICIT_PTR:
+    case DEBUG_PARAMETER_REF:
       return hash;
     default:
       break;

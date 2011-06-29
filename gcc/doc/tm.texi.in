@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -99,6 +99,16 @@ initializer @code{TARGETCM_INITIALIZER} in
 @file{c-family/c-target-def.h}.  If targets initialize @code{targetcm}
 themselves, they should set @code{target_has_targetcm=yes} in
 @file{config.gcc}; otherwise a default definition is used.
+
+Similarly, there is a @code{targetm_common} variable for hooks that
+are shared between the compiler driver and the compilers proper,
+documented as ``Common Target Hook''.  This is declared in
+@file{common/common-target.h}, the initializer
+@code{TARGETM_COMMON_INITIALIZER} in
+@file{common/common-target-def.h}.  If targets initialize
+@code{targetm_common} themselves, they should set
+@code{target_has_targetm_common=yes} in @file{config.gcc}; otherwise a
+default definition is used.
 
 @node Driver
 @section Controlling the Compilation Driver, @file{gcc}
@@ -383,6 +393,8 @@ A nonzero value causes @command{collect2} to remove duplicate @option{-L@var{dir
 directories from linking commands.  Do not give it a nonzero value if
 removing duplicate search directories changes the linker's semantics.
 @end defmac
+
+@hook TARGET_ALWAYS_STRIP_DOTDOT
 
 @defmac MULTILIB_DEFAULTS
 Define this macro as a C expression for the initializer of an array of
@@ -742,13 +754,6 @@ options are changed via @code{#pragma GCC optimize} or by using the
 @hook TARGET_OPTION_INIT_STRUCT
 
 @hook TARGET_OPTION_DEFAULT_PARAMS
-
-@hook TARGET_HELP
-This hook is called in response to the user invoking
-@option{--target-help} on the command line.  It gives the target a
-chance to display extra information on the target specific command
-line options found in its @file{.opt} file.
-@end deftypefn
 
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
@@ -2328,6 +2333,12 @@ constraints is through machine-dependent operand constraint letters.
 You can define such letters to correspond to various classes, then use
 them in operand constraints.
 
+You must define the narrowest register classes for allocatable
+registers, so that each class either has no subclasses, or that for
+some mode, the move cost between registers within the class is
+cheaper than moving a register in the class to or from memory
+(@pxref{Costs}).
+
 You should define a class for the union of two classes whenever some
 instruction allows both classes.  For example, if an instruction allows
 either a floating point (coprocessor) register or a general register for a
@@ -3360,11 +3371,6 @@ This is a C statement that branches to @var{done} if the format was
 handled.  @var{encoding} is the format chosen, @var{size} is the number
 of bytes that the format occupies, @var{addr} is the @code{SYMBOL_REF}
 to be emitted.
-@end defmac
-
-@defmac MD_UNWIND_SUPPORT
-A string specifying a file to be #include'd in unwind-dw2.c.  The file
-so included typically defines @code{MD_FALLBACK_FRAME_STATE_FOR}.
 @end defmac
 
 @defmac MD_FALLBACK_FRAME_STATE_FOR (@var{context}, @var{fs})
@@ -5145,19 +5151,6 @@ If defined, expands to a C expression clearing the @emph{instruction
 cache} in the specified interval.  The definition of this macro would
 typically be a series of @code{asm} statements.  Both @var{beg} and
 @var{end} are both pointer expressions.
-@end defmac
-
-The operating system may also require the stack to be made executable
-before calling the trampoline.  To implement this requirement, define
-the following macro.
-
-@defmac ENABLE_EXECUTE_STACK
-Define this macro if certain operations must be performed before executing
-code located on the stack.  The macro should expand to a series of C
-file-scope constructs (e.g.@: functions) and provide a unique entry point
-named @code{__enable_execute_stack}.  The target is responsible for
-emitting calls to the entry point in the code, for example from the
-@code{TARGET_TRAMPOLINE_INIT} hook.
 @end defmac
 
 To use a standard subroutine, define the following macro.  In addition,
@@ -9353,6 +9346,10 @@ tables, and hence is desirable if it works.
 @end defmac
 
 @hook TARGET_WANT_DEBUG_PUB_SECTIONS
+
+@hook TARGET_DELAY_SCHED2
+
+@hook TARGET_DELAY_VARTRACK
 
 @defmac ASM_OUTPUT_DWARF_DELTA (@var{stream}, @var{size}, @var{label1}, @var{label2})
 A C statement to issue assembly directives that create a difference

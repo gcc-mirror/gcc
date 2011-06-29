@@ -1,8 +1,8 @@
 /* Contributed by Nicola Pero - Fri Mar  9 21:35:47 CET 2001 */
-#import "../../objc-obj-c++-shared/Object1.h"
+#import "../../objc-obj-c++-shared/TestsuiteObject.h"
 #include <objc/objc.h>
 
-@interface Object (StopProtocol)
+@interface TestsuiteObject (StopProtocol)
 - (void) stop;
 @end
 

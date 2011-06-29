@@ -1,5 +1,5 @@
 #include <objc/objc.h>
-#include <objc/Object.h>
+#include "../../../objc-obj-c++-shared/TestsuiteObject.m"
 
 #ifdef __NEXT_RUNTIME__
 /* This test only runs for the GNU runtime.  */
@@ -24,7 +24,7 @@ int main (void)
     {
       @throw nil;
     }
-  @catch (Object *exc)
+  @catch (TestsuiteObject *exc)
     {
       abort ();
     }

@@ -624,6 +624,8 @@ tm_defines
 tm_include_list
 tm_file_list
 thread_file
+common_out_object_file
+common_out_file
 out_object_file
 out_file
 objc_boehm_gc
@@ -10700,16 +10702,114 @@ $as_echo_n "checking for .preinit_array/.init_array/.fini_array support... " >&6
 if test "${gcc_cv_initfini_array+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
+    if test "x${build}" = "x${target}" && test "x${build}" = "x${host}"; then
     if test "$cross_compiling" = yes; then :
   gcc_cv_initfini_array=no
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+#ifdef __ia64__
+/* We turn on .preinit_array/.init_array/.fini_array support for ia64
+   if it can be used.  */
 static int x = -1;
 int main (void) { return x; }
 int foo (void) { x = 0; }
 int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;
+#else
+extern void abort ();
+static int count;
+
+static void
+init1005 ()
+{
+  if (count != 0)
+    abort ();
+  count = 1005;
+}
+void (*const init_array1005) ()
+  __attribute__ ((section (".init_array.01005"), aligned (sizeof (void *))))
+  = { init1005 };
+static void
+fini1005 ()
+{
+  if (count != 1005)
+    abort ();
+}
+void (*const fini_array1005) ()
+  __attribute__ ((section (".fini_array.01005"), aligned (sizeof (void *))))
+  = { fini1005 };
+
+static void
+ctor1007 ()
+{
+  if (count != 1005)
+    abort ();
+  count = 1007;
+}
+void (*const ctors1007) ()
+  __attribute__ ((section (".ctors.64528"), aligned (sizeof (void *))))
+  = { ctor1007 };
+static void
+dtor1007 ()
+{
+  if (count != 1007)
+    abort ();
+  count = 1005;
+}
+void (*const dtors1007) ()
+  __attribute__ ((section (".dtors.64528"), aligned (sizeof (void *))))
+  = { dtor1007 };
+
+static void
+init65530 ()
+{
+  if (count != 1007)
+    abort ();
+  count = 65530;
+}
+void (*const init_array65530) ()
+  __attribute__ ((section (".init_array.65530"), aligned (sizeof (void *))))
+  = { init65530 };
+static void
+fini65530 ()
+{
+  if (count != 65530)
+    abort ();
+  count = 1007;
+}
+void (*const fini_array65530) ()
+  __attribute__ ((section (".fini_array.65530"), aligned (sizeof (void *))))
+  = { fini65530 };
+
+static void
+ctor65535 ()
+{
+  if (count != 65530)
+    abort ();
+  count = 65535;
+}
+void (*const ctors65535) ()
+  __attribute__ ((section (".ctors"), aligned (sizeof (void *))))
+  = { ctor65535 };
+static void
+dtor65535 ()
+{
+  if (count != 65535)
+    abort ();
+  count = 65530;
+}
+void (*const dtors65535) ()
+  __attribute__ ((section (".dtors"), aligned (sizeof (void *))))
+  = { dtor65535 };
+
+int
+main ()
+{
+  return 0;
+}
+#endif
+
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
   gcc_cv_initfini_array=yes
@@ -10720,6 +10820,11 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
+   else
+     { $as_echo "$as_me:${as_lineno-$LINENO}: checking cross compile... guessing" >&5
+$as_echo_n "checking cross compile... guessing... " >&6; }
+     gcc_cv_initfini_array=no
+   fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_initfini_array" >&5
 $as_echo "$gcc_cv_initfini_array" >&6; }
@@ -11460,6 +11565,7 @@ done
 tmake_file="${tmake_file_}"
 
 out_object_file=`basename $out_file .c`.o
+common_out_object_file=`basename $common_out_file .c`.o
 
 tm_file_list="options.h"
 tm_include_list="options.h insn-constants.h"
@@ -17760,7 +17866,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17763 "configure"
+#line 17869 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17866,7 +17972,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17869 "configure"
+#line 17975 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21951,6 +22057,12 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_hidden" >&5
 $as_echo "$gcc_cv_as_hidden" >&6; }
 
+case "${target}" in
+  *-*-darwin*)
+    # Darwin as has some visibility support, though with a different syntax.
+    gcc_cv_as_hidden=yes
+    ;;
+esac
 
 # gnu_indirect_function type is an extension proposed at
 # http://groups.google/com/group/generic-abi/files. It allows dynamic runtime
@@ -22055,6 +22167,10 @@ else
     fi
   else
     case "${target}" in
+      *-*-darwin*)
+	# Darwin ld has some visibility support.
+	gcc_cv_ld_hidden=yes
+        ;;
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
@@ -26627,6 +26743,8 @@ fi
 
 
 
+
+
 # Echo link setup.
 if test x${build} = x${host} ; then
   if test x${host} = x${target} ; then
@@ -28184,7 +28302,7 @@ case ${CONFIG_HEADERS} in
   echo > cstamp-h ;;
 esac
 # Make sure all the subdirs exist.
-for d in $subdirs doc build c-family
+for d in $subdirs doc build common c-family
 do
     test -d $d || mkdir $d
 done

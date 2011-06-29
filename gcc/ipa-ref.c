@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cgraph.h"
 
-static const char *ipa_ref_use_name[] = {"read","write","addr"};
+static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
 
 /* Return ipa reference from REFERING_NODE or REFERING_VARPOOL_NODE
    to REFERED_NODE or REFERED_VARPOOL_NODE. USE_TYPE specify type
@@ -46,6 +46,7 @@ ipa_record_reference (struct cgraph_node *refering_node,
   gcc_assert ((!refering_node) ^ (!refering_varpool_node));
   gcc_assert ((!refered_node) ^ (!refered_varpool_node));
   gcc_assert (!stmt || refering_node);
+  gcc_assert (use_type != IPA_REF_ALIAS || !stmt);
 
   list = (refering_node ? &refering_node->ref_list
 	  : &refering_varpool_node->ref_list);
@@ -67,13 +68,13 @@ ipa_record_reference (struct cgraph_node *refering_node,
     {
       ref->refering.varpool_node = refering_varpool_node;
       ref->refering_type = IPA_REF_VARPOOL;
-      gcc_assert (use_type == IPA_REF_ADDR);
+      gcc_assert (use_type == IPA_REF_ADDR || use_type == IPA_REF_ALIAS);
     }
   if (refered_node)
     {
       ref->refered.cgraph_node = refered_node;
       ref->refered_type = IPA_REF_CGRAPH;
-      gcc_assert (use_type == IPA_REF_ADDR);
+      gcc_assert (use_type == IPA_REF_ADDR || use_type == IPA_REF_ALIAS);
     }
   else
     {
@@ -240,4 +241,16 @@ bool
 ipa_ref_cannot_lead_to_return (struct ipa_ref *ref)
 {
   return cgraph_node_cannot_return (ipa_ref_refering_node (ref));
+}
+
+/* Return true if list contains an alias.  */
+bool
+ipa_ref_has_aliases_p (struct ipa_ref_list *ref_list)
+{
+  struct ipa_ref *ref;
+  int i;
+  for (i = 0; ipa_ref_list_refering_iterate (ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      return true;
+  return false;
 }

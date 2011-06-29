@@ -1,3 +1,258 @@
+2011-06-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/objc.h (__GNU_LIBOBJC__): Bumped to 20110608.
+
+2011-06-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* configure.ac (VERSION): Bumped to 4:0:0.
+	* configure (VERSION): Likewise.
+
+2011-06-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/README: Updated.
+	* objc-private/selector.h: Updated comments.
+	
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* sendmsg.c (class_get_instance_method): Removed.
+	(class_get_class_method): Removed.
+	(objc_get_uninstalled_dtable): Removed.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-private/module-abi-8.h (class_get_instance_size): Removed.
+	* objects.c (class_create_instance): Removed.
+	* error.c (__USE_FIXED_PROTOTYPES__): Removed.
+	* gc.c (__objc_generate_gc_type_description): Use
+	class_getInstanceSize() instead of class_get_instance_size().
+	* selector.c (sel_types_match): Made static.
+	(sel_get_typed_uid): Removed.
+	(sel_get_any_typed_uid): Removed.
+	(sel_get_name): Removed.
+	(sel_get_type): Removed.
+	(sel_register_name): Removed.
+	(sel_register_typed_name): Removed.
+	(sel_get_uid): Removed.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* encoding.c (method_get_number_of_arguments): Removed.
+	(method_get_sizeof_arguments): Removed.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* class.c (objc_next_class): Removed.
+	(class_pose_as): Removed.
+	(CLASSOF): Removed.
+	(class_table_replace): Removed.
+	(objc_lookup_class): Removed.
+
+2011-06-07  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Removed the Traditional Objective-C runtime public API.
+	* Makefile.in (OBJC_DEPRECATED_H): Variable removed.
+	(install-headers): Do not create the objc/deprecated directory and
+	do not install the deprecated headers.
+	(OBJC_H): Removed encoding.h and objc-api.h.
+	* Object.m: Removed all methods with the exception of -class and
+	-isEqual:.  Updated includes.  ([-class]): Use Modern API.
+	* objc/Object.h: Do not include deprecated/Object.h.
+	* objc/deprecated/Object.h: Removed.
+	* linking.m (__objc_linking): Call [Object class] instead of
+	[Object name].
+	* Protocol.m: Removed all methods with the exception of -isEqual:.
+	Updated includes.
+	* objc/Protocol.h: Do not include deprecated/Protocol.h.
+	* objc/deprecated/Protocol.h: Removed.
+	* objc/deprecated/struct_objc_symtab.h: Removed.
+	* objc/deprecated/struct_objc_module.h: Removed.
+	* objc/deprecated/struct_objc_ivar.h: Removed.
+	* objc/deprecated/struct_objc_ivar_list.h: Removed.
+	* objc/deprecated/struct_objc_method.h: Removed.
+	* objc/deprecated/struct_objc_method_list.h: Removed.
+	* objc/deprecated/struct_objc_protocol_list.h: Removed.
+	* objc/deprecated/struct_objc_category.h: Removed.
+	* objc/deprecated/MetaClass.h: Removed.
+	* objc/deprecated/objc_msg_sendv.h: Removed.  
+	* objc/deprecated/README: Removed.
+	* objc/deprecated/struct_objc_class.h: Removed.
+	* objc/deprecated/struct_objc_protocol.h: Removed.
+	* objc/deprecated/struct_objc_selector.h: Removed.
+	* objc/encoding.h: Removed.
+	* objc/message.h (struct objc_super): Removed the definition for
+	the Traditional Objective-C runtime API.
+	* objc/objc.h: Do not include objc/objc-decls.h.
+	deprecated/struct_objc_selector.h, deprecated/MetaClass.h,
+	deprecated/struct_objc_class.h, deprecated/struct_objc_protocol.h
+	and deprecated/objc_msg_sendv.h.  Uncommented new definition of
+	Protocol *.
+	* objc/objc-api.h: Removed.
+	* objc/runtime.h: Updated comments.  Removed check to detect
+	concurrent usage of Traditional and Modern APIs.
+	* objc-private/module-abi-8.h: Always define struct objc_class and
+	struct objc_protocol.  (struct objc_protocol_list): Changed type
+	of 'list' argument from 'Protocol *' to 'struct objc_protocol *'.
+	(class_get_instance_size): Added.
+	* objc-private/protocols.h (__objc_protocols_add_protocol): Take a
+	'struct objc_protocol *' as argument, not a 'Protocol *'.
+	* objc-private/runtime.h: Updated comments.
+	* objc-private/selector.h (struct objc_selector, sel_eq): Added.
+	* class.c: Include objc-private/selector.h.
+	(objc_get_meta_class): Return a Class instead of a MetaClass.
+	* encoding.c (method_get_next_argument): Removed.
+	(method_get_first_argument): Removed.
+	(method_get_nth_argument): Removed.
+	* gc.c: Include objc/runtime.h instead of objc/encoding.h.
+	Include objc-private/module-abi-8.h and ctype.h.
+	* protocols.c (__objc_protocols_add_protocol): Take a 'struct
+	objc_protocl *' as argument, not a 'Protocol *'.
+	(class_addProtocol): Added casts to 'struct objc_protocol *' and
+	'Protocol *'.
+	(class_copyProtocolList): Likewise.
+	(protocol_conformsToProtocol): Likewise.
+	(protocol_copyProtocolList): Likewise.
+	* sarray.c: Include objc-private/module-abi-8.h.
+	* sendmsg.c (method_get_next_argument): Removed.
+	(method_get_first_argument): Removed.
+	(method_get_nth_argument): Removed.
+	(objc_msg_sendv): Removed.
+	(arglist_t, retval_t): New.  (class_get_class_method): Take a
+	'Class', not 'MetaClass', argument.
+	* thr.c: Include module-abi-8.h.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_DEPRECATED_H): Removed struct_objc_static_instances.h
+	and objc_get_uninstalled_dtable.h.
+	* objc/deprecated/struct_objc_static_instances.h: Removed.
+	* objc/deprecated/objc_get_uninstalled_dtable.h: Removed.	
+	* objc/objc-api.h: Do not include deprecated/objc_static_instances.h
+	and deprecated/objc_get_uninstalled_dtable.h.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_object_alloc.h.
+	* objc/deprecated/objc_object_alloc.h: Removed.
+	* objc/objc-api.h: Do not include deprecated/objc_object_alloc.h.
+	* objects.c (_objc_object_alloc, _objc_object_dispose,
+	_objc_object_copy): Removed.
+	* libobjc.def (__objc_object_alloc, __objc_object_copy,
+	__objc_object_dispose): Removed.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_DEPRECATED_H): Removed METHOD_NULL.h.
+	* objc/objc-api.h: Do not include deprecated/METHOD_NULL.h.
+	* objc/deprecated/METHOD_NULL.h: Removed.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_valloc.h,
+	objc_malloc.h and objc_unexpected_exception.h.
+	(exception.lo): Do not use -Wno-deprecated-declarations.
+	(exception_gc.lo): Likewise.
+	* objc/objc-api.h: Do not include deprecated/objc_valloc.h,
+	deprecated/objc_malloc.h and
+	deprecated/objc_unexpected_exception.h.
+	* objc/deprecated/objc_valloc.h: Removed.
+	* objc/deprecated/objc_malloc.h: Removed.
+	* objc/deprecated/objc_unexpected_exception.h: Removed.
+	* exception.c (_objc_unexpected_exception): Removed.
+	(objc_exception_throw): Do not check for
+	_objc_unexpected_exception.
+	* memory.c (objc_valloc, _objc_malloc, _objc_atomic_malloc,
+	_objc_valloc, _objc_realloc, _objc_calloc, _objc_free): Removed.	
+	* libobjc.def (_objc_unexpected_exception, objc_valloc): Removed.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/objc.h: Do not include deprecated/STR.h.
+	* objc/deprecated/STR.h: Removed.
+	* Makefile.in (OBJC_DEPRECATED_H): removed STR.h.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_H): Removed hash.h and sarray.h.
+	(OBJC_DEPRECATED_H): Likewise.
+	* libobjc.def (objc_hash_new, objc_hash_delete, objc_hash_add,
+	objc_hash_remove, objc_hash_next, objc_hash_value_for_key,
+	objc_hash_is_key_in_hash, hash_add, hash_delete, hash_new,
+	hash_next, hash_remove, hash_value_for_key, hash_is_key_in_hash,
+	sarray_at_put, sarray_at_put_safe, sarray_free, sarray_lazy_copy,
+	sarray_new, sarray_realloc, sarray_remove_garbage): Removed.
+	* objc/sarray.h: Removed.
+	* objc/hash.h: Removed.
+	* objc/deprecated/sarray.h: Removed.
+	* objc/deprecated/hash.h: Removed.
+	* objc/Object.h: Do not include objc/deprecated/hash.h
+	* Object.m: Include string.h.
+	* objc/objc-api.h: Do not include objc/deprecated/hash.h.
+	* objc-private/common.h (GNU_LIBOBJC_COMPILING_LIBOBJC_ITSELF):
+	Removed.
+
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Object.m ([-forward::]): Removed.
+	* objc/deprecated/Object.h ([-forward::]): Removed.
+	* sendmsg.c (__objc_forward): Updated comments.
+	
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_H): Removed objc-list.h.
+	(OBJC_DEPRECATED_H): Removed objc-list.h.
+	* objc/objc-list.h: File removed.
+	* objc/deprecated/objc-list.h: File removed.
+
+2011-06-03  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_H): Removed typedstream.h.
+	(OBJC_DEPRECATED_H): Removed typedstream.h.
+	(C_SOURCE_FILES): Removed archive.c.
+	(Object.lo): Rule removed.
+	(Object_gc.lo): Likewise.
+	(archive.lo): Likewise.
+	(archive_gc.lo): Likewise.
+	* objc/deprecated/Object.h ([+streamVersion:], [-read], [-write],
+	[-awake]): Removed.
+	Do not include deprecated/typedstream.h.
+	* Object.m: Removed the same methods.
+	* archive.c: File removed.
+	* objc/typedstream.h: File removed.
+	* objc/deprecated/typedstream.h: File removed.
+	* libobjc.def (__objc_read_nbyte_uint, __objc_read_nbyte_ulong,
+	__objc_write_class, __objc_write_object, __objc_write_selector,
+	objc_close_typed_stream, objc_end_of_typed_stream,
+	objc_flush_typed_stream, objc_get_stream_class_version,
+	objc_open_typed_stream, objc_open_typed_stream_for_file,
+	objc_read_array, objc_read_char, objc_read_int, objc_read_long,
+	objc_read_object, objc_read_selector, objc_read_short,
+	objc_read_string, objc_read_type, objc_read_types,
+	objc_read_unsigned_char, objc_read_unsigned_int,
+	objc_read_unsigned_long, objc_read_unsigned_short,
+	objc_write_array, objc_write_char, objc_write_int,
+	objc_write_long, objc_write_object, objc_write_object_reference,
+	objc_write_root_object, objc_write_selector, objc_write_short,
+	objc_write_string, objc_write_string_atomic, objc_write_type,
+	objc_write_types, objc_write_unsigned_char,
+	objc_write_unsigned_int, objc_write_unsigned_long,
+	objc_write_unsigned_short): Removed.
+	
+2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Makefile.in (OBJC_DEPRECATED_H): Removed objc_error.h.
+	* objc/deprecated/objc_error.h: Removed.
+	* objc/objc-api.h: Do not include deprecated/objc_error.h.
+	* libobjc.def (objc_error, objc_verror): Removed.
+	* error.c (_objc_error_handler, objc_error, objc_verror,
+	objc_set_error_handler): Removed.
+	* Object.m ([-error:], [-perform:], [-perform:with:],
+	[-perform:with:with], [-subclassResponsibility:],
+	[-notImplemented:], [-shouldNotImplement:], [-doesNotRecognize:]):
+	Removed.
+	* objc/deprecated/Object.h: Removed the same methods.
+	* sendmsg.c (__objc_forward): Do not try to invoke the "error:"
+	method after trying to invoke the "doesNotRecognize:" method.
+	
 2011-05-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* sendmsg.c: Reindented part of the file.  No non-trivial changes

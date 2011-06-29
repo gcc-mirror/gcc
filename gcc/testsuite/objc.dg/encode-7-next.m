@@ -6,8 +6,8 @@
 /* { dg-options "-Wno-deprecated-declarations" } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
-#include "../objc-obj-c++-shared/Object1.h"
-#include "../objc-obj-c++-shared/next-mapping.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.m"
+#include "../objc-obj-c++-shared/runtime.h"
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
@@ -99,10 +99,10 @@ typedef struct {
   unsigned int parameterMask;
 } NSErrorUserInfoFormatter;
 
-typedef Object MyObj;
-typedef Object *MyPtr;
+typedef TestsuiteObject MyObj;
+typedef TestsuiteObject *MyPtr;
 
-@interface Foo: Object {
+@interface Foo: TestsuiteObject {
   NSATSGlyphStorageRun r;
 }
 - (NSError *)_errorWithOSStatus:(OSStatus)inOSStatus ref1:(const FSRef *)inRef1 ref2:(const struct FSRef *)inRef2
@@ -114,7 +114,7 @@ typedef Object *MyPtr;
 - (id)str1:(const char *)str1 str2:(char *)str2 str3:(char *const)str3 str4:(const char *const)str4;
 - (oneway void)foo1:(Foo *)foo1 foo2:(const Foo *)foo2 foo3:(Foo *const)foo3 foo4:(const Foo *const)foo4;
 - (in const char *)sel1:(const SEL)sel1 id1:(const id)id1;
-- (inout id)obj1:(const MyPtr)obj1 obj2:(Object *const)obj2 obj3:(MyObj *const)obj3;
+- (inout id)obj1:(const MyPtr)obj1 obj2:(TestsuiteObject *const)obj2 obj3:(MyObj *const)obj3;
 + (ComponentInstance)_defaultScriptingComponent;
 - (NSString *)_formatCocoaErrorString:(NSString *)formatString parameters:(const char *)parameters 
   applicableFormatters:(NSErrorUserInfoFormatter **)formatters count:(int)numFormatters;
@@ -156,7 +156,7 @@ NSRange globalRange;
 - (in const char *)sel1:(const SEL)sel1 id1:(const id)id1 {
   return "Hello";
 }  
-- (inout id)obj1:(const MyPtr)obj1 obj2:(Object *const)obj2 obj3:(MyObj *const)obj3 {
+- (inout id)obj1:(const MyPtr)obj1 obj2:(TestsuiteObject *const)obj2 obj3:(MyObj *const)obj3 {
   return self;
 }
 + (ComponentInstance)_defaultScriptingComponent {
@@ -222,7 +222,7 @@ int main(void) {
   CHECK_IF (!strcmp (meth->method_types, "rn*16@0:4r:8r@12"));
 
   meth = class_getInstanceMethod (fooClass, @selector(obj1:obj2:obj3:));
-  CHECK_IF (!strcmp (meth->method_types, "N@20@0:4r@8@12^{Object=#}16"));
+  CHECK_IF (!strcmp (meth->method_types, "N@20@0:4r@8@12^{TestsuiteObject=#}16"));
 
   meth = class_getClassMethod (fooClass, @selector(_defaultScriptingComponent));
   CHECK_IF (!strcmp (meth->method_types, "^{ComponentInstanceRecord=[1l]}8@0:4"));

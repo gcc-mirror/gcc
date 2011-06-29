@@ -3020,7 +3020,7 @@ pp_base_tree_identifier (pretty_printer *pp, tree id)
    function dump.  */
 
 void
-dump_function_header (FILE *dump_file, tree fdecl)
+dump_function_header (FILE *dump_file, tree fdecl, int flags)
 {
   const char *dname, *aname;
   struct cgraph_node *node = cgraph_get_node (fdecl);
@@ -3034,11 +3034,13 @@ dump_function_header (FILE *dump_file, tree fdecl)
   else
     aname = "<unset-asm-name>";
 
+  fprintf (dump_file, "\n;; Function %s (%s, funcdef_no=%d",
+	   dname, aname, fun->funcdef_no);
+  if (!(flags & TDF_NOUID))
+    fprintf (dump_file, ", decl_uid=%d", DECL_UID (fdecl));
   if (node)
     {
-      fprintf (dump_file, "\n;; Function %s (%s, funcdef_no=%d, decl_uid=%d, cgraph_uid=%d)",
-               dname, aname, fun->funcdef_no, DECL_UID(fdecl), node->uid);
-      fprintf (dump_file, "%s\n\n",
+      fprintf (dump_file, ", cgraph_uid=%d)%s\n\n", node->uid,
                node->frequency == NODE_FREQUENCY_HOT
                ? " (hot)"
                : node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
@@ -3048,6 +3050,5 @@ dump_function_header (FILE *dump_file, tree fdecl)
                : "");
     }
   else
-    fprintf (dump_file, "\n;; Function %s (%s, funcdef_no=%d, decl_uid = %d)",
-             dname, aname, fun->funcdef_no, DECL_UID(fdecl));
+    fprintf (dump_file, ")\n\n");
 }

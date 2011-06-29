@@ -11,4 +11,4 @@ template<typename T> struct A
   typedef typename T::X Y; // { dg-error "not a class" "" }
 };
 
-A<int>::Y y; // { dg-message "instantiated from here" "" }
+A<int>::Y y; // { dg-message "required from here" "" }

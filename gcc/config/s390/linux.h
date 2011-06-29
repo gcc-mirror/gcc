@@ -79,8 +79,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
-#define MD_UNWIND_SUPPORT "config/s390/linux-unwind.h"
-
 #ifdef TARGET_LIBC_PROVIDES_SSP
 /* s390 glibc provides __stack_chk_guard in 0x14(tp),
    s390x glibc provides it at 0x28(tp).  */

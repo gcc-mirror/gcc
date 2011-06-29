@@ -82,6 +82,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     move(_Tp&& __t) noexcept
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
 
+
+  template<typename _Tp>
+    struct __move_if_noexcept_cond
+    : public __and_<__not_<is_nothrow_move_constructible<_Tp>>,
+                    is_copy_constructible<_Tp>>::type { };
+
   /**
    *  @brief Move unless it could throw and the type is copyable.
    *  @ingroup utilities
@@ -90,9 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp>
     inline typename
-    conditional<(!is_nothrow_move_constructible<_Tp>::value
-		 && is_copy_constructible<_Tp>::value),
-                const _Tp&, _Tp&&>::type
+    conditional<__move_if_noexcept_cond<_Tp>::value, const _Tp&, _Tp&&>::type
     move_if_noexcept(_Tp& __x) noexcept
     { return std::move(__x); }
 
@@ -148,12 +152,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __b = _GLIBCXX_MOVE(__tmp);
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  // To work around c++/49045.
+  template<typename _Tp>
+    struct __is_nothrow_swappable
+    { static const bool value = noexcept(swap(std::declval<_Tp&>(),
+					      std::declval<_Tp&>())); };
+#endif
+
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 809. std::swap should be overloaded for array types.
   template<typename _Tp, size_t _Nm>
     inline void
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
-    // noexcept waits for c++/49045
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    noexcept(__is_nothrow_swappable<_Tp>::value)
+#endif
     {
       for (size_t __n = 0; __n < _Nm; ++__n)
 	swap(__a[__n], __b[__n]);

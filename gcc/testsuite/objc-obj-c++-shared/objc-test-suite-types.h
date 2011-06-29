@@ -21,16 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef _OBJC_TEST_SUITE_TYPES_H_
 #define _OBJC_TEST_SUITE_TYPES_H_
 
-#ifdef __cplusplus
-#define ProtoBool bool
-#else
-#define ProtoBool _Bool
-#endif
-
 #ifndef __NEXT_RUNTIME__
-
-#define METHOD Method_t
-#define IVAR_T struct objc_ivar
 
 /* dummy const string class ref. */
 typedef void * TNS_STRING_REF_T;
@@ -52,17 +43,8 @@ typedef void * TNS_STRING_REF_T;
 #define NULL 0
 #endif
 
-#define METHOD Method
-
 /* Where there are equivalent interfaces between APIs we substitute
    a macro or typedef.  */
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-typedef void * PMETH;
-#define IVAR_T Ivar 
-#else
-typedef struct objc_method * PMETH;
-#define IVAR_T struct objc_ivar 
-#endif
 
 #ifdef __OBJC2__
 /* Const String Class ref.  */

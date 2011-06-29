@@ -53,13 +53,6 @@
 
 static void score_option_override (void);
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options score_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START           score_asm_file_start
 
@@ -72,17 +65,8 @@ static const struct default_options score_option_optimization_table[] =
 #undef  TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE    score_function_epilogue
 
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS     TARGET_DEFAULT
-
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION            score_handle_option
-
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE          score_option_override
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE score_option_optimization_table
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS	score_legitimize_address
@@ -168,7 +152,7 @@ score_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 
 /* Return nonzero when an argument must be passed by reference.  */
 static bool
-score_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+score_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
                          enum machine_mode mode, const_tree type,
                          bool named ATTRIBUTE_UNUSED)
 {
@@ -279,35 +263,6 @@ score_asm_file_end (void)
     gcc_unreachable ();
 }
 
-#define MASK_ALL_CPU_BITS	(MASK_SCORE7 | MASK_SCORE7D)
-
-/* Implement TARGET_HANDLE_OPTION.  */
-static bool
-score_handle_option (struct gcc_options *opts,
-		     struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		     const struct cl_decoded_option *decoded,
-		     location_t loc ATTRIBUTE_UNUSED)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mscore7d:
-      opts->x_target_flags &= ~(MASK_ALL_CPU_BITS);
-      opts->x_target_flags |= MASK_SCORE7 | MASK_SCORE7D;
-      return true;
-
-    case OPT_march_:
-      opts->x_target_flags &= ~(MASK_ALL_CPU_BITS);
-      opts->x_target_flags |= value;
-      return true;
-
-    default:
-      return true;
-    }
-}
-
 /* Implement TARGET_OPTION_OVERRIDE hook.  */
 static void
 score_option_override (void)
@@ -397,33 +352,34 @@ score_init_cumulative_args (CUMULATIVE_ARGS *cum,
 
 /* Implement TARGET_FUNCTION_ARG_ADVANCE hook.  */
 static void
-score_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+score_function_arg_advance (cumulative_args_t cum, enum machine_mode mode,
                             const_tree type, bool named)
 {
   if (TARGET_SCORE7 || TARGET_SCORE7D)
-    score7_function_arg_advance (cum, mode, type, named);
+    score7_function_arg_advance (get_cumulative_args (cum), mode, type, named);
   else
     gcc_unreachable ();
 }
 
 /* Implement TARGET_ARG_PARTIAL_BYTES macro.  */
 int
-score_arg_partial_bytes (CUMULATIVE_ARGS *cum,
+score_arg_partial_bytes (cumulative_args_t cum,
                          enum machine_mode mode, tree type, bool named)
 {
   if (TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_arg_partial_bytes (cum, mode, type, named);
+    return score7_arg_partial_bytes (get_cumulative_args (cum), mode, type,
+				     named);
   else
     gcc_unreachable ();
 }
 
 /* Implement TARGET_FUNCTION_ARG hook.  */
 static rtx
-score_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+score_function_arg (cumulative_args_t cum, enum machine_mode mode,
                     const_tree type, bool named)
 {
   if (TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_function_arg (cum, mode, type, named);
+    return score7_function_arg (get_cumulative_args (cum), mode, type, named);
   else
     gcc_unreachable ();
 }

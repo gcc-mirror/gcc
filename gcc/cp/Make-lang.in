@@ -292,7 +292,8 @@ cp/friend.o: cp/friend.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H)
 cp/init.o: cp/init.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
   $(EXCEPT_H) $(TARGET_H)
 cp/method.o: cp/method.c $(CXX_TREE_H) $(TM_H) toplev.h \
-  $(TM_P_H) $(TARGET_H) $(DIAGNOSTIC_H) gt-cp-method.h $(GIMPLE_H)
+  $(TM_P_H) $(TARGET_H) $(DIAGNOSTIC_H) gt-cp-method.h $(GIMPLE_H) \
+  $(COMMON_TARGET_H)
 cp/cvt.o: cp/cvt.c $(CXX_TREE_H) $(TM_H) cp/decl.h $(FLAGS_H) \
   convert.h $(TARGET_H) intl.h
 cp/search.o: cp/search.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \

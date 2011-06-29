@@ -45,4 +45,3 @@ main()
   test01();
   return 0;
 }
-// { dg-excess-errors "candidates are" }

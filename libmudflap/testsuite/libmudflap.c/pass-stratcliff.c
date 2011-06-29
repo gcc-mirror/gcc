@@ -153,7 +153,7 @@ main (int argc, char *argv[])
 	    }
         }
 
-#ifndef __FreeBSD__
+#if !defined  __FreeBSD__ && !(defined __sun__ && defined __svr4__)
       /* rawmemchr test */
       for (outer = size - 1; outer >= MAX (0, size - 128); --outer)
         {
@@ -250,7 +250,7 @@ main (int argc, char *argv[])
 	    }
         }
 
-#ifndef __FreeBSD__
+#ifndef __FreeBSD__ && !(defined __sun__ && defined __svr4__)
       /* stpcpy test */
       for (outer = size - 1; outer >= MAX (0, size - 128); --outer)
         {
@@ -302,7 +302,7 @@ main (int argc, char *argv[])
 	      result = 1;
 	    }
 
-#ifndef __FreeBSD__
+#if !defined __FreeBSD__ && !(defined __sun__ && defined __svr4__)
       /* mempcpy test */
       for (outer = size - 1; outer >= MAX (0, size - 128); --outer)
 	for (inner = 0; inner < size - outer; ++inner)

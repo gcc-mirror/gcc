@@ -2568,18 +2568,17 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
     }
 
   /* Update the number of iteration estimates according to the bound.
-     If at_stmt is an exit, then every statement in the loop is
-     executed at most BOUND + 1 times.  If it is not an exit, then
-     some of the statements before it could be executed BOUND + 2
-     times, if an exit of LOOP is before stmt.  */
+     If at_stmt is an exit or dominates the single exit from the loop,
+     then the loop latch is executed at most BOUND times, otherwise
+     it can be executed BOUND + 1 times.  */
   exit = single_exit (loop);
   if (is_exit
       || (exit != NULL
 	  && dominated_by_p (CDI_DOMINATORS,
 			     exit->src, gimple_bb (at_stmt))))
-    delta = double_int_one;
+    delta = double_int_zero;
   else
-    delta = double_int_two;
+    delta = double_int_one;
   i_bound = double_int_add (i_bound, delta);
 
   /* If an overflow occurred, ignore the result.  */
@@ -2876,6 +2875,16 @@ infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple stmt)
   low = lower_bound_in_type (type, type);
   high = upper_bound_in_type (type, type);
 
+  /* In C, pointer arithmetic p + 1 cannot use a NULL pointer, and p - 1 cannot
+     produce a NULL pointer.  The contrary would mean NULL points to an object,
+     while NULL is supposed to compare unequal with the address of all objects.
+     Furthermore, p + 1 cannot produce a NULL pointer and p - 1 cannot use a
+     NULL pointer since that would mean wrapping, which we assume here not to
+     happen.  So, we can exclude NULL from the valid range of pointer
+     arithmetic.  */
+  if (flag_delete_null_pointer_checks && int_cst_value (low) == 0)
+    low = build_int_cstu (TREE_TYPE (low), TYPE_ALIGN_UNIT (TREE_TYPE (type)));
+
   record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
 }
 
@@ -3040,6 +3049,93 @@ estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
       && double_int_ucmp (loop->nb_iterations_upper_bound,
 			  loop->nb_iterations_estimate) < 0)
     loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
+}
+
+/* Sets NIT to the estimated number of executions of the latch of the
+   LOOP.  If CONSERVATIVE is true, we must be sure that NIT is at least as
+   large as the number of iterations.  If we have no reliable estimate,
+   the function returns false, otherwise returns true.  */
+
+bool
+estimated_loop_iterations (struct loop *loop, bool conservative,
+			   double_int *nit)
+{
+  estimate_numbers_of_iterations_loop (loop, true);
+  if (conservative)
+    {
+      if (!loop->any_upper_bound)
+	return false;
+
+      *nit = loop->nb_iterations_upper_bound;
+    }
+  else
+    {
+      if (!loop->any_estimate)
+	return false;
+
+      *nit = loop->nb_iterations_estimate;
+    }
+
+  return true;
+}
+
+/* Similar to estimated_loop_iterations, but returns the estimate only
+   if it fits to HOST_WIDE_INT.  If this is not the case, or the estimate
+   on the number of iterations of LOOP could not be derived, returns -1.  */
+
+HOST_WIDE_INT
+estimated_loop_iterations_int (struct loop *loop, bool conservative)
+{
+  double_int nit;
+  HOST_WIDE_INT hwi_nit;
+
+  if (!estimated_loop_iterations (loop, conservative, &nit))
+    return -1;
+
+  if (!double_int_fits_in_shwi_p (nit))
+    return -1;
+  hwi_nit = double_int_to_shwi (nit);
+
+  return hwi_nit < 0 ? -1 : hwi_nit;
+}
+
+/* Returns an upper bound on the number of executions of statements
+   in the LOOP.  For statements before the loop exit, this exceeds
+   the number of execution of the latch by one.  */
+
+HOST_WIDE_INT
+max_stmt_executions_int (struct loop *loop, bool conservative)
+{
+  HOST_WIDE_INT nit = estimated_loop_iterations_int (loop, conservative);
+  HOST_WIDE_INT snit;
+
+  if (nit == -1)
+    return -1;
+
+  snit = (HOST_WIDE_INT) ((unsigned HOST_WIDE_INT) nit + 1);
+
+  /* If the computation overflows, return -1.  */
+  return snit < 0 ? -1 : snit;
+}
+
+/* Sets NIT to the estimated number of executions of the latch of the
+   LOOP, plus one.  If CONSERVATIVE is true, we must be sure that NIT is at
+   least as large as the number of iterations.  If we have no reliable
+   estimate, the function returns false, otherwise returns true.  */
+
+bool
+max_stmt_executions (struct loop *loop, bool conservative, double_int *nit)
+{
+  double_int nit_minus_one;
+
+  if (!estimated_loop_iterations (loop, conservative, nit))
+    return false;
+
+  nit_minus_one = *nit;
+
+  *nit = double_int_add (*nit, double_int_one);
+
+  return double_int_ucmp (*nit, nit_minus_one) > 0;
 }
 
 /* Records estimates on numbers of iterations of loops.  */

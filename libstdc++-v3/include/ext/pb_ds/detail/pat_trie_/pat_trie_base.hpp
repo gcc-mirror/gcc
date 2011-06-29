@@ -858,10 +858,10 @@ namespace __gnu_pbds
       typedef value_type 				reference;
       typedef value_type 				const_reference;
 
-      // Metadata type.
+      /// Metadata type.
       typedef typename Node::metadata_type 		metadata_type;
 
-      // Const metadata reference type.
+      /// Const metadata reference type.
       typedef typename _Alloc::template rebind<metadata_type> __rebind_m;
       typedef typename __rebind_m::other 		__rebind_ma;
       typedef typename __rebind_ma::const_reference    metadata_const_reference;
@@ -871,13 +871,13 @@ namespace __gnu_pbds
       : m_p_nd(const_cast<node_pointer>(p_nd)), m_p_traits(p_traits)
       { }
 
-      // Subtree valid prefix.
+      /// Subtree valid prefix.
       std::pair<a_const_iterator, a_const_iterator>
       valid_prefix() const
       { return std::make_pair(pref_begin(), pref_end()); }
 
-      // Const access; returns the __const iterator* associated with
-      // the current leaf.
+      /// Const access; returns the __const iterator* associated with
+      /// the current leaf.
       const_reference
       operator*() const
       {
@@ -885,12 +885,12 @@ namespace __gnu_pbds
 	return _CIterator(m_p_nd);
       }
 
-      // Metadata access.
+      /// Metadata access.
       metadata_const_reference
       get_metadata() const
       { return m_p_nd->get_metadata(); }
 
-      // Returns the number of children in the corresponding node.
+      /// Returns the number of children in the corresponding node.
       size_type
       num_children() const
       {
@@ -901,8 +901,8 @@ namespace __gnu_pbds
 	return std::distance(inp->begin(), inp->end());
       }
 
-      // Returns a __const node __iterator to the corresponding node's
-      // i-th child.
+      /// Returns a __const node __iterator to the corresponding node's
+      /// i-th child.
       _Node_citer
       get_child(size_type i) const
       {
@@ -913,12 +913,12 @@ namespace __gnu_pbds
 	return _Node_citer(*it, m_p_traits);
       }
 
-      // Compares content to a different iterator object.
+      /// Compares content to a different iterator object.
       bool
       operator==(const _Node_citer& other) const
       { return m_p_nd == other.m_p_nd; }
 
-      // Compares content (negatively) to a different iterator object.
+      /// Compares content (negatively) to a different iterator object.
       bool
       operator!=(const _Node_citer& other) const
       { return m_p_nd != other.m_p_nd; }
@@ -959,7 +959,7 @@ namespace __gnu_pbds
       : base_type(p_nd, p_traits)
       { }
 
-      // Access; returns the iterator*  associated with the current leaf.
+      /// Access; returns the iterator*  associated with the current leaf.
       reference
       operator*() const
       {
@@ -967,7 +967,7 @@ namespace __gnu_pbds
 	return iterator(base_type::m_p_nd);
       }
 
-      // Returns a node __iterator to the corresponding node's i-th child.
+      /// Returns a node __iterator to the corresponding node's i-th child.
       _Node_iter
       get_child(size_type i) const
       {
@@ -1318,7 +1318,7 @@ namespace __gnu_pbds
     get_begin_pos() const
     {
       size_type i = 0;
-      for (i; i < arr_size && m_a_p_children[i] == 0; ++i)
+      for (; i < arr_size && m_a_p_children[i] == 0; ++i)
 	;
       return i;
     }

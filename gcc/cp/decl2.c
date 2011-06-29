@@ -361,7 +361,7 @@ grok_array_decl (tree array_expr, tree index_exp)
   if (MAYBE_CLASS_TYPE_P (type) || MAYBE_CLASS_TYPE_P (TREE_TYPE (index_exp)))
     expr = build_new_op (ARRAY_REF, LOOKUP_NORMAL,
 			 array_expr, index_exp, NULL_TREE,
-			 /*overloaded_p=*/NULL, tf_warning_or_error);
+			 /*overload=*/NULL, tf_warning_or_error);
   else
     {
       tree p1, p2, i1, i2;
@@ -1327,7 +1327,10 @@ build_anon_union_vars (tree type, tree object)
   /* Rather than write the code to handle the non-union case,
      just give an error.  */
   if (TREE_CODE (type) != UNION_TYPE)
-    error ("anonymous struct not inside named type");
+    {
+      error ("anonymous struct not inside named type");
+      return error_mark_node;
+    }
 
   for (field = TYPE_FIELDS (type);
        field != NULL_TREE;
@@ -3635,6 +3638,15 @@ collect_all_refs (const char *source_file)
   collect_ada_namespace (global_namespace, source_file);
 }
 
+/* Clear DECL_EXTERNAL for NODE.  */
+
+static bool
+clear_decl_external (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  DECL_EXTERNAL (node->decl) = 0;
+  return false;
+}
+
 /* This routine is called at the end of compilation.
    Its job is to create all the code needed to initialize and
    destroy the global aggregates.  We do the destruction
@@ -3662,6 +3674,8 @@ cp_write_global_declarations (void)
 
   if (pch_file)
     c_common_write_pch ();
+
+  cgraph_process_same_body_aliases ();
 
   /* Handle -fdump-ada-spec[-slim] */
   if (dump_enabled_p (TDI_ada))
@@ -3857,17 +3871,14 @@ cp_write_global_declarations (void)
 	      && DECL_INITIAL (decl)
 	      && decl_needed_p (decl))
 	    {
-	      struct cgraph_node *node = cgraph_get_node (decl), *alias, *next;
+	      struct cgraph_node *node, *next;
 
-	      DECL_EXTERNAL (decl) = 0;
-	      /* If we mark !DECL_EXTERNAL one of the same body aliases,
-		 we need to mark all of them that way.  */
-	      if (node && node->same_body)
-		{
-		  DECL_EXTERNAL (node->decl) = 0;
-		  for (alias = node->same_body; alias; alias = alias->next)
-		    DECL_EXTERNAL (alias->decl) = 0;
-		}
+	      node = cgraph_get_node (decl);
+	      if (node->same_body_alias)
+		node = cgraph_alias_aliased_node (node);
+
+	      cgraph_for_node_and_aliases (node, clear_decl_external,
+					   NULL, true);
 	      /* If we mark !DECL_EXTERNAL one of the symbols in some comdat
 		 group, we need to mark all symbols in the same comdat group
 		 that way.  */
@@ -3875,16 +3886,8 @@ cp_write_global_declarations (void)
 		for (next = node->same_comdat_group;
 		     next != node;
 		     next = next->same_comdat_group)
-		  {
-		    DECL_EXTERNAL (next->decl) = 0;
-		    if (next->same_body)
-		      {
-			for (alias = next->same_body;
-			     alias;
-			     alias = alias->next)
-			  DECL_EXTERNAL (alias->decl) = 0;
-		      }
-		  }
+	          cgraph_for_node_and_aliases (next, clear_decl_external,
+					       NULL, true);
 	    }
 
 	  /* If we're going to need to write this function out, and
@@ -4228,6 +4231,9 @@ mark_used (tree decl)
       return;
     }
 
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    maybe_instantiate_noexcept (decl);
+
   /* Normally, we can wait until instantiation-time to synthesize DECL.
      However, if DECL is a static data member initialized with a constant
      or a constexpr function, we need it right now because a reference to
@@ -4294,6 +4300,9 @@ mark_used (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && DECL_DEFAULTED_FN (decl)
+      /* A function defaulted outside the class is synthesized either by
+	 cp_finish_decl or instantiate_decl.  */
+      && !DECL_DEFAULTED_OUTSIDE_CLASS_P (decl)
       && ! DECL_INITIAL (decl))
     {
       /* Remember the current location for a function we will end up

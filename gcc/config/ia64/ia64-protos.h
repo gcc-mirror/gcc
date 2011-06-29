@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for IA-64.
-   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2007, 2010
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2007, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -17,6 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+/* Shared between the driver and cc1.  */
+extern enum unwind_info_type ia64_except_unwind_info (struct gcc_options *);
 
 /* Functions defined in ia64.c */
 

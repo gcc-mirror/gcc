@@ -73,15 +73,15 @@ static struct machine_function *m32c_init_machine_status (void);
 static void m32c_insert_attributes (tree, tree *);
 static bool m32c_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool m32c_addr_space_legitimate_address_p (enum machine_mode, rtx, bool, addr_space_t);
-static rtx m32c_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx m32c_function_arg (cumulative_args_t, enum machine_mode,
 			      const_tree, bool);
-static bool m32c_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
+static bool m32c_pass_by_reference (cumulative_args_t, enum machine_mode,
 				    const_tree, bool);
-static void m32c_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void m32c_function_arg_advance (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
 static unsigned int m32c_function_arg_boundary (enum machine_mode, const_tree);
 static int m32c_pushm_popm (Push_Pop_Type);
-static bool m32c_strict_argument_naming (CUMULATIVE_ARGS *);
+static bool m32c_strict_argument_naming (cumulative_args_t);
 static rtx m32c_struct_value_rtx (tree, int);
 static rtx m32c_subreg (enum machine_mode, rtx, enum machine_mode, int);
 static int need_to_save (int);
@@ -1536,9 +1536,11 @@ m32c_push_rounding (int n)
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG m32c_function_arg
 static rtx
-m32c_function_arg (CUMULATIVE_ARGS * ca,
+m32c_function_arg (cumulative_args_t ca_v,
 		   enum machine_mode mode, const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+
   /* Can return a reg, parallel, or 0 for stack */
   rtx rv = NULL_RTX;
 #if DEBUG0
@@ -1587,7 +1589,7 @@ m32c_function_arg (CUMULATIVE_ARGS * ca,
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE m32c_pass_by_reference
 static bool
-m32c_pass_by_reference (CUMULATIVE_ARGS * ca ATTRIBUTE_UNUSED,
+m32c_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			const_tree type ATTRIBUTE_UNUSED,
 			bool named ATTRIBUTE_UNUSED)
@@ -1617,11 +1619,13 @@ m32c_init_cumulative_args (CUMULATIVE_ARGS * ca,
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE m32c_function_arg_advance
 static void
-m32c_function_arg_advance (CUMULATIVE_ARGS * ca,
+m32c_function_arg_advance (cumulative_args_t ca_v,
 			   enum machine_mode mode ATTRIBUTE_UNUSED,
 			   const_tree type ATTRIBUTE_UNUSED,
 			   bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *ca = get_cumulative_args (ca_v);
+
   if (ca->force_mem)
     ca->force_mem = 0;
   else
@@ -1783,7 +1787,7 @@ m32c_epilogue_uses (int regno ATTRIBUTE_UNUSED)
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING m32c_strict_argument_naming
 static bool
-m32c_strict_argument_naming (CUMULATIVE_ARGS * ca ATTRIBUTE_UNUSED)
+m32c_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -2548,11 +2552,6 @@ m32c_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
 }
 
 /* Defining the Output Assembler Language */
-
-/* The Overall Framework of an Assembler File */
-
-#undef TARGET_HAVE_NAMED_SECTIONS
-#define TARGET_HAVE_NAMED_SECTIONS true
 
 /* Output of Data */
 

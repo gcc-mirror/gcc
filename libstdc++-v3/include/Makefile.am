@@ -79,6 +79,7 @@ bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits
 bits_headers = \
         ${bits_srcdir}/algorithmfwd.h \
+	${bits_srcdir}/alloc_traits.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/atomic_base.h \
 	${bits_srcdir}/atomic_0.h \
@@ -314,7 +315,6 @@ pb_headers2 = \
 pb_headers3 = \
 	${pb_srcdir}/detail/cc_hash_table_map_/trace_fn_imps.hpp \
 	${pb_srcdir}/detail/cond_dealtor.hpp \
-	${pb_srcdir}/detail/constructors_destructor_fn_imps.hpp \
 	${pb_srcdir}/detail/container_base_dispatch.hpp \
 	${pb_srcdir}/detail/eq_fn/eq_by_less.hpp \
 	${pb_srcdir}/detail/eq_fn/hash_eq_fn.hpp \
@@ -494,6 +494,7 @@ ext_srcdir = ${glibcxx_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
+	${ext_srcdir}/alloc_traits.h \
 	${ext_srcdir}/atomicity.h \
 	${ext_srcdir}/array_allocator.h \
 	${ext_srcdir}/bitmap_allocator.h \

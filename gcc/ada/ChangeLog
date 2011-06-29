@@ -1,3 +1,69 @@
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_component_type): Use GNAT_TYPE
+	local variable throughout.  Remove useless call to Base_Type.
+	(gnat_to_gnu_field): Use GNAT_FIELD_TYPE local variable throughout.
+	Take it also into account for the volatileness of the field.  Set the
+	TREE_SIDE_EFFECTS flag as well in this case.  Reorder some warnings.
+
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Don't set TREE_THIS_NOTRAP
+	on a dereference built for a by-ref object if it has an address clause.
+
+2011-06-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Address_Taken): Document use for the second argument of
+	Asm_Input and Asm_Output attributes.
+	* sem_attr.adb (Analyze_Attribute) <Attribute_Asm_Input>: If the second
+	argument is an entity name, then set Address_Taken on it.
+	<Attribute_Asm_Output>: Likewise.
+	* gcc-interface/trans.c (lvalue_required_for_attribute_p): Handle the
+	Attr_Asm_Input and Attr_Asm_Output attributes explicitly.
+	(gnat_to_gnu) <N_Code_Statement>: If an operand is going to end up in
+	memory and is a CONST_DECL, retrieve its corresponding VAR_DECL.
+
+2011-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR middle-end/46500
+	* gcc-interface/decl.c (gnat_to_gnu_param): Use pack_cumulative_args.
+
+2011-06-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/Make-lang.in (gnatbind$(exeext)): Use ggc-none.o.
+	(ada/utils.o): Update dependencies.
+	* gcc-interface/Makefile.in (EXTRA_GNATTOOLS_OBJS): Add
+	../../../libcpp/libcpp.a.
+	* gcc-interface/utils.c: Include common/common-target.h.
+	(process_attributes): Use targetm_common.have_named_sections.
+
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* gcc-interface/misc.c (gnat_init): Do not set size_type_node or call
+	set_sizetype.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (gnat_stabilize_reference): Propagate the
+	TREE_THIS_NOTRAP flag.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (gnat_stabilize_reference) <COMPOUND_EXPR>:
+	Fix thinko.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Also handle deferred
+	constants whose full view has discriminants specially.
+
+2011-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c: Include diagnostic.h.
+	(gnat_write_global_declarations): Output debug information for all
+	global type declarations before finalizing the compilation unit.
+	* gcc-interface/Make-lang.in (ada/utils.o): Add dependency.
+
 2011-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/utils.c (def_fn_type): Remove extra va_end.
@@ -20,15 +86,13 @@
 2011-05-21  Joseph Myers  <joseph@codesourcery.com>
 
 	PR ada/49097
-	* gcc-interface/Make-lang.in (gnatbind$(exeext)): Depend on
-	$(LIBDEPS).
+	* gcc-interface/Make-lang.in (gnatbind$(exeext)): Depend on $(LIBDEPS).
 
 2011-05-20  Joseph Myers  <joseph@codesourcery.com>
 
-	* gcc-interface/Make-lang.in (EXTRA_GNATBIND_OBJS): Remove
-	version.o.
-	* gcc-interface/Makefile.in (EXTRA_GNATTOOLS_OBJS): Use
-	libcommon.a instead of version.o.
+	* gcc-interface/Make-lang.in (EXTRA_GNATBIND_OBJS): Remove version.o.
+	* gcc-interface/Makefile.in (EXTRA_GNATTOOLS_OBJS): Use libcommon.a
+	instead of version.o.
 
 2011-05-18  Kai Tietz <ktietz@redhat.com>
 
@@ -212,8 +276,8 @@
 2011-04-04  Kai Tietz  <ktietz@redhat.com>
 
 	PR ada/47163
-	* s-oscons-tmplt.c (MSG_WAITALL): Define it for native windows
-	targets to flag value.
+	* s-oscons-tmplt.c (MSG_WAITALL): Define it for native windows targets
+	to flag value.
 
 2011-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -418,7 +482,7 @@
 2011-03-21  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/12171
-	* gcc-interface/utils.c (gnat_internal_attribute_table): Add new column
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Add column.
 
 2011-03-17  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -440,8 +504,8 @@
 
 2011-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* gnat_ugn.texi (Compiling Different Versions of Ada): Update
-	link to "Ada Issues".
+	* gnat_ugn.texi (Compiling Different Versions of Ada): Update link to
+	"Ada Issues".
 
 2011-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 

@@ -199,6 +199,7 @@ static const char * const optabs[] =
   "set_optab_handler (ffs_optab, $A, CODE_FOR_$(ffs$a2$))",
   "set_optab_handler (clz_optab, $A, CODE_FOR_$(clz$a2$))",
   "set_optab_handler (ctz_optab, $A, CODE_FOR_$(ctz$a2$))",
+  "set_optab_handler (clrsb_optab, $A, CODE_FOR_$(clrsb$a2$))",
   "set_optab_handler (popcount_optab, $A, CODE_FOR_$(popcount$a2$))",
   "set_optab_handler (parity_optab, $A, CODE_FOR_$(parity$a2$))",
   "set_optab_handler (mov_optab, $A, CODE_FOR_$(mov$a$))",

@@ -229,6 +229,8 @@ extern GTY(()) int darwin_ms_struct;
 #define LINK_SYSROOT_SPEC "%{isysroot*:-syslibroot %*}"
 #endif
 
+#define PIE_SPEC "%{fpie|pie|fPIE:}"
+
 /* Please keep the random linker options in alphabetical order (modulo
    'Z' and 'no' prefixes). Note that options taking arguments may appear
    multiple times on a command line with different arguments each time,
@@ -293,7 +295,7 @@ extern GTY(()) int darwin_ms_struct;
      %:version-compare(< 10.5 mmacosx-version-min= -multiply_defined) \
      %:version-compare(< 10.5 mmacosx-version-min= suppress)}} \
    %{Zmultiplydefinedunused*:-multiply_defined_unused %*} \
-   %{fpie:-pie} \
+   " PIE_SPEC " \
    %{prebind} %{noprebind} %{nofixprebinding} %{prebind_all_twolevel_modules} \
    %{read_only_relocs} \
    %{sectcreate*} %{sectorder*} %{seg1addr*} %{segprot*} \
@@ -922,43 +924,7 @@ void add_framework_path (char *);
 #define TARGET_ASM_OUTPUT_ANCHOR NULL
 #define DARWIN_SECTION_ANCHORS 0
 
-/* Attempt to turn on execute permission for the stack.  This may be
-    used by TARGET_TRAMPOLINE_INIT if the target needs it (that is,
-    if the target machine can change execute permissions on a page).
-
-    There is no way to query the execute permission of the stack, so
-    we always issue the mprotect() call.
-
-    Unfortunately it is not possible to make this namespace-clean.
-
-    Also note that no errors should be emitted by this code; it is
-    considered dangerous for library calls to send messages to
-    stdout/stderr.  */
-
-#define ENABLE_EXECUTE_STACK                                            \
-extern void __enable_execute_stack (void *);                            \
-void                                                                    \
-__enable_execute_stack (void *addr)                                     \
-{                                                                       \
-   extern int mprotect (void *, size_t, int);                           \
-   extern int getpagesize (void);					\
-   static int size;                                                     \
-   static long mask;                                                    \
-                                                                        \
-   char *page, *end;                                                    \
-                                                                        \
-   if (size == 0)                                                       \
-     {                                                                  \
-       size = getpagesize();						\
-       mask = ~((long) size - 1);                                       \
-     }                                                                  \
-                                                                        \
-   page = (char *) (((long) addr) & mask);                              \
-   end  = (char *) ((((long) (addr + (TARGET_64BIT ? 48 : 40))) & mask) + size); \
-                                                                        \
-   /* 7 == PROT_READ | PROT_WRITE | PROT_EXEC */                        \
-   (void) mprotect (page, end - page, 7);                               \
-}
+#define HAVE_ENABLE_EXECUTE_STACK
 
 /* For Apple KEXTs, we make the constructors return this to match gcc
    2.95.  */

@@ -39,12 +39,15 @@ proc libstdc++-dg-prune { system text } {
     # definitions, etc as these confuse dejagnu
     regsub -all "(^|\n)(\[^\n\]*: )?In ((static member |lambda )?function|member|method|(copy )?constructor|destructor|instantiation|program|subroutine|block-data)\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*(: )?At (top level|global scope):\[^\n\]*" $text "" text
-    regsub -all "(^|\n)\[^\n\]*:   (recursively )?instantiated from \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   (recursively )?required \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   . skipping \[0-9\]* instantiation contexts \[^\n\]*" $text "" text
     regsub -all "(^|\n)    inlined from \[^\n\]*" $text "" text
     # Why doesn't GCC need these to strip header context?
     regsub -all "(^|\n)In file included from \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[ \t\]*from \[^\n\]*" $text "" text
+
+    # Ignore informational notes.
+    regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text
 
     # Ignore errata warning from IA64 assembler.
     regsub -all "(^|\n)\[^\n\]*: Additional NOP may be necessary to workaround Itanium processor A/B step errata" $text "" text

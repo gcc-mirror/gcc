@@ -99,6 +99,12 @@
 (define_register_constraint "Y2" "TARGET_SSE2 ? SSE_REGS : NO_REGS"
  "@internal Any SSE register, when SSE2 is enabled.")
 
+(define_register_constraint "Y3" "TARGET_SSE3 ? SSE_REGS : NO_REGS"
+ "@internal Any SSE register, when SSE3 is enabled.")
+
+(define_register_constraint "Y4" "TARGET_SSE4_1 ? SSE_REGS : NO_REGS"
+ "@internal Any SSE register, when SSE4_1 is enabled.")
+
 (define_register_constraint "Yi"
  "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES ? SSE_REGS : NO_REGS"
  "@internal Any SSE register, when SSE2 and inter-unit moves are enabled.")

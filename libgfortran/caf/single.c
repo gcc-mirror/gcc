@@ -35,6 +35,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Note: For performance reasons -fcoarry=single should be used
    rather than this library.  */
 
+/* Global variables.  */
+caf_static_t *caf_static_list = NULL;
+
 
 void
 _gfortran_caf_init (int *argc __attribute__ ((unused)),
@@ -49,16 +52,32 @@ _gfortran_caf_init (int *argc __attribute__ ((unused)),
 void
 _gfortran_caf_finalize (void)
 {
+  while (caf_static_list != NULL)
+    {
+      free(caf_static_list->token[0]);
+      caf_static_list = caf_static_list->prev;
+    }
 }
 
 
 void *
-_gfortran_caf_register (ptrdiff_t size,
-			caf_register_t type __attribute__ ((unused)),
+_gfortran_caf_register (ptrdiff_t size, caf_register_t type,
 			void **token)
 {
-  *token = NULL;
-  return malloc (size);
+  void *local;
+
+  local = malloc (size);
+  token = malloc (sizeof (void*) * 1);
+  token[0] = local;
+
+  if (type == CAF_REGTYPE_COARRAY_STATIC)
+    {
+      caf_static_t *tmp = malloc (sizeof (caf_static_t));
+      tmp->prev  = caf_static_list;
+      tmp->token = token;
+      caf_static_list = tmp;
+    }
+  return local;
 }
 
 
@@ -69,16 +88,20 @@ _gfortran_caf_deregister (void **token __attribute__ ((unused)))
 }
 
 
-int
-_gfortran_caf_sync_all (char *errmsg __attribute__ ((unused)),
+void
+_gfortran_caf_sync_all (int *stat,
+			char *errmsg __attribute__ ((unused)),
 			int errmsg_len __attribute__ ((unused)))
 {
-  return 0;
+  if (stat)
+    *stat = 0;
 }
 
-int
+
+void
 _gfortran_caf_sync_images (int count __attribute__ ((unused)),
 			   int images[] __attribute__ ((unused)),
+			   int *stat,
 			   char *errmsg __attribute__ ((unused)),
 			   int errmsg_len __attribute__ ((unused)))
 {
@@ -94,7 +117,8 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
       }
 #endif
 
-  return 0;
+  if (stat)
+    *stat = 0;
 }
 
 

@@ -753,10 +753,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       shrink_to_fit()
       {
-	__try
-	  { reserve(0); }
-	__catch(...)
-	  { }
+	if (capacity() > size())
+	  {
+	    __try
+	      { reserve(0); }
+	    __catch(...)
+	      { }
+	  }
       }
 #endif
 

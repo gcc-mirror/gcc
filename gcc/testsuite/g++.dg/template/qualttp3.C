@@ -19,5 +19,5 @@ template <class T> struct C
 
 int main()
 {
-	C<A> c; // { dg-message "instantiated" }
+	C<A> c; // { dg-message "required" }
 }

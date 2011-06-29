@@ -24,7 +24,7 @@ class B {
 
 
 int main() {
-  B<char> objB; // { dg-message "instantiated" }
+  B<char> objB; // { dg-message "required" }
 
   return 0;
 }

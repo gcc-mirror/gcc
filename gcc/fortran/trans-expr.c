@@ -3269,6 +3269,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  else
 	    goto end_pointer_check;
 
+	  /*  In Fortran 2008 it's allowed to pass a NULL pointer/nonallocated
+	      allocatable to an optional dummy, cf. 12.5.2.12.  */
+	  if (fsym != NULL && fsym->attr.optional && !attr.proc_pointer
+	      && (gfc_option.allow_std & GFC_STD_F2008) != 0)
+	    goto end_pointer_check;
+
           if (attr.optional)
 	    {
               /* If the actual argument is an optional pointer/allocatable and
@@ -6149,8 +6155,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
 				 l_is_temp || init_flag,
-				 expr_is_variable (expr2) || scalar_to_array,
-				 dealloc);
+				 expr_is_variable (expr2) || scalar_to_array
+				 || expr2->expr_type == EXPR_ARRAY, dealloc);
   gfc_add_expr_to_block (&body, tmp);
 
   if (lss == gfc_ss_terminator)

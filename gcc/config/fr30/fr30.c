@@ -1,6 +1,6 @@
 /* FR30 specific functions.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2011 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -114,14 +114,14 @@ static struct fr30_frame_info 	current_frame_info;
 /* Zero structure to initialize current_frame_info.  */
 static struct fr30_frame_info 	zero_frame_info;
 
-static void fr30_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+static void fr30_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					 tree, int *, int);
 static bool fr30_must_pass_in_stack (enum machine_mode, const_tree);
-static int fr30_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int fr30_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				   tree, bool);
-static rtx fr30_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx fr30_function_arg (cumulative_args_t, enum machine_mode,
 			      const_tree, bool);
-static void fr30_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void fr30_function_arg_advance (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
 static bool fr30_frame_pointer_required (void);
 static rtx fr30_function_value (const_tree, const_tree, bool);
@@ -150,13 +150,6 @@ static int fr30_num_arg_regs (enum machine_mode, const_tree);
 #if UNITS_PER_WORD == 4
 #define WORD_ALIGN(SIZE) (((SIZE) + 3) & ~3)
 #endif
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options fr30_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -197,12 +190,6 @@ static const struct default_options fr30_option_optimization_table[] =
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE fr30_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT fr30_trampoline_init
-
-#undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
-
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE fr30_option_optimization_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -467,12 +454,14 @@ fr30_expand_epilogue (void)
    ARG_REGS_USED_SO_FAR has *not* been updated for the last named argument
    which has type TYPE and mode MODE, and we rely on this fact.  */
 void
-fr30_setup_incoming_varargs (CUMULATIVE_ARGS *arg_regs_used_so_far,
+fr30_setup_incoming_varargs (cumulative_args_t arg_regs_used_so_far_v,
 			     enum machine_mode mode,
 			     tree type ATTRIBUTE_UNUSED,
 			     int *pretend_size,
 			     int second_time ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *arg_regs_used_so_far
+    = get_cumulative_args (arg_regs_used_so_far_v);
   int size;
 
   /* All BLKmode values are passed by reference.  */
@@ -480,9 +469,10 @@ fr30_setup_incoming_varargs (CUMULATIVE_ARGS *arg_regs_used_so_far,
 
   /* ??? This run-time test as well as the code inside the if
      statement is probably unnecessary.  */
-  if (targetm.calls.strict_argument_naming (arg_regs_used_so_far))
+  if (targetm.calls.strict_argument_naming (arg_regs_used_so_far_v))
     /* If TARGET_STRICT_ARGUMENT_NAMING returns true, then the last named
        arg must not be treated as an anonymous arg.  */
+    /* ??? This is a pointer increment, which makes no sense.  */
     arg_regs_used_so_far += fr30_num_arg_regs (mode, type);
 
   size = FR30_NUM_ARG_REGS - (* arg_regs_used_so_far);
@@ -782,9 +772,11 @@ fr30_num_arg_regs (enum machine_mode mode, const_tree type)
    parameters to the function.  */
 
 static int
-fr30_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+fr30_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
 			tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   /* Unnamed arguments, i.e. those that are prototyped as ...
      are always passed on the stack.
      Also check here to see if all the argument registers are full.  */
@@ -804,9 +796,11 @@ fr30_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static rtx
-fr30_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+fr30_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		   const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (!named
       || fr30_must_pass_in_stack (mode, type)
       || *cum >= FR30_NUM_ARG_REGS)
@@ -824,10 +818,10 @@ fr30_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    the stack.  The compiler knows how to track the amount of stack space used
    for arguments without any special help.  */
 static void
-fr30_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+fr30_function_arg_advance (cumulative_args_t cum, enum machine_mode mode,
 			   const_tree type, bool named)
 {
-  *cum += named * fr30_num_arg_regs (mode, type);
+  *get_cumulative_args (cum) += named * fr30_num_arg_regs (mode, type);
 }
 
 /*}}}*/

@@ -43,4 +43,4 @@ void A<T>::B::func2(void)
     (void)F2<T*>::foo;
 }
 
-template class A<int>;	// { dg-message "instantiated" }
+template class A<int>;	// { dg-message "required" }

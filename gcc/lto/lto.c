@@ -501,6 +501,141 @@ lto_fixup_types (tree t)
     }
 }
 
+
+/* Return the resolution for the decl with index INDEX from DATA_IN. */
+
+static enum ld_plugin_symbol_resolution
+get_resolution (struct data_in *data_in, unsigned index)
+{
+  if (data_in->globals_resolution)
+    {
+      ld_plugin_symbol_resolution_t ret;
+      /* We can have references to not emitted functions in
+	 DECL_FUNCTION_PERSONALITY at least.  So we can and have
+	 to indeed return LDPR_UNKNOWN in some cases.   */
+      if (VEC_length (ld_plugin_symbol_resolution_t,
+		      data_in->globals_resolution) <= index)
+	return LDPR_UNKNOWN;
+      ret = VEC_index (ld_plugin_symbol_resolution_t,
+		       data_in->globals_resolution,
+		       index);
+      return ret;
+    }
+  else
+    /* Delay resolution finding until decl merging.  */
+    return LDPR_UNKNOWN;
+}
+
+
+/* Register DECL with the global symbol table and change its
+   name if necessary to avoid name clashes for static globals across
+   different files.  */
+
+static void
+lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
+{
+  tree context;
+
+  /* Variable has file scope, not local. Need to ensure static variables
+     between different files don't clash unexpectedly.  */
+  if (!TREE_PUBLIC (decl)
+      && !((context = decl_function_context (decl))
+	   && auto_var_in_fn_p (decl, context)))
+    {
+      /* ??? We normally pre-mangle names before we serialize them
+	 out.  Here, in lto1, we do not know the language, and
+	 thus cannot do the mangling again. Instead, we just
+	 append a suffix to the mangled name.  The resulting name,
+	 however, is not a properly-formed mangled name, and will
+	 confuse any attempt to unmangle it.  */
+      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      char *label;
+
+      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
+      rest_of_decl_compilation (decl, 1, 0);
+      VEC_safe_push (tree, gc, lto_global_var_decls, decl);
+    }
+
+  /* If this variable has already been declared, queue the
+     declaration for merging.  */
+  if (TREE_PUBLIC (decl))
+    {
+      unsigned ix;
+      if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
+	gcc_unreachable ();
+      lto_symtab_register_decl (decl, get_resolution (data_in, ix),
+				data_in->file_data);
+    }
+}
+
+
+/* Register DECL with the global symbol table and change its
+   name if necessary to avoid name clashes for static globals across
+   different files.  DATA_IN contains descriptors and tables for the
+   file being read.  */
+
+static void
+lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
+{
+  /* Need to ensure static entities between different files
+     don't clash unexpectedly.  */
+  if (!TREE_PUBLIC (decl))
+    {
+      /* We must not use the DECL_ASSEMBLER_NAME macro here, as it
+	 may set the assembler name where it was previously empty.  */
+      tree old_assembler_name = decl->decl_with_vis.assembler_name;
+
+      /* FIXME lto: We normally pre-mangle names before we serialize
+	 them out.  Here, in lto1, we do not know the language, and
+	 thus cannot do the mangling again. Instead, we just append a
+	 suffix to the mangled name.  The resulting name, however, is
+	 not a properly-formed mangled name, and will confuse any
+	 attempt to unmangle it.  */
+      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      char *label;
+
+      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
+
+      /* We may arrive here with the old assembler name not set
+	 if the function body is not needed, e.g., it has been
+	 inlined away and does not appear in the cgraph.  */
+      if (old_assembler_name)
+	{
+	  tree new_assembler_name = DECL_ASSEMBLER_NAME (decl);
+
+	  /* Make the original assembler name available for later use.
+	     We may have used it to indicate the section within its
+	     object file where the function body may be found.
+	     FIXME lto: Find a better way to maintain the function decl
+	     to body section mapping so we don't need this hack.  */
+	  lto_record_renamed_decl (data_in->file_data,
+				   IDENTIFIER_POINTER (old_assembler_name),
+				   IDENTIFIER_POINTER (new_assembler_name));
+
+	  /* Also register the reverse mapping so that we can find the
+	     new name given to an existing assembler name (used when
+	     restoring alias pairs in input_constructors_or_inits.  */
+	  lto_record_renamed_decl (data_in->file_data,
+				   IDENTIFIER_POINTER (new_assembler_name),
+				   IDENTIFIER_POINTER (old_assembler_name));
+	}
+    }
+
+  /* If this variable has already been declared, queue the
+     declaration for merging.  */
+  if (TREE_PUBLIC (decl) && !DECL_ABSTRACT (decl))
+    {
+      unsigned ix;
+      if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
+	gcc_unreachable ();
+      lto_symtab_register_decl (decl, get_resolution (data_in, ix),
+				data_in->file_data);
+    }
+}
+
+
 /* Given a streamer cache structure DATA_IN (holding a sequence of trees
    for one compilation unit) go over all trees starting at index FROM until the
    end of the sequence and replace fields of those trees, and the trees
@@ -513,20 +648,17 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
   unsigned len = VEC_length (tree, cache->nodes);
   unsigned i;
 
-  /* Go backwards because childs streamed for the first time come
+  /* Go backwards because children streamed for the first time come
      as part of their parents, and hence are created after them.  */
 
-  /* First register all types in the cache.
-     This makes sure to have the original structure in the type cycles
-     when registering them and computing hashes.  */
+  /* First register all the types in the cache.  This makes sure to
+     have the original structure in the type cycles when registering
+     them and computing hashes.  */
   for (i = len; i-- > from;)
     {
       tree t = VEC_index (tree, cache->nodes, i);
-      if (!t
-	  || !TYPE_P (t))
-	continue;
-
-      gimple_register_type (t);
+      if (t && TYPE_P (t))
+	gimple_register_type (t);
     }
 
   /* Second fixup all trees in the new cache entries.  */
@@ -648,22 +780,27 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	}
     }
 
-  /* Finally compute the canonical type of t.  From this point
-     there are no longer any types with TYPE_STRUCTURAL_EQUALITY_P
-     and its type-based alias problems.  This step requires the
-     TYPE_POINTER_TO lists being present, so make sure it is done
-     last.  */
+  /* Finally compute the canonical type of all TREE_TYPEs and register
+     VAR_DECL and FUNCTION_DECL nodes in the symbol table.
+     From this point there are no longer any types with
+     TYPE_STRUCTURAL_EQUALITY_P and its type-based alias problems.
+     This step requires the TYPE_POINTER_TO lists being present, so
+     make sure it is done last.  */
   for (i = len; i-- > from;)
     {
       tree t = VEC_index (tree, cache->nodes, i);
-      if (!t
-	  || !TYPE_P (t))
+      if (t == NULL_TREE)
 	continue;
 
-      if (!TYPE_CANONICAL (t))
+      if (TREE_CODE (t) == VAR_DECL)
+	lto_register_var_decl_in_symtab (data_in, t);
+      else if (TREE_CODE (t) == FUNCTION_DECL && !DECL_BUILT_IN (t))
+	lto_register_function_decl_in_symtab (data_in, t);
+      else if (TYPE_P (t) && !TYPE_CANONICAL (t))
 	TYPE_CANONICAL (t) = gimple_register_canonical_type (t);
     }
 }
+
 
 /* Read all the symbols from buffer DATA, using descriptors in DECL_DATA.
    RESOLUTIONS is the set of symbols picked by the linker (read from the
@@ -1182,7 +1319,7 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
   for (i = 0; ipa_ref_list_reference_iterate (refs, i, ref); i++)
     {
       if (ref->refered_type == IPA_REF_CGRAPH
-	  && DECL_COMDAT (ipa_ref_node (ref)->decl)
+	  && DECL_COMDAT (cgraph_function_node (ipa_ref_node (ref), NULL)->decl)
 	  && !cgraph_node_in_set_p (ipa_ref_node (ref), part->cgraph_set))
 	add_cgraph_node_to_partition (part, ipa_ref_node (ref));
       else
@@ -1193,20 +1330,21 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
     }
 }
 
-/* Add NODE to partition as well as the inline callees and referred comdats into partition PART. */
+/* Worker for add_cgraph_node_to_partition.  */
 
-static void
-add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
+static bool
+add_cgraph_node_to_partition_1 (struct cgraph_node *node, void *data)
 {
-  struct cgraph_edge *e;
-  cgraph_node_set_iterator csi;
+  ltrans_partition part = (ltrans_partition) data;
 
-  /* If NODE is already there, we have nothing to do.  */
-  csi = cgraph_node_set_find (part->cgraph_set, node);
-  if (!csi_end_p (csi))
-    return;
-
-  part->insns += inline_summary (node)->self_size;
+  /* non-COMDAT aliases of COMDAT functions needs to be output just once.  */
+  if (!DECL_COMDAT (node->decl)
+      && !node->global.inlined_to
+      && node->aux)
+    {
+      gcc_assert (node->thunk.thunk_p || node->alias);
+      return false;
+    }
 
   if (node->aux)
     {
@@ -1216,26 +1354,45 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
 		 cgraph_node_name (node), node->uid);
     }
   node->aux = (void *)((size_t)node->aux + 1);
+  cgraph_node_set_add (part->cgraph_set, node);
+  return false;
+}
+
+/* Add NODE to partition as well as the inline callees and referred comdats into partition PART. */
+
+static void
+add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
+{
+  struct cgraph_edge *e;
+  cgraph_node_set_iterator csi;
+  struct cgraph_node *n;
+
+  /* We always decide on functions, not associated thunks and aliases.  */
+  node = cgraph_function_node (node, NULL);
+
+  /* If NODE is already there, we have nothing to do.  */
+  csi = cgraph_node_set_find (part->cgraph_set, node);
+  if (!csi_end_p (csi))
+    return;
+
+  cgraph_for_node_thunks_and_aliases (node, add_cgraph_node_to_partition_1, part, true);
+
+  part->insns += inline_summary (node)->self_size;
+
 
   cgraph_node_set_add (part->cgraph_set, node);
 
-  /* Thunks always must go along with function they reffer to.  */
-  if (node->thunk.thunk_p)
-    add_cgraph_node_to_partition (part, node->callees->callee);
-  for (e = node->callers; e; e = e->next_caller)
-    if (e->caller->thunk.thunk_p)
-      add_cgraph_node_to_partition (part, e->caller);
-
   for (e = node->callees; e; e = e->next_callee)
-    if ((!e->inline_failed || DECL_COMDAT (e->callee->decl))
+    if ((!e->inline_failed
+	 || DECL_COMDAT (cgraph_function_node (e->callee, NULL)->decl))
 	&& !cgraph_node_in_set_p (e->callee, part->cgraph_set))
       add_cgraph_node_to_partition (part, e->callee);
 
   add_references_to_partition (part, &node->ref_list);
 
-  if (node->same_comdat_group
-      && !cgraph_node_in_set_p (node->same_comdat_group, part->cgraph_set))
-    add_cgraph_node_to_partition (part, node->same_comdat_group);
+  if (node->same_comdat_group)
+    for (n = node->same_comdat_group; n != node; n = n->same_comdat_group)
+      add_cgraph_node_to_partition (part, n);
 }
 
 /* Add VNODE to partition as well as comdat references partition PART. */
@@ -1359,11 +1516,11 @@ lto_1_to_1_map (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
-      if (!partition_cgraph_node_p (node))
+      if (!partition_cgraph_node_p (node)
+	  || node->aux)
 	continue;
 
       file_data = node->local.lto_file_data;
-      gcc_assert (!node->same_body_alias);
 
       if (file_data)
 	{
@@ -1389,13 +1546,13 @@ lto_1_to_1_map (void)
 	  npartitions++;
 	}
 
-      if (!node->aux)
-        add_cgraph_node_to_partition (partition, node);
+      add_cgraph_node_to_partition (partition, node);
     }
 
   for (vnode = varpool_nodes; vnode; vnode = vnode->next)
     {
-      if (!partition_varpool_node_p (vnode))
+      if (!partition_varpool_node_p (vnode)
+	  || vnode->aux)
 	continue;
       file_data = vnode->lto_file_data;
       slot = pointer_map_contains (pmap, file_data);
@@ -1409,8 +1566,7 @@ lto_1_to_1_map (void)
 	  npartitions++;
 	}
 
-      if (!vnode->aux)
-        add_varpool_node_to_partition (partition, vnode);
+      add_varpool_node_to_partition (partition, vnode);
     }
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
@@ -1519,8 +1675,9 @@ lto_balanced_map (void)
 
   for (i = 0; i < n_nodes; i++)
     {
-      if (!order[i]->aux)
-        add_cgraph_node_to_partition (partition, order[i]);
+      if (order[i]->aux)
+	continue;
+      add_cgraph_node_to_partition (partition, order[i]);
       total_size -= inline_summary (order[i])->size;
 
       /* Once we added a new node to the partition, we also want to add
@@ -1700,6 +1857,8 @@ lto_balanced_map (void)
 	    }
 	  i = best_i;
  	  /* When we are finished, avoid creating empty partition.  */
+	  while (i < n_nodes - 1 && order[i + 1]->aux)
+	    i++;
 	  if (i == n_nodes - 1)
 	    break;
 	  partition = new_partition ("");
@@ -1763,17 +1922,6 @@ promote_fn (struct cgraph_node *node)
   TREE_PUBLIC (node->decl) = 1;
   DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (node->decl) = true;
-  if (node->same_body)
-    {
-      struct cgraph_node *alias;
-      for (alias = node->same_body;
-	   alias; alias = alias->next)
-	{
-	  TREE_PUBLIC (alias->decl) = 1;
-	  DECL_VISIBILITY (alias->decl) = VISIBILITY_HIDDEN;
-	  DECL_VISIBILITY_SPECIFIED (alias->decl) = true;
-	}
-    }
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file,
 	     "Promoting function as hidden: %s/%i\n",
@@ -1807,8 +1955,8 @@ lto_promote_cross_file_statics (void)
       set = part->cgraph_set;
       vset = part->varpool_set;
 
-      /* If node has either address taken (and we have no clue from where)
-	 or it is called from other partition, it needs to be globalized.  */
+      /* If node called or referred to from other partition, it needs to be
+	 globalized.  */
       for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
 	{
 	  struct cgraph_node *node = csi_node (csi);
@@ -2591,6 +2739,21 @@ lto_process_name (void)
     setproctitle ("lto1-ltrans");
 }
 
+
+/* Initialize the LTO front end.  */
+
+static void
+lto_init (void)
+{
+  lto_process_name ();
+  lto_streamer_hooks_init ();
+  lto_reader_init ();
+  memset (&lto_stats, 0, sizeof (lto_stats));
+  bitmap_obstack_initialize (NULL);
+  gimple_register_cfg_hooks ();
+}
+
+
 /* Main entry point for the GIMPLE front end.  This front end has
    three main personalities:
 
@@ -2614,9 +2777,8 @@ lto_process_name (void)
 void
 lto_main (void)
 {
-  lto_process_name ();
-
-  lto_init_reader ();
+  /* Initialize the LTO front end.  */
+  lto_init ();
 
   /* Read all the symbols and call graph from all the files in the
      command line.  */

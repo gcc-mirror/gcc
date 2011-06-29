@@ -1012,6 +1012,10 @@ fdump-noaddr
 Common Report Var(flag_dump_noaddr)
 Suppress output of addresses in debugging dumps
 
+fdump-passes
+Common Var(flag_dump_passes) Init(0)
+Dump optimization passes
+
 fdump-unnumbered
 Common Report Var(flag_dump_unnumbered)
 Suppress output of instruction numbers, line number notes and addresses in debugging dumps
@@ -1233,7 +1237,7 @@ Common Report Var(flag_inline_functions) Optimization
 Integrate simple functions into their callers
 
 finline-functions-called-once
-Common Report Var(flag_inline_functions_called_once) Init(1) Optimization
+Common Report Var(flag_inline_functions_called_once) Optimization
 Integrate functions called once into their callers
 
 finline-limit-

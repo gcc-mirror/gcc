@@ -1,3 +1,15 @@
+2011-06-08  Douglas B Rupp  <rupp@gnat.com>
+
+	* configure.ac (AC_USE_SYSTEM_EXTENSIONS): Add.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2011-06-06  Peter O'Gorman  <pogma@thewrittenword.com>
+
+	* inclhack.def (aix_net_if_arp): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/net/if_arp.h [AIX_NET_IF_ARP_CHECK]: New test.
+
 2011-05-17  Tristan Gingold  <gingold@adacore.com>
 
 	* inclhack.def (solaris_complex_cxx): Fix syntax.

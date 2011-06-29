@@ -87,8 +87,6 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 	  if (lang_hooks.callgraph.analyze_expr)
 	    lang_hooks.callgraph.analyze_expr (&decl, walk_subtrees);
 	  varpool_mark_needed_node (vnode);
-	  if (vnode->alias && vnode->extra_name)
-	    vnode = vnode->extra_name;
 	  ipa_record_reference (NULL, ctx->varpool_node,
 				NULL, vnode,
 				IPA_REF_ADDR, NULL);
@@ -149,9 +147,13 @@ record_eh_tables (struct cgraph_node *node, struct function *fun)
   eh_region i;
 
   if (DECL_FUNCTION_PERSONALITY (node->decl))
-    ipa_record_reference (node, NULL,
-	       cgraph_get_create_node (DECL_FUNCTION_PERSONALITY (node->decl)),
-	       NULL, IPA_REF_ADDR, NULL);
+    {
+      struct cgraph_node *per_node;
+
+      per_node = cgraph_get_create_node (DECL_FUNCTION_PERSONALITY (node->decl));
+      ipa_record_reference (node, NULL, per_node, NULL, IPA_REF_ADDR, NULL);
+      cgraph_mark_address_taken_node (per_node);
+    }
 
   i = fun->eh->region_tree;
   if (!i)
@@ -257,8 +259,6 @@ mark_address (gimple stmt, tree addr, void *data)
       if (lang_hooks.callgraph.analyze_expr)
 	lang_hooks.callgraph.analyze_expr (&addr, &walk_subtrees);
       varpool_mark_needed_node (vnode);
-      if (vnode->alias && vnode->extra_name)
-	vnode = vnode->extra_name;
       ipa_record_reference ((struct cgraph_node *)data, NULL,
 			    NULL, vnode,
 			    IPA_REF_ADDR, stmt);
@@ -292,8 +292,6 @@ mark_load (gimple stmt, tree t, void *data)
       if (lang_hooks.callgraph.analyze_expr)
 	lang_hooks.callgraph.analyze_expr (&t, &walk_subtrees);
       varpool_mark_needed_node (vnode);
-      if (vnode->alias && vnode->extra_name)
-	vnode = vnode->extra_name;
       ipa_record_reference ((struct cgraph_node *)data, NULL,
 			    NULL, vnode,
 			    IPA_REF_LOAD, stmt);
@@ -316,8 +314,6 @@ mark_store (gimple stmt, tree t, void *data)
       if (lang_hooks.callgraph.analyze_expr)
 	lang_hooks.callgraph.analyze_expr (&t, &walk_subtrees);
       varpool_mark_needed_node (vnode);
-      if (vnode->alias && vnode->extra_name)
-	vnode = vnode->extra_name;
       ipa_record_reference ((struct cgraph_node *)data, NULL,
 			    NULL, vnode,
 			    IPA_REF_STORE, stmt);

@@ -30,7 +30,7 @@
 #include "cpuid.h"
 #endif
 
-#if !defined __x86_64 && defined __sun__ && defined __svr4__
+#if !defined __x86_64__ && defined __sun__ && defined __svr4__
 #include <signal.h>
 #include <ucontext.h>
 
@@ -43,9 +43,9 @@ sigill_hdlr (int sig __attribute((unused)),
 {
   sigill_caught = 1;
   /* Set PC to the instruction after the faulting one to skip over it,
-     otherwise we enter an infinite loop.  4 is the size of the stmxcsr
+     otherwise we enter an infinite loop.  3 is the size of the movaps
      instruction.  */
-  ucp->uc_mcontext.gregs[EIP] += 4;
+  ucp->uc_mcontext.gregs[EIP] += 3;
   setcontext (ucp);
 }
 #endif
@@ -83,7 +83,7 @@ set_fast_math (void)
 
       /* We need a single SSE instruction here so the handler can safely skip
 	 over it.  */
-      __asm__ volatile ("movss %xmm2,%xmm1");
+      __asm__ volatile ("movaps %xmm0,%xmm0");
 
       sigaction (SIGILL, &oact, NULL);
 

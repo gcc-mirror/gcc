@@ -113,6 +113,8 @@ gfc_free_statement (gfc_code *p)
     case EXEC_SYNC_ALL:
     case EXEC_SYNC_IMAGES:
     case EXEC_SYNC_MEMORY:
+    case EXEC_LOCK:
+    case EXEC_UNLOCK:
       break;
 
     case EXEC_BLOCK:

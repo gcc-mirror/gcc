@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -93,7 +93,7 @@ ipa_init_func_list (void)
 
   wl = NULL;
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
+    if (node->analyzed && !node->alias)
       {
 	struct ipa_node_params *info = IPA_NODE_REF (node);
 	/* Unreachable nodes should have been eliminated before ipcp and
@@ -1096,6 +1096,7 @@ ipa_compute_jump_functions (struct cgraph_node *node,
 
   for (cs = node->callees; cs; cs = cs->next_callee)
     {
+      struct cgraph_node *callee = cgraph_function_or_thunk_node (cs->callee, NULL);
       /* We do not need to bother analyzing calls to unknown
 	 functions unless they may become known during lto/whopr.  */
       if (!cs->callee->analyzed && !flag_lto)
@@ -1103,11 +1104,11 @@ ipa_compute_jump_functions (struct cgraph_node *node,
       ipa_count_arguments (cs);
       /* If the descriptor of the callee is not initialized yet, we have to do
 	 it now. */
-      if (cs->callee->analyzed)
-	ipa_initialize_node_params (cs->callee);
+      if (callee->analyzed)
+	ipa_initialize_node_params (callee);
       if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
-	  != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
-	ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
+	  != ipa_get_param_count (IPA_NODE_REF (callee)))
+	ipa_set_called_with_variable_arg (IPA_NODE_REF (callee));
       ipa_compute_jump_functions_for_edge (parms_info, cs);
     }
 
@@ -1346,7 +1347,8 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
   if (!branch || gimple_code (branch) != GIMPLE_COND)
     return;
 
-  if (gimple_cond_code (branch) != NE_EXPR
+  if ((gimple_cond_code (branch) != NE_EXPR
+       && gimple_cond_code (branch) != EQ_EXPR)
       || !integer_zerop (gimple_cond_rhs (branch)))
     return;
 
@@ -1718,6 +1720,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target, tree delta)
 	  fprintf (dump_file, "\n");
 	}
     }
+  callee = cgraph_function_or_thunk_node (callee, NULL);
 
   if (ipa_get_cs_argument_count (IPA_EDGE_REF (ie))
       != ipa_get_param_count (IPA_NODE_REF (callee)))
@@ -1771,7 +1774,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
   type = ie->indirect_info->otr_type;
   binfo = get_binfo_at_offset (binfo, ie->indirect_info->anc_offset, type);
   if (binfo)
-    target = gimple_get_virt_method_for_binfo (token, binfo, &delta, true);
+    target = gimple_get_virt_method_for_binfo (token, binfo, &delta);
   else
     return NULL;
 
@@ -2390,6 +2393,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 			   ipa_parm_adjustment_vec adjustments)
 {
   VEC(tree, heap) *vargs;
+  VEC(tree, gc) **debug_args = NULL;
   gimple new_stmt;
   gimple_stmt_iterator gsi;
   tree callee_decl;
@@ -2397,6 +2401,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 
   len = VEC_length (ipa_parm_adjustment_t, adjustments);
   vargs = VEC_alloc (tree, heap, len);
+  callee_decl = !cs ? gimple_call_fndecl (stmt) : cs->callee->decl;
 
   gsi = gsi_for_stmt (stmt);
   for (i = 0; i < len; i++)
@@ -2487,6 +2492,42 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 					   NULL, true, GSI_SAME_STMT);
 	  VEC_quick_push (tree, vargs, expr);
 	}
+      if (!adj->copy_param && MAY_HAVE_DEBUG_STMTS)
+	{
+	  unsigned int ix;
+	  tree ddecl = NULL_TREE, origin = DECL_ORIGIN (adj->base), arg;
+	  gimple def_temp;
+
+	  arg = gimple_call_arg (stmt, adj->base_index);
+	  if (!useless_type_conversion_p (TREE_TYPE (origin), TREE_TYPE (arg)))
+	    {
+	      if (!fold_convertible_p (TREE_TYPE (origin), arg))
+		continue;
+	      arg = fold_convert_loc (gimple_location (stmt),
+				      TREE_TYPE (origin), arg);
+	    }
+	  if (debug_args == NULL)
+	    debug_args = decl_debug_args_insert (callee_decl);
+	  for (ix = 0; VEC_iterate (tree, *debug_args, ix, ddecl); ix += 2)
+	    if (ddecl == origin)
+	      {
+		ddecl = VEC_index (tree, *debug_args, ix + 1);
+		break;
+	      }
+	  if (ddecl == NULL)
+	    {
+	      ddecl = make_node (DEBUG_EXPR_DECL);
+	      DECL_ARTIFICIAL (ddecl) = 1;
+	      TREE_TYPE (ddecl) = TREE_TYPE (origin);
+	      DECL_MODE (ddecl) = DECL_MODE (origin);
+
+	      VEC_safe_push (tree, gc, *debug_args, origin);
+	      VEC_safe_push (tree, gc, *debug_args, ddecl);
+	    }
+	  def_temp = gimple_build_debug_bind (ddecl, unshare_expr (arg),
+					      stmt);
+	  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
+	}
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2495,7 +2536,6 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
       print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
     }
 
-  callee_decl = !cs ? gimple_call_fndecl (stmt) : cs->callee->decl;
   new_stmt = gimple_build_call_vec (callee_decl, vargs);
   VEC_free (tree, heap, vargs);
   if (gimple_call_lhs (stmt))
@@ -2814,7 +2854,6 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   lto_output_uleb128_stream (ob->main_stream, node_ref);
 
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, info->called_with_var_arguments, 1);
   gcc_assert (info->uses_analysis_done
 	      || ipa_get_param_count (info) == 0);
   gcc_assert (!info->node_enqueued);
@@ -2832,7 +2871,15 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
 	ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
-    ipa_write_indirect_edge_info (ob, e);
+    {
+      struct ipa_edge_args *args = IPA_EDGE_REF (e);
+
+      lto_output_uleb128_stream (ob->main_stream,
+				 ipa_get_cs_argument_count (args));
+      for (j = 0; j < ipa_get_cs_argument_count (args); j++)
+	ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
+      ipa_write_indirect_edge_info (ob, e);
+    }
 }
 
 /* Stream in NODE info from IB.  */
@@ -2849,7 +2896,6 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   ipa_initialize_node_params (node);
 
   bp = lto_input_bitpack (ib);
-  info->called_with_var_arguments = bp_unpack_value (&bp, 1);
   if (ipa_get_param_count (info) != 0)
     info->uses_analysis_done = true;
   info->node_enqueued = false;
@@ -2870,7 +2916,20 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
 	ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), data_in);
     }
   for (e = node->indirect_calls; e; e = e->next_callee)
-    ipa_read_indirect_edge_info (ib, data_in, e);
+    {
+      struct ipa_edge_args *args = IPA_EDGE_REF (e);
+      int count = lto_input_uleb128 (ib);
+
+      ipa_set_cs_argument_count (args, count);
+      if (count)
+	{
+          args->jump_functions = ggc_alloc_cleared_vec_ipa_jump_func
+	    (ipa_get_cs_argument_count (args));
+          for (k = 0; k < ipa_get_cs_argument_count (args); k++)
+	    ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), data_in);
+	}
+      ipa_read_indirect_edge_info (ib, data_in, e);
+    }
 }
 
 /* Write jump functions for nodes in SET.  */
@@ -2879,12 +2938,15 @@ void
 ipa_prop_write_jump_functions (cgraph_node_set set)
 {
   struct cgraph_node *node;
-  struct output_block *ob = create_output_block (LTO_section_jump_functions);
+  struct output_block *ob;
   unsigned int count = 0;
   cgraph_node_set_iterator csi;
 
-  ob->cgraph_node = NULL;
+  if (!ipa_node_params_vector)
+    return;
 
+  ob = create_output_block (LTO_section_jump_functions);
+  ob->cgraph_node = NULL;
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
@@ -2993,9 +3055,12 @@ ipa_update_after_lto_read (void)
     if (node->analyzed)
       for (cs = node->callees; cs; cs = cs->next_callee)
 	{
+	  struct cgraph_node *callee;
+
+	  callee = cgraph_function_or_thunk_node (cs->callee, NULL);
 	  if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
-	      != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
-	    ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
+	      != ipa_get_param_count (IPA_NODE_REF (callee)))
+	    ipa_set_called_with_variable_arg (IPA_NODE_REF (callee));
 	}
 }
 

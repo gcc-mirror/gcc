@@ -486,6 +486,35 @@ optimize_binop_array_assignment (gfc_code *c, gfc_expr **rhs, bool seen_op)
   return false;
 }
 
+/* Remove unneeded TRIMs at the end of expressions.  */
+
+static bool
+remove_trim (gfc_expr *rhs)
+{
+  bool ret;
+
+  ret = false;
+
+  /* Check for a // b // trim(c).  Looping is probably not
+     necessary because the parser usually generates
+     (// (// a b ) trim(c) ) , but better safe than sorry.  */
+
+  while (rhs->expr_type == EXPR_OP
+	 && rhs->value.op.op == INTRINSIC_CONCAT)
+    rhs = rhs->value.op.op2;
+
+  while (rhs->expr_type == EXPR_FUNCTION && rhs->value.function.isym
+	 && rhs->value.function.isym->id == GFC_ISYM_TRIM)
+    {
+      strip_function_call (rhs);
+      /* Recursive call to catch silly stuff like trim ( a // trim(b)).  */
+      remove_trim (rhs);
+      ret = true;
+    }
+
+  return ret;
+}
+
 /* Optimizations for an assignment.  */
 
 static void
@@ -499,16 +528,7 @@ optimize_assignment (gfc_code * c)
   /* Optimize away a = trim(b), where a is a character variable.  */
 
   if (lhs->ts.type == BT_CHARACTER)
-    {
-      if (rhs->expr_type == EXPR_FUNCTION &&
-	  rhs->value.function.isym &&
-	  rhs->value.function.isym->id == GFC_ISYM_TRIM)
-	{
-	  strip_function_call (rhs);
-	  optimize_assignment (c);
-	  return;
-	}
-    }
+    remove_trim (rhs);
 
   if (lhs->rank > 0 && gfc_check_dependency (lhs, rhs, true) == 0)
     optimize_binop_array_assignment (c, &rhs, false);
@@ -631,36 +651,17 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 
   /* Strip off unneeded TRIM calls from string comparisons.  */
 
-  change = false;
+  change = remove_trim (op1);
 
-  if (op1->expr_type == EXPR_FUNCTION 
-      && op1->value.function.isym
-      && op1->value.function.isym->id == GFC_ISYM_TRIM)
-    {
-      strip_function_call (op1);
-      change = true;
-    }
-
-  if (op2->expr_type == EXPR_FUNCTION 
-      && op2->value.function.isym
-      && op2->value.function.isym->id == GFC_ISYM_TRIM)
-    {
-      strip_function_call (op2);
-      change = true;
-    }
-
-  if (change)
-    {
-      optimize_comparison (e, op);
-      return true;
-    }
+  if (remove_trim (op2))
+    change = true;
 
   /* An expression of type EXPR_CONSTANT is only valid for scalars.  */
   /* TODO: A scalar constant may be acceptable in some cases (the scalarizer
      handles them well). However, there are also cases that need a non-scalar
      argument. For example the any intrinsic. See PR 45380.  */
   if (e->rank > 0)
-    return false;
+    return change;
 
   /* Don't compare REAL or COMPLEX expressions when honoring NaNs.  */
 
@@ -690,7 +691,7 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 			&& op2_left->expr_type == EXPR_CONSTANT
 			&& op1_left->value.character.length
 			   != op2_left->value.character.length)
-		    return false;
+		    return change;
 		  else
 		    {
 		      free (op1_left);
@@ -779,7 +780,7 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 	}
     }
 
-  return false;
+  return change;
 }
 
 /* Optimize a trim function by replacing it with an equivalent substring
@@ -1190,6 +1191,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	  WALK_SUBEXPR (co->expr1);
 	  WALK_SUBEXPR (co->expr2);
 	  WALK_SUBEXPR (co->expr3);
+	  WALK_SUBEXPR (co->expr4);
 	  for (b = co->block; b; b = b->block)
 	    {
 	      WALK_SUBEXPR (b->expr1);

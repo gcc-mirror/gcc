@@ -5,16 +5,16 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
-typedef Object ObjectTypedef1;
+typedef TestsuiteObject ObjectTypedef1;
 typedef ObjectTypedef1 ObjectTypedef2;
 @compatibility_alias ObjectAlias1 ObjectTypedef2;
 @compatibility_alias ObjectAlias2 ObjectAlias1;
 typedef ObjectAlias2 ObjectTypedef3;
 
 void foo(void) {
-  id obj = [Object new];
+  id obj = [TestsuiteObject new];
   obj = [ObjectTypedef1 new];
   obj = [ObjectTypedef2 new];
   obj = [ObjectTypedef3 new];
@@ -23,7 +23,7 @@ void foo(void) {
 }
 
 /* { dg-final { scan-assembler "_OBJC_ClassRefs_0"  { target { *-*-darwin* && { ! lp64 } } } } } */
-/* { dg-final { scan-assembler "_OBJC_ClassRef_Object"  { target { *-*-darwin* && { lp64 } } } } } */
+/* { dg-final { scan-assembler "_OBJC_ClassRef_TestsuiteObject"  { target { *-*-darwin* && { lp64 } } } } } */
 /* { dg-final { scan-assembler-not "_OBJC_ClassRefs_1" { target { *-*-darwin* && { ! lp64 } } } } } */
 /* { dg-final { scan-assembler-not "_OBJC_ClassRef_ObjectTypedef" { target { *-*-darwin* && { lp64 } } } } } */
 /* { dg-final { scan-assembler-not "_OBJC_ClassRef_ObjectAlias" { target { *-*-darwin* && { lp64 } } } } } */

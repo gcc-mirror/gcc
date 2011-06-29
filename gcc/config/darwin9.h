@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 2006, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Apple Inc.
 
 This file is part of GCC.
@@ -35,8 +35,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Tell collect2 to run dsymutil for us as necessary.  */
 #define COLLECT_RUN_DSYMUTIL 1
 
-/* libSystem contains unwind information for signal frames.  */
-#define DARWIN_LIBSYSTEM_HAS_UNWIND
+#undef PIE_SPEC
+#define PIE_SPEC \
+  "%{fpie|pie|fPIE: \
+     %{mdynamic-no-pic: %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
+      :-pie}}"
 
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\

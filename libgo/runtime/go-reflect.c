@@ -57,7 +57,7 @@ extern const struct __go_type_descriptor ptr_struct_descriptor
 const struct __go_type_descriptor *
 get_descriptor (int code)
 {
-  switch (code)
+  switch (code & GO_CODE_MASK)
     {
     case GO_BOOL:
       return &ptr_bool_descriptor;

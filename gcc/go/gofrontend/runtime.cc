@@ -64,6 +64,8 @@ enum Runtime_function_type
   RFT_FUNC_PTR,
   // Pointer to Go type descriptor.
   RFT_TYPE,
+  // Pointer to map descriptor.
+  RFT_MAPDESCRIPTOR,
 
   NUMBER_OF_RUNTIME_FUNCTION_TYPES
 };
@@ -175,6 +177,10 @@ runtime_function_type(Runtime_function_type bft)
 	case RFT_TYPE:
 	  t = Type::make_type_descriptor_ptr_type();
 	  break;
+
+	case RFT_MAPDESCRIPTOR:
+	  t = Type::make_pointer_type(Map_type::make_map_descriptor_type());
+	  break;
 	}
 
       runtime_function_types[bft] = t;
@@ -224,6 +230,11 @@ convert_to_runtime_function_type(Runtime_function_type bft, Expression* e,
 
     case RFT_TYPE:
       go_assert(e->type() == Type::make_type_descriptor_ptr_type());
+      return e;
+
+    case RFT_MAPDESCRIPTOR:
+      go_assert(e->type()->points_to()
+		== Map_type::make_map_descriptor_type());
       return e;
     }
 }

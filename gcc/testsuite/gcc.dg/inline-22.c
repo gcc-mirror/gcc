@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-funit-at-a-time" } */
+/* { dg-options "-funit-at-a-time -Wno-attributes" } */
 /* Verify we can inline without a complete prototype and with promoted
    arguments.  See also PR32492.  */
 __attribute__((always_inline)) void f1() {}

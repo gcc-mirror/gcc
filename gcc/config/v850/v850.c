@@ -50,14 +50,6 @@
 
 static void v850_print_operand_address (FILE *, rtx);
 
-/* Information about the various small memory areas.  */
-static const int small_memory_physical_max[(int) SMALL_MEMORY_max] =
-{
-  256,
-  65536,
-  32768,
-};
-
 /* Names of the various data areas used on the v850.  */
 tree GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
 tree GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
@@ -81,89 +73,11 @@ static GTY(()) section * tdata_section;
 static GTY(()) section * zdata_section;
 static GTY(()) section * zbss_section;
 
-/* Set the maximum size of small memory area TYPE to the value given
-   by SIZE in structure OPTS (option text OPT passed at location LOC).  */
-
-static void
-v850_handle_memory_option (enum small_memory_type type,
-			   struct gcc_options *opts, const char *opt,
-			   int size, location_t loc)
-{
-  if (size > small_memory_physical_max[type])
-    error_at (loc, "value passed in %qs is too large", opt);
-  else
-    opts->x_small_memory_max[type] = size;
-}
-
-/* Implement TARGET_HANDLE_OPTION.  */
-
-static bool
-v850_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
-		    const struct cl_decoded_option *decoded,
-		    location_t loc)
-{
-  size_t code = decoded->opt_index;
-  int value = decoded->value;
-
-  switch (code)
-    {
-    case OPT_mspace:
-      opts->x_target_flags |= MASK_EP | MASK_PROLOG_FUNCTION;
-      return true;
-
-    case OPT_mv850:
-      opts->x_target_flags &= ~(MASK_CPU ^ MASK_V850);
-      return true;
-
-    case OPT_mv850e:
-    case OPT_mv850e1:
-      opts->x_target_flags &= ~(MASK_CPU ^ MASK_V850E);
-      return true;
-
-    case OPT_mtda_:
-      v850_handle_memory_option (SMALL_MEMORY_TDA, opts,
-				 decoded->orig_option_with_args_text,
-				 value, loc);
-      return true;
-
-    case OPT_msda_:
-      v850_handle_memory_option (SMALL_MEMORY_SDA, opts,
-				 decoded->orig_option_with_args_text,
-				 value, loc);
-      return true;
-
-    case OPT_mzda_:
-      v850_handle_memory_option (SMALL_MEMORY_ZDA, opts,
-				 decoded->orig_option_with_args_text,
-				 value, loc);
-      return true;
-
-    default:
-      return true;
-    }
-}
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-
-static const struct default_options v850_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    /* Note - we no longer enable MASK_EP when optimizing.  This is
-       because of a hardware bug which stops the SLD and SST instructions
-       from correctly detecting some hazards.  If the user is sure that
-       their hardware is fixed or that their program will not encounter
-       the conditions that trigger the bug then they can enable -mep by
-       hand.  */
-    { OPT_LEVELS_1_PLUS, OPT_mprolog_function, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 /* Handle the TARGET_PASS_BY_REFERENCE target hook.
    Specify whether to pass the argument by reference.  */
 
 static bool
-v850_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+v850_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
@@ -180,7 +94,7 @@ v850_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 /* Implementing the Varargs Macros.  */
 
 static bool
-v850_strict_argument_naming (CUMULATIVE_ARGS * ca ATTRIBUTE_UNUSED)
+v850_strict_argument_naming (cumulative_args_t ca ATTRIBUTE_UNUSED)
 {
   return !TARGET_GHS ? true : false;
 }
@@ -190,9 +104,10 @@ v850_strict_argument_naming (CUMULATIVE_ARGS * ca ATTRIBUTE_UNUSED)
    is NULL_RTX, the argument will be pushed.  */
 
 static rtx
-v850_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+v850_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		   const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   rtx result = NULL_RTX;
   int size, align;
 
@@ -251,9 +166,10 @@ v850_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
 /* Return the number of bytes which must be put into registers
    for values which are part in registers and part in memory.  */
 static int
-v850_arg_partial_bytes (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+v850_arg_partial_bytes (cumulative_args_t cum_v, enum machine_mode mode,
                         tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int size, align;
 
   if (TARGET_GHS && !named)
@@ -292,9 +208,11 @@ v850_arg_partial_bytes (CUMULATIVE_ARGS * cum, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be available.)  */
 
 static void
-v850_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+v850_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   cum->nbytes += (((type && int_size_in_bytes (type) > 8
 		    ? GET_MODE_SIZE (Pmode)
 		    : (mode != BLKmode
@@ -3050,13 +2968,13 @@ v850_function_value (const_tree valtype,
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-v850_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
+v850_setup_incoming_varargs (cumulative_args_t ca,
 			     enum machine_mode mode ATTRIBUTE_UNUSED,
 			     tree type ATTRIBUTE_UNUSED,
 			     int *pretend_arg_size ATTRIBUTE_UNUSED,
 			     int second_time ATTRIBUTE_UNUSED)
 {
-  ca->anonymous_args = (!TARGET_GHS ? 1 : 0);
+  get_cumulative_args (ca)->anonymous_args = (!TARGET_GHS ? 1 : 0);
 }
 
 /* Worker function for TARGET_CAN_ELIMINATE.  */
@@ -3130,6 +3048,25 @@ v850_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	       && !CONST_OK_FOR_K (INTVAL (XEXP (XEXP (x, 0), 1)))));
 }
+
+static int
+v850_memory_move_cost (enum machine_mode mode,
+		       reg_class_t reg_class ATTRIBUTE_UNUSED,
+		       bool in)
+{
+  switch (GET_MODE_SIZE (mode))
+    {
+    case 0:
+      return in ? 24 : 8;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+      return in ? 6 : 2;
+    default:
+      return (GET_MODE_SIZE (mode) / 2) * (in ? 3 : 1);
+    }
+}
 
 /* V850 specific attributes.  */
 
@@ -3151,6 +3088,10 @@ static const struct attribute_spec v850_attribute_table[] =
 };
 
 /* Initialize the GCC target structure.  */
+
+#undef  TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST v850_memory_move_cost
+
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 
@@ -3183,11 +3124,6 @@ static const struct attribute_spec v850_attribute_table[] =
 
 #undef  TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
-
-#undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (MASK_DEFAULT | MASK_APP_REGS)
-#undef  TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION v850_handle_option
 
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS v850_rtx_costs
@@ -3243,9 +3179,6 @@ static const struct attribute_spec v850_attribute_table[] =
 
 #undef  TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING v850_strict_argument_naming
-
-#undef  TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE v850_option_optimization_table
 
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P v850_legitimate_constant_p

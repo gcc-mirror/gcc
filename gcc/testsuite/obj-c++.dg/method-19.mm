@@ -4,12 +4,8 @@
 /* Author: Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
-#include "../objc-obj-c++-shared/next-mapping.h"
 #include <objc/objc.h>
-
-#ifndef __NEXT_RUNTIME__
-#include <objc/objc-api.h>
-#endif
+#include "../objc-obj-c++-shared/runtime.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -47,16 +43,14 @@
 @end
 
 @implementation Root
-#ifdef __NEXT_RUNTIME__
 + initialize { return self; }
-#endif
 - (const char *) method1 { return "Root::-method1"; }
 + (const char *) method2 { return "Root::+method2"; }
 @end
 
 int main(void)
 {
-  Class obj = objc_get_class("Derived");
+  Class obj = objc_getClass("Derived");
 
   /* None of the following should elicit compiler-time warnings.  */
 
@@ -75,4 +69,4 @@ int main(void)
 
   return 0;
 }
-#include "../objc-obj-c++-shared/Object1-implementation.h"
+

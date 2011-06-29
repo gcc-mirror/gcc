@@ -1011,7 +1011,7 @@ gfc_check_atomic_def (gfc_expr *atom, gfc_expr *value)
   if (scalar_check (atom, 0) == FAILURE || scalar_check (value, 1) == FAILURE)
     return FAILURE;
 
-  if (gfc_check_vardef_context (atom, false, NULL) == FAILURE)
+  if (gfc_check_vardef_context (atom, false, false, NULL) == FAILURE)
     {
       gfc_error ("ATOM argument of the %s intrinsic function at %L shall be "
 		 "definable", gfc_current_intrinsic, &atom->where);
@@ -1028,7 +1028,7 @@ gfc_check_atomic_ref (gfc_expr *value, gfc_expr *atom)
   if (scalar_check (value, 0) == FAILURE || scalar_check (atom, 1) == FAILURE)
     return FAILURE;
 
-  if (gfc_check_vardef_context (value, false, NULL) == FAILURE)
+  if (gfc_check_vardef_context (value, false, false, NULL) == FAILURE)
     {
       gfc_error ("VALUE argument of the %s intrinsic function at %L shall be "
 		 "definable", gfc_current_intrinsic, &value->where);
@@ -2671,6 +2671,10 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
 		 &to->where, from->ts.kind, to->ts.kind);
       return FAILURE;
     }
+
+  /* CLASS arguments: Make sure the vtab is present.  */
+  if (to->ts.type == BT_CLASS)
+    gfc_find_derived_vtab (from->ts.u.derived);
 
   return SUCCESS;
 }

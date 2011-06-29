@@ -1,3 +1,164 @@
+2011-06-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49466
+	* trans-array.c (structure_alloc_comps): Make sure sub-components
+	and extended types are correctly deallocated.
+
+2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* trans-openmp.c: Add sync_ or SYNC__ to builtin names.
+	* trans-stmt.c: Add sync_ or SYNC__ to builtin names.
+	* trans-decl.c: Add sync_ or SYNC__ to builtin names.
+
+2011-06-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49112
+	* class.c (gfc_find_derived_vtab): Make vtab and default initialization
+	symbols SAVE_IMPLICIT.
+
+2011-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.h (gfc_check_vardef_context): Update prototype.
+	(iso_fortran_env_symbol): Handle derived types.
+	(symbol_attribute): Add lock_comp.
+	* expr.c (gfc_check_vardef_context): Add LOCK_TYPE check.
+	* interface.c (compare_parameter, gfc_procedure_use): Handle
+	LOCK_TYPE.
+	(compare_actual_formal): Update
+	gfc_check_vardef_context call.
+	* check.c (gfc_check_atomic_def, gfc_check_atomic_ref): Ditto.
+	* intrinsic.c (check_arglist): Ditto.
+	* io.c (resolve_tag, gfc_resolve_dt, gfc_resolve_inquire): Ditto.
+	* iso-fortran-env.def (ISOFORTRAN_LOCK_TYPE): Add.
+	* intrinsic.texi (ISO_FORTRAN_ENV): Document LOCK_TYPE.
+	* module.c (mio_symbol_attribute): Handle lock_comp.
+	(create_derived_type): New function.
+	(use_iso_fortran_env_module): Call it to handle LOCK_TYPE.
+	* parse.c (parse_derived): Add constraint check for LOCK_TYPE.
+	* resolve.c (resolve_symbol, resolve_lock_unlock): Add constraint
+	checks for LOCK_TYPE.
+	(gfc_resolve_iterator, resolve_deallocate_expr,
+	resolve_allocate_expr, resolve_code, resolve_transfer): Update
+	gfc_check_vardef_context call.
+	* trans-stmt.h (gfc_trans_lock_unlock): New prototype.
+	* trans-stmt.c (gfc_trans_lock_unlock): New function.
+	* trans.c (trans_code): Handle LOCK and UNLOCK.
+
+2011-06-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49400
+	* decl.c (gfc_match_procedure): Allow PROCEDURE declarations inside
+	BLOCK constructs.
+
+2011-06-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/48699
+	* check.c (gfc_check_move_alloc): If 'TO' argument is polymorphic,
+	make sure the vtab is present.
+
+2011-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49074
+	* interface.c (gfc_extend_assign): Propagate the locus from the
+	assignment to the type-bound procedure call.
+
+2011-06-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49417
+	* module.c (mio_component): Make sure the 'class_ok' attribute is set
+	for use-associated CLASS components.
+	* parse.c (parse_derived): Check for 'class_ok' attribute.
+	* resolve.c (resolve_fl_derived): Ditto.
+
+2011-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (remove_trim):  New function.
+	(optimize_assignment):  Use it.
+	(optimize_comparison):  Likewise.  Return correct status
+	for previous change.
+
+2011-06-12  Tobias Burnus
+
+	PR fortran/49324
+	* trans-expr.c (gfc_trans_assignment_1): Tell
+	gfc_trans_scalar_assign to also deep-copy RHS nonvariables
+	with allocatable components.
+	* trans-array.c (gfc_conv_expr_descriptor): Ditto.
+
+2011-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (optimize_assignment): Follow chains
+	of concatenation operators to the end for removing trailing
+	TRIMS for assignments.
+
+2011-06-10  Daniel Carrera  <dcarrera@gmail.com>
+
+	* trans-decl.c (gfc_build_builtin_function_decls):
+	Updated declaration of caf_sync_all and caf_sync_images.
+	* trans-stmt.c (gfc_trans_sync): Function
+	can now handle a "stat" variable that has an integer type
+	different from integer_type_node.
+
+2011-06-09  Richard Guenther  <rguenther@suse.de>
+
+	* trans.c (gfc_allocate_array_with_status): Mark error path
+	as unlikely.
+
+2011-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.h (gfc_statement): Add ST_LOCK and ST_UNLOCK.
+	(gfc_exec_op): Add EXEC_LOCK and EXEC_UNLOCK.
+	(gfc_code): Add expr4.
+	* match.h (gfc_match_lock, gfc_match_unlock): New prototypes.
+	* match.c (gfc_match_lock, gfc_match_unlock,
+	lock_unlock_statement): New functions.
+	(sync_statement): Bug fix, avoiding double freeing.
+	(gfc_match_if): Handle LOCK/UNLOCK statement.
+	* parse.c (decode_statement, next_statement,
+	gfc_ascii_statement): Ditto.
+	* st.c (gfc_free_statement): Handle LOCK and UNLOCK.
+	* resolve.c (resolve_lock_unlock): New function.
+	(resolve_code): Call it.
+	* dump-parse-tree.c (show_code_node): Handle LOCK/UNLOCK.
+
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* f95-lang.c (gfc_init_decl_processing): Do not set
+	size_type_node or call set_sizetype.
+
+2011-06-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49255
+	* trans-expr.c (gfc_conv_procedure_call): Fix -fcheck=pointer
+	for F2008.
+
+2011-06-05  Andreas Schmidt  <andreas.schmidt.42@gmx.net>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_symbol):  Don't dump namespace
+	for ENTRY to avoid infinite recursion.
+
+2011-06-02  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/49268
+	* trans-decl.c (gfc_trans_deferred_vars): Treat assumed-size Cray
+	pointees as AS_EXPLICIT.
+
+2011-06-02  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/37039
+	* decl.c (variable_decl): Merge current_as before copying to cp_as.
+
+2011-06-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/49265
+	* decl.c (gfc_match_modproc):  Allow for a double colon in a module
+	procedure statement.
+	* parse.c ( decode_statement): Deal with whitespace around :: in
+	gfc_match_modproc.
+
 2011-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918

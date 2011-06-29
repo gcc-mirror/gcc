@@ -1,3 +1,334 @@
+2011-06-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: Fix for
+	C++0x mode.
+	* testsuite/25_algorithms/sort/35588.cc: Likewise.
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Likewise.
+
+2011-06-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/bind/socket.cc: Use variable and remove attribute.
+
+2011-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_base.hpp: Avoid -Wall
+	warning.
+
+2011-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/reference_wrapper/invoke.cc: Avoid -Wall warnings.
+	* testsuite/20_util/reference_wrapper/typedefs-3.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/invoke-2.cc: Likewise.
+	* testsuite/20_util/allocator_traits/members/allocate_hint.cc:
+	Likewise.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+	* testsuite/20_util/bind/socket.cc: Likewise.
+	* testsuite/20_util/pointer_traits/pointer_to.cc: Likewise.
+	* testsuite/util/testsuite_random.h: Likewise.
+
+2011-06-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/Makefile.am: Add alloc_traits.h headers.
+	* include/Makefile.in: Regenerate.
+	* include/std/memory: Include uses_allocator.h explicitly.
+	* include/bits/allocator.h (allocator_traits): Move to ...
+	* include/bits/alloc_traits.h: New header.
+	* include/ext/alloc_traits.h (__alloc_traits): Extension to provide
+	a common allocator interface for C++98 and C++0x.
+	* include/bits/stl_construct.h: Use __alloc_traits.
+	* include/bits/stl_uninitialized.h: Likewise.
+
+2011-06-22  Daniel Krugler  <daniel.kruegler@googlemail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (__is_nothrow_swappable): Add.
+	(swap(_Tp(&)[_Nm], _Tp(&)[_Nm])): Use noexcept.
+	* include/bits/algorithmfwd.h: Adjust.
+	* testsuite/25_algorithms/swap/noexcept.cc: New.
+
+2011-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/Makefile.am (check_DEJAGNU_normal_targets): Add
+	check-DEJAGNUnormal[4-9].
+	(check-DEJAGNU): Split into 10 jobs for parallel testing instead of 4.
+	* testsuite/Makefile.in: Regenerated.
+
+2011-06-20  Daniel Krugler  <daniel.kruegler@googlemail.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/tuple (__conv_types, __one_by_one_convertible,
+	__all_convertible): Add.
+	(tuple): Use the latter.
+	(tuple<_T1>): Remove.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+
+2011-06-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/ptr_traits.h (pointer_traits<T*>::pointer_to): Use
+	noexcept.
+
+2011-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/valarray (~valarray): Use noexcept.
+	* include/bits/unique_ptr.h (~unique_ptr): Likewise.
+	* testsuite/26_numerics/valarray/noexcept_move_construct.cc: New.
+	* testsuite/20_util/shared_ptr/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/20_util/weak_ptr/cons/noexcept_move_construct.cc:
+	Likewise.
+
+2011-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/functional: Use noexcept.
+	* include/bits/stl_tempbuf.h: Likewise.
+
+2011-06-12  François Dumont  <francois.cppdevs@free.fr>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/allocator.h (__shrink_to_fit): Rename to
+	__shrink_to_fit_aux, fix.
+	* include/bits/stl_vector.h (_M_shrink_to_fit): Declare.
+	(shrink_to_fit): Use the latter.
+	* include/debug/vector (shrink_to_fit): Likewise.
+	* include/bits/vector.tcc (_M_shrink_to_fit): Define.
+	* include/bits/stl_deque.h (_M_shrink_to_fit): Declare.
+	(shrink_to_fit): Use the latter.
+	* include/debug/deque (shrink_to_fit): Likewise.
+	* include/bits/deque.tcc (_M_shrink_to_fit): Define.
+	* include/bits/vector.tcc (vector<bool>::_M_reallocate): Add.
+	* include/bits/stl_bvector.h (_M_shrink_to_fit): Declare.
+	(shrink_to_fit): Use the latter.
+	(reserve): Use _M_reallocate, move inline.
+	(_Bvector_base<>::_S_nword): Add, use it throughout.
+	* include/debug/string (shrink_to_fit): Redo.
+	* include/ext/vstring.h (shrink_to_fit): Optimize.
+	* include/bits/basic_string.h (shrink_to_fit): Likewise.
+	* testsuite/21_strings/debug/shrink_to_fit.cc: New.
+	* testsuite/23_containers/vector/debug/shrink_to_fit.cc: Likewise.
+	* testsuite/23_containers/vector/debug/bool/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/capacity/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/23_containers/deque/debug/shrink_to_fit.cc: Likewise.
+
+2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: Fix for
+	C++0x mode.
+	* testsuite/25_algorithms/sort/35588.cc: Likewise.
+	* testsuite/26_numerics/headers/complex/synopsis.cc: Likewise.
+
+2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/ext/extptr_allocator.h (construct, destroy): Fix for C++0x
+	mode by overloading to take allocator's pointer type.
+	* testsuite/23_containers/vector/ext_pointer/types/2.cc: New.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/
+	2.cc: New.
+
+2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/allocator_traits/requirements/
+	explicit_instantiation.cc: Add another instantiation.
+
+2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/allocator_traits/requirements/typedefs.cc: Check
+	for allocator_type and value_type.
+
+2011-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/30_threads/packaged_task/uses_allocator.cc: New.
+	* testsuite/30_threads/promise/uses_allocator.cc: Likewise.
+
+2011-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/throw_allocator.h: Use noexcept.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/extptr_allocator.h: Likewise.
+	* testsuite/util/testsuite_allocator.h: Likewise; do not include
+	<cassert> directly, include <testsuite_hooks.h> instead.
+
+2011-06-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/*: Doxygen markup redo.
+	* include/Makefile.am: Fold in constructors_destructor_fn_imps.hpp.
+	* include/Makefile.in: Regenerate.
+
+2011-06-10  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/bind/ref_neg.cc: Remove wrong test lines.
+
+	* testsuite/20_util/bind/ref_neg.cc: Remove dg-excess-errors,
+	fix dg-error markup.
+
+2011-06-09  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust.
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Prune notes.
+	* testsuite/20_util/duration/cons/1_neg.cc: Remove dg-excess-errors.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/forward/1_neg.cc: Likewise.
+	* testsuite/20_util/function/cmp/cmp_neg.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+	* testsuite/20_util/reference_wrapper/ref_neg.cc: Likewise.
+	* testsuite/20_util/tuple/comparison_operators/35480_neg.cc: Likewise.
+	* testsuite/tr1/6_containers/tuple/comparison_operators/35480_neg.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/unique_ptr_lvalue_neg.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/ptr_deleter_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr_neg.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/
+	auto_ptr_rvalue_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr_neg.cc:
+	Likewise.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/map/operators/1_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/
+	bitwise_neg.cc: Likewise.
+	* testsuite/decimal/mixed-mode-arith_neg.cc: Likewise.
+	* testsuite/decimal/mixed-mode-cmp_neg.cc: Likewise.
+	* testsuite/decimal/operator_neg.cc: Likewise.
+
+2011-06-09  Simon Baldwin  <simonb@google.com>
+
+	* scripts/extract_symvers.in: Handle processor/OS specific or
+	unknown symbol binding strings from readelf.
+
+2011-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (__is_copy_assignable_impl,
+	__is_nt_copy_assignable_impl): Fix typo.
+
+2011-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/extptr_allocator.h: Include <ext/numeric_traits.h>
+	instead of <limits>.
+	* include/bits/allocator.h: Likewise.
+
+	* include/std/chrono (duration_values<>::min): Call lowest, not min.
+
+2011-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/allocator.h (__shrink_to_fit): Simplify.
+	* include/bits/stl_vector.h (vector<>::shrink_to_fit): Adjust.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+
+2011-06-07  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/lib/prune.exp: s/required/instantiated/.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/forward/1_neg.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Likewise.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/shared_ptr_neg.cc: Likewise.
+	* testsuite/ext/ext_pointer/1_neg.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Likewise.
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: Likewise.
+	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc: Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/
+	shared_ptr_neg.cc: Likewise.
+
+2011-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (struct __move_if_noexcept_cond): Add.
+	(move_if_noexcept): Use the latter.
+	* include/bits/stl_iterator.h (__make_move_if_noexcept_iterator,
+	_GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR): Add.
+	* include/bits/stl_uninitialized.h
+	(__uninitialized_move_if_noexcept_a): Add.
+	* include/bits/vector.tcc (vector<>::reserve): Use
+	_GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR.
+	(vector<>::_M_insert_aux, _M_fill_insert, _M_default_append,
+	_M_range_insert): Use __uninitialized_move_if_noexcept_a.
+	* testsuite/util/testsuite_rvalref.h (throwing_move_constructor):
+	Add.
+	(copycounter::copycounter(copycounter&&)): Use noexcept.
+	* testsuite/23_containers/vector/modifiers/moveable2.cc: New.
+	* testsuite/23_containers/vector/capacity/resize/moveable2.cc:
+	Likewise.
+	* testsuite/23_containers/vector/capacity/reserve/moveable2.cc:
+	Likewise.
+
+2011-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49293
+	* testsuite/22_locale/time_get/get_weekday/char/38081-1.cc: Tweak
+	for glibc 2.14.
+	* testsuite/22_locale/time_get/get_weekday/char/38081-2.cc: Likewise.
+
+2011-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (move_if_noexcept): Use __and_ and __not_.
+
+2011-06-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/ptr_traits.h (pointer_traits): Fix typos.
+	* include/ext/pointer.h (pointer_traits): Add partial specialization
+	for _Pointer_adapter.
+
+2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/util/testsuite_allocator.h (tracker_allocator::construct):
+	Update to C++0x definition using type to construct as template
+	parameter.
+	(tracker_allocator::destroy): Likewise for type to destroy.
+	(uneq_allocator::construct, uneq_allocator::destroy): Likewise.
+
 2011-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/hashtable.h (_Hashtable<>::_Hashtable(_Hashtable&&)):

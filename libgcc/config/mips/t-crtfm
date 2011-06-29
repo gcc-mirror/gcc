@@ -1,3 +1,0 @@
-crtfastmath.o: $(gcc_srcdir)/config/mips/crtfastmath.c
-	$(gcc_compile) -c $(gcc_srcdir)/config/mips/crtfastmath.c
-

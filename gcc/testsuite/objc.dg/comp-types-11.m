@@ -1,10 +1,10 @@
 /* { dg-do compile } */
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
-@interface Derived: Object
+@interface Derived: TestsuiteObject
 @end
 
-extern Object* foo(void);
+extern TestsuiteObject* foo(void);
 static Derived *test(void)
 {
    Derived *m = foo();   /* { dg-warning "initialization from distinct Objective\\-C type" } */

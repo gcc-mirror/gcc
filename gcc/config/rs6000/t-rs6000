@@ -27,7 +27,7 @@ rs6000.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(OBSTACK_H) $(TREE_H) $(EXPR_H) $(OPTABS_H) except.h function.h \
   output.h $(BASIC_BLOCK_H) $(INTEGRATE_H) toplev.h $(GGC_H) $(HASHTAB_H) \
   $(TM_P_H) $(TARGET_H) $(TARGET_DEF_H) langhooks.h reload.h gt-rs6000.h \
-  cfglayout.h cfgloop.h $(OPTS_H)
+  cfglayout.h cfgloop.h $(OPTS_H) $(COMMON_TARGET_H)
 
 rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.c \
     $(srcdir)/config/rs6000/rs6000-protos.h \

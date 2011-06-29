@@ -359,7 +359,7 @@ static void frv_init_libfuncs			(void);
 static bool frv_in_small_data_p			(const_tree);
 static void frv_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
-static void frv_setup_incoming_varargs		(CUMULATIVE_ARGS *,
+static void frv_setup_incoming_varargs		(cumulative_args_t,
 						 enum machine_mode,
 						 tree, int *, int);
 static rtx frv_expand_builtin_saveregs		(void);
@@ -380,13 +380,13 @@ static void frv_output_const_unspec		(FILE *,
 static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
 static bool frv_must_pass_in_stack (enum machine_mode mode, const_tree type);
-static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+static int frv_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				  tree, bool);
-static rtx frv_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx frv_function_arg (cumulative_args_t, enum machine_mode,
 			     const_tree, bool);
-static rtx frv_function_incoming_arg (CUMULATIVE_ARGS *, enum machine_mode,
+static rtx frv_function_incoming_arg (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
-static void frv_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+static void frv_function_arg_advance (cumulative_args_t, enum machine_mode,
 				       const_tree, bool);
 static unsigned int frv_function_arg_boundary	(enum machine_mode,
 						 const_tree);
@@ -400,20 +400,6 @@ static bool frv_can_eliminate			(const int, const int);
 static void frv_conditional_register_usage	(void);
 static void frv_trampoline_init			(rtx, tree, rtx);
 static bool frv_class_likely_spilled_p 		(reg_class_t);
-
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options frv_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
-/* Allow us to easily change the default for -malloc-cc.  */
-#ifndef DEFAULT_NO_ALLOC_CC
-#define MASK_DEFAULT_ALLOC_CC	MASK_ALLOC_CC
-#else
-#define MASK_DEFAULT_ALLOC_CC	0
-#endif
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_PRINT_OPERAND
@@ -428,19 +414,8 @@ static const struct default_options frv_option_optimization_table[] =
 #define TARGET_ASM_FUNCTION_EPILOGUE frv_function_epilogue
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER frv_assemble_integer
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS		\
-  (MASK_DEFAULT_ALLOC_CC			\
-   | MASK_COND_MOVE				\
-   | MASK_SCC					\
-   | MASK_COND_EXEC				\
-   | MASK_VLIW_BRANCH				\
-   | MASK_MULTI_CE				\
-   | MASK_NESTED_CE)
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE frv_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE frv_option_optimization_table
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS frv_init_builtins
 #undef TARGET_EXPAND_BUILTIN
@@ -2135,12 +2110,14 @@ frv_initial_elimination_offset (int from, int to)
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
-frv_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
+frv_setup_incoming_varargs (cumulative_args_t cum_v,
                             enum machine_mode mode,
                             tree type ATTRIBUTE_UNUSED,
                             int *pretend_size,
                             int second_time)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
 	     "setup_vararg: words = %2d, mode = %4s, pretend_size = %d, second_time = %d\n",
@@ -3127,10 +3104,12 @@ frv_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 static rtx
-frv_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+frv_function_arg_1 (cumulative_args_t cum_v, enum machine_mode mode,
 		    const_tree type ATTRIBUTE_UNUSED, bool named,
 		    bool incoming ATTRIBUTE_UNUSED)
 {
+  const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   enum machine_mode xmode = (mode == BLKmode) ? SImode : mode;
   int arg_num = *cum;
   rtx ret;
@@ -3164,14 +3143,14 @@ frv_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static rtx
-frv_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+frv_function_arg (cumulative_args_t cum, enum machine_mode mode,
 		  const_tree type, bool named)
 {
   return frv_function_arg_1 (cum, mode, type, named, false);
 }
 
 static rtx
-frv_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+frv_function_incoming_arg (cumulative_args_t cum, enum machine_mode mode,
 			   const_tree type, bool named)
 {
   return frv_function_arg_1 (cum, mode, type, named, true);
@@ -3188,11 +3167,13 @@ frv_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    for arguments without any special help.  */
 
 static void
-frv_function_arg_advance (CUMULATIVE_ARGS *cum,
+frv_function_arg_advance (cumulative_args_t cum_v,
                           enum machine_mode mode,
                           const_tree type ATTRIBUTE_UNUSED,
                           bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   enum machine_mode xmode = (mode == BLKmode) ? SImode : mode;
   int bytes = GET_MODE_SIZE (xmode);
   int words = (bytes + UNITS_PER_WORD  - 1) / UNITS_PER_WORD;
@@ -3224,13 +3205,14 @@ frv_function_arg_advance (CUMULATIVE_ARGS *cum,
    the called function.  */
 
 static int
-frv_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+frv_arg_partial_bytes (cumulative_args_t cum, enum machine_mode mode,
 		       tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
+
   enum machine_mode xmode = (mode == BLKmode) ? SImode : mode;
   int bytes = GET_MODE_SIZE (xmode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-  int arg_num = *cum;
+  int arg_num = *get_cumulative_args (cum);
   int ret;
 
   ret = ((arg_num <= LAST_ARG_REGNUM && arg_num + words > LAST_ARG_REGNUM+1)

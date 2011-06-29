@@ -26,9 +26,6 @@ makechan (const struct __go_type_descriptor *typ, uint32_t size)
   struct __go_channel *channel;
   void *ret;
 
-  __go_assert (typ->__code == GO_CHAN);
-  typ = ((const struct __go_channel_type *) typ)->__element_type;
-
   channel = __go_new_channel (typ, size);
 
   ret = __go_alloc (sizeof (void *));

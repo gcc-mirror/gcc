@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -99,6 +99,16 @@ initializer @code{TARGETCM_INITIALIZER} in
 @file{c-family/c-target-def.h}.  If targets initialize @code{targetcm}
 themselves, they should set @code{target_has_targetcm=yes} in
 @file{config.gcc}; otherwise a default definition is used.
+
+Similarly, there is a @code{targetm_common} variable for hooks that
+are shared between the compiler driver and the compilers proper,
+documented as ``Common Target Hook''.  This is declared in
+@file{common/common-target.h}, the initializer
+@code{TARGETM_COMMON_INITIALIZER} in
+@file{common/common-target-def.h}.  If targets initialize
+@code{targetm_common} themselves, they should set
+@code{target_has_targetm_common=yes} in @file{config.gcc}; otherwise a
+default definition is used.
 
 @node Driver
 @section Controlling the Compilation Driver, @file{gcc}
@@ -384,6 +394,10 @@ directories from linking commands.  Do not give it a nonzero value if
 removing duplicate search directories changes the linker's semantics.
 @end defmac
 
+@deftypevr {Common Target Hook} bool TARGET_ALWAYS_STRIP_DOTDOT
+True if @file{..} components should always be removed from directory names computed relative to GCC's internal directories, false (default) if such components should be preserved and directory names containing them passed to other tools such as the linker.
+@end deftypevr
+
 @defmac MULTILIB_DEFAULTS
 Define this macro as a C expression for the initializer of an array of
 string to tell the driver program which options are defaults for this
@@ -665,7 +679,7 @@ This variable is declared in @file{options.h}, which is included before
 any target-specific headers.
 @end deftypevar
 
-@deftypevr {Target Hook} int TARGET_DEFAULT_TARGET_FLAGS
+@deftypevr {Common Target Hook} int TARGET_DEFAULT_TARGET_FLAGS
 This variable specifies the initial value of @code{target_flags}.
 Its default setting is 0.
 @end deftypevr
@@ -673,7 +687,7 @@ Its default setting is 0.
 @cindex optional hardware or system features
 @cindex features, optional, in system conventions
 
-@deftypefn {Target Hook} bool TARGET_HANDLE_OPTION (struct gcc_options *@var{opts}, struct gcc_options *@var{opts_set}, const struct cl_decoded_option *@var{decoded}, unsigned int @var{loc})
+@deftypefn {Common Target Hook} bool TARGET_HANDLE_OPTION (struct gcc_options *@var{opts}, struct gcc_options *@var{opts_set}, const struct cl_decoded_option *@var{decoded}, location_t @var{loc})
 This hook is called whenever the user specifies one of the
 target-specific options described by the @file{.opt} definition files
 (@pxref{Options}).  It has the opportunity to do some option-specific
@@ -731,7 +745,7 @@ used to alter option flag variables which only exist in those
 frontends.
 @end defmac
 
-@deftypevr {Target Hook} {const struct default_options *} TARGET_OPTION_OPTIMIZATION_TABLE
+@deftypevr {Common Target Hook} {const struct default_options *} TARGET_OPTION_OPTIMIZATION_TABLE
 Some machines may desire to change what optimizations are performed for
 various optimization levels.   This variable, if defined, describes
 options to enable at particular sets of optimization levels.  These
@@ -745,19 +759,12 @@ options are changed via @code{#pragma GCC optimize} or by using the
 @code{optimize} attribute.
 @end deftypevr
 
-@deftypefn {Target Hook} void TARGET_OPTION_INIT_STRUCT (struct gcc_options *@var{opts})
+@deftypefn {Common Target Hook} void TARGET_OPTION_INIT_STRUCT (struct gcc_options *@var{opts})
 Set target-dependent initial values of fields in @var{opts}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_OPTION_DEFAULT_PARAMS (void)
+@deftypefn {Common Target Hook} void TARGET_OPTION_DEFAULT_PARAMS (void)
 Set target-dependent default values for @option{--param} settings, using calls to @code{set_default_param_value}.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_HELP (void)
-This hook is called in response to the user invoking
-@option{--target-help} on the command line.  It gives the target a
-chance to display extra information on the target specific command
-line options found in its @file{.opt} file.
 @end deftypefn
 
 @defmac SWITCHABLE_TARGET
@@ -2338,6 +2345,12 @@ constraints is through machine-dependent operand constraint letters.
 You can define such letters to correspond to various classes, then use
 them in operand constraints.
 
+You must define the narrowest register classes for allocatable
+registers, so that each class either has no subclasses, or that for
+some mode, the move cost between registers within the class is
+cheaper than moving a register in the class to or from memory
+(@pxref{Costs}).
+
 You should define a class for the union of two classes whenever some
 instruction allows both classes.  For example, if an instruction allows
 either a floating point (coprocessor) register or a general register for a
@@ -3374,11 +3387,6 @@ of bytes that the format occupies, @var{addr} is the @code{SYMBOL_REF}
 to be emitted.
 @end defmac
 
-@defmac MD_UNWIND_SUPPORT
-A string specifying a file to be #include'd in unwind-dw2.c.  The file
-so included typically defines @code{MD_FALLBACK_FRAME_STATE_FOR}.
-@end defmac
-
 @defmac MD_FALLBACK_FRAME_STATE_FOR (@var{context}, @var{fs})
 This macro allows the target to add CPU and operating system specific
 code to the call-frame unwinder for use when there is no unwind data
@@ -3954,7 +3962,7 @@ This section describes the macros which let you control how various
 types of arguments are passed in registers or how they are arranged in
 the stack.
 
-@deftypefn {Target Hook} rtx TARGET_FUNCTION_ARG (CUMULATIVE_ARGS *@var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_ARG (cumulative_args_t @var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 Return an RTX indicating whether a function argument is passed in a
 register and if so, which register.
 
@@ -4014,7 +4022,7 @@ definition that is usually appropriate, refer to @file{expr.h} for additional
 documentation.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_FUNCTION_INCOMING_ARG (CUMULATIVE_ARGS *@var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_INCOMING_ARG (cumulative_args_t @var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 Define this hook if the target machine has ``register windows'', so
 that the register in which a function sees an arguments is not
 necessarily the same as the one in which the caller passed the
@@ -4030,7 +4038,7 @@ If @code{TARGET_FUNCTION_INCOMING_ARG} is not defined,
 @code{TARGET_FUNCTION_ARG} serves both purposes.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_ARG_PARTIAL_BYTES (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} int TARGET_ARG_PARTIAL_BYTES (cumulative_args_t @var{cum}, enum machine_mode @var{mode}, tree @var{type}, bool @var{named})
 This target hook returns the number of bytes at the beginning of an
 argument that must be put in registers.  The value must be zero for
 arguments that are passed entirely in registers or that are entirely
@@ -4049,7 +4057,7 @@ register to be used by the caller for this argument; likewise
 @code{TARGET_FUNCTION_INCOMING_ARG}, for the called function.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (cumulative_args_t @var{cum}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 This target hook should return @code{true} if an argument at the
 position indicated by @var{cum} should be passed by reference.  This
 predicate is queried after target independent reasons for being
@@ -4061,7 +4069,7 @@ The pointer is passed in whatever way is appropriate for passing a pointer
 to that type.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (cumulative_args_t @var{cum}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 The function argument described by the parameters to this hook is
 known to be passed by reference.  The hook should return true if the
 function argument should be copied by the callee instead of copied
@@ -4140,7 +4148,7 @@ argument @var{libname} exists for symmetry with
 @c --mew 5feb93   i switched the order of the sentences.  --mew 10feb93
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_FUNCTION_ARG_ADVANCE (CUMULATIVE_ARGS *@var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} void TARGET_FUNCTION_ARG_ADVANCE (cumulative_args_t @var{ca}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 This hook updates the summarizer variable pointed to by @var{ca} to
 advance past an argument in the argument list.  The values @var{mode},
 @var{type} and @var{named} describe that argument.  Once this is done,
@@ -4951,7 +4959,7 @@ The default version of this hook invokes a function called
 normally defined in @file{libgcc2.c}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SUPPORTS_SPLIT_STACK (bool @var{report}, struct gcc_options *@var{opts})
+@deftypefn {Common Target Hook} bool TARGET_SUPPORTS_SPLIT_STACK (bool @var{report}, struct gcc_options *@var{opts})
 Whether this target supports splitting the stack when the options described in @var{opts} have been passed.  This is called after options have been parsed, so the target may reject splitting the stack in some configurations.  The default version of this hook returns false.  If @var{report} is true, this function may issue a warning or error; if @var{report} is false, it must simply return a value
 @end deftypefn
 
@@ -5031,7 +5039,7 @@ return value of this function should be an RTX that contains the value
 to use as the return of @code{__builtin_saveregs}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARGS (CUMULATIVE_ARGS *@var{args_so_far}, enum machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
+@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARGS (cumulative_args_t @var{args_so_far}, enum machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
 This target hook offers an alternative to using
 @code{__builtin_saveregs} and defining the hook
 @code{TARGET_EXPAND_BUILTIN_SAVEREGS}.  Use it to store the anonymous
@@ -5065,7 +5073,7 @@ end of the source file.  The hook @code{TARGET_SETUP_INCOMING_VARARGS} should
 not generate any instructions in this case.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_STRICT_ARGUMENT_NAMING (CUMULATIVE_ARGS *@var{ca})
+@deftypefn {Target Hook} bool TARGET_STRICT_ARGUMENT_NAMING (cumulative_args_t @var{ca})
 Define this hook to return @code{true} if the location where a function
 argument is passed depends on whether or not it is a named argument.
 
@@ -5080,7 +5088,7 @@ except the last are treated as named.
 You need not define this hook if it always returns @code{false}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_PRETEND_OUTGOING_VARARGS_NAMED (CUMULATIVE_ARGS *@var{ca})
+@deftypefn {Target Hook} bool TARGET_PRETEND_OUTGOING_VARARGS_NAMED (cumulative_args_t @var{ca})
 If you need to conditionally change ABIs so that one works with
 @code{TARGET_SETUP_INCOMING_VARARGS}, but the other works like neither
 @code{TARGET_SETUP_INCOMING_VARARGS} nor @code{TARGET_STRICT_ARGUMENT_NAMING} was
@@ -5193,19 +5201,6 @@ If defined, expands to a C expression clearing the @emph{instruction
 cache} in the specified interval.  The definition of this macro would
 typically be a series of @code{asm} statements.  Both @var{beg} and
 @var{end} are both pointer expressions.
-@end defmac
-
-The operating system may also require the stack to be made executable
-before calling the trampoline.  To implement this requirement, define
-the following macro.
-
-@defmac ENABLE_EXECUTE_STACK
-Define this macro if certain operations must be performed before executing
-code located on the stack.  The macro should expand to a series of C
-file-scope constructs (e.g.@: functions) and provide a unique entry point
-named @code{__enable_execute_stack}.  The target is responsible for
-emitting calls to the entry point in the code, for example from the
-@code{TARGET_TRAMPOLINE_INIT} hook.
 @end defmac
 
 To use a standard subroutine, define the following macro.  In addition,
@@ -7354,7 +7349,7 @@ Return NULL if function should go to default text section.
 Used by the target to emit any assembler directives or additional  labels needed when a function is partitioned between different  sections.  Output should be written to @var{file}.  The function  decl is available as @var{decl} and the new section is `cold' if  @var{new_is_cold} is @code{true}.
 @end deftypefn
 
-@deftypevr {Target Hook} bool TARGET_HAVE_NAMED_SECTIONS
+@deftypevr {Common Target Hook} bool TARGET_HAVE_NAMED_SECTIONS
 This flag is true if the target supports @code{TARGET_ASM_NAMED_SECTION}.
 It must not be modified by command-line option processing.
 @end deftypevr
@@ -8869,7 +8864,7 @@ Otherwise, if your target supports this information (if it defines
 or @code{OBJECT_FORMAT_ELF}), GCC will provide a default definition of 1.
 @end defmac
 
-@deftypefn {Target Hook} {enum unwind_info_type} TARGET_EXCEPT_UNWIND_INFO (struct gcc_options *@var{opts})
+@deftypefn {Common Target Hook} {enum unwind_info_type} TARGET_EXCEPT_UNWIND_INFO (struct gcc_options *@var{opts})
 This hook defines the mechanism that will be used for exception handling
 by the target.  If the target has ABI specified unwind tables, the hook
 should return @code{UI_TARGET}.  If the target is to use the
@@ -8895,7 +8890,7 @@ The default implementation of the hook first honors the
 must define this hook so that @var{opts} is used correctly.
 @end deftypefn
 
-@deftypevr {Target Hook} bool TARGET_UNWIND_TABLES_DEFAULT
+@deftypevr {Common Target Hook} bool TARGET_UNWIND_TABLES_DEFAULT
 This variable should be set to @code{true} if the target ABI requires unwinding
 tables even when exceptions are not used.  It must not be modified by
 command-line option processing.
@@ -9431,6 +9426,14 @@ tables, and hence is desirable if it works.
 
 @deftypevr {Target Hook} bool TARGET_WANT_DEBUG_PUB_SECTIONS
 True if the @code{.debug_pubtypes} and @code{.debug_pubnames} sections should be emitted.  These sections are not used on most platforms, and in particular GDB does not use them.
+@end deftypevr
+
+@deftypevr {Target Hook} bool TARGET_DELAY_SCHED2
+True if sched2 is not to be run at its normal place.  This usually means it will be run as part of machine-specific reorg.
+@end deftypevr
+
+@deftypevr {Target Hook} bool TARGET_DELAY_VARTRACK
+True if vartrack is not to be run at its normal place.  This usually means it will be run as part of machine-specific reorg.
 @end deftypevr
 
 @defmac ASM_OUTPUT_DWARF_DELTA (@var{stream}, @var{size}, @var{label1}, @var{label2})

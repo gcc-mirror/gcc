@@ -1,3 +1,7 @@
+2011-06-27  Richard Guenther  <rguenther@suse.de>
+
+	* update_version_svn (IGNORE_BRANCHES): Add gcc-4_3-branch.
+
 2011-05-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc_release (adjust_dirs, maybe_build_tarfile): Remove.

@@ -16,4 +16,4 @@ struct C
   typename T::F f;		// { dg-error "no type" }
 };
 
-C<B, B> c;			// { dg-message "instantiated" }
+C<B, B> c;			// { dg-message "required" }

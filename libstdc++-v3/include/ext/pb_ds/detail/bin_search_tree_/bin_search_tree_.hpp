@@ -237,15 +237,23 @@ namespace __gnu_pbds
       inline const_reverse_iterator
       rend() const;
 
+      /// Returns a const node_iterator corresponding to the node at the
+      /// root of the tree.
       inline node_const_iterator
       node_begin() const;
 
+      /// Returns a node_iterator corresponding to the node at the
+      /// root of the tree.
       inline node_iterator
       node_begin();
 
+      /// Returns a const node_iterator corresponding to a node just
+      /// after a leaf of the tree.
       inline node_const_iterator
       node_end() const;
 
+      /// Returns a node_iterator corresponding to a node just
+      /// after a leaf of the tree.
       inline node_iterator
       node_end();
 

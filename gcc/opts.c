@@ -23,18 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "intl.h"
 #include "coretypes.h"
-#include "tm.h" /* Needed by rtl.h and used for STACK_CHECK_BUILTIN,
+#include "tm.h" /* For STACK_CHECK_BUILTIN,
 		   STACK_CHECK_STATIC_BUILTIN, DEFAULT_GDB_EXTENSIONS,
 		   DWARF2_DEBUGGING_INFO and DBX_DEBUGGING_INFO.  */
-#include "rtl.h" /* Needed by insn-attr.h.  */
 #include "opts.h"
 #include "options.h"
 #include "flags.h"
 #include "params.h"
 #include "diagnostic.h"
 #include "opts-diagnostic.h"
-#include "insn-attr.h"		/* For INSN_SCHEDULING and DELAY_SLOTS.  */
-#include "target.h"
+#include "insn-attr-common.h"
+#include "common/common-target.h"
 
 /* Parse the -femit-struct-debug-detailed option value
    and set the flag variables. */
@@ -231,7 +230,7 @@ target_handle_option (struct gcc_options *opts,
 {
   gcc_assert (dc == global_dc);
   gcc_assert (kind == DK_UNSPECIFIED);
-  return targetm.handle_option (opts, opts_set, decoded, loc);
+  return targetm_common.handle_option (opts, opts_set, decoded, loc);
 }
 
 /* Add comma-separated strings to a char_p vector.  */
@@ -295,15 +294,15 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
      is set after target options have been processed.  */
   opts->x_flag_short_enums = 2;
 
-  /* Initialize target_flags before targetm.target_option.optimization
+  /* Initialize target_flags before default_options_optimization
      so the latter can modify it.  */
-  opts->x_target_flags = targetm.default_target_flags;
+  opts->x_target_flags = targetm_common.default_target_flags;
 
   /* Some targets have ABI-specified unwind tables.  */
-  opts->x_flag_unwind_tables = targetm.unwind_tables_default;
+  opts->x_flag_unwind_tables = targetm_common.unwind_tables_default;
 
   /* Some targets have other target-specific initialization.  */
-  targetm.target_option.init_struct (opts);
+  targetm_common.option_init_struct (opts);
 }
 
 /* If indicated by the optimization level LEVEL (-Os if SIZE is set,
@@ -486,6 +485,7 @@ static const struct default_options default_options_table[] =
     /* Inlining of functions reducing size is a good idea with -Os
        regardless of them being declared inline.  */
     { OPT_LEVELS_3_PLUS_AND_SIZE, OPT_finline_functions, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_finline_functions_called_once, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_vectorize, NULL, 1 },
@@ -595,7 +595,7 @@ default_options_optimization (struct gcc_options *opts,
 
   /* Allow default optimizations to be specified on a per-machine basis.  */
   maybe_default_options (opts, opts_set,
-			 targetm.target_option.optimization_table,
+			 targetm_common.option_optimization_table,
 			 opts->x_optimize, opts->x_optimize_size,
 			 opts->x_optimize_fast, lang_mask, handlers, loc, dc);
 }
@@ -699,7 +699,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
      generating unwind info.  If opts->x_flag_exceptions is turned on
      we need to turn off the partitioning optimization.  */
 
-  ui_except = targetm.except_unwind_info (opts);
+  ui_except = targetm_common.except_unwind_info (opts);
 
   if (opts->x_flag_exceptions
       && opts->x_flag_reorder_blocks_and_partition
@@ -716,7 +716,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
      optimization.  */
 
   if (opts->x_flag_unwind_tables
-      && !targetm.unwind_tables_default
+      && !targetm_common.unwind_tables_default
       && opts->x_flag_reorder_blocks_and_partition
       && (ui_except == UI_SJLJ || ui_except == UI_TARGET))
     {
@@ -732,9 +732,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
      support named sections.  */
 
   if (opts->x_flag_reorder_blocks_and_partition
-      && (!targetm.have_named_sections
+      && (!targetm_common.have_named_sections
 	  || (opts->x_flag_unwind_tables
-	      && targetm.unwind_tables_default
+	      && targetm_common.unwind_tables_default
 	      && (ui_except == UI_SJLJ || ui_except == UI_TARGET))))
     {
       inform (loc,
@@ -794,7 +794,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     opts->x_flag_split_stack = 0;
   else if (opts->x_flag_split_stack)
     {
-      if (!targetm.supports_split_stack (true, opts))
+      if (!targetm_common.supports_split_stack (true, opts))
 	{
 	  error_at (loc, "%<-fsplit-stack%> is not supported by "
 		    "this compiler configuration");
@@ -1267,10 +1267,6 @@ common_handle_option (struct gcc_options *opts,
     case OPT__target_help:
       print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0, opts, lang_mask);
       opts->x_exit_after_options = true;
-
-      /* Allow the target a chance to give the user some additional information.  */
-      if (targetm.help)
-	targetm.help ();
       break;
 
     case OPT__help_:

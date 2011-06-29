@@ -4,7 +4,7 @@ template<unsigned int nFactor>
 struct Factorial
 {
   enum { nValue = nFactor * Factorial<nFactor - 1>::nValue }; // { dg-error "depth exceeds maximum" } 
-  // { dg-message "recursively instantiated" "" { target *-*-* } 6 } 
+  // { dg-message "recursively required" "" { target *-*-* } 6 }
   // { dg-error "incomplete type" "" { target *-*-* } 6 } 
 } // { dg-error "expected ';' after" }
 

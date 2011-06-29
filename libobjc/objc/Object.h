@@ -55,12 +55,6 @@ extern "C" {
 - (BOOL)isEqual: (id)anObject;
 @end
 
-/* All of the following includes were deprecated in GCC 4.6 and will
-   be removed in the next release.  */
-#include "deprecated/hash.h"
-#include "deprecated/typedstream.h"
-#include "deprecated/Object.h"
-
 #ifdef __cplusplus
 }
 #endif

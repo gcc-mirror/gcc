@@ -1,8 +1,7 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, November 2010.  */
 /* { dg-do compile } */
 
-#include "../../objc-obj-c++-shared/Object1.h"
-#include "../../objc-obj-c++-shared/next-mapping.h"
+#include "../../objc-obj-c++-shared/runtime.h"
 #ifndef __NEXT_RUNTIME__
 #include <objc/NXConstStr.h>
 #endif
@@ -30,4 +29,4 @@ id test_invalid7          = @"te" @"s" @@"t";    /* { dg-error "repeated .@. bef
 id test_invalid8          = @"te" @@"s" @"t";    /* { dg-error "repeated .@. before Objective-C string" } */
 id test_invalid9          = @"te" @"s" @"t" @;   /* { dg-error "stray .@. in program" } */
 id test_invalidA          = @"te" @ st;          /* { dg-error "stray .@. in program" } */
-                                                 /* { dg-error "expected" "" { target *-*-* } 32 } */
+                                                 /* { dg-error "expected" "" { target *-*-* } 31 } */

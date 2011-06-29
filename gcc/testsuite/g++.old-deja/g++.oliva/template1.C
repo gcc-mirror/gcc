@@ -7,7 +7,7 @@
 
 
 template<int P = 0> struct foo {
-  static void bar(double (*)[dim]) {} // { dg-error "'dim' was not declared" } 
+  static void bar(double (*)[dim]) {} // { dg-error "'dim' was not declared|array bound" }
 };
 
 void bar() {

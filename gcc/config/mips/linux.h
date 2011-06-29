@@ -99,8 +99,6 @@ along with GCC; see the file COPYING3.  If not see
 %{!shared: \
   %{profile:-lc_p} %{!profile:-lc}}"
 
-#define MD_UNWIND_SUPPORT "config/mips/linux-unwind.h"
-
 #ifdef HAVE_AS_NO_SHARED
 /* Default to -mno-shared for non-PIC.  */
 # define NO_SHARED_SPECS \

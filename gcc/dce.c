@@ -493,6 +493,44 @@ remove_reg_equal_equiv_notes_for_defs (rtx insn)
     remove_reg_equal_equiv_notes_for_regno (DF_REF_REGNO (*def_rec));
 }
 
+/* Scan all BBs for debug insns and reset those that reference values
+   defined in unmarked insns.  */
+
+static void
+reset_unmarked_insns_debug_uses (void)
+{
+  basic_block bb;
+  rtx insn, next;
+
+  FOR_EACH_BB_REVERSE (bb)
+    FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
+      if (DEBUG_INSN_P (insn))
+	{
+	  df_ref *use_rec;
+
+	  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	    {
+	      df_ref use = *use_rec;
+	      struct df_link *defs;
+	      for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
+		{
+		  rtx ref_insn;
+		  if (DF_REF_IS_ARTIFICIAL (defs->ref))
+		    continue;
+		  ref_insn = DF_REF_INSN (defs->ref);
+		  if (!marked_insn_p (ref_insn))
+		    break;
+		}
+	      if (!defs)
+		continue;
+	      /* ??? FIXME could we propagate the values assigned to
+		 each of the DEFs?  */
+	      INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+	      df_insn_rescan_debug_internal (insn);
+	      break;
+	    }
+	}
+}
 
 /* Delete every instruction that hasn't been marked.  */
 
@@ -505,7 +543,7 @@ delete_unmarked_insns (void)
 
   FOR_EACH_BB_REVERSE (bb)
     FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	{
 	  /* Always delete no-op moves.  */
 	  if (noop_move_p (insn))
@@ -579,7 +617,7 @@ prescan_insns_for_dce (bool fast)
   FOR_EACH_BB (bb)
     {
       FOR_BB_INSNS_REVERSE_SAFE (bb, insn, prev)
-	if (INSN_P (insn))
+	if (NONDEBUG_INSN_P (insn))
 	  {
 	    /* Don't mark argument stores now.  They will be marked
 	       if needed when the associated CALL is marked.  */
@@ -713,6 +751,9 @@ rest_of_handle_ud_dce (void)
     }
   VEC_free (rtx, heap, worklist);
 
+  if (MAY_HAVE_DEBUG_INSNS)
+    reset_unmarked_insns_debug_uses ();
+
   /* Before any insns are deleted, we must remove the chains since
      they are not bidirectional.  */
   df_remove_problem (df_chain);
@@ -745,7 +786,6 @@ struct rtl_opt_pass pass_ud_rtl_dce =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_ggc_collect                     /* todo_flags_finish */
  }
@@ -1097,7 +1137,6 @@ struct rtl_opt_pass pass_fast_rtl_dce =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_ggc_collect                      /* todo_flags_finish */
  }

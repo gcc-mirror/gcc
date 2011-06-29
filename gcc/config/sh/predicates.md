@@ -394,6 +394,19 @@
 	return 0;
     }
 
+  if ((mode == QImode || mode == HImode)
+      && mode == GET_MODE (op)
+      && (MEM_P (op)
+	  || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))))
+    {
+      rtx x = XEXP ((MEM_P (op) ? op : SUBREG_REG (op)), 0);
+
+      if (GET_CODE (x) == PLUS
+	  && REG_P (XEXP (x, 0))
+	  && CONST_INT_P (XEXP (x, 1)))
+	return sh_legitimate_index_p (mode, XEXP (x, 1));
+    }
+
   if (TARGET_SHMEDIA
       && (GET_CODE (op) == PARALLEL || GET_CODE (op) == CONST_VECTOR)
       && sh_rep_vec (op, mode))
@@ -418,6 +431,19 @@
       && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) < 8
       && ! (high_life_started || reload_completed))
     return 0;
+
+  if ((mode == QImode || mode == HImode)
+      && mode == GET_MODE (op)
+      && (MEM_P (op)
+	  || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))))
+    {
+      rtx x = XEXP ((MEM_P (op) ? op : SUBREG_REG (op)), 0);
+
+      if (GET_CODE (x) == PLUS
+	  && REG_P (XEXP (x, 0))
+	  && CONST_INT_P (XEXP (x, 1)))
+	return sh_legitimate_index_p (mode, XEXP (x, 1));
+    }
 
   return general_operand (op, mode);
 })

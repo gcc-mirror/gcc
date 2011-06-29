@@ -64,7 +64,11 @@ test1 (void *q, int x)
     r = malloc (30);
   else
     r = calloc (2, 16);
-  if (__builtin_object_size (r, 0) != 2 * 16)
+  /* We may duplicate this test onto the two exit paths.  On one path
+     the size will be 32, the other it will be 30.  If we don't duplicate
+     this test, then the size will be 32.  */
+  if (__builtin_object_size (r, 0) != 2 * 16
+      && __builtin_object_size (r, 0) != 30)
     abort ();
   if (x < 20)
     r = malloc (30);

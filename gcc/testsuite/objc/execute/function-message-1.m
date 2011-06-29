@@ -1,6 +1,6 @@
-#import "../../objc-obj-c++-shared/Object1.h"
+#include "../../objc-obj-c++-shared/TestsuiteObject.m"
 
-@interface Foo : Object
+@interface Foo : TestsuiteObject
 + bar;
 @end
 

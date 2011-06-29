@@ -196,7 +196,7 @@ ipa_reference_get_not_read_global (struct cgraph_node *fn)
 {
   ipa_reference_optimization_summary_t info;
 
-  info = get_reference_optimization_summary (fn);
+  info = get_reference_optimization_summary (cgraph_function_node (fn, NULL));
   if (info)
     return info->statics_not_read;
   else if (flags_from_decl_or_type (fn->decl) & ECF_LEAF)
@@ -301,16 +301,17 @@ propagate_bits (ipa_reference_global_vars_info_t x_global, struct cgraph_node *x
   struct cgraph_edge *e;
   for (e = x->callees; e; e = e->next_callee)
     {
-      struct cgraph_node *y = e->callee;
       enum availability avail;
+      struct cgraph_node *y = cgraph_function_node (e->callee, &avail);
 
-      avail = cgraph_function_body_availability (e->callee);
+      if (!y)
+	continue;
       /* Only look into nodes we can propagate something.  */
       if (avail > AVAIL_OVERWRITABLE
 	  || (avail == AVAIL_OVERWRITABLE
-	      && (flags_from_decl_or_type (e->callee->decl) & ECF_LEAF)))
+	      && (flags_from_decl_or_type (y->decl) & ECF_LEAF)))
 	{
-	  int flags = flags_from_decl_or_type (e->callee->decl);
+	  int flags = flags_from_decl_or_type (y->decl);
 	  if (get_reference_vars_info (y))
 	    {
 	      ipa_reference_vars_info_t y_info
@@ -644,6 +645,8 @@ propagate (void)
       struct ipa_dfs_info * w_info;
 
       node = order[i];
+      if (node->alias)
+	continue;
       node_info = get_reference_vars_info (node);
       gcc_assert (node_info);
 
@@ -663,8 +666,12 @@ propagate (void)
         read_write_all_from_decl (node, &read_all, &write_all);
 
       for (e = node->callees; e; e = e->next_callee)
-        if (cgraph_function_body_availability (e->callee) <= AVAIL_OVERWRITABLE)
-          read_write_all_from_decl (e->callee, &read_all, &write_all);
+	{
+	  enum availability avail;
+	  struct cgraph_node *callee = cgraph_function_node (e->callee, &avail);
+          if (!callee || avail <= AVAIL_OVERWRITABLE)
+            read_write_all_from_decl (callee, &read_all, &write_all);
+	}
 
       for (ie = node->indirect_calls; ie; ie = ie->next_callee)
 	if (!(ie->indirect_info->ecf_flags & ECF_CONST))
@@ -696,8 +703,13 @@ propagate (void)
 	    read_write_all_from_decl (w, &read_all, &write_all);
 
 	  for (e = w->callees; e; e = e->next_callee)
-	    if (cgraph_function_body_availability (e->callee) <= AVAIL_OVERWRITABLE)
-	      read_write_all_from_decl (e->callee, &read_all, &write_all);
+	    {
+	      enum availability avail;
+	      struct cgraph_node *callee = cgraph_function_node (e->callee, &avail);
+
+	      if (avail <= AVAIL_OVERWRITABLE)
+		read_write_all_from_decl (callee, &read_all, &write_all);
+	    }
 
 	  for (ie = w->indirect_calls; ie; ie = ie->next_callee)
 	    if (!(ie->indirect_info->ecf_flags & ECF_CONST))
@@ -792,6 +804,8 @@ propagate (void)
 	  struct ipa_dfs_info * w_info;
 
 	  node = order[i];
+	  if (node->alias)
+	    continue;
 	  node_info = get_reference_vars_info (node);
 	  node_g = &node_info->global;
 	  node_l = &node_info->local;
@@ -875,7 +889,7 @@ propagate (void)
       ipa_reference_global_vars_info_t node_g;
       ipa_reference_optimization_summary_t opt;
 
-      if (!node->analyzed)
+      if (!node->analyzed || node->alias)
         continue;
 
       node_info = get_reference_vars_info (node);

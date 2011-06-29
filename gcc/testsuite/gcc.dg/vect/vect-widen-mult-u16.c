@@ -9,13 +9,11 @@ unsigned short X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 unsigned short Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 unsigned int result[N];
 
-/* short->int widening-mult */
+/* unsigned short->unsigned int widening-mult.  */
 __attribute__ ((noinline)) int
 foo1(int len) {
   int i;
 
-  /* Not vectorized because X[i] and Y[i] are casted to 'int'
-     so the widening multiplication pattern is not recognized.  */
   for (i=0; i<len; i++) {
     result[i] = (unsigned int)(X[i] * Y[i]);
   }
@@ -43,8 +41,8 @@ int main (void)
   return 0;
 }
 
-/*The induction loop is vectorized  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_pack_trunc } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_widen_mult_hi_to_si || vect_unpack } } } } */
+/* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 1 "vect" { target vect_widen_mult_hi_to_si_pattern } } } */
+/* { dg-final { scan-tree-dump-times "pattern recognized" 1 "vect" { target vect_widen_mult_hi_to_si_pattern } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

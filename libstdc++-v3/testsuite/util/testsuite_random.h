@@ -48,7 +48,7 @@ namespace __gnu_test
       for (unsigned long i = 0; i < N; i++)
 	{
 	  auto r = f();
-	  if (r >= 0 && r < BINS)
+	  if (r >= 0 && (unsigned long)r < BINS)
 	    count[r]++;
 	}
 
@@ -116,7 +116,7 @@ namespace __gnu_test
     if (!wl.size())
       wl = { 1.0 };
 
-    if (k < 0 || k >= wl.size())
+    if (k < 0 || (std::size_t)k >= wl.size())
       return 0.0;
     else
       {

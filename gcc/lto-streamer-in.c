@@ -1533,31 +1533,6 @@ lto_input_constructors_and_inits (struct lto_file_decl_data *file_data,
 }
 
 
-/* Return the resolution for the decl with index INDEX from DATA_IN. */
-
-static enum ld_plugin_symbol_resolution
-get_resolution (struct data_in *data_in, unsigned index)
-{
-  if (data_in->globals_resolution)
-    {
-      ld_plugin_symbol_resolution_t ret;
-      /* We can have references to not emitted functions in
-	 DECL_FUNCTION_PERSONALITY at least.  So we can and have
-	 to indeed return LDPR_UNKNOWN in some cases.   */
-      if (VEC_length (ld_plugin_symbol_resolution_t,
-		      data_in->globals_resolution) <= index)
-	return LDPR_UNKNOWN;
-      ret = VEC_index (ld_plugin_symbol_resolution_t,
-		       data_in->globals_resolution,
-		       index);
-      return ret;
-    }
-  else
-    /* Delay resolution finding until decl merging.  */
-    return LDPR_UNKNOWN;
-}
-
-
 /* Unpack all the non-pointer fields of the TS_BASE structure of
    expression EXPR from bitpack BP.  */
 
@@ -1864,26 +1839,11 @@ unpack_value_fields (struct bitpack_d *bp, tree expr)
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     unpack_ts_block_value_fields (bp, expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
-    {
-      /* We only stream the version number of SSA names.  */
-      gcc_unreachable ();
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
-    {
-      /* This is only used by GENERIC.  */
-      gcc_unreachable ();
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_OMP_CLAUSE))
-    {
-      /* This is only used by High GIMPLE.  */
-      gcc_unreachable ();
-    }
-
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     unpack_ts_translation_unit_decl_value_fields (bp, expr);
+
+  if (streamer_hooks.unpack_value_fields)
+    streamer_hooks.unpack_value_fields (bp, expr);
 }
 
 
@@ -1935,8 +1895,15 @@ lto_materialize_tree (struct lto_input_block *ib, struct data_in *data_in,
     }
   else
     {
-      /* All other nodes can be materialized with a raw make_node call.  */
-      result = make_node (code);
+      /* For all other nodes, see if the streamer knows how to allocate
+	 it.  */
+      if (streamer_hooks.alloc_tree)
+	result = streamer_hooks.alloc_tree (code, ib, data_in);
+
+      /* If the hook did not handle it, materialize the tree with a raw
+	 make_node call.  */
+      if (result == NULL_TREE)
+	result = make_node (code);
     }
 
 #ifdef LTO_STREAMER_DEBUG
@@ -2031,12 +1998,8 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
 {
   DECL_SIZE (expr) = lto_input_tree (ib, data_in);
   DECL_SIZE_UNIT (expr) = lto_input_tree (ib, data_in);
-
-  if (TREE_CODE (expr) != FUNCTION_DECL
-      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
-    DECL_INITIAL (expr) = lto_input_tree (ib, data_in);
-
   DECL_ATTRIBUTES (expr) = lto_input_tree (ib, data_in);
+
   /* Do not stream DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
      for early inlining so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
@@ -2433,154 +2396,20 @@ lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     lto_input_ts_exp_tree_pointers (ib, data_in, expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_SSA_NAME))
-    {
-      /* We only stream the version number of SSA names.  */
-      gcc_unreachable ();
-    }
-
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
     lto_input_ts_block_tree_pointers (ib, data_in, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
     lto_input_ts_binfo_tree_pointers (ib, data_in, expr);
 
-  if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
-    {
-      /* This should only appear in GENERIC.  */
-      gcc_unreachable ();
-    }
-
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     lto_input_ts_constructor_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_OMP_CLAUSE))
-    {
-      /* This should only appear in High GIMPLE.  */
-      gcc_unreachable ();
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    {
-      sorry ("optimization options not supported yet");
-    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
     lto_input_ts_target_option (ib, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     lto_input_ts_translation_unit_decl_tree_pointers (ib, data_in, expr);
-}
-
-
-/* Register DECL with the global symbol table and change its
-   name if necessary to avoid name clashes for static globals across
-   different files.  */
-
-static void
-lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
-{
-  tree context;
-
-  /* Variable has file scope, not local. Need to ensure static variables
-     between different files don't clash unexpectedly.  */
-  if (!TREE_PUBLIC (decl)
-      && !((context = decl_function_context (decl))
-	   && auto_var_in_fn_p (decl, context)))
-    {
-      /* ??? We normally pre-mangle names before we serialize them
-	 out.  Here, in lto1, we do not know the language, and
-	 thus cannot do the mangling again. Instead, we just
-	 append a suffix to the mangled name.  The resulting name,
-	 however, is not a properly-formed mangled name, and will
-	 confuse any attempt to unmangle it.  */
-      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      char *label;
-
-      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
-      rest_of_decl_compilation (decl, 1, 0);
-
-      VEC_safe_push (tree, gc, lto_global_var_decls, decl);
-    }
-
-  /* If this variable has already been declared, queue the
-     declaration for merging.  */
-  if (TREE_PUBLIC (decl))
-    {
-      unsigned ix;
-      if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
-	gcc_unreachable ();
-      lto_symtab_register_decl (decl, get_resolution (data_in, ix),
-				data_in->file_data);
-    }
-}
-
-
-
-/* Register DECL with the global symbol table and change its
-   name if necessary to avoid name clashes for static globals across
-   different files.  DATA_IN contains descriptors and tables for the
-   file being read.  */
-
-static void
-lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
-{
-  /* Need to ensure static entities between different files
-     don't clash unexpectedly.  */
-  if (!TREE_PUBLIC (decl))
-    {
-      /* We must not use the DECL_ASSEMBLER_NAME macro here, as it
-	 may set the assembler name where it was previously empty.  */
-      tree old_assembler_name = decl->decl_with_vis.assembler_name;
-
-      /* FIXME lto: We normally pre-mangle names before we serialize
-	 them out.  Here, in lto1, we do not know the language, and
-	 thus cannot do the mangling again. Instead, we just append a
-	 suffix to the mangled name.  The resulting name, however, is
-	 not a properly-formed mangled name, and will confuse any
-	 attempt to unmangle it.  */
-      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      char *label;
-
-      ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
-
-      /* We may arrive here with the old assembler name not set
-	 if the function body is not needed, e.g., it has been
-	 inlined away and does not appear in the cgraph.  */
-      if (old_assembler_name)
-	{
-	  tree new_assembler_name = DECL_ASSEMBLER_NAME (decl);
-
-	  /* Make the original assembler name available for later use.
-	     We may have used it to indicate the section within its
-	     object file where the function body may be found.
-	     FIXME lto: Find a better way to maintain the function decl
-	     to body section mapping so we don't need this hack.  */
-	  lto_record_renamed_decl (data_in->file_data,
-				   IDENTIFIER_POINTER (old_assembler_name),
-				   IDENTIFIER_POINTER (new_assembler_name));
-
-	  /* Also register the reverse mapping so that we can find the
-	     new name given to an existing assembler name (used when
-	     restoring alias pairs in input_constructors_or_inits.  */
-	  lto_record_renamed_decl (data_in->file_data,
-				   IDENTIFIER_POINTER (new_assembler_name),
-				   IDENTIFIER_POINTER (old_assembler_name));
-	}
-    }
-
-  /* If this variable has already been declared, queue the
-     declaration for merging.  */
-  if (TREE_PUBLIC (decl) && !DECL_ABSTRACT (decl))
-    {
-      unsigned ix;
-      if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
-	gcc_unreachable ();
-      lto_symtab_register_decl (decl, get_resolution (data_in, ix),
-				data_in->file_data);
-    }
 }
 
 
@@ -2661,14 +2490,14 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
   /* Read all the pointer fields in RESULT.  */
   lto_input_tree_pointers (ib, data_in, result);
 
+  /* Call back into the streaming module to read anything else it
+     may need.  */
+  if (streamer_hooks.read_tree)
+    streamer_hooks.read_tree (ib, data_in, result);
+
   /* We should never try to instantiate an MD or NORMAL builtin here.  */
   if (TREE_CODE (result) == FUNCTION_DECL)
     gcc_assert (!lto_stream_as_builtin_p (result));
-
-  if (TREE_CODE (result) == VAR_DECL)
-    lto_register_var_decl_in_symtab (data_in, result);
-  else if (TREE_CODE (result) == FUNCTION_DECL && !DECL_BUILT_IN (result))
-    lto_register_function_decl_in_symtab (data_in, result);
 
   /* end_marker = */ lto_input_1_unsigned (ib);
 
@@ -2679,6 +2508,21 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
 #endif
 
   return result;
+}
+
+
+/* LTO streamer hook for reading GIMPLE trees.  IB and DATA_IN are as in
+   lto_read_tree.  EXPR is the tree was materialized by lto_read_tree and
+   needs GIMPLE specific data to be filled in.  */
+
+void
+lto_streamer_read_tree (struct lto_input_block *ib, struct data_in *data_in,
+			tree expr)
+{
+  if (DECL_P (expr)
+      && TREE_CODE (expr) != FUNCTION_DECL
+      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
+    DECL_INITIAL (expr) = lto_input_tree (ib, data_in);
 }
 
 
@@ -2763,17 +2607,11 @@ lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
 /* Initialization for the LTO reader.  */
 
 void
-lto_init_reader (void)
+lto_reader_init (void)
 {
   lto_streamer_init ();
-
-  memset (&lto_stats, 0, sizeof (lto_stats));
-  bitmap_obstack_initialize (NULL);
-
   file_name_hash_table = htab_create (37, hash_string_slot_node,
 				      eq_string_slot_node, free);
-
-  gimple_register_cfg_hooks ();
 }
 
 

@@ -28,6 +28,6 @@ struct S {
 template< typename _A > void S::foo() {} 
 
 template void S::foo< 0 >();    // { dg-error "no definition available" "no def" }
-				// { dg-message "instantiated" "instantiated" { target *-*-* } 30 }
+				// { dg-message "required" "instantiated" { target *-*-* } 30 }
 
 }

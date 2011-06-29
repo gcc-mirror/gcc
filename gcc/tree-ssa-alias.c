@@ -1,5 +1,5 @@
 /* Alias analysis for trees.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -1199,6 +1199,24 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 					   size);
 	    return refs_may_alias_p_1 (&dref, ref, false);
 	  }
+	case BUILT_IN_STRCPY_CHK:
+	case BUILT_IN_STRNCPY_CHK:
+	case BUILT_IN_MEMCPY_CHK:
+	case BUILT_IN_MEMMOVE_CHK:
+	case BUILT_IN_MEMPCPY_CHK:
+	case BUILT_IN_STPCPY_CHK:
+	case BUILT_IN_STRCAT_CHK:
+	case BUILT_IN_STRNCAT_CHK:
+	  {
+	    ao_ref dref;
+	    tree size = NULL_TREE;
+	    if (gimple_call_num_args (call) == 4)
+	      size = gimple_call_arg (call, 2);
+	    ao_ref_init_from_ptr_and_size (&dref,
+					   gimple_call_arg (call, 1),
+					   size);
+	    return refs_may_alias_p_1 (&dref, ref, false);
+	  }
 	case BUILT_IN_BCOPY:
 	  {
 	    ao_ref dref;
@@ -1216,6 +1234,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_STACK_SAVE:
 	case BUILT_IN_STACK_RESTORE:
 	case BUILT_IN_MEMSET:
+	case BUILT_IN_MEMSET_CHK:
 	case BUILT_IN_FREXP:
 	case BUILT_IN_FREXPF:
 	case BUILT_IN_FREXPL:
@@ -1234,6 +1253,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_SINCOS:
 	case BUILT_IN_SINCOSF:
 	case BUILT_IN_SINCOSL:
+	case BUILT_IN_ASSUME_ALIGNED:
 	  return false;
 	/* __sync_* builtins and some OpenMP builtins act as threading
 	   barriers.  */
@@ -1453,6 +1473,25 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 					   size);
 	    return refs_may_alias_p_1 (&dref, ref, false);
 	  }
+	case BUILT_IN_STRCPY_CHK:
+	case BUILT_IN_STRNCPY_CHK:
+	case BUILT_IN_MEMCPY_CHK:
+	case BUILT_IN_MEMMOVE_CHK:
+	case BUILT_IN_MEMPCPY_CHK:
+	case BUILT_IN_STPCPY_CHK:
+	case BUILT_IN_STRCAT_CHK:
+	case BUILT_IN_STRNCAT_CHK:
+	case BUILT_IN_MEMSET_CHK:
+	  {
+	    ao_ref dref;
+	    tree size = NULL_TREE;
+	    if (gimple_call_num_args (call) == 4)
+	      size = gimple_call_arg (call, 2);
+	    ao_ref_init_from_ptr_and_size (&dref,
+					   gimple_call_arg (call, 0),
+					   size);
+	    return refs_may_alias_p_1 (&dref, ref, false);
+	  }
 	case BUILT_IN_BCOPY:
 	  {
 	    ao_ref dref;
@@ -1473,6 +1512,7 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	  return false;
 	case BUILT_IN_STACK_SAVE:
 	case BUILT_IN_ALLOCA:
+	case BUILT_IN_ASSUME_ALIGNED:
 	  return false;
 	/* Freeing memory kills the pointed-to memory.  More importantly
 	   the call has to serve as a barrier for moving loads and stores
@@ -1697,6 +1737,10 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	  case BUILT_IN_MEMPCPY:
 	  case BUILT_IN_MEMMOVE:
 	  case BUILT_IN_MEMSET:
+	  case BUILT_IN_MEMCPY_CHK:
+	  case BUILT_IN_MEMPCPY_CHK:
+	  case BUILT_IN_MEMMOVE_CHK:
+	  case BUILT_IN_MEMSET_CHK:
 	    {
 	      tree dest = gimple_call_arg (stmt, 0);
 	      tree len = gimple_call_arg (stmt, 2);

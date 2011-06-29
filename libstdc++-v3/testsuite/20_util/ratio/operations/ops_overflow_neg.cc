@@ -26,22 +26,25 @@
 void
 test01()
 {
-  std::ratio_add<std::ratio<INTMAX_MAX, 1>, std::ratio<1>>::type r1;
+  std::ratio_add<std::ratio<INTMAX_MAX, 1>, std::ratio<1>>::type r1
+    __attribute__((unused));
 }
 
 void
 test02()
 {  
-  std::ratio_multiply<std::ratio<-INTMAX_MAX, 2>, std::ratio<3, 2>>::type r1;
-  std::ratio_multiply<std::ratio<INTMAX_MAX>, std::ratio<INTMAX_MAX>>::type r2;
+  std::ratio_multiply<std::ratio<-INTMAX_MAX, 2>, std::ratio<3, 2>>::type r1
+    __attribute__((unused));
+  std::ratio_multiply<std::ratio<INTMAX_MAX>, std::ratio<INTMAX_MAX>>::type r2
+    __attribute__((unused));
 }
 
-// { dg-error "instantiated from here" "" { target *-*-* } 29 }
-// { dg-error "instantiated from here" "" { target *-*-* } 35 }
-// { dg-error "instantiated from here" "" { target *-*-* } 36 }
+// { dg-error "required from here" "" { target *-*-* } 29 }
+// { dg-error "required from here" "" { target *-*-* } 36 }
+// { dg-error "required from here" "" { target *-*-* } 38 }
 // { dg-error "overflow in addition" "" { target *-*-* } 432 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 104 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 100 }
 // { dg-error "overflow in multiplication" "" { target *-*-* } 102 }
-// { dg-excess-errors "In instantiation of" }
-// { dg-excess-errors "out of range" }
+// { dg-prune-output "out of range" }
+// { dg-prune-output "not usable in a constant expression" }

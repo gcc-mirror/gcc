@@ -1,3 +1,19 @@
+2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* builtins.c: Add sync_ or SYNC__ to builtin names.
+	* expr.c: Add sync_ or SYNC__ to builtin names.
+
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (java_init_decl_processing): Call build_common_nodes,
+	build_common_nodes_2 at the beginning.  Remove then duplicate
+	initializations.
+
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (java_init_decl_processing): Properly initialize
+	size_type_node.
+
 2011-05-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR middle-end/46500

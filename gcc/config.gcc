@@ -96,6 +96,9 @@
 #  out_file		The name of the machine description C support
 #			file, if different from "$cpu_type/$cpu_type.c".
 #
+#  common_out_file	The name of the source file for code shared between
+#			the compiler proper and the driver.
+#
 #  md_file		The name of the machine-description file, if
 #			different from "$cpu_type/$cpu_type.md".
 #
@@ -192,8 +195,12 @@
 #
 #  target_has_targetcm	Set to yes or no depending on whether the target
 #			has its own definition of targetcm.
+#
+#  target_has_targetm_common	Set to yes or no depending on whether the
+#			target has its own definition of targetm_common.
 
 out_file=
+common_out_file=
 tmake_file=
 extra_headers=
 user_headers_inc_next_pre=
@@ -210,6 +217,7 @@ c_target_objs=
 cxx_target_objs=
 fortran_target_objs=
 target_has_targetcm=no
+target_has_targetm_common=yes
 tm_defines=
 xm_defines=
 libgcc_tm_file=
@@ -310,6 +318,7 @@ avr-*-*)
 	cpu_type=avr
 	c_target_objs="avr-c.o"
 	cxx_target_objs="avr-c.o"
+	extra_options="${extra_options} avr/avr-tables.opt"
 	;;
 bfin*-*)
 	cpu_type=bfin
@@ -321,6 +330,7 @@ frv*)	cpu_type=frv
 	extra_options="${extra_options} g.opt"
 	;;
 moxie*)	cpu_type=moxie
+	target_has_targetm_common=no
 	;;
 fido-*-*)
 	cpu_type=m68k
@@ -420,6 +430,9 @@ s390*-*-*)
 sh[123456789lbe]*-*-* | sh-*-*)
 	cpu_type=sh
 	need_64bit_hwint=yes
+	;;
+v850*-*-*)
+	cpu_type=v850
 	;;
 xtensa*-*-*)
 	extra_options="${extra_options} fused-madd.opt"
@@ -674,12 +687,43 @@ case ${target} in
   tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC SINGLE_LIBC"
   ;;
 *-*-solaris2*)
+  # i?86-*-solaris2* needs to insert headers between cpu default and
+  # Solaris 2 specific ones.
+  sol2_tm_file="dbxelf.h elfos.h ${cpu_type}/sysv4.h sol2.h ${cpu_type}/sol2.h"
+  case ${target} in
+    *-*-solaris2.1[0-9]*)
+      sol2_tm_file="${sol2_tm_file} sol2-10.h"
+      use_gcc_stdint=wrap
+      ;;
+    *)
+      use_gcc_stdint=provide
+      ;;
+  esac
+  if test x$gnu_ld = xyes; then
+    tm_file="usegld.h ${tm_file}"
+  fi
+  if test x$gas = xyes; then
+    tm_file="usegas.h ${tm_file}"
+  fi
+  tm_p_file="${tm_p_file} sol2-protos.h"
+  tmake_file="${tmake_file} t-sol2 t-slibgcc-dummy"
+  c_target_objs="${c_target_objs} sol2-c.o"
+  cxx_target_objs="${cxx_target_objs} sol2-c.o"
+  extra_objs="sol2.o"
   extra_options="${extra_options} sol2.opt"
+  case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
+    "":yes:* | yes:yes:* )
+      thread_file=posix
+      ;;
+  esac
   ;;
 *-*-*vms*)
   extra_options="${extra_options} vms/vms.opt"
   xmake_file=vms/x-vms
   tmake_file="vms/t-vms"
+  extra_objs="vms.o"
+  target_gtfiles="$target_gtfiles \$(srcdir)/config/vms/vms.c"
+  tm_p_file="${tm_p_file} vms/vms-protos.h"
   if test x$gnu_ld != xyes; then
     # Build wrappers for native case.
     extra_programs="ld\$(exeext) ar\$(exeext)"
@@ -756,7 +800,7 @@ alpha*-dec-osf5.1*)
 		extra_passes="mips-tfile mips-tdump"
 	fi
 	use_collect2=yes
-	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-crtfm alpha/t-osf5"
+	tmake_file="t-slibgcc-dummy"
 	tm_file="${tm_file} alpha/osf5.h"
 	tm_defines="${tm_defines} TARGET_SUPPORT_ARCH=1"
 	extra_options="${extra_options} rpath.opt alpha/osf5.opt"
@@ -765,7 +809,6 @@ alpha*-dec-osf5.1*)
 	case ${enable_threads} in
 	  "" | yes | posix)
 	    thread_file='posix'
-	    tmake_file="${tmake_file} alpha/t-osf-pthread"
 	    ;;
 	esac
 	;;
@@ -823,6 +866,7 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	    tmake_file="$tmake_file arm/t-linux"
 	    ;;
 	esac
+	with_tls=${with_tls:-gnu}
 	tm_file="$tm_file arm/aout.h arm/arm.h"
 	tmake_file="${tmake_file} arm/t-arm-softfp soft-fp/t-softfp"
 	;;
@@ -892,13 +936,13 @@ arm*-wince-pe*)
 	extra_objs="pe.o"
 	;;
 avr-*-rtems*)
-	tm_file="avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
+	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="avr/t-avr t-rtems avr/t-rtems"
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o"
 	;;
 avr-*-*)
-	tm_file="avr/avr.h dbxelf.h newlib-stdint.h"
+	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h newlib-stdint.h"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o"
@@ -1268,7 +1312,7 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	x86_64-*-linux*)
 	  tm_file="${tm_file} linux.h i386/linux64.h"
 	  default_gnu_indirect_function=glibc-2011 ;;
-	x86_64-*-kfreebsd*-gnu) tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu.h" ;;
+	x86_64-*-kfreebsd*-gnu) tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h" ;;
 	x86_64-*-knetbsd*-gnu) tm_file="${tm_file} knetbsd-gnu.h" ;;
 	esac
 	tmake_file="${tmake_file} i386/t-linux64 i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
@@ -1324,7 +1368,7 @@ i[34567]86-*-rtems*)
 	tmake_file="${tmake_file} i386/t-rtems t-rtems"
 	;;
 i[34567]86-*-solaris2*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/sysv4.h sol2.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h ${sol2_tm_file}"
 	# Set default arch_32 to pentium4, tune_32 to generic like the other
 	# i386 targets, although config.guess defaults to i386-pc-solaris2*.
 	case ${target} in
@@ -1340,36 +1384,11 @@ i[34567]86-*-solaris2*)
 	with_tune_32=${with_tune_32:-generic}
 	case ${target} in
 	*-*-solaris2.1[0-9]*)
-		tm_file="${tm_file} sol2-10.h"
-		;;
-	esac
-	tm_file="${tm_file} i386/sol2.h"
-	if test x$gnu_ld = xyes; then
-		tm_file="${tm_file} sol2-gld.h"
-	fi
-	if test x$gas = xyes; then
-		tm_file="${tm_file} i386/sol2-gas.h"
-	fi
-	tmake_file="${tmake_file} t-sol2 t-slibgcc-dummy"
-	c_target_objs="${c_target_objs} sol2-c.o"
-	cxx_target_objs="${cxx_target_objs} sol2-c.o"
-	extra_objs="sol2.o"
-	tm_p_file="${tm_p_file} sol2-protos.h"
-	if test x$gnu_ld = xyes; then
-		tm_defines="${tm_defines} TARGET_GNU_LD=1"
-	fi
-	if test x$gas = xyes; then
-		tm_file="usegas.h ${tm_file}"
-	fi
-	tm_file="$tm_file tm-dwarf2.h"
-	case ${target} in
-	*-*-solaris2.1[0-9]*)
-		tm_file="${tm_file} i386/x86-64.h i386/sol2-10.h"
+		tm_file="${tm_file} i386/x86-64.h i386/sol2-bi.h sol2-bi.h"
 		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
-		tmake_file="$tmake_file i386/t-sol2-10"
+		tmake_file="$tmake_file i386/t-sol2-64"
 		need_64bit_hwint=yes
 		need_64bit_isa=yes
-		use_gcc_stdint=wrap
 		case X"${with_cpu}" in
 		Xgeneric|Xatom|Xcore2|Xcorei7|Xcorei7-avx|Xnocona|Xx86-64|Xbdver1|Xbtver1|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
 			;;
@@ -1384,14 +1403,6 @@ i[34567]86-*-solaris2*)
 			exit 1
 			;;
 		esac
-		;;
-	*)
-		use_gcc_stdint=provide
-		;;
-	esac
-	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
-	  "":yes:* | yes:yes:* )
-		thread_file=posix
 		;;
 	esac
 	;;
@@ -1779,7 +1790,7 @@ microblaze*-*-*)
         ;;
 mips-sgi-irix6.5*)
 	tm_file="elfos.h ${tm_file} mips/iris6.h"
-	tmake_file="mips/t-iris mips/t-iris6 mips/t-slibgcc-irix"
+	tmake_file="mips/t-irix6 t-slibgcc-dummy"
 	extra_options="${extra_options} rpath.opt mips/iris6.opt"
 	target_cpu_default="MASK_ABICALLS"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
@@ -2468,17 +2479,7 @@ sparc-*-netbsdelf*)
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	;;
 sparc*-*-solaris2*)
-	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h sol2.h"
-	case ${target} in
-	    *-*-solaris2.1[0-9]*)
-		tm_file="${tm_file} sol2-10.h"
-		use_gcc_stdint=wrap
-		;;
-	    *)
-		use_gcc_stdint=provide
-		;;
-	esac
-	tm_file="${tm_file} sparc/sol2.h"
+	tm_file="sparc/biarch64.h ${tm_file} ${sol2_tm_file} sol2-bi.h"
 	case ${target} in
 	    sparc64-*-* | sparcv9-*-*)
 		tm_file="${tm_file} sparc/sol2-64.h"
@@ -2487,27 +2488,7 @@ sparc*-*-solaris2*)
 		test x$with_cpu != x || with_cpu=v9
 		;;
 	esac
-	tm_file="${tm_file} sparc/sol2-bi.h"
-	if test x$gas = xyes; then
-		tm_file="${tm_file} sparc/sol2-gas.h sparc/sol2-gas-bi.h"
-	fi
-	if test x$gnu_ld = xyes; then
-		tm_file="${tm_file} sol2-gld.h sparc/sol2-gld-bi.h"
-	fi
-	tm_file="${tm_file} tm-dwarf2.h"
-	tmake_file="t-sol2 t-slibgcc-dummy sparc/t-sol2-64"
-	if test x$gas = xyes; then
-		tm_file="usegas.h ${tm_file}"
-	fi
-	c_target_objs="sol2-c.o"
-	cxx_target_objs="sol2-c.o"
-	extra_objs="sol2.o"
-	tm_p_file="${tm_p_file} sol2-protos.h"
-	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
-	  "":yes:* | yes:yes:* )
-		thread_file=posix
-		;;
-	esac
+	tmake_file="${tmake_file} sparc/t-sol2-64"
 	;;
 sparc-wrs-vxworks)
 	tm_file="${tm_file} elfos.h sparc/sysv4.h vx-common.h vxworks.h sparc/vxworks.h"
@@ -2560,46 +2541,26 @@ spu-*-elf*)
 	c_target_objs="${c_target_objs} spu-c.o"
 	cxx_target_objs="${cxx_target_objs} spu-c.o"
 	;;
-v850e1-*-*)
-	target_cpu_default="TARGET_CPU_v850e1"
+
+v850*-*-*)
+	case ${target} in
+	v850e2v3-*-*)
+		target_cpu_default="TARGET_CPU_v850e2v3"
+		;;
+	v850e2-*-*)
+		target_cpu_default="TARGET_CPU_v850e2"
+		;;
+	v850e1-*-* | v850es-*-*)
+		target_cpu_default="TARGET_CPU_v850e1"
+		;;
+	v850e-*-*)
+		target_cpu_default="TARGET_CPU_v850e"
+		;;
+	v850-*-*)
+		target_cpu_default="TARGET_CPU_generic"
+		;;
+	esac
 	tm_file="dbxelf.h elfos.h newlib-stdint.h v850/v850.h"
-	tm_p_file=v850/v850-protos.h
-	tmake_file=v850/t-v850e
-	md_file=v850/v850.md
-	extra_modes=v850/v850-modes.def
-	out_file=v850/v850.c
-	extra_options="${extra_options} v850/v850.opt"
-	if test x$stabs = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
-	use_collect2=no
-	c_target_objs="v850-c.o"
-	cxx_target_objs="v850-c.o"
-	use_gcc_stdint=wrap
-	;;
-v850e-*-*)
-	target_cpu_default="TARGET_CPU_v850e"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h v850/v850.h"
-	tm_p_file=v850/v850-protos.h
-	tmake_file=v850/t-v850e
-	md_file=v850/v850.md
-	extra_modes=v850/v850-modes.def
-	out_file=v850/v850.c
-	extra_options="${extra_options} v850/v850.opt"
-	if test x$stabs = xyes
-	then
-		tm_file="${tm_file} dbx.h"
-	fi
-	use_collect2=no
-	c_target_objs="v850-c.o"
-	cxx_target_objs="v850-c.o"
-	use_gcc_stdint=wrap
-	;;
-v850-*-*)
-	target_cpu_default="TARGET_CPU_generic"
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	tmake_file=v850/t-v850
 	if test x$stabs = xyes
 	then
 		tm_file="${tm_file} dbx.h"
@@ -2680,6 +2641,14 @@ esac
 if [ "$target_has_targetcm" = "no" ]; then
   c_target_objs="$c_target_objs default-c.o"
   cxx_target_objs="$cxx_target_objs default-c.o"
+fi
+
+if [ "$common_out_file" = "" ]; then
+  if [ "$target_has_targetm_common" = "yes" ]; then
+    common_out_file="$cpu_type/$cpu_type-common.c"
+  else
+    common_out_file="default-common.c"
+  fi
 fi
 
 # Support for --with-cpu and related options (and a few unrelated options,
@@ -3074,7 +3043,7 @@ case "${target}" in
 		;;
 
 	arm*-*-*)
-		supported_defaults="arch cpu float tune fpu abi mode"
+		supported_defaults="arch cpu float tune fpu abi mode tls"
 		for which in cpu tune; do
 			# See if it matches any of the entries in arm-cores.def
 			eval "val=\$with_$which"
@@ -3153,6 +3122,17 @@ case "${target}" in
 			;;
 		*)
 			echo "Unknown mode used in --with-mode=$with_mode"
+			exit 1
+			;;
+		esac
+
+		case "$with_tls" in
+		"" \
+		| gnu | gnu2)
+			# OK
+			;;
+		*)
+			echo "Unknown TLS method used in --with-tls=$with_tls" 1>&2
 			exit 1
 			;;
 		esac
@@ -3494,7 +3474,7 @@ case "${target}" in
 	v850*-*-*)
 		supported_defaults=cpu
 		case ${with_cpu} in
-		"" | v850e | v850e1)
+		"" | v850e | v850e1 | v850e2 | v850es | v850e2v3)
 			# OK
 			;;
 		*)
@@ -3622,20 +3602,21 @@ case ${target} in
 		;;
 
 	v850*-*-*)
-		# FIXME: The v850 is "special" in that it does not support
-		# runtime CPU selection, only --with-cpu.
 		case "x$with_cpu" in
 		x)
 			;;
-		xv850e)
+		xv850e | xv850e1 | xv850e2 | xv850e2v3)
 			target_cpu_default2="TARGET_CPU_$with_cpu"
+			;;
+		xv850es)
+			target_cpu_default2="TARGET_CPU_v850e1"
 			;;
 		esac
 		;;
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu divide llsc mips-plt synci"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu divide llsc mips-plt synci tls"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`

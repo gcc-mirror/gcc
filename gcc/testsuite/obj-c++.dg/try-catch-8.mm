@@ -3,9 +3,9 @@
 /* { dg-do compile } */
 /* { dg-options "-fobjc-exceptions" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/TestsuiteObject.h"
 
-@interface Derived: Object
+@interface Derived: TestsuiteObject
 - (id) meth;
 @end
 

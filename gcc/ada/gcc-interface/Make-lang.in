@@ -479,8 +479,8 @@ gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target
 	$(GCC_LINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a $(LIBS) $(SYSLIBS) $(BACKENDLIBS) $(CFLAGS)
 	$(RM) stamp-gnatlib2-rts stamp-tools
 
-gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) libcommon-target.a $(LIBDEPS)
-	$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) libcommon-target.a $(LIBS) $(SYSLIBS) $(CFLAGS)
+gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBDEPS)
+	$(GCC_LINK) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(CFLAGS)
 
 # use cross-gcc
 gnat-cross: force
@@ -1237,7 +1237,8 @@ ada/trans.o : ada/gcc-interface/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 ada/utils.o : ada/gcc-interface/utils.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FLAGS_H) toplev.h $(RTL_H) output.h debug.h convert.h \
-   $(TARGET_H) function.h langhooks.h $(CGRAPH_H) \
+   $(TARGET_H) $(COMMON_TARGET_H) function.h langhooks.h \
+   $(CGRAPH_H) $(DIAGNOSTIC_H) \
    $(TREE_DUMP_H) $(TREE_INLINE_H) tree-iterator.h \
    ada/gcc-interface/ada.h ada/types.h ada/atree.h ada/elists.h ada/namet.h \
    ada/nlists.h ada/stringt.h ada/uintp.h ada/fe.h ada/sinfo.h ada/einfo.h \

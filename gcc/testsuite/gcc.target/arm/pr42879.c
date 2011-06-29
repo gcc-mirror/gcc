@@ -1,4 +1,5 @@
-/* { dg-options "-march=armv7-a -mthumb -Os" }  */
+/* { dg-require-effective-target arm_thumb2_ok } */
+/* { dg-options "-mthumb -Os" }  */
 /* { dg-final { scan-assembler "lsls" } } */
 
 struct A

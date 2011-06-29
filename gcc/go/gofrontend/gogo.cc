@@ -29,8 +29,6 @@ Gogo::Gogo(Backend* backend, int int_type_size, int pointer_size)
     imports_(),
     imported_unsafe_(false),
     packages_(),
-    map_descriptors_(NULL),
-    type_descriptor_decls_(NULL),
     init_functions_(),
     need_init_fn_(false),
     init_fn_name_(),
@@ -1498,6 +1496,10 @@ Check_types_traverse::variable(Named_object* named_object)
   if (named_object->is_variable())
     {
       Variable* var = named_object->var_value();
+
+      // Give error if variable type is not defined.
+      var->type()->base();
+
       Expression* init = var->init();
       std::string reason;
       if (init != NULL
@@ -2593,6 +2595,7 @@ Gogo::convert_named_types()
   Array_type::make_array_type_descriptor_type();
   Array_type::make_slice_type_descriptor_type();
   Map_type::make_map_type_descriptor_type();
+  Map_type::make_map_descriptor_type();
   Channel_type::make_chan_type_descriptor_type();
   Interface_type::make_interface_type_descriptor_type();
   Type::convert_builtin_named_types(this);

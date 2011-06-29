@@ -1195,7 +1195,11 @@ static section *
 darwin_mergeable_string_section (tree exp,
 				 unsigned HOST_WIDE_INT align)
 {
-  if (flag_merge_constants
+  /* Darwin's ld expects to see non-writable string literals in the .cstring 
+     section.  Later versions of ld check and complain when CFStrings are 
+     enabled.  Therefore we shall force the strings into .cstring since we
+     don't support writable ones anyway.  */
+  if ((darwin_constant_cfstrings || flag_merge_constants)
       && TREE_CODE (exp) == STRING_CST
       && TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
       && align <= 256
@@ -2932,7 +2936,9 @@ darwin_override_options (void)
   if (MACHO_DYNAMIC_NO_PIC_P)
     {
       if (flag_pic)
-	warning (0, "-mdynamic-no-pic overrides -fpic or -fPIC");
+	warning_at (UNKNOWN_LOCATION, 0,
+		 "%<-mdynamic-no-pic%> overrides %<-fpic%>, %<-fPIC%>,"
+		 " %<-fpie%> or %<-fPIE%>");
       flag_pic = 0;
     }
   else if (flag_pic == 1)

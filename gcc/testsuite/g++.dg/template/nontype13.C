@@ -24,6 +24,6 @@ struct Dummy
 int main()
 {
   Dummy<int> d;
-  d.tester<true> (); // { dg-message "instantiated" }
+  d.tester<true> (); // { dg-message "required" }
 }
 

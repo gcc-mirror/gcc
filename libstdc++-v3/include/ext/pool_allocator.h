@@ -1,6 +1,7 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+// 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -139,23 +140,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         struct rebind
         { typedef __pool_alloc<_Tp1> other; };
 
-      __pool_alloc() throw() { }
+      __pool_alloc() _GLIBCXX_USE_NOEXCEPT { }
 
-      __pool_alloc(const __pool_alloc&) throw() { }
+      __pool_alloc(const __pool_alloc&) _GLIBCXX_USE_NOEXCEPT { }
 
       template<typename _Tp1>
-        __pool_alloc(const __pool_alloc<_Tp1>&) throw() { }
+        __pool_alloc(const __pool_alloc<_Tp1>&) _GLIBCXX_USE_NOEXCEPT { }
 
-      ~__pool_alloc() throw() { }
+      ~__pool_alloc() _GLIBCXX_USE_NOEXCEPT { }
 
       pointer
-      address(reference __x) const { return std::__addressof(__x); }
+      address(reference __x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(__x); }
 
       const_pointer
-      address(const_reference __x) const { return std::__addressof(__x); }
+      address(const_reference __x) const _GLIBCXX_NOEXCEPT
+      { return std::__addressof(__x); }
 
       size_type
-      max_size() const throw() 
+      max_size() const _GLIBCXX_USE_NOEXCEPT 
       { return size_t(-1) / sizeof(_Tp); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__

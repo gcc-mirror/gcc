@@ -1,6 +1,6 @@
 /* Front-end tree definitions for GNU compiler.
    Copyright (C) 1989, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1431,6 +1431,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 #define DECL_READ_P(NODE) \
   (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)->decl_common.decl_read_flag)
+
+#define DECL_NONSHAREABLE(NODE) \
+  (TREE_CHECK2 (NODE, VAR_DECL, \
+		RESULT_DECL)->decl_common.decl_nonshareable_flag)
 
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
@@ -2954,8 +2958,9 @@ struct GTY(()) tree_decl_common {
      being set.  */
   unsigned decl_read_flag : 1;
 
-  /* Padding so that 'off_align' can be on a 32-bit boundary.  */
-  unsigned decl_common_unused : 1;
+  /* In VAR_DECL or RESULT_DECL set when significant code movement precludes
+     attempting to share the stack slot with some other variable.  */
+  unsigned decl_nonshareable_flag : 1;
 
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */
   unsigned int off_align : 8;
@@ -3493,6 +3498,13 @@ struct GTY(())
 #define DECL_DISREGARD_INLINE_LIMITS(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.disregard_inline_limits)
 
+extern VEC(tree, gc) **decl_debug_args_lookup (tree);
+extern VEC(tree, gc) **decl_debug_args_insert (tree);
+
+/* Nonzero if a FUNCTION_DECL has DEBUG arguments attached to it.  */
+#define DECL_HAS_DEBUG_ARGS_P(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.has_debug_args_flag)
+
 /* For FUNCTION_DECL, this holds a pointer to a structure ("struct function")
    that describes the status of this function.  */
 #define DECL_STRUCT_FUNCTION(NODE) \
@@ -3558,16 +3570,16 @@ struct GTY(()) tree_function_decl {
   unsigned operator_new_flag : 1;
   unsigned declared_inline_flag : 1;
   unsigned regdecl_flag : 1;
-
   unsigned no_inline_warning_flag : 1;
+
   unsigned no_instrument_function_entry_exit : 1;
   unsigned no_limit_stack : 1;
   unsigned disregard_inline_limits : 1;
   unsigned pure_flag : 1;
   unsigned looping_const_or_pure_flag : 1;
+  unsigned has_debug_args_flag : 1;
 
-
-  /* 3 bits left */
+  /* 2 bits left */
 };
 
 /* The source language of the translation-unit.  */
@@ -4148,6 +4160,12 @@ enum ptrmemfunc_vbit_where_t
 
 #define NULL_TREE (tree) NULL
 
+/* True if NODE is an erroneous expression.  */
+
+#define error_operand_p(NODE)					\
+  ((NODE) == error_mark_node					\
+   || ((NODE) && TREE_TYPE ((NODE)) == error_mark_node))
+
 extern tree decl_assembler_name (tree);
 extern bool decl_assembler_name_equal (tree decl, const_tree asmname);
 extern hashval_t decl_assembler_name_hash (const_tree asmname);
@@ -4386,7 +4404,6 @@ extern tree signed_or_unsigned_type_for (int, tree);
 extern tree signed_type_for (tree);
 extern tree unsigned_type_for (tree);
 extern void initialize_sizetypes (void);
-extern void set_sizetype (tree);
 extern void fixup_unsigned_type (tree);
 extern tree build_pointer_type_for_mode (tree, enum machine_mode, bool);
 extern tree build_pointer_type (tree);
@@ -4583,18 +4600,54 @@ enum attribute_flags
 extern tree merge_decl_attributes (tree, tree);
 extern tree merge_type_attributes (tree, tree);
 
-/* Given a tree node and a string, return nonzero if the tree node is
-   a valid attribute name for the string.  */
+/* This function is a private implementation detail of lookup_attribute()
+   and you should never call it directly.  */
+extern tree private_lookup_attribute (const char *, size_t, tree);
 
-extern int is_attribute_p (const char *, const_tree);
+/* Given an attribute name ATTR_NAME and a list of attributes LIST,
+   return a pointer to the attribute's list element if the attribute
+   is part of the list, or NULL_TREE if not found.  If the attribute
+   appears more than once, this only returns the first occurrence; the
+   TREE_CHAIN of the return value should be passed back in if further
+   occurrences are wanted.  ATTR_NAME must be in the form 'text' (not
+   '__text__').  */
 
-/* Given an attribute name and a list of attributes, return the list element
-   of the attribute or NULL_TREE if not found.  */
+static inline tree
+lookup_attribute (const char *attr_name, tree list)
+{
+  gcc_checking_assert (attr_name[0] != '_');  
+  /* In most cases, list is NULL_TREE.  */
+  if (list == NULL_TREE)
+    return NULL_TREE;
+  else
+    /* Do the strlen() before calling the out-of-line implementation.
+       In most cases attr_name is a string constant, and the compiler
+       will optimize the strlen() away.  */
+    return private_lookup_attribute (attr_name, strlen (attr_name), list);
+}
 
-extern tree lookup_attribute (const char *, tree);
+/* This function is a private implementation detail of
+   is_attribute_p() and you should never call it directly.  */
+extern bool private_is_attribute_p (const char *, size_t, const_tree);
+
+/* Given an identifier node IDENT and a string ATTR_NAME, return true
+   if the identifier node is a valid attribute name for the string.
+   ATTR_NAME must be in the form 'text' (not '__text__').  IDENT could
+   be the identifier for 'text' or for '__text__'.  */
+
+static inline bool
+is_attribute_p (const char *attr_name, const_tree ident)
+{
+  gcc_checking_assert (attr_name[0] != '_');
+  /* Do the strlen() before calling the out-of-line implementation.
+     In most cases attr_name is a string constant, and the compiler
+     will optimize the strlen() away.  */
+  return private_is_attribute_p (attr_name, strlen (attr_name), ident);
+}
 
 /* Remove any instances of attribute ATTR_NAME in LIST and return the
-   modified list.  */
+   modified list.  ATTR_NAME must be in the form 'text' (not
+   '__text__').  */
 
 extern tree remove_attribute (const char *, tree);
 
@@ -5655,10 +5708,6 @@ extern char *dwarf2out_cfi_label (bool);
 
 extern void dwarf2out_def_cfa (const char *, unsigned, HOST_WIDE_INT);
 
-/* Add the CFI for saving a register window.  */
-
-extern void dwarf2out_window_save (const char *);
-
 /* Entry point for saving a register to the stack.  */
 
 extern void dwarf2out_reg_save (const char *, unsigned, HOST_WIDE_INT);
@@ -5796,6 +5845,17 @@ struct GTY(()) tree_priority_map {
 #define tree_priority_map_eq tree_map_base_eq
 #define tree_priority_map_hash tree_map_base_hash
 #define tree_priority_map_marked_p tree_map_base_marked_p
+
+/* Map from a decl tree to a tree vector.  */
+
+struct GTY(()) tree_vec_map {
+  struct tree_map_base base;
+  VEC(tree,gc) *to;
+};
+
+#define tree_vec_map_eq tree_map_base_eq
+#define tree_vec_map_hash tree_decl_map_hash
+#define tree_vec_map_marked_p tree_map_base_marked_p
 
 /* In tree-ssa.c */
 

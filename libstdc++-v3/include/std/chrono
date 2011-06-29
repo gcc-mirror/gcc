@@ -203,7 +203,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 	static constexpr _Rep
 	min()
-	{ return numeric_limits<_Rep>::min(); }
+	{ return numeric_limits<_Rep>::lowest(); }
       };
 
     template<typename T>

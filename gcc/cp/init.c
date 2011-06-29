@@ -1514,7 +1514,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       tree fn = get_callee_fndecl (rval);
       if (fn && DECL_DECLARED_CONSTEXPR_P (fn))
 	{
-	  tree e = maybe_constant_value (rval);
+	  tree e = maybe_constant_init (rval);
 	  if (TREE_CONSTANT (e))
 	    rval = build2 (INIT_EXPR, type, exp, e);
 	}
@@ -2600,8 +2600,7 @@ build_new (VEC(tree,gc) **placement, tree type, tree nelts,
 	{
 	  tree d_init = VEC_index (tree, *init, 0);
 	  d_init = resolve_nondeduced_context (d_init);
-	  if (describable_type (d_init))
-	    type = do_auto_deduction (type, d_init, auto_node);
+	  type = do_auto_deduction (type, d_init, auto_node);
 	}
     }
 
@@ -3083,8 +3082,9 @@ build_vec_init (tree base, tree maxindex, tree init,
       unsigned HOST_WIDE_INT idx;
       tree field, elt;
       /* Should we try to create a constant initializer?  */
-      bool try_const = (literal_type_p (inner_elt_type)
-			|| TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type));
+      bool try_const = (TREE_CODE (atype) == ARRAY_TYPE
+			&& (literal_type_p (inner_elt_type)
+			    || TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
       bool saw_non_const = false;
       bool saw_const = false;
       /* If we're initializing a static array, we want to do static
@@ -3420,6 +3420,25 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 			  "declared when the class is defined");
 		}
 	      complete_p = false;
+	    }
+	  else if (warn_delnonvdtor && MAYBE_CLASS_TYPE_P (type)
+		   && !CLASSTYPE_FINAL (type) && TYPE_POLYMORPHIC_P (type))
+	    {
+	      tree dtor;
+	      dtor = CLASSTYPE_DESTRUCTORS (type);
+	      if (!dtor || !DECL_VINDEX (dtor))
+		{
+		  if (CLASSTYPE_PURE_VIRTUALS (type))
+		    warning (OPT_Wdelete_non_virtual_dtor,
+			     "deleting object of abstract class type %qT"
+			     " which has non-virtual destructor"
+			     " will cause undefined behaviour", type);
+		  else
+		    warning (OPT_Wdelete_non_virtual_dtor,
+			     "deleting object of polymorphic class type %qT"
+			     " which has non-virtual destructor"
+			     " might cause undefined behaviour", type);
+		}
 	    }
 	}
       if (VOID_TYPE_P (type) || !complete_p || !MAYBE_CLASS_TYPE_P (type))

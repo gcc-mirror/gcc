@@ -1,3 +1,42 @@
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/48246
+	* lto.c (lto_1_to_1_map): Don't create empty partitions.
+	(lto_balanced_map): Likewise.
+
+2011-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (add_cgraph_node_to_partition_1): Break out from ...
+	(add_cgraph_node_to_partition) ... here; walk aliases.
+	(lto_1_to_1_map): Remove same body alias code.
+	(promote_fn): Likewise.
+	(lto_promote_cross_file_statics): Update comment.
+
+
+2011-06-07  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (uniquify_nodes): Move code to register decls to
+	the loop that computes canonical types.
+
+2011-06-07  Richard Guenther  <rguenther@suse.de>
+
+	* lto-lang.c (lto_init): Do not set
+	size_type_node or call set_sizetype.
+
+2011-06-04  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_init): New.
+	(lto_main): Call it.
+
+2011-06-03  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (get_resolution): Move from lto-streamer-in.c.
+	(lto_register_var_decl_in_symtab): Likewise.
+	(lto_register_function_decl_in_symtab): Likewise.
+	(uniquify_nodes): Call lto_register_var_decl and
+	lto_register_function_decl_in_symtab after reading a new
+	VAR_DECL or FUNCTION_DECL.
+
 2011-06-01  Richard Guenther  <rguenther@suse.de>
 
 	* lto-lang.c (lto_register_canonical_types): New function.

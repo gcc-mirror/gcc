@@ -149,8 +149,6 @@ char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 
 /*  Prototypes and external defs.  */
 static void spu_option_override (void);
-static void spu_option_init_struct (struct gcc_options *opts);
-static void spu_option_default_params (void);
 static void spu_init_builtins (void);
 static tree spu_builtin_decl (unsigned, bool);
 static bool spu_scalar_mode_supported_p (enum machine_mode mode);
@@ -188,11 +186,13 @@ static tree spu_handle_vector_attribute (tree * node, tree name, tree args,
 					 int flags,
 					 bool *no_add_attrs);
 static int spu_naked_function_p (tree func);
-static bool spu_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+static bool spu_pass_by_reference (cumulative_args_t cum,
+				   enum machine_mode mode,
 				   const_tree type, bool named);
-static rtx spu_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+static rtx spu_function_arg (cumulative_args_t cum, enum machine_mode mode,
 			     const_tree type, bool named);
-static void spu_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+static void spu_function_arg_advance (cumulative_args_t cum,
+				      enum machine_mode mode,
 				      const_tree type, bool named);
 static tree spu_build_builtin_va_list (void);
 static void spu_va_start (tree, rtx);
@@ -247,10 +247,6 @@ int spu_tune;
    for the compiler to allow up to 2 nops be emitted.  The nops are
    inserted in pairs, so we round down. */
 int spu_hint_dist = (8*4) - (2*4);
-
-/* Determines whether we run variable tracking in machine dependent
-   reorganization.  */
-static int spu_flag_var_tracking;
 
 enum spu_immediate {
   SPU_NONE,
@@ -417,6 +413,10 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START spu_va_start
 
+static void spu_setup_incoming_varargs (cumulative_args_t cum,
+					enum machine_mode mode,
+					tree type, int *pretend_size,
+					int no_rtl);
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS spu_setup_incoming_varargs
 
@@ -425,9 +425,6 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR spu_gimplify_va_arg_expr
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT)
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS spu_init_libfuncs
@@ -489,15 +486,6 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE spu_option_override
 
-#undef TARGET_OPTION_INIT_STRUCT
-#define TARGET_OPTION_INIT_STRUCT spu_option_init_struct
-
-#undef TARGET_OPTION_DEFAULT_PARAMS
-#define TARGET_OPTION_DEFAULT_PARAMS spu_option_default_params
-
-#undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO  sjlj_except_unwind_info
-
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE spu_conditional_register_usage
 
@@ -509,23 +497,12 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 
+/* Variable tracking should be run after all optimizations which
+   change order of insns.  It also needs a valid CFG.  */
+#undef TARGET_DELAY_VARTRACK
+#define TARGET_DELAY_VARTRACK true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
-
-static void
-spu_option_init_struct (struct gcc_options *opts)
-{
-  /* With so many registers this is better on by default. */
-  opts->x_flag_rename_registers = 1;
-}
-
-/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
-static void
-spu_option_default_params (void)
-{
-  /* Override some of the default param values.  With so many registers
-     larger values are better for these params.  */
-  set_default_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 128);
-}
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
 static void
@@ -2696,6 +2673,19 @@ insert_hbrp (void)
 
 static int in_spu_reorg;
 
+static void
+spu_var_tracking (void)
+{
+  if (flag_var_tracking)
+    {
+      df_analyze ();
+      timevar_push (TV_VAR_TRACKING);
+      variable_tracking_main ();
+      timevar_pop (TV_VAR_TRACKING);
+      df_finish_pass (false);
+    }
+}
+
 /* Insert branch hints.  There are no branch optimizations after this
    pass, so it's safe to set our branch hints now. */
 static void
@@ -2715,6 +2705,7 @@ spu_machine_dependent_reorg (void)
          function might have hinted a call or return. */
       insert_hbrp ();
       pad_bb ();
+      spu_var_tracking ();
       return;
     }
 
@@ -2921,14 +2912,7 @@ spu_machine_dependent_reorg (void)
 	  XVECEXP (unspec, 0, 0) = plus_constant (label_ref, offset);
       }
 
-  if (spu_flag_var_tracking)
-    {
-      df_analyze ();
-      timevar_push (TV_VAR_TRACKING);
-      variable_tracking_main ();
-      timevar_pop (TV_VAR_TRACKING);
-      df_finish_pass (false);
-    }
+  spu_var_tracking ();
 
   free_bb_for_insn ();
 
@@ -4048,10 +4032,11 @@ spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
 }
 
 static rtx
-spu_function_arg (CUMULATIVE_ARGS *cum,
+spu_function_arg (cumulative_args_t cum_v,
 		  enum machine_mode mode,
 		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int byte_size;
 
   if (*cum >= MAX_REGISTER_ARGS)
@@ -4084,9 +4069,11 @@ spu_function_arg (CUMULATIVE_ARGS *cum,
 }
 
 static void
-spu_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+spu_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   *cum += (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
 	   ? 1
 	   : mode == BLKmode
@@ -4098,7 +4085,7 @@ spu_function_arg_advance (CUMULATIVE_ARGS * cum, enum machine_mode mode,
 
 /* Variable sized types are passed by reference.  */
 static bool
-spu_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
+spu_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		       enum machine_mode mode ATTRIBUTE_UNUSED,
 		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
@@ -4291,8 +4278,8 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
    to the first unnamed parameters.  If the first unnamed parameter is
    in the stack then save no registers.  Set pretend_args_size to the
    amount of space needed to save the registers. */
-void
-spu_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+static void
+spu_setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
 			    tree type, int *pretend_size, int no_rtl)
 {
   if (!no_rtl)
@@ -4300,11 +4287,11 @@ spu_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
       rtx tmp;
       int regno;
       int offset;
-      int ncum = *cum;
+      int ncum = *get_cumulative_args (cum);
 
       /* cum currently points to the last named argument, we want to
          start at the next argument. */
-      spu_function_arg_advance (&ncum, mode, type, true);
+      spu_function_arg_advance (pack_cumulative_args (&ncum), mode, type, true);
 
       offset = -STACK_POINTER_OFFSET;
       for (regno = ncum; regno < MAX_REGISTER_ARGS; regno++)
@@ -7057,19 +7044,6 @@ spu_libgcc_shift_count_mode (void)
 static void
 asm_file_start (void)
 {
-  /* Variable tracking should be run after all optimizations which
-     change order of insns.  It also needs a valid CFG.  Therefore,
-     *if* we make nontrivial changes in machine-dependent reorg,
-     run variable tracking after those.  However, if we do not run
-     our machine-dependent reorg pass, we must still run the normal
-     variable tracking pass (or else we will ICE in final since
-     debug insns have not been removed).  */
-  if (TARGET_BRANCH_HINTS && optimize)
-    {
-      spu_flag_var_tracking = flag_var_tracking;
-      flag_var_tracking = 0;
-    }
-
   default_file_start ();
 }
 

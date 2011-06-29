@@ -1,3 +1,154 @@
+2011-06-28  Nick Clifton  <nickc@redhat.com>
+
+	* config.host: Recognize all V850 variants.
+
+2011-06-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* enable-execute-stack-empty.c (__enable_execute_stack): Add prototype.
+
+2011-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* shared-object.mk (c_flags-$o): Save c_flags.
+	($(base)$(objext)): Use it.
+	($(base)_s$(objext)): Likewise.
+
+2011-06-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* Makefile.in (lib2funcs): Add _clrsbsi2 and _clrsbdi2.
+	* libgcc-std.ver.in (GCC_4.7.0): New section.
+
+2011-06-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/49313
+	PR target/29524
+	* config/avr/t-avr: Fix line endings.
+	(intfuncs16): Remove _ffsXX2,  _clzXX2, _ctzXX2, _popcountXX2,
+	_parityXX2.
+
+2011-06-14  Olivier Hainque  <hainque@adacore.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/irix6-unwind.h: New file.
+	* config.host (mips-sgi-irix6.5*): Set md_unwind_header.
+
+2011-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/linux-unwind.h (STACK_BIAS): Define.
+	(sparc64_fallback_frame_state): Use it.
+	(sparc64_frob_update_context): Further adjust context.
+	* config/sparc/sol2-unwind.h (sparc64_frob_update_context): Likewise.
+	* config/sparc/sol2-ci.S: Add TARGET_FLAT handling.
+	* config/sparc/sol2-cn.S: Likewise.
+
+2011-06-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* enable-execute-stack-empty.c: New file.
+	* enable-execute-stack-mprotect.c: New file.
+	* config/i386/enable-execute-stack-mingw32.c: New file.
+	* config.host (enable_execute_stack): New variable.
+	Select appropriate variants.
+	* configure.ac: Link enable-execute-stack.c to
+	$enable_execute_stack.
+	* configure: Regenerate.
+	* Makefile.in (LIB2ADD): Add enable-execute-stack.c.
+	(lib2funcs): Remove _enable_execute_stack.
+
+2011-06-09  David S. Miller  <davem@davemloft.net>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (sparc-*-linux*): Correct md_unwind_header
+	filename.
+	(s390x-ibm-tpf*): Fix typo.
+
+2011-06-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (mips-sgi-irix6.5*): Add t-crtfm to tmake_file.
+	Add crtfastmath.o to extra_parts.
+	(mips64*-*-linux*, mips*-*-linux*): Use t-crtfm instead of
+	mips/t-crtfm.
+	* config/mips/t-crtfm: Remove.
+
+2011-06-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.host (hppa*-*-linux*): Correct md_unwind_header name.
+
+2011-06-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config.host (sh*-*-linux*): Fix typo.
+
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/linux-unwind.h: Move from ../gcc/config/alpha.
+	* config/alpha/osf5-unwind.h: Move from ../gcc/config/alpha.
+	* config/alpha/vms-unwind.h: Move from ../gcc/config/alpha.
+	* config/bfin/linux-unwind.h: Move from ../gcc/config/bfin.
+	* config/i386/linux-unwind.h: Move from ../gcc/config/i386.
+	* config/i386/sol2-unwind.h: Move from ../gcc/config/i386.
+	* config/i386/w32-unwind.h: Move from ../gcc/config/i386.
+	Wrap in !__MINGW64__.
+	* config/ia64/linux-unwind.h: Move from ../gcc/config/ia64.
+	* config/ia64/vms-unwind.h: Move from ../gcc/config/ia64.
+	* config/m68k/linux-unwind.h: Move from ../gcc/config/m68k.
+	* config/mips/linux-unwind.h: Move from ../gcc/config/mips.
+	* config/pa/hpux-unwind.h: Move from ../gcc/config/pa.
+	* config/pa/linux-unwind.h: Move from ../gcc/config/pa.
+	* config/rs6000/darwin-unwind.h: Move from ../gcc/config/rs6000.
+	Wrap in !__LP64__.
+	* config/rs6000/linux-unwind.h: Move from ../gcc/config/rs6000.
+	* config/s390/linux-unwind.h: Move from ../gcc/config/s390.
+	* config/s390/tpf-unwind.h: Move from ../gcc/config/s390.
+	* config/sh/linux-unwind.h: Move from ../gcc/config/sh.
+	* config/sparc/linux-unwind.h: Move from ../gcc/config/sparc.
+	* config/sparc/sol2-unwind.h: Move from ../gcc/config/sparc.
+	* config/xtensa/linux-unwind.h: Move from ../gcc/config/xtensa.
+	* config/no-unwind.h: New file.
+	* config.host (md_unwind_header): Document.
+	Define.
+	(alpha*-*-linux*, alpha*-dec-osf5.1*, alpha64-dec-*vms*,
+	alpha*-dec-*vms*, bfin*-uclinux*, bfin*-linux-uclibc*,
+	hppa*-*-linux*, hppa[12]*-*-hpux10*, hppa*64*-*-hpux11*,
+	hppa[12]*-*-hpux11*): Set md_unwind_header.
+	(i[34567]86-*-linux*): Handle i[34567]86-*-kopensolaris*-gnu.
+	Set md_unwind_header.
+	(x86_64-*-linux*, i[34567]86-*-solaris2*): Set md_unwind_header.
+	(i[34567]86-*-cygwin*): Split from i[34567]86-*-mingw*.
+	(i[34567]86-*-mingw*, ia64*-*-linux*, ia64-hp-*vms*,
+	m68k-*-uclinux*, m68k-*-linux*, mips64*-*-linux*, mips*-*-linux*,
+	powerpc-*-darwin*, powerpc-*-linux*, s390-*-linux*,
+	s390x-*-linux*,  s390x-ibm-tpf*, sh*-*-linux*, sparc-*-linux*,
+	sparc*-*-solaris2*, sparc64-*-linux*, xtensa*-*-linux*): Set
+	md_unwind_header.
+	* configure.ac: Link md-unwind-support.h to $md_unwind_header.
+	* configure: Regenerate.
+
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (mips-sgi-irix[56]*): Restrict to mips-sgi-irix6.5*.
+	Set tmake_file, extra_parts.
+	* config/mips/irix-crti.S: Move from ../gcc/config/mips/irix-crti.asm.
+	Remove O32 support.
+	* config/mips/irix-crtn.S: Move from ../gcc/config/mips/irix-crtn.asm.
+	Remove O32 support.
+	* config/mips/t-irix6: New file.
+	* config/mips/t-slibgcc-irix: New file.
+
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/s390/t-tpf (LIB2ADDEHDEP): Remove.
+	* config/t-sol2 (LIB2ADDEH): Use gcc_srcdir, add emutls.c.
+
+2011-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (target_thread_file): Determine thread model.
+	* configure: Regenerate.
+	* config.host (alpha*-dec-osf5.1*): Set tmake_file, extra_parts.
+	* config/alpha/t-alpha: New file.
+	* config/alpha/t-crtfm: Use $<.
+	* config/alpha/t-ieee: New file.
+	* config/alpha/t-osf-pthread: New file.
+	* config/alpha/t-slibgcc-osf: New file.
+	* config/alpha/libgcc-osf5.ver: New file.
+
 2011-06-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (i[34567]86-*-solaris2*): Add i386/t-crtfm to
@@ -236,7 +387,7 @@
 2010-09-09  Gerald Pfeifer  <gerald@pfeifer.com>
 	    Andrew Pinski  <pinskia@gmail.com>
 
-	PR target/40959	
+	PR target/40959
 	* config.host (ia64*-*-freebsd*): Set extra_parts.  Set tmake_file.
 
 2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>

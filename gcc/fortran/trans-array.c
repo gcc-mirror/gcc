@@ -5808,7 +5808,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       lse.string_length = rse.string_length;
       tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, true,
-				     expr->expr_type == EXPR_VARIABLE, true);
+				     expr->expr_type == EXPR_VARIABLE
+				     || expr->expr_type == EXPR_ARRAY, true);
       gfc_add_expr_to_block (&block, tmp);
 
       /* Finish the copying loops.  */
@@ -6681,18 +6682,22 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
       switch (purpose)
 	{
 	case DEALLOCATE_ALLOC_COMP:
+	  if (cmp_has_alloc_comps && !c->attr.pointer)
+	    {
+	      /* Do not deallocate the components of ultimate pointer
+		 components.  */
+	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				      decl, cdecl, NULL_TREE);
+	      rank = c->as ? c->as->rank : 0;
+	      tmp = structure_alloc_comps (c->ts.u.derived, comp, NULL_TREE,
+					   rank, purpose);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
+
 	  if (c->attr.allocatable && c->attr.dimension)
 	    {
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
-	      if (cmp_has_alloc_comps && !c->attr.pointer)
-		{
-		  /* Do not deallocate the components of ultimate pointer
-		     components.  */
-		  tmp = structure_alloc_comps (c->ts.u.derived, comp, NULL_TREE,
-					       c->as->rank, purpose);
-		  gfc_add_expr_to_block (&fnblock, tmp);
-		}
 	      tmp = gfc_trans_dealloc_allocated (comp);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }

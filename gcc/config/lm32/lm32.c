@@ -1,7 +1,7 @@
 /* Subroutines used for code generation on the Lattice Mico32 architecture.
    Contributed by Jon Beniston <jon@beniston.com>
 
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -65,7 +65,7 @@ static rtx emit_add (rtx dest, rtx src0, rtx src1);
 static void expand_save_restore (struct lm32_frame_info *info, int op);
 static void stack_adjust (HOST_WIDE_INT amount);
 static bool lm32_in_small_data_p (const_tree);
-static void lm32_setup_incoming_varargs (CUMULATIVE_ARGS * cum,
+static void lm32_setup_incoming_varargs (cumulative_args_t cum,
 					 enum machine_mode mode, tree type,
 					 int *pretend_size, int no_rtl);
 static bool lm32_rtx_costs (rtx x, int code, int outer_code, int *total,
@@ -75,25 +75,16 @@ static bool
 lm32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict);
 static HOST_WIDE_INT lm32_compute_frame_size (int size);
 static void lm32_option_override (void);
-static rtx lm32_function_arg (CUMULATIVE_ARGS * cum,
+static rtx lm32_function_arg (cumulative_args_t cum,
 			      enum machine_mode mode, const_tree type,
 			      bool named);
-static void lm32_function_arg_advance (CUMULATIVE_ARGS * cum,
+static void lm32_function_arg_advance (cumulative_args_t cum,
 				       enum machine_mode mode,
 				       const_tree type, bool named);
 static bool lm32_legitimate_constant_p (enum machine_mode, rtx);
 
-/* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
-static const struct default_options lm32_option_optimization_table[] =
-  {
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
-    { OPT_LEVELS_NONE, 0, NULL, 0 }
-  };
-
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE lm32_option_override
-#undef TARGET_OPTION_OPTIMIZATION_TABLE
-#define TARGET_OPTION_OPTIMIZATION_TABLE lm32_option_optimization_table
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_bool_0
 #undef TARGET_RTX_COSTS
@@ -118,8 +109,6 @@ static const struct default_options lm32_option_optimization_table[] =
 #define TARGET_CAN_ELIMINATE lm32_can_eliminate
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P lm32_legitimate_address_p
-#undef TARGET_EXCEPT_UNWIND_INFO
-#define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P lm32_legitimate_constant_p
 
@@ -634,9 +623,11 @@ lm32_print_operand_address (FILE * file, rtx addr)
     (otherwise it is an extra parameter matching an ellipsis).  */
 
 static rtx
-lm32_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+lm32_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		   const_tree type, bool named)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
+
   if (mode == VOIDmode)
     /* Compute operand 2 of the call insn.  */
     return GEN_INT (0);
@@ -651,10 +642,10 @@ lm32_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static void
-lm32_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+lm32_function_arg_advance (cumulative_args_t cum, enum machine_mode mode,
 			   const_tree type, bool named ATTRIBUTE_UNUSED)
 {
-  *cum += LM32_NUM_REGS2 (mode, type);
+  *get_cumulative_args (cum) += LM32_NUM_REGS2 (mode, type);
 }
 
 HOST_WIDE_INT
@@ -687,9 +678,10 @@ lm32_compute_initial_elimination_offset (int from, int to)
 }
 
 static void
-lm32_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+lm32_setup_incoming_varargs (cumulative_args_t cum_v, enum machine_mode mode,
 			     tree type, int *pretend_size, int no_rtl)
 {
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int first_anon_arg;
   tree fntype;
 

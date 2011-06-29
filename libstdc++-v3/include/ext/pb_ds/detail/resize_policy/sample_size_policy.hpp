@@ -47,25 +47,25 @@ namespace __gnu_pbds
   class sample_size_policy
   {
   public:
-    // Size type.
+    /// Size type.
     typedef std::size_t size_type;
 
-    // Default constructor.
+    /// Default constructor.
     sample_size_policy();
 
-    // Copy constructor.
+    /// Copy constructor.
     sample_range_hashing(const sample_size_policy&);
 
-    // Swaps content.
+    /// Swaps content.
     inline void
     swap(sample_size_policy& other);
 
   protected:
-    // Given a __size size, returns a __size that is larger.
+    /// Given a __size size, returns a __size that is larger.
     inline size_type
     get_nearest_larger_size(size_type size) const;
 
-    // Given a __size size, returns a __size that is smaller.
+    /// Given a __size size, returns a __size that is smaller.
     inline size_type
     get_nearest_smaller_size(size_type size) const;
   };

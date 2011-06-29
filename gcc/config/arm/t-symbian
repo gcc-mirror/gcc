@@ -1,4 +1,4 @@
-# Copyright (C) 2004, 2005, 2006, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005, 2006, 2008, 2011 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -33,7 +33,6 @@ LIB1ASMFUNCS += \
 # Include the gcc personality routine
 UNWIND_H = $(srcdir)/config/arm/unwind-arm.h
 LIB2ADDEH = $(srcdir)/unwind-c.c $(srcdir)/config/arm/pr-support.c
-LIB2ADDEHDEP = $(UNWIND_H)
 
 # Include half-float helpers.
 LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/arm/fp16.c

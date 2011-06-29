@@ -1,3 +1,17 @@
+2011-06-05  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (receiver_is_class_object): Expanded comment.
+	(objc_finish_message_expr): Likewise.
+
+2011-06-02  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/48539
+	* objc-act.c (objc_finish_message_expr): Warn if messaging a class
+	that was only declared using @class without an @interface.  Warn
+	if messaging an instance of a class that was only declared using
+	@class without an @interface, unless the receiver was also typed
+	with a protocol list.
+
 2011-06-01  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_decl_method_attributes): Implement nonnull
