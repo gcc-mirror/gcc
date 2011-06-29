@@ -6,6 +6,7 @@
 
 /* { dg-do run { xfail strongarm*-*-* xscale*-*-* } } */
 /* { dg-output "" { xfail avr32*-*-* } } */
+/* { dg-output "PR libffi/46660" { xfail mips-sgi-irix6* } } */
 /* { dg-skip-if "" arm*-*-* { "-mfloat-abi=hard" } { "" } } */
 
 #include "ffitest.h"
