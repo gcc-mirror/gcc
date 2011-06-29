@@ -1,3 +1,11 @@
+2011-06-29  Jason Merrill  <jason@redhat.com>
+
+	DR 990
+	* call.c (convert_like_real) [ck_user]: Handle value-initialization.
+	(build_new_method_call_1): Likewise.
+	* init.c (expand_default_init): Handle direct list-initialization
+	of aggregates.
+
 2011-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (union lang_tree_node): Use it in chain_next expression.
