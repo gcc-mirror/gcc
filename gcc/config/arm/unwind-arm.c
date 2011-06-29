@@ -32,13 +32,18 @@ extern void abort (void);
 typedef unsigned char bool;
 
 typedef struct _ZSt9type_info type_info; /* This names C++ type_info type */
+enum __cxa_type_match_result
+  {
+    ctm_failed = 0,
+    ctm_succeeded = 1,
+    ctm_succeeded_with_ptr_to_base = 2
+  };
 
 void __attribute__((weak)) __cxa_call_unexpected(_Unwind_Control_Block *ucbp);
 bool __attribute__((weak)) __cxa_begin_cleanup(_Unwind_Control_Block *ucbp);
-bool __attribute__((weak)) __cxa_type_match(_Unwind_Control_Block *ucbp,
-					    const type_info *rttip,
-					    bool is_reference,
-					    void **matched_object);
+enum __cxa_type_match_result __attribute__((weak)) __cxa_type_match
+  (_Unwind_Control_Block *ucbp, const type_info *rttip,
+   bool is_reference, void **matched_object);
 
 _Unwind_Ptr __attribute__((weak))
 __gnu_Unwind_Find_exidx (_Unwind_Ptr, int *);
@@ -1107,6 +1112,7 @@ __gnu_unwind_pr_common (_Unwind_State state,
 		      _uw rtti;
 		      bool is_reference = (data[0] & uint32_highbit) != 0;
 		      void *matched;
+		      enum __cxa_type_match_result match_type;
 
 		      /* Check for no-throw areas.  */
 		      if (data[1] == (_uw) -2)
@@ -1118,17 +1124,31 @@ __gnu_unwind_pr_common (_Unwind_State state,
 			{
 			  /* Match a catch specification.  */
 			  rtti = _Unwind_decode_target2 ((_uw) &data[1]);
-			  if (!__cxa_type_match (ucbp, (type_info *) rtti,
-						 is_reference,
-						 &matched))
-			    matched = (void *)0;
+			  match_type = __cxa_type_match (ucbp,
+							 (type_info *) rtti,
+							 is_reference,
+							 &matched);
 			}
+		      else
+			match_type = ctm_succeeded;
 
-		      if (matched)
+		      if (match_type)
 			{
 			  ucbp->barrier_cache.sp =
 			    _Unwind_GetGR (context, R_SP);
-			  ucbp->barrier_cache.bitpattern[0] = (_uw) matched;
+			  // ctm_succeeded_with_ptr_to_base really
+			  // means _c_t_m indirected the pointer
+			  // object.  We have to reconstruct the
+			  // additional pointer layer by using a temporary.
+			  if (match_type == ctm_succeeded_with_ptr_to_base)
+			    {
+			      ucbp->barrier_cache.bitpattern[2]
+				= (_uw) matched;
+			      ucbp->barrier_cache.bitpattern[0]
+				= (_uw) &ucbp->barrier_cache.bitpattern[2];
+			    }
+			  else
+			    ucbp->barrier_cache.bitpattern[0] = (_uw) matched;
 			  ucbp->barrier_cache.bitpattern[1] = (_uw) data;
 			  return _URC_HANDLER_FOUND;
 			}
