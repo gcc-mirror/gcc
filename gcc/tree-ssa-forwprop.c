@@ -260,9 +260,6 @@ get_prop_source_stmt (tree name, bool single_use_only, bool *single_use_p)
 static bool
 can_propagate_from (gimple def_stmt)
 {
-  use_operand_p use_p;
-  ssa_op_iter iter;
-
   gcc_assert (is_gimple_assign (def_stmt));
 
   /* If the rhs has side-effects we cannot propagate from it.  */
@@ -280,9 +277,8 @@ can_propagate_from (gimple def_stmt)
     return true;
 
   /* We cannot propagate ssa names that occur in abnormal phi nodes.  */
-  FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_USE)
-    if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (USE_FROM_PTR (use_p)))
-      return false;
+  if (stmt_references_abnormal_ssa_name (def_stmt))
+    return false;
 
   /* If the definition is a conversion of a pointer to a function type,
      then we can not apply optimizations as some targets require
@@ -1679,7 +1675,8 @@ associate_plusminus (gimple stmt)
 	{
 	  gimple def_stmt = SSA_NAME_DEF_STMT (rhs2);
 	  if (is_gimple_assign (def_stmt)
-	      && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR)
+	      && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR
+	      && can_propagate_from (def_stmt))
 	    {
 	      code = (code == MINUS_EXPR) ? PLUS_EXPR : MINUS_EXPR;
 	      gimple_assign_set_rhs_code (stmt, code);
@@ -1696,7 +1693,8 @@ associate_plusminus (gimple stmt)
 	{
 	  gimple def_stmt = SSA_NAME_DEF_STMT (rhs1);
 	  if (is_gimple_assign (def_stmt)
-	      && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR)
+	      && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR
+	      && can_propagate_from (def_stmt))
 	    {
 	      code = MINUS_EXPR;
 	      gimple_assign_set_rhs_code (stmt, code);
@@ -1739,7 +1737,7 @@ associate_plusminus (gimple stmt)
   if (TREE_CODE (rhs1) == SSA_NAME)
     {
       gimple def_stmt = SSA_NAME_DEF_STMT (rhs1);
-      if (is_gimple_assign (def_stmt))
+      if (is_gimple_assign (def_stmt) && can_propagate_from (def_stmt))
 	{
 	  enum tree_code def_code = gimple_assign_rhs_code (def_stmt);
 	  if (def_code == PLUS_EXPR
@@ -1839,7 +1837,7 @@ associate_plusminus (gimple stmt)
   if (rhs2 && TREE_CODE (rhs2) == SSA_NAME)
     {
       gimple def_stmt = SSA_NAME_DEF_STMT (rhs2);
-      if (is_gimple_assign (def_stmt))
+      if (is_gimple_assign (def_stmt) && can_propagate_from (def_stmt))
 	{
 	  enum tree_code def_code = gimple_assign_rhs_code (def_stmt);
 	  if (def_code == PLUS_EXPR

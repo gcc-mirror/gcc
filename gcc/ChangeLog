@@ -1,4 +1,13 @@
+2011-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/49539
+	* tree-ssa-forwprop.c (can_propagate_from): Check for abnormal SSA
+	names by means of stmt_references_abnormal_ssa_name.
+	(associate_plusminus): Call can_propagate_from before propagating
+	from definition statements.
+
 2011-06-29  Martin Jambor  <mjambor@suse.cz>
+
 	Backport from mainline
 	2011-06-24  Martin Jambor  <mjambor@suse.cz>
 
@@ -6,24 +15,27 @@
 	* tree-sra.c (sra_modify_assign): Choose the safe path for
 	aggregate copies if we also did scalar replacements.
 
-2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
+2011-06-28  Changpeng Fang  <changpeng.fang@amd.com>
+
 	Backport from mainline
 	2011-06-20  Changpeng Fang  <changpeng.fang@amd.com>
 
-	PR i386/49089
-        * config/i386/i386.c (avx256_split_unaligned_load): New definition.
-        (avx256_split_unaligned_store): New definition.
-        (ix86_option_override_internal): Enable avx256 unaligned load/store
-        splitting only when avx256_split_unaligned_load/store is set.
+	PR target/49089
+	* config/i386/i386.c (avx256_split_unaligned_load): New definition.
+	(avx256_split_unaligned_store): New definition.
+	(ix86_option_override_internal): Enable avx256 unaligned load/store
+	splitting only when avx256_split_unaligned_load/store is set.
 
-2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
+2011-06-28  Changpeng Fang  <changpeng.fang@amd.com>
+
 	Backport from mainline
 	2011-03-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (flag_opts): Fix a typo in
 	-mavx256-split-unaligned-store.
 
-2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
+2011-06-28  Changpeng Fang  <changpeng.fang@amd.com>
+
 	Backport from mainline
 	2011-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -32,7 +44,8 @@
 	(*avx_movu<ssemodesuffix><avxmodesuffix>): Likewise.
 	(*avx_movdqu<avxmodesuffix>): Likewise.
 
-2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
+2011-06-28  Changpeng Fang  <changpeng.fang@amd.com>
+
 	Backport from mainline
 	2011-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -55,7 +68,6 @@
 
 	* doc/invoke.texi: Document -mavx256-split-unaligned-load and
 	-mavx256-split-unaligned-store.
-	
 
 2011-06-28  Eric Botcazou  <ebotcazou@adacore.com>
 
