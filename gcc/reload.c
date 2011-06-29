@@ -923,7 +923,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
   int i;
   int dont_share = 0;
   int dont_remove_subreg = 0;
+#ifdef LIMIT_RELOAD_CLASS
   rtx *in_subreg_loc = 0, *out_subreg_loc = 0;
+#endif
   int secondary_in_reload = -1, secondary_out_reload = -1;
   enum insn_code secondary_in_icode = CODE_FOR_nothing;
   enum insn_code secondary_out_icode = CODE_FOR_nothing;
@@ -1068,7 +1070,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 #endif
 	  ))
     {
+#ifdef LIMIT_RELOAD_CLASS
       in_subreg_loc = inloc;
+#endif
       inloc = &SUBREG_REG (in);
       in = *inloc;
 #if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
@@ -1163,7 +1167,9 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 #endif
 	  ))
     {
+#ifdef LIMIT_RELOAD_CLASS
       out_subreg_loc = outloc;
+#endif
       outloc = &SUBREG_REG (out);
       out = *outloc;
 #if ! defined (LOAD_EXTEND_OP) && ! defined (WORD_REGISTER_OPERATIONS)
