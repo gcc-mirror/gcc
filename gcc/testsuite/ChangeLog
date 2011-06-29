@@ -1,3 +1,7 @@
+2011-06-29  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/torture/pr49169.c: Restrict to ARM and MIPS targets.
+
 2011-06-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/inline_1.c: Remove dg-excess-errors.

@@ -520,10 +520,6 @@ get_value_from_alignment (tree expr)
     val = bit_value_binop (PLUS_EXPR, TREE_TYPE (expr),
 			   TREE_OPERAND (base, 0), TREE_OPERAND (base, 1));
   else if (base
-	   /* ???  While function decls have DECL_ALIGN their addresses
-	      may encode extra information in the lower bits on some
-	      targets (PR47239).  Simply punt for function decls for now.  */
-	   && TREE_CODE (base) != FUNCTION_DECL
 	   && ((align = get_object_alignment (base, BIGGEST_ALIGNMENT))
 		> BITS_PER_UNIT))
     {

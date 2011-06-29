@@ -1,3 +1,5 @@
+/* { dg-do compile { target { arm*-*-* || mips*-*-* } } } */
+
 #include <stdlib.h>
 #include <stdint.h>
 

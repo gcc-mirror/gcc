@@ -9216,8 +9216,7 @@ get_pointer_modulus_and_residue (tree expr, unsigned HOST_WIDE_INT *residue,
   *residue = 0;
 
   code = TREE_CODE (expr);
-  if (code == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (expr, 0)) != FUNCTION_DECL)
+  if (code == ADDR_EXPR)
     {
       unsigned int bitalign;
       bitalign = get_object_alignment_1 (TREE_OPERAND (expr, 0), residue);

@@ -1,3 +1,13 @@
+2011-06-29  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/49545
+	* builtins.c (get_object_alignment_1): Update function comment.
+	Do not use DECL_ALIGN for functions, but test
+	TARGET_PTRMEMFUNC_VBIT_LOCATION instead.
+	* fold-const.c (get_pointer_modulus_and_residue): Don't check
+	for functions here.
+	* tree-ssa-ccp.c (get_value_from_alignment): Likewise.
+
 2011-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/49567
