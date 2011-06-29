@@ -231,6 +231,7 @@ reload			Ulrich Weigand		uweigand@de.ibm.com
 reload			Bernd Schmidt		bernds@codesourcery.com
 dfp.c, related		Ben Elliston		bje@gnu.org
 RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
+RTL optimizers		Richard Sandiford	rdsandiford@googlemail.com
 auto-vectorizer		Richard Guenther	rguenther@suse.de
 auto-vectorizer		Zdenek Dvorak		ook@ucw.cz
 auto-vectorizer		Ira Rosen		irar@il.ibm.com
