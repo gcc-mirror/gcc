@@ -264,8 +264,15 @@ called_as_built_in (tree node)
   return is_builtin_name (name);
 }
 
-/* Return the alignment in bits of EXP, an object.
-   Don't return more than MAX_ALIGN no matter what.  */
+/* Compute values M and N such that M divides (address of EXP - N) and
+   such that N < M.  Store N in *BITPOSP and return M.
+
+   Note that the address (and thus the alignment) computed here is based
+   on the address to which a symbol resolves, whereas DECL_ALIGN is based
+   on the address at which an object is actually located.  These two
+   addresses are not always the same.  For example, on ARM targets,
+   the address &foo of a Thumb function foo() has the lowest bit set,
+   whereas foo() itself starts on an even address.  */
 
 unsigned int
 get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
@@ -287,7 +294,21 @@ get_object_alignment_1 (tree exp, unsigned HOST_WIDE_INT *bitposp)
     exp = DECL_INITIAL (exp);
   if (DECL_P (exp)
       && TREE_CODE (exp) != LABEL_DECL)
-    align = DECL_ALIGN (exp);
+    {
+      if (TREE_CODE (exp) == FUNCTION_DECL)
+	{
+	  /* Function addresses can encode extra information besides their
+	     alignment.  However, if TARGET_PTRMEMFUNC_VBIT_LOCATION
+	     allows the low bit to be used as a virtual bit, we know
+	     that the address itself must be 2-byte aligned.  */
+	  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn)
+	    align = 2 * BITS_PER_UNIT;
+	  else
+	    align = BITS_PER_UNIT;
+	}
+      else
+	align = DECL_ALIGN (exp);
+    }
   else if (CONSTANT_CLASS_P (exp))
     {
       align = TYPE_ALIGN (TREE_TYPE (exp));
