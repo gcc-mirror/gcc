@@ -953,6 +953,10 @@ struct GTY(()) saved_scope {
   struct cp_binding_level *x_previous_class_level;
   tree x_saved_tree;
 
+  /* Only used for uses of this in trailing return type.  */
+  tree x_current_class_ptr;
+  tree x_current_class_ref;
+
   int x_processing_template_decl;
   int x_processing_specialization;
   BOOL_BITFIELD x_processing_explicit_instantiation : 1;
@@ -1070,12 +1074,14 @@ struct GTY(()) language_function {
    PARM_DECL for the `this' pointer.  The current_class_ref is an
    expression for `*this'.  */
 
-#define current_class_ptr \
-  (cfun && cp_function_chain					\
-   ? cp_function_chain->x_current_class_ptr : NULL_TREE)
-#define current_class_ref \
-  ((cfun && cp_function_chain)                                  \
-   ? cp_function_chain->x_current_class_ref : NULL_TREE)
+#define current_class_ptr			\
+  (*(cfun && cp_function_chain			\
+     ? &cp_function_chain->x_current_class_ptr	\
+     : &scope_chain->x_current_class_ptr))
+#define current_class_ref			\
+  (*(cfun && cp_function_chain			\
+     ? &cp_function_chain->x_current_class_ref	\
+     : &scope_chain->x_current_class_ref))
 
 /* The EH_SPEC_BLOCK for the exception-specifiers for the current
    function, if any.  */
