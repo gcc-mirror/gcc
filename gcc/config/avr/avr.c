@@ -5161,7 +5161,7 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 /* Implement `TARGET_ENCODE_SECTION_INFO'.  */
 
 static void
-avr_encode_section_info (tree decl, rtx rtl ATTRIBUTE_UNUSED,
+avr_encode_section_info (tree decl, rtx rtl,
                          int new_decl_p)
 {
   /* In avr_handle_progmem_attribute, DECL_INITIAL is not yet
@@ -5177,6 +5177,8 @@ avr_encode_section_info (tree decl, rtx rtl ATTRIBUTE_UNUSED,
                "uninitialized variable %q+D put into "
                "program memory area", decl);
     }
+
+  default_encode_section_info (decl, rtl, new_decl_p);
 }
 
 
