@@ -312,6 +312,7 @@ enum ix86_tune_indices {
   X86_TUNE_OPT_AGU,
   X86_TUNE_VECTORIZE_DOUBLE,
   X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL,
+  X86_TUNE_AVX128_OPTIMAL,
 
   X86_TUNE_LAST
 };
@@ -410,7 +411,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_VECTORIZE_DOUBLE]
 #define TARGET_SOFTWARE_PREFETCHING_BENEFICIAL \
 	ix86_tune_features[X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL]
-
+#define TARGET_AVX128_OPTIMAL \
+	ix86_tune_features[X86_TUNE_AVX128_OPTIMAL]
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
   X86_ARCH_CMOVE,		/* || TARGET_SSE */

@@ -2089,7 +2089,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_SOFTARE_PREFETCHING_BENEFICIAL: Enable software prefetching
      at -O3.  For the moment, the prefetching seems badly tuned for Intel
      chips.  */
-  m_K6_GEODE | m_AMD_MULTIPLE
+  m_K6_GEODE | m_AMD_MULTIPLE,
+
+  /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
+     the auto-vectorizer.  */
+  m_BDVER1
 };
 
 /* Feature tests against the various architecture variations.  */
@@ -2623,6 +2627,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-mvzeroupper",			MASK_VZEROUPPER },
     { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD},
     { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE},
+    { "-mprefer-avx128",		MASK_PREFER_AVX128},
   };
 
   const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (flag_opts) + 6][2];
@@ -3672,6 +3677,9 @@ ix86_option_override_internal (bool main_args_p)
 	  if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
 	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
+	  /* Enable 128-bit AVX instruction generation for the auto-vectorizer.  */
+	  if (TARGET_AVX128_OPTIMAL && !(target_flags_explicit & MASK_PREFER_AVX128))
+	    target_flags |= MASK_PREFER_AVX128;
 	}
     }
   else 
@@ -34614,7 +34622,7 @@ ix86_preferred_simd_mode (enum machine_mode mode)
       return V2DImode;
 
     case SFmode:
-      if (TARGET_AVX && !flag_prefer_avx128)
+      if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V8SFmode;
       else
 	return V4SFmode;
@@ -34622,7 +34630,7 @@ ix86_preferred_simd_mode (enum machine_mode mode)
     case DFmode:
       if (!TARGET_VECTORIZE_DOUBLE)
 	return word_mode;
-      else if (TARGET_AVX && !flag_prefer_avx128)
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
 	return V4DFmode;
       else if (TARGET_SSE2)
 	return V2DFmode;
@@ -34639,7 +34647,7 @@ ix86_preferred_simd_mode (enum machine_mode mode)
 static unsigned int
 ix86_autovectorize_vector_sizes (void)
 {
-  return (TARGET_AVX && !flag_prefer_avx128) ? 32 | 16 : 0;
+  return (TARGET_AVX && !TARGET_PREFER_AVX128) ? 32 | 16 : 0;
 }
 
 /* Initialize the GCC target structure.  */
