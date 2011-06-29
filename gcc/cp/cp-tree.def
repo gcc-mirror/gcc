@@ -207,7 +207,7 @@ DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", tcc_type, 0)
 DEFTREECODE (USING_DECL, "using_decl", tcc_declaration, 0)
 
 /* A using directive. The operand is USING_STMT_NAMESPACE.  */
-DEFTREECODE (USING_STMT, "using_directive", tcc_statement, 1)
+DEFTREECODE (USING_STMT, "using_stmt", tcc_statement, 1)
 
 /* An un-parsed default argument.  Holds a vector of input tokens and
    a vector of places where the argument was instantiated before
