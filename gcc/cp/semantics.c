@@ -5657,6 +5657,9 @@ constexpr_fn_retval (tree body)
 	return NULL_TREE;
       return error_mark_node;
 
+    case CLEANUP_POINT_EXPR:
+      return constexpr_fn_retval (TREE_OPERAND (body, 0));
+
     case USING_STMT:
       return NULL_TREE;
 
@@ -5683,8 +5686,6 @@ massage_constexpr_body (tree fun, tree body)
         body = EH_SPEC_STMTS (body);
       if (TREE_CODE (body) == MUST_NOT_THROW_EXPR)
 	body = TREE_OPERAND (body, 0);
-      if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
-        body = TREE_OPERAND (body, 0);
       body = constexpr_fn_retval (body);
     }
   return body;

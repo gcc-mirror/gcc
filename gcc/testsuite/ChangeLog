@@ -1,5 +1,8 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49520
+	* g++.dg/cpp0x/constexpr-using2.C: New.
+
 	* g++.dg/cpp0x/lambda/lambda-template3.C: New.
 
 	PR c++/45923
