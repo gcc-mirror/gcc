@@ -30,10 +30,11 @@
 using namespace __cxxabiv1;
 
 
-// Given the thrown type THROW_TYPE, pointer to a variable containing a
-// pointer to the exception object THROWN_PTR_P and a type CATCH_TYPE to
-// compare against, return whether or not there is a match and if so,
-// update *THROWN_PTR_P.
+// Given the thrown type THROW_TYPE, exception object UE_HEADER and a
+// type CATCH_TYPE to compare against, return whether or not there is
+// a match and if so, update *THROWN_PTR_P to point to either the
+// type-matched object, or in the case of a pointer type, the object
+// pointed to by the pointer.
 
 extern "C" __cxa_type_match_result
 __cxa_type_match(_Unwind_Exception* ue_header,
@@ -41,51 +42,51 @@ __cxa_type_match(_Unwind_Exception* ue_header,
 		 bool is_reference __attribute__((__unused__)),
 		 void** thrown_ptr_p)
 {
-  bool forced_unwind = __is_gxx_forced_unwind_class(ue_header->exception_class);
-  bool foreign_exception = !forced_unwind && !__is_gxx_exception_class(ue_header->exception_class);
-  bool dependent_exception =
-    __is_dependent_exception(ue_header->exception_class);
+  bool forced_unwind
+    = __is_gxx_forced_unwind_class(ue_header->exception_class);
+  bool foreign_exception
+    = !forced_unwind && !__is_gxx_exception_class(ue_header->exception_class);
+  bool dependent_exception
+    = __is_dependent_exception(ue_header->exception_class);
   __cxa_exception* xh = __get_exception_header_from_ue(ue_header);
   __cxa_dependent_exception *dx = __get_dependent_exception_from_ue(ue_header);
   const std::type_info* throw_type;
+  void *thrown_ptr = 0;
 
   if (forced_unwind)
     throw_type = &typeid(abi::__forced_unwind);
   else if (foreign_exception)
     throw_type = &typeid(abi::__foreign_exception);
-  else if (dependent_exception)
-    throw_type = __get_exception_header_from_obj
-      (dx->primaryException)->exceptionType;
   else
-    throw_type = xh->exceptionType;
-
-  void* thrown_ptr = *thrown_ptr_p;
+    {
+      if (dependent_exception)
+	xh = __get_exception_header_from_obj (dx->primaryException);
+      throw_type = xh->exceptionType;
+      // We used to require the caller set the target of thrown_ptr_p,
+      // but that's incorrect -- the EHABI makes no such requirement
+      // -- and not all callers will set it.  Fortunately callers that
+      // do initialize will always pass us the value we calculate
+      // here, so there's no backwards compatibility problem.
+      thrown_ptr = __get_object_from_ue (ue_header);
+    }
+  
+  __cxa_type_match_result result = ctm_succeeded;
 
   // Pointer types need to adjust the actual pointer, not
   // the pointer to pointer that is the exception object.
   // This also has the effect of passing pointer types
   // "by value" through the __cxa_begin_catch return value.
   if (throw_type->__is_pointer_p())
-    thrown_ptr = *(void**) thrown_ptr;
+    {
+      thrown_ptr = *(void**) thrown_ptr;
+      // We need to indicate the indirection to our caller.
+      result = ctm_succeeded_with_ptr_to_base;
+    }
 
   if (catch_type->__do_catch(throw_type, &thrown_ptr, 1))
     {
       *thrown_ptr_p = thrown_ptr;
-
-      if (typeid(*catch_type) == typeid (typeid(void*)))
-	{
-	  const __pointer_type_info *catch_pointer_type =
-	    static_cast<const __pointer_type_info *> (catch_type);
-	  const __pointer_type_info *throw_pointer_type =
-	    static_cast<const __pointer_type_info *> (throw_type);
-
-	  if (typeid (*catch_pointer_type->__pointee) != typeid (void)
-	      && (*catch_pointer_type->__pointee != 
-		  *throw_pointer_type->__pointee))
-	    return ctm_succeeded_with_ptr_to_base;
-	}
-
-      return ctm_succeeded;
+      return result;
     }
 
   return ctm_failed;

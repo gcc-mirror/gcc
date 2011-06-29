@@ -1,3 +1,9 @@
+2011-06-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libsupc++/eh_arm.c (__cxa_type_match): Construct address of
+	thrown object here.  Return succeded_with_ptr_to_base for all
+	pointer cases.
+
 2011-06-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/tr1/6_containers/tuple/creation_functions/tie2.cc: Fix for
