@@ -1056,6 +1056,50 @@
   [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
+(define_expand "mulhisi3"
+  [(set (reg:HI 18)
+        (match_operand:HI 1 "register_operand" ""))
+   (set (reg:HI 20)
+        (match_operand:HI 2 "register_operand" ""))
+   (set (reg:SI 22) 
+        (mult:SI (sign_extend:SI (reg:HI 18))
+                 (sign_extend:SI (reg:HI 20))))
+   (set (match_operand:SI 0 "register_operand" "") 
+        (reg:SI 22))]
+  "AVR_HAVE_MUL"
+  "")
+
+(define_expand "umulhisi3"
+  [(set (reg:HI 18)
+        (match_operand:HI 1 "register_operand" ""))
+   (set (reg:HI 20)
+        (match_operand:HI 2 "register_operand" ""))
+   (set (reg:SI 22) 
+        (mult:SI (zero_extend:SI (reg:HI 18))
+                 (zero_extend:SI (reg:HI 20))))
+   (set (match_operand:SI 0 "register_operand" "") 
+        (reg:SI 22))]
+  "AVR_HAVE_MUL"
+  "")
+
+(define_insn "*mulhisi3_call"
+  [(set (reg:SI 22) 
+        (mult:SI (sign_extend:SI (reg:HI 18))
+                 (sign_extend:SI (reg:HI 20))))]
+  "AVR_HAVE_MUL"
+  "%~call __mulhisi3"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*umulhisi3_call"
+  [(set (reg:SI 22) 
+        (mult:SI (zero_extend:SI (reg:HI 18))
+                 (zero_extend:SI (reg:HI 20))))]
+  "AVR_HAVE_MUL"
+  "%~call __umulhisi3"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
 ; / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / %
 ; divmod
 

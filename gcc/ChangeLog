@@ -1,3 +1,15 @@
+2011-06-29  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _mulhisi3, _umulhisi3,
+	_xmulhisi3_exit.
+	* config/avr/libgcc.S (_xmulhisi3_exit): New Function.
+	(__mulhisi3): Optimize if have MUL*.  Use XJMP instead of rjmp.
+	(__umulhisi3): Ditto.
+	* config/avr/avr.md (mulhisi3): New insn expender.
+	(umulhisi3): New insn expender.
+	(*mulhisi3_call): New insn.
+	(*umulhisi3_call): New insn.
+
 2011-06-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (LIBGCC2_CFLAGS): Remove -D__GCC_FLOAT_NOT_NEEDED.
