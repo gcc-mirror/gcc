@@ -158,8 +158,6 @@ static int replace_reloads;
 struct replacement
 {
   rtx *where;			/* Location to store in */
-  rtx *subreg_loc;		/* Location of SUBREG if WHERE is inside
-				   a SUBREG; 0 otherwise.  */
   int what;			/* which reload this is for */
   enum machine_mode mode;	/* mode it must have */
 };
@@ -1496,7 +1494,6 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	{
 	  struct replacement *r = &replacements[n_replacements++];
 	  r->what = i;
-	  r->subreg_loc = in_subreg_loc;
 	  r->where = inloc;
 	  r->mode = inmode;
 	}
@@ -1505,7 +1502,6 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  struct replacement *r = &replacements[n_replacements++];
 	  r->what = i;
 	  r->where = outloc;
-	  r->subreg_loc = out_subreg_loc;
 	  r->mode = outmode;
 	}
     }
@@ -1634,7 +1630,6 @@ push_replacement (rtx *loc, int reloadnum, enum machine_mode mode)
       struct replacement *r = &replacements[n_replacements++];
       r->what = reloadnum;
       r->where = loc;
-      r->subreg_loc = 0;
       r->mode = mode;
     }
 }
@@ -6287,33 +6282,7 @@ subst_reloads (rtx insn)
 	  if (GET_MODE (reloadreg) != r->mode && r->mode != VOIDmode)
 	    reloadreg = reload_adjust_reg_for_mode (reloadreg, r->mode);
 
-	  /* If we are putting this into a SUBREG and RELOADREG is a
-	     SUBREG, we would be making nested SUBREGs, so we have to fix
-	     this up.  Note that r->where == &SUBREG_REG (*r->subreg_loc).  */
-
-	  if (r->subreg_loc != 0 && GET_CODE (reloadreg) == SUBREG)
-	    {
-	      if (GET_MODE (*r->subreg_loc)
-		  == GET_MODE (SUBREG_REG (reloadreg)))
-		*r->subreg_loc = SUBREG_REG (reloadreg);
-	      else
-		{
-		  int final_offset =
-		    SUBREG_BYTE (*r->subreg_loc) + SUBREG_BYTE (reloadreg);
-
-		  /* When working with SUBREGs the rule is that the byte
-		     offset must be a multiple of the SUBREG's mode.  */
-		  final_offset = (final_offset /
-				  GET_MODE_SIZE (GET_MODE (*r->subreg_loc)));
-		  final_offset = (final_offset *
-				  GET_MODE_SIZE (GET_MODE (*r->subreg_loc)));
-
-		  *r->where = SUBREG_REG (reloadreg);
-		  SUBREG_BYTE (*r->subreg_loc) = final_offset;
-		}
-	    }
-	  else
-	    *r->where = reloadreg;
+	  *r->where = reloadreg;
 	}
       /* If reload got no reg and isn't optional, something's wrong.  */
       else
@@ -6327,10 +6296,6 @@ subst_reloads (rtx insn)
 void
 copy_replacements (rtx x, rtx y)
 {
-  /* We can't support X being a SUBREG because we might then need to know its
-     location if something inside it was replaced.  */
-  gcc_assert (GET_CODE (x) != SUBREG);
-
   copy_replacements_1 (&x, &y, n_replacements);
 }
 
@@ -6344,24 +6309,13 @@ copy_replacements_1 (rtx *px, rtx *py, int orig_replacements)
   const char *fmt;
 
   for (j = 0; j < orig_replacements; j++)
-    {
-      if (replacements[j].subreg_loc == px)
-	{
-	  r = &replacements[n_replacements++];
-	  r->where = replacements[j].where;
-	  r->subreg_loc = py;
-	  r->what = replacements[j].what;
-	  r->mode = replacements[j].mode;
-	}
-      else if (replacements[j].where == px)
-	{
-	  r = &replacements[n_replacements++];
-	  r->where = py;
-	  r->subreg_loc = 0;
-	  r->what = replacements[j].what;
-	  r->mode = replacements[j].mode;
-	}
-    }
+    if (replacements[j].where == px)
+      {
+	r = &replacements[n_replacements++];
+	r->where = py;
+	r->what = replacements[j].what;
+	r->mode = replacements[j].mode;
+      }
 
   x = *px;
   y = *py;
@@ -6387,13 +6341,8 @@ move_replacements (rtx *x, rtx *y)
   int i;
 
   for (i = 0; i < n_replacements; i++)
-    if (replacements[i].subreg_loc == x)
-      replacements[i].subreg_loc = y;
-    else if (replacements[i].where == x)
-      {
-	replacements[i].where = y;
-	replacements[i].subreg_loc = 0;
-      }
+    if (replacements[i].where == x)
+      replacements[i].where = y;
 }
 
 /* If LOC was scheduled to be replaced by something, return the replacement.
@@ -6411,36 +6360,19 @@ find_replacement (rtx *loc)
       if (reloadreg && r->where == loc)
 	{
 	  if (r->mode != VOIDmode && GET_MODE (reloadreg) != r->mode)
-	    reloadreg = gen_rtx_REG (r->mode, REGNO (reloadreg));
+	    reloadreg = reload_adjust_reg_for_mode (reloadreg, r->mode);
 
 	  return reloadreg;
 	}
-      else if (reloadreg && r->subreg_loc == loc)
+      else if (reloadreg && GET_CODE (*loc) == SUBREG
+	       && r->where == &SUBREG_REG (*loc))
 	{
-	  /* RELOADREG must be either a REG or a SUBREG.
+	  if (r->mode != VOIDmode && GET_MODE (reloadreg) != r->mode)
+	    reloadreg = reload_adjust_reg_for_mode (reloadreg, r->mode);
 
-	     ??? Is it actually still ever a SUBREG?  If so, why?  */
-
-	  if (REG_P (reloadreg))
-	    return gen_rtx_REG (GET_MODE (*loc),
-				(REGNO (reloadreg) +
-				 subreg_regno_offset (REGNO (SUBREG_REG (*loc)),
-						      GET_MODE (SUBREG_REG (*loc)),
-						      SUBREG_BYTE (*loc),
-						      GET_MODE (*loc))));
-	  else if (GET_MODE (reloadreg) == GET_MODE (*loc))
-	    return reloadreg;
-	  else
-	    {
-	      int final_offset = SUBREG_BYTE (reloadreg) + SUBREG_BYTE (*loc);
-
-	      /* When working with SUBREGs the rule is that the byte
-		 offset must be a multiple of the SUBREG's mode.  */
-	      final_offset = (final_offset / GET_MODE_SIZE (GET_MODE (*loc)));
-	      final_offset = (final_offset * GET_MODE_SIZE (GET_MODE (*loc)));
-	      return gen_rtx_SUBREG (GET_MODE (*loc), SUBREG_REG (reloadreg),
-				     final_offset);
-	    }
+	  return simplify_gen_subreg (GET_MODE (*loc), reloadreg,
+				      GET_MODE (SUBREG_REG (*loc)),
+				      SUBREG_BYTE (*loc));
 	}
     }
 
