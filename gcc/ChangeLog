@@ -1,3 +1,16 @@
+2011-06-29  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR rtl-optimization/49114
+	* reload.c (struct replacement): Remove SUBREG_LOC member.
+	(push_reload): Do not set it.
+	(push_replacement): Likewise.
+	(subst_reload): Remove dead code.
+	(copy_replacements): Remove assertion.
+	(copy_replacements_1): Do not handle SUBREG_LOC.
+	(move_replacements): Likewise.
+	(find_replacement): Remove dead code.  Use reload_adjust_reg_for_mode.
+	Detect subregs via recursive descent instead of via SUBREG_LOC.
+
 2011-06-29  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/avr.c (avr_encode_section_info): Dispatch to
