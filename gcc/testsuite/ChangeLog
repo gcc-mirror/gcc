@@ -1,3 +1,10 @@
+2011-06-29  Martin Jambor  <mjambor@suse.cz>
+	Backport from mainline
+	2011-06-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimizations/49516
+	* g++.dg/tree-ssa/pr49516.C: New test.
+
 2011-06-28 Changpeng Fang <changpeng.fang@amd.com>
 	Backport from mainline
 	2011-03-27  H.J. Lu  <hongjiu.lu@intel.com>

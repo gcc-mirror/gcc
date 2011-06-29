@@ -2813,7 +2813,8 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
      there to do the copying and then load the scalar replacements of the LHS.
      This is what the first branch does.  */
 
-  if (gimple_has_volatile_ops (*stmt)
+  if (modify_this_stmt
+      || gimple_has_volatile_ops (*stmt)
       || contains_vce_or_bfcref_p (rhs)
       || contains_vce_or_bfcref_p (lhs))
     {
