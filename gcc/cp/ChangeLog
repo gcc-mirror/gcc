@@ -1,5 +1,14 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	DR 1207
+	PR c++/49003
+	* cp-tree.h (struct saved_scope): Add x_current_class_ptr,
+	x_current_class_ref.
+	(current_class_ptr, current_class_ref): Use them.
+	* decl.c (build_this_parm): Handle getting the class type.
+	* parser.c (cp_parser_late_return_type_opt): Set up 'this'
+	for use within the trailing return type.
+
 	* pt.c (tsubst_decl) [VAR_DECL]: In unevaluated operand,
 	don't tsubst DECL_INITIAL unless our type use auto.
 

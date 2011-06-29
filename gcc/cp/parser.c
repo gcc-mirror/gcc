@@ -1696,7 +1696,7 @@ static cp_cv_quals cp_parser_cv_qualifier_seq_opt
 static cp_virt_specifiers cp_parser_virt_specifier_seq_opt
   (cp_parser *);
 static tree cp_parser_late_return_type_opt
-  (cp_parser *);
+  (cp_parser *, cp_cv_quals);
 static tree cp_parser_declarator_id
   (cp_parser *, bool);
 static tree cp_parser_type_id
@@ -14968,7 +14968,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
 
 		  late_return
-		    = cp_parser_late_return_type_opt (parser);
+		    = cp_parser_late_return_type_opt (parser, cv_quals);
 
 		  /* Create the function-declarator.  */
 		  declarator = make_call_declarator (declarator,
@@ -15537,9 +15537,10 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
    Returns the type indicated by the type-id.  */
 
 static tree
-cp_parser_late_return_type_opt (cp_parser* parser)
+cp_parser_late_return_type_opt (cp_parser* parser, cp_cv_quals quals)
 {
   cp_token *token;
+  tree type;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -15550,7 +15551,23 @@ cp_parser_late_return_type_opt (cp_parser* parser)
   /* Consume the ->.  */
   cp_lexer_consume_token (parser->lexer);
 
-  return cp_parser_trailing_type_id (parser);
+  if (current_class_type)
+    {
+      /* DR 1207: 'this' is in scope in the trailing return type.  */
+      tree this_parm = build_this_parm (current_class_type, quals);
+      gcc_assert (current_class_ptr == NULL_TREE);
+      current_class_ref
+	= cp_build_indirect_ref (this_parm, RO_NULL, tf_warning_or_error);
+      /* Set this second to avoid shortcut in cp_build_indirect_ref.  */
+      current_class_ptr = this_parm;
+    }
+
+  type = cp_parser_trailing_type_id (parser);
+
+  if (current_class_type)
+    current_class_ptr = current_class_ref = NULL_TREE;
+
+  return type;
 }
 
 /* Parse a declarator-id.

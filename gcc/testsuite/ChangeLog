@@ -1,5 +1,9 @@
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49003
+	* g++.dg/cpp0x/trailing6.C: New.
+	* g++.dg/cpp0x/pr45908.C: No error.
+
 	PR c++/49272
 	* g++.old-deja/g++.jason/rfg10.C: Accept other overflow error too.
 
