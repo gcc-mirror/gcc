@@ -1,3 +1,11 @@
+2011-06-29  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/set.h, unordered_map, multiset.h, forward_list,
+	unordered_set, vector, deque, string, list, multimap.h: Remove
+	base class default constructor calls.
+	* include/debug/map.h: Likewise and cleanup several redefinition of
+	base iterator typedef.
+
 2011-06-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* libsupc++/eh_arm.c (__cxa_type_match): Construct address of

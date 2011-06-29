@@ -45,7 +45,6 @@ namespace __debug
       public __gnu_debug::_Safe_sequence<deque<_Tp, _Allocator> >
     {
       typedef  _GLIBCXX_STD_C::deque<_Tp, _Allocator> _Base;
-      typedef __gnu_debug::_Safe_sequence<deque> _Safe_base;
 
       typedef typename _Base::const_iterator _Base_const_iterator;
       typedef typename _Base::iterator _Base_iterator;
@@ -98,19 +97,19 @@ namespace __debug
         { }
 
       deque(const deque& __x)
-      : _Base(__x), _Safe_base() { }
+      : _Base(__x) { }
 
       deque(const _Base& __x)
-      : _Base(__x), _Safe_base() { }
+      : _Base(__x) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       deque(deque&& __x)
-      : _Base(std::move(__x)), _Safe_base()
+      : _Base(std::move(__x))
       { this->_M_swap(__x); }
 
       deque(initializer_list<value_type> __l,
 	    const allocator_type& __a = allocator_type())
-      : _Base(__l, __a), _Safe_base() { }
+      : _Base(__l, __a) { }
 #endif
 
       ~deque() _GLIBCXX_NOEXCEPT { }

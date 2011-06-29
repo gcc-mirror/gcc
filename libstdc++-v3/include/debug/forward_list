@@ -46,7 +46,6 @@ namespace __debug
       public __gnu_debug::_Safe_sequence<forward_list<_Tp, _Alloc> >
     {
       typedef _GLIBCXX_STD_C::forward_list<_Tp, _Alloc> _Base;
-      typedef __gnu_debug::_Safe_sequence<forward_list> _Safe_base;
 
       typedef typename _Base::iterator       _Base_iterator;
       typedef typename _Base::const_iterator _Base_const_iterator;
