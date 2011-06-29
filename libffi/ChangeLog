@@ -1,5 +1,10 @@
 2011-06-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* testsuite/libffi.call/cls_double_va.c: Move PR number to comment.
+	* testsuite/libffi.call/cls_longdouble_va.c: Likewise.
+
+2011-06-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR libffi/46660
 	* testsuite/libffi.call/cls_double_va.c: xfail dg-output on
 	mips-sgi-irix6*.
