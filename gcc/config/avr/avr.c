@@ -108,6 +108,7 @@ static void avr_function_arg_advance (cumulative_args_t, enum machine_mode,
 				      const_tree, bool);
 static bool avr_function_ok_for_sibcall (tree, tree);
 static void avr_asm_named_section (const char *name, unsigned int flags, tree decl);
+static void avr_encode_section_info (tree, rtx, int);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -197,6 +198,8 @@ static const struct attribute_spec avr_attribute_table[] =
 
 #undef TARGET_ASM_INIT_SECTIONS
 #define TARGET_ASM_INIT_SECTIONS avr_asm_init_sections
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST avr_register_move_cost
@@ -4941,12 +4944,7 @@ avr_handle_progmem_attribute (tree *node, tree name,
 	}
       else if (TREE_STATIC (*node) || DECL_EXTERNAL (*node))
 	{
-	  if (DECL_INITIAL (*node) == NULL_TREE && !DECL_EXTERNAL (*node))
-	    {
-	      warning (0, "only initialized variables can be placed into "
-		       "program memory area");
-	      *no_add_attrs = true;
-	    }
+          *no_add_attrs = false;
 	}
       else
 	{
@@ -5153,7 +5151,32 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 		 ".noinit section");
     }
 
+  if (0 == strncmp (name, ".progmem.data", strlen (".progmem.data")))
+    flags &= ~SECTION_WRITE;
+  
   return flags;
+}
+
+
+/* Implement `TARGET_ENCODE_SECTION_INFO'.  */
+
+static void
+avr_encode_section_info (tree decl, rtx rtl ATTRIBUTE_UNUSED,
+                         int new_decl_p)
+{
+  /* In avr_handle_progmem_attribute, DECL_INITIAL is not yet
+     readily available, see PR34734.  So we postpone the warning
+     about uninitialized data in program memory section until here.  */
+   
+  if (new_decl_p
+      && decl && DECL_P (decl)
+      && NULL_TREE == DECL_INITIAL (decl)
+      && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
+    {
+      warning (OPT_Wuninitialized,
+               "uninitialized variable %q+D put into "
+               "program memory area", decl);
+    }
 }
 
 
