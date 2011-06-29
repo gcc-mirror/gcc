@@ -1,3 +1,9 @@
+2011-06-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/inline_1.c: Remove dg-excess-errors.
+	* gcc.dg/inline_2.c: Likewise.
+	* gcc.dg/unroll_1.c: Likewise.
+
 2011-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/49567
