@@ -1,3 +1,10 @@
+2011-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49567
+	* dwarf2out.c (mem_loc_descriptor) <case ZERO_EXTEND>: Give up
+	for non-MODE_INT modes instead of asserting the mode has MODE_INT
+	class.
+
 2011-06-29  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/34734
