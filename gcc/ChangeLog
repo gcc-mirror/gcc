@@ -1,3 +1,23 @@
+2011-06-30  Ira Rosen  <ira.rosen@linaro.org>
+
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Handle
+	both pattern and original statements if necessary.
+	(vect_transform_loop): Likewise.
+	* tree-vect-patterns.c (vect_pattern_recog): Update documentation.
+	* tree-vect-stmts.c (vect_mark_relevant): Add new argument.
+	Mark the pattern statement only if the original statement doesn't
+	have its own uses.
+	(process_use): Call vect_mark_relevant with additional parameter.
+	(vect_mark_stmts_to_be_vectorized): Likewise.
+	(vect_get_vec_def_for_operand): Use vectorized pattern statement.
+	(vect_analyze_stmt): Handle both pattern and original statements
+	if necessary.
+	(vect_transform_stmt): Don't store vectorized pattern statement
+	in the original statement.
+	(vect_is_simple_use_1): Use related pattern statement only if the
+	original statement is irrelevant.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Likewise.
+
 2011-06-29  Changpeng Fang <changpeng.fang@amd.com>
 
 	* config/i386/i386.opt (mprefer-avx128): Redefine the flag as a Mask option.

@@ -181,6 +181,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
   stmt_vec_info stmt_info;
   int i;
   HOST_WIDE_INT dummy;
+  gimple stmt, pattern_stmt = NULL;
+  bool analyze_pattern_stmt = false;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_determine_vectorization_factor ===");
@@ -241,11 +243,19 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	    }
 	}
 
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+      for (si = gsi_start_bb (bb); !gsi_end_p (si) || analyze_pattern_stmt;)
         {
-	  tree vf_vectype;
-	  gimple stmt = gsi_stmt (si), pattern_stmt;
-	  stmt_info = vinfo_for_stmt (stmt);
+          tree vf_vectype;
+
+          if (analyze_pattern_stmt)
+            {
+              stmt = pattern_stmt;
+              analyze_pattern_stmt = false;
+            }
+          else
+            stmt = gsi_stmt (si);
+
+          stmt_info = vinfo_for_stmt (stmt);
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
@@ -276,9 +286,15 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	        {
 	          if (vect_print_dump_info (REPORT_DETAILS))
 	            fprintf (vect_dump, "skip.");
+                  gsi_next (&si);
 	          continue;
                 }
 	    }
+          else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
+                   && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
+                   && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
+                       || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
+            analyze_pattern_stmt = true;
 
 	  if (gimple_get_lhs (stmt) == NULL_TREE)
 	    {
@@ -383,6 +399,9 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	  if (!vectorization_factor
 	      || (nunits > vectorization_factor))
 	    vectorization_factor = nunits;
+
+          if (!analyze_pattern_stmt)
+            gsi_next (&si);
         }
     }
 
@@ -5057,6 +5076,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   tree cond_expr = NULL_TREE;
   gimple_seq cond_expr_stmt_list = NULL;
   bool do_peeling_for_loop_bound;
+  gimple stmt, pattern_stmt;
+  bool transform_pattern_stmt = false;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vec_transform_loop ===");
@@ -5144,10 +5165,18 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	    }
 	}
 
-      for (si = gsi_start_bb (bb); !gsi_end_p (si);)
+      pattern_stmt = NULL;
+      for (si = gsi_start_bb (bb); !gsi_end_p (si) || transform_pattern_stmt;)
 	{
-	  gimple stmt = gsi_stmt (si), pattern_stmt;
 	  bool is_store;
+
+          if (transform_pattern_stmt)
+            {
+              stmt = pattern_stmt;
+              transform_pattern_stmt = false;
+            }
+          else
+            stmt = gsi_stmt (si);
 
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
@@ -5186,6 +5215,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	          continue;
                 }
 	    }
+          else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
+                   && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
+                   && (STMT_VINFO_RELEVANT_P (vinfo_for_stmt (pattern_stmt))
+                       || STMT_VINFO_LIVE_P (vinfo_for_stmt (pattern_stmt))))
+            transform_pattern_stmt = true;
 
 	  gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
 	  nunits = (unsigned int) TYPE_VECTOR_SUBPARTS (
@@ -5214,8 +5248,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */
 	      if (!vinfo_for_stmt (stmt) || PURE_SLP_STMT (stmt_info))
 		{
-		  gsi_next (&si);
-		  continue;
+                  if (!transform_pattern_stmt)
+ 		    gsi_next (&si);
+  		  continue;
 		}
 	    }
 
@@ -5234,7 +5269,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		     the chain.  */
 		  vect_remove_stores (GROUP_FIRST_ELEMENT (stmt_info));
 		  gsi_remove (&si, true);
-		  continue;
+ 		  continue;
 		}
 	      else
 		{
@@ -5244,7 +5279,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		  continue;
 		}
 	    }
-	  gsi_next (&si);
+
+          if (!transform_pattern_stmt)
+ 	    gsi_next (&si);
 	}		        /* stmts in BB */
     }				/* BBs in loop */
 
