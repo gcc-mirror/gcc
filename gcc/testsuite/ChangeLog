@@ -1,3 +1,10 @@
+2011-06-30  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR libobjc/36610
+	* objc.dg/torture/forward-1.m: Remove dg-xfail-run-if.
+	Only skip on 64-bit *-*-darwin8* && !objc2.
+
 2011-06-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38752
