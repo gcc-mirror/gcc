@@ -1,3 +1,8 @@
+2011-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* df-scan.c (df_get_entry_block_def_set): Use INCOMING_REGNO macro
+	unconditionally.
+
 2011-06-30  Richard Guenther  <rguenther@suse.de>
 
 	* opts.c (finish_options): Do not disable IPA-PTA during ltrans.
@@ -66,10 +71,12 @@
 	original statement is irrelevant.
 	* tree-vect-slp.c (vect_get_and_check_slp_defs): Likewise.
 
-2011-06-29  Changpeng Fang <changpeng.fang@amd.com>
+2011-06-29  Changpeng Fang  <changpeng.fang@amd.com>
 
-	* config/i386/i386.opt (mprefer-avx128): Redefine the flag as a Mask option.
-	* config/i386/i386.h (ix86_tune_indices): Add X86_TUNE_AVX128_OPTIMAL entry.
+	* config/i386/i386.opt (mprefer-avx128): Redefine the flag as a Mask
+	option.
+	* config/i386/i386.h (ix86_tune_indices): Add X86_TUNE_AVX128_OPTIMAL
+	entry.
 	(TARGET_AVX128_OPTIMAL): New definition.
 	* config/i386/i386.c (initial_ix86_tune_features): Initialize
 	X86_TUNE_AVX128_OPTIMAL entry.
