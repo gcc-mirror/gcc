@@ -919,21 +919,6 @@ dr_analyze_alias (struct data_reference *dr)
     }
 }
 
-/* Returns true if the address of DR is invariant.  */
-
-static bool
-dr_address_invariant_p (struct data_reference *dr)
-{
-  unsigned i;
-  tree idx;
-
-  FOR_EACH_VEC_ELT (tree, DR_ACCESS_FNS (dr), i, idx)
-    if (tree_contains_chrecs (idx, NULL))
-      return false;
-
-  return true;
-}
-
 /* Frees data reference DR.  */
 
 void
@@ -4228,19 +4213,6 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
       dr = create_data_ref (nest, loop_containing_stmt (stmt),
 			    *ref->pos, stmt, ref->is_read);
       gcc_assert (dr != NULL);
-
-      /* FIXME -- data dependence analysis does not work correctly for objects
-         with invariant addresses in loop nests.  Let us fail here until the
-	 problem is fixed.  */
-      if (dr_address_invariant_p (dr) && nest)
-	{
-	  free_data_ref (dr);
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "\tFAILED as dr address is invariant\n");
-	  ret = false;
-	  break;
-	}
-
       VEC_safe_push (data_reference_p, heap, *datarefs, dr);
     }
   VEC_free (data_ref_loc, heap, references);
