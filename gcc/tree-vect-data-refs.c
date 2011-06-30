@@ -2302,9 +2302,9 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       return false;
     }
 
-  /* Don't allow invariant accesses in loops.  */
+  /* Allow invariant loads in loops.  */
   if (loop_vinfo && dr_step == 0)
-    return false;
+    return DR_IS_READ (dr);
 
   if (loop && nested_in_vect_loop_p (loop, stmt))
     {

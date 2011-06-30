@@ -1,3 +1,13 @@
+2011-06-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46787
+	* tree-data-ref.c (dr_address_invariant_p): Remove.
+	(find_data_references_in_stmt): Invariant accesses are ok now.
+	* tree-vect-stmts.c (vectorizable_load): Handle invariant
+	loads.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_access): Allow
+	invariant loads.
+
 2011-06-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/49094

@@ -4123,7 +4123,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       && code != COMPONENT_REF
       && code != IMAGPART_EXPR
       && code != REALPART_EXPR
-      && code != MEM_REF)
+      && code != MEM_REF
+      && TREE_CODE_CLASS (code) != tcc_declaration)
     return false;
 
   if (!STMT_VINFO_DATA_REF (stmt_info))
@@ -4574,30 +4575,14 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      if (inv_p && !bb_vinfo)
 		{
 		  gcc_assert (!strided_load);
-		  gcc_assert (nested_in_vect_loop_p (loop, stmt));
 		  if (j == 0)
 		    {
-		      int k;
-		      tree t = NULL_TREE;
-		      tree vec_inv, bitpos, bitsize = TYPE_SIZE (scalar_type);
-
-		      /* CHECKME: bitpos depends on endianess?  */
-		      bitpos = bitsize_zero_node;
-		      vec_inv = build3 (BIT_FIELD_REF, scalar_type, new_temp,
-					bitsize, bitpos);
-		      vec_dest = vect_create_destination_var (scalar_dest,
-							      NULL_TREE);
-		      new_stmt = gimple_build_assign (vec_dest, vec_inv);
-		      new_temp = make_ssa_name (vec_dest, new_stmt);
-		      gimple_assign_set_lhs (new_stmt, new_temp);
-		      vect_finish_stmt_generation (stmt, new_stmt, gsi);
-
-		      for (k = nunits - 1; k >= 0; --k)
-			t = tree_cons (NULL_TREE, new_temp, t);
-		      /* FIXME: use build_constructor directly.  */
-		      vec_inv = build_constructor_from_list (vectype, t);
+		      tree vec_inv;
+		      gimple_stmt_iterator gsi2 = *gsi;
+		      gsi_next (&gsi2);
+		      vec_inv = build_vector_from_val (vectype, scalar_dest);
 		      new_temp = vect_init_vector (stmt, vec_inv,
-						   vectype, gsi);
+						   vectype, &gsi2);
 		      new_stmt = SSA_NAME_DEF_STMT (new_temp);
 		    }
 		  else
