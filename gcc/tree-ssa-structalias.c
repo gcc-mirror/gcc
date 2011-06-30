@@ -4002,7 +4002,6 @@ find_func_aliases_for_builtin_call (gimple t)
       case BUILT_IN_STPCPY_CHK:
       case BUILT_IN_STRCAT_CHK:
       case BUILT_IN_STRNCAT_CHK:
-      case BUILT_IN_ASSUME_ALIGNED:
 	{
 	  tree res = gimple_call_lhs (t);
 	  tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
@@ -4066,6 +4065,20 @@ find_func_aliases_for_builtin_call (gimple t)
 	  FOR_EACH_VEC_ELT (ce_s, lhsc, i, lhsp)
 	      process_constraint (new_constraint (*lhsp, ac));
 	  VEC_free (ce_s, heap, lhsc);
+	  return true;
+	}
+      case BUILT_IN_ASSUME_ALIGNED:
+	{
+	  tree res = gimple_call_lhs (t);
+	  tree dest = gimple_call_arg (t, 0);
+	  if (res != NULL_TREE)
+	    {
+	      get_constraint_for (res, &lhsc);
+	      get_constraint_for (dest, &rhsc);
+	      process_all_all_constraints (lhsc, rhsc);
+	      VEC_free (ce_s, heap, lhsc);
+	      VEC_free (ce_s, heap, rhsc);
+	    }
 	  return true;
 	}
       /* All the following functions do not return pointers, do not

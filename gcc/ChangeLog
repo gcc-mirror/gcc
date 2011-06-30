@@ -1,5 +1,8 @@
 2011-06-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call): Fix
+	handling of BUILT_IN_ASSUME_ALIGNED.
+
 	PR debug/49364
 	* dwarf2out.c (output_abbrev_section): Don't return early
 	if abbrev_die_table_in_use is 1.
