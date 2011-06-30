@@ -10,11 +10,11 @@ fi
 # type -p is missing from Solaris 2 /bin/sh and /bin/ksh (ksh88), but both
 # ksh93 and bash have it.
 # type output format differs between ksh88 and ksh93, so avoid it if
-# type -p is present.
+# type -p is present.  Unfortunately, HP-UX /bin/sh ignores -p with type.
 # Fall back to whence which ksh88 and ksh93 provide, but bash does not.
 
 which () {
-    path=`type -p $* 2>/dev/null` && { echo $path; return 0; }
+    path=`type -p $* 2>/dev/null | awk '{print $NF}'` && { echo $path; return 0; }
     path=`type $* 2>/dev/null | awk '{print $NF}'` && { echo $path; return 0; }
     path=`whence $* 2>/dev/null` && { echo $path; return 0; }
     return 1

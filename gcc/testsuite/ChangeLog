@@ -1,3 +1,8 @@
+2011-06-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ada/49511
+	* ada/acats/run_acats (which): Use last field of type -p output.
+
 2011-06-30  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 
