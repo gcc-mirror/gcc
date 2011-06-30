@@ -1,3 +1,18 @@
+2011-06-30  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (struct reg_saved_in_data): Provide a typedef.
+	Define a vector of this type.
+	(regs_saved_in_regs): Use a VEC.
+	(num_regs_saved_in_regs): Remove.
+	(compare_reg_or_pc): New.
+	(record_reg_saved_in_reg): Split out from...
+	(dwarf2out_flush_queued_reg_saves): ... here.
+	(clobbers_queued_reg_save): Update for VEC.
+	(reg_saved_in): Likewise.
+	(dwarf2out_frame_debug_init): Likewise.
+	(dwarf2out_reg_save_reg): Use record_reg_saved_in_reg.
+	(dwarf2out_frame_debug_cfa_register): Likewise.
+
 2011-06-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/49572
