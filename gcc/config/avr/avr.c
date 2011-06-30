@@ -78,7 +78,7 @@ static rtx avr_function_value (const_tree, const_tree, bool);
 static void avr_insert_attributes (tree, tree *);
 static void avr_asm_init_sections (void);
 static unsigned int avr_section_type_flags (tree, const char *, int);
-
+static void avr_encode_section_info (tree, rtx, int);
 static void avr_reorg (void);
 static void avr_asm_out_ctor (rtx, int);
 static void avr_asm_out_dtor (rtx, int);
@@ -176,6 +176,8 @@ static const struct default_options avr_option_optimization_table[] =
 #define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST avr_register_move_cost
 #undef TARGET_MEMORY_MOVE_COST
@@ -4961,12 +4963,7 @@ avr_handle_progmem_attribute (tree *node, tree name,
 	}
       else if (TREE_STATIC (*node) || DECL_EXTERNAL (*node))
 	{
-	  if (DECL_INITIAL (*node) == NULL_TREE && !DECL_EXTERNAL (*node))
-	    {
-	      warning (0, "only initialized variables can be placed into "
-		       "program memory area");
-	      *no_add_attrs = true;
-	    }
+          *no_add_attrs = false;
 	}
       else
 	{
@@ -5109,6 +5106,30 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 
   return flags;
 }
+
+
+/* Implement `TARGET_ENCODE_SECTION_INFO'.  */
+
+static void
+avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
+{
+  /* In avr_handle_progmem_attribute, DECL_INITIAL is not yet
+     readily available, see PR34734.  So we postpone the warning
+     about uninitialized data in program memory section until here.  */
+   
+  if (new_decl_p
+      && decl && DECL_P (decl)
+      && NULL_TREE == DECL_INITIAL (decl)
+      && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
+    {
+      warning (OPT_Wuninitialized,
+               "uninitialized variable %q+D put into "
+               "program memory area", decl);
+    }
+
+  default_encode_section_info (decl, rtl, new_decl_p);
+}
+
 
 /* Outputs some appropriate text to go at the start of an assembler
    file.  */
