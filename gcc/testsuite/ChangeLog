@@ -1,3 +1,8 @@
+2011-06-30  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/slp-widen-mult-half.c: New test.
+	* gcc.dg/vect/vect-widen-mult-half.c: New test.
+
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49216

@@ -1016,10 +1016,8 @@ vect_pattern_recog_1 (
 
    If vectorization succeeds, vect_transform_stmt will skip over {S1,S2,S3}
    (because they are marked as irrelevant).  It will vectorize S6, and record
-   a pointer to the new vector stmt VS6 both from S6 (as usual), and also
-   from S4.  We do that so that when we get to vectorizing stmts that use the
-   def of S4 (like S5 that uses a_0), we'll know where to take the relevant
-   vector-def from.  S4 will be skipped, and S5 will be vectorized as usual:
+   a pointer to the new vector stmt VS6 from S6 (as usual).
+   S4 will be skipped, and S5 will be vectorized as usual:
 
                                   in_pattern_p  related_stmt    vec_stmt
          S1: a_i = ....                 -       -               -
@@ -1035,7 +1033,21 @@ vect_pattern_recog_1 (
    elsewhere), and we'll end up with:
 
         VS6: va_new = ....
-        VS5: ... = ..vuse(va_new)..  */
+        VS5: ... = ..vuse(va_new)..
+
+   In case of more than one pattern statements, e.g., widen-mult with
+   intermediate type:
+
+     S1  a_t = ;
+     S2  a_T = (TYPE) a_t;
+           '--> S3: a_it = (interm_type) a_t;
+     S4  prod_T = a_T * CONST;
+           '--> S5: prod_T' = a_it w* CONST;
+
+   there may be other users of a_T outside the pattern.  In that case S2 will
+   be marked as relevant (as well as S3), and both S2 and S3 will be analyzed
+   and vectorized.  The vector stmt VS2 will be recorded in S2, and VS3 will
+   be recorded in S3.  */
 
 void
 vect_pattern_recog (loop_vec_info loop_vinfo)
