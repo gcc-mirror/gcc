@@ -766,11 +766,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       maybe_set_param_value (PARAM_STACK_FRAME_GROWTH, 40,
 			     opts->x_param_values, opts_set->x_param_values);
     }
-  if (opts->x_flag_wpa || opts->x_flag_ltrans)
-    {
-      /* These passes are not WHOPR compatible yet.  */
-      opts->x_flag_ipa_pta = 0;
-    }
 
   if (opts->x_flag_lto)
     {

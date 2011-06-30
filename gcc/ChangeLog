@@ -1,5 +1,16 @@
 2011-06-30  Richard Guenther  <rguenther@suse.de>
 
+	* opts.c (finish_options): Do not disable IPA-PTA during ltrans.
+	* tree-ssa-structalias.c (create_variable_info_for): Do not
+	add initial constraints for non-var-decls.  Properly handle
+	globals in other ltrans partitions.
+	(intra_create_variable_infos): Manually create constraints for
+	the fake no-alias parameter.
+	(ipa_pta_execute): Dump the cgraph, handle ltrans partitions properly
+	and assert there are no clones.
+
+2011-06-30  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/46787
 	* tree-data-ref.c (dr_address_invariant_p): Remove.
 	(find_data_references_in_stmt): Invariant accesses are ok now.
