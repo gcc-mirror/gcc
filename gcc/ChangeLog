@@ -1,3 +1,16 @@
+2011-06-30  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (struct access): Rename total_scalarization to
+	grp_total_scalarization
+	(completely_scalarize_var): New function.
+	(sort_and_splice_var_accesses): Set total_scalarization in the
+	representative access.
+	(analyze_access_subtree): Propagate total scalarization accross the
+	tree, no holes in totally scalarized trees, simplify coverage
+	computation.
+	(analyze_all_variable_accesses): Call completely_scalarize_var instead
+	of completely_scalarize_record.
+
 2011-06-30  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.h (X86_TUNE_DEEP_BRANCH_PREDICTION): Remove.
