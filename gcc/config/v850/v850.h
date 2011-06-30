@@ -95,6 +95,7 @@ extern GTY(()) rtx v850_compare_op1;
   %{mv850e2:-D__v850e2__} \
   %{mv850es:-D__v850e1__} \
   %{mv850e1:-D__v850e1__} \
+  %{mv850e:-D__v850e__} \
   %{mv850:-D__v850__} \
   %(subtarget_cpp_spec)" \
   " %{mep:-D__EP__}"
