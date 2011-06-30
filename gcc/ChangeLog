@@ -1,25 +1,34 @@
+2011-06-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/49572
+	* tree-ssa-dom.c (initialize_hash_element) <GIMPLE_SINGLE_RHS>: Use the
+	type of the RHS instead of that of the LHS for the expression type.
+
 2011-06-30  Georg-Johann Lay  <avr@gjlay.de>
-	
-	PR target/34734
+
 	Backport from mainline
+	PR target/34734
 	(avr_section_type_flags): For data in ".progmem.data", remove
 	section flag SECTION_WRITE.
 
 2011-06-30  Georg-Johann Lay  <avr@gjlay.de>
-	
-	PR target/34734
+
 	Backport from mainline
-	* config/avr/avr.c (avr_handle_progmem_attribute): Move warning 
+	PR target/34734
+	* config/avr/avr.c (avr_handle_progmem_attribute): Move warning
 	about uninitialized data attributed 'progmem' from here...
 	(avr_encode_section_info): ...to this new function.
 	(TARGET_ENCODE_SECTION_INFO): New define.
 
 2011-06-29  Changpeng Fang  <changpeng.fang@amd.com>
+
 	Backport from mainline
 	2011-06-29  Changpeng Fang  <changpeng.fang@amd.com>
 
-	* config/i386/i386.opt (mprefer-avx128): Redefine the flag as a Mask option.
-	* config/i386/i386.h (ix86_tune_indices): Add X86_TUNE_AVX128_OPTIMAL entry.
+	* config/i386/i386.opt (mprefer-avx128): Redefine the flag as a Mask
+	option.
+	* config/i386/i386.h (ix86_tune_indices): Add X86_TUNE_AVX128_OPTIMAL
+	entry.
 	(TARGET_AVX128_OPTIMAL): New definition.
 	* config/i386/i386.c (initial_ix86_tune_features): Initialize
 	X86_TUNE_AVX128_OPTIMAL entry.
