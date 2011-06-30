@@ -1,5 +1,16 @@
 2011-06-30  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.h (X86_TUNE_DEEP_BRANCH_PREDICTION): Remove.
+	(TARGET_DEEP_BRANCH_PREDICTION): Remove.
+	* config/i386/i386.c: Don't include dwarf2out.h.
+	(initial_ix86_tune_features): Remove X86_TUNE_DEEP_BRANCH_PREDICTION.
+	(output_set_got): Don't test TARGET_DEEP_BRANCH_PREDICTION, delete
+	all code dead thereafter.  Don't do dwarf2out_flush_queued_reg_saves.
+	(ix86_expand_prologue): Set REG_CFA_FLUSH_QUEUE on set_got insn.
+	(machopic_output_stub): Don't test TARGET_DEEP_BRANCH_PREDICTION.
+
+2011-06-30  Richard Henderson  <rth@redhat.com>
+
 	* reg-notes.def (REG_CFA_FLUSH_QUEUE): New.
 	* dwarf2out.c (dwarf2out_frame_debug): Handle it.
 	* final.c (final_scan_insn): Look for it, and invoke
