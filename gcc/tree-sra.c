@@ -1050,6 +1050,26 @@ disqualify_ops_if_throwing_stmt (gimple stmt, tree lhs, tree rhs)
   return false;
 }
 
+/* Return true iff type of EXP is not sufficiently aligned.  */
+
+static bool
+tree_non_mode_aligned_mem_p (tree exp)
+{
+  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  unsigned int align;
+
+  if (TREE_CODE (exp) == SSA_NAME
+      || mode == BLKmode
+      || !STRICT_ALIGNMENT)
+    return false;
+
+  align = get_object_alignment (exp, BIGGEST_ALIGNMENT);
+  if (GET_MODE_ALIGNMENT (mode) > align)
+    return true;
+
+  return false;
+}
+
 /* Scan expressions occuring in STMT, create access structures for all accesses
    to candidates for scalarization and remove those candidates which occur in
    statements or expressions that prevent them from being split apart.  Return
@@ -1074,7 +1094,10 @@ build_accesses_from_assign (gimple stmt)
   lacc = build_access_from_expr_1 (lhs, stmt, true);
 
   if (lacc)
-    lacc->grp_assignment_write = 1;
+    {
+      lacc->grp_assignment_write = 1;
+      lacc->grp_unscalarizable_region |= tree_non_mode_aligned_mem_p (rhs);
+    }
 
   if (racc)
     {
@@ -1082,6 +1105,7 @@ build_accesses_from_assign (gimple stmt)
       if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
 	  && !is_gimple_reg_type (racc->type))
 	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
+      racc->grp_unscalarizable_region |= tree_non_mode_aligned_mem_p (lhs);
     }
 
   if (lacc && racc

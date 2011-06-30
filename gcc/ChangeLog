@@ -1,3 +1,9 @@
+2011-06-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/49094
+	* tree-sra.c (tree_non_mode_aligned_mem_p): New function.
+	(build_accesses_from_assign): Use it.
+
 2011-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call): Fix
