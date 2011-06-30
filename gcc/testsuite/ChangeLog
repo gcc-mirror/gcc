@@ -1,3 +1,9 @@
+2011-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/49540
+	* gfortran.dg/pr49540-1.f90: New test.
+	* gfortran.dg/pr49540-2.f90: New test.
+
 2011-06-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR ada/49511

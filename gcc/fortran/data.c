@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
@@ -189,10 +189,13 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 
 /* Assign the initial value RVALUE to  LVALUE's symbol->value. If the
    LVALUE already has an initialization, we extend this, otherwise we
-   create a new one.  */
+   create a new one.  If REPEAT is non-NULL, initialize *REPEAT
+   consecutive values in LVALUE the same value in RVALUE.  In that case,
+   LVALUE must refer to a full array, not an array section.  */
 
 gfc_try
-gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
+gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
+		       mpz_t *repeat)
 {
   gfc_ref *ref;
   gfc_expr *init;
@@ -269,6 +272,100 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 			 &lvalue->where);
 	      goto abort;
 	    }
+	  else if (repeat != NULL
+		   && ref->u.ar.type != AR_ELEMENT)
+	    {
+	      mpz_t size, end;
+	      gcc_assert (ref->u.ar.type == AR_FULL
+			  && ref->next == NULL);
+	      mpz_init_set (end, offset);
+	      mpz_add (end, end, *repeat);
+	      if (spec_size (ref->u.ar.as, &size) == SUCCESS)
+		{
+		  if (mpz_cmp (end, size) > 0)
+		    {
+		      mpz_clear (size);
+		      gfc_error ("Data element above array upper bound at %L",
+				 &lvalue->where);
+		      goto abort;
+		    }
+		  mpz_clear (size);
+		}
+
+	      con = gfc_constructor_lookup (expr->value.constructor,
+					    mpz_get_si (offset));
+	      if (!con)
+		{
+		  con = gfc_constructor_lookup_next (expr->value.constructor,
+						     mpz_get_si (offset));
+		  if (con != NULL && mpz_cmp (con->offset, end) >= 0)
+		    con = NULL;
+		}
+
+	      /* Overwriting an existing initializer is non-standard but
+		 usually only provokes a warning from other compilers.  */
+	      if (con != NULL && con->expr != NULL)
+		{
+		  /* Order in which the expressions arrive here depends on
+		     whether they are from data statements or F95 style
+		     declarations.  Therefore, check which is the most
+		     recent.  */
+		  gfc_expr *exprd;
+		  exprd = (LOCATION_LINE (con->expr->where.lb->location)
+			   > LOCATION_LINE (rvalue->where.lb->location))
+			  ? con->expr : rvalue;
+		  if (gfc_notify_std (GFC_STD_GNU,"Extension: "
+				      "re-initialization of '%s' at %L",
+				      symbol->name, &exprd->where) == FAILURE)
+		    return FAILURE;
+		}
+
+	      while (con != NULL)
+		{
+		  gfc_constructor *next_con = gfc_constructor_next (con);
+
+		  if (mpz_cmp (con->offset, end) >= 0)
+		    break;
+		  if (mpz_cmp (con->offset, offset) < 0)
+		    {
+		      gcc_assert (mpz_cmp_si (con->repeat, 1) > 0);
+		      mpz_sub (con->repeat, offset, con->offset);
+		    }
+		  else if (mpz_cmp_si (con->repeat, 1) > 0
+			   && mpz_get_si (con->offset)
+			      + mpz_get_si (con->repeat) > mpz_get_si (end))
+		    {
+		      int endi;
+		      splay_tree_node node
+			= splay_tree_lookup (con->base,
+					     mpz_get_si (con->offset));
+		      gcc_assert (node
+				  && con == (gfc_constructor *) node->value
+				  && node->key == (splay_tree_key)
+						  mpz_get_si (con->offset));
+		      endi = mpz_get_si (con->offset)
+			     + mpz_get_si (con->repeat);
+		      if (endi > mpz_get_si (end) + 1)
+			mpz_set_si (con->repeat, endi - mpz_get_si (end));
+		      else
+			mpz_set_si (con->repeat, 1);
+		      mpz_set (con->offset, end);
+		      node->key = (splay_tree_key) mpz_get_si (end);
+		      break;
+		    }
+		  else
+		    gfc_constructor_remove (con);
+		  con = next_con;
+		}
+
+	      con = gfc_constructor_insert_expr (&expr->value.constructor,
+						 NULL, &rvalue->where,
+						 mpz_get_si (offset));
+	      mpz_set (con->repeat, *repeat);
+	      repeat = NULL;
+	      mpz_clear (end);
+	      break;
+	    }
 	  else
 	    {
 	      mpz_t size;
@@ -292,6 +389,32 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	      con = gfc_constructor_insert_expr (&expr->value.constructor,
 						 NULL, &rvalue->where,
 						 mpz_get_si (offset));
+	    }
+	  else if (mpz_cmp_si (con->repeat, 1) > 0)
+	    {
+	      /* Need to split a range.  */
+	      if (mpz_cmp (con->offset, offset) < 0)
+		{
+		  gfc_constructor *pred_con = con;
+		  con = gfc_constructor_insert_expr (&expr->value.constructor,
+						     NULL, &con->where,
+						     mpz_get_si (offset));
+		  con->expr = gfc_copy_expr (pred_con->expr);
+		  mpz_add (con->repeat, pred_con->offset, pred_con->repeat);
+		  mpz_sub (con->repeat, con->repeat, offset);
+		  mpz_sub (pred_con->repeat, offset, pred_con->offset);
+		}
+	      if (mpz_cmp_si (con->repeat, 1) > 0)
+		{
+		  gfc_constructor *succ_con;
+		  succ_con
+		    = gfc_constructor_insert_expr (&expr->value.constructor,
+						   NULL, &con->where,
+						   mpz_get_si (offset) + 1);
+		  succ_con->expr = gfc_copy_expr (con->expr);
+		  mpz_sub_ui (succ_con->repeat, con->repeat, 1);
+		  mpz_set_si (con->repeat, 1);
+		}
 	    }
 	  break;
 
@@ -337,6 +460,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
     }
 
   mpz_clear (offset);
+  gcc_assert (repeat == NULL);
 
   if (ref || last_ts->type == BT_CHARACTER)
     {
@@ -377,36 +501,6 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 abort:
   mpz_clear (offset);
   return FAILURE;
-}
-
-
-/* Similarly, but initialize REPEAT consecutive values in LVALUE the same
-   value in RVALUE.  */
-
-gfc_try
-gfc_assign_data_value_range (gfc_expr *lvalue, gfc_expr *rvalue,
-			     mpz_t index, mpz_t repeat)
-{
-  mpz_t offset, last_offset;
-  gfc_try t;
-
-  mpz_init (offset);
-  mpz_init (last_offset);
-  mpz_add (last_offset, index, repeat);
-
-  t = SUCCESS;
-  for (mpz_set(offset, index) ; mpz_cmp(offset, last_offset) < 0;
-		   mpz_add_ui (offset, offset, 1))
-    if (gfc_assign_data_value (lvalue, rvalue, offset) == FAILURE)
-      {
-	t = FAILURE;
-	break;
-      }
-
-  mpz_clear (offset);
-  mpz_clear (last_offset);
-
-  return t;
 }
 
 
