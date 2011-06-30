@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* See if -forward:: is able to work. */
-/* { dg-xfail-run-if "PR36610" { ! { { i?86-*-* x86_64-*-* } && ilp32 } } { "-fgnu-runtime" } { "" } } */
-/* { dg-skip-if "Needs OBJC2 Implementation" { *-*-darwin* && { lp64 } } { "-fnext-runtime" } { "" } } */
+/* { dg-skip-if "Needs OBJC2 Implementation" { *-*-darwin8* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
 #include <stdio.h>
 #include <stdlib.h>
