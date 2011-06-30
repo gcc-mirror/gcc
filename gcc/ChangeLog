@@ -1,3 +1,8 @@
+2011-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call): Fix
+	handling of BUILT_IN_MEMPCPY_CHK and BUILT_IN_STPCPY_CHK.
+
 2011-06-30  Ira Rosen  <ira.rosen@linaro.org>
 
 	* tree-vect-loop.c (vect_determine_vectorization_factor): Handle

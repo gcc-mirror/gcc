@@ -4014,7 +4014,9 @@ find_func_aliases_for_builtin_call (gimple t)
 	      get_constraint_for (res, &lhsc);
 	      if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMPCPY
 		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY
-		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY)
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPNCPY
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMPCPY_CHK
+		  || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STPCPY_CHK)
 		get_constraint_for_ptr_offset (dest, NULL_TREE, &rhsc);
 	      else
 		get_constraint_for (dest, &rhsc);
