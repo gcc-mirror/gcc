@@ -2832,6 +2832,7 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
   const char *label;
   rtx note, n;
   bool handled_one = false;
+  bool need_flush = false;
 
   if (!NONJUMP_INSN_P (insn) || clobbers_queued_reg_save (insn))
     dwarf2out_flush_queued_reg_saves ();
@@ -2854,7 +2855,7 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
       {
       case REG_FRAME_RELATED_EXPR:
 	insn = XEXP (note, 0);
-	goto found;
+	goto do_frame_expr;
 
       case REG_CFA_DEF_CFA:
 	dwarf2out_frame_debug_def_cfa (XEXP (note, 0), label);
@@ -2934,24 +2935,36 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 	handled_one = true;
 	break;
 
+      case REG_CFA_FLUSH_QUEUE:
+	/* The actual flush happens below.  */
+	need_flush = true;
+	handled_one = true;
+	break;
+
       default:
 	break;
       }
+
   if (handled_one)
     {
-      if (any_cfis_emitted)
-	dwarf2out_flush_queued_reg_saves ();
-      return;
+      /* Minimize the number of advances by emitting the entire queue
+	 once anything is emitted.  */
+      need_flush |= any_cfis_emitted;
+    }
+  else
+    {
+      insn = PATTERN (insn);
+    do_frame_expr:
+      dwarf2out_frame_debug_expr (insn, label);
+
+      /* Check again.  A parallel can save and update the same register.
+         We could probably check just once, here, but this is safer than
+         removing the check at the start of the function.  */
+      if (any_cfis_emitted || clobbers_queued_reg_save (insn))
+	need_flush = true;
     }
 
-  insn = PATTERN (insn);
- found:
-  dwarf2out_frame_debug_expr (insn, label);
-
-  /* Check again.  A parallel can save and update the same register.
-     We could probably check just once, here, but this is safer than
-     removing the check above.  */
-  if (any_cfis_emitted || clobbers_queued_reg_save (insn))
+  if (need_flush)
     dwarf2out_flush_queued_reg_saves ();
 }
 

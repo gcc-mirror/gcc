@@ -1,5 +1,12 @@
 2011-06-30  Richard Henderson  <rth@redhat.com>
 
+	* reg-notes.def (REG_CFA_FLUSH_QUEUE): New.
+	* dwarf2out.c (dwarf2out_frame_debug): Handle it.
+	* final.c (final_scan_insn): Look for it, and invoke
+	dwarf2out_frame_debug before the insn if found.
+
+2011-06-30  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (dwarf2out_frame_debug_cfa_offset): Allow PC_RTX
 	as a source, and interpret that as DWARF_FRAME_RETURN_COLUMN.
 

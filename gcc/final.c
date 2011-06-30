@@ -2683,7 +2683,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	current_output_insn = debug_insn = insn;
 
-	if (CALL_P (insn) && dwarf2out_do_frame ())
+	if (dwarf2out_do_frame ()
+	    && (CALL_P (insn)
+		|| find_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL)))
 	  dwarf2out_frame_debug (insn, false);
 
 	/* Find the proper template for this insn.  */
