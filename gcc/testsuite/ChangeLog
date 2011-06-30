@@ -1,3 +1,8 @@
+2011-06-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38752
+	* gcc.c-torture/compile/pr38752.c: New testcase.
+
 2011-06-29  Martin Jambor  <mjambor@suse.cz>
 	Backport from mainline
 	2011-06-24  Martin Jambor  <mjambor@suse.cz>
