@@ -5104,6 +5104,9 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 		 ".noinit section");
     }
 
+  if (0 == strncmp (name, ".progmem.data", strlen (".progmem.data")))
+    flags &= ~SECTION_WRITE;
+  
   return flags;
 }
 
