@@ -1732,17 +1732,56 @@ struct GTY(()) queued_reg_save {
 static GTY(()) struct queued_reg_save *queued_reg_saves;
 
 /* The caller's ORIG_REG is saved in SAVED_IN_REG.  */
-struct GTY(()) reg_saved_in_data {
+typedef struct GTY(()) reg_saved_in_data {
   rtx orig_reg;
   rtx saved_in_reg;
-};
+} reg_saved_in_data;
 
-/* A list of registers saved in other registers.
-   The list intentionally has a small maximum capacity of 4; if your
-   port needs more than that, you might consider implementing a
-   more efficient data structure.  */
-static GTY(()) struct reg_saved_in_data regs_saved_in_regs[4];
-static GTY(()) size_t num_regs_saved_in_regs;
+DEF_VEC_O (reg_saved_in_data);
+DEF_VEC_ALLOC_O (reg_saved_in_data, gc);
+
+/* A set of registers saved in other registers.  This is implemented as
+   a flat array because it normally contains zero or 1 entry, depending
+   on the target.  IA-64 is the big spender here, using a maximum of
+   5 entries.  */
+static GTY(()) VEC(reg_saved_in_data, gc) *regs_saved_in_regs;
+
+/* Compare X and Y for equivalence.  The inputs may be REGs or PC_RTX.  */
+
+static bool
+compare_reg_or_pc (rtx x, rtx y)
+{
+  if (REG_P (x) && REG_P (y))
+    return REGNO (x) == REGNO (y);
+  return x == y;
+}
+
+/* Record SRC as being saved in DEST.  DEST may be null to delete an
+   existing entry.  SRC may be a register or PC_RTX.  */
+
+static void
+record_reg_saved_in_reg (rtx dest, rtx src)
+{
+  reg_saved_in_data *elt;
+  size_t i;
+
+  FOR_EACH_VEC_ELT (reg_saved_in_data, regs_saved_in_regs, i, elt)
+    if (compare_reg_or_pc (elt->orig_reg, src))
+      {
+	if (dest == NULL)
+	  VEC_unordered_remove(reg_saved_in_data, regs_saved_in_regs, i);
+	else
+	  elt->saved_in_reg = dest;
+	return;
+      }
+
+  if (dest == NULL)
+    return;
+
+  elt = VEC_safe_push(reg_saved_in_data, gc, regs_saved_in_regs, NULL);
+  elt->orig_reg = src;
+  elt->saved_in_reg = dest;
+}
 
 static const char *last_reg_save_label;
 
@@ -1784,22 +1823,9 @@ dwarf2out_flush_queued_reg_saves (void)
 
   for (q = queued_reg_saves; q; q = q->next)
     {
-      size_t i;
       unsigned int reg, sreg;
 
-      for (i = 0; i < num_regs_saved_in_regs; i++)
-	if (REGNO (regs_saved_in_regs[i].orig_reg) == REGNO (q->reg))
-	  break;
-      if (q->saved_reg && i == num_regs_saved_in_regs)
-	{
-	  gcc_assert (i != ARRAY_SIZE (regs_saved_in_regs));
-	  num_regs_saved_in_regs++;
-	}
-      if (i != num_regs_saved_in_regs)
-	{
-	  regs_saved_in_regs[i].orig_reg = q->reg;
-	  regs_saved_in_regs[i].saved_in_reg = q->saved_reg;
-	}
+      record_reg_saved_in_reg (q->saved_reg, q->reg);
 
       reg = DWARF_FRAME_REGNUM (REGNO (q->reg));
       if (q->saved_reg)
@@ -1826,11 +1852,14 @@ clobbers_queued_reg_save (const_rtx insn)
   for (q = queued_reg_saves; q; q = q->next)
     {
       size_t i;
+      reg_saved_in_data *rir;
+
       if (modified_in_p (q->reg, insn))
 	return true;
-      for (i = 0; i < num_regs_saved_in_regs; i++)
-	if (REGNO (q->reg) == REGNO (regs_saved_in_regs[i].orig_reg)
-	    && modified_in_p (regs_saved_in_regs[i].saved_in_reg, insn))
+
+      FOR_EACH_VEC_ELT (reg_saved_in_data, regs_saved_in_regs, i, rir)
+	if (compare_reg_or_pc (q->reg, rir->orig_reg)
+	    && modified_in_p (rir->saved_in_reg, insn))
 	  return true;
     }
 
@@ -1842,19 +1871,9 @@ clobbers_queued_reg_save (const_rtx insn)
 void
 dwarf2out_reg_save_reg (const char *label, rtx reg, rtx sreg)
 {
-  size_t i;
   unsigned int regno, sregno;
 
-  for (i = 0; i < num_regs_saved_in_regs; i++)
-    if (REGNO (regs_saved_in_regs[i].orig_reg) == REGNO (reg))
-      break;
-  if (i == num_regs_saved_in_regs)
-    {
-      gcc_assert (i != ARRAY_SIZE (regs_saved_in_regs));
-      num_regs_saved_in_regs++;
-    }
-  regs_saved_in_regs[i].orig_reg = reg;
-  regs_saved_in_regs[i].saved_in_reg = sreg;
+  record_reg_saved_in_reg (sreg, reg);
 
   regno = DWARF_FRAME_REGNUM (REGNO (reg));
   sregno = DWARF_FRAME_REGNUM (REGNO (sreg));
@@ -1867,17 +1886,17 @@ static rtx
 reg_saved_in (rtx reg)
 {
   unsigned int regn = REGNO (reg);
-  size_t i;
   struct queued_reg_save *q;
+  reg_saved_in_data *rir;
+  size_t i;
 
   for (q = queued_reg_saves; q; q = q->next)
     if (q->saved_reg && regn == REGNO (q->saved_reg))
       return q->reg;
 
-  for (i = 0; i < num_regs_saved_in_regs; i++)
-    if (regs_saved_in_regs[i].saved_in_reg
-	&& regn == REGNO (regs_saved_in_regs[i].saved_in_reg))
-      return regs_saved_in_regs[i].orig_reg;
+  FOR_EACH_VEC_ELT (reg_saved_in_data, regs_saved_in_regs, i, rir)
+    if (regn == REGNO (rir->saved_in_reg))
+      return rir->orig_reg;
 
   return NULL_RTX;
 }
@@ -2026,7 +2045,10 @@ dwarf2out_frame_debug_cfa_register (rtx set, const char *label)
   if (src == pc_rtx)
     sregno = DWARF_FRAME_RETURN_COLUMN;
   else
-    sregno = DWARF_FRAME_REGNUM (REGNO (src));
+    {
+      record_reg_saved_in_reg (dest, src);
+      sregno = DWARF_FRAME_REGNUM (REGNO (src));
+    }
 
   dregno = DWARF_FRAME_REGNUM (REGNO (dest));
 
@@ -2928,8 +2950,6 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 void
 dwarf2out_frame_debug_init (void)
 {
-  size_t i;
-
   /* Flush any queued register saves.  */
   dwarf2out_flush_queued_reg_saves ();
 
@@ -2943,12 +2963,7 @@ dwarf2out_frame_debug_init (void)
   cfa_temp.reg = -1;
   cfa_temp.offset = 0;
 
-  for (i = 0; i < num_regs_saved_in_regs; i++)
-    {
-      regs_saved_in_regs[i].orig_reg = NULL_RTX;
-      regs_saved_in_regs[i].saved_in_reg = NULL_RTX;
-    }
-  num_regs_saved_in_regs = 0;
+  regs_saved_in_regs = NULL;
 
   if (barrier_args_size)
     {
