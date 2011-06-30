@@ -1,5 +1,10 @@
 2011-06-30  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2out.c (dwarf2out_frame_debug_cfa_offset): Allow PC_RTX
+	as a source, and interpret that as DWARF_FRAME_RETURN_COLUMN.
+
+2011-06-30  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (struct reg_saved_in_data): Provide a typedef.
 	Define a vector of this type.
 	(regs_saved_in_regs): Use a VEC.
