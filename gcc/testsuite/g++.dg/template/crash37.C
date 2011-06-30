@@ -11,7 +11,7 @@ struct coperator_stack
 struct helper {};
 
 template<class F>
-void bla(F f) // { dg-message "bla|no known conversion" }
+void bla(F f)
 {
 }
 
@@ -20,8 +20,7 @@ struct definition
 {
  definition()
  {
-   bla(coperator_stack::push3<helper>); // { dg-error "matching" }
-   // { dg-message "candidate" "candidate note" { target *-*-* } 23 }
+   bla(coperator_stack::push3<helper>); // { dg-error "pointer to member" }
  }
 };
 

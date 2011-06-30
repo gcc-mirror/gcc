@@ -1,3 +1,10 @@
+2011-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48481
+	* name-lookup.c (struct arg_lookup): Add fn_set.
+	(add_function): Check it.
+	(lookup_arg_dependent_1): Initialize it.
+
 2011-06-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49216
