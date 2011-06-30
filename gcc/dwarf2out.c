@@ -11358,9 +11358,6 @@ output_abbrev_section (void)
 {
   unsigned long abbrev_id;
 
-  if (abbrev_die_table_in_use == 1)
-    return;
-
   for (abbrev_id = 1; abbrev_id < abbrev_die_table_in_use; ++abbrev_id)
     {
       dw_die_ref abbrev = abbrev_die_table[abbrev_id];
@@ -25226,9 +25223,12 @@ dwarf2out_finish (const char *filename)
   output_comp_unit (comp_unit_die (), debug_info_level >= DINFO_LEVEL_VERBOSE);
 
   /* Output the abbreviation table.  */
-  switch_to_section (debug_abbrev_section);
-  ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
-  output_abbrev_section ();
+  if (abbrev_die_table_in_use != 1)
+    {
+      switch_to_section (debug_abbrev_section);
+      ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
+      output_abbrev_section ();
+    }
 
   /* Output location list section if necessary.  */
   if (have_location_lists)
