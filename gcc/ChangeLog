@@ -1,3 +1,11 @@
+2011-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49364
+	* dwarf2out.c (output_abbrev_section): Don't return early
+	if abbrev_die_table_in_use is 1.
+	(dwarf2out_finish): Instead don't call output_abbrev_section
+	nor emit abbrev_section_label in that case.
+
 2011-06-30  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.h (CPP_SPEC): Define __v850e__ when compiling
