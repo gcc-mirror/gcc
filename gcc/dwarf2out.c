@@ -1982,6 +1982,7 @@ dwarf2out_frame_debug_cfa_offset (rtx set, const char *label)
 {
   HOST_WIDE_INT offset;
   rtx src, addr, span;
+  unsigned int sregno;
 
   src = XEXP (set, 1);
   addr = XEXP (set, 0);
@@ -2003,12 +2004,21 @@ dwarf2out_frame_debug_cfa_offset (rtx set, const char *label)
       gcc_unreachable ();
     }
 
-  span = targetm.dwarf_register_span (src);
+  if (src == pc_rtx)
+    {
+      span = NULL;
+      sregno = DWARF_FRAME_RETURN_COLUMN;
+    }
+  else 
+    {
+      span = targetm.dwarf_register_span (src);
+      sregno = DWARF_FRAME_REGNUM (REGNO (src));
+    }
 
   /* ??? We'd like to use queue_reg_save, but we need to come up with
      a different flushing heuristic for epilogues.  */
   if (!span)
-    reg_save (label, DWARF_FRAME_REGNUM (REGNO (src)), INVALID_REGNUM, offset);
+    reg_save (label, sregno, INVALID_REGNUM, offset);
   else
     {
       /* We have a PARALLEL describing where the contents of SRC live.
@@ -2024,8 +2034,8 @@ dwarf2out_frame_debug_cfa_offset (rtx set, const char *label)
 	{
 	  rtx elem = XVECEXP (span, 0, par_index);
 
-	  reg_save (label, DWARF_FRAME_REGNUM (REGNO (elem)),
-		    INVALID_REGNUM, span_offset);
+	  sregno = DWARF_FRAME_REGNUM (REGNO (src));
+	  reg_save (label, sregno, INVALID_REGNUM, span_offset);
 	  span_offset += GET_MODE_SIZE (GET_MODE (elem));
 	}
     }
