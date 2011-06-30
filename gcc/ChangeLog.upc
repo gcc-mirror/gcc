@@ -1,3 +1,8 @@
+2011-06-30  Gary Funck  <gary@intrepid.com>
+
+	* c-family/c.opt: Bring options definitions up-to-date
+	with respect to changes made in the trunk.
+
 2011-06-29  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 175584 into gupc branch.

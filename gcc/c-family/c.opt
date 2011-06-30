@@ -176,7 +176,7 @@ C UPC ObjC C++ ObjC++ Joined Alias(U) MissingArgError(macro name missing after %
 C UPC ObjC C++ ObjC++ Alias(MM)
 
 -verbose
-Common C ObjC C++ ObjC++ Alias(v)
+Common C UPC ObjC C++ ObjC++ Alias(v)
 
 -write-dependencies
 C UPC ObjC C++ ObjC++ NoDriverArg Separate Alias(MD) MissingArgError(missing filename after %qs)
@@ -185,9 +185,8 @@ C UPC ObjC C++ ObjC++ NoDriverArg Separate Alias(MD) MissingArgError(missing fil
 C UPC ObjC C++ ObjC++ NoDriverArg Separate Alias(MMD) MissingArgError(missing filename after %qs)
 
 A
-C UPC ObjC C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(assertion missing after %qs)
 -A<question>=<answer>	Assert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>
-
 
 C
 C UPC ObjC C++ ObjC++
@@ -225,7 +224,6 @@ C UPC ObjC C++ ObjC++ NoDriverArg Separate MissingArgError(missing filename afte
 Generate make dependencies and compile
 
 MF
-C UPC ObjC C++ ObjC++ Joined Separate
 C UPC ObjC C++ ObjC++ Joined Separate MissingArgError(missing filename after %qs)
 -MF <file>	Write dependency output to the given file
 
@@ -711,7 +709,7 @@ Recognize the \"asm\" keyword
 
 ; Define extra predefined macros for use in libgcc.
 fbuilding-libgcc
-C ObjC C++ ObjC++ Undocumented Var(flag_building_libgcc)
+C UPC ObjC C++ ObjC++ Undocumented Var(flag_building_libgcc)
 
 fbuiltin
 C UPC ObjC C++ ObjC++ Var(flag_no_builtin, 0)
@@ -777,6 +775,7 @@ Permit universal character names (\\u and \\U) in identifiers
 finput-charset=
 C UPC ObjC C++ ObjC++ Joined RejectNegative
 -finput-charset=<cset>	Specify the default character set for source files
+
 
 fexternal-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
