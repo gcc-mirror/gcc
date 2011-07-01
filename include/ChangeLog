@@ -1,3 +1,9 @@
+2011-07-01  Joel Brobecker  <brobecker@adacore.com>
+
+	* filenames.h (HAVE_CASE_INSENSITIVE_FILE_SYSTEM): Define
+	on Darwin, as well as on the systems that use a DOS-like
+	filesystem.
+
 2011-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/47858

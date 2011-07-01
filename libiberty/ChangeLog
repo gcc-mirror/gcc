@@ -1,3 +1,8 @@
+2011-07-01  Joel Brobecker  <brobecker@adacore.com>
+
+	* filename_cmp.c (filename_cmp, filename_ncmp): Add handling of
+	HAVE_CASE_INSENSITIVE_FILE_SYSTEM.
+
 2011-07-01  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	PR debug/49408
