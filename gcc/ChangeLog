@@ -1,3 +1,12 @@
+2011-07-01  Chen Liqin  <liqin.gcc@gmail.com>
+
+	* config.gcc (score-*-elf): Remove score7.o.
+	* config/score/t-score-elf: Likewise.
+	* config/score/score.c: Merge score7 to score.c and
+	remove forwarding functions.
+	* config/score/score7.c: Deleted.
+	* config/score/score7.h: Deleted.
+
 2011-07-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49603

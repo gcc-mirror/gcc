@@ -2245,7 +2245,6 @@ score-*-elf)
         tm_file="dbxelf.h elfos.h score/elf.h score/score.h newlib-stdint.h"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
         tmake_file="${tmake_file} score/t-score-elf score/t-score-softfp soft-fp/t-softfp"
-        extra_objs="score7.o"
         ;;
 sh-*-elf* | sh[12346l]*-*-elf* | \
   sh-*-linux* | sh[2346lbe]*-*-linux* | \
