@@ -1,5 +1,11 @@
 2011-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config.gcc: Obsolete alpha*-dec-osf5.1, mips-sgi-irix6.5.
+	* doc/install.texi (Specific, alpha*-dec-osf5.1): Document it.
+	(Specific, mips-sgi-irix6): Likewise.
+
+2011-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR libmudflap/49549
 	* doc/sourcebuild.texi (Effective-Target Keywords): Document gld.
 
