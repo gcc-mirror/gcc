@@ -1,3 +1,11 @@
+2011-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libmudflap/49549
+	* testsuite/lib/libmudflap.exp (load_gcc_lib): Load
+	target-supports.exp.
+	* testsuite/libmudflap.cth/cthfrags.exp: Only pass
+	--noinhibit-exec to GNU ld.
+
 2011-06-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libmudflap/38738

@@ -3843,6 +3843,26 @@ proc check_effective_target_gas { } {
     return $use_gas_saved
 }
 
+# Return 1 if GNU ld is used.
+
+proc check_effective_target_gld { } {
+    global use_gld_saved
+    global tool
+
+    if {![info exists use_gld_saved]} {
+	# Check if the ld used by gcc is GNU ld.
+	set gcc_ld [lindex [${tool}_target_compile "-print-prog-name=ld" "" "none" ""] 0]
+	set status [remote_exec host "$gcc_ld" "--version"]
+	set ld_output [lindex $status 1]
+	if { [ string first "GNU" $ld_output ] >= 0 } {
+	    set use_gld_saved 1
+	} else {
+	    set use_gld_saved 0
+	}
+    }
+    return $use_gld_saved
+}
+
 # Return 1 if the compiler has been configure with link-time optimization
 # (LTO) support.
 
