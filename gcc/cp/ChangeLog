@@ -1,3 +1,8 @@
+2011-07-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/49605
+	* init.c (build_delete): Only warn for sfk_deleting_destructor.
+
 2011-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (cp/decl.o): Depend on pointer-set.h.

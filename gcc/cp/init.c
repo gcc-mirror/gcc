@@ -3467,8 +3467,9 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 		}
 	      complete_p = false;
 	    }
-	  else if (warn_delnonvdtor && MAYBE_CLASS_TYPE_P (type)
-		   && !CLASSTYPE_FINAL (type) && TYPE_POLYMORPHIC_P (type))
+	  else if (auto_delete == sfk_deleting_destructor && warn_delnonvdtor
+	           && MAYBE_CLASS_TYPE_P (type) && !CLASSTYPE_FINAL (type)
+		   && TYPE_POLYMORPHIC_P (type))
 	    {
 	      tree dtor;
 	      dtor = CLASSTYPE_DESTRUCTORS (type);
