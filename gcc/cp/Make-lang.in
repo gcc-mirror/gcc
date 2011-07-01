@@ -266,11 +266,11 @@ cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h \
   output.h toplev.h $(HASHTAB_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(C_PRAGMA_H) \
   debug.h gt-cp-decl.h $(TIMEVAR_H) $(TARGET_H) $(PLUGIN_H) \
-  intl.h tree-iterator.h $(SPLAY_TREE_H) \
+  intl.h tree-iterator.h pointer-set.h $(SPLAY_TREE_H) \
   c-family/c-objc.h
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h \
   output.h toplev.h $(C_COMMON_H) gt-cp-decl2.h $(CGRAPH_H) \
-  $(C_PRAGMA_H) $(TREE_DUMP_H) intl.h $(TARGET_H) $(GIMPLE_H) $(POINTER_SET_H) \
+  $(C_PRAGMA_H) $(TREE_DUMP_H) intl.h $(TARGET_H) $(GIMPLE_H) pointer-set.h \
   $(SPLAY_TREE_H) c-family/c-ada-spec.h \
   c-family/c-objc.h
 cp/cp-objcp-common.o : cp/cp-objcp-common.c $(CONFIG_H) $(SYSTEM_H) \
@@ -284,7 +284,7 @@ cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
   output.h c-family/c-objc.h
 cp/class.o: cp/class.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
   $(TARGET_H) convert.h $(CGRAPH_H) $(TREE_DUMP_H) gt-cp-class.h \
-  $(SPLAY_TREE_H)
+  $(SPLAY_TREE_H) pointer-set.h
 cp/call.o: cp/call.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
   $(DIAGNOSTIC_CORE_H) intl.h gt-cp-call.h convert.h $(TARGET_H) langhooks.h \
   $(TIMEVAR_H) c-family/c-objc.h
@@ -312,7 +312,7 @@ cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h cp/cp-objcp-common.h \
   c-family/c-objc.h
 cp/error.o: cp/error.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_H) \
   $(FLAGS_H) $(REAL_H) $(LANGHOOKS_DEF_H) $(CXX_PRETTY_PRINT_H) \
-  tree-diagnostic.h tree-pretty-print.h c-family/c-objc.h
+  tree-diagnostic.h tree-pretty-print.h pointer-set.h c-family/c-objc.h
 cp/repo.o: cp/repo.c $(CXX_TREE_H) $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) \
   gt-cp-repo.h
 cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) toplev.h \
@@ -333,7 +333,7 @@ cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) $(C_COMMON_H) \
 
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(CXX_TREE_H) $(TIMEVAR_H) gt-cp-name-lookup.h \
-	$(DIAGNOSTIC_CORE_H) $(FLAGS_H) debug.h
+	$(DIAGNOSTIC_CORE_H) $(FLAGS_H) debug.h pointer-set.h
 
 cp/cxx-pretty-print.o: cp/cxx-pretty-print.c $(CXX_PRETTY_PRINT_H) \
   $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h $(CXX_TREE_H) tree-pretty-print.h
