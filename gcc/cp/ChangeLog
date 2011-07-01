@@ -1,5 +1,9 @@
 2011-07-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48883
+	PR c++/49609
+	* pt.c (resolve_nondeduced_context): Call mark_used.
+
 	PR c++/49085
 	* semantics.c (finish_offsetof): Complain about incomplete type.
 

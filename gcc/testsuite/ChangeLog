@@ -1,5 +1,8 @@
 2011-07-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48883
+	* g++.dg/template/explicit-args4.C: New.
+
 	PR c++/49085
 	* g++.dg/template/offsetof2.C: New.
 
