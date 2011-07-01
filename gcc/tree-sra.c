@@ -1076,6 +1076,7 @@ tree_non_mode_aligned_mem_p (tree exp)
   unsigned int align;
 
   if (TREE_CODE (exp) == SSA_NAME
+      || TREE_CODE (exp) == MEM_REF
       || mode == BLKmode
       || !STRICT_ALIGNMENT)
     return false;

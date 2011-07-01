@@ -1,3 +1,7 @@
+2011-07-01  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (tree_non_mode_aligned_mem_p): Also ignore MEM_REFs.
+
 2011-07-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/48016
