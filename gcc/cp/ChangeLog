@@ -1,3 +1,11 @@
+2011-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (cp/decl.o): Depend on pointer-set.h.
+	(cp/class.o): Likewise.
+	(cp/error.o): Likewise.
+	(cp/name-lookup.o): Likewise.
+	(cp/decl2.o): Likewise.  Don't depend on $(POINTER_SET_H).
+
 2011-07-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48261
