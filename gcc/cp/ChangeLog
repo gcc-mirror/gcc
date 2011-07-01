@@ -1,5 +1,9 @@
 2011-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49569
+	* method.c (implicitly_declare_fn): Set DECL_PARM_LEVEL and
+	DECL_PARM_INDEX on rhs parm.
+
 	* pt.c (iterative_hash_template_arg): Use cp_tree_operand_length.
 
 	PR c++/49355
