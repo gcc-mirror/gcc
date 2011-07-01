@@ -406,6 +406,8 @@ get_tinfo_decl (tree type)
     type = build_function_type (TREE_TYPE (type),
 				TREE_CHAIN (TYPE_ARG_TYPES (type)));
 
+  type = complete_type (type);
+
   /* For a class type, the variable is cached in the type node
      itself.  */
   if (CLASS_TYPE_P (type))
