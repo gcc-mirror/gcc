@@ -1675,7 +1675,7 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
   /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST)).  */
   if (TREE_CODE (arg2) == INTEGER_CST
       && CONVERT_EXPR_CODE_P (def1_code)
-      && INTEGRAL_TYPE_P (def1_arg1)
+      && INTEGRAL_TYPE_P (TREE_TYPE (def1_arg1))
       && int_fits_type_p (arg2, TREE_TYPE (def1_arg1)))
     {
       gimple newop;

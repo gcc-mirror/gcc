@@ -1,3 +1,7 @@
+2011-07-01  Kai Tietz  <ktietz@redhat.com>
+
+        * gcc.dg/tree-ssa/bitwise-sink.c: New test.
+
 2011-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libmudflap/49549
