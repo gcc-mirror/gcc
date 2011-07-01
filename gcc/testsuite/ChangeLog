@@ -1,5 +1,8 @@
 2011-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49387
+	* g++.dg/rtti/template1.C: New.
+
 	PR c++/49569
 	* g++.dg/cpp0x/regress/ctor1.C: New.
 
