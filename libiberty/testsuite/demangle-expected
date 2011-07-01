@@ -3920,7 +3920,11 @@ decltype (({parm#1}.(g<double>))()) h<A<int>, double>(A<int>, double)
 # test for typed function in decltype
 --format=gnu-v3
 _ZN1AIiE1jIiEEDTplfp_clL_Z1xvEEET_
-decltype ({parm#1}+((x())())) A<int>::j<int>(int)
+decltype ({parm#1}+(x())) A<int>::j<int>(int)
+# typed function in decltype with an argument list
+--format=gnu-v3
+_Z1tIlEDTplcvT_Li5EclL_Z1qsELi6EEEv
+decltype (((long)(5))+(q(6))) t<long>()
 # test for expansion of function parameter pack
 --format=gnu-v3
 _Z1gIIidEEDTclL_Z1fEspplfp_Li1EEEDpT_
@@ -3989,6 +3993,18 @@ outer(short (*)(int), long)
 --format=gnu-v3 --ret-drop
 _Z6outer2IsEPFilES1_
 outer2<short>(int (*)(long))
+#
+--format=gnu-v3 --no-params
+_ZN1KIXadL_ZN1S1mEiEEE1fEv
+K<&S::m>::f()
+K<&S::m>::f
+--format=gnu-v3
+_ZN1KILi1EXadL_ZN1S1mEiEEE1fEv
+K<1, &S::m>::f()
+# Here the `(int)' argument list of `S::m' is already removed.
+--format=gnu-v3
+_ZN1KILi1EXadL_ZN1S1mEEEE1fEv
+K<1, &S::m>::f()
 #
 # Ada (GNAT) tests.
 #
