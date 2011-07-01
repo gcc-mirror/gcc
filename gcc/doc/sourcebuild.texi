@@ -1760,6 +1760,9 @@ Target uses GNU @command{as}.
 @item gc_sections
 Target supports @option{--gc-sections}.
 
+@item gld
+Target uses GNU @command{ld}.
+
 @item keeps_null_pointer_checks
 Target keeps null pointer checks, either due to the use of
 @option{-fno-delete-null-pointer-checks} or hardwired into the target.

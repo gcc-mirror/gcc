@@ -1,3 +1,8 @@
+2011-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libmudflap/49549
+	* lib/target-supports.exp (check_effective_target_gld): New proc.
+
 2011-07-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49603
