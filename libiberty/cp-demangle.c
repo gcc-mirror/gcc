@@ -4139,7 +4139,46 @@ d_print_comp (struct d_print_info *dpi, int options,
       return;
 
     case DEMANGLE_COMPONENT_UNARY:
-      if (d_left (dc)->type != DEMANGLE_COMPONENT_CAST)
+      if (d_left (dc)->type == DEMANGLE_COMPONENT_OPERATOR
+	  && d_left (dc)->u.s_operator.op->len == 1
+	  && d_left (dc)->u.s_operator.op->name[0] == '&'
+	  && d_right (dc)->type == DEMANGLE_COMPONENT_TYPED_NAME
+	  && d_left (d_right (dc))->type == DEMANGLE_COMPONENT_QUAL_NAME
+	  && d_right (d_right (dc))->type == DEMANGLE_COMPONENT_FUNCTION_TYPE)
+	{
+	  /* Address of a function (therefore in an expression context) must
+	     have its argument list suppressed.
+
+	     unary operator ... dc
+	       operator & ... d_left (dc)
+	       typed name ... d_right (dc)
+		 qualified name ... d_left (d_right (dc))
+		   <names>
+		 function type ... d_right (d_right (dc))
+		   argument list
+		     <arguments>  */
+
+	  d_print_expr_op (dpi, options, d_left (dc));
+	  d_print_comp (dpi, options, d_left (d_right (dc)));
+	  return;
+	}
+      else if (d_left (dc)->type == DEMANGLE_COMPONENT_OPERATOR
+	       && d_left (dc)->u.s_operator.op->len == 1
+	       && d_left (dc)->u.s_operator.op->name[0] == '&'
+	       && d_right (dc)->type == DEMANGLE_COMPONENT_QUAL_NAME)
+	{
+	  /* Keep also already processed variant without the argument list.
+
+	     unary operator ... dc
+	       operator & ... d_left (dc)
+	       qualified name ... d_right (dc)
+		 <names>  */
+
+	  d_print_expr_op (dpi, options, d_left (dc));
+	  d_print_comp (dpi, options, d_right (dc));
+	  return;
+	}
+      else if (d_left (dc)->type != DEMANGLE_COMPONENT_CAST)
 	d_print_expr_op (dpi, options, d_left (dc));
       else
 	{
@@ -4165,7 +4204,21 @@ d_print_comp (struct d_print_info *dpi, int options,
 	  && d_left (dc)->u.s_operator.op->name[0] == '>')
 	d_append_char (dpi, '(');
 
-      d_print_subexpr (dpi, options, d_left (d_right (dc)));
+      if (strcmp (d_left (dc)->u.s_operator.op->code, "cl") == 0
+          && d_left (d_right (dc))->type == DEMANGLE_COMPONENT_TYPED_NAME)
+	{
+	  /* Function call used in an expression should not have printed types
+	     of the function arguments.  Values of the function arguments still
+	     get printed below.  */
+
+	  const struct demangle_component *func = d_left (d_right (dc));
+
+	  if (d_right (func)->type != DEMANGLE_COMPONENT_FUNCTION_TYPE)
+	    d_print_error (dpi);
+	  d_print_subexpr (dpi, options, d_left (func));
+	}
+      else
+	d_print_subexpr (dpi, options, d_left (d_right (dc)));
       if (strcmp (d_left (dc)->u.s_operator.op->code, "ix") == 0)
 	{
 	  d_append_char (dpi, '[');

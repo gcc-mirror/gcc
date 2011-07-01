@@ -1,3 +1,15 @@
+2011-07-01  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	PR debug/49408
+	* cp-demangle.c (d_print_comp): Suppress argument list for function
+	references by the '&' unary operator.  Keep also already processed
+	variant without the argument list.  Suppress argument list types for
+	function call used in an expression.
+	* testsuite/demangle-expected: Fix excessive argument list types in
+	`test for typed function in decltype'.  New testcase for no argument
+	list types printed.  3 new testcases for function references by the
+	'&' unary operator..
+
 2011-06-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37089
