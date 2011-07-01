@@ -4574,19 +4574,14 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      /* 4. Handle invariant-load.  */
 	      if (inv_p && !bb_vinfo)
 		{
+		  tree vec_inv;
+		  gimple_stmt_iterator gsi2 = *gsi;
 		  gcc_assert (!strided_load);
-		  if (j == 0)
-		    {
-		      tree vec_inv;
-		      gimple_stmt_iterator gsi2 = *gsi;
-		      gsi_next (&gsi2);
-		      vec_inv = build_vector_from_val (vectype, scalar_dest);
-		      new_temp = vect_init_vector (stmt, vec_inv,
-						   vectype, &gsi2);
-		      new_stmt = SSA_NAME_DEF_STMT (new_temp);
-		    }
-		  else
-		    gcc_unreachable (); /* FORNOW. */
+		  gsi_next (&gsi2);
+		  vec_inv = build_vector_from_val (vectype, scalar_dest);
+		  new_temp = vect_init_vector (stmt, vec_inv,
+					       vectype, &gsi2);
+		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
 		}
 
 	      if (negative)
