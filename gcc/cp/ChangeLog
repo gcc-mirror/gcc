@@ -1,5 +1,13 @@
 2011-07-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48593
+	* pt.c (tsubst_qualified_id): Check PTRMEM_OK_P.
+	* tree.c (build_qualified_name): Set PTRMEM_OK_P.
+	* semantics.c (finish_parenthesized_expr): Clear PTRMEM_OK_P on
+	SCOPE_REF, too.
+	* cp-tree.h (PTRMEM_OK_P): Apply to SCOPE_REF, too.
+	(QUALIFIED_NAME_IS_TEMPLATE): Switch to lang flag 1.
+
 	PR c++/48883
 	PR c++/49609
 	* pt.c (resolve_nondeduced_context): Call mark_used.
