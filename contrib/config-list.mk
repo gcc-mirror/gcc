@@ -12,7 +12,8 @@ TEST=all-gcc
 #
 # v850e1-elf is rejected by config.sub
 LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
-  alpha-dec-osf5.1 alpha64-dec-vms alpha-dec-vms am33_2.0-linux \
+  alpha-dec-osf5.1OPT-enable-obsolete alpha64-dec-vms alpha-dec-vms \
+  am33_2.0-linux \
   arm-wrs-vxworks arm-freebsd6 arm-netbsdelf arm-linux \
   arm-linux-androideabi arm-uclinux_eabi arm-ecos-elf arm-eabi \
   arm-symbianelf arm-rtems arm-elf arm-wince-pe avr-rtems avr-elf \
@@ -35,7 +36,8 @@ LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
   m32r-linux m32rle-linux m68k-elf m68k-netbsdelf \
   m68k-openbsd m68k-uclinux m68k-linux m68k-rtems \
   mcore-elf mep-elf microblaze-linux microblaze-elf \
-  mips-sgi-irix6.5OPT-with-stabsOPT-enable-threads=posix mips-netbsd \
+  mips-sgi-irix6.5OPT-with-stabsOPT-enable-threads=posixOPT-enable-obsolete \
+  mips-netbsd \
   mips64el-st-linux-gnu mips64octeon-linux mipsisa64r2-linux \
   mipsisa32r2-linux-gnu mips-openbsd mipsisa64r2-sde-elf mipsisa32-elfoabi \
   mipsisa64-elfoabi mipsisa64r2el-elf mipsisa64sr71k-elf mipsisa64sb1-elf \
