@@ -1,3 +1,8 @@
+2011-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49355
+	* g++.dg/cpp0x/initlist54.C: New.
+
 2011-06-30  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/tree-ssa/sra-12.c: New test.
