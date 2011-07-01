@@ -1,3 +1,10 @@
+2011-07-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/48016
+	* explow.c (update_nonlocal_goto_save_area): Use proper mode
+	for stack save area.
+	* function.c (expand_function_start): Likewise.
+
 2011-07-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/49596
