@@ -1,3 +1,9 @@
+2011-07-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/49596
+	* cgraph.h (varpool_all_refs_explicit_p): Not analyzed nodes
+	may have unknown refs.
+
 2011-07-01  Kai Tietz  <ktietz@redhat.com>
 
 	* tree-ssa-forwprop.c (simplify_bitwise_binary): Fix typo.
