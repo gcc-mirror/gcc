@@ -3291,10 +3291,18 @@ stabilize_init (tree init, tree *initp)
     t = TARGET_EXPR_INITIAL (t);
   if (TREE_CODE (t) == COMPOUND_EXPR)
     t = expr_last (t);
-  if (TREE_CODE (t) == CONSTRUCTOR
-      && EMPTY_CONSTRUCTOR_P (t))
-    /* Default-initialization.  */
-    return true;
+  if (TREE_CODE (t) == CONSTRUCTOR)
+    {
+      /* Aggregate initialization: stabilize each of the field
+	 initializers.  */
+      unsigned i;
+      tree value;
+      bool good = true;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), i, value)
+	if (!stabilize_init (value, initp))
+	  good = false;
+      return good;
+    }
 
   /* If the initializer is a COND_EXPR, we can't preevaluate
      anything.  */

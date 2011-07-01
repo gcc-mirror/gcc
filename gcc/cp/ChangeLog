@@ -1,5 +1,8 @@
 2011-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49355
+	* tree.c (stabilize_init): Handle aggregate initialization.
+
 	PR c++/48481
 	* name-lookup.c (struct arg_lookup): Add fn_set.
 	(add_function): Check it.
