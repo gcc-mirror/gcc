@@ -1,3 +1,9 @@
+2011-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-pretty-print.c (dump_generic_code) <case CONSTRUCTOR>: Print
+	[idx]= and [idx1 ... idx2]= before initializers if needed for
+	array initializers.
+
 2011-07-01  Chen Liqin  <liqin.gcc@gmail.com>
 
 	* config.gcc (score-*-elf): Remove score7.o.

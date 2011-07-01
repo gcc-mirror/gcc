@@ -1,6 +1,6 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011  Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1250,19 +1250,58 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       {
 	unsigned HOST_WIDE_INT ix;
 	tree field, val;
-	bool is_struct_init = FALSE;
+	bool is_struct_init = false;
+	bool is_array_init = false;
+	double_int curidx = double_int_zero;
 	pp_character (buffer, '{');
 	if (TREE_CODE (TREE_TYPE (node)) == RECORD_TYPE
 	    || TREE_CODE (TREE_TYPE (node)) == UNION_TYPE)
-	  is_struct_init = TRUE;
+	  is_struct_init = true;
+        else if (TREE_CODE (TREE_TYPE (node)) == ARRAY_TYPE
+		 && TYPE_DOMAIN (TREE_TYPE (node))
+		 && TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (node)))
+		 && TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (node))))
+		    == INTEGER_CST)
+	  {
+	    tree minv = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (node)));
+	    is_array_init = true;
+	    curidx = tree_to_double_int (minv);
+	  }
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node), ix, field, val)
 	  {
-	    if (field && is_struct_init)
+	    if (field)
 	      {
-		pp_character (buffer, '.');
-		dump_generic_node (buffer, field, spc, flags, false);
-		pp_string (buffer, "=");
+		if (is_struct_init)
+		  {
+		    pp_character (buffer, '.');
+		    dump_generic_node (buffer, field, spc, flags, false);
+		    pp_character (buffer, '=');
+		  }
+		else if (is_array_init
+			 && (TREE_CODE (field) != INTEGER_CST
+			     || !double_int_equal_p (tree_to_double_int (field),
+						     curidx)))
+		  {
+		    pp_character (buffer, '[');
+		    if (TREE_CODE (field) == RANGE_EXPR)
+		      {
+			dump_generic_node (buffer, TREE_OPERAND (field, 0), spc,
+					   flags, false);
+			pp_string (buffer, " ... ");
+			dump_generic_node (buffer, TREE_OPERAND (field, 1), spc,
+					   flags, false);
+			if (TREE_CODE (TREE_OPERAND (field, 1)) == INTEGER_CST)
+			  curidx = tree_to_double_int (TREE_OPERAND (field, 1));
+		      }
+		    else
+		      dump_generic_node (buffer, field, spc, flags, false);
+		    if (TREE_CODE (field) == INTEGER_CST)
+		      curidx = tree_to_double_int (field);
+		    pp_string (buffer, "]=");
+		  }
 	      }
+            if (is_array_init)
+	      curidx = double_int_add (curidx, double_int_one);
 	    if (val && TREE_CODE (val) == ADDR_EXPR)
 	      if (TREE_CODE (TREE_OPERAND (val, 0)) == FUNCTION_DECL)
 		val = TREE_OPERAND (val, 0);
