@@ -4782,11 +4782,12 @@ expand_function_start (tree subr)
       if (!DECL_RTL_SET_P (var))
 	expand_decl (var);
 
-      t_save = build4 (ARRAY_REF, ptr_type_node,
+      t_save = build4 (ARRAY_REF,
+		       TREE_TYPE (TREE_TYPE (cfun->nonlocal_goto_save_area)),
 		       cfun->nonlocal_goto_save_area,
 		       integer_zero_node, NULL_TREE, NULL_TREE);
       r_save = expand_expr (t_save, NULL_RTX, VOIDmode, EXPAND_WRITE);
-      r_save = convert_memory_address (Pmode, r_save);
+      gcc_assert (GET_MODE (r_save) == Pmode);
 
       emit_move_insn (r_save, targetm.builtin_setjmp_frame_value ());
       update_nonlocal_goto_save_area ();
