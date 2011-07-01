@@ -1,5 +1,7 @@
 2011-06-30  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (iterative_hash_template_arg): Use cp_tree_operand_length.
+
 	PR c++/49355
 	* tree.c (stabilize_init): Handle aggregate initialization.
 
