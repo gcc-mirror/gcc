@@ -1609,7 +1609,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
     default:
       gcc_assert (IS_EXPR_CODE_CLASS (tclass));
       {
-	unsigned n = TREE_OPERAND_LENGTH (arg);
+	unsigned n = cp_tree_operand_length (arg);
 	for (i = 0; i < n; ++i)
 	  val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
 	return val;
