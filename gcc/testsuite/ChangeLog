@@ -1,5 +1,8 @@
 2011-07-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48261
+	* g++.dg/template/template-id-3.C: New.
+
 	PR c++/48593
 	* g++.dg/template/qualified-id4.C: New.
 

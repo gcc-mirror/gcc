@@ -1,5 +1,8 @@
 2011-07-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48261
+	* pt.c (lookup_template_function): Handle non-function.
+
 	PR c++/48593
 	* pt.c (tsubst_qualified_id): Check PTRMEM_OK_P.
 	* tree.c (build_qualified_name): Set PTRMEM_OK_P.
