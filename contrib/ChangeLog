@@ -1,3 +1,8 @@
+2011-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config-list.mk (LIST): Append OPT-enable-obsolete to
+	alpha-dec-osf5.1, mips-sgi-irix6.5.
+
 2011-06-24  Diego Novillo  <dnovillo@google.com>
 
 	* repro_fail: New.
