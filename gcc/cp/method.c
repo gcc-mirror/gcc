@@ -1528,8 +1528,11 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       /* Note that this parameter is *not* marked DECL_ARTIFICIAL; we
 	 want its type to be included in the mangled function
 	 name.  */
-      DECL_ARGUMENTS (fn) = cp_build_parm_decl (NULL_TREE, rhs_parm_type);
-      TREE_READONLY (DECL_ARGUMENTS (fn)) = 1;
+      tree decl = cp_build_parm_decl (NULL_TREE, rhs_parm_type);
+      TREE_READONLY (decl) = 1;
+      retrofit_lang_decl (decl);
+      DECL_PARM_INDEX (decl) = DECL_PARM_LEVEL (decl) = 1;
+      DECL_ARGUMENTS (fn) = decl;
     }
   /* Add the "this" parameter.  */
   this_parm = build_this_parm (fn_type, TYPE_UNQUALIFIED);
