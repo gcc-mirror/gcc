@@ -1,3 +1,9 @@
+2011-07-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49466
+	* trans-array.c (structure_alloc_comps): Make sure sub-components
+	and extended types are correctly deallocated.
+
 2011-06-27  Release Manager
 
 	* GCC 4.6.1 released.

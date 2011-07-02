@@ -1,3 +1,9 @@
+2011-07-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49466
+	* gfortran.dg/allocatable_scalar_9.f90: Modified.
+	* gfortran.dg/extends_14.f03: New.
+
 2011-06-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR ada/49511
