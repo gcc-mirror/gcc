@@ -1,3 +1,8 @@
+2011-07-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49562
+	* gfortran.dg/typebound_proc_23.f90: New.
+
 2011-07-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/49605

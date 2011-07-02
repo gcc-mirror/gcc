@@ -4394,8 +4394,8 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       sym = e->value.function.esym ? e->value.function.esym : e->symtree->n.sym;
     }
 
-  if (!pointer && e->expr_type == EXPR_FUNCTION
-      && sym->result->attr.pointer)
+  attr = gfc_expr_attr (e);
+  if (!pointer && e->expr_type == EXPR_FUNCTION && attr.pointer)
     {
       if (!(gfc_option.allow_std & GFC_STD_F2008))
 	{
@@ -4432,7 +4432,6 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 
   /* Find out whether the expr is a pointer; this also means following
      component references to the last one.  */
-  attr = gfc_expr_attr (e);
   is_pointer = (attr.pointer || attr.proc_pointer);
   if (pointer && !is_pointer)
     {
