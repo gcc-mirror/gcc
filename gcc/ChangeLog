@@ -1,3 +1,16 @@
+2011-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+	    Nicolas Setton  <setton@adacore.com>
+
+	* tree.h (TYPE_ARTIFICIAL): New flag.
+	* dwarf2out.c (modified_type_die): Add a DW_AT_artificial attribute to
+	the DIE of the type if it is artificial.
+	(gen_array_type_die): Likewise.
+	(gen_enumeration_type_die): Likewise.
+	(gen_struct_or_union_type_die): Likewise.
+	* lto-streamer-in.c (unpack_ts_base_value_fields): Use TYPE_ARTIFICIAL.
+	* lto-streamer-out.c (pack_ts_base_value_fields): Likewise.
+
 2011-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-object-size.c (pass_through_call): Handle

@@ -1563,7 +1563,10 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   else
     bp_unpack_value (bp, 1);
   TREE_ASM_WRITTEN (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_NO_WARNING (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (TYPE_P (expr))
+    TYPE_ARTIFICIAL (expr) = (unsigned) bp_unpack_value (bp, 1);
+  else
+    TREE_NO_WARNING (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_USED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_NOTHROW (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_STATIC (expr) = (unsigned) bp_unpack_value (bp, 1);

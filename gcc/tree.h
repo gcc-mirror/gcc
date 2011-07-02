@@ -699,6 +699,9 @@ struct GTY(()) tree_common {
            all expressions
            all decls
 
+       TYPE_ARTIFICIAL in
+           all types
+
    default_def_flag:
 
        TYPE_VECTOR_OPAQUE in
@@ -1242,6 +1245,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    least for used-before-set warnings, and it set after one warning is
    emitted.  */
 #define TREE_NO_WARNING(NODE) ((NODE)->base.nowarning_flag)
+
+/* Used to indicate that this TYPE represents a compiler-generated entity.  */
+#define TYPE_ARTIFICIAL(NODE) (TYPE_CHECK (NODE)->base.nowarning_flag)
 
 /* In an IDENTIFIER_NODE, this means that assemble_name was called with
    this string as an argument.  */
