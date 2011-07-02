@@ -13189,6 +13189,8 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 	name = DECL_NAME (name);
       add_name_attribute (mod_type_die, IDENTIFIER_POINTER (name));
       add_gnat_descriptive_type_attribute (mod_type_die, type, context_die);
+      if (TYPE_ARTIFICIAL (type))
+	add_AT_flag (mod_type_die, DW_AT_artificial, 1);
     }
   /* This probably indicates a bug.  */
   else if (mod_type_die && mod_type_die->die_tag == DW_TAG_base_type)
@@ -19444,6 +19446,8 @@ gen_array_type_die (tree type, dw_die_ref context_die)
   array_die = new_die (DW_TAG_array_type, scope_die, type);
   add_name_attribute (array_die, type_tag (type));
   add_gnat_descriptive_type_attribute (array_die, type, context_die);
+  if (TYPE_ARTIFICIAL (type))
+    add_AT_flag (array_die, DW_AT_artificial, 1);
   equate_type_number_to_die (type, array_die);
 
   if (TREE_CODE (type) == VECTOR_TYPE)
@@ -19747,6 +19751,8 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
       add_gnat_descriptive_type_attribute (type_die, type, context_die);
+      if (TYPE_ARTIFICIAL (type))
+	add_AT_flag (type_die, DW_AT_artificial, 1);
       if (dwarf_version >= 4 || !dwarf_strict)
 	{
 	  if (ENUM_IS_SCOPED (type))
@@ -21604,6 +21610,8 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
 	{
 	  add_name_attribute (type_die, type_tag (type));
 	  add_gnat_descriptive_type_attribute (type_die, type, context_die);
+	  if (TYPE_ARTIFICIAL (type))
+	    add_AT_flag (type_die, DW_AT_artificial, 1);
 	}
     }
   else

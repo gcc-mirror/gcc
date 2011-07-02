@@ -1,3 +1,12 @@
+2011-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+	    Nicolas Setton  <setton@adacore.com>
+
+	* gcc-interface/utils.c (record_builtin_type): Set TYPE_ARTIFICIAL on
+	the type according to the ARTIFICIAL_P parameter.
+	(create_type_decl): Likewise.
+	(create_type_stub_decl): Set TYPE_ARTIFICIAL on the type to 1.
+
 2011-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (gnat1): Prepend '+' to the command.
