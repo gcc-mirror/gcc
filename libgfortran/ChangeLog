@@ -1,3 +1,10 @@
+2011-07-03  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from mainline:
+        PR libfortran/49296
+        * io/list_read.c (read_character): Accept EOF as a separator when
+        reading string.
+
 2011-06-27  Release Manager
 
 	* GCC 4.6.1 released.

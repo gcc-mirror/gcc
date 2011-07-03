@@ -1024,7 +1024,7 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
   for (;;)
     {
       if ((c = next_char (dtp)) == EOF)
-	goto eof;
+	goto done_eof;
       switch (c)
 	{
 	case '"':
@@ -1070,8 +1070,8 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
      invalid.  */
  done:
   c = next_char (dtp);
- eof:
-  if (is_separator (c) || c == '!')
+ done_eof:
+  if (is_separator (c) || c == '!' || c == EOF)
     {
       unget_char (dtp, c);
       eat_separator (dtp);
@@ -1081,15 +1081,15 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
   else
     {
       free_saved (dtp);
-      if (c == EOF)
-	{
-	  hit_eof (dtp);
-	  return;
-	}
       sprintf (message, "Invalid string input in item %d",
 		  dtp->u.p.item_count);
       generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
     }
+  return;
+
+ eof:
+  free_saved (dtp);
+  hit_eof (dtp);
 }
 
 

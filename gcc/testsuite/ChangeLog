@@ -1,3 +1,9 @@
+2011-07-03  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from mainline:
+        PR libfortran/48296
+        * gfortran.dg/read_list_eof_1.f90: New test.
+
 2011-07-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49466
