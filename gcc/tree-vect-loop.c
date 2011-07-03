@@ -1823,6 +1823,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
 	     ("vect_internal_def"), or it's an induction (defined by a
 	     loop-header phi-node).  */
           if (def_stmt
+              && gimple_bb (def_stmt)
 	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
               && (is_gimple_assign (def_stmt)
                   || is_gimple_call (def_stmt)
@@ -1852,6 +1853,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
             ("vect_internal_def"), or it's an induction (defined by a
             loop-header phi-node).  */
           if (def_stmt
+              && gimple_bb (def_stmt)
 	      && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
               && (is_gimple_assign (def_stmt)
                   || is_gimple_call (def_stmt)
