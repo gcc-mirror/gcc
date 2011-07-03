@@ -1,3 +1,9 @@
+2011-07-03  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49610
+	* tree-vect-loop.c (vect_is_slp_reduction): Check that DEF_STMT has
+	a basic block.
+
 2011-07-02  Eric Botcazou  <ebotcazou@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 	    Nicolas Setton  <setton@adacore.com>
