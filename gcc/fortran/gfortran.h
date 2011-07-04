@@ -2264,6 +2264,8 @@ typedef struct gfc_constructor
      gfc_component *component; /* Record the component being initialized.  */
   }
   n;
+  mpz_t repeat; /* Record the repeat number of initial values in data
+		  statement like "data a/5*10/".  */
 }
 gfc_constructor;
 

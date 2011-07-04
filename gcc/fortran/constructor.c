@@ -1,5 +1,5 @@
 /* Array and structure constructors
-   Copyright (C) 2009, 2010
+   Copyright (C) 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -36,6 +36,7 @@ node_free (splay_tree_value value)
     gfc_free_iterator (c->iterator, 1);
 
   mpz_clear (c->offset);
+  mpz_clear (c->repeat);
 
   gfc_free (c);
 }
@@ -54,6 +55,7 @@ node_copy (splay_tree_node node, void *base)
   c->n.component = src->n.component;
 
   mpz_init_set (c->offset, src->offset);
+  mpz_init_set (c->repeat, src->repeat);
 
   return c;
 }
@@ -78,6 +80,7 @@ gfc_constructor_get (void)
   c->iterator = NULL;
 
   mpz_init_set_si (c->offset, 0);
+  mpz_init_set_si (c->repeat, 1);
 
   return c;
 }
@@ -169,6 +172,7 @@ gfc_constructor_insert_expr (gfc_constructor_base *base,
 gfc_constructor *
 gfc_constructor_lookup (gfc_constructor_base base, int offset)
 {
+  gfc_constructor *c;
   splay_tree_node node;
 
   if (!base)
@@ -176,9 +180,24 @@ gfc_constructor_lookup (gfc_constructor_base base, int offset)
 
   node = splay_tree_lookup (base, (splay_tree_key) offset);
   if (node)
-    return (gfc_constructor*) node->value;
+    return (gfc_constructor *) node->value;
 
-  return NULL;
+  /* Check if the previous node has a repeat count big enough to
+     cover the offset looked for.  */
+  node = splay_tree_predecessor (base, (splay_tree_key) offset);
+  if (!node)
+    return NULL;
+
+  c = (gfc_constructor *) node->value;
+  if (mpz_cmp_si (c->repeat, 1) > 0)
+    {
+      if (mpz_get_si (c->offset) + mpz_get_si (c->repeat) <= offset)
+	c = NULL;
+    }
+  else
+    c = NULL;
+
+  return c;
 }
 
 
@@ -231,4 +250,28 @@ gfc_constructor_next (gfc_constructor *ctor)
     }
   else
     return NULL;
+}
+
+
+void
+gfc_constructor_remove (gfc_constructor *ctor)
+{
+  if (ctor)
+    splay_tree_remove (ctor->base, mpz_get_si (ctor->offset));
+}
+
+
+gfc_constructor *
+gfc_constructor_lookup_next (gfc_constructor_base base, int offset)
+{
+  splay_tree_node node;
+
+  if (!base)
+    return NULL;
+
+  node = splay_tree_successor (base, (splay_tree_key) offset);
+  if (!node)
+    return NULL;
+
+  return (gfc_constructor *) node->value;
 }

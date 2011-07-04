@@ -1,3 +1,12 @@
+2011-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2011-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49262
+	* dwarf2out.c (native_encode_initializer): Decrement count in each
+	iteration.
+
 2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from mainline

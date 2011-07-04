@@ -1,3 +1,27 @@
+2011-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2011-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/49540
+	* gfortran.h (gfc_constructor): Add repeat field.
+	* trans-array.c (gfc_conv_array_initializer): Handle repeat > 1.
+	* array.c (current_expand): Add repeat field.
+	(expand_constructor): Copy repeat.
+	* constructor.c (node_free, node_copy, gfc_constructor_get,
+	gfc_constructor_lookup): Handle repeat field.
+	(gfc_constructor_lookup_next, gfc_constructor_remove): New functions.
+	* data.h (gfc_assign_data_value): Add mpz_t * argument.
+	(gfc_assign_data_value_range): Removed.
+	* constructor.h (gfc_constructor_advance): Removed.
+	(gfc_constructor_lookup_next, gfc_constructor_remove): New prototypes.
+	* data.c (gfc_assign_data_value): Add REPEAT argument, handle it and
+	also handle overwriting a range with a single entry.
+	(gfc_assign_data_value_range): Removed.
+	* resolve.c (check_data_variable): Adjust gfc_assign_data_value
+	call.  Use gfc_assign_data_value instead of
+	gfc_assign_data_value_expr.
+
 2011-07-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49466

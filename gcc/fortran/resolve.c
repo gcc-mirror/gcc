@@ -12612,8 +12612,8 @@ check_data_variable (gfc_data_variable *var, locus *where)
 	      mpz_set_ui (size, 0);
 	    }
 
-	  t = gfc_assign_data_value_range (var->expr, values.vnode->expr,
-					   offset, range);
+	  t = gfc_assign_data_value (var->expr, values.vnode->expr,
+				     offset, &range);
 
 	  mpz_add (offset, offset, range);
 	  mpz_clear (range);
@@ -12628,7 +12628,8 @@ check_data_variable (gfc_data_variable *var, locus *where)
 	  mpz_sub_ui (values.left, values.left, 1);
 	  mpz_sub_ui (size, size, 1);
 
-	  t = gfc_assign_data_value (var->expr, values.vnode->expr, offset);
+	  t = gfc_assign_data_value (var->expr, values.vnode->expr,
+				     offset, NULL);
 	  if (t == FAILURE)
 	    break;
 

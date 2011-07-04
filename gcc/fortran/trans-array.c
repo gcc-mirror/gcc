@@ -4490,7 +4490,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
   gfc_se se;
   HOST_WIDE_INT hi;
   unsigned HOST_WIDE_INT lo;
-  tree index;
+  tree index, range;
   VEC(constructor_elt,gc) *v = NULL;
 
   switch (expr->expr_type)
@@ -4544,27 +4544,55 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
           else
             index = NULL_TREE;
 
+	  if (mpz_cmp_si (c->repeat, 1) > 0)
+	    {
+	      tree tmp1, tmp2;
+	      mpz_t maxval;
+
+	      mpz_init (maxval);
+	      mpz_add (maxval, c->offset, c->repeat);
+	      mpz_sub_ui (maxval, maxval, 1);
+	      tmp2 = gfc_conv_mpz_to_tree (maxval, gfc_index_integer_kind);
+	      if (mpz_cmp_si (c->offset, 0) != 0)
+		{
+		  mpz_add_ui (maxval, c->offset, 1);
+		  tmp1 = gfc_conv_mpz_to_tree (maxval, gfc_index_integer_kind);
+		}
+	      else
+		tmp1 = gfc_conv_mpz_to_tree (c->offset, gfc_index_integer_kind);
+
+	      range = fold_build2 (RANGE_EXPR, gfc_array_index_type, tmp1, tmp2);
+	      mpz_clear (maxval);
+	    }
+	  else
+	    range = NULL;
+
           gfc_init_se (&se, NULL);
 	  switch (c->expr->expr_type)
 	    {
 	    case EXPR_CONSTANT:
 	      gfc_conv_constant (&se, c->expr);
-	      CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
 	      break;
 
 	    case EXPR_STRUCTURE:
               gfc_conv_structure (&se, c->expr, 1);
-	      CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
 	      break;
-
 
 	    default:
 	      /* Catch those occasional beasts that do not simplify
 		 for one reason or another, assuming that if they are
 		 standard defying the frontend will catch them.  */
 	      gfc_conv_expr (&se, c->expr);
-	      CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
 	      break;
+	    }
+
+	  if (range == NULL_TREE)
+	    CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
+	  else
+	    {
+	      if (index != NULL_TREE)
+		CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
+	      CONSTRUCTOR_APPEND_ELT (v, range, se.expr);
 	    }
         }
       break;

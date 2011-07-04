@@ -17118,7 +17118,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 		{
 		  int count = tree_low_cst (TREE_OPERAND (index, 1), 0)
 			      - tree_low_cst (TREE_OPERAND (index, 0), 0);
-		  while (count > 0)
+		  while (count-- > 0)
 		    {
 		      if (val)
 			memcpy (array + curpos, array + pos, fieldsize);
