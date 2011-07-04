@@ -52,7 +52,7 @@ set-torture-options $AVR_TORTURE_OPTIONS
 
 
 # Main loop.
-gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] $DEFAULT_CFLAGS
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.{\[cS\],cpp}]] $DEFAULT_CFLAGS
 
 # Finalize use of torture lists.
 torture-finish

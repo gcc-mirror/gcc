@@ -1,3 +1,17 @@
+2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/34734
+	PR target/44643
+	* gcc.target/avr/avr.exp: Run over cpp files, too.
+	* gcc.target/avr/torture/avr-torture.exp: Ditto.
+	* gcc.target/avr/progmem.h: New file.
+	* gcc.target/avr/exit-abort.h: New file.
+	* gcc.target/avr/progmem-error-1.c: New file.
+	* gcc.target/avr/progmem-error-1.cpp: New file.
+	* gcc.target/avr/progmem-warning-1.c: New file.
+	* gcc.target/avr/torture/progmem-1.c: New file.
+	* gcc.target/avr/torture/progmem-1.cpp: New file.
+
 2011-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49615
