@@ -1,5 +1,5 @@
 # Extra 16-bit integer functions.
-intfuncs16 = _absvXX2 _addvXX3 _subvXX3 _mulvXX3 _negvXX2 
+intfuncs16 = _absvXX2 _addvXX3 _subvXX3 _mulvXX3 _negvXX2 _clrsbXX2
 
 hiintfuncs16 = $(subst XX,hi,$(intfuncs16))
 siintfuncs16 = $(subst XX,si,$(intfuncs16))
