@@ -58,8 +58,8 @@ extern struct obstack util_obstack;
 extern char *util_firstobj;
 
 #include "objc-runtime-hooks.h"
-
 #include "objc-runtime-shared-support.h"
+#include "objc-encoding.h"
 
 /* ABI 2 Private definitions. */
 #define DEF_CONSTANT_STRING_CLASS_NAME "NSConstantString"

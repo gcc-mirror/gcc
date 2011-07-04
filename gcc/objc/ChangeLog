@@ -1,3 +1,47 @@
+2011-07-04  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Refactored encoding code into objc-encoding.h and objc-encoding.c.
+	* objc-act.c (util_obstack, util_firstobj, encode_type_qualifiers,
+	encode_type, generating_instance_variables, objc_method_parm_type,
+	objc_encoded_type_size, encode_method_prototype,
+	objc_build_encode_expr, pointee_is_readonly, encode_pointer,
+	encode_array, encode_vector, encode_aggregate_fields,
+	encode_aggregate_within, encode_next_bitfield,
+	encode_gnu_bitfield, encode_field_decl,
+	objc_v2_encode_property_attr): Moved to objc-encoding.h and
+	objc-encoding.c.  No change in the actual code.
+	Include objc-encoding.h.
+	(objc_init): Added TODO.
+	(objc_build_property_setter_name): Made non-static so it can be
+	called from objc-encoding.c.
+	* objc-act.h (OBJC_ENCODE_INLINE_DEFS,
+	OBJC_ENCODE_DONT_INLINE_DEFS): Moved to objc-encoding.h.
+	* objc-runtime-shared-support.h (objc_v2_encode_property_attr,
+	encode_method_prototype, encode_field_decl,
+	generating_instance_variables): Moved to objc-encoding.h.	
+	(objc_build_property_setter_name): Declare.
+	* objc-encoding.c: New.
+	* objc-encoding.h: New.
+	* objc-gnu-runtime-abi-01.c: Include objc-encoding.h.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.	
+	* objc-runtime-shared-support.c: Likewise.
+	* Make-lang.in (OBJC_OBJS): Added objc-encoding.o.
+	(objc/objc-lang.o): Reordered dependencies.
+	(objc/objc-runtime-shared-support.o): Reordered dependencies.
+	Added dependencies on objc-encoding.h and on $(GGC_H),
+	$(DIAGNOSTIC_CORE_H), $(FLAGS_H) and input.h.
+	(objc/objc-gnu-runtime-abi-01.o): Likewise.
+	(objc/objc-next-runtime-abi-01.o): Likewise.
+	(objc/objc-next-runtime-abi-02.o): Likewise.
+	(objc/objc-act.o): Reordered dependencies.  Added dependency on
+	objc-encoding.h.
+	(objc/objc-encoding.o): New rule.
+
+	* objc-encoding.c (encode_type): Use "%<%T%>" format when printing
+	warning "unknown type %<%T%> found during Objective-C encoding"
+	instead of using gen_type_name.
+	
 2011-06-05  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (receiver_is_class_object): Expanded comment.
