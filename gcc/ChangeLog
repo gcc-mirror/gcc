@@ -1,3 +1,12 @@
+2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from mainline
+	2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/44643
+	* config/avr/avr.c (avr_insert_attributes): Use TYPE_READONLY
+	instead of TREE_READONLY.
+
 2011-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49615

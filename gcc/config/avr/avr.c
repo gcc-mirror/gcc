@@ -5049,7 +5049,19 @@ avr_insert_attributes (tree node, tree *attributes)
       && (TREE_STATIC (node) || DECL_EXTERNAL (node))
       && avr_progmem_p (node, *attributes))
     {
-      if (TREE_READONLY (node)) 
+      tree node0 = node;
+
+      /* For C++, we have to peel arrays in order to get correct
+         determination of readonlyness.  */
+      
+      do
+        node0 = TREE_TYPE (node0);
+      while (TREE_CODE (node0) == ARRAY_TYPE);
+
+      if (error_mark_node == node0)
+        return;
+      
+      if (TYPE_READONLY (node0))
         {
           static const char dsec[] = ".progmem.data";
 
