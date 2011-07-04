@@ -2738,10 +2738,18 @@ d_expression (struct d_info *di)
       /* Function parameter used in a late-specified return type.  */
       int index;
       d_advance (di, 2);
-      index = d_compact_number (di);
-      if (index < 0)
-	return NULL;
-
+      if (d_peek_char (di) == 'T')
+	{
+	  /* 'this' parameter.  */
+	  d_advance (di, 1);
+	  index = 0;
+	}
+      else
+	{
+	  index = d_compact_number (di) + 1;
+	  if (index == 0)
+	    return NULL;
+	}
       return d_make_function_param (di, index);
     }
   else if (IS_DIGIT (peek)
@@ -4400,9 +4408,17 @@ d_print_comp (struct d_print_info *dpi, int options,
       return;
 
     case DEMANGLE_COMPONENT_FUNCTION_PARAM:
-      d_append_string (dpi, "{parm#");
-      d_append_num (dpi, dc->u.s_number.number + 1);
-      d_append_char (dpi, '}');
+      {
+	long num = dc->u.s_number.number;
+	if (num == 0)
+	  d_append_string (dpi, "this");
+	else
+	  {
+	    d_append_string (dpi, "{parm#");
+	    d_append_num (dpi, num);
+	    d_append_char (dpi, '}');
+	  }
+      }
       return;
 
     case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:
