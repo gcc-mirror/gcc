@@ -1,3 +1,9 @@
+2011-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49600
+	* config/i386/i386.md (SSE2 int->float split): Push operand 1 in
+	general register to memory for !TARGET_INTER_UNIT_MOVES.
+
 2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/44643
@@ -8,8 +14,7 @@
 
 	* doc/extend.texi (AVR Built-in Functions): Update documentation
 	of __builtin_avr_fmul*.
-	* config/avr/avr.c (avr_init_builtins): Don't depend on
-	AVR_HAVE_MUL.
+	* config/avr/avr.c (avr_init_builtins): Don't depend on AVR_HAVE_MUL.
 	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Ditto.
 	* config/avr/avr.md (fmul): Rename to fmul_insn.
 	(fmuls): Rename to fmuls_insn.
@@ -107,8 +112,7 @@
 2011-07-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49603
-	* tree-vect-stmts.c (vectorizable_load): Remove unnecessary
-	assert.
+	* tree-vect-stmts.c (vectorizable_load): Remove unnecessary assert.
 
 2011-06-30  Martin Jambor  <mjambor@suse.cz>
 
@@ -188,8 +192,7 @@
 	PR tree-optimization/46787
 	* tree-data-ref.c (dr_address_invariant_p): Remove.
 	(find_data_references_in_stmt): Invariant accesses are ok now.
-	* tree-vect-stmts.c (vectorizable_load): Handle invariant
-	loads.
+	* tree-vect-stmts.c (vectorizable_load): Handle invariant loads.
 	* tree-vect-data-refs.c (vect_analyze_data_ref_access): Allow
 	invariant loads.
 
@@ -275,9 +278,8 @@
 
 	* config/arm/unwind-arm.c (enum __cxa_type_match_result): New.
 	(cxa_type_match): Correct declaration.
-	(__gnu_unwind_pr_common): Reconstruct
-	additional indirection when __cxa_type_match returns
-	succeeded_with_ptr_to_base.
+	(__gnu_unwind_pr_common): Reconstruct additional indirection
+	when __cxa_type_match returns succeeded_with_ptr_to_base.
 
 2011-06-29  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -293,7 +295,7 @@
 	Detect subregs via recursive descent instead of via SUBREG_LOC.
 
 2011-06-29  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.c (avr_encode_section_info): Dispatch to
 	default_encode_section_info.
 
@@ -310,14 +312,13 @@
 2011-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/49567
-	* dwarf2out.c (mem_loc_descriptor) <case ZERO_EXTEND>: Give up
-	for non-MODE_INT modes instead of asserting the mode has MODE_INT
-	class.
+	* dwarf2out.c (mem_loc_descriptor) <case ZERO_EXTEND>: Give up for
+	non-MODE_INT modes instead of asserting the mode has MODE_INT class.
 
 2011-06-29  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/34734
-	* config/avr/avr.c (avr_handle_progmem_attribute): Move warning 
+	* config/avr/avr.c (avr_handle_progmem_attribute): Move warning
 	about uninitialized data attributed 'progmem' from here...
 	(avr_encode_section_info): ...to this new function.
 	(TARGET_ENCODE_SECTION_INFO): New define.
@@ -325,7 +326,7 @@
 	section flag SECTION_WRITE.
 
 2011-06-29  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/t-avr (LIB1ASMFUNCS): Add _mulhisi3, _umulhisi3,
 	_xmulhisi3_exit.
 	* config/avr/libgcc.S (_xmulhisi3_exit): New Function.
@@ -387,13 +388,12 @@
 	* gcc.c: Include params.h.
 	(set_option_handlers): Also use common_handle_option and
 	target_handle_option.
-	(main): Call global_init_params, finish_params and
-	init_options_struct.
+	(main): Call global_init_params, finish_params and init_options_struct.
 	* opts.c (debug_type_names): Move from toplev.c.
 	(print_filtered_help): Access quiet_flag through opts pointer.
-	(common_handle_option): Return early in the driver for some
-	options.  Access in_lto_p, dwarf_version and
-	warn_maybe_uninitialized through opts pointer.
+	(common_handle_option): Return early in the driver for some options.
+	Access in_lto_p, dwarf_version and warn_maybe_uninitialized through
+	opts pointer.
 	* toplev.c (in_lto_p): Move to common.opt.
 	(debug_type_names): Move to opts.c.
 	* Makefile.in (OBJS): Remove opts.o.
@@ -402,8 +402,7 @@
 
 2011-06-28  Kai Tietz  <ktietz@redhat.com>
 
-	* tree-ssa-forwprop.c (simplify_bitwise_binary): Improve
-	type sinking.
+	* tree-ssa-forwprop.c (simplify_bitwise_binary): Improve type sinking.
 
 2011-06-28  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
@@ -437,8 +436,7 @@
 	(genprogrtl): Add attr-common.
 	* genattr.c (main): Include insn-attr-common.h.  Don't generate
 	definitions of DELAY_SLOTS or INSN_SCHEDULING.
-	* opts.c: Include insn-attr-common.h instead of rtl.h and
-	insn-attr.h.
+	* opts.c: Include insn-attr-common.h instead of rtl.h and insn-attr.h.
 
 2011-06-28  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -535,9 +533,8 @@
 
 2011-06-27  Nick Clifton  <nickc@redhat.com>
 
-	* config/mn10300/mn10300.md (clzsi2): Use XOR after BSCH to
-	convert bit position of highest bit set into a count of the high
-	zero bits.
+	* config/mn10300/mn10300.md (clzsi2): Use XOR after BSCH to convert
+	bit position of highest bit set into a count of the high zero bits.
 
 2011-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -559,8 +556,8 @@
 
 	* tree-ssa-math-opts.c (do_shift_rotate): Zero bits
 	out of type precision after operation.
-	(find_bswap): Take for limit value the integer auto-
-	promotion into account.
+	(find_bswap): Take for limit value the integer auto-promotion
+	into account.
 
 2011-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -590,8 +587,7 @@
 	clear some builtins on VMS.  Calls vms_patch_builtins.
 	(ia64_asm_output_external): Remove DO_CRTL_NAME.
 	* config/ia64/vms64.h: Do not include vms-crtl-64.h
-	* config.gcc (*-*-*vms*): Define extra_objs, target_gtfiles,
-	tm_p_file.
+	* config.gcc (*-*-*vms*): Define extra_objs, target_gtfiles, tm_p_file.
 
 2011-06-27  Tristan Gingold  <gingold@adacore.com>
 
@@ -694,8 +690,7 @@
 
 	PR target/49335
 	* config/arm/predicates.md (add_operator): New.
-	* config/arm/arm.md ("*arith_shiftsi"): Fix for SP reg usage
-	in Thumb2.
+	* config/arm/arm.md ("*arith_shiftsi"): Fix for SP reg usage in Thumb2.
 
 2011-06-24  Andi Kleen  <ak@linux.intel.com>
 
@@ -791,9 +786,8 @@
 
 	PR libgomp/49490
 	* omp-low.c (expand_omp_for_static_nochunk): Only
-	use n ceil/ nthreads size for the first
-	n % nthreads threads in the team instead of
-	all threads except for the last few ones which
+	use n ceil/ nthreads size for the first n % nthreads threads in the
+	team instead of all threads except for the last few ones which
 	get less work or none at all.
 
 	PR debug/49496
@@ -814,8 +808,7 @@
 
 2011-06-22  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* config/arm/arm.h (OPTION_DEFAULT_SPECS): Fix -mtls-dialect
-	typo.
+	* config/arm/arm.h (OPTION_DEFAULT_SPECS): Fix -mtls-dialect typo.
 	* config.gcc (arm*-*-linux*): Default to gnu tls.
 	(arm*-*-*): Add --with-tls option.
 	(all_defaults): Add 'tls'.
@@ -851,7 +844,7 @@
 	* cgraphunit.c (assemble_thunk): Use correct return type.
 
 2011-06-22  Dmitry Plotnikov  <dplotnikov@ispras.ru>
-	Dmitry Melnik  <dm@ispras.ru>
+	    Dmitry Melnik  <dm@ispras.ru>
 
 	* config/arm/arm.c (neon_immediate_valid_for_shift): New function.
 	(neon_output_shift_immediate): Ditto.
@@ -897,9 +890,8 @@
 	of base type reference as argument.
 	(resolve_addr_in_expr): Likewise.  Fix keep computation.
 	(convert_descriptor_to_signed): Renamed to...
-	(convert_descriptor_to_mode): ... this.  For wider types convert
-	to unsigned instead of signed, for <= DWARF2_ADDR_SIZE convert to
-	untyped.
+	(convert_descriptor_to_mode): ... this.  For wider types convert to
+	unsigned instead of signed, for <= DWARF2_ADDR_SIZE convert to untyped.
 	(typed_binop): New function.
 	(scompare_loc_descriptor, ucompare_loc_descriptor,
 	minmax_loc_descriptor, mem_loc_descriptor): For wider integer modes
@@ -952,8 +944,7 @@
 	debug args vector from old_decl to new_decl.
 	* ipa-prop.c (ipa_modify_call_arguments): For optimized away
 	or modified parameters, add debug bind stmts before call
-	setting DEBUG_EXPR_DECL which is remembered in debug args
-	vector.
+	setting DEBUG_EXPR_DECL which is remembered in debug args vector.
 	* cfgexpand.c (expand_call_stmt): Call expand_debug_expr
 	on DECL_DEBUG_EXPRs from debug args vector.
 	(expand_debug_source_expr): New function.
@@ -962,9 +953,8 @@
 	* var-tracking.c (prepare_call_arguments): Add debug args
 	to call_arguments if any.
 	* dwarf2out.c (dwarf_stack_op_name, size_of_loc_descr,
-	output_loc_operands, output_loc_operands_raw,
-	resolve_addr_in_expr, compare_loc_operands): Handle
-	DW_OP_GNU_parameter_ref.
+	output_loc_operands, output_loc_operands_raw, resolve_addr_in_expr,
+	compare_loc_operands): Handle DW_OP_GNU_parameter_ref.
 	(get_ref_die_offset, parameter_ref_descriptor): New functions.
 	(mem_loc_descriptor): Handle DEBUG_PARAMETER_REF.
 	(gen_subprogram_die): Handle parameters identified by
@@ -997,7 +987,7 @@
 	if the function has no attributes.
 	* tree.c (is_attribute_with_length_p): Removed.
 	(is_attribute_p): Removed.
-	(private_is_attribute_p): New.  
+	(private_is_attribute_p): New.
 	(private_lookup_attribute): New.
 	(lookup_attribute): Removed.
 	(lookup_ident_attribute): New.
@@ -1016,7 +1006,7 @@
 	in the form 'text', not '__text__'.
 	(private_is_attribute_p, private_lookup_attribute): New.
 	Updated comments.
-	
+
 2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	* builtins.c: Add sync_ or SYNC__ to builtin names.
