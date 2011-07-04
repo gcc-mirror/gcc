@@ -1,5 +1,13 @@
 2011-07-04  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2011-05-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49115
+	* g++.dg/torture/pr49115.C: New testcase.
+
+2011-07-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/49615
 	* g++.dg/torture/pr49615.C: New testcase.
 
