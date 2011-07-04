@@ -1,5 +1,7 @@
 2011-07-04  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/diag1.C: New.
+
 	* g++.dg/diagnostic/aka1.C: New.
 
 2011-07-04  Jakub Jelinek  <jakub@redhat.com>

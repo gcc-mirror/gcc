@@ -1,5 +1,13 @@
 2011-07-04  Jason Merrill  <jason@redhat.com>
 
+	* error.c (dump_template_bindings): Don't print typenames
+	for a partial instantiation.
+	(dump_function_decl): If we aren't printing function arguments,
+	print template arguments as <args> rather than [with ...].
+	(dump_expr): Don't print return type or template header.
+	[BASELINK]: Use BASELINK_FUNCTIONS rather than get_first_fn.
+	* pt.c (dependent_template_arg_p): Handle null arg.
+
 	* error.c (type_to_string): Avoid redundant akas.
 
 2011-07-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
