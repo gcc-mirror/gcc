@@ -2,9 +2,7 @@
 
 	PR rtl-optimization/49619
 	* combine.c (combine_simplify_rtx): In PLUS -> IOR simplification
-	pass VOIDmode as op0_mode to recursive call, and return temp even
-	when different from tor, just if it is not IOR of the original
-	PLUS arguments.
+	pass VOIDmode as op0_mode to recursive call.
 
 	PR rtl-optimization/49472
 	* simplify-rtx.c (simplify_unary_operation_1) <case NEG>: When
