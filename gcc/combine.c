@@ -5681,12 +5681,17 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 	{
 	  /* Try to simplify the expression further.  */
 	  rtx tor = simplify_gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
-	  temp = combine_simplify_rtx (tor, mode, in_dest, 0);
+	  temp = combine_simplify_rtx (tor, VOIDmode, in_dest, 0);
 
 	  /* If we could, great.  If not, do not go ahead with the IOR
 	     replacement, since PLUS appears in many special purpose
 	     address arithmetic instructions.  */
-	  if (GET_CODE (temp) != CLOBBER && temp != tor)
+	  if (GET_CODE (temp) != CLOBBER
+	      && (GET_CODE (temp) != IOR
+		  || ((XEXP (temp, 0) != XEXP (x, 0)
+		       || XEXP (temp, 1) != XEXP (x, 1))
+		      && (XEXP (temp, 0) != XEXP (x, 1)
+			  || XEXP (temp, 1) != XEXP (x, 0)))))
 	    return temp;
 	}
       break;
