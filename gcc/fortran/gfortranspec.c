@@ -255,6 +255,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   for (i = 1; i < argc; ++i)
     {
+      if (decoded_options[i].errors & CL_ERR_MISSING_ARG)
+	continue;
+
       switch (decoded_options[i].opt_index)
 	{
 	case OPT_SPECIAL_input_file:

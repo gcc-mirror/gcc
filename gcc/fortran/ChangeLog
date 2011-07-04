@@ -1,5 +1,9 @@
 2011-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/49623
+	* gfortranspec.c (lang_specific_driver): Ignore options with
+	CL_ERR_MISSING_ARG errors.
+
 	Backported from mainline
 	2011-06-30  Jakub Jelinek  <jakub@redhat.com>
 
