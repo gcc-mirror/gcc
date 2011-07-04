@@ -3905,6 +3905,10 @@ decltype ({parm#1}+{parm#2}) add<int, double>(int, double)
 --format=gnu-v3
 _Z4add3IidEDTclL_Z1gEfp_fp0_EET_T0_
 decltype (g({parm#1}, {parm#2})) add3<int, double>(int, double)
+# 'this' test
+--format=gnu-v3
+_ZN1A1fIiEEDTcldtdtdefpT1b1fIT_EEEv
+decltype ((((*this).b).(f<int>))()) A::f<int>()
 # new (2008) built in types test
 --format=gnu-v3
 _Z1fDfDdDeDhDsDi
