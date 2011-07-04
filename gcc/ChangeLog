@@ -1,5 +1,13 @@
 2011-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/49472
+	* simplify-rtx.c (simplify_unary_operation_1) <case NEG>: When
+	negating MULT, negate the second operand instead of first.
+	(simplify_binary_operation_1) <case MULT>: If one operand is
+	a NEG and the other is MULT, don't attempt to optimize by
+	negation of the MULT operand if it only moves the NEG operation
+	around.
+
 	PR debug/49602
 	* tree-into-ssa.c (rewrite_debug_stmt_uses): Disregard
 	get_current_def return value if it can't be trusted to be
