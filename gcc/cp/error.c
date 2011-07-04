@@ -307,9 +307,12 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
       parms = TREE_CHAIN (parms);
     }
 
+  /* Don't bother with typenames for a partial instantiation.  */
+  if (VEC_empty (tree, typenames) || uses_template_parms (args))
+    return;
+
   FOR_EACH_VEC_ELT (tree, typenames, i, t)
     {
-      bool dependent = uses_template_parms (args);
       if (need_comma)
 	pp_separate_with_comma (cxx_pp);
       dump_type (t, TFF_PLAIN_IDENTIFIER);
@@ -317,11 +320,7 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
       pp_equal (cxx_pp);
       pp_cxx_whitespace (cxx_pp);
       push_deferring_access_checks (dk_no_check);
-      if (dependent)
-	++processing_template_decl;
       t = tsubst (t, args, tf_none, NULL_TREE);
-      if (dependent)
-	--processing_template_decl;
       pop_deferring_access_checks ();
       /* Strip typedefs.  We can't just use TFF_CHASE_TYPEDEF because
 	 pp_simple_type_specifier doesn't know about it.  */
@@ -1379,17 +1378,37 @@ dump_function_decl (tree t, int flags)
 
       if (show_return)
 	dump_type_suffix (TREE_TYPE (fntype), flags);
-    }
 
-  /* If T is a template instantiation, dump the parameter binding.  */
-  if (template_parms != NULL_TREE && template_args != NULL_TREE)
+      /* If T is a template instantiation, dump the parameter binding.  */
+      if (template_parms != NULL_TREE && template_args != NULL_TREE)
+	{
+	  pp_cxx_whitespace (cxx_pp);
+	  pp_cxx_left_bracket (cxx_pp);
+	  pp_cxx_ws_string (cxx_pp, M_("with"));
+	  pp_cxx_whitespace (cxx_pp);
+	  dump_template_bindings (template_parms, template_args, typenames);
+	  pp_cxx_right_bracket (cxx_pp);
+	}
+    }
+  else if (template_args)
     {
-      pp_cxx_whitespace (cxx_pp);
-      pp_cxx_left_bracket (cxx_pp);
-      pp_cxx_ws_string (cxx_pp, M_("with"));
-      pp_cxx_whitespace (cxx_pp);
-      dump_template_bindings (template_parms, template_args, typenames);
-      pp_cxx_right_bracket (cxx_pp);
+      bool need_comma = false;
+      int i;
+      pp_cxx_begin_template_argument_list (cxx_pp);
+      template_args = INNERMOST_TEMPLATE_ARGS (template_args);
+      for (i = 0; i < TREE_VEC_LENGTH (template_args); ++i)
+	{
+	  tree arg = TREE_VEC_ELT (template_args, i);
+	  if (need_comma)
+	    pp_separate_with_comma (cxx_pp);
+	  if (ARGUMENT_PACK_P (arg))
+	    pp_cxx_left_brace (cxx_pp);
+	  dump_template_argument (arg, TFF_PLAIN_IDENTIFIER);
+	  if (ARGUMENT_PACK_P (arg))
+	    pp_cxx_right_brace (cxx_pp);
+	  need_comma = true;
+	}
+      pp_cxx_end_template_argument_list (cxx_pp);
     }
 }
 
@@ -1724,7 +1743,9 @@ dump_expr (tree t, int flags)
     case OVERLOAD:
     case TYPE_DECL:
     case IDENTIFIER_NODE:
-      dump_decl (t, (flags & ~TFF_DECL_SPECIFIERS) | TFF_NO_FUNCTION_ARGUMENTS);
+      dump_decl (t, ((flags & ~(TFF_DECL_SPECIFIERS|TFF_RETURN_TYPE
+				|TFF_TEMPLATE_HEADER))
+		     | TFF_NO_FUNCTION_ARGUMENTS));
       break;
 
     case INTEGER_CST:
@@ -2289,7 +2310,7 @@ dump_expr (tree t, int flags)
       break;
 
     case BASELINK:
-      dump_expr (get_first_fn (t), flags & ~TFF_EXPR_IN_PARENS);
+      dump_expr (BASELINK_FUNCTIONS (t), flags & ~TFF_EXPR_IN_PARENS);
       break;
 
     case EMPTY_CLASS_EXPR:

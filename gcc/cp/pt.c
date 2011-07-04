@@ -18848,7 +18848,7 @@ dependent_template_arg_p (tree arg)
      is dependent. This is consistent with what
      any_dependent_template_arguments_p [that calls this function]
      does.  */
-  if (arg == error_mark_node)
+  if (!arg || arg == error_mark_node)
     return true;
 
   if (TREE_CODE (arg) == ARGUMENT_PACK_SELECT)
