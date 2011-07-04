@@ -1,3 +1,20 @@
+2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (AVR Built-in Functions): Update documentation
+	of __builtin_avr_fmul*.
+	* config/avr/avr.c (avr_init_builtins): Don't depend on
+	AVR_HAVE_MUL.
+	* config/avr/avr-c.c (avr_cpu_cpp_builtins): Ditto.
+	* config/avr/avr.md (fmul): Rename to fmul_insn.
+	(fmuls): Rename to fmuls_insn.
+	(fmulsu): Rename to fmulsu_insn.
+	(fmul,fmuls,fmulsu): New expander.
+	(*fmul.call,*fmuls.call,*fmulsu.call): New Insn.
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _fmul, _fmuls, _fmulsu.
+	* config/avr/libgcc.S (__fmul): New function.
+	(__fmuls): New function.
+	(__fmulsu,__fmulsu_exit): New function.
+
 2011-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49615

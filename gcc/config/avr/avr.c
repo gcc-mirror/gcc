@@ -6536,19 +6536,12 @@ avr_init_builtins (void)
   DEF_BUILTIN ("__builtin_avr_delay_cycles", void_ftype_ulong, 
                AVR_BUILTIN_DELAY_CYCLES);
 
-  if (AVR_HAVE_MUL)
-    {
-      /* FIXME: If !AVR_HAVE_MUL, make respective functions available
-         in libgcc. For fmul and fmuls this is straight forward with
-         upcoming fixed point support. */
-      
-      DEF_BUILTIN ("__builtin_avr_fmul", uint_ftype_uchar_uchar, 
-                   AVR_BUILTIN_FMUL);
-      DEF_BUILTIN ("__builtin_avr_fmuls", int_ftype_char_char, 
-                   AVR_BUILTIN_FMULS);
-      DEF_BUILTIN ("__builtin_avr_fmulsu", int_ftype_char_uchar, 
-                   AVR_BUILTIN_FMULSU);
-    }
+  DEF_BUILTIN ("__builtin_avr_fmul", uint_ftype_uchar_uchar, 
+               AVR_BUILTIN_FMUL);
+  DEF_BUILTIN ("__builtin_avr_fmuls", int_ftype_char_char, 
+               AVR_BUILTIN_FMULS);
+  DEF_BUILTIN ("__builtin_avr_fmulsu", int_ftype_char_uchar, 
+               AVR_BUILTIN_FMULSU);
 }
 
 #undef DEF_BUILTIN
