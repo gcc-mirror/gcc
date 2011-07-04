@@ -1,3 +1,7 @@
+2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (intfuncs16): Add _clrsbXX2.
+
 2011-06-28  Nick Clifton  <nickc@redhat.com>
 
 	* config.host: Recognize all V850 variants.

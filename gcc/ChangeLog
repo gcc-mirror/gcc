@@ -1,3 +1,9 @@
+2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* longlong.h (count_leading_zeros, count_trailing_zeros,
+	COUNT_LEADING_ZEROS_0): Define for target avr if W_TYPE_SIZE is 16
+	resp. 64.
+
 2011-07-03  Ira Rosen  <ira.rosen@linaro.org>
 
 	PR tree-optimization/49610
