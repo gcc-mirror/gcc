@@ -8226,8 +8226,8 @@ or if not a specific built-in is implemented or not. For example, if
 The following built-in functions map to the respective machine
 instruction, i.e. @code{nop}, @code{sei}, @code{cli}, @code{sleep},
 @code{wdr}, @code{swap}, @code{fmul}, @code{fmuls}
-resp. @code{fmulsu}. The latter three are only available if the AVR
-device actually supports multiplication.
+resp. @code{fmulsu}. The three @code{fmul*} built-ins are implemented
+as library call if no hardware multiplier is available.
 
 @smallexample
 void __builtin_avr_nop (void)

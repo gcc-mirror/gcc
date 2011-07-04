@@ -1417,3 +1417,91 @@ DEFUN __ashldi3
     ret
 ENDF __ashldi3
 #endif /* defined (L_ashldi3) */
+
+
+/***********************************************************/    
+;;; Softmul versions of FMUL, FMULS and FMULSU to implement
+;;; __builtin_avr_fmul* if !AVR_HAVE_MUL
+/***********************************************************/    
+
+#define A1 24
+#define B1 25
+#define C0 22
+#define C1 23
+#define A0 __tmp_reg__
+
+#ifdef L_fmuls
+;;; r23:r22 = fmuls (r24, r25) like in FMULS instruction
+;;; Clobbers: r24, r25, __tmp_reg__
+DEFUN __fmuls
+    ;; A0.7 = negate result?
+    mov  A0, A1
+    eor  A0, B1
+    ;; B1 = |B1|
+    sbrc B1, 7
+    neg  B1
+    XJMP __fmulsu_exit
+ENDF __fmuls
+#endif /* L_fmuls */
+
+#ifdef L_fmulsu
+;;; r23:r22 = fmulsu (r24, r25) like in FMULSU instruction
+;;; Clobbers: r24, r25, __tmp_reg__
+DEFUN __fmulsu
+    ;; A0.7 = negate result?
+    mov  A0, A1
+;; FALLTHRU
+ENDF __fmulsu
+
+;; Helper for __fmuls and __fmulsu
+DEFUN __fmulsu_exit
+    ;; A1 = |A1|
+    sbrc A1, 7
+    neg  A1
+#ifdef __AVR_HAVE_JMP_CALL__
+    ;; Some cores have problem skipping 2-word instruction
+    tst  A0
+    brmi 1f
+#else
+    sbrs A0, 7
+#endif /* __AVR_HAVE_JMP_CALL__ */
+    XJMP  __fmul
+1:  XCALL __fmul
+    ;; C = -C iff A0.7 = 1
+    com  C1
+    neg  C0
+    sbci C1, -1
+    ret
+ENDF __fmulsu_exit
+#endif /* L_fmulsu */
+
+
+#ifdef L_fmul
+;;; r22:r23 = fmul (r24, r25) like in FMUL instruction
+;;; Clobbers: r24, r25, __tmp_reg__
+DEFUN __fmul
+    ; clear result
+    clr   C0
+    clr   C1
+    clr   A0
+1:  tst   B1
+    ;; 1.0 = 0x80, so test for bit 7 of B to see if A must to be added to C.
+2:  brpl  3f
+    ;; C += A
+    add   C0, A0
+    adc   C1, A1
+3:  ;; A >>= 1
+    lsr   A1
+    ror   A0
+    ;; B <<= 1
+    lsl   B1
+    brne  2b
+    ret
+ENDF __fmul
+#endif /* L_fmul */
+
+#undef A0
+#undef A1
+#undef B1
+#undef C0
+#undef C1

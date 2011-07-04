@@ -78,7 +78,8 @@ LIB1ASMFUNCS = \
 	_bswapdi2 \
 	_ashldi3 \
 	_ashrdi3 \
-	_lshrdi3
+	_lshrdi3 \
+	_fmul _fmuls _fmulsu
 
 LIB2FUNCS_EXCLUDE = \
 	_clz

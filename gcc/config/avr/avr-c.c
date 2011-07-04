@@ -94,10 +94,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   cpp_define (pfile, "__BUILTIN_AVR_SWAP");
   cpp_define (pfile, "__BUILTIN_AVR_DELAY_CYCLES");
 
-  if (AVR_HAVE_MUL)
-    {
-      cpp_define (pfile, "__BUILTIN_AVR_FMUL");
-      cpp_define (pfile, "__BUILTIN_AVR_FMULS");
-      cpp_define (pfile, "__BUILTIN_AVR_FMULSU");
-    }
+  cpp_define (pfile, "__BUILTIN_AVR_FMUL");
+  cpp_define (pfile, "__BUILTIN_AVR_FMULS");
+  cpp_define (pfile, "__BUILTIN_AVR_FMULSU");
 }
