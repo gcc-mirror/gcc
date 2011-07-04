@@ -51,6 +51,7 @@ extern char *util_firstobj;
 #include "objc-runtime-hooks.h"
 
 #include "objc-runtime-shared-support.h"
+#include "objc-encoding.h"
 
 /* rt_trees identifiers - shared between NeXT implementations.  These allow
    the FE to tag meta-data in a manner that survives LTO and can be used when

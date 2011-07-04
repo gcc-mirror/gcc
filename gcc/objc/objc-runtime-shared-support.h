@@ -52,19 +52,16 @@ extern void objc_push_parm (tree);
 
 extern tree build_function_type_for_method (tree, tree, int, bool);
 
+extern char *objc_build_property_setter_name (tree);
+
 /* Stuff that should be migrated to shared support (or some v1-only file).  */
 extern void build_super_template (void);
 
 extern tree objc_build_component_ref (tree, tree);
 
-extern tree objc_v2_encode_prop_attr (tree);
 extern tree build_descriptor_table_initializer (tree, tree);
 extern tree build_method_prototype_list_template (tree, int);
 extern tree build_protocol_initializer (tree, tree, tree, tree, tree);
-
-/* Stuff that should be migrated to shared encode.  */
-extern tree encode_method_prototype (tree);
-extern void encode_field_decl (tree, int, int);
 
 /* Moved or new routines in objc-runtime-shared-support.c  */
 
@@ -85,7 +82,6 @@ extern tree build_ivar_template (void);
 extern void generate_strings (void);
 
 extern void dump_interface (FILE *, tree);
-extern int generating_instance_variables;
 extern FILE *gen_declaration_file;
 
 #endif /* _OBJC_RUNTIME_SHARED_SUPPORT_H_ */

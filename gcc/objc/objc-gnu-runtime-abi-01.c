@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "objc-runtime-hooks.h"
 #include "objc-runtime-shared-support.h"
+#include "objc-encoding.h"
 
 /* GNU runtime private definitions.  */
 #define DEF_CONSTANT_STRING_CLASS_NAME "NXConstantString"
