@@ -1,5 +1,11 @@
 2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/44643
+	* config/avr/avr.c (avr_insert_attributes): Use TYPE_READONLY
+	instead of TREE_READONLY.
+
+2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
+
 	* doc/extend.texi (AVR Built-in Functions): Update documentation
 	of __builtin_avr_fmul*.
 	* config/avr/avr.c (avr_init_builtins): Don't depend on
