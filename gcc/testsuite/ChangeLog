@@ -1,5 +1,8 @@
 2011-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/49472
+	* gfortran.dg/pr49472.f90: New test.
+
 	PR debug/49602
 	* gcc.dg/pr49602.c: New test.
 
