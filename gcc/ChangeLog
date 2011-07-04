@@ -1,3 +1,9 @@
+2011-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49615
+	* tree-cfgcleanup.c (split_bbs_on_noreturn_calls): Fix
+	basic-block index check.
+
 2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	* longlong.h (count_leading_zeros, count_trailing_zeros,
