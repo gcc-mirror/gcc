@@ -1,3 +1,8 @@
+2011-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49615
+	* g++.dg/torture/pr49615.C: New testcase.
+
 2011-07-03  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from mainline:
