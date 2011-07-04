@@ -1,6 +1,14 @@
 2011-07-04  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2011-05-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/48822
+	* tree-ssa-sccvn.c (set_ssa_val_to): Never go up the lattice.
+
+2011-07-04  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2011-05-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49115
