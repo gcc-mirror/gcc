@@ -2495,6 +2495,11 @@ write_expression (tree expr)
   else if (TREE_CODE_CLASS (code) == tcc_constant
 	   || (abi_version_at_least (2) && code == CONST_DECL))
     write_template_arg_literal (expr);
+  else if (code == PARM_DECL && DECL_ARTIFICIAL (expr))
+    {
+      gcc_assert (!strcmp ("this", IDENTIFIER_POINTER (DECL_NAME (expr))));
+      write_string ("fpT");
+    }
   else if (code == PARM_DECL)
     {
       /* A function parameter used in a late-specified return type.  */

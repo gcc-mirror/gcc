@@ -5281,7 +5281,11 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 		    postfix_expression);
 	  scope = NULL_TREE;
 	}
-      else
+      /* Unlike the object expression in other contexts, *this is not
+	 required to be of complete type for purposes of class member
+	 access (5.2.5) outside the member function body.  */
+      else if (scope != current_class_ref
+	       && !(processing_template_decl && scope == current_class_type))
 	scope = complete_type_or_else (scope, NULL_TREE);
       /* Let the name lookup machinery know that we are processing a
 	 class member access expression.  */

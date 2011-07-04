@@ -1,5 +1,13 @@
 2011-07-04  Jason Merrill  <jason@redhat.com>
 
+	DR 1207
+	PR c++/49589
+	* mangle.c (write_expression): Handle 'this'.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Allow
+	incomplete *this.
+	* semantics.c (potential_constant_expression_1): Check that
+	DECL_CONTEXT is set on 'this'.
+
 	* error.c (dump_template_bindings): Don't print typenames
 	for a partial instantiation.
 	(dump_function_decl): If we aren't printing function arguments,
