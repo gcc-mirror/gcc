@@ -1,3 +1,8 @@
+2011-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49602
+	* gcc.dg/pr49602.c: New test.
+
 2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/34734

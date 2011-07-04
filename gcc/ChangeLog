@@ -1,3 +1,10 @@
+2011-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49602
+	* tree-into-ssa.c (rewrite_debug_stmt_uses): Disregard
+	get_current_def return value if it can't be trusted to be
+	the current value of the variable in the current bb.
+
 2011-07-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49600
