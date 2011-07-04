@@ -1,5 +1,8 @@
 2011-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/49472
+	* gfortran.dg/pr49472.f90: New test.
+
 	Backported from mainline
 	2011-06-30  Jakub Jelinek  <jakub@redhat.com>
 
