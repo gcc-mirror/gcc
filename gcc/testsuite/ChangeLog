@@ -1,5 +1,20 @@
 2011-07-05  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/target-supports.exp (add_options_for_arm_fp16): Renamed
+	from add_options_for_arm_neon_fp16.
+	(check_effective_target_arm_fp16_ok_nocache): Renamed from
+	check_effective_target_arm_neon_fp16_ok_nocache.
+	Check -mfpu and -mfloat-abi options from current multilib.
+	Do not require neon support.
+	(check_effective_target_arm_fp16_ok): Renamed from
+	check_effecitve_target_arm_neon_fp16_ok.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-5.C: Use new names for
+	arm_neon_fp16_ok and arm_fp16.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-6.C: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-5.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-6.c: Likewise.
+	* gcc.target/arm/fp16-compile-vcvt.c: Likewise.
+
 	* lib/scandump.exp (scan-dump, scan-dump-times, scan-dump-not,
 	scan-dump-dem, scan-dump-dem-not): Treat a missing dump file as
 	unresolved and report the reason to the log file.

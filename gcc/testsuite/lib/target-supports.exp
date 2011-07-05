@@ -1932,45 +1932,53 @@ proc check_effective_target_arm_neon_ok { } {
 # or -mfloat-abi=hard, but if one is already specified by the
 # multilib, use it.
 
-proc add_options_for_arm_neon_fp16 { flags } {
-    if { ! [check_effective_target_arm_neon_fp16_ok] } {
+proc add_options_for_arm_fp16 { flags } {
+    if { ! [check_effective_target_arm_fp16_ok] } {
 	return "$flags"
     }
-    global et_arm_neon_fp16_flags
-    return "$flags $et_arm_neon_fp16_flags"
+    global et_arm_fp16_flags
+    return "$flags $et_arm_fp16_flags"
 }
 
-# Return 1 if this is an ARM target supporting -mfpu=neon-fp16
-# -mfloat-abi=softfp or equivalent options.  Skip multilibs that are
-# incompatible with these options.  Also set et_arm_neon_flags to the
-# best options to add.
+# Return 1 if this is an ARM target that can support a VFP fp16 variant.
+# Skip multilibs that are incompatible with these options and set
+# et_arm_fp16_flags to the best options to add.
 
-proc check_effective_target_arm_neon_fp16_ok_nocache { } {
-    global et_arm_neon_fp16_flags
-    set et_arm_neon_fp16_flags ""
-    if { [check_effective_target_arm32] } {
-	if [check-flags [list "" { *-*-* } { "-mfpu=*" } { "-mfpu=neon-fp16*" } ]] {
-	    return 0
-	}
-	# Always add -mfpu=neon-fp16, since there is no preprocessor
-	# macro for FP16 support.
-	foreach flags {"-mfpu=neon-fp16" "-mfpu=neon-fp16 -mfloat-abi=softfp"} {
-	    if { [check_no_compiler_messages_nocache arm_neon_fp16_ok object {
-		#include "arm_neon.h"
-		int dummy;
-	    } "$flags"] } {
-		set et_arm_neon_fp16_flags $flags
-		return 1
-	    }
-	}
+proc check_effective_target_arm_fp16_ok_nocache { } {
+    global et_arm_fp16_flags
+    set et_arm_fp16_flags ""
+    if { ! [check_effective_target_arm32] } {
+	return 0;
+    }
+    if [check-flags [list "" { *-*-* } { "-mfpu=*" } { "-mfpu=*fp16*" "-mfpu=*fpv[4-9]*" "-mfpu=*fpv[1-9][0-9]*" } ]] {
+	# Multilib flags would override -mfpu.
+	return 0
+    }
+    if [check-flags [list "" { *-*-* } { "-mfloat-abi=soft" } { "" } ]] {
+	# Must generate floating-point instructions.
+	return 0
+    }
+    if [check-flags [list "" { *-*-* } { "-mfpu=*" } { "" } ]] {
+        # The existing -mfpu value is OK; use it, but add softfp.
+	set et_arm_fp16_flags "-mfloat-abi=softfp"
+	return 1;
+    }
+    # Add -mfpu for a VFP fp16 variant since there is no preprocessor
+    # macro to check for this support.
+    set flags "-mfpu=vfpv4 -mfloat-abi=softfp"
+    if { [check_no_compiler_messages_nocache arm_fp16_ok assembly {
+	int dummy;
+    } "$flags"] } {
+	set et_arm_fp16_flags "$flags"
+	return 1
     }
 
     return 0
 }
 
-proc check_effective_target_arm_neon_fp16_ok { } {
-    return [check_cached_effective_target arm_neon_fp16_ok \
-		check_effective_target_arm_neon_fp16_ok_nocache]
+proc check_effective_target_arm_fp16_ok { } {
+    return [check_cached_effective_target arm_fp16_ok \
+		check_effective_target_arm_fp16_ok_nocache]
 }
 
 # Return 1 is this is an ARM target where -mthumb causes Thumb-1 to be
