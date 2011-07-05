@@ -1,3 +1,7 @@
+2011-07-05  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* gcc.dg/cpp/pragma-3.c: Add dg-require-effective-target fopenmp.
+
 2011-07-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/ppc-switch-1.c: New test for
