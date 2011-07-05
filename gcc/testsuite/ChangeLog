@@ -1,3 +1,8 @@
+2011-07-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* ada/acats/run_acats (which): Extract last field from type -p,
+	type output only if command succeeded.
+
 2011-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/49619
