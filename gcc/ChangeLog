@@ -1,5 +1,17 @@
 2011-07-05  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2out.c (dwarf2out_cfi_label): Make static.
+	(dwarf2out_flush_queued_reg_saves): Make static.
+	(dwarf2out_reg_save): Remove.
+	(dwarf2out_return_save): Remove.
+	(dwarf2out_return_reg): Remove.
+	(dwarf2out_reg_save_reg): Remove.
+	(dwarf2out_def_cfa): Merge into ...
+	(dwarf2out_frame_init): ... here.
+	* dwarf2out.h, tree.h: Remove declarations as necessary.
+
+2011-07-05  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64.c (ia64_dwarf_handle_frame_unspec): Remove.
 	(TARGET_DWARF_HANDLE_FRAME_UNSPEC): Remove.
 	(ia64_expand_epilogue): Emit an empty FRAME_RELATED_EXPR for
