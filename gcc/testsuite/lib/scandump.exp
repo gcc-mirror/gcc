@@ -55,7 +55,8 @@ proc scan-dump { args } {
     set src [file tail [lindex $testcase 0]]
     set output_file "[glob -nocomplain $src.[lindex $args 2]]"
     if { $output_file == "" } {
-	fail "$testname: dump file does not exist"
+	verbose -log "$testcase: dump file does not exist"
+	unresolved "$testname"
 	return
     }
 
@@ -97,7 +98,8 @@ proc scan-dump-times { args } {
     set src [file tail [lindex $testcase 0]]
     set output_file "[glob -nocomplain $src.[lindex $args 3]]"
     if { $output_file == "" } {
-	fail "$testname: dump file does not exist"
+	verbose -log "$testcase: dump file does not exist"
+	unresolved "$testname"
 	return
     }
 
@@ -139,7 +141,8 @@ proc scan-dump-not { args } {
     set src [file tail [lindex $testcase 0]]
     set output_file "[glob -nocomplain $src.[lindex $args 2]]"
     if { $output_file == "" } {
-	fail "$testname: dump file does not exist"
+	verbose -log "$testcase: dump file does not exist"
+	unresolved "$testname"
 	return
     }
 
@@ -190,7 +193,8 @@ proc scan-dump-dem { args } {
     set src [file tail [lindex $testcase 0]]
     set output_file "[glob -nocomplain $src.[lindex $args 2]]"
     if { $output_file == "" } {
-	fail "$testname: dump file does not exist"
+	verbose -log "$testcase: dump file does not exist"
+	unresolved "$testname"
 	return
     }
 
@@ -241,7 +245,8 @@ proc scan-dump-dem-not { args } {
     set src [file tail [lindex $testcase 0]]
     set output_file "[glob -nocomplain $src.[lindex $args 2]]"
     if { $output_file == "" } {
-	fail "$testname: dump file does not exist"
+	verbose -log "$testcase: dump file does not exist"
+	unresolved "$testname"
 	return
     }
 

@@ -1,5 +1,9 @@
 2011-07-05  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/scandump.exp (scan-dump, scan-dump-times, scan-dump-not,
+	scan-dump-dem, scan-dump-dem-not): Treat a missing dump file as
+	unresolved and report the reason to the log file.
+
 	* lib/scanasm.exp (dg-scan, scan-assembler-times, scan-assembler-dem,
 	scan-assembler-dem-not): For missing file, report unresolved with
 	same message as for pass/fail, with reason reported in log file.
