@@ -1,5 +1,8 @@
 2011-07-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49598
+	* semantics.c (finish_id_expression): convert_from_reference.
+
 	* error.c (type_to_string): Avoid redundant akas.
 
 2011-06-27  Jason Merrill  <jason@redhat.com>
