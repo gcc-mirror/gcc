@@ -1,4 +1,9 @@
 2011-07-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/pr44023.c: Add dg-require-effective-target int32plus
+	* gcc.dg/pr43402.c: Ditto.
+
+2011-07-05  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* gcc.dg/cpp/pragma-3.c: Add dg-require-effective-target fopenmp.
 

@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fcompare-debug -O2" } */
 /* { dg-options "-fcompare-debug -O2 -mcpu=ev67" { target alpha*-*-* } } */
+/* { dg-require-effective-target int32plus } */
 
 void
 foo (unsigned f, long v, unsigned *w, unsigned a, unsigned b, unsigned e, unsigned c, unsigned d)
