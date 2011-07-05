@@ -1,3 +1,14 @@
+2011-07-05  Razya Ladelsky  <razya@il.ibm.com>
+
+	PR tree-optimization/49580
+	* tree-cfg.c (gimple_duplicate_sese_tail): Remove handling of 
+	the loop's number of iterations.
+        * tree-parloops.c (transform_to_exit_first_loop): Add the 
+	handling of the loop's number of iterations before the call 
+	to gimple_duplicate_sese_tail.
+        Insert the stmt caclculating the new rhs of the loop's
+	condition stmt to the preheader instead of iters_bb.
+
 2011-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/47449
