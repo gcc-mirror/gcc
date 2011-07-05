@@ -1,3 +1,9 @@
+2011-07-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/47449
+	* fwprop.c (forward_propagate_subreg): Don't propagate hard
+	register nor zero/sign extended hard register.
+
 2011-07-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49518
