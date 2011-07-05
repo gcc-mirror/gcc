@@ -131,7 +131,8 @@ value_max (mpz_t res, mpz_t v1, mpz_t v2)
 {
   if (mpz_cmp (v1, v2) < 0)
     mpz_set (res, v2);
-  mpz_set (res, v1);
+  else
+    mpz_set (res, v1);
 }
 
 /* Builds a new identity map for dimension DIM.  */
