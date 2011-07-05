@@ -100,13 +100,10 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
 	  GFC_DIMENSION_SET(ret->dim[n], 0, ub, stride);
 	}
       ret->offset = 0;
-      if (rs > 0)
-        ret->data = internal_malloc_size (rs * size);
-      else
-	{
-	  ret->data = internal_malloc_size (1);
-	  return;
-	}
+      ret->data = internal_malloc_size (rs * size);
+
+      if (rs <= 0)
+	return;
     }
   else
     {

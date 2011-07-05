@@ -166,14 +166,12 @@ pack_r8 (gfc_array_r8 *ret, const gfc_array_r8 *array,
 	  GFC_DIMENSION_SET(ret->dim[0], 0, total-1, 1);
 
 	  ret->offset = 0;
+
+	  /* internal_malloc_size allocates a single byte for zero size.  */
+	  ret->data = internal_malloc_size (sizeof (GFC_REAL_8) * total);
+
 	  if (total == 0)
-	    {
-	      /* In this case, nothing remains to be done.  */
-	      ret->data = internal_malloc_size (1);
-	      return;
-	    }
-	  else
-	    ret->data = internal_malloc_size (sizeof (GFC_REAL_8) * total);
+	    return;
 	}
       else 
 	{

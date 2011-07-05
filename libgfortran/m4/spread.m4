@@ -101,13 +101,11 @@ spread_'rtype_code` ('rtype` *ret, const 'rtype` *source,
 	  GFC_DIMENSION_SET(ret->dim[n], 0, ub, stride);
 	}
       ret->offset = 0;
-      if (rs > 0)
-        ret->data = internal_malloc_size (rs * sizeof('rtype_name`));
-      else
-	{
-	  ret->data = internal_malloc_size (1);
-	  return;
-	}
+
+      /* internal_malloc_size allocates a single byte for zero size.  */
+      ret->data = internal_malloc_size (rs * sizeof('rtype_name`));
+      if (rs <= 0)
+        return;
     }
   else
     {

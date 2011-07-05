@@ -1,3 +1,53 @@
+2011-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* runtime/memory.c (internal_malloc_size):  If size is zero,
+	allocate a single byte.
+	* m4/pack.m4 (pack_'rtype_code`):  Don't check for zero size
+	for the argument of internal_malloc_size.
+	* m4/spread.m4 (spread_'rtype_code`):  Likewise.
+	* m4/eoshift1.m4 (eoshift1):  Don't allocate twice.  Don't check
+	for zero size for the argument of internal_malloc_size.
+	* m4/eoshift3.m4: Don't check for zero size for the argument of
+	internal_malloc_size.
+	* intrinsics/pack_generic.c (pack_internal):  Likewise.
+	(pack_s_internal):  Likewise.
+	* intrinsics/cshift0.c (cshift0):  Likewise.
+	* intrinsics/spread_generic.c (spread_internal):  Likewise.
+	* intrinsics/eoshift0.c (eoshift0):  Likewise.
+	* intrinsics/eoshift2.c (eoshift2):  Likewise.
+	* generated/eoshift1_16.c: Regenerated.
+	* generated/eoshift1_4.c: Regenerated.
+	* generated/eoshift1_8.c: Regenerated.
+	* generated/eoshift3_16.c: Regenerated.
+	* generated/eoshift3_4.c: Regenerated.
+	* generated/eoshift3_8.c: Regenerated.
+	* generated/pack_c10.c: Regenerated.
+	* generated/pack_c16.c: Regenerated.
+	* generated/pack_c4.c: Regenerated.
+	* generated/pack_c8.c: Regenerated.
+	* generated/pack_i16.c: Regenerated.
+	* generated/pack_i1.c: Regenerated.
+	* generated/pack_i2.c: Regenerated.
+	* generated/pack_i4.c: Regenerated.
+	* generated/pack_i8.c: Regenerated.
+	* generated/pack_r10.c: Regenerated.
+	* generated/pack_r16.c: Regenerated.
+	* generated/pack_r4.c: Regenerated.
+	* generated/pack_r8.c: Regenerated.
+	* generated/spread_c10.c: Regenerated.
+	* generated/spread_c16.c: Regenerated.
+	* generated/spread_c4.c: Regenerated.
+	* generated/spread_c8.c: Regenerated.
+	* generated/spread_i16.c: Regenerated.
+	* generated/spread_i1.c: Regenerated.
+	* generated/spread_i2.c: Regenerated.
+	* generated/spread_i4.c: Regenerated.
+	* generated/spread_i8.c: Regenerated.
+	* generated/spread_r10.c: Regenerated.
+	* generated/spread_r16.c: Regenerated.
+	* generated/spread_r4.c: Regenerated.
+	* generated/spread_r8.c: Regenerated.
+
 2011-06-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/49479
