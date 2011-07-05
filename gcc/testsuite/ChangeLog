@@ -1,5 +1,9 @@
 2011-07-05  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/20031108-1.c: Require thumb1 or thumb2.
+	* gcc.target/arm/pr40482.c: Likewise.
+	* gcc.target/arm/stack-corruption.c: Likewise.
+
 	* gcc.target/arm/ctz.c: Don't specify -march, require thumb2.
 	* gcc.target/arm/pr42879.c: Likewise.
 	* gcc.target/arm/pr45701-3.c: Likewise.
