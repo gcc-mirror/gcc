@@ -1,6 +1,7 @@
 /* 
    { dg-options "-fopenmp" }
    { dg-do preprocess }
+   { dg-require-effective-target fopenmp }
  */
 
 void foo (void)
