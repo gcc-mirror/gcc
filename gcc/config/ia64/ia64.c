@@ -3249,7 +3249,14 @@ ia64_expand_prologue (void)
 				   GEN_INT (current_frame_info.n_local_regs),
 				   GEN_INT (current_frame_info.n_output_regs),
 				   GEN_INT (current_frame_info.n_rotate_regs)));
-      RTX_FRAME_RELATED_P (insn) = (current_frame_info.r[reg_save_ar_pfs] != 0);
+      if (current_frame_info.r[reg_save_ar_pfs])
+	{
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_CFA_REGISTER,
+			gen_rtx_SET (VOIDmode,
+				     ar_pfs_save_reg,
+				     gen_rtx_REG (DImode, AR_PFS_REGNUM)));
+	}
     }
 
   /* Set up frame pointer, stack pointer, and spill iterators.  */
