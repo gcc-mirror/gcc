@@ -319,7 +319,6 @@ static enum machine_mode ia64_promote_function_mode (const_tree,
 static void ia64_trampoline_init (rtx, tree, rtx);
 static void ia64_override_options_after_change (void);
 
-static void ia64_dwarf_handle_frame_unspec (const char *, rtx, int);
 static tree ia64_builtin_decl (unsigned, bool);
 
 static reg_class_t ia64_preferred_reload_class (rtx, reg_class_t);
@@ -551,8 +550,6 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ia64_gimplify_va_arg
 
-#undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
-#define TARGET_DWARF_HANDLE_FRAME_UNSPEC  ia64_dwarf_handle_frame_unspec
 #undef TARGET_ASM_UNWIND_EMIT
 #define TARGET_ASM_UNWIND_EMIT ia64_asm_unwind_emit
 #undef TARGET_ASM_EMIT_EXCEPT_PERSONALITY
@@ -3793,10 +3790,19 @@ ia64_expand_epilogue (int sibcall_p)
       if (current_frame_info.n_input_regs != 0)
 	{
 	  rtx n_inputs = GEN_INT (current_frame_info.n_input_regs);
+
 	  insn = emit_insn (gen_alloc (gen_rtx_REG (DImode, fp),
 				const0_rtx, const0_rtx,
 				n_inputs, const0_rtx));
 	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  /* ??? We need to mark the alloc as frame-related so that it gets
+	     passed into ia64_asm_unwind_emit for ia64-specific unwinding.
+	     But there's nothing dwarf2 related to be done wrt the register
+	     windows.  If we do nothing, dwarf2out will abort on the UNSPEC;
+	     the empty parallel means dwarf2out will not see anything.  */
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (0)));
 	}
     }
 }
@@ -9619,17 +9625,6 @@ static bool need_copy_state;
 #ifndef MAX_ARTIFICIAL_LABEL_BYTES
 # define MAX_ARTIFICIAL_LABEL_BYTES 30
 #endif
-
-/* All we need to do here is avoid a crash in the generic dwarf2
-   processing.  The real CFA definition is set up above.  */
-
-static void
-ia64_dwarf_handle_frame_unspec (const char * ARG_UNUSED (label),
-				rtx ARG_UNUSED (pattern),
-				int index)
-{
-  gcc_assert (index == UNSPECV_ALLOC);
-}
 
 /* The function emits unwind directives for the start of an epilogue.  */
 
