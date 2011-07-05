@@ -14,8 +14,8 @@ fi
 # Fall back to whence which ksh88 and ksh93 provide, but bash does not.
 
 which () {
-    path=`type -p $* 2>/dev/null | awk '{print $NF}'` && { echo $path; return 0; }
-    path=`type $* 2>/dev/null | awk '{print $NF}'` && { echo $path; return 0; }
+    path=`type -p $* 2>/dev/null` && { echo $path | awk '{print $NF}'; return 0; }
+    path=`type $* 2>/dev/null` && { echo $path | awk '{print $NF}'; return 0; }
     path=`whence $* 2>/dev/null` && { echo $path; return 0; }
     return 1
 }
