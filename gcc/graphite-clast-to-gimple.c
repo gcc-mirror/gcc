@@ -379,72 +379,16 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
   return NULL_TREE;
 }
 
-/* Return the precision needed to represent the value VAL.  */
-
-static int
-precision_for_value (mpz_t val)
-{
-  mpz_t x, y, two;
-  int precision;
-
-  mpz_init (x);
-  mpz_init (y);
-  mpz_init (two);
-  mpz_set_si (x, 2);
-  mpz_set (y, val);
-  mpz_set_si (two, 2);
-  precision = 1;
-
-  if (mpz_sgn (y) < 0)
-    mpz_neg (y, y);
-
-  while (mpz_cmp (y, x) >= 0)
-    {
-      mpz_mul (x, x, two);
-      precision++;
-    }
-
-  mpz_clear (x);
-  mpz_clear (y);
-  mpz_clear (two);
-
-  return precision;
-}
-
-/* Return the precision needed to represent the values between LOW and
-   UP.  */
-
-static int
-precision_for_interval (mpz_t low, mpz_t up)
-{
-  mpz_t diff;
-  int precision;
-
-  gcc_assert (mpz_cmp (low, up) <= 0);
-
-  mpz_init (diff);
-  mpz_sub (diff, up, low);
-  precision = precision_for_value (diff);
-  mpz_clear (diff);
-
-  return precision;
-}
-
-/* Return a type that could represent the integer value VAL.  */
+/* Return a type that could represent the values between V1 and V2.  */
 
 static tree
-gcc_type_for_interval (mpz_t low, mpz_t up)
+gcc_type_for_interval (mpz_t v1, mpz_t v2)
 {
-  bool unsigned_p = true;
-  int precision, prec_up, prec_int;
+  bool unsigned_p;
   tree type;
   enum machine_mode mode;
-
-  gcc_assert (mpz_cmp (low, up) <= 0);
-
-  prec_up = precision_for_value (up);
-  prec_int = precision_for_interval (low, up);
-  precision = MAX (prec_up, prec_int);
+  int precision = MAX (mpz_sizeinbase (v1, 2),
+		       mpz_sizeinbase (v2, 2));
 
   if (precision > BITS_PER_WORD)
     {
@@ -452,14 +396,10 @@ gcc_type_for_interval (mpz_t low, mpz_t up)
       return integer_type_node;
     }
 
-  if (mpz_sgn (low) <= 0)
-    unsigned_p = false;
-
-  else if (precision < BITS_PER_WORD)
-    {
-      unsigned_p = false;
-      precision++;
-    }
+  if (mpz_cmp (v1, v2) <= 0)
+    unsigned_p = (mpz_sgn (v1) >= 0);
+  else
+    unsigned_p = (mpz_sgn (v2) >= 0);
 
   mode = smallest_mode_for_size (precision, MODE_INT);
   precision = GET_MODE_PRECISION (mode);

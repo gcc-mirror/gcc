@@ -1,5 +1,11 @@
 2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (precision_for_value): Removed.
+	(precision_for_interval): Removed.
+	(gcc_type_for_interval): Use mpz_sizeinbase.
+
+2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-ppl.h (value_max): Correct computation of max.
 
 2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
