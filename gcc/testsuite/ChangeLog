@@ -1,3 +1,7 @@
+2011-07-05  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/rtti/anon-ns1.C: Allow for null-termination.
+
 2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/47654
