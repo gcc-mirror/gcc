@@ -54,8 +54,8 @@ get_mem (size_t n)
 void *
 internal_malloc_size (size_t size)
 {
-  if (size == 0)
-    return NULL;
+  if (unlikely (size == 0))
+    size = 1;
 
   return get_mem (size);
 }

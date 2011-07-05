@@ -167,14 +167,12 @@ pack_'rtype_code` ('rtype` *ret, const 'rtype` *array,
 	  GFC_DIMENSION_SET(ret->dim[0], 0, total-1, 1);
 
 	  ret->offset = 0;
+
+	  /* internal_malloc_size allocates a single byte for zero size.  */
+	  ret->data = internal_malloc_size (sizeof ('rtype_name`) * total);
+
 	  if (total == 0)
-	    {
-	      /* In this case, nothing remains to be done.  */
-	      ret->data = internal_malloc_size (1);
-	      return;
-	    }
-	  else
-	    ret->data = internal_malloc_size (sizeof ('rtype_name`) * total);
+	    return;
 	}
       else 
 	{

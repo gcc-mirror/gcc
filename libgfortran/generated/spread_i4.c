@@ -100,13 +100,11 @@ spread_i4 (gfc_array_i4 *ret, const gfc_array_i4 *source,
 	  GFC_DIMENSION_SET(ret->dim[n], 0, ub, stride);
 	}
       ret->offset = 0;
-      if (rs > 0)
-        ret->data = internal_malloc_size (rs * sizeof(GFC_INTEGER_4));
-      else
-	{
-	  ret->data = internal_malloc_size (1);
-	  return;
-	}
+
+      /* internal_malloc_size allocates a single byte for zero size.  */
+      ret->data = internal_malloc_size (rs * sizeof(GFC_INTEGER_4));
+      if (rs <= 0)
+        return;
     }
   else
     {
