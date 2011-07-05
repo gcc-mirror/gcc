@@ -1,3 +1,7 @@
+2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (clast_name_to_index): Add missing space.
+
 2011-07-05  Richard Guenther  <rguenther@suse.de>
 
 	* c-decl.c (c_init_decl_processing): Defer building common
