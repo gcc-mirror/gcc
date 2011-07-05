@@ -5602,33 +5602,6 @@ extern tree tree_overlaps_hard_reg_set (tree, HARD_REG_SET *);
 #endif
 
 
-/* In dwarf2out.c */
-/* Interface of the DWARF2 unwind info support.  */
-
-/* Generate a new label for the CFI info to refer to.  */
-
-extern char *dwarf2out_cfi_label (bool);
-
-/* Entry point to update the canonical frame address (CFA).  */
-
-extern void dwarf2out_def_cfa (const char *, unsigned, HOST_WIDE_INT);
-
-/* Entry point for saving a register to the stack.  */
-
-extern void dwarf2out_reg_save (const char *, unsigned, HOST_WIDE_INT);
-
-/* Entry point for saving the return address in the stack.  */
-
-extern void dwarf2out_return_save (const char *, HOST_WIDE_INT);
-
-/* Entry point for saving the return address in a register.  */
-
-extern void dwarf2out_return_reg (const char *, unsigned);
-
-/* Entry point for saving the first register into the second.  */
-
-extern void dwarf2out_reg_save_reg (const char *, rtx, rtx);
-
 /* In tree-inline.c  */
 
 /* The type of a set of already-visited pointers.  Functions for creating

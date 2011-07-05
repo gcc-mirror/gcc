@@ -848,7 +848,7 @@ add_cfi (cfi_vec *vec, dw_cfi_ref cfi)
 /* Generate a new label for the CFI info to refer to.  FORCE is true
    if a label needs to be output even when using .cfi_* directives.  */
 
-char *
+static char *
 dwarf2out_cfi_label (bool force)
 {
   static char label[20];
@@ -1080,21 +1080,6 @@ static HOST_WIDE_INT args_size;
 /* The last args_size we actually output.  */
 static HOST_WIDE_INT old_args_size;
 
-/* Entry point to update the canonical frame address (CFA).
-   LABEL is passed to add_fde_cfi.  The value of CFA is now to be
-   calculated from REG+OFFSET.  */
-
-void
-dwarf2out_def_cfa (const char *label, unsigned int reg, HOST_WIDE_INT offset)
-{
-  dw_cfa_location loc;
-  loc.indirect = 0;
-  loc.base_offset = 0;
-  loc.reg = reg;
-  loc.offset = offset;
-  def_cfa_1 (label, &loc);
-}
-
 /* Determine if two dw_cfa_location structures define the same data.  */
 
 static bool
@@ -1230,33 +1215,6 @@ reg_save (const char *label, unsigned int reg, unsigned int sreg, HOST_WIDE_INT 
     }
 
   add_fde_cfi (label, cfi);
-}
-
-/* Entry point for saving a register to the stack.  REG is the GCC register
-   number.  LABEL and OFFSET are passed to reg_save.  */
-
-void
-dwarf2out_reg_save (const char *label, unsigned int reg, HOST_WIDE_INT offset)
-{
-  reg_save (label, DWARF_FRAME_REGNUM (reg), INVALID_REGNUM, offset);
-}
-
-/* Entry point for saving the return address in the stack.
-   LABEL and OFFSET are passed to reg_save.  */
-
-void
-dwarf2out_return_save (const char *label, HOST_WIDE_INT offset)
-{
-  reg_save (label, DWARF_FRAME_RETURN_COLUMN, INVALID_REGNUM, offset);
-}
-
-/* Entry point for saving the return address in a register.
-   LABEL and SREG are passed to reg_save.  */
-
-void
-dwarf2out_return_reg (const char *label, unsigned int sreg)
-{
-  reg_save (label, DWARF_FRAME_RETURN_COLUMN, DWARF_FRAME_REGNUM (sreg), 0);
 }
 
 /* Record the initial position of the return address.  RTL is
@@ -1816,7 +1774,7 @@ queue_reg_save (const char *label, rtx reg, rtx sreg, HOST_WIDE_INT offset)
 
 /* Output all the entries in QUEUED_REG_SAVES.  */
 
-void
+static void
 dwarf2out_flush_queued_reg_saves (void)
 {
   struct queued_reg_save *q;
@@ -1864,20 +1822,6 @@ clobbers_queued_reg_save (const_rtx insn)
     }
 
   return false;
-}
-
-/* Entry point for saving the first register into the second.  */
-
-void
-dwarf2out_reg_save_reg (const char *label, rtx reg, rtx sreg)
-{
-  unsigned int regno, sregno;
-
-  record_reg_saved_in_reg (sreg, reg);
-
-  regno = DWARF_FRAME_REGNUM (REGNO (reg));
-  sregno = DWARF_FRAME_REGNUM (REGNO (sreg));
-  reg_save (label, regno, sregno, 0);
 }
 
 /* What register, if any, is currently saved in REG?  */
@@ -4273,6 +4217,8 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
 void
 dwarf2out_frame_init (void)
 {
+  dw_cfa_location loc;
+
   /* Allocate the initial hunk of the fde_table.  */
   fde_table = ggc_alloc_cleared_vec_dw_fde_node (FDE_TABLE_INCREMENT);
   fde_table_allocated = FDE_TABLE_INCREMENT;
@@ -4282,7 +4228,10 @@ dwarf2out_frame_init (void)
      sake of lookup_cfa.  */
 
   /* On entry, the Canonical Frame Address is at SP.  */
-  dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
+  memset(&loc, 0, sizeof (loc));
+  loc.reg = STACK_POINTER_REGNUM;
+  loc.offset = INCOMING_FRAME_SP_OFFSET;
+  def_cfa_1 (NULL, &loc);
 
   if (targetm.debug_unwind_info () == UI_DWARF2
       || targetm_common.except_unwind_info (&global_options) == UI_DWARF2)
