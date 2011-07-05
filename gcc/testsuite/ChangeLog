@@ -1,3 +1,7 @@
+2011-07-05  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/pr42093.c: Use "-fno-reorder-blocks".
+
 2011-07-05  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/rtti/anon-ns1.C: Allow for null-termination.
