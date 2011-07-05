@@ -664,27 +664,27 @@ lst_interchange_select_inner (scop_p scop, lst_p outer_father, int outer,
 }
 
 /* Interchanges all the loops of LOOP and the loops of its body that
-   are considered profitable to interchange.  Return true if it did
-   interchanged some loops.  OUTER is the index in LST_SEQ (LOOP) that
+   are considered profitable to interchange.  Return the number of
+   interchanged loops.  OUTER is the index in LST_SEQ (LOOP) that
    points to the next outer loop to be considered for interchange.  */
 
-static bool
+static int
 lst_interchange_select_outer (scop_p scop, lst_p loop, int outer)
 {
   lst_p l;
-  bool res = false;
+  int res = 0;
   int i = 0;
   lst_p father;
 
   if (!loop || !LST_LOOP_P (loop))
-    return false;
+    return 0;
 
   father = LST_LOOP_FATHER (loop);
   if (father)
     {
       while (lst_interchange_select_inner (scop, father, outer, loop))
 	{
-	  res = true;
+	  res++;
 	  loop = VEC_index (lst_p, LST_SEQ (father), outer);
 	}
     }
@@ -692,17 +692,18 @@ lst_interchange_select_outer (scop_p scop, lst_p loop, int outer)
   if (LST_LOOP_P (loop))
     FOR_EACH_VEC_ELT (lst_p, LST_SEQ (loop), i, l)
       if (LST_LOOP_P (l))
-	res |= lst_interchange_select_outer (scop, l, i);
+	res += lst_interchange_select_outer (scop, l, i);
 
   return res;
 }
 
-/* Interchanges all the loop depths that are considered profitable for SCOP.  */
+/* Interchanges all the loop depths that are considered profitable for
+   SCOP.  Return the number of interchanged loops.  */
 
-bool
+int
 scop_do_interchange (scop_p scop)
 {
-  bool res = lst_interchange_select_outer
+  int res = lst_interchange_select_outer
     (scop, SCOP_TRANSFORMED_SCHEDULE (scop), 0);
 
   lst_update_scattering (SCOP_TRANSFORMED_SCHEDULE (scop));

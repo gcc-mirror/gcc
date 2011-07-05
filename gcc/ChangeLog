@@ -1,5 +1,18 @@
 2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/47654
+	* graphite-blocking.c (pbb_strip_mine_time_depth): Do not return bool.
+	(lst_do_strip_mine_loop): Return an int.
+	(lst_do_strip_mine): Same.
+	(scop_do_strip_mine): Same.
+	(scop_do_block): Loop blocking should strip-mine at least two loops.
+	* graphite-interchange.c (lst_interchange_select_outer): Return an int.
+	(scop_do_interchange): Same.
+	* graphite-poly.h (scop_do_interchange): Update declaration.
+	(scop_do_strip_mine): Same.
+
+2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (precision_for_value): Removed.
 	(precision_for_interval): Removed.
 	(gcc_type_for_interval): Use mpz_sizeinbase.

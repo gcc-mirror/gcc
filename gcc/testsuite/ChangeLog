@@ -1,3 +1,8 @@
+2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/47654
+	* gcc.dg/graphite/block-pr47654.c: New.
+
 2011-07-05  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-ref2.C: New.
@@ -39,7 +44,7 @@
 	* gcc.dg/pr49602.c: New test.
 
 2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/34734
 	PR target/44643
 	* gcc.target/avr/avr.exp: Run over cpp files, too.
