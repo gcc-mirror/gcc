@@ -3518,8 +3518,6 @@ cxx_init_decl_processing (void)
   tree void_ftype;
   tree void_ftype_ptr;
 
-  build_common_tree_nodes (flag_signed_char);
-
   /* Create all the identifiers we need.  */
   initialize_predefined_identifiers ();
 
@@ -3535,8 +3533,6 @@ cxx_init_decl_processing (void)
   DECL_CONTEXT (global_namespace) = build_translation_unit_decl (NULL_TREE);
   TREE_PUBLIC (global_namespace) = 1;
   begin_scope (sk_namespace, global_namespace);
-
-  current_lang_name = NULL_TREE;
 
   if (flag_visibility_ms_compat)
     default_visibility = VISIBILITY_HIDDEN;

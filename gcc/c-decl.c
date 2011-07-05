@@ -3478,8 +3478,6 @@ c_init_decl_processing (void)
      using preprocessed headers.  */
   input_location = BUILTINS_LOCATION;
 
-  build_common_tree_nodes (flag_signed_char);
-
   c_common_nodes_and_builtins ();
 
   /* In C, comparisons and TRUTH_* expressions have type int.  */
