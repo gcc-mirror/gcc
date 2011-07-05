@@ -1,5 +1,9 @@
 2011-07-05  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/ctz.c: Don't specify -march, require thumb2.
+	* gcc.target/arm/pr42879.c: Likewise.
+	* gcc.target/arm/pr45701-3.c: Likewise.
+
 	* gcc.target/arm/thumb-bitfld1.c: Don't specify -march, require thumb1.
 
 	* gcc.target/arm/scd42-3.c: Allow -march-xscale; skip if -mcpu
