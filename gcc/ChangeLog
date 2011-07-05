@@ -1,5 +1,9 @@
 2011-07-05  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_emit_deleted_label_after_insn): Remove.
+	(IA64_CHANGE_CFA_IN_EPILOGUE): Remove.
+	(process_epilogue): Don't call dwarf2out_def_cfa.
+
 	* config/ia64/ia64.c (ia64_expand_prologue): Use pc_rtx to
 	indicate the return address save.
 	(process_cfa_register): Likewise.
