@@ -1,5 +1,16 @@
 2011-07-05  Richard Henderson  <rth@redhat.com>
 
+	* config/arm/arm.c (arm_dwarf_handle_frame_unspec): Remove.
+	(TARGET_DWARF_HANDLE_FRAME_UNSPEC): Remove.
+	(arm_expand_prologue): Use REG_CFA_REGISTER to mark the
+	stack pointer save.
+	(arm_unwind_emit_set): Don't recognize UNSPEC_STACK_ALIGN.
+	(arm_unwind_emit): Walk REG_NOTES for unwinding notes.  Emit
+	proper unwind info for a REG_CFA_REGISTER save of stack pointer.
+	* config/arm/arm.md (UNSPEC_STACK_ALIGN): Remove.
+
+2011-07-05  Richard Henderson  <rth@redhat.com>
+
 	* config/vax/vax.md (define_c_enum unspecv): New.  Define the
 	VUNSPEC_* constants here instead of via define_constants.
 	(VUNSPEC_PEM): New constant.

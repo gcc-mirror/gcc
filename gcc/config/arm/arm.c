@@ -203,7 +203,6 @@ static bool arm_output_ttype (rtx);
 static void arm_asm_emit_except_personality (rtx);
 static void arm_asm_init_sections (void);
 #endif
-static void arm_dwarf_handle_frame_unspec (const char *, rtx, int);
 static rtx arm_dwarf_register_span (rtx);
 
 static tree arm_cxx_guard_type (void);
@@ -500,9 +499,6 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_ASM_INIT_SECTIONS
 #define TARGET_ASM_INIT_SECTIONS arm_asm_init_sections
 #endif /* ARM_UNWIND_INFO */
-
-#undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
-#define TARGET_DWARF_HANDLE_FRAME_UNSPEC arm_dwarf_handle_frame_unspec
 
 #undef TARGET_DWARF_REGISTER_SPAN
 #define TARGET_DWARF_REGISTER_SPAN arm_dwarf_register_span
@@ -15830,9 +15826,8 @@ arm_expand_prologue (void)
 
   if (IS_STACKALIGN (func_type))
     {
-      rtx dwarf;
-      rtx r0;
-      rtx r1;
+      rtx r0, r1;
+
       /* Handle a word-aligned stack pointer.  We generate the following:
 
 	  mov r0, sp
@@ -15848,15 +15843,18 @@ arm_expand_prologue (void)
 
       r0 = gen_rtx_REG (SImode, 0);
       r1 = gen_rtx_REG (SImode, 1);
-      /* Use a real rtvec rather than NULL_RTVEC so the rest of the
-	 compiler won't choke.  */
-      dwarf = gen_rtx_UNSPEC (SImode, rtvec_alloc (0), UNSPEC_STACK_ALIGN);
-      dwarf = gen_rtx_SET (VOIDmode, r0, dwarf);
-      insn = gen_movsi (r0, stack_pointer_rtx);
+
+      insn = emit_insn (gen_movsi (r0, stack_pointer_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
-      add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
-      emit_insn (insn);
+      add_reg_note (insn, REG_CFA_REGISTER, NULL);
+
       emit_insn (gen_andsi3 (r1, r0, GEN_INT (~(HOST_WIDE_INT)7)));
+
+      /* ??? The CFA changes here, which may cause GDB to conclude that it
+	 has entered a different function.  That said, the unwind info is
+	 correct, individually, before and after this instruction because
+	 we've described the save of SP, which will override the default
+	 handling of SP as restoring from the CFA.  */
       emit_insn (gen_movsi (stack_pointer_rtx, r1));
     }
 
@@ -22880,13 +22878,6 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	  asm_fprintf (asm_out_file, "\t.movsp %r, #%d\n",
 		       REGNO (e0), (int)INTVAL(XEXP (e1, 1)));
 	}
-      else if (GET_CODE (e1) == UNSPEC && XINT (e1, 1) == UNSPEC_STACK_ALIGN)
-	{
-	  /* Stack pointer save before alignment.  */
-	  reg = REGNO (e0);
-	  asm_fprintf (asm_out_file, "\t.unwind_raw 0, 0x%x @ vsp = r%d\n",
-		       reg + 0x90, reg);
-	}
       else
 	abort ();
       break;
@@ -22902,7 +22893,8 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 static void
 arm_unwind_emit (FILE * asm_out_file, rtx insn)
 {
-  rtx pat;
+  rtx note, pat;
+  bool handled_one = false;
 
   if (arm_except_unwind_info (&global_options) != UI_TARGET)
     return;
@@ -22912,14 +22904,56 @@ arm_unwind_emit (FILE * asm_out_file, rtx insn)
 	  || crtl->all_throwers_are_sibcalls))
     return;
 
-  if (GET_CODE (insn) == NOTE || !RTX_FRAME_RELATED_P (insn))
+  if (NOTE_P (insn) || !RTX_FRAME_RELATED_P (insn))
     return;
 
-  pat = find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX);
-  if (pat)
-    pat = XEXP (pat, 0);
-  else
-    pat = PATTERN (insn);
+  for (note = REG_NOTES (insn); note ; note = XEXP (note, 1))
+    {
+      pat = XEXP (note, 0);
+      switch (REG_NOTE_KIND (note))
+	{
+	case REG_FRAME_RELATED_EXPR:
+	  goto found;
+
+	case REG_CFA_REGISTER:
+	  if (pat == NULL)
+	    {
+	      pat = PATTERN (insn);
+	      if (GET_CODE (pat) == PARALLEL)
+		pat = XVECEXP (pat, 0, 0);
+	    }
+
+	  /* Only emitted for IS_STACKALIGN re-alignment.  */
+	  {
+	    rtx dest, src;
+	    unsigned reg;
+
+	    src = SET_SRC (pat);
+	    dest = SET_DEST (pat);
+
+	    gcc_assert (src == stack_pointer_rtx);
+	    reg = REGNO (dest);
+	    asm_fprintf (asm_out_file, "\t.unwind_raw 0, 0x%x @ vsp = r%d\n",
+			 reg + 0x90, reg);
+	  }
+	  handled_one = true;
+	  break;
+
+	case REG_CFA_DEF_CFA:
+	case REG_CFA_EXPRESSION:
+	case REG_CFA_ADJUST_CFA:
+	case REG_CFA_OFFSET:
+	  /* ??? Only handling here what we actually emit.  */
+	  gcc_unreachable ();
+
+	default:
+	  break;
+	}
+    }
+  if (handled_one)
+    return;
+  pat = PATTERN (insn);
+ found:
 
   switch (GET_CODE (pat))
     {
@@ -22974,30 +23008,6 @@ arm_asm_init_sections (void)
 					   "\t.handlerdata");
 }
 #endif /* ARM_UNWIND_INFO */
-
-/* Handle UNSPEC DWARF call frame instructions.  These are needed for dynamic
-   stack alignment.  */
-
-static void
-arm_dwarf_handle_frame_unspec (const char *label, rtx pattern, int index)
-{
-  rtx unspec = SET_SRC (pattern);
-  gcc_assert (GET_CODE (unspec) == UNSPEC);
-
-  switch (index)
-    {
-    case UNSPEC_STACK_ALIGN:
-      /* ??? We should set the CFA = (SP & ~7).  At this point we haven't
-         put anything on the stack, so hopefully it won't matter.
-         CFA = SP will be correct after alignment.  */
-      dwarf2out_reg_save_reg (label, stack_pointer_rtx,
-                              SET_DEST (pattern));
-      break;
-    default:
-      gcc_unreachable ();
-    }
-}
-
 
 /* Output unwind directives for the start/end of a function.  */
 
