@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static void vax_option_override (void);
 static bool vax_legitimate_address_p (enum machine_mode, rtx, bool);
-static void vax_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void vax_file_start (void);
 static void vax_init_libfuncs (void);
 static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -69,9 +68,6 @@ static int vax_return_pops_args (tree, tree, int);
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
-
-#undef TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE vax_output_function_prologue
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START vax_file_start
@@ -137,6 +133,17 @@ vax_option_override (void)
 #endif
 }
 
+static void
+vax_add_reg_cfa_offset (rtx insn, int offset, rtx src)
+{
+  rtx x;
+
+  x = plus_constant (frame_pointer_rtx, offset);
+  x = gen_rtx_MEM (SImode, x);
+  x = gen_rtx_SET (VOIDmode, x, src);
+  add_reg_note (insn, REG_CFA_OFFSET, x);
+}
+
 /* Generate the assembly code for function entry.  FILE is a stdio
    stream to output the code to.  SIZE is an int: how many units of
    temporary storage to allocate.
@@ -146,38 +153,67 @@ vax_option_override (void)
    used in the function.  This function is responsible for knowing
    which registers should not be saved even if used.  */
 
-static void
-vax_output_function_prologue (FILE * file, HOST_WIDE_INT size)
+void
+vax_expand_prologue (void)
 {
-  int regno;
+  int regno, offset;
   int mask = 0;
+  HOST_WIDE_INT size;
+  rtx insn;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
       mask |= 1 << regno;
 
-  fprintf (file, "\t.word 0x%x\n", mask);
+  insn = emit_insn (gen_procedure_entry_mask (GEN_INT (mask)));
+  RTX_FRAME_RELATED_P (insn) = 1;
 
-  if (dwarf2out_do_frame ())
-    {
-      const char *label = dwarf2out_cfi_label (false);
-      int offset = 0;
+  /* The layout of the CALLG/S stack frame is follows:
 
-      for (regno = FIRST_PSEUDO_REGISTER-1; regno >= 0; --regno)
-	if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
-	  dwarf2out_reg_save (label, regno, offset -= 4);
+		<- CFA, AP
+	r11
+	r10
+	...	Registers saved as specified by MASK
+	r3
+	r2
+	return-addr
+	old fp
+	old ap
+	old psw
+	zero
+		<- FP, SP
 
-      dwarf2out_reg_save (label, PC_REGNUM, offset -= 4);
-      dwarf2out_reg_save (label, FRAME_POINTER_REGNUM, offset -= 4);
-      dwarf2out_reg_save (label, ARG_POINTER_REGNUM, offset -= 4);
-      dwarf2out_def_cfa (label, FRAME_POINTER_REGNUM, -(offset - 4));
-    }
+     The rest of the prologue will adjust the SP for the local frame.  */
 
+  vax_add_reg_cfa_offset (insn, 4, arg_pointer_rtx);
+  vax_add_reg_cfa_offset (insn, 8, frame_pointer_rtx);
+  vax_add_reg_cfa_offset (insn, 12, pc_rtx);
+
+  offset = 16;
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (mask & (1 << regno))
+      {
+	vax_add_reg_cfa_offset (insn, offset, gen_rtx_REG (SImode, regno));
+	offset += 4;
+      }
+
+  /* Because add_reg_note pushes the notes, adding this last means that
+     it will be processed first.  This is required to allow the other
+     notes be interpreted properly.  */
+  add_reg_note (insn, REG_CFA_DEF_CFA,
+		plus_constant (frame_pointer_rtx, offset));
+
+  /* Allocate the local stack frame.  */
+  size = get_frame_size ();
   size -= STARTING_FRAME_OFFSET;
-  if (size >= 64)
-    asm_fprintf (file, "\tmovab %wd(%Rsp),%Rsp\n", -size);
-  else if (size)
-    asm_fprintf (file, "\tsubl2 $%wd,%Rsp\n", size);
+  emit_insn (gen_addsi3 (stack_pointer_rtx,
+			 stack_pointer_rtx, GEN_INT (-size)));
+
+  /* Do not allow instructions referencing local stack memory to be
+     scheduled before the frame is allocated.  This is more pedantic
+     than anything else, given that VAX does not currently have a
+     scheduling description.  */
+  emit_insn (gen_blockage ());
 }
 
 /* When debugging with stabs, we want to output an extra dummy label
@@ -485,6 +521,8 @@ print_operand (FILE *file, rtx x, int code)
     fprintf (file, "$%d", (int) (0xff & - INTVAL (x)));
   else if (code == 'M' && CONST_INT_P (x))
     fprintf (file, "$%d", ~((1 << INTVAL (x)) - 1));
+  else if (code == 'x' && CONST_INT_P (x))
+    fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (x));
   else if (REG_P (x))
     fprintf (file, "%s", reg_names[REGNO (x)]);
   else if (MEM_P (x))
