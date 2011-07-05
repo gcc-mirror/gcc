@@ -1,5 +1,9 @@
 2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-ppl.h (value_max): Correct computation of max.
+
+2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (clast_name_to_index): Add missing space.
 
 2011-07-05  Richard Guenther  <rguenther@suse.de>
