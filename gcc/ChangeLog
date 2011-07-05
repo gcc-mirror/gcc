@@ -1,3 +1,9 @@
+2011-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49618
+	* tree-eh.c (tree_could_trap_p) <case FUNCTION_DECL, case VAR_DECL>:
+	For DECL_WEAK decls return true.
+
 2011-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/49619

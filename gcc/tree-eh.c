@@ -2459,6 +2459,13 @@ tree_could_trap_p (tree expr)
 	return true;
       return false;
 
+    case VAR_DECL:
+    case FUNCTION_DECL:
+      /* Assume that accesses to weak vars or functions may trap.  */
+      if (DECL_WEAK (expr))
+        return true;
+      return false;
+
     default:
       return false;
     }
