@@ -172,6 +172,12 @@ proc dg-require-effective-target { args } {
     if { [llength $args] < 1 || [llength $args] > 2 } {
 	error "syntax error, need a single effective-target keyword with optional selector"
     }
+
+    # Don't bother if we're already skipping the test.
+    upvar dg-do-what dg-do-what
+    if { [lindex ${dg-do-what} 1] == "N" } {
+      return
+    }
     
     # Evaluate selector if present.
     if { [llength $args] == 2 } {
@@ -182,7 +188,6 @@ proc dg-require-effective-target { args } {
     }
 
     if { ![is-effective-target [lindex $args 0]] } {
-	upvar dg-do-what dg-do-what
         set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
     }
 }

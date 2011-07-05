@@ -1,5 +1,8 @@
 2011-07-05  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/target-supports-dg.exp (dg-require-effective-target): Return
+	early if the test is already being skipped.
+
 	* lib/target-supports.exp (add_options_for_arm_fp16): Renamed
 	from add_options_for_arm_neon_fp16.
 	(check_effective_target_arm_fp16_ok_nocache): Renamed from
