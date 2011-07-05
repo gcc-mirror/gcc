@@ -2618,14 +2618,28 @@ type_to_string (tree typ, int verbose)
 
   reinit_cxx_pp ();
   dump_type (typ, flags);
+  /* If we're printing a type that involves typedefs, also print the
+     stripped version.  But sometimes the stripped version looks
+     exactly the same, so we don't want it after all.  To avoid printing
+     it in that case, we play ugly obstack games.  */
   if (typ && TYPE_P (typ) && typ != TYPE_CANONICAL (typ)
       && !uses_template_parms (typ))
     {
+      int aka_start; char *p;
+      struct obstack *ob = pp_base (cxx_pp)->buffer->obstack;
+      /* Remember the end of the initial dump.  */
+      int len = obstack_object_size (ob);
       tree aka = strip_typedefs (typ);
       pp_string (cxx_pp, " {aka");
       pp_cxx_whitespace (cxx_pp);
+      /* And remember the start of the aka dump.  */
+      aka_start = obstack_object_size (ob);
       dump_type (aka, flags);
       pp_character (cxx_pp, '}');
+      p = (char*)obstack_base (ob);
+      /* If they are identical, cut off the aka with a NUL.  */
+      if (memcmp (p, p+aka_start, len) == 0)
+	p[len] = '\0';
     }
   return pp_formatted_text (cxx_pp);
 }
