@@ -1,5 +1,8 @@
 2011-07-05  Jason Merrill  <jason@redhat.com>
 
+	PR testsuite/49643
+	* g++.dg/rtti/anon-ns1.C: Allow for null-termination.
+
 	* g++.dg/cpp0x/lambda/lambda-ref2.C: New.
 
 	* g++.dg/diagnostic/aka1.C: New.
