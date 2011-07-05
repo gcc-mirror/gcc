@@ -1,3 +1,12 @@
+2011-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49618
+	* tree-eh.c (tree_could_trap_p) <case CALL_EXPR>: For DECL_WEAK
+	t recurse on the decl.
+	<case FUNCTION_DECL, case VAR_DECL>: For DECL_WEAK decls
+	return true if expr isn't known to be defined in current
+	TU or some other LTO partition.
+
 2011-07-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* params.def (PARAM_CASE_VALUES_THRESHOLD): New parameter to
