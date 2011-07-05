@@ -9620,29 +9620,6 @@ static bool need_copy_state;
 # define MAX_ARTIFICIAL_LABEL_BYTES 30
 #endif
 
-/* Emit a debugging label after a call-frame-related insn.  We'd
-   rather output the label right away, but we'd have to output it
-   after, not before, the instruction, and the instruction has not
-   been output yet.  So we emit the label after the insn, delete it to
-   avoid introducing basic blocks, and mark it as preserved, such that
-   it is still output, given that it is referenced in debug info.  */
-
-static const char *
-ia64_emit_deleted_label_after_insn (rtx insn)
-{
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-  rtx lb = gen_label_rtx ();
-  rtx label_insn = emit_label_after (lb, insn);
-
-  LABEL_PRESERVE_P (lb) = 1;
-
-  delete_insn (label_insn);
-
-  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (label_insn));
-
-  return xstrdup (label);
-}
-
 /* All we need to do here is avoid a crash in the generic dwarf2
    processing.  The real CFA definition is set up above.  */
 
@@ -9654,16 +9631,11 @@ ia64_dwarf_handle_frame_unspec (const char * ARG_UNUSED (label),
   gcc_assert (index == UNSPECV_ALLOC);
 }
 
-/* The generic dwarf2 frame debug info generator does not define a
-   separate region for the very end of the epilogue, so refrain from
-   doing so in the IA64-specific code as well.  */
-
-#define IA64_CHANGE_CFA_IN_EPILOGUE 0
-
 /* The function emits unwind directives for the start of an epilogue.  */
 
 static void
-process_epilogue (FILE *asm_out_file, rtx insn, bool unwind, bool frame)
+process_epilogue (FILE *asm_out_file, rtx insn ATTRIBUTE_UNUSED,
+		  bool unwind, bool frame ATTRIBUTE_UNUSED)
 {
   /* If this isn't the last block of the function, then we need to label the
      current state, and copy it back in at the start of the next block.  */
@@ -9678,9 +9650,6 @@ process_epilogue (FILE *asm_out_file, rtx insn, bool unwind, bool frame)
 
   if (unwind)
     fprintf (asm_out_file, "\t.restore sp\n");
-  if (IA64_CHANGE_CFA_IN_EPILOGUE && frame)
-    dwarf2out_def_cfa (ia64_emit_deleted_label_after_insn (insn),
-		       STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
 }
 
 /* This function processes a SET pattern for REG_CFA_ADJUST_CFA.  */
