@@ -94,8 +94,6 @@
   UNSPEC_TLS            ; A symbol that has been treated properly for TLS usage.
   UNSPEC_PIC_LABEL      ; A label used for PIC access that does not appear in the
                         ; instruction stream.
-  UNSPEC_STACK_ALIGN    ; Doubleword aligned stack pointer.  Used to
-                        ; generate correct unwind information.
   UNSPEC_PIC_OFFSET     ; A symbolic 12-bit OFFSET that has been treated
                         ; correctly for PIC usage.
   UNSPEC_GOTSYM_OFF     ; The offset of the start of the GOT from a
