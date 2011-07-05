@@ -1,3 +1,12 @@
+2011-07-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49518
+	PR tree-optimization/49628
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Skip
+	irrelevant and invariant data-references.
+	(vect_analyze_data_ref_access): For invariant loads clear the
+	group association.
+
 2011-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/49619

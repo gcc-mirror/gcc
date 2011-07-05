@@ -1,3 +1,10 @@
+2011-07-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49518
+	PR tree-optimization/49628
+	* g++.dg/torture/pr49628.C: New testcase.
+	* gcc.dg/torture/pr49518.c: Likewise.
+
 2011-07-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* ada/acats/run_acats (which): Extract last field from type -p,
