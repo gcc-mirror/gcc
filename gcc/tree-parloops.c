@@ -1474,6 +1474,8 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
   gimple phi, nphi, cond_stmt, stmt, cond_nit;
   gimple_stmt_iterator gsi;
   tree nit_1;
+  edge exit_1;
+  tree new_rhs;
 
   split_block_after_labels (loop->header);
   orig_header = single_succ (loop->header);
@@ -1502,6 +1504,38 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
 	  control = t;
 	}
     }
+
+ /* Setting the condition towards peeling the last iteration:
+    If the block consisting of the exit condition has the latch as
+    successor, then the body of the loop is executed before
+    the exit condition is tested.  In such case, moving the
+    condition to the entry, causes that the loop will iterate
+    one less iteration (which is the wanted outcome, since we
+    peel out the last iteration).  If the body is executed after
+    the condition, moving the condition to the entry requires
+    decrementing one iteration.  */
+  exit_1 = EDGE_SUCC (exit->src, EDGE_SUCC (exit->src, 0) == exit); 
+  if (exit_1->dest == loop->latch)
+    new_rhs = gimple_cond_rhs (cond_stmt);
+  else
+  {
+    new_rhs = fold_build2 (MINUS_EXPR, TREE_TYPE (gimple_cond_rhs (cond_stmt)),
+			   gimple_cond_rhs (cond_stmt),
+			   build_int_cst (TREE_TYPE (gimple_cond_rhs (cond_stmt)), 1));
+    if (TREE_CODE (gimple_cond_rhs (cond_stmt)) == SSA_NAME)
+      {
+ 	basic_block preheader;
+  	gimple_stmt_iterator gsi1;
+
+  	preheader = loop_preheader_edge(loop)->src;
+    	gsi1 = gsi_after_labels (preheader);
+	new_rhs = force_gimple_operand_gsi (&gsi1, new_rhs, true,
+					    NULL_TREE,false,GSI_CONTINUE_LINKING);
+      }
+  }
+  gimple_cond_set_rhs (cond_stmt, unshare_expr (new_rhs));
+  gimple_cond_set_lhs (cond_stmt, unshare_expr (gimple_cond_lhs (cond_stmt)));
+  
   bbs = get_loop_body_in_dom_order (loop);
 
   for (n = 0; bbs[n] != loop->latch; n++)
