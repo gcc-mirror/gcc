@@ -1,3 +1,8 @@
+2011-07-05  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (cxx_init_decl_processing): Defer building common
+	tree nodes to c_common_nodes_and_builtins.
+
 2011-07-04  Jason Merrill  <jason@redhat.com>
 
 	DR 1207
