@@ -1,3 +1,9 @@
+2011-07-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/47715
+	* calls.c (precompute_register_parameters): Promote the function
+	argument before checking non-legitimate constant.
+
 2011-07-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/47654
