@@ -1,3 +1,13 @@
+2011-07-06  Thomas Schwinge  <thomas@schwinge.name>
+
+	* config.host (i[34567]86-*-kfreebsd*-gnu, i[34567]86-*-knetbsd*-gnu)
+	(i[34567]86-*-gnu*, i[34567]86-*-kopensolaris*-gnu): Remove
+	md_unwind_header by splitting out of...
+	(i[34567]86-*-linux*): ... this.
+	* config.host (x86_64-*-kfreebsd*-gnu, x86_64-*-knetbsd*-gnu):
+	Remove md_unwind_header by splitting out of...
+	(x86_64-*-linux*): ... this.
+
 2011-07-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (intfuncs16): Add _clrsbXX2.
