@@ -3444,7 +3444,8 @@ ia64_expand_prologue (void)
           reg_emitted (reg_save_b0);
 	  insn = emit_move_insn (alt_reg, reg);
 	  RTX_FRAME_RELATED_P (insn) = 1;
-	  add_reg_note (insn, REG_CFA_REGISTER, NULL_RTX);
+	  add_reg_note (insn, REG_CFA_REGISTER,
+			gen_rtx_SET (VOIDmode, alt_reg, pc_rtx));
 
 	  /* Even if we're not going to generate an epilogue, we still
 	     need to save the register so that EH works.  */
@@ -9737,20 +9738,22 @@ process_cfa_register (FILE *asm_out_file, rtx pat, bool unwind)
 {
   rtx dest = SET_DEST (pat);
   rtx src = SET_SRC (pat);
-
   int dest_regno = REGNO (dest);
-  int src_regno = REGNO (src);
+  int src_regno;
 
-  switch (src_regno)
+  if (src == pc_rtx)
     {
-    case BR_REG (0):
       /* Saving return address pointer.  */
-      gcc_assert (dest_regno == current_frame_info.r[reg_save_b0]);
       if (unwind)
 	fprintf (asm_out_file, "\t.save rp, r%d\n",
 		 ia64_dbx_register_number (dest_regno));
-      break;
+      return;
+    }
 
+  src_regno = REGNO (src);
+
+  switch (src_regno)
+    {
     case PR_REG (0):
       gcc_assert (dest_regno == current_frame_info.r[reg_save_pr]);
       if (unwind)
