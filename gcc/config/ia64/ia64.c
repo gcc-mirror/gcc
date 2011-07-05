@@ -9642,26 +9642,6 @@ ia64_emit_deleted_label_after_insn (rtx insn)
   return xstrdup (label);
 }
 
-/* Define the CFA after INSN with the steady-state definition.  */
-
-static void
-ia64_dwarf2out_def_steady_cfa (rtx insn, bool frame)
-{
-  rtx fp = frame_pointer_needed
-    ? hard_frame_pointer_rtx
-    : stack_pointer_rtx;
-  const char *label = ia64_emit_deleted_label_after_insn (insn);
-
-  if (!frame)
-    return;
-
-  dwarf2out_def_cfa
-    (label, REGNO (fp),
-     ia64_initial_elimination_offset
-     (REGNO (arg_pointer_rtx), REGNO (fp))
-     + ARG_POINTER_CFA_OFFSET (current_function_decl));
-}
-
 /* All we need to do here is avoid a crash in the generic dwarf2
    processing.  The real CFA definition is set up above.  */
 
@@ -9727,7 +9707,6 @@ process_cfa_adjust_cfa (FILE *asm_out_file, rtx pat, rtx insn,
 		fprintf (asm_out_file,
 			 "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
 			 -INTVAL (op1));
-	      ia64_dwarf2out_def_steady_cfa (insn, frame);
 	    }
 	  else
 	    process_epilogue (asm_out_file, insn, unwind, frame);
@@ -9746,7 +9725,6 @@ process_cfa_adjust_cfa (FILE *asm_out_file, rtx pat, rtx insn,
       if (unwind)
 	fprintf (asm_out_file, "\t.vframe r%d\n",
 		 ia64_dbx_register_number (REGNO (dest)));
-      ia64_dwarf2out_def_steady_cfa (insn, frame);
     }
   else
     gcc_unreachable ();
@@ -9946,8 +9924,6 @@ ia64_asm_unwind_emit (FILE *asm_out_file, rtx insn)
 	      fprintf (asm_out_file, "\t.copy_state %d\n",
 		       cfun->machine->state_num);
 	    }
-	  if (IA64_CHANGE_CFA_IN_EPILOGUE)
-	    ia64_dwarf2out_def_steady_cfa (insn, frame);
 	  need_copy_state = false;
 	}
     }

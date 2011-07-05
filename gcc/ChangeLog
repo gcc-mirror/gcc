@@ -1,5 +1,8 @@
 2011-07-05  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_dwarf2out_def_steady_cfa): Remove.
+	(process_cfa_adjust_cfa, ia64_asm_unwind_emit): Don't call it.
+
 	* config/ia64/ia64.c (ia64_expand_prologue): Emit REG_CFA_REGISTER
 	for ar.pfs save at alloc insn.
 
