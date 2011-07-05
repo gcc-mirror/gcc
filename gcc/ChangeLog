@@ -1,3 +1,16 @@
+2011-07-05  Richard Henderson  <rth@redhat.com>
+
+	* config/vax/vax.md (define_c_enum unspecv): New.  Define the
+	VUNSPEC_* constants here instead of via define_constants.
+	(VUNSPEC_PEM): New constant.
+	(procedure_entry_mask): New insn.
+	(prologue): New expander.
+	* config/vax/vax.c (vax_add_reg_cfa_offset): New.
+	(vax_expand_prologue): Rename from vax_output_function_prologue;
+	emit rtl instead of text.
+	(TARGET_ASM_FUNCTION_PROLOGUE): Remove.
+	(print_operand): Add 'x' prefix.
+
 2011-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47715
