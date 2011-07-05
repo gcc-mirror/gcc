@@ -88,7 +88,7 @@ clast_name_to_index (clast_name_p name, htab_t index_table)
 
 #ifdef CLOOG_ORG
   gcc_assert (name->type == clast_expr_name);
-  tmp.name = ((const struct clast_name*) name)->name;
+  tmp.name = ((const struct clast_name *) name)->name;
 #else
   tmp.name = name;
 #endif
