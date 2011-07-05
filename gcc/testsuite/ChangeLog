@@ -1,5 +1,8 @@
 2011-07-05  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/scd42-3.c: Allow -march-xscale; skip if -mcpu
+	is not xscale.
+
 	* lib/target-supports-dg.exp (dg-require-effective-target): Return
 	early if the test is already being skipped.
 
