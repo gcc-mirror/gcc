@@ -1,3 +1,15 @@
+2011-07-06  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* configure.ac (plugin-version.h): Generate
+	GCCPLUGIN_VERSION_MAJOR, GCCPLUGIN_VERSION_MINOR,
+	GCCPLUGIN_VERSION_PATCHLEVEL, GCCPLUGIN_VERSION constant integer
+	macros.
+
+	* configure: Regenerate.
+
+	* doc/plugins.texi (Building GCC plugins): Mention
+	GCCPLUGIN_VERSION ... constant macros in plugin-version.h.
+
 2011-07-06  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* machmode.h (TRULY_NOOP_TRUNCATION_MODES_P): New macro.
