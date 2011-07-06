@@ -1511,6 +1511,11 @@ fi
 cat > plugin-version.h <<EOF
 #include "configargs.h"
 
+#define GCCPLUGIN_VERSION_MAJOR   `echo $gcc_BASEVER | sed -e 's/^\([0-9]*\).*$/\1/'`
+#define GCCPLUGIN_VERSION_MINOR   `echo $gcc_BASEVER | sed -e 's/^[0-9]*\.\([0-9]*\).*$/\1/'`
+#define GCCPLUGIN_VERSION_PATCHLEVEL   `echo $gcc_BASEVER | sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\)$/\1/'`
+#define GCCPLUGIN_VERSION  (GCCPLUGIN_VERSION_MAJOR*1000 + GCCPLUGIN_VERSION_MINOR)
+
 static char basever[] = "$gcc_BASEVER";
 static char datestamp[] = "$gcc_DATESTAMP";
 static char devphase[] = "$gcc_DEVPHASE";
