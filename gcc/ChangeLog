@@ -1,3 +1,8 @@
+2011-07-06  Ian Lance Taylor  <iant@google.com>
+
+	* doc/install.texi (Configuration): It's
+	--enable-gnu-indirect-function, not --enable-indirect-function.
+
 2011-07-06  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* simplify-rtx.c (simplify_const_binary_operation): Use the

@@ -1245,7 +1245,7 @@ destructors, but requires __cxa_atexit in libc.  This option is currently
 only available on systems with GNU libc.  When enabled, this will cause
 @option{-fuse-cxa-atexit} to be passed by default.
 
-@item --enable-indirect-function
+@item --enable-gnu-indirect-function
 Define if you want to enable the @code{ifunc} attribute.  This option is
 currently only available on systems with GNU libc on certain targets.
 
