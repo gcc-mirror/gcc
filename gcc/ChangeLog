@@ -1,3 +1,21 @@
+2011-07-06  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* cse.c (find_comparison_args): Use val_mode_signbit_set_p.
+	* simplify-rtx.c (mode_signbit_p): Use GET_MODE_PRECISION.
+	(val_mode_signbit_p, val_mode_signbit_set_p): New functions.
+	(simplify_const_unary_operation, simplify_binary_operation_1,
+	simplify_const_binary_operation,
+	simplify_const_relational_operation): Use them.  Use
+	GET_MODE_MASK for masking and sign-extensions.
+	* combine.c (set_nonzero_bits_and_sign_copies, simplify_set,
+	combine_simplify_rtx, force_to_mode, reg_nonzero_bits_for_combine,
+	simplify_shift_const_1, simplify_comparison): Likewise.
+	* expr.c (convert_modes): Likewise.
+	* rtlanal.c (nonzero_bits1, canonicalize_condition): Likewise.
+	* expmed.c (emit_cstore, emit_store_flag_1, emit_store_flag):
+	Likewise.
+	* rtl.h (val_mode_signbit_p, val_mode_signbit_set_p): Declare.
+
 2011-07-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49645

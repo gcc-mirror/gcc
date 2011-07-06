@@ -3063,12 +3063,8 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 		 for STORE_FLAG_VALUE, also look at LT and GE operations.  */
 	      || ((code == NE
 		   || (code == LT
-		       && GET_MODE_CLASS (inner_mode) == MODE_INT
-		       && (GET_MODE_BITSIZE (inner_mode)
-			   <= HOST_BITS_PER_WIDE_INT)
-		       && (STORE_FLAG_VALUE
-			   & ((HOST_WIDE_INT) 1
-			      << (GET_MODE_BITSIZE (inner_mode) - 1))))
+		       && val_signbit_known_set_p (inner_mode,
+						   STORE_FLAG_VALUE))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		   || (code == LT
 		       && SCALAR_FLOAT_MODE_P (inner_mode)
@@ -3083,12 +3079,8 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	    }
 	  else if ((code == EQ
 		    || (code == GE
-			&& GET_MODE_CLASS (inner_mode) == MODE_INT
-			&& (GET_MODE_BITSIZE (inner_mode)
-			    <= HOST_BITS_PER_WIDE_INT)
-			&& (STORE_FLAG_VALUE
-			    & ((HOST_WIDE_INT) 1
-			       << (GET_MODE_BITSIZE (inner_mode) - 1))))
+			&& val_signbit_known_set_p (inner_mode,
+						    STORE_FLAG_VALUE))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		    || (code == GE
 			&& SCALAR_FLOAT_MODE_P (inner_mode)

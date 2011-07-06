@@ -3849,6 +3849,7 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
   unsigned HOST_WIDE_INT nonzero = GET_MODE_MASK (mode);
   unsigned HOST_WIDE_INT inner_nz;
   enum rtx_code code;
+  enum machine_mode inner_mode;
   unsigned int mode_width = GET_MODE_BITSIZE (mode);
 
   /* For floating-point and vector values, assume all bits are needed.  */
@@ -4028,9 +4029,7 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
       if (GET_MODE (XEXP (x, 0)) != VOIDmode)
 	{
 	  inner_nz &= GET_MODE_MASK (GET_MODE (XEXP (x, 0)));
-	  if (inner_nz
-	      & (((unsigned HOST_WIDE_INT) 1
-		  << (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) - 1))))
+	  if (val_signbit_known_set_p (GET_MODE (XEXP (x, 0)), inner_nz))
 	    inner_nz |= (GET_MODE_MASK (mode)
 			 & ~GET_MODE_MASK (GET_MODE (XEXP (x, 0))));
 	}
@@ -4153,12 +4152,12 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 		  & cached_nonzero_bits (SUBREG_REG (x), GET_MODE (x),
 					 known_x, known_mode, known_ret);
 
+      inner_mode = GET_MODE (SUBREG_REG (x));
       /* If the inner mode is a single word for both the host and target
 	 machines, we can compute this from which bits of the inner
 	 object might be nonzero.  */
-      if (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))) <= BITS_PER_WORD
-	  && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x)))
-	      <= HOST_BITS_PER_WIDE_INT))
+      if (GET_MODE_BITSIZE (inner_mode) <= BITS_PER_WORD
+	  && (GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_WIDE_INT))
 	{
 	  nonzero &= cached_nonzero_bits (SUBREG_REG (x), mode,
 					  known_x, known_mode, known_ret);
@@ -4166,12 +4165,9 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 #if defined (WORD_REGISTER_OPERATIONS) && defined (LOAD_EXTEND_OP)
 	  /* If this is a typical RISC machine, we only have to worry
 	     about the way loads are extended.  */
-	  if ((LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) == SIGN_EXTEND
-	       ? (((nonzero
-		    & (((unsigned HOST_WIDE_INT) 1
-			<< (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))) - 1))))
-		   != 0))
-	       : LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) != ZERO_EXTEND)
+	  if ((LOAD_EXTEND_OP (inner_mode) == SIGN_EXTEND
+	       ? val_signbit_known_set_p (inner_mode, nonzero)
+	       : LOAD_EXTEND_OP (inner_mode) != ZERO_EXTEND)
 	      || !MEM_P (SUBREG_REG (x)))
 #endif
 	    {
@@ -4179,9 +4175,9 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 		 causes the high-order bits to become undefined.  So they are
 		 not known to be zero.  */
 	      if (GET_MODE_SIZE (GET_MODE (x))
-		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+		  > GET_MODE_SIZE (inner_mode))
 		nonzero |= (GET_MODE_MASK (GET_MODE (x))
-			    & ~GET_MODE_MASK (GET_MODE (SUBREG_REG (x))));
+			    & ~GET_MODE_MASK (inner_mode));
 	    }
 	}
       break;
@@ -4921,12 +4917,8 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 	  if ((GET_CODE (SET_SRC (set)) == COMPARE
 	       || (((code == NE
 		     || (code == LT
-			 && GET_MODE_CLASS (inner_mode) == MODE_INT
-			 && (GET_MODE_BITSIZE (inner_mode)
-			     <= HOST_BITS_PER_WIDE_INT)
-			 && (STORE_FLAG_VALUE
-			     & ((unsigned HOST_WIDE_INT) 1
-				<< (GET_MODE_BITSIZE (inner_mode) - 1))))
+			 && val_signbit_known_set_p (inner_mode,
+						     STORE_FLAG_VALUE))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		     || (code == LT
 			 && SCALAR_FLOAT_MODE_P (inner_mode)
@@ -4941,12 +4933,8 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 	    x = SET_SRC (set);
 	  else if (((code == EQ
 		     || (code == GE
-			 && (GET_MODE_BITSIZE (inner_mode)
-			     <= HOST_BITS_PER_WIDE_INT)
-			 && GET_MODE_CLASS (inner_mode) == MODE_INT
-			 && (STORE_FLAG_VALUE
-			     & ((unsigned HOST_WIDE_INT) 1
-				<< (GET_MODE_BITSIZE (inner_mode) - 1))))
+			 && val_signbit_known_set_p (inner_mode,
+						     STORE_FLAG_VALUE))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		     || (code == GE
 			 && SCALAR_FLOAT_MODE_P (inner_mode)
