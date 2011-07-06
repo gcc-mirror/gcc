@@ -4381,7 +4381,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   gfc_expr **lower;
   gfc_expr **upper;
   gfc_ref *ref, *prev_ref = NULL;
-  bool allocatable_array, coarray;
+  bool allocatable, coarray;
 
   ref = expr->ref;
 
@@ -4399,12 +4399,12 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
 
   if (!prev_ref)
     {
-      allocatable_array = expr->symtree->n.sym->attr.allocatable;
+      allocatable = expr->symtree->n.sym->attr.allocatable;
       coarray = expr->symtree->n.sym->attr.codimension;
     }
   else
     {
-      allocatable_array = prev_ref->u.c.component->attr.allocatable;
+      allocatable = prev_ref->u.c.component->attr.allocatable;
       coarray = prev_ref->u.c.component->attr.codimension;
     }
 
@@ -4485,10 +4485,11 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   STRIP_NOPS (pointer);
 
   /* The allocate_array variants take the old pointer as first argument.  */
-  if (allocatable_array)
-    tmp = gfc_allocate_array_with_status (&elseblock, pointer, size, pstat, expr);
+  if (allocatable)
+    tmp = gfc_allocate_allocatable_with_status (&elseblock,
+						pointer, size, pstat, expr);
   else
-    tmp = gfc_allocate_with_status (&elseblock, size, pstat);
+    tmp = gfc_allocate_with_status (&elseblock, size, pstat, false);
   tmp = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node, pointer,
 			 tmp);
 

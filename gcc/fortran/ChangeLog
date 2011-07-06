@@ -1,3 +1,27 @@
+2011-07-06  Daniel Carrera <dcarrera@gmail.com>
+
+	* trans-array.c (gfc_array_allocate): Rename allocatable_array to
+	allocatable. Rename function gfc_allocate_array_with_status to 
+	gfc_allocate_allocatable_with_status. Update function call for
+	gfc_allocate_with_status.
+	* trans-opemp.c (gfc_omp_clause_default_ctor): Rename function
+	gfc_allocate_array_with_status to gfc_allocate_allocatable_with_status.
+	* trans-stmt.c (gfc_trans_allocate): Update function call for
+	gfc_allocate_with_status. Rename function gfc_allocate_array_with_status
+	to gfc_allocate_allocatable_with_status.
+	* trans.c (gfc_call_malloc): Add new parameter gfc_allocate_with_status
+	so it uses the library for memory allocation when -fcoarray=lib.
+	(gfc_allocate_allocatable_with_status): Renamed from
+	gfc_allocate_array_with_status.
+	(gfc_allocate_allocatable_with_status): Update function call for
+	gfc_allocate_with_status.
+	* trans.h (gfc_coarray_type): New enum.
+	(gfc_allocate_with_status): Update prototype.
+	(gfc_allocate_allocatable_with_status): Renamed from
+	gfc_allocate_array_with_status.
+	* trans-decl.c (generate_coarray_sym_init): Use the new constant
+	GFC_CAF_COARRAY_ALLOC in the call to gfor_fndecl_caf_register.
+
 2011-07-06  Richard Guenther  <rguenther@suse.de>
 
 	* f95-lang.c (gfc_init_decl_processing):
