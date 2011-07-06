@@ -94,6 +94,18 @@ typedef struct gfc_se
 gfc_se;
 
 
+/* Denotes different types of coarray.
+   Please keep in sync with libgfortran/caf/libcaf.h.  */
+typedef enum 
+{
+  GFC_CAF_COARRAY_STATIC,
+  GFC_CAF_COARRAY_ALLOC,
+  GFC_CAF_LOCK,
+  GFC_CAF_LOCK_COMP
+}
+gfc_coarray_type;
+
+
 /* Scalarization State chain.  Created by walking an expression tree before
    creating the scalarization loops. Then passed as part of a gfc_se structure
    to translate the expression inside the loop.  Note that these chains are
@@ -528,11 +540,12 @@ tree gfc_call_malloc (stmtblock_t *, tree, tree);
 /* Build a memcpy call.  */
 tree gfc_build_memcpy_call (tree, tree, tree);
 
-/* Allocate memory for arrays, with optional status variable.  */
-tree gfc_allocate_array_with_status (stmtblock_t*, tree, tree, tree, gfc_expr*);
+/* Allocate memory for allocatable variables, with optional status variable.  */
+tree gfc_allocate_allocatable_with_status (stmtblock_t*,
+					   tree, tree, tree, gfc_expr*);
 
 /* Allocate memory, with optional status variable.  */
-tree gfc_allocate_with_status (stmtblock_t *, tree, tree);
+tree gfc_allocate_with_status (stmtblock_t *, tree, tree, bool);
 
 /* Generate code to deallocate an array.  */
 tree gfc_deallocate_with_status (tree, tree, bool, gfc_expr*);

@@ -4847,10 +4847,10 @@ gfc_trans_allocate (gfc_code * code)
 
 	  /* Allocate - for non-pointers with re-alloc checking.  */
 	  if (gfc_expr_attr (expr).allocatable)
-	    tmp = gfc_allocate_array_with_status (&se.pre, se.expr, memsz,
-						  pstat, expr);
+	    tmp = gfc_allocate_allocatable_with_status (&se.pre, se.expr, memsz,
+							pstat, expr);
 	  else
-	    tmp = gfc_allocate_with_status (&se.pre, memsz, pstat);
+	    tmp = gfc_allocate_with_status (&se.pre, memsz, pstat, false);
 
 	  tmp = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node,
 				 se.expr,
