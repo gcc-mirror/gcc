@@ -4970,15 +4970,6 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
 		val |= ~ (((unsigned HOST_WIDE_INT) 1 << INTVAL (op1)) - 1);
 	    }
 
-	  /* Clear the bits that don't belong in our mode,
-	     unless they and our sign bit are all one.
-	     So we get either a reasonable negative value or a reasonable
-	     unsigned value for this mode.  */
-	  if (width < HOST_BITS_PER_WIDE_INT
-	      && ((val & ((unsigned HOST_WIDE_INT) (-1) << (width - 1)))
-		  != ((unsigned HOST_WIDE_INT) (-1) << (width - 1))))
-	    val &= ((unsigned HOST_WIDE_INT) 1 << width) - 1;
-
 	  return gen_int_mode (val, mode);
 	}
       break;

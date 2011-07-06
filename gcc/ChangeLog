@@ -16,6 +16,8 @@
 	Likewise.
 	* rtl.h (val_mode_signbit_p, val_mode_signbit_set_p): Declare.
 
+	* simplify-rtx.c (simplify_ternary_operation): Remove dead code.
+
 2011-07-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49645
