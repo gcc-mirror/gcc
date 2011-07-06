@@ -497,6 +497,11 @@ proc check_profiling_available { test_what } {
 
     # Tree profiling requires TLS runtime support.
     if { $test_what == "-fprofile-generate" } {
+	# AVR does not support profile generation because
+	# it does not implement needed support functions.
+	if { [istarget avr-*-*] } {
+	    return 0
+	}
 	return [check_effective_target_tls_runtime]
     }
 

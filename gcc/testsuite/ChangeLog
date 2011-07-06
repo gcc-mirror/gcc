@@ -1,3 +1,8 @@
+2011-07-06  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* lib/target-supports.exp (check_profiling_available): Disable
+	profiling with -fprofile-generate for target avr.
+
 2011-07-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49645
