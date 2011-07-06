@@ -1,3 +1,15 @@
+2011-07-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49645
+	* c-decl.c (finish_decl): Also set DECL_HARD_REGISTER for global
+	register variables.
+	* tree-ssa-sccvn.c (vn_reference_op_eq): Disregard differences
+	in type qualification here ...
+	(copy_reference_ops_from_ref): ... not here.
+	(vn_reference_lookup_3): ... or here.
+	(copy_reference_ops_from_ref): Record decl bases as MEM[&decl].
+	(vn_reference_lookup): Do the lookup with a valueized ao-ref.
+
 2011-07-06  Ian Lance Taylor  <iant@google.com>
 
 	* doc/install.texi (Configuration): It's
