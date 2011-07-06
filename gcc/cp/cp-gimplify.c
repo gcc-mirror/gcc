@@ -502,9 +502,7 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
 /* Do C++-specific gimplification.  Args are as for gimplify_expr.  */
 
 int
-cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
-                  bool (* gimple_test_f) (tree) ATTRIBUTE_UNUSED,
-                  int fallback ATTRIBUTE_UNUSED) 
+cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 {
   int saved_stmts_are_full_exprs_p = 0;
   enum tree_code code = TREE_CODE (*expr_p);
@@ -697,8 +695,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       break;
 
     default:
-      ret = (enum gimplify_status) c_gimplify_expr (expr_p, pre_p, post_p,
-                                                    NULL, fb_none);
+      ret = (enum gimplify_status) c_gimplify_expr (expr_p, pre_p, post_p);
       break;
     }
 

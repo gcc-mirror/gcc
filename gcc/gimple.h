@@ -1059,6 +1059,7 @@ extern void gimplify_and_add (tree, gimple_seq *);
 
 /* Miscellaneous helpers.  */
 extern void gimple_add_tmp_var (tree);
+extern bool flag_instrument_functions_exclude_p (tree);
 extern gimple gimple_current_bind_expr (void);
 extern VEC(gimple, heap) *gimple_bind_expr_stack (void);
 extern tree voidify_wrapper_expr (tree, tree);
@@ -1080,7 +1081,6 @@ extern void lower_nested_functions (tree);
 extern void insert_field_into_struct (tree, tree);
 
 /* In gimplify.c.  */
-extern void prepare_gimple_addressable (tree *, gimple_seq *);
 extern void gimplify_function_tree (tree);
 
 /* In cfgexpand.c.  */

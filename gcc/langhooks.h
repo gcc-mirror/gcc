@@ -435,12 +435,7 @@ struct lang_hooks
 
   /* Perform language-specific gimplification on the argument.  Returns an
      enum gimplify_status, though we can't see that type here.  */
-  int (*gimplify_expr) (tree *, gimple_seq *, gimple_seq *,
-                        bool (*) (tree), int);
-
-  /* Perform language-specific instrumentation of a function.
-     (called from gimplify_function_tree()).  */
-  void (*instrument_func) (tree);
+  int (*gimplify_expr) (tree *, gimple_seq *, gimple_seq *);
 
   /* Do language specific processing in the builtin function DECL  */
   tree (*builtin_function) (tree decl);

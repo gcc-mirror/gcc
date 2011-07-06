@@ -62,7 +62,7 @@ UPC_PTS_OBJ = upc/upc-pts-packed.o upc/upc-pts-struct.o
 
 # Language-specific object files for UPC.
 UPC_OBJS = c-family/stub-objc.o upc/upc-act.o \
-	   upc/upc-gimplify.o upc/upc-lang.o \
+	   upc/upc-genericize.o upc/upc-lang.o \
 	   upc/upc-gasp.o $(UPC_PTS_OBJ)
 
 cc1upc-checksum.c : build/genchecksum$(build_exeext) checksum-options \
@@ -122,12 +122,12 @@ upc/upc-act.o : upc/upc-act.c \
    gtype-upc.h gt-upc-upc-act.h upc/upc-act.h upc/upc-pts.h \
    upc/upc-rts-names.h
 
-upc/upc-gimplify.o : upc/upc-gimplify.c \
+upc/upc-genericize.o : upc/upc-genericize.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h \
    toplev.h flags.h input.h function.h output.h debug.h langhooks.h \
    $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-family/c-pragma.h \
-   upc/upc-gimplify.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h \
+   upc/upc-genericize.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h \
    upc/upc-rts-names.h
 
 upc/upc-pts-packed.o: upc/upc-pts-packed.c \

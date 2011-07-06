@@ -2841,6 +2841,8 @@ pushdecl_top_level (tree x)
 static void
 implicit_decl_warning (tree id, tree olddecl)
 {
+  if (upc_diagnose_deprecated_stmt (input_location, id))
+    return;
   if (warn_implicit_function_declaration)
     {
       bool warned;

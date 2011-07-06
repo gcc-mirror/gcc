@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "upc-act.h"
 #include "upc-pts.h"
-#include "upc-gimplify.h"
+#include "upc-genericize.h"
 #include "upc-gasp.h"
 #include "upc-pts.h"
 #include "langhooks.h"
@@ -74,10 +74,6 @@ static void upc_init_ts (void);
 #define LANG_HOOKS_GET_ALIAS_SET upc_get_alias_set
 #undef LANG_HOOKS_GENERICIZE
 #define LANG_HOOKS_GENERICIZE upc_genericize
-#undef LANG_HOOKS_GIMPLIFY_EXPR
-#define LANG_HOOKS_GIMPLIFY_EXPR upc_gimplify_expr
-#undef LANG_HOOKS_INSTRUMENT_FUNC
-#define LANG_HOOKS_INSTRUMENT_FUNC upc_instrument_func
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION upc_handle_option
 #undef LANG_HOOKS_INIT

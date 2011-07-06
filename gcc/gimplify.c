@@ -429,8 +429,7 @@ create_tmp_var_raw (tree type, const char *prefix)
   tree tmp_var;
 
   /* Temps. cannot be UPC shared qualified. */
-  if (upc_shared_type_p (type))
-    type = build_upc_unshared_type (type);
+  gcc_assert (!upc_shared_type_p (type));
 
   tmp_var = build_decl (input_location,
 			VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,
@@ -3168,7 +3167,7 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
    that it could not mark addressable yet, like a Fortran pass-by-reference
    parameter (int) floatvar.  */
 
-void
+static void
 prepare_gimple_addressable (tree *expr_p, gimple_seq *seq_p)
 {
   while (handled_component_p (*expr_p))
@@ -6661,8 +6660,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
       /* Do any language-specific gimplification.  */
       ret = ((enum gimplify_status)
-	     lang_hooks.gimplify_expr (expr_p, pre_p, post_p,
-                                       gimple_test_f, fallback));
+	     lang_hooks.gimplify_expr (expr_p, pre_p, post_p));
       if (ret == GS_OK)
 	{
 	  if (*expr_p == NULL_TREE)
@@ -7824,7 +7822,7 @@ DEF_VEC_ALLOC_P(char_p,heap);
 
 /* Return whether we should exclude FNDECL from instrumentation.  */
 
-static bool
+bool
 flag_instrument_functions_exclude_p (tree fndecl)
 {
   VEC(char_p,heap) *vec;
@@ -7954,13 +7952,6 @@ gimplify_function_tree (tree fndecl)
       seq = gimple_seq_alloc ();
       gimple_seq_add_stmt (&seq, new_bind);
       gimple_set_body (fndecl, seq);
-    }
-
-  if (flag_upc_instrument_functions
-      && !DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (fndecl)
-      && !flag_instrument_functions_exclude_p (fndecl))
-    {
-      lang_hooks.instrument_func (fndecl);
     }
 
   DECL_SAVED_TREE (fndecl) = NULL_TREE;

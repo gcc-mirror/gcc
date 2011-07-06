@@ -44,12 +44,6 @@ enum libfunc_index
 
   LTI_gcov_flush,
 
-  /* UPC support functions */
-  LTI_upc_barrier,
-  LTI_upc_notify,
-  LTI_upc_wait,
-  LTI_upc_getaddr,
-
   LTI_MAX
 };
 
@@ -99,11 +93,6 @@ extern struct target_libfuncs *this_target_libfuncs;
 
 #define profile_function_entry_libfunc	(libfunc_table[LTI_profile_function_entry])
 #define profile_function_exit_libfunc	(libfunc_table[LTI_profile_function_exit])
-/* UPC support functions */
-#define upc_barrier_libfunc	(libfunc_table[LTI_upc_barrier])
-#define upc_notify_libfunc	(libfunc_table[LTI_upc_notify])
-#define upc_wait_libfunc	(libfunc_table[LTI_upc_wait])
-#define upc_getaddr_libfunc	(libfunc_table[LTI_upc_getaddr])
 
 #define synchronize_libfunc	(libfunc_table[LTI_synchronize])
 

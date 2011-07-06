@@ -1,4 +1,4 @@
-/* upc-gimplify.h: declarations for upc-gimplify.c
+/* upc-genericize.h: declarations for upc-genericize.c
    Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
@@ -20,11 +20,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef _UPC_GIMPLIFY_H_
-#define _UPC_GIMPLIFY_H_
+#ifndef _UPC_GENERICIZE_H_
+#define _UPC_GENERICIZE_H_
 
-extern int upc_gimplify_expr (tree *, gimple_seq *, gimple_seq *,
-                              bool (*) (tree), int);
 extern void upc_genericize (tree);
 
-#endif /* !_UPC_GIMPLIFY_H_ */
+#endif /* !_UPC_GENERICIZE_H_ */

@@ -267,9 +267,7 @@ lhd_tree_dump_type_quals (const_tree t)
 int
 lhd_gimplify_expr (tree *expr_p ATTRIBUTE_UNUSED,
 		   gimple_seq *pre_p ATTRIBUTE_UNUSED,
-		   gimple_seq *post_p ATTRIBUTE_UNUSED,
-	           bool (* gimple_test_f) (tree) ATTRIBUTE_UNUSED,
-		   int fallback ATTRIBUTE_UNUSED)
+		   gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   return GS_UNHANDLED;
 }

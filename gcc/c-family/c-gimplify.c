@@ -169,9 +169,7 @@ c_build_bind_expr (location_t loc, tree block, tree body)
 
 int
 c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
-		 gimple_seq *post_p ATTRIBUTE_UNUSED,
-	         bool (* gimple_test_f) (tree) ATTRIBUTE_UNUSED,
-		 int fallback ATTRIBUTE_UNUSED)
+		 gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   enum tree_code code = TREE_CODE (*expr_p);
 

@@ -3848,7 +3848,7 @@ build_unary_op (location_t location,
 	    return error_mark_node;
 	  /* Taking the address of a UPC shared array element
 	     cannot be performed as a simple addition. 
-	     Return an ADDR_EXPR node, and let upc_gimplify_expr()
+	     Return an ADDR_EXPR node, and let upc_genericize()
 	     implement the proper semantics.  */
 	  if (TREE_SHARED (arg))
 	    return build1 (ADDR_EXPR, TREE_TYPE (arg), arg);

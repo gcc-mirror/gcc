@@ -238,11 +238,9 @@ struct dump_file_info
 #define PROP_gimple_lomp	(1 << 8)	/* lowered OpenMP directives */
 #define PROP_cfglayout	 	(1 << 9)	/* cfglayout mode on RTL */
 #define PROP_gimple_lcx		(1 << 10)       /* lowered complex */
-#define PROP_gimple_lupc	(1 << 11)	/* lowered UPC operations */
 
 #define PROP_trees \
-  (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh \
-   | PROP_gimple_lomp | PROP_gimple_lupc)
+  (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
 
 /* To-do flags.  */
 #define TODO_dump_func			(1 << 0)

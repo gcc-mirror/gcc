@@ -564,7 +564,7 @@ is_multiple_of_upc_threads (tree expr)
    UPC shared array will yield the local size of the array.  */
 
 void
-set_upc_threads_refs_to_one (tree * expr)
+set_upc_threads_refs_to_one (tree *expr)
 {
   enum tree_code code;
   int i;

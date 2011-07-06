@@ -1018,8 +1018,7 @@ extern VEC(tree,gc) *make_tree_vector_copy (const VEC(tree,gc) *);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);
-extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *,
-	                    bool (*) (tree), int);
+extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 extern tree c_build_bind_expr (location_t, tree, tree);
 
 /* In c-pch.c  */
