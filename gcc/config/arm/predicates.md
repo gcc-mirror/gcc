@@ -683,3 +683,6 @@
    } 
   return true; 
 })
+
+(define_special_predicate "add_operator"
+			 (match_code "plus"))

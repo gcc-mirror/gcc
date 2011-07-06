@@ -1,3 +1,13 @@
+2011-07-06  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	Backport from mainline.
+	2011-06-24  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/49335
+	* config/arm/predicates.md (add_operator): New.
+	* config/arm/arm.md ("*arith_shiftsi"): Fix for SP reg usage
+	in Thumb2.
+
 2011-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49618
