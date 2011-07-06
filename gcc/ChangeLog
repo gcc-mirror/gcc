@@ -1,3 +1,69 @@
+2011-07-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_call_indirect_aix): New
+	declaration.
+	(rs6000_save_toc_in_prologue_p): Ditto.
+
+	* config/rs6000/rs6000.opt (-mr11): New switch to disable loading
+	up the static chain (r11) during indirect function calls.
+	(-msave-toc-indirect): New undocumented debug switch.
+
+	* config/rs6000/rs6000.c (struct machine_function): Add
+	save_toc_in_prologue field to note whether the prologue needs to
+	save the TOC value in the reserved stack location.
+	(rs6000_emit_prologue): Use TOC_REGNUM instead of 2.  If we need
+	to save the TOC in the prologue, do so.
+	(rs6000_trampoline_init): Don't allow creating AIX style
+	trampolines if -mno-r11 is in effect.
+	(rs6000_call_indirect_aix): New function to create AIX style
+	indirect calls, adding support for -mno-r11 to suppress loading
+	the static chain, and saving the TOC in the prologue instead of
+	the call body.
+	(rs6000_save_toc_in_prologue_p): Return true if we are saving the
+	TOC in the prologue.
+
+	* config/rs6000/rs6000.md (STACK_POINTER_REGNUM): Add more fixed
+	register numbers.
+	(TOC_REGNUM): Ditto.
+	(STATIC_CHAIN_REGNUM): Ditto.
+	(ARG_POINTER_REGNUM): Ditto.
+	(SFP_REGNO): Delete, unused.
+	(TOC_SAVE_OFFSET_32BIT): Add constants for AIX TOC save and
+	function descriptor offsets.
+	(TOC_SAVE_OFFSET_64BIT): Ditto.
+	(AIX_FUNC_DESC_TOC_32BIT): Ditto.
+	(AIX_FUNC_DESC_TOC_64BIT): Ditto.
+	(AIX_FUNC_DESC_SC_32BIT): Ditto.
+	(AIX_FUNC_DESC_SC_64BIT): Ditto.
+	(ptrload): New mode attribute for the appropriate load of a
+	pointer.
+	(call_indirect_aix32): Delete, rewrite AIX indirect function
+	calls.
+	(call_indirect_aix64): Ditto.
+	(call_value_indirect_aix32): Ditto.
+	(call_value_indirect_aix64): Ditto.
+	(call_indirect_nonlocal_aix32_internal): Ditto.
+	(call_indirect_nonlocal_aix32): Ditto.
+	(call_indirect_nonlocal_aix64_internal): Ditto.
+	(call_indirect_nonlocal_aix64): Ditto.
+	(call): Rewrite AIX indirect function calls.  Add support for
+	eliminating the static chain, and for moving the save of the TOC
+	to the function prologue.
+	(call_value): Ditto.
+	(call_indirect_aix<ptrsize>): Ditto.
+	(call_indirect_aix<ptrsize>_internal): Ditto.
+	(call_indirect_aix<ptrsize>_internal2): Ditto.
+	(call_indirect_aix<ptrsize>_nor11): Ditto.
+	(call_value_indirect_aix<ptrsize>): Ditto.
+	(call_value_indirect_aix<ptrsize>_internal): Ditto.
+	(call_value_indirect_aix<ptrsize>_internal2): Ditto.
+	(call_value_indirect_aix<ptrsize>_nor11): Ditto.
+	(call_nonlocal_aix32): Relocate in the rs6000.md file.
+	(call_nonlocal_aix64): Ditto.
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Add -mr11 and
+	-mno-r11 documentation.
+
 2011-07-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR other/49658
