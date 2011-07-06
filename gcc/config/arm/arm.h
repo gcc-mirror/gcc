@@ -45,6 +45,8 @@ extern char arm_arch_name[];
 #define TARGET_CPU_CPP_BUILTINS()			\
   do							\
     {							\
+	if (TARGET_DSP_MULTIPLY)			\
+	   builtin_define ("__ARM_FEATURE_DSP");	\
 	/* Define __arm__ even when in thumb mode, for	\
 	   consistency with armcc.  */			\
 	builtin_define ("__arm__");			\
