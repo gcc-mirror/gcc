@@ -140,11 +140,12 @@ make_thunk (tree function, bool this_adjusting,
   THUNK_VIRTUAL_OFFSET (thunk) = virtual_offset;
   THUNK_ALIAS (thunk) = NULL_TREE;
 
-  /* The thunk itself is not a constructor or destructor, even if
-     the thing it is thunking to is.  */
   DECL_INTERFACE_KNOWN (thunk) = 1;
   DECL_NOT_REALLY_EXTERN (thunk) = 1;
+  DECL_COMDAT (thunk) = DECL_COMDAT (function);
   DECL_SAVED_FUNCTION_DATA (thunk) = NULL;
+  /* The thunk itself is not a constructor or destructor, even if
+     the thing it is thunking to is.  */
   DECL_DESTRUCTOR_P (thunk) = 0;
   DECL_CONSTRUCTOR_P (thunk) = 0;
   DECL_EXTERNAL (thunk) = 1;
@@ -342,6 +343,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   DECL_VISIBILITY (thunk_fndecl) = DECL_VISIBILITY (function);
   DECL_VISIBILITY_SPECIFIED (thunk_fndecl)
     = DECL_VISIBILITY_SPECIFIED (function);
+  DECL_COMDAT (thunk_fndecl) = DECL_COMDAT (function);
   if (DECL_ONE_ONLY (function) || DECL_WEAK (function))
     make_decl_one_only (thunk_fndecl, cxx_comdat_group (thunk_fndecl));
 

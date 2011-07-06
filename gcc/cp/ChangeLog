@@ -1,3 +1,8 @@
+2011-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49568
+	* method.c (make_thunk, use_thunk): Copy DECL_COMDAT.
+
 2011-07-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48157
