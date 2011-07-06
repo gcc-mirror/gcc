@@ -1,5 +1,10 @@
+2011-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/stack-layout-2.c: Cleanup expand rtl dump.
+	* gfortran.dg/move_alloc_4.f90: Cleanup original tree dump.
+
 2011-07-06  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* lib/target-supports.exp (check_profiling_available): Disable
 	profiling with -fprofile-generate for target avr.
 
@@ -35,7 +40,7 @@
 	* gcc.dg/pr43402.c: Ditto.
 
 2011-07-05  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* gcc.dg/cpp/pragma-3.c: Add dg-require-effective-target fopenmp.
 
 2011-07-05  Michael Meissner  <meissner@linux.vnet.ibm.com>
