@@ -3726,8 +3726,8 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	     shift_truncation_mask, since the shift might not be part of an
 	     ashlM3, lshrM3 or ashrM3 instruction.  */
 	  if (SHIFT_COUNT_TRUNCATED)
-	    arg1 = (unsigned HOST_WIDE_INT) arg1 % width;
-	  else if (arg1 < 0 || arg1 >= GET_MODE_BITSIZE (mode))
+	    arg1 &= targetm.shift_truncation_mask (mode);
+	  else if (arg1 < 0 || arg1 >= GET_MODE_PRECISION (mode))
 	    return 0;
 
 	  val = (code == ASHIFT

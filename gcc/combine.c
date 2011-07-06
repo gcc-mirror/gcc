@@ -5946,9 +5946,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
       else if (SHIFT_COUNT_TRUNCATED && !REG_P (XEXP (x, 1)))
 	SUBST (XEXP (x, 1),
 	       force_to_mode (XEXP (x, 1), GET_MODE (XEXP (x, 1)),
-			      ((unsigned HOST_WIDE_INT) 1
-			       << exact_log2 (GET_MODE_BITSIZE (GET_MODE (x))))
-			      - 1,
+			      targetm.shift_truncation_mask (GET_MODE (x)),
 			      0));
       break;
 
@@ -9901,7 +9899,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
      want to do this inside the loop as it makes it more difficult to
      combine shifts.  */
   if (SHIFT_COUNT_TRUNCATED)
-    orig_count &= GET_MODE_BITSIZE (mode) - 1;
+    orig_count &= targetm.shift_truncation_mask (mode);
 
   /* If we were given an invalid count, don't do anything except exactly
      what was requested.  */
