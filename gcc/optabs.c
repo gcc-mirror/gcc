@@ -1440,8 +1440,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       if (temp != 0)
 	{
 	  if (GET_MODE_CLASS (mode) == MODE_INT
-	      && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-                                        GET_MODE_BITSIZE (GET_MODE (temp))))
+	      && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (temp)))
 	    return gen_lowpart (mode, temp);
 	  else
 	    return convert_to_mode (mode, temp, unsignedp);
@@ -1498,8 +1497,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	    if (temp)
 	      {
 		if (mclass != MODE_INT
-                    || !TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-                                               GET_MODE_BITSIZE (wider_mode)))
+                    || !TRULY_NOOP_TRUNCATION_MODES_P (mode, wider_mode))
 		  {
 		    if (target == 0)
 		      target = gen_reg_rtx (mode);
@@ -2027,8 +2025,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	      if (temp)
 		{
 		  if (mclass != MODE_INT
-		      || !TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-						 GET_MODE_BITSIZE (wider_mode)))
+		      || !TRULY_NOOP_TRUNCATION_MODES_P (mode, wider_mode))
 		    {
 		      if (target == 0)
 			target = gen_reg_rtx (mode);
@@ -2915,8 +2912,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	    if (temp)
 	      {
 		if (mclass != MODE_INT
-		    || !TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-					       GET_MODE_BITSIZE (wider_mode)))
+		    || !TRULY_NOOP_TRUNCATION_MODES_P (mode, wider_mode))
 		  {
 		    if (target == 0)
 		      target = gen_reg_rtx (mode);

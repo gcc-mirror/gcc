@@ -1,3 +1,18 @@
+2011-07-06  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* machmode.h (TRULY_NOOP_TRUNCATION_MODES_P): New macro.
+	* combine.c (make_extraction, gen_lowpart_or_truncate,
+	apply_distributive_law, simplify_comparison,
+	reg_truncated_to_mode, record_truncated_value): Use it.
+	* cse.c (notreg_cost): Likewise.
+	* expmed.c (store_bit_field_1, extract_bit_field_1): Likewise.
+	* expr.c (convert_move, convert_modes): Likewise.
+	* optabs.c (expand_binop, expand_unop): Likewise.
+	* postreload.c (move2add_last_label): Likewise.
+	* regmove.c (optimize_reg_copy_3): Likewise.
+	* rtlhooks.c (gen_lowpart_general): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+
 2011-07-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/vxworks.h (WORDS_BIG_ENDIAN): Define.

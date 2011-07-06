@@ -1643,8 +1643,7 @@ static int move2add_last_label_luid;
 #define MODES_OK_FOR_MOVE2ADD(OUTMODE, INMODE) \
   (GET_MODE_SIZE (OUTMODE) == GET_MODE_SIZE (INMODE) \
    || (GET_MODE_SIZE (OUTMODE) <= GET_MODE_SIZE (INMODE) \
-       && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (OUTMODE), \
-				 GET_MODE_BITSIZE (INMODE))))
+       && TRULY_NOOP_TRUNCATION_MODES_P (OUTMODE, INMODE)))
 
 /* This function is called with INSN that sets REG to (SYM + OFF),
    while REG is known to already have value (SYM + offset).

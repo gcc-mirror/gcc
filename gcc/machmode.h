@@ -275,4 +275,8 @@ extern enum machine_mode ptr_mode;
 /* Target-dependent machine mode initialization - in insn-modes.c.  */
 extern void init_adjust_machine_modes (void);
 
+#define TRULY_NOOP_TRUNCATION_MODES_P(MODE1, MODE2) \
+  TRULY_NOOP_TRUNCATION (GET_MODE_PRECISION (MODE1), \
+			 GET_MODE_PRECISION (MODE2))
+
 #endif /* not HAVE_MACHINE_MODES */
