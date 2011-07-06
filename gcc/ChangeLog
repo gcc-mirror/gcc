@@ -1,3 +1,12 @@
+2011-07-06  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* simplify-rtx.c (simplify_const_binary_operation): Use the
+	shift_truncation_mask hook instead of performing modulo by
+	width.  Compare against mode precision, not bitsize.
+	* combine.c (combine_simplify_rtx, simplify_shift_const_1):
+	Use shift_truncation_mask instead of constructing the value
+	manually.
+
 2011-07-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47383
