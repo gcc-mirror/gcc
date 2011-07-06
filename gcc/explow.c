@@ -51,7 +51,7 @@ static rtx break_out_memory_refs (rtx);
 HOST_WIDE_INT
 trunc_int_for_mode (HOST_WIDE_INT c, enum machine_mode mode)
 {
-  int width = GET_MODE_BITSIZE (mode);
+  int width = GET_MODE_PRECISION (mode);
 
   /* You want to truncate to a _what_?  */
   gcc_assert (SCALAR_INT_MODE_P (mode));

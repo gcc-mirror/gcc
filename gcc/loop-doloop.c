@@ -465,7 +465,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	 Note that the maximum value loaded is iterations_max - 1.  */
       if (desc->niter_max
 	  <= ((unsigned HOST_WIDEST_INT) 1
-	      << (GET_MODE_BITSIZE (mode) - 1)))
+	      << (GET_MODE_PRECISION (mode) - 1)))
 	nonneg = 1;
       break;
 
@@ -677,7 +677,7 @@ doloop_optimize (struct loop *loop)
   doloop_seq = gen_doloop_end (doloop_reg, iterations, iterations_max,
 			       GEN_INT (level), start_label);
 
-  word_mode_size = GET_MODE_BITSIZE (word_mode);
+  word_mode_size = GET_MODE_PRECISION (word_mode);
   word_mode_max
 	  = ((unsigned HOST_WIDE_INT) 1 << (word_mode_size - 1) << 1) - 1;
   if (! doloop_seq
@@ -685,10 +685,10 @@ doloop_optimize (struct loop *loop)
       /* Before trying mode different from the one in that # of iterations is
 	 computed, we must be sure that the number of iterations fits into
 	 the new mode.  */
-      && (word_mode_size >= GET_MODE_BITSIZE (mode)
+      && (word_mode_size >= GET_MODE_PRECISION (mode)
 	  || desc->niter_max <= word_mode_max))
     {
-      if (word_mode_size > GET_MODE_BITSIZE (mode))
+      if (word_mode_size > GET_MODE_PRECISION (mode))
 	{
 	  zero_extend_p = true;
 	  iterations = simplify_gen_unary (ZERO_EXTEND, word_mode,

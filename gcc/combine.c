@@ -2758,14 +2758,14 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	      offset = INTVAL (XEXP (dest, 2));
 	      dest = XEXP (dest, 0);
 	      if (BITS_BIG_ENDIAN)
-		offset = GET_MODE_BITSIZE (GET_MODE (dest)) - width - offset;
+		offset = GET_MODE_PRECISION (GET_MODE (dest)) - width - offset;
 	    }
 	}
       else
 	{
 	  if (GET_CODE (dest) == STRICT_LOW_PART)
 	    dest = XEXP (dest, 0);
-	  width = GET_MODE_BITSIZE (GET_MODE (dest));
+	  width = GET_MODE_PRECISION (GET_MODE (dest));
 	  offset = 0;
 	}
 
@@ -2775,16 +2775,16 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	  if (subreg_lowpart_p (dest))
 	    ;
 	  /* Handle the case where inner is twice the size of outer.  */
-	  else if (GET_MODE_BITSIZE (GET_MODE (SET_DEST (temp)))
-		   == 2 * GET_MODE_BITSIZE (GET_MODE (dest)))
-	    offset += GET_MODE_BITSIZE (GET_MODE (dest));
+	  else if (GET_MODE_PRECISION (GET_MODE (SET_DEST (temp)))
+		   == 2 * GET_MODE_PRECISION (GET_MODE (dest)))
+	    offset += GET_MODE_PRECISION (GET_MODE (dest));
 	  /* Otherwise give up for now.  */
 	  else
 	    offset = -1;
 	}
 
       if (offset >= 0
-	  && (GET_MODE_BITSIZE (GET_MODE (SET_DEST (temp)))
+	  && (GET_MODE_PRECISION (GET_MODE (SET_DEST (temp)))
 	      <= HOST_BITS_PER_DOUBLE_INT))
 	{
 	  double_int m, o, i;
@@ -3745,8 +3745,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 		 (REG_P (temp)
 		  && VEC_index (reg_stat_type, reg_stat,
 				REGNO (temp))->nonzero_bits != 0
-		  && GET_MODE_BITSIZE (GET_MODE (temp)) < BITS_PER_WORD
-		  && GET_MODE_BITSIZE (GET_MODE (temp)) < HOST_BITS_PER_INT
+		  && GET_MODE_PRECISION (GET_MODE (temp)) < BITS_PER_WORD
+		  && GET_MODE_PRECISION (GET_MODE (temp)) < HOST_BITS_PER_INT
 		  && (VEC_index (reg_stat_type, reg_stat,
 				 REGNO (temp))->nonzero_bits
 		      != GET_MODE_MASK (word_mode))))
@@ -3755,8 +3755,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 		     (REG_P (temp)
 		      && VEC_index (reg_stat_type, reg_stat,
 				    REGNO (temp))->nonzero_bits != 0
-		      && GET_MODE_BITSIZE (GET_MODE (temp)) < BITS_PER_WORD
-		      && GET_MODE_BITSIZE (GET_MODE (temp)) < HOST_BITS_PER_INT
+		      && GET_MODE_PRECISION (GET_MODE (temp)) < BITS_PER_WORD
+		      && GET_MODE_PRECISION (GET_MODE (temp)) < HOST_BITS_PER_INT
 		      && (VEC_index (reg_stat_type, reg_stat,
 				     REGNO (temp))->nonzero_bits
 			  != GET_MODE_MASK (word_mode)))))
@@ -4685,7 +4685,7 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 	  && CONST_INT_P (SET_SRC (x))
 	  && ((INTVAL (XEXP (SET_DEST (x), 1))
 	       + INTVAL (XEXP (SET_DEST (x), 2)))
-	      <= GET_MODE_BITSIZE (GET_MODE (XEXP (SET_DEST (x), 0))))
+	      <= GET_MODE_PRECISION (GET_MODE (XEXP (SET_DEST (x), 0))))
 	  && ! side_effects_p (XEXP (SET_DEST (x), 0)))
 	{
 	  HOST_WIDE_INT pos = INTVAL (XEXP (SET_DEST (x), 2));
@@ -4698,7 +4698,7 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 	  rtx or_mask;
 
 	  if (BITS_BIG_ENDIAN)
-	    pos = GET_MODE_BITSIZE (mode) - len - pos;
+	    pos = GET_MODE_PRECISION (mode) - len - pos;
 
 	  or_mask = gen_int_mode (src << pos, mode);
 	  if (src == mask)
@@ -4791,7 +4791,7 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 	    break;
 
 	  pos = 0;
-	  len = GET_MODE_BITSIZE (GET_MODE (inner));
+	  len = GET_MODE_PRECISION (GET_MODE (inner));
 	  unsignedp = 0;
 	  break;
 
@@ -4805,7 +4805,7 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 	      pos = INTVAL (XEXP (SET_SRC (x), 2));
 
 	      if (BITS_BIG_ENDIAN)
-		pos = GET_MODE_BITSIZE (GET_MODE (inner)) - len - pos;
+		pos = GET_MODE_PRECISION (GET_MODE (inner)) - len - pos;
 	      unsignedp = (code == ZERO_EXTRACT);
 	    }
 	  break;
@@ -4814,7 +4814,8 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 	  break;
 	}
 
-      if (len && pos >= 0 && pos + len <= GET_MODE_BITSIZE (GET_MODE (inner)))
+      if (len && pos >= 0
+	  && pos + len <= GET_MODE_PRECISION (GET_MODE (inner)))
 	{
 	  enum machine_mode mode = GET_MODE (SET_SRC (x));
 
@@ -4845,9 +4846,9 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 		     (unsignedp ? LSHIFTRT : ASHIFTRT, mode,
 		      gen_rtx_ASHIFT (mode,
 				      gen_lowpart (mode, inner),
-				      GEN_INT (GET_MODE_BITSIZE (mode)
+				      GEN_INT (GET_MODE_PRECISION (mode)
 					       - len - pos)),
-		      GEN_INT (GET_MODE_BITSIZE (mode) - len)));
+		      GEN_INT (GET_MODE_PRECISION (mode) - len)));
 
 	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
@@ -5544,7 +5545,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 
       if (GET_CODE (temp) == ASHIFTRT
 	  && CONST_INT_P (XEXP (temp, 1))
-	  && INTVAL (XEXP (temp, 1)) == GET_MODE_BITSIZE (mode) - 1)
+	  && INTVAL (XEXP (temp, 1)) == GET_MODE_PRECISION (mode) - 1)
 	return simplify_shift_const (NULL_RTX, LSHIFTRT, mode, XEXP (temp, 0),
 				     INTVAL (XEXP (temp, 1)));
 
@@ -5563,8 +5564,8 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 	  rtx temp1 = simplify_shift_const
 	    (NULL_RTX, ASHIFTRT, mode,
 	     simplify_shift_const (NULL_RTX, ASHIFT, mode, temp,
-				   GET_MODE_BITSIZE (mode) - 1 - i),
-	     GET_MODE_BITSIZE (mode) - 1 - i);
+				   GET_MODE_PRECISION (mode) - 1 - i),
+	     GET_MODE_PRECISION (mode) - 1 - i);
 
 	  /* If all we did was surround TEMP with the two shifts, we
 	     haven't improved anything, so don't use it.  Otherwise,
@@ -5639,14 +5640,14 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 	       && (UINTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))
 		   == ((unsigned HOST_WIDE_INT) 1 << (i + 1)) - 1))
 	      || (GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND
-		  && (GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)))
+		  && (GET_MODE_PRECISION (GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)))
 		      == (unsigned int) i + 1))))
 	return simplify_shift_const
 	  (NULL_RTX, ASHIFTRT, mode,
 	   simplify_shift_const (NULL_RTX, ASHIFT, mode,
 				 XEXP (XEXP (XEXP (x, 0), 0), 0),
-				 GET_MODE_BITSIZE (mode) - (i + 1)),
-	   GET_MODE_BITSIZE (mode) - (i + 1));
+				 GET_MODE_PRECISION (mode) - (i + 1)),
+	   GET_MODE_PRECISION (mode) - (i + 1));
 
       /* If only the low-order bit of X is possibly nonzero, (plus x -1)
 	 can become (ashiftrt (ashift (xor x 1) C) C) where C is
@@ -5660,8 +5661,8 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 	return simplify_shift_const (NULL_RTX, ASHIFTRT, mode,
 	   simplify_shift_const (NULL_RTX, ASHIFT, mode,
 				 gen_rtx_XOR (mode, XEXP (x, 0), const1_rtx),
-				 GET_MODE_BITSIZE (mode) - 1),
-	   GET_MODE_BITSIZE (mode) - 1);
+				 GET_MODE_PRECISION (mode) - 1),
+	   GET_MODE_PRECISION (mode) - 1);
 
       /* If we are adding two things that have no bits in common, convert
 	 the addition into an IOR.  This will often be further simplified,
@@ -5793,7 +5794,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 		   && op1 == const0_rtx
 		   && mode == GET_MODE (op0)
 		   && (num_sign_bit_copies (op0, mode)
-		       == GET_MODE_BITSIZE (mode)))
+		       == GET_MODE_PRECISION (mode)))
 	    {
 	      op0 = expand_compound_operation (op0);
 	      return simplify_gen_unary (NEG, mode,
@@ -5818,7 +5819,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 		   && op1 == const0_rtx
 		   && mode == GET_MODE (op0)
 		   && (num_sign_bit_copies (op0, mode)
-		       == GET_MODE_BITSIZE (mode)))
+		       == GET_MODE_PRECISION (mode)))
 	    {
 	      op0 = expand_compound_operation (op0);
 	      return plus_constant (gen_lowpart (mode, op0), 1);
@@ -5833,7 +5834,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 	      && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 	      && op1 == const0_rtx
 	      && (num_sign_bit_copies (op0, mode)
-		  == GET_MODE_BITSIZE (mode)))
+		  == GET_MODE_PRECISION (mode)))
 	    return gen_lowpart (mode,
 				expand_compound_operation (op0));
 
@@ -5854,7 +5855,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 		   && op1 == const0_rtx
 		   && mode == GET_MODE (op0)
 		   && (num_sign_bit_copies (op0, mode)
-		       == GET_MODE_BITSIZE (mode)))
+		       == GET_MODE_PRECISION (mode)))
 	    {
 	      op0 = expand_compound_operation (op0);
 	      return simplify_gen_unary (NOT, mode,
@@ -5887,7 +5888,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 	    {
 	      x = simplify_shift_const (NULL_RTX, ASHIFT, mode,
 					expand_compound_operation (op0),
-					GET_MODE_BITSIZE (mode) - 1 - i);
+					GET_MODE_PRECISION (mode) - 1 - i);
 	      if (GET_CODE (x) == AND && XEXP (x, 1) == const_true_rtx)
 		return XEXP (x, 0);
 	      else
@@ -6011,7 +6012,7 @@ simplify_if_then_else (rtx x)
 	}
       else if (true_code == EQ && true_val == const0_rtx
 	       && (num_sign_bit_copies (from, GET_MODE (from))
-		   == GET_MODE_BITSIZE (GET_MODE (from))))
+		   == GET_MODE_PRECISION (GET_MODE (from))))
 	{
 	  false_code = EQ;
 	  false_val = constm1_rtx;
@@ -6181,8 +6182,8 @@ simplify_if_then_else (rtx x)
 	       && rtx_equal_p (SUBREG_REG (XEXP (XEXP (t, 0), 0)), f)
 	       && (num_sign_bit_copies (f, GET_MODE (f))
 		   > (unsigned int)
-		     (GET_MODE_BITSIZE (mode)
-		      - GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (t, 0), 0))))))
+		     (GET_MODE_PRECISION (mode)
+		      - GET_MODE_PRECISION (GET_MODE (XEXP (XEXP (t, 0), 0))))))
 	{
 	  c1 = XEXP (XEXP (t, 0), 1); z = f; op = GET_CODE (XEXP (t, 0));
 	  extend_op = SIGN_EXTEND;
@@ -6197,8 +6198,8 @@ simplify_if_then_else (rtx x)
 	       && rtx_equal_p (SUBREG_REG (XEXP (XEXP (t, 0), 1)), f)
 	       && (num_sign_bit_copies (f, GET_MODE (f))
 		   > (unsigned int)
-		     (GET_MODE_BITSIZE (mode)
-		      - GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (t, 0), 1))))))
+		     (GET_MODE_PRECISION (mode)
+		      - GET_MODE_PRECISION (GET_MODE (XEXP (XEXP (t, 0), 1))))))
 	{
 	  c1 = XEXP (XEXP (t, 0), 0); z = f; op = GET_CODE (XEXP (t, 0));
 	  extend_op = SIGN_EXTEND;
@@ -6269,7 +6270,7 @@ simplify_if_then_else (rtx x)
       && ((1 == nonzero_bits (XEXP (cond, 0), mode)
 	   && (i = exact_log2 (UINTVAL (true_rtx))) >= 0)
 	  || ((num_sign_bit_copies (XEXP (cond, 0), mode)
-	       == GET_MODE_BITSIZE (mode))
+	       == GET_MODE_PRECISION (mode))
 	      && (i = exact_log2 (-UINTVAL (true_rtx))) >= 0)))
     return
       simplify_shift_const (NULL_RTX, ASHIFT, mode,
@@ -6535,8 +6536,8 @@ simplify_set (rtx x)
   if (dest == cc0_rtx
       && GET_CODE (src) == SUBREG
       && subreg_lowpart_p (src)
-      && (GET_MODE_BITSIZE (GET_MODE (src))
-	  < GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (src)))))
+      && (GET_MODE_PRECISION (GET_MODE (src))
+	  < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (src)))))
     {
       rtx inner = SUBREG_REG (src);
       enum machine_mode inner_mode = GET_MODE (inner);
@@ -6588,7 +6589,7 @@ simplify_set (rtx x)
 #endif
       && (num_sign_bit_copies (XEXP (XEXP (src, 0), 0),
 			       GET_MODE (XEXP (XEXP (src, 0), 0)))
-	  == GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (src, 0), 0))))
+	  == GET_MODE_PRECISION (GET_MODE (XEXP (XEXP (src, 0), 0))))
       && ! side_effects_p (src))
     {
       rtx true_rtx = (GET_CODE (XEXP (src, 0)) == NE
@@ -6764,7 +6765,7 @@ expand_compound_operation (rtx x)
       if (! SCALAR_INT_MODE_P (GET_MODE (XEXP (x, 0))))
 	return x;
 
-      len = GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)));
+      len = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
       /* If the inner object has VOIDmode (the only way this can happen
 	 is if it is an ASM_OPERANDS), we can't do anything since we don't
 	 know how much masking to do.  */
@@ -6798,11 +6799,11 @@ expand_compound_operation (rtx x)
       pos = INTVAL (XEXP (x, 2));
 
       /* This should stay within the object being extracted, fail otherwise.  */
-      if (len + pos > GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))))
+      if (len + pos > GET_MODE_PRECISION (GET_MODE (XEXP (x, 0))))
 	return x;
 
       if (BITS_BIG_ENDIAN)
-	pos = GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) - len - pos;
+	pos = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0))) - len - pos;
 
       break;
 
@@ -6863,7 +6864,7 @@ expand_compound_operation (rtx x)
       if (GET_CODE (XEXP (x, 0)) == TRUNCATE
 	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == GET_MODE (x)
 	  && COMPARISON_P (XEXP (XEXP (x, 0), 0))
-	  && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
+	  && (GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)))
 	      <= HOST_BITS_PER_WIDE_INT)
 	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
 	return XEXP (XEXP (x, 0), 0);
@@ -6873,7 +6874,7 @@ expand_compound_operation (rtx x)
 	  && GET_MODE (SUBREG_REG (XEXP (x, 0))) == GET_MODE (x)
 	  && subreg_lowpart_p (XEXP (x, 0))
 	  && COMPARISON_P (SUBREG_REG (XEXP (x, 0)))
-	  && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
+	  && (GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)))
 	      <= HOST_BITS_PER_WIDE_INT)
 	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
 	return SUBREG_REG (XEXP (x, 0));
@@ -6895,7 +6896,7 @@ expand_compound_operation (rtx x)
      extraction.  Then the constant of 31 would be substituted in
      to produce such a position.  */
 
-  modewidth = GET_MODE_BITSIZE (GET_MODE (x));
+  modewidth = GET_MODE_PRECISION (GET_MODE (x));
   if (modewidth >= pos + len)
     {
       enum machine_mode mode = GET_MODE (x);
@@ -6949,7 +6950,7 @@ expand_field_assignment (const_rtx x)
 	  && GET_CODE (XEXP (SET_DEST (x), 0)) == SUBREG)
 	{
 	  inner = SUBREG_REG (XEXP (SET_DEST (x), 0));
-	  len = GET_MODE_BITSIZE (GET_MODE (XEXP (SET_DEST (x), 0)));
+	  len = GET_MODE_PRECISION (GET_MODE (XEXP (SET_DEST (x), 0)));
 	  pos = GEN_INT (subreg_lsb (XEXP (SET_DEST (x), 0)));
 	}
       else if (GET_CODE (SET_DEST (x)) == ZERO_EXTRACT
@@ -6961,23 +6962,23 @@ expand_field_assignment (const_rtx x)
 
 	  /* A constant position should stay within the width of INNER.  */
 	  if (CONST_INT_P (pos)
-	      && INTVAL (pos) + len > GET_MODE_BITSIZE (GET_MODE (inner)))
+	      && INTVAL (pos) + len > GET_MODE_PRECISION (GET_MODE (inner)))
 	    break;
 
 	  if (BITS_BIG_ENDIAN)
 	    {
 	      if (CONST_INT_P (pos))
-		pos = GEN_INT (GET_MODE_BITSIZE (GET_MODE (inner)) - len
+		pos = GEN_INT (GET_MODE_PRECISION (GET_MODE (inner)) - len
 			       - INTVAL (pos));
 	      else if (GET_CODE (pos) == MINUS
 		       && CONST_INT_P (XEXP (pos, 1))
 		       && (INTVAL (XEXP (pos, 1))
-			   == GET_MODE_BITSIZE (GET_MODE (inner)) - len))
+			   == GET_MODE_PRECISION (GET_MODE (inner)) - len))
 		/* If position is ADJUST - X, new position is X.  */
 		pos = XEXP (pos, 0);
 	      else
 		pos = simplify_gen_binary (MINUS, GET_MODE (pos),
-					   GEN_INT (GET_MODE_BITSIZE (
+					   GEN_INT (GET_MODE_PRECISION (
 						    GET_MODE (inner))
 						    - len),
 					   pos);
@@ -7152,7 +7153,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 		     : BITS_PER_UNIT)) == 0
 	      /* We can't do this if we are widening INNER_MODE (it
 		 may not be aligned, for one thing).  */
-	      && GET_MODE_BITSIZE (inner_mode) >= GET_MODE_BITSIZE (tmode)
+	      && GET_MODE_PRECISION (inner_mode) >= GET_MODE_PRECISION (tmode)
 	      && (inner_mode == tmode
 		  || (! mode_dependent_address_p (XEXP (inner, 0))
 		      && ! MEM_VOLATILE_P (inner))))))
@@ -7170,7 +7171,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 
 	  /* POS counts from lsb, but make OFFSET count in memory order.  */
 	  if (BYTES_BIG_ENDIAN)
-	    offset = (GET_MODE_BITSIZE (is_mode) - len - pos) / BITS_PER_UNIT;
+	    offset = (GET_MODE_PRECISION (is_mode) - len - pos) / BITS_PER_UNIT;
 	  else
 	    offset = pos / BITS_PER_UNIT;
 
@@ -7275,7 +7276,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      other cases, we would only be going outside our object in cases when
      an original shift would have been undefined.  */
   if (MEM_P (inner)
-      && ((pos_rtx == 0 && pos + len > GET_MODE_BITSIZE (is_mode))
+      && ((pos_rtx == 0 && pos + len > GET_MODE_PRECISION (is_mode))
 	  || (pos_rtx != 0 && len != 1)))
     return 0;
 
@@ -7550,7 +7551,7 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
-  int mode_width = GET_MODE_BITSIZE (mode);
+  int mode_width = GET_MODE_PRECISION (mode);
   rtx rhs, lhs;
   enum rtx_code next_code;
   int i, j;
@@ -7709,7 +7710,7 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	{
 	  new_rtx = make_compound_operation (XEXP (XEXP (x, 0), 0), next_code);
 	  new_rtx = make_extraction (mode, new_rtx,
-				 (GET_MODE_BITSIZE (mode)
+				 (GET_MODE_PRECISION (mode)
 				  - INTVAL (XEXP (XEXP (x, 0), 1))),
 				 NULL_RTX, i, 1, 0, in_code == COMPARE);
 	}
@@ -8100,7 +8101,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
   /* It is not valid to do a right-shift in a narrower mode
      than the one it came in with.  */
   if ((code == LSHIFTRT || code == ASHIFTRT)
-      && GET_MODE_BITSIZE (mode) < GET_MODE_BITSIZE (GET_MODE (x)))
+      && GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (GET_MODE (x)))
     op_mode = GET_MODE (x);
 
   /* Truncate MASK to fit OP_MODE.  */
@@ -8208,7 +8209,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	      unsigned HOST_WIDE_INT cval
 		= UINTVAL (XEXP (x, 1))
 		  | (GET_MODE_MASK (GET_MODE (x)) & ~mask);
-	      int width = GET_MODE_BITSIZE (GET_MODE (x));
+	      int width = GET_MODE_PRECISION (GET_MODE (x));
 	      rtx y;
 
 	      /* If MODE is narrower than HOST_WIDE_INT and CVAL is a negative
@@ -8236,7 +8237,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	 This may eliminate that PLUS and, later, the AND.  */
 
       {
-	unsigned int width = GET_MODE_BITSIZE (mode);
+	unsigned int width = GET_MODE_PRECISION (mode);
 	unsigned HOST_WIDE_INT smask = mask;
 
 	/* If MODE is narrower than HOST_WIDE_INT and mask is a negative
@@ -8304,7 +8305,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	  && CONST_INT_P (XEXP (x, 1))
 	  && ((INTVAL (XEXP (XEXP (x, 0), 1))
 	       + floor_log2 (INTVAL (XEXP (x, 1))))
-	      < GET_MODE_BITSIZE (GET_MODE (x)))
+	      < GET_MODE_PRECISION (GET_MODE (x)))
 	  && (UINTVAL (XEXP (x, 1))
 	      & ~nonzero_bits (XEXP (x, 0), GET_MODE (x))) == 0)
 	{
@@ -8349,10 +8350,10 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 
       if (! (CONST_INT_P (XEXP (x, 1))
 	     && INTVAL (XEXP (x, 1)) >= 0
-	     && INTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (mode))
+	     && INTVAL (XEXP (x, 1)) < GET_MODE_PRECISION (mode))
 	  && ! (GET_MODE (XEXP (x, 1)) != VOIDmode
 		&& (nonzero_bits (XEXP (x, 1), GET_MODE (XEXP (x, 1)))
-		    < (unsigned HOST_WIDE_INT) GET_MODE_BITSIZE (mode))))
+		    < (unsigned HOST_WIDE_INT) GET_MODE_PRECISION (mode))))
 	break;
 
       /* If the shift count is a constant and we can do arithmetic in
@@ -8360,7 +8361,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	 conservative form of the mask.  */
       if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) >= 0
-	  && INTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (op_mode)
+	  && INTVAL (XEXP (x, 1)) < GET_MODE_PRECISION (op_mode)
 	  && HWI_COMPUTABLE_MODE_P (op_mode))
 	mask >>= INTVAL (XEXP (x, 1));
       else
@@ -8411,17 +8412,17 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	     bit.  */
 	  && ((INTVAL (XEXP (x, 1))
 	       + num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
-	      >= GET_MODE_BITSIZE (GET_MODE (x)))
+	      >= GET_MODE_PRECISION (GET_MODE (x)))
 	  && exact_log2 (mask + 1) >= 0
 	  /* Number of bits left after the shift must be more than the mask
 	     needs.  */
 	  && ((INTVAL (XEXP (x, 1)) + exact_log2 (mask + 1))
-	      <= GET_MODE_BITSIZE (GET_MODE (x)))
+	      <= GET_MODE_PRECISION (GET_MODE (x)))
 	  /* Must be more sign bit copies than the mask needs.  */
 	  && ((int) num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
 	      >= exact_log2 (mask + 1)))
 	x = simplify_gen_binary (LSHIFTRT, GET_MODE (x), XEXP (x, 0),
-				 GEN_INT (GET_MODE_BITSIZE (GET_MODE (x))
+				 GEN_INT (GET_MODE_PRECISION (GET_MODE (x))
 					  - exact_log2 (mask + 1)));
 
       goto shiftrt;
@@ -8448,20 +8449,20 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	     represent a mask for all its bits in a single scalar.
 	     But we only care about the lower bits, so calculate these.  */
 
-	  if (GET_MODE_BITSIZE (GET_MODE (x)) > HOST_BITS_PER_WIDE_INT)
+	  if (GET_MODE_PRECISION (GET_MODE (x)) > HOST_BITS_PER_WIDE_INT)
 	    {
 	      nonzero = ~(unsigned HOST_WIDE_INT) 0;
 
-	      /* GET_MODE_BITSIZE (GET_MODE (x)) - INTVAL (XEXP (x, 1))
+	      /* GET_MODE_PRECISION (GET_MODE (x)) - INTVAL (XEXP (x, 1))
 		 is the number of bits a full-width mask would have set.
 		 We need only shift if these are fewer than nonzero can
 		 hold.  If not, we must keep all bits set in nonzero.  */
 
-	      if (GET_MODE_BITSIZE (GET_MODE (x)) - INTVAL (XEXP (x, 1))
+	      if (GET_MODE_PRECISION (GET_MODE (x)) - INTVAL (XEXP (x, 1))
 		  < HOST_BITS_PER_WIDE_INT)
 		nonzero >>= INTVAL (XEXP (x, 1))
 			    + HOST_BITS_PER_WIDE_INT
-			    - GET_MODE_BITSIZE (GET_MODE (x)) ;
+			    - GET_MODE_PRECISION (GET_MODE (x)) ;
 	    }
 	  else
 	    {
@@ -8481,7 +8482,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	    {
 	      x = simplify_shift_const
 		  (NULL_RTX, LSHIFTRT, GET_MODE (x), XEXP (x, 0),
-		   GET_MODE_BITSIZE (GET_MODE (x)) - 1 - i);
+		   GET_MODE_PRECISION (GET_MODE (x)) - 1 - i);
 
 	      if (GET_CODE (x) != ASHIFTRT)
 		return force_to_mode (x, mode, mask, next_select);
@@ -8504,7 +8505,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	  && CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) >= 0
 	  && (INTVAL (XEXP (x, 1))
-	      <= GET_MODE_BITSIZE (GET_MODE (x)) - (floor_log2 (mask) + 1))
+	      <= GET_MODE_PRECISION (GET_MODE (x)) - (floor_log2 (mask) + 1))
 	  && GET_CODE (XEXP (x, 0)) == ASHIFT
 	  && XEXP (XEXP (x, 0), 1) == XEXP (x, 1))
 	return force_to_mode (XEXP (XEXP (x, 0), 0), mode, mask,
@@ -8552,7 +8553,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && INTVAL (XEXP (XEXP (x, 0), 1)) >= 0
 	  && (INTVAL (XEXP (XEXP (x, 0), 1)) + floor_log2 (mask)
-	      < GET_MODE_BITSIZE (GET_MODE (x)))
+	      < GET_MODE_PRECISION (GET_MODE (x)))
 	  && INTVAL (XEXP (XEXP (x, 0), 1)) < HOST_BITS_PER_WIDE_INT)
 	{
 	  temp = gen_int_mode (mask << INTVAL (XEXP (XEXP (x, 0), 1)),
@@ -8804,7 +8805,7 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
      false values when testing X.  */
   else if (x == constm1_rtx || x == const0_rtx
 	   || (mode != VOIDmode
-	       && num_sign_bit_copies (x, mode) == GET_MODE_BITSIZE (mode)))
+	       && num_sign_bit_copies (x, mode) == GET_MODE_PRECISION (mode)))
     {
       *ptrue = constm1_rtx, *pfalse = const0_rtx;
       return x;
@@ -9136,8 +9137,8 @@ make_field_assignment (rtx x)
     return x;
 
   pos = get_pos_from_mask ((~c1) & GET_MODE_MASK (GET_MODE (dest)), &len);
-  if (pos < 0 || pos + len > GET_MODE_BITSIZE (GET_MODE (dest))
-      || GET_MODE_BITSIZE (GET_MODE (dest)) > HOST_BITS_PER_WIDE_INT
+  if (pos < 0 || pos + len > GET_MODE_PRECISION (GET_MODE (dest))
+      || GET_MODE_PRECISION (GET_MODE (dest)) > HOST_BITS_PER_WIDE_INT
       || (c1 & nonzero_bits (other, GET_MODE (dest))) != 0)
     return x;
 
@@ -9158,7 +9159,7 @@ make_field_assignment (rtx x)
 						     other, pos),
 			       dest);
   src = force_to_mode (src, mode,
-		       GET_MODE_BITSIZE (mode) >= HOST_BITS_PER_WIDE_INT
+		       GET_MODE_PRECISION (mode) >= HOST_BITS_PER_WIDE_INT
 		       ? ~(unsigned HOST_WIDE_INT) 0
 		       : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
 		       0);
@@ -9580,7 +9581,7 @@ reg_nonzero_bits_for_combine (const_rtx x, enum machine_mode mode,
     {
       unsigned HOST_WIDE_INT mask = rsp->nonzero_bits;
 
-      if (GET_MODE_BITSIZE (GET_MODE (x)) < GET_MODE_BITSIZE (mode))
+      if (GET_MODE_PRECISION (GET_MODE (x)) < GET_MODE_PRECISION (mode))
 	/* We don't know anything about the upper bits.  */
 	mask |= GET_MODE_MASK (mode) ^ GET_MODE_MASK (GET_MODE (x));
       *nonzero &= mask;
@@ -9626,7 +9627,7 @@ reg_num_sign_bit_copies_for_combine (const_rtx x, enum machine_mode mode,
     return tem;
 
   if (nonzero_sign_valid && rsp->sign_bit_copies != 0
-      && GET_MODE_BITSIZE (GET_MODE (x)) == GET_MODE_BITSIZE (mode))
+      && GET_MODE_PRECISION (GET_MODE (x)) == GET_MODE_PRECISION (mode))
     *result = rsp->sign_bit_copies;
 
   return NULL;
@@ -9651,7 +9652,7 @@ extended_count (const_rtx x, enum machine_mode mode, int unsignedp)
 
   return (unsignedp
 	  ? (HWI_COMPUTABLE_MODE_P (mode)
-	     ? (unsigned int) (GET_MODE_BITSIZE (mode) - 1
+	     ? (unsigned int) (GET_MODE_PRECISION (mode) - 1
 			       - floor_log2 (nonzero_bits (x, mode)))
 	     : 0)
 	  : num_sign_bit_copies (x, mode) - 1);
@@ -9802,7 +9803,7 @@ try_widen_shift_mode (enum rtx_code code, rtx op, int count,
 {
   if (orig_mode == mode)
     return mode;
-  gcc_assert (GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (orig_mode));
+  gcc_assert (GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (orig_mode));
 
   /* In general we can't perform in wider mode for right shift and rotate.  */
   switch (code)
@@ -9811,8 +9812,8 @@ try_widen_shift_mode (enum rtx_code code, rtx op, int count,
       /* We can still widen if the bits brought in from the left are identical
 	 to the sign bit of ORIG_MODE.  */
       if (num_sign_bit_copies (op, mode)
-	  > (unsigned) (GET_MODE_BITSIZE (mode)
-			- GET_MODE_BITSIZE (orig_mode)))
+	  > (unsigned) (GET_MODE_PRECISION (mode)
+			- GET_MODE_PRECISION (orig_mode)))
 	return mode;
       return orig_mode;
 
@@ -9829,7 +9830,7 @@ try_widen_shift_mode (enum rtx_code code, rtx op, int count,
 	  int care_bits = low_bitmask_len (orig_mode, outer_const);
 
 	  if (care_bits >= 0
-	      && GET_MODE_BITSIZE (orig_mode) - care_bits >= count)
+	      && GET_MODE_PRECISION (orig_mode) - care_bits >= count)
 	    return mode;
 	}
       /* fall through */
@@ -9845,9 +9846,9 @@ try_widen_shift_mode (enum rtx_code code, rtx op, int count,
     }
 }
 
-/* Simplify a shift of VAROP by COUNT bits.  CODE says what kind of shift.
-   The result of the shift is RESULT_MODE.  Return NULL_RTX if we cannot
-   simplify it.  Otherwise, return a simplified value.
+/* Simplify a shift of VAROP by ORIG_COUNT bits.  CODE says what kind
+   of shift.  The result of the shift is RESULT_MODE.  Return NULL_RTX
+   if we cannot simplify it.  Otherwise, return a simplified value.
 
    The shift is normally computed in the widest mode we find in VAROP, as
    long as it isn't a different number of words than RESULT_MODE.  Exceptions
@@ -9879,7 +9880,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
   /* If we were given an invalid count, don't do anything except exactly
      what was requested.  */
 
-  if (orig_count < 0 || orig_count >= (int) GET_MODE_BITSIZE (mode))
+  if (orig_count < 0 || orig_count >= (int) GET_MODE_PRECISION (mode))
     return NULL_RTX;
 
   count = orig_count;
@@ -9896,7 +9897,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
       /* Convert ROTATERT to ROTATE.  */
       if (code == ROTATERT)
 	{
-	  unsigned int bitsize = GET_MODE_BITSIZE (result_mode);;
+	  unsigned int bitsize = GET_MODE_PRECISION (result_mode);
 	  code = ROTATE;
 	  if (VECTOR_MODE_P (result_mode))
 	    count = bitsize / GET_MODE_NUNITS (result_mode) - count;
@@ -9917,12 +9918,12 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	 multiple operations, each of which are defined, we know what the
 	 result is supposed to be.  */
 
-      if (count > (GET_MODE_BITSIZE (shift_mode) - 1))
+      if (count > (GET_MODE_PRECISION (shift_mode) - 1))
 	{
 	  if (code == ASHIFTRT)
-	    count = GET_MODE_BITSIZE (shift_mode) - 1;
+	    count = GET_MODE_PRECISION (shift_mode) - 1;
 	  else if (code == ROTATE || code == ROTATERT)
-	    count %= GET_MODE_BITSIZE (shift_mode);
+	    count %= GET_MODE_PRECISION (shift_mode);
 	  else
 	    {
 	      /* We can't simply return zero because there may be an
@@ -9942,7 +9943,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	 is a no-op.  */
       if (code == ASHIFTRT
 	  && (num_sign_bit_copies (varop, shift_mode)
-	      == GET_MODE_BITSIZE (shift_mode)))
+	      == GET_MODE_PRECISION (shift_mode)))
 	{
 	  count = 0;
 	  break;
@@ -9955,8 +9956,8 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 
       if (code == ASHIFTRT
 	  && (count + num_sign_bit_copies (varop, shift_mode)
-	      >= GET_MODE_BITSIZE (shift_mode)))
-	count = GET_MODE_BITSIZE (shift_mode) - 1;
+	      >= GET_MODE_PRECISION (shift_mode)))
+	count = GET_MODE_PRECISION (shift_mode) - 1;
 
       /* We simplify the tests below and elsewhere by converting
 	 ASHIFTRT to LSHIFTRT if we know the sign bit is clear.
@@ -10086,7 +10087,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	     AND of a new shift with a mask.  We compute the result below.  */
 	  if (CONST_INT_P (XEXP (varop, 1))
 	      && INTVAL (XEXP (varop, 1)) >= 0
-	      && INTVAL (XEXP (varop, 1)) < GET_MODE_BITSIZE (GET_MODE (varop))
+	      && INTVAL (XEXP (varop, 1)) < GET_MODE_PRECISION (GET_MODE (varop))
 	      && HWI_COMPUTABLE_MODE_P (result_mode)
 	      && HWI_COMPUTABLE_MODE_P (mode)
 	      && !VECTOR_MODE_P (result_mode))
@@ -10101,11 +10102,11 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 		 we have (ashift:M1 (subreg:M1 (ashiftrt:M2 FOO C1) 0) C2)
 		 with C2 == GET_MODE_BITSIZE (M1) - GET_MODE_BITSIZE (M2),
 		 we can convert it to
-		 (ashiftrt:M1 (ashift:M1 (and:M1 (subreg:M1 FOO 0 C2) C3) C1).
+		 (ashiftrt:M1 (ashift:M1 (and:M1 (subreg:M1 FOO 0) C3) C2) C1).
 		 This simplifies certain SIGN_EXTEND operations.  */
 	      if (code == ASHIFT && first_code == ASHIFTRT
-		  && count == (GET_MODE_BITSIZE (result_mode)
-			       - GET_MODE_BITSIZE (GET_MODE (varop))))
+		  && count == (GET_MODE_PRECISION (result_mode)
+			       - GET_MODE_PRECISION (GET_MODE (varop))))
 		{
 		  /* C3 has the low-order C1 bits zero.  */
 
@@ -10173,7 +10174,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 
 	      if (code == ASHIFTRT
 		  || (code == ROTATE && first_code == ASHIFTRT)
-		  || GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT
+		  || GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT
 		  || (GET_MODE (varop) != result_mode
 		      && (first_code == ASHIFTRT || first_code == LSHIFTRT
 			  || first_code == ROTATE
@@ -10261,7 +10262,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	      && XEXP (XEXP (varop, 0), 1) == constm1_rtx
 	      && (STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	      && (code == LSHIFTRT || code == ASHIFTRT)
-	      && count == (GET_MODE_BITSIZE (GET_MODE (varop)) - 1)
+	      && count == (GET_MODE_PRECISION (GET_MODE (varop)) - 1)
 	      && rtx_equal_p (XEXP (XEXP (varop, 0), 0), XEXP (varop, 1)))
 	    {
 	      count = 0;
@@ -10323,12 +10324,12 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	case EQ:
 	  /* Convert (lshiftrt (eq FOO 0) C) to (xor FOO 1) if STORE_FLAG_VALUE
 	     says that the sign bit can be tested, FOO has mode MODE, C is
-	     GET_MODE_BITSIZE (MODE) - 1, and FOO has only its low-order bit
+	     GET_MODE_PRECISION (MODE) - 1, and FOO has only its low-order bit
 	     that may be nonzero.  */
 	  if (code == LSHIFTRT
 	      && XEXP (varop, 1) == const0_rtx
 	      && GET_MODE (XEXP (varop, 0)) == result_mode
-	      && count == (GET_MODE_BITSIZE (result_mode) - 1)
+	      && count == (GET_MODE_PRECISION (result_mode) - 1)
 	      && HWI_COMPUTABLE_MODE_P (result_mode)
 	      && STORE_FLAG_VALUE == -1
 	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1
@@ -10345,7 +10346,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	  /* (lshiftrt (neg A) C) where A is either 0 or 1 and C is one less
 	     than the number of bits in the mode is equivalent to A.  */
 	  if (code == LSHIFTRT
-	      && count == (GET_MODE_BITSIZE (result_mode) - 1)
+	      && count == (GET_MODE_PRECISION (result_mode) - 1)
 	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1)
 	    {
 	      varop = XEXP (varop, 0);
@@ -10369,7 +10370,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	     is one less than the number of bits in the mode is
 	     equivalent to (xor A 1).  */
 	  if (code == LSHIFTRT
-	      && count == (GET_MODE_BITSIZE (result_mode) - 1)
+	      && count == (GET_MODE_PRECISION (result_mode) - 1)
 	      && XEXP (varop, 1) == constm1_rtx
 	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1
 	      && merge_outer_ops (&outer_op, &outer_const, XOR, 1, result_mode,
@@ -10453,7 +10454,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 
 	  if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	      && GET_CODE (XEXP (varop, 0)) == ASHIFTRT
-	      && count == (GET_MODE_BITSIZE (GET_MODE (varop)) - 1)
+	      && count == (GET_MODE_PRECISION (GET_MODE (varop)) - 1)
 	      && (code == LSHIFTRT || code == ASHIFTRT)
 	      && CONST_INT_P (XEXP (XEXP (varop, 0), 1))
 	      && INTVAL (XEXP (XEXP (varop, 0), 1)) == count
@@ -10477,8 +10478,8 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	      && GET_CODE (XEXP (varop, 0)) == LSHIFTRT
 	      && CONST_INT_P (XEXP (XEXP (varop, 0), 1))
 	      && (INTVAL (XEXP (XEXP (varop, 0), 1))
-		  >= (GET_MODE_BITSIZE (GET_MODE (XEXP (varop, 0)))
-		      - GET_MODE_BITSIZE (GET_MODE (varop)))))
+		  >= (GET_MODE_PRECISION (GET_MODE (XEXP (varop, 0)))
+		      - GET_MODE_PRECISION (GET_MODE (varop)))))
 	    {
 	      rtx varop_inner = XEXP (varop, 0);
 
@@ -10550,7 +10551,7 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
   if (outer_op != UNKNOWN)
     {
       if (GET_RTX_CLASS (outer_op) != RTX_UNARY
-	  && GET_MODE_BITSIZE (result_mode) < HOST_BITS_PER_WIDE_INT)
+	  && GET_MODE_PRECISION (result_mode) < HOST_BITS_PER_WIDE_INT)
 	outer_const = trunc_int_for_mode (outer_const, result_mode);
 
       if (outer_op == AND)
@@ -10852,7 +10853,7 @@ static enum rtx_code
 simplify_compare_const (enum rtx_code code, rtx op0, rtx *pop1)
 {
   enum machine_mode mode = GET_MODE (op0);
-  unsigned int mode_width = GET_MODE_BITSIZE (mode);
+  unsigned int mode_width = GET_MODE_PRECISION (mode);
   HOST_WIDE_INT const_op = INTVAL (*pop1);
 
   /* Get the constant we are comparing against and turn off all bits
@@ -11065,8 +11066,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  && XEXP (op0, 1) == XEXP (XEXP (op0, 0), 1)
 	  && XEXP (op0, 1) == XEXP (XEXP (op1, 0), 1)
 	  && (INTVAL (XEXP (op0, 1))
-	      == (GET_MODE_BITSIZE (GET_MODE (op0))
-		  - (GET_MODE_BITSIZE
+	      == (GET_MODE_PRECISION (GET_MODE (op0))
+		  - (GET_MODE_PRECISION
 		     (GET_MODE (SUBREG_REG (XEXP (XEXP (op0, 0), 0))))))))
 	{
 	  op0 = SUBREG_REG (XEXP (XEXP (op0, 0), 0));
@@ -11134,7 +11135,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && GET_CODE (inner_op1) == SUBREG
 	      && (GET_MODE (SUBREG_REG (inner_op0))
 		  == GET_MODE (SUBREG_REG (inner_op1)))
-	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (inner_op0)))
+	      && (GET_MODE_PRECISION (GET_MODE (SUBREG_REG (inner_op0)))
 		  <= HOST_BITS_PER_WIDE_INT)
 	      && (0 == ((~c0) & nonzero_bits (SUBREG_REG (inner_op0),
 					     GET_MODE (SUBREG_REG (inner_op0)))))
@@ -11197,7 +11198,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
   while (CONST_INT_P (op1))
     {
       enum machine_mode mode = GET_MODE (op0);
-      unsigned int mode_width = GET_MODE_BITSIZE (mode);
+      unsigned int mode_width = GET_MODE_PRECISION (mode);
       unsigned HOST_WIDE_INT mask = GET_MODE_MASK (mode);
       int equality_comparison_p;
       int sign_bit_comparison_p;
@@ -11231,7 +11232,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
       if (sign_bit_comparison_p && HWI_COMPUTABLE_MODE_P (mode))
 	op0 = force_to_mode (op0, mode,
 			     (unsigned HOST_WIDE_INT) 1
-			     << (GET_MODE_BITSIZE (mode) - 1),
+			     << (GET_MODE_PRECISION (mode) - 1),
 			     0);
 
       /* Now try cases based on the opcode of OP0.  If none of the cases
@@ -11262,7 +11263,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		  else
 		    {
 		      mode = new_mode;
-		      i = (GET_MODE_BITSIZE (mode) - 1 - i);
+		      i = (GET_MODE_PRECISION (mode) - 1 - i);
 		    }
 		}
 
@@ -11426,7 +11427,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
 	  if (mode_width <= HOST_BITS_PER_WIDE_INT
 	      && subreg_lowpart_p (op0)
-	      && GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0))) > mode_width
+	      && GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op0))) > mode_width
 	      && GET_CODE (SUBREG_REG (op0)) == PLUS
 	      && CONST_INT_P (XEXP (SUBREG_REG (op0), 1)))
 	    {
@@ -11446,14 +11447,14 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		       /* (A - C1) sign-extends if it is positive and 1-extends
 			  if it is negative, C2 both sign- and 1-extends.  */
 		       || (num_sign_bit_copies (a, inner_mode)
-			   > (unsigned int) (GET_MODE_BITSIZE (inner_mode)
+			   > (unsigned int) (GET_MODE_PRECISION (inner_mode)
 					     - mode_width)
 			   && const_op < 0)))
 		  || ((unsigned HOST_WIDE_INT) c1
 		       < (unsigned HOST_WIDE_INT) 1 << (mode_width - 2)
 		      /* (A - C1) always sign-extends, like C2.  */
 		      && num_sign_bit_copies (a, inner_mode)
-			 > (unsigned int) (GET_MODE_BITSIZE (inner_mode)
+			 > (unsigned int) (GET_MODE_PRECISION (inner_mode)
 					   - (mode_width - 1))))
 		{
 		  op0 = SUBREG_REG (op0);
@@ -11464,7 +11465,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  /* If the inner mode is narrower and we are extracting the low part,
 	     we can treat the SUBREG as if it were a ZERO_EXTEND.  */
 	  if (subreg_lowpart_p (op0)
-	      && GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0))) < mode_width)
+	      && GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op0))) < mode_width)
 	    /* Fall through */ ;
 	  else
 	    break;
@@ -11713,10 +11714,10 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		     the code has been changed.  */
 		  && (0
 #ifdef WORD_REGISTER_OPERATIONS
-		      || (mode_width > GET_MODE_BITSIZE (tmode)
+		      || (mode_width > GET_MODE_PRECISION (tmode)
 			  && mode_width <= BITS_PER_WORD)
 #endif
-		      || (mode_width <= GET_MODE_BITSIZE (tmode)
+		      || (mode_width <= GET_MODE_PRECISION (tmode)
 			  && subreg_lowpart_p (XEXP (op0, 0))))
 		  && CONST_INT_P (XEXP (op0, 1))
 		  && mode_width <= HOST_BITS_PER_WIDE_INT
@@ -11983,7 +11984,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      op1 = gen_lowpart (GET_MODE (op0), op1);
 	    }
 	}
-      else if ((GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
+      else if ((GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op0)))
 		<= HOST_BITS_PER_WIDE_INT)
 	       && (nonzero_bits (SUBREG_REG (op0),
 				 GET_MODE (SUBREG_REG (op0)))
@@ -12045,11 +12046,11 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
 	  if (zero_extended
 	      || ((num_sign_bit_copies (op0, tmode)
-		   > (unsigned int) (GET_MODE_BITSIZE (tmode)
-				     - GET_MODE_BITSIZE (mode)))
+		   > (unsigned int) (GET_MODE_PRECISION (tmode)
+				     - GET_MODE_PRECISION (mode)))
 		  && (num_sign_bit_copies (op1, tmode)
-		      > (unsigned int) (GET_MODE_BITSIZE (tmode)
-					- GET_MODE_BITSIZE (mode)))))
+		      > (unsigned int) (GET_MODE_PRECISION (tmode)
+					- GET_MODE_PRECISION (mode)))))
 	    {
 	      /* If OP0 is an AND and we don't have an AND in MODE either,
 		 make a new AND in the proper mode.  */
@@ -12348,7 +12349,7 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
       else if (GET_CODE (setter) == SET
 	       && GET_CODE (SET_DEST (setter)) == SUBREG
 	       && SUBREG_REG (SET_DEST (setter)) == dest
-	       && GET_MODE_BITSIZE (GET_MODE (dest)) <= BITS_PER_WORD
+	       && GET_MODE_PRECISION (GET_MODE (dest)) <= BITS_PER_WORD
 	       && subreg_lowpart_p (SET_DEST (setter)))
 	record_value_for_reg (dest, record_dead_insn,
 			      gen_lowpart (GET_MODE (dest),
@@ -12445,7 +12446,7 @@ record_promoted_value (rtx insn, rtx subreg)
   unsigned int regno = REGNO (SUBREG_REG (subreg));
   enum machine_mode mode = GET_MODE (subreg);
 
-  if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
+  if (GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT)
     return;
 
   for (links = LOG_LINKS (insn); links;)

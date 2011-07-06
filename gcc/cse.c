@@ -3650,7 +3650,7 @@ fold_rtx (rtx x, rtx insn)
 	      enum rtx_code associate_code;
 
 	      if (is_shift
-		  && (INTVAL (const_arg1) >= GET_MODE_BITSIZE (mode)
+		  && (INTVAL (const_arg1) >= GET_MODE_PRECISION (mode)
 		      || INTVAL (const_arg1) < 0))
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
@@ -3699,7 +3699,7 @@ fold_rtx (rtx x, rtx insn)
                 break;
 
 	      if (is_shift
-		  && (INTVAL (inner_const) >= GET_MODE_BITSIZE (mode)
+		  && (INTVAL (inner_const) >= GET_MODE_PRECISION (mode)
 		      || INTVAL (inner_const) < 0))
 		{
 		  if (SHIFT_COUNT_TRUNCATED)
@@ -3729,7 +3729,7 @@ fold_rtx (rtx x, rtx insn)
 
 	      if (is_shift
 		  && CONST_INT_P (new_const)
-		  && INTVAL (new_const) >= GET_MODE_BITSIZE (mode))
+		  && INTVAL (new_const) >= GET_MODE_PRECISION (mode))
 		{
 		  /* As an exception, we can turn an ASHIFTRT of this
 		     form into a shift of the number of bits - 1.  */
@@ -4672,13 +4672,13 @@ cse_insn (rtx insn)
 
       if (src_const && src_related == 0 && CONST_INT_P (src_const)
 	  && GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
+	  && GET_MODE_PRECISION (mode) < BITS_PER_WORD)
 	{
 	  enum machine_mode wider_mode;
 
 	  for (wider_mode = GET_MODE_WIDER_MODE (mode);
 	       wider_mode != VOIDmode
-	       && GET_MODE_BITSIZE (wider_mode) <= BITS_PER_WORD
+	       && GET_MODE_PRECISION (wider_mode) <= BITS_PER_WORD
 	       && src_related == 0;
 	       wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	    {
@@ -5031,7 +5031,7 @@ cse_insn (rtx insn)
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 1))
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 2))
 	      && REG_P (XEXP (SET_DEST (sets[i].rtl), 0))
-	      && (GET_MODE_BITSIZE (GET_MODE (SET_DEST (sets[i].rtl)))
+	      && (GET_MODE_PRECISION (GET_MODE (SET_DEST (sets[i].rtl)))
 		  >= INTVAL (XEXP (SET_DEST (sets[i].rtl), 1)))
 	      && ((unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))
 		  + (unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 2))
@@ -5058,7 +5058,7 @@ cse_insn (rtx insn)
 		  HOST_WIDE_INT mask;
 		  unsigned int shift;
 		  if (BITS_BIG_ENDIAN)
-		    shift = GET_MODE_BITSIZE (GET_MODE (dest_reg))
+		    shift = GET_MODE_PRECISION (GET_MODE (dest_reg))
 			    - INTVAL (pos) - INTVAL (width);
 		  else
 		    shift = INTVAL (pos);
