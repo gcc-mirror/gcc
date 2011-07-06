@@ -521,4 +521,10 @@ mxilinx-fpu
 Target Var(rs6000_xilinx_fpu) Save
 Specify Xilinx FPU.
 
+mr11
+Target Report Var(TARGET_R11) Init(1) Save
+Use/do not use r11 to hold the static link in calls.
 
+msave-toc-indirect
+Target Undocumented Var(TARGET_SAVE_TOC_INDIRECT) Save Init(1)
+; Control whether we save the TOC in the prologue for indirect calls or generate the save inline
