@@ -20,3 +20,4 @@ program testmv3
 end program testmv3 
 
 ! { dg-final { scan-tree-dump-times "__builtin_free" 9 "original" } }
+! { dg-final { cleanup-tree-dump "original" } }
