@@ -761,8 +761,8 @@ notreg_cost (rtx x, enum rtx_code outer)
 	   && (GET_MODE_SIZE (GET_MODE (x))
 	       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
 	   && subreg_lowpart_p (x)
-	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (x)),
-				     GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x)))))
+	   && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (x),
+					     GET_MODE (SUBREG_REG (x))))
 	  ? 0
 	  : rtx_cost (x, outer, optimize_this_for_speed_p) * 2);
 }

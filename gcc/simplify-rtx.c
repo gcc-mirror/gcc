@@ -852,8 +852,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
          truncation.  But don't do this for an (LSHIFTRT (MULT ...))
          since this will cause problems with the umulXi3_highpart
          patterns.  */
-      if ((TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-				 GET_MODE_BITSIZE (GET_MODE (op)))
+      if ((TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op))
 	   ? (num_sign_bit_copies (op, GET_MODE (op))
 	      > (unsigned int) (GET_MODE_BITSIZE (GET_MODE (op))
 				- GET_MODE_BITSIZE (mode)))

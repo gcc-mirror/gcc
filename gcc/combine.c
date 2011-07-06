@@ -7146,8 +7146,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	   && !MEM_P (inner)
 	   && (inner_mode == tmode
 	       || !REG_P (inner)
-	       || TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (tmode),
-					 GET_MODE_BITSIZE (inner_mode))
+	       || TRULY_NOOP_TRUNCATION_MODES_P (tmode, inner_mode)
 	       || reg_truncated_to_mode (tmode, inner))
 	   && (! in_dest
 	       || (REG_P (inner)
@@ -7416,8 +7415,8 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       /* On the LHS, don't create paradoxical subregs implicitely truncating
 	 the register unless TRULY_NOOP_TRUNCATION.  */
       if (in_dest
-	  && !TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (inner)),
-				     GET_MODE_BITSIZE (wanted_inner_mode)))
+	  && !TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (inner),
+					     wanted_inner_mode))
 	return NULL_RTX;
 
       if (GET_MODE (inner) != wanted_inner_mode
@@ -8053,8 +8052,7 @@ gen_lowpart_or_truncate (enum machine_mode mode, rtx x)
 {
   if (!CONST_INT_P (x)
       && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x))
-      && !TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-				 GET_MODE_BITSIZE (GET_MODE (x)))
+      && !TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (x))
       && !(REG_P (x) && reg_truncated_to_mode (mode, x)))
     {
       /* Bit-cast X into an integer mode.  */
@@ -9268,9 +9266,8 @@ apply_distributive_law (rtx x)
 	  || GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))) > UNITS_PER_WORD
 	  /* Result might need to be truncated.  Don't change mode if
 	     explicit truncation is needed.  */
-	  || !TRULY_NOOP_TRUNCATION
-	       (GET_MODE_BITSIZE (GET_MODE (x)),
-		GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (lhs)))))
+	  || !TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (x),
+					     GET_MODE (SUBREG_REG (lhs))))
 	return x;
 
       tem = simplify_gen_binary (code, GET_MODE (SUBREG_REG (lhs)),
@@ -11699,8 +11696,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 				  + 1)) >= 0
 	      && const_op >> i == 0
 	      && (tmode = mode_for_size (i, MODE_INT, 1)) != BLKmode
-	      && (TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (tmode),
-					 GET_MODE_BITSIZE (GET_MODE (op0)))
+	      && (TRULY_NOOP_TRUNCATION_MODES_P (tmode, GET_MODE (op0))
 		  || (REG_P (XEXP (op0, 0))
 		      && reg_truncated_to_mode (tmode, XEXP (op0, 0)))))
 	    {
@@ -12513,8 +12509,7 @@ reg_truncated_to_mode (enum machine_mode mode, const_rtx x)
     return false;
   if (GET_MODE_SIZE (truncated) <= GET_MODE_SIZE (mode))
     return true;
-  if (TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
-			     GET_MODE_BITSIZE (truncated)))
+  if (TRULY_NOOP_TRUNCATION_MODES_P (mode, truncated))
     return true;
   return false;
 }
@@ -12539,8 +12534,7 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
       if (GET_MODE_SIZE (original_mode) <= GET_MODE_SIZE (truncated_mode))
 	return -1;
 
-      if (TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (truncated_mode),
-				 GET_MODE_BITSIZE (original_mode)))
+      if (TRULY_NOOP_TRUNCATION_MODES_P (truncated_mode, original_mode))
 	return -1;
 
       x = SUBREG_REG (x);

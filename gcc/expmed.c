@@ -635,9 +635,8 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 X) 0)) is (reg:N X).  */
       if (GET_CODE (xop0) == SUBREG
 	  && REG_P (SUBREG_REG (xop0))
-	  && (!TRULY_NOOP_TRUNCATION
-	      (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (xop0))),
-	       GET_MODE_BITSIZE (op_mode))))
+	  && (!TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (SUBREG_REG (xop0)),
+					      op_mode)))
 	{
 	  rtx tem = gen_reg_rtx (op_mode);
 	  emit_move_insn (tem, xop0);
@@ -1304,8 +1303,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	       ? bitpos + bitsize == BITS_PER_WORD
 	       : bitpos == 0)))
       && ((!MEM_P (op0)
-	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode1),
-				     GET_MODE_BITSIZE (GET_MODE (op0)))
+	   && TRULY_NOOP_TRUNCATION_MODES_P (mode1, GET_MODE (op0))
 	   && GET_MODE_SIZE (mode1) != 0
 	   && byte_offset % GET_MODE_SIZE (mode1) == 0)
 	  || (MEM_P (op0)
@@ -1475,8 +1473,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	     mode.  Instead, create a temporary and use convert_move to set
 	     the target.  */
 	  if (REG_P (xtarget)
-	      && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (xtarget)),
-					GET_MODE_BITSIZE (ext_mode)))
+	      && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (xtarget), ext_mode))
 	    {
 	      xtarget = gen_lowpart (ext_mode, xtarget);
 	      if (GET_MODE_SIZE (ext_mode)
