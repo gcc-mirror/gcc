@@ -391,11 +391,15 @@ vn_reference_op_eq (const void *p1, const void *p2)
   const_vn_reference_op_t const vro1 = (const_vn_reference_op_t) p1;
   const_vn_reference_op_t const vro2 = (const_vn_reference_op_t) p2;
 
-  return vro1->opcode == vro2->opcode
-    && types_compatible_p (vro1->type, vro2->type)
-    && expressions_equal_p (vro1->op0, vro2->op0)
-    && expressions_equal_p (vro1->op1, vro2->op1)
-    && expressions_equal_p (vro1->op2, vro2->op2);
+  return (vro1->opcode == vro2->opcode
+	  /* We do not care for differences in type qualification.  */
+	  && (vro1->type == vro2->type
+	      || (vro1->type && vro2->type
+		  && types_compatible_p (TYPE_MAIN_VARIANT (vro1->type),
+					 TYPE_MAIN_VARIANT (vro2->type))))
+	  && expressions_equal_p (vro1->op0, vro2->op0)
+	  && expressions_equal_p (vro1->op1, vro2->op1)
+	  && expressions_equal_p (vro1->op2, vro2->op2));
 }
 
 /* Compute the hash for a reference operand VRO1.  */
@@ -578,8 +582,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       vn_reference_op_s temp;
 
       memset (&temp, 0, sizeof (temp));
-      /* We do not care for spurious type qualifications.  */
-      temp.type = TYPE_MAIN_VARIANT (TREE_TYPE (ref));
+      temp.type = TREE_TYPE (ref);
       temp.opcode = TREE_CODE (ref);
       temp.op0 = TMR_INDEX (ref);
       temp.op1 = TMR_STEP (ref);
@@ -610,8 +613,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       vn_reference_op_s temp;
 
       memset (&temp, 0, sizeof (temp));
-      /* We do not care for spurious type qualifications.  */
-      temp.type = TYPE_MAIN_VARIANT (TREE_TYPE (ref));
+      temp.type = TREE_TYPE (ref);
       temp.opcode = TREE_CODE (ref);
       temp.off = -1;
 
@@ -676,16 +678,33 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 		temp.off = off.low;
 	    }
 	  break;
+	case VAR_DECL:
+	  if (DECL_HARD_REGISTER (ref))
+	    {
+	      temp.op0 = ref;
+	      break;
+	    }
+	  /* Fallthru.  */
+	case PARM_DECL:
+	case CONST_DECL:
+	case RESULT_DECL:
+	  /* Canonicalize decls to MEM[&decl] which is what we end up with
+	     when valueizing MEM[ptr] with ptr = &decl.  */
+	  temp.opcode = MEM_REF;
+	  temp.op0 = build_int_cst (build_pointer_type (TREE_TYPE (ref)), 0);
+	  temp.off = 0;
+	  VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+	  temp.opcode = ADDR_EXPR;
+	  temp.op0 = build_fold_addr_expr (ref);
+	  temp.type = TREE_TYPE (temp.op0);
+	  temp.off = -1;
+	  break;
 	case STRING_CST:
 	case INTEGER_CST:
 	case COMPLEX_CST:
 	case VECTOR_CST:
 	case REAL_CST:
 	case CONSTRUCTOR:
-	case VAR_DECL:
-	case PARM_DECL:
-	case CONST_DECL:
-	case RESULT_DECL:
 	case SSA_NAME:
 	  temp.op0 = ref;
 	  break;
@@ -1580,7 +1599,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       op.op0 = build_int_cst (ptr_type_node, at - rhs_offset);
       op.off = at - lhs_offset + rhs_offset;
       VEC_replace (vn_reference_op_s, vr->operands, 0, &op);
-      op.type = TYPE_MAIN_VARIANT (TREE_TYPE (rhs));
+      op.type = TREE_TYPE (rhs);
       op.opcode = TREE_CODE (rhs);
       op.op0 = rhs;
       op.off = -1;
@@ -1692,7 +1711,12 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
     {
       vn_reference_t wvnresult;
       ao_ref r;
-      ao_ref_init (&r, op);
+      /* Make sure to use a valueized reference ...  */
+      if (!ao_ref_init_from_vn_reference (&r, vr1.set, vr1.type, vr1.operands))
+	ao_ref_init (&r, op);
+      else
+	/* ... but also preserve a full reference tree for advanced TBAA.  */
+	r.ref = op;
       vn_walk_kind = kind;
       wvnresult =
 	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,

@@ -1,3 +1,8 @@
+2011-07-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49645
+	* g++.dg/tree-ssa/pr8781.C: Disable SRA.
+
 2011-07-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47383
