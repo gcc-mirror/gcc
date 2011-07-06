@@ -1619,7 +1619,7 @@ GOTESTFLAGS =
 
 # Check a package.
 CHECK = \
-	GC="$(GOC) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
+	GC="$(GOC) $(GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
