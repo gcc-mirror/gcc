@@ -865,7 +865,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
          STORE_FLAG_VALUE permits.  This is like the previous test,
          but it works even if the comparison is done in a mode larger
          than HOST_BITS_PER_WIDE_INT.  */
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+      if (HWI_COMPUTABLE_MODE_P (mode)
 	  && COMPARISON_P (op)
 	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0)
 	return rtl_hooks.gen_lowpart_no_emit (mode, op);
@@ -2446,7 +2446,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
       /* (ior A C) is C if all bits of A that might be nonzero are on in C.  */
       if (CONST_INT_P (op1)
-	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  && HWI_COMPUTABLE_MODE_P (mode)
 	  && (nonzero_bits (op0, mode) & ~UINTVAL (op1)) == 0)
 	return op1;
 
@@ -2531,7 +2531,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       /* If we have (ior (and (X C1) C2)), simplify this by making
 	 C1 as small as possible if C1 actually changes.  */
       if (CONST_INT_P (op1)
-	  && (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  && (HWI_COMPUTABLE_MODE_P (mode)
 	      || INTVAL (op1) > 0)
 	  && GET_CODE (op0) == AND
 	  && CONST_INT_P (XEXP (op0, 1))
@@ -2602,7 +2602,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	 convert them into an IOR.  This helps to detect rotation encoded
 	 using those methods and possibly other simplifications.  */
 
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+      if (HWI_COMPUTABLE_MODE_P (mode)
 	  && (nonzero_bits (op0, mode)
 	      & nonzero_bits (op1, mode)) == 0)
 	return (simplify_gen_binary (IOR, mode, op0, op1));
@@ -2721,7 +2721,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case AND:
       if (trueop1 == CONST0_RTX (mode) && ! side_effects_p (op0))
 	return trueop1;
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+      if (HWI_COMPUTABLE_MODE_P (mode))
 	{
 	  HOST_WIDE_INT nzop0 = nonzero_bits (trueop0, mode);
 	  HOST_WIDE_INT nzop1;
@@ -2754,7 +2754,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       if ((GET_CODE (op0) == SIGN_EXTEND
 	   || GET_CODE (op0) == ZERO_EXTEND)
 	  && CONST_INT_P (trueop1)
-	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  && HWI_COMPUTABLE_MODE_P (mode)
 	  && (~GET_MODE_MASK (GET_MODE (XEXP (op0, 0)))
 	      & UINTVAL (trueop1)) == 0)
 	{
@@ -2836,7 +2836,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
          Also, if (N & M) == 0, then
 	 (A +- N) & M -> A & M.  */
       if (CONST_INT_P (trueop1)
-	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  && HWI_COMPUTABLE_MODE_P (mode)
 	  && ~UINTVAL (trueop1)
 	  && (UINTVAL (trueop1) & (UINTVAL (trueop1) + 1)) == 0
 	  && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS))
@@ -4681,8 +4681,7 @@ simplify_const_relational_operation (enum rtx_code code,
     }
 
   /* Optimize comparisons with upper and lower bounds.  */
-  if (SCALAR_INT_MODE_P (mode)
-      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+  if (HWI_COMPUTABLE_MODE_P (mode)
       && CONST_INT_P (trueop1))
     {
       int sign;
