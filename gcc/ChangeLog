@@ -1,3 +1,17 @@
+2011-07-07  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* emit-rtl.c (paradoxical_subreg_p): New function.
+	* rtl.h (paradoxical_subreg_p): Declare.
+	* combine.c (set_nonzero_bits_and_sign_copies, get_last_value,
+	apply_distributive_law, simplify_comparison, simplify_set): Use it.
+	* cse.c (record_jump_cond, cse_insn): Likewise.
+	* expr.c (force_operand): Likewise.
+	* rtlanal.c (num_sign_bit_copies1): Likewise.
+	* reload1.c (eliminate_regs_1, strip_paradoxical_subreg): Likewise.
+	* reload.c (push_secondary_reload, find_reloads_toplev): Likewise.
+	(push_reload): Use precision to check for paradoxical subregs.
+	* expmed.c (extract_bit_field_1): Likewise.
+
 2011-07-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_call_indirect_aix): New
