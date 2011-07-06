@@ -12,6 +12,18 @@
 	(push_reload): Use precision to check for paradoxical subregs.
 	* expmed.c (extract_bit_field_1): Likewise.
 
+	* machmode.h (HWI_COMPUTABLE_MODE_P): New macro.
+	* combine.c (set_nonzero_bits_and_sign_copies): Use it.
+	(find_split-point, combine_simplify_rtx, simplify_if_then_else,
+	simplify_set, simplify_logical, expand_compound_operation,
+	make_extraction, force_to_mode, if_then_else_cond, extended_count,
+	try_widen_shift_mode, simplify_shift_const_1, simplify_comparison,
+	record_value_for_reg): Likewise.
+	* expmed.c (expand_widening_mult, expand_mult_highpart): Likewise.
+	* simplify-rtx. c (simplify_unary_operation_1,
+	simplify_binary_operation_1, simplify_const_relational_operation):
+	Likewise.
+
 2011-07-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_call_indirect_aix): New

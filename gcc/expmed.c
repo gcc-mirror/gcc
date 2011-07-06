@@ -3112,7 +3112,7 @@ expand_widening_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 				this_optab == umul_widen_optab))
       && CONST_INT_P (cop1)
       && (INTVAL (cop1) >= 0
-	  || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT))
+	  || HWI_COMPUTABLE_MODE_P (mode)))
     {
       HOST_WIDE_INT coeff = INTVAL (cop1);
       int max_cost;
@@ -3459,7 +3459,7 @@ expand_mult_highpart (enum machine_mode mode, rtx op0, rtx op1,
 
   gcc_assert (!SCALAR_FLOAT_MODE_P (mode));
   /* We can't support modes wider than HOST_BITS_PER_INT.  */
-  gcc_assert (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT);
+  gcc_assert (HWI_COMPUTABLE_MODE_P (mode));
 
   cnst1 = INTVAL (op1) & GET_MODE_MASK (mode);
 

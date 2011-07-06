@@ -279,4 +279,8 @@ extern void init_adjust_machine_modes (void);
   TRULY_NOOP_TRUNCATION (GET_MODE_PRECISION (MODE1), \
 			 GET_MODE_PRECISION (MODE2))
 
+#define HWI_COMPUTABLE_MODE_P(MODE) \
+  (SCALAR_INT_MODE_P (MODE) \
+   && GET_MODE_PRECISION (MODE) <= HOST_BITS_PER_WIDE_INT)
+
 #endif /* not HAVE_MACHINE_MODES */
