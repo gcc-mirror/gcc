@@ -1,3 +1,9 @@
+2011-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/49542
+	* gcc.dg/vect/pr33804.c: XFAIL if vect_no_align unconditionally.
+	* gcc.dg/vect/slp-multitypes-3.c: XFAIL on SPARC unconditionally.
+
 2011-07-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48157
