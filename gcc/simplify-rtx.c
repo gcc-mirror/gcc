@@ -82,7 +82,7 @@ mode_signbit_p (enum machine_mode mode, const_rtx x)
   if (GET_MODE_CLASS (mode) != MODE_INT)
     return false;
 
-  width = GET_MODE_BITSIZE (mode);
+  width = GET_MODE_PRECISION (mode);
   if (width == 0)
     return false;
 
@@ -102,6 +102,62 @@ mode_signbit_p (enum machine_mode mode, const_rtx x)
   if (width < HOST_BITS_PER_WIDE_INT)
     val &= ((unsigned HOST_WIDE_INT) 1 << width) - 1;
   return val == ((unsigned HOST_WIDE_INT) 1 << (width - 1));
+}
+
+/* Test whether VAL is equal to the most significant bit of mode MODE
+   (after masking with the mode mask of MODE).  Returns false if the
+   precision of MODE is too large to handle.  */
+
+bool
+val_signbit_p (enum machine_mode mode, unsigned HOST_WIDE_INT val)
+{
+  unsigned int width;
+
+  if (GET_MODE_CLASS (mode) != MODE_INT)
+    return false;
+
+  width = GET_MODE_PRECISION (mode);
+  if (width == 0 || width > HOST_BITS_PER_WIDE_INT)
+    return false;
+
+  val &= GET_MODE_MASK (mode);
+  return val == ((unsigned HOST_WIDE_INT) 1 << (width - 1));
+}
+
+/* Test whether the most significant bit of mode MODE is set in VAL.
+   Returns false if the precision of MODE is too large to handle.  */
+bool
+val_signbit_known_set_p (enum machine_mode mode, unsigned HOST_WIDE_INT val)
+{
+  unsigned int width;
+
+  if (GET_MODE_CLASS (mode) != MODE_INT)
+    return false;
+
+  width = GET_MODE_PRECISION (mode);
+  if (width == 0 || width > HOST_BITS_PER_WIDE_INT)
+    return false;
+
+  val &= (unsigned HOST_WIDE_INT) 1 << (width - 1);
+  return val != 0;
+}
+
+/* Test whether the most significant bit of mode MODE is clear in VAL.
+   Returns false if the precision of MODE is too large to handle.  */
+bool
+val_signbit_known_clear_p (enum machine_mode mode, unsigned HOST_WIDE_INT val)
+{
+  unsigned int width;
+
+  if (GET_MODE_CLASS (mode) != MODE_INT)
+    return false;
+
+  width = GET_MODE_PRECISION (mode);
+  if (width == 0 || width > HOST_BITS_PER_WIDE_INT)
+    return false;
+
+  val &= (unsigned HOST_WIDE_INT) 1 << (width - 1);
+  return val == 0;
 }
 
 /* Make a binary operation by properly ordering the operands and
@@ -908,12 +964,8 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 
       /* If operand is something known to be positive, ignore the ABS.  */
       if (GET_CODE (op) == FFS || GET_CODE (op) == ABS
-	  || ((GET_MODE_BITSIZE (GET_MODE (op))
-	       <= HOST_BITS_PER_WIDE_INT)
-	      && ((nonzero_bits (op, GET_MODE (op))
-		   & ((unsigned HOST_WIDE_INT) 1
-		      << (GET_MODE_BITSIZE (GET_MODE (op)) - 1)))
-		  == 0)))
+	  || val_signbit_known_clear_p (GET_MODE (op),
+					nonzero_bits (op, GET_MODE (op))))
 	return op;
 
       /* If operand is known to be only -1 or 0, convert ABS to NEG.  */
@@ -1425,8 +1477,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	      val = arg0;
 	    }
 	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT)
-	    val = arg0 & ~((unsigned HOST_WIDE_INT) (-1)
-			   << GET_MODE_BITSIZE (op_mode));
+	    val = arg0 & GET_MODE_MASK (op_mode);
 	  else
 	    return 0;
 	  break;
@@ -1444,13 +1495,9 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	    }
 	  else if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT)
 	    {
-	      val
-		= arg0 & ~((unsigned HOST_WIDE_INT) (-1)
-			   << GET_MODE_BITSIZE (op_mode));
-	      if (val & ((unsigned HOST_WIDE_INT) 1
-			 << (GET_MODE_BITSIZE (op_mode) - 1)))
-		val
-		  -= (unsigned HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (op_mode);
+	      val = arg0 & GET_MODE_MASK (op_mode);
+	      if (val_signbit_known_set_p (op_mode, val))
+		val |= ~GET_MODE_MASK (op_mode);
 	    }
 	  else
 	    return 0;
@@ -1602,10 +1649,8 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  else
 	    {
 	      lv = l1 & GET_MODE_MASK (op_mode);
-	      if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT
-		  && (lv & ((unsigned HOST_WIDE_INT) 1
-			    << (GET_MODE_BITSIZE (op_mode) - 1))) != 0)
-		lv -= (unsigned HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (op_mode);
+	      if (val_signbit_known_set_p (op_mode, lv))
+		lv |= ~GET_MODE_MASK (op_mode);
 
 	      hv = HWI_SIGN_EXTEND (lv);
 	    }
@@ -2663,9 +2708,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
       /* (xor (comparison foo bar) (const_int sign-bit))
 	 when STORE_FLAG_VALUE is the sign bit.  */
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-	  && ((STORE_FLAG_VALUE & GET_MODE_MASK (mode))
-	      == (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1))
+      if (val_signbit_p (mode, STORE_FLAG_VALUE)
 	  && trueop1 == const_true_rtx
 	  && COMPARISON_P (op0)
 	  && (reversed = reversed_comparison (op0, mode)))
@@ -3028,8 +3071,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
     case SMIN:
       if (width <= HOST_BITS_PER_WIDE_INT
-	  && CONST_INT_P (trueop1)
-	  && UINTVAL (trueop1) == (unsigned HOST_WIDE_INT) 1 << (width -1)
+	  && mode_signbit_p (mode, trueop1)
 	  && ! side_effects_p (op0))
 	return op1;
       if (rtx_equal_p (trueop0, trueop1) && ! side_effects_p (op0))
@@ -3634,16 +3676,16 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 
       if (width < HOST_BITS_PER_WIDE_INT)
         {
-          arg0 &= ((unsigned HOST_WIDE_INT) 1 << width) - 1;
-          arg1 &= ((unsigned HOST_WIDE_INT) 1 << width) - 1;
+          arg0 &= GET_MODE_MASK (mode);
+          arg1 &= GET_MODE_MASK (mode);
 
           arg0s = arg0;
-          if (arg0s & ((unsigned HOST_WIDE_INT) 1 << (width - 1)))
-	    arg0s |= ((unsigned HOST_WIDE_INT) (-1) << width);
+	  if (val_signbit_known_set_p (mode, arg0s))
+	    arg0s |= ~GET_MODE_MASK (mode);
 
-	  arg1s = arg1;
-	  if (arg1s & ((unsigned HOST_WIDE_INT) 1 << (width - 1)))
-	    arg1s |= ((unsigned HOST_WIDE_INT) (-1) << width);
+          arg1s = arg1;
+	  if (val_signbit_known_set_p (mode, arg1s))
+	    arg1s |= ~GET_MODE_MASK (mode);
 	}
       else
 	{
@@ -4616,14 +4658,14 @@ simplify_const_relational_operation (enum rtx_code code,
 	 we have to sign or zero-extend the values.  */
       if (width != 0 && width < HOST_BITS_PER_WIDE_INT)
 	{
-	  l0u &= ((unsigned HOST_WIDE_INT) 1 << width) - 1;
-	  l1u &= ((unsigned HOST_WIDE_INT) 1 << width) - 1;
+	  l0u &= GET_MODE_MASK (mode);
+	  l1u &= GET_MODE_MASK (mode);
 
-	  if (l0s & ((unsigned HOST_WIDE_INT) 1 << (width - 1)))
-	    l0s |= ((unsigned HOST_WIDE_INT) (-1) << width);
+	  if (val_signbit_known_set_p (mode, l0s))
+	    l0s |= ~GET_MODE_MASK (mode);
 
-	  if (l1s & ((unsigned HOST_WIDE_INT) 1 << (width - 1)))
-	    l1s |= ((unsigned HOST_WIDE_INT) (-1) << width);
+	  if (val_signbit_known_set_p (mode, l1s))
+	    l1s |= ~GET_MODE_MASK (mode);
 	}
       if (width != 0 && width <= HOST_BITS_PER_WIDE_INT)
 	h0u = h1u = 0, h0s = HWI_SIGN_EXTEND (l0s), h1s = HWI_SIGN_EXTEND (l1s);
