@@ -1,3 +1,17 @@
+2011-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Partial backport from trunk:
+	PR fortran/49479
+	* runtime/memory.c:  If size is zero, allocate a single byte.
+	* m4/eoshift1.m4:  Remove double allocation.
+	* m4/eoshift3.m4:  Likewise.
+	* generated/eoshift1_4.c:  Regenerated.
+	* generated/eoshift1_8.c:  Regenerated.
+	* generated/eoshift1_16.c:  Regenerated.
+	* generated/eoshift3_4.c:  Regenerated.
+	* generated/eoshift3_8.c:  Regenerated.
+	* generated/eoshift3_16.c:  Regenerated.
+
 2011-07-03  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from mainline:
