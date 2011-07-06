@@ -1,3 +1,8 @@
+2011-07-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48157
+	* g++.dg/template/template-id-4.C: New.
+
 2011-07-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.dg/pr44023.c: Add dg-require-effective-target int32plus
