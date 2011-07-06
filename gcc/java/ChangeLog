@@ -1,3 +1,8 @@
+2011-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (java_init_decl_processing):
+	Merge calls to build_common_tree_nodes and build_common_tree_nodes_2.
+
 2011-06-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	* builtins.c: Add sync_ or SYNC__ to builtin names.
