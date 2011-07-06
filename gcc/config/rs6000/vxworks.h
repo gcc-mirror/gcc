@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Only big endian PPC is supported by VxWorks.  */
 #undef BYTES_BIG_ENDIAN
 #define BYTES_BIG_ENDIAN 1
+#undef WORDS_BIG_ENDIAN
+#define WORDS_BIG_ENDIAN 1
 
 /* We have to kill off the entire specs set created by rs6000/sysv4.h
    and substitute our own set.  The top level vxworks.h has done some
