@@ -4576,8 +4576,7 @@ c_common_nodes_and_builtins (void)
   tree va_list_ref_type_node;
   tree va_list_arg_type_node;
 
-  build_common_tree_nodes (flag_signed_char);
-  build_common_tree_nodes_2 (flag_short_double);
+  build_common_tree_nodes (flag_signed_char, flag_short_double);
 
   /* Define `int' and `char' first so that dbx will output them first.  */
   record_builtin_type (RID_INT, NULL, integer_type_node);

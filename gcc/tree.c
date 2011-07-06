@@ -9167,10 +9167,12 @@ make_or_reuse_accum_type (unsigned size, int unsignedp, int satp)
 }
 
 /* Create nodes for all integer types (and error_mark_node) using the sizes
-   of C datatypes.  */
+   of C datatypes.  SIGNED_CHAR specifies whether char is signed,
+   SHORT_DOUBLE specifies whether double should be of the same precision
+   as float.  */
 
 void
-build_common_tree_nodes (bool signed_char)
+build_common_tree_nodes (bool signed_char, bool short_double)
 {
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
@@ -9247,14 +9249,7 @@ build_common_tree_nodes (bool signed_char)
   access_public_node = get_identifier ("public");
   access_protected_node = get_identifier ("protected");
   access_private_node = get_identifier ("private");
-}
 
-/* Call this function after calling build_common_tree_nodes.
-   It will create several other common tree nodes.  */
-
-void
-build_common_tree_nodes_2 (int short_double)
-{
   /* Define these next since types below may used them.  */
   integer_zero_node = build_int_cst (integer_type_node, 0);
   integer_one_node = build_int_cst (integer_type_node, 1);

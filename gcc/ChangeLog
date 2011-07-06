@@ -1,3 +1,12 @@
+2011-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (build_common_tree_nodes_2): Merge with
+	build_common_tree_nodes.
+	* tree.h (build_common_tree_nodes): Adjust prototype.
+	(build_common_tree_nodes_2): Remove.
+	* doc/tm.texi.in (lang_hooks.builtin_function): Adjust.
+	* doc/tm.texi (lang_hooks.builtin_function): Regenerate.
+
 2011-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49618

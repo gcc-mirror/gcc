@@ -1,3 +1,8 @@
+2011-07-06  Richard Guenther  <rguenther@suse.de>
+
+	* lto-lang.c (lto_init):
+	Merge calls to build_common_tree_nodes and build_common_tree_nodes_2.
+
 2011-06-11  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/48246
