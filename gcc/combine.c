@@ -1610,9 +1610,7 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 	 set what we know about X.  */
 
       if (SET_DEST (set) == x
-	  || (GET_CODE (SET_DEST (set)) == SUBREG
-	      && (GET_MODE_SIZE (GET_MODE (SET_DEST (set)))
-		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (set)))))
+	  || (paradoxical_subreg_p (SET_DEST (set))
 	      && SUBREG_REG (SET_DEST (set)) == x))
 	{
 	  rtx src = SET_SRC (set);
@@ -6564,8 +6562,7 @@ simplify_set (rtx x)
       && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (src)))
       && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (src))) != UNKNOWN
       && SUBREG_BYTE (src) == 0
-      && (GET_MODE_SIZE (GET_MODE (src))
-	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))
+      && paradoxical_subreg_p (src)
       && MEM_P (SUBREG_REG (src)))
     {
       SUBST (SET_SRC (x),
@@ -9260,8 +9257,7 @@ apply_distributive_law (rtx x)
 	  || ! subreg_lowpart_p (lhs)
 	  || (GET_MODE_CLASS (GET_MODE (lhs))
 	      != GET_MODE_CLASS (GET_MODE (SUBREG_REG (lhs))))
-	  || (GET_MODE_SIZE (GET_MODE (lhs))
-	      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))))
+	  || paradoxical_subreg_p (lhs)
 	  || VECTOR_MODE_P (GET_MODE (lhs))
 	  || GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))) > UNITS_PER_WORD
 	  /* Result might need to be truncated.  Don't change mode if
@@ -11139,9 +11135,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  HOST_WIDE_INT c1 = INTVAL (XEXP (op1, 1));
 	  int changed = 0;
 
-	  if (GET_CODE (inner_op0) == SUBREG && GET_CODE (inner_op1) == SUBREG
-	      && (GET_MODE_SIZE (GET_MODE (inner_op0))
-		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (inner_op0))))
+	  if (paradoxical_subreg_p (inner_op0)
+	      && GET_CODE (inner_op1) == SUBREG
 	      && (GET_MODE (SUBREG_REG (inner_op0))
 		  == GET_MODE (SUBREG_REG (inner_op1)))
 	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (inner_op0)))
@@ -11984,8 +11979,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
       && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op0))) == MODE_INT
       && (code == NE || code == EQ))
     {
-      if (GET_MODE_SIZE (GET_MODE (op0))
-	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))))
+      if (paradoxical_subreg_p (op0))
 	{
 	  /* For paradoxical subregs, allow case 1 as above.  Case 3 isn't
 	     implemented.  */
@@ -12721,8 +12715,7 @@ get_last_value (const_rtx x)
      we cannot predict what values the "extra" bits might have.  */
   if (GET_CODE (x) == SUBREG
       && subreg_lowpart_p (x)
-      && (GET_MODE_SIZE (GET_MODE (x))
-	  <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+      && !paradoxical_subreg_p (x)
       && (value = get_last_value (SUBREG_REG (x))) != 0)
     return gen_lowpart (GET_MODE (x), value);
 

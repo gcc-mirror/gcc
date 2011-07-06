@@ -1476,8 +1476,8 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	      && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (xtarget), ext_mode))
 	    {
 	      xtarget = gen_lowpart (ext_mode, xtarget);
-	      if (GET_MODE_SIZE (ext_mode)
-		  > GET_MODE_SIZE (GET_MODE (xspec_target)))
+	      if (GET_MODE_PRECISION (ext_mode)
+		  > GET_MODE_PRECISION (GET_MODE (xspec_target)))
 		xspec_target_subreg = xtarget;
 	    }
 	  else

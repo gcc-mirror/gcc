@@ -2840,8 +2840,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 	 eliminated version of the memory location because push_reload
 	 may do the replacement in certain circumstances.  */
       if (REG_P (SUBREG_REG (x))
-	  && (GET_MODE_SIZE (GET_MODE (x))
-	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	  && !paradoxical_subreg_p (x)
 	  && reg_equivs
 	  && reg_equiv_memory_loc (REGNO (SUBREG_REG (x))) != 0)
 	{
@@ -4495,12 +4494,9 @@ strip_paradoxical_subreg (rtx *op_ptr, rtx *other_ptr)
   rtx op, inner, other, tem;
 
   op = *op_ptr;
-  if (GET_CODE (op) != SUBREG)
+  if (!paradoxical_subreg_p (op))
     return false;
-
   inner = SUBREG_REG (op);
-  if (GET_MODE_SIZE (GET_MODE (op)) <= GET_MODE_SIZE (GET_MODE (inner)))
-    return false;
 
   other = *other_ptr;
   tem = gen_lowpart_common (GET_MODE (inner), other);
