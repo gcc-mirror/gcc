@@ -44,6 +44,14 @@
 	simplify_comparison, record_promoted_value, simplify_compare_const,
 	record_dead_and_set_regs_1): Likewise.
 
+	Revert:
+	* simplify-rtx.c (simplify_const_binary_operation): Use the
+	shift_truncation_mask hook instead of performing modulo by
+	width.  Compare against mode precision, not bitsize.
+	* combine.c (combine_simplify_rtx, simplify_shift_const_1):
+	Use shift_truncation_mask instead of constructing the value
+	manually.
+
 2011-07-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_call_indirect_aix): New
