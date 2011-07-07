@@ -9768,9 +9768,6 @@ Use this when inconsistent options are detected.
 @item %(@var{name})
 Substitute the contents of spec string @var{name} at this point.
 
-@item %[@var{name}]
-Like @samp{%(@dots{})} but put @samp{__} around @option{-D} arguments.
-
 @item %x@{@var{option}@}
 Accumulate an option for @samp{%X}.
 
