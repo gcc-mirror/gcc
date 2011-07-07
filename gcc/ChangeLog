@@ -1,3 +1,18 @@
+2011-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/49660
+	* config/sparc/sol2.h [TARGET_64BIT_DEFAULT] (TARGET_DEFAULT): Add
+	MASK_V8PLUS, remove commented out flag and reorder.
+
+	Backport from mainline
+	2011-06-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sol2-64.h (TARGET_DEFAULT): Remove.
+	(TARGET_64BIT_DEFAULT): Define.
+	* config.gcc (sparc*-*-solaris2*): Move sparc/sol2-64.h to front
+	of tm_file.
+	* config/sparc/sol2.h [TARGET_64BIT_DEFAULT] (TARGET_DEFAULT): Define.
+
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/49644
