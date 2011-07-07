@@ -1,3 +1,8 @@
+2011-07-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/graphite/pr37485.c (dg-options): Add -fno-loop-strip-mine
+	-fno-loop-interchange -ffast-math.
+
 2011-07-07  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/ftrapv-3.c: New testcase.
@@ -198,7 +203,7 @@
 
 2011-07-01  Kai Tietz  <ktietz@redhat.com>
 
-        * gcc.dg/tree-ssa/bitwise-sink.c: New test.
+	* gcc.dg/tree-ssa/bitwise-sink.c: New test.
 
 2011-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
