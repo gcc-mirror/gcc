@@ -1,3 +1,7 @@
+2011-07-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/arm/neon-modes-3.c: New test.
+
 2011-07-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/graphite/pr37485.c (dg-options): Add -fno-loop-strip-mine
