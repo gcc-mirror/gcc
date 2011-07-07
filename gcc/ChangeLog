@@ -1,3 +1,27 @@
+2011-07-07  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* hw-doloop.c: New file.
+	* hw-doloop.h: New file.
+	* Makefile.in (OBJS): Add hw-doloop.o.
+	(hw-doloop.o): New rule.
+	($(obj_out_file)): Add hw-doloop.h dependency.
+	* config/bfin/bfin.c: Include "hw-doloop.h".
+	(loop_info, DEF_VEC_P for loop_info, loop_info_d): Remove.
+	(bfin_dump_loops, bfin_bb_in_loop, bfin_scan_loop): Remove.
+	(hwloop_optimize): Renamed from bfin_optimize_loop.  Argument
+	type changed to hwloop_info.  Return bool, true if the loop was
+	successfully optimized.  Remove code that was moved to
+	hw-doloop.c, and adjust other parts.
+	(hwloop_fail): New static function, containing parts that used
+	to be in bfin_optimize_loop.
+	(bfin_discover_loop, bfin_discover_loops, free_loops,
+	bfin_reorder_loops): Remove.
+	(hwloop_pattern_reg): New static function.
+	(bfin_doloop_hooks): New variable.
+	(bfin_reorg_loops): Remove most code, call reorg_loops.
+	* config/bfin/bfin.md (doloop_end splitter): Also enable if
+	loop counter is a memory_operand.
+
 2011-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc: Support --with-multilib-list for x86 Linux
