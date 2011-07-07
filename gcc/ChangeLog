@@ -1,5 +1,35 @@
 2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR target/39150
+	* configure.ac (gcc_cv_as_hidden): Also accept
+	x86_64-*-solaris2.1[0-9]*.
+	(gcc_cv_as_cfi_directive): Likewise.
+	(gcc_cv_as_comdat_group_group): Likewise.
+	(set_have_as_tls): Likewise.
+	* configure: Regenerate.
+	* config.gcc (i[34567]86-*-solaris2*): Also handle
+	x86_64-*-solaris2.1[0-9]*.
+	* config.host (i[34567]86-*-solaris2*): Likewise.
+	* config/sparc/sol2.h (ASM_CPU_DEFAULT_SPEC): Remove.
+	* config/sol2-bi.h (ASM_CPU_DEFAULT_SPEC): Redefine.
+	[USE_GLD] (ARCH_DEFAULT_EMULATION): Define.
+	(TARGET_LD_EMULATION): Use it.
+	* config/i386/sol2.h (ASM_CPU_DEFAULT_SPEC): Define.
+	(SUBTARGET_CPU_EXTRA_SPECS): Add asm_cpu_default.
+	* config/i386/sol2-bi.h (ASM_CPU32_DEFAULT_SPEC): Define.
+	(ASM_CPU64_DEFAULT_SPEC): Define.
+	(ASM_CPU_SPEC): Use %(asm_cpu_default).
+	(ASM_SPEC): Redefine.
+	(DEFAULT_ARCH32_P): Define using TARGET_64BIT_DEFAULT.
+	* config/host-solaris.c [__x86_64__] (TRY_EMPTY_VM_SPACE): Reduce.
+	* doc/install.texi (Specific, amd64-*-solaris2.1[0-9]*):
+	Document.
+	(Specific, i?86-*-solaris2.10): Mention x86_64-*-solaris2.1[0-9]*
+	configuration.
+	(Specific, x86_64-*-solaris2.1[0-9]*): Document.
+
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/sol2.h (ASM_SPEC): Split into ...
 	(ASM_SPEC_BASE, ASM_PIC_SPEC): ... this.
 	* config/i386/sol2.h (ASM_SPEC): Define using ASM_SPEC_BASE.

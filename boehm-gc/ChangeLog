@@ -1,3 +1,10 @@
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/39150
+	* configure.ac (i?86-*-solaris2.[89]): Also accept
+	x86_64-*-solaris2.1?.
+	* configure: Regenerate.
+
 2011-06-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libgcj/49451

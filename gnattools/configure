@@ -2041,7 +2041,7 @@ case "${target}" in
   sparc-sun-solaris*)
     TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb"
     ;;
-  *86-*-solaris2*)
+  *86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
     TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb"
     ;;
   *86-*-linux* \

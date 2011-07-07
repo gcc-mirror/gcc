@@ -2173,7 +2173,7 @@ foobar:],[
 # Solaris 9/x86 as incorrectly emits an alias for a hidden symbol with
 # STV_HIDDEN, so disable .hidden support if so.
 case "${target}" in
-  i?86-*-solaris2*)
+  i?86-*-solaris2* | x86_64-*-solaris2.1[[0-9]]*)
     if test x$gcc_cv_as != x && test x$gcc_cv_objdump != x; then
       cat > conftest.s <<EOF
 .globl hidden
@@ -2428,7 +2428,7 @@ gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
 	  gcc_cv_as_cfi_directive=no
 	else
 	  case "$target" in
-	    i?86-*-solaris2.1[[0-9]]*)
+	    i?86-*-solaris2.1[[0-9]]* | x86_64-*-solaris2.1[[0-9]]*)
 	      # On Solaris/x86, make sure that GCC and gas agree on using
 	      # read-only .eh_frame sections for 64-bit.
 	      if $gcc_cv_as --64 -o conftest.o conftest.s > /dev/null 2>&1 && \
@@ -2632,7 +2632,7 @@ else
              foo:
 	     '
            ;;
-         i?86-*-solaris2*)
+         i?86-*-solaris2* | x86_64-*-solaris2.1[[0-9]]*)
 	   conftest_s='
                .group foo,.text%foo,#comdat
                .section .text%foo, "ax", @progbits
@@ -2810,12 +2810,16 @@ foo:	.long	25
 	tls_first_major=2
 	tls_first_minor=17
 	;;
-  i[34567]86-*-*)
+  i[34567]86-*-* | x86_64-*-solaris2.1[0-9]*)
     case "$target" in
       i[34567]86-*-solaris2.*)
 	on_solaris=yes
 	tga_func=___tls_get_addr
 	;;
+      x86_64-*-solaris2.1[0-9]*)
+	on_solaris=yes
+	tga_func=__tls_get_addr
+        ;;
       *)
 	on_solaris=no
 	;;

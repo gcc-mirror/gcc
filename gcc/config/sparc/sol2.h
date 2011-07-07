@@ -205,16 +205,6 @@ along with GCC; see the file COPYING3.  If not see
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
-#undef ASM_CPU_DEFAULT_SPEC
-#define ASM_CPU_DEFAULT_SPEC \
-(DEFAULT_ARCH32_P ? "\
-%{m64:" ASM_CPU64_DEFAULT_SPEC "} \
-%{!m64:" ASM_CPU32_DEFAULT_SPEC "} \
-" : "\
-%{m32:" ASM_CPU32_DEFAULT_SPEC "} \
-%{!m32:" ASM_CPU64_DEFAULT_SPEC "} \
-")
-
 #undef ASM_ARCH32_SPEC
 #define ASM_ARCH32_SPEC ""
 

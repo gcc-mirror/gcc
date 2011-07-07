@@ -1,3 +1,12 @@
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/39150
+	* config.host (*-*-solaris2*): Handle x86_64-*-solaris2.1[0-9]*
+	like i?86-*-solaris2.1[0-9]*.
+	(i[34567]86-*-solaris2*): Also handle x86_64-*-solaris2.1[0-9]*.
+	* configure.ac (i?86-*-solaris2*): Likewise.
+	* configure: Regenerate.
+
 2011-07-06  Thomas Schwinge  <thomas@schwinge.name>
 
 	* config.host (i[34567]86-*-kfreebsd*-gnu, i[34567]86-*-knetbsd*-gnu)
