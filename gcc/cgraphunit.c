@@ -450,6 +450,28 @@ cgraph_debug_gimple_stmt (struct function *this_cfun, gimple stmt)
   debug_gimple_stmt (stmt);
 }
 
+/* Verify that call graph edge E corresponds to DECL from the associated
+   statement.  Return true if the verification should fail.  */
+
+static bool
+verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
+{
+  if (!e->callee->global.inlined_to
+      && decl
+      && cgraph_get_node (decl)
+      && (e->callee->former_clone_of
+	  != cgraph_function_or_thunk_node (cgraph_get_node (decl), NULL)->decl)
+      /* IPA-CP sometimes redirect edge to clone and then back to the former
+	 function.  This ping-pong has to go, eventaully.  */
+      && (cgraph_function_or_thunk_node (cgraph_get_node (decl), NULL)
+	  != cgraph_function_or_thunk_node (e->callee, NULL))
+      && !clone_of_p (cgraph_get_node (decl),
+		      e->callee))
+    return true;
+  else
+    return false;
+}
+
 /* Verify cgraph nodes of given cgraph node.  */
 DEBUG_FUNCTION void
 verify_cgraph_node (struct cgraph_node *node)
@@ -702,17 +724,7 @@ verify_cgraph_node (struct cgraph_node *node)
 			  }
 			if (!e->indirect_unknown_callee)
 			  {
-			    if (!e->callee->global.inlined_to
-			        && decl
-			        && cgraph_get_node (decl)
-			        && (e->callee->former_clone_of
-				    != cgraph_get_node (decl)->decl)
-				/* IPA-CP sometimes redirect edge to clone and then back to the former
-				   function.  This ping-pong has to go, eventaully.  */
-				&& (cgraph_function_or_thunk_node (cgraph_get_node (decl), NULL)
-				    != cgraph_function_or_thunk_node (e->callee, NULL))
-				&& !clone_of_p (cgraph_get_node (decl),
-					        e->callee))
+			    if (verify_edge_corresponds_to_fndecl (e, decl))
 			      {
 				error ("edge points to wrong declaration:");
 				debug_tree (e->callee->decl);
