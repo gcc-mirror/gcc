@@ -1,3 +1,7 @@
+2011-07-07  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/graphite/pr37485.c: Add -floop-block.
+
 2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/39150
