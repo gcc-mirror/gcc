@@ -1281,6 +1281,22 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 			tm_file="${tm_file} i386/x86-64.h i386/gnu-user64.h i386/linux64.h"
 			tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 			tmake_file="${tmake_file} i386/t-linux64"
+			x86_multilibs="${with_multilib_list}"
+			if test "$x86_multilibs" = "default"; then
+				x86_multilibs="m64,m32"
+			fi
+			x86_multilibs=`echo $x86_multilibs | sed -e 's/,/ /g'`
+			for x86_multilib in ${x86_multilibs}; do
+				case ${x86_multilib} in
+				m32 | m64 | mx32)
+					TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${x86_multilib}"
+					;;
+				*)
+					echo "--with-multilib-list=${x86_with_multilib} not supported."
+					exit 1
+				esac
+			done
+			TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 			need_64bit_hwint=yes
 			need_64bit_isa=yes
 			case X"${with_cpu}" in
@@ -1319,6 +1335,22 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	x86_64-*-knetbsd*-gnu) tm_file="${tm_file} knetbsd-gnu.h" ;;
 	esac
 	tmake_file="${tmake_file} i386/t-linux64 i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
+	x86_multilibs="${with_multilib_list}"
+	if test "$x86_multilibs" = "default"; then
+		x86_multilibs="m64,m32"
+	fi
+	x86_multilibs=`echo $x86_multilibs | sed -e 's/,/ /g'`
+	for x86_multilib in ${x86_multilibs}; do
+		case ${x86_multilib} in
+		m32 | m64 | mx32)
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${x86_multilib}"
+			;;
+		*)
+			echo "--with-multilib-list=${x86_with_multilib} not supported."
+			exit 1
+		esac
+	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 	;;
 i[34567]86-pc-msdosdjgpp*)
 	xm_file=i386/xm-djgpp.h

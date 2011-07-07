@@ -398,8 +398,12 @@ Target RejectNegative Negative(m64) Report InverseMask(ISA_64BIT) Var(ix86_isa_f
 Generate 32bit i386 code
 
 m64
-Target RejectNegative Negative(m32) Report Mask(ISA_64BIT) Var(ix86_isa_flags) Save
+Target RejectNegative Negative(mx32) Report Mask(ISA_64BIT) Var(ix86_isa_flags) Save
 Generate 64bit x86-64 code
+
+mx32
+Target RejectNegative Negative(m32) Report Mask(ISA_X32) Var(ix86_isa_flags) Save
+Generate 32bit x86-64 code
 
 mmmx
 Target Report Mask(ISA_MMX) Var(ix86_isa_flags) Save

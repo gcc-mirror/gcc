@@ -77,9 +77,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
 #define UCLIBC_DYNAMIC_LINKER32 "/lib/ld-uClibc.so.0"
 #define UCLIBC_DYNAMIC_LINKER64 "/lib/ld64-uClibc.so.0"
+#define UCLIBC_DYNAMIC_LINKERX32 "/lib/ldx32-uClibc.so.0"
 #define BIONIC_DYNAMIC_LINKER "/system/bin/linker"
 #define BIONIC_DYNAMIC_LINKER32 "/system/bin/linker"
 #define BIONIC_DYNAMIC_LINKER64 "/system/bin/linker64"
+#define BIONIC_DYNAMIC_LINKERX32 "/system/bin/linkerx32"
 
 #define GNU_USER_DYNAMIC_LINKER						\
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER,	\
@@ -90,6 +92,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GNU_USER_DYNAMIC_LINKER64					\
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER64, UCLIBC_DYNAMIC_LINKER64, \
 			 BIONIC_DYNAMIC_LINKER64)
+#define GNU_USER_DYNAMIC_LINKERX32					\
+  CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKERX32, UCLIBC_DYNAMIC_LINKERX32, \
+			 BIONIC_DYNAMIC_LINKERX32)
 
 /* Determine whether the entire c99 runtime
    is present in the runtime library.  */
