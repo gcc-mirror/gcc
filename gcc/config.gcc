@@ -752,17 +752,6 @@ case ${target} in
 esac
 
 case ${target} in
-# Support site-specific machine types.
-*local*)
-	rest=`echo ${target} | sed -e "s/$cpu_type-//"`
-	tm_file=${cpu_type}/$rest.h
-	if test -f $srcdir/config/${cpu_type}/xm-$rest.h
-	then xm_file=${cpu_type}/xm-$rest.h
-	fi
-	if test -f $srcdir/config/${cpu_type}/t-$rest
-	then tmake_file=${cpu_type}/t-$rest
-	fi
-	;;
 alpha*-*-linux*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
 	extra_options="${extra_options} alpha/elf.opt"
