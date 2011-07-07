@@ -1512,6 +1512,28 @@ proc check_effective_target_ilp32 { } {
     }]
 }
 
+# Return 1 if we're generating ia32 code using default options, 0
+# otherwise.
+
+proc check_effective_target_ia32 { } {
+    return [check_no_compiler_messages ia32 object {
+	int dummy[sizeof (int) == 4
+		  && sizeof (void *) == 4
+		  && sizeof (long) == 4 ? 1 : -1] = { __i386__ };
+    }]
+}
+
+# Return 1 if we're generating x32 code using default options, 0
+# otherwise.
+
+proc check_effective_target_x32 { } {
+    return [check_no_compiler_messages x32 object {
+	int dummy[sizeof (int) == 4
+		  && sizeof (void *) == 4
+		  && sizeof (long) == 4 ? 1 : -1] = { __x86_64__ };
+    }]
+}
+
 # Return 1 if we're generating 32-bit or larger integers using default
 # options, 0 otherwise.
 
@@ -1713,7 +1735,8 @@ proc check_effective_target_vect_cmdline_needed { } {
 	if { [istarget alpha*-*-*]
 	     || [istarget ia64-*-*]
 	     || (([istarget x86_64-*-*] || [istarget i?86-*-*])
-		 && [check_effective_target_lp64])
+		 && ([check_effective_target_x32]
+		     || [check_effective_target_lp64]))
 	     || ([istarget powerpc*-*-*]
 		 && ([check_effective_target_powerpc_spe]
 		     || [check_effective_target_powerpc_altivec]))
