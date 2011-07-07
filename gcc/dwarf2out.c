@@ -843,7 +843,7 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 
 /* Similar, but do it via assembler directives instead.  */
 
-void
+static void
 output_cfi_directive (dw_cfi_ref cfi)
 {
   unsigned long r, r2;
@@ -940,6 +940,12 @@ output_cfi_directive (dw_cfi_ref cfi)
     default:
       gcc_unreachable ();
     }
+}
+
+void
+dwarf2out_emit_cfi (dw_cfi_ref cfi)
+{
+  output_cfi_directive (cfi);
 }
 
 /* Output CFIs from VEC, up to index UPTO, to bring current FDE to the

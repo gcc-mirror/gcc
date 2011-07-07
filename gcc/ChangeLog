@@ -1,3 +1,25 @@
+2011-07-07  Bernd Schmidt  <bernds@codesourcery.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* dwarf2cfi.c (cfi_insn): New.
+	(dwarf2out_cfi_label): Don't emit cfi label here.
+	(add_fde_cfi): Create a NOTE_INSN_CFI.
+	(dwarf2out_frame_debug): Setup cfi_insn.
+	(dwarf2out_frame_debug_init): Loop over insns creating CFI notes.
+	(dwarf2out_cfi_begin_epilogue): Make static.
+	(dwarf2out_frame_debug_restore_state): Make static.
+	* dwarf2out.c (output_cfi_directive): Make static.
+	(dwarf2out_emit_cfi): New.
+	* dwarf2out.h: Update.
+	* final.c (final): Remove CFI notes.
+	(final_scan_insn): Don't call dwarf2out_cfi_begin_epilogue,
+	dwarf2out_frame_debug_restore_state, dwarf2out_frame_debug.
+	Handle NOTE_INSN_CFI and NOTE_INSN_CFI_LABEL.
+	* insn-notes.def (NOTE_INSN_CFI): New.
+	(NOTE_INSN_CFI_LABEL): New.
+	* rtl.h (union rtunion_def): Add rt_cfi member.
+	(XCFI, XCCFI, NOTE_CFI, NOTE_LABEL_NUMBER): New.
+
 2011-07-07  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2cfi.c: New file.

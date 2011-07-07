@@ -143,6 +143,19 @@ cfi_vec cie_cfi_vec;
 
 static GTY(()) unsigned long dwarf2out_cfi_label_num;
 
+/* The insn after which a new CFI note should be emitted.  */
+static rtx cfi_insn;
+
+/* True if remember_state should be emitted before following CFI directive.  */
+static bool emit_cfa_remember;
+
+/* True if any CFI directives were emitted at the current insn.  */
+static bool any_cfis_emitted;
+
+
+static void dwarf2out_cfi_begin_epilogue (rtx insn);
+static void dwarf2out_frame_debug_restore_state (void);
+
 
 /* Hook used by __throw.  */
 
@@ -292,17 +305,12 @@ dwarf2out_cfi_label (bool force)
     {
       int num = dwarf2out_cfi_label_num++;
       ASM_GENERATE_INTERNAL_LABEL (label, "LCFI", num);
-      ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LCFI", num);
+      cfi_insn = emit_note_after (NOTE_INSN_CFI_LABEL, cfi_insn);
+      NOTE_LABEL_NUMBER (cfi_insn) = num;
     }
 
   return label;
 }
-
-/* True if remember_state should be emitted before following CFI directive.  */
-static bool emit_cfa_remember;
-
-/* True if any CFI directives were emitted at the current insn.  */
-static bool any_cfis_emitted;
 
 /* Add CFI to the current fde at the PC value indicated by LABEL if specified,
    or to the CIE if LABEL is NULL.  */
@@ -383,7 +391,8 @@ add_fde_cfi (const char *label, dw_cfi_ref cfi)
 	        }
 	    }
 
-	  output_cfi_directive (cfi);
+	  cfi_insn = emit_note_after (NOTE_INSN_CFI, cfi_insn);
+	  NOTE_CFI (cfi_insn) = cfi;
 
 	  vec = &fde->dw_fde_cfi;
 	  any_cfis_emitted = true;
@@ -2301,6 +2310,9 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
   bool handled_one = false;
   bool need_flush = false;
 
+  /* Remember where we are to insert notes.  */
+  cfi_insn = (after_p ? insn : PREV_INSN (insn));
+
   if (!NONJUMP_INSN_P (insn) || clobbers_queued_reg_save (insn))
     dwarf2out_flush_queued_reg_saves ();
 
@@ -2440,8 +2452,16 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 void
 dwarf2out_frame_debug_init (void)
 {
-  /* Flush any queued register saves.  */
-  dwarf2out_flush_queued_reg_saves ();
+  rtx insn;
+
+  regs_saved_in_regs = NULL;
+  queued_reg_saves = NULL;
+
+  if (barrier_args_size)
+    {
+      XDELETEVEC (barrier_args_size);
+      barrier_args_size = NULL;
+    }
 
   /* Set up state for generating call frame debug info.  */
   lookup_cfa (&cfa);
@@ -2453,12 +2473,55 @@ dwarf2out_frame_debug_init (void)
   cfa_temp.reg = -1;
   cfa_temp.offset = 0;
 
-  regs_saved_in_regs = NULL;
-
-  if (barrier_args_size)
+  for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
     {
-      XDELETEVEC (barrier_args_size);
-      barrier_args_size = NULL;
+      rtx pat;
+
+      if (BARRIER_P (insn))
+	{
+	  dwarf2out_frame_debug (insn, false);
+	  continue;
+        }
+
+      if (NOTE_P (insn))
+	{
+	  switch (NOTE_KIND (insn))
+	    {
+	    case NOTE_INSN_EPILOGUE_BEG:
+#if defined(HAVE_epilogue)
+	      dwarf2out_cfi_begin_epilogue (insn);
+#endif
+	      break;
+	    case NOTE_INSN_CFA_RESTORE_STATE:
+	      cfi_insn = insn;
+	      dwarf2out_frame_debug_restore_state ();
+	      break;
+	    }
+	  continue;
+	}
+
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+
+      pat = PATTERN (insn);
+      if (asm_noperands (pat) >= 0)
+	{
+	  dwarf2out_frame_debug (insn, false);
+	  continue;
+	}
+
+      if (GET_CODE (pat) == SEQUENCE)
+	{
+	  int i, n = XVECLEN (pat, 0);
+	  for (i = 1; i < n; ++i)
+	    dwarf2out_frame_debug (XVECEXP (pat, 0, i), false);
+	}
+
+      if (CALL_P (insn)
+	  || find_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL))
+	dwarf2out_frame_debug (insn, false);
+
+      dwarf2out_frame_debug (insn, true);
     }
 }
 
@@ -2467,7 +2530,7 @@ dwarf2out_frame_debug_init (void)
    we do need to save/restore, then emit the save now, and insert a
    NOTE_INSN_CFA_RESTORE_STATE at the appropriate place in the stream.  */
 
-void
+static void
 dwarf2out_cfi_begin_epilogue (rtx insn)
 {
   bool saw_frp = false;
@@ -2544,7 +2607,7 @@ dwarf2out_cfi_begin_epilogue (rtx insn)
 /* A "subroutine" of dwarf2out_cfi_begin_epilogue.  Emit the restore
    required.  */
 
-void
+static void
 dwarf2out_frame_debug_restore_state (void)
 {
   dw_cfi_ref cfi = new_cfi ();
