@@ -294,7 +294,7 @@ add_fde_cfi (dw_cfi_ref cfi)
     }
   else
     {
-      dw_fde_ref fde = current_fde ();
+      dw_fde_ref fde = cfun->fde;
       VEC_safe_push (dw_cfi_ref, gc, fde->dw_fde_cfi, cfi);
       dwarf2out_emit_cfi (cfi);
     }
@@ -468,7 +468,7 @@ lookup_cfa (dw_cfa_location *loc)
   FOR_EACH_VEC_ELT (dw_cfi_ref, cie_cfi_vec, ix, cfi)
     lookup_cfa_1 (cfi, loc, &remember);
 
-  fde = current_fde ();
+  fde = cfun->fde;
   if (fde)
     FOR_EACH_VEC_ELT (dw_cfi_ref, fde->dw_fde_cfi, ix, cfi)
       lookup_cfa_1 (cfi, loc, &remember);
@@ -599,8 +599,8 @@ static void
 reg_save (bool for_cie, unsigned int reg, unsigned int sreg,
           HOST_WIDE_INT offset)
 {
+  dw_fde_ref fde = for_cie ? NULL : cfun->fde;
   dw_cfi_ref cfi = new_cfi ();
-  dw_fde_ref fde = current_fde ();
 
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
 
@@ -1652,7 +1652,7 @@ dwarf2out_frame_debug_cfa_window_save (void)
   Rule 16:
   (set sp (and: sp <const_int>))
   constraints: cfa_store.reg == sp
-  effects: current_fde.stack_realign = 1
+  effects: cfun->fde.stack_realign = 1
            cfa_store.offset = 0
 	   fde->drap_reg = cfa.reg if cfa.reg != sp and cfa.reg != fp
 
@@ -1742,7 +1742,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	src = rsi;
     }
 
-  fde = current_fde ();
+  fde = cfun->fde;
 
   switch (GET_CODE (dest))
     {
@@ -2268,7 +2268,7 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 	n = XEXP (note, 0);
 	if (REG_P (n))
 	  {
-	    dw_fde_ref fde = current_fde ();
+	    dw_fde_ref fde = cfun->fde;
 	    if (fde)
 	      {
 		gcc_assert (fde->vdrap_reg == INVALID_REGNUM);
@@ -2387,7 +2387,7 @@ cfi_label_required_p (dw_cfi_ref cfi)
 static void
 add_cfis_to_fde (void)
 {
-  dw_fde_ref fde = current_fde ();
+  dw_fde_ref fde = cfun->fde;
   rtx insn, next;
   /* We always start with a function_begin label.  */
   bool first = false;
@@ -2611,7 +2611,7 @@ dwarf2cfi_function_init (void)
 /* Run once.  */
 
 void
-dwarf2cfi_frame_init (void)
+dwarf2out_frame_init (void)
 {
   dw_cfa_location loc;
 

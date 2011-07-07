@@ -169,6 +169,7 @@ struct gimple_df;
 struct temp_slot;
 typedef struct temp_slot *temp_slot_p;
 struct call_site_record_d;
+struct dw_fde_struct;
 
 DEF_VEC_P(temp_slot_p);
 DEF_VEC_ALLOC_P(temp_slot_p,gc);
@@ -541,6 +542,11 @@ struct GTY(()) function {
 
   /* Used types hash table.  */
   htab_t GTY ((param_is (union tree_node))) used_types_hash;
+
+  /* Dwarf2 Frame Description Entry, containing the Call Frame Instructions
+     used for unwinding.  Only set when either dwarf2 unwinding or dwarf2
+     debugging is enabled.  */
+  struct dw_fde_struct *fde;
 
   /* Last statement uid.  */
   int last_stmt_uid;
