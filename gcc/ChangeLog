@@ -1,3 +1,8 @@
+2011-07-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (simplify_conversion_using_ranges): New function.
+	(simplify_stmt_using_ranges): Call it.
+
 2011-07-07  Kai Tietz  <ktietz@redhat.com>
 
 	* tree-ssa-forwprop.c (truth_valued_ssa_name): New function.
