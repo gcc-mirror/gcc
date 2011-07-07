@@ -1,3 +1,20 @@
+2011-07-07  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (fde_table, fde_table_allocated, fde_table_in_use,
+	FDE_TABLE_INCREMENT): Replace with...
+	(fde_vec): ... this, a new vector.
+	(current_fde): Remove.  Replace all users with cfun->fde.
+	(output_call_frame_info): Use FOR_EACH_VEC_ELT over fde_vec.
+	(size_of_aranges, dwarf2out_finish): Likewise.
+	(dwarf2out_alloc_current_fde): Break out from ...
+	(dwarf2out_begin_prologue): ... here.
+	(dwarf2out_frame_init): Remove.
+	* dwarf2cfi.c: Update all users of current_fde.
+	(dwarf2out_frame_init): Rename from dwarf2cfi_frame_init.
+	* dwarf2out.h: Update decls.
+	(dw_fde_node): Add fde_index member.
+	* function.h (struct function): Add fde member.
+
 2011-07-07  Bernd Schmidt  <bernds@codesourcery.com>
 	    Richard Henderson  <rth@redhat.com>
 

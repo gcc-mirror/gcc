@@ -88,7 +88,10 @@ typedef struct GTY(()) dw_fde_struct {
   cfi_vec dw_fde_cfi;
   int dw_fde_switch_cfi_index; /* Last CFI before switching sections.  */
   HOST_WIDE_INT stack_realignment;
+
   unsigned funcdef_number;
+  unsigned fde_index;
+
   /* Dynamic realign argument pointer register.  */
   unsigned int drap_reg;
   /* Virtual dynamic realign argument pointer register.  */
@@ -215,7 +218,6 @@ dw_loc_descr_node;
 
 
 /* Interface from dwarf2out.c to dwarf2cfi.c.  */
-extern dw_fde_ref current_fde (void);
 extern struct dw_loc_descr_struct *build_cfa_loc
   (dw_cfa_location *, HOST_WIDE_INT);
 extern struct dw_loc_descr_struct *build_cfa_aligned_loc
@@ -224,9 +226,9 @@ extern struct dw_loc_descr_struct *mem_loc_descriptor
   (rtx, enum machine_mode mode, enum machine_mode mem_mode,
    enum var_init_status);
 extern enum machine_mode get_address_mode (rtx mem);
+extern dw_fde_ref dwarf2out_alloc_current_fde (void);
 
 /* Interface from dwarf2cfi.c to dwarf2out.c.  */
-extern void dwarf2cfi_frame_init (void);
 extern void dwarf2cfi_function_init (void);
 extern void lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc,
 			  dw_cfa_location *remember);

@@ -233,33 +233,12 @@ static GTY(()) section *debug_frame_section;
 #define DWARF_CIE_ID DW_CIE_ID
 #endif
 
-/* A pointer to the base of a table that contains frame description
+DEF_VEC_P (dw_fde_ref);
+DEF_VEC_ALLOC_P (dw_fde_ref, gc);
+
+/* A vector for a table that contains frame description
    information for each routine.  */
-static GTY((length ("fde_table_allocated"))) dw_fde_ref fde_table;
-
-/* Number of elements currently allocated for fde_table.  */
-static GTY(()) unsigned fde_table_allocated;
-
-/* Number of elements in fde_table currently in use.  */
-static GTY(()) unsigned fde_table_in_use;
-
-/* Size (in elements) of increments by which we may expand the
-   fde_table.  */
-#define FDE_TABLE_INCREMENT 256
-
-/* Get the current fde_table entry we should use.  */
-
-dw_fde_ref
-current_fde (void)
-{
-  return fde_table_in_use ? &fde_table[fde_table_in_use - 1] : NULL;
-}
-
-/* Some DWARF extensions (e.g., MIPS/SGI) implement a subprogram
-   attribute that accelerates the lookup of the FDE associated
-   with the subprogram.  This variable holds the table index of the FDE
-   associated with the current function (body) definition.  */
-static unsigned current_funcdef_fde;
+static GTY(()) VEC(dw_fde_ref, gc) *fde_vec;
 
 struct GTY(()) indirect_string_node {
   const char *str;
@@ -1313,7 +1292,7 @@ output_call_frame_info (int for_eh)
   int dw_cie_version;
 
   /* Don't emit a CIE if there won't be any FDEs.  */
-  if (fde_table_in_use == 0)
+  if (fde_vec == NULL)
     return;
 
   /* Nothing to do if the assembler's doing it all.  */
@@ -1330,14 +1309,15 @@ output_call_frame_info (int for_eh)
     {
       bool any_eh_needed = false;
 
-      for (i = 0; i < fde_table_in_use; i++)
-	if (fde_table[i].uses_eh_lsda)
-	  any_eh_needed = any_lsda_needed = true;
-	else if (fde_needed_for_eh_p (&fde_table[i]))
-	  any_eh_needed = true;
-	else if (TARGET_USES_WEAK_UNWIND_INFO)
-	  targetm.asm_out.emit_unwind_label (asm_out_file, fde_table[i].decl,
-					     1, 1);
+      FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, i, fde)
+	{
+	  if (fde->uses_eh_lsda)
+	    any_eh_needed = any_lsda_needed = true;
+	  else if (fde_needed_for_eh_p (fde))
+	    any_eh_needed = true;
+	  else if (TARGET_USES_WEAK_UNWIND_INFO)
+	    targetm.asm_out.emit_unwind_label (asm_out_file, fde->decl, 1, 1);
+	}
 
       if (!any_eh_needed)
 	return;
@@ -1490,10 +1470,9 @@ output_call_frame_info (int for_eh)
   ASM_OUTPUT_LABEL (asm_out_file, l2);
 
   /* Loop through all of the FDE's.  */
-  for (i = 0; i < fde_table_in_use; i++)
+  FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, i, fde)
     {
       unsigned int k;
-      fde = &fde_table[i];
 
       /* Don't emit EH unwind info for leaf functions that don't need it.  */
       if (for_eh && !fde_needed_for_eh_p (fde))
@@ -1564,6 +1543,31 @@ dwarf2out_do_cfi_startproc (bool second)
     }
 }
 
+/* Allocate CURRENT_FDE.  Immediately initialize all we can, noting that
+   this allocation may be done before pass_final.  */
+
+dw_fde_ref
+dwarf2out_alloc_current_fde (void)
+{
+  dw_fde_ref fde;
+
+  fde = ggc_alloc_cleared_dw_fde_node ();
+  fde->decl = current_function_decl;
+  fde->funcdef_number = current_function_funcdef_no;
+  fde->fde_index = VEC_length (dw_fde_ref, fde_vec);
+  fde->all_throwers_are_sibcalls = crtl->all_throwers_are_sibcalls;
+  fde->uses_eh_lsda = crtl->uses_eh_lsda;
+  fde->nothrow = crtl->nothrow;
+  fde->drap_reg = INVALID_REGNUM;
+  fde->vdrap_reg = INVALID_REGNUM;
+
+  /* Record the FDE associated with this function.  */
+  cfun->fde = fde;
+  VEC_safe_push (dw_fde_ref, gc, fde_vec, fde);
+
+  return fde;
+}
+
 /* Output a marker (i.e. a label) for the beginning of a function, before
    the prologue.  */
 
@@ -1601,39 +1605,12 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   if (!do_frame)
     return;
 
-  /* Expand the fde table if necessary.  */
-  if (fde_table_in_use == fde_table_allocated)
-    {
-      fde_table_allocated += FDE_TABLE_INCREMENT;
-      fde_table = GGC_RESIZEVEC (dw_fde_node, fde_table, fde_table_allocated);
-      memset (fde_table + fde_table_in_use, 0,
-	      FDE_TABLE_INCREMENT * sizeof (dw_fde_node));
-    }
-
-  /* Record the FDE associated with this function.  */
-  current_funcdef_fde = fde_table_in_use;
-
-  /* Add the new FDE at the end of the fde_table.  */
-  fde = &fde_table[fde_table_in_use++];
-  fde->decl = current_function_decl;
+  /* Initialize the bits of CURRENT_FDE that were not available earlier.  */
+  fde = dwarf2out_alloc_current_fde ();
   fde->dw_fde_begin = dup_label;
-  fde->dw_fde_end = NULL;
   fde->dw_fde_current_label = dup_label;
-  fde->dw_fde_second_begin = NULL;
-  fde->dw_fde_second_end = NULL;
-  fde->dw_fde_vms_end_prologue = NULL;
-  fde->dw_fde_vms_begin_epilogue = NULL;
-  fde->dw_fde_cfi = VEC_alloc (dw_cfi_ref, gc, 20);
-  fde->dw_fde_switch_cfi_index = 0;
-  fde->funcdef_number = current_function_funcdef_no;
-  fde->all_throwers_are_sibcalls = crtl->all_throwers_are_sibcalls;
-  fde->uses_eh_lsda = crtl->uses_eh_lsda;
-  fde->nothrow = crtl->nothrow;
-  fde->drap_reg = INVALID_REGNUM;
-  fde->vdrap_reg = INVALID_REGNUM;
   fde->in_std_section = (fnsec == text_section
 			 || (cold_text_section && fnsec == cold_text_section));
-  fde->second_in_std_section = 0;
 
   dwarf2cfi_function_init ();
 
@@ -1669,7 +1646,6 @@ void
 dwarf2out_vms_end_prologue (unsigned int line ATTRIBUTE_UNUSED,
 			const char *file ATTRIBUTE_UNUSED)
 {
-  dw_fde_ref fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   /* Output a label to mark the endpoint of the code generated for this
@@ -1678,8 +1654,7 @@ dwarf2out_vms_end_prologue (unsigned int line ATTRIBUTE_UNUSED,
 			       current_function_funcdef_no);
   ASM_OUTPUT_DEBUG_LABEL (asm_out_file, PROLOGUE_END_LABEL,
 			  current_function_funcdef_no);
-  fde = &fde_table[fde_table_in_use - 1];
-  fde->dw_fde_vms_end_prologue = xstrdup (label);
+  cfun->fde->dw_fde_vms_end_prologue = xstrdup (label);
 }
 
 /* Output a marker (i.e. a label) for the beginning of the generated code
@@ -1690,10 +1665,9 @@ void
 dwarf2out_vms_begin_epilogue (unsigned int line ATTRIBUTE_UNUSED,
 			  const char *file ATTRIBUTE_UNUSED)
 {
-  dw_fde_ref fde;
+  dw_fde_ref fde = cfun->fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-  fde = &fde_table[fde_table_in_use - 1];
   if (fde->dw_fde_vms_begin_epilogue)
     return;
 
@@ -1727,21 +1701,10 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
   ASM_GENERATE_INTERNAL_LABEL (label, FUNC_END_LABEL,
 			       current_function_funcdef_no);
   ASM_OUTPUT_LABEL (asm_out_file, label);
-  fde = current_fde ();
+  fde = cfun->fde;
   gcc_assert (fde != NULL);
   if (fde->dw_fde_second_begin == NULL)
     fde->dw_fde_end = xstrdup (label);
-}
-
-void
-dwarf2out_frame_init (void)
-{
-  /* Allocate the initial hunk of the fde_table.  */
-  fde_table = ggc_alloc_cleared_vec_dw_fde_node (FDE_TABLE_INCREMENT);
-  fde_table_allocated = FDE_TABLE_INCREMENT;
-  fde_table_in_use = 0;
-
-  dwarf2cfi_frame_init ();
 }
 
 void
@@ -1776,7 +1739,7 @@ void
 dwarf2out_switch_text_section (void)
 {
   section *sect;
-  dw_fde_ref fde = current_fde ();
+  dw_fde_ref fde = cfun->fde;
 
   gcc_assert (cfun && fde && fde->dw_fde_second_begin == NULL);
 
@@ -8460,12 +8423,11 @@ size_of_aranges (void)
     size += 2 * DWARF2_ADDR_SIZE;
   if (have_multiple_function_sections)
     {
-      unsigned fde_idx = 0;
+      unsigned fde_idx;
+      dw_fde_ref fde;
 
-      for (fde_idx = 0; fde_idx < fde_table_in_use; fde_idx++)
+      FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, fde_idx, fde)
 	{
-	  dw_fde_ref fde = &fde_table[fde_idx];
-
 	  if (!fde->in_std_section)
 	    size += 2 * DWARF2_ADDR_SIZE;
 	  if (fde->dw_fde_second_begin && !fde->second_in_std_section)
@@ -9353,12 +9315,11 @@ output_aranges (unsigned long aranges_length)
 
   if (have_multiple_function_sections)
     {
-      unsigned fde_idx = 0;
+      unsigned fde_idx;
+      dw_fde_ref fde;
 
-      for (fde_idx = 0; fde_idx < fde_table_in_use; fde_idx++)
+      FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, fde_idx, fde)
 	{
-	  dw_fde_ref fde = &fde_table[fde_idx];
-
 	  if (!fde->in_std_section)
 	    {
 	      dw2_asm_output_addr (DWARF2_ADDR_SIZE, fde->dw_fde_begin,
@@ -10926,7 +10887,7 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 {
   unsigned int regno;
   dw_loc_descr_ref result;
-  dw_fde_ref fde = current_fde ();
+  dw_fde_ref fde = cfun->fde;
 
   /* We only use "frame base" when we're sure we're talking about the
      post-prologue local stack frame.  We do this by *not* running
@@ -13491,7 +13452,7 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
 		&& (node != loc_list->first || loc_list->first->next)
 		&& current_function_decl)
 	      {
-		endname = current_fde ()->dw_fde_end;
+		endname = cfun->fde->dw_fde_end;
 		range_across_switch = true;
 	      }
 	    /* The variable has a location between NODE->LABEL and
@@ -13534,9 +13495,9 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
 		if (node->next)
 		  endname = node->next->label;
 		else
-		  endname = current_fde ()->dw_fde_second_end;
+		  endname = cfun->fde->dw_fde_second_end;
 		*listp = new_loc_list (descr,
-				       current_fde ()->dw_fde_second_begin,
+				       cfun->fde->dw_fde_second_begin,
 				       endname, secname);
 		listp = &(*listp)->dw_loc_next;
 	      }
@@ -15642,7 +15603,7 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
   const char *start_label, *last_label, *section;
   dw_cfa_location remember;
 
-  fde = current_fde ();
+  fde = cfun->fde;
   gcc_assert (fde != NULL);
 
   section = secname_for_decl (current_function_decl);
@@ -17666,7 +17627,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
       if (!flag_reorder_blocks_and_partition)
 	{
-	  dw_fde_ref fde = &fde_table[current_funcdef_fde];
+	  dw_fde_ref fde = cfun->fde;
 	  if (fde->dw_fde_begin)
 	    {
 	      /* We have already generated the labels.  */
@@ -17712,9 +17673,9 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  add_pubname (decl, subr_die);
 	}
       else
-	{  /* Generate pubnames entries for the split function code
-	      ranges.  */
-	  dw_fde_ref fde = &fde_table[current_funcdef_fde];
+	{
+	  /* Generate pubnames entries for the split function code ranges.  */
+	  dw_fde_ref fde = cfun->fde;
 
 	  if (fde->dw_fde_second_begin)
 	    {
@@ -17795,7 +17756,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
 #ifdef MIPS_DEBUGGING_INFO
       /* Add a reference to the FDE for this routine.  */
-      add_AT_fde_ref (subr_die, DW_AT_MIPS_fde, current_funcdef_fde);
+      add_AT_fde_ref (subr_die, DW_AT_MIPS_fde, cfun->fde->fde_index);
 #endif
 
       cfa_fb_offset = CFA_FRAME_BASE_OFFSET (decl);
@@ -22452,7 +22413,8 @@ dwarf2out_finish (const char *filename)
     }
   else
     {
-      unsigned fde_idx = 0;
+      unsigned fde_idx;
+      dw_fde_ref fde;
       bool range_list_added = false;
 
       if (text_section_used)
@@ -22462,10 +22424,8 @@ dwarf2out_finish (const char *filename)
 	add_ranges_by_labels (comp_unit_die (), cold_text_section_label,
 			      cold_end_label, &range_list_added);
 
-      for (fde_idx = 0; fde_idx < fde_table_in_use; fde_idx++)
+      FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, fde_idx, fde)
 	{
-	  dw_fde_ref fde = &fde_table[fde_idx];
-
 	  if (!fde->in_std_section)
 	    add_ranges_by_labels (comp_unit_die (), fde->dw_fde_begin,
 				  fde->dw_fde_end, &range_list_added);
