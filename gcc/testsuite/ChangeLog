@@ -1,3 +1,10 @@
+2011-07-07  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_thumb1): New.
+	(check_effective_target_arm_thumb2): Clarify comment, add valid code.
+	*  gcc.target/arm/mla-1.c: Skip for arm_thumb1, don't specify -march,
+	add tab to scan target.
+
 2011-07-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.target/arm/neon-modes-3.c: New test.
