@@ -1300,6 +1300,7 @@ OBJS = \
 	graphite-sese-to-poly.o \
 	gtype-desc.o \
 	haifa-sched.o \
+	hw-doloop.o \
 	hwint.o \
 	ifcvt.o \
 	implicit-zee.o \
@@ -3552,13 +3553,16 @@ target-globals.o : target-globals.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) insn-config.h $(MACHMODE_H) $(GGC_H) toplev.h target-globals.h \
    $(FLAGS_H) $(REGS_H) $(RTL_H) reload.h expmed.h $(EXPR_H) $(OPTABS_H) \
    $(LIBFUNCS_H) $(CFGLOOP_H) $(IRA_INT_H) builtins.h gcse.h bb-reorder.h
-
+hw-doloop.o : hw-doloop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(RTL_H) $(FLAGS_H) $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TM_P_H) \
+   $(DF_H) $(CFGLAYOUT_H) $(CFGLOOP_H) output.h $(RECOG_H) $(TARGET_H) \
+   $(REGS_H) hw-doloop.h
 $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h insn-config.h conditions.h \
    output.h $(INSN_ATTR_H) $(SYSTEM_H) toplev.h $(DIAGNOSTIC_CORE_H) \
    $(TARGET_H) $(LIBFUNCS_H) $(TARGET_DEF_H) $(FUNCTION_H) $(SCHED_INT_H) \
    $(TM_P_H) $(EXPR_H) langhooks.h $(GGC_H) $(OPTABS_H) $(REAL_H) \
-   tm-constrs.h $(GIMPLE_H) $(DF_H) cselib.h $(COMMON_TARGET_H)
+   tm-constrs.h $(GIMPLE_H) $(DF_H) cselib.h $(COMMON_TARGET_H) hw-doloop.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 		$(out_file) $(OUTPUT_OPTION)
 
