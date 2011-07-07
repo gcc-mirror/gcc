@@ -42,6 +42,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Redefines for option macros.  */
 
 #define TARGET_64BIT	OPTION_ISA_64BIT
+#define TARGET_X32	OPTION_ISA_X32
 #define TARGET_MMX	OPTION_ISA_MMX
 #define TARGET_3DNOW	OPTION_ISA_3DNOW
 #define TARGET_3DNOW_A	OPTION_ISA_3DNOW_A
@@ -72,6 +73,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_RDRND	OPTION_ISA_RDRND
 #define TARGET_F16C	OPTION_ISA_F16C
 
+#define TARGET_LP64	(TARGET_64BIT && !TARGET_X32)
 
 /* SSE4.1 defines round instructions */
 #define	OPTION_MASK_ISA_ROUND	OPTION_MASK_ISA_SSE4_1
@@ -516,8 +518,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define OPT_ARCH64 "!m32"
 #define OPT_ARCH32 "m32"
 #else
-#define OPT_ARCH64 "m64"
-#define OPT_ARCH32 "!m64"
+#define OPT_ARCH64 "m64|mx32"
+#define OPT_ARCH32 "m64|mx32:;"
 #endif
 
 /* Support for configure-time defaults of some command line options.
@@ -637,6 +639,8 @@ enum target_cpu_default
 
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32
+#define LONG_TYPE_SIZE (TARGET_X32 ? 32 : BITS_PER_WORD)
+#define POINTER_SIZE (TARGET_X32 ? 32 : BITS_PER_WORD)
 #define LONG_LONG_TYPE_SIZE 64
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
@@ -1741,6 +1745,13 @@ do {							\
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
 #define Pmode (TARGET_64BIT ? DImode : SImode)
+
+/* A C expression whose value is zero if pointers that need to be extended
+   from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and
+   greater then zero if they are zero-extended and less then zero if the
+   ptr_extend instruction should be used.  */
+
+#define POINTERS_EXTEND_UNSIGNED 1
 
 /* A function address in a call instruction
    is a byte address (for indexing purposes)

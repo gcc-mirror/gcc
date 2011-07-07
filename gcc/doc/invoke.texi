@@ -610,7 +610,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} -mabi=@var{name} @gol
--m32  -m64 -mlarge-data-threshold=@var{num} @gol
+-m32 -m64 -mx32 -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store}
 
@@ -12853,15 +12853,19 @@ on AMD x86-64 processors in 64-bit environments.
 @table @gcctabopt
 @item -m32
 @itemx -m64
+@itemx -mx32
 @opindex m32
 @opindex m64
+@opindex mx32
 Generate code for a 32-bit or 64-bit environment.
-The 32-bit environment sets int, long and pointer to 32 bits and
+The @option{-m32} option sets int, long and pointer to 32 bits and
 generates code that runs on any i386 system.
-The 64-bit environment sets int to 32 bits and long and pointer
-to 64 bits and generates code for AMD's x86-64 architecture. For
-darwin only the -m64 option turns off the @option{-fno-pic} and
-@option{-mdynamic-no-pic} options.
+The @option{-m64} option sets int to 32 bits and long and pointer
+to 64 bits and generates code for AMD's x86-64 architecture.
+The @option{-mx32} option sets int, long and pointer to 32 bits and
+generates code for AMD's x86-64 architecture.
+For darwin only the @option{-m64} option turns off the @option{-fno-pic}
+and @option{-mdynamic-no-pic} options.
 
 @item -mno-red-zone
 @opindex mno-red-zone

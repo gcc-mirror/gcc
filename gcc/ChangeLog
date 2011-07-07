@@ -1,3 +1,45 @@
+2011-07-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Support --with-multilib-list for x86 Linux
+	targets.
+
+	* configure.ac: Mention x86-64 for --with-multilib-list.
+	* configure: Regenerated.
+
+	* config/i386/gnu-user64.h (SPEC_64): Support x32.
+	(SPEC_32): Likewise.
+	(ASM_SPEC): Likewise.
+	(LINK_SPEC): Likewise.
+	(TARGET_THREAD_SSP_OFFSET): Likewise.
+	(TARGET_THREAD_SPLIT_STACK_OFFSET): Likewise.
+	(SPEC_X32): New.
+
+	* config/i386/i386.h (TARGET_X32): New.
+	(TARGET_LP64): New.
+	(LONG_TYPE_SIZE): Likewise.
+	(POINTER_SIZE): Likewise.
+	(POINTERS_EXTEND_UNSIGNED): Likewise.
+	(OPT_ARCH64): Support x32.
+	(OPT_ARCH32): Likewise.
+
+	* config/i386/i386.opt (mx32): New.
+
+	* config/i386/kfreebsd-gnu64.h (GNU_USER_LINK_EMULATIONX32): New.
+	(GLIBC_DYNAMIC_LINKERX32): Likewise.
+	* config/i386/linux64.h (GNU_USER_LINK_EMULATIONX32): Likewise.
+	(GLIBC_DYNAMIC_LINKERX32): Likewise.
+
+	* config/linux.h (UCLIBC_DYNAMIC_LINKERX32): New.
+	(BIONIC_DYNAMIC_LINKERX32): Likewise.
+	(GNU_USER_DYNAMIC_LINKERX32): Likewise.
+
+	* config/i386/t-linux64: Support TM_MULTILIB_CONFIG.
+
+	* doc/install.texi: Document --with-multilib-list for
+	Linux/x86-64.
+
+	* doc/invoke.texi: Document -mx32.
+
 2011-07-07  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/invoke.texi (mwords-little-endian): Deprecate.

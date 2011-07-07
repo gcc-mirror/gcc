@@ -1,4 +1,5 @@
-# Copyright (C) 2002, 2005, 2007, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2005, 2007, 2008, 2011
+# Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -23,9 +24,19 @@
 # it doesn't tell anything about the 32bit libraries on those systems.  Set
 # MULTILIB_OSDIRNAMES according to what is found on the target.
 
-MULTILIB_OPTIONS = m64/m32
-MULTILIB_DIRNAMES = 64 32 
-MULTILIB_OSDIRNAMES = ../lib64 $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)
+# To support i386, x86-64 and x32 libraries, the directory structrue
+# should be:
+#
+# 	/lib has i386 libraries.
+# 	/lib64 has x86-64 libraries.
+# 	/libx32 has x32 libraries.
+#
+comma=,
+MULTILIB_OPTIONS    = $(subst $(comma),/,$(TM_MULTILIB_CONFIG))
+MULTILIB_DIRNAMES   = $(patsubst m%, %, $(subst /, ,$(MULTILIB_OPTIONS)))
+MULTILIB_OSDIRNAMES = m64=../lib64
+MULTILIB_OSDIRNAMES+= m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)
+MULTILIB_OSDIRNAMES+= mx32=../libx32
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
