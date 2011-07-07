@@ -1602,6 +1602,129 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
   return false;
 }
 
+/* Checks if expression has type of one-bit precision, or is a known
+   truth-valued expression.  */
+static bool
+truth_valued_ssa_name (tree name)
+{
+  gimple def;
+  tree type = TREE_TYPE (name);
+
+  if (!INTEGRAL_TYPE_P (type))
+    return false;
+  /* Don't check here for BOOLEAN_TYPE as the precision isn't
+     necessarily one and so ~X is not equal to !X.  */
+  if (TYPE_PRECISION (type) == 1)
+    return true;
+  def = SSA_NAME_DEF_STMT (name);
+  if (is_gimple_assign (def))
+    return truth_value_p (gimple_assign_rhs_code (def));
+  return false;
+}
+
+/* Helper routine for simplify_bitwise_binary_1 function.
+   Return for the SSA name NAME the expression X if it mets condition
+   NAME = !X. Otherwise return NULL_TREE.
+   Detected patterns for NAME = !X are:
+     !X and X == 0 for X with integral type.
+     X ^ 1, X != 1,or ~X for X with integral type with precision of one.  */
+static tree
+lookup_logical_inverted_value (tree name)
+{
+  tree op1, op2;
+  enum tree_code code;
+  gimple def;
+
+  /* If name has none-intergal type, or isn't a SSA_NAME, then
+     return.  */
+  if (TREE_CODE (name) != SSA_NAME
+      || !INTEGRAL_TYPE_P (TREE_TYPE (name)))
+    return NULL_TREE;
+  def = SSA_NAME_DEF_STMT (name);
+  if (!is_gimple_assign (def))
+    return NULL_TREE;
+
+  code = gimple_assign_rhs_code (def);
+  op1 = gimple_assign_rhs1 (def);
+  op2 = NULL_TREE;
+
+  /* Get for EQ_EXPR or BIT_XOR_EXPR operation the second operand.
+     If CODE isn't an EQ_EXPR, BIT_XOR_EXPR, TRUTH_NOT_EXPR,
+     or BIT_NOT_EXPR, then return.  */
+  if (code == EQ_EXPR || code == NE_EXPR
+      || code == BIT_XOR_EXPR)
+    op2 = gimple_assign_rhs2 (def);
+
+  switch (code)
+    {
+    case TRUTH_NOT_EXPR:
+      return op1;
+    case BIT_NOT_EXPR:
+      if (truth_valued_ssa_name (name))
+	return op1;
+      break;
+    case EQ_EXPR:
+      /* Check if we have X == 0 and X has an integral type.  */
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (op1)))
+	break;
+      if (integer_zerop (op2))
+	return op1;
+      break;
+    case NE_EXPR:
+      /* Check if we have X != 1 and X is a truth-valued.  */
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (op1)))
+	break;
+      if (integer_onep (op2) && truth_valued_ssa_name (op1))
+	return op1;
+      break;
+    case BIT_XOR_EXPR:
+      /* Check if we have X ^ 1 and X is truth valued.  */
+      if (integer_onep (op2) && truth_valued_ssa_name (op1))
+	return op1;
+      break;
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+/* Optimize ARG1 CODE ARG2 to a constant for bitwise binary
+   operations CODE, if one operand has the logically inverted
+   value of the other.  */
+static tree
+simplify_bitwise_binary_1 (enum tree_code code, tree type,
+			   tree arg1, tree arg2)
+{
+  tree anot;
+
+  /* If CODE isn't a bitwise binary operation, return NULL_TREE.  */
+  if (code != BIT_AND_EXPR && code != BIT_IOR_EXPR
+      && code != BIT_XOR_EXPR)
+    return NULL_TREE;
+
+  /* First check if operands ARG1 and ARG2 are equal.  If so
+     return NULL_TREE as this optimization is handled fold_stmt.  */
+  if (arg1 == arg2)
+    return NULL_TREE;
+  /* See if we have in arguments logical-not patterns.  */
+  if (((anot = lookup_logical_inverted_value (arg1)) == NULL_TREE
+       || anot != arg2)
+      && ((anot = lookup_logical_inverted_value (arg2)) == NULL_TREE
+	  || anot != arg1))
+    return NULL_TREE;
+
+  /* X & !X -> 0.  */
+  if (code == BIT_AND_EXPR)
+    return fold_convert (type, integer_zero_node);
+  /* X | !X -> 1 and X ^ !X -> 1, if X is truth-valued.  */
+  if (truth_valued_ssa_name (anot))
+    return fold_convert (type, integer_one_node);
+
+  /* ??? Otherwise result is (X != 0 ? X : 1).  not handled.  */
+  return NULL_TREE;
+}
+
 /* Simplify bitwise binary operations.
    Return true if a transformation applied, otherwise return false.  */
 
@@ -1766,6 +1889,15 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
       gimple_assign_set_rhs1 (stmt, def1_arg1);
       gimple_assign_set_rhs2 (stmt, cst);
       update_stmt (stmt);
+      return true;
+    }
+
+  /* Try simple folding for X op !X, and X op X.  */
+  res = simplify_bitwise_binary_1 (code, TREE_TYPE (arg1), arg1, arg2);
+  if (res != NULL_TREE)
+    {
+      gimple_assign_set_rhs_from_tree (gsi, res);
+      update_stmt (gsi_stmt (*gsi));
       return true;
     }
 

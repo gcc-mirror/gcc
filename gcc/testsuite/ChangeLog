@@ -1,3 +1,16 @@
+2011-07-07  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/binop-notxor1.c: New test.
+	* gcc.dg/binop-notand4a.c: New test.
+	* gcc.dg/binop-notxor2.c: New test.
+	* gcc.dg/binop-notand3a.c: New test.
+	* gcc.dg/binop-notand2a.c: New test.
+	* gcc.dg/binop-notand6a.c: New test.
+	* gcc.dg/binop-notor1.c: New test.
+	* gcc.dg/binop-notand1a.c: New test.
+	* gcc.dg/binop-notand5a.c: New test.
+	* gcc.dg/binop-notor2.c: New test.
+
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49640
