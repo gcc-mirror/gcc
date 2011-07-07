@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv7-a" } */
+/* { dg-require-effective-target arm_dsp } */
+/* { dg-options "-O2" } */
 
 long long foolong (long long x, short *a, short *b)
 {

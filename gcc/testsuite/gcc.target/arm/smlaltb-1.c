@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv7-a" } */
+/* { dg-require-effective-target arm_dsp } */
+/* { dg-options "-O2" } */
 
 long long int
 foo (long long x, int in)
@@ -10,4 +11,4 @@ foo (long long x, int in)
   return x + b * a;
 }
 
-/* { dg-final { scan-assembler "smlaltb" } } */
+/* { dg-final { scan-assembler "smlaltb\\t" } } */
