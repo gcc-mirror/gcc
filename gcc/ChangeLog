@@ -1,3 +1,8 @@
+2011-07-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (*local*): Remove.
+	* doc/install-old.texi: Don't mention local configurations.
+
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/49522

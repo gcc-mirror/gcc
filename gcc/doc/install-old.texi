@@ -183,13 +183,3 @@ sun4, symmetry, tower-32, tower.
 @noindent
 Remember that a machine name specifies both the cpu type and the company
 name.
-If you want to install your own homemade configuration files, you can
-use @samp{local} as the company name to access them.  If you use
-configuration @samp{@var{cpu}-local}, the configuration name
-without the cpu prefix
-is used to form the configuration file names.
-
-Thus, if you specify @samp{m68k-local}, configuration uses
-files @file{m68k.md}, @file{local.h}, @file{m68k.c},
-@file{xm-local.h}, @file{t-local}, and @file{x-local}, all in the
-directory @file{config/m68k}.

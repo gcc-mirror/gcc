@@ -222,13 +222,6 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 esac
 
 case ${host} in
-# Support site-specific machine types.
-*local*)
-	rest=`echo ${host} | sed -e "s/$cpu_type-//"`
-	if test -f $srcdir/config/${cpu_type}/t-$rest
-	then tmake_file=${cpu_type}/t-$rest
-	fi
-	;;
 alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-crtfm"
 	extra_parts="$extra_parts crtfastmath.o"
