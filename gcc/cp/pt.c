@@ -214,7 +214,7 @@ push_access_scope (tree t)
   else if (DECL_CLASS_SCOPE_P (t))
     push_nested_class (DECL_CONTEXT (t));
   else
-    pushclass (NULL_TREE);
+    push_to_top_level ();
 
   if (TREE_CODE (t) == FUNCTION_DECL)
     {
@@ -239,7 +239,7 @@ pop_access_scope (tree t)
   if (DECL_FRIEND_CONTEXT (t) || DECL_CLASS_SCOPE_P (t))
     pop_nested_class ();
   else
-    popclass ();
+    pop_from_top_level ();
 }
 
 /* Do any processing required when DECL (a member template
@@ -13843,7 +13843,13 @@ static void
 push_deduction_access_scope (tree tmpl)
 {
   if (cxx_dialect >= cxx0x)
-    push_access_scope (DECL_TEMPLATE_RESULT (tmpl));
+    {
+      int ptd = processing_template_decl;
+      push_access_scope (DECL_TEMPLATE_RESULT (tmpl));
+      /* Preserve processing_template_decl across push_to_top_level.  */
+      if (ptd && !processing_template_decl)
+	++processing_template_decl;
+    }
   else
     push_deferring_access_checks (dk_no_check);
 }
