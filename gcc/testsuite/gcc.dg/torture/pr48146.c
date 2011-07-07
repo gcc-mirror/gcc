@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 
 static unsigned char
 safe_sub_func_int_s_s (int si1, unsigned char si2)

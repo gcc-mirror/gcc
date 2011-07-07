@@ -6,6 +6,7 @@
 
 /* { dg-do run } */
 /* { dg-add-options ieee } */
+/* { dg-require-effective-target large_double } */
 
 extern void link_error(int);
 

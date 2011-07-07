@@ -1,6 +1,7 @@
 /* PR tree-optimization/28632 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vrp" } */
+/* { dg-require-effective-target int32plus } */
 
 void
 v4 (unsigned a, unsigned b)
