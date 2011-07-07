@@ -1,5 +1,9 @@
 2011-07-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49353
+	* semantics.c (expand_or_defer_fn_1): Clear DECL_EXTERNAL
+	on kept inlines.
+
 	PR c++/49568
 	* method.c (make_thunk, use_thunk): Copy DECL_COMDAT.
 
