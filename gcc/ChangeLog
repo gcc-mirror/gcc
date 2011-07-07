@@ -1,3 +1,8 @@
+2011-07-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/t-crtpic, config/i386/t-svr3dbx, config/pa/t-pa:
+	Remove.
+
 2011-07-07  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* hw-doloop.c: New file.
