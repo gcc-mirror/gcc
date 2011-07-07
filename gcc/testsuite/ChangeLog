@@ -1,5 +1,12 @@
 2011-07-07  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr40657-2.c: Remove -march option and unneeded
+	dg-prune-output.
+	* gcc.target/arm/pr42235.c: Likewise.
+	* gcc.target/arm/pr42495.c: Likewise.
+	* gcc.target/arm/pr42574.c: Likewise.
+	* gcc.target/arm/thumb-branch1.c: Likewise.
+
 	* gcc.target/arm/pr39839.c: Don't specify -mthumb or -march, remove
 	unneeded prune of possible warning.
 	* gcc.target/arm/pr40956.c: Likewise.
