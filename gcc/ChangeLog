@@ -1,3 +1,10 @@
+2011-07-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/49495
+	* cgraphunit.c (verify_edge_corresponds_to_fndecl): New function.
+	(verify_cgraph_node): Some functinality moved to
+	verify_edge_corresponds_to_fndecl, call it.
+
 2011-07-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (*local*): Remove.
