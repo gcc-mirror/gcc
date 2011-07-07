@@ -1,6 +1,4 @@
-/* { dg-options "-mthumb -Os -march=armv5te" }  */
-/* { dg-require-effective-target arm_thumb1_ok } */
-/* { dg-prune-output "switch .* conflicts with" } */
+/* { dg-options "-Os" }  */
 /* { dg-final { scan-assembler-not "str\[\\t \]*r.,\[\\t \]*.sp," } } */
 
 struct A {
