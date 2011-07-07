@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv5te" } */
-/* { dg-prune-output "switch .* conflicts with" } */
+/* { dg-skip-if "" { arm_thumb1 } { "*" } { "" } } */
+/* { dg-options "-O2" } */
 
 
 int
@@ -19,4 +19,4 @@ foo (int *p, int *q)
   return accum;
 }
 
-/* { dg-final { scan-assembler "mla" } } */
+/* { dg-final { scan-assembler "mla\\t" } } */
