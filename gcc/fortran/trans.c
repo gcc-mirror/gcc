@@ -622,13 +622,16 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status,
       gfc_add_modify (&alloc_block, res,
 	      fold_convert (prvoid_type_node,
 		    build_call_expr_loc (input_location,
-			 gfor_fndecl_caf_register, 3,
+			 gfor_fndecl_caf_register, 6,
 			 fold_build2_loc (input_location,
 				  MAX_EXPR, size_type_node, size,
 				  build_int_cst (size_type_node, 1)),
 			 build_int_cst (integer_type_node,
 					GFC_CAF_COARRAY_ALLOC),
-			 null_pointer_node)));  /* Token */
+			 null_pointer_node,  /* token  */
+			 null_pointer_node,  /* stat  */
+			 null_pointer_node,  /* errmsg, errmsg_len  */
+			 build_int_cst (integer_type_node, 0))));
     }
   else
     {

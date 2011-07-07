@@ -1,3 +1,13 @@
+2011-07-07  Tobias Burnus  <burnus@net-b.de>
+
+	* libcaf.h (__attribute__, unlikely, likely): New macros.
+	(caf_register_t): Update comment.
+	(_gfortran_caf_register): Add stat, errmsg, errmsg_len arguments.
+	* single.c (_gfortran_caf_register): Ditto; add error diagnostics.
+	* mpi.c (_gfortran_caf_register): Ditto.
+	(caf_is_finalized): New global variable.
+	(_gfortran_caf_finalize): Use it.
+
 2011-07-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* runtime/memory.c (internal_malloc_size):  If size is zero,

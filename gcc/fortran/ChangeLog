@@ -1,3 +1,8 @@
+2011-07-07  Tobias Burnus  <burnus@net-b.de>
+
+	* trans.c (gfc_allocate_with_status): Call _gfortran_caf_register
+	with NULL arguments for (new) stat=/errmsg= arguments.
+
 2011-07-06  Daniel Carrera <dcarrera@gmail.com>
 
 	* trans-array.c (gfc_array_allocate): Rename allocatable_array to
