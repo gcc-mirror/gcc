@@ -120,6 +120,10 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_CPU_DEFAULT_SPEC ASM_CPU32_DEFAULT_SPEC
 #endif
 
+/* Both Sun as and GNU as understand -K PIC.  */
+#undef ASM_SPEC
+#define ASM_SPEC ASM_SPEC_BASE ASM_PIC_SPEC
+
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
 %{mcpu=sparclet|mcpu=tsc701:-D__sparclet__} \

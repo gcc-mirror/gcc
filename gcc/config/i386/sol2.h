@@ -61,12 +61,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #define ASM_CPU_SPEC ""
  
-/* Removed -K PIC from generic sol2.h ASM_SPEC: the Solaris 8 and 9 assembler
-   gives many warnings: R_386_32 relocation is used for symbol ".text", and
+/* Don't include ASM_PIC_SPEC.  While the Solaris 8 and 9 assembler accepts
+   -K PIC, it gives many warnings:
+	R_386_32 relocation is used for symbol "<symbol>"
    GNU as doesn't recognize -K at all.  */
-/* FIXME: Perhaps split between common and CPU-specific parts?  */
 #undef ASM_SPEC
-#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} -s %(asm_cpu)"
+#define ASM_SPEC ASM_SPEC_BASE
 
 #define SUBTARGET_CPU_EXTRA_SPECS \
   { "cpp_subtarget",	 CPP_SUBTARGET_SPEC },		\

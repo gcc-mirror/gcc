@@ -99,13 +99,12 @@ along with GCC; see the file COPYING3.  If not see
 	TARGET_SUB_OS_CPP_BUILTINS();			\
     } while (0)
 
-/* It's safe to pass -s always, even if -g is not used.  */
-#undef ASM_SPEC
-#define ASM_SPEC "\
-%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} -s \
-%{fpic|fpie|fPIC|fPIE:-K PIC} \
-%(asm_cpu) \
-"
+/* It's safe to pass -s always, even if -g is not used.  Those options are
+   handled by both Sun as and GNU as.  */
+#define ASM_SPEC_BASE \
+"%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} -s %(asm_cpu)"
+
+#define ASM_PIC_SPEC " %{fpic|fpie|fPIC|fPIE:-K PIC}"
 
 #undef LIB_SPEC
 #define LIB_SPEC \

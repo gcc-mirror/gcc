@@ -1,3 +1,12 @@
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (ASM_SPEC): Split into ...
+	(ASM_SPEC_BASE, ASM_PIC_SPEC): ... this.
+	* config/i386/sol2.h (ASM_SPEC): Define using ASM_SPEC_BASE.
+	* config/i386/sol2-bi.h (ASM_CPU_SPEC): Redefine.
+	(ASM_SPEC): Use ASM_SPEC_BASE.
+	* config/sparc/sol2.h (ASM_SPEC): Redefine.
+
 2011-07-07  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/avr.md (*reload_insi): Change predicate #1 to
