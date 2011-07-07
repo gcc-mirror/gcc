@@ -1,5 +1,11 @@
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/49522
+	* df-problems.c (dead_debug_reset): Remove dead_debug_uses
+	referencing debug insns that have been reset.
+	(dead_debug_insert_before): Don't assert reg is non-NULL,
+	instead return immediately if it is NULL.
+
 	PR middle-end/49640
 	* gimplify.c (gimplify_compound_lval): For last 2 ARRAY_*REF
 	operands and last COMPONENT_REF operand call gimplify_expr on it

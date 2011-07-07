@@ -1,5 +1,8 @@
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/49522
+	* gcc.dg/debug/pr49522.c: New test.
+
 	PR middle-end/49640
 	* gcc.dg/gomp/pr49640.c: New test.
 

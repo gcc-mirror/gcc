@@ -3095,6 +3095,7 @@ static void
 dead_debug_reset (struct dead_debug *debug, unsigned int dregno)
 {
   struct dead_debug_use **tailp = &debug->head;
+  struct dead_debug_use **insnp = &debug->head;
   struct dead_debug_use *cur;
   rtx insn;
 
@@ -3112,9 +3113,25 @@ dead_debug_reset (struct dead_debug *debug, unsigned int dregno)
 	    debug->to_rescan = BITMAP_ALLOC (NULL);
 	  bitmap_set_bit (debug->to_rescan, INSN_UID (insn));
 	  XDELETE (cur);
+	  /* If the current use isn't the first one attached to INSN, go back
+	     to this first use.  We assume that the uses attached to an insn
+	     are adjacent.  */                                                                       
+	  if (tailp != insnp && DF_REF_INSN ((*insnp)->use) == insn)
+	    tailp = insnp;
+	  /* Then remove all the other uses attached to INSN.  */
+	  while ((cur = *tailp) && DF_REF_INSN (cur->use) == insn)
+	    {
+	      *tailp = cur->next;
+	      XDELETE (cur);
+	    }
+	  insnp = tailp;
 	}
       else
-	tailp = &(*tailp)->next;
+	{
+	  if (DF_REF_INSN ((*insnp)->use) != DF_REF_INSN (cur->use))
+	    insnp = tailp;
+	  tailp = &(*tailp)->next;
+	}
     }
 }
 
@@ -3173,7 +3190,10 @@ dead_debug_insert_before (struct dead_debug *debug, unsigned int uregno,
 	tailp = &(*tailp)->next;
     }
 
-  gcc_assert (reg);
+  /* We may have dangling bits in debug->used for registers that were part
+     of a multi-register use, one component of which has been reset.  */
+  if (reg == NULL)
+    return;
 
   /* Create DEBUG_EXPR (and DEBUG_EXPR_DECL).  */
   dval = make_debug_expr_from_rtl (reg);
