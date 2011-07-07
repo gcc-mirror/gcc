@@ -216,7 +216,6 @@ dw_loc_descr_node;
 
 /* Interface from dwarf2out.c to dwarf2cfi.c.  */
 extern dw_fde_ref current_fde (void);
-extern void output_cfi_directive (dw_cfi_ref);
 extern struct dw_loc_descr_struct *build_cfa_loc
   (dw_cfa_location *, HOST_WIDE_INT);
 extern struct dw_loc_descr_struct *build_cfa_aligned_loc
@@ -244,8 +243,7 @@ extern enum dw_cfi_oprnd_type dw_cfi_oprnd2_desc
 extern void dwarf2out_decl (tree);
 extern void dwarf2out_frame_debug (rtx, bool);
 extern void dwarf2out_frame_debug_init (void);
-extern void dwarf2out_cfi_begin_epilogue (rtx);
-extern void dwarf2out_frame_debug_restore_state (void);
+extern void dwarf2out_emit_cfi (dw_cfi_ref cfi);
 
 extern void debug_dwarf (void);
 struct die_struct;
