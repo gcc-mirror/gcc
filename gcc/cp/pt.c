@@ -11200,8 +11200,12 @@ tsubst_qualified_id (tree qualified_id, tree args,
     expr = name;
 
   if (dependent_scope_p (scope))
-    return build_qualified_name (NULL_TREE, scope, expr,
-				 QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
+    {
+      if (is_template)
+	expr = build_min_nt (TEMPLATE_ID_EXPR, expr, template_args);
+      return build_qualified_name (NULL_TREE, scope, expr,
+				   QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
+    }
 
   if (!BASELINK_P (name) && !DECL_P (expr))
     {

@@ -1,3 +1,9 @@
+2011-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48157
+	* pt.c (tsubst_qualified_id): Preserve TEMPLATE_ID_EXPR in
+	partial instantiation.
+
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/49644

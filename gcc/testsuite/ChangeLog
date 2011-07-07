@@ -1,3 +1,8 @@
+2011-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48157
+	* g++.dg/template/template-id-4.C: New.
+
 2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/sparc/cas64.c: New test.
