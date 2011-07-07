@@ -1,5 +1,10 @@
 2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR libmudflap/49550
+	* gcc.c (MFWRAP_SPEC): Also wrap mmap64.
+
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR target/39150
 	* configure.ac (gcc_cv_as_hidden): Also accept
 	x86_64-*-solaris2.1[0-9]*.

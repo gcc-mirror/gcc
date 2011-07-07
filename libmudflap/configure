@@ -4455,12 +4455,36 @@ _ACEOF
 fi
 done
 
+for ac_func in mmap64
+do :
+  ac_fn_c_check_func "$LINENO" "mmap64" "ac_cv_func_mmap64"
+if test "x$ac_cv_func_mmap64" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MMAP64 1
+_ACEOF
+
+fi
+done
+
 for ac_func in __libc_freeres
 do :
   ac_fn_c_check_func "$LINENO" "__libc_freeres" "ac_cv_func___libc_freeres"
 if test "x$ac_cv_func___libc_freeres" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE___LIBC_FREERES 1
+_ACEOF
+
+fi
+done
+
+for ac_func in rawmemchr stpcpy mempcpy
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi
@@ -10583,7 +10607,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10586 "configure"
+#line 10610 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10689,7 +10713,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10692 "configure"
+#line 10716 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
