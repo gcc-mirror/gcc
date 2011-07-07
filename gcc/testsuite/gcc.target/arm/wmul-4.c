@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv6t2" } */
+/* { dg-require-effective-target arm_dsp } */
+/* { dg-options "-O2" } */
 
 int mac(const int *a, const int *b, long long sqr, long long *sum)
 {
