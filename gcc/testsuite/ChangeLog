@@ -1,5 +1,10 @@
 2011-07-07  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr39839.c: Don't specify -mthumb or -march, remove
+	unneeded prune of possible warning.
+	* gcc.target/arm/pr40956.c: Likewise.
+	* gcc.target/arm/pr42505.c: Likewise.
+
 	* gcc.c-torture/compile/pr41679.c: Move from gcc.target/arm.
 	* gcc.c-torture/compile/pr46883.c: Likewise.
 	* gcc.c-torture/compile/pr46934.c: Likewise.
