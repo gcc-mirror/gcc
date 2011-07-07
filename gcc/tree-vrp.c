@@ -7342,6 +7342,39 @@ simplify_switch_using_ranges (gimple stmt)
   return false;
 }
 
+/* Simplify an integral conversion from an SSA name in STMT.  */
+
+static bool
+simplify_conversion_using_ranges (gimple stmt)
+{
+  tree rhs1 = gimple_assign_rhs1 (stmt);
+  gimple def_stmt = SSA_NAME_DEF_STMT (rhs1);
+  value_range_t *final, *inner;
+
+  /* Obtain final and inner value-ranges for a conversion
+     sequence (final-type)(intermediate-type)inner-type.  */
+  final = get_value_range (gimple_assign_lhs (stmt));
+  if (final->type != VR_RANGE)
+    return false;
+  if (!is_gimple_assign (def_stmt)
+      || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
+    return false;
+  rhs1 = gimple_assign_rhs1 (def_stmt);
+  if (TREE_CODE (rhs1) != SSA_NAME)
+    return false;
+  inner = get_value_range (rhs1);
+  if (inner->type != VR_RANGE)
+    return false;
+  /* If the value-range is preserved by the conversion sequence strip
+     the intermediate conversion.  */
+  if (!tree_int_cst_equal (final->min, inner->min)
+      || !tree_int_cst_equal (final->max, inner->max))
+    return false;
+  gimple_assign_set_rhs1 (stmt, rhs1);
+  update_stmt (stmt);
+  return true;
+}
+
 /* Simplify STMT using ranges if possible.  */
 
 static bool
@@ -7351,6 +7384,7 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
   if (is_gimple_assign (stmt))
     {
       enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
+      tree rhs1 = gimple_assign_rhs1 (stmt);
 
       switch (rhs_code)
 	{
@@ -7364,7 +7398,7 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	     or identity if the RHS is zero or one, and the LHS are known
 	     to be boolean values.  Transform all TRUTH_*_EXPR into
              BIT_*_EXPR if both arguments are known to be boolean values.  */
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_truth_ops_using_ranges (gsi, stmt);
 	  break;
 
@@ -7373,15 +7407,15 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	 than zero and the second operand is an exact power of two.  */
 	case TRUNC_DIV_EXPR:
 	case TRUNC_MOD_EXPR:
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt)))
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 	      && integer_pow2p (gimple_assign_rhs2 (stmt)))
 	    return simplify_div_or_mod_using_ranges (stmt);
 	  break;
 
       /* Transform ABS (X) into X or -X as appropriate.  */
 	case ABS_EXPR:
-	  if (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
-	      && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
+	  if (TREE_CODE (rhs1) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_abs_using_ranges (stmt);
 	  break;
 
@@ -7390,8 +7424,14 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	  /* Optimize away BIT_AND_EXPR and BIT_IOR_EXPR
 	     if all the bits being cleared are already cleared or
 	     all the bits being set are already set.  */
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_bit_ops_using_ranges (gsi, stmt);
+	  break;
+
+	CASE_CONVERT:
+	  if (TREE_CODE (rhs1) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
+	    return simplify_conversion_using_ranges (stmt);
 	  break;
 
 	default:
