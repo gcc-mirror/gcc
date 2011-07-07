@@ -1,3 +1,8 @@
+2011-07-07  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* reload1.c (choose_reload_regs): Use mode sizes to check whether
+	an old reload register completely defines the required value.
+
 2011-07-07  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_unary_loc): Do not strip sign-changes
