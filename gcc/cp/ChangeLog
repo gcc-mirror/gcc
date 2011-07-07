@@ -1,3 +1,15 @@
+2011-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49663
+	* pt.c (push_deduction_access_scope): Preserve
+	processing_template_decl across push_to_top_level.
+	And revert:
+	* class.c (pushclass): Accept NULL argument.
+	(popclass): Deal with popping null class.
+	* pt.c (push_access_scope, pop_access_scope): Use them rather than
+	push_to_top_level/pop_from_top_level.
+	* name-lookup.c (lookup_name_real_1): Check current_class_type.
+
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/49644

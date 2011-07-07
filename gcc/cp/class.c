@@ -6125,9 +6125,6 @@ restore_class_cache (void)
    So that we may avoid calls to lookup_name, we cache the _TYPE
    nodes of local TYPE_DECLs in the TREE_TYPE field of the name.
 
-   For use by push_access_scope, we allow TYPE to be null to temporarily
-   push out of class scope.  This does not actually change binding levels.
-
    For multiple inheritance, we perform a two-pass depth-first search
    of the type lattice.  */
 
@@ -6135,6 +6132,8 @@ void
 pushclass (tree type)
 {
   class_stack_node_t csn;
+
+  type = TYPE_MAIN_VARIANT (type);
 
   /* Make sure there is enough room for the new entry on the stack.  */
   if (current_class_depth + 1 >= current_class_stack_size)
@@ -6153,15 +6152,6 @@ pushclass (tree type)
   csn->names_used = 0;
   csn->hidden = 0;
   current_class_depth++;
-
-  if (type == NULL_TREE)
-    {
-      current_class_name = current_class_type = NULL_TREE;
-      csn->hidden = true;
-      return;
-    }
-
-  type = TYPE_MAIN_VARIANT (type);
 
   /* Now set up the new type.  */
   current_class_name = TYPE_NAME (type);
@@ -6207,11 +6197,7 @@ invalidate_class_lookup_cache (void)
 void
 popclass (void)
 {
-  if (current_class_type)
-    poplevel_class ();
-  else
-    gcc_assert (current_class_depth
-		&& current_class_stack[current_class_depth - 1].hidden);
+  poplevel_class ();
 
   current_class_depth--;
   current_class_name = current_class_stack[current_class_depth].name;
