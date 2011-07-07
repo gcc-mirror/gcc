@@ -315,11 +315,11 @@ gnat_init (void)
   SET_TYPE_RM_MAX_VALUE (boolean_type_node,
 			 build_int_cst (boolean_type_node, 1));
   SET_TYPE_RM_SIZE (boolean_type_node, bitsize_int (1));
+  boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
+  boolean_false_node = TYPE_MIN_VALUE (boolean_type_node);
 
   sbitsize_one_node = sbitsize_int (1);
   sbitsize_unit_node = sbitsize_int (BITS_PER_UNIT);
-  boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
-  boolean_false_node = TYPE_MIN_VALUE (boolean_type_node);
 
   ptr_void_type_node = build_pointer_type (void_type_node);
 
