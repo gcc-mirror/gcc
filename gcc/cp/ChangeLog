@@ -1,3 +1,10 @@
+2011-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/49644
+	* typeck.c (cp_build_binary_op): For MULT_EXPR and TRUNC_DIV_EXPR with
+	one non-complex and one complex argument, call save_expr on both
+	operands.
+
 2011-07-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49598
