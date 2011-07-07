@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SPEC
 #define CPP_SPEC "%{,assembler-with-cpp:-P} %(cpp_subtarget)"
 
+#define ASM_CPU_DEFAULT_SPEC ""
+
 #define ASM_CPU_SPEC ""
  
 /* Don't include ASM_PIC_SPEC.  While the Solaris 8 and 9 assembler accepts
@@ -70,7 +72,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define SUBTARGET_CPU_EXTRA_SPECS \
   { "cpp_subtarget",	 CPP_SUBTARGET_SPEC },		\
-  { "asm_cpu",		 ASM_CPU_SPEC }
+  { "asm_cpu",		 ASM_CPU_SPEC },		\
+  { "asm_cpu_default",	 ASM_CPU_DEFAULT_SPEC },	\
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \

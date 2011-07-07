@@ -2957,6 +2957,8 @@ information are.
 @item
 @uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
 @item
+@uref{#amd64-x-solaris210,,amd64-*-solaris2.10}
+@item
 @uref{#arm-x-elf,,arm-*-elf}
 @item
 @uref{#avr,,avr}
@@ -3057,6 +3059,8 @@ information are.
 @item
 @uref{#x86-64-x-x,,x86_64-*-*, amd64-*-*}
 @item
+@uref{#x86-64-x-solaris210,,x86_64-*-solaris2.1[0-9]*}
+@item
 @uref{#xtensa-x-elf,,xtensa*-*-elf}
 @item
 @uref{#xtensa-x-linux,,xtensa*-*-linux*}
@@ -3153,6 +3157,13 @@ DBX@.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
 
 @c FIXME: still applicable?
+
+@html
+<hr />
+@end html
+@heading @anchor{amd64-x-solaris210}amd64-*-solaris2.1[0-9]*
+
+This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
 
 @html
 <hr />
@@ -3537,10 +3548,10 @@ you have the patch installed, you can configure GCC with an appropriate
 @end html
 @heading @anchor{ix86-x-solaris210}i?86-*-solaris2.10
 Use this for Solaris 10 or later on x86 and x86-64 systems.  This
-configuration is supported by GCC 4.0 and later versions only.  Unlike
-@samp{sparcv9-sun-solaris2*}, there is no corresponding 64-bit
-configuration like @samp{amd64-*-solaris2*} or @samp{x86_64-*-solaris2*}.
-@c FIXME: will there ever be?
+configuration is supported by GCC 4.0 and later versions only.  Starting
+with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2.1[0-9]*} or
+@samp{x86_64-*-solaris2.1[0-9]*} configuration that corresponds to
+@samp{sparcv9-sun-solaris2*}.
 
 It is recommended that you configure GCC to use the GNU assembler, in
 @file{/usr/sfw/bin/gas}.  The versions included in Solaris 10, from GNU
@@ -4396,6 +4407,22 @@ GCC supports the x86-64 architecture implemented by the AMD64 processor
 (amd64-*-* is an alias for x86_64-*-*) on GNU/Linux, FreeBSD and NetBSD@.
 On GNU/Linux the default is a bi-arch compiler which is able to generate
 both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
+
+@html
+<hr />
+@end html
+@heading @anchor{x86-64-x-solaris2.10}x86_64-*-solaris2.1[0-9]*
+
+GCC also supports the x86-64 architecture implemented by the AMD64
+processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}) on
+Solaris 10 or later.  Unlike other systems, without special options a
+bi-arch compiler is built which generates 32-bit code by default, but
+can generate 64-bit x86-64 code with the @option{-m64} switch.  Since
+GCC 4.7, there is also configuration that defaults to 64-bit code, but
+can generate 32-bit code with @option{-m32}.  To configure and build
+this way, you have to provide all support libraries like @file{libgmp}
+as 64-bit code, configure with @option{--target=x86_64-pc-solaris2.1x}
+and @samp{CC=gcc -m64}.
 
 @html
 <hr />

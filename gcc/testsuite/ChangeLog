@@ -1,3 +1,8 @@
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/39150
+	* gcc.misc-tests/linkage.exp: Handle x86_64-*-solaris2.1[0-9]*.
+
 2011-07-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/no-r11-1.c: New test for -mr11, -mno-r11.

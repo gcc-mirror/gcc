@@ -1011,8 +1011,8 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
   endif
 endif
 
-ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
-  LIBGNAT_TARGET_PAIRS = \
+ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(arch) $(osys))),)
+  LIBGNAT_TARGET_PAIRS_COMMON = \
   a-numaux.adb<a-numaux-x86.adb \
   a-numaux.ads<a-numaux-x86.ads \
   a-intnam.ads<a-intnam-solaris.ads \
@@ -1028,13 +1028,29 @@ ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
   s-tpopsp.adb<s-tpopsp-solaris.adb \
   g-soliop.ads<g-soliop-solaris.ads
 
-  ifeq ($(strip $(MULTISUBDIR)),/amd64)
-    LIBGNAT_TARGET_PAIRS += \
-    system.ads<system-solaris-x86_64.ads
+  LIBGNAT_TARGET_PAIRS_32 = \
+  g-bytswa.adb<g-bytswa-x86.adb \
+  system.ads<system-solaris-x86.ads
+
+  LIBGNAT_TARGET_PAIRS_64 = \
+  system.ads<system-solaris-x86_64.ads
+
+  ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
+    ifeq ($(strip $(MULTISUBDIR)),/amd64)
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
+    else
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
+    endif
   else
-    LIBGNAT_TARGET_PAIRS += \
-    g-bytswa.adb<g-bytswa-x86.adb \
-    system.ads<system-solaris-x86.ads
+    ifeq ($(strip $(MULTISUBDIR)),/32)
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
+    else
+      LIBGNAT_TARGET_PAIRS = \
+      $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
+    endif
   endif
 
   TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb

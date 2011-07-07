@@ -15163,7 +15163,7 @@ $as_echo "$as_me: WARNING: OpenBSD/Alpha without dlopen(). Shared library suppor
  alpha*-*-linux*)
     machdep="alpha_mach_dep.lo"
     ;;
- i?86-*-solaris2.[89] | i?86-*-solaris2.1?)
+ i?86-*-solaris2.[89] | i?86-*-solaris2.1? | x86_64-*-solaris2.1?)
 
 $as_echo "#define SOLARIS25_PROC_VDB_BUG_FIXED 1" >>confdefs.h
 

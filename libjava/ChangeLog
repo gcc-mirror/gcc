@@ -1,3 +1,10 @@
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/39150
+	* configure.host (x86_64-*): Add -Usun to libgcj_flags.
+	(x86_64-*-solaris2.1[0-9]*): New case.
+	(i?86-*-solaris2*): Also accept x86_64-*-solaris2.1[0-9]*.
+
 2011-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libgcj/49314

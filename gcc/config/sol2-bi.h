@@ -56,6 +56,16 @@
 #define DEF_ARCH64_SPEC(__str) "%{!m32:" __str "}"
 #endif
 
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC \
+(DEFAULT_ARCH32_P ? "\
+%{m64:" ASM_CPU64_DEFAULT_SPEC "} \
+%{!m64:" ASM_CPU32_DEFAULT_SPEC "} \
+" : "\
+%{m32:" ASM_CPU32_DEFAULT_SPEC "} \
+%{!m32:" ASM_CPU64_DEFAULT_SPEC "} \
+")
+
 /* This should be the same as LINK_ARCH32_SPEC_BASE, except with
    ARCH64_SUBDIR appended to the paths and /usr/ccs/lib is no longer
    necessary.  */
@@ -78,8 +88,14 @@
 #endif
 
 #ifdef USE_GLD
+#if DEFAULT_ARCH32_P
+#define ARCH_DEFAULT_EMULATION ARCH32_EMULATION
+#else
+#define ARCH_DEFAULT_EMULATION ARCH64_EMULATION
+#endif
 #define TARGET_LD_EMULATION "%{m32:-m " ARCH32_EMULATION "}" \
-			    "%{m64:-m " ARCH64_EMULATION "} "
+			    "%{m64:-m " ARCH64_EMULATION "}" \
+			    "%{!m32:%{!m64:-m " ARCH_DEFAULT_EMULATION "}} "
 #else
 #define TARGET_LD_EMULATION ""
 #endif

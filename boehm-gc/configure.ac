@@ -400,7 +400,7 @@ case "$host" in
  alpha*-*-linux*)
     machdep="alpha_mach_dep.lo"
     ;;
- i?86-*-solaris2.[[89]] | i?86-*-solaris2.1?)
+ i?86-*-solaris2.[[89]] | i?86-*-solaris2.1? | x86_64-*-solaris2.1?)
     AC_DEFINE(SOLARIS25_PROC_VDB_BUG_FIXED,1,[PROC_VDB in Solaris 2.5 gives wrong values for dirty bits])
     ;;
  mipstx39-*-elf*)

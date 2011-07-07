@@ -3477,7 +3477,7 @@ case "${target}" in
   i[3456789]86-*-sco*)
     noconfigdirs="$noconfigdirs gprof target-libgloss"
     ;;
-  i[3456789]86-*-solaris2*)
+  i[3456789]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   i[3456789]86-*-sysv4*)

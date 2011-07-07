@@ -141,6 +141,9 @@ case "${host}" in
 		libgcj_flags="${libgcj_flags} -ffloat-store" ;;
 	esac
 	libgcj_flags="${libgcj_flags} -fomit-frame-pointer"
+	# On Solaris we have defined 'sun' which later conflicts with 
+	# namespace usage. So to work this away we use the below undefine.
+	libgcj_flags="${libgcj_flags} -Usun"
 	libgcj_cxxflags=
 	libgcj_cflags=
 	DIVIDESPEC=-fno-use-divide-subroutine
@@ -285,6 +288,10 @@ EOF
 	sysdeps_dir=i386
 	DIVIDESPEC=-f%{m32:no-}%{!m32:%{!m64:no-}}%{m64:}use-divide-subroutine
 	;;
+  x86_64-*-solaris2.1[0-9]* )
+	sysdeps_dir=i386
+	DIVIDESPEC=-f%{m32:no-}use-divide-subroutine
+	;;
   mips-sgi-irix6* )
 	can_unwind_signal=yes
 	sysdeps_dir=mips
@@ -322,7 +329,7 @@ EOF
 	DIVIDESPEC=-fuse-divide-subroutine
 	CHECKREFSPEC=-fcheck-references
 	;;
-  i?86-*-solaris2*)
+  i?86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 	can_unwind_signal=yes
 	;;
   *-*-freebsd*)
