@@ -1,6 +1,33 @@
 2011-07-07  Bernd Schmidt  <bernds@codesourcery.com>
 	    Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (add_cfi): Remove.
+	(dwarf2out_cfi_label): Remove force argument.  Only generate the
+	label name.
+	(add_fde_cfi): Simplify the different code paths.
+	(add_cie_cfi): New.
+	(old_cfa, old_cfa_remember): New.
+	(def_cfa_1, reg_save): Remove label, add for_cie parameter.
+	(last_reg_save_label): Remove.
+	(dwarf2out_args_size, dwarf2out_stack_adjust, queue_reg_save,
+	dwarf2out_frame_debug_def_cfa, dwarf2out_frame_debug_adjust_cfa,
+	dwarf2out_frame_debug_cfa_offset, dwarf2out_frame_debug_cfa_register,
+	dwarf2out_frame_debug_cfa_expression,
+	dwarf2out_frame_debug_cfa_restore,
+	dwarf2out_frame_debug_cfa_window_save,
+	dwarf2out_frame_debug_expr): Remove label parameter.
+	(cfi_label_required_p, add_cfis_to_fde): New.
+	(dwarf2out_frame_debug_after_prologue): New.
+	(dwarf2cfi_frame_init): Initialize old_cfa.
+	(dwarf2out_frame_debug_restore_state): Likewise.
+	* dwarf2out.c (dwarf2out_emit_cfi): Only do output for cfi_asm.
+	(dwarf2out_switch_text_section): Don't clear dw_fde_current_label here.
+	* final.c (final_start_function): Call
+	dwarf2out_frame_debug_after_prologue.
+
+2011-07-07  Bernd Schmidt  <bernds@codesourcery.com>
+	    Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (cfi_insn): New.
 	(dwarf2out_cfi_label): Don't emit cfi label here.
 	(add_fde_cfi): Create a NOTE_INSN_CFI.

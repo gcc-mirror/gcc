@@ -243,6 +243,7 @@ extern enum dw_cfi_oprnd_type dw_cfi_oprnd2_desc
 extern void dwarf2out_decl (tree);
 extern void dwarf2out_frame_debug (rtx, bool);
 extern void dwarf2out_frame_debug_init (void);
+extern void dwarf2out_frame_debug_after_prologue (void);
 extern void dwarf2out_emit_cfi (dw_cfi_ref cfi);
 
 extern void debug_dwarf (void);

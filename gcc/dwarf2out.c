@@ -945,7 +945,8 @@ output_cfi_directive (dw_cfi_ref cfi)
 void
 dwarf2out_emit_cfi (dw_cfi_ref cfi)
 {
-  output_cfi_directive (cfi);
+  if (dwarf2out_do_cfi_asm ())
+    output_cfi_directive (cfi);
 }
 
 /* Output CFIs from VEC, up to index UPTO, to bring current FDE to the
@@ -1792,10 +1793,6 @@ dwarf2out_switch_text_section (void)
       fde->dw_fde_second_end = crtl->subsections.cold_section_end_label;
     }
   have_multiple_function_sections = true;
-
-  /* Reset the current label on switching text sections, so that we
-     don't attempt to advance_loc4 between labels in different sections.  */
-  fde->dw_fde_current_label = NULL;
 
   /* There is no need to mark used sections when not debugging.  */
   if (cold_text_section != NULL)
