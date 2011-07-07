@@ -1,3 +1,19 @@
+2011-07-07  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.md (*reload_insi): Change predicate #1 to
+	const_int_operand.  Ditto for peep2 producing this insn.
+	Add argument to output_reload_insisf call.
+	(*movsi,*movsf): Add argument to output_movsisf call.
+	(*reload_insf): New insn and new peep2 to produce it.
+	* config/avr/avr-protos.h (output_movsisf): Change prototype.
+	(output_reload_insisf): Change prototype.
+	* config/avr/avr.c (avr_asm_len): New function.
+	(output_reload_insisf): Rewrite.
+	(output_movsisf): Change prototype.  output_reload_insisf for
+	all CONST_INT and CONST_DOUBLE.  ALlow moving 0.0f to memory.
+	(adjust_insn_length): Add argument to output_movsisf and
+	output_reload_insisf call.
+
 2011-07-07  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* emit-rtl.c (paradoxical_subreg_p): New function.

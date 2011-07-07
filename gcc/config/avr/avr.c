@@ -1184,6 +1184,32 @@ avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 }
 
 
+/* Helper function to print assembler resp. track instruction
+   sequence lengths.
+   
+   If PLEN == NULL:
+       Output assembler code from template TPL with operands supplied
+       by OPERANDS.  This is just forwarding to output_asm_insn.
+   
+   If PLEN != NULL:
+       Add N_WORDS to *PLEN.
+       Don't output anything.
+*/
+
+static void
+avr_asm_len (const char* tpl, rtx* operands, int* plen, int n_words)
+{
+  if (NULL == plen)
+    {
+      output_asm_insn (tpl, operands);
+    }
+  else
+    {
+      *plen += n_words;
+    }
+}
+
+
 /* Return a pointer register name as a string.  */
 
 static const char *
@@ -2600,7 +2626,7 @@ out_movsi_mr_r (rtx insn, rtx op[], int *l)
 }
 
 const char *
-output_movsisf(rtx insn, rtx operands[], int *l)
+output_movsisf (rtx insn, rtx operands[], rtx clobber_reg, int *l)
 {
   int dummy;
   rtx dest = operands[0];
@@ -2643,6 +2669,11 @@ output_movsisf(rtx insn, rtx operands[], int *l)
 		      AS2 (mov,%D0,%D1));
 	    }
 	}
+      else if (CONST_INT_P (src)
+               || CONST_DOUBLE_P (src))
+        {
+          return output_reload_insisf (insn, operands, clobber_reg, real_l);
+        }
       else if (CONSTANT_P (src))
 	{
 	  if (test_hard_reg_class (LD_REGS, dest)) /* ldi d,i */
@@ -2653,68 +2684,6 @@ output_movsisf(rtx insn, rtx operands[], int *l)
 		      AS2 (ldi,%C0,hlo8(%1)) CR_TAB
 		      AS2 (ldi,%D0,hhi8(%1)));
 	    }
-	  
-	  if (GET_CODE (src) == CONST_INT)
-	    {
-	      const char *const clr_op0 =
-		AVR_HAVE_MOVW ? (AS1 (clr,%A0) CR_TAB
-				AS1 (clr,%B0) CR_TAB
-				AS2 (movw,%C0,%A0))
-			     : (AS1 (clr,%A0) CR_TAB
-				AS1 (clr,%B0) CR_TAB
-				AS1 (clr,%C0) CR_TAB
-				AS1 (clr,%D0));
-
-	      if (src == const0_rtx) /* mov r,L */
-		{
-		  *l = AVR_HAVE_MOVW ? 3 : 4;
-		  return clr_op0;
-		}
-	      else if (src == const1_rtx)
-		{
-		  if (!real_l)
-		    output_asm_insn (clr_op0, operands);
-		  *l = AVR_HAVE_MOVW ? 4 : 5;
-		  return AS1 (inc,%A0);
-		}
-	      else if (src == constm1_rtx)
-		{
-		  /* Immediate constants -1 to any register */
-		  if (AVR_HAVE_MOVW)
-		    {
-		      *l = 4;
-		      return (AS1 (clr,%A0)     CR_TAB
-			      AS1 (dec,%A0)     CR_TAB
-			      AS2 (mov,%B0,%A0) CR_TAB
-			      AS2 (movw,%C0,%A0));
-		    }
-		  *l = 5;
-		  return (AS1 (clr,%A0)     CR_TAB
-			  AS1 (dec,%A0)     CR_TAB
-			  AS2 (mov,%B0,%A0) CR_TAB
-			  AS2 (mov,%C0,%A0) CR_TAB
-			  AS2 (mov,%D0,%A0));
-		}
-	      else
-		{
-		  int bit_nr = exact_log2 (INTVAL (src));
-
-		  if (bit_nr >= 0)
-		    {
-		      *l = AVR_HAVE_MOVW ? 5 : 6;
-		      if (!real_l)
-			{
-			  output_asm_insn (clr_op0, operands);
-			  output_asm_insn ("set", operands);
-			}
-		      if (!real_l)
-			avr_output_bld (operands, bit_nr);
-
-		      return "";
-		    }
-		}
-	    }
-	  
 	  /* Last resort, better than loading from memory.  */
 	  *l = 10;
 	  return (AS2 (mov,__tmp_reg__,r31) CR_TAB
@@ -2735,7 +2704,7 @@ output_movsisf(rtx insn, rtx operands[], int *l)
     {
       const char *templ;
 
-      if (src == const0_rtx)
+      if (src == CONST0_RTX (GET_MODE (dest)))
 	  operands[1] = zero_reg_rtx;
 
       templ = out_movsi_mr_r (insn, operands, real_l);
@@ -4612,7 +4581,7 @@ adjust_insn_length (rtx insn, int len)
 	      break;
 	    case SImode:
 	    case SFmode:
-	      output_movsisf (insn, op, &len);
+	      output_movsisf (insn, op, NULL_RTX, &len);
 	      break;
 	    default:
 	      break;
@@ -4683,7 +4652,7 @@ adjust_insn_length (rtx insn, int len)
 	      break;
 	    case SImode:
 	    case SFmode:
-	      output_reload_insisf (insn, op, &len);
+	      output_reload_insisf (insn, op, XEXP (op[2], 0), &len);
 	      break;
 	    default:
 	      break;
@@ -6212,53 +6181,199 @@ output_reload_inhi (rtx insn ATTRIBUTE_UNUSED, rtx *operands, int *len)
 }
 
 
+/* Reload a SI or SF compile time constant (OP[1]) into a GPR (OP[0]).
+   CLOBBER_REG is a QI clobber reg needed to move vast majority of consts
+   into a NO_LD_REGS.  If CLOBBER_REG is NULL_RTX we either don't need a
+   clobber reg or have to cook one up.
+
+   LEN == NULL: Output instructions.
+   
+   LEN != NULL: Output nothing.  Increment *LEN by number of words occupied
+                by the insns printed.
+
+   Return "".  */
+
 const char *
-output_reload_insisf (rtx insn ATTRIBUTE_UNUSED, rtx *operands, int *len)
+output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
+                      rtx *op, rtx clobber_reg, int *len)
 {
-  rtx src = operands[1];
-  int cnst = (GET_CODE (src) == CONST_INT);
+  rtx src = op[1];
+  rtx dest = op[0];
+  rtx xval, xdest[4];
+  int ival[4];
+  int clobber_val = 1234;
+  bool cooked_clobber_p = false;
+  bool set_p = false;
+  unsigned int n;
+  enum machine_mode mode = GET_MODE (dest);
+  
+  gcc_assert (REG_P (dest));
 
   if (len)
+    *len = 0;
+  
+  /* (REG:SI 14) is special: It's neither in LD_REGS nor in NO_LD_REGS
+     but has some subregs that are in LD_REGS.  Use the MSB (REG:QI 17).  */
+  
+  if (14 == REGNO (dest))
     {
-      if (cnst)
-	*len = 4 + ((INTVAL (src) & 0xff) != 0)
-		+ ((INTVAL (src) & 0xff00) != 0)
-		+ ((INTVAL (src) & 0xff0000) != 0)
-		+ ((INTVAL (src) & 0xff000000) != 0);
-      else
-	*len = 8;
-
-      return "";
+      clobber_reg = gen_rtx_REG (QImode, 17);
     }
 
-  if (cnst && ((INTVAL (src) & 0xff) == 0))
-    output_asm_insn (AS2 (mov, %A0, __zero_reg__), operands);
-  else
+  /* We might need a clobber reg but don't have one.  Look at the value
+     to be loaded more closely.  A clobber is only needed if it contains
+     a byte that is neither 0, -1 or a power of 2.  */
+  
+  if (NULL_RTX == clobber_reg
+      && !test_hard_reg_class (LD_REGS, dest))
     {
-      output_asm_insn (AS2 (ldi, %2, lo8(%1)), operands);
-      output_asm_insn (AS2 (mov, %A0, %2), operands);
+      for (n = 0; n < GET_MODE_SIZE (mode); n++)
+        {
+          xval = simplify_gen_subreg (QImode, src, mode, n);
+
+          if (!(const0_rtx == xval
+                || constm1_rtx == xval
+                || single_one_operand (xval, QImode)))
+            {
+              /* We have no clobber reg but need one.  Cook one up.
+                 That's cheaper than loading from constant pool.  */
+              
+              cooked_clobber_p = true;
+              clobber_reg = gen_rtx_REG (QImode, 31);
+              avr_asm_len ("mov __tmp_reg__,%0", &clobber_reg, len, 1);
+              break;
+            }
+        }
     }
-  if (cnst && ((INTVAL (src) & 0xff00) == 0))
-    output_asm_insn (AS2 (mov, %B0, __zero_reg__), operands);
-  else
+
+  /* Now start filling DEST from LSB to MSB.  */
+  
+  for (n = 0; n < GET_MODE_SIZE (mode); n++)
     {
-      output_asm_insn (AS2 (ldi, %2, hi8(%1)), operands);
-      output_asm_insn (AS2 (mov, %B0, %2), operands);
+      bool done_byte = false;
+      unsigned int j;
+      rtx xop[3];
+
+      /* Crop the n-th sub-byte.  */
+      
+      xval = simplify_gen_subreg (QImode, src, mode, n);
+      xdest[n] = simplify_gen_subreg (QImode, dest, mode, n);
+      ival[n] = INTVAL (xval);
+
+      /* Look if we can reuse the low word by means of MOVW.  */
+      
+      if (n == 2
+          && AVR_HAVE_MOVW)
+        {
+          rtx lo16 = simplify_gen_subreg (HImode, src, mode, 0);
+          rtx hi16 = simplify_gen_subreg (HImode, src, mode, 2);
+
+          if (INTVAL (lo16) == INTVAL (hi16))
+            {
+              avr_asm_len ("movw %C0,%A0", &op[0], len, 1);
+              break;
+            }
+        }
+
+      /* Use CLR to zero a value so that cc0 is set as expected
+         for zero.  */
+      
+      if (ival[n] == 0)
+        {
+          avr_asm_len ("clr %0", &xdest[n], len, 1);
+          continue;
+        }
+
+      if (clobber_val == ival[n]
+          && REGNO (clobber_reg) == REGNO (xdest[n]))
+        {
+          continue;
+        }
+
+      /* LD_REGS can use LDI to move a constant value */
+      
+      if (test_hard_reg_class (LD_REGS, xdest[n]))
+        {
+          xop[0] = xdest[n];
+          xop[1] = xval;
+          avr_asm_len ("ldi %0,lo8(%1)", xop, len, 1);
+          continue;
+        }
+
+      /* Try to reuse value already loaded in some lower byte. */
+      
+      for (j = 0; j < n; j++)
+        if (ival[j] == ival[n])
+          {
+            xop[0] = xdest[n];
+            xop[1] = xdest[j];
+            
+            avr_asm_len ("mov %0,%1", xop, len, 1);
+            done_byte = true;
+            break;
+          }
+
+      if (done_byte)
+        continue;
+
+      /* Need no clobber reg for -1: Use CLR/DEC */
+      
+      if (-1 == ival[n])
+        {
+          avr_asm_len ("clr %0" CR_TAB
+                       "dec %0", &xdest[n], len, 2);
+          continue;
+        }
+
+      /* Use T flag or INC to manage powers of 2 if we have
+         no clobber reg.  */
+
+      if (NULL_RTX == clobber_reg
+          && single_one_operand (xval, QImode))
+        {
+          if (1 == ival[n])
+            {
+              avr_asm_len ("clr %0" CR_TAB
+                           "inc %0", &xdest[n], len, 2);
+              continue;
+            }
+          
+          xop[0] = xdest[n];
+          xop[1] = GEN_INT (exact_log2 (ival[n] & GET_MODE_MASK (QImode)));
+
+          gcc_assert (constm1_rtx != xop[1]);
+
+          if (!set_p)
+            {
+              set_p = true;
+              avr_asm_len ("set", xop, len, 1);
+            }
+
+          avr_asm_len ("clr %0" CR_TAB
+                       "bld %0,%1", xop, len, 2);
+          continue;
+        }
+
+      /* We actually need the LD_REGS clobber reg.  */
+
+      gcc_assert (NULL_RTX != clobber_reg);
+        
+      xop[0] = xdest[n];
+      xop[1] = xval;
+      xop[2] = clobber_reg;
+      clobber_val = ival[n];
+        
+      avr_asm_len ("ldi %2,lo8(%1)" CR_TAB
+                   "mov %0,%2", xop, len, 2);
     }
-  if (cnst && ((INTVAL (src) & 0xff0000) == 0))
-    output_asm_insn (AS2 (mov, %C0, __zero_reg__), operands);
-  else
+  
+  /* If we cooked up a clobber reg above, restore it.  */
+  
+  if (cooked_clobber_p)
     {
-      output_asm_insn (AS2 (ldi, %2, hlo8(%1)), operands);
-      output_asm_insn (AS2 (mov, %C0, %2), operands);
+      avr_asm_len ("mov %0,__tmp_reg__", &clobber_reg, len, 1);
     }
-  if (cnst && ((INTVAL (src) & 0xff000000) == 0))
-    output_asm_insn (AS2 (mov, %D0, __zero_reg__), operands);
-  else
-    {
-      output_asm_insn (AS2 (ldi, %2, hhi8(%1)), operands);
-      output_asm_insn (AS2 (mov, %D0, %2), operands);
-    }
+  
   return "";
 }
 
