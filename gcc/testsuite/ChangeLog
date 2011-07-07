@@ -1,3 +1,7 @@
+2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/sparc/cas64.c: New test.
+
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/49644
