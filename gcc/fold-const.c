@@ -7561,7 +7561,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
   if (arg0)
     {
       if (CONVERT_EXPR_CODE_P (code)
-	  || code == FLOAT_EXPR || code == ABS_EXPR)
+	  || code == FLOAT_EXPR || code == ABS_EXPR || code == NEGATE_EXPR)
 	{
 	  /* Don't use STRIP_NOPS, because signedness of argument type
 	     matters.  */
