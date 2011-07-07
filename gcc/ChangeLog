@@ -1,5 +1,10 @@
 2011-07-07  Richard Guenther  <rguenther@suse.de>
 
+	* fold-const.c (fold_unary_loc): Do not strip sign-changes
+	for NEGATE_EXPR.
+
+2011-07-07  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vrp.c (simplify_conversion_using_ranges): New function.
 	(simplify_stmt_using_ranges): Call it.
 

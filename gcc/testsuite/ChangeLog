@@ -1,5 +1,9 @@
 2011-07-07  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/ftrapv-3.c: New testcase.
+
+2011-07-07  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/vrp58.c: New testcase.
 	* gcc.dg/tree-ssa/scev-cast.c: Adjust.
 
