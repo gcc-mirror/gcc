@@ -93,7 +93,7 @@ DEFHOOKPOD
 DEFHOOKPOD
 (have_named_sections,
  "",
- bool, false)
+ bool, true)
 
 DEFHOOKPOD
 (always_strip_dotdot,

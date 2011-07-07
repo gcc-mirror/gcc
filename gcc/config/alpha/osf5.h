@@ -259,3 +259,5 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Handle #pragma extern_prefix.  */
 #define TARGET_HANDLE_PRAGMA_EXTERN_PREFIX 1
+
+#define TARGET_HAVE_NAMED_SECTIONS false
