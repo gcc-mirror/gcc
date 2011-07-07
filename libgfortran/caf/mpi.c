@@ -41,6 +41,7 @@ static void error_stop (int error) __attribute__ ((noreturn));
 static int caf_mpi_initialized;
 static int caf_this_image;
 static int caf_num_images;
+static int caf_is_finalized;
 
 caf_static_t *caf_static_list = NULL;
 
@@ -87,14 +88,20 @@ _gfortran_caf_finalize (void)
 
   if (!caf_mpi_initialized)
     MPI_Finalize ();
+
+  caf_is_finalized = 1;
 }
 
 
 void *
-_gfortran_caf_register (ptrdiff_t size, caf_register_t type,
-                        void **token)
+_gfortran_caf_register (ptrdiff_t size, caf_register_t type, void **token,
+			int *stat, char *errmsg, int errmsg_len)
 {
   void *local;
+  int err;
+
+  if (unlikely (caf_is_finalized))
+    goto error;
 
   /* Start MPI if not already started.  */
   if (caf_num_images == 0)
@@ -104,9 +111,18 @@ _gfortran_caf_register (ptrdiff_t size, caf_register_t type,
   local = malloc (size);
   token = malloc (sizeof (void*) * caf_num_images);
 
+  if (unlikely (local == NULL || token == NULL))
+    goto error;
+
   /* token[img-1] is the address of the token in image "img".  */
-  MPI_Allgather (&local, sizeof (void*), MPI_BYTE,
-		 token,  sizeof (void*), MPI_BYTE, MPI_COMM_WORLD);
+  err = MPI_Allgather (&local, sizeof (void*), MPI_BYTE, token,
+		       sizeof (void*), MPI_BYTE, MPI_COMM_WORLD);
+  if (unlikely (err))
+    {
+      free (local);
+      free (token);
+      goto error;
+    }
 
   if (type == CAF_REGTYPE_COARRAY_STATIC)
     {
@@ -115,7 +131,41 @@ _gfortran_caf_register (ptrdiff_t size, caf_register_t type,
       tmp->token = token;
       caf_static_list = tmp;
     }
+
+  if (stat)
+    *stat = 0;
+
   return local;
+
+error:
+  if (stat)
+    {
+      *stat = caf_is_finalized ? STAT_STOPPED_IMAGE : 1;
+      if (errmsg_len > 0)
+	{
+	  char *msg;
+	  if (caf_is_finalized)
+	    msg = "Failed to allocate coarray - stopped images";
+	  else
+	    msg = "Failed to allocate coarray";
+	  int len = ((int) strlen (msg) > errmsg_len) ? errmsg_len
+						      : (int) strlen (msg);
+	  memcpy (errmsg, msg, len);
+	  if (errmsg_len > len)
+	    memset (&errmsg[len], ' ', errmsg_len-len);
+	}
+      return NULL;
+    }
+  else
+    {
+      if (caf_is_finalized)
+	fprintf (stderr, "ERROR: Image %d is stopped, failed to allocate "
+		 "coarray", caf_this_image);
+      else
+	fprintf (stderr, "ERROR: Failed to allocate coarray on image %d\n",
+		 caf_this_image);
+      error_stop (1);
+    }
 }
 
 

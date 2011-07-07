@@ -30,6 +30,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdint.h>	/* For int32_t.  */
 #include <stddef.h>	/* For ptrdiff_t.  */
 
+#ifndef __GNUC__
+#define __attribute__(x)
+#define likely(x)       (x)
+#define unlikely(x)     (x)
+#else
+#define likely(x)       __builtin_expect(!!(x), 1)
+#define unlikely(x)     __builtin_expect(!!(x), 0)
+#endif
 
 /* Definitions of the Fortran 2008 standard; need to kept in sync with
    ISO_FORTRAN_ENV, cf. libgfortran.h.  */
@@ -38,7 +46,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STAT_LOCKED_OTHER_IMAGE	2
 #define STAT_STOPPED_IMAGE 	3
 
-/* Describes what type of array we are registerring.  */
+/* Describes what type of array we are registerring. Keep in sync with
+   gcc/fortran/trans.h.  */
 typedef enum caf_register_t {
   CAF_REGTYPE_COARRAY_STATIC,
   CAF_REGTYPE_COARRAY_ALLOC,
@@ -58,7 +67,8 @@ caf_static_t;
 void _gfortran_caf_init (int *, char ***, int *, int *);
 void _gfortran_caf_finalize (void);
 
-void * _gfortran_caf_register (ptrdiff_t, caf_register_t, void **);
+void * _gfortran_caf_register (ptrdiff_t, caf_register_t, void **, int *,
+			       char *, int);
 int _gfortran_caf_deregister (void **);
 
 

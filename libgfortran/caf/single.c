@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libcaf.h"
 #include <stdio.h>  /* For fputs and fprintf.  */
 #include <stdlib.h> /* For exit and malloc.  */
+#include <string.h> /* For memcpy and memset.  */
 
 /* Define GFC_CAF_CHECK to enable run-time checking.  */
 /* #define GFC_CAF_CHECK  1  */
@@ -61,14 +62,40 @@ _gfortran_caf_finalize (void)
 
 
 void *
-_gfortran_caf_register (ptrdiff_t size, caf_register_t type,
-			void **token)
+_gfortran_caf_register (ptrdiff_t size, caf_register_t type, void **token,
+			int *stat, char *errmsg, int errmsg_len)
 {
   void *local;
 
   local = malloc (size);
   token = malloc (sizeof (void*) * 1);
   token[0] = local;
+
+  if (unlikely (local == NULL || token == NULL))
+    {
+      if (stat)
+	{
+	  *stat = 1;
+	  if (errmsg_len > 0)
+	    {
+	      const char msg[] = "Failed to allocate coarray";
+	      int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
+							  : (int) sizeof (msg);
+	      memcpy (errmsg, msg, len);
+	      if (errmsg_len > len)
+		memset (&errmsg[len], ' ', errmsg_len-len);
+	    }
+	  return NULL;
+	}
+      else
+	{
+	  fprintf (stderr, "ERROR: Failed to allocate coarray");
+	  exit (1);
+	}
+    }
+
+  if (stat)
+    *stat = 0;
 
   if (type == CAF_REGTYPE_COARRAY_STATIC)
     {
