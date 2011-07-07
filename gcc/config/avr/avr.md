@@ -402,10 +402,10 @@
 
 
 
-(define_peephole2 ; movsi_lreg_const
+(define_peephole2 ; *reload_insi
   [(match_scratch:QI 2 "d")
    (set (match_operand:SI 0 "l_register_operand" "")
-        (match_operand:SI 1 "immediate_operand" ""))
+        (match_operand:SI 1 "const_int_operand" ""))
    (match_dup 2)]
   "(operands[1] != const0_rtx
     && operands[1] != constm1_rtx)"
@@ -416,12 +416,14 @@
 ;; '*' because it is not used in rtl generation.
 (define_insn "*reload_insi"
   [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operand:SI 1 "immediate_operand" "i"))
+        (match_operand:SI 1 "const_int_operand" "n"))
    (clobber (match_operand:QI 2 "register_operand" "=&d"))]
   "reload_completed"
-  "* return output_reload_insisf (insn, operands, NULL);"
+  {
+    return output_reload_insisf (insn, operands, operands[2], NULL);
+  }
   [(set_attr "length" "8")
-   (set_attr "cc" "none")])
+   (set_attr "cc" "clobber")])
 
 
 (define_insn "*movsi"
@@ -429,9 +431,11 @@
         (match_operand:SI 1 "general_operand"       "r,L,Qm,rL,i,i"))]
   "(register_operand (operands[0],SImode)
     || register_operand (operands[1],SImode) || const0_rtx == operands[1])"
-  "* return output_movsisf (insn, operands, NULL);"
+  {
+    return output_movsisf (insn, operands, NULL_RTX, NULL);
+  }
   [(set_attr "length" "4,4,8,9,4,10")
-   (set_attr "cc" "none,set_zn,clobber,clobber,none,clobber")])
+   (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
 
 ;; fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ;; move floating point numbers (32 bit)
@@ -452,12 +456,38 @@
 
 (define_insn "*movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r,Qm,!d,r")
-        (match_operand:SF 1 "general_operand"       "r,G,Qm,r,F,F"))]
+        (match_operand:SF 1 "general_operand"       "r,G,Qm,rG,F,F"))]
   "register_operand (operands[0], SFmode)
-   || register_operand (operands[1], SFmode)"
-  "* return output_movsisf (insn, operands, NULL);"
+   || register_operand (operands[1], SFmode)
+   || operands[1] == CONST0_RTX (SFmode)"
+  {
+    return output_movsisf (insn, operands, NULL_RTX, NULL);
+  }
   [(set_attr "length" "4,4,8,9,4,10")
-   (set_attr "cc" "none,set_zn,clobber,clobber,none,clobber")])
+   (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
+
+(define_peephole2 ; *reload_insf
+  [(match_scratch:QI 2 "d")
+   (set (match_operand:SF 0 "l_register_operand" "")
+        (match_operand:SF 1 "const_double_operand" ""))
+   (match_dup 2)]
+  "operands[1] != CONST0_RTX (SFmode)"
+  [(parallel [(set (match_dup 0) 
+                   (match_dup 1))
+              (clobber (match_dup 2))])]
+  "")
+
+;; '*' because it is not used in rtl generation.
+(define_insn "*reload_insf"
+  [(set (match_operand:SF 0 "register_operand" "=r")
+        (match_operand:SF 1 "const_double_operand" "F"))
+   (clobber (match_operand:QI 2 "register_operand" "=&d"))]
+  "reload_completed"
+  {
+    return output_reload_insisf (insn, operands, operands[2], NULL);
+  }
+  [(set_attr "length" "8")
+   (set_attr "cc" "clobber")])
 
 ;;=========================================================================
 ;; move string (like memcpy)
