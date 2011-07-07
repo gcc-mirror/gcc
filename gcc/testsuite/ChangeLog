@@ -1,3 +1,8 @@
+2011-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/49644
+	* gcc.c-torture/execute/pr49644.c: New test.
+
 2011-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* lib/target-supports.exp (check_effective_target_ia32): New.
