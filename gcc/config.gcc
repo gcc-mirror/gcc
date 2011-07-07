@@ -300,6 +300,7 @@ case ${target} in
 m32c*-*-*)
         cpu_type=m32c
 	tmake_file=m32c/t-m32c
+	target_has_targetm_common=no
         ;;
 alpha*-*-*)
 	cpu_type=alpha

@@ -16,10 +16,6 @@
    along with this program; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#ifdef TARGET_ASM_NAMED_SECTION
-#define TARGET_HAVE_NAMED_SECTIONS true
-#endif
-
 #include "common/common-target-hooks-def.h"
 #include "hooks.h"
 #include "common/common-targhooks.h"

@@ -1,5 +1,5 @@
 /* Configuration file for an m68k OpenBSD target.
-   Copyright (C) 1999, 2002, 2003, 2007, 2009, 2010
+   Copyright (C) 1999, 2002, 2003, 2007, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -87,3 +87,5 @@ along with GCC; see the file COPYING3.  If not see
 /* All configurations that don't use elf must be explicit about not using
    dwarf unwind information.  */
 #define DWARF2_UNWIND_INFO 0
+
+#define TARGET_HAVE_NAMED_SECTIONS false

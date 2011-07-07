@@ -98,3 +98,5 @@ along with GCC; see the file COPYING3.  If not see
 
 /* OpenBSD gas currently does not support quad, so do not use it.  */
 #undef ASM_QUAD
+
+#define TARGET_HAVE_NAMED_SECTIONS false
