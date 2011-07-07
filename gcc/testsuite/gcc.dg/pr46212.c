@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -funroll-loops" } */
 /* { dg-options "-O3 -funroll-loops -march=i386" { target { { i686-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-require-effective-target int32plus } */
 
 static inline unsigned
 foo (void *x)

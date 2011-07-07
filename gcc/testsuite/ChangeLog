@@ -1,3 +1,17 @@
+2011-07-07  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* gcc.dg/pragma-align.c: Run only if target !default_packed.
+	* gcc.dg/pr46212.c: Run only if target int32plus.
+	* gcc.dg/torture/pr48146.c: Ditto.
+	* gcc.dg/tree-ssa/vrp51.c: Ditto.
+	* c-c++-common/pr44832.c: Ditto.
+	* gcc.dg/pr49544.c: Run only if target ptr32plus.
+	* gcc.dg/pr31490.c: Ditto.
+	* gcc.dg/torture/builtin-math-7.c: Run only if target
+	large_double.
+	* gcc.dg/torture/pr45764.c: Skip for AVR.
+	* gcc.dg/pr47893.c: Ditto.
+
 2011-07-07  Janis Johnson  <janisjo@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_thumb1): New.

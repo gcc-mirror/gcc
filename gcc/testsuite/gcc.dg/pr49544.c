@@ -1,6 +1,7 @@
 /* PR debug/49544 */
 /* { dg-do compile } */
 /* { dg-options "-g -O2" } */
+/* { dg-require-effective-target ptr32plus } */
 
 int baz (int, int, void *);
 
