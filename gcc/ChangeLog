@@ -1,3 +1,11 @@
+2011-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49522
+	* df-problems.c (dead_debug_reset): Remove dead_debug_uses
+	referencing debug insns that have been reset.
+	(dead_debug_insert_before): Don't assert reg is non-NULL,
+	instead return immediately if it is NULL.
+
 2011-07-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/t-crtpic, config/i386/t-svr3dbx, config/pa/t-pa:
