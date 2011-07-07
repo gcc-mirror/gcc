@@ -2102,7 +2102,42 @@ WRAPPER2(struct mntent *, getmntent, FILE *filep)
   return m;
 }
 #elif defined HAVE_SYS_MNTTAB_H
-/* FIXME: Implement.  */
+WRAPPER2(int, getmntent, FILE *filep, struct mnttab *mp)
+{
+  static struct mnttab *last = NULL;
+  int res;
+
+  MF_VALIDATE_EXTENT (filep, sizeof (*filep), __MF_CHECK_WRITE,
+    "getmntent stream");
+#define UR(field) __mf_unregister(last->field, strlen (last->field)+1, __MF_TYPE_STATIC)
+  if (last)
+    {
+      UR (mnt_special);
+      UR (mnt_mountp);
+      UR (mnt_fstype);
+      UR (mnt_mntopts);
+      UR (mnt_time);
+      __mf_unregister (last, sizeof (*last), __MF_TYPE_STATIC);
+    }
+#undef UR
+
+  res = getmntent (filep, mp);
+  last = mp;
+
+#define R(field) __mf_register(last->field, strlen (last->field)+1, __MF_TYPE_STATIC, "mntent " #field)
+  if (mp)
+    {
+      R (mnt_special);
+      R (mnt_mountp);
+      R (mnt_fstype);
+      R (mnt_mntopts);
+      R (mnt_time);
+      __mf_register (last, sizeof (*last), __MF_TYPE_STATIC, "getmntent result");
+    }
+#undef R
+
+  return res;
+}
 #endif
 #endif
 

@@ -666,6 +666,9 @@ struct __mf_dynamic_entry __mf_dynamic [] =
   {NULL, "free", NULL},
   {NULL, "malloc", NULL},
   {NULL, "mmap", NULL},
+#ifdef HAVE_MMAP64
+  {NULL, "mmap64", NULL},
+#endif
   {NULL, "munmap", NULL},
   {NULL, "realloc", NULL},
   {NULL, "DUMMY", NULL}, /* dyn_INITRESOLVE */
@@ -781,12 +784,22 @@ __wrap_main (int argc, char* argv[])
 
       __mf_register (& errno, sizeof (errno), __MF_TYPE_STATIC, "errno area");
 
+#if !(defined(__sun__) && defined(__svr4__))
+      /* Conflicts with the automatic registration of __iob[].  */
       __mf_register (stdin,  sizeof (*stdin),  __MF_TYPE_STATIC, "stdin");
       __mf_register (stdout, sizeof (*stdout), __MF_TYPE_STATIC, "stdout");
       __mf_register (stderr, sizeof (*stderr), __MF_TYPE_STATIC, "stderr");
+#endif
 
       /* Make some effort to register ctype.h static arrays.  */
-      /* XXX: e.g., on Solaris, may need to register __ctype, _ctype, __ctype_mask, __toupper, etc. */
+#if defined(__sun__) && defined(__svr4__)
+      /* __ctype[] is declared without size, but MB_CUR_MAX is the last
+	 member.  There seems to be no proper way to determine the size.  */
+      __mf_register (__ctype, &MB_CUR_MAX - &__ctype[0] + 1, __MF_TYPE_STATIC, "__ctype");
+      /* __ctype_mask points at _C_masks[1].  The size can only determined
+	 using nm on libc.so.1.  */
+      __mf_register (__ctype_mask - 1, 1028, __MF_TYPE_STATIC, "_C_masks");
+#endif
       /* On modern Linux GLIBC, these are thread-specific and changeable, and are dealt
          with in mf-hooks2.c.  */
     }

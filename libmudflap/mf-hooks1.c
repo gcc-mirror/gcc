@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003, 2004, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
 
@@ -412,6 +412,61 @@ WRAPPER(int , munmap, void *start, size_t length)
   return result;
 }
 #endif /* HAVE_MMAP */
+
+
+#ifdef HAVE_MMAP64
+#if PIC
+/* A special bootstrap variant. */
+void *
+__mf_0fn_mmap64 (void *start, size_t l, int prot, int f, int fd, off64_t off)
+{
+  return (void *) -1;
+}
+#endif
+
+
+#undef mmap
+WRAPPER(void *, mmap64,
+	void  *start,  size_t length, int prot,
+	int flags, int fd, off64_t offset)
+{
+  DECLARE(void *, mmap64, void *, size_t, int,
+			    int, int, off64_t);
+  void *result;
+  BEGIN_PROTECT (mmap64, start, length, prot, flags, fd, offset);
+
+  result = CALL_REAL (mmap64, start, length, prot,
+			flags, fd, offset);
+
+  /*
+  VERBOSE_TRACE ("mmap64 (%08lx, %08lx, ...) => %08lx\n",
+		 (uintptr_t) start, (uintptr_t) length,
+		 (uintptr_t) result);
+  */
+
+  if (result != (void *)-1)
+    {
+      /* Register each page as a heap object.  Why not register it all
+	 as a single segment?  That's so that a later munmap() call
+	 can unmap individual pages.  XXX: would __MF_TYPE_GUESS make
+	 this more automatic?  */
+      size_t ps = getpagesize ();
+      uintptr_t base = (uintptr_t) result;
+      uintptr_t offset;
+
+      for (offset=0; offset<length; offset+=ps)
+	{
+	  /* XXX: We could map PROT_NONE to __MF_TYPE_NOACCESS. */
+	  /* XXX: Unaccessed HEAP pages are reported as leaks.  Is this
+	     appropriate for unaccessed mmap pages? */
+	  __mf_register ((void *) CLAMPADD (base, offset), ps,
+			 __MF_TYPE_HEAP_I, "mmap64 page");
+	}
+    }
+
+  return result;
+}
+#endif /* HAVE_MMAP64 */
 
 
 /* This wrapper is a little different, as it's called indirectly from

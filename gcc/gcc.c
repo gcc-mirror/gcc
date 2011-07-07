@@ -518,7 +518,7 @@ proper position among the other output files.  */
 /* XXX: should exactly match hooks provided by libmudflap.a */
 #define MFWRAP_SPEC " %{static: %{fmudflap|fmudflapth: \
  --wrap=malloc --wrap=free --wrap=calloc --wrap=realloc\
- --wrap=mmap --wrap=munmap --wrap=alloca\
+ --wrap=mmap --wrap=mmap64 --wrap=munmap --wrap=alloca\
 } %{fmudflapth: --wrap=pthread_create\
 }} %{fmudflap|fmudflapth: --wrap=main}"
 #endif
