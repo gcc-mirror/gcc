@@ -1,5 +1,10 @@
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/49644
+	* c-typeck.c (build_binary_op): For MULT_EXPR and TRUNC_DIV_EXPR with
+	one non-complex and one complex argument, call c_save_expr on both
+	operands.
+
 	PR debug/49522
 	* df-problems.c (dead_debug_reset): Remove dead_debug_uses
 	referencing debug insns that have been reset.

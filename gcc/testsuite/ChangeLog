@@ -1,5 +1,8 @@
 2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/49644
+	* gcc.c-torture/execute/pr49644.c: New test.
+
 	PR debug/49522
 	* gcc.dg/debug/pr49522.c: New test.
 
