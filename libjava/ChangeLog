@@ -1,5 +1,9 @@
 2011-07-07  Matthias Klose  <doko@ubuntu.com>
 
+	* libtool-version: Bump soversion.
+
+2011-07-07  Matthias Klose  <doko@ubuntu.com>
+
 	* sysdep/x86-64: Remove empty directory.
 
 2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
