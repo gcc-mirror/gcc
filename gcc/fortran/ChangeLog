@@ -1,3 +1,9 @@
+2011-07-07  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/49648
+	* resolve.c (resolve_symbol): Force resolution of function result's
+	array specification.
+
 2011-07-07  Tobias Burnus  <burnus@net-b.de>
 
 	* trans.c (gfc_allocate_with_status): Call _gfortran_caf_register
