@@ -1,5 +1,12 @@
 2011-07-07  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.c (%[Spec]): Don't document.
+	(struct spec_list): Update comment.
+	(do_spec_1): Don't handle %[Spec].
+	* doc/invoke.texi (%[@var{name}]): Remove documentation of spec.
+
+2011-07-07  Joseph Myers  <joseph@codesourcery.com>
+
 	* common/common-target-def.h (TARGET_HAVE_NAMED_SECTIONS): Don't
 	default based on TARGET_ASM_NAMED_SECTION.
 	* common/common-target.def (have_named_sections): Default to true.

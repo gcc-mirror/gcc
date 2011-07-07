@@ -438,7 +438,6 @@ or with constant text in a single argument.
           This may be combined with '.', '!', ',', '|', and '*' as above.
 
  %(Spec) processes a specification defined in a specs file as *Spec:
- %[Spec] as above, but put __ around -D arguments
 
 The conditional text X in a %{S:X} or similar construct may contain
 other nested % constructs or spaces, or even newlines.  They are
@@ -1149,8 +1148,8 @@ static const char *multilib_dir;
 static const char *multilib_os_dir;
 
 /* Structure to keep track of the specs that have been defined so far.
-   These are accessed using %(specname) or %[specname] in a compiler
-   or link spec.  */
+   These are accessed using %(specname) in a compiler or link
+   spec.  */
 
 struct spec_list
 {
@@ -5212,11 +5211,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	    /* Process a string found as the value of a spec given by name.
 	       This feature allows individual machine descriptions
-	       to add and use their own specs.
-	       %[...] modifies -D options the way %P does;
-	       %(...) uses the spec unmodified.  */
-	  case '[':
-	    warning (0, "use of obsolete %%[ operator in specs");
+	       to add and use their own specs.  */
 	  case '(':
 	    {
 	      const char *name = p;
@@ -5225,7 +5220,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	      /* The string after the S/P is the name of a spec that is to be
 		 processed.  */
-	      while (*p && *p != ')' && *p != ']')
+	      while (*p && *p != ')')
 		p++;
 
 	      /* See if it's in the list.  */
@@ -5234,63 +5229,20 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		  {
 		    name = *(sl->ptr_spec);
 #ifdef DEBUG_SPECS
-		    fnotice (stderr, "Processing spec %c%s%c, which is '%s'\n",
-			    c, sl->name, (c == '(') ? ')' : ']', name);
+		    fnotice (stderr, "Processing spec (%s), which is '%s'\n",
+			     sl->name, name);
 #endif
 		    break;
 		  }
 
 	      if (sl)
 		{
-		  if (c == '(')
-		    {
-		      value = do_spec_1 (name, 0, NULL);
-		      if (value != 0)
-			return value;
-		    }
-		  else
-		    {
-		      char *x = (char *) alloca (strlen (name) * 2 + 1);
-		      char *buf = x;
-		      const char *y = name;
-		      int flag = 0;
-
-		      /* Copy all of NAME into BUF, but put __ after
-			 every -D and at the end of each arg.  */
-		      while (1)
-			{
-			  if (! strncmp (y, "-D", 2))
-			    {
-			      *x++ = '-';
-			      *x++ = 'D';
-			      *x++ = '_';
-			      *x++ = '_';
-			      y += 2;
-			      flag = 1;
-			      continue;
-			    }
-			  else if (flag
-				   && (*y == ' ' || *y == '\t' || *y == '='
-				       || *y == '}' || *y == 0))
-			    {
-			      *x++ = '_';
-			      *x++ = '_';
-			      flag = 0;
-			    }
-			  if (*y == 0)
-			    break;
-			  else
-			    *x++ = *y++;
-			}
-		      *x = 0;
-
-		      value = do_spec_1 (buf, 0, NULL);
-		      if (value != 0)
-			return value;
-		    }
+		  value = do_spec_1 (name, 0, NULL);
+		  if (value != 0)
+		    return value;
 		}
 
-	      /* Discard the closing paren or bracket.  */
+	      /* Discard the closing paren.  */
 	      if (*p)
 		p++;
 	    }
