@@ -1591,6 +1591,10 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
 	   && (XEXP (addr, 0) == crtl->args.internal_arg_pointer
 	       || XEXP (addr, 1) == crtl->args.internal_arg_pointer))
     return true;
+  /* If the address comes in a register, we have no idea of its origin so
+     give up and conservatively return true.  */
+  else if (REG_P(addr))
+    return true;
   else
     return false;
 
@@ -1830,6 +1834,10 @@ check_sibcall_argument_overlap_1 (rtx x)
     return 0;
 
   code = GET_CODE (x);
+
+  /* We need not check the operands of the CALL expression itself.  */
+  if (code == CALL)
+    return 0;
 
   if (code == MEM)
     return mem_overlaps_already_clobbered_arg_p (XEXP (x, 0),
