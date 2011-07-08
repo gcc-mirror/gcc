@@ -1,5 +1,9 @@
 2011-07-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45603
+	* decl.c (expand_static_init): Don't get confused by user
+	declaration of __cxa_guard_acquire.
+
 	* typeck.c (cp_apply_type_quals_to_decl): Don't check
 	COMPLETE_TYPE_P either.
 
