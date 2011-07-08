@@ -1,3 +1,8 @@
+2011-07-08  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR middle-end/49519
+	* g++.dg/torture/pr49519.C: New test.
+
 2011-07-08  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/tree-ssa/sra-12.c: Skip dump scan on avr targets.

@@ -1,3 +1,11 @@
+2011-07-08  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR middle-end/49519
+	* calls.c (mem_overlaps_already_clobbered_arg_p): Additional
+	check if address is stored in register. If so - give up.
+	(check_sibcall_argument_overlap_1): Do not perform check of
+	overlapping when it is call to address.
+
 2011-07-08  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/avr.c (output_reload_insisf): Use 'REG_Z+1' instead
