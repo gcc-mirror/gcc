@@ -4,6 +4,10 @@
 	* dwarf2cfi.c (dwarf2out_frame_debug): Insert cfi notes after
 	any tablejump vector.
 
+	PR bootstrap/49680
+	* dwarf2cfi.c (create_cfi_notes): Flush queued saves at the
+	end of the prologue.
+
 2011-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/49621

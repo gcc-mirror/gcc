@@ -2442,11 +2442,18 @@ create_cfi_notes (void)
 	{
 	  switch (NOTE_KIND (insn))
 	    {
+	    case NOTE_INSN_PROLOGUE_END:
+	      cfi_insn = PREV_INSN (insn);
+	      dwarf2out_flush_queued_reg_saves ();
+	      cfi_insn = NULL;
+	      break;
+
 	    case NOTE_INSN_EPILOGUE_BEG:
 #if defined(HAVE_epilogue)
 	      dwarf2out_cfi_begin_epilogue (insn);
 #endif
 	      break;
+
 	    case NOTE_INSN_CFA_RESTORE_STATE:
 	      cfi_insn = insn;
 	      dwarf2out_frame_debug_restore_state ();
