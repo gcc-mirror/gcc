@@ -1428,12 +1428,12 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
      takes operands of this mode and makes a wider mode.  */
 
   if (binoptab == smul_optab
-      && GET_MODE_WIDER_MODE (mode) != VOIDmode
+      && GET_MODE_2XWIDER_MODE (mode) != VOIDmode
       && (optab_handler ((unsignedp ? umul_widen_optab : smul_widen_optab),
-			 GET_MODE_WIDER_MODE (mode))
+			 GET_MODE_2XWIDER_MODE (mode))
 	  != CODE_FOR_nothing))
     {
-      temp = expand_binop (GET_MODE_WIDER_MODE (mode),
+      temp = expand_binop (GET_MODE_2XWIDER_MODE (mode),
 			   unsignedp ? umul_widen_optab : smul_widen_optab,
 			   op0, op1, NULL_RTX, unsignedp, OPTAB_DIRECT);
 
@@ -1575,6 +1575,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       && mclass == MODE_INT
       && (CONST_INT_P (op1) || optimize_insn_for_speed_p ())
       && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && GET_MODE_PRECISION (mode) == GET_MODE_BITSIZE (mode)
       && optab_handler (binoptab, word_mode) != CODE_FOR_nothing
       && optab_handler (ashl_optab, word_mode) != CODE_FOR_nothing
       && optab_handler (lshr_optab, word_mode) != CODE_FOR_nothing)
@@ -1647,7 +1648,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
   if ((binoptab == rotl_optab || binoptab == rotr_optab)
       && mclass == MODE_INT
       && CONST_INT_P (op1)
-      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && GET_MODE_PRECISION (mode) == 2 * BITS_PER_WORD
       && optab_handler (ashl_optab, word_mode) != CODE_FOR_nothing
       && optab_handler (lshr_optab, word_mode) != CODE_FOR_nothing)
     {
@@ -2463,6 +2464,8 @@ widen_bswap (enum machine_mode mode, rtx op0, rtx target)
   x = widen_operand (op0, wider_mode, mode, true, true);
   x = expand_unop (wider_mode, bswap_optab, x, NULL_RTX, true);
 
+  gcc_assert (GET_MODE_PRECISION (wider_mode) == GET_MODE_BITSIZE (wider_mode)
+	      && GET_MODE_PRECISION (mode) == GET_MODE_BITSIZE (mode));
   if (x != 0)
     x = expand_shift (RSHIFT_EXPR, wider_mode, x,
 		      GET_MODE_BITSIZE (wider_mode)

@@ -638,6 +638,8 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
 		  (GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (wanted_mode) -
 		   offset);
 
+	      gcc_assert (GET_MODE_PRECISION (wanted_mode)
+			  == GET_MODE_BITSIZE (wanted_mode));
 	      pos %= GET_MODE_BITSIZE (wanted_mode);
 
 	      newmem = adjust_address_nv (XEXP (x, 0), wanted_mode, offset);

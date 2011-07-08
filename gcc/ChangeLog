@@ -16,6 +16,15 @@
 	* rtlanal.c (nonzero_bits1): Don't compare GET_MODE_SIZE against
 	a bitsize.
 
+	* optabs.c (expand_binop): Tighten conditions for doubleword
+	expansions.
+	(widen_bswap): Assert that mode bitsize and precision are the
+	same.
+	* stor-layout.c (get_best_mode): Skip modes that have lower
+	precision than bitsize.
+	* recog.c (simplify_while_replacing): Assert that bitsize and
+	precision are the same.
+
 2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (LIBGCOV): Remove.

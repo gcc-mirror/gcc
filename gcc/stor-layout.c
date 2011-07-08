@@ -2389,7 +2389,8 @@ get_best_mode (int bitsize, int bitpos, unsigned int align,
        mode = GET_MODE_WIDER_MODE (mode))
     {
       unit = GET_MODE_BITSIZE (mode);
-      if ((bitpos % unit) + bitsize <= unit)
+      if (unit == GET_MODE_PRECISION (mode)
+	  && (bitpos % unit) + bitsize <= unit)
 	break;
     }
 
@@ -2414,7 +2415,8 @@ get_best_mode (int bitsize, int bitpos, unsigned int align,
 	   tmode = GET_MODE_WIDER_MODE (tmode))
 	{
 	  unit = GET_MODE_BITSIZE (tmode);
-	  if (bitpos / unit == (bitpos + bitsize - 1) / unit
+	  if (unit == GET_MODE_PRECISION (tmode)
+	      && bitpos / unit == (bitpos + bitsize - 1) / unit
 	      && unit <= BITS_PER_WORD
 	      && unit <= MIN (align, BIGGEST_ALIGNMENT)
 	      && (largest_mode == VOIDmode
