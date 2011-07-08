@@ -1,3 +1,9 @@
+2011-07-08  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* genattrtab.c (evaluate_eq_attr): Allow an attribute to be defined
+	in terms of another.
+	(write_attr_value): Write a cast if necessary.
+
 2011-07-08  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary_loc): Remove index +p PTR -> PTR +p index
@@ -19,7 +25,7 @@
 	overlapping when it is call to address.
 
 2011-07-08  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.c (output_reload_insisf): Use 'REG_Z+1' instead
 	of magic '31'.
 

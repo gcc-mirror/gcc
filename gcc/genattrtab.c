@@ -1916,6 +1916,37 @@ evaluate_eq_attr (rtx exp, struct attr_desc *attr, rtx value,
   rtx newexp;
   int i;
 
+  while (GET_CODE (value) == ATTR)
+    {
+      struct attr_value *av = NULL;
+
+      attr = find_attr (&XSTR (value, 0), 0);
+
+      if (insn_code_values)
+        {
+          struct attr_value_list *iv;
+          for (iv = insn_code_values[insn_code]; iv; iv = iv->next)
+            if (iv->attr == attr)
+              {
+                av = iv->av;
+                break;
+              }
+        }
+      else
+        {
+          struct insn_ent *ie;
+          for (av = attr->first_value; av; av = av->next)
+            for (ie = av->first_insn; ie; ie = ie->next)
+              if (ie->def->insn_code == insn_code)
+                goto got_av;
+        }
+      if (av)
+        {
+        got_av:
+          value = av->value;
+        }
+    }
+
   switch (GET_CODE (value))
     {
     case CONST_STRING:
@@ -4119,6 +4150,13 @@ write_attr_value (struct attr_desc *attr, rtx value)
     case ATTR:
       {
 	struct attr_desc *attr2 = find_attr (&XSTR (value, 0), 0);
+	if (attr->enum_name)
+	  printf ("(enum %s)", attr->enum_name);
+	else if (!attr->is_numeric)
+	  printf ("(enum attr_%s)", attr->name);
+	else if (!attr2->is_numeric)
+	  printf ("(int)");
+
 	printf ("get_attr_%s (%s)", attr2->name,
 		(attr2->is_const ? "" : "insn"));
       }
