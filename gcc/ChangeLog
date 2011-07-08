@@ -1,3 +1,8 @@
+2011-07-08  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (build_alias_set_powerset): Remove
+	continue from loop, add one more assert.
+
 2011-07-08  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/46779
