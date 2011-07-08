@@ -229,7 +229,6 @@ extern enum machine_mode get_address_mode (rtx mem);
 extern dw_fde_ref dwarf2out_alloc_current_fde (void);
 
 /* Interface from dwarf2cfi.c to dwarf2out.c.  */
-extern void dwarf2cfi_function_init (void);
 extern void lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc,
 			  dw_cfa_location *remember);
 extern bool cfa_equal_p (const dw_cfa_location *, const dw_cfa_location *);
@@ -243,9 +242,6 @@ extern enum dw_cfi_oprnd_type dw_cfi_oprnd2_desc
   (enum dwarf_call_frame_info cfi);
 
 extern void dwarf2out_decl (tree);
-extern void dwarf2out_frame_debug (rtx, bool);
-extern void dwarf2out_frame_debug_init (void);
-extern void dwarf2out_frame_debug_after_prologue (void);
 extern void dwarf2out_emit_cfi (dw_cfi_ref cfi);
 
 extern void debug_dwarf (void);

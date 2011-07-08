@@ -2173,7 +2173,7 @@ dwarf2out_frame_debug_expr (rtx expr)
    If AFTER_P is false, we're being called before the insn is emitted,
    otherwise after.  Call instructions get invoked twice.  */
 
-void
+static void
 dwarf2out_frame_debug (rtx insn, bool after_p)
 {
   rtx note, n;
@@ -2318,33 +2318,6 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
   cfi_insn = NULL;
 }
 
-/* Called once at the start of final to initialize some data for the
-   current function.  */
-
-void
-dwarf2out_frame_debug_init (void)
-{
-  regs_saved_in_regs = NULL;
-  queued_reg_saves = NULL;
-
-  if (barrier_args_size)
-    {
-      XDELETEVEC (barrier_args_size);
-      barrier_args_size = NULL;
-    }
-
-  /* Set up state for generating call frame debug info.  */
-  lookup_cfa (&cfa);
-  gcc_assert (cfa.reg
-	      == (unsigned long)DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
-
-  old_cfa = cfa;
-  cfa.reg = STACK_POINTER_REGNUM;
-  cfa_store = cfa;
-  cfa_temp.reg = -1;
-  cfa_temp.offset = 0;
-}
-
 /* Examine CFI and return true if a cfi label and set_loc is needed
    beforehand.  Even when generating CFI assembler instructions, we
    still have to add the cfi to the list so that lookup_cfa works
@@ -2440,11 +2413,10 @@ add_cfis_to_fde (void)
     }
 }
 
-/* After the (optional) text prologue has been written, emit CFI insns
-   and update the FDE for frame-related instructions.  */
+/* Scan the function and create the initial set of CFI notes.  */
  
-void
-dwarf2out_frame_debug_after_prologue (void)
+static void
+create_cfi_notes (void)
 {
   rtx insn;
 
@@ -2499,8 +2471,6 @@ dwarf2out_frame_debug_after_prologue (void)
 
       dwarf2out_frame_debug (insn, true);
     }
-
-  add_cfis_to_fde ();
 }
 
 /* Determine if we need to save and restore CFI information around this
@@ -2599,47 +2569,70 @@ dwarf2out_frame_debug_restore_state (void)
   old_cfa = old_cfa_remember;
   cfa_remember.in_use = 0;
 }
+
 
-/* Run once per function.  */
+/* Annotate the function with NOTE_INSN_CFI notes to record the CFI
+   state at each location within the function.  These notes will be
+   emitted during pass_final.  */
 
-void
-dwarf2cfi_function_init (void)
+static unsigned int
+execute_dwarf2_frame (void)
 {
+  /* The first time we're called, compute the incoming frame state.  */
+  if (cie_cfi_vec == NULL)
+    {
+      dw_cfa_location loc;
+
+      memset(&old_cfa, 0, sizeof (old_cfa));
+      old_cfa.reg = INVALID_REGNUM;
+
+      /* On entry, the Canonical Frame Address is at SP.  */
+      memset(&loc, 0, sizeof (loc));
+      loc.reg = STACK_POINTER_REGNUM;
+      loc.offset = INCOMING_FRAME_SP_OFFSET;
+      def_cfa_1 (true, &loc);
+
+      if (targetm.debug_unwind_info () == UI_DWARF2
+          || targetm_common.except_unwind_info (&global_options) == UI_DWARF2)
+	initial_return_save (INCOMING_RETURN_ADDR_RTX);
+    }
+
+  /* Set up state for generating call frame debug info.  */
+  lookup_cfa (&cfa);
+  gcc_assert (cfa.reg
+	      == (unsigned long)DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
+
+  old_cfa = cfa;
+  cfa.reg = STACK_POINTER_REGNUM;
+  cfa_store = cfa;
+  cfa_temp.reg = -1;
+  cfa_temp.offset = 0;
+
+  dwarf2out_alloc_current_fde ();
+
+  /* Do the work.  */
+  create_cfi_notes ();
+  add_cfis_to_fde ();
+
+  /* Reset all function-specific information, particularly for GC.  */
+  XDELETEVEC (barrier_args_size);
+  barrier_args_size = NULL;
+  regs_saved_in_regs = NULL;
+  queued_reg_saves = NULL;
   args_size = old_args_size = 0;
-}
 
-/* Run once.  */
-
-void
-dwarf2out_frame_init (void)
-{
-  dw_cfa_location loc;
-
-  /* Generate the CFA instructions common to all FDE's.  Do it now for the
-     sake of lookup_cfa.  */
-
-  memset(&old_cfa, 0, sizeof (old_cfa));
-  old_cfa.reg = INVALID_REGNUM;
-
-  /* On entry, the Canonical Frame Address is at SP.  */
-  memset(&loc, 0, sizeof (loc));
-  loc.reg = STACK_POINTER_REGNUM;
-  loc.offset = INCOMING_FRAME_SP_OFFSET;
-  def_cfa_1 (true, &loc);
-
-  if (targetm.debug_unwind_info () == UI_DWARF2
-      || targetm_common.except_unwind_info (&global_options) == UI_DWARF2)
-    initial_return_save (INCOMING_RETURN_ADDR_RTX);
+  return 0;
 }
 
 
-/* Save the result of dwarf2out_do_frame across PCH.  */
-static GTY(()) bool saved_do_cfi_asm = 0;
+/* Save the result of dwarf2out_do_frame across PCH.
+   This variable is tri-state, with 0 unset, >0 true, <0 false.  */
+static GTY(()) signed char saved_do_cfi_asm = 0;
 
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 
-int
+bool
 dwarf2out_do_frame (void)
 {
   /* We want to emit correct CFA location expressions or lists, so we
@@ -2648,7 +2641,7 @@ dwarf2out_do_frame (void)
   if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
     return true;
 
-  if (saved_do_cfi_asm)
+  if (saved_do_cfi_asm > 0)
     return true;
 
   if (targetm.debug_unwind_info () == UI_DWARF2)
@@ -2663,7 +2656,7 @@ dwarf2out_do_frame (void)
 
 /* Decide whether to emit frame unwind via assembler directives.  */
 
-int
+bool
 dwarf2out_do_cfi_asm (void)
 {
   int enc;
@@ -2671,8 +2664,13 @@ dwarf2out_do_cfi_asm (void)
 #ifdef MIPS_DEBUGGING_INFO
   return false;
 #endif
-  if (saved_do_cfi_asm)
-    return true;
+
+  if (saved_do_cfi_asm != 0)
+    return saved_do_cfi_asm > 0;
+
+  /* Assume failure for a moment.  */
+  saved_do_cfi_asm = -1;
+
   if (!flag_dwarf2_cfi_asm || !dwarf2out_do_frame ())
     return false;
   if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
@@ -2694,8 +2692,43 @@ dwarf2out_do_cfi_asm (void)
       && targetm_common.except_unwind_info (&global_options) != UI_DWARF2)
     return false;
 
-  saved_do_cfi_asm = true;
+  /* Success!  */
+  saved_do_cfi_asm = 1;
   return true;
 }
+
+static bool
+gate_dwarf2_frame (void)
+{
+#ifndef HAVE_prologue
+  /* Targets which still implement the prologue in assembler text
+     cannot use the generic dwarf2 unwinding.  */
+  return false;
+#endif
+
+  /* ??? What to do for UI_TARGET unwinding?  They might be able to benefit
+     from the optimized shrink-wrapping annotations that we will compute.
+     For now, only produce the CFI notes for dwarf2.  */
+  return dwarf2out_do_frame ();
+}
+
+struct rtl_opt_pass pass_dwarf2_frame =
+{
+ {
+  RTL_PASS,
+  "dwarf2",			/* name */
+  gate_dwarf2_frame,		/* gate */
+  execute_dwarf2_frame,		/* execute */
+  NULL,				/* sub */
+  NULL,				/* next */
+  0,				/* static_pass_number */
+  TV_FINAL,			/* tv_id */
+  0,				/* properties_required */
+  0,				/* properties_provided */
+  0,				/* properties_destroyed */
+  0,				/* todo_flags_start */
+  0				/* todo_flags_finish */
+ }
+};
 
 #include "gt-dwarf2cfi.h"

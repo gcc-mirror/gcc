@@ -567,6 +567,7 @@ extern struct rtl_opt_pass pass_split_before_regstack;
 extern struct rtl_opt_pass pass_convert_to_eh_region_ranges;
 extern struct rtl_opt_pass pass_shorten_branches;
 extern struct rtl_opt_pass pass_set_nothrow_function_flags;
+extern struct rtl_opt_pass pass_dwarf2_frame;
 extern struct rtl_opt_pass pass_final;
 extern struct rtl_opt_pass pass_rtl_seqabstr;
 extern struct gimple_opt_pass pass_release_ssa_names;
