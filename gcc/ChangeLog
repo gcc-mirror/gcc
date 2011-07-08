@@ -1,3 +1,18 @@
+2011-07-08  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* optabs.c (expand_binop): Use GET_MODE_PRECISION instead of
+	GET_MODE_BITSIZE where appropriate.
+	(widen_leading, expand_parity, expand_ctz, expand_ffs,
+	expand_unop, expand_abs_nojump, expand_one_cmpl_abs_nojump,
+	expand_float, expand_fix): Likewise.
+	* expr.c (convert_move, convert_modes, expand_expr_real_2,
+	expand_expr_real_1, reduce_to_bit_field_precision): Likewise.
+	* stor-layout.c (get_mode_bounds): Likewise.
+	* cfgexpand.c (convert_debug_memory_address, expand_debug_expr):
+	Likewise.
+	* convert.c (convert_to_integer): Likewise.
+	* expmed.c (expand_shift_1): Likewise.
+
 2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (LIBGCOV): Remove.

@@ -2090,7 +2090,7 @@ expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
   if (code == LSHIFT_EXPR
       && CONST_INT_P (op1)
       && INTVAL (op1) > 0
-      && INTVAL (op1) < GET_MODE_BITSIZE (mode)
+      && INTVAL (op1) < GET_MODE_PRECISION (mode)
       && INTVAL (op1) < MAX_BITS_PER_WORD
       && shift_cost[speed][mode][INTVAL (op1)] > INTVAL (op1) * add_cost[speed][mode]
       && shift_cost[speed][mode][INTVAL (op1)] != MAX_COST)
@@ -2146,7 +2146,7 @@ expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
 	      else
 		other_amount
 		  = simplify_gen_binary (MINUS, GET_MODE (op1),
-					 GEN_INT (GET_MODE_BITSIZE (mode)),
+					 GEN_INT (GET_MODE_PRECISION (mode)),
 					 op1);
 
 	      shifted = force_reg (mode, shifted);

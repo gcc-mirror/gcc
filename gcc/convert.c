@@ -583,7 +583,7 @@ convert_to_integer (tree type, tree expr)
 	     be cleared.  */
 	  if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (TREE_TYPE (expr))
 	      && (TYPE_PRECISION (TREE_TYPE (expr))
-		  != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (expr)))))
+		  != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (expr)))))
 	    code = CONVERT_EXPR;
 	  else
 	    code = NOP_EXPR;
@@ -602,7 +602,7 @@ convert_to_integer (tree type, tree expr)
 	 type corresponding to its mode, then do a nop conversion
 	 to TYPE.  */
       else if (TREE_CODE (type) == ENUMERAL_TYPE
-	       || outprec != GET_MODE_BITSIZE (TYPE_MODE (type)))
+	       || outprec != GET_MODE_PRECISION (TYPE_MODE (type)))
 	return build1 (NOP_EXPR, type,
 		       convert (lang_hooks.types.type_for_mode
 				(TYPE_MODE (type), TYPE_UNSIGNED (type)),
