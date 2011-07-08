@@ -1,3 +1,9 @@
+2011-07-08  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/49680
+	* dwarf2cfi.c (dwarf2out_frame_debug): Insert cfi notes after
+	any tablejump vector.
+
 2011-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/49621
