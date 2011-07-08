@@ -747,9 +747,19 @@ iter-items := $(LIBUNWIND)
 include $(iterator)
 
 # Build libgcov components.
+
+# Defined in libgcov.c, included only in gcov library
+LIBGCOV = _gcov _gcov_merge_add _gcov_merge_single _gcov_merge_delta \
+    _gcov_fork _gcov_execl _gcov_execlp _gcov_execle \
+    _gcov_execv _gcov_execvp _gcov_execve \
+    _gcov_interval_profiler _gcov_pow2_profiler _gcov_one_value_profiler \
+    _gcov_indirect_call_profiler _gcov_average_profiler _gcov_ior_profiler \
+    _gcov_merge_ior
+
 libgcov-objects = $(patsubst %,%$(objext),$(LIBGCOV))
-$(libgcov-objects): %$(objext): $(gcc_srcdir)/libgcov.c
-	$(gcc_compile) -DL$* -c $(gcc_srcdir)/libgcov.c
+
+$(libgcov-objects): %$(objext): $(srcdir)/libgcov.c
+	$(gcc_compile) -DL$* -c $(srcdir)/libgcov.c
 
 
 # Static libraries.

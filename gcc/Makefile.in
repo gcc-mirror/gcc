@@ -1540,14 +1540,6 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
 
-# Defined in libgcov.c, included only in gcov library
-LIBGCOV = _gcov _gcov_merge_add _gcov_merge_single _gcov_merge_delta \
-    _gcov_fork _gcov_execl _gcov_execlp _gcov_execle \
-    _gcov_execv _gcov_execvp _gcov_execve \
-    _gcov_interval_profiler _gcov_pow2_profiler _gcov_one_value_profiler \
-    _gcov_indirect_call_profiler _gcov_average_profiler _gcov_ior_profiler \
-    _gcov_merge_ior
-
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
     _lt_sf _le_sf _unord_sf _si_to_sf _sf_to_si _negate_sf _make_sf \
@@ -1933,7 +1925,6 @@ libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 	echo LIB1ASMSRC = '$(LIB1ASMSRC)' >> tmp-libgcc.mvars
 	echo LIB2FUNCS_ST = '$(LIB2FUNCS_ST)' >> tmp-libgcc.mvars
 	echo LIB2FUNCS_EXCLUDE = '$(LIB2FUNCS_EXCLUDE)' >> tmp-libgcc.mvars
-	echo LIBGCOV = '$(LIBGCOV)' >> tmp-libgcc.mvars
 	echo LIB2ADD = '$(call srcdirify,$(LIB2ADD))' >> tmp-libgcc.mvars
 	echo LIB2ADD_ST = '$(call srcdirify,$(LIB2ADD_ST))' >> tmp-libgcc.mvars
 	echo LIB2ADDEH = '$(call srcdirify,$(LIB2ADDEH) $(srcdir)/emutls.c)' >> tmp-libgcc.mvars
