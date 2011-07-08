@@ -13,6 +13,9 @@
 	* convert.c (convert_to_integer): Likewise.
 	* expmed.c (expand_shift_1): Likewise.
 
+	* rtlanal.c (nonzero_bits1): Don't compare GET_MODE_SIZE against
+	a bitsize.
+
 2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (LIBGCOV): Remove.
