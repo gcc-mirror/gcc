@@ -1,5 +1,11 @@
 2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* Makefile.in (LIBGCOV): Remove.
+	(libgcc.mvars): Remove LIBGCOV.
+	* libgov.c: Move to ../libgcc.
+
+2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/fixed-bit.c, config/fixed-bit.h: Move to ../libgcc.
 
 2011-07-08  Martin Jambor  <mjambor@suse.cz>
