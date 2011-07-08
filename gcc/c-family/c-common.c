@@ -4058,14 +4058,11 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
   if (type == error_mark_node)
     return;
 
-  if (((type_quals & TYPE_QUAL_CONST)
-       || (type && TREE_CODE (type) == REFERENCE_TYPE))
-      /* An object declared 'const' is only readonly after it is
-	 initialized.  We don't have any way of expressing this currently,
-	 so we need to be conservative and unset TREE_READONLY for types
-	 with constructors.  Otherwise aliasing code will ignore stores in
-	 an inline constructor.  */
-      && !(type && TYPE_NEEDS_CONSTRUCTING (type)))
+  if ((type_quals & TYPE_QUAL_CONST)
+      || (type && TREE_CODE (type) == REFERENCE_TYPE))
+    /* We used to check TYPE_NEEDS_CONSTRUCTING here, but now a constexpr
+       constructor can produce constant init, so rely on cp_finish_decl to
+       clear TREE_READONLY if the variable has non-constant init.  */
     TREE_READONLY (decl) = 1;
   if (type_quals & TYPE_QUAL_VOLATILE)
     {
