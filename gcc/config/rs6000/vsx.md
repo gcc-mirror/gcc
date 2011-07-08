@@ -674,7 +674,7 @@
   [(set (match_operand:VSX_L 0 "vsx_register_operand" "=<VSr>,?wa")
 	(if_then_else:VSX_L
 	 (ne:CC (match_operand:VSX_L 1 "vsx_register_operand" "<VSr>,wa")
-		(const_int 0))
+		(match_operand:VSX_L 4 "zero_constant" ""))
 	 (match_operand:VSX_L 2 "vsx_register_operand" "<VSr>,wa")
 	 (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,wa")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
@@ -685,7 +685,7 @@
   [(set (match_operand:VSX_L 0 "vsx_register_operand" "=<VSr>,?wa")
 	(if_then_else:VSX_L
 	 (ne:CCUNS (match_operand:VSX_L 1 "vsx_register_operand" "<VSr>,wa")
-		   (const_int 0))
+		   (match_operand:VSX_L 4 "zero_constant" ""))
 	 (match_operand:VSX_L 2 "vsx_register_operand" "<VSr>,wa")
 	 (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,wa")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
