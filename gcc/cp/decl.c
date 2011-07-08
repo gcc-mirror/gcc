@@ -6646,7 +6646,6 @@ expand_static_init (tree decl, tree init)
       tree if_stmt = NULL_TREE, inner_if_stmt = NULL_TREE;
       tree then_clause = NULL_TREE, inner_then_clause = NULL_TREE;
       tree guard, guard_addr;
-      tree acquire_fn, release_fn, abort_fn;
       tree flag, begin;
 
       /* Emit code to perform this initialization but once.  This code
@@ -6696,29 +6695,31 @@ expand_static_init (tree decl, tree init)
 
       if (flag_threadsafe_statics)
 	{
+	  tree vfntype = NULL_TREE;
+	  tree acquire_name, release_name, abort_name;
+	  tree acquire_fn, release_fn, abort_fn;
 	  guard_addr = build_address (guard);
 
-	  acquire_fn = get_identifier ("__cxa_guard_acquire");
-	  release_fn = get_identifier ("__cxa_guard_release");
-	  abort_fn = get_identifier ("__cxa_guard_abort");
-	  if (!get_global_value_if_present (acquire_fn, &acquire_fn))
-	    {
-	      tree vfntype = build_function_type_list (void_type_node,
-						       TREE_TYPE (guard_addr),
-						       NULL_TREE);
-	      acquire_fn = push_library_fn
-		(acquire_fn, build_function_type_list (integer_type_node,
+	  acquire_name = get_identifier ("__cxa_guard_acquire");
+	  release_name = get_identifier ("__cxa_guard_release");
+	  abort_name = get_identifier ("__cxa_guard_abort");
+	  acquire_fn = identifier_global_value (acquire_name);
+	  release_fn = identifier_global_value (release_name);
+	  abort_fn = identifier_global_value (abort_name);
+	  if (!acquire_fn)
+	    acquire_fn = push_library_fn
+	      (acquire_name, build_function_type_list (integer_type_node,
 						       TREE_TYPE (guard_addr),
 						       NULL_TREE),
-		 NULL_TREE);
-	      release_fn = push_library_fn (release_fn, vfntype, NULL_TREE);
-	      abort_fn = push_library_fn (abort_fn, vfntype, NULL_TREE);
-	    }
-	  else
-	    {
-	      release_fn = identifier_global_value (release_fn);
-	      abort_fn = identifier_global_value (abort_fn);
-	    }
+	       NULL_TREE);
+	  if (!release_fn || !abort_fn)
+	    vfntype = build_function_type_list (void_type_node,
+						TREE_TYPE (guard_addr),
+						NULL_TREE);
+	  if (!release_fn)
+	    release_fn = push_library_fn (release_name, vfntype, NULL_TREE);
+	  if (!abort_fn)
+	    abort_fn = push_library_fn (abort_name, vfntype, NULL_TREE);
 
 	  inner_if_stmt = begin_if_stmt ();
 	  finish_if_stmt_cond (build_call_n (acquire_fn, 1, guard_addr),
