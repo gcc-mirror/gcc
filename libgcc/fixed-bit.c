@@ -51,7 +51,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MIN_UNITS_PER_WORD UNITS_PER_WORD
 #endif
 
-#include "config/fixed-bit.h"
+#include "fixed-bit.h"
 
 #if defined(FIXED_ADD) && defined(L_add)
 FIXED_C_TYPE

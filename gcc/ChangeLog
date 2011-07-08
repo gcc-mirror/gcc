@@ -1,3 +1,7 @@
+2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/fixed-bit.c, config/fixed-bit.h: Move to ../libgcc.
+
 2011-07-08  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (analyze_all_variable_accesses): Dump that a struture

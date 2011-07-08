@@ -1,3 +1,9 @@
+2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* fixed-bit.c, fixed-bit.h: New files.
+	* fixed-obj.mk ($o$(objext), $(o)_s$(objext)): Use $(srcdir) to
+	refer to fixed-bit.c.
+
 2011-07-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.host (*local*): Remove.
