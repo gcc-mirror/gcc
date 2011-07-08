@@ -1,3 +1,8 @@
+2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/48727
+	* g++.dg/opt/devirt2.C: Use specific pattern for sparc*-*-*.
+
 2011-07-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49662
