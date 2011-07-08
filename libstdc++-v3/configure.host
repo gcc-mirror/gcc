@@ -30,6 +30,11 @@
 #   abi_baseline_pair      directory name for ABI compat testing,
 #                          defaults to host_cpu-host_os (as per config.guess)
 #
+#   abi_baseline_subdir_switch
+#			   g++ switch to determine ABI baseline subdir for
+#			   multilibbed targets,
+#			   defaults to --print-multi-directory
+#
 #   abi_tweaks_dir         location of cxxabi_tweaks.h,
 #                          defaults to cpu_include_dir
 #
@@ -78,6 +83,7 @@ atomic_flags=""
 atomicity_dir="cpu/generic"
 cpu_defines_dir="cpu/generic"
 try_cpu=generic
+abi_baseline_subdir_switch=--print-multi-directory
 abi_tweaks_dir="cpu/generic"
 error_constants_dir="os/generic"
 
@@ -332,8 +338,10 @@ case "${host}" in
     ;;
   *-*-solaris2.[89])
     abi_baseline_pair=solaris2.8
+    abi_baseline_subdir_switch=--print-multi-os-directory
     ;;
   *-*-solaris2.1[0-9])
     abi_baseline_pair=solaris2.10
+    abi_baseline_subdir_switch=--print-multi-os-directory
     ;;
 esac

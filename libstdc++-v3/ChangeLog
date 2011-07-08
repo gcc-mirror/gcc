@@ -1,3 +1,23 @@
+2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.host (abi_baseline_subdir_switch): Describe.
+	Provide default.
+	(*-*-solaris2.[89], *-*-solaris2.1[0-9]): Override.
+	* acinclude.m4 (GLIBCXX_CONFIGURE_TESTSUITE): Substitute
+	baseline_subdir_switch.
+	* testsuite/Makefile.am (site.exp): Emit it.
+	(baseline_subdir): Use it.
+	* testsuite/libstdc++-abi/abi.exp: Use it.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2011-06-29  François Dumont  <francois.cppdevs@free.fr>
 
 	* include/debug/set.h, unordered_map, multiset.h, forward_list,
