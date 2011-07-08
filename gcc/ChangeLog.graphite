@@ -1,3 +1,25 @@
+2011-05-26  Alexey Kravets  <kayrick@ispras.ru>
+
+	PR middle-end/49147
+	* graphite-opencl-codegen.c
+	(opencl_get_perfect_nested_loop_depth): Use
+	enabled_dependency_in_clast_loop_p instead of
+	dependency_in_clast_loop_p.
+	* graphite-opencl.c (opencl_transform_stmt_list): Ditto.
+	(enabled_dependency_in_clast_loop_p): New.
+	* graphite-opencl.h (enabled_dependency_in_clast_loop_p): Export.
+
+	* gcc.dg/graphite/pr49147.c: New test.
+
+2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c (opencl_print_local_vars): Fix typo.
+
+2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (graphite_outer_subscript_bound): Remove
+	memory leaks, add one more assert.
+
 2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (build_alias_set_powerset): Remove
