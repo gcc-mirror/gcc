@@ -3289,7 +3289,7 @@ subreg_get_info (unsigned int xregno, enum machine_mode xmode,
 	 return a negative offset so that we find the proper highpart
 	 of the register.  */
       if (GET_MODE_SIZE (ymode) > UNITS_PER_WORD
-	  ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN)
+	  ? REG_WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN)
 	info->offset = nregs_xmode - nregs_ymode;
       else
 	info->offset = 0;
@@ -3344,6 +3344,15 @@ subreg_get_info (unsigned int xregno, enum machine_mode xmode,
   gcc_assert ((GET_MODE_SIZE (xmode) % GET_MODE_SIZE (ymode)) == 0);
   gcc_assert ((nregs_xmode % nregs_ymode) == 0);
 
+  if (WORDS_BIG_ENDIAN != REG_WORDS_BIG_ENDIAN
+      && GET_MODE_SIZE (xmode) > UNITS_PER_WORD)
+    {
+      HOST_WIDE_INT xsize = GET_MODE_SIZE (xmode);
+      HOST_WIDE_INT ysize = GET_MODE_SIZE (ymode);
+      HOST_WIDE_INT off_low = offset & (ysize - 1);
+      HOST_WIDE_INT off_high = offset & ~(ysize - 1);
+      offset = (xsize - ysize - off_high) | off_low;
+    }
   /* The XMODE value can be seen as a vector of NREGS_XMODE
      values.  The subreg must represent a lowpart of given field.
      Compute what field it is.  */
