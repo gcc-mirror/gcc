@@ -1,5 +1,5 @@
 /* Verify that SRA total scalarization will not be confused by padding.  */
-
+/* Test skipped for targets with small (often default) MOVE_RATIO.  */
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-release_ssa" } */
 
@@ -21,5 +21,5 @@ int foo (struct S *p)
   *p = l;
 }
 
-/* { dg-final { scan-tree-dump-times "l;" 0 "release_ssa"} } */
+/* { dg-final { scan-tree-dump-times "l;" 0 "release_ssa" { target { ! "avr*-*-*" } } } } */
 /* { dg-final { cleanup-tree-dump "release_ssa" } } */
