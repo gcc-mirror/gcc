@@ -2180,8 +2180,16 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
   bool handled_one = false;
   bool need_flush = false;
 
-  /* Remember where we are to insert notes.  */
-  cfi_insn = (after_p ? insn : PREV_INSN (insn));
+  /* Remember where we are to insert notes.  Do not separate tablejump
+     insns from their ADDR_DIFF_VEC.  Putting the note after the VEC
+     should be ok.  */
+  if (after_p)
+    {
+      if (!tablejump_p (insn, NULL, &cfi_insn))
+	cfi_insn = insn;
+    }
+  else
+    cfi_insn = PREV_INSN (insn);
 
   if (!NONJUMP_INSN_P (insn) || clobbers_queued_reg_save (insn))
     dwarf2out_flush_queued_reg_saves ();
