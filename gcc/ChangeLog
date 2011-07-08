@@ -1,5 +1,10 @@
 2011-07-07  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/elf.h (MIPS_DEBUGGING_INFO): Undef.
+	(DBX_DEBUGGING_INFO): Undef.
+
+2011-07-07  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (output_cfi_directive): Export.  Add FILE parameter.
 	Handle some opcodes specially for debugging.
 	* print-rtl.c: Include dwarf2out.h
