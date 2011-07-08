@@ -870,9 +870,16 @@ word has the lowest number.  This macro need not be a constant.
 @defmac WORDS_BIG_ENDIAN
 Define this macro to have the value 1 if, in a multiword object, the
 most significant word has the lowest number.  This applies to both
-memory locations and registers; GCC fundamentally assumes that the
-order of words in memory is the same as the order in registers.  This
+memory locations and registers; see @code{REG_WORDS_BIG_ENDIAN} if the
+order of words in memory is not the same as the order in registers.  This
 macro need not be a constant.
+@end defmac
+
+@defmac REG_WORDS_BIG_ENDIAN
+On some machines, the order of words in a multiword object differs between
+registers in memory.  In such a situation, define this macro to describe
+the order of words in a register.  The macro @code{WORDS_BIG_ENDIAN} controls
+the order of words in memory.
 @end defmac
 
 @defmac FLOAT_WORDS_BIG_ENDIAN

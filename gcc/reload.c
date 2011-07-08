@@ -2218,15 +2218,15 @@ operands_match_p (rtx x, rtx y)
       else
 	j = REGNO (y);
 
-      /* On a WORDS_BIG_ENDIAN machine, point to the last register of a
+      /* On a REG_WORDS_BIG_ENDIAN machine, point to the last register of a
 	 multiple hard register group of scalar integer registers, so that
 	 for example (reg:DI 0) and (reg:SI 1) will be considered the same
 	 register.  */
-      if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
+      if (REG_WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
 	  && SCALAR_INT_MODE_P (GET_MODE (x))
 	  && i < FIRST_PSEUDO_REGISTER)
 	i += hard_regno_nregs[i][GET_MODE (x)] - 1;
-      if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (y)) > UNITS_PER_WORD
+      if (REG_WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (y)) > UNITS_PER_WORD
 	  && SCALAR_INT_MODE_P (GET_MODE (y))
 	  && j < FIRST_PSEUDO_REGISTER)
 	j += hard_regno_nregs[j][GET_MODE (y)] - 1;
@@ -7251,7 +7251,7 @@ reload_adjust_reg_for_mode (rtx reloadreg, enum machine_mode mode)
 
   regno = REGNO (reloadreg);
 
-  if (WORDS_BIG_ENDIAN)
+  if (REG_WORDS_BIG_ENDIAN)
     regno += (int) hard_regno_nregs[regno][GET_MODE (reloadreg)]
       - (int) hard_regno_nregs[regno][mode];
 

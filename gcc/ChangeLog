@@ -4,6 +4,14 @@
 	in terms of another.
 	(write_attr_value): Write a cast if necessary.
 
+	* defaults.h (REG_WORDS_BIG_ENDIAN): Provide a default.
+	* doc/tm.texi.in (WORDS_BIG_ENDIAN): Mention REG_WORDS_BIG_ENDIAN.
+	(REG_WORDS_BIG_ENDIAN): Document.
+	* doc/tm.texi: Regenerate.
+	* reload.c (operands_match_p): Take it into account.
+	(reload_adjust_reg_for_mode): Likewise.
+	* rtlanal.c (subreg_get_info): Likewise.
+
 2011-07-08  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary_loc): Remove index +p PTR -> PTR +p index
