@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2011-03-24 16:45+0000\n"
+"POT-Creation-Date: 2011-06-21 10:26+0000\n"
 "PO-Revision-Date: 2006-03-09 12:37+0800\n"
 "Last-Translator: Wei-Lun Chao <chaoweilun@pcmail.com.tw>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -74,7 +74,7 @@ msgstr "不完整的萬國碼字元名稱 %.*s"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s 不是一個有效的萬國碼字元"
 
-#: charset.c:1056 lex.c:1040
+#: charset.c:1056 lex.c:1041
 msgid "'$' in identifier or number"
 msgstr "「$」出現在識別字或數字中"
 
@@ -123,6 +123,7 @@ msgstr "非 ISO 標準的逸出序列，「\\%c」"
 
 #: charset.c:1321
 #, fuzzy, c-format
+#| msgid "unknown escape sequence '\\%c'"
 msgid "unknown escape sequence: '\\%c'"
 msgstr "不明的逸出序列：「\\%c」"
 
@@ -164,6 +165,7 @@ msgstr "#%s 是 GCC 擴充功能"
 
 #: directives.c:361
 #, fuzzy, c-format
+#| msgid "#%s is a GCC extension"
 msgid "#%s is a deprecated GCC extension"
 msgstr "#%s 是 GCC 擴充功能"
 
@@ -284,6 +286,7 @@ msgstr ""
 
 #: directives.c:1165
 #, fuzzy, c-format
+#| msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "「%s」既被註冊為一個 pragma 又被註冊為一個 pragma 命名空間"
 
@@ -312,11 +315,13 @@ msgstr "#pragma once 出現在主檔案中"
 
 #: directives.c:1454
 #, fuzzy
+#| msgid "invalid #pragma GCC poison directive"
 msgid "invalid #pragma push_macro directive"
 msgstr "無效的 #pragma GCC poison 指令"
 
 #: directives.c:1509
 #, fuzzy
+#| msgid "invalid #pragma GCC poison directive"
 msgid "invalid #pragma pop_macro directive"
 msgstr "無效的 #pragma GCC poison 指令"
 
@@ -347,61 +352,61 @@ msgstr "目前檔案早於 %s"
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma 需要一個括起的字串原文"
 
-#: directives.c:1917
+#: directives.c:1927
 msgid "#else without #if"
 msgstr "#else 沒有匹配的 #if"
 
-#: directives.c:1922
+#: directives.c:1932
 msgid "#else after #else"
 msgstr "#else 出現在 #else 後"
 
-#: directives.c:1924 directives.c:1957
+#: directives.c:1934 directives.c:1967
 msgid "the conditional began here"
 msgstr "條件自此開始"
 
-#: directives.c:1950
+#: directives.c:1960
 msgid "#elif without #if"
 msgstr "#elif 沒有匹配的 #if"
 
-#: directives.c:1955
+#: directives.c:1965
 msgid "#elif after #else"
 msgstr "#elif 出現在 #else 後"
 
-#: directives.c:1993
+#: directives.c:2003
 msgid "#endif without #if"
 msgstr "#endif 沒有匹配的 #if"
 
-#: directives.c:2073
+#: directives.c:2083
 msgid "missing '(' after predicate"
 msgstr "述語後缺少「(」"
 
-#: directives.c:2088
+#: directives.c:2098
 msgid "missing ')' to complete answer"
 msgstr "完整的答案缺少「)」"
 
-#: directives.c:2108
+#: directives.c:2118
 msgid "predicate's answer is empty"
 msgstr "述語的答案為空"
 
-#: directives.c:2135
+#: directives.c:2145
 msgid "assertion without predicate"
 msgstr "判定語後沒有述語"
 
-#: directives.c:2138
+#: directives.c:2148
 msgid "predicate must be an identifier"
 msgstr "述語必須是一個識別字"
 
-#: directives.c:2224
+#: directives.c:2234
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "已再判定「%s」"
 
-#: directives.c:2515
+#: directives.c:2525
 #, c-format
 msgid "unterminated #%s"
 msgstr "未終止的 #%s"
 
-#: directives-only.c:222 lex.c:2074 traditional.c:163
+#: directives-only.c:222 lex.c:2077 traditional.c:163
 msgid "unterminated comment"
 msgstr "未終結的註釋"
 
@@ -420,11 +425,13 @@ msgstr "數字中有太多小數點"
 
 #: expr.c:311 expr.c:396
 #, fuzzy
+#| msgid "imaginary constants are a GCC extension"
 msgid "fixed-point constants are a GCC extension"
 msgstr "虛數常數是一個 GCC 擴充功能"
 
 #: expr.c:324
 #, fuzzy, c-format
+#| msgid "invalid digit \"%c\" in octal constant"
 msgid "invalid digit \"%c\" in binary constant"
 msgstr "八進位常數中有無效字元「%c」"
 
@@ -435,11 +442,13 @@ msgstr "八進位常數中有無效字元「%c」"
 
 #: expr.c:334
 #, fuzzy
+#| msgid "invalid suffix \"%.*s\" on floating constant"
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "浮點常數的「%.*s」字尾無效"
 
 #: expr.c:339
 #, fuzzy
+#| msgid "use of C99 hexadecimal floating constant"
 msgid "no digits in hexadecimal floating constant"
 msgstr "使用 C99 式的十六進位浮點常數"
 
@@ -467,16 +476,19 @@ msgstr "傳統 C 不接受「%.*s」字尾"
 
 #: expr.c:383
 #, fuzzy
+#| msgid "imaginary constants are a GCC extension"
 msgid "suffix for double constant is a GCC extension"
 msgstr "虛數常數是一個 GCC 擴充功能"
 
 #: expr.c:389
 #, fuzzy, c-format
+#| msgid "invalid suffix \"%.*s\" on floating constant"
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "浮點常數的「%.*s」字尾無效"
 
 #: expr.c:400
 #, fuzzy
+#| msgid "imaginary constants are a GCC extension"
 msgid "decimal float constants are a GCC extension"
 msgstr "虛數常數是一個 GCC 擴充功能"
 
@@ -487,6 +499,7 @@ msgstr "整數常數的「%.*s」字尾無效"
 
 #: expr.c:433
 #, fuzzy
+#| msgid "use of C99 long long integer constant"
 msgid "use of C++0x long long integer constant"
 msgstr "使用 C99 long long 整數常數"
 
@@ -500,6 +513,7 @@ msgstr "虛數常數是一個 GCC 擴充功能"
 
 #: expr.c:451
 #, fuzzy
+#| msgid "imaginary constants are a GCC extension"
 msgid "binary constants are a GCC extension"
 msgstr "虛數常數是一個 GCC 擴充功能"
 
@@ -528,106 +542,109 @@ msgstr "(在 C++ 中「%s」會是「%s」的替代識別字)"
 msgid "this use of \"defined\" may not be portable"
 msgstr "使用「defined」可能不利於移植"
 
-#: expr.c:751
+#: expr.c:756
 msgid "floating constant in preprocessor expression"
 msgstr "浮點常數出現在預先處理運算式中"
 
-#: expr.c:757
+#: expr.c:762
 msgid "imaginary number in preprocessor expression"
 msgstr "預先處理運算式中出現虛數"
 
-#: expr.c:804
+#: expr.c:809
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "「%s」未定義"
 
-#: expr.c:816
+#: expr.c:821
 #, fuzzy
+#| msgid "#%s is a GCC extension"
 msgid "assertions are a GCC extension"
 msgstr "#%s 是 GCC 擴充功能"
 
-#: expr.c:819
+#: expr.c:824
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.c:952 expr.c:981
+#: expr.c:957 expr.c:986
 #, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr "識別字「%s」前缺少二元運算子"
 
-#: expr.c:972
+#: expr.c:977
 #, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "識別字「%s」在預先處理運算式中無效"
 
-#: expr.c:989
+#: expr.c:994
 msgid "missing expression between '(' and ')'"
 msgstr "「(」與「)」之間缺少運算式"
 
-#: expr.c:992
+#: expr.c:997
 #, fuzzy, c-format
+#| msgid "#if with no expression"
 msgid "%s with no expression"
 msgstr "#if 後沒有運算式"
 
-#: expr.c:995
+#: expr.c:1000
 #, c-format
 msgid "operator '%s' has no right operand"
 msgstr "運算子「%s」沒有右運算元"
 
-#: expr.c:1000
+#: expr.c:1005
 #, c-format
 msgid "operator '%s' has no left operand"
 msgstr "運算子「%s」沒有左運算元"
 
-#: expr.c:1026
+#: expr.c:1031
 msgid " ':' without preceding '?'"
 msgstr "「:」前沒有「?」"
 
-#: expr.c:1054
+#: expr.c:1059
 #, fuzzy, c-format
+#| msgid "unbalanced stack in #if"
 msgid "unbalanced stack in %s"
 msgstr "#if 中不平衡的堆疊"
 
-#: expr.c:1074
+#: expr.c:1079
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "不可能的運算子「%u」"
 
-#: expr.c:1175
+#: expr.c:1180
 msgid "missing ')' in expression"
 msgstr "運算式中缺少「)」"
 
-#: expr.c:1204
+#: expr.c:1209
 msgid "'?' without following ':'"
 msgstr "「?」後沒有「:」"
 
-#: expr.c:1214
+#: expr.c:1219
 msgid "integer overflow in preprocessor expression"
 msgstr "預先處理運算式中整數溢出"
 
-#: expr.c:1219
+#: expr.c:1224
 msgid "missing '(' in expression"
 msgstr "運算式中缺少「(」"
 
-#: expr.c:1251
+#: expr.c:1256
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "「%s」的左運算元在提升時變換了符號"
 
-#: expr.c:1256
+#: expr.c:1261
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "「%s」的右運算元在提升時變換了符號"
 
-#: expr.c:1515
+#: expr.c:1520
 msgid "traditional C rejects the unary plus operator"
 msgstr "傳統 C 不接受單元 + 運算子"
 
-#: expr.c:1598
+#: expr.c:1603
 msgid "comma operator in operand of #if"
 msgstr "#if 運算元中出現逗號"
 
-#: expr.c:1734
+#: expr.c:1739
 msgid "division by zero in #if"
 msgstr "#if 中用零做除數"
 
@@ -701,97 +718,100 @@ msgstr "CPP 半整數短於 CPP 字元"
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "在此宿主機上，CPP 不能處理長於 %lu 位的寬字元常數，但目標需要 %lu 位"
 
-#: lex.c:834
+#: lex.c:835
 msgid "backslash and newline separated by space"
 msgstr "反斜線和換列為空格所分隔"
 
-#: lex.c:839
+#: lex.c:840
 msgid "backslash-newline at end of file"
 msgstr "反斜線-換列出現在檔案末尾"
 
-#: lex.c:855
+#: lex.c:856
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "三元符 ??%c 轉換為 %c"
 
-#: lex.c:863
+#: lex.c:864
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "三元符 ??%c 被忽略，請使用 -trigraphs 來啟用"
 
-#: lex.c:912
+#: lex.c:913
 msgid "\"/*\" within comment"
 msgstr "「/*」出現在註釋中"
 
-#: lex.c:970
+#: lex.c:971
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "預先處理指令中出現 %s"
 
-#: lex.c:979
+#: lex.c:980
 msgid "null character(s) ignored"
 msgstr "忽略空字元"
 
-#: lex.c:1016
+#: lex.c:1017
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "「%.*s」不在 NFKC 中"
 
-#: lex.c:1019
+#: lex.c:1020
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "「%.*s」不在 NFC 中"
 
-#: lex.c:1087 lex.c:1164
+#: lex.c:1088 lex.c:1165
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "試圖使用已加料的「%s」"
 
-#: lex.c:1095 lex.c:1172
+#: lex.c:1096 lex.c:1173
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ 只能出現在 C99 可變參數巨集的展開中"
 
-#: lex.c:1101 lex.c:1178
+#: lex.c:1102 lex.c:1179
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:1323
+#: lex.c:1324
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:1326
+#: lex.c:1327
 #, fuzzy, c-format
+#| msgid "universal character %.*s is not valid in an identifier"
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "萬國碼字元 %.*s 在識別字中無效"
 
-#: lex.c:1447 lex.c:1469
+#: lex.c:1450 lex.c:1472
 #, fuzzy
+#| msgid "unterminated #%s"
 msgid "unterminated raw string"
 msgstr "未終止的 #%s"
 
-#: lex.c:1484 lex.c:1583
+#: lex.c:1487 lex.c:1586
 msgid "null character(s) preserved in literal"
 msgstr "空字元將保留在原文中"
 
-#: lex.c:1586
+#: lex.c:1589
 #, fuzzy, c-format
+#| msgid "missing terminating > character"
 msgid "missing terminating %c character"
 msgstr "缺少結尾的 > 字元"
 
-#: lex.c:2085
+#: lex.c:2088
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ 風格的註釋在 ISO C90 中不被允許"
 
-#: lex.c:2087
+#: lex.c:2090
 msgid "(this will be reported only once per input file)"
 msgstr "(此警告為每個輸入檔案只報告一次)"
 
-#: lex.c:2092
+#: lex.c:2095
 msgid "multi-line comment"
 msgstr "多列註釋"
 
-#: lex.c:2412
+#: lex.c:2415
 #, c-format
 msgid "unspellable token %s"
 msgstr "無法拼出的識別字 %s"
@@ -808,6 +828,7 @@ msgstr "無效的內建巨集「%s」"
 
 #: macro.c:160
 #, fuzzy
+#| msgid "could not determine date and time"
 msgid "could not determine file timestamp"
 msgstr "無法決定日期與時間"
 
@@ -928,6 +949,7 @@ msgstr "在寫入預先編譯標頭時"
 
 #: pch.c:608
 #, fuzzy, c-format
+#| msgid "%s: not used because `%s' is defined"
 msgid "%s: not used because `%.*s' is poisoned"
 msgstr "%s：未使用，因為「%s」已定義"
 
@@ -948,6 +970,7 @@ msgstr "%s：未使用，因為「%s」已定義"
 
 #: pch.c:703
 #, fuzzy, c-format
+#| msgid "%s: not used because `%s' is defined"
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s：未使用，因為「%s」已定義"
 

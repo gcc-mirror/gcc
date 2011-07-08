@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2011-03-24 16:45+0000\n"
+"POT-Creation-Date: 2011-06-21 10:26+0000\n"
 "PO-Revision-Date: 2011-01-07 16:23+0300\n"
 "Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
 "Language-Team: Russian <gnu@mx.ru>\n"
@@ -74,7 +74,7 @@ msgstr "неполное универсальное имя символа %.*s"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s не является допустимым универсальным именем символа"
 
-#: charset.c:1056 lex.c:1040
+#: charset.c:1056 lex.c:1041
 msgid "'$' in identifier or number"
 msgstr "«$» в идентификаторе или числе"
 
@@ -345,61 +345,61 @@ msgstr "текущий файл старее чем %s"
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "для _Pragma требуется указать строковый литерал в скобках"
 
-#: directives.c:1917
+#: directives.c:1927
 msgid "#else without #if"
 msgstr "#else без #if"
 
-#: directives.c:1922
+#: directives.c:1932
 msgid "#else after #else"
 msgstr "#else после #else"
 
-#: directives.c:1924 directives.c:1957
+#: directives.c:1934 directives.c:1967
 msgid "the conditional began here"
 msgstr "условие начинается здесь"
 
-#: directives.c:1950
+#: directives.c:1960
 msgid "#elif without #if"
 msgstr "#elif без #if"
 
-#: directives.c:1955
+#: directives.c:1965
 msgid "#elif after #else"
 msgstr "#elif после #else"
 
-#: directives.c:1993
+#: directives.c:2003
 msgid "#endif without #if"
 msgstr "#endif без #if"
 
-#: directives.c:2073
+#: directives.c:2083
 msgid "missing '(' after predicate"
 msgstr "отсутствует «(» после предиката"
 
-#: directives.c:2088
+#: directives.c:2098
 msgid "missing ')' to complete answer"
 msgstr "отсутствует «)» для завершения ответа"
 
-#: directives.c:2108
+#: directives.c:2118
 msgid "predicate's answer is empty"
 msgstr "ответ предиката пуст"
 
-#: directives.c:2135
+#: directives.c:2145
 msgid "assertion without predicate"
 msgstr "утверждение без предиката"
 
-#: directives.c:2138
+#: directives.c:2148
 msgid "predicate must be an identifier"
 msgstr "предикат должен быть идентификатором"
 
-#: directives.c:2224
+#: directives.c:2234
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "повторное утверждение «%s»"
 
-#: directives.c:2515
+#: directives.c:2525
 #, c-format
 msgid "unterminated #%s"
 msgstr "незавершённая #%s"
 
-#: directives-only.c:222 lex.c:2074 traditional.c:163
+#: directives-only.c:222 lex.c:2077 traditional.c:163
 msgid "unterminated comment"
 msgstr "незавершённый комментарий"
 
@@ -519,105 +519,105 @@ msgstr "(«%s» является альтернативой токену «%s» 
 msgid "this use of \"defined\" may not be portable"
 msgstr "такое использование «defined» может оказаться непереносимым"
 
-#: expr.c:751
+#: expr.c:756
 msgid "floating constant in preprocessor expression"
 msgstr "плавающая константа в препроцессорном выражении"
 
-#: expr.c:757
+#: expr.c:762
 msgid "imaginary number in preprocessor expression"
 msgstr "мнимое число в препроцессорном выражении"
 
-#: expr.c:804
+#: expr.c:809
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "«%s» не определена"
 
-#: expr.c:816
+#: expr.c:821
 msgid "assertions are a GCC extension"
 msgstr "утверждения являются расширением GCC"
 
-#: expr.c:819
+#: expr.c:824
 msgid "assertions are a deprecated extension"
 msgstr "утверждения являются устаревшим расширением"
 
-#: expr.c:952 expr.c:981
+#: expr.c:957 expr.c:986
 #, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr "отсутствует двоичный оператор перед токеном «%s»"
 
-#: expr.c:972
+#: expr.c:977
 #, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "токен «%s» не допустим в препроцессорных расширениях"
 
-#: expr.c:989
+#: expr.c:994
 msgid "missing expression between '(' and ')'"
 msgstr "отсутствует выражение между «(» и «)»"
 
-#: expr.c:992
+#: expr.c:997
 #, c-format
 msgid "%s with no expression"
 msgstr "%s без выражения"
 
-#: expr.c:995
+#: expr.c:1000
 #, c-format
 msgid "operator '%s' has no right operand"
 msgstr "оператор «%s» не имеет правого операнда"
 
-#: expr.c:1000
+#: expr.c:1005
 #, c-format
 msgid "operator '%s' has no left operand"
 msgstr "оператор «%s» не имеет левого операнда"
 
-#: expr.c:1026
+#: expr.c:1031
 msgid " ':' without preceding '?'"
 msgstr " «:» без начального «?»"
 
-#: expr.c:1054
+#: expr.c:1059
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "несбалансированный стек в %s"
 
-#: expr.c:1074
+#: expr.c:1079
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "невозможный оператор «%u»"
 
-#: expr.c:1175
+#: expr.c:1180
 msgid "missing ')' in expression"
 msgstr "отсутствующая «)» в выражении"
 
-#: expr.c:1204
+#: expr.c:1209
 msgid "'?' without following ':'"
 msgstr "«?» без последующего «:»"
 
-#: expr.c:1214
+#: expr.c:1219
 msgid "integer overflow in preprocessor expression"
 msgstr "целочисленное переполнение в препроцессорном выражении"
 
-#: expr.c:1219
+#: expr.c:1224
 msgid "missing '(' in expression"
 msgstr "отсутствующая «(» в выражении"
 
-#: expr.c:1251
+#: expr.c:1256
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "левый операнд «%s» изменяет знак при появлении"
 
-#: expr.c:1256
+#: expr.c:1261
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "операнд операнд «%s» изменяет знак при появлении"
 
-#: expr.c:1515
+#: expr.c:1520
 msgid "traditional C rejects the unary plus operator"
 msgstr "в традиционном C отвергается оператор унарного сложения"
 
-#: expr.c:1598
+#: expr.c:1603
 msgid "comma operator in operand of #if"
 msgstr "оператор запятая в операнде #if"
 
-#: expr.c:1734
+#: expr.c:1739
 msgid "division by zero in #if"
 msgstr "деление на ноль в #if"
 
@@ -691,96 +691,96 @@ msgstr "ширина половины integer CPP уже чем символ CPP
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP на данной машине не может работать с широкими символьными константами более %lu бит, но для цели требуется %lu бит"
 
-#: lex.c:834
+#: lex.c:835
 msgid "backslash and newline separated by space"
 msgstr "обратная косая черта и символ новой строки разделены пробелом"
 
-#: lex.c:839
+#: lex.c:840
 msgid "backslash-newline at end of file"
 msgstr "обратная косая черта/символ новой строки в конце файла"
 
-#: lex.c:855
+#: lex.c:856
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "триграф ??%c преобразован в %c"
 
-#: lex.c:863
+#: lex.c:864
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "триграф ??%c игнорируется, для включения используйте -trigraphs"
 
-#: lex.c:912
+#: lex.c:913
 msgid "\"/*\" within comment"
 msgstr "«/*» внутри комментария"
 
-#: lex.c:970
+#: lex.c:971
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s в препроцессорной директиве"
 
-#: lex.c:979
+#: lex.c:980
 msgid "null character(s) ignored"
 msgstr "игнорируется символ(ы) null"
 
-#: lex.c:1016
+#: lex.c:1017
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "«%.*s» не является NFKC"
 
-#: lex.c:1019
+#: lex.c:1020
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "«%.*s» не является NFC"
 
-#: lex.c:1087 lex.c:1164
+#: lex.c:1088 lex.c:1165
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "попытка использовать отравленный «%s»"
 
-#: lex.c:1095 lex.c:1172
+#: lex.c:1096 lex.c:1173
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ может появляться только в расширении C99: вариативном макросе"
 
-#: lex.c:1101 lex.c:1178
+#: lex.c:1102 lex.c:1179
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "идентификатор «%s» является именем специального оператора в C++"
 
-#: lex.c:1323
+#: lex.c:1324
 msgid "raw string delimiter longer than 16 characters"
 msgstr "разделитель сырой строки больше 16 символов"
 
-#: lex.c:1326
+#: lex.c:1327
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "неверный символ «%c» в разделителе сырой строки"
 
-#: lex.c:1447 lex.c:1469
+#: lex.c:1450 lex.c:1472
 msgid "unterminated raw string"
 msgstr "незавершённая сырая строка"
 
-#: lex.c:1484 lex.c:1583
+#: lex.c:1487 lex.c:1586
 msgid "null character(s) preserved in literal"
 msgstr "символ(ы) null сохраняются в литерале"
 
-#: lex.c:1586
+#: lex.c:1589
 #, c-format
 msgid "missing terminating %c character"
 msgstr "отсутствует завершающий символ %c"
 
-#: lex.c:2085
+#: lex.c:2088
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "комментарии в стиле C++ не разрешены в ISO C90"
 
-#: lex.c:2087
+#: lex.c:2090
 msgid "(this will be reported only once per input file)"
 msgstr "(об этом будет сообщено только один раз для каждого файла)"
 
-#: lex.c:2092
+#: lex.c:2095
 msgid "multi-line comment"
 msgstr "многострочный комментарий"
 
-#: lex.c:2412
+#: lex.c:2415
 #, c-format
 msgid "unspellable token %s"
 msgstr "неразбираемый токен %s"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2011-03-24 16:45+0000\n"
+"POT-Creation-Date: 2011-06-21 10:26+0000\n"
 "PO-Revision-Date: 2010-12-19 21:07+0200\n"
 "Last-Translator: Jorma Karvonen <karvonen.jorma@gmail.com>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
@@ -75,7 +75,7 @@ msgstr "vaillinainen yleispätevä merkkinimi %.*s"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s ei ole kelvollinen yleispätevä merkki"
 
-#: charset.c:1056 lex.c:1040
+#: charset.c:1056 lex.c:1041
 msgid "'$' in identifier or number"
 msgstr "’$’ tunnisteessa tai numerossa"
 
@@ -348,61 +348,61 @@ msgstr "nykyinen tiedosto on vanhempi kuin %s"
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma ottaa sulkumerkkeillä ympäröidyn merkkijonoliteraalin"
 
-#: directives.c:1917
+#: directives.c:1927
 msgid "#else without #if"
 msgstr "#else ilman #if"
 
-#: directives.c:1922
+#: directives.c:1932
 msgid "#else after #else"
 msgstr "#else jälkeen #else"
 
-#: directives.c:1924 directives.c:1957
+#: directives.c:1934 directives.c:1967
 msgid "the conditional began here"
 msgstr "ehdollinen alkoi tässä"
 
-#: directives.c:1950
+#: directives.c:1960
 msgid "#elif without #if"
 msgstr "#elif ilman #if"
 
-#: directives.c:1955
+#: directives.c:1965
 msgid "#elif after #else"
 msgstr "#elif jälkeen #else"
 
-#: directives.c:1993
+#: directives.c:2003
 msgid "#endif without #if"
 msgstr "#endif ilman #if"
 
-#: directives.c:2073
+#: directives.c:2083
 msgid "missing '(' after predicate"
 msgstr "merkki ’(’ puuttuu predikaatin jälkeen"
 
-#: directives.c:2088
+#: directives.c:2098
 msgid "missing ')' to complete answer"
 msgstr "merkki ’)’ puuttuu täydelliseen vastaukseen"
 
-#: directives.c:2108
+#: directives.c:2118
 msgid "predicate's answer is empty"
 msgstr "predikaatin vastaus on tyhjä"
 
-#: directives.c:2135
+#: directives.c:2145
 msgid "assertion without predicate"
 msgstr "assertion-toiminto ilman predikaattia"
 
-#: directives.c:2138
+#: directives.c:2148
 msgid "predicate must be an identifier"
 msgstr "predikaatin on oltava tunniste"
 
-#: directives.c:2224
+#: directives.c:2234
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "”%s” uudelleen assert-toimintoon"
 
-#: directives.c:2515
+#: directives.c:2525
 #, c-format
 msgid "unterminated #%s"
 msgstr "päättämätön #%s"
 
-#: directives-only.c:222 lex.c:2074 traditional.c:163
+#: directives-only.c:222 lex.c:2077 traditional.c:163
 msgid "unterminated comment"
 msgstr "päättämätön kommentti"
 
@@ -522,105 +522,105 @@ msgstr "(”%s” on vaihtoehtoinen merkkijono ”%s” C++:ssa)"
 msgid "this use of \"defined\" may not be portable"
 msgstr "tämä ”defined”-käyttö ei ehkä ole siirrettävä"
 
-#: expr.c:751
+#: expr.c:756
 msgid "floating constant in preprocessor expression"
 msgstr "liukulukuvakio esikäsittelijälausekkeessa"
 
-#: expr.c:757
+#: expr.c:762
 msgid "imaginary number in preprocessor expression"
 msgstr "imaginaariluku esikääntäjälausekkeessa"
 
-#: expr.c:804
+#: expr.c:809
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "”%s” ei ole määritelty"
 
-#: expr.c:816
+#: expr.c:821
 msgid "assertions are a GCC extension"
 msgstr "assertion-toiminnot ovat GCC-laajennus"
 
-#: expr.c:819
+#: expr.c:824
 msgid "assertions are a deprecated extension"
 msgstr "assertion-toiminnot ovat vanhentunut laajennus"
 
-#: expr.c:952 expr.c:981
+#: expr.c:957 expr.c:986
 #, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr "puuttua binäärioperaattori ennen merkkijonoa ”%s”"
 
-#: expr.c:972
+#: expr.c:977
 #, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "merkkijono ”%s” ei ole kelvollinen esikäsittelijälausekkeissa"
 
-#: expr.c:989
+#: expr.c:994
 msgid "missing expression between '(' and ')'"
 msgstr "puuttuva lauseke merkkien ’(’ ja ’)’ välillä"
 
-#: expr.c:992
+#: expr.c:997
 #, c-format
 msgid "%s with no expression"
 msgstr "%s ilman lauseketta"
 
-#: expr.c:995
+#: expr.c:1000
 #, c-format
 msgid "operator '%s' has no right operand"
 msgstr "operaattorilla ’%s’ ei ole oikeaa operandia"
 
-#: expr.c:1000
+#: expr.c:1005
 #, c-format
 msgid "operator '%s' has no left operand"
 msgstr "operaattorilla ’%s’ ei ole vasenta operandia"
 
-#: expr.c:1026
+#: expr.c:1031
 msgid " ':' without preceding '?'"
 msgstr " ’:’ ilman edeltävää ’?’"
 
-#: expr.c:1054
+#: expr.c:1059
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "tasapainoton pino kohteessa %s"
 
-#: expr.c:1074
+#: expr.c:1079
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "mahdoton operaattori ’%u’"
 
-#: expr.c:1175
+#: expr.c:1180
 msgid "missing ')' in expression"
 msgstr "merkki ’)’ puuttuu lausekkeessa"
 
-#: expr.c:1204
+#: expr.c:1209
 msgid "'?' without following ':'"
 msgstr "’?’ ilman seuraavaa ’:’"
 
-#: expr.c:1214
+#: expr.c:1219
 msgid "integer overflow in preprocessor expression"
 msgstr "kokonaislukuylivuoto esikääntäjälausekkeessa"
 
-#: expr.c:1219
+#: expr.c:1224
 msgid "missing '(' in expression"
 msgstr "merkki ’(’ puuttuu lausekkeessa"
 
-#: expr.c:1251
+#: expr.c:1256
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "vasen ”%s”-operandi vaihtaa merkkiä, kun korotettiin"
 
-#: expr.c:1256
+#: expr.c:1261
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "oikea ”%s”-operandi vaihtaa merkkiä, kun korotettiin"
 
-#: expr.c:1515
+#: expr.c:1520
 msgid "traditional C rejects the unary plus operator"
 msgstr "perinteinen C hylkää unaariplus-operaattorin"
 
-#: expr.c:1598
+#: expr.c:1603
 msgid "comma operator in operand of #if"
 msgstr "pilkkuoperaattori #if-operandissa"
 
-#: expr.c:1734
+#: expr.c:1739
 msgid "division by zero in #if"
 msgstr "jako nollalla #if-lauseessa"
 
@@ -694,99 +694,99 @@ msgstr "CPP-puolikokonaisluku on kapeampi kuin CPP-merkki"
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP tällä tietokoneella ei voi käsitellä wide-merkkivakioita, jotka ovat yli %lu bittiä, mutta kohde vaatii %lu bittiä"
 
-#: lex.c:834
+#: lex.c:835
 msgid "backslash and newline separated by space"
 msgstr "kenoviiva ja rivinvaihtomerkki eroteltu välilyönnillä"
 
-#: lex.c:839
+#: lex.c:840
 msgid "backslash-newline at end of file"
 msgstr "kenoviiva-rivinvaihto tiedoston lopussa"
 
-#: lex.c:855
+#: lex.c:856
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "trigraph-merkki ??%c muunnettu merkiksi %c"
 
-#: lex.c:863
+#: lex.c:864
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "trigraph-merkki ??%c ohitettiin, käytä valitsinta -trigraphs merkkien käyttöönottamiseksi"
 
-#: lex.c:912
+#: lex.c:913
 msgid "\"/*\" within comment"
 msgstr "”/*” kommentin sisällä"
 
-#: lex.c:970
+#: lex.c:971
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s esikäsittelijädirektiivissä"
 
-#: lex.c:979
+#: lex.c:980
 msgid "null character(s) ignored"
 msgstr "null-merkkejä ei oteta huomioon"
 
 #  NFKC-muodossa Unicode-merkki ilmaistaan nelinumeroisella heksadesimaaliluvulla
-#: lex.c:1016
+#: lex.c:1017
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "”%.*s” ei ole Unicode-normalisointimerkkijonomuodossa NFKC"
 
 #  NFC-muodossa Unicode-merkki ilmaistaan nelinumeroisella heksadesimaaliluvulla
-#: lex.c:1019
+#: lex.c:1020
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "”%.*s” ei ole Unicode-normalisointimerkkijonomuodossa NFC"
 
 #  poison tarkoittaa, että makroa tai direktiiviä ei koskaan määritellä tai käytetä
-#: lex.c:1087 lex.c:1164
+#: lex.c:1088 lex.c:1165
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "yritys käyttää poison-kiellettyä makroa ”%s”"
 
-#: lex.c:1095 lex.c:1172
+#: lex.c:1096 lex.c:1173
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ voi vain esiintyä C99 variadic-makrolaajennuksessa"
 
-#: lex.c:1101 lex.c:1178
+#: lex.c:1102 lex.c:1179
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "tunniste ”%s” on erikoisoperaattorinimi C++:ssa"
 
-#: lex.c:1323
+#: lex.c:1324
 msgid "raw string delimiter longer than 16 characters"
 msgstr "raakamerkkijonoerotin pitempi kuin 16 merkkiä"
 
-#: lex.c:1326
+#: lex.c:1327
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "virheellinen merkki ’%c’ raakamerkkijonoerottimessa"
 
-#: lex.c:1447 lex.c:1469
+#: lex.c:1450 lex.c:1472
 msgid "unterminated raw string"
 msgstr "päättämätön raakamerkkijono"
 
-#: lex.c:1484 lex.c:1583
+#: lex.c:1487 lex.c:1586
 msgid "null character(s) preserved in literal"
 msgstr "null-merkit säilytetään literaaleissa"
 
-#: lex.c:1586
+#: lex.c:1589
 #, c-format
 msgid "missing terminating %c character"
 msgstr "puuttuva päättymismerkki %c"
 
-#: lex.c:2085
+#: lex.c:2088
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++-tyyliset kommentit eivät ole sallittuja ISO C90-standardissa"
 
-#: lex.c:2087
+#: lex.c:2090
 msgid "(this will be reported only once per input file)"
 msgstr "(tästä ilmoitetaan vain kerran per syötetiedosto)"
 
-#: lex.c:2092
+#: lex.c:2095
 msgid "multi-line comment"
 msgstr "monirivinen kommentti"
 
-#: lex.c:2412
+#: lex.c:2415
 #, c-format
 msgid "unspellable token %s"
 msgstr "tavaamaton merkkijono %s"
