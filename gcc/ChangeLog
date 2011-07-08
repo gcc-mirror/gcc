@@ -1,3 +1,16 @@
+2011-07-08  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/neon.md (vec_shr_<mode>, vec_shl_<mode>): Disable in
+	big-endian mode.
+	(reduc_splus_<mode>, reduc_uplus_<mode>, reduc_smin_<mode>)
+	(reduc_smax_<mode>, reduc_umin_<mode>, reduc_umax_<mode>)
+	(neon_vec_unpack<US>_lo_<mode>, neon_vec_unpack<US>_hi_<mode>)
+	(vec_unpack<US>_hi_<mode>, vec_unpack<US>_lo_<mode>)
+	(neon_vec_<US>mult_lo_<mode>, vec_widen_<US>mult_lo_<mode>)
+	(neon_vec_<US>mult_hi_<mode>, vec_widen_<US>mult_hi_<mode>)
+	(vec_pack_trunc_<mode>, neon_vec_pack_trunc_<mode>): Disable for Q
+	registers in big-endian mode.
+
 2011-07-08  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* genattrtab.c (evaluate_eq_attr): Allow an attribute to be defined

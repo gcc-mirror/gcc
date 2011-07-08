@@ -1,3 +1,12 @@
+2011-07-08  Julian Brown  <julian@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_little_endian): New.
+	(check_effective_target_vect_pack_trunc): Use above.
+	(check_effective_target_vect_unpack): Likewise.
+	(check_effective_target_vect_element_align): Test
+	check_effective_target_arm_vect_no_misalign for ARM.
+
 2011-07-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49673
