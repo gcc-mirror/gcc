@@ -1,5 +1,10 @@
 2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (build_alias_set_powerset): Remove
+	continue from loop, add one more assert.
+
+2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (graphite_outer_subscript_bound): Remove
 	unused parameter.
 	* graphite-dependences.h (graphite_outer_subscript_bound): Same.

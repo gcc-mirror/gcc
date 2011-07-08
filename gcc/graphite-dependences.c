@@ -171,19 +171,16 @@ build_alias_set_powerset (ppl_Pointset_Powerset_C_Polyhedron_t alias_powerset,
 {
   ppl_dimension_type *ds;
   ppl_dimension_type access_dim;
-  unsigned i, pos = 0;
+  unsigned i, pos;
 
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (alias_powerset,
 						      &access_dim);
-  ds = XNEWVEC (ppl_dimension_type, access_dim-1);
-  for (i = 0; i < access_dim; i++)
-    {
-      if (i == alias_dim)
-	continue;
+  ds = XNEWVEC (ppl_dimension_type, access_dim - 1);
+  gcc_assert (alias_dim < access_dim);
 
-      ds[pos] = i;
-      pos++;
-    }
+  for (pos = 0, i = 0; i < access_dim; i++)
+    if (i != alias_dim)
+      ds[pos++] = i;
 
   ppl_Pointset_Powerset_C_Polyhedron_remove_space_dimensions (alias_powerset,
 							      ds,
