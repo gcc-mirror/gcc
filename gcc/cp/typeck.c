@@ -8130,12 +8130,10 @@ cp_apply_type_quals_to_decl (int type_quals, tree decl)
   /* We used to check TYPE_NEEDS_CONSTRUCTING here, but now a constexpr
      constructor can produce constant init, so rely on cp_finish_decl to
      clear TREE_READONLY if the variable has non-constant init.  */
-  if (/* If the type isn't complete, we don't know yet if it will need
-	 constructing.  */
-      !COMPLETE_TYPE_P (type)
-      /* If the type has a mutable component, that component might be
-	 modified.  */
-      || TYPE_HAS_MUTABLE_P (type))
+
+  /* If the type has a mutable component, that component might be
+     modified.  */
+  if (TYPE_HAS_MUTABLE_P (type))
     type_quals &= ~TYPE_QUAL_CONST;
 
   c_apply_type_quals_to_decl (type_quals, decl);

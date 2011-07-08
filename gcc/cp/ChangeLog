@@ -1,5 +1,8 @@
 2011-07-08  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (cp_apply_type_quals_to_decl): Don't check
+	COMPLETE_TYPE_P either.
+
 	PR c++/49673
 	* typeck.c (cp_apply_type_quals_to_decl): Don't check
 	TYPE_NEEDS_CONSTRUCTING.
