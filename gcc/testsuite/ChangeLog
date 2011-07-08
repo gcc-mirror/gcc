@@ -1,3 +1,8 @@
+2011-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49621
+	* gcc.target/powerpc/altivec-34.c: New test.
+
 2011-07-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48157

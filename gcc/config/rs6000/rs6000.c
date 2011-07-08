@@ -17437,7 +17437,7 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
       op_false = tmp;
     }
 
-  cond2 = gen_rtx_fmt_ee (NE, cc_mode, mask, const0_rtx);
+  cond2 = gen_rtx_fmt_ee (NE, cc_mode, mask, CONST0_RTX (dest_mode));
   emit_insn (gen_rtx_SET (VOIDmode,
 			  dest,
 			  gen_rtx_IF_THEN_ELSE (dest_mode,

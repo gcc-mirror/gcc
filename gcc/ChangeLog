@@ -1,3 +1,18 @@
+2011-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49621
+	* config/rs6000/rs6000.c (rs6000_emit_vector_cond_expr): Use
+	CONST0_RTX (dest_mode) instead of const0_rtx as second operand
+	of NE.
+	* config/rs6000/vector.md (vector_select_<mode>,
+	vector_select_<mode>_uns): Change second operand of NE to
+	CONST0_RTX (<MODE>mode) instead of const0_rtx.
+	* config/rs6000/altivec.md (*altivec_vsel<mode>,
+	*altivec_vsel<mode>_uns): Expect second operand of NE to be
+	zero_constant of the corresponding vector mode.
+	* config/rs6000/vsx.md (*vsx_xxsel<mode>, *vsx_xxsel<mode>_uns):
+	Likewise.
+
 2011-07-08  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/46779
