@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2011-03-24 16:45+0000\n"
+"POT-Creation-Date: 2011-06-21 10:26+0000\n"
 "PO-Revision-Date: 2002-08-18 15:46+0100\n"
 "Last-Translator: Simos Xenitellis <simos@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -72,7 +72,7 @@ msgstr ""
 msgid "%.*s is not a valid universal character"
 msgstr "Το `%s' δεν είναι κατάλογος."
 
-#: charset.c:1056 lex.c:1040
+#: charset.c:1056 lex.c:1041
 msgid "'$' in identifier or number"
 msgstr ""
 
@@ -356,63 +356,63 @@ msgstr ""
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.c:1917
+#: directives.c:1927
 msgid "#else without #if"
 msgstr ""
 
-#: directives.c:1922
+#: directives.c:1932
 msgid "#else after #else"
 msgstr "#else μετά από #else"
 
-#: directives.c:1924 directives.c:1957
+#: directives.c:1934 directives.c:1967
 msgid "the conditional began here"
 msgstr ""
 
-#: directives.c:1950
+#: directives.c:1960
 msgid "#elif without #if"
 msgstr ""
 
-#: directives.c:1955
+#: directives.c:1965
 msgid "#elif after #else"
 msgstr "#elif μετά από #else"
 
-#: directives.c:1993
+#: directives.c:2003
 msgid "#endif without #if"
 msgstr ""
 
-#: directives.c:2073
+#: directives.c:2083
 msgid "missing '(' after predicate"
 msgstr ""
 
-#: directives.c:2088
+#: directives.c:2098
 msgid "missing ')' to complete answer"
 msgstr ""
 
-#: directives.c:2108
+#: directives.c:2118
 msgid "predicate's answer is empty"
 msgstr ""
 
-#: directives.c:2135
+#: directives.c:2145
 #, fuzzy
 msgid "assertion without predicate"
 msgstr "Η λειτουργία δεν επιτρέπεται"
 
-#: directives.c:2138
+#: directives.c:2148
 #, fuzzy
 msgid "predicate must be an identifier"
 msgstr "διπλός προσδιοριστής μηνύματος"
 
-#: directives.c:2224
+#: directives.c:2234
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2515
+#: directives.c:2525
 #, fuzzy, c-format
 msgid "unterminated #%s"
 msgstr "μη τερματιζόμενo αλφαριθμητικό"
 
-#: directives-only.c:222 lex.c:2074 traditional.c:163
+#: directives-only.c:222 lex.c:2077 traditional.c:163
 #, fuzzy
 msgid "unterminated comment"
 msgstr "Μη τερματισμένη εντολή `s'"
@@ -542,59 +542,59 @@ msgstr ""
 msgid "this use of \"defined\" may not be portable"
 msgstr ""
 
-#: expr.c:751
+#: expr.c:756
 #, fuzzy
 msgid "floating constant in preprocessor expression"
 msgstr "Εξαίρεση κινητής υποδιαστολής"
 
-#: expr.c:757
+#: expr.c:762
 #, fuzzy
 msgid "imaginary number in preprocessor expression"
 msgstr "μη έγκυρος αριθμός από γραμμές"
 
-#: expr.c:804
+#: expr.c:809
 #, fuzzy, c-format
 msgid "\"%s\" is not defined"
 msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: expr.c:816
+#: expr.c:821
 msgid "assertions are a GCC extension"
 msgstr ""
 
-#: expr.c:819
+#: expr.c:824
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.c:952 expr.c:981
+#: expr.c:957 expr.c:986
 #, fuzzy, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr "%s: Αναμενόταν δυαδικός χειριστής.\n"
 
-#: expr.c:972
+#: expr.c:977
 #, fuzzy, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
 
-#: expr.c:989
+#: expr.c:994
 msgid "missing expression between '(' and ')'"
 msgstr ""
 
-#: expr.c:992
+#: expr.c:997
 #, fuzzy, c-format
 msgid "%s with no expression"
 msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#: expr.c:995
+#: expr.c:1000
 #, c-format
 msgid "operator '%s' has no right operand"
 msgstr ""
 
-#: expr.c:1000
+#: expr.c:1005
 #, c-format
 msgid "operator '%s' has no left operand"
 msgstr ""
 
-#: expr.c:1026
+#: expr.c:1031
 msgid " ':' without preceding '?'"
 msgstr ""
 
@@ -602,54 +602,54 @@ msgstr ""
 # src/dfa.c:690 src/dfa.c:703 src/dfa.c:704
 # src/dfa.c:660 src/dfa.c:663 src/dfa.c:690 src/dfa.c:694 src/dfa.c:695
 # src/dfa.c:698 src/dfa.c:711 src/dfa.c:712
-#: expr.c:1054
+#: expr.c:1059
 #, fuzzy, c-format
 msgid "unbalanced stack in %s"
 msgstr "Μη ισσοροπημένο ["
 
-#: expr.c:1074
+#: expr.c:1079
 #, fuzzy, c-format
 msgid "impossible operator '%u'"
 msgstr "RPC: Μη συμβατές εκδόσεις του RPC"
 
-#: expr.c:1175
+#: expr.c:1180
 #, fuzzy
 msgid "missing ')' in expression"
 msgstr "έχει παραληφθεί η λίστα με τις θέσεις"
 
-#: expr.c:1204
+#: expr.c:1209
 #, fuzzy
 msgid "'?' without following ':'"
 msgstr "συντακτικό σφάλμα στον πρόλογο: %s"
 
-#: expr.c:1214
+#: expr.c:1219
 msgid "integer overflow in preprocessor expression"
 msgstr ""
 
-#: expr.c:1219
+#: expr.c:1224
 #, fuzzy
 msgid "missing '(' in expression"
 msgstr "έχει παραληφθεί η λίστα με τις θέσεις"
 
-#: expr.c:1251
+#: expr.c:1256
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.c:1256
+#: expr.c:1261
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.c:1515
+#: expr.c:1520
 msgid "traditional C rejects the unary plus operator"
 msgstr ""
 
-#: expr.c:1598
+#: expr.c:1603
 msgid "comma operator in operand of #if"
 msgstr ""
 
-#: expr.c:1734
+#: expr.c:1739
 #, fuzzy
 msgid "division by zero in #if"
 msgstr "Διαίρεση με μηδέν στην αποτίμηση: %s"
@@ -726,99 +726,99 @@ msgstr ""
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr ""
 
-#: lex.c:834
+#: lex.c:835
 msgid "backslash and newline separated by space"
 msgstr ""
 
-#: lex.c:839
+#: lex.c:840
 #, fuzzy
 msgid "backslash-newline at end of file"
 msgstr "μη έγκυρη διαφυγή με πισωκάθετο στο τέλος του αλφαριθμητικού"
 
-#: lex.c:855
+#: lex.c:856
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr ""
 
-#: lex.c:863
+#: lex.c:864
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr ""
 
-#: lex.c:912
+#: lex.c:913
 msgid "\"/*\" within comment"
 msgstr ""
 
-#: lex.c:970
+#: lex.c:971
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr ""
 
-#: lex.c:979
+#: lex.c:980
 #, fuzzy
 msgid "null character(s) ignored"
 msgstr "μη έγκυρος χαρακτήρας στο αρχείο: "
 
-#: lex.c:1016
+#: lex.c:1017
 #, fuzzy, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: lex.c:1019
+#: lex.c:1020
 #, fuzzy, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: lex.c:1087 lex.c:1164
+#: lex.c:1088 lex.c:1165
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.c:1095 lex.c:1172
+#: lex.c:1096 lex.c:1173
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:1101 lex.c:1178
+#: lex.c:1102 lex.c:1179
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:1323
+#: lex.c:1324
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:1326
+#: lex.c:1327
 #, fuzzy, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "μη έγκυρος χαρακτήρας `%c' στο τύπο αλφαριθμητικού `%s'"
 
-#: lex.c:1447 lex.c:1469
+#: lex.c:1450 lex.c:1472
 #, fuzzy
 msgid "unterminated raw string"
 msgstr "μη τερματιζόμενo αλφαριθμητικό"
 
-#: lex.c:1484 lex.c:1583
+#: lex.c:1487 lex.c:1586
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:1586
+#: lex.c:1589
 #, c-format
 msgid "missing terminating %c character"
 msgstr "έχει παραληφθεί τερματικός χαρακτήρας %c"
 
-#: lex.c:2085
+#: lex.c:2088
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:2087
+#: lex.c:2090
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:2092
+#: lex.c:2095
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:2412
+#: lex.c:2415
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "%s: αδύνατο το άνοιγμα του %s: %m\n"

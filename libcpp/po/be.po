@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2011-03-24 16:45+0000\n"
+"POT-Creation-Date: 2011-06-21 10:26+0000\n"
 "PO-Revision-Date: 2002-05-17 15:54+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nyakhaychyk@i18n.linux.by>\n"
 "Language-Team: Belarusian <i18n@tut.by>\n"
@@ -71,7 +71,7 @@ msgstr ""
 msgid "%.*s is not a valid universal character"
 msgstr "\"%s\" - гэта не пачатак дэкларацыі"
 
-#: charset.c:1056 lex.c:1040
+#: charset.c:1056 lex.c:1041
 msgid "'$' in identifier or number"
 msgstr ""
 
@@ -120,11 +120,13 @@ msgstr ""
 
 #: charset.c:1321
 #, fuzzy, c-format
+#| msgid "unknown escape sequence '\\%c'"
 msgid "unknown escape sequence: '\\%c'"
 msgstr "невядомая ESC-паслядоўнасць '\\%c'"
 
 #: charset.c:1329
 #, fuzzy, c-format
+#| msgid "unknown escape sequence '\\%c'"
 msgid "unknown escape sequence: '\\%s'"
 msgstr "невядомая ESC-паслядоўнасць '\\%c'"
 
@@ -134,6 +136,7 @@ msgstr ""
 
 #: charset.c:1509 charset.c:1573
 #, fuzzy
+#| msgid "character constant too long"
 msgid "character constant too long for its type"
 msgstr "сімвальная канстанта вельмі доўгая"
 
@@ -333,6 +336,7 @@ msgstr ""
 
 #: directives.c:1617
 #, fuzzy, c-format
+#| msgid "cannot find source %s"
 msgid "cannot find source file %s"
 msgstr "не магу знайсці крыніцу %s"
 
@@ -345,61 +349,61 @@ msgstr ""
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.c:1917
+#: directives.c:1927
 msgid "#else without #if"
 msgstr ""
 
-#: directives.c:1922
+#: directives.c:1932
 msgid "#else after #else"
 msgstr ""
 
-#: directives.c:1924 directives.c:1957
+#: directives.c:1934 directives.c:1967
 msgid "the conditional began here"
 msgstr ""
 
-#: directives.c:1950
+#: directives.c:1960
 msgid "#elif without #if"
 msgstr ""
 
-#: directives.c:1955
+#: directives.c:1965
 msgid "#elif after #else"
 msgstr ""
 
-#: directives.c:1993
+#: directives.c:2003
 msgid "#endif without #if"
 msgstr ""
 
-#: directives.c:2073
+#: directives.c:2083
 msgid "missing '(' after predicate"
 msgstr ""
 
-#: directives.c:2088
+#: directives.c:2098
 msgid "missing ')' to complete answer"
 msgstr ""
 
-#: directives.c:2108
+#: directives.c:2118
 msgid "predicate's answer is empty"
 msgstr ""
 
-#: directives.c:2135
+#: directives.c:2145
 msgid "assertion without predicate"
 msgstr ""
 
-#: directives.c:2138
+#: directives.c:2148
 msgid "predicate must be an identifier"
 msgstr ""
 
-#: directives.c:2224
+#: directives.c:2234
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2515
+#: directives.c:2525
 #, c-format
 msgid "unterminated #%s"
 msgstr ""
 
-#: directives-only.c:222 lex.c:2074 traditional.c:163
+#: directives-only.c:222 lex.c:2077 traditional.c:163
 msgid "unterminated comment"
 msgstr "незавершаныя каментарыі"
 
@@ -422,16 +426,19 @@ msgstr ""
 
 #: expr.c:324
 #, fuzzy, c-format
+#| msgid "invalid string constant `%E'"
 msgid "invalid digit \"%c\" in binary constant"
 msgstr "`%E' - нерэчаісная нязьменная тыпу string"
 
 #: expr.c:326
 #, fuzzy, c-format
+#| msgid "invalid string constant `%E'"
 msgid "invalid digit \"%c\" in octal constant"
 msgstr "`%E' - нерэчаісная нязьменная тыпу string"
 
 #: expr.c:334
 #, fuzzy
+#| msgid "invalid string constant `%E'"
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "`%E' - нерэчаісная нязьменная тыпу string"
 
@@ -453,6 +460,7 @@ msgstr ""
 
 #: expr.c:365
 #, fuzzy, c-format
+#| msgid "invalid string constant `%E'"
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "`%E' - нерэчаісная нязьменная тыпу string"
 
@@ -476,6 +484,7 @@ msgstr ""
 
 #: expr.c:410
 #, fuzzy, c-format
+#| msgid "invalid string constant `%E'"
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "`%E' - нерэчаісная нязьменная тыпу string"
 
@@ -520,105 +529,107 @@ msgstr ""
 msgid "this use of \"defined\" may not be portable"
 msgstr ""
 
-#: expr.c:751
+#: expr.c:756
 msgid "floating constant in preprocessor expression"
 msgstr ""
 
-#: expr.c:757
+#: expr.c:762
 msgid "imaginary number in preprocessor expression"
 msgstr ""
 
-#: expr.c:804
+#: expr.c:809
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr ""
 
-#: expr.c:816
+#: expr.c:821
 msgid "assertions are a GCC extension"
 msgstr ""
 
-#: expr.c:819
+#: expr.c:824
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.c:952 expr.c:981
+#: expr.c:957 expr.c:986
 #, fuzzy, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr "прапушчан прабел пасля нумара \"%.*s\""
 
-#: expr.c:972
+#: expr.c:977
 #, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr ""
 
-#: expr.c:989
+#: expr.c:994
 msgid "missing expression between '(' and ')'"
 msgstr ""
 
-#: expr.c:992
+#: expr.c:997
 #, c-format
 msgid "%s with no expression"
 msgstr ""
 
-#: expr.c:995
+#: expr.c:1000
 #, c-format
 msgid "operator '%s' has no right operand"
 msgstr ""
 
-#: expr.c:1000
+#: expr.c:1005
 #, c-format
 msgid "operator '%s' has no left operand"
 msgstr ""
 
-#: expr.c:1026
+#: expr.c:1031
 msgid " ':' without preceding '?'"
 msgstr ""
 
-#: expr.c:1054
+#: expr.c:1059
 #, fuzzy, c-format
+#| msgid "unbalanced #endif"
 msgid "unbalanced stack in %s"
 msgstr "незбалансаваны #endif"
 
-#: expr.c:1074
+#: expr.c:1079
 #, fuzzy, c-format
+#| msgid "impossible operator '%s'"
 msgid "impossible operator '%u'"
 msgstr "немагчымы апэратар '%s'"
 
-#: expr.c:1175
+#: expr.c:1180
 msgid "missing ')' in expression"
 msgstr ""
 
-#: expr.c:1204
+#: expr.c:1209
 msgid "'?' without following ':'"
 msgstr ""
 
-#: expr.c:1214
+#: expr.c:1219
 msgid "integer overflow in preprocessor expression"
 msgstr ""
 
-#: expr.c:1219
+#: expr.c:1224
 msgid "missing '(' in expression"
-msgstr ""
-
-#: expr.c:1251
-#, c-format
-msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr ""
 
 #: expr.c:1256
 #, c-format
+msgid "the left operand of \"%s\" changes sign when promoted"
+msgstr ""
+
+#: expr.c:1261
+#, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.c:1515
+#: expr.c:1520
 msgid "traditional C rejects the unary plus operator"
 msgstr ""
 
-#: expr.c:1598
+#: expr.c:1603
 msgid "comma operator in operand of #if"
 msgstr ""
 
-#: expr.c:1734
+#: expr.c:1739
 msgid "division by zero in #if"
 msgstr ""
 
@@ -692,97 +703,99 @@ msgstr ""
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr ""
 
-#: lex.c:834
+#: lex.c:835
 msgid "backslash and newline separated by space"
 msgstr ""
 
-#: lex.c:839
+#: lex.c:840
 msgid "backslash-newline at end of file"
 msgstr ""
 
-#: lex.c:855
+#: lex.c:856
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr ""
 
-#: lex.c:863
+#: lex.c:864
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr ""
 
-#: lex.c:912
+#: lex.c:913
 msgid "\"/*\" within comment"
 msgstr ""
 
-#: lex.c:970
+#: lex.c:971
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr ""
 
-#: lex.c:979
+#: lex.c:980
 msgid "null character(s) ignored"
 msgstr ""
 
-#: lex.c:1016
+#: lex.c:1017
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr ""
 
-#: lex.c:1019
+#: lex.c:1020
 #, fuzzy, c-format
+#| msgid "`%D' is not a function,"
 msgid "`%.*s' is not in NFC"
 msgstr "`%D' - гэта ня функцыя,"
 
-#: lex.c:1087 lex.c:1164
+#: lex.c:1088 lex.c:1165
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.c:1095 lex.c:1172
+#: lex.c:1096 lex.c:1173
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:1101 lex.c:1178
+#: lex.c:1102 lex.c:1179
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:1323
+#: lex.c:1324
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:1326
+#: lex.c:1327
 #, fuzzy, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "сімвальная канстанта вельмі доўгая"
 
-#: lex.c:1447 lex.c:1469
+#: lex.c:1450 lex.c:1472
 #, fuzzy
+#| msgid "unterminated comment"
 msgid "unterminated raw string"
 msgstr "незавершаныя каментарыі"
 
-#: lex.c:1484 lex.c:1583
+#: lex.c:1487 lex.c:1586
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:1586
+#: lex.c:1589
 #, c-format
 msgid "missing terminating %c character"
 msgstr "прапушчан завяршаючы сімвал %c"
 
-#: lex.c:2085
+#: lex.c:2088
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:2087
+#: lex.c:2090
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:2092
+#: lex.c:2095
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:2412
+#: lex.c:2415
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "немагу адчыніць файл \"%s\""
@@ -804,6 +817,7 @@ msgstr "не магу знайсці крыніцу %s\n"
 
 #: macro.c:256
 #, fuzzy
+#| msgid "Could not open data file %s.\n"
 msgid "could not determine date and time"
 msgstr "Немагчыма адчыніць файл з дадзенымі %s.\n"
 
@@ -889,6 +903,7 @@ msgstr ""
 
 #: macro.c:1718
 #, fuzzy
+#| msgid "missing white space after number '%.*s'"
 msgid "missing whitespace after the macro name"
 msgstr "прапушчан прабел пасля нумара \"%.*s\""
 
@@ -926,6 +941,7 @@ msgstr ""
 
 #: pch.c:630
 #, fuzzy, c-format
+#| msgid "label `%s' used but not defined"
 msgid "%s: not used because `%.*s' not defined"
 msgstr "адмеціна `%s' выкарыстоўвываецца, але ня вызначана"
 
