@@ -8127,12 +8127,12 @@ cp_apply_type_quals_to_decl (int type_quals, tree decl)
 		&& type_quals != TYPE_UNQUALIFIED));
 
   /* Avoid setting TREE_READONLY incorrectly.  */
-  if (/* If the object has a constructor, the constructor may modify
-	 the object.  */
-      TYPE_NEEDS_CONSTRUCTING (type)
-      /* If the type isn't complete, we don't know yet if it will need
+  /* We used to check TYPE_NEEDS_CONSTRUCTING here, but now a constexpr
+     constructor can produce constant init, so rely on cp_finish_decl to
+     clear TREE_READONLY if the variable has non-constant init.  */
+  if (/* If the type isn't complete, we don't know yet if it will need
 	 constructing.  */
-      || !COMPLETE_TYPE_P (type)
+      !COMPLETE_TYPE_P (type)
       /* If the type has a mutable component, that component might be
 	 modified.  */
       || TYPE_HAS_MUTABLE_P (type))

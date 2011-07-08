@@ -1,3 +1,8 @@
+2011-07-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49673
+	* g++.dg/cpp0x/constexpr-rom.C: New.
+
 2011-07-08  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR middle-end/49519
