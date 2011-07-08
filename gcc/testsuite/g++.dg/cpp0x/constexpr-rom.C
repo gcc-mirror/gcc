@@ -1,6 +1,6 @@
 // PR c++/49673: check that test_data goes into .rodata
 // { dg-options -std=c++0x }
-// { dg-final { scan-assembler "rodata" } }
+// { dg-final { scan-assembler "rodata" { target { *-*-linux-gnu || *-*-elf } } } }
 
 struct Data
 {
