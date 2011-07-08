@@ -1,3 +1,8 @@
+2011-07-08  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.c (output_reload_insisf): Use 'REG_Z+1' instead
+	of magic '31'.
+
 2011-07-08  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* optabs.c (expand_binop): Use GET_MODE_PRECISION instead of

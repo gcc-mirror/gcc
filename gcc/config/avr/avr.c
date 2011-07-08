@@ -6239,7 +6239,7 @@ output_reload_insisf (rtx insn ATTRIBUTE_UNUSED,
                  That's cheaper than loading from constant pool.  */
               
               cooked_clobber_p = true;
-              clobber_reg = gen_rtx_REG (QImode, 31);
+              clobber_reg = gen_rtx_REG (QImode, REG_Z + 1);
               avr_asm_len ("mov __tmp_reg__,%0", &clobber_reg, len, 1);
               break;
             }
