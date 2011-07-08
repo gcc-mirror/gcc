@@ -1899,6 +1899,15 @@ proc check_effective_target_arm_nothumb { } {
     }]
 }
 
+# Return 1 if this is a little-endian ARM target
+proc check_effective_target_arm_little_endian { } {
+    return [check_no_compiler_messages arm_little_endian assembly {
+	#if !defined(__arm__) || !defined(__ARMEL__)
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if this is an ARM target that only supports aligned vector accesses
 proc check_effective_target_arm_vect_no_misalign { } {
     return [check_no_compiler_messages arm_vect_no_misalign assembly {
@@ -2953,7 +2962,8 @@ proc check_effective_target_vect_pack_trunc { } {
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
              || [istarget spu-*-*]
-             || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+             || ([istarget arm*-*-*] && [check_effective_target_arm_neon]
+		 && [check_effective_target_arm_little_endian]) } {
             set et_vect_pack_trunc_saved 1
         }
     }
@@ -2978,7 +2988,8 @@ proc check_effective_target_vect_unpack { } {
              || [istarget x86_64-*-*] 
              || [istarget spu-*-*]
              || [istarget ia64-*-*]
-             || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+             || ([istarget arm*-*-*] && [check_effective_target_arm_neon]
+		 && [check_effective_target_arm_little_endian]) } {
             set et_vect_unpack_saved 1
         }
     }
@@ -3164,7 +3175,8 @@ proc check_effective_target_vect_element_align { } {
 	verbose "check_effective_target_vect_element_align: using cached result" 2
     } else {
 	set et_vect_element_align 0
-	if { [istarget arm*-*-*]
+	if { ([istarget arm*-*-*]
+	      && ![check_effective_target_arm_vect_no_misalign])
 	     || [check_effective_target_vect_hw_misalign] } {
 	   set et_vect_element_align 1
 	}
