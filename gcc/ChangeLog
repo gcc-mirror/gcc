@@ -1,3 +1,8 @@
+2011-07-08  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary_loc): Remove index +p PTR -> PTR +p index
+	folding.
+
 2011-07-08  Kai Tietz  <ktietz@redhat.com>
 
 	* fold-const.c (fold_truth_andor): Factored out truth_andor
