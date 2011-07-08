@@ -1,3 +1,10 @@
+2011-07-08  Kai Tietz  <ktietz@redhat.com>
+
+	* fold-const.c (fold_truth_andor): Factored out truth_andor
+	label from fold_binary as function.
+	(fold_binary_loc): Replace truth_andor lable
+	by function fold_truth_andor.
+
 2011-07-08  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR middle-end/49519
