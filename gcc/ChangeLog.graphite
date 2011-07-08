@@ -1,3 +1,30 @@
+2011-05-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (graphite_outer_subscript_bound): Remove
+	unused parameter.
+	* graphite-dependences.h (graphite_outer_subscript_bound): Same.
+	* graphite-opencl-meta-clast.c (opencl_set_meta_rw_flags): Update
+	call to graphite_outer_subscript_bound.
+	* graphite-opencl.c (opencl_get_indirect_size): Same.
+
+2011-05-24  Alexey Kravets  <kayrick@ispras.ru>
+
+	* graphite-opencl.c (opencl_private_var_name_p): Removed.
+	(graphite_artificial_array_p): Removed.
+	(opencl_data_create): Use zero_dim_array_p instead of
+	graphite_artificial_array_p.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl.c (opencl_create_function_call): Use cl_khr_fp64
+	pragma extension only when it is defined.  Use cl_amd_fp64 when it
+	is defined.
+
+2011-01-23  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* doc/install.texi: Replace '/' by an or and give the exact
+			    version number of cloog-0.16.1
+
 2011-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (dr_indices_valid_in_loop): New.
