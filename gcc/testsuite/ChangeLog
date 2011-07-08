@@ -1,3 +1,7 @@
+2011-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/tree-ssa/sra-12.c: Skip dump scan on avr targets.
+
 2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/48727
