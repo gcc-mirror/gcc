@@ -822,8 +822,8 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 
 /* Similar, but do it via assembler directives instead.  */
 
-static void
-output_cfi_directive (dw_cfi_ref cfi)
+void
+output_cfi_directive (FILE *f, dw_cfi_ref cfi)
 {
   unsigned long r, r2;
 
@@ -837,83 +837,105 @@ output_cfi_directive (dw_cfi_ref cfi)
     case DW_CFA_set_loc:
       /* Should only be created by add_fde_cfi in a code path not
 	 followed when emitting via directives.  The assembler is
-	 going to take care of this for us.  */
-      gcc_unreachable ();
+	 going to take care of this for us.  But this routines is
+	 also used for debugging dumps, so print something.  */
+      gcc_assert (f != asm_out_file);
+      fprintf (f, "\t.cfi_advance_loc\n");
+      break;
 
     case DW_CFA_offset:
     case DW_CFA_offset_extended:
     case DW_CFA_offset_extended_sf:
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
-      fprintf (asm_out_file, "\t.cfi_offset %lu, "HOST_WIDE_INT_PRINT_DEC"\n",
+      fprintf (f, "\t.cfi_offset %lu, "HOST_WIDE_INT_PRINT_DEC"\n",
 	       r, cfi->dw_cfi_oprnd2.dw_cfi_offset);
       break;
 
     case DW_CFA_restore:
     case DW_CFA_restore_extended:
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
-      fprintf (asm_out_file, "\t.cfi_restore %lu\n", r);
+      fprintf (f, "\t.cfi_restore %lu\n", r);
       break;
 
     case DW_CFA_undefined:
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
-      fprintf (asm_out_file, "\t.cfi_undefined %lu\n", r);
+      fprintf (f, "\t.cfi_undefined %lu\n", r);
       break;
 
     case DW_CFA_same_value:
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
-      fprintf (asm_out_file, "\t.cfi_same_value %lu\n", r);
+      fprintf (f, "\t.cfi_same_value %lu\n", r);
       break;
 
     case DW_CFA_def_cfa:
     case DW_CFA_def_cfa_sf:
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
-      fprintf (asm_out_file, "\t.cfi_def_cfa %lu, "HOST_WIDE_INT_PRINT_DEC"\n",
+      fprintf (f, "\t.cfi_def_cfa %lu, "HOST_WIDE_INT_PRINT_DEC"\n",
 	       r, cfi->dw_cfi_oprnd2.dw_cfi_offset);
       break;
 
     case DW_CFA_def_cfa_register:
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
-      fprintf (asm_out_file, "\t.cfi_def_cfa_register %lu\n", r);
+      fprintf (f, "\t.cfi_def_cfa_register %lu\n", r);
       break;
 
     case DW_CFA_register:
       r = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
       r2 = DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd2.dw_cfi_reg_num, 1);
-      fprintf (asm_out_file, "\t.cfi_register %lu, %lu\n", r, r2);
+      fprintf (f, "\t.cfi_register %lu, %lu\n", r, r2);
       break;
 
     case DW_CFA_def_cfa_offset:
     case DW_CFA_def_cfa_offset_sf:
-      fprintf (asm_out_file, "\t.cfi_def_cfa_offset "
+      fprintf (f, "\t.cfi_def_cfa_offset "
 	       HOST_WIDE_INT_PRINT_DEC"\n",
 	       cfi->dw_cfi_oprnd1.dw_cfi_offset);
       break;
 
     case DW_CFA_remember_state:
-      fprintf (asm_out_file, "\t.cfi_remember_state\n");
+      fprintf (f, "\t.cfi_remember_state\n");
       break;
     case DW_CFA_restore_state:
-      fprintf (asm_out_file, "\t.cfi_restore_state\n");
+      fprintf (f, "\t.cfi_restore_state\n");
       break;
 
     case DW_CFA_GNU_args_size:
-      fprintf (asm_out_file, "\t.cfi_escape %#x,", DW_CFA_GNU_args_size);
-      dw2_asm_output_data_uleb128_raw (cfi->dw_cfi_oprnd1.dw_cfi_offset);
-      if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s args_size "HOST_WIDE_INT_PRINT_DEC,
-		 ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_offset);
-      fputc ('\n', asm_out_file);
+      if (f == asm_out_file)
+	{
+	  fprintf (f, "\t.cfi_escape %#x,", DW_CFA_GNU_args_size);
+	  dw2_asm_output_data_uleb128_raw (cfi->dw_cfi_oprnd1.dw_cfi_offset);
+	  if (flag_debug_asm)
+	    fprintf (f, "\t%s args_size "HOST_WIDE_INT_PRINT_DEC,
+		     ASM_COMMENT_START, cfi->dw_cfi_oprnd1.dw_cfi_offset);
+	  fputc ('\n', f);
+	}
+      else
+	{
+	  fprintf (f, "\t.cfi_GNU_args_size "HOST_WIDE_INT_PRINT_DEC "\n",
+		   cfi->dw_cfi_oprnd1.dw_cfi_offset);
+	}
       break;
 
     case DW_CFA_GNU_window_save:
-      fprintf (asm_out_file, "\t.cfi_window_save\n");
+      fprintf (f, "\t.cfi_window_save\n");
       break;
 
     case DW_CFA_def_cfa_expression:
+      if (f != asm_out_file)
+	{
+	  fprintf (f, "\t.cfi_def_cfa_expression ...\n");
+	  break;
+	}
+      /* FALLTHRU */
     case DW_CFA_expression:
-      fprintf (asm_out_file, "\t.cfi_escape %#x,", cfi->dw_cfi_opc);
+      if (f != asm_out_file)
+	{
+	  fprintf (f, "\t.cfi_cfa_expression ...\n");
+	  break;
+	}
+      fprintf (f, "\t.cfi_escape %#x,", cfi->dw_cfi_opc);
       output_cfa_loc_raw (cfi);
-      fputc ('\n', asm_out_file);
+      fputc ('\n', f);
       break;
 
     default:
@@ -925,7 +947,7 @@ void
 dwarf2out_emit_cfi (dw_cfi_ref cfi)
 {
   if (dwarf2out_do_cfi_asm ())
-    output_cfi_directive (cfi);
+    output_cfi_directive (asm_out_file, cfi);
 }
 
 /* Output CFIs from VEC, up to index UPTO, to bring current FDE to the
@@ -1032,7 +1054,7 @@ output_cfis (cfi_vec vec, int upto, bool do_cfi_asm,
 		  && cfi2->dw_cfi_opc != DW_CFA_restore_extended)
 		{
 		  if (do_cfi_asm)
-		    output_cfi_directive (cfi2);
+		    output_cfi_directive (asm_out_file, cfi2);
 		  else
 		    output_cfi (cfi2, fde, for_eh);
 		}
@@ -1066,7 +1088,7 @@ output_cfis (cfi_vec vec, int upto, bool do_cfi_asm,
 	  if (cfi_cfa)
 	    {
 	      if (do_cfi_asm)
-		output_cfi_directive (cfi_cfa);
+		output_cfi_directive (asm_out_file, cfi_cfa);
 	      else
 		output_cfi (cfi_cfa, fde, for_eh);
 	    }
@@ -1076,7 +1098,7 @@ output_cfis (cfi_vec vec, int upto, bool do_cfi_asm,
 	      && cfi_args_size->dw_cfi_oprnd1.dw_cfi_offset)
 	    {
 	      if (do_cfi_asm)
-		output_cfi_directive (cfi_args_size);
+		output_cfi_directive (asm_out_file, cfi_args_size);
 	      else
 		output_cfi (cfi_args_size, fde, for_eh);
 	    }
@@ -1087,7 +1109,7 @@ output_cfis (cfi_vec vec, int upto, bool do_cfi_asm,
 	      return;
 	    }
 	  else if (do_cfi_asm)
-	    output_cfi_directive (cfi);
+	    output_cfi_directive (asm_out_file, cfi);
 	  else
 	    output_cfi (cfi, fde, for_eh);
 	  break;

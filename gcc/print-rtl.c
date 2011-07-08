@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "cselib.h"
 #include "tree-pass.h"
+#include "dwarf2out.h"
 #endif
 
 static FILE *outfile;
@@ -306,6 +307,14 @@ print_rtx (const_rtx in_rtx)
 #ifndef GENERATOR_FILE
 		fputc (' ', outfile);
 		print_rtx (NOTE_VAR_LOCATION (in_rtx));
+#endif
+		break;
+
+	      case NOTE_INSN_CFI:
+#ifndef GENERATOR_FILE
+		fputc ('\n', outfile);
+		output_cfi_directive (outfile, NOTE_CFI (in_rtx));
+		fputc ('\t', outfile);
 #endif
 		break;
 

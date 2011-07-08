@@ -241,6 +241,8 @@ extern enum dw_cfi_oprnd_type dw_cfi_oprnd1_desc
 extern enum dw_cfi_oprnd_type dw_cfi_oprnd2_desc
   (enum dwarf_call_frame_info cfi);
 
+extern void output_cfi_directive (FILE *f, struct dw_cfi_struct *cfi);
+
 extern void dwarf2out_decl (tree);
 extern void dwarf2out_emit_cfi (dw_cfi_ref cfi);
 
