@@ -1,3 +1,10 @@
+2011-07-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49662
+	* gcc.dg/graphite/interchange-14.c: XFAIL.
+	* gcc.dg/graphite/interchange-15.c: Likewise.
+	* gcc.dg/graphite/interchange-mvt.c: Likewise.
+
 2011-07-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49663
