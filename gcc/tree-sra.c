@@ -2312,16 +2312,24 @@ analyze_all_variable_accesses (void)
 	tree var = referenced_var (i);
 
 	if (TREE_CODE (var) == VAR_DECL
-	    && ((unsigned) tree_low_cst (TYPE_SIZE (TREE_TYPE (var)), 1)
-		<= max_total_scalarization_size)
 	    && type_consists_of_records_p (TREE_TYPE (var)))
 	  {
-	    completely_scalarize_var (var);
-	    if (dump_file && (dump_flags & TDF_DETAILS))
+	    if ((unsigned) tree_low_cst (TYPE_SIZE (TREE_TYPE (var)), 1)
+		<= max_total_scalarization_size)
 	      {
-		fprintf (dump_file, "Will attempt to totally scalarize ");
+		completely_scalarize_var (var);
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  {
+		    fprintf (dump_file, "Will attempt to totally scalarize ");
+		    print_generic_expr (dump_file, var, 0);
+		    fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
+		  }
+	      }
+	    else if (dump_file && (dump_flags & TDF_DETAILS))
+	      {
+		fprintf (dump_file, "Too big to totally scalarize: ");
 		print_generic_expr (dump_file, var, 0);
-		fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
+		fprintf (dump_file, " (UID: %u)\n", DECL_UID (var));
 	      }
 	  }
       }
