@@ -339,11 +339,6 @@ gnat_init (void)
 void
 gnat_init_gcc_eh (void)
 {
-#ifdef DWARF2_UNWIND_INFO
-  /* lang_dependent_init already called dwarf2out_frame_init if true.  */
-  int dwarf2out_frame_initialized = dwarf2out_do_frame ();
-#endif
-
   /* We shouldn't do anything if the No_Exceptions_Handler pragma is set,
      though. This could for instance lead to the emission of tables with
      references to symbols (such as the Ada eh personality routine) within
@@ -370,11 +365,6 @@ gnat_init_gcc_eh (void)
   flag_non_call_exceptions = 1;
 
   init_eh ();
-
-#ifdef DWARF2_UNWIND_INFO
-  if (!dwarf2out_frame_initialized && dwarf2out_do_frame ())
-    dwarf2out_frame_init ();
-#endif
 }
 
 /* Print language-specific items in declaration NODE.  */

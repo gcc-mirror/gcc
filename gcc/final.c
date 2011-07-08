@@ -1560,11 +1560,6 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
   if (targetm.profile_before_prologue () && crtl->profile)
     profile_function (file);
 
-#if defined (HAVE_prologue)
-  if (dwarf2out_do_frame ())
-    dwarf2out_frame_debug_init ();
-#endif
-
   /* If debugging, assign block numbers to all of the blocks in this
      function.  */
   if (write_symbols)
@@ -1588,11 +1583,6 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
 
   /* First output the function prologue: code to set up the stack frame.  */
   targetm.asm_out.function_prologue (file, get_frame_size ());
-
-#if defined (HAVE_prologue)
-  if (dwarf2out_do_frame ())
-    dwarf2out_frame_debug_after_prologue ();
-#endif
 
   /* If the machine represents the prologue as RTL, the profiling code must
      be emitted when NOTE_INSN_PROLOGUE_END is scanned.  */

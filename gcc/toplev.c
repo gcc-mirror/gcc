@@ -1741,11 +1741,6 @@ lang_dependent_init (const char *name)
 	 predefined types.  */
       timevar_push (TV_SYMOUT);
 
-#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_UNWIND_INFO
-      if (dwarf2out_do_frame ())
-	dwarf2out_frame_init ();
-#endif
-
       /* Now we have the correct original filename, we can initialize
 	 debug output.  */
       (*debug_hooks->init) (name);

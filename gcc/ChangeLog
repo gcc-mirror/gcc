@@ -1,5 +1,26 @@
 2011-07-07  Richard Henderson  <rth@redhat.com>
 
+	* tree-pass.h (pass_dwarf2_frame): Declare.
+	* passes.c (init_optimization_passes): Add it.
+	* dwarf2cfi.c (dwarf2out_frame_debug): Make static.
+	(create_cfi_notes): Rename from dwarf2out_frame_debug_after_prologue;
+	make static, do not call add_cfis_to_fde.
+	(dwarf2out_frame_debug_init, dwarf2cfi_function_init,
+	dwarf2out_frame_init): Merge into...
+	(execute_dwarf2_frame): ... here.  New function.
+	(dwarf2out_do_frame, dwarf2out_do_cfi_asm): Make boolean.  Change
+	saved_do_cfi_asm to a tri-state variable.
+	(gate_dwarf2_frame, pass_dwarf2_frame): New.
+	* dwarf2out.c (dwarf2out_begin_prologue): Only allocate the fde
+	if it has yet to be done.  Don't call dwarf2cfi_function_init.
+	* dwarf2out.h, debug.h: Update decls.
+	* final.c (final_start_function): Don't call
+	dwarf2out_frame_debug_init or dwarf2out_frame_debug_after_prologue.
+	* lto-streamer-in.c (lto_init_eh): Don't call dwarf2out_frame_init.
+	* toplev.c (lang_dependent_init): Likewise.
+
+2011-07-07  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (fde_table, fde_table_allocated, fde_table_in_use,
 	FDE_TABLE_INCREMENT): Replace with...
 	(fde_vec): ... this, a new vector.

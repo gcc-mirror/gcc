@@ -1605,14 +1605,19 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   if (!do_frame)
     return;
 
+  /* Cater to the various TARGET_ASM_OUTPUT_MI_THUNK implementations that
+     emit insns as rtx but bypass the bulk of rest_of_compilation, which
+     would include pass_dwarf2_frame.  If we've not created the FDE yet,
+     do so now.  */
+  fde = cfun->fde;
+  if (fde == NULL)
+    fde = dwarf2out_alloc_current_fde ();
+
   /* Initialize the bits of CURRENT_FDE that were not available earlier.  */
-  fde = dwarf2out_alloc_current_fde ();
   fde->dw_fde_begin = dup_label;
   fde->dw_fde_current_label = dup_label;
   fde->in_std_section = (fnsec == text_section
 			 || (cold_text_section && fnsec == cold_text_section));
-
-  dwarf2cfi_function_init ();
 
   /* We only want to output line number information for the genuine dwarf2
      prologue case, not the eh frame case.  */
