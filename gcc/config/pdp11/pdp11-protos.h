@@ -38,6 +38,7 @@ typedef enum { no_action, dec_before, inc_after } pdp11_action;
 typedef enum { little, either, big } pdp11_partorder;
 extern bool pdp11_expand_operands (rtx *, rtx [][2], int, 
 				   pdp11_action *, pdp11_partorder);
+extern int pdp11_sp_frame_offset (void);
 extern int pdp11_initial_elimination_offset (int, int);
 extern enum reg_class pdp11_regno_reg_class (int);
 
@@ -45,3 +46,5 @@ extern enum reg_class pdp11_regno_reg_class (int);
 
 extern void output_ascii (FILE *, const char *, int);
 extern void pdp11_asm_output_var (FILE *, const char *, int, int, bool);
+extern void pdp11_expand_prologue (void);
+extern void pdp11_expand_epilogue (void);

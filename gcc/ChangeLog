@@ -1,5 +1,20 @@
 2011-07-09  Richard Henderson  <rth@redhat.com>
 
+	* config/pdp11/pdp11.md (define_c_enum "unspecv"): New.
+	(prologue, epilogue): New.
+	(return, *rts): New.
+	(blockage, setd, seti): New.
+	* config/pdp11/pdp11.c (TARGET_ASM_FUNCTION_PROLOGUE): Remove.
+	(TARGET_ASM_FUNCTION_EPILOGUE): Remove.
+	(pdp11_saved_regno): New.
+	(pdp11_expand_prologue): Rename from pdp11_output_function_prologue;
+	generate rtl instead of text.
+	(pdp11_expand_epilogue): Similarly from pdp11_output_function_epilogue.
+	(pdp11_sp_frame_offset): Export.  Use pdp11_saved_regno.
+	* config/pdp11/pdp11-protos.h: Update.
+
+2011-07-09  Richard Henderson  <rth@redhat.com>
+
 	* config/rs6000/rs6000.c (rs6000_output_function_prologue): Don't
 	try to insert an rtl prologue here.
 	(rs6000_output_function_epilogue): Similarly.
