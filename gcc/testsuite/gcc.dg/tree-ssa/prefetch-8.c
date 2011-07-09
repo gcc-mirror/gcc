@@ -1,5 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* { dg-require-effective-target sse2 } */
 /* { dg-skip-if "" { i?86-*-* x86_64-*-* } { "-march=*" } { "-march=athlon" } } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -msse2 -mfpmath=sse --param simultaneous-prefetches=100 -fdump-tree-aprefetch-details -fdump-tree-optimized" } */

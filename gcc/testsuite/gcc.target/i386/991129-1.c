@@ -1,7 +1,7 @@
 /* Test against a problem in push_reload.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2" } */
 
 unsigned long foo (unsigned long long x, unsigned long y)

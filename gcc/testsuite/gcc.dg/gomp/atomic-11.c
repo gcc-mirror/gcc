@@ -1,7 +1,7 @@
 /* PR middle-end/36877 */
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
-/* { dg-options "-fopenmp -march=i386" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-fopenmp -march=i386" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 int i;
 float f;

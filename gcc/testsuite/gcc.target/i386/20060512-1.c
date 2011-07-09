@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-std=gnu99 -msse2 -mpreferred-stack-boundary=4" } */
 /* { dg-require-effective-target sse2 } */
 

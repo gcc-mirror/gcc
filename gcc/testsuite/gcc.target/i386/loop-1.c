@@ -1,6 +1,6 @@
 /* PR optimization/9888 */
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-mtune=k6 -O3" } */
 
 /* Verify that GCC doesn't emit out of range 'loop' instructions.  */

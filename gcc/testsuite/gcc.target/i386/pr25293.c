@@ -1,7 +1,7 @@
 /* PR target/25293 */
 /* { dg-do compile } */
 /* { dg-options "-mpreferred-stack-boundary=2 -mtune=i586 -O2 -fomit-frame-pointer -g" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 struct T { unsigned short t1, t2, t3, t4, t5, t6, t7; };
 struct S { struct T s1; unsigned short s2, s3; };

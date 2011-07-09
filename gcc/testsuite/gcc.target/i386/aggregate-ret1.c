@@ -3,7 +3,7 @@
    not pop the stack for the implicit pointer arg when returning a large
    structure in memory.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 struct foo {
   int a;

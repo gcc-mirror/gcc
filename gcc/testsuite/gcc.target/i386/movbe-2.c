@@ -15,5 +15,5 @@ bar ()
   return __builtin_bswap64 (x);
 }
 
-/* { dg-final { scan-assembler-times "movbe\[ \t\]" 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times "movbe\[ \t\]" 2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "movbe\[ \t\]" 4 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "movbe\[ \t\]" 2 { target { ! { ia32 } } } } } */

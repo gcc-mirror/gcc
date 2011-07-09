@@ -1,6 +1,6 @@
 /* { dg-do compile }
 /* { dg-options "-Os -march=pentium4 -mtune=prescott" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 register char foo asm("edi");
 char x;

@@ -2,7 +2,7 @@
    The testcase below used to trigger an ICE.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-march=pentium" } */
 
 signed long long sll;

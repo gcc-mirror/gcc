@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-skip-if "no stack realignment" { *-*-darwin* } { "*" } { "" } } */
 /* { dg-options "-fstack-usage -msse2 -mforce-drap" } */
 

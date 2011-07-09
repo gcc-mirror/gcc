@@ -1,7 +1,7 @@
 /* PR debug/44136 */
 /* { dg-do compile } */
 /* { dg-options "-w -O2 -g" } */
-/* { dg-options "-w -Wno-psabi -O2 -g -mno-sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-w -Wno-psabi -O2 -g -mno-sse" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 #define vector __attribute((vector_size(16)))
 vector float a;

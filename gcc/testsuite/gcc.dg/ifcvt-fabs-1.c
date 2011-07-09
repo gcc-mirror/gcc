@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O" } */
-/* { dg-options "-O -march=i686" { target { { i686-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O -march=i686" { target { { i686-*-* x86_64-*-* } && ia32 } } } */
 
 extern void abort(void);
 

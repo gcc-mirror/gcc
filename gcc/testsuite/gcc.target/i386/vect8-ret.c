@@ -1,4 +1,4 @@
-/* { dg-do compile { target ilp32 } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-mmmx" { target i?86-*-solaris2.[89] *-*-vxworks* } } */
 /* { dg-options "-mmmx -mvect8-ret-in-mem" } */
 

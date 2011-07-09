@@ -1,6 +1,5 @@
 /* PR target/39082 */
-/* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-do compile { target { ! { ia32 } } } } */
 /* { dg-options "-O2" } */
 
 union un

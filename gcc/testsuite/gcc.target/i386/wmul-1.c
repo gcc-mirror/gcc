@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 long long mac(const int *a, const int *b, long long sqr, long long *sum)
 {

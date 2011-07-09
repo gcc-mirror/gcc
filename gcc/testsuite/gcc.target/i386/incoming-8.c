@@ -1,5 +1,5 @@
 /* PR target/40838 */
-/* { dg-do compile { target { { ! *-*-darwin* } && ilp32 } } } */
+/* { dg-do compile { target { { ! *-*-darwin* } && ia32 } } } */
 /* { dg-options "-w -mstackrealign -O3 -msse2 -mno-avx -mpreferred-stack-boundary=4" } */
 
 float

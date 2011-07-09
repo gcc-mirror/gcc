@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -march=i586" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O2 -march=i586" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 typedef void (*fp)(void);
 extern char* bar(void* a1, int a2);

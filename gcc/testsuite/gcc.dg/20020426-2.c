@@ -2,7 +2,7 @@
    Distilled from zlib sources.  */
 /* { dg-do run } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -frename-registers -fomit-frame-pointer -fPIC -mtune=i686" { target { { i?86-*-* x86_64-*-* } && { ilp32 && fpic } } } } */
+/* { dg-options "-O2 -frename-registers -fomit-frame-pointer -fPIC -mtune=i686" { target { { i?86-*-* x86_64-*-* } && { ia32 && fpic } } } } */
 
 extern void exit (int);
 

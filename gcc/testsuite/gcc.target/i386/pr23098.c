@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fPIC" } */
 /* { dg-final { scan-assembler-not "\.LC\[0-9\]" { xfail *-*-vxworks* } } } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-require-effective-target fpic } */
 
 double foo (float);

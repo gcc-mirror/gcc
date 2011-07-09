@@ -1,7 +1,7 @@
 /* PR rtl-optimization/49095 */
 /* { dg-do compile } */
 /* { dg-options "-Os" } */
-/* { dg-options "-Os -mregparm=2" { target ilp32 } } */
+/* { dg-options "-Os -mregparm=2" { target ia32 } } */
 
 void foo (void *);
 

@@ -1,8 +1,7 @@
 /* Test that the compiler properly optimizes floating point multiply and add
    instructions vector into vfmaddps on FMA4 systems.  */
 
-/* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-do compile { target { ! { ia32 } } } } */
 /* { dg-options "-O2 -mfma4 -ftree-vectorize -mtune=generic" } */
 
 extern void exit (int);

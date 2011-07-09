@@ -1,4 +1,4 @@
-/* { dg-do run { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-do run { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 /* { dg-options "-mpreferred-stack-boundary=2" } */
 
 /* Simple test of vararg passing for problematic types with and without

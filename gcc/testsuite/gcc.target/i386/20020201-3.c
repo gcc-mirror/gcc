@@ -1,7 +1,7 @@
 /* This testcase ICEd because a SFmode variable was given a MMX register
    for which there is no movsf exists.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -march=i686 -mmmx -fno-strict-aliasing" } */
 
 struct A { unsigned int a, b; };

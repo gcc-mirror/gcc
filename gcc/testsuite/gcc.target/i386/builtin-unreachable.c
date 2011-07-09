@@ -1,7 +1,7 @@
 /* This should return 1 without setting up a stack frame or
    jumping.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 int h (char *p)
 {
