@@ -22,6 +22,13 @@
 (include "predicates.md")
 (include "constraints.md")
 
+(define_c_enum "unspecv"
+  [
+    UNSPECV_BLOCKAGE
+    UNSPECV_SETD
+    UNSPECV_SETI
+  ])
+
 (define_constants
   [
    ;; Register numbers
@@ -103,6 +110,50 @@
    (set_attr "length" "6")])
 
 ;; define function units
+
+;; Prologue and epilogue support.
+
+(define_expand "prologue"
+  [(const_int 0)]
+  ""
+{
+  pdp11_expand_prologue ();
+  DONE;
+})
+
+(define_expand "epilogue"
+  [(const_int 0)]
+  ""
+{
+  pdp11_expand_epilogue ();
+  DONE;
+})
+
+(define_expand "return"
+  [(return)]
+  "reload_completed && !frame_pointer_needed && pdp11_sp_frame_offset () == 0"
+  "")
+
+(define_insn "*rts"
+  [(return)]
+  ""
+  "rts pc")
+
+(define_insn "blockage"
+  [(unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
+(define_insn "setd"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SETD)]
+  ""
+  "setd")
+
+(define_insn "seti"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SETI)]
+  ""
+  "seti")
 
 ;; arithmetic - values here immediately when next insn issued
 ;; or does it mean the number of cycles after this insn was issued?

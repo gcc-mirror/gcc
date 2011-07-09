@@ -141,8 +141,6 @@ decode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
 static const char *singlemove_string (rtx *);
 static bool pdp11_assemble_integer (rtx, unsigned int, int);
-static void pdp11_output_function_prologue (FILE *, HOST_WIDE_INT);
-static void pdp11_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static bool pdp11_rtx_costs (rtx, int, int, int *, bool);
 static bool pdp11_return_in_memory (const_tree, const_tree);
 static rtx pdp11_function_value (const_tree, const_tree, bool);
@@ -165,11 +163,6 @@ static bool pdp11_legitimate_constant_p (enum machine_mode, rtx);
 #define TARGET_ASM_ALIGNED_SI_OP NULL
 #undef TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER pdp11_assemble_integer
-
-#undef TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE pdp11_output_function_prologue
-#undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE pdp11_output_function_epilogue
 
 #undef TARGET_ASM_OPEN_PAREN
 #define TARGET_ASM_OPEN_PAREN "["
@@ -227,95 +220,92 @@ static bool pdp11_legitimate_constant_p (enum machine_mode, rtx);
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P pdp11_legitimate_constant_p
 
-/*
-   stream is a stdio stream to output the code to.
-   size is an int: how many units of temporary storage to allocate.
-   Refer to the array `regs_ever_live' to determine which registers
-   to save; `regs_ever_live[I]' is nonzero if register number I
-   is ever used in the function.  This macro is responsible for
-   knowing which registers should not be saved even if used.  
-*/
+/* A helper function to determine if REGNO should be saved in the
+   current function's stack frame.  */
 
-static void
-pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
-{							       
-    HOST_WIDE_INT fsize = ((size) + 1) & ~1;
-    int regno;
-    int via_ac = -1;
-
-    fprintf (stream,
-	     "\n\t;	/* function prologue %s*/\n",
-	     current_function_name ());
-
-    /* if we are outputting code for main, 
-       the switch FPU to right mode if TARGET_FPU */
-    if (MAIN_NAME_P (DECL_NAME (current_function_decl)) && TARGET_FPU)
-    {
-	fprintf(stream,
-		"\t;/* switch cpu to double float, single integer */\n");
-	fprintf(stream, "\tsetd\n");
-	fprintf(stream, "\tseti\n\n");
-    }
-    
-    if (frame_pointer_needed) 					
-    {								
-	fprintf(stream, "\tmov r5, -(sp)\n");			
-	fprintf(stream, "\tmov sp, r5\n");				
-    }								
-    else 								
-    {								
-	/* DON'T SAVE FP */
-    }								
-
-    /* make frame */
-    if (fsize)							
-	asm_fprintf (stream, "\tsub $%#wo, sp\n", fsize);
-
-    /* save CPU registers  */
-    for (regno = R0_REGNUM; regno <= PC_REGNUM; regno++)				
-      if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])	
-	    if (! ((regno == FRAME_POINTER_REGNUM)			
-		   && frame_pointer_needed))				
-		fprintf (stream, "\tmov %s, -(sp)\n", reg_names[regno]);	
-    /* fpu regs saving */
-    
-    /* via_ac specifies the ac to use for saving ac4, ac5 */
-    via_ac = -1;
-    
-    for (regno = AC0_REGNUM; regno <= AC5_REGNUM ; regno++) 
-    {
-	/* ac0 - ac3 */						
-	if (LOAD_FPU_REG_P(regno)
-	    && df_regs_ever_live_p (regno) 
-	    && ! call_used_regs[regno])
-	{
-	    fprintf (stream, "\tstd %s, -(sp)\n", reg_names[regno]);
-	    via_ac = regno;
-	}
-	
-	/* maybe make ac4, ac5 call used regs?? */
-	/* ac4 - ac5 */
-	if (NO_LOAD_FPU_REG_P(regno)
-	    && df_regs_ever_live_p (regno)
-	    && ! call_used_regs[regno])
-	{
-	  gcc_assert (via_ac != -1);
-	  fprintf (stream, "\tldd %s, %s\n",
-		   reg_names[regno], reg_names[via_ac]);
-	  fprintf (stream, "\tstd %s, -(sp)\n", reg_names[via_ac]);
-	}
-    }
-
-    fprintf (stream, "\t;/* end of prologue */\n\n");		
+static inline bool
+pdp11_saved_regno (unsigned regno)
+{
+  return !call_used_regs[regno] && df_regs_ever_live_p (regno);
 }
 
-/*
-   The function epilogue should not depend on the current stack pointer!
+/* Expand the function prologue.  */
+
+void
+pdp11_expand_prologue (void)
+{							       
+  HOST_WIDE_INT fsize = get_frame_size ();
+  unsigned regno;
+  rtx x, via_ac = NULL;
+
+  /* If we are outputting code for main, the switch FPU to the
+     right mode if TARGET_FPU.  */
+  if (MAIN_NAME_P (DECL_NAME (current_function_decl)) && TARGET_FPU)
+    {
+      emit_insn (gen_setd ());
+      emit_insn (gen_seti ());
+    }
+    
+  if (frame_pointer_needed) 					
+    {								
+      x = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
+      x = gen_frame_mem (Pmode, x);
+      emit_move_insn (x, hard_frame_pointer_rtx);
+
+      emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+    }								
+
+  /* Make frame.  */
+  if (fsize)
+    {
+      emit_insn (gen_addhi3 (stack_pointer_rtx, stack_pointer_rtx,
+			     GEN_INT (-fsize)));
+
+      /* Prevent frame references via the frame pointer from being
+	 scheduled before the frame is allocated.  */
+      if (frame_pointer_needed)
+	emit_insn (gen_blockage ());
+    }
+
+  /* Save CPU registers.  */
+  for (regno = R0_REGNUM; regno <= PC_REGNUM; regno++)
+    if (pdp11_saved_regno (regno)
+	&& (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed))
+      {
+	x = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
+	x = gen_frame_mem (Pmode, x);
+	emit_move_insn (x, gen_rtx_REG (Pmode, regno));
+      }
+
+  /* Save FPU registers.  */
+  for (regno = AC0_REGNUM; regno <= AC3_REGNUM; regno++) 
+    if (pdp11_saved_regno (regno))
+      {
+	x = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
+	x = gen_frame_mem (DFmode, x);
+	via_ac = gen_rtx_REG (DFmode, regno);
+	emit_move_insn (x, via_ac);
+      }
+
+  /* ??? Maybe make ac4, ac5 call used regs?? */
+  for (regno = AC4_REGNUM; regno <= AC5_REGNUM; regno++)
+    if (pdp11_saved_regno (regno))
+      {
+	gcc_assert (via_ac != NULL);
+	emit_move_insn (via_ac, gen_rtx_REG (DFmode, regno));
+
+	x = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
+	x = gen_frame_mem (DFmode, x);
+	emit_move_insn (x, via_ac);
+      }
+}
+
+/* The function epilogue should not depend on the current stack pointer!
    It should use the frame pointer only.  This is mandatory because
    of alloca; we also take advantage of it to omit stack adjustments
    before returning.  */
 
-/* maybe we can make leaf functions faster by switching to the
+/* Maybe we can make leaf functions faster by switching to the
    second register file - this way we don't have to save regs!
    leaf functions are ~ 50% of all functions (dynamically!) 
 
@@ -328,109 +318,127 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 
    maybe as option if you want to generate code for kernel mode? */
 
-static void
-pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
+void
+pdp11_expand_epilogue (void)
 {								
-    HOST_WIDE_INT fsize = ((size) + 1) & ~1;
-    int i, j, k;
+  HOST_WIDE_INT fsize = get_frame_size ();
+  unsigned regno;
+  rtx x, reg, via_ac = NULL;
 
-    int via_ac;
-    
-    fprintf (stream, "\n\t;	/*function epilogue */\n");		
+  if (pdp11_saved_regno (AC4_REGNUM) || pdp11_saved_regno (AC5_REGNUM))
+    {
+      /* Find a temporary with which to restore AC4/5.  */
+      for (regno = AC0_REGNUM; regno <= AC3_REGNUM; regno++)
+	if (pdp11_saved_regno (regno))
+	  {
+	    via_ac = gen_rtx_REG (DFmode, regno);
+	    break;
+	  }
+    }
 
-    if (frame_pointer_needed)					
-    {								
-	/* hope this is safe - m68k does it also .... */		
-        df_set_regs_ever_live (FRAME_POINTER_REGNUM, false);
-								
-	for (i = PC_REGNUM, j = 0 ; i >= 0 ; i--)				
-	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])		
-		j++;
-	
-	/* remember # of pushed bytes for CPU regs */
-	k = 2*j;
-	
-	/* change fp -> r5 due to the compile error on libgcc2.c */
-	for (i = PC_REGNUM ; i >= R0_REGNUM ; i--)					
-	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])		
-		fprintf(stream, "\tmov %#" HOST_WIDE_INT_PRINT "o(r5), %s\n",
-			(-fsize-2*j--)&0xffff, reg_names[i]);
+  /* If possible, restore registers via pops.  */
+  if (!frame_pointer_needed || current_function_sp_is_unchanging)
+    {
+      /* Restore registers via pops.  */
 
-	/* get ACs */						
-	via_ac = AC5_REGNUM;
-	
-	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
-	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])
-	    {
-		via_ac = i;
-		k += 8;
-	    }
-	
-	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
+      for (regno = AC5_REGNUM; regno >= AC0_REGNUM; regno--)
+	if (pdp11_saved_regno (regno))
+	  {
+	    x = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
+	    x = gen_frame_mem (DFmode, x);
+	    reg = gen_rtx_REG (DFmode, regno);
+
+	    if (LOAD_FPU_REG_P (regno))
+	      emit_move_insn (reg, x);
+	    else
+	      {
+	        emit_move_insn (via_ac, x);
+		emit_move_insn (reg, via_ac);
+	      }
+	  }
+
+      for (regno = PC_REGNUM; regno >= R0_REGNUM + 2; regno--)
+	if (pdp11_saved_regno (regno)
+	    && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed))
+	  {
+	    x = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
+	    x = gen_frame_mem (Pmode, x);
+	    emit_move_insn (gen_rtx_REG (Pmode, regno), x);
+	  }
+    }
+  else
+    {
+      /* Restore registers via moves.  */
+      /* ??? If more than a few registers need to be restored, it's smaller
+	 to generate a pointer through which we can emit pops.  Consider
+	 that moves cost 2*NREG words and pops cost NREG+3 words.  This
+	 means that the crossover is NREG=3.
+
+	 Possible registers to use are:
+	  (1) The first call-saved general register.  This register will
+		be restored with the last pop.
+	  (2) R1, if it's not used as a return register.
+	  (3) FP itself.  This option may result in +4 words, since we
+		may need two add imm,rn instructions instead of just one.
+		This also has the downside that we're not representing
+		the unwind info in any way, so during the epilogue the
+		debugger may get lost.  */
+
+      HOST_WIDE_INT ofs = -pdp11_sp_frame_offset ();
+
+      for (regno = AC5_REGNUM; regno >= AC0_REGNUM; regno--)
+	if (pdp11_saved_regno (regno))
+	  {
+	    x = plus_constant (hard_frame_pointer_rtx, ofs);
+	    x = gen_frame_mem (DFmode, x);
+	    reg = gen_rtx_REG (DFmode, regno);
+
+	    if (LOAD_FPU_REG_P (regno))
+	      emit_move_insn (reg, x);
+	    else
+	      {
+	        emit_move_insn (via_ac, x);
+		emit_move_insn (reg, via_ac);
+	      }
+	    ofs += 8;
+	  }
+
+      for (regno = PC_REGNUM; regno >= R0_REGNUM + 2; regno--)
+	if (pdp11_saved_regno (regno)
+	    && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed))
+	  {
+	    x = plus_constant (hard_frame_pointer_rtx, ofs);
+	    x = gen_frame_mem (Pmode, x);
+	    emit_move_insn (gen_rtx_REG (Pmode, regno), x);
+	    ofs += 2;
+	  }
+    }
+
+  /* Deallocate the stack frame.  */
+  if (fsize)
+    {
+      /* Prevent frame references via any pointer from being
+	 scheduled after the frame is deallocated.  */
+      emit_insn (gen_blockage ());
+
+      if (frame_pointer_needed)
 	{
-	    if (LOAD_FPU_REG_P(i)
-		&& df_regs_ever_live_p (i)
-		&& ! call_used_regs[i])
-	    {
-		fprintf(stream, "\tldd %#" HOST_WIDE_INT_PRINT "o(r5), %s\n",
-			(-fsize-k)&0xffff, reg_names[i]);
-		k -= 8;
-	    }
-	    
-	    if (NO_LOAD_FPU_REG_P(i)
-		&& df_regs_ever_live_p (i)
-		&& ! call_used_regs[i])
-	    {
-	        gcc_assert (LOAD_FPU_REG_P(via_ac));
-		    
-		fprintf(stream, "\tldd %#" HOST_WIDE_INT_PRINT "o(r5), %s\n",
-			(-fsize-k)&0xffff, reg_names[via_ac]);
-		fprintf(stream, "\tstd %s, %s\n", reg_names[via_ac], reg_names[i]);
-		k -= 8;
-	    }
+	  /* We can deallocate the frame with a single move.  */
+	  emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
 	}
-	
-	fprintf(stream, "\tmov r5, sp\n");				
-	fprintf (stream, "\tmov (sp)+, r5\n");     			
-    }								
-    else								
-    {		   
-      via_ac = AC5_REGNUM;
-	
-	/* get ACs */
-	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
-	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])
-		via_ac = i;
-	
-	for (i = AC5_REGNUM; i >= AC0_REGNUM; i--)
-	{
-	    if (LOAD_FPU_REG_P(i)
-		&& df_regs_ever_live_p (i)
-		&& ! call_used_regs[i])
-	      fprintf(stream, "\tldd (sp)+, %s\n", reg_names[i]);
-	    
-	    if (NO_LOAD_FPU_REG_P(i)
-		&& df_regs_ever_live_p (i)
-		&& ! call_used_regs[i])
-	    {
-	        gcc_assert (LOAD_FPU_REG_P(via_ac));
-		    
-		fprintf(stream, "\tldd (sp)+, %s\n", reg_names[via_ac]);
-		fprintf(stream, "\tstd %s, %s\n", reg_names[via_ac], reg_names[i]);
-	    }
-	}
+      else
+	emit_insn (gen_addhi3 (stack_pointer_rtx, stack_pointer_rtx,
+			       GEN_INT (fsize)));
+    }
 
-	for (i = PC_REGNUM; i >= 0; i--)					
-	  if (df_regs_ever_live_p (i) && !call_used_regs[i])		
-		fprintf(stream, "\tmov (sp)+, %s\n", reg_names[i]);	
-								
-	if (fsize)						
-	    fprintf((stream), "\tadd $%#" HOST_WIDE_INT_PRINT "o, sp\n",
-		    (fsize)&0xffff);      		
-    }			
-					
-    fprintf (stream, "\trts pc\n");					
-    fprintf (stream, "\t;/* end of epilogue*/\n\n\n");		
+  if (frame_pointer_needed)
+    {
+      x = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
+      x = gen_frame_mem (Pmode, x);
+      emit_move_insn (hard_frame_pointer_rtx, x);
+    }
+
+  emit_jump_insn (gen_return ());
 }
 
 /* Return the best assembler insn template
@@ -1570,16 +1578,16 @@ pdp11_regno_reg_class (int regno)
 }
 
 
-static int
+int
 pdp11_sp_frame_offset (void)
 {
   int offset = 0, regno;
   offset = get_frame_size();
   for (regno = 0; regno <= PC_REGNUM; regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (pdp11_saved_regno (regno))
       offset += 2;
   for (regno = AC0_REGNUM; regno <= AC5_REGNUM; regno++)
-    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
+    if (pdp11_saved_regno (regno))
       offset += 8;
   
   return offset;
