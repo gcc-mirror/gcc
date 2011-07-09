@@ -1,5 +1,9 @@
 2011-07-10  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/49684
+	* config/cris/t-elfmulti (CRTSTUFF_T_CFLAGS): Don't include
+	$(LIBGCC2_CFLAGS).
+
 	PR bootstrap/49680
 	* config/cris/cris.c (cris_asm_output_case_end): Robustify against
 	stray notes and debug insns by using prev_nonnote_nondebug_insn
