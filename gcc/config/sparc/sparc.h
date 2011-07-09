@@ -630,6 +630,11 @@ extern enum cmodel sparc_cmodel;
      : MAX ((COMPUTED), (SPECIFIED)))			\
    :  MAX ((COMPUTED), (SPECIFIED)))
 
+/* We need 2 words, so we can save the stack pointer and the return register
+   of the function containing a non-local goto target.  */
+#define STACK_SAVEAREA_MODE(LEVEL) \
+  ((LEVEL) == SAVE_NONLOCAL ? (TARGET_ARCH64 ? TImode : DImode) : Pmode)
+
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
   ((TREE_CODE (EXP) == STRING_CST	\
@@ -1377,11 +1382,6 @@ do {									\
    functions that have frame pointers.  */
 #define EXIT_IGNORE_STACK 1
 
-/* We need 2 words, so we can save the stack pointer and the return register
-   of the function containing a non-local goto target.  */
-#define STACK_SAVEAREA_MODE(LEVEL) \
-  ((LEVEL) == SAVE_NONLOCAL ? (TARGET_ARCH64 ? TImode : DImode) : Pmode)
-
 /* Length in units of the trampoline for entering a nested function.  */
 #define TRAMPOLINE_SIZE (TARGET_ARCH64 ? 32 : 16)
 
@@ -1517,24 +1517,11 @@ do {									\
 #define REGNO_OK_FOR_FP_P(REGNO) \
   (((unsigned) (REGNO) - 32 < (TARGET_V9 ? (unsigned)64 : (unsigned)32)) \
    || ((unsigned) reg_renumber[REGNO] - 32 < (TARGET_V9 ? (unsigned)64 : (unsigned)32)))
+
 #define REGNO_OK_FOR_CCFP_P(REGNO) \
  (TARGET_V9 \
   && (((unsigned) (REGNO) - 96 < (unsigned)4) \
       || ((unsigned) reg_renumber[REGNO] - 96 < (unsigned)4)))
-
-/* Now macros that check whether X is a register and also,
-   strictly, whether it is in a specified class.
-
-   These macros are specific to the SPARC, and may be used only
-   in code for printing assembler insns and in conditions for
-   define_optimization.  */
-
-/* 1 if X is an fp register.  */
-
-#define FP_REG_P(X) (REG_P (X) && REGNO_OK_FOR_FP_P (REGNO (X)))
-
-/* Is X, a REG, an in or global register?  i.e. is regno 0..7 or 24..31 */
-#define IN_OR_GLOBAL_P(X) (REGNO (X) < 8 || (REGNO (X) >= 24 && REGNO (X) <= 31))
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
