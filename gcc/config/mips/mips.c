@@ -8203,13 +8203,6 @@ mips_frame_set (rtx mem, rtx reg)
 {
   rtx set;
 
-  /* If we're saving the return address register and the DWARF return
-     address column differs from the hard register number, adjust the
-     note reg to refer to the former.  */
-  if (REGNO (reg) == RETURN_ADDR_REGNUM
-      && DWARF_FRAME_RETURN_COLUMN != RETURN_ADDR_REGNUM)
-    reg = gen_rtx_REG (GET_MODE (reg), DWARF_FRAME_RETURN_COLUMN);
-
   set = gen_rtx_SET (VOIDmode, mem, reg);
   RTX_FRAME_RELATED_P (set) = 1;
 

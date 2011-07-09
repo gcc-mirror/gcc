@@ -1,5 +1,18 @@
 2011-07-09  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (cie_return_save): New.
+	(queue_reg_save): Use compare_reg_or_pc.
+	(dwarf2out_flush_queued_reg_saves): Handle pc_rtx as return column.
+	(dwarf2out_frame_debug_expr): Likewise.
+	(dwarf2out_frame_debug_cfa_register): Record saved reg for pc too.
+	(initial_return_save): Likewise.
+	(execute_dwarf2_frame): Save and restore initial return save from
+	the cie to the fde.
+	* config/mips/mips.c (mips_frame_set): Remove special case for
+	DWARF_FRAME_RETURN_COLUMN.
+
+2011-07-09  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (lookup_cfa): Remove.
 	(execute_dwarf2_frame): Assert queues are empty on entry.
 	Setup initial cfa directly, not via lookup_cfa.
