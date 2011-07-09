@@ -1,5 +1,16 @@
 2011-07-09  Richard Henderson  <rth@redhat.com>
 
+	* defaults.h (DWARF_CIE_DATA_ALIGNMENT, DWARF_FRAME_RETURN_COLUMN,
+	DWARF_FRAME_REGNUM, DWARF2_FRAME_REG_OUT): Move from ...
+	* dwarf2cfi.c: ... here.
+	(PTR_SIZE, DWARF_OFFSET_SIZE, DWARF_INITIAL_LENGTH_SIZE): Remove.
+	(DWARF_ROUND, DWARF_CIE_ID): Remove.
+	* dwarf2out.c (INCOMING_RETURN_ADDR_RTX): Remove.
+	(DWARF2_FRAME_REG_OUT, DWARF_CIE_DATA_ALIGNMENT): Remove.
+	(DWARF_FRAME_RETURN_COLUMN, DWARF_FRAME_REGNUM): Remove.
+
+2011-07-09  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (cie_return_save): New.
 	(queue_reg_save): Use compare_reg_or_pc.
 	(dwarf2out_flush_queued_reg_saves): Handle pc_rtx as return column.

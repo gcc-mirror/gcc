@@ -55,88 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #define INCOMING_RETURN_ADDR_RTX  (gcc_unreachable (), NULL_RTX)
 #endif
 
-/* The size of the target's pointer type.  */
-#ifndef PTR_SIZE
-#define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
-#endif
-
 /* Maximum size (in bytes) of an artificially generated label.  */
 #define MAX_ARTIFICIAL_LABEL_BYTES	30
-
-/* The size of addresses as they appear in the Dwarf 2 data.
-   Some architectures use word addresses to refer to code locations,
-   but Dwarf 2 info always uses byte addresses.  On such machines,
-   Dwarf 2 addresses need to be larger than the architecture's
-   pointers.  */
-#ifndef DWARF2_ADDR_SIZE
-#define DWARF2_ADDR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
-#endif
-
-/* The size in bytes of a DWARF field indicating an offset or length
-   relative to a debug info section, specified to be 4 bytes in the
-   DWARF-2 specification.  The SGI/MIPS ABI defines it to be the same
-   as PTR_SIZE.  */
-
-#ifndef DWARF_OFFSET_SIZE
-#define DWARF_OFFSET_SIZE 4
-#endif
-
-/* According to the (draft) DWARF 3 specification, the initial length
-   should either be 4 or 12 bytes.  When it's 12 bytes, the first 4
-   bytes are 0xffffffff, followed by the length stored in the next 8
-   bytes.
-
-   However, the SGI/MIPS ABI uses an initial length which is equal to
-   DWARF_OFFSET_SIZE.  It is defined (elsewhere) accordingly.  */
-
-#ifndef DWARF_INITIAL_LENGTH_SIZE
-#define DWARF_INITIAL_LENGTH_SIZE (DWARF_OFFSET_SIZE == 4 ? 4 : 12)
-#endif
-
-/* Round SIZE up to the nearest BOUNDARY.  */
-#define DWARF_ROUND(SIZE,BOUNDARY) \
-  ((((SIZE) + (BOUNDARY) - 1) / (BOUNDARY)) * (BOUNDARY))
-
-/* Offsets recorded in opcodes are a multiple of this alignment factor.  */
-#ifndef DWARF_CIE_DATA_ALIGNMENT
-#ifdef STACK_GROWS_DOWNWARD
-#define DWARF_CIE_DATA_ALIGNMENT (-((int) UNITS_PER_WORD))
-#else
-#define DWARF_CIE_DATA_ALIGNMENT ((int) UNITS_PER_WORD)
-#endif
-#endif
-
-/* CIE identifier.  */
-#if HOST_BITS_PER_WIDE_INT >= 64
-#define DWARF_CIE_ID \
-  (unsigned HOST_WIDE_INT) (DWARF_OFFSET_SIZE == 4 ? DW_CIE_ID : DW64_CIE_ID)
-#else
-#define DWARF_CIE_ID DW_CIE_ID
-#endif
-
-/* The DWARF 2 CFA column which tracks the return address.  Normally this
-   is the column for PC, or the first column after all of the hard
-   registers.  */
-#ifndef DWARF_FRAME_RETURN_COLUMN
-#ifdef PC_REGNUM
-#define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGNUM (PC_REGNUM)
-#else
-#define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGISTERS
-#endif
-#endif
-
-/* The mapping from gcc register number to DWARF 2 CFA column number.  By
-   default, we just provide columns for all registers.  */
-#ifndef DWARF_FRAME_REGNUM
-#define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
-#endif
-
-/* Map register numbers held in the call frame info that gcc has
-   collected using DWARF_FRAME_REGNUM to those that should be output in
-   .debug_frame and .eh_frame.  */
-#ifndef DWARF2_FRAME_REG_OUT
-#define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH) (REGNO)
-#endif
 
 /* A vector of call frame insns for the CIE.  */
 cfi_vec cie_cfi_vec;
