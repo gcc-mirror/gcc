@@ -309,12 +309,12 @@ maybe_clone_body (tree fn)
 	  && (!DECL_ONE_ONLY (fns[0])
 	      || (HAVE_COMDAT_GROUP
 		  && DECL_WEAK (fns[0])))
-	  && (flag_syntax_only
-	      /* Set linkage flags appropriately before
-		 cgraph_create_function_alias looks at them.  */
-	      || (expand_or_defer_fn_1 (clone)
-		  && cgraph_same_body_alias (cgraph_get_node (fns[0]),
-					     clone, fns[0]))))
+	  && !flag_syntax_only
+	  /* Set linkage flags appropriately before
+	     cgraph_create_function_alias looks at them.  */
+	  && expand_or_defer_fn_1 (clone)
+	  && cgraph_same_body_alias (cgraph_get_node (fns[0]),
+				     clone, fns[0]))
 	{
 	  alias = true;
 	  if (DECL_ONE_ONLY (fns[0]))
@@ -324,13 +324,22 @@ maybe_clone_body (tree fn)
 		 *[CD][12]*.  */
 	      comdat_group = cdtor_comdat_group (fns[1], fns[0]);
 	      DECL_COMDAT_GROUP (fns[0]) = comdat_group;
+	      cgraph_add_to_same_comdat_group (cgraph_get_node (clone),
+					       cgraph_get_node (fns[0]));
 	    }
 	}
 
       /* Build the delete destructor by calling complete destructor
          and delete function.  */
       if (idx == 2)
-	build_delete_destructor_body (clone, fns[1]);
+	{
+	  build_delete_destructor_body (clone, fns[1]);
+	  /* If *[CD][12]* dtors go into the *[CD]5* comdat group and dtor is
+	     virtual, it goes into the same comdat group as well.  */
+	  if (comdat_group)
+	    cgraph_add_to_same_comdat_group (cgraph_get_create_node (clone),
+					     cgraph_get_node (fns[0]));
+	}
       else if (alias)
 	/* No need to populate body.  */ ;
       else
@@ -418,24 +427,6 @@ maybe_clone_body (tree fn)
       first = false;
     }
   pop_from_top_level ();
-
-  if (comdat_group)
-    {
-      DECL_COMDAT_GROUP (fns[1]) = comdat_group;
-      if (fns[2])
-	{
-	  struct cgraph_node *base_dtor_node, *deleting_dtor_node;
-	  /* If *[CD][12]* dtors go into the *[CD]5* comdat group and dtor is
-	     virtual, it goes into the same comdat group as well.  */
-	  DECL_COMDAT_GROUP (fns[2]) = comdat_group;
-	  base_dtor_node = cgraph_get_node (fns[0]);
-	  deleting_dtor_node = cgraph_get_node (fns[2]);
-	  gcc_assert (base_dtor_node->same_comdat_group == NULL);
-	  gcc_assert (deleting_dtor_node->same_comdat_group == NULL);
-	  base_dtor_node->same_comdat_group = deleting_dtor_node;
-	  deleting_dtor_node->same_comdat_group = base_dtor_node;
-	}
-    }
 
   /* We don't need to process the original function any further.  */
   return 1;
