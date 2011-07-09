@@ -168,11 +168,6 @@ static GTY(()) section *debug_str_section;
 static GTY(()) section *debug_ranges_section;
 static GTY(()) section *debug_frame_section;
 
-/* How to start an assembler comment.  */
-#ifndef ASM_COMMENT_START
-#define ASM_COMMENT_START ";#"
-#endif
-
 /* Maximum size (in bytes) of an artificially generated label.  */
 #define MAX_ARTIFICIAL_LABEL_BYTES	30
 
@@ -276,11 +271,6 @@ static void output_cfa_loc_raw (dw_cfi_ref);
 /* Personality decl of current unit.  Used only when assembler does not support
    personality CFI.  */
 static GTY(()) rtx current_unit_personality;
-
-/* How to start an assembler comment.  */
-#ifndef ASM_COMMENT_START
-#define ASM_COMMENT_START ";#"
-#endif
 
 /* Data and reference forms for relocatable data.  */
 #define DW_FORM_data (DWARF_OFFSET_SIZE == 8 ? DW_FORM_data8 : DW_FORM_data4)
@@ -3478,11 +3468,6 @@ typedef struct skeleton_chain_struct
   struct skeleton_chain_struct *parent;
 }
 skeleton_chain_node;
-
-/* How to start an assembler comment.  */
-#ifndef ASM_COMMENT_START
-#define ASM_COMMENT_START ";#"
-#endif
 
 /* Define a macro which returns nonzero for a TYPE_DECL which was
    implicitly generated for a type.

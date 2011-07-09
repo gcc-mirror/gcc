@@ -106,11 +106,6 @@ along with GCC; see the file COPYING3.  If not see
 #define CC_STATUS_INIT
 #endif
 
-/* How to start an assembler comment.  */
-#ifndef ASM_COMMENT_START
-#define ASM_COMMENT_START ";#"
-#endif
-
 /* Is the given character a logical line separator for the assembler?  */
 #ifndef IS_ASM_LOGICAL_LINE_SEPARATOR
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C, STR) ((C) == ';')

@@ -28,6 +28,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef GCC_DEFAULTS_H
 #define GCC_DEFAULTS_H
 
+/* How to start an assembler comment.  */
+#ifndef ASM_COMMENT_START
+#define ASM_COMMENT_START ";#"
+#endif
+
 /* Store in OUTPUT a string (made with alloca) containing an
    assembler-name for a local static variable or function named NAME.
    LABELNO is an integer which is different for each call.  */
