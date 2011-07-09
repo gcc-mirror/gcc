@@ -722,7 +722,6 @@ print_version (FILE *file, const char *indent)
   print_plugins_versions (file, indent);
 }
 
-#ifdef ASM_COMMENT_START
 static int
 print_to_asm_out_file (print_switch_type type, const char * text)
 {
@@ -755,7 +754,6 @@ print_to_asm_out_file (print_switch_type type, const char * text)
       return -1;
     }
 }
-#endif
 
 static int
 print_to_stderr (print_switch_type type, const char * text)
@@ -921,7 +919,6 @@ init_asm_output (const char *name)
 	    inform (input_location, "-frecord-gcc-switches is not supported by the current target");
 	}
 
-#ifdef ASM_COMMENT_START
       if (flag_verbose_asm)
 	{
 	  /* Print the list of switches in effect
@@ -930,7 +927,6 @@ init_asm_output (const char *name)
 	  print_switch_values (print_to_asm_out_file);
 	  putc ('\n', asm_out_file);
 	}
-#endif
     }
 }
 

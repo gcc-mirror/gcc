@@ -5062,14 +5062,12 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
       else if (TREE_CODE (local.type) == ARRAY_TYPE)
 	local.index = ce->index;
 
-#ifdef ASM_COMMENT_START
       if (local.field && flag_verbose_asm)
 	fprintf (asm_out_file, "%s %s:\n",
 		 ASM_COMMENT_START,
 		 DECL_NAME (local.field)
 		 ? IDENTIFIER_POINTER (DECL_NAME (local.field))
 		 : "<anonymous>");
-#endif
 
       /* Eliminate the marker that makes a cast not be an lvalue.  */
       if (local.val != NULL_TREE)
@@ -6180,12 +6178,10 @@ default_elf_asm_named_section (const char *name, unsigned int flags,
 	type = "progbits";
 
       format = ",@%s";
-#ifdef ASM_COMMENT_START
       /* On platforms that use "@" as the assembly comment character,
 	 use "%" instead.  */
       if (strcmp (ASM_COMMENT_START, "@") == 0)
 	format = ",%%%s";
-#endif
       fprintf (asm_out_file, format, type);
 
       if (flags & SECTION_ENTSIZE)
