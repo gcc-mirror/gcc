@@ -122,17 +122,6 @@ int vms_file_stats_name (const char *, long long *, long *, char *, int *);
  #pragma GCC poison DWARF2_UNWIND_INFO DWARF2_FRAME_INFO
 #endif
 
-#ifndef INCOMING_RETURN_ADDR_RTX
-#define INCOMING_RETURN_ADDR_RTX  (gcc_unreachable (), NULL_RTX)
-#endif
-
-/* Map register numbers held in the call frame info that gcc has
-   collected using DWARF_FRAME_REGNUM to those that should be output in
-   .debug_frame and .eh_frame.  */
-#ifndef DWARF2_FRAME_REG_OUT
-#define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH) (REGNO)
-#endif
-
 /* The size of the target's pointer type.  */
 #ifndef PTR_SIZE
 #define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
@@ -210,15 +199,6 @@ static GTY(()) section *debug_frame_section;
 /* Round SIZE up to the nearest BOUNDARY.  */
 #define DWARF_ROUND(SIZE,BOUNDARY) \
   ((((SIZE) + (BOUNDARY) - 1) / (BOUNDARY)) * (BOUNDARY))
-
-/* Offsets recorded in opcodes are a multiple of this alignment factor.  */
-#ifndef DWARF_CIE_DATA_ALIGNMENT
-#ifdef STACK_GROWS_DOWNWARD
-#define DWARF_CIE_DATA_ALIGNMENT (-((int) UNITS_PER_WORD))
-#else
-#define DWARF_CIE_DATA_ALIGNMENT ((int) UNITS_PER_WORD)
-#endif
-#endif
 
 /* CIE identifier.  */
 #if HOST_BITS_PER_WIDE_INT >= 64
@@ -309,23 +289,6 @@ static GTY(()) rtx current_unit_personality;
 #define LN_PROLOG_AS_LABEL	"LASLTP"
 #define LN_PROLOG_END_LABEL	"LELTP"
 #define DIE_LABEL_PREFIX	"DW"
-
-/* The DWARF 2 CFA column which tracks the return address.  Normally this
-   is the column for PC, or the first column after all of the hard
-   registers.  */
-#ifndef DWARF_FRAME_RETURN_COLUMN
-#ifdef PC_REGNUM
-#define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGNUM (PC_REGNUM)
-#else
-#define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGISTERS
-#endif
-#endif
-
-/* The mapping from gcc register number to DWARF 2 CFA column number.  By
-   default, we just provide columns for all registers.  */
-#ifndef DWARF_FRAME_REGNUM
-#define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
-#endif
 
 /* Match the base name of a file to the base name of a compilation unit. */
 
