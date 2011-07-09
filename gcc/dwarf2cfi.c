@@ -405,7 +405,9 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_struct *loc)
     }
 }
 
-/* Subroutine of lookup_cfa.  */
+/* Find the previous value for the CFA, iteratively.  CFI is the opcode
+   to interpret, *LOC will be updated as necessary, *REMEMBER is used for
+   one level of remember/restore state processing.  */
 
 void
 lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc, dw_cfa_location *remember)
@@ -442,29 +444,6 @@ lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc, dw_cfa_location *remember)
     default:
       break;
     }
-}
-
-/* Find the previous value for the CFA.  */
-
-static void
-lookup_cfa (dw_cfa_location *loc)
-{
-  int ix;
-  dw_cfi_ref cfi;
-  dw_fde_ref fde;
-  dw_cfa_location remember;
-
-  memset (loc, 0, sizeof (*loc));
-  loc->reg = INVALID_REGNUM;
-  remember = *loc;
-
-  FOR_EACH_VEC_ELT (dw_cfi_ref, cie_cfi_vec, ix, cfi)
-    lookup_cfa_1 (cfi, loc, &remember);
-
-  fde = cfun->fde;
-  if (fde)
-    FOR_EACH_VEC_ELT (dw_cfi_ref, fde->dw_fde_cfi, ix, cfi)
-      lookup_cfa_1 (cfi, loc, &remember);
 }
 
 /* The current rule for calculating the DWARF2 canonical frame address.  */
@@ -2301,7 +2280,7 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 
 /* Examine CFI and return true if a cfi label and set_loc is needed
    beforehand.  Even when generating CFI assembler instructions, we
-   still have to add the cfi to the list so that lookup_cfa works
+   still have to add the cfi to the list so that lookup_cfa_1 works
    later on.  When -g2 and above we even need to force emitting of
    CFI labels and add to list a DW_CFA_set_loc for convert_cfa_to_fb_loc_list
    purposes.  If we're generating DWARF3 output we use DW_OP_call_frame_cfa
@@ -2596,15 +2575,18 @@ execute_dwarf2_frame (void)
     }
 
   /* Set up state for generating call frame debug info.  */
-  lookup_cfa (&cfa);
-  gcc_assert (cfa.reg
-	      == (unsigned long)DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
+  gcc_checking_assert (queued_reg_saves == NULL);
+  gcc_checking_assert (regs_saved_in_regs == NULL);
+
+  memset (&cfa, 0, sizeof(cfa));
+  cfa.reg = STACK_POINTER_REGNUM;
+  cfa.offset = INCOMING_FRAME_SP_OFFSET;
 
   old_cfa = cfa;
-  cfa.reg = STACK_POINTER_REGNUM;
   cfa_store = cfa;
-  cfa_temp.reg = -1;
-  cfa_temp.offset = 0;
+
+  memset (&cfa_temp, 0, sizeof(cfa_temp));
+  cfa_temp.reg = INVALID_REGNUM;
 
   dwarf2out_alloc_current_fde ();
 
@@ -2617,7 +2599,6 @@ execute_dwarf2_frame (void)
   barrier_args_size = NULL;
   regs_saved_in_regs = NULL;
   queued_reg_saves = NULL;
-  args_size = old_args_size = 0;
 
   return 0;
 }
