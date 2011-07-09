@@ -1,4 +1,9 @@
 2011-07-09  Tobias Burnus  <burnus@net-b.de>
+
+	* runtime/error.c (sys_abort): Change argument list
+	from "()" to "(void)".
+
+2011-07-09  Tobias Burnus  <burnus@net-b.de>
 	    Daniel Carrera  <dcarrera@gmail.com>
 
 	* caf/mpi.c (runtime_error): New function.
