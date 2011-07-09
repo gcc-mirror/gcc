@@ -71,13 +71,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     struct _Vector_base
     {
       typedef typename _Alloc::template rebind<_Tp>::other _Tp_alloc_type;
+      typedef typename __gnu_cxx::__alloc_traits<_Tp_alloc_type>::pointer
+       	pointer;
 
       struct _Vector_impl 
       : public _Tp_alloc_type
       {
-	typename _Tp_alloc_type::pointer _M_start;
-	typename _Tp_alloc_type::pointer _M_finish;
-	typename _Tp_alloc_type::pointer _M_end_of_storage;
+	pointer _M_start;
+	pointer _M_finish;
+	pointer _M_end_of_storage;
 
 	_Vector_impl()
 	: _Tp_alloc_type(), _M_start(0), _M_finish(0), _M_end_of_storage(0)
@@ -93,6 +95,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_start(0), _M_finish(0), _M_end_of_storage(0)
 	{ }
 #endif
+
+	void _M_swap_data(_Vector_impl& __x)
+	{
+	  std::swap(_M_start, __x._M_start);
+	  std::swap(_M_finish, __x._M_finish);
+	  std::swap(_M_end_of_storage, __x._M_end_of_storage);
+	}
       };
       
     public:
@@ -118,30 +127,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       _Vector_base(size_t __n)
       : _M_impl()
-      {
-	this->_M_impl._M_start = this->_M_allocate(__n);
-	this->_M_impl._M_finish = this->_M_impl._M_start;
-	this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
-      }
+      { _M_create_storage(__n); }
 
       _Vector_base(size_t __n, const allocator_type& __a)
       : _M_impl(__a)
-      {
-	this->_M_impl._M_start = this->_M_allocate(__n);
-	this->_M_impl._M_finish = this->_M_impl._M_start;
-	this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
-      }
+      { _M_create_storage(__n); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+      _Vector_base(_Tp_alloc_type&& __a)
+      : _M_impl(std::move(__a)) { }
+
       _Vector_base(_Vector_base&& __x)
       : _M_impl(std::move(__x._M_get_Tp_allocator()))
+      { this->_M_impl._M_swap_data(__x._M_impl); }
+
+      _Vector_base(_Vector_base&& __x, const allocator_type& __a)
+      : _M_impl(__a)
       {
-	this->_M_impl._M_start = __x._M_impl._M_start;
-	this->_M_impl._M_finish = __x._M_impl._M_finish;
-	this->_M_impl._M_end_of_storage = __x._M_impl._M_end_of_storage;
-	__x._M_impl._M_start = 0;
-	__x._M_impl._M_finish = 0;
-	__x._M_impl._M_end_of_storage = 0;
+	if (__x.get_allocator() == __a)
+	  this->_M_impl._M_swap_data(__x._M_impl);
+	else
+	  {
+	    size_t __n = __x._M_impl._M_finish - __x._M_impl._M_start;
+	    _M_create_storage(__n);
+	  }
       }
 #endif
 
@@ -152,15 +161,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       _Vector_impl _M_impl;
 
-      typename _Tp_alloc_type::pointer
+      pointer
       _M_allocate(size_t __n)
       { return __n != 0 ? _M_impl.allocate(__n) : 0; }
 
       void
-      _M_deallocate(typename _Tp_alloc_type::pointer __p, size_t __n)
+      _M_deallocate(pointer __p, size_t __n)
       {
 	if (__p)
 	  _M_impl.deallocate(__p, __n);
+      }
+
+    private:
+      void
+      _M_create_storage(size_t __n)
+      {
+	this->_M_impl._M_start = this->_M_allocate(__n);
+	this->_M_impl._M_finish = this->_M_impl._M_start;
+	this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
       }
     };
 
@@ -196,10 +214,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     public:
       typedef _Tp					 value_type;
-      typedef typename _Tp_alloc_type::pointer           pointer;
-      typedef typename _Tp_alloc_type::const_pointer     const_pointer;
-      typedef typename _Tp_alloc_type::reference         reference;
-      typedef typename _Tp_alloc_type::const_reference   const_reference;
+      typedef typename _Base::pointer                    pointer;
+      typedef __gnu_cxx::__alloc_traits<_Tp_alloc_type>  _Alloc_traits;
+      typedef typename _Alloc_traits::const_pointer      const_pointer;
+      typedef typename _Alloc_traits::reference          reference;
+      typedef typename _Alloc_traits::const_reference    const_reference;
       typedef __gnu_cxx::__normal_iterator<pointer, vector> iterator;
       typedef __gnu_cxx::__normal_iterator<const_pointer, vector>
       const_iterator;
@@ -283,7 +302,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @a x (for fast expansion) will not be copied.
        */
       vector(const vector& __x)
-      : _Base(__x.size(), __x._M_get_Tp_allocator())
+      : _Base(__x.size(),
+        _Alloc_traits::_S_select_on_copy(__x._M_get_Tp_allocator()))
       { this->_M_impl._M_finish =
 	  std::__uninitialized_copy_a(__x.begin(), __x.end(),
 				      this->_M_impl._M_start,
@@ -300,6 +320,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       vector(vector&& __x) noexcept
       : _Base(std::move(__x)) { }
+
+      /// Copy constructor with alternative allocator
+      vector(const vector& __x, const allocator_type& __a)
+      : _Base(__x.size(), __a)
+      { this->_M_impl._M_finish =
+	  std::__uninitialized_copy_a(__x.begin(), __x.end(),
+				      this->_M_impl._M_start,
+				      _M_get_Tp_allocator());
+      }
+
+      /// Move constructor with alternative allocator
+      vector(vector&& __rv, const allocator_type& __m)
+      : _Base(std::move(__rv), __m)
+      {
+	if (__rv.get_allocator() != __m)
+	  {
+	    this->_M_impl._M_finish =
+	      std::__uninitialized_move_a(__rv.begin(), __rv.end(),
+					  this->_M_impl._M_start,
+					  _M_get_Tp_allocator());
+	    __rv.clear();
+	  }
+      }
 
       /**
        *  @brief  Builds a %vector from an initializer list.
@@ -377,12 +420,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @a x is a valid, but unspecified %vector.
        */
       vector&
-      operator=(vector&& __x)
+      operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
+	if (_Alloc_traits::_S_propagate_on_move_assign())
+	  {
+	    // We're moving the rvalue's allocator so can move the data too.
+	    const vector __tmp(std::move(*this));     // discard existing data
+	    this->_M_impl._M_swap_data(__x._M_impl);
+	    std::__alloc_on_move(_M_get_Tp_allocator(),
+				 __x._M_get_Tp_allocator());
+	  }
+	else if (_Alloc_traits::_S_always_equal()
+	         || __x._M_get_Tp_allocator() == this->_M_get_Tp_allocator())
+	  {
+	    // The rvalue's allocator can free our storage and vice versa,
+	    // so can swap the data storage after destroying our contents.
+	    this->clear();
+	    this->_M_impl._M_swap_data(__x._M_impl);
+	  }
+	else
+	  {
+	    // The rvalue's allocator cannot be moved, or is not equal,
+	    // so we need to individually move each element.
+	    this->assign(std::__make_move_if_noexcept_iterator(__x.begin()),
+			 std::__make_move_if_noexcept_iterator(__x.end()));
+	    __x.clear();
+	  }
 	return *this;
       }
 
@@ -834,7 +897,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	  {
-	    this->_M_impl.construct(this->_M_impl._M_finish, __x);
+	    _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
+	                             __x);
 	    ++this->_M_impl._M_finish;
 	  }
 	else
@@ -864,7 +928,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       pop_back()
       {
 	--this->_M_impl._M_finish;
-	this->_M_impl.destroy(this->_M_impl._M_finish);
+	_Alloc_traits::destroy(this->_M_impl, this->_M_impl._M_finish);
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -1024,16 +1088,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       swap(vector& __x)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+			noexcept(_Alloc_traits::_S_nothrow_swap())
+#endif
       {
-	std::swap(this->_M_impl._M_start, __x._M_impl._M_start);
-	std::swap(this->_M_impl._M_finish, __x._M_impl._M_finish);
-	std::swap(this->_M_impl._M_end_of_storage,
-		  __x._M_impl._M_end_of_storage);
-
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 431. Swapping containers with unequal allocators.
-	std::__alloc_swap<_Tp_alloc_type>::_S_do_it(_M_get_Tp_allocator(),
-						    __x._M_get_Tp_allocator());
+	this->_M_impl._M_swap_data(__x._M_impl);
+	_Alloc_traits::_S_on_swap(_M_get_Tp_allocator(),
+	                          __x._M_get_Tp_allocator());
       }
 
       /**
