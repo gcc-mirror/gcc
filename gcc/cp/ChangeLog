@@ -1,5 +1,9 @@
 2011-07-08  Jason Merrill  <jason@redhat.com>
 
+	* method.c (use_thunk): Use cgraph_add_to_same_comdat_group.
+	* optimize.c (maybe_clone_body): Likewise.
+	* semantics.c (maybe_add_lambda_conv_op): Likewise.
+
 	PR c++/45603
 	* decl.c (expand_static_init): Don't get confused by user
 	declaration of __cxa_guard_acquire.

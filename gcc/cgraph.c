@@ -1630,6 +1630,31 @@ cgraph_remove_node (struct cgraph_node *node)
   free_nodes = node;
 }
 
+/* Add NEW_ to the same comdat group that OLD is in.  */
+
+void
+cgraph_add_to_same_comdat_group (struct cgraph_node *new_,
+				 struct cgraph_node *old)
+{
+  gcc_assert (DECL_ONE_ONLY (old->decl));
+  gcc_assert (!new_->same_comdat_group);
+  gcc_assert (new_ != old);
+
+  DECL_COMDAT_GROUP (new_->decl) = DECL_COMDAT_GROUP (old->decl);
+  new_->same_comdat_group = old;
+  if (!old->same_comdat_group)
+    old->same_comdat_group = new_;
+  else
+    {
+      struct cgraph_node *n;
+      for (n = old->same_comdat_group;
+	   n->same_comdat_group != old;
+	   n = n->same_comdat_group)
+	;
+      n->same_comdat_group = new_;
+    }
+}
+
 /* Remove the node from cgraph.  */
 
 void
