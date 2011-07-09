@@ -1,3 +1,8 @@
+2011-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/graphite/pr37485.c (dg-options): Add -floop-block
+	-fno-loop-strip-mine -fno-loop-interchange -ffast-math.
+
 2011-07-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/regress/regress5.C: New.
@@ -113,8 +118,8 @@
 2011-07-03  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from mainline:
-        PR libfortran/49296
-        * gfortran.dg/read_list_eof_1.f90: New test.
+	PR libfortran/49296
+	* gfortran.dg/read_list_eof_1.f90: New test.
 
 2011-07-02  Janus Weil  <janus@gcc.gnu.org>
 
@@ -385,7 +390,7 @@
 
 2011-06-04  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-        PR c++/33840
+	PR c++/33840
 	* g++.dg/diagnostic/bitfld2.C: New.
 
 2011-06-04  Ira Rosen  <ira.rosen@linaro.org>
@@ -757,7 +762,7 @@
 
 2011-05-06  Dodji Seketeli  <dodji@redhat.com>
 
-    	PR c++/48838
+	PR c++/48838
 	* g++.dg/template/member9.C: New test case.
 
 2011-05-05  Jason Merrill  <jason@redhat.com>
