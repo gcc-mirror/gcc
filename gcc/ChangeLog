@@ -1,5 +1,20 @@
 2011-07-09  Richard Henderson  <rth@redhat.com>
 
+	* defaults.h (DWARF2_ADDR_SIZE, DWARF_OFFSET_SIZE,
+	DWARF_TYPE_SIGNATURE_SIZE): Move from ...
+	* dwarf2out.c: ... here.
+	(output_all_cfis): Remove.
+	(dwarf2out_switch_text_section): Use output_cfis directly.
+	(size_of_locs): Export.
+	(output_loc_sequence, output_loc_sequence_raw): Export.
+	(div_data_align, need_data_align_sf_opcode, dwarf_cfi_name, output_cfi,
+	output_cfi_directive, dwarf2out_emit_cfi, output_cfis, output_cfa_loc,
+	output_cfa_loc_raw): Move to ...
+	* dwarfcfi.c: ... here.
+	* dwarf2out.h: Update decls.
+
+2011-07-09  Richard Henderson  <rth@redhat.com>
+
 	* defaults.h (DWARF_CIE_DATA_ALIGNMENT, DWARF_FRAME_RETURN_COLUMN,
 	DWARF_FRAME_REGNUM, DWARF2_FRAME_REG_OUT): Move from ...
 	* dwarf2cfi.c: ... here.

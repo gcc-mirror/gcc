@@ -453,6 +453,28 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DWARF2_FRAME_REG_OUT(REGNO, FOR_EH) (REGNO)
 #endif
 
+/* The size of addresses as they appear in the Dwarf 2 data.
+   Some architectures use word addresses to refer to code locations,
+   but Dwarf 2 info always uses byte addresses.  On such machines,
+   Dwarf 2 addresses need to be larger than the architecture's
+   pointers.  */
+#ifndef DWARF2_ADDR_SIZE
+#define DWARF2_ADDR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
+#endif
+
+/* The size in bytes of a DWARF field indicating an offset or length
+   relative to a debug info section, specified to be 4 bytes in the
+   DWARF-2 specification.  The SGI/MIPS ABI defines it to be the same
+   as PTR_SIZE.  */
+#ifndef DWARF_OFFSET_SIZE
+#define DWARF_OFFSET_SIZE 4
+#endif
+
+/* The size in bytes of a DWARF 4 type signature.  */
+#ifndef DWARF_TYPE_SIGNATURE_SIZE
+#define DWARF_TYPE_SIGNATURE_SIZE 8
+#endif
+
 /* Default sizes for base C types.  If the sizes are different for
    your target, you should override these values by defining the
    appropriate symbols in your tm.h file.  */
