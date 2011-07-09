@@ -495,9 +495,16 @@ build_vec_init_elt (tree type, tree init)
 	dummy = move (dummy);
       VEC_quick_push (tree, argvec, dummy);
     }
-  return build_special_member_call (NULL_TREE, complete_ctor_identifier,
+  init = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				    &argvec, inner_type, LOOKUP_NORMAL,
 				    tf_warning_or_error);
+
+  /* For a trivial constructor, build_over_call creates a TARGET_EXPR.  But
+     we don't want one here.  */
+  if (TREE_CODE (init) == TARGET_EXPR)
+    init = TARGET_EXPR_INITIAL (init);
+
+  return init;
 }
 
 /* Return a TARGET_EXPR which expresses the initialization of an array to

@@ -1,3 +1,7 @@
+2011-07-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/regress/regress5.C: New.
+
 2011-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/49621
