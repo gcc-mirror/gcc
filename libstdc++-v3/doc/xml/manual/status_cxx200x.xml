@@ -1009,52 +1009,47 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.12</entry>
       <entry>Scoped allocator adaptor</entry>
-      <entry/>
+      <entry>Partial</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.12.1</entry>
       <entry>Header <code>&lt;scoped_allocator&gt;</code> synopsis</entry>
       <entry/>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.12.2</entry>
       <entry>Scoped allocator adaptor member types</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.12.3</entry>
       <entry>Scoped allocator adaptor constructors</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.12.4</entry>
       <entry>Scoped allocator adaptor members</entry>
-      <entry>N</entry>
+      <entry>Partial</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.12.5</entry>
       <entry>Scoped allocator operators</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>20.13</entry>
       <entry>Class <code>type_index</code></entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>

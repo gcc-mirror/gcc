@@ -1,5 +1,17 @@
 2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/scoped_allocator: New.
+	* doc/xml/manual/status_cxx200x.xml: Update.
+	* testsuite/20_util/scoped_allocator/1.cc: New.
+	* testsuite/20_util/scoped_allocator/propagation.cc: New.
+	* testsuite/20_util/scoped_allocator/requirements/typedefs.cc: New.
+	* testsuite/20_util/scoped_allocator/requirements/
+	explicit_instantiation.cc: New.
+
+2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/stl_vector.h: Use new allocator model in C++0x mode.
 	* include/bits/vector.tcc: Likewise.
 	* testsuite/util/testsuite_allocator.h (propagating_allocator): Define.
