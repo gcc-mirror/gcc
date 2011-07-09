@@ -488,17 +488,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void _M_run_deferred() { }
     };
 
-    template<typename _Res>
+    template<typename _BoundFn, typename = typename _BoundFn::result_type>
       class _Deferred_state;
 
-    template<typename _Res>
+    template<typename _BoundFn, typename = typename _BoundFn::result_type>
       class _Async_state;
 
     template<typename _Signature>
       class _Task_state;
 
-    template<typename _StateT, typename _Res = typename _StateT::_Res_type>
+    template<typename _BoundFn>
+      static std::shared_ptr<_State_base>
+      _S_make_deferred_state(_BoundFn&& __fn);
+
+    template<typename _BoundFn>
+      static std::shared_ptr<_State_base>
+      _S_make_async_state(_BoundFn&& __fn);
+
+    template<typename _Res_ptr, typename _Res>
       struct _Task_setter;
+
+    template<typename _Res_ptr, typename _BoundFn>
+      class _Task_setter_helper
+      {
+	typedef typename remove_reference<_BoundFn>::type::result_type __res;
+      public:
+	typedef _Task_setter<_Res_ptr, __res> __type;
+      };
+
+    template<typename _Res_ptr, typename _BoundFn>
+      static typename _Task_setter_helper<_Res_ptr, _BoundFn>::__type
+      _S_task_setter(_Res_ptr& __ptr, _BoundFn&& __call)
+      {
+	typedef _Task_setter_helper<_Res_ptr, _BoundFn> __helper_type;
+	typedef typename __helper_type::__type _Setter;
+	return _Setter{ __ptr, std::ref(__call) };
+      }
   };
 
   /// Partial specialization for reference types.
@@ -1165,29 +1190,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
 
-  template<typename _StateT, typename _Res>
+  template<typename _Ptr_type, typename _Res>
     struct __future_base::_Task_setter
     {
-      typename _StateT::_Ptr_type operator()()
+      _Ptr_type operator()()
       {
         __try
 	  {
-	    _M_state->_M_result->_M_set(_M_fn());
+	    _M_result->_M_set(_M_fn());
 	  }
 	__catch(...)
 	  {
-	    _M_state->_M_result->_M_error = current_exception();
+	    _M_result->_M_error = current_exception();
 	  }
-        return std::move(_M_state->_M_result);
+        return std::move(_M_result);
       }
-      _StateT*                  _M_state;
+      _Ptr_type&                _M_result;
       std::function<_Res()>     _M_fn;
     };
 
-  template<typename _StateT>
-    struct __future_base::_Task_setter<_StateT, void>
+  template<typename _Ptr_type>
+    struct __future_base::_Task_setter<_Ptr_type, void>
     {
-      typename _StateT::_Ptr_type operator()()
+      _Ptr_type operator()()
       {
         __try
 	  {
@@ -1195,11 +1220,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	__catch(...)
 	  {
-	    _M_state->_M_result->_M_error = current_exception();
+	    _M_result->_M_error = current_exception();
 	  }
-	return std::move(_M_state->_M_result);
+	return std::move(_M_result);
       }
-      _StateT*                  _M_state;
+      _Ptr_type&                _M_result;
       std::function<void()>     _M_fn;
     };
 
@@ -1223,13 +1248,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_run(_Args... __args)
       {
         // bound arguments decay so wrap lvalue references
-        auto __bound = std::bind<_Res>(std::ref(_M_task),
-            _S_maybe_wrap_ref(std::forward<_Args>(__args))...);
-        _Task_setter<_Task_state> __setter{ this, std::move(__bound) };
+	auto __boundfn = std::__bind_simple(std::ref(_M_task),
+	    _S_maybe_wrap_ref(std::forward<_Args>(__args))...);
+        auto __setter = _S_task_setter(_M_result, std::move(__boundfn));
         _M_set_result(std::move(__setter));
       }
 
-      template<typename, typename> friend class _Task_setter;
       typedef typename __future_base::_Ptr<_Result<_Res>>::type _Ptr_type;
       _Ptr_type _M_result;
       std::function<_Res(_Args...)> _M_task;
@@ -1331,40 +1355,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 
 
-  template<typename _Res>
+  template<typename _BoundFn, typename _Res>
     class __future_base::_Deferred_state : public __future_base::_State_base
     {
     public:
-      typedef _Res _Res_type;
-
       explicit
-      _Deferred_state(std::function<_Res()>&& __fn)
+      _Deferred_state(_BoundFn&& __fn)
       : _M_result(new _Result<_Res>()), _M_fn(std::move(__fn))
       { }
 
     private:
-      template<typename, typename> friend class _Task_setter;
       typedef typename __future_base::_Ptr<_Result<_Res>>::type _Ptr_type;
       _Ptr_type _M_result;
-      std::function<_Res()> _M_fn;
+      _BoundFn _M_fn;
 
       virtual void
       _M_run_deferred()
       {
-        _Task_setter<_Deferred_state> __setter{ this, _M_fn };
         // safe to call multiple times so ignore failure
-        _M_set_result(std::move(__setter), true);
+        _M_set_result(_S_task_setter(_M_result, _M_fn), true);
       }
     };
 
-  template<typename _Res>
+  template<typename _BoundFn, typename _Res>
     class __future_base::_Async_state : public __future_base::_State_base
     {
     public:
-      typedef _Res _Res_type;
-
       explicit
-      _Async_state(std::function<_Res()>&& __fn)
+      _Async_state(_BoundFn&& __fn)
       : _M_result(new _Result<_Res>()), _M_fn(std::move(__fn)),
 	_M_thread(mem_fn(&_Async_state::_M_do_run), this)
       { }
@@ -1374,16 +1392,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       void _M_do_run()
       {
-        _Task_setter<_Async_state> __setter{ this, std::move(_M_fn) };
-        _M_set_result(std::move(__setter));
+        _M_set_result(_S_task_setter(_M_result, _M_fn));
       }
 
-      template<typename, typename> friend class _Task_setter;
       typedef typename __future_base::_Ptr<_Result<_Res>>::type _Ptr_type;
       _Ptr_type _M_result;
-      std::function<_Res()> _M_fn;
+      _BoundFn _M_fn;
       thread _M_thread;
     };
+
+  template<typename _BoundFn>
+    inline std::shared_ptr<__future_base::_State_base>
+    __future_base::_S_make_deferred_state(_BoundFn&& __fn)
+    {
+      typedef typename remove_reference<_BoundFn>::type __fn_type;
+      typedef _Deferred_state<__fn_type> __state_type;
+      return std::make_shared<__state_type>(std::move(__fn));
+    }
+
+  template<typename _BoundFn>
+    inline std::shared_ptr<__future_base::_State_base>
+    __future_base::_S_make_async_state(_BoundFn&& __fn)
+    {
+      typedef typename remove_reference<_BoundFn>::type __fn_type;
+      typedef _Async_state<__fn_type> __state_type;
+      return std::make_shared<__state_type>(std::move(__fn));
+    }
+
 
   /// async
   template<typename _Fn, typename... _Args>
@@ -1394,14 +1429,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::shared_ptr<__future_base::_State_base> __state;
       if ((__policy & (launch::async|launch::deferred)) == launch::async)
 	{
-	  typedef typename __future_base::_Async_state<result_type> _State;
-	  __state = std::make_shared<_State>(std::bind<result_type>(
+	  __state = __future_base::_S_make_async_state(std::__bind_simple(
               std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
 	}
       else
 	{
-	  typedef typename __future_base::_Deferred_state<result_type> _State;
-	  __state = std::make_shared<_State>(std::bind<result_type>(
+	  __state = __future_base::_S_make_deferred_state(std::__bind_simple(
               std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
 	}
       return future<result_type>(__state);
