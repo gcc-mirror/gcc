@@ -6663,6 +6663,8 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	}
       else
 	{
+	  tree init = NULL_TREE;
+
 	  /* A binary op has been requested.  Combine the old LHS
 	     value with the RHS producing the value we should actually
 	     store into the LHS.  */
@@ -6670,7 +6672,17 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 			 && MAYBE_CLASS_TYPE_P (TREE_TYPE (lhstype)))
 			|| MAYBE_CLASS_TYPE_P (lhstype)));
 
+	  /* Preevaluate the RHS to make sure its evaluation is complete
+	     before the lvalue-to-rvalue conversion of the LHS:
+
+	     [expr.ass] With respect to an indeterminately-sequenced
+	     function call, the operation of a compound assignment is a
+	     single evaluation. [ Note: Therefore, a function call shall
+	     not intervene between the lvalue-to-rvalue conversion and the
+	     side effect associated with any single compound assignment
+	     operator. -- end note ]  */
 	  lhs = stabilize_reference (lhs);
+	  rhs = stabilize_expr (rhs, &init);
 	  newrhs = cp_build_binary_op (input_location,
 				       modifycode, lhs, rhs,
 				       complain);
@@ -6681,6 +6693,9 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 		       TREE_TYPE (lhs), TREE_TYPE (rhs));
 	      return error_mark_node;
 	    }
+
+	  if (init)
+	    newrhs = build2 (COMPOUND_EXPR, TREE_TYPE (newrhs), init, newrhs);
 
 	  /* Now it looks like a plain assignment.  */
 	  modifycode = NOP_EXPR;

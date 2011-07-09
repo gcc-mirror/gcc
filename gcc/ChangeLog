@@ -1,5 +1,9 @@
 2011-07-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45437
+	* gimplify.c (goa_stabilize_expr): Handle RHS preevaluation in
+	compound assignment.
+
 	* cgraph.c (cgraph_add_to_same_comdat_group): New.
 	* cgraph.h: Declare it.
 	* ipa.c (function_and_variable_visibility): Make sure thunks

@@ -62,7 +62,7 @@ foo (int a, int b, int n, int p, int *ptr, struct s *sptr,
   (a = a++) && b; /* { dg-warning "undefined" "sequence point warning" } */
   b, (a = a++); /* { dg-warning "undefined" "sequence point warning" } */
   (a = a++), b; /* { dg-warning "undefined" "sequence point warning" } */
-  a ^= b ^= a ^= b; /* { dg-warning "undefined" "sequence point warning" } */
+  a ^= b ^= a ^= b; /* { dg-bogus "undefined" "sequence point warning" } */
 
   a = a; /* { dg-bogus "undefined" "bogus sequence point warning" } */
   a = (a++ && 4); /* { dg-bogus "undefined" "bogus sequence point warning" } */

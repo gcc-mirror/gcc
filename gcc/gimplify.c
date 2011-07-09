@@ -6451,6 +6451,13 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
 					 lhs_addr, lhs_var);
 	  break;
+	case COMPOUND_EXPR:
+	  /* Break out any preevaluations from cp_build_modify_expr.  */
+	  for (; TREE_CODE (expr) == COMPOUND_EXPR;
+	       expr = TREE_OPERAND (expr, 1))
+	    gimplify_stmt (&TREE_OPERAND (expr, 0), pre_p);
+	  *expr_p = expr;
+	  return goa_stabilize_expr (expr_p, pre_p, lhs_addr, lhs_var);
 	default:
 	  break;
 	}
