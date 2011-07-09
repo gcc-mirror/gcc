@@ -1,7 +1,7 @@
 /* Verify that gimple-level NRV is occurring even for SSA_NAMEs.  *./
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-optimized" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 _Complex double foo (_Complex double x)
 {

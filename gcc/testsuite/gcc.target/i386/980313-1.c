@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -march=pentiumpro" } */
 
 extern __inline  double

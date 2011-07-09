@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-mtune=i686 -O1 -fpeel-loops -fschedule-insns2 -ftree-vectorize -fsched2-use-superblocks" } */
 
 extern void abort ();

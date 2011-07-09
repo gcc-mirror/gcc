@@ -1,6 +1,6 @@
 /* PR optimization/8599 */
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-mtune=k6 -O2 -funroll-loops" } */
 
 extern void exit (int);

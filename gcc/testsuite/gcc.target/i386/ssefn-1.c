@@ -2,7 +2,7 @@
    Written by Paolo Bonzini, 25 January 2005 */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-final { scan-assembler "movss" } } */
 /* { dg-final { scan-assembler "mulss" } } */
 /* { dg-final { scan-assembler-not "movsd" } } */

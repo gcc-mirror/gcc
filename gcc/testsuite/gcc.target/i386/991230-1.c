@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O -ffast-math -mtune=i486" } */
 
 /* Test that floating point greater-than tests are compiled correctly with

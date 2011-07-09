@@ -1,4 +1,4 @@
-! { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
+! { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } }
 ! { dg-options "-march=i486 -fopenmp -mavx -O3 -funroll-all-loops" } 
 
   call test_workshare

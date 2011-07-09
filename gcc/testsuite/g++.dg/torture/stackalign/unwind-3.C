@@ -1,4 +1,4 @@
-/* { dg-do run { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-do run { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 #include "test-unwind.h"
 

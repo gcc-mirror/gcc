@@ -1,6 +1,6 @@
 /* { dg-options "-O2" } */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 unsigned long long a;
 unsigned int b;

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 
 void vec_mpy(int y[], const int x[], int scaler)
 {

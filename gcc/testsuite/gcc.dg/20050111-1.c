@@ -1,7 +1,7 @@
 /* PR middle-end/19084, rtl-optimization/19348 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -march=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O2 -march=i686" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 unsigned int
 foo (unsigned long long x)

@@ -1,4 +1,4 @@
-// { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
+// { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } }
 // Test that old declaration is used, if new one has no attributes.
 extern void __attribute__((stdcall)) foo (int);
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O -fomit-frame-pointer -march=i586" } */
 
 void foo(char* p, char c, int i)

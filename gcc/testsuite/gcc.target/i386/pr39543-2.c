@@ -1,7 +1,7 @@
 /* PR inline-asm/39543 */
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
-/* { dg-skip-if "" { ilp32 && { ! nonpic } } { "*" } { "" } } */
+/* { dg-skip-if "" { ia32 && { ! nonpic } } { "*" } { "" } } */
 
 float __attribute__ ((aligned (16))) s0[128];
 const float s1 = 0.707;

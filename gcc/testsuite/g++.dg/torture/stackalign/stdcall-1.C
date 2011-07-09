@@ -1,4 +1,4 @@
-// { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
+// { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } }
 
 // This case is to detect an assertion failure in stack branch development.
 

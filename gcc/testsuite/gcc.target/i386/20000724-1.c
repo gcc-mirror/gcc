@@ -1,5 +1,5 @@
 /* { dg-do run { target *-*-linux* } } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 
 extern void abort (void);

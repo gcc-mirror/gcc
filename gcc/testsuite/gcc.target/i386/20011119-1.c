@@ -1,6 +1,6 @@
 /* Test for reload failing to eliminate from argp to sp.  */
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 

@@ -8,11 +8,13 @@
    IA64 hpux in ILP32 mode because extending x - 1 before adding the
    array offset gives a different answer then adding first and then
    extending.  The underlying problem is the same as with hppa, x - 1 is
-   not a legal data address.  */
+   not a legal data address.  It also fails on x32 targets for the
+   same reason.  */
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -mdisable-indexing" { target hppa*-*-hpux* } } */
 /* { dg-skip-if "" { "ia64-*-hpux*" } "*" "-mlp64" } */
+/* { dg-skip-if "" { { i?86-*-* x86_64-*-* } && x32 } { "*" } { "" } } */
 
 /* Disable the test entirely for 16-bit targets.  */
 #if __INT_MAX__ > 32767

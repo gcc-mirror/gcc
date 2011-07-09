@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { ! { ilp32 && dfp } } { "*" } { "" } } */
+/* { dg-skip-if "" { ! { ia32 && dfp } } { "*" } { "" } } */
 /* { dg-options "-msse -std=gnu99 -mpreferred-stack-boundary=2" } */
 /* { dg-require-effective-target sse } */
 

@@ -1,6 +1,6 @@
 /* PR inline-asm/30505 */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2" } */
 
 unsigned long long a, c;

@@ -1,8 +1,7 @@
 /* Test that the compiler properly optimizes conditional floating point moves
    into the pcmov instruction on XOP systems.  */
 
-/* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
+/* { dg-do compile { target { ! { ia32 } } } } */
 /* { dg-options "-O2 -mxop" } */
 
 extern void exit (int);

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-march=i386 -O3 -fomit-frame-pointer" } */
 
 /* For this test case, we used to do an invalid load motion after

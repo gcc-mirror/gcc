@@ -3,7 +3,7 @@
    simplify_relational_operation_1 in simplify-rtx.c.  */
 /* { dg-do run } */
 /* { dg-options "-O1" } */
-/* { dg-options "-O1 -march=pentium4" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O1 -march=pentium4" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 extern void abort (void) __attribute__ ((noreturn));
 extern void exit (int) __attribute__ ((noreturn));

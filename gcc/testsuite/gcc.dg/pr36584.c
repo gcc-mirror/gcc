@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -lm" } */
-/* { dg-options "-O2 -msse2 -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
-/* { dg-require-effective-target sse2_runtime { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-O2 -msse2 -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-require-effective-target sse2_runtime { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 extern double fabs (double);
 extern void abort (void);

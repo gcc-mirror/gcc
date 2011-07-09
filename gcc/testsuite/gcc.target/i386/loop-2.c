@@ -1,7 +1,7 @@
 /* PR optimization/9888 */
 /* Originator: Jim Bray <jb@as220.org> */
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-mtune=k6 -Os" } */
 
 enum reload_type

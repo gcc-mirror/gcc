@@ -1,5 +1,5 @@
 /* PR target/40838 */
-/* { dg-do compile { target { { ! *-*-darwin* } && ilp32 } } } */
+/* { dg-do compile { target { { ! *-*-darwin* } && ia32 } } } */
 /* { dg-options "-w -mstackrealign -fomit-frame-pointer -O3 -march=barcelona -mpreferred-stack-boundary=4" } */
 
 struct s {

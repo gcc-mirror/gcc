@@ -2,7 +2,7 @@
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do run { target i?86-*-* x86_64-*-* ia64-*-* } } */
 /* { dg-options "" } */
-/* { dg-options "-mmmx" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-options "-mmmx" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 #include "fp-int-convert.h"
 

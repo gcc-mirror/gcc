@@ -44,7 +44,7 @@ set additional_flags "-fno-inline"
 if [istarget "i\[34567\]86-*-*"] then {
   lappend additional_flags "-ffloat-store"
 }
-if { [istarget "x86_64-*-*"] && [check_effective_target_ilp32] } then {
+if { [istarget "x86_64-*-*"] && [check_effective_target_ia32] } then {
   lappend additional_flags "-ffloat-store"
 }
 if [istarget "m68k-*-*"] then {

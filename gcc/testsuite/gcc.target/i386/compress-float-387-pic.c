@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -march=pentium4 -mtune=prescott -mfpmath=387 -fpic" } */
 double foo (double x) {

@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-march=i586" } */
 
 #ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1

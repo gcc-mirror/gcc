@@ -1,5 +1,5 @@
 /* PR middle-end/37275 */
-/* { dg-do compile { target ilp32 } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-g -dA -O2 -march=i686 -fstack-protector" } */
 /* { dg-require-visibility "" } */
 

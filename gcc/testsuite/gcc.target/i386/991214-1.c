@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2" } */
 
 /* Test against a problem with the combiner substituting explicit hard reg

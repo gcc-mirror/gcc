@@ -16,7 +16,7 @@ int main ()
 	   Ditto for any x86 system that is ilp32 && pic.
 	*/
 #if !(defined (__MACH__))
-#if ! defined (__PIC__) || defined (__LP64__)
+#if ! defined (__PIC__) || defined (__x86_64__)
         __asm__ ("movl $1,%0\n\txorl %%ebx,%%ebx" : "=r" (i) : : "ebx");
         if (i != 1)
                 abort ();

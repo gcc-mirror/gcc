@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target ia32 } */
 /* { dg-options "-O1 -ffast-math -march=i686" } */
 
 
