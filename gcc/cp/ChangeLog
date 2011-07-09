@@ -1,3 +1,9 @@
+2011-07-09  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_vec_init_expr): Don't add TARGET_EXPR.
+	* typeck2.c (digest_init_r): Handle VEC_INIT_EXPR.
+	* semantics.c (cxx_eval_vec_init_1): Correct type.
+
 2011-07-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48157
