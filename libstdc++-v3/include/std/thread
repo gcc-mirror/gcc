@@ -38,8 +38,6 @@
 #include <chrono>
 #include <functional>
 #include <memory>
-#include <mutex>
-#include <condition_variable>
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>
@@ -132,7 +130,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit 
       thread(_Callable&& __f, _Args&&... __args)
       {
-        _M_start_thread(_M_make_routine(std::bind<void>(
+        _M_start_thread(_M_make_routine(std::__bind_simple(
                 std::forward<_Callable>(__f),
                 std::forward<_Args>(__args)...)));
       }

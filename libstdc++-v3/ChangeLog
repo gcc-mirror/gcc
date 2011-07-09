@@ -1,3 +1,23 @@
+2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/49668
+	* include/std/functional (__bind_simple): Define.
+	* include/std/future (_Task_setter): Parameterize by type of result
+	pointer instead of state object.
+	(_S_task_setter): Type deduction helper.
+	(_Task_state): Use _S_task_setter and __bind_simple.
+	(_Deferred_state, _Async_state): Store call wrapper directly not as
+	std::function. Use _S_task_setter and __bind_simple.
+	(_S_make_deferred_state, _S_make_async_state): Type deduction helpers.
+	(async): Use new functions and __bind_simple.
+	* include/std/mutex (call_once): Use __bind_simple.
+	* include/std/thread (thread): Likewise. Remove unused headers.
+	* src/thread.cc: Add header.
+	* testsuite/30_threads/async/49668.cc: New.
+	* testsuite/30_threads/call_once/49668.cc: New.
+	* testsuite/30_threads/thread/cons/49668.cc: New.
+	* testsuite/30_threads/thread/cons/moveable.cc: Remove unused bool.
+
 2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.host (abi_baseline_subdir_switch): Describe.

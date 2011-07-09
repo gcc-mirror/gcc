@@ -5,7 +5,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,56 +22,40 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
-#include <thread>
-#include <utility>
+#include <future>
+#include <functional>
 #include <testsuite_hooks.h>
 
 struct moveable
 {
   moveable() = default;
-  ~moveable() = default;
-  moveable(const moveable& c) = delete;
-  moveable& operator=(const moveable&) = delete;
-  moveable(moveable&&) { }
-
-  void operator()() const { }
+  moveable(moveable&&) = default;
+  moveable(const moveable&) = delete;
 };
 
+using std::launch;
+namespace ph = std::placeholders;
+
+typedef decltype(ph::_1) placeholder_type;
+
+bool f(moveable, placeholder_type) { return true; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
-  moveable m;
-  std::thread b(std::move(m));
-  std::thread::id id_initial = b.get_id();
-  VERIFY( b.joinable() );
-  VERIFY( id_initial != std::thread::id() );
-
-  // copy move construct
-  // copied new thread old id, original thread default id
-  std::thread c(std::move(b));
-  VERIFY( c.joinable() );
-  VERIFY( c.get_id() == id_initial );
-  VERIFY( !b.joinable() );
-  VERIFY( b.get_id() == std::thread::id() );
-
-  // copy move assign
-  std::thread d;
-  VERIFY( !d.joinable() );
-  VERIFY( d.get_id() == std::thread::id() );
-  d = std::move(c);
-  VERIFY( d.joinable() );
-  VERIFY( d.get_id() == id_initial );
-  VERIFY( !c.joinable() );
-  VERIFY( c.get_id() == std::thread::id() );
-  
-  d.join();
+  auto fut = std::async(launch::async, f, moveable(), ph::_1);
+  bool test = fut.get();
+  VERIFY( test );
 }
 
-int main(void)
+void test02()
+{
+  auto fut = std::async(launch::deferred, f, moveable(), ph::_1);
+  bool test = fut.get();
+  VERIFY( test );
+}
+
+int main()
 {
   test01();
-  return 0;
+  test02();
 }

@@ -5,7 +5,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,56 +22,30 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <thread>
-#include <utility>
+#include <functional>
 #include <testsuite_hooks.h>
 
 struct moveable
 {
   moveable() = default;
-  ~moveable() = default;
-  moveable(const moveable& c) = delete;
-  moveable& operator=(const moveable&) = delete;
-  moveable(moveable&&) { }
-
-  void operator()() const { }
+  moveable(moveable&&) = default;
+  moveable(const moveable&) = delete;
 };
 
+typedef decltype(std::placeholders::_1) placeholder_type;
+
+void f(moveable, placeholder_type, bool& b) { b = true; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-
-  moveable m;
-  std::thread b(std::move(m));
-  std::thread::id id_initial = b.get_id();
-  VERIFY( b.joinable() );
-  VERIFY( id_initial != std::thread::id() );
-
-  // copy move construct
-  // copied new thread old id, original thread default id
-  std::thread c(std::move(b));
-  VERIFY( c.joinable() );
-  VERIFY( c.get_id() == id_initial );
-  VERIFY( !b.joinable() );
-  VERIFY( b.get_id() == std::thread::id() );
-
-  // copy move assign
-  std::thread d;
-  VERIFY( !d.joinable() );
-  VERIFY( d.get_id() == std::thread::id() );
-  d = std::move(c);
-  VERIFY( d.joinable() );
-  VERIFY( d.get_id() == id_initial );
-  VERIFY( !c.joinable() );
-  VERIFY( c.get_id() == std::thread::id() );
-  
-  d.join();
+  bool test = false;
+  std::thread t(f, moveable(), std::placeholders::_1, std::ref(test));
+  t.join();
+  VERIFY( test );
 }
 
-int main(void)
+int main()
 {
   test01();
-  return 0;
 }
