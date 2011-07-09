@@ -1,3 +1,12 @@
+2011-07-09  Tobias Burnus  <burnus@net-b.de>
+	    Daniel Carrera  <dcarrera@gmail.com>
+
+	* caf/mpi.c (runtime_error): New function.
+	(_gfortran_caf_register): Use it.
+	(_gfortran_caf_sync_all): Use it, add STAT_STOPPED_IMAGE
+	as possible status value.
+	(_gfortran_caf_sync_images): Ditto.
+
 2011-07-07  Tobias Burnus  <burnus@net-b.de>
 
 	* libcaf.h (__attribute__, unlikely, likely): New macros.
