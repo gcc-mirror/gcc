@@ -1,5 +1,8 @@
 2011-07-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45437
+	* c-omp.c (check_omp_for_incr_expr): Handle preevaluation.
+
 	PR c++/49673
 	* c-common.c (c_apply_type_quals_to_decl): Don't check
 	TYPE_NEEDS_CONSTRUCTING.
