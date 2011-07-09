@@ -2180,17 +2180,6 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
   bool handled_one = false;
   bool need_flush = false;
 
-  /* Remember where we are to insert notes.  Do not separate tablejump
-     insns from their ADDR_DIFF_VEC.  Putting the note after the VEC
-     should be ok.  */
-  if (after_p)
-    {
-      if (!tablejump_p (insn, NULL, &cfi_insn))
-	cfi_insn = insn;
-    }
-  else
-    cfi_insn = PREV_INSN (insn);
-
   if (!NONJUMP_INSN_P (insn) || clobbers_queued_reg_save (insn))
     dwarf2out_flush_queued_reg_saves ();
 
@@ -2201,7 +2190,6 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 	 is still used to save registers.  */
       if (!ACCUMULATE_OUTGOING_ARGS)
 	dwarf2out_notice_stack_adjust (insn, after_p);
-      cfi_insn = NULL;
       return;
     }
 
@@ -2323,7 +2311,6 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 
   if (need_flush)
     dwarf2out_flush_queued_reg_saves ();
-  cfi_insn = NULL;
 }
 
 /* Examine CFI and return true if a cfi label and set_loc is needed
@@ -2432,6 +2419,8 @@ create_cfi_notes (void)
     {
       rtx pat;
 
+      cfi_insn = PREV_INSN (insn);
+
       if (BARRIER_P (insn))
 	{
 	  dwarf2out_frame_debug (insn, false);
@@ -2443,9 +2432,7 @@ create_cfi_notes (void)
 	  switch (NOTE_KIND (insn))
 	    {
 	    case NOTE_INSN_PROLOGUE_END:
-	      cfi_insn = PREV_INSN (insn);
 	      dwarf2out_flush_queued_reg_saves ();
-	      cfi_insn = NULL;
 	      break;
 
 	    case NOTE_INSN_EPILOGUE_BEG:
@@ -2457,7 +2444,6 @@ create_cfi_notes (void)
 	    case NOTE_INSN_CFA_RESTORE_STATE:
 	      cfi_insn = insn;
 	      dwarf2out_frame_debug_restore_state ();
-	      cfi_insn = NULL;
 	      break;
 	    }
 	  continue;
@@ -2484,8 +2470,15 @@ create_cfi_notes (void)
 	  || find_reg_note (insn, REG_CFA_FLUSH_QUEUE, NULL))
 	dwarf2out_frame_debug (insn, false);
 
+      /* Do not separate tablejump insns from their ADDR_DIFF_VEC.
+	 Putting the note after the VEC should be ok.  */
+      if (!tablejump_p (insn, NULL, &cfi_insn))
+	cfi_insn = insn;
+
       dwarf2out_frame_debug (insn, true);
     }
+
+  cfi_insn = NULL;
 }
 
 /* Determine if we need to save and restore CFI information around this
