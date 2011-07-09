@@ -825,10 +825,10 @@ output_cfi_directive (FILE *f, dw_cfi_ref cfi)
     case DW_CFA_advance_loc4:
     case DW_CFA_MIPS_advance_loc8:
     case DW_CFA_set_loc:
-      /* Should only be created by add_fde_cfi in a code path not
-	 followed when emitting via directives.  The assembler is
-	 going to take care of this for us.  But this routines is
-	 also used for debugging dumps, so print something.  */
+      /* Should only be created in a code path not followed when emitting
+	 via directives.  The assembler is going to take care of this for
+	 us.  But this routines is also used for debugging dumps, so
+	 print something.  */
       gcc_assert (f != asm_out_file);
       fprintf (f, "\t.cfi_advance_loc\n");
       break;
