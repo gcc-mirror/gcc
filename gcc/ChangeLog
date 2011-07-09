@@ -1,3 +1,9 @@
+2011-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.h (STACK_SAVEAREA_MODE): Move around.
+	(FP_REG_P): Delete.
+	(IN_OR_GLOBAL_P): Likewise.
+
 2011-07-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45437
