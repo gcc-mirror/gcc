@@ -58,6 +58,7 @@ std_headers = \
 	${std_srcdir}/random \
 	${std_srcdir}/ratio \
 	${std_srcdir}/regex \
+	${std_srcdir}/scoped_allocator \
 	${std_srcdir}/set \
 	${std_srcdir}/sstream \
 	${std_srcdir}/stack \
