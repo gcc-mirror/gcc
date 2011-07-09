@@ -1,3 +1,7 @@
+2011-07-09  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_vec_init_elt): Strip TARGET_EXPR.
+
 2011-07-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45437
