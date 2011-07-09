@@ -511,6 +511,11 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
 				    complain);
   release_tree_vector (argvec);
 
+  /* For a trivial constructor, build_over_call creates a TARGET_EXPR.  But
+     we don't want one here because we aren't creating a temporary.  */
+  if (TREE_CODE (init) == TARGET_EXPR)
+    init = TARGET_EXPR_INITIAL (init);
+
   return init;
 }
 
