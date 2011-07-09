@@ -1,3 +1,9 @@
+2011-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR fortran/48926
+	* expr.c (gfc_get_corank): Change return value to int.
+	* gfortran.h (gfc_get_corank): Update function prototype.
+
 2011-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/49623

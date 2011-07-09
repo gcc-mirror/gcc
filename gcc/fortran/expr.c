@@ -4139,7 +4139,7 @@ gfc_is_coindexed (gfc_expr *e)
 }
 
 
-bool
+int
 gfc_get_corank (gfc_expr *e)
 {
   int corank;
