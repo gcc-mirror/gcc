@@ -146,6 +146,9 @@ static GTY(()) unsigned long dwarf2out_cfi_label_num;
 /* The insn after which a new CFI note should be emitted.  */
 static rtx cfi_insn;
 
+/* When non-null, add_cfi will add the CFI to this vector.  */
+static cfi_vec *add_cfi_vec;
+
 /* True if remember_state should be emitted before following CFI directive.  */
 static bool emit_cfa_remember;
 
@@ -270,10 +273,10 @@ dwarf2out_cfi_label (void)
   return xstrdup (label);
 }
 
-/* Add CFI to the current fde.  */
+/* Add CFI either to the current insn stream or to a vector, or both.  */
 
 static void
-add_fde_cfi (dw_cfi_ref cfi)
+add_cfi (dw_cfi_ref cfi)
 {
   if (emit_cfa_remember)
     {
@@ -283,7 +286,7 @@ add_fde_cfi (dw_cfi_ref cfi)
       emit_cfa_remember = false;
       cfi_remember = new_cfi ();
       cfi_remember->dw_cfi_opc = DW_CFA_remember_state;
-      add_fde_cfi (cfi_remember);
+      add_cfi (cfi_remember);
     }
 
   any_cfis_emitted = true;
@@ -292,18 +295,8 @@ add_fde_cfi (dw_cfi_ref cfi)
       cfi_insn = emit_note_after (NOTE_INSN_CFI, cfi_insn);
       NOTE_CFI (cfi_insn) = cfi;
     }
-  else
-    {
-      dw_fde_ref fde = cfun->fde;
-      VEC_safe_push (dw_cfi_ref, gc, fde->dw_fde_cfi, cfi);
-      dwarf2out_emit_cfi (cfi);
-    }
-}
-
-static void
-add_cie_cfi (dw_cfi_ref cfi)
-{
-  VEC_safe_push (dw_cfi_ref, gc, cie_cfi_vec, cfi);
+  if (add_cfi_vec != NULL)
+    VEC_safe_push (dw_cfi_ref, gc, *add_cfi_vec, cfi);
 }
 
 /* This function fills in aa dw_cfa_location structure from a dwarf location
@@ -512,7 +505,7 @@ cfa_equal_p (const dw_cfa_location *loc1, const dw_cfa_location *loc2)
    the dw_cfa_location structure.  */
 
 static void
-def_cfa_1 (bool for_cie, dw_cfa_location *loc_p)
+def_cfa_1 (dw_cfa_location *loc_p)
 {
   dw_cfi_ref cfi;
   dw_cfa_location loc;
@@ -584,10 +577,7 @@ def_cfa_1 (bool for_cie, dw_cfa_location *loc_p)
       cfi->dw_cfi_oprnd1.dw_cfi_loc = loc_list;
     }
 
-  if (for_cie)
-    add_cie_cfi (cfi);
-  else
-    add_fde_cfi (cfi);
+  add_cfi (cfi);
   old_cfa = loc;
 }
 
@@ -596,10 +586,9 @@ def_cfa_1 (bool for_cie, dw_cfa_location *loc_p)
    otherwise it is saved in SREG.  */
 
 static void
-reg_save (bool for_cie, unsigned int reg, unsigned int sreg,
-          HOST_WIDE_INT offset)
+reg_save (unsigned int reg, unsigned int sreg, HOST_WIDE_INT offset)
 {
-  dw_fde_ref fde = for_cie ? NULL : cfun->fde;
+  dw_fde_ref fde = cfun ? cfun->fde : NULL;
   dw_cfi_ref cfi = new_cfi ();
 
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
@@ -632,10 +621,7 @@ reg_save (bool for_cie, unsigned int reg, unsigned int sreg,
       cfi->dw_cfi_oprnd2.dw_cfi_reg_num = sreg;
     }
 
-  if (for_cie)
-    add_cie_cfi (cfi);
-  else
-    add_fde_cfi (cfi);
+  add_cfi (cfi);
 }
 
 /* Record the initial position of the return address.  RTL is
@@ -693,7 +679,7 @@ initial_return_save (rtx rtl)
     }
 
   if (reg != DWARF_FRAME_RETURN_COLUMN)
-    reg_save (true, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
+    reg_save (DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
 }
 
 /* Given a SET, calculate the amount of stack adjustment it
@@ -975,7 +961,7 @@ dwarf2out_args_size (HOST_WIDE_INT size)
   cfi = new_cfi ();
   cfi->dw_cfi_opc = DW_CFA_GNU_args_size;
   cfi->dw_cfi_oprnd1.dw_cfi_offset = size;
-  add_fde_cfi (cfi);
+  add_cfi (cfi);
 }
 
 /* Record a stack adjustment of OFFSET bytes.  */
@@ -1000,7 +986,7 @@ dwarf2out_stack_adjust (HOST_WIDE_INT offset)
   if (args_size < 0)
     args_size = 0;
 
-  def_cfa_1 (false, &cfa);
+  def_cfa_1 (&cfa);
   if (flag_asynchronous_unwind_tables)
     dwarf2out_args_size (args_size);
 }
@@ -1205,7 +1191,7 @@ dwarf2out_flush_queued_reg_saves (void)
 	sreg = DWARF_FRAME_REGNUM (REGNO (q->saved_reg));
       else
 	sreg = INVALID_REGNUM;
-      reg_save (false, reg, sreg, q->cfa_offset);
+      reg_save (reg, sreg, q->cfa_offset);
     }
 
   queued_reg_saves = NULL;
@@ -1299,7 +1285,7 @@ dwarf2out_frame_debug_def_cfa (rtx pat)
       gcc_unreachable ();
     }
 
-  def_cfa_1 (false, &cfa);
+  def_cfa_1 (&cfa);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_ADJUST_CFA note.  */
@@ -1330,7 +1316,7 @@ dwarf2out_frame_debug_adjust_cfa (rtx pat)
   cfa.reg = REGNO (dest);
   gcc_assert (cfa.indirect == 0);
 
-  def_cfa_1 (false, &cfa);
+  def_cfa_1 (&cfa);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_OFFSET note.  */
@@ -1376,7 +1362,7 @@ dwarf2out_frame_debug_cfa_offset (rtx set)
   /* ??? We'd like to use queue_reg_save, but we need to come up with
      a different flushing heuristic for epilogues.  */
   if (!span)
-    reg_save (false, sregno, INVALID_REGNUM, offset);
+    reg_save (sregno, INVALID_REGNUM, offset);
   else
     {
       /* We have a PARALLEL describing where the contents of SRC live.
@@ -1393,7 +1379,7 @@ dwarf2out_frame_debug_cfa_offset (rtx set)
 	  rtx elem = XVECEXP (span, 0, par_index);
 
 	  sregno = DWARF_FRAME_REGNUM (REGNO (src));
-	  reg_save (false, sregno, INVALID_REGNUM, span_offset);
+	  reg_save (sregno, INVALID_REGNUM, span_offset);
 	  span_offset += GET_MODE_SIZE (GET_MODE (elem));
 	}
     }
@@ -1422,7 +1408,7 @@ dwarf2out_frame_debug_cfa_register (rtx set)
 
   /* ??? We'd like to use queue_reg_save, but we need to come up with
      a different flushing heuristic for epilogues.  */
-  reg_save (false, sregno, dregno, 0);
+  reg_save (sregno, dregno, 0);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_EXPRESSION note. */
@@ -1450,7 +1436,7 @@ dwarf2out_frame_debug_cfa_expression (rtx set)
 
   /* ??? We'd like to use queue_reg_save, were the interface different,
      and, as above, we could manage flushing for epilogues.  */
-  add_fde_cfi (cfi);
+  add_cfi (cfi);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_RESTORE note.  */
@@ -1464,7 +1450,7 @@ dwarf2out_frame_debug_cfa_restore (rtx reg)
   cfi->dw_cfi_opc = (regno & ~0x3f ? DW_CFA_restore_extended : DW_CFA_restore);
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = regno;
 
-  add_fde_cfi (cfi);
+  add_cfi (cfi);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_WINDOW_SAVE.
@@ -1477,7 +1463,7 @@ dwarf2out_frame_debug_cfa_window_save (void)
   dw_cfi_ref cfi = new_cfi ();
 
   cfi->dw_cfi_opc = DW_CFA_GNU_window_save;
-  add_fde_cfi (cfi);
+  add_cfi (cfi);
 }
 
 /* Record call frame debugging information for an expression EXPR,
@@ -1943,7 +1929,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	  gcc_unreachable ();
 	}
 
-      def_cfa_1 (false, &cfa);
+      def_cfa_1 (&cfa);
       break;
 
     case MEM:
@@ -2103,14 +2089,14 @@ dwarf2out_frame_debug_expr (rtx expr)
 
 		  fde->drap_reg_saved = 1;
 
-		  def_cfa_1 (false, &cfa_exp);
+		  def_cfa_1 (&cfa_exp);
 		  break;
                 }
 
 	      /* If the source register is exactly the CFA, assume
 		 we're saving SP like any other register; this happens
 		 on the ARM.  */
-	      def_cfa_1 (false, &cfa);
+	      def_cfa_1 (&cfa);
 	      queue_reg_save (stack_pointer_rtx, NULL_RTX, offset);
 	      break;
 	    }
@@ -2127,12 +2113,12 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      cfa.reg = REGNO (x);
 	      cfa.base_offset = offset;
 	      cfa.indirect = 1;
-	      def_cfa_1 (false, &cfa);
+	      def_cfa_1 (&cfa);
 	      break;
 	    }
 	}
 
-      def_cfa_1 (false, &cfa);
+      def_cfa_1 (&cfa);
       {
 	span = targetm.dwarf_register_span (src);
 
@@ -2570,7 +2556,7 @@ dwarf2out_frame_debug_restore_state (void)
   dw_cfi_ref cfi = new_cfi ();
 
   cfi->dw_cfi_opc = DW_CFA_restore_state;
-  add_fde_cfi (cfi);
+  add_cfi (cfi);
 
   gcc_assert (cfa_remember.in_use);
   cfa = cfa_remember;
@@ -2591,6 +2577,8 @@ execute_dwarf2_frame (void)
     {
       dw_cfa_location loc;
 
+      add_cfi_vec = &cie_cfi_vec;
+
       memset(&old_cfa, 0, sizeof (old_cfa));
       old_cfa.reg = INVALID_REGNUM;
 
@@ -2598,11 +2586,13 @@ execute_dwarf2_frame (void)
       memset(&loc, 0, sizeof (loc));
       loc.reg = STACK_POINTER_REGNUM;
       loc.offset = INCOMING_FRAME_SP_OFFSET;
-      def_cfa_1 (true, &loc);
+      def_cfa_1 (&loc);
 
       if (targetm.debug_unwind_info () == UI_DWARF2
           || targetm_common.except_unwind_info (&global_options) == UI_DWARF2)
 	initial_return_save (INCOMING_RETURN_ADDR_RTX);
+
+      add_cfi_vec = NULL;
     }
 
   /* Set up state for generating call frame debug info.  */
