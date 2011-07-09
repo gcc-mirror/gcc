@@ -2275,12 +2275,22 @@ cris_legitimate_pic_operand (rtx x)
 void
 cris_asm_output_case_end (FILE *stream, int num, rtx table)
 {
+  /* Step back, over the label for the table, to the actual casejump and
+     assert that we find only what's expected.  */
+  rtx whole_jump_insn = prev_nonnote_nondebug_insn (table);
+  gcc_assert (whole_jump_insn != NULL_RTX && LABEL_P (whole_jump_insn));
+  whole_jump_insn = prev_nonnote_nondebug_insn (whole_jump_insn);
+  gcc_assert (whole_jump_insn != NULL_RTX
+	      && (JUMP_P (whole_jump_insn)
+		  || (TARGET_V32 && INSN_P (whole_jump_insn)
+		      && GET_CODE (PATTERN (whole_jump_insn)) == SEQUENCE)));
+  /* Get the pattern of the casejump, so we can extract the default label.  */
+  whole_jump_insn = PATTERN (whole_jump_insn);
+
   if (TARGET_V32)
     {
-      rtx whole_jump_insn = PATTERN (PREV_INSN (PREV_INSN (table)));
-
       /* This can be a SEQUENCE, meaning the delay-slot of the jump is
-	 filled.  */
+	 filled.  We also output the offset word a little differently.  */
       rtx parallel_jump
 	= (GET_CODE (whole_jump_insn) == SEQUENCE
 	   ? PATTERN (XVECEXP (whole_jump_insn, 0, 0)) : whole_jump_insn);
@@ -2298,11 +2308,7 @@ cris_asm_output_case_end (FILE *stream, int num, rtx table)
 	       "\t.word %LL%d-%LL%d%s\n",
 	       CODE_LABEL_NUMBER (XEXP
 				  (XEXP
-				   (XEXP
-				    (XVECEXP
-				     (PATTERN
-				      (PREV_INSN
-				       (PREV_INSN (table))), 0, 0), 1),
+				   (XEXP (XVECEXP (whole_jump_insn, 0, 0), 1), 
 				    2), 0)),
 	       num,
 	       (TARGET_PDEBUG ? "; default" : ""));
