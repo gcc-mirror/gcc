@@ -20570,39 +20570,6 @@ rs6000_output_function_prologue (FILE *file,
       common_mode_defined = 1;
     }
 
-  if (! HAVE_prologue)
-    {
-      rtx prologue;
-
-      start_sequence ();
-
-      /* A NOTE_INSN_DELETED is supposed to be at the start and end of
-	 the "toplevel" insn chain.  */
-      emit_note (NOTE_INSN_DELETED);
-      rs6000_emit_prologue ();
-      emit_note (NOTE_INSN_DELETED);
-
-      /* Expand INSN_ADDRESSES so final() doesn't crash.  */
-      {
-	rtx insn;
-	unsigned addr = 0;
-	for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
-	  {
-	    INSN_ADDRESSES_NEW (insn, addr);
-	    addr += 4;
-	  }
-      }
-
-      prologue = get_insns ();
-      end_sequence ();
-
-      if (TARGET_DEBUG_STACK)
-	debug_rtx_list (prologue, 100);
-
-      emit_insn_before_noloc (prologue, BB_HEAD (ENTRY_BLOCK_PTR->next_bb),
-			      ENTRY_BLOCK_PTR);
-    }
-
   rs6000_pic_labelno++;
 }
 
@@ -21413,43 +21380,6 @@ static void
 rs6000_output_function_epilogue (FILE *file,
 				 HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  if (! HAVE_epilogue)
-    {
-      rtx insn = get_last_insn ();
-      /* If the last insn was a BARRIER, we don't have to write anything except
-	 the trace table.  */
-      if (GET_CODE (insn) == NOTE)
-	insn = prev_nonnote_insn (insn);
-      if (insn == 0 ||  GET_CODE (insn) != BARRIER)
-	{
-	  /* This is slightly ugly, but at least we don't have two
-	     copies of the epilogue-emitting code.  */
-	  start_sequence ();
-
-	  /* A NOTE_INSN_DELETED is supposed to be at the start
-	     and end of the "toplevel" insn chain.  */
-	  emit_note (NOTE_INSN_DELETED);
-	  rs6000_emit_epilogue (FALSE);
-	  emit_note (NOTE_INSN_DELETED);
-
-	  /* Expand INSN_ADDRESSES so final() doesn't crash.  */
-	  {
-	    rtx insn;
-	    unsigned addr = 0;
-	    for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
-	      {
-		INSN_ADDRESSES_NEW (insn, addr);
-		addr += 4;
-	      }
-	  }
-
-	  if (TARGET_DEBUG_STACK)
-	    debug_rtx_list (get_insns (), 100);
-	  final (get_insns (), file, FALSE);
-	  end_sequence ();
-	}
-    }
-
 #if TARGET_MACHO
   macho_branch_islands ();
   /* Mach-O doesn't support labels at the end of objects, so if
