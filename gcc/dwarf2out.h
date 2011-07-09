@@ -228,10 +228,17 @@ extern struct dw_loc_descr_struct *mem_loc_descriptor
 extern enum machine_mode get_address_mode (rtx mem);
 extern dw_fde_ref dwarf2out_alloc_current_fde (void);
 
+extern unsigned long size_of_locs (dw_loc_descr_ref);
+extern void output_loc_sequence (dw_loc_descr_ref, int);
+extern void output_loc_sequence_raw (dw_loc_descr_ref);
+
 /* Interface from dwarf2cfi.c to dwarf2out.c.  */
 extern void lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc,
 			  dw_cfa_location *remember);
 extern bool cfa_equal_p (const dw_cfa_location *, const dw_cfa_location *);
+
+extern void output_cfi (dw_cfi_ref, dw_fde_ref, int);
+extern void output_cfis (cfi_vec, int, bool, dw_fde_ref, bool);
 
 extern GTY(()) cfi_vec cie_cfi_vec;
 
