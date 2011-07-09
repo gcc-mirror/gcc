@@ -603,64 +603,6 @@ reg_save (unsigned int reg, unsigned int sreg, HOST_WIDE_INT offset)
   add_cfi (cfi);
 }
 
-/* Record the initial position of the return address.  RTL is
-   INCOMING_RETURN_ADDR_RTX.  */
-
-static void
-initial_return_save (rtx rtl)
-{
-  unsigned int reg = INVALID_REGNUM;
-  HOST_WIDE_INT offset = 0;
-
-  switch (GET_CODE (rtl))
-    {
-    case REG:
-      /* RA is in a register.  */
-      reg = DWARF_FRAME_REGNUM (REGNO (rtl));
-      break;
-
-    case MEM:
-      /* RA is on the stack.  */
-      rtl = XEXP (rtl, 0);
-      switch (GET_CODE (rtl))
-	{
-	case REG:
-	  gcc_assert (REGNO (rtl) == STACK_POINTER_REGNUM);
-	  offset = 0;
-	  break;
-
-	case PLUS:
-	  gcc_assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
-	  offset = INTVAL (XEXP (rtl, 1));
-	  break;
-
-	case MINUS:
-	  gcc_assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
-	  offset = -INTVAL (XEXP (rtl, 1));
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-      break;
-
-    case PLUS:
-      /* The return address is at some offset from any value we can
-	 actually load.  For instance, on the SPARC it is in %i7+8. Just
-	 ignore the offset for now; it doesn't matter for unwinding frames.  */
-      gcc_assert (CONST_INT_P (XEXP (rtl, 1)));
-      initial_return_save (XEXP (rtl, 0));
-      return;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  if (reg != DWARF_FRAME_RETURN_COLUMN)
-    reg_save (DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
-}
-
 /* Given a SET, calculate the amount of stack adjustment it
    contains.  */
 
@@ -1088,6 +1030,8 @@ DEF_VEC_ALLOC_O (reg_saved_in_data, gc);
    5 entries.  */
 static GTY(()) VEC(reg_saved_in_data, gc) *regs_saved_in_regs;
 
+static GTY(()) reg_saved_in_data *cie_return_save;
+
 /* Compare X and Y for equivalence.  The inputs may be REGs or PC_RTX.  */
 
 static bool
@@ -1134,10 +1078,9 @@ queue_reg_save (rtx reg, rtx sreg, HOST_WIDE_INT offset)
   struct queued_reg_save *q;
 
   /* Duplicates waste space, but it's also necessary to remove them
-     for correctness, since the queue gets output in reverse
-     order.  */
+     for correctness, since the queue gets output in reverse order.  */
   for (q = queued_reg_saves; q != NULL; q = q->next)
-    if (REGNO (q->reg) == REGNO (reg))
+    if (compare_reg_or_pc (q->reg, reg))
       break;
 
   if (q == NULL)
@@ -1165,7 +1108,10 @@ dwarf2out_flush_queued_reg_saves (void)
 
       record_reg_saved_in_reg (q->saved_reg, q->reg);
 
-      reg = DWARF_FRAME_REGNUM (REGNO (q->reg));
+      if (q->reg == pc_rtx)
+	reg = DWARF_FRAME_RETURN_COLUMN;
+      else
+        reg = DWARF_FRAME_REGNUM (REGNO (q->reg));
       if (q->saved_reg)
 	sreg = DWARF_FRAME_REGNUM (REGNO (q->saved_reg));
       else
@@ -1375,13 +1321,11 @@ dwarf2out_frame_debug_cfa_register (rtx set)
   src = XEXP (set, 1);
   dest = XEXP (set, 0);
 
+  record_reg_saved_in_reg (dest, src);
   if (src == pc_rtx)
     sregno = DWARF_FRAME_RETURN_COLUMN;
   else
-    {
-      record_reg_saved_in_reg (dest, src);
-      sregno = DWARF_FRAME_REGNUM (REGNO (src));
-    }
+    sregno = DWARF_FRAME_REGNUM (REGNO (src));
 
   dregno = DWARF_FRAME_REGNUM (REGNO (dest));
 
@@ -2031,14 +1975,14 @@ dwarf2out_frame_debug_expr (rtx expr)
 	  gcc_unreachable ();
 	}
 
-        /* Rule 17 */
-        /* If the source operand of this MEM operation is not a
-	   register, basically the source is return address.  Here
-	   we only care how much stack grew and we don't save it.  */
-      if (!REG_P (src))
+      /* Rule 17 */
+      /* If the source operand of this MEM operation is a memory,
+	 we only care how much stack grew.  */
+      if (MEM_P (src))
         break;
 
-      if (REGNO (src) != STACK_POINTER_REGNUM
+      if (REG_P (src)
+	  && REGNO (src) != STACK_POINTER_REGNUM
 	  && REGNO (src) != HARD_FRAME_POINTER_REGNUM
 	  && (unsigned) REGNO (src) == cfa.reg)
 	{
@@ -2098,32 +2042,30 @@ dwarf2out_frame_debug_expr (rtx expr)
 	}
 
       def_cfa_1 (&cfa);
-      {
+
+      span = NULL;
+      if (REG_P (src))
 	span = targetm.dwarf_register_span (src);
+      if (!span)
+	queue_reg_save (src, NULL_RTX, offset);
+      else
+	{
+	  /* We have a PARALLEL describing where the contents of SRC live.
+	     Queue register saves for each piece of the PARALLEL.  */
+	  int par_index;
+	  int limit;
+	  HOST_WIDE_INT span_offset = offset;
 
-	if (!span)
-	  queue_reg_save (src, NULL_RTX, offset);
-	else
-	  {
-	    /* We have a PARALLEL describing where the contents of SRC
-	       live.  Queue register saves for each piece of the
-	       PARALLEL.  */
-	    int par_index;
-	    int limit;
-	    HOST_WIDE_INT span_offset = offset;
+	  gcc_assert (GET_CODE (span) == PARALLEL);
 
-	    gcc_assert (GET_CODE (span) == PARALLEL);
-
-	    limit = XVECLEN (span, 0);
-	    for (par_index = 0; par_index < limit; par_index++)
-	      {
-		rtx elem = XVECEXP (span, 0, par_index);
-
-		queue_reg_save (elem, NULL_RTX, span_offset);
-		span_offset += GET_MODE_SIZE (GET_MODE (elem));
-	      }
-	  }
-      }
+	  limit = XVECLEN (span, 0);
+	  for (par_index = 0; par_index < limit; par_index++)
+	    {
+	      rtx elem = XVECEXP (span, 0, par_index);
+	      queue_reg_save (elem, NULL_RTX, span_offset);
+	      span_offset += GET_MODE_SIZE (GET_MODE (elem));
+	    }
+	}
       break;
 
     default:
@@ -2543,6 +2485,67 @@ dwarf2out_frame_debug_restore_state (void)
   cfa_remember.in_use = 0;
 }
 
+/* Record the initial position of the return address.  RTL is
+   INCOMING_RETURN_ADDR_RTX.  */
+
+static void
+initial_return_save (rtx rtl)
+{
+  unsigned int reg = INVALID_REGNUM;
+  HOST_WIDE_INT offset = 0;
+
+  switch (GET_CODE (rtl))
+    {
+    case REG:
+      /* RA is in a register.  */
+      reg = DWARF_FRAME_REGNUM (REGNO (rtl));
+      break;
+
+    case MEM:
+      /* RA is on the stack.  */
+      rtl = XEXP (rtl, 0);
+      switch (GET_CODE (rtl))
+	{
+	case REG:
+	  gcc_assert (REGNO (rtl) == STACK_POINTER_REGNUM);
+	  offset = 0;
+	  break;
+
+	case PLUS:
+	  gcc_assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
+	  offset = INTVAL (XEXP (rtl, 1));
+	  break;
+
+	case MINUS:
+	  gcc_assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
+	  offset = -INTVAL (XEXP (rtl, 1));
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      break;
+
+    case PLUS:
+      /* The return address is at some offset from any value we can
+	 actually load.  For instance, on the SPARC it is in %i7+8. Just
+	 ignore the offset for now; it doesn't matter for unwinding frames.  */
+      gcc_assert (CONST_INT_P (XEXP (rtl, 1)));
+      initial_return_save (XEXP (rtl, 0));
+      return;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (reg != DWARF_FRAME_RETURN_COLUMN)
+    {
+      if (reg != INVALID_REGNUM)
+        record_reg_saved_in_reg (rtl, pc_rtx);
+      reg_save (DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
+    }
+}
 
 /* Annotate the function with NOTE_INSN_CFI notes to record the CFI
    state at each location within the function.  These notes will be
@@ -2569,7 +2572,31 @@ execute_dwarf2_frame (void)
 
       if (targetm.debug_unwind_info () == UI_DWARF2
           || targetm_common.except_unwind_info (&global_options) == UI_DWARF2)
-	initial_return_save (INCOMING_RETURN_ADDR_RTX);
+	{
+	  initial_return_save (INCOMING_RETURN_ADDR_RTX);
+
+	  /* For a few targets, we have the return address incoming into a
+	     register, but choose a different return column.  This will result
+	     in a DW_CFA_register for the return, and an entry in
+	     regs_saved_in_regs to match.  If the target later stores that
+	     return address register to the stack, we want to be able to emit
+	     the DW_CFA_offset against the return column, not the intermediate
+	     save register.  Save the contents of regs_saved_in_regs so that
+	     we can re-initialize it at the start of each function.  */
+	  switch (VEC_length (reg_saved_in_data, regs_saved_in_regs))
+	    {
+	    case 0:
+	      break;
+	    case 1:
+	      cie_return_save = ggc_alloc_reg_saved_in_data ();
+	      *cie_return_save = *VEC_index (reg_saved_in_data,
+					     regs_saved_in_regs, 0);
+	      regs_saved_in_regs = NULL;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
 
       add_cfi_vec = NULL;
     }
@@ -2587,6 +2614,9 @@ execute_dwarf2_frame (void)
 
   memset (&cfa_temp, 0, sizeof(cfa_temp));
   cfa_temp.reg = INVALID_REGNUM;
+
+  if (cie_return_save)
+    VEC_safe_push (reg_saved_in_data, gc, regs_saved_in_regs, cie_return_save);
 
   dwarf2out_alloc_current_fde ();
 
