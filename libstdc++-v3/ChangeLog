@@ -1,5 +1,12 @@
 2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/ext/cast.h: Fix typo in include guard.
+	* include/ext/pointer.h (_Unqualified_type): Remove redundant
+	partial specializations for volatile types. Fix typos in comments.
+	(pointer_traits<_Pointer_adaptor<Tp>>::pointer_to): Define.
+
+2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/49668
 	* include/std/functional (__bind_simple): Define.
 	* include/std/future (_Task_setter): Parameterize by type of result
