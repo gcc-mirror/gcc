@@ -1,5 +1,15 @@
 2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/ext/alloc_traits.h (__allocator_always_compares_equal): New
+	trait, provide partial specializations for known allocators.
+	(__alloc_traits::construct, __alloc_traits::destroy): Overload for
+	non-standard pointer types.
+	(__alloc_traits::_S_always_equal): New trait for use with noexcept.
+	(__alloc_traits::_S_nothrow_move): Likewise.
+	(__alloc_traits::_S_nothrow_swap): Likewise.
+
+2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/ext/cast.h: Fix typo in include guard.
 	* include/ext/pointer.h (_Unqualified_type): Remove redundant
 	partial specializations for volatile types. Fix typos in comments.
