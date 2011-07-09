@@ -10848,6 +10848,40 @@ int_loc_descriptor (HOST_WIDE_INT i)
   return new_loc_descr (op, i, 0);
 }
 
+/* Return size_of_locs (int_loc_descriptor (i)) without
+   actually allocating it.  */
+
+static unsigned long
+size_of_int_loc_descriptor (HOST_WIDE_INT i)
+{
+  if (i >= 0)
+    {
+      if (i <= 31)
+	return 1;
+      else if (i <= 0xff)
+	return 2;
+      else if (i <= 0xffff)
+	return 3;
+      else if (HOST_BITS_PER_WIDE_INT == 32
+	       || i <= 0xffffffff)
+	return 5;
+      else
+	return 1 + size_of_uleb128 ((unsigned HOST_WIDE_INT) i);
+    }
+  else
+    {
+      if (i >= -0x80)
+	return 2;
+      else if (i >= -0x8000)
+	return 3;
+      else if (HOST_BITS_PER_WIDE_INT == 32
+	       || i >= -0x80000000)
+	return 5;
+      else
+	return 1 + size_of_sleb128 (i);
+    }
+}
+
 /* Return loc description representing "address" of integer value.
    This can appear only as toplevel expression.  */
 
@@ -10860,32 +10894,7 @@ address_of_int_loc_descriptor (int size, HOST_WIDE_INT i)
   if (!(dwarf_version >= 4 || !dwarf_strict))
     return NULL;
 
-  if (i >= 0)
-    {
-      if (i <= 31)
-	litsize = 1;
-      else if (i <= 0xff)
-	litsize = 2;
-      else if (i <= 0xffff)
-	litsize = 3;
-      else if (HOST_BITS_PER_WIDE_INT == 32
-	       || i <= 0xffffffff)
-	litsize = 5;
-      else
-	litsize = 1 + size_of_uleb128 ((unsigned HOST_WIDE_INT) i);
-    }
-  else
-    {
-      if (i >= -0x80)
-	litsize = 2;
-      else if (i >= -0x8000)
-	litsize = 3;
-      else if (HOST_BITS_PER_WIDE_INT == 32
-	       || i >= -0x80000000)
-	litsize = 5;
-      else
-	litsize = 1 + size_of_sleb128 (i);
-    }
+  litsize = size_of_int_loc_descriptor (i);
   /* Determine if DW_OP_stack_value or DW_OP_implicit_value
      is more compact.  For DW_OP_stack_value we need:
      litsize + 1 (DW_OP_stack_value)
@@ -11284,6 +11293,28 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
 		  && (unsigned HOST_WIDE_INT) INTVAL (XEXP (rtl, 1))
 		     == (INTVAL (XEXP (rtl, 1)) & GET_MODE_MASK (op_mode)))))
 	return compare_loc_descriptor (op, op0, op1);
+
+      /* EQ/NE comparison against constant in narrower type than
+	 DWARF2_ADDR_SIZE can be performed either as
+	 DW_OP_const1u <shift> DW_OP_shl DW_OP_const* <cst << shift>
+	 DW_OP_{eq,ne}
+	 or
+	 DW_OP_const*u <mode_mask> DW_OP_and DW_OP_const* <cst & mode_mask>
+	 DW_OP_{eq,ne}.  Pick whatever is shorter.  */
+      if (CONST_INT_P (XEXP (rtl, 1))
+	  && GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT
+	  && (size_of_int_loc_descriptor (shift) + 1
+	      + size_of_int_loc_descriptor (INTVAL (XEXP (rtl, 1)) << shift)
+	      >= size_of_int_loc_descriptor (GET_MODE_MASK (op_mode)) + 1
+		 + size_of_int_loc_descriptor (INTVAL (XEXP (rtl, 1))
+					       & GET_MODE_MASK (op_mode))))
+	{
+	  add_loc_descr (&op0, int_loc_descriptor (GET_MODE_MASK (op_mode)));
+	  add_loc_descr (&op0, new_loc_descr (DW_OP_and, 0, 0));
+	  op1 = int_loc_descriptor (INTVAL (XEXP (rtl, 1))
+				    & GET_MODE_MASK (op_mode));
+	  return compare_loc_descriptor (op, op0, op1);
+	}
     }
   add_loc_descr (&op0, int_loc_descriptor (shift));
   add_loc_descr (&op0, new_loc_descr (DW_OP_shl, 0, 0));
