@@ -1,3 +1,9 @@
+2011-07-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Turn on
+	OPTION_MASK_ISA_64BIT for TARGET_X32.  Only allow small and
+	small PIC models for TARGET_X32.
+
 2011-07-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/49684
