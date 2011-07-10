@@ -14388,7 +14388,7 @@ cp_parser_init_declarator (cp_parser* parser,
     = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 			    &ctor_dtor_or_conv_p,
 			    /*parenthesized_p=*/NULL,
-			    /*member_p=*/false);
+			    member_p);
   /* Gather up the deferred checks.  */
   stop_deferring_access_checks ();
 
@@ -14971,8 +14971,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* Parse the virt-specifier-seq.  */
 		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
 
-		  late_return
-		    = cp_parser_late_return_type_opt (parser, cv_quals);
+		  late_return = (cp_parser_late_return_type_opt
+				 (parser, member_p ? cv_quals : -1));
 
 		  /* Create the function-declarator.  */
 		  declarator = make_call_declarator (declarator,
@@ -15538,7 +15538,10 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
 
    -> trailing-type-specifier-seq abstract-declarator(opt)
 
-   Returns the type indicated by the type-id.  */
+   Returns the type indicated by the type-id.
+
+   QUALS is either a bitmask of cv_qualifiers or -1 for a non-member
+   function.  */
 
 static tree
 cp_parser_late_return_type_opt (cp_parser* parser, cp_cv_quals quals)
@@ -15555,7 +15558,7 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_cv_quals quals)
   /* Consume the ->.  */
   cp_lexer_consume_token (parser->lexer);
 
-  if (current_class_type)
+  if (quals >= 0)
     {
       /* DR 1207: 'this' is in scope in the trailing return type.  */
       tree this_parm = build_this_parm (current_class_type, quals);

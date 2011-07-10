@@ -1,3 +1,11 @@
+2011-07-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49691
+	* parser.c (cp_parser_late_return_type_opt): Check quals parameter
+	rather than current_class_type to determine whether to set 'this'.
+	(cp_parser_direct_declarator): Pass -1 to quals if member_p is false.
+	(cp_parser_init_declarator): Pass down member_p.
+
 2011-07-09  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (build_vec_init_elt): Strip TARGET_EXPR.
