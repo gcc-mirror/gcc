@@ -1,3 +1,8 @@
+2011-07-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49562
+	* expr.c (gfc_check_vardef_context): Handle type-bound procedures.
+
 2011-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR fortran/48926
