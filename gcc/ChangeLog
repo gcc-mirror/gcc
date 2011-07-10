@@ -1,3 +1,8 @@
+2011-07-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_trampoline_init): Use movl instead
+	of movabs for x32.
+
 2011-07-10  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (x86_output_mi_thunk): Generate rtl and
