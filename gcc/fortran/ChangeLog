@@ -1,3 +1,8 @@
+2011-07-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49690
+	* intrinsic.c (add_functions): Use BT_VOID for 2nd argument of SIGNAL.
+
 2011-07-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49562
