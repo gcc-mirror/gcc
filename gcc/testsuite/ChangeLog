@@ -1,3 +1,8 @@
+2011-07-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49690
+	* gfortran.dg/intrinsic_signal.f90: New.
+
 2011-07-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/regress/regress6.C: New.
