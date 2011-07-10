@@ -1,3 +1,8 @@
+2011-07-10  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (x86_output_mi_thunk): Generate rtl and
+	run final, instead of emitting text directly.
+
 2011-07-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Turn on

@@ -29296,12 +29296,10 @@ x86_output_mi_thunk (FILE *file,
 		     tree thunk ATTRIBUTE_UNUSED, HOST_WIDE_INT delta,
 		     HOST_WIDE_INT vcall_offset, tree function)
 {
-  rtx xops[3];
   rtx this_param = x86_this_parameter (function);
-  rtx this_reg, tmp;
+  rtx this_reg, tmp, fnaddr;
 
-  /* Make sure unwind info is emitted for the thunk if needed.  */
-  final_start_function (emit_barrier (), file, 1);
+  emit_note (NOTE_INSN_PROLOGUE_END);
 
   /* If VCALL_OFFSET, we'll need THIS in a register.  Might as well
      pull it in now and let DELTA benefit.  */
@@ -29310,9 +29308,8 @@ x86_output_mi_thunk (FILE *file,
   else if (vcall_offset)
     {
       /* Put the this parameter into %eax.  */
-      xops[0] = this_param;
-      xops[1] = this_reg = gen_rtx_REG (Pmode, AX_REG);
-      output_asm_insn ("mov%z1\t{%0, %1|%1, %0}", xops);
+      this_reg = gen_rtx_REG (Pmode, AX_REG);
+      emit_move_insn (this_reg, this_param);
     }
   else
     this_reg = NULL_RTX;
@@ -29320,116 +29317,121 @@ x86_output_mi_thunk (FILE *file,
   /* Adjust the this parameter by a fixed constant.  */
   if (delta)
     {
-      xops[0] = GEN_INT (delta);
-      xops[1] = this_reg ? this_reg : this_param;
+      rtx delta_rtx = GEN_INT (delta);
+      rtx delta_dst = this_reg ? this_reg : this_param;
+
       if (TARGET_64BIT)
 	{
-	  if (!x86_64_general_operand (xops[0], DImode))
+	  if (!x86_64_general_operand (delta_rtx, Pmode))
 	    {
-	      tmp = gen_rtx_REG (DImode, R10_REG);
-	      xops[1] = tmp;
-	      output_asm_insn ("mov{q}\t{%1, %0|%0, %1}", xops);
-	      xops[0] = tmp;
-	      xops[1] = this_param;
+	      tmp = gen_rtx_REG (Pmode, R10_REG);
+	      emit_move_insn (tmp, delta_rtx);
+	      delta_rtx = tmp;
 	    }
-	  if (x86_maybe_negate_const_int (&xops[0], DImode))
-	    output_asm_insn ("sub{q}\t{%0, %1|%1, %0}", xops);
-	  else
-	    output_asm_insn ("add{q}\t{%0, %1|%1, %0}", xops);
 	}
-      else if (x86_maybe_negate_const_int (&xops[0], SImode))
-	output_asm_insn ("sub{l}\t{%0, %1|%1, %0}", xops);
-      else
-	output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
+
+      emit_insn (ix86_gen_add3 (delta_dst, delta_dst, delta_rtx));
     }
 
   /* Adjust the this parameter by a value stored in the vtable.  */
   if (vcall_offset)
     {
+      rtx vcall_addr, vcall_mem;
+      unsigned int tmp_regno;
+
       if (TARGET_64BIT)
-	tmp = gen_rtx_REG (DImode, R10_REG);
+	tmp_regno = R10_REG;
       else
 	{
-	  int tmp_regno = CX_REG;
 	  unsigned int ccvt = ix86_get_callcvt (TREE_TYPE (function));
 	  if ((ccvt & (IX86_CALLCVT_FASTCALL | IX86_CALLCVT_THISCALL)) != 0)
 	    tmp_regno = AX_REG;
-	  tmp = gen_rtx_REG (SImode, tmp_regno);
+	  else
+	    tmp_regno = CX_REG;
 	}
+      tmp = gen_rtx_REG (Pmode, tmp_regno);
 
-      xops[0] = gen_rtx_MEM (Pmode, this_reg);
-      xops[1] = tmp;
-      output_asm_insn ("mov%z1\t{%0, %1|%1, %0}", xops);
+      emit_move_insn (tmp, gen_rtx_MEM (ptr_mode, this_reg));
 
       /* Adjust the this parameter.  */
-      xops[0] = gen_rtx_MEM (Pmode, plus_constant (tmp, vcall_offset));
-      if (TARGET_64BIT && !memory_operand (xops[0], Pmode))
+      vcall_addr = plus_constant (tmp, vcall_offset);
+      if (TARGET_64BIT
+	  && !ix86_legitimate_address_p (ptr_mode, vcall_addr, true))
 	{
-	  rtx tmp2 = gen_rtx_REG (DImode, R11_REG);
-	  xops[0] = GEN_INT (vcall_offset);
-	  xops[1] = tmp2;
-	  output_asm_insn ("mov{q}\t{%0, %1|%1, %0}", xops);
-	  xops[0] = gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, tmp, tmp2));
+	  rtx tmp2 = gen_rtx_REG (Pmode, R11_REG);
+	  emit_move_insn (tmp2, GEN_INT (vcall_offset));
+	  vcall_addr = gen_rtx_PLUS (Pmode, tmp, tmp2);
 	}
-      xops[1] = this_reg;
-      output_asm_insn ("add%z1\t{%0, %1|%1, %0}", xops);
+
+      vcall_mem = gen_rtx_MEM (Pmode, vcall_addr);
+      emit_insn (ix86_gen_add3 (this_reg, this_reg, vcall_mem));
     }
 
   /* If necessary, drop THIS back to its stack slot.  */
   if (this_reg && this_reg != this_param)
-    {
-      xops[0] = this_reg;
-      xops[1] = this_param;
-      output_asm_insn ("mov%z1\t{%0, %1|%1, %0}", xops);
-    }
+    emit_move_insn (this_param, this_reg);
 
-  xops[0] = XEXP (DECL_RTL (function), 0);
+  fnaddr = XEXP (DECL_RTL (function), 0);
   if (TARGET_64BIT)
     {
       if (!flag_pic || targetm.binds_local_p (function)
-	  || DEFAULT_ABI == MS_ABI)
-	output_asm_insn ("jmp\t%P0", xops);
-      /* All thunks should be in the same object as their target,
-	 and thus binds_local_p should be true.  */
-      else if (TARGET_64BIT && cfun->machine->call_abi == MS_ABI)
-	gcc_unreachable ();
+	  || cfun->machine->call_abi == MS_ABI)
+	;
       else
 	{
-	  tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, xops[0]), UNSPEC_GOTPCREL);
+	  tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, fnaddr), UNSPEC_GOTPCREL);
 	  tmp = gen_rtx_CONST (Pmode, tmp);
-	  tmp = gen_rtx_MEM (QImode, tmp);
-	  xops[0] = tmp;
-	  output_asm_insn ("jmp\t%A0", xops);
+	  fnaddr = gen_rtx_MEM (QImode, tmp);
 	}
     }
   else
     {
       if (!flag_pic || targetm.binds_local_p (function))
-	output_asm_insn ("jmp\t%P0", xops);
-      else
+	;
 #if TARGET_MACHO
-	if (TARGET_MACHO)
-	  {
-	    rtx sym_ref = XEXP (DECL_RTL (function), 0);
-	    if (TARGET_MACHO_BRANCH_ISLANDS)
-	      sym_ref = (gen_rtx_SYMBOL_REF
+      else if (TARGET_MACHO)
+	{
+	  rtx sym_ref = XEXP (DECL_RTL (function), 0);
+	  if (TARGET_MACHO_BRANCH_ISLANDS)
+	    sym_ref = (gen_rtx_SYMBOL_REF
 		   (Pmode,
 		    machopic_indirection_name (sym_ref, /*stub_p=*/true)));
-	    tmp = gen_rtx_MEM (QImode, sym_ref);
-	    xops[0] = tmp;
-	    output_asm_insn ("jmp\t%0", xops);
-	  }
-	else
+	  fnaddr = gen_rtx_MEM (QImode, sym_ref);
+	}
 #endif /* TARGET_MACHO */
+      else
 	{
-	  tmp = gen_rtx_REG (SImode, CX_REG);
+	  tmp = gen_rtx_REG (Pmode, CX_REG);
 	  output_set_got (tmp, NULL_RTX);
 
-	  xops[1] = tmp;
-	  output_asm_insn ("mov{l}\t{%0@GOT(%1), %1|%1, %0@GOT[%1]}", xops);
-	  output_asm_insn ("jmp\t{*}%1", xops);
+	  fnaddr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, fnaddr), UNSPEC_GOT);
+	  fnaddr = gen_rtx_PLUS (Pmode, fnaddr, tmp);
+	  fnaddr = gen_rtx_MEM (Pmode, fnaddr);
 	}
     }
+
+  /* Our sibling call patterns do not allow memories, because we have no
+     predicate that can distinguish between frame and non-frame memory.
+     For our purposes here, we can get away with (ab)using a jump pattern,
+     because we're going to do no optimization.  */
+  if (MEM_P (fnaddr))
+    emit_jump_insn (gen_indirect_jump (fnaddr));
+  else
+    {
+      tmp = gen_rtx_MEM (QImode, fnaddr);
+      tmp = gen_rtx_CALL (VOIDmode, tmp, const0_rtx);
+      tmp = emit_call_insn (tmp);
+      SIBLING_CALL_P (tmp) = 1;
+    }
+  emit_barrier ();
+
+  /* Emit just enough of rest_of_compilation to get the insns emitted.
+     Note that use_thunk calls assemble_start_function et al.  */
+  tmp = get_insns ();
+  insn_locators_alloc ();
+  shorten_branches (tmp);
+  final_start_function (tmp, file, 1);
+  final (tmp, file, 1);
   final_end_function ();
 }
 
