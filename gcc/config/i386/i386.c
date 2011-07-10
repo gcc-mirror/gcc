@@ -2973,6 +2973,9 @@ ix86_option_override_internal (bool main_args_p)
   SUBSUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
+  if (TARGET_X32)
+    ix86_isa_flags |= OPTION_MASK_ISA_64BIT;
+
   /* -fPIC is the default for x86_64.  */
   if (TARGET_MACHO && TARGET_64BIT)
     flag_pic = 2;
@@ -3064,6 +3067,9 @@ ix86_option_override_internal (bool main_args_p)
 	  if (!TARGET_64BIT)
 	    error ("code model %qs not supported in the %s bit mode",
 		   "medium", "32");
+	  else if (TARGET_X32)
+	    error ("code model %qs not supported in x32 mode",
+		   "medium");
 	  break;
 
 	case CM_LARGE:
@@ -3073,6 +3079,9 @@ ix86_option_override_internal (bool main_args_p)
 	  if (!TARGET_64BIT)
 	    error ("code model %qs not supported in the %s bit mode",
 		   "large", "32");
+	  else if (TARGET_X32)
+	    error ("code model %qs not supported in x32 mode",
+		   "medium");
 	  break;
 
 	case CM_32:
