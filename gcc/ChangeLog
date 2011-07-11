@@ -1,5 +1,10 @@
 2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/i386/sol2.h [!USE_GLD] (CTORS_SECTION_ASM_OP): Define.
+	(DTORS_SECTION_ASM_OP): Define.
+
+2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/dfp-bit.c, config/dfp-bit.h: Move to ../libgcc.
 	* config/t-dfprules: Move to ../libgcc/config.
 	* config.gcc (i[34567]86-*-linux*, i[34567]86-*-kfreebsd*-gnu,
