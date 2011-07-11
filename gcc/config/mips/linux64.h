@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
   BASE_DRIVER_SELF_SPECS, \
   LINUX_DRIVER_SELF_SPECS \
   " %{!EB:%{!EL:%(endian_spec)}}" \
-  " %{!mabi=*: -mabi=n32}"
+  " %{!mabi=*: -" MULTILIB_ABI_DEFAULT "}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "\
