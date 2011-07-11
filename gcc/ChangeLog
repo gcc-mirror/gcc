@@ -1,3 +1,9 @@
+2011-07-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/49094
+	* tree-sra.c (tree_non_mode_aligned_mem_p): New function.
+	(build_accesses_from_assign): Use it.
+
 2011-07-11  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/39633
