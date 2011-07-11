@@ -346,21 +346,21 @@ i[34567]86-*-openbsd*)
 	;;
 i[34567]86-*-linux*)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
-	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
+	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm t-dfprules"
 	md_unwind_header=i386/linux-unwind.h
 	;;
 i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
-	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
+	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm t-dfprules"
 	;;
 x86_64-*-linux*)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
-	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
+	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm t-dfprules"
 	md_unwind_header=i386/linux-unwind.h
 	;;
 x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
-	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
+	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm t-dfprules"
 	;;
 i[34567]86-pc-msdosdjgpp*)
 	;;
@@ -388,14 +388,15 @@ i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
 	;;
 i[34567]86-*-cygwin*)
 	extra_parts="crtbegin.o crtend.o crtfastmath.o"
-	tmake_file="i386/t-cygming i386/t-crtfm"
+	tmake_file="i386/t-cygming i386/t-crtfm t-dfprules"
 	;;
 i[34567]86-*-mingw*)
 	extra_parts="crtbegin.o crtend.o crtfastmath.o"
-	tmake_file="i386/t-cygming i386/t-crtfm"
+	tmake_file="i386/t-cygming i386/t-crtfm t-dfprules"
 	md_unwind_header=i386/w32-unwind.h
 	;;
 x86_64-*-mingw*)
+	tmake_file=t-dfprules
 	;;
 i[34567]86-*-interix3*)
 	;;
@@ -551,7 +552,7 @@ powerpc-*-eabi*)
 powerpc-*-rtems*)
 	;;
 powerpc-*-linux* | powerpc64-*-linux*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp t-dfprules"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc-wrs-vxworks|powerpc-wrs-vxworksae)

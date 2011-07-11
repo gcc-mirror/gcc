@@ -1311,7 +1311,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 	i[34567]86-*-kopensolaris*-gnu) tm_file="${tm_file} i386/gnu-user.h kopensolaris-gnu.h i386/kopensolaris-gnu.h" ;;
 	i[34567]86-*-gnu*) tm_file="$tm_file i386/gnu-user.h gnu.h i386/gnu.h";;
 	esac
-	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
+	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtpc i386/t-crtfm"
 	;;
 x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h glibc-stdint.h \
@@ -1323,7 +1323,7 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	x86_64-*-kfreebsd*-gnu) tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h" ;;
 	x86_64-*-knetbsd*-gnu) tm_file="${tm_file} knetbsd-gnu.h" ;;
 	esac
-	tmake_file="${tmake_file} i386/t-linux64 i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
+	tmake_file="${tmake_file} i386/t-linux64 i386/t-crtstuff i386/t-crtpc i386/t-crtfm"
 	x86_multilibs="${with_multilib_list}"
 	if test "$x86_multilibs" = "default"; then
 		x86_multilibs="m64,m32"
@@ -1458,7 +1458,7 @@ i[34567]86-*-cygwin*)
 	else
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-cygming i386/t-cygwin t-dfprules"
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-cygming i386/t-cygwin"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt"
 	extra_objs="winnt.o winnt-stubs.o"
@@ -1524,7 +1524,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	else
 		tmake_dlldir_file="i386/t-dlldir-x"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-cygming t-dfprules"
+	tmake_file="${tmake_file} ${tmake_eh_file} ${tmake_dlldir_file} i386/t-cygming"
         case ${target} in
                x86_64-w64-*)
                		tmake_file="${tmake_file} i386/t-mingw-w64"
@@ -2114,7 +2114,7 @@ powerpc-*-rtems*)
 powerpc-*-linux* | powerpc64-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h rs6000/sysv4.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="t-dfprules rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	maybe_biarch=yes
 	case ${target} in
 	    powerpc64-*-linux*spe* | powerpc64-*-linux*paired*)

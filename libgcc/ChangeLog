@@ -1,3 +1,21 @@
+2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dfp-bit.c, dfp-bit.h: New files.
+	* Makefile.in (D32PBIT_FUNCS, D64PBIT_FUNCS, D128PBIT_FUNCS): New
+	variables.
+	($(d32pbit-o)): Use $(srcdir) to refer to dfp-bit.c
+	($(d64pbit-o)): Likewise.
+	($(d128pbit-o)): Likewise.
+	* config/t-dfprules: New file.
+	* config.host (i[34567]86-*-linux*): Add t-dfprules to tmake_file.
+	(i[34567]86-*-kfreebsd*-gnu, i[34567]86-*-knetbsd*-gnu,
+	i[34567]86-*-gnu*, i[34567]86-*-kopensolaris*-gnu): Likewise.
+	(x86_64-*-linux*): Likewise.
+	(x86_64-*-kfreebsd*-gnu, x86_64-*-knetbsd*-gnu): Likewise.
+	(i[34567]86-*-cygwin*): Likewise.
+	(i[34567]86-*-mingw*,  x86_64-*-mingw*): Likewise.
+	(powerpc-*-linux*, powerpc64-*-linux*): Likewise.
+
 2011-07-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makfile.in (LIBGCOV): New variable.
