@@ -42,6 +42,9 @@ AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
+CC_FOR_BUILD=${CC_FOR_BUILD:-gcc}
+AC_SUBST(CC_FOR_BUILD)
+
 WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual'
 AC_SUBST(WARN_FLAGS)
 
