@@ -1,3 +1,18 @@
+2011-07-11  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2cfi.c (DW_STACK_POINTER_REGNUM): New.
+	(DW_FRAME_POINTER_REGNUM): New.
+	(expand_builtin_init_dwarf_reg_sizes): Use unsigned for rnum.
+	(def_cfa_1): Do not convert reg to DWARF_FRAME_REGNUM here.
+	(dwf_regno): New.
+	(dwarf2out_flush_queued_reg_saves, dwarf2out_frame_debug_def_cfa,
+	dwarf2out_frame_debug_adjust_cfa, dwarf2out_frame_debug_cfa_register,
+	dwarf2out_frame_debug_cfa_expression, dwarf2out_frame_debug_expr):
+	Use it.
+	* dwarf2out.c (based_loc_descr): Use dwarf_frame_regnum.
+	* dwarf2out.h (dwarf_frame_regnum): New.
+	(struct cfa_loc): Document the domain of the reg member.
+
 2011-07-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_trampoline_init): Switch arms of if expr.

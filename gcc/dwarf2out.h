@@ -121,6 +121,7 @@ dw_fde_node;
 typedef struct cfa_loc {
   HOST_WIDE_INT offset;
   HOST_WIDE_INT base_offset;
+  /* REG is in DWARF_FRAME_REGNUM space, *not* normal REGNO space.  */
   unsigned int reg;
   BOOL_BITFIELD indirect : 1;  /* 1 if CFA is accessed via a dereference.  */
   BOOL_BITFIELD in_use : 1;    /* 1 if a saved cfa is stored here.  */
@@ -261,6 +262,15 @@ extern void dwarf2out_set_demangle_name_func (const char *(*) (const char *));
 extern void dwarf2out_vms_debug_main_pointer (void);
 #endif
 
+/* Unfortunately, DWARF_FRAME_REGNUM is not universally defined in such a
+   way as to force an unsigned return type.  Do that via inline wrapper.  */
+
+static inline unsigned
+dwarf_frame_regnum (unsigned regnum)
+{
+  return DWARF_FRAME_REGNUM (regnum);
+}
+  
 struct array_descr_info
 {
   int ndimensions;

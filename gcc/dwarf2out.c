@@ -10408,8 +10408,8 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
     }
   else if (!optimize
 	   && fde
-	   && (fde->drap_reg == REGNO (reg)
-	       || fde->vdrap_reg == REGNO (reg)))
+	   && (fde->drap_reg == dwarf_frame_regnum (REGNO (reg))
+	       || fde->vdrap_reg == dwarf_frame_regnum (REGNO (reg))))
     {
       /* Use cfa+offset to represent the location of arguments passed
 	 on the stack when drap is used to align stack.
