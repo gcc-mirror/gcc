@@ -6276,10 +6276,10 @@
   DONE;
 })
 
-;; The "save register window" insn is modelled as follows.  The dwarf2
-;; information is manually added in emit_save_register_window in sparc.c.
+;; The "register window save" insn is modelled as follows.  The dwarf2
+;; information is manually added in emit_window_save.
 
-(define_insn "save_register_window_1"
+(define_insn "window_save"
   [(unspec_volatile
 	[(match_operand 0 "arith_operand" "rI")]
 	UNSPECV_SAVEW)]

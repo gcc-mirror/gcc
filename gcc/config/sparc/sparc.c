@@ -4590,14 +4590,12 @@ emit_save_or_restore_local_in_regs (rtx base, int offset, sorr_act_t action)
 			     save_local_or_in_reg_p, action, SORR_ADVANCE);
 }
 
-/* Generate a save_register_window insn.  */
+/* Emit a window_save insn.  */
 
 static rtx
-emit_save_register_window (rtx increment)
+emit_window_save (rtx increment)
 {
-  rtx insn;
-
-  insn = emit_insn (gen_save_register_window_1 (increment));
+  rtx insn = emit_insn (gen_window_save (increment));
   RTX_FRAME_RELATED_P (insn) = 1;
 
   /* The incoming return address (%o7) is saved in %i7.  */
@@ -4716,10 +4714,10 @@ sparc_expand_prologue (void)
       rtx size_int_rtx = GEN_INT (-size);
 
       if (size <= 4096)
-	emit_save_register_window (size_int_rtx);
+	emit_window_save (size_int_rtx);
       else if (size <= 8192)
 	{
-	  emit_save_register_window (GEN_INT (-4096));
+	  emit_window_save (GEN_INT (-4096));
 	  /* %sp is not the CFA register anymore.  */
 	  emit_insn (gen_stack_pointer_inc (GEN_INT (4096 - size)));
 	}
@@ -4727,7 +4725,7 @@ sparc_expand_prologue (void)
 	{
 	  rtx size_rtx = gen_rtx_REG (Pmode, 1);
 	  emit_move_insn (size_rtx, size_int_rtx);
-	  emit_save_register_window (size_rtx);
+	  emit_window_save (size_rtx);
 	}
     }
 
