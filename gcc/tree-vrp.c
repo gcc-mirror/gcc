@@ -7347,30 +7347,55 @@ simplify_switch_using_ranges (gimple stmt)
 static bool
 simplify_conversion_using_ranges (gimple stmt)
 {
-  tree rhs1 = gimple_assign_rhs1 (stmt);
-  gimple def_stmt = SSA_NAME_DEF_STMT (rhs1);
-  value_range_t *final, *inner;
+  tree innerop, middleop, finaltype;
+  gimple def_stmt;
+  value_range_t *innervr;
+  double_int innermin, innermax, middlemin, middlemax;
 
-  /* Obtain final and inner value-ranges for a conversion
-     sequence (final-type)(intermediate-type)inner-type.  */
-  final = get_value_range (gimple_assign_lhs (stmt));
-  if (final->type != VR_RANGE)
-    return false;
+  finaltype = TREE_TYPE (gimple_assign_lhs (stmt));
+  middleop = gimple_assign_rhs1 (stmt);
+  def_stmt = SSA_NAME_DEF_STMT (middleop);
   if (!is_gimple_assign (def_stmt)
       || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
     return false;
-  rhs1 = gimple_assign_rhs1 (def_stmt);
-  if (TREE_CODE (rhs1) != SSA_NAME)
+  innerop = gimple_assign_rhs1 (def_stmt);
+  if (TREE_CODE (innerop) != SSA_NAME)
     return false;
-  inner = get_value_range (rhs1);
-  if (inner->type != VR_RANGE)
+
+  /* Get the value-range of the inner operand.  */
+  innervr = get_value_range (innerop);
+  if (innervr->type != VR_RANGE
+      || TREE_CODE (innervr->min) != INTEGER_CST
+      || TREE_CODE (innervr->max) != INTEGER_CST)
     return false;
-  /* If the value-range is preserved by the conversion sequence strip
-     the intermediate conversion.  */
-  if (!tree_int_cst_equal (final->min, inner->min)
-      || !tree_int_cst_equal (final->max, inner->max))
+
+  /* Simulate the conversion chain to check if the result is equal if
+     the middle conversion is removed.  */
+  innermin = tree_to_double_int (innervr->min);
+  innermax = tree_to_double_int (innervr->max);
+  middlemin = double_int_ext (innermin, TYPE_PRECISION (TREE_TYPE (middleop)),
+			      TYPE_UNSIGNED (TREE_TYPE (middleop)));
+  middlemax = double_int_ext (innermax, TYPE_PRECISION (TREE_TYPE (middleop)),
+			      TYPE_UNSIGNED (TREE_TYPE (middleop)));
+  /* If the middle values do not represent a proper range fail.  */
+  if (double_int_cmp (middlemin, middlemax,
+		      TYPE_UNSIGNED (TREE_TYPE (middleop))) > 0)
     return false;
-  gimple_assign_set_rhs1 (stmt, rhs1);
+  if (!double_int_equal_p (double_int_ext (middlemin,
+					   TYPE_PRECISION (finaltype),
+					   TYPE_UNSIGNED (finaltype)),
+			   double_int_ext (innermin,
+					   TYPE_PRECISION (finaltype),
+					   TYPE_UNSIGNED (finaltype)))
+      || !double_int_equal_p (double_int_ext (middlemax,
+					      TYPE_PRECISION (finaltype),
+					      TYPE_UNSIGNED (finaltype)),
+			      double_int_ext (innermax,
+					      TYPE_PRECISION (finaltype),
+					      TYPE_UNSIGNED (finaltype))))
+    return false;
+
+  gimple_assign_set_rhs1 (stmt, innerop);
   update_stmt (stmt);
   return true;
 }

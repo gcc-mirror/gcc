@@ -1,3 +1,8 @@
+2011-07-11  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (simplify_conversion_using_ranges): Manually
+	translate the source value-range through the conversion chain.
+
 2011-07-11  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* expr.c (expand_expr_real_1): Use expand_insn for movmisalign.
