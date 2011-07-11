@@ -8473,6 +8473,9 @@ maybe_add_lambda_conv_op (tree type)
   if (LAMBDA_EXPR_CAPTURE_LIST (CLASSTYPE_LAMBDA_EXPR (type)) != NULL_TREE)
     return;
 
+  if (processing_template_decl)
+    return;
+
   stattype = build_function_type (TREE_TYPE (TREE_TYPE (callop)),
 				  FUNCTION_ARG_CHAIN (callop));
 

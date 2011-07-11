@@ -8620,11 +8620,12 @@ tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   return r;
 }
 
-/* Give a chain SPEC_PARM of PARM_DECLs, pack them into a
-   NONTYPE_ARGUMENT_PACK.  */
+/* Given a function parameter pack TMPL_PARM and some function parameters
+   instantiated from it at *SPEC_P, return a NONTYPE_ARGUMENT_PACK of them
+   and set *SPEC_P to point at the next point in the list.  */
 
 static tree
-make_fnparm_pack (tree spec_parm)
+extract_fnparm_pack (tree tmpl_parm, tree *spec_p)
 {
   /* Collect all of the extra "packed" parameters into an
      argument pack.  */
@@ -8632,11 +8633,18 @@ make_fnparm_pack (tree spec_parm)
   tree parmtypevec;
   tree argpack = make_node (NONTYPE_ARGUMENT_PACK);
   tree argtypepack = cxx_make_type (TYPE_ARGUMENT_PACK);
-  int i, len = list_length (spec_parm);
+  tree spec_parm = *spec_p;
+  int i, len;
+
+  for (len = 0; spec_parm; ++len, spec_parm = TREE_CHAIN (spec_parm))
+    if (tmpl_parm
+	&& !function_parameter_expanded_from_pack_p (spec_parm, tmpl_parm))
+      break;
 
   /* Fill in PARMVEC and PARMTYPEVEC with all of the parameters.  */
   parmvec = make_tree_vec (len);
   parmtypevec = make_tree_vec (len);
+  spec_parm = *spec_p;
   for (i = 0; i < len; i++, spec_parm = DECL_CHAIN (spec_parm))
     {
       TREE_VEC_ELT (parmvec, i) = spec_parm;
@@ -8647,9 +8655,19 @@ make_fnparm_pack (tree spec_parm)
   SET_ARGUMENT_PACK_ARGS (argpack, parmvec);
   SET_ARGUMENT_PACK_ARGS (argtypepack, parmtypevec);
   TREE_TYPE (argpack) = argtypepack;
+  *spec_p = spec_parm;
 
   return argpack;
-}        
+}
+
+/* Give a chain SPEC_PARM of PARM_DECLs, pack them into a
+   NONTYPE_ARGUMENT_PACK.  */
+
+static tree
+make_fnparm_pack (tree spec_parm)
+{
+  return extract_fnparm_pack (NULL_TREE, &spec_parm);
+}
 
 /* Substitute ARGS into T, which is an pack expansion
    (i.e. TYPE_PACK_EXPANSION or EXPR_PACK_EXPANSION). Returns a
@@ -17470,21 +17488,21 @@ instantiate_decl (tree d, int defer_ok,
 	  spec_parm = skip_artificial_parms_for (d, spec_parm);
 	  tmpl_parm = skip_artificial_parms_for (subst_decl, tmpl_parm);
 	}
-      while (tmpl_parm && !FUNCTION_PARAMETER_PACK_P (tmpl_parm))
+      for (; tmpl_parm; tmpl_parm = DECL_CHAIN (tmpl_parm))
 	{
-	  register_local_specialization (spec_parm, tmpl_parm);
-	  tmpl_parm = DECL_CHAIN (tmpl_parm);
-	  spec_parm = DECL_CHAIN (spec_parm);
+	  if (!FUNCTION_PARAMETER_PACK_P (tmpl_parm))
+	    {
+	      register_local_specialization (spec_parm, tmpl_parm);
+	      spec_parm = DECL_CHAIN (spec_parm);
+	    }
+	  else
+	    {
+	      /* Register the (value) argument pack as a specialization of
+		 TMPL_PARM, then move on.  */
+	      tree argpack = extract_fnparm_pack (tmpl_parm, &spec_parm);
+	      register_local_specialization (argpack, tmpl_parm);
+	    }
 	}
-      if (tmpl_parm && FUNCTION_PARAMETER_PACK_P (tmpl_parm))
-        {
-          /* Register the (value) argument pack as a specialization of
-             TMPL_PARM, then move on.  */
-	  tree argpack = make_fnparm_pack (spec_parm);
-          register_local_specialization (argpack, tmpl_parm);
-          tmpl_parm = DECL_CHAIN (tmpl_parm);
-	  spec_parm = NULL_TREE;
-        }
       gcc_assert (!spec_parm);
 
       /* Substitute into the body of the function.  */
