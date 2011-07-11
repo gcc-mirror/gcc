@@ -712,6 +712,14 @@ proc check_effective_target_function_sections {} {
     } "-ffunction-sections"]
 }
 
+# Return 1 if instruction scheduling is available, 0 otherwise.
+
+proc check_effective_target_scheduling {} {
+    return [check_no_compiler_messages scheduling object {
+	void foo (void) { }
+    } "-fschedule-insns"]
+}
+
 # Return 1 if compilation with -fgraphite is error-free for trivial 
 # code, 0 otherwise.
 
