@@ -1,3 +1,9 @@
+2011-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/49698
+	* trans-stmt.c (gfc_trans_pointer_assign_need_temp): Initialize
+	inner_size to gfc_index_one_node instead of integer_one_node.
+
 2011-07-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49690
