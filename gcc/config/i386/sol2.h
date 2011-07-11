@@ -152,6 +152,13 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION i386_solaris_elf_named_section
 
+/* Unlike GNU ld, Sun ld doesn't coalesce .ctors.N/.dtors.N sections, so
+   inhibit their creation.  Also cf. sparc/sysv4.h.  */
+#ifndef USE_GLD
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors, \"aw\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors, \"aw\""
+#endif
+
 /* We do not need NT_VERSION notes.  */
 #undef X86_FILE_START_VERSION_DIRECTIVE
 #define X86_FILE_START_VERSION_DIRECTIVE false
