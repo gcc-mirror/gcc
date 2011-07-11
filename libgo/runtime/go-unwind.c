@@ -293,7 +293,7 @@ PERSONALITY_FUNCTION (int version,
       break;
 
     default:
-      std::abort();
+      abort();
     }
   actions |= state & _US_FORCE_UNWIND;
 
