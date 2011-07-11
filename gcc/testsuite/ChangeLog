@@ -1,3 +1,8 @@
+2011-07-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_lock_3.f90: Remove bogus dg-error.
+
 2011-07-11  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* lib/target-supports.exp (check_effective_target_scheduling):
