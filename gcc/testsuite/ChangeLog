@@ -1,4 +1,9 @@
-2011-07-11  Jeff Law <law@redhat.com>
+2011-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/49698
+	* gfortran.dg/pr49698.f90: New test.
+
+2011-07-11  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/uninit-pred-8_b.c: Disable dominator optimizations.
 
