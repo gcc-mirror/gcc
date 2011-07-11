@@ -41,12 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "objcp-decl.h"
 #endif  /* OBJCPLUS */
 
-#include "obstack.h"
-
-/* These are only used for encoding ivars.  */
-extern struct obstack util_obstack;
-extern char *util_firstobj;
-
 /* Hooks for string decls etc.  */
 #include "objc-runtime-hooks.h"
 
@@ -551,16 +545,9 @@ build_ivar_list_initializer (tree type, tree field_decl)
 	CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, build_int_cst (NULL_TREE, 0));
 
       /* Set type.  */
-      encode_field_decl (field_decl,
-			 obstack_object_size (&util_obstack),
-			 OBJC_ENCODE_DONT_INLINE_DEFS);
-
-      /* Null terminate string.  */
-      obstack_1grow (&util_obstack, 0);
-      id = add_objc_string (get_identifier (XOBFINISH (&util_obstack, char *)),
+      id = add_objc_string (encode_field_decl (field_decl),
                             meth_var_types);
       CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, id);
-      obstack_free (&util_obstack, util_firstobj);
 
       /* Set offset.  */
       CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, byte_position (field_decl));

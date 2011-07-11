@@ -50,12 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "ggc.h"
 #include "target.h"
-#include "obstack.h"
 #include "tree-iterator.h"
-
-/* These are only used for encoding ivars.  */
-extern struct obstack util_obstack;
-extern char *util_firstobj;
 
 #include "objc-runtime-hooks.h"
 #include "objc-runtime-shared-support.h"
@@ -2852,15 +2847,9 @@ build_v2_ivar_list_initializer (tree class_name, tree type, tree field_decl)
 						meth_var_names));
 
       /* Set type.  */
-      encode_field_decl (field_decl,
-			 obstack_object_size (&util_obstack),
-			 OBJC_ENCODE_DONT_INLINE_DEFS);
-      /* Null terminate string.  */
-      obstack_1grow (&util_obstack, 0);
-      id = add_objc_string (get_identifier (XOBFINISH (&util_obstack, char *)),
+      id = add_objc_string (encode_field_decl (field_decl),
                             meth_var_types);
       CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE, id);
-      obstack_free (&util_obstack, util_firstobj);
 
       /* Set alignment.  */
       val = DECL_ALIGN_UNIT (field_decl);

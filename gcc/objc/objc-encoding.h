@@ -22,25 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OBJC_ENCODING_H
 #define GCC_OBJC_ENCODING_H
 
-/* TODO: Hide the following obstack code in objc-encoding.c, and have
-   a objc_encoding_init() that is called by objc_init() to set them
-   up.  */
-
-/* Set up for use of obstacks.  */
-#include "obstack.h"
-
-/* This obstack is used to accumulate the encoding of a data type.  */
-extern struct obstack util_obstack;
-
-/* This points to the beginning of obstack contents, so we can free
-   the whole contents.  */
-extern char *util_firstobj;
-
-/* This will be used to initialize the obstacks used by encoding.  It
+/* This is used to initialize the obstacks used by encoding.  It
    should be called before any encoding function is used.  It is
    usually done in objc_init().  */
-/* extern void objc_encoding_init (void); */
-
+extern void objc_encoding_init (void);
 
 /* Encode a method prototype.  The format is described in
    gcc/doc/objc.texi, section 'Method signatures'.  */
@@ -57,8 +42,10 @@ extern tree objc_build_encode_expr (tree type);
 /* Encode the attributes of a property.  */
 extern tree objc_v2_encode_prop_attr (tree property);
 
-/* Encode the type of a field.  */
-extern void encode_field_decl (tree field_decl, int curtype, int format);
+/* Encode the type of a field.  Return an identifier with the type
+   encoding for the field.  The type encoding is a null-terminated
+   string.  */
+extern tree encode_field_decl (tree field_decl);
 
 /* Tells "encode_pointer/encode_aggregate" whether we are generating
    type descriptors for instance variables (as opposed to methods).

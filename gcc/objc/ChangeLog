@@ -1,3 +1,30 @@
+2011-07-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-encoding.h (obstack.h): Do not include.
+	(util_obstack, util_firstobj): Do not declare.
+	(encode_field_decl): Updated prototype to return a tree and take a
+	single tree argument.  Updated comments.
+	* objc-encoding.c (util_obstack, util_firstobj): Made static.
+	(objc_encoding_init): New.
+	(encode_field_decl): Existing function renamed to encode_field and
+	made static.  New encode_field_decl wrapper function added.
+	(encode_aggregate_fields): Update call to encode_field_decl to
+	call encode_field.
+	* objc-next-runtime-abi-02.c (obstack.h): Do not include.
+	(util_obstack, util_firstobj): Do not declare.
+	(build_v2_ivar_list_initializer): Updated call to
+	encode_field_decl.
+	* objc-runtime-shared-support.c (obstack.h): Do not include.
+	(util_obstack, util_firstobj): Do not declare.
+	(build_ivar_list_initializer): Updated call to encode_field_decl.
+	* objc-act.c (objc_init): Use objc_encoding_init.
+	* Make-lang.in (objc/objc-runtime-shared-support.o): Do not depend
+	on OBSTACK_H.
+	(objc/objc-gnu-runtime-abi-01.o): Likewise.
+	(objc/objc-next-runtime-abi-01.o): Likewise.
+	(objc/objc-next-runtime-abi-02.o): Likewise.
+	(objc/objc-act.o): Likewise.
+	
 2011-07-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Refactored encoding code into objc-encoding.h and objc-encoding.c.
