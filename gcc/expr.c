@@ -8692,7 +8692,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       {
 	addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
 	struct mem_address addr;
-	int icode, align;
+	enum insn_code icode;
+	int align;
 
 	get_address_description (exp, &addr);
 	op0 = addr_for_mem_ref (&addr, as, true);
@@ -8709,18 +8710,15 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    && ((icode = optab_handler (movmisalign_optab, mode))
 		!= CODE_FOR_nothing))
 	  {
-	    rtx reg, insn;
+	    struct expand_operand ops[2];
 
 	    /* We've already validated the memory, and we're creating a
-	       new pseudo destination.  The predicates really can't fail.  */
-	    reg = gen_reg_rtx (mode);
-
-	    /* Nor can the insn generator.  */
-	    insn = GEN_FCN (icode) (reg, temp);
-	    gcc_assert (insn != NULL_RTX);
-	    emit_insn (insn);
-
-	    return reg;
+	       new pseudo destination.  The predicates really can't fail,
+	       nor can the generator.  */
+	    create_output_operand (&ops[0], NULL_RTX, mode);
+	    create_fixed_operand (&ops[1], temp);
+	    expand_insn (icode, 2, ops);
+	    return ops[0].value;
 	  }
 	return temp;
       }
@@ -8732,7 +8730,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	enum machine_mode address_mode;
 	tree base = TREE_OPERAND (exp, 0);
 	gimple def_stmt;
-	int icode, align;
+	enum insn_code icode;
+	int align;
 	/* Handle expansion of non-aliased memory with non-BLKmode.  That
 	   might end up in a register.  */
 	if (TREE_CODE (base) == ADDR_EXPR)
@@ -8806,17 +8805,15 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    && ((icode = optab_handler (movmisalign_optab, mode))
 		!= CODE_FOR_nothing))
 	  {
-	    rtx reg, insn;
+	    struct expand_operand ops[2];
 
 	    /* We've already validated the memory, and we're creating a
-	       new pseudo destination.  The predicates really can't fail.  */
-	    reg = gen_reg_rtx (mode);
-
-	    /* Nor can the insn generator.  */
-	    insn = GEN_FCN (icode) (reg, temp);
-	    emit_insn (insn);
-
-	    return reg;
+	       new pseudo destination.  The predicates really can't fail,
+	       nor can the generator.  */
+	    create_output_operand (&ops[0], NULL_RTX, mode);
+	    create_fixed_operand (&ops[1], temp);
+	    expand_insn (icode, 2, ops);
+	    return ops[0].value;
 	  }
 	return temp;
       }
