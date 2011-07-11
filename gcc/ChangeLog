@@ -1,4 +1,12 @@
 2011-07-11  Arthur Loiret  <aloiret@debian.org>
+
+	* config.gcc (s390-*-linux*): If 'enabled_targets' is 'all', build
+	a bi-arch compiler defaulting to 31-bit. In this case:
+	(tmake_file): Add s390/t-linux64.
+	* doc/install.texi: Add s390-linux to the list of targets supporting
+	--enable-targets=all.
+
+2011-07-11  Arthur Loiret  <aloiret@debian.org>
 	    Matthias Klose <doko@debian.org>
 
 	* config.gcc (mips*-*-linux*): If 'enabled_targets' is 'all', build
