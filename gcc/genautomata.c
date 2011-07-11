@@ -3908,16 +3908,16 @@ find_arc (state_t from_state, state_t to_state, ainsn_t insn)
   return NULL;
 }
 
-/* The function adds arc from FROM_STATE to TO_STATE marked by AINSN.
-   The function returns added arc (or already existing arc).  */
-static arc_t
+/* The function adds arc from FROM_STATE to TO_STATE marked by AINSN,
+   unless such an arc already exists.  */
+static void
 add_arc (state_t from_state, state_t to_state, ainsn_t ainsn)
 {
   arc_t new_arc;
 
   new_arc = find_arc (from_state, to_state, ainsn);
   if (new_arc != NULL)
-    return new_arc;
+    return;
   if (first_free_arc == NULL)
     {
 #ifndef NDEBUG
@@ -3940,7 +3940,6 @@ add_arc (state_t from_state, state_t to_state, ainsn_t ainsn)
   from_state->first_out_arc = new_arc;
   from_state->num_out_arcs++;
   new_arc->next_arc_marked_by_insn = NULL;
-  return new_arc;
 }
 
 /* The function returns the first arc starting from STATE.  */
@@ -5464,7 +5463,6 @@ make_automaton (automaton_t automaton)
   state_t start_state;
   state_t state2;
   ainsn_t advance_cycle_ainsn;
-  arc_t added_arc;
   VEC(state_t, heap) *state_stack = VEC_alloc(state_t, heap, 150);
   int states_n;
   reserv_sets_t reservs_matter = form_reservs_matter (automaton);
@@ -5489,7 +5487,6 @@ make_automaton (automaton_t automaton)
               {
 		/* We process alt_states in the same order as they are
                    present in the description.  */
-		added_arc = NULL;
                 for (alt_state = ainsn->alt_states;
                      alt_state != NULL;
                      alt_state = alt_state->next_alt_state)
@@ -5507,18 +5504,11 @@ make_automaton (automaton_t automaton)
 			    if (progress_flag && states_n % 100 == 0)
 			      fprintf (stderr, ".");
                           }
-			added_arc = add_arc (state, state2, ainsn);
+			add_arc (state, state2, ainsn);
 			if (!ndfa_flag)
 			  break;
                       }
                   }
-		if (!ndfa_flag && added_arc != NULL)
-		  {
-		    for (alt_state = ainsn->alt_states;
-			 alt_state != NULL;
-			 alt_state = alt_state->next_alt_state)
-		      state2 = alt_state->state;
-		  }
               }
             else
               advance_cycle_ainsn = ainsn;
