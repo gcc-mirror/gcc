@@ -1,5 +1,14 @@
 2011-07-11  Georg-Johann Lay  <avr@gjlay.de>
 	
+	* lib/target-supports.exp (check_effective_target_scheduling):
+	New Function.
+	* gcc.dg/pr46614.c: Add dg-require-effective-target scheduling.
+	* gcc.dg/pr45055.c: Ditto.
+	* gcc.dg/pr45353.c: Ditto.
+	* g++.dg/pr45056.C: Ditto.
+
+2011-07-11  Georg-Johann Lay  <avr@gjlay.de>
+	
 	* gcc.dg/compat/struct-by-value-16_main.c: Skip AVR.
 	* gcc.dg/compat/struct-by-value-17_main.c: Skip AVR.
 	* gcc.dg/compat/struct-by-value-18_main.c: Skip AVR.

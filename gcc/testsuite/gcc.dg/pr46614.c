@@ -1,6 +1,7 @@
 /* PR rtl-optimization/46614 */
 /* { dg-do run } */
 /* { dg-options "-O -fno-rename-registers -fsched2-use-superblocks -fschedule-insns2 -funroll-loops" } */
+/* { dg-require-effective-target scheduling } */
 
 extern void abort (void);
 
