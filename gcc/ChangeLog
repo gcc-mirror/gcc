@@ -1,3 +1,11 @@
+2011-07-11  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/39633
+	Backport from mainline r176141
+	2011-07-11  Georg-Johann Lay
+	* config/avr/avr.c (notice_update_cc): For ashiftrt:QI, only
+	offsets 1..5 set cc0 in a usable way.
+
 2011-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/49621

@@ -1477,9 +1477,8 @@ notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
 	    {
 	      rtx x = XEXP (src, 1);
 
-	      if (GET_CODE (x) == CONST_INT
-		  && INTVAL (x) > 0
-		  && INTVAL (x) != 6)
+	      if (CONST_INT_P (x)
+		  && IN_RANGE (INTVAL (x), 1, 5))
 		{
 		  cc_status.value1 = SET_DEST (set);
 		  cc_status.flags |= CC_OVERFLOW_UNUSABLE;
