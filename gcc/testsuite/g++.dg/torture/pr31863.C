@@ -1,5 +1,6 @@
 /* { dg-do link } */
 /* { dg-timeout-factor 2.0 } */
+/* { dg-skip-if "Program too big" { "avr-*-*" } { "*" } { "" } } */
 
 namespace Loki
 {
