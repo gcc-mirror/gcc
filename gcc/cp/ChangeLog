@@ -1,5 +1,11 @@
 2011-07-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49672
+	* pt.c (extract_fnparm_pack): Split out from...
+	(make_fnparm_pack): ...here.
+	(instantiate_decl): Handle non-pack parms after a pack.
+	* semantics.c (maybe_add_lambda_conv_op): Don't in a template.
+
 	* decl2.c (decl_constant_var_p): Use decl_maybe_constant_var_p.
 
 	PR c++/44609
