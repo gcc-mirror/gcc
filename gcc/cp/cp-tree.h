@@ -4679,6 +4679,9 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   /* The location where the template is instantiated.  */
   location_t locus;
 
+  /* errorcount+sorrycount when we pushed this level.  */
+  int errors;
+
   /* True if the location is in a system header.  */
   bool in_system_header_p;
 };
