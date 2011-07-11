@@ -1,3 +1,8 @@
+2011-07-11  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* genautomata.c (add_arc): Return void.  All callers changed.
+	(make_automaton): Remove dead code.
+
 2011-07-11  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2cfi.c (DW_STACK_POINTER_REGNUM): New.
