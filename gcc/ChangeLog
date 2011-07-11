@@ -1,3 +1,21 @@
+2011-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49676
+	* dwarf2out.c (int_shift_loc_descriptor): New function.
+	(int_loc_descriptor): If shorter, emit i as
+	(i >> shift), shift, DW_OP_shl for suitable shift value.
+	Similarly, try to optimize large negative values using
+	DW_OP_neg of a positive value if shorter.
+	(size_of_int_shift_loc_descriptor): New function.
+	(size_of_int_loc_descriptor): Adjust to match int_loc_descriptor
+	changes.
+	(mem_loc_descriptor) <case CONST_INT>: Emit zero-extended constants
+	that fit into DWARF2_ADDR_SIZE bytes as int_loc_descriptor +
+	DW_OP_GNU_convert instead of DW_OP_GNU_const_type if the former
+	is shorter.
+	(resolve_addr_in_expr): Optimize DW_OP_plus_uconst with a large
+	addend as added DW_OP_plus if it is shorter.
+
 2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h [!USE_GLD] (CTORS_SECTION_ASM_OP): Define.
