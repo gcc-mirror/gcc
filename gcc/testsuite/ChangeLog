@@ -1,5 +1,8 @@
 2011-07-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/49676
+	* gcc.dg/guality/csttest.c: New test.
+
 	PR fortran/49698
 	* gfortran.dg/pr49698.f90: New test.
 
