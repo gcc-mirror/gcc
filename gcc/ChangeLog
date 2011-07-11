@@ -1,3 +1,11 @@
+2011-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.md (save_register_window_1): Rename to...
+	(window_save): ...this.
+	* config/sparc/sparc.c (emit_save_register_window): Rename to...
+	(emit_window_save): ...this.
+	(sparc_expand_prologue): Adjust to above renaming.
+
 2011-07-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_trampoline_init): Use movl instead
