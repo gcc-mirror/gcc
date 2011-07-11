@@ -1,5 +1,11 @@
 2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (i?86-*-solaris2*): Use libgcc copy of
+	i386/t-crtstuff.
+	* configure: Regenerate.
+
+2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* dfp-bit.c, dfp-bit.h: New files.
 	* Makefile.in (D32PBIT_FUNCS, D64PBIT_FUNCS, D128PBIT_FUNCS): New
 	variables.

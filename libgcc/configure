@@ -3826,9 +3826,7 @@ EOF
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }; then
-      # configure expects config files in libgcc/config, so need a relative
-      # path here.
-      tmake_file="${tmake_file} ../../gcc/config/i386/t-crtstuff"
+      tmake_file="${tmake_file} i386/t-crtstuff"
   fi
   ;;
 esac
