@@ -69,7 +69,7 @@ subroutine lock_test2
   lock(lock)
   lock(lock2(1))
   lock(lock2) ! { dg-error "must be a scalar coarray of type LOCK_TYPE" }
-  lock(lock[1]) ! { dg-error "must be a scalar coarray of type LOCK_TYPE" }
+  lock(lock[1]) ! OK
 end subroutine lock_test2
 
 
