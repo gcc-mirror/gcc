@@ -1,5 +1,7 @@
 2011-07-11  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (decl_constant_var_p): Use decl_maybe_constant_var_p.
+
 	PR c++/44609
 	* cp-tree.h (struct tinst_level): Add errors field.
 	* pt.c (neglectable_inst_p, limit_bad_template_recurson): New.
