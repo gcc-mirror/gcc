@@ -3950,10 +3950,10 @@ cp_write_global_declarations (void)
 	     #pragma interface, etc.) we decided not to emit the
 	     definition here.  */
 	  && !DECL_INITIAL (decl)
-	  /* An explicit instantiation can be used to specify
-	     that the body is in another unit. It will have
-	     already verified there was a definition.  */
-	  && !DECL_EXPLICIT_INSTANTIATION (decl))
+	  /* Don't complain if the template was defined.  */
+	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
+	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
+				(template_for_substitution (decl)))))
 	{
 	  warning (0, "inline function %q+D used but never defined", decl);
 	  /* Avoid a duplicate warning from check_global_declaration_1.  */

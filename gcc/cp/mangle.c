@@ -3106,11 +3106,11 @@ mangle_decl_string (const tree decl)
   if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
     {
       struct tinst_level *tl = current_instantiation ();
-      if (!tl || tl->decl != decl)
+      if ((!tl || tl->decl != decl)
+	  && push_tinst_level (decl))
 	{
 	  template_p = true;
 	  saved_fn = current_function_decl;
-	  push_tinst_level (decl);
 	  current_function_decl = NULL_TREE;
 	}
     }

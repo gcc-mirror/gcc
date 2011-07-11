@@ -1,3 +1,14 @@
+2011-07-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44609
+	* cp-tree.h (struct tinst_level): Add errors field.
+	* pt.c (neglectable_inst_p, limit_bad_template_recurson): New.
+	(push_tinst_level): Don't start another decl in that case.
+	(reopen_tinst_level): Adjust errors field.
+	* decl2.c (cp_write_global_declarations): Don't complain about
+	undefined inline if its template was defined.
+	* mangle.c (mangle_decl_string): Handle failure from push_tinst_level.
+
 2011-07-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49691

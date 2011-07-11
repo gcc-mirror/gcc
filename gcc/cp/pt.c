@@ -7499,6 +7499,36 @@ uses_template_parms_level (tree t, int level)
 				 /*include_nondeduced_p=*/true);
 }
 
+/* Returns TRUE iff INST is an instantiation we don't need to do in an
+   ill-formed translation unit, i.e. a variable or function that isn't
+   usable in a constant expression.  */
+
+static inline bool
+neglectable_inst_p (tree d)
+{
+  return (DECL_P (d)
+	  && !(TREE_CODE (d) == FUNCTION_DECL ? DECL_DECLARED_CONSTEXPR_P (d)
+	       : decl_maybe_constant_var_p (d)));
+}
+
+/* Returns TRUE iff we should refuse to instantiate DECL because it's
+   neglectable and instantiated from within an erroneous instantiation.  */
+
+static bool
+limit_bad_template_recurson (tree decl)
+{
+  struct tinst_level *lev = current_tinst_level;
+  int errs = errorcount + sorrycount;
+  if (lev == NULL || errs == 0 || !neglectable_inst_p (decl))
+    return false;
+
+  for (; lev; lev = lev->next)
+    if (neglectable_inst_p (lev->decl))
+      break;
+
+  return (lev && errs > lev->errors);
+}
+
 static int tinst_depth;
 extern int max_tinst_depth;
 #ifdef GATHER_STATISTICS
@@ -7532,9 +7562,16 @@ push_tinst_level (tree d)
       return 0;
     }
 
+  /* If the current instantiation caused problems, don't let it instantiate
+     anything else.  Do allow deduction substitution and decls usable in
+     constant expressions.  */
+  if (limit_bad_template_recurson (d))
+    return 0;
+
   new_level = ggc_alloc_tinst_level ();
   new_level->decl = d;
   new_level->locus = input_location;
+  new_level->errors = errorcount+sorrycount;
   new_level->in_system_header_p = in_system_header;
   new_level->next = current_tinst_level;
   current_tinst_level = new_level;
@@ -7578,6 +7615,8 @@ reopen_tinst_level (struct tinst_level *level)
 
   current_tinst_level = level;
   pop_tinst_level ();
+  if (current_tinst_level)
+    current_tinst_level->errors = errorcount+sorrycount;
   return level->decl;
 }
 
