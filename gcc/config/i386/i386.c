@@ -22683,54 +22683,14 @@ static void
 ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
   rtx mem, fnaddr;
+  int opcode;
+  int offset = 0;
 
   fnaddr = XEXP (DECL_RTL (fndecl), 0);
 
-  if (!TARGET_64BIT)
+  if (TARGET_64BIT)
     {
-      rtx disp, chain;
-      int opcode;
-
-      /* Depending on the static chain location, either load a register
-	 with a constant, or push the constant to the stack.  All of the
-	 instructions are the same size.  */
-      chain = ix86_static_chain (fndecl, true);
-      if (REG_P (chain))
-	{
-	  if (REGNO (chain) == CX_REG)
-	    opcode = 0xb9;
-	  else if (REGNO (chain) == AX_REG)
-	    opcode = 0xb8;
-	  else
-	    gcc_unreachable ();
-	}
-      else
-	opcode = 0x68;
-
-      mem = adjust_address (m_tramp, QImode, 0);
-      emit_move_insn (mem, gen_int_mode (opcode, QImode));
-
-      mem = adjust_address (m_tramp, SImode, 1);
-      emit_move_insn (mem, chain_value);
-
-      /* Compute offset from the end of the jmp to the target function.
-	 In the case in which the trampoline stores the static chain on
-	 the stack, we need to skip the first insn which pushes the
-	 (call-saved) register static chain; this push is 1 byte.  */
-      disp = expand_binop (SImode, sub_optab, fnaddr,
-			   plus_constant (XEXP (m_tramp, 0),
-					  MEM_P (chain) ? 9 : 10),
-			   NULL_RTX, 1, OPTAB_DIRECT);
-
-      mem = adjust_address (m_tramp, QImode, 5);
-      emit_move_insn (mem, gen_int_mode (0xe9, QImode));
-
-      mem = adjust_address (m_tramp, SImode, 6);
-      emit_move_insn (mem, disp);
-    }
-  else
-    {
-      int offset = 0, size;
+      int size;
 
       /* Load the function address to r11.  Try to load address using
 	 the shorter movl instead of movabs.  We may want to support
@@ -22757,19 +22717,21 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	  offset += 10;
 	}
 
-      /* Load static chain using movabs to r10.  */
-      mem = adjust_address (m_tramp, HImode, offset);
-      /* Use the shorter movl instead of movabs for x32.  */
+      /* Load static chain using movabs to r10.  Use the
+	 shorter movl instead of movabs for x32.  */
       if (TARGET_X32)
 	{
+	  opcode = 0xba41;
 	  size = 6;
-	  emit_move_insn (mem, gen_int_mode (0xba41, HImode));
 	}
       else
 	{
+	  opcode = 0xba49;
 	  size = 10;
-	  emit_move_insn (mem, gen_int_mode (0xba49, HImode));
 	}
+
+      mem = adjust_address (m_tramp, HImode, offset);
+      emit_move_insn (mem, gen_int_mode (opcode, HImode));
 
       mem = adjust_address (m_tramp, ptr_mode, offset + 2);
       emit_move_insn (mem, chain_value);
@@ -22780,9 +22742,55 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       mem = adjust_address (m_tramp, SImode, offset);
       emit_move_insn (mem, gen_int_mode (0x90e3ff49, SImode));
       offset += 4;
-
-      gcc_assert (offset <= TRAMPOLINE_SIZE);
     }
+  else
+    {
+      rtx disp, chain;
+
+      /* Depending on the static chain location, either load a register
+	 with a constant, or push the constant to the stack.  All of the
+	 instructions are the same size.  */
+      chain = ix86_static_chain (fndecl, true);
+      if (REG_P (chain))
+	{
+	  switch (REGNO (chain))
+	    {
+	    case AX_REG:
+	      opcode = 0xb8; break;
+	    case CX_REG:
+	      opcode = 0xb9; break;	
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      else
+	opcode = 0x68;
+
+      mem = adjust_address (m_tramp, QImode, offset);
+      emit_move_insn (mem, gen_int_mode (opcode, QImode));
+
+      mem = adjust_address (m_tramp, SImode, offset + 1);
+      emit_move_insn (mem, chain_value);
+      offset += 5;
+
+      mem = adjust_address (m_tramp, QImode, offset);
+      emit_move_insn (mem, gen_int_mode (0xe9, QImode));
+
+      mem = adjust_address (m_tramp, SImode, offset + 1);
+
+      /* Compute offset from the end of the jmp to the target function.
+	 In the case in which the trampoline stores the static chain on
+	 the stack, we need to skip the first insn which pushes the
+	 (call-saved) register static chain; this push is 1 byte.  */
+      offset += 5;
+      disp = expand_binop (SImode, sub_optab, fnaddr,
+			   plus_constant (XEXP (m_tramp, 0),
+					  offset - (MEM_P (chain) ? 1 : 0)),
+			   NULL_RTX, 1, OPTAB_DIRECT);
+      emit_move_insn (mem, disp);
+    }
+
+  gcc_assert (offset <= TRAMPOLINE_SIZE);
 
 #ifdef HAVE_ENABLE_EXECUTE_STACK
 #ifdef CHECK_EXECUTE_STACK_ENABLED
