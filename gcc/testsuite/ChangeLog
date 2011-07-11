@@ -1,3 +1,9 @@
+2011-07-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/vect/costmodel/x86_64/x86_64-costmodel-vect.exp: Check
+	ia32.
+	* go.test/go-test.exp (go-set-goarch): Likewise.
+
 2011-07-11  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/39633
