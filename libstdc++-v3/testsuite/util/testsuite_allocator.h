@@ -408,6 +408,7 @@ namespace __gnu_test
   	{
 	  static_assert(P2, "assigning propagating_allocator<T, true>");
 	  propagating_allocator(a).swap_base(*this);
+	  return *this;
   	}
 
       // postcondition: a.get_personality() == 0

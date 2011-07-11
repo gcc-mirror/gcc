@@ -1,3 +1,8 @@
+2011-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_allocator.h (propagating_allocator<>::
+	operator=(const propagating_allocator<>&)): Retun *this.
+
 2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/Makefile.am: Add new header.
@@ -24,10 +29,10 @@
 	Adjust dg-error line numbers.
 	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
 	Likewise.
-	* testsuite/23_containers/vector/requirements/dr438/constructor_1_neg.cc:
-	Likewise.
-	* testsuite/23_containers/vector/requirements/dr438/constructor_2_neg.cc:
-	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
 
 2011-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
