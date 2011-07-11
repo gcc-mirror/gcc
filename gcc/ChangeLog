@@ -1,3 +1,19 @@
+2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/dfp-bit.c, config/dfp-bit.h: Move to ../libgcc.
+	* config/t-dfprules: Move to ../libgcc/config.
+	* config.gcc (i[34567]86-*-linux*, i[34567]86-*-kfreebsd*-gnu,
+	i[34567]86-*-knetbsd*-gnu, i[34567]86-*-gnu*,
+	i[34567]86-*-kopensolaris*-gnu): Remove t-dfprules from tmake_file.
+	(x86_64-*-linux*, x86_64-*-kfreebsd*-gnu, x86_64-*-knetbsd*-gnu):
+	Likewise.
+	(i[34567]86-*-cygwin*): Likewise.
+	(i[34567]86-*-mingw*,  x86_64-*-mingw*): Likewise.
+	(powerpc-*-linux*, powerpc64-*-linux*): Likewise.
+	* Makefile.in (D32PBIT_FUNCS, D64PBIT_FUNCS, D128PBIT_FUNCS): Remove.
+	(libgcc.mvars): Remove DFP_ENABLE, DFP_CFLAGS, D32PBIT_FUNCS,
+	D64PBIT_FUNCS, D128PBIT_FUNCS.
+
 2011-07-11  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (simplify_conversion_using_ranges): Manually
