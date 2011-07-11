@@ -1,3 +1,12 @@
+2011-07-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* Make-lang.in (objcp/objc-runtime-shared-support.o): Do not
+	depend on OBSTACK_H.
+	(objcp/objc-gnu-runtime-abi-01.o): Likewise.
+	(objcp/objc-next-runtime-abi-01.o): Likewise.
+	(objcp/objc-next-runtime-abi-02.o): Likewise.
+	(objcp/objcp-act.o): Likewise.
+
 2011-07-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Make-lang.in (OBJCXX_OBJS): Added objc-encoding.o.

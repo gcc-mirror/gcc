@@ -381,9 +381,7 @@ objc_init (void)
   /* Set up stuff used by FE parser and all runtimes.  */
   errbuf = XNEWVEC (char, 1024 * 10);
   hash_init ();
-  /* TODO: Use objc_encoding_init().  */
-  gcc_obstack_init (&util_obstack);
-  util_firstobj = (char *) obstack_finish (&util_obstack);
+  objc_encoding_init ();
   /* ... and then check flags and set-up for the selected runtime ... */
   if (flag_next_runtime && flag_objc_abi >= 2)
     ok = objc_next_runtime_abi_02_init (&runtime);

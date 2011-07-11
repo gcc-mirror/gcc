@@ -92,7 +92,6 @@ objcp/objc-runtime-shared-support.o : objc/objc-runtime-shared-support.c \
    gt-objc-objc-runtime-shared-support.h \
    $(START_HDRS) \
    $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   $(OBSTACK_H) \
    objc/objc-encoding.h \
    objc/objc-next-metadata-tags.h \
    objc/objc-runtime-shared-support.h \
@@ -104,7 +103,6 @@ objcp/objc-gnu-runtime-abi-01.o: objc/objc-gnu-runtime-abi-01.c \
    gt-objc-objc-gnu-runtime-abi-01.h \
    $(START_HDRS) \
    $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   $(OBSTACK_H) \
    toplev.h \
    objc/objc-encoding.h \
    objc/objc-runtime-hooks.h \
@@ -117,7 +115,6 @@ objcp/objc-next-runtime-abi-01.o: objc/objc-next-runtime-abi-01.c \
    gt-objc-objc-next-runtime-abi-01.h \
    $(START_HDRS) \
    $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   $(OBSTACK_H) \
    $(TARGET_H) output.h \
    objc/objc-encoding.h \
    objc/objc-next-metadata-tags.h \
@@ -131,7 +128,6 @@ objcp/objc-next-runtime-abi-02.o: objc/objc-next-runtime-abi-02.c \
    gt-objc-objc-next-runtime-abi-02.h \
    $(START_HDRS) \
    $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   $(OBSTACK_H) \
    $(TARGET_H) \
    objc/objc-encoding.h \
    objc/objc-next-metadata-tags.h \
@@ -148,7 +144,6 @@ objcp/objcp-act.o : objc/objc-act.c \
    gt-objc-objc-act.h \
    $(START_HDRS) \
    $(GGC_H) $(DIAGNOSTIC_H) $(FLAGS_H) input.h \
-   $(OBSTACK_H) \
    toplev.h $(FUNCTION_H) output.h debug.h $(LANGHOOKS_DEF_H) \
    $(HASHTAB_H) $(GIMPLE_H) \
    $(RTL_H) $(EXPR_H) $(TARGET_H) \

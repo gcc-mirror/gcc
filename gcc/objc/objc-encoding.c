@@ -53,18 +53,24 @@ along with GCC; see the file COPYING3.  If not see
 /* Set up for use of obstacks.  */
 #include "obstack.h"
 
-/* This obstack is used to accumulate the encoding of a data type.
-   TODO: Make this static.  */
-struct obstack util_obstack;
+/* This obstack is used to accumulate the encoding of a data type.  */
+static struct obstack util_obstack;
 
 /* This points to the beginning of obstack contents, so we can free
-   the whole contents.  TODO: Make this static.  */
-char *util_firstobj;
+   the whole contents.  */
+static char *util_firstobj;
+
+void objc_encoding_init (void)
+{
+  gcc_obstack_init (&util_obstack);
+  util_firstobj = (char *) obstack_finish (&util_obstack);
+}
 
 int generating_instance_variables = 0;
 
 static void encode_type_qualifiers (tree);
 static void encode_type (tree, int, int);
+static void encode_field (tree field_decl, int curtype, int format);
 
 static tree
 objc_method_parm_type (tree type)
@@ -470,7 +476,7 @@ encode_aggregate_fields (tree type, bool pointed_to, int curtype, int format)
 	  obstack_1grow (&util_obstack, '"');
         }
 
-      encode_field_decl (field, curtype, format);
+      encode_field (field, curtype, format);
     }
 }
 
@@ -802,8 +808,8 @@ encode_gnu_bitfield (int position, tree type, int size)
   obstack_grow (&util_obstack, buffer, strlen (buffer));
 }
 
-void
-encode_field_decl (tree field_decl, int curtype, int format)
+static void
+encode_field (tree field_decl, int curtype, int format)
 {
 #ifdef OBJCPLUS
   /* C++ static members, and things that are not fields at all,
@@ -826,6 +832,25 @@ encode_field_decl (tree field_decl, int curtype, int format)
     }
   else
     encode_type (TREE_TYPE (field_decl), curtype, format);
+}
+
+tree
+encode_field_decl (tree field_decl)
+{
+  tree result;
+
+  encode_field (field_decl,
+		obstack_object_size (&util_obstack),
+		OBJC_ENCODE_DONT_INLINE_DEFS);
+  
+  /* Null terminate string.  */
+  obstack_1grow (&util_obstack, 0);
+
+  /* Get identifier for the string.  */
+  result = get_identifier (XOBFINISH (&util_obstack, char *));
+  obstack_free (&util_obstack, util_firstobj);
+
+  return result;
 }
 
 /* This routine encodes the attribute of the input PROPERTY according
