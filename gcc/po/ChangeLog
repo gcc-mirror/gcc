@@ -1,3 +1,7 @@
+2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* EXCLUDES (libgcov.c): Remove.
+
 2011-07-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, id.po, ja.po,

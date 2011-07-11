@@ -42,7 +42,6 @@ gthr-win32.h
 gthr.h
 libgcc2.c
 libgcc2.h
-libgcov.c
 limitx.h
 limity.h
 longlong.h
