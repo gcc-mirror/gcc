@@ -17,7 +17,11 @@
 # <http://www.gnu.org/licenses/>.
 
 MULTILIB_OPTIONS = mabi=n32/mabi=32/mabi=64
+ifneq ($(filter MIPS_ABI_DEFAULT=ABI_32,$(tm_defines)),)
+MULTILIB_DIRNAMES = n32 . 64
+else
 MULTILIB_DIRNAMES = n32 32 64
+endif
 MULTILIB_OSDIRNAMES = ../lib32 ../lib ../lib64
 
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
