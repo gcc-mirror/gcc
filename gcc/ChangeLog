@@ -1,3 +1,8 @@
+2011-07-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c: Tidy processor feature bitmasks.
+	(m_P4_NOCONA): New.
+
 2011-07-12  Andrew Pinski  <pinskia@gmail.com>
 
 	PR rtl-opt/49474
