@@ -1,5 +1,10 @@
 2011-07-12  Andrew Haley  <aph@redhat.com>
 
+	* interpret.cc (check_handler): Fix bit rot.
+	(breakpoint_at): Likewise.
+
+2011-07-12  Andrew Haley  <aph@redhat.com>
+
 	* java/lang/natClass.cc (finalize): Make sure that the class
 	really has an engine.
 
