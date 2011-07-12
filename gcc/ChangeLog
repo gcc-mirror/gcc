@@ -1,3 +1,8 @@
+2011-07-12  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-copyrename.c (rename_ssa_copies): Zero statistics.
+	Do not perform no-op changes.
+
 2011-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/arm/predicates.md (neon_struct_operand): Make a normal
