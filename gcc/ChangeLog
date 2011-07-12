@@ -1,3 +1,8 @@
+2011-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49712
+	* tree-ssa-loop-im.c (gen_lsm_tmp_name): Handle TARGET_MEM_REF.
+
 2011-07-11  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* genautomata.c (add_arc): Return void.  All callers changed.
