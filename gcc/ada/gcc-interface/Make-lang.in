@@ -104,19 +104,19 @@ ADA_TOOLS_FLAGS_TO_PASS=\
 	"GNATLINK=../../gnatlink"	\
 	"GNATBIND=../../gnatbind"
 
-GCC_LINK=$(CC) -static-libgcc $(LDFLAGS)
+GCC_LINK=$(LINKER) $(ALL_LINKERFLAGS) -static-libgcc $(LDFLAGS)
 
 # Lists of files for various purposes.
 
 # Languages-specific object files for Ada.
+
 # Object files for gnat1 from C sources.
-GNAT1_C_OBJS = ada/b_gnat1.o ada/adadecode.o ada/adaint.o ada/cstreams.o \
- ada/cio.o ada/targtyps.o ada/decl.o ada/misc.o ada/utils.o ada/utils2.o \
- ada/trans.o ada/cuintp.o ada/argv.o ada/raise.o ada/init.o ada/tracebak.o \
- ada/initialize.o ada/env.o
+GNAT1_C_OBJS = ada/adadecode.o ada/adaint.o ada/argv.o ada/cio.o \
+ ada/cstreams.o ada/env.o ada/init.o ada/initialize.o ada/raise.o \
+ ada/seh_init.o ada/targext.o ada/tracebak.o ada/cuintp.o ada/decl.o \
+ ada/misc.o ada/utils.o ada/utils2.o ada/trans.o ada/targtyps.o
 
 # Object files from Ada sources that are used by gnat1
-
 GNAT_ADA_OBJS =	\
  ada/a-charac.o	\
  ada/a-chlat1.o	\
@@ -270,7 +270,6 @@ GNAT_ADA_OBJS =	\
  ada/scng.o	\
  ada/scos.o	\
  ada/sdefault.o	\
- ada/seh_init.o	\
  ada/sem.o	\
  ada/sem_aggr.o	\
  ada/sem_attr.o	\
@@ -320,7 +319,6 @@ GNAT_ADA_OBJS =	\
  ada/switch.o	\
  ada/system.o	\
  ada/table.o	\
- ada/targext.o	\
  ada/targparm.o	\
  ada/tbuild.o	\
  ada/tree_gen.o	\
@@ -338,24 +336,24 @@ GNAT_ADA_OBJS =	\
  ada/widechar.o
 
 # Object files for gnat executables
-GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o
+GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o ada/b_gnat1.o
 
 GNAT1_OBJS = $(GNAT1_C_OBJS) $(GNAT1_ADA_OBJS)
 
 GNATBIND_OBJS = \
  ada/adaint.o     \
  ada/argv.o       \
- ada/exit.o       \
  ada/cio.o        \
  ada/cstreams.o   \
  ada/env.o        \
+ ada/exit.o       \
  ada/final.o      \
  ada/init.o       \
  ada/initialize.o \
- ada/seh_init.o   \
  ada/link.o       \
- ada/targext.o    \
  ada/raise.o      \
+ ada/seh_init.o   \
+ ada/targext.o    \
  ada/tracebak.o   \
  ada/ada.o        \
  ada/a-clrefi.o   \

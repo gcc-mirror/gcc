@@ -1,3 +1,8 @@
+2011-07-12  Laurent GUERBY  <laurent@guerby.net>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* prefix.h: Wrap up in extern "C" block.
+
 2011-07-12  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	AMD bdver2 Enablement

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2005-2009, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2005-2011, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -31,6 +31,10 @@
 
 /*  This unit contains support for SEH (Structured Exception Handling).
     Right now the only implementation is for Win32.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef IN_RTS
 #include "tconfig.h"
@@ -309,5 +313,9 @@ __gnat_install_SEH_handler (void *ER)
 /* For all non Windows targets we provide a dummy SEH install handler.  */
 void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
 {
+}
+#endif
+
+#ifdef __cplusplus
 }
 #endif

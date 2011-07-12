@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,9 +29,12 @@
  *                                                                          *
  ****************************************************************************/
 
-/*  This file contains host-specific parameters describing the behavior     */
-/*  of the linker. It is used by gnatlink as well as all tools that use     */
-/*  Mlib.                                                                   */
+/*  This file contains host-specific parameters describing the behavior of the
+    linker.  It is used by gnatlink as well as all tools that use Mlib.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <string.h>
 
@@ -253,4 +256,8 @@ unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_default_libgcc_subdir = "lib";
+#endif
+
+#ifdef __cplusplus
+}
 #endif

@@ -162,6 +162,11 @@ begin
    end loop;
 
    Put_Line (Ofile, "");
+
+   Put_Line (Ofile, "#ifdef __cplusplus");
+   Put_Line (Ofile, "extern ""C"" {");
+   Put_Line (Ofile, "#endif");
+
    NKV := 0;
 
    --  Loop through node kind codes
@@ -248,6 +253,9 @@ exception
    when Done =>
       Close (InS);
       Put_Line (Ofile, "");
+      Put_Line (Ofile, "#ifdef __cplusplus");
+      Put_Line (Ofile, "}");
+      Put_Line (Ofile, "#endif");
       Close (Ofile);
       Set_Exit_Status (0);
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *             Copyright (C) 2010, Free Software Foundation, Inc.           *
+ *           Copyright (C) 2010-2011, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -30,6 +30,14 @@
 #ifndef GCC_ADAINT_H
 #define GCC_ADAINT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char *__gnat_to_canonical_file_spec (char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GCC_ADAINT_H */

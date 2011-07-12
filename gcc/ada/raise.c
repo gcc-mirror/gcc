@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2009, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2011, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -31,6 +31,10 @@
 
 /* Shared routines to support exception handling.  __gnat_unhandled_terminate
    is shared between all exception handling mechanisms.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef IN_RTS
 #include "tconfig.h"
@@ -79,3 +83,7 @@ __gnat_unhandled_terminate (void)
   /* Default termination handling */
   __gnat_os_exit (1);
 }
+
+#ifdef __cplusplus
+}
+#endif

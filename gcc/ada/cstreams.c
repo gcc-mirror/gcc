@@ -6,7 +6,7 @@
  *                                                                          *
  *              Auxiliary C functions for Interfaces.C.Streams              *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,7 +29,11 @@
  *                                                                          *
  ****************************************************************************/
 
-/* Routines required for implementing routines in Interfaces.C.Streams */
+/* Routines required for implementing routines in Interfaces.C.Streams.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef __vxworks
 #include "vxWorks.h"
@@ -242,3 +246,7 @@ __gnat_full_name (char *nam, char *buffer)
 
   return buffer;
 }
+
+#ifdef __cplusplus
+}
+#endif

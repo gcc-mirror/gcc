@@ -194,6 +194,10 @@ begin
    Create (OutB, Out_File, "snames.nb");
    Create (OutH, Out_File, "snames.nh");
 
+   Put_Line (OutH, "#ifdef __cplusplus");
+   Put_Line (OutH, "extern ""C"" {");
+   Put_Line (OutH, "#endif");
+
    Anchored_Mode := True;
    Val := 0;
 
@@ -274,4 +278,8 @@ begin
       Line := Get_Line (InH);
       Put_Line (OutH, Line);
    end loop;
+
+   Put_Line (OutH, "#ifdef __cplusplus");
+   Put_Line (OutH, "}");
+   Put_Line (OutH, "#endif");
 end XSnamesT;

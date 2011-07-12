@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *           Copyright (C) 2001-2009, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2011, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -28,6 +28,10 @@
  * Extensive contributions were provided by Ada Core Technologies Inc.      *
  *                                                                          *
  ****************************************************************************/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* This function will return the Ada name from the encoded form.
    The Ada coding is done in exp_dbug.ads and this is the inverse function.
@@ -51,3 +55,7 @@ extern void get_encoding (const char *, char *);
    function used in the binutils and GDB. Always consider using __gnat_decode
    instead of ada_demangle. Caller must free the pointer returned.  */
 extern char *ada_demangle (const char *);
+
+#ifdef __cplusplus
+}
+#endif

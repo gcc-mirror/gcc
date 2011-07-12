@@ -68,11 +68,19 @@ const char **save_argv;
 extern int gnat_argc;
 extern char **gnat_argv;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Declare functions we use as part of startup.  */
 extern void __gnat_initialize (void *);
 extern void __gnat_install_SEH_handler (void *);
 extern void adainit (void);
 extern void _ada_gnat1drv (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* The parser for the language.  For us, we process the GNAT tree.  */
 

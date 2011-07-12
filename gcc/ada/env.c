@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2005-2010, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2005-2011, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -35,6 +35,10 @@
 #if defined (__alpha__) && defined (__osf__)
 #define AES_SOURCE
 #define _BSD
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #ifdef IN_RTS
@@ -323,3 +327,7 @@ void __gnat_clearenv (void) {
   clearenv ();
 #endif
 }
+
+#ifdef __cplusplus
+}
+#endif
