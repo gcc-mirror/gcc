@@ -1,3 +1,9 @@
+2011-07-12   Diego Novillo  <dnovillo@google.com>
+
+	* name-lookup.h (cp_binding_level): Rename from cxx_scope.
+	Update all users.
+	(struct cp_binding_level): Fix indentation.
+
 2011-07-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49672

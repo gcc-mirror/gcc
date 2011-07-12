@@ -950,7 +950,7 @@ struct GTY(()) saved_scope {
   VEC(tree,gc) *lang_base;
   tree lang_name;
   tree template_parms;
-  struct cp_binding_level *x_previous_class_level;
+  cp_binding_level *x_previous_class_level;
   tree x_saved_tree;
 
   /* Only used for uses of this in trailing return type.  */
@@ -967,8 +967,8 @@ struct GTY(()) saved_scope {
 
   struct stmt_tree_s x_stmt_tree;
 
-  struct cp_binding_level *class_bindings;
-  struct cp_binding_level *bindings;
+  cp_binding_level *class_bindings;
+  cp_binding_level *bindings;
 
   struct saved_scope *prev;
 };
@@ -1054,7 +1054,7 @@ struct GTY(()) language_function {
   BOOL_BITFIELD can_throw : 1;
 
   htab_t GTY((param_is(struct named_label_entry))) x_named_labels;
-  struct cp_binding_level *bindings;
+  cp_binding_level *bindings;
   VEC(tree,gc) *x_local_names;
   htab_t GTY((param_is (struct cxx_int_tree_map))) extern_decl_map;
 };
@@ -1944,7 +1944,7 @@ struct GTY(()) lang_decl_fn {
 
 struct GTY(()) lang_decl_ns {
   struct lang_decl_base base;
-  struct cp_binding_level *level;
+  cp_binding_level *level;
 };
 
 /* DECL_LANG_SPECIFIC for parameters.  */
@@ -4860,7 +4860,7 @@ extern tree make_anon_name			(void);
 extern tree pushdecl_top_level_maybe_friend	(tree, bool);
 extern tree pushdecl_top_level_and_finish	(tree, tree);
 extern tree check_for_out_of_scope_variable	(tree);
-extern void print_other_binding_stack		(struct cp_binding_level *);
+extern void print_other_binding_stack		(cp_binding_level *);
 extern tree maybe_push_decl			(tree);
 extern tree current_decl_namespace		(void);
 

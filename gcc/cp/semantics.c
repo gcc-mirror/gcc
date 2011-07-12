@@ -8452,7 +8452,7 @@ is_normal_capture_proxy (tree decl)
 static inline void
 insert_capture_proxy (tree var)
 {
-  cxx_scope *b;
+  cp_binding_level *b;
   int skip;
   tree stmt_list;
 
@@ -8461,7 +8461,7 @@ insert_capture_proxy (tree var)
   b = current_binding_level;
   for (skip = 0; ; ++skip)
     {
-      cxx_scope *n = b->level_chain;
+      cp_binding_level *n = b->level_chain;
       if (n->kind == sk_function_parms)
 	break;
       b = n;
