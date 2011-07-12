@@ -4166,9 +4166,9 @@ to pad out an argument with extra space.  The value should be of type
 @code{enum direction}: either @code{upward} to pad above the argument,
 @code{downward} to pad below, or @code{none} to inhibit padding.
 
-The @emph{amount} of padding is always just enough to reach the next
-multiple of @code{TARGET_FUNCTION_ARG_BOUNDARY}; this macro does not
-control it.
+The @emph{amount} of padding is not controlled by this macro, but by the
+target hook @code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is
+always just enough to reach the next multiple of that boundary. 
 
 This macro has a default definition which is right for most systems.
 For little-endian machines, the default is to pad upward.  For
@@ -4200,6 +4200,8 @@ This hook returns the alignment boundary, in bits, of an argument
 with the specified mode and type.  The default hook returns
 @code{PARM_BOUNDARY} for all arguments.
 @end deftypefn
+
+@hook TARGET_FUNCTION_ARG_ROUND_BOUNDARY
 
 @defmac FUNCTION_ARG_REGNO_P (@var{regno})
 A C expression that is nonzero if @var{regno} is the number of a hard

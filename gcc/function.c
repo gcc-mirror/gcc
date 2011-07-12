@@ -3705,7 +3705,7 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
 {
   tree sizetree;
   enum direction where_pad;
-  unsigned int boundary;
+  unsigned int boundary, round_boundary;
   int reg_parm_stack_space = 0;
   int part_size_in_regs;
 
@@ -3737,6 +3737,8 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
     = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
   where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
   boundary = targetm.calls.function_arg_boundary (passed_mode, type);
+  round_boundary = targetm.calls.function_arg_round_boundary (passed_mode,
+							      type);
   locate->where_pad = where_pad;
 
   /* Alignment can't exceed MAX_SUPPORTED_STACK_ALIGNMENT.  */
@@ -3783,8 +3785,8 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
     tree s2 = sizetree;
     if (where_pad != none
 	&& (!host_integerp (sizetree, 1)
-	    || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % PARM_BOUNDARY))
-      s2 = round_up (s2, PARM_BOUNDARY / BITS_PER_UNIT);
+	    || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % round_boundary))
+      s2 = round_up (s2, round_boundary / BITS_PER_UNIT);
     SUB_PARM_SIZE (locate->slot_offset, s2);
   }
 
@@ -3836,8 +3838,8 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
 
   if (where_pad != none
       && (!host_integerp (sizetree, 1)
-	  || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % PARM_BOUNDARY))
-    sizetree = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
+	  || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % round_boundary))
+    sizetree = round_up (sizetree, round_boundary / BITS_PER_UNIT);
 
   ADD_PARM_SIZE (locate->size, sizetree);
 

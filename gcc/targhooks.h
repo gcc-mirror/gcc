@@ -115,6 +115,8 @@ extern rtx default_function_incoming_arg
   (cumulative_args_t, enum machine_mode, const_tree, bool);
 extern unsigned int default_function_arg_boundary (enum machine_mode,
 						   const_tree);
+extern unsigned int default_function_arg_round_boundary (enum machine_mode,
+							 const_tree);
 extern bool hook_bool_const_rtx_commutative_p (const_rtx, int);
 extern rtx default_function_value (const_tree, const_tree, bool);
 extern rtx default_libcall_value (enum machine_mode, const_rtx);
