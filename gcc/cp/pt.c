@@ -7515,7 +7515,7 @@ neglectable_inst_p (tree d)
    neglectable and instantiated from within an erroneous instantiation.  */
 
 static bool
-limit_bad_template_recurson (tree decl)
+limit_bad_template_recursion (tree decl)
 {
   struct tinst_level *lev = current_tinst_level;
   int errs = errorcount + sorrycount;
@@ -7565,7 +7565,7 @@ push_tinst_level (tree d)
   /* If the current instantiation caused problems, don't let it instantiate
      anything else.  Do allow deduction substitution and decls usable in
      constant expressions.  */
-  if (limit_bad_template_recurson (d))
+  if (limit_bad_template_recursion (d))
     return 0;
 
   new_level = ggc_alloc_tinst_level ();
