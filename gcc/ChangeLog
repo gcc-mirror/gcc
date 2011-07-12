@@ -1,3 +1,14 @@
+2011-07-12  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* doc/tm.texi.in (FUNCTION_ARG_PADDING): Mention
+	TARGET_FUNCTION_ARG_ROUND_BOUNDARY.
+	(TARGET_FUNCTION_ARG_ROUND_BOUNDARY): Add hook.
+	* function.c (locate_and_pad_parm): Take it into account.
+	* target.def (function_arg_round_boundary): New hook.
+	* targhooks.c (default_function_arg_round_boundary): New function.
+	* targhooks.h (default_function_arg_round_boundary): Declare.
+	* doc/tm.texi: Regenerate.
+
 2011-07-12  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-copyrename.c (rename_ssa_copies): Zero statistics.
