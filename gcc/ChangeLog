@@ -1,3 +1,10 @@
+2011-07-12  Richard Henderson  <rth@redhat.com>
+
+	PR target/49714
+	* config/i386/i386.c (x86_output_mi_thunk): Use
+	machopic_indirect_call_target instead of machopic_indirection_name
+	directly.
+
 2011-07-12  Laurent GUERBY  <laurent@guerby.net>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 
