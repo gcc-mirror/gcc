@@ -1,3 +1,14 @@
+2011-07-12  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (cgraph_get_node_or_alias): Removed declaration.
+	* cgraph.c (cgraph_get_node_or_alias): Removed.
+	(change_decl_assembler_name): Changed all calls to
+	cgraph_get_node_or_alias to a call to cgraph_get_node.
+	(cgraph_make_decl_local): Likewise.
+	* lto-symtab.c (lto_symtab_resolve_symbols): Likewise.
+	* varasm.c (default_binds_local_p_1): Likewise.
+	(decl_binds_to_current_def_p): Likewise.
+
 2011-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49712
