@@ -438,7 +438,7 @@ lto_symtab_resolve_symbols (void **slot)
   for (e = (lto_symtab_entry_t) *slot; e; e = e->next)
     {
       if (TREE_CODE (e->decl) == FUNCTION_DECL)
-	e->node = cgraph_get_node_or_alias (e->decl);
+	e->node = cgraph_get_node (e->decl);
       else if (TREE_CODE (e->decl) == VAR_DECL)
 	e->vnode = varpool_get_node (e->decl);
     }

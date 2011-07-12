@@ -6720,7 +6720,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
     }
   else if (TREE_CODE (exp) == FUNCTION_DECL && TREE_PUBLIC (exp))
     {
-      struct cgraph_node *node = cgraph_get_node_or_alias (exp);
+      struct cgraph_node *node = cgraph_get_node (exp);
       if (node
 	  && resolution_local_p (node->resolution))
 	resolved_locally = true;
@@ -6808,7 +6808,7 @@ decl_binds_to_current_def_p (tree decl)
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      struct cgraph_node *node = cgraph_get_node_or_alias (decl);
+      struct cgraph_node *node = cgraph_get_node (decl);
       if (node
 	  && node->resolution != LDPR_UNKNOWN)
 	return resolution_to_local_definition_p (node->resolution);
