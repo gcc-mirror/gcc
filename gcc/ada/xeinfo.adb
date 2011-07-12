@@ -276,6 +276,10 @@ begin
 
    Put_Line (Ofile, "");
 
+   Put_Line (Ofile, "#ifdef __cplusplus");
+   Put_Line (Ofile, "extern ""C"" {");
+   Put_Line (Ofile, "#endif");
+
    --  Find and record pragma Inlines
 
    loop
@@ -492,6 +496,11 @@ begin
    end loop;
 
    Put_Line (Ofile, "");
+
+   Put_Line (Ofile, "#ifdef __cplusplus");
+   Put_Line (Ofile, "}");
+   Put_Line (Ofile, "#endif");
+
    Put_Line
      (Ofile,
       "/* End of einfo.h (C version of Einfo package specification) */");

@@ -1,3 +1,44 @@
+2011-07-12  Laurent GUERBY  <laurent@guerby.net>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adadecode.c: Wrap up in extern "C" block.
+	* adadecode.h: Likewise.
+	* adaint.c: Likewise.  Remove 'const' keyword.
+	* adaint.h: Likewise.
+	* argv.c: Likewise.
+	* atree.h: Likewise.
+	* cio.c: Likewise.
+	* cstreams.c: Likewise.
+	* env.c: Likewise.
+	* exit.c: Likewise.
+	* fe.h: Likewise.
+	* final.c: Likewise.
+	* init.c: Likewise.
+	* initialize.c: Likewise.
+	* link.c: Likewise.
+	* namet.h: Likewise.
+	* nlists.h: Likewise.
+	* raise.c: Likewise.
+	* raise.h: Likewise.
+	* repinfo.h: Likewise.
+	* seh_init.c: Likewise.
+	* targext.c: Likewise.
+	* tracebak.c: Likewise.
+	* uintp.h: Likewise.
+	* urealp.h: Likewise.
+	* xeinfo.adb: Wrap up generated C code in extern "C" block.
+	* xsinfo.adb: Likewise.
+	* xsnamest.adb: Likewise.
+	* gcc-interface/gadaint.h: Wrap up in extern "C" block.
+	* gcc-interface/gigi.h: Wrap up some prototypes in extern "C" block.
+	* gcc-interface/misc.c: Likewise.
+	* gcc-interface/Make-lang.in (GCC_LINK): Use LINKER.
+	(GNAT1_C_OBJS): Remove ada/b_gnat1.o.  List ada/seh_init.o and
+	ada/targext.o here...
+	(GNAT_ADA_OBJS): ...and not here.
+	(GNAT1_ADA_OBJS): Add ada/b_gnat1.o.
+	(GNATBIND_OBJS): Reorder.
+
 2011-07-07  Richard Henderson  <rth@redhat.com>
 
 	* gcc-interface/misc.c (gnat_init_gcc_eh): Don't call

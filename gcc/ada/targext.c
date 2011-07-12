@@ -29,9 +29,13 @@
  *                                                                          *
  ****************************************************************************/
 
-/*  This file contains target-specific parameters describing the file       */
-/*  extension for object and executable files. It is used by the compiler,  */
-/*  binder and tools.                                                       */
+/*  This file contains target-specific parameters describing the file
+    extension for object and executable files.  It is used by the compiler,
+    binder and tools.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef IN_RTS
 #include "tconfig.h"
@@ -54,3 +58,7 @@
 const char *__gnat_target_object_extension = TARGET_OBJECT_SUFFIX;
 const char *__gnat_target_executable_extension = TARGET_EXECUTABLE_SUFFIX;
 const char *__gnat_target_debuggable_extension = TARGET_EXECUTABLE_SUFFIX;
+
+#ifdef __cplusplus
+}
+#endif

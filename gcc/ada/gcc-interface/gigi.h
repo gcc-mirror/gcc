@@ -199,6 +199,10 @@ struct File_Info_Type
   Nat Num_Source_Lines;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.  */
 extern void gigi (Node_Id gnat_root, int max_gnat_node,
@@ -217,6 +221,10 @@ extern void gigi (Node_Id gnat_root, int max_gnat_node,
                   Entity_Id standard_long_long_float,
                   Entity_Id standard_exception_type,
                   Int gigi_operating_mode);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* GNAT_NODE is the root of some GNAT tree.  Return the root of the
    GCC tree corresponding to that GNAT tree.  Normally, no code is generated;
@@ -929,6 +937,11 @@ extern int fp_size_to_prec (int size);
 /* These functions return the basic data type sizes and related parameters
    about the target machine.  */
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern Pos get_target_bits_per_unit (void);
 extern Pos get_target_bits_per_word (void);
 extern Pos get_target_char_size (void);
@@ -952,6 +965,10 @@ extern Nat get_bits_be (void);
 extern Nat get_target_strict_alignment (void);
 extern Nat get_target_double_float_alignment (void);
 extern Nat get_target_double_scalar_alignment (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* Let code know whether we are targetting VMS without need of
    intrusive preprocessor directives.  */

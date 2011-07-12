@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,6 +33,10 @@
    packages in the GNAT hierarchy (especially GNAT.OS_Lib) and in
    package Osint.  Many of the subprograms in OS_Lib import standard
    library calls directly. This file contains all other routines.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef __vxworks
 
@@ -291,9 +295,9 @@ const char *__gnat_library_template = GNAT_LIBRARY_TEMPLATE;
 /* This variable is used in hostparm.ads to say whether the host is a VMS
    system.  */
 #ifdef VMS
-const int __gnat_vmsp = 1;
+int __gnat_vmsp = 1;
 #else
-const int __gnat_vmsp = 0;
+int __gnat_vmsp = 0;
 #endif
 
 #if defined (VMS)
@@ -324,7 +328,7 @@ const int __gnat_vmsp = 0;
 #endif
 
 /* Used for Ada bindings */
-const int __gnat_size_of_file_attributes = sizeof (struct file_attributes);
+int __gnat_size_of_file_attributes = sizeof (struct file_attributes);
 
 /* Reset the file attributes as if no system call had been performed */
 void __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr);
@@ -3684,5 +3688,9 @@ void __main (void) {}
 void *__gnat_lwp_self (void)
 {
    return (void *) syscall (__NR_gettid);
+}
+#endif
+
+#ifdef __cplusplus
 }
 #endif

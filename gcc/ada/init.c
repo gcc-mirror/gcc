@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -37,6 +37,10 @@
     and the subsection "Specifying How Stack Checking is Done".  The handlers
     installed by this file are used to catch the resulting signals that come
     from these probes failing (i.e. touching protected pages).  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* This file should be kept synchronized with 2sinit.ads, 2sinit.adb,
    s-init-ae653-cert.adb and s-init-xi-sparc.adb.  All these files implement
@@ -2402,4 +2406,8 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
      the unwinder adjustment is still desired.  */
 }
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -31,6 +31,10 @@
 
 /* This file contains definitions to access front-end functions and
    variables used by gigi.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* comperr:  */
 
@@ -251,3 +255,7 @@ extern void Set_Has_No_Elaboration_Code	(Node_Id, Boolean);
 extern Boolean Backend_Overflow_Checks_On_Target;
 extern Boolean Stack_Check_Probes_On_Target;
 extern Boolean Stack_Check_Limits_On_Target;
+
+#ifdef __cplusplus
+}
+#endif

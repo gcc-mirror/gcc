@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,7 +29,11 @@
    atree.adb and must be kept synchronized with changes in these files.
 
    Note that only routines for reading the tree are included, since the tree
-   transformer is not supposed to modify the tree in any way. */
+   transformer is not supposed to modify the tree in any way.  */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Structure used for the first part of the node in the case where we have
    an Nkind.  */
@@ -734,3 +738,6 @@ extern Node_Id Current_Error_Node;
 #define Flag253(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag71)
 #define Flag254(N)     (Nodes_Ptr[(N) - First_Node_Id + 4].U.NK.flag72)
 
+#ifdef __cplusplus
+}
+#endif

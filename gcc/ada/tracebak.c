@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2000-2010, AdaCore                     *
+ *            Copyright (C) 2000-2011, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -45,6 +45,10 @@
    Alpha/VxWorks
    Alpha/VMS
 */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef __alpha_vxworks
 #include "vxWorks.h"
@@ -512,4 +516,8 @@ __gnat_backtrace (void **array ATTRIBUTE_UNUSED,
 
 #endif
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif
