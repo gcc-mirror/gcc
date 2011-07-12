@@ -72,6 +72,7 @@ static void upc_genericize_compound_expr (tree *, int);
 static void upc_genericize_cond_expr (tree *, int);
 static void upc_genericize_decl_expr (tree *);
 static tree upc_genericize_expr (tree *, int *, void *);
+static void upc_genericize_fndecl (tree);
 static void upc_genericize_field_ref (location_t, tree *);
 static void upc_genericize_forall_stmt (tree *);
 static void upc_genericize_indirect_ref (location_t, tree *);
@@ -79,7 +80,7 @@ static void upc_genericize_modify_expr (location_t, tree *, int);
 static void upc_genericize_pts_arith_expr (location_t, tree *);
 static void upc_genericize_pts_cond_expr (location_t, tree *);
 static void upc_genericize_pts_cvt (location_t, tree *);
-static void upc_genericize_real_image_ref (location_t, tree *);
+static void upc_genericize_real_imag_ref (location_t, tree *);
 static void upc_genericize_shared_inc_dec_expr (location_t, tree *, int);
 static void upc_genericize_shared_var_ref (location_t, tree *);
 static void upc_genericize_stmt (tree *, int);
@@ -95,7 +96,8 @@ upc_create_tmp_var (tree type)
   tree tmp_var;
   /* We don't allow types that are addressable or incomplete.  */
   gcc_assert (!TREE_ADDRESSABLE (type) && COMPLETE_TYPE_P (type));
-  /* The temp. cannot be shared qualified.  */
+  /* The temp. must not be shared qualified.  If it is, then 
+     remove the 'shared' qualifier.  */
   if (upc_shared_type_p (type))
     type = build_upc_unshared_type (type);
   tmp_var = create_tmp_var_raw (type, "UPC");
@@ -109,7 +111,7 @@ upc_create_tmp_var (tree type)
 }
 
 /* Create a temporary variable and initialize it to VAL.
-   The expression used initialized the temporary value
+   The expression used to initialize the temporary value
    is returned in *VAL_EXPR.  */
 
 static tree
@@ -148,7 +150,8 @@ upc_expand_get (location_t loc, tree src_addr)
   /* The runtime API expects the internal rep. of a UPC pointer-to-shared.  */
   src_addr = build1 (NOP_EXPR, upc_pts_rep_type_node, src_addr);
   if (!lib_op)
-    abort ();
+    internal_error ("UPC runtime library operation for "
+                    "get operation not found");
   libfunc_name = XSTR (lib_op, 0);
   libfunc = identifier_global_value (get_identifier (libfunc_name));
   if (!libfunc)
@@ -194,7 +197,7 @@ upc_expand_get (location_t loc, tree src_addr)
 static tree
 upc_expand_put (location_t loc, tree dest_addr, tree src, int want_value)
 {
-  tree type = TREE_TYPE (src);
+  tree type = TREE_TYPE (TREE_TYPE (dest_addr));
   int strict_mode = TYPE_STRICT (type)
     || (!TYPE_RELAXED (type) && get_upc_consistency_mode ());
   int doprofcall = flag_upc_instrument && get_upc_pupc_mode ();
@@ -227,7 +230,9 @@ upc_expand_put (location_t loc, tree dest_addr, tree src, int want_value)
   else
     {
       rtx lib_op = optab_libfunc (put_op, op_mode);
-      gcc_assert (lib_op);
+      if (!lib_op)
+        internal_error ("UPC runtime library operation for "
+	                "put operation not found");
       libfunc_name = XSTR (lib_op, 0);
     }
   libfunc = identifier_global_value (get_identifier (libfunc_name));
@@ -282,7 +287,6 @@ static tree
 upc_make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos)
 {
   tree result;
-
   if (bitpos == 0)
     {
       tree size = TYPE_SIZE (TREE_TYPE (inner));
@@ -294,7 +298,6 @@ upc_make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos)
 
   result = build3 (BIT_FIELD_REF, type, inner,
 		   size_int (bitsize), bitsize_int (bitpos));
-
   return result;
 }
 
@@ -478,8 +481,7 @@ upc_genericize_sync_stmt (location_t loc, tree *stmt_p)
   *stmt_p = build_function_call (loc, libfunc, lib_args);
 }
 
-/* Rewrite a reference to a UPC shared variable into a call
-   to the runtime to perform a 'get' operation.  */
+/* Rewrite a reference to a UPC shared variable into a 'get' operation.  */
 
 static void
 upc_genericize_shared_var_ref (location_t loc, tree *expr_p)
@@ -498,26 +500,29 @@ upc_genericize_addr_expr (location_t loc, tree *expr_p)
   *expr_p = upc_shared_addr (loc, op0);
 }
 
+/* Expand indirection through a UPC pointer-to-shared
+   into a UPC get operation.  */
+
 static void
 upc_genericize_indirect_ref (location_t loc, tree *expr_p)
 {
   tree src_addr;
-  /* drop the indirect ref. to obtain the address of the
+  /* Drop the indirect ref. to obtain the address of the
      shared object. */
   src_addr = TREE_OPERAND (*expr_p, 0);
   *expr_p = upc_expand_get (loc, src_addr);
 }
 
 static void
-upc_genericize_real_image_ref (location_t loc ATTRIBUTE_UNUSED,
-			       tree *expr_p ATTRIBUTE_UNUSED)
+upc_genericize_real_imag_ref (location_t loc ATTRIBUTE_UNUSED,
+			      tree *expr_p ATTRIBUTE_UNUSED)
 {
-  /* not yet implemented */
-  gcc_unreachable ();
+  error ("accesses to .real and .imag are not yet implemented");
+  *expr_p = error_mark_node;
 }
 
-/* Rewrite a[i] into *(a + i).  This code is taken from
-   build_array_ref.  We could call build_array_ref
+/* Rewrite a[i] into *(a + i).  This code is derived from
+   build_array_ref().  We could call build_array_ref()
    directly, and depend upon it to do this rewrite if
    the array is shared, but it is clearer to handle
    it explicitly here.  */
@@ -572,7 +577,7 @@ upc_genericize_field_ref (location_t loc, tree *expr_p)
   ref = upc_simplify_shared_ref (loc, ref);
   if (TREE_CODE (ref) == BIT_FIELD_REF)
     {
-      error ("accesses to UPC shared bit fields " "are not yet implemented");
+      error ("accesses to UPC shared bit fields are not yet implemented");
       ref = error_mark_node;
     }
   gcc_assert (INDIRECT_REF_P (ref));
@@ -643,9 +648,9 @@ upc_genericize_shared_inc_dec_expr (location_t loc, tree *expr_p,
   const tree exp = *expr_p;
   const enum tree_code code = TREE_CODE (exp);
   const tree op0 = TREE_OPERAND (exp, 0);
-  const enum tree_code inc_dec_code = (code == POSTINCREMENT_EXPR
-				       || code == PREINCREMENT_EXPR)
-    ? PLUS_EXPR : MINUS_EXPR;
+  const int is_inc_op = (code == POSTINCREMENT_EXPR
+                         || code == PREINCREMENT_EXPR);
+  const enum tree_code inc_dec_code = is_inc_op ? PLUS_EXPR : MINUS_EXPR;
   tree val, val_init_expr, inc_dec_expr, mod_expr;
   val = upc_copy_value_to_tmp_var (&val_init_expr, op0);
   inc_dec_expr = build_binary_op (loc, inc_dec_code,
@@ -714,7 +719,7 @@ upc_genericize_modify_expr (location_t loc, tree *expr_p, int want_value)
       /* <unshared dest> = <shared src> */
       const tree src_addr = upc_shared_addr (loc, src);
       /* We could check for BLKmode and in
-         that case perform a upc_memget().  */
+         that case perform a upc_memget() here.  */
       src = upc_expand_get (loc, src_addr);
       if (want_value && TREE_CODE (src) != COMPOUND_EXPR)
 	{
@@ -755,14 +760,14 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
   const location_t loc = EXPR_LOCATION (expr);
   const enum tree_code code = TREE_CODE (expr);
   const tree type = CODE_CONTAINS_STRUCT (code, TS_TYPED)
-    ? TREE_TYPE (expr) : NULL;
+                    ? TREE_TYPE (expr) : NULL;
   const int want_value = wdata->want_value
                          && !(type && VOID_TYPE_P (type));
   const tree op0 = (TREE_CODE_LENGTH (code) >= 1)
-    ? TREE_OPERAND (expr, 0) : NULL_TREE;
+                   ? TREE_OPERAND (expr, 0) : NULL_TREE;
   const tree type0 = (op0 != NULL_TREE) ? TREE_TYPE (op0) : NULL_TREE;
   tree op1 = (TREE_CODE_LENGTH (code) >= 2)
-    ? TREE_OPERAND (expr, 1) : NULL_TREE;
+             ? TREE_OPERAND (expr, 1) : NULL_TREE;
   tree type1 = (op1 != NULL_TREE) ? TREE_TYPE (op1) : NULL_TREE;
   switch (code)
     {
@@ -801,7 +806,7 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       if (op0 && TREE_SHARED (op0))
-	upc_genericize_real_image_ref (loc, expr_p);
+	upc_genericize_real_imag_ref (loc, expr_p);
       break;
 
     case VAR_DECL:
@@ -949,9 +954,10 @@ upc_genericize_expr (tree *expr_p, int *walk_subtrees, void *data)
     }
 
   /* After evaluating the current node, we assert the
-     want_value flag so that subtrees will be fully
-     evaluated.  */
-  wdata->want_value = 1;
+     want_value flag so that all subtrees of this root node
+     will be fully evaluated.  */
+  if (!wdata->want_value)
+    wdata->want_value = 1;
 
   /* Continue tree traversal.  */
   return NULL_TREE;
@@ -1005,8 +1011,8 @@ upc_genericize_decl_expr (tree *expr_p)
 }
 
 /* Convert the tree rooted at STMT_P into GENERIC.
-   WANT_VALUE is initial value the flag that
-   upc_genericize_expr() queries to determine
+   WANT_VALUE is the initial value the flag that
+   upc_genericize_expr() will query to determine
    whether the expression node should return a value.
    NOTE: STMT_P can point to any kind of expression node.  */
 
@@ -1034,7 +1040,7 @@ upc_genericize_stmt_list (tree *stmt_list_p)
 
 /* Convert the function body identified by BODY_P into GENERIC.
    Initially assert WANT_VALUE as TRUE.  Traverse the function
-   body by calling walk_tree() and applying upc_genericize_expr().  */
+   body by calling walk_tree() and applying upc_genericize_stmt().  */
 
 static void
 upc_genericize_body (tree *body_p, tree fndecl)
@@ -1083,18 +1089,26 @@ upc_genericize_function_tree (tree fndecl)
   pop_cfun ();
 }
 
-/* Convert the tree representation of FNDECL built by the UPC front-end
-   into the GENERIC form.  */
+/* Convert the tree representation of FNDECL, along with all nested
+   functions defined within it, into the GENERIC form.  */
 
-void
-upc_genericize (tree fndecl)
+static void
+upc_genericize_fndecl (tree fndecl)
 {
   struct cgraph_node *cgn;
   /* Lower this function and any nested functions.  */
   upc_genericize_function_tree (fndecl);
   cgn = cgraph_get_create_node (fndecl);
   for (cgn = cgn->nested; cgn; cgn = cgn->next_nested)
-    upc_genericize (cgn->decl);
-  /* Perform "C" lowering.  */
+    upc_genericize_fndecl (cgn->decl);
+}
+
+/* Convert the tree representation of FNDECL built by the UPC front-end
+   into the GENERIC form.  Then call the "C" genericize hook.  */
+
+void
+upc_genericize (tree fndecl)
+{
+  upc_genericize_fndecl (fndecl);
   c_genericize (fndecl);
 }
