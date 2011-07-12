@@ -1,3 +1,13 @@
+2011-07-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/predicates.md (neon_struct_operand): Make a normal
+	predicate.
+	(neon_struct_or_register_operand): New predicate.
+	* config/arm/neon.md (movmisalign<mode>): Replace predicates
+	with neon_struct_or_register_operand.
+	(*movmisalign<mode>_neon_store, *movmisalign<mode>_neon_load): Use
+	neon_struct_operand instead of memory_operand.
+
 2011-07-12  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.h (cgraph_get_node_or_alias): Removed declaration.
