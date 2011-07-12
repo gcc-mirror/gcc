@@ -1,3 +1,16 @@
+2011-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cse.c (insert_with_costs): Put semi-colon after empty loop body
+	on the next line.
+	* emit-rtl.c (push_to_sequence): Likewise.
+	* haifa-sched.c (max_issue): Likewise.
+	* matrix-reorg.c (add_allocation_site): Likewise.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Likewise.
+	* reload.c (alternative_allows_const_pool_ref): Likewise.
+	* sched-rgn.c (rgn_add_block): Likewise.
+	(rgn_fix_recovery_cfg): Likewise.
+	* tree.c (attribute_list_contained): Likewise.
+
 2011-07-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c: Tidy processor feature bitmasks.

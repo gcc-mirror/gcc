@@ -1637,8 +1637,10 @@ insert_with_costs (rtx x, struct table_elt *classp, unsigned int hash,
 	  /* Put it after the last element cheaper than X.  */
 	  struct table_elt *p, *next;
 
-	  for (p = classp; (next = p->next_same_value) && CHEAPER (next, elt);
-	       p = next);
+	  for (p = classp;
+	       (next = p->next_same_value) && CHEAPER (next, elt);
+	       p = next)
+	    ;
 
 	  /* Put it after P and before NEXT.  */
 	  elt->next_same_value = next;

@@ -2333,7 +2333,8 @@ dump_nested_types (pretty_printer *buffer, tree t, tree parent, bool forward,
 		if (TREE_CODE (decl) == FUNCTION_TYPE)
 		  for (decl = TREE_TYPE (decl);
 		       decl && TREE_CODE (decl) == POINTER_TYPE;
-		       decl = TREE_TYPE (decl));
+		       decl = TREE_TYPE (decl))
+		    ;
 
 		decl = get_underlying_decl (decl);
 

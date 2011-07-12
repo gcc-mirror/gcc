@@ -2568,7 +2568,8 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
 		{
 		  n = privileged_n;
 		  /* Try to find issued privileged insn.  */
-		  while (n && !ready_try[--n]);
+		  while (n && !ready_try[--n])
+		    ;
 		}
 
 	      if (/* If all insns are equally good...  */
