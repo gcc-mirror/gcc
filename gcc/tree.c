@@ -6350,7 +6350,8 @@ attribute_list_contained (const_tree l1, const_tree l2)
        t1 != 0 && t2 != 0
         && TREE_PURPOSE (t1) == TREE_PURPOSE (t2)
         && TREE_VALUE (t1) == TREE_VALUE (t2);
-       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2));
+       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
+    ;
 
   /* Maybe the lists are equal.  */
   if (t1 == 0 && t2 == 0)

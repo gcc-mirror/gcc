@@ -4591,7 +4591,8 @@ alternative_allows_const_pool_ref (rtx mem ATTRIBUTE_UNUSED,
   /* Skip alternatives before the one requested.  */
   while (altnum > 0)
     {
-      while (*constraint++ != ',');
+      while (*constraint++ != ',')
+	;
       altnum--;
     }
   /* Scan the requested alternative for TARGET_MEM_CONSTRAINT or 'o'.

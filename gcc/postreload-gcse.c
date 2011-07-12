@@ -1131,7 +1131,8 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
      discover additional redundancies, so mark it for later deletion.  */
   for (a_occr = get_bb_avail_insn (bb, expr->avail_occr);
        a_occr && (a_occr->insn != insn);
-       a_occr = get_bb_avail_insn (bb, a_occr->next));
+       a_occr = get_bb_avail_insn (bb, a_occr->next))
+    ;
 
   if (!a_occr)
     {

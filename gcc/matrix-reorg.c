@@ -719,7 +719,8 @@ add_allocation_site (struct matrix_info *mi, gimple stmt, int level)
          must be set accordingly.  */
       for (min_malloc_level = 0;
 	   min_malloc_level < mi->max_malloced_level
-	   && mi->malloc_for_level[min_malloc_level]; min_malloc_level++);
+	   && mi->malloc_for_level[min_malloc_level]; min_malloc_level++)
+	;
       if (level < min_malloc_level)
 	{
 	  mi->allocation_function_decl = current_function_decl;
