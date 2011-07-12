@@ -43,8 +43,8 @@ struct scope_binding {
 };
 #define EMPTY_SCOPE_BINDING { NULL_TREE, NULL_TREE }
 
-static cxx_scope *innermost_nonclass_level (void);
-static cxx_binding *binding_for_name (cxx_scope *, tree);
+static cp_binding_level *innermost_nonclass_level (void);
+static cxx_binding *binding_for_name (cp_binding_level *, tree);
 static tree push_overloaded_decl (tree, int, bool);
 static bool lookup_using_namespace (tree, struct scope_binding *, tree,
 				    tree, int);
@@ -315,7 +315,7 @@ cxx_binding_free (cxx_binding *binding)
    bindings) in the class scope indicated by SCOPE.  */
 
 static cxx_binding *
-new_class_binding (tree name, tree value, tree type, cxx_scope *scope)
+new_class_binding (tree name, tree value, tree type, cp_binding_level *scope)
 {
   cp_class_binding *cb;
   cxx_binding *binding;
@@ -332,7 +332,7 @@ new_class_binding (tree name, tree value, tree type, cxx_scope *scope)
    level at which this declaration is being bound.  */
 
 static void
-push_binding (tree id, tree decl, cxx_scope* level)
+push_binding (tree id, tree decl, cp_binding_level* level)
 {
   cxx_binding *binding;
 
@@ -524,7 +524,7 @@ supplement_binding (cxx_binding *binding, tree decl)
 /* Add DECL to the list of things declared in B.  */
 
 static void
-add_decl_to_level (tree decl, cxx_scope *b)
+add_decl_to_level (tree decl, cp_binding_level *b)
 {
   /* We used to record virtual tables as if they were ordinary
      variables, but no longer do so.  */
@@ -939,7 +939,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  /* Here to install a non-global value.  */
 	  tree oldglobal = IDENTIFIER_NAMESPACE_VALUE (name);
 	  tree oldlocal = NULL_TREE;
-	  cxx_scope *oldscope = NULL;
+	  cp_binding_level *oldscope = NULL;
 	  cxx_binding *oldbinding = outer_binding (name, NULL, true);
 	  if (oldbinding)
 	    {
@@ -1036,7 +1036,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		{
 		  /* Go to where the parms should be and see if we find
 		     them there.  */
-		  struct cp_binding_level *b = current_binding_level->level_chain;
+		  cp_binding_level *b = current_binding_level->level_chain;
 
 		  if (FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
 		    /* Skip the ctor/dtor cleanup level.  */
@@ -1054,7 +1054,7 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 		 the containing function anyway.  */
 	      if (DECL_CONTEXT (oldlocal) != current_function_decl)
 		{
-		  cxx_scope *scope = current_binding_level;
+		  cp_binding_level *scope = current_binding_level;
 		  tree context = DECL_CONTEXT (oldlocal);
 		  for (; scope; scope = scope->level_chain)
 		   {
@@ -1215,7 +1215,7 @@ maybe_push_decl (tree decl)
 void
 push_local_binding (tree id, tree decl, int flags)
 {
-  struct cp_binding_level *b;
+  cp_binding_level *b;
 
   /* Skip over any local classes.  This makes sense if we call
      push_local_binding with a friend decl of a local class.  */
@@ -1337,7 +1337,7 @@ indent (int depth)
 
 /* Return a string describing the kind of SCOPE we have.  */
 static const char *
-cxx_scope_descriptor (cxx_scope *scope)
+cp_binding_level_descriptor (cp_binding_level *scope)
 {
   /* The order of this table must match the "scope_kind"
      enumerators.  */
@@ -1362,9 +1362,9 @@ cxx_scope_descriptor (cxx_scope *scope)
 /* Output a debugging information about SCOPE when performing
    ACTION at LINE.  */
 static void
-cxx_scope_debug (cxx_scope *scope, int line, const char *action)
+cp_binding_level_debug (cp_binding_level *scope, int line, const char *action)
 {
-  const char *desc = cxx_scope_descriptor (scope);
+  const char *desc = cp_binding_level_descriptor (scope);
   if (scope->this_entity)
     verbatim ("%s %s(%E) %p %d\n", action, desc,
 	      scope->this_entity, (void *) scope, line);
@@ -1389,12 +1389,12 @@ namespace_scope_ht_size (tree ns)
 
 /* A chain of binding_level structures awaiting reuse.  */
 
-static GTY((deletable)) struct cp_binding_level *free_binding_level;
+static GTY((deletable)) cp_binding_level *free_binding_level;
 
 /* Insert SCOPE as the innermost binding level.  */
 
 void
-push_binding_level (struct cp_binding_level *scope)
+push_binding_level (cp_binding_level *scope)
 {
   /* Add it to the front of currently active scopes stack.  */
   scope->level_chain = current_binding_level;
@@ -1405,7 +1405,7 @@ push_binding_level (struct cp_binding_level *scope)
     {
       scope->binding_depth = binding_depth;
       indent (binding_depth);
-      cxx_scope_debug (scope, input_line, "push");
+      cp_binding_level_debug (scope, input_line, "push");
       binding_depth++;
     }
 }
@@ -1414,20 +1414,20 @@ push_binding_level (struct cp_binding_level *scope)
    ENTITY is the scope of the associated C++ entity (namespace, class,
    function, C++0x enumeration); it is NULL otherwise.  */
 
-cxx_scope *
+cp_binding_level *
 begin_scope (scope_kind kind, tree entity)
 {
-  cxx_scope *scope;
+  cp_binding_level *scope;
 
   /* Reuse or create a struct for this binding level.  */
   if (!ENABLE_SCOPE_CHECKING && free_binding_level)
     {
       scope = free_binding_level;
-      memset (scope, 0, sizeof (cxx_scope));
+      memset (scope, 0, sizeof (cp_binding_level));
       free_binding_level = scope->level_chain;
     }
   else
-    scope = ggc_alloc_cleared_cxx_scope ();
+    scope = ggc_alloc_cleared_cp_binding_level ();
 
   scope->this_entity = entity;
   scope->more_cleanups_ok = true;
@@ -1478,10 +1478,10 @@ begin_scope (scope_kind kind, tree entity)
 /* We're about to leave current scope.  Pop the top of the stack of
    currently active scopes.  Return the enclosing scope, now active.  */
 
-cxx_scope *
+cp_binding_level *
 leave_scope (void)
 {
-  cxx_scope *scope = current_binding_level;
+  cp_binding_level *scope = current_binding_level;
 
   if (scope->kind == sk_namespace && class_binding_level)
     current_binding_level = class_binding_level;
@@ -1493,7 +1493,7 @@ leave_scope (void)
   if (ENABLE_SCOPE_CHECKING)
     {
       indent (--binding_depth);
-      cxx_scope_debug (scope, input_line, "leave");
+      cp_binding_level_debug (scope, input_line, "leave");
     }
 
   /* Move one nesting level up.  */
@@ -1530,7 +1530,7 @@ leave_scope (void)
 }
 
 static void
-resume_scope (struct cp_binding_level* b)
+resume_scope (cp_binding_level* b)
 {
   /* Resuming binding levels is meant only for namespaces,
      and those cannot nest into classes.  */
@@ -1542,17 +1542,17 @@ resume_scope (struct cp_binding_level* b)
     {
       b->binding_depth = binding_depth;
       indent (binding_depth);
-      cxx_scope_debug (b, input_line, "resume");
+      cp_binding_level_debug (b, input_line, "resume");
       binding_depth++;
     }
 }
 
 /* Return the innermost binding level that is not for a class scope.  */
 
-static cxx_scope *
+static cp_binding_level *
 innermost_nonclass_level (void)
 {
-  cxx_scope *b;
+  cp_binding_level *b;
 
   b = current_binding_level;
   while (b->kind == sk_class)
@@ -1594,7 +1594,7 @@ global_bindings_p (void)
 bool
 toplevel_bindings_p (void)
 {
-  struct cp_binding_level *b = innermost_nonclass_level ();
+  cp_binding_level *b = innermost_nonclass_level ();
 
   return b->kind == sk_namespace || b->kind == sk_template_parms;
 }
@@ -1606,7 +1606,7 @@ toplevel_bindings_p (void)
 bool
 namespace_bindings_p (void)
 {
-  struct cp_binding_level *b = innermost_nonclass_level ();
+  cp_binding_level *b = innermost_nonclass_level ();
 
   return b->kind == sk_namespace;
 }
@@ -1666,7 +1666,7 @@ int
 function_parm_depth (void)
 {
   int level = 0;
-  struct cp_binding_level *b;
+  cp_binding_level *b;
 
   for (b = current_binding_level;
        b->kind == sk_function_parms;
@@ -1681,7 +1681,7 @@ static int no_print_functions = 0;
 static int no_print_builtins = 0;
 
 static void
-print_binding_level (struct cp_binding_level* lvl)
+print_binding_level (cp_binding_level* lvl)
 {
   tree t;
   int i = 0, len;
@@ -1743,9 +1743,9 @@ print_binding_level (struct cp_binding_level* lvl)
 }
 
 void
-print_other_binding_stack (struct cp_binding_level *stack)
+print_other_binding_stack (cp_binding_level *stack)
 {
-  struct cp_binding_level *level;
+  cp_binding_level *level;
   for (level = stack; !global_scope_p (level); level = level->level_chain)
     {
       fprintf (stderr, "binding level %p\n", (void *) level);
@@ -1756,7 +1756,7 @@ print_other_binding_stack (struct cp_binding_level *stack)
 void
 print_binding_stack (void)
 {
-  struct cp_binding_level *b;
+  cp_binding_level *b;
   fprintf (stderr, "current_binding_level=%p\n"
 	   "class_binding_level=%p\n"
 	   "NAMESPACE_LEVEL (global_namespace)=%p\n",
@@ -1825,7 +1825,7 @@ identifier_global_value	(tree t)
    the tag ID is not already defined.  */
 
 static void
-set_identifier_type_value_with_scope (tree id, tree decl, cxx_scope *b)
+set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
 {
   tree type;
 
@@ -1949,7 +1949,7 @@ make_lambda_name (void)
 /* Return (from the stack of) the BINDING, if any, established at SCOPE.  */
 
 static inline cxx_binding *
-find_binding (cxx_scope *scope, cxx_binding *binding)
+find_binding (cp_binding_level *scope, cxx_binding *binding)
 {
   for (; binding != NULL; binding = binding->previous)
     if (binding->scope == scope)
@@ -1961,7 +1961,7 @@ find_binding (cxx_scope *scope, cxx_binding *binding)
 /* Return the binding for NAME in SCOPE, if any.  Otherwise, return NULL.  */
 
 static inline cxx_binding *
-cxx_scope_find_binding_for_name (cxx_scope *scope, tree name)
+cp_binding_level_find_binding_for_name (cp_binding_level *scope, tree name)
 {
   cxx_binding *b = IDENTIFIER_NAMESPACE_BINDINGS (name);
   if (b)
@@ -1978,11 +1978,11 @@ cxx_scope_find_binding_for_name (cxx_scope *scope, tree name)
    found, make a new one.  */
 
 static cxx_binding *
-binding_for_name (cxx_scope *scope, tree name)
+binding_for_name (cp_binding_level *scope, tree name)
 {
   cxx_binding *result;
 
-  result = cxx_scope_find_binding_for_name (scope, name);
+  result = cp_binding_level_find_binding_for_name (scope, name);
   if (result)
     return result;
   /* Not found, make a new one.  */
@@ -2073,9 +2073,9 @@ push_using_decl (tree scope, tree name)
    closer binding level than LEVEL.  */
 
 static tree
-pushdecl_with_scope_1 (tree x, cxx_scope *level, bool is_friend)
+pushdecl_with_scope_1 (tree x, cp_binding_level *level, bool is_friend)
 {
-  struct cp_binding_level *b;
+  cp_binding_level *b;
   tree function_decl = current_function_decl;
 
   current_function_decl = NULL_TREE;
@@ -2100,7 +2100,7 @@ pushdecl_with_scope_1 (tree x, cxx_scope *level, bool is_friend)
 /* Wrapper for pushdecl_with_scope_1.  */
 
 tree
-pushdecl_with_scope (tree x, cxx_scope *level, bool is_friend)
+pushdecl_with_scope (tree x, cp_binding_level *level, bool is_friend)
 {
   tree ret;
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
@@ -2610,12 +2610,12 @@ push_inner_scope_r (tree outer, tree inner)
     push_inner_scope_r (outer, prev);
   if (TREE_CODE (inner) == NAMESPACE_DECL)
     {
-      struct cp_binding_level *save_template_parm = 0;
+      cp_binding_level *save_template_parm = 0;
       /* Temporary take out template parameter scopes.  They are saved
 	 in reversed order in save_template_parm.  */
       while (current_binding_level->kind == sk_template_parms)
 	{
-	  struct cp_binding_level *b = current_binding_level;
+	  cp_binding_level *b = current_binding_level;
 	  current_binding_level = b->level_chain;
 	  b->level_chain = save_template_parm;
 	  save_template_parm = b;
@@ -2627,7 +2627,7 @@ push_inner_scope_r (tree outer, tree inner)
       /* Restore template parameter scopes.  */
       while (save_template_parm)
 	{
-	  struct cp_binding_level *b = save_template_parm;
+	  cp_binding_level *b = save_template_parm;
 	  save_template_parm = b->level_chain;
 	  b->level_chain = current_binding_level;
 	  current_binding_level = b;
@@ -2669,12 +2669,12 @@ pop_inner_scope (tree outer, tree inner)
     {
       if (TREE_CODE (inner) == NAMESPACE_DECL)
 	{
-	  struct cp_binding_level *save_template_parm = 0;
+	  cp_binding_level *save_template_parm = 0;
 	  /* Temporary take out template parameter scopes.  They are saved
 	     in reversed order in save_template_parm.  */
 	  while (current_binding_level->kind == sk_template_parms)
 	    {
-	      struct cp_binding_level *b = current_binding_level;
+	      cp_binding_level *b = current_binding_level;
 	      current_binding_level = b->level_chain;
 	      b->level_chain = save_template_parm;
 	      save_template_parm = b;
@@ -2685,7 +2685,7 @@ pop_inner_scope (tree outer, tree inner)
 	  /* Restore template parameter scopes.  */
 	  while (save_template_parm)
 	    {
-	      struct cp_binding_level *b = save_template_parm;
+	      cp_binding_level *b = save_template_parm;
 	      save_template_parm = b->level_chain;
 	      b->level_chain = current_binding_level;
 	      current_binding_level = b;
@@ -2711,7 +2711,7 @@ pushlevel_class (void)
 void
 poplevel_class (void)
 {
-  struct cp_binding_level *level = class_binding_level;
+  cp_binding_level *level = class_binding_level;
   cp_class_binding *cb;
   size_t i;
   tree shadowed;
@@ -2832,7 +2832,7 @@ pushdecl_class_level (tree x)
    is not set, callers must set the PREVIOUS field explicitly.  */
 
 static cxx_binding *
-get_class_binding (tree name, cxx_scope *scope)
+get_class_binding (tree name, cp_binding_level *scope)
 {
   tree class_type;
   tree type_binding;
@@ -3181,7 +3181,7 @@ namespace_binding_1 (tree name, tree scope)
     /* Unnecessary for the global namespace because it can't be an alias. */
     scope = ORIGINAL_NAMESPACE (scope);
 
-  binding = cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
+  binding = cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
 
   return binding ? binding->value : NULL_TREE;
 }
@@ -3586,7 +3586,7 @@ do_namespace_alias (tree alias, tree name_space)
 tree
 pushdecl_namespace_level (tree x, bool is_friend)
 {
-  struct cp_binding_level *b = current_binding_level;
+  cp_binding_level *b = current_binding_level;
   tree t;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
@@ -4078,7 +4078,7 @@ suggest_alternatives_for (location_t location, tree name)
     {
       tree scope = VEC_pop (tree, namespaces_to_search);
       struct scope_binding binding = EMPTY_SCOPE_BINDING;
-      struct cp_binding_level *level = NAMESPACE_LEVEL (scope);
+      cp_binding_level *level = NAMESPACE_LEVEL (scope);
 
       /* Look in this namespace.  */
       qualified_lookup_using_namespace (name, scope, &binding, 0);
@@ -4128,14 +4128,14 @@ unqualified_namespace_lookup_1 (tree name, int flags)
   tree initial = current_decl_namespace ();
   tree scope = initial;
   tree siter;
-  struct cp_binding_level *level;
+  cp_binding_level *level;
   tree val = NULL_TREE;
 
   for (; !val; scope = CP_DECL_CONTEXT (scope))
     {
       struct scope_binding binding = EMPTY_SCOPE_BINDING;
       cxx_binding *b =
-	 cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
+	 cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
 
       if (b)
 	ambiguous_decl (&binding, b, flags);
@@ -4237,7 +4237,7 @@ lookup_using_namespace (tree name, struct scope_binding *val,
       {
 	tree used = ORIGINAL_NAMESPACE (TREE_PURPOSE (iter));
 	cxx_binding *val1 =
-	  cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (used), name);
+	  cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (used), name);
 	/* Resolve ambiguities.  */
 	if (val1)
 	  ambiguous_decl (val, val1, flags);
@@ -4306,7 +4306,7 @@ qualified_lookup_using_namespace (tree name, tree scope,
 	  VEC_safe_push (tree, gc, seen_inline, scope);
 
 	  binding =
-	    cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
+	    cp_binding_level_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
 	  if (binding)
 	    {
 	      found_here = true;
@@ -4350,7 +4350,7 @@ qualified_lookup_using_namespace (tree name, tree scope,
 
 static bool
 binding_to_template_parms_of_scope_p (cxx_binding *binding,
-				      cxx_scope *scope)
+				      cp_binding_level *scope)
 {
   tree binding_value;
 
@@ -4381,8 +4381,8 @@ outer_binding (tree name,
 	       bool class_p)
 {
   cxx_binding *outer;
-  cxx_scope *scope;
-  cxx_scope *outer_scope;
+  cp_binding_level *scope;
+  cp_binding_level *outer_scope;
 
   if (binding)
     {
@@ -4475,7 +4475,7 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
      operators.  */
   if (IDENTIFIER_TYPENAME_P (name))
     {
-      struct cp_binding_level *level;
+      cp_binding_level *level;
 
       for (level = current_binding_level;
 	   level && level->kind != sk_namespace;
@@ -4690,7 +4690,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
   /* Look in namespace scope.  */
   if (!val)
     {
-      iter = cxx_scope_find_binding_for_name
+      iter = cp_binding_level_find_binding_for_name
 	       (NAMESPACE_LEVEL (current_decl_namespace ()), name);
 
       if (iter)
@@ -4708,7 +4708,7 @@ lookup_type_scope_1 (tree name, tag_scope scope)
      and template parameter scopes.  */
   if (val)
     {
-      struct cp_binding_level *b = current_binding_level;
+      cp_binding_level *b = current_binding_level;
       while (b)
 	{
 	  if (iter->scope == b)
@@ -4747,7 +4747,7 @@ lookup_type_scope (tree name, tag_scope scope)
 static tree
 lookup_name_innermost_nonclass_level_1 (tree name)
 {
-  struct cp_binding_level *b;
+  cp_binding_level *b;
   tree t = NULL_TREE;
 
   b = innermost_nonclass_level ();
@@ -4836,7 +4836,7 @@ lookup_type_current_level (tree name)
   if (REAL_IDENTIFIER_TYPE_VALUE (name) != NULL_TREE
       && REAL_IDENTIFIER_TYPE_VALUE (name) != global_type_node)
     {
-      struct cp_binding_level *b = current_binding_level;
+      cp_binding_level *b = current_binding_level;
       while (1)
 	{
 	  if (purpose_member (name, b->type_shadowed))
@@ -5446,7 +5446,7 @@ push_using_directive (tree used)
 
 static tree
 maybe_process_template_type_declaration (tree type, int is_friend,
-					 cxx_scope *b)
+					 cp_binding_level *b)
 {
   tree decl = TYPE_NAME (type);
 
@@ -5528,7 +5528,7 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 static tree
 pushtag_1 (tree name, tree type, tag_scope scope)
 {
-  struct cp_binding_level *b;
+  cp_binding_level *b;
   tree decl;
 
   b = current_binding_level;
@@ -5745,7 +5745,7 @@ void
 push_to_top_level (void)
 {
   struct saved_scope *s;
-  struct cp_binding_level *b;
+  cp_binding_level *b;
   cxx_saved_binding *sb;
   size_t i;
   bool need_pop;

@@ -1791,7 +1791,7 @@ determine_specialization (tree template_id,
      with the signature of DECL.  */
   tree templates = NULL_TREE;
   int header_count;
-  struct cp_binding_level *b;
+  cp_binding_level *b;
 
   *targs_out = NULL_TREE;
 
