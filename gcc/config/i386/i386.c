@@ -29399,7 +29399,7 @@ x86_output_mi_thunk (FILE *file,
 	{
 	  tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, fnaddr), UNSPEC_GOTPCREL);
 	  tmp = gen_rtx_CONST (Pmode, tmp);
-	  fnaddr = gen_rtx_MEM (QImode, tmp);
+	  fnaddr = gen_rtx_MEM (Pmode, tmp);
 	}
     }
   else
@@ -29414,7 +29414,7 @@ x86_output_mi_thunk (FILE *file,
 	    sym_ref = (gen_rtx_SYMBOL_REF
 		   (Pmode,
 		    machopic_indirection_name (sym_ref, /*stub_p=*/true)));
-	  fnaddr = gen_rtx_MEM (QImode, sym_ref);
+	  fnaddr = gen_rtx_MEM (Pmode, sym_ref);
 	}
 #endif /* TARGET_MACHO */
       else
