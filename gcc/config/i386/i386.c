@@ -29508,12 +29508,8 @@ x86_output_mi_thunk (FILE *file,
 #if TARGET_MACHO
       else if (TARGET_MACHO)
 	{
-	  rtx sym_ref = XEXP (DECL_RTL (function), 0);
-	  if (TARGET_MACHO_BRANCH_ISLANDS)
-	    sym_ref = (gen_rtx_SYMBOL_REF
-		   (Pmode,
-		    machopic_indirection_name (sym_ref, /*stub_p=*/true)));
-	  fnaddr = gen_rtx_MEM (Pmode, sym_ref);
+	  fnaddr = machopic_indirect_call_target (DECL_RTL (function));
+	  fnaddr = XEXP (fnaddr, 0);
 	}
 #endif /* TARGET_MACHO */
       else
