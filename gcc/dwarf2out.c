@@ -10406,10 +10406,11 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 	  return new_loc_descr (DW_OP_fbreg, offset, 0);
 	}
     }
-  else if (!optimize
-	   && fde
-	   && (fde->drap_reg == dwarf_frame_regnum (REGNO (reg))
-	       || fde->vdrap_reg == dwarf_frame_regnum (REGNO (reg))))
+
+  regno = DWARF_FRAME_REGNUM (REGNO (reg));
+
+  if (!optimize && fde
+      && (fde->drap_reg == regno || fde->vdrap_reg == regno))
     {
       /* Use cfa+offset to represent the location of arguments passed
 	 on the stack when drap is used to align stack.
@@ -10420,7 +10421,6 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
       return new_loc_descr (DW_OP_fbreg, offset, 0);
     }
 
-  regno = dbx_reg_number (reg);
   if (regno <= 31)
     result = new_loc_descr ((enum dwarf_location_atom) (DW_OP_breg0 + regno),
 			    offset, 0);

@@ -1,5 +1,19 @@
 2011-07-12  Richard Henderson  <rth@redhat.com>
 
+	PR target/49713
+	* dwarf2out.h (dwarf_frame_regnum): Remove.
+	* dwarf2out.c (based_loc_descr): Revert last change.  Initialize regno
+	earlier from DWARF_FRAME_REGNUM.  Never use dbx_reg_number.
+	* dwarf2cfi.c (dw_stack_pointer_regnum, dw_frame_pointer_regnum): New.
+	(execute_dwarf2_frame): Initialize them.
+	(DW_STACK_POINTER_REGNUM, DW_FRAME_POINTER_REGNUM): Remove; replace
+	users of the macros with the variables.
+	(expand_builtin_dwarf_sp_column): Revert last change.
+	(expand_builtin_init_dwarf_reg_sizes): Likewise.  Compute the
+	result of DWARF_FRAME_REGNUM into a local variable.
+
+2011-07-12  Richard Henderson  <rth@redhat.com>
+
 	PR target/49714
 	* config/i386/i386.c (x86_output_mi_thunk): Use
 	machopic_indirect_call_target instead of machopic_indirection_name
