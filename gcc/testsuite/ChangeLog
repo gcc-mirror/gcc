@@ -1,3 +1,8 @@
+2011-07-12  Andrew Pinski  <pinskia@gmail.com>
+
+	PR rtl-opt/49474
+	* gcc.c-torture/compile/pr49474.c: New testcase.
+
 2011-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49712

@@ -1,3 +1,8 @@
+2011-07-12  Andrew Pinski  <pinskia@gmail.com>
+
+	PR rtl-opt/49474
+	* cprop.c (find_implicit_sets): Correct the condition.
+
 2011-07-12  Richard Henderson  <rth@redhat.com>
 
 	PR target/49713

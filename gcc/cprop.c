@@ -1332,7 +1332,7 @@ find_implicit_sets (void)
   FOR_EACH_BB (bb)
     {
       /* Check for more than one successor.  */
-      if (! EDGE_COUNT (bb->succs) > 1)
+      if (EDGE_COUNT (bb->succs) <= 1)
 	continue;
 
       cond = fis_get_condition (BB_END (bb));
