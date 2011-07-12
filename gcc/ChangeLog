@@ -1,3 +1,30 @@
+2011-07-12  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	AMD bdver2 Enablement
+	* config.gcc (i[34567]86-*-linux* | ...): Add bdver2.
+	(case ${target}): Add bdver2.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Let
+	-march=native recognize bdver2 processors.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	bdver2 def_and_undef
+	* config/i386/i386.c (struct processor_costs bdver2_cost): New
+	bdver2 cost table.
+	(m_BDVER2): New definition.
+	(m_AMD_MULTIPLE): Includes m_BDVER2.
+	(initial_ix86_tune_features): Add bdver2 tuning.
+	(processor_target_table): Add bdver2 entry.
+	(static const char *const cpu_names): Add bdver2 entry.
+	(ix86_option_override_internal): Add bdver2 instruction sets.
+	(ix86_issue_rate): Add bdver2.
+	(ix86_adjust_cost): Add bdver2.
+	(has_dispatch): Add bdver2.
+	* config/i386/i386.h (TARGET_BDVER2): New definition.
+	(enum target_cpu_default): Add TARGET_CPU_DEFAULT_bdver2.
+	(enum processor_type): Add PROCESSOR_BDVER2.
+	* config/i386/i386.md (define_attr "cpu"): Add bdver2.
+	* config/i386/i386.opt ( mdispatch-scheduler): Add bdver2 to
+	description.
+
 2011-07-12  Richard Henderson  <rth@redhat.com>
 
 	PR target/49714
