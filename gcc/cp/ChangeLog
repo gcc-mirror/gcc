@@ -1,3 +1,10 @@
+2011-07-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* typeck2.c (split_nonconstant_init_1): Pass the initializer directly,
+	rather than a pointer to it.  Return true if the whole of the value
+	was initialized by the generated statements.  Use
+	complete_ctor_at_level_p instead of count_type_elements.
+
 2011-07-12   Diego Novillo  <dnovillo@google.com>
 
 	* name-lookup.h (cp_binding_level): Rename from cxx_scope.

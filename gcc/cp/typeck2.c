@@ -481,18 +481,20 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
 
 
 /* The recursive part of split_nonconstant_init.  DEST is an lvalue
-   expression to which INIT should be assigned.  INIT is a CONSTRUCTOR.  */
+   expression to which INIT should be assigned.  INIT is a CONSTRUCTOR.
+   Return true if the whole of the value was initialized by the
+   generated statements.  */
 
-static void
-split_nonconstant_init_1 (tree dest, tree *initp)
+static bool
+split_nonconstant_init_1 (tree dest, tree init)
 {
   unsigned HOST_WIDE_INT idx;
-  tree init = *initp;
   tree field_index, value;
   tree type = TREE_TYPE (dest);
   tree inner_type = NULL;
   bool array_type_p = false;
-  HOST_WIDE_INT num_type_elements, num_initialized_elements;
+  bool complete_p = true;
+  HOST_WIDE_INT num_split_elts = 0;
 
   switch (TREE_CODE (type))
     {
@@ -504,7 +506,6 @@ split_nonconstant_init_1 (tree dest, tree *initp)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      num_initialized_elements = 0;
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx,
 				field_index, value)
 	{
@@ -527,13 +528,14 @@ split_nonconstant_init_1 (tree dest, tree *initp)
 		sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 			      NULL_TREE);
 
-	      split_nonconstant_init_1 (sub, &value);
+	      if (!split_nonconstant_init_1 (sub, value))
+		complete_p = false;
+	      num_split_elts++;
 	    }
 	  else if (!initializer_constant_valid_p (value, inner_type))
 	    {
 	      tree code;
 	      tree sub;
-	      HOST_WIDE_INT inner_elements;
 
 	      /* FIXME: Ordered removal is O(1) so the whole function is
 		 worst-case quadratic. This could be fixed using an aside
@@ -557,21 +559,9 @@ split_nonconstant_init_1 (tree dest, tree *initp)
 	      code = build_stmt (input_location, EXPR_STMT, code);
 	      add_stmt (code);
 
-	      inner_elements = count_type_elements (inner_type, true);
-	      if (inner_elements < 0)
-		num_initialized_elements = -1;
-	      else if (num_initialized_elements >= 0)
-		num_initialized_elements += inner_elements;
-	      continue;
+	      num_split_elts++;
 	    }
 	}
-
-      num_type_elements = count_type_elements (type, true);
-      /* If all elements of the initializer are non-constant and
-	 have been split out, we don't need the empty CONSTRUCTOR.  */
-      if (num_type_elements > 0
-	  && num_type_elements == num_initialized_elements)
-	*initp = NULL;
       break;
 
     case VECTOR_TYPE:
@@ -583,6 +573,7 @@ split_nonconstant_init_1 (tree dest, tree *initp)
 	  code = build2 (MODIFY_EXPR, type, dest, cons);
 	  code = build_stmt (input_location, EXPR_STMT, code);
 	  add_stmt (code);
+	  num_split_elts += CONSTRUCTOR_NELTS (init);
 	}
       break;
 
@@ -592,6 +583,8 @@ split_nonconstant_init_1 (tree dest, tree *initp)
 
   /* The rest of the initializer is now a constant. */
   TREE_CONSTANT (init) = 1;
+  return complete_p && complete_ctor_at_level_p (TREE_TYPE (init),
+						 num_split_elts, inner_type);
 }
 
 /* A subroutine of store_init_value.  Splits non-constant static
@@ -607,7 +600,8 @@ split_nonconstant_init (tree dest, tree init)
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
       code = push_stmt_list ();
-      split_nonconstant_init_1 (dest, &init);
+      if (split_nonconstant_init_1 (dest, init))
+	init = NULL_TREE;
       code = pop_stmt_list (code);
       DECL_INITIAL (dest) = init;
       TREE_READONLY (dest) = 0;
