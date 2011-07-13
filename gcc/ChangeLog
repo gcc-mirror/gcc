@@ -1,5 +1,19 @@
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/i386/crtprec.c: Move to ../libgcc/config/i386.
+	* config/i386/t-crtpc: Remove.
+	* config/t-darwin (EXTRA_MULTILIB_PARTS): Remove.
+	* config.gcc (i[34567]86-*-darwin*): Remove i386/t-crtpc from
+	tmake_file.
+	(x86_64-*-darwin*): Likewise.
+	(i[34567]86-*-linux*): Likewise.
+	(x86_64-*-linux*): Likewise.
+
+	* config/i386/sol2.h (ENDFILE_SPEC): Redefine.
+	Handle -mpc32, -mpc64, -mpc80.
+
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/alpha/crtfastmath.c: Move to ../libgcc/config/alpha.
 	* config/alpha/t-crtfm: Remove.
 	* config/i386/crtfastmath.c: Move to ../libgcc/config/i386.

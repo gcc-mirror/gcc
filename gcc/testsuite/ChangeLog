@@ -1,3 +1,8 @@
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.c-torture/execute/990127-2.x: Use -mpc64 on i?86-*-darwin*,
+	i?86-*-solaris2*, x86_64-*-darwin*, x86_64-*-solaris2*.
+
 2011-07-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/g++.exp (g++_init):  Use istarget.  Remove target_triplet global.
