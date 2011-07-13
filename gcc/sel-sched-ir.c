@@ -5700,6 +5700,10 @@ static struct haifa_sched_info sched_sel_haifa_sched_info =
   NULL, /* begin_schedule_ready */
   NULL, /* begin_move_insn */
   NULL, /* advance_target_bb */
+
+  NULL,
+  NULL,
+
   SEL_SCHED | NEW_BBS
 };
 

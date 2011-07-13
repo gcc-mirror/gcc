@@ -1301,6 +1301,28 @@ sd_resolve_dep (sd_iterator_def sd_it)
 		 INSN_RESOLVED_FORW_DEPS (pro));
 }
 
+/* Perform the inverse operation of sd_resolve_dep.  Restore the dependence
+   pointed to by SD_IT to unresolved state.  */
+void
+sd_unresolve_dep (sd_iterator_def sd_it)
+{
+  dep_node_t node = DEP_LINK_NODE (*sd_it.linkp);
+  dep_t dep = DEP_NODE_DEP (node);
+  rtx pro = DEP_PRO (dep);
+  rtx con = DEP_CON (dep);
+
+  if ((current_sched_info->flags & DO_SPECULATION)
+      && (DEP_STATUS (dep) & SPECULATIVE))
+    move_dep_link (DEP_NODE_BACK (node), INSN_RESOLVED_BACK_DEPS (con),
+		   INSN_SPEC_BACK_DEPS (con));
+  else
+    move_dep_link (DEP_NODE_BACK (node), INSN_RESOLVED_BACK_DEPS (con),
+		   INSN_HARD_BACK_DEPS (con));
+
+  move_dep_link (DEP_NODE_FORW (node), INSN_RESOLVED_FORW_DEPS (pro),
+		 INSN_FORW_DEPS (pro));
+}
+
 /* Make TO depend on all the FROM's producers.
    If RESOLVED_P is true add dependencies to the resolved lists.  */
 void

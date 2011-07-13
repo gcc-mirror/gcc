@@ -1,3 +1,56 @@
+2011-07-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* haifa-sched.c: Include "hashtab.h"
+	(sched_no_dce): New global variable.
+	(INSN_EXACT_TICK, INSN_TICK_ESTIMATE, FEEDS_BACKTRACK_INSN,
+	SHADOW_P): New macros.
+	(last_clock_var, cycle_issued_insns): Move declarations.
+	(must_backtrack): New static variable.
+	(struct delay_pair): New structure.
+	(delay_htab, delay_htab_i2): New static variables.
+	(delay_hash_i1, delay_hash_i2, delay_i1_eq, delay_i2_eq,
+	record_delay_slot_pair, pair_delay, add_delay_dependencies): New
+	functions.
+	(dep_cost_1): If delay pairs exist, try to look up the insns and
+	use the correct pair delay if we find them.
+	(rank-for_schedule): Tweak priority for insns that must be scheduled
+	soon to avoid backtracking.
+	(queue_insn): Detect conditions which force backtracking.
+	(ready_add): Likewise.
+	(struct sched_block_state): Add member shadows_only_p.
+	(struct haifa_save_data): New structure.
+	(backtrack_queue): New static variable.
+	(mark_backtrack_feeds, copy_insn_list, save_backtrack_point,
+	unschedule_insns_until, restore_last_backtrack_point,
+	free_topmost_backtrack_point, free_backtrack_queue,
+	estimate_insn_tick, estimate_shadow_tick): New functions.
+	(prune_ready_list): New arg shadows_only_p.  All callers changed.
+	If true, remove everything that isn't SHADOW_P.  Look up delay
+	pairs and estimate ticks to avoid scheduling the first insn too
+	early.
+	(verify_shadows): New function.
+	(schedule_block): Add machinery to enable backtracking.
+	(sched_init): Take sched_no_dce into account when setting
+	DF_LR_RUN_DCE.
+	(free_delay_pairs): New function.
+	(init_h_i_d): Initialize INSN_EXACT_TICK.
+	* Makefile.in (haifa-sched.o): Add $(HASHTAB_H).
+	* sched-deps.c (sd_unresolve_dep): New function.
+	* sched-int. (struct haifa_sched_info): New fields save_state
+	and restore_state.
+	(struct _haifa_insn_data): New fields exact_tick, tick_estimate,
+	feeds_backtrack_insn and shadow_p.
+	(DO_BACKTRACKING): New value in enum SCHED_FLAGS.
+	(sched_no_dce): Declare variable.
+	(record_delay_slot_pair, free_delay_pairs, add_delay_dependencies,
+	sd_unresolve_dep): Declare functions.
+	* modulo-sched.c (sms_sched_info): Clear the two new fields.
+	* sched-rgn.c (rgn_const_sched_info): Likewise.
+	* sel-sched-ir.c (sched_sel_haifa_sched_info): Likewise.
+	* sched-ebb.c (save_ebb_state, restore_ebb_state): New functions.
+	(ebb_sched_info): Add them for the two new fields.
+	(add_deps_for_risky_insns): Call add_delay_dependencies.
+
 2011-07-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.opt (-mpointers-to-nested-functions):
