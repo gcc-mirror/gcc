@@ -126,6 +126,9 @@
 /* Define to 1 if you have the `dl' library (-ldl). */
 #undef HAVE_LIBDL
 
+/* Define to 1 if you have the `rt' library (-lrt). */
+#undef HAVE_LIBRT
+
 /* Define to 1 if you have the `socket' library (-lsocket). */
 #undef HAVE_LIBSOCKET
 

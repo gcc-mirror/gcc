@@ -10986,12 +10986,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
 
-if test ! -d pth
-then
-  # libmudflapth objects are built in this subdirectory
-  mkdir pth
-fi
-
 for ac_header in pthread.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
@@ -11133,6 +11127,57 @@ if test "x$ac_cv_lib_socket_connect" = x""yes; then :
 _ACEOF
 
   LIBS="-lsocket $LIBS"
+
+fi
+
+fi
+
+ac_fn_c_check_func "$LINENO" "sched_yield" "ac_cv_func_sched_yield"
+if test "x$ac_cv_func_sched_yield" = x""yes; then :
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sched_yield in -lrt" >&5
+$as_echo_n "checking for sched_yield in -lrt... " >&6; }
+if test "${ac_cv_lib_rt_sched_yield+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lrt  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sched_yield ();
+int
+main ()
+{
+return sched_yield ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_rt_sched_yield=yes
+else
+  ac_cv_lib_rt_sched_yield=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_sched_yield" >&5
+$as_echo "$ac_cv_lib_rt_sched_yield" >&6; }
+if test "x$ac_cv_lib_rt_sched_yield" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBRT 1
+_ACEOF
+
+  LIBS="-lrt $LIBS"
 
 fi
 

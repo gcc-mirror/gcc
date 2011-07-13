@@ -112,12 +112,6 @@ else
 fi
 AC_SUBST(MF_HAVE_UINTPTR_T)
 
-if test ! -d pth
-then
-  # libmudflapth objects are built in this subdirectory
-  mkdir pth
-fi
-
 AC_CHECK_HEADERS(pthread.h)
 
 AC_MSG_CHECKING([for thread model used by GCC])
@@ -150,6 +144,7 @@ AC_SUBST(build_libmudflapth)
 AC_CHECK_LIB(dl, dlsym)
 
 AC_CHECK_FUNC(connect,, AC_CHECK_LIB(socket, connect))
+AC_CHECK_FUNC(sched_yield,, AC_CHECK_LIB(rt, sched_yield))
 
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
