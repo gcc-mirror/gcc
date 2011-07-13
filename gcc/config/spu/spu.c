@@ -5630,6 +5630,7 @@ spu_init_libfuncs (void)
   set_optab_libfunc (ffs_optab, DImode, "__ffsdi2");
   set_optab_libfunc (clz_optab, DImode, "__clzdi2");
   set_optab_libfunc (ctz_optab, DImode, "__ctzdi2");
+  set_optab_libfunc (clrsb_optab, DImode, "__clrsbdi2");
   set_optab_libfunc (popcount_optab, DImode, "__popcountdi2");
   set_optab_libfunc (parity_optab, DImode, "__paritydi2");
 
