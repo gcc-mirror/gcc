@@ -2232,6 +2232,21 @@
      operands[5] = spu_const(<MODE>mode, 31);
   })
 
+(define_expand "clrsb<mode>2"
+  [(set (match_dup 2)
+        (gt:VSI (match_operand:VSI 1 "spu_reg_operand" "") (match_dup 5)))
+   (set (match_dup 3) (not:VSI (xor:VSI (match_dup 1) (match_dup 2))))
+   (set (match_dup 4) (clz:VSI (match_dup 3)))
+   (set (match_operand:VSI 0 "spu_reg_operand")
+        (plus:VSI (match_dup 4) (match_dup 5)))]
+  ""
+  {
+     operands[2] = gen_reg_rtx (<MODE>mode);
+     operands[3] = gen_reg_rtx (<MODE>mode);
+     operands[4] = gen_reg_rtx (<MODE>mode);
+     operands[5] = spu_const(<MODE>mode, -1);
+  })
+
 (define_expand "ffs<mode>2"
   [(set (match_dup 2)
 	(neg:VSI (match_operand:VSI 1 "spu_reg_operand" "")))

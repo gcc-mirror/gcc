@@ -1,3 +1,8 @@
+2011-07-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (spu_init_libfuncs): Install __clrsbdi2.
+	* config/spu/spu.md ("clrsb<mode>2"): New expander.
+
 2011-07-13  Thomas Schwinge  <thomas@schwinge.name>
 
 	* acinclude.m4 (gcc_GAS_CHECK_FEATURE): Use AS_ECHO instead of echo.
