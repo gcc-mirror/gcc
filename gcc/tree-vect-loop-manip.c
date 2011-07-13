@@ -2409,13 +2409,13 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
   tree part_cond_expr, length_factor;
 
   /* Create expression
-     ((store_ptr_0 + store_segment_length_0) < load_ptr_0)
-     || (load_ptr_0 + load_segment_length_0) < store_ptr_0))
+     ((store_ptr_0 + store_segment_length_0) <= load_ptr_0)
+     || (load_ptr_0 + load_segment_length_0) <= store_ptr_0))
      &&
      ...
      &&
-     ((store_ptr_n + store_segment_length_n) < load_ptr_n)
-     || (load_ptr_n + load_segment_length_n) < store_ptr_n))  */
+     ((store_ptr_n + store_segment_length_n) <= load_ptr_n)
+     || (load_ptr_n + load_segment_length_n) <= store_ptr_n))  */
 
   if (VEC_empty (ddr_p, may_alias_ddrs))
     return;
@@ -2484,8 +2484,8 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
 
       part_cond_expr =
       	fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-	  fold_build2 (LT_EXPR, boolean_type_node, seg_a_max, seg_b_min),
-	  fold_build2 (LT_EXPR, boolean_type_node, seg_b_max, seg_a_min));
+	  fold_build2 (LE_EXPR, boolean_type_node, seg_a_max, seg_b_min),
+	  fold_build2 (LE_EXPR, boolean_type_node, seg_b_max, seg_a_min));
 
       if (*cond_expr)
 	*cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
