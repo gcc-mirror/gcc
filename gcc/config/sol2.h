@@ -109,10 +109,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!symbolic:\
-     %{pthreads|pthread:" \
-        LIB_THREAD_LDFLAGS_SPEC " -lpthread " LIB_TLS_SPEC "} \
-     %{fprofile-generate*:" \
-        LIB_THREAD_LDFLAGS_SPEC " " LIB_TLS_SPEC "} \
+     %{pthreads|pthread:-lpthread} \
+     %{pthreads|pthread|fprofile-generate*:" LIB_TLS_SPEC "} \
      %{p|pg:-ldl} -lc}"
 
 #ifndef CROSS_DIRECTORY_STRUCTURE
@@ -175,6 +173,7 @@ along with GCC; see the file COPYING3.  If not see
    %{static:-dn -Bstatic} \
    %{shared:-G -dy %{!mimpure-text:-z text}} \
    %{symbolic:-Bsymbolic -G -dy -z text} \
+   %{pthreads|pthread|fprofile-generate*:" LIB_THREAD_LDFLAGS_SPEC "} \
    %(link_arch) \
    %{Qy:} %{!Qn:-Qy}"
 
