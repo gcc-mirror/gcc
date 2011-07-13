@@ -1,3 +1,8 @@
+2011-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (build_vms_descriptor32): Skip the 32-bit
+	range comparison if Pmode is SImode.
+
 2011-07-12  Laurent GUERBY  <laurent@guerby.net>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 

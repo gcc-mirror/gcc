@@ -2556,8 +2556,10 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
   tem = build_unary_op (ADDR_EXPR, pointer64_type,
 			build0 (PLACEHOLDER_EXPR, type));
   tem = build3 (COND_EXPR, pointer32_type,
-		build_binary_op (GE_EXPR, boolean_type_node, tem,
-				 build_int_cstu (pointer64_type, 0x80000000)),
+		Pmode != SImode
+		? build_binary_op (GE_EXPR, boolean_type_node, tem,
+				   build_int_cstu (pointer64_type, 0x80000000))
+		: boolean_false_node,
 		build0 (PLACEHOLDER_EXPR, void_type_node),
 		convert (pointer32_type, tem));
 
