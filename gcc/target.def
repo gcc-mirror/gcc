@@ -296,6 +296,15 @@ DEFHOOK
  section *, (tree decl),
  default_function_rodata_section)
 
+/* Nonnull if the target wants to override the default ".rodata" prefix
+   for mergeable data sections.  */
+DEFHOOKPOD
+(mergeable_rodata_prefix,
+ "Usually, the compiler uses the prefix @code{\".rodata\"} to construct\n\
+section names for mergeable constant data.  Define this macro to override\n\
+the string if a different section name should be used.",
+ const char *, ".rodata")
+
 /* Output a constructor for a symbol with a given priority.  */
 DEFHOOK
 (constructor,
