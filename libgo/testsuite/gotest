@@ -288,11 +288,11 @@ if test -n "$prefix"; then
 	prefixarg="-fgo-prefix=$prefix"
 fi
 
-$GC -g $prefixarg -c -I . -o _gotest_.o $gofiles $pkgbasefiles
+$GC -g $prefixarg -c -I . -fno-toplevel-reorder -o _gotest_.o $gofiles $pkgbasefiles
 if $havex; then
 	mkdir -p `dirname $package`
 	cp _gotest_.o `dirname $package`/lib`basename $package`.a
-	$GC -g -c -I . -o $xofile $xgofiles
+	$GC -g -c -I . -fno-toplevel-reorder -o $xofile $xgofiles
 fi
 
 # They all compile; now generate the code to call them.
