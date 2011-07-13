@@ -1,3 +1,11 @@
+2011-07-13  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* doc/tm.texi.in (TARGET_ASM_MERGEABLE_RODATA_PREFIX): Add hook.
+	* doc/tm.texi: Regenerate.
+	* target.def (mergeable_rodata_prefix: New defhookpod.
+	* varasm.c (mergeable_string_section, mergeable_constant_section):
+	Use it. Allocate name with alloca.
+
 2011-07-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi (x86): Remove -mfused-madd and add -mfma.

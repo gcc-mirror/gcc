@@ -742,7 +742,8 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
       const char *str;
       HOST_WIDE_INT i;
       int j, unit;
-      char name[30];
+      const char *prefix = targetm.asm_out.mergeable_rodata_prefix;
+      char *name = (char *) alloca (strlen (prefix) + 30);
 
       mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (decl)));
       modesize = GET_MODE_BITSIZE (mode);
@@ -766,8 +767,8 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 	    }
 	  if (i == len - unit)
 	    {
-	      sprintf (name, ".rodata.str%d.%d", modesize / 8,
-		       (int) (align / 8));
+	      sprintf (name, "%s.str%d.%d", prefix,
+		       modesize / 8, (int) (align / 8));
 	      flags |= (modesize / 8) | SECTION_MERGE | SECTION_STRINGS;
 	      return get_section (name, flags, NULL);
 	    }
@@ -794,9 +795,10 @@ mergeable_constant_section (enum machine_mode mode ATTRIBUTE_UNUSED,
       && align <= 256
       && (align & (align - 1)) == 0)
     {
-      char name[24];
+      const char *prefix = targetm.asm_out.mergeable_rodata_prefix;
+      char *name = (char *) alloca (strlen (prefix) + 30);
 
-      sprintf (name, ".rodata.cst%d", (int) (align / 8));
+      sprintf (name, "%s.cst%d", prefix, (int) (align / 8));
       flags |= (align / 8) | SECTION_MERGE;
       return get_section (name, flags, NULL);
     }
