@@ -1,3 +1,8 @@
+2011-07-13  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (simplify_conversion_using_ranges): Make sure
+	the final type is integral.
+
 2011-07-13  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* sched-int.h (struct _dep): Add member cost.

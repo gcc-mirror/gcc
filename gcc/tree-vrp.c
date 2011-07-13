@@ -7353,6 +7353,8 @@ simplify_conversion_using_ranges (gimple stmt)
   double_int innermin, innermax, middlemin, middlemax;
 
   finaltype = TREE_TYPE (gimple_assign_lhs (stmt));
+  if (!INTEGRAL_TYPE_P (finaltype))
+    return false;
   middleop = gimple_assign_rhs1 (stmt);
   def_stmt = SSA_NAME_DEF_STMT (middleop);
   if (!is_gimple_assign (def_stmt)

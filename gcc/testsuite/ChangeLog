@@ -1,3 +1,7 @@
+2011-07-13  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/20110713-1.c: New testcase.
+
 2011-07-12  Andrew Pinski  <pinskia@gmail.com>
 
 	PR rtl-opt/49474
