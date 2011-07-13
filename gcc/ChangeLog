@@ -1,3 +1,11 @@
+2011-07-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (x86_output_mi_thunk): Support ptr_mode
+	!= Pmode.
+
+	* config/i386/i386.md (*addsi_1_zext): Renamed to ...
+	(addsi_1_zext): This.
+
 2011-07-13  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* doc/tm.texi.in (TARGET_ASM_MERGEABLE_RODATA_PREFIX): Add hook.
