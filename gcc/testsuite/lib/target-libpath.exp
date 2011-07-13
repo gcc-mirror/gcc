@@ -272,11 +272,11 @@ proc restore_ld_library_path_env_vars { } {
 proc get_shlib_extension { } {
     global shlib_ext
 
-    if { [ istarget *-*-darwin* ] } {
+    if { [istarget *-*-darwin*] } {
 	set shlib_ext "dylib"
-    } elseif { [ istarget *-*-cygwin* ] || [ istarget *-*-mingw* ] } {
+    } elseif { [istarget *-*-cygwin*] || [istarget *-*-mingw*] } {
 	set shlib_ext "dll"
-    } elseif { [ istarget hppa*-*-hpux* ] } {
+    } elseif { [istarget hppa*-*-hpux*] } {
 	set shlib_ext "sl"
     } else {
 	set shlib_ext "so"

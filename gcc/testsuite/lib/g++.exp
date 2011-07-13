@@ -188,7 +188,6 @@ proc g++_init { args } {
     global TOOL_EXECUTABLE TOOL_OPTIONS
     global GXX_UNDER_TEST
     global TESTING_IN_BUILD_TREE
-    global target_triplet
     global gcc_warning_prefix
     global gcc_error_prefix
 
@@ -263,7 +262,7 @@ proc g++_init { args } {
     set gcc_warning_prefix "warning:"
     set gcc_error_prefix "error:"
 
-    if { [string match "*-*-darwin*" $target_triplet] } {
+    if { [istarget *-*-darwin*] } {
 	lappend ALWAYS_CXXFLAGS "ldflags=-multiply_defined suppress"
        }
 

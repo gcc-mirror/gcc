@@ -37,33 +37,33 @@ proc get-fortran-torture-options { } {
 
     set vectorizer_options [list "-O2" "-ftree-vectorize"]
 
-    if { [istarget "powerpc*-*-*"]
+    if { [istarget powerpc*-*-*]
 	 && [is-effective-target powerpc_altivec_ok]
 	 && [check_vmx_hw_available] } {
 	lappend vectorizer_options "-maltivec"
 	set test_tree_vectorize 1
-    } elseif { [istarget  "spu-*-*"] } {
+    } elseif { [istarget spu-*-*] } {
 	set test_tree_vectorize 1
-    } elseif { ( [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] )
+    } elseif { ( [istarget i?86-*-*] || [istarget x86_64-*-*] )
 	       && [check_effective_target_sse2]
 	       && [check_sse2_hw_available]
 	       && [check_sse_os_support_available] } {
 	lappend vectorizer_options "-msse2"
 	set test_tree_vectorize 1
-    } elseif { [istarget "mips*-*-*"]
+    } elseif { [istarget mips*-*-*]
 	       && [check_effective_target_mpaired_single]
 	       && [check_effective_target_nomips16] } {
 	lappend vectorizer_options "-mpaired-single"
 	set test_tree_vectorize 1
-    } elseif { [istarget "sparc*-*-*"]
+    } elseif { [istarget sparc*-*-*]
 	       && [check_effective_target_ultrasparc_hw] } {
 	lappend vectorizer_options "-mcpu=ultrasparc" "-mvis"
 	set test_tree_vectorize 1
-    } elseif { [istarget "alpha*-*-*"]
+    } elseif { [istarget alpha*-*-*]
 	       && [check_alpha_max_hw_available] } {
 	lappend vectorizer_options "-mmax"
 	set test_tree_vectorize 1
-    } elseif [istarget "ia64-*-*"] {
+    } elseif [istarget ia64-*-*] {
 	set test_tree_vectorize 1
     } else {
 	set test_tree_vectorize 0
@@ -414,14 +414,14 @@ proc fortran-torture { args } {
 #
 proc add-ieee-options { } {
     # Ensure that excess precision does not cause problems.
-    if { [istarget "i?86-*-*"]
-	 || [istarget "m68k-*-*"] } then {
+    if { [istarget i?86-*-*]
+	 || [istarget m68k-*-*] } then {
       uplevel 1 lappend additional_flags "-ffloat-store"
     }
 
     # Enable full IEEE compliance mode.
-    if { [istarget "alpha*-*-*"]
-         || [istarget "sh*-*-*"] } then {
+    if { [istarget alpha*-*-*]
+         || [istarget sh*-*-*] } then {
       uplevel 1 lappend additional_flags "-mieee"
     }
 }
