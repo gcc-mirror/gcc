@@ -122,11 +122,10 @@ proc dg-require-profiling { args } {
 # If this target does not support DLL attributes skip this test.
 
 proc dg-require-dll { args } {
-    global target_triplet
     # As a special case, the mcore-*-elf supports these attributes.
     # All Symbian OS targets also support these attributes.
-    if { [string match "mcore-*-elf" $target_triplet]
-         || [string match "*-*-symbianelf" $target_triplet]} {
+    if { [istarget mcore-*-elf]
+         || [istarget *-*-symbianelf] } {
 	return
     }
     # PE/COFF targets support dllimport/dllexport.

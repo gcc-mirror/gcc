@@ -219,7 +219,6 @@ proc check_runtime {prop args} {
 # this proc returns 1 if they're supported, 0 if they're not, or -1 if unsure
 
 proc check_weak_available { } {
-    global target_triplet
     global target_cpu
 
     # All mips targets should support it
@@ -230,25 +229,25 @@ proc check_weak_available { } {
 
     # All solaris2 targets should support it
 
-    if { [regexp ".*-solaris2.*" $target_triplet] } {
+    if { [istarget *-*-solaris2*] } {
         return 1
     }
 
     # DEC OSF/1/Digital UNIX/Tru64 UNIX supports it
 
-    if { [regexp "alpha.*osf.*" $target_triplet] } {
+    if { [istarget alpha*-dec-osf*] } {
 	return 1
     }
 
     # Windows targets Cygwin and MingW32 support it
 
-    if { [regexp ".*mingw32|.*cygwin" $target_triplet] } {
+    if { [istarget *-*-cygwin*] || [istarget *-*-mingw*] } {
 	return 1
     }
 
     # HP-UX 10.X doesn't support it
 
-    if { [istarget "hppa*-*-hpux10*"] } {
+    if { [istarget hppa*-*-hpux10*] } {
 	return 0
     }
 
@@ -276,7 +275,7 @@ proc check_weak_available { } {
 # cannot be overridden.
 
 proc check_weak_override_available { } {
-    if { [istarget "*-*-mingw*"] } {
+    if { [istarget *-*-mingw*] } {
 	return 0
     }
     return [check_weak_available]
@@ -291,9 +290,6 @@ proc check_weak_override_available { } {
 # The argument is the kind of visibility, default/protected/hidden/internal.
 
 proc check_visibility_available { what_kind } {
-    global tool
-    global target_triplet
-
     # On NetWare, support makes no sense.
     if { [istarget *-*-netware*] } {
         return 0
@@ -627,7 +623,7 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 proc add_options_for_tls { flags } {
     # Tru64 UNIX uses emutls, which relies on a couple of pthread functions
     # which only live in libpthread, so always pass -pthread for TLS.
-    if { [istarget *-*-osf*] } {
+    if { [istarget alpha*-dec-osf*] } {
 	return "$flags -pthread"
     }
     # On Solaris 8 and 9, __tls_get_addr/___tls_get_addr only lives in
@@ -660,8 +656,7 @@ proc check_effective_target_tls {} {
 proc check_effective_target_tls_native {} {
     # VxWorks uses emulated TLS machinery, but with non-standard helper
     # functions, so we fail to automatically detect it.
-    global target_triplet
-    if { [regexp ".*-.*-vxworks.*" $target_triplet] } {
+    if { [istarget *-*-vxworks*] } {
 	return 0
     }
     
@@ -677,8 +672,7 @@ proc check_effective_target_tls_native {} {
 proc check_effective_target_tls_emulated {} {
     # VxWorks uses emulated TLS machinery, but with non-standard helper
     # functions, so we fail to automatically detect it.
-    global target_triplet
-    if { [regexp ".*-.*-vxworks.*" $target_triplet] } {
+    if { [istarget *-*-vxworks*] } {
 	return 1
     }
     
@@ -702,8 +696,7 @@ proc check_effective_target_tls_runtime {} {
 
 proc check_effective_target_function_sections {} {
     # Darwin has its own scheme and silently accepts -ffunction-sections.
-    global target_triplet
-    if { [regexp ".*-.*-darwin.*" $target_triplet] } {
+    if { [istarget *-*-darwin*] } {
 	return 0
     }
     
@@ -1435,7 +1428,7 @@ proc check_fork_available {} {
 # Returns true iff "mkfifo" is available on the target system.
 
 proc check_mkfifo_available {} {
-    if {[istarget *-*-cygwin*]} {
+    if { [istarget *-*-cygwin*] } {
        # Cygwin has mkfifo, but support is incomplete.
        return 0
      }
@@ -1447,10 +1440,10 @@ proc check_mkfifo_available {} {
 
 proc check_cxa_atexit_available { } {
     return [check_cached_effective_target cxa_atexit_available {
-	if { [istarget "hppa*-*-hpux10*"] } {
+	if { [istarget hppa*-*-hpux10*] } {
 	    # HP-UX 10 doesn't have __cxa_atexit but subsequent test passes.
 	    expr 0
-	} elseif { [istarget "*-*-vxworks"] } {
+	} elseif { [istarget *-*-vxworks] } {
 	    # vxworks doesn't have __cxa_atexit but subsequent test passes.
 	    expr 0
 	} else {
@@ -2282,7 +2275,7 @@ proc check_effective_target_powerpc_ppu_ok { } {
 # Return 1 if this is a PowerPC target that supports SPU.
 
 proc check_effective_target_powerpc_spu { } {
-    if [istarget powerpc*-*-linux*] {
+    if { [istarget powerpc*-*-linux*] } {
 	return [check_effective_target_powerpc_altivec_ok]
     } else {
 	return 0
@@ -3705,11 +3698,11 @@ proc add_options_for_c99_runtime { flags } {
 # full IEEE compliance mode.
 
 proc add_options_for_ieee { flags } {
-    if { [istarget "alpha*-*-*"]
-         || [istarget "sh*-*-*"] } {
+    if { [istarget alpha*-*-*]
+         || [istarget sh*-*-*] } {
        return "$flags -mieee"
     }
-    if { [istarget "rx-*-*"] } {
+    if { [istarget rx-*-*] } {
        return "$flags -mnofpu"
     }
     return $flags
@@ -3999,21 +3992,21 @@ proc check_vect_support_and_set_flags { } {
     global DEFAULT_VECTCFLAGS
     global dg-do-what-default
 
-    if  [istarget "powerpc-*paired*"]  {
+    if  [istarget powerpc-*paired*]  {
         lappend DEFAULT_VECTCFLAGS "-mpaired"
         if [check_750cl_hw_available] {
             set dg-do-what-default run
         } else {
             set dg-do-what-default compile
         }
-    } elseif [istarget "powerpc*-*-*"] {
+    } elseif [istarget powerpc*-*-*] {
         # Skip targets not supporting -maltivec.
         if ![is-effective-target powerpc_altivec_ok] {
             return 0
         }
 
         lappend DEFAULT_VECTCFLAGS "-maltivec"
-        if [check_vsx_hw_available]  {
+        if [check_vsx_hw_available] {
             lappend DEFAULT_VECTCFLAGS "-mvsx" "-mno-allow-movmisalign"
         }
 
@@ -4026,16 +4019,16 @@ proc check_vect_support_and_set_flags { } {
             }
             set dg-do-what-default compile
         }
-    } elseif { [istarget  "spu-*-*"] } {
+    } elseif { [istarget spu-*-*] } {
         set dg-do-what-default run
-    } elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
+    } elseif { [istarget i?86-*-*] || [istarget x86_64-*-*] } {
         lappend DEFAULT_VECTCFLAGS "-msse2"
         if { [check_effective_target_sse2_runtime] } {
             set dg-do-what-default run
         } else {
             set dg-do-what-default compile
         }
-    } elseif { [istarget "mips*-*-*"]
+    } elseif { [istarget mips*-*-*]
                && ([check_effective_target_mpaired_single]
                     || [check_effective_target_mips_loongson])
                && [check_effective_target_nomips16] } {
@@ -4043,14 +4036,14 @@ proc check_vect_support_and_set_flags { } {
             lappend DEFAULT_VECTCFLAGS "-mpaired-single"
         }
         set dg-do-what-default run
-    } elseif [istarget "sparc*-*-*"] {
+    } elseif [istarget sparc*-*-*] {
         lappend DEFAULT_VECTCFLAGS "-mcpu=ultrasparc" "-mvis"
         if [check_effective_target_ultrasparc_hw] {
             set dg-do-what-default run
         } else {
             set dg-do-what-default compile
         }
-    } elseif [istarget "alpha*-*-*"] {
+    } elseif [istarget alpha*-*-*] {
         # Alpha's vectorization capabilities are extremely limited.
         # It's more effort than its worth disabling all of the tests
         # that it cannot pass.  But if you actually want to see what
@@ -4063,7 +4056,7 @@ proc check_vect_support_and_set_flags { } {
         } else {
             set dg-do-what-default compile
         }
-    } elseif [istarget "ia64-*-*"] {
+    } elseif [istarget ia64-*-*] {
         set dg-do-what-default run
     } elseif [is-effective-target arm_neon_ok] {
         eval lappend DEFAULT_VECTCFLAGS [add_options_for_arm_neon ""]

@@ -210,7 +210,6 @@ proc obj-c++_init { args } {
     global TOOL_EXECUTABLE TOOL_OPTIONS
     global OBJCXX_UNDER_TEST
     global TESTING_IN_BUILD_TREE
-    global target_triplet
     global gcc_warning_prefix
     global gcc_error_prefix
 
@@ -270,7 +269,7 @@ proc obj-c++_init { args } {
     set gcc_warning_prefix "warning:"
     set gcc_error_prefix "error:"
 
-    if { [string match "*-*-darwin*" $target_triplet] } {
+    if { [istarget *-*-darwin*] } {
 	lappend ALWAYS_OBJCXXFLAGS "ldflags=-multiply_defined suppress"
     }
 
@@ -299,7 +298,7 @@ proc obj-c++_target_compile { source dest type options } {
     # we need to add the include path for the gnu runtime if that is in
     # use.
     # First, set the default...
-    if { [istarget "*-*-darwin*"] } {
+    if { [istarget *-*-darwin*] } {
 	set nextruntime 1
     } else {
 	set nextruntime 0

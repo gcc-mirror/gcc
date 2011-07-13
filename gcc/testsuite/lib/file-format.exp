@@ -24,17 +24,16 @@
 
 proc gcc_target_object_format { } { 
     global gcc_target_object_format_saved
-    global target_triplet
     global tool
 
     if [info exists gcc_target_object_format_saved] {
         verbose "gcc_target_object_format returning saved $gcc_target_object_format_saved" 2
-    } elseif { [string match "*-*-darwin*" $target_triplet] } {
+    } elseif { [istarget *-*-darwin*] } {
 	# Darwin doesn't necessarily have objdump, so hand-code it.
 	set gcc_target_object_format_saved mach-o
-    } elseif { [string match "hppa*-*-hpux*" $target_triplet] } {
+    } elseif { [istarget hppa*-*-hpux*] } {
 	# HP-UX doesn't necessarily have objdump, so hand-code it.
-	if { [string match "hppa*64*-*-hpux*" $target_triplet] } {
+	if { [istarget hppa*64*-*-hpux*] } {
 	  set gcc_target_object_format_saved elf
 	} else {
 	  set gcc_target_object_format_saved som
