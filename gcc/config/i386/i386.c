@@ -29442,7 +29442,7 @@ x86_output_mi_thunk (FILE *file,
   /* Adjust the this parameter by a value stored in the vtable.  */
   if (vcall_offset)
     {
-      rtx vcall_addr, vcall_mem;
+      rtx vcall_addr, vcall_mem, this_mem;
       unsigned int tmp_regno;
 
       if (TARGET_64BIT)
@@ -29457,7 +29457,10 @@ x86_output_mi_thunk (FILE *file,
 	}
       tmp = gen_rtx_REG (Pmode, tmp_regno);
 
-      emit_move_insn (tmp, gen_rtx_MEM (ptr_mode, this_reg));
+      this_mem = gen_rtx_MEM (ptr_mode, this_reg);
+      if (Pmode != ptr_mode)
+	this_mem = gen_rtx_ZERO_EXTEND (Pmode, this_mem);
+      emit_move_insn (tmp, this_mem);
 
       /* Adjust the this parameter.  */
       vcall_addr = plus_constant (tmp, vcall_offset);
@@ -29469,8 +29472,14 @@ x86_output_mi_thunk (FILE *file,
 	  vcall_addr = gen_rtx_PLUS (Pmode, tmp, tmp2);
 	}
 
-      vcall_mem = gen_rtx_MEM (Pmode, vcall_addr);
-      emit_insn (ix86_gen_add3 (this_reg, this_reg, vcall_mem));
+      vcall_mem = gen_rtx_MEM (ptr_mode, vcall_addr);
+      if (Pmode != ptr_mode)
+	emit_insn (gen_addsi_1_zext (this_reg,
+				     gen_rtx_REG (ptr_mode,
+						  REGNO (this_reg)),
+				     vcall_mem));
+      else
+	emit_insn (ix86_gen_add3 (this_reg, this_reg, vcall_mem));
     }
 
   /* If necessary, drop THIS back to its stack slot.  */
