@@ -1,3 +1,19 @@
+2011-07-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.opt (-mpointers-to-nested-functions):
+	Rename -mr11.
+	* config/rs6000/rs6000.c (rs6000_trampoline_init): Ditto.
+	(rs6000_call_indirect_aix): Ditto.
+	* config/rs6000/rs6000.md (call_indirect_aix<ptrsize>): Ditto.
+	(call_indirect_aix<ptrsize>_internal): Ditto.
+	(call_indirect_aix<ptrsize>_nor11): Ditto.
+	(call_indirect_aix<ptrsize>_internal2): Ditto.
+	(call_value_indirect_aix<ptrsize>): Ditto.
+	(call_value_indirect_aix<ptrsize>_internal): Ditto.
+	(call_value_indirect_aix<ptrsize>_nor11): Ditto.
+	(call_value_indirect_aix<ptrsize>_internal2): Ditto.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Ditto.
+
 2011-07-13  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in ($(lang_checks_parallelized)): Allow --tool_opts.

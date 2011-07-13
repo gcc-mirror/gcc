@@ -24409,7 +24409,7 @@ rs6000_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
       {
 	rtx fnmem, fn_reg, toc_reg;
 
-	if (!TARGET_R11)
+	if (!TARGET_POINTERS_TO_NESTED_FUNCTIONS)
 	  error ("-mno-r11 must not be used if you have trampolines");
 
 	fnmem = gen_const_mem (Pmode, force_reg (Pmode, fnaddr));
@@ -27741,7 +27741,7 @@ rs6000_call_indirect_aix (rtx value, rtx func_desc, rtx flag)
       stack_toc_offset = GEN_INT (TOC_SAVE_OFFSET_32BIT);
       func_toc_offset = GEN_INT (AIX_FUNC_DESC_TOC_32BIT);
       func_sc_offset = GEN_INT (AIX_FUNC_DESC_SC_32BIT);
-      if (TARGET_R11)
+      if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
 	{
 	  call_func = gen_call_indirect_aix32bit;
 	  call_value_func = gen_call_value_indirect_aix32bit;
@@ -27757,7 +27757,7 @@ rs6000_call_indirect_aix (rtx value, rtx func_desc, rtx flag)
       stack_toc_offset = GEN_INT (TOC_SAVE_OFFSET_64BIT);
       func_toc_offset = GEN_INT (AIX_FUNC_DESC_TOC_64BIT);
       func_sc_offset = GEN_INT (AIX_FUNC_DESC_SC_64BIT);
-      if (TARGET_R11)
+      if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
 	{
 	  call_func = gen_call_indirect_aix64bit;
 	  call_value_func = gen_call_value_indirect_aix64bit;
@@ -27800,7 +27800,7 @@ rs6000_call_indirect_aix (rtx value, rtx func_desc, rtx flag)
 					    func_toc_offset));
 
   /* If we have a static chain, load it up.  */
-  if (TARGET_R11)
+  if (TARGET_POINTERS_TO_NESTED_FUNCTIONS)
     {
       func_sc_mem = gen_rtx_MEM (Pmode,
 				 gen_rtx_PLUS (Pmode,
