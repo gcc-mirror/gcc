@@ -124,9 +124,11 @@ proc libmudflap-init { language } {
 
     # If there is no static library then don't run tests with -static.
     global tool
+    global mfconfig_libs
     set opts "additional_flags=-static"
     lappend opts "additional_flags=-fmudflap"
     lappend opts "additional_flags=-lmudflap"
+    lappend opts "libs=$mfconfig_libs"
     set src stlm[pid].c
     set exe stlm[pid].x
 

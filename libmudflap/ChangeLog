@@ -1,3 +1,13 @@
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Don't create pth.
+	Check for library containing sched_yield.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+	* testsuite/lib/libmudflap.exp (libmudflap-init): Use
+	mfconfig_libs in -static check.
+
 2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libmudflap/49550
