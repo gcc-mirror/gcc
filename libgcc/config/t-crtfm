@@ -1,2 +1,5 @@
-crtfastmath.o: $(gcc_srcdir)/config/$(cpu_type)/crtfastmath.c
-	$(gcc_compile) -c $<
+# -frandom-seed is necessary to avoid bootstrap comparison failures due to
+# changing mangled names of the constructor on Tru64 Unix, but harmless
+# otherwise.
+crtfastmath.o: $(srcdir)/config/$(cpu_type)/crtfastmath.c
+	$(gcc_compile) -frandom-seed=gcc-crtfastmath -c $<

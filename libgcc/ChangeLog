@@ -1,5 +1,34 @@
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/alpha/crtfastmath.c: New file.
+	* config/i386/crtfastmath.c: New file.
+	* config/ia64/crtfastmath.c: New file.
+	* config/mips/crtfastmath.c: New file.
+	* config/sparc/crtfastmath.c: New file.
+
+	* config/t-crtfm (crtfastmath.o): Use $(srcdir) to refer to
+	crtfastmath.c.
+	Add -frandom-seed=gcc-crtfastmath.
+	* config/alpha/t-crtfm: Remove.
+	* config/i386/t-crtfm: Use $(srcdir) to refer to crtfastmath.c.
+	* config/ia64/t-ia64 (crtfastmath.o): Remove.
+
+	* config.host (alpha*-*-linux*): Replace alpha/t-crtfm by t-crtfm.
+	(alpha*-dec-osf5.1*): Likewise.
+	(alpha*-*-freebsd*): Add t-crtfm to tmake_file.
+	Add crtfastmath.o to extra_parts.
+	(i[34567]86-*-darwin*): Add i386/t-crtfm to tmake_file.
+	Add crtfastmath.o to extra_parts.
+	(x86_64-*-darwin*): Likewise.
+	(x86_64-*-mingw*): Likewise.
+	(ia64*-*-elf*): Add t-crtfm to tmake_file.
+	(ia64*-*-freebsd*): Likewise.
+	(ia64*-*-linux*): Likewise.
+	(sparc64-*-freebsd*): Add t-crtfm to tmake_file.
+	Add crtfastmath.o to extra_parts.
+
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/darwin-crt3.o: New file.
 	* config/rs6000/darwin-crt2.c: New file.
 	* config/t-darwin: New file.

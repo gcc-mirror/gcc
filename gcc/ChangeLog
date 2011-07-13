@@ -1,5 +1,32 @@
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/alpha/crtfastmath.c: Move to ../libgcc/config/alpha.
+	* config/alpha/t-crtfm: Remove.
+	* config/i386/crtfastmath.c: Move to ../libgcc/config/i386.
+	* config/i386/t-crtfm: Remove.
+	* config/ia64/crtfastmath.c: Move to ../libgcc/config/ia64.
+	* config/mips/crtfastmath.c: Move to ../libgcc/config/mips.
+	* config/sparc/crtfastmath.c: Move to ../libgcc/config/sparc.
+	* config/sparc/t-crtfm: Remove.
+
+	* config.gcc (alpha*-*-linux*): Remove alpha/t-crtfm from tmake_file.
+	(alpha*-*-freebsd*): Likewise.
+	(i[34567]86-*-darwin*): Remove i386/t-crtfm from tmake_file.
+	(x86_64-*-darwin*): Likewise.
+	(i[34567]86-*-linux*): Likewise.
+	(x86_64-*-linux*): Likewise.
+	(x86_64-*-mingw*): Likewise.
+	(ia64*-*-elf*): Remove crtfastmath.o from extra_parts.
+	(ia64*-*-freebsd*): Likewise.
+	(ia64*-*-linux*): Likewise.
+	(mips64*-*-linux*): Likewise.
+	(mips*-*-linux*): Likewise.
+	(sparc-*-linux*): Remove sparc/t-crtfm from tmake_file.
+	(sparc64-*-linux*): Likewise.
+	(sparc64-*-freebsd*): Likewise.
+
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/darwin-crt2.c: Move to ../libgcc/config/rs6000.
 	* config/darwin-crt3.c: Move to ../libgcc/config.
 	* config/t-darwin (EXTRA_MULTILIB_PARTS): Remove.
