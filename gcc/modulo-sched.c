@@ -283,6 +283,7 @@ static struct haifa_sched_info sms_sched_info =
   0, 0,
 
   NULL, NULL, NULL, NULL,
+  NULL, NULL,
   0
 };
 

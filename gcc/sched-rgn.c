@@ -2371,6 +2371,7 @@ static const struct haifa_sched_info rgn_const_sched_info =
   begin_schedule_ready,
   NULL,
   advance_target_bb,
+  NULL, NULL,
   SCHED_RGN
 };
 
