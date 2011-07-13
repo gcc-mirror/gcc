@@ -1638,6 +1638,16 @@ sched_setup_bb_reg_pressure_info (basic_block bb, rtx after)
   initiate_bb_reg_pressure_info (bb);
   setup_insn_max_reg_pressure (after, false);
 }
+
+/* A structure that holds local state for the loop in schedule_block.  */
+struct sched_block_state
+{
+  /* True if no real insns have been scheduled in the current cycle.  */
+  bool first_cycle_insn_p;
+  /* Initialized with the machine's issue rate every cycle, and updated
+     by calls to the variable_issue hook.  */
+  int can_issue_more;
+};
 
 /* INSN is the "currently executing insn".  Launch each insn which was
    waiting on INSN.  READY is the ready list which contains the insns
@@ -2924,8 +2934,7 @@ void
 schedule_block (basic_block *target_bb)
 {
   int i;
-  bool first_cycle_insn_p;
-  int can_issue_more;
+  struct sched_block_state ls;
   state_t temp_state = NULL;  /* It is used for multipass scheduling.  */
   int sort_p, advance, start_clock_var;
 
@@ -3075,9 +3084,9 @@ schedule_block (basic_block *target_bb)
       if (ready.n_ready == 0)
 	continue;
 
-      first_cycle_insn_p = true;
+      ls.first_cycle_insn_p = true;
       cycle_issued_insns = 0;
-      can_issue_more = issue_rate;
+      ls.can_issue_more = issue_rate;
       for (;;)
 	{
 	  rtx insn;
@@ -3118,7 +3127,7 @@ schedule_block (basic_block *target_bb)
 		}
 	    }
 
-	  if (first_cycle_insn_p && !ready.n_ready)
+	  if (ls.first_cycle_insn_p && !ready.n_ready)
 	    break;
 
 	  /* Allow the target to reorder the list, typically for
@@ -3127,13 +3136,13 @@ schedule_block (basic_block *target_bb)
 	      && (ready.n_ready == 0
 		  || !SCHED_GROUP_P (ready_element (&ready, 0))))
 	    {
-	      if (first_cycle_insn_p && targetm.sched.reorder)
-		can_issue_more
+	      if (ls.first_cycle_insn_p && targetm.sched.reorder)
+		ls.can_issue_more
 		  = targetm.sched.reorder (sched_dump, sched_verbose,
 					   ready_lastpos (&ready),
 					   &ready.n_ready, clock_var);
-	      else if (!first_cycle_insn_p && targetm.sched.reorder2)
-		can_issue_more
+	      else if (!ls.first_cycle_insn_p && targetm.sched.reorder2)
+		ls.can_issue_more
 		  = targetm.sched.reorder2 (sched_dump, sched_verbose,
 					    ready.n_ready
 					    ? ready_lastpos (&ready) : NULL,
@@ -3151,7 +3160,7 @@ schedule_block (basic_block *target_bb)
 	    }
 
 	  if (ready.n_ready == 0
-	      && can_issue_more
+	      && ls.can_issue_more
 	      && reload_completed)
 	    {
 	      /* Allow scheduling insns directly from the queue in case
@@ -3165,7 +3174,7 @@ schedule_block (basic_block *target_bb)
 	    }
 
 	  if (ready.n_ready == 0
-	      || !can_issue_more
+	      || !ls.can_issue_more
 	      || state_dead_lock_p (curr_state)
 	      || !(*current_sched_info->schedule_more_p) ())
 	    break;
@@ -3176,7 +3185,7 @@ schedule_block (basic_block *target_bb)
 	      int res;
 
 	      insn = NULL_RTX;
-	      res = choose_ready (&ready, first_cycle_insn_p, &insn);
+	      res = choose_ready (&ready, ls.first_cycle_insn_p, &insn);
 
 	      if (res < 0)
 		/* Finish cycle.  */
@@ -3256,14 +3265,14 @@ schedule_block (basic_block *target_bb)
 		     || asm_noperands (PATTERN (insn)) >= 0);
 
 	  if (targetm.sched.variable_issue)
-	    can_issue_more =
+	    ls.can_issue_more =
 	      targetm.sched.variable_issue (sched_dump, sched_verbose,
-					    insn, can_issue_more);
+					    insn, ls.can_issue_more);
 	  /* A naked CLOBBER or USE generates no instruction, so do
 	     not count them against the issue rate.  */
 	  else if (GET_CODE (PATTERN (insn)) != USE
 		   && GET_CODE (PATTERN (insn)) != CLOBBER)
-	    can_issue_more--;
+	    ls.can_issue_more--;
 	  advance = schedule_insn (insn);
 
 	  /* After issuing an asm insn we should start a new cycle.  */
@@ -3272,7 +3281,7 @@ schedule_block (basic_block *target_bb)
 	  if (advance != 0)
 	    break;
 
-	  first_cycle_insn_p = false;
+	  ls.first_cycle_insn_p = false;
 	  if (ready.n_ready > 0)
 	    prune_ready_list (temp_state, false);
 	}
