@@ -1,3 +1,10 @@
+2011-07-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/49296
+	* io/list_read.c (read_logical): Don't error out if a valid value
+	is followed by EOF instead of a normal separator.
+	(read_integer): Likewise.
+
 2011-07-09  Tobias Burnus  <burnus@net-b.de>
 
 	* runtime/error.c (sys_abort): Change argument list

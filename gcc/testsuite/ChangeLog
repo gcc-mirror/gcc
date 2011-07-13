@@ -1,3 +1,9 @@
+2011-07-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/49296
+	* gfortran.dg/read_list_eof_1.f90: Add tests for integer, real,
+	and logical reads.
+
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.c-torture/execute/990127-2.x: Use -mpc64 on i?86-*-darwin*,
