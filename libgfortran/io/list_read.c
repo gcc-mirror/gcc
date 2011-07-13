@@ -657,22 +657,20 @@ read_logical (st_parameter_dt *dtp, int length)
     {
     case 't':
       v = 1;
-      if ((c = next_char (dtp)) == EOF)
-	goto bad_logical;
+      c = next_char (dtp);
       l_push_char (dtp, c);
 
-      if (!is_separator(c))
+      if (!is_separator(c) && c != EOF)
 	goto possible_name;
 
       unget_char (dtp, c);
       break;
     case 'f':
       v = 0;
-      if ((c = next_char (dtp)) == EOF)
-	goto bad_logical;
+      c = next_char (dtp);
       l_push_char (dtp, c);
 
-      if (!is_separator(c))
+      if (!is_separator(c) && c != EOF)
 	goto possible_name;
 
       unget_char (dtp, c);
@@ -837,6 +835,7 @@ read_integer (st_parameter_dt *dtp, int length)
 	  goto repeat;
 
 	CASE_SEPARATORS:	/* Not a repeat count.  */
+	case EOF:
 	  goto done;
 
 	default:
@@ -886,6 +885,7 @@ read_integer (st_parameter_dt *dtp, int length)
 	  break;
 
 	CASE_SEPARATORS:
+	case EOF:
 	  goto done;
 
 	default:
