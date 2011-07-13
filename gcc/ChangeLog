@@ -1,3 +1,14 @@
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/darwin-crt2.c: Move to ../libgcc/config/rs6000.
+	* config/darwin-crt3.c: Move to ../libgcc/config.
+	* config/t-darwin (EXTRA_MULTILIB_PARTS): Remove.
+	($(T)crt3$(objext)): Remove.
+	* config/rs6000/t-darwin (DARWIN_EXTRA_CRT_BUILD_CFLAGS): Remove.
+	($(T)crt2$(objext)): Remove.
+	* config.gcc (powerpc-*-darwin*): Remove extra_parts.
+	(powerpc64-*-darwin*): Likewise.
+
 2011-07-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (x86_output_mi_thunk): Support ptr_mode

@@ -22,7 +22,6 @@
 # .def are examined to begin with.
 
 #   These files are part of libgcc, or target headers provided by gcc.
-config/darwin-crt2.c
 config/fp-bit.c
 config/fp-bit.h
 config/vxlib.c

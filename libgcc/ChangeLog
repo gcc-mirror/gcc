@@ -1,5 +1,16 @@
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/darwin-crt3.o: New file.
+	* config/rs6000/darwin-crt2.c: New file.
+	* config/t-darwin: New file.
+	* config/rs6000/t-darwin (DARWIN_EXTRA_CRT_BUILD_CFLAGS): New variable.
+	(crt2.o): New rule.
+	* config.host (*-*-darwin*): Add crt3.o to extra_parts.
+	(powerpc-*-darwin*): Add crt2.o to extra_parts.
+	(powerpc64-*-darwin*): Likewise.
+
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/i386/netware-crt0.c: New file.
 	* config/i386/t-nwld: Rename to ...
 	* config/i386/t-slibgcc-nwld: ... this.

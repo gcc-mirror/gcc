@@ -1,3 +1,7 @@
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* EXCLUDES (config/darwin-crt2.c): Remove.
+
 2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* EXCLUDES (libgcov.c): Remove.

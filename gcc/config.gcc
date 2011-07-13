@@ -2030,7 +2030,6 @@ picochip-*)
 #	;;
 powerpc-*-darwin*)
 	extra_options="${extra_options} rs6000/darwin.opt"
-	extra_parts="crt2.o"
 	case ${target} in
 	  *-darwin1[0-9]* | *-darwin[8-9]*)
 	    tmake_file="${tmake_file} rs6000/t-darwin8"
@@ -2047,7 +2046,6 @@ powerpc-*-darwin*)
 	;;
 powerpc64-*-darwin*)
 	extra_options="${extra_options} ${cpu_type}/darwin.opt"
-	extra_parts="crt2.o"
 	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc-dummy"
 	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
 	extra_headers=altivec.h
