@@ -215,6 +215,9 @@ struct _dep
   /* Dependency status.  This field holds all dependency types and additional
      information for speculative dependencies.  */
   ds_t status;
+
+  /* Cached cost of the dependency.  */
+  int cost;
 };
 
 typedef struct _dep dep_def;
@@ -224,6 +227,9 @@ typedef dep_def *dep_t;
 #define DEP_CON(D) ((D)->con)
 #define DEP_TYPE(D) ((D)->type)
 #define DEP_STATUS(D) ((D)->status)
+#define DEP_COST(D) ((D)->cost)
+
+#define UNKNOWN_DEP_COST INT_MIN
 
 /* Functions to work with dep.  */
 

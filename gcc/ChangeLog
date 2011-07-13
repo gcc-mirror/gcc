@@ -1,3 +1,11 @@
+2011-07-13  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* sched-int.h (struct _dep): Add member cost.
+	(DEP_COST, UNKNOWN_DEP_COST): New macros.
+	* sched-deps.c (init_dep_1): Initialize DEP_COST.
+	* haifa-sched.c (dep_cost_1): Use and set DEP_COST.
+	(sched_change_pattern): Reset it for dependent insns.
+
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (CRT0STUFF_T_CFLAGS): Remove.

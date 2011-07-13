@@ -854,6 +854,9 @@ dep_cost_1 (dep_t link, dw_t dw)
   rtx used = DEP_CON (link);
   int cost;
 
+  if (DEP_COST (link) != UNKNOWN_DEP_COST)
+    return DEP_COST (link);
+
   /* A USE insn should never require the value used to be computed.
      This allows the computation of a function's result and parameter
      values to overlap the return and call.  We don't care about the
@@ -911,6 +914,7 @@ dep_cost_1 (dep_t link, dw_t dw)
 	cost = 0;
     }
 
+  DEP_COST (link) = cost;
   return cost;
 }
 
@@ -4865,11 +4869,21 @@ fix_recovery_deps (basic_block rec)
 void
 sched_change_pattern (rtx insn, rtx new_pat)
 {
+  sd_iterator_def sd_it;
+  dep_t dep;
   int t;
 
   t = validate_change (insn, &PATTERN (insn), new_pat, 0);
   gcc_assert (t);
   dfa_clear_single_insn_cache (insn);
+
+  for (sd_it = sd_iterator_start (insn, (SD_LIST_FORW | SD_LIST_BACK
+					 | SD_LIST_RES_BACK));
+       sd_iterator_cond (&sd_it, &dep);)
+    {
+      DEP_COST (dep) = UNKNOWN_DEP_COST;
+      sd_iterator_next (&sd_it);
+    }
 }
 
 /* Change pattern of INSN to NEW_PAT.  Invalidate cached haifa

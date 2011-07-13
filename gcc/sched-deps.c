@@ -107,6 +107,7 @@ init_dep_1 (dep_t dep, rtx pro, rtx con, enum reg_note type, ds_t ds)
   DEP_CON (dep) = con;
   DEP_TYPE (dep) = type;
   DEP_STATUS (dep) = ds;
+  DEP_COST (dep) = UNKNOWN_DEP_COST;
 }
 
 /* Init DEP with the arguments.
