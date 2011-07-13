@@ -369,7 +369,8 @@ i[34567]86-*-lynxos*)
 i[3456x]86-*-netware*)
 	case /${with_ld} in
 	*/nwld)
-	 	tmake_file="${tmake_file} i386/t-nwld"
+	 	tmake_file="${tmake_file} i386/t-nwld i386/t-slibgcc-nwld"
+		extra_parts="${extra_parts} crt0.o libgcc.def libc.def libcpre.def posixpre.def"
 		;;
 	esac
 	;;

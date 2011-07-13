@@ -1,3 +1,14 @@
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/netware-crt0.c: New file.
+	* config/i386/t-nwld: Rename to ...
+	* config/i386/t-slibgcc-nwld: ... this.
+	* config/i386/t-nwld: New file.
+	* config.host (i[3456x]86-*-netware*): Add i386/t-slibgcc-nwld to
+	tmake_file.
+	Add crt0.o, libgcc.def, libc.def, libcpre.def, posixpre.def to
+	extra_parts.
+
 2011-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (i?86-*-solaris2*): Use libgcc copy of
