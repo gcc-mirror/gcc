@@ -807,7 +807,8 @@ See RS/6000 and PowerPC Options.
 -msdata=@var{opt}  -mvxworks  -G @var{num}  -pthread @gol
 -mrecip -mrecip=@var{opt} -mno-recip -mrecip-precision @gol
 -mno-recip-precision @gol
--mveclibabi=@var{type} -mfriz -mno-friz -mr11 -mno-r11}
+-mveclibabi=@var{type} -mfriz -mno-friz @gol
+-mpointers-to-nested-functions -mno-pointers-to-nested-functions}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -16322,18 +16323,18 @@ rounding a floating point value to 64-bit integer and back to floating
 point.  The @code{friz} instruction does not return the same value if
 the floating point number is too large to fit in an integer.
 
-@item -mr11
-@itemx -mno-r11
-@opindex mr11
+@item -mpointers-to-nested-functions
+@itemx -mno-pointers-to-nested-functions
+@opindex mpointers-to-nested-functions
 Generate (do not generate) code to load up the static chain register
 (@var{r11}) when calling through a pointer on AIX and 64-bit Linux
 systems where a function pointer points to a 3 word descriptor giving
 the function address, TOC value to be loaded in register @var{r2}, and
 static chain value to be loaded in register @var{r11}.  The
-@option{-mr11} is on by default.  You will not be able to call through
-pointers to nested functions or pointers to functions compiled in
-other languages that use the static chain if you use the
-@option{-mno-r11}.
+@option{-mpointers-to-nested-functions} is on by default.  You will
+not be able to call through pointers to nested functions or pointers
+to functions compiled in other languages that use the static chain if
+you use the @option{-mno-pointers-to-nested-functions}.
 @end table
 
 @node RX Options
