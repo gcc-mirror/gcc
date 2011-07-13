@@ -1,5 +1,14 @@
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/i386/crtprec.c: New file.
+	* config/i386/t-crtpc: Use $(srcdir) to refer to crtprec.c.
+	* config.host (i[34567]86-*-darwin*): Add i386/t-crtpc to tmake_file.
+	Add crtprec32.o, crtprec64.o, crtprec80.o to extra_parts.
+	(x86_64-*-darwin*): Likewise.
+	(i[34567]86-*-solaris2*: Likewise.
+
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config/alpha/crtfastmath.c: New file.
 	* config/i386/crtfastmath.c: New file.
 	* config/ia64/crtfastmath.c: New file.

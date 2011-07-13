@@ -1208,12 +1208,12 @@ i[34567]86-*-darwin*)
 	need_64bit_isa=yes
 	# Baseline choice for a machine that allows m64 support.
 	with_cpu=${with_cpu:-core2}
-	tmake_file="${tmake_file} t-slibgcc-dummy i386/t-crtpc"
+	tmake_file="${tmake_file} t-slibgcc-dummy"
 	libgcc_tm_file="$libgcc_tm_file i386/darwin-lib.h"
 	;;
 x86_64-*-darwin*)
 	with_cpu=${with_cpu:-core2}
-	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc-dummy i386/t-crtpc"
+	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc-dummy"
 	tm_file="${tm_file} ${cpu_type}/darwin64.h"
 	libgcc_tm_file="$libgcc_tm_file i386/darwin-lib.h"
 	;;
@@ -1311,7 +1311,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 	i[34567]86-*-kopensolaris*-gnu) tm_file="${tm_file} i386/gnu-user.h kopensolaris-gnu.h i386/kopensolaris-gnu.h" ;;
 	i[34567]86-*-gnu*) tm_file="$tm_file i386/gnu-user.h gnu.h i386/gnu.h";;
 	esac
-	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtpc"
+	tmake_file="${tmake_file} i386/t-crtstuff"
 	;;
 x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h glibc-stdint.h \
@@ -1323,7 +1323,7 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	x86_64-*-kfreebsd*-gnu) tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h" ;;
 	x86_64-*-knetbsd*-gnu) tm_file="${tm_file} knetbsd-gnu.h" ;;
 	esac
-	tmake_file="${tmake_file} i386/t-linux64 i386/t-crtstuff i386/t-crtpc"
+	tmake_file="${tmake_file} i386/t-linux64 i386/t-crtstuff"
 	x86_multilibs="${with_multilib_list}"
 	if test "$x86_multilibs" = "default"; then
 		x86_multilibs="m64,m32"

@@ -325,12 +325,12 @@ hppa[12]*-*-hpux11*)
 	md_unwind_header=pa/hpux-unwind.h
 	;;
 i[34567]86-*-darwin*)
-	tmake_file="$tmake_file i386/t-crtfm"
-	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="$tmake_file i386/t-crtpc i386/t-crtfm"
+	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	;;
 x86_64-*-darwin*)
-	tmake_file="t-darwin ${cpu_type}/t-darwin64 i386/t-crtfm t-slibgcc-darwin"
-	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="t-darwin ${cpu_type}/t-darwin64 i386/t-crtpc i386/t-crtfm t-slibgcc-darwin"
+	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	;;
 i[34567]86-*-elf*)
 	;;
@@ -387,8 +387,8 @@ i[34567]86-*-rtems*)
 	tmake_file="${tmake_file} t-crtin i386/t-softfp i386/t-crtstuff t-rtems"
 	;;
 i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
-	tmake_file="$tmake_file i386/t-crtfm"
-	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="$tmake_file i386/t-crtpc i386/t-crtfm"
+	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	md_unwind_header=i386/sol2-unwind.h
 	;;
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
