@@ -153,6 +153,7 @@ case ${host} in
 *-*-darwin*)
   asm_hidden_op=.private_extern
   tmake_file="t-darwin ${cpu_type}/t-darwin t-slibgcc-darwin"
+  extra_parts=crt3.o
   ;;
 *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
   # This is the place-holder for the generic a.out configuration
@@ -528,8 +529,10 @@ powerpc-*-darwin*)
 	  md_unwind_header=rs6000/darwin-unwind.h
 	  ;;
 	esac
+	extra_parts="$extra_parts crt2.o"
 	;;
 powerpc64-*-darwin*)
+	extra_parts="$extra_parts crt2.o"
 	;;
 powerpc-*-freebsd*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-freebsd t-softfp"

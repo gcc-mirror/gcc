@@ -1,1 +1,6 @@
+DARWIN_EXTRA_CRT_BUILD_CFLAGS = -mlongcall -mmacosx-version-min=10.4
+
+crt2.o: $(srcdir)/config/rs6000/darwin-crt2.c
+	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -c $<
+
 SHLIB_VERPFX = $(gcc_srcdir)/config/rs6000/darwin-libgcc
