@@ -1,3 +1,8 @@
+2011-07-13  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (check-gcc-c++0x): New.
+	(check-c++): Depend on it.
+
 2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/39150

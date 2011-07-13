@@ -307,28 +307,3 @@ proc g++_target_compile { source dest type options } {
 
     return $result
 }
-
-#
-# ${tool}_option_help
-#
-
-proc ${tool}_option_help { } {
-    send_user " --additional_options,OPTIONS\t\tUse OPTIONS to compile the testcase files. OPTIONS should be comma-separated.\n"
-}
-
-#
-# ${tool}_option_proc
-#
-
-proc ${tool}_option_proc { option } {
-    if [regexp "^--additional_options," $option] {
-	global gpp_compile_options
-	regsub "--additional_options," $option "" option
-	foreach x [split $option ","] {
-	    lappend gpp_compile_options "additional_flags=$x"
-	}
-	return 1
-    } else {
-	return 0
-    }
-}

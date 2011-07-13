@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+// { dg-options "-fpermissive" }
+// { dg-prune-output "narrowing" }
 
 extern void *memcpy (void *__dest, __const void *__src, __SIZE_TYPE__  __n);
 
