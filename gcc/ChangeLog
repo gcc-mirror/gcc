@@ -1,3 +1,15 @@
+2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.in (CRT0STUFF_T_CFLAGS): Remove.
+	($(T)crt0.o, $(T)mcrt0.o, s-crt0): Remove.
+	* config/i386/netware-crt0.c: Move to ../libgcc/config/i386.
+	* config/i386/t-nwld (CRTSTUFF_T_CFLAGS, CRT0STUFF_T_CFLAGS): Remove.
+	(CRT0_S, MCRT0_S): Remove.
+	($(T)libgcc.def, $(T)libc.def, $(T)libcpre.def, $(T)posixpre.def):
+	Remove.
+	(s-crt0): Remove.
+	* config.gcc (i[3456x]86-*-netware*): Remove extra_parts.
+
 2011-07-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cse.c (insert_with_costs): Put semi-colon after empty loop body

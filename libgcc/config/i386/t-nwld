@@ -1,31 +1,39 @@
-# Build a shared libgcc library for NetWare.
+# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011
+# Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
 
-SHLIB_EXT = .nlm
-SHLIB_NAME = @shlib_base_name@.nlm
-SHLIB_SLIBDIR_QUAL = @shlib_slibdir_qual@
-SHLIB_DEF = $(gcc_srcdir)/config/i386/netware-libgcc.def
-SHLIB_MAP = $(gcc_srcdir)/config/i386/netware-libgcc.exp
-SHLIB_SRC = $(gcc_srcdir)/config/i386/netware-libgcc.c
+crt0.o: $(srcdir)/config/i386/netware-crt0.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $<
 
-SHLIB_LINK = set -e; \
-	cat $(SHLIB_DEF) >@shlib_base_name@.def; \
-	echo "name $(SHLIB_NAME)" >>@shlib_base_name@.def; \
-	echo "version $(version)" | sed "s!\.!,!g" >>@shlib_base_name@.def; \
-	touch build; \
-	echo "build $$(expr $$(<build) + 0)" >>@shlib_base_name@.def; \
-	echo "export @$(SHLIB_MAP)" >>@shlib_base_name@.def; \
-	if mpkxdc -n -p @shlib_base_name@.xdc; \
-		then echo "xdcdata @shlib_base_name@.xdc" >>@shlib_base_name@.def; \
-		else echo "WARNING: $(SHLIB_NAME) built without XDC data will not work well." 1>&2; \
-	fi; \
-	$(CC) $(LIBGCC2_CFLAGS) -o $(SHLIB_NAME) \
-		$(SHLIB_SRC) -posix -static-libgcc -lnetware \
-		-Wl,--Map,--map-info,full,--strip-all,--def-file,@shlib_base_name@.def; \
-	rm -f @shlib_base_name@.imp; $(LN_S) $(SHLIB_MAP) @shlib_base_name@.imp; \
-	rm -f libgcc.imp; $(LN_S) @shlib_base_name@.imp libgcc.imp; \
-	expr $$(<build) + 1 >build
+CRTSTUFF_T_CFLAGS = -mpreferred-stack-boundary=2
 
-SHLIB_INSTALL = \
-	$(SHELL) $(srcdir)/mkinstalldirs $(slibdir)$(SHLIB_SLIBDIR_QUAL); \
-	$(INSTALL_DATA) $(SHLIB_NAME) $(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_NAME); \
-	$(INSTALL_DATA) @shlib_base_name@.imp $(DESTDIR)$(libsubdir)/
+libgcc.def: $(srcdir)/config/i386/t-nwld
+	echo "module libgcc_s" >$@
+
+libc.def: $(srcdir)/config/i386/t-nwld
+	echo "module libc" >$@
+
+libcpre.def: $(srcdir)/config/i386/t-nwld
+	echo "start _LibCPrelude" >$@
+	echo "exit _LibCPostlude" >>$@
+	echo "check _LibCCheckUnload" >>$@
+
+posixpre.def: $(srcdir)/config/i386/t-nwld
+	echo "start POSIX_Start" >$@
+	echo "exit POSIX_Stop" >>$@
+	echo "check POSIX_CheckUnload" >>$@
