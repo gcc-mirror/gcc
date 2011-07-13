@@ -149,6 +149,10 @@ c++.srcman: doc/g++.1
 # check targets.  However, our DejaGNU framework requires 'check-g++' as its
 # entry point.  We feed the former to the latter here.
 check-c++ : check-g++
+# Run the testsute in C++0x mode.
+check-c++0x:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --tool_opts=-std=gnu++0x" \
+	  TESTSUITEDIR="$(TESTSUITEDIR).c++0x" check-g++
 check-c++-subtargets : check-g++-subtargets
 # List of targets that can use the generic check- rule and its // variant.
 lang_checks += check-g++

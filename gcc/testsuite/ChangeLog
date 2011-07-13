@@ -1,3 +1,18 @@
+2011-07-13  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++.exp (${tool}_option_help, ${tool}_option_proc): Remove.
+	* lib/lto.exp (lto_prune_warns): Prune warning about -std=c++0x
+	when compiling C files.
+	* g++.dg/debug/dwarf2/lineno-simple1.C: Avoid constexpr ctor.
+	* g++.dg/debug/dwarf2/pr44641.C: Avoid constexpr ctor.
+	* g++.dg/ext/utf-dflt.C: Specify -std=c++98.
+	* g++.dg/lookup/anon2.C: Likewise.
+	* g++.dg/tree-ssa/copyprop.C: Likewise.
+	* g++.old-deja/g++.jason/rfg27.C: Likewise.
+	* g++.dg/init/vector1.C: Ignore narrowing errors.
+	* g++.dg/torture/pr35526.C: Likewise.
+	* g++.old-deja/g++.ext/arrnew.C: Prune C++0x warning.
+
 2011-07-13  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/49296

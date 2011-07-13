@@ -1,3 +1,7 @@
+2011-07-13  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in ($(lang_checks_parallelized)): Allow --tool_opts.
+
 2011-07-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_init_libfuncs): Install __clrsbdi2.

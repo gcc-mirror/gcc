@@ -25,6 +25,9 @@ proc lto_prune_warns { text } {
     # Many tests that use visibility will still pass on platforms that don't support it.
     regsub -all "(^|\n)\[^\n\]*: warning: visibility attribute not supported in this configuration; ignored\[^\n\]*" $text "" text
 
+    # Allow mixed-language LTO tests to pass with make check-c++0x
+    regsub -all "(^|\n)\[^\n\]*: warning: command line option '-std=\[^\n\]*" $text "" text
+
     # And any stray location lines.
     regsub -all "(^|\n)\[^\n\]*: In function \[^\n\]*" $text "" text
     regsub -all "(^|\n)In file included from \[^\n\]*" $text "" text

@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-pedantic-errors" }
+// { dg-options "-std=c++98 -pedantic-errors" }
 // Don't compile this one with -Wno-long-long...
 
 short volatile short var_0_2;              /* { dg-error "" } duplicate short */
