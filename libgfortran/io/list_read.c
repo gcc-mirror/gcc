@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist input contributed by Paul Thomas
@@ -659,22 +659,20 @@ read_logical (st_parameter_dt *dtp, int length)
     {
     case 't':
       v = 1;
-      if ((c = next_char (dtp)) == EOF)
-	goto bad_logical;
+      c = next_char (dtp);
       l_push_char (dtp, c);
 
-      if (!is_separator(c))
+      if (!is_separator(c) && c != EOF)
 	goto possible_name;
 
       unget_char (dtp, c);
       break;
     case 'f':
       v = 0;
-      if ((c = next_char (dtp)) == EOF)
-	goto bad_logical;
+      c = next_char (dtp);
       l_push_char (dtp, c);
 
-      if (!is_separator(c))
+      if (!is_separator(c) && c != EOF)
 	goto possible_name;
 
       unget_char (dtp, c);
@@ -839,6 +837,7 @@ read_integer (st_parameter_dt *dtp, int length)
 	  goto repeat;
 
 	CASE_SEPARATORS:	/* Not a repeat count.  */
+	case EOF:
 	  goto done;
 
 	default:
@@ -887,7 +886,7 @@ read_integer (st_parameter_dt *dtp, int length)
 	  push_char (dtp, c);
 	  break;
 
-	CASE_SEPARATORS:
+	CASE_SEPARATORS:	  
 	  goto done;
 
 	default:
@@ -1595,6 +1594,7 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 	  break;
 
 	CASE_SEPARATORS:
+	case EOF:
 	  goto done;
 
 	default:

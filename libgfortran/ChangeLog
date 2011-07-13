@@ -1,3 +1,11 @@
+2011-07-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from trunk:
+	PR libfortran/49296
+	* io/list_read.c (read_logical): Don't error out if a valid value
+	is followed by EOF instead of a normal separator.
+	(read_integer): Likewise.
+
 2011-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Partial backport from trunk:

@@ -1,3 +1,10 @@
+2011-07-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	Backport from trunk:
+	PR libfortran/49296
+	* gfortran.dg/read_list_eof_1.f90: Add tests for integer, real,
+	and logical reads.
+
 2011-07-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/49094
