@@ -1,5 +1,0 @@
-EXTRA_PARTS += crtfastmath.o
-
-$(T)crtfastmath.o: $(srcdir)/config/alpha/crtfastmath.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -frandom-seed=gcc-crtfastmath -c \
-		-o $(T)crtfastmath.o $(srcdir)/config/alpha/crtfastmath.c
