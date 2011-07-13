@@ -1,3 +1,8 @@
+2011-07-13  Thomas Schwinge  <thomas@schwinge.name>
+
+	* acinclude.m4 (gcc_GAS_CHECK_FEATURE): Use AS_ECHO instead of echo.
+	* configure: Regenerate.
+
 2011-07-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (TARGET_ASM_FILE_START): Do not define.
