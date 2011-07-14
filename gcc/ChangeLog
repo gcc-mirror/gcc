@@ -1,3 +1,7 @@
+2011-07-14  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Add __ARM_FEATURE_DSP.
+
 2011-07-14  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/49309
