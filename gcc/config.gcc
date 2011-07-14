@@ -1304,6 +1304,9 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 			esac
 		else
 			tm_file="${tm_file} i386/gnu-user.h i386/linux.h"
+			# This is a hack to avoid a configuration mismatch
+			# until the toplevel libgcc move is complete.
+			extra_parts="${extra_parts} crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 		fi
 		;;
 	i[34567]86-*-knetbsd*-gnu) tm_file="${tm_file} i386/gnu-user.h knetbsd-gnu.h i386/knetbsd-gnu.h" ;;
