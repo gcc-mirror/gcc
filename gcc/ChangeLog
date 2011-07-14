@@ -1,3 +1,7 @@
+2011-07-14  Matthias Klose <doko@ubuntu.com>
+
+	* doc/extend.texi (optimize attribute): Fix typo.
+
 2011-07-14  Richard Guenther  <rguenther@suse.de>
 
 	* gimplify.c (gimplify_expr): Only do required conversions.
