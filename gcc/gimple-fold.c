@@ -817,26 +817,15 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 
       if (!result)
         result = fold_binary_loc (loc, subcode,
-                              TREE_TYPE (gimple_assign_lhs (stmt)),
-                              gimple_assign_rhs1 (stmt),
-                              gimple_assign_rhs2 (stmt));
+				  TREE_TYPE (gimple_assign_lhs (stmt)),
+				  gimple_assign_rhs1 (stmt),
+				  gimple_assign_rhs2 (stmt));
 
       if (result)
         {
           STRIP_USELESS_TYPE_CONVERSION (result);
           if (valid_gimple_rhs_p (result))
 	    return result;
-
-	  /* Fold might have produced non-GIMPLE, so if we trust it blindly
-	     we lose canonicalization opportunities.  Do not go again
-	     through fold here though, or the same non-GIMPLE will be
-	     produced.  */
-          if (commutative_tree_code (subcode)
-              && tree_swap_operands_p (gimple_assign_rhs1 (stmt),
-                                       gimple_assign_rhs2 (stmt), false))
-            return build2 (subcode, TREE_TYPE (gimple_assign_lhs (stmt)),
-                           gimple_assign_rhs2 (stmt),
-                           gimple_assign_rhs1 (stmt));
         }
       break;
 
@@ -852,18 +841,6 @@ fold_gimple_assign (gimple_stmt_iterator *si)
           STRIP_USELESS_TYPE_CONVERSION (result);
           if (valid_gimple_rhs_p (result))
 	    return result;
-
-	  /* Fold might have produced non-GIMPLE, so if we trust it blindly
-	     we lose canonicalization opportunities.  Do not go again
-	     through fold here though, or the same non-GIMPLE will be
-	     produced.  */
-          if (commutative_ternary_tree_code (subcode)
-              && tree_swap_operands_p (gimple_assign_rhs1 (stmt),
-                                       gimple_assign_rhs2 (stmt), false))
-            return build3 (subcode, TREE_TYPE (gimple_assign_lhs (stmt)),
-			   gimple_assign_rhs2 (stmt),
-			   gimple_assign_rhs1 (stmt),
-			   gimple_assign_rhs3 (stmt));
         }
       break;
 
@@ -1576,8 +1553,22 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
     case GIMPLE_ASSIGN:
       {
 	unsigned old_num_ops = gimple_num_ops (stmt);
-	tree new_rhs = fold_gimple_assign (gsi);
+	enum tree_code subcode = gimple_assign_rhs_code (stmt);
 	tree lhs = gimple_assign_lhs (stmt);
+	tree new_rhs;
+	/* First canonicalize operand order.  This avoids building new
+	   trees if this is the only thing fold would later do.  */
+	if ((commutative_tree_code (subcode)
+	     || commutative_ternary_tree_code (subcode))
+	    && tree_swap_operands_p (gimple_assign_rhs1 (stmt),
+				     gimple_assign_rhs2 (stmt), false))
+	  {
+	    tree tem = gimple_assign_rhs1 (stmt);
+	    gimple_assign_set_rhs1 (stmt, gimple_assign_rhs2 (stmt));
+	    gimple_assign_set_rhs2 (stmt, tem);
+	    changed = true;
+	  }
+	new_rhs = fold_gimple_assign (gsi);
 	if (new_rhs
 	    && !useless_type_conversion_p (TREE_TYPE (lhs),
 					   TREE_TYPE (new_rhs)))
