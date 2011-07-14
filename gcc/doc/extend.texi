@@ -3594,7 +3594,7 @@ away so that a longer more expensive calling sequence is required.
 @item cpu=@var{CPU}
 @cindex @code{target("cpu=@var{CPU}")} attribute
 Specify the architecture to generate code for when compiling the
-function.  If you select the @code{"target("cpu=power7")} attribute when
+function.  If you select the @code{target("cpu=power7")} attribute when
 generating 32-bit code, VSX and Altivec instructions are not generated
 unless you use the @option{-mabi=altivec} option on the command line.
 
