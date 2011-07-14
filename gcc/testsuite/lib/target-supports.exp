@@ -1887,6 +1887,18 @@ proc check_effective_target_arm_hard_vfp_ok { } {
     }
 }
 
+# Return 1 if this is an ARM target that supports DSP multiply with
+# current multilib flags.
+
+proc check_effective_target_arm_dsp { } {
+    return [check_no_compiler_messages arm_dsp assembly {
+	#ifndef __ARM_FEATURE_DSP
+	#error not DSP
+	#endif
+	int i;
+    }]
+}
+
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp
 # or -mfloat-abi=hard, but if one is already specified by the
 # multilib, use it.  Similarly, if a -mfpu option already enables
