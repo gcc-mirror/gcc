@@ -3349,9 +3349,18 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 
 	      /* If we are not taking the address then make sure to process
 		 all subvariables we might access.  */
+	      if (address_p)
+		return;
+
 	      cs = *VEC_last (ce_s, *results);
-	      if (address_p
-		  || cs.type != SCALAR)
+	      if (cs.type == DEREF)
+		{
+		  /* For dereferences this means we have to defer it
+		     to solving time.  */
+		  VEC_last (ce_s, *results)->offset = UNKNOWN_OFFSET;
+		  return;
+		}
+	      if (cs.type != SCALAR)
 		return;
 
 	      vi = get_varinfo (cs.var);

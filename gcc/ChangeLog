@@ -1,3 +1,9 @@
+2011-07-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49651
+	* tree-ssa-structalias.c (get_constraint_for_1): Properly
+	handle dereferences with subvariables.
+
 2011-07-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/49094
