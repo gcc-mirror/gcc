@@ -1,5 +1,11 @@
+2011-07-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/11320
+	* config/ia64/ia64.md (load_symptr_low): Show a MEM.
+	* config/ia64/ia64.c (ia64_expand_load_address): Generate it.
+
 2011-07-14  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/49487
 	* config/avr/avr.md (rotl<mode>3): Generate SCRATCH instead
 	of REG.
