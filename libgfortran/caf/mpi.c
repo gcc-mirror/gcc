@@ -47,8 +47,9 @@ static int caf_is_finalized;
 caf_static_t *caf_static_list = NULL;
 
 
+/* Keep in sync with single.c.  */
 static void
-caf_runtime_error (int error, const char *message, ...)
+caf_runtime_error (const char *message, ...)
 {
   va_list ap;
   fprintf (stderr, "Fortran runtime error on image %d: ", caf_this_image);
@@ -59,10 +60,10 @@ caf_runtime_error (int error, const char *message, ...)
 
   /* FIXME: Shutdown the Fortran RTL to flush the buffer.  PR 43849.  */
   /* FIXME: Do some more effort than just MPI_ABORT.  */
-  MPI_Abort (MPI_COMM_WORLD, error);
+  MPI_Abort (MPI_COMM_WORLD, EXIT_FAILURE);
 
   /* Should be unreachable, but to make sure also call exit.  */
-  exit (2);
+  exit (EXIT_FAILURE);
 }
 
 
@@ -179,7 +180,7 @@ error:
 	  }
       }
     else
-      caf_runtime_error (caf_is_finalized ? STAT_STOPPED_IMAGE : 1, msg);
+      caf_runtime_error (msg);
   }
 
   return NULL;
@@ -223,7 +224,7 @@ _gfortran_caf_sync_all (int *stat, char *errmsg, int errmsg_len)
 	    memset (&errmsg[len], ' ', errmsg_len-len);
 	}
       else
-	caf_runtime_error (caf_is_finalized ? STAT_STOPPED_IMAGE : ierr, msg);
+	caf_runtime_error (msg);
     }
 }
 
@@ -291,7 +292,7 @@ _gfortran_caf_sync_images (int count, int images[], int *stat, char *errmsg,
 	    memset (&errmsg[len], ' ', errmsg_len-len);
 	}
       else
-	caf_runtime_error (caf_is_finalized ? STAT_STOPPED_IMAGE : ierr, msg);
+	caf_runtime_error (msg);
     }
 }
 
