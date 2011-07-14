@@ -1,3 +1,8 @@
+2011-07-14  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR middle-end/49736
+	* expr.c (all_zeros_p): Undo bogus part of last change.
+
 2011-07-14  Matthias Klose <doko@ubuntu.com>
 
 	* doc/extend.texi (optimize attribute): Fix typo.
