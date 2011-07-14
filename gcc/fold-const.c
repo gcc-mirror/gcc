@@ -12156,14 +12156,16 @@ fold_binary_loc (location_t loc,
       /* bool_var != 1 becomes !bool_var. */
       if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE && integer_onep (arg1)
           && code == NE_EXPR)
-        return fold_build1_loc (loc, TRUTH_NOT_EXPR, type,
-			    fold_convert_loc (loc, type, arg0));
+        return fold_convert_loc (loc, type,
+				 fold_build1_loc (loc, TRUTH_NOT_EXPR,
+						  TREE_TYPE (arg0), arg0));
 
       /* bool_var == 0 becomes !bool_var. */
       if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE && integer_zerop (arg1)
           && code == EQ_EXPR)
-        return fold_build1_loc (loc, TRUTH_NOT_EXPR, type,
-			    fold_convert_loc (loc, type, arg0));
+        return fold_convert_loc (loc, type,
+				 fold_build1_loc (loc, TRUTH_NOT_EXPR,
+						  TREE_TYPE (arg0), arg0));
 
       /* !exp != 0 becomes !exp */
       if (TREE_CODE (arg0) == TRUTH_NOT_EXPR && integer_zerop (arg1)
