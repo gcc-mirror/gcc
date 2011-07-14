@@ -1514,18 +1514,18 @@
 				(match_operand:VOID 2 "const_int_operand" "")))
 		(clobber (match_operand 3 ""))])]
   ""
-  "
-{
-  if (CONST_INT_P (operands[2]) && 0 == (INTVAL (operands[2]) % 8))
   {
-  if (AVR_HAVE_MOVW && 0 == INTVAL (operands[2]) % 16)
-    operands[3] = gen_reg_rtx (<rotsmode>mode);
-  else
-    operands[3] = gen_reg_rtx (QImode);
-  }
-  else
-    FAIL;
-}")
+    if (CONST_INT_P (operands[2])
+        && 0 == INTVAL (operands[2]) % 8)
+      {
+        if (AVR_HAVE_MOVW && 0 == INTVAL (operands[2]) % 16)
+          operands[3] = gen_rtx_SCRATCH (<rotsmode>mode);
+        else
+          operands[3] = gen_rtx_SCRATCH (QImode);
+      }
+    else
+      FAIL;
+  })
 
 
 ;; Overlapping non-HImode registers often (but not always) need a scratch.
@@ -1537,34 +1537,38 @@
 ; Split word aligned rotates using scratch that is mode dependent.
 (define_insn_and_split "*rotw<mode>"
   [(set (match_operand:HIDI 0 "register_operand" "=r,r,#&r")
-	(rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")
-		     (match_operand 2 "immediate_operand" "n,n,n")))
-   (clobber (match_operand:<rotsmode> 3 "register_operand"  "=<rotx>" ))]
-  "(CONST_INT_P (operands[2]) &&
-     (0 == (INTVAL (operands[2]) % 16) && AVR_HAVE_MOVW))"
+        (rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")
+                     (match_operand 2 "const_int_operand" "n,n,n")))
+   (clobber (match_scratch:<rotsmode> 3 "=<rotx>"))]
+  "AVR_HAVE_MOVW
+   && CONST_INT_P (operands[2])
+   && 0 == INTVAL (operands[2]) % 16"
   "#"
   "&& (reload_completed || <MODE>mode == DImode)"
   [(const_int 0)]
-  "avr_rotate_bytes (operands);
-  DONE;"
-)
+  {
+    avr_rotate_bytes (operands);
+    DONE;
+  })
 
 
 ; Split byte aligned rotates using scratch that is always QI mode.
 (define_insn_and_split "*rotb<mode>"
   [(set (match_operand:HIDI 0 "register_operand" "=r,r,#&r")
-	(rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")
-		     (match_operand 2 "immediate_operand" "n,n,n")))
-   (clobber (match_operand:QI 3 "register_operand" "=<rotx>" ))]
-  "(CONST_INT_P (operands[2]) &&
-     (8 == (INTVAL (operands[2]) % 16)
-     	|| (!AVR_HAVE_MOVW && 0 == (INTVAL (operands[2]) % 16))))"
+        (rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")
+                     (match_operand 2 "const_int_operand" "n,n,n")))
+   (clobber (match_scratch:QI 3 "=<rotx>"))]
+  "CONST_INT_P (operands[2])
+   && (8 == INTVAL (operands[2]) % 16
+       || (!AVR_HAVE_MOVW
+           && 0 == INTVAL (operands[2]) % 16))"
   "#"
   "&& (reload_completed || <MODE>mode == DImode)"
   [(const_int 0)]
-  "avr_rotate_bytes (operands);
-  DONE;"
-)
+  {
+    avr_rotate_bytes (operands);
+    DONE;
+  })
 
 
 ;;<< << << << << << << << << << << << << << << << << << << << << << << << << <<

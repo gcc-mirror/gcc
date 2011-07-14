@@ -1,3 +1,15 @@
+2011-07-14  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/49487
+	Backport from mainline r176276
+	2011-07-14  Georg-Johann Lay
+	* config/avr/avr.md (rotl<mode>3): Generate SCRATCH instead
+	of REG.
+	(*rotw<mode>): Use const_int_operand for operand2.
+	Use match_scatch for operand3.
+	(*rotb<mode>): Ditto
+	* config/avr/avr.c (avr_rotate_bytes): Treat SCRATCH.
+
 2011-07-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49651

@@ -4395,7 +4395,9 @@ avr_rotate_bytes (rtx operands[])
     if (mode == DImode)
       move_mode = QImode;
     /* Make scratch smaller if needed.  */
-    if (GET_MODE (scratch) == HImode && move_mode == QImode)
+    if (SCRATCH != GET_CODE (scratch)
+        && HImode == GET_MODE (scratch)
+        && QImode == move_mode)
       scratch = simplify_gen_subreg (move_mode, scratch, HImode, 0); 
 
     move_size = GET_MODE_SIZE (move_mode);
@@ -4490,6 +4492,8 @@ avr_rotate_bytes (rtx operands[])
 		   Add move to put dst of blocked move into scratch.
 		   When this move occurs, it will break chain deadlock.
 		   The scratch register is substituted for real move.  */
+
+		gcc_assert (SCRATCH != GET_CODE (scratch));
 
 		move[size].src = move[blocked].dst;
 		move[size].dst =  scratch;
