@@ -1,3 +1,8 @@
+2011-07-14  Florian Weimer  <fw@deneb.enyo.de>
+
+	PR ada/48711
+	* g-socthi-mingw.adb (Fill): Guard against invalid MSG_WAITALL.
+
 2011-07-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (build_vms_descriptor32): Skip the 32-bit
