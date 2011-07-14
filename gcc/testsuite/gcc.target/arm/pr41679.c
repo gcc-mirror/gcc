@@ -1,5 +1,4 @@
-/* { dg-do compile } */
-/* { dg-options "-march=armv5te -g -O2" } */
+/* { dg-options "-g" } */
 
 extern int a;
 extern char b;

@@ -1,5 +1,9 @@
 2011-07-14  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr41679.c: Remove test directives in preparation
+	for move to ../../gcc.c-torture/compile.
+	* gcc.target/arm/pr46883.c: Likewise.
+
 	* lib/target-supports.exp (check_effective_target_arm_dsp): New.
 	* gcc.target/arm/wmul-1.c: Use it instead of specific -march.
 	* gcc.target/arm/wmul-2.c: Likewise.

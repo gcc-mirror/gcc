@@ -1,6 +1,3 @@
-/* { dg-do compile } */
-/* { dg-options "-O1 -march=armv5te" } */
-
 void bar (unsigned char *q, unsigned short *data16s, int len)
 {
   int i;
