@@ -5157,7 +5157,7 @@ all_zeros_p (const_tree exp)
       bool complete_p;
 
       categorize_ctor_elements (exp, &nz_elts, &init_elts, &complete_p);
-      return nz_elts == init_elts;
+      return nz_elts == 0;
     }
 
   return initializer_zerop (exp);
