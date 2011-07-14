@@ -1,3 +1,16 @@
+2011-07-14  Daniel Carrera  <dcarrera@gmail.com>
+
+	* caf/single.c:  Include stdarg.h header.
+	(caf_runtime_error): New function. Use "exit(EXIT_FAILURE)".
+	(_gfortran_caf_register): Use caf_runtime_error.
+	(_gfortran_caf_sync_images): Use "exit(EXIT_FAILURE)".
+	* caf/mpi.c (caf_runtime_error): Remove "error" parameter.
+	Return EXIT_FAILURE instead.
+	(_gfortran_caf_register): Update call to caf_runtime_error.
+	(_gfortran_caf_sync_all): Ditto.
+	(_gfortran_caf_sync_images): Ditto.
+	(_gfortran_caf_error_stop_str): Use "exit(EXIT_FAILURE)".
+
 2011-07-13  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/49296
