@@ -1,3 +1,7 @@
+2011-07-14  Richard Guenther  <rguenther@suse.de>
+
+	* gimplify.c (gimplify_expr): Only do required conversions.
+
 2011-07-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/43746
