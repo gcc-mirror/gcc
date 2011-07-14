@@ -6787,21 +6787,19 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case TRUTH_NOT_EXPR:
 	  {
-	    tree org_type = TREE_TYPE (*expr_p);
-
+	    tree orig_type = TREE_TYPE (*expr_p);
 	    *expr_p = gimple_boolify (*expr_p);
-	    if (org_type != boolean_type_node)
+	    if (!useless_type_conversion_p (orig_type, TREE_TYPE (*expr_p)))
 	      {
-		*expr_p = fold_convert (org_type, *expr_p);
+		*expr_p = fold_convert_loc (saved_location, orig_type, *expr_p);
 		ret = GS_OK;
 		break;
 	      }
+	    ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
+				 is_gimple_val, fb_rvalue);
+	    recalculate_side_effects (*expr_p);
+	    break;
 	  }
-
-	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
-			       is_gimple_val, fb_rvalue);
-	  recalculate_side_effects (*expr_p);
-	  break;
 
 	case ADDR_EXPR:
 	  ret = gimplify_addr_expr (expr_p, pre_p, post_p);
@@ -7227,40 +7225,36 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case TRUTH_OR_EXPR:
 	case TRUTH_XOR_EXPR:
 	  {
-	    tree org_type = TREE_TYPE (*expr_p);
-	    
+	    tree orig_type = TREE_TYPE (*expr_p);
 	    *expr_p = gimple_boolify (*expr_p);
-
-	    /* This shouldn't happen, but due fold-const (and here especially
-	       fold_truth_not_expr) happily uses operand type and doesn't
-	       automatically uses boolean_type as result, we need to keep
-	       orignal type.  */
-	    if (org_type != boolean_type_node)
+	    if (!useless_type_conversion_p (orig_type, TREE_TYPE (*expr_p)))
 	      {
-		*expr_p = fold_convert (org_type, *expr_p);
+		*expr_p = fold_convert_loc (saved_location, orig_type, *expr_p);
 		ret = GS_OK;
 		break;
 	      }
-	  }
 
-	  /* With two-valued operand types binary truth expressions are
-	     semantically equivalent to bitwise binary expressions.  Canonicalize
-	     them to the bitwise variant.  */	switch (TREE_CODE (*expr_p))
-	  {
-	  case TRUTH_AND_EXPR:
-	    TREE_SET_CODE (*expr_p, BIT_AND_EXPR);
-	    break;
-	  case TRUTH_OR_EXPR:
-	    TREE_SET_CODE (*expr_p, BIT_IOR_EXPR);
-	    break;
-	  case TRUTH_XOR_EXPR:
-	    TREE_SET_CODE (*expr_p, BIT_XOR_EXPR);
-	    break;
-	  default:
-	    break;
+	  /* Boolified binary truth expressions are semantically equivalent
+	     to bitwise binary expressions.  Canonicalize them to the
+	     bitwise variant.  */
+	    switch (TREE_CODE (*expr_p))
+	      {
+	      case TRUTH_AND_EXPR:
+		TREE_SET_CODE (*expr_p, BIT_AND_EXPR);
+		break;
+	      case TRUTH_OR_EXPR:
+		TREE_SET_CODE (*expr_p, BIT_IOR_EXPR);
+		break;
+	      case TRUTH_XOR_EXPR:
+		TREE_SET_CODE (*expr_p, BIT_XOR_EXPR);
+		break;
+	      default:
+		break;
+	      }
+
+	    /* Continue classified as tcc_binary.  */
+	    goto expr_2;
 	  }
-	  /* Classified as tcc_expression.  */
-	  goto expr_2;
 
 	case FMA_EXPR:
 	  /* Classified as tcc_expression.  */
