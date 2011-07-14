@@ -1,5 +1,14 @@
 2011-07-14  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/vfp-ldmdbs.c: Skip for soft float.
+	* gcc.target/arm/vfp-ldmias.c: Likewise.
+	* gcc.target/arm/vfp-ldmdbd.c: Likewise.
+	* gcc.target/arm/vfp-stmdbs.c: Likewise.
+	* gcc.target/arm/vfp-ldmiad.c: Likewise.
+	* gcc.target/arm/vfp-stmias.c: Likewise.
+	* gcc.target/arm/vfp-stmdbd.c: Likewise.
+	* gcc.target/arm/vfp-stmiad.c: Likewise.
+
 	* gcc.c-torture/compile/pr41679.c: Move from gcc.target/arm.
 	* gcc.c-torture/compile/pr46883.c: Likewise.
 
