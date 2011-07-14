@@ -1,5 +1,8 @@
 2011-07-14  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.c-torture/compile/pr41679.c: Move from gcc.target/arm.
+	* gcc.c-torture/compile/pr46883.c: Likewise.
+
 	* gcc.target/arm/pr41679.c: Remove test directives in preparation
 	for move to ../../gcc.c-torture/compile.
 	* gcc.target/arm/pr46883.c: Likewise.
