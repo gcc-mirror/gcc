@@ -1,3 +1,8 @@
+2011-07-14  Florian Weimer  <fw@deneb.enyo.de>
+
+	PR ada/48711
+	* g-socthi-mingw.adb (Fill): Guard against invalid MSG_WAITALL.
+
 2011-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (gnat1): Prepend '+' to the command.
