@@ -1,5 +1,7 @@
 2011-07-14  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr42093.c: Use "-fno-reorder-blocks".
+
 	* gcc.target/arm/pr39839.c: Don't specify -march, require thumb.
 	* gcc.target/arm/thumb-branch1.c: Likewise.
 
