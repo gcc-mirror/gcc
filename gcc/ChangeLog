@@ -1,3 +1,10 @@
+2011-07-14  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-opt/49309
+	* tree-mudflap.c (mf_xform_derefs_1 <case MEM_REF>):
+	Use fold_build2_loc instead of build2.
+	Use the correct type for the new tree.
+
 2011-07-14  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/49487

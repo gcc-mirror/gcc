@@ -869,7 +869,7 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
       break;
 
     case MEM_REF:
-      addr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (TREE_OPERAND (t, 1)),
+      addr = fold_build2_loc (location, POINTER_PLUS_EXPR, TREE_TYPE (TREE_OPERAND (t, 0)),
 		     TREE_OPERAND (t, 0),
 		     fold_convert (sizetype, TREE_OPERAND (t, 1)));
       base = addr;

@@ -1,3 +1,8 @@
+2011-07-14  Andrew Pinski  <pinskia@gmail.com>
+
+	PR tree-opt/49309
+	* g++.dg/torture/pr49309.C: New testcase.
+
 2011-07-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49651
