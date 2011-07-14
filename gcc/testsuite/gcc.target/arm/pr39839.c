@@ -1,5 +1,5 @@
-/* { dg-options "-mthumb -Os -march=armv5te -mthumb-interwork -fpic" }  */
-/* { dg-require-effective-target arm_thumb1_ok } */
+/* { dg-require-effective-target fpic } */
+/* { dg-options "-Os -fpic" }  */
 /* { dg-final { scan-assembler-not "str\[\\t \]*r.,\[\\t \]*.sp," } } */
 
 struct S

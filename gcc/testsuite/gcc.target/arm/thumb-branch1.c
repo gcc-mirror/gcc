@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -mthumb -march=armv5te" } */
+/* { dg-skip-if "" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
+/* { dg-options "-Os -mthumb" } */
 
 int returnbool(int a, int b)
 {
