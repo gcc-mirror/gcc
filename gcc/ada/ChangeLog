@@ -1,3 +1,8 @@
+2011-07-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR ada/46350
+	* s-taprop-hpux-dce.adb (Abort_Task): Remove unnecessary cast.
+
 2011-07-14  Florian Weimer  <fw@deneb.enyo.de>
 
 	PR ada/48711
