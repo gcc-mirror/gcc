@@ -121,7 +121,7 @@ init_dep (dep_t dep, rtx pro, rtx con, enum reg_note kind)
   if ((current_sched_info->flags & USE_DEPS_LIST))
     ds = dk_to_ds (kind);
   else
-    ds = -1;
+    ds = 0;
 
   init_dep_1 (dep, pro, con, kind, ds);
 }
@@ -412,6 +412,16 @@ clear_deps_list (deps_list_t l)
       remove_from_deps_list (link, l);
     }
   while (1);
+}
+
+/* Decide whether a dependency should be treated as a hard or a speculative
+   dependency.  */
+static bool
+dep_spec_p (dep_t dep)
+{
+  if (current_sched_info->flags & DO_SPECULATION)
+    return (DEP_STATUS (dep) & SPECULATIVE) != 0;
+  return false;
 }
 
 static regset reg_pending_sets;
@@ -1064,6 +1074,7 @@ update_dep (dep_t dep, dep_t new_dep,
 {
   enum DEPS_ADJUST_RESULT res = DEP_PRESENT;
   enum reg_note old_type = DEP_TYPE (dep);
+  bool was_spec = dep_spec_p (dep);
 
   /* If this is a more restrictive type of dependence than the
      existing one, then change the existing dependence to this
@@ -1082,20 +1093,13 @@ update_dep (dep_t dep, dep_t new_dep,
       ds_t new_status = ds | dep_status;
 
       if (new_status & SPECULATIVE)
-	/* Either existing dep or a dep we're adding or both are
-	   speculative.  */
 	{
+	  /* Either existing dep or a dep we're adding or both are
+	     speculative.  */
 	  if (!(ds & SPECULATIVE)
 	      || !(dep_status & SPECULATIVE))
 	    /* The new dep can't be speculative.  */
-	    {
-	      new_status &= ~SPECULATIVE;
-
-	      if (dep_status & SPECULATIVE)
-		/* The old dep was speculative, but now it
-		   isn't.  */
-		change_spec_dep_to_hard (sd_it);
-	    }
+	    new_status &= ~SPECULATIVE;
 	  else
 	    {
 	      /* Both are speculative.  Merge probabilities.  */
@@ -1119,6 +1123,10 @@ update_dep (dep_t dep, dep_t new_dep,
 	  res = DEP_CHANGED;
 	}
     }
+
+  if (was_spec && !dep_spec_p (dep))
+    /* The old dep was speculative, but now it isn't.  */
+    change_spec_dep_to_hard (sd_it);
 
   if (true_dependency_cache != NULL
       && res == DEP_CHANGED)
@@ -1220,8 +1228,7 @@ get_back_and_forw_lists (dep_t dep, bool resolved_p,
 
   if (!resolved_p)
     {
-      if ((current_sched_info->flags & DO_SPECULATION)
-	  && (DEP_STATUS (dep) & SPECULATIVE))
+      if (dep_spec_p (dep))
 	*back_list_ptr = INSN_SPEC_BACK_DEPS (con);
       else
 	*back_list_ptr = INSN_HARD_BACK_DEPS (con);
@@ -1248,8 +1255,8 @@ sd_add_dep (dep_t dep, bool resolved_p)
 
   gcc_assert (INSN_P (insn) && INSN_P (elem) && insn != elem);
 
-  if ((current_sched_info->flags & DO_SPECULATION)
-      && !sched_insn_is_legitimate_for_speculation_p (insn, DEP_STATUS (dep)))
+  if ((current_sched_info->flags & DO_SPECULATION) == 0
+      || !sched_insn_is_legitimate_for_speculation_p (insn, DEP_STATUS (dep)))
     DEP_STATUS (dep) &= ~SPECULATIVE;
 
   copy_dep (DEP_NODE_DEP (n), dep);
@@ -1289,8 +1296,7 @@ sd_resolve_dep (sd_iterator_def sd_it)
   rtx pro = DEP_PRO (dep);
   rtx con = DEP_CON (dep);
 
-  if ((current_sched_info->flags & DO_SPECULATION)
-      && (DEP_STATUS (dep) & SPECULATIVE))
+  if (dep_spec_p (dep))
     move_dep_link (DEP_NODE_BACK (node), INSN_SPEC_BACK_DEPS (con),
 		   INSN_RESOLVED_BACK_DEPS (con));
   else
@@ -1705,7 +1711,7 @@ haifa_note_mem_dep (rtx mem, rtx pending_mem, rtx pending_insn, ds_t ds)
     dep_def _dep, *dep = &_dep;
 
     init_dep_1 (dep, pending_insn, cur_insn, ds_to_dt (ds),
-                current_sched_info->flags & USE_DEPS_LIST ? ds : -1);
+                current_sched_info->flags & USE_DEPS_LIST ? ds : 0);
     maybe_add_or_update_dep_1 (dep, false, pending_mem, mem);
   }
 
@@ -3512,18 +3518,23 @@ sched_free_deps (rtx head, rtx tail, bool resolved_p)
   rtx insn;
   rtx next_tail = NEXT_INSN (tail);
 
+  /* We make two passes since some insns may be scheduled before their
+     dependencies are resolved.  */
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     if (INSN_P (insn) && INSN_LUID (insn) > 0)
       {
-	/* Clear resolved back deps together with its dep_nodes.  */
-	delete_dep_nodes_in_back_deps (insn, resolved_p);
-
 	/* Clear forward deps and leave the dep_nodes to the
 	   corresponding back_deps list.  */
 	if (resolved_p)
 	  clear_deps_list (INSN_RESOLVED_FORW_DEPS (insn));
 	else
 	  clear_deps_list (INSN_FORW_DEPS (insn));
+      }
+  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
+    if (INSN_P (insn) && INSN_LUID (insn) > 0)
+      {
+	/* Clear resolved back deps together with its dep_nodes.  */
+	delete_dep_nodes_in_back_deps (insn, resolved_p);
 
 	sd_finish_insn (insn);
       }
@@ -4164,7 +4175,7 @@ check_dep (dep_t dep, bool relaxed_p)
 
   if (!(current_sched_info->flags & USE_DEPS_LIST))
     {
-      gcc_assert (ds == -1);
+      gcc_assert (ds == 0);
       return;
     }
 

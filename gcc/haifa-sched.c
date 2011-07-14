@@ -2004,18 +2004,6 @@ schedule_insn (rtx insn)
 	}
     }
 
-  /* This is the place where scheduler doesn't *basically* need backward and
-     forward dependencies for INSN anymore.  Nevertheless they are used in
-     heuristics in rank_for_schedule (), early_queue_to_ready () and in
-     some targets (e.g. rs6000).  Thus the earliest place where we *can*
-     remove dependencies is after targetm.sched.finish () call in
-     schedule_block ().  But, on the other side, the safest place to remove
-     dependencies is when we are finishing scheduling entire region.  As we
-     don't generate [many] dependencies during scheduling itself, we won't
-     need memory until beginning of next region.
-     Bottom line: Dependencies are removed for all insns in the end of
-     scheduling the region.  */
-
   /* Annotate the instruction with issue information -- TImode
      indicates that the instruction is expected not to be able
      to issue on the same cycle as the previous insn.  A machine
@@ -3906,7 +3894,7 @@ schedule_block (basic_block *target_bb)
 	    /* We normally get here only if we don't want to move
 	       insn from the split block.  */
 	    {
-	      TODO_SPEC (insn) = (TODO_SPEC (insn) & ~SPECULATIVE) | HARD_DEP;
+	      TODO_SPEC (insn) = HARD_DEP;
 	      goto restart_choose_ready;
 	    }
 
@@ -4049,7 +4037,7 @@ schedule_block (basic_block *target_bb)
 
 	  x = ready_element (&ready, i);
 	  QUEUE_INDEX (x) = QUEUE_NOWHERE;
-	  TODO_SPEC (x) = (TODO_SPEC (x) & ~SPECULATIVE) | HARD_DEP;
+	  TODO_SPEC (x) = HARD_DEP;
 	}
 
       if (q_size)
@@ -4062,7 +4050,7 @@ schedule_block (basic_block *target_bb)
 
 		x = XEXP (link, 0);
 		QUEUE_INDEX (x) = QUEUE_NOWHERE;
-		TODO_SPEC (x) = (TODO_SPEC (x) & ~SPECULATIVE) | HARD_DEP;
+		TODO_SPEC (x) = HARD_DEP;
 	      }
 	    free_INSN_LIST_list (&insn_queue[i]);
 	  }
@@ -4492,10 +4480,9 @@ static int haifa_speculate_insn (rtx, ds_t, rtx *);
 int
 try_ready (rtx next)
 {
-  ds_t old_ts, *ts;
+  ds_t old_ts, new_ts;
 
-  ts = &TODO_SPEC (next);
-  old_ts = *ts;
+  old_ts = TODO_SPEC (next);
 
   gcc_assert (!(old_ts & ~(SPECULATIVE | HARD_DEP))
 	      && ((old_ts & HARD_DEP)
@@ -4503,22 +4490,15 @@ try_ready (rtx next)
 
   if (sd_lists_empty_p (next, SD_LIST_BACK))
     /* NEXT has all its dependencies resolved.  */
-    {
-      /* Remove HARD_DEP bit from NEXT's status.  */
-      *ts &= ~HARD_DEP;
-
-      if (current_sched_info->flags & DO_SPECULATION)
-	/* Remove all speculative bits from NEXT's status.  */
-	*ts &= ~SPECULATIVE;
-    }
+    new_ts = 0;
   else
     {
       /* One of the NEXT's dependencies has been resolved.
 	 Recalculate NEXT's status.  */
 
-      *ts &= ~SPECULATIVE & ~HARD_DEP;
-
-      if (sd_lists_empty_p (next, SD_LIST_HARD_BACK))
+      if (!sd_lists_empty_p (next, SD_LIST_HARD_BACK))
+	new_ts = HARD_DEP;
+      else
 	/* Now we've got NEXT with speculative deps only.
 	   1. Look at the deps to see what we have to do.
 	   2. Check if we can do 'todo'.  */
@@ -4526,6 +4506,8 @@ try_ready (rtx next)
 	  sd_iterator_def sd_it;
 	  dep_t dep;
 	  bool first_p = true;
+
+	  new_ts = 0;
 
 	  FOR_EACH_DEP (next, SD_LIST_BACK, sd_it, dep)
 	    {
@@ -4539,25 +4521,23 @@ try_ready (rtx next)
 		{
 		  first_p = false;
 
-		  *ts = ds;
+		  new_ts = ds;
 		}
 	      else
-		*ts = ds_merge (*ts, ds);
+		new_ts = ds_merge (new_ts, ds);
 	    }
 
-	  if (ds_weak (*ts) < spec_info->data_weakness_cutoff)
+	  if (ds_weak (new_ts) < spec_info->data_weakness_cutoff)
 	    /* Too few points.  */
-	    *ts = (*ts & ~SPECULATIVE) | HARD_DEP;
+	    new_ts = HARD_DEP;
 	}
-      else
-	*ts |= HARD_DEP;
     }
 
-  if (*ts & HARD_DEP)
-    gcc_assert (*ts == old_ts
+  if (new_ts & HARD_DEP)
+    gcc_assert (new_ts == HARD_DEP && new_ts == old_ts
 		&& QUEUE_INDEX (next) == QUEUE_NOWHERE);
   else if (current_sched_info->new_ready)
-    *ts = current_sched_info->new_ready (next, *ts);
+    new_ts = current_sched_info->new_ready (next, new_ts);
 
   /* * if !(old_ts & SPECULATIVE) (e.g. HARD_DEP or 0), then insn might
      have its original pattern or changed (speculative) one.  This is due
@@ -4565,29 +4545,29 @@ try_ready (rtx next)
      * But if (old_ts & SPECULATIVE), then we are pretty sure that insn
      has speculative pattern.
 
-     We can't assert (!(*ts & HARD_DEP) || *ts == old_ts) here because
+     We can't assert (!(new_ts & HARD_DEP) || new_ts == old_ts) here because
      control-speculative NEXT could have been discarded by sched-rgn.c
      (the same case as when discarded by can_schedule_ready_p ()).  */
 
-  if ((*ts & SPECULATIVE)
-      /* If (old_ts == *ts), then (old_ts & SPECULATIVE) and we don't
+  if ((new_ts & SPECULATIVE)
+      /* If (old_ts == new_ts), then (old_ts & SPECULATIVE) and we don't
 	 need to change anything.  */
-      && *ts != old_ts)
+      && new_ts != old_ts)
     {
       int res;
       rtx new_pat;
 
-      gcc_assert ((*ts & SPECULATIVE) && !(*ts & ~SPECULATIVE));
+      gcc_assert (!(new_ts & ~SPECULATIVE));
 
-      res = haifa_speculate_insn (next, *ts, &new_pat);
+      res = haifa_speculate_insn (next, new_ts, &new_pat);
 
       switch (res)
 	{
 	case -1:
 	  /* It would be nice to change DEP_STATUS of all dependences,
-	     which have ((DEP_STATUS & SPECULATIVE) == *ts) to HARD_DEP,
+	     which have ((DEP_STATUS & SPECULATIVE) == new_ts) to HARD_DEP,
 	     so we won't reanalyze anything.  */
-	  *ts = (*ts & ~SPECULATIVE) | HARD_DEP;
+	  new_ts = HARD_DEP;
 	  break;
 
 	case 0:
@@ -4611,14 +4591,16 @@ try_ready (rtx next)
 	}
     }
 
-  /* We need to restore pattern only if (*ts == 0), because otherwise it is
-     either correct (*ts & SPECULATIVE),
-     or we simply don't care (*ts & HARD_DEP).  */
+  /* We need to restore pattern only if (new_ts == 0), because otherwise it is
+     either correct (new_ts & SPECULATIVE),
+     or we simply don't care (new_ts & HARD_DEP).  */
 
   gcc_assert (!ORIG_PAT (next)
 	      || !IS_SPECULATION_BRANCHY_CHECK_P (next));
 
-  if (*ts & HARD_DEP)
+  TODO_SPEC (next) = new_ts;
+
+  if (new_ts & HARD_DEP)
     {
       /* We can't assert (QUEUE_INDEX (next) == QUEUE_NOWHERE) here because
 	 control-speculative NEXT could have been discarded by sched-rgn.c
@@ -4628,7 +4610,8 @@ try_ready (rtx next)
       change_queue_index (next, QUEUE_NOWHERE);
       return -1;
     }
-  else if (!(*ts & BEGIN_SPEC) && ORIG_PAT (next) && !IS_SPECULATION_CHECK_P (next))
+  else if (!(new_ts & BEGIN_SPEC)
+	   && ORIG_PAT (next) && !IS_SPECULATION_CHECK_P (next))
     /* We should change pattern of every previously speculative
        instruction - and we determine if NEXT was speculative by using
        ORIG_PAT field.  Except one case - speculation checks have ORIG_PAT
@@ -4640,18 +4623,16 @@ try_ready (rtx next)
 
   if (sched_verbose >= 2)
     {
-      int s = TODO_SPEC (next);
-
       fprintf (sched_dump, ";;\t\tdependencies resolved: insn %s",
                (*current_sched_info->print_insn) (next, 0));
 
       if (spec_info && spec_info->dump)
         {
-          if (s & BEGIN_DATA)
+          if (new_ts & BEGIN_DATA)
             fprintf (spec_info->dump, "; data-spec;");
-          if (s & BEGIN_CONTROL)
+          if (new_ts & BEGIN_CONTROL)
             fprintf (spec_info->dump, "; control-spec;");
-          if (s & BE_IN_CONTROL)
+          if (new_ts & BE_IN_CONTROL)
             fprintf (spec_info->dump, "; in-control-spec;");
         }
 
