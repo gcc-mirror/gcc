@@ -1,4 +1,4 @@
-/* { dg-options "-mthumb -Os -fpic -march=armv5te" }  */
+/* { dg-options "-mthumb -Os -fpic" }  */
 /* { dg-require-effective-target arm_thumb1_ok } */
 /* { dg-require-effective-target fpic } */
 /* Make sure the address of glob.c is calculated only once and using

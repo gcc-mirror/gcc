@@ -1,4 +1,4 @@
-/* { dg-options "-Os -march=armv4t -mthumb" }  */
+/* { dg-options "-Os -mthumb" }  */
 /* { dg-require-effective-target arm_thumb1_ok } */
 /* { dg-final { scan-assembler-not "sub\[\\t \]*sp,\[\\t \]*sp" } } */
 /* { dg-final { scan-assembler-not "add\[\\t \]*sp,\[\\t \]*sp" } } */

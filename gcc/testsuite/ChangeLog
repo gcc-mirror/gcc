@@ -1,5 +1,12 @@
 2011-07-14  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr40657-2.c: Remove -march.
+	* gcc.target/arm/pr42235.c: Likewise.
+	* gcc.target/arm/pr42495.c: Likewise.
+	* gcc.target/arm/pr42574.c: Likewise.
+	* gcc.target/arm/pr40956.c: Remove target-specific options.
+	* gcc.target/arm/pr42505.c: Likewise.
+
 	* lib/target-supports.exp (check_effective_target_arm_thumb1): New.
 	* gcc.target/arm/mla-1.c: Skip for arm_thumb1, don't specify -march.
 
