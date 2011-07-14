@@ -1,5 +1,8 @@
 2011-07-14  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/target-supports.exp (check_effective_target_arm_thumb1): New.
+	* gcc.target/arm/mla-1.c: Skip for arm_thumb1, don't specify -march.
+
 	* gcc.target/arm/pr42093.c: Use "-fno-reorder-blocks".
 
 	* gcc.target/arm/pr39839.c: Don't specify -march, require thumb.

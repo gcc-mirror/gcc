@@ -2015,6 +2015,18 @@ proc check_effective_target_arm_thumb2_ok { } {
     } "-mthumb"]
 }
 
+# Return 1 if this is an ARM target where Thumb-1 is used without options
+# added by the test.
+
+proc check_effective_target_arm_thumb1 { } {
+    return [check_no_compiler_messages arm_thumb1 assembly {
+	#if !defined(__arm__) || !defined(__thumb__) || defined(__thumb2__)
+	#error not thumb1
+	#endif
+	int i;
+    } ""]
+}
+
 # Return 1 if the target supports executing NEON instructions, 0
 # otherwise.  Cache the result.
 

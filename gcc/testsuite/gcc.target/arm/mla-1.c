@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv5te" } */
+/* { dg-skip-if "" { arm_thumb1 } { "*" } { "" } } */
+/* { dg-options "-O2" } */
 
 
 int
