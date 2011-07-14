@@ -1,3 +1,16 @@
+2011-07-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/43746
+	* config/avr/elf.h (TARGET_ASM_SELECT_SECTION): Remove,
+	i.e. use default_elf_select_section.
+	(TARGET_HAVE_SWITCHABLE_BSS_SECTIONS): Remove.
+	(READONLY_DATA_SECTION_ASM_OP): Remove.
+	(TARGET_ASM_NAMED_SECTION): Move from here...
+	* config/avr/avr.c: ...to here.
+	(avr_asm_init_sections): Set unnamed callback of
+	readonly_data_section.
+	(avr_asm_named_section): Make static.
+
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/49739

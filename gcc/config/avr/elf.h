@@ -26,23 +26,11 @@
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION avr_asm_named_section
-
-/* Use lame default: no string merging, ...  */
-#undef TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION default_select_section
-
 #undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (32768 * 8)
 
-#undef TARGET_HAVE_SWITCHABLE_BSS_SECTIONS
-
 #undef STRING_LIMIT
 #define STRING_LIMIT ((unsigned) 64)
-
-/* Setup `readonly_data_section' in `avr_asm_init_sections'.  */
-#undef READONLY_DATA_SECTION_ASM_OP
 
 /* Take care of `signal' and `interrupt' attributes.  */
 #undef ASM_DECLARE_FUNCTION_NAME
