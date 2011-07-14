@@ -1,5 +1,10 @@
 2011-07-14  Richard Guenther  <rguenther@suse.de>
 
+	* gimple-fold.c (fold_gimple_assign): Remove operand swapping.
+	(fold_stmt_1): Do it here directly on gimple and as a first thing.
+
+2011-07-14  Richard Guenther  <rguenther@suse.de>
+
 	* fold-const.c (fold_binary_loc): Convert the !bool_var result,
 	not bool_var when folding bool_var != 1 or bool_var == 0.
 
