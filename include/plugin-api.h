@@ -93,6 +93,14 @@ struct ld_plugin_symbol
   int resolution;
 };
 
+/* An object's section.  */
+
+struct ld_plugin_section
+{
+  const void* handle;
+  unsigned int shndx;
+};
+
 /* Whether the symbol is a definition, reference, or common, weak or not.  */
 
 enum ld_plugin_symbol_kind
@@ -244,6 +252,65 @@ typedef
 enum ld_plugin_status
 (*ld_plugin_message) (int level, const char *format, ...);
 
+/* The linker's interface for retrieving the number of sections in an object.
+   The handle is obtained in the claim_file handler.  This interface should
+   only be invoked in the claim_file handler.   This function sets *COUNT to
+   the number of sections in the object.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_get_input_section_count) (const void* handle, unsigned int *count);
+
+/* The linker's interface for retrieving the section type of a specific
+   section in an object.  This interface should only be invoked in the
+   claim_file handler.  This function sets *TYPE to an ELF SHT_xxx value.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_get_input_section_type) (const struct ld_plugin_section section,
+                                     unsigned int *type);
+
+/* The linker's interface for retrieving the name of a specific section in
+   an object. This interface should only be invoked in the claim_file handler.
+   This function sets *SECTION_NAME_PTR to a null-terminated buffer allocated
+   by malloc.  The plugin must free *SECTION_NAME_PTR.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_get_input_section_name) (const struct ld_plugin_section section,
+                                     char **section_name_ptr);
+
+/* The linker's interface for retrieving the contents of a specific section
+   in an object.  This interface should only be invoked in the claim_file
+   handler.  This function sets *SECTION_CONTENTS to point to a buffer that is
+   valid until clam_file handler returns.  It sets *LEN to the size of the
+   buffer.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_get_input_section_contents) (const struct ld_plugin_section section,
+                                         const unsigned char **section_contents,
+                                         size_t* len);
+
+/* The linker's interface for specifying the desired order of sections.
+   The sections should be specifed using the array SECTION_LIST in the
+   order in which they should appear in the final layout.  NUM_SECTIONS
+   specifies the number of entries in each array.  This should be invoked
+   in the all_symbols_read handler.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_update_section_order) (const struct ld_plugin_section *section_list,
+				   unsigned int num_sections);
+
+/* The linker's interface for specifying that reordering of sections is
+   desired so that the linker can prepare for it.  This should be invoked
+   before update_section_order, preferably in the claim_file handler.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_allow_section_ordering) (void);
+
 enum ld_plugin_level
 {
   LDPL_INFO,
@@ -274,7 +341,13 @@ enum ld_plugin_tag
   LDPT_OUTPUT_NAME,
   LDPT_SET_EXTRA_LIBRARY_PATH,
   LDPT_GNU_LD_VERSION,
-  LDPT_GET_VIEW
+  LDPT_GET_VIEW,
+  LDPT_GET_INPUT_SECTION_COUNT,
+  LDPT_GET_INPUT_SECTION_TYPE,
+  LDPT_GET_INPUT_SECTION_NAME,
+  LDPT_GET_INPUT_SECTION_CONTENTS,
+  LDPT_UPDATE_SECTION_ORDER,
+  LDPT_ALLOW_SECTION_ORDERING
 };
 
 /* The plugin transfer vector.  */
@@ -298,6 +371,12 @@ struct ld_plugin_tv
     ld_plugin_release_input_file tv_release_input_file;
     ld_plugin_add_input_library tv_add_input_library;
     ld_plugin_set_extra_library_path tv_set_extra_library_path;
+    ld_plugin_get_input_section_count tv_get_input_section_count;
+    ld_plugin_get_input_section_type tv_get_input_section_type;
+    ld_plugin_get_input_section_name tv_get_input_section_name;
+    ld_plugin_get_input_section_contents tv_get_input_section_contents;
+    ld_plugin_update_section_order tv_update_section_order;
+    ld_plugin_allow_section_ordering tv_allow_section_ordering;
   } tv_u;
 };
 
