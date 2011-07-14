@@ -1,3 +1,22 @@
+2011-07-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* haifa-sched.c (schedule_insns): Remove outdated comment.
+	(schedule_block): When computing a known value for TODO_SPEC,
+	just set it rather than using logical operations.
+	(try_ready): Likewise.  Use a local variable rather than a
+	pointer to TODO_SPEC.  Reorder an if statement to move the
+	easy case to the then block.
+	* sched-deps.c (dep_spec_p): New static function.
+	(update_dep): Use it to decide whether to call
+	change_spec_dep_to_hard.
+	(get_back_and_forw_lists): Use it.
+	(sd_resolve_dep): Likewise.
+	(init_dep): If !USE_DEPS_LIST, use zero to initialize status.
+	(haifa_note_mem_dep): Likewise.
+	(check_dep): Likewise.
+	(sd_add_dep): Also clear SPECULATIVE bits if not DO_SPECULATION.
+	(sched_free_deps): Free in two passes.
+
 2011-07-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR middle-end/49736
