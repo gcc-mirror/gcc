@@ -1,5 +1,8 @@
 2011-07-14  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr45701-1.c: Don't specify -march, require thumb.
+	* gcc.target/arm/pr45701-2.c: Likewise.
+
 	* gcc.target/arm/vfp-ldmdbs.c: Skip for soft float.
 	* gcc.target/arm/vfp-ldmias.c: Likewise.
 	* gcc.target/arm/vfp-ldmdbd.c: Likewise.
