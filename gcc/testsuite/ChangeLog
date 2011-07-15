@@ -1,3 +1,8 @@
+2011-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR testsuite/49643
+	* g++.dg/rtti/anon-ns1.C: Allow for null-termination.
+
 2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/sparc/cas64.c: New test.
