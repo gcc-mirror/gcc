@@ -568,6 +568,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
 	     || [istarget rx-*-*]	
+	     || [istarget tic6x-*-elf]
 	     || [istarget xstormy16-*]
 	     || [istarget xtensa*-*-elf]
 	     || [istarget *-*-netware*]
@@ -1397,6 +1398,25 @@ proc check_effective_target_broken_cplxf_arg { } {
 	}
     }]
 }
+
+# Return 1 is this is a TI C6X target supporting C67X instructions
+proc check_effective_target_ti_c67x { } {
+    return [check_no_compiler_messages ti_c67x assembly {
+	#if !defined(_TMS320C6700)
+	#error FOO
+	#endif
+    }]
+}
+
+# Return 1 is this is a TI C6X target supporting C64X+ instructions
+proc check_effective_target_ti_c64xp { } {
+    return [check_no_compiler_messages ti_c64xp assembly {
+	#if !defined(_TMS320C6400_PLUS)
+	#error FOO
+	#endif
+    }]
+}
+
 
 proc check_alpha_max_hw_available { } {
     return [check_runtime alpha_max_hw_available {

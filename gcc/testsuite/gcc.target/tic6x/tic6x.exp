@@ -1,0 +1,62 @@
+# Copyright (C) 2010 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+if ![istarget tic6x-*-*] then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Like dg-options, but treats certain C6X-specific options specially:
+#
+#    -march=*
+#	Select the target architecture. Skip the test if the multilib
+#	flags force a different arch.
+proc dg-c6x-options {args} {
+    upvar dg-extra-tool-flags extra_tool_flags
+    upvar dg-do-what do_what
+
+    set multilib_arch ""
+    set arch ""
+
+    foreach flag [target_info multilib_flags] {
+	regexp "^-march=(.*)" $flag dummy multilib_arch
+    }
+
+    set flags [lindex $args 1]
+
+    foreach flag $flags {
+	regexp "^-march=(.*)" $flag dummy arch
+    }
+
+    if {$multilib_arch == "" || $multilib_cpu == $arch} {
+	set extra_tool_flags $flags
+    } else {
+	set do_what [list [lindex $do_what 0] "N" "P"]
+    }
+}
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]]	"" ""
+
+# All done.
+dg-finish
