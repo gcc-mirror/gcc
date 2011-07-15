@@ -1,3 +1,11 @@
+2011-07-15  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/locale/newlib/ctype_members.cc: New file.
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Add a new C locale
+	kind: newlib.  Configure to use the newlib specific
+	ctype_members.cc when with_newlib is enabled.
+	* configure: Regenerate.
+
 2011-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
