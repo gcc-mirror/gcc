@@ -1,3 +1,11 @@
+2011-07-15  Dodji Seketeli  <dodji@redhat.com>
+
+	* directives.c (struct if_stack): Use source_location as type
+	here.
+	* include/cpplib.h (struct cpp_callbacks)<include, define, undef,
+	indent, def_pragma, used_define, used_undef>: Properly use
+	source_location as parameter type, rather than unsigned int.
+
 2011-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/39150

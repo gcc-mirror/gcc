@@ -32,7 +32,7 @@ along with this program; see the file COPYING3.  If not see
 struct if_stack
 {
   struct if_stack *next;
-  linenum_type line;		/* Line where condition started.  */
+  source_location line;		/* Line where condition started.  */
   const cpp_hashnode *mi_cmacro;/* macro name for #ifndef around entire file */
   bool skip_elses;		/* Can future #else / #elif be skipped?  */
   bool was_skipping;		/* If were skipping on entry.  */
