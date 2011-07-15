@@ -1,7 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009, 2010 Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,7 +39,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #include <pthread.h>
-#include <unistd.h>
+
+#if ((defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)) \
+     || !defined(_GTHREAD_USE_MUTEX_TIMEDLOCK))
+# include <unistd.h>
+# if defined(_POSIX_TIMEOUTS) && _POSIX_TIMEOUTS >= 0
+#  define _GTHREAD_USE_MUTEX_TIMEDLOCK 1
+# else
+#  define _GTHREAD_USE_MUTEX_TIMEDLOCK 0
+# endif
+#endif
 
 typedef pthread_t __gthread_t;
 typedef pthread_key_t __gthread_key_t;
@@ -100,11 +109,9 @@ __gthrw3(sched_yield)
 
 __gthrw3(pthread_mutex_lock)
 __gthrw3(pthread_mutex_trylock)
-#ifdef _POSIX_TIMEOUTS
-#if _POSIX_TIMEOUTS >= 0
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
 __gthrw3(pthread_mutex_timedlock)
 #endif
-#endif /* _POSIX_TIMEOUTS */
 __gthrw3(pthread_mutex_unlock)
 __gthrw3(pthread_mutex_init)
 __gthrw3(pthread_mutex_destroy)
@@ -131,11 +138,9 @@ __gthrw(sched_yield)
 
 __gthrw(pthread_mutex_lock)
 __gthrw(pthread_mutex_trylock)
-#ifdef _POSIX_TIMEOUTS
-#if _POSIX_TIMEOUTS >= 0
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
 __gthrw(pthread_mutex_timedlock)
 #endif
-#endif /* _POSIX_TIMEOUTS */
 __gthrw(pthread_mutex_unlock)
 __gthrw(pthread_mutex_init)
 __gthrw(pthread_mutex_destroy)
@@ -753,8 +758,7 @@ __gthread_mutex_trylock (__gthread_mutex_t *__mutex)
     return 0;
 }
 
-#ifdef _POSIX_TIMEOUTS
-#if _POSIX_TIMEOUTS >= 0
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
 static inline int
 __gthread_mutex_timedlock (__gthread_mutex_t *__mutex,
 			   const __gthread_time_t *__abs_timeout)
@@ -764,7 +768,6 @@ __gthread_mutex_timedlock (__gthread_mutex_t *__mutex,
   else
     return 0;
 }
-#endif
 #endif
 
 static inline int
@@ -811,15 +814,13 @@ __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
   return __gthread_mutex_trylock (__mutex);
 }
 
-#ifdef _POSIX_TIMEOUTS
-#if _POSIX_TIMEOUTS >= 0
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
 static inline int
 __gthread_recursive_mutex_timedlock (__gthread_recursive_mutex_t *__mutex,
 				     const __gthread_time_t *__abs_timeout)
 {
   return __gthread_mutex_timedlock (__mutex, __abs_timeout);
 }
-#endif
 #endif
 
 static inline int

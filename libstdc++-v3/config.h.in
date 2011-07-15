@@ -823,6 +823,9 @@
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T
 
+/* Define to 1 if mutex_timedlock is available. */
+#undef _GTHREAD_USE_MUTEX_TIMEDLOCK
+
 #if defined (HAVE__ACOSF) && ! defined (HAVE_ACOSF)
 # define HAVE_ACOSF 1
 # define acosf _acosf
