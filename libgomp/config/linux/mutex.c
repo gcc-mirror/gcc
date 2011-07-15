@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -32,15 +32,27 @@ long int gomp_futex_wake = FUTEX_WAKE | FUTEX_PRIVATE_FLAG;
 long int gomp_futex_wait = FUTEX_WAIT | FUTEX_PRIVATE_FLAG;
 
 void
-gomp_mutex_lock_slow (gomp_mutex_t *mutex)
+gomp_mutex_lock_slow (gomp_mutex_t *mutex, int oldval)
 {
-  do
+  while (oldval == 1)
     {
-      int oldval = __sync_val_compare_and_swap (mutex, 1, 2);
-      if (oldval != 0)
-	do_wait (mutex, 2);
+      if (do_spin (mutex, 1))
+	{
+	  oldval = __sync_lock_test_and_set (mutex, 2);
+	  if (oldval == 0)
+	    return;
+	  futex_wait (mutex, 2);
+	  break;
+	}
+      else
+	{
+	  oldval = __sync_val_compare_and_swap (mutex, 0, 1);
+	  if (oldval == 0)
+	    return;
+	}
     }
-  while (!__sync_bool_compare_and_swap (mutex, 0, 2));
+  while ((oldval = __sync_lock_test_and_set (mutex, 2)))
+    do_wait (mutex, 2);
 }
 
 void

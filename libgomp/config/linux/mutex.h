@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -38,11 +38,12 @@ static inline void gomp_mutex_init (gomp_mutex_t *mutex)
   *mutex = 0;
 }
 
-extern void gomp_mutex_lock_slow (gomp_mutex_t *mutex);
+extern void gomp_mutex_lock_slow (gomp_mutex_t *mutex, int);
 static inline void gomp_mutex_lock (gomp_mutex_t *mutex)
 {
-  if (!__sync_bool_compare_and_swap (mutex, 0, 1))
-    gomp_mutex_lock_slow (mutex);
+  int oldval = __sync_val_compare_and_swap (mutex, 0, 1);
+  if (__builtin_expect (oldval, 0))
+    gomp_mutex_lock_slow (mutex, oldval);
 }
 
 extern void gomp_mutex_unlock_slow (gomp_mutex_t *mutex);
