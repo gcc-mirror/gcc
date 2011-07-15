@@ -54,7 +54,7 @@ caf_runtime_error (const char *message, ...)
   va_list ap;
   fprintf (stderr, "Fortran runtime error on image %d: ", caf_this_image);
   va_start (ap, message);
-  fprintf (stderr, message, ap);
+  vfprintf (stderr, message, ap);
   va_end (ap);
   fprintf (stderr, "\n");
 

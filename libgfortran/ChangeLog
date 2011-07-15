@@ -1,3 +1,8 @@
+2011-07-15  Daniel Carrera  <dcarrera@gmail.com>
+
+	* caf/mpi.c (caf_runtime_error): Change fprintf to vfprintf.
+	* caf/single.c (caf_runtime_error): Ditto.
+
 2011-07-14  Daniel Carrera  <dcarrera@gmail.com>
 
 	* caf/single.c:  Include stdarg.h header.
