@@ -3304,6 +3304,89 @@ The constant 0.
 
 @end table
 
+@item TI C6X family---@file{config/c6x/constraints.md}
+@table @code
+@item a
+Register file A (A0--A31).
+
+@item b
+Register file B (B0--B31).
+
+@item A
+Predicate registers in register file A (A0--A2 on C64X and
+higher, A1 and A2 otherwise).
+
+@item B
+Predicate registers in register file B (B0--B2).
+
+@item C
+A call-used register in register file B (B0--B9, B16--B31).
+
+@item Da
+Register file A, excluding predicate registers (A3--A31,
+plus A0 if not C64X or higher).
+
+@item Db
+Register file B, excluding predicate registers (B3--B31).
+
+@item Iu4
+Integer constant in the range 0 @dots{} 15.
+
+@item Iu5
+Integer constant in the range 0 @dots{} 31.
+
+@item In5
+Integer constant in the range @minus{}31 @dots{} 0.
+
+@item Is5
+Integer constant in the range @minus{}16 @dots{} 15.
+
+@item I5x
+Integer constant that can be the operand of an ADDA or a SUBA insn.
+
+@item IuB
+Integer constant in the range 0 @dots{} 65535.
+
+@item IsB
+Integer constant in the range @minus{}32768 @dots{} 32767.
+
+@item IsC
+Integer constant in the range @math{-2^{20}} @dots{} @math{2^{20} - 1}.
+
+@item Jc
+Integer constant that is a valid mask for the clr instruction.
+
+@item Js
+Integer constant that is a valid mask for the set instruction.
+
+@item Q
+Memory location with A base register.
+
+@item R
+Memory location with B base register.
+
+@ifset INTERNALS
+@item S0
+On C64x+ targets, a GP-relative small data reference.
+
+@item S1
+Any kind of @code{SYMBOL_REF}, for use in a call address.
+
+@item Si
+Any kind of immediate operand, unless it matches the S0 constraint.
+
+@item T
+Memory location with B base register, but not using a long offset.
+
+@item W
+A memory operand with an address that can't be used in an unaligned access.
+
+@end ifset
+@item Z
+Register B14 (aka DP).
+
+@end table
+
 @item Xtensa---@file{config/xtensa/constraints.md}
 @table @code
 @item a

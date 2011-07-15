@@ -1,0 +1,230 @@
+;; Scheduling description for TI C6X.
+;; Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
+;; Contributed by CodeSourcery.
+;;
+;; This file is part of GCC.
+;;
+;; GCC is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+;;
+;; GCC is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with GCC; see the file COPYING3.  If not see
+;; <http://www.gnu.org/licenses/>.
+
+;; Input file for gensched.sh We process this file multiple times,
+;; replacing _N_ with either 1 or 2 for each of the sides of the
+;; machine, and _RF_ correspondingly with "a" or "b".  _CROSS_ and
+;; _CUNIT_ are replaced with yes/no and the appropriate reservation.
+
+(define_insn_reservation "load_d_N__CROSS_" 5
+  (and (eq_attr "type" "load")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "d_addr")
+		 (eq_attr "addr_regfile" "_RF_"))))
+  "d_N_+t_NX_")
+
+(define_insn_reservation "store_d_N__CROSS_" 1
+  (and (eq_attr "type" "store")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "d_addr")
+		 (eq_attr "addr_regfile" "_RF_"))))
+  "d_N_+t_NX_")
+
+(define_insn_reservation "loadn_d_N__CROSS_" 5
+  (and (eq_attr "type" "loadn")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "d_addr")
+		 (eq_attr "addr_regfile" "_RF_"))))
+  "d_N_+t1+t2")
+
+(define_insn_reservation "storen_d_N__CROSS_" 1
+  (and (eq_attr "type" "storen")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "d_addr")
+		 (eq_attr "addr_regfile" "_RF_"))))
+  "d_N_+t1+t2")
+
+(define_insn_reservation "single_d_N__CROSS_" 1
+  (and (eq_attr "type" "single")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "d")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "d_N__CUNIT_")
+
+(define_insn_reservation "single_l_N__CROSS_" 1
+  (and (eq_attr "type" "single")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "l")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "l_N_+l_N_w_CUNIT_")
+
+(define_insn_reservation "fp4_l_N__CROSS_" 4
+  (and (eq_attr "type" "fp4")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "l")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "l_N__CUNIT_,nothing*2,l_N_w")
+
+(define_insn_reservation "intdp_l_N__CROSS_" 5
+  (and (eq_attr "type" "intdp")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "l")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "l_N__CUNIT_,nothing*2,l_N_w*2")
+
+(define_insn_reservation "adddp_l_N__CROSS_" 7
+  (and (eq_attr "type" "adddp")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "l")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(l_N__CUNIT_)*2,nothing*3,l_N_w*2")
+
+(define_insn_reservation "branch_s_N__CROSS_" 6
+  (and (eq_attr "type" "branch")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "s")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(s_N_+s_N_w)_CUNIT_+br1")
+
+(define_insn_reservation "call_addkpc_s_N__CROSS_" 6
+  (and (eq_attr "type" "call")
+       (and (ne (symbol_ref "TARGET_INSNS_64") (const_int 0))
+	    (and (eq_attr "cross" "_CROSS_")
+		 (and (eq_attr "units" "s")
+		      (eq_attr "dest_regfile" "_RF_")))))
+  "(s_N_+s_N_w)_CUNIT_+br1,s2+br0+br1")
+
+(define_insn_reservation "call_mvk_s_N__CROSS_" 6
+  (and (eq_attr "type" "call")
+       (and (eq (symbol_ref "TARGET_INSNS_64") (const_int 0))
+	    (and (eq_attr "cross" "_CROSS_")
+		 (and (eq_attr "units" "s")
+		      (eq_attr "dest_regfile" "_RF_")))))
+  "(s_N_+s_N_w)_CUNIT_+br1,s2,s2")
+
+(define_insn_reservation "single_s_N__CROSS_" 1
+  (and (eq_attr "type" "single")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "s")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(s_N_+s_N_w)_CUNIT_")
+
+(define_insn_reservation "cmpdp_s_N__CROSS_" 2
+  (and (eq_attr "type" "cmpdp")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "s")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "s_N__CUNIT_,(s_N__CUNIT_)+s_N_w")
+
+(define_insn_reservation "dp2_s_N__CROSS_" 2
+  (and (eq_attr "type" "dp2")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "s")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "s_N_+s_N_w_CUNIT_,s_N_w")
+
+(define_insn_reservation "fp4_s_N__CROSS_" 4
+  (and (eq_attr "type" "fp4")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "s")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "s_N__CUNIT_,nothing*2,s_N_w")
+
+(define_insn_reservation "mvilc4_s_N__CROSS_" 4
+  (and (eq_attr "type" "mvilc")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "s")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(s_N_+s_N_w)_CUNIT_")
+
+(define_insn_reservation "single_dl_N__CROSS_" 1
+  (and (eq_attr "type" "single")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "dl")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(d_N_|(l_N_+l_N_w))_CUNIT_")
+
+(define_insn_reservation "single_ds_N__CROSS_" 1
+  (and (eq_attr "type" "single")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "ds")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(d_N_|(s_N_+s_N_w))_CUNIT_")
+
+(define_insn_reservation "single_ls_N__CROSS_" 1
+  (and (eq_attr "type" "single")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "ls")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "((l_N_+l_N_w)|(s_N_+s_N_w))_CUNIT_")
+
+(define_insn_reservation "dp2_l_N__CROSS_" 2
+  (and (eq_attr "type" "dp2")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "l")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "l_N_+l_N_w_CUNIT_,l_N_w")
+
+(define_insn_reservation "fp4_ls_N__CROSS_" 4
+  (and (eq_attr "type" "fp4")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "ls")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(s_N__CUNIT_,nothing*2,s_N_w)|(l_N__CUNIT_,nothing*2,l_N_w)")
+
+(define_insn_reservation "adddp_ls_N__CROSS_" 7
+  (and (eq_attr "type" "adddp")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "ls")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "((s_N__CUNIT_)*2,nothing*3,s_N_w*2)|((l_N__CUNIT_)*2,nothing*3,l_N_w*2)")
+
+(define_insn_reservation "single_dls_N__CROSS_" 1
+  (and (eq_attr "type" "single")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "dls")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(d_N_|(l_N_+l_N_w)|(s_N_+s_N_w))_CUNIT_")
+
+(define_insn_reservation "mpy2_m_N__CROSS_" 2
+  (and (eq_attr "type" "mpy2")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "m")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "m_N__CUNIT_,m_N_w")
+
+(define_insn_reservation "mpy4_m_N__CROSS_" 4
+  (and (eq_attr "type" "mpy4")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "m")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "m_N__CUNIT_,nothing,nothing,m_N_w")
+
+(define_insn_reservation "mpydp_m_N__CROSS_" 10
+  (and (eq_attr "type" "mpydp")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "m")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(m_N__CUNIT_)*4,nothing*4,m_N_w*2")
+
+(define_insn_reservation "mpyspdp_m_N__CROSS_" 7
+  (and (eq_attr "type" "mpyspdp")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "m")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "(m_N__CUNIT_)*2,nothing*3,m_N_w*2")
+
+(define_insn_reservation "mpysp2dp_m_N__CROSS_" 5
+  (and (eq_attr "type" "mpysp2dp")
+       (and (eq_attr "cross" "_CROSS_")
+	    (and (eq_attr "units" "m")
+		 (eq_attr "dest_regfile" "_RF_"))))
+  "m_N__CUNIT_,nothing*2,m_N_w*2")

@@ -1,3 +1,54 @@
+2011-07-15  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* doc/invoke.texi (C6X Options): New section.
+	* doc/md.texi (TI C6X family): New section.
+	* config.gcc: Handle tic6x, in particular tic6x-*-elf and
+	tic6x-*-uclinux.
+	* longlong.h (add_ssaaaa, __umulsidi3, umul_ppmm,
+	count_leading_zeros, count_trailing_zeros, UMUL_TIME, UDIV_TIME):
+	Provide C6X definitions.
+	* config/c6x/c6x.md: New file.
+	* config/c6x/constraints.md: New file.
+	* config/c6x/predicates.md: New file.
+	* config/c6x/c6x-sched.md.in: New file.
+	* config/c6x/c6x-sched.md: New file.
+	* config/c6x/gensched.sh: New file.
+	* config/c6x/c6x-mult.md.in: New file.
+	* config/c6x/genmult.sh: New file.
+	* config/c6x/c6x-mult.md: New file.
+	* config/c6x/sync.md: New file.
+	* config/c6x/c6x-protos.h: New file.
+	* config/c6x/sfp-machine.h: New file.
+	* config/c6x/c6x.c: New file.
+	* config/c6x/c6x.h: New file.
+	* config/c6x/crti.s: New file.
+	* config/c6x/crtn.s: New file.
+	* config/c6x/lib1funcs.asm: New file.
+	* config/c6x/c6x-modes.def: New file.
+	* config/c6x/genopt.sh: New file.
+	* config/c6x/c6x.opt: New file.
+	* config/c6x/c6x-tables.opt: New file.
+	* config/c6x/c6x-opts.h: New file.
+	* config/c6x/c6x-isas.def: New file.
+	* config/c6x/elf.h: New file.
+	* config/c6x/elf-common.h: New file.
+	* config/c6x/uclinux-elf.h: New file.
+	* config/c6x/t-c6x: New file.
+	* config/c6x/t-c6x-elf: New file.
+	* config/c6x/t-c6x-uclinux: New file.
+	* config/c6x/t-c6x-softfp: New file.
+	* config/c6x/gtd.c: New file.
+	* config/c6x/gtf.c: New file.
+	* config/c6x/ltd.c: New file.
+	* config/c6x/ltf.c: New file.
+	* config/c6x/ged.c: New file.
+	* config/c6x/gef.c: New file.
+	* config/c6x/led.c: New file.
+	* config/c6x/lef.c: New file.
+	* config/c6x/eqd.c: New file.
+	* config/c6x/eqf.c: New file.
+	* config/c6x/libgcc-c6xeabi.ver: New file.
+
 2011-07-14  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/49309

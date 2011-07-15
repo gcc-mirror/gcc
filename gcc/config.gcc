@@ -437,6 +437,11 @@ sh[123456789lbe]*-*-* | sh-*-*)
 v850*-*-*)
 	cpu_type=v850
 	;;
+tic6x-*-*)
+	cpu_type=c6x
+	extra_headers="c6x_intrinsics.h"
+	extra_options="${extra_options} c6x/c6x-tables.opt"
+	;;
 xtensa*-*-*)
 	extra_options="${extra_options} fused-madd.opt"
 	;;
@@ -2561,7 +2566,24 @@ spu-*-elf*)
 	c_target_objs="${c_target_objs} spu-c.o"
 	cxx_target_objs="${cxx_target_objs} spu-c.o"
 	;;
-
+tic6x-*-elf)
+	tm_file="elfos.h ${tm_file} c6x/elf-common.h c6x/elf.h"
+	tm_file="${tm_file} dbxelf.h tm-dwarf2.h newlib-stdint.h"
+	libgcc_tm_file="${libgcc_tm_file} c6x/c6x-abi.h"
+	tmake_file="c6x/t-c6x c6x/t-c6x-elf"
+	tmake_file="${tmake_file} c6x/t-c6x-softfp soft-fp/t-softfp"
+	use_collect2=no
+	;;
+tic6x-*-uclinux)
+	tm_file="elfos.h ${tm_file} gnu-user.h linux.h c6x/elf-common.h c6x/uclinux-elf.h"
+	tm_file="${tm_file} dbxelf.h tm-dwarf2.h glibc-stdint.h"
+	tm_file="${tm_file} ./sysroot-suffix.h"
+	libgcc_tm_file="${libgcc_tm_file} c6x/c6x-abi.h"
+	tmake_file="t-slibgcc-elf-ver t-sysroot-suffix"
+	tmake_file="${tmake_file} c6x/t-c6x c6x/t-c6x-elf c6x/t-c6x-uclinux"
+	tmake_file="${tmake_file} c6x/t-c6x-softfp soft-fp/t-softfp"
+	use_collect2=no
+	;;
 v850*-*-*)
 	case ${target} in
 	v850e2v3-*-*)
@@ -3498,6 +3520,20 @@ case "${target}" in
 				;;
 			esac
 		done
+		;;
+
+	tic6x-*-*)
+		supported_defaults="arch"
+
+		case ${with_arch} in
+		"" | c62x | c64x | c64x+ | c67x | c67x+ | c674x)
+			# OK
+			;;
+		*)
+			echo "Unknown arch used in --with-arch=$with_arch." 1>&2
+			exit 1
+			;;
+		esac
 		;;
 
 	v850*-*-*)

@@ -146,6 +146,9 @@ sh[123456789lbe]*-*-*)
 v850*-*-*)
 	cpu_type=v850
 	;;
+tic6x-*-*)
+	cpu_type=c6x
+	;;
 esac
 
 # Common parts for widely ported systems.
@@ -661,6 +664,9 @@ sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 sparc64-*-netbsd*)
 	;;
 spu-*-elf*)
+	;;
+tic6x-*-*)
+	tmake_file="${tmake_file} t-gnu-prefix"
 	;;
 v850*-*-*)
 	;;

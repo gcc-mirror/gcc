@@ -1,0 +1,103 @@
+# Copyright (C) 2011 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+GCC_4.7.0 {
+  __c6xabi_strasgi
+  __c6xabi_call_stub
+  __c6xabi_mpyll
+  __c6xabi_negll
+  __c6xabi_llshru
+  __c6xabi_llshl
+  __c6xabi_llshr
+  __c6xabi_fixfu
+  __c6xabi_fixdu
+  __c6xabi_fixflli
+  __c6xabi_fixdlli
+  __c6xabi_fixfull
+  __c6xabi_fixdull
+  __c6xabi_fltllif
+  __c6xabi_fltllid
+  __c6xabi_fltullf
+  __c6xabi_fltulld
+  __c6xabi_divlli
+  __c6xabi_remlli
+  __c6xabi_divull
+  __c6xabi_remull
+  __c6xabi_divremull
+  __c6xabi_gef
+  __c6xabi_gtf
+  __c6xabi_lef
+  __c6xabi_ltf
+  __c6xabi_eqf
+  __c6xabi_ged
+  __c6xabi_gtd
+  __c6xabi_led
+  __c6xabi_ltd
+  __c6xabi_eqd
+  __c6xabi_addf
+  __c6xabi_divf
+  __c6xabi_neqf
+  __c6xabi_cmpf
+  __c6xabi_mpyf
+  __c6xabi_negf
+  __c6xabi_subf
+  __c6xabi_unordf
+  __c6xabi_fixfi
+  __c6xabi_fltif
+  __c6xabi_fltuf
+  __c6xabi_addd
+  __c6xabi_divd
+  __c6xabi_neqd
+  __c6xabi_cmpd
+  __c6xabi_mpyd
+  __c6xabi_negd
+  __c6xabi_subd
+  __c6xabi_unordd
+  __c6xabi_fixdi
+  __c6xabi_fltid
+  __c6xabi_fltud
+  __c6xabi_cvtfd
+  __c6xabi_cvtdf
+  __c6xabi_mulcf
+  __c6xabi_mulcd
+  __c6xabi_divcf
+  __c6xabi_divcd
+
+  __gnu_ltsf2
+  __gnu_ltdf2
+  __gnu_gesf2
+  __gnu_gedf2
+  __gnu_gtsf2
+  __gnu_gtdf2
+  __gnu_eqsf2
+  __gnu_eqdf2
+
+  # Exception-Handling
+  _Unwind_Complete
+  _Unwind_VRS_Get
+  _Unwind_VRS_Set
+  _Unwind_VRS_Pop
+  __c6xabi_unwind_cpp_pr0
+  __c6xabi_unwind_cpp_pr1
+  __c6xabi_unwind_cpp_pr2
+  __c6xabi_unwind_cpp_pr3
+  __c6xabi_unwind_cpp_pr4
+  # The libstdc++ exception-handling personality routine uses this 
+  # GNU-specific entry point.
+  __gnu_unwind_frame
+}
