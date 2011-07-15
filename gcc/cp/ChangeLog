@@ -1,3 +1,8 @@
+2011-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR testsuite/49741
+	* Make-lang.in (check-c++0x): Use --extra_opts instead of--tool_opts.
+
 2011-07-13  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (check-c++0x): New.
