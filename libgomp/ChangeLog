@@ -1,3 +1,25 @@
+2011-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/wait.h (do_spin): New inline, largely copied
+	from do_wait, just don't do futex_wait here, instead return true if
+	it should be done.
+	(do_wait): Implement using do_spin.
+	* config/linux/mutex.h (gomp_mutex_lock_slow): Add an int argument
+	to prototype.
+	(gomp_mutex_lock): Use __sync_val_compare_and_swap instead of
+	__sync_bool_compare_and_swap, pass the oldval to
+	gomp_mutex_lock_slow.
+	* config/linux/mutex.c (gomp_mutex_lock_slow): Add oldval argument.
+	If all mutex contenders are just spinning and not sleeping, don't
+	change state to 2 unnecessarily.  Optimize the loop when state has
+	already become 2 to use just one atomic operation per loop instead
+	of two.
+	* config/linux/ia64/mutex.h (gomp_mutex_lock_slow): Add an int argument
+	to prototype.
+	(gomp_mutex_lock): Use __sync_val_compare_and_swap instead of
+	__sync_bool_compare_and_swap, pass the oldval to
+	gomp_mutex_lock_slow.
+
 2011-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/49490
