@@ -32,6 +32,10 @@
 	* gcc.dg/torture/pr37868.c: Skip on tic6x.
 	* gcc.dg/torture/builtin-math-7.c: Likewise.
 
+	PR testsuite/49757
+	* gcc/testsuite/gcc.target/tic6x/builtins/c6x-builtins.exp: Return if
+	not testing tic6x-*-*.
+
 2011-07-14  Andrew Pinski  <pinskia@gmail.com>
 
 	PR tree-opt/49309
