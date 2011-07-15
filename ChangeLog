@@ -1,3 +1,7 @@
+2011-07-15  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* MAINTAINERS (c6x port): New entry.
+
 2011-07-13  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (check-gcc-c++0x): New.
