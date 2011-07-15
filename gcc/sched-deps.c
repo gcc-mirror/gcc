@@ -579,7 +579,7 @@ conditions_mutex_p (const_rtx cond1, const_rtx cond2, bool rev1, bool rev2)
 	  (rev1==rev2
 	  ? reversed_comparison_code (cond2, NULL)
 	  : GET_CODE (cond2))
-      && XEXP (cond1, 0) == XEXP (cond2, 0)
+      && rtx_equal_p (XEXP (cond1, 0), XEXP (cond2, 0))
       && XEXP (cond1, 1) == XEXP (cond2, 1))
     return 1;
   return 0;
@@ -2751,14 +2751,13 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 
           if (sched_deps_info->compute_jump_reg_dependencies)
             {
-              regset_head tmp_uses, tmp_sets;
-              INIT_REG_SET (&tmp_uses);
-              INIT_REG_SET (&tmp_sets);
+              regset_head tmp;
+              INIT_REG_SET (&tmp);
 
-              (*sched_deps_info->compute_jump_reg_dependencies)
-                (insn, &deps->reg_conditional_sets, &tmp_uses, &tmp_sets);
+              (*sched_deps_info->compute_jump_reg_dependencies) (insn, &tmp);
+
               /* Make latency of jump equal to 0 by using anti-dependence.  */
-              EXECUTE_IF_SET_IN_REG_SET (&tmp_uses, 0, i, rsi)
+              EXECUTE_IF_SET_IN_REG_SET (&tmp, 0, i, rsi)
                 {
                   struct deps_reg *reg_last = &deps->reg_last[i];
                   add_dependence_list (insn, reg_last->sets, 0, REG_DEP_ANTI);
@@ -2773,10 +2772,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
                       reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
                     }
                 }
-              IOR_REG_SET (reg_pending_sets, &tmp_sets);
 
-              CLEAR_REG_SET (&tmp_uses);
-              CLEAR_REG_SET (&tmp_sets);
+              CLEAR_REG_SET (&tmp);
             }
 
 	  /* All memory writes and volatile reads must happen before the
@@ -2949,10 +2946,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 	      add_dependence_list (insn, reg_last->uses, 0, REG_DEP_ANTI);
 
 	      if (!deps->readonly)
-		{
-		  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
-		  SET_REGNO_REG_SET (&deps->reg_conditional_sets, i);
-		}
+		reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
 	    }
 	}
       else
@@ -3014,7 +3008,6 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 		  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
 		  reg_last->uses_length = 0;
 		  reg_last->clobbers_length = 0;
-		  CLEAR_REGNO_REG_SET (&deps->reg_conditional_sets, i);
 		}
 	    }
 	}
@@ -3112,8 +3105,6 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
                              && sel_insn_is_speculation_check (insn)))
 	flush_pending_lists (deps, insn, true, true);
 
-      if (!deps->readonly)
-        CLEAR_REG_SET (&deps->reg_conditional_sets);
       reg_pending_barrier = NOT_A_BARRIER;
     }
 
@@ -3555,7 +3546,6 @@ init_deps (struct deps_desc *deps, bool lazy_reg_last)
   else
     deps->reg_last = XCNEWVEC (struct deps_reg, max_reg);
   INIT_REG_SET (&deps->reg_last_in_use);
-  INIT_REG_SET (&deps->reg_conditional_sets);
 
   deps->pending_read_insns = 0;
   deps->pending_read_mems = 0;
@@ -3624,7 +3614,6 @@ free_deps (struct deps_desc *deps)
 	free_INSN_LIST_list (&reg_last->clobbers);
     }
   CLEAR_REG_SET (&deps->reg_last_in_use);
-  CLEAR_REG_SET (&deps->reg_conditional_sets);
 
   /* As we initialize reg_last lazily, it is possible that we didn't allocate
      it at all.  */
@@ -3634,8 +3623,7 @@ free_deps (struct deps_desc *deps)
   deps = NULL;
 }
 
-/* Remove INSN from dependence contexts DEPS.  Caution: reg_conditional_sets
-   is not handled.  */
+/* Remove INSN from dependence contexts DEPS.  */
 void
 remove_from_deps (struct deps_desc *deps, rtx insn)
 {

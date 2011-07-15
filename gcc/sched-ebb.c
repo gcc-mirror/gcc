@@ -257,28 +257,18 @@ ebb_contributes_to_priority (rtx next ATTRIBUTE_UNUSED,
   return 1;
 }
 
- /* INSN is a JUMP_INSN, COND_SET is the set of registers that are
-    conditionally set before INSN.  Store the set of registers that
-    must be considered as used by this jump in USED and that of
-    registers that must be considered as set in SET.  */
+ /* INSN is a JUMP_INSN.  Store the set of registers that
+    must be considered as used by this jump in USED.  */
 
 void
-ebb_compute_jump_reg_dependencies (rtx insn, regset cond_set, regset used,
-				   regset set)
+ebb_compute_jump_reg_dependencies (rtx insn, regset used)
 {
   basic_block b = BLOCK_FOR_INSN (insn);
   edge e;
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, b->succs)
-    if (e->flags & EDGE_FALLTHRU)
-      /* The jump may be a by-product of a branch that has been merged
-	 in the main codepath after being conditionalized.  Therefore
-	 it may guard the fallthrough block from using a value that has
-	 conditionally overwritten that of the main codepath.  So we
-	 consider that it restores the value of the main codepath.  */
-      bitmap_and (set, df_get_live_in (e->dest), cond_set);
-    else
+    if ((e->flags & EDGE_FALLTHRU) == 0)
       bitmap_ior_into (used, df_get_live_in (e->dest));
 }
 
