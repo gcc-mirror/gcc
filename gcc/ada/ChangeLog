@@ -1,3 +1,8 @@
+2011-07-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/48711
+	* g-socthi-mingw.adb (Fill): Fix formatting.
+
 2011-07-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR ada/46350

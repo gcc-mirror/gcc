@@ -277,8 +277,8 @@ package body GNAT.Sockets.Thin is
       use type C.size_t;
 
       Fill  : constant Boolean :=
-	SOSC.MSG_WAITALL /= -1
-	and then (C.unsigned (Flags) and SOSC.MSG_WAITALL) /= 0;
+        SOSC.MSG_WAITALL /= -1
+          and then (C.unsigned (Flags) and SOSC.MSG_WAITALL) /= 0;
       --  Is the MSG_WAITALL flag set? If so we need to fully fill all vectors
 
       Res   : C.int;
