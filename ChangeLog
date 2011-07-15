@@ -1,3 +1,8 @@
+2011-07-15  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (check-c++): Move check-gcc-c++0x after
+	check-target-libstdc++-v3.
+
 2011-07-15  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* MAINTAINERS (c6x port): New entry.

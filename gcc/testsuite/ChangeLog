@@ -1,3 +1,9 @@
+2011-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR testsuite/49741
+	* lib/g++.exp (${tool}_option_help, ${tool}_option_proc): Restore.
+	Use --extra_opts instead of --additional_options.
+
 2011-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/49753

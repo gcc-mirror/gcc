@@ -5019,7 +5019,7 @@ check_p_subdirs=$(wordlist 1,$(words $(check_$*_parallelize)),$(check_p_numbers)
 
 # For parallelized check-% targets, this decides whether parallelization
 # is desirable (if -jN is used and RUNTESTFLAGS doesn't contain anything
-# but optional --target_board or --tool_opts arguments).  If it is desirable,
+# but optional --target_board or --extra_opts arguments).  If desirable,
 # recursive make is run with check-parallel-$lang{,1,2,3,4,5} etc. goals,
 # which can be executed in parallel, as they are run in separate directories.
 # check-parallel-$lang{1,2,3,4,5} etc. goals invoke runtest with the longest
@@ -5036,7 +5036,7 @@ check_p_subdirs=$(wordlist 1,$(words $(check_$*_parallelize)),$(check_p_numbers)
 # to lang_checks_parallelized variable and define check_$lang_parallelize
 # variable (see above check_gcc_parallelize description).
 $(lang_checks_parallelized): check-% : site.exp
-	@if [ -z "$(filter-out --target_board=%,$(filter-out --tool_opts%,$(RUNTESTFLAGS)))" ] \
+	@if [ -z "$(filter-out --target_board=%,$(filter-out --extra_opts%,$(RUNTESTFLAGS)))" ] \
 	    && [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
 	  $(MAKE) TESTSUITEDIR="$(TESTSUITEDIR)" RUNTESTFLAGS="$(RUNTESTFLAGS)" \
 	    check-parallel-$* \

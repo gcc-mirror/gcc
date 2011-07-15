@@ -1,3 +1,9 @@
+2011-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR testsuite/49741
+	* Makefile.in ($(lang_checks_parallelized)): Allow --extra_opts
+	rather than --tool_opts.
+
 2011-07-15  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* doc/plugins.texi (Building GCC plugins): gengtype needs its
