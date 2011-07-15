@@ -1,5 +1,7 @@
-/* { dg-do compile } */
-/* { dg-options "-fmudflap"  } */
+// PR tree-optimization/49309
+// { dg-do compile }
+// { dg-options "-fmudflap" }
+
 struct A
 {
   int i;
@@ -11,4 +13,3 @@ struct A
 inline void foo(A a) { a = A(); }
 
 void bar() { foo(A()); }
-

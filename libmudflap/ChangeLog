@@ -1,3 +1,9 @@
+2011-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49753
+	PR tree-optimization/49309
+	* testsuite/libmudflap.c++/pass68-frag.cxx: New test.
+
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Don't create pth.
