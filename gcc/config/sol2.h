@@ -132,10 +132,8 @@ along with GCC; see the file COPYING3.  If not see
 #define LIB_SPEC \
   "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
    %{!symbolic:\
-     %{pthreads|pthread:" \
-        LIB_THREAD_LDFLAGS_SPEC " -lpthread " LIB_TLS_SPEC "} \
-     %{!pthreads:%{!pthread:%{threads:" \
-	LIB_THREAD_LDFLAGS_SPEC " -lthread}}} \
+     %{pthreads|pthread:-lpthread " LIB_TLS_SPEC "} \
+     %{!pthreads:%{!pthread:%{threads:-lthread}}} \
      %{p|pg:-ldl} -lc}"
 
 #undef  ENDFILE_SPEC
@@ -185,6 +183,7 @@ along with GCC; see the file COPYING3.  If not see
    %{static:-dn -Bstatic} \
    %{shared:-G -dy %{!mimpure-text:-z text}} \
    %{symbolic:-Bsymbolic -G -dy -z text} \
+   %{pthreads|pthread|threads:" LIB_THREAD_LDFLAGS_SPEC "} \
    %(link_arch) \
    %{Qy:} %{!Qn:-Qy}"
 

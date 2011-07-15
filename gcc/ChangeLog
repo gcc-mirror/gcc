@@ -1,3 +1,13 @@
+2011-07-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/49541
+	* config/sol2.h (LIB_SPEC): Simplify.
+	Move LIB_THREAD_LDFLAGS_SPEC ...
+	(LINK_SPEC): ... here.
+
 2011-07-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Add __ARM_FEATURE_DSP.
