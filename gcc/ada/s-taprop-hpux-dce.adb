@@ -888,8 +888,7 @@ package body System.Task_Primitives.Operations is
 
       if T.Common.State = Interrupt_Server_Blocked_On_Event_Flag then
          System.Interrupt_Management.Operations.Interrupt_Self_Process
-           (System.Interrupt_Management.Interrupt_ID
-             (PIO.Get_Interrupt_ID (T)));
+           (PIO.Get_Interrupt_ID (T));
       end if;
    end Abort_Task;
 
