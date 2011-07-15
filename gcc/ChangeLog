@@ -1,3 +1,14 @@
+2011-07-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	Backport from mainline:
+	2011-07-13  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (TARGET_ASM_FILE_START): Do not define.
+	(asm_file_start): Remove.
+	(spu_machine_dependent_reorg): Call compute_bb_for_insn and
+	free_bb_for_insn around code that modifies insns before
+	restarting df analysis.
+
 2011-07-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:

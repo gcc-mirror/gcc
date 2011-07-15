@@ -223,7 +223,6 @@ static enum machine_mode spu_addr_space_address_mode (addr_space_t);
 static bool spu_addr_space_subset_p (addr_space_t, addr_space_t);
 static rtx spu_addr_space_convert (rtx, tree, tree);
 static int spu_sms_res_mii (struct ddg *g);
-static void asm_file_start (void);
 static unsigned int spu_section_type_flags (tree, const char *, int);
 static section *spu_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void spu_unique_section (tree, int);
@@ -454,9 +453,6 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_SCHED_SMS_RES_MII
 #define TARGET_SCHED_SMS_RES_MII spu_sms_res_mii
-
-#undef TARGET_ASM_FILE_START
-#define TARGET_ASM_FILE_START asm_file_start
 
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS spu_section_type_flags
@@ -2717,9 +2713,11 @@ spu_machine_dependent_reorg (void)
     {
       /* We still do it for unoptimized code because an external
          function might have hinted a call or return. */
+      compute_bb_for_insn ();
       insert_hbrp ();
       pad_bb ();
       spu_var_tracking ();
+      free_bb_for_insn ();
       return;
     }
 
@@ -7050,14 +7048,6 @@ spu_libgcc_shift_count_mode (void)
 /* For SPU word mode is TI mode so it is better to use SImode
    for shift counts.  */
   return SImode;
-}
-
-/* An early place to adjust some flags after GCC has finished processing
- * them. */
-static void
-asm_file_start (void)
-{
-  default_file_start ();
 }
 
 /* Implement targetm.section_type_flags.  */
