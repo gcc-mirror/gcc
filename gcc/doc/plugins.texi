@@ -446,6 +446,6 @@ A single source file plugin may be built with @code{gcc -I`gcc
 plugin.so}, using backquote shell syntax to query the @file{plugin}
 directory.
 
-Plugins needing to use @command{gengtype} require a GCC build
-directory for the same version of GCC that they will be linked
-against.
+When a plugin needs to use @command{gengtype}, be sure that both
+@file{gengtype} and @file{gtype.state} have the same version as the
+GCC for which the plugin is built.

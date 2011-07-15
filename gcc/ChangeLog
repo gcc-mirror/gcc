@@ -1,3 +1,8 @@
+2011-07-15  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* doc/plugins.texi (Building GCC plugins): gengtype needs its
+	gtype.state.
+
 2011-07-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/49723
