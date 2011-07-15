@@ -3,6 +3,8 @@
 	PR ada/48711
 	* g-socthi-mingw.adb (Fill): Fix formatting.
 
+	* gcc-interface/gigi.h: Move around comment.
+
 2011-07-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR ada/46350
