@@ -496,6 +496,10 @@ Objective-C and Objective-C++ Dialects}.
 -mfast-fp -minline-plt -mmulticore  -mcorea  -mcoreb  -msdram @gol
 -micplb}
 
+@emph{C6X Options}
+@gccoptlist{-mbig-endian  -mlittle-endian -march=@var{cpu} @gol
+-msim -msdata=@var{sdata-type}}
+
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
 -mmax-stack-frame=@var{n}  -melinux-stacksize=@var{n} @gol
@@ -10091,6 +10095,7 @@ platform.
 * ARM Options::
 * AVR Options::
 * Blackfin Options::
+* C6X Options::
 * CRIS Options::
 * Darwin Options::
 * DEC Alpha Options::
@@ -10753,6 +10758,54 @@ into SDRAM. This option defines @code{__BFIN_SDRAM}.
 Assume that ICPLBs are enabled at runtime.  This has an effect on certain
 anomaly workarounds.  For Linux targets, the default is to assume ICPLBs
 are enabled; for standalone applications the default is off.
+@end table
+
+@node C6X Options
+@subsection C6X Options
+@cindex C6X Options
+
+@table @gcctabopt
+@item -march=@var{name}
+@opindex march
+This specifies the name of the target architecture.  GCC uses this
+name to determine what kind of instructions it can emit when generating
+assembly code.  Permissible names are: @samp{c62x},
+@samp{c64x}, @samp{c64x+}, @samp{c67x}, @samp{c67x+}, @samp{c674x}.
+
+@item -mbig-endian
+@opindex mbig-endian
+Generate code for a big endian target.
+
+@item -mlittle-endian
+@opindex mlittle-endian
+Generate code for a little endian target.  This is the default.
+
+@item -msim
+@opindex msim
+Choose startup files and linker script suitable for the simulator.
+
+@item -msdata=default
+@opindex msdata=default
+Put small global and static data in the @samp{.neardata} section,
+which is pointed to by register @code{B14}.  Put small uninitialized
+global and static data in the @samp{.bss} section, which is adjacent
+to the @samp{.neardata} section.  Put small read-only data into the
+@samp{.rodata} section.  The corresponding sections used for large
+pieces of data are @samp{.fardata}, @samp{.far} and @samp{.const}.
+
+@item -msdata=all
+@opindex msdata=all
+Put all data, not just small objets, into the sections reserved for
+small data, and use addressing relative to the @code{B14} register to
+access them.
+
+@item -msdata=none
+@opindex msdata=none
+Make no use of the sections reserved for small data, and use absolute
+addresses to access all data.  Put all initialized global and static
+data in the @samp{.fardata} section, and all uninitialized data in the
+@samp{.far} section.  Put all constant data into the @samp{.const}
+section.
 @end table
 
 @node CRIS Options

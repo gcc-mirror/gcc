@@ -1,0 +1,66 @@
+# Target Makefile Fragment for TI C6X using ELF.
+# Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+# Contributed by CodeSourcery.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your
+# option) any later version.
+#
+# GCC is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+LIB1ASMSRC = c6x/lib1funcs.asm
+LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3 _udivmodsi4 _divmodsi4
+LIB1ASMFUNCS += _strasgi _strasgi_64plus _clzsi2 _clzdi2 _clz
+LIB1ASMFUNCS += _push_rts _pop_rts _call_stub
+
+LIB2FUNCS_EXCLUDE = _cmpdi2 _ucmpdi2 _gcc_bcmp _eprintf _clzsi _clzdi
+
+LIB2FUNCS_EXTRA = $(srcdir)/config/c6x/gef.c \
+                  $(srcdir)/config/c6x/gtf.c \
+                  $(srcdir)/config/c6x/lef.c \
+                  $(srcdir)/config/c6x/ltf.c \
+                  $(srcdir)/config/c6x/eqf.c \
+                  $(srcdir)/config/c6x/ged.c \
+                  $(srcdir)/config/c6x/gtd.c \
+                  $(srcdir)/config/c6x/led.c \
+                  $(srcdir)/config/c6x/ltd.c \
+                  $(srcdir)/config/c6x/eqd.c
+
+# Use this variant for fully testing all CPU types
+#MULTILIB_OPTIONS     = mbig-endian march=c674x/march=c64x/march=c67x/march=c67x+/march=c62x
+#MULTILIB_DIRNAMES    = be c674x c64x c67x c67x+ c62x
+
+MULTILIB_OPTIONS     = mbig-endian march=c674x
+MULTILIB_DIRNAMES    = be c674x
+MULTILIB_EXCEPTIONS  =
+MULTILIB_MATCHES     =
+
+# Assemble startup files.
+$(T)crti.o: $(srcdir)/config/c6x/crti.s $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	-c -o $(T)crti.o $(CRTSTUFF_T_CFLAGS) -x assembler-with-cpp \
+	$(srcdir)/config/c6x/crti.s
+
+$(T)crtn.o: $(srcdir)/config/c6x/crtn.s $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	-c -o $(T)crtn.o $(CRTSTUFF_T_CFLAGS) -x assembler-with-cpp \
+	$(srcdir)/config/c6x/crtn.s
+
+EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o crti.o crtn.o
+
+# Avoid failures when the user's GOT becomes too large.
+CRTSTUFF_T_CFLAGS = -msdata=none
+CRTSTUFF_T_CFLAGS_S = -msdata=none
+TARGET_LIBGCC2_CFLAGS = -msdata=none
+
+SHLIB_MAPFILES += $(srcdir)/config/c6x/libgcc-c6xeabi.ver

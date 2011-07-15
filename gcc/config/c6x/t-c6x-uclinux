@@ -1,0 +1,7 @@
+MULTILIB_OSDIRNAMES    = march.c674x=!c674x
+MULTILIB_OSDIRNAMES   += mbig-endian=!be
+MULTILIB_OSDIRNAMES   += mbig-endian/march.c674x=!be/c674x
+
+CRTSTUFF_T_CFLAGS = -fPIC -msdata=none
+CRTSTUFF_T_CFLAGS_S = -fPIC -msdata=none
+TARGET_LIBGCC2_CFLAGS = -fPIC -msdata=none

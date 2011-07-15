@@ -1,0 +1,419 @@
+;; Multiplication patterns for TI C6X.
+;; This file is processed by genmult.sh to produce two variants of each
+;; pattern, a normal one and a real_mult variant for modulo scheduling.
+;; Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
+;; Contributed by CodeSourcery.
+;;
+;; This file is part of GCC.
+;;
+;; GCC is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+;;
+;; GCC is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with GCC; see the file COPYING3.  If not see
+;; <http://www.gnu.org/licenses/>.
+
+;; -------------------------------------------------------------------------
+;; Miscellaneous insns that execute on the M units
+;; -------------------------------------------------------------------------
+
+(define_insn "rotlsi3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (rotate:SI (match_operand:SI 1 "register_operand" "a,b,?b,?a")
+		   (match_operand:SI 2 "reg_or_ucst5_operand" "aIu5,bIu5,aIu5,bIu5"))_CBRK_)]
+  "TARGET_INSNS_64"
+  "%|%.\\trotl\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "units" "m")
+   (set_attr "type" "mpy2")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "bitrevsi2_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_A_,_B_,_B_")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "a,?b,b,?a")]
+		   UNSPEC_BITREV)_CBRK_)]
+  "TARGET_INSNS_64"
+  "%|%.\\tbitr\\t%$\\t%1, %_MODk_0"
+  [(set_attr "units" "m")
+   (set_attr "type" "mpy2")
+   (set_attr "cross" "n,y,n,y")])
+
+;; Vector average.
+
+(define_insn "avgv2hi3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:_MV2HI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (unspec:V2HI [(match_operand:V2HI 1 "register_operand" "a,b,?b,?a")
+		      (match_operand:V2HI 2 "register_operand" "a,b,a,b")] UNSPEC_AVG)_CBRK_)]
+  "TARGET_INSNS_64"
+  "%|%.\\tavg2\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "units" "m")
+   (set_attr "type" "mpy2")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "uavgv4qi3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:_MV4QI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (unspec:V4QI [(match_operand:V4QI 1 "register_operand" "a,b,?b,?a")
+		      (match_operand:V4QI 2 "register_operand" "a,b,a,b")] UNSPEC_AVG)_CBRK_)]
+  "TARGET_INSNS_64"
+  "%|%.\\tavgu4\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "units" "m")
+   (set_attr "type" "mpy2")
+   (set_attr "cross" "n,n,y,y")])
+
+;; -------------------------------------------------------------------------
+;; Multiplication
+;; -------------------------------------------------------------------------
+
+(define_insn "mulhi3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:HI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:HI (match_operand:HI 1 "register_operand" "a,b,?b,?a")
+                 (match_operand:HI 2 "reg_or_scst5_operand" "aIs5,bIs5,aIs5,bIs5"))_CBRK_)]
+  ""
+  "%|%.\\tmpy\\t%$\\t%2, %1, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "mulhisi3_const_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A__B_")
+        (mult:SI (sign_extend:SI
+		  (match_operand:HI 1 "register_operand" "a,b,?ab"))
+                 (match_operand:HI 2 "scst5_operand" "Is5,Is5,Is5"))_CBRK_)]
+  ""
+  "%|%.\\tmpy\\t%$\\t%2, %1, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y")])
+
+(define_insn "*mulhisi3_insn_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (sign_extend:SI
+		  (match_operand:HI 1 "register_operand" "%a,b,?a,?b"))
+                 (sign_extend:SI
+		  (match_operand:HI 2 "reg_or_scst5_operand" "a,b,b,a")))_CBRK_)]
+  ""
+  "%|%.\\tmpy\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "mulhisi3_lh_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (sign_extend:SI
+		  (match_operand:HI 1 "register_operand" "a,b,?a,?b"))
+                 (ashiftrt:SI
+		  (match_operand:SI 2 "register_operand" "a,b,b,a")
+		  (const_int 16)))_CBRK_)]
+  ""
+  "%|%.\\tmpylh\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "mulhisi3_hl_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (ashiftrt:SI
+		  (match_operand:SI 1 "register_operand" "a,b,?a,?b")
+		  (const_int 16))
+                 (sign_extend:SI
+		  (match_operand:HI 2 "register_operand" "a,b,b,a")))_CBRK_)]
+  ""
+  "%|%.\\tmpyhl\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "mulhisi3_hh_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (ashiftrt:SI
+		  (match_operand:SI 1 "register_operand" "%a,b,?a,?b")
+		  (const_int 16))
+                 (ashiftrt:SI
+		  (match_operand:SI 2 "register_operand" "a,b,b,a")
+		  (const_int 16)))_CBRK_)]
+  ""
+  "%|%.\\tmpyh\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "umulhisi3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (zero_extend:SI
+		  (match_operand:HI 1 "register_operand" "%a,b,?a,?b"))
+                 (zero_extend:SI
+		  (match_operand:HI 2 "register_operand" "a,b,b,a")))_CBRK_)]
+  ""
+  "%|%.\\tmpyu\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "umulhisi3_lh_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (zero_extend:SI
+		  (match_operand:HI 1 "register_operand" "a,b,?a,?b"))
+                 (lshiftrt:SI
+		  (match_operand:SI 2 "register_operand" "a,b,b,a")
+		  (const_int 16)))_CBRK_)]
+  ""
+  "%|%.\\tmpylhu\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "umulhisi3_hl_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (lshiftrt:SI
+		  (match_operand:SI 1 "register_operand" "a,b,?a,?b")
+		  (const_int 16))
+                 (zero_extend:SI
+		  (match_operand:HI 2 "register_operand" "a,b,b,a")))_CBRK_)]
+  ""
+  "%|%.\\tmpyhlu\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "umulhisi3_hh_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (lshiftrt:SI
+		  (match_operand:SI 1 "register_operand" "%a,b,?a,?b")
+		  (const_int 16))
+                 (lshiftrt:SI
+		  (match_operand:SI 2 "register_operand" "a,b,b,a")
+		  (const_int 16)))_CBRK_)]
+  ""
+  "%|%.\\tmpyhu\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "usmulhisi3_const_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A__B_")
+        (mult:SI (zero_extend:SI
+		  (match_operand:HI 1 "register_operand" "a,b,?ab"))
+                 (match_operand:SI 2 "scst5_operand" "Is5,Is5,Is5"))_CBRK_)]
+  ""
+  "%|%.\\tmpysu\\t%$\\t%2, %1, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y")])
+
+(define_insn "*usmulhisi3_insn_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (zero_extend:SI
+		  (match_operand:HI 1 "register_operand" "a,b,?a,?b"))
+                 (sign_extend:SI
+		  (match_operand:HI 2 "reg_or_scst5_operand" "aIs5,bIs5,bIs5,aIs5")))_CBRK_)]
+  ""
+  "%|%.\\tmpyus\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "usmulhisi3_lh_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+	(mult:SI (zero_extend:SI
+		  (match_operand:HI 1 "register_operand" "a,b,?a,?b"))
+                 (ashiftrt:SI
+		  (match_operand:SI 2 "register_operand" "a,b,b,a")
+		  (const_int 16)))_CBRK_)]
+  ""
+  "%|%.\\tmpyluhs\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "usmulhisi3_hl_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (lshiftrt:SI
+		  (match_operand:SI 1 "register_operand" "a,b,?a,?b")
+		  (const_int 16))
+                 (sign_extend:SI
+		  (match_operand:HI 2 "register_operand" "a,b,b,a")))_CBRK_)]
+  ""
+  "%|%.\\tmpyhuls\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "usmulhisi3_hh_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:SI (lshiftrt:SI
+		  (match_operand:SI 1 "register_operand" "a,b,?a,?b")
+		  (const_int 16))
+                 (ashiftrt:SI
+		  (match_operand:SI 2 "register_operand" "a,b,b,a")
+		  (const_int 16)))_CBRK_)]
+  ""
+  "%|%.\\tmpyhus\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "mulsi3_insn_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+	(mult:SI (match_operand:SI 1 "register_operand" "%a,b,?a,?b")
+		 (match_operand:SI 2 "register_operand" "a,b,b,a"))_CBRK_)]
+  "TARGET_MPY32"
+  "%|%.\\tmpy32\\t%$\\t%1, %2, %_MODk_0"
+ [(set_attr "type" "mpy4")
+  (set_attr "units" "m")
+  (set_attr "cross" "n,n,y,y")])
+
+(define_insn "<u>mulsidi3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:DI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:DI (any_ext:DI
+		  (match_operand:SI 1 "register_operand" "%a,b,?a,?b"))
+                 (any_ext:DI
+		  (match_operand:SI 2 "register_operand" "a,b,b,a")))_CBRK_)]
+  "TARGET_MPY32"
+  "%|%.\\tmpy32<u>\\t%$\\t%1, %2, %_MODK_0"
+  [(set_attr "type" "mpy4")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "usmulsidi3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:DI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (mult:DI (zero_extend:DI
+		  (match_operand:SI 1 "register_operand" "a,b,?a,?b"))
+                 (sign_extend:DI
+		  (match_operand:SI 2 "register_operand" "a,b,b,a")))_CBRK_)]
+  "TARGET_MPY32"
+  "%|%.\\tmpy32us\\t%$\\t%1, %2, %_MODK_0"
+  [(set_attr "type" "mpy4")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+;; Widening vector multiply and dot product
+
+(define_insn "mulv2hiv2si3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:V2SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+	(mult:V2SI
+	 (sign_extend:V2SI (match_operand:V2HI 1 "register_operand" "a,b,a,b"))
+	 (sign_extend:V2SI (match_operand:V2HI 2 "register_operand" "a,b,?b,?a")))_CBRK_)]
+  "TARGET_INSNS_64"
+  "%|%.\\tmpy2\\t%$\\t%1, %2, %_MODk_0"
+ [(set_attr "type" "mpy4")
+  (set_attr "units" "m")
+  (set_attr "cross" "n,n,y,y")])
+
+(define_insn "umulv4qiv4hi3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:V4HI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+	(mult:V4HI
+	 (zero_extend:V4HI (match_operand:V4QI 1 "register_operand" "a,b,a,b"))
+	 (zero_extend:V4HI (match_operand:V4QI 2 "register_operand" "a,b,?b,?a")))_CBRK_)]
+  "TARGET_INSNS_64"
+  "%|%.\\tmpyu4\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy4")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "usmulv4qiv4hi3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:V4HI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+	(mult:V4HI
+	 (zero_extend:V4HI (match_operand:V4QI 1 "register_operand" "a,b,?b,?a"))
+	 (sign_extend:V4HI (match_operand:V4QI 2 "register_operand" "a,b,a,b")))_CBRK_)]
+  "TARGET_INSNS_64"
+  "%|%.\\tmpyus4\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy4")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "dotv2hi_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:SI 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+	(plus:SI
+	  (mult:SI
+	    (sign_extend:SI
+	      (vec_select:HI
+		(match_operand:V2HI 1 "register_operand" "a,b,a,b")
+		(parallel [(const_int 0)])))
+	    (sign_extend:SI
+	      (vec_select:HI
+		(match_operand:V2HI 2 "register_operand" "a,b,?b,?a")
+		(parallel [(const_int 0)]))))
+	  (mult:SI
+	    (sign_extend:SI
+	      (vec_select:HI (match_dup 1) (parallel [(const_int 1)])))
+	    (sign_extend:SI
+	      (vec_select:HI (match_dup 2) (parallel [(const_int 1)])))))_CBRK_)]
+  "TARGET_INSNS_64"
+  "%|%.\\tdotp2\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy4")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+;; Fractional multiply
+
+(define_insn "mulv2hqv2sq3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:_MV2SQ 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (ss_mult:V2SQ
+	 (fract_convert:V2SQ
+	  (match_operand:V2HQ 1 "register_operand" "%a,b,?a,?b"))
+	 (fract_convert:V2SQ
+	  (match_operand:V2HQ 2 "register_operand" "a,b,b,a")))_CBRK_)]
+  ""
+  "%|%.\\tsmpy2\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy4")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "mulhqsq3_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:_MSQ 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (ss_mult:SQ
+	 (fract_convert:SQ
+	  (match_operand:HQ 1 "register_operand" "%a,b,?a,?b"))
+	 (fract_convert:SQ
+	  (match_operand:HQ 2 "register_operand" "a,b,b,a")))_CBRK_)]
+  ""
+  "%|%.\\tsmpy\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "mulhqsq3_lh_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:_MSQ 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (ss_mult:SQ
+	 (fract_convert:SQ
+	  (match_operand:HQ 1 "register_operand" "a,b,?a,?b"))
+	 (fract_convert:SQ
+	  (truncate:HQ (match_operand:SQ 2 "register_operand" "a,b,b,a"))))_CBRK_)]
+  ""
+  "%|%.\\tsmpylh\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "mulhqsq3_hl_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:_MSQ 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (ss_mult:SQ
+	 (fract_convert:SQ
+	  (truncate:HQ (match_operand:SQ 1 "register_operand" "a,b,b,a")))
+	 (fract_convert:SQ
+	  (match_operand:HQ 2 "register_operand" "a,b,b,a")))_CBRK_)]
+  ""
+  "%|%.\\tsmpyhl\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])
+
+(define_insn "mulhqsq3_hh_VARIANT_"
+  [(_SET_ _OBRK_(match_operand:_MSQ 0 "_DESTOPERAND_" "=_A_,_B_,_A_,_B_")
+        (ss_mult:SQ
+	 (fract_convert:SQ
+	  (truncate:HQ (match_operand:SQ 1 "register_operand" "a,b,b,a")))
+	 (fract_convert:SQ
+	  (truncate:HQ (match_operand:SQ 2 "register_operand" "a,b,b,a"))))_CBRK_)]
+  ""
+  "%|%.\\tsmpyh\\t%$\\t%1, %2, %_MODk_0"
+  [(set_attr "type" "mpy2")
+   (set_attr "units" "m")
+   (set_attr "cross" "n,n,y,y")])

@@ -806,8 +806,8 @@ Tobias Schl@"uter for work on GNU Fortran.
 
 @item
 Bernd Schmidt for various code generation improvements and major
-work in the reload pass as well a serving as release manager for
-GCC 2.95.3.
+work in the reload pass, serving as release manager for
+GCC 2.95.3, and work on the Blackfin and C6X ports.
 
 @item
 Peter Schmid for constant testing of libstdc++---especially application

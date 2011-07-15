@@ -1,0 +1,43 @@
+# Target Makefile Fragment for TI C6X.
+# Copyright (C) 2010, 2011
+# Free Software Foundation, Inc.
+# Contributed by CodeSourcery.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your
+# option) any later version.
+#
+# GCC is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+MD_INCLUDES= 	$(srcdir)/config/c6x/constraints.md \
+		$(srcdir)/config/c6x/predicates.md \
+		$(srcdir)/config/c6x/c6x-mult.md \
+		$(srcdir)/config/c6x/c6x-sched.md
+
+s-config s-conditions s-flags s-codes s-constants s-emit s-recog s-preds \
+	s-opinit s-extract s-peep s-attr s-attrtab s-output: $(MD_INCLUDES)
+
+$(srcdir)/config/c6x/c6x-sched.md: $(srcdir)/config/c6x/gensched.sh \
+  $(srcdir)/config/c6x/c6x-sched.md.in
+	$(SHELL) $(srcdir)/config/c6x/gensched.sh \
+	$(srcdir)/config/c6x/c6x-sched.md.in > $@
+
+$(srcdir)/config/c6x/c6x-mult.md: $(srcdir)/config/c6x/genmult.sh \
+  $(srcdir)/config/c6x/c6x-mult.md.in
+	$(SHELL) $(srcdir)/config/c6x/genmult.sh \
+	$(srcdir)/config/c6x/c6x-mult.md.in > $@
+
+$(srcdir)/config/c6x/c6x-tables.opt: $(srcdir)/config/c6x/genopt.sh \
+  $(srcdir)/config/c6x/c6x-isas.def
+	$(SHELL) $(srcdir)/config/c6x/genopt.sh $(srcdir)/config/c6x > \
+		$(srcdir)/config/c6x/c6x-tables.opt

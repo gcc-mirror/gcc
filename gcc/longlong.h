@@ -1389,6 +1389,36 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #endif /* __vax__ */
 
+#ifdef _TMS320C6X
+#define add_ssaaaa(sh, sl, ah, al, bh, bl) \
+  do									\
+    {									\
+      UDItype __ll;							\
+      __asm__ ("addu .l1 %1, %2, %0"					\
+	       : "=a" (__ll) : "a" (al), "a" (bl));			\
+      (sl) = (USItype)__ll;						\
+      (sh) = ((USItype)(__ll >> 32)) + (ah) + (bh);			\
+    }									\
+  while (0)
+
+#ifdef _TMS320C6400_PLUS
+#define __umulsidi3(u,v) ((UDItype)(USItype)u*(USItype)v)
+#define umul_ppmm(w1, w0, u, v)						\
+  do {									\
+    UDItype __x = (UDItype) (USItype) (u) * (USItype) (v);		\
+    (w1) = (USItype) (__x >> 32);					\
+    (w0) = (USItype) (__x);						\
+  } while (0)
+#endif  /* _TMS320C6400_PLUS */
+
+#define count_leading_zeros(count, x)	((count) = __builtin_clz (x))
+#ifdef _TMS320C6400
+#define count_trailing_zeros(count, x)	((count) = __builtin_ctz (x))
+#endif
+#define UMUL_TIME 4
+#define UDIV_TIME 40
+#endif /* _TMS320C6X */
+
 #if defined (__xtensa__) && W_TYPE_SIZE == 32
 /* This code is not Xtensa-configuration-specific, so rely on the compiler
    to expand builtin functions depending on what configuration features
