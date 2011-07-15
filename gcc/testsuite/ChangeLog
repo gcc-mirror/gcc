@@ -14,13 +14,13 @@
 	* gcc.target/tic6x/bswapl.c: New test.
 	* gcc.target/tic6x/ffsdi.c: New test.
 	* gcc.target/tic6x/tic6x.exp: New file.
-	* gcc/testsuite/gcc.target/tic6x/builtins/arith24.c: New test.
-	* gcc/testsuite/gcc.target/tic6x/builtins/smpy.c: New test.
-	* gcc/testsuite/gcc.target/tic6x/builtins/smpylh.c: New test.
-	* gcc/testsuite/gcc.target/tic6x/builtins/smpyh.c: New test.
-	* gcc/testsuite/gcc.target/tic6x/builtins/sarith1.c: New test.
-	* gcc/testsuite/gcc.target/tic6x/builtins/extclr.c: New test
-	* gcc/testsuite/gcc.target/tic6x/builtins/c6x-builtins.exp: New file.
+	* gcc.target/tic6x/builtins/arith24.c: New test.
+	* gcc.target/tic6x/builtins/smpy.c: New test.
+	* gcc.target/tic6x/builtins/smpylh.c: New test.
+	* gcc.target/tic6x/builtins/smpyh.c: New test.
+	* gcc.target/tic6x/builtins/sarith1.c: New test.
+	* gcc.target/tic6x/builtins/extclr.c: New test
+	* gcc.target/tic6x/builtins/c6x-builtins.exp: New file.
 	* gcc.target/tic6x/builtin-math-7.c: New test, adapted from gcc.dg.
 	* lib/target-supports.exp (chck_profiling_available): Not on tic6x.
 	(check_effective_target_ti_c67x, check_effective_target_ti_c64xp):
@@ -33,7 +33,7 @@
 	* gcc.dg/torture/builtin-math-7.c: Likewise.
 
 	PR testsuite/49757
-	* gcc/testsuite/gcc.target/tic6x/builtins/c6x-builtins.exp: Return if
+	* gcc.target/tic6x/builtins/c6x-builtins.exp: Return if
 	not testing tic6x-*-*.
 
 2011-07-14  Andrew Pinski  <pinskia@gmail.com>
