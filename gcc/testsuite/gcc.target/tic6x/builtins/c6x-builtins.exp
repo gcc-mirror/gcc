@@ -19,6 +19,10 @@
 
 load_lib gcc-dg.exp
 
+if { ![istarget tic6x-*-*] } then {
+  return
+}
+
 dg-init
 gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] ""
 dg-finish
