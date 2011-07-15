@@ -34,7 +34,7 @@
    operations.
    The micro operations of one instruction are ordered so that
    pre-modifying stack adjustment < use < use with no var < call insn <
-     < set < clobber < post-modifying stack adjustment
+     < clobber < set < post-modifying stack adjustment
 
    Then, a forward dataflow analysis is performed to find out how locations
    of variables change through code and to propagate the variable locations
@@ -399,6 +399,17 @@ static shared_hash empty_shared_hash;
 
 /* Scratch register bitmap used by cselib_expand_value_rtx.  */
 static bitmap scratch_regs = NULL;
+
+typedef struct GTY(()) parm_reg {
+  rtx outgoing;
+  rtx incoming;
+} parm_reg_t;
+
+DEF_VEC_O(parm_reg_t);
+DEF_VEC_ALLOC_O(parm_reg_t, gc);
+
+/* Vector of windowed parameter registers, if any.  */
+static VEC(parm_reg_t, gc) *windowed_parm_regs = NULL;
 
 /* Variable used to tell whether cselib_process_insn called our hook.  */
 static bool cselib_hook_called;
@@ -970,6 +981,33 @@ adjust_insn (basic_block bb, rtx insn)
 {
   struct adjust_mem_data amd;
   rtx set;
+
+#ifdef HAVE_window_save
+  /* If the target machine has an explicit window save instruction, the
+     transformation OUTGOING_REGNO -> INCOMING_REGNO is done there.  */
+  if (RTX_FRAME_RELATED_P (insn)
+      && find_reg_note (insn, REG_CFA_WINDOW_SAVE, NULL_RTX))
+    {
+      unsigned int i, nregs = VEC_length(parm_reg_t, windowed_parm_regs);
+      rtx rtl = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs * 2));
+      parm_reg_t *p;
+
+      FOR_EACH_VEC_ELT (parm_reg_t, windowed_parm_regs, i, p)
+	{
+	  XVECEXP (rtl, 0, i * 2)
+	    = gen_rtx_SET (VOIDmode, p->incoming, p->outgoing);
+	  /* Do not clobber the attached DECL, but only the REG.  */
+	  XVECEXP (rtl, 0, i * 2 + 1)
+	    = gen_rtx_CLOBBER (GET_MODE (p->outgoing),
+			       gen_raw_REG (GET_MODE (p->outgoing),
+					    REGNO (p->outgoing)));
+	}
+
+      validate_change (NULL_RTX, &PATTERN (insn), rtl, true);
+      return;
+    }
+#endif
+
   amd.mem_mode = VOIDmode;
   amd.stack_adjust = -VTI (bb)->out.stack_adjust;
   amd.side_effects = NULL_RTX;
@@ -8002,6 +8040,23 @@ emit_notes_for_differences (rtx insn, dataflow_set *old_set,
   emit_notes_for_changes (insn, EMIT_NOTE_BEFORE_INSN, new_set->vars);
 }
 
+/* Return the next insn after INSN that is not a NOTE_INSN_VAR_LOCATION.  */
+
+static rtx
+next_non_note_insn_var_location (rtx insn)
+{
+  while (insn)
+    {
+      insn = NEXT_INSN (insn);
+      if (insn == 0
+	  || !NOTE_P (insn)
+	  || NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION)
+	break;
+    }
+
+  return insn;
+}
+
 /* Emit the notes for changes of location parts in the basic block BB.  */
 
 static void
@@ -8016,6 +8071,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
   FOR_EACH_VEC_ELT (micro_operation, VTI (bb)->mos, i, mo)
     {
       rtx insn = mo->insn;
+      rtx next_insn = next_non_note_insn_var_location (insn);
 
       switch (mo->type)
 	{
@@ -8222,7 +8278,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 		val_store (set, XEXP (reverse, 0), XEXP (reverse, 1),
 			   insn, false);
 
-	      emit_notes_for_changes (NEXT_INSN (insn), EMIT_NOTE_BEFORE_INSN,
+	      emit_notes_for_changes (next_insn, EMIT_NOTE_BEFORE_INSN,
 				      set->vars);
 	    }
 	    break;
@@ -8245,7 +8301,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 		var_mem_delete_and_set (set, loc, true, VAR_INIT_STATUS_INITIALIZED,
 					set_src);
 
-	      emit_notes_for_changes (NEXT_INSN (insn), EMIT_NOTE_BEFORE_INSN,
+	      emit_notes_for_changes (next_insn, EMIT_NOTE_BEFORE_INSN,
 				      set->vars);
 	    }
 	    break;
@@ -8270,7 +8326,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	      else
 		var_mem_delete_and_set (set, loc, false, src_status, set_src);
 
-	      emit_notes_for_changes (NEXT_INSN (insn), EMIT_NOTE_BEFORE_INSN,
+	      emit_notes_for_changes (next_insn, EMIT_NOTE_BEFORE_INSN,
 				      set->vars);
 	    }
 	    break;
@@ -8297,7 +8353,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	      else
 		var_mem_delete (set, loc, true);
 
-	      emit_notes_for_changes (NEXT_INSN (insn), EMIT_NOTE_BEFORE_INSN,
+	      emit_notes_for_changes (next_insn, EMIT_NOTE_BEFORE_INSN,
 				      set->vars);
 	    }
 	    break;
@@ -8482,6 +8538,39 @@ vt_add_function_parameter (tree parm)
 	= replace_equiv_address_nv (incoming,
 				    plus_constant (arg_pointer_rtx, off));
     }
+
+#ifdef HAVE_window_save
+  /* DECL_INCOMING_RTL uses the INCOMING_REGNO of parameter registers.
+     If the target machine has an explicit window save instruction, the
+     actual entry value is the corresponding OUTGOING_REGNO instead.  */
+  if (REG_P (incoming)
+      && HARD_REGISTER_P (incoming)
+      && OUTGOING_REGNO (REGNO (incoming)) != REGNO (incoming))
+    {
+      parm_reg_t *p
+	= VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, NULL);
+      p->incoming = incoming;
+      incoming
+	= gen_rtx_REG_offset (incoming, GET_MODE (incoming),
+			      OUTGOING_REGNO (REGNO (incoming)), 0);
+      p->outgoing = incoming;
+    }
+  else if (MEM_P (incoming)
+	   && REG_P (XEXP (incoming, 0))
+	   && HARD_REGISTER_P (XEXP (incoming, 0)))
+    {
+      rtx reg = XEXP (incoming, 0);
+      if (OUTGOING_REGNO (REGNO (reg)) != REGNO (reg))
+	{
+	  parm_reg_t *p
+	    = VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, NULL);
+	  p->incoming = reg;
+	  reg = gen_raw_REG (GET_MODE (reg), OUTGOING_REGNO (REGNO (reg)));
+	  p->outgoing = reg;
+	  incoming = replace_equiv_address_nv (incoming, reg);
+	}
+    }
+#endif
 
   if (!vt_get_decl_and_offset (incoming, &decl, &offset))
     {
@@ -9046,6 +9135,7 @@ vt_finalize (void)
       cselib_finish ();
       BITMAP_FREE (scratch_regs);
       scratch_regs = NULL;
+      VEC_free (parm_reg_t, gc, windowed_parm_regs);
     }
 
   if (vui_vec)
