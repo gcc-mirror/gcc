@@ -173,7 +173,7 @@ extern struct ready_list ready;
 
 extern int max_issue (struct ready_list *, int, state_t, bool, int *);
 
-extern void ebb_compute_jump_reg_dependencies (rtx, regset, regset, regset);
+extern void ebb_compute_jump_reg_dependencies (rtx, regset);
 
 extern edge find_fallthru_edge_from (basic_block);
 
@@ -516,9 +516,6 @@ struct deps_desc
   /* Element N is set for each register that has any nonzero element
      in reg_last[N].{uses,sets,clobbers}.  */
   regset_head reg_last_in_use;
-
-  /* Element N is set for each register that is conditionally set.  */
-  regset_head reg_conditional_sets;
 
   /* Shows the last value of reg_pending_barrier associated with the insn.  */
   enum reg_pending_barrier_mode last_reg_pending_barrier;
@@ -1147,7 +1144,7 @@ struct sched_deps_info_def
   /* Called when computing dependencies for a JUMP_INSN.  This function
      should store the set of registers that must be considered as set by
      the jump in the regset.  */
-  void (*compute_jump_reg_dependencies) (rtx, regset, regset, regset);
+  void (*compute_jump_reg_dependencies) (rtx, regset);
 
   /* Start analyzing insn.  */
   void (*start_insn) (rtx);

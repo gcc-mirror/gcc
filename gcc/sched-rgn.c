@@ -2062,7 +2062,7 @@ static ds_t new_ready (rtx, ds_t);
 static int schedule_more_p (void);
 static const char *rgn_print_insn (const_rtx, int);
 static int rgn_rank (rtx, rtx);
-static void compute_jump_reg_dependencies (rtx, regset, regset, regset);
+static void compute_jump_reg_dependencies (rtx, regset);
 
 /* Functions for speculative scheduling.  */
 static void rgn_add_remove_insn (rtx, int);
@@ -2295,16 +2295,12 @@ contributes_to_priority (rtx next, rtx insn)
   return BLOCK_TO_BB (BLOCK_NUM (next)) == BLOCK_TO_BB (BLOCK_NUM (insn));
 }
 
-/* INSN is a JUMP_INSN, COND_SET is the set of registers that are
-   conditionally set before INSN.  Store the set of registers that
-   must be considered as used by this jump in USED and that of
-   registers that must be considered as set in SET.  */
+/* INSN is a JUMP_INSN.  Store the set of registers that must be
+   considered as used by this jump in USED.  */
 
 static void
 compute_jump_reg_dependencies (rtx insn ATTRIBUTE_UNUSED,
-			       regset cond_exec ATTRIBUTE_UNUSED,
-			       regset used ATTRIBUTE_UNUSED,
-			       regset set ATTRIBUTE_UNUSED)
+			       regset used ATTRIBUTE_UNUSED)
 {
   /* Nothing to do here, since we postprocess jumps in
      add_branch_dependences.  */
