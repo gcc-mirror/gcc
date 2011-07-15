@@ -5333,6 +5333,14 @@ Using a prologue pattern is generally preferred over defining
 The @code{prologue} pattern is particularly useful for targets which perform
 instruction scheduling.
 
+@cindex @code{window_save} instruction pattern
+@anchor{window_save instruction pattern}
+@item @samp{window_save}
+This pattern, if defined, emits RTL for a register window save.  It should
+be defined if the target machine has register windows but the window events
+are decoupled from calls to subroutines.  The canonical example is the SPARC
+architecture.
+
 @cindex @code{epilogue} instruction pattern
 @anchor{epilogue instruction pattern}
 @item @samp{epilogue}
