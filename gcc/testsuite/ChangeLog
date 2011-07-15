@@ -1,3 +1,8 @@
+2011-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/49753
+	* g++.dg/torture/pr49309.C: Remove.
+
 2011-07-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr40657-2.c: Remove -march.
