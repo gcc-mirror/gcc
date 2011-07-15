@@ -6913,7 +6913,7 @@
     {
       rtx index = gen_reg_rtx (SImode);
 
-      operands[1] = GEN_INT (-INTVAL (operands[1]));
+      operands[1] = gen_int_mode (-INTVAL (operands[1]), SImode);
       if (!INT_14_BITS (operands[1]))
 	operands[1] = force_reg (SImode, operands[1]);
       emit_insn (gen_addsi3 (index, operands[0], operands[1]));
