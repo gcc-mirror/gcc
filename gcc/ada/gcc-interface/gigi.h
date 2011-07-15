@@ -934,14 +934,12 @@ extern int fp_prec_to_size (int prec);
 /* Return the precision of the FP mode with size SIZE.  */
 extern int fp_size_to_prec (int size);
 
-/* These functions return the basic data type sizes and related parameters
-   about the target machine.  */
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* These functions return the basic data type sizes and related parameters
+   about the target machine.  */
 extern Pos get_target_bits_per_unit (void);
 extern Pos get_target_bits_per_word (void);
 extern Pos get_target_char_size (void);
