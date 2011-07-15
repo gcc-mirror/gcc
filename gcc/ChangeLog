@@ -1,3 +1,11 @@
+2011-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/49745
+	* gthr-posix.h: Do not include <unistd.h> unconditionally; use
+	_GTHREADS_USE_MUTEX_TIMEDLOCK instead of _POSIX_TIMEOUTS.
+
 2011-07-15  Jason Merrill  <jason@redhat.com>
 
 	PR testsuite/49741

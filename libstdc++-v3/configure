@@ -19427,6 +19427,42 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions -I${toplevel_srcdir}/gcc"
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking check whether it can be safely assumed that mutex_timedlock is available" >&5
+$as_echo_n "checking check whether it can be safely assumed that mutex_timedlock is available... " >&6; }
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+
+      #if !defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS < 0
+      #error
+      #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_gthread_use_mutex_timedlock=1
+else
+  ac_gthread_use_mutex_timedlock=0
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+
+cat >>confdefs.h <<_ACEOF
+#define _GTHREAD_USE_MUTEX_TIMEDLOCK $ac_gthread_use_mutex_timedlock
+_ACEOF
+
+
+  if test $ac_gthread_use_mutex_timedlock = 1 ; then res_mutex_timedlock=yes ;
+  else res_mutex_timedlock=no ; fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $res_mutex_timedlock" >&5
+$as_echo "$res_mutex_timedlock" >&6; }
+
   target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   case $target_thread_file in
     posix)
@@ -19438,7 +19474,10 @@ $as_echo_n "checking for gthreads library... " >&6; }
 
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include "gthr.h"
+
+                  #include "gthr.h"
+		  #include <unistd.h>
+
 int
 main ()
 {

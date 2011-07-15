@@ -1,3 +1,14 @@
+2011-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/49745
+	* acinclude.m4 ([GLIBCXX_CHECK_GTHREADS]): Check separately for
+	_POSIX_TIMEOUTS and define _GTHREADS_USE_MUTEX_TIMEDLOCK.
+	* libstdc++-v3/libsupc++/guard.cc: Include <unistd.h>.
+	* testsuite/17_intro/headers/c++1998/49745.cc: New.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+
 2011-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/49559
