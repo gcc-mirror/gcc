@@ -1,13 +1,14 @@
 /* Copyright (C) 2009  Free Software Foundation.
 
    Verify that folding of complex mul and div work correctly.
+   TI C6X specific version, reduced by two tests that fails due to the
+   use of implicit -freciprocal-math.
 
    Origin: Kaveh R. Ghazi,  August 13, 2009.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "" { tic6x-*-* } "*" "" } */
+/* { dg-options "-O2" } */
 /* { dg-add-options ieee } */
-/* { dg-require-effective-target large_double } */
 
 extern void link_error(int);
 
@@ -66,18 +67,10 @@ int main()
   TESTIT (int, 3+4i, /, 2, 1+2i);
 
   TESTIT (double, 3.+4.i, *, 2+5i, -14+23i);
-  TESTIT (double, 3.+4.i, /, 5i, .8-.6i);
   TESTIT (int, 3+4i, *, 2+5i, -14+23i);
   TESTIT (int, 30+40i, /, 5i, 8-6i);
   TESTIT (int, 14+6i, /, 7+3i, 2);
   TESTIT (int, 8+24i, /, 4+12i, 2);
-
-  /* Test that we don't overflow.  */
-  TESTIT (double,
-	  (__DBL_MAX__ * 0.5 + __DBL_MAX__ * 0.5i),
-	  /,
-	  (__DBL_MAX__ * 0.25 + __DBL_MAX__ * 0.25i),
-	  2);
 
   /* Test for accuracy.  */
   COMPILETIME_TESTIT (double,
