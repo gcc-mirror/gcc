@@ -44,6 +44,8 @@ main ()
   expect (+1.00 * nzero, nzero);
   expect (-1.00 * nzero, pzero);
 
+#ifndef _TMS320C6700
+  /* C6X floating point division is implemented using reciprocals.  */
   expect (pzero / pzero, nan);
   expect (pzero / nzero, nan);
   expect (nzero / pzero, nan);
@@ -53,6 +55,7 @@ main ()
   expect (-1.00 / pzero, ninf);
   expect (+1.00 / nzero, ninf);
   expect (-1.00 / nzero, pinf);
+#endif
 
   exit (0);
 }
