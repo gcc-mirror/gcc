@@ -8875,6 +8875,10 @@ maybe_add_lambda_conv_op (tree type)
 
   if (nested)
     push_function_context ();
+  else
+    /* Still increment function_depth so that we don't GC in the
+       middle of an expression.  */
+    ++function_depth;
 
   /* Generate the body of the thunk.  */
 
@@ -8927,6 +8931,8 @@ maybe_add_lambda_conv_op (tree type)
 
   if (nested)
     pop_function_context ();
+  else
+    --function_depth;
 }
 
 /* Returns true iff VAL is a lambda-related declaration which should

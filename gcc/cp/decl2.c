@@ -4231,9 +4231,9 @@ mark_used (tree decl)
   if ((decl_maybe_constant_var_p (decl)
        || (TREE_CODE (decl) == FUNCTION_DECL
 	   && DECL_DECLARED_CONSTEXPR_P (decl)))
-      && !DECL_INITIAL (decl)
       && DECL_LANG_SPECIFIC (decl)
-      && DECL_TEMPLATE_INSTANTIATION (decl))
+      && DECL_TEMPLATE_INFO (decl)
+      && !uses_template_parms (DECL_TI_ARGS (decl)))
     {
       /* Instantiating a function will result in garbage collection.  We
 	 must treat this situation as if we were within the body of a
@@ -4327,8 +4327,12 @@ mark_used (tree decl)
        times.  Maintaining a stack of active functions is expensive,
        and the inliner knows to instantiate any functions it might
        need.  Therefore, we always try to defer instantiation.  */
-    instantiate_decl (decl, /*defer_ok=*/true,
-		      /*expl_inst_class_mem_p=*/false);
+    {
+      ++function_depth;
+      instantiate_decl (decl, /*defer_ok=*/true,
+			/*expl_inst_class_mem_p=*/false);
+      --function_depth;
+    }
 }
 
 #include "gt-cp-decl2.h"

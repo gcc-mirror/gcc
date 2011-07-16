@@ -1227,3 +1227,5 @@ build_noexcept_spec (tree expr, int complain)
       return build_tree_list (expr, NULL_TREE);
     }
 }
+
+#include "gt-cp-except.h"
