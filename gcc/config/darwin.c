@@ -2927,6 +2927,7 @@ darwin_override_options (void)
     }
 
   if (flag_var_tracking
+      && optimize >= 1
       && generating_for_darwin_version >= 9
       && (flag_gtoggle ? (debug_info_level == DINFO_LEVEL_NONE)
       : (debug_info_level >= DINFO_LEVEL_NORMAL))
