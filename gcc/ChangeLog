@@ -1,3 +1,7 @@
+2011-07-16  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Document --enable-static-libjava.
+
 2011-07-15  Richard Henderson  <rth@redhat.com>
 
 	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):

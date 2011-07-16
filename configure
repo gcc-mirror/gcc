@@ -667,6 +667,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+EXTRA_CONFIGARGS_LIBJAVA
 target_subdir
 host_subdir
 build_subdir
@@ -746,6 +747,7 @@ enable_libquadmath
 enable_libquadmath_support
 enable_libada
 enable_libssp
+enable_static_libjava
 enable_build_with_cxx
 with_mpc
 with_mpc_include
@@ -1460,6 +1462,8 @@ Optional Features:
                           disable libquadmath support for Fortran
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
+  --enable-static-libjava[=ARG]
+                          build static libjava [default=no]
   --enable-build-with-cxx build with C++ compiler instead of C compiler
   --disable-ppl-version-check
                           disable check for PPL version
@@ -2996,6 +3000,22 @@ no)
   libgcj_saved=
   ;;
 esac
+
+# Check whether --enable-static-libjava was given.
+if test "${enable_static_libjava+set}" = set; then :
+  enableval=$enable_static_libjava; ENABLE_STATIC_LIBJAVA=$enableval
+else
+  ENABLE_STATIC_LIBJAVA=no
+fi
+
+enable_static_libjava=
+if test "${ENABLE_STATIC_LIBJAVA}" = "yes" ; then
+  enable_static_libjava=yes
+fi
+
+if test x$enable_static_libjava != xyes ; then
+  EXTRA_CONFIGARGS_LIBJAVA=--disable-static
+fi
 
 
 # Disable libmudflap on some systems.
