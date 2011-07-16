@@ -90,7 +90,7 @@ type(t), allocatable :: b(:)[:], C[:]
 
 allocate(b(1)) ! { dg-error "Coarray specification" }
 allocate(a[3]%a(5)) ! { dg-error "Coindexed allocatable" }
-allocate(c[*]) ! { dg-error "Sorry" }
+allocate(c[*]) ! OK
 allocate(a%a(5)) ! OK
 end subroutine alloc
 
@@ -151,9 +151,9 @@ subroutine allocateTest()
   integer :: n, q
   n = 1
   q = 1
-  allocate(a[q,*]) ! { dg-error "Sorry" }
-  allocate(b[q,*]) ! { dg-error "Sorry" }
-  allocate(c[q,*]) ! { dg-error "Sorry" }
+  allocate(a[q,*]) ! OK
+  allocate(b[q,*]) ! OK
+  allocate(c[q,*]) ! OK
 end subroutine allocateTest
 
 

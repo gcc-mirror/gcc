@@ -1425,7 +1425,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && (sym->attr.save || sym->ns->proc_name->attr.is_main_program
 	  || gfc_option.flag_max_stack_var_size == 0
 	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE)
-      && (gfc_option.coarray != GFC_FCOARRAY_LIB || !sym->attr.codimension))
+      && (gfc_option.coarray != GFC_FCOARRAY_LIB
+	  || !sym->attr.codimension || sym->attr.allocatable))
     {
       /* Add static initializer. For procedures, it is only needed if
 	 SAVE is specified otherwise they need to be reinitialized
@@ -1433,7 +1434,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	 in this case due to -fmax-stack-var-size=.  */
       DECL_INITIAL (decl) = gfc_conv_initializer (sym->value, &sym->ts,
 						  TREE_TYPE (decl),
-						  sym->attr.dimension,
+						  sym->attr.dimension
+						  || (sym->attr.codimension
+						      && sym->attr.allocatable),
 						  sym->attr.pointer
 						  || sym->attr.allocatable,
 						  sym->attr.proc_pointer);
