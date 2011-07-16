@@ -182,15 +182,6 @@ static void connect_traces (int, struct trace *);
 static bool copy_bb_p (const_basic_block, int);
 static int get_uncond_jump_length (void);
 static bool push_to_next_round_p (const_basic_block, int, int, int, gcov_type);
-static void find_rarely_executed_basic_blocks_and_crossing_edges (edge **,
-								  int *,
-								  int *);
-static void add_labels_and_missing_jumps (edge *, int);
-static void add_reg_crossing_jump_notes (void);
-static void fix_up_fall_thru_edges (void);
-static void fix_edges_for_rarely_executed_code (edge *, int);
-static void fix_crossing_conditional_branches (void);
-static void fix_crossing_unconditional_branches (void);
 
 /* Check to see if bb should be pushed into the next round of trace
    collections or not.  Reasons for pushing the block forward are 1).
@@ -1219,16 +1210,14 @@ get_uncond_jump_length (void)
 
 /* Find the basic blocks that are rarely executed and need to be moved to
    a separate section of the .o file (to cut down on paging and improve
-   cache locality).  */
+   cache locality).  Return a vector of all edges that cross.  */
 
-static void
-find_rarely_executed_basic_blocks_and_crossing_edges (edge **crossing_edges,
-						      int *n_crossing_edges,
-						      int *max_idx)
+static VEC(edge, heap) *
+find_rarely_executed_basic_blocks_and_crossing_edges (void)
 {
+  VEC(edge, heap) *crossing_edges = NULL;
   basic_block bb;
   edge e;
-  int i;
   edge_iterator ei;
 
   /* Mark which partition (hot/cold) each basic block belongs in.  */
@@ -1243,7 +1232,6 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge **crossing_edges,
 
   /* Mark every edge that crosses between sections.  */
 
-  i = 0;
   FOR_EACH_BB (bb)
     FOR_EACH_EDGE (e, ei, bb->succs)
     {
@@ -1252,77 +1240,62 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge **crossing_edges,
 	  && BB_PARTITION (e->src) != BB_PARTITION (e->dest))
 	{
 	  e->flags |= EDGE_CROSSING;
-	  if (i == *max_idx)
-	    {
-	      *max_idx *= 2;
-	      *crossing_edges = XRESIZEVEC (edge, *crossing_edges, *max_idx);
-	    }
-	  (*crossing_edges)[i++] = e;
+	  VEC_safe_push (edge, heap, crossing_edges, e);
 	}
       else
 	e->flags &= ~EDGE_CROSSING;
     }
-  *n_crossing_edges = i;
+
+  return crossing_edges;
 }
 
 /* If any destination of a crossing edge does not have a label, add label;
-   Convert any fall-through crossing edges (for blocks that do not contain
-   a jump) to unconditional jumps.  */
+   Convert any easy fall-through crossing edges to unconditional jumps.  */
 
 static void
-add_labels_and_missing_jumps (edge *crossing_edges, int n_crossing_edges)
+add_labels_and_missing_jumps (VEC(edge, heap) *crossing_edges)
 {
-  int i;
-  basic_block src;
-  basic_block dest;
-  rtx label;
-  rtx barrier;
-  rtx new_jump;
+  size_t i;
+  edge e;
 
-  for (i=0; i < n_crossing_edges; i++)
+  FOR_EACH_VEC_ELT (edge, crossing_edges, i, e)
     {
-      if (crossing_edges[i])
-	{
-	  src = crossing_edges[i]->src;
-	  dest = crossing_edges[i]->dest;
+      basic_block src = e->src;
+      basic_block dest = e->dest;
+      rtx label, barrier, new_jump;
 
-	  /* Make sure dest has a label.  */
+      if (dest == EXIT_BLOCK_PTR)
+	continue;
 
-	  if (dest && (dest != EXIT_BLOCK_PTR))
-	    {
-	      label = block_label (dest);
+      /* Make sure dest has a label.  */
+      label = block_label (dest);
 
-	      /* Make sure source block ends with a jump.  If the
-	         source block does not end with a jump it might end
-	         with a call_insn;  this case will be handled in
-	         fix_up_fall_thru_edges function.  */
+      /* Nothing to do for non-fallthru edges.  */
+      if (src == ENTRY_BLOCK_PTR)
+	continue;
+      if ((e->flags & EDGE_FALLTHRU) == 0)
+	continue;
 
-	      if (src && (src != ENTRY_BLOCK_PTR))
-		{
-		  if (!JUMP_P (BB_END (src))
-		      && !block_ends_with_call_p (src)
-		      && !can_throw_internal (BB_END (src)))
-		    /* bb just falls through.  */
-		    {
-		      /* make sure there's only one successor */
-		      gcc_assert (single_succ_p (src));
+      /* If the block does not end with a control flow insn, then we
+	 can trivially add a jump to the end to fixup the crossing.
+	 Otherwise the jump will have to go in a new bb, which will
+	 be handled by fix_up_fall_thru_edges function.  */
+      if (control_flow_insn_p (BB_END (src)))
+	continue;
 
-		      /* Find label in dest block.  */
-		      label = block_label (dest);
+      /* Make sure there's only one successor.  */
+      gcc_assert (single_succ_p (src));
 
-		      new_jump = emit_jump_insn_after (gen_jump (label),
-						       BB_END (src));
-		      barrier = emit_barrier_after (new_jump);
-		      JUMP_LABEL (new_jump) = label;
-		      LABEL_NUSES (label) += 1;
-		      src->il.rtl->footer = unlink_insn_chain (barrier, barrier);
-		      /* Mark edge as non-fallthru.  */
-		      crossing_edges[i]->flags &= ~EDGE_FALLTHRU;
-		    } /* end: 'if (!JUMP_P ... '  */
-		} /* end: 'if (src && src !=...'  */
-	    } /* end: 'if (dest && dest !=...'  */
-	} /* end: 'if (crossing_edges[i]...'  */
-    } /* end for loop  */
+      new_jump = emit_jump_insn_after (gen_jump (label), BB_END (src));
+      BB_END (src) = new_jump;
+      barrier = emit_barrier_after (new_jump);
+      JUMP_LABEL (new_jump) = label;
+      LABEL_NUSES (label) += 1;
+      src->il.rtl->footer = unlink_insn_chain (barrier, barrier);
+
+      /* Mark edge as non-fallthru.  */
+      e->flags &= ~EDGE_FALLTHRU;
+    }
 }
 
 /* Find any bb's where the fall-through edge is a crossing edge (note that
@@ -1796,71 +1769,6 @@ add_reg_crossing_jump_notes (void)
 	add_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
 }
 
-/* Hot and cold basic blocks are partitioned and put in separate
-   sections of the .o file, to reduce paging and improve cache
-   performance (hopefully).  This can result in bits of code from the
-   same function being widely separated in the .o file.  However this
-   is not obvious to the current bb structure.  Therefore we must take
-   care to ensure that: 1). There are no fall_thru edges that cross
-   between sections; 2). For those architectures which have "short"
-   conditional branches, all conditional branches that attempt to
-   cross between sections are converted to unconditional branches;
-   and, 3). For those architectures which have "short" unconditional
-   branches, all unconditional branches that attempt to cross between
-   sections are converted to indirect jumps.
-
-   The code for fixing up fall_thru edges that cross between hot and
-   cold basic blocks does so by creating new basic blocks containing
-   unconditional branches to the appropriate label in the "other"
-   section.  The new basic block is then put in the same (hot or cold)
-   section as the original conditional branch, and the fall_thru edge
-   is modified to fall into the new basic block instead.  By adding
-   this level of indirection we end up with only unconditional branches
-   crossing between hot and cold sections.
-
-   Conditional branches are dealt with by adding a level of indirection.
-   A new basic block is added in the same (hot/cold) section as the
-   conditional branch, and the conditional branch is retargeted to the
-   new basic block.  The new basic block contains an unconditional branch
-   to the original target of the conditional branch (in the other section).
-
-   Unconditional branches are dealt with by converting them into
-   indirect jumps.  */
-
-static void
-fix_edges_for_rarely_executed_code (edge *crossing_edges,
-				    int n_crossing_edges)
-{
-  /* Make sure the source of any crossing edge ends in a jump and the
-     destination of any crossing edge has a label.  */
-
-  add_labels_and_missing_jumps (crossing_edges, n_crossing_edges);
-
-  /* Convert all crossing fall_thru edges to non-crossing fall
-     thrus to unconditional jumps (that jump to the original fall
-     thru dest).  */
-
-  fix_up_fall_thru_edges ();
-
-  /* If the architecture does not have conditional branches that can
-     span all of memory, convert crossing conditional branches into
-     crossing unconditional branches.  */
-
-  if (!HAS_LONG_COND_BRANCH)
-    fix_crossing_conditional_branches ();
-
-  /* If the architecture does not have unconditional branches that
-     can span all of memory, convert crossing unconditional branches
-     into indirect jumps.  Since adding an indirect jump also adds
-     a new register usage, update the register usage information as
-     well.  */
-
-  if (!HAS_LONG_UNCOND_BRANCH)
-    fix_crossing_unconditional_branches ();
-
-  add_reg_crossing_jump_notes ();
-}
-
 /* Verify, in the basic block chain, that there is at most one switch
    between hot/cold partitions. This is modelled on
    rtl_verify_flow_info_1, but it cannot go inside that function
@@ -2178,28 +2086,79 @@ struct rtl_opt_pass pass_duplicate_computed_gotos =
    if we could perform this optimization later in the compilation, but
    unfortunately the fact that we may need to create indirect jumps
    (through registers) requires that this optimization be performed
-   before register allocation.  */
+   before register allocation.
 
-static void
+   Hot and cold basic blocks are partitioned and put in separate
+   sections of the .o file, to reduce paging and improve cache
+   performance (hopefully).  This can result in bits of code from the
+   same function being widely separated in the .o file.  However this
+   is not obvious to the current bb structure.  Therefore we must take
+   care to ensure that: 1). There are no fall_thru edges that cross
+   between sections; 2). For those architectures which have "short"
+   conditional branches, all conditional branches that attempt to
+   cross between sections are converted to unconditional branches;
+   and, 3). For those architectures which have "short" unconditional
+   branches, all unconditional branches that attempt to cross between
+   sections are converted to indirect jumps.
+
+   The code for fixing up fall_thru edges that cross between hot and
+   cold basic blocks does so by creating new basic blocks containing
+   unconditional branches to the appropriate label in the "other"
+   section.  The new basic block is then put in the same (hot or cold)
+   section as the original conditional branch, and the fall_thru edge
+   is modified to fall into the new basic block instead.  By adding
+   this level of indirection we end up with only unconditional branches
+   crossing between hot and cold sections.
+
+   Conditional branches are dealt with by adding a level of indirection.
+   A new basic block is added in the same (hot/cold) section as the
+   conditional branch, and the conditional branch is retargeted to the
+   new basic block.  The new basic block contains an unconditional branch
+   to the original target of the conditional branch (in the other section).
+
+   Unconditional branches are dealt with by converting them into
+   indirect jumps.  */
+
+static unsigned
 partition_hot_cold_basic_blocks (void)
 {
-  edge *crossing_edges;
-  int n_crossing_edges;
-  int max_edges = 2 * last_basic_block;
+  VEC(edge, heap) *crossing_edges;
 
   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
-    return;
+    return 0;
 
-  crossing_edges = XCNEWVEC (edge, max_edges);
+  crossing_edges = find_rarely_executed_basic_blocks_and_crossing_edges ();
+  if (crossing_edges == NULL)
+    return 0;
 
-  find_rarely_executed_basic_blocks_and_crossing_edges (&crossing_edges,
-							&n_crossing_edges,
-							&max_edges);
+  /* Make sure the source of any crossing edge ends in a jump and the
+     destination of any crossing edge has a label.  */
+  add_labels_and_missing_jumps (crossing_edges);
 
-  if (n_crossing_edges > 0)
-    fix_edges_for_rarely_executed_code (crossing_edges, n_crossing_edges);
+  /* Convert all crossing fall_thru edges to non-crossing fall
+     thrus to unconditional jumps (that jump to the original fall
+     thru dest).  */
+  fix_up_fall_thru_edges ();
 
-  free (crossing_edges);
+  /* If the architecture does not have conditional branches that can
+     span all of memory, convert crossing conditional branches into
+     crossing unconditional branches.  */
+  if (!HAS_LONG_COND_BRANCH)
+    fix_crossing_conditional_branches ();
+
+  /* If the architecture does not have unconditional branches that
+     can span all of memory, convert crossing unconditional branches
+     into indirect jumps.  Since adding an indirect jump also adds
+     a new register usage, update the register usage information as
+     well.  */
+  if (!HAS_LONG_UNCOND_BRANCH)
+    fix_crossing_unconditional_branches ();
+
+  add_reg_crossing_jump_notes ();
+
+  VEC_free (edge, heap, crossing_edges);
+
+  return TODO_verify_flow | TODO_verify_rtl_sharing;
 }
 
 static bool
@@ -2271,18 +2230,9 @@ gate_handle_partition_blocks (void)
      sections of the .o file does not work well with linkonce or with
      user defined section attributes.  Don't call it if either case
      arises.  */
-
   return (flag_reorder_blocks_and_partition
 	  && !DECL_ONE_ONLY (current_function_decl)
 	  && !user_defined_section_attribute);
-}
-
-/* Partition hot and cold basic blocks.  */
-static unsigned int
-rest_of_handle_partition_blocks (void)
-{
-  partition_hot_cold_basic_blocks ();
-  return 0;
 }
 
 struct rtl_opt_pass pass_partition_blocks =
@@ -2291,7 +2241,7 @@ struct rtl_opt_pass pass_partition_blocks =
   RTL_PASS,
   "bbpart",                             /* name */
   gate_handle_partition_blocks,         /* gate */
-  rest_of_handle_partition_blocks,      /* execute */
+  partition_hot_cold_basic_blocks,      /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -2300,6 +2250,6 @@ struct rtl_opt_pass pass_partition_blocks =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing               /* todo_flags_finish */
+  0					/* todo_flags_finish */
  }
 };

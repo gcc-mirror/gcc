@@ -1,3 +1,15 @@
+2011-07-15  Richard Henderson  <rth@redhat.com>
+
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	Replace all three arguments by returning a VEC of edges.
+	(add_labels_and_missing_jumps): Accept a VEC of edges, not bare
+	pointers and counts.
+	(fix_edges_for_rarely_executed_code): Merge ...
+	(rest_of_handle_partition_blocks): ... into...
+	(partition_hot_cold_basic_blocks): ... here.  Return todo items if
+	any work was performed.
+	(pass_partition_blocks): Clear todo_flags_finish.
+
 2011-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
