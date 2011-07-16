@@ -1,5 +1,14 @@
 2011-07-15  Jason Merrill  <jason@redhat.com>
 
+	* Make-lang.in (check-g++-strict-gc): New.
+	(cp/except.o): Depend on gt-cp-except.h
+	* except.c: Include gt-cp-except.h.
+	* config-lang.in (gtfiles): Add cp/except.c.
+	* decl2.c (mark_used): Adjust constexpr condition, set
+	function_depth around template instantiation.
+	* parser.c (cp_parser_lambda_body): Set function_depth.
+	* semantics.c (maybe_add_lambda_conv_op): Likewise.
+
 	PR testsuite/49741
 	* Make-lang.in (check-c++0x): Use --extra_opts instead of--tool_opts.
 

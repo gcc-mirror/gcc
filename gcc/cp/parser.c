@@ -7737,6 +7737,10 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
   bool nested = (current_function_decl != NULL_TREE);
   if (nested)
     push_function_context ();
+  else
+    /* Still increment function_depth so that we don't GC in the
+       middle of an expression.  */
+    ++function_depth;
 
   /* Finish the function call operator
      - class_specifier
@@ -7836,6 +7840,8 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 
   if (nested)
     pop_function_context();
+  else
+    --function_depth;
 }
 
 /* Statements [gram.stmt.stmt]  */

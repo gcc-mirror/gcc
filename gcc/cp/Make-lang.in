@@ -153,6 +153,10 @@ check-c++ : check-g++
 check-c++0x:
 	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --extra_opts,-std=gnu++0x" \
 	  TESTSUITEDIR="$(TESTSUITEDIR).c++0x" check-g++
+# Run the testsuite with garbage collection at every opportunity.
+check-g++-strict-gc:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --extra_opts,--param,ggc-min-heapsize=0,--param,ggc-min-expand=0" \
+	  TESTSUITEDIR="$(TESTSUITEDIR).gc" check-g++
 check-c++-subtargets : check-g++-subtargets
 # List of targets that can use the generic check- rule and its // variant.
 lang_checks += check-g++
@@ -309,7 +313,7 @@ cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(TM_H)
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) convert.h \
   $(TARGET_H) $(C_PRAGMA_H) gt-cp-rtti.h intl.h
 cp/except.o: cp/except.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
-  cp/cfns.h $(TREE_INLINE_H) $(TARGET_H)
+  cp/cfns.h $(TREE_INLINE_H) $(TARGET_H) gt-cp-except.h
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(TM_P_H)
 cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h cp/cp-objcp-common.h \
   toplev.h $(TREE_INLINE_H) pointer-set.h gt-cp-pt.h vecprim.h intl.h \
