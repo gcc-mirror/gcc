@@ -691,8 +691,9 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	}
       else if (!sym->attr.value)
 	{
-          /* Dereference non-character scalar dummy arguments.  */
-	  if (sym->attr.dummy && !sym->attr.dimension)
+	  /* Dereference non-character scalar dummy arguments.  */
+	  if (sym->attr.dummy && !sym->attr.dimension
+	      && !(sym->attr.codimension && sym->attr.allocatable))
 	    se->expr = build_fold_indirect_ref_loc (input_location,
 						se->expr);
 
@@ -711,7 +712,8 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	      && (sym->attr.dummy
 		  || sym->attr.function
 		  || sym->attr.result
-		  || !sym->attr.dimension))
+		  || (!sym->attr.dimension
+		      && (!sym->attr.codimension || !sym->attr.allocatable))))
 	    se->expr = build_fold_indirect_ref_loc (input_location,
 						se->expr);
 	}

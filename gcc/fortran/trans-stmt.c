@@ -5104,7 +5104,7 @@ gfc_trans_deallocate (gfc_code *code)
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
 
-      if (expr->rank)
+      if (expr->rank || gfc_expr_attr (expr).codimension)
 	{
 	  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp)
 	    {

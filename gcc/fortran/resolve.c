@@ -6460,7 +6460,9 @@ resolve_deallocate_expr (gfc_expr *e)
       switch (ref->type)
 	{
 	case REF_ARRAY:
-	  if (ref->u.ar.type != AR_FULL)
+	  if (ref->u.ar.type != AR_FULL
+	      && !(ref->u.ar.type == AR_ELEMENT && ref->u.ar.as->rank == 0
+	           && ref->u.ar.codimen && gfc_ref_this_image (ref)))
 	    allocatable = 0;
 	  break;
 
@@ -6980,13 +6982,6 @@ check_symbols:
 
       gfc_error ("Bad coarray specification in ALLOCATE statement at %L",
 		 &e->where);
-      goto failure;
-    }
-
-  if (codimension && ar->as->rank == 0)
-    {
-      gfc_error ("Sorry, allocatable scalar coarrays are not yet supported "
-		 "at %L", &e->where);
       goto failure;
     }
 
