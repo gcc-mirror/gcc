@@ -2784,6 +2784,10 @@ static void
 cp_print_error_function (diagnostic_context *context,
 			 diagnostic_info *diagnostic)
 {
+  /* If we are in an instantiation context, current_function_decl is likely
+     to be wrong, so just rely on print_instantiation_full_context.  */
+  if (current_instantiation ())
+    return;
   if (diagnostic_last_function_changed (context, diagnostic))
     {
       const char *old_prefix = context->printer->prefix;
@@ -2927,26 +2931,15 @@ print_instantiation_full_context (diagnostic_context *context)
 
   if (p)
     {
-      if (current_function_decl != p->decl
-	  && current_function_decl != NULL_TREE)
-	/* We can get here during the processing of some synthesized
-	   method.  Then, P->DECL will be the function that's causing
-	   the synthesis.  */
-	;
-      else
-	{
-	  if (current_function_decl == p->decl)
-	    /* Avoid redundancy with the "In function" line.  */;
-	  else
-	    pp_verbatim (context->printer,
-			 _("%s: In instantiation of %qs:\n"),
-			 LOCATION_FILE (location),
-			 decl_as_string_translate (p->decl,
-						   TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
+      pp_verbatim (context->printer,
+		   TREE_CODE (p->decl) == TREE_LIST
+		   ? _("%s: In substitution of %qS:\n")
+		   : _("%s: In instantiation of %q#D:\n"),
+		   LOCATION_FILE (location),
+		   p->decl);
 
-	  location = p->locus;
-	  p = p->next;
-	}
+      location = p->locus;
+      p = p->next;
     }
 
   print_instantiation_partial_context (context, p, location);

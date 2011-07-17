@@ -1,3 +1,7 @@
+2011-07-16  Jason Merrill  <jason@redhat.com>
+
+	* lib/prune.exp (prune_gcc_output): Prune "In substitution" too.
+
 2011-07-16  Nathan Froyd  <froydnj@codesourcery.com>
 	    Jason Merrill  <jason@redhat.com>
 

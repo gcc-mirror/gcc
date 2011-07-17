@@ -7766,8 +7766,7 @@ extern int max_tinst_depth;
 #ifdef GATHER_STATISTICS
 int depth_reached;
 #endif
-static int tinst_level_tick;
-static int last_template_error_tick;
+static GTY(()) struct tinst_level *last_error_tinst_level;
 
 /* We're starting to instantiate D; record the template instantiation context
    for diagnostics and to restore it later.  */
@@ -7779,7 +7778,7 @@ push_tinst_level (tree d)
 
   if (tinst_depth >= max_tinst_depth)
     {
-      last_template_error_tick = tinst_level_tick;
+      last_error_tinst_level = current_tinst_level;
       if (TREE_CODE (d) == TREE_LIST)
 	error ("template instantiation depth exceeds maximum of %d (use "
 	       "-ftemplate-depth= to increase the maximum) substituting %qS",
@@ -7814,7 +7813,6 @@ push_tinst_level (tree d)
     depth_reached = tinst_depth;
 #endif
 
-  ++tinst_level_tick;
   return 1;
 }
 
@@ -7829,7 +7827,6 @@ pop_tinst_level (void)
   input_location = current_tinst_level->locus;
   current_tinst_level = current_tinst_level->next;
   --tinst_depth;
-  ++tinst_level_tick;
 }
 
 /* We're instantiating a deferred template; restore the template
@@ -13961,6 +13958,7 @@ deduction_tsubst_fntype (tree fn, tree targs, tsubst_flags_t complain)
   static bool excessive_deduction_depth;
   static int deduction_depth;
   struct pending_template *old_last_pend = last_pending_template;
+  struct tinst_level *old_error_tinst = last_error_tinst_level;
 
   tree fntype = TREE_TYPE (fn);
   tree tinst;
@@ -13993,8 +13991,10 @@ deduction_tsubst_fntype (tree fn, tree targs, tsubst_flags_t complain)
     }
 
   pop_tinst_level ();
-  /* We can't free this if a pending_template entry is pointing at it.  */
-  if (last_pending_template == old_last_pend)
+  /* We can't free this if a pending_template entry or last_error_tinst_level
+     is pointing at it.  */
+  if (last_pending_template == old_last_pend
+      && last_error_tinst_level == old_error_tinst)
     ggc_free (tinst);
   return r;
 }
@@ -18564,14 +18564,14 @@ get_mostly_instantiated_function_type (tree decl)
 int
 problematic_instantiation_changed (void)
 {
-  return last_template_error_tick != tinst_level_tick;
+  return current_tinst_level != last_error_tinst_level;
 }
 
 /* Remember current template involved in diagnostics.  */
 void
 record_last_problematic_instantiation (void)
 {
-  last_template_error_tick = tinst_level_tick;
+  last_error_tinst_level = current_tinst_level;
 }
 
 struct tinst_level *
