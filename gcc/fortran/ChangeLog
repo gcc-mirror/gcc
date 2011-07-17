@@ -1,5 +1,11 @@
 2011-07-17  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/34657
+	* module.c (check_for_ambiguous): Check whether the name is matches
+	the current program unit.
+
+2011-07-17  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/49624
 	* expr.c (gfc_check_pointer_assign): Fix checking for invalid
 	pointer bounds.

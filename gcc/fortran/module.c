@@ -4278,6 +4278,13 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
   module_locus locus;
   symbol_attribute attr;
 
+  if (st_sym->ns->proc_name && st_sym->name == st_sym->ns->proc_name->name)
+    {
+      gfc_error ("'%s' of module '%s', imported at %C, is also the name of the "
+		 "current program unit", st_sym->name, module_name);
+      return true;
+    }
+
   rsym = info->u.rsym.sym;
   if (st_sym == rsym)
     return false;
