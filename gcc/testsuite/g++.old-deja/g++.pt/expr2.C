@@ -9,5 +9,5 @@ void foo(S<J + 2>);		// { dg-message "note" }
 void bar()
 {
   foo(S<3>()); // { dg-error "" } no way to deduce J from this.
-  // { dg-message "candidate" "candidate note" { target *-*-* } 11 }
+  // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 11 }
 }

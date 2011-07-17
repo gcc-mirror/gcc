@@ -19,5 +19,5 @@ void Bar ()
   Foo3 (&Baz);
 
   Foo3 (&Baz, &Baz); // { dg-error "no matching function" "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 21 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 21 }
 }

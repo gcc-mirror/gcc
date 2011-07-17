@@ -5,7 +5,7 @@ template <class T> struct PCVector2 // { dg-message "note" }
     PCVector2<T> operator- (const PCVector2<T> &ov) const 
 	{ 
 	  return PCVector2<T>(ov.xFIELD, ov.yFIELD); // { dg-error "matching" }
-	  // { dg-message "candidate" "candidate note" { target *-*-* } 7 }
+	  // { dg-message "(candidate|expects 1 argument, 2 provided|cannot convert)" "candidate note" { target *-*-* } 7 }
 	}
 
     T xFIELD, yFIELD;

@@ -1,3 +1,60 @@
+2011-07-16  Nathan Froyd  <froydnj@codesourcery.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/45329
+	PR c++/48934
+	* cp-tree.h (fn_type_unification): Add `bool' parameter.
+	* pt.c (enum template_base_result): Define.
+	(unify_success, unify_unknown): Define.
+	(unify_parameter_deduction_failure): Define.
+	(unify_invalid, unify_cv_qual_mismatch, unify_type_mismatch): Define.
+	(unify_parameter_pack_mismatch): Define.
+	(unify_parameter_pack_inconsistent): Define.
+	(unify_ptrmem_cst_mismatch, unify_vla_arg): Define.
+	(unify_expression_unequal, unify_inconsistency): Define.
+	(unify_method_type_error, unify_arity): Likewise.
+	(unify_too_many_parameters, unify_too_few_parameters): Define.
+	(unify_arg_conversion, unify_no_common_base): Define.
+	(unify_illformed_ptrmem_cst_expr): Define.
+	(unify_substitution_failure): Define.
+	(unify_inconsistent_template_template_parameters): Define.
+	(unify_template_deduction_failure): Define.
+	(unify_template_argument_mismatch): Define.
+	(unify_overload_resolution_failure): Define.
+	(comp_template_args_with_info): New function, split out from...
+	(comp_template_args): ...here.	Call it.
+	(deduction_tsubst_fntype): Add `complain' parameter'.  Pass it
+	to tsubst.
+	(unify): Add `explain_p' parameter.  Pass to all relevant calls.
+	Call above status functions when appropriate.
+	(resolve_overloaded_unification, try_one_overload): Likewise.
+	(type_unification, type_unification_real): Likewise.
+	(unify_pack_expansion): Likewise.
+	(get_template_base, try_class_unification): Likewise.
+	(get_bindings, more_specialized_fn): Pass false to unification
+	calls.
+	(get_class_bindings, do_auto_deduction): Likewise.
+	(convert_nontype_argument): Likewise.
+	(fn_type_unification): Likewise.  Pass tf_warning_or_error if
+	explain_p.
+	(get_template_base): Add `explain_p' parameter and pass it to
+	try_class_unification.	Return an enum template_base_result.
+	* class.c (resolve_address_of_overloaded_function): Pass false to
+	fn_type_unification.
+	* call.c (enum rejection_reason_code): Add new codes.
+	(struct rejection_reason): Add template_unification field.
+	Add template_instantiation field.
+	(template_unification_rejection): Define.
+	(template_unification_error_rejection): Define.
+	(template_instantiation_rejection): Define.
+	(invalid_copy_with_fn_template_rejection): Define.
+	(add_template_candidate): Pass false to unify.
+	Provide more rejection reasons when possible.
+	(print_template_unification_rejection): Define.
+	(print_arity_rejection): Define, split out from...
+	(print_z_candidate): ...here.  Add cases for new rejection
+	reasons.
+
 2011-07-15  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (check-g++-strict-gc): New.

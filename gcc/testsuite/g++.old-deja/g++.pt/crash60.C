@@ -7,7 +7,7 @@
 template< typename SID, class SDR >
 void k( SID sid, SDR* p,
  void (SDR::*)
- ( typename SID::T ) );		// { dg-message "note" }
+ ( typename SID::T ) );		// { dg-error "no type named 'T'" }
 
 struct E { };
 struct S { void f( int ); };

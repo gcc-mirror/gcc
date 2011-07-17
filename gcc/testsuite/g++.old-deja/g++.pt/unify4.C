@@ -8,6 +8,6 @@ int
 main ()
 {
   f (g);			// { dg-error "" } ambiguous unification
-  // { dg-message "candidate" "candidate note" { target *-*-* } 10 }
+  // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 10 }
   return 0;
 }

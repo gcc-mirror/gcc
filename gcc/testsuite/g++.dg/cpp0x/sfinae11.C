@@ -51,6 +51,6 @@ int main()
   // static_assert(  noexcept( f3(y) ), "shall be ill-formed(OK)." );
 
   noexcept( f1(z) );		// { dg-message "required" }
-  static_assert(  noexcept( f2(z) ), "shall be ill-formed." ); // { dg-error "no match" }
+  static_assert(  noexcept( f2(z) ), "shall be ill-formed." ); // { dg-error "no match|could not convert" }
   noexcept( f3(z) );		// { dg-message "required" }
 }

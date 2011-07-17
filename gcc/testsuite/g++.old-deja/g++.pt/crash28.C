@@ -11,5 +11,5 @@ void f(unsigned int n) {
   int x[n];
 
   asize(x); // { dg-error "" } no matching function
-  // { dg-message "candidate" "candidate note" { target *-*-* } 13 }
+  // { dg-message "(candidate|not a valid template argument)" "candidate note" { target *-*-* } 13 }
 }

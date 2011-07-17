@@ -1,3 +1,61 @@
+2011-07-16  Nathan Froyd  <froydnj@codesourcery.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/45329
+	PR c++/48934
+	* g++.dg/cpp0x/decltype29.C: Adjust.
+	* g++.dg/cpp0x/error4.C: Adjust.
+	* g++.dg/cpp0x/sfinae26.C: Adjust.
+	* g++.dg/cpp0x/variadic105.C: Adjust.
+	* g++.dg/template/deduce3.C: Adjust.
+	* g++.dg/template/error45.C: Adjust.
+	* g++.dg/template/ptrmem2.C: Adjust.
+	* g++.dg/template/sfinae2.C: Adjust.
+	* g++.old-deja/g++.pt/crash60.C: Adjust.
+	* g++.old-deja/g++.pt/unify6.C: Adjust.
+	* g++.dg/cpp0x/lambda/lambda-ice2.C: Adjust.
+	* g++.dg/cpp0x/nullptr15.C: Adjust.
+	* g++.dg/cpp0x/pr31431-2.C: Adjust.
+	* g++.dg/cpp0x/pr31431.C: Adjust.
+	* g++.dg/cpp0x/pr31434.C: Adjust.
+	* g++.dg/cpp0x/sfinae11.C: Adjust
+	* g++.dg/cpp0x/temp_default2.C: Adjust.
+	* g++.dg/cpp0x/trailing4.C: Adjust.
+	* g++.dg/cpp0x/variadic-ex3.C: Adjust.
+	* g++.dg/cpp0x/variadic-ex4.C: Adjust.
+	* g++.dg/cpp0x/variadic105.C: Adjust.
+	* g++.dg/cpp0x/vt-37737-2.C: Adjust.
+	* g++.dg/ext/vla2.C: Adjust.
+	* g++.dg/other/ptrmem10.C: Adjust.
+	* g++.dg/other/ptrmem11.C: Adjust.
+	* g++.dg/overload/unknown1.C: Adjust.
+	* g++.dg/template/conv11.C: Adjust.
+	* g++.dg/template/dependent-expr5.C: Adjust.
+	* g++.dg/template/friend.C: Adjust.
+	* g++.dg/template/incomplete2.C: Adjust.
+	* g++.dg/template/local4.C: Adjust.
+	* g++.dg/template/local6.C: Adjust.
+	* g++.dg/template/operator9.C: Adjust.
+	* g++.dg/template/ttp25.C: Adjust.
+	* g++.dg/template/unify10.C: Adjust.
+	* g++.dg/template/unify11.C: Adjust.
+	* g++.dg/template/unify6.C: Adjust.
+	* g++.dg/template/unify9.C: Adjust.
+	* g++.dg/template/varmod1.C: Adjust.
+	* g++.old-deja/g++.brendan/crash56.C: Adjust.
+	* g++.old-deja/g++.pt/crash28.C: Adjust.
+	* g++.old-deja/g++.pt/explicit41.C: Adjust.
+	* g++.old-deja/g++.pt/explicit77.C: Adjust.
+	* g++.old-deja/g++.pt/expr2.C: Adjust.
+	* g++.old-deja/g++.pt/ptrmem6.C: Adjust.
+	* g++.old-deja/g++.pt/spec5.C: Adjust.
+	* g++.old-deja/g++.pt/spec6.C: Adjust.
+	* g++.old-deja/g++.pt/unify4.C: Adjust.
+	* g++.old-deja/g++.pt/unify8.C: Adjust.
+	* g++.old-deja/g++.robertl/eb98.C: Adjust.
+	* g++.dg/overload/template5.C: New testcase.
+	* g++.dg/template/overload12.C: New testcase.
+
 2011-07-11  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_14.f90: Remove dg-error "sorry not implemented".

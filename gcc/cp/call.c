@@ -434,7 +434,10 @@ enum rejection_reason_code {
   rr_arity,
   rr_explicit_conversion,
   rr_arg_conversion,
-  rr_bad_arg_conversion
+  rr_bad_arg_conversion,
+  rr_template_unification,
+  rr_template_instantiation,
+  rr_invalid_copy
 };
 
 struct conversion_info {
@@ -462,6 +465,24 @@ struct rejection_reason {
     struct conversion_info conversion;
     /* Same, but for bad argument conversions.  */
     struct conversion_info bad_conversion;
+    /* Information about template unification failures.  These are the
+       parameters passed to fn_type_unification.  */
+    struct {
+      tree tmpl;
+      tree explicit_targs;
+      tree targs;
+      const tree *args;
+      unsigned int nargs;
+      tree return_type;
+      unification_kind_t strict;
+      int flags;
+    } template_unification;
+    /* Information about template instantiation failures.  These are the
+       parameters passed to instantiate_template.  */
+    struct {
+      tree tmpl;
+      tree targs;
+    } template_instantiation;
   } u;
 };
 
@@ -619,6 +640,50 @@ explicit_conversion_rejection (tree from, tree to)
   r->u.conversion.n_arg = 0;
   r->u.conversion.from_type = from;
   r->u.conversion.to_type = to;
+  return r;
+}
+
+static struct rejection_reason *
+template_unification_rejection (tree tmpl, tree explicit_targs, tree targs,
+				const tree *args, unsigned int nargs,
+				tree return_type, unification_kind_t strict,
+				int flags)
+{
+  size_t args_n_bytes = sizeof (*args) * nargs;
+  tree *args1 = (tree *) conversion_obstack_alloc (args_n_bytes);
+  struct rejection_reason *r = alloc_rejection (rr_template_unification);
+  r->u.template_unification.tmpl = tmpl;
+  r->u.template_unification.explicit_targs = explicit_targs;
+  r->u.template_unification.targs = targs;
+  /* Copy args to our own storage.  */
+  memcpy (args1, args, args_n_bytes);
+  r->u.template_unification.args = args1;
+  r->u.template_unification.nargs = nargs;
+  r->u.template_unification.return_type = return_type;
+  r->u.template_unification.strict = strict;
+  r->u.template_unification.flags = flags;
+  return r;
+}
+
+static struct rejection_reason *
+template_unification_error_rejection (void)
+{
+  return alloc_rejection (rr_template_unification);
+}
+
+static struct rejection_reason *
+template_instantiation_rejection (tree tmpl, tree targs)
+{
+  struct rejection_reason *r = alloc_rejection (rr_template_instantiation);
+  r->u.template_instantiation.tmpl = tmpl;
+  r->u.template_instantiation.targs = targs;
+  return r;
+}
+
+static struct rejection_reason *
+invalid_copy_with_fn_template_rejection (void)
+{
+  struct rejection_reason *r = alloc_rejection (rr_invalid_copy);
   return r;
 }
 
@@ -2859,6 +2924,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   int i;
   tree fn;
   struct rejection_reason *reason = NULL;
+  int errs;
 
   /* We don't do deduction on the in-charge parameter, the VTT
      parameter or 'this'.  */
@@ -2901,17 +2967,31 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
     }
   gcc_assert (ia == nargs_without_in_chrg);
 
+  errs = errorcount+sorrycount;
   i = fn_type_unification (tmpl, explicit_targs, targs,
 			   args_without_in_chrg,
 			   nargs_without_in_chrg,
-			   return_type, strict, flags);
+			   return_type, strict, flags, false);
 
   if (i != 0)
-    goto fail;
+    {
+      /* Don't repeat unification later if it already resulted in errors.  */
+      if (errorcount+sorrycount == errs)
+	reason = template_unification_rejection (tmpl, explicit_targs,
+						 targs, args_without_in_chrg,
+						 nargs_without_in_chrg,
+						 return_type, strict, flags);
+      else
+	reason = template_unification_error_rejection ();
+      goto fail;
+    }
 
   fn = instantiate_template (tmpl, targs, tf_none);
   if (fn == error_mark_node)
-    goto fail;
+    {
+      reason = template_instantiation_rejection (tmpl, targs);
+      goto fail;
+    }
 
   /* In [class.copy]:
 
@@ -2940,7 +3020,10 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
       tree arg_types = FUNCTION_FIRST_USER_PARMTYPE (fn);
       if (arg_types && same_type_p (TYPE_MAIN_VARIANT (TREE_VALUE (arg_types)),
 				    ctype))
-	goto fail;
+	{
+	  reason = invalid_copy_with_fn_template_rejection ();
+	  goto fail;
+	}
     }
 
   if (obj != NULL_TREE)
@@ -3108,6 +3191,18 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
 	    info->n_arg+1, info->from_type, info->to_type);
 }
 
+/* Print information about a candidate with WANT parameters and we found
+   HAVE.  */
+
+static void
+print_arity_information (location_t loc, unsigned int have, unsigned int want)
+{
+  inform_n (loc, want,
+	    "  candidate expects %d argument, %d provided",
+	    "  candidate expects %d arguments, %d provided",
+	    want, have);
+}
+
 /* Print information about one overload candidate CANDIDATE.  MSGSTR
    is the text to print before the candidate itself.
 
@@ -3154,10 +3249,8 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
       switch (r->code)
 	{
 	case rr_arity:
-	  inform_n (loc, r->u.arity.expected,
-		    "  candidate expects %d argument, %d provided",
-		    "  candidate expects %d arguments, %d provided",
-		    r->u.arity.expected, r->u.arity.actual);
+	  print_arity_information (loc, r->u.arity.actual,
+				   r->u.arity.expected);
 	  break;
 	case rr_arg_conversion:
 	  print_conversion_rejection (loc, &r->u.conversion);
@@ -3170,6 +3263,39 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
 		  "cannot be converted to %qT with a qualification "
 		  "conversion", r->u.conversion.from_type,
 		  r->u.conversion.to_type);
+	  break;
+	case rr_template_unification:
+	  /* We use template_unification_error_rejection if unification caused
+	     actual non-SFINAE errors, in which case we don't need to repeat
+	     them here.  */
+	  if (r->u.template_unification.tmpl == NULL_TREE)
+	    {
+	      inform (loc, "  substitution of deduced template arguments "
+		      "resulted in errors seen above");
+	      break;
+	    }
+	  /* Re-run template unification with diagnostics.  */
+	  inform (loc, "  template argument deduction/substitution failed:");
+	  fn_type_unification (r->u.template_unification.tmpl,
+			       r->u.template_unification.explicit_targs,
+			       r->u.template_unification.targs,
+			       r->u.template_unification.args,
+			       r->u.template_unification.nargs,
+			       r->u.template_unification.return_type,
+			       r->u.template_unification.strict,
+			       r->u.template_unification.flags,
+			       true);
+	  break;
+	case rr_template_instantiation:
+	  /* Re-run template instantiation with diagnostics.  */
+	  instantiate_template (r->u.template_instantiation.tmpl,
+				r->u.template_instantiation.targs,
+				tf_warning_or_error);
+	  break;
+	case rr_invalid_copy:
+	  inform (loc,
+		  "  a constructor taking a single argument of its own "
+		  "class type is invalid");
 	  break;
 	case rr_none:
 	default:

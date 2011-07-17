@@ -8,7 +8,7 @@ template<int T> struct cl {
   const static int value = T;
 };
 
-template<int I> void fn (char (*) [cl<I>::value] = 0 ); // { dg-message "note" }
+template<int I> void fn (char (*) [cl<I>::value] = 0 ); // { dg-error "zero-size array" }
 
 void foo (void)
 {

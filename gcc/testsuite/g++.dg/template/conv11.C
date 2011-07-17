@@ -7,5 +7,5 @@ struct A
 int main()
 {
   A().operator int();		// { dg-error "operator int" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 9 }
+  // { dg-message "(candidate|mismatched types)" "candidate note" { target *-*-* } 9 }
 }

@@ -13,7 +13,7 @@ decltype (ft<F> (F()))
 ft() {}				// { dg-error "depth" }
 
 int main() {
-    ft<struct a*, 0>();		// { dg-error "no match" }
+    ft<struct a*, 0>();		// { dg-error "no match|wrong number" }
 }
 
 // { dg-prune-output "note" }

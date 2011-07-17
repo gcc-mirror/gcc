@@ -11,7 +11,7 @@ struct enable_if< true, T >
 
 template < typename T >
 struct enable_if< true, T >::type
-f( T x );
+f( T x );			// { dg-error "not a class type" }
 
 void
 g( void )

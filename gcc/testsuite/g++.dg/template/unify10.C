@@ -26,34 +26,34 @@ void cvFunction(void (CLASS::* method)() const volatile) {} // { dg-message "not
 int main() {
   mFunction(&MyClass::mMethod);
   mFunction(&MyClass::cMethod);    // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 28 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 28 }
   mFunction(&MyClass::vMethod);    // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 30 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 30 }
   mFunction(&MyClass::cvMethod);   // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 32 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 32 }
 
   cFunction(&MyClass::mMethod);    // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 35 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 35 }
   cFunction(&MyClass::cMethod);
   cFunction(&MyClass::vMethod);    // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 38 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 38 }
   cFunction(&MyClass::cvMethod);   // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 40 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 40 }
 
   vFunction(&MyClass::mMethod);    // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 43 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 43 }
   vFunction(&MyClass::cMethod);    // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 45 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 45 }
   vFunction(&MyClass::vMethod);
   vFunction(&MyClass::cvMethod);   // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 48 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 48 }
 
   cvFunction(&MyClass::mMethod);   // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 51 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 51 }
   cvFunction(&MyClass::cMethod);   // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 53 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 53 }
   cvFunction(&MyClass::vMethod);   // { dg-error "no matching function" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 55 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 55 }
   cvFunction(&MyClass::cvMethod);
 
   return 0;

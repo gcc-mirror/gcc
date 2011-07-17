@@ -40,12 +40,12 @@ struct foo {
       bind (&bar::baikt);
 
       bind (&barf); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 42 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 42 }
       bind (&foo::barf); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 44 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 44 }
 
       bindm (&barf); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 47 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 47 }
       bindm (&foo::barf);
 
       bindn (&barf);
@@ -53,15 +53,15 @@ struct foo {
 
       bindb (&barf);
       bindb (&foo::barf); // { dg-error "ambiguous" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 55 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 55 }
 
       bind (&bark); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 58 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 58 }
       bind (&bar::bark); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 60 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 60 }
 
       bindm (&bark); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 63 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 63 }
       bindm (&bar::bark);
 
       bindn (&bark);
@@ -69,7 +69,7 @@ struct foo {
 
       bindb (&bark);
       bindb (&bar::bark); // { dg-error "ambiguous" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 71 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 71 }
     }
   };
 
@@ -92,12 +92,12 @@ struct foo {
       bind (&barT::baikt);
 
       bind (&barf); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 94 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 94 }
       bind (&foo::barf); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 96 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 96 }
 
       bindm (&barf); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 99 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 99 }
       bindm (&foo::barf);
 
       bindn (&barf);
@@ -105,15 +105,15 @@ struct foo {
 
       bindb (&barf);
       bindb (&foo::barf); // { dg-error "ambiguous" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 107 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 107 }
 
       bind (&bark); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 110 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 110 }
       bind (&barT::bark); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 112 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 112 }
 
       bindm (&bark); // { dg-error "no matching function" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 115 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 115 }
       bindm (&barT::bark);
 
       bindn (&bark);
@@ -121,7 +121,7 @@ struct foo {
 
       bindb (&bark);
       bindb (&barT::bark); // { dg-error "ambiguous" }
-      // { dg-message "candidate" "candidate note" { target *-*-* } 123 }
+      // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 123 }
     }
   };
 

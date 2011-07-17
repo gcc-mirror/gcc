@@ -19,7 +19,7 @@ template<> void fn<int &>() {} // ok, specialize A
 template<> void fn<void ()>() {} // ok, specialize A
 
 // now make sure we moan when we really should
-template<class T> void foo(T const *){} // { dg-message "note" }
+template<class T> void foo(T const *){} // { dg-error "pointer to reference" }
 
 void f()
 {
