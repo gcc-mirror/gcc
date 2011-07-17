@@ -5161,7 +5161,8 @@ extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
 extern int fn_type_unification			(tree, tree, tree,
 						 const tree *, unsigned int,
-						 tree, unification_kind_t, int);
+						 tree, unification_kind_t, int,
+						 bool);
 extern void mark_decl_instantiated		(tree, int);
 extern int more_specialized_fn			(tree, tree, int);
 extern void do_decl_instantiation		(tree, tree);

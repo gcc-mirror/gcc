@@ -14,7 +14,7 @@ template <typename T>
 int
 bar(int T::* p)
 {
-  return foo<p>(0);// { dg-error "(not a valid template arg|no matching func|pointer-to-member)" }
+  return foo<p>(0);// { dg-error "(not a valid template arg|no matching func|pointer-to-member|could not convert)" }
   // { dg-message "candidate" "candidate note" { target *-*-* } 17 }
 }
 

@@ -11,5 +11,5 @@ int main()
 {
   Foo (f);
   Baz (f); // { dg-error "no matching function" "" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 13 }
+  // { dg-message "(candidate|incompatible cv-qualifiers)" "candidate note" { target *-*-* } 13 }
 }

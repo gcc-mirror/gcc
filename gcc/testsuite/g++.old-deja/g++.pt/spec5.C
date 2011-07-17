@@ -14,9 +14,9 @@ template void g(int i, int j);
 void h()
 {
   f(3, 'c'); // { dg-error "" } no matching function
-  // { dg-message "candidate" "candidate note" { target *-*-* } 16 }
+  // { dg-message "(candidate|deduced conflicting types)" "candidate note" { target *-*-* } 16 }
   g(3, 'c'); // { dg-error "" } no matching function
-  // { dg-message "candidate" "candidate note" { target *-*-* } 18 }
+  // { dg-message "(candidate|deduced conflicting types)" "candidate note" { target *-*-* } 18 }
 }
 
 

@@ -1,6 +1,6 @@
 // { dg-do assemble  }
 template <int I>
-void f(int i);			// { dg-message "note" }
+void f(int i);			// { dg-message "void f" }
 
 void g()
 {

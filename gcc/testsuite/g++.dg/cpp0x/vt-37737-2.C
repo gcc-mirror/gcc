@@ -4,7 +4,7 @@ template<class U, class... T>
 void f()			// { dg-message "note" }
 {
   f<T...>(); // { dg-error "no matching" }
-  // { dg-message "candidate" "candidate note" { target *-*-* } 6 }
+  // { dg-message "(candidate|deduce template parameter)" "candidate note" { target *-*-* } 6 }
 }
 
 template<>

@@ -7,5 +7,5 @@ void bar()
   int i;
   int A[i][i]; 
   foo(A); // { dg-error "" } 
-  // { dg-message "candidate" "candidate note" { target *-*-* } 9 }
+  // { dg-message "(candidate|not a valid template argument)" "candidate note" { target *-*-* } 9 }
 }

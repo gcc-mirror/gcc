@@ -278,7 +278,7 @@ SetLD<T>::remove(const T& item)
     Vix x;
     for (first(x); 0 != x && this->REMOVE_CURRENT != a; next(x, a))
 	a = operator()(x) == item ? this->REMOVE_CURRENT: this->NORMAL; // { dg-error "" } .*
-    // { dg-message "candidate" "candidate note" { target *-*-* } 280 }
+    // { dg-message "(candidate|not derived from)" "candidate note" { target *-*-* } 280 }
 }
 template<class T>
 bool
@@ -287,7 +287,7 @@ SetLD<T>::contains(const T& item) const
     Vix x;
     for (first(x); 0 != x; next(x)) {
 	if (operator()(x) == item)// { dg-error "" } .*
-	  // { dg-message "candidate" "candidate note" { target *-*-* } 289 }
+	  // { dg-message "(candidate|not derived from)" "candidate note" { target *-*-* } 289 }
 	    return TRUE;
     }
     return FALSE;
