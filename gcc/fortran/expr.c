@@ -3286,7 +3286,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	     upper bounds are present, we may do rank remapping.  */
 	  for (dim = 0; dim < ref->u.ar.dimen; ++dim)
 	    {
-	      if (!ref->u.ar.start[dim])
+	      if (!ref->u.ar.start[dim]
+		  || ref->u.ar.dimen_type[dim] != DIMEN_RANGE)
 		{
 		  gfc_error ("Lower bound has to be present at %L",
 			     &lvalue->where);
