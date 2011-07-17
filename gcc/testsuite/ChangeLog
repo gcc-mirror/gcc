@@ -1,3 +1,7 @@
+2011-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pointer_controlled.adb: New test.
+
 2011-07-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49624
