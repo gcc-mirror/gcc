@@ -10596,9 +10596,14 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  if (result || !walk_subtrees)
 	    return result;
 
-	  result = walk_type_fields (*type_p, func, data, pset, lh);
-	  if (result)
-	    return result;
+	  /* But do not walk a pointed-to type since it may itself need to
+	     be walked in the declaration case if it isn't anonymous.  */
+	  if (!POINTER_TYPE_P (*type_p))
+	    {
+	      result = walk_type_fields (*type_p, func, data, pset, lh);
+	      if (result)
+		return result;
+	    }
 
 	  /* If this is a record type, also walk the fields.  */
 	  if (RECORD_OR_UNION_TYPE_P (*type_p))
