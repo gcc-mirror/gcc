@@ -1,3 +1,8 @@
+2011-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/49732
+	* tree.c (walk_tree_1) <DECL_EXPR>: Do not walk a pointed-to type.
+
 2011-07-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/49725

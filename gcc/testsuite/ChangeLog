@@ -1,3 +1,7 @@
+2011-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pointer_controlled.adb: New test.
+
 2011-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/49753
