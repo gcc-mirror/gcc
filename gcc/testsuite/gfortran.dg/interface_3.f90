@@ -5,6 +5,8 @@
 !
 ! Contributed by Joost VandeVondele  <jv244@cam.ac.uk>
 !
+! Modified for PR fortran/34657
+!
 module test_mod
 interface
   subroutine my_sub (a)
@@ -30,14 +32,14 @@ end module
 ! This is the original PR, excepting that the error requires the symbol
 ! to be referenced.
 subroutine my_sub (a)
-  use test_mod
+  use test_mod     ! { dg-error "is also the name of the current program unit" }
   real a
   call my_sub (a)  ! { dg-error "ambiguous reference" }
   print *, a
 end subroutine
 
 integer function my_fun (a)
-  use test_mod
+  use test_mod ! { dg-error "is also the name of the current program unit" }
   real a
   print *, a
   my_fun = 1  ! { dg-error "ambiguous reference" }
