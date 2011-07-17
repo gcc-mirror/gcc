@@ -47,6 +47,6 @@ main()
   test01();
   return 0;
 }
-// { dg-error "In member function" "" { target *-*-* } 0 }
+// { dg-error "In instantiation" "" { target *-*-* } 0 }
 // { dg-error "cannot convert" "" { target *-*-* } 0 }
 // { dg-error "required from" "" { target *-*-* } 0 }

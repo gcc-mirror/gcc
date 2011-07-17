@@ -1,3 +1,14 @@
+2011-07-16  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tinst_level_tick, last_template_error_tick): Replace with
+	last_error_tinst_level.
+	(push_tinst_level, pop_tinst_level): Adjust.
+	(problematic_instantiation_changed): Adjust.
+	(record_last_problematic_instantiation): Adjust.
+	* error.c (cp_print_error_function): Don't print
+	current_function_decl if we're in a template instantiation context.
+	(print_instantiation_full_context): Always print first line.
+
 2011-07-16  Nathan Froyd  <froydnj@codesourcery.com>
 	    Jason Merrill  <jason@redhat.com>
 
