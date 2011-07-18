@@ -1,3 +1,7 @@
+2011-07-18  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/20110718-1.c: New testcase.
+
 2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/ext/bitfield2.C: Remove i?86-*-netware support.
