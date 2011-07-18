@@ -1,3 +1,10 @@
+2011-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/48430
+	* include/bits/shared_ptr.h (struct hash<shared_ptr<>>): Use
+	__hash_base.
+	* include/bits/unique_ptr.h (struct hash<unique_ptr<>>): Likewise.
+
 2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* crossconfig.m4 (*-netware): Remove.
