@@ -5,9 +5,13 @@
 int
 very_long_function(int a)
 {
-  return very_long_function (a)/4;
+  if (a > 0)
+    return 2 * a + very_long_function (a)/4;
+  else
+    return 2 * -a + very_long_function (a)/4;
 }
-main()
+
+blah ()
 {
   very_long_function (1);
 }

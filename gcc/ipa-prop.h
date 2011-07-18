@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "cgraph.h"
 #include "gimple.h"
+#include "alloc-pool.h"
 
 /* The following definitions and interfaces are used by
    interprocedural analyses or parameters.  */
@@ -32,7 +33,10 @@ along with GCC; see the file COPYING3.  If not see
 /* ipa-prop.c stuff (ipa-cp, indirect inlining):  */
 
 /* A jump function for a callsite represents the values passed as actual
-   arguments of the callsite. There are three main types of values :
+   arguments of the callsite.  They were originally proposed in a paper called
+   "Interprocedural Constant Propagation", by David Callahan, Keith D Cooper,
+   Ken Kennedy, Linda Torczon in Comp86, pg 152-161.  There are three main
+   types of values :
 
    Pass-through - the caller's formal parameter is passed as an actual
                   argument, possibly one simple operation performed on it.
@@ -41,7 +45,8 @@ along with GCC; see the file COPYING3.  If not see
    Unknown      - neither of the above.
 
    IPA_JF_CONST_MEMBER_PTR stands for C++ member pointers, it is a special
-   constant in this regard.  Other constants are represented with IPA_JF_CONST.
+   constant in this regard because it is in fact a structure consisting of two
+   values.  Other constants are represented with IPA_JF_CONST.
 
    IPA_JF_ANCESTOR is a special pass-through jump function, which means that
    the result is an address of a part of the object pointed to by the formal
@@ -130,95 +135,65 @@ struct GTY (()) ipa_jump_func
   } GTY ((desc ("%1.type"))) value;
 };
 
-/* All formal parameters in the program have a lattice associated with it
-   computed by the interprocedural stage of IPCP.
-   There are three main values of the lattice:
-   IPA_TOP - unknown,
-   IPA_BOTTOM - variable,
-   IPA_CONST_VALUE - simple scalar constant,
+/* Summary describing a single formal parameter.  */
 
-   We also use this type to propagate types accross the call graph for the
-   purpose of devirtualization.  In that case, IPA_CONST_VALUE denotes a known
-   type, rather than a constant.  */
-enum ipa_lattice_type
-{
-  IPA_BOTTOM,
-  IPA_CONST_VALUE,
-  IPA_TOP
-};
-
-/* All formal parameters in the program have a cval computed by
-   the interprocedural stage of IPCP. See enum ipa_lattice_type for
-   the various types of lattices supported */
-struct ipcp_lattice
-{
-  enum ipa_lattice_type type;
-  tree constant;
-};
-
-/* Structure describing a single formal parameter.  */
 struct ipa_param_descriptor
 {
-  /* IPA-CP lattice.  */
-  struct ipcp_lattice ipcp_lattice;
   /* PARAM_DECL of this parameter.  */
   tree decl;
-  /* Vector of BINFOs of types that this argument might encounter.  NULL
-     basically means a top value, bottom is marked by the cannot_devirtualize
-     flag below.*/
-  VEC (tree, heap) *types;
   /* The parameter is used.  */
   unsigned used : 1;
-  /* Set when parameter type cannot be used for devirtualization.  */
-  unsigned cannot_devirtualize : 1;
 };
+
+typedef struct ipa_param_descriptor ipa_param_descriptor_t;
+DEF_VEC_O (ipa_param_descriptor_t);
+DEF_VEC_ALLOC_O (ipa_param_descriptor_t, heap);
+struct ipcp_lattice;
 
 /* ipa_node_params stores information related to formal parameters of functions
    and some other information for interprocedural passes that operate on
    parameters (such as ipa-cp).  */
+
 struct ipa_node_params
 {
-  /* Number of formal parameters of this function.  When set to 0, this
-     function's parameters would not be analyzed by IPA CP.  */
-  int param_count;
-  /* Whether this function is called with variable number of actual
-     arguments.  */
-  unsigned called_with_var_arguments : 1;
-  /* Whether the param uses analysis has already been performed.  */
-  unsigned uses_analysis_done : 1;
-  /* Whether the function is enqueued in an ipa_func_list.  */
-  unsigned node_enqueued : 1;
+  /* Information about individual formal parameters that are gathered when
+     summaries are generated. */
+  VEC (ipa_param_descriptor_t, heap) *descriptors;
   /* Pointer to an array of structures describing individual formal
      parameters.  */
-  struct ipa_param_descriptor *params;
+  struct ipcp_lattice *lattices;
   /* Only for versioned nodes this field would not be NULL,
      it points to the node that IPA cp cloned from.  */
   struct cgraph_node *ipcp_orig_node;
-  /* Meaningful only for original functions.  Expresses the
-     ratio between the direct calls and sum of all invocations of
-     this function (given by profiling info).  It is used to calculate
-     the profiling information of the original function and the versioned
-     one.  */
-  gcov_type count_scale;
+  /* If this node is an ipa-cp clone, these are the known values that describe
+     what it has been specialized for.  */
+  VEC (tree, heap) *known_vals;
+  /* Whether this function is called with variable number of actual
+     arguments.  */
+  unsigned called_with_var_arguments : 1;
+  /* Set when it is possible to create specialized versions of this node.  */
+  unsigned node_versionable : 1;
+  /* Whether the param uses analysis has already been performed.  */
+  unsigned uses_analysis_done : 1;
+  /* Whether the function is enqueued in ipa-cp propagation stack.  */
+  unsigned node_enqueued : 1;
+  /* Whether we should create a specialized version based on values that are
+     known to be constant in all contexts.  */
+  unsigned clone_for_all_contexts : 1;
+  /* Node has been completely replaced by clones and will be removed after
+     ipa-cp is finished.  */
+  unsigned node_dead : 1;
 };
 
 /* ipa_node_params access functions.  Please use these to access fields that
    are or will be shared among various passes.  */
-
-/* Set the number of formal parameters. */
-
-static inline void
-ipa_set_param_count (struct ipa_node_params *info, int count)
-{
-  info->param_count = count;
-}
 
 /* Return the number of formal parameters. */
 
 static inline int
 ipa_get_param_count (struct ipa_node_params *info)
 {
-  return info->param_count;
+  return VEC_length (ipa_param_descriptor_t, info->descriptors);
 }
 
 /* Return the declaration of Ith formal parameter of the function corresponding
@@ -228,39 +203,25 @@ ipa_get_param_count (struct ipa_node_params *info)
 static inline tree
 ipa_get_param (struct ipa_node_params *info, int i)
 {
-  gcc_assert (i >= 0 && i <= info->param_count);
-  return info->params[i].decl;
+  return VEC_index (ipa_param_descriptor_t, info->descriptors, i)->decl;
 }
 
-/* Return the used flag corresponding to the Ith formal parameter of
-   the function associated with INFO.  */
+/* Set the used flag corresponding to the Ith formal parameter of the function
+   associated with INFO to VAL.  */
+
+static inline void
+ipa_set_param_used (struct ipa_node_params *info, int i, bool val)
+{
+  VEC_index (ipa_param_descriptor_t, info->descriptors, i)->used = val;
+}
+
+/* Return the used flag corresponding to the Ith formal parameter of the
+   function associated with INFO.  */
 
 static inline bool
 ipa_is_param_used (struct ipa_node_params *info, int i)
 {
-  gcc_assert (i >= 0 && i <= info->param_count);
-  return info->params[i].used;
-}
-
-/* Return the cannot_devirtualize flag corresponding to the Ith formal
-   parameter of the function associated with INFO.  The corresponding function
-   to set the flag is ipa_set_param_cannot_devirtualize.  */
-
-static inline bool
-ipa_param_cannot_devirtualize_p (struct ipa_node_params *info, int i)
-{
-  gcc_assert (i >= 0 && i <= info->param_count);
-  return info->params[i].cannot_devirtualize;
-}
-
-/* Return true iff the vector of possible types of the Ith formal parameter of
-   the function associated with INFO is empty.  */
-
-static inline bool
-ipa_param_types_vec_empty (struct ipa_node_params *info, int i)
-{
-  gcc_assert (i >= 0 && i <= info->param_count);
-  return info->params[i].types == NULL;
+  return VEC_index (ipa_param_descriptor_t, info->descriptors, i)->used;
 }
 
 /* Flag this node as having callers with variable number of arguments.  */
@@ -278,8 +239,6 @@ ipa_is_called_with_var_arguments (struct ipa_node_params *info)
 {
   return info->called_with_var_arguments;
 }
-
-
 
 /* ipa_edge_args stores information related to a callsite and particularly its
    arguments.  It can be accessed by the IPA_EDGE_REF macro.  */
@@ -402,33 +361,6 @@ ipa_edge_args_info_available_for_edge_p (struct cgraph_edge *edge)
 					     ipa_edge_args_vector));
 }
 
-/* A function list element.  It is used to create a temporary worklist used in
-   the propagation stage of IPCP. (can be used for more IPA optimizations)  */
-struct ipa_func_list
-{
-  struct cgraph_node *node;
-  struct ipa_func_list *next;
-};
-
-/* ipa_func_list interface.  */
-struct ipa_func_list *ipa_init_func_list (void);
-void ipa_push_func_to_list_1 (struct ipa_func_list **, struct cgraph_node *,
-			      struct ipa_node_params *);
-struct cgraph_node *ipa_pop_func_from_list (struct ipa_func_list **);
-
-/* Add cgraph NODE to the worklist WL if it is not already in one.  */
-
-static inline void
-ipa_push_func_to_list (struct ipa_func_list **wl, struct cgraph_node *node)
-{
-  struct ipa_node_params *info = IPA_NODE_REF (node);
-
-  if (!info->node_enqueued)
-    ipa_push_func_to_list_1 (wl, node, info);
-}
-
-void ipa_analyze_node (struct cgraph_node *);
-
 /* Function formal parameters related computations.  */
 void ipa_initialize_node_params (struct cgraph_node *node);
 bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
@@ -438,12 +370,18 @@ bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree,
 						    tree);
 
+/* Functions related to both.  */
+void ipa_analyze_node (struct cgraph_node *);
 
 /* Debugging interface.  */
 void ipa_print_node_params (FILE *, struct cgraph_node *node);
 void ipa_print_all_params (FILE *);
 void ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node);
 void ipa_print_all_jump_functions (FILE * f);
+void ipcp_verify_propagated_values (void);
+
+extern alloc_pool ipcp_values_pool;
+extern alloc_pool ipcp_sources_pool;
 
 /* Structure to describe transformations of formal parameters and actual
    arguments.  Each instance describes one new parameter and they are meant to
@@ -521,9 +459,6 @@ void ipa_prop_write_jump_functions (cgraph_node_set set);
 void ipa_prop_read_jump_functions (void);
 void ipa_update_after_lto_read (void);
 int ipa_get_param_decl_index (struct ipa_node_params *, tree);
-void ipa_lattice_from_jfunc (struct ipa_node_params *info,
-			     struct ipcp_lattice *lat,
-			     struct ipa_jump_func *jfunc);
 tree ipa_cst_from_jfunc (struct ipa_node_params *info,
 			 struct ipa_jump_func *jfunc);
 
@@ -531,14 +466,5 @@ tree ipa_cst_from_jfunc (struct ipa_node_params *info,
 /* From tree-sra.c:  */
 tree build_ref_for_offset (location_t, tree, HOST_WIDE_INT, tree,
 			   gimple_stmt_iterator *, bool);
-
-/* Return the lattice corresponding to the Ith formal parameter of the function
-   described by INFO.  */
-static inline struct ipcp_lattice *
-ipa_get_lattice (struct ipa_node_params *info, int i)
-{
-  gcc_assert (i >= 0 && i <= info->param_count);
-  return &(info->params[i].ipcp_lattice);
-}
 
 #endif /* IPA_PROP_H */

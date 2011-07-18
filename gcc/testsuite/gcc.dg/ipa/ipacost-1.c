@@ -51,10 +51,10 @@ main()
   i_can_not_be_propagated_fully2 (array);
 }
 
-/* { dg-final { scan-ipa-dump-times "versioned function i_can_be_propagated_fully2" 1 "cp"  } } */
-/* { dg-final { scan-ipa-dump-times "versioned function i_can_be_propagated_fully " 1 "cp"  } } */
-/* { dg-final { scan-ipa-dump-not "versioned function i_can_not_be_propagated_fully2" "cp"  } } */
-/* { dg-final { scan-ipa-dump-not "versioned function i_can_not_be_propagated_fully " "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "Creating a specialized node of i_can_be_propagated_fully2" 1 "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "Creating a specialized node of i_can_be_propagated_fully/" 1 "cp"  } } */
+/* { dg-final { scan-ipa-dump-not "Creating a specialized node of i_can_not_be_propagated_fully2" "cp"  } } */
+/* { dg-final { scan-ipa-dump-not "Creating a specialized node of i_can_not_be_propagated_fully/" "cp"  } } */
 /* { dg-final { scan-tree-dump-not "i_can_be_propagated_fully " "optimized"  } } */
 /* { dg-final { scan-tree-dump-not "i_can_be_propagated_fully2 " "optimized"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */
