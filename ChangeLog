@@ -1,10 +1,10 @@
+2011-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* MAINTAINERS (Global Reviewers): Add myself.
+
 2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure: Regenerate.
-
-2011-07-18  Richard Guenther  <rguenther@suse.de>
-
-	* MAINTAINERS (Global Reviewers): Add myself.
 
 2011-07-16  Jason Merrill  <jason@redhat.com>
 
