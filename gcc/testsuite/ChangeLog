@@ -1,3 +1,7 @@
+2011-07-18  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/pr49038.c: Run only on targets that support mmap.
+
 2011-07-17  Tobias Burnus  <burnus@net-b.de>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
