@@ -12076,6 +12076,8 @@ resolve_symbol (gfc_symbol *sym)
 	    }
 	}
     }
+  else if (mp_flag && sym->attr.flavor == FL_PROCEDURE && sym->attr.function)
+    gfc_resolve_array_spec (sym->result->as, false);
 
   /* Assumed size arrays and assumed shape arrays must be dummy
      arguments.  Array-spec's of implied-shape should have been resolved to

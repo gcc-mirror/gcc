@@ -1,3 +1,9 @@
+2011-07-18  Mikael Morin  <mikael.morin@sfr.fr>
+
+	PR fortran/49648
+	* resolve.c (resolve_symbol): Force resolution of function result's
+	array specification.
+
 2011-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/49698
