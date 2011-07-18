@@ -1,3 +1,5 @@
+/* { dg-do run { target i?86-*-linux* x86_64-*-linux* ia64-*-linux* alpha*-*-linux* powerpc*-*-linux* s390*-*-linux* sparc*-*-linux* *-*-darwin* } } */
+
 #include <sys/mman.h>
 #include <stdio.h>
 
