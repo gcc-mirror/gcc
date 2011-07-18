@@ -1,3 +1,9 @@
+2011-07-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47744
+	* config/i386/i386.c (ix86_decompose_address): Allow only subregs
+	of DImode hard registers in PLUS address chains.
+
 2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/49769
@@ -281,15 +287,14 @@
 	(READONLY_DATA_SECTION_ASM_OP): Remove.
 	(TARGET_ASM_NAMED_SECTION): Move from here...
 	* config/avr/avr.c: ...to here.
-	(avr_asm_init_sections): Set unnamed callback of
-	readonly_data_section.
+	(avr_asm_init_sections): Set unnamed callback of readonly_data_section.
 	(avr_asm_named_section): Make static.
 
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/49739
-	* config.gcc (extra_parts): Add crtprec32.o crtprec64.o crtp
-	rec80.o crtfastmath.o for Linux/x86.
+	* config.gcc (extra_parts): Add crtprec32.o crtprec64.o crtprec80.o
+	and crtfastmath.o for Linux/x86.
 
 2011-07-14  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -319,8 +324,7 @@
 	estimate_insn_tick, estimate_shadow_tick): New functions.
 	(prune_ready_list): New arg shadows_only_p.  All callers changed.
 	If true, remove everything that isn't SHADOW_P.  Look up delay
-	pairs and estimate ticks to avoid scheduling the first insn too
-	early.
+	pairs and estimate ticks to avoid scheduling the first insn too early.
 	(verify_shadows): New function.
 	(schedule_block): Add machinery to enable backtracking.
 	(sched_init): Take sched_no_dce into account when setting
@@ -385,8 +389,7 @@
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/49541
-	* config/sol2.h (LIB_SPEC): Simplify.
-	Move LIB_THREAD_LDFLAGS_SPEC ...
+	* config/sol2.h (LIB_SPEC): Simplify.  Move LIB_THREAD_LDFLAGS_SPEC ...
 	(LINK_SPEC): ... here.
 
 2011-07-13  Bernd Schmidt  <bernds@codesourcery.com>
@@ -448,8 +451,7 @@
 
 2011-07-13  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.c (x86_output_mi_thunk): Support ptr_mode
-	!= Pmode.
+	* config/i386/i386.c (x86_output_mi_thunk): Support ptr_mode != Pmode.
 
 	* config/i386/i386.md (*addsi_1_zext): Renamed to ...
 	(addsi_1_zext): This.
