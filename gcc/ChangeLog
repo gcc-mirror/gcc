@@ -1,3 +1,8 @@
+2011-07-18  Richard Henderson  <rth@redhat.com>
+
+	* bb-reorder.c (fix_crossing_conditional_branches): Emit all insns
+	before calling create_basic_block.
+
 2011-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49675
