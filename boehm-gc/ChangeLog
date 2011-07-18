@@ -1,3 +1,12 @@
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR boehm-gc/49381
+	Backport from mainline:
+	2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (*-*-solaris2*): Add -lrt to THREADLIBS.
+	* configure: Regenerate.
+
 2011-04-28  Release Manager
 
 	* GCC 4.5.3 released.

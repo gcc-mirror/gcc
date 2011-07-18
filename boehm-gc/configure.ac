@@ -193,7 +193,9 @@ case "$THREADS" in
 	# The alternate thread library was only introduced in Solaris 8 and
 	# became the default in Solaris 9, so no need for the special code
 	# above otherwise.
-	THREADLIBS=-lpthread
+	# nanosleep, sched_yield, and sem_* only live in librt before
+	# Solaris 11.
+	THREADLIBS="-lpthread -lrt"
 	;;
      *-*-irix*)
 	AC_DEFINE(GC_IRIX_THREADS,1,[support for Irix pthreads])
