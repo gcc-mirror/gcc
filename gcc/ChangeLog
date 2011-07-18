@@ -1,3 +1,9 @@
+2011-07-18  Richard Henderson  <rth@redhat.com>
+
+	* bb-reorder.c (emit_barrier_after_bb): Split out of ...
+	(add_labels_and_missing_jumps): ... here.
+	(fix_up_fall_thru_edges, fix_crossing_conditional_branches): Use it.
+
 2011-07-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47744
