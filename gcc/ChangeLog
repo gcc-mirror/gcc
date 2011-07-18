@@ -1,3 +1,23 @@
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/49769
+	* config.gcc (alpha*-*-linux*): Add crtfastmath.o to extra_parts.
+	(alpha*-*-freebsd*): Likewise.
+	(i[34567]86-*-linux*, i[34567]86-*-kfreebsd*-gnu,
+	i[34567]86-*-knetbsd*-gnu, i[34567]86-*-gnu*,
+	i[34567]86-*-kopensolaris*-gnu): Add crtprec32.o, crtprec64.o,
+	crtprec80.o, crtfastmath.o to extra_parts for all targets.
+	(ia64*-*-elf*): Remove extra_parts.
+	(sparc-*-linux*): Add crtfastmath.o to extra_parts.
+	(sparc64-*-linux*): Likewise.
+	(sparc64-*-freebsd*): Likewise.
+
+	Revert:
+	* config.gcc (ia64*-*-freebsd*): Remove crtfastmath.o from extra_parts.
+	(ia64*-*-linux*): Likewise.
+	(mips64*-*-linux*): Likewise.
+	(mips*-*-linux*): Likewise.
+
 2011-07-18  David Edelsohn  <dje.gcc@gmail.com>
 
 	* doc/install.texi (Specific, *-ibm-aix*): AIX assembler bug.
