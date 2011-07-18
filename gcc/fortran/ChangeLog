@@ -1,3 +1,8 @@
+2011-07-18  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (resolve_transfer): Mention defined I/O
+	in the diagnostic for alloc_comp/pointer_comp.
+
 2011-07-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34657
