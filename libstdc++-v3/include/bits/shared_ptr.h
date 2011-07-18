@@ -614,7 +614,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// std::hash specialization for shared_ptr.
   template<typename _Tp>
     struct hash<shared_ptr<_Tp>>
-    : public std::unary_function<shared_ptr<_Tp>, size_t>
+    : public __hash_base<size_t, shared_ptr<_Tp>>
     {
       size_t
       operator()(const shared_ptr<_Tp>& __s) const
