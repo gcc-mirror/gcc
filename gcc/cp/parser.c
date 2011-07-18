@@ -15921,7 +15921,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
     {
       cp_parameter_declarator *parameter;
       tree decl = error_mark_node;
-      bool parenthesized_p;
+      bool parenthesized_p = false;
       /* Parse the parameter.  */
       parameter
 	= cp_parser_parameter_declaration (parser,

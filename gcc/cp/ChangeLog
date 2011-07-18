@@ -1,3 +1,8 @@
+2011-07-18  Martin Jambor  <mjambor@suse.cz>
+
+	* parser.c (cp_parser_parameter_declaration_list): Initialize
+	parenthesized_p.
+
 2011-07-16  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tinst_level_tick, last_template_error_tick): Replace with
