@@ -1,3 +1,7 @@
+2011-07-18  Richard Guenther  <rguenther@suse.de>
+
+	* MAINTAINERS (Global Reviewers): Add myself.
+
 2011-07-16  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.def (language=c++): Add check-c++0x and
