@@ -1,3 +1,9 @@
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/49541
+	* testsuite/lib/libgomp.exp (libgomp_init): Don't add -lgomp to
+	ldflags.
+
 2011-06-27  Release Manager
 
 	* GCC 4.6.1 released.
