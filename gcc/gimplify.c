@@ -6773,13 +6773,13 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	       source location of the outer expression.  */
 	    tree org_type = TREE_TYPE (*expr_p);
 	    *expr_p = gimple_boolify (*expr_p);
-	    *expr_p = build3_loc (saved_location, COND_EXPR,
+	    *expr_p = build3_loc (input_location, COND_EXPR,
 				  org_type, *expr_p,
 				  fold_convert_loc
-				    (saved_location,
+				    (input_location,
 				     org_type, boolean_true_node),
 				  fold_convert_loc
-				    (saved_location,
+				    (input_location,
 				     org_type, boolean_false_node));
 	    ret = GS_OK;
 	    break;
@@ -7229,7 +7229,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    *expr_p = gimple_boolify (*expr_p);
 	    if (!useless_type_conversion_p (orig_type, TREE_TYPE (*expr_p)))
 	      {
-		*expr_p = fold_convert_loc (saved_location, orig_type, *expr_p);
+		*expr_p = fold_convert_loc (input_location, orig_type, *expr_p);
 		ret = GS_OK;
 		break;
 	      }
