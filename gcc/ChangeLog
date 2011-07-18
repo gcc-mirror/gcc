@@ -1,5 +1,10 @@
 2011-07-18  Richard Guenther  <rguenther@suse.de>
 
+	* gimplify.c (gimplify_expr): Use input_location, not saved_location
+	when building new trees.
+
+2011-07-18  Richard Guenther  <rguenther@suse.de>
+
 	* expr.c (expand_expr_real_2): Properly truncate the BIT_NOT_EXPR
 	expansion result to bitfield precision if required.
 
