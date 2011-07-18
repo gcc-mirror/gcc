@@ -860,11 +860,17 @@ DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "a pointer to an aggregate with",
 	  2, 0, 0)
 
-DEFPARAM (PARAM_DEVIRT_TYPE_LIST_SIZE,
-	  "devirt-type-list-size",
-	  "Maximum size of a type list associated with each parameter for "
-	  "devirtualization",
+DEFPARAM (PARAM_IPA_CP_VALUE_LIST_SIZE,
+	  "ipa-cp-value-list-size",
+	  "Maximum size of a list of values associated with each parameter for "
+	  "interprocedural constant propagation",
 	  8, 0, 0)
+
+DEFPARAM (PARAM_IPA_CP_EVAL_THRESHOLD,
+	  "ipa-cp-eval-threshold",
+	  "Threshold ipa-cp opportunity evaluation that is still considered "
+	  "beneficial to clone.",
+	  500, 0, 0)
 
 /* WHOPR partitioning configuration.  */
 

@@ -1,3 +1,65 @@
+2011-07-18  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h: Include alloc-pool.h, all sorts of updates to general
+	comments.
+	(ipcp_values_pool): Declare.
+	(ipcp_sources_pool): Likewise.
+	(ipcp_lattice): Changed to forward declaration.
+	(ipa_param_descriptor): Removed fields ipcp_lattice, types and
+	cannot_devirtualize.
+	(ipa_node_params): New fields descriptors, lattices, known_vals,
+	clone_for_all_contexts and node dead, removed fields params and
+	count_scale.
+	(ipa_set_param_count): Removed.
+	(ipa_get_param_count): Made to work with descriptors vector.
+	(ipa_get_param): Updated.
+	(ipa_param_cannot_devirtualize_p): Removed.
+	(ipa_param_types_vec_empty): Likewise.
+	(ipa_set_param_used): New function.
+	(ipa_get_param_used): Updated to use descriptors vector.
+	(ipa_func_list): Removed.
+	(ipa_init_func_list): Removed declaration.
+	(ipa_push_func_to_list_1): Likewise.
+	(ipa_pop_func_from_list): Likewise.
+	(ipa_push_func_to_list): Removed.
+	(ipa_lattice_from_jfunc): Remove declaration.
+	(ipa_get_jf_pass_through_result): Declare.
+	(ipa_get_jf_ancestor_result): Likewise.
+	(ipa_value_from_jfunc): Likewise.
+	(ipa_get_lattice): Update.
+	(ipa_lat_is_single_const): New function.
+	* ipa-prop.c (ipa_push_func_to_list_1): Removed.
+	(ipa_init_func_list): Likewise.
+	(ipa_pop_func_from_list): Likewise.
+	(ipa_get_param_decl_index): Fix coding style.
+	(count_formal_params): Removed.
+	(count_formal_params_1): Renamed to count_formal_params.
+	(ipa_populate_param_decls): Update to use descriptors vector.
+	(ipa_initialize_node_params): Likewise.
+	(visit_ref_for_mod_analysis): Use ipa_set_param_used.
+	(ipa_analyze_params_uses): Likewise.
+	(ipa_free_node_params_substructures): Likewise and free also lattices
+	and known values.
+	(duplicate_array): Removed.
+	(ipa_edge_duplication_hook): Add the new edge to the list of edge
+	clones.
+	(ipa_node_duplication_hook): Update to use new lattices.
+	(ipa_free_all_structures_after_ipa_cp): Free alloc pools.
+	(ipa_free_all_structures_after_iinln): Likewise.
+	(ipa_write_node_info): Update to use new lattices.
+	(ipa_read_node_info): Likewise.
+	(ipa_get_jf_pass_through_result): New function.
+	(ipa_get_jf_ancestor_result): Likewise.
+	(ipa_value_from_jfunc): Likewise.
+	(ipa_cst_from_jfunc): Reimplemented using ipa_value_from_jfunc.
+	* ipa-cp.c: Reimplemented.
+	* params.def (PARAM_DEVIRT_TYPE_LIST_SIZE): Removed.
+	(PARAM_IPA_CP_VALUE_LIST_SIZE): New parameter.
+	(PARAM_IPA_CP_EVAL_THRESHOLD): Likewise.
+	* Makefile.in (IPA_PROP_H): Added alloc-pool.h to dependencies.
+	* doc/invoke.texi (devirt-type-list-size): Removed description.
+	(ipa-cp-value-list-size): Added description.
+
 2011-07-18  Richard Henderson  <rth@redhat.com>
 
 	* bb-reorder.c (fix_crossing_conditional_branches): Emit all insns

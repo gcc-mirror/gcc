@@ -1,3 +1,19 @@
+2011-07-18  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipa-1.c: Updated testcase dump scan.
+	* gcc.dg/ipa/ipa-2.c: Likewise.
+	* gcc.dg/ipa/ipa-3.c: Likewise and made functions static.
+	* gcc.dg/ipa/ipa-4.c: Updated testcase dump scan.
+	* gcc.dg/ipa/ipa-5.c: Likewise.
+	* gcc.dg/ipa/ipa-7.c: Likewise.
+	* gcc.dg/ipa/ipa-8.c: Updated testcase dump scan.
+	* gcc.dg/ipa/ipacost-1.c: Likewise.
+	* gcc.dg/ipa/ipacost-2.c: Likewise and increased sizes of some
+	functions.
+	* gcc.dg/ipa/ipcp-1.c: New test.
+	* gcc.dg/ipa/ipcp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Updated testcase.
+
 2011-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49675

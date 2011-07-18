@@ -9006,11 +9006,11 @@ loop in the loop nest by a given number of iterations.  The strip
 length can be changed using the @option{loop-block-tile-size}
 parameter.  The default value is 51 iterations.
 
-@item devirt-type-list-size
-IPA-CP attempts to track all possible types passed to a function's
-parameter in order to perform devirtualization.
-@option{devirt-type-list-size} is the maximum number of types it
-stores per a single formal parameter of a function.
+@item ipa-cp-value-list-size
+IPA-CP attempts to track all possible values and types passed to a function's
+parameter in order to propagate them and perform devirtualization.
+@option{ipa-cp-value-list-size} is the maximum number of values and types it
+stores per one formal parameter of a function.
 
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.

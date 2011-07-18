@@ -1006,7 +1006,7 @@ LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) vecprim.h $(TREE_H) $(GIMPLE_H) \
 		$(GCOV_IO_H)
 TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H)
-IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H)
+IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H) alloc-pool.h
 GSTAB_H = gstab.h stab.def
 BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
 GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h $(CONFIG_H) $(SYSTEM_H) \
