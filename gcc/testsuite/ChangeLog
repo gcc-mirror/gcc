@@ -1,3 +1,29 @@
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/ext/bitfield2.C: Remove i?86-*-netware support.
+	* g++.dg/ext/bitfield3.C: Likewise.
+	* g++.dg/ext/bitfield4.C: Likewise.
+	* g++.dg/ext/bitfield5.C: Likewise.
+	* g++.dg/other/PR23205.C: Remove *-*-netware* support.
+	* g++.dg/other/pr23205-2.C: Likewise.
+	* gcc.c-torture/compile/20001109-1.c: Remove dg-xfail-if.
+	* gcc.c-torture/compile/20001109-2.c: Likewise.
+	* gcc.dg/20040813-1.c: Remove *-*-netware* support.
+	* gcc.dg/bitfld-15.c: Remove i?86-*-netware support.
+	* gcc.dg/bitfld-16.c: Likewise.
+	* gcc.dg/bitfld-17.c: Likewise.
+	* gcc.dg/bitfld-18.c: Likewise.
+	* gcc.dg/builtins-config.h: Remove Netware support.
+	* gcc.dg/cdce1.c: Remove *-*-netware* support.  Update line number.
+	* gcc.dg/cdce2.c: Likewise.
+	* gcc.dg/cpp/assert4.c: Remove netware support.
+	* gcc.dg/debug/pr35154.c: Remove *-*-netware* support.
+	* gfortran.dg/debug/pr35154-stabs.f: Remove *-*-netware* support.
+
+	* lib/target-supports.exp (check_visibility_available): Remove
+	NetWare support.
+	(check_profiling_available): Likewise.
+
 2011-07-18  Ira Rosen  <ira.rosen@linaro.org>
 
 	* gcc.dg/vect/pr49038.c: Run only on targets that support mmap.

@@ -128,14 +128,6 @@
 # error
 #endif
 
-#if defined __netware__
-# if !#system(netware)
-#  error
-# endif
-#elif #system(netware)
-# error
-#endif
-
 
 /* Check for #cpu and #machine assertions.  */
 

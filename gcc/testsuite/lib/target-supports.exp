@@ -290,11 +290,6 @@ proc check_weak_override_available { } {
 # The argument is the kind of visibility, default/protected/hidden/internal.
 
 proc check_visibility_available { what_kind } {
-    # On NetWare, support makes no sense.
-    if { [istarget *-*-netware*] } {
-        return 0
-    }
-
     if [string match "" $what_kind] { set what_kind "hidden" }
 
     return [check_no_compiler_messages visibility_available_$what_kind object "
@@ -571,7 +566,6 @@ proc check_profiling_available { test_what } {
 	     || [istarget tic6x-*-elf]
 	     || [istarget xstormy16-*]
 	     || [istarget xtensa*-*-elf]
-	     || [istarget *-*-netware*]
 	     || [istarget *-*-rtems*]
 	     || [istarget *-*-vxworks*] } {
 	    set profiling_available_saved 0

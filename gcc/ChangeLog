@@ -1,3 +1,27 @@
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (i[3456x]86-*-netware*): Remove.
+
+	* gthr-nks.h: Remove.
+	* configure.ac (enable_threads): Remove nks.
+	* configure: Regenerate.
+
+	* config/i386/i386.c (ix86_encode_section_info): Remove netware
+	reference.
+	* config/i386/i386.h (KEEP_AGGREGATE_RETURN_POINTER): Remove
+	<netware.h> reference.
+
+	* config/i386/netware-libgcc.c,
+	gcc/config/i386/netware-libgcc.def,
+	gcc/config/i386/netware-libgcc.exp, gcc/config/i386/netware.c,
+	gcc/config/i386/netware.h, gcc/config/i386/netware.opt,
+	gcc/config/i386/nwld.c, gcc/config/i386/nwld.h,
+	gcc/config/i386/t-netware, gcc/config/i386/t-nwld: Remove
+
+	* doc/extend.texi (Function Attributes,
+	callee_pop_aggregate_return): Remove i?86-netware reference.
+	* doc/install.texi (Configuration, --enable-threads): Remove nks.
+
 2011-07-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/49746

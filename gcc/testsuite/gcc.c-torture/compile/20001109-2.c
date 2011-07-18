@@ -1,5 +1,3 @@
-/* This does not work on NetWare, which has a default of 1-byte alignment.  */
-/* { dg-xfail-if "" { "*-*-netware*" } { "*" } { "" } } */
 extern struct foo bar;
 struct foo {
   int a;

@@ -1,3 +1,9 @@
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (i[3456x]86-*-netware*): Remove.
+	* config/i386/netware-crt0.c, config/i386/t-nwld,
+	config/i386/t-slibgcc-nwld: Remove.
+
 2011-07-15  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config.host: Handle tic6x-*-*.

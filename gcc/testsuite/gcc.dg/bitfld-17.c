@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
-/* { dg-options "-mno-ms-bitfields" { target i?86-*-netware } } */
 /* { dg-options "-mno-ms-bitfields -Wno-packed-bitfield-compat" { target { i?86-*-mingw* x86_64-*-mingw* } } } */
 
 struct t
