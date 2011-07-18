@@ -759,7 +759,9 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
     {
       tree token;
 
-      token = gfc_create_var_np (pvoid_type_node, "caf_token");
+      token = gfc_create_var_np (build_qualified_type (pvoid_type_node,
+						       TYPE_QUAL_RESTRICT),
+				 "caf_token");
       GFC_TYPE_ARRAY_CAF_TOKEN (type) = token;
       DECL_ARTIFICIAL (token) = 1;
       TREE_STATIC (token) = 1;

@@ -1,5 +1,10 @@
 2011-07-18  Tobias Burnus  <burnus@net-b.de>
 
+	* trans-decl.c (gfc_build_qualified_array): Make coarray's
+	token TYPE_QUAL_RESTRICT.
+
+2011-07-18  Tobias Burnus  <burnus@net-b.de>
+
 	* resolve.c (resolve_transfer): Mention defined I/O
 	in the diagnostic for alloc_comp/pointer_comp.
 
@@ -1075,7 +1080,7 @@
 
 	* f95-lang.c (build_builtin_fntypes): Swap frexp parameter types.
 
-2010-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2011-04-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes: (optimize_lexical_comparison): New function.
 	(optimize_expr): Call it.
@@ -1211,7 +1216,7 @@
 	* trans-types.c (gfc_get_function_type): Don't use varargs if the
 	procedure is known to have no arguments.
 
-2010-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2011-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/22572
 	* gfortran.h (gfc_option_t) : Add
