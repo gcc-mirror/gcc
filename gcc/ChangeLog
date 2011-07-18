@@ -1,3 +1,10 @@
+2011-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/49675
+	* tree.c (build_common_builtin_nodes): Register
+	__builtin_return_address, __cyg_profile_func_enter
+	and __cyg_profile_func_exit.
+
 2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc: Obsolete i[3456x]86-*-netware*.
