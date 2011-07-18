@@ -1,3 +1,7 @@
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc: Obsolete i[3456x]86-*-netware*.
+
 2011-07-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/49746

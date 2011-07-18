@@ -240,6 +240,7 @@ case ${target} in
  | crx-*				\
  | i[34567]86-*-interix3*		\
  | i[34567]86-*-netbsd*			\
+ | i[3456x]86-*-netware*		\
  | i[34567]86-*-pe			\
  | m68hc11-*-*				\
  | m6811-*-*				\
