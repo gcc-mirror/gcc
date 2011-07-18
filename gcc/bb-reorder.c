@@ -1522,7 +1522,6 @@ fix_crossing_conditional_branches (void)
 {
   basic_block cur_bb;
   basic_block new_bb;
-  basic_block last_bb;
   basic_block dest;
   edge succ1;
   edge succ2;
@@ -1532,9 +1531,6 @@ fix_crossing_conditional_branches (void)
   rtx set_src;
   rtx old_label = NULL_RTX;
   rtx new_label;
-  rtx new_jump;
-
- last_bb = EXIT_BLOCK_PTR->prev_bb;
 
   FOR_EACH_BB (cur_bb)
     {
@@ -1597,35 +1593,27 @@ fix_crossing_conditional_branches (void)
 		new_label = block_label (new_bb);
 	      else
 		{
+		  basic_block last_bb;
+		  rtx new_jump;
+
 		  /* Create new basic block to be dest for
 		     conditional jump.  */
 
-		  new_bb = create_basic_block (NULL, NULL, last_bb);
-		  new_bb->aux = last_bb->aux;
-		  last_bb->aux = new_bb;
-		  last_bb = new_bb;
 		  /* Put appropriate instructions in new bb.  */
 
 		  new_label = gen_label_rtx ();
-		  emit_label_before (new_label, BB_HEAD (new_bb));
+		  emit_label (new_label);
 		  BB_HEAD (new_bb) = new_label;
 
-		  if (GET_CODE (old_label) == LABEL_REF)
-		    {
-		      old_label = JUMP_LABEL (old_jump);
-		      new_jump = emit_jump_insn_after (gen_jump
-						       (old_label),
-						       BB_END (new_bb));
-		    }
-		  else
-		    {
-		      gcc_assert (HAVE_return
-				  && GET_CODE (old_label) == RETURN);
-		      new_jump = emit_jump_insn_after (gen_return (),
-						       BB_END (new_bb));
-		    }
+		  gcc_assert (GET_CODE (old_label) == LABEL_REF);
+		  old_label = JUMP_LABEL (old_jump);
+		  new_jump = emit_jump_insn (gen_jump (old_label));
 		  JUMP_LABEL (new_jump) = old_label;
-		  BB_END (new_bb) = new_jump;
+
+		  last_bb = EXIT_BLOCK_PTR->prev_bb;
+		  new_bb = create_basic_block (new_label, new_jump, last_bb);
+		  new_bb->aux = last_bb->aux;
+		  last_bb->aux = new_bb;
 
 		  emit_barrier_after_bb (new_bb);
 
