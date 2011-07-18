@@ -1,3 +1,10 @@
+2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config-list.mk (i586-netware): Remove.
+	(.PHONY): Remove make-script-dir dependency.
+	(make-script-dir): Remove.
+	($(LIST)): Remove make-script-dir dependency.
+
 2011-07-15  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* gcc_update: Add C6X generated files.

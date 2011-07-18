@@ -2836,11 +2836,8 @@ On 32-bit i?86-*-* targets, you can control by those attribute for
 aggregate return in memory, if the caller is responsible to pop the hidden
 pointer together with the rest of the arguments - @var{number} equal to
 zero -, or if the callee is responsible to pop hidden pointer - @var{number}
-equal to one.
-
-For i?86-netware, the caller pops the stack for the hidden arguments pointing
-to aggregate return value.  This differs from the default i386 ABI which assumes
-that the callee pops the stack for hidden pointer.
+equal to one.  The default i386 ABI assumes that the callee pops the
+stack for hidden pointer.
 
 @item ms_hook_prologue
 @cindex @code{ms_hook_prologue} attribute

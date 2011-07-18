@@ -1141,8 +1141,6 @@ DCE thread support.
 LynxOS thread support.
 @item mipssde
 MIPS SDE thread support.
-@item nks
-Novell Kernel Services thread support.
 @item no
 This is an alias for @samp{single}.
 @item posix

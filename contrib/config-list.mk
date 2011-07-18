@@ -27,7 +27,7 @@ LIST = alpha-linux-gnu alpha-freebsd6 alpha-netbsd alpha-openbsd \
   i486-freebsd4 i686-freebsd6 i686-kfreebsd-gnu \
   i686-netbsdelf9 i686-knetbsd-gnu i686-openbsd i686-openbsd3.0 \
   i686-elf i686-kopensolaris-gnu i686-symbolics-gnu i686-pc-msdosdjgpp \
-  i686-lynxos i586-netwareOPT-with-ld=SCRIPTSnwld i686-nto-qnx \
+  i686-lynxos i686-nto-qnx \
   i686-rtems i686-solaris2.10 i686-wrs-vxworks \
   i686-wrs-vxworksae \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
@@ -72,7 +72,7 @@ LOGFILES = $(patsubst %,log/%-make.out,$(LIST))
 all: $(LOGFILES)
 config: $(LIST)
 
-.PHONY: make-log-dir make-script-dir all config
+.PHONY: make-log-dir all config
 
 empty=
 
@@ -81,14 +81,7 @@ empty=
 make-log-dir: ../gcc/MAINTAINERS
 	mkdir log
 
-# The 'ix86-netware --with-ld=nwld' configuration needs a nwld executable to
-# configure.  See PR47104.
-make-script-dir:
-	mkdir scripts
-	echo ld $* > scripts/nwld
-	chmod u+x scripts/nwld
-
-$(LIST): make-log-dir make-script-dir
+$(LIST): make-log-dir
 	-mkdir $@
 	(cd $@ && \
 	../../gcc/configure \

@@ -1,4 +1,4 @@
-dnl Copyright (C) 2010 Free Software Foundation, Inc.
+dnl Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 dnl This file is free software, distributed under the terms of the GNU
 dnl General Public License.  As a special exception to the GNU General
 dnl Public License, this file may be distributed as part of a program
@@ -14,7 +14,7 @@ AC_REQUIRE([AC_CANONICAL_TARGET])
 target_elf=no
 case $target in
   *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
-  *-msdosdjgpp* | *-netware* | *-vms* | *-wince* | *-*-pe* | \
+  *-msdosdjgpp* | *-vms* | *-wince* | *-*-pe* | \
   alpha*-dec-osf* | *-interix* | hppa[[12]]*-*-hpux*)
     target_elf=no
     ;;
