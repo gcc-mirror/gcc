@@ -1088,9 +1088,7 @@ use_pred_not_overlap_with_undef_path_pred (
 static inline bool
 is_and_or_or (enum tree_code tc, tree typ)
 {
-  return (tc == TRUTH_AND_EXPR
-          || tc == TRUTH_OR_EXPR
-          || tc == BIT_IOR_EXPR
+  return (tc == BIT_IOR_EXPR
           || (tc == BIT_AND_EXPR
               && (typ == 0 || TREE_CODE (typ) == BOOLEAN_TYPE)));
 }
@@ -1415,15 +1413,15 @@ is_norm_cond_subset_of (norm_cond_t norm_cond1,
   code1 = norm_cond1->cond_code;
   code2 = norm_cond2->cond_code;
 
-  if (code1 == TRUTH_AND_EXPR || code1 == BIT_AND_EXPR)
+  if (code1 == BIT_AND_EXPR)
     {
       /* Both conditions are AND expressions.  */
-      if (code2 == TRUTH_AND_EXPR || code2 == BIT_AND_EXPR)
+      if (code2 == BIT_AND_EXPR)
         return is_and_set_subset_of (norm_cond1, norm_cond2);
       /* NORM_COND1 is an AND expression, and NORM_COND2 is an OR
          expression. In this case, returns true if any subexpression
          of NORM_COND1 is a subset of any subexpression of NORM_COND2.  */
-      else if (code2 == TRUTH_OR_EXPR || code2 == BIT_IOR_EXPR)
+      else if (code2 == BIT_IOR_EXPR)
         {
           size_t len1;
           len1 = VEC_length (gimple, norm_cond1->conds);
@@ -1444,7 +1442,7 @@ is_norm_cond_subset_of (norm_cond_t norm_cond1,
         }
     }
   /* NORM_COND1 is an OR expression  */
-  else if (code1 == TRUTH_OR_EXPR || code1 == BIT_IOR_EXPR)
+  else if (code1 == BIT_IOR_EXPR)
     {
       if (code2 != code1)
         return false;
@@ -1457,10 +1455,10 @@ is_norm_cond_subset_of (norm_cond_t norm_cond1,
       gcc_assert (VEC_length (gimple, norm_cond1->conds) == 1);
       /* Conservatively returns false if NORM_COND1 is non-decomposible
          and NORM_COND2 is an AND expression.  */
-      if (code2 == TRUTH_AND_EXPR || code2 == BIT_AND_EXPR)
+      if (code2 == BIT_AND_EXPR)
         return false;
 
-      if (code2 == TRUTH_OR_EXPR || code2 == BIT_IOR_EXPR)
+      if (code2 == BIT_IOR_EXPR)
         return is_subset_of_any (VEC_index (gimple, norm_cond1->conds, 0),
                                  norm_cond1->invert, norm_cond2, false);
 
