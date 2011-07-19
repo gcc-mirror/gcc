@@ -9113,10 +9113,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  /* If temp is constant, we can just compute the result.  */
 	  if (GET_CODE (temp) == CONST_INT)
 	    {
-	      if (INTVAL (temp) != 0)
-	        emit_move_insn (target, const1_rtx);
-	      else
+	      if (INTVAL (temp) == 0)
 	        emit_move_insn (target, const0_rtx);
+	      else if (TYPE_PRECISION (type) == 1 && !TYPE_UNSIGNED (type))
+		emit_move_insn (target, constm1_rtx);
+	      else
+	        emit_move_insn (target, const1_rtx);
 
 	      return target;
 	    }
@@ -9133,7 +9135,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  op1 = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (temp, const0_rtx, EQ, NULL_RTX,
 				   GET_MODE (temp), unsignedp, op1);
-	  emit_move_insn (temp, const1_rtx);
+	  emit_move_insn (temp,
+			  TYPE_PRECISION (type) == 1 && !TYPE_UNSIGNED (type)
+			  ? constm1_rtx : const1_rtx);
 	  emit_label (op1);
 	  return temp;
 	}
@@ -9757,7 +9761,7 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
   rtx op0, op1;
   enum insn_code icode;
   rtx subtarget = target;
-  rtx result, label;
+  rtx result, label, trueval = const1_rtx;
 
   /* If this is a TRUTH_NOT_EXPR, set a flag indicating we must invert the
      result at the end.  We can't simply invert the test since it would
@@ -9887,7 +9891,9 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
 
   if ((code == NE || code == EQ)
       && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
-      && integer_pow2p (TREE_OPERAND (arg0, 1)))
+      && integer_pow2p (TREE_OPERAND (arg0, 1))
+      && (TYPE_PRECISION (TREE_TYPE (exp)) != 1
+	  || TYPE_UNSIGNED (TREE_TYPE (exp))))
     {
       tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
       return expand_expr (fold_single_bit_test (code == NE ? NE_EXPR : EQ_EXPR,
@@ -9939,13 +9945,18 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
   if (target == 0)
     target = gen_reg_rtx (mode);
 
+  if (TYPE_PRECISION (TREE_TYPE (exp)) == 1
+      && !TYPE_UNSIGNED (TREE_TYPE (exp)))
+    trueval = constm1_rtx;
+
   result = emit_store_flag (target, code, op0, op1,
-			    operand_mode, unsignedp, 1);
+			    operand_mode, unsignedp,
+			    trueval == const1_rtx ? 1 : -1);
 
   if (result)
     {
       if (invert)
-	result = expand_binop (mode, xor_optab, result, const1_rtx,
+	result = expand_binop (mode, xor_optab, result, trueval,
 			       result, 0, OPTAB_LIB_WIDEN);
       return result;
     }
@@ -9955,12 +9966,12 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
       || reg_mentioned_p (target, op0) || reg_mentioned_p (target, op1))
     target = gen_reg_rtx (GET_MODE (target));
 
-  emit_move_insn (target, invert ? const0_rtx : const1_rtx);
+  emit_move_insn (target, invert ? const0_rtx : trueval);
   label = gen_label_rtx ();
   do_compare_rtx_and_jump (op0, op1, code, unsignedp, operand_mode, NULL_RTX,
 			   NULL_RTX, label, -1);
 
-  emit_move_insn (target, invert ? const1_rtx : const0_rtx);
+  emit_move_insn (target, invert ? trueval : const0_rtx);
   emit_label (label);
 
   return target;

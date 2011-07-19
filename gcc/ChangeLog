@@ -1,6 +1,17 @@
 2011-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2011-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48973
+	* expr.c (expand_expr_real_1) <case LT_EXPR>: If do_store_flag
+	failed and the comparison has a single bit signed type, use
+	constm1_rtx instead of const1_rtx for true value.
+	(do_store_flag): If TREE_TYPE (exp) is single bit signed type, disable
+	single bit test optimization, pass -1 instead of 1 as last
+	parameter to emit_store_flag and use constm1_rtx instead of
+	const1_rtx as true value.
+
 	2011-05-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49039
