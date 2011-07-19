@@ -1,5 +1,16 @@
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-forwprop.c (lookup_logical_inverted_value): Remove
+	TRUTH_*_EXPR handling.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-ssa-pre.c (fully_constant_expression): Likewise.
+	* tree-ssa-uninit.c (use_pred_not_overlap_with_undef_path_pre):
+	Likewise.
+	(is_and_or_or): Likewise.
+	(is_norm_cond_subset_of): Likewise.
+
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
 	* tree.h (fold_build_pointer_plus_loc): New helper function.
 	(fold_build_pointer_plus_hwi_loc): Likewise.
 	(fold_build_pointer_plus): Define.

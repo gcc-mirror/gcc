@@ -1622,16 +1622,13 @@ lookup_logical_inverted_value (tree name)
   op2 = NULL_TREE;
 
   /* Get for EQ_EXPR or BIT_XOR_EXPR operation the second operand.
-     If CODE isn't an EQ_EXPR, BIT_XOR_EXPR, TRUTH_NOT_EXPR,
-     or BIT_NOT_EXPR, then return.  */
+     If CODE isn't an EQ_EXPR, BIT_XOR_EXPR, or BIT_NOT_EXPR, then return.  */
   if (code == EQ_EXPR || code == NE_EXPR
       || code == BIT_XOR_EXPR)
     op2 = gimple_assign_rhs2 (def);
 
   switch (code)
     {
-    case TRUTH_NOT_EXPR:
-      return op1;
     case BIT_NOT_EXPR:
       if (truth_valued_ssa_name (name))
 	return op1;
