@@ -1357,19 +1357,6 @@ enum reg_class
    ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
    : MODE)
 
-/* Return the maximum number of consecutive registers
-   needed to represent mode MODE in a register of class CLASS.  */
-/* On the 80386, this is the size of MODE in words,
-   except in the FP regs, where a single reg is always enough.  */
-#define CLASS_MAX_NREGS(CLASS, MODE)					\
-  (MAYBE_INTEGER_CLASS_P (CLASS)					\
-   ? ((MODE) == XFmode							\
-      ? (TARGET_64BIT ? 2 : 3)						\
-      : (MODE) == XCmode						\
-      ? (TARGET_64BIT ? 4 : 6)						\
-      : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))	\
-   : (COMPLEX_MODE_P (MODE) ? 2 : 1))
-
 /* Return a class of registers that cannot change FROM mode to TO mode.  */
 
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \

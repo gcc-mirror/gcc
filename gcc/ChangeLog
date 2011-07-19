@@ -1,3 +1,48 @@
+2011-07-20  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.def (class_max_nregs): New hook.
+	* doc/tm.texi.in (TARGET_CLASS_MAX_NREGS): Document.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_class_max_nregs): New function.
+	* targhooks.h (default_class_max_nregs): Declare.
+	* ira.h (target_ira): Change type x_ira_reg_class_max_nregs and
+	x_ira_reg_class_min_nregs arrays to unsigned char.
+	* ira.c (setup_reg_class_nregs): Use TARGET_CLASS_MAX_NREGS target
+	hook instead of CLASS_MAX_NREGS macro.
+	* reginfo.c (restore_register_info): Ditto.
+	* ira-conflicts.c (process_regs_for_copy): Use
+	ira_reg_class_max_nregs array instead of CLASS_MAX_NREGS macro.
+	Change type rclass and aclass vars to reg_class_t.
+	* ira-costs.c (record_reg_classes): Use ira_reg_class_max_nregs
+	array instead of CLASS_MAX_NREGS macro. Change type rclass var to
+	reg_class_t.
+	* reload.c (combine_reloads, find_reloads, find_reloads_address_1):
+	Use ira_reg_class_max_nregs array instead of CLASS_MAX_NREGS macro.
+
+	* config/i386/i386.h (CLASS_MAX_NREGS): Remove.
+	* config/i386/i386.c (ix86_class_max_nregs): New function.
+	(ix86_register_move_cost): Use TARGET_CLASS_MAX_NREGS target hook
+	instead of CLASS_MAX_NREGS macro.
+	(TARGET_CLASS_MAX_NREGS): Define.
+	* config/avr/avr.h (CLASS_MAX_NREGS): Remove.
+	* config/avr/avr-protos.h (class_max_nregs): Remove declaration.
+	* config/avr/avr.c (class_max_nregs): Remove function.
+	* config/alpha/alpha.h (CLASS_MAX_NREGS): Remove.
+	* config/spu/spu.h (CLASS_MAX_NREGS): Remove.
+	* config/mep/mep.h (CLASS_MAX_NREGS): Remove.
+	* config/m32r/m32r.h (CLASS_MAX_NREGS): Remove.
+	* config/microblaze/microblaze.h (CLASS_MAX_NREGS): Remove.
+	* config/xtensa/xtensa.h (CLASS_MAX_NREGS): Remove.
+	* config/stormy16/stormy16.h (CLASS_MAX_NREGS): Remove.
+	* config/lm32/lm32.h (CLASS_MAX_NREGS): Remove.
+	* config/moxie/moxie.h (CLASS_MAX_NREGS): Remove.
+	* config/iq2000/iq2000.h (CLASS_MAX_NREGS): Remove.
+	* config/mn10300/mn10300.h (CLASS_MAX_NREGS): Remove.
+	* config/score/score.h (CLASS_MAX_NREGS): Remove.
+	* config/vax/vax.h (CLASS_MAX_NREGS): Remove.
+	* config/h8300/h8300.h (CLASS_MAX_NREGS): Remove.
+	* config/v850/v850.h (CLASS_MAX_NREGS): Remove.
+
 2011-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cif-code.def (OVERWRITABLE): Fix typo and move around.

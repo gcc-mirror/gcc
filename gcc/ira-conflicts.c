@@ -393,7 +393,7 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
   int allocno_preferenced_hard_regno, cost, index, offset1, offset2;
   bool only_regs_p;
   ira_allocno_t a;
-  enum reg_class rclass, aclass;
+  reg_class_t rclass, aclass;
   enum machine_mode mode;
   ira_copy_t cp;
 
@@ -438,7 +438,7 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
   mode = ALLOCNO_MODE (a);
   aclass = ALLOCNO_CLASS (a);
   if (only_regs_p && insn != NULL_RTX
-      && reg_class_size[rclass] <= (unsigned) CLASS_MAX_NREGS (rclass, mode))
+      && reg_class_size[rclass] <= ira_reg_class_max_nregs [rclass][mode])
     /* It is already taken into account in ira-costs.c.  */
     return false;
   index = ira_class_hard_reg_index[aclass][allocno_preferenced_hard_regno];

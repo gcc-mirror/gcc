@@ -1767,9 +1767,9 @@ combine_reloads (void)
 	&& rld[i].when_needed != RELOAD_FOR_OUTPUT_ADDRESS
 	&& rld[i].when_needed != RELOAD_FOR_OUTADDR_ADDRESS
 	&& rld[i].when_needed != RELOAD_OTHER
-	&& (CLASS_MAX_NREGS (rld[i].rclass, rld[i].inmode)
-	    == CLASS_MAX_NREGS (rld[output_reload].rclass,
-				rld[output_reload].outmode))
+	&& (ira_reg_class_max_nregs [(int)rld[i].rclass][(int) rld[i].inmode]
+	    == ira_reg_class_max_nregs [(int) rld[output_reload].rclass]
+				       [(int) rld[output_reload].outmode])
 	&& rld[i].inc == 0
 	&& rld[i].reg_rtx == 0
 #ifdef SECONDARY_MEMORY_NEEDED
@@ -4542,7 +4542,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	       > GET_MODE_SIZE (rld[i].inmode)))
 	  ? rld[i].outmode : rld[i].inmode;
 
-      rld[i].nregs = CLASS_MAX_NREGS (rld[i].rclass, rld[i].mode);
+      rld[i].nregs = ira_reg_class_max_nregs [rld[i].rclass][rld[i].mode];
     }
 
   /* Special case a simple move with an input reload and a
@@ -5992,8 +5992,8 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	  else
 	    {
 	      enum reg_class rclass = context_reg_class;
-	      if ((unsigned) CLASS_MAX_NREGS (rclass, GET_MODE (SUBREG_REG (x)))
-		  > reg_class_size[rclass])
+	      if (ira_reg_class_max_nregs [rclass][GET_MODE (SUBREG_REG (x))]
+		  > reg_class_size[(int) rclass])
 		{
 		  x = find_reloads_subreg_address (x, 0, opnum,
 						   ADDR_TYPE (type),

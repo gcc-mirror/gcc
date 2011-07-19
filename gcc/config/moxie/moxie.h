@@ -189,11 +189,6 @@ enum reg_class
    accessible in mode MODE2 without copying.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) 1
 
-/* A C expression for the maximum number of consecutive registers of
-   class CLASS needed to hold a value of mode MODE.  */
-#define CLASS_MAX_NREGS(CLASS, MODE) \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 /* The Overall Framework of an Assembler File */
 
 #undef  ASM_SPEC

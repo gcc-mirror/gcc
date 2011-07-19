@@ -163,6 +163,7 @@ extern reg_class_t default_preferred_reload_class (rtx, reg_class_t);
 extern reg_class_t default_preferred_output_reload_class (rtx, reg_class_t);
 extern reg_class_t default_preferred_rename_class (reg_class_t rclass);
 extern bool default_class_likely_spilled_p (reg_class_t);
+extern unsigned char default_class_max_nregs (reg_class_t, enum machine_mode);
 
 extern enum unwind_info_type default_debug_unwind_info (void);
 
