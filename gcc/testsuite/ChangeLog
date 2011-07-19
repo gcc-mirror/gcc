@@ -4,6 +4,9 @@
 	2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/49644
+	* g++.dg/torture/pr49644.C: New test.
+
+	PR c/49644
 	* gcc.c-torture/execute/pr49644.c: New test.
 
 	PR middle-end/49640
