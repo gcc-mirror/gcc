@@ -136,19 +136,38 @@ typedef struct
 
 /* Structure used to describe the attributes of a MEM.  These are hashed
    so MEMs that the same attributes share a data structure.  This means
-   they cannot be modified in place.  If any element is nonzero, it means
-   the value of the corresponding attribute is unknown.  */
-/* ALIGN and SIZE are the alignment and size of the MEM itself,
-   while EXPR can describe a larger underlying object, which might have a
-   stricter alignment; OFFSET is the offset of the MEM within that object.  */
+   they cannot be modified in place.  */
 typedef struct GTY(()) mem_attrs
 {
-  tree expr;			/* expr corresponding to MEM.  */
-  rtx offset;			/* Offset from start of DECL, as CONST_INT.  */
-  rtx size;			/* Size in bytes, as a CONST_INT.  */
-  alias_set_type alias;		/* Memory alias set.  */
-  unsigned int align;		/* Alignment of MEM in bits.  */
-  unsigned char addrspace;	/* Address space (0 for generic).  */
+  /* The expression that the MEM accesses, or null if not known.
+     This expression might be larger than the memory reference itself.
+     (In other words, the MEM might access only part of the object.)  */
+  tree expr;
+
+  /* The offset of the memory reference from the start of EXPR.
+     Only valid if OFFSET_KNOWN_P.  */
+  HOST_WIDE_INT offset;
+
+  /* The size of the memory reference in bytes.  Only valid if
+     SIZE_KNOWN_P.  */
+  HOST_WIDE_INT size;
+
+  /* The alias set of the memory reference.  */
+  alias_set_type alias;
+
+  /* The alignment of the reference in bits.  Always a multiple of
+     BITS_PER_UNIT.  Note that EXPR may have a stricter alignment
+     than the memory reference itself.  */
+  unsigned int align;
+
+  /* The address space that the memory reference uses.  */
+  unsigned char addrspace;
+
+  /* True if OFFSET is known.  */
+  bool offset_known_p;
+
+  /* True if SIZE is known.  */
+  bool size_known_p;
 } mem_attrs;
 
 /* Structure used to describe the attributes of a REG in similar way as
@@ -1303,19 +1322,19 @@ do {									\
 #define MEM_EXPR(RTX) (get_mem_attrs (RTX)->expr)
 
 /* For a MEM rtx, true if its MEM_OFFSET is known.  */
-#define MEM_OFFSET_KNOWN_P(RTX) (get_mem_attrs (RTX)->offset != NULL_RTX)
+#define MEM_OFFSET_KNOWN_P(RTX) (get_mem_attrs (RTX)->offset_known_p)
 
 /* For a MEM rtx, the offset from the start of MEM_EXPR.  */
-#define MEM_OFFSET(RTX) INTVAL (get_mem_attrs (RTX)->offset)
+#define MEM_OFFSET(RTX) (get_mem_attrs (RTX)->offset)
 
 /* For a MEM rtx, the address space.  */
 #define MEM_ADDR_SPACE(RTX) (get_mem_attrs (RTX)->addrspace)
 
 /* For a MEM rtx, true if its MEM_SIZE is known.  */
-#define MEM_SIZE_KNOWN_P(RTX) (get_mem_attrs (RTX)->size != NULL_RTX)
+#define MEM_SIZE_KNOWN_P(RTX) (get_mem_attrs (RTX)->size_known_p)
 
 /* For a MEM rtx, the size in bytes of the MEM.  */
-#define MEM_SIZE(RTX) INTVAL (get_mem_attrs (RTX)->size)
+#define MEM_SIZE(RTX) (get_mem_attrs (RTX)->size)
 
 /* For a MEM rtx, the alignment in bits.  We can use the alignment of the
    mode as a default when STRICT_ALIGNMENT, but not if not.  */
