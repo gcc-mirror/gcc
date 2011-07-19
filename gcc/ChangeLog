@@ -1,3 +1,9 @@
+2011-07-19  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49771
+	* tree-vect-loop-manip.c (vect_vfa_segment_size): In case of
+	zero step, set segment length to the size of the data-ref's type.
+
 2011-07-18  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h: Include alloc-pool.h, all sorts of updates to general

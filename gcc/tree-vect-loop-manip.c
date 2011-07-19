@@ -2356,9 +2356,14 @@ static tree
 vect_vfa_segment_size (struct data_reference *dr, tree length_factor)
 {
   tree segment_length;
-  segment_length = size_binop (MULT_EXPR,
-			       fold_convert (sizetype, DR_STEP (dr)),
-			       fold_convert (sizetype, length_factor));
+
+  if (!compare_tree_int (DR_STEP (dr), 0))
+    segment_length = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
+  else
+    segment_length = size_binop (MULT_EXPR,
+                                 fold_convert (sizetype, DR_STEP (dr)),
+                                 fold_convert (sizetype, length_factor));
+
   if (vect_supportable_dr_alignment (dr, false)
         == dr_explicit_realign_optimized)
     {
