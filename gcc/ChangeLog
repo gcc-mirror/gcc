@@ -1,6 +1,12 @@
 2011-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2011-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49619
+	* combine.c (combine_simplify_rtx): In PLUS -> IOR simplification
+	pass VOIDmode as op0_mode to recursive call.
+
 	2011-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49165

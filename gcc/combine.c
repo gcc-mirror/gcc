@@ -5298,7 +5298,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
 	{
 	  /* Try to simplify the expression further.  */
 	  rtx tor = simplify_gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
-	  temp = combine_simplify_rtx (tor, mode, in_dest);
+	  temp = combine_simplify_rtx (tor, VOIDmode, in_dest);
 
 	  /* If we could, great.  If not, do not go ahead with the IOR
 	     replacement, since PLUS appears in many special purpose

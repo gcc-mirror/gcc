@@ -1,6 +1,11 @@
 2011-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2011-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/49619
+	* gcc.dg/pr49619.c: New test.
+
 	2011-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49165
