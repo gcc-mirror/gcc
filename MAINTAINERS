@@ -242,6 +242,7 @@ loop infrastructure	Zdenek Dvorak		ook@ucw.cz
 OpenMP			Jakub Jelinek		jakub@redhat.com
 testsuite		Rainer Orth		ro@CeBiTec.Uni-Bielefeld.DE
 testsuite		Mike Stump		mikestump@comcast.net
+register allocation	Vladimir Makarov	vmakarov@redhat.com
 
 Note that individuals who maintain parts of the compiler need approval to
 check in changes outside of the parts of the compiler they maintain.
@@ -283,7 +284,6 @@ loop optimizer		Zdenek Dvorak		ook@ucw.cz
 Plugin			Diego Novillo		dnovillo@google.com
 Plugin			Le-Chun Wu		lcwu@google.com
 register allocation	Peter Bergner		bergner@vnet.ibm.com
-register allocation	Vladimir Makarov	vmakarov@redhat.com
 register allocation	Kenneth Zadeck		zadeck@naturalbridge.com
 register allocation	Seongbae Park		seongbae.park@gmail.com
 LTO			Diego Novillo		dnovillo@google.com
