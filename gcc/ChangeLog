@@ -1,3 +1,9 @@
+2011-07-19  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/49742
+	* tree-data-ref.c (get_references_in_stmt): Treat the lhs of a call
+	as a potential write.
+
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 
 	* gimplify.c (gimplify_expr): Gimplify TRUTH_NOT_EXPR as
