@@ -2259,17 +2259,27 @@ extract_range_from_binary_expr (value_range_t *vr,
 	 op0 + op1 == 0, so we cannot claim that the sum is in ~[0,0].
 	 Note that we are guaranteed to have vr0.type == vr1.type at
 	 this point.  */
-      if (code == PLUS_EXPR && vr0.type == VR_ANTI_RANGE)
+      if (vr0.type == VR_ANTI_RANGE)
 	{
-	  set_value_range_to_varying (vr);
-	  return;
+	  if (code == PLUS_EXPR)
+	    {
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
+	  /* For MIN_EXPR and MAX_EXPR with two VR_ANTI_RANGEs,
+	     the resulting VR_ANTI_RANGE is the same - intersection
+	     of the two ranges.  */
+	  min = vrp_int_const_binop (MAX_EXPR, vr0.min, vr1.min);
+	  max = vrp_int_const_binop (MIN_EXPR, vr0.max, vr1.max);
 	}
-
-      /* For operations that make the resulting range directly
-	 proportional to the original ranges, apply the operation to
-	 the same end of each range.  */
-      min = vrp_int_const_binop (code, vr0.min, vr1.min);
-      max = vrp_int_const_binop (code, vr0.max, vr1.max);
+      else
+	{
+	  /* For operations that make the resulting range directly
+	     proportional to the original ranges, apply the operation to
+	     the same end of each range.  */
+	  min = vrp_int_const_binop (code, vr0.min, vr1.min);
+	  max = vrp_int_const_binop (code, vr0.max, vr1.max);
+	}
     }
   else if (code == MULT_EXPR
 	   || code == TRUNC_DIV_EXPR
