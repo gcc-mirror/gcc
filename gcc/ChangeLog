@@ -1,5 +1,17 @@
 2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* rtl.h (mem_attrs): Turn offset and size fields into HOST_WIDE_INTs.
+	Add offset_known_p and size_known_p fields.
+	(MEM_OFFSET_KNOWN_P): Update accordingly.
+	(MEM_OFFSET, MEM_SIZE_KNOWN_P, MEM_SIZE): Likewise.
+	* emit-rtl.c (mem_attrs_htab_hash): Update after mem_attrs changes.
+	(mem_attrs_eq_p, set_mem_attributes_minus_bitpos, set_mem_offset)
+	(clear_mem_offset, set_mem_size, clear_mem_size, change_address)
+	(adjust_address_1, widen_memory_access, set_mem_attrs_for_spill)
+	(init_emit_regs): Likewise.
+
+2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/rtl.texi (MEM_OFFSET_KNOWN_P): Document.
 	(MEM_OFFSET): Change from returning an rtx to returning a
 	HOST_WIDE_INT.
