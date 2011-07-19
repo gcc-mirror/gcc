@@ -1,3 +1,8 @@
+2011-07-19  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49771
+	* gcc.dg/vect/pr49771.c: New test.
+
 2011-07-18  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/ipa-1.c: Updated testcase dump scan.
