@@ -2420,7 +2420,8 @@ tree-ssa-dse.o : tree-ssa-dse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 tree-ssa-forwprop.o : tree-ssa-forwprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(TM_P_H) $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
-   langhooks.h $(FLAGS_H) $(GIMPLE_H) tree-pretty-print.h $(EXPR_H)
+   langhooks.h $(FLAGS_H) $(GIMPLE_H) tree-pretty-print.h \
+   gimple-pretty-print.h $(EXPR_H)
 tree-ssa-phiprop.o : tree-ssa-phiprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(TM_P_H) $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(TREE_DUMP_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
