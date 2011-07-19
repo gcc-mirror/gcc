@@ -1,3 +1,48 @@
+2011-07-19  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/safe_unordered_base.h, safe_unordered_sequence.h,
+	safe_unordered_sequence.tcc, safe_local_iterator.h,
+	safe_local_iterator.tcc: New, support for unordered sequence safe
+	local iterators.
+	* include/Makefile.am: Add previous files.
+	* include/Makefile.in: Regenerate.
+	* include/debug/unordered_map, unordered_set: Implement
+	_Safe_unordered_sequence and expose _Safe_local_iterator.
+	* include/debug/safe_iterator.h, safe_iterator.tcc: Refactor
+	_Safe_iterator::_M_get_distance static method to expose it as
+	__get_distance function and use it in _Safe_local_iterator type.
+	* include/debug/formatter.h: Add __msg_local_iter_compare_bad
+	_Debug_msg_id enum entry to notify invalid comparison between local
+	iterators from different buckets. Add _Parameter constructor from
+	_Safe_local_iterator.
+	* include/debug/functions.h: Add __valid_range overload for
+	_Safe_local_iterator.
+	* src/debug.cc: Add _Safe_unordered_sequence_base and
+	_Safe_local_iterator_base methods implementations.
+	* config/abi/pre/gnu.ver: Add export of some
+	_Safe_unordered_sequence_base and _Safe_local_iterator_base methods.
+	* testsuite/util/debug/checks.h: Add use_invalid_iterator function to
+	simulate use of a singular iterator.
+	* testsuite/util/debug/unordered_checks.h: New, several functions
+	to simulate classic invalid usage of unordered sequence local
+	iterators.
+	* testsuite/23_containers/unordered_map/debug/
+	use_erased_local_iterator_neg.cc, invalid_local_iterator_range_neg.cc,
+	use_invalid_local_iterator_neg.cc, use_invalid_iterator_neg.cc,
+	invalid_local_iterator_compare_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/
+	use_erased_local_iterator_neg.cc, invalid_local_iterator_range_neg.cc,
+	use_invalid_local_iterator_neg.cc, use_invalid_iterator_neg.cc,
+	invalid_local_iterator_compare_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/
+	use_erased_local_iterator_neg.cc, invalid_local_iterator_range_neg.cc,
+	use_invalid_local_iterator_neg.cc, use_invalid_iterator_neg.cc,
+	invalid_local_iterator_compare_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/
+	use_erased_local_iterator_neg.cc, invalid_local_iterator_range_neg.cc,
+	use_invalid_local_iterator_neg.cc, use_invalid_iterator_neg.cc,
+	invalid_local_iterator_compare_neg.cc: New.
+
 2011-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/48430

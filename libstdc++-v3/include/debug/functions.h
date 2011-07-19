@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -142,6 +142,13 @@ namespace __gnu_debug
     inline bool
     __valid_range(const _Safe_iterator<_Iterator, _Sequence>& __first,
 		  const _Safe_iterator<_Iterator, _Sequence>& __last)
+    { return __first._M_valid_range(__last); }
+
+  /** Safe local iterators know how to check if they form a valid range. */
+  template<typename _Iterator, typename _Sequence>
+    inline bool
+    __valid_range(const _Safe_local_iterator<_Iterator, _Sequence>& __first,
+		  const _Safe_local_iterator<_Iterator, _Sequence>& __last)
     { return __first._M_valid_range(__last); }
 
   /* Checks that [first, last) is a valid range, and then returns
