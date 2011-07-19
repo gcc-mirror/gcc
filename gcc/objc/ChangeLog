@@ -1,3 +1,9 @@
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* objc-next-runtime-abi-02.c (objc_v2_build_ivar_ref):
+	Use fold_build_pointer_plus.
+	(objc2_build_ehtype_initializer): Likewise.
+
 2011-07-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-encoding.h (obstack.h): Do not include.

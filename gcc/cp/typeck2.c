@@ -1560,9 +1560,7 @@ build_m_component_ref (tree datum, tree component)
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
       ptype = build_pointer_type (type);
-      datum = build2 (POINTER_PLUS_EXPR, ptype,
-		      fold_convert (ptype, datum),
-		      build_nop (sizetype, component));
+      datum = fold_build_pointer_plus (fold_convert (ptype, datum), component);
       datum = cp_build_indirect_ref (datum, RO_NULL, tf_warning_or_error);
       /* If the object expression was an rvalue, return an rvalue.  */
       if (!is_lval)

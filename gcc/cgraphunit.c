@@ -1458,11 +1458,10 @@ thunk_adjust (gimple_stmt_iterator * bsi,
   if (this_adjusting
       && fixed_offset != 0)
     {
-      stmt = gimple_build_assign (ptr,
-				  fold_build2_loc (input_location,
-						   POINTER_PLUS_EXPR,
-						   TREE_TYPE (ptr), ptr,
-						   size_int (fixed_offset)));
+      stmt = gimple_build_assign
+		(ptr, fold_build_pointer_plus_hwi_loc (input_location,
+						       ptr,
+						       fixed_offset));
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
     }
 
@@ -1508,12 +1507,9 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 
       /* Find the entry with the vcall offset.  */
       stmt = gimple_build_assign (vtabletmp2,
-				  fold_build2_loc (input_location,
-						   POINTER_PLUS_EXPR,
-						   TREE_TYPE (vtabletmp2),
-						   vtabletmp2,
-						   fold_convert (sizetype,
-								 virtual_offset)));
+				  fold_build_pointer_plus_loc (input_location,
+							       vtabletmp2,
+							       virtual_offset));
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
 
       /* Get the offset itself.  */
@@ -1533,9 +1529,7 @@ thunk_adjust (gimple_stmt_iterator * bsi,
       find_referenced_vars_in (stmt);
 
       /* Adjust the `this' pointer.  */
-      ptr = fold_build2_loc (input_location,
-			     POINTER_PLUS_EXPR, TREE_TYPE (ptr), ptr,
-			     offsettmp);
+      ptr = fold_build_pointer_plus_loc (input_location, ptr, offsettmp);
     }
 
   if (!this_adjusting
@@ -1554,9 +1548,8 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 	  mark_symbols_for_renaming (stmt);
 	  find_referenced_vars_in (stmt);
 	}
-      ptr = fold_build2_loc (input_location,
-			     POINTER_PLUS_EXPR, TREE_TYPE (ptrtmp), ptrtmp,
-			     size_int (fixed_offset));
+      ptr = fold_build_pointer_plus_hwi_loc (input_location,
+					     ptrtmp, fixed_offset);
     }
 
   /* Emit the statement and gimplify the adjustment expression.  */

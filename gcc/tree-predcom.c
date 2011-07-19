@@ -1396,7 +1396,7 @@ ref_at_iteration (struct loop *loop, tree ref, int iter)
 	{
 	  val = fold_build2 (MULT_EXPR, sizetype, iv.step,
 			     size_int (iter));
-	  val = fold_build2 (POINTER_PLUS_EXPR, type, iv.base, val);
+	  val = fold_build_pointer_plus (iv.base, val);
 	}
       else
 	{

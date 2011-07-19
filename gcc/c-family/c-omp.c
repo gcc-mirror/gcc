@@ -424,7 +424,7 @@ c_finish_omp_for (location_t locus, tree declv, tree initv, tree condv,
 		  if (TREE_CODE (incr) == POSTDECREMENT_EXPR
 		      || TREE_CODE (incr) == PREDECREMENT_EXPR)
 		    t = fold_build1_loc (elocus, NEGATE_EXPR, sizetype, t);
-		  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (decl), decl, t);
+		  t = fold_build_pointer_plus (decl, t);
 		  incr = build2 (MODIFY_EXPR, void_type_node, decl, t);
 		}
 	      break;

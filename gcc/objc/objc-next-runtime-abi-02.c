@@ -1381,8 +1381,7 @@ objc_v2_build_ivar_ref (tree datum, tree component)
 		       string_type_node, build_fold_addr_expr (datum));
 
   /* (char*)datum + offset */
-  expr = fold_build2_loc (input_location,
-			  POINTER_PLUS_EXPR, string_type_node, expr, offset);
+  expr = fold_build_pointer_plus_loc (input_location, expr, offset);
 
   /* (ftype*)((char*)datum + offset) */
   expr = build_c_cast (input_location, build_pointer_type (ftype), expr);
@@ -3486,7 +3485,7 @@ objc2_build_ehtype_initializer (tree name, tree cls)
     }
   addr = build_fold_addr_expr_with_type (next_v2_ehvtable_decl, ptr_type_node);
   offs = size_int (2 * int_cst_value (TYPE_SIZE_UNIT (ptr_type_node)));
-  addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, addr, offs);
+  addr = fold_build_pointer_plus (addr, offs);
 
   CONSTRUCTOR_APPEND_ELT (initlist, NULL_TREE, addr);
 

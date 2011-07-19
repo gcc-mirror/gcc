@@ -1,3 +1,21 @@
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* call.c (build_special_member_call): Use fold_build_pointer_plus.
+	* class.c (build_base_path): Likewise.
+	(convert_to_base_statically): Likewise.
+	(dfs_accumulate_vtbl_inits): Likewise.
+	* cp-gimplify.c (cxx_omp_clause_apply_fn): Likewise.
+	* except.c (expand_start_catch_block): Likewise.
+	* init.c (expand_virtual_init): Likewise.
+	(build_new_1): Likewise.
+	(build_vec_delete_1): Likewise.
+	(build_vec_delete): Likewise.
+	* rtti.c (build_headof): Likewise.
+	(tinfo_base_init): Likewise.
+	* typeck.c (get_member_function_from_ptrfunc): Likewise.
+	(cp_build_addr_expr_1): Likewise.
+	* typeck2.c (build_m_component_ref): Likewise.
+
 2011-07-18  Martin Jambor  <mjambor@suse.cz>
 
 	* parser.c (cp_parser_parameter_declaration_list): Initialize

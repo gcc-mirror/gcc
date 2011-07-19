@@ -1063,10 +1063,7 @@ expand_virtual_init (tree binfo, tree decl)
 
       /* Compute the value to use, when there's a VTT.  */
       vtt_parm = current_vtt_parm;
-      vtbl2 = build2 (POINTER_PLUS_EXPR,
-		      TREE_TYPE (vtt_parm),
-		      vtt_parm,
-		      vtt_index);
+      vtbl2 = fold_build_pointer_plus (vtt_parm, vtt_index);
       vtbl2 = cp_build_indirect_ref (vtbl2, RO_NULL, tf_warning_or_error);
       vtbl2 = convert (TREE_TYPE (vtbl), vtbl2);
 
@@ -2310,16 +2307,14 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
       tree size_ptr_type;
 
       /* Adjust so we're pointing to the start of the object.  */
-      data_addr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (alloc_node),
-			  alloc_node, cookie_size);
+      data_addr = fold_build_pointer_plus (alloc_node, cookie_size);
 
       /* Store the number of bytes allocated so that we can know how
 	 many elements to destroy later.  We use the last sizeof
 	 (size_t) bytes to store the number of elements.  */
       cookie_ptr = size_binop (MINUS_EXPR, cookie_size, size_in_bytes (sizetype));
-      cookie_ptr = fold_build2_loc (input_location,
-				POINTER_PLUS_EXPR, TREE_TYPE (alloc_node),
-				alloc_node, cookie_ptr);
+      cookie_ptr = fold_build_pointer_plus_loc (input_location,
+						alloc_node, cookie_ptr);
       size_ptr_type = build_pointer_type (sizetype);
       cookie_ptr = fold_convert (size_ptr_type, cookie_ptr);
       cookie = cp_build_indirect_ref (cookie_ptr, RO_NULL, complain);
@@ -2329,10 +2324,10 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
       if (targetm.cxx.cookie_has_size ())
 	{
 	  /* Also store the element size.  */
-	  cookie_ptr = build2 (POINTER_PLUS_EXPR, size_ptr_type, cookie_ptr,
+	  cookie_ptr = fold_build_pointer_plus (cookie_ptr,
 			       fold_build1_loc (input_location,
-					    NEGATE_EXPR, sizetype,
-					    size_in_bytes (sizetype)));
+						NEGATE_EXPR, sizetype,
+						size_in_bytes (sizetype)));
 
 	  cookie = cp_build_indirect_ref (cookie_ptr, RO_NULL, complain);
 	  cookie = build2 (MODIFY_EXPR, sizetype, cookie,
@@ -2801,12 +2796,13 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 			     convert (sizetype, maxindex));
 
   tbase = create_temporary_var (ptype);
-  tbase_init = cp_build_modify_expr (tbase, NOP_EXPR,
-				     fold_build2_loc (input_location,
-						  POINTER_PLUS_EXPR, ptype,
-						  fold_convert (ptype, base),
-						  virtual_size),
-				     complain);
+  tbase_init
+    = cp_build_modify_expr (tbase, NOP_EXPR,
+			    fold_build_pointer_plus_loc (input_location,
+							 fold_convert (ptype,
+								       base),
+							 virtual_size),
+			    complain);
   if (tbase_init == error_mark_node)
     return error_mark_node;
   controller = build3 (BIND_EXPR, void_type_node, tbase,
@@ -2817,7 +2813,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 		 build2 (EQ_EXPR, boolean_type_node, tbase,
 			 fold_convert (ptype, base)));
   tmp = fold_build1_loc (input_location, NEGATE_EXPR, sizetype, size_exp);
-  tmp = build2 (POINTER_PLUS_EXPR, ptype, tbase, tmp);
+  tmp = fold_build_pointer_plus (tbase, tmp);
   tmp = cp_build_modify_expr (tbase, NOP_EXPR, tmp, complain);
   if (tmp == error_mark_node)
     return error_mark_node;
@@ -3751,10 +3747,8 @@ build_vec_delete (tree base, tree maxindex,
       type = strip_array_types (TREE_TYPE (type));
       cookie_addr = fold_build1_loc (input_location, NEGATE_EXPR,
 				 sizetype, TYPE_SIZE_UNIT (sizetype));
-      cookie_addr = build2 (POINTER_PLUS_EXPR,
-			    size_ptr_type,
-			    fold_convert (size_ptr_type, base),
-			    cookie_addr);
+      cookie_addr = fold_build_pointer_plus (fold_convert (size_ptr_type, base),
+					     cookie_addr);
       maxindex = cp_build_indirect_ref (cookie_addr, RO_NULL, complain);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)

@@ -604,8 +604,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	    split_constant_offset (poffset, &poffset, &off1);
 	    off0 = size_binop (PLUS_EXPR, off0, off1);
 	    if (POINTER_TYPE_P (TREE_TYPE (base)))
-	      base = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (base),
-				  base, fold_convert (sizetype, poffset));
+	      base = fold_build_pointer_plus (base, poffset);
 	    else
 	      base = fold_build2 (PLUS_EXPR, TREE_TYPE (base), base,
 				  fold_convert (TREE_TYPE (base), poffset));

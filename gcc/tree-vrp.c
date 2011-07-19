@@ -1877,8 +1877,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 				   anti_max,
 				   build_int_cst (TREE_TYPE (var_vr->min), 1));
 	      else
-		min = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (var_vr->min),
-				   anti_max, size_int (1));
+		min = fold_build_pointer_plus_hwi (anti_max, 1);
 	      max = real_max;
 	      set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
 	    }
@@ -1905,9 +1904,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 				   anti_min,
 				   build_int_cst (TREE_TYPE (var_vr->min), 1));
 	      else
-		max = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (var_vr->min),
-				   anti_min,
-				   size_int (-1));
+		max = fold_build_pointer_plus_hwi (anti_min, -1);
 	      min = real_min;
 	      set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
 	    }

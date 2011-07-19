@@ -5998,9 +5998,8 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 			 fold_convert (gfc_charlen_type_node, count));
   tmp = fold_build2_loc (input_location, MULT_EXPR, gfc_charlen_type_node,
 			 tmp, fold_convert (gfc_charlen_type_node, size));
-  tmp = fold_build2_loc (input_location, POINTER_PLUS_EXPR, pvoid_type_node,
-			 fold_convert (pvoid_type_node, dest),
-			 fold_convert (sizetype, tmp));
+  tmp = fold_build_pointer_plus_loc (input_location,
+				     fold_convert (pvoid_type_node, dest), tmp);
   tmp = build_call_expr_loc (input_location,
 			     built_in_decls[BUILT_IN_MEMMOVE], 3, tmp, src,
 			     fold_build2_loc (input_location, MULT_EXPR,

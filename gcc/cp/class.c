@@ -374,8 +374,7 @@ build_base_path (enum tree_code code,
                                                             tf_warning_or_error),
 				     TREE_TYPE (TREE_TYPE (expr)));
 
-      v_offset = build2 (POINTER_PLUS_EXPR, TREE_TYPE (v_offset),
-			 v_offset, fold_convert (sizetype, BINFO_VPTR_FIELD (v_binfo)));
+      v_offset = fold_build_pointer_plus (v_offset, BINFO_VPTR_FIELD (v_binfo));
       v_offset = build1 (NOP_EXPR,
 			 build_pointer_type (ptrdiff_type_node),
 			 v_offset);
@@ -413,7 +412,7 @@ build_base_path (enum tree_code code,
       offset = fold_convert (sizetype, offset);
       if (code == MINUS_EXPR)
 	offset = fold_build1_loc (input_location, NEGATE_EXPR, sizetype, offset);
-      expr = build2 (POINTER_PLUS_EXPR, ptr_target_type, expr, offset);
+      expr = fold_build_pointer_plus (expr, offset);
     }
   else
     null_test = NULL;
@@ -540,10 +539,6 @@ convert_to_base_statically (tree expr, tree base)
   expr_type = TREE_TYPE (expr);
   if (!SAME_BINFO_TYPE_P (BINFO_TYPE (base), expr_type))
     {
-      tree pointer_type;
-
-      pointer_type = build_pointer_type (expr_type);
-
       /* We use fold_build2 and fold_convert below to simplify the trees
 	 provided to the optimizers.  It is not safe to call these functions
 	 when processing a template because they do not handle C++-specific
@@ -551,9 +546,8 @@ convert_to_base_statically (tree expr, tree base)
       gcc_assert (!processing_template_decl);
       expr = cp_build_addr_expr (expr, tf_warning_or_error);
       if (!integer_zerop (BINFO_OFFSET (base)))
-        expr = fold_build2_loc (input_location,
-			    POINTER_PLUS_EXPR, pointer_type, expr,
-			    fold_convert (sizetype, BINFO_OFFSET (base)));
+        expr = fold_build_pointer_plus_loc (input_location,
+					    expr, BINFO_OFFSET (base));
       expr = fold_convert (build_pointer_type (BINFO_TYPE (base)), expr);
       expr = build_fold_indirect_ref_loc (input_location, expr);
     }
@@ -7833,13 +7827,10 @@ dfs_accumulate_vtbl_inits (tree binfo,
 
       /* Figure out the position to which the VPTR should point.  */
       vtbl = build1 (ADDR_EXPR, vtbl_ptr_type_node, orig_vtbl);
-      index = size_binop (PLUS_EXPR,
-			  size_int (non_fn_entries),
-			  size_int (n_inits));
       index = size_binop (MULT_EXPR,
 			  TYPE_SIZE_UNIT (vtable_entry_type),
-			  index);
-      vtbl = build2 (POINTER_PLUS_EXPR, TREE_TYPE (vtbl), vtbl, index);
+			  size_int (non_fn_entries + n_inits));
+      vtbl = fold_build_pointer_plus (vtbl, index);
     }
 
   if (ctor_vtbl_p)

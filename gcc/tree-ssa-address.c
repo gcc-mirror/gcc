@@ -302,7 +302,7 @@ tree_mem_ref_addr (tree type, tree mem_ref)
     }
 
   if (addr_off)
-    addr = fold_build2 (POINTER_PLUS_EXPR, type, addr_base, addr_off);
+    addr = fold_build_pointer_plus (addr_base, addr_off);
   else
     addr = addr_base;
 
@@ -521,9 +521,7 @@ add_to_parts (struct mem_address *parts, tree elt)
   /* Add ELT to base.  */
   type = TREE_TYPE (parts->base);
   if (POINTER_TYPE_P (type))
-    parts->base = fold_build2 (POINTER_PLUS_EXPR, type,
-			       parts->base,
-			       fold_convert (sizetype, elt));
+    parts->base = fold_build_pointer_plus (parts->base, elt);
   else
     parts->base = fold_build2 (PLUS_EXPR, type,
 			       parts->base, elt);
@@ -692,7 +690,6 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 		tree alias_ptr_type, tree iv_cand, tree base_hint, bool speed)
 {
   tree mem_ref, tmp;
-  tree atype;
   struct mem_address parts;
 
   addr_to_parts (type, addr, iv_cand, base_hint, &parts, speed);
@@ -731,11 +728,8 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 
 	  if (parts.index)
 	    {
-	      atype = TREE_TYPE (tmp);
 	      parts.base = force_gimple_operand_gsi_1 (gsi,
-			fold_build2 (POINTER_PLUS_EXPR, atype,
-				     tmp,
-				     fold_convert (sizetype, parts.base)),
+			fold_build_pointer_plus (tmp, parts.base),
 			is_gimple_mem_ref_addr, NULL_TREE, true, GSI_SAME_STMT);
 	    }
 	  else
@@ -758,11 +752,8 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
       /* Add index to base.  */
       if (parts.base)
 	{
-	  atype = TREE_TYPE (parts.base);
 	  parts.base = force_gimple_operand_gsi_1 (gsi,
-			fold_build2 (POINTER_PLUS_EXPR, atype,
-				     parts.base,
-			    	     parts.index),
+			fold_build_pointer_plus (parts.base, parts.index),
 			is_gimple_mem_ref_addr, NULL_TREE, true, GSI_SAME_STMT);
 	}
       else
@@ -779,11 +770,8 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
       /* Try adding offset to base.  */
       if (parts.base)
 	{
-	  atype = TREE_TYPE (parts.base);
 	  parts.base = force_gimple_operand_gsi_1 (gsi,
-			fold_build2 (POINTER_PLUS_EXPR, atype,
-				     parts.base,
-				     fold_convert (sizetype, parts.offset)),
+			fold_build_pointer_plus (parts.base, parts.offset),
 			is_gimple_mem_ref_addr, NULL_TREE, true, GSI_SAME_STMT);
 	}
       else

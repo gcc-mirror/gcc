@@ -936,7 +936,7 @@ build_java_arrayaccess (tree array, tree type, tree index)
 		  size_exp);
 
   /* Sum the byte offset and the address of the data field.  */
-  node = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (node), node, index);
+  node = fold_build_pointer_plus (node, index);
 
   /* Finally, return
 
@@ -1743,12 +1743,8 @@ build_field_ref (tree self_value, tree self_class, tree name)
 					 1, otable_index),
 			field_offset);
 	  
-	  field_offset = fold (convert (sizetype, field_offset));
 	  self_value = java_check_reference (self_value, check);
-	  address 
-	    = fold_build2 (POINTER_PLUS_EXPR, 
-			   TREE_TYPE (self_value),
-			   self_value, field_offset);
+	  address = fold_build_pointer_plus (self_value, field_offset);
 	  address = fold_convert (build_pointer_type (TREE_TYPE (field_decl)),
 				  address);
 	  return fold_build1 (INDIRECT_REF, TREE_TYPE (field_decl), address);
@@ -2255,8 +2251,7 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 	  method_index++;
 	}
       method_index *= int_size_in_bytes (method_type_node);
-      ref = fold_build2 (POINTER_PLUS_EXPR, method_ptr_type_node,
-			 ref, size_int (method_index));
+      ref = fold_build_pointer_plus_hwi (ref, method_index);
       ref = build1 (INDIRECT_REF, method_type_node, ref);
       func = build3 (COMPONENT_REF, nativecode_ptr_type_node,
 		     ref, lookup_field (&method_type_node, ncode_ident),
@@ -2349,8 +2344,7 @@ build_invokevirtual (tree dtable, tree method, tree special)
 				   size_int (TARGET_VTABLE_USES_DESCRIPTORS));
     }
 
-  func = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (dtable), dtable,
-		      convert (sizetype, method_index));
+  func = fold_build_pointer_plus (dtable, method_index);
 
   if (TARGET_VTABLE_USES_DESCRIPTORS)
     func = build1 (NOP_EXPR, nativecode_ptr_type_node, func);

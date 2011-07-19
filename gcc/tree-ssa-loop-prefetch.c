@@ -1100,8 +1100,7 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
           /* Determine the address to prefetch.  */
           delta = (ahead + ap * ref->prefetch_mod) *
 		   int_cst_value (ref->group->step);
-          addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
-                              addr_base, size_int (delta));
+          addr = fold_build_pointer_plus_hwi (addr_base, delta);
           addr = force_gimple_operand_gsi (&bsi, unshare_expr (addr), true, NULL,
                                            true, GSI_SAME_STMT);
         }
@@ -1112,8 +1111,7 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
           forward = fold_build2 (MULT_EXPR, sizetype,
                                  fold_convert (sizetype, ref->group->step),
                                  fold_convert (sizetype, size_int (ahead)));
-          addr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, addr_base,
-			      forward);
+          addr = fold_build_pointer_plus (addr_base, forward);
           addr = force_gimple_operand_gsi (&bsi, unshare_expr (addr), true,
 					   NULL, true, GSI_SAME_STMT);
       }

@@ -6112,7 +6112,7 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
       u = fold_convert (sizetype, size_in_bytes (type));
       u = fold_build1 (NEGATE_EXPR, sizetype, u);
-      t = build2 (POINTER_PLUS_EXPR, valist_type, valist, u);
+      t = fold_build_pointer_plus (valist, u);
 
       /* Align to 4 or 8 byte boundary depending on argument size.  */
 
@@ -6124,10 +6124,7 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
       ofs = (8 - size) % 4;
       if (ofs != 0)
-	{
-	  u = size_int (ofs);
-	  t = build2 (POINTER_PLUS_EXPR, valist_type, t, u);
-	}
+	t = fold_build_pointer_plus_hwi (t, ofs);
 
       t = fold_convert (ptr, t);
       t = build_va_arg_indirect_ref (t);
