@@ -1,3 +1,8 @@
+2011-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49785
+	* pt.c (coerce_template_parms): Handle non-pack after pack.
+
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 
 	* call.c (build_special_member_call): Use fold_build_pointer_plus.
