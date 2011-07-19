@@ -1,3 +1,20 @@
+2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl.h (MEM_ALIAS_SET, MEM_EXPR, MEM_OFFSET, MEM_ADDR_SPACE)
+	(MEM_SIZE, MEM_ALIGN): Redefine in terms of get_mem_attrs.
+	Provide a dummy definition of MEM_ADDR_SPACE for generators.
+	(target_rtl): Add x_mode_mem_attrs.
+	(mode_mem_attrs): New macro.
+	(get_mem_attrs): New function.
+	* emit-rtl.c (get_mem_attrs): Rename to...
+	(find_mem_attrs): ...this.
+	(set_mem_attributes_minus_bitpos, set_mem_alias_set)
+	(set_mem_addr_space, set_mem_align, set_mem_expr, set_mem_offset)
+	(set_mem_size, change_address, adjust_address_1, offset_address)
+	(widen_memory_access, get_spill_slot_decl, set_mem_attrs_for_spill):
+	Update accordingly.
+	(init_emit_regs): Initialize mode_mem_attrs.
+
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (lookup_logical_inverted_value): Remove

@@ -157,8 +157,6 @@ static int const_fixed_htab_eq (const void *, const void *);
 static rtx lookup_const_fixed (rtx);
 static hashval_t mem_attrs_htab_hash (const void *);
 static int mem_attrs_htab_eq (const void *, const void *);
-static mem_attrs *get_mem_attrs (alias_set_type, tree, rtx, rtx, unsigned int,
-				 addr_space_t, enum machine_mode);
 static hashval_t reg_attrs_htab_hash (const void *);
 static int reg_attrs_htab_eq (const void *, const void *);
 static reg_attrs *get_reg_attrs (tree, int);
@@ -286,8 +284,9 @@ mem_attrs_htab_eq (const void *x, const void *y)
    MEM of mode MODE.  */
 
 static mem_attrs *
-get_mem_attrs (alias_set_type alias, tree expr, rtx offset, rtx size,
-	       unsigned int align, addr_space_t addrspace, enum machine_mode mode)
+find_mem_attrs (alias_set_type alias, tree expr, rtx offset, rtx size,
+		unsigned int align, addr_space_t addrspace,
+		enum machine_mode mode)
 {
   mem_attrs attrs;
   void **slot;
@@ -1833,8 +1832,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 
   /* Now set the attributes we computed above.  */
   MEM_ATTRS (ref)
-    = get_mem_attrs (alias, expr, offset, size, align,
-		     TYPE_ADDR_SPACE (type), GET_MODE (ref));
+    = find_mem_attrs (alias, expr, offset, size, align,
+		      TYPE_ADDR_SPACE (type), GET_MODE (ref));
 
   /* If this is already known to be a scalar or aggregate, we are done.  */
   if (MEM_IN_STRUCT_P (ref) || MEM_SCALAR_P (ref))
@@ -1862,9 +1861,9 @@ set_mem_alias_set (rtx mem, alias_set_type set)
   /* If the new and old alias sets don't conflict, something is wrong.  */
   gcc_checking_assert (alias_sets_conflict_p (set, MEM_ALIAS_SET (mem)));
 
-  MEM_ATTRS (mem) = get_mem_attrs (set, MEM_EXPR (mem), MEM_OFFSET (mem),
-				   MEM_SIZE (mem), MEM_ALIGN (mem),
-				   MEM_ADDR_SPACE (mem), GET_MODE (mem));
+  MEM_ATTRS (mem) = find_mem_attrs (set, MEM_EXPR (mem), MEM_OFFSET (mem),
+				    MEM_SIZE (mem), MEM_ALIGN (mem),
+				    MEM_ADDR_SPACE (mem), GET_MODE (mem));
 }
 
 /* Set the address space of MEM to ADDRSPACE (target-defined).  */
@@ -1872,9 +1871,9 @@ set_mem_alias_set (rtx mem, alias_set_type set)
 void
 set_mem_addr_space (rtx mem, addr_space_t addrspace)
 {
-  MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
-				   MEM_OFFSET (mem), MEM_SIZE (mem),
-				   MEM_ALIGN (mem), addrspace, GET_MODE (mem));
+  MEM_ATTRS (mem) = find_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
+				    MEM_OFFSET (mem), MEM_SIZE (mem),
+				    MEM_ALIGN (mem), addrspace, GET_MODE (mem));
 }
 
 /* Set the alignment of MEM to ALIGN bits.  */
@@ -1882,9 +1881,9 @@ set_mem_addr_space (rtx mem, addr_space_t addrspace)
 void
 set_mem_align (rtx mem, unsigned int align)
 {
-  MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
-				   MEM_OFFSET (mem), MEM_SIZE (mem), align,
-				   MEM_ADDR_SPACE (mem), GET_MODE (mem));
+  MEM_ATTRS (mem) = find_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
+				    MEM_OFFSET (mem), MEM_SIZE (mem), align,
+				    MEM_ADDR_SPACE (mem), GET_MODE (mem));
 }
 
 /* Set the expr for MEM to EXPR.  */
@@ -1893,9 +1892,9 @@ void
 set_mem_expr (rtx mem, tree expr)
 {
   MEM_ATTRS (mem)
-    = get_mem_attrs (MEM_ALIAS_SET (mem), expr, MEM_OFFSET (mem),
-		     MEM_SIZE (mem), MEM_ALIGN (mem),
-		     MEM_ADDR_SPACE (mem), GET_MODE (mem));
+    = find_mem_attrs (MEM_ALIAS_SET (mem), expr, MEM_OFFSET (mem),
+		      MEM_SIZE (mem), MEM_ALIGN (mem),
+		      MEM_ADDR_SPACE (mem), GET_MODE (mem));
 }
 
 /* Set the offset of MEM to OFFSET.  */
@@ -1903,9 +1902,9 @@ set_mem_expr (rtx mem, tree expr)
 void
 set_mem_offset (rtx mem, rtx offset)
 {
-  MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
-				   offset, MEM_SIZE (mem), MEM_ALIGN (mem),
-				   MEM_ADDR_SPACE (mem), GET_MODE (mem));
+  MEM_ATTRS (mem) = find_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
+				    offset, MEM_SIZE (mem), MEM_ALIGN (mem),
+				    MEM_ADDR_SPACE (mem), GET_MODE (mem));
 }
 
 /* Set the size of MEM to SIZE.  */
@@ -1913,9 +1912,9 @@ set_mem_offset (rtx mem, rtx offset)
 void
 set_mem_size (rtx mem, rtx size)
 {
-  MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
-				   MEM_OFFSET (mem), size, MEM_ALIGN (mem),
-				   MEM_ADDR_SPACE (mem), GET_MODE (mem));
+  MEM_ATTRS (mem) = find_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
+				    MEM_OFFSET (mem), size, MEM_ALIGN (mem),
+				    MEM_ADDR_SPACE (mem), GET_MODE (mem));
 }
 
 /* Return a memory reference like MEMREF, but with its mode changed to MODE
@@ -1984,8 +1983,8 @@ change_address (rtx memref, enum machine_mode mode, rtx addr)
     }
 
   MEM_ATTRS (new_rtx)
-    = get_mem_attrs (MEM_ALIAS_SET (memref), 0, 0, size, align,
-		     MEM_ADDR_SPACE (memref), mmode);
+    = find_mem_attrs (MEM_ALIAS_SET (memref), 0, 0, size, align,
+		      MEM_ADDR_SPACE (memref), mmode);
 
   return new_rtx;
 }
@@ -2069,9 +2068,10 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
   else if (MEM_SIZE (memref))
     size = plus_constant (MEM_SIZE (memref), -offset);
 
-  MEM_ATTRS (new_rtx) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_EXPR (memref),
-				       memoffset, size, memalign, as,
-				       GET_MODE (new_rtx));
+  MEM_ATTRS (new_rtx) = find_mem_attrs (MEM_ALIAS_SET (memref),
+					MEM_EXPR (memref),
+					memoffset, size, memalign, as,
+					GET_MODE (new_rtx));
 
   /* At some point, we should validate that this offset is within the object,
      if all the appropriate values are known.  */
@@ -2129,9 +2129,9 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
   /* Update the alignment to reflect the offset.  Reset the offset, which
      we don't know.  */
   MEM_ATTRS (new_rtx)
-    = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_EXPR (memref), 0, 0,
-		     MIN (MEM_ALIGN (memref), pow2 * BITS_PER_UNIT),
-		     as, GET_MODE (new_rtx));
+    = find_mem_attrs (MEM_ALIAS_SET (memref), MEM_EXPR (memref), 0, 0,
+		      MIN (MEM_ALIGN (memref), pow2 * BITS_PER_UNIT),
+		      as, GET_MODE (new_rtx));
   return new_rtx;
 }
 
@@ -2234,9 +2234,9 @@ widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
   /* The widened memory may alias other stuff, so zap the alias set.  */
   /* ??? Maybe use get_alias_set on any remaining expression.  */
 
-  MEM_ATTRS (new_rtx) = get_mem_attrs (0, expr, memoffset, GEN_INT (size),
-				       MEM_ALIGN (new_rtx),
-				       MEM_ADDR_SPACE (new_rtx), mode);
+  MEM_ATTRS (new_rtx) = find_mem_attrs (0, expr, memoffset, GEN_INT (size),
+					MEM_ALIGN (new_rtx),
+					MEM_ADDR_SPACE (new_rtx), mode);
 
   return new_rtx;
 }
@@ -2262,8 +2262,8 @@ get_spill_slot_decl (bool force_build_p)
 
   rd = gen_rtx_MEM (BLKmode, frame_pointer_rtx);
   MEM_NOTRAP_P (rd) = 1;
-  MEM_ATTRS (rd) = get_mem_attrs (new_alias_set (), d, const0_rtx,
-				  NULL_RTX, 0, ADDR_SPACE_GENERIC, BLKmode);
+  MEM_ATTRS (rd) = find_mem_attrs (new_alias_set (), d, const0_rtx,
+				   NULL_RTX, 0, ADDR_SPACE_GENERIC, BLKmode);
   SET_DECL_RTL (d, rd);
 
   return d;
@@ -2294,9 +2294,9 @@ set_mem_attrs_for_spill (rtx mem)
       && CONST_INT_P (XEXP (addr, 1)))
     offset = XEXP (addr, 1);
 
-  MEM_ATTRS (mem) = get_mem_attrs (alias, expr, offset,
-				   MEM_SIZE (mem), MEM_ALIGN (mem),
-				   ADDR_SPACE_GENERIC, GET_MODE (mem));
+  MEM_ATTRS (mem) = find_mem_attrs (alias, expr, offset,
+				    MEM_SIZE (mem), MEM_ALIGN (mem),
+				    ADDR_SPACE_GENERIC, GET_MODE (mem));
   MEM_NOTRAP_P (mem) = 1;
 }
 
@@ -5442,6 +5442,8 @@ void
 init_emit_regs (void)
 {
   int i;
+  enum machine_mode mode;
+  mem_attrs *attrs;
 
   /* Reset register attributes */
   htab_empty (reg_attrs_htab);
@@ -5483,6 +5485,21 @@ init_emit_regs (void)
     pic_offset_table_rtx = gen_raw_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
   else
     pic_offset_table_rtx = NULL_RTX;
+
+  for (i = 0; i < (int) MAX_MACHINE_MODE; i++)
+    {
+      mode = (enum machine_mode) i;
+      attrs = ggc_alloc_cleared_mem_attrs ();
+      attrs->align = BITS_PER_UNIT;
+      attrs->addrspace = ADDR_SPACE_GENERIC;
+      if (mode != BLKmode)
+	{
+	  attrs->size = GEN_INT (GET_MODE_SIZE (mode));
+	  if (STRICT_ALIGNMENT)
+	    attrs->align = GET_MODE_ALIGNMENT (mode);
+	}
+      mode_mem_attrs[i] = attrs;
+    }
 }
 
 /* Create some permanent unique rtl objects shared between all functions.  */
