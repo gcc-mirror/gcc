@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "timevar.h"
-#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "tree-dump.h"
@@ -1109,6 +1109,9 @@ forward_propagate_comparison (gimple stmt)
   tree name = gimple_assign_lhs (stmt);
   gimple use_stmt;
   tree tmp = NULL_TREE;
+  gimple_stmt_iterator gsi;
+  enum tree_code code;
+  tree lhs;
 
   /* Don't propagate ssa names that occur in abnormal phis.  */
   if ((TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
@@ -1119,93 +1122,59 @@ forward_propagate_comparison (gimple stmt)
 
   /* Do not un-cse comparisons.  But propagate through copies.  */
   use_stmt = get_prop_dest_stmt (name, &name);
-  if (!use_stmt)
+  if (!use_stmt
+      || !is_gimple_assign (use_stmt))
     return false;
 
-  /* Conversion of the condition result to another integral type.  */
-  if (is_gimple_assign (use_stmt)
-      && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt))
-	  || TREE_CODE_CLASS (gimple_assign_rhs_code (use_stmt))
-	     == tcc_comparison
-          || gimple_assign_rhs_code (use_stmt) == BIT_NOT_EXPR
-	  || gimple_assign_rhs_code (use_stmt) == BIT_XOR_EXPR)
-      && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (use_stmt))))
+  code = gimple_assign_rhs_code (use_stmt);
+  lhs = gimple_assign_lhs (use_stmt);
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+    return false;
+
+  /* We can propagate the condition into a conversion.  */
+  if (CONVERT_EXPR_CODE_P (code))
     {
-      tree lhs = gimple_assign_lhs (use_stmt);
-
-      /* We can propagate the condition into a conversion.  */
-      if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt)))
-	{
-	  /* Avoid using fold here as that may create a COND_EXPR with
-	     non-boolean condition as canonical form.  */
-	  tmp = build2 (gimple_assign_rhs_code (stmt), TREE_TYPE (lhs),
-                        gimple_assign_rhs1 (stmt), gimple_assign_rhs2 (stmt));
-	}
-      /* We can propagate the condition into X op CST where op
-	 is EQ_EXPR or NE_EXPR and CST is either one or zero.  */
-      else if (TREE_CODE_CLASS (gimple_assign_rhs_code (use_stmt))
-              == tcc_comparison
-             && TREE_CODE (gimple_assign_rhs1 (use_stmt)) == SSA_NAME
-             && TREE_CODE (gimple_assign_rhs2 (use_stmt)) == INTEGER_CST)
-      {
-        enum tree_code code = gimple_assign_rhs_code (use_stmt);
-        tree cst = gimple_assign_rhs2 (use_stmt);
-	tree cond;
-
-	cond = build2 (gimple_assign_rhs_code (stmt),
-		       TREE_TYPE (cst),
-		       gimple_assign_rhs1 (stmt),
-		       gimple_assign_rhs2 (stmt));
-
-        tmp = combine_cond_expr_cond (gimple_location (use_stmt),
-				      code, TREE_TYPE (lhs),
-				      cond, cst, false);
-        if (tmp == NULL_TREE)
-          return false;
-      }
-      /* We can propagate the condition into a statement that
-	 computes the logical negation of the comparison result.  */
-      else if ((gimple_assign_rhs_code (use_stmt) == BIT_NOT_EXPR
-		&& TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
-	       || (gimple_assign_rhs_code (use_stmt) == BIT_XOR_EXPR
-		   && integer_onep (gimple_assign_rhs2 (use_stmt))))
-	{
-	  tree type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-	  bool nans = HONOR_NANS (TYPE_MODE (type));
-	  enum tree_code code;
-	  code = invert_tree_comparison (gimple_assign_rhs_code (stmt), nans);
-	  if (code == ERROR_MARK)
-	    return false;
-
-	  tmp = build2 (code, TREE_TYPE (lhs), gimple_assign_rhs1 (stmt),
-                        gimple_assign_rhs2 (stmt));
-	}
-      else
+      /* Avoid using fold here as that may create a COND_EXPR with
+	 non-boolean condition as canonical form.  */
+      tmp = build2 (gimple_assign_rhs_code (stmt), TREE_TYPE (lhs),
+		    gimple_assign_rhs1 (stmt), gimple_assign_rhs2 (stmt));
+    }
+  /* We can propagate the condition into a statement that
+     computes the logical negation of the comparison result.  */
+  else if ((code == BIT_NOT_EXPR
+	    && TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
+	   || (code == BIT_XOR_EXPR
+	       && integer_onep (gimple_assign_rhs2 (use_stmt))))
+    {
+      tree type = TREE_TYPE (gimple_assign_rhs1 (stmt));
+      bool nans = HONOR_NANS (TYPE_MODE (type));
+      enum tree_code inv_code;
+      inv_code = invert_tree_comparison (gimple_assign_rhs_code (stmt), nans);
+      if (inv_code == ERROR_MARK)
 	return false;
 
-      {
-	gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
-	gimple_assign_set_rhs_from_tree (&gsi, unshare_expr (tmp));
-	use_stmt = gsi_stmt (gsi);
-	update_stmt (use_stmt);
-      }
+      tmp = build2 (inv_code, TREE_TYPE (lhs), gimple_assign_rhs1 (stmt),
+		    gimple_assign_rhs2 (stmt));
+    }
+  else
+    return false;
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  tree old_rhs = rhs_to_tree (TREE_TYPE (gimple_assign_lhs (stmt)),
-                                      stmt);
-	  fprintf (dump_file, "  Replaced '");
-	  print_generic_expr (dump_file, old_rhs, dump_flags);
-	  fprintf (dump_file, "' with '");
-	  print_generic_expr (dump_file, tmp, dump_flags);
-	  fprintf (dump_file, "'\n");
-	}
+  gsi = gsi_for_stmt (use_stmt);
+  gimple_assign_set_rhs_from_tree (&gsi, unshare_expr (tmp));
+  use_stmt = gsi_stmt (gsi);
+  update_stmt (use_stmt);
 
-      /* Remove defining statements.  */
-      return remove_prop_source_from_use (name);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  Replaced '");
+      print_gimple_expr (dump_file, stmt, 0, dump_flags);
+      fprintf (dump_file, "' with '");
+      print_gimple_expr (dump_file, use_stmt, 0, dump_flags);
+      fprintf (dump_file, "'\n");
     }
 
-  return false;
+  /* Remove defining statements.  */
+  return remove_prop_source_from_use (name);
 }
 
 
