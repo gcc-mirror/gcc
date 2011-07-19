@@ -6295,6 +6295,7 @@ coerce_template_parms (tree parms,
      subtract it from nparms to get the number of non-variadic
      parameters.  */
   int variadic_p = 0;
+  int post_variadic_parms = 0;
 
   if (args == error_mark_node)
     return error_mark_node;
@@ -6305,19 +6306,22 @@ coerce_template_parms (tree parms,
   for (parm_idx = 0; parm_idx < nparms; ++parm_idx)
     {
       tree tparm = TREE_VALUE (TREE_VEC_ELT (parms, parm_idx));
+      if (variadic_p)
+	++post_variadic_parms;
       if (template_parameter_pack_p (tparm))
 	++variadic_p;
     }
 
   inner_args = INNERMOST_TEMPLATE_ARGS (args);
-  /* If there are 0 or 1 parameter packs, we need to expand any argument
-     packs so that we can deduce a parameter pack from some non-packed args
-     followed by an argument pack, as in variadic85.C.  If there are more
-     than that, we need to leave argument packs intact so the arguments are
-     assigned to the right parameter packs.  This should only happen when
-     dealing with a nested class inside a partial specialization of a class
-     template, as in variadic92.C.  */
-  if (variadic_p <= 1)
+  /* If there are no parameters that follow a parameter pack, we need to
+     expand any argument packs so that we can deduce a parameter pack from
+     some non-packed args followed by an argument pack, as in variadic85.C.
+     If there are such parameters, we need to leave argument packs intact
+     so the arguments are assigned properly.  This can happen when dealing
+     with a nested class inside a partial specialization of a class
+     template, as in variadic92.C, or when deducing a template parameter pack
+     from a sub-declarator, as in variadic114.C.  */
+  if (!post_variadic_parms)
     inner_args = expand_template_argument_pack (inner_args);
 
   nargs = inner_args ? NUM_TMPL_ARGS (inner_args) : 0;

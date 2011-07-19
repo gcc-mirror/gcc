@@ -1,3 +1,8 @@
+2011-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49785
+	* pt.c (coerce_template_parms): Handle non-pack after pack.
+
 2011-07-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49672

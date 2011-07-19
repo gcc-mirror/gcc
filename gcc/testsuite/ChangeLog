@@ -1,3 +1,8 @@
+2011-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49785
+	* g++.dg/cpp0x/variadic114.C: New.
+
 2011-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49768
