@@ -1289,39 +1289,36 @@ do {									\
    in the block and provide defaults if none specified.  */
 #define REG_ATTRS(RTX) X0REGATTR (RTX, 2)
 
+#ifndef GENERATOR_FILE
 /* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias
    set, and may alias anything.  Otherwise, the MEM can only alias
    MEMs in a conflicting alias set.  This value is set in a
    language-dependent manner in the front-end, and should not be
    altered in the back-end.  These set numbers are tested with
    alias_sets_conflict_p.  */
-#define MEM_ALIAS_SET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->alias)
+#define MEM_ALIAS_SET(RTX) (get_mem_attrs (RTX)->alias)
 
 /* For a MEM rtx, the decl it is known to refer to, if it is known to
    refer to part of a DECL.  It may also be a COMPONENT_REF.  */
-#define MEM_EXPR(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->expr)
+#define MEM_EXPR(RTX) (get_mem_attrs (RTX)->expr)
 
 /* For a MEM rtx, the offset from the start of MEM_EXPR, if known, as a
    RTX that is always a CONST_INT.  */
-#define MEM_OFFSET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->offset)
+#define MEM_OFFSET(RTX) (get_mem_attrs (RTX)->offset)
 
 /* For a MEM rtx, the address space.  */
-#define MEM_ADDR_SPACE(RTX) (MEM_ATTRS (RTX) == 0 ? ADDR_SPACE_GENERIC \
-						  : MEM_ATTRS (RTX)->addrspace)
+#define MEM_ADDR_SPACE(RTX) (get_mem_attrs (RTX)->addrspace)
 
 /* For a MEM rtx, the size in bytes of the MEM, if known, as an RTX that
    is always a CONST_INT.  */
-#define MEM_SIZE(RTX)							\
-(MEM_ATTRS (RTX) != 0 ? MEM_ATTRS (RTX)->size				\
- : GET_MODE (RTX) != BLKmode ? GEN_INT (GET_MODE_SIZE (GET_MODE (RTX)))	\
- : 0)
+#define MEM_SIZE(RTX) (get_mem_attrs (RTX)->size)
 
 /* For a MEM rtx, the alignment in bits.  We can use the alignment of the
    mode as a default when STRICT_ALIGNMENT, but not if not.  */
-#define MEM_ALIGN(RTX)							\
-(MEM_ATTRS (RTX) != 0 ? MEM_ATTRS (RTX)->align				\
- : (STRICT_ALIGNMENT && GET_MODE (RTX) != BLKmode			\
-    ? GET_MODE_ALIGNMENT (GET_MODE (RTX)) : BITS_PER_UNIT))
+#define MEM_ALIGN(RTX) (get_mem_attrs (RTX)->align)
+#else
+#define MEM_ADDR_SPACE(RTX) ADDR_SPACE_GENERIC
+#endif
 
 /* For a REG rtx, the decl it is known to refer to, if it is known to
    refer to part of a DECL.  */
@@ -2120,6 +2117,9 @@ struct GTY(()) target_rtl {
   /* Static hunks of RTL used by the aliasing code; these are treated
      as persistent to avoid unnecessary RTL allocations.  */
   rtx x_static_reg_base_value[FIRST_PSEUDO_REGISTER];
+
+  /* The default memory attributes for each mode.  */
+  struct mem_attrs *x_mode_mem_attrs[(int) MAX_MACHINE_MODE];
 };
 
 extern GTY(()) struct target_rtl default_target_rtl;
@@ -2137,6 +2137,8 @@ extern struct target_rtl *this_target_rtl;
   (this_target_rtl->x_return_address_pointer_rtx)
 #define top_of_stack \
   (this_target_rtl->x_top_of_stack)
+#define mode_mem_attrs \
+  (this_target_rtl->x_mode_mem_attrs)
 
 /* Standard pieces of rtx, to be substituted directly into things.  */
 #define pc_rtx                  (global_rtl[GR_PC])
@@ -2150,6 +2152,20 @@ extern struct target_rtl *this_target_rtl;
 #define frame_pointer_rtx       (global_rtl[GR_FRAME_POINTER])
 #define hard_frame_pointer_rtx	(global_rtl[GR_HARD_FRAME_POINTER])
 #define arg_pointer_rtx		(global_rtl[GR_ARG_POINTER])
+
+#ifndef GENERATOR_FILE
+/* Return the attributes of a MEM rtx.  */
+static inline struct mem_attrs *
+get_mem_attrs (const_rtx x)
+{
+  struct mem_attrs *attrs;
+
+  attrs = MEM_ATTRS (x);
+  if (!attrs)
+    attrs = mode_mem_attrs[(int) GET_MODE (x)];
+  return attrs;
+}
+#endif
 
 /* Include the RTL generation functions.  */
 
