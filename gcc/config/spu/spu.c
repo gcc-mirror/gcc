@@ -4181,17 +4181,15 @@ spu_va_start (tree valist, rtx nextarg)
   /* Find the __args area.  */
   t = make_tree (TREE_TYPE (args), nextarg);
   if (crtl->args.pretend_args_size > 0)
-    t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (args), t,
-		size_int (-STACK_POINTER_OFFSET));
+    t = fold_build_pointer_plus_hwi (t, -STACK_POINTER_OFFSET);
   t = build2 (MODIFY_EXPR, TREE_TYPE (args), args, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Find the __skip area.  */
   t = make_tree (TREE_TYPE (skip), virtual_incoming_args_rtx);
-  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (skip), t,
-	      size_int (crtl->args.pretend_args_size
-			 - STACK_POINTER_OFFSET));
+  t = fold_build_pointer_plus_hwi (t, (crtl->args.pretend_args_size
+				       - STACK_POINTER_OFFSET));
   t = build2 (MODIFY_EXPR, TREE_TYPE (skip), skip, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -4221,7 +4219,7 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
   tree f_args, f_skip;
   tree args, skip;
   HOST_WIDE_INT size, rsize;
-  tree paddedsize, addr, tmp;
+  tree addr, tmp;
   bool pass_by_reference_p;
 
   f_args = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
@@ -4246,21 +4244,20 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
 
   /* build conditional expression to calculate addr. The expression
      will be gimplified later. */
-  paddedsize = size_int (rsize);
-  tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node, unshare_expr (args), paddedsize);
+  tmp = fold_build_pointer_plus_hwi (unshare_expr (args), rsize);
   tmp = build2 (TRUTH_AND_EXPR, boolean_type_node,
 		build2 (GT_EXPR, boolean_type_node, tmp, unshare_expr (skip)),
 		build2 (LE_EXPR, boolean_type_node, unshare_expr (args),
 		unshare_expr (skip)));
 
   tmp = build3 (COND_EXPR, ptr_type_node, tmp,
-		build2 (POINTER_PLUS_EXPR, ptr_type_node, unshare_expr (skip),
-			size_int (32)), unshare_expr (args));
+		fold_build_pointer_plus_hwi (unshare_expr (skip), 32),
+		unshare_expr (args));
 
   gimplify_assign (addr, tmp, pre_p);
 
   /* update VALIST.__args */
-  tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node, addr, paddedsize);
+  tmp = fold_build_pointer_plus_hwi (addr, rsize);
   gimplify_assign (unshare_expr (args), tmp, pre_p);
 
   addr = fold_convert (build_pointer_type_for_mode (type, ptr_mode, true),

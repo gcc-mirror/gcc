@@ -310,9 +310,7 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	  break;
 	case LE_EXPR:
 	  if (POINTER_TYPE_P (TREE_TYPE (loop->n2)))
-	    loop->n2 = fold_build2_loc (loc,
-				    POINTER_PLUS_EXPR, TREE_TYPE (loop->n2),
-				    loop->n2, size_one_node);
+	    loop->n2 = fold_build_pointer_plus_hwi_loc (loc, loop->n2, 1);
 	  else
 	    loop->n2 = fold_build2_loc (loc,
 				    PLUS_EXPR, TREE_TYPE (loop->n2), loop->n2,
@@ -321,9 +319,7 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	  break;
 	case GE_EXPR:
 	  if (POINTER_TYPE_P (TREE_TYPE (loop->n2)))
-	    loop->n2 = fold_build2_loc (loc,
-				    POINTER_PLUS_EXPR, TREE_TYPE (loop->n2),
-				    loop->n2, size_int (-1));
+	    loop->n2 = fold_build_pointer_plus_hwi_loc (loc, loop->n2, -1);
 	  else
 	    loop->n2 = fold_build2_loc (loc,
 				    MINUS_EXPR, TREE_TYPE (loop->n2), loop->n2,
@@ -3914,8 +3910,7 @@ expand_omp_for_generic (struct omp_region *region,
 	  t = fold_build2 (MULT_EXPR, itype, t,
 			   fold_convert (itype, fd->loops[i].step));
 	  if (POINTER_TYPE_P (vtype))
-	    t = fold_build2 (POINTER_PLUS_EXPR, vtype,
-			     fd->loops[i].n1, fold_convert (sizetype, t));
+	    t = fold_build_pointer_plus (fd->loops[i].n1, t);
 	  else
 	    t = fold_build2 (PLUS_EXPR, itype, fd->loops[i].n1, t);
 	  t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE,
@@ -3944,8 +3939,7 @@ expand_omp_for_generic (struct omp_region *region,
       vback = gimple_omp_continue_control_def (stmt);
 
       if (POINTER_TYPE_P (type))
-	t = fold_build2 (POINTER_PLUS_EXPR, type, vmain,
-			 fold_convert (sizetype, fd->loop.step));
+	t = fold_build_pointer_plus (vmain, fd->loop.step);
       else
 	t = fold_build2 (PLUS_EXPR, type, vmain, fd->loop.step);
       t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE,
@@ -3989,9 +3983,7 @@ expand_omp_for_generic (struct omp_region *region,
 	      set_immediate_dominator (CDI_DOMINATORS, bb, last_bb);
 
 	      if (POINTER_TYPE_P (vtype))
-		t = fold_build2 (POINTER_PLUS_EXPR, vtype,
-				 fd->loops[i].v,
-				 fold_convert (sizetype, fd->loops[i].step));
+		t = fold_build_pointer_plus (fd->loops[i].v, fd->loops[i].step);
 	      else
 		t = fold_build2 (PLUS_EXPR, vtype, fd->loops[i].v,
 				 fd->loops[i].step);
@@ -4239,8 +4231,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_convert (itype, s0);
   t = fold_build2 (MULT_EXPR, itype, t, fd->loop.step);
   if (POINTER_TYPE_P (type))
-    t = fold_build2 (POINTER_PLUS_EXPR, type, fd->loop.n1,
-		     fold_convert (sizetype, t));
+    t = fold_build_pointer_plus (fd->loop.n1, t);
   else
     t = fold_build2 (PLUS_EXPR, type, t, fd->loop.n1);
   t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE,
@@ -4251,8 +4242,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_convert (itype, e0);
   t = fold_build2 (MULT_EXPR, itype, t, fd->loop.step);
   if (POINTER_TYPE_P (type))
-    t = fold_build2 (POINTER_PLUS_EXPR, type, fd->loop.n1,
-		     fold_convert (sizetype, t));
+    t = fold_build_pointer_plus (fd->loop.n1, t);
   else
     t = fold_build2 (PLUS_EXPR, type, t, fd->loop.n1);
   e = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
@@ -4267,8 +4257,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   vback = gimple_omp_continue_control_def (stmt);
 
   if (POINTER_TYPE_P (type))
-    t = fold_build2 (POINTER_PLUS_EXPR, type, vmain,
-		     fold_convert (sizetype, fd->loop.step));
+    t = fold_build_pointer_plus (vmain, fd->loop.step);
   else
     t = fold_build2 (PLUS_EXPR, type, vmain, fd->loop.step);
   t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE,
@@ -4442,8 +4431,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   t = fold_build2 (MULT_EXPR, itype, threadid, fd->chunk_size);
   t = fold_build2 (MULT_EXPR, itype, t, fd->loop.step);
   if (POINTER_TYPE_P (type))
-    t = fold_build2 (POINTER_PLUS_EXPR, type, fd->loop.n1,
-		     fold_convert (sizetype, t));
+    t = fold_build_pointer_plus (fd->loop.n1, t);
   else
     t = fold_build2 (PLUS_EXPR, type, t, fd->loop.n1);
   v_extra = force_gimple_operand_gsi (&si, t, true, NULL_TREE,
@@ -4475,8 +4463,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   t = fold_convert (itype, s0);
   t = fold_build2 (MULT_EXPR, itype, t, fd->loop.step);
   if (POINTER_TYPE_P (type))
-    t = fold_build2 (POINTER_PLUS_EXPR, type, fd->loop.n1,
-		     fold_convert (sizetype, t));
+    t = fold_build_pointer_plus (fd->loop.n1, t);
   else
     t = fold_build2 (PLUS_EXPR, type, t, fd->loop.n1);
   t = force_gimple_operand_gsi (&si, t, false, NULL_TREE,
@@ -4487,8 +4474,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   t = fold_convert (itype, e0);
   t = fold_build2 (MULT_EXPR, itype, t, fd->loop.step);
   if (POINTER_TYPE_P (type))
-    t = fold_build2 (POINTER_PLUS_EXPR, type, fd->loop.n1,
-		     fold_convert (sizetype, t));
+    t = fold_build_pointer_plus (fd->loop.n1, t);
   else
     t = fold_build2 (PLUS_EXPR, type, t, fd->loop.n1);
   e = force_gimple_operand_gsi (&si, t, true, NULL_TREE,
@@ -4503,8 +4489,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   v_back = gimple_omp_continue_control_def (stmt);
 
   if (POINTER_TYPE_P (type))
-    t = fold_build2 (POINTER_PLUS_EXPR, type, v_main,
-		     fold_convert (sizetype, fd->loop.step));
+    t = fold_build_pointer_plus (v_main, fd->loop.step);
   else
     t = fold_build2 (PLUS_EXPR, type, v_main, fd->loop.step);
   stmt = gimple_build_assign (v_back, t);

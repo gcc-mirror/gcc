@@ -2085,10 +2085,10 @@ make_class_data (tree type)
   PUSH_FIELD_VALUE (v1, "vtable",
 		    (flag_indirect_classes 
 		     ? null_pointer_node
-		     : build2 (POINTER_PLUS_EXPR, dtable_ptr_type,
-			       build1 (ADDR_EXPR, dtable_ptr_type,
-				       class_dtable_decl),
-			       dtable_start_offset)));
+		     : fold_build_pointer_plus
+			 (build1 (ADDR_EXPR, dtable_ptr_type,
+				  class_dtable_decl),
+			  dtable_start_offset)));
   if (! flag_hash_synchronization)
     PUSH_FIELD_VALUE (v1, "sync_info", null_pointer_node);
   FINISH_RECORD_CONSTRUCTOR (temp, v1, object_type_node);
@@ -2131,10 +2131,10 @@ make_class_data (tree type)
   PUSH_FIELD_VALUE (v2, "vtable",
                     (flag_indirect_dispatch || dtable_decl == NULL_TREE
                      ? null_pointer_node
-                     : build2 (POINTER_PLUS_EXPR, dtable_ptr_type,
-				build1 (ADDR_EXPR, dtable_ptr_type,
-					dtable_decl),
-                               dtable_start_offset)));
+                     : fold_build_pointer_plus
+			 (build1 (ADDR_EXPR, dtable_ptr_type,
+				  dtable_decl),
+			  dtable_start_offset)));
   add_table_and_syms (&v2, TYPE_OTABLE_METHODS (type),
                       "otable", TYPE_OTABLE_DECL (type), otable_ptr_type,
                       "otable_syms", TYPE_OTABLE_SYMS_DECL (type));
@@ -2896,8 +2896,7 @@ build_symbol_entry (tree decl, tree special)
      system that this is a "special" symbol, i.e. one that should
      bypass access controls.  */
   if (special != NULL_TREE)
-    signature = build2 (POINTER_PLUS_EXPR, TREE_TYPE (signature), signature,
-			fold_convert (sizetype, special));
+    signature = fold_build_pointer_plus (signature, special);
 
   return build_symbol_table_entry (clname, name, signature);
 } 

@@ -1230,7 +1230,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
 	start2 = build_fold_addr_expr_loc (input_location, start2);
 
       end1 = TYPE_SIZE_UNIT (TREE_TYPE (arg1));
-      end1 = build2 (POINTER_PLUS_EXPR, TREE_TYPE (start1), start1, end1);
+      end1 = fold_build_pointer_plus (start1, end1);
 
       p1 = create_tmp_var (TREE_TYPE (start1), NULL);
       t = build2 (MODIFY_EXPR, TREE_TYPE (p1), p1, start1);
@@ -1260,15 +1260,13 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
       t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
       append_to_statement_list (t, &ret);
 
-      t = TYPE_SIZE_UNIT (inner_type);
-      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (p1), p1, t);
+      t = fold_build_pointer_plus (p1, TYPE_SIZE_UNIT (inner_type));
       t = build2 (MODIFY_EXPR, TREE_TYPE (p1), p1, t);
       append_to_statement_list (t, &ret);
 
       if (arg2)
 	{
-	  t = TYPE_SIZE_UNIT (inner_type);
-	  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (p2), p2, t);
+	  t = fold_build_pointer_plus (p2, TYPE_SIZE_UNIT (inner_type));
 	  t = build2 (MODIFY_EXPR, TREE_TYPE (p2), p2, t);
 	  append_to_statement_list (t, &ret);
 	}

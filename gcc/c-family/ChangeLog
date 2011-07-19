@@ -1,3 +1,8 @@
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (pointer_int_sum): Use fold_build_pointer_plus.
+	* c-omp.c (c_finish_omp_for): Likewise.
+
 2011-07-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_nested_types): Put semi-colon after empty loop

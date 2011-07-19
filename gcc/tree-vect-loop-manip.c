@@ -1819,9 +1819,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
 			 fold_convert (TREE_TYPE (step_expr), niters),
 			 step_expr);
       if (POINTER_TYPE_P (TREE_TYPE (init_expr)))
-	ni = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (init_expr),
-			  init_expr,
-			  fold_convert (sizetype, off));
+	ni = fold_build_pointer_plus (init_expr, off);
       else
 	ni = fold_build2 (PLUS_EXPR, TREE_TYPE (init_expr),
 			  init_expr,
@@ -2476,14 +2474,12 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
 	}
 
       seg_a_min = addr_base_a;
-      seg_a_max = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr_base_a), 
-			       addr_base_a, segment_length_a);
+      seg_a_max = fold_build_pointer_plus (addr_base_a, segment_length_a);
       if (tree_int_cst_compare (DR_STEP (dr_a), size_zero_node) < 0)
 	seg_a_min = seg_a_max, seg_a_max = addr_base_a;
 
       seg_b_min = addr_base_b;
-      seg_b_max = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr_base_b),
-			       addr_base_b, segment_length_b);
+      seg_b_max = fold_build_pointer_plus (addr_base_b, segment_length_b);
       if (tree_int_cst_compare (DR_STEP (dr_b), size_zero_node) < 0)
 	seg_b_min = seg_b_max, seg_b_max = addr_base_b;
 

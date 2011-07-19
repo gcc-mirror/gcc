@@ -4236,9 +4236,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       && !integer_zerop (TYPE_SIZE (type)))
     {
       t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
-		  fold_build2 (POINTER_PLUS_EXPR,
-			       TREE_TYPE (valist),
-			       valist_tmp, size_int (boundary - 1)));
+		  fold_build_pointer_plus_hwi (valist_tmp, boundary - 1));
       gimplify_and_add (t, pre_p);
 
       t = fold_convert (sizetype, valist_tmp);
@@ -4277,12 +4275,11 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		       rounded_size, size_int (align));
       t = fold_build3 (COND_EXPR, sizetype, t, size_zero_node,
 		       size_binop (MINUS_EXPR, rounded_size, type_size));
-      addr = fold_build2 (POINTER_PLUS_EXPR,
-			  TREE_TYPE (addr), addr, t);
+      addr = fold_build_pointer_plus (addr, t);
     }
 
   /* Compute new value for AP.  */
-  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (valist), valist_tmp, rounded_size);
+  t = fold_build_pointer_plus (valist_tmp, rounded_size);
   t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
   gimplify_and_add (t, pre_p);
 
@@ -8222,8 +8219,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
     len = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (len), len,
 		       ssize_int (1));
 
-  len = fold_convert_loc (loc, sizetype, len);
-  dest = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (dest), dest, len);
+  dest = fold_build_pointer_plus_loc (loc, dest, len);
   dest = fold_convert_loc (loc, type, dest);
   if (expr)
     dest = omit_one_operand_loc (loc, type, dest, expr);
@@ -8299,8 +8295,7 @@ fold_builtin_stpcpy (location_t loc, tree fndecl, tree dest, tree src)
   call = build_call_expr_loc (loc, fn, 3, dest, src, lenp1);
 
   type = TREE_TYPE (TREE_TYPE (fndecl));
-  len = fold_convert_loc (loc, sizetype, len);
-  dest = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (dest), dest, len);
+  dest = fold_build_pointer_plus_loc (loc, dest, len);
   dest = fold_convert_loc (loc, type, dest);
   dest = omit_one_operand_loc (loc, type, dest, call);
   return dest;
@@ -8387,8 +8382,7 @@ fold_builtin_memchr (location_t loc, tree arg1, tree arg2, tree len, tree type)
 	  if (r == NULL)
 	    return build_int_cst (TREE_TYPE (arg1), 0);
 
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (arg1), arg1,
-			     size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, arg1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
       return NULL_TREE;
@@ -10775,8 +10769,7 @@ fold_builtin_strstr (location_t loc, tree s1, tree s2, tree type)
 	    return build_int_cst (TREE_TYPE (s1), 0);
 
 	  /* Return an offset into the constant string argument.  */
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (s1),
-			     s1, size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, s1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
 
@@ -10846,8 +10839,7 @@ fold_builtin_strchr (location_t loc, tree s1, tree s2, tree type)
 	    return build_int_cst (TREE_TYPE (s1), 0);
 
 	  /* Return an offset into the constant string argument.  */
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (s1),
-			     s1, size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, s1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
       return NULL_TREE;
@@ -10902,8 +10894,7 @@ fold_builtin_strrchr (location_t loc, tree s1, tree s2, tree type)
 	    return build_int_cst (TREE_TYPE (s1), 0);
 
 	  /* Return an offset into the constant string argument.  */
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (s1),
-			     s1, size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, s1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
 
@@ -10962,8 +10953,7 @@ fold_builtin_strpbrk (location_t loc, tree s1, tree s2, tree type)
 	    return build_int_cst (TREE_TYPE (s1), 0);
 
 	  /* Return an offset into the constant string argument.  */
-	  tem = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (s1),
-			     s1, size_int (r - p1));
+	  tem = fold_build_pointer_plus_hwi_loc (loc, s1, r - p1);
 	  return fold_convert_loc (loc, type, tem);
 	}
 
@@ -11047,8 +11037,7 @@ fold_builtin_strcat (location_t loc ATTRIBUTE_UNUSED, tree dst, tree src)
 	  newdst = build_call_expr_loc (loc, strlen_fn, 1, dst);
 	  /* Create (dst p+ strlen (dst)).  */
 
-	  newdst = fold_build2_loc (loc, POINTER_PLUS_EXPR,
-				TREE_TYPE (dst), dst, newdst);
+	  newdst = fold_build_pointer_plus_loc (loc, dst, newdst);
 	  newdst = builtin_save_expr (newdst);
 
 	  call = build_call_expr_loc (loc, strcpy_fn, 2, newdst, src);
@@ -11721,7 +11710,7 @@ expand_builtin_memory_chk (tree exp, rtx target, enum machine_mode mode,
 	      return expand_expr (dest, target, mode, EXPAND_NORMAL);
 	    }
 
-	  expr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (dest), dest, len);
+	  expr = fold_build_pointer_plus (dest, len);
 	  return expand_expr (expr, target, mode, EXPAND_NORMAL);
 	}
 
@@ -11981,8 +11970,7 @@ fold_builtin_memory_chk (location_t loc, tree fndecl,
 				 dest, len);
       else
 	{
-	  tree temp = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (dest),
-				   dest, len);
+	  tree temp = fold_build_pointer_plus_loc (loc, dest, len);
 	  return fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)), temp);
 	}
     }

@@ -3790,8 +3790,8 @@ fill_with_spaces (tree start, tree type, tree size)
 		  fold_build2_loc (input_location, MINUS_EXPR, sizetype, i,
 				   TYPE_SIZE_UNIT (type)));
   gfc_add_modify (&loop, el,
-		  fold_build2_loc (input_location, POINTER_PLUS_EXPR,
-				   TREE_TYPE (el), el, TYPE_SIZE_UNIT (type)));
+		  fold_build_pointer_plus_loc (input_location,
+					       el, TYPE_SIZE_UNIT (type)));
 
   /* Making the loop... actually loop!  */
   tmp = gfc_finish_block (&loop);
@@ -3917,8 +3917,7 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 			  built_in_decls[BUILT_IN_MEMMOVE],
 			  3, dest, src, slen);
 
-  tmp4 = fold_build2_loc (input_location, POINTER_PLUS_EXPR, TREE_TYPE (dest),
-			  dest, fold_convert (sizetype, slen));
+  tmp4 = fold_build_pointer_plus_loc (input_location, dest, slen);
   tmp4 = fill_with_spaces (tmp4, chartype,
 			   fold_build2_loc (input_location, MINUS_EXPR,
 					    TREE_TYPE(dlen), dlen, slen));

@@ -7645,8 +7645,7 @@ ix86_va_start (tree valist, rtx nextarg)
     ovf_rtx = cfun->machine->split_stack_varargs_pointer;
   t = make_tree (type, ovf_rtx);
   if (words != 0)
-    t = build2 (POINTER_PLUS_EXPR, type, t,
-	        size_int (words * UNITS_PER_WORD));
+    t = fold_build_pointer_plus_hwi (t, words * UNITS_PER_WORD);
   t = build2 (MODIFY_EXPR, type, ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -7658,8 +7657,7 @@ ix86_va_start (tree valist, rtx nextarg)
       type = TREE_TYPE (sav);
       t = make_tree (type, frame_pointer_rtx);
       if (!ix86_varargs_gpr_size)
-	t = build2 (POINTER_PLUS_EXPR, type, t,
-		    size_int (-8 * X86_64_REGPARM_MAX));
+	t = fold_build_pointer_plus_hwi (t, -8 * X86_64_REGPARM_MAX);
       t = build2 (MODIFY_EXPR, type, sav, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -7815,15 +7813,13 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       if (needed_intregs)
 	{
 	  /* int_addr = gpr + sav; */
-	  t = fold_convert (sizetype, gpr);
-	  t = build2 (POINTER_PLUS_EXPR, ptr_type_node, sav, t);
+	  t = fold_build_pointer_plus (sav, gpr);
 	  gimplify_assign (int_addr, t, pre_p);
 	}
       if (needed_sseregs)
 	{
 	  /* sse_addr = fpr + sav; */
-	  t = fold_convert (sizetype, fpr);
-	  t = build2 (POINTER_PLUS_EXPR, ptr_type_node, sav, t);
+	  t = fold_build_pointer_plus (sav, fpr);
 	  gimplify_assign (sse_addr, t, pre_p);
 	}
       if (need_temp)
@@ -7877,12 +7873,10 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 		  src_offset = REGNO (reg) * 8;
 		}
 	      src_addr = fold_convert (addr_type, src_addr);
-	      src_addr = fold_build2 (POINTER_PLUS_EXPR, addr_type, src_addr,
-				      size_int (src_offset));
+	      src_addr = fold_build_pointer_plus_hwi (src_addr, src_offset);
 
 	      dest_addr = fold_convert (daddr_type, addr);
-	      dest_addr = fold_build2 (POINTER_PLUS_EXPR, daddr_type, dest_addr,
-				       size_int (prev_size));
+	      dest_addr = fold_build_pointer_plus_hwi (dest_addr, prev_size);
 	      if (cur_size == GET_MODE_SIZE (mode))
 		{
 		  src = build_va_arg_indirect_ref (src_addr);
@@ -7937,19 +7931,15 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
  else
     {
       HOST_WIDE_INT align = arg_boundary / 8;
-      t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (ovf), ovf,
-		  size_int (align - 1));
-      t = fold_convert (sizetype, t);
+      t = fold_build_pointer_plus_hwi (ovf, align - 1);
       t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t,
-		  size_int (-align));
-      t = fold_convert (TREE_TYPE (ovf), t);
+		  build_int_cst (TREE_TYPE (t), -align));
     }
 
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
   gimplify_assign (addr, t, pre_p);
 
-  t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (t), t,
-	      size_int (rsize * UNITS_PER_WORD));
+  t = fold_build_pointer_plus_hwi (t, rsize * UNITS_PER_WORD);
   gimplify_assign (unshare_expr (ovf), t, pre_p);
 
   if (container)

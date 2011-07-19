@@ -1,5 +1,72 @@
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 
+	* tree.h (fold_build_pointer_plus_loc): New helper function.
+	(fold_build_pointer_plus_hwi_loc): Likewise.
+	(fold_build_pointer_plus): Define.
+	(fold_build_pointer_plus_hwi): Likewise.
+	* builtins.c (std_gimplify_va_arg_expr): Use fold_build_pointer_plus.
+	(fold_builtin_memory_op): Likewise.
+	(fold_builtin_stpcpy): Likewise.
+	(fold_builtin_memchr): Likewise.
+	(fold_builtin_strstr): Likewise.
+	(fold_builtin_strchr): Likewise.
+	(fold_builtin_strrchr): Likewise.
+	(fold_builtin_strpbrk): Likewise.
+	(fold_builtin_strcat): Likewise.
+	(expand_builtin_memory_chk): Likewise.
+	(fold_builtin_memory_chk): Likewise.
+	* c-typeck.c (build_unary_op): Likewise.
+	* cgraphunit.c (thunk_adjust): Likewise.
+	* fold-const.c (build_range_check): Likewise.
+	(fold_binary_loc): Likewise.
+	* omp-low.c (extract_omp_for_data): Likewise.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	* tree-affine.c (add_elt_to_tree): Likewise.
+	* tree-data-ref.c (split_constant_offset_1): Likewise.
+	* tree-loop-distribution.c (generate_memset_zero): Likewise.
+	* tree-mudflap.c (mf_xform_derefs_1): Likewise.
+	* tree-predcom.c (ref_at_iteration): Likewise.
+	* tree-ssa-address.c (tree_mem_ref_addr): Likewise.
+	(add_to_parts): Likewise.
+	(create_mem_ref): Likewise.
+	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost): Likewise.
+	* tree-ssa-loop-niter.c (number_of_iterations_lt_to_ne): Likewise.
+	(number_of_iterations_le): Likewise.
+	* tree-ssa-loop-prefetch.c (issue_prefetch_ref): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Likewise.
+	(vect_create_addr_base_for_vector_ref): Likewise.
+	* tree-vect-loop-manip.c (vect_update_ivs_after_vectorizer): Likewise.
+	(vect_create_cond_for_alias_checks): Likewise.
+	* tree-vrp.c (extract_range_from_assert): Likewise.
+	* config/alpha/alpha.c (alpha_va_start): Likewise.
+	(alpha_gimplify_va_arg_1): Likewise.
+	* config/i386/i386.c (ix86_va_start): Likewise.
+	(ix86_gimplify_va_arg): Likewise.
+	* config/ia64/ia64.c (ia64_gimplify_va_arg): Likewise.
+	* config/mep/mep.c (mep_expand_va_start): Likewise.
+	(mep_gimplify_va_arg_expr): Likewise.
+	* config/mips/mips.c (mips_va_start): Likewise.
+	(mips_gimplify_va_arg_expr): Likewise.
+	* config/pa/pa.c (hppa_gimplify_va_arg_expr): Likewise.
+	* config/rs6000/rs6000.c (rs6000_va_start): Likewise.
+	(rs6000_gimplify_va_arg): Likewise.
+	* config/s390/s390.c (s390_va_start): Likewise.
+	(s390_gimplify_va_arg): Likewise.
+	* config/sh/sh.c (sh_va_start): Likewise.
+	(sh_gimplify_va_arg_expr): Likewise.
+	* config/sparc/sparc.c (sparc_gimplify_va_arg): Likewise.
+	* config/spu/spu.c (spu_va_start): Likewise.
+	(spu_gimplify_va_arg_expr): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_expand_builtin_va_start):
+	Likewise.
+	(xstormy16_gimplify_va_arg_expr): Likewise.
+	* config/xtensa/xtensa.c (xtensa_va_start): Likewise.
+	(xtensa_gimplify_va_arg_expr): Likewise.
+
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
 	* expr.c (expand_expr_real_2): Remove TRUTH_*_EXPR handling.
 	(expand_expr_real_1): Remove TRUTH_*IF_EXPR and STATEMENT_LIST
 	handling.

@@ -387,7 +387,7 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
 	return fold_convert (type, elt);
 
       if (POINTER_TYPE_P (type))
-        return fold_build2 (POINTER_PLUS_EXPR, type, expr, elt);
+        return fold_build_pointer_plus (expr, elt);
       return fold_build2 (PLUS_EXPR, type, expr, elt);
     }
 
@@ -399,7 +399,7 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
       if (POINTER_TYPE_P (type))
 	{
 	  elt = fold_build1 (NEGATE_EXPR, type1, elt);
-	  return fold_build2 (POINTER_PLUS_EXPR, type, expr, elt);
+	  return fold_build_pointer_plus (expr, elt);
 	}
       return fold_build2 (MINUS_EXPR, type, expr, elt);
     }
@@ -423,7 +423,7 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
     {
       if (code == MINUS_EXPR)
         elt = fold_build1 (NEGATE_EXPR, type1, elt);
-      return fold_build2 (POINTER_PLUS_EXPR, type, expr, elt);
+      return fold_build_pointer_plus (expr, elt);
     }
   return fold_build2 (code, type, expr, elt);
 }

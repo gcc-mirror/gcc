@@ -5990,8 +5990,7 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   if (TARGET_ABI_OPEN_VMS)
     {
       t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
-      t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t,
-		 size_int (offset + NUM_ARGS * UNITS_PER_WORD));
+      t = fold_build_pointer_plus_hwi (t, offset + NUM_ARGS * UNITS_PER_WORD);
       t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6007,8 +6006,7 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 			     valist, offset_field, NULL_TREE);
 
       t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
-      t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t,
-		  size_int (offset));
+      t = fold_build_pointer_plus_hwi (t, offset);
       t = build2 (MODIFY_EXPR, TREE_TYPE (base_field), base_field, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6069,8 +6067,7 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
     }
 
   /* Build the final address and force that value into a temporary.  */
-  addr = build2 (POINTER_PLUS_EXPR, ptr_type, fold_convert (ptr_type, base),
-	         fold_convert (sizetype, addend));
+  addr = fold_build_pointer_plus (fold_convert (ptr_type, base), addend);
   internal_post = NULL;
   gimplify_expr (&addr, pre_p, &internal_post, is_gimple_val, fb_rvalue);
   gimple_seq_add_seq (pre_p, internal_post);

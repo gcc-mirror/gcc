@@ -345,9 +345,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
 				gfc_array_index_type,
 				offset, GFC_DECL_SPAN(decl));
       tmp = gfc_build_addr_expr (pvoid_type_node, base);
-      tmp = fold_build2_loc (input_location, POINTER_PLUS_EXPR,
-			     pvoid_type_node, tmp,
-			     fold_convert (sizetype, offset));
+      tmp = fold_build_pointer_plus_loc (input_location, tmp, offset);
       tmp = fold_convert (build_pointer_type (type), tmp);
       if (!TYPE_STRING_FLAG (type))
 	tmp = build_fold_indirect_ref_loc (input_location, tmp);

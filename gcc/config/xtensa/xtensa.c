@@ -2853,7 +2853,7 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   /* Set the __va_stk member to ($arg_ptr - 32).  */
   u = make_tree (ptr_type_node, virtual_incoming_args_rtx);
-  u = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, u, size_int (-32));
+  u = fold_build_pointer_plus_hwi (u, -32);
   t = build2 (MODIFY_EXPR, ptr_type_node, stk, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -3042,7 +3042,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
   t = fold_convert (sizetype, unshare_expr (ndx));
   t = build2 (MINUS_EXPR, sizetype, t, size);
-  addr = build2 (POINTER_PLUS_EXPR, ptr_type_node, unshare_expr (array), t);
+  addr = fold_build_pointer_plus (unshare_expr (array), t);
 
   addr = fold_convert (build_pointer_type (type), addr);
   if (indirect)

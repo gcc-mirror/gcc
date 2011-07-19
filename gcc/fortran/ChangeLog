@@ -1,3 +1,11 @@
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* trans-expr.c (fill_with_spaces): Use fold_build_pointer_plus.
+	(gfc_trans_string_copy): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_repeat): Likewise.
+	* trans-types.c (gfc_get_array_descr_info): Likewise.
+	* trans.c (gfc_build_array_ref): Likewise.
+
 2011-07-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49708
