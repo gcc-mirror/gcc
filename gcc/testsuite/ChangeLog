@@ -1,3 +1,8 @@
+2011-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49768
+	* gcc.c-torture/execute/pr49768.c: New test.
+
 2011-07-18  Mikael Morin  <mikael.morin@sfr.fr>
 
 	PR fortran/49648

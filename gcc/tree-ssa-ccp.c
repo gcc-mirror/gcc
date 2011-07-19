@@ -1520,7 +1520,7 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
       double_int bitoffset;
       double_int byte_offset_cst = tree_to_double_int (byte_offset);
       double_int bits_per_unit_cst = uhwi_to_double_int (BITS_PER_UNIT);
-      double_int bitoffset_end;
+      double_int bitoffset_end, access_end;
 
       /* Variable sized objects in static constructors makes no sense,
 	 but field_size can be NULL for flexible array members.  */
@@ -1541,20 +1541,24 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
       else
 	bitoffset_end = double_int_zero;
 
-      /* Is OFFSET in the range (BITOFFSET, BITOFFSET_END)? */
-      if (double_int_cmp (uhwi_to_double_int (offset), bitoffset, 0) >= 0
+      access_end = double_int_add (uhwi_to_double_int (offset),
+				   uhwi_to_double_int (size));
+
+      /* Is there any overlap between [OFFSET, OFFSET+SIZE) and
+	 [BITOFFSET, BITOFFSET_END)?  */
+      if (double_int_cmp (access_end, bitoffset, 0) > 0
 	  && (field_size == NULL_TREE
 	      || double_int_cmp (uhwi_to_double_int (offset),
 				 bitoffset_end, 0) < 0))
 	{
-	  double_int access_end = double_int_add (uhwi_to_double_int (offset),
-						  uhwi_to_double_int (size));
 	  double_int inner_offset = double_int_sub (uhwi_to_double_int (offset),
 						    bitoffset);
 	  /* We do have overlap.  Now see if field is large enough to
 	     cover the access.  Give up for accesses spanning multiple
 	     fields.  */
 	  if (double_int_cmp (access_end, bitoffset_end, 0) > 0)
+	    return NULL_TREE;
+	  if (double_int_cmp (uhwi_to_double_int (offset), bitoffset, 0) < 0)
 	    return NULL_TREE;
 	  return fold_ctor_reference (type, cval,
 				      double_int_to_uhwi (inner_offset), size);

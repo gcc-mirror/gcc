@@ -1,3 +1,10 @@
+2011-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/49768
+	* tree-ssa-ccp.c (fold_nonarray_ctor_reference): Return NULL
+	if offset is smaller than bitoffset, but offset+size is bigger
+	than bitoffset.
+
 2011-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49675
