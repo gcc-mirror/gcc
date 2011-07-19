@@ -2391,7 +2391,7 @@ assemble_trampoline_template (void)
 
   initial_trampoline = gen_const_mem (BLKmode, symbol);
   set_mem_align (initial_trampoline, TRAMPOLINE_ALIGNMENT);
-  set_mem_size (initial_trampoline, GEN_INT (TRAMPOLINE_SIZE));
+  set_mem_size (initial_trampoline, TRAMPOLINE_SIZE);
 
   return initial_trampoline;
 }

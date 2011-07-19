@@ -313,10 +313,10 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 
   ref->ref_alias_set = MEM_ALIAS_SET (mem);
 
-  /* If MEM_OFFSET or MEM_SIZE are NULL we have to punt.
+  /* If MEM_OFFSET or MEM_SIZE are unknown we have to punt.
      Keep points-to related information though.  */
   if (!MEM_OFFSET (mem)
-      || !MEM_SIZE (mem))
+      || !MEM_SIZE_KNOWN_P (mem))
     {
       ref->ref = NULL_TREE;
       ref->offset = 0;
@@ -329,12 +329,12 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
      case of promoted subregs on bigendian targets.  Trust the MEM_EXPR
      here.  */
   if (INTVAL (MEM_OFFSET (mem)) < 0
-      && ((INTVAL (MEM_SIZE (mem)) + INTVAL (MEM_OFFSET (mem)))
+      && ((MEM_SIZE (mem) + INTVAL (MEM_OFFSET (mem)))
 	  * BITS_PER_UNIT) == ref->size)
     return true;
 
   ref->offset += INTVAL (MEM_OFFSET (mem)) * BITS_PER_UNIT;
-  ref->size = INTVAL (MEM_SIZE (mem)) * BITS_PER_UNIT;
+  ref->size = MEM_SIZE (mem) * BITS_PER_UNIT;
 
   /* The MEM may extend into adjacent fields, so adjust max_size if
      necessary.  */
@@ -2338,11 +2338,11 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
     return 0;              
 
   sizex = (!MEM_P (rtlx) ? (int) GET_MODE_SIZE (GET_MODE (rtlx))
-	   : MEM_SIZE (rtlx) ? INTVAL (MEM_SIZE (rtlx))
+	   : MEM_SIZE_KNOWN_P (rtlx) ? MEM_SIZE (rtlx)
 	   : -1);
   sizey = (!MEM_P (rtly) ? (int) GET_MODE_SIZE (GET_MODE (rtly))
-	   : MEM_SIZE (rtly) ? INTVAL (MEM_SIZE (rtly)) :
-	   -1);
+	   : MEM_SIZE_KNOWN_P (rtly) ? MEM_SIZE (rtly)
+	   : -1);
 
   /* If we have an offset for either memref, it can update the values computed
      above.  */
@@ -2354,10 +2354,10 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   /* If a memref has both a size and an offset, we can use the smaller size.
      We can't do this if the offset isn't known because we must view this
      memref as being anywhere inside the DECL's MEM.  */
-  if (MEM_SIZE (x) && moffsetx)
-    sizex = INTVAL (MEM_SIZE (x));
-  if (MEM_SIZE (y) && moffsety)
-    sizey = INTVAL (MEM_SIZE (y));
+  if (MEM_SIZE_KNOWN_P (x) && moffsetx)
+    sizex = MEM_SIZE (x);
+  if (MEM_SIZE_KNOWN_P (y) && moffsety)
+    sizey = MEM_SIZE (y);
 
   /* Put the values of the memref with the lower offset in X's values.  */
   if (offsetx > offsety)

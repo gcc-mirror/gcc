@@ -19697,6 +19697,7 @@ expand_movmem_via_rep_mov (rtx destmem, rtx srcmem,
   rtx destexp;
   rtx srcexp;
   rtx countreg;
+  HOST_WIDE_INT rounded_count;
 
   /* If the size is known, it is shorter to use rep movs.  */
   if (mode == QImode && CONST_INT_P (count)
@@ -19724,19 +19725,19 @@ expand_movmem_via_rep_mov (rtx destmem, rtx srcmem,
     }
   if (CONST_INT_P (count))
     {
-      count = GEN_INT (INTVAL (count)
+      rounded_count = (INTVAL (count)
 		       & ~((HOST_WIDE_INT) GET_MODE_SIZE (mode) - 1));
       destmem = shallow_copy_rtx (destmem);
       srcmem = shallow_copy_rtx (srcmem);
-      set_mem_size (destmem, count);
-      set_mem_size (srcmem, count);
+      set_mem_size (destmem, rounded_count);
+      set_mem_size (srcmem, rounded_count);
     }
   else
     {
-      if (MEM_SIZE (destmem))
-	set_mem_size (destmem, NULL_RTX);
-      if (MEM_SIZE (srcmem))
-	set_mem_size (srcmem, NULL_RTX);
+      if (MEM_SIZE_KNOWN_P (destmem))
+	clear_mem_size (destmem);
+      if (MEM_SIZE_KNOWN_P (srcmem))
+	clear_mem_size (srcmem);
     }
   emit_insn (gen_rep_mov (destptr, destmem, srcptr, srcmem, countreg,
 			  destexp, srcexp));
@@ -19751,6 +19752,7 @@ expand_setmem_via_rep_stos (rtx destmem, rtx destptr, rtx value,
 {
   rtx destexp;
   rtx countreg;
+  HOST_WIDE_INT rounded_count;
 
   if (destptr != XEXP (destmem, 0) || GET_MODE (destmem) != BLKmode)
     destmem = adjust_automodify_address_nv (destmem, BLKmode, destptr, 0);
@@ -19766,13 +19768,13 @@ expand_setmem_via_rep_stos (rtx destmem, rtx destptr, rtx value,
     destexp = gen_rtx_PLUS (Pmode, destptr, countreg);
   if (orig_value == const0_rtx && CONST_INT_P (count))
     {
-      count = GEN_INT (INTVAL (count)
+      rounded_count = (INTVAL (count)
 		       & ~((HOST_WIDE_INT) GET_MODE_SIZE (mode) - 1));
       destmem = shallow_copy_rtx (destmem);
-      set_mem_size (destmem, count);
+      set_mem_size (destmem, rounded_count);
     }
-  else if (MEM_SIZE (destmem))
-    set_mem_size (destmem, NULL_RTX);
+  else if (MEM_SIZE_KNOWN_P (destmem))
+    clear_mem_size (destmem);
   emit_insn (gen_rep_stos (destptr, countreg, destmem, value, destexp));
 }
 
@@ -20113,13 +20115,12 @@ expand_constant_movmem_prologue (rtx dst, rtx *srcp, rtx destreg, rtx srcreg,
 				 int desired_align, int align_bytes)
 {
   rtx src = *srcp;
-  rtx src_size, dst_size;
+  rtx orig_dst = dst;
+  rtx orig_src = src;
   int off = 0;
   int src_align_bytes = get_mem_align_offset (src, desired_align * BITS_PER_UNIT);
   if (src_align_bytes >= 0)
     src_align_bytes = desired_align - src_align_bytes;
-  src_size = MEM_SIZE (src);
-  dst_size = MEM_SIZE (dst);
   if (align_bytes & 1)
     {
       dst = adjust_automodify_address_nv (dst, QImode, destreg, 0);
@@ -20177,10 +20178,10 @@ expand_constant_movmem_prologue (rtx dst, rtx *srcp, rtx destreg, rtx srcreg,
       if (MEM_ALIGN (src) < src_align * BITS_PER_UNIT)
 	set_mem_align (src, src_align * BITS_PER_UNIT);
     }
-  if (dst_size)
-    set_mem_size (dst, GEN_INT (INTVAL (dst_size) - align_bytes));
-  if (src_size)
-    set_mem_size (dst, GEN_INT (INTVAL (src_size) - align_bytes));
+  if (MEM_SIZE_KNOWN_P (orig_dst))
+    set_mem_size (dst, MEM_SIZE (orig_dst) - align_bytes);
+  if (MEM_SIZE_KNOWN_P (orig_src))
+    set_mem_size (src, MEM_SIZE (orig_src) - align_bytes);
   *srcp = src;
   return dst;
 }
@@ -20228,7 +20229,7 @@ expand_constant_setmem_prologue (rtx dst, rtx destreg, rtx value,
 				 int desired_align, int align_bytes)
 {
   int off = 0;
-  rtx dst_size = MEM_SIZE (dst);
+  rtx orig_dst = dst;
   if (align_bytes & 1)
     {
       dst = adjust_automodify_address_nv (dst, QImode, destreg, 0);
@@ -20257,8 +20258,8 @@ expand_constant_setmem_prologue (rtx dst, rtx destreg, rtx value,
   dst = adjust_automodify_address_nv (dst, BLKmode, destreg, off);
   if (MEM_ALIGN (dst) < (unsigned int) desired_align * BITS_PER_UNIT)
     set_mem_align (dst, desired_align * BITS_PER_UNIT);
-  if (dst_size)
-    set_mem_size (dst, GEN_INT (INTVAL (dst_size) - align_bytes));
+  if (MEM_SIZE_KNOWN_P (orig_dst))
+    set_mem_size (dst, MEM_SIZE (orig_dst) - align_bytes);
   return dst;
 }
 

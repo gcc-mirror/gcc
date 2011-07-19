@@ -1913,12 +1913,24 @@ set_mem_offset (rtx mem, rtx offset)
 /* Set the size of MEM to SIZE.  */
 
 void
-set_mem_size (rtx mem, rtx size)
+set_mem_size (rtx mem, HOST_WIDE_INT size)
 {
   struct mem_attrs attrs;
 
   attrs = *get_mem_attrs (mem);
-  attrs.size = size;
+  attrs.size = GEN_INT (size);
+  set_mem_attrs (mem, &attrs);
+}
+
+/* Clear the size of MEM.  */
+
+void
+clear_mem_size (rtx mem)
+{
+  struct mem_attrs attrs;
+
+  attrs = *get_mem_attrs (mem);
+  attrs.size = NULL_RTX;
   set_mem_attrs (mem, &attrs);
 }
 

@@ -1299,7 +1299,7 @@ get_memory_rtx (tree exp, tree len)
 	    }
 	}
       set_mem_alias_set (mem, 0);
-      set_mem_size (mem, NULL_RTX);
+      clear_mem_size (mem);
     }
 
   return mem;
@@ -3691,8 +3691,8 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     /* Set MEM_SIZE as appropriate.  */
     if (CONST_INT_P (arg3_rtx))
       {
-	set_mem_size (arg1_rtx, arg3_rtx);
-	set_mem_size (arg2_rtx, arg3_rtx);
+	set_mem_size (arg1_rtx, INTVAL (arg3_rtx));
+	set_mem_size (arg2_rtx, INTVAL (arg3_rtx));
       }
 
 #ifdef HAVE_cmpmemsi
@@ -4835,7 +4835,7 @@ expand_builtin_init_trampoline (tree exp)
     {
       m_tramp = change_address (m_tramp, BLKmode, tmp);
       set_mem_align (m_tramp, TRAMPOLINE_ALIGNMENT);
-      set_mem_size (m_tramp, GEN_INT (TRAMPOLINE_SIZE));
+      set_mem_size (m_tramp, TRAMPOLINE_SIZE);
     }
 
   /* The FUNC argument should be the address of the nested function.
