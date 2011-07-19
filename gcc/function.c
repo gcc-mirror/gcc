@@ -2577,14 +2577,12 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
 	  && data->promoted_mode != DECL_MODE (parm))
 	{
 	  set_mem_size (stack_parm, GET_MODE_SIZE (data->promoted_mode));
-	  if (MEM_EXPR (stack_parm) && MEM_OFFSET (stack_parm))
+	  if (MEM_EXPR (stack_parm) && MEM_OFFSET_KNOWN_P (stack_parm))
 	    {
 	      int offset = subreg_lowpart_offset (DECL_MODE (parm),
 						  data->promoted_mode);
 	      if (offset)
-		set_mem_offset (stack_parm,
-				plus_constant (MEM_OFFSET (stack_parm),
-					       -offset));
+		set_mem_offset (stack_parm, MEM_OFFSET (stack_parm) - offset);
 	    }
 	}
     }
@@ -3198,10 +3196,9 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 	  /* ??? This may need a big-endian conversion on sparc64.  */
 	  data->stack_parm
 	    = adjust_address (data->stack_parm, data->nominal_mode, 0);
-	  if (offset && MEM_OFFSET (data->stack_parm))
+	  if (offset && MEM_OFFSET_KNOWN_P (data->stack_parm))
 	    set_mem_offset (data->stack_parm,
-			    plus_constant (MEM_OFFSET (data->stack_parm),
-					   offset));
+			    MEM_OFFSET (data->stack_parm) + offset);
 	}
     }
 

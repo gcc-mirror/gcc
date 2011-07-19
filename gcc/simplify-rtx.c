@@ -268,7 +268,7 @@ delegitimize_mem_from_attrs (rtx x)
      use their base addresses as equivalent.  */
   if (MEM_P (x)
       && MEM_EXPR (x)
-      && MEM_OFFSET (x))
+      && MEM_OFFSET_KNOWN_P (x))
     {
       tree decl = MEM_EXPR (x);
       enum machine_mode mode = GET_MODE (x);
@@ -321,7 +321,7 @@ delegitimize_mem_from_attrs (rtx x)
 	{
 	  rtx newx;
 
-	  offset += INTVAL (MEM_OFFSET (x));
+	  offset += MEM_OFFSET (x);
 
 	  newx = DECL_RTL (decl);
 

@@ -969,9 +969,9 @@ set_reg_attrs_from_value (rtx reg, rtx x)
   offset = byte_lowpart_offset (GET_MODE (reg), GET_MODE (x));
   if (MEM_P (x))
     {
-      if (MEM_OFFSET (x) && CONST_INT_P (MEM_OFFSET (x)))
-	REG_ATTRS (reg)
-	  = get_reg_attrs (MEM_EXPR (x), INTVAL (MEM_OFFSET (x)) + offset);
+      if (MEM_OFFSET_KNOWN_P (x))
+	REG_ATTRS (reg) = get_reg_attrs (MEM_EXPR (x),
+					 MEM_OFFSET (x) + offset);
       if (MEM_POINTER (x))
 	mark_reg_pointer (reg, 0);
     }
@@ -1460,14 +1460,13 @@ get_mem_align_offset (rtx mem, unsigned int align)
   unsigned HOST_WIDE_INT offset;
 
   /* This function can't use
-     if (!MEM_EXPR (mem) || !MEM_OFFSET (mem)
-	 || !CONST_INT_P (MEM_OFFSET (mem))
+     if (!MEM_EXPR (mem) || !MEM_OFFSET_KNOWN_P (mem)
 	 || (MAX (MEM_ALIGN (mem),
 	          get_object_alignment (MEM_EXPR (mem), align))
 	     < align))
        return -1;
      else
-       return (- INTVAL (MEM_OFFSET (mem))) & (align / BITS_PER_UNIT - 1);
+       return (- MEM_OFFSET (mem)) & (align / BITS_PER_UNIT - 1);
      for two reasons:
      - COMPONENT_REFs in MEM_EXPR can have NULL first operand,
        for <variable>.  get_inner_reference doesn't handle it and
@@ -1477,12 +1476,10 @@ get_mem_align_offset (rtx mem, unsigned int align)
        isn't sufficiently aligned, the object it is in might be.  */
   gcc_assert (MEM_P (mem));
   expr = MEM_EXPR (mem);
-  if (expr == NULL_TREE
-      || MEM_OFFSET (mem) == NULL_RTX
-      || !CONST_INT_P (MEM_OFFSET (mem)))
+  if (expr == NULL_TREE || !MEM_OFFSET_KNOWN_P (mem))
     return -1;
 
-  offset = INTVAL (MEM_OFFSET (mem));
+  offset = MEM_OFFSET (mem);
   if (DECL_P (expr))
     {
       if (DECL_ALIGN (expr) < align)
@@ -1901,12 +1898,24 @@ set_mem_expr (rtx mem, tree expr)
 /* Set the offset of MEM to OFFSET.  */
 
 void
-set_mem_offset (rtx mem, rtx offset)
+set_mem_offset (rtx mem, HOST_WIDE_INT offset)
 {
   struct mem_attrs attrs;
 
   attrs = *get_mem_attrs (mem);
-  attrs.offset = offset;
+  attrs.offset = GEN_INT (offset);
+  set_mem_attrs (mem, &attrs);
+}
+
+/* Clear the offset of MEM.  */
+
+void
+clear_mem_offset (rtx mem)
+{
+  struct mem_attrs attrs;
+
+  attrs = *get_mem_attrs (mem);
+  attrs.offset = NULL_RTX;
   set_mem_attrs (mem, &attrs);
 }
 

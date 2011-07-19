@@ -6137,8 +6137,8 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 
 	      XEXP (tem, 0) = plus_constant (XEXP (tem, 0), offset);
 	      PUT_MODE (tem, GET_MODE (x));
-	      if (MEM_OFFSET (tem))
-		set_mem_offset (tem, plus_constant (MEM_OFFSET (tem), offset));
+	      if (MEM_OFFSET_KNOWN_P (tem))
+		set_mem_offset (tem, MEM_OFFSET (tem) + offset);
 	      if (MEM_SIZE_KNOWN_P (tem)
 		  && MEM_SIZE (tem) != (HOST_WIDE_INT) outer_size)
 		set_mem_size (tem, outer_size);

@@ -10453,7 +10453,7 @@ tls_mem_loc_descriptor (rtx mem)
   tree base;
   dw_loc_descr_ref loc_result;
 
-  if (MEM_EXPR (mem) == NULL_TREE || MEM_OFFSET (mem) == NULL_RTX)
+  if (MEM_EXPR (mem) == NULL_TREE || !MEM_OFFSET_KNOWN_P (mem))
     return NULL;
 
   base = get_base_address (MEM_EXPR (mem));
@@ -10466,8 +10466,8 @@ tls_mem_loc_descriptor (rtx mem)
   if (loc_result == NULL)
     return NULL;
 
-  if (INTVAL (MEM_OFFSET (mem)))
-    loc_descr_plus_const (&loc_result, INTVAL (MEM_OFFSET (mem)));
+  if (MEM_OFFSET (mem))
+    loc_descr_plus_const (&loc_result, MEM_OFFSET (mem));
 
   return loc_result;
 }

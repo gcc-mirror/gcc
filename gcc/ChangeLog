@@ -1,5 +1,41 @@
 2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/rtl.texi (MEM_OFFSET_KNOWN_P): Document.
+	(MEM_OFFSET): Change from returning an rtx to returning a
+	HOST_WIDE_INT.
+	* rtl.h (MEM_OFFSET_KNOWN_P): New macro.
+	(MEM_OFFSET): Return a HOST_WIDE_INT rather than an rtx.
+	* emit-rtl.h (set_mem_offset): Take a HOST_WIDE_INT rather than an rtx.
+	(clear_mem_offset): Declare.
+	* alias.c (ao_ref_from_mem): Adjust uses of MEM_OFFSET, using
+	MEM_OFFSET_KNOWN_P to test whether the offset is known, and
+	MEM_OFFSET to get a HOST_WIDE_INT offset.
+	(nonoverlapping_memrefs_p): Likewise.  Adjust calls to...
+	(adjust_offset_for_component_ref): Take a bool "known_p"
+	parameter and a HOST_WIDE_INT "offset" parameter.
+	* builtins.c (get_memory_rtx): As for ao_ref_from_mem.
+	Adjust calls to set_mem_offset, passing a HOST_WIDE_INT rather
+	than an rtx.  Use clear_mem_offset to clear the offset.
+	* cfgcleanup.c (merge_memattrs): Likewise.
+	* dwarf2out.c (tls_mem_loc_descriptor): Likewise.
+	* function.c (assign_parm_find_stack_rtl): Likewise.
+	(assign_parm_setup_stack): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* reload.c (find_reloads_subreg_address): Likewise.
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Likewise.
+	* var-tracking.c (INT_MEM_OFFSET): Likewise.
+	* emit-rtl.c (set_reg_attrs_from_value): Likewise.
+	(get_mem_align_offset): Likewise.
+	(set_mem_offset): Take a HOST_WIDE_INT rather than an rtx.
+	(clear_mem_offset): New function.
+	* config/mips/mips.c (r10k_safe_mem_expr_p): Take a HOST_WIDE_INT
+	offset rather than an rtx.  Assume both the expressio and offset
+	are available.
+	(r10k_needs_protection_p_1): Update accordingly, checking the
+	expression and offset availability here instead.
+
+2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/rtl.texi (MEM_SIZE_KNOWN_P): Document.
 	(MEM_SIZE): Change from returning an rtx to returning a HOST_WIDE_INT.
 	* rtl.h (MEM_SIZE_KNOWN_P): New macro.
