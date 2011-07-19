@@ -1309,9 +1309,11 @@ do {									\
 /* For a MEM rtx, the address space.  */
 #define MEM_ADDR_SPACE(RTX) (get_mem_attrs (RTX)->addrspace)
 
-/* For a MEM rtx, the size in bytes of the MEM, if known, as an RTX that
-   is always a CONST_INT.  */
-#define MEM_SIZE(RTX) (get_mem_attrs (RTX)->size)
+/* For a MEM rtx, true if its MEM_SIZE is known.  */
+#define MEM_SIZE_KNOWN_P(RTX) (get_mem_attrs (RTX)->size != NULL_RTX)
+
+/* For a MEM rtx, the size in bytes of the MEM.  */
+#define MEM_SIZE(RTX) INTVAL (get_mem_attrs (RTX)->size)
 
 /* For a MEM rtx, the alignment in bits.  We can use the alignment of the
    mode as a default when STRICT_ALIGNMENT, but not if not.  */

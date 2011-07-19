@@ -1,5 +1,50 @@
 2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/rtl.texi (MEM_SIZE_KNOWN_P): Document.
+	(MEM_SIZE): Change from returning an rtx to returning a HOST_WIDE_INT.
+	* rtl.h (MEM_SIZE_KNOWN_P): New macro.
+	(MEM_SIZE): Return a HOST_WIDE_INT rather than an rtx.
+	* emit-rtl.h (set_mem_size): Take a HOST_WIDE_INT rather than an rtx.
+	(clear_mem_size): Declare.
+	* emit-rtl.c (set_mem_size): Take a HOST_WIDE_INT rather than an rtx.
+	(clear_mem_size): New function.
+	* alias.c (ao_ref_from_mem): Adjust uses of MEM_SIZE, using
+	MEM_SIZE_KNOWN_P to test whether the size is known, and MEM_SIZE
+	to get a HOST_WIDE_INT size.  Adjust calls to set_mem_size,
+	passing a HOST_WIDE_INT rather than an rtx.  Use clear_mem_size
+	to clear the size.
+	(nonoverlapping_memrefs_p): Likewise.
+	* builtins.c (get_memory_rtx, expand_builtin_memcmp): Likewise.
+	(expand_builtin_init_trampoline): Likewise.
+	* calls.c (compute_argument_addresses): Likewise.
+	* cfgcleanup.c (merge_memattrs): Likewise.
+	* dce.c (find_call_stack_args): Likewise.
+	* dse.c (record_store, scan_insn): Likewise.
+	* dwarf2out.c (dw_sra_loc_expr): Likewise.
+	* expr.c (emit_block_move_hints): Likewise.
+	* function.c (assign_parm_find_stack_rtl): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* reload.c (find_reloads_subreg_address): Likewise.
+	* rtlanal.c (may_trap_p_1): Likewise.
+	* var-tracking.c (track_expr_p): Likewise.
+	* varasm.c (assemble_trampoline_template): Likewise.
+	* config/arm/arm.c (arm_print_operand): Likewise.
+	* config/h8300/h8300.c (h8sx_emit_movmd): Likewise.
+	* config/i386/i386.c (expand_movmem_via_rep_mov): Likewise.
+	(expand_setmem_via_rep_stos, expand_constant_movmem_prologue)
+	(expand_constant_setmem_prologue): Likewise.
+	* config/mips/mips.c (mips_get_unaligned_mem): Likewise.
+	* config/rs6000/rs6000.c (expand_block_move): Likewise.
+	(adjacent_mem_locations): Likewise.
+	* config/s390/s390.c (s390_expand_setmem): Likewise.
+	(s390_expand_insv): Likewise.
+	* config/s390/s390.md (*extzv<mode>, *extv<mode>): Likewise.
+	(*extendqi<mode>2_short_displ): Likewise.
+	* config/sh/sh.c (expand_block_move): Likewise.
+	* config/sh/sh.md (extv, extzv): Likewise.
+
+2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* emit-rtl.c (mem_attrs_eq_p): New function, split out from...
 	(mem_attrs_htab_eq): ...here.
 	(find_mem_attrs): Replace with...

@@ -12876,7 +12876,7 @@ dw_sra_loc_expr (tree decl, rtx loc)
 	  if (MEM_P (varloc))
 	    {
 	      unsigned HOST_WIDE_INT memsize
-		= INTVAL (MEM_SIZE (varloc)) * BITS_PER_UNIT;
+		= MEM_SIZE (varloc) * BITS_PER_UNIT;
 	      if (memsize != bitsize)
 		{
 		  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN

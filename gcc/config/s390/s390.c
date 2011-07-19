@@ -4099,7 +4099,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 		 DST is set to size 1 so the rest of the memory location
 		 does not count as source operand.  */
 	      rtx dstp1 = adjust_address (dst, VOIDmode, 1);
-	      set_mem_size (dst, const1_rtx);
+	      set_mem_size (dst, 1);
 
 	      emit_insn (gen_movmem_short (dstp1, dst,
 					   GEN_INT (INTVAL (len) - 2)));
@@ -4142,7 +4142,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
       else
 	{
 	  dstp1 = adjust_address (dst, VOIDmode, 1);
-	  set_mem_size (dst, const1_rtx);
+	  set_mem_size (dst, 1);
 
 	  /* Initialize memory by storing the first byte.  */
 	  emit_move_insn (adjust_address (dst, QImode, 0), val);
@@ -4551,7 +4551,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 					GET_MODE_SIZE (word_mode) - size);
 
 	  dest = adjust_address (dest, BLKmode, 0);
-	  set_mem_size (dest, GEN_INT (size));
+	  set_mem_size (dest, size);
 	  s390_expand_movmem (dest, src_mem, GEN_INT (size));
 	}
 
@@ -4569,7 +4569,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 
 	      emit_move_insn (adjust_address (dest, SImode, size),
 			      gen_lowpart (SImode, src));
-	      set_mem_size (dest, GEN_INT (size));
+	      set_mem_size (dest, size);
 	      emit_move_insn (gen_rtx_ZERO_EXTRACT (word_mode, dest, GEN_INT
 						    (stcmh_width), const0_rtx),
 			      gen_rtx_LSHIFTRT (word_mode, src, GEN_INT

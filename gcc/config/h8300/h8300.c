@@ -2642,8 +2642,8 @@ h8sx_emit_movmd (rtx dest, rtx src, rtx length,
       first_dest = replace_equiv_address (dest, dest_reg);
       first_src = replace_equiv_address (src, src_reg);
 
-      set_mem_size (first_dest, GEN_INT (n & -factor));
-      set_mem_size (first_src, GEN_INT (n & -factor));
+      set_mem_size (first_dest, n & -factor);
+      set_mem_size (first_src, n & -factor);
 
       length = copy_to_mode_reg (HImode, gen_int_mode (n / factor, HImode));
       emit_insn (gen_movmd (first_dest, first_src, length, GEN_INT (factor)));

@@ -275,11 +275,11 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
     if (GET_CODE (XEXP (p, 0)) == USE
 	&& MEM_P (XEXP (XEXP (p, 0), 0)))
       {
-	rtx mem = XEXP (XEXP (p, 0), 0), addr, size;
-	HOST_WIDE_INT off = 0;
-	size = MEM_SIZE (mem);
-	if (size == NULL_RTX)
+	rtx mem = XEXP (XEXP (p, 0), 0), addr;
+	HOST_WIDE_INT off = 0, size;
+	if (!MEM_SIZE_KNOWN_P (mem))
 	  return false;
+	size = MEM_SIZE (mem);
 	addr = XEXP (mem, 0);
 	if (GET_CODE (addr) == PLUS
 	    && REG_P (XEXP (addr, 0))
@@ -329,7 +329,7 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
 	      return false;
 	  }
 	min_sp_off = MIN (min_sp_off, off);
-	max_sp_off = MAX (max_sp_off, off + INTVAL (size));
+	max_sp_off = MAX (max_sp_off, off + size);
       }
 
   if (min_sp_off >= max_sp_off)
@@ -370,7 +370,7 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
 	    set = single_set (DF_REF_INSN (defs->ref));
 	    off += INTVAL (XEXP (SET_SRC (set), 1));
 	  }
-	for (byte = off; byte < off + INTVAL (MEM_SIZE (mem)); byte++)
+	for (byte = off; byte < off + MEM_SIZE (mem); byte++)
 	  {
 	    if (!bitmap_set_bit (sp_bytes, byte - min_sp_off))
 	      gcc_unreachable ();

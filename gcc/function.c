@@ -2576,8 +2576,7 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
       if (data->promoted_mode != BLKmode
 	  && data->promoted_mode != DECL_MODE (parm))
 	{
-	  set_mem_size (stack_parm,
-			GEN_INT (GET_MODE_SIZE (data->promoted_mode)));
+	  set_mem_size (stack_parm, GET_MODE_SIZE (data->promoted_mode));
 	  if (MEM_EXPR (stack_parm) && MEM_OFFSET (stack_parm))
 	    {
 	      int offset = subreg_lowpart_offset (DECL_MODE (parm),

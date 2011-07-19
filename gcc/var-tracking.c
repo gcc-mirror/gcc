@@ -4674,8 +4674,8 @@ track_expr_p (tree expr, bool need_rtl)
       if (GET_MODE (decl_rtl) == BLKmode
 	  || AGGREGATE_TYPE_P (TREE_TYPE (realdecl)))
 	return 0;
-      if (MEM_SIZE (decl_rtl)
-	  && INTVAL (MEM_SIZE (decl_rtl)) > MAX_VAR_PARTS)
+      if (MEM_SIZE_KNOWN_P (decl_rtl)
+	  && MEM_SIZE (decl_rtl) > MAX_VAR_PARTS)
 	return 0;
     }
 

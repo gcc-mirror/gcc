@@ -13679,14 +13679,14 @@ expand_block_move (rtx operands[])
 	      rtx src_reg = copy_addr_to_reg (XEXP (src, 0));
 	      src = replace_equiv_address (src, src_reg);
 	    }
-	  set_mem_size (src, GEN_INT (move_bytes));
+	  set_mem_size (src, move_bytes);
 
 	  if (!REG_P (XEXP (dest, 0)))
 	    {
 	      rtx dest_reg = copy_addr_to_reg (XEXP (dest, 0));
 	      dest = replace_equiv_address (dest, dest_reg);
 	    }
-	  set_mem_size (dest, GEN_INT (move_bytes));
+	  set_mem_size (dest, move_bytes);
 
 	  emit_insn ((*gen_func.movmemsi) (dest, src,
 					   GEN_INT (move_bytes & 31),
@@ -23057,8 +23057,8 @@ adjacent_mem_locations (rtx insn1, rtx insn2)
       val_diff = val1 - val0;
 
       return ((REGNO (reg0) == REGNO (reg1))
-	      && ((MEM_SIZE (a) && val_diff == INTVAL (MEM_SIZE (a)))
-		  || (MEM_SIZE (b) && val_diff == -INTVAL (MEM_SIZE (b)))));
+	      && ((MEM_SIZE_KNOWN_P (a) && val_diff == MEM_SIZE (a))
+		  || (MEM_SIZE_KNOWN_P (b) && val_diff == -MEM_SIZE (b))));
     }
 
   return false;
