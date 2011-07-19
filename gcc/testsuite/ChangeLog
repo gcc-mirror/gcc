@@ -3,6 +3,9 @@
 	Backport from mainline
 	2011-05-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/49120
+	* c-decl.c (start_decl): Convert expr to void_type_node.
+
 	PR middle-end/48973
 	* gcc.c-torture/execute/pr48973-1.c: New test.
 	* gcc.c-torture/execute/pr48973-2.c: New test.
