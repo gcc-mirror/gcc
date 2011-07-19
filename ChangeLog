@@ -1,3 +1,8 @@
+2011-07-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* MAINTAINERS (Register Allocation): Move myself from reviewers to
+	maintainers.
+
 2011-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* MAINTAINERS (Global Reviewers): Add myself.
