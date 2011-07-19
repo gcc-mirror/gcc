@@ -3,6 +3,11 @@
 	Backport from mainline
 	2011-07-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/49644
+	* c-typeck.c (build_binary_op): For MULT_EXPR and TRUNC_DIV_EXPR with
+	one non-complex and one complex argument, call c_save_expr on both
+	operands.
+
 	PR middle-end/49640
 	* gimplify.c (gimplify_compound_lval): For last 2 ARRAY_*REF
 	operands and last COMPONENT_REF operand call gimplify_expr on it
