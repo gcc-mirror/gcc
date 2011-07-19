@@ -1,3 +1,28 @@
+2011-07-19  Robert Millan  <rmh@gnu.org>
+
+	* config/mips/gnu-user.h: Copy from linux.h.  Update comments.
+	(GLIBC_DYNAMIC_LINKER): Remove.
+
+	* config/mips/gnu-user64.h: Copy from linux64.h.  Update comments.
+	(GLIBC_DYNAMIC_LINKER32, GLIBC_DYNAMIC_LINKER64)
+	(GLIBC_DYNAMIC_LINKERN32, UCLIBC_DYNAMIC_LINKERN32)
+	(BIONIC_DYNAMIC_LINKERN32, GNU_USER_DYNAMIC_LINKERN32): Remove.
+	(LINK_SPEC): Use GNU_USER_DYNAMIC_LINKER32,
+	GNU_USER_DYNAMIC_LINKER64 and GNU_USER_LINK_EMULATIONN32.
+
+	* config/mips/linux.h: Remove everything except for ...
+	(GLIBC_DYNAMIC_LINKER): ... this macro.
+
+	* config/mips/linux64.h: Remove everything except for ...
+	(GLIBC_DYNAMIC_LINKER32, GLIBC_DYNAMIC_LINKER64)
+	(GLIBC_DYNAMIC_LINKERN32, UCLIBC_DYNAMIC_LINKERN32)
+	(BIONIC_DYNAMIC_LINKERN32): ... these macros.
+	(GNU_USER_LINK_EMULATION32, GNU_USER_LINK_EMULATION64)
+	(GNU_USER_LINK_EMULATIONN32): New macros.
+
+	* config.gcc (mips64*-*-linux* | mipsisa64*-*-linux* |
+	mips-*-linux*): Use the new headers.
+
 2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* rtl.h (mem_attrs): Turn offset and size fields into HOST_WIDE_INTs.
