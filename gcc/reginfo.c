@@ -529,8 +529,7 @@ init_reg_sets_1 (void)
 	  SET_HARD_REG_BIT (ok_regs, j);
 
       for (i = 0; i < N_REG_CLASSES; i++)
-	if (((unsigned) CLASS_MAX_NREGS ((enum reg_class) i,
-					 (enum machine_mode) m)
+	if ((targetm.class_max_nregs ((reg_class_t) i, (enum machine_mode) m)
 	     <= reg_class_size[i])
 	    && hard_reg_set_intersect_p (ok_regs, reg_class_contents[i]))
 	  {

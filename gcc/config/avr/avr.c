@@ -1491,15 +1491,6 @@ notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
     }
 }
 
-/* Return maximum number of consecutive registers of
-   class CLASS needed to hold a value of mode MODE.  */
-
-int
-class_max_nregs (enum reg_class rclass ATTRIBUTE_UNUSED,enum machine_mode mode)
-{
-  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
-}
-
 /* Choose mode for jump insn:
    1 - relative jump in range -63 <= x <= 62 ;
    2 - relative jump in range -2046 <= x <= 2045 ;

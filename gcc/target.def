@@ -2245,6 +2245,14 @@ DEFHOOK
  bool, (reg_class_t rclass),
  default_class_likely_spilled_p)
 
+/* Return the maximum number of consecutive registers
+   needed to represent mode MODE in a register of class RCLASS.  */
+DEFHOOK
+(class_max_nregs,
+ "",
+ unsigned char, (reg_class_t rclass, enum machine_mode mode),
+ default_class_max_nregs)
+
 DEFHOOK
 (preferred_rename_class,
  "A target hook that places additional preference on the register\

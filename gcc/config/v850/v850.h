@@ -341,12 +341,6 @@ enum reg_class
 
 #define REGNO_OK_FOR_INDEX_P(regno) 0
 
-/* Return the maximum number of consecutive registers
-   needed to represent mode MODE in a register of class CLASS.  */
-
-#define CLASS_MAX_NREGS(CLASS, MODE)	\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 /* Convenience wrappers around insn_const_int_ok_for_constraint.  */
 
 #define CONST_OK_FOR_I(VALUE) \

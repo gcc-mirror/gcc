@@ -110,10 +110,6 @@ extern void out_shift_with_cnt (const char *templ, rtx insn,
 extern rtx avr_incoming_return_addr_rtx (void);
 #endif /* RTX_CODE */
 
-#ifdef HAVE_MACHINE_MODES
-extern int class_max_nregs (enum reg_class rclass, enum machine_mode mode);
-#endif /* HAVE_MACHINE_MODES */
-
 #ifdef REAL_VALUE_TYPE
 extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 #endif

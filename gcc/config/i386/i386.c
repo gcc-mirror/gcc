@@ -28263,6 +28263,32 @@ ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
   return inline_secondary_memory_needed (class1, class2, mode, strict);
 }
 
+/* Implement the TARGET_CLASS_MAX_NREGS hook.
+
+   On the 80386, this is the size of MODE in words,
+   except in the FP regs, where a single reg is always enough.  */
+
+static unsigned char
+ix86_class_max_nregs (reg_class_t rclass, enum machine_mode mode)
+{
+  if (MAYBE_INTEGER_CLASS_P (rclass))
+    {
+      if (mode == XFmode)
+	return (TARGET_64BIT ? 2 : 3);
+      else if (mode == XCmode)
+	return (TARGET_64BIT ? 4 : 6);
+      else
+	return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
+    }
+  else
+    {
+      if (COMPLEX_MODE_P (mode))
+	return 2;
+      else
+	return 1;
+    }
+}
+
 /* Return true if the registers in CLASS cannot represent the change from
    modes FROM to TO.  */
 
@@ -28459,7 +28485,8 @@ ix86_register_move_cost (enum machine_mode mode, reg_class_t class1_i,
       /* In case of copying from general_purpose_register we may emit multiple
          stores followed by single load causing memory size mismatch stall.
          Count this as arbitrarily high cost of 20.  */
-      if (CLASS_MAX_NREGS (class1, mode) > CLASS_MAX_NREGS (class2, mode))
+      if (targetm.class_max_nregs (class1, mode)
+	  > targetm.class_max_nregs (class2, mode))
 	cost += 20;
 
       /* In the case of FP/MMX moves, the registers actually overlap, and we
@@ -34930,6 +34957,9 @@ ix86_autovectorize_vector_sizes (void)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload
+
+#undef TARGET_CLASS_MAX_NREGS
+#define TARGET_CLASS_MAX_NREGS ix86_class_max_nregs
 
 #undef TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS ix86_preferred_reload_class

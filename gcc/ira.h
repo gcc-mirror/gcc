@@ -68,8 +68,8 @@ struct target_ira {
   /* Maps: register class x machine mode -> maximal/minimal number of
      hard registers of given class needed to store value of given
      mode.  */
-  int x_ira_reg_class_max_nregs[N_REG_CLASSES][MAX_MACHINE_MODE];
-  int x_ira_reg_class_min_nregs[N_REG_CLASSES][MAX_MACHINE_MODE];
+  unsigned char x_ira_reg_class_max_nregs[N_REG_CLASSES][MAX_MACHINE_MODE];
+  unsigned char x_ira_reg_class_min_nregs[N_REG_CLASSES][MAX_MACHINE_MODE];
 
   /* Array analogous to target hook TARGET_MEMORY_MOVE_COST.  */
   short x_ira_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];

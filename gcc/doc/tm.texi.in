@@ -2832,6 +2832,23 @@ the only effect of such implementation would be to slow down register
 allocation.
 @end deftypefn
 
+@hook TARGET_CLASS_MAX_NREGS
+A target hook returns the maximum number of consecutive registers
+of class @var{rclass} needed to hold a value of mode @var{mode}.
+
+This is closely related to the macro @code{HARD_REGNO_NREGS}.  In fact,
+the value returned by @code{TERGET_CLASS_MAX_NREGS (@var{rclass},
+@var{mode})} target hook should be the maximum value of
+@code{HARD_REGNO_NREGS (@var{regno}, @var{mode})} for all @var{regno}
+values in the class @var{rclass}.
+
+This target hook helps control the handling of multiple-word values
+in the reload pass.
+
+The default version of this target hook returns the size of @var{mode}
+in words.
+@end deftypefn
+
 @defmac CLASS_MAX_NREGS (@var{class}, @var{mode})
 A C expression for the maximum number of consecutive registers
 of class @var{class} needed to hold a value of mode @var{mode}.
