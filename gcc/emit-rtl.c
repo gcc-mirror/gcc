@@ -261,16 +261,11 @@ mem_attrs_htab_hash (const void *x)
 	  ^ (size_t) iterative_hash_expr (p->expr, 0));
 }
 
-/* Returns nonzero if the value represented by X (which is really a
-   mem_attrs *) is the same as that given by Y (which is also really a
-   mem_attrs *).  */
+/* Return true if the given memory attributes are equal.  */
 
-static int
-mem_attrs_htab_eq (const void *x, const void *y)
+static bool
+mem_attrs_eq_p (const struct mem_attrs *p, const struct mem_attrs *q)
 {
-  const mem_attrs *const p = (const mem_attrs *) x;
-  const mem_attrs *const q = (const mem_attrs *) y;
-
   return (p->alias == q->alias && p->offset == q->offset
 	  && p->size == q->size && p->align == q->align
 	  && p->addrspace == q->addrspace
@@ -279,43 +274,38 @@ mem_attrs_htab_eq (const void *x, const void *y)
 		  && operand_equal_p (p->expr, q->expr, 0))));
 }
 
-/* Allocate a new mem_attrs structure and insert it into the hash table if
-   one identical to it is not already in the table.  We are doing this for
-   MEM of mode MODE.  */
+/* Returns nonzero if the value represented by X (which is really a
+   mem_attrs *) is the same as that given by Y (which is also really a
+   mem_attrs *).  */
 
-static mem_attrs *
-find_mem_attrs (alias_set_type alias, tree expr, rtx offset, rtx size,
-		unsigned int align, addr_space_t addrspace,
-		enum machine_mode mode)
+static int
+mem_attrs_htab_eq (const void *x, const void *y)
 {
-  mem_attrs attrs;
+  return mem_attrs_eq_p ((const mem_attrs *) x, (const mem_attrs *) y);
+}
+
+/* Set MEM's memory attributes so that they are the same as ATTRS.  */
+
+static void
+set_mem_attrs (rtx mem, mem_attrs *attrs)
+{
   void **slot;
 
-  /* If everything is the default, we can just return zero.
-     This must match what the corresponding MEM_* macros return when the
-     field is not present.  */
-  if (alias == 0 && expr == 0 && offset == 0 && addrspace == 0
-      && (size == 0
-	  || (mode != BLKmode && GET_MODE_SIZE (mode) == INTVAL (size)))
-      && (STRICT_ALIGNMENT && mode != BLKmode
-	  ? align == GET_MODE_ALIGNMENT (mode) : align == BITS_PER_UNIT))
-    return 0;
+  /* If everything is the default, we can just clear the attributes.  */
+  if (mem_attrs_eq_p (attrs, mode_mem_attrs[(int) GET_MODE (mem)]))
+    {
+      MEM_ATTRS (mem) = 0;
+      return;
+    }
 
-  attrs.alias = alias;
-  attrs.expr = expr;
-  attrs.offset = offset;
-  attrs.size = size;
-  attrs.align = align;
-  attrs.addrspace = addrspace;
-
-  slot = htab_find_slot (mem_attrs_htab, &attrs, INSERT);
+  slot = htab_find_slot (mem_attrs_htab, attrs, INSERT);
   if (*slot == 0)
     {
       *slot = ggc_alloc_mem_attrs ();
-      memcpy (*slot, &attrs, sizeof (mem_attrs));
+      memcpy (*slot, attrs, sizeof (mem_attrs));
     }
 
-  return (mem_attrs *) *slot;
+  MEM_ATTRS (mem) = (mem_attrs *) *slot;
 }
 
 /* Returns a hash code for X (which is a really a reg_attrs *).  */
@@ -1553,13 +1543,9 @@ void
 set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 				 HOST_WIDE_INT bitpos)
 {
-  alias_set_type alias;
-  tree expr = NULL;
-  rtx offset = NULL_RTX;
-  rtx size = NULL_RTX;
-  unsigned int align = BITS_PER_UNIT;
   HOST_WIDE_INT apply_bitpos = 0;
   tree type;
+  struct mem_attrs attrs, *defattrs, *refattrs;
 
   /* It can happen that type_for_mode was given a mode for which there
      is no language-level type.  In which case it returns NULL, which
@@ -1577,9 +1563,11 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
      set_mem_attributes.  */
   gcc_assert (!DECL_P (t) || ref != DECL_RTL_IF_SET (t));
 
+  memset (&attrs, 0, sizeof (attrs));
+
   /* Get the alias set from the expression or type (perhaps using a
      front-end routine) and use it.  */
-  alias = get_alias_set (t);
+  attrs.alias = get_alias_set (t);
 
   MEM_VOLATILE_P (ref) |= TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref)
@@ -1594,28 +1582,35 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
     MEM_SCALAR_P (ref) = 1;
 
   /* Default values from pre-existing memory attributes if present.  */
-  if (MEM_ATTRS (ref))
+  refattrs = MEM_ATTRS (ref);
+  if (refattrs)
     {
       /* ??? Can this ever happen?  Calling this routine on a MEM that
 	 already carries memory attributes should probably be invalid.  */
-      expr = MEM_EXPR (ref);
-      offset = MEM_OFFSET (ref);
-      size = MEM_SIZE (ref);
-      align = MEM_ALIGN (ref);
+      attrs.expr = refattrs->expr;
+      attrs.offset = refattrs->offset;
+      attrs.size = refattrs->size;
+      attrs.align = refattrs->align;
     }
 
   /* Otherwise, default values from the mode of the MEM reference.  */
-  else if (GET_MODE (ref) != BLKmode)
+  else
     {
+      defattrs = mode_mem_attrs[(int) GET_MODE (ref)];
+      gcc_assert (!defattrs->expr);
+      gcc_assert (!defattrs->offset);
+
       /* Respect mode size.  */
-      size = GEN_INT (GET_MODE_SIZE (GET_MODE (ref)));
+      attrs.size = defattrs->size;
       /* ??? Is this really necessary?  We probably should always get
 	 the size from the type below.  */
 
       /* Respect mode alignment for STRICT_ALIGNMENT targets if T is a type;
          if T is an object, always compute the object alignment below.  */
-      if (STRICT_ALIGNMENT && TYPE_P (t))
-	align = GET_MODE_ALIGNMENT (GET_MODE (ref));
+      if (TYPE_P (t))
+	attrs.align = defattrs->align;
+      else
+	attrs.align = BITS_PER_UNIT;
       /* ??? If T is a type, respecting mode alignment may *also* be wrong
 	 e.g. if the type carries an alignment attribute.  Should we be
 	 able to simply always use TYPE_ALIGN?  */
@@ -1624,7 +1619,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
   /* We can set the alignment from the type if we are making an object,
      this is an INDIRECT_REF, or if TYPE_ALIGN_OK.  */
   if (objectp || TREE_CODE (t) == INDIRECT_REF || TYPE_ALIGN_OK (type))
-    align = MAX (align, TYPE_ALIGN (type));
+    attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
 
   else if (TREE_CODE (t) == MEM_REF)
     {
@@ -1634,12 +1629,13 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	      || CONSTANT_CLASS_P (TREE_OPERAND (op0, 0))))
 	{
 	  if (DECL_P (TREE_OPERAND (op0, 0)))
-	    align = DECL_ALIGN (TREE_OPERAND (op0, 0));
+	    attrs.align = DECL_ALIGN (TREE_OPERAND (op0, 0));
 	  else if (CONSTANT_CLASS_P (TREE_OPERAND (op0, 0)))
 	    {
-	      align = TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (op0, 0)));
+	      attrs.align = TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (op0, 0)));
 #ifdef CONSTANT_ALIGNMENT
-	      align = CONSTANT_ALIGNMENT (TREE_OPERAND (op0, 0), align);
+	      attrs.align = CONSTANT_ALIGNMENT (TREE_OPERAND (op0, 0),
+						attrs.align);
 #endif
 	    }
 	  if (TREE_INT_CST_LOW (TREE_OPERAND (t, 1)) != 0)
@@ -1647,23 +1643,23 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	      unsigned HOST_WIDE_INT ioff
 		= TREE_INT_CST_LOW (TREE_OPERAND (t, 1));
 	      unsigned HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
-	      align = MIN (aoff, align);
+	      attrs.align = MIN (aoff, attrs.align);
 	    }
 	}
       else
 	/* ??? This isn't fully correct, we can't set the alignment from the
 	   type in all cases.  */
-	align = MAX (align, TYPE_ALIGN (type));
+	attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
     }
 
   else if (TREE_CODE (t) == TARGET_MEM_REF)
     /* ??? This isn't fully correct, we can't set the alignment from the
        type in all cases.  */
-    align = MAX (align, TYPE_ALIGN (type));
+    attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
 
   /* If the size is known, we can set that.  */
   if (TYPE_SIZE_UNIT (type) && host_integerp (TYPE_SIZE_UNIT (type), 1))
-    size = GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (type), 1));
+    attrs.size = GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (type), 1));
 
   /* If T is not a type, we may be able to deduce some more information about
      the expression.  */
@@ -1700,22 +1696,22 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       /* If this is a decl, set the attributes of the MEM from it.  */
       if (DECL_P (t))
 	{
-	  expr = t;
-	  offset = const0_rtx;
+	  attrs.expr = t;
+	  attrs.offset = const0_rtx;
 	  apply_bitpos = bitpos;
-	  size = (DECL_SIZE_UNIT (t)
-		  && host_integerp (DECL_SIZE_UNIT (t), 1)
-		  ? GEN_INT (tree_low_cst (DECL_SIZE_UNIT (t), 1)) : 0);
-	  align = DECL_ALIGN (t);
+	  attrs.size = (DECL_SIZE_UNIT (t)
+			&& host_integerp (DECL_SIZE_UNIT (t), 1)
+			? GEN_INT (tree_low_cst (DECL_SIZE_UNIT (t), 1)) : 0);
+	  attrs.align = DECL_ALIGN (t);
 	  align_computed = true;
 	}
 
       /* If this is a constant, we know the alignment.  */
       else if (CONSTANT_CLASS_P (t))
 	{
-	  align = TYPE_ALIGN (type);
+	  attrs.align = TYPE_ALIGN (type);
 #ifdef CONSTANT_ALIGNMENT
-	  align = CONSTANT_ALIGNMENT (t, align);
+	  attrs.align = CONSTANT_ALIGNMENT (t, attrs.align);
 #endif
 	  align_computed = true;
 	}
@@ -1727,8 +1723,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       else if (TREE_CODE (t) == COMPONENT_REF
 	       && ! DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
 	{
-	  expr = t;
-	  offset = const0_rtx;
+	  attrs.expr = t;
+	  attrs.offset = const0_rtx;
 	  apply_bitpos = bitpos;
 	  /* ??? Any reason the field size would be different than
 	     the size we got from the type?  */
@@ -1768,27 +1764,27 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 
 	  if (DECL_P (t2))
 	    {
-	      expr = t2;
-	      offset = NULL;
+	      attrs.expr = t2;
+	      attrs.offset = NULL;
 	      if (host_integerp (off_tree, 1))
 		{
 		  HOST_WIDE_INT ioff = tree_low_cst (off_tree, 1);
 		  HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
-		  align = DECL_ALIGN (t2);
-		  if (aoff && (unsigned HOST_WIDE_INT) aoff < align)
-	            align = aoff;
+		  attrs.align = DECL_ALIGN (t2);
+		  if (aoff && (unsigned HOST_WIDE_INT) aoff < attrs.align)
+	            attrs.align = aoff;
 		  align_computed = true;
-		  offset = GEN_INT (ioff);
+		  attrs.offset = GEN_INT (ioff);
 		  apply_bitpos = bitpos;
 		}
 	    }
 	  else if (TREE_CODE (t2) == COMPONENT_REF)
 	    {
-	      expr = t2;
-	      offset = NULL;
+	      attrs.expr = t2;
+	      attrs.offset = NULL;
 	      if (host_integerp (off_tree, 1))
 		{
-		  offset = GEN_INT (tree_low_cst (off_tree, 1));
+		  attrs.offset = GEN_INT (tree_low_cst (off_tree, 1));
 		  apply_bitpos = bitpos;
 		}
 	      /* ??? Any reason the field size would be different than
@@ -1798,8 +1794,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  /* If this is an indirect reference, record it.  */
 	  else if (TREE_CODE (t) == MEM_REF)
 	    {
-	      expr = t;
-	      offset = const0_rtx;
+	      attrs.expr = t;
+	      attrs.offset = const0_rtx;
 	      apply_bitpos = bitpos;
 	    }
 	}
@@ -1808,15 +1804,15 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       else if (TREE_CODE (t) == MEM_REF 
 	       || TREE_CODE (t) == TARGET_MEM_REF)
 	{
-	  expr = t;
-	  offset = const0_rtx;
+	  attrs.expr = t;
+	  attrs.offset = const0_rtx;
 	  apply_bitpos = bitpos;
 	}
 
       if (!align_computed && !INDIRECT_REF_P (t))
 	{
 	  unsigned int obj_align = get_object_alignment (t, BIGGEST_ALIGNMENT);
-	  align = MAX (align, obj_align);
+	  attrs.align = MAX (attrs.align, obj_align);
 	}
     }
 
@@ -1825,15 +1821,14 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
      object to contain the negative offset.  */
   if (apply_bitpos)
     {
-      offset = plus_constant (offset, -(apply_bitpos / BITS_PER_UNIT));
-      if (size)
-	size = plus_constant (size, apply_bitpos / BITS_PER_UNIT);
+      attrs.offset = plus_constant (attrs.offset,
+				    -(apply_bitpos / BITS_PER_UNIT));
+      if (attrs.size)
+	attrs.size = plus_constant (attrs.size, apply_bitpos / BITS_PER_UNIT);
     }
 
   /* Now set the attributes we computed above.  */
-  MEM_ATTRS (ref)
-    = find_mem_attrs (alias, expr, offset, size, align,
-		      TYPE_ADDR_SPACE (type), GET_MODE (ref));
+  set_mem_attrs (ref, &attrs);
 
   /* If this is already known to be a scalar or aggregate, we are done.  */
   if (MEM_IN_STRUCT_P (ref) || MEM_SCALAR_P (ref))
@@ -1858,12 +1853,13 @@ set_mem_attributes (rtx ref, tree t, int objectp)
 void
 set_mem_alias_set (rtx mem, alias_set_type set)
 {
+  struct mem_attrs attrs;
+
   /* If the new and old alias sets don't conflict, something is wrong.  */
   gcc_checking_assert (alias_sets_conflict_p (set, MEM_ALIAS_SET (mem)));
-
-  MEM_ATTRS (mem) = find_mem_attrs (set, MEM_EXPR (mem), MEM_OFFSET (mem),
-				    MEM_SIZE (mem), MEM_ALIGN (mem),
-				    MEM_ADDR_SPACE (mem), GET_MODE (mem));
+  attrs = *get_mem_attrs (mem);
+  attrs.alias = set;
+  set_mem_attrs (mem, &attrs);
 }
 
 /* Set the address space of MEM to ADDRSPACE (target-defined).  */
@@ -1871,9 +1867,11 @@ set_mem_alias_set (rtx mem, alias_set_type set)
 void
 set_mem_addr_space (rtx mem, addr_space_t addrspace)
 {
-  MEM_ATTRS (mem) = find_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
-				    MEM_OFFSET (mem), MEM_SIZE (mem),
-				    MEM_ALIGN (mem), addrspace, GET_MODE (mem));
+  struct mem_attrs attrs;
+
+  attrs = *get_mem_attrs (mem);
+  attrs.addrspace = addrspace;
+  set_mem_attrs (mem, &attrs);
 }
 
 /* Set the alignment of MEM to ALIGN bits.  */
@@ -1881,9 +1879,11 @@ set_mem_addr_space (rtx mem, addr_space_t addrspace)
 void
 set_mem_align (rtx mem, unsigned int align)
 {
-  MEM_ATTRS (mem) = find_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
-				    MEM_OFFSET (mem), MEM_SIZE (mem), align,
-				    MEM_ADDR_SPACE (mem), GET_MODE (mem));
+  struct mem_attrs attrs;
+
+  attrs = *get_mem_attrs (mem);
+  attrs.align = align;
+  set_mem_attrs (mem, &attrs);
 }
 
 /* Set the expr for MEM to EXPR.  */
@@ -1891,10 +1891,11 @@ set_mem_align (rtx mem, unsigned int align)
 void
 set_mem_expr (rtx mem, tree expr)
 {
-  MEM_ATTRS (mem)
-    = find_mem_attrs (MEM_ALIAS_SET (mem), expr, MEM_OFFSET (mem),
-		      MEM_SIZE (mem), MEM_ALIGN (mem),
-		      MEM_ADDR_SPACE (mem), GET_MODE (mem));
+  struct mem_attrs attrs;
+
+  attrs = *get_mem_attrs (mem);
+  attrs.expr = expr;
+  set_mem_attrs (mem, &attrs);
 }
 
 /* Set the offset of MEM to OFFSET.  */
@@ -1902,9 +1903,11 @@ set_mem_expr (rtx mem, tree expr)
 void
 set_mem_offset (rtx mem, rtx offset)
 {
-  MEM_ATTRS (mem) = find_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
-				    offset, MEM_SIZE (mem), MEM_ALIGN (mem),
-				    MEM_ADDR_SPACE (mem), GET_MODE (mem));
+  struct mem_attrs attrs;
+
+  attrs = *get_mem_attrs (mem);
+  attrs.offset = offset;
+  set_mem_attrs (mem, &attrs);
 }
 
 /* Set the size of MEM to SIZE.  */
@@ -1912,9 +1915,11 @@ set_mem_offset (rtx mem, rtx offset)
 void
 set_mem_size (rtx mem, rtx size)
 {
-  MEM_ATTRS (mem) = find_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
-				    MEM_OFFSET (mem), size, MEM_ALIGN (mem),
-				    MEM_ADDR_SPACE (mem), GET_MODE (mem));
+  struct mem_attrs attrs;
+
+  attrs = *get_mem_attrs (mem);
+  attrs.size = size;
+  set_mem_attrs (mem, &attrs);
 }
 
 /* Return a memory reference like MEMREF, but with its mode changed to MODE
@@ -1961,31 +1966,28 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
 rtx
 change_address (rtx memref, enum machine_mode mode, rtx addr)
 {
-  rtx new_rtx = change_address_1 (memref, mode, addr, 1), size;
+  rtx new_rtx = change_address_1 (memref, mode, addr, 1);
   enum machine_mode mmode = GET_MODE (new_rtx);
-  unsigned int align;
+  struct mem_attrs attrs, *defattrs;
 
-  size = mmode == BLKmode ? 0 : GEN_INT (GET_MODE_SIZE (mmode));
-  align = mmode == BLKmode ? BITS_PER_UNIT : GET_MODE_ALIGNMENT (mmode);
+  attrs = *get_mem_attrs (memref);
+  defattrs = mode_mem_attrs[(int) mmode];
+  attrs.expr = defattrs->expr;
+  attrs.offset = defattrs->offset;
+  attrs.size = defattrs->size;
+  attrs.align = defattrs->align;
 
   /* If there are no changes, just return the original memory reference.  */
   if (new_rtx == memref)
     {
-      if (MEM_ATTRS (memref) == 0
-	  || (MEM_EXPR (memref) == NULL
-	      && MEM_OFFSET (memref) == NULL
-	      && MEM_SIZE (memref) == size
-	      && MEM_ALIGN (memref) == align))
+      if (mem_attrs_eq_p (get_mem_attrs (memref), &attrs))
 	return new_rtx;
 
       new_rtx = gen_rtx_MEM (mmode, XEXP (memref, 0));
       MEM_COPY_ATTRIBUTES (new_rtx, memref);
     }
 
-  MEM_ATTRS (new_rtx)
-    = find_mem_attrs (MEM_ALIAS_SET (memref), 0, 0, size, align,
-		      MEM_ADDR_SPACE (memref), mmode);
-
+  set_mem_attrs (new_rtx, &attrs);
   return new_rtx;
 }
 
@@ -2001,16 +2003,17 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 {
   rtx addr = XEXP (memref, 0);
   rtx new_rtx;
-  rtx memoffset = MEM_OFFSET (memref);
-  rtx size = 0;
-  unsigned int memalign = MEM_ALIGN (memref);
-  addr_space_t as = MEM_ADDR_SPACE (memref);
-  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
+  enum machine_mode address_mode;
   int pbits;
+  struct mem_attrs attrs, *defattrs;
+  unsigned HOST_WIDE_INT max_align;
+
+  attrs = *get_mem_attrs (memref);
 
   /* If there are no changes, just return the original memory reference.  */
   if (mode == GET_MODE (memref) && !offset
-      && (!validate || memory_address_addr_space_p (mode, addr, as)))
+      && (!validate || memory_address_addr_space_p (mode, addr,
+						    attrs.addrspace)))
     return memref;
 
   /* ??? Prefer to create garbage instead of creating shared rtl.
@@ -2020,6 +2023,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 
   /* Convert a possibly large offset to a signed value within the
      range of the target address space.  */
+  address_mode = targetm.addr_space.address_mode (attrs.addrspace);
   pbits = GET_MODE_BITSIZE (address_mode);
   if (HOST_BITS_PER_WIDE_INT > pbits)
     {
@@ -2051,27 +2055,26 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 
   /* Compute the new values of the memory attributes due to this adjustment.
      We add the offsets and update the alignment.  */
-  if (memoffset)
-    memoffset = GEN_INT (offset + INTVAL (memoffset));
+  if (attrs.offset)
+    attrs.offset = GEN_INT (offset + INTVAL (attrs.offset));
 
   /* Compute the new alignment by taking the MIN of the alignment and the
      lowest-order set bit in OFFSET, but don't change the alignment if OFFSET
      if zero.  */
   if (offset != 0)
-    memalign
-      = MIN (memalign,
-	     (unsigned HOST_WIDE_INT) (offset & -offset) * BITS_PER_UNIT);
+    {
+      max_align = (offset & -offset) * BITS_PER_UNIT;
+      attrs.align = MIN (attrs.align, max_align);
+    }
 
   /* We can compute the size in a number of ways.  */
-  if (GET_MODE (new_rtx) != BLKmode)
-    size = GEN_INT (GET_MODE_SIZE (GET_MODE (new_rtx)));
-  else if (MEM_SIZE (memref))
-    size = plus_constant (MEM_SIZE (memref), -offset);
+  defattrs = mode_mem_attrs[(int) GET_MODE (new_rtx)];
+  if (defattrs->size)
+    attrs.size = defattrs->size;
+  else if (attrs.size)
+    attrs.size = plus_constant (attrs.size, -offset);
 
-  MEM_ATTRS (new_rtx) = find_mem_attrs (MEM_ALIAS_SET (memref),
-					MEM_EXPR (memref),
-					memoffset, size, memalign, as,
-					GET_MODE (new_rtx));
+  set_mem_attrs (new_rtx, &attrs);
 
   /* At some point, we should validate that this offset is within the object,
      if all the appropriate values are known.  */
@@ -2099,9 +2102,11 @@ rtx
 offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
 {
   rtx new_rtx, addr = XEXP (memref, 0);
-  addr_space_t as = MEM_ADDR_SPACE (memref);
-  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
+  enum machine_mode address_mode;
+  struct mem_attrs attrs;
 
+  attrs = *get_mem_attrs (memref);
+  address_mode = targetm.addr_space.address_mode (attrs.addrspace);
   new_rtx = simplify_gen_binary (PLUS, address_mode, addr, offset);
 
   /* At this point we don't know _why_ the address is invalid.  It
@@ -2111,7 +2116,8 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
      being able to recognize the magic around pic_offset_table_rtx.
      This stuff is fragile, and is yet another example of why it is
      bad to expose PIC machinery too early.  */
-  if (! memory_address_addr_space_p (GET_MODE (memref), new_rtx, as)
+  if (! memory_address_addr_space_p (GET_MODE (memref), new_rtx,
+				     attrs.addrspace)
       && GET_CODE (addr) == PLUS
       && XEXP (addr, 0) == pic_offset_table_rtx)
     {
@@ -2128,10 +2134,10 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
 
   /* Update the alignment to reflect the offset.  Reset the offset, which
      we don't know.  */
-  MEM_ATTRS (new_rtx)
-    = find_mem_attrs (MEM_ALIAS_SET (memref), MEM_EXPR (memref), 0, 0,
-		      MIN (MEM_ALIGN (memref), pow2 * BITS_PER_UNIT),
-		      as, GET_MODE (new_rtx));
+  attrs.offset = 0;
+  attrs.size = mode_mem_attrs[(int) GET_MODE (new_rtx)]->size;
+  attrs.align = MIN (attrs.align, pow2 * BITS_PER_UNIT);
+  set_mem_attrs (new_rtx, &attrs);
   return new_rtx;
 }
 
@@ -2166,29 +2172,30 @@ rtx
 widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
 {
   rtx new_rtx = adjust_address_1 (memref, mode, offset, 1, 1);
-  tree expr = MEM_EXPR (new_rtx);
-  rtx memoffset = MEM_OFFSET (new_rtx);
+  struct mem_attrs attrs;
   unsigned int size = GET_MODE_SIZE (mode);
 
   /* If there are no changes, just return the original memory reference.  */
   if (new_rtx == memref)
     return new_rtx;
 
+  attrs = *get_mem_attrs (new_rtx);
+
   /* If we don't know what offset we were at within the expression, then
      we can't know if we've overstepped the bounds.  */
-  if (! memoffset)
-    expr = NULL_TREE;
+  if (! attrs.offset)
+    attrs.expr = NULL_TREE;
 
-  while (expr)
+  while (attrs.expr)
     {
-      if (TREE_CODE (expr) == COMPONENT_REF)
+      if (TREE_CODE (attrs.expr) == COMPONENT_REF)
 	{
-	  tree field = TREE_OPERAND (expr, 1);
-	  tree offset = component_ref_field_offset (expr);
+	  tree field = TREE_OPERAND (attrs.expr, 1);
+	  tree offset = component_ref_field_offset (attrs.expr);
 
 	  if (! DECL_SIZE_UNIT (field))
 	    {
-	      expr = NULL_TREE;
+	      attrs.expr = NULL_TREE;
 	      break;
 	    }
 
@@ -2196,48 +2203,46 @@ widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
 	     otherwise strip back to the containing structure.  */
 	  if (TREE_CODE (DECL_SIZE_UNIT (field)) == INTEGER_CST
 	      && compare_tree_int (DECL_SIZE_UNIT (field), size) >= 0
-	      && INTVAL (memoffset) >= 0)
+	      && INTVAL (attrs.offset) >= 0)
 	    break;
 
 	  if (! host_integerp (offset, 1))
 	    {
-	      expr = NULL_TREE;
+	      attrs.expr = NULL_TREE;
 	      break;
 	    }
 
-	  expr = TREE_OPERAND (expr, 0);
-	  memoffset
-	    = (GEN_INT (INTVAL (memoffset)
+	  attrs.expr = TREE_OPERAND (attrs.expr, 0);
+	  attrs.offset
+	    = (GEN_INT (INTVAL (attrs.offset)
 			+ tree_low_cst (offset, 1)
 			+ (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
 			   / BITS_PER_UNIT)));
 	}
       /* Similarly for the decl.  */
-      else if (DECL_P (expr)
-	       && DECL_SIZE_UNIT (expr)
-	       && TREE_CODE (DECL_SIZE_UNIT (expr)) == INTEGER_CST
-	       && compare_tree_int (DECL_SIZE_UNIT (expr), size) >= 0
-	       && (! memoffset || INTVAL (memoffset) >= 0))
+      else if (DECL_P (attrs.expr)
+	       && DECL_SIZE_UNIT (attrs.expr)
+	       && TREE_CODE (DECL_SIZE_UNIT (attrs.expr)) == INTEGER_CST
+	       && compare_tree_int (DECL_SIZE_UNIT (attrs.expr), size) >= 0
+	       && (! attrs.offset || INTVAL (attrs.offset) >= 0))
 	break;
       else
 	{
 	  /* The widened memory access overflows the expression, which means
 	     that it could alias another expression.  Zap it.  */
-	  expr = NULL_TREE;
+	  attrs.expr = NULL_TREE;
 	  break;
 	}
     }
 
-  if (! expr)
-    memoffset = NULL_RTX;
+  if (! attrs.expr)
+    attrs.offset = NULL_RTX;
 
   /* The widened memory may alias other stuff, so zap the alias set.  */
   /* ??? Maybe use get_alias_set on any remaining expression.  */
-
-  MEM_ATTRS (new_rtx) = find_mem_attrs (0, expr, memoffset, GEN_INT (size),
-					MEM_ALIGN (new_rtx),
-					MEM_ADDR_SPACE (new_rtx), mode);
-
+  attrs.alias = 0;
+  attrs.size = GEN_INT (size);
+  set_mem_attrs (new_rtx, &attrs);
   return new_rtx;
 }
 
@@ -2249,6 +2254,7 @@ get_spill_slot_decl (bool force_build_p)
 {
   tree d = spill_slot_decl;
   rtx rd;
+  struct mem_attrs attrs;
 
   if (d || !force_build_p)
     return d;
@@ -2262,8 +2268,10 @@ get_spill_slot_decl (bool force_build_p)
 
   rd = gen_rtx_MEM (BLKmode, frame_pointer_rtx);
   MEM_NOTRAP_P (rd) = 1;
-  MEM_ATTRS (rd) = find_mem_attrs (new_alias_set (), d, const0_rtx,
-				   NULL_RTX, 0, ADDR_SPACE_GENERIC, BLKmode);
+  attrs = *mode_mem_attrs[(int) BLKmode];
+  attrs.alias = new_alias_set ();
+  attrs.expr = d;
+  set_mem_attrs (rd, &attrs);
   SET_DECL_RTL (d, rd);
 
   return d;
@@ -2278,25 +2286,24 @@ get_spill_slot_decl (bool force_build_p)
 void
 set_mem_attrs_for_spill (rtx mem)
 {
-  alias_set_type alias;
-  rtx addr, offset;
-  tree expr;
+  struct mem_attrs attrs;
+  rtx addr;
 
-  expr = get_spill_slot_decl (true);
-  alias = MEM_ALIAS_SET (DECL_RTL (expr));
+  attrs = *get_mem_attrs (mem);
+  attrs.expr = get_spill_slot_decl (true);
+  attrs.alias = MEM_ALIAS_SET (DECL_RTL (attrs.expr));
+  attrs.addrspace = ADDR_SPACE_GENERIC;
 
   /* We expect the incoming memory to be of the form:
 	(mem:MODE (plus (reg sfp) (const_int offset)))
      with perhaps the plus missing for offset = 0.  */
   addr = XEXP (mem, 0);
-  offset = const0_rtx;
+  attrs.offset = const0_rtx;
   if (GET_CODE (addr) == PLUS
       && CONST_INT_P (XEXP (addr, 1)))
-    offset = XEXP (addr, 1);
+    attrs.offset = XEXP (addr, 1);
 
-  MEM_ATTRS (mem) = find_mem_attrs (alias, expr, offset,
-				    MEM_SIZE (mem), MEM_ALIGN (mem),
-				    ADDR_SPACE_GENERIC, GET_MODE (mem));
+  set_mem_attrs (mem, &attrs);
   MEM_NOTRAP_P (mem) = 1;
 }
 

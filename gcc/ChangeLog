@@ -1,5 +1,18 @@
 2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* emit-rtl.c (mem_attrs_eq_p): New function, split out from...
+	(mem_attrs_htab_eq): ...here.
+	(find_mem_attrs): Replace with...
+	(set_mem_attrs): ...this function.  Take a mem_attrs structure
+	rather than individual fields.
+	(set_mem_attributes_minus_bitpos, set_mem_alias_set)
+	(set_mem_addr_space, set_mem_align, set_mem_expr, set_mem_offset)
+	(set_mem_size, change_address, adjust_address_1, offset_address)
+	(widen_memory_access, get_spill_slot_decl, set_mem_attrs_for_spill):
+	Update accordingly.
+
+2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.h (MEM_ALIAS_SET, MEM_EXPR, MEM_OFFSET, MEM_ADDR_SPACE)
 	(MEM_SIZE, MEM_ALIGN): Redefine in terms of get_mem_attrs.
 	Provide a dummy definition of MEM_ADDR_SPACE for generators.
