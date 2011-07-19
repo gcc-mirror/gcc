@@ -1127,7 +1127,8 @@ forward_propagate_comparison (gimple stmt)
       && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (use_stmt))
 	  || TREE_CODE_CLASS (gimple_assign_rhs_code (use_stmt))
 	     == tcc_comparison
-          || gimple_assign_rhs_code (use_stmt) == TRUTH_NOT_EXPR)
+          || gimple_assign_rhs_code (use_stmt) == BIT_NOT_EXPR
+	  || gimple_assign_rhs_code (use_stmt) == BIT_XOR_EXPR)
       && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (use_stmt))))
     {
       tree lhs = gimple_assign_lhs (use_stmt);
@@ -1164,7 +1165,10 @@ forward_propagate_comparison (gimple stmt)
       }
       /* We can propagate the condition into a statement that
 	 computes the logical negation of the comparison result.  */
-      else if (gimple_assign_rhs_code (use_stmt) == TRUTH_NOT_EXPR)
+      else if ((gimple_assign_rhs_code (use_stmt) == BIT_NOT_EXPR
+		&& TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
+	       || (gimple_assign_rhs_code (use_stmt) == BIT_XOR_EXPR
+		   && integer_onep (gimple_assign_rhs2 (use_stmt))))
 	{
 	  tree type = TREE_TYPE (gimple_assign_rhs1 (stmt));
 	  bool nans = HONOR_NANS (TYPE_MODE (type));
