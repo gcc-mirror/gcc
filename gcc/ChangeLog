@@ -1,8 +1,24 @@
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (expand_expr_real_2): Remove TRUTH_*_EXPR handling.
+	(expand_expr_real_1): Remove TRUTH_*IF_EXPR and STATEMENT_LIST
+	handling.
+
+	PR middle-end/18908
+	* expr.c (expand_expr_real_2): Do not unnecessarily truncate the
+	result of BIT_*_EXPR to bitfield precision.
+
 2011-07-19  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/49742
 	* tree-data-ref.c (get_references_in_stmt): Treat the lhs of a call
 	as a potential write.
+
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (tree-ssa-forwprop.o): Depend on gimple-pretty-print.h.
+	* tree-ssa-forwprop.c: Include gimple-pretty-print.h.
+	(forward_propagate_comparison): Simplify, remove obsolete code.
 
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 

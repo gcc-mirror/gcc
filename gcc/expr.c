@@ -8054,26 +8054,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	 and (a bitwise1 b) bitwise2 b (etc)
 	 but that is probably not worth while.  */
 
-      /* BIT_AND_EXPR is for bitwise anding.  TRUTH_AND_EXPR is for anding two
-	 boolean values when we want in all cases to compute both of them.  In
-	 general it is fastest to do TRUTH_AND_EXPR by computing both operands
-	 as actual zero-or-1 values and then bitwise anding.  In cases where
-	 there cannot be any side effects, better code would be made by
-	 treating TRUTH_AND_EXPR like TRUTH_ANDIF_EXPR; but the question is
-	 how to recognize those cases.  */
-
-    case TRUTH_AND_EXPR:
-      code = BIT_AND_EXPR;
     case BIT_AND_EXPR:
-      goto binop;
-
-    case TRUTH_OR_EXPR:
-      code = BIT_IOR_EXPR;
     case BIT_IOR_EXPR:
-      goto binop;
-
-    case TRUTH_XOR_EXPR:
-      code = BIT_XOR_EXPR;
     case BIT_XOR_EXPR:
       goto binop;
 
@@ -8151,18 +8133,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 
       emit_label (op1);
       return target;
-
-    case TRUTH_NOT_EXPR:
-      if (modifier == EXPAND_STACK_PARM)
-	target = 0;
-      op0 = expand_expr (treeop0, target,
-			 VOIDmode, EXPAND_NORMAL);
-      /* The parser is careful to generate TRUTH_NOT_EXPR
-	 only with operands that are always zero or one.  */
-      temp = expand_binop (mode, xor_optab, op0, const1_rtx,
-			   target, 1, OPTAB_LIB_WIDEN);
-      gcc_assert (temp);
-      return temp;
 
     case COMPLEX_EXPR:
       /* Get the rtx code of the operands.  */
@@ -8319,6 +8289,12 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
   temp = expand_binop (mode, this_optab, op0, op1, target,
 		       unsignedp, OPTAB_LIB_WIDEN);
   gcc_assert (temp);
+  /* Bitwise operations do not need bitfield reduction as we expect their
+     operands being properly truncated.  */
+  if (code == BIT_XOR_EXPR
+      || code == BIT_AND_EXPR
+      || code == BIT_IOR_EXPR)
+    return temp;
   return REDUCE_BIT_FIELD (temp);
 }
 #undef REDUCE_BIT_FIELD
@@ -9540,47 +9516,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	}
 
       return op0;
-
-      /* Use a compare and a jump for BLKmode comparisons, or for function
-	 type comparisons is HAVE_canonicalize_funcptr_for_compare.  */
-
-      /* Although TRUTH_{AND,OR}IF_EXPR aren't present in GIMPLE, they
-	 are occassionally created by folding during expansion.  */
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-      if (! ignore
-	  && (target == 0
-	      || modifier == EXPAND_STACK_PARM
-	      || ! safe_from_p (target, treeop0, 1)
-	      || ! safe_from_p (target, treeop1, 1)
-	      /* Make sure we don't have a hard reg (such as function's return
-		 value) live across basic blocks, if not optimizing.  */
-	      || (!optimize && REG_P (target)
-		  && REGNO (target) < FIRST_PSEUDO_REGISTER)))
-	target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
-
-      if (target)
-	emit_move_insn (target, const0_rtx);
-
-      op1 = gen_label_rtx ();
-      jumpifnot_1 (code, treeop0, treeop1, op1, -1);
-
-      if (target)
-	emit_move_insn (target, const1_rtx);
-
-      emit_label (op1);
-      return ignore ? const0_rtx : target;
-
-    case STATEMENT_LIST:
-      {
-	tree_stmt_iterator iter;
-
-	gcc_assert (ignore);
-
-	for (iter = tsi_start (exp); !tsi_end_p (iter); tsi_next (&iter))
-	  expand_expr (tsi_stmt (iter), const0_rtx, VOIDmode, modifier);
-      }
-      return const0_rtx;
 
     case COND_EXPR:
       /* A COND_EXPR with its type being VOID_TYPE represents a
