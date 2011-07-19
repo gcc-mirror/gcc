@@ -1,7 +1,7 @@
 /* This file contains the definitions of the cgraph_inline_failed_t
    enums used in GCC.
 
-   Copyright (C) 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -35,18 +35,21 @@ DEFCIFCODE(UNSPECIFIED , "")
 
 /* Function has not be considered for inlining.  This is the code for
    functions that have not been rejected for inlining yet.  */
-DEFCIFCODE(FUNCTION_NOT_CONSIDERED,
-	   N_("function not considered for inlining"))
+DEFCIFCODE(FUNCTION_NOT_CONSIDERED, N_("function not considered for inlining"))
 
 /* Inlining failed owing to unavailable function body.  */
 DEFCIFCODE(BODY_NOT_AVAILABLE, N_("function body not available"))
 
+/* Extern inline function that has been redefined.  */
 DEFCIFCODE(REDEFINED_EXTERN_INLINE,
-           N_("redefined extern inline functions are not considered for "
-              "inlining"))
+	   N_("redefined extern inline functions are not considered for "
+	      "inlining"))
 
 /* Function is not inlinable.  */
 DEFCIFCODE(FUNCTION_NOT_INLINABLE, N_("function not inlinable"))
+
+/* Function is not overwritable.  */
+DEFCIFCODE(OVERWRITABLE, N_("function body can be overwritten at link time"))
 
 /* Function is not an inlining candidate.  */
 DEFCIFCODE(FUNCTION_NOT_INLINE_CANDIDATE, N_("function not inline candidate"))
@@ -69,7 +72,7 @@ DEFCIFCODE(RECURSIVE_INLINING, N_("recursive inlining"))
 /* Call is unlikely.  */
 DEFCIFCODE(UNLIKELY_CALL, N_("call is unlikely and code size would grow"))
 
-/* Function is not declared as an inline.  */
+/* Function is not declared as inline.  */
 DEFCIFCODE(NOT_DECLARED_INLINED,
 	   N_("function not declared inline and code size would grow"))
 
@@ -77,10 +80,7 @@ DEFCIFCODE(NOT_DECLARED_INLINED,
 DEFCIFCODE(OPTIMIZING_FOR_SIZE,
 	   N_("optimizing for size and code size would grow"))
 
-/* Inlining failed because of mismatched options or arguments.  */
-DEFCIFCODE(TARGET_OPTION_MISMATCH, N_("target specific option mismatch"))
-DEFCIFCODE(TARGET_OPTIMIZATION_MISMATCH,
-	   N_("optimization level attribute mismatch"))
+/* Caller and callee disagree on the arguments.  */
 DEFCIFCODE(MISMATCHED_ARGUMENTS, N_("mismatched arguments"))
 
 /* Call was originally indirect.  */
@@ -92,17 +92,14 @@ DEFCIFCODE(INDIRECT_UNKNOWN_CALL,
 	   N_("indirect function call with a yet undetermined callee"))
 
 /* We can't inline different EH personalities together.  */
-DEFCIFCODE(EH_PERSONALITY,
-	   N_("excepion handling personality mismatch"))
+DEFCIFCODE(EH_PERSONALITY, N_("exception handling personality mismatch"))
 
-/* Don't inline if the callee can throw non-call exceptions but the
+/* We can't inline if the callee can throw non-call exceptions but the
    caller cannot.  */
-DEFCIFCODE(NON_CALL_EXCEPTIONS,
-	   N_("excepion handling personality mismatch"))
+DEFCIFCODE(NON_CALL_EXCEPTIONS, N_("non-call exception handling mismatch"))
 
-/* Don't inline if the callee can throw non-call exceptions but the
-   caller cannot.  */
-DEFCIFCODE(OPTIMIZATION_MISMATCH,
-	   N_("optimization mode mismatch"))
+/* We can't inline because of mismatched target specific options.  */
+DEFCIFCODE(TARGET_OPTION_MISMATCH, N_("target specific option mismatch"))
 
-DEFCIFCODE(OVERWRITABLE, N_("function body can be overwriten at linktime"))
+/* We can't inline because of mismatched optimization levels.  */
+DEFCIFCODE(OPTIMIZATION_MISMATCH, N_("optimization level attribute mismatch"))
