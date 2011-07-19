@@ -1302,9 +1302,11 @@ do {									\
    refer to part of a DECL.  It may also be a COMPONENT_REF.  */
 #define MEM_EXPR(RTX) (get_mem_attrs (RTX)->expr)
 
-/* For a MEM rtx, the offset from the start of MEM_EXPR, if known, as a
-   RTX that is always a CONST_INT.  */
-#define MEM_OFFSET(RTX) (get_mem_attrs (RTX)->offset)
+/* For a MEM rtx, true if its MEM_OFFSET is known.  */
+#define MEM_OFFSET_KNOWN_P(RTX) (get_mem_attrs (RTX)->offset != NULL_RTX)
+
+/* For a MEM rtx, the offset from the start of MEM_EXPR.  */
+#define MEM_OFFSET(RTX) INTVAL (get_mem_attrs (RTX)->offset)
 
 /* For a MEM rtx, the address space.  */
 #define MEM_ADDR_SPACE(RTX) (get_mem_attrs (RTX)->addrspace)

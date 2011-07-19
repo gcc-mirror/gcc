@@ -1238,9 +1238,8 @@ get_memory_rtx (tree exp, tree len)
 
 	  gcc_assert (TREE_CODE (inner) == COMPONENT_REF);
 
-	  if (MEM_OFFSET (mem)
-	      && CONST_INT_P (MEM_OFFSET (mem)))
-	    offset = INTVAL (MEM_OFFSET (mem));
+	  if (MEM_OFFSET_KNOWN_P (mem))
+	    offset = MEM_OFFSET (mem);
 
 	  if (offset >= 0 && len && host_integerp (len, 0))
 	    length = tree_low_cst (len, 0);
@@ -1295,7 +1294,10 @@ get_memory_rtx (tree exp, tree len)
 	  if (mem_expr != MEM_EXPR (mem))
 	    {
 	      set_mem_expr (mem, mem_expr);
-	      set_mem_offset (mem, offset >= 0 ? GEN_INT (offset) : NULL_RTX);
+	      if (offset >= 0)
+		set_mem_offset (mem, offset);
+	      else
+		clear_mem_offset (mem);
 	    }
 	}
       set_mem_alias_set (mem, 0);

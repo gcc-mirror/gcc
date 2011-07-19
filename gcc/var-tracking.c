@@ -365,7 +365,7 @@ typedef const struct value_chain_def *const_value_chain;
 #define VTI(BB) ((variable_tracking_info) (BB)->aux)
 
 /* Macro to access MEM_OFFSET as an HOST_WIDE_INT.  Evaluates MEM twice.  */
-#define INT_MEM_OFFSET(mem) (MEM_OFFSET (mem) ? INTVAL (MEM_OFFSET (mem)) : 0)
+#define INT_MEM_OFFSET(mem) (MEM_OFFSET_KNOWN_P (mem) ? MEM_OFFSET (mem) : 0)
 
 /* Alloc pool for struct attrs_def.  */
 static alloc_pool attrs_pool;

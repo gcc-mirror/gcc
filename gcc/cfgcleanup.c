@@ -895,13 +895,15 @@ merge_memattrs (rtx x, rtx y)
 	    {
 	      set_mem_expr (x, 0);
 	      set_mem_expr (y, 0);
-	      set_mem_offset (x, 0);
-	      set_mem_offset (y, 0);
+	      clear_mem_offset (x);
+	      clear_mem_offset (y);
 	    }
-	  else if (MEM_OFFSET (x) != MEM_OFFSET (y))
+	  else if (MEM_OFFSET_KNOWN_P (x) != MEM_OFFSET_KNOWN_P (y)
+		   || (MEM_OFFSET_KNOWN_P (x)
+		       && MEM_OFFSET (x) != MEM_OFFSET (y)))
 	    {
-	      set_mem_offset (x, 0);
-	      set_mem_offset (y, 0);
+	      clear_mem_offset (x);
+	      clear_mem_offset (y);
 	    }
 
 	  if (MEM_SIZE_KNOWN_P (x) && MEM_SIZE_KNOWN_P (y))
