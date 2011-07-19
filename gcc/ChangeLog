@@ -1,3 +1,12 @@
+2011-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cif-code.def (OVERWRITABLE): Fix typo and move around.
+	(TARGET_OPTIMIZATION_MISMATCH): Delete.
+	(EH_PERSONALITY): Fix typo.
+	(NON_CALL_EXCEPTIONS): Fix message.
+	(OPTIMIZATION_MISMATCH): Adjust message.
+	* ipa-inline.c (can_inline_edge_p): Use CIF_OPTIMIZATION_MISMATCH.
+
 2011-07-19  Ian Lance Taylor  <iant@google.com>
 
 	* doc/install.texi (Configuration): Document

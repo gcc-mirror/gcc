@@ -323,7 +323,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report)
 	  /* gcc.dg/pr43564.c.  Look at forced inline even in -O0.  */
 	  && !DECL_DISREGARD_INLINE_LIMITS (e->callee->decl))
 	{
-          e->inline_failed = CIF_TARGET_OPTIMIZATION_MISMATCH;
+	  e->inline_failed = CIF_OPTIMIZATION_MISMATCH;
 	  inlinable = false;
 	}
     }
