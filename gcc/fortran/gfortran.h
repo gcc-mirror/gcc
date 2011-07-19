@@ -2735,6 +2735,7 @@ bool gfc_is_proc_ptr_comp (gfc_expr *, gfc_component **);
 
 bool gfc_ref_this_image (gfc_ref *ref);
 bool gfc_is_coindexed (gfc_expr *);
+bool gfc_is_coarray (gfc_expr *);
 int gfc_get_corank (gfc_expr *);
 bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);

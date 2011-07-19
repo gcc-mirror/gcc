@@ -4154,6 +4154,73 @@ gfc_is_coindexed (gfc_expr *e)
 }
 
 
+/* Coarrays are variables with a corank but not being coindexed. However, also
+   the following is a coarray: A subobject of a coarray is a coarray if it does
+   not have any cosubscripts, vector subscripts, allocatable component
+   selection, or pointer component selection. (F2008, 2.4.7)  */
+
+bool
+gfc_is_coarray (gfc_expr *e)
+{
+  gfc_ref *ref;
+  gfc_symbol *sym;
+  gfc_component *comp;
+  bool coindexed;
+  bool coarray;
+  int i;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  coindexed = false;
+  sym = e->symtree->n.sym;
+
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
+    coarray = CLASS_DATA (sym)->attr.codimension;
+  else
+    coarray = sym->attr.codimension;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    switch (ref->type)
+    {
+      case REF_COMPONENT:
+	comp = ref->u.c.component;
+        if (comp->attr.pointer || comp->attr.allocatable)
+	  {
+	    coindexed = false;
+	    if (comp->ts.type == BT_CLASS && comp->attr.class_ok)
+	      coarray = CLASS_DATA (comp)->attr.codimension;
+	    else
+	      coarray = comp->attr.codimension;
+	  }
+        break;
+
+     case REF_ARRAY:
+	if (!coarray)
+	  break;
+
+	if (ref->u.ar.codimen > 0 && !gfc_ref_this_image (ref))
+	  {
+	    coindexed = true;
+	    break;
+	  }
+
+	for (i = 0; i < ref->u.ar.dimen; i++)
+	  if (ref->u.ar.dimen_type[i] == DIMEN_VECTOR)
+	    {
+	      coarray = false;
+	      break;
+	    }
+	break;
+
+     case REF_SUBSTRING:
+	break;
+    }
+
+  return coarray && !coindexed;
+}
+
+
 int
 gfc_get_corank (gfc_expr *e)
 {

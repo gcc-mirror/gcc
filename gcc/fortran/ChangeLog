@@ -1,3 +1,9 @@
+2011-07-19  Tobias Burnus  <burnus@net-b.de>
+
+	* expr.c (gfc_is_coarray): New function.
+	* gfortran.h (gfc_is_coarray): New prototype.
+	* interface.c (compare_parameter): Use it.
+
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 
 	* trans-expr.c (fill_with_spaces): Use fold_build_pointer_plus.
