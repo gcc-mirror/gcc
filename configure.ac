@@ -1140,6 +1140,13 @@ AC_ARG_ENABLE(build-with-cxx,
 ENABLE_BUILD_WITH_CXX=$enableval,
 ENABLE_BUILD_WITH_CXX=no)
 
+# Build stage1 with C and build stages 2 and 3 with C++.
+AC_ARG_ENABLE(build-poststage1-with-cxx,
+[AS_HELP_STRING([--enable-build-poststage1-with-cxx],
+		[build stages 2 and 3 with C++, not C])],
+ENABLE_BUILD_POSTSTAGE1_WITH_CXX=$enableval,
+ENABLE_BUILD_POSTSTAGE1_WITH_CXX=yes)
+
 # Used for setting $lt_cv_objdir
 _LT_CHECK_OBJDIR
 
@@ -1710,9 +1717,11 @@ if test -d ${srcdir}/gcc; then
           exit 1
         fi
 
-	if test "$language" = "c++" \
-	   && test "$ENABLE_BUILD_WITH_CXX" = "yes"; then
-	  boot_language=yes
+	if test "$language" = "c++"; then
+	  if test "$ENABLE_BUILD_WITH_CXX" = "yes" \
+	     || test "$ENABLE_BUILD_POSTSTAGE1_WITH_CXX" = "yes"; then
+	    boot_language=yes
+	  fi
 	fi
 
         case ,${enable_languages}, in
@@ -2411,10 +2420,10 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
     ;;
 esac
 
-case ",$enable_languages,:$ENABLE_BUILD_WITH_CXX:$enable_bootstrap" in
-  *,c++,*:yes:yes) ;;
-  *:yes:yes)
-    AC_MSG_ERROR([bootstrapping with --enable-build-with-cxx requires c++ in --enable-languages])
+case ",$enable_languages,:,$ENABLE_BUILD_WITH_CXX,$ENABLE_BUILD_POSTSTAGE1_WITH_CXX,:$enable_bootstrap" in
+  *,c++,*:*:*) ;;
+  *:*,yes,*:yes)
+    AC_MSG_ERROR([bootstrapping with --enable-build-with-cxx or --enable-build-postage1-with-cxx requires c++ in --enable-languages])
     ;;
 esac
 
@@ -3201,6 +3210,15 @@ case ${enable_werror} in
   *) stage2_werror_flag="" ;;
 esac
 AC_SUBST(stage2_werror_flag)
+
+# If using ENABLE_BUILD_POSTSTAGE1_WITH_CXX, pass
+# --enable-build-with-cxx after stage1.
+if test "$ENABLE_BUILD_POSTSTAGE1_WITH_CXX" = "yes"; then
+  POSTSTAGE1_CONFIGURE_FLAGS=--enable-build-with-cxx
+else
+  POSTSTAGE1_CONFIGURE_FLAGS=
+fi
+AC_SUBST(POSTSTAGE1_CONFIGURE_FLAGS)
 
 # Specify what files to not compare during bootstrap.
 
