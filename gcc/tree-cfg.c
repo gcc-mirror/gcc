@@ -2680,7 +2680,8 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       break;
 
     case NON_LVALUE_EXPR:
-	gcc_unreachable ();
+    case TRUTH_NOT_EXPR:
+      gcc_unreachable ();
 
     CASE_CONVERT:
     case FIX_TRUNC_EXPR:
@@ -2688,7 +2689,6 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case NEGATE_EXPR:
     case ABS_EXPR:
     case BIT_NOT_EXPR:
-    case TRUTH_NOT_EXPR:
       CHECK_OP (0, "invalid operand to unary operator");
       break;
 
@@ -3343,19 +3343,6 @@ verify_gimple_assign_unary (gimple stmt)
     case VEC_UNPACK_FLOAT_LO_EXPR:
       /* FIXME.  */
       return false;
-
-    case TRUTH_NOT_EXPR:
-      /* We require two-valued operand types.  */
-      if (!(TREE_CODE (rhs1_type) == BOOLEAN_TYPE
-	    || (INTEGRAL_TYPE_P (rhs1_type)
-		&& TYPE_PRECISION (rhs1_type) == 1)))
-        {
-	  error ("invalid types in truth not");
-	  debug_generic_expr (lhs_type);
-	  debug_generic_expr (rhs1_type);
-	  return true;
-        }
-      break;
 
     case NEGATE_EXPR:
     case ABS_EXPR:

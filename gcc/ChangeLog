@@ -1,3 +1,13 @@
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* gimplify.c (gimplify_expr): Gimplify TRUTH_NOT_EXPR as
+	BIT_XOR_EXPR, same as the RTL expander does.
+	* tree-cfg.c (verify_expr): Disallow TRUTH_NOT_EXPR in the gimple IL.
+	(verify_gimple_assign_unary): Likewise.
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): Disallow TRUTH_*_EXPR.
+	* tree-ssa-forwprop.c (forward_propagate_comparison): Handle
+	BIT_NOT_EXPR and BIT_XOR_EXPR instead of TRUTH_NOT_EXPR.
+
 2011-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49768

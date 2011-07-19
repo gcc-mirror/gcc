@@ -6787,17 +6787,24 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case TRUTH_NOT_EXPR:
 	  {
-	    tree orig_type = TREE_TYPE (*expr_p);
+	    tree type = TREE_TYPE (*expr_p);
+	    /* The parsers are careful to generate TRUTH_NOT_EXPR
+	       only with operands that are always zero or one.
+	       We do not fold here but handle the only interesting case
+	       manually, as fold may re-introduce the TRUTH_NOT_EXPR.  */
 	    *expr_p = gimple_boolify (*expr_p);
-	    if (!useless_type_conversion_p (orig_type, TREE_TYPE (*expr_p)))
-	      {
-		*expr_p = fold_convert_loc (saved_location, orig_type, *expr_p);
-		ret = GS_OK;
-		break;
-	      }
-	    ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
-				 is_gimple_val, fb_rvalue);
-	    recalculate_side_effects (*expr_p);
+	    if (TYPE_PRECISION (TREE_TYPE (*expr_p)) == 1)
+	      *expr_p = build1_loc (input_location, BIT_NOT_EXPR,
+				    TREE_TYPE (*expr_p),
+				    TREE_OPERAND (*expr_p, 0));
+	    else
+	      *expr_p = build2_loc (input_location, BIT_XOR_EXPR,
+				    TREE_TYPE (*expr_p),
+				    TREE_OPERAND (*expr_p, 0),
+				    build_int_cst (TREE_TYPE (*expr_p), 1));
+	    if (!useless_type_conversion_p (type, TREE_TYPE (*expr_p)))
+	      *expr_p = fold_convert_loc (input_location, type, *expr_p);
+	    ret = GS_OK;
 	    break;
 	  }
 

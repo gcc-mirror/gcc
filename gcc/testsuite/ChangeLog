@@ -1,3 +1,9 @@
+2011-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/bool-10.c: Adjust expected pattern.
+	* gcc.dg/tree-ssa/bool-11.c: Likewise.
+	* gcc.dg/torture/20110719-1.c: New testcase.
+
 2011-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49768
