@@ -1557,47 +1557,26 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	}
     }
 
-  if (formal->attr.codimension)
+  if (formal->attr.codimension && !gfc_is_coarray (actual))
+    {
+      if (where)
+	gfc_error ("Actual argument to '%s' at %L must be a coarray",
+		       formal->name, &actual->where);
+      return 0;
+    }
+
+  if (formal->attr.codimension && formal->attr.allocatable)
     {
       gfc_ref *last = NULL;
 
-      if (actual->expr_type != EXPR_VARIABLE
-	  || !gfc_expr_attr (actual).codimension)
-	{
-	  if (where)
-	    gfc_error ("Actual argument to '%s' at %L must be a coarray",
-		       formal->name, &actual->where);
-	  return 0;
-	}
-
-      if (gfc_is_coindexed (actual))
-	{
-	  if (where)
-	    gfc_error ("Actual argument to '%s' at %L must be a coarray "
-		       "and not coindexed", formal->name, &actual->where);
-	  return 0;
-	}
-
       for (ref = actual->ref; ref; ref = ref->next)
-	{
-	  if (ref->type == REF_ARRAY && ref->u.ar.as->corank
-	      && ref->u.ar.type != AR_FULL && ref->u.ar.dimen != 0)
-	    {
-	      if (where)
-		gfc_error ("Actual argument to '%s' at %L must be a coarray "
-			   "and thus shall not have an array designator",
-			   formal->name, &ref->u.ar.where);
-	      return 0;
-	    }
-	  if (ref->type == REF_COMPONENT)
-	    last = ref;
-	}
+	if (ref->type == REF_COMPONENT)
+	  last = ref;
 
       /* F2008, 12.5.2.6.  */
-      if (formal->attr.allocatable &&
-	  ((last && last->u.c.component->as->corank != formal->as->corank)
-	   || (!last
-	       && actual->symtree->n.sym->as->corank != formal->as->corank)))
+      if ((last && last->u.c.component->as->corank != formal->as->corank)
+	  || (!last
+	      && actual->symtree->n.sym->as->corank != formal->as->corank))
 	{
 	  if (where)
 	    gfc_error ("Corank mismatch in argument '%s' at %L (%d and %d)",
@@ -1606,7 +1585,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 			: actual->symtree->n.sym->as->corank);
 	  return 0;
 	}
+    }
 
+  if (formal->attr.codimension)
+    {
       /* F2008, 12.5.2.8.  */
       if (formal->attr.dimension
 	  && (formal->attr.contiguous || formal->as->type != AS_ASSUMED_SHAPE)
@@ -1633,7 +1615,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		       formal->name, &actual->where);
 	  return 0;
 	}
-      }
+    }
 
   /* F2008, C1239/C1240.  */
   if (actual->expr_type == EXPR_VARIABLE
