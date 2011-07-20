@@ -16693,8 +16693,13 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
    GNU Extension:
 
    initializer-list:
-     identifier : initializer-clause
-     initializer-list, identifier : initializer-clause
+     designation initializer-clause ...[opt]
+     initializer-list , designation initializer-clause ...[opt]
+
+   designation:
+     . identifier =
+     identifier :
+     [ constant-expression ] =
 
    Returns a VEC of constructor_elt.  The VALUE of each elt is an expression
    for the initializer.  If the INDEX of the elt is non-NULL, it is the
@@ -16713,7 +16718,7 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
   while (true)
     {
       cp_token *token;
-      tree identifier;
+      tree designator;
       tree initializer;
       bool clause_non_constant_p;
 
@@ -16728,12 +16733,38 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	  pedwarn (input_location, OPT_pedantic, 
 		   "ISO C++ does not allow designated initializers");
 	  /* Consume the identifier.  */
-	  identifier = cp_lexer_consume_token (parser->lexer)->u.value;
+	  designator = cp_lexer_consume_token (parser->lexer)->u.value;
 	  /* Consume the `:'.  */
 	  cp_lexer_consume_token (parser->lexer);
 	}
+      /* Also handle the C99 syntax, '. id ='.  */
+      else if (cp_parser_allow_gnu_extensions_p (parser)
+	       && cp_lexer_next_token_is (parser->lexer, CPP_DOT)
+	       && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_NAME
+	       && cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_EQ)
+	{
+	  /* Warn the user that they are using an extension.  */
+	  pedwarn (input_location, OPT_pedantic,
+		   "ISO C++ does not allow C99 designated initializers");
+	  /* Consume the `.'.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  /* Consume the identifier.  */
+	  designator = cp_lexer_consume_token (parser->lexer)->u.value;
+	  /* Consume the `='.  */
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      /* Also handle C99 array designators, '[ const ] ='.  */
+      else if (cp_parser_allow_gnu_extensions_p (parser)
+	       && !c_dialect_objc ()
+	       && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  designator = cp_parser_constant_expression (parser, false, NULL);
+	  cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
+	  cp_parser_require (parser, CPP_EQ, RT_EQ);
+	}
       else
-	identifier = NULL_TREE;
+	designator = NULL_TREE;
 
       /* Parse the initializer.  */
       initializer = cp_parser_initializer_clause (parser,
@@ -16754,7 +16785,7 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
         }
 
       /* Add it to the vector.  */
-      CONSTRUCTOR_APPEND_ELT(v, identifier, initializer);
+      CONSTRUCTOR_APPEND_ELT (v, designator, initializer);
 
       /* If the next token is not a comma, we have reached the end of
 	 the list.  */

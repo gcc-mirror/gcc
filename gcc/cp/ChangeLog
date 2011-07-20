@@ -1,5 +1,11 @@
 2011-07-20  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_initializer_list): Handle C99 .id= and [N]=
+	designated initializer syntax.
+	* decl.c (check_array_designated_initializer): Add index parm.
+	(maybe_deduce_size_from_array_init): Pass it.
+	(reshape_init_array_1): Likewise.
+
 	PR c++/6709 (DR 743)
 	PR c++/42603 (DR 950)
 	* parser.c (token_is_decltype, cp_lexer_next_token_is_decltype): New.
