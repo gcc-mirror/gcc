@@ -1,5 +1,10 @@
 2011-07-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* bb-reorder.c (fix_crossing_conditional_branches): Fix crash by
+	removing now-unnecessary assignment.
+
+2011-07-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Restore setting
 	memory address space to the type's address space.
 

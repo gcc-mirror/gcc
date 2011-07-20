@@ -1603,7 +1603,6 @@ fix_crossing_conditional_branches (void)
 
 		  new_label = gen_label_rtx ();
 		  emit_label (new_label);
-		  BB_HEAD (new_bb) = new_label;
 
 		  gcc_assert (GET_CODE (old_label) == LABEL_REF);
 		  old_label = JUMP_LABEL (old_jump);
