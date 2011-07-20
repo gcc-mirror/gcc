@@ -11197,6 +11197,16 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   else
     disp = addr;			/* displacement */
 
+  if (index)
+    {
+      if (REG_P (index))
+	;
+      /* Allow only subregs of DImode hard regs.  */
+      else if (GET_CODE (index) == SUBREG
+	       && !register_no_elim_operand (SUBREG_REG (index), DImode))
+	return 0;
+    }
+
   /* Extract the integral value of scale.  */
   if (scale_rtx)
     {
@@ -11630,23 +11640,18 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   disp = parts.disp;
   scale = parts.scale;
 
-  /* Validate base register.
-
-     Don't allow SUBREG's that span more than a word here.  It can lead to spill
-     failures when the base is one word out of a two word structure, which is
-     represented internally as a DImode int.  */
-
+  /* Validate base register.  */
   if (base)
     {
       rtx reg;
 
       if (REG_P (base))
   	reg = base;
-      else if (GET_CODE (base) == SUBREG
-	       && REG_P (SUBREG_REG (base))
-	       && GET_MODE_SIZE (GET_MODE (SUBREG_REG (base)))
-		  <= UNITS_PER_WORD)
-  	reg = SUBREG_REG (base);
+      else if (GET_CODE (base) == SUBREG && REG_P (SUBREG_REG (base)))
+	{
+	  reg = SUBREG_REG (base);
+	  gcc_assert (register_no_elim_operand (reg, DImode));
+	}
       else
 	/* Base is not a register.  */
 	return false;
@@ -11660,21 +11665,18 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	return false;
     }
 
-  /* Validate index register.
-
-     Don't allow SUBREG's that span more than a word here -- same as above.  */
-
+  /* Validate index register.  */
   if (index)
     {
       rtx reg;
 
       if (REG_P (index))
   	reg = index;
-      else if (GET_CODE (index) == SUBREG
-	       && REG_P (SUBREG_REG (index))
-	       && GET_MODE_SIZE (GET_MODE (SUBREG_REG (index)))
-		  <= UNITS_PER_WORD)
-  	reg = SUBREG_REG (index);
+      else if (GET_CODE (index) == SUBREG && REG_P (SUBREG_REG (index)))
+	{
+	  reg = SUBREG_REG (index);
+	  gcc_assert (register_no_elim_operand (reg, DImode));
+	}
       else
 	/* Index is not a register.  */
 	return false;
@@ -11687,6 +11689,11 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	/* Index is not valid.  */
 	return false;
     }
+
+  /* Index and base should have the same mode.  */
+  if (base && index
+      && GET_MODE (base) != GET_MODE (index))
+    return false;
 
   /* Validate scale factor.  */
   if (scale != 1)
