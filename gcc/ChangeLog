@@ -1,3 +1,33 @@
+2011-07-20  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/36467
+	PR target/49687
+	* config/avr/avr.md (mulhi3): Use register_or_s9_operand for
+	operand2 and expand appropriately if there is a CONST_INT in
+	operand2.
+	(usmulqihi3): New insn.
+	(*sumulqihi3): New insn.
+	(*osmulqihi3): New insn.
+	(*oumulqihi3): New insn.
+	(*muluqihi3.uconst): New insn_and_split.
+	(*muluqihi3.sconst): New insn_and_split.
+	(*mulsqihi3.sconst): New insn_and_split.
+	(*mulsqihi3.uconst): New insn_and_split.
+	(*mulsqihi3.oconst): New insn_and_split.
+	(*ashifthi3.signx.const): New insn_and_split.
+	(*ashifthi3.signx.const7): New insn_and_split.
+	(*ashifthi3.zerox.const): New insn_and_split.
+	(mulsqihi3): New insn.
+	(muluqihi3): New insn.
+	(muloqihi3): New insn.
+	* config/avr/predicates.md (const_2_to_7_operand): New.
+	(const_2_to_6_operand): New.
+	(u8_operand): New.
+	(s8_operand): New.
+	(o8_operand): New.
+	(s9_operand): New.
+	(register_or_s9_operand): New.
+
 2011-07-20  Kai Tietz  <ktietz@redhat.com>
 
 	* builtins.c (fold_builtin_expect): See through the cast
