@@ -1,3 +1,37 @@
+2011-07-20  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* config/i386/constraints.md (w): New.
+
+	* config/i386/i386.c (ix86_output_addr_vec_elt): Check
+	TARGET_LP64 instead of TARGET_64BIT for ASM_QUAD.
+
+	* config/i386/i386.h (CASE_VECTOR_MODE): Check TARGET_LP64
+	instead of TARGET_64BIT.
+
+	* config/i386/i386.md (indirect_jump): Replace
+	nonimmediate_operand with indirect_branch_operand.
+	(*indirect_jump): Likewise.  Replace constraint "m" with "w".
+	(tablejump): Replace nonimmediate_operand with
+	indirect_branch_operand.  Convert operand 0 to Pmode for x32 if
+	not PIC.
+	(*tablejump_1): Replace nonimmediate_operand with
+	indirect_branch_operand.  Replace constraint "m" with "w".
+	(*call_vzeroupper): Replace constraint "m" with "w".
+	(*call): Likewise.
+	(*call_rex64_ms_sysv_vzeroupper): Likewise.
+	(*call_rex64_ms_sysv): Likewise.
+	(*call_value_vzeroupper): Likewise.
+	(*call_value): Likewise.
+	(*call_value_rex64_ms_sysv_vzeroupper): Likewise.
+	(*call_value_rex64_ms_sysv): Likewise.
+	(set_got_offset_rex64): Check TARGET_LP64 instead of
+	TARGET_64BIT.
+
+	* config/i386/predicates.md (indirect_branch_operand): New.
+	(call_insn_operand): Support x32.
+
 2011-07-20  Michael Eager  <eager@eagercon.com>
 
 	* params.def (PARAM_MAX_VARTRACK_EXPR_DEPTH): Default to 12.
