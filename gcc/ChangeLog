@@ -1,3 +1,15 @@
+2011-07-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (remove_prop_source_from_use): Robustify
+	against already removed statements.
+	(forward_propagate_into_comparison): Remove dead defining stmts.
+	(forward_propagate_into_gimple_cond): Likewise.
+	(forward_propagate_into_cond): Simplify.
+	(ssa_forward_propagate_and_combine): Handle changed cfg from
+	forward_propagate_into_comparison.
+	* tree-ssa-phiopt.c (conditional_replacement): Use proper
+	locations for newly built statements.
+
 2011-07-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_rtx_costs): Set cost of SYMBOL_REF to 0.
