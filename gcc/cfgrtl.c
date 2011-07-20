@@ -1664,28 +1664,10 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
       for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
 	{
 	  int did_output;
-	  if ((bb = start[INSN_UID (tmp_rtx)]) != NULL)
-	    {
-	      edge e;
-	      edge_iterator ei;
 
-	      fprintf (outf, ";; Start of basic block (");
-	      FOR_EACH_EDGE (e, ei, bb->preds)
-		fprintf (outf, " %d", e->src->index);
-	      fprintf (outf, ") -> %d\n", bb->index);
-
-	      if (df)
-		{
-		  df_dump_top (bb, outf);
-		  putc ('\n', outf);
-		}
-	      FOR_EACH_EDGE (e, ei, bb->preds)
-		{
-		  fputs (";; Pred edge ", outf);
-		  dump_edge_info (outf, e, 0);
-		  fputc ('\n', outf);
-		}
-	    }
+	  bb = start[INSN_UID (tmp_rtx)];
+	  if (bb != NULL)
+	    dump_bb_info (bb, true, false, dump_flags, ";; ", outf);
 
 	  if (in_bb_p[INSN_UID (tmp_rtx)] == NOT_IN_BB
 	      && !NOTE_P (tmp_rtx)
@@ -1696,29 +1678,9 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
 
 	  did_output = print_rtl_single (outf, tmp_rtx);
 
-	  if ((bb = end[INSN_UID (tmp_rtx)]) != NULL)
-	    {
-	      edge e;
-	      edge_iterator ei;
-
-	      fprintf (outf, ";; End of basic block %d -> (", bb->index);
-	      FOR_EACH_EDGE (e, ei, bb->succs)
-		fprintf (outf, " %d", e->dest->index);
-	      fprintf (outf, ")\n");
-
-	      if (df)
-		{
-		  df_dump_bottom (bb, outf);
-		  putc ('\n', outf);
-		}
-	      putc ('\n', outf);
-	      FOR_EACH_EDGE (e, ei, bb->succs)
-		{
-		  fputs (";; Succ edge ", outf);
-		  dump_edge_info (outf, e, 1);
-		  fputc ('\n', outf);
-		}
-	    }
+	  bb = end[INSN_UID (tmp_rtx)];
+	  if (bb != NULL)
+	    dump_bb_info (bb, false, true, dump_flags, ";; ", outf);
 	  if (did_output)
 	    putc ('\n', outf);
 	}
