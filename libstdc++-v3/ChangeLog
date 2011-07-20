@@ -1,3 +1,17 @@
+2011-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/system_error: Use noexcept.
+	* src/system_error.cc: Likewise.
+	* testsuite/19_diagnostics/error_condition/modifiers/39881.cc: Adjust.
+	* testsuite/19_diagnostics/error_condition/cons/39881.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/modifiers/39882.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/cons/39882.cc: Likewise.
+	* testsuite/util/testsuite_error.h: Likewise.
+
+	* include/std/system_error (error_code::error_code(_ErrorCodeEnum)):
+	Use enable_if on template parameter default.
+	(error_condition::error_condition(_ErrorConditionEnum)): Likewise.
+
 2011-07-20  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/precompiled/stdc++.h: Add scoped_allocator.

@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,7 +26,7 @@ class my_error_category_impl
 : public std::error_category
 {
 public:
-  const char* name() const { return ""; }
+  const char* name() const noexcept { return ""; }
   std::string message(int) const { return ""; }
 } my_error_category_instance;
 
