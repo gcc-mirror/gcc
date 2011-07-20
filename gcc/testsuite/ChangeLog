@@ -1,3 +1,9 @@
+2011-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/6709 (DR 743)
+	PR c++/42603 (DR 950)
+	* g++.dg/cpp0x/decltype21.C: New.
+
 2011-07-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/18908

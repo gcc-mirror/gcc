@@ -1,4 +1,16 @@
-2011-07-19  Jason Merrill  <jason@redhat.com>
+2011-07-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/6709 (DR 743)
+	PR c++/42603 (DR 950)
+	* parser.c (token_is_decltype, cp_lexer_next_token_is_decltype): New.
+	(cp_parser_nested_name_specifier_opt): Allow decltype.
+	(cp_parser_qualifying_entity): Likewise.
+	(cp_parser_decltype): Replace source tokens with CPP_DECLTYPE.
+	(cp_parser_simple_type_specifier): Handle decltype as scope.
+	(cp_parser_base_specifier): Allow decltype.
+	(cp_parser_base_clause): Don't crash on null base.
+	* parser.h (CPP_KEYWORD, CPP_TEMPLATE_ID): Move to c-common.h.
+	(CPP_NESTED_NAME_SPECIFIER, N_CP_TTYPES): Likewise.
 
 	PR c++/49785
 	* pt.c (coerce_template_parms): Handle non-pack after pack.

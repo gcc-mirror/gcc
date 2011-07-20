@@ -23,25 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "c-family/c-pragma.h"
 
-/* A token type for keywords, as opposed to ordinary identifiers.  */
-#define CPP_KEYWORD ((enum cpp_ttype) (N_TTYPES + 1))
-
-/* A token type for template-ids.  If a template-id is processed while
-   parsing tentatively, it is replaced with a CPP_TEMPLATE_ID token;
-   the value of the CPP_TEMPLATE_ID is whatever was returned by
-   cp_parser_template_id.  */
-#define CPP_TEMPLATE_ID ((enum cpp_ttype) (CPP_KEYWORD + 1))
-
-/* A token type for nested-name-specifiers.  If a
-   nested-name-specifier is processed while parsing tentatively, it is
-   replaced with a CPP_NESTED_NAME_SPECIFIER token; the value of the
-   CPP_NESTED_NAME_SPECIFIER is whatever was returned by
-   cp_parser_nested_name_specifier_opt.  */
-#define CPP_NESTED_NAME_SPECIFIER ((enum cpp_ttype) (CPP_TEMPLATE_ID + 1))
-
-/* The number of token types, including C++-specific ones.  */
-#define N_CP_TTYPES ((int) (CPP_NESTED_NAME_SPECIFIER + 1))
-
 /* A token's value and its associated deferred access checks and
    qualifying scope.  */
 
