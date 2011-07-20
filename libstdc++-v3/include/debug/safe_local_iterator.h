@@ -88,7 +88,7 @@ namespace __gnu_debug
        * @pre @p seq is not NULL
        * @post this is not singular
        */
-      _Safe_local_iterator(const _Iterator& __i, size_t __bucket,
+      _Safe_local_iterator(const _Iterator& __i, size_type __bucket,
 			   const _Sequence* __seq)
       : _Safe_local_iterator_base(__seq, _M_constant()), _M_current(__i),
 	_M_bucket(__bucket)
