@@ -1,3 +1,8 @@
+2011-07-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/frv/frv.c (frv_register_move_cost): Define explicitly
+	costs for subclasses of GR_REGS.
+
 2011-07-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49780

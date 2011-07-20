@@ -6818,6 +6818,13 @@ frv_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 
     case QUAD_REGS:
     case GPR_REGS:
+    case GR8_REGS:
+    case GR9_REGS:
+    case GR89_REGS:
+    case FDPIC_REGS:
+    case FDPIC_FPTR_REGS:
+    case FDPIC_CALL_REGS:
+
       switch (to)
 	{
 	default:
@@ -6825,6 +6832,13 @@ frv_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 	case QUAD_REGS:	
 	case GPR_REGS:
+	case GR8_REGS:
+	case GR9_REGS:
+	case GR89_REGS:
+	case FDPIC_REGS:
+	case FDPIC_FPTR_REGS:
+	case FDPIC_CALL_REGS:
+
 	  return LOW_COST;
 
 	case FPR_REGS:
@@ -6844,6 +6858,13 @@ frv_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 	case QUAD_REGS:
 	case GPR_REGS:
+	case GR8_REGS:
+	case GR9_REGS:
+	case GR89_REGS:
+	case FDPIC_REGS:
+	case FDPIC_FPTR_REGS:
+	case FDPIC_CALL_REGS:
+
 	case QUAD_ACC_REGS:
 	case ACCG_REGS:
 	  return MEDIUM_COST;
@@ -6862,6 +6883,13 @@ frv_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 	case QUAD_REGS:
 	case GPR_REGS:
+	case GR8_REGS:
+	case GR9_REGS:
+	case GR89_REGS:
+	case FDPIC_REGS:
+	case FDPIC_FPTR_REGS:
+	case FDPIC_CALL_REGS:
+
 	  return MEDIUM_COST;
 	}
 
