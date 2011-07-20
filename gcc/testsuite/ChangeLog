@@ -1,3 +1,8 @@
+2011-07-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gcc.target/arm/combine-movs.c: New.
+	* gcc.target/arm/unsigned-extend-2.c: New.
+
 2011-07-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49785
