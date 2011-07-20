@@ -7,5 +7,5 @@ foo (_Bool x)
   return (x ^ 1);
 }
 
-/* { dg-final { scan-tree-dump-times "x\[^ \]* \\^ 1" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "~x" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

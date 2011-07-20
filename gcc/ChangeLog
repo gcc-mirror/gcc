@@ -1,3 +1,10 @@
+2011-07-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/18908
+	* tree.c (integer_all_onesp): Use TYPE_PRECISION, not mode precision.
+	* tree-ssa-forwprop.c (simplify_bitwise_binary): Remove bogus
+	ADDR_EXPR folding.  Canonicalize X ^ ~0 as ~X.
+
 2011-07-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/frv/frv.c (frv_register_move_cost): Define explicitly
