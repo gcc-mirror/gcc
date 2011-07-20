@@ -1,3 +1,10 @@
+2011-07-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (new_var_info): Allocate oldsolution
+	lazily.
+	(unify_nodes): Deal with that.
+	(solve_graph): Likewise.
+
 2011-07-20  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/arm/arm.c (arm_canonicalize_comparison): Add case to

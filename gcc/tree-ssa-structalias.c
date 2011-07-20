@@ -362,7 +362,7 @@ new_var_info (tree t, const char *name)
 			  || (TREE_CODE (t) == VAR_DECL
 			      && DECL_HARD_REGISTER (t)));
   ret->solution = BITMAP_ALLOC (&pta_obstack);
-  ret->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
+  ret->oldsolution = NULL;
   ret->next = NULL;
 
   stats.total_vars++;
@@ -1504,13 +1504,12 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
 	}
 
       BITMAP_FREE (get_varinfo (from)->solution);
-      BITMAP_FREE (get_varinfo (from)->oldsolution);
+      if (get_varinfo (from)->oldsolution)
+	BITMAP_FREE (get_varinfo (from)->oldsolution);
 
-      if (stats.iterations > 0)
-	{
-	  BITMAP_FREE (get_varinfo (to)->oldsolution);
-	  get_varinfo (to)->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
-	}
+      if (stats.iterations > 0
+	  && get_varinfo (to)->oldsolution)
+	BITMAP_FREE (get_varinfo (to)->oldsolution);
     }
   if (valid_graph_edge (graph, to, to))
     {
@@ -2544,18 +2543,27 @@ solve_graph (constraint_graph_t graph)
 	      constraint_t c;
 	      bitmap solution;
 	      VEC(constraint_t,heap) *complex = graph->complex[i];
+	      varinfo_t vi = get_varinfo (i);
 	      bool solution_empty;
 
 	      /* Compute the changed set of solution bits.  */
-	      bitmap_and_compl (pts, get_varinfo (i)->solution,
-				get_varinfo (i)->oldsolution);
+	      if (vi->oldsolution)
+		bitmap_and_compl (pts, vi->solution, vi->oldsolution);
+	      else
+		bitmap_copy (pts, vi->solution);
 
 	      if (bitmap_empty_p (pts))
 		continue;
 
-	      bitmap_ior_into (get_varinfo (i)->oldsolution, pts);
+	      if (vi->oldsolution)
+		bitmap_ior_into (vi->oldsolution, pts);
+	      else
+		{
+		  vi->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
+		  bitmap_copy (vi->oldsolution, pts);
+		}
 
-	      solution = get_varinfo (i)->solution;
+	      solution = vi->solution;
 	      solution_empty = bitmap_empty_p (solution);
 
 	      /* Process the complex constraints */
