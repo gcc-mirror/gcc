@@ -111,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_getword(size_t __pos) _GLIBCXX_NOEXCEPT
       { return _M_w[_S_whichword(__pos)]; }
 
-      _WordT
+      _GLIBCXX_CONSTEXPR _WordT
       _M_getword(size_t __pos) const _GLIBCXX_NOEXCEPT
       { return _M_w[_S_whichword(__pos)]; }
 
@@ -221,12 +221,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // find first "on" bit
       size_t
-      _M_do_find_first(size_t __not_found) const _GLIBCXX_NOEXCEPT;
+      _M_do_find_first(size_t) const _GLIBCXX_NOEXCEPT;
 
       // find the next "on" bit that follows "prev"
       size_t
-      _M_do_find_next(size_t __prev, size_t __not_found) const
-	_GLIBCXX_NOEXCEPT;
+      _M_do_find_next(size_t, size_t) const _GLIBCXX_NOEXCEPT;
     };
 
   // Definitions of non-inline functions from _Base_bitset.
@@ -405,7 +404,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_getword(size_t) _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
-      _WordT
+      _GLIBCXX_CONSTEXPR _WordT
       _M_getword(size_t) const _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
@@ -557,7 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *new _WordT;
       }
 
-      _WordT
+      _GLIBCXX_CONSTEXPR _WordT
       _M_getword(size_t __pos) const _GLIBCXX_NOEXCEPT
       { return 0; }
 
@@ -1017,7 +1016,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return *this;
       }
 
-      bool
+      _GLIBCXX_CONSTEXPR bool
       _Unchecked_test(size_t __pos) const _GLIBCXX_NOEXCEPT
       { return ((this->_M_getword(__pos) & _Base::_S_maskbit(__pos))
 		!= static_cast<_WordT>(0)); }
@@ -1122,7 +1121,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator[](size_t __position)
       { return reference(*this, __position); }
 
-      bool
+      _GLIBCXX_CONSTEXPR bool
       operator[](size_t __position) const
       { return _Unchecked_test(__position); }
       //@}
