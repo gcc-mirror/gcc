@@ -66,47 +66,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class error_category
   {
   protected:
-    error_category();
+    error_category() noexcept;
 
   public:
-    virtual ~error_category();
+    virtual ~error_category() noexcept;
 
     error_category(const error_category&) = delete;
     error_category& operator=(const error_category&) = delete;
 
     virtual const char* 
-    name() const = 0;
+    name() const noexcept = 0;
 
     virtual string 
     message(int) const = 0;
 
     virtual error_condition
-    default_error_condition(int __i) const;
+    default_error_condition(int __i) const noexcept;
 
     virtual bool 
-    equivalent(int __i, const error_condition& __cond) const;
+    equivalent(int __i, const error_condition& __cond) const noexcept;
 
     virtual bool 
-    equivalent(const error_code& __code, int __i) const;
+    equivalent(const error_code& __code, int __i) const noexcept;
 
     bool 
-    operator<(const error_category& __other) const
+    operator<(const error_category& __other) const noexcept
     { return less<const error_category*>()(this, &__other); }
 
     bool 
-    operator==(const error_category& __other) const
+    operator==(const error_category& __other) const noexcept
     { return this == &__other; }
 
     bool 
-    operator!=(const error_category& __other) const
+    operator!=(const error_category& __other) const noexcept
     { return this != &__other; }
   };
 
   // DR 890.
-  _GLIBCXX_CONST const error_category& system_category() throw();
-  _GLIBCXX_CONST const error_category& generic_category() throw();
+  _GLIBCXX_CONST const error_category& system_category() noexcept;
+  _GLIBCXX_CONST const error_category& generic_category() noexcept;
 
-  error_code make_error_code(errc);
+  error_code make_error_code(errc) noexcept;
 
   template<typename _Tp>
     struct hash;
@@ -115,49 +115,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Implementation-specific error identification
   struct error_code
   {
-    error_code()
+    error_code() noexcept
     : _M_value(0), _M_cat(&system_category()) { }
 
-    error_code(int __v, const error_category& __cat)
+    error_code(int __v, const error_category& __cat) noexcept
     : _M_value(__v), _M_cat(&__cat) { }
 
-    template<typename _ErrorCodeEnum>
-      error_code(_ErrorCodeEnum __e,
-      typename enable_if<is_error_code_enum<_ErrorCodeEnum>::value>::type* = 0)
+    template<typename _ErrorCodeEnum, typename = typename
+	     enable_if<is_error_code_enum<_ErrorCodeEnum>::value>::type>
+      error_code(_ErrorCodeEnum __e) noexcept
       { *this = make_error_code(__e); }
 
     void 
-    assign(int __v, const error_category& __cat)
+    assign(int __v, const error_category& __cat) noexcept
     {
       _M_value = __v;
       _M_cat = &__cat; 
     }
 
     void 
-    clear()
+    clear() noexcept
     { assign(0, system_category()); }
 
     // DR 804.
     template<typename _ErrorCodeEnum>
       typename enable_if<is_error_code_enum<_ErrorCodeEnum>::value,
 			 error_code&>::type
-      operator=(_ErrorCodeEnum __e)
+      operator=(_ErrorCodeEnum __e) noexcept
       { return *this = make_error_code(__e); }
 
     int
-    value() const { return _M_value; }
+    value() const noexcept { return _M_value; }
       
     const error_category&  
-    category() const { return *_M_cat; }
+    category() const noexcept { return *_M_cat; }
 
     error_condition 
-    default_error_condition() const;
+    default_error_condition() const noexcept;
 
     string 
     message() const
     { return category().message(value()); }
 
-    explicit operator bool() const
+    explicit operator bool() const noexcept
     { return _M_value != 0 ? true : false; }
 
     // DR 804.
@@ -170,11 +170,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 19.4.2.6 non-member functions
   inline error_code
-  make_error_code(errc __e)
+  make_error_code(errc __e) noexcept
   { return error_code(static_cast<int>(__e), generic_category()); }
 
   inline bool
-  operator<(const error_code& __lhs, const error_code& __rhs)
+  operator<(const error_code& __lhs, const error_code& __rhs) noexcept
   { 
     return (__lhs.category() < __rhs.category()
 	    || (__lhs.category() == __rhs.category()
@@ -186,26 +186,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<<(basic_ostream<_CharT, _Traits>& __os, const error_code& __e)
     { return (__os << __e.category().name() << ':' << __e.value()); }
 
-  error_condition make_error_condition(errc);
+  error_condition make_error_condition(errc) noexcept;
 
   /// error_condition
   // Portable error identification
   struct error_condition 
   {
-    error_condition()
+    error_condition() noexcept
     : _M_value(0), _M_cat(&generic_category()) { }
 
-    error_condition(int __v, const error_category& __cat)     
+    error_condition(int __v, const error_category& __cat) noexcept
     : _M_value(__v), _M_cat(&__cat) { }
 
-    template<typename _ErrorConditionEnum>
-      error_condition(_ErrorConditionEnum __e,
-		      typename enable_if<is_error_condition_enum
-		                      <_ErrorConditionEnum>::value>::type* = 0)
+    template<typename _ErrorConditionEnum, typename = typename
+	 enable_if<is_error_condition_enum<_ErrorConditionEnum>::value>::type>
+      error_condition(_ErrorConditionEnum __e) noexcept
       { *this = make_error_condition(__e); }
 
     void
-    assign(int __v, const error_category& __cat)
+    assign(int __v, const error_category& __cat) noexcept
     {
       _M_value = __v;
       _M_cat = &__cat;
@@ -215,25 +214,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _ErrorConditionEnum>
       typename enable_if<is_error_condition_enum
 			 <_ErrorConditionEnum>::value, error_condition&>::type
-      operator=(_ErrorConditionEnum __e)
+      operator=(_ErrorConditionEnum __e) noexcept
       { return *this = make_error_condition(__e); }
 
     void 
-    clear()
+    clear() noexcept
     { assign(0, generic_category()); }
 
     // 19.4.3.4 observers
-    int 
-    value() const { return _M_value; }
+    int
+    value() const noexcept { return _M_value; }
 
     const error_category&
-    category() const { return *_M_cat; }
+    category() const noexcept { return *_M_cat; }
 
     string 
     message() const
     { return category().message(value()); }
 
-    explicit operator bool() const
+    explicit operator bool() const noexcept
     { return _M_value != 0 ? true : false; }
 
     // DR 804.
@@ -244,11 +243,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 19.4.3.6 non-member functions
   inline error_condition
-  make_error_condition(errc __e)
+  make_error_condition(errc __e) noexcept
   { return error_condition(static_cast<int>(__e), generic_category()); }
 
   inline bool 
-  operator<(const error_condition& __lhs, const error_condition& __rhs)
+  operator<(const error_condition& __lhs,
+	    const error_condition& __rhs) noexcept
   {
     return (__lhs.category() < __rhs.category()
 	    || (__lhs.category() == __rhs.category()
@@ -257,45 +257,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 19.4.4 Comparison operators
   inline bool
-  operator==(const error_code& __lhs, const error_code& __rhs)
+  operator==(const error_code& __lhs, const error_code& __rhs) noexcept
   { return (__lhs.category() == __rhs.category()
 	    && __lhs.value() == __rhs.value()); }
 
   inline bool
-  operator==(const error_code& __lhs, const error_condition& __rhs)
+  operator==(const error_code& __lhs, const error_condition& __rhs) noexcept
   {
     return (__lhs.category().equivalent(__lhs.value(), __rhs)
 	    || __rhs.category().equivalent(__lhs, __rhs.value()));
   }
 
   inline bool
-  operator==(const error_condition& __lhs, const error_code& __rhs)
+  operator==(const error_condition& __lhs, const error_code& __rhs) noexcept
   {
     return (__rhs.category().equivalent(__rhs.value(), __lhs)
 	    || __lhs.category().equivalent(__rhs, __lhs.value()));
   }
 
   inline bool
-  operator==(const error_condition& __lhs, const error_condition& __rhs)
+  operator==(const error_condition& __lhs,
+	     const error_condition& __rhs) noexcept
   {
     return (__lhs.category() == __rhs.category()
 	    && __lhs.value() == __rhs.value());
   }
 
   inline bool
-  operator!=(const error_code& __lhs, const error_code& __rhs)
+  operator!=(const error_code& __lhs, const error_code& __rhs) noexcept
   { return !(__lhs == __rhs); }
 
   inline bool
-  operator!=(const error_code& __lhs, const error_condition& __rhs)
+  operator!=(const error_code& __lhs, const error_condition& __rhs) noexcept
   { return !(__lhs == __rhs); }
 
   inline bool
-  operator!=(const error_condition& __lhs, const error_code& __rhs)
+  operator!=(const error_condition& __lhs, const error_code& __rhs) noexcept
   { return !(__lhs == __rhs); }
 
   inline bool
-  operator!=(const error_condition& __lhs, const error_condition& __rhs)
+  operator!=(const error_condition& __lhs,
+	     const error_condition& __rhs) noexcept
   { return !(__lhs == __rhs); }
 
 
@@ -338,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     virtual ~system_error() throw();
 
     const error_code& 
-    code() const throw() { return _M_code; }
+    code() const noexcept { return _M_code; }
   };
 
 _GLIBCXX_END_NAMESPACE_VERSION
