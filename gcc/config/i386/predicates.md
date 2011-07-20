@@ -796,7 +796,7 @@
 
 ;; Return true if op if a valid address, and does not contain
 ;; a segment override.
-(define_special_predicate "no_seg_address_operand"
+(define_predicate "no_seg_address_operand"
   (match_operand 0 "address_operand")
 {
   struct ix86_address parts;

@@ -11085,8 +11085,16 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   int retval = 1;
   enum ix86_address_seg seg = SEG_DEFAULT;
 
-  if (REG_P (addr) || GET_CODE (addr) == SUBREG)
+  if (REG_P (addr))
     base = addr;
+  else if (GET_CODE (addr) == SUBREG)
+    {
+      /* Allow only subregs of DImode hard regs.  */
+      if (register_no_elim_operand (SUBREG_REG (addr), DImode))
+	base = addr;
+      else
+	return 0;
+    }
   else if (GET_CODE (addr) == PLUS)
     {
       rtx addends[4], op;
@@ -11643,8 +11651,7 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	/* Base is not a register.  */
 	return false;
 
-      if (GET_MODE (base) != Pmode)
-	/* Base is not in Pmode.  */
+      if (GET_MODE (base) != SImode && GET_MODE (base) != DImode)
 	return false;
 
       if ((strict && ! REG_OK_FOR_BASE_STRICT_P (reg))
@@ -11672,8 +11679,7 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	/* Index is not a register.  */
 	return false;
 
-      if (GET_MODE (index) != Pmode)
-	/* Index is not in Pmode.  */
+      if (GET_MODE (index) != SImode && GET_MODE (index) != DImode)
 	return false;
 
       if ((strict && ! REG_OK_FOR_INDEX_STRICT_P (reg))
