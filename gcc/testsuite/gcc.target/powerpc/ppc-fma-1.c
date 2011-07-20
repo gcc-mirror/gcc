@@ -3,16 +3,16 @@
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -ftree-vectorize -mcpu=power7 -ffast-math" } */
 /* { dg-final { scan-assembler-times "xvmadd" 4 } } */
-/* { dg-final { scan-assembler-times "xsmadd" 2 } } */
+/* { dg-final { scan-assembler-times "xsmadd\|fmadd\ " 2 } } */
 /* { dg-final { scan-assembler-times "fmadds" 2 } } */
 /* { dg-final { scan-assembler-times "xvmsub" 2 } } */
-/* { dg-final { scan-assembler-times "xsmsub" 1 } } */
+/* { dg-final { scan-assembler-times "xsmsub\|fmsub\ " 1 } } */
 /* { dg-final { scan-assembler-times "fmsubs" 1 } } */
 /* { dg-final { scan-assembler-times "xvnmadd" 2 } } */
-/* { dg-final { scan-assembler-times "xsnmadd" 1 } } */
+/* { dg-final { scan-assembler-times "xsnmadd\|fnmadd " 1 } } */
 /* { dg-final { scan-assembler-times "fnmadds" 1 } } */
 /* { dg-final { scan-assembler-times "xvnmsub" 2 } } */
-/* { dg-final { scan-assembler-times "xsnmsub" 1 } } */
+/* { dg-final { scan-assembler-times "xsnmsub\|fnmsub " 1 } } */
 /* { dg-final { scan-assembler-times "fnmsubs" 1 } } */
 
 /* All functions should generate an appropriate (a * b) + c instruction
