@@ -14865,7 +14865,7 @@ ix86_output_addr_vec_elt (FILE *file, int value)
   const char *directive = ASM_LONG;
 
 #ifdef ASM_QUAD
-  if (TARGET_64BIT)
+  if (TARGET_LP64)
     directive = ASM_QUAD;
 #else
   gcc_assert (!TARGET_64BIT);
