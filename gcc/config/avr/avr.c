@@ -5332,6 +5332,7 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED, int *total,
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case SYMBOL_REF:
       /* Immediate constants are as cheap as registers.  */
       *total = 0;
       return true;
@@ -5339,7 +5340,6 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED, int *total,
     case MEM:
     case CONST:
     case LABEL_REF:
-    case SYMBOL_REF:
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode));
       return true;
 

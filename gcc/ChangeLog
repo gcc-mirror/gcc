@@ -1,3 +1,7 @@
+2011-07-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_rtx_costs): Set cost of SYMBOL_REF to 0.
+
 2011-07-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_class_max_nregs): Fix return type.
@@ -907,7 +911,7 @@
 
 	* doc/tm.texi.in (TARGET_ASM_MERGEABLE_RODATA_PREFIX): Add hook.
 	* doc/tm.texi: Regenerate.
-	* target.def (mergeable_rodata_prefix: New defhookpod.
+	* target.def (mergeable_rodata_prefix): New defhookpod.
 	* varasm.c (mergeable_string_section, mergeable_constant_section):
 	Use it. Allocate name with alloca.
 
