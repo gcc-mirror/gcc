@@ -1759,9 +1759,7 @@ integer_all_onesp (const_tree expr)
   if (!uns)
     return 0;
 
-  /* Note that using TYPE_PRECISION here is wrong.  We care about the
-     actual bits, not the (arbitrary) range of the type.  */
-  prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (expr)));
+  prec = TYPE_PRECISION (TREE_TYPE (expr));
   if (prec >= HOST_BITS_PER_WIDE_INT)
     {
       HOST_WIDE_INT high_value;
