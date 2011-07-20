@@ -1,3 +1,19 @@
+2011-07-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_fma*): Use 4 argument fma instructions
+	where we can use them from the standard and altivec instruction
+	sets, instead of always using the 3 operand VSX forms that require
+	the destination to overlap one of the inputs.
+	(vsx_fms*): Ditto.
+	(vsx_fnma*): Ditto.
+	(vsx_fnms*): Ditto.
+
+	* config/rs6000/rs6000.md (fmadf4_fpr): Set fp_type fp_maddsub_d
+	for DF types.
+	(fmsdf4_fpr): Ditto.
+	(nfmadf4_fpr): Ditto.
+	(nfmsdf4_fpr): Ditto.
+
 2011-07-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* genrecog.c (make_insn_sequence): Correct position numbering
