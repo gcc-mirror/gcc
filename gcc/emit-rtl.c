@@ -1845,6 +1845,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
     }
 
   /* Now set the attributes we computed above.  */
+  attrs.addrspace = TYPE_ADDR_SPACE (type);
   set_mem_attrs (ref, &attrs);
 
   /* If this is already known to be a scalar or aggregate, we are done.  */
