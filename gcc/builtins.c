@@ -6263,13 +6263,22 @@ build_builtin_expect_predicate (location_t loc, tree pred, tree expected)
 static tree
 fold_builtin_expect (location_t loc, tree arg0, tree arg1)
 {
-  tree inner, fndecl;
+  tree inner, fndecl, inner_arg0;
   enum tree_code code;
+
+  /* Distribute the expected value over short-circuiting operators.
+     See through the cast from truthvalue_type_node to long.  */
+  inner_arg0 = arg0;
+  while (TREE_CODE (inner_arg0) == NOP_EXPR
+	 && INTEGRAL_TYPE_P (TREE_TYPE (inner_arg0))
+	 && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (inner_arg0, 0))))
+    inner_arg0 = TREE_OPERAND (inner_arg0, 0);
 
   /* If this is a builtin_expect within a builtin_expect keep the
      inner one.  See through a comparison against a constant.  It
      might have been added to create a thruthvalue.  */
-  inner = arg0;
+  inner = inner_arg0;
+
   if (COMPARISON_CLASS_P (inner)
       && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST)
     inner = TREE_OPERAND (inner, 0);
@@ -6280,14 +6289,7 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1)
       && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT)
     return arg0;
 
-  /* Distribute the expected value over short-circuiting operators.
-     See through the cast from truthvalue_type_node to long.  */
-  inner = arg0;
-  while (TREE_CODE (inner) == NOP_EXPR
-	 && INTEGRAL_TYPE_P (TREE_TYPE (inner))
-	 && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (inner, 0))))
-    inner = TREE_OPERAND (inner, 0);
-
+  inner = inner_arg0;
   code = TREE_CODE (inner);
   if (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
     {
@@ -6302,13 +6304,13 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1)
     }
 
   /* If the argument isn't invariant then there's nothing else we can do.  */
-  if (!TREE_CONSTANT (arg0))
+  if (!TREE_CONSTANT (inner_arg0))
     return NULL_TREE;
 
   /* If we expect that a comparison against the argument will fold to
      a constant return the constant.  In practice, this means a true
      constant or the address of a non-weak symbol.  */
-  inner = arg0;
+  inner = inner_arg0;
   STRIP_NOPS (inner);
   if (TREE_CODE (inner) == ADDR_EXPR)
     {

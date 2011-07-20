@@ -1,3 +1,8 @@
+2011-07-20  Kai Tietz  <ktietz@redhat.com>
+
+	* builtins.c (fold_builtin_expect): See through the cast
+	from truthvalue_type_node to long.
+
 2011-07-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (vsx_fma*): Use 4 argument fma instructions
