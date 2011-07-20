@@ -4648,7 +4648,8 @@ build_init_list_var_init (tree decl, tree type, tree init, tree *array_init,
    is valid, i.e., does not have a designated initializer.  */
 
 static bool
-check_array_designated_initializer (const constructor_elt *ce)
+check_array_designated_initializer (const constructor_elt *ce,
+				    unsigned HOST_WIDE_INT index)
 {
   /* Designated initializers for array elements are not supported.  */
   if (ce->index)
@@ -4659,8 +4660,13 @@ check_array_designated_initializer (const constructor_elt *ce)
 	error ("name used in a GNU-style designated "
 	       "initializer for an array");
       else if (TREE_CODE (ce->index) == INTEGER_CST)
-	/* An index added by reshape_init.  */
-	return true;
+	{
+	  /* A C99 designator is OK if it matches the current index.  */
+	  if (TREE_INT_CST_LOW (ce->index) == index)
+	    return true;
+	  else
+	    sorry ("non-trivial designated initializers not supported");
+	}
       else
 	{
 	  gcc_assert (TREE_CODE (ce->index) == IDENTIFIER_NODE);
@@ -4702,7 +4708,7 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	  constructor_elt *ce;
 	  HOST_WIDE_INT i;
 	  FOR_EACH_VEC_ELT (constructor_elt, v, i, ce)
-	    if (!check_array_designated_initializer (ce))
+	    if (!check_array_designated_initializer (ce, i))
 	      failure = 1;
 	}
 
@@ -4961,7 +4967,7 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
     {
       tree elt_init;
 
-      check_array_designated_initializer (d->cur);
+      check_array_designated_initializer (d->cur, index);
       elt_init = reshape_init_r (elt_type, d, /*first_initializer_p=*/false,
 				 complain);
       if (elt_init == error_mark_node)
