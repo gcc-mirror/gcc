@@ -2345,7 +2345,7 @@ make_insn_sequence (rtx insn, enum routine_type type)
 	  if (GET_CODE (tmp) != MATCH_SCRATCH && GET_CODE (tmp) != MATCH_DUP)
 	    {
 	      c_test_pos = next_position (pos_ptr, &root_pos,
-					  POS_PEEP2_INSN, i);
+					  POS_PEEP2_INSN, j);
 	      XVECEXP (x, 0, j) = tmp;
 	      j++;
 	      pos_ptr = &c_test_pos->next;

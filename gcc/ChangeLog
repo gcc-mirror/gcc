@@ -1,3 +1,8 @@
+2011-07-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* genrecog.c (make_insn_sequence): Correct position numbering
+	when filtering out match_scratch and match_dup.
+
 2011-07-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (remove_prop_source_from_use): Robustify
