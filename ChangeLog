@@ -1,3 +1,9 @@
+2011-07-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* Makefile.tpl (POSTSTAGE1_CONFIGURE_FLAGS): Add libsupc++ to
+	link directories.
+	* Makefile.in: Rebuild.
+
 2011-07-20  Ian Lance Taylor  <iant@google.com>
 
 	PR bootstrap/49787
