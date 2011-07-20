@@ -1,3 +1,9 @@
+2011-07-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/18908
+	* gcc.dg/tree-ssa/pr18908.c: New testcase.
+	* gcc.dg/tree-ssa/bitwise-sink.c: Adjust.
+
 2011-07-20  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gcc.target/arm/combine-movs.c: New.

@@ -1710,37 +1710,6 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
   tree def1_arg1, def2_arg1;
   enum tree_code def1_code, def2_code;
 
-  /* If the first argument is an SSA name that is itself a result of a
-     typecast of an ADDR_EXPR to an integer, feed the ADDR_EXPR to the
-     folder rather than the ssa name.  */
-  if (code == BIT_AND_EXPR
-      && TREE_CODE (arg2) == INTEGER_CST
-      && TREE_CODE (arg1) == SSA_NAME)
-    {
-      gimple def = SSA_NAME_DEF_STMT (arg1);
-      tree op = arg1;
-
-      /* ???  This looks bogus - the conversion could be truncating.  */
-      if (is_gimple_assign (def)
-	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
-	{
-	  tree opp = gimple_assign_rhs1 (def);
-	  if (TREE_CODE (opp) == ADDR_EXPR)
-	    op = opp;
-	}
-
-      res = fold_binary_loc (gimple_location (stmt),
-			     BIT_AND_EXPR, TREE_TYPE (gimple_assign_lhs (stmt)),
-			     op, arg2);
-      if (res && is_gimple_min_invariant (res))
-	{
-	  gimple_assign_set_rhs_from_tree (gsi, res);
-	  update_stmt (stmt);
-	  return true;
-	}
-    }
-
   def1_code = TREE_CODE (arg1);
   def1_arg1 = arg1;
   if (TREE_CODE (arg1) == SSA_NAME)
@@ -1858,6 +1827,17 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 			      arg2, gimple_assign_rhs2 (def1));
       gimple_assign_set_rhs1 (stmt, def1_arg1);
       gimple_assign_set_rhs2 (stmt, cst);
+      update_stmt (stmt);
+      return true;
+    }
+
+  /* Canonicalize X ^ ~0 to ~X.  */
+  if (code == BIT_XOR_EXPR
+      && TREE_CODE (arg2) == INTEGER_CST
+      && integer_all_onesp (arg2))
+    {
+      gimple_assign_set_rhs_with_ops (gsi, BIT_NOT_EXPR, arg1, NULL_TREE);
+      gcc_assert (gsi_stmt (*gsi) == stmt);
       update_stmt (stmt);
       return true;
     }
