@@ -663,6 +663,24 @@ cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
     }
 }
 
+/* Returns TRUE iff the token T begins a decltype type.  */
+
+static bool
+token_is_decltype (cp_token *t)
+{
+  return (t->keyword == RID_DECLTYPE
+	  || t->type == CPP_DECLTYPE);
+}
+
+/* Returns TRUE iff the next token begins a decltype type.  */
+
+static bool
+cp_lexer_next_token_is_decltype (cp_lexer *lexer)
+{
+  cp_token *t = cp_lexer_peek_token (lexer);
+  return token_is_decltype (t);
+}
+
 /* Return a pointer to the Nth token in the token stream.  If N is 1,
    then this is precisely equivalent to cp_lexer_peek_token (except
    that it is not inline).  One would like to disallow that case, but
@@ -4313,6 +4331,9 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
       /* A template-id can start a nested-name-specifier.  */
       else if (token->type == CPP_TEMPLATE_ID)
 	;
+      /* DR 743: decltype can be used in a nested-name-specifier.  */
+      else if (token_is_decltype (token))
+	;
       else
 	{
 	  /* If the next token is not an identifier, then it is
@@ -4386,6 +4407,28 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	     class-or-namespace-name.  */
 	  parser->scope = old_scope;
 	  parser->qualifying_scope = saved_qualifying_scope;
+
+	  /* If the next token is a decltype, and the one after that is a
+	     `::', then the decltype has failed to resolve to a class or
+	     enumeration type.  Give this error even when parsing
+	     tentatively since it can't possibly be valid--and we're going
+	     to replace it with a CPP_NESTED_NAME_SPECIFIER below, so we
+	     won't get another chance.*/
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_DECLTYPE)
+	      && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
+		  == CPP_SCOPE))
+	    {
+	      token = cp_lexer_consume_token (parser->lexer);
+	      error_at (token->location, "decltype evaluates to %qT, "
+			"which is not a class or enumeration type",
+			token->u.value);
+	      parser->scope = error_mark_node;
+	      error_p = true;
+	      /* As below.  */
+	      success = true;
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+
 	  if (cp_parser_uncommitted_to_tentative_parse_p (parser))
 	    break;
 	  /* If the next token is an identifier, and the one after
@@ -4584,6 +4627,19 @@ cp_parser_qualifying_entity (cp_parser *parser,
   tree scope;
   bool only_class_p;
   bool successful_parse_p;
+
+  /* DR 743: decltype can appear in a nested-name-specifier.  */
+  if (cp_lexer_next_token_is_decltype (parser->lexer))
+    {
+      scope = cp_parser_decltype (parser);
+      if (TREE_CODE (scope) != ENUMERAL_TYPE
+	  && !MAYBE_CLASS_TYPE_P (scope))
+	{
+	  cp_parser_simulate_error (parser);
+	  return error_mark_node;
+	}
+      return TYPE_NAME (scope);
+    }
 
   /* Before we try to parse the class-name, we must save away the
      current PARSER->SCOPE since cp_parser_class_name will destroy
@@ -10197,6 +10253,14 @@ cp_parser_decltype (cp_parser *parser)
   bool saved_integral_constant_expression_p;
   bool saved_non_integral_constant_expression_p;
   cp_token *id_expr_start_token;
+  cp_token *start_token = cp_lexer_peek_token (parser->lexer);
+
+  if (start_token->type == CPP_DECLTYPE)
+    {
+      /* Already parsed.  */
+      cp_lexer_consume_token (parser->lexer);
+      return start_token->u.value;
+    }
 
   /* Look for the `decltype' token.  */
   if (!cp_parser_require_keyword (parser, RID_DECLTYPE, RT_DECLTYPE))
@@ -10350,14 +10414,6 @@ cp_parser_decltype (cp_parser *parser)
   parser->non_integral_constant_expression_p
     = saved_non_integral_constant_expression_p;
 
-  if (expr == error_mark_node)
-    {
-      /* Skip everything up to the closing `)'.  */
-      cp_parser_skip_to_closing_parenthesis (parser, true, false,
-                                             /*consume_paren=*/true);
-      return error_mark_node;
-    }
-  
   /* Parse to the closing `)'.  */
   if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
     {
@@ -10366,8 +10422,17 @@ cp_parser_decltype (cp_parser *parser)
       return error_mark_node;
     }
 
-  return finish_decltype_type (expr, id_expression_or_member_access_p,
+  expr = finish_decltype_type (expr, id_expression_or_member_access_p,
 			       tf_warning_or_error);
+
+  /* Replace the decltype with a CPP_DECLTYPE so we don't need to parse
+     it again.  */
+  start_token->type = CPP_DECLTYPE;
+  start_token->u.value = expr;
+  start_token->keyword = RID_MAX;
+  cp_lexer_purge_tokens_after (parser->lexer, start_token);
+
+  return expr;
 }
 
 /* Special member functions [gram.special] */
@@ -12679,15 +12744,13 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       break;
 
     case RID_DECLTYPE:
-      /* Parse the `decltype' type.  */
-      type = cp_parser_decltype (parser);
-
-      if (decl_specs)
-	cp_parser_set_decl_spec_type (decl_specs, type,
-				      token->location,
-				      /*user_defined_p=*/true);
-
-      return type;
+      /* Since DR 743, decltype can either be a simple-type-specifier by
+	 itself or begin a nested-name-specifier.  Parsing it will replace
+	 it with a CPP_DECLTYPE, so just rewind and let the CPP_DECLTYPE
+	 handling below decide what to do.  */
+      cp_parser_decltype (parser);
+      cp_lexer_set_token_position (parser->lexer, token);
+      break;
 
     case RID_TYPEOF:
       /* Consume the `typeof' token.  */
@@ -12717,6 +12780,20 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
     default:
       break;
+    }
+
+  /* If token is an already-parsed decltype not followed by ::,
+     it's a simple-type-specifier.  */
+  if (token->type == CPP_DECLTYPE
+      && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_SCOPE)
+    {
+      type = token->u.value;
+      if (decl_specs)
+	cp_parser_set_decl_spec_type (decl_specs, type,
+				      token->location,
+				      /*user_defined_p=*/true);
+      cp_lexer_consume_token (parser->lexer);
+      return type;
     }
 
   /* If the type-specifier was for a built-in type, we're done.  */
@@ -18232,12 +18309,11 @@ cp_parser_base_clause (cp_parser* parser)
         }
 
       /* Add BASE to the front of the list.  */
-      if (base != error_mark_node)
+      if (base && base != error_mark_node)
 	{
           if (pack_expansion_p)
             /* Make this a pack expansion type. */
             TREE_VALUE (base) = make_pack_expansion (TREE_VALUE (base));
-          
 
           if (!check_for_bare_parameter_packs (TREE_VALUE (base)))
             {
@@ -18379,19 +18455,27 @@ cp_parser_base_specifier (cp_parser* parser)
   class_scope_p = (parser->scope && TYPE_P (parser->scope));
   template_p = class_scope_p && cp_parser_optional_template_keyword (parser);
 
-  /* Finally, look for the class-name.  */
-  type = cp_parser_class_name (parser,
-			       class_scope_p,
-			       template_p,
-			       typename_type,
-			       /*check_dependency_p=*/true,
-			       /*class_head_p=*/false,
-			       /*is_declaration=*/true);
+  if (!parser->scope
+      && cp_lexer_next_token_is_decltype (parser->lexer))
+    /* DR 950 allows decltype as a base-specifier.  */
+    type = cp_parser_decltype (parser);
+  else
+    {
+      /* Otherwise, look for the class-name.  */
+      type = cp_parser_class_name (parser,
+				   class_scope_p,
+				   template_p,
+				   typename_type,
+				   /*check_dependency_p=*/true,
+				   /*class_head_p=*/false,
+				   /*is_declaration=*/true);
+      type = TREE_TYPE (type);
+    }
 
   if (type == error_mark_node)
     return error_mark_node;
 
-  return finish_base_specifier (TREE_TYPE (type), access, virtual_p);
+  return finish_base_specifier (type, access, virtual_p);
 }
 
 /* Exception handling [gram.exception] */

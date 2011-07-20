@@ -1,3 +1,12 @@
+2011-07-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/6709 (DR 743)
+	PR c++/42603 (DR 950)
+	* c-common.h (CPP_KEYWORD, CPP_TEMPLATE_ID): Move from cp/parser.h.
+	(CPP_NESTED_NAME_SPECIFIER, N_CP_TTYPES): Likewise.
+	(CPP_DECLTYPE): New.
+	* c-common.c (c_parse_error): Handle CPP_DECLTYPE.
+
 2011-07-19  Richard Guenther  <rguenther@suse.de>
 
 	* c-common.c (pointer_int_sum): Use fold_build_pointer_plus.
