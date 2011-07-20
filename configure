@@ -749,6 +749,7 @@ enable_libquadmath_support
 enable_libada
 enable_libssp
 enable_static_libjava
+enable_bootstrap
 enable_build_with_cxx
 enable_build_poststage1_with_cxx
 with_mpc
@@ -781,7 +782,6 @@ enable_stage1_languages
 enable_objc_gc
 with_build_sysroot
 with_debug_prefix_map
-enable_bootstrap
 with_build_config
 enable_serial_configure
 with_build_time_tools
@@ -1466,6 +1466,7 @@ Optional Features:
   --enable-libssp         build libssp directory
   --enable-static-libjava[=ARG]
                           build static libjava [default=no]
+  --enable-bootstrap      enable bootstrapping [yes if native build]
   --enable-build-with-cxx build with C++ compiler instead of C compiler
   --enable-build-poststage1-with-cxx
                           build stages 2 and 3 with C++, not C
@@ -1482,7 +1483,6 @@ Optional Features:
                           Mostly useful for compiler development
   --enable-objc-gc        enable use of Boehm's garbage collector with the GNU
                           Objective-C runtime
-  --enable-bootstrap      enable bootstrapping [yes if native build]
   --enable-serial-[{host,target,build}-]configure
                           force sequential configuration of sub-packages for
                           the host, target or build machine, or all
@@ -4983,6 +4983,52 @@ do_compare="$gcc_cv_prog_cmp_skip"
 
 
 
+# Check whether --enable-bootstrap was given.
+if test "${enable_bootstrap+set}" = set; then :
+  enableval=$enable_bootstrap;
+else
+  enable_bootstrap=default
+fi
+
+
+# Issue errors and warnings for invalid/strange bootstrap combinations.
+case "$configdirs" in
+  *gcc*) have_compiler=yes ;;
+  *) have_compiler=no ;;
+esac
+
+case "$have_compiler:$host:$target:$enable_bootstrap" in
+  *:*:*:no) ;;
+
+  # Default behavior.  Enable bootstrap if we have a compiler
+  # and we are in a native configuration.
+  yes:$build:$build:default)
+    enable_bootstrap=yes ;;
+
+  *:*:*:default)
+    enable_bootstrap=no ;;
+
+  # We have a compiler and we are in a native configuration, bootstrap is ok
+  yes:$build:$build:yes)
+    ;;
+
+  # Other configurations, but we have a compiler.  Assume the user knows
+  # what he's doing.
+  yes:*:*:yes)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: trying to bootstrap a cross compiler" >&5
+$as_echo "$as_me: WARNING: trying to bootstrap a cross compiler" >&2;}
+    ;;
+
+  # No compiler: if they passed --enable-bootstrap explicitly, fail
+  no:*:*:yes)
+    as_fn_error "cannot bootstrap without a compiler" "$LINENO" 5 ;;
+
+  # Fail if wrong command line
+  *)
+    as_fn_error "invalid option for --enable-bootstrap" "$LINENO" 5
+    ;;
+esac
+
 # See if we are building gcc with C++.
 # Check whether --enable-build-with-cxx was given.
 if test "${enable_build_with_cxx+set}" = set; then :
@@ -6105,6 +6151,19 @@ if test -d ${srcdir}/gcc; then
       ;;
   esac
 
+  # If bootstrapping, then using --enable-build-with-cxx or
+  # --enable-build-poststage1-with-cxx requires enabling C++.
+  case ",$enable_languages,:,$ENABLE_BUILD_WITH_CXX,$ENABLE_BUILD_POSTSTAGE1_WITH_CXX,:$enable_bootstrap" in
+    *,c++,*:*:*) ;;
+    *:*,yes,*:yes)
+      if test -f ${srcdir}/gcc/cp/config-lang.in; then
+        enable_languages="${enable_languages},c++"
+      else
+        as_fn_error "bootstrapping with --enable-build-with-cxx or --enable-build-poststage1-with-cxx requires c++ sources" "$LINENO" 5
+      fi
+      ;;
+  esac
+
   # First scan to see if an enabled language requires some other language.
   # We assume that a given config-lang.in will list all the language
   # front ends it requires, even if some are required indirectly.
@@ -6905,59 +6964,6 @@ INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 # the substitutions up that way, but only to remain below the limit of
 # 99 commands in a script, for HP-UX sed.
 # Do not nest @if/@endif pairs, because configure will not warn you at all.
-
-# Check whether --enable-bootstrap was given.
-if test "${enable_bootstrap+set}" = set; then :
-  enableval=$enable_bootstrap;
-else
-  enable_bootstrap=default
-fi
-
-
-# Issue errors and warnings for invalid/strange bootstrap combinations.
-case "$configdirs" in
-  *gcc*) have_compiler=yes ;;
-  *) have_compiler=no ;;
-esac
-
-case "$have_compiler:$host:$target:$enable_bootstrap" in
-  *:*:*:no) ;;
-
-  # Default behavior.  Enable bootstrap if we have a compiler
-  # and we are in a native configuration.
-  yes:$build:$build:default)
-    enable_bootstrap=yes ;;
-
-  *:*:*:default)
-    enable_bootstrap=no ;;
-
-  # We have a compiler and we are in a native configuration, bootstrap is ok
-  yes:$build:$build:yes)
-    ;;
-
-  # Other configurations, but we have a compiler.  Assume the user knows
-  # what he's doing.
-  yes:*:*:yes)
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: trying to bootstrap a cross compiler" >&5
-$as_echo "$as_me: WARNING: trying to bootstrap a cross compiler" >&2;}
-    ;;
-
-  # No compiler: if they passed --enable-bootstrap explicitly, fail
-  no:*:*:yes)
-    as_fn_error "cannot bootstrap without a compiler" "$LINENO" 5 ;;
-
-  # Fail if wrong command line
-  *)
-    as_fn_error "invalid option for --enable-bootstrap" "$LINENO" 5
-    ;;
-esac
-
-case ",$enable_languages,:,$ENABLE_BUILD_WITH_CXX,$ENABLE_BUILD_POSTSTAGE1_WITH_CXX,:$enable_bootstrap" in
-  *,c++,*:*:*) ;;
-  *:*,yes,*:yes)
-    as_fn_error "bootstrapping with --enable-build-with-cxx or --enable-build-postage1-with-cxx requires c++ in --enable-languages" "$LINENO" 5
-    ;;
-esac
 
 case "$enable_bootstrap:$ENABLE_GOLD: $configdirs :,$stage1_languages," in
   yes:yes:*\ gold\ *:*,c++,*) ;;

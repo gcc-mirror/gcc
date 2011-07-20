@@ -1,3 +1,11 @@
+2011-07-20  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/49787
+	* configure.ac: Move --enable-bootstrap handling earlier in file.
+	If --enable-bootstrap and either --enable-build-with-cxx or
+	--enable-build-poststage1-with-cxx, enable C++ automatically.
+	* configure: Rebuild.
+
 2011-07-19  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Add --enable-build-poststage1-with-cxx.  If set,
