@@ -41,7 +41,7 @@ extern void s390_function_profiler (FILE *, int);
 extern void s390_set_has_landing_pad_p (bool);
 extern bool s390_hard_regno_mode_ok (unsigned int, enum machine_mode);
 extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
-extern bool s390_class_max_nregs (enum reg_class, enum machine_mode);
+extern int s390_class_max_nregs (enum reg_class, enum machine_mode);
 
 #ifdef RTX_CODE
 extern int s390_extra_constraint_str (rtx, int, const char *);

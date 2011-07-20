@@ -1,3 +1,8 @@
+2011-07-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_class_max_nregs): Fix return type.
+	* config/s390/s390-protos.h (s390_class_max_nregs): Likewise.
+
 2011-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/49768

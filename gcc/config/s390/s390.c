@@ -7648,7 +7648,7 @@ s390_hard_regno_rename_ok (unsigned int old_reg, unsigned int new_reg)
 /* Maximum number of registers to represent a value of mode MODE
    in a register of class RCLASS.  */
 
-bool
+int
 s390_class_max_nregs (enum reg_class rclass, enum machine_mode mode)
 {
   switch (rclass)
