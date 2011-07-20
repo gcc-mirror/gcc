@@ -73,6 +73,16 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 7)")))
 
+;; Return 1 if OP is constant integer 2..7 for MODE.
+(define_predicate "const_2_to_7_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 2, 7)")))
+
+;; Return 1 if OP is constant integer 2..6 for MODE.
+(define_predicate "const_2_to_6_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 2, 6)")))
+
 ;; Returns true if OP is either the constant zero or a register.
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "register_operand")
@@ -156,3 +166,26 @@
   (and (match_code "const_int")
        (match_test "8 == INTVAL(op) || 16 == INTVAL(op) || 24 == INTVAL(op)")))
 
+;; Unsigned CONST_INT that fits in 8 bits, i.e. 0..255.
+(define_predicate "u8_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 255)")))
+
+;; Signed CONST_INT that fits in 8 bits, i.e. -128..127.
+(define_predicate "s8_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -128, 127)")))
+
+;; One-extended CONST_INT that fits in 8 bits, i.e. -256..-1.
+(define_predicate "o8_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -256, -1)")))
+
+;; Signed CONST_INT that fits in 9 bits, i.e. -256..255.
+(define_predicate "s9_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -256, 255)")))
+
+(define_predicate "register_or_s9_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "s9_operand")))
