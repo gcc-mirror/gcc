@@ -1,3 +1,8 @@
+2011-07-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/arm/arm.c (arm_canonicalize_comparison): Add case to
+	canonicalize left operand from ZERO_EXTEND to AND.
+
 2011-07-20  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.def (class_max_nregs): New hook.
