@@ -1,7 +1,15 @@
+2011-07-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49780
+	* config/i386/predicates.md (no_seg_addres_operand): No more special.
+	* config/i386/i386.c (ix86_decompose_address): Allow only subregs
+	of DImode hard registers in base.
+	(ix86_legitimate_address_p): Allow SImode and DImode base and index
+	registers.
+
 2011-07-20  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-structalias.c (new_var_info): Allocate oldsolution
-	lazily.
+	* tree-ssa-structalias.c (new_var_info): Allocate oldsolution lazily.
 	(unify_nodes): Deal with that.
 	(solve_graph): Likewise.
 
@@ -91,8 +99,8 @@
 	(GNU_USER_LINK_EMULATION32, GNU_USER_LINK_EMULATION64)
 	(GNU_USER_LINK_EMULATIONN32): New macros.
 
-	* config.gcc (mips64*-*-linux* | mipsisa64*-*-linux* |
-	mips-*-linux*): Use the new headers.
+	* config.gcc (mips64*-*-linux* | mipsisa64*-*-linux* | mips-*-linux*):
+	Use the new headers.
 
 2011-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
