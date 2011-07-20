@@ -12,6 +12,8 @@
 	* parser.h (CPP_KEYWORD, CPP_TEMPLATE_ID): Move to c-common.h.
 	(CPP_NESTED_NAME_SPECIFIER, N_CP_TTYPES): Likewise.
 
+2011-07-19  Jason Merrill  <jason@redhat.com>
+
 	PR c++/49785
 	* pt.c (coerce_template_parms): Handle non-pack after pack.
 
