@@ -1,3 +1,7 @@
+2011-07-20  Robert Millan  <rmh@gnu.org>
+
+	* config.gcc (mips*-*-linux*): Remove redundant tm_file entry.
+
 2011-07-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* bb-reorder.c (fix_crossing_conditional_branches): Fix crash by
