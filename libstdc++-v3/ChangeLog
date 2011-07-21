@@ -1,9 +1,16 @@
 2011-07-20  Benjamin Kosnik  <bkoz@redhat.com>
 	    Daniel Krugler  <daniel.kruegler@googlemail.com>
 
+	* include/std/array (array::at, array::operator[]): Mark constexpr.
+	* testsuite/23_containers/array/requirements/
+	constexpr_element_access.cc: Add.
+
+2011-07-20  Benjamin Kosnik  <bkoz@redhat.com>
+	    Daniel Krugler  <daniel.kruegler@googlemail.com>
+
 	* include/std/chrono: (system_clock::is_steady): Update to N3291
 	from is_monotonic.
-	(time_point): Add constexpr to nonmember arithmetic operators.
+	(time_point): Mark nonmember arithmetic operators constexpr.
 	* src/chrono.cc: Modify for above.
 	* src/compatibility-c++0x.cc: Same.
 	* testsuite/20_util/time_point/nonmember/constexpr.cc: New.
