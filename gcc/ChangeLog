@@ -1,5 +1,13 @@
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (max_signed_precision_type): Removed.
+	(max_precision_type): Inline max_signed_precision_type.
+	(type_for_clast_red): Use max_precision_type.
+	(type_for_clast_bin): Same.
+	(type_for_clast_for): Same.
+
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (gcc_type_for_interval): Renamed
 	type_for_interval.
 	(gcc_type_for_value): Renamed type_for_value.
