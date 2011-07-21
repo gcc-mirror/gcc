@@ -1,3 +1,10 @@
+2011-07-21  Jason Merrill  <jason@redhat.com>
+
+	* system.h (HAVE_DESIGNATED_UNION_INITIALIZERS): New.
+	* recog.h (struct insn_data_d): Check it instead of
+	HAVE_DESIGNATED_INITIALIZERS.
+	* genoutput.c (output_insn_data): Likewise.
+
 2011-07-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49770

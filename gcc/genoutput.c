@@ -340,7 +340,7 @@ output_insn_data (void)
       switch (d->output_format)
 	{
 	case INSN_OUTPUT_FORMAT_NONE:
-	  printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	  printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
 	  printf ("    { 0 },\n");
 	  printf ("#else\n");
 	  printf ("    { 0, 0, 0 },\n");
@@ -351,7 +351,7 @@ output_insn_data (void)
 	    const char *p = d->template_code;
 	    char prev = 0;
 
-	    printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	    printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
 	    printf ("    { .single =\n");
 	    printf ("#else\n");
 	    printf ("    {\n");
@@ -372,7 +372,7 @@ output_insn_data (void)
 		++p;
 	      }
 	    printf ("\",\n");
-	    printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	    printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
 	    printf ("    },\n");
 	    printf ("#else\n");
 	    printf ("    0, 0 },\n");
@@ -380,14 +380,14 @@ output_insn_data (void)
 	  }
 	  break;
 	case INSN_OUTPUT_FORMAT_MULTI:
-	  printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	  printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
 	  printf ("    { .multi = output_%d },\n", d->code_number);
 	  printf ("#else\n");
 	  printf ("    { 0, output_%d, 0 },\n", d->code_number);
 	  printf ("#endif\n");
 	  break;
 	case INSN_OUTPUT_FORMAT_FUNCTION:
-	  printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	  printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
 	  printf ("    { .function = output_%d },\n", d->code_number);
 	  printf ("#else\n");
 	  printf ("    { 0, 0, output_%d },\n", d->code_number);

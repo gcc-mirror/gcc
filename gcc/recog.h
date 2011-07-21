@@ -286,7 +286,7 @@ struct insn_operand_data
 struct insn_data_d
 {
   const char *const name;
-#if HAVE_DESIGNATED_INITIALIZERS
+#if HAVE_DESIGNATED_UNION_INITIALIZERS
   union {
     const char *single;
     const char *const *multi;
