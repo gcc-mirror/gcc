@@ -1146,29 +1146,51 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 
 /* Transform any SSA_NAME's in a vector of vn_reference_op_s
    structures into their value numbers.  This is done in-place, and
-   the vector passed in is returned.  */
+   the vector passed in is returned.  *VALUEIZED_ANYTHING will specify
+   whether any operands were valueized.  */
 
 static VEC (vn_reference_op_s, heap) *
-valueize_refs (VEC (vn_reference_op_s, heap) *orig)
+valueize_refs_1 (VEC (vn_reference_op_s, heap) *orig, bool *valueized_anything)
 {
   vn_reference_op_t vro;
   unsigned int i;
+
+  *valueized_anything = false;
 
   FOR_EACH_VEC_ELT (vn_reference_op_s, orig, i, vro)
     {
       if (vro->opcode == SSA_NAME
 	  || (vro->op0 && TREE_CODE (vro->op0) == SSA_NAME))
 	{
-	  vro->op0 = SSA_VAL (vro->op0);
+	  tree tem = SSA_VAL (vro->op0);
+	  if (tem != vro->op0)
+	    {
+	      *valueized_anything = true;
+	      vro->op0 = tem;
+	    }
 	  /* If it transforms from an SSA_NAME to a constant, update
 	     the opcode.  */
 	  if (TREE_CODE (vro->op0) != SSA_NAME && vro->opcode == SSA_NAME)
 	    vro->opcode = TREE_CODE (vro->op0);
 	}
       if (vro->op1 && TREE_CODE (vro->op1) == SSA_NAME)
-	vro->op1 = SSA_VAL (vro->op1);
+	{
+	  tree tem = SSA_VAL (vro->op1);
+	  if (tem != vro->op1)
+	    {
+	      *valueized_anything = true;
+	      vro->op1 = tem;
+	    }
+	}
       if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
-	vro->op2 = SSA_VAL (vro->op2);
+	{
+	  tree tem = SSA_VAL (vro->op2);
+	  if (tem != vro->op2)
+	    {
+	      *valueized_anything = true;
+	      vro->op2 = tem;
+	    }
+	}
       /* If it transforms from an SSA_NAME to an address, fold with
 	 a preceding indirect reference.  */
       if (i > 0
@@ -1203,20 +1225,29 @@ valueize_refs (VEC (vn_reference_op_s, heap) *orig)
   return orig;
 }
 
+static VEC (vn_reference_op_s, heap) *
+valueize_refs (VEC (vn_reference_op_s, heap) *orig)
+{
+  bool tem;
+  return valueize_refs_1 (orig, &tem);
+}
+
 static VEC(vn_reference_op_s, heap) *shared_lookup_references;
 
 /* Create a vector of vn_reference_op_s structures from REF, a
    REFERENCE_CLASS_P tree.  The vector is shared among all callers of
-   this function.  */
+   this function.  *VALUEIZED_ANYTHING will specify whether any
+   operands were valueized.  */
 
 static VEC(vn_reference_op_s, heap) *
-valueize_shared_reference_ops_from_ref (tree ref)
+valueize_shared_reference_ops_from_ref (tree ref, bool *valueized_anything)
 {
   if (!ref)
     return NULL;
   VEC_truncate (vn_reference_op_s, shared_lookup_references, 0);
   copy_reference_ops_from_ref (ref, &shared_lookup_references);
-  shared_lookup_references = valueize_refs (shared_lookup_references);
+  shared_lookup_references = valueize_refs_1 (shared_lookup_references,
+					      valueized_anything);
   return shared_lookup_references;
 }
 
@@ -1694,12 +1725,14 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   VEC (vn_reference_op_s, heap) *operands;
   struct vn_reference_s vr1;
   tree cst;
+  bool valuezied_anything;
 
   if (vnresult)
     *vnresult = NULL;
 
   vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
-  vr1.operands = operands = valueize_shared_reference_ops_from_ref (op);
+  vr1.operands = operands
+    = valueize_shared_reference_ops_from_ref (op, &valuezied_anything);
   vr1.type = TREE_TYPE (op);
   vr1.set = get_alias_set (op);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
@@ -1711,12 +1744,12 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
     {
       vn_reference_t wvnresult;
       ao_ref r;
-      /* Make sure to use a valueized reference ...  */
-      if (!ao_ref_init_from_vn_reference (&r, vr1.set, vr1.type, vr1.operands))
+      /* Make sure to use a valueized reference if we valueized anything.
+         Otherwise preserve the full reference for advanced TBAA.  */
+      if (!valuezied_anything
+	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.type,
+					     vr1.operands))
 	ao_ref_init (&r, op);
-      else
-	/* ... but also preserve a full reference tree for advanced TBAA.  */
-	r.ref = op;
       vn_walk_kind = kind;
       wvnresult =
 	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,

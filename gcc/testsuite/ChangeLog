@@ -1,3 +1,8 @@
+2011-07-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49770
+	* g++.dg/torture/pr49770.C: New testcase.
+
 2011-07-21  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.dg/tree-ssa/pr30978.c: adjusted.
