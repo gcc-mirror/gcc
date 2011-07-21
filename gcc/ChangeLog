@@ -1,5 +1,21 @@
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (gcc_type_for_interval): Renamed
+	type_for_interval.
+	(gcc_type_for_value): Renamed type_for_value.
+	(gcc_type_for_clast_term): Renamed type_for_clast_term.
+	(gcc_type_for_clast_expr): Renamed type_for_clast_expr.
+	(gcc_type_for_clast_red): Renamed type_for_clast_red.
+	(gcc_type_for_clast_bin): Renamed type_for_clast_bin.
+	(gcc_type_for_clast_eq): Renamed type_for_clast_eq.
+	(graphite_translate_clast_equation): Update calls.
+	(compute_type_for_level): Renamed type_for_level.
+	(gcc_type_for_iv_of_clast_loop): Renamed type_for_clast_for.
+	(build_iv_mapping): Update calls.
+	(graphite_create_new_loop_guard): Same.
+
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (clast_get_body_of_loop): Add fixme
 	comment.
 

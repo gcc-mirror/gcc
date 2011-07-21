@@ -398,7 +398,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e, ivs_params_p ip)
 /* Return a type that could represent the values between V1 and V2.  */
 
 static tree
-gcc_type_for_interval (mpz_t v1, mpz_t v2)
+type_for_interval (mpz_t v1, mpz_t v2)
 {
   bool unsigned_p;
   tree type;
@@ -434,48 +434,46 @@ gcc_type_for_interval (mpz_t v1, mpz_t v2)
    otherwise return NULL_TREE.  */
 
 static tree
-gcc_type_for_value (mpz_t val)
+type_for_value (mpz_t val)
 {
-  return gcc_type_for_interval (val, val);
+  return type_for_interval (val, val);
 }
 
 /* Return the type for the clast_term T used in STMT.  */
 
 static tree
-gcc_type_for_clast_term (struct clast_term *t,
-			 ivs_params_p ip)
+type_for_clast_term (struct clast_term *t, ivs_params_p ip)
 {
   gcc_assert (t->expr.type == clast_expr_term);
 
   if (!t->var)
-    return gcc_type_for_value (t->val);
+    return type_for_value (t->val);
 
   return TREE_TYPE (clast_name_to_gcc (t->var, ip));
 }
 
 static tree
-gcc_type_for_clast_expr (struct clast_expr *, ivs_params_p);
+type_for_clast_expr (struct clast_expr *, ivs_params_p);
 
 /* Return the type for the clast_reduction R used in STMT.  */
 
 static tree
-gcc_type_for_clast_red (struct clast_reduction *r,
-			ivs_params_p ip)
+type_for_clast_red (struct clast_reduction *r, ivs_params_p ip)
 {
   int i;
   tree type = NULL_TREE;
 
   if (r->n == 1)
-    return gcc_type_for_clast_expr (r->elts[0], ip);
+    return type_for_clast_expr (r->elts[0], ip);
 
   switch (r->type)
     {
     case clast_red_sum:
     case clast_red_min:
     case clast_red_max:
-      type = gcc_type_for_clast_expr (r->elts[0], ip);
+      type = type_for_clast_expr (r->elts[0], ip);
       for (i = 1; i < r->n; i++)
-	type = max_precision_type (type, gcc_type_for_clast_expr
+	type = max_precision_type (type, type_for_clast_expr
 				   (r->elts[i], ip));
 
       return type;
@@ -491,10 +489,10 @@ gcc_type_for_clast_red (struct clast_reduction *r,
 /* Return the type for the clast_binary B used in STMT.  */
 
 static tree
-gcc_type_for_clast_bin (struct clast_binary *b, ivs_params_p ip)
+type_for_clast_bin (struct clast_binary *b, ivs_params_p ip)
 {
-  tree l = gcc_type_for_clast_expr ((struct clast_expr *) b->LHS, ip);
-  tree r = gcc_type_for_value (b->RHS);
+  tree l = type_for_clast_expr ((struct clast_expr *) b->LHS, ip);
+  tree r = type_for_value (b->RHS);
   return max_signed_precision_type (l, r);
 }
 
@@ -502,19 +500,18 @@ gcc_type_for_clast_bin (struct clast_binary *b, ivs_params_p ip)
    STMT.  */
 
 static tree
-gcc_type_for_clast_expr (struct clast_expr *e,
-			 ivs_params_p ip)
+type_for_clast_expr (struct clast_expr *e, ivs_params_p ip)
 {
   switch (e->type)
     {
     case clast_expr_term:
-      return gcc_type_for_clast_term ((struct clast_term *) e, ip);
+      return type_for_clast_term ((struct clast_term *) e, ip);
 
     case clast_expr_red:
-      return gcc_type_for_clast_red ((struct clast_reduction *) e, ip);
+      return type_for_clast_red ((struct clast_reduction *) e, ip);
 
     case clast_expr_bin:
-      return gcc_type_for_clast_bin ((struct clast_binary *) e, ip);
+      return type_for_clast_bin ((struct clast_binary *) e, ip);
 
     default:
       gcc_unreachable ();
@@ -526,11 +523,10 @@ gcc_type_for_clast_expr (struct clast_expr *e,
 /* Returns the type for the equation CLEQ.  */
 
 static tree
-gcc_type_for_clast_eq (struct clast_equation *cleq,
-		       ivs_params_p ip)
+type_for_clast_eq (struct clast_equation *cleq, ivs_params_p ip)
 {
-  tree l = gcc_type_for_clast_expr (cleq->LHS, ip);
-  tree r = gcc_type_for_clast_expr (cleq->RHS, ip);
+  tree l = type_for_clast_expr (cleq->LHS, ip);
+  tree r = type_for_clast_expr (cleq->RHS, ip);
   return max_precision_type (l, r);
 }
 
@@ -541,7 +537,7 @@ graphite_translate_clast_equation (struct clast_equation *cleq,
 				   ivs_params_p ip)
 {
   enum tree_code comp;
-  tree type = gcc_type_for_clast_eq (cleq, ip);
+  tree type = type_for_clast_eq (cleq, ip);
   tree lhs = clast_to_gcc_expression (type, cleq->LHS, ip);
   tree rhs = clast_to_gcc_expression (type, cleq->RHS, ip);
 
@@ -623,7 +619,7 @@ compute_bounds_for_level (poly_bb_p pbb, int level, mpz_t low, mpz_t up)
    statement PBB, based on the transformed schedule of PBB.  */
 
 static tree
-compute_type_for_level (poly_bb_p pbb, int level)
+type_for_level (poly_bb_p pbb, int level)
 {
   mpz_t low, up;
   tree type;
@@ -632,7 +628,7 @@ compute_type_for_level (poly_bb_p pbb, int level)
   mpz_init (up);
 
   compute_bounds_for_level (pbb, level, low, up);
-  type = gcc_type_for_interval (low, up);
+  type = type_for_interval (low, up);
 
   mpz_clear (low);
   mpz_clear (up);
@@ -682,17 +678,18 @@ clast_get_body_of_loop (struct clast_stmt *stmt)
    from STMT_FOR.  */
 
 static tree
-gcc_type_for_iv_of_clast_loop (struct clast_for *stmt_for, int level,
-			       tree lb_type, tree ub_type)
+type_for_clast_for (struct clast_for *stmt_for, int level,
+		    ivs_params_p ip)
 {
   struct clast_stmt *stmt = (struct clast_stmt *) stmt_for;
   struct clast_user_stmt *body = clast_get_body_of_loop (stmt);
   CloogStatement *cs = body->statement;
   poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
+  tree lb_type = type_for_clast_expr (stmt_for->LB, ip);
+  tree ub_type = type_for_clast_expr (stmt_for->UB, ip);
 
   return max_signed_precision_type (lb_type, max_precision_type
-				    (ub_type, compute_type_for_level
-				     (pbb, level)));
+				    (ub_type, type_for_level (pbb, level)));
 }
 
 /* Creates a new LOOP corresponding to Cloog's STMT.  Inserts an
@@ -740,7 +737,7 @@ build_iv_mapping (VEC (tree, heap) *iv_map, struct clast_user_stmt *user_stmt,
     {
       struct clast_expr *expr = (struct clast_expr *)
        ((struct clast_assignment *)t)->RHS;
-      tree type = gcc_type_for_clast_expr (expr, ip);
+      tree type = type_for_clast_expr (expr, ip);
       tree new_name = clast_to_gcc_expression (type, expr, ip);
       loop_p old_loop = gbb_loop_at_index (gbb, ip->region, depth);
 
@@ -877,10 +874,8 @@ graphite_create_new_loop_guard (edge entry_edge, struct clast_for *stmt,
 {
   tree cond_expr;
   edge exit_edge;
-  tree lb_type = gcc_type_for_clast_expr (stmt->LB, ip);
-  tree ub_type = gcc_type_for_clast_expr (stmt->UB, ip);
 
-  *type = gcc_type_for_iv_of_clast_loop (stmt, level, lb_type, ub_type);
+  *type = type_for_clast_for (stmt, level, ip);
   *lb = clast_to_gcc_expression (*type, stmt->LB, ip);
   *ub = clast_to_gcc_expression (*type, stmt->UB, ip);
 
