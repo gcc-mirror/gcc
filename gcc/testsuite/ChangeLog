@@ -1,3 +1,8 @@
+2011-07-21  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/49705
+	* gcc.dg/pr49705.c: New test.
+
 2011-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp (check_avx_os_support_available): New.
