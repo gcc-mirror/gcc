@@ -7078,6 +7078,11 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
 	  return gen_rtx_REG (mode, AX_REG);
 	}
     }
+  else if (POINTER_TYPE_P (valtype))
+    {
+      /* Pointers are always returned in Pmode. */
+      mode = Pmode;
+    }
 
   ret = construct_container (mode, orig_mode, valtype, 1,
 			     X86_64_REGPARM_MAX, X86_64_SSE_REGPARM_MAX,
@@ -7145,6 +7150,22 @@ ix86_function_value (const_tree valtype, const_tree fntype_or_decl,
   orig_mode = TYPE_MODE (valtype);
   mode = type_natural_mode (valtype, NULL);
   return ix86_function_value_1 (valtype, fntype_or_decl, orig_mode, mode);
+}
+
+/* Pointer function arguments and return values are promoted to Pmode.  */
+
+static enum machine_mode
+ix86_promote_function_mode (const_tree type, enum machine_mode mode,
+			    int *punsignedp, const_tree fntype,
+			    int for_return)
+{
+  if (type != NULL_TREE && POINTER_TYPE_P (type))
+    {
+      *punsignedp = POINTERS_EXTEND_UNSIGNED;
+      return Pmode;
+    }
+  return default_promote_function_mode (type, mode, punsignedp, fntype,
+					for_return);
 }
 
 rtx
@@ -34969,6 +34990,9 @@ ix86_autovectorize_vector_sizes (void)
 
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P ix86_function_value_regno_p
+
+#undef TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE ix86_promote_function_mode
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload
