@@ -1,3 +1,7 @@
+2011-07-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* MAINTAINERS (Global Reviewers): Add self.
+
 2011-07-20  David Edelsohn  <dje.gcc@gmail.com>
 
 	* Makefile.tpl (POSTSTAGE1_CONFIGURE_FLAGS): Add libsupc++ to
