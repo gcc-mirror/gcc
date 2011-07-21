@@ -706,8 +706,8 @@ debug_headers = \
 	${debug_srcdir}/safe_sequence.h \
 	${debug_srcdir}/safe_sequence.tcc \
 	${debug_srcdir}/safe_unordered_base.h \
-	${debug_srcdir}/safe_unordered_sequence.h \
-	${debug_srcdir}/safe_unordered_sequence.tcc \
+	${debug_srcdir}/safe_unordered_container.h \
+	${debug_srcdir}/safe_unordered_container.tcc \
 	${debug_srcdir}/set \
 	${debug_srcdir}/set.h \
 	${debug_srcdir}/string \

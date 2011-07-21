@@ -1,4 +1,4 @@
-// Safe sequence/iterator base implementation  -*- C++ -*-
+// Safe container/iterator base implementation  -*- C++ -*-
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //
@@ -33,13 +33,13 @@
 
 namespace __gnu_debug
 {
-  class _Safe_unordered_sequence_base;
+  class _Safe_unordered_container_base;
 
   /** \brief Basic functionality for a @a safe iterator.
    *
    *  The %_Safe_local_iterator_base base class implements the functionality
    *  of a safe local iterator that is not specific to a particular iterator
-   *  type. It contains a pointer back to the sequence it references
+   *  type. It contains a pointer back to the container it references
    *  along with iterator version information and pointers to form a
    *  doubly-linked list of local iterators referenced by the container.
    *
@@ -54,7 +54,7 @@ namespace __gnu_debug
     _Safe_local_iterator_base()
     { }
 
-    /** Initialize the iterator to reference the sequence pointed to
+    /** Initialize the iterator to reference the container pointed to
      *  by @p__seq. @p __constant is true when we are initializing a
      *  constant local iterator, and false if it is a mutable local iterator.
      *  Note that @p __seq may be NULL, in which case the iterator will be
@@ -64,7 +64,7 @@ namespace __gnu_debug
     _Safe_local_iterator_base(const _Safe_sequence_base* __seq, bool __constant)
     { this->_M_attach(const_cast<_Safe_sequence_base*>(__seq), __constant); }
 
-    /** Initializes the iterator to reference the same sequence that
+    /** Initializes the iterator to reference the same container that
 	@p __x does. @p __constant is true if this is a constant
 	iterator, and false if it is mutable. */
     _Safe_local_iterator_base(const _Safe_local_iterator_base& __x,
@@ -79,13 +79,13 @@ namespace __gnu_debug
 
     ~_Safe_local_iterator_base() { this->_M_detach(); }
 
-    _Safe_unordered_sequence_base*
-    _M_get_sequence() const _GLIBCXX_NOEXCEPT;
+    _Safe_unordered_container_base*
+    _M_get_container() const _GLIBCXX_NOEXCEPT;
 
   public:
-    /** Attaches this iterator to the given sequence, detaching it
-     *	from whatever sequence it was attached to originally. If the
-     *	new sequence is the NULL pointer, the iterator is left
+    /** Attaches this iterator to the given container, detaching it
+     *	from whatever container it was attached to originally. If the
+     *	new container is the NULL pointer, the iterator is left
      *	unattached.
      */
     void _M_attach(_Safe_sequence_base* __seq, bool __constant);
@@ -93,7 +93,7 @@ namespace __gnu_debug
     /** Likewise, but not thread-safe. */
     void _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ();
 
-    /** Detach the iterator for whatever sequence it is attached to,
+    /** Detach the iterator for whatever container it is attached to,
      *	if any.
     */
     void _M_detach();
@@ -104,23 +104,23 @@ namespace __gnu_debug
 
   /**
    * @brief Base class that supports tracking of local iterators that
-   * reference an unordered sequence.
+   * reference an unordered container.
    *
-   * The %_Safe_unordered_sequence_base class provides basic support for
-   * tracking iterators into an unordered sequence. Sequences that track
-   * iterators must derived from %_Safe_sequence_base publicly, so
+   * The %_Safe_unordered_container_base class provides basic support for
+   * tracking iterators into an unordered container. Containers that track
+   * iterators must derived from %_Safe_unordered_container_base publicly, so
    * that safe iterators (which inherit _Safe_iterator_base) can
    * attach to them. This class contains four linked lists of
    * iterators, one for constant iterators, one for mutable
    * iterators, one for constant local iterators, one for mutable local
-   * iterator and a version number that allows very fast
+   * iterators and a version number that allows very fast
    * invalidation of all iterators that reference the container.
    *
    * This class must ensure that no operation on it may throw an
-   * exception, otherwise @a safe sequences may fail to provide the
+   * exception, otherwise @a safe containers may fail to provide the
    * exception-safety guarantees required by the C++ standard.
    */
-  class _Safe_unordered_sequence_base : public _Safe_sequence_base
+  class _Safe_unordered_container_base : public _Safe_sequence_base
   {
     typedef _Safe_sequence_base _Base;
   public:
@@ -132,29 +132,29 @@ namespace __gnu_debug
 
   protected:
     // Initialize with a version number of 1 and no iterators
-    _Safe_unordered_sequence_base()
+    _Safe_unordered_container_base()
     : _M_local_iterators(0), _M_const_local_iterators(0)
     { }
 
-    /** Notify all iterators that reference this sequence that the
-	sequence is being destroyed. */
-    ~_Safe_unordered_sequence_base()
+    /** Notify all iterators that reference this container that the
+	container is being destroyed. */
+    ~_Safe_unordered_container_base()
     { this->_M_detach_all(); }
 
     /** Detach all iterators, leaving them singular. */
     void
     _M_detach_all();
 
-    /** Swap this sequence with the given sequence. This operation
+    /** Swap this container with the given container. This operation
      *  also swaps ownership of the iterators, so that when the
      *  operation is complete all iterators that originally referenced
      *  one container now reference the other container.
      */
     void
-    _M_swap(_Safe_unordered_sequence_base& __x);
+    _M_swap(_Safe_unordered_container_base& __x);
 
   public:
-    /** Attach an iterator to this sequence. */
+    /** Attach an iterator to this container. */
     void
     _M_attach_local(_Safe_iterator_base* __it, bool __constant);
 
@@ -162,7 +162,7 @@ namespace __gnu_debug
     void
     _M_attach_local_single(_Safe_iterator_base* __it, bool __constant) throw ();
 
-    /** Detach an iterator from this sequence */
+    /** Detach an iterator from this container */
     void
     _M_detach_local(_Safe_iterator_base* __it);
 

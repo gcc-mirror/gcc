@@ -1,4 +1,4 @@
-// Safe sequence implementation  -*- C++ -*-
+// Safe container implementation  -*- C++ -*-
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //
@@ -22,12 +22,12 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file debug/safe_unordered_sequence.h
+/** @file debug/safe_unordered_container.h
  *  This file is a GNU debug extension to the Standard C++ Library.
  */
 
-#ifndef _GLIBCXX_DEBUG_SAFE_UNORDERED_SEQUENCE_H
-#define _GLIBCXX_DEBUG_SAFE_UNORDERED_SEQUENCE_H 1
+#ifndef _GLIBCXX_DEBUG_SAFE_UNORDERED_CONTAINER_H
+#define _GLIBCXX_DEBUG_SAFE_UNORDERED_CONTAINER_H 1
 
 #include <debug/debug.h>
 #include <debug/macros.h>
@@ -37,26 +37,28 @@
 namespace __gnu_debug
 {
   /**
-   * @brief Base class for constructing a @a safe unordered sequence type
+   * @brief Base class for constructing a @a safe unordered container type
    * that tracks iterators that reference it.
    *
-   * The class template %_Safe_unordered_sequence simplifies the
-   * construction of @a safe unordered sequences that track the iterators
-   * that reference the sequence, so that the iterators are notified of
-   * changes in the sequence that may affect their operation, e.g., if
+   * The class template %_Safe_unordered_container simplifies the
+   * construction of @a safe unordered containers that track the iterators
+   * that reference the container, so that the iterators are notified of
+   * changes in the container that may affect their operation, e.g., if
    * the container invalidates its iterators or is destructed. This class
    * template may only be used by deriving from it and passing the name
    * of the derived class as its template parameter via the curiously
    * recurring template pattern. The derived class must have @c
    * iterator and @const_iterator types that are instantiations of
-   * class template _Safe_iterator for this sequence. Iterators will
+   * class template _Safe_iterator for this container and @c local_iterator
+   * and @const_local_iterator types that are instantiations of class
+   * template _Safe_local_iterator for this container. Iterators will
    * then be tracked automatically.
    */
-  template<typename _Sequence>
-    class _Safe_unordered_sequence : public _Safe_unordered_sequence_base
+  template<typename _Container>
+    class _Safe_unordered_container : public _Safe_unordered_container_base
     {
     public:
-      /** Invalidates all iterators @c x that reference this sequence,
+      /** Invalidates all iterators @c x that reference this container,
 	  are not singular, and for which @c pred(x) returns @c
 	  true. @c pred will be invoked with the normal iterators nested
 	  in the safe ones. */
@@ -64,12 +66,16 @@ namespace __gnu_debug
 	void
 	_M_invalidate_if(_Predicate __pred);
 
+      /** Invalidates all local iterators @c x that reference this container,
+	  are not singular, and for which @c pred(x) returns @c
+	  true. @c pred will be invoked with the normal ilocal iterators
+	  nested in the safe ones. */
       template<typename _Predicate>
 	void
 	_M_invalidate_local_if(_Predicate __pred);
     };
 } // namespace __gnu_debug
 
-#include <debug/safe_unordered_sequence.tcc>
+#include <debug/safe_unordered_container.tcc>
 
 #endif
