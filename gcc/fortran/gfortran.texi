@@ -2461,7 +2461,7 @@ in GNU Fortran; therefore, these features are not yet available.
 @node GNU Fortran Compiler Directives
 @section GNU Fortran Compiler Directives
 
-The Fortran standard standard describes how a conforming program shall
+The Fortran standard describes how a conforming program shall
 behave; however, the exact implementation is not standardized.  In order
 to allow the user to choose specific implementation details, compiler
 directives can be used to set attributes of variables and procedures

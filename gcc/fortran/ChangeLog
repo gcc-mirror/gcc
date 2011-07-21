@@ -1,3 +1,7 @@
+2011-07-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.texi: Remove a duplicate word.
+
 2011-07-21  Tobias Burnus  <burnus@net-b.de>
 
 	* check.c (gfc_check_present): Allow coarrays.
