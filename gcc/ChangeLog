@@ -1,3 +1,9 @@
+2011-07-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (combine_conversions): Return whether
+	we have to run cfg-cleanup.  Properly remove dead stmts.
+	(ssa_forward_propagate_and_combine): Adjust.
+
 2011-07-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* regcprop.c (maybe_mode_change): Check HARD_REGNO_MODE_OK.
