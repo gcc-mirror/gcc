@@ -1629,12 +1629,18 @@ byte_immediate_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
 void
 final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
-		    int num_operands ATTRIBUTE_UNUSED)
+                    int num_operands ATTRIBUTE_UNUSED)
 {
   if (TARGET_ALL_DEBUG)
     {
-      fprintf (asm_out_file, "/* DEBUG: cost = %d.  */\n",
-	       rtx_cost (PATTERN (insn), INSN, !optimize_size));
+      rtx set = single_set (insn);
+
+      if (set)
+        fprintf (asm_out_file, "/* DEBUG: cost = %d.  */\n",
+                 rtx_cost (SET_SRC (set), SET, optimize_insn_for_speed_p()));
+      else
+        fprintf (asm_out_file, "/* DEBUG: pattern-cost = %d.  */\n",
+                 rtx_cost (PATTERN (insn), INSN, optimize_insn_for_speed_p()));
     }
 }
 

@@ -1,3 +1,7 @@
+2011-07-21  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.c (final_prescan_insn): Fix printing of rtx_costs.
+
 2011-07-21  Jason Merrill  <jason@redhat.com>
 
 	* system.h (HAVE_DESIGNATED_UNION_INITIALIZERS): New.
