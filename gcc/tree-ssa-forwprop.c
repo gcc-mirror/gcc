@@ -2144,9 +2144,10 @@ out:
 }
 
 /* Combine two conversions in a row for the second conversion at *GSI.
-   Returns true if there were any changes made.  */
+   Returns 1 if there were any changes made, 2 if cfg-cleanup needs to
+   run.  Else it returns 0.  */
  
-static bool
+static int
 combine_conversions (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
@@ -2163,15 +2164,15 @@ combine_conversions (gimple_stmt_iterator *gsi)
   if (useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (op0)))
     {
       gimple_assign_set_rhs_code (stmt, TREE_CODE (op0));
-      return true;
+      return 1;
     }
 
   if (TREE_CODE (op0) != SSA_NAME)
-    return false;
+    return 0;
 
   def_stmt = SSA_NAME_DEF_STMT (op0);
   if (!is_gimple_assign (def_stmt))
-    return false;
+    return 0;
 
   if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
     {
@@ -2210,7 +2211,7 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	  gimple_assign_set_rhs1 (stmt, unshare_expr (defop0));
 	  gimple_assign_set_rhs_code (stmt, TREE_CODE (defop0));
 	  update_stmt (stmt);
-	  return true;
+	  return remove_prop_source_from_use (op0) ? 2 : 1;
 	}
 
       /* Likewise, if the intermediate and initial types are either both
@@ -2232,7 +2233,7 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	{
 	  gimple_assign_set_rhs1 (stmt, defop0);
 	  update_stmt (stmt);
-	  return true;
+	  return remove_prop_source_from_use (op0) ? 2 : 1;
 	}
 
       /* If we have a sign-extension of a zero-extended value, we can
@@ -2243,7 +2244,7 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	{
 	  gimple_assign_set_rhs1 (stmt, defop0);
 	  update_stmt (stmt);
-	  return true;
+	  return remove_prop_source_from_use (op0) ? 2 : 1;
 	}
 
       /* Two conversions in a row are not needed unless:
@@ -2272,7 +2273,7 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	{
 	  gimple_assign_set_rhs1 (stmt, defop0);
 	  update_stmt (stmt);
-	  return true;
+	  return remove_prop_source_from_use (op0) ? 2 : 1;
 	}
 
       /* A truncation to an unsigned type should be canonicalized as
@@ -2296,11 +2297,11 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	  else
 	    gimple_assign_set_rhs_from_tree (gsi, tem);
 	  update_stmt (gsi_stmt (*gsi));
-	  return true;
+	  return 1;
 	}
     }
 
-  return false;
+  return 0;
 }
 
 /* Main entry point for the forward propagation and statement combine
@@ -2462,7 +2463,12 @@ ssa_forward_propagate_and_combine (void)
 		else if (CONVERT_EXPR_CODE_P (code)
 			 || code == FLOAT_EXPR
 			 || code == FIX_TRUNC_EXPR)
-		  changed = combine_conversions (&gsi);
+		  {
+		    int did_something = combine_conversions (&gsi);
+		    if (did_something == 2)
+		      cfg_changed = true;
+		    changed = did_something != 0;
+		  }
 		break;
 	      }
 
