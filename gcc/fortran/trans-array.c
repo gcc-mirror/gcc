@@ -2631,10 +2631,11 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 	  if (GFC_ARRAY_TYPE_P (TREE_TYPE (se->expr))
 	      && TREE_CODE (TREE_TYPE (se->expr)) == POINTER_TYPE)
 	    se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
-	
+
 	  /* Use the actual tree type and not the wrapped coarray. */
-	  se->expr = fold_convert (TYPE_MAIN_VARIANT (TREE_TYPE (se->expr)),
-				   se->expr);
+	  if (!se->want_pointer)
+	    se->expr = fold_convert (TYPE_MAIN_VARIANT (TREE_TYPE (se->expr)),
+				     se->expr);
 	}
 
       return;

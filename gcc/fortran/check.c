@@ -2895,7 +2895,9 @@ gfc_check_present (gfc_expr *a)
 
   if (a->ref != NULL
       && !(a->ref->next == NULL && a->ref->type == REF_ARRAY
-	   && a->ref->u.ar.type == AR_FULL))
+	   && (a->ref->u.ar.type == AR_FULL
+	       || (a->ref->u.ar.type == AR_ELEMENT
+		   && a->ref->u.ar.as->rank == 0))))
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must not be a "
 		 "subobject of '%s'", gfc_current_intrinsic_arg[0]->name,

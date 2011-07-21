@@ -261,6 +261,33 @@ gfc_get_expr_charlen (gfc_expr *e)
 }
 
 
+/* Return for an expression the backend decl of the coarray.  */
+
+static tree
+get_tree_for_caf_expr (gfc_expr *expr)
+{
+   tree caf_decl = NULL_TREE;
+   gfc_ref *ref;
+
+   gcc_assert (expr && expr->expr_type == EXPR_VARIABLE);
+   if (expr->symtree->n.sym->attr.codimension)
+     caf_decl = expr->symtree->n.sym->backend_decl;
+
+   for (ref = expr->ref; ref; ref = ref->next)
+     if (ref->type == REF_COMPONENT)
+       {
+	gfc_component *comp = ref->u.c.component;
+        if (comp->attr.pointer || comp->attr.allocatable)
+	  caf_decl = NULL_TREE;
+	if (comp->attr.codimension)
+	  caf_decl = comp->backend_decl;
+       }
+
+   gcc_assert (caf_decl != NULL_TREE);
+   return caf_decl;
+}
+
+
 /* For each character array constructor subexpression without a ts.u.cl->length,
    replace it by its first element (if there aren't any elements, the length
    should already be set to zero).  */
@@ -2814,6 +2841,7 @@ conv_isocbinding_procedure (gfc_se * se, gfc_symbol * sym,
   return 0;
 }
 
+
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
    Return nonzero, if the call has alternate specifiers.
@@ -3361,6 +3389,59 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
          pointer - except for Bind(c) which only passes the pointer.  */
       if (parmse.string_length != NULL_TREE && !sym->attr.is_bind_c)
 	VEC_safe_push (tree, gc, stringargs, parmse.string_length);
+
+      /* For descriptorless coarrays, we pass the token and the offset
+	 as additional arguments.  */
+      if (fsym && fsym->attr.codimension
+	  && gfc_option.coarray == GFC_FCOARRAY_LIB
+	  && !fsym->attr.allocatable && fsym->as->type != AS_ASSUMED_SHAPE
+	  && (e == NULL
+	      || GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (get_tree_for_caf_expr (e)))))
+	  /* FIXME: Remove the "||" condition when coarray descriptors have a
+	     "token" component. This condition occurs when passing an alloc
+	      coarray or assumed-shape dummy to an explict-shape dummy.  */
+	{
+	  /* Token and offset. */
+	  VEC_safe_push (tree, gc, stringargs, null_pointer_node);
+	  VEC_safe_push (tree, gc, stringargs,
+			 build_int_cst (gfc_array_index_type, 0));
+	  gcc_assert (fsym->attr.optional || e != NULL); /* FIXME: "||" cond.  */
+	}
+      else if (fsym && fsym->attr.codimension
+	       && !fsym->attr.allocatable && fsym->as->type != AS_ASSUMED_SHAPE
+	       && gfc_option.coarray == GFC_FCOARRAY_LIB)
+	{
+	  tree caf_decl, caf_type;
+	  tree offset;
+
+          caf_decl = get_tree_for_caf_expr (e);
+	  caf_type = TREE_TYPE (caf_decl);
+
+	  gcc_assert (GFC_ARRAY_TYPE_P (caf_type)
+		      && GFC_TYPE_ARRAY_CAF_TOKEN (caf_type) != NULL_TREE);
+	  
+	  VEC_safe_push (tree, gc, stringargs,
+			 GFC_TYPE_ARRAY_CAF_TOKEN (caf_type));
+
+	  if (GFC_TYPE_ARRAY_CAF_OFFSET (caf_type) != NULL_TREE)
+	    offset = GFC_TYPE_ARRAY_CAF_OFFSET (caf_type);
+	  else
+	    offset = build_int_cst (gfc_array_index_type, 0);
+
+	  gcc_assert (POINTER_TYPE_P (TREE_TYPE (caf_decl))
+		      && POINTER_TYPE_P (TREE_TYPE (parmse.expr)));
+
+	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
+                                 gfc_array_index_type,
+                                 fold_convert (gfc_array_index_type,
+					       parmse.expr),
+                                 fold_convert (gfc_array_index_type,
+					       caf_decl));
+	  offset = fold_build2_loc (input_location, PLUS_EXPR,
+				    gfc_array_index_type, offset, tmp);
+
+	  VEC_safe_push (tree, gc, stringargs, offset);
+	}
 
       VEC_safe_push (tree, gc, arglist, parmse.expr);
     }
