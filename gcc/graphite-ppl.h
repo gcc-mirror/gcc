@@ -124,6 +124,17 @@ ppl_set_coef_tree (ppl_Linear_Expression_t e, ppl_dimension_type i, tree x)
   mpz_clear (v);
 }
 
+/* Sets RES to the min of V1 and V2.  */
+
+static inline void
+value_min (mpz_t res, mpz_t v1, mpz_t v2)
+{
+  if (mpz_cmp (v1, v2) < 0)
+    mpz_set (res, v1);
+  else
+    mpz_set (res, v2);
+}
+
 /* Sets RES to the max of V1 and V2.  */
 
 static inline void

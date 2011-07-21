@@ -1,3 +1,9 @@
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/47654
+	PR middle-end/49649
+	* gcc.dg/graphite/run-id-pr47654.c: New.
+
 2011-07-21  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/49705
