@@ -1132,20 +1132,12 @@ forward_propagate_comparison (gimple stmt)
   if (!INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     return false;
 
-  /* We can propagate the condition into a conversion.  */
-  if (CONVERT_EXPR_CODE_P (code))
-    {
-      /* Avoid using fold here as that may create a COND_EXPR with
-	 non-boolean condition as canonical form.  */
-      tmp = build2 (gimple_assign_rhs_code (stmt), TREE_TYPE (lhs),
-		    gimple_assign_rhs1 (stmt), gimple_assign_rhs2 (stmt));
-    }
   /* We can propagate the condition into a statement that
      computes the logical negation of the comparison result.  */
-  else if ((code == BIT_NOT_EXPR
-	    && TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
-	   || (code == BIT_XOR_EXPR
-	       && integer_onep (gimple_assign_rhs2 (use_stmt))))
+  if ((code == BIT_NOT_EXPR
+       && TYPE_PRECISION (TREE_TYPE (lhs)) == 1)
+      || (code == BIT_XOR_EXPR
+	  && integer_onep (gimple_assign_rhs2 (use_stmt))))
     {
       tree type = TREE_TYPE (gimple_assign_rhs1 (stmt));
       bool nans = HONOR_NANS (TYPE_MODE (type));
@@ -1750,6 +1742,7 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 							arg2));
       tem = make_ssa_name (tem, newop);
       gimple_assign_set_lhs (newop, tem);
+      gimple_set_location (newop, gimple_location (stmt));
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
       gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
 					tem, NULL_TREE, NULL_TREE);
@@ -1779,6 +1772,7 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
       newop = gimple_build_assign_with_ops (code, tem, def1_arg1, def2_arg1);
       tem = make_ssa_name (tem, newop);
       gimple_assign_set_lhs (newop, tem);
+      gimple_set_location (newop, gimple_location (stmt));
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
       gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
 					tem, NULL_TREE, NULL_TREE);
@@ -1807,6 +1801,7 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 					    tem, def1_arg1, arg2);
       tem = make_ssa_name (tem, newop);
       gimple_assign_set_lhs (newop, tem);
+      gimple_set_location (newop, gimple_location (stmt));
       /* Make sure to re-process the new stmt as it's walking upwards.  */
       gsi_insert_before (gsi, newop, GSI_NEW_STMT);
       gimple_assign_set_rhs1 (stmt, tem);

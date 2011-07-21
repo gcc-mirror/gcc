@@ -7664,11 +7664,11 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	     non-integral type.
 	     Do not fold the result as that would not simplify further, also
 	     folding again results in recursions.  */
-	  if (INTEGRAL_TYPE_P (type))
+	  if (TREE_CODE (type) == BOOLEAN_TYPE)
 	    return build2_loc (loc, TREE_CODE (op0), type,
 			       TREE_OPERAND (op0, 0),
 			       TREE_OPERAND (op0, 1));
-	  else
+	  else if (!INTEGRAL_TYPE_P (type))
 	    return build3_loc (loc, COND_EXPR, type, op0,
 			       fold_convert (type, boolean_true_node),
 			       fold_convert (type, boolean_false_node));
