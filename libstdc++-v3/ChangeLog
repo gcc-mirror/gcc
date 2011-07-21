@@ -1,3 +1,20 @@
+2011-07-20  Benjamin Kosnik  <bkoz@redhat.com>
+	    Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/std/chrono: (system_clock::is_steady): Update to N3291
+	from is_monotonic.
+	(time_point): Add constexpr to nonmember arithmetic operators.
+	* src/chrono.cc: Modify for above.
+	* src/compatibility-c++0x.cc: Same.
+	* testsuite/20_util/time_point/nonmember/constexpr.cc: New.
+	* testsuite/20_util/time_point/1.cc: Modify.
+	* testsuite/20_util/system_clock/constexpr_data.cc: Modify.
+	* testsuite/20_util/system_clock/1.cc: Modify.
+	* testsuite/20_util/monotonic_clock/constexpr_data.cc: Move to...
+	* testsuite/20_util/steady_clock/constexpr_data.cc: ...here.
+	* testsuite/30_threads/condition_variable/members/2.cc: Modify.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: Modify.
+
 2011-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/system_error: Use noexcept.
@@ -1544,7 +1561,7 @@
 2011-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/tuple (tuple<>::operator=(tuple&&)): Specify as
-        noexcept.
+	noexcept.
 	(__get_helper): Likewise.
 	(_Head_base<>::_M_head, _Tuple_impl<>::_M_head, _M_tail): Likewise.
 	* include/bits/move.h (swap): Likewise.
@@ -2237,8 +2254,8 @@
 
 2011-03-31  Jeffrey Yasskin  <jyasskin@google.com>
 
-        * libsupc++/exception_ptr.h: Forward-declare std::type_info.
-        * libsupc++/nested_exception.h (__throw_with_nested): Remove a
+	* libsupc++/exception_ptr.h: Forward-declare std::type_info.
+	* libsupc++/nested_exception.h (__throw_with_nested): Remove a
 	redundant default argument from std::__throw_with_nested.
 
 2011-03-31  Paolo Carlini  <paolo.carlini@oracle.com>

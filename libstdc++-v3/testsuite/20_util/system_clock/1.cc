@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,8 +29,8 @@ main()
   using namespace std::chrono;
 
   system_clock::time_point t1 = system_clock::now();
-  bool is_monotonic = system_clock::is_monotonic;
-  is_monotonic = is_monotonic; // suppress unused warning
+  bool is_steady = system_clock::is_steady;
+  is_steady = is_steady; // suppress unused warning
   std::time_t t2 = system_clock::to_time_t(t1);
   system_clock::time_point t3 = system_clock::from_time_t(t2);
   t3 = t3; // suppress unused warning

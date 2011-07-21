@@ -585,7 +585,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
     template<typename _Clock, typename _Dur1,
 	     typename _Rep2, typename _Period2>
-      inline time_point<_Clock,
+      inline constexpr time_point<_Clock,
 	typename common_type<_Dur1, duration<_Rep2, _Period2>>::type>
       operator+(const time_point<_Clock, _Dur1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
@@ -593,27 +593,37 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	typedef duration<_Rep2, _Period2>			__dur2;
 	typedef typename common_type<_Dur1,__dur2>::type	__ct;
 	typedef time_point<_Clock, __ct> 			__time_point;
-	return __time_point(__lhs) += __rhs;
+	return __time_point(__lhs.time_since_epoch() + __rhs);
       }
 
     template<typename _Rep1, typename _Period1,
 	     typename _Clock, typename _Dur2>
-      inline time_point<_Clock,
+      inline constexpr time_point<_Clock,
 	typename common_type<duration<_Rep1, _Period1>, _Dur2>::type>
       operator+(const duration<_Rep1, _Period1>& __lhs,
 		const time_point<_Clock, _Dur2>& __rhs)
-      { return __rhs + __lhs; }
+      { 
+	typedef duration<_Rep1, _Period1>			__dur1;
+	typedef typename common_type<__dur1,_Dur2>::type	__ct;
+	typedef time_point<_Clock, __ct> 			__time_point;
+	return __time_point(__rhs.time_since_epoch() + __lhs); 
+      }
 
     template<typename _Clock, typename _Dur1,
 	     typename _Rep2, typename _Period2>
-      inline time_point<_Clock,
+      inline constexpr time_point<_Clock,
 	typename common_type<_Dur1, duration<_Rep2, _Period2>>::type>
       operator-(const time_point<_Clock, _Dur1>& __lhs,
 		const duration<_Rep2, _Period2>& __rhs)
-      { return __lhs + (-__rhs); }
+      { 
+	typedef duration<_Rep2, _Period2>			__dur2;
+	typedef typename common_type<_Dur1,__dur2>::type	__ct;
+	typedef time_point<_Clock, __ct> 			__time_point;
+	return __time_point(__lhs.time_since_epoch() -__rhs); 
+      }
 
     template<typename _Clock, typename _Dur1, typename _Dur2>
-      inline typename common_type<_Dur1, _Dur2>::type
+      inline constexpr typename common_type<_Dur1, _Dur2>::type
       operator-(const time_point<_Clock, _Dur1>& __lhs,
 		const time_point<_Clock, _Dur2>& __rhs)
       { return __lhs.time_since_epoch() - __rhs.time_since_epoch(); }
@@ -673,7 +683,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 		    < system_clock::duration::zero(),
 		    "a clock's minimum duration cannot be less than its epoch");
 
-      static constexpr bool is_monotonic = false;
+      static constexpr bool is_steady = false;
 
       static time_point
       now() throw ();
@@ -696,21 +706,21 @@ _GLIBCXX_END_NAMESPACE_VERSION
     };
 
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    /// monotonic_clock
-    struct monotonic_clock
+    /// steady_clock
+    struct steady_clock
     {
       typedef chrono::nanoseconds 				duration;
       typedef duration::rep	  				rep;
       typedef duration::period	  				period;
-      typedef chrono::time_point<monotonic_clock, duration> 	time_point;
+      typedef chrono::time_point<steady_clock, duration> 	time_point;
 
-      static constexpr bool is_monotonic = true;
+      static constexpr bool is_steady = true;
 
       static time_point
       now();
     };
 #else
-    typedef system_clock monotonic_clock;
+    typedef system_clock steady_clock;
 #endif
 
     typedef system_clock high_resolution_clock;

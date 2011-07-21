@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@ namespace __gnu_test
 	  void __constraint()
 	  {
 	    constexpr auto v1 __attribute__((unused))
-	      = _Ttesttype::is_monotonic;
+	      = _Ttesttype::is_steady;
 	  }
 	};
 
