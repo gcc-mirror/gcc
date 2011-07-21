@@ -212,7 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef __gthread_mutex_t 		  	__native_type;
 
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    typedef chrono::monotonic_clock 	  	__clock_t;
+    typedef chrono::steady_clock 	  	__clock_t;
 #else
     typedef chrono::high_resolution_clock 	__clock_t;
 #endif
@@ -317,7 +317,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef __gthread_recursive_mutex_t		__native_type;
 
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    typedef chrono::monotonic_clock 		__clock_t;
+    typedef chrono::steady_clock 		__clock_t;
 #else
     typedef chrono::high_resolution_clock 	__clock_t;
 #endif
