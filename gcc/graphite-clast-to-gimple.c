@@ -56,24 +56,53 @@ graphite_verify (void)
 #endif
 }
 
-/* Stores the INDEX in a vector for a given clast NAME.  */
+/* Stores the INDEX in a vector and the loop nesting LEVEL for a given
+   clast NAME.  */
 
 typedef struct clast_name_index {
   int index;
+  int level;
   const char *name;
 } *clast_name_index_p;
 
 /* Returns a pointer to a new element of type clast_name_index_p built
-   from NAME and INDEX.  */
+   from NAME, LEVEL, and INDEX.  */
 
 static inline clast_name_index_p
-new_clast_name_index (const char *name, int index)
+new_clast_name_index (const char *name, int index, int level)
 {
   clast_name_index_p res = XNEW (struct clast_name_index);
 
   res->name = name;
+  res->level = level;
   res->index = index;
   return res;
+}
+
+/* For a given clast NAME, returns -1 if NAME is not in the
+   INDEX_TABLE, otherwise returns the loop level for the induction
+   variable NAME, or if it is a parameter, the parameter number in the
+   vector of parameters.  */
+
+static inline int
+clast_name_to_level (clast_name_p name, htab_t index_table)
+{
+  struct clast_name_index tmp;
+  PTR *slot;
+
+#ifdef CLOOG_ORG
+  gcc_assert (name->type == clast_expr_name);
+  tmp.name = ((const struct clast_name *) name)->name;
+#else
+  tmp.name = name;
+#endif
+
+  slot = htab_find_slot (index_table, &tmp, NO_INSERT);
+
+  if (slot && *slot)
+    return ((struct clast_name_index *) *slot)->level;
+
+  return -1;
 }
 
 /* For a given clast NAME, returns -1 if it does not correspond to any
@@ -101,10 +130,11 @@ clast_name_to_index (clast_name_p name, htab_t index_table)
   return -1;
 }
 
-/* Records in INDEX_TABLE the INDEX for NAME.  */
+/* Records in INDEX_TABLE the INDEX and LEVEL for NAME.  */
 
 static inline void
-save_clast_name_index (htab_t index_table, const char *name, int index)
+save_clast_name_index (htab_t index_table, const char *name,
+		       int index, int level)
 {
   struct clast_name_index tmp;
   PTR *slot;
@@ -116,7 +146,7 @@ save_clast_name_index (htab_t index_table, const char *name, int index)
     {
       free (*slot);
 
-      *slot = new_clast_name_index (name, index);
+      *slot = new_clast_name_index (name, index, level);
     }
 }
 
@@ -137,15 +167,6 @@ eq_clast_name_indexes (const void *e1, const void *e2)
   const struct clast_name_index *elt2 = (const struct clast_name_index *) e2;
 
   return (elt1->name == elt2->name);
-}
-
-/* For a given scattering dimension, return the new induction variable
-   associated to it.  */
-
-static inline tree
-newivs_to_depth_to_newiv (VEC (tree, heap) *newivs, int depth)
-{
-  return VEC_index (tree, newivs, depth);
 }
 
 
@@ -172,7 +193,7 @@ clast_name_to_gcc (clast_name_p name, sese region, VEC (tree, heap) *newivs,
   index = clast_name_to_index (name, newivs_index);
   gcc_assert (index >= 0);
 
-  return newivs_to_depth_to_newiv (newivs, index);
+  return VEC_index (tree, newivs, index);
 }
 
 /* Returns the signed maximal precision type for expressions TYPE1 and TYPE2.  */
@@ -703,7 +724,7 @@ graphite_create_new_loop (edge entry_edge,
 			  struct clast_for *stmt,
 			  loop_p outer, VEC (tree, heap) **newivs,
 			  htab_t newivs_index,
-			  tree type, tree lb, tree ub)
+			  tree type, tree lb, tree ub, int level)
 {
   tree stride = gmp_cst_to_tree (type, stmt->stride);
   tree ivvar = create_tmp_var (type, "graphite_IV");
@@ -715,7 +736,7 @@ graphite_create_new_loop (edge entry_edge,
   add_referenced_var (ivvar);
 
   save_clast_name_index (newivs_index, stmt->iterator,
-			 VEC_length (tree, *newivs));
+			 VEC_length (tree, *newivs), level);
   VEC_safe_push (tree, heap, *newivs, iv);
   return loop;
 }
@@ -942,7 +963,7 @@ translate_clast_for_loop (sese region, loop_p context_loop,
   struct loop *loop = graphite_create_new_loop (next_e, stmt,
  						context_loop, newivs,
 						newivs_index,
-						type, lb, ub);
+						type, lb, ub, level);
   edge last_e = single_exit (loop);
   edge to_body = single_succ_edge (loop->header);
   basic_block after = to_body->dest;
@@ -1423,7 +1444,7 @@ create_params_index (htab_t index_table, CloogProgram *prog) {
   int i;
 
   for (i = 0; i < nb_parameters; i++)
-    save_clast_name_index (index_table, parameters[i], i);
+    save_clast_name_index (index_table, parameters[i], i, i);
 }
 
 /* GIMPLE Loop Generator: generates loops from STMT in GIMPLE form for

@@ -1,5 +1,18 @@
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (struct clast_name_index): Add level.
+	(new_clast_name_index): Add level parameter.
+	(clast_name_to_level): New.
+	(save_clast_name_index): Add level parameter.
+	(newivs_to_depth_to_newiv): Removed.
+	(clast_name_to_gcc): Inlined newivs_to_depth_to_newiv.
+	(graphite_create_new_loop): Add level parameter.  Pass level to
+	save_clast_name_index.
+	(translate_clast_for_loop): Pass level to graphite_create_new_loop.
+	(create_params_index): Pass level to save_clast_name_index.
+
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (graphite_create_new_loop): Do not
 	recompute type, lb, and ub.  Get them from...
 	(graphite_create_new_loop_guard): ...here.  Pass in parameter
