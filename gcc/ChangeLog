@@ -1,5 +1,10 @@
 2011-07-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_legitimize_address): Convert to
+	Pmode if needed.
+
+2011-07-21  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (function_value_64): Always return pointers
 	in Pmode.
 	(ix86_promote_function_mode): New.
