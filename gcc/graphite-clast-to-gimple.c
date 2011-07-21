@@ -206,16 +206,27 @@ clast_name_to_gcc (clast_name_p name, ivs_params_p ip)
   return VEC_index (tree, *(ip->newivs), index);
 }
 
-/* Returns the signed maximal precision type for expressions TYPE1 and TYPE2.  */
+/* Returns the maximal precision type for expressions TYPE1 and TYPE2.  */
 
 static tree
-max_signed_precision_type (tree type1, tree type2)
+max_precision_type (tree type1, tree type2)
 {
-  int p1 = TYPE_PRECISION (type1);
-  int p2 = TYPE_PRECISION (type2);
-  int precision;
-  tree type;
   enum machine_mode mode;
+  int p1, p2, precision;
+  tree type;
+
+  if (POINTER_TYPE_P (type1))
+    return type1;
+
+  if (POINTER_TYPE_P (type2))
+    return type2;
+
+  if (TYPE_UNSIGNED (type1)
+      && TYPE_UNSIGNED (type2))
+    return TYPE_PRECISION (type1) > TYPE_PRECISION (type2) ? type1 : type2;
+
+  p1 = TYPE_PRECISION (type1);
+  p2 = TYPE_PRECISION (type2);
 
   if (p1 > p2)
     precision = TYPE_UNSIGNED (type1) ? p1 * 2 : p1;
@@ -239,24 +250,6 @@ max_signed_precision_type (tree type1, tree type2)
     }
 
   return type;
-}
-
-/* Returns the maximal precision type for expressions TYPE1 and TYPE2.  */
-
-static tree
-max_precision_type (tree type1, tree type2)
-{
-  if (POINTER_TYPE_P (type1))
-    return type1;
-
-  if (POINTER_TYPE_P (type2))
-    return type2;
-
-  if (!TYPE_UNSIGNED (type1)
-      || !TYPE_UNSIGNED (type2))
-    return max_signed_precision_type (type1, type2);
-
-  return TYPE_PRECISION (type1) > TYPE_PRECISION (type2) ? type1 : type2;
 }
 
 static tree
@@ -473,8 +466,8 @@ type_for_clast_red (struct clast_reduction *r, ivs_params_p ip)
     case clast_red_max:
       type = type_for_clast_expr (r->elts[0], ip);
       for (i = 1; i < r->n; i++)
-	type = max_precision_type (type, type_for_clast_expr
-				   (r->elts[i], ip));
+	type = max_precision_type
+	  (type, type_for_clast_expr (r->elts[i], ip));
 
       return type;
 
@@ -493,7 +486,7 @@ type_for_clast_bin (struct clast_binary *b, ivs_params_p ip)
 {
   tree l = type_for_clast_expr ((struct clast_expr *) b->LHS, ip);
   tree r = type_for_value (b->RHS);
-  return max_signed_precision_type (l, r);
+  return max_precision_type (l, r);
 }
 
 /* Returns the type for the CLAST expression E when used in statement
@@ -688,8 +681,8 @@ type_for_clast_for (struct clast_for *stmt_for, int level,
   tree lb_type = type_for_clast_expr (stmt_for->LB, ip);
   tree ub_type = type_for_clast_expr (stmt_for->UB, ip);
 
-  return max_signed_precision_type (lb_type, max_precision_type
-				    (ub_type, type_for_level (pbb, level)));
+  return max_precision_type
+    (lb_type, max_precision_type (ub_type, type_for_level (pbb, level)));
 }
 
 /* Creates a new LOOP corresponding to Cloog's STMT.  Inserts an
