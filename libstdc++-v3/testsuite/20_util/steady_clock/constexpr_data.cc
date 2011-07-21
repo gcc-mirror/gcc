@@ -34,7 +34,7 @@ namespace __gnu_test
 	  void __constraint()
 	  {
 	    constexpr auto v1 __attribute__((unused))
-	      = _Ttesttype::is_monotonic;
+	      = _Ttesttype::is_steady;
 	  }
 	};
 
@@ -47,6 +47,6 @@ namespace __gnu_test
 int main()
 {
   __gnu_test::constexpr_member_data test;
-  test.operator()<std::chrono::monotonic_clock>();
+  test.operator()<std::chrono::steady_clock>();
   return 0;
 }

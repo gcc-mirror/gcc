@@ -1,7 +1,7 @@
+// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
-// { dg-require-cstdint "" }
 
-// Copyright (C) 2008, 2009, 2011 Free Software Foundation
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,31 +18,28 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.8.4 Class template time_point [time.point]
-
 #include <chrono>
 #include <testsuite_hooks.h>
 
-// 20.8.4.1 time_point constructors [time.point.cons]
-void
-test01()
+int main()
 {
   bool test __attribute__((unused)) = true;
   using namespace std::chrono;
   
-  time_point<system_clock> t1;
-  VERIFY(t1.time_since_epoch() == system_clock::duration::zero());
+  typedef time_point<system_clock> time_type;
 
-  time_point<steady_clock> t2;
-  VERIFY(t2.time_since_epoch() == steady_clock::duration::zero());
+  constexpr time_type t1(seconds(1));
+  constexpr time_type t2(seconds(30));
+  constexpr time_type t3(seconds(60));
+  
+  constexpr duration<int> d0(12);
+  constexpr duration<int> d1(3);
 
-  time_point<high_resolution_clock> t3;
-  VERIFY(t3.time_since_epoch() == high_resolution_clock::duration::zero());
-}
+  constexpr auto r1 = t1 + d0;
+  constexpr auto r2 = d1 + t2;
 
-int
-main()
-{
-  test01();
+  constexpr auto r3 = t1 - d0;
+  constexpr auto r4 = t2 - t3;
+
   return 0;
 }
