@@ -336,9 +336,9 @@ GNAT_ADA_OBJS =	\
  ada/widechar.o
 
 # Object files for gnat executables
-GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o ada/b_gnat1.o
+GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o
 
-GNAT1_OBJS = $(GNAT1_C_OBJS) $(GNAT1_ADA_OBJS)
+GNAT1_OBJS = $(GNAT1_C_OBJS) $(GNAT1_ADA_OBJS) ada/b_gnat1.o
 
 GNATBIND_OBJS = \
  ada/adaint.o     \
