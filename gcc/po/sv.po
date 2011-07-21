@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.6.0\n"
+"Project-Id-Version: gcc 4.6.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-06-21 10:27+0000\n"
-"PO-Revision-Date: 2011-04-13 22:28+0200\n"
+"PO-Revision-Date: 2011-07-15 17:29+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -2114,7 +2114,7 @@ msgstr "Det maximala antalet instruktioner redo att matas ut för att övervägas u
 
 #: params.def:704
 msgid "Maximum number of active local stores in RTL dead store elimination"
-msgstr ""
+msgstr "Maximalt antal aktiva lokala lagringar i RTL vid eliminering av döda lagringar"
 
 #: params.def:714
 msgid "The number of insns executed before prefetch is completed"
@@ -4975,7 +4975,7 @@ msgstr "Inbyggd för inbyggda om inte är med i den valda standarden"
 
 #: fortran/lang.opt:243
 msgid "Warn about real-literal-constants with 'q' exponent-letter"
-msgstr ""
+msgstr "Varna för reella literala konstanter med exponentbokstav \"q\""
 
 #: fortran/lang.opt:251
 msgid "Warn about \"suspicious\" constructs"
@@ -9330,10 +9330,8 @@ msgid "-fconst-string-class=<name>\tUse class <name> for constant strings"
 msgstr "-fconst-string-class=<namn>\tAnvänd klassen <namn> för konstanta strängar"
 
 #: c-family/c.opt:724
-#, fuzzy
-#| msgid "-ftemplate-depth=<number>\tSpecify maximum template instantiation depth"
 msgid "-fconstexpr-depth=<number>\tSpecify maximum constexpr recursion depth"
-msgstr "-ftemplate-depth=<antal>\tAnge maximalt instansieringsdjup för mallar"
+msgstr "-fconstexpr-depth=<antal>\tAnge maximalt rekursionsdjup för konstantuttryck"
 
 #: c-family/c.opt:728
 msgid "-fno-deduce-init-list\tdisable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list"
@@ -9662,10 +9660,8 @@ msgid "Remap file names when including files"
 msgstr "Översätt filnamn när filer inkluderas"
 
 #: c-family/c.opt:1140 c-family/c.opt:1144
-#, fuzzy
-#| msgid "Conform to the ISO 1998 C++ standard with GNU extensions"
 msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum"
-msgstr "Följ standarden ISO 1998 C++ med GNU-utökningar"
+msgstr "Följ standarden ISO 1998 C++ reviderad av 2003 års tekniska rättelser"
 
 #: c-family/c.opt:1148
 msgid "Conform to the ISO 1998 C++ standard, with extensions that are likely to"
@@ -21614,7 +21610,7 @@ msgstr "bara initierade variabler kan placeras i programminnesområdet"
 #: config/avr/avr.c:5065
 #, gcc-internal-format
 msgid "variable %q+D must be const in order to be put into read-only section by means of %<__attribute__((progmem))%>"
-msgstr ""
+msgstr "variabeln %q+D måste vara const för att kunna läggas i en endast läsbar sektion med hjälp av %<__attribute__((progmem))%>"
 
 #: config/avr/avr.c:5106
 #, gcc-internal-format
@@ -22305,14 +22301,12 @@ msgid "the last argument must be a 2-bit immediate"
 msgstr "det sista argumentet måste vara en 2-bitars omedelbar"
 
 #: config/i386/i386.c:26380
-#, fuzzy, gcc-internal-format
-#| msgid "the fifth argument must be a 8-bit immediate"
+#, gcc-internal-format
 msgid "the fifth argument must be an 8-bit immediate"
 msgstr "det femte argumentet måste vara en 8-bitars omedelbar"
 
 #: config/i386/i386.c:26475
-#, fuzzy, gcc-internal-format
-#| msgid "the third argument must be a 8-bit immediate"
+#, gcc-internal-format
 msgid "the third argument must be an 8-bit immediate"
 msgstr "det tredje argumentet måste vara en 8-bitars omedelbar"
 
@@ -24698,10 +24692,9 @@ msgid "cannot bind rvalue %qE to %qT"
 msgstr "det går inte att binda rvalue %qE till %qT"
 
 #: cp/call.c:5730 cp/cvt.c:1625
-#, fuzzy, gcc-internal-format
-#| msgid "class %qT will be considered nearly empty in a future version of GCC"
+#, gcc-internal-format
 msgid "scoped enum %qT will not promote to an integral type in a future version of GCC"
-msgstr "klass %qT kommer betraktas som nästan tom i en framtida version av GCC"
+msgstr "enum %qT med räckvidd kommer inte befordras till en heltalstyp i en framtida version av GCC"
 
 #: cp/call.c:5760
 #, gcc-internal-format
@@ -24840,10 +24833,9 @@ msgid "ISO C++ says that these are ambiguous, even though the worst conversion f
 msgstr "ISO C++ säger att dessa är tvetydiga, trots att den sämsta konverteringen för den första är bättre än den sämsta konverteringen för den andra:"
 
 #: cp/call.c:8070
-#, fuzzy, gcc-internal-format
-#| msgid "could not convert %qE to %qT"
+#, gcc-internal-format
 msgid "could not convert %qE from %qT to %qT"
-msgstr "kunde inte konvertera %qE till %qT"
+msgstr "kunde inte konvertera %qE från %qT till %qT"
 
 #: cp/call.c:8313
 #, gcc-internal-format
@@ -25102,10 +25094,9 @@ msgid "initializer specified for non-virtual method %q+D"
 msgstr "initierare angiven för icke-virtuell metod %q+D"
 
 #: cp/class.c:4563 cp/semantics.c:5455
-#, fuzzy, gcc-internal-format
-#| msgid "enclosing class of %q+D is not a literal type"
+#, gcc-internal-format
 msgid "enclosing class of %q+#D is not a literal type"
-msgstr "omslutande klass till %q+D är inte en literal typ"
+msgstr "omslutande klass till %q+#D är inte en literal typ"
 
 #: cp/class.c:4670
 #, gcc-internal-format
@@ -27050,10 +27041,9 @@ msgid "reference %qs cannot be declared %<mutable%>"
 msgstr "referensen %qs kan inte deklareras %<mutable%>"
 
 #: cp/decl.c:9308
-#, fuzzy, gcc-internal-format
-#| msgid "parameter declared %<auto%>"
+#, gcc-internal-format
 msgid "typedef declared %<auto%>"
-msgstr "parametern deklarerad %<auto%>"
+msgstr "typedef deklarerad %<auto%>"
 
 #: cp/decl.c:9318
 #, gcc-internal-format
@@ -28558,10 +28548,9 @@ msgid "%qD cannot be declared as constexpr"
 msgstr "%qD får inte deklareras som constexpr"
 
 #: cp/method.c:1599
-#, fuzzy, gcc-internal-format
-#| msgid "%qD cannot be defaulted"
+#, gcc-internal-format
 msgid "a template cannot be defaulted"
-msgstr "%qD kan inte ha standardvärde"
+msgstr "en mall kan inte ha standardvärde"
 
 #: cp/method.c:1627
 #, gcc-internal-format
@@ -29102,10 +29091,9 @@ msgid "need %<typename%> before %<%T::%E%> because %qT is a dependent scope"
 msgstr "%<typename%> behövs före %<%T::%E%> för att %qT är en beroende räckvidd"
 
 #: cp/parser.c:2791
-#, fuzzy, gcc-internal-format
-#| msgid "%qE in class %qT does not name a type"
+#, gcc-internal-format
 msgid "%qE in %q#T does not name a type"
-msgstr "%qE i klassen %qT är inte namnet på en typ"
+msgstr "%qE i %q#T är inte namnet på en typ"
 
 #: cp/parser.c:3340
 #, gcc-internal-format
@@ -31469,16 +31457,14 @@ msgid "the type %qT of constexpr variable %qD is not literal"
 msgstr "typen %qT för constexpr-variabeln %qD är inte en literal"
 
 #: cp/semantics.c:5434
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type for parameter %q#D of constexpr function"
+#, gcc-internal-format
 msgid "invalid type for parameter %d of constexpr function %q+#D"
-msgstr "ogiltig typ för parameter %q#D till constexpr-funktion"
+msgstr "ogiltig typ för parameter %d till constexpr-funktion %q+#D"
 
 #: cp/semantics.c:5445
-#, fuzzy, gcc-internal-format
-#| msgid "invalid return type %qT of constexpr function %qD"
+#, gcc-internal-format
 msgid "invalid return type %qT of constexpr function %q+D"
-msgstr "ogiltig returtyp %qT för constexpr-funktionen %qD"
+msgstr "ogiltig returtyp %qT för constexpr-funktionen %q+D"
 
 #: cp/semantics.c:5610
 #, gcc-internal-format
@@ -31511,10 +31497,9 @@ msgid "call has circular dependency"
 msgstr "anrop har cirkulärt beroende"
 
 #: cp/semantics.c:6111
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth= to increase the maximum) instantiating %qD"
+#, gcc-internal-format, gfc-internal-format
 msgid "constexpr evaluation depth exceeds maximum of %d (use -fconstexpr-depth= to increase the maximum)"
-msgstr "mallinstansieringsdjupet överskrider maxvärdet på %d (använd -ftemplate-depth= för att öka maxvärdet) vid instansiering av %qD"
+msgstr "beräkning av constexpr överskrider maxvärdet på %d (använd -fconstexpr-depth= för att öka maxvärdet)"
 
 #: cp/semantics.c:6189
 #, gcc-internal-format
@@ -31627,10 +31612,9 @@ msgid "address-of an object %qE with thread local or automatic storage is not a 
 msgstr "adress-av på ett objekt %qE med trådlokal eller automatisk lagring är inte ett konstant uttryck"
 
 #: cp/semantics.c:7621
-#, fuzzy, gcc-internal-format
-#| msgid "the value of %qD is not usable in a constant expression"
+#, gcc-internal-format
 msgid "use of the value of the object being constructed in a constant expression"
-msgstr "värdet på %qD är inte användbart i ett konstant uttryck"
+msgstr "användning av värdet på objektet som konstrueras i ett konstant uttryck"
 
 #: cp/semantics.c:7670
 #, gcc-internal-format
@@ -34506,10 +34490,9 @@ msgid "MODULE PROCEDURE at %C must be in a generic module interface"
 msgstr "MODULE PROCEDURE vid %C måste vara i ett generiskt modulgränssnitt"
 
 #: fortran/decl.c:7042
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Fortran 2003: PROCEDURE statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2008: double colon in MODULE PROCEDURE statement at %L"
-msgstr "Fortran 2003: PROCEDURE-sats vid %C"
+msgstr "Fortran 2008: dubbelkolon i MODULE PROCEDURE-sats vid %L"
 
 #: fortran/decl.c:7076
 #, gcc-internal-format, gfc-internal-format
@@ -35427,10 +35410,9 @@ msgid "In %s at %L procedures must be either all SUBROUTINEs or all FUNCTIONs"
 msgstr "I %s vid %L måste procedurerna antingen alla vara SUBROUTINE eller alla vara FUNCTION"
 
 #: fortran/interface.c:1133
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Extension: Conversion from %s to %s at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Extension: Internal procedure '%s' in %s at %L"
-msgstr "Utökning: Konvertering från %s till %s vid %L"
+msgstr "Utökning: Intern procedur \"%s\" i %s vid %L"
 
 #: fortran/interface.c:1188 fortran/interface.c:1192
 #, gcc-internal-format, gfc-internal-format
@@ -37932,10 +37914,9 @@ msgid "Fortran 2003: BOZ used outside a DATA statement at %C"
 msgstr "Fortran 2003: BOZ använd utanför en DATA-sats vid %C"
 
 #: fortran/primary.c:547 fortran/primary.c:551
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Extension: Hollerith constant at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Extension: exponent-letter 'q' in real-literal-constant at %C"
-msgstr "Utökning: Hollerithkonstant vid %C"
+msgstr "Utökning: exponentbokstav \"q\" i reeel literal konstant vid %C"
 
 #: fortran/primary.c:567
 #, gcc-internal-format, gfc-internal-format
@@ -37948,16 +37929,14 @@ msgid "Real number at %C has a 'd' exponent and an explicit kind"
 msgstr "Reellt tal vid %C har en \"d\"-exponent och en explicit sort"
 
 #: fortran/primary.c:633
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Real number at %C has a 'd' exponent and an explicit kind"
+#, gcc-internal-format, gfc-internal-format
 msgid "Real number at %C has a 'q' exponent and an explicit kind"
-msgstr "Reellt tal vid %C har en \"d\"-exponent och en explicit sort"
+msgstr "Reellt tal vid %C har en \"q\"-exponent och en explicit sort"
 
 #: fortran/primary.c:647
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid initializer %s in Data statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid exponent-letter 'q' in real-literal-constant at %C"
-msgstr "Ogiltig initierare %s på DATA-sats vid %C"
+msgstr "Ogiltig exponentbokstav \"q\" i reell literal konstant vid %C"
 
 #: fortran/primary.c:660
 #, gcc-internal-format, gfc-internal-format
@@ -42574,12 +42553,3 @@ msgstr "%<-fobjc-sjlj-exceptions%> ignoreras för %<-fnext-runtime%> när %<-fobj-
 #, gcc-internal-format
 msgid "creating selector for nonexistent method %qE"
 msgstr "skapar selektor för icke existerande metod %qE"
-
-#~ msgid "Conform to the ISO 1998 C++ standard"
-#~ msgstr "Följ standarden ISO 1998 C++"
-
-#~ msgid "parameter packs must be at the end of the parameter list"
-#~ msgstr "parameterpaket måste vara vid slutet av parameterlistan"
-
-#~ msgid "enclosing class of %q#D is not a literal type"
-#~ msgstr "omslutande klass till %q#D är inte en literal typ"
