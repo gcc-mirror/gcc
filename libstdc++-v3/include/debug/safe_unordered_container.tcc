@@ -1,4 +1,4 @@
-// Safe sequence implementation  -*- C++ -*-
+// Safe container implementation  -*- C++ -*-
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //
@@ -22,23 +22,23 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file debug/safe_unordered_sequence.tcc
+/** @file debug/safe_unordered_container.tcc
  *  This file is a GNU debug extension to the Standard C++ Library.
  */
 
-#ifndef _GLIBCXX_DEBUG_SAFE_UNORDERED_SEQUENCE_TCC
-#define _GLIBCXX_DEBUG_SAFE_UNORDERED_SEQUENCE_TCC 1
+#ifndef _GLIBCXX_DEBUG_SAFE_UNORDERED_CONTAINER_TCC
+#define _GLIBCXX_DEBUG_SAFE_UNORDERED_CONTAINER_TCC 1
 
 namespace __gnu_debug
 {
-  template<typename _Sequence>
+  template<typename _Container>
     template<typename _Predicate>
       void
-      _Safe_unordered_sequence<_Sequence>::
+      _Safe_unordered_container<_Container>::
       _M_invalidate_if(_Predicate __pred)
       {
-	typedef typename _Sequence::iterator iterator;
-	typedef typename _Sequence::const_iterator const_iterator;
+	typedef typename _Container::iterator iterator;
+	typedef typename _Container::const_iterator const_iterator;
 
 	__gnu_cxx::__scoped_lock sentry(this->_M_get_mutex());
 	for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
@@ -63,14 +63,14 @@ namespace __gnu_debug
       }
 
 
-  template<typename _Sequence>
+  template<typename _Container>
     template<typename _Predicate>
       void
-      _Safe_unordered_sequence<_Sequence>::
+      _Safe_unordered_container<_Container>::
       _M_invalidate_local_if(_Predicate __pred)
       {
-	typedef typename _Sequence::local_iterator local_iterator;
-	typedef typename _Sequence::const_local_iterator const_local_iterator;
+	typedef typename _Container::local_iterator local_iterator;
+	typedef typename _Container::const_local_iterator const_local_iterator;
 
 	__gnu_cxx::__scoped_lock sentry(this->_M_get_mutex());
 	for (_Safe_iterator_base* __iter = _M_local_iterators; __iter;)

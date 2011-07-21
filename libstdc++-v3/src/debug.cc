@@ -25,7 +25,7 @@
 
 #include <debug/debug.h>
 #include <debug/safe_sequence.h>
-#include <debug/safe_unordered_sequence.h>
+#include <debug/safe_unordered_container.h>
 #include <debug/safe_iterator.h>
 #include <debug/safe_local_iterator.h>
 #include <algorithm>
@@ -78,8 +78,8 @@ namespace
   }
 
   void
-  swap_useq(__gnu_debug::_Safe_unordered_sequence_base& __lhs,
-	    __gnu_debug::_Safe_unordered_sequence_base& __rhs)
+  swap_ucont(__gnu_debug::_Safe_unordered_container_base& __lhs,
+	    __gnu_debug::_Safe_unordered_container_base& __rhs)
   {
     swap_seq(__lhs, __rhs);
     swap_its(__lhs, __lhs._M_local_iterators,
@@ -174,8 +174,8 @@ namespace __gnu_debug
     " by a dereferenceable one",
     "function requires a valid iterator range (%2.name;, %3.name;)"
     ", \"%2.name;\" shall be before and not equal to \"%3.name;\"",
-    // std::unordered_sequence::local_iterator
-    "attempt to compare local iterators from different unordered sequence"
+    // std::unordered_container::local_iterator
+    "attempt to compare local iterators from different unordered container"
     " buckets"
   };
 
@@ -374,38 +374,38 @@ namespace __gnu_debug
   _M_get_mutex() throw ()
   { return get_safe_base_mutex(_M_sequence); }
 
-  _Safe_unordered_sequence_base*
+  _Safe_unordered_container_base*
   _Safe_local_iterator_base::
-  _M_get_sequence() const _GLIBCXX_NOEXCEPT
-  { return static_cast<_Safe_unordered_sequence_base*>(_M_sequence); }
+  _M_get_container() const _GLIBCXX_NOEXCEPT
+  { return static_cast<_Safe_unordered_container_base*>(_M_sequence); }
 
   void
   _Safe_local_iterator_base::
-  _M_attach(_Safe_sequence_base* __seq, bool __constant)
+  _M_attach(_Safe_sequence_base* __cont, bool __constant)
   {
     _M_detach();
     
-    // Attach to the new sequence (if there is one)
-    if (__seq)
+    // Attach to the new container (if there is one)
+    if (__cont)
       {
-	_M_sequence = __seq;
+	_M_sequence = __cont;
 	_M_version = _M_sequence->_M_version;
-	_M_get_sequence()->_M_attach_local(this, __constant);
+	_M_get_container()->_M_attach_local(this, __constant);
       }
   }
   
   void
   _Safe_local_iterator_base::
-  _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ()
+  _M_attach_single(_Safe_sequence_base* __cont, bool __constant) throw ()
   {
     _M_detach_single();
     
-    // Attach to the new sequence (if there is one)
-    if (__seq)
+    // Attach to the new container (if there is one)
+    if (__cont)
       {
-	_M_sequence = __seq;
+	_M_sequence = __cont;
 	_M_version = _M_sequence->_M_version;
-	_M_get_sequence()->_M_attach_local_single(this, __constant);
+	_M_get_container()->_M_attach_local_single(this, __constant);
       }
   }
 
@@ -414,7 +414,7 @@ namespace __gnu_debug
   _M_detach()
   {
     if (_M_sequence)
-      _M_get_sequence()->_M_detach_local(this);
+      _M_get_container()->_M_detach_local(this);
 
     _M_reset();
   }
@@ -424,13 +424,13 @@ namespace __gnu_debug
   _M_detach_single() throw ()
   {
     if (_M_sequence)
-      _M_get_sequence()->_M_detach_local_single(this);
+      _M_get_container()->_M_detach_local_single(this);
 
     _M_reset();
   }
 
   void
-  _Safe_unordered_sequence_base::
+  _Safe_unordered_container_base::
   _M_detach_all()
   {
     __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
@@ -448,17 +448,17 @@ namespace __gnu_debug
   }
 
   void
-  _Safe_unordered_sequence_base::
-  _M_swap(_Safe_unordered_sequence_base& __x)
+  _Safe_unordered_container_base::
+  _M_swap(_Safe_unordered_container_base& __x)
   {
-    // We need to lock both sequences to swap
+    // We need to lock both containers to swap
     using namespace __gnu_cxx;
     __mutex *__this_mutex = &_M_get_mutex();
     __mutex *__x_mutex = &__x._M_get_mutex();
     if (__this_mutex == __x_mutex)
       {
 	__scoped_lock __lock(*__this_mutex);
-	swap_useq(*this, __x);
+	swap_ucont(*this, __x);
       }
     else
       {
@@ -466,12 +466,12 @@ namespace __gnu_debug
 			     ? *__this_mutex : *__x_mutex);
 	__scoped_lock __l2(__this_mutex < __x_mutex
 			     ? *__x_mutex : *__this_mutex);
-	swap_useq(*this, __x);
+	swap_ucont(*this, __x);
       }
   }
 
   void
-  _Safe_unordered_sequence_base::
+  _Safe_unordered_container_base::
   _M_attach_local(_Safe_iterator_base* __it, bool __constant)
   {
     __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
@@ -479,7 +479,7 @@ namespace __gnu_debug
   }
 
   void
-  _Safe_unordered_sequence_base::
+  _Safe_unordered_container_base::
   _M_attach_local_single(_Safe_iterator_base* __it, bool __constant) throw ()
   {
     _Safe_iterator_base*& __its =
@@ -491,19 +491,19 @@ namespace __gnu_debug
   }
 
   void
-  _Safe_unordered_sequence_base::
+  _Safe_unordered_container_base::
   _M_detach_local(_Safe_iterator_base* __it)
   {
-    // Remove __it from this sequence's list
+    // Remove __it from this container's list
     __gnu_cxx::__scoped_lock sentry(_M_get_mutex());
     _M_detach_local_single(__it);
   }
 
   void
-  _Safe_unordered_sequence_base::
+  _Safe_unordered_container_base::
   _M_detach_local_single(_Safe_iterator_base* __it) throw ()
   {
-    // Remove __it from this sequence's list
+    // Remove __it from this container's list
     __it->_M_unlink();
     if (_M_const_local_iterators == __it)
       _M_const_local_iterators = __it->_M_next;

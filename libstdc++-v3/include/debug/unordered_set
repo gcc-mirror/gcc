@@ -35,7 +35,7 @@
 #else
 # include <unordered_set>
 
-#include <debug/safe_unordered_sequence.h>
+#include <debug/safe_unordered_container.h>
 #include <debug/safe_iterator.h>
 #include <debug/safe_local_iterator.h>
 
@@ -50,12 +50,12 @@ namespace __debug
 	   typename _Alloc = std::allocator<_Value> >
     class unordered_set
     : public _GLIBCXX_STD_C::unordered_set<_Value, _Hash, _Pred, _Alloc>,
-      public __gnu_debug::_Safe_unordered_sequence<unordered_set<_Value, _Hash,
+      public __gnu_debug::_Safe_unordered_container<unordered_set<_Value, _Hash,
 						       _Pred, _Alloc> >
     {
       typedef _GLIBCXX_STD_C::unordered_set<_Value, _Hash,
 					    _Pred, _Alloc> _Base;
-      typedef __gnu_debug::_Safe_unordered_sequence<unordered_set> _Safe_base;
+      typedef __gnu_debug::_Safe_unordered_container<unordered_set> _Safe_base;
       typedef typename _Base::const_iterator _Base_const_iterator;
       typedef typename _Base::iterator _Base_iterator;
       typedef typename _Base::const_local_iterator _Base_const_local_iterator;
@@ -425,12 +425,12 @@ namespace __debug
 	   typename _Alloc = std::allocator<_Value> >
     class unordered_multiset
     : public _GLIBCXX_STD_C::unordered_multiset<_Value, _Hash, _Pred, _Alloc>,
-      public __gnu_debug::_Safe_unordered_sequence<
+      public __gnu_debug::_Safe_unordered_container<
 		unordered_multiset<_Value, _Hash, _Pred, _Alloc> >
     {
       typedef _GLIBCXX_STD_C::unordered_multiset<_Value, _Hash,
 						 _Pred, _Alloc> _Base;
-      typedef __gnu_debug::_Safe_unordered_sequence<unordered_multiset>
+      typedef __gnu_debug::_Safe_unordered_container<unordered_multiset>
 		_Safe_base;
       typedef typename _Base::const_iterator _Base_const_iterator;
       typedef typename _Base::iterator _Base_iterator;
