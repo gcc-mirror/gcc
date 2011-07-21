@@ -1,5 +1,21 @@
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/47654
+	PR middle-end/49649
+	* graphite-clast-to-gimple.c (type_for_clast_term): Pass v1 and v2
+	in parameter.  Initialize v1 and v2 based on the values returned
+	by clast_name_to_lb_ub.
+	(type_for_clast_red): Pass v1 and v2 in parameter, and set their
+	values.
+	(type_for_clast_bin): Same.
+	(type_for_clast_expr): Same.
+	(type_for_clast_eq): Update calls to type_for_clast_expr.
+	(type_for_clast_for): Same.
+	(build_iv_mapping): Same.
+	* graphite-ppl.h (value_min): New.
+
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (type_for_interval): Generate signed
 	types whenever possible.
 

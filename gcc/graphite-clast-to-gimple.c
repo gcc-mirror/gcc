@@ -488,79 +488,164 @@ type_for_value (mpz_t val)
   return type_for_interval (val, val);
 }
 
-/* Return the type for the clast_term T used in STMT.  */
+/* Return the type for the clast_term T.  Initializes V1 and V2 to the
+   bounds of the term.  */
 
 static tree
-type_for_clast_term (struct clast_term *t, ivs_params_p ip)
+type_for_clast_term (struct clast_term *t, ivs_params_p ip, mpz_t v1, mpz_t v2)
 {
+  clast_name_p name = t->var;
+  bool found = false;
+
   gcc_assert (t->expr.type == clast_expr_term);
 
-  if (!t->var)
-    return type_for_value (t->val);
+  if (!name)
+    {
+      mpz_set (v1, t->val);
+      mpz_set (v2, t->val);
+      return type_for_value (t->val);
+    }
 
-  return TREE_TYPE (clast_name_to_gcc (t->var, ip));
+  if (ip->params && ip->params_index)
+    found = clast_name_to_lb_ub (name, ip->params_index, v1, v2);
+
+  if (!found)
+    {
+      gcc_assert (*(ip->newivs) && ip->newivs_index);
+      found = clast_name_to_lb_ub (name, ip->newivs_index, v1, v2);
+      gcc_assert (found);
+    }
+
+  mpz_mul (v1, v1, t->val);
+  mpz_mul (v2, v2, t->val);
+
+  return TREE_TYPE (clast_name_to_gcc (name, ip));
 }
 
 static tree
-type_for_clast_expr (struct clast_expr *, ivs_params_p);
+type_for_clast_expr (struct clast_expr *, ivs_params_p, mpz_t, mpz_t);
 
-/* Return the type for the clast_reduction R used in STMT.  */
+/* Return the type for the clast_reduction R.  Initializes V1 and V2
+   to the bounds of the reduction expression.  */
 
 static tree
-type_for_clast_red (struct clast_reduction *r, ivs_params_p ip)
+type_for_clast_red (struct clast_reduction *r, ivs_params_p ip,
+		    mpz_t v1, mpz_t v2)
 {
   int i;
-  tree type = NULL_TREE;
+  tree type = type_for_clast_expr (r->elts[0], ip, v1, v2);
+  mpz_t b1, b2, m1, m2;
 
   if (r->n == 1)
-    return type_for_clast_expr (r->elts[0], ip);
+    return type;
 
-  switch (r->type)
+  mpz_init (b1);
+  mpz_init (b2);
+  mpz_init (m1);
+  mpz_init (m2);
+
+  for (i = 1; i < r->n; i++)
     {
-    case clast_red_sum:
-    case clast_red_min:
-    case clast_red_max:
-      type = type_for_clast_expr (r->elts[0], ip);
-      for (i = 1; i < r->n; i++)
-	type = max_precision_type
-	  (type, type_for_clast_expr (r->elts[i], ip));
+      tree t = type_for_clast_expr (r->elts[i], ip, b1, b2);
+      type = max_precision_type (type, t);
 
-      return type;
+      switch (r->type)
+	{
+	case clast_red_sum:
+	  value_min (m1, v1, v2);
+	  value_min (m2, b1, b2);
+	  mpz_add (v1, m1, m2);
 
-    default:
-      break;
+	  value_max (m1, v1, v2);
+	  value_max (m2, b1, b2);
+	  mpz_add (v2, m1, m2);
+	  break;
+
+	case clast_red_min:
+	  value_min (v1, v1, v2);
+	  value_min (v2, b1, b2);
+	  break;
+
+	case clast_red_max:
+	  value_max (v1, v1, v2);
+	  value_max (v2, b1, b2);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	  break;
+	}
     }
 
-  gcc_unreachable ();
-  return NULL_TREE;
+  mpz_clear (b1);
+  mpz_clear (b2);
+  mpz_clear (m1);
+  mpz_clear (m2);
+
+  /* Return a type that can represent the result of the reduction.  */
+  return max_precision_type (type, type_for_interval (v1, v2));
 }
 
 /* Return the type for the clast_binary B used in STMT.  */
 
 static tree
-type_for_clast_bin (struct clast_binary *b, ivs_params_p ip)
+type_for_clast_bin (struct clast_binary *b, ivs_params_p ip, mpz_t v1, mpz_t v2)
 {
-  tree l = type_for_clast_expr ((struct clast_expr *) b->LHS, ip);
+  mpz_t one;
+  tree l = type_for_clast_expr ((struct clast_expr *) b->LHS, ip, v1, v2);
   tree r = type_for_value (b->RHS);
-  return max_precision_type (l, r);
+  tree type = max_precision_type (l, r);
+
+  switch (b->type)
+    {
+    case clast_bin_fdiv:
+      mpz_mdiv (v1, v1, b->RHS);
+      mpz_mdiv (v2, v2, b->RHS);
+      break;
+
+    case clast_bin_cdiv:
+      mpz_mdiv (v1, v1, b->RHS);
+      mpz_mdiv (v2, v2, b->RHS);
+      mpz_init (one);
+      mpz_add (v1, v1, one);
+      mpz_add (v2, v2, one);
+      mpz_clear (one);
+      break;
+
+    case clast_bin_div:
+      mpz_div (v1, v1, b->RHS);
+      mpz_div (v2, v2, b->RHS);
+      break;
+
+    case clast_bin_mod:
+      mpz_mod (v1, v1, b->RHS);
+      mpz_mod (v2, v2, b->RHS);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Return a type that can represent the result of the reduction.  */
+  return max_precision_type (type, type_for_interval (v1, v2));
 }
 
 /* Returns the type for the CLAST expression E when used in statement
    STMT.  */
 
 static tree
-type_for_clast_expr (struct clast_expr *e, ivs_params_p ip)
+type_for_clast_expr (struct clast_expr *e, ivs_params_p ip, mpz_t v1, mpz_t v2)
 {
   switch (e->type)
     {
     case clast_expr_term:
-      return type_for_clast_term ((struct clast_term *) e, ip);
+      return type_for_clast_term ((struct clast_term *) e, ip, v1, v2);
 
     case clast_expr_red:
-      return type_for_clast_red ((struct clast_reduction *) e, ip);
+      return type_for_clast_red ((struct clast_reduction *) e, ip, v1, v2);
 
     case clast_expr_bin:
-      return type_for_clast_bin ((struct clast_binary *) e, ip);
+      return type_for_clast_bin ((struct clast_binary *) e, ip, v1, v2);
 
     default:
       gcc_unreachable ();
@@ -574,8 +659,17 @@ type_for_clast_expr (struct clast_expr *e, ivs_params_p ip)
 static tree
 type_for_clast_eq (struct clast_equation *cleq, ivs_params_p ip)
 {
-  tree l = type_for_clast_expr (cleq->LHS, ip);
-  tree r = type_for_clast_expr (cleq->RHS, ip);
+  mpz_t v1, v2;
+  tree l, r;
+
+  mpz_init (v1);
+  mpz_init (v2);
+
+  l = type_for_clast_expr (cleq->LHS, ip, v1, v2);
+  r = type_for_clast_expr (cleq->RHS, ip, v1, v2);
+
+  mpz_clear (v1);
+  mpz_clear (v2);
   return max_precision_type (l, r);
 }
 
@@ -727,8 +821,17 @@ clast_get_body_of_loop (struct clast_stmt *stmt)
 static tree
 type_for_clast_for (struct clast_for *stmt_for, ivs_params_p ip)
 {
-  tree lb_type = type_for_clast_expr (stmt_for->LB, ip);
-  tree ub_type = type_for_clast_expr (stmt_for->UB, ip);
+  mpz_t v1, v2;
+  tree lb_type, ub_type;
+
+  mpz_init (v1);
+  mpz_init (v2);
+
+  lb_type = type_for_clast_expr (stmt_for->LB, ip, v1, v2);
+  ub_type = type_for_clast_expr (stmt_for->UB, ip, v1, v2);
+
+  mpz_clear (v1);
+  mpz_clear (v2);
 
   return max_precision_type (lb_type, ub_type);
 }
@@ -784,17 +887,24 @@ build_iv_mapping (VEC (tree, heap) *iv_map, struct clast_user_stmt *user_stmt,
   CloogStatement *cs = user_stmt->statement;
   poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
   gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
+  mpz_t v1, v2;
+
+  mpz_init (v1);
+  mpz_init (v2);
 
   for (t = user_stmt->substitutions; t; t = t->next, depth++)
     {
       struct clast_expr *expr = (struct clast_expr *)
        ((struct clast_assignment *)t)->RHS;
-      tree type = type_for_clast_expr (expr, ip);
+      tree type = type_for_clast_expr (expr, ip, v1, v2);
       tree new_name = clast_to_gcc_expression (type, expr, ip);
       loop_p old_loop = gbb_loop_at_index (gbb, ip->region, depth);
 
       VEC_replace (tree, iv_map, old_loop->num, new_name);
     }
+
+  mpz_clear (v1);
+  mpz_clear (v2);
 }
 
 /* Construct bb_pbb_def with BB and PBB.  */
