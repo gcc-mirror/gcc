@@ -1,3 +1,15 @@
+2011-07-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49770
+	* tree-ssa-sccvn.c (valueize_refs_1): Return whether we
+	valueized any operand.  Renamed from ...
+	(valueize_refs): ... this.  New wrapper around valueize_refs_1.
+	(valueize_shared_reference_ops_from_ref): Return whether we
+	valueized any operand.
+	(vn_reference_lookup): Only when we valueized any operand
+	use the valueized reference for alias analysis.  Do not preserve
+	the original reference tree in this case.
+
 2011-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_decompose_address): Reject all but
