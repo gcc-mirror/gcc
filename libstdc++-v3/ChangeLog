@@ -1,3 +1,19 @@
+2011-07-21  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/safe_unordered_sequence.h,
+	safe_unordered_sequence.tcc: Rename respectively in...
+	* include/debug/safe_unordered_container.h,
+	safe_unordered_container.tcc: ...those. _Safe_unordered_sequence
+	rename _Safe_unordered_container.
+	* include/debug/safe_unordered_base.h: _Safe_unordered_sequence_base
+	rename _Safe_unordered_container_base.
+	* include/debug/unordered_map, unordered_set: Adapt to previous
+	modifications.
+	* config/abi/pre/gnu.ver: Likewise.
+	* src/debug.cc: Likewise.
+	* include/Makefile.am: Likewise.
+	* include/Makefile.in: Regenerate.
+
 2011-07-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/mutex (timed_mutex, recursive_timed_mutex): Update
