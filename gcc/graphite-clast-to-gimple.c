@@ -696,23 +696,15 @@ gcc_type_for_iv_of_clast_loop (struct clast_for *stmt_for, int level,
    becomes the child loop of the OUTER_LOOP.  NEWIVS_INDEX binds
    CLooG's scattering name to the induction variable created for the
    loop of STMT.  The new induction variable is inserted in the NEWIVS
-   vector.  */
+   vector and is of type TYPE.  */
 
 static struct loop *
-graphite_create_new_loop (sese region, edge entry_edge,
+graphite_create_new_loop (edge entry_edge,
 			  struct clast_for *stmt,
 			  loop_p outer, VEC (tree, heap) **newivs,
-			  htab_t newivs_index, htab_t params_index, int level)
+			  htab_t newivs_index,
+			  tree type, tree lb, tree ub)
 {
-  tree lb_type = gcc_type_for_clast_expr (stmt->LB, region, *newivs,
-					  newivs_index, params_index);
-  tree ub_type = gcc_type_for_clast_expr (stmt->UB, region, *newivs,
-					  newivs_index, params_index);
-  tree type = gcc_type_for_iv_of_clast_loop (stmt, level, lb_type, ub_type);
-  tree lb = clast_to_gcc_expression (type, stmt->LB, region, *newivs,
-				     newivs_index, params_index);
-  tree ub = clast_to_gcc_expression (type, stmt->UB, region, *newivs,
-				     newivs_index, params_index);
   tree stride = gmp_cst_to_tree (type, stmt->stride);
   tree ivvar = create_tmp_var (type, "graphite_IV");
   tree iv, iv_after_increment;
@@ -887,7 +879,8 @@ static edge
 graphite_create_new_loop_guard (sese region, edge entry_edge,
 				struct clast_for *stmt,
 				VEC (tree, heap) *newivs,
-				htab_t newivs_index, htab_t params_index)
+				htab_t newivs_index, htab_t params_index,
+				int level, tree *type, tree *lb, tree *ub)
 {
   tree cond_expr;
   edge exit_edge;
@@ -895,28 +888,30 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
 					  newivs_index, params_index);
   tree ub_type = gcc_type_for_clast_expr (stmt->UB, region, newivs,
 					  newivs_index, params_index);
-  tree type = max_precision_type (lb_type, ub_type);
-  tree lb = clast_to_gcc_expression (type, stmt->LB, region, newivs,
-				     newivs_index, params_index);
-  tree ub = clast_to_gcc_expression (type, stmt->UB, region, newivs,
-				     newivs_index, params_index);
+
+  *type = gcc_type_for_iv_of_clast_loop (stmt, level, lb_type, ub_type);
+  *lb = clast_to_gcc_expression (*type, stmt->LB, region, newivs,
+				 newivs_index, params_index);
+  *ub = clast_to_gcc_expression (*type, stmt->UB, region, newivs,
+				 newivs_index, params_index);
+
   /* When ub is simply a constant or a parameter, use lb <= ub.  */
-  if (TREE_CODE (ub) == INTEGER_CST || TREE_CODE (ub) == SSA_NAME)
-    cond_expr = fold_build2 (LE_EXPR, boolean_type_node, lb, ub);
+  if (TREE_CODE (*ub) == INTEGER_CST || TREE_CODE (*ub) == SSA_NAME)
+    cond_expr = fold_build2 (LE_EXPR, boolean_type_node, *lb, *ub);
   else
     {
-      tree one = (POINTER_TYPE_P (type)
+      tree one = (POINTER_TYPE_P (*type)
 		  ? size_one_node
-		  : fold_convert (type, integer_one_node));
+		  : fold_convert (*type, integer_one_node));
       /* Adding +1 and using LT_EXPR helps with loop latches that have a
 	 loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this becomes
 	 2^k-1 due to integer overflow, and the condition lb <= ub is true,
 	 even if we do not want this.  However lb < ub + 1 is false, as
 	 expected.  */
-      tree ub_one = fold_build2 (POINTER_TYPE_P (type) ? POINTER_PLUS_EXPR
-				 : PLUS_EXPR, type, ub, one);
+      tree ub_one = fold_build2 (POINTER_TYPE_P (*type) ? POINTER_PLUS_EXPR
+				 : PLUS_EXPR, *type, *ub, one);
 
-      cond_expr = fold_build2 (LT_EXPR, boolean_type_node, lb, ub_one);
+      cond_expr = fold_build2 (LT_EXPR, boolean_type_node, *lb, ub_one);
     }
 
   exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
@@ -935,17 +930,19 @@ translate_clast (sese, loop_p, struct clast_stmt *, edge,
    - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
+
 static edge
 translate_clast_for_loop (sese region, loop_p context_loop,
 			  struct clast_for *stmt, edge next_e,
 			  VEC (tree, heap) **newivs,
 			  htab_t newivs_index, htab_t bb_pbb_mapping,
-			  int level, htab_t params_index)
+			  int level, htab_t params_index, tree type,
+			  tree lb, tree ub)
 {
-  struct loop *loop = graphite_create_new_loop (region, next_e, stmt,
+  struct loop *loop = graphite_create_new_loop (next_e, stmt,
  						context_loop, newivs,
- 						newivs_index, params_index,
-						level);
+						newivs_index,
+						type, lb, ub);
   edge last_e = single_exit (loop);
   edge to_body = single_succ_edge (loop->header);
   basic_block after = to_body->dest;
@@ -982,13 +979,15 @@ translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt,
 		     htab_t newivs_index, htab_t bb_pbb_mapping, int level,
 		     htab_t params_index)
 {
+  tree type, lb, ub;
   edge last_e = graphite_create_new_loop_guard (region, next_e, stmt, *newivs,
-						newivs_index, params_index);
+						newivs_index, params_index,
+						level, &type, &lb, &ub);
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
 
   translate_clast_for_loop (region, context_loop, stmt, true_e, newivs,
 			    newivs_index, bb_pbb_mapping, level,
-			    params_index);
+			    params_index, type, lb, ub);
   return last_e;
 }
 

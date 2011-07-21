@@ -1,5 +1,14 @@
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (graphite_create_new_loop): Do not
+	recompute type, lb, and ub.  Get them from...
+	(graphite_create_new_loop_guard): ...here.  Pass in parameter
+	pointers to type, lb, and ub.
+	(translate_clast_for_loop): Update function calls.
+	(translate_clast_for): Same.
+
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (compute_bounds_for_level): Call
 	psct_dynamic_dim.
 	(translate_clast_for_loop): Pass loop level to dependency_in_loop_p.
