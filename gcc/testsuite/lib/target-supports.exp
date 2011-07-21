@@ -1054,12 +1054,35 @@ proc check_sse_os_support_available { } {
 	    check_runtime_nocache sse_os_support_available {
 		int main ()
 		{
-		    __asm__ volatile ("movss %xmm2,%xmm1");
-		    return 0;
+		  asm volatile ("movss %xmm2,%xmm1");
+		  return 0;
 		}
 	    } "-msse"
 	} else {
 	    expr 1
+	}
+    }]
+}
+
+# Return 1 if the target OS supports running AVX executables, 0
+# otherwise.  Cache the result.
+
+proc check_avx_os_support_available { } {
+    return [check_cached_effective_target avx_os_support_available {
+	# If this is not the right target then we can skip the test.
+	if { !([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	    expr 0
+	} else {
+	    # Check that OS has AVX and SSE saving enabled.
+	    check_runtime_nocache avx_os_support_available {
+		int main ()
+		{
+		  unsigned int eax, edx;
+
+		  asm ("xgetbv" : "=a" (eax), "=d" (edx) : "c" (0));
+		  return (eax & 6) != 6;
+		}
+	    } ""
 	}
     }]
 }
@@ -1160,7 +1183,8 @@ proc check_effective_target_sse2_runtime { } {
 
 proc check_effective_target_avx_runtime { } {
     if { [check_effective_target_avx]
-	 && [check_avx_hw_available] } {
+	 && [check_avx_hw_available]
+	 && [check_avx_os_support_available] } {
 	return 1
     }
     return 0

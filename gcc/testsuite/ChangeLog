@@ -1,3 +1,8 @@
+2011-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_avx_os_support_available): New.
+	(check_effective_target_avx_runtime): Use it.
+
 2011-07-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49785
