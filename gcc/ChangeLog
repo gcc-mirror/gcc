@@ -1,3 +1,7 @@
+2011-07-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* regcprop.c (maybe_mode_change): Check HARD_REGNO_MODE_OK.
+
 2011-07-21  Kai Tietz  <ktietz@redhat.com>
 
 	* tree-ssa-propagate.c (substitute_and_fold): Use
