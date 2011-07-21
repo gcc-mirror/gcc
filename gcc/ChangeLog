@@ -1,3 +1,7 @@
+2011-07-21  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr.c (avr_rtx_costs): Set cost of CONST, LABEL_REF to 0.
+
 2011-07-20  H.J. Lu  <hongjiu.lu@intel.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 	    Richard Henderson  <rth@redhat.com>
