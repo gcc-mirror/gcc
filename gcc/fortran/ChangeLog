@@ -1,3 +1,17 @@
+2011-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_present): Allow coarrays.
+	* trans-array.c (gfc_conv_array_ref): Avoid casting
+	when a pointer is wanted.
+	* trans-decl.c (create_function_arglist): For -fcoarray=lib,
+	handle hidden token and offset arguments for nondescriptor
+	coarrays.
+	* trans-expr.c (get_tree_for_caf_expr): New function.
+	(gfc_conv_procedure_call): For -fcoarray=lib pass the
+	token and offset for nondescriptor coarray dummies.
+	* trans.h (lang_type): Add caf_offset tree.
+	(GFC_TYPE_ARRAY_CAF_OFFSET): New macro.
+
 2011-07-19  Tobias Burnus  <burnus@net-b.de>
 
 	* expr.c (gfc_is_coarray): New function.
