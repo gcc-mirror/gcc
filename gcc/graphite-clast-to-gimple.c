@@ -171,29 +171,39 @@ eq_clast_name_indexes (const void *e1, const void *e2)
 
 
 
+/* NEWIVS_INDEX binds CLooG's scattering name to the index of the tree
+   induction variable in NEWIVS.
+
+   PARAMS_INDEX binds CLooG's parameter name to the index of the tree
+   parameter in PARAMS.  */
+
+typedef struct ivs_params {
+  VEC (tree, heap) *params, **newivs;
+  htab_t newivs_index, params_index;
+  sese region;
+} *ivs_params_p;
+
 /* Returns the tree variable from the name NAME that was given in
    Cloog representation.  */
 
 static tree
-clast_name_to_gcc (clast_name_p name, sese region, VEC (tree, heap) *newivs,
-		   htab_t newivs_index, htab_t params_index)
+clast_name_to_gcc (clast_name_p name, ivs_params_p ip)
 {
   int index;
-  VEC (tree, heap) *params = SESE_PARAMS (region);
 
-  if (params && params_index)
+  if (ip->params && ip->params_index)
     {
-      index = clast_name_to_index (name, params_index);
+      index = clast_name_to_index (name, ip->params_index);
 
       if (index >= 0)
-	return VEC_index (tree, params, index);
+	return VEC_index (tree, ip->params, index);
     }
 
-  gcc_assert (newivs && newivs_index);
-  index = clast_name_to_index (name, newivs_index);
+  gcc_assert (*(ip->newivs) && ip->newivs_index);
+  index = clast_name_to_index (name, ip->newivs_index);
   gcc_assert (index >= 0);
 
-  return VEC_index (tree, newivs, index);
+  return VEC_index (tree, *(ip->newivs), index);
 }
 
 /* Returns the signed maximal precision type for expressions TYPE1 and TYPE2.  */
@@ -250,27 +260,22 @@ max_precision_type (tree type1, tree type2)
 }
 
 static tree
-clast_to_gcc_expression (tree, struct clast_expr *, sese, VEC (tree, heap) *,
-			 htab_t, htab_t);
+clast_to_gcc_expression (tree, struct clast_expr *, ivs_params_p);
 
 /* Converts a Cloog reduction expression R with reduction operation OP
    to a GCC expression tree of type TYPE.  */
 
 static tree
 clast_to_gcc_expression_red (tree type, enum tree_code op,
-			     struct clast_reduction *r,
-			     sese region, VEC (tree, heap) *newivs,
-			     htab_t newivs_index, htab_t params_index)
+			     struct clast_reduction *r, ivs_params_p ip)
 {
   int i;
-  tree res = clast_to_gcc_expression (type, r->elts[0], region, newivs,
-				      newivs_index, params_index);
+  tree res = clast_to_gcc_expression (type, r->elts[0], ip);
   tree operand_type = (op == POINTER_PLUS_EXPR) ? sizetype : type;
 
   for (i = 1; i < r->n; i++)
     {
-      tree t = clast_to_gcc_expression (operand_type, r->elts[i], region,
-					newivs, newivs_index, params_index);
+      tree t = clast_to_gcc_expression (operand_type, r->elts[i], ip);
       res = fold_build2 (op, type, res, t);
     }
 
@@ -281,9 +286,7 @@ clast_to_gcc_expression_red (tree type, enum tree_code op,
    type TYPE.  */
 
 static tree
-clast_to_gcc_expression (tree type, struct clast_expr *e,
-			 sese region, VEC (tree, heap) *newivs,
-			 htab_t newivs_index, htab_t params_index)
+clast_to_gcc_expression (tree type, struct clast_expr *e, ivs_params_p ip)
 {
   switch (e->type)
     {
@@ -295,8 +298,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 	  {
 	    if (mpz_cmp_si (t->val, 1) == 0)
 	      {
-		tree name = clast_name_to_gcc (t->var, region, newivs,
-					       newivs_index, params_index);
+		tree name = clast_name_to_gcc (t->var, ip);
 
 		if (POINTER_TYPE_P (TREE_TYPE (name)) != POINTER_TYPE_P (type))
 		  name = fold_convert (sizetype, name);
@@ -307,8 +309,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 
 	    else if (mpz_cmp_si (t->val, -1) == 0)
 	      {
-		tree name = clast_name_to_gcc (t->var, region, newivs,
-					       newivs_index, params_index);
+		tree name = clast_name_to_gcc (t->var, ip);
 
 		if (POINTER_TYPE_P (TREE_TYPE (name)) != POINTER_TYPE_P (type))
 		  name = fold_convert (sizetype, name);
@@ -319,8 +320,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 	      }
 	    else
 	      {
-		tree name = clast_name_to_gcc (t->var, region, newivs,
-					       newivs_index, params_index);
+		tree name = clast_name_to_gcc (t->var, ip);
 		tree cst = gmp_cst_to_tree (type, t->val);
 
 		if (POINTER_TYPE_P (TREE_TYPE (name)) != POINTER_TYPE_P (type))
@@ -348,17 +348,13 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 	  case clast_red_sum:
 	    return clast_to_gcc_expression_red
 	      (type, POINTER_TYPE_P (type) ? POINTER_PLUS_EXPR : PLUS_EXPR,
-	       r, region, newivs, newivs_index, params_index);
+	       r, ip);
 
 	  case clast_red_min:
-	    return clast_to_gcc_expression_red (type, MIN_EXPR, r, region,
-						newivs, newivs_index,
-						params_index);
+	    return clast_to_gcc_expression_red (type, MIN_EXPR, r, ip);
 
 	  case clast_red_max:
-	    return clast_to_gcc_expression_red (type, MAX_EXPR, r, region,
-						newivs, newivs_index,
-						params_index);
+	    return clast_to_gcc_expression_red (type, MAX_EXPR, r, ip);
 
 	  default:
 	    gcc_unreachable ();
@@ -370,8 +366,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
       {
 	struct clast_binary *b = (struct clast_binary *) e;
 	struct clast_expr *lhs = (struct clast_expr *) b->LHS;
-	tree tl = clast_to_gcc_expression (type, lhs, region, newivs,
-					   newivs_index, params_index);
+	tree tl = clast_to_gcc_expression (type, lhs, ip);
 	tree tr = gmp_cst_to_tree (type, b->RHS);
 
 	switch (b->type)
@@ -448,47 +443,40 @@ gcc_type_for_value (mpz_t val)
 
 static tree
 gcc_type_for_clast_term (struct clast_term *t,
-			 sese region, VEC (tree, heap) *newivs,
-			 htab_t newivs_index, htab_t params_index)
+			 ivs_params_p ip)
 {
   gcc_assert (t->expr.type == clast_expr_term);
 
   if (!t->var)
     return gcc_type_for_value (t->val);
 
-  return TREE_TYPE (clast_name_to_gcc (t->var, region, newivs,
-				       newivs_index, params_index));
+  return TREE_TYPE (clast_name_to_gcc (t->var, ip));
 }
 
 static tree
-gcc_type_for_clast_expr (struct clast_expr *, sese,
-			 VEC (tree, heap) *, htab_t, htab_t);
+gcc_type_for_clast_expr (struct clast_expr *, ivs_params_p);
 
 /* Return the type for the clast_reduction R used in STMT.  */
 
 static tree
-gcc_type_for_clast_red (struct clast_reduction *r, sese region,
-			VEC (tree, heap) *newivs,
-			htab_t newivs_index, htab_t params_index)
+gcc_type_for_clast_red (struct clast_reduction *r,
+			ivs_params_p ip)
 {
   int i;
   tree type = NULL_TREE;
 
   if (r->n == 1)
-    return gcc_type_for_clast_expr (r->elts[0], region, newivs,
-				    newivs_index, params_index);
+    return gcc_type_for_clast_expr (r->elts[0], ip);
 
   switch (r->type)
     {
     case clast_red_sum:
     case clast_red_min:
     case clast_red_max:
-      type = gcc_type_for_clast_expr (r->elts[0], region, newivs,
-				      newivs_index, params_index);
+      type = gcc_type_for_clast_expr (r->elts[0], ip);
       for (i = 1; i < r->n; i++)
 	type = max_precision_type (type, gcc_type_for_clast_expr
-				   (r->elts[i], region, newivs,
-				    newivs_index, params_index));
+				   (r->elts[i], ip));
 
       return type;
 
@@ -503,12 +491,9 @@ gcc_type_for_clast_red (struct clast_reduction *r, sese region,
 /* Return the type for the clast_binary B used in STMT.  */
 
 static tree
-gcc_type_for_clast_bin (struct clast_binary *b,
-			sese region, VEC (tree, heap) *newivs,
-			htab_t newivs_index, htab_t params_index)
+gcc_type_for_clast_bin (struct clast_binary *b, ivs_params_p ip)
 {
-  tree l = gcc_type_for_clast_expr ((struct clast_expr *) b->LHS, region,
-				    newivs, newivs_index, params_index);
+  tree l = gcc_type_for_clast_expr ((struct clast_expr *) b->LHS, ip);
   tree r = gcc_type_for_value (b->RHS);
   return max_signed_precision_type (l, r);
 }
@@ -518,22 +503,18 @@ gcc_type_for_clast_bin (struct clast_binary *b,
 
 static tree
 gcc_type_for_clast_expr (struct clast_expr *e,
-			 sese region, VEC (tree, heap) *newivs,
-			 htab_t newivs_index, htab_t params_index)
+			 ivs_params_p ip)
 {
   switch (e->type)
     {
     case clast_expr_term:
-      return gcc_type_for_clast_term ((struct clast_term *) e, region,
-				      newivs, newivs_index, params_index);
+      return gcc_type_for_clast_term ((struct clast_term *) e, ip);
 
     case clast_expr_red:
-      return gcc_type_for_clast_red ((struct clast_reduction *) e, region,
-				     newivs, newivs_index, params_index);
+      return gcc_type_for_clast_red ((struct clast_reduction *) e, ip);
 
     case clast_expr_bin:
-      return gcc_type_for_clast_bin ((struct clast_binary *) e, region,
-				     newivs, newivs_index, params_index);
+      return gcc_type_for_clast_bin ((struct clast_binary *) e, ip);
 
     default:
       gcc_unreachable ();
@@ -546,31 +527,23 @@ gcc_type_for_clast_expr (struct clast_expr *e,
 
 static tree
 gcc_type_for_clast_eq (struct clast_equation *cleq,
-		       sese region, VEC (tree, heap) *newivs,
-		       htab_t newivs_index, htab_t params_index)
+		       ivs_params_p ip)
 {
-  tree l = gcc_type_for_clast_expr (cleq->LHS, region, newivs,
-				    newivs_index, params_index);
-  tree r = gcc_type_for_clast_expr (cleq->RHS, region, newivs,
-				    newivs_index, params_index);
+  tree l = gcc_type_for_clast_expr (cleq->LHS, ip);
+  tree r = gcc_type_for_clast_expr (cleq->RHS, ip);
   return max_precision_type (l, r);
 }
 
 /* Translates a clast equation CLEQ to a tree.  */
 
 static tree
-graphite_translate_clast_equation (sese region,
-				   struct clast_equation *cleq,
-				   VEC (tree, heap) *newivs,
-				   htab_t newivs_index, htab_t params_index)
+graphite_translate_clast_equation (struct clast_equation *cleq,
+				   ivs_params_p ip)
 {
   enum tree_code comp;
-  tree type = gcc_type_for_clast_eq (cleq, region, newivs, newivs_index,
-				     params_index);
-  tree lhs = clast_to_gcc_expression (type, cleq->LHS, region, newivs,
-				      newivs_index, params_index);
-  tree rhs = clast_to_gcc_expression (type, cleq->RHS, region, newivs,
-				      newivs_index, params_index);
+  tree type = gcc_type_for_clast_eq (cleq, ip);
+  tree lhs = clast_to_gcc_expression (type, cleq->LHS, ip);
+  tree rhs = clast_to_gcc_expression (type, cleq->RHS, ip);
 
   if (cleq->sign == 0)
     comp = EQ_EXPR;
@@ -587,18 +560,15 @@ graphite_translate_clast_equation (sese region,
 /* Creates the test for the condition in STMT.  */
 
 static tree
-graphite_create_guard_cond_expr (sese region, struct clast_guard *stmt,
-				 VEC (tree, heap) *newivs,
-				 htab_t newivs_index, htab_t params_index)
+graphite_create_guard_cond_expr (struct clast_guard *stmt,
+				 ivs_params_p ip)
 {
   tree cond = NULL;
   int i;
 
   for (i = 0; i < stmt->n; i++)
     {
-      tree eq = graphite_translate_clast_equation (region, &stmt->eq[i],
-						   newivs, newivs_index,
-						   params_index);
+      tree eq = graphite_translate_clast_equation (&stmt->eq[i], ip);
 
       if (cond)
 	cond = fold_build2 (TRUTH_AND_EXPR, TREE_TYPE (eq), cond, eq);
@@ -612,13 +582,10 @@ graphite_create_guard_cond_expr (sese region, struct clast_guard *stmt,
 /* Creates a new if region corresponding to Cloog's guard.  */
 
 static edge
-graphite_create_new_guard (sese region, edge entry_edge,
-			   struct clast_guard *stmt,
-			   VEC (tree, heap) *newivs,
-			   htab_t newivs_index, htab_t params_index)
+graphite_create_new_guard (edge entry_edge, struct clast_guard *stmt,
+			   ivs_params_p ip)
 {
-  tree cond_expr = graphite_create_guard_cond_expr (region, stmt, newivs,
-						    newivs_index, params_index);
+  tree cond_expr = graphite_create_guard_cond_expr (stmt, ip);
   edge exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
   return exit_edge;
 }
@@ -720,11 +687,9 @@ gcc_type_for_iv_of_clast_loop (struct clast_for *stmt_for, int level,
    vector and is of type TYPE.  */
 
 static struct loop *
-graphite_create_new_loop (edge entry_edge,
-			  struct clast_for *stmt,
-			  loop_p outer, VEC (tree, heap) **newivs,
-			  htab_t newivs_index,
-			  tree type, tree lb, tree ub, int level)
+graphite_create_new_loop (edge entry_edge, struct clast_for *stmt,
+			  loop_p outer, tree type, tree lb, tree ub,
+			  int level, ivs_params_p ip)
 {
   tree stride = gmp_cst_to_tree (type, stmt->stride);
   tree ivvar = create_tmp_var (type, "graphite_IV");
@@ -735,9 +700,9 @@ graphite_create_new_loop (edge entry_edge,
 
   add_referenced_var (ivvar);
 
-  save_clast_name_index (newivs_index, stmt->iterator,
-			 VEC_length (tree, *newivs), level);
-  VEC_safe_push (tree, heap, *newivs, iv);
+  save_clast_name_index (ip->newivs_index, stmt->iterator,
+			 VEC_length (tree, *(ip->newivs)), level);
+  VEC_safe_push (tree, heap, *(ip->newivs), iv);
   return loop;
 }
 
@@ -745,10 +710,8 @@ graphite_create_new_loop (edge entry_edge,
    induction variables of the loops around GBB in SESE.  */
 
 static void
-build_iv_mapping (VEC (tree, heap) *iv_map, sese region,
-		  VEC (tree, heap) *newivs, htab_t newivs_index,
-		  struct clast_user_stmt *user_stmt,
-		  htab_t params_index)
+build_iv_mapping (VEC (tree, heap) *iv_map, struct clast_user_stmt *user_stmt,
+		  ivs_params_p ip)
 {
   struct clast_stmt *t;
   int depth = 0;
@@ -760,11 +723,9 @@ build_iv_mapping (VEC (tree, heap) *iv_map, sese region,
     {
       struct clast_expr *expr = (struct clast_expr *)
        ((struct clast_assignment *)t)->RHS;
-      tree type = gcc_type_for_clast_expr (expr, region, newivs,
-					   newivs_index, params_index);
-      tree new_name = clast_to_gcc_expression (type, expr, region, newivs,
-					       newivs_index, params_index);
-      loop_p old_loop = gbb_loop_at_index (gbb, region, depth);
+      tree type = gcc_type_for_clast_expr (expr, ip);
+      tree new_name = clast_to_gcc_expression (type, expr, ip);
+      loop_p old_loop = gbb_loop_at_index (gbb, ip->region, depth);
 
       VEC_replace (tree, iv_map, old_loop->num, new_name);
     }
@@ -855,17 +816,13 @@ dependency_in_loop_p (loop_p loop, htab_t bb_pbb_mapping, int level)
 
 /* Translates a clast user statement STMT to gimple.
 
-   - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
    - CONTEXT_LOOP is the loop in which the generated code will be placed
-   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
-   - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
-     the sese region.  */
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.  */
+
 static edge
-translate_clast_user (sese region, struct clast_user_stmt *stmt, edge next_e,
-		      VEC (tree, heap) **newivs,
-		      htab_t newivs_index, htab_t bb_pbb_mapping,
-		      htab_t params_index)
+translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
+		      htab_t bb_pbb_mapping, ivs_params_p ip)
 {
   int i, nb_loops;
   basic_block new_bb;
@@ -881,8 +838,8 @@ translate_clast_user (sese region, struct clast_user_stmt *stmt, edge next_e,
   for (i = 0; i < nb_loops; i++)
     VEC_quick_push (tree, iv_map, NULL_TREE);
 
-  build_iv_mapping (iv_map, region, *newivs, newivs_index, stmt, params_index);
-  next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), region,
+  build_iv_mapping (iv_map, stmt, ip);
+  next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), ip->region,
 					   next_e, iv_map);
   VEC_free (tree, heap, iv_map);
 
@@ -897,24 +854,18 @@ translate_clast_user (sese region, struct clast_user_stmt *stmt, edge next_e,
    count is zero (lb > ub).  */
 
 static edge
-graphite_create_new_loop_guard (sese region, edge entry_edge,
-				struct clast_for *stmt,
-				VEC (tree, heap) *newivs,
-				htab_t newivs_index, htab_t params_index,
-				int level, tree *type, tree *lb, tree *ub)
+graphite_create_new_loop_guard (edge entry_edge, struct clast_for *stmt,
+				int level, tree *type, tree *lb, tree *ub,
+				ivs_params_p ip)
 {
   tree cond_expr;
   edge exit_edge;
-  tree lb_type = gcc_type_for_clast_expr (stmt->LB, region, newivs,
-					  newivs_index, params_index);
-  tree ub_type = gcc_type_for_clast_expr (stmt->UB, region, newivs,
-					  newivs_index, params_index);
+  tree lb_type = gcc_type_for_clast_expr (stmt->LB, ip);
+  tree ub_type = gcc_type_for_clast_expr (stmt->UB, ip);
 
   *type = gcc_type_for_iv_of_clast_loop (stmt, level, lb_type, ub_type);
-  *lb = clast_to_gcc_expression (*type, stmt->LB, region, newivs,
-				 newivs_index, params_index);
-  *ub = clast_to_gcc_expression (*type, stmt->UB, region, newivs,
-				 newivs_index, params_index);
+  *lb = clast_to_gcc_expression (*type, stmt->LB, ip);
+  *ub = clast_to_gcc_expression (*type, stmt->UB, ip);
 
   /* When ub is simply a constant or a parameter, use lb <= ub.  */
   if (TREE_CODE (*ub) == INTEGER_CST || TREE_CODE (*ub) == SSA_NAME)
@@ -941,29 +892,20 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
 }
 
 static edge
-translate_clast (sese, loop_p, struct clast_stmt *, edge,
-		 VEC (tree, heap) **, htab_t, htab_t, int, htab_t);
+translate_clast (loop_p, struct clast_stmt *, edge, htab_t, int, ivs_params_p);
 
 /* Create the loop for a clast for statement.
 
-   - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
-   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
-   - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
-     the sese region.  */
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.  */
 
 static edge
-translate_clast_for_loop (sese region, loop_p context_loop,
-			  struct clast_for *stmt, edge next_e,
-			  VEC (tree, heap) **newivs,
-			  htab_t newivs_index, htab_t bb_pbb_mapping,
-			  int level, htab_t params_index, tree type,
-			  tree lb, tree ub)
+translate_clast_for_loop (loop_p context_loop, struct clast_for *stmt,
+			  edge next_e, htab_t bb_pbb_mapping, int level,
+			  tree type, tree lb, tree ub, ivs_params_p ip)
 {
-  struct loop *loop = graphite_create_new_loop (next_e, stmt,
- 						context_loop, newivs,
-						newivs_index,
-						type, lb, ub, level);
+  struct loop *loop = graphite_create_new_loop (next_e, stmt, context_loop,
+						type, lb, ub, level, ip);
   edge last_e = single_exit (loop);
   edge to_body = single_succ_edge (loop->header);
   basic_block after = to_body->dest;
@@ -972,9 +914,8 @@ translate_clast_for_loop (sese region, loop_p context_loop,
   last_e = single_succ_edge (split_edge (last_e));
 
   /* Translate the body of the loop.  */
-  next_e = translate_clast (region, loop, stmt->body, to_body,
-			    newivs, newivs_index, bb_pbb_mapping, level + 1,
-			    params_index);
+  next_e = translate_clast (loop, stmt->body, to_body, bb_pbb_mapping,
+			    level + 1, ip);
   redirect_edge_succ_nodup (next_e, after);
   set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
@@ -989,51 +930,38 @@ translate_clast_for_loop (sese region, loop_p context_loop,
    protecting the loop, if it is executed zero times.  In this guard we create
    the real loop structure.
 
-   - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
-   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
-   - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
-     the sese region.  */
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.  */
+
 static edge
-translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt,
-		     edge next_e, VEC (tree, heap) **newivs,
-		     htab_t newivs_index, htab_t bb_pbb_mapping, int level,
-		     htab_t params_index)
+translate_clast_for (loop_p context_loop, struct clast_for *stmt, edge next_e,
+		     htab_t bb_pbb_mapping, int level, ivs_params_p ip)
 {
   tree type, lb, ub;
-  edge last_e = graphite_create_new_loop_guard (region, next_e, stmt, *newivs,
-						newivs_index, params_index,
-						level, &type, &lb, &ub);
+  edge last_e = graphite_create_new_loop_guard (next_e, stmt, level, &type,
+						&lb, &ub, ip);
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
 
-  translate_clast_for_loop (region, context_loop, stmt, true_e, newivs,
-			    newivs_index, bb_pbb_mapping, level,
-			    params_index, type, lb, ub);
+  translate_clast_for_loop (context_loop, stmt, true_e, bb_pbb_mapping, level,
+			    type, lb, ub, ip);
   return last_e;
 }
 
 /* Translates a clast guard statement STMT to gimple.
 
-   - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
    - CONTEXT_LOOP is the loop in which the generated code will be placed
-   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
-   - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
-     the sese region.  */
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.  */
+
 static edge
-translate_clast_guard (sese region, loop_p context_loop,
-		       struct clast_guard *stmt, edge next_e,
-		       VEC (tree, heap) **newivs,
-		       htab_t newivs_index, htab_t bb_pbb_mapping, int level,
-		       htab_t params_index)
+translate_clast_guard (loop_p context_loop, struct clast_guard *stmt,
+		       edge next_e, htab_t bb_pbb_mapping, int level,
+		       ivs_params_p ip)
 {
-  edge last_e = graphite_create_new_guard (region, next_e, stmt, *newivs,
-					   newivs_index, params_index);
+  edge last_e = graphite_create_new_guard (next_e, stmt, ip);
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
 
-  translate_clast (region, context_loop, stmt->then, true_e,
-		   newivs, newivs_index, bb_pbb_mapping,
-		   level, params_index);
+  translate_clast (context_loop, stmt->then, true_e, bb_pbb_mapping, level, ip);
   return last_e;
 }
 
@@ -1043,11 +971,10 @@ translate_clast_guard (sese region, loop_p context_loop,
    - NEXT_E is the edge where new generated code should be attached.
    - CONTEXT_LOOP is the loop in which the generated code will be placed
    - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.  */
+
 static edge
-translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
-		 edge next_e, VEC (tree, heap) **newivs,
-		 htab_t newivs_index, htab_t bb_pbb_mapping, int level,
-		 htab_t params_index)
+translate_clast (loop_p context_loop, struct clast_stmt *stmt, edge next_e,
+		 htab_t bb_pbb_mapping, int level, ivs_params_p ip)
 {
   if (!stmt)
     return next_e;
@@ -1056,36 +983,28 @@ translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
     ; /* Do nothing.  */
 
   else if (CLAST_STMT_IS_A (stmt, stmt_user))
-    next_e = translate_clast_user (region, (struct clast_user_stmt *) stmt,
-				   next_e, newivs, newivs_index,
-				   bb_pbb_mapping, params_index);
+    next_e = translate_clast_user ((struct clast_user_stmt *) stmt,
+				   next_e, bb_pbb_mapping, ip);
 
   else if (CLAST_STMT_IS_A (stmt, stmt_for))
-    next_e = translate_clast_for (region, context_loop,
-				  (struct clast_for *) stmt, next_e,
-				  newivs, newivs_index,
-				  bb_pbb_mapping, level, params_index);
+    next_e = translate_clast_for (context_loop, (struct clast_for *) stmt,
+				  next_e, bb_pbb_mapping, level, ip);
 
   else if (CLAST_STMT_IS_A (stmt, stmt_guard))
-    next_e = translate_clast_guard (region, context_loop,
-				    (struct clast_guard *) stmt, next_e,
-				    newivs, newivs_index,
-				    bb_pbb_mapping, level, params_index);
+    next_e = translate_clast_guard (context_loop, (struct clast_guard *) stmt,
+				    next_e, bb_pbb_mapping, level, ip);
 
   else if (CLAST_STMT_IS_A (stmt, stmt_block))
-    next_e = translate_clast (region, context_loop,
-			      ((struct clast_block *) stmt)->body,
-			      next_e, newivs, newivs_index,
-			      bb_pbb_mapping, level, params_index);
+    next_e = translate_clast (context_loop, ((struct clast_block *) stmt)->body,
+			      next_e, bb_pbb_mapping, level, ip);
   else
     gcc_unreachable();
 
   recompute_all_dominators ();
   graphite_verify ();
 
-  return translate_clast (region, context_loop, stmt->next, next_e,
-			  newivs, newivs_index,
-			  bb_pbb_mapping, level, params_index);
+  return translate_clast (context_loop, stmt->next, next_e, bb_pbb_mapping,
+			  level, ip);
 }
 
 /* Free the SCATTERING domain list.  */
@@ -1124,7 +1043,7 @@ initialize_cloog_names (scop_p scop, CloogProgram *prog)
 
   for (i = 0; i < nb_parameters; i++)
     {
-      tree param = VEC_index (tree, SESE_PARAMS(region), i);
+      tree param = VEC_index (tree, SESE_PARAMS (region), i);
       const char *name = get_name (param);
       int len;
 
@@ -1461,6 +1380,7 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   ifsese if_region = NULL;
   htab_t newivs_index, params_index;
   cloog_prog_clast pc;
+  struct ivs_params ip;
 
   timevar_push (TV_GRAPHITE_CODE_GEN);
   gloog_error = false;
@@ -1493,10 +1413,14 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 
   create_params_index (params_index, pc.prog);
 
-  translate_clast (region, context_loop, pc.stmt,
-		   if_region->true_region->entry,
-		   &newivs, newivs_index,
-		   bb_pbb_mapping, 0, params_index);
+  ip.newivs = &newivs;
+  ip.newivs_index = newivs_index;
+  ip.params = SESE_PARAMS (region);
+  ip.params_index = params_index;
+  ip.region = region;
+
+  translate_clast (context_loop, pc.stmt, if_region->true_region->entry,
+		   bb_pbb_mapping, 0, &ip);
   graphite_verify ();
   scev_reset ();
   recompute_all_dominators ();

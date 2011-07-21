@@ -1,5 +1,30 @@
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (struct ivs_params): New.
+	(clast_name_to_gcc): Use ivs_params to pass around parameters.
+	(clast_to_gcc_expression): Same.
+	(clast_to_gcc_expression_red): Same.
+	(gcc_type_for_clast_term): Same.
+	(gcc_type_for_clast_expr): Same.
+	(gcc_type_for_clast_red): Same.
+	(gcc_type_for_clast_bin): Same.
+	(gcc_type_for_clast_eq): Same.
+	(graphite_translate_clast_equation): Same.
+	(graphite_create_guard_cond_expr): Same.
+	(graphite_create_new_guard): Same.
+	(graphite_create_new_loop): Same.
+	(build_iv_mapping): Same.
+	(translate_clast_user): Same.
+	(graphite_create_new_loop_guard): Same.
+	(translate_clast): Same.
+	(translate_clast_for_loop): Same.
+	(translate_clast_for): Same.
+	(translate_clast_guard): Same.
+	(initialize_cloog_names): Fix typo.
+	(gloog): Initialize an ivs_params struct, pass it to translate_clast.
+
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (struct clast_name_index): Add level.
 	(new_clast_name_index): Add level parameter.
 	(clast_name_to_level): New.
