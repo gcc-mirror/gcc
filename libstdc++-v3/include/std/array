@@ -35,6 +35,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
+#include <stdexcept>
 #include <bits/stl_algobase.h>
 #include <bits/range_access.h>
 
@@ -150,8 +151,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator[](size_type __n)
       { return _M_instance[__n]; }
 
-      const_reference
-      operator[](size_type __n) const
+      constexpr const_reference
+      operator[](size_type __n) const noexcept
       { return _M_instance[__n]; }
 
       reference
@@ -162,12 +163,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_instance[__n];
       }
 
-      const_reference
+      constexpr const_reference
       at(size_type __n) const
       {
-	if (__n >= _Nm)
-	  std::__throw_out_of_range(__N("array::at"));
-	return _M_instance[__n];
+	return __n < _Nm ? _M_instance[__n] : 
+#ifdef __EXCEPTIONS
+	                   throw out_of_range(__N("array::at"));
+#else
+	                   _M_instance[0];
+#endif
       }
 
       reference 
