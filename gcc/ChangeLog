@@ -1,18 +1,20 @@
+2011-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Reject all but
+	register operands and DImode hard registers in index.
+
 2011-07-21  Kai Tietz  <ktietz@redhat.com>
 
 	* fold-const.c (fold_unary_loc): Preserve indirect
 	comparison cast to none-boolean type.
 	* tree-ssa.c (useless_type_conversion_p): Preserve cast
 	from/to boolean-type.
-	* gimplify.c (gimple_boolify): Handle boolification
-	of comparisons.
-	(gimplify_expr): Boolifiy non aggregate-typed
-	comparisons.
+	* gimplify.c (gimple_boolify): Handle boolification of comparisons.
+	(gimplify_expr): Boolifiy non aggregate-typed comparisons.
 	* tree-cfg.c (verify_gimple_comparison): Check result
 	type of comparison expression.
-	* tree-ssa-forwprop.c (forward_propagate_comparison):
-	Adjust test of condition result and disallow type-cast
-	sinking into comparison.
+	* tree-ssa-forwprop.c (forward_propagate_comparison): Adjust test
+	of condition result and disallow type-cast sinking into comparison.
 
 2011-07-21  Richard Guenther  <rguenther@suse.de>
 
@@ -31,7 +33,7 @@
 	in last to first, or first to last order.
 
 2011-07-21  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.c (avr_rtx_costs): Set cost of CONST, LABEL_REF to 0.
 
 2011-07-20  H.J. Lu  <hongjiu.lu@intel.com>
