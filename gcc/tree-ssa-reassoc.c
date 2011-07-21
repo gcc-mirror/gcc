@@ -235,7 +235,7 @@ get_rank (tree e)
   if (TREE_CODE (e) == SSA_NAME)
     {
       gimple stmt;
-      long rank, maxrank;
+      long rank;
       int i, n;
 
       if (TREE_CODE (SSA_NAME_VAR (e)) == PARM_DECL
@@ -258,7 +258,6 @@ get_rank (tree e)
       /* Otherwise, find the maximum rank for the operands, or the bb
 	 rank, whichever is less.   */
       rank = 0;
-      maxrank = bb_rank[gimple_bb(stmt)->index];
       if (gimple_assign_single_p (stmt))
 	{
 	  tree rhs = gimple_assign_rhs1 (stmt);
@@ -267,15 +266,15 @@ get_rank (tree e)
 	    rank = MAX (rank, get_rank (rhs));
 	  else
 	    {
-	      for (i = 0;
-		   i < n && TREE_OPERAND (rhs, i) && rank != maxrank; i++)
-		rank = MAX(rank, get_rank (TREE_OPERAND (rhs, i)));
+	      for (i = 0; i < n; i++)
+		if (TREE_OPERAND (rhs, i))
+		  rank = MAX(rank, get_rank (TREE_OPERAND (rhs, i)));
 	    }
 	}
       else
 	{
 	  n = gimple_num_ops (stmt);
-	  for (i = 1; i < n && rank != maxrank; i++)
+	  for (i = 1; i < n; i++)
 	    {
 	      gcc_assert (gimple_op (stmt, i));
 	      rank = MAX(rank, get_rank (gimple_op (stmt, i)));

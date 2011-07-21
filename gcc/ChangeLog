@@ -1,3 +1,9 @@
+2011-07-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/49749
+	* tree-ssa-reassoc.c (get_rank): Fix operand scan conditions and
+	remove no-longer-used maxrank variable.
+	
 2011-07-21  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/avr.c (final_prescan_insn): Fix printing of rtx_costs.
