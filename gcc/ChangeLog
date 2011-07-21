@@ -1,3 +1,12 @@
+2011-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2011-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49600
+	* config/i386/i386.md (SSE2 int->float split): Push operand 1 in
+	general register to memory for !TARGET_INTER_UNIT_MOVES.
+
 2011-07-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_class_max_nregs): Fix return type.
