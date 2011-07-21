@@ -541,11 +541,12 @@ tree gfc_call_malloc (stmtblock_t *, tree, tree);
 tree gfc_build_memcpy_call (tree, tree, tree);
 
 /* Allocate memory for allocatable variables, with optional status variable.  */
-tree gfc_allocate_allocatable_with_status (stmtblock_t*,
-					   tree, tree, tree, gfc_expr*);
+tree gfc_allocate_allocatable (stmtblock_t*, tree, tree,
+			       tree, tree, tree, gfc_expr*);
 
 /* Allocate memory, with optional status variable.  */
-tree gfc_allocate_with_status (stmtblock_t *, tree, tree, bool);
+tree gfc_allocate_using_malloc (stmtblock_t *, tree, tree);
+tree gfc_allocate_using_lib (stmtblock_t *, tree, tree, tree, tree);
 
 /* Generate code to deallocate an array.  */
 tree gfc_deallocate_with_status (tree, tree, bool, gfc_expr*);

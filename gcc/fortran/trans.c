@@ -565,12 +565,12 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
    This function follows the following pseudo-code:
 
     void *
-    allocate (size_t size, integer_type* stat)
+    allocate (size_t size, integer_type stat)
     {
       void *newmem;
     
-      if (stat)
-	*stat = 0;
+      if (stat requested)
+	stat = 0;
 
       newmem = malloc (MAX (size, 1));
       if (newmem == NULL)
@@ -583,12 +583,11 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
       return newmem;
     }  */
 tree
-gfc_allocate_with_status (stmtblock_t * block, tree size, tree status,
-			  bool coarray_lib)
+gfc_allocate_using_malloc (stmtblock_t * block, tree size, tree status)
 {
   stmtblock_t alloc_block;
-  tree res, tmp, msg, cond;
-  tree status_type = status ? TREE_TYPE (TREE_TYPE (status)) : NULL_TREE;
+  tree res, tmp, on_error;
+  tree status_type = status ? TREE_TYPE (status) : NULL_TREE;
 
   /* Evaluate size only once, and make sure it has the right type.  */
   size = gfc_evaluate_now (size, block);
@@ -599,76 +598,94 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status,
   res = gfc_create_var (prvoid_type_node, NULL);
 
   /* Set the optional status variable to zero.  */
-  if (status != NULL_TREE && !integer_zerop (status))
-    {
-      tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
-			     fold_build1_loc (input_location, INDIRECT_REF,
-					      status_type, status),
-			     build_int_cst (status_type, 0));
-      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			     fold_build2_loc (input_location, NE_EXPR,
-					boolean_type_node, status,
-					build_int_cst (TREE_TYPE (status), 0)),
-			     tmp, build_empty_stmt (input_location));
-      gfc_add_expr_to_block (block, tmp);
-    }
+  if (status != NULL_TREE)
+      gfc_add_expr_to_block (block,
+	     fold_build2_loc (input_location, MODIFY_EXPR, status_type,
+			      status, build_int_cst (status_type, 0)));
 
   /* The allocation itself.  */
   gfc_start_block (&alloc_block);
-  if (coarray_lib)
-    {
-      gfc_add_modify (&alloc_block, res,
-	      fold_convert (prvoid_type_node,
-		    build_call_expr_loc (input_location,
-			 gfor_fndecl_caf_register, 6,
-			 fold_build2_loc (input_location,
-				  MAX_EXPR, size_type_node, size,
-				  build_int_cst (size_type_node, 1)),
-			 build_int_cst (integer_type_node,
-					GFC_CAF_COARRAY_ALLOC),
-			 null_pointer_node,  /* token  */
-			 null_pointer_node,  /* stat  */
-			 null_pointer_node,  /* errmsg, errmsg_len  */
-			 build_int_cst (integer_type_node, 0))));
-    }
+  gfc_add_modify (&alloc_block, res,
+	  fold_convert (prvoid_type_node,
+		build_call_expr_loc (input_location,
+			     built_in_decls[BUILT_IN_MALLOC], 1,
+			     fold_build2_loc (input_location,
+				      MAX_EXPR, size_type_node, size,
+				      build_int_cst (size_type_node, 1)))));
+
+  /* What to do in case of error.  */
+  if (status != NULL_TREE)
+    on_error = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
+			status, build_int_cst (status_type, LIBERROR_ALLOCATION));
   else
-    {
-      gfc_add_modify (&alloc_block, res,
-	      fold_convert (prvoid_type_node,
-		    build_call_expr_loc (input_location,
-			 built_in_decls[BUILT_IN_MALLOC], 1,
-			 fold_build2_loc (input_location,
-				  MAX_EXPR, size_type_node, size,
-				  build_int_cst (size_type_node, 1)))));
-    }
-
-  msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
-			     ("Allocation would exceed memory limit"));
-  tmp = build_call_expr_loc (input_location,
-			 gfor_fndecl_os_error, 1, msg);
-
-  if (status != NULL_TREE && !integer_zerop (status))
-    {
-      /* Set the status variable if it's present.  */
-      tree tmp2;
-
-      cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
-			      status, build_int_cst (TREE_TYPE (status), 0));
-      tmp2 = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
-			      fold_build1_loc (input_location, INDIRECT_REF,
-					       status_type, status),
-			      build_int_cst (status_type, LIBERROR_ALLOCATION));
-      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond,
-			     tmp, tmp2);
-    }
+    on_error = build_call_expr_loc (input_location, gfor_fndecl_os_error, 1,
+		    gfc_build_addr_expr (pchar_type_node,
+				 gfc_build_localized_cstring_const
+				 ("Allocation would exceed memory limit")));
 
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 			 fold_build2_loc (input_location, EQ_EXPR,
 					  boolean_type_node, res,
 					  build_int_cst (prvoid_type_node, 0)),
-			 tmp, build_empty_stmt (input_location));
+			 on_error, build_empty_stmt (input_location));
+
   gfc_add_expr_to_block (&alloc_block, tmp);
   gfc_add_expr_to_block (block, gfc_finish_block (&alloc_block));
+
+  return res;
+}
+
+
+/* Allocate memory, using an optional status argument.
+ 
+   This function follows the following pseudo-code:
+
+    void *
+    allocate (size_t size, integer_type stat)
+    {
+      void *newmem;
+    
+      newmem = _caf_register ( size, regtype, NULL, &stat, NULL, NULL);
+      return newmem;
+    }  */
+tree
+gfc_allocate_using_lib (stmtblock_t * block, tree size, tree status,
+			tree errmsg, tree errlen)
+{
+  tree res, pstat;
+
+  /* Evaluate size only once, and make sure it has the right type.  */
+  size = gfc_evaluate_now (size, block);
+  if (TREE_TYPE (size) != TREE_TYPE (size_type_node))
+    size = fold_convert (size_type_node, size);
+
+  /* Create a variable to hold the result.  */
+  res = gfc_create_var (prvoid_type_node, NULL);
+
+  /* The allocation itself.  */
+  if (status == NULL_TREE)
+    pstat  = null_pointer_node;
+  else
+    pstat  = gfc_build_addr_expr (NULL_TREE, status);
+
+  if (errmsg == NULL_TREE)
+    {
+      gcc_assert(errlen == NULL_TREE);
+      errmsg = null_pointer_node;
+      errlen = build_int_cst (integer_type_node, 0);
+    }
+
+  gfc_add_modify (block, res,
+	  fold_convert (prvoid_type_node,
+		build_call_expr_loc (input_location,
+		     gfor_fndecl_caf_register, 6,
+		     fold_build2_loc (input_location,
+			      MAX_EXPR, size_type_node, size,
+			      build_int_cst (size_type_node, 1)),
+		     build_int_cst (integer_type_node,
+			    GFC_CAF_COARRAY_ALLOC),
+		     null_pointer_node,  /* token  */
+		     pstat, errmsg, errlen)));
 
   return res;
 }
@@ -681,7 +698,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status,
    This function follows the following pseudo-code:
   
     void *
-    allocate_allocatable (void *mem, size_t size, integer_type *stat)
+    allocate_allocatable (void *mem, size_t size, integer_type stat)
     {
       if (mem == NULL)
 	return allocate (size, stat);
@@ -691,7 +708,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status,
 	{
 	  free (mem);
 	  mem = allocate (size, stat);
-	  *stat = LIBERROR_ALLOCATION;
+	  stat = LIBERROR_ALLOCATION;
 	  return mem;
 	}
 	else
@@ -702,8 +719,8 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status,
     expr must be set to the original expression being allocated for its locus
     and variable name in case a runtime error has to be printed.  */
 tree
-gfc_allocate_allocatable_with_status (stmtblock_t * block, tree mem, tree size,
-				      tree status, gfc_expr* expr)
+gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size, tree status,
+			  tree errmsg, tree errlen, gfc_expr* expr)
 {
   stmtblock_t alloc_block;
   tree res, tmp, null_mem, alloc, error;
@@ -718,11 +735,16 @@ gfc_allocate_allocatable_with_status (stmtblock_t * block, tree mem, tree size,
 					    boolean_type_node, mem,
 					    build_int_cst (type, 0)));
 
-  /* If mem is NULL, we call gfc_allocate_with_status.  */
+  /* If mem is NULL, we call gfc_allocate_using_malloc or
+     gfc_allocate_using_lib.  */
   gfc_start_block (&alloc_block);
-  tmp = gfc_allocate_with_status (&alloc_block, size, status,
-				  gfc_option.coarray == GFC_FCOARRAY_LIB
-				  && gfc_expr_attr (expr).codimension);
+
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB
+      && gfc_expr_attr (expr).codimension)
+    tmp = gfc_allocate_using_lib (&alloc_block, size, status,
+				  errmsg, errlen);
+  else
+    tmp = gfc_allocate_using_malloc (&alloc_block, size, status);
 
   gfc_add_modify (&alloc_block, res, fold_convert (type, tmp));
   alloc = gfc_finish_block (&alloc_block);
@@ -747,9 +769,9 @@ gfc_allocate_allocatable_with_status (stmtblock_t * block, tree mem, tree size,
 				     "Attempting to allocate already allocated"
 				     " variable");
 
-  if (status != NULL_TREE && !integer_zerop (status))
+  if (status != NULL_TREE)
     {
-      tree status_type = TREE_TYPE (TREE_TYPE (status));
+      tree status_type = TREE_TYPE (status);
       stmtblock_t set_status_block;
 
       gfc_start_block (&set_status_block);
@@ -758,18 +780,12 @@ gfc_allocate_allocatable_with_status (stmtblock_t * block, tree mem, tree size,
 			     fold_convert (pvoid_type_node, mem));
       gfc_add_expr_to_block (&set_status_block, tmp);
 
-      tmp = gfc_allocate_with_status (&set_status_block, size, status, false);
+      tmp = gfc_allocate_using_malloc (&set_status_block, size, status);
       gfc_add_modify (&set_status_block, res, fold_convert (type, tmp));
 
-      gfc_add_modify (&set_status_block,
-			   fold_build1_loc (input_location, INDIRECT_REF,
-					    status_type, status),
-			   build_int_cst (status_type, LIBERROR_ALLOCATION));
-
-      tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
-			     status, build_int_cst (status_type, 0));
-      error = fold_build3_loc (input_location, COND_EXPR, void_type_node, tmp,
-			       error, gfc_finish_block (&set_status_block));
+      gfc_add_modify (&set_status_block, status,
+		      build_int_cst (status_type, LIBERROR_ALLOCATION));
+      error = gfc_finish_block (&set_status_block);
     }
 
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, null_mem,
