@@ -11203,7 +11203,9 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	;
       /* Allow only subregs of DImode hard regs.  */
       else if (GET_CODE (index) == SUBREG
-	       && !register_no_elim_operand (SUBREG_REG (index), DImode))
+	       && register_no_elim_operand (SUBREG_REG (index), DImode))
+	;
+      else
 	return 0;
     }
 
