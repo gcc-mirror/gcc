@@ -443,6 +443,7 @@ type_for_interval (mpz_t v1, mpz_t v2)
   bool unsigned_p;
   tree type;
   enum machine_mode mode;
+  int wider_precision;
   int precision = MAX (mpz_sizeinbase (v1, 2),
 		       mpz_sizeinbase (v2, 2));
 
@@ -458,8 +459,16 @@ type_for_interval (mpz_t v1, mpz_t v2)
     unsigned_p = (mpz_sgn (v2) >= 0);
 
   mode = smallest_mode_for_size (precision, MODE_INT);
-  precision = GET_MODE_PRECISION (mode);
-  type = build_nonstandard_integer_type (precision, unsigned_p);
+  wider_precision = GET_MODE_PRECISION (mode);
+
+  /* As we want to generate signed types as much as possible, try to
+     fit the interval [v1, v2] in a signed type.  For example,
+     supposing that we have the interval [0, 100], instead of
+     generating unsigned char, we want to generate a signed char.  */
+  if (unsigned_p && precision < wider_precision)
+    unsigned_p = false;
+
+  type = build_nonstandard_integer_type (wider_precision, unsigned_p);
 
   if (!type)
     {

@@ -1,5 +1,10 @@
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (type_for_interval): Generate signed
+	types whenever possible.
+
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (struct clast_name_index): Add lb
 	and ub fields.
 	(new_clast_name_index): Add lb and ub parameters.
