@@ -57,26 +57,44 @@ graphite_verify (void)
 }
 
 /* Stores the INDEX in a vector and the loop nesting LEVEL for a given
-   clast NAME.  */
+   clast NAME.  LB and UB represent the exact lower and upper bounds
+   that can be inferred from the polyhedral representation.  */
 
 typedef struct clast_name_index {
   int index;
   int level;
+  mpz_t lb, ub;
   const char *name;
 } *clast_name_index_p;
 
 /* Returns a pointer to a new element of type clast_name_index_p built
-   from NAME, LEVEL, and INDEX.  */
+   from NAME, INDEX, LEVEL, LB, and UB.  */
 
 static inline clast_name_index_p
-new_clast_name_index (const char *name, int index, int level)
+new_clast_name_index (const char *name, int index, int level,
+		      mpz_t lb, mpz_t ub)
 {
   clast_name_index_p res = XNEW (struct clast_name_index);
 
   res->name = name;
   res->level = level;
   res->index = index;
+  mpz_init (res->lb);
+  mpz_init (res->ub);
+  mpz_set (res->lb, lb);
+  mpz_set (res->ub, ub);
   return res;
+}
+
+/* Free the memory taken by a clast_name_index struct.  */
+
+static void
+free_clast_name_index (void *ptr)
+{
+  struct clast_name_index *c = (struct clast_name_index *) ptr;
+  mpz_clear (c->lb);
+  mpz_clear (c->ub);
+  free (ptr);
 }
 
 /* For a given clast NAME, returns -1 if NAME is not in the
@@ -130,11 +148,40 @@ clast_name_to_index (clast_name_p name, htab_t index_table)
   return -1;
 }
 
+/* For a given clast NAME, initializes the lower and upper bounds LB
+   and UB stored in the INDEX_TABLE.  Returns true when NAME has been
+   found in the INDEX_TABLE, false otherwise.  */
+
+static inline bool
+clast_name_to_lb_ub (clast_name_p name, htab_t index_table, mpz_t lb, mpz_t ub)
+{
+  struct clast_name_index tmp;
+  PTR *slot;
+
+#ifdef CLOOG_ORG
+  gcc_assert (name->type == clast_expr_name);
+  tmp.name = ((const struct clast_name *) name)->name;
+#else
+  tmp.name = name;
+#endif
+
+  slot = htab_find_slot (index_table, &tmp, NO_INSERT);
+
+  if (slot && *slot)
+    {
+      mpz_set (lb, ((struct clast_name_index *) *slot)->lb);
+      mpz_set (ub, ((struct clast_name_index *) *slot)->ub);
+      return true;
+    }
+
+  return false;
+}
+
 /* Records in INDEX_TABLE the INDEX and LEVEL for NAME.  */
 
 static inline void
 save_clast_name_index (htab_t index_table, const char *name,
-		       int index, int level)
+		       int index, int level, mpz_t lb, mpz_t ub)
 {
   struct clast_name_index tmp;
   PTR *slot;
@@ -146,7 +193,7 @@ save_clast_name_index (htab_t index_table, const char *name,
     {
       free (*slot);
 
-      *slot = new_clast_name_index (name, index, level);
+      *slot = new_clast_name_index (name, index, level, lb, ub);
     }
 }
 
@@ -579,6 +626,24 @@ graphite_create_new_guard (edge entry_edge, struct clast_guard *stmt,
   return exit_edge;
 }
 
+/* Compute the lower bound LOW and upper bound UP for the parameter
+   PARAM in scop SCOP based on the constraints in the context.  */
+
+static void
+compute_bounds_for_param (scop_p scop, int param, mpz_t low, mpz_t up)
+{
+  ppl_Linear_Expression_t le;
+
+  /* Prepare the linear expression corresponding to the parameter that
+     we want to maximize/minimize.  */
+  ppl_new_Linear_Expression_with_dimension (&le, scop_nb_params (scop));
+  ppl_set_coef (le, param, 1);
+
+  ppl_max_for_le_pointset (SCOP_CONTEXT (scop), le, up);
+  ppl_min_for_le_pointset (SCOP_CONTEXT (scop), le, low);
+  ppl_delete_Linear_Expression (le);
+}
+
 /* Compute the lower bound LOW and upper bound UP for the induction
    variable at LEVEL for the statement PBB, based on the transformed
    scattering of PBB: T|I|G|Cst, with T the scattering transform, I
@@ -606,26 +671,6 @@ compute_bounds_for_level (poly_bb_p pbb, int level, mpz_t low, mpz_t up)
   ppl_min_for_le_pointset (ps, le, low);
   ppl_delete_Linear_Expression (le);
   ppl_delete_Pointset_Powerset_C_Polyhedron (ps);
-}
-
-/* Compute the type for the induction variable at LEVEL for the
-   statement PBB, based on the transformed schedule of PBB.  */
-
-static tree
-type_for_level (poly_bb_p pbb, int level)
-{
-  mpz_t low, up;
-  tree type;
-
-  mpz_init (low);
-  mpz_init (up);
-
-  compute_bounds_for_level (pbb, level, low, up);
-  type = type_for_interval (low, up);
-
-  mpz_clear (low);
-  mpz_clear (up);
-  return type;
 }
 
 /* Walks a CLAST and returns the first statement in the body of a
@@ -671,18 +716,12 @@ clast_get_body_of_loop (struct clast_stmt *stmt)
    from STMT_FOR.  */
 
 static tree
-type_for_clast_for (struct clast_for *stmt_for, int level,
-		    ivs_params_p ip)
+type_for_clast_for (struct clast_for *stmt_for, ivs_params_p ip)
 {
-  struct clast_stmt *stmt = (struct clast_stmt *) stmt_for;
-  struct clast_user_stmt *body = clast_get_body_of_loop (stmt);
-  CloogStatement *cs = body->statement;
-  poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
   tree lb_type = type_for_clast_expr (stmt_for->LB, ip);
   tree ub_type = type_for_clast_expr (stmt_for->UB, ip);
 
-  return max_precision_type
-    (lb_type, max_precision_type (ub_type, type_for_level (pbb, level)));
+  return max_precision_type (lb_type, ub_type);
 }
 
 /* Creates a new LOOP corresponding to Cloog's STMT.  Inserts an
@@ -698,6 +737,12 @@ graphite_create_new_loop (edge entry_edge, struct clast_for *stmt,
 			  loop_p outer, tree type, tree lb, tree ub,
 			  int level, ivs_params_p ip)
 {
+  mpz_t low, up;
+
+  struct clast_user_stmt *body
+    = clast_get_body_of_loop ((struct clast_stmt *) stmt);
+  poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (body->statement);
+
   tree stride = gmp_cst_to_tree (type, stmt->stride);
   tree ivvar = create_tmp_var (type, "graphite_IV");
   tree iv, iv_after_increment;
@@ -707,8 +752,13 @@ graphite_create_new_loop (edge entry_edge, struct clast_for *stmt,
 
   add_referenced_var (ivvar);
 
+  mpz_init (low);
+  mpz_init (up);
+  compute_bounds_for_level (pbb, level, low, up);
   save_clast_name_index (ip->newivs_index, stmt->iterator,
-			 VEC_length (tree, *(ip->newivs)), level);
+			 VEC_length (tree, *(ip->newivs)), level, low, up);
+  mpz_clear (low);
+  mpz_clear (up);
   VEC_safe_push (tree, heap, *(ip->newivs), iv);
   return loop;
 }
@@ -862,13 +912,13 @@ translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
 
 static edge
 graphite_create_new_loop_guard (edge entry_edge, struct clast_for *stmt,
-				int level, tree *type, tree *lb, tree *ub,
+				tree *type, tree *lb, tree *ub,
 				ivs_params_p ip)
 {
   tree cond_expr;
   edge exit_edge;
 
-  *type = type_for_clast_for (stmt, level, ip);
+  *type = type_for_clast_for (stmt, ip);
   *lb = clast_to_gcc_expression (*type, stmt->LB, ip);
   *ub = clast_to_gcc_expression (*type, stmt->UB, ip);
 
@@ -943,7 +993,7 @@ translate_clast_for (loop_p context_loop, struct clast_for *stmt, edge next_e,
 		     htab_t bb_pbb_mapping, int level, ivs_params_p ip)
 {
   tree type, lb, ub;
-  edge last_e = graphite_create_new_loop_guard (next_e, stmt, level, &type,
+  edge last_e = graphite_create_new_loop_guard (next_e, stmt, &type,
 						&lb, &ub, ip);
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
 
@@ -1361,14 +1411,24 @@ debug_generated_program (scop_p scop)
    back from CLooG names to GCC trees.  */
 
 static void
-create_params_index (htab_t index_table, CloogProgram *prog) {
+create_params_index (scop_p scop, htab_t index_table, CloogProgram *prog) {
   CloogNames* names = cloog_program_names (prog);
   int nb_parameters = cloog_names_nb_parameters (names);
   char **parameters = cloog_names_parameters (names);
   int i;
+  mpz_t lb, ub;
+
+  mpz_init (lb);
+  mpz_init (ub);
 
   for (i = 0; i < nb_parameters; i++)
-    save_clast_name_index (index_table, parameters[i], i, i);
+    {
+      compute_bounds_for_param (scop, i, lb, ub);
+      save_clast_name_index (index_table, parameters[i], i, i, lb, ub);
+    }
+
+  mpz_clear (lb);
+  mpz_clear (ub);
 }
 
 /* GIMPLE Loop Generator: generates loops from STMT in GIMPLE form for
@@ -1412,11 +1472,11 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 
   context_loop = SESE_ENTRY (region)->src->loop_father;
   newivs_index = htab_create (10, clast_name_index_elt_info,
-			      eq_clast_name_indexes, free);
+			      eq_clast_name_indexes, free_clast_name_index);
   params_index = htab_create (10, clast_name_index_elt_info,
-			      eq_clast_name_indexes, free);
+			      eq_clast_name_indexes, free_clast_name_index);
 
-  create_params_index (params_index, pc.prog);
+  create_params_index (scop, params_index, pc.prog);
 
   ip.newivs = &newivs;
   ip.newivs_index = newivs_index;
