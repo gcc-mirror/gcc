@@ -1,3 +1,8 @@
+2011-07-21  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/tree-ssa/pr30978.c: adjusted.
+	* gcc.dg/tree-ssa/ssa-fre-6.c: Likewise.
+
 2011-07-21  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_lib_token_1.f90: New.

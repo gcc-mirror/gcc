@@ -1,3 +1,19 @@
+2011-07-21  Kai Tietz  <ktietz@redhat.com>
+
+	* fold-const.c (fold_unary_loc): Preserve indirect
+	comparison cast to none-boolean type.
+	* tree-ssa.c (useless_type_conversion_p): Preserve cast
+	from/to boolean-type.
+	* gimplify.c (gimple_boolify): Handle boolification
+	of comparisons.
+	(gimplify_expr): Boolifiy non aggregate-typed
+	comparisons.
+	* tree-cfg.c (verify_gimple_comparison): Check result
+	type of comparison expression.
+	* tree-ssa-forwprop.c (forward_propagate_comparison):
+	Adjust test of condition result and disallow type-cast
+	sinking into comparison.
+
 2011-07-21  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (combine_conversions): Return whether

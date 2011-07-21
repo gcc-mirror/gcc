@@ -2860,18 +2860,23 @@ gimple_boolify (tree expr)
 
     case TRUTH_NOT_EXPR:
       TREE_OPERAND (expr, 0) = gimple_boolify (TREE_OPERAND (expr, 0));
-      /* FALLTHRU */
 
-    case EQ_EXPR: case NE_EXPR:
-    case LE_EXPR: case GE_EXPR: case LT_EXPR: case GT_EXPR:
       /* These expressions always produce boolean results.  */
-      TREE_TYPE (expr) = boolean_type_node;
+      if (TREE_CODE (type) != BOOLEAN_TYPE)
+	TREE_TYPE (expr) = boolean_type_node;
       return expr;
 
     default:
+      if (COMPARISON_CLASS_P (expr))
+	{
+	  /* There expressions always prduce boolean results.  */
+	  if (TREE_CODE (type) != BOOLEAN_TYPE)
+	    TREE_TYPE (expr) = boolean_type_node;
+	  return expr;
+	}
       /* Other expressions that get here must have boolean values, but
 	 might need to be converted to the appropriate mode.  */
-      if (type == boolean_type_node)
+      if (TREE_CODE (type) == BOOLEAN_TYPE)
 	return expr;
       return fold_convert_loc (loc, boolean_type_node, expr);
     }
@@ -7316,7 +7321,19 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  tree type = TREE_TYPE (TREE_OPERAND (*expr_p, 1));
 
 		  if (!AGGREGATE_TYPE_P (type))
-		    goto expr_2;
+		    {
+		      tree org_type = TREE_TYPE (*expr_p);
+		      *expr_p = gimple_boolify (*expr_p);
+		      if (!useless_type_conversion_p (org_type,
+						      TREE_TYPE (*expr_p)))
+			{
+			  *expr_p = fold_convert_loc (input_location,
+						      org_type, *expr_p);
+			  ret = GS_OK;
+			}
+		      else
+			goto expr_2;
+		    }
 		  else if (TYPE_MODE (type) != BLKmode)
 		    ret = gimplify_scalar_mode_aggregate_compare (expr_p);
 		  else

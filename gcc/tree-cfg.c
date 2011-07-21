@@ -3203,7 +3203,9 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
        && (!POINTER_TYPE_P (op0_type)
 	   || !POINTER_TYPE_P (op1_type)
 	   || TYPE_MODE (op0_type) != TYPE_MODE (op1_type)))
-      || !INTEGRAL_TYPE_P (type))
+      || !INTEGRAL_TYPE_P (type)
+      || (TREE_CODE (type) != BOOLEAN_TYPE
+	  && TYPE_PRECISION (type) != 1))
     {
       error ("type mismatch in comparison expression");
       debug_generic_expr (type);
