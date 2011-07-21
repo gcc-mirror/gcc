@@ -1,3 +1,7 @@
+2011-07-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po, sv.po: Update.
+
 2011-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* EXCLUDES (config/darwin-crt2.c): Remove.
