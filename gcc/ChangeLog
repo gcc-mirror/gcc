@@ -1,3 +1,10 @@
+2011-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48973
+	* expr.c (expand_expr_real_1) <case TRUTH_ANDIF_EXPR>: If
+	the comparison has a single bit signed type, use
+	constm1_rtx instead of const1_rtx for true value.
+
 2011-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline

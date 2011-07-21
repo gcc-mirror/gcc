@@ -9166,7 +9166,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       jumpifnot (exp, op1, -1);
 
       if (target)
-	emit_move_insn (target, const1_rtx);
+	emit_move_insn (target,
+			TYPE_PRECISION (type) == 1 && !TYPE_UNSIGNED (type)
+			? constm1_rtx : const1_rtx);
 
       emit_label (op1);
       return ignore ? const0_rtx : target;
