@@ -1,3 +1,9 @@
+2011-07-21  Kai Tietz  <ktietz@redhat.com>
+
+	* tree-ssa-propagate.c (substitute_and_fold): Use
+	do_dce flag to deside, if BB's statements are scanned
+	in last to first, or first to last order.
+
 2011-07-21  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/avr.c (avr_rtx_costs): Set cost of CONST, LABEL_REF to 0.
