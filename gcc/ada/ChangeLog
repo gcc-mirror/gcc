@@ -1,3 +1,8 @@
+2011-07-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (GNAT1_ADA_OBJS): Move ada/b_gnat1.o to...
+	(GNAT1_OBJS): ...here.
+
 2011-07-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/48711
