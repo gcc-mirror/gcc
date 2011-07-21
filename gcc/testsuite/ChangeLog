@@ -1,3 +1,8 @@
+2011-07-21  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* gcc.dg/pr32912-2.c: Skip for AVR.
+	* gcc.dg/pr44674.c: Add dg-require-profiling.
+
 2011-07-20  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/ext/desig2.C: New.
