@@ -1,5 +1,24 @@
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (struct clast_name_index): Add lb
+	and ub fields.
+	(new_clast_name_index): Add lb and ub parameters.
+	(free_clast_name_index): New.
+	(clast_name_to_lb_ub): New.
+	(save_clast_name_index): Add lb and ub parameters.
+	(compute_bounds_for_param): New.
+	(type_for_level): Removed.
+	(type_for_clast_for): Removed level parameter.  Do not call
+	type_for_level.
+	(graphite_create_new_loop): Store the lb and ub for the clast_name
+	of the iterator of the loop that has been generated.
+	(graphite_create_new_loop_guard): Remove parameter level.
+	(create_params_index): Store the lb and ub of each parameter.
+	(gloog): Use free_clast_name_index.  Pass to create_params_index
+	the current scop.
+
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (max_signed_precision_type): Removed.
 	(max_precision_type): Inline max_signed_precision_type.
 	(type_for_clast_red): Use max_precision_type.
