@@ -188,9 +188,9 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
   size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			  size, esize);
   size = gfc_evaluate_now (fold_convert (size_type_node, size), &cond_block);
-  ptr = gfc_allocate_allocatable_with_status (&cond_block,
-					      build_int_cst (pvoid_type_node, 0),
-					      size, NULL, NULL);
+  ptr = gfc_allocate_allocatable (&cond_block,
+			  build_int_cst (pvoid_type_node, 0),
+			  size, NULL_TREE, NULL_TREE, NULL_TREE, NULL);
   gfc_conv_descriptor_data_set (&cond_block, decl, ptr);
   then_b = gfc_finish_block (&cond_block);
 
@@ -241,9 +241,9 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
   size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			  size, esize);
   size = gfc_evaluate_now (fold_convert (size_type_node, size), &block);
-  ptr = gfc_allocate_allocatable_with_status (&block,
-					      build_int_cst (pvoid_type_node, 0),
-					      size, NULL, NULL);
+  ptr = gfc_allocate_allocatable (&block,
+			  build_int_cst (pvoid_type_node, 0),
+			  size, NULL_TREE, NULL_TREE, NULL_TREE, NULL);
   gfc_conv_descriptor_data_set (&block, dest, ptr);
   call = build_call_expr_loc (input_location,
 			  built_in_decls[BUILT_IN_MEMCPY], 3, ptr,
@@ -663,9 +663,9 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
       size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			      size, esize);
       size = gfc_evaluate_now (fold_convert (size_type_node, size), &block);
-      ptr = gfc_allocate_allocatable_with_status (&block,
-						  build_int_cst (pvoid_type_node, 0),
-						  size, NULL, NULL);
+      ptr = gfc_allocate_allocatable (&block,
+			      build_int_cst (pvoid_type_node, 0),
+			      size, NULL_TREE, NULL_TREE, NULL_TREE, NULL);
       gfc_conv_descriptor_data_set (&block, decl, ptr);
       gfc_add_expr_to_block (&block, gfc_trans_assignment (e1, e2, false,
 			     false));

@@ -1,3 +1,26 @@
+2011-07-21  Daniel Carrera  <dcarrera@gmail.com>
+
+	* trans.c (gfc_allocate_with_status): Split into two functions
+	gfc_allocate_using_malloc and gfc_allocate_usig_lib.
+	(gfc_allocate_using_malloc): The status parameter is now the
+	actual status rather than a pointer. Code cleanup.
+	(gfc_allocate_using_lib): Ditto. Add new parametrs errmsg and
+	errlen. Pass these to the coarray lib.
+	* trans-openmp.c (gfc_omp_clause_default_ctor): Update calls to
+	gfc_allocate_allocatable.
+	(gfc_omp_clause_copy_ctor): Ditto.
+	(gfc_trans_omp_array_reduction): Ditto.
+	* trans-stmt.c (gfc_trans_allocate): Ditto. Update call to
+	gfc_allocate_using_malloc. Pass stat rather than pstat to the allocate
+	fuctions. If using coarray lib, pass errmsg and errlen to the allocate
+	functions. Move error checking outside the if (!gfc_array_allocate)
+	block so that it also affects trees produced by gfc_array_allocate.
+	* trans-array.c (gfc_array_allocate): Add new parameters errmsg
+	and errlen. Replace parameter pstat by status. Code cleanup. Update
+	calls to gfc_allocate_allocatable and gfc_allocate_using_malloc.
+	* trans-array.h (gfc_array_allocate): Update signature of
+	gfc_array_allocate.
+
 2011-07-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.texi: Remove a duplicate word.
