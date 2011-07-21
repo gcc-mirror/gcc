@@ -1,3 +1,14 @@
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (compute_bounds_for_level): Call
+	psct_dynamic_dim.
+	(translate_clast_for_loop): Pass loop level to dependency_in_loop_p.
+	(gcc_type_for_iv_of_clast_loop): Update use of level.
+	(gloog): Start counting nesting level from 0.
+	* graphite-clast-to-gimple.h (get_scattering_level): Removed.
+	* graphite-dependences.c (graphite_carried_dependence_level_k): Call
+	psct_dynamic_dim on level.
+
 2011-07-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_legitimize_address): Convert to

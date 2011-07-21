@@ -622,7 +622,7 @@ compute_bounds_for_level (poly_bb_p pbb, int level, mpz_t low, mpz_t up)
       + pbb_dim_iter_domain (pbb) + pbb_nb_params (pbb);
 
     ppl_new_Linear_Expression_with_dimension (&le, dim);
-    ppl_set_coef (le, 2 * level + 1, 1);
+    ppl_set_coef (le, psct_dynamic_dim (pbb, level), 1);
   }
 
   ppl_max_for_le_pointset (ps, le, up);
@@ -687,7 +687,7 @@ gcc_type_for_iv_of_clast_loop (struct clast_for *stmt_for, int level,
 
   return max_signed_precision_type (lb_type, max_precision_type
 				    (ub_type, compute_type_for_level
-				     (pbb, level - 1)));
+				     (pbb, level)));
 }
 
 /* Creates a new LOOP corresponding to Cloog's STMT.  Inserts an
@@ -803,7 +803,7 @@ find_pbb_via_hash (htab_t bb_pbb_mapping, basic_block bb)
   return NULL;
 }
 
-/* Check data dependency in LOOP at scattering level LEVEL.
+/* Check data dependency in LOOP at level LEVEL.
    BB_PBB_MAPPING is a basic_block and it's related poly_bb_p
    mapping.  */
 
@@ -961,8 +961,7 @@ translate_clast_for_loop (sese region, loop_p context_loop,
   set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
   if (flag_loop_parallelize_all
-      && !dependency_in_loop_p (loop, bb_pbb_mapping,
- 				get_scattering_level (level)))
+      && !dependency_in_loop_p (loop, bb_pbb_mapping, level))
     loop->can_be_parallel = true;
 
   return last_e;
@@ -1477,7 +1476,7 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   translate_clast (region, context_loop, pc.stmt,
 		   if_region->true_region->entry,
 		   &newivs, newivs_index,
-		   bb_pbb_mapping, 1, params_index);
+		   bb_pbb_mapping, 0, params_index);
   graphite_verify ();
   scev_reset ();
   recompute_all_dominators ();
