@@ -640,7 +640,24 @@ compute_type_for_level (poly_bb_p pbb, int level)
 }
 
 /* Walks a CLAST and returns the first statement in the body of a
-   loop.  */
+   loop.
+
+   FIXME: This function should not be used to get a PBB in the STMT
+   loop in order to find out the iteration domain of the loop: the
+   counter example from Tobias is:
+
+   | for (i = 0; i < 100; i++)
+   |   {
+   |     if (i == 0)
+   |       S1;
+   |     S2;
+   |   }
+
+   This function would return S1 whose iteration domain contains only
+   one point "i = 0", whereas the iteration domain of S2 has 100 points.
+
+   This should be implemented using some functionality existing in
+   CLooG-ISL.  */
 
 static struct clast_user_stmt *
 clast_get_body_of_loop (struct clast_stmt *stmt)

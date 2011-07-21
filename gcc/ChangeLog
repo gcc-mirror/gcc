@@ -1,5 +1,10 @@
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (clast_get_body_of_loop): Add fixme
+	comment.
+
+2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (struct ivs_params): New.
 	(clast_name_to_gcc): Use ivs_params to pass around parameters.
 	(clast_to_gcc_expression): Same.
