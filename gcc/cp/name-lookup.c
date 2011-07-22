@@ -52,7 +52,7 @@ static bool qualified_lookup_using_namespace (tree, tree,
 					      struct scope_binding *, int);
 static tree lookup_type_current_level (tree);
 static tree push_using_directive (tree);
-static cxx_binding* lookup_extern_c_fun_binding_in_all_ns (tree);
+static tree lookup_extern_c_fun_in_all_ns (tree);
 
 /* The :: namespace.  */
 
@@ -768,18 +768,12 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  && !DECL_ARTIFICIAL (x)
 	  && !DECL_IN_SYSTEM_HEADER (x))
 	{
-	  cxx_binding *function_binding =
-	      lookup_extern_c_fun_binding_in_all_ns (x);
-	  tree previous = (function_binding
-			   ? function_binding->value
-			   : NULL_TREE);
+	  tree previous = lookup_extern_c_fun_in_all_ns (x);
 	  if (previous
 	      && !DECL_ARTIFICIAL (previous)
               && !DECL_IN_SYSTEM_HEADER (previous)
 	      && DECL_CONTEXT (previous) != DECL_CONTEXT (x))
 	    {
-	      tree previous = function_binding->value;
-
 	      /* In case either x or previous is declared to throw an exception,
 	         make sure both exception specifications are equal.  */
 	      if (decls_match (x, previous))
@@ -805,6 +799,9 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
                                "due to different exception specifications");
 		      return error_mark_node;
 		    }
+		  if (DECL_ASSEMBLER_NAME_SET_P (previous))
+		    SET_DECL_ASSEMBLER_NAME (x,
+					     DECL_ASSEMBLER_NAME (previous));
 		}
 	      else
 		{
@@ -1996,14 +1993,14 @@ binding_for_name (cp_binding_level *scope, tree name)
 }
 
 /* Walk through the bindings associated to the name of FUNCTION,
-   and return the first binding that declares a function with a
+   and return the first declaration of a function with a
    "C" linkage specification, a.k.a 'extern "C"'.
    This function looks for the binding, regardless of which scope it
    has been defined in. It basically looks in all the known scopes.
    Note that this function does not lookup for bindings of builtin functions
    or for functions declared in system headers.  */
-static cxx_binding*
-lookup_extern_c_fun_binding_in_all_ns (tree function)
+static tree
+lookup_extern_c_fun_in_all_ns (tree function)
 {
   tree name;
   cxx_binding *iter;
@@ -2017,15 +2014,50 @@ lookup_extern_c_fun_binding_in_all_ns (tree function)
        iter;
        iter = iter->previous)
     {
-      if (iter->value
-	  && TREE_CODE (iter->value) == FUNCTION_DECL
-	  && DECL_EXTERN_C_P (iter->value)
-	  && !DECL_ARTIFICIAL (iter->value))
+      tree ovl;
+      for (ovl = iter->value; ovl; ovl = OVL_NEXT (ovl))
 	{
-	  return iter;
+	  tree decl = OVL_CURRENT (ovl);
+	  if (decl
+	      && TREE_CODE (decl) == FUNCTION_DECL
+	      && DECL_EXTERN_C_P (decl)
+	      && !DECL_ARTIFICIAL (decl))
+	    {
+	      return decl;
+	    }
 	}
     }
   return NULL;
+}
+
+/* Returns a list of C-linkage decls with the name NAME.  */
+
+tree
+c_linkage_bindings (tree name)
+{
+  tree decls = NULL_TREE;
+  cxx_binding *iter;
+
+  for (iter = IDENTIFIER_NAMESPACE_BINDINGS (name);
+       iter;
+       iter = iter->previous)
+    {
+      tree ovl;
+      for (ovl = iter->value; ovl; ovl = OVL_NEXT (ovl))
+	{
+	  tree decl = OVL_CURRENT (ovl);
+	  if (decl
+	      && DECL_EXTERN_C_P (decl)
+	      && !DECL_ARTIFICIAL (decl))
+	    {
+	      if (decls == NULL_TREE)
+		decls = decl;
+	      else
+		decls = tree_cons (NULL_TREE, decl, decls);
+	    }
+	}
+    }
+  return decls;
 }
 
 /* Insert another USING_DECL into the current binding level, returning

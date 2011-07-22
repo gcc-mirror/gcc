@@ -1,3 +1,8 @@
+2011-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/30112
+	* c-decl.c (c_linkage_bindings): Define.
+
 2011-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/49815

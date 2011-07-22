@@ -8501,6 +8501,14 @@ identifier_global_value	(tree t)
   return 0;
 }
 
+/* In C, the only C-linkage public declaration is at file scope.  */
+
+tree
+c_linkage_bindings (tree name)
+{
+  return identifier_global_value (name);
+}
+
 /* Record a builtin type for C.  If NAME is non-NULL, it is the name used;
    otherwise the name is found in ridpointers from RID_INDEX.  */
 

@@ -1,3 +1,14 @@
+2011-07-22  Jason Merrill  <jason@redhat.com>
+	    Mark Glisse  <marc.glisse@normalesup.org>
+
+	PR c++/30112
+	* decl.c (cp_finish_decl): Apply pragma redefine_extname in
+	other namespaces as well.
+	* name-lookup.c (c_linkage_bindings): Define.
+	(lookup_extern_c_fun_in_all_ns): Rename from
+	lookup_extern_c_fun_binding_in_all_ns.  Return tree.
+	(pushdecl_maybe_friend_1): Adjust.  Copy DECL_ASSEMBLER_NAME.
+
 2011-07-20  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_initializer_list): Handle C99 .id= and [N]=
