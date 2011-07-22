@@ -21894,17 +21894,18 @@ const char *
 rs6000_xcoff_strip_dollar (const char *name)
 {
   char *strip, *p;
-  int len;
+  const char *q;
+  size_t len;
 
-  p = strchr (name, '$');
+  q = (const char *) strchr (name, '$');
 
-  if (p == 0 || p == name)
+  if (q == 0 || q == name)
     return name;
 
   len = strlen (name);
-  strip = (char *) alloca (len + 1);
+  strip = XALLOCAVEC (char, len + 1);
   strcpy (strip, name);
-  p = strchr (strip, '$');
+  p = strip + (q - name);
   while (p)
     {
       *p = '_';
