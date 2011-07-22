@@ -1,4 +1,8 @@
 2011-07-22  Jason Merrill  <jason@redhat.com>
+	    Mark Glisse  <marc.glisse@normalesup.org>
+
+	PR c++/30112
+	* g++.dg/other/pragma-re-1.C: Add namespace cases.
 
 	PR c++/49813
 	* g++.dg/opt/builtins2.C: New.

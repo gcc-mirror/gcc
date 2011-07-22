@@ -1,5 +1,9 @@
 2011-07-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/30112
+	* c-common.h: Declare c_linkage_bindings.
+	* c-pragma.c (handle_pragma_redefine_extname): Use it.
+
 	PR c++/49813
 	* c-opts.c (set_std_cxx0x): Set flag_isoc94 and flag_isoc99.
 	* c-pretty-print.c (pp_c_cv_qualifiers): Check c_dialect_cxx as well

@@ -417,8 +417,9 @@ static void handle_pragma_redefine_extname (cpp_reader *);
 static void
 handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
 {
-  tree oldname, newname, decl, x;
+  tree oldname, newname, decls, x;
   enum cpp_ttype t;
+  bool found;
 
   if (pragma_lex (&oldname) != CPP_NAME)
     GCC_BAD ("malformed #pragma redefine_extname, ignored");
@@ -428,26 +429,42 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
   if (t != CPP_EOF)
     warning (OPT_Wpragmas, "junk at end of %<#pragma redefine_extname%>");
 
-  decl = identifier_global_value (oldname);
-  if (decl
-      && (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
-      && (TREE_CODE (decl) == FUNCTION_DECL
-	  || TREE_CODE (decl) == VAR_DECL)
-      && has_c_linkage (decl))
+  found = false;
+  for (decls = c_linkage_bindings (oldname);
+       decls; )
     {
-      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+      tree decl;
+      if (TREE_CODE (decls) == TREE_LIST)
 	{
-	  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-	  name = targetm.strip_name_encoding (name);
-
-	  if (strcmp (name, IDENTIFIER_POINTER (newname)))
-	    warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
-		     "conflict with previous rename");
+	  decl = TREE_VALUE (decls);
+	  decls = TREE_CHAIN (decls);
 	}
       else
-	change_decl_assembler_name (decl, newname);
+	{
+	  decl = decls;
+	  decls = NULL_TREE;
+	}
+
+      if ((TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
+	  && (TREE_CODE (decl) == FUNCTION_DECL
+	      || TREE_CODE (decl) == VAR_DECL))
+	{
+	  found = true;
+	  if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	    {
+	      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+	      name = targetm.strip_name_encoding (name);
+
+	      if (strcmp (name, IDENTIFIER_POINTER (newname)))
+		warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
+			 "conflict with previous rename");
+	    }
+	  else
+	    change_decl_assembler_name (decl, newname);
+	}
     }
-  else
+
+  if (!found)
     /* We have to add this to the rename list even if there's already
        a global value that doesn't meet the above criteria, because in
        C++ "struct foo {...};" puts "foo" in the current namespace but
