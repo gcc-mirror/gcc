@@ -361,7 +361,7 @@ proc check_alias_available { } {
     return $alias_available_saved
 }
 
-# Returns 1 if the target supports ifunc, 0 otherwise.
+# Returns 1 if the target toolchain supports ifunc, 0 otherwise.
 
 proc check_ifunc_available { } {
     return [check_no_compiler_messages ifunc_available object {
