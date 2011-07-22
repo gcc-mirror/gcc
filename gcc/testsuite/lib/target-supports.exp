@@ -370,45 +370,16 @@ proc check_alias_available { } {
     return $alias_available_saved
 }
 
-###############################
-# proc check_ifunc_available { }
-###############################
-
-# Determine if the target toolchain supports the ifunc attribute.
-
-# Returns 1 if the target supports ifunc.  Returns 0 if the target
-# does not support ifunc.
+# Returns 1 if the target toolchain supports ifunc, 0 otherwise.
 
 proc check_ifunc_available { } {
-    global ifunc_available_saved
-    global tool
-
-    if [info exists ifunc_available_saved] {
-        verbose "check_ifunc_available  returning saved $ifunc_available_saved" 2
-    } else {
-	set src ifunc[pid].c
-	set obj ifunc[pid].o
-        verbose "check_ifunc_available  compiling testfile $src" 2
-	set f [open $src "w"]
-	puts $f "#endif"
-	puts $f "#ifdef __cplusplus\nextern \"C\"\n#endif"
-	puts $f "void g() {}"
-	puts $f "void f() __attribute__((ifunc(\"g\")));"
-	close $f
-	set lines [${tool}_target_compile $src $obj object ""]
-	file delete $src
-	remote_file build delete $obj
-
-	if [string match "" $lines] then {
-	    set ifunc_available_saved 1
-	} else {
-	    set ifunc_available_saved 0
-	}
-
-	verbose "check_ifunc_available  returning $ifunc_available_saved" 2
-    }
-
-    return $ifunc_available_saved
+    return [check_no_compiler_messages ifunc_available object {
+	#ifdef __cplusplus
+	extern "C"
+	#endif
+	void g() {}
+	void f() __attribute__((ifunc("g")));
+    }]
 }
 
 # Returns true if --gc-sections is supported on the target.
@@ -465,7 +436,7 @@ proc check_effective_target_trampolines { } {
     }
     if { [istarget avr-*-*]
 	 || [istarget hppa2.0w-hp-hpux11.23]
-	|| [istarget hppa64-hp-hpux11.23] } {
+	 || [istarget hppa64-hp-hpux11.23] } {
 	return 0;   
     }
     return 1
