@@ -1,3 +1,11 @@
+2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/49794
+	* configure.ac: Test AM_ICONV with CXX.
+	* configure: Regenerate.
+	* system.h (HAVE_DESIGNATED_INITIALIZERS): Never define for C++.
+
 2011-07-15  Dodji Seketeli  <dodji@redhat.com>
 
 	* directives.c (struct if_stack): Use source_location as type

@@ -482,12 +482,12 @@ __gnat_backtrace (void **array,
   while (cnt < size)
     {
       if (STOP_FRAME (current, top_stack) ||
-	  !VALID_STACK_FRAME((char *)(current->return_address + PC_ADJUST)))
+	  !VALID_STACK_FRAME(((char *) current->return_address) + PC_ADJUST))
         break;
 
       if (current->return_address < exclude_min
 	  || current->return_address > exclude_max)
-        array[cnt++] = current->return_address + PC_ADJUST;
+        array[cnt++] = ((char *) current->return_address) + PC_ADJUST;
 
       current = (struct layout *) ((size_t) current->next + FRAME_OFFSET (1));
     }
