@@ -1,3 +1,8 @@
+2011-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49756
+	* libiberty.h (stack_limit_increase): New prototype.
+
 2011-07-13  Sriraman Tallam  <tmsriram@google.com>
 	
 	* plugin-api.h

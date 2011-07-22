@@ -1911,6 +1911,10 @@ do_compile (void)
 int
 toplev_main (int argc, char **argv)
 {
+  /* Parsing and gimplification sometimes need quite large stack.
+     Increase stack size limits if possible.  */
+  stack_limit_increase (64 * 1024 * 1024);
+
   expandargv (&argc, &argv);
 
   /* Initialization of GCC's environment, and diagnostics.  */

@@ -1,3 +1,9 @@
+2011-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49756
+	* gcc.c (main): Call stack_limit_increase (64MB).
+	* toplev.c (toplev_main): Likewise.
+
 2011-07-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_expand_call): Call copy_to_mode_reg

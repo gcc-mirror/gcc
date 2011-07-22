@@ -1,7 +1,7 @@
 /* Function declarations for libiberty.
 
    Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -636,6 +636,9 @@ extern int strverscmp (const char *, const char *);
 
 /* Set the title of a process */
 extern void setproctitle (const char *name, ...);
+
+/* Increase stack limit if possible.  */
+extern void stack_limit_increase (unsigned long);
 
 #define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
 

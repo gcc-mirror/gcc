@@ -2,7 +2,7 @@
 # Originally written by K. Richard Pixley <rich@cygnus.com>.
 #
 # Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-# 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+# 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 # Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -148,10 +148,10 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 simple-object.c simple-object-coff.c simple-object-elf.c	\
 	 simple-object-mach-o.c						\
          snprintf.c sort.c						\
-	 spaces.c splay-tree.c stpcpy.c stpncpy.c strcasecmp.c		\
-	 strchr.c strdup.c strerror.c strncasecmp.c strncmp.c		\
-	 strrchr.c strsignal.c strstr.c strtod.c strtol.c strtoul.c	\
-	 strndup.c strverscmp.c						\
+	 spaces.c splay-tree.c stack-limit.c stpcpy.c stpncpy.c		\
+	 strcasecmp.c strchr.c strdup.c strerror.c strncasecmp.c	\
+	 strncmp.c strrchr.c strsignal.c strstr.c strtod.c strtol.c	\
+	 strtoul.c strndup.c strverscmp.c				\
 	tmpnam.c							\
 	unlink-if-ordinary.c						\
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsnprintf.c vsprintf.c	\
@@ -183,7 +183,8 @@ REQUIRED_OFILES =							\
 	./simple-object.$(objext) ./simple-object-coff.$(objext)	\
 	./simple-object-elf.$(objext) ./simple-object-mach-o.$(objext)	\
 	./sort.$(objext) ./spaces.$(objext)				\
-	./splay-tree.$(objext) ./strerror.$(objext)			\
+	./splay-tree.$(objext) ./stack-limit.$(objext)			\
+	./strerror.$(objext)						\
 	./strsignal.$(objext) ./unlink-if-ordinary.$(objext)		\
 	./xatexit.$(objext) ./xexit.$(objext) ./xmalloc.$(objext)	\
 	./xmemdup.$(objext) ./xstrdup.$(objext) ./xstrerror.$(objext)	\
@@ -1032,6 +1033,12 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/splay-tree.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/splay-tree.c $(OUTPUT_OPTION)
+
+./stack-limit.$(objext): $(srcdir)/stack-limit.c config.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/stack-limit.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/stack-limit.c $(OUTPUT_OPTION)
 
 ./stpcpy.$(objext): $(srcdir)/stpcpy.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
