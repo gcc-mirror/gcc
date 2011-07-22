@@ -15596,9 +15596,19 @@ cp_parser_virt_specifier_seq_opt (cp_parser* parser)
       if (token->type != CPP_NAME)
         break;
       if (!strcmp (IDENTIFIER_POINTER(token->u.value), "override"))
-	virt_specifier = VIRT_SPEC_OVERRIDE;
+        {
+          maybe_warn_cpp0x (CPP0X_OVERRIDE_CONTROLS);
+          virt_specifier = VIRT_SPEC_OVERRIDE;
+        }
       else if (!strcmp (IDENTIFIER_POINTER(token->u.value), "final"))
-	virt_specifier = VIRT_SPEC_FINAL;
+        {
+          maybe_warn_cpp0x (CPP0X_OVERRIDE_CONTROLS);
+          virt_specifier = VIRT_SPEC_FINAL;
+        }
+      else if (!strcmp (IDENTIFIER_POINTER(token->u.value), "__final"))
+        {
+          virt_specifier = VIRT_SPEC_FINAL;
+        }
       else
 	break;
 

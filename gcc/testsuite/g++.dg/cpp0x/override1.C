@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "--std=c++0x" }
 struct B
 {
   virtual void f() final {}

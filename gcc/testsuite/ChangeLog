@@ -1,3 +1,8 @@
+2011-07-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* override1.C: This test should use c++0x mode.
+	* override3.C: New. Test the diagnostics in c++98 mode.
+
 2011-07-22  Jason Merrill  <jason@redhat.com>
 	    Mark Glisse  <marc.glisse@normalesup.org>
 
