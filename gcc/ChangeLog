@@ -1,3 +1,10 @@
+2011-07-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/49796
+	* cgraphunit.c (verify_edge_corresponds_to_fndecl): Return false
+	if decl node is in another partition, call cgraph_get_node only
+	once.
+
 2011-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config.gcc (x86_64-*-linux*): Set
