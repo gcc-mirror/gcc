@@ -1,5 +1,5 @@
 /* Translation of CLAST (CLooG AST) to Gimple.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
@@ -39,6 +39,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-clast-to-gimple.h"
 #include "graphite-dependences.h"
 #include "graphite-cloog-compat.h"
+
+#ifndef CLOOG_LANGUAGE_C
+#define CLOOG_LANGUAGE_C LANGUAGE_C
+#endif
 
 /* This flag is set when an error occurred during the translation of
    CLAST to Gimple.  */
@@ -1418,7 +1422,7 @@ set_cloog_options (void)
   /* Change cloog output language to C.  If we do use FORTRAN instead, cloog
      will stop e.g. with "ERROR: unbounded loops not allowed in FORTRAN.", if
      we pass an incomplete program to cloog.  */
-  options->language = LANGUAGE_C;
+  options->language = CLOOG_LANGUAGE_C;
 
   /* Enable complex equality spreading: removes dummy statements
      (assignments) in the generated code which repeats the

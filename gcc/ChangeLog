@@ -1,3 +1,9 @@
+2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/49797
+	* graphite-clast-to-gimple.c (CLOOG_LANGUAGE_C): Provide if missing.
+	(set_cloog_options): Use it.
+
 2011-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49756
