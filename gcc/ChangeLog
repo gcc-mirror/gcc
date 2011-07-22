@@ -1,3 +1,8 @@
+2011-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.gcc (x86_64-*-linux*): Set
+	default_gnu_indirect_function to yes.
+
 2011-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45819

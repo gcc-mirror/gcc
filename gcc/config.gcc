@@ -1282,10 +1282,17 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 			tm_file="${tm_file} i386/linux.h"
 		fi
 		;;
-	i[34567]86-*-knetbsd*-gnu) tm_file="${tm_file} i386/linux.h knetbsd-gnu.h i386/knetbsd-gnu.h" ;;
-	i[34567]86-*-kfreebsd*-gnu) tm_file="${tm_file} i386/linux.h kfreebsd-gnu.h i386/kfreebsd-gnu.h" ;;
-	i[34567]86-*-kopensolaris*-gnu) tm_file="${tm_file} i386/linux.h kopensolaris-gnu.h i386/kopensolaris-gnu.h" ;;
-	i[34567]86-*-gnu*) tm_file="$tm_file i386/linux.h gnu.h i386/gnu.h";;
+	i[34567]86-*-knetbsd*-gnu)
+		tm_file="${tm_file} i386/linux.h knetbsd-gnu.h i386/knetbsd-gnu.h"
+		;;
+	i[34567]86-*-kfreebsd*-gnu)
+		tm_file="${tm_file} i386/linux.h kfreebsd-gnu.h i386/kfreebsd-gnu.h"
+		;;
+	i[34567]86-*-kopensolaris*-gnu)
+		tm_file="${tm_file} i386/linux.h kopensolaris-gnu.h i386/kopensolaris-gnu.h"
+		;;
+	i[34567]86-*-gnu*)
+		tm_file="$tm_file i386/linux.h gnu.h i386/gnu.h";;
 	esac
 	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
 	;;
@@ -1294,9 +1301,14 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 		 i386/x86-64.h i386/linux64.h"
 	case ${target} in
 	x86_64-*-linux*)
-	  default_gnu_indirect_function=glibc-2011 ;;
-	x86_64-*-kfreebsd*-gnu) tm_file="${tm_file} kfreebsd-gnu.h" ;;
-	x86_64-*-knetbsd*-gnu) tm_file="${tm_file} knetbsd-gnu.h" ;;
+		default_gnu_indirect_function=yes
+		;;
+	x86_64-*-kfreebsd*-gnu)
+		tm_file="${tm_file} kfreebsd-gnu.h"
+		;;
+	x86_64-*-knetbsd*-gnu)
+		tm_file="${tm_file} knetbsd-gnu.h"
+		;;
 	esac
 	tmake_file="${tmake_file} i386/t-linux64 i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
 	;;
