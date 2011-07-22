@@ -12435,16 +12435,14 @@ resolve_symbol (gfc_symbol *sym)
 	       sym->name, &sym->declared_at);
 
   /* F2008, C526.  The function-result case was handled above.  */
-  if (((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.coarray_comp)
-       || sym->attr.codimension)
+  if (sym->attr.codimension
       && !(sym->attr.allocatable || sym->attr.dummy || sym->attr.save
 	   || sym->ns->save_all
 	   || sym->ns->proc_name->attr.flavor == FL_MODULE
 	   || sym->ns->proc_name->attr.is_main_program
 	   || sym->attr.function || sym->attr.result || sym->attr.use_assoc))
-    gfc_error ("Variable '%s' at %L is a coarray or has a coarray "
-	       "component and is not ALLOCATABLE, SAVE nor a "
-	       "dummy argument", sym->name, &sym->declared_at);
+    gfc_error ("Variable '%s' at %L is a coarray and is not ALLOCATABLE, SAVE "
+	       "nor a dummy argument", sym->name, &sym->declared_at);
   /* F2008, C528.  */  /* FIXME: sym->as check due to PR 43412.  */
   else if (sym->attr.codimension && !sym->attr.allocatable
       && sym->as && sym->as->cotype == AS_DEFERRED)

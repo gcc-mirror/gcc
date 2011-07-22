@@ -31,7 +31,7 @@ subroutine valid2()
     integer, allocatable :: b[:]
   end type tt
   type(tt), save :: foo
-  type(tt) :: bar ! { dg-error "is a coarray or has a coarray component" }
+  type(tt) :: bar
 end subroutine valid2
 
 subroutine invalid(n)
