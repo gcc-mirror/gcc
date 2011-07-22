@@ -1,5 +1,10 @@
 2011-07-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_expand_call): Call copy_to_mode_reg
+	instead of force_reg.
+
+2011-07-21  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (ix86_expand_move): Convert to Pmode if
 	needed and use force_reg after convert.
 	(ix86_expand_call): Likewise.

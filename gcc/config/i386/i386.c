@@ -21515,7 +21515,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       fnaddr = XEXP (fnaddr, 0);
       if (GET_MODE (fnaddr) != Pmode)
 	fnaddr = convert_to_mode (Pmode, fnaddr, 1);
-      fnaddr = gen_rtx_MEM (QImode, force_reg (Pmode, fnaddr));
+      fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (Pmode, fnaddr));
     }
 
   call = gen_rtx_CALL (VOIDmode, fnaddr, callarg1);
