@@ -1,3 +1,9 @@
+2011-07-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45819
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Properly
+	preserve volatile and notrap flags.
+
 2011-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

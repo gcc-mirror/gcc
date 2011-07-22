@@ -890,6 +890,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	    }
 	  *def_rhs_basep = build2 (MEM_REF, TREE_TYPE (*def_rhs_basep),
 				   new_base, new_offset);
+	  TREE_THIS_VOLATILE (*def_rhs_basep) = TREE_THIS_VOLATILE (lhs);
+	  TREE_THIS_NOTRAP (*def_rhs_basep) = TREE_THIS_NOTRAP (lhs);
 	  gimple_assign_set_lhs (use_stmt,
 				 unshare_expr (TREE_OPERAND (def_rhs, 0)));
 	  *def_rhs_basep = saved;
@@ -942,9 +944,9 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	  tidy_after_forward_propagate_addr (use_stmt);
 	  return res;
 	}
-      /* If the LHS is a plain dereference and the value type is the same as
+      /* If the RHS is a plain dereference and the value type is the same as
          that of the pointed-to type of the address we can put the
-	 dereferenced address on the LHS preserving the original alias-type.  */
+	 dereferenced address on the RHS preserving the original alias-type.  */
       else if (gimple_assign_rhs1 (use_stmt) == rhs
 	       && useless_type_conversion_p
 		    (TREE_TYPE (gimple_assign_lhs (use_stmt)),
@@ -969,6 +971,8 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	    }
 	  *def_rhs_basep = build2 (MEM_REF, TREE_TYPE (*def_rhs_basep),
 				   new_base, new_offset);
+	  TREE_THIS_VOLATILE (*def_rhs_basep) = TREE_THIS_VOLATILE (rhs);
+	  TREE_THIS_NOTRAP (*def_rhs_basep) = TREE_THIS_NOTRAP (rhs);
 	  gimple_assign_set_rhs1 (use_stmt,
 				  unshare_expr (TREE_OPERAND (def_rhs, 0)));
 	  *def_rhs_basep = saved;

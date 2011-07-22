@@ -1,3 +1,8 @@
+2011-07-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45819
+	* gcc.dg/pr45819.c: New testcase.
+
 2011-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp (check_avx_os_support_available): New.
