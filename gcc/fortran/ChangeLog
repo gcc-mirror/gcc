@@ -1,3 +1,7 @@
+2011-07-23  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (resolve_symbol): Fix coarray var decl check.
+
 2011-07-21  Daniel Carrera  <dcarrera@gmail.com>
 
 	* trans.c (gfc_allocate_with_status): Split into two functions

@@ -1,3 +1,7 @@
+2011-07-23  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_25.f90: New.
+
 2011-07-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* override1.C: This test should use c++0x mode.
