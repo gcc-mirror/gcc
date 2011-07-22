@@ -456,17 +456,23 @@ cgraph_debug_gimple_stmt (struct function *this_cfun, gimple stmt)
 static bool
 verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
 {
-  if (!e->callee->global.inlined_to
-      && decl
-      && cgraph_get_node (decl)
-      && (e->callee->former_clone_of
-	  != cgraph_function_or_thunk_node (cgraph_get_node (decl), NULL)->decl)
+  struct cgraph_node *node;
+
+  if (!decl || e->callee->global.inlined_to)
+    return false;
+  node = cgraph_get_node (decl);
+
+  /* We do not know if a node from a different partition is an alias or what it
+     aliases and therefore cannot do the former_clone_of check reliably.  */
+  if (!node || node->in_other_partition)
+    return false;
+  node = cgraph_function_or_thunk_node (node, NULL);
+
+  if ((e->callee->former_clone_of != node->decl)
       /* IPA-CP sometimes redirect edge to clone and then back to the former
 	 function.  This ping-pong has to go, eventaully.  */
-      && (cgraph_function_or_thunk_node (cgraph_get_node (decl), NULL)
-	  != cgraph_function_or_thunk_node (e->callee, NULL))
-      && !clone_of_p (cgraph_get_node (decl),
-		      e->callee))
+      && (node != cgraph_function_or_thunk_node (e->callee, NULL))
+      && !clone_of_p (node, e->callee))
     return true;
   else
     return false;
