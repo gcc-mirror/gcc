@@ -1,3 +1,11 @@
+2011-07-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_move): Convert to Pmode if
+	needed and use force_reg after convert.
+	(ix86_expand_call): Likewise.
+	(ix86_expand_special_args_builtin): Likewise.
+	(ix86_expand_builtin): Likewise.
+
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/47654
