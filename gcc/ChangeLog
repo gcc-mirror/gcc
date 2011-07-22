@@ -1,3 +1,8 @@
+2011-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/49815
+	* var-tracking.c (vt_finalize): Always free windowed_parm_regs.
+
 2011-07-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Disallow

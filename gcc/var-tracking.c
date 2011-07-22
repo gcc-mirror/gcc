@@ -9135,8 +9135,9 @@ vt_finalize (void)
       cselib_finish ();
       BITMAP_FREE (scratch_regs);
       scratch_regs = NULL;
-      VEC_free (parm_reg_t, gc, windowed_parm_regs);
     }
+
+  VEC_free (parm_reg_t, gc, windowed_parm_regs);
 
   if (vui_vec)
     XDELETEVEC (vui_vec);
