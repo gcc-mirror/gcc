@@ -1,3 +1,15 @@
+2011-07-22  Ian Lance Taylor  <iant@google.com>
+
+	* fragment.am (CONFIG_CXXFLAGS): Add -frandom-seed.
+	* Makefile.in: Rebuild.
+	* doc/Makefile.in: Rebuild.
+	* include/Makefile.in: Rebuild.
+	* libsupc++/Makefile.in: Rebuild.
+	* po/Makefile.in: Rebuild.
+	* python/Makefile.in: Rebuild.
+	* src/Makefile.in: Rebuild.
+	* testsuite/Makefile.in: Rebuild.
+
 2011-07-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc: Move...
