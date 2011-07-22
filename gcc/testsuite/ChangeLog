@@ -1,5 +1,10 @@
 2011-07-23  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/49791
+	* gfortran.dg/namelist_72.f: New.
+
+2011-07-23  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/coarray_25.f90: New.
 
 2011-07-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
