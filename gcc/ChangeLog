@@ -1,3 +1,12 @@
+2011-07-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Disallow
+	MS ABI in x32 mode.
+	(ix86_init_builtins): Call ix86_init_builtins_va_builtins_abi
+	only for TARGET_LP64.
+	(ix86_handle_abi_attribute): Check TARGET_LP64 instead of
+	TARGET_64BIT.
+
 2011-07-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_xcoff_strip_dollar): Rewrite to

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-options "-O2" } */
 
 void __attribute__ ((ms_abi)) foo (void)

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! { ia32 } } } } */
+/* { dg-do compile { target lp64 } } */
 
 int __attribute__((__noinline__))
 bugged(float f1, float f2, float f3, float f4,

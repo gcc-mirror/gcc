@@ -20,7 +20,7 @@
 load_lib gcc-dg.exp
 
 if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
-     || [is-effective-target ia32] } then {
+     || [is-effective-target ilp32] } then {
   return
 }
 
