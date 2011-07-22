@@ -1,3 +1,8 @@
+2011-07-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49708
+	* resolve.c (resolve_allocate_expr): Fix diagnostics for pointers.
+
 2011-07-18  Mikael Morin  <mikael.morin@sfr.fr>
 
 	PR fortran/49648

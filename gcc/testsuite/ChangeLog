@@ -1,3 +1,8 @@
+2011-07-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49708
+	* gfortran.dg/allocate_error_3.f90: New.
+
 2011-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp (check_ifunc_available): Rewrite.

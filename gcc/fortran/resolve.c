@@ -6831,7 +6831,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       gfc_find_derived_vtab (ts.u.derived);
     }
 
-  if (pointer || (dimension == 0 && codimension == 0))
+  if (dimension == 0 && codimension == 0)
     goto success;
 
   /* Make sure the last reference node is an array specifiction.  */
