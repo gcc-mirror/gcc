@@ -1,3 +1,9 @@
+2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR debug/47393
+	* g++.dg/debug/dwarf2/icf.C: XFAIL some scan-assembler on
+	mips-sgi-irix*.
+
 2011-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45819
