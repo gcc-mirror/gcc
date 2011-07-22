@@ -2212,6 +2212,7 @@ gate_handle_partition_blocks (void)
      user defined section attributes.  Don't call it if either case
      arises.  */
   return (flag_reorder_blocks_and_partition
+          && optimize
 	  && !DECL_ONE_ONLY (current_function_decl)
 	  && !user_defined_section_attribute);
 }
