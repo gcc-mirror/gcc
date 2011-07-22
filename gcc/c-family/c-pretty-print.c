@@ -205,7 +205,8 @@ pp_c_cv_qualifiers (c_pretty_printer *pp, int qualifiers, bool func_type)
     {
       if (previous)
         pp_c_whitespace (pp);
-      pp_c_ws_string (pp, flag_isoc99 ? "restrict" : "__restrict__");
+      pp_c_ws_string (pp, (flag_isoc99 && !c_dialect_cxx ()
+			   ? "restrict" : "__restrict__"));
     }
 }
 
@@ -476,7 +477,8 @@ pp_c_specifier_qualifier_list (c_pretty_printer *pp, tree t)
     case VECTOR_TYPE:
     case COMPLEX_TYPE:
       if (code == COMPLEX_TYPE)
-	pp_c_ws_string (pp, flag_isoc99 ? "_Complex" : "__complex__");
+	pp_c_ws_string (pp, (flag_isoc99 && !c_dialect_cxx ()
+			     ? "_Complex" : "__complex__"));
       else if (code == VECTOR_TYPE)
 	{
 	  pp_c_ws_string (pp, "__vector");

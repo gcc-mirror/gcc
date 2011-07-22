@@ -1,3 +1,11 @@
+2011-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49813
+	* c-opts.c (set_std_cxx0x): Set flag_isoc94 and flag_isoc99.
+	* c-pretty-print.c (pp_c_cv_qualifiers): Check c_dialect_cxx as well
+	as flag_isoc99 for 'restrict'.
+	(pp_c_specifier_qualifier_list): Likewise for _Complex.
+
 2011-07-21  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/49705
