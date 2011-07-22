@@ -1,3 +1,8 @@
+2011-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.gcc (i[34567]86-*-linux*): Set
+	default_gnu_indirect_function to yes.
+
 2011-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45819
@@ -181,9 +186,9 @@
 	PR tree-optimization/49749
 	* tree-ssa-reassoc.c (get_rank): Fix operand scan conditions and
 	remove no-longer-used maxrank variable.
-	
+
 2011-07-21  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr.c (final_prescan_insn): Fix printing of rtx_costs.
 
 2011-07-21  Jason Merrill  <jason@redhat.com>
