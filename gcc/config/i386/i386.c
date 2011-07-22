@@ -14993,6 +14993,8 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 	  op1 = force_operand (op1, op0);
 	  if (op1 == op0)
 	    return;
+	  if (GET_MODE (op1) != mode)
+	    op1 = convert_to_mode (mode, op1, 1);
 	}
       else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
 	       && SYMBOL_REF_DLLIMPORT_P (op1))
@@ -21510,8 +21512,10 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	   ? !sibcall_insn_operand (XEXP (fnaddr, 0), Pmode)
 	   : !call_insn_operand (XEXP (fnaddr, 0), Pmode))
     {
-      fnaddr = copy_to_mode_reg (Pmode, XEXP (fnaddr, 0));
-      fnaddr = gen_rtx_MEM (QImode, fnaddr);
+      fnaddr = XEXP (fnaddr, 0);
+      if (GET_MODE (fnaddr) != Pmode)
+	fnaddr = convert_to_mode (Pmode, fnaddr, 1);
+      fnaddr = gen_rtx_MEM (QImode, force_reg (Pmode, fnaddr));
     }
 
   call = gen_rtx_CALL (VOIDmode, fnaddr, callarg1);
@@ -26735,7 +26739,11 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       op = expand_normal (arg);
       gcc_assert (target == 0);
       if (memory)
-	target = gen_rtx_MEM (tmode, copy_to_mode_reg (Pmode, op));
+	{
+	  if (GET_MODE (op) != Pmode)
+	    op = convert_to_mode (Pmode, op, 1);
+	  target = gen_rtx_MEM (tmode, force_reg (Pmode, op));
+	}
       else
 	target = force_reg (tmode, op);
       arg_adjust = 1;
@@ -26778,7 +26786,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	  if (i == memory)
 	    {
 	      /* This must be the memory operand.  */
-	      op = gen_rtx_MEM (mode, copy_to_mode_reg (Pmode, op));
+	      if (GET_MODE (op) != Pmode)
+		op = convert_to_mode (Pmode, op, 1);
+	      op = gen_rtx_MEM (mode, force_reg (Pmode, op));
 	      gcc_assert (GET_MODE (op) == mode
 			  || GET_MODE (op) == VOIDmode);
 	    }
@@ -27004,8 +27014,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       mode1 = insn_data[icode].operand[1].mode;
       mode2 = insn_data[icode].operand[2].mode;
 
-      op0 = force_reg (Pmode, op0);
-      op0 = gen_rtx_MEM (mode1, op0);
+      if (GET_MODE (op0) != Pmode)
+	op0 = convert_to_mode (Pmode, op0, 1);
+      op0 = gen_rtx_MEM (mode1, force_reg (Pmode, op0));
 
       if (!insn_data[icode].operand[0].predicate (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
@@ -27036,7 +27047,11 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	op0 = expand_normal (arg0);
 	icode = CODE_FOR_sse2_clflush;
 	if (!insn_data[icode].operand[0].predicate (op0, Pmode))
-	    op0 = copy_to_mode_reg (Pmode, op0);
+	  {
+	    if (GET_MODE (op0) != Pmode)
+	      op0 = convert_to_mode (Pmode, op0, 1);
+	    op0 = force_reg (Pmode, op0);
+	  }
 
 	emit_insn (gen_sse2_clflush (op0));
 	return 0;
@@ -27049,7 +27064,11 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
       if (!REG_P (op0))
-	op0 = copy_to_mode_reg (Pmode, op0);
+	{
+	  if (GET_MODE (op0) != Pmode)
+	    op0 = convert_to_mode (Pmode, op0, 1);
+	  op0 = force_reg (Pmode, op0);
+	}
       if (!REG_P (op1))
 	op1 = copy_to_mode_reg (SImode, op1);
       if (!REG_P (op2))
@@ -27129,7 +27148,11 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       op0 = expand_normal (arg0);
       icode = CODE_FOR_lwp_llwpcb;
       if (!insn_data[icode].operand[0].predicate (op0, Pmode))
-	op0 = copy_to_mode_reg (Pmode, op0);
+	{
+	  if (GET_MODE (op0) != Pmode)
+	    op0 = convert_to_mode (Pmode, op0, 1);
+	  op0 = force_reg (Pmode, op0);
+	}
       emit_insn (gen_lwp_llwpcb (op0));
       return 0;
 
@@ -27188,7 +27211,10 @@ rdrand_step:
       arg0 = CALL_EXPR_ARG (exp, 0);
       op1 = expand_normal (arg0);
       if (!address_operand (op1, VOIDmode))
-	op1 = copy_addr_to_reg (op1);
+	{
+	  op1 = convert_memory_address (Pmode, op1);
+	  op1 = copy_addr_to_reg (op1);
+	}
       emit_move_insn (gen_rtx_MEM (mode0, op1), op0);
 
       op1 = gen_reg_rtx (SImode);
