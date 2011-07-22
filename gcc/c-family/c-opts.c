@@ -1488,6 +1488,9 @@ set_std_cxx0x (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  /* C++0x includes the C99 standard library.  */
+  flag_isoc94 = 1;
+  flag_isoc99 = 1;
   cxx_dialect = cxx0x;
 }
 

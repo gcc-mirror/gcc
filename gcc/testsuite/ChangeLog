@@ -1,3 +1,9 @@
+2011-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49813
+	* g++.dg/opt/builtins2.C: New.
+	* g++.dg/other/error27.C: Don't rely on __builtin.
+
 2011-07-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc/testsuite/gcc.target/i386/avx-vzeroupper-16.c: Only run
