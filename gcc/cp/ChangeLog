@@ -1,3 +1,12 @@
+2011-07-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Warn about the use of final/override in non-c++0x mode, and
+	add __final for non-c++0x mode.
+	* cp-tree.h (cpp0x_warn_str): Add CPP0X_OVERRIDE_CONTROLS.
+	* error.c (maybe_warn_cpp0x): Adjust.
+	* parser.c (cp_parser_virt_specifier_seq_opt): Use it. Add
+	'__final' as a non-c++0x alternative for 'final'.
+
 2011-07-22  Jason Merrill  <jason@redhat.com>
 	    Mark Glisse  <marc.glisse@normalesup.org>
 

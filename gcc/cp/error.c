@@ -3227,6 +3227,11 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 		 "inline namespaces "
 		 "only available with -std=c++0x or -std=gnu++0x");
 	break;	
+      case CPP0X_OVERRIDE_CONTROLS:
+	pedwarn (input_location, 0,
+		 "override controls (override/final) "
+		 "only available with -std=c++0x or -std=gnu++0x");
+        break;
       default:
 	gcc_unreachable();
       }
