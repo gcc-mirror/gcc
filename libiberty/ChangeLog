@@ -1,3 +1,15 @@
+2011-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/49756
+	* stack-limit.c: New file.
+	* Makefile.in: Regenerate deps.
+	(CFILES): Add stack-limit.c.
+	(REQUIRED_OFILES): Add ./stack-limit.$(objext).
+	* configure.ac (checkfuncs): Add getrlimit and setrlimit.
+	(AC_CHECK_FUNCS): Likewise.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
 2011-07-04  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_expression): Handle 'this'.

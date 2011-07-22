@@ -6156,6 +6156,10 @@ main (int argc, char **argv)
   signal (SIGCHLD, SIG_DFL);
 #endif
 
+  /* Parsing and gimplification sometimes need quite large stack.
+     Increase stack size limits if possible.  */
+  stack_limit_increase (64 * 1024 * 1024);
+
   /* Allocate the argument vector.  */
   alloc_args ();
 
