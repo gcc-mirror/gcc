@@ -1,5 +1,25 @@
 2011-07-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (struct macinfo_struct): Change code to unsigned char.
+	(DEBUG_MACRO_SECTION, DEBUG_MACRO_SECTION_LABEL): Define.
+	(dwarf_attr_name): Handle DW_AT_GNU_macros.
+	(dwarf2out_define): If the vector is empty and
+	lineno is 0, emit a dummy entry first.
+	(dwarf2out_undef): Likewise.  Remove redundant semicolon.
+	(htab_macinfo_hash, htab_macinfo_eq, output_macinfo_op,
+	optimize_macinfo_range): New functions.
+	(output_macinfo): Use them.  If !dwarf_strict and .debug_str is
+	mergeable, optimize longer strings using
+	DW_MACRO_GNU_{define,undef}_indirect and if HAVE_COMDAT_GROUP,
+	optimize longer sequences of define/undef ops from headers
+	using DW_MACRO_GNU_transparent_include.  For !dwarf_strict
+	emit a section headers.
+	(dwarf2out_init): For !dwarf_strict set debug_macinfo_section
+	and macinfo_section_label to DEBUG_MACRO_SECTION
+	resp. DEBUG_MACRO_SECTION_LABEL.
+	(dwarf2out_finish): For !dwarf_strict emit DW_AT_GNU_macros
+	instead of DW_AT_macro_info.
+
 	PR other/32998
 	* common.opt (grecord-gcc-switches, gno-record-gcc-switches): New
 	options.

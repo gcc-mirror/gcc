@@ -2771,7 +2771,7 @@ struct GTY(()) dw_ranges_struct {
 /* A structure to hold a macinfo entry.  */
 
 typedef struct GTY(()) macinfo_struct {
-  unsigned HOST_WIDE_INT code;
+  unsigned char code;
   unsigned HOST_WIDE_INT lineno;
   const char *info;
 }
@@ -3418,6 +3418,9 @@ static void gen_scheduled_generic_parms_dies (void);
 #ifndef DEBUG_MACINFO_SECTION
 #define DEBUG_MACINFO_SECTION	".debug_macinfo"
 #endif
+#ifndef DEBUG_MACRO_SECTION
+#define DEBUG_MACRO_SECTION	".debug_macro"
+#endif
 #ifndef DEBUG_LINE_SECTION
 #define DEBUG_LINE_SECTION	".debug_line"
 #endif
@@ -3474,6 +3477,9 @@ static void gen_scheduled_generic_parms_dies (void);
 #endif
 #ifndef DEBUG_MACINFO_SECTION_LABEL
 #define DEBUG_MACINFO_SECTION_LABEL     "Ldebug_macinfo"
+#endif
+#ifndef DEBUG_MACRO_SECTION_LABEL
+#define DEBUG_MACRO_SECTION_LABEL	"Ldebug_macro"
 #endif
 
 
@@ -4016,6 +4022,8 @@ dwarf_attr_name (unsigned int attr)
       return "DW_AT_GNU_all_call_sites";
     case DW_AT_GNU_all_source_call_sites:
       return "DW_AT_GNU_all_source_call_sites";
+    case DW_AT_GNU_macros:
+      return "DW_AT_GNU_macros";
 
     case DW_AT_GNAT_descriptive_type:
       return "DW_AT_GNAT_descriptive_type";
@@ -20391,6 +20399,15 @@ dwarf2out_define (unsigned int lineno ATTRIBUTE_UNUSED,
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
       macinfo_entry e;
+      /* Insert a dummy first entry to be able to optimize the whole
+	 predefined macro block using DW_MACRO_GNU_transparent_include.  */
+      if (VEC_empty (macinfo_entry, macinfo_table) && lineno == 0)
+	{
+	  e.code = 0;
+	  e.lineno = 0;
+	  e.info = NULL;
+	  VEC_safe_push (macinfo_entry, gc, macinfo_table, &e);
+	}
       e.code = DW_MACINFO_define;
       e.lineno = lineno;
       e.info = xstrdup (buffer);;
@@ -20409,12 +20426,251 @@ dwarf2out_undef (unsigned int lineno ATTRIBUTE_UNUSED,
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
       macinfo_entry e;
+      /* Insert a dummy first entry to be able to optimize the whole
+	 predefined macro block using DW_MACRO_GNU_transparent_include.  */
+      if (VEC_empty (macinfo_entry, macinfo_table) && lineno == 0)
+	{
+	  e.code = 0;
+	  e.lineno = 0;
+	  e.info = NULL;
+	  VEC_safe_push (macinfo_entry, gc, macinfo_table, &e);
+	}
       e.code = DW_MACINFO_undef;
       e.lineno = lineno;
-      e.info = xstrdup (buffer);;
+      e.info = xstrdup (buffer);
       VEC_safe_push (macinfo_entry, gc, macinfo_table, &e);
     }
 }
+
+/* Routines to manipulate hash table of CUs.  */
+
+static hashval_t
+htab_macinfo_hash (const void *of)
+{
+  const macinfo_entry *const entry =
+    (const macinfo_entry *) of;
+
+  return htab_hash_string (entry->info);
+}
+
+static int
+htab_macinfo_eq (const void *of1, const void *of2)
+{
+  const macinfo_entry *const entry1 = (const macinfo_entry *) of1;
+  const macinfo_entry *const entry2 = (const macinfo_entry *) of2;
+
+  return !strcmp (entry1->info, entry2->info);
+}
+
+/* Output a single .debug_macinfo entry.  */
+
+static void
+output_macinfo_op (macinfo_entry *ref)
+{
+  int file_num;
+  size_t len;
+  struct indirect_string_node *node;
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  switch (ref->code)
+    {
+    case DW_MACINFO_start_file:
+      file_num = maybe_emit_file (lookup_filename (ref->info));
+      dw2_asm_output_data (1, DW_MACINFO_start_file, "Start new file");
+      dw2_asm_output_data_uleb128 (ref->lineno,
+				   "Included from line number %lu", 
+				   (unsigned long) ref->lineno);
+      dw2_asm_output_data_uleb128 (file_num, "file %s", ref->info);
+      break;
+    case DW_MACINFO_end_file:
+      dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
+      break;
+    case DW_MACINFO_define:
+    case DW_MACINFO_undef:
+      len = strlen (ref->info) + 1;
+      if (!dwarf_strict
+	  && len > DWARF_OFFSET_SIZE
+	  && !DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET
+	  && (debug_str_section->common.flags & SECTION_MERGE) != 0)
+	{
+	  ref->code = ref->code == DW_MACINFO_define
+		      ? DW_MACRO_GNU_define_indirect
+		      : DW_MACRO_GNU_undef_indirect;
+	  output_macinfo_op (ref);
+	  return;
+	}
+      dw2_asm_output_data (1, ref->code,
+			   ref->code == DW_MACINFO_define
+			   ? "Define macro" : "Undefine macro");
+      dw2_asm_output_data_uleb128 (ref->lineno, "At line number %lu", 
+				   (unsigned long) ref->lineno);
+      dw2_asm_output_nstring (ref->info, -1, "The macro");
+      break;
+    case DW_MACRO_GNU_define_indirect:
+    case DW_MACRO_GNU_undef_indirect:
+      node = find_AT_string (ref->info);
+      if (node->form != DW_FORM_strp)
+	{
+	  char label[32];
+	  ASM_GENERATE_INTERNAL_LABEL (label, "LASF", dw2_string_counter);
+	  ++dw2_string_counter;
+	  node->label = xstrdup (label);
+	  node->form = DW_FORM_strp;
+	}
+      dw2_asm_output_data (1, ref->code,
+			   ref->code == DW_MACRO_GNU_define_indirect
+			   ? "Define macro indirect"
+			   : "Undefine macro indirect");
+      dw2_asm_output_data_uleb128 (ref->lineno, "At line number %lu",
+				   (unsigned long) ref->lineno);
+      dw2_asm_output_offset (DWARF_OFFSET_SIZE, node->label,
+			     debug_str_section, "The macro: \"%s\"",
+			     ref->info);
+      break;
+    case DW_MACRO_GNU_transparent_include:
+      dw2_asm_output_data (1, ref->code, "Transparent include");
+      ASM_GENERATE_INTERNAL_LABEL (label,
+				   DEBUG_MACRO_SECTION_LABEL, ref->lineno);
+      dw2_asm_output_offset (DWARF_OFFSET_SIZE, label, NULL, NULL);
+      break;
+    default:
+      fprintf (asm_out_file, "%s unrecognized macinfo code %lu\n",
+	       ASM_COMMENT_START, (unsigned long) ref->code);
+      break;
+    }
+}
+
+/* Attempt to make a sequence of define/undef macinfo ops shareable with
+   other compilation unit .debug_macinfo sections.  IDX is the first
+   index of a define/undef, return the number of ops that should be
+   emitted in a comdat .debug_macinfo section and emit
+   a DW_MACRO_GNU_transparent_include entry referencing it.
+   If the define/undef entry should be emitted normally, return 0.  */
+
+static unsigned
+optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
+			htab_t *macinfo_htab)
+{
+  macinfo_entry *first, *second, *cur, *inc;
+  char linebuf[sizeof (HOST_WIDE_INT) * 3 + 1];
+  unsigned char checksum[16];
+  struct md5_ctx ctx;
+  char *grp_name, *tail;
+  const char *base;
+  unsigned int i, count, encoded_filename_len, linebuf_len;
+  void **slot;
+
+  first = VEC_index (macinfo_entry, macinfo_table, idx);
+  second = VEC_index (macinfo_entry, macinfo_table, idx + 1);
+
+  /* Optimize only if there are at least two consecutive define/undef ops,
+     and either all of them are before first DW_MACINFO_start_file
+     with lineno 0 (i.e. predefined macro block), or all of them are
+     in some included header file.  */
+  if (second->code != DW_MACINFO_define && second->code != DW_MACINFO_undef)
+    return 0;
+  if (VEC_empty (macinfo_entry, files))
+    {
+      if (first->lineno != 0 || second->lineno != 0)
+	return 0;
+    }
+  else if (first->lineno == 0)
+    return 0;
+
+  /* Find the last define/undef entry that can be grouped together
+     with first and at the same time compute md5 checksum of their
+     codes, linenumbers and strings.  */
+  md5_init_ctx (&ctx);
+  for (i = idx; VEC_iterate (macinfo_entry, macinfo_table, i, cur); i++)
+    if (cur->code != DW_MACINFO_define && cur->code != DW_MACINFO_undef)
+      break;
+    else if (first->lineno == 0 && cur->lineno != 0)
+      break;
+    else
+      {
+	unsigned char code = cur->code;
+	md5_process_bytes (&code, 1, &ctx);
+	checksum_uleb128 (cur->lineno, &ctx);
+	md5_process_bytes (cur->info, strlen (cur->info) + 1, &ctx);
+      }
+  md5_finish_ctx (&ctx, checksum);
+  count = i - idx;
+
+  /* From the containing include filename (if any) pick up just
+     usable characters from its basename.  */
+  if (first->lineno == 0)
+    base = "";
+  else
+    base = lbasename (VEC_last (macinfo_entry, files)->info);
+  for (encoded_filename_len = 0, i = 0; base[i]; i++)
+    if (ISIDNUM (base[i]) || base[i] == '.')
+      encoded_filename_len++;
+  /* Count . at the end.  */
+  if (encoded_filename_len)
+    encoded_filename_len++;
+
+  sprintf (linebuf, HOST_WIDE_INT_PRINT_UNSIGNED, first->lineno);
+  linebuf_len = strlen (linebuf);
+
+  /* The group name format is: wmN.[<encoded filename>.]<lineno>.<md5sum>  */
+  grp_name = XNEWVEC (char, 4 + encoded_filename_len + linebuf_len + 1
+		      + 16 * 2 + 1);
+  memcpy (grp_name, DWARF_OFFSET_SIZE == 4 ? "wm4." : "wm8.", 4);
+  tail = grp_name + 4;
+  if (encoded_filename_len)
+    {
+      for (i = 0; base[i]; i++)
+	if (ISIDNUM (base[i]) || base[i] == '.')
+	  *tail++ = base[i];
+      *tail++ = '.';
+    }
+  memcpy (tail, linebuf, linebuf_len);
+  tail += linebuf_len;
+  *tail++ = '.';
+  for (i = 0; i < 16; i++)
+    sprintf (tail + i * 2, "%02x", checksum[i] & 0xff);
+
+  /* Construct a macinfo_entry for DW_MACRO_GNU_transparent_include
+     in the empty vector entry before the first define/undef.  */
+  inc = VEC_index (macinfo_entry, macinfo_table, idx - 1);
+  inc->code = DW_MACRO_GNU_transparent_include;
+  inc->lineno = 0;
+  inc->info = grp_name;
+  if (*macinfo_htab == NULL)
+    *macinfo_htab = htab_create (10, htab_macinfo_hash, htab_macinfo_eq, NULL);
+  /* Avoid emitting duplicates.  */
+  slot = htab_find_slot (*macinfo_htab, inc, INSERT);
+  if (*slot != NULL)
+    {
+      free (CONST_CAST (char *, inc->info));
+      inc->code = 0;
+      inc->info = NULL;
+      /* If such an entry has been used before, just emit
+	 a DW_MACRO_GNU_transparent_include op.  */
+      inc = (macinfo_entry *) *slot;
+      output_macinfo_op (inc);
+      /* And clear all macinfo_entry in the range to avoid emitting them
+	 in the second pass.  */
+      for (i = idx;
+	   VEC_iterate (macinfo_entry, macinfo_table, i, cur)
+	   && i < idx + count;
+	   i++)
+	{
+	  cur->code = 0;
+	  free (CONST_CAST (char *, cur->info));
+	  cur->info = NULL;
+	}
+    }
+  else
+    {
+      *slot = inc;
+      inc->lineno = htab_elements (*macinfo_htab);
+      output_macinfo_op (inc);
+    }
+  return count;
+}
+
+/* Output macinfo section(s).  */
 
 static void
 output_macinfo (void)
@@ -20422,45 +20678,134 @@ output_macinfo (void)
   unsigned i;
   unsigned long length = VEC_length (macinfo_entry, macinfo_table);
   macinfo_entry *ref;
+  VEC (macinfo_entry, gc) *files = NULL;
+  htab_t macinfo_htab = NULL;
 
   if (! length)
     return;
 
+  /* output_macinfo* uses these interchangeably.  */
+  gcc_assert ((int) DW_MACINFO_define == (int) DW_MACRO_GNU_define
+	      && (int) DW_MACINFO_undef == (int) DW_MACRO_GNU_undef
+	      && (int) DW_MACINFO_start_file == (int) DW_MACRO_GNU_start_file
+	      && (int) DW_MACINFO_end_file == (int) DW_MACRO_GNU_end_file);
+
+  /* For .debug_macro emit the section header.  */
+  if (!dwarf_strict)
+    {
+      dw2_asm_output_data (2, 4, "DWARF macro version number");
+      if (DWARF_OFFSET_SIZE == 8)
+	dw2_asm_output_data (1, 3, "Flags: 64-bit, lineptr present");
+      else
+	dw2_asm_output_data (1, 2, "Flags: 32-bit, lineptr present");
+      dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_line_section_label,
+			     debug_line_section, NULL);
+    }
+
+  /* In the first loop, it emits the primary .debug_macinfo section
+     and after each emitted op the macinfo_entry is cleared.
+     If a longer range of define/undef ops can be optimized using
+     DW_MACRO_GNU_transparent_include, the
+     DW_MACRO_GNU_transparent_include op is emitted and kept in
+     the vector before the first define/undef in the range and the
+     whole range of define/undef ops is not emitted and kept.  */
   for (i = 0; VEC_iterate (macinfo_entry, macinfo_table, i, ref); i++)
     {
       switch (ref->code)
 	{
-	  case DW_MACINFO_start_file:
+	case DW_MACINFO_start_file:
+	  VEC_safe_push (macinfo_entry, gc, files, ref);
+	  break;
+	case DW_MACINFO_end_file:
+	  if (!VEC_empty (macinfo_entry, files))
 	    {
-	      int file_num = maybe_emit_file (lookup_filename (ref->info));
-	      dw2_asm_output_data (1, DW_MACINFO_start_file, "Start new file");
-	      dw2_asm_output_data_uleb128 
-			(ref->lineno, "Included from line number %lu", 
-			 			(unsigned long)ref->lineno);
-	      dw2_asm_output_data_uleb128 (file_num, "file %s", ref->info);
+	      macinfo_entry *file = VEC_last (macinfo_entry, files);
+	      free (CONST_CAST (char *, file->info));
+	      VEC_pop (macinfo_entry, files);
 	    }
-	    break;
-	  case DW_MACINFO_end_file:
-	    dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
-	    break;
-	  case DW_MACINFO_define:
-	    dw2_asm_output_data (1, DW_MACINFO_define, "Define macro");
-	    dw2_asm_output_data_uleb128 (ref->lineno, "At line number %lu", 
-			 			(unsigned long)ref->lineno);
-	    dw2_asm_output_nstring (ref->info, -1, "The macro");
-	    break;
-	  case DW_MACINFO_undef:
-	    dw2_asm_output_data (1, DW_MACINFO_undef, "Undefine macro");
-	    dw2_asm_output_data_uleb128 (ref->lineno, "At line number %lu",
-			 			(unsigned long)ref->lineno);
-	    dw2_asm_output_nstring (ref->info, -1, "The macro");
-	    break;
-	  default:
-	   fprintf (asm_out_file, "%s unrecognized macinfo code %lu\n",
-	     ASM_COMMENT_START, (unsigned long)ref->code);
+	  break;
+	case DW_MACINFO_define:
+	case DW_MACINFO_undef:
+	  if (!dwarf_strict
+	      && HAVE_COMDAT_GROUP
+	      && VEC_length (macinfo_entry, files) != 1
+	      && i > 0
+	      && i + 1 < length
+	      && VEC_index (macinfo_entry, macinfo_table, i - 1)->code == 0)
+	    {
+	      unsigned count = optimize_macinfo_range (i, files, &macinfo_htab);
+	      if (count)
+		{
+		  i += count - 1;
+		  continue;
+		}
+	    }
+	  break;
+	case 0:
+	  /* A dummy entry may be inserted at the beginning to be able
+	     to optimize the whole block of predefined macros.  */
+	  if (i == 0)
+	    continue;
+	default:
 	  break;
 	}
+      output_macinfo_op (ref);
+      /* For DW_MACINFO_start_file ref->info has been copied into files
+	 vector.  */
+      if (ref->code != DW_MACINFO_start_file)
+	free (CONST_CAST (char *, ref->info));
+      ref->info = NULL;
+      ref->code = 0;
     }
+
+  if (macinfo_htab == NULL)
+    return;
+
+  htab_delete (macinfo_htab);
+
+  /* If any DW_MACRO_GNU_transparent_include were used, on those
+     DW_MACRO_GNU_transparent_include entries terminate the
+     current chain and switch to a new comdat .debug_macinfo
+     section and emit the define/undef entries within it.  */
+  for (i = 0; VEC_iterate (macinfo_entry, macinfo_table, i, ref); i++)
+    switch (ref->code)
+      {
+      case 0:
+	continue;
+      case DW_MACRO_GNU_transparent_include:
+	{
+	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+	  tree comdat_key = get_identifier (ref->info);
+	  /* Terminate the previous .debug_macinfo section.  */
+	  dw2_asm_output_data (1, 0, "End compilation unit");
+	  targetm.asm_out.named_section (DEBUG_MACRO_SECTION,
+					 SECTION_DEBUG
+					 | SECTION_LINKONCE,
+					 comdat_key);
+	  ASM_GENERATE_INTERNAL_LABEL (label,
+				       DEBUG_MACRO_SECTION_LABEL,
+				       ref->lineno);
+	  ASM_OUTPUT_LABEL (asm_out_file, label);
+	  ref->code = 0;
+	  free (CONST_CAST (char *, ref->info));
+	  ref->info = NULL;
+	  dw2_asm_output_data (2, 4, "DWARF macro version number");
+	  if (DWARF_OFFSET_SIZE == 8)
+	    dw2_asm_output_data (1, 1, "Flags: 64-bit");
+	  else
+	    dw2_asm_output_data (1, 0, "Flags: 32-bit");
+	}
+	break;
+      case DW_MACINFO_define:
+      case DW_MACINFO_undef:
+	output_macinfo_op (ref);
+	ref->code = 0;
+	free (CONST_CAST (char *, ref->info));
+	ref->info = NULL;
+	break;
+      default:
+	gcc_unreachable ();
+      }
 }
 
 /* Set up for Dwarf output at the start of compilation.  */
@@ -20509,7 +20854,9 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 				      SECTION_DEBUG, NULL);
   debug_aranges_section = get_section (DEBUG_ARANGES_SECTION,
 				       SECTION_DEBUG, NULL);
-  debug_macinfo_section = get_section (DEBUG_MACINFO_SECTION,
+  debug_macinfo_section = get_section (dwarf_strict
+				       ? DEBUG_MACINFO_SECTION
+				       : DEBUG_MACRO_SECTION,
 				       SECTION_DEBUG, NULL);
   debug_line_section = get_section (DEBUG_LINE_SECTION,
 				    SECTION_DEBUG, NULL);
@@ -20541,7 +20888,9 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
 			       DEBUG_RANGES_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
-			       DEBUG_MACINFO_SECTION_LABEL, 0);
+			       dwarf_strict
+			       ? DEBUG_MACINFO_SECTION_LABEL
+			       : DEBUG_MACRO_SECTION_LABEL, 0);
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     macinfo_table = VEC_alloc (macinfo_entry, gc, 64);
@@ -22093,7 +22442,9 @@ dwarf2out_finish (const char *filename)
 		    debug_line_section_label);
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
-    add_AT_macptr (comp_unit_die (), DW_AT_macro_info, macinfo_section_label);
+    add_AT_macptr (comp_unit_die (),
+		   dwarf_strict ? DW_AT_macro_info : DW_AT_GNU_macros,
+		   macinfo_section_label);
 
   if (have_location_lists)
     optimize_location_lists (comp_unit_die ());
