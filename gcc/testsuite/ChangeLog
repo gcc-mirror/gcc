@@ -1,3 +1,15 @@
+2011-07-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc/testsuite/gcc.target/i386/avx-vzeroupper-16.c: Only run
+	on lp64 targets.
+	* gcc/testsuite/gcc.target/i386/avx-vzeroupper-17.c: Likewise.
+	* gcc/testsuite/gcc.target/i386/avx-vzeroupper-18.c: Likewise.
+	* gcc/testsuite/gcc.target/i386/pr43662.c: Likewise.
+	* gcc/testsuite/gcc.target/i386/pr43869.c: Likewise.
+
+	* gcc.target/x86_64/abi/callabi/callabi.exp: Check ilp32
+	instead of ia32.
+
 2011-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45819
