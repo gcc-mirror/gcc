@@ -1,3 +1,8 @@
+2011-07-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/49817
+	* stack-limit.c: Include <stdint.h>.
+
 2011-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/49756
