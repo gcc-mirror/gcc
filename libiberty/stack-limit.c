@@ -35,6 +35,9 @@ Attempt to increase stack size limit to @var{pref} bytes if possible.
 
 #include "config.h"
 
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
