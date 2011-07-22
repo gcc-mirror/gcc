@@ -1,5 +1,8 @@
 2011-07-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2.h (DW_AT_GNU_macros): New.
+	(enum dwarf_macro_record_type): New enum.  Add DW_MACRO_GNU_*.
+
 	PR c++/49756
 	* libiberty.h (stack_limit_increase): New prototype.
 
