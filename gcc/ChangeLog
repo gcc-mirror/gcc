@@ -1,3 +1,20 @@
+2011-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/32998
+	* common.opt (grecord-gcc-switches, gno-record-gcc-switches): New
+	options.
+	* dwarf2out.c: Include opts.h.
+	(dchar_p): New typedef.  Define heap VEC for it.
+	(producer_string): New variable.
+	(gen_producer_string): New function.
+	(gen_compile_unit_die): Use it.
+	(dwarf2out_finish): Fix up comp_unit_die () DW_AT_producer
+	if needed.
+	* Makefile.in (dwarf2out.o): Depend on $(OPTS_H).
+	* doc/invoke.texi: Document -grecord-gcc-switches and
+	-gno-record-gcc-switches, add a -grecord-gcc-switches reference
+	to -frecord-gcc-switches description.
+
 2011-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/30112

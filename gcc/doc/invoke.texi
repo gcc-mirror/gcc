@@ -11,7 +11,7 @@
 
 @c man begin COPYRIGHT
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -328,7 +328,8 @@ Objective-C and Objective-C++ Dialects}.
 -fstack-usage  -ftest-coverage  -ftime-report -fvar-tracking @gol
 -fvar-tracking-assignments  -fvar-tracking-assignments-toggle @gol
 -g  -g@var{level}  -gtoggle  -gcoff  -gdwarf-@var{version} @gol
--ggdb  -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
+-ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
+-gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
 -gvms  -gxcoff  -gxcoff+ @gol
 -fno-merge-debug-strings -fno-dwarf2-cfi-asm @gol
 -fdebug-prefix-map=@var{old}=@var{new} @gol
@@ -4686,6 +4687,20 @@ use, some non-conflicting DWARF 3 extensions in the unwind tables.
 
 Version 4 may require GDB 7.0 and @option{-fvar-tracking-assignments}
 for maximum benefit.
+
+@item -grecord-gcc-switches
+@opindex grecord-gcc-switches
+This switch causes the command line options, that were used to invoke the
+compiler and may affect code generation, to be appended to the
+DW_AT_producer attribute in DWARF debugging information.  The options
+are concatenated with spaces separating them from each other and from
+the compiler version.  See also @option{-frecord-gcc-switches} for another
+way of storing compiler options into the object file.
+
+@item -gno-record-gcc-switches
+@opindex gno-record-gcc-switches
+Disallow appending command line options to the DW_AT_producer attribute
+in DWARF debugging information.  This is the default.
 
 @item -gstrict-dwarf
 @opindex gstrict-dwarf
@@ -18029,6 +18044,8 @@ usually takes the form of a section containing ASCII text.  This
 switch is related to the @option{-fverbose-asm} switch, but that
 switch only records information in the assembler output file as
 comments, so it never reaches the object file.
+See also @option{-grecord-gcc-switches} for another
+way of storing compiler options into the object file.
 
 @item -fpic
 @opindex fpic
