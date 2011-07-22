@@ -1,3 +1,10 @@
+2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* init.c [sgi] (__gnat_error_handler): Update sigaction(2) citation.
+	Correct argument types.
+	Extract code from reason.
+	(__gnat_install_handler): Assign to act.sa_sigaction.
+
 2011-07-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (GNAT1_ADA_OBJS): Move ada/b_gnat1.o to...
