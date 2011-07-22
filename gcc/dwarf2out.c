@@ -94,6 +94,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-flow.h"
 #include "cfglayout.h"
+#include "opts.h"
 
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);
 static rtx last_var_location_insn;
@@ -18108,13 +18109,123 @@ gen_ptr_to_mbr_type_die (tree type, dw_die_ref context_die)
   add_type_attribute (ptr_die, TREE_TYPE (type), 0, 0, context_die);
 }
 
+typedef const char *dchar_p; /* For DEF_VEC_P.  */
+DEF_VEC_P(dchar_p);
+DEF_VEC_ALLOC_P(dchar_p,heap);
+
+static char *producer_string;
+
+/* Return a heap allocated producer string including command line options
+   if -grecord-gcc-switches.  */
+
+static char *
+gen_producer_string (void)
+{
+  size_t j;
+  VEC(dchar_p, heap) *switches = NULL;
+  const char *language_string = lang_hooks.name;
+  char *producer, *tail;
+  const char *p;
+  size_t len = dwarf_record_gcc_switches ? 0 : 3;
+  size_t plen = strlen (language_string) + 1 + strlen (version_string);
+
+  for (j = 1; dwarf_record_gcc_switches && j < save_decoded_options_count; j++)
+    switch (save_decoded_options[j].opt_index)
+      {
+      case OPT_o:
+      case OPT_d:
+      case OPT_dumpbase:
+      case OPT_dumpdir:
+      case OPT_auxbase:
+      case OPT_auxbase_strip:
+      case OPT_quiet:
+      case OPT_version:
+      case OPT_v:
+      case OPT_w:
+      case OPT_L:
+      case OPT_D:
+      case OPT_I:
+      case OPT_U:
+      case OPT_SPECIAL_unknown:
+      case OPT_SPECIAL_ignore:
+      case OPT_SPECIAL_program_name:
+      case OPT_SPECIAL_input_file:
+      case OPT_grecord_gcc_switches:
+      case OPT_gno_record_gcc_switches:
+      case OPT__output_pch_:
+      case OPT_fdiagnostics_show_location_:
+      case OPT_fdiagnostics_show_option:
+      case OPT____:
+      case OPT__sysroot_:
+      case OPT_nostdinc:
+      case OPT_nostdinc__:
+	/* Ignore these.  */
+	continue;
+      default:
+        gcc_checking_assert (save_decoded_options[j].canonical_option[0][0]
+			     == '-');
+        switch (save_decoded_options[j].canonical_option[0][1])
+	  {
+	  case 'M':
+	  case 'i':
+	  case 'W':
+	    continue;
+	  case 'f':
+	    if (strncmp (save_decoded_options[j].canonical_option[0] + 2,
+			 "dump", 4) == 0)
+	      continue;
+	    break;
+	  default:
+	    break;
+	  }
+	VEC_safe_push (dchar_p, heap, switches,
+		       save_decoded_options[j].orig_option_with_args_text);
+	len += strlen (save_decoded_options[j].orig_option_with_args_text) + 1;
+	break;
+      }
+
+  producer = XNEWVEC (char, plen + 1 + len + 1);
+  tail = producer;
+  sprintf (tail, "%s %s", language_string, version_string);
+  tail += plen;
+
+  if (!dwarf_record_gcc_switches)
+    {
+#ifdef MIPS_DEBUGGING_INFO
+      /* The MIPS/SGI compilers place the 'cc' command line options in the
+	 producer string.  The SGI debugger looks for -g, -g1, -g2, or -g3;
+	 if they do not appear in the producer string, the debugger reaches
+	 the conclusion that the object file is stripped and has no debugging
+	 information.  To get the MIPS/SGI debugger to believe that there is
+	 debugging information in the object file, we add a -g to the producer
+	 string.  */
+      if (debug_info_level > DINFO_LEVEL_TERSE)
+	{
+	  memcpy (tail, " -g", 3);
+	  tail += 3;
+	}
+#endif
+    }
+
+  FOR_EACH_VEC_ELT (dchar_p, switches, j, p)
+    {
+      len = strlen (p);
+      *tail = ' ';
+      memcpy (tail + 1, p, len);
+      tail += len + 1;
+    }
+
+  *tail = '\0';
+  VEC_free (dchar_p, heap, switches);
+  return producer;
+}
+
 /* Generate the DIE for the compilation unit.  */
 
 static dw_die_ref
 gen_compile_unit_die (const char *filename)
 {
   dw_die_ref die;
-  char producer[250];
   const char *language_string = lang_hooks.name;
   int language;
 
@@ -18128,20 +18239,9 @@ gen_compile_unit_die (const char *filename)
 	add_comp_dir_attribute (die);
     }
 
-  sprintf (producer, "%s %s", language_string, version_string);
-
-#ifdef MIPS_DEBUGGING_INFO
-  /* The MIPS/SGI compilers place the 'cc' command line options in the producer
-     string.  The SGI debugger looks for -g, -g1, -g2, or -g3; if they do
-     not appear in the producer string, the debugger reaches the conclusion
-     that the object file is stripped and has no debugging information.
-     To get the MIPS/SGI debugger to believe that there is debugging
-     information in the object file, we add a -g to the producer string.  */
-  if (debug_info_level > DINFO_LEVEL_TERSE)
-    strcat (producer, " -g");
-#endif
-
-  add_AT_string (die, DW_AT_producer, producer);
+  if (producer_string == NULL)
+    producer_string = gen_producer_string ();
+  add_AT_string (die, DW_AT_producer, producer_string);
 
   /* If our producer is LTO try to figure out a common language to use
      from the global list of translation units.  */
@@ -21773,6 +21873,15 @@ dwarf2out_finish (const char *filename)
   comdat_type_node *ctnode;
   htab_t comdat_type_table;
   unsigned int i;
+
+  /* PCH might result in DW_AT_producer string being restored from the
+     header compilation, fix it up if needed.  */
+  dw_attr_ref producer = get_AT (comp_unit_die (), DW_AT_producer);
+  if (strcmp (AT_string (producer), producer_string) != 0)
+    {
+      struct indirect_string_node *node = find_AT_string (producer_string);
+      producer->dw_attr_val.v.val_str = node;
+    }
 
   gen_scheduled_generic_parms_dies ();
   gen_remaining_tmpl_value_param_die_attribute ();
