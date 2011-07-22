@@ -1,5 +1,13 @@
 2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR bootstrap/49794
+	* init.c [sun && __SVR4 && !__vxworks] (__gnat_install_handler):
+	Assign to act.sa_sigaction.
+	* tracebak.c [USE_GENERIC_UNWINDER] (__gnat_backtrace): Cast
+	current->return_address to char * before arithmetic.
+
+2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* init.c [sgi] (__gnat_error_handler): Update sigaction(2) citation.
 	Correct argument types.
 	Extract code from reason.

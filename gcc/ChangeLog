@@ -1,4 +1,12 @@
 2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/49794
+	* configure.ac: Test AM_ICONV with CXX.
+	* configure: Regenerate.
+	* config/sol2-c.c (solaris_format_types): Use EXPORTED_CONST.
+
+2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/49797
 	* graphite-clast-to-gimple.c (CLOOG_LANGUAGE_C): Provide if missing.
