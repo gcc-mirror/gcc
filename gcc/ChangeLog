@@ -1,3 +1,9 @@
+2011-07-22  Richard Henderson  <rth@redhat.com>
+
+	* jump.c (maybe_propagate_label_ref): Split out of...
+	(mark_all_labels): ... here.  Do not attempt label_ref
+	propagation while in cfglayout mode.
+
 2011-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (struct macinfo_struct): Change code to unsigned char.

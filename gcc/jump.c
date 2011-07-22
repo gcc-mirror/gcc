@@ -200,6 +200,54 @@ init_label_info (rtx f)
     }
 }
 
+/* A subroutine of mark_all_labels.  Trivially propagate a simple label
+   load into a jump_insn that uses it.  */
+
+static void
+maybe_propagate_label_ref (rtx jump_insn, rtx prev_nonjump_insn)
+{
+  rtx label_note, pc, pc_src;
+
+  pc = pc_set (jump_insn);
+  pc_src = pc != NULL ? SET_SRC (pc) : NULL;
+  label_note = find_reg_note (prev_nonjump_insn, REG_LABEL_OPERAND, NULL);
+
+  /* If the previous non-jump insn sets something to a label,
+     something that this jump insn uses, make that label the primary
+     target of this insn if we don't yet have any.  That previous
+     insn must be a single_set and not refer to more than one label.
+     The jump insn must not refer to other labels as jump targets
+     and must be a plain (set (pc) ...), maybe in a parallel, and
+     may refer to the item being set only directly or as one of the
+     arms in an IF_THEN_ELSE.  */
+
+  if (label_note != NULL && pc_src != NULL)
+    {
+      rtx label_set = single_set (prev_nonjump_insn);
+      rtx label_dest = label_set != NULL ? SET_DEST (label_set) : NULL;
+
+      if (label_set != NULL
+	  /* The source must be the direct LABEL_REF, not a
+	     PLUS, UNSPEC, IF_THEN_ELSE etc.  */
+	  && GET_CODE (SET_SRC (label_set)) == LABEL_REF
+	  && (rtx_equal_p (label_dest, pc_src)
+	      || (GET_CODE (pc_src) == IF_THEN_ELSE
+		  && (rtx_equal_p (label_dest, XEXP (pc_src, 1))
+		      || rtx_equal_p (label_dest, XEXP (pc_src, 2))))))
+	{
+	  /* The CODE_LABEL referred to in the note must be the
+	     CODE_LABEL in the LABEL_REF of the "set".  We can
+	     conveniently use it for the marker function, which
+	     requires a LABEL_REF wrapping.  */
+	  gcc_assert (XEXP (label_note, 0) == XEXP (SET_SRC (label_set), 0));
+
+	  mark_jump_label_1 (label_set, jump_insn, false, true);
+
+	  gcc_assert (JUMP_LABEL (jump_insn) == XEXP (label_note, 0));
+	}
+    }
+}
+
 /* Mark the label each jump jumps to.
    Combine consecutive labels, and count uses of labels.  */
 
@@ -207,91 +255,59 @@ static void
 mark_all_labels (rtx f)
 {
   rtx insn;
-  rtx prev_nonjump_insn = NULL;
 
-  for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (NONDEBUG_INSN_P (insn))
-      {
-	mark_jump_label (PATTERN (insn), insn, 0);
-
-	/* If the previous non-jump insn sets something to a label,
-	   something that this jump insn uses, make that label the primary
-	   target of this insn if we don't yet have any.  That previous
-	   insn must be a single_set and not refer to more than one label.
-	   The jump insn must not refer to other labels as jump targets
-	   and must be a plain (set (pc) ...), maybe in a parallel, and
-	   may refer to the item being set only directly or as one of the
-	   arms in an IF_THEN_ELSE.  */
-	if (! INSN_DELETED_P (insn)
-	    && JUMP_P (insn)
-	    && JUMP_LABEL (insn) == NULL)
-	  {
-	    rtx label_note = NULL;
-	    rtx pc = pc_set (insn);
-	    rtx pc_src = pc != NULL ? SET_SRC (pc) : NULL;
-
-	    if (prev_nonjump_insn != NULL)
-	      label_note
-		= find_reg_note (prev_nonjump_insn, REG_LABEL_OPERAND, NULL);
-
-	    if (label_note != NULL && pc_src != NULL)
-	      {
-		rtx label_set = single_set (prev_nonjump_insn);
-		rtx label_dest
-		  = label_set != NULL ? SET_DEST (label_set) : NULL;
-
-		if (label_set != NULL
-		    /* The source must be the direct LABEL_REF, not a
-		       PLUS, UNSPEC, IF_THEN_ELSE etc.  */
-		    && GET_CODE (SET_SRC (label_set)) == LABEL_REF
-		    && (rtx_equal_p (label_dest, pc_src)
-			|| (GET_CODE (pc_src) == IF_THEN_ELSE
-			    && (rtx_equal_p (label_dest, XEXP (pc_src, 1))
-				|| rtx_equal_p (label_dest,
-						XEXP (pc_src, 2))))))
-
-		  {
-		    /* The CODE_LABEL referred to in the note must be the
-		       CODE_LABEL in the LABEL_REF of the "set".  We can
-		       conveniently use it for the marker function, which
-		       requires a LABEL_REF wrapping.  */
-		    gcc_assert (XEXP (label_note, 0)
-				== XEXP (SET_SRC (label_set), 0));
-
-		    mark_jump_label_1 (label_set, insn, false, true);
-		    gcc_assert (JUMP_LABEL (insn)
-				== XEXP (SET_SRC (label_set), 0));
-		  }
-	      }
-	  }
-	else if (! INSN_DELETED_P (insn))
-	  prev_nonjump_insn = insn;
-      }
-    else if (LABEL_P (insn))
-      prev_nonjump_insn = NULL;
-
-  /* If we are in cfglayout mode, there may be non-insns between the
-     basic blocks.  If those non-insns represent tablejump data, they
-     contain label references that we must record.  */
   if (current_ir_type () == IR_RTL_CFGLAYOUT)
     {
       basic_block bb;
-      rtx insn;
       FOR_EACH_BB (bb)
 	{
+	  /* In cfglayout mode, we don't bother with trivial next-insn
+	     propagation of LABEL_REFs into JUMP_LABEL.  This will be
+	     handled by other optimizers using better algorithms.  */
+	  FOR_BB_INSNS (bb, insn)
+	    {
+	      gcc_assert (! INSN_DELETED_P (insn));
+	      if (NONDEBUG_INSN_P (insn))
+	        mark_jump_label (PATTERN (insn), insn, 0);
+	    }
+
+	  /* In cfglayout mode, there may be non-insns between the
+	     basic blocks.  If those non-insns represent tablejump data,
+	     they contain label references that we must record.  */
 	  for (insn = bb->il.rtl->header; insn; insn = NEXT_INSN (insn))
 	    if (INSN_P (insn))
 	      {
 		gcc_assert (JUMP_TABLE_DATA_P (insn));
 		mark_jump_label (PATTERN (insn), insn, 0);
 	      }
-
 	  for (insn = bb->il.rtl->footer; insn; insn = NEXT_INSN (insn))
 	    if (INSN_P (insn))
 	      {
 		gcc_assert (JUMP_TABLE_DATA_P (insn));
 		mark_jump_label (PATTERN (insn), insn, 0);
 	      }
+	}
+    }
+  else
+    {
+      rtx prev_nonjump_insn = NULL;
+      for (insn = f; insn; insn = NEXT_INSN (insn))
+	{
+	  if (INSN_DELETED_P (insn))
+	    ;
+	  else if (LABEL_P (insn))
+	    prev_nonjump_insn = NULL;
+	  else if (NONDEBUG_INSN_P (insn))
+	    {
+	      mark_jump_label (PATTERN (insn), insn, 0);
+	      if (JUMP_P (insn))
+		{
+		  if (JUMP_LABEL (insn) == NULL && prev_nonjump_insn != NULL)
+		    maybe_propagate_label_ref (insn, prev_nonjump_insn);
+		}
+	      else
+		prev_nonjump_insn = insn;
+	    }
 	}
     }
 }
