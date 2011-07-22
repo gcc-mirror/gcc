@@ -1,3 +1,7 @@
+2011-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_ifunc_available): Rewrite.
+
 2011-07-21  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/47654
