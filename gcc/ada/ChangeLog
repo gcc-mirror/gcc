@@ -1,3 +1,12 @@
+2011-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2011-07-23  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/49819
+	* gcc-interface/Makefile.in (powerpc-linux): Remove reference to
+	g-trasym-dwarf.adb.
+
 2011-07-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/48711

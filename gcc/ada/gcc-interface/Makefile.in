@@ -1792,7 +1792,6 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   s-osinte.adb<s-osinte-posix.adb \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   g-sercom.adb<g-sercom-linux.adb \
-  g-trasym.adb<g-trasym-dwarf.adb \
   $(ATOMICS_TARGET_PAIRS)
 
   ifeq ($(strip $(filter-out xenomai,$(THREAD_KIND))),)
