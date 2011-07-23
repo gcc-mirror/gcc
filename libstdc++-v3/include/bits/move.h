@@ -58,12 +58,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   
   /// forward (as per N3143)
   template<typename _Tp>
-    inline _Tp&&
+    inline constexpr _Tp&&
     forward(typename std::remove_reference<_Tp>::type& __t) noexcept
     { return static_cast<_Tp&&>(__t); }
 
   template<typename _Tp>
-    inline _Tp&&
+    inline constexpr _Tp&&
     forward(typename std::remove_reference<_Tp>::type&& __t) noexcept
     {
       static_assert(!std::is_lvalue_reference<_Tp>::value, "template argument"
@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return Same, moved.
   */
   template<typename _Tp>
-    inline typename std::remove_reference<_Tp>::type&&
+    inline constexpr typename std::remove_reference<_Tp>::type&&
     move(_Tp&& __t) noexcept
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
 
