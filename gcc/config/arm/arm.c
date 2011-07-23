@@ -3996,7 +3996,7 @@ aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
 			       const_tree type ATTRIBUTE_UNUSED)
 {
   if (!use_vfp_abi (pcs_variant, false))
-    return false;
+    return NULL;
 
   if (mode == BLKmode || (mode == TImode && !TARGET_NEON))
     {

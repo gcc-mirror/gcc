@@ -1,3 +1,8 @@
+2011-07-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/49816
+	* arm.c (aapcs_vfp_allocate_return_reg): Return NULL on failure.
+
 2011-07-22  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Document -Wno-narrowing.
