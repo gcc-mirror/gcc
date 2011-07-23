@@ -285,6 +285,17 @@ add_cfi (dw_cfi_ref cfi)
     VEC_safe_push (dw_cfi_ref, gc, *add_cfi_vec, cfi);
 }
 
+/* Perform ROW->REG_SAVE[COLUMN] = CFI.  CFI may be null, indicating
+   that the register column is no longer saved.  */
+
+static void
+update_row_reg_save (dw_cfi_row_ref row, unsigned column, dw_cfi_ref cfi)
+{
+  if (VEC_length (dw_cfi_ref, row->reg_save) <= column)
+    VEC_safe_grow_cleared (dw_cfi_ref, gc, row->reg_save, column + 1);
+  VEC_replace (dw_cfi_ref, row->reg_save, column, cfi);
+}
+
 /* This function fills in aa dw_cfa_location structure from a dwarf location
    descriptor sequence.  */
 
@@ -574,7 +585,13 @@ reg_save (unsigned int reg, unsigned int sreg, HOST_WIDE_INT offset)
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
     }
   else if (sreg == reg)
-    cfi->dw_cfi_opc = DW_CFA_same_value;
+    {
+      /* While we could emit something like DW_CFA_same_value or
+	 DW_CFA_restore, we never expect to see something like that
+	 in a prologue.  This is more likely to be a bug.  A backend
+	 can always bypass this by using REG_CFA_RESTORE directly.  */
+      gcc_unreachable ();
+    }
   else
     {
       cfi->dw_cfi_opc = DW_CFA_register;
@@ -582,6 +599,7 @@ reg_save (unsigned int reg, unsigned int sreg, HOST_WIDE_INT offset)
     }
 
   add_cfi (cfi);
+  update_row_reg_save (cur_row, reg, cfi);
 }
 
 /* Given a SET, calculate the amount of stack adjustment it
@@ -1337,6 +1355,7 @@ dwarf2out_frame_debug_cfa_expression (rtx set)
 {
   rtx src, dest, span;
   dw_cfi_ref cfi = new_cfi ();
+  unsigned regno;
 
   dest = SET_DEST (set);
   src = SET_SRC (set);
@@ -1347,8 +1366,10 @@ dwarf2out_frame_debug_cfa_expression (rtx set)
   span = targetm.dwarf_register_span (src);
   gcc_assert (!span);
 
+  regno = dwf_regno (src);
+
   cfi->dw_cfi_opc = DW_CFA_expression;
-  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = dwf_regno (src);
+  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = regno;
   cfi->dw_cfi_oprnd2.dw_cfi_loc
     = mem_loc_descriptor (XEXP (dest, 0), get_address_mode (dest),
 			  GET_MODE (dest), VAR_INIT_STATUS_INITIALIZED);
@@ -1356,6 +1377,7 @@ dwarf2out_frame_debug_cfa_expression (rtx set)
   /* ??? We'd like to use queue_reg_save, were the interface different,
      and, as above, we could manage flushing for epilogues.  */
   add_cfi (cfi);
+  update_row_reg_save (cur_row, regno, cfi);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_RESTORE note.  */
@@ -1370,6 +1392,7 @@ dwarf2out_frame_debug_cfa_restore (rtx reg)
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = regno;
 
   add_cfi (cfi);
+  update_row_reg_save (cur_row, regno, NULL);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_WINDOW_SAVE.
