@@ -1,5 +1,20 @@
 2011-07-23  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (dw_trace_info): New.
+	(dw_label_info): New.
+	(cie_return_save): New.
+	(cur_trace): New.
+	(queued_args_size): Rename from args_size.  Update all users.
+	(cfa_store, cfa_temp, regs_saved_in_regs): Remove.
+	(def_cfa_1): Use cur_trace instead of cfa_*.
+	(dwarf2out_stack_adjust, record_reg_saved_in_reg): Likewise.
+	(clobbers_queued_reg_save, reg_saved_in): Likewise.
+	(dwarf2out_frame_debug_expr): Likewise.
+	(create_cie_data): Split out from ...
+	(execute_dwarf2_frame): ... here.  Initialize cur_trace.
+
+2011-07-23  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (regs_saved_in_regs): Allocate from heap, not gc.
 	Update all users to match.
 	(execute_dwarf2_frame): Free reg_saved_in_data.
