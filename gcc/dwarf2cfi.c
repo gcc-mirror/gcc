@@ -1109,13 +1109,13 @@ typedef struct GTY(()) reg_saved_in_data {
 } reg_saved_in_data;
 
 DEF_VEC_O (reg_saved_in_data);
-DEF_VEC_ALLOC_O (reg_saved_in_data, gc);
+DEF_VEC_ALLOC_O (reg_saved_in_data, heap);
 
 /* A set of registers saved in other registers.  This is implemented as
    a flat array because it normally contains zero or 1 entry, depending
    on the target.  IA-64 is the big spender here, using a maximum of
    5 entries.  */
-static GTY(()) VEC(reg_saved_in_data, gc) *regs_saved_in_regs;
+static VEC(reg_saved_in_data, heap) *regs_saved_in_regs;
 
 static GTY(()) reg_saved_in_data *cie_return_save;
 
@@ -1161,7 +1161,7 @@ record_reg_saved_in_reg (rtx dest, rtx src)
   if (dest == NULL)
     return;
 
-  elt = VEC_safe_push(reg_saved_in_data, gc, regs_saved_in_regs, NULL);
+  elt = VEC_safe_push(reg_saved_in_data, heap, regs_saved_in_regs, NULL);
   elt->orig_reg = src;
   elt->saved_in_reg = dest;
 }
@@ -2699,6 +2699,9 @@ initial_return_save (rtx rtl)
 static unsigned int
 execute_dwarf2_frame (void)
 {
+  gcc_checking_assert (queued_reg_saves == NULL);
+  gcc_checking_assert (regs_saved_in_regs == NULL);
+
   /* The first time we're called, compute the incoming frame state.  */
   if (cie_cfi_vec == NULL)
     {
@@ -2737,7 +2740,7 @@ execute_dwarf2_frame (void)
 	      cie_return_save = ggc_alloc_reg_saved_in_data ();
 	      *cie_return_save = *VEC_index (reg_saved_in_data,
 					     regs_saved_in_regs, 0);
-	      regs_saved_in_regs = NULL;
+	      VEC_pop (reg_saved_in_data, regs_saved_in_regs);
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -2748,12 +2751,10 @@ execute_dwarf2_frame (void)
     }
 
   /* Set up state for generating call frame debug info.  */
-  gcc_checking_assert (queued_reg_saves == NULL);
-  gcc_checking_assert (regs_saved_in_regs == NULL);
-
   cur_row = copy_cfi_row (cie_cfi_row);
   if (cie_return_save)
-    VEC_safe_push (reg_saved_in_data, gc, regs_saved_in_regs, cie_return_save);
+    VEC_safe_push (reg_saved_in_data, heap,
+		   regs_saved_in_regs, cie_return_save);
 
   cfa_store = cur_row->cfa;
   args_size = 0;
@@ -2770,7 +2771,7 @@ execute_dwarf2_frame (void)
   /* Reset all function-specific information, particularly for GC.  */
   XDELETEVEC (barrier_args_size);
   barrier_args_size = NULL;
-  regs_saved_in_regs = NULL;
+  VEC_free (reg_saved_in_data, heap, regs_saved_in_regs);
   VEC_free (queued_reg_save, heap, queued_reg_saves);
 
   free_cfi_row (cur_row);
