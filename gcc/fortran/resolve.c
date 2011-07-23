@@ -6402,7 +6402,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	}
     }
 
-  if (pointer || dimension == 0)
+  if (dimension == 0)
     return SUCCESS;
 
   /* Make sure the next-to-last reference node is an array specification.  */

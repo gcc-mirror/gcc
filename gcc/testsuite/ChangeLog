@@ -1,3 +1,8 @@
+2011-07-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/49708
+	* gfortran.dg/allocate_error_3.f90: New.
+
 2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR debug/47393
