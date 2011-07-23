@@ -1,3 +1,7 @@
+2011-07-22  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Document -Wno-narrowing.
+
 2011-07-22  Richard Henderson  <rth@redhat.com>
 
 	* bb-reorder.c (gate_handle_partition_blocks): Honor optimize.
