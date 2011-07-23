@@ -1,3 +1,9 @@
+2011-07-23  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* intrinsics/ctime.c: Include <stdlib.h>.
+	* intrinsics/getlog.c: Likewise.
+	* runtime/stop.c: Likewise.
+
 2011-07-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49791
