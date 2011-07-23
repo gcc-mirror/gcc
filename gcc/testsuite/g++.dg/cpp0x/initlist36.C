@@ -1,5 +1,5 @@
 // PR c++/44358
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++0x -pedantic-errors" }
 
 #include <initializer_list>
 

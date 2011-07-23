@@ -489,6 +489,10 @@ Wmultichar
 C ObjC C++ ObjC++ Warning
 Warn about use of multi-character character constants
 
+Wnarrowing
+C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(1)
+-Wno-narrowing	  In C++0x mode, ignore ill-formed narrowing conversions within { }
+
 Wnested-externs
 C ObjC Var(warn_nested_externs) Warning
 Warn about \"extern\" declarations not at file scope

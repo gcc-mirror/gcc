@@ -1,5 +1,5 @@
 // PR c++/45378
-// { dg-options -std=c++0x }
+// { dg-options "-std=c++0x -pedantic-errors" }
 
 int main()
 {

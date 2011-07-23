@@ -1,5 +1,5 @@
 // Test for narrowing diagnostics
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++0x -pedantic-errors" }
 
 #include <initializer_list>
 
