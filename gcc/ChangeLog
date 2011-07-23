@@ -1,5 +1,27 @@
 2011-07-23  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c: Include basic-block.h.
+	(dw_label_info): Remove.
+	(trace_work_list, trace_index): New.
+	(remember_row, emit_cfa_remember): Remove.
+	(dw_trace_info_hash, dw_trace_info_eq): New.
+	(get_trace_index, get_trace_info): New.
+	(save_point_p): New.
+	(free_cfi_row): Remove.
+	(add_cfi): Do not emit DW_CFA_remember_state.
+	(cfa_row_equal_p): New.
+	(barrier_args_size): Remove.
+	(compute_barrier_args_size_1, compute_barrier_args_size): Remove.
+	(dwarf2out_notice_stack_adjust): Don't compute_barrier_args_size.
+	(maybe_record_trace_start, create_trace_edges, scan_trace): New.
+	(dwarf2out_cfi_begin_epilogue): Remove.
+	(dwarf2out_frame_debug_restore_state): Remove.
+	(connect_traces, create_pseudo_cfg): New.
+	(create_cfi_notes, execute_dwarf2_frame): Rewrite using traces.
+	* Makefile.in (dwarf2cfi.o): Update.
+
+2011-07-23  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (dw_trace_info): New.
 	(dw_label_info): New.
 	(cie_return_save): New.

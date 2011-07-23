@@ -2957,7 +2957,7 @@ dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    tree-pretty-print.h $(COMMON_TARGET_H) $(OPTS_H)
 dwarf2cfi.o : dwarf2cfi.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    version.h $(RTL_H) $(FUNCTION_H) $(DWARF2_H) dwarf2asm.h dwarf2out.h \
-   $(GGC_H) $(TM_P_H) $(TARGET_H) $(TREE_PASS_H)
+   $(GGC_H) $(TM_P_H) $(TARGET_H) $(TREE_PASS_H) $(BASIC_BLOCK_H)
 dwarf2asm.o : dwarf2asm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(FLAGS_H) $(RTL_H) $(TREE_H) output.h dwarf2asm.h $(TM_P_H) $(GGC_H) \
    gt-dwarf2asm.h $(DWARF2_H) $(SPLAY_TREE_H) $(TARGET_H)
