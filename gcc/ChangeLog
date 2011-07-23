@@ -1,5 +1,9 @@
 2011-07-23  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (dw_cfi_row_ref): Remove.  Update all users.
+
+2011-07-23  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (add_cfi_args_size): Split out from...
 	(dwarf2out_args_size): ... here.
 	(add_cfi_restore): Split out from ...
