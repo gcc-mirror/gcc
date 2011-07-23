@@ -2348,6 +2348,18 @@ an instance of a derived class through a pointer to a base class if the
 base class does not have a virtual destructor.  This warning is enabled
 by @option{-Wall}.
 
+@item -Wno-narrowing @r{(C++ and Objective-C++ only)}
+@opindex Wnarrowing
+@opindex Wno-narrowing
+With -std=c++0x, suppress the diagnostic required by the standard for
+narrowing conversions within @samp{@{ @}}, e.g.
+
+@smallexample
+int i = @{ 2.2 @}; // error: narrowing from double to int
+@end smallexample
+
+This flag can be useful for compiling valid C++98 code in C++0x mode.
+
 @item -Wnoexcept @r{(C++ and Objective-C++ only)}
 @opindex Wnoexcept
 @opindex Wno-noexcept
