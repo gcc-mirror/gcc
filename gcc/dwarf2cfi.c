@@ -285,6 +285,28 @@ add_cfi (dw_cfi_ref cfi)
     VEC_safe_push (dw_cfi_ref, gc, *add_cfi_vec, cfi);
 }
 
+static void
+add_cfi_args_size (HOST_WIDE_INT size)
+{
+  dw_cfi_ref cfi = new_cfi ();
+
+  cfi->dw_cfi_opc = DW_CFA_GNU_args_size;
+  cfi->dw_cfi_oprnd1.dw_cfi_offset = size;
+
+  add_cfi (cfi);
+}
+
+static void
+add_cfi_restore (unsigned reg)
+{
+  dw_cfi_ref cfi = new_cfi ();
+
+  cfi->dw_cfi_opc = (reg & ~0x3f ? DW_CFA_restore_extended : DW_CFA_restore);
+  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
+
+  add_cfi (cfi);
+}
+
 /* Perform ROW->REG_SAVE[COLUMN] = CFI.  CFI may be null, indicating
    that the register column is no longer saved.  */
 
@@ -474,64 +496,109 @@ cfa_equal_p (const dw_cfa_location *loc1, const dw_cfa_location *loc2)
 	      || loc1->base_offset == loc2->base_offset));
 }
 
-/* This routine does the actual work.  The CFA is now calculated from
-   the dw_cfa_location structure.  */
+/* Determine if two CFI operands are identical.  */
 
-static void
-def_cfa_1 (dw_cfa_location *loc_p)
+static bool
+cfi_oprnd_equal_p (enum dw_cfi_oprnd_type t, dw_cfi_oprnd *a, dw_cfi_oprnd *b)
+{
+  switch (t)
+    {
+    case dw_cfi_oprnd_unused:
+      return true;
+    case dw_cfi_oprnd_reg_num:
+      return a->dw_cfi_reg_num == b->dw_cfi_reg_num;
+    case dw_cfi_oprnd_offset:
+      return a->dw_cfi_offset == b->dw_cfi_offset;
+    case dw_cfi_oprnd_addr:
+      return (a->dw_cfi_addr == b->dw_cfi_addr
+	      || strcmp (a->dw_cfi_addr, b->dw_cfi_addr) == 0);
+    case dw_cfi_oprnd_loc:
+      return loc_descr_equal_p (a->dw_cfi_loc, b->dw_cfi_loc);
+    }
+  gcc_unreachable ();
+}
+
+/* Determine if two CFI entries are identical.  */
+
+static bool
+cfi_equal_p (dw_cfi_ref a, dw_cfi_ref b)
+{
+  enum dwarf_call_frame_info opc;
+
+  /* Make things easier for our callers, including missing operands.  */
+  if (a == b)
+    return true;
+  if (a == NULL || b == NULL)
+    return false;
+
+  /* Obviously, the opcodes must match.  */
+  opc = a->dw_cfi_opc;
+  if (opc != b->dw_cfi_opc)
+    return false;
+
+  /* Compare the two operands, re-using the type of the operands as
+     already exposed elsewhere.  */
+  return (cfi_oprnd_equal_p (dw_cfi_oprnd1_desc (opc),
+			     &a->dw_cfi_oprnd1, &b->dw_cfi_oprnd1)
+	  && cfi_oprnd_equal_p (dw_cfi_oprnd2_desc (opc),
+				&a->dw_cfi_oprnd2, &b->dw_cfi_oprnd2));
+}
+
+/* The CFA is now calculated from NEW_CFA.  Consider OLD_CFA in determining
+   what opcode to emit.  Returns the CFI opcode to effect the change, or
+   NULL if NEW_CFA == OLD_CFA.  */
+
+static dw_cfi_ref
+def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
 {
   dw_cfi_ref cfi;
-  dw_cfa_location loc = *loc_p;
-
-  if (cfa_store.reg == loc.reg && loc.indirect == 0)
-    cfa_store.offset = loc.offset;
 
   /* If nothing changed, no need to issue any call frame instructions.  */
-  if (cfa_equal_p (&loc, &cur_row->cfa))
-    return;
+  if (cfa_equal_p (old_cfa, new_cfa))
+    return NULL;
 
   cfi = new_cfi ();
 
-  if (loc.reg == cur_row->cfa.reg && !loc.indirect && !cur_row->cfa.indirect)
+  if (new_cfa->reg == old_cfa->reg && !new_cfa->indirect && !old_cfa->indirect)
     {
       /* Construct a "DW_CFA_def_cfa_offset <offset>" instruction, indicating
 	 the CFA register did not change but the offset did.  The data
 	 factoring for DW_CFA_def_cfa_offset_sf happens in output_cfi, or
 	 in the assembler via the .cfi_def_cfa_offset directive.  */
-      if (loc.offset < 0)
+      if (new_cfa->offset < 0)
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset_sf;
       else
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
-      cfi->dw_cfi_oprnd1.dw_cfi_offset = loc.offset;
+      cfi->dw_cfi_oprnd1.dw_cfi_offset = new_cfa->offset;
     }
 
 #ifndef MIPS_DEBUGGING_INFO  /* SGI dbx thinks this means no offset.  */
-  else if (loc.offset == cur_row->cfa.offset
-	   && cur_row->cfa.reg != INVALID_REGNUM
-	   && !loc.indirect
-	   && !cur_row->cfa.indirect)
+  else if (new_cfa->offset == old_cfa->offset
+	   && old_cfa->reg != INVALID_REGNUM
+	   && !new_cfa->indirect
+	   && !old_cfa->indirect)
     {
       /* Construct a "DW_CFA_def_cfa_register <register>" instruction,
 	 indicating the CFA register has changed to <register> but the
 	 offset has not changed.  */
       cfi->dw_cfi_opc = DW_CFA_def_cfa_register;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = new_cfa->reg;
     }
 #endif
 
-  else if (loc.indirect == 0)
+  else if (new_cfa->indirect == 0)
     {
       /* Construct a "DW_CFA_def_cfa <register> <offset>" instruction,
 	 indicating the CFA register has changed to <register> with
 	 the specified offset.  The data factoring for DW_CFA_def_cfa_sf
 	 happens in output_cfi, or in the assembler via the .cfi_def_cfa
 	 directive.  */
-      if (loc.offset < 0)
+      if (new_cfa->offset < 0)
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_sf;
       else
 	cfi->dw_cfi_opc = DW_CFA_def_cfa;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
-      cfi->dw_cfi_oprnd2.dw_cfi_offset = loc.offset;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = new_cfa->reg;
+      cfi->dw_cfi_oprnd2.dw_cfi_offset = new_cfa->offset;
     }
   else
     {
@@ -541,14 +608,32 @@ def_cfa_1 (dw_cfa_location *loc_p)
       struct dw_loc_descr_struct *loc_list;
 
       cfi->dw_cfi_opc = DW_CFA_def_cfa_expression;
-      loc_list = build_cfa_loc (&loc, 0);
+      loc_list = build_cfa_loc (new_cfa, 0);
       cfi->dw_cfi_oprnd1.dw_cfi_loc = loc_list;
-
-      cur_row->cfa_cfi = cfi;
     }
 
-  add_cfi (cfi);
-  cur_row->cfa = loc;
+  return cfi;
+}
+
+/* Similarly, but take OLD_CFA from CUR_ROW, and update it after the fact.  */
+
+static void
+def_cfa_1 (dw_cfa_location *new_cfa)
+{
+  dw_cfi_ref cfi;
+
+  if (cfa_store.reg == new_cfa->reg && new_cfa->indirect == 0)
+    cfa_store.offset = new_cfa->offset;
+
+  cfi = def_cfa_0 (&cur_row->cfa, new_cfa);
+  if (cfi)
+    {
+      cur_row->cfa = *new_cfa;
+      if (cfi->dw_cfi_opc == DW_CFA_def_cfa_expression)
+        cur_row->cfa_cfi = cfi;
+
+      add_cfi (cfi);
+    }
 }
 
 /* Add the CFI for saving a register.  REG is the CFA column number.
@@ -871,17 +956,11 @@ compute_barrier_args_size (void)
 static void
 dwarf2out_args_size (HOST_WIDE_INT size)
 {
-  dw_cfi_ref cfi;
-
   if (size == cur_row->args_size)
     return;
 
   cur_row->args_size = size;
-
-  cfi = new_cfi ();
-  cfi->dw_cfi_opc = DW_CFA_GNU_args_size;
-  cfi->dw_cfi_oprnd1.dw_cfi_offset = size;
-  add_cfi (cfi);
+  add_cfi_args_size (size);
 }
 
 /* Record a stack adjustment of OFFSET bytes.  */
@@ -1385,13 +1464,9 @@ dwarf2out_frame_debug_cfa_expression (rtx set)
 static void
 dwarf2out_frame_debug_cfa_restore (rtx reg)
 {
-  dw_cfi_ref cfi = new_cfi ();
   unsigned int regno = dwf_regno (reg);
 
-  cfi->dw_cfi_opc = (regno & ~0x3f ? DW_CFA_restore_extended : DW_CFA_restore);
-  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = regno;
-
-  add_cfi (cfi);
+  add_cfi_restore (regno);
   update_row_reg_save (cur_row, regno, NULL);
 }
 
@@ -2238,6 +2313,48 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
     dwarf2out_flush_queued_reg_saves ();
 }
 
+/* Emit CFI info to change the state from OLD_ROW to NEW_ROW.  */
+
+static void
+change_cfi_row (dw_cfi_row_ref old_row, dw_cfi_row_ref new_row)
+{
+  size_t i, n_old, n_new, n_max;
+  dw_cfi_ref cfi;
+
+  if (new_row->cfa_cfi && !cfi_equal_p (old_row->cfa_cfi, new_row->cfa_cfi))
+    add_cfi (new_row->cfa_cfi);
+  else
+    {
+      cfi = def_cfa_0 (&old_row->cfa, &new_row->cfa);
+      if (cfi)
+	add_cfi (cfi);
+    }
+
+  if (old_row->args_size != new_row->args_size)
+    add_cfi_args_size (new_row->args_size);
+
+  n_old = VEC_length (dw_cfi_ref, old_row->reg_save);
+  n_new = VEC_length (dw_cfi_ref, new_row->reg_save);
+  n_max = MAX (n_old, n_new);
+
+  for (i = 0; i < n_max; ++i)
+    {
+      dw_cfi_ref r_old = NULL, r_new = NULL;
+
+      if (i < n_old)
+	r_old = VEC_index (dw_cfi_ref, old_row->reg_save, i);
+      if (i < n_new)
+	r_new = VEC_index (dw_cfi_ref, new_row->reg_save, i);
+
+      if (r_old == r_new)
+	;
+      else if (r_new == NULL)
+	add_cfi_restore (i);
+      else if (!cfi_equal_p (r_old, r_new))
+        add_cfi (r_new);
+    }
+}
+
 /* Examine CFI and return true if a cfi label and set_loc is needed
    beforehand.  Even when generating CFI assembler instructions, we
    still have to add the cfi to the list so that lookup_cfa_1 works
@@ -2291,6 +2408,8 @@ add_cfis_to_fde (void)
 
       if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
 	{
+	  fde->dw_fde_switch_cfi_index
+	    = VEC_length (dw_cfi_ref, fde->dw_fde_cfi);
 	  /* Don't attempt to advance_loc4 between labels
 	     in different sections.  */
 	  first = true;
@@ -2369,6 +2488,16 @@ create_cfi_notes (void)
 	    case NOTE_INSN_CFA_RESTORE_STATE:
 	      add_cfi_insn = insn;
 	      dwarf2out_frame_debug_restore_state ();
+	      break;
+
+	    case NOTE_INSN_SWITCH_TEXT_SECTIONS:
+	      /* In dwarf2out_switch_text_section, we'll begin a new FDE
+		 for the portion of the function in the alternate text
+		 section.  The row state at the very beginning of that
+		 new FDE will be exactly the row state from the CIE.
+		 Emit whatever CFIs are necessary to make CUR_ROW current.  */
+	      add_cfi_insn = insn;
+	      change_cfi_row (cie_cfi_row, cur_row);
 	      break;
 	    }
 	  continue;
@@ -3046,175 +3175,6 @@ dwarf2out_emit_cfi (dw_cfi_ref cfi)
 {
   if (dwarf2out_do_cfi_asm ())
     output_cfi_directive (asm_out_file, cfi);
-}
-
-/* Output CFIs from VEC, up to index UPTO, to bring current FDE to the
-   same state as after executing CFIs in CFI chain.  DO_CFI_ASM is
-   true if .cfi_* directives shall be emitted, false otherwise.  If it
-   is false, FDE and FOR_EH are the other arguments to pass to
-   output_cfi.  */
-
-void
-output_cfis (cfi_vec vec, int upto, bool do_cfi_asm,
-	     dw_fde_ref fde, bool for_eh)
-{
-  int ix;
-  struct dw_cfi_struct cfi_buf;
-  dw_cfi_ref cfi2;
-  dw_cfi_ref cfi_args_size = NULL, cfi_cfa = NULL, cfi_cfa_offset = NULL;
-  VEC(dw_cfi_ref, heap) *regs = VEC_alloc (dw_cfi_ref, heap, 32);
-  unsigned int len, idx;
-
-  for (ix = 0; ix < upto + 1; ix++)
-    {
-      dw_cfi_ref cfi = ix < upto ? VEC_index (dw_cfi_ref, vec, ix) : NULL;
-      switch (cfi ? cfi->dw_cfi_opc : DW_CFA_nop)
-	{
-	case DW_CFA_advance_loc:
-	case DW_CFA_advance_loc1:
-	case DW_CFA_advance_loc2:
-	case DW_CFA_advance_loc4:
-	case DW_CFA_MIPS_advance_loc8:
-	case DW_CFA_set_loc:
-	  /* All advances should be ignored.  */
-	  break;
-	case DW_CFA_remember_state:
-	  {
-	    dw_cfi_ref args_size = cfi_args_size;
-
-	    /* Skip everything between .cfi_remember_state and
-	       .cfi_restore_state.  */
-	    ix++;
-	    if (ix == upto)
-	      goto flush_all;
-
-	    for (; ix < upto; ix++)
-	      {
-		cfi2 = VEC_index (dw_cfi_ref, vec, ix);
-		if (cfi2->dw_cfi_opc == DW_CFA_restore_state)
-		  break;
-		else if (cfi2->dw_cfi_opc == DW_CFA_GNU_args_size)
-		  args_size = cfi2;
-		else
-		  gcc_assert (cfi2->dw_cfi_opc != DW_CFA_remember_state);
-	      }
-
-	    cfi_args_size = args_size;
-	    break;
-	  }
-	case DW_CFA_GNU_args_size:
-	  cfi_args_size = cfi;
-	  break;
-	case DW_CFA_GNU_window_save:
-	  goto flush_all;
-	case DW_CFA_offset:
-	case DW_CFA_offset_extended:
-	case DW_CFA_offset_extended_sf:
-	case DW_CFA_restore:
-	case DW_CFA_restore_extended:
-	case DW_CFA_undefined:
-	case DW_CFA_same_value:
-	case DW_CFA_register:
-	case DW_CFA_val_offset:
-	case DW_CFA_val_offset_sf:
-	case DW_CFA_expression:
-	case DW_CFA_val_expression:
-	case DW_CFA_GNU_negative_offset_extended:
-	  if (VEC_length (dw_cfi_ref, regs)
-	      <= cfi->dw_cfi_oprnd1.dw_cfi_reg_num)
-	    VEC_safe_grow_cleared (dw_cfi_ref, heap, regs,
-				   cfi->dw_cfi_oprnd1.dw_cfi_reg_num + 1);
-	  VEC_replace (dw_cfi_ref, regs, cfi->dw_cfi_oprnd1.dw_cfi_reg_num,
-		       cfi);
-	  break;
-	case DW_CFA_def_cfa:
-	case DW_CFA_def_cfa_sf:
-	case DW_CFA_def_cfa_expression:
-	  cfi_cfa = cfi;
-	  cfi_cfa_offset = cfi;
-	  break;
-	case DW_CFA_def_cfa_register:
-	  cfi_cfa = cfi;
-	  break;
-	case DW_CFA_def_cfa_offset:
-	case DW_CFA_def_cfa_offset_sf:
-	  cfi_cfa_offset = cfi;
-	  break;
-	case DW_CFA_nop:
-	  gcc_assert (cfi == NULL);
-	flush_all:
-	  len = VEC_length (dw_cfi_ref, regs);
-	  for (idx = 0; idx < len; idx++)
-	    {
-	      cfi2 = VEC_replace (dw_cfi_ref, regs, idx, NULL);
-	      if (cfi2 != NULL
-		  && cfi2->dw_cfi_opc != DW_CFA_restore
-		  && cfi2->dw_cfi_opc != DW_CFA_restore_extended)
-		{
-		  if (do_cfi_asm)
-		    output_cfi_directive (asm_out_file, cfi2);
-		  else
-		    output_cfi (cfi2, fde, for_eh);
-		}
-	    }
-	  if (cfi_cfa && cfi_cfa_offset && cfi_cfa_offset != cfi_cfa)
-	    {
-	      gcc_assert (cfi_cfa->dw_cfi_opc != DW_CFA_def_cfa_expression);
-	      cfi_buf = *cfi_cfa;
-	      switch (cfi_cfa_offset->dw_cfi_opc)
-		{
-		case DW_CFA_def_cfa_offset:
-		  cfi_buf.dw_cfi_opc = DW_CFA_def_cfa;
-		  cfi_buf.dw_cfi_oprnd2 = cfi_cfa_offset->dw_cfi_oprnd1;
-		  break;
-		case DW_CFA_def_cfa_offset_sf:
-		  cfi_buf.dw_cfi_opc = DW_CFA_def_cfa_sf;
-		  cfi_buf.dw_cfi_oprnd2 = cfi_cfa_offset->dw_cfi_oprnd1;
-		  break;
-		case DW_CFA_def_cfa:
-		case DW_CFA_def_cfa_sf:
-		  cfi_buf.dw_cfi_opc = cfi_cfa_offset->dw_cfi_opc;
-		  cfi_buf.dw_cfi_oprnd2 = cfi_cfa_offset->dw_cfi_oprnd2;
-		  break;
-		default:
-		  gcc_unreachable ();
-		}
-	      cfi_cfa = &cfi_buf;
-	    }
-	  else if (cfi_cfa_offset)
-	    cfi_cfa = cfi_cfa_offset;
-	  if (cfi_cfa)
-	    {
-	      if (do_cfi_asm)
-		output_cfi_directive (asm_out_file, cfi_cfa);
-	      else
-		output_cfi (cfi_cfa, fde, for_eh);
-	    }
-	  cfi_cfa = NULL;
-	  cfi_cfa_offset = NULL;
-	  if (cfi_args_size
-	      && cfi_args_size->dw_cfi_oprnd1.dw_cfi_offset)
-	    {
-	      if (do_cfi_asm)
-		output_cfi_directive (asm_out_file, cfi_args_size);
-	      else
-		output_cfi (cfi_args_size, fde, for_eh);
-	    }
-	  cfi_args_size = NULL;
-	  if (cfi == NULL)
-	    {
-	      VEC_free (dw_cfi_ref, heap, regs);
-	      return;
-	    }
-	  else if (do_cfi_asm)
-	    output_cfi_directive (asm_out_file, cfi);
-	  else
-	    output_cfi (cfi, fde, for_eh);
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
 }
 
 

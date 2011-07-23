@@ -1,5 +1,24 @@
 2011-07-23  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (add_cfi_args_size): Split out from...
+	(dwarf2out_args_size): ... here.
+	(add_cfi_restore): Split out from ...
+	(dwarf2out_frame_debug_cfa_restore): ... here.
+	(def_cfa_0): Split out from ...
+	(def_cfa_1): ... here.
+	(cfi_oprnd_equal_p, cfi_equal_p): New.
+	(change_cfi_row): New.
+	(add_cfis_to_fde): Set fde->dw_fde_switch_cfi_index.
+	(create_cfi_notes): Use change_cfi_row at SWITCH_TEXT note.
+	(output_cfis): Remove.
+	* dwarf2out.c (output_fde): Simplify output_cfi loop.
+	(dwarf2out_switch_text_section): Don't call output_cfis.
+	(dw_val_equal_p, loc_descr_equal_p_1, loc_descr_equal_p): New.
+	* dwarf2out.h: Update decls.
+	(enum dw_val_class): Add dw_val_class_none.
+
+2011-07-23  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (update_row_reg_save): New.
 	(dwarf2out_frame_debug_cfa_expression): Use it.
 	(dwarf2out_frame_debug_cfa_restore): Likewise.
