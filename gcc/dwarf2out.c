@@ -519,11 +519,9 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
 	    char *section_start_label, int fde_encoding, char *augmentation,
 	    bool any_lsda_needed, int lsda_encoding)
 {
-  int ix;
   const char *begin, *end;
   static unsigned int j;
   char l1[20], l2[20];
-  dw_cfi_ref cfi;
 
   targetm.asm_out.emit_unwind_label (asm_out_file, fde->decl, for_eh,
 				     /* empty */ 0);
@@ -603,36 +601,24 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
 	dw2_asm_output_data_uleb128 (0, "Augmentation size");
     }
 
-  /* Loop through the Call Frame Instructions associated with
-     this FDE.  */
+  /* Loop through the Call Frame Instructions associated with this FDE.  */
   fde->dw_fde_current_label = begin;
-  if (fde->dw_fde_second_begin == NULL)
-    FOR_EACH_VEC_ELT (dw_cfi_ref, fde->dw_fde_cfi, ix, cfi)
-      output_cfi (cfi, fde, for_eh);
-  else if (!second)
-    {
-      if (fde->dw_fde_switch_cfi_index > 0)
-	FOR_EACH_VEC_ELT (dw_cfi_ref, fde->dw_fde_cfi, ix, cfi)
-	  {
-	    if (ix == fde->dw_fde_switch_cfi_index)
-	      break;
-	    output_cfi (cfi, fde, for_eh);
-	  }
-    }
-  else
-    {
-      int i, from = 0;
-      int until = VEC_length (dw_cfi_ref, fde->dw_fde_cfi);
+  {
+    size_t from, until, i;
 
-      if (fde->dw_fde_switch_cfi_index > 0)
-	{
-	  from = fde->dw_fde_switch_cfi_index;
-	  output_cfis (fde->dw_fde_cfi, from, false, fde, for_eh);
-	}
-      for (i = from; i < until; i++)
-	output_cfi (VEC_index (dw_cfi_ref, fde->dw_fde_cfi, i),
-		    fde, for_eh);
-    }
+    from = 0;
+    until = VEC_length (dw_cfi_ref, fde->dw_fde_cfi);
+
+    if (fde->dw_fde_second_begin == NULL)
+      ;
+    else if (!second)
+      until = fde->dw_fde_switch_cfi_index;
+    else
+      from = fde->dw_fde_switch_cfi_index;
+
+    for (i = from; i < until; i++)
+      output_cfi (VEC_index (dw_cfi_ref, fde->dw_fde_cfi, i), fde, for_eh);
+  }
 
   /* If we are to emit a ref/link from function bodies to their frame tables,
      do it now.  This is typically performed to make sure that tables
@@ -1184,16 +1170,8 @@ dwarf2out_switch_text_section (void)
     = (sect == text_section
        || (cold_text_section && sect == cold_text_section));
 
-  fde->dw_fde_switch_cfi_index = VEC_length (dw_cfi_ref, fde->dw_fde_cfi);
-
   if (dwarf2out_do_cfi_asm ())
-    {
-      dwarf2out_do_cfi_startproc (true);
-      /* As this is a different FDE, insert all current CFI instructions
-	 again.  */
-      output_cfis (fde->dw_fde_cfi, fde->dw_fde_switch_cfi_index,
-		   true, fde, true);
-    }
+    dwarf2out_do_cfi_startproc (true);
 
   var_location_switch_text_section ();
 
@@ -1638,6 +1616,109 @@ add_loc_descr (dw_loc_descr_ref *list_head, dw_loc_descr_ref descr)
 
   *d = descr;
 }
+
+/* Compare two location operands for exact equality.  */
+
+static bool
+dw_val_equal_p (dw_val_node *a, dw_val_node *b)
+{
+  if (a->val_class != b->val_class)
+    return false;
+  switch (a->val_class)
+    {
+    case dw_val_class_none:
+      return true;
+    case dw_val_class_addr:
+      return rtx_equal_p (a->v.val_addr, b->v.val_addr);
+
+    case dw_val_class_offset:
+    case dw_val_class_unsigned_const:
+    case dw_val_class_const:
+    case dw_val_class_range_list:
+    case dw_val_class_lineptr:
+    case dw_val_class_macptr:
+      /* These are all HOST_WIDE_INT, signed or unsigned.  */
+      return a->v.val_unsigned == b->v.val_unsigned;
+
+    case dw_val_class_loc:
+      return a->v.val_loc == b->v.val_loc;
+    case dw_val_class_loc_list:
+      return a->v.val_loc_list == b->v.val_loc_list;
+    case dw_val_class_die_ref:
+      return a->v.val_die_ref.die == b->v.val_die_ref.die;
+    case dw_val_class_fde_ref:
+      return a->v.val_fde_index == b->v.val_fde_index;
+    case dw_val_class_lbl_id:
+      return strcmp (a->v.val_lbl_id, b->v.val_lbl_id) == 0;
+    case dw_val_class_str:
+      return a->v.val_str == b->v.val_str;
+    case dw_val_class_flag:
+      return a->v.val_flag == b->v.val_flag;
+    case dw_val_class_file:
+      return a->v.val_file == b->v.val_file;
+    case dw_val_class_decl_ref:
+      return a->v.val_decl_ref == b->v.val_decl_ref;
+    
+    case dw_val_class_const_double:
+      return (a->v.val_double.high == b->v.val_double.high
+	      && a->v.val_double.low == b->v.val_double.low);
+
+    case dw_val_class_vec:
+      {
+	size_t a_len = a->v.val_vec.elt_size * a->v.val_vec.length;
+	size_t b_len = b->v.val_vec.elt_size * b->v.val_vec.length;
+
+	return (a_len == b_len
+		&& !memcmp (a->v.val_vec.array, b->v.val_vec.array, a_len));
+      }
+
+    case dw_val_class_data8:
+      return memcmp (a->v.val_data8, b->v.val_data8, 8) == 0;
+
+    case dw_val_class_vms_delta:
+      return (!strcmp (a->v.val_vms_delta.lbl1, b->v.val_vms_delta.lbl1)
+              && !strcmp (a->v.val_vms_delta.lbl1, b->v.val_vms_delta.lbl1));
+    }
+  gcc_unreachable ();
+}
+
+/* Compare two location atoms for exact equality.  */
+
+static bool
+loc_descr_equal_p_1 (dw_loc_descr_ref a, dw_loc_descr_ref b)
+{
+  if (a->dw_loc_opc != b->dw_loc_opc)
+    return false;
+
+  /* ??? This is only ever set for DW_OP_constNu, for N equal to the
+     address size, but since we always allocate cleared storage it
+     should be zero for other types of locations.  */
+  if (a->dtprel != b->dtprel)
+    return false;
+
+  return (dw_val_equal_p (&a->dw_loc_oprnd1, &b->dw_loc_oprnd1)
+	  && dw_val_equal_p (&a->dw_loc_oprnd2, &b->dw_loc_oprnd2));
+}
+
+/* Compare two complete location expressions for exact equality.  */
+
+bool
+loc_descr_equal_p (dw_loc_descr_ref a, dw_loc_descr_ref b)
+{
+  while (1)
+    {
+      if (a == b)
+	return true;
+      if (a == NULL || b == NULL)
+	return false;
+      if (!loc_descr_equal_p_1 (a, b))
+	return false;
+
+      a = a->dw_loc_next;
+      b = b->dw_loc_next;
+    }
+}
+
 
 /* Add a constant OFFSET to a location expression.  */
 
