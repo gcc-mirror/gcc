@@ -1,3 +1,23 @@
+2011-07-23  Richard Henderson  <rth@redhat.com>
+
+	* basic-block.h (EDGE_PRESERVE): New.
+	(EDGE_ALL_FLAGS, EDGE_COMPLEX): Include it.
+	* bb-reorder.c: Include except.h.
+	(fix_up_crossing_landing_pad): New.
+	(find_rarely_executed_basic_blocks_and_crossing_edges): Place 
+	landing pads in the right partition.  Duplicate as necessary.
+	(partition_hot_cold_basic_blocks): Fix up DF info after
+	duplicating landing pads.
+	* cfg.c (dump_edge_info): Add crossing and preserve to bitnames.
+	* cfgrtl.c (rtl_verify_flow_info_1): Validate that EDGE_CROSSING
+	is set properly.  Validate that EH edges are not CROSSING.
+	* except.c (expand_dw2_landing_pad_for_region): Split out from ...
+	(dw2_build_landing_pads): ... here.
+	(convert_to_eh_region_ranges): Remove code to fixup crossing
+	landing pads.
+	* except.h (expand_dw2_landing_pad_for_region): Declare.
+	* tree-cfg.c (gimple_can_merge_blocks_p): Don't merge PRESERVE edges.
+
 2011-07-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/49816
