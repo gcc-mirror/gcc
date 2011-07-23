@@ -74,14 +74,13 @@ typedef struct GTY(()) dw_cfi_row_struct
   HOST_WIDE_INT args_size;
 } dw_cfi_row;
 
-typedef dw_cfi_row *dw_cfi_row_ref;
 
 /* A vector of call frame insns for the CIE.  */
 cfi_vec cie_cfi_vec;
 
 /* The state of the first row of the FDE table, which includes the
    state provided by the CIE.  */
-static GTY(()) dw_cfi_row_ref cie_cfi_row;
+static GTY(()) dw_cfi_row *cie_cfi_row;
 
 static GTY(()) unsigned long dwarf2out_cfi_label_num;
 
@@ -209,10 +208,10 @@ new_cfi (void)
 
 /* Return a newly allocated CFI row, with no defined data.  */
 
-static dw_cfi_row_ref
+static dw_cfi_row *
 new_cfi_row (void)
 {
-  dw_cfi_row_ref row = ggc_alloc_cleared_dw_cfi_row ();
+  dw_cfi_row *row = ggc_alloc_cleared_dw_cfi_row ();
 
   row->cfa.reg = INVALID_REGNUM;
 
@@ -221,10 +220,10 @@ new_cfi_row (void)
 
 /* Return a copy of an existing CFI row.  */
 
-static dw_cfi_row_ref
-copy_cfi_row (dw_cfi_row_ref src)
+static dw_cfi_row *
+copy_cfi_row (dw_cfi_row *src)
 {
-  dw_cfi_row_ref dst = ggc_alloc_dw_cfi_row ();
+  dw_cfi_row *dst = ggc_alloc_dw_cfi_row ();
 
   *dst = *src;
   dst->reg_save = VEC_copy (dw_cfi_ref, gc, src->reg_save);
@@ -235,7 +234,7 @@ copy_cfi_row (dw_cfi_row_ref src)
 /* Free an allocated CFI row.  */
 
 static void
-free_cfi_row (dw_cfi_row_ref row)
+free_cfi_row (dw_cfi_row *row)
 {
   if (row != NULL)
     {
@@ -311,7 +310,7 @@ add_cfi_restore (unsigned reg)
    that the register column is no longer saved.  */
 
 static void
-update_row_reg_save (dw_cfi_row_ref row, unsigned column, dw_cfi_ref cfi)
+update_row_reg_save (dw_cfi_row *row, unsigned column, dw_cfi_ref cfi)
 {
   if (VEC_length (dw_cfi_ref, row->reg_save) <= column)
     VEC_safe_grow_cleared (dw_cfi_ref, gc, row->reg_save, column + 1);
@@ -466,10 +465,10 @@ lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc, dw_cfa_location *remember)
 }
 
 /* The current, i.e. most recently generated, row of the CFI table.  */
-static dw_cfi_row_ref cur_row;
+static dw_cfi_row *cur_row;
 
 /* The row state from a preceeding DW_CFA_remember_state.  */
-static dw_cfi_row_ref remember_row;
+static dw_cfi_row *remember_row;
 
 /* The register used for saving registers to the stack, and its offset
    from the CFA.  */
@@ -2316,7 +2315,7 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 /* Emit CFI info to change the state from OLD_ROW to NEW_ROW.  */
 
 static void
-change_cfi_row (dw_cfi_row_ref old_row, dw_cfi_row_ref new_row)
+change_cfi_row (dw_cfi_row *old_row, dw_cfi_row *new_row)
 {
   size_t i, n_old, n_new, n_max;
   dw_cfi_ref cfi;
