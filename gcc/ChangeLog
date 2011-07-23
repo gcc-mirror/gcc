@@ -1,5 +1,22 @@
 2011-07-23  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (dw_cfi_row, dw_cfi_row_ref): New.
+	(cie_cfi_row): New.
+	(new_cfi_row, copy_cfi_row, free_cfi_row): New.
+	(cfa, old_cfa, cfa_remember, old_cfa_remember, old_args_size): Remove.
+	(cur_row, remember_row): New.
+	(def_cfa_1): Use cur_row instead of the old_* variables.
+	(dwarf2out_frame_debug_restore_state): Similarly.
+	(dwarf2out_args_size, dwarf2out_notice_stack_adjust): Likewise.
+	(dwarf2out_frame_debug_def_cfa): Use a local variable instead of cfa.
+	(dwarf2out_frame_debug_adjust_cfa): Likewise.
+	(dwarf2out_frame_debug_cfa_offset): Likewise.
+	(dwarf2out_frame_debug_expr): Likewise.
+	(execute_dwarf2_frame): Set up cur_row.
+	* dwarf2out.h (struct cfa_loc): Mark for GTY.
+
+2011-07-23  Richard Henderson  <rth@redhat.com>
+
 	* basic-block.h (EDGE_PRESERVE): New.
 	(EDGE_ALL_FLAGS, EDGE_COMPLEX): Include it.
 	* bb-reorder.c: Include except.h.

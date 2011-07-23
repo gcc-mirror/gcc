@@ -58,8 +58,30 @@ along with GCC; see the file COPYING3.  If not see
 /* Maximum size (in bytes) of an artificially generated label.  */
 #define MAX_ARTIFICIAL_LABEL_BYTES	30
 
+/* A collected description of an entire row of the abstract CFI table.  */
+typedef struct GTY(()) dw_cfi_row_struct
+{
+  /* The expression that computes the CFA, expressed in two different ways.
+     The CFA member for the simple cases, and the full CFI expression for
+     the complex cases.  The later will be a DW_CFA_cfa_expression.  */
+  dw_cfa_location cfa;
+  dw_cfi_ref cfa_cfi;
+
+  /* The expressions for any register column that is saved.  */
+  cfi_vec reg_save;
+
+  /* The value of any DW_CFA_GNU_args_size.  */
+  HOST_WIDE_INT args_size;
+} dw_cfi_row;
+
+typedef dw_cfi_row *dw_cfi_row_ref;
+
 /* A vector of call frame insns for the CIE.  */
 cfi_vec cie_cfi_vec;
+
+/* The state of the first row of the FDE table, which includes the
+   state provided by the CIE.  */
+static GTY(()) dw_cfi_row_ref cie_cfi_row;
 
 static GTY(()) unsigned long dwarf2out_cfi_label_num;
 
@@ -183,6 +205,43 @@ new_cfi (void)
   cfi->dw_cfi_oprnd2.dw_cfi_reg_num = 0;
 
   return cfi;
+}
+
+/* Return a newly allocated CFI row, with no defined data.  */
+
+static dw_cfi_row_ref
+new_cfi_row (void)
+{
+  dw_cfi_row_ref row = ggc_alloc_cleared_dw_cfi_row ();
+
+  row->cfa.reg = INVALID_REGNUM;
+
+  return row;
+}
+
+/* Return a copy of an existing CFI row.  */
+
+static dw_cfi_row_ref
+copy_cfi_row (dw_cfi_row_ref src)
+{
+  dw_cfi_row_ref dst = ggc_alloc_dw_cfi_row ();
+
+  *dst = *src;
+  dst->reg_save = VEC_copy (dw_cfi_ref, gc, src->reg_save);
+
+  return dst;
+}
+
+/* Free an allocated CFI row.  */
+
+static void
+free_cfi_row (dw_cfi_row_ref row)
+{
+  if (row != NULL)
+    {
+      VEC_free (dw_cfi_ref, gc, row->reg_save);
+      ggc_free (row);
+    }
 }
 
 /* Generate a new label for the CFI info to refer to.  */
@@ -371,27 +430,24 @@ lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc, dw_cfa_location *remember)
     }
 }
 
-/* The current rule for calculating the DWARF2 canonical frame address.  */
-static dw_cfa_location cfa;
+/* The current, i.e. most recently generated, row of the CFI table.  */
+static dw_cfi_row_ref cur_row;
 
-/* A copy of the CFA, for comparison purposes.  */
-static dw_cfa_location old_cfa;
+/* The row state from a preceeding DW_CFA_remember_state.  */
+static dw_cfi_row_ref remember_row;
 
 /* The register used for saving registers to the stack, and its offset
    from the CFA.  */
 static dw_cfa_location cfa_store;
 
-/* The current save location around an epilogue.  */
-static dw_cfa_location cfa_remember;
+/* A temporary register holding an integral value used in adjusting SP
+   or setting up the store_reg.  The "offset" field holds the integer
+   value, not an offset.  */
+static dw_cfa_location cfa_temp;
 
-/* Like cfa_remember, but a copy of old_cfa.  */
-static dw_cfa_location old_cfa_remember;
-
-/* The running total of the size of arguments pushed onto the stack.  */
+/* The (really) current value for DW_CFA_GNU_args_size.  We delay actually
+   emitting this data, i.e. updating CUR_ROW, without async unwind.  */
 static HOST_WIDE_INT args_size;
-
-/* The last args_size we actually output.  */
-static HOST_WIDE_INT old_args_size;
 
 /* Determine if two dw_cfa_location structures define the same data.  */
 
@@ -412,21 +468,18 @@ static void
 def_cfa_1 (dw_cfa_location *loc_p)
 {
   dw_cfi_ref cfi;
-  dw_cfa_location loc;
-
-  cfa = *loc_p;
-  loc = *loc_p;
+  dw_cfa_location loc = *loc_p;
 
   if (cfa_store.reg == loc.reg && loc.indirect == 0)
     cfa_store.offset = loc.offset;
 
   /* If nothing changed, no need to issue any call frame instructions.  */
-  if (cfa_equal_p (&loc, &old_cfa))
+  if (cfa_equal_p (&loc, &cur_row->cfa))
     return;
 
   cfi = new_cfi ();
 
-  if (loc.reg == old_cfa.reg && !loc.indirect && !old_cfa.indirect)
+  if (loc.reg == cur_row->cfa.reg && !loc.indirect && !cur_row->cfa.indirect)
     {
       /* Construct a "DW_CFA_def_cfa_offset <offset>" instruction, indicating
 	 the CFA register did not change but the offset did.  The data
@@ -440,10 +493,10 @@ def_cfa_1 (dw_cfa_location *loc_p)
     }
 
 #ifndef MIPS_DEBUGGING_INFO  /* SGI dbx thinks this means no offset.  */
-  else if (loc.offset == old_cfa.offset
-	   && old_cfa.reg != INVALID_REGNUM
+  else if (loc.offset == cur_row->cfa.offset
+	   && cur_row->cfa.reg != INVALID_REGNUM
 	   && !loc.indirect
-	   && !old_cfa.indirect)
+	   && !cur_row->cfa.indirect)
     {
       /* Construct a "DW_CFA_def_cfa_register <register>" instruction,
 	 indicating the CFA register has changed to <register> but the
@@ -477,10 +530,12 @@ def_cfa_1 (dw_cfa_location *loc_p)
       cfi->dw_cfi_opc = DW_CFA_def_cfa_expression;
       loc_list = build_cfa_loc (&loc, 0);
       cfi->dw_cfi_oprnd1.dw_cfi_loc = loc_list;
+
+      cur_row->cfa_cfi = cfi;
     }
 
   add_cfi (cfi);
-  old_cfa = loc;
+  cur_row->cfa = loc;
 }
 
 /* Add the CFI for saving a register.  REG is the CFA column number.
@@ -503,7 +558,8 @@ reg_save (unsigned int reg, unsigned int sreg, HOST_WIDE_INT offset)
       cfi->dw_cfi_opc = DW_CFA_expression;
       cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
       cfi->dw_cfi_oprnd2.dw_cfi_loc
-	= build_cfa_aligned_loc (&cfa, offset, fde->stack_realignment);
+	= build_cfa_aligned_loc (&cur_row->cfa, offset,
+				 fde->stack_realignment);
     }
   else if (sreg == INVALID_REGNUM)
     {
@@ -797,10 +853,10 @@ dwarf2out_args_size (HOST_WIDE_INT size)
 {
   dw_cfi_ref cfi;
 
-  if (size == old_args_size)
+  if (size == cur_row->args_size)
     return;
 
-  old_args_size = size;
+  cur_row->args_size = size;
 
   cfi = new_cfi ();
   cfi->dw_cfi_opc = DW_CFA_GNU_args_size;
@@ -813,12 +869,19 @@ dwarf2out_args_size (HOST_WIDE_INT size)
 static void
 dwarf2out_stack_adjust (HOST_WIDE_INT offset)
 {
-  if (cfa.reg == dw_stack_pointer_regnum)
-    cfa.offset += offset;
+  dw_cfa_location loc = cur_row->cfa;
+
+  if (loc.reg == dw_stack_pointer_regnum)
+    loc.offset += offset;
 
   if (cfa_store.reg == dw_stack_pointer_regnum)
     cfa_store.offset += offset;
 
+  /* ??? The assumption seems to be that if A_O_A, the only CFA adjustments
+     involving the stack pointer are inside the prologue and marked as
+     RTX_FRAME_RELATED_P.  That said, should we not verify this assumption
+     by *asserting* A_O_A at this point?  Why else would we have a change
+     to the stack pointer?  */
   if (ACCUMULATE_OUTGOING_ARGS)
     return;
 
@@ -830,7 +893,7 @@ dwarf2out_stack_adjust (HOST_WIDE_INT offset)
   if (args_size < 0)
     args_size = 0;
 
-  def_cfa_1 (&cfa);
+  def_cfa_1 (&loc);
   if (flag_asynchronous_unwind_tables)
     dwarf2out_args_size (args_size);
 }
@@ -862,7 +925,8 @@ dwarf2out_notice_stack_adjust (rtx insn, bool after_p)
 
   /* If only calls can throw, and we have a frame pointer,
      save up adjustments until we see the CALL_INSN.  */
-  if (!flag_asynchronous_unwind_tables && cfa.reg != dw_stack_pointer_regnum)
+  if (!flag_asynchronous_unwind_tables
+      && cur_row->cfa.reg != dw_stack_pointer_regnum)
     {
       if (CALL_P (insn) && !after_p)
 	{
@@ -1103,39 +1167,35 @@ reg_saved_in (rtx reg)
   return NULL_RTX;
 }
 
-
-/* A temporary register holding an integral value used in adjusting SP
-   or setting up the store_reg.  The "offset" field holds the integer
-   value, not an offset.  */
-static dw_cfa_location cfa_temp;
-
 /* A subroutine of dwarf2out_frame_debug, process a REG_DEF_CFA note.  */
 
 static void
 dwarf2out_frame_debug_def_cfa (rtx pat)
 {
-  memset (&cfa, 0, sizeof (cfa));
+  dw_cfa_location loc;
+
+  memset (&loc, 0, sizeof (loc));
 
   switch (GET_CODE (pat))
     {
     case PLUS:
-      cfa.reg = dwf_regno (XEXP (pat, 0));
-      cfa.offset = INTVAL (XEXP (pat, 1));
+      loc.reg = dwf_regno (XEXP (pat, 0));
+      loc.offset = INTVAL (XEXP (pat, 1));
       break;
 
     case REG:
-      cfa.reg = dwf_regno (pat);
+      loc.reg = dwf_regno (pat);
       break;
 
     case MEM:
-      cfa.indirect = 1;
+      loc.indirect = 1;
       pat = XEXP (pat, 0);
       if (GET_CODE (pat) == PLUS)
 	{
-	  cfa.base_offset = INTVAL (XEXP (pat, 1));
+	  loc.base_offset = INTVAL (XEXP (pat, 1));
 	  pat = XEXP (pat, 0);
 	}
-      cfa.reg = dwf_regno (pat);
+      loc.reg = dwf_regno (pat);
       break;
 
     default:
@@ -1143,7 +1203,7 @@ dwarf2out_frame_debug_def_cfa (rtx pat)
       gcc_unreachable ();
     }
 
-  def_cfa_1 (&cfa);
+  def_cfa_1 (&loc);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_ADJUST_CFA note.  */
@@ -1151,6 +1211,7 @@ dwarf2out_frame_debug_def_cfa (rtx pat)
 static void
 dwarf2out_frame_debug_adjust_cfa (rtx pat)
 {
+  dw_cfa_location loc = cur_row->cfa;
   rtx src, dest;
 
   gcc_assert (GET_CODE (pat) == SET);
@@ -1160,8 +1221,8 @@ dwarf2out_frame_debug_adjust_cfa (rtx pat)
   switch (GET_CODE (src))
     {
     case PLUS:
-      gcc_assert (dwf_regno (XEXP (src, 0)) == cfa.reg);
-      cfa.offset -= INTVAL (XEXP (src, 1));
+      gcc_assert (dwf_regno (XEXP (src, 0)) == loc.reg);
+      loc.offset -= INTVAL (XEXP (src, 1));
       break;
 
     case REG:
@@ -1171,10 +1232,10 @@ dwarf2out_frame_debug_adjust_cfa (rtx pat)
 	gcc_unreachable ();
     }
 
-  cfa.reg = dwf_regno (dest);
-  gcc_assert (cfa.indirect == 0);
+  loc.reg = dwf_regno (dest);
+  gcc_assert (loc.indirect == 0);
 
-  def_cfa_1 (&cfa);
+  def_cfa_1 (&loc);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_OFFSET note.  */
@@ -1195,12 +1256,12 @@ dwarf2out_frame_debug_cfa_offset (rtx set)
   switch (GET_CODE (addr))
     {
     case REG:
-      gcc_assert (dwf_regno (addr) == cfa.reg);
-      offset = -cfa.offset;
+      gcc_assert (dwf_regno (addr) == cur_row->cfa.reg);
+      offset = -cur_row->cfa.offset;
       break;
     case PLUS:
-      gcc_assert (dwf_regno (XEXP (addr, 0)) == cfa.reg);
-      offset = INTVAL (XEXP (addr, 1)) - cfa.offset;
+      gcc_assert (dwf_regno (XEXP (addr, 0)) == cur_row->cfa.reg);
+      offset = INTVAL (XEXP (addr, 1)) - cur_row->cfa.offset;
       break;
     default:
       gcc_unreachable ();
@@ -1366,7 +1427,9 @@ dwarf2out_frame_debug_cfa_window_save (void)
   Invariants / Summaries of Rules
 
   cfa	       current rule for calculating the CFA.  It usually
-	       consists of a register and an offset.
+	       consists of a register and an offset.  This is
+	       actually stored in cur_row->cfa, but abbreviated
+	       for the purposes of this documentation.
   cfa_store    register used by prologue code to save things to the stack
 	       cfa_store.offset is the offset from the value of
 	       cfa_store.reg to the actual CFA
@@ -1520,6 +1583,7 @@ dwarf2out_frame_debug_cfa_window_save (void)
 static void
 dwarf2out_frame_debug_expr (rtx expr)
 {
+  dw_cfa_location cfa = cur_row->cfa;
   rtx src, dest, span;
   HOST_WIDE_INT offset;
   dw_fde_ref fde;
@@ -2391,10 +2455,8 @@ dwarf2out_cfi_begin_epilogue (rtx insn)
   emit_cfa_remember = true;
 
   /* And emulate the state save.  */
-  gcc_assert (!cfa_remember.in_use);
-  cfa_remember = cfa;
-  old_cfa_remember = old_cfa;
-  cfa_remember.in_use = 1;
+  gcc_assert (remember_row == NULL);
+  remember_row = copy_cfi_row (cur_row);
 }
 
 /* A "subroutine" of dwarf2out_cfi_begin_epilogue.  Emit the restore
@@ -2408,10 +2470,10 @@ dwarf2out_frame_debug_restore_state (void)
   cfi->dw_cfi_opc = DW_CFA_restore_state;
   add_cfi (cfi);
 
-  gcc_assert (cfa_remember.in_use);
-  cfa = cfa_remember;
-  old_cfa = old_cfa_remember;
-  cfa_remember.in_use = 0;
+  gcc_assert (remember_row != NULL);
+  free_cfi_row (cur_row);
+  cur_row = remember_row;
+  remember_row = NULL;
 }
 
 /* Record the initial position of the return address.  RTL is
@@ -2472,7 +2534,7 @@ initial_return_save (rtx rtl)
     {
       if (reg != INVALID_REGNUM)
         record_reg_saved_in_reg (rtl, pc_rtx);
-      reg_save (DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
+      reg_save (DWARF_FRAME_RETURN_COLUMN, reg, offset - cur_row->cfa.offset);
     }
 }
 
@@ -2492,9 +2554,7 @@ execute_dwarf2_frame (void)
       dw_frame_pointer_regnum = DWARF_FRAME_REGNUM (HARD_FRAME_POINTER_REGNUM);
 
       add_cfi_vec = &cie_cfi_vec;
-
-      memset (&old_cfa, 0, sizeof (old_cfa));
-      old_cfa.reg = INVALID_REGNUM;
+      cie_cfi_row = cur_row = new_cfi_row ();
 
       /* On entry, the Canonical Frame Address is at SP.  */
       memset(&loc, 0, sizeof (loc));
@@ -2537,18 +2597,15 @@ execute_dwarf2_frame (void)
   gcc_checking_assert (queued_reg_saves == NULL);
   gcc_checking_assert (regs_saved_in_regs == NULL);
 
-  memset (&cfa, 0, sizeof(cfa));
-  cfa.reg = dw_stack_pointer_regnum;
-  cfa.offset = INCOMING_FRAME_SP_OFFSET;
+  cur_row = copy_cfi_row (cie_cfi_row);
+  if (cie_return_save)
+    VEC_safe_push (reg_saved_in_data, gc, regs_saved_in_regs, cie_return_save);
 
-  old_cfa = cfa;
-  cfa_store = cfa;
+  cfa_store = cur_row->cfa;
+  args_size = 0;
 
   memset (&cfa_temp, 0, sizeof(cfa_temp));
   cfa_temp.reg = INVALID_REGNUM;
-
-  if (cie_return_save)
-    VEC_safe_push (reg_saved_in_data, gc, regs_saved_in_regs, cie_return_save);
 
   dwarf2out_alloc_current_fde ();
 
@@ -2561,6 +2618,9 @@ execute_dwarf2_frame (void)
   barrier_args_size = NULL;
   regs_saved_in_regs = NULL;
   queued_reg_saves = NULL;
+
+  free_cfi_row (cur_row);
+  cur_row = NULL;
 
   return 0;
 }

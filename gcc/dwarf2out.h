@@ -118,7 +118,7 @@ dw_fde_node;
    It can now be either REG + CFA_OFFSET or *(REG + BASE_OFFSET) + CFA_OFFSET.
    Instead of passing around REG and OFFSET, we pass a copy
    of this structure.  */
-typedef struct cfa_loc {
+typedef struct GTY(()) cfa_loc {
   HOST_WIDE_INT offset;
   HOST_WIDE_INT base_offset;
   /* REG is in DWARF_FRAME_REGNUM space, *not* normal REGNO space.  */
