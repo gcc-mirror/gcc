@@ -1,5 +1,12 @@
 2011-07-23  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (update_row_reg_save): New.
+	(dwarf2out_frame_debug_cfa_expression): Use it.
+	(dwarf2out_frame_debug_cfa_restore): Likewise.
+	(reg_save): Likewise.  Do not emit DW_CFA_same_value.
+
+2011-07-23  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (add_cfi_insn): Rename from cfi_insn.  Update all users.
 
 2011-07-23  Richard Henderson  <rth@redhat.com>
