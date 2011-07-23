@@ -1091,14 +1091,16 @@ dwarf2out_notice_stack_adjust (rtx insn, bool after_p)
    of the prologue or (b) the register is clobbered.  This clusters
    register saves so that there are fewer pc advances.  */
 
-struct GTY(()) queued_reg_save {
-  struct queued_reg_save *next;
+typedef struct {
   rtx reg;
-  HOST_WIDE_INT cfa_offset;
   rtx saved_reg;
-};
+  HOST_WIDE_INT cfa_offset;
+} queued_reg_save;
 
-static GTY(()) struct queued_reg_save *queued_reg_saves;
+DEF_VEC_O (queued_reg_save);
+DEF_VEC_ALLOC_O (queued_reg_save, heap);
+
+static VEC(queued_reg_save, heap) *queued_reg_saves;
 
 /* The caller's ORIG_REG is saved in SAVED_IN_REG.  */
 typedef struct GTY(()) reg_saved_in_data {
@@ -1170,24 +1172,21 @@ record_reg_saved_in_reg (rtx dest, rtx src)
 static void
 queue_reg_save (rtx reg, rtx sreg, HOST_WIDE_INT offset)
 {
-  struct queued_reg_save *q;
+  queued_reg_save *q;
+  size_t i;
 
   /* Duplicates waste space, but it's also necessary to remove them
      for correctness, since the queue gets output in reverse order.  */
-  for (q = queued_reg_saves; q != NULL; q = q->next)
+  FOR_EACH_VEC_ELT (queued_reg_save, queued_reg_saves, i, q)
     if (compare_reg_or_pc (q->reg, reg))
-      break;
+      goto found;
 
-  if (q == NULL)
-    {
-      q = ggc_alloc_queued_reg_save ();
-      q->next = queued_reg_saves;
-      queued_reg_saves = q;
-    }
+  q = VEC_safe_push (queued_reg_save, heap, queued_reg_saves, NULL);
 
+ found:
   q->reg = reg;
-  q->cfa_offset = offset;
   q->saved_reg = sreg;
+  q->cfa_offset = offset;
 }
 
 /* Output all the entries in QUEUED_REG_SAVES.  */
@@ -1195,9 +1194,10 @@ queue_reg_save (rtx reg, rtx sreg, HOST_WIDE_INT offset)
 static void
 dwarf2out_flush_queued_reg_saves (void)
 {
-  struct queued_reg_save *q;
+  queued_reg_save *q;
+  size_t i;
 
-  for (q = queued_reg_saves; q; q = q->next)
+  FOR_EACH_VEC_ELT (queued_reg_save, queued_reg_saves, i, q)
     {
       unsigned int reg, sreg;
 
@@ -1214,7 +1214,7 @@ dwarf2out_flush_queued_reg_saves (void)
       reg_save (reg, sreg, q->cfa_offset);
     }
 
-  queued_reg_saves = NULL;
+  VEC_truncate (queued_reg_save, queued_reg_saves, 0);
 }
 
 /* Does INSN clobber any register which QUEUED_REG_SAVES lists a saved
@@ -1225,17 +1225,18 @@ dwarf2out_flush_queued_reg_saves (void)
 static bool
 clobbers_queued_reg_save (const_rtx insn)
 {
-  struct queued_reg_save *q;
+  queued_reg_save *q;
+  size_t iq;
 
-  for (q = queued_reg_saves; q; q = q->next)
+  FOR_EACH_VEC_ELT (queued_reg_save, queued_reg_saves, iq, q)
     {
-      size_t i;
+      size_t ir;
       reg_saved_in_data *rir;
 
       if (modified_in_p (q->reg, insn))
 	return true;
 
-      FOR_EACH_VEC_ELT (reg_saved_in_data, regs_saved_in_regs, i, rir)
+      FOR_EACH_VEC_ELT (reg_saved_in_data, regs_saved_in_regs, ir, rir)
 	if (compare_reg_or_pc (q->reg, rir->orig_reg)
 	    && modified_in_p (rir->saved_in_reg, insn))
 	  return true;
@@ -1250,11 +1251,11 @@ static rtx
 reg_saved_in (rtx reg)
 {
   unsigned int regn = REGNO (reg);
-  struct queued_reg_save *q;
+  queued_reg_save *q;
   reg_saved_in_data *rir;
   size_t i;
 
-  for (q = queued_reg_saves; q; q = q->next)
+  FOR_EACH_VEC_ELT (queued_reg_save, queued_reg_saves, i, q)
     if (q->saved_reg && regn == REGNO (q->saved_reg))
       return q->reg;
 
@@ -2770,7 +2771,7 @@ execute_dwarf2_frame (void)
   XDELETEVEC (barrier_args_size);
   barrier_args_size = NULL;
   regs_saved_in_regs = NULL;
-  queued_reg_saves = NULL;
+  VEC_free (queued_reg_save, heap, queued_reg_saves);
 
   free_cfi_row (cur_row);
   cur_row = NULL;

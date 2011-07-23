@@ -1,5 +1,15 @@
 2011-07-23  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (queued_reg_save): Reorder for packing.  Don't GTY.
+	(queued_reg_saves): Don't GTY.  Change to a VEC.
+	(queue_reg_save): Update to match.
+	(dwarf2out_flush_queued_reg_saves): Likewise.
+	(clobbers_queued_reg_save): Likewise.
+	(reg_saved_in): Likewise.
+	(execute_dwarf2_frame): Free queued_reg_saves.
+
+2011-07-23  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (dw_cfi_row_ref): Remove.  Update all users.
 
 2011-07-23  Richard Henderson  <rth@redhat.com>
