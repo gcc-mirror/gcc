@@ -86,7 +86,7 @@ static GTY(()) dw_cfi_row_ref cie_cfi_row;
 static GTY(()) unsigned long dwarf2out_cfi_label_num;
 
 /* The insn after which a new CFI note should be emitted.  */
-static rtx cfi_insn;
+static rtx add_cfi_insn;
 
 /* When non-null, add_cfi will add the CFI to this vector.  */
 static cfi_vec *add_cfi_vec;
@@ -274,11 +274,13 @@ add_cfi (dw_cfi_ref cfi)
     }
 
   any_cfis_emitted = true;
-  if (cfi_insn != NULL)
+
+  if (add_cfi_insn != NULL)
     {
-      cfi_insn = emit_note_after (NOTE_INSN_CFI, cfi_insn);
-      NOTE_CFI (cfi_insn) = cfi;
+      add_cfi_insn = emit_note_after (NOTE_INSN_CFI, add_cfi_insn);
+      NOTE_CFI (add_cfi_insn) = cfi;
     }
+
   if (add_cfi_vec != NULL)
     VEC_safe_push (dw_cfi_ref, gc, *add_cfi_vec, cfi);
 }
@@ -2319,7 +2321,7 @@ create_cfi_notes (void)
     {
       rtx pat;
 
-      cfi_insn = PREV_INSN (insn);
+      add_cfi_insn = PREV_INSN (insn);
 
       if (BARRIER_P (insn))
 	{
@@ -2342,7 +2344,7 @@ create_cfi_notes (void)
 	      break;
 
 	    case NOTE_INSN_CFA_RESTORE_STATE:
-	      cfi_insn = insn;
+	      add_cfi_insn = insn;
 	      dwarf2out_frame_debug_restore_state ();
 	      break;
 	    }
@@ -2372,13 +2374,13 @@ create_cfi_notes (void)
 
       /* Do not separate tablejump insns from their ADDR_DIFF_VEC.
 	 Putting the note after the VEC should be ok.  */
-      if (!tablejump_p (insn, NULL, &cfi_insn))
-	cfi_insn = insn;
+      if (!tablejump_p (insn, NULL, &add_cfi_insn))
+	add_cfi_insn = insn;
 
       dwarf2out_frame_debug (insn, true);
     }
 
-  cfi_insn = NULL;
+  add_cfi_insn = NULL;
 }
 
 /* Determine if we need to save and restore CFI information around this

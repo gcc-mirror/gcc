@@ -1,5 +1,9 @@
 2011-07-23  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (add_cfi_insn): Rename from cfi_insn.  Update all users.
+
+2011-07-23  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2cfi.c (dw_cfi_row, dw_cfi_row_ref): New.
 	(cie_cfi_row): New.
 	(new_cfi_row, copy_cfi_row, free_cfi_row): New.
