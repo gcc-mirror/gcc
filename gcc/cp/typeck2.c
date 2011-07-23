@@ -719,7 +719,7 @@ check_narrowing (tree type, tree init)
   bool ok = true;
   REAL_VALUE_TYPE d;
 
-  if (!ARITHMETIC_TYPE_P (type))
+  if (!warn_narrowing || !ARITHMETIC_TYPE_P (type))
     return;
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init)
@@ -777,8 +777,8 @@ check_narrowing (tree type, tree init)
     }
 
   if (!ok)
-    permerror (input_location, "narrowing conversion of %qE from %qT "
-	       "to %qT inside { }", init, ftype, type);
+    pedwarn (input_location, OPT_Wnarrowing, "narrowing conversion of %qE "
+	     "from %qT to %qT inside { }", init, ftype, type);
 }
 
 /* Process the initializer INIT for a variable of type TYPE, emitting

@@ -1,3 +1,9 @@
+2011-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49793
+	* typeck2.c (check_narrowing): Downgrade permerror to pedwarn.
+	Make conditional on -Wnarrowing.
+
 2011-07-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Warn about the use of final/override in non-c++0x mode, and

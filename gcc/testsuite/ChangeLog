@@ -1,3 +1,8 @@
+2011-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49793
+	* g++.dg/cpp0x/initlist55.C: New.
+
 2011-07-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49791
