@@ -1,3 +1,11 @@
+2011-07-22  Benjamin Kosnik  <bkoz@redhat.com>
+	    Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/bits/move.h (move, forward): Mark constexpr.
+	* include/bits/stl_pair.h (pair): Mark move ctors constexpr.
+	* testsuite/20_util/pair/make_pair/constexpr.cc: New.
+	* testsuite/20_util/pair/cons/constexpr.cc: Add tests.
+
 2011-07-22  Ian Lance Taylor  <iant@google.com>
 
 	* fragment.am (CONFIG_CXXFLAGS): Add -frandom-seed.
