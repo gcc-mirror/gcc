@@ -1,3 +1,9 @@
+2011-07-23  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/49819
+	* gcc-interface/Makefile.in (powerpc-linux): Remove reference to
+	g-trasym-dwarf.adb.
+
 2011-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/49794
