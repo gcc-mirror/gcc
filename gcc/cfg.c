@@ -720,7 +720,7 @@ dump_edge_info (FILE *file, edge e, int do_succ)
       static const char * const bitnames[] = {
 	"fallthru", "ab", "abcall", "eh", "fake", "dfs_back",
 	"can_fallthru", "irreducible", "sibcall", "loop_exit",
-	"true", "false", "exec"
+	"true", "false", "exec", "crossing", "preserve"
       };
       int comma = 0;
       int i, flags = e->flags;

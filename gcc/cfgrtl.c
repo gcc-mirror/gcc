@@ -1820,18 +1820,38 @@ rtl_verify_flow_info_1 (void)
 	}
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
+	  bool is_crossing;
+
 	  if (e->flags & EDGE_FALLTHRU)
+	    n_fallthru++, fallthru = e;
+
+	  is_crossing = (BB_PARTITION (e->src) != BB_PARTITION (e->dest)
+			 && e->src != ENTRY_BLOCK_PTR
+			 && e->dest != EXIT_BLOCK_PTR);
+	  if (e->flags & EDGE_CROSSING)
 	    {
-	      n_fallthru++, fallthru = e;
-	      if ((e->flags & EDGE_CROSSING)
-		  || (BB_PARTITION (e->src) != BB_PARTITION (e->dest)
-		      && e->src != ENTRY_BLOCK_PTR
-		      && e->dest != EXIT_BLOCK_PTR))
-	    {
+	      if (!is_crossing)
+		{
+		  error ("EDGE_CROSSING incorrectly set across same section");
+		  err = 1;
+		}
+	      if (e->flags & EDGE_FALLTHRU)
+		{
 		  error ("fallthru edge crosses section boundary (bb %i)",
 			 e->src->index);
 		  err = 1;
 		}
+	      if (e->flags & EDGE_EH)
+		{
+		  error ("EH edge crosses section boundary (bb %i)",
+			 e->src->index);
+		  err = 1;
+		}
+	    }
+	  else if (is_crossing)
+	    {
+	      error ("EDGE_CROSSING missing across section boundary");
+	      err = 1;
 	    }
 
 	  if ((e->flags & ~(EDGE_DFS_BACK

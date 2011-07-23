@@ -87,6 +87,7 @@
 #include "tree-pass.h"
 #include "df.h"
 #include "bb-reorder.h"
+#include "except.h"
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
@@ -1208,6 +1209,79 @@ get_uncond_jump_length (void)
   return length;
 }
 
+/* Emit a barrier into the footer of BB.  */
+
+static void
+emit_barrier_after_bb (basic_block bb)
+{
+  rtx barrier = emit_barrier_after (BB_END (bb));
+  bb->il.rtl->footer = unlink_insn_chain (barrier, barrier);
+}
+
+/* The landing pad OLD_LP, in block OLD_BB, has edges from both partitions.
+   Duplicate the landing pad and split the edges so that no EH edge
+   crosses partitions.  */
+
+static void
+fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
+{
+  eh_landing_pad new_lp;
+  basic_block new_bb, last_bb, post_bb;
+  rtx new_label, jump, post_label;
+  unsigned new_partition;
+  edge_iterator ei;
+  edge e;
+
+  /* Generate the new landing-pad structure.  */
+  new_lp = gen_eh_landing_pad (old_lp->region);
+  new_lp->post_landing_pad = old_lp->post_landing_pad;
+  new_lp->landing_pad = gen_label_rtx ();
+  LABEL_PRESERVE_P (new_lp->landing_pad) = 1;
+
+  /* Put appropriate instructions in new bb.  */
+  new_label = emit_label (new_lp->landing_pad);
+
+  expand_dw2_landing_pad_for_region (old_lp->region);
+
+  post_bb = BLOCK_FOR_INSN (old_lp->landing_pad);
+  post_bb = single_succ (post_bb);
+  post_label = block_label (post_bb);
+  jump = emit_jump_insn (gen_jump (post_label));
+  JUMP_LABEL (jump) = post_label;
+
+  /* Create new basic block to be dest for lp.  */
+  last_bb = EXIT_BLOCK_PTR->prev_bb;
+  new_bb = create_basic_block (new_label, jump, last_bb);
+  new_bb->aux = last_bb->aux;
+  last_bb->aux = new_bb;
+
+  emit_barrier_after_bb (new_bb);
+
+  make_edge (new_bb, post_bb, 0);
+
+  /* Make sure new bb is in the other partition.  */
+  new_partition = BB_PARTITION (old_bb);
+  new_partition ^= BB_HOT_PARTITION | BB_COLD_PARTITION;
+  BB_SET_PARTITION (new_bb, new_partition);
+
+  /* Fix up the edges.  */
+  for (ei = ei_start (old_bb->preds); (e = ei_safe_edge (ei)) != NULL; )
+    if (BB_PARTITION (e->src) == new_partition)
+      {
+	rtx insn = BB_END (e->src);
+	rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+
+	gcc_assert (note != NULL);
+	gcc_checking_assert (INTVAL (XEXP (note, 0)) == old_lp->index);
+	XEXP (note, 0) = GEN_INT (new_lp->index);
+
+	/* Adjust the edge to the new destination.  */
+	redirect_edge_succ (e, new_bb);
+      }
+    else
+      ei_next (&ei);
+}
+
 /* Find the basic blocks that are rarely executed and need to be moved to
    a separate section of the .o file (to cut down on paging and improve
    cache locality).  Return a vector of all edges that cross.  */
@@ -1221,7 +1295,6 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
   edge_iterator ei;
 
   /* Mark which partition (hot/cold) each basic block belongs in.  */
-
   FOR_EACH_BB (bb)
     {
       if (probably_never_executed_bb_p (bb))
@@ -1230,32 +1303,71 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
 	BB_SET_PARTITION (bb, BB_HOT_PARTITION);
     }
 
+  /* The format of .gcc_except_table does not allow landing pads to
+     be in a different partition as the throw.  Fix this by either
+     moving or duplicating the landing pads.  */
+  if (cfun->eh->lp_array)
+    {
+      unsigned i;
+      eh_landing_pad lp;
+
+      FOR_EACH_VEC_ELT (eh_landing_pad, cfun->eh->lp_array, i, lp)
+	{
+	  bool all_same, all_diff;
+
+	  if (lp == NULL)
+	    continue;
+
+	  all_same = all_diff = true;
+	  bb = BLOCK_FOR_INSN (lp->landing_pad);
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    {
+	      gcc_assert (e->flags & EDGE_EH);
+	      if (BB_PARTITION (bb) == BB_PARTITION (e->src))
+		all_diff = false;
+	      else
+		all_same = false;
+	    }
+
+	  if (all_same)
+	    ;
+	  else if (all_diff)
+	    {
+	      int which = BB_PARTITION (bb);
+	      which ^= BB_HOT_PARTITION | BB_COLD_PARTITION;
+	      BB_SET_PARTITION (bb, which);
+	    }
+	  else
+	    fix_up_crossing_landing_pad (lp, bb);
+	}
+    }
+
   /* Mark every edge that crosses between sections.  */
 
   FOR_EACH_BB (bb)
     FOR_EACH_EDGE (e, ei, bb->succs)
-    {
-      if (e->src != ENTRY_BLOCK_PTR
-	  && e->dest != EXIT_BLOCK_PTR
-	  && BB_PARTITION (e->src) != BB_PARTITION (e->dest))
-	{
-	  e->flags |= EDGE_CROSSING;
-	  VEC_safe_push (edge, heap, crossing_edges, e);
-	}
-      else
-	e->flags &= ~EDGE_CROSSING;
-    }
+      {
+	unsigned int flags = e->flags;
+      
+        /* We should never have EDGE_CROSSING set yet.  */
+	gcc_checking_assert ((flags & EDGE_CROSSING) == 0);
+
+	if (e->src != ENTRY_BLOCK_PTR
+	    && e->dest != EXIT_BLOCK_PTR
+	    && BB_PARTITION (e->src) != BB_PARTITION (e->dest))
+	  {
+	    VEC_safe_push (edge, heap, crossing_edges, e);
+	    flags |= EDGE_CROSSING;
+	  }
+
+	/* Now that we've split eh edges as appropriate, allow landing pads
+	   to be merged with the post-landing pads.  */
+	flags &= ~EDGE_PRESERVE;
+
+	e->flags = flags;
+      }
 
   return crossing_edges;
-}
-
-/* Emit a barrier into the footer of BB.  */
-
-static void
-emit_barrier_after_bb (basic_block bb)
-{
-  rtx barrier = emit_barrier_after (BB_END (bb));
-  bb->il.rtl->footer = unlink_insn_chain (barrier, barrier);
 }
 
 /* If any destination of a crossing edge does not have a label, add label;
@@ -2108,6 +2220,8 @@ partition_hot_cold_basic_blocks (void)
   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
     return 0;
 
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
   crossing_edges = find_rarely_executed_basic_blocks_and_crossing_edges ();
   if (crossing_edges == NULL)
     return 0;
@@ -2138,6 +2252,38 @@ partition_hot_cold_basic_blocks (void)
   add_reg_crossing_jump_notes ();
 
   VEC_free (edge, heap, crossing_edges);
+
+  /* ??? FIXME: DF generates the bb info for a block immediately.
+     And by immediately, I mean *during* creation of the block.
+
+	#0  df_bb_refs_collect
+	#1  in df_bb_refs_record
+	#2  in create_basic_block_structure
+
+     Which means that the bb_has_eh_pred test in df_bb_refs_collect
+     will *always* fail, because no edges can have been added to the
+     block yet.  Which of course means we don't add the right 
+     artificial refs, which means we fail df_verify (much) later.
+
+     Cleanest solution would seem to make DF_DEFER_INSN_RESCAN imply
+     that we also shouldn't grab data from the new blocks those new
+     insns are in either.  In this way one can create the block, link
+     it up properly, and have everything Just Work later, when deferred
+     insns are processed.
+
+     In the meantime, we have no other option but to throw away all
+     of the DF data and recompute it all.  */
+  if (cfun->eh->lp_array)
+    {
+      df_finish_pass (true);
+      df_scan_alloc (NULL);
+      df_scan_blocks ();
+      /* Not all post-landing pads use all of the EH_RETURN_DATA_REGNO
+	 data.  We blindly generated all of them when creating the new
+	 landing pad.  Delete those assignments we don't use.  */
+      df_set_flags (DF_LR_RUN_DCE);
+      df_analyze ();
+    }
 
   return TODO_verify_flow | TODO_verify_rtl_sharing;
 }
