@@ -1,3 +1,13 @@
+2011-07-24  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* configure.ac (demangler_in_ld): Default to yes.
+	* configure: Regenerated.
+	* collect2.c (main): When HAVE_LD_DEMANGLE is defined, don't
+	mess with COLLECT_NO_DEMANGLE, and just pass --demangle and
+	--no-demangle options straight through to ld.  When
+	HAVE_LD_DEMANGLE is not defined, set COLLECT_NO_DEMANGLE in a
+	way that has the intended effect on Windows.
+
 2011-07-23  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2cfi.c: Include basic-block.h.

@@ -3413,7 +3413,7 @@ fi
 if test "${with_demangler_in_ld+set}" = set; then :
   withval=$with_demangler_in_ld; demangler_in_ld="$with_demangler_in_ld"
 else
-  demangler_in_ld=no
+  demangler_in_ld=yes
 fi
 
 
