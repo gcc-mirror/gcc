@@ -1,5 +1,10 @@
 2011-07-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (build_binary_op) <ARRAY_REF>: Do not mark the
+	left operand as addressable.
+
+2011-07-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (build_function_stub): Remove.
 	(build_return_expr): Likewise.
 	(convert_vms_descriptor): Declare.
