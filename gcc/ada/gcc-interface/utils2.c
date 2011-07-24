@@ -721,11 +721,6 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 unneeded sign conversions when sizetype is wider than integer.  */
       right_operand = convert (right_base_type, right_operand);
       right_operand = convert (sizetype, right_operand);
-
-      if (!TREE_CONSTANT (right_operand)
-	  || !TREE_CONSTANT (TYPE_MIN_VALUE (right_type)))
-	gnat_mark_addressable (left_operand);
-
       modulus = NULL_TREE;
       break;
 
