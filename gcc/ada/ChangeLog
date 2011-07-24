@@ -1,5 +1,11 @@
 2011-07-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Subprogram_Type>: If the
+	subprogram has copy-in copy-out parameters, try to promote the mode of
+	the return type if it is passed in registers.
+
+2011-07-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (build_binary_op) <ARRAY_REF>: Do not mark the
 	left operand as addressable.
 
