@@ -4245,17 +4245,50 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      }
 	  }
 
-	/* Do not compute record for out parameters if subprogram is
-	   stubbed since structures are incomplete for the back-end.  */
-	if (gnu_field_list && Convention (gnat_entity) != Convention_Stubbed)
-	  finish_record_type (gnu_return_type, nreverse (gnu_field_list),
-			      0, debug_info_p);
+	if (gnu_cico_list)
+	  {
+	    /* If we have a CICO list but it has only one entry, we convert
+	       this function into a function that returns this object.  */
+	    if (list_length (gnu_cico_list) == 1)
+	      gnu_return_type = TREE_TYPE (TREE_PURPOSE (gnu_cico_list));
 
-	/* If we have a CICO list but it has only one entry, we convert
-	   this function into a function that simply returns that one
-	   object.  */
-	if (list_length (gnu_cico_list) == 1)
-	  gnu_return_type = TREE_TYPE (TREE_PURPOSE (gnu_cico_list));
+	    /* Do not finalize the return type if the subprogram is stubbed
+	       since structures are incomplete for the back-end.  */
+	    else if (Convention (gnat_entity) != Convention_Stubbed)
+	      {
+		finish_record_type (gnu_return_type, nreverse (gnu_field_list),
+				    0, false);
+
+	        /* Try to promote the mode of the return type if it is passed
+		   in registers, again to speed up accesses.  */
+		if (TYPE_MODE (gnu_return_type) == BLKmode
+		    && !targetm.calls.return_in_memory (gnu_return_type,
+							NULL_TREE))
+		  {
+		    unsigned int size
+		      = TREE_INT_CST_LOW (TYPE_SIZE (gnu_return_type));
+		    unsigned int i = BITS_PER_UNIT;
+		    enum machine_mode mode;
+
+		    while (i < size)
+		      i <<= 1;
+		    mode = mode_for_size (i, MODE_INT, 0);
+		    if (mode != BLKmode)
+		      {
+			SET_TYPE_MODE (gnu_return_type, mode);
+			TYPE_ALIGN (gnu_return_type)
+			  = GET_MODE_ALIGNMENT (mode);
+			TYPE_SIZE (gnu_return_type)
+			  = bitsize_int (GET_MODE_BITSIZE (mode));
+			TYPE_SIZE_UNIT (gnu_return_type)
+			  = size_int (GET_MODE_SIZE (mode));
+		      }
+		  }
+
+	        if (debug_info_p)
+		  rest_of_record_type_compilation (gnu_return_type);
+	      }
+	  }
 
 	if (Has_Stdcall_Convention (gnat_entity))
 	  prepend_one_attribute_to
