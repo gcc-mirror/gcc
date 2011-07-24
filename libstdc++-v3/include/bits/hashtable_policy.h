@@ -431,7 +431,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						+ _S_n_primes, __n);
     _M_next_resize =
       static_cast<std::size_t>(__builtin_floor(__p * _M_max_load_factor));
-    return *__p;
+    return __p;
   }
 
   // Return the smallest prime p such that alpha p >= n, where alpha
@@ -445,7 +445,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						+ _S_n_primes, __min_bkts);
     _M_next_resize =
       static_cast<std::size_t>(__builtin_floor(__p * _M_max_load_factor));
-    return *__p;
+    return __p;
   }
 
   // Finds the smallest prime p such that alpha p > __n_elt + __n_ins.
@@ -474,7 +474,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				__min_bkts);
 	    _M_next_resize = static_cast<std::size_t>
 	      (__builtin_floor(__p * _M_max_load_factor));
-	    return std::make_pair(true, *__p);
+	    return std::make_pair(true, __p);
 	  }
 	else
 	  {
