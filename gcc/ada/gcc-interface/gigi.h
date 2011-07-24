@@ -706,10 +706,6 @@ extern tree build_vms_descriptor (tree type, Mechanism_Type mech,
 extern tree build_vms_descriptor32 (tree type, Mechanism_Type mech,
                                   Entity_Id gnat_entity);
 
-/* Build a stub for the subprogram specified by the GCC tree GNU_SUBPROG
-   and the GNAT node GNAT_SUBPROG.  */
-extern void build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog);
-
 /* Build a type to be used to represent an aliased object whose nominal type
    is an unconstrained array.  This consists of a RECORD_TYPE containing a
    field of TEMPLATE_TYPE and a field of OBJECT_TYPE, which is an ARRAY_TYPE.
@@ -812,12 +808,8 @@ extern tree build_cond_expr (tree result_type, tree condition_operand,
                              tree true_operand, tree false_operand);
 
 /* Similar, but for COMPOUND_EXPR.  */
-
 extern tree build_compound_expr (tree result_type, tree stmt_operand,
 				 tree expr_operand);
-
-/* Similar, but for RETURN_EXPR.  */
-extern tree build_return_expr (tree ret_obj, tree ret_val);
 
 /* Build a CALL_EXPR to call FUNDECL with one argument, ARG.  Return
    the CALL_EXPR.  */
@@ -892,6 +884,15 @@ extern tree build_allocator (tree type, tree init, tree result_type,
    GNAT_ACTUAL is the actual parameter for which the descriptor is built.  */
 extern tree fill_vms_descriptor (tree gnu_type, tree gnu_expr,
                                  Node_Id gnat_actual);
+
+/* Convert GNU_EXPR, a pointer to a VMS descriptor, to GNU_TYPE, a regular
+   pointer or fat pointer type.  GNU_EXPR_ALT_TYPE is the alternate (32-bit)
+   pointer type of GNU_EXPR.  BY_REF is true if the result is to be used by
+   reference.  GNAT_SUBPROG is the subprogram to which the VMS descriptor is
+   passed.  */
+extern tree convert_vms_descriptor (tree gnu_type, tree gnu_expr,
+				    tree gnu_expr_alt_type, bool by_ref,
+				    Entity_Id gnat_subprog);
 
 /* Indicate that we need to take the address of T and that it therefore
    should not be allocated in a register.  Returns true if successful.  */

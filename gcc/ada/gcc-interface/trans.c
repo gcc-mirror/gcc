@@ -2428,6 +2428,107 @@ establish_gnat_vms_condition_handler (void)
 
   add_stmt (establish_stmt);
 }
+
+/* Similar, but for RETURN_EXPR.  If RET_VAL is non-null, build a RETURN_EXPR
+   around the assignment of RET_VAL to RET_OBJ.  Otherwise just build a bare
+   RETURN_EXPR around RESULT_OBJ, which may be null in this case.  */
+
+static tree
+build_return_expr (tree ret_obj, tree ret_val)
+{
+  tree result_expr;
+
+  if (ret_val)
+    {
+      /* The gimplifier explicitly enforces the following invariant:
+
+	      RETURN_EXPR
+		  |
+	      MODIFY_EXPR
+	      /        \
+	     /          \
+	 RET_OBJ        ...
+
+	 As a consequence, type consistency dictates that we use the type
+	 of the RET_OBJ as the operation type.  */
+      tree operation_type = TREE_TYPE (ret_obj);
+
+      /* Convert the right operand to the operation type.  Note that it's the
+	 same transformation as in the MODIFY_EXPR case of build_binary_op,
+	 with the assumption that the type cannot involve a placeholder.  */
+      if (operation_type != TREE_TYPE (ret_val))
+	ret_val = convert (operation_type, ret_val);
+
+      result_expr = build2 (MODIFY_EXPR, operation_type, ret_obj, ret_val);
+    }
+  else
+    result_expr = ret_obj;
+
+  return build1 (RETURN_EXPR, void_type_node, result_expr);
+}
+
+/* Build a stub for the subprogram specified by the GCC tree GNU_SUBPROG
+   and the GNAT node GNAT_SUBPROG.  */
+
+static void
+build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
+{
+  tree gnu_subprog_type, gnu_subprog_addr, gnu_subprog_call;
+  tree gnu_subprog_param, gnu_stub_param, gnu_param;
+  tree gnu_stub_decl = DECL_FUNCTION_STUB (gnu_subprog);
+  VEC(tree,gc) *gnu_param_vec = NULL;
+
+  gnu_subprog_type = TREE_TYPE (gnu_subprog);
+
+  /* Initialize the information structure for the function.  */
+  allocate_struct_function (gnu_stub_decl, false);
+  set_cfun (NULL);
+
+  begin_subprog_body (gnu_stub_decl);
+
+  start_stmt_group ();
+  gnat_pushlevel ();
+
+  /* Loop over the parameters of the stub and translate any of them
+     passed by descriptor into a by reference one.  */
+  for (gnu_stub_param = DECL_ARGUMENTS (gnu_stub_decl),
+       gnu_subprog_param = DECL_ARGUMENTS (gnu_subprog);
+       gnu_stub_param;
+       gnu_stub_param = TREE_CHAIN (gnu_stub_param),
+       gnu_subprog_param = TREE_CHAIN (gnu_subprog_param))
+    {
+      if (DECL_BY_DESCRIPTOR_P (gnu_stub_param))
+	{
+	  gcc_assert (DECL_BY_REF_P (gnu_subprog_param));
+	  gnu_param
+	    = convert_vms_descriptor (TREE_TYPE (gnu_subprog_param),
+				      gnu_stub_param,
+				      DECL_PARM_ALT_TYPE (gnu_stub_param),
+				      DECL_BY_DOUBLE_REF_P (gnu_subprog_param),
+				      gnat_subprog);
+	}
+      else
+	gnu_param = gnu_stub_param;
+
+      VEC_safe_push (tree, gc, gnu_param_vec, gnu_param);
+    }
+
+  /* Invoke the internal subprogram.  */
+  gnu_subprog_addr = build1 (ADDR_EXPR, build_pointer_type (gnu_subprog_type),
+			     gnu_subprog);
+  gnu_subprog_call = build_call_vec (TREE_TYPE (gnu_subprog_type),
+                                     gnu_subprog_addr, gnu_param_vec);
+
+  /* Propagate the return value, if any.  */
+  if (VOID_TYPE_P (TREE_TYPE (gnu_subprog_type)))
+    add_stmt (gnu_subprog_call);
+  else
+    add_stmt (build_return_expr (DECL_RESULT (gnu_stub_decl),
+				 gnu_subprog_call));
+
+  gnat_poplevel ();
+  end_subprog_body (end_stmt_group ());
+}
 
 /* Subroutine of gnat_to_gnu to process gnat_node, an N_Subprogram_Body.  We
    don't return anything.  */
@@ -2455,6 +2556,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   /* The entry in the CI_CO_LIST that represents a function return, if any.  */
   tree gnu_return_var_elmt = NULL_TREE;
   tree gnu_result;
+  struct language_function *gnu_subprog_language;
   VEC(parm_attr,gc) *cache;
 
   /* If this is a generic object or if it has been eliminated,
@@ -2496,8 +2598,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* Initialize the information structure for the function.  */
   allocate_struct_function (gnu_subprog_decl, false);
-  DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language
-    = ggc_alloc_cleared_language_function ();
+  gnu_subprog_language = ggc_alloc_cleared_language_function ();
+  DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language = gnu_subprog_language;
   set_cfun (NULL);
 
   begin_subprog_body (gnu_subprog_decl);
@@ -2594,7 +2696,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   /* If we populated the parameter attributes cache, we need to make sure that
      the cached expressions are evaluated on all the possible paths leading to
      their uses.  So we force their evaluation on entry of the function.  */
-  cache = DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language->parm_attr_cache;
+  cache = gnu_subprog_language->parm_attr_cache;
   if (cache)
     {
       struct parm_attr_d *pa;
@@ -2614,6 +2716,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
       add_stmt (gnu_result);
       gnu_result = end_stmt_group ();
+
+      gnu_subprog_language->parm_attr_cache = NULL;
     }
 
   /* If we are dealing with a return from an Ada procedure with parameters
@@ -2650,13 +2754,13 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   VEC_pop (tree, gnu_return_label_stack);
 
-  end_subprog_body (gnu_result);
-
   /* Attempt setting the end_locus of our GCC body tree, typically a
      BIND_EXPR or STATEMENT_LIST, then the end_locus of our GCC subprogram
      declaration tree.  */
   set_end_locus_from_node (gnu_result, gnat_node);
   set_end_locus_from_node (gnu_subprog_decl, gnat_node);
+
+  end_subprog_body (gnu_result);
 
   /* Finally annotate the parameters and disconnect the trees for parameters
      that we have turned into variables since they are now unusable.  */
@@ -2675,11 +2779,12 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	save_gnu_tree (gnat_param, NULL_TREE, false);
     }
 
-  if (DECL_FUNCTION_STUB (gnu_subprog_decl))
-    build_function_stub (gnu_subprog_decl, gnat_subprog_id);
-
   if (gnu_return_var_elmt)
     TREE_VALUE (gnu_return_var_elmt) = void_type_node;
+
+  /* If there is a stub associated with the function, build it now.  */
+  if (DECL_FUNCTION_STUB (gnu_subprog_decl))
+    build_function_stub (gnu_subprog_decl, gnat_subprog_id);
 
   mark_out_of_scope (Defining_Unit_Name (Specification (gnat_node)));
 }
@@ -5085,23 +5190,22 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Return_Statement:
       {
-	tree gnu_ret_val, gnu_ret_obj;
+	tree gnu_ret_obj, gnu_ret_val;
 
 	/* If the subprogram is a function, we must return the expression.  */
 	if (Present (Expression (gnat_node)))
 	  {
 	    tree gnu_subprog_type = TREE_TYPE (current_function_decl);
-	    tree gnu_ret_type = TREE_TYPE (gnu_subprog_type);
-	    tree gnu_result_decl = DECL_RESULT (current_function_decl);
-	    gnu_ret_val = gnat_to_gnu (Expression (gnat_node));
 
 	    /* If this function has copy-in/copy-out parameters, get the real
-	       variable and type for the return.  See Subprogram_to_gnu.  */
+	       object for the return.  See Subprogram_to_gnu.  */
 	    if (TYPE_CI_CO_LIST (gnu_subprog_type))
-	      {
-		gnu_result_decl = VEC_last (tree, gnu_return_var_stack);
-		gnu_ret_type = TREE_TYPE (gnu_result_decl);
-	      }
+	      gnu_ret_obj = VEC_last (tree, gnu_return_var_stack);
+	    else
+	      gnu_ret_obj = DECL_RESULT (current_function_decl);
+
+	    /* Get the GCC tree for the expression to be returned.  */
+	    gnu_ret_val = gnat_to_gnu (Expression (gnat_node));
 
 	    /* Do not remove the padding from GNU_RET_VAL if the inner type is
 	       self-referential since we want to allocate the fixed size.  */
@@ -5112,7 +5216,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		   (TYPE_SIZE (TREE_TYPE (gnu_ret_val))))
 	      gnu_ret_val = TREE_OPERAND (gnu_ret_val, 0);
 
-	    /* If the subprogram returns by direct reference, return a pointer
+	    /* If the function returns by direct reference, return a pointer
 	       to the return value.  */
 	    if (TYPE_RETURN_BY_DIRECT_REF_P (gnu_subprog_type)
 		|| By_Ref (gnat_node))
@@ -5124,37 +5228,33 @@ gnat_to_gnu (Node_Id gnat_node)
 	      {
 		gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
 		gnu_ret_val = build_allocator (TREE_TYPE (gnu_ret_val),
-					       gnu_ret_val, gnu_ret_type,
+					       gnu_ret_val,
+					       TREE_TYPE (gnu_ret_obj),
 					       Procedure_To_Call (gnat_node),
 					       Storage_Pool (gnat_node),
 					       gnat_node, false);
 	      }
 
-	    /* If the subprogram returns by invisible reference, dereference
+	    /* If the function returns by invisible reference, dereference
 	       the pointer it is passed using the type of the return value
 	       and build the copy operation manually.  This ensures that we
 	       don't copy too much data, for example if the return type is
 	       unconstrained with a maximum size.  */
 	    if (TREE_ADDRESSABLE (gnu_subprog_type))
 	      {
-		gnu_ret_obj
+		tree gnu_ret_deref
 		  = build_unary_op (INDIRECT_REF, TREE_TYPE (gnu_ret_val),
-				    gnu_result_decl);
+				    gnu_ret_obj);
 		gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
-					      gnu_ret_obj, gnu_ret_val);
+					      gnu_ret_deref, gnu_ret_val);
 		add_stmt_with_node (gnu_result, gnat_node);
 		gnu_ret_val = NULL_TREE;
-		gnu_ret_obj = gnu_result_decl;
 	      }
-
-	    /* Otherwise, build a regular return.  */
-	    else
-	      gnu_ret_obj = gnu_result_decl;
 	  }
 	else
 	  {
-	    gnu_ret_val = NULL_TREE;
 	    gnu_ret_obj = NULL_TREE;
+	    gnu_ret_val = NULL_TREE;
 	  }
 
 	/* If we have a return label defined, convert this into a branch to
@@ -5167,13 +5267,15 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	    gnu_result = build1 (GOTO_EXPR, void_type_node,
 				 VEC_last (tree, gnu_return_label_stack));
+
 	    /* When not optimizing, make sure the return is preserved.  */
 	    if (!optimize && Comes_From_Source (gnat_node))
 	      DECL_ARTIFICIAL (VEC_last (tree, gnu_return_label_stack)) = 0;
-	    break;
 	  }
 
-	gnu_result = build_return_expr (gnu_ret_obj, gnu_ret_val);
+	/* Otherwise, build a regular return.  */
+	else
+	  gnu_result = build_return_expr (gnu_ret_obj, gnu_ret_val);
       }
       break;
 
