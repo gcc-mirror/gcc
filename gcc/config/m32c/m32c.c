@@ -2644,8 +2644,12 @@ static char const *pushm_regs[] = {
   "fb", "sb", "a1", "a0", "r3", "r2", "r1", "r0"
 };
 
-/* Implements PRINT_OPERAND.  */
-void
+/* Implements TARGET_PRINT_OPERAND.  */
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND m32c_print_operand
+
+static void
 m32c_print_operand (FILE * file, rtx x, int code)
 {
   int i, j, b;
@@ -2998,18 +3002,28 @@ m32c_print_operand (FILE * file, rtx x, int code)
   return;
 }
 
-/* Implements PRINT_OPERAND_PUNCT_VALID_P.  See m32c_print_operand
-   above for descriptions of what these do.  */
-int
-m32c_print_operand_punct_valid_p (int c)
+/* Implements TARGET_PRINT_OPERAND_PUNCT_VALID_P.
+
+   See m32c_print_operand above for descriptions of what these do.  */
+
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P m32c_print_operand_punct_valid_p
+
+static bool 
+m32c_print_operand_punct_valid_p (unsigned char c)
 {
   if (c == '&' || c == '!')
-    return 1;
-  return 0;
+    return true;
+
+  return false;
 }
 
-/* Implements PRINT_OPERAND_ADDRESS.  Nothing unusual here.  */
-void
+/* Implements TARGET_PRINT_OPERAND_ADDRESS.  Nothing unusual here.  */
+
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS m32c_print_operand_address
+
+static void
 m32c_print_operand_address (FILE * stream, rtx address)
 {
   if (GET_CODE (address) == MEM)
