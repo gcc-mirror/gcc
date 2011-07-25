@@ -1,3 +1,11 @@
+2011-07-22  Romain Geissler  <romain.geissler@gmail.com>
+
+	PR plugins/45348
+	PR plugins/48425
+	PR plugins/46577
+	* Makefile.in: Do not flatten c-family directory when installing
+	plugin headers.
+
 2011-07-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-inline.c (can_inline_edge_p): Look into DECL_STRUCT_FUNCTION of

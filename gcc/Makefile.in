@@ -4602,8 +4602,8 @@ s-header-vars: Makefile
 
 # Install the headers needed to build a plugin.
 install-plugin: installdirs lang.install-plugin s-header-vars
-# We keep the directory structure for files in config and .def files. All
-# other files are flattened to a single directory.
+# We keep the directory structure for files in config or c-family and .def
+# files. All other files are flattened to a single directory.
 	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)
 	headers=`echo $(PLUGIN_HEADERS) | tr ' ' '\012' | sort -u`; \
 	srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`; \
@@ -4615,7 +4615,7 @@ install-plugin: installdirs lang.install-plugin s-header-vars
 	  else continue; \
 	  fi; \
 	  case $$path in \
-	  "$(srcdir)"/config/* | "$(srcdir)"/*.def ) \
+	  "$(srcdir)"/config/* | "$(srcdir)"/c-family/* | "$(srcdir)"/*.def ) \
 	    base=`echo "$$path" | sed -e "s|$$srcdirstrip/||"`;; \
 	  *) base=`basename $$path` ;; \
 	  esac; \
