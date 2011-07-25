@@ -3706,6 +3706,23 @@ fix = {
 
 
 /*
+ * Solaris 10+ <spawn.h> uses char *const argv[_RESTRICT_KYWD] in the
+ * posix_spawn declarations, which doesn't work with C++.
+ */
+fix = {
+    hackname  = solaris_posix_spawn_restrict;
+    files     = spawn.h;
+    mach      = '*-*-solaris2*';
+    c_fix     = format;
+    c_fix_arg = "%1*_RESTRICT_KYWD %2%3";
+    select    = "(.*[ \t]+)([a-z]+)\\[_RESTRICT_KYWD\\](.*)";
+    test_text =
+    "char *const argv[_RESTRICT_KYWD],\n"
+    "char *const envp[_RESTRICT_KYWD]);";
+};
+
+
+/*
  * Sun Solaris 8 has what appears to be some gross workaround for
  * some old version of their c++ compiler.  G++ doesn't want it
  * either, but doesn't want to be tied to SunPRO version numbers.
