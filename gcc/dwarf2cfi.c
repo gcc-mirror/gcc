@@ -109,9 +109,6 @@ typedef struct
   /* The row state at the beginning and end of the trace.  */
   dw_cfi_row *beg_row, *end_row;
 
-  /* True if this trace immediately follows NOTE_INSN_SWITCH_TEXT_SECTIONS.  */
-  bool switch_sections;
-
   /* The following variables contain data used in interpreting frame related
      expressions.  These are not part of the "real" row state as defined by
      Dwarf, but it seems like they need to be propagated into a trace in case
@@ -139,6 +136,11 @@ typedef struct
      a maximum of 5 entries.  */
   VEC(reg_saved_in_data, heap) *regs_saved_in_regs;
 
+  /* An identifier for this trace.  Used only for debugging dumps.  */
+  unsigned id;
+
+  /* True if this trace immediately follows NOTE_INSN_SWITCH_TEXT_SECTIONS.  */
+  bool switch_sections;
 } dw_trace_info;
 
 DEF_VEC_O (dw_trace_info);
@@ -286,12 +288,6 @@ dw_trace_info_eq (const void *ptr_a, const void *ptr_b)
   const dw_trace_info *a = (const dw_trace_info *) ptr_a;
   const dw_trace_info *b = (const dw_trace_info *) ptr_b;
   return a->head == b->head;
-}
-
-static unsigned
-get_trace_index (dw_trace_info *trace)
-{
-  return trace - VEC_address (dw_trace_info, trace_info);
 }
 
 static dw_trace_info *
@@ -2410,7 +2406,7 @@ maybe_record_trace_start (rtx start, rtx origin, bool abnormal)
   if (dump_file)
     {
       fprintf (dump_file, "   saw edge from trace %u to %u (via %s %d)\n",
-	       get_trace_index (cur_trace), get_trace_index (ti),
+	       cur_trace->id, ti->id,
 	       (origin ? rtx_name[(int) GET_CODE (origin)] : "fallthru"),
 	       (origin ? INSN_UID (origin) : 0));
     }
@@ -2433,8 +2429,7 @@ maybe_record_trace_start (rtx start, rtx origin, bool abnormal)
       VEC_safe_push (dw_trace_info_ref, heap, trace_work_list, ti);
 
       if (dump_file)
-	fprintf (dump_file, "\tpush trace %u to worklist\n",
-		 get_trace_index (ti));
+	fprintf (dump_file, "\tpush trace %u to worklist\n", ti->id);
     }
   else
     {
@@ -2534,7 +2529,7 @@ scan_trace (dw_trace_info *trace)
 
   if (dump_file)
     fprintf (dump_file, "Processing trace %u : start at %s %d\n",
-	     get_trace_index (trace), rtx_name[(int) GET_CODE (insn)],
+	     trace->id, rtx_name[(int) GET_CODE (insn)],
 	     INSN_UID (insn));
 
   trace->end_row = copy_cfi_row (trace->beg_row);
@@ -2630,8 +2625,23 @@ create_cfi_notes (void)
   VEC_free (dw_trace_info_ref, heap, trace_work_list);
 }
 
+/* Return the insn before the first NOTE_INSN_CFI after START.  */
+
+static rtx
+before_next_cfi_note (rtx start)
+{
+  rtx prev = start;
+  while (start)
+    {
+      if (NOTE_P (start) && NOTE_KIND (start) == NOTE_INSN_CFI)
+	return prev;
+      prev = start;
+      start = NEXT_INSN (start);
+    }
+  gcc_unreachable ();
+}
+
 /* Insert CFI notes between traces to properly change state between them.  */
-/* ??? TODO: Make use of remember/restore_state.  */
 
 static void
 connect_traces (void)
@@ -2639,24 +2649,37 @@ connect_traces (void)
   unsigned i, n = VEC_length (dw_trace_info, trace_info);
   dw_trace_info *prev_ti, *ti;
 
-  prev_ti = VEC_index (dw_trace_info, trace_info, 0);
+  /* ??? Ideally, we should have both queued and processed every trace.
+     However the current representation of constant pools on various targets
+     is indistinguishable from unreachable code.  Assume for the moment that
+     we can simply skip over such traces.  */
+  /* ??? Consider creating a DATA_INSN rtx code to indicate that
+     these are not "real" instructions, and should not be considered.
+     This could be generically useful for tablejump data as well.  */
+  /* Remove all unprocessed traces from the list.  */
+  for (i = n - 1; i > 0; --i)
+    {
+      ti = VEC_index (dw_trace_info, trace_info, i);
+      if (ti->beg_row == NULL)
+	{
+	  VEC_ordered_remove (dw_trace_info, trace_info, i);
+	  n -= 1;
+	}
+      else
+	gcc_assert (ti->end_row != NULL);
+    }
 
-  for (i = 1; i < n; ++i)
+  /* Work from the end back to the beginning.  This lets us easily insert
+     remember/restore_state notes in the correct order wrt other notes.  */
+  prev_ti = VEC_index (dw_trace_info, trace_info, n - 1);
+  for (i = n - 1; i > 0; --i)
     {
       dw_cfi_row *old_row;
 
-      ti = VEC_index (dw_trace_info, trace_info, i);
+      ti = prev_ti;
+      prev_ti = VEC_index (dw_trace_info, trace_info, i - 1);
 
-      /* ??? Ideally, we should have both queued and processed.  However
-	 the current representation of constant pools on various targets
-	 is indistinguishable from unreachable code.  Assume for the 
-	 moment that we can simply skip over such traces.  */
-      /* ??? Consider creating a DATA_INSN rtx code to indicate that
-	 these are not "real" instructions, and should not be considered.
-	 This could be generically useful for tablejump data as well.  */
-      if (ti->beg_row == NULL)
-	continue;
-      gcc_assert (ti->end_row != NULL);
+      add_cfi_insn = ti->head;
 
       /* In dwarf2out_switch_text_section, we'll begin a new FDE
 	 for the portion of the function in the alternate text
@@ -2665,16 +2688,47 @@ connect_traces (void)
       if (ti->switch_sections)
 	old_row = cie_cfi_row;
       else
-	old_row = prev_ti->end_row;
+	{
+	  old_row = prev_ti->end_row;
+	  /* If there's no change from the previous end state, fine.  */
+	  if (cfi_row_equal_p (old_row, ti->beg_row))
+	    ;
+	  /* Otherwise check for the common case of sharing state with
+	     the beginning of an epilogue, but not the end.  Insert
+	     remember/restore opcodes in that case.  */
+	  else if (cfi_row_equal_p (prev_ti->beg_row, ti->beg_row))
+	    {
+	      dw_cfi_ref cfi;
 
-      add_cfi_insn = ti->head;
+	      /* Note that if we blindly insert the remember at the
+		 start of the trace, we can wind up increasing the
+		 size of the unwind info due to extra advance opcodes.
+		 Instead, put the remember immediately before the next
+		 state change.  We know there must be one, because the 
+		 state at the beginning and head of the trace differ.  */
+	      add_cfi_insn = before_next_cfi_note (prev_ti->head);
+	      cfi = new_cfi ();
+	      cfi->dw_cfi_opc = DW_CFA_remember_state;
+	      add_cfi (cfi);
+
+	      add_cfi_insn = ti->head;
+	      cfi = new_cfi ();
+	      cfi->dw_cfi_opc = DW_CFA_restore_state;
+	      add_cfi (cfi);
+
+	      old_row = prev_ti->beg_row;
+	    }
+	  /* Otherwise, we'll simply change state from the previous end.  */
+	}
+
       change_cfi_row (old_row, ti->beg_row);
 
       if (dump_file && add_cfi_insn != ti->head)
 	{
 	  rtx note;
 
-	  fprintf (dump_file, "Fixup between trace %u and %u:\n", i - 1, i);
+	  fprintf (dump_file, "Fixup between trace %u and %u:\n",
+		   prev_ti->id, ti->id);
 
 	  note = ti->head;
 	  do
@@ -2685,8 +2739,6 @@ connect_traces (void)
 	    }
 	  while (note != add_cfi_insn);
 	}
-
-      prev_ti = ti;
     }
 }
 
@@ -2739,6 +2791,7 @@ create_pseudo_cfg (void)
 	  memset (ti, 0, sizeof (*ti));
 	  ti->head = insn;
 	  ti->switch_sections = switch_sections;
+	  ti->id = VEC_length (dw_trace_info, trace_info) - 1;
 
 	  saw_barrier = false;
 	  switch_sections = false;
