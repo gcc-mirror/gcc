@@ -1,3 +1,8 @@
+2011-07-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/49835
+	* collect2.c (demangle_flag): Removed.
+
 2011-07-24  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* configure.ac (demangler_in_ld): Default to yes.
