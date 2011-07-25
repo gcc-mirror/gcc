@@ -1,3 +1,7 @@
+2011-07-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* common/config/c6x/c6x-common.c: New file.
+
 2011-07-25  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* tree-flow.h (tree_ssa_loop_version): Remove unused declaration.
