@@ -1,5 +1,10 @@
 2011-07-24  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2cfi.c (maybe_record_trace_start): Add abnormal parameter.
+	Zero args_size for abnormal edges.  Adjust all callers.
+
+2011-07-24  Richard Henderson  <rth@redhat.com>
+
 	PR debug/49825
 	* dwarf2cfi.c (cfi_row_equal_p): Don't compare args_size.
 
