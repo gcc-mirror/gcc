@@ -1,3 +1,7 @@
+2011-07-25  Romain Geissler  <romain.geissler@gmail.com>
+
+	* c-pretty-print.h: Search c-common.h in c-family.
+	
 2011-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49793
