@@ -138,7 +138,9 @@ static assert_locus_t *asserts_for;
 
 /* Value range array.  After propagation, VR_VALUE[I] holds the range
    of values that SSA name N_I may take.  */
+static unsigned num_vr_values;
 static value_range_t **vr_value;
+static bool values_propagated;
 
 /* For a PHI node which sets SSA name N_I, VR_COUNTS[I] holds the
    number of executable edges we saw the last time we visited the
@@ -658,6 +660,8 @@ abs_extent_range (value_range_t *vr, tree min, tree max)
 static value_range_t *
 get_value_range (const_tree var)
 {
+  static const struct value_range_d vr_const_varying
+    = { VR_VARYING, NULL_TREE, NULL_TREE, NULL };
   value_range_t *vr;
   tree sym;
   unsigned ver = SSA_NAME_VERSION (var);
@@ -666,9 +670,19 @@ get_value_range (const_tree var)
   if (! vr_value)
     return NULL;
 
+  /* If we query the range for a new SSA name return an unmodifiable VARYING.
+     We should get here at most from the substitute-and-fold stage which
+     will never try to change values.  */
+  if (ver >= num_vr_values)
+    return CONST_CAST (value_range_t *, &vr_const_varying);
+
   vr = vr_value[ver];
   if (vr)
     return vr;
+
+  /* After propagation finished do not allocate new value-ranges.  */
+  if (values_propagated)
+    return CONST_CAST (value_range_t *, &vr_const_varying);
 
   /* Create a default value range.  */
   vr_value[ver] = vr = XCNEW (value_range_t);
@@ -3931,7 +3945,7 @@ dump_all_value_ranges (FILE *file)
 {
   size_t i;
 
-  for (i = 0; i < num_ssa_names; i++)
+  for (i = 0; i < num_vr_values; i++)
     {
       if (vr_value[i])
 	{
@@ -5593,7 +5607,9 @@ vrp_initialize (void)
 {
   basic_block bb;
 
-  vr_value = XCNEWVEC (value_range_t *, num_ssa_names);
+  values_propagated = false;
+  num_vr_values = num_ssa_names;
+  vr_value = XCNEWVEC (value_range_t *, num_vr_values);
   vr_phi_edge_counts = XCNEWVEC (int, num_ssa_names);
 
   FOR_EACH_BB (bb)
@@ -5720,7 +5736,7 @@ vrp_visit_assignment_or_call (gimple stmt, tree *output_p)
 static inline value_range_t
 get_vr_for_comparison (int i)
 {
-  value_range_t vr = *(vr_value[i]);
+  value_range_t vr = *get_value_range (ssa_name (i));
 
   /* If name N_i does not have a valid range, use N_i as its own
      range.  This allows us to compare against names that may
@@ -7700,7 +7716,8 @@ static void
 vrp_finalize (void)
 {
   size_t i;
-  unsigned num = num_ssa_names;
+
+  values_propagated = true;
 
   if (dump_file)
     {
@@ -7720,7 +7737,7 @@ vrp_finalize (void)
   identify_jump_threads ();
 
   /* Free allocated memory.  */
-  for (i = 0; i < num; i++)
+  for (i = 0; i < num_vr_values; i++)
     if (vr_value[i])
       {
 	BITMAP_FREE (vr_value[i]->equiv);
