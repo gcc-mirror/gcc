@@ -1,4 +1,4 @@
-/* { dg-do run { target i?86-*-linux* x86_64-*-linux* ia64-*-linux* alpha*-*-linux* powerpc*-*-linux* s390*-*-linux* sparc*-*-linux* *-*-darwin* } } */
+/* { dg-require-effective-target mmap } */
 
 #include <sys/mman.h>
 #include <stdio.h>
