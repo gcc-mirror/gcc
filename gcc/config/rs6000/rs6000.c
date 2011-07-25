@@ -872,10 +872,7 @@ static bool rs6000_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool rs6000_debug_legitimate_address_p (enum machine_mode, rtx, bool);
 static rtx rs6000_generate_compare (rtx, enum machine_mode);
 static void rs6000_emit_stack_tie (void);
-static void rs6000_frame_related (rtx, rtx, HOST_WIDE_INT, rtx, rtx);
 static bool spe_func_has_64bit_regs_p (void);
-static void emit_frame_save (rtx, rtx, enum machine_mode, unsigned int,
-			     int, HOST_WIDE_INT);
 static rtx gen_frame_mem_offset (enum machine_mode, rtx, int);
 static unsigned rs6000_hash_constant (rtx);
 static unsigned toc_hash_function (const void *);
@@ -19317,7 +19314,7 @@ output_probe_stack_range (rtx reg1, rtx reg2)
    deduce these equivalences by itself so it wasn't necessary to hold
    its hand so much.  */
 
-static void
+static rtx
 rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
 		      rtx reg2, rtx rreg)
 {
@@ -19390,6 +19387,8 @@ rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
 
   RTX_FRAME_RELATED_P (insn) = 1;
   add_reg_note (insn, REG_FRAME_RELATED_EXPR, real);
+
+  return insn;
 }
 
 /* Returns an insn that has a vrsave set operation with the
@@ -19454,7 +19453,7 @@ generate_set_vrsave (rtx reg, rs6000_stack_t *info, int epiloguep)
 /* Save a register into the frame, and emit RTX_FRAME_RELATED_P notes.
    Save REGNO into [FRAME_REG + OFFSET] in mode MODE.  */
 
-static void
+static rtx
 emit_frame_save (rtx frame_reg, rtx frame_ptr, enum machine_mode mode,
 		 unsigned int regno, int offset, HOST_WIDE_INT total_size)
 {
@@ -19492,7 +19491,7 @@ emit_frame_save (rtx frame_reg, rtx frame_ptr, enum machine_mode mode,
 
   insn = emit_move_insn (mem, reg);
 
-  rs6000_frame_related (insn, frame_ptr, total_size, replacea, replaceb);
+  return rs6000_frame_related (insn, frame_ptr, total_size, replacea, replaceb);
 }
 
 /* Emit an offset memory reference suitable for a frame store, while
@@ -20288,6 +20287,7 @@ rs6000_emit_prologue (void)
   if (TARGET_AIX && crtl->calls_eh_return)
     {
       rtx tmp_reg, tmp_reg_si, hi, lo, compare_result, toc_save_done, jump;
+      rtx save_insn, join_insn, note;
       long toc_restore_insn;
 
       gcc_assert (frame_reg_rtx == frame_ptr_rtx
@@ -20322,9 +20322,29 @@ rs6000_emit_prologue (void)
       JUMP_LABEL (jump) = toc_save_done;
       LABEL_NUSES (toc_save_done) += 1;
 
-      emit_frame_save (frame_reg_rtx, frame_ptr_rtx, reg_mode, TOC_REGNUM,
-		       sp_offset + 5 * reg_size, info->total_size);
+      save_insn = emit_frame_save (frame_reg_rtx, frame_ptr_rtx, reg_mode,
+				   TOC_REGNUM, sp_offset + 5 * reg_size,
+				   info->total_size);
+
       emit_label (toc_save_done);
+
+      /* ??? If we leave SAVE_INSN as marked as saving R2, then we'll
+	 have a CFG that has different saves along different paths.
+	 Move the note to a dummy blockage insn, which describes that
+	 R2 is unconditionally saved after the label.  */
+      /* ??? An alternate representation might be a special insn pattern
+	 containing both the branch and the store.  That might let the
+	 code that minimizes the number of DW_CFA_advance opcodes better
+	 freedom in placing the annotations.  */
+      note = find_reg_note (save_insn, REG_FRAME_RELATED_EXPR, NULL);
+      gcc_assert (note);
+      remove_note (save_insn, note);
+      RTX_FRAME_RELATED_P (save_insn) = 0;
+
+      join_insn = emit_insn (gen_blockage ());
+      REG_NOTES (join_insn) = note;
+      RTX_FRAME_RELATED_P (join_insn) = 1;
+
       if (using_static_chain_p)
 	emit_move_insn (tmp_reg, gen_rtx_REG (Pmode, 0));
     }
