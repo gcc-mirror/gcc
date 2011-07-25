@@ -667,8 +667,15 @@ cfi_row_equal_p (dw_cfi_row *a, dw_cfi_row *b)
   else if (!cfa_equal_p (&a->cfa, &b->cfa))
     return false;
 
-  if (a->args_size != b->args_size)
-    return false;
+  /* Logic suggests that we compare args_size here.  However, if
+     EXIT_IGNORE_STACK we don't bother tracking the args_size after
+     the last time it really matters within the function.  This does
+     in fact lead to paths with differing arg_size, but in cases for
+     which it doesn't matter.  */
+  /* ??? If we really want to sanity check the output of the optimizers,
+     find a way to backtrack from epilogues to the last EH site.  This
+     would allow us to distinguish regions with garbage args_size and
+     regions where paths ought to agree.  */
 
   n_a = VEC_length (dw_cfi_ref, a->reg_save);
   n_b = VEC_length (dw_cfi_ref, b->reg_save);

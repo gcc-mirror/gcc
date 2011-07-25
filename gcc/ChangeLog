@@ -1,3 +1,8 @@
+2011-07-24  Richard Henderson  <rth@redhat.com>
+
+	PR debug/49825
+	* dwarf2cfi.c (cfi_row_equal_p): Don't compare args_size.
+
 2011-07-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/49835
