@@ -956,14 +956,6 @@ dwarf2out_stack_adjust (HOST_WIDE_INT offset)
   if (cur_trace->cfa_store.reg == dw_stack_pointer_regnum)
     cur_trace->cfa_store.offset += offset;
 
-#ifndef STACK_GROWS_DOWNWARD
-  offset = -offset;
-#endif
-
-  queued_args_size += offset;
-  if (queued_args_size < 0)
-    queued_args_size = 0;
-
   /* ??? The assumption seems to be that if A_O_A, the only CFA adjustments
      involving the stack pointer are inside the prologue and marked as
      RTX_FRAME_RELATED_P.  That said, should we not verify this assumption
@@ -971,6 +963,14 @@ dwarf2out_stack_adjust (HOST_WIDE_INT offset)
      to the stack pointer?  */
   if (ACCUMULATE_OUTGOING_ARGS)
     return;
+
+#ifndef STACK_GROWS_DOWNWARD
+  offset = -offset;
+#endif
+
+  queued_args_size += offset;
+  if (queued_args_size < 0)
+    queued_args_size = 0;
 
   def_cfa_1 (&loc);
   if (flag_asynchronous_unwind_tables)
@@ -1016,8 +1016,7 @@ dwarf2out_notice_stack_adjust (rtx insn, bool after_p)
 	  if (GET_CODE (insn) == SET)
 	    insn = SET_SRC (insn);
 	  gcc_assert (GET_CODE (insn) == CALL);
-	  gcc_assert (queued_args_size == INTVAL (XEXP (insn, 1)));
-	  dwarf2out_args_size (queued_args_size);
+	  dwarf2out_args_size (INTVAL (XEXP (insn, 1)));
 	}
       return;
     }
