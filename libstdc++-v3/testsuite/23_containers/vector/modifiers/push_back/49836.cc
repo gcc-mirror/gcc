@@ -1,6 +1,6 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,18 +17,34 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1222 }
-
 #include <vector>
+#include <testsuite_hooks.h>
+#include <testsuite_tr1.h>
 
-struct A
+// libstdc++/49836
+void test01()
 {
-  explicit A(int) { }
-};
+  bool test __attribute__((unused)) = true;
+  using __gnu_test::CopyConsOnlyType;
+  using __gnu_test::MoveConsOnlyType;
 
-void f()
+  std::vector<CopyConsOnlyType> v1;
+  CopyConsOnlyType t1(1);
+  v1.push_back(t1);
+  v1.push_back(t1);
+  v1.push_back(t1);
+  VERIFY( v1.size() == 3 );
+
+  std::vector<MoveConsOnlyType> v2;
+  MoveConsOnlyType t2(1);
+  v2.push_back(std::move(t2));
+  v2.push_back(std::move(t2));
+  v2.push_back(std::move(t2));
+  VERIFY( v2.size() == 3 );
+}
+
+int main()
 {
-  std::vector<A> v;
-  v.assign(10, 1);
+  test01();
+  return 0;
 }

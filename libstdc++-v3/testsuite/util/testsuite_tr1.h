@@ -696,6 +696,24 @@ namespace __gnu_test
       MO& operator=(MO&&) = default;
     };
   }
+
+  struct CopyConsOnlyType
+  {
+    CopyConsOnlyType(int) { }
+    CopyConsOnlyType(CopyConsOnlyType&&) = delete;
+    CopyConsOnlyType(const CopyConsOnlyType&) = default;
+    CopyConsOnlyType& operator=(const CopyConsOnlyType&) = delete;
+    CopyConsOnlyType& operator=(CopyConsOnlyType&&) = delete;
+  };
+
+  struct MoveConsOnlyType
+  {
+    MoveConsOnlyType(int) { }
+    MoveConsOnlyType(const MoveConsOnlyType&) = delete;
+    MoveConsOnlyType(MoveConsOnlyType&&) = default;
+    MoveConsOnlyType& operator=(const MoveConsOnlyType&) = delete;
+    MoveConsOnlyType& operator=(MoveConsOnlyType&&) = delete;
+  };
 #endif
 
 } // namespace __gnu_test
