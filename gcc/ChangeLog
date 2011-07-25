@@ -1,3 +1,8 @@
+2011-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-inline.c (can_inline_edge_p): Look into DECL_STRUCT_FUNCTION of
+	original nodes if we are dealing with virtual clones.
+
 2011-07-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* common/config/c6x/c6x-common.c: New file.
