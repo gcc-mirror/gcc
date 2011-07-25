@@ -1,3 +1,8 @@
+2011-07-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49823
+	* parser.c (cp_parser_qualifying_entity): Handle templates.
+
 2011-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49793
