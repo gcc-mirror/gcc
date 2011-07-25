@@ -1,3 +1,28 @@
+2011-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Nathan Ridge  <zeratul976@hotmail.com>
+
+	PR libstdc++/49836
+	* include/bits/stl_vector.h (vector<>::_M_emplace_back_aux):
+	Declare.
+	(vector<>::push_back(const value_type&)): Use it.
+	* include/bits/vector.tcc: Define.
+	(vector<>::emplace_back(_Args&&...)): Use it.
+	* testsuite/util/testsuite_tr1.h (CopyConsOnlyType, MoveConsOnlyType):
+	Add.
+	* testsuite/23_containers/vector/modifiers/push_back/49836.cc: New.
+	* testsuite/23_containers/deque/modifiers/push_back/49836.cc:
+	Likewise.
+	* testsuite/23_containers/deque/modifiers/push_front/49836.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2011-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/hashtable_policy.h (_Prime_rehash_policy::_M_next_bkt,

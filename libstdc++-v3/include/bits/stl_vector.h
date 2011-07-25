@@ -902,7 +902,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    ++this->_M_impl._M_finish;
 	  }
 	else
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	  _M_emplace_back_aux(__x);
+#else
 	  _M_insert_aux(end(), __x);
+#endif
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -1303,6 +1307,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename... _Args>
         void
         _M_insert_aux(iterator __position, _Args&&... __args);
+
+      template<typename... _Args>
+        void
+        _M_emplace_back_aux(_Args&&... __args);
 #endif
 
       // Called by the latter.
