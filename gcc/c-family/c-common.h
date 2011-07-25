@@ -985,7 +985,7 @@ extern void warn_for_sign_compare (location_t,
 				   enum tree_code resultcode);
 extern void do_warn_double_promotion (tree, tree, tree, const char *, 
 				      location_t);
-extern void set_underlying_type (tree x);
+extern void set_underlying_type (tree);
 extern VEC(tree,gc) *make_tree_vector (void);
 extern void release_tree_vector (VEC(tree,gc) *);
 extern VEC(tree,gc) *make_tree_vector_single (tree);
