@@ -1,5 +1,11 @@
 2011-07-24  Richard Henderson  <rth@redhat.com>
 
+	PR debug/49825
+	* dwarf2cfi.c (dwarf2out_stack_adjust): Move A_O_A test earlier.
+	(dwarf2out_notice_stack_adjust): Use args_size from call_insn.
+
+2011-07-24  Richard Henderson  <rth@redhat.com>
+
 	PR debug/49827
 	* dwarf2cfi.c (create_trace_edges): Handle sequences properly.
 
