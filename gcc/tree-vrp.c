@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-chrec.h"
 #include "gimple-fold.h"
+#include "expr.h"
+#include "optabs.h"
 
 
 /* Type of value ranges.  See value_range_d for a description of these
@@ -7415,6 +7417,99 @@ simplify_conversion_using_ranges (gimple stmt)
   return true;
 }
 
+/* Return whether the value range *VR fits in an integer type specified
+   by PRECISION and UNSIGNED_P.  */
+
+static bool
+range_fits_type_p (value_range_t *vr, unsigned precision, bool unsigned_p)
+{
+  double_int tem;
+
+  /* We can only handle constant ranges.  */
+  if (vr->type != VR_RANGE
+      || TREE_CODE (vr->min) != INTEGER_CST
+      || TREE_CODE (vr->max) != INTEGER_CST)
+    return false;
+
+  tem = double_int_ext (tree_to_double_int (vr->min), precision, unsigned_p);
+  if (!double_int_equal_p (tree_to_double_int (vr->min), tem))
+    return false;
+
+  tem = double_int_ext (tree_to_double_int (vr->max), precision, unsigned_p);
+  if (!double_int_equal_p (tree_to_double_int (vr->max), tem))
+    return false;
+
+  return true;
+}
+
+/* Simplify a conversion from integral SSA name to float in STMT.  */
+
+static bool
+simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
+{
+  tree rhs1 = gimple_assign_rhs1 (stmt);
+  value_range_t *vr = get_value_range (rhs1);
+  enum machine_mode fltmode = TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
+  enum machine_mode mode;
+  tree tem;
+  gimple conv;
+
+  /* We can only handle constant ranges.  */
+  if (vr->type != VR_RANGE
+      || TREE_CODE (vr->min) != INTEGER_CST
+      || TREE_CODE (vr->max) != INTEGER_CST)
+    return false;
+
+  /* First check if we can use a signed type in place of an unsigned.  */
+  if (TYPE_UNSIGNED (TREE_TYPE (rhs1))
+      && (can_float_p (fltmode, TYPE_MODE (TREE_TYPE (rhs1)), 0)
+	  != CODE_FOR_nothing)
+      && range_fits_type_p (vr, GET_MODE_PRECISION
+			          (TYPE_MODE (TREE_TYPE (rhs1))), 0))
+    mode = TYPE_MODE (TREE_TYPE (rhs1));
+  /* If we can do the conversion in the current input mode do nothing.  */
+  else if (can_float_p (fltmode, TYPE_MODE (TREE_TYPE (rhs1)),
+			TYPE_UNSIGNED (TREE_TYPE (rhs1))))
+    return false;
+  /* Otherwise search for a mode we can use, starting from the narrowest
+     integer mode available.  */
+  else
+    {
+      mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+      do
+	{
+	  /* If we cannot do a signed conversion to float from mode
+	     or if the value-range does not fit in the signed type
+	     try with a wider mode.  */
+	  if (can_float_p (fltmode, mode, 0) != CODE_FOR_nothing
+	      && range_fits_type_p (vr, GET_MODE_PRECISION (mode), 0))
+	    break;
+
+	  mode = GET_MODE_WIDER_MODE (mode);
+	  /* But do not widen the input.  Instead leave that to the
+	     optabs expansion code.  */
+	  if (GET_MODE_PRECISION (mode) > TYPE_PRECISION (TREE_TYPE (rhs1)))
+	    return false;
+	}
+      while (mode != VOIDmode);
+      if (mode == VOIDmode)
+	return false;
+    }
+
+  /* It works, insert a truncation or sign-change before the
+     float conversion.  */
+  tem = create_tmp_var (build_nonstandard_integer_type
+			  (GET_MODE_PRECISION (mode), 0), NULL);
+  conv = gimple_build_assign_with_ops (NOP_EXPR, tem, rhs1, NULL_TREE);
+  tem = make_ssa_name (tem, conv);
+  gimple_assign_set_lhs (conv, tem);
+  gsi_insert_before (gsi, conv, GSI_SAME_STMT);
+  gimple_assign_set_rhs1 (stmt, tem);
+  update_stmt (stmt);
+
+  return true;
+}
+
 /* Simplify STMT using ranges if possible.  */
 
 static bool
@@ -7472,6 +7567,12 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	  if (TREE_CODE (rhs1) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_conversion_using_ranges (stmt);
+	  break;
+
+	case FLOAT_EXPR:
+	  if (TREE_CODE (rhs1) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
+	    return simplify_float_conversion_using_ranges (gsi, stmt);
 	  break;
 
 	default:

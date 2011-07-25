@@ -1,5 +1,16 @@
 2011-07-25  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/49715
+	* tree-vrp.c: Include expr.h and optabs.h.
+	(range_fits_type_): New function.
+	(simplify_float_conversion_using_ranges): Likewise.
+	(simplify_stmt_using_ranges): Call it.
+	* Makefile.in (tree-vrp.o): Add $(EXPR_H) and $(OPTABS_H) dependencies.
+	* optabs.c (can_float_p): Export.
+	* optabs.h (can_float_p): Declare.
+
+2011-07-25  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vrp.c (num_vr_values, values_propagated): New global vars.
 	(get_value_range): For out-of-range SSA names or names created
 	after propagation return a read-only varying range.
