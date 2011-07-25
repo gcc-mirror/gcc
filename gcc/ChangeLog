@@ -1,3 +1,11 @@
+2011-07-25  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/39386
+	Backport from mainline r176756
+	2011-07-25  Georg-Johann Lay
+	* config/avr/avr.c (out_shift_with_cnt): Use tmp_reg as
+	shift counter for x << x and x >> x shifts.
+
 2011-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config.gcc (x86_64-*-linux*): Set
