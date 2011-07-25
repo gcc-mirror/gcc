@@ -118,8 +118,8 @@ static void mmix_asm_output_source_filename (FILE *, const char *);
 static void mmix_output_shiftvalue_op_from_str
   (FILE *, const char *, HOST_WIDEST_INT);
 static void mmix_output_shifted_value (FILE *, HOST_WIDEST_INT);
-static void mmix_output_condition (FILE *, rtx, int);
-static HOST_WIDEST_INT mmix_intval (rtx);
+static void mmix_output_condition (FILE *, const_rtx, int);
+static HOST_WIDEST_INT mmix_intval (const_rtx);
 static void mmix_output_octa (FILE *, HOST_WIDEST_INT, int);
 static bool mmix_assemble_integer (rtx, unsigned int, int);
 static struct machine_function *mmix_init_machine_status (void);
@@ -159,6 +159,9 @@ static bool mmix_pass_by_reference (cumulative_args_t,
 static bool mmix_frame_pointer_required (void);
 static void mmix_asm_trampoline_template (FILE *);
 static void mmix_trampoline_init (rtx, tree, rtx);
+static void mmix_print_operand (FILE *, rtx, int);
+static void mmix_print_operand_address (FILE *, rtx);
+static bool mmix_print_operand_punct_valid_p (unsigned char);
 static void mmix_conditional_register_usage (void);
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
@@ -185,6 +188,13 @@ static void mmix_conditional_register_usage (void);
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE mmix_target_asm_function_epilogue
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND mmix_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS mmix_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P mmix_print_operand_punct_valid_p
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO  mmix_encode_section_info
@@ -1552,9 +1562,9 @@ mmix_asm_output_def (FILE *stream, const char *name, const char *value)
   fputc ('\n', stream);
 }
 
-/* PRINT_OPERAND.  */
+/* TARGET_PRINT_OPERAND.  */
 
-void
+static void
 mmix_print_operand (FILE *stream, rtx x, int code)
 {
   /* When we add support for different codes later, we can, when needed,
@@ -1779,10 +1789,10 @@ mmix_print_operand (FILE *stream, rtx x, int code)
     }
 }
 
-/* PRINT_OPERAND_PUNCT_VALID_P.  */
+/* TARGET_PRINT_OPERAND_PUNCT_VALID_P.  */
 
-int
-mmix_print_operand_punct_valid_p (int code ATTRIBUTE_UNUSED)
+static bool
+mmix_print_operand_punct_valid_p (unsigned char code)
 {
   /* A '+' is used for branch prediction, similar to other ports.  */
   return code == '+'
@@ -1790,9 +1800,9 @@ mmix_print_operand_punct_valid_p (int code ATTRIBUTE_UNUSED)
     || code == '.';
 }
 
-/* PRINT_OPERAND_ADDRESS.  */
+/* TARGET_PRINT_OPERAND_ADDRESS.  */
 
-void
+static void
 mmix_print_operand_address (FILE *stream, rtx x)
 {
   if (REG_P (x))
@@ -2619,7 +2629,7 @@ mmix_output_shifted_value (FILE *stream, HOST_WIDEST_INT value)
    same as swapping the arguments).  */
 
 static void
-mmix_output_condition (FILE *stream, rtx x, int reversed)
+mmix_output_condition (FILE *stream, const_rtx x, int reversed)
 {
   struct cc_conv
   {
@@ -2724,7 +2734,7 @@ mmix_output_condition (FILE *stream, rtx x, int reversed)
 /* Return the bit-value for a const_int or const_double.  */
 
 static HOST_WIDEST_INT
-mmix_intval (rtx x)
+mmix_intval (const_rtx x)
 {
   unsigned HOST_WIDEST_INT retval;
 

@@ -793,15 +793,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
  {{"sp", 254}, {":sp", 254}, {"rD", 256}, {"rE", 257},	\
   {"rH", 258}, {"rJ", MMIX_rJ_REGNUM}, {"rO", MMIX_rO_REGNUM}}
 
-#define PRINT_OPERAND(STREAM, X, CODE) \
- mmix_print_operand (STREAM, X, CODE)
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
- mmix_print_operand_punct_valid_p (CODE)
-
-#define PRINT_OPERAND_ADDRESS(STREAM, X) \
- mmix_print_operand_address (STREAM, X)
-
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO) \
  mmix_asm_output_reg_push (STREAM, REGNO)
 

@@ -1,3 +1,17 @@
+2011-07-25  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mmix/mmix.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS,
+	PRINT_OPERAND_PUNCT_VALID_P): Remove macro.
+	* config/mmix/mmix-protos.h (mmix_print_operand_punct_valid_p,
+	mmix_print_operand, mmix_print_operand_address): Remove.
+	* config/mmix/mmix.c (mmix_print_operand_punct_valid_p): Make static.
+	Change return type to bool. Change argument type to bool.
+	(mmix_print_operand, mmix_print_operand_address): Make static.
+	(mmix_intval, mmix_output_condition): Change 'x' argument type 
+	to const_rtx.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS,
+	TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define.
+
 2011-07-25  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/39386
