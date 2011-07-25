@@ -8796,7 +8796,10 @@ static tree
 cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 {
   if (error_operand_p (range))
-    return error_mark_node;
+    {
+      *begin = *end = error_mark_node;
+      return error_mark_node;
+    }
 
   if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (range))))
     {
