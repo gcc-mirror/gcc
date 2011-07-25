@@ -3314,6 +3314,38 @@ dwarf2out_emit_cfi (dw_cfi_ref cfi)
   if (dwarf2out_do_cfi_asm ())
     output_cfi_directive (asm_out_file, cfi);
 }
+
+static void
+dump_cfi_row (FILE *f, dw_cfi_row *row)
+{
+  dw_cfi_ref cfi;
+  unsigned i;
+
+  cfi = row->cfa_cfi;
+  if (!cfi)
+    {
+      dw_cfa_location dummy;
+      memset(&dummy, 0, sizeof(dummy));
+      dummy.reg = INVALID_REGNUM;
+      cfi = def_cfa_0 (&dummy, &row->cfa);
+    }
+  output_cfi_directive (f, cfi);
+
+  FOR_EACH_VEC_ELT (dw_cfi_ref, row->reg_save, i, cfi)
+    if (cfi)
+      output_cfi_directive (f, cfi);
+
+  fprintf (f, "\t.cfi_GNU_args_size "HOST_WIDE_INT_PRINT_DEC "\n",
+	   row->args_size);
+}
+
+void debug_cfi_row (dw_cfi_row *row);
+
+void
+debug_cfi_row (dw_cfi_row *row)
+{
+  dump_cfi_row (stderr, row);
+}
 
 
 /* Save the result of dwarf2out_do_frame across PCH.
