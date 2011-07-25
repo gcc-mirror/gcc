@@ -1,3 +1,7 @@
+2011-07-23  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/decltype21.C: Add 49823 examples.
+
 2011-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49793

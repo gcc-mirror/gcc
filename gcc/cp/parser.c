@@ -4638,7 +4638,9 @@ cp_parser_qualifying_entity (cp_parser *parser,
 	  cp_parser_simulate_error (parser);
 	  return error_mark_node;
 	}
-      return TYPE_NAME (scope);
+      if (TYPE_NAME (scope))
+	scope = TYPE_NAME (scope);
+      return scope;
     }
 
   /* Before we try to parse the class-name, we must save away the
