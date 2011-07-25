@@ -4626,7 +4626,7 @@ can_fix_p (enum machine_mode fixmode, enum machine_mode fltmode,
   return CODE_FOR_nothing;
 }
 
-static enum insn_code
+enum insn_code
 can_float_p (enum machine_mode fltmode, enum machine_mode fixmode,
 	     int unsignedp)
 {

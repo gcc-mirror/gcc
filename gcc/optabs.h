@@ -849,6 +849,9 @@ extern void expand_fixed_convert (rtx, rtx, int, int);
 /* Generate code for a FLOAT_EXPR.  */
 extern void expand_float (rtx, rtx, int);
 
+/* Return the insn_code for a FLOAT_EXPR.  */
+enum insn_code can_float_p (enum machine_mode, enum machine_mode, int);
+
 /* Generate code for a FIX_EXPR.  */
 extern void expand_fix (rtx, rtx, int);
 
