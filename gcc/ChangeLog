@@ -1,3 +1,12 @@
+2011-07-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (num_vr_values, values_propagated): New global vars.
+	(get_value_range): For out-of-range SSA names or names created
+	after propagation return a read-only varying range.
+	(dump_all_value_ranges): Adjust.
+	(vrp_initialize): Likewise.
+	(vrp_finalize): Likewise.
+
 2011-07-24  Richard Henderson  <rth@redhat.com>
 
 	PR debug/49831
