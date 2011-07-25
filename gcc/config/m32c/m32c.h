@@ -620,10 +620,6 @@ typedef struct m32c_cumulative_args
   {"a0a1", 4}, \
   {"r0r2r1r3", 0} }
 
-#define PRINT_OPERAND(S,X,C) m32c_print_operand (S, X, C)
-#define PRINT_OPERAND_PUNCT_VALID_P(C) m32c_print_operand_punct_valid_p (C)
-#define PRINT_OPERAND_ADDRESS(S,X) m32c_print_operand_address (S, X)
-
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
 
