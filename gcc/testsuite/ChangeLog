@@ -1,3 +1,9 @@
+2011-07-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/49809
+	* gnat.dg/opt18.adb, gnat.dg/opt18.ads, gnat.dg/opt18_pkg.ads: New
+	test.
+
 2011-07-25  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/49715

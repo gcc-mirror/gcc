@@ -1,3 +1,9 @@
+2011-07-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/49809
+	* tree-ssa-phiopt.c (cond_if_else_store_replacement): Use
+	gimple_get_lhs instead of gimple_assign_lhs.
+
 2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* system.h [__cplusplus]: Wrap C function declarations in extern "C".
