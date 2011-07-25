@@ -1679,6 +1679,9 @@ Target might have errors of a few ULP in string to floating-point
 conversion functions and overflow is not always detected correctly by
 those functions.
 
+@item mmap
+Target supports @code{mmap}.
+
 @item newlib
 Target supports Newlib.
 

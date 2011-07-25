@@ -697,6 +697,14 @@ proc check_effective_target_fopenmp {} {
     } "-fopenmp"]
 }
 
+# Return 1 if the target supports mmap, 0 otherwise.
+
+proc check_effective_target_mmap {} {
+    return [check_no_compiler_messages mmap assembly {
+	#include <sys/mman.h>
+    }]
+}
+
 # Return 1 if compilation with -pthread is error-free for trivial
 # code, 0 otherwise.
 

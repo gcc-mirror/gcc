@@ -1,5 +1,5 @@
 /* PR target/36533 */
-/* { dg-do run { target { { i?86-*-linux* x86_64-*-linux* } && ilp32 } } } */
+/* { dg-do run { target { mmap && ilp32 } } } */
 /* { dg-options "-Os" } */
 #include <string.h>
 #include <sys/mman.h>

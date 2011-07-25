@@ -1,6 +1,5 @@
 #include <limits.h>
 
-#ifdef __unix__ /* ??? Is that good enough? */
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -17,7 +16,6 @@
 #endif
 #ifndef MAP_FIXED
 #define MAP_FIXED 0
-#endif
 #endif
 
 #define MAP_START (void *)0x7fff8000
