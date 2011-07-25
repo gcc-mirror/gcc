@@ -1,3 +1,8 @@
+2011-07-25  Dodji Seketeli  <dodji@redhat.com>
+
+	* c-common.h (set_underlying_type): Remove parm name from
+	declaration.
+
 2011-07-25  Romain Geissler  <romain.geissler@gmail.com>
 
 	* c-pretty-print.h: Search c-common.h in c-family.
