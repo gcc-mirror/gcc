@@ -280,6 +280,7 @@ case ${target} in
  | *-*-linux*oldld*			\
  | *-*-rtemsaout*			\
  | *-*-rtemscoff*			\
+ | *-*-solaris2				\
  | *-*-solaris2.[0-7]			\
  | *-*-solaris2.[0-7].*			\
  | *-*-sysv*		\
