@@ -1,3 +1,9 @@
+2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgomp/45351
+	* config/osf/sem.h: New file.
+	* configure.tgt (alpha*-dec-osf*): Prepend osf to config_path.
+
 2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/49541
