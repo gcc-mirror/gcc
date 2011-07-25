@@ -2507,6 +2507,14 @@ create_trace_edges (rtx insn)
 	for (lab = nonlocal_goto_handler_labels; lab; lab = XEXP (lab, 1))
 	  maybe_record_trace_start (XEXP (lab, 0), insn, true);
     }
+  else if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+    {
+      rtx seq = PATTERN (insn);
+      int i, n = XVECLEN (seq, 0);
+      for (i = 0; i < n; ++i)
+	create_trace_edges (XVECEXP (seq, 0, i));
+      return;
+    }
 
   /* Process EH edges.  */
   if (CALL_P (insn) || cfun->can_throw_non_call_exceptions)
