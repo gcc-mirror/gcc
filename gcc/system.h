@@ -90,6 +90,10 @@ along with GCC; see the file COPYING3.  If not see
 #  define fputc(C, Stream) fputc_unlocked (C, Stream)
 # endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 # ifdef HAVE_CLEARERR_UNLOCKED
 #  undef clearerr
 #  define clearerr(Stream) clearerr_unlocked (Stream)
@@ -169,6 +173,10 @@ extern size_t fwrite_unlocked (const void *, size_t, size_t, FILE *);
 extern int fprintf_unlocked (FILE *, const char *, ...);
 #  endif
 # endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
@@ -390,6 +398,10 @@ extern int errno;
    here.  These checks will be in the undefined state while configure
    is running so be careful to test "defined (HAVE_DECL_*)".  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined (HAVE_DECL_ATOF) && !HAVE_DECL_ATOF
 extern double atof (const char *);
 #endif
@@ -430,8 +442,16 @@ extern void *sbrk (int);
 extern char *strstr (const char *, const char *);
 #endif
 
+#ifdef __cplusplus
+}
+#endif
+
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #if defined (HAVE_DECL_MALLOC) && !HAVE_DECL_MALLOC
@@ -446,12 +466,20 @@ extern void *calloc (size_t, size_t);
 extern void *realloc (void *, size_t);
 #endif
 
+#ifdef __cplusplus
+}
+#endif
+
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
 
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /* If the system doesn't provide strsignal, we get it defined in
@@ -491,6 +519,10 @@ extern int snprintf (char *, size_t, const char *, ...);
 
 #if defined (HAVE_DECL_VSNPRINTF) && !HAVE_DECL_VSNPRINTF
 extern int vsnprintf(char *, size_t, const char *, va_list);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 /* 1 if we have C99 designated initializers.  */

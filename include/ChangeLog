@@ -1,3 +1,7 @@
+2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* xregex.h (regoff_t): Define.
+
 2011-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (DW_AT_GNU_macros): New.
