@@ -2396,7 +2396,7 @@ add_cfis_to_fde (void)
    trace from CUR_TRACE and CUR_ROW.  */
 
 static void
-maybe_record_trace_start (rtx start, rtx origin)
+maybe_record_trace_start (rtx start, rtx origin, bool abnormal)
 {
   dw_trace_info *ti;
 
@@ -2421,6 +2421,11 @@ maybe_record_trace_start (rtx start, rtx origin)
       /* This is the first time we've encountered this trace.  Propagate
 	 state across the edge and push the trace onto the work list.  */
       ti->beg_row = copy_cfi_row (cur_row);
+      /* On all abnormal edges, especially EH and non-local-goto, we take
+	 care to free the pushed arguments.  */
+      if (abnormal)
+	ti->beg_row->args_size = 0;
+
       ti->cfa_store = cur_trace->cfa_store;
       ti->cfa_temp = cur_trace->cfa_temp;
       ti->regs_saved_in_regs = VEC_copy (reg_saved_in_data, heap,
@@ -2465,13 +2470,13 @@ create_trace_edges (rtx insn)
 	  for (i = 0; i < n; ++i)
 	    {
 	      lab = XEXP (RTVEC_ELT (vec, i), 0);
-	      maybe_record_trace_start (lab, insn);
+	      maybe_record_trace_start (lab, insn, false);
 	    }
 	}
       else if (computed_jump_p (insn))
 	{
 	  for (lab = forced_labels; lab; lab = XEXP (lab, 1))
-	    maybe_record_trace_start (XEXP (lab, 0), insn);
+	    maybe_record_trace_start (XEXP (lab, 0), insn, true);
 	}
       else if (returnjump_p (insn))
 	;
@@ -2481,14 +2486,14 @@ create_trace_edges (rtx insn)
 	  for (i = 0; i < n; ++i)
 	    {
 	      lab = XEXP (ASM_OPERANDS_LABEL (tmp, i), 0);
-	      maybe_record_trace_start (lab, insn);
+	      maybe_record_trace_start (lab, insn, true);
 	    }
 	}
       else
 	{
 	  lab = JUMP_LABEL (insn);
 	  gcc_assert (lab != NULL);
-	  maybe_record_trace_start (lab, insn);
+	  maybe_record_trace_start (lab, insn, false);
 	}
     }
   else if (CALL_P (insn))
@@ -2500,7 +2505,7 @@ create_trace_edges (rtx insn)
       /* Process non-local goto edges.  */
       if (can_nonlocal_goto (insn))
 	for (lab = nonlocal_goto_handler_labels; lab; lab = XEXP (lab, 1))
-	  maybe_record_trace_start (XEXP (lab, 0), insn);
+	  maybe_record_trace_start (XEXP (lab, 0), insn, true);
     }
 
   /* Process EH edges.  */
@@ -2508,7 +2513,7 @@ create_trace_edges (rtx insn)
     {
       eh_landing_pad lp = get_eh_landing_pad_from_rtx (insn);
       if (lp)
-	maybe_record_trace_start (lp->landing_pad, insn);
+	maybe_record_trace_start (lp->landing_pad, insn, true);
     }
 }
 
@@ -2545,7 +2550,7 @@ scan_trace (dw_trace_info *trace)
 
 	  /* Propagate across fallthru edges.  */
 	  if (!BARRIER_P (insn))
-	    maybe_record_trace_start (insn, NULL);
+	    maybe_record_trace_start (insn, NULL, false);
 	  break;
 	}
 
