@@ -30,15 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gensupport.h"
 
 
-static void write_upcase (const char *);
 static void gen_attr (rtx);
-
-static void
-write_upcase (const char *str)
-{
-  for (; *str; str++)
-    putchar (TOUPPER(*str));
-}
 
 static VEC (rtx, heap) *const_attrs, *reservations;
 
@@ -46,7 +38,7 @@ static VEC (rtx, heap) *const_attrs, *reservations;
 static void
 gen_attr (rtx attr)
 {
-  const char *p, *tag;
+  const char *p;
   int is_const = GET_CODE (XEXP (attr, 2)) == CONST;
 
   if (is_const)
@@ -65,23 +57,8 @@ gen_attr (rtx attr)
 	printf ("extern int get_attr_%s (%s);\n", XSTR (attr, 0),
 		(is_const ? "void" : "rtx"));
       else
-	{
-	  printf ("enum attr_%s {", XSTR (attr, 0));
-
-	  while ((tag = scan_comma_elt (&p)) != 0)
-	    {
-	      write_upcase (XSTR (attr, 0));
-	      putchar ('_');
-	      while (tag != p)
-		putchar (TOUPPER (*tag++));
-	      if (*p == ',')
-		fputs (", ", stdout);
-	    }
-	  fputs ("};\n", stdout);
-
-	  printf ("extern enum attr_%s get_attr_%s (%s);\n\n",
-		  XSTR (attr, 0), XSTR (attr, 0), (is_const ? "void" : "rtx"));
-	}
+	printf ("extern enum attr_%s get_attr_%s (%s);\n\n",
+		XSTR (attr, 0), XSTR (attr, 0), (is_const ? "void" : "rtx"));
     }
 
   /* If `length' attribute, write additional function definitions and define

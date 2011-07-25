@@ -2257,7 +2257,7 @@ s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
 	$(STAMP) $@
 
 options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(OPTS_H) intl.h $(OPTIONS_C_EXTRA)
+	$(TM_H) $(OPTS_H) intl.h $(OPTIONS_C_EXTRA) insn-attr-common.h
 
 options-save.o: options-save.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) $(FLAGS_H) \
 	$(TM_H) $(OPTS_H) intl.h $(OPTIONS_C_EXTRA)
