@@ -30,6 +30,36 @@ along with GCC; see the file COPYING3.  If not see
 #include "read-md.h"
 #include "gensupport.h"
 
+static void
+write_upcase (const char *str)
+{
+  for (; *str; str++)
+    putchar (TOUPPER(*str));
+}
+
+static void
+gen_attr (rtx attr)
+{
+  const char *p, *tag;
+
+  p = XSTR (attr, 1);
+  if (*p != '\0')
+    {
+      printf ("enum attr_%s {", XSTR (attr, 0));
+
+      while ((tag = scan_comma_elt (&p)) != 0)
+	{
+	  write_upcase (XSTR (attr, 0));
+	  putchar ('_');
+	  while (tag != p)
+	    putchar (TOUPPER (*tag++));
+	  if (*p == ',')
+	    fputs (", ", stdout);
+	}
+      fputs ("};\n", stdout);
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -56,6 +86,9 @@ main (int argc, char **argv)
       desc = read_md_rtx (&line_no, &insn_code_number);
       if (desc == NULL)
 	break;
+
+      if (GET_CODE (desc) == DEFINE_ATTR)
+	gen_attr (desc);
 
       if (GET_CODE (desc) == DEFINE_DELAY)
         {

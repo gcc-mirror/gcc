@@ -1,3 +1,12 @@
+2011-07-25  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* genattr.c (write_upcase, gen_attr <enum definition writing>):
+	Move to ...
+	* genattr-common.c ... here.
+	(main): Call gen_attr.
+	* optc-gen.awk: Make generated program include insn-attr-common.h .
+	* Makefile.in (oprions.o): Depend on insn-attr-common.h
+
 2011-07-25  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32c/m32c.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS,
