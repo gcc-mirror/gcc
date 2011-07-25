@@ -295,9 +295,12 @@ can_propagate_from (gimple def_stmt)
   return true;
 }
 
-/* Remove a copy chain ending in NAME along the defs.
+/* Remove a chain of dead statements starting at the definition of
+   NAME.  The chain is linked via the first operand of the defining statements.
    If NAME was replaced in its only use then this function can be used
-   to clean up dead stmts.  Returns true if cleanup-cfg has to run.  */
+   to clean up dead stmts.  The function handles already released SSA
+   names gracefully.
+   Returns true if cleanup-cfg has to run.  */
 
 static bool
 remove_prop_source_from_use (tree name)
@@ -309,19 +312,24 @@ remove_prop_source_from_use (tree name)
   do {
     basic_block bb;
 
-    if (!has_zero_uses (name))
+    if (SSA_NAME_IN_FREE_LIST (name)
+	|| SSA_NAME_IS_DEFAULT_DEF (name)
+	|| !has_zero_uses (name))
       return cfg_changed;
 
     stmt = SSA_NAME_DEF_STMT (name);
-    bb = gimple_bb (stmt);
-    if (!bb)
+    if (gimple_code (stmt) == GIMPLE_PHI
+	|| gimple_has_side_effects (stmt))
       return cfg_changed;
+
+    bb = gimple_bb (stmt);
     gsi = gsi_for_stmt (stmt);
-    release_defs (stmt);
+    unlink_stmt_vdef (stmt);
     gsi_remove (&gsi, true);
+    release_defs (stmt);
     cfg_changed |= gimple_purge_dead_eh_edges (bb);
 
-    name = (gimple_assign_copy_p (stmt)) ? gimple_assign_rhs1 (stmt) : NULL;
+    name = is_gimple_assign (stmt) ? gimple_assign_rhs1 (stmt) : NULL_TREE;
   } while (name && TREE_CODE (name) == SSA_NAME);
 
   return cfg_changed;
