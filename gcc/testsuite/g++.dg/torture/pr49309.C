@@ -1,6 +1,6 @@
 // PR tree-optimization/49309
 // { dg-do compile }
-// { dg-options "-fmudflap" }
+// { dg-options "-fpreprocessed -fmudflap" }
 
 struct A
 {
