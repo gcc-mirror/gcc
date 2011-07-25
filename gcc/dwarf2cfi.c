@@ -2641,14 +2641,22 @@ connect_traces (void)
 
   prev_ti = VEC_index (dw_trace_info, trace_info, 0);
 
-  for (i = 1; i < n; ++i, prev_ti = ti)
+  for (i = 1; i < n; ++i)
     {
       dw_cfi_row *old_row;
 
       ti = VEC_index (dw_trace_info, trace_info, i);
 
-      /* We must have both queued and processed every trace.  */
-      gcc_assert (ti->beg_row && ti->end_row);
+      /* ??? Ideally, we should have both queued and processed.  However
+	 the current representation of constant pools on various targets
+	 is indistinguishable from unreachable code.  Assume for the 
+	 moment that we can simply skip over such traces.  */
+      /* ??? Consider creating a DATA_INSN rtx code to indicate that
+	 these are not "real" instructions, and should not be considered.
+	 This could be generically useful for tablejump data as well.  */
+      if (ti->beg_row == NULL)
+	continue;
+      gcc_assert (ti->end_row != NULL);
 
       /* In dwarf2out_switch_text_section, we'll begin a new FDE
 	 for the portion of the function in the alternate text
@@ -2677,6 +2685,8 @@ connect_traces (void)
 	    }
 	  while (note != add_cfi_insn);
 	}
+
+      prev_ti = ti;
     }
 }
 
