@@ -7,7 +7,7 @@
 
 struct s{
   int m;
-  int n[N][N][N];
+  int n[N/6][N/6][N];
 };
 
 struct test1{
