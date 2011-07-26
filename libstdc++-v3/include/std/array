@@ -163,16 +163,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_instance[__n];
       }
 
+#ifdef __EXCEPTIONS
       constexpr const_reference
       at(size_type __n) const
       {
-	return __n < _Nm ? _M_instance[__n] : 
-#ifdef __EXCEPTIONS
-	                   throw out_of_range(__N("array::at"));
-#else
-	                   _M_instance[0];
-#endif
+	return __n < _Nm ? 
+	       _M_instance[__n] : throw out_of_range(__N("array::at"));
       }
+#else
+      const_reference
+      at(size_type __n) const
+      {
+	return __n < _Nm ?
+	       _M_instance[__n] : __throw_out_of_range(__N("array::at"));
+      }
+#endif
 
       reference 
       front()
