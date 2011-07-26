@@ -1,5 +1,10 @@
 2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/47046
+	* gcc.dg/graphite/id-pr47046.c: New.
+
+2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/47653
 	* gcc.dg/graphite/run-id-pr47593.c: New.
 
