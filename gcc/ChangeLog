@@ -1,5 +1,10 @@
 2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-data-ref.c (max_stmt_executions_tree): Do not call
+	lang_hooks.types.type_for_size.
+
+2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/47653
 	* graphite-scop-detection.c (graphite_can_represent_loop): Discard
 	loops using wrapping semantics.
