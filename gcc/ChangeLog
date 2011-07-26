@@ -1,3 +1,9 @@
+2011-07-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49840
+	* tree-vrp.c (range_fits_type_p): Properly handle full
+	double-int precision.
+
 2011-07-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR bootstrap/49786
