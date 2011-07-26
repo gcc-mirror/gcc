@@ -4992,10 +4992,11 @@ fi
 
 
 # Issue errors and warnings for invalid/strange bootstrap combinations.
-case "$configdirs" in
-  *gcc*) have_compiler=yes ;;
-  *) have_compiler=no ;;
-esac
+if test -r $srcdir/gcc/configure; then
+  have_compiler=yes
+else
+  have_compiler=no
+fi
 
 case "$have_compiler:$host:$target:$enable_bootstrap" in
   *:*:*:no) ;;
