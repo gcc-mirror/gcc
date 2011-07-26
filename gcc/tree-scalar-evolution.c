@@ -2645,6 +2645,7 @@ instantiate_scev_r (basic_block instantiate_below,
 				   TREE_OPERAND (chrec, 0),
 				   fold_conversions, cache, size_expr);
 
+    case ADDR_EXPR:
     case SCEV_NOT_KNOWN:
       return chrec_dont_know;
 
