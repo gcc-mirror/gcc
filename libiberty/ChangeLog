@@ -1,3 +1,9 @@
+2011-07-26  Ian Lance Taylor  <iant@google.com>
+
+	* cp-demangle.c (d_print_init): Initialize pack_index field.
+	(d_print_comp): Check for NULL template argument.
+	* testsuite/demangle-expected: Add test case.
+
 2011-07-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	PR target/49817

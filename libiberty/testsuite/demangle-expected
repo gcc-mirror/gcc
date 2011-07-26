@@ -4010,6 +4010,12 @@ K<1, &S::m>::f()
 _ZN1KILi1EXadL_ZN1S1mEEEE1fEv
 K<1, &S::m>::f()
 #
+# Used to crash -- binutils PR 13030.
+--format=gnu-v3
+_ZSt10_ConstructI10CellBorderIS0_EEvPT_DpOT0_
+_ZSt10_ConstructI10CellBorderIS0_EEvPT_DpOT0_
+_ZSt10_ConstructI10CellBorderIS0_EEvPT_DpOT0_
+#
 # Ada (GNAT) tests.
 #
 # Simple test.
