@@ -1,3 +1,9 @@
+2011-07-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/49776
+	* typeck.c (cp_build_modify_expr): Check digest_init return value
+	for error_mark_node.
+
 2011-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR bootstrap/49845

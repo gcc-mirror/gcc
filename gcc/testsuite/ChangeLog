@@ -1,3 +1,8 @@
+2011-07-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/49776
+	* g++.dg/cpp0x/constexpr-49776.C: New.
+
 2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/47046

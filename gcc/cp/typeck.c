@@ -6753,6 +6753,8 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	  if (check_array_initializer (lhs, lhstype, newrhs))
 	    return error_mark_node;
 	  newrhs = digest_init (lhstype, newrhs, complain);
+	  if (newrhs == error_mark_node)
+	    return error_mark_node;
 	}
 
       else if (!same_or_base_type_p (TYPE_MAIN_VARIANT (lhstype),
