@@ -1614,16 +1614,14 @@ static tree
 max_stmt_executions_tree (struct loop *loop)
 {
   double_int nit;
-  tree type;
 
   if (!max_stmt_executions (loop, true, &nit))
     return chrec_dont_know;
 
-  type = lang_hooks.types.type_for_size (INT_TYPE_SIZE, true);
-  if (!double_int_fits_to_tree_p (type, nit))
+  if (!double_int_fits_to_tree_p (unsigned_type_node, nit))
     return chrec_dont_know;
 
-  return double_int_to_tree (type, nit);
+  return double_int_to_tree (unsigned_type_node, nit);
 }
 
 /* Analyze a SIV (Single Index Variable) subscript where CHREC_A is a
