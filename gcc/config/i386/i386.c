@@ -14122,6 +14122,9 @@ ix86_print_operand_address (FILE *file, rtx addr)
     }
   else
     {
+      /* Print DImode registers on 64bit targets to avoid addr32 prefixes.  */
+      int code = TARGET_64BIT ? 'q' : 0;
+
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	{
 	  if (disp)
@@ -14136,11 +14139,11 @@ ix86_print_operand_address (FILE *file, rtx addr)
 
 	  putc ('(', file);
 	  if (base)
-	    print_reg (base, 0, file);
+	    print_reg (base, code, file);
 	  if (index)
 	    {
 	      putc (',', file);
-	      print_reg (index, 0, file);
+	      print_reg (index, code, file);
 	      if (scale != 1)
 		fprintf (file, ",%d", scale);
 	    }
@@ -14175,7 +14178,7 @@ ix86_print_operand_address (FILE *file, rtx addr)
 	  putc ('[', file);
 	  if (base)
 	    {
-	      print_reg (base, 0, file);
+	      print_reg (base, code, file);
 	      if (offset)
 		{
 		  if (INTVAL (offset) >= 0)
@@ -14191,7 +14194,7 @@ ix86_print_operand_address (FILE *file, rtx addr)
 	  if (index)
 	    {
 	      putc ('+', file);
-	      print_reg (index, 0, file);
+	      print_reg (index, code, file);
 	      if (scale != 1)
 		fprintf (file, "*%d", scale);
 	    }
