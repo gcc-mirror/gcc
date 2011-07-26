@@ -4014,7 +4014,6 @@ K<1, &S::m>::f()
 --format=gnu-v3
 _ZSt10_ConstructI10CellBorderIS0_EEvPT_DpOT0_
 _ZSt10_ConstructI10CellBorderIS0_EEvPT_DpOT0_
-_ZSt10_ConstructI10CellBorderIS0_EEvPT_DpOT0_
 #
 # Ada (GNAT) tests.
 #
