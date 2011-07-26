@@ -1,5 +1,11 @@
 2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/47046
+	* tree-chrec.h (evolution_function_is_affine_p): Recursively call
+	evolution_function_is_affine_p on CHREC_RIGHT.
+
+2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-data-ref.c (max_stmt_executions_tree): Do not call
 	lang_hooks.types.type_for_size.
 

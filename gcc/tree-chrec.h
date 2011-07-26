@@ -205,7 +205,9 @@ evolution_function_is_affine_p (const_tree chrec)
   return chrec
     && TREE_CODE (chrec) == POLYNOMIAL_CHREC
     && evolution_function_is_invariant_p (CHREC_RIGHT (chrec),
-					  CHREC_VARIABLE (chrec));
+					  CHREC_VARIABLE (chrec))
+    && (TREE_CODE (CHREC_RIGHT (chrec)) != POLYNOMIAL_CHREC
+	|| evolution_function_is_affine_p (CHREC_RIGHT (chrec)));
 }
 
 /* Determines whether EXPR does not contains chrec expressions.  */
