@@ -129,6 +129,7 @@ gfc_array_dataptr_type (tree desc)
 #define OFFSET_FIELD 1
 #define DTYPE_FIELD 2
 #define DIMENSION_FIELD 3
+#define CAF_TOKEN_FIELD 4
 
 #define STRIDE_SUBFIELD 0
 #define LBOUND_SUBFIELD 1
@@ -266,6 +267,24 @@ gfc_conv_descriptor_dimension (tree desc, tree dim)
   tmp = gfc_build_array_ref (tmp, dim, NULL);
   return tmp;
 }
+
+
+tree
+gfc_conv_descriptor_token (tree desc)
+{
+  tree type;
+  tree field;
+
+  type = TREE_TYPE (desc);
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+  gcc_assert (gfc_option.coarray == GFC_FCOARRAY_LIB);
+  field = gfc_advance_chain (TYPE_FIELDS (type), CAF_TOKEN_FIELD);
+  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == prvoid_type_node);
+
+  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
+			  desc, field, NULL_TREE);
+}
+
 
 static tree
 gfc_conv_descriptor_stride (tree desc, tree dim)
@@ -429,6 +448,7 @@ gfc_conv_shift_descriptor_lbound (stmtblock_t* block, tree desc,
 #undef OFFSET_FIELD
 #undef DTYPE_FIELD
 #undef DIMENSION_FIELD
+#undef CAF_TOKEN_FIELD
 #undef STRIDE_SUBFIELD
 #undef LBOUND_SUBFIELD
 #undef UBOUND_SUBFIELD

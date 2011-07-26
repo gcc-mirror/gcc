@@ -81,6 +81,7 @@ bool gfc_real16_is_float128 = false;
 static GTY(()) tree gfc_desc_dim_type;
 static GTY(()) tree gfc_max_array_element_size;
 static GTY(()) tree gfc_array_descriptor_base[2 * GFC_MAX_DIMENSIONS];
+static GTY(()) tree gfc_array_descriptor_base_caf[2 * GFC_MAX_DIMENSIONS];
 
 /* Arrays for all integral and real kinds.  We'll fill this in at runtime
    after the target has a chance to process command-line options.  */
@@ -1623,7 +1624,13 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
   int idx = 2 * (codimen + dimen - 1) + restricted;
 
   gcc_assert (codimen + dimen >= 1 && codimen + dimen <= GFC_MAX_DIMENSIONS);
-  if (gfc_array_descriptor_base[idx])
+
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen)
+    {
+      if (gfc_array_descriptor_base_caf[idx])
+	return gfc_array_descriptor_base_caf[idx];
+    }
+  else if (gfc_array_descriptor_base[idx])
     return gfc_array_descriptor_base[idx];
 
   /* Build the type node.  */
@@ -1664,11 +1671,23 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
 				    arraytype, &chain);
   TREE_NO_WARNING (decl) = 1;
 
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen)
+    {
+      decl = gfc_add_field_to_struct_1 (fat_type,
+					get_identifier ("token"),
+					prvoid_type_node, &chain);
+      TREE_NO_WARNING (decl) = 1;
+    }
+
   /* Finish off the type.  */
   gfc_finish_type (fat_type);
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (fat_type)) = 1;
 
-  gfc_array_descriptor_base[idx] = fat_type;
+  if (gfc_option.coarray == GFC_FCOARRAY_LIB && codimen)
+    gfc_array_descriptor_base_caf[idx] = fat_type;
+  else
+    gfc_array_descriptor_base[idx] = fat_type;
+
   return fat_type;
 }
 

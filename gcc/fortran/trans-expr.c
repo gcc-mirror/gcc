@@ -3395,48 +3395,62 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (fsym && fsym->attr.codimension
 	  && gfc_option.coarray == GFC_FCOARRAY_LIB
 	  && !fsym->attr.allocatable && fsym->as->type != AS_ASSUMED_SHAPE
-	  && (e == NULL
-	      || GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (get_tree_for_caf_expr (e)))))
-	  /* FIXME: Remove the "||" condition when coarray descriptors have a
-	     "token" component. This condition occurs when passing an alloc
-	      coarray or assumed-shape dummy to an explict-shape dummy.  */
+	  && e == NULL)
 	{
 	  /* Token and offset. */
 	  VEC_safe_push (tree, gc, stringargs, null_pointer_node);
 	  VEC_safe_push (tree, gc, stringargs,
 			 build_int_cst (gfc_array_index_type, 0));
-	  gcc_assert (fsym->attr.optional || e != NULL); /* FIXME: "||" cond.  */
+	  gcc_assert (fsym->attr.optional);
 	}
       else if (fsym && fsym->attr.codimension
 	       && !fsym->attr.allocatable && fsym->as->type != AS_ASSUMED_SHAPE
 	       && gfc_option.coarray == GFC_FCOARRAY_LIB)
 	{
 	  tree caf_decl, caf_type;
-	  tree offset;
+	  tree offset, tmp2;
 
-          caf_decl = get_tree_for_caf_expr (e);
+	  caf_decl = get_tree_for_caf_expr (e);
 	  caf_type = TREE_TYPE (caf_decl);
 
-	  gcc_assert (GFC_ARRAY_TYPE_P (caf_type)
-		      && GFC_TYPE_ARRAY_CAF_TOKEN (caf_type) != NULL_TREE);
+	  if (GFC_DESCRIPTOR_TYPE_P (caf_type))
+	    tmp = gfc_conv_descriptor_token (caf_decl);
+	  else
+	    {
+	      gcc_assert (GFC_ARRAY_TYPE_P (caf_type)
+			  && GFC_TYPE_ARRAY_CAF_TOKEN (caf_type) != NULL_TREE);
+	      tmp = GFC_TYPE_ARRAY_CAF_TOKEN (caf_type);
+	    }
 	  
-	  VEC_safe_push (tree, gc, stringargs,
-			 GFC_TYPE_ARRAY_CAF_TOKEN (caf_type));
+	  VEC_safe_push (tree, gc, stringargs, tmp);
 
-	  if (GFC_TYPE_ARRAY_CAF_OFFSET (caf_type) != NULL_TREE)
+	  if (GFC_DESCRIPTOR_TYPE_P (caf_type))
+	    offset = build_int_cst (gfc_array_index_type, 0);
+	  else if (GFC_TYPE_ARRAY_CAF_OFFSET (caf_type) != NULL_TREE)
 	    offset = GFC_TYPE_ARRAY_CAF_OFFSET (caf_type);
 	  else
 	    offset = build_int_cst (gfc_array_index_type, 0);
 
-	  gcc_assert (POINTER_TYPE_P (TREE_TYPE (caf_decl))
-		      && POINTER_TYPE_P (TREE_TYPE (parmse.expr)));
+	  if (GFC_DESCRIPTOR_TYPE_P (caf_type))
+	    tmp = gfc_conv_descriptor_data_get (caf_decl);
+	  else
+	    {
+	      gcc_assert (POINTER_TYPE_P (caf_type));
+	      tmp = caf_decl;
+	    }
+
+	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (parmse.expr)))
+	    tmp2 = gfc_conv_descriptor_data_get (parmse.expr);
+	  else
+	    {
+	      gcc_assert (POINTER_TYPE_P (TREE_TYPE (parmse.expr)));
+	      tmp2 = parmse.expr;
+	    }
 
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
                                  gfc_array_index_type,
-                                 fold_convert (gfc_array_index_type,
-					       parmse.expr),
-                                 fold_convert (gfc_array_index_type,
-					       caf_decl));
+                                 fold_convert (gfc_array_index_type, tmp2),
+                                 fold_convert (gfc_array_index_type, tmp));
 	  offset = fold_build2_loc (input_location, PLUS_EXPR,
 				    gfc_array_index_type, offset, tmp);
 
