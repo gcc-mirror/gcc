@@ -1,3 +1,61 @@
+2011-07-26  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/47381
+	PR target/49832
+	PR target/49833
+	* config/i386/i386.md (i): Change SImode attribute to "e".
+	(g): Change SImode attribute to "rme".
+	(di): Change SImode attribute to "nF".
+	(general_operand): Change SImode attribute to x86_64_general_operand.
+	(general_szext_operand): Change SImode attribute to
+	x86_64_szext_general_operand.
+	(immediate_operand): Change SImode attribute to
+	x86_64_immediate_operand.
+	(nonmemory_operand): Change SImode attribute to
+	x86_64_nonmemory_operand.
+	(*movdi_internal_rex64): Remove mode from pic_32bit_operand check.
+	(*movsi_internal): Ditto.  Use "e" constraint in alternative 2.
+	(*lea_1): Use SWI48 mode iterator.
+	(*lea_1_zext): New insn pattern.
+	(testsi_ccno_1): Use x86_64_nonmemory_operand predicate for operand 2.
+	(*bt<mode>): Ditto.
+	(*add<mode>1): Use x86_64_general_operand predicate for operand 2.
+	Update operand constraints.
+	(addsi_1_zext): Ditto.
+	(*add<mode>2): Ditto.
+	(*addsi_3_zext): Ditto.
+	(*subsi_1_zext): Ditto.
+	(*subsi_2_zext): Ditto.
+	(*subsi_3_zext): Ditto.
+	(*addsi3_carry_zext): Ditto.
+	(*<plusminus_insn>si3_zext_cc_overflow): Ditto.
+	(*mulsi3_1_zext): Ditto.
+	(*andsi_1): Ditto.
+	(*andsi_1_zext): Ditto.
+	(*andsi_2_zext): Ditto.
+	(*<any_or:code>si_1_zext): Ditto.
+	(*<any_or:code>si_2_zext): Ditto.
+	(*test<mode>_1): Use <general_operand> predicate for operand 1.
+	(*and<mode>_2): Ditto.
+	(mov<mode>cc): Use  <general_operand> predicate for operands 1 and 2.
+	(add->lea splitter): Check operand modes in insn constraint.  Extend
+	operands less than SImode wide to SImode.
+	(add->lea zext splitter): Do not extend input operands to DImode.
+	(*lea_general_1): Handle only QImode and HImode operands.
+	(*lea_general_2): Ditto.
+	(*lea_general_3): Ditto.
+	(*lea_general_1_zext): Remove.
+	(*lea_general_2_zext): Ditto.
+	(*lea_general_3_zext): Ditto.
+	(*lea_general_4): Check operand modes in insn constraint.  Extend
+	operands less than SImode wide to SImode.
+	(ashift->lea splitter): Ditto.
+	* config/i386/i386.c (ix86_print_operand_address): Print address
+	registers with 'q' modifier on 64bit targets.
+	* config/i386/predicates.md (pic_32bit_opreand): Define as special
+	predicate.  Reject non-SI and non-DI modes.
+
 2011-07-25  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/49671
@@ -68,13 +126,13 @@
 	* config/mmix/mmix.c (mmix_print_operand_punct_valid_p): Make static.
 	Change return type to bool. Change argument type to bool.
 	(mmix_print_operand, mmix_print_operand_address): Make static.
-	(mmix_intval, mmix_output_condition): Change 'x' argument type 
+	(mmix_intval, mmix_output_condition): Change 'x' argument type
 	to const_rtx.
 	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS,
 	TARGET_PRINT_OPERAND_PUNCT_VALID_P): Define.
 
 2011-07-25  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/39386
 	* config/avr/avr.c (out_shift_with_cnt): Use tmp_reg as
 	shift counter for x << x and x >> x shifts.
@@ -294,7 +352,7 @@
 	(EDGE_ALL_FLAGS, EDGE_COMPLEX): Include it.
 	* bb-reorder.c: Include except.h.
 	(fix_up_crossing_landing_pad): New.
-	(find_rarely_executed_basic_blocks_and_crossing_edges): Place 
+	(find_rarely_executed_basic_blocks_and_crossing_edges): Place
 	landing pads in the right partition.  Duplicate as necessary.
 	(partition_hot_cold_basic_blocks): Fix up DF info after
 	duplicating landing pads.
@@ -357,8 +415,7 @@
 	(producer_string): New variable.
 	(gen_producer_string): New function.
 	(gen_compile_unit_die): Use it.
-	(dwarf2out_finish): Fix up comp_unit_die () DW_AT_producer
-	if needed.
+	(dwarf2out_finish): Fix up comp_unit_die () DW_AT_producer if needed.
 	* Makefile.in (dwarf2out.o): Depend on $(OPTS_H).
 	* doc/invoke.texi: Document -grecord-gcc-switches and
 	-gno-record-gcc-switches, add a -grecord-gcc-switches reference
@@ -380,8 +437,7 @@
 	MS ABI in x32 mode.
 	(ix86_init_builtins): Call ix86_init_builtins_va_builtins_abi
 	only for TARGET_LP64.
-	(ix86_handle_abi_attribute): Check TARGET_LP64 instead of
-	TARGET_64BIT.
+	(ix86_handle_abi_attribute): Check TARGET_LP64 instead of TARGET_64BIT.
 
 2011-07-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -392,8 +448,7 @@
 
 	PR lto/49796
 	* cgraphunit.c (verify_edge_corresponds_to_fndecl): Return false
-	if decl node is in another partition, call cgraph_get_node only
-	once.
+	if decl node is in another partition, call cgraph_get_node only once.
 
 2011-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
