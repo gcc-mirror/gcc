@@ -1,5 +1,11 @@
 2011-07-25  Richard Henderson  <rth@redhat.com>
 
+	* insn-notes.def (NOTE_INSN_CFA_RESTORE_STATE): Remove.
+	* final.c (final_scan_insn): Don't test for it.
+	(rest_of_clean_state): Likewise.
+
+2011-07-25  Richard Henderson  <rth@redhat.com>
+
 	PR debug/49841
 	* config/rs6000/rs6000.c (rs6000_frame_related): Return the insn.
 	(emit_frame_save): Likewise.
