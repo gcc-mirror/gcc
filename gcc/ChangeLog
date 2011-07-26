@@ -1,5 +1,10 @@
 2011-07-26  Richard Guenther  <rguenther@suse.de>
 
+	* predict.c (maybe_hot_frequency_p): Make sure a zero entry-block
+	frequency makes everything hot.
+
+2011-07-26  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/49840
 	* tree-vrp.c (range_fits_type_p): Properly handle full
 	double-int precision.
