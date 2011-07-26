@@ -20552,11 +20552,15 @@ output_macinfo_op (macinfo_entry *ref)
   size_t len;
   struct indirect_string_node *node;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
+  struct dwarf_file_data *fd;
 
   switch (ref->code)
     {
     case DW_MACINFO_start_file:
-      file_num = maybe_emit_file (lookup_filename (ref->info));
+      fd = lookup_filename (ref->info);
+      if (fd->filename == ref->info)
+	fd->filename = ggc_strdup (fd->filename);
+      file_num = maybe_emit_file (fd);
       dw2_asm_output_data (1, DW_MACINFO_start_file, "Start new file");
       dw2_asm_output_data_uleb128 (ref->lineno,
 				   "Included from line number %lu", 
@@ -22637,6 +22641,16 @@ dwarf2out_finish (const char *filename)
       output_ranges ();
     }
 
+  /* Have to end the macro section.  */
+  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+    {
+      switch_to_section (debug_macinfo_section);
+      ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
+      if (!VEC_empty (macinfo_entry, macinfo_table))
+	output_macinfo ();
+      dw2_asm_output_data (1, 0, "End compilation unit");
+    }
+
   /* Output the source line correspondence table.  We must do this
      even if there is no line information.  Otherwise, on an empty
      translation unit, we will generate a present, but empty,
@@ -22647,16 +22661,6 @@ dwarf2out_finish (const char *filename)
   ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
   if (! DWARF2_ASM_LINE_DEBUG_INFO)
     output_line_info ();
-
-  /* Have to end the macro section.  */
-  if (debug_info_level >= DINFO_LEVEL_VERBOSE)
-    {
-      switch_to_section (debug_macinfo_section);
-      ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
-      if (!VEC_empty (macinfo_entry, macinfo_table))
-        output_macinfo ();
-      dw2_asm_output_data (1, 0, "End compilation unit");
-    }
 
   /* If we emitted any DW_FORM_strp form attribute, output the string
      table too.  */
