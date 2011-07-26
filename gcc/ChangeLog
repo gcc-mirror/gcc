@@ -1,3 +1,8 @@
+2011-07-26  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (tree_non_mode_aligned_mem_p): Strip conversions and
+	return false for invariants.
+
 2011-07-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (add->lea splitter): Implement using SWI
