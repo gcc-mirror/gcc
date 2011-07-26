@@ -1,3 +1,13 @@
+2011-07-26  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/47369
+	PR target/49853
+	* config/i386/i386.c (ix86_expand_move): Call convert_to_mode
+	if legitimize_tls_address returned operand in wrong mode. Allow
+	SImode and DImode symbolic operand for PIC.  Call convert_to_mode
+	if legitimize_pic_address returned operand in wrong mode.
+
 2011-07-26  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (tree_non_mode_aligned_mem_p): Strip conversions and
