@@ -3,7 +3,7 @@ void foo (int);
 int test ()
 {
   int a[N+6];
-  unsigned i;
+  int i;
 
   for (i = 0; i < N; i++)
     {
