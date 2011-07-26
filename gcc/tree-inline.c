@@ -846,14 +846,16 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 			      build_int_cst
 			      (TREE_TYPE (TREE_OPERAND (*tp, 1)), 0));
 	      *tp = tem;
+	      TREE_THIS_VOLATILE (*tem_basep) = TREE_THIS_VOLATILE (old);
+	      TREE_THIS_NOTRAP (*tem_basep) = TREE_THIS_NOTRAP (old);
 	    }
 	  else
 	    {
 	      *tp = fold_build2 (MEM_REF, type,
 				 ptr, TREE_OPERAND (*tp, 1));
-	      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 	      TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
 	    }
+	  TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 	  TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
 	  *walk_subtrees = 0;
 	  return NULL;
