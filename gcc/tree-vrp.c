@@ -7423,18 +7423,40 @@ simplify_conversion_using_ranges (gimple stmt)
 static bool
 range_fits_type_p (value_range_t *vr, unsigned precision, bool unsigned_p)
 {
+  tree src_type;
+  unsigned src_precision;
   double_int tem;
 
-  /* We can only handle constant ranges.  */
+  /* We can only handle integral and pointer types.  */
+  src_type = TREE_TYPE (vr->min);
+  if (!INTEGRAL_TYPE_P (src_type)
+      && !POINTER_TYPE_P (src_type))
+    return false;
+
+  /* An extension is always fine, so is an identity transform.  */
+  src_precision = TYPE_PRECISION (TREE_TYPE (vr->min));
+  if (src_precision < precision
+      || (src_precision == precision
+	  && TYPE_UNSIGNED (src_type) == unsigned_p))
+    return true;
+
+  /* Now we can only handle ranges with constant bounds.  */
   if (vr->type != VR_RANGE
       || TREE_CODE (vr->min) != INTEGER_CST
       || TREE_CODE (vr->max) != INTEGER_CST)
     return false;
 
+  /* For precision-preserving sign-changes the MSB of the double-int
+     has to be clear.  */
+  if (src_precision == precision
+      && (TREE_INT_CST_HIGH (vr->min) | TREE_INT_CST_HIGH (vr->max)) < 0)
+    return false;
+
+  /* Then we can perform the conversion on both ends and compare
+     the result for equality.  */
   tem = double_int_ext (tree_to_double_int (vr->min), precision, unsigned_p);
   if (!double_int_equal_p (tree_to_double_int (vr->min), tem))
     return false;
-
   tem = double_int_ext (tree_to_double_int (vr->max), precision, unsigned_p);
   if (!double_int_equal_p (tree_to_double_int (vr->max), tem))
     return false;
