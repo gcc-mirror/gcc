@@ -1,3 +1,8 @@
+2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/48805
+	* gcc.dg/graphite/id-pr48805.c: New.
+
 2011-07-26  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_lib_token_2.f90: New.
@@ -12,7 +17,7 @@
 	PR tree-opt/49671
 	* gcc.dg/tree-ssa/pr49671-1.c: New testcase.
 	* gcc.dg/tree-ssa/pr49671-2.c: New testcase.
-	
+
 2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_effective_target_mmap): New proc.
