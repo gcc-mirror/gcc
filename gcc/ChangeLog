@@ -1,3 +1,10 @@
+2011-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (output_macinfo_op): Ensure fd->filename points
+	to GC allocated copy of the string.
+	(dwarf2out_finish): Emit .debug_macinfo or .debug_macro sections
+	before .debug_line, not after it.
+
 2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/47046
