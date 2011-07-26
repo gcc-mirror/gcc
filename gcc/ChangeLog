@@ -1,3 +1,10 @@
+2011-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (add->lea splitter): Implement using SWI
+	mode iterator.  Change operand 2 predicate to <nonmemory_operand>.
+	(add->lea zext splitter): Change operand 2 predicate to
+	x86_64_nonmemory_operand.
+
 2011-07-26  Richard Guenther  <rguenther@suse.de>
 
 	* predict.c (maybe_hot_frequency_p): Make sure a zero entry-block
