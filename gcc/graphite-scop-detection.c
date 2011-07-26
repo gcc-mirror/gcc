@@ -378,17 +378,17 @@ harmful_stmt_in_bb (basic_block scop_entry, loop_p outer_loop, basic_block bb)
 static bool
 graphite_can_represent_loop (basic_block scop_entry, loop_p loop)
 {
-  tree niter = number_of_latch_executions (loop);
+  tree niter;
+  struct tree_niter_desc niter_desc;
 
-  /* Number of iterations unknown.  */
-  if (chrec_contains_undetermined (niter))
-    return false;
+  /* FIXME: For the moment, graphite cannot be used on loops that
+     iterate using induction variables that wrap.  */
 
-  /* Number of iterations not affine.  */
-  if (!graphite_can_represent_expr (scop_entry, loop, niter))
-    return false;
-
-  return true;
+  return number_of_iterations_exit (loop, single_exit (loop), &niter_desc, false)
+    && niter_desc.control.no_overflow
+    && (niter = number_of_latch_executions (loop))
+    && !chrec_contains_undetermined (niter)
+    && graphite_can_represent_expr (scop_entry, loop, niter);
 }
 
 /* Store information needed by scopdet_* functions.  */

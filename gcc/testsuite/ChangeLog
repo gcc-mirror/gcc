@@ -1,5 +1,15 @@
 2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/47653
+	* gcc.dg/graphite/run-id-pr47653.c: New.
+	* gcc.dg/graphite/interchange-3.c: Do not use unsigned types for
+	induction variables.
+	* gcc.dg/graphite/scop-16.c: Same.
+	* gcc.dg/graphite/scop-17.c: Same.
+	* gcc.dg/graphite/scop-21.c: Same.
+
+2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/48805
 	* gcc.dg/graphite/id-pr48805.c: New.
 

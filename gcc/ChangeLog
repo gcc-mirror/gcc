@@ -1,5 +1,11 @@
 2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/47653
+	* graphite-scop-detection.c (graphite_can_represent_loop): Discard
+	loops using wrapping semantics.
+
+2011-07-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/48805
 	* tree-scalar-evolution.c (instantiate_scev_r): Return
 	chrec_dont_know for ADDR_EXPR.

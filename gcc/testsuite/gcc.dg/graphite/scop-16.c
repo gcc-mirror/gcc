@@ -6,7 +6,7 @@ int test ()
 {
   int a[N][N];
   int b[N][N];
-  unsigned i, j;
+  int i, j;
 
   for (i = 0; i < N; i++) 
     for (j = 0; j < N; j++)
