@@ -1877,7 +1877,6 @@ dump_profile_updates (struct cgraph_node *orig_node,
 	     cgraph_node_name (cs->callee), (HOST_WIDE_INT) cs->count);
 }
 
-
 /* After a specialized NEW_NODE version of ORIG_NODE has been created, update
    their profile information to reflect this.  */
 
@@ -1923,12 +1922,14 @@ update_profiling_info (struct cgraph_node *orig_node,
 
   for (cs = new_node->callees; cs ; cs = cs->next_callee)
     if (cs->frequency)
-      cs->count = cs->count * new_sum / orig_node_count;
+      cs->count = cs->count * (new_sum * REG_BR_PROB_BASE
+			       / orig_node_count) / REG_BR_PROB_BASE;
     else
       cs->count = 0;
 
   for (cs = orig_node->callees; cs ; cs = cs->next_callee)
-    cs->count = cs->count * remainder / orig_node_count;
+    cs->count = cs->count * (remainder * REG_BR_PROB_BASE
+			     / orig_node_count) / REG_BR_PROB_BASE;
 
   if (dump_file)
     dump_profile_updates (orig_node, new_node);
@@ -1966,7 +1967,8 @@ update_specialized_profile (struct cgraph_node *new_node,
 
   for (cs = orig_node->callees; cs ; cs = cs->next_callee)
     {
-      gcov_type dec = cs->count * redirected_sum / orig_node_count;
+      gcov_type dec = cs->count * (redirected_sum * REG_BR_PROB_BASE
+				   / orig_node_count) / REG_BR_PROB_BASE;
       if (dec < cs->count)
 	cs->count -= dec;
       else
