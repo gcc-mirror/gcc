@@ -1,3 +1,7 @@
+2011-07-27  Jeffrey Yasskin  <jyasskin@google.com>
+
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Updated.
+
 2011-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
