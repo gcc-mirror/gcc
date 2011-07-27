@@ -1,3 +1,8 @@
+2011-07-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_mmap): Use
+	check_function_available.
+
 2011-07-27  Jeffrey Yasskin  <jyasskin@google.com>
 
 	* g++.old-deja/g++.pt/crash60.C: Updated.
