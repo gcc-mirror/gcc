@@ -3133,9 +3133,6 @@ ix86_option_override_internal (bool main_args_p)
   if (!global_options_set.x_ix86_abi)
     ix86_abi = DEFAULT_ABI;
 
-  if (ix86_abi == MS_ABI && TARGET_X32)
-    error ("MS ABI not supported in x32 mode");
-
   if (global_options_set.x_ix86_cmodel)
     {
       switch (ix86_cmodel)
@@ -29321,13 +29318,6 @@ ix86_handle_abi_attribute (tree *node, tree name,
       && TREE_CODE (*node) != TYPE_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute only applies to functions",
-	       name);
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
-  if (!TARGET_LP64)
-    {
-      warning (OPT_Wattributes, "%qE attribute only available for 64-bit",
 	       name);
       *no_add_attrs = true;
       return NULL_TREE;

@@ -1,5 +1,11 @@
 2011-07-27  Kai Tietz  <ktietz@redhat.com>
 
+	* config/i386/i386.c (ix86_option_override_internal): Allow -mabi
+	for 32-bit, too.
+	(ix86_handle_abi_attribute): Allow function attributes
+	ms_abi/sysv_abi in 32-bit mode, too.
+	* doc/extend.texi: Adjust attribute documentation.
+
 	* gimple-fold.c (or_comparisons_1): Remove TRUTH_AND/OR
 	expression handling.
 	(and_var_with_comparison_1): Likewise.

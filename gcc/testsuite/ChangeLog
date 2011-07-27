@@ -1,3 +1,8 @@
+2011-07-27  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.target/i386/aggregate-ret3.c: New test.
+	* gcc.target/i386/aggregate-ret4.c: New test.
+
 2011-07-27  Daniel Carrera  <dcarrera@gmail.com>
 
 	PR fortran/49755
