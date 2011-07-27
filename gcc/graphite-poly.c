@@ -738,7 +738,11 @@ apply_poly_transforms (scop_p scop)
       graphite_file = init_graphite_in_file (file_scop_number);
       transform_done |= graphite_read_scop_file (graphite_file, scop);
 
-      if (!graphite_legal_transform (scop))
+      /* We cannot check for the legality of the transform here: there
+	 are cases where graphite_legal_transform cannot determine the
+	 dependence at compile time.  For an example, see the
+	 explanation of why http://gcc.gnu.org/PR45450 is invalid.  */
+      if (0 && !graphite_legal_transform (scop))
 	fatal_error ("the graphite file read for scop %d does not contain a legal transform",
 		     (int) file_scop_number);
 

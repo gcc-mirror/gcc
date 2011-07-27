@@ -1,5 +1,11 @@
 2011-07-27  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/45450
+	* graphite-poly.c (apply_poly_transforms): Disable legality check
+	after an openscop read.
+
+2011-07-27  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/47691
 	* graphite-clast-to-gimple.c (translate_clast_user): Update use of
 	copy_bb_and_scalar_dependences.
