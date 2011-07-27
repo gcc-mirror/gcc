@@ -2188,7 +2188,6 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		      do not allow excess data to be processed.  */
 		  if (is_array_section == 1
 		      || !(compile_options.allow_std & GFC_STD_GNU)
-		      || !dtp->u.p.ionml->touched
 		      || dtp->u.p.ionml->type == BT_DERIVED)
 		    ls[dim].end = ls[dim].start;
 		  else

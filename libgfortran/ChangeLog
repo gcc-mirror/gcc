@@ -1,3 +1,12 @@
+2011-07-27  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2011-07-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49791
+	* io/list_read.c (nml_parse_qualifier): Remove check to
+	enabled extended read for another case.
+
 2011-07-13  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from trunk:
@@ -23,9 +32,9 @@
 2011-07-03  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from mainline:
-        PR libfortran/49296
-        * io/list_read.c (read_character): Accept EOF as a separator when
-        reading string.
+	PR libfortran/49296
+	* io/list_read.c (read_character): Accept EOF as a separator when
+	reading string.
 
 2011-06-27  Release Manager
 
