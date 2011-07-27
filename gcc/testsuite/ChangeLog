@@ -1,14 +1,21 @@
+2011-07-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/avx-os-support.h: New.
+	* gcc.target/i386/avx-check.h: Include avx-os-support.h
+	(main): Check avx_os_support before the test is run.
+	* gcc.target/i386/aes-avx-check.h: Ditto.
+	* gcc.target/i386/pclmul-avx-check.h: Ditto.
+
 2011-07-26  Ira Rosen  <ira.rosen@linaro.org>
 
-	* gcc.dg/vect/vect-70.c: Reduce the data size to fit
-	SPU local store.
+	* gcc.dg/vect/vect-70.c: Reduce the data size to fit SPU local store.
 
 2011-07-25  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/49671
 	* gcc.dg/tree-ssa/pr49671-1.c: New testcase.
 	* gcc.dg/tree-ssa/pr49671-2.c: New testcase.
-	
+
 2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/49753
