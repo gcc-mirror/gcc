@@ -1,3 +1,11 @@
+2011-07-27  Tobias Burnus  <burnus@net-b.de>
+
+	Backported from mainline
+	2011-07-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49791
+	* gfortran.dg/namelist_72.f: New.
+
 2011-07-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/avx-os-support.h: New.
