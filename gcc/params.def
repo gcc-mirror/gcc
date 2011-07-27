@@ -908,6 +908,12 @@ DEFPARAM (PARAM_CASE_VALUES_THRESHOLD,
 	  "if 0, use the default for the machine",
           0, 0, 0)
 
+/* Data race flags for C++0x memory model compliance.  */
+DEFPARAM (PARAM_ALLOW_STORE_DATA_RACES,
+	  "allow-store-data-races",
+	  "Allow new data races on stores to be introduced",
+	  1, 0, 1)
+
 
 /*
 Local variables:

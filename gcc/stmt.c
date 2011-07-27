@@ -1759,7 +1759,8 @@ expand_return (tree retval)
 
 	  /* Use bitpos for the source extraction (left justified) and
 	     xbitpos for the destination store (right justified).  */
-	  store_bit_field (dst, bitsize, xbitpos % BITS_PER_WORD, word_mode,
+	  store_bit_field (dst, bitsize, xbitpos % BITS_PER_WORD,
+			   0, 0, word_mode,
 			   extract_bit_field (src, bitsize,
 					      bitpos % BITS_PER_WORD, 1, false,
 					      NULL_RTX, word_mode, word_mode));

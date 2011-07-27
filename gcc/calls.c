@@ -924,8 +924,8 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 	    emit_move_insn (reg, const0_rtx);
 
 	    bytes -= bitsize / BITS_PER_UNIT;
-	    store_bit_field (reg, bitsize, endian_correction, word_mode,
-			     word);
+	    store_bit_field (reg, bitsize, endian_correction, 0, 0,
+			     word_mode, word);
 	  }
       }
 }
