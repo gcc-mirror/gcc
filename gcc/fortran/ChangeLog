@@ -1,3 +1,30 @@
+2011-07-27  Daniel Carrera  <dcarrera@gmail.com>
+
+	PR fortran/49755
+	* trans.c (gfc_allocate_using_malloc): Change function signature.
+	Return nothing. New parameter "pointer". Eliminate temorary variables. 
+	(gfc_allocate_using_lib): Ditto.
+	(gfc_allocate_allocatable): Ditto. Update call to gfc_allocate_using_lib
+	and gfc_allocate_using_malloc. Do not free and then reallocate a
+	variable that is already allocated.
+	(gfc_likely): New function. Basedon gfc_unlikely.
+	* trans-array.c (gfc_array_init_size): New parameter "descriptor_block".
+	Instructions to modify the array descriptor are stored in this block
+	while other instructions continue to be stored in "pblock".
+	(gfc_array_allocate): Update call to gfc_array_init_size. Move the
+	descriptor_block so that the array descriptor is only updated if
+	the array was allocated successfully.
+	Update calls to gfc_allocate_allocatable and gfc_allocate_using_malloc.
+	* trans.h (gfc_allocate_allocatable): Change function signature.
+	Function now returns void.
+	(gfc_allocate_using_lib): Ditto, and new function parameter.
+	(gfc_allocate_using_malloc): Ditto.
+	* trans-openmp.c (gfc_omp_clause_default_ctor,
+	gfc_omp_clause_copy_ctor,gfc_trans_omp_array_reduction): Replace a call
+	to gfc_allocate_allocatable with gfc_allocate_using_malloc.
+	* trans-stmt.c (gfc_trans_allocate): Update function calls for
+	gfc_allocate_allocatable and gfc_allocate_using_malloc.
+
 2011-07-26  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-array.c (CAF_TOKEN_FIELD): New macro constant.

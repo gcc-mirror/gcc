@@ -4867,15 +4867,10 @@ gfc_trans_allocate (gfc_code * code)
 
 	  /* Allocate - for non-pointers with re-alloc checking.  */
 	  if (gfc_expr_attr (expr).allocatable)
-	    tmp = gfc_allocate_allocatable (&se.pre, se.expr, memsz,
-					    stat, errmsg, errlen, expr);
+	    gfc_allocate_allocatable (&se.pre, se.expr, memsz,
+				      stat, errmsg, errlen, expr);
 	  else
-	    tmp = gfc_allocate_using_malloc (&se.pre, memsz, stat);
-
-	  tmp = fold_build2_loc (input_location, MODIFY_EXPR, void_type_node,
-				 se.expr,
-				 fold_convert (TREE_TYPE (se.expr), tmp));
-	  gfc_add_expr_to_block (&se.pre, tmp);
+	    gfc_allocate_using_malloc (&se.pre, se.expr, memsz, stat);
 
 	  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp)
 	    {
@@ -4901,7 +4896,7 @@ gfc_trans_allocate (gfc_code * code)
 				  boolean_type_node, stat,
 				  build_int_cst (TREE_TYPE (stat), 0));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-				 parm, tmp,
+				 gfc_unlikely(parm), tmp,
 				     build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&block, tmp);
 	}
