@@ -389,15 +389,10 @@
   return symbolic_operand (op, mode);
 })
 
-
 ;; Return true if OP is nonmemory operand acceptable by movabs patterns.
 (define_predicate "x86_64_movabs_operand"
-  (if_then_else (not (and (match_test "TARGET_64BIT")
-			  (match_test "flag_pic")))
-    (match_operand 0 "nonmemory_operand")
-    (ior (match_operand 0 "register_operand")
-	 (and (match_operand 0 "const_double_operand")
-	      (match_test "GET_MODE_SIZE (mode) <= 8")))))
+  (and (match_operand 0 "nonmemory_operand")
+       (not (match_operand 0 "pic_32bit_operand"))))
 
 ;; Return true if OP is either a symbol reference or a sum of a symbol
 ;; reference and a constant.
