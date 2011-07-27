@@ -1200,18 +1200,36 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
   gimple stmt;
   edge exit = single_dom_exit (loop);
   gimple_seq stmts;
+  enum machine_mode mode;
+  bool unsigned_p = false;
 
   for (psi = gsi_start_phis (loop->header);
        !gsi_end_p (psi); gsi_next (&psi))
     {
       gimple phi = gsi_stmt (psi);
       tree res = PHI_RESULT (phi);
+      bool uns;
 
-      if (is_gimple_reg (res) && TYPE_PRECISION (TREE_TYPE (res)) > precision)
-	precision = TYPE_PRECISION (TREE_TYPE (res));
+      type = TREE_TYPE (res);
+      if (!is_gimple_reg (res)
+	  || (!INTEGRAL_TYPE_P (type)
+	      && !POINTER_TYPE_P (type))
+	  || TYPE_PRECISION (type) < precision)
+	continue;
+
+      uns = POINTER_TYPE_P (type) | TYPE_UNSIGNED (type);
+
+      if (TYPE_PRECISION (type) > precision)
+	unsigned_p = uns;
+      else
+	unsigned_p |= uns;
+
+      precision = TYPE_PRECISION (type);
     }
 
-  type = lang_hooks.types.type_for_size (precision, 1);
+  mode = smallest_mode_for_size (precision, MODE_INT);
+  precision = GET_MODE_PRECISION (mode);
+  type = build_nonstandard_integer_type (precision, unsigned_p);
 
   if (original_precision != precision)
     {
