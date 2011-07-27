@@ -1,3 +1,40 @@
+2011-07-27  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/49313
+	* config/avr/libgcc.S (__ffshi2): Don't skip 2-word instruction.
+	(__ctzsi2): Result for 0 may be undefined.
+	(__ctzhi2): Result for 0 may be undefined.
+	(__popcounthi2): Don't clobber r30. Use __popcounthi2_tail.
+	(__popcountsi2): Ditto. And don't clobber r26.
+	(__popcountdi2): Ditto. And don't clobber r27.
+	* config/avr/avr.md (UNSPEC_COPYSIGN): New c_enum.
+	(parityhi2): New expand.
+	(paritysi2): New expand.
+	(popcounthi2): New expand.
+	(popcountsi2): New expand.
+	(clzhi2): New expand.
+	(clzsi2): New expand.
+	(ctzhi2): New expand.
+	(ctzsi2): New expand.
+	(ffshi2): New expand.
+	(ffssi2): New expand.
+	(copysignsf3): New insn.
+	(bswapsi2): New expand.
+	(*parityhi2.libgcc): New insn.
+	(*parityqihi2.libgcc): New insn.
+	(*paritysihi2.libgcc): New insn.
+	(*popcounthi2.libgcc): New insn.
+	(*popcountsi2.libgcc): New insn.
+	(*popcountqi2.libgcc): New insn.
+	(*popcountqihi2.libgcc): New insn-and-split.
+	(*clzhi2.libgcc): New insn.
+	(*clzsihi2.libgcc): New insn.
+	(*ctzhi2.libgcc): New insn.
+	(*ctzsihi2.libgcc): New insn.
+	(*ffshi2.libgcc): New insn.
+	(*ffssihi2.libgcc): New insn.
+	(*bswapsi2.libgcc): New insn.
+
 2011-07-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_move): Do not explicitly check
