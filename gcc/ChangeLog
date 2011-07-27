@@ -1,3 +1,10 @@
+2011-07-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (x86_64_movabs_operand): Reject
+	pic32_bit_operand operands.
+	* config/i386/i386.c (ix86_expand_move): Check x86_64_movabs_operand
+	in DImode.
+
 2011-07-27  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Allow -mabi
@@ -26,11 +33,9 @@
 	(optimize_bitfield_assignment_op): Add argument.
 	Add argument to get_best_mode.
 	(get_bit_range): New.
-	(expand_assignment): Calculate maxbits and pass it down
-	accordingly.
+	(expand_assignment): Calculate maxbits and pass it down accordingly.
 	(store_field): New argument.
-	(expand_expr_real_2): New argument to store_field.
-	Include params.h.
+	(expand_expr_real_2): New argument to store_field.  Include params.h.
 	* expr.h (store_bit_field): New argument.
 	* stor-layout.c (get_best_mode): Restrict mode expansion by taking
 	into account maxbits.
@@ -47,8 +52,7 @@
 
 2011-07-27  Jakub Jelinek  <jakub@redhat.com>
 
-	* dwarf2out.c (gen_producer_string): Ignore also -fverbose-asm
-	option.
+	* dwarf2out.c (gen_producer_string): Ignore also -fverbose-asm option.
 
 2011-07-27  Kai Tietz  <ktietz@redhat.com>
 
