@@ -1,3 +1,7 @@
+2011-07-27  Jeffrey Yasskin  <jyasskin@google.com>
+
+	* g++.old-deja/g++.pt/crash60.C: Updated.
+
 2011-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/49866

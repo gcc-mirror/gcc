@@ -1,3 +1,8 @@
+2011-07-27  Jeffrey Yasskin  <jyasskin@google.com>
+
+	* pt.c (build_template_decl): Copy the function_decl's
+	source location to the new template_decl.
+
 2011-07-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/49776
