@@ -55,6 +55,7 @@
    UNSPEC_FMUL
    UNSPEC_FMULS
    UNSPEC_FMULSU
+   UNSPEC_COPYSIGN
    ])
 
 (define_c_enum "unspecv"
@@ -3679,6 +3680,275 @@
 	brne 1b"
   [(set_attr "length" "9")
    (set_attr "cc" "clobber")])
+
+
+;; Parity
+
+(define_expand "parityhi2"
+  [(set (reg:HI 24)
+        (match_operand:HI 1 "register_operand" ""))
+   (set (reg:HI 24)
+        (parity:HI (reg:HI 24)))
+   (set (match_operand:HI 0 "register_operand" "")
+        (reg:HI 24))]
+  ""
+  "")
+
+(define_expand "paritysi2"
+  [(set (reg:SI 22)
+        (match_operand:SI 1 "register_operand" ""))
+   (set (reg:HI 24)
+        (parity:HI (reg:SI 22)))
+   (set (match_operand:SI 0 "register_operand" "")
+        (zero_extend:SI (reg:HI 24)))]
+  ""
+  "")
+
+(define_insn "*parityhi2.libgcc"
+  [(set (reg:HI 24)
+        (parity:HI (reg:HI 24)))]
+  ""
+  "%~call __parityhi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*parityqihi2.libgcc"
+  [(set (reg:HI 24)
+        (parity:HI (reg:QI 24)))]
+  ""
+  "%~call __parityqi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*paritysihi2.libgcc"
+  [(set (reg:HI 24)
+        (parity:HI (reg:SI 22)))]
+  ""
+  "%~call __paritysi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+
+;; Popcount
+
+(define_expand "popcounthi2"
+  [(set (reg:HI 24)
+        (match_operand:HI 1 "register_operand" ""))
+   (set (reg:HI 24)
+        (popcount:HI (reg:HI 24)))
+   (set (match_operand:HI 0 "register_operand" "")
+        (reg:HI 24))]
+  ""
+  "")
+
+(define_expand "popcountsi2"
+  [(set (reg:SI 22)
+        (match_operand:SI 1 "register_operand" ""))
+   (set (reg:HI 24)
+        (popcount:HI (reg:SI 22)))
+   (set (match_operand:SI 0 "register_operand" "")
+        (zero_extend:SI (reg:HI 24)))]
+  ""
+  "")
+
+(define_insn "*popcounthi2.libgcc"
+  [(set (reg:HI 24)
+        (popcount:HI (reg:HI 24)))]
+  ""
+  "%~call __popcounthi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*popcountsi2.libgcc"
+  [(set (reg:HI 24)
+        (popcount:HI (reg:SI 22)))]
+  ""
+  "%~call __popcountsi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*popcountqi2.libgcc"
+  [(set (reg:QI 24)
+        (popcount:QI (reg:QI 24)))]
+  ""
+  "%~call __popcountqi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn_and_split "*popcountqihi2.libgcc"
+  [(set (reg:HI 24)
+        (popcount:HI (reg:QI 24)))]
+  ""
+  "#"
+  ""
+  [(set (reg:QI 24)
+        (popcount:QI (reg:QI 24)))
+   (set (reg:QI 25)
+        (const_int 0))]
+  "")
+
+;; Count Leading Zeros
+
+(define_expand "clzhi2"
+  [(set (reg:HI 24)
+        (match_operand:HI 1 "register_operand" ""))
+   (parallel [(set (reg:HI 24)
+                   (clz:HI (reg:HI 24)))
+              (clobber (reg:QI 26))])
+   (set (match_operand:HI 0 "register_operand" "")
+        (reg:HI 24))]
+  ""
+  "")
+
+(define_expand "clzsi2"
+  [(set (reg:SI 22)
+        (match_operand:SI 1 "register_operand" ""))
+   (parallel [(set (reg:HI 24)
+                   (clz:HI (reg:SI 22)))
+              (clobber (reg:QI 26))])
+   (set (match_operand:SI 0 "register_operand" "")
+        (zero_extend:SI (reg:HI 24)))]
+  ""
+  "")
+
+(define_insn "*clzhi2.libgcc"
+  [(parallel [(set (reg:HI 24)
+                   (clz:HI (reg:HI 24)))
+              (clobber (reg:QI 26))])]
+  ""
+  "%~call __clzhi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*clzsihi2.libgcc"
+  [(parallel [(set (reg:HI 24)
+                   (clz:HI (reg:SI 22)))
+              (clobber (reg:QI 26))])]
+  ""
+  "%~call __clzsi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+;; Count Trailing Zeros
+
+(define_expand "ctzhi2"
+  [(set (reg:HI 24)
+        (match_operand:HI 1 "register_operand" ""))
+   (parallel [(set (reg:HI 24)
+                   (ctz:HI (reg:HI 24)))
+              (clobber (reg:QI 26))])
+   (set (match_operand:HI 0 "register_operand" "")
+        (reg:HI 24))]
+  ""
+  "")
+
+(define_expand "ctzsi2"
+  [(set (reg:SI 22)
+        (match_operand:SI 1 "register_operand" ""))
+   (parallel [(set (reg:HI 24)
+                   (ctz:HI (reg:SI 22)))
+              (clobber (reg:QI 22))
+              (clobber (reg:QI 26))])
+   (set (match_operand:SI 0 "register_operand" "")
+        (zero_extend:SI (reg:HI 24)))]
+  ""
+  "")
+
+(define_insn "*ctzhi2.libgcc"
+  [(set (reg:HI 24)
+        (ctz:HI (reg:HI 24)))
+   (clobber (reg:QI 26))]
+  ""
+  "%~call __ctzhi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*ctzsihi2.libgcc"
+  [(set (reg:HI 24)
+        (ctz:HI (reg:SI 22)))
+   (clobber (reg:QI 22))
+   (clobber (reg:QI 26))]
+  ""
+  "%~call __ctzsi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+;; Find First Set
+
+(define_expand "ffshi2"
+  [(set (reg:HI 24)
+        (match_operand:HI 1 "register_operand" ""))
+   (parallel [(set (reg:HI 24)
+                   (ffs:HI (reg:HI 24)))
+              (clobber (reg:QI 26))])
+   (set (match_operand:HI 0 "register_operand" "")
+        (reg:HI 24))]
+  ""
+  "")
+
+(define_expand "ffssi2"
+  [(set (reg:SI 22)
+        (match_operand:SI 1 "register_operand" ""))
+   (parallel [(set (reg:HI 24)
+                   (ffs:HI (reg:SI 22)))
+              (clobber (reg:QI 22))
+              (clobber (reg:QI 26))])
+   (set (match_operand:SI 0 "register_operand" "")
+        (zero_extend:SI (reg:HI 24)))]
+  ""
+  "")
+
+(define_insn "*ffshi2.libgcc"
+  [(parallel [(set (reg:HI 24)
+                   (ffs:HI (reg:HI 24)))
+              (clobber (reg:QI 26))])]
+  ""
+  "%~call __ffshi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+(define_insn "*ffssihi2.libgcc"
+  [(parallel [(set (reg:HI 24)
+                   (ffs:HI (reg:SI 22)))
+              (clobber (reg:QI 22))
+              (clobber (reg:QI 26))])]
+  ""
+  "%~call __ffssi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+;; Copysign
+
+(define_insn "copysignsf3"
+  [(set (match_operand:SF 0 "register_operand"             "=r")
+        (unspec:SF [(match_operand:SF 1 "register_operand"  "0")
+                    (match_operand:SF 2 "register_operand"  "r")]
+                   UNSPEC_COPYSIGN))]
+  ""
+  "bst %D2,7\;bld %D0,7"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+  
+;; Swap Bytes (change byte-endianess)
+
+(define_expand "bswapsi2"
+  [(set (reg:SI 22)
+        (match_operand:SI 1 "register_operand" ""))
+   (set (reg:SI 22)
+        (bswap:SI (reg:SI 22)))
+   (set (match_operand:SI 0 "register_operand" "")
+        (reg:SI 22))]
+  ""
+  "")
+
+(define_insn "*bswapsi2.libgcc"
+  [(set (reg:SI 22)
+        (bswap:SI (reg:SI 22)))]
+  ""
+  "%~call __bswapsi2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
 
 ;; CPU instructions
 
