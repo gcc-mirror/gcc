@@ -15,4 +15,4 @@ void update_c(struct bits *p, int val)
     p -> c = val;
 }
 
-/* { dg-final { scan-assembler-not "movl" } } */
+/* { dg-final { scan-assembler "mov\[bw\]" } } */

@@ -26,4 +26,4 @@ void foo()
   p -> c = 55;
 }
 
-/* { dg-final { scan-assembler-not "movl\t\\(" } } */
+/* { dg-final { scan-assembler "mov\[bw\]" } } */
