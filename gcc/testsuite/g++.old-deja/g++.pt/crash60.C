@@ -5,9 +5,9 @@
 // We ICE'd rather than fail to instantiate.
 
 template< typename SID, class SDR >
-void k( SID sid, SDR* p,
+void k( SID sid, SDR* p,	// { dg-error "no type named 'T'" }
  void (SDR::*)
- ( typename SID::T ) );		// { dg-error "no type named 'T'" }
+ ( typename SID::T ) );
 
 struct E { };
 struct S { void f( int ); };
