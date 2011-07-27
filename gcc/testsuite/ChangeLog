@@ -1,3 +1,8 @@
+2011-07-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/47691
+	* gfortran.dg/graphite/id-pr47691.f: New.
+
 2011-07-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/avx-os-support.h: New.

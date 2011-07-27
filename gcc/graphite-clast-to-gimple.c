@@ -1020,7 +1020,7 @@ translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
 
   build_iv_mapping (iv_map, stmt, ip);
   next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), ip->region,
-					   next_e, iv_map);
+					   next_e, iv_map, &gloog_error);
   VEC_free (tree, heap, iv_map);
 
   new_bb = next_e->src;
