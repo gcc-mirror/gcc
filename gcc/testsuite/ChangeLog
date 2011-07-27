@@ -1,3 +1,31 @@
+2011-07-27  Yukhin Kirill  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/i386.exp (check_effective_target_bmi): New.
+	* gcc.target/i386/bmi-andn-1.c: New test.
+	* gcc.target/i386/bmi-andn-1a.c: Likewise.
+	* gcc.target/i386/bmi-andn-2.c: Likewise.
+	* gcc.target/i386/bmi-andn-2a.c: Likewise.
+	* gcc.target/i386/bmi-bextr-1.c: Likewise.
+	* gcc.target/i386/bmi-bextr-1a.c: Likewise.
+	* gcc.target/i386/bmi-bextr-2.c: Likewise.
+	* gcc.target/i386/bmi-bextr-2a.c: Likewise.
+	* gcc.target/i386/bmi-blsi-1.c: Likewise.
+	* gcc.target/i386/bmi-blsi-1a.c: Likewise.
+	* gcc.target/i386/bmi-blsi-2.c: Likewise.
+	* gcc.target/i386/bmi-blsi-2a.c: Likewise.
+	* gcc.target/i386/bmi-blsmsk-1.c: Likewise.
+	* gcc.target/i386/bmi-blsmsk-1a.c: Likewise.
+	* gcc.target/i386/bmi-blsmsk-2.c: Likewise.
+	* gcc.target/i386/bmi-blsmsk-2a.c: Likewise.
+	* gcc.target/i386/bmi-blsr-1.c: Likewise.
+	* gcc.target/i386/bmi-blsr-1a.c: Likewise.
+	* gcc.target/i386/bmi-blsr-2.c: Likewise.
+	* gcc.target/i386/bmi-blsr-2a.c: Likewise.
+	* gcc.target/i386/bmi-tzcnt-1.c: Likewise.
+	* gcc.target/i386/bmi-tzcnt-1a.c: Likewise.
+	* gcc.target/i386/bmi-tzcnt-2.c: Likewise.
+	* gcc.target/i386/bmi-tzcnt-2a.c: Likewise.
+
 2011-07-27  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/47691
