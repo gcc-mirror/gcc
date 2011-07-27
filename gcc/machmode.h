@@ -248,7 +248,10 @@ extern enum machine_mode mode_for_vector (enum machine_mode, unsigned);
 
 /* Find the best mode to use to access a bit field.  */
 
-extern enum machine_mode get_best_mode (int, int, unsigned int,
+extern enum machine_mode get_best_mode (int, int,
+					unsigned HOST_WIDE_INT,
+					unsigned HOST_WIDE_INT,
+					unsigned int,
 					enum machine_mode, int);
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */

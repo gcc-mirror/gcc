@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "ssaexpand.h"
 #include "target-globals.h"
+#include "params.h"
 
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
@@ -143,7 +144,9 @@ static void store_constructor_field (rtx, unsigned HOST_WIDE_INT,
 				     HOST_WIDE_INT, enum machine_mode,
 				     tree, tree, int, alias_set_type);
 static void store_constructor (tree, rtx, int, HOST_WIDE_INT);
-static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode,
+static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT,
+			unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+			enum machine_mode,
 			tree, tree, alias_set_type, bool);
 
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (const_tree, const_tree);
@@ -2074,7 +2077,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	emit_move_insn (adjust_address (dest, mode, bytepos), tmps[i]);
       else
 	store_bit_field (dest, bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
-			 mode, tmps[i]);
+			 0, 0, mode, tmps[i]);
     }
 
   /* Copy from the pseudo into the (probable) hard reg.  */
@@ -2168,7 +2171,7 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
 
       /* Use xbitpos for the source extraction (right justified) and
 	 bitpos for the destination store (left justified).  */
-      store_bit_field (dst, bitsize, bitpos % BITS_PER_WORD, copy_mode,
+      store_bit_field (dst, bitsize, bitpos % BITS_PER_WORD, 0, 0, copy_mode,
 		       extract_bit_field (src, bitsize,
 					  xbitpos % BITS_PER_WORD, 1, false,
 					  NULL_RTX, copy_mode, copy_mode));
@@ -2805,7 +2808,7 @@ write_complex_part (rtx cplx, rtx val, bool imag_p)
 	gcc_assert (MEM_P (cplx) && ibitsize < BITS_PER_WORD);
     }
 
-  store_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0, imode, val);
+  store_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0, 0, 0, imode, val);
 }
 
 /* Extract one of the components of the complex value CPLX.  Extract the
@@ -3940,6 +3943,8 @@ get_subtarget (rtx x)
 static bool
 optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
 				 unsigned HOST_WIDE_INT bitpos,
+				 unsigned HOST_WIDE_INT bitregion_start,
+				 unsigned HOST_WIDE_INT bitregion_end,
 				 enum machine_mode mode1, rtx str_rtx,
 				 tree to, tree src)
 {
@@ -4001,6 +4006,7 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
       if (str_bitsize == 0 || str_bitsize > BITS_PER_WORD)
 	str_mode = word_mode;
       str_mode = get_best_mode (bitsize, bitpos,
+				bitregion_start, bitregion_end,
 				MEM_ALIGN (str_rtx), str_mode, 0);
       if (str_mode == VOIDmode)
 	return false;
@@ -4109,6 +4115,113 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
   return false;
 }
 
+/* In the C++ memory model, consecutive bit fields in a structure are
+   considered one memory location.
+
+   Given a COMPONENT_REF, this function returns the bit range of
+   consecutive bits in which this COMPONENT_REF belongs in.  The
+   values are returned in *BITSTART and *BITEND.  If either the C++
+   memory model is not activated, or this memory access is not thread
+   visible, 0 is returned in *BITSTART and *BITEND.
+
+   EXP is the COMPONENT_REF.
+   INNERDECL is the actual object being referenced.
+   BITPOS is the position in bits where the bit starts within the structure.
+   BITSIZE is size in bits of the field being referenced in EXP.
+
+   For example, while storing into FOO.A here...
+
+      struct {
+        BIT 0:
+          unsigned int a : 4;
+	  unsigned int b : 1;
+	BIT 8:
+	  unsigned char c;
+	  unsigned int d : 6;
+      } foo;
+
+   ...we are not allowed to store past <b>, so for the layout above, a
+   range of 0..7 (because no one cares if we store into the
+   padding).  */
+
+static void
+get_bit_range (unsigned HOST_WIDE_INT *bitstart,
+	       unsigned HOST_WIDE_INT *bitend,
+	       tree exp, tree innerdecl,
+	       HOST_WIDE_INT bitpos, HOST_WIDE_INT bitsize)
+{
+  tree field, record_type, fld;
+  bool found_field = false;
+  bool prev_field_is_bitfield;
+
+  gcc_assert (TREE_CODE (exp) == COMPONENT_REF);
+
+  /* If other threads can't see this value, no need to restrict stores.  */
+  if (ALLOW_STORE_DATA_RACES
+      || (!ptr_deref_may_alias_global_p (innerdecl)
+	  && (DECL_THREAD_LOCAL_P (innerdecl)
+	      || !TREE_STATIC (innerdecl))))
+    {
+      *bitstart = *bitend = 0;
+      return;
+    }
+
+  /* Bit field we're storing into.  */
+  field = TREE_OPERAND (exp, 1);
+  record_type = DECL_FIELD_CONTEXT (field);
+
+  /* Count the contiguous bitfields for the memory location that
+     contains FIELD.  */
+  *bitstart = 0;
+  prev_field_is_bitfield = true;
+  for (fld = TYPE_FIELDS (record_type); fld; fld = DECL_CHAIN (fld))
+    {
+      tree t, offset;
+      enum machine_mode mode;
+      int unsignedp, volatilep;
+
+      if (TREE_CODE (fld) != FIELD_DECL)
+	continue;
+
+      t = build3 (COMPONENT_REF, TREE_TYPE (exp),
+		  unshare_expr (TREE_OPERAND (exp, 0)),
+		  fld, NULL_TREE);
+      get_inner_reference (t, &bitsize, &bitpos, &offset,
+			   &mode, &unsignedp, &volatilep, true);
+
+      if (field == fld)
+	found_field = true;
+
+      if (DECL_BIT_FIELD_TYPE (fld) && bitsize > 0)
+	{
+	  if (prev_field_is_bitfield == false)
+	    {
+	      *bitstart = bitpos;
+	      prev_field_is_bitfield = true;
+	    }
+	}
+      else
+	{
+	  prev_field_is_bitfield = false;
+	  if (found_field)
+	    break;
+	}
+    }
+  gcc_assert (found_field);
+
+  if (fld)
+    {
+      /* We found the end of the bit field sequence.  Include the
+	 padding up to the next field and be done.  */
+      *bitend = bitpos - 1;
+    }
+  else
+    {
+      /* If this is the last element in the structure, include the padding
+	 at the end of structure.  */
+      *bitend = TREE_INT_CST_LOW (TYPE_SIZE (record_type)) - 1;
+    }
+}
 
 /* Expand an assignment that stores the value of FROM into TO.  If NONTEMPORAL
    is true, try generating a nontemporal store.  */
@@ -4208,6 +4321,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
     {
       enum machine_mode mode1;
       HOST_WIDE_INT bitsize, bitpos;
+      unsigned HOST_WIDE_INT bitregion_start = 0;
+      unsigned HOST_WIDE_INT bitregion_end = 0;
       tree offset;
       int unsignedp;
       int volatilep = 0;
@@ -4216,6 +4331,11 @@ expand_assignment (tree to, tree from, bool nontemporal)
       push_temp_slots ();
       tem = get_inner_reference (to, &bitsize, &bitpos, &offset, &mode1,
 				 &unsignedp, &volatilep, true);
+
+      if (TREE_CODE (to) == COMPONENT_REF
+	  && DECL_BIT_FIELD_TYPE (TREE_OPERAND (to, 1)))
+	get_bit_range (&bitregion_start, &bitregion_end,
+		       to, tem, bitpos, bitsize);
 
       /* If we are going to use store_bit_field and extract_bit_field,
 	 make sure to_rtx will be safe for multiple use.  */
@@ -4298,11 +4418,14 @@ expand_assignment (tree to, tree from, bool nontemporal)
 				 nontemporal);
 	  else if (bitpos + bitsize <= mode_bitsize / 2)
 	    result = store_field (XEXP (to_rtx, 0), bitsize, bitpos,
+				  bitregion_start, bitregion_end,
 				  mode1, from, TREE_TYPE (tem),
 				  get_alias_set (to), nontemporal);
 	  else if (bitpos >= mode_bitsize / 2)
 	    result = store_field (XEXP (to_rtx, 1), bitsize,
-				  bitpos - mode_bitsize / 2, mode1, from,
+				  bitpos - mode_bitsize / 2,
+				  bitregion_start, bitregion_end,
+				  mode1, from,
 				  TREE_TYPE (tem), get_alias_set (to),
 				  nontemporal);
 	  else if (bitpos == 0 && bitsize == mode_bitsize)
@@ -4323,7 +4446,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 					    0);
 	      write_complex_part (temp, XEXP (to_rtx, 0), false);
 	      write_complex_part (temp, XEXP (to_rtx, 1), true);
-	      result = store_field (temp, bitsize, bitpos, mode1, from,
+	      result = store_field (temp, bitsize, bitpos,
+				    bitregion_start, bitregion_end,
+				    mode1, from,
 				    TREE_TYPE (tem), get_alias_set (to),
 				    nontemporal);
 	      emit_move_insn (XEXP (to_rtx, 0), read_complex_part (temp, false));
@@ -4348,11 +4473,15 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	    }
 
-	  if (optimize_bitfield_assignment_op (bitsize, bitpos, mode1,
+	  if (optimize_bitfield_assignment_op (bitsize, bitpos,
+					       bitregion_start, bitregion_end,
+					       mode1,
 					       to_rtx, to, from))
 	    result = NULL;
 	  else
-	    result = store_field (to_rtx, bitsize, bitpos, mode1, from,
+	    result = store_field (to_rtx, bitsize, bitpos,
+				  bitregion_start, bitregion_end,
+				  mode1, from,
 				  TREE_TYPE (tem), get_alias_set (to),
 				  nontemporal);
 	}
@@ -4745,7 +4874,7 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 			      : BLOCK_OP_NORMAL));
 	  else if (GET_MODE (target) == BLKmode)
 	    store_bit_field (target, INTVAL (expr_size (exp)) * BITS_PER_UNIT,
-			     0, GET_MODE (temp), temp);
+			     0, 0, 0, GET_MODE (temp), temp);
 	  else
 	    convert_move (target, temp, unsignedp);
 	}
@@ -5210,7 +5339,8 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
       store_constructor (exp, target, cleared, bitsize / BITS_PER_UNIT);
     }
   else
-    store_field (target, bitsize, bitpos, mode, exp, type, alias_set, false);
+    store_field (target, bitsize, bitpos, 0, 0, mode, exp, type, alias_set,
+		 false);
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
@@ -5784,6 +5914,11 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
    BITSIZE bits, starting BITPOS bits from the start of TARGET.
    If MODE is VOIDmode, it means that we are storing into a bit-field.
 
+   BITREGION_START is bitpos of the first bitfield in this region.
+   BITREGION_END is the bitpos of the ending bitfield in this region.
+   These two fields are 0, if the C++ memory model does not apply,
+   or we are not interested in keeping track of bitfield regions.
+
    Always return const0_rtx unless we have something particular to
    return.
 
@@ -5797,6 +5932,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 static rtx
 store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
+	     unsigned HOST_WIDE_INT bitregion_start,
+	     unsigned HOST_WIDE_INT bitregion_end,
 	     enum machine_mode mode, tree exp, tree type,
 	     alias_set_type alias_set, bool nontemporal)
 {
@@ -5829,8 +5966,9 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       if (bitsize != (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (target)))
 	emit_move_insn (object, target);
 
-      store_field (blk_object, bitsize, bitpos, mode, exp, type, alias_set,
-		   nontemporal);
+      store_field (blk_object, bitsize, bitpos,
+		   bitregion_start, bitregion_end,
+		   mode, exp, type, alias_set, nontemporal);
 
       emit_move_insn (target, object);
 
@@ -5944,7 +6082,9 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	}
 
       /* Store the value in the bitfield.  */
-      store_bit_field (target, bitsize, bitpos, mode, temp);
+      store_bit_field (target, bitsize, bitpos,
+		       bitregion_start, bitregion_end,
+		       mode, temp);
 
       return const0_rtx;
     }
@@ -7354,7 +7494,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 						    (treeop0))
 				 * BITS_PER_UNIT),
 				(HOST_WIDE_INT) GET_MODE_BITSIZE (mode)),
-			   0, TYPE_MODE (valtype), treeop0,
+			   0, 0, 0, TYPE_MODE (valtype), treeop0,
 			   type, 0, false);
 	    }
 

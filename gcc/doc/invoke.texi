@@ -9058,6 +9058,11 @@ The maximum number of conditional stores paires that can be sunk.  Set to 0
 if either vectorization (@option{-ftree-vectorize}) or if-conversion
 (@option{-ftree-loop-if-convert}) is disabled.  The default is 2.
 
+@item allow-store-data-races
+Allow optimizers to introduce new data races on stores.
+Set to 1 to allow, otherwise to 0.  This option is enabled by default
+unless implicitly set by the @option{-fmemory-model=} option.
+
 @item case-values-threshold
 The smallest number of different values for which it is best to use a
 jump-table instead of a tree of conditional branches.  If the value is

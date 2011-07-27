@@ -3394,7 +3394,7 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
       && flag_strict_volatile_bitfields > 0)
     nmode = lmode;
   else
-    nmode = get_best_mode (lbitsize, lbitpos,
+    nmode = get_best_mode (lbitsize, lbitpos, 0, 0,
 			   const_p ? TYPE_ALIGN (TREE_TYPE (linner))
 			   : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
 				  TYPE_ALIGN (TREE_TYPE (rinner))),
@@ -5221,7 +5221,7 @@ fold_truthop (location_t loc, enum tree_code code, tree truth_type,
      to be relative to a field of that size.  */
   first_bit = MIN (ll_bitpos, rl_bitpos);
   end_bit = MAX (ll_bitpos + ll_bitsize, rl_bitpos + rl_bitsize);
-  lnmode = get_best_mode (end_bit - first_bit, first_bit,
+  lnmode = get_best_mode (end_bit - first_bit, first_bit, 0, 0,
 			  TYPE_ALIGN (TREE_TYPE (ll_inner)), word_mode,
 			  volatilep);
   if (lnmode == VOIDmode)
@@ -5286,7 +5286,7 @@ fold_truthop (location_t loc, enum tree_code code, tree truth_type,
 
       first_bit = MIN (lr_bitpos, rr_bitpos);
       end_bit = MAX (lr_bitpos + lr_bitsize, rr_bitpos + rr_bitsize);
-      rnmode = get_best_mode (end_bit - first_bit, first_bit,
+      rnmode = get_best_mode (end_bit - first_bit, first_bit, 0, 0,
 			      TYPE_ALIGN (TREE_TYPE (lr_inner)), word_mode,
 			      volatilep);
       if (rnmode == VOIDmode)

@@ -1,3 +1,38 @@
+2011-07-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* params.h (ALLOW_STORE_DATA_RACES): New.
+	* params.def (PARAM_ALLOW_STORE_DATA_RACES): New.
+	* Makefile.in (expr.o): Depend on PARAMS_H.
+	* machmode.h (get_best_mode): Add argument.
+	* fold-const.c (optimize_bit_field_compare): Add argument to
+	get_best_mode.
+	(fold_truthop): Same.
+	* ifcvt.c (noce_emit_move_insn): Add argument to store_bit_field.
+	* expr.c (emit_group_store): Same.
+	(copy_blkmode_from_reg): Same.
+	(write_complex_part): Same.
+	(optimize_bitfield_assignment_op): Add argument.
+	Add argument to get_best_mode.
+	(get_bit_range): New.
+	(expand_assignment): Calculate maxbits and pass it down
+	accordingly.
+	(store_field): New argument.
+	(expand_expr_real_2): New argument to store_field.
+	Include params.h.
+	* expr.h (store_bit_field): New argument.
+	* stor-layout.c (get_best_mode): Restrict mode expansion by taking
+	into account maxbits.
+	* calls.c (store_unaligned_arguments_into_pseudos): New argument
+	to store_bit_field.
+	* expmed.c (store_bit_field_1): New argument.  Use it.
+	(store_bit_field): Same.
+	(store_fixed_bit_field): Same.
+	(store_split_bit_field): Same.
+	(extract_bit_field_1): Pass new argument to get_best_mode.
+	(extract_bit_field): Same.
+	* stmt.c (store_bit_field): Pass new argument to store_bit_field.
+	* doc/invoke.texi: Document parameter allow-store-data-races.
+
 2011-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (gen_producer_string): Ignore also -fverbose-asm
