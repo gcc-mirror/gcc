@@ -1,3 +1,8 @@
+2011-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49866
+	* gcc.target/i386/pr49866.c: New test.
+
 2011-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	Backported from mainline

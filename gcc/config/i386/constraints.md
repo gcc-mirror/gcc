@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;     B     H           T  W
-;;;           h jk          vw  z
+;;;           h jk          vw
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
@@ -104,6 +104,10 @@
 (define_register_constraint "Ym"
  "TARGET_MMX && TARGET_INTER_UNIT_MOVES ? MMX_REGS : NO_REGS"
  "@internal Any MMX register, when inter-unit moves are enabled.")
+
+(define_constraint "z"
+  "@internal Constant call address operand."
+  (match_operand 0 "constant_call_address_operand"))
 
 ;; Integer constant constraints.
 (define_constraint "I"

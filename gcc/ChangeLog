@@ -1,3 +1,25 @@
+2011-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/49866
+	* config/i386/i386.md (*call_pop_1_vzeroupper, *call_pop_1,
+	*sibcall_pop_1_vzeroupper, *sibcall_pop_1, *call_1_vzeroupper,
+	*call_1, *sibcall_1_vzeroupper, *sibcall_1, *call_1_rex64_vzeroupper,
+	*call_1_rex64, *call_1_rex64_ms_sysv_vzeroupper,
+	*call_1_rex64_ms_sysv, *sibcall_1_rex64_vzeroupper,
+	*sibcall_1_rex64, *call_value_pop_1_vzeroupper,
+	*call_value_pop_1, *sibcall_value_pop_1_vzeroupper,
+	*sibcall_value_pop_1, *call_value_1_vzeroupper,
+	*call_value_1, *sibcall_value_1_vzeroupper,
+	*sibcall_value_1, *call_value_1_rex64_vzeroupper,
+	*call_value_1_rex64, *call_value_1_rex64_ms_sysv_vzeroupper,
+	*call_value_1_rex64_ms_sysv, *sibcall_value_1_rex64_vzeroupper,
+	*sibcall_value_1_rex64): Use z constraint instead of s constraint.
+
+	Backport from mainline
+	2011-05-16  Uros Bizjak  <ubizjak@gmail.com>
+        
+        * config/i386/constraints.md (z): New constraint.
+
 2011-07-25  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/49671
