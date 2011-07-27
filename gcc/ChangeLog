@@ -1,5 +1,16 @@
+2011-07-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/47691
+	* graphite-clast-to-gimple.c (translate_clast_user): Update use of
+	copy_bb_and_scalar_dependences.
+	* sese.c (rename_uses): Do not call gcc_assert.  Set gloog_error.
+	(graphite_copy_stmts_from_block): Update call to rename_uses.
+	(copy_bb_and_scalar_dependences): Update call to
+	graphite_copy_stmts_from_block.
+	* sese.h (copy_bb_and_scalar_dependences): Update declaration.
+
 2011-07-27  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/49313
 	* config/avr/libgcc.S (__ffshi2): Don't skip 2-word instruction.
 	(__ctzsi2): Result for 0 may be undefined.
