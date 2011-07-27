@@ -15032,7 +15032,6 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
     }
 
   if ((flag_pic || MACHOPIC_INDIRECT) 
-      && (mode == SImode || mode == DImode)
       && symbolic_operand (op1, mode))
     {
       if (TARGET_MACHO && !TARGET_64BIT)
