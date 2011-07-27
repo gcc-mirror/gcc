@@ -186,6 +186,16 @@ proc check_effective_target_xop { } {
     } "-O2 -mxop" ]
 }
 
+# Return 1 if bmi instructions can be compiled.
+proc check_effective_target_bmi { } {
+    return [check_no_compiler_messages bmi object {
+	void __bextr_u32 (void)
+	{
+	  __builtin_ia32_bextr_u32 (0, 0);
+	}
+    } "-mbmi" ]
+}
+
 # If the linker used understands -M <mapfile>, pass it to clear hardware
 # capabilities set by the Sun assembler.
 set clearcap_ldflags "-Wl,-M,$srcdir/$subdir/clearcap.map"
