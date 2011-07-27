@@ -517,7 +517,8 @@ void gfc_generate_constructors (void);
 /* Get the string length of an array constructor.  */
 bool get_array_ctor_strlen (stmtblock_t *, gfc_constructor_base, tree *);
 
-/* Mark a condition as unlikely.  */
+/* Mark a condition as likely or unlikely.  */
+tree gfc_likely (tree);
 tree gfc_unlikely (tree);
 
 /* Generate a runtime error call.  */
@@ -541,12 +542,12 @@ tree gfc_call_malloc (stmtblock_t *, tree, tree);
 tree gfc_build_memcpy_call (tree, tree, tree);
 
 /* Allocate memory for allocatable variables, with optional status variable.  */
-tree gfc_allocate_allocatable (stmtblock_t*, tree, tree,
+void gfc_allocate_allocatable (stmtblock_t*, tree, tree,
 			       tree, tree, tree, gfc_expr*);
 
 /* Allocate memory, with optional status variable.  */
-tree gfc_allocate_using_malloc (stmtblock_t *, tree, tree);
-tree gfc_allocate_using_lib (stmtblock_t *, tree, tree, tree, tree);
+void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree);
+void gfc_allocate_using_lib (stmtblock_t *, tree, tree, tree, tree, tree);
 
 /* Generate code to deallocate an array.  */
 tree gfc_deallocate_with_status (tree, tree, bool, gfc_expr*);
