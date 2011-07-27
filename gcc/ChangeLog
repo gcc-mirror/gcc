@@ -1,3 +1,9 @@
+2011-07-27  Kai Tietz  <ktietz@redhat.com>
+
+	* gimple-fold.c (or_comparisons_1): Remove TRUTH_AND/OR
+	expression handling.
+	(and_var_with_comparison_1): Likewise.
+
 2011-07-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* params.h (ALLOW_STORE_DATA_RACES): New.

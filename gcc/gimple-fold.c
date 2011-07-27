@@ -1937,17 +1937,15 @@ and_var_with_comparison_1 (gimple stmt,
 
   /* If the definition is an AND or OR expression, we may be able to
      simplify by reassociating.  */
-  if (innercode == TRUTH_AND_EXPR
-      || innercode == TRUTH_OR_EXPR
-      || (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
-	  && (innercode == BIT_AND_EXPR || innercode == BIT_IOR_EXPR)))
+  if (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
+      && (innercode == BIT_AND_EXPR || innercode == BIT_IOR_EXPR))
     {
       tree inner1 = gimple_assign_rhs1 (stmt);
       tree inner2 = gimple_assign_rhs2 (stmt);
       gimple s;
       tree t;
       tree partial = NULL_TREE;
-      bool is_and = (innercode == TRUTH_AND_EXPR || innercode == BIT_AND_EXPR);
+      bool is_and = (innercode == BIT_AND_EXPR);
       
       /* Check for boolean identities that don't require recursive examination
 	 of inner1/inner2:
@@ -2069,6 +2067,7 @@ and_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
   if (operand_equal_p (op1a, op2a, 0)
       && operand_equal_p (op1b, op2b, 0))
     {
+      /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ANDIF_EXPR, code1, code2,
 				    boolean_type_node, op1a, op1b);
@@ -2080,6 +2079,7 @@ and_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
   if (operand_equal_p (op1a, op2b, 0)
       && operand_equal_p (op1b, op2a, 0))
     {
+      /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ANDIF_EXPR, code1,
 				    swap_tree_comparison (code2),
@@ -2398,17 +2398,15 @@ or_var_with_comparison_1 (gimple stmt,
   
   /* If the definition is an AND or OR expression, we may be able to
      simplify by reassociating.  */
-  if (innercode == TRUTH_AND_EXPR
-      || innercode == TRUTH_OR_EXPR
-      || (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
-	  && (innercode == BIT_AND_EXPR || innercode == BIT_IOR_EXPR)))
+  if (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
+      && (innercode == BIT_AND_EXPR || innercode == BIT_IOR_EXPR))
     {
       tree inner1 = gimple_assign_rhs1 (stmt);
       tree inner2 = gimple_assign_rhs2 (stmt);
       gimple s;
       tree t;
       tree partial = NULL_TREE;
-      bool is_or = (innercode == TRUTH_OR_EXPR || innercode == BIT_IOR_EXPR);
+      bool is_or = (innercode == BIT_IOR_EXPR);
       
       /* Check for boolean identities that don't require recursive examination
 	 of inner1/inner2:
@@ -2531,6 +2529,7 @@ or_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
   if (operand_equal_p (op1a, op2a, 0)
       && operand_equal_p (op1b, op2b, 0))
     {
+      /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ORIF_EXPR, code1, code2,
 				    boolean_type_node, op1a, op1b);
@@ -2542,6 +2541,7 @@ or_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
   if (operand_equal_p (op1a, op2b, 0)
       && operand_equal_p (op1b, op2a, 0))
     {
+      /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ORIF_EXPR, code1,
 				    swap_tree_comparison (code2),
