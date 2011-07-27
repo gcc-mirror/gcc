@@ -1,7 +1,12 @@
 2011-07-27  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_expand_move): Do not explicitly check
+	the mode of symbolic_opreand RTXes.
+
+2011-07-27  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/predicates.md (x86_64_movabs_operand): Reject
-	pic32_bit_operand operands.
+	pic32_bit_operand RTXes.
 	* config/i386/i386.c (ix86_expand_move): Check x86_64_movabs_operand
 	in DImode.
 
