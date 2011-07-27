@@ -1,3 +1,10 @@
+2011-07-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/49875
+	* c-c++-common/cxxbitfields-4.c: Check for smaller than long
+	moves.
+	* c-c++-common/cxxbitfields-5.c: Same.
+
 2011-07-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_mmap): Use
