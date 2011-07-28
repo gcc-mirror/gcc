@@ -189,9 +189,9 @@ proc check_effective_target_xop { } {
 # Return 1 if bmi instructions can be compiled.
 proc check_effective_target_bmi { } {
     return [check_no_compiler_messages bmi object {
-	void __bextr_u32 (void)
+	unsigned int __bextr_u32 (unsigned int __X, unsigned int __Y)
 	{
-	  __builtin_ia32_bextr_u32 (0, 0);
+	  return __builtin_ia32_bextr_u32 (__X, __Y);
 	}
     } "-mbmi" ]
 }

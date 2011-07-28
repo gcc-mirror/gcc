@@ -1,3 +1,8 @@
+2011-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/i386.exp (check_effective_target_bmi): Make sure
+	the builtin isn't optimized away.
+
 2011-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45586
