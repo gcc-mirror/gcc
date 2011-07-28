@@ -1,3 +1,14 @@
+2011-07-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47715
+	* config/i386/i386.md (*tls_global_dynamic_64): Remove mode from
+	tls_symbolic_operand check.  Update code sequence for TARGET_X32.
+	(tls_global_dynamic_64): Remove mode from tls_symbolic_operand check.
+	(tls_dynamic_gnu2_64): Ditto.
+	(*tls_dynamic_gnu2_lea_64): Ditto.
+	(*tls_dynamic_gnu2_call_64): Ditto.
+	(*tls_dynamic_gnu2_combine_64): Ditto.
+
 2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc: Set need_64bit_hwint to yes for x86 targets.
@@ -15,21 +26,20 @@
 
 2011-07-28  Kai Tietz  <ktietz@redhat.com>
 
-	* tree-vrp.c (simplify_stmt_using_ranges): Remove
-	TRUTH_NOT_EXPR case.
+	* tree-vrp.c (simplify_stmt_using_ranges): Remove TRUTH_NOT_EXPR case.
 	(simplify_truth_ops_using_ranges): Likewise.
 	(build_assert_expr_for): Likewise.
 	(build_assert_expr_for_1): Remove TRUTH_NOT_EXPR case
 	and handle BIT_NOT_EXPR for truth-operation.
 
 2011-07-28  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/49313
 	Undo r176835 from trunk
 	2011-07-27  Georg-Johann Lay
 
 2011-07-28  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/49687
 	* config/avr/t-avr (LIB1ASMFUNCS): Remove _xmulhisi3_exit.
 	Add _muluhisi3, _mulshisi3, _usmulhisi3.
