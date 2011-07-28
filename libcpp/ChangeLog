@@ -1,3 +1,8 @@
+2011-07-28  Gabriel Charette  <gchare@google.com>
+
+	* include/line-map.h (struct line_maps):
+	Remove unused field last_listed. Update all users.
+
 2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac: Set need_64bit_hwint to yes for x86 targets.
