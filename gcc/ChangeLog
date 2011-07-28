@@ -1,3 +1,10 @@
+2011-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49871
+	* dwarf2out.c (size_of_die, value_format, output_die): Use
+	DW_FORM_udata instead of DW_FORM_data[48] for
+	dw_val_class_unsigned_const DW_AT_data_member_location for DWARF 3.
+
 2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

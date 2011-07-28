@@ -1,3 +1,8 @@
+2011-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49871
+	* gcc.dg/debug/dwarf2/pr49871.c: New test.
+
 2011-07-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45586

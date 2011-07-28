@@ -10647,7 +10647,15 @@ size_of_die (dw_die_ref die)
 	  size += size_of_sleb128 (AT_int (a));
 	  break;
 	case dw_val_class_unsigned_const:
-	  size += constant_size (AT_unsigned (a));
+	  {
+	    int csize = constant_size (AT_unsigned (a));
+	    if (dwarf_version == 3
+		&& a->dw_attr == DW_AT_data_member_location
+		&& csize >= 4)
+	      size += size_of_uleb128 (AT_unsigned (a));
+	    else
+	      size += csize;
+	  }
 	  break;
 	case dw_val_class_const_double:
 	  size += 2 * HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR;
@@ -10917,8 +10925,16 @@ value_format (dw_attr_ref a)
 	case 2:
 	  return DW_FORM_data2;
 	case 4:
+	  /* In DWARF3 DW_AT_data_member_location with
+	     DW_FORM_data4 or DW_FORM_data8 is a loclistptr, not
+	     constant, so we need to use DW_FORM_udata if we need
+	     a large constant.  */
+	  if (dwarf_version == 3 && a->dw_attr == DW_AT_data_member_location)
+	    return DW_FORM_udata;
 	  return DW_FORM_data4;
 	case 8:
+	  if (dwarf_version == 3 && a->dw_attr == DW_AT_data_member_location)
+	    return DW_FORM_udata;
 	  return DW_FORM_data8;
 	default:
 	  gcc_unreachable ();
@@ -11225,8 +11241,15 @@ output_die (dw_die_ref die)
 	  break;
 
 	case dw_val_class_unsigned_const:
-	  dw2_asm_output_data (constant_size (AT_unsigned (a)),
-			       AT_unsigned (a), "%s", name);
+	  {
+	    int csize = constant_size (AT_unsigned (a));
+	    if (dwarf_version == 3
+		&& a->dw_attr == DW_AT_data_member_location
+		&& csize >= 4)
+	      dw2_asm_output_data_uleb128 (AT_unsigned (a), "%s", name);
+	    else
+	      dw2_asm_output_data (csize, AT_unsigned (a), "%s", name);
+	  }
 	  break;
 
 	case dw_val_class_const_double:
