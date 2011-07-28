@@ -970,6 +970,15 @@ onlyjump_p (const_rtx insn)
   return 1;
 }
 
+/* Return true iff INSN is a jump and its JUMP_LABEL is a label, not
+   NULL or a return.  */
+bool
+jump_to_label_p (rtx insn)
+{
+  return (JUMP_P (insn)
+	  && JUMP_LABEL (insn) != NULL && !ANY_RETURN_P (JUMP_LABEL (insn)));
+}
+
 #ifdef HAVE_cc0
 
 /* Return nonzero if X is an RTX that only sets the condition codes
@@ -1233,7 +1242,7 @@ delete_related_insns (rtx insn)
   /* If deleting a jump, decrement the count of the label,
      and delete the label if it is now unused.  */
 
-  if (JUMP_P (insn) && JUMP_LABEL (insn))
+  if (jump_to_label_p (insn))
     {
       rtx lab = JUMP_LABEL (insn), lab_next;
 
@@ -1364,6 +1373,18 @@ delete_for_peephole (rtx from, rtx to)
      is also an unconditional jump in that case.  */
 }
 
+/* A helper function for redirect_exp_1; examines its input X and returns
+   either a LABEL_REF around a label, or a RETURN if X was NULL.  */
+static rtx
+redirect_target (rtx x)
+{
+  if (x == NULL_RTX)
+    return ret_rtx;
+  if (!ANY_RETURN_P (x))
+    return gen_rtx_LABEL_REF (Pmode, x);
+  return x;
+}
+
 /* Throughout LOC, redirect OLABEL to NLABEL.  Treat null OLABEL or
    NLABEL as a return.  Accrue modifications into the change group.  */
 
@@ -1375,37 +1396,22 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
   int i;
   const char *fmt;
 
-  if (code == LABEL_REF)
+      if ((code == LABEL_REF && XEXP (x, 0) == olabel)
+      || x == olabel)
     {
-      if (XEXP (x, 0) == olabel)
-	{
-	  rtx n;
-	  if (nlabel)
-	    n = gen_rtx_LABEL_REF (Pmode, nlabel);
-	  else
-	    n = ret_rtx;
-
-	  validate_change (insn, loc, n, 1);
-	  return;
-	}
-    }
-  else if (code == RETURN && olabel == 0)
-    {
-      if (nlabel)
-	x = gen_rtx_LABEL_REF (Pmode, nlabel);
-      else
-	x = ret_rtx;
-      if (loc == &PATTERN (insn))
-	x = gen_rtx_SET (VOIDmode, pc_rtx, x);
+      x = redirect_target (nlabel);
+      if (GET_CODE (x) == LABEL_REF && loc == &PATTERN (insn))
+ 	x = gen_rtx_SET (VOIDmode, pc_rtx, x);
       validate_change (insn, loc, x, 1);
       return;
     }
 
-  if (code == SET && nlabel == 0 && SET_DEST (x) == pc_rtx
+  if (code == SET && SET_DEST (x) == pc_rtx
+      && ANY_RETURN_P (nlabel)
       && GET_CODE (SET_SRC (x)) == LABEL_REF
       && XEXP (SET_SRC (x), 0) == olabel)
     {
-      validate_change (insn, loc, ret_rtx, 1);
+      validate_change (insn, loc, nlabel, 1);
       return;
     }
 
@@ -1442,6 +1448,7 @@ redirect_jump_1 (rtx jump, rtx nlabel)
   int ochanges = num_validated_changes ();
   rtx *loc, asmop;
 
+  gcc_assert (nlabel != NULL_RTX);
   asmop = extract_asm_operands (PATTERN (jump));
   if (asmop)
     {
@@ -1463,16 +1470,19 @@ redirect_jump_1 (rtx jump, rtx nlabel)
    jump target label is unused as a result, it and the code following
    it may be deleted.
 
-   If NLABEL is zero, we are to turn the jump into a (possibly conditional)
-   RETURN insn.
+   Normally, NLABEL will be a label, but it may also be a RETURN rtx;
+   in that case we are to turn the jump into a (possibly conditional)
+   return insn.
 
    The return value will be 1 if the change was made, 0 if it wasn't
-   (this can only occur for NLABEL == 0).  */
+   (this can only occur when trying to produce return insns).  */
 
 int
 redirect_jump (rtx jump, rtx nlabel, int delete_unused)
 {
   rtx olabel = JUMP_LABEL (jump);
+
+  gcc_assert (nlabel != NULL_RTX);
 
   if (nlabel == olabel)
     return 1;
@@ -1501,13 +1511,14 @@ redirect_jump_2 (rtx jump, rtx olabel, rtx nlabel, int delete_unused,
      about this.  */
   gcc_assert (delete_unused >= 0);
   JUMP_LABEL (jump) = nlabel;
-  if (nlabel)
+  if (!ANY_RETURN_P (nlabel))
     ++LABEL_NUSES (nlabel);
 
   /* Update labels in any REG_EQUAL note.  */
   if ((note = find_reg_note (jump, REG_EQUAL, NULL_RTX)) != NULL_RTX)
     {
-      if (!nlabel || (invert && !invert_exp_1 (XEXP (note, 0), jump)))
+      if (ANY_RETURN_P (nlabel)
+	  || (invert && !invert_exp_1 (XEXP (note, 0), jump)))
 	remove_note (jump, note);
       else
 	{
@@ -1516,7 +1527,8 @@ redirect_jump_2 (rtx jump, rtx olabel, rtx nlabel, int delete_unused,
 	}
     }
 
-  if (olabel && --LABEL_NUSES (olabel) == 0 && delete_unused > 0
+  if (!ANY_RETURN_P (olabel)
+      && --LABEL_NUSES (olabel) == 0 && delete_unused > 0
       /* Undefined labels will remain outside the insn stream.  */
       && INSN_UID (olabel))
     delete_related_insns (olabel);

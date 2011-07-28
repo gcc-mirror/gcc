@@ -432,6 +432,9 @@ struct GTY((variable_size)) rtvec_def {
   (JUMP_P (INSN) && (GET_CODE (PATTERN (INSN)) == ADDR_VEC || \
 		     GET_CODE (PATTERN (INSN)) == ADDR_DIFF_VEC))
 
+/* Predicate yielding nonzero iff X is a return.  */
+#define ANY_RETURN_P(X) ((X) == ret_rtx)
+
 /* 1 if X is a unary operator.  */
 
 #define UNARY_P(X)   \
@@ -2341,6 +2344,7 @@ extern void check_for_inc_dec (rtx insn);
 
 /* In jump.c */
 extern int comparison_dominates_p (enum rtx_code, enum rtx_code);
+extern bool jump_to_label_p (rtx);
 extern int condjump_p (const_rtx);
 extern int any_condjump_p (const_rtx);
 extern int any_uncondjump_p (const_rtx);

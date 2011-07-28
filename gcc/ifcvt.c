@@ -104,7 +104,7 @@ static int cond_exec_find_if_block (ce_if_block_t *);
 static int find_if_case_1 (basic_block, edge, edge);
 static int find_if_case_2 (basic_block, edge, edge);
 static int dead_or_predicable (basic_block, basic_block, basic_block,
-			       basic_block, int);
+			       edge, int);
 static void noce_emit_move_insn (rtx, rtx);
 static rtx block_has_only_trap (basic_block);
 
@@ -3847,7 +3847,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 
   /* Registers set are dead, or are predicable.  */
   if (! dead_or_predicable (test_bb, then_bb, else_bb,
-			    single_succ (then_bb), 1))
+			    single_succ_edge (then_bb), 1))
     return FALSE;
 
   /* Conversion went ok, including moving the insns and fixing up the
@@ -3962,7 +3962,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
     return FALSE;
 
   /* Registers set are dead, or are predicable.  */
-  if (! dead_or_predicable (test_bb, else_bb, then_bb, else_succ->dest, 0))
+  if (! dead_or_predicable (test_bb, else_bb, then_bb, else_succ, 0))
     return FALSE;
 
   /* Conversion went ok, including moving the insns and fixing up the
@@ -3985,18 +3985,21 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
    Return TRUE if successful.
 
    TEST_BB is the block containing the conditional branch.  MERGE_BB
-   is the block containing the code to manipulate.  NEW_DEST is the
-   label TEST_BB should be branching to after the conversion.
+   is the block containing the code to manipulate.  DEST_EDGE is an
+   edge representing a jump to the join block; after the conversion,
+   TEST_BB should be branching to its destination.
    REVERSEP is true if the sense of the branch should be reversed.  */
 
 static int
 dead_or_predicable (basic_block test_bb, basic_block merge_bb,
-		    basic_block other_bb, basic_block new_dest, int reversep)
+		    basic_block other_bb, edge dest_edge, int reversep)
 {
-  rtx head, end, jump, earliest = NULL_RTX, old_dest, new_label = NULL_RTX;
+  basic_block new_dest = dest_edge->dest;
+  rtx head, end, jump, earliest = NULL_RTX, old_dest;
   bitmap merge_set = NULL;
   /* Number of pending changes.  */
   int n_validated_changes = 0;
+  rtx new_dest_label = NULL_RTX;
 
   jump = BB_END (test_bb);
 
@@ -4134,10 +4137,16 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
   old_dest = JUMP_LABEL (jump);
   if (other_bb != new_dest)
     {
-      new_label = block_label (new_dest);
+      if (JUMP_P (BB_END (dest_edge->src)))
+	new_dest_label = JUMP_LABEL (BB_END (dest_edge->src));
+      else if (new_dest == EXIT_BLOCK_PTR)
+	new_dest_label = ret_rtx;
+      else
+	new_dest_label = block_label (new_dest);
+
       if (reversep
-	  ? ! invert_jump_1 (jump, new_label)
-	  : ! redirect_jump_1 (jump, new_label))
+	  ? ! invert_jump_1 (jump, new_dest_label)
+	  : ! redirect_jump_1 (jump, new_dest_label))
 	goto cancel;
     }
 
@@ -4148,7 +4157,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
   if (other_bb != new_dest)
     {
-      redirect_jump_2 (jump, old_dest, new_label, 0, reversep);
+      redirect_jump_2 (jump, old_dest, new_dest_label, 0, reversep);
 
       redirect_edge_succ (BRANCH_EDGE (test_bb), new_dest);
       if (reversep)

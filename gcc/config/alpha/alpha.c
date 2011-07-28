@@ -571,59 +571,6 @@ direct_return (void)
 	  && crtl->args.pretend_args_size == 0);
 }
 
-/* Return the ADDR_VEC associated with a tablejump insn.  */
-
-rtx
-alpha_tablejump_addr_vec (rtx insn)
-{
-  rtx tmp;
-
-  tmp = JUMP_LABEL (insn);
-  if (!tmp)
-    return NULL_RTX;
-  tmp = NEXT_INSN (tmp);
-  if (!tmp)
-    return NULL_RTX;
-  if (JUMP_P (tmp)
-      && GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC)
-    return PATTERN (tmp);
-  return NULL_RTX;
-}
-
-/* Return the label of the predicted edge, or CONST0_RTX if we don't know.  */
-
-rtx
-alpha_tablejump_best_label (rtx insn)
-{
-  rtx jump_table = alpha_tablejump_addr_vec (insn);
-  rtx best_label = NULL_RTX;
-
-  /* ??? Once the CFG doesn't keep getting completely rebuilt, look
-     there for edge frequency counts from profile data.  */
-
-  if (jump_table)
-    {
-      int n_labels = XVECLEN (jump_table, 1);
-      int best_count = -1;
-      int i, j;
-
-      for (i = 0; i < n_labels; i++)
-	{
-	  int count = 1;
-
-	  for (j = i + 1; j < n_labels; j++)
-	    if (XEXP (XVECEXP (jump_table, 1, i), 0)
-		== XEXP (XVECEXP (jump_table, 1, j), 0))
-	      count++;
-
-	  if (count > best_count)
-	    best_count = count, best_label = XVECEXP (jump_table, 1, i);
-	}
-    }
-
-  return best_label ? best_label : const0_rtx;
-}
-
 /* Return the TLS model to use for SYMBOL.  */
 
 static enum tls_model

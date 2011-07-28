@@ -3322,13 +3322,16 @@ prev_label (rtx insn)
   return insn;
 }
 
-/* Return the last label to mark the same position as LABEL.  Return null
-   if LABEL itself is null.  */
+/* Return the last label to mark the same position as LABEL.  Return LABEL
+   itself if it is null or any return rtx.  */
 
 rtx
 skip_consecutive_labels (rtx label)
 {
   rtx insn;
+
+  if (label && ANY_RETURN_P (label))
+    return label;
 
   for (insn = label; insn != 0 && !INSN_P (insn); insn = NEXT_INSN (insn))
     if (LABEL_P (insn))

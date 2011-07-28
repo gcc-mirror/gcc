@@ -5305,7 +5305,8 @@ emit_use_return_register_into_block (basic_block bb)
 static void
 emit_return_into_block (basic_block bb)
 {
-  emit_jump_insn_after (gen_return (), BB_END (bb));
+  rtx jump = emit_jump_insn_after (gen_return (), BB_END (bb));
+  JUMP_LABEL (jump) = ret_rtx;
 }
 #endif /* HAVE_return */
 
@@ -5464,7 +5465,7 @@ thread_prologue_and_epilogue_insns (void)
 		 that with a conditional return instruction.  */
 	      else if (condjump_p (jump))
 		{
-		  if (! redirect_jump (jump, 0, 0))
+		  if (! redirect_jump (jump, ret_rtx, 0))
 		    {
 		      ei_next (&ei2);
 		      continue;
@@ -5547,6 +5548,8 @@ thread_prologue_and_epilogue_insns (void)
 #ifdef HAVE_epilogue
   if (HAVE_epilogue)
     {
+      rtx returnjump;
+
       start_sequence ();
       epilogue_end = emit_note (NOTE_INSN_EPILOGUE_BEG);
       seq = gen_epilogue ();
@@ -5557,11 +5560,25 @@ thread_prologue_and_epilogue_insns (void)
       record_insns (seq, NULL, &epilogue_insn_hash);
       set_insn_locators (seq, epilogue_locator);
 
+      returnjump = get_last_insn ();
       seq = get_insns ();
       end_sequence ();
 
       insert_insn_on_edge (seq, e);
       inserted = true;
+
+      if (JUMP_P (returnjump))
+	{
+	  rtx pat = PATTERN (returnjump);
+	  if (GET_CODE (pat) == PARALLEL)
+	    pat = XVECEXP (pat, 0, 0);
+	  if (ANY_RETURN_P (pat))
+	    JUMP_LABEL (returnjump) = pat;
+	  else
+	    JUMP_LABEL (returnjump) = ret_rtx;
+	}
+      else
+	returnjump = NULL_RTX;
     }
   else
 #endif

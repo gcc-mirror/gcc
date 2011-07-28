@@ -323,9 +323,14 @@ print_rtx (const_rtx in_rtx)
 	      }
 	  }
 	else if (i == 8 && JUMP_P (in_rtx) && JUMP_LABEL (in_rtx) != NULL)
-	  /* Output the JUMP_LABEL reference.  */
-	  fprintf (outfile, "\n%s%*s -> %d", print_rtx_head, indent * 2, "",
-		   INSN_UID (JUMP_LABEL (in_rtx)));
+	  {
+	    /* Output the JUMP_LABEL reference.  */
+	    fprintf (outfile, "\n%s%*s -> ", print_rtx_head, indent * 2, "");
+	    if (GET_CODE (JUMP_LABEL (in_rtx)) == RETURN)
+	      fprintf (outfile, "return");
+	    else
+	      fprintf (outfile, "%d", INSN_UID (JUMP_LABEL (in_rtx)));
+	  }
 	else if (i == 0 && GET_CODE (in_rtx) == VALUE)
 	  {
 #ifndef GENERATOR_FILE

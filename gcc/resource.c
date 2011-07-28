@@ -495,6 +495,8 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 		  || GET_CODE (PATTERN (this_jump_insn)) == RETURN)
 		{
 		  next = JUMP_LABEL (this_jump_insn);
+		  if (ANY_RETURN_P (next))
+		    next = NULL_RTX;
 		  if (jump_insn == 0)
 		    {
 		      jump_insn = insn;
@@ -562,9 +564,10 @@ find_dead_or_set_registers (rtx target, struct resources *res,
 		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
 		  AND_COMPL_HARD_REG_SET (fallthrough_res.regs, scratch);
 
-		  find_dead_or_set_registers (JUMP_LABEL (this_jump_insn),
-					      &target_res, 0, jump_count,
-					      target_set, needed);
+		  if (!ANY_RETURN_P (JUMP_LABEL (this_jump_insn)))
+		    find_dead_or_set_registers (JUMP_LABEL (this_jump_insn),
+						&target_res, 0, jump_count,
+						target_set, needed);
 		  find_dead_or_set_registers (next,
 					      &fallthrough_res, 0, jump_count,
 					      set, needed);
@@ -878,7 +881,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
   struct resources set, needed;
 
   /* Handle end of function.  */
-  if (target == 0)
+  if (target == 0 || ANY_RETURN_P (target))
     {
       *res = end_of_function_needs;
       return;
@@ -1097,8 +1100,9 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
       struct resources new_resources;
       rtx stop_insn = next_active_insn (jump_insn);
 
-      mark_target_live_regs (insns, next_active_insn (jump_target),
-			     &new_resources);
+      if (!ANY_RETURN_P (jump_target))
+	jump_target = next_active_insn (jump_target);
+      mark_target_live_regs (insns, jump_target, &new_resources);
       CLEAR_RESOURCE (&set);
       CLEAR_RESOURCE (&needed);
 
