@@ -1,3 +1,8 @@
+2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*tls_global_dynamic_64): Update length
+	attribute.
+
 2011-07-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47715
