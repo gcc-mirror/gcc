@@ -1028,9 +1028,13 @@ tree_non_mode_aligned_mem_p (tree exp)
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
   unsigned int align;
 
+  if (TREE_CODE (exp) == VIEW_CONVERT_EXPR)
+    exp = TREE_OPERAND (exp, 0);
+
   if (TREE_CODE (exp) == SSA_NAME
       || TREE_CODE (exp) == MEM_REF
       || mode == BLKmode
+      || is_gimple_min_invariant (exp)
       || !STRICT_ALIGNMENT)
     return false;
 

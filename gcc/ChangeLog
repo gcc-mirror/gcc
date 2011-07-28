@@ -1,3 +1,11 @@
+2011-07-28  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	Backport from mainline:
+	2011-07-26  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (tree_non_mode_aligned_mem_p): Strip conversions and
+	return false for invariants.
+
 2011-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/49866
