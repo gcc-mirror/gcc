@@ -1,3 +1,12 @@
+2011-07-28  Kai Tietz  <ktietz@redhat.com>
+
+	* tree-vrp.c (simplify_stmt_using_ranges): Remove
+	TRUTH_NOT_EXPR case.
+	(simplify_truth_ops_using_ranges): Likewise.
+	(build_assert_expr_for): Likewise.
+	(build_assert_expr_for_1): Remove TRUTH_NOT_EXPR case
+	and handle BIT_NOT_EXPR for truth-operation.
+
 2011-07-28  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/49313

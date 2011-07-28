@@ -3972,13 +3972,6 @@ build_assert_expr_for (tree cond, tree v)
       tree a = build2 (ASSERT_EXPR, TREE_TYPE (v), v, cond);
       assertion = gimple_build_assign (n, a);
     }
-  else if (TREE_CODE (cond) == TRUTH_NOT_EXPR)
-    {
-      /* Given !V, build the assignment N = false.  */
-      tree op0 = TREE_OPERAND (cond, 0);
-      gcc_assert (op0 == v);
-      assertion = gimple_build_assign (n, boolean_false_node);
-    }
   else if (TREE_CODE (cond) == SSA_NAME)
     {
       /* Given V, build the assignment N = true.  */
@@ -4525,7 +4518,8 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
       retval |= register_edge_assert_for_1 (gimple_assign_rhs2 (op_def),
 					    code, e, bsi);
     }
-  else if (gimple_assign_rhs_code (op_def) == TRUTH_NOT_EXPR)
+  else if (gimple_assign_rhs_code (op_def) == BIT_NOT_EXPR
+	   && TYPE_PRECISION (TREE_TYPE (gimple_assign_lhs (op_def))) == 1)
     {
       /* Recurse, flipping CODE.  */
       code = invert_tree_comparison (code, false);
@@ -6754,6 +6748,9 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   bool sop = false;
   bool need_conversion;
 
+  /* We handle only !=/== case here.  */
+  gcc_assert (rhs_code == EQ_EXPR || rhs_code == NE_EXPR);
+
   op0 = gimple_assign_rhs1 (stmt);
   if (TYPE_PRECISION (TREE_TYPE (op0)) != 1)
     {
@@ -6770,52 +6767,40 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
         return false;
     }
 
-  if (rhs_code == TRUTH_NOT_EXPR)
+  op1 = gimple_assign_rhs2 (stmt);
+
+  /* Reduce number of cases to handle.  */
+  if (is_gimple_min_invariant (op1))
     {
-      rhs_code = NE_EXPR;
-      op1 = build_int_cst (TREE_TYPE (op0), 1);
+      if (!integer_zerop (op1)
+	  && !integer_onep (op1)
+	  && !integer_all_onesp (op1))
+	return false;
+
+      /* Limit the number of cases we have to consider.  */
+      if (rhs_code == EQ_EXPR)
+	{
+	  rhs_code = NE_EXPR;
+	  /* OP1 is a constant.  */
+	  op1 = fold_unary (TRUTH_NOT_EXPR, TREE_TYPE (op1), op1);
+	}
     }
   else
     {
-      op1 = gimple_assign_rhs2 (stmt);
+      /* Punt on A == B as there is no BIT_XNOR_EXPR.  */
+      if (rhs_code == EQ_EXPR)
+	return false;
 
-      /* Reduce number of cases to handle.  */
-      if (is_gimple_min_invariant (op1))
+      if (TYPE_PRECISION (TREE_TYPE (op1)) != 1)
 	{
-          /* Exclude anything that should have been already folded.  */
-	  if (rhs_code != EQ_EXPR
-	      && rhs_code != NE_EXPR)
+	  vr = get_value_range (op1);
+	  val = compare_range_with_value (GE_EXPR, vr, integer_zero_node, &sop);
+	  if (!val || !integer_onep (val))
 	    return false;
 
-	  if (!integer_zerop (op1)
-	      && !integer_onep (op1)
-	      && !integer_all_onesp (op1))
+	  val = compare_range_with_value (LE_EXPR, vr, integer_one_node, &sop);
+	  if (!val || !integer_onep (val))
 	    return false;
-
-	  /* Limit the number of cases we have to consider.  */
-	  if (rhs_code == EQ_EXPR)
-	    {
-	      rhs_code = NE_EXPR;
-	      op1 = fold_unary (TRUTH_NOT_EXPR, TREE_TYPE (op1), op1);
-	    }
-	}
-      else
-	{
-	  /* Punt on A == B as there is no BIT_XNOR_EXPR.  */
-	  if (rhs_code == EQ_EXPR)
-	    return false;
-
-	  if (TYPE_PRECISION (TREE_TYPE (op1)) != 1)
-	    {
-	      vr = get_value_range (op1);
-	      val = compare_range_with_value (GE_EXPR, vr, integer_zero_node, &sop);
-	      if (!val || !integer_onep (val))
-	        return false;
-
-	      val = compare_range_with_value (LE_EXPR, vr, integer_one_node, &sop);
-	      if (!val || !integer_onep (val))
-	        return false;
-	    }
 	}
     }
 
@@ -7514,11 +7499,9 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
 	{
 	case EQ_EXPR:
 	case NE_EXPR:
-	case TRUTH_NOT_EXPR:
-          /* Transform EQ_EXPR, NE_EXPR, TRUTH_NOT_EXPR into BIT_XOR_EXPR
-	     or identity if the RHS is zero or one, and the LHS are known
-	     to be boolean values.  Transform all TRUTH_*_EXPR into
-             BIT_*_EXPR if both arguments are known to be boolean values.  */
+          /* Transform EQ_EXPR, NE_EXPR into BIT_XOR_EXPR or identity
+	     if the RHS is zero or one, and the LHS are known to be boolean
+	     values.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
 	    return simplify_truth_ops_using_ranges (gsi, stmt);
 	  break;
