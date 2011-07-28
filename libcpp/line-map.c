@@ -34,7 +34,6 @@ linemap_init (struct line_maps *set)
   set->maps = NULL;
   set->allocated = 0;
   set->used = 0;
-  set->last_listed = -1;
   set->trace_includes = false;
   set->depth = 0;
   set->cache = 0;

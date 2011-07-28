@@ -76,11 +76,6 @@ struct GTY(()) line_maps {
 
   unsigned int cache;
 
-  /* The most recently listed include stack, if any, starts with
-     LAST_LISTED as the topmost including file.  -1 indicates nothing
-     has been listed yet.  */
-  int last_listed;
-
   /* Depth of the include stack, including the current file.  */
   unsigned int depth;
 
