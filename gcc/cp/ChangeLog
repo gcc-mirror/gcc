@@ -1,3 +1,8 @@
+2011-07-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/49813
+	* semantics.c (potential_constant_expression_1):  Handle FMA_EXPR.
+
 2011-07-27  Jeffrey Yasskin  <jyasskin@google.com>
 
 	* pt.c (build_template_decl): Copy the function_decl's
