@@ -1,7 +1,7 @@
 2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.md (*tls_global_dynamic_64): Update length
-	attribute.
+	* config/i386/i386.md (*tls_global_dynamic_64): Update
+	length attribute.
 
 2011-07-28  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -4601,24 +4601,12 @@
 	* regrename.c (scan_rtx_reg): Handle the case where we write to an
 	open chain in a smaller mode without failing the entire block.
 
-2011-06-20  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR middle-end/47725
-	* combine.c (cant_combine_insn_p): Don't check zero/sign
-	extended hard registers.
-
 2011-06-21  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_cannot_force_const_mem): Match
 	CONST high part large-toc address.
 	(rs6000_tls_referenced_p): Make static.
 	* config/rs6000/rs6000-protos.h (rs6000_tls_referenced_p): Delete.
-
-2011-06-20  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR middle-end/47725
-	* combine.c (cant_combine_insn_p): Check zero/sign extended
-	hard registers.
 
 2011-06-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
@@ -18331,18 +18319,6 @@
 	* expr.c (expand_expr_addr_expr_1): Use simplify_gen_binary
 	instead of gen_rtx_PLUS if EXPAND_SUM or EXPAND_INITIALIZER.
 
-2011-03-17  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR middle-end/47725
-	* combine.c (cant_combine_insn_p): Don't check zero/sign
-	extended hard registers.
-
-2011-03-17  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR middle-end/47725
-	* combine.c (cant_combine_insn_p): Check zero/sign extended
-	hard registers.
-
 2011-03-17  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/v850/v850.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
@@ -19734,11 +19710,6 @@
 	handle them like argument loads from stack slots.  Do not double
 	count memory for memory constants and argument loads from stack slots.
 
-2011-02-15  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR middle-end/47725
-	* combine.c (cant_combine_insn_p): Revert the last change.
-
 2011-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/47755
@@ -19832,12 +19803,6 @@
 	mode values.
 	(cmp_liw, liw_cmp): Likewise.  Plus fix order of operands in the
 	instruction.
-
-2011-02-15  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR middle-end/47725
-	* combine.c (cant_combine_insn_p): Check zero/sign extended
-	hard registers.
 
 2011-02-15  Richard Guenther  <rguenther@suse.de>
 
