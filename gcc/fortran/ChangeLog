@@ -1,3 +1,9 @@
+2011-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/31067
+	* frontend-passes.c (optimize_minmaxloc): New function.
+	(optimize_expr): Call it.
+
 2011-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45586

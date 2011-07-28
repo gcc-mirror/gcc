@@ -1,5 +1,5 @@
 /* Pass manager for Fortran front end.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
    Contributed by Thomas König.
 
 This file is part of GCC.
@@ -36,6 +36,7 @@ static bool optimize_op (gfc_expr *);
 static bool optimize_comparison (gfc_expr *, gfc_intrinsic_op);
 static bool optimize_trim (gfc_expr *);
 static bool optimize_lexical_comparison (gfc_expr *);
+static void optimize_minmaxloc (gfc_expr **);
 
 /* How deep we are inside an argument list.  */
 
@@ -128,6 +129,17 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   if ((*e)->expr_type == EXPR_OP && optimize_op (*e))
     gfc_simplify_expr (*e, 0);
+
+  if ((*e)->expr_type == EXPR_FUNCTION && (*e)->value.function.isym)
+    switch ((*e)->value.function.isym->id)
+      {
+      case GFC_ISYM_MINLOC:
+      case GFC_ISYM_MAXLOC:
+	optimize_minmaxloc (e);
+	break;
+      default:
+	break;
+      }
 
   if (function_expr)
     count_arglist --;
@@ -860,6 +872,49 @@ optimize_trim (gfc_expr *e)
   gcc_assert (*rr == NULL);
   *rr = ref;
   return true;
+}
+
+/* Optimize minloc(b), where b is rank 1 array, into
+   (/ minloc(b, dim=1) /), and similarly for maxloc,
+   as the latter forms are expanded inline.  */
+
+static void
+optimize_minmaxloc (gfc_expr **e)
+{
+  gfc_expr *fn = *e;
+  gfc_actual_arglist *a;
+  char *name, *p;
+
+  if (fn->rank != 1
+      || fn->value.function.actual == NULL
+      || fn->value.function.actual->expr == NULL
+      || fn->value.function.actual->expr->rank != 1)
+    return;
+
+  *e = gfc_get_array_expr (fn->ts.type, fn->ts.kind, &fn->where);
+  (*e)->shape = fn->shape;
+  fn->rank = 0;
+  fn->shape = NULL;
+  gfc_constructor_append_expr (&(*e)->value.constructor, fn, &fn->where);
+
+  name = XALLOCAVEC (char, strlen (fn->value.function.name) + 1);
+  strcpy (name, fn->value.function.name);
+  p = strstr (name, "loc0");
+  p[3] = '1';
+  fn->value.function.name = gfc_get_string (name);
+  if (fn->value.function.actual->next)
+    {
+      a = fn->value.function.actual->next;
+      gcc_assert (a->expr == NULL);
+    }
+  else
+    {
+      a = gfc_get_actual_arglist ();
+      fn->value.function.actual->next = a;
+    }
+  a->expr = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
+				   &fn->where);
+  mpz_set_ui (a->expr->value.integer, 1);
 }
 
 #define WALK_SUBEXPR(NODE) \
