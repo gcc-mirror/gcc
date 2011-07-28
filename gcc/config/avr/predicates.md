@@ -155,10 +155,34 @@
        (ior (match_test "register_operand (XEXP (op, 0), mode)")
             (match_test "CONSTANT_ADDRESS_P (XEXP (op, 0))"))))
 
+;; For some insns we must ensure that no hard register is inserted
+;; into their operands because the insns are split and the split
+;; involves hard registers.  An example are divmod insn that are
+;; split to insns that represent implicit library calls.
+
 ;; True for register that is pseudo register.
 (define_predicate "pseudo_register_operand"
-  (and (match_code "reg")
-       (match_test "!HARD_REGISTER_P (op)")))
+  (and (match_operand 0 "register_operand")
+       (not (and (match_code "reg")
+                 (match_test "HARD_REGISTER_P (op)")))))
+
+;; True for operand that is pseudo register or CONST_INT.
+(define_predicate "pseudo_register_or_const_int_operand"
+  (ior (match_operand 0 "const_int_operand")
+       (match_operand 0 "pseudo_register_operand")))
+
+;; We keep combiner from inserting hard registers into the input of sign- and
+;; zero-extends.  A hard register in the input operand is not wanted because
+;; 32-bit multiply patterns clobber some hard registers and extends with a
+;; hard register that overlaps these clobbers won't combine to a widening
+;; multiplication.  There is no need for combine to propagate or insert
+;; hard registers, register allocation can do it just as well.
+
+;; True for operand that is pseudo register at combine time.
+(define_predicate "combine_pseudo_register_operand"
+  (ior (match_operand 0 "pseudo_register_operand")
+       (and (match_operand 0 "register_operand")
+            (match_test "reload_completed || reload_in_progress"))))
 
 ;; Return true if OP is a constant integer that is either
 ;; 8 or 16 or 24.
@@ -189,3 +213,18 @@
 (define_predicate "register_or_s9_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "s9_operand")))
+
+;; Unsigned CONST_INT that fits in 16 bits, i.e. 0..65536.
+(define_predicate "u16_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, (1<<16)-1)")))
+
+;; Signed CONST_INT that fits in 16 bits, i.e. -32768..32767.
+(define_predicate "s16_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -(1<<15), (1<<15)-1)")))
+
+;; One-extended CONST_INT that fits in 16 bits, i.e. -65536..-1.
+(define_predicate "o16_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), -(1<<16), -1)")))

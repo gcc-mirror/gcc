@@ -41,7 +41,9 @@ LIB1ASMFUNCS = \
 	_mulhi3 \
 	_mulhisi3 \
 	_umulhisi3 \
-	_xmulhisi3_exit \
+	_usmulhisi3 \
+	_muluhisi3 \
+	_mulshisi3 \
 	_mulsi3 \
 	_udivmodqi4 \
 	_divmodqi4 \
