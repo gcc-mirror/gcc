@@ -1254,6 +1254,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
     {
 #ifdef HAVE_return
 	emit_jump_insn_after_setloc (gen_return (), BB_END (jump_block), loc);
+	JUMP_LABEL (BB_END (jump_block)) = ret_rtx;
 #else
 	gcc_unreachable ();
 #endif
