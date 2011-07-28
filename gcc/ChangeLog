@@ -1,5 +1,11 @@
 2011-07-28  Georg-Johann Lay  <avr@gjlay.de>
 	
+	PR target/49313
+	Undo r176835 from trunk
+	2011-07-27  Georg-Johann Lay
+
+2011-07-28  Georg-Johann Lay  <avr@gjlay.de>
+	
 	PR target/49687
 	* config/avr/t-avr (LIB1ASMFUNCS): Remove _xmulhisi3_exit.
 	Add _muluhisi3, _mulshisi3, _usmulhisi3.
