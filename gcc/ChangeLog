@@ -1,3 +1,10 @@
+2011-07-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/49876
+	* sese.c (rename_uses): Do not return false on gloog_error: set
+	the new_expr to integer_zero_node and continue code generation.
+	(graphite_copy_stmts_from_block): Remove early exit on gloog_error.
+
 2011-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/49846
