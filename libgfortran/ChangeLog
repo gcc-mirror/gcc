@@ -1,3 +1,12 @@
+2011-07-28  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2011-07-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49791
+	* io/list_read.c (nml_parse_qualifier): Remove check to
+	enabled extended read for another case.
+
 2011-04-16  Release Manager
 
 	* GCC 4.4.6 released.
