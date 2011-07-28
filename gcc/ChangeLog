@@ -1,8 +1,12 @@
+2011-07-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (pic_32bit_opreand): Do not define as
+	special predicate.  Remove explicit mode checks.
+
 2011-07-28  Jakub Jelinek  <jakub@redhat.com>
 
-	* dwarf2out.c (resolve_addr): For -gdwarf-2 don't
-	optimize DW_AT_data_member_location containing just
-	DW_OP_plus_uconst.
+	* dwarf2out.c (resolve_addr): For -gdwarf-2 don't optimize
+	DW_AT_data_member_location containing just DW_OP_plus_uconst.
 
 	PR debug/49871
 	* dwarf2out.c (size_of_die, value_format, output_die): Use
@@ -38,7 +42,7 @@
 
 	* config/arm/vfp.md ("*movdf_vfp"): Handle the VFP constraints
 	before the core constraints. Adjust attributes.
-	(*thumb2_movdf_vfp"): Likewise.
+	("*thumb2_movdf_vfp"): Likewise.
 
 2011-07-28  Kai Tietz  <ktietz@redhat.com>
 
@@ -178,8 +182,8 @@
 
 2011-07-27  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/predicates.md (x86_64_movabs_operand): Reject
-	pic32_bit_operand RTXes.
+	* config/i386/predicates.md (x86_64_movabs_operand): Return false
+	for pic_32bit_operand RTXes.
 	* config/i386/i386.c (ix86_expand_move): Check x86_64_movabs_operand
 	in DImode.
 
