@@ -1,3 +1,55 @@
+2011-07-28  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/49687
+	* config/avr/t-avr (LIB1ASMFUNCS): Remove _xmulhisi3_exit.
+	Add _muluhisi3, _mulshisi3, _usmulhisi3.
+	* config/avr/libgcc.S (__mulsi3): Rewrite.
+	(__mulhisi3): Rewrite.
+	(__umulhisi3): Rewrite.
+	(__usmulhisi3): New.
+	(__muluhisi3): New.
+	(__mulshisi3): New.
+	(__mulohisi3): New.
+	(__mulqi3, __mulqihi3, __umulqihi3, __mulhi3): Use DEFUN/ENDF to
+	declare.
+	* config/avr/predicates.md (pseudo_register_operand): Rewrite.
+	(pseudo_register_or_const_int_operand): New.
+	(combine_pseudo_register_operand): New.
+	(u16_operand): New.
+	(s16_operand): New.
+	(o16_operand): New.
+	* config/avr/avr.c (avr_rtx_costs): Handle costs for mult:SI.
+	* config/avr/avr.md (QIHI, QIHI2): New mode iterators.
+	(any_extend, any_extend2): New code iterators.
+	(extend_prefix): New code attribute.
+	(mulsi3): Rewrite. Turn insn to expander.
+	(mulhisi3): Ditto.
+	(umulhisi3): Ditto.
+	(usmulhisi3): New expander.
+	(*mulsi3): New insn-and-split.
+	(mulu<mode>si3): New insn-and-split.
+	(muls<mode>si3): New insn-and-split.
+	(mulohisi3): New insn-and-split.
+	(*uumulqihisi3, *uumulhiqisi3, *uumulhihisi3, *uumulqiqisi3,
+	*usmulqihisi3, *usmulhiqisi3, *usmulhihisi3, *usmulqiqisi3,
+	*sumulqihisi3, *sumulhiqisi3, *sumulhihisi3, *sumulqiqisi3,
+	*ssmulqihisi3, *ssmulhiqisi3, *ssmulhihisi3, *ssmulqiqisi3): New
+	insn-and-split.
+	(*mulsi3_call): Rewrite.
+	(*mulhisi3_call): Rewrite.
+	(*umulhisi3_call): Rewrite.
+	(*usmulhisi3_call): New insn.
+	(*muluhisi3_call): New insn.
+	(*mulshisi3_call): New insn.
+	(*mulohisi3_call): New insn.
+	(extendqihi2): Use combine_pseudo_register_operand as predicate
+	for operand 1.
+	(extendqisi2): Ditto.
+	(zero_extendqihi2): Ditto.
+	(zero_extendqisi2): Ditto.
+	(zero_extendhisi2): Ditto.
+	(extendhisi2): Ditto. Don't early-clobber operand 0.
+
 2011-07-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (add->lea splitter): Add SWI mode to PLUS RTX.

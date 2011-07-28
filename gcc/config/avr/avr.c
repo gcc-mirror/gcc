@@ -5515,6 +5515,34 @@ avr_rtx_costs (rtx x, int codearg, int outer_code ATTRIBUTE_UNUSED, int *total,
 	    return false;
 	  break;
 
+	case SImode:
+	  if (AVR_HAVE_MUL)
+            {
+              if (!speed)
+                {
+                  /* Add some additional costs besides CALL like moves etc.  */
+
+                  *total = COSTS_N_INSNS (AVR_HAVE_JMP_CALL ? 5 : 4);
+                }
+              else
+                {
+                  /* Just a rough estimate.  Even with -O2 we don't want bulky
+                     code expanded inline.  */
+
+                  *total = COSTS_N_INSNS (25);
+                }
+            }
+          else
+            {
+              if (speed)
+                *total = COSTS_N_INSNS (300);
+              else
+                /* Add some additional costs besides CALL like moves etc.  */
+                *total = COSTS_N_INSNS (AVR_HAVE_JMP_CALL ? 5 : 4);
+            }
+          
+          return true;
+          
 	default:
 	  return false;
 	}

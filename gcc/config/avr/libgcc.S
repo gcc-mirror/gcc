@@ -72,10 +72,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 .endm
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 /* Note: mulqi3, mulhi3 are open-coded on the enhanced core.  */
 #if !defined (__AVR_HAVE_MUL__)
 /*******************************************************
-               Multiplication  8 x 8
+    Multiplication  8 x 8  without MUL
 *******************************************************/
 #if defined (L_mulqi3)
 
@@ -83,9 +84,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define	r_arg1 	r24		/* multiplier */
 #define r_res	__tmp_reg__	/* result */
 
-	.global	__mulqi3
-	.func	__mulqi3
-__mulqi3:
+DEFUN __mulqi3
 	clr	r_res		; clear result
 __mulqi3_loop:
 	sbrc	r_arg1,0
@@ -97,18 +96,16 @@ __mulqi3_loop:
 __mulqi3_exit:	
 	mov	r_arg1,r_res	; result to return register
 	ret
+ENDF __mulqi3
 
 #undef r_arg2  
 #undef r_arg1  
 #undef r_res   
 	
-.endfunc
 #endif 	/* defined (L_mulqi3) */
 
 #if defined (L_mulqihi3)
-	.global	__mulqihi3
-	.func	__mulqihi3
-__mulqihi3:
+DEFUN __mulqihi3
 	clr	r25
 	sbrc	r24, 7
 	dec	r25
@@ -116,21 +113,19 @@ __mulqihi3:
 	sbrc	r22, 7
 	dec	r22
 	rjmp	__mulhi3
-	.endfunc
+ENDF __mulqihi3:
 #endif /* defined (L_mulqihi3) */
 
 #if defined (L_umulqihi3)
-	.global	__umulqihi3
-	.func	__umulqihi3
-__umulqihi3:
+DEFUN __umulqihi3
 	clr	r25
 	clr	r23
 	rjmp	__mulhi3
-	.endfunc
+ENDF __umulqihi3
 #endif /* defined (L_umulqihi3) */
 
 /*******************************************************
-               Multiplication  16 x 16
+    Multiplication  16 x 16  without MUL
 *******************************************************/
 #if defined (L_mulhi3)
 #define	r_arg1L	r24		/* multiplier Low */
@@ -140,9 +135,7 @@ __umulqihi3:
 #define r_resL	__tmp_reg__	/* result Low */
 #define r_resH  r21		/* result High */
 
-	.global	__mulhi3
-	.func	__mulhi3
-__mulhi3:
+DEFUN __mulhi3
 	clr	r_resH		; clear result
 	clr	r_resL		; clear result
 __mulhi3_loop:
@@ -166,6 +159,7 @@ __mulhi3_exit:
 	mov	r_arg1H,r_resH	; result to return register
 	mov	r_arg1L,r_resL
 	ret
+ENDF __mulhi3
 
 #undef r_arg1L
 #undef r_arg1H
@@ -174,167 +168,50 @@ __mulhi3_exit:
 #undef r_resL 	
 #undef r_resH 
 
-.endfunc
 #endif /* defined (L_mulhi3) */
-#endif /* !defined (__AVR_HAVE_MUL__) */
 
 /*******************************************************
-      Widening Multiplication  32 = 16 x 16
+    Widening Multiplication  32 = 16 x 16  without MUL
 *******************************************************/
-                              
+
 #if defined (L_mulhisi3)
 DEFUN __mulhisi3
-#if defined (__AVR_HAVE_MUL__)
-
-;; r25:r22 = r19:r18 * r21:r20
-
-#define A0 18
-#define B0 20
-#define C0 22
-
-#define A1 A0+1
-#define B1 B0+1
-#define C1 C0+1
-#define C2 C0+2
-#define C3 C0+3
- 
-    ; C = (signed)A1 * (signed)B1
-    muls  A1, B1
-    movw  C2, R0
-
-    ; C += A0 * B0
-    mul   A0, B0
-    movw  C0, R0
-
-    ; C += (signed)A1 * B0
-    mulsu A1, B0
-    sbci  C3, 0
-    add   C1, R0
-    adc   C2, R1
-    clr   __zero_reg__
-    adc   C3, __zero_reg__
-
-    ; C += (signed)B1 * A0
-    mulsu B1, A0
-    sbci  C3, 0
-    XJMP  __xmulhisi3_exit
-
-#undef A0
-#undef A1
-#undef B0
-#undef B1
-#undef C0
-#undef C1
-#undef C2
-#undef C3
-
-#else /* !__AVR_HAVE_MUL__ */
 ;;; FIXME: This is dead code (noone calls it)
-	mov_l	r18, r24
-	mov_h	r19, r25
-	clr	r24
-	sbrc	r23, 7
-	dec	r24
-	mov	r25, r24
-	clr	r20
-	sbrc	r19, 7
-	dec	r20
-	mov	r21, r20
-	XJMP	__mulsi3
-#endif /* __AVR_HAVE_MUL__ */
+    mov_l   r18, r24
+    mov_h   r19, r25
+    clr     r24
+    sbrc    r23, 7
+    dec     r24
+    mov     r25, r24
+    clr     r20
+    sbrc    r19, 7
+    dec     r20
+    mov     r21, r20
+    XJMP    __mulsi3
 ENDF __mulhisi3
 #endif /* defined (L_mulhisi3) */
 
 #if defined (L_umulhisi3)
 DEFUN __umulhisi3
-#if defined (__AVR_HAVE_MUL__)
-
-;; r25:r22 = r19:r18 * r21:r20
-
-#define A0 18
-#define B0 20
-#define C0 22
-
-#define A1 A0+1
-#define B1 B0+1
-#define C1 C0+1
-#define C2 C0+2
-#define C3 C0+3
-
-    ; C = A1 * B1
-    mul   A1, B1
-    movw  C2, R0
-
-    ; C += A0 * B0
-    mul   A0, B0
-    movw  C0, R0
-
-    ; C += A1 * B0
-    mul   A1, B0
-    add   C1, R0
-    adc   C2, R1
-    clr   __zero_reg__
-    adc   C3, __zero_reg__
-
-    ; C += B1 * A0
-    mul   B1, A0
-    XJMP  __xmulhisi3_exit
-
-#undef A0
-#undef A1
-#undef B0
-#undef B1
-#undef C0
-#undef C1
-#undef C2
-#undef C3
-
-#else /* !__AVR_HAVE_MUL__ */
 ;;; FIXME: This is dead code (noone calls it)
-	mov_l	r18, r24
-	mov_h	r19, r25
-	clr	r24
-	clr	r25
-	clr	r20
-	clr	r21
-	XJMP	__mulsi3
-#endif /* __AVR_HAVE_MUL__ */
+    mov_l   r18, r24
+    mov_h   r19, r25
+    clr     r24
+    clr     r25
+    mov_l   r20, r24
+    mov_h   r21, r25
+    XJMP    __mulsi3
 ENDF __umulhisi3
 #endif /* defined (L_umulhisi3) */
 
-#if defined (L_xmulhisi3_exit)
-
-;;; Helper for __mulhisi3 resp. __umulhisi3.
-
-#define C0 22
-#define C1 C0+1
-#define C2 C0+2
-#define C3 C0+3
-
-DEFUN __xmulhisi3_exit
-    add   C1, R0
-    adc   C2, R1
-    clr   __zero_reg__
-    adc   C3, __zero_reg__
-    ret
-ENDF __xmulhisi3_exit
-
-#undef C0
-#undef C1
-#undef C2
-#undef C3
-
-#endif /* defined (L_xmulhisi3_exit) */
-
 #if defined (L_mulsi3)
 /*******************************************************
-               Multiplication  32 x 32
+    Multiplication  32 x 32  without MUL
 *******************************************************/
 #define r_arg1L  r22		/* multiplier Low */
 #define r_arg1H  r23
 #define	r_arg1HL r24
 #define	r_arg1HH r25		/* multiplier High */
-
 
 #define	r_arg2L  r18		/* multiplicand Low */
 #define	r_arg2H  r19	
@@ -346,43 +223,7 @@ ENDF __xmulhisi3_exit
 #define r_resHL	 r30
 #define r_resHH  r31		/* result High */
 
-	
-	.global	__mulsi3
-	.func	__mulsi3
-__mulsi3:
-#if defined (__AVR_HAVE_MUL__)
-	mul	r_arg1L, r_arg2L
-	movw	r_resL, r0
-	mul	r_arg1H, r_arg2H
-	movw	r_resHL, r0
-	mul	r_arg1HL, r_arg2L
-	add	r_resHL, r0
-	adc	r_resHH, r1
-	mul	r_arg1L, r_arg2HL
-	add	r_resHL, r0
-	adc	r_resHH, r1
-	mul	r_arg1HH, r_arg2L
-	add	r_resHH, r0
-	mul	r_arg1HL, r_arg2H
-	add	r_resHH, r0
-	mul	r_arg1H, r_arg2HL
-	add	r_resHH, r0
-	mul	r_arg1L, r_arg2HH
-	add	r_resHH, r0
-	clr	r_arg1HH	; use instead of __zero_reg__ to add carry
-	mul	r_arg1H, r_arg2L
-	add	r_resH, r0
-	adc	r_resHL, r1
-	adc	r_resHH, r_arg1HH ; add carry
-	mul	r_arg1L, r_arg2H
-	add	r_resH, r0
-	adc	r_resHL, r1
-	adc	r_resHH, r_arg1HH ; add carry
-	movw	r_arg1L, r_resL
-	movw	r_arg1HL, r_resHL
-	clr	r1		; __zero_reg__ clobbered by "mul"
-	ret
-#else
+DEFUN __mulsi3
 	clr	r_resHH		; clear result
 	clr	r_resHL		; clear result
 	clr	r_resH		; clear result
@@ -414,12 +255,12 @@ __mulsi3_exit:
 	mov_h	r_arg1H,r_resH
 	mov_l	r_arg1L,r_resL
 	ret
-#endif /* defined (__AVR_HAVE_MUL__) */
+ENDF __mulsi3
+
 #undef r_arg1L 
 #undef r_arg1H 
 #undef r_arg1HL
 #undef r_arg1HH
-             
              
 #undef r_arg2L 
 #undef r_arg2H 
@@ -431,9 +272,181 @@ __mulsi3_exit:
 #undef r_resHL 
 #undef r_resHH 
 
-.endfunc
 #endif /* defined (L_mulsi3) */
+
+#endif /* !defined (__AVR_HAVE_MUL__) */
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#if defined (__AVR_HAVE_MUL__)    
+#define A0 26
+#define B0 18
+#define C0 22
+
+#define A1 A0+1
+
+#define B1 B0+1
+#define B2 B0+2
+#define B3 B0+3
+
+#define C1 C0+1
+#define C2 C0+2
+#define C3 C0+3
+
+/*******************************************************
+    Widening Multiplication  32 = 16 x 16
+*******************************************************/
+                              
+#if defined (L_mulhisi3)
+;;; R25:R22 = (signed long) R27:R26 * (signed long) R19:R18
+;;; C3:C0   = (signed long) A1:A0   * (signed long) B1:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __mulhisi3
+    XCALL   __umulhisi3
+    ;; Sign-extend B
+    tst     B1
+    brpl    1f
+    sub     C2, A0
+    sbc     C3, A1
+1:  ;; Sign-extend A
+    XJMP __usmulhisi3_tail
+ENDF __mulhisi3
+#endif /* L_mulhisi3 */
+
+#if defined (L_usmulhisi3)
+;;; R25:R22 = (signed long) R27:R26 * (unsigned long) R19:R18
+;;; C3:C0   = (signed long) A1:A0   * (unsigned long) B1:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __usmulhisi3
+    XCALL   __umulhisi3
+    ;; FALLTHRU
+ENDF __usmulhisi3
+
+DEFUN __usmulhisi3_tail
+    ;; Sign-extend A
+    sbrs    A1, 7
+    ret
+    sub     C2, B0
+    sbc     C3, B1
+    ret
+ENDF __usmulhisi3_tail
+#endif /* L_usmulhisi3 */
+
+#if defined (L_umulhisi3)
+;;; R25:R22 = (unsigned long) R27:R26 * (unsigned long) R19:R18
+;;; C3:C0   = (unsigned long) A1:A0   * (unsigned long) B1:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __umulhisi3
+    mul     A0, B0
+    movw    C0, r0
+    mul     A1, B1
+    movw    C2, r0
+    mul     A0, B1
+    rcall   1f
+    mul     A1, B0
+1:  add     C1, r0
+    adc     C2, r1
+    clr     __zero_reg__
+    adc     C3, __zero_reg__
+    ret
+ENDF __umulhisi3
+#endif /* L_umulhisi3 */
+
+/*******************************************************
+    Widening Multiplication  32 = 16 x 32
+*******************************************************/
+
+#if defined (L_mulshisi3)
+;;; R25:R22 = (signed long) R27:R26 * R21:R18
+;;; (C3:C0) = (signed long) A1:A0   * B3:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __mulshisi3
+#ifdef __AVR_HAVE_JMP_CALL__
+    ;; Some cores have problem skipping 2-word instruction
+    tst     A1
+    brmi    __mulohisi3
+#else
+    sbrs    A1, 7
+#endif /* __AVR_HAVE_JMP_CALL__ */
+    XJMP    __muluhisi3
+    ;; FALLTHRU
+ENDF __mulshisi3
+    
+;;; R25:R22 = (one-extended long) R27:R26 * R21:R18
+;;; (C3:C0) = (one-extended long) A1:A0   * B3:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __mulohisi3
+    XCALL   __muluhisi3
+    ;; One-extend R27:R26 (A1:A0)
+    sub     C2, B0
+    sbc     C3, B1
+    ret
+ENDF __mulohisi3
+#endif /* L_mulshisi3 */
+
+#if defined (L_muluhisi3)
+;;; R25:R22 = (unsigned long) R27:R26 * R21:R18
+;;; (C3:C0) = (unsigned long) A1:A0   * B3:B0
+;;; Clobbers: __tmp_reg__
+DEFUN __muluhisi3
+    XCALL   __umulhisi3
+    mul     A0, B3
+    add     C3, r0
+    mul     A1, B2
+    add     C3, r0
+    mul     A0, B2
+    add     C2, r0
+    adc     C3, r1
+    clr     __zero_reg__
+    ret
+ENDF __muluhisi3
+#endif /* L_muluhisi3 */
+
+/*******************************************************
+    Multiplication  32 x 32
+*******************************************************/
+
+#if defined (L_mulsi3)
+;;; R25:R22 = R25:R22 * R21:R18
+;;; (C3:C0) = C3:C0   * B3:B0
+;;; Clobbers: R26, R27, __tmp_reg__
+DEFUN __mulsi3
+    movw    A0, C0
+    push    C2
+    push    C3
+    XCALL   __muluhisi3
+    pop     A1
+    pop     A0
+    ;; A1:A0 now contains the high word of A
+    mul     A0, B0
+    add     C2, r0
+    adc     C3, r1
+    mul     A0, B1
+    add     C3, r0
+    mul     A1, B0
+    add     C3, r0
+    clr     __zero_reg__
+    ret
+ENDF __mulsi3
+#endif /* L_mulsi3 */
+
+#undef A0
+#undef A1
+
+#undef B0
+#undef B1
+#undef B2
+#undef B3
+
+#undef C0
+#undef C1
+#undef C2
+#undef C3
+
+#endif /* __AVR_HAVE_MUL__ */
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
+
 /*******************************************************
        Division 8 / 8 => (result + remainder)
 *******************************************************/
