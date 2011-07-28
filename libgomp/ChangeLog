@@ -1,3 +1,11 @@
+2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Add -march=i486
+	for ia32 instead of ilp32.
+
+	* testsuite/libgomp.c/atomic-1.c: Require ia32 instead of ilp32.
+	* testsuite/libgomp.c/atomic-6.c: Likewise.
+
 2011-07-23  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* testsuite/libgomp.graphite/force-parallel-1.c: Un-xfail.
