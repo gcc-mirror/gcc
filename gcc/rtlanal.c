@@ -2660,8 +2660,11 @@ tablejump_p (const_rtx insn, rtx *labelp, rtx *tablep)
 {
   rtx label, table;
 
-  if (JUMP_P (insn)
-      && (label = JUMP_LABEL (insn)) != NULL_RTX
+  if (!JUMP_P (insn))
+    return false;
+
+  label = JUMP_LABEL (insn);
+  if (label != NULL_RTX && !ANY_RETURN_P (label)
       && (table = next_active_insn (label)) != NULL_RTX
       && JUMP_TABLE_DATA_P (table))
     {

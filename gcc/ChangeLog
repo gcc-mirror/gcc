@@ -1,3 +1,49 @@
+2011-07-28  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* rtlanal.c (tablejump_p): False for returns.
+	* reorg.c (first_active_target_insn): New static function.
+	(find_end_label): Set JUMP_LABEL for a new returnjump.
+	(optimize_skip, get_jump_flags, rare_destination,
+	mostly_true_jump, get_branch_condition,
+	steal_delay_list_from_target, own_thread_p,
+	fill_simple_delay_slots, follow_jumps, fill_slots_from_thread,
+	fill_eager_delay_slots, relax_delay_slots, make_return_insns,
+	dbr_schedule): Adjust to handle ret_rtx in JUMP_LABELs.
+	* jump.c (delete_related_insns): Likewise.
+	(jump_to_label_p): New function.
+	(redirect_target): New static function.
+	(redirect_exp_1): Use it.  Adjust to handle ret_rtx in JUMP_LABELS.
+	(redirect_jump_1): Assert that the new label is nonnull.
+	(redirect_jump): Likewise.
+	(redirect_jump_2): Check for ANY_RETURN_P rather than NULL labels.
+	* ifcvt.c (find_if_case_1): Take care when redirecting jumps to the
+	exit block.
+	(dead_or_predicable): Change NEW_DEST arg to DEST_EDGE.  All callers
+	changed.  Ensure that the right label is passed to redirect_jump.
+	* function.c (emit_return_into_block,
+	thread_prologue_and_epilogue_insns): Ensure new returnjumps have
+	ret_rtx in their JUMP_LABEL.
+	* print-rtl.c (print_rtx): Handle ret_rtx in a JUMP_LABEL.
+	* emit-rtl.c (skip_consecutive_labels): Allow the caller to
+	pass ret_rtx as label.
+	* cfglayout.c (fixup_reorder_chain): Use
+	force_nonfallthru_and_redirect rather than force_nonfallthru.
+	(duplicate_insn_chain): Copy JUMP_LABELs for returns.
+	* rtl.h (ANY_RETURN_P): New macro.
+	(jump_to_label_p): Declare.
+	* resource.c (find_dead_or_set_registers): Handle ret_rtx in
+	JUMP_LABELs.
+	(mark_target_live_regs): Likewise.
+	* basic-block.h (force_nonfallthru_and_redirect): Declare.
+	* cfgrtl.c (force_nonfallthru_and_redirect): No longer static.
+	* config/alpha/alpha.c (alpha_tablejump_addr_vec,
+	alpha_tablejump_best_label): Remove functions.
+	* config/alpha/alpha-protos.c (alpha_tablejump_addr_vec,
+	alpha_tablejump_best_label): Remove declarations.
+	* config/sh/sh.c (barrier_align, split_branches): Adjust for
+	ret_rtx in JUMP_LABELs.
+	* config/arm/arm.c (is_jump_table): Likewise.
+
 2011-07-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (pic_32bit_opreand): Do not define as

@@ -899,7 +899,7 @@ fixup_reorder_chain (void)
 	 Note force_nonfallthru can delete E_FALL and thus we have to
 	 save E_FALL->src prior to the call to force_nonfallthru.  */
       src_bb = e_fall->src;
-      nb = force_nonfallthru (e_fall);
+      nb = force_nonfallthru_and_redirect (e_fall, e_fall->dest);
       if (nb)
 	{
 	  nb->il.rtl->visited = 1;
@@ -1195,6 +1195,9 @@ duplicate_insn_chain (rtx from, rtx to)
 	      break;
 	    }
 	  copy = emit_copy_of_insn_after (insn, get_last_insn ());
+	  if (JUMP_P (insn) && JUMP_LABEL (insn) != NULL_RTX
+	      && ANY_RETURN_P (JUMP_LABEL (insn)))
+	    JUMP_LABEL (copy) = JUMP_LABEL (insn);
           maybe_copy_prologue_epilogue_insn (insn, copy);
 	  break;
 

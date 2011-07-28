@@ -11477,8 +11477,7 @@ is_jump_table (rtx insn)
 {
   rtx table;
 
-  if (GET_CODE (insn) == JUMP_INSN
-      && JUMP_LABEL (insn) != NULL
+  if (jump_to_label_p (insn)
       && ((table = next_real_insn (JUMP_LABEL (insn)))
 	  == next_real_insn (insn))
       && table != NULL
