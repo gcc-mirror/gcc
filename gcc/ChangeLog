@@ -1,5 +1,10 @@
 2011-07-28  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c: Replace v1, v2, lb, ub with
+	bound_one, bound_two.
+
+2011-07-28  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/48648
 	* graphite-clast-to-gimple.c (clast_get_body_of_loop): Handle
 	CLAST assignments.

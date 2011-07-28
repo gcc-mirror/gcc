@@ -61,32 +61,32 @@ graphite_verify (void)
 }
 
 /* Stores the INDEX in a vector and the loop nesting LEVEL for a given
-   clast NAME.  LB and UB represent the exact lower and upper bounds
-   that can be inferred from the polyhedral representation.  */
+   clast NAME.  BOUND_ONE and BOUND_TWO represent the exact lower and
+   upper bounds that can be inferred from the polyhedral representation.  */
 
 typedef struct clast_name_index {
   int index;
   int level;
-  mpz_t lb, ub;
+  mpz_t bound_one, bound_two;
   const char *name;
 } *clast_name_index_p;
 
 /* Returns a pointer to a new element of type clast_name_index_p built
-   from NAME, INDEX, LEVEL, LB, and UB.  */
+   from NAME, INDEX, LEVEL, BOUND_ONE, and BOUND_TWO.  */
 
 static inline clast_name_index_p
 new_clast_name_index (const char *name, int index, int level,
-		      mpz_t lb, mpz_t ub)
+		      mpz_t bound_one, mpz_t bound_two)
 {
   clast_name_index_p res = XNEW (struct clast_name_index);
 
   res->name = name;
   res->level = level;
   res->index = index;
-  mpz_init (res->lb);
-  mpz_init (res->ub);
-  mpz_set (res->lb, lb);
-  mpz_set (res->ub, ub);
+  mpz_init (res->bound_one);
+  mpz_init (res->bound_two);
+  mpz_set (res->bound_one, bound_one);
+  mpz_set (res->bound_two, bound_two);
   return res;
 }
 
@@ -96,8 +96,8 @@ static void
 free_clast_name_index (void *ptr)
 {
   struct clast_name_index *c = (struct clast_name_index *) ptr;
-  mpz_clear (c->lb);
-  mpz_clear (c->ub);
+  mpz_clear (c->bound_one);
+  mpz_clear (c->bound_two);
   free (ptr);
 }
 
@@ -152,12 +152,13 @@ clast_name_to_index (clast_name_p name, htab_t index_table)
   return -1;
 }
 
-/* For a given clast NAME, initializes the lower and upper bounds LB
-   and UB stored in the INDEX_TABLE.  Returns true when NAME has been
+/* For a given clast NAME, initializes the lower and upper bounds BOUND_ONE
+   and BOUND_TWO stored in the INDEX_TABLE.  Returns true when NAME has been
    found in the INDEX_TABLE, false otherwise.  */
 
 static inline bool
-clast_name_to_lb_ub (clast_name_p name, htab_t index_table, mpz_t lb, mpz_t ub)
+clast_name_to_lb_ub (clast_name_p name, htab_t index_table, mpz_t bound_one,
+		     mpz_t bound_two)
 {
   struct clast_name_index tmp;
   PTR *slot;
@@ -173,8 +174,8 @@ clast_name_to_lb_ub (clast_name_p name, htab_t index_table, mpz_t lb, mpz_t ub)
 
   if (slot && *slot)
     {
-      mpz_set (lb, ((struct clast_name_index *) *slot)->lb);
-      mpz_set (ub, ((struct clast_name_index *) *slot)->ub);
+      mpz_set (bound_one, ((struct clast_name_index *) *slot)->bound_one);
+      mpz_set (bound_two, ((struct clast_name_index *) *slot)->bound_two);
       return true;
     }
 
@@ -185,7 +186,7 @@ clast_name_to_lb_ub (clast_name_p name, htab_t index_table, mpz_t lb, mpz_t ub)
 
 static inline void
 save_clast_name_index (htab_t index_table, const char *name,
-		       int index, int level, mpz_t lb, mpz_t ub)
+		       int index, int level, mpz_t bound_one, mpz_t bound_two)
 {
   struct clast_name_index tmp;
   PTR *slot;
@@ -197,7 +198,7 @@ save_clast_name_index (htab_t index_table, const char *name,
     {
       free (*slot);
 
-      *slot = new_clast_name_index (name, index, level, lb, ub);
+      *slot = new_clast_name_index (name, index, level, bound_one, bound_two);
     }
 }
 
@@ -439,17 +440,18 @@ clast_to_gcc_expression (tree type, struct clast_expr *e, ivs_params_p ip)
   return NULL_TREE;
 }
 
-/* Return a type that could represent the values between V1 and V2.  */
+/* Return a type that could represent the values between BOUND_ONE and
+   BOUND_TWO.  */
 
 static tree
-type_for_interval (mpz_t v1, mpz_t v2)
+type_for_interval (mpz_t bound_one, mpz_t bound_two)
 {
   bool unsigned_p;
   tree type;
   enum machine_mode mode;
   int wider_precision;
-  int precision = MAX (mpz_sizeinbase (v1, 2),
-		       mpz_sizeinbase (v2, 2));
+  int precision = MAX (mpz_sizeinbase (bound_one, 2),
+		       mpz_sizeinbase (bound_two, 2));
 
   if (precision > BITS_PER_WORD)
     {
@@ -457,16 +459,16 @@ type_for_interval (mpz_t v1, mpz_t v2)
       return integer_type_node;
     }
 
-  if (mpz_cmp (v1, v2) <= 0)
-    unsigned_p = (mpz_sgn (v1) >= 0);
+  if (mpz_cmp (bound_one, bound_two) <= 0)
+    unsigned_p = (mpz_sgn (bound_one) >= 0);
   else
-    unsigned_p = (mpz_sgn (v2) >= 0);
+    unsigned_p = (mpz_sgn (bound_two) >= 0);
 
   mode = smallest_mode_for_size (precision, MODE_INT);
   wider_precision = GET_MODE_PRECISION (mode);
 
   /* As we want to generate signed types as much as possible, try to
-     fit the interval [v1, v2] in a signed type.  For example,
+     fit the interval [bound_one, bound_two] in a signed type.  For example,
      supposing that we have the interval [0, 100], instead of
      generating unsigned char, we want to generate a signed char.  */
   if (unsigned_p && precision < wider_precision)
@@ -492,11 +494,12 @@ type_for_value (mpz_t val)
   return type_for_interval (val, val);
 }
 
-/* Return the type for the clast_term T.  Initializes V1 and V2 to the
-   bounds of the term.  */
+/* Return the type for the clast_term T.  Initializes BOUND_ONE and
+   BOUND_TWO to the bounds of the term.  */
 
 static tree
-type_for_clast_term (struct clast_term *t, ivs_params_p ip, mpz_t v1, mpz_t v2)
+type_for_clast_term (struct clast_term *t, ivs_params_p ip, mpz_t bound_one,
+		     mpz_t bound_two)
 {
   clast_name_p name = t->var;
   bool found = false;
@@ -505,23 +508,24 @@ type_for_clast_term (struct clast_term *t, ivs_params_p ip, mpz_t v1, mpz_t v2)
 
   if (!name)
     {
-      mpz_set (v1, t->val);
-      mpz_set (v2, t->val);
+      mpz_set (bound_one, t->val);
+      mpz_set (bound_two, t->val);
       return type_for_value (t->val);
     }
 
   if (ip->params && ip->params_index)
-    found = clast_name_to_lb_ub (name, ip->params_index, v1, v2);
+    found = clast_name_to_lb_ub (name, ip->params_index, bound_one, bound_two);
 
   if (!found)
     {
       gcc_assert (*(ip->newivs) && ip->newivs_index);
-      found = clast_name_to_lb_ub (name, ip->newivs_index, v1, v2);
+      found = clast_name_to_lb_ub (name, ip->newivs_index,
+				   bound_one, bound_two);
       gcc_assert (found);
     }
 
-  mpz_mul (v1, v1, t->val);
-  mpz_mul (v2, v2, t->val);
+  mpz_mul (bound_one, bound_one, t->val);
+  mpz_mul (bound_two, bound_two, t->val);
 
   return TREE_TYPE (clast_name_to_gcc (name, ip));
 }
@@ -529,15 +533,15 @@ type_for_clast_term (struct clast_term *t, ivs_params_p ip, mpz_t v1, mpz_t v2)
 static tree
 type_for_clast_expr (struct clast_expr *, ivs_params_p, mpz_t, mpz_t);
 
-/* Return the type for the clast_reduction R.  Initializes V1 and V2
-   to the bounds of the reduction expression.  */
+/* Return the type for the clast_reduction R.  Initializes BOUND_ONE
+   and BOUND_TWO to the bounds of the reduction expression.  */
 
 static tree
 type_for_clast_red (struct clast_reduction *r, ivs_params_p ip,
-		    mpz_t v1, mpz_t v2)
+		    mpz_t bound_one, mpz_t bound_two)
 {
   int i;
-  tree type = type_for_clast_expr (r->elts[0], ip, v1, v2);
+  tree type = type_for_clast_expr (r->elts[0], ip, bound_one, bound_two);
   mpz_t b1, b2, m1, m2;
 
   if (r->n == 1)
@@ -556,23 +560,23 @@ type_for_clast_red (struct clast_reduction *r, ivs_params_p ip,
       switch (r->type)
 	{
 	case clast_red_sum:
-	  value_min (m1, v1, v2);
+	  value_min (m1, bound_one, bound_two);
 	  value_min (m2, b1, b2);
-	  mpz_add (v1, m1, m2);
+	  mpz_add (bound_one, m1, m2);
 
-	  value_max (m1, v1, v2);
+	  value_max (m1, bound_one, bound_two);
 	  value_max (m2, b1, b2);
-	  mpz_add (v2, m1, m2);
+	  mpz_add (bound_two, m1, m2);
 	  break;
 
 	case clast_red_min:
-	  value_min (v1, v1, v2);
-	  value_min (v2, b1, b2);
+	  value_min (bound_one, bound_one, bound_two);
+	  value_min (bound_two, b1, b2);
 	  break;
 
 	case clast_red_max:
-	  value_max (v1, v1, v2);
-	  value_max (v2, b1, b2);
+	  value_max (bound_one, bound_one, bound_two);
+	  value_max (bound_two, b1, b2);
 	  break;
 
 	default:
@@ -587,43 +591,45 @@ type_for_clast_red (struct clast_reduction *r, ivs_params_p ip,
   mpz_clear (m2);
 
   /* Return a type that can represent the result of the reduction.  */
-  return max_precision_type (type, type_for_interval (v1, v2));
+  return max_precision_type (type, type_for_interval (bound_one, bound_two));
 }
 
 /* Return the type for the clast_binary B used in STMT.  */
 
 static tree
-type_for_clast_bin (struct clast_binary *b, ivs_params_p ip, mpz_t v1, mpz_t v2)
+type_for_clast_bin (struct clast_binary *b, ivs_params_p ip, mpz_t bound_one,
+		    mpz_t bound_two)
 {
   mpz_t one;
-  tree l = type_for_clast_expr ((struct clast_expr *) b->LHS, ip, v1, v2);
+  tree l = type_for_clast_expr ((struct clast_expr *) b->LHS, ip,
+				bound_one, bound_two);
   tree r = type_for_value (b->RHS);
   tree type = max_precision_type (l, r);
 
   switch (b->type)
     {
     case clast_bin_fdiv:
-      mpz_mdiv (v1, v1, b->RHS);
-      mpz_mdiv (v2, v2, b->RHS);
+      mpz_mdiv (bound_one, bound_one, b->RHS);
+      mpz_mdiv (bound_two, bound_two, b->RHS);
       break;
 
     case clast_bin_cdiv:
-      mpz_mdiv (v1, v1, b->RHS);
-      mpz_mdiv (v2, v2, b->RHS);
+      mpz_mdiv (bound_one, bound_one, b->RHS);
+      mpz_mdiv (bound_two, bound_two, b->RHS);
       mpz_init (one);
-      mpz_add (v1, v1, one);
-      mpz_add (v2, v2, one);
+      mpz_add (bound_one, bound_one, one);
+      mpz_add (bound_two, bound_two, one);
       mpz_clear (one);
       break;
 
     case clast_bin_div:
-      mpz_div (v1, v1, b->RHS);
-      mpz_div (v2, v2, b->RHS);
+      mpz_div (bound_one, bound_one, b->RHS);
+      mpz_div (bound_two, bound_two, b->RHS);
       break;
 
     case clast_bin_mod:
-      mpz_mod (v1, v1, b->RHS);
-      mpz_mod (v2, v2, b->RHS);
+      mpz_mod (bound_one, bound_one, b->RHS);
+      mpz_mod (bound_two, bound_two, b->RHS);
       break;
 
     default:
@@ -631,25 +637,29 @@ type_for_clast_bin (struct clast_binary *b, ivs_params_p ip, mpz_t v1, mpz_t v2)
     }
 
   /* Return a type that can represent the result of the reduction.  */
-  return max_precision_type (type, type_for_interval (v1, v2));
+  return max_precision_type (type, type_for_interval (bound_one, bound_two));
 }
 
 /* Returns the type for the CLAST expression E when used in statement
    STMT.  */
 
 static tree
-type_for_clast_expr (struct clast_expr *e, ivs_params_p ip, mpz_t v1, mpz_t v2)
+type_for_clast_expr (struct clast_expr *e, ivs_params_p ip, mpz_t bound_one,
+		     mpz_t bound_two)
 {
   switch (e->type)
     {
     case clast_expr_term:
-      return type_for_clast_term ((struct clast_term *) e, ip, v1, v2);
+      return type_for_clast_term ((struct clast_term *) e, ip,
+				  bound_one, bound_two);
 
     case clast_expr_red:
-      return type_for_clast_red ((struct clast_reduction *) e, ip, v1, v2);
+      return type_for_clast_red ((struct clast_reduction *) e, ip,
+				 bound_one, bound_two);
 
     case clast_expr_bin:
-      return type_for_clast_bin ((struct clast_binary *) e, ip, v1, v2);
+      return type_for_clast_bin ((struct clast_binary *) e, ip,
+				 bound_one, bound_two);
 
     default:
       gcc_unreachable ();
@@ -663,17 +673,17 @@ type_for_clast_expr (struct clast_expr *e, ivs_params_p ip, mpz_t v1, mpz_t v2)
 static tree
 type_for_clast_eq (struct clast_equation *cleq, ivs_params_p ip)
 {
-  mpz_t v1, v2;
+  mpz_t bound_one, bound_two;
   tree l, r;
 
-  mpz_init (v1);
-  mpz_init (v2);
+  mpz_init (bound_one);
+  mpz_init (bound_two);
 
-  l = type_for_clast_expr (cleq->LHS, ip, v1, v2);
-  r = type_for_clast_expr (cleq->RHS, ip, v1, v2);
+  l = type_for_clast_expr (cleq->LHS, ip, bound_one, bound_two);
+  r = type_for_clast_expr (cleq->RHS, ip, bound_one, bound_two);
 
-  mpz_clear (v1);
-  mpz_clear (v2);
+  mpz_clear (bound_one);
+  mpz_clear (bound_two);
   return max_precision_type (l, r);
 }
 
@@ -828,17 +838,17 @@ clast_get_body_of_loop (struct clast_stmt *stmt)
 static tree
 type_for_clast_for (struct clast_for *stmt_for, ivs_params_p ip)
 {
-  mpz_t v1, v2;
+  mpz_t bound_one, bound_two;
   tree lb_type, ub_type;
 
-  mpz_init (v1);
-  mpz_init (v2);
+  mpz_init (bound_one);
+  mpz_init (bound_two);
 
-  lb_type = type_for_clast_expr (stmt_for->LB, ip, v1, v2);
-  ub_type = type_for_clast_expr (stmt_for->UB, ip, v1, v2);
+  lb_type = type_for_clast_expr (stmt_for->LB, ip, bound_one, bound_two);
+  ub_type = type_for_clast_expr (stmt_for->UB, ip, bound_one, bound_two);
 
-  mpz_clear (v1);
-  mpz_clear (v2);
+  mpz_clear (bound_one);
+  mpz_clear (bound_two);
 
   return max_precision_type (lb_type, ub_type);
 }
@@ -894,24 +904,24 @@ build_iv_mapping (VEC (tree, heap) *iv_map, struct clast_user_stmt *user_stmt,
   CloogStatement *cs = user_stmt->statement;
   poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
   gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
-  mpz_t v1, v2;
+  mpz_t bound_one, bound_two;
 
-  mpz_init (v1);
-  mpz_init (v2);
+  mpz_init (bound_one);
+  mpz_init (bound_two);
 
   for (t = user_stmt->substitutions; t; t = t->next, depth++)
     {
       struct clast_expr *expr = (struct clast_expr *)
        ((struct clast_assignment *)t)->RHS;
-      tree type = type_for_clast_expr (expr, ip, v1, v2);
+      tree type = type_for_clast_expr (expr, ip, bound_one, bound_two);
       tree new_name = clast_to_gcc_expression (type, expr, ip);
       loop_p old_loop = gbb_loop_at_index (gbb, ip->region, depth);
 
       VEC_replace (tree, iv_map, old_loop->num, new_name);
     }
 
-  mpz_clear (v1);
-  mpz_clear (v2);
+  mpz_clear (bound_one);
+  mpz_clear (bound_two);
 }
 
 /* Construct bb_pbb_def with BB and PBB.  */
@@ -1138,14 +1148,14 @@ translate_clast_assignment (struct clast_assignment *stmt, edge next_e,
 			    int level, ivs_params_p ip)
 {
   gimple_seq stmts;
-  mpz_t v1, v2;
+  mpz_t bound_one, bound_two;
   tree type, new_name, var;
   edge res = single_succ_edge (split_edge (next_e));
   struct clast_expr *expr = (struct clast_expr *) stmt->RHS;
 
-  mpz_init (v1);
-  mpz_init (v2);
-  type = type_for_clast_expr (expr, ip, v1, v2);
+  mpz_init (bound_one);
+  mpz_init (bound_two);
+  type = type_for_clast_expr (expr, ip, bound_one, bound_two);
   var = create_tmp_var (type, "graphite_var");
   new_name = force_gimple_operand (clast_to_gcc_expression (type, expr, ip),
 				   &stmts, true, var);
@@ -1157,11 +1167,12 @@ translate_clast_assignment (struct clast_assignment *stmt, edge next_e,
     }
 
   save_clast_name_index (ip->newivs_index, stmt->LHS,
-			 VEC_length (tree, *(ip->newivs)), level, v1, v2);
+			 VEC_length (tree, *(ip->newivs)), level,
+			 bound_one, bound_two);
   VEC_safe_push (tree, heap, *(ip->newivs), new_name);
 
-  mpz_clear (v1);
-  mpz_clear (v2);
+  mpz_clear (bound_one);
+  mpz_clear (bound_two);
 
   return res;
 }
@@ -1584,19 +1595,20 @@ create_params_index (scop_p scop, htab_t index_table, CloogProgram *prog) {
   int nb_parameters = cloog_names_nb_parameters (names);
   char **parameters = cloog_names_parameters (names);
   int i;
-  mpz_t lb, ub;
+  mpz_t bound_one, bound_two;
 
-  mpz_init (lb);
-  mpz_init (ub);
+  mpz_init (bound_one);
+  mpz_init (bound_two);
 
   for (i = 0; i < nb_parameters; i++)
     {
-      compute_bounds_for_param (scop, i, lb, ub);
-      save_clast_name_index (index_table, parameters[i], i, i, lb, ub);
+      compute_bounds_for_param (scop, i, bound_one, bound_two);
+      save_clast_name_index (index_table, parameters[i], i, i,
+			     bound_one, bound_two);
     }
 
-  mpz_clear (lb);
-  mpz_clear (ub);
+  mpz_clear (bound_one);
+  mpz_clear (bound_two);
 }
 
 /* GIMPLE Loop Generator: generates loops from STMT in GIMPLE form for
