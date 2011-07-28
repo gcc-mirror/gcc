@@ -1,5 +1,9 @@
 2011-07-28  DJ Delorie  <dj@redhat.com>
 
+	* expr.c (expand_expr_addr_expr_1): Detect a user request for a
+	local frame in a naked function, and produce a suitable error for
+	that specific case.
+
 	* config/m32c/m32c.c (m32c_secondary_reload_class): Allow PSI
 	registers to be reloaded in HI classes when the target is HI.
 
