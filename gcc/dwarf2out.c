@@ -21809,13 +21809,26 @@ resolve_addr (dw_die_ref die)
 	  }
 	break;
       case dw_val_class_loc:
-	if (!resolve_addr_in_expr (AT_loc (a)))
-	  {
-	    remove_AT (die, a->dw_attr);
-	    ix--;
-	  }
-	else
-	  mark_base_types (AT_loc (a));
+	{
+	  dw_loc_descr_ref l = AT_loc (a);
+	  /* For -gdwarf-2 don't attempt to optimize
+	     DW_AT_data_member_location containing
+	     DW_OP_plus_uconst - older consumers might
+	     rely on it being that op instead of a more complex,
+	     but shorter, location description.  */
+	  if ((dwarf_version > 2
+	       || a->dw_attr != DW_AT_data_member_location
+	       || l == NULL
+	       || l->dw_loc_opc != DW_OP_plus_uconst
+	       || l->dw_loc_next != NULL)
+	      && !resolve_addr_in_expr (l))
+	    {
+	      remove_AT (die, a->dw_attr);
+	      ix--;
+	    }
+	  else
+	    mark_base_types (l);
+	}
 	break;
       case dw_val_class_addr:
 	if (a->dw_attr == DW_AT_const_value
