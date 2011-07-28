@@ -816,6 +816,9 @@ clast_get_body_of_loop (struct clast_stmt *stmt)
   if (CLAST_STMT_IS_A (stmt, stmt_block))
     return clast_get_body_of_loop (((struct clast_block *) stmt)->body);
 
+  if (CLAST_STMT_IS_A (stmt, stmt_ass))
+    return clast_get_body_of_loop (stmt->next);
+
   gcc_unreachable ();
 }
 
@@ -1125,6 +1128,44 @@ translate_clast_for (loop_p context_loop, struct clast_for *stmt, edge next_e,
   return last_e;
 }
 
+/* Translates a clast assignment STMT to gimple.
+
+   - NEXT_E is the edge where new generated code should be attached.
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.  */
+
+static edge
+translate_clast_assignment (struct clast_assignment *stmt, edge next_e,
+			    int level, ivs_params_p ip)
+{
+  gimple_seq stmts;
+  mpz_t v1, v2;
+  tree type, new_name, var;
+  edge res = single_succ_edge (split_edge (next_e));
+  struct clast_expr *expr = (struct clast_expr *) stmt->RHS;
+
+  mpz_init (v1);
+  mpz_init (v2);
+  type = type_for_clast_expr (expr, ip, v1, v2);
+  var = create_tmp_var (type, "graphite_var");
+  new_name = force_gimple_operand (clast_to_gcc_expression (type, expr, ip),
+				   &stmts, true, var);
+  add_referenced_var (var);
+  if (stmts)
+    {
+      gsi_insert_seq_on_edge (next_e, stmts);
+      gsi_commit_edge_inserts ();
+    }
+
+  save_clast_name_index (ip->newivs_index, stmt->LHS,
+			 VEC_length (tree, *(ip->newivs)), level, v1, v2);
+  VEC_safe_push (tree, heap, *(ip->newivs), new_name);
+
+  mpz_clear (v1);
+  mpz_clear (v2);
+
+  return res;
+}
+
 /* Translates a clast guard statement STMT to gimple.
 
    - NEXT_E is the edge where new generated code should be attached.
@@ -1175,6 +1216,10 @@ translate_clast (loop_p context_loop, struct clast_stmt *stmt, edge next_e,
   else if (CLAST_STMT_IS_A (stmt, stmt_block))
     next_e = translate_clast (context_loop, ((struct clast_block *) stmt)->body,
 			      next_e, bb_pbb_mapping, level, ip);
+
+  else if (CLAST_STMT_IS_A (stmt, stmt_ass))
+    next_e = translate_clast_assignment ((struct clast_assignment *) stmt,
+					 next_e, level, ip);
   else
     gcc_unreachable();
 
