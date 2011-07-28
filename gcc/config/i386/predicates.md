@@ -366,15 +366,12 @@
 
 ;; Return true when operand is PIC expression that can be computed by lea
 ;; operation.
-(define_special_predicate "pic_32bit_operand"
+(define_predicate "pic_32bit_operand"
   (match_code "const,symbol_ref,label_ref")
 {
-  if (GET_MODE (op) != SImode
-      && GET_MODE (op) != DImode)
-    return false;
-
   if (!flag_pic)
     return false;
+
   /* Rule out relocations that translate into 64bit constants.  */
   if (TARGET_64BIT && GET_CODE (op) == CONST)
     {
@@ -386,6 +383,7 @@
 	      || XINT (op, 1) == UNSPEC_GOT))
 	return false;
     }
+
   return symbolic_operand (op, mode);
 })
 
