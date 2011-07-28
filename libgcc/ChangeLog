@@ -1,3 +1,9 @@
+2011-07-28  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/linux-unwind.h (frob_update_context <__powerpc64__>):
+	Leave r2 REG_UNSAVED if stopped on the instruction that saves r2
+	in a plt call stub.  Do restore r2 if stopped on bctrl.
+
 2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.host (i[3456x]86-*-netware*): Remove.
