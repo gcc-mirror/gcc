@@ -527,10 +527,10 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
       if (chrec_contains_undetermined (scev))
 	{
 	  *gloog_error = true;
-	  return false;
+	  new_expr = build_zero_cst (TREE_TYPE (old_name));
 	}
-
-      new_expr = chrec_apply_map (scev, iv_map);
+      else
+	new_expr = chrec_apply_map (scev, iv_map);
 
       /* The apply should produce an expression tree containing
 	 the uses of the new induction variables.  We should be
@@ -540,12 +540,13 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 	  || tree_contains_chrecs (new_expr, NULL))
 	{
 	  *gloog_error = true;
-	  return false;
+	  new_expr = build_zero_cst (TREE_TYPE (old_name));
 	}
+      else
+	/* Replace the old_name with the new_expr.  */
+	new_expr = force_gimple_operand (unshare_expr (new_expr), &stmts,
+					 true, NULL_TREE);
 
-      /* Replace the old_name with the new_expr.  */
-      new_expr = force_gimple_operand (unshare_expr (new_expr), &stmts,
-				       true, NULL_TREE);
       gsi_insert_seq_before (gsi_tgt, stmts, GSI_SAME_STMT);
       replace_exp (use_p, new_expr);
 
@@ -620,9 +621,6 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
       if (rename_uses (copy, rename_map, &gsi_tgt, region, loop, iv_map,
 		       gloog_error))
 	fold_stmt_inplace (copy);
-
-      if (*gloog_error)
-	break;
 
       update_stmt (copy);
     }
