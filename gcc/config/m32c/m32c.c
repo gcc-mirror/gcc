@@ -845,7 +845,7 @@ m32c_secondary_reload_class (int rclass, enum machine_mode mode, rtx x)
   if (reg_classes_intersect_p (rclass, CR_REGS)
       && GET_CODE (x) == REG
       && REGNO (x) >= SB_REGNO && REGNO (x) <= SP_REGNO)
-    return TARGET_A16 ? HI_REGS : A_REGS;
+    return (TARGET_A16 || mode == HImode) ? HI_REGS : A_REGS;
   return NO_REGS;
 }
 
