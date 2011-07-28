@@ -5777,6 +5777,22 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	    val = cselib_lookup (mem, GET_MODE (mem), 0, VOIDmode);
 	    if (val && cselib_preserved_value_p (val))
 	      item = gen_rtx_CONCAT (GET_MODE (x), copy_rtx (x), val->val_rtx);
+	    else if (GET_MODE_CLASS (GET_MODE (mem)) != MODE_INT)
+	      {
+		/* For non-integer stack argument see also if they weren't
+		   initialized by integers.  */
+		enum machine_mode imode = int_mode_for_mode (GET_MODE (mem));
+		if (imode != GET_MODE (mem) && imode != BLKmode)
+		  {
+		    val = cselib_lookup (adjust_address_nv (mem, imode, 0),
+					 imode, 0, VOIDmode);
+		    if (val && cselib_preserved_value_p (val))
+		      item = gen_rtx_CONCAT (GET_MODE (x), copy_rtx (x),
+					     lowpart_subreg (GET_MODE (x),
+							     val->val_rtx,
+							     imode));
+		  }
+	      }
 	  }
 	if (item)
 	  call_arguments = gen_rtx_EXPR_LIST (VOIDmode, item, call_arguments);

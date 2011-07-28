@@ -1,3 +1,10 @@
+2011-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/49846
+	* var-tracking.c (prepare_call_arguments): For non-MODE_INT stack
+	arguments also check if they aren't initialized with a MODE_INT
+	mode of the same size.
+
 2011-07-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	* expr.c (get_bit_range): Handle *MEM_REF's.
