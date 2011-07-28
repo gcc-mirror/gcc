@@ -1,3 +1,7 @@
+2011-07-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* expr.c (get_bit_range): Handle *MEM_REF's.
+
 2011-07-28  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* rtlanal.c (tablejump_p): False for returns.

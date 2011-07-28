@@ -4158,7 +4158,10 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
 
   /* If other threads can't see this value, no need to restrict stores.  */
   if (ALLOW_STORE_DATA_RACES
-      || (!ptr_deref_may_alias_global_p (innerdecl)
+      || ((TREE_CODE (innerdecl) == MEM_REF
+	   || TREE_CODE (innerdecl) == TARGET_MEM_REF)
+	  && !ptr_deref_may_alias_global_p (TREE_OPERAND (innerdecl, 0)))
+      || (DECL_P (innerdecl)
 	  && (DECL_THREAD_LOCAL_P (innerdecl)
 	      || !TREE_STATIC (innerdecl))))
     {
