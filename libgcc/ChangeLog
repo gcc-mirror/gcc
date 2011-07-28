@@ -1,3 +1,10 @@
+2010-07-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/64/sfp-machine.h (_FP_W_TYPE): Always use _WIN64
+	version.
+	(_FP_WS_TYPE): Likewise.
+	(_FP_I_TYPE): Likewise.
+
 2011-07-28  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/linux-unwind.h (frob_update_context <__powerpc64__>):
