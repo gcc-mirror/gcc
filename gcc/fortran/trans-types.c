@@ -2329,6 +2329,9 @@ gfc_get_derived_type (gfc_symbol * derived)
 	       && !c->attr.proc_pointer)
 	field_type = build_pointer_type (field_type);
 
+      if (c->attr.pointer)
+	field_type = gfc_nonrestricted_type (field_type);
+
       /* vtype fields can point to different types to the base type.  */
       if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.vtype)
 	  field_type = build_pointer_type_for_mode (TREE_TYPE (field_type),

@@ -1,3 +1,9 @@
+2011-07-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45586
+	* trans-types.c (gfc_get_derived_type): Ensure that pointer
+	component types are marked as nonrestricted.
+
 2011-07-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49708
