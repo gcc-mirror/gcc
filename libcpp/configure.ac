@@ -150,9 +150,7 @@ case $target in
 	x86_64-*-* | \
 	ia64-*-* | \
 	hppa*64*-*-* | \
-	i[34567]86-*-darwin* | \
-	i[34567]86-*-solaris2.1[0-9]* | x86_64-*-solaris2.1[0-9]* | \
-	i[34567]86-w64-mingw* | \
+	i[34567]86-*-* | x86_64-*-solaris2.1[0-9]* | \
 	mips*-*-* | \
 	mmix-*-* | \
 	powerpc*-*-* | \
@@ -162,13 +160,6 @@ case $target in
 	spu-*-* | \
 	sh[123456789lbe]*-*-* | sh-*-*)
 		need_64bit_hwint=yes ;;
-	i[34567]86-*-linux*)
-		if test "x$enable_targets" = xall; then
-			need_64bit_hwint=yes
-		else
-			need_64bit_hwint=no
-		fi
-		;;
 	*)
 		need_64bit_hwint=no ;;
 esac
