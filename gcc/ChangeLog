@@ -1,5 +1,9 @@
 2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config.gcc: Set need_64bit_hwint to yes for x86 targets.
+
+2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/47364
 	* config/i386/i386.md (strlen<mode>): Replace SWI48x with P.
 
