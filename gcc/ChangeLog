@@ -1,3 +1,7 @@
+2011-07-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (add->lea splitter): Add SWI mode to PLUS RTX.
+
 2011-07-27  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/49471
