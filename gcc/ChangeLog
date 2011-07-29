@@ -1,5 +1,17 @@
+2011-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47715
+	* config/i386/i386.md (*load_tp_x32): New.
+	(*load_tp_x32_zext): Ditto.
+	(*add_tp_x32): Ditto.
+	(*add_tp_x32_zext): Ditto.
+	(*load_tp_<mode>): Disable for TARGET_X32 targets.
+	(*add_tp_<mode>): Ditto.
+	* config/i386/i386.c (get_thread_pointer): Load thread pointer in
+	ptr_mode and convert to Pmode if needed.
+
 2011-07-29  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/49687
 	* config/avr/avr.md (mulsi3, *mulsi3, mulu<mode>si3,
 	muls<mode>si3, mulohisi3, mulhisi3, umulhisi3, usmulhisi3,
@@ -18,7 +30,7 @@
 	are not suitable.
 
 2011-07-29  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	PR target/49313
 	* config/avr/libgcc.S (__ffshi2): Don't skip 2-word instruction.
 	(__ctzsi2): Result for 0 may be undefined.

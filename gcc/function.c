@@ -4570,8 +4570,13 @@ stack_protect_prologue (void)
   tree guard_decl = targetm.stack_protect_guard ();
   rtx x, y;
 
+  printf ("TESTx\n");
+
   x = expand_normal (crtl->stack_protect_guard);
   y = expand_normal (guard_decl);
+
+  debug_rtx (x);
+  debug_rtx (y);
 
   /* Allow the target to copy from Y to X without leaking Y into a
      register.  */
@@ -4604,8 +4609,13 @@ stack_protect_epilogue (void)
   rtx label = gen_label_rtx ();
   rtx x, y, tmp;
 
+  printf ("TESTz\n");
+
   x = expand_normal (crtl->stack_protect_guard);
   y = expand_normal (guard_decl);
+
+  debug_rtx (x);
+  debug_rtx (y);
 
   /* Allow the target to compare Y with X without leaking either into
      a register.  */

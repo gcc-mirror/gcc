@@ -12118,17 +12118,15 @@ legitimize_pic_address (rtx orig, rtx reg)
 static rtx
 get_thread_pointer (bool to_reg)
 {
-  rtx tp, reg, insn;
+  rtx tp = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, const0_rtx), UNSPEC_TP);
 
-  tp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx), UNSPEC_TP);
-  if (!to_reg)
-    return tp;
+  if (GET_MODE (tp) != Pmode)
+    tp = convert_to_mode (Pmode, tp, 1);
 
-  reg = gen_reg_rtx (Pmode);
-  insn = gen_rtx_SET (VOIDmode, reg, tp);
-  insn = emit_insn (insn);
+  if (to_reg)
+    tp = copy_addr_to_reg (tp);
 
-  return reg;
+  return tp;
 }
 
 /* Construct the SYMBOL_REF for the tls_get_addr function.  */
