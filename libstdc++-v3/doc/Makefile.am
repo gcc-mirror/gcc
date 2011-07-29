@@ -144,7 +144,6 @@ stamp-html-copy: stamp-html-docbook
 	cp -r ${top_srcdir}/doc/html/ext ${docbook_outdir}/html/manual/ext
 	cd ${docbook_outdir}/html/manual/ext
 	rm -rf ${docbook_outdir}/html/manual/ext/.svn 
-	rm -rf ${docbook_outdir}/html/manual/ext/pb_ds/.svn
 	$(STAMP) stamp-html-copy
 
 doc-html: stamp-html
@@ -339,6 +338,7 @@ xml_sources_manual = \
 	${xml_dir}/manual/mt_allocator.xml \
 	${xml_dir}/manual/numerics.xml \
 	${xml_dir}/manual/parallel_mode.xml \
+	${xml_dir}/manual/policy_data_structures.xml \
 	${xml_dir}/manual/prerequisites.xml \
 	${xml_dir}/manual/profile_mode.xml \
 	${xml_dir}/manual/shared_ptr.xml \
@@ -350,6 +350,7 @@ xml_sources_manual = \
 	${xml_dir}/manual/strings.xml \
 	${xml_dir}/manual/support.xml \
 	${xml_dir}/manual/test.xml \
+	${xml_dir}/manual/test_policy_data_structures.xml \
 	${xml_dir}/manual/using.xml \
 	${xml_dir}/manual/using_exceptions.xml \
 	${xml_dir}/manual/utilities.xml \
@@ -375,7 +376,8 @@ xml_noinst = \
 	${xml_dir}/images/confdeps.pdf
 
 XSLTPROC       = xsltproc
-XSLTPROC_FLAGS = --nonet --xinclude
+XSLT_FLAGS = --nonet --xinclude
+XSLT_PARAM = --param toc.section.depth 4
 #XSL_STYLE_DIR = /usr/share/xml/docbook/stylesheet/docbook-xsl-ns
 #XSL_STYLE_DIR = /usr/share/sgml/docbook/xsl-ns-stylesheets
 XSL_FO_STYLE = $(XSL_STYLE_DIR)/fo/docbook.xsl
@@ -433,7 +435,7 @@ doc-xml-single-docbook: stamp-xml-single-docbook
 # HTML, index plus chapters
 stamp-html-docbook: $(xml_sources) ${docbook_outdir}/html
 	@echo "Generating html files..."
-	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${docbook_outdir}/html/ \
+	$(XSLTPROC) $(XSLT_PARAM) $(XSLT_FLAGS) -o ${docbook_outdir}/html/ \
 	$(XSL_HTML_STYLE) ${top_srcdir}/doc/xml/spine.xml
 	$(STAMP) stamp-html-docbook
 
@@ -443,7 +445,7 @@ doc-html-docbook: stamp-html-docbook
 manual_html = ${docbook_outdir}/html/libstdc++-manual-single.html
 stamp-html-single-docbook: $(xml_sources) ${docbook_outdir}/html
 	@echo "Generating html single file..."
-	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${manual_html} \
+	$(XSLTPROC) $(XSLT_PARAM) $(XSLT_FLAGS) -o ${manual_html} \
 	$(XSL_HTML_SINGLE_STYLE) ${top_srcdir}/doc/xml/spine.xml
 	$(STAMP) stamp-html-single-docbook
 
@@ -452,7 +454,7 @@ doc-html-single-docbook: stamp-html-single-docbook
 # FO
 stamp-fo-docbook: $(xml_sources) ${docbook_outdir}/fo
 	@echo "Generating FO files..."
-	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${docbook_outdir}/fo/spine.fo \
+	$(XSLTPROC) $(XSLT_FLAGS) -o ${docbook_outdir}/fo/spine.fo \
 	$(XSL_FO_STYLE) ${top_srcdir}/doc/xml/spine.xml
 	$(STAMP) stamp-fo-docbook
 
@@ -506,6 +508,7 @@ doc-epub-docbook: stamp-epub-docbook
 # Performance doc and graph configuration.
 # Assumes pychart, beautiful soup installed.
 # Generates the plots and graphs for performance testing.
+# XXX this needs to be re-worked to create only the SVG charts
 doc_performance_script=${top_srcdir}/scripts/make_graphs.py
 doc-html-performance:
 	-@(chmod + ${doc_performance_script}; \
