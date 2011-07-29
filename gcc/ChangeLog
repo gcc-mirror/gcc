@@ -1,3 +1,9 @@
+2011-07-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/49893
+	* tree-predcom.c (suitable_reference_p): Volatile references
+	are not suitable.
+
 2011-07-29  Georg-Johann Lay  <avr@gjlay.de>
 	
 	PR target/49313
