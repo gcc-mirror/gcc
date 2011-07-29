@@ -1,5 +1,10 @@
 2011-07-29  Richard Guenther  <rguenther@suse.de>
 
+	* builtins.c (fold_builtin_signbit): Build the comparison
+	with a proper type.
+
+2011-07-29  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/49893
 	* tree-predcom.c (suitable_reference_p): Volatile references
 	are not suitable.

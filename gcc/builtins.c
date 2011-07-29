@@ -8645,8 +8645,9 @@ fold_builtin_signbit (location_t loc, tree arg, tree type)
 
   /* If ARG's format doesn't have signed zeros, return "arg < 0.0".  */
   if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg))))
-    return fold_build2_loc (loc, LT_EXPR, type, arg,
-			build_real (TREE_TYPE (arg), dconst0));
+    return fold_convert (type,
+			 fold_build2_loc (loc, LT_EXPR, boolean_type_node, arg,
+			build_real (TREE_TYPE (arg), dconst0)));
 
   return NULL_TREE;
 }
