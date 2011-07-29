@@ -1,3 +1,7 @@
+2011-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (tp_or_register_operand): Remove predicate.
+
 2011-07-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/alpha/driver-alpha.c (IMPLVER_EV4_FAMILY,
