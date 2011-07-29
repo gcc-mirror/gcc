@@ -5556,41 +5556,45 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      function). We just strip everything and get to the arg.
      See g++.old-deja/g++.oliva/template4.C and g++.dg/template/nontype9.C
      for examples.  */
-  if (TREE_CODE (expr) == NOP_EXPR)
+  if (TYPE_REF_OBJ_P (type) || TYPE_REFFN_P (type))
     {
-      if (TYPE_REF_OBJ_P (type) || TYPE_REFFN_P (type))
+      tree probe_type, probe = expr;
+      if (REFERENCE_REF_P (probe))
+	probe = TREE_OPERAND (probe, 0);
+      probe_type = TREE_TYPE (probe);
+      if (TREE_CODE (probe) == NOP_EXPR)
 	{
 	  /* ??? Maybe we could use convert_from_reference here, but we
 	     would need to relax its constraints because the NOP_EXPR
 	     could actually change the type to something more cv-qualified,
 	     and this is not folded by convert_from_reference.  */
-	  tree addr = TREE_OPERAND (expr, 0);
-	  gcc_assert (TREE_CODE (expr_type) == REFERENCE_TYPE);
+	  tree addr = TREE_OPERAND (probe, 0);
+	  gcc_assert (TREE_CODE (probe_type) == REFERENCE_TYPE);
 	  gcc_assert (TREE_CODE (addr) == ADDR_EXPR);
 	  gcc_assert (TREE_CODE (TREE_TYPE (addr)) == POINTER_TYPE);
 	  gcc_assert (same_type_ignoring_top_level_qualifiers_p
-		      (TREE_TYPE (expr_type),
+		      (TREE_TYPE (probe_type),
 		       TREE_TYPE (TREE_TYPE (addr))));
 
 	  expr = TREE_OPERAND (addr, 0);
 	  expr_type = TREE_TYPE (expr);
 	}
+    }
 
-      /* We could also generate a NOP_EXPR(ADDR_EXPR()) when the
-	 parameter is a pointer to object, through decay and
-	 qualification conversion. Let's strip everything.  */
-      else if (TYPE_PTROBV_P (type))
-	{
-	  STRIP_NOPS (expr);
-	  gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
-	  gcc_assert (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE);
-	  /* Skip the ADDR_EXPR only if it is part of the decay for
-	     an array. Otherwise, it is part of the original argument
-	     in the source code.  */
-	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == ARRAY_TYPE)
-	    expr = TREE_OPERAND (expr, 0);
-	  expr_type = TREE_TYPE (expr);
-	}
+  /* We could also generate a NOP_EXPR(ADDR_EXPR()) when the
+     parameter is a pointer to object, through decay and
+     qualification conversion. Let's strip everything.  */
+  else if (TREE_CODE (expr) == NOP_EXPR && TYPE_PTROBV_P (type))
+    {
+      STRIP_NOPS (expr);
+      gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
+      gcc_assert (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE);
+      /* Skip the ADDR_EXPR only if it is part of the decay for
+	 an array. Otherwise, it is part of the original argument
+	 in the source code.  */
+      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == ARRAY_TYPE)
+	expr = TREE_OPERAND (expr, 0);
+      expr_type = TREE_TYPE (expr);
     }
 
   /* [temp.arg.nontype]/5, bullet 1
@@ -8941,6 +8945,10 @@ tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		       /*integral_constant_expression_p=*/true);
       if (!(complain & tf_warning))
 	--c_inhibit_evaluation_warnings;
+      /* Preserve the raw-reference nature of T.  */
+      if (TREE_TYPE (t) && TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE
+	  && REFERENCE_REF_P (r))
+	r = TREE_OPERAND (r, 0);
     }
   return r;
 }
@@ -10981,7 +10989,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      }
 	    else
 	      /* TEMPLATE_TEMPLATE_PARM or TEMPLATE_PARM_INDEX.  */
-	      return unshare_expr (arg);
+	      return convert_from_reference (unshare_expr (arg));
 	  }
 
 	if (level == 1)
