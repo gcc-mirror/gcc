@@ -80,6 +80,22 @@ along with GCC; see the file COPYING3.  If not see
 #define CPP_SPEC \
 "%{pthread|threads:-D_REENTRANT} %{threads:-D_PTHREAD_USE_D4}"
 
+/* -mcpu=native handling only makes sense with compiler running on
+   an Alpha chip.  */
+#if defined(__alpha__) || defined(__alpha)
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+# define EXTRA_SPEC_FUNCTIONS						\
+  { "local_cpu_detect", host_detect_local_cpu },
+
+# define MCPU_MTUNE_NATIVE_SPECS					\
+   " %{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)}"		\
+   " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+#else
+# define MCPU_MTUNE_NATIVE_SPECS ""
+#endif
+
+#define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
+
 /* Under DEC OSF/1 V4, -p and -pg require -lprof1, and -lprof1 requires 
    -lpdf.  */
 

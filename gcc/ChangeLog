@@ -1,3 +1,20 @@
+2011-07-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/alpha/driver-alpha.c (IMPLVER_EV4_FAMILY,
+	IMPLVER_EV5_FAMILY, IMPLVER_EV6_FAMILY, IMPLVER_EV7_FAMILY): Define.
+	(AMASK_BWX, AMASK_FIX, AMASK_CIX, AMASK_MVI, AMASK_PRECISE,
+	AMASK_LOCKPFTCHOK): Define.
+	(host_detect_local_cpu): Remove buf, f, cpu_names.
+	Define cpu_types, implver, amask.
+	Use __builtin_alpha_implver, __builtin_alpha_amask to determine
+	native CPU.
+	* config.host: Also use driver-alpha.o, alpha/x-alpha on
+	alpha*-dec-osf*.
+	* config/alpha/osf5.h [__alpha__ || __alpha]
+	(host_detect_local_cpu): Declare.
+	(EXTRA_SPEC_FUNCTIONS, MCPU_MTUNE_NATIVE_SPECS)
+	(DRIVER_SELF_SPECS): Define.
+
 2011-07-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47715

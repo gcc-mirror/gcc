@@ -100,9 +100,9 @@ case ${host} in
 esac
 
 case ${host} in
-  alpha*-*-linux*)
+  alpha*-*-linux* | alpha*-dec-osf*)
     case ${target} in
-      alpha*-*-linux*)
+      alpha*-*-linux* | alpha*-dec-osf*)
 	host_extra_gcc_objs="driver-alpha.o"
 	host_xmake_file="${host_xmake_file} alpha/x-alpha"
 	;;
