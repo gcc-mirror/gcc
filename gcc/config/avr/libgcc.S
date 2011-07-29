@@ -1074,9 +1074,15 @@ ENDF __ffssi2
 ;; clobbers: r26
 DEFUN __ffshi2
     clr  r26
+#ifdef __AVR_HAVE_JMP_CALL__
+    ;; Some cores have problem skipping 2-word instruction
+    tst  r24
+    breq 2f
+#else
     cpse r24, __zero_reg__
+#endif /* __AVR_HAVE_JMP_CALL__ */
 1:  XJMP __loop_ffsqi2
-    ldi  r26, 8
+2:  ldi  r26, 8
     or   r24, r25
     brne 1b
     ret
@@ -1106,12 +1112,12 @@ ENDF __loop_ffsqi2
 #if defined (L_ctzsi2)
 ;; count trailing zeros
 ;; r25:r24 = ctz32 (r25:r22)
-;; ctz(0) = 32
+;; clobbers: r26, r22
+;; ctz(0) = 255
+;; Note that ctz(0) in undefined for GCC
 DEFUN __ctzsi2
     XCALL __ffssi2
     dec  r24
-    sbrc r24, 7
-    ldi  r24, 32
     ret
 ENDF __ctzsi2
 #endif /* defined (L_ctzsi2) */
@@ -1119,12 +1125,12 @@ ENDF __ctzsi2
 #if defined (L_ctzhi2)
 ;; count trailing zeros
 ;; r25:r24 = ctz16 (r25:r24)
-;; ctz(0) = 16
+;; clobbers: r26
+;; ctz(0) = 255
+;; Note that ctz(0) in undefined for GCC
 DEFUN __ctzhi2
     XCALL __ffshi2
     dec  r24
-    sbrc r24, 7
-    ldi  r24, 16
     ret
 ENDF __ctzhi2
 #endif /* defined (L_ctzhi2) */
@@ -1258,47 +1264,50 @@ ENDF __parityqi2
 #if defined (L_popcounthi2)
 ;; population count
 ;; r25:r24 = popcount16 (r25:r24)
-;; clobbers: r30, __tmp_reg__
+;; clobbers: __tmp_reg__
 DEFUN __popcounthi2
     XCALL __popcountqi2
-    mov  r30, r24
+    push r24
     mov  r24, r25
     XCALL __popcountqi2
-    add  r24, r30
     clr  r25
-    ret
+    ;; FALLTHRU
 ENDF __popcounthi2
+
+DEFUN __popcounthi2_tail
+    pop   __tmp_reg__
+    add   r24, __tmp_reg__
+    ret
+ENDF __popcounthi2_tail
 #endif /* defined (L_popcounthi2) */
 
 #if defined (L_popcountsi2)
 ;; population count
 ;; r25:r24 = popcount32 (r25:r22)
-;; clobbers: r26, r30, __tmp_reg__
+;; clobbers: __tmp_reg__
 DEFUN __popcountsi2
     XCALL __popcounthi2
-    mov   r26, r24
+    push  r24
     mov_l r24, r22
     mov_h r25, r23
     XCALL __popcounthi2
-    add   r24, r26
-    ret
+    XJMP  __popcounthi2_tail
 ENDF __popcountsi2
 #endif /* defined (L_popcountsi2) */
 
 #if defined (L_popcountdi2)
 ;; population count
 ;; r25:r24 = popcount64 (r25:r18)
-;; clobbers: r22, r23, r26, r27, r30, __tmp_reg__
+;; clobbers: r22, r23, __tmp_reg__
 DEFUN __popcountdi2
     XCALL __popcountsi2
-    mov   r27, r24
+    push  r24
     mov_l r22, r18
     mov_h r23, r19
     mov_l r24, r20
     mov_h r25, r21
     XCALL __popcountsi2
-    add   r24, r27
-    ret
+    XJMP  __popcounthi2_tail
 ENDF __popcountdi2
 #endif /* defined (L_popcountdi2) */
 
