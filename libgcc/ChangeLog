@@ -1,3 +1,9 @@
+2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/morestack.S (X86_64_SAVE_NEW_STACK_BOUNDARY): New.
+	Use X86_64_SAVE_NEW_STACK_BOUNDARY to save the new stack boundary
+	for x86-64.  Properly check __x86_64__ and __LP64__.
+
 2010-07-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/64/sfp-machine.h (_FP_W_TYPE): Always use _WIN64
