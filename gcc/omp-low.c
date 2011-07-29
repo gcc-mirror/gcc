@@ -785,7 +785,7 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
 		  break;
 
 	      if (c)
-		return true;
+		goto maybe_mark_addressable_and_ret;
 	    }
 	}
 
@@ -795,7 +795,9 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
 	 returns, the task hasn't necessarily terminated.  */
       if (!TREE_READONLY (decl) && is_task_ctx (shared_ctx))
 	{
-	  tree outer = maybe_lookup_decl_in_outer_ctx (decl, shared_ctx);
+	  tree outer;
+	maybe_mark_addressable_and_ret:
+	  outer = maybe_lookup_decl_in_outer_ctx (decl, shared_ctx);
 	  if (is_gimple_reg (outer))
 	    {
 	      /* Taking address of OUTER in lower_send_shared_vars

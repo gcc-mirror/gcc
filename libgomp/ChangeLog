@@ -1,3 +1,12 @@
+2011-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/49897
+	PR middle-end/49898
+	* testsuite/libgomp.c/pr49897-1.c: New test.
+	* testsuite/libgomp.c/pr49897-2.c: New test.
+	* testsuite/libgomp.c/pr49898-1.c: New test.
+	* testsuite/libgomp.c/pr49898-2.c: New test.
+
 2011-07-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/49541
