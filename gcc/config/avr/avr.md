@@ -1373,6 +1373,7 @@
   [(parallel [(set (match_operand:SI 0 "register_operand" "")
                    (mult:SI (match_operand:SI 1 "register_operand" "")
                             (match_operand:SI 2 "nonmemory_operand" "")))
+              (clobber (reg:HI 26))
               (clobber (reg:DI 18))])]
   "AVR_HAVE_MUL"
   {
@@ -1395,6 +1396,7 @@
   [(set (match_operand:SI 0 "pseudo_register_operand"                      "=r")
         (mult:SI (match_operand:SI 1 "pseudo_register_operand"              "r")
                  (match_operand:SI 2 "pseudo_register_or_const_int_operand" "rn")))
+   (clobber (reg:HI 26))
    (clobber (reg:DI 18))]
   "AVR_HAVE_MUL && !reload_completed"
   { gcc_unreachable(); }
@@ -1431,6 +1433,7 @@
   [(set (match_operand:SI 0 "pseudo_register_operand"                           "=r")
         (mult:SI (zero_extend:SI (match_operand:QIHI 1 "pseudo_register_operand" "r"))
                  (match_operand:SI 2 "pseudo_register_or_const_int_operand"      "rn")))
+   (clobber (reg:HI 26))
    (clobber (reg:DI 18))]
   "AVR_HAVE_MUL && !reload_completed"
   { gcc_unreachable(); }
@@ -1466,6 +1469,7 @@
   [(set (match_operand:SI 0 "pseudo_register_operand"                           "=r")
         (mult:SI (sign_extend:SI (match_operand:QIHI 1 "pseudo_register_operand" "r"))
                  (match_operand:SI 2 "pseudo_register_or_const_int_operand"      "rn")))
+   (clobber (reg:HI 26))
    (clobber (reg:DI 18))]
   "AVR_HAVE_MUL && !reload_completed"
   { gcc_unreachable(); }
@@ -1509,6 +1513,7 @@
         (mult:SI (not:SI (zero_extend:SI 
                           (not:HI (match_operand:HI 1 "pseudo_register_operand" "r"))))
                  (match_operand:SI 2 "pseudo_register_or_const_int_operand"     "rn")))
+   (clobber (reg:HI 26))
    (clobber (reg:DI 18))]
   "AVR_HAVE_MUL && !reload_completed"
   { gcc_unreachable(); }
@@ -1528,6 +1533,7 @@
   [(parallel [(set (match_operand:SI 0 "register_operand" "")
                    (mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand" ""))
                             (sign_extend:SI (match_operand:HI 2 "register_operand" ""))))
+              (clobber (reg:HI 26))
               (clobber (reg:DI 18))])]
   "AVR_HAVE_MUL"
   "")
@@ -1536,6 +1542,7 @@
   [(parallel [(set (match_operand:SI 0 "register_operand" "")
                    (mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" ""))
                             (zero_extend:SI (match_operand:HI 2 "register_operand" ""))))
+              (clobber (reg:HI 26))
               (clobber (reg:DI 18))])]
   "AVR_HAVE_MUL"
   "")
@@ -1544,6 +1551,7 @@
   [(parallel [(set (match_operand:SI 0 "register_operand" "")
                    (mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" ""))
                             (sign_extend:SI (match_operand:HI 2 "register_operand" ""))))
+              (clobber (reg:HI 26))
               (clobber (reg:DI 18))])]
   "AVR_HAVE_MUL"
   "")
@@ -1557,6 +1565,7 @@
   [(set (match_operand:SI 0 "pseudo_register_operand"                            "=r")
         (mult:SI (any_extend:SI (match_operand:QIHI 1 "pseudo_register_operand"   "r"))
                  (any_extend2:SI (match_operand:QIHI2 2 "pseudo_register_operand" "r"))))
+   (clobber (reg:HI 26))
    (clobber (reg:DI 18))]
   "AVR_HAVE_MUL && !reload_completed"
   { gcc_unreachable(); }
