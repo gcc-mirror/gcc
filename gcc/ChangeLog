@@ -1,3 +1,10 @@
+2011-07-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (get_value_range): Only set parameter default
+	definitions to varying, leave others at undefined.
+	(extract_range_from_binary_expr): Fix undefined handling.
+	(vrp_visit_phi_node): Handle merged undefined state.
+
 2011-07-29  Wei Guozhi  <carrot@google.com>
 
 	PR rtl-optimization/49799

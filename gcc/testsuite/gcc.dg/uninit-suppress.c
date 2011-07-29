@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fno-tree-ccp -O2 -Wuninitialized -Wno-maybe-uninitialized" } */
+/* { dg-options "-fno-tree-ccp -fno-tree-vrp -O2 -Wuninitialized -Wno-maybe-uninitialized" } */
 void blah();
 int gflag;
 

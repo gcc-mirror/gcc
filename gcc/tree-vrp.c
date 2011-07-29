@@ -692,16 +692,16 @@ get_value_range (const_tree var)
   /* Defer allocating the equivalence set.  */
   vr->equiv = NULL;
 
-  /* If VAR is a default definition, the variable can take any value
-     in VAR's type.  */
+  /* If VAR is a default definition of a parameter, the variable can
+     take any value in VAR's type.  */
   sym = SSA_NAME_VAR (var);
-  if (SSA_NAME_IS_DEFAULT_DEF (var))
+  if (SSA_NAME_IS_DEFAULT_DEF (var)
+      && TREE_CODE (sym) == PARM_DECL)
     {
       /* Try to use the "nonnull" attribute to create ~[0, 0]
 	 anti-ranges for pointers.  Note that this is only valid with
 	 default definitions of PARM_DECLs.  */
-      if (TREE_CODE (sym) == PARM_DECL
-	  && POINTER_TYPE_P (TREE_TYPE (sym))
+      if (POINTER_TYPE_P (TREE_TYPE (sym))
 	  && nonnull_arg_p (sym))
 	set_value_range_to_nonnull (vr, TREE_TYPE (sym));
       else
@@ -2225,12 +2225,20 @@ extract_range_from_binary_expr (value_range_t *vr,
   else
     set_value_range_to_varying (&vr1);
 
-  /* If either range is UNDEFINED, so is the result.  */
-  if (vr0.type == VR_UNDEFINED || vr1.type == VR_UNDEFINED)
+  /* If both ranges are UNDEFINED, so is the result.  */
+  if (vr0.type == VR_UNDEFINED && vr1.type == VR_UNDEFINED)
     {
       set_value_range_to_undefined (vr);
       return;
     }
+  /* If one of the ranges is UNDEFINED drop it to VARYING for the following
+     code.  At some point we may want to special-case operations that
+     have UNDEFINED result for all or some value-ranges of the not UNDEFINED
+     operand.  */
+  else if (vr0.type == VR_UNDEFINED)
+    set_value_range_to_varying (&vr0);
+  else if (vr1.type == VR_UNDEFINED)
+    set_value_range_to_varying (&vr1);
 
   /* The type of the resulting value range defaults to VR0.TYPE.  */
   type = vr0.type;
@@ -6642,6 +6650,8 @@ vrp_visit_phi_node (gimple phi)
 
   if (vr_result.type == VR_VARYING)
     goto varying;
+  else if (vr_result.type == VR_UNDEFINED)
+    goto update_range;
 
   old_edges = vr_phi_edge_counts[SSA_NAME_VERSION (lhs)];
   vr_phi_edge_counts[SSA_NAME_VERSION (lhs)] = edges;
@@ -6713,6 +6723,7 @@ vrp_visit_phi_node (gimple phi)
 
   /* If the new range is different than the previous value, keep
      iterating.  */
+update_range:
   if (update_value_range (lhs, &vr_result))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
