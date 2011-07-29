@@ -1,3 +1,11 @@
+2011-07-29  Georg-Johann Lay  <avr@gjlay.de>
+	
+	PR target/49687
+	* config/avr/avr.md (mulsi3, *mulsi3, mulu<mode>si3,
+	muls<mode>si3, mulohisi3, mulhisi3, umulhisi3, usmulhisi3,
+	*<any_extend:extend_prefix><any_extend2:extend_prefix>mul<QIHI:mode><QIHI2:mode>si3):
+	Add X to register footprint: Clobber r26/r27.
+
 2011-07-29  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (fold_builtin_signbit): Build the comparison
