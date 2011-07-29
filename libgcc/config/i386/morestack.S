@@ -353,7 +353,13 @@ __morestack:
 	# FIXME: The offset must match
 	# TARGET_THREAD_SPLIT_STACK_OFFSET in
 	# gcc/config/i386/linux64.h.
-	movq	%rax,%fs:0x70		# Save the new stack boundary.
+	# Macro to save the new stack boundary.
+#ifdef __LP64__
+#define X86_64_SAVE_NEW_STACK_BOUNDARY(reg)	movq	%r##reg,%fs:0x70
+#else
+#define X86_64_SAVE_NEW_STACK_BOUNDARY(reg)	movl	%e##reg,%fs:0x40
+#endif
+	X86_64_SAVE_NEW_STACK_BOUNDARY (ax)
 
 	call	__morestack_unblock_signals
 
@@ -391,7 +397,7 @@ __morestack:
 	subq	0(%rsp),%rax		# Subtract available space.
 	addq	$BACKOFF,%rax		# Back off 1024 bytes.
 .LEHE0:
-	movq	%rax,%fs:0x70		# Save the new stack boundary.
+	X86_64_SAVE_NEW_STACK_BOUNDARY (ax)
 
 	addq	$16,%rsp		# Remove values from stack.
 
@@ -433,7 +439,7 @@ __morestack:
 	movq	%rbp,%rcx		# Get the stack pointer.
 	subq	%rax,%rcx		# Subtract available space.
 	addq	$BACKOFF,%rcx		# Back off 1024 bytes.
-	movq	%rcx,%fs:0x70		# Save new stack boundary.
+	X86_64_SAVE_NEW_STACK_BOUNDARY (cx)
 	movq	(%rsp),%rdi		# Restore exception data for call.
 #ifdef __PIC__
 	call	_Unwind_Resume@PLT	# Resume unwinding.
@@ -493,7 +499,7 @@ __x86.get_pc_thunk.bx:
 	.section .data.DW.ref.__gcc_personality_v0,"awG",@progbits,DW.ref.__gcc_personality_v0,comdat
 	.type	DW.ref.__gcc_personality_v0, @object
 DW.ref.__gcc_personality_v0:
-#ifndef __x86_64
+#ifndef __LP64__
 	.align 4
 	.size	DW.ref.__gcc_personality_v0, 4
 	.long	__gcc_personality_v0
@@ -504,7 +510,7 @@ DW.ref.__gcc_personality_v0:
 #endif
 #endif
 
-#ifdef __x86_64__
+#if defined __x86_64__ && defined __LP64__
 
 # This entry point is used for the large model.  With this entry point
 # the upper 32 bits of %r10 hold the argument size and the lower 32
@@ -537,7 +543,7 @@ __morestack_large_model:
        .size	__morestack_large_model, . - __morestack_large_model
 #endif
 
-#endif /* __x86_64__ */
+#endif /* __x86_64__ && __LP64__ */
 
 # Initialize the stack test value when the program starts or when a
 # new thread starts.  We don't know how large the main stack is, so we
@@ -570,7 +576,7 @@ __stack_split_initialize:
 #else /* defined(__x86_64__) */
 
 	leaq	-16000(%rsp),%rax	# We should have at least 16K.
-	movq	%rax,%fs:0x70
+	X86_64_SAVE_NEW_STACK_BOUNDARY (ax)
 	movq	%rsp,%rdi
 	movq	$16000,%rsi
 #ifdef __PIC__
@@ -592,7 +598,7 @@ __stack_split_initialize:
 
 	.section	.ctors.65535,"aw",@progbits
 
-#ifndef __x86_64__
+#ifndef __LP64__
 	.align	4
 	.long	__stack_split_initialize
 	.long	__morestack_load_mmap
