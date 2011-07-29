@@ -1,3 +1,10 @@
+2011-07-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/47407
+	* gcc.dg/tree-ssa/pr42585.c: XFAIL scan-tree-dump-times on
+	alpha*-dec-osf*.
+	Sort target list.
+
 2011-07-29  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/uninit-suppress.c: Also disable VRP.
