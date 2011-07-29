@@ -1,3 +1,11 @@
+2011-07-29  Wei Guozhi  <carrot@google.com>
+
+	Backported from mainline
+	2011-07-29  Wei Guozhi  <carrot@google.com>
+
+	PR rtl-optimization/49799
+	* gcc.dg/pr49799.c: New test case.
+
 2011-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/49871

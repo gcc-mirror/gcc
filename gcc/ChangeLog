@@ -1,3 +1,12 @@
+2011-07-29  Wei Guozhi  <carrot@google.com>
+
+	Backport from mainline
+	2011-07-29  Wei Guozhi  <carrot@google.com>
+
+	PR rtl-optimization/49799
+	* combine.c (make_compound_operation): Check if the bit field is valid
+	before change it to bit field extraction.
+
 2011-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/49871
