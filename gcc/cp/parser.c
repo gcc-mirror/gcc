@@ -7437,8 +7437,12 @@ cp_parser_lambda_expression (cp_parser* parser)
     /* Inside the class, surrounding template-parameter-lists do not apply.  */
     unsigned int saved_num_template_parameter_lists
         = parser->num_template_parameter_lists;
+    unsigned char in_statement = parser->in_statement;
+    bool in_switch_statement_p = parser->in_switch_statement_p;
 
     parser->num_template_parameter_lists = 0;
+    parser->in_statement = 0;
+    parser->in_switch_statement_p = false;
 
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
@@ -7471,6 +7475,8 @@ cp_parser_lambda_expression (cp_parser* parser)
     type = finish_struct (type, /*attributes=*/NULL_TREE);
 
     parser->num_template_parameter_lists = saved_num_template_parameter_lists;
+    parser->in_statement = in_statement;
+    parser->in_switch_statement_p = in_switch_statement_p;
   }
 
   pop_deferring_access_checks ();
@@ -17007,6 +17013,8 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   bool nested_name_specifier_p;
   unsigned saved_num_template_parameter_lists;
   bool saved_in_function_body;
+  unsigned char in_statement;
+  bool in_switch_statement_p;
   bool saved_in_unbraced_linkage_specification_p;
   tree old_scope = NULL_TREE;
   tree scope = NULL_TREE;
@@ -17060,6 +17068,12 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   /* We are not in a function body.  */
   saved_in_function_body = parser->in_function_body;
   parser->in_function_body = false;
+  /* Or in a loop.  */
+  in_statement = parser->in_statement;
+  parser->in_statement = 0;
+  /* Or in a switch.  */
+  in_switch_statement_p = parser->in_switch_statement_p;
+  parser->in_switch_statement_p = false;
   /* We are not immediately inside an extern "lang" block.  */
   saved_in_unbraced_linkage_specification_p
     = parser->in_unbraced_linkage_specification_p;
@@ -17254,6 +17268,8 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   pop_deferring_access_checks ();
 
   /* Restore saved state.  */
+  parser->in_switch_statement_p = in_switch_statement_p;
+  parser->in_statement = in_statement;
   parser->in_function_body = saved_in_function_body;
   parser->num_template_parameter_lists
     = saved_num_template_parameter_lists;

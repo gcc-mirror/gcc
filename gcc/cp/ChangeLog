@@ -1,3 +1,10 @@
+2011-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49867
+	* parser.c (cp_parser_lambda_expression): Also clear in_statement
+	and in_switch_statement_p.
+	(cp_parser_class_specifier): Likewise.
+
 2011-07-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/49808
