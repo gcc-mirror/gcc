@@ -1321,12 +1321,12 @@
 	<title>Exception Hierarchy</title>
 	<mediaobject>
 	  <imageobject>
-	    <imagedata align="center" format="PNG" scale="100"
-		       fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_exception_hierarchy.png"/>
+	    <imagedata align="center" format="PDF" scale="75"
+		       fileref="../images/pbds_exception_hierarchy.pdf"/>
 	  </imageobject>
 	  <imageobject>
-	    <imagedata align="center" format="PDF" scale="50"
-		       fileref="../images/pbds_exception_hierarchy.pdf"/>
+	    <imagedata align="center" format="PNG" scale="100"
+		       fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_exception_hierarchy.png"/>
 	  </imageobject>
 	  <textobject>
 	    <phrase>Exception Hierarchy</phrase>
@@ -2679,12 +2679,12 @@
 	  <title>Invalidation Guarantee Tags Hierarchy</title>
 	  <mediaobject>
 	    <imageobject>
-	      <imagedata align="center" format="PNG" scale="100"
-			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_invalidation_tag_hierarchy.png"/>
+	      <imagedata align="center" format="PDF" scale="75"
+			 fileref="../images/pbds_invalidation_tag_hierarchy.pdf"/>
 	    </imageobject>
 	    <imageobject>
-	      <imagedata align="center" format="PDF" scale="50"
-			 fileref="../images/pbds_invalidation_tag_hierarchy.pdf"/>
+	      <imagedata align="center" format="PNG" scale="100"
+			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_invalidation_tag_hierarchy.png"/>
 	    </imageobject>
 	    <textobject>
 	      <phrase>Invalidation Guarantee Tags Hierarchy</phrase>
@@ -2838,12 +2838,12 @@
 	  <title>Container Tag Hierarchy</title>
 	  <mediaobject>
 	    <imageobject>
-	      <imagedata align="center" format="PNG" scale="100"
-			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_container_tag_hierarchy.png"/>
+	      <imagedata align="center" format="PDF" scale="75"
+			 fileref="../images/pbds_container_tag_hierarchy.pdf"/>
 	    </imageobject>
 	    <imageobject>
-	      <imagedata align="center" format="PDF" scale="50"
-			 fileref="../images/pbds_container_tag_hierarchy.pdf"/>
+	      <imagedata align="center" format="PNG" scale="100"
+			 fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/pbds_container_tag_hierarchy.png"/>
 	    </imageobject>
 	    <textobject>
 	      <phrase>Container Tag Hierarchy</phrase>

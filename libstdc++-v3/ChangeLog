@@ -1,5 +1,20 @@
 2011-07-29  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* doc/xml/manual/build_hacking.xml: Markup imagedata changes.
+	* doc/xml/manual/policy_data_structures.xml: Same.
+
+	* doc/xml/class.txml: Remove biblioid.
+	* doc/xml/manual/allocator.xml: Same.
+	* doc/xml/manual/ctype.xml: Same.
+	* doc/xml/manual/codecvt.xml: Same.
+	* doc/xml/manual/backwards_compatibility.xml: Same.
+	* doc/xml/manual/abi.xml: Same.
+	* doc/xml/manual/shared_ptr.xml: Same.
+	* doc/xml/manual/using_exceptions.xml: Same.
+	* doc/xml/manual/messages.xml: Same.
+
+2011-07-29  Benjamin Kosnik  <bkoz@redhat.com>
+
 	Docbook conversion of existing ext/pb_ds documentation.
 	* doc/Makefile.am (xml_sources_manual): Add
 	policy_data_structures.xml and

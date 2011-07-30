@@ -45,10 +45,10 @@
     <title>Configure and Build File Dependencies</title>
   <mediaobject>
     <imageobject>
-      <imagedata align="center" format="PDF" fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/confdeps.pdf"/>
+      <imagedata align="center" format="PDF" scale="75" fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/confdeps.pdf"/>
     </imageobject>
     <imageobject>
-      <imagedata align="center" format="PNG" fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/confdeps.png"/>
+      <imagedata align="center" format="PNG" scale="100" fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/confdeps.png"/>
     </imageobject>
     <textobject>
       <phrase>Dependency Graph for Configure and Build Files</phrase>

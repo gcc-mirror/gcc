@@ -108,48 +108,57 @@
    </para>
 </section>
 
-<bibliography xml:id="allocator.biblio" xreflabel="allocator.biblio"><info><title>Bibliography</title></info>
+<bibliography xml:id="allocator.biblio" xreflabel="allocator.biblio">
+<info>	      
+	<title>
+	Bibliography
+	</title>	
+</info>
 
 
 <!-- 
-  <biblioentry>
-    <abbrev>
-    </abbrev>
+    <biblioentry xml:id="biblio.xxx">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://xxx.html">
+	      XXX
+	</link>
+      </title>
+      <date>
+      
+      </date>
 
-    <biblioid class="uri">
-      <ulink url="http://about:blank">
-      </ulink>
-    </biblioid>
-    <citetitle>
-    The Title
-    </citetitle>
+     <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      E.
+	    </firstname>
+	    <surname>
+	      Gamma
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      R.
+	    </firstname>
+	    <surname>
+	      Helm
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
 
-    <editor>
-      <firstname></firstname>
-      <surname></surname>
-    </editor>
+      <publisher>
+	<publishername>
 
-    <author>
-      <surname></surname>
-      <firstname></firstname>
-    </author>
-
-    <copyright>
-      <year></year>
-      <holder></holder>
-    </copyright>
-    <pagenums></pagenums>
-
-    <publisher>
-      <publishername>
-      </publishername>
-    </publisher>
-
-  </biblioentry> 
+	</publishername>
+      </publisher>
+    </biblioentry>
 -->
 
-  <biblioentry>
-  </biblioentry>
 
 </bibliography>
 
