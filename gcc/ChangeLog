@@ -1,3 +1,9 @@
+2011-07-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43513
+	* tree-ssa-dce.c (ref_may_be_aliased): Add assert.
+	(propagate_necessity): Handle WITH_SIZE_EXPR call arg.
+
 2011-07-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/mips/driver-native.c [__sgi__]: Include <invent.h>,
