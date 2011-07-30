@@ -1,3 +1,10 @@
+2011-07-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/48876
+	* expr.c (gfc_simplify_expr):  If end of a string is less
+	than zero, set it to zero.
+
 2011-07-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45586

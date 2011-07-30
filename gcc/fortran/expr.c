@@ -1840,6 +1840,9 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  if (p->ref && p->ref->u.ss.end)
 	    gfc_extract_int (p->ref->u.ss.end, &end);
 
+	  if (end < 0)
+	    end = 0;
+
 	  s = gfc_get_wide_string (end - start + 2);
 	  memcpy (s, p->value.character.string + start,
 		  (end - start) * sizeof (gfc_char_t));
