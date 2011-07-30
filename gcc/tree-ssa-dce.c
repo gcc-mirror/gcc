@@ -490,6 +490,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
 static bool
 ref_may_be_aliased (tree ref)
 {
+  gcc_assert (TREE_CODE (ref) != WITH_SIZE_EXPR);
   while (handled_component_p (ref))
     ref = TREE_OPERAND (ref, 0);
   if (TREE_CODE (ref) == MEM_REF
@@ -850,6 +851,8 @@ propagate_necessity (struct edge_list *el)
 		  if (TREE_CODE (arg) == SSA_NAME
 		      || is_gimple_min_invariant (arg))
 		    continue;
+		  if (TREE_CODE (arg) == WITH_SIZE_EXPR)
+		    arg = TREE_OPERAND (arg, 0);
 		  if (!ref_may_be_aliased (arg))
 		    mark_aliased_reaching_defs_necessary (stmt, arg);
 		}
