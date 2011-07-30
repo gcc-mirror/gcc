@@ -1,3 +1,8 @@
+2011-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR testsuite/49917
+	* g++.dg/init/for1.C: Fix.
+
 2011-07-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48876
