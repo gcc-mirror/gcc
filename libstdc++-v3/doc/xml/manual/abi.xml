@@ -1101,54 +1101,60 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 
 <bibliography xml:id="abi.biblio"><info><title>Bibliography</title></info>
 
+    <biblioentry xml:id="biblio.abicheck">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://abicheck.sourceforge.net">
+	  ABIcheck
+	</link>
+      </title>
+    </biblioentry>
+
+    <biblioentry xml:id="biblio.cxxabi">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.codesourcery.com/public/cxx-abi">
+	  C++ ABI Summary
+	</link>
+      </title>
+    </biblioentry>
+
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://abicheck.sourceforge.net/" class="uri">
-      </biblioid>
-      <citetitle>
-	ABIcheck, a vague idea of checking ABI compatibility
-      </citetitle>
-  </biblioentry>
-
-  <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.codesourcery.com/public/cxx-abi/" class="uri">
-    </biblioid>
-    <citetitle>
-      C++ ABI Reference
-    </citetitle>
-  </biblioentry>
-
-  <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.intel.com/cd/software/products/asmo-na/eng/284736.htm" class="uri">
-      </biblioid>
-      <citetitle>
+       <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.intel.com/cd/software/products/asmo-na/eng/284736.htm">
 	Intel Compilers for Linux Compatibility with the GNU Compilers
-      </citetitle>     
+	</link>
+      </title>
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://download.oracle.com/docs/cd/E19963-01/html/819-0690/index.html" class="uri">
-      </biblioid>
-      <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://download.oracle.com/docs/cd/E19963-01/html/819-0690/index.html">
 	Linker and Libraries Guide (document 819-0690)
-      </citetitle>
+	</link>
+      </title>
   </biblioentry>
 
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://download.oracle.com/docs/cd/E19422-01/819-3689/index.html" class="uri">
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://download.oracle.com/docs/cd/E19422-01/819-3689/index.html">
       Sun Studio 11: C++ Migration Guide (document 819-3689)
-    </citetitle>
+	</link>
+      </title>
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://people.redhat.com/drepper/dsohowto.pdf" class="uri">
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.akkadia.org/drepper/dsohowto.pdf">
       How to Write Shared Libraries
-    </citetitle>
+	</link>
+      </title>
 
     <author>
     <personname>
@@ -1158,19 +1164,22 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.arm.com/miscPDFs/8033.pdf" class="uri">
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.arm.com/miscPDFs/8033.pdf">
       C++ ABI for the ARM Architecture
-    </citetitle>
+	</link>
+      </title>
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html" class="uri">
-    </biblioid>
-    <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html">
       Dynamic Shared Objects: Survey and Issues
-    </citetitle>
+	</link>
+      </title>
+
     <subtitle>
       ISO C++ J16/06-0046
     </subtitle>
@@ -1178,11 +1187,12 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html" class="uri">
-      </biblioid>
-      <citetitle>
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html">
 	Versioning With Namespaces
-      </citetitle>
+	</link>
+      </title>
     <subtitle>
       ISO C++ J16/06-0083
     </subtitle>
@@ -1190,12 +1200,13 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://syrcose.ispras.ru/2009/files/SYRCoSE2009-CfP.pdf" class="uri">
-    </biblioid>
-    <citetitle>
+     <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://syrcose.ispras.ru/2009/files/SYRCoSE2009-CfP.pdf">
       Binary Compatibility of Shared Libraries Implemented in C++
       on GNU/Linux Systems
-    </citetitle>
+	</link>
+      </title>
 	
     <subtitle>
       SYRCoSE 2009
