@@ -84,13 +84,14 @@ along with GCC; see the file COPYING3.  If not see
       II cycles (i.e. use register copies to prevent a def from overwriting
       itself before reaching the use).
 
-    SMS works with countable loops whose loop count can be easily
-    adjusted.  This is because we peel a constant number of iterations
-    into a prologue and epilogue for which we want to avoid emitting
-    the control part, and a kernel which is to iterate that constant
-    number of iterations less than the original loop.  So the control
-    part should be a set of insns clearly identified and having its
-    own iv, not otherwise used in the loop (at-least for now), which
+    SMS works with countable loops (1) whose control part can be easily
+    decoupled from the rest of the loop and (2) whose loop count can
+    be easily adjusted.  This is because we peel a constant number of
+    iterations into a prologue and epilogue for which we want to avoid
+    emitting the control part, and a kernel which is to iterate that
+    constant number of iterations less than the original loop.  So the
+    control part should be a set of insns clearly identified and having
+    its own iv, not otherwise used in the loop (at-least for now), which
     initializes a register before the loop to the number of iterations.
     Currently SMS relies on the do-loop pattern to recognize such loops,
     where (1) the control part comprises of all insns defining and/or
@@ -598,8 +599,8 @@ reset_sched_times (partial_schedule_ptr ps, int amount)
             /* Print the scheduling times after the rotation.  */
             fprintf (dump_file, "crr_insn->node=%d (insn id %d), "
                      "crr_insn->cycle=%d, min_cycle=%d", crr_insn->node->cuid,
-                     INSN_UID (crr_insn->node->insn), SCHED_TIME (u),
-                     normalized_time);
+                     INSN_UID (crr_insn->node->insn), normalized_time,
+                     new_min_cycle);
             if (JUMP_P (crr_insn->node->insn))
               fprintf (dump_file, " (branch)");
             fprintf (dump_file, "\n");
@@ -2550,8 +2551,13 @@ print_partial_schedule (partial_schedule_ptr ps, FILE *dump)
       fprintf (dump, "\n[ROW %d ]: ", i);
       while (ps_i)
 	{
-	  fprintf (dump, "%d, ",
-		   INSN_UID (ps_i->node->insn));
+	  if (JUMP_P (ps_i->node->insn))
+	    fprintf (dump, "%d (branch), ",
+		     INSN_UID (ps_i->node->insn));
+	  else
+	    fprintf (dump, "%d, ",
+		     INSN_UID (ps_i->node->insn));
+	
 	  ps_i = ps_i->next_in_row;
 	}
     }
