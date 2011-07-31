@@ -1,3 +1,10 @@
+2011-07-31  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR target/47908
+	* config/m68k/m68k.c (m68k_override_options_after_change): New function.
+	Disable instruction scheduling for non-ColdFire targets.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Define.
+
 2011-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/49897
