@@ -1,3 +1,8 @@
+2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/gcc-dg.exp (cleanup-dump): Also remove .exe. and
+	.exe.ltrans[0-9]*. dump files.
+
 2011-07-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/49112
@@ -77,8 +82,7 @@
 2011-07-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/49875
-	* c-c++-common/cxxbitfields-4.c: Check for smaller than long
-	moves.
+	* c-c++-common/cxxbitfields-4.c: Check for smaller than long moves.
 	* c-c++-common/cxxbitfields-5.c: Same.
 
 2011-07-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
