@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp" } */
+/* { dg-options "-O2 -fdump-tree-vrp1" } */
 
 extern void abort (void);
 
@@ -16,5 +16,5 @@ main(void)
 }
 
 /* { dg-final { scan-tree-dump-times "Removing basic block" 2 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

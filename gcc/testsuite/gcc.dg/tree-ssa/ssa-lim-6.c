@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-lim-details" } */
+/* { dg-options "-O2 -fdump-tree-lim1-details" } */
 
 double a[16][64], y[64], x[16];
 void foo(void)
@@ -11,4 +11,4 @@ void foo(void)
 }
 
 /* { dg-final { scan-tree-dump "Executing store motion of y" "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */

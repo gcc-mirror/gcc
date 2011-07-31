@@ -3,7 +3,7 @@
    actually merged, causing a segfault later.  Make sure that does not
    happen any more.  */
 
-/* { dg-options "-O1 -fdump-tree-mergephi" } */
+/* { dg-options "-O1 -fdump-tree-mergephi1" } */
 
 int
 foo (int a)
@@ -33,4 +33,4 @@ foo (int a)
 }
 
 /* { dg-final { scan-tree-dump-times "Removing basic block" 0 "mergephi1"} } */
-/* { dg-final { cleanup-tree-dump "mergephi\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "mergephi1" } } */

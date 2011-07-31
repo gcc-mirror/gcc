@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-strict-aliasing -fdump-tree-lim-details" } */
+/* { dg-options "-O -fno-strict-aliasing -fdump-tree-lim1-details" } */
 
 void foo (float * __restrict__ a, float * __restrict__ b, int n, int j)
 {
@@ -11,4 +11,4 @@ void foo (float * __restrict__ a, float * __restrict__ b, int n, int j)
 /* We should move the RHS of the store out of the loop.  */
 
 /* { dg-final { scan-tree-dump-times "Moving statement" 11 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */

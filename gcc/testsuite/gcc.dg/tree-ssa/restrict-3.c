@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-strict-aliasing -fdump-tree-lim-details" } */
+/* { dg-options "-O -fno-strict-aliasing -fdump-tree-lim1-details" } */
 
 void f(int * __restrict__ r,
        int a[__restrict__ 16][16],
@@ -15,4 +15,4 @@ void f(int * __restrict__ r,
 /* We should apply store motion to the store to *r.  */
 
 /* { dg-final { scan-tree-dump "Executing store motion of \\\*r" "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */
