@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2011-06-21 10:27+0000\n"
-"PO-Revision-Date: 2011-07-12 21:15+0100\n"
+"PO-Revision-Date: 2011-07-31 14:14+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -40105,12 +40105,12 @@ msgstr "Zuordnungsfähige Koarray-Variable »%s« bei %L muss aufgeschobene Form
 #: fortran/resolve.c:12324
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable '%s' at %L is INTENT(OUT) and can thus not be an allocatable coarray or have coarray components"
-msgstr ""
+msgstr "Variable '%s' bei %L ist INTENT(OUT) und kann daher kein reservierbares Coarray sein oder Coarray-Komponenten haben"
 
 #: fortran/resolve.c:12330
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Coarray dummy variable '%s' at %L not allowed in BIND(C) procedure '%s'"
-msgstr "Scheinprozedur bei %L nicht in ELEMENTAL-Prozedur erlaubt"
+msgstr "Coarray-Hilfsvariable '%s' bei %L in BIND(C)-Prozedur '%s' nicht erlaubt"
 
 #: fortran/resolve.c:12400
 #, gcc-internal-format, gfc-internal-format
@@ -40128,14 +40128,14 @@ msgid "DATA array '%s' at %L must be specified in a previous declaration"
 msgstr "DATA-Feld »%s« bei %L muss in vorheriger Deklaration angegeben werden"
 
 #: fortran/resolve.c:12514
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "DATA element '%s' at %L cannot have a coindex"
-msgstr "Schein-»%s« bei %L kann keine Initialisierung haben"
+msgstr "DATA-Element '%s' bei %L kann keinen Coindex haben"
 
 #: fortran/resolve.c:12523
 #, gcc-internal-format, gfc-internal-format
 msgid "DATA element '%s' at %L is a pointer and so must be a full array"
-msgstr ""
+msgstr "DATA-Element '%s' bei %L ist ein Zeiger und muss daher ein vollständiges Feld sein"
 
 #: fortran/resolve.c:12569
 #, gcc-internal-format, gfc-internal-format
@@ -40150,17 +40150,17 @@ msgstr "DATA-Anweisung bei %L hat mehr Variablen als Werte"
 #: fortran/resolve.c:12680
 #, gcc-internal-format, gfc-internal-format
 msgid "start of implied-do loop at %L could not be simplified to a constant value"
-msgstr ""
+msgstr "Anfang der Implied-do-Schleife bei %L konnte nicht zu einem konstanten Wert vereinfacht werden"
 
 #: fortran/resolve.c:12688
 #, gcc-internal-format, gfc-internal-format
 msgid "end of implied-do loop at %L could not be simplified to a constant value"
-msgstr ""
+msgstr "Ende der Implied-do-Schleife bei %L konnte nicht zu einem konstanten Wert vereinfacht werden"
 
 #: fortran/resolve.c:12696
 #, gcc-internal-format, gfc-internal-format
 msgid "step of implied-do loop at %L could not be simplified to a constant value"
-msgstr ""
+msgstr "Schritt der Implied-do-Schleife bei %L konnte nicht zu einem konstanten Wert vereinfacht werden"
 
 #: fortran/resolve.c:12821
 #, gcc-internal-format, gfc-internal-format
@@ -40233,9 +40233,9 @@ msgid "Substring at %L has length zero"
 msgstr "Teilzeichenkette bei %L hat Länge Null"
 
 #: fortran/resolve.c:13364
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: PUBLIC function '%s' at %L of PRIVATE type '%s'"
-msgstr "Fortran 2003: PUBLIC %s »%s« bei %L mit abgeleitetem PRIVATE-Typen »%s«"
+msgstr "Fortran 2003: PUBLIC-Funktion »%s« bei %L mit PRIVATE-Typen »%s«"
 
 #: fortran/resolve.c:13377
 #, gcc-internal-format, gfc-internal-format
@@ -40283,9 +40283,9 @@ msgid "!$OMP at %C starts a commented line as it neither is followed by a space 
 msgstr "!$OMP bei %C beginnt eine kommentierte Zeile, da es weder von Leerzeichen gefolgt wird noch eine Fortsetzungszeile ist"
 
 #: fortran/scanner.c:1052 fortran/scanner.c:1190
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Line truncated at %L"
-msgstr "Zeile bei %C wird abgeschnitten"
+msgstr "Zeile bei %L wird abgeschnitten"
 
 #: fortran/scanner.c:1102 fortran/scanner.c:1234
 #, gcc-internal-format, gfc-internal-format
@@ -40358,19 +40358,19 @@ msgid "Invalid KIND parameter of %s at %L"
 msgstr "Ungültiger KIND-Parameter von %s bei %L"
 
 #: fortran/simplify.c:700
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Argument of %s function at %L is negative"
-msgstr "Anweisungsfunktion bei %L ist rekursiv"
+msgstr "Argument der Funktion %s bei %L ist negativ"
 
 #: fortran/simplify.c:707
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Argument of %s function at %L outside of range [0,127]"
-msgstr "Argument der ACHAR-Funktion bei %L außerhalb des Wertebereichs [0,127]"
+msgstr "Argument der Funktion %s bei %L außerhalb des Wertebereichs [0,127]"
 
 #: fortran/simplify.c:725
 #, gcc-internal-format, gfc-internal-format
 msgid "Argument of %s function at %L is too large for the collating sequence of kind %d"
-msgstr ""
+msgstr "Argument der Funktion %s bei %L ist zu groß für die zusammenfassende Sequenz der Art %d"
 
 #: fortran/simplify.c:762
 #, gcc-internal-format, gfc-internal-format
@@ -40398,14 +40398,14 @@ msgid "If first argument of ATAN2 %L is zero, then the second argument must not 
 msgstr "Wenn das erste Argument von ATAN2 %L Null ist, dann darf das zweite Argument nicht Null sein"
 
 #: fortran/simplify.c:1238
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Result of BESSEL_YN is -INF at %L"
-msgstr "Ergebnis von NEAREST ist NaN bei %L"
+msgstr "Ergebnis von BESSEL_YN ist -INF bei %L"
 
 #: fortran/simplify.c:1903
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid SHIFT argument of DSHIFTL at %L"
-msgstr "Ungültiges zweites Argument von ISHFT bei %L"
+msgstr "Ungültiges SHIFT-Argument von DSHIFTL bei %L"
 
 #: fortran/simplify.c:2429
 #, gcc-internal-format, gfc-internal-format
@@ -40458,20 +40458,20 @@ msgid "Argument of ICHAR at %L must be of length one"
 msgstr "Argument von ICHAR bei %L muss Länge Eins haben"
 
 #: fortran/simplify.c:3008
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid second argument of %s at %L"
-msgstr "Ungültiges zweites Argument von IBCLR bei %L"
+msgstr "Ungültiges zweites Argument von %s bei %L"
 
 #. Left shift, as in SHIFTL.
 #: fortran/simplify.c:3026 fortran/simplify.c:3034
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Second argument of %s is negative at %L"
-msgstr "Zweites Argument von IBCLR überschreitet Bit-Größe bei %L"
+msgstr "Zweites Argument von %s ist bei %L negativ"
 
 #: fortran/simplify.c:3046
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Magnitude of second argument of %s exceeds bit size at %L"
-msgstr "Größe des zweiten Arguments von ISHFT überschreitet Bit-Größe bei %L"
+msgstr "Größe des zweiten Arguments von %s überschreitet Bit-Größe bei %L"
 
 #: fortran/simplify.c:3150
 #, gcc-internal-format, gfc-internal-format
@@ -40506,7 +40506,7 @@ msgstr "DIM-Argument bei %L ist außerhalb der Grenzen"
 #: fortran/simplify.c:3642
 #, gcc-internal-format, gfc-internal-format
 msgid "Not yet implemented: LCOBOUND for coarray with non-constant cobounds at %L"
-msgstr ""
+msgstr "Noch nicht implementiert: LCOBOUND für Coarray mit nicht konstanten Co-Grenzen bei %L"
 
 #: fortran/simplify.c:3796
 #, gcc-internal-format, gfc-internal-format
@@ -40579,44 +40579,44 @@ msgid "Intrinsic TRANSFER at %L has partly undefined result: source size %ld < r
 msgstr "Intrinsisches TRANSFER bei %L hat teilweise undefiniertes Ergebnis: Quellgröße %ld < Ergebnisgröße %ld"
 
 #: fortran/simplify.c:6221
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Too few elements in expression for SUB= argument at %L"
-msgstr "Zu wenige Elemente (%A fehlt) bei %0 für Feldreferenz bei %1"
+msgstr "Zu wenige Elemente in Ausdruck für SUB= Argument bei %L"
 
 #: fortran/simplify.c:6247
 #, gcc-internal-format, gfc-internal-format
 msgid "Out of bounds in IMAGE_INDEX at %L for dimension %d, SUB has %ld and COARRAY lower bound is %ld)"
-msgstr ""
+msgstr "Außerhalb des Wertebereichs in IMAGE_INDEX bei %L für Dimension %d, SUB hat %ld und untere Grenze für COARRAY ist %ld"
 
 #: fortran/simplify.c:6270
 #, gcc-internal-format, gfc-internal-format
 msgid "Out of bounds in IMAGE_INDEX at %L for dimension %d, SUB has %ld and COARRAY upper bound is %ld)"
-msgstr ""
+msgstr "Außerhalb des Wertebereichs in IMAGE_INDEX bei %L für Dimension %d, SUB hat %ld und obere Grenze für COARRAY ist %ld"
 
 #: fortran/simplify.c:6288
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Too many elements in expression for SUB= argument at %L"
-msgstr "Zu viele Elemente bei %0 für Feldreferenz bei %1"
+msgstr "Zu viele Elemente in Ausdruck für SUB= Argument bei %L"
 
 #: fortran/simplify.c:6303
 #, gcc-internal-format, gfc-internal-format
 msgid "Not yet implemented: IMAGE_INDEX for coarray with non-constant cobounds at %L"
-msgstr ""
+msgstr "Noch nicht implementiert: IMAGE_INDEX für Coarray mit nicht konstanten Co-Grenzen bei %L"
 
 #: fortran/simplify.c:6402
 #, gcc-internal-format, gfc-internal-format
 msgid "Not yet implemented: THIS_IMAGE for coarray with non-constant cobounds at %L"
-msgstr ""
+msgstr "Noch nicht implementiert: THIS_IMAGE für Coarray mit nicht konstanten Co-Grenzen bei %L"
 
 #: fortran/simplify.c:6424
 #, gcc-internal-format, gfc-internal-format
 msgid "Not yet implemented: UCOBOUND for coarray with non-constant cobounds at %L"
-msgstr ""
+msgstr "Noch nicht implementiert: UCOBOUND für Coarray mit nicht konstanten Co-Grenzen bei %L"
 
 #: fortran/simplify.c:6781
 #, gcc-internal-format, gfc-internal-format
 msgid "Character '%s' in string at %L cannot be converted into character kind %d"
-msgstr ""
+msgstr "Zeichen »%s« in Zeichenkette bei %L kann nicht in Zeichenart %d umgewandelt werden"
 
 #: fortran/symbol.c:135
 #, gcc-internal-format, gfc-internal-format
@@ -40652,9 +40652,9 @@ msgstr "Implizit deklarierte BIND(C)-Variable »%s« bei %L kann nicht C-kompati
 #. Dummy args to a BIND(C) routine may not be interoperable if
 #. they are implicitly typed.
 #: fortran/symbol.c:294
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Implicitly declared variable '%s' at %L may not be C interoperable but it is a dummy argument to the BIND(C) procedure '%s' at %L"
-msgstr "Implizit deklarierte Variable »%s« bei %L kann nicht C-kompatibel sein, ist aber ein Scheinargument für BIND(C)-Prozedur »%s« bei %L"
+msgstr "Implizit deklarierte Variable »%s« bei %L ist nicht C-kompatibel, sondern ein Scheinargument für BIND(C)-Prozedur »%s« bei %L"
 
 #: fortran/symbol.c:335
 #, gcc-internal-format, gfc-internal-format
@@ -40667,19 +40667,19 @@ msgid "%s attribute not allowed in BLOCK DATA program unit at %L"
 msgstr "Attribut %s ungültig in BLOCK DATA - Programmeinheit bei %L"
 
 #: fortran/symbol.c:479
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: Procedure pointer at %C"
-msgstr "Fortran 2003: Modul-Eigenschaft in USE-Anweisung bei %C"
+msgstr "Fortran 2003: Prozedur-Zeiger bei %C"
 
 #: fortran/symbol.c:641
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "%s attribute applied to %s %s at %L"
-msgstr "Attribut %s steht mit Attribut %s bei %L in Konflikt"
+msgstr "Attribut %s auf %s %s bei %L angewendet"
 
 #: fortran/symbol.c:648
 #, gcc-internal-format, gfc-internal-format
 msgid "BIND(C) applied to %s %s at %L"
-msgstr ""
+msgstr "BIND(C) auf %s %s bei %L angewendet"
 
 #: fortran/symbol.c:756 fortran/symbol.c:1479
 #, gcc-internal-format, gfc-internal-format
@@ -40719,17 +40719,17 @@ msgstr "Attribut %s doppelt angegeben bei %L"
 #: fortran/symbol.c:878
 #, gcc-internal-format, gfc-internal-format
 msgid "ALLOCATABLE specified outside of INTERFACE body at %L"
-msgstr ""
+msgstr "ALLOCATABLE außerhalb des INTERFACE-Körpers bei %L angegeben"
 
 #: fortran/symbol.c:904
 #, gcc-internal-format, gfc-internal-format
 msgid "CODIMENSION specified for '%s' outside its INTERFACE body at %L"
-msgstr ""
+msgstr "CODIMENSION für »%s« außerhalb seines INTERFACE-Körpers bei %L angegeben"
 
 #: fortran/symbol.c:930
 #, gcc-internal-format, gfc-internal-format
 msgid "DIMENSION specified for '%s' outside its INTERFACE body at %L"
-msgstr ""
+msgstr "DIMENSION für »%s« außerhalb seines INTERFACE-Körpers bei %L angegeben"
 
 #: fortran/symbol.c:1060
 #, gcc-internal-format, gfc-internal-format
@@ -40762,9 +40762,9 @@ msgid "Duplicate VOLATILE attribute specified at %L"
 msgstr "Doppeltes VOLATILE-Attribut bei %L angegeben"
 
 #: fortran/symbol.c:1184
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate ASYNCHRONOUS attribute specified at %L"
-msgstr "Doppeltes VALUE-Attribut bei %L angegeben"
+msgstr "Doppeltes ASYNCHRONOUS-Attribut bei %L angegeben"
 
 #: fortran/symbol.c:1475
 #, gcc-internal-format, gfc-internal-format
@@ -40797,14 +40797,14 @@ msgid "Fortran 2003: BIND(C) at %L"
 msgstr "Fortran 2003: BIND(C) bei %L"
 
 #: fortran/symbol.c:1609
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate EXTENDS attribute specified at %L"
-msgstr "Doppeltes BIND-Attribut bei %L angegeben"
+msgstr "Doppeltes EXTENDS-Attribut bei %L angegeben"
 
 #: fortran/symbol.c:1613
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Fortran 2003: EXTENDS at %L"
-msgstr "Fortran 2003: BIND(C) bei %L"
+msgstr "Fortran 2003: EXTENDS bei %L"
 
 #: fortran/symbol.c:1635
 #, gcc-internal-format, gfc-internal-format
@@ -40814,7 +40814,7 @@ msgstr "Symbol »%s« bei %L hat bereits eine explizite Schnittstelle"
 #: fortran/symbol.c:1642
 #, gcc-internal-format, gfc-internal-format
 msgid "'%s' at %L has attributes specified outside its INTERFACE body"
-msgstr ""
+msgstr "»%s« bei %L hat außerhalb seines INTERFACE-Körpers spezifizierte Attribute"
 
 #: fortran/symbol.c:1675
 #, gcc-internal-format, gfc-internal-format
@@ -40822,9 +40822,9 @@ msgid "Symbol '%s' at %L already has basic type of %s"
 msgstr "Symbol »%s« bei %L hat bereits grundlegenden Typen %s"
 
 #: fortran/symbol.c:1682
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Procedure '%s' at %L may not have basic type of %s"
-msgstr "Symbol »%s« bei %L hat bereits grundlegenden Typen %s"
+msgstr "Prozedur »%s« bei %L kann nicht grundlegenden Typen %s haben"
 
 #: fortran/symbol.c:1694
 #, gcc-internal-format, gfc-internal-format
@@ -40837,9 +40837,9 @@ msgid "Component '%s' at %C already declared at %L"
 msgstr "Komponente »%s« bei %C bereits bei %L deklariert"
 
 #: fortran/symbol.c:1874
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "Component '%s' at %C already in the parent type at %L"
-msgstr "Komponente »%s« bei %C bereits bei %L deklariert"
+msgstr "Komponente »%s« bei %C bereits im Elterntypen bei %L deklariert"
 
 #: fortran/symbol.c:1950
 #, gcc-internal-format, gfc-internal-format
