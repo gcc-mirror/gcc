@@ -1,3 +1,13 @@
+2011-07-31  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/49749
+	* tree-ssa-reassoc.c (get_rank): New forward declaration.
+	(PHI_LOOP_BIAS): New macro.
+	(phi_rank): New function.
+	(loop_carried_phi): Likewise.
+	(propagate_rank): Likewise.
+	(get_rank): Add calls to phi_rank and propagate_rank.
+	
 2011-07-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/x86-64.h (SIZE_TYPE): Check TARGET_LP64 instead
