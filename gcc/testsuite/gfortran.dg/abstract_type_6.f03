@@ -31,7 +31,7 @@ TYPE, EXTENDS(middle) :: bottom
 CONTAINS
    ! useful proc to satisfy deferred procedure in top. Because we've
    ! extended middle we wouldn't get told off if we forgot this.
-   PROCEDURE :: proc_a => bottom_a
+   PROCEDURE :: proc_a => bottom_a  ! { dg-error "must be a module procedure" }
    ! calls middle%proc_b and then provides extra behaviour
    PROCEDURE :: proc_b => bottom_b
    ! calls top_c and then provides extra behaviour
