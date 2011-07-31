@@ -1,5 +1,9 @@
 2011-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/parallel/algo.h: Trivial uglification fixes.
+
+2011-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/49925
 	* include/bits/shared_ptr.h (make_shared): Qualify allocate_shared
 	with std::.
