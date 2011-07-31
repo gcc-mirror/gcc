@@ -1432,14 +1432,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __make_shared(_Args&&... __args)
     {
       typedef typename std::remove_const<_Tp>::type _Tp_nc;
-      return __allocate_shared<_Tp, _Lp>(std::allocator<_Tp_nc>(),
-					 std::forward<_Args>(__args)...);
+      return std::__allocate_shared<_Tp, _Lp>(std::allocator<_Tp_nc>(),
+					      std::forward<_Args>(__args)...);
     }
 
   /// std::hash specialization for __shared_ptr.
   template<typename _Tp, _Lock_policy _Lp>
     struct hash<__shared_ptr<_Tp, _Lp>>
-    : public std::unary_function<__shared_ptr<_Tp, _Lp>, size_t>
+    : public __hash_base<size_t, __shared_ptr<_Tp, _Lp>>
     {
       size_t
       operator()(const __shared_ptr<_Tp, _Lp>& __s) const
