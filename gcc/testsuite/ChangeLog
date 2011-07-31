@@ -1,5 +1,10 @@
 2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/49920
+	* gcc.target/i386/pr49920.c: New test.
+
+2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.dg/tree-ssa/20050314-1.c: Dump and cleanup lim1 pass only.
 	* gcc.dg/tree-ssa/pr23109.c: Ditto.
 	* gcc.dg/tree-ssa/loop-7.c: Ditto.
