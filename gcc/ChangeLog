@@ -1,3 +1,9 @@
+2011-07-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/x86-64.h (SIZE_TYPE): Check TARGET_LP64 instead
+	of TARGET_64BIT.
+	(PTRDIFF_TYPE): Likewise.
+
 2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49920
