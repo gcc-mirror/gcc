@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-lim" } */
+/* { dg-options "-O -fdump-tree-lim1" } */
 
 /* This is a variant that doesn't cause fold to place a cast to
    int before testing bit 1.  */
@@ -19,4 +19,4 @@ int size)
 }
 
 /* { dg-final { scan-tree-dump-times "1 <<" 3 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */

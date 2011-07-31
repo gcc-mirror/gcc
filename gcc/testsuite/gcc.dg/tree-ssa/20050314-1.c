@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-lim-details" } */
+/* { dg-options "-O1 -fdump-tree-lim1-details" } */
 
 float a[100];
 
@@ -18,4 +18,4 @@ void xxx (void)
    cannot read nor write the memory.  */
 
 /* { dg-final { scan-tree-dump-times "Moving statement" 1 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */

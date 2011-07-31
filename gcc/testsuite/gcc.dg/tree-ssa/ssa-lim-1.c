@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-lim" } */
+/* { dg-options "-O -fdump-tree-lim1" } */
 
 /* This is a variant that does cause fold to place a cast to
    int before testing bit 1.  */
@@ -19,4 +19,4 @@ quantum_toffoli (int control1, int control2, int target,
 }
 
 /* { dg-final { scan-tree-dump-times "1 <<" 3 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */

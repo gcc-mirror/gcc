@@ -1,5 +1,35 @@
 2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/tree-ssa/20050314-1.c: Dump and cleanup lim1 pass only.
+	* gcc.dg/tree-ssa/pr23109.c: Ditto.
+	* gcc.dg/tree-ssa/loop-7.c: Ditto.
+	* gcc.dg/tree-ssa/loop-32.c: Ditto.
+	* gcc.dg/tree-ssa/loop-33.c: Ditto.
+	* gcc.dg/tree-ssa/loop-34.c: Ditto.
+	* gcc.dg/tree-ssa/loop-35.c: Ditto.
+	* gcc.dg/tree-ssa/restrict-3.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-lim-2.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-lim-1.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-lim-3.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-lim-6.c: Ditto.
+	* gcc.dg/tree-ssa/structopt-1.c: Ditto.
+	* g++.dg/tree-ssa/pr33615.C: Ditto.
+	* g++.dg/tree-ssa/restrict1.C: Ditto.
+	* c-c++-common/restrict-2.c: Ditto.
+	* gfortran.dg/pr32921.f: Ditto.
+	* gcc.dg/tree-ssa/ssa-dse-10.c: Dump and cleanup dse1 pass only.
+	* gcc.dg/fold-compare-2.c: Dump and cleanup vrp1 pass only.
+	* gcc.dg/tree-ssa/vrp47.c: Ditto.
+	* gcc.dg/tree-ssa/pr25501.c: Dump and cleanup mergephi1 pass only.
+	* gcc.dg/tree-ssa/pr15349.c: Dump and cleanup mergephi2 pass only.
+	* gcc.dg/tree-ssa/tailrecursion-1.c: Dump and cleanup tailr1 pass only.
+	* gcc.dg/tree-ssa/tailrecursion-2.c: Ditto.
+	* gcc.dg/tree-ssa/tailrecursion-3.c: Ditto.
+	* gcc.dg/tree-ssa/tailrecursion-4.c: Ditto.
+	* gcc.dg/tree-ssa/tailrecursion-6.c: Ditto.
+
+2011-07-31  Uros Bizjak  <ubizjak@gmail.com>
+
 	* lib/gcc-dg.exp (cleanup-dump): Also remove .exe. and
 	.exe.ltrans[0-9]*. dump files.
 

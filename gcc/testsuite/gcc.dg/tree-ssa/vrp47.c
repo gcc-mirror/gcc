@@ -4,8 +4,8 @@
    jumps when evaluating an && condition.  VRP is not able to optimize
    this.  */
 /* { dg-do compile { target { ! "mips*-*-* s390*-*-*  avr-*-* mn10300-*-*" } } } */
-/* { dg-options "-O2 -fdump-tree-vrp -fdump-tree-dom" } */
-/* { dg-options "-O2 -fdump-tree-vrp -fdump-tree-dom -march=i586" { target { i?86-*-* && ilp32 } } } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fdump-tree-dom1" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fdump-tree-dom1 -march=i586" { target { i?86-*-* && ilp32 } } } */
 
 int h(int x, int y)
 {
@@ -44,5 +44,5 @@ int f(int x)
 /* { dg-final { scan-tree-dump-times "x\[^ \]* \[|\] y" 1 "vrp1" } } */
 /* { dg-final { scan-tree-dump-times "x\[^ \]* \\^ 1" 1 "vrp1" } } */
 
-/* { dg-final { cleanup-tree-dump "vrp\[0-9\]" } } */
-/* { dg-final { cleanup-tree-dump "dom\[0-9\]" } } */
+/* { dg-final { cleanup-tree-dump "vrp1" } } */
+/* { dg-final { cleanup-tree-dump "dom1" } } */

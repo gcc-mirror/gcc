@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-lim-details" } */
+/* { dg-options "-O2 -fdump-tree-lim1-details" } */
 
 int x;
 int a[100];
@@ -43,4 +43,4 @@ void test3(struct a *A)
 }
 
 /* { dg-final { scan-tree-dump-times "Executing store motion of" 3 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim\[1-2\]" } } */
+/* { dg-final { cleanup-tree-dump "lim1" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-lim-details" } */
+/* { dg-options "-O2 -fdump-tree-lim1-details" } */
 
 struct Foo
 {
