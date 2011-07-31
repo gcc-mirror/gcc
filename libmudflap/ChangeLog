@@ -1,3 +1,9 @@
+2011-07-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43513
+	* testsuite/libmudflap.c/fail31-frag.c: Adapt testcase to prevent
+	folding of alloca.
+
 2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Revert:
