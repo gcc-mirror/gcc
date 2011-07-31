@@ -1,3 +1,9 @@
+2011-07-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/43513
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Use max of
+	get_object_alignment and TYPE_ALIGN.
+
 2011-07-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/43513
