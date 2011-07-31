@@ -1,3 +1,38 @@
+	PR target/49920
+	* config/i386/i386.md (strset): Do not expand strset_singleop
+	when %eax or $edi are fixed.
+	(*strsetdi_rex_1): Disable when %eax or %edi are fixed.
+	(*strsetsi_1): Ditto.
+	(*strsetsi_rex_1): Ditto.
+	(*strsethi_1): Ditto.
+	(*strsethi_rex_1): Ditto.
+	(*strsetqi_1): Ditto.
+	(*strsetqi_rex_1): Ditto.
+	(*rep_stosdi_rex64): Disable when %eax, %ecx or %edi are fixed.
+	(*rep_stossi): Ditto.
+	(*rep_stossi_rex64): Ditto.
+	(*rep_stosqi): Ditto.
+	(*rep_stosqi_rex64): Ditto.
+	(*strlenqi_1): Ditto.
+	(*strlenqi_rex_1): Ditto.
+	(cmpstrnsi): Also fail when %ecx is fixed.
+	(*cmpstrnqi_nz_1): Disable when %ecx, %esi or %edi are fixed.
+	(*cmpstrnqi_nz_rex_1): Ditto.
+	(*cmpstrnqi_1): Ditto.
+	(*cmpstrnqi_rex_1): Ditto.
+	(*strmovdi_rex_1): Disable when %esi or %edi are fixed.
+	(*strmovsi_1): Ditto.
+	(*strmovsi_rex_1): Ditto.
+	(*strmovhi_1): Ditto.
+	(*strmovhi_rex_1): Ditto.
+	(*strmovqi_1): Ditto.
+	(*strmovqi_rex_1): Ditto.
+	(*rep_movdi_rex64): Disable when %ecx, %esi or %edi are fixed.
+	(*rep_movsi): Ditto.
+	(*rep_movsi_rex64): Ditto.
+	(*rep_movqi): Ditto.
+	(*rep_movqi_rex64): Ditto.
+
 2011-07-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47364
