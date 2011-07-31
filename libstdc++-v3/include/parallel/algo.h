@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -273,12 +273,12 @@ namespace __parallel
                   _BinaryPredicate __comp)
     {
       typedef std::iterator_traits<_IIter> _IIterTraits;
-      typedef std::iterator_traits<_FIterator> iteratorf_traits;
+      typedef std::iterator_traits<_FIterator> _FIterTraits;
       typedef typename _IIterTraits::iterator_category _IIteratorCategory;
-      typedef typename iteratorf_traits::iterator_category iteratorf_category;
+      typedef typename _FIterTraits::iterator_category _FIteratorCategory;
 
       return __find_first_of_switch(__begin1, __end1, __begin2, __end2, __comp,
-                                  _IIteratorCategory(), iteratorf_category());
+                                  _IIteratorCategory(), _FIteratorCategory());
     }
 
   // Public interface, insert default comparator
@@ -288,9 +288,9 @@ namespace __parallel
                   _FIterator __begin2, _FIterator __end2)
     {
       typedef std::iterator_traits<_IIter> _IIterTraits;
-      typedef std::iterator_traits<_FIterator> iteratorf_traits;
+      typedef std::iterator_traits<_FIterator> _FIterTraits;
       typedef typename _IIterTraits::value_type _IValueType;
-      typedef typename iteratorf_traits::value_type _FValueType;
+      typedef typename _FIterTraits::value_type _FValueType;
 
       return __gnu_parallel::find_first_of(__begin1, __end1, __begin2, __end2,
                          __gnu_parallel::_EqualTo<_IValueType, _FValueType>());

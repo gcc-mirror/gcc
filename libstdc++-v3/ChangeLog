@@ -1,3 +1,10 @@
+2011-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/49925
+	* include/bits/shared_ptr.h (make_shared): Qualify allocate_shared
+	with std::.
+	* include/bits/shared_ptr_base.h (__make_shared): Likewise.
+
 2011-07-27  Jeffrey Yasskin  <jyasskin@google.com>
 
 	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Updated.

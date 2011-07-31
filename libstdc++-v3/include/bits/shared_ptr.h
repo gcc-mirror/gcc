@@ -543,8 +543,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_shared(_Args&&... __args)
     {
       typedef typename std::remove_const<_Tp>::type _Tp_nc;
-      return allocate_shared<_Tp>(std::allocator<_Tp_nc>(),
-				  std::forward<_Args>(__args)...);
+      return std::allocate_shared<_Tp>(std::allocator<_Tp_nc>(),
+				       std::forward<_Args>(__args)...);
     }
 
   /// std::hash specialization for shared_ptr.
