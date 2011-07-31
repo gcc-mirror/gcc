@@ -1,5 +1,12 @@
 2011-07-31  Revital Eres  <revital.eres@linaro.org>
 
+	* ddg.c (create_ddg_dep_from_intra_loop_link): Remove the creation
+	of anti-dep edge from a branch.
+	(add_cross_iteration_register_deps): Create anti-dep edge from
+	a branch.
+
+2011-07-31  Revital Eres  <revital.eres@linaro.org>
+
 	* modulo-sched.c: Change comment.
 	(reset_sched_times): Fix print message.
 	(print_partial_schedule): Add print info.

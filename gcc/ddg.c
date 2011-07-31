@@ -197,11 +197,6 @@ create_ddg_dep_from_intra_loop_link (ddg_ptr g, ddg_node_ptr src_node,
         }
     }
 
-  /* If a true dep edge enters the branch create an anti edge in the
-     opposite direction to prevent the creation of reg-moves.  */
-  if ((DEP_TYPE (link) == REG_DEP_TRUE) && JUMP_P (dest_node->insn))
-    create_ddg_dep_no_link (g, dest_node, src_node, ANTI_DEP, REG_DEP, 1);
-
    latency = dep_cost (link);
    e = create_ddg_edge (src_node, dest_node, t, dt, latency, distance);
    add_edge_to_ddg (g, e);
@@ -306,8 +301,11 @@ add_cross_iteration_register_deps (ddg_ptr g, df_ref last_def)
 
 	  gcc_assert (first_def_node);
 
+         /* Always create the edge if the use node is a branch in
+            order to prevent the creation of reg-moves.  */
           if (DF_REF_ID (last_def) != DF_REF_ID (first_def)
-              || !flag_modulo_sched_allow_regmoves)
+              || !flag_modulo_sched_allow_regmoves
+	      || JUMP_P (use_node->insn))
             create_ddg_dep_no_link (g, use_node, first_def_node, ANTI_DEP,
                                     REG_DEP, 1);
 
