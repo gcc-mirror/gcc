@@ -2013,9 +2013,9 @@ package body Prj.Env is
       -------------------
 
       function Try_Path_Name (Path : String) return String_Access is
-         First    : Natural;
-         Last     : Natural;
-         Result   : String_Access := null;
+         First  : Natural;
+         Last   : Natural;
+         Result : String_Access := null;
 
       begin
          if Current_Verbosity = High then
@@ -2080,9 +2080,9 @@ package body Prj.Env is
 
       --  Local Declarations
 
-      Result    : String_Access;
-      Has_Dot   : Boolean := False;
-      Key       : Name_Id;
+      Result  : String_Access;
+      Has_Dot : Boolean := False;
+      Key     : Name_Id;
 
    --  Start of processing for Find_Project
 

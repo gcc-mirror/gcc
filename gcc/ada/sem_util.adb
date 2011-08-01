@@ -3200,6 +3200,45 @@ package body Sem_Util is
       Append_Entity     (Def_Id, S);
       Set_Public_Status (Def_Id);
 
+      --  Declaring an homonym is not allowed in SPARK or ALFA...
+
+      if Formal_Verification_Mode and then Present (C)
+
+        --  ...unless the new declaration is in a subprogram, and the visible
+        --  declaration is a variable declaration or a parameter specification
+        --  outside that subprogram;
+
+        and then not
+          (Nkind_In (Parent (Parent (Def_Id)),
+                     N_Subprogram_Body,
+                     N_Function_Specification,
+                     N_Procedure_Specification)
+           and then
+             Nkind_In (Parent (C),
+                       N_Object_Declaration,
+                       N_Parameter_Specification))
+
+        --  ...or the new declaration is in a package, and the visible
+        --  declaration occurs outside that package;
+
+        and then not Nkind_In (Parent (Parent (Def_Id)),
+                               N_Package_Specification,
+                               N_Package_Body)
+
+        --  ...or the new declaration is a component declaration in a record
+        --  type definition.
+
+        and then Nkind (Parent (Def_Id)) /= N_Component_Declaration
+
+        --  Don't issue error for non-source entities
+
+        and then Comes_From_Source (Def_Id)
+        and then Comes_From_Source (C)
+      then
+         Error_Msg_Sloc := Sloc (C);
+         Formal_Error_Msg_N ("redeclaration of identifier &#", Def_Id);
+      end if;
+
       --  Warn if new entity hides an old one
 
       if Warn_On_Hiding and then Present (C)

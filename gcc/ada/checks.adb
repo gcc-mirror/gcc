@@ -4565,8 +4565,10 @@ package body Checks is
       ----------------------
 
       function Entity_Of_Prefix return Entity_Id is
-         P : Node_Id := Prefix (N);
+         P : Node_Id;
+
       begin
+         P := Prefix (N);
          while not Is_Entity_Name (P) loop
             if not Nkind_In (P, N_Selected_Component,
                                 N_Indexed_Component)
@@ -4596,7 +4598,7 @@ package body Checks is
 
       if not Is_Array_Type (Etype (A))
         or else (Present (A_Ent)
-                   and then Index_Checks_Suppressed (A_Ent))
+                  and then Index_Checks_Suppressed (A_Ent))
         or else Index_Checks_Suppressed (Etype (A))
       then
          return;

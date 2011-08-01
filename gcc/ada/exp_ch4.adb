@@ -876,7 +876,6 @@ package body Exp_Ch4 is
          if Present (TagT) then
             declare
                Full_T : constant Entity_Id := Underlying_Type (TagT);
-
             begin
                Tag_Assign :=
                  Make_Assignment_Statement (Loc,

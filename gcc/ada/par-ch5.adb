@@ -2114,6 +2114,8 @@ package body Ch5 is
       --  The same is true for the SPARK mode: although SPARK 95 removes
       --  the distinction between initial and later declarative items,
       --  the distinction remains in the Examiner. (JB01-005)
+      --  Note that the Examiner does not count package declarations in later
+      --  declarative items.
 
       if Ada_Version = Ada_83 or else SPARK_Mode then
          Decl := First (Decls);
@@ -2135,7 +2137,9 @@ package body Ch5 is
                Body_Sloc := Sloc (Decl);
 
                Inner : while Present (Decl) loop
-                  if Nkind (Decl) not in N_Later_Decl_Item
+                  if (Nkind (Decl) not in N_Later_Decl_Item
+                      or else (SPARK_Mode
+                               and then Nkind (Decl) = N_Package_Declaration))
                     and then Nkind (Decl) /= N_Pragma
                   then
                      if Ada_Version = Ada_83 then

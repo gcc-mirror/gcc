@@ -75,7 +75,7 @@ package Prj.Env is
      (In_Tree   : Project_Tree_Ref;
       Path_FD   : out File_Descriptor;
       Path_Name : out Path_Name_Type);
-   --  Create a new temporary path file. Get the file name in Path_Name.
+   --  Create a new temporary path file. Get the file name in Path_Name
 
    function Ada_Include_Path
      (Project   : Project_Id;
