@@ -1,3 +1,8 @@
+2011-08-01  Julian Brown  <julian@codesourcery.com>
+
+	* optabs.c (prepare_cmp_insn): Use correct biasing for fixed-point
+	comparison helpers.
+
 2011-07-31  Richard Henderson  <rth@redhat.com>
 
 	* config/h8300/crti.asm: Add flags to .section directive.
