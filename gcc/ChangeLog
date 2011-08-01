@@ -1,3 +1,27 @@
+2011-08-01  Sebastian Pop  <sebastian.pop@amd.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (hwint.o): Depend on DIAGNOSTIC_CORE_H.
+	* hwint.c: Include diagnostic-core.h.
+	(abs_hwi): New.
+	(gcd): Moved here...
+	(pos_mul_hwi): New.
+	(mul_hwi): New.
+	(least_common_multiple): Moved here...
+	* hwint.h (gcd): ... from here.
+	(least_common_multiple): ... from here.
+	(HOST_WIDE_INT_MIN): New.
+	(HOST_WIDE_INT_MAX): New.
+	(abs_hwi): Declared.
+	(gcd): Declared.
+	(pos_mul_hwi): Declared.
+	(mul_hwi): Declared.
+	(least_common_multiple): Declared.
+	* omega.c (check_pos_mul): Removed.
+	(check_mul): Removed.
+	(omega_solve_geq): Use pos_mul_hwi instead of check_pos_mul and
+	mul_hwi instead of check_mul.
+
 2011-08-01  Richard Henderson  <rth@redhat.com>
 
 	PR target/49881
