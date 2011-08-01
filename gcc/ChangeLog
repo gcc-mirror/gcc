@@ -1,3 +1,8 @@
+2011-08-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* mode-switching.c (optimize_mode_switching): Fix bug in MODE_AFTER
+	handling.
+
 2011-08-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/47766
