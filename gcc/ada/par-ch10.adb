@@ -114,6 +114,7 @@ package body Ch10 is
       Config_Pragmas     : List_Id;
       P                  : Node_Id;
       SR_Present         : Boolean;
+      No_Body            : Boolean;
 
       Cunit_Error_Flag : Boolean := False;
       --  This flag is set True if we have to scan for a compilation unit
@@ -144,6 +145,10 @@ package body Ch10 is
       --  to generate an NR parameter in the output line.
 
       SR_Present := False;
+
+      --  If we see a pragma No_Body, remember not to complain about no body
+
+      No_Body := False;
 
       if Token = Tok_Pragma then
          Save_Scan_State (Scan_State);
@@ -178,6 +183,10 @@ package body Ch10 is
       while Token = Tok_Pragma loop
          Save_Scan_State (Scan_State);
          Item := P_Pragma;
+
+         if Item /= Error and then Pragma_Name (Item) = Name_No_Body then
+            No_Body := True;
+         end if;
 
          if Item = Error
            or else not Is_Configuration_Pragma_Name (Pragma_Name (Item))
@@ -301,7 +310,12 @@ package body Ch10 is
 
          else
             if Operating_Mode = Check_Syntax and then Token = Tok_EOF then
-               Error_Msg_SC ("?file contains no compilation units");
+
+               --  Do not complain if there is a pragma No_Body
+
+               if not No_Body then
+                  Error_Msg_SC ("?file contains no compilation units");
+               end if;
             else
                Error_Msg_SC ("compilation unit expected");
                Cunit_Error_Flag := True;

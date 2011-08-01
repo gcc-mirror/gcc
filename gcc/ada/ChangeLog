@@ -1,3 +1,17 @@
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch6.adb (Enter_Overloaded_Entity): Do not warn about a
+	declaration being hidden when overriding an implicit inherited
+	subprogram.
+	* par-ch10.adb (P_Compilation_Unit): In syntax check only mode
+	(-gnats), do not complain about a source file that contains only a
+	pragma No_Body.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Scheme): Do not overwrite type of loop
+	variable if already set.
+
 2011-08-01  Arnaud Charlet  <charlet@adacore.com>
 
 	* g-socket-dummy.adb, s-osinte-linux.ads, g-socket-dummy.ads,
