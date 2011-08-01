@@ -27804,33 +27804,70 @@ Resources are an easy way to add Windows specific objects to your
 application. The objects that can be added as resources include:
 
 @itemize @bullet
-@item
-menus
+@item menus
 
-@item
-accelerators
+@item accelerators
 
-@item
-dialog boxes
+@item dialog boxes
 
-@item
-string tables
+@item string tables
 
-@item
-bitmaps
+@item bitmaps
 
-@item
-cursors
+@item cursors
 
-@item
-icons
+@item icons
 
-@item
-fonts
+@item fonts
+
+@item version information
 @end itemize
 
+For example, a version information resource can be defined as follow and
+embedded into an executable or DLL:
+
+A version information resource can be used to embed information into an
+executable or a DLL. These information can be viewed using the file properties
+from the Windows Explorer. Here is an example of a version information
+resource:
+
+@smallexample
+@group
+1 VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName", "My Company Name"
+      VALUE "FileDescription", "My application"
+      VALUE "FileVersion", "1.0"
+      VALUE "InternalName", "my_app"
+      VALUE "LegalCopyright", "My Name"
+      VALUE "OriginalFilename", "my_app.exe"
+      VALUE "ProductName", "My App"
+      VALUE "ProductVersion", "1.0"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END
+@end group
+@end smallexample
+
+The value @code{0809} (langID) is for the U.K English language and
+@code{04E4} (charsetID), which is equal to @code{1252} decimal, for
+multilingual.
+
 @noindent
-This section explains how to build, compile and use resources.
+This section explains how to build, compile and use resources. Note that this
+section does not cover all resource objects, for a complete description see
+the corresponding Microsoft documentation.
 
 @node Building Resources
 @subsection Building Resources
