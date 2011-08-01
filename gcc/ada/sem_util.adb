@@ -11533,6 +11533,109 @@ package body Sem_Util is
       return N;
    end Unit_Declaration_Node;
 
+   ---------------------
+   -- Unit_Is_Visible --
+   ---------------------
+
+   function Unit_Is_Visible (U : Entity_Id) return Boolean is
+      Curr        : constant Node_Id   := Cunit (Current_Sem_Unit);
+      Curr_Entity : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
+
+      function Unit_In_Parent_Context (Par_Unit : Node_Id) return Boolean;
+      --  For a child unit, check whether unit appears in a with_clause
+      --  of a parent.
+
+      function Unit_In_Context (Comp_Unit : Node_Id) return Boolean;
+      --  Scan the context clause of one compilation unit looking for a
+      --  with_clause for the unit in question.
+
+      ----------------------------
+      -- Unit_In_Parent_Context --
+      ----------------------------
+
+      function Unit_In_Parent_Context (Par_Unit : Node_Id) return Boolean
+      is
+      begin
+         if Unit_In_Context (Par_Unit) then
+            return True;
+
+         elsif Is_Child_Unit (Defining_Entity (Unit (Par_Unit))) then
+            return Unit_In_Parent_Context (Parent_Spec (Unit (Par_Unit)));
+
+         else
+            return False;
+         end if;
+      end Unit_In_Parent_Context;
+
+      ---------------------
+      -- Unit_In_Context --
+      ---------------------
+
+      function Unit_In_Context (Comp_Unit : Node_Id) return Boolean is
+         Clause : Node_Id;
+
+      begin
+         Clause := First (Context_Items (Comp_Unit));
+         while Present (Clause) loop
+            if Nkind (Clause) = N_With_Clause then
+               if Library_Unit (Clause) = U then
+                  return True;
+
+               --  The with_clause may denote a renaming of the unit we are
+               --  looking for, eg. Text_IO which renames Ada.Text_IO.
+
+               elsif
+                 Renamed_Entity (Entity (Name (Clause)))
+                   = Defining_Entity (Unit (U))
+               then
+                  return True;
+               end if;
+            end if;
+
+            Next (Clause);
+         end loop;
+         return False;
+      end Unit_In_Context;
+
+   begin
+
+      --  The currrent unit is directly visible.
+
+      if Curr = U then
+         return True;
+
+      elsif Unit_In_Context (Curr) then
+         return True;
+
+      --  If the current unit is a body, check the context of the spec.
+
+      elsif Nkind (Unit (Curr)) = N_Package_Body
+        or else
+          (Nkind (Unit (Curr)) = N_Subprogram_Body
+            and then not Acts_As_Spec (Unit (Curr)))
+      then
+
+         if Unit_In_Context (Library_Unit (Curr)) then
+            return True;
+         end if;
+      end if;
+
+      --  If the spec is a child unit, examine the parents.
+
+      if Is_Child_Unit (Curr_Entity) then
+         if Nkind (Unit (Curr)) in N_Unit_Body then
+            return
+              Unit_In_Parent_Context
+                (Parent_Spec (Unit (Library_Unit (Curr))));
+         else
+            return Unit_In_Parent_Context (Parent_Spec (Unit (Curr)));
+         end if;
+
+      else
+         return False;
+      end if;
+   end Unit_Is_Visible;
+
    ------------------------------
    -- Universal_Interpretation --
    ------------------------------

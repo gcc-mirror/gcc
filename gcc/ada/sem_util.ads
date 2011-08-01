@@ -1316,6 +1316,11 @@ package Sem_Util is
    --  it returns the subprogram, task or protected body node for it. The unit
    --  may be a child unit with any number of ancestors.
 
+   function Unit_Is_Visible (U : Entity_Id) return Boolean;
+   --  Determine whether a compilation unit is visible in the current context,
+   --  because there is a with_clause that makes the unit available. Used to
+   --  provide better messages on common visiblity errors on operators.
+
    function Universal_Interpretation (Opnd : Node_Id) return Entity_Id;
    --  Yields Universal_Integer or Universal_Real if this is a candidate
 
