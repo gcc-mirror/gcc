@@ -808,7 +808,9 @@ package body Sem_Ch5 is
    begin
       --  Block statement is not allowed in SPARK or ALFA
 
-      if Formal_Verification_Mode then
+      if Formal_Verification_Mode
+        and then Comes_From_Source (N)
+      then
          Error_Msg_F ("|~~block statement is not allowed", N);
       end if;
 

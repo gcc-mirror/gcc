@@ -104,7 +104,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~abort statement is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis
@@ -182,7 +181,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~accept statement is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis
@@ -421,7 +419,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~select statement is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis
@@ -475,7 +472,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~select statement is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis
@@ -580,7 +576,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~delay statement is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis
@@ -606,7 +601,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~delay statement is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis
@@ -901,7 +895,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~entry call is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis
@@ -1360,7 +1353,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~requeue statement is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis
@@ -1642,7 +1634,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~select statement is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis
@@ -2179,7 +2170,6 @@ package body Sem_Ch9 is
 
       if Formal_Verification_Mode then
          Error_Msg_F ("|~~select statement is not allowed", N);
-         return;
       end if;
 
       --  Proceed with analysis

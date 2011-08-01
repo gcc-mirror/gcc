@@ -736,9 +736,10 @@ Notice the three steps described earlier:
 The default output of GPRbuild's execution is kept reasonably simple and easy
 to understand. In particular, some of the less frequently used commands are not
 shown, and some parameters are abbreviated. So it is not possible to rerun the
-effect of the gprbuild command by cut-and-pasting its output. GPRbuild's option
-@code{-v} provides a much more verbose output which includes, among other
-information, more complete compilation, post-compilation and link commands.
+effect of the @command{gprbuild} command by cut-and-pasting its output.
+GPRbuild's option @code{-v} provides a much more verbose output which includes,
+among other information, more complete compilation, post-compilation and link
+commands.
 
 @c ---------------------------------------------
 @node Executable File Names
@@ -1112,6 +1113,7 @@ the search stops:
 @itemize @bullet
 @item First, the file is searched relative to the directory that contains the
   current project file.
+
 @item
 @cindex @code{ADA_PROJECT_PATH}
 @cindex @code{GPR_PROJECT_PATH}
@@ -1119,12 +1121,22 @@ the search stops:
   ^environment variables^logical names^ @b{GPR_PROJECT_PATH} and
   @b{ADA_PROJECT_PATH} (in that order) if they exist. The former is
   recommended, the latter is kept for backward compatibility.
-@item Finally, it is searched relative to the default project directories.
-  Such directories depends on the tool used. For @command{gnatmake}, there is
-  one default project directory: @file{<prefix>/lib/gnat/}. In our example,
-  @file{gtkada.gpr} is found in the predefined directory if it was installed at
-  the same root as GNAT.
 
+@item Finally, it is searched relative to the default project directories.
+  Such directories depends on the tool used. The different locations searched
+  in the specified order are:
+
+  @itemize @bullet
+  @item @file{<prefix>/<target>/lib/gnat}
+  (for @command{gprbuild} only and if option @option{--target} is specified)
+  @item @file{<prefix>/share/gpr/}
+  (for @command{gnatmake} and @command{gprbuild})
+  @item @file{<prefix>/lib/gnat/}
+  (for @command{gnatmake} and @command{gprbuild})
+  @end itemize
+
+  In our example, @file{gtkada.gpr} is found in the predefined directory if
+  it was installed at the same root as GNAT.
 @end itemize
 
 @noindent

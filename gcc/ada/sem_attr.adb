@@ -565,6 +565,14 @@ package body Sem_Attr is
       --  Start of processing for Analyze_Access_Attribute
 
       begin
+         --  Access attribute is not allowed in SPARK or ALFA
+
+         if Formal_Verification_Mode and then Comes_From_Source (N) then
+            Error_Attr_P ("|~~% attribute is not allowed");
+         end if;
+
+         --  Proceed with analysis
+
          Check_E0;
 
          if Nkind (P) = N_Character_Literal then
