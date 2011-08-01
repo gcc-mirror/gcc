@@ -4560,6 +4560,10 @@ package body Checks is
       function Entity_Of_Prefix return Entity_Id;
       --  Returns the entity of the prefix of N (or Empty if not found)
 
+      ----------------------
+      -- Entity_Of_Prefix --
+      ----------------------
+
       function Entity_Of_Prefix return Entity_Id is
          P : Node_Id := Prefix (N);
       begin
@@ -4583,6 +4587,8 @@ package body Checks is
       A_Ent : constant Entity_Id  := Entity_Of_Prefix;
       Sub   : Node_Id;
 
+   --  Start of processing for Generate_Index_Checks
+
    begin
       --  Ignore call if the prefix is not an array since we have a serious
       --  error in the sources. Ignore it also if index checks are suppressed
@@ -4599,7 +4605,7 @@ package body Checks is
       --  Generate a raise of constraint error with the appropriate reason and
       --  a condition of the form:
 
-      --    Base_Type(Sub) not in array'range (subscript)
+      --    Base_Type (Sub) not in Array'Range (Subscript)
 
       --  Note that the reason we generate the conversion to the base type here
       --  is that we definitely want the range check to take place, even if it
@@ -4627,7 +4633,7 @@ package body Checks is
                           Duplicate_Subexpr_Move_Checks (Sub)),
                       Right_Opnd =>
                         Make_Attribute_Reference (Loc,
-                          Prefix => New_Reference_To (Etype (A), Loc),
+                          Prefix         => New_Reference_To (Etype (A), Loc),
                           Attribute_Name => Name_Range)),
                  Reason => CE_Index_Check_Failed));
          end if;
@@ -4680,7 +4686,8 @@ package body Checks is
                   then
                      Range_N :=
                        Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Etype (A_Idx), Loc),
+                         Prefix         =>
+                           New_Reference_To (Etype (A_Idx), Loc),
                          Attribute_Name => Name_Range);
 
                   --  For arrays with non-constant bounds we cannot generate

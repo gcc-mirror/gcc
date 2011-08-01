@@ -1158,10 +1158,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  the argument. A typical use is to skip by some junk that is not
       --  expected in the current context.
 
-      procedure Formal_Error_Msg_SP (Msg : String);
-      --  Wrapper on Errout.Error_Msg_SP which adds a prefix to Msg giving
-      --  the name of the formal language analyzed (spark or alfa)
-
       procedure Ignore (T : Token_Type);
       --  If current token matches T, then give an error message and skip
       --  past it, otherwise the call has no effect at all. T may be any

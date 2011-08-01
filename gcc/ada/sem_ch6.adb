@@ -3072,6 +3072,7 @@ package body Sem_Ch6 is
       --  User-defined operator is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode
+        and then Comes_From_Source (N)
         and then Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol
       then
          Formal_Error_Msg_N ("user-defined operator is not allowed", N);
@@ -8492,6 +8493,15 @@ package body Sem_Ch6 is
          Check_For_Primitive_Subprogram (Is_Primitive_Subp);
          Check_Overriding_Indicator
            (S, Overridden_Subp, Is_Primitive => Is_Primitive_Subp);
+
+         --  Overloading is not allowed in SPARK or ALFA
+
+         if Formal_Verification_Mode
+           and then Comes_From_Source (S)
+         then
+            Error_Msg_Sloc := Sloc (Homonym (S));
+            Formal_Error_Msg_N ("overloading not allowed with entity#", S);
+         end if;
 
          --  If S is a derived operation for an untagged type then by
          --  definition it's not a dispatching operation (even if the parent

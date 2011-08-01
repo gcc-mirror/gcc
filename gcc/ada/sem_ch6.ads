@@ -205,7 +205,7 @@ package Sem_Ch6 is
    --  Process new overloaded entity. Overloaded entities are created by
    --  enumeration type declarations, subprogram specifications, entry
    --  declarations, and (implicitly) by type derivations. Derived_Type non-
-   --  Empty indicates that this is subprogram derived for that type.
+   --  Empty indicates that this is a subprogram derived for that type.
 
    procedure Process_Formals (T : List_Id; Related_Nod : Node_Id);
    --  Enter the formals in the scope of the subprogram or entry, and

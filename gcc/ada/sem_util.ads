@@ -407,14 +407,6 @@ package Sem_Util is
    --  is always the expression (not the N_Parameter_Association nodes,
    --  even if named association is used).
 
-   procedure Formal_Error_Msg (Msg : String; Flag_Location : Source_Ptr);
-   --  Wrapper on Errout.Error_Msg which adds a prefix to Msg giving
-   --  the name of the formal language analyzed (spark or alfa)
-
-   procedure Formal_Error_Msg_N (Msg : String; N : Node_Id);
-   --  Wrapper on Errout.Error_Msg_N which adds a prefix to Msg giving
-   --  the name of the formal language analyzed (spark or alfa)
-
    procedure Gather_Components
      (Typ           : Entity_Id;
       Comp_List     : Node_Id;
