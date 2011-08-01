@@ -361,7 +361,7 @@ ENDF __umulhisi3
 ;;; (C3:C0) = (signed long) A1:A0   * B3:B0
 ;;; Clobbers: __tmp_reg__
 DEFUN __mulshisi3
-#ifdef __AVR_HAVE_JMP_CALL__
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
     ;; Some cores have problem skipping 2-word instruction
     tst     A1
     brmi    __mulohisi3
@@ -1074,7 +1074,7 @@ ENDF __ffssi2
 ;; clobbers: r26
 DEFUN __ffshi2
     clr  r26
-#ifdef __AVR_HAVE_JMP_CALL__
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
     ;; Some cores have problem skipping 2-word instruction
     tst  r24
     breq 2f
@@ -1480,7 +1480,7 @@ DEFUN __fmulsu_exit
     ;; A1 = |A1|
     sbrc A1, 7
     neg  A1
-#ifdef __AVR_HAVE_JMP_CALL__
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
     ;; Some cores have problem skipping 2-word instruction
     tst  A0
     brmi 1f

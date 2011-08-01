@@ -82,6 +82,14 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   if (TARGET_NO_INTERRUPTS)
     cpp_define (pfile, "__NO_INTERRUPTS__");
 
+  if (avr_current_device->errata_skip)
+    {
+      cpp_define (pfile, "__AVR_ERRATA_SKIP__");
+      
+      if (avr_current_arch->have_jmp_call)
+        cpp_define (pfile, "__AVR_ERRATA_SKIP_JMP_CALL__");
+    }
+
   /* Define builtin macros so that the user can
      easily query if or if not a specific builtin
      is available. */

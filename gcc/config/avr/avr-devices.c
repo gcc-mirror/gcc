@@ -40,11 +40,11 @@ const struct base_arch_s avr_arch_types[] = {
 };
 
 const struct mcu_type_s avr_mcu_types[] = {
-#define AVR_MCU(NAME, ARCH, MACRO, SHORT_SP, DATA_SEC, LIBRARY_NAME)	\
-  { NAME, ARCH, MACRO, SHORT_SP, DATA_SEC, LIBRARY_NAME },
+#define AVR_MCU(NAME, ARCH, MACRO, SHORT_SP, ERRATA_SKIP, DATA_SEC, LIBRARY_NAME) \
+  { NAME, ARCH, MACRO, SHORT_SP, ERRATA_SKIP, DATA_SEC, LIBRARY_NAME },
 #include "avr-mcus.def"
 #undef AVR_MCU
     /* End of list.  */
-  { NULL,                   ARCH_UNKNOWN, NULL,                     0,      0, NULL }
+  { NULL, ARCH_UNKNOWN, NULL, 0, 0, 0, NULL }
 };
 
