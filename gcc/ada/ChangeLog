@@ -1,3 +1,8 @@
+2011-08-01  Vincent Celier  <celier@adacore.com>
+
+	* a-stzfix.adb, a-stwifi.adb (Replace_Slice): Fixed computation when
+	High is above Source length.
+
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* a-ztexio.ads, a-textio.ads, a-witeio.ads: Fix comment.
