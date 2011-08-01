@@ -1,3 +1,32 @@
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads: Minor comment fix.
+	* a-stwifi.adb, a-stzfix.adb, a-strfix.adb, a-ztexio.ads, a-textio.ads,
+	a-witeio.ads, sem_prag.adb: Minor reformatting.
+
+2011-08-01  Doug Rupp  <rupp@adacore.com>
+
+	* env.c (__gnat_setenv) [VMS]: Force 32bit on item list structure
+	pointers. Use descrip.h header file for convenience. Add some
+	comments.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Call Check_Aspect_At_Freeze_Point
+	(Freeze_All): Call Check_Aspect_At_End_Of_Declarations
+	* sem_ch13.ads, sem_ch13.adb (Check_Aspect_At_Freeze_Point):
+	New procedure.
+	(Check_Aspect_At_End_Of_Declarations): New procedure
+	(Analye_Aspect_Specification): Minor changes for above procedures
+	* sinfo.ads, sinfo.adb (Is_Delayed_Aspect): Now set in aspect
+	specification node as well.
+
+2011-08-01  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (_gnat_stat): GetFilesAttributesEx() would fail on special
+	Windows files. Use GetFilesAttributes() in this case to check for file
+	existence instead of returning with an error code.
+
 2011-08-01  Vincent Celier  <celier@adacore.com>
 
 	* a-stzfix.adb, a-stwifi.adb (Replace_Slice): Fixed computation when

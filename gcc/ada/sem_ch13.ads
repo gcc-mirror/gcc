@@ -236,4 +236,81 @@ package Sem_Ch13 is
      Table_Increment      => 200,
      Table_Name           => "Independence_Checks");
 
+   -----------------------------------
+   -- Handling of Aspect Visibility --
+   -----------------------------------
+
+   --  The visibility of aspects is tricky. First, the visibility is delayed
+   --  to the freeze point. This is not too complicated, what we do is simply
+   --  to leave the aspect "laying in wait" for the freeze point, and at that
+   --  point materialize and analye the corresponding attribute definition
+   --  clause or pragma. There is some special processing for preconditions
+   --  and postonditions, where the pragmas themselves deal with the required
+   --  delay, but basically the approach is the same, delay analysis of the
+   --  expression to the freeze point.
+
+   --  Much harder is the requirement for diagnosing cases in which an early
+   --  freeze causes a change in visibility. Consider:
+
+   --    package AspectVis is
+   --       R_Size : constant Integer := 32;
+   --
+   --       package Inner is
+   --          type R is new Integer with
+   --            Size => R_Size;
+   --          F : R; -- freezes
+   --          R_Size : constant Integer := 64;
+   --          S : constant Integer := R'Size; -- 32 not 64
+   --       end Inner;
+   --    end AspectVis;
+
+   --  Here the 32 not 64 shows what would be expected if this program were
+   --  legal, since the evaluation of R_Size has to be done at the freeze
+   --  point and gets the outer definition not the inner one.
+
+   --  But the language rule requires this program to be diagnosed as illegal
+   --  because the visibility changes between the freeze point and the end of
+   --  the declarative region.
+
+   --  To meet this requirement, we first note that the Expression field of the
+   --  N_Aspect_Specification node holds the raw unanalyzed expression, which
+   --  will get used in processing the aspect. At the time of analyzing the
+   --  N_Aspect_Specification node, we create a complete copy of the expression
+   --  and store it in the entity field of the Identifier (an odd usage, but
+   --  the identifier is not used except to identify the aspect, so its Entity
+   --  field is otherwise unused, and we are short of room in the node).
+
+   --  This copy stays unanalyzed up to the freeze point, where we analyze the
+   --  resulting pragma or attribute definition clause, except that in the
+   --  case of invariants and predicates, we mark occurrences of the subtype
+   --  name as having the entity of the subprogram parameter, so that they
+   --  will not cause trouble in the following steps.
+
+   --  Then at the freeze point, we create another copy of this unanalyzed
+   --  expression. By this time we no longer need the Expression field for
+   --  other purposes, so we can store it there. Now we have two copies of
+   --  the original unanalyzed expression. One of them gets preanalyzed at
+   --  the freeze point to capture the visibility at the freeze point.
+
+   --  Now when we hit the freeze all at the end of the declarative part, if
+   --  we come across a frozen entity with delayed aspects, we still have one
+   --  copy of the unanalyzed expression available in the node, and we again
+   --  do a preanalysis using that copy and the visibility at the end of the
+   --  declarative part. Now we have two preanalyzed expression (preanalysis
+   --  is good enough, since we are only interested in referenced entities).
+   --  One captures the visibility at the freeze point, the other captures the
+   --  visibility at the end of the declarative part. We see if the entities
+   --  in these two expressions are the same, by seeing if the two expressions
+   --  are fully conformant, and if not, issue appropriate error messages.
+
+   --  Quite an awkward procedure, but this is an awkard requirement!
+
+   procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id);
+   --  Performs the processing described above at the freeze point, ASN is the
+   --  N_Aspect_Specification node for the aspect.
+
+   procedure Check_Aspect_At_End_Of_Declarations (ASN : Node_Id);
+   --  Performs the processing described above at the freeze all point, and
+   --  issues appropriate error messages if the visibility has indeed changed.
+   --  Again, ASN is the N_Aspect_Specification node for the aspect.
 end Sem_Ch13;

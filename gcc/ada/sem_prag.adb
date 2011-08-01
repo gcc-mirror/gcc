@@ -11243,8 +11243,8 @@ package body Sem_Prag is
          ---------------
 
          --  pragma Predicate
-         --    ([Entity =>]    type_LOCAL_NAME,
-         --     [Check  =>]    EXPRESSION);
+         --    ([Entity =>] type_LOCAL_NAME,
+         --     [Check  =>] EXPRESSION);
 
          when Pragma_Predicate => Predicate : declare
             Type_Id : Node_Id;

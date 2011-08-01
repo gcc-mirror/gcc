@@ -50,6 +50,7 @@ extern "C" {
 #include <time.h>
 #ifdef VMS
 #include <unixio.h>
+#include <vms/descrip.h>
 #endif
 
 #if defined (__MINGW32__)
@@ -93,17 +94,11 @@ __gnat_getenv (char *name, int *len, char **value)
 
 static char *to_host_path_spec (char *);
 
-struct descriptor_s
-{
-  unsigned short len, mbz;
-  __char_ptr32 adr;
-};
-
 typedef struct _ile3
 {
   unsigned short len, code;
   __char_ptr32 adr;
-  unsigned short *retlen_adr;
+  __char_ptr32 retlen_adr;
 } ile_s;
 
 #endif
@@ -112,18 +107,19 @@ void
 __gnat_setenv (char *name, char *value)
 {
 #if defined (VMS)
-  struct descriptor_s name_desc;
+  struct dsc$descriptor_s name_desc;
   /* Put in JOB table for now, so that the project stuff at least works.  */
-  struct descriptor_s table_desc = {7, 0, "LNM$JOB"};
+  $DESCRIPTOR (table_desc, "LNM$JOB");
   char *host_pathspec = value;
   char *copy_pathspec;
   int num_dirs_in_pathspec = 1;
   char *ptr;
   long status;
 
-  name_desc.len = strlen (name);
-  name_desc.mbz = 0;
-  name_desc.adr = name;
+  name_desc.dsc$w_length = strlen (name);
+  name_desc.dsc$b_dtype = DSC$K_DTYPE_T;
+  name_desc.dsc$b_class = DSC$K_CLASS_S;
+  name_desc.dsc$a_pointer = name; /* ??? Danger, not 64bit safe.  */
 
   if (*host_pathspec == 0)
     /* deassign */
@@ -141,6 +137,7 @@ __gnat_setenv (char *name, char *value)
 
   {
     int i, status;
+    /* Alloca is guaranteed to be 32bit.  */
     ile_s *ile_array = alloca (sizeof (ile_s) * (num_dirs_in_pathspec + 1));
     char *copy_pathspec = alloca (strlen (host_pathspec) + 1);
     char *curr, *next;
