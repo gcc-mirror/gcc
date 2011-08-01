@@ -165,7 +165,10 @@ package body Sem_Util is
             Nod := Type_Definition (Parent (Typ));
 
          elsif Nkind (Parent (Typ)) = N_Private_Type_Declaration then
-            if Present (Full_View (Typ)) then
+            if Present (Full_View (Typ))
+              and then Nkind (Parent (Full_View (Typ)))
+                         = N_Full_Type_Declaration
+            then
                Nod := Type_Definition (Parent (Full_View (Typ)));
 
             --  If the full-view is not available we cannot do anything else
@@ -7335,6 +7338,7 @@ package body Sem_Util is
                 and then Is_Synchronized_Interface (E))
             or else
              (Ekind (E) = E_Record_Type_With_Private
+                and then Nkind (Parent (E)) = N_Private_Extension_Declaration
                 and then (Synchronized_Present (Parent (E))
                            or else Is_Synchronized_Interface (Etype (E))));
    end Is_Synchronized_Tagged_Type;

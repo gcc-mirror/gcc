@@ -42,10 +42,10 @@ package body Interfaces.C.Strings is
    --  this type will in fact be used for aliasing values of other types.
 
    function To_chars_ptr is
-      new Ada.Unchecked_Conversion (Address, chars_ptr);
+      new Ada.Unchecked_Conversion (System.Parameters.C_Address, chars_ptr);
 
    function To_Address is
-      new Ada.Unchecked_Conversion (chars_ptr, Address);
+      new Ada.Unchecked_Conversion (chars_ptr, System.Parameters.C_Address);
 
    -----------------------
    -- Local Subprograms --
@@ -70,7 +70,7 @@ package body Interfaces.C.Strings is
    --  compatible, so we directly import here the malloc and free routines.
 
    function Memory_Alloc (Size : size_t) return chars_ptr;
-   pragma Import (C, Memory_Alloc, "__gnat_malloc");
+   pragma Import (C, Memory_Alloc, System.Parameters.C_Malloc_Linkname);
 
    procedure Memory_Free (Address : chars_ptr);
    pragma Import (C, Memory_Free, "__gnat_free");

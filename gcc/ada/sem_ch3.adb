@@ -1175,7 +1175,7 @@ package body Sem_Ch3 is
 
             --  In ASIS mode, the access_to_subprogram may be analyzed twice,
             --  when it is part of an unconstrained type and subtype expansion
-            --  is disabled.  To avoid back-end problems with shared profiles,
+            --  is disabled. To avoid back-end problems with shared profiles,
             --  use previous subprogram type as the designated type.
 
             if ASIS_Mode
