@@ -1,3 +1,8 @@
+2011-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* calls.c (emit_library_call_value_1): Declare size only if
+	BLOCK_REG_PADDING is defined.
+
 2011-08-01  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/49547
