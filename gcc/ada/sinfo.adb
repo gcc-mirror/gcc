@@ -1360,6 +1360,22 @@ package body Sinfo is
       return Flag6 (N);
    end From_Default;
 
+   function From_Dynamic_Predicate
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag7 (N);
+   end From_Dynamic_Predicate;
+
+   function From_Static_Predicate
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag8 (N);
+   end From_Static_Predicate;
+
    function Generic_Associations
       (N : Node_Id) return List_Id is
    begin
@@ -4387,6 +4403,22 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Renaming_Declaration);
       Set_Flag6 (N, Val);
    end Set_From_Default;
+
+   procedure Set_From_Dynamic_Predicate
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag7 (N, Val);
+   end Set_From_Dynamic_Predicate;
+
+   procedure Set_From_Static_Predicate
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag8 (N, Val);
+   end Set_From_Static_Predicate;
 
    procedure Set_Generic_Associations
       (N : Node_Id; Val : List_Id) is

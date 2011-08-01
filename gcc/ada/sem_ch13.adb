@@ -1054,9 +1054,12 @@ package body Sem_Ch13 is
                --  declaration, to get the required pragma placement. The
                --  pragma processing takes care of the required delay.
 
-               when Aspect_Predicate =>
+               when Aspect_Dynamic_Predicate |
+                    Aspect_Predicate         |
+                    Aspect_Static_Predicate  =>
 
-                  --  Construct the pragma
+                  --  Construct the pragma (always a pragma Predicate, with
+                  --  flags recording whether
 
                   Aitem :=
                     Make_Pragma (Loc,
@@ -1067,6 +1070,14 @@ package body Sem_Ch13 is
                         Make_Identifier (Sloc (Id), Name_Predicate));
 
                   Set_From_Aspect_Specification (Aitem, True);
+
+                  --  Set special flags for dynamic/static cases
+
+                  if A_Id = Aspect_Dynamic_Predicate then
+                     Set_From_Dynamic_Predicate (Aitem);
+                  elsif A_Id = Aspect_Static_Predicate then
+                     Set_From_Static_Predicate (Aitem);
+                  end if;
 
                   --  Make sure we have a freeze node (it might otherwise be
                   --  missing in cases like subtype X is Y, and we would not
@@ -3818,6 +3829,13 @@ package body Sem_Ch13 is
       Object_Name : constant Name_Id := New_Internal_Name ('I');
       --  Name for argument of Predicate procedure
 
+      Dynamic_Predicate_Present : Boolean := False;
+      --  Set True if a dynamic predicate is present, results in the entire
+      --  predicate being considered dynamic even if it looks static
+
+      Static_Predicate_Present : Node_Id := Empty;
+      --  Set to N_Pragma node for a static predicate if one is encountered.
+
       --------------
       -- Add_Call --
       --------------
@@ -3903,6 +3921,12 @@ package body Sem_Ch13 is
             if Nkind (Ritem) = N_Pragma
               and then Pragma_Name (Ritem) = Name_Predicate
             then
+               if From_Dynamic_Predicate (Ritem) then
+                  Dynamic_Predicate_Present := True;
+               elsif From_Static_Predicate (Ritem) then
+                  Static_Predicate_Present := Ritem;
+               end if;
+
                Arg1 := First (Pragma_Argument_Associations (Ritem));
                Arg2 := Next (Arg1);
 
@@ -3945,7 +3969,7 @@ package body Sem_Ch13 is
    begin
       --  Initialize for construction of statement list
 
-      Expr  := Empty;
+      Expr := Empty;
 
       --  Return if already built or if type does not have predicates
 
@@ -4034,8 +4058,19 @@ package body Sem_Ch13 is
                            E_Modular_Integer_Subtype,
                            E_Signed_Integer_Subtype)
            and then Is_Static_Subtype (Typ)
+           and then not Dynamic_Predicate_Present
          then
             Build_Static_Predicate (Typ, Expr, Object_Name);
+
+            if Present (Static_Predicate_Present)
+              and No (Static_Predicate (Typ))
+            then
+               Error_Msg_F
+                 ("expression does not have required form for "
+                  & "static predicate",
+                  Next (First (Pragma_Argument_Associations
+                                (Static_Predicate_Present))));
+            end if;
          end if;
       end if;
    end Build_Predicate_Function;
@@ -5002,10 +5037,12 @@ package body Sem_Ch13 is
 
          --  Pre/Post/Invariant/Predicate take boolean expressions
 
-         when Aspect_Pre       |
-              Aspect_Post      |
-              Aspect_Invariant |
-              Aspect_Predicate =>
+         when Aspect_Dynamic_Predicate |
+              Aspect_Invariant         |
+              Aspect_Pre               |
+              Aspect_Post              |
+              Aspect_Predicate         |
+              Aspect_Static_Predicate  =>
             T := Standard_Boolean;
       end case;
 
