@@ -1730,7 +1730,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
   tree lhs;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
-  int nloop_uses, size = 0;
+  int nloop_uses, size = 0, n_out_of_loop_uses;
   bool found = false;
 
   if (loop != vect_loop)
@@ -1741,6 +1741,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
   while (1)
     {
       nloop_uses = 0;
+      n_out_of_loop_uses = 0;
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
         {
 	  gimple use_stmt = USE_STMT (use_p);
@@ -1757,16 +1758,22 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
               break;
             }
 
-          if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
-              && vinfo_for_stmt (use_stmt)
-	      && !STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (use_stmt)))
-	    {
-	      loop_use_stmt = use_stmt;
-	      nloop_uses++;
-	    }
+          if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+            {
+              if (vinfo_for_stmt (use_stmt)
+                  && !STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (use_stmt)))
+                {
+                  loop_use_stmt = use_stmt;
+                  nloop_uses++;
+                }
+            }
+           else
+             n_out_of_loop_uses++;
 
-          if (nloop_uses > 1)
-            return false;
+           /* There are can be either a single use in the loop or two uses in
+              phi nodes.  */
+           if (nloop_uses > 1 || (n_out_of_loop_uses && nloop_uses))
+             return false;
         }
 
       if (found)

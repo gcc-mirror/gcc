@@ -1,3 +1,8 @@
+2011-08-01  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49926
+	* gcc.dg/vect/pr49926.c: New test.
+
 2011-08-01  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/i386.exp (check_effective_target_lzcnt): New.
