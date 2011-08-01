@@ -7523,32 +7523,6 @@ check_automatic_or_tls (tree ref)
 }
 #endif
 
-/* Return true if the DECL designates a builtin function that is
-   morally constexpr, in the sense that its parameter types and
-   return type are literal types and the compiler is allowed to
-   fold its invocations.  */
-
-static bool
-morally_constexpr_builtin_function_p (tree decl)
-{
-  tree funtype = TREE_TYPE (decl);
-  tree t;
-
-  if (!is_builtin_fn (decl))
-    return false;
-  if (!literal_type_p (TREE_TYPE (funtype)))
-    return false;
-  for (t = TYPE_ARG_TYPES (funtype); t != NULL ; t = TREE_CHAIN (t))
-    {
-      if (t == void_list_node)
-        return true;
-      if (!literal_type_p (TREE_VALUE (t)))
-        return false;
-    }
-  /* We assume no varargs builtins are suitable.  */
-  return t != NULL;
-}
-
 /* Return true if T denotes a potentially constant expression.  Issue
    diagnostic as appropriate under control of FLAGS.  If WANT_RVAL is true,
    an lvalue-rvalue conversion is implied.
@@ -7656,7 +7630,9 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 		if (builtin_valid_in_constant_expr_p (fun))
 		  return true;
 		if (!DECL_DECLARED_CONSTEXPR_P (fun)
-		    && !morally_constexpr_builtin_function_p (fun))
+		    /* Allow any built-in function; if the expansion
+		       isn't constant, we'll deal with that then.  */
+		    && !is_builtin_fn (fun))
 		  {
 		    if (flags & tf_error)
 		      {

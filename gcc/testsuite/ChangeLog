@@ -1,3 +1,8 @@
+2011-08-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49813
+	* g++.dg/cpp0x/constexpr-builtin1.C: New.
+
 2011-08-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/49927
