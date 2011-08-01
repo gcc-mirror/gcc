@@ -7837,14 +7837,16 @@ package body Sem_Attr is
 
                if Ekind_In (Btyp, E_Access_Subprogram_Type,
                                   E_Anonymous_Access_Subprogram_Type,
+                                  E_Access_Protected_Subprogram_Type,
                                   E_Anonymous_Access_Protected_Subprogram_Type)
                then
                   --  Deal with convention mismatch
 
-                  if Convention (Btyp) /= Convention (Entity (P)) then
+                  if Convention (Designated_Type (Btyp)) /=
+                     Convention (Entity (P))
+                  then
                      Error_Msg_FE
                        ("subprogram & has wrong convention", P, Entity (P));
-
                      Error_Msg_FE
                        ("\does not match convention of access type &",
                         P, Btyp);

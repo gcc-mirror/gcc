@@ -862,7 +862,7 @@ package body MLib.Prj is
                Arguments := new String_List (1 .. Initial_Argument_Max);
             end if;
 
-            --  Add "-n -o b~<lib>.adb (b__<lib>.adb on VMS) -L<lib>"
+            --  Add "-n -o b~<lib>.adb (b__<lib>.adb on VMS) -L<lib>_"
 
             Argument_Number := 2;
             Arguments (1) := No_Main;
@@ -875,7 +875,17 @@ package body MLib.Prj is
             Add_Argument
               (B_Start.all
                & Get_Name_String (For_Project.Library_Name) & ".adb");
-            Add_Argument ("-L" & Get_Name_String (For_Project.Library_Name));
+
+            --  Make sure that the init procedure is never "adainit"
+
+            Get_Name_String (For_Project.Library_Name);
+
+            if Name_Buffer (1 .. Name_Len) = "ada" then
+               Add_Argument ("-Lada_");
+            else
+               Add_Argument
+                 ("-L" & Get_Name_String (For_Project.Library_Name));
+            end if;
 
             if For_Project.Lib_Auto_Init and then SALs_Use_Constructors then
                Add_Argument (Auto_Initialize);
@@ -950,16 +960,15 @@ package body MLib.Prj is
                then
                   if Check_Project (Unit.File_Names (Impl).Project) then
                      if Unit.File_Names (Spec) = null then
+
+                        --  Add the ALI file only if it is not a subunit
+
                         declare
-                           Src_Ind : Source_File_Index;
-
+                           Src_Ind : constant Source_File_Index :=
+                                       Sinput.P.Load_Project_File
+                                         (Get_Name_String
+                                           (Unit.File_Names (Impl).Path.Name));
                         begin
-                           Src_Ind := Sinput.P.Load_Project_File
-                                        (Get_Name_String
-                                          (Unit.File_Names (Impl).Path.Name));
-
-                           --  Add the ALI file only if it is not a subunit
-
                            if not
                              Sinput.P.Source_File_Is_Subunit (Src_Ind)
                            then

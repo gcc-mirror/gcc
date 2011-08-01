@@ -1,5 +1,20 @@
 2011-08-01  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_attr.adb (Analyze_Attribute, case 'Access): Handle properly named
+	access to protected subprograms in generic bodies.
+	* sem_ch6.adb (Analyze_Subprogram_Declaration): If the context is a
+	protected type, indicate that the convention of the subprogram is
+	Convention_Protected, because it may be used in subsequent declarations
+	within the protected declaration.
+
+2011-08-01  Vincent Celier  <celier@adacore.com>
+
+	* mlib-prj.adb (Build_Library): Use "ada_" as the prefix for the "init"
+	and "final" procedures when the name of the library is "ada", to avoid
+	duplicate symbols "adainit" and "adafinal" in executables.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_attr.adb (Analyze_Attribute, case 'Result): Handle properly a
 	quantified expression that appears within a postcondition and uses the
 	Ada2012 'Result attribute.
