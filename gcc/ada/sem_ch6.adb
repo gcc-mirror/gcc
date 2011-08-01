@@ -1855,7 +1855,7 @@ package body Sem_Ch6 is
                            Last_Source_Node_In_Sequence (Statements (HSS));
                begin
                   if Present (Stat)
-                    and then not Nkind_In (Nkind (Stat),
+                    and then not Nkind_In (Stat,
                                            N_Simple_Return_Statement,
                                            N_Extended_Return_Statement)
                   then

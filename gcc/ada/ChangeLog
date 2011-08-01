@@ -1,3 +1,20 @@
+2011-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* sem_disp.adb (Override_Dispatching_Operation): Enforce strictness of
+	condition that detects if the overridden operation must replace an
+	existing entity.
+
+2011-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Propagate to the expanded
+	code declarations inserted by Insert_Actions in each alternative of the
+	N_Case_Expression node.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb: Minor code reorganization.
+	* sem_util.adb: Minor reformatting.
+
 2011-08-01  Pascal Obry  <obry@adacore.com>
 
 	* prj-env.adb: Remove <prefix>/lib/gpr/<target> project search path.

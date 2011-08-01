@@ -7986,13 +7986,12 @@ package body Sem_Util is
    ----------------------------------
 
    function Last_Source_Node_In_Sequence (List : List_Id) return Node_Id is
-      N : Node_Id := Last (List);
+      N : Node_Id;
+
    begin
+      N := Last (List);
       while Present (N) loop
          exit when Comes_From_Source (N);
-
-         --  Reach before the generated statements at the end of the function
-
          N := Prev (N);
       end loop;
 
