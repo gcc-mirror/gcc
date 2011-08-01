@@ -4018,6 +4018,11 @@ package body Exp_Ch4 is
             Aloc : constant Source_Ptr := Sloc (Aexp);
 
          begin
+            --  Propagate declarations inserted in the node by Insert_Actions
+            --  (for example, temporaries generated to remove side effects).
+
+            Append_List_To (Actions, Sinfo.Actions (Alt));
+
             if not Is_Scalar_Type (Typ) then
                Aexp :=
                  Make_Attribute_Reference (Aloc,
