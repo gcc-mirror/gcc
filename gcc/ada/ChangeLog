@@ -1,3 +1,14 @@
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* i-cstrin.adb, sem_util.adb, exp_ch11.adb, sem_ch8.adb,
+	lib-xref.adb: Minor reformatting
+
+2011-08-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Replace test of
+	when to generate a call to Move_Final_List.
+	(Has_Controlled_Parts): Remove this function.
+
 2011-08-01  Geert Bosch  <bosch@adacore.com>
 
 	* par-ch3.adb (P_Discrete_Choice_List): Improve error message for extra

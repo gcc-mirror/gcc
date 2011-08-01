@@ -2204,7 +2204,7 @@ package body Lib.Xref is
                   if XE.Loc /= No_Location
                     and then
                       (XE.Loc /= Crloc
-                         or else (Prevt = 'm' and then  XE.Typ = 'r'))
+                        or else (Prevt = 'm' and then  XE.Typ = 'r'))
                   then
                      Crloc := XE.Loc;
                      Prevt := XE.Typ;
