@@ -186,6 +186,16 @@ proc check_effective_target_xop { } {
     } "-O2 -mxop" ]
 }
 
+# Return 1 if lzcnt instruction can be compiled.
+proc check_effective_target_lzcnt { } {
+    return [check_no_compiler_messages lzcnt object {
+	unsigned short _lzcnt (unsigned short __X)
+	{
+	   return __builtin_clzs (__X);
+	}
+    } "-mlzcnt" ]
+}
+
 # Return 1 if bmi instructions can be compiled.
 proc check_effective_target_bmi { } {
     return [check_no_compiler_messages bmi object {

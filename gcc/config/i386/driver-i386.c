@@ -396,7 +396,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_popcnt = 0, has_aes = 0, has_avx = 0;
   unsigned int has_pclmul = 0, has_abm = 0, has_lwp = 0;
   unsigned int has_fma = 0, has_fma4 = 0, has_xop = 0;
-  unsigned int has_bmi = 0, has_tbm = 0;
+  unsigned int has_bmi = 0, has_tbm = 0, has_lzcnt = 0;
 
   bool arch;
 
@@ -465,6 +465,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_fma4 = ecx & bit_FMA4;
       has_xop = ecx & bit_XOP;
       has_tbm = ecx & bit_TBM;
+      has_lzcnt = ecx & bit_LZCNT;
 
       has_longmode = edx & bit_LM;
       has_3dnowp = edx & bit_3DNOWP;
@@ -717,10 +718,11 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *avx = has_avx ? " -mavx" : " -mno-avx";
       const char *sse4_2 = has_sse4_2 ? " -msse4.2" : " -mno-sse4.2";
       const char *sse4_1 = has_sse4_1 ? " -msse4.1" : " -mno-sse4.1";
+      const char *lzcnt = has_lzcnt ? " -mlzcnt" : " -mnolzcnt";
 
       options = concat (options, cx16, sahf, movbe, ase, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, tbm,
-			avx, sse4_2, sse4_1, NULL);
+			avx, sse4_2, sse4_1, lzcnt, NULL);
     }
 
 done:

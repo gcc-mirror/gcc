@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Free Software Foundation, Inc.
+/* Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -31,12 +31,6 @@
 
 #ifndef _BMIINTRIN_H_INCLUDED
 #define _BMIINTRIN_H_INCLUDED
-
-extern __inline unsigned short __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lzcnt_u16 (unsigned short __X)
-{
-  return __builtin_clzs (__X);
-}
 
 extern __inline unsigned short __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __tzcnt_u16 (unsigned short __X)
@@ -77,12 +71,6 @@ __blsr_u32 (unsigned int __X)
 {
   unsigned int tmp = (__X) & (__X - 1);
   return tmp;
-}
-
-extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lzcnt_u32 (unsigned int __X)
-{
-  return __builtin_clz (__X);
 }
 
 
@@ -126,12 +114,6 @@ __blsr_u64 (unsigned long long __X)
 {
   unsigned long long tmp = (__X) & (__X - 1);
   return tmp;
-}
-
-extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lzcnt_u64 (unsigned long long __X)
-{
-  return __builtin_clzll (__X);
 }
 
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
