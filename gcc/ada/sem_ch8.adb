@@ -6282,11 +6282,15 @@ package body Sem_Ch8 is
       --  active set of scopes.
 
       for J in reverse 0 .. Scope_Stack.Last loop
+
+         --  S was reached without seing a loop scope first
+
          if Scope_Stack.Table (J).Entity = S then
-            --  S was reached without seing a loop scope first
             return False;
+
+         --  S was not yet reached, so it contains at least one inner loop
+
          elsif Ekind (Scope_Stack.Table (J).Entity) = E_Loop then
-            --  S was not yet reached, so it contains at least one inner loop
             return True;
          end if;
 

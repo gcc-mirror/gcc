@@ -1494,17 +1494,23 @@ package body Sem_Ch4 is
 
          begin
             Set_Etype (N, Any_Type);
-            Get_First_Interp (Then_Expr, I, It);
-            if No (Else_Expr) then
-               --  if no else_expression the conditional must be boolean.
 
+            --  Shouldn't the following statement be down in the ELSE of the
+            --  following loop? ???
+
+            Get_First_Interp (Then_Expr, I, It);
+
+            --  if no Else_Expression the conditional must be boolean
+
+            if No (Else_Expr) then
                Set_Etype (N, Standard_Boolean);
+
+            --  Else_Expression Present. For each possible intepretation of
+            --  the Then_Expression, add it only if the Else_Expression has
+            --  a compatible type.
+
             else
                while Present (It.Nam) loop
-
-                  --  For each possible intepretation of the Then Expression,
-                  --  add it only if the else expression has a compatible type.
-
                   if Has_Compatible_Type (Else_Expr, It.Typ) then
                      Add_One_Interp (N, It.Typ, It.Typ);
                   end if;

@@ -2028,7 +2028,7 @@ package body Sem_Ch3 is
       while Present (D) loop
 
          --  Package specification cannot contain a package declaration in
-         --  SPARK or ALFA
+         --  SPARK or ALFA.
 
          if Formal_Verification_Mode
            and then Nkind (D) = N_Package_Declaration

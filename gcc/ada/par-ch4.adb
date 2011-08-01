@@ -673,6 +673,7 @@ package body Ch4 is
                   Formal_Error_Msg_SP ("no mixing of positional and named "
                                        & "parameter association");
                end if;
+
                Restore_Scan_State (Scan_State); -- to Id
                goto LP_State_Call;
 

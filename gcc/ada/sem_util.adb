@@ -3200,32 +3200,30 @@ package body Sem_Util is
       Append_Entity     (Def_Id, S);
       Set_Public_Status (Def_Id);
 
-      --  Declaring an homonym is not allowed in SPARK or ALFA...
+      --  Declaring a homonym is not allowed in SPARK or ALFA ...
 
       if Formal_Verification_Mode and then Present (C)
 
-        --  ...unless the new declaration is in a subprogram, and the visible
+        --  ... unless the new declaration is in a subprogram, and the visible
         --  declaration is a variable declaration or a parameter specification
-        --  outside that subprogram;
+        --  outside that subprogram.
 
         and then not
-          (Nkind_In (Parent (Parent (Def_Id)),
-                     N_Subprogram_Body,
-                     N_Function_Specification,
-                     N_Procedure_Specification)
+          (Nkind_In (Parent (Parent (Def_Id)), N_Subprogram_Body,
+                                               N_Function_Specification,
+                                               N_Procedure_Specification)
            and then
-             Nkind_In (Parent (C),
-                       N_Object_Declaration,
-                       N_Parameter_Specification))
+             Nkind_In (Parent (C), N_Object_Declaration,
+                                   N_Parameter_Specification))
 
-        --  ...or the new declaration is in a package, and the visible
-        --  declaration occurs outside that package;
+        --  ... or the new declaration is in a package, and the visible
+        --  declaration occurs outside that package.
 
-        and then not Nkind_In (Parent (Parent (Def_Id)),
-                               N_Package_Specification,
-                               N_Package_Body)
+        and then not
+          Nkind_In (Parent (Parent (Def_Id)), N_Package_Specification,
+                                              N_Package_Body)
 
-        --  ...or the new declaration is a component declaration in a record
+        --  ... or the new declaration is a component declaration in a record
         --  type definition.
 
         and then Nkind (Parent (Def_Id)) /= N_Component_Declaration
