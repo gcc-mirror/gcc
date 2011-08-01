@@ -427,6 +427,19 @@ package body Ch13 is
          if A_Id = No_Aspect then
             Error_Msg_SC ("aspect identifier expected");
 
+            --  Check bad spelling
+
+            for J in Aspect_Names'Range loop
+               if Is_Bad_Spelling_Of (Token_Name, Aspect_Names (J).Nam) then
+                  Error_Msg_Name_1 := Aspect_Names (J).Nam;
+                  Error_Msg_SC -- CODEFIX
+                    ("\possible misspelling of%");
+                  exit;
+               end if;
+            end loop;
+
+            Scan; -- past incorrect identifier
+
             if Token = Tok_Apostrophe then
                Scan; -- past '
                Scan; -- past presumably CLASS

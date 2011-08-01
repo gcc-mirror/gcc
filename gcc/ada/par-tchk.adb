@@ -43,10 +43,10 @@ package body Tchk is
    --  position of the error message if the token is missing (see Wrong_Token)
 
    procedure Wrong_Token (T : Token_Type; P : Position);
-   --  Called when scanning a reserved keyword when the keyword is not
-   --  present. T is the token type for the keyword, and P indicates the
-   --  position to be used to place a message relative to the current
-   --  token if the keyword is not located nearby.
+   --  Called when scanning a reserved keyword when the keyword is not present.
+   --  T is the token type for the keyword, and P indicates the position to be
+   --  used to place a message relative to the current token if the keyword is
+   --  not located nearby.
 
    -----------------
    -- Check_Token --

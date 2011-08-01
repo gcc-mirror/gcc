@@ -1,5 +1,38 @@
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* aspects.ads, aspects.adb (Aspect_Names): Moved from body to spec.
+	* par-ch13.adb (P_Aspect_Specifications): Check misspelled aspect name.
+	* par.adb: Add with for Namet.Sp.
+	* par-tchk.adb: Minor reformatting.
+
+2011-08-01  Vincent Celier  <celier@adacore.com>
+
+	* mlib-tgt-specific-vms-alpha.adb, mlib-tgt-specific-vms-ia64.adb
+	(Build_Dynamic_Library): Use new function Init_Proc_Name to get the name
+	of the init procedure of a SAL.
+	* mlib-tgt-vms_common.ads, mlib-tgt-vms_common.adb (Init_Proc_Name):
+	New procedure.
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb, s-tasini.ads, sem_attr.adb, s-soflin.ads: Minor
+	reformatting.
+
+2011-08-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* adaint.c (__gnat_file_time_name_attr): Get rid of warning.
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_util.adb, sem_util.ads (Has_Overriding_Initialize): Make function
+	conformant with its spec (return True only for types that have
+	an overriding Initialize primitive operation that prevents them from
+	having preelaborable initialization).
+	* sem_cat.adb (Validate_Object_Declaration): Fix test for preelaborable
+	initialization for controlled types in Ada 2005 or later mode.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads, aspects.adb: Add aspect Type_Invariant, Precondition,
 	Postcondition.
 	(Same_Aspect): New function.

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,7 @@ with Ada.Characters.Handling; use Ada.Characters.Handling;
 with MLib.Fil;
 with MLib.Utl;
 
-with MLib.Tgt.VMS_Common;
-pragma Warnings (Off, MLib.Tgt.VMS_Common);
---  MLib.Tgt.VMS_Common is with'ed only for elaboration purposes
+with MLib.Tgt.VMS_Common; use MLib.Tgt.VMS_Common;
 
 with Opt;      use Opt;
 with Output;   use Output;
@@ -251,7 +249,7 @@ package body MLib.Tgt.Specific is
          declare
             Macro_File_Name : constant String := Lib_Filename & "__init.asm";
             Macro_File      : File_Descriptor;
-            Init_Proc       : String := Lib_Filename & "INIT";
+            Init_Proc       : constant String := Init_Proc_Name (Lib_Filename);
             Popen_Result    : System.Address;
             Pclose_Result   : Integer;
             Len             : Natural;
@@ -266,8 +264,6 @@ package body MLib.Tgt.Specific is
             --  The mode for the invocation of Popen
 
          begin
-            To_Upper (Init_Proc);
-
             if Verbose_Mode then
                Write_Str ("Creating auto-init assembly file """);
                Write_Str (Macro_File_Name);
