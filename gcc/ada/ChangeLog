@@ -1,3 +1,24 @@
+2011-08-01  Pascal Obry  <obry@adacore.com>
+
+	* prj-part.ads, prj-part.adb (Parse): Add Target_Name parameter. Pass
+	Target_Name to Get_Path call.
+	(Parse_Single_Project): Likewise.
+	(Post_Parse_Context_Clause): Likewise.
+	* prj-env.ads, prj-env.adb (Find_Project): Add Target_Name parameter.
+	Call Initialise_Project_Path with the proper Target_Name.
+	(Initialize_Project_Path): Add <gnat_root>/<target_name>/lib/gnat
+	search path.
+	(Get_Path): Add Target_Name parameter. Call Initialise_Project_Path
+	with the proper Target_Name.
+	* prj-conf.adb (Get_Or_Create_Configuration_File): Pass Target_Name to
+	Part.Parse routine.
+	(Parse_Project_And_Apply_Config): Likewise.
+	* prj-makr.adb (Initialize): Pass empty Target_Name to Parse routine.
+	This is fine as this part of the code is supporting only native
+	compilation.
+	* prj-pars.adb (Parse): Pass empty Target_Name to Parse routine. This
+	is fine as this part of the code is supporting only native compilation.
+
 2011-08-01  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Enter_Name): issue error in formal mode on declaration

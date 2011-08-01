@@ -180,8 +180,9 @@ package Prj.Env is
    --  path.
 
    procedure Get_Path
-     (Self : in out Project_Search_Path;
-      Path : out String_Access);
+     (Self        : in out Project_Search_Path;
+      Path        : out String_Access;
+      Target_Name : String := "");
    --  Return the current value of the project path, either the value set
    --  during elaboration of the package or, if procedure Set_Project_Path has
    --  been called, the value set by the last call to Set_Project_Path.
@@ -196,7 +197,8 @@ package Prj.Env is
      (Self               : in out Project_Search_Path;
       Project_File_Name  : String;
       Directory          : String;
-      Path               : out Namet.Path_Name_Type);
+      Path               : out Namet.Path_Name_Type;
+      Target_Name        : String);
    --  Search for a project with the given name either in Directory (which
    --  often will be the directory contain the project we are currently parsing
    --  and which we found a reference to another project), or in the project
