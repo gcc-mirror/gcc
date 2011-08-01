@@ -927,9 +927,10 @@ package Sem_Util is
    --  direction. Cases which may possibly be assignments but are not known to
    --  be may return True from May_Be_Lvalue, but False from this function.
 
-   function Last_Source_Node_In_Sequence (List : List_Id) return Node_Id;
-   --  Returns the last node in List for which Comes_From_Source returns True,
-   --  if any, or Empty otherwise.
+   function Last_Source_Statement (HSS : Node_Id) return Node_Id;
+   --  HSS is a handled statement sequence. This function returns the last
+   --  statement in Statements (HSS) that has Comes_From_Source set. If no
+   --  such statement exists, Empty is returned.
 
    function Make_Simple_Return_Statement
      (Sloc       : Source_Ptr;

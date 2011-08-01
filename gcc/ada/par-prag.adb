@@ -893,13 +893,15 @@ begin
       -- SPARK_95 --
       --------------
 
-      --  This pragma must be processed at parse time, since we want to set
-      --  the SPARK version properly at parse time to recognize the appropriate
+      --  This pragma must be processed at parse time, since we want to set the
+      --  SPARK version properly at parse time to recognize the appropriate
       --  SPARK version syntax.
 
       when Pragma_SPARK_95 =>
          SPARK_Version := SPARK_95;
-         Set_Error_Msg_Lang ("(" & Formal_Language & ") ");
+         SPARK_Mode := True;
+         Set_Error_Msg_Lang ("spark");
+         Formal_Verification_Mode := True;
 
       -------------------------
       -- Style_Checks (GNAT) --

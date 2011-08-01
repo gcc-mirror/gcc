@@ -7402,6 +7402,12 @@ package body Sem_Res is
          exit when NN = N;
          NN := Parent (NN);
       end loop;
+
+      if Formal_Verification_Mode
+        and then Base_Type (Etype (N)) /= Standard_String
+      then
+         Error_Msg_F ("|~~result of concatenation should have type String", N);
+      end if;
    end Resolve_Op_Concat;
 
    ---------------------------
@@ -7503,6 +7509,33 @@ package body Sem_Res is
 
       else
          Resolve (Arg, Btyp);
+      end if;
+
+      --  Concatenation is restricted in SPARK or ALFA: each operand must be
+      --  either a string literal, a static character expression, or another
+      --  concatenation. Arg cannot be a concatenation here as callers of
+      --  Resolve_Op_Concat_Arg call it separately on each final operand, past
+      --  concatenation operations.
+
+      if Formal_Verification_Mode then
+         if Is_Character_Type (Etype (Arg)) then
+            if not Is_Static_Expression (Arg) then
+               Error_Msg_F ("|~~character operand for concatenation should be "
+                            & "static", N);
+            end if;
+
+         elsif Is_String_Type (Etype (Arg)) then
+            if Nkind (Arg) /= N_String_Literal then
+               Error_Msg_F ("|~~string operand for concatenation should be "
+                            & "a literal", N);
+            end if;
+
+         --  Do not issue error on an operand that is neither a character nor
+         --  a string, as the error is issued in Resolve_Op_Concat.
+
+         else
+            null;
+         end if;
       end if;
 
       Check_Unset_Reference (Arg);

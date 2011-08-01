@@ -1877,27 +1877,25 @@ package Opt is
 
    --  These modes are currently defined through debug flags
 
-   function Formal_Language return String;
-   --  Returns "alfa" in ALFA_Mode and "spark" in SPARK_Mode
+   Formal_Verification_Mode : Boolean := False;
+   --  Set True if ALFA_Mode or SPARK_Mode
 
-   function Formal_Verification_Mode return Boolean;
-   --  Shorthand for ALFA_Mode or else SPARK_Mode
+   ALFA_Mode : Boolean := False;
+   --  Set True if ALFA_Through_SPARK_Mode or else ALFA_Through_Why_Mode
 
-   function ALFA_Mode return Boolean;
-   --  Shorthand for ALFA_Through_SPARK_Mode or else ALFA_Through_Why_Mode
-
-   function ALFA_Through_SPARK_Mode return Boolean;
+   ALFA_Through_SPARK_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through
    --  the generation of SPARK code for those parts of the input code that
-   --  belong to the ALFA subset of Ada. It is set by the flag -gnatd.E.
+   --  belong to the ALFA subset of Ada. Set by debug flag -gnatd.E.
 
-   function ALFA_Through_Why_Mode return Boolean;
+   ALFA_Through_Why_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through
    --  the generation of Why code for those parts of the input code that
-   --  belong to the ALFA subset of Ada. It is set by the flag -gnatd.F.
+   --  belong to the ALFA subset of Ada. Set by debuf flag -gnatd.F.
 
-   function SPARK_Mode return Boolean;
-   --  Accept the SPARK subset of Ada only. It is set by the flag -gnatd.D.
+   SPARK_Mode : Boolean := False;
+   --  Reject constructs not allowed by SPARK. Set by flag -gnatd.D or
+   --  by pragma SPARK_95.
 
 private
 

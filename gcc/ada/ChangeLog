@@ -1,3 +1,34 @@
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads, sem_util.adb, sem_ch6.adb (Last_Source_Statement):
+	Replaces Last_Source_Node_In_Sequence.
+	* err_vars.ads (Error_Msg_Lang): 16 is OK, don't need 4K
+	* errout.adb (Set_Error_Msg_Lang): Takes arg with no parens, but stores
+	parens and blank in string (this was inconsistently implemented).
+	* errout.ads
+	(Set_Error_Msg_Lang): Takes arg with no parens, but stores parens and
+	blank in string (this was inconsistently implemented).
+	* gnat1drv.adb
+	(Set_Global_Switches): Set formal mode switches appropriately
+	* opt.ads, opt.adb: Formal mode is now global switches, more consistent
+	* par-prag.adb
+	(Analyze_Pragma, case SPARK_95): Set opt switches appropriately and
+	call Set_Error_Msg_Lang to set "spark" as language name.
+	* par.adb: Remove unnecessary call to set formal language for errout
+	* sem_prag.adb (P_Pragma, case SPARK_95): Set opt switches
+	appropriately and call Set_Error_Msg_Lang to set "spark" as language
+	name.
+	* sem_ch4.adb (Analyze_Concatenation_Operand): remove procedure and
+	calls to it, moved after resolution so that types are known
+	* sem_res.adb (Resolve_Op_Concat): issue an error in formal mode if
+	result of concatenation is not of type String
+	(Resolve_Op_Concat_Arg): issue an error in formal mode if an operand of
+	concatenation is not properly restricted
+	* gnat_rm.texi: Add doc on pragma Spark_95.
+	* gcc-interface/Makefile.in: Remove obsolete target pairs for
+	Interfaces.C.* on VMS. Remove s-parame-vms-restrict.ads.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2011-08-01  Javier Miranda  <miranda@adacore.com>
 
 	* sem_disp.adb (Override_Dispatching_Operation): Enforce strictness of

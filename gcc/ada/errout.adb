@@ -2177,8 +2177,11 @@ package body Errout is
 
    procedure Set_Error_Msg_Lang (To : String) is
    begin
-      Error_Msg_Langlen := To'Length;
-      Error_Msg_Lang (1 .. Error_Msg_Langlen) := To;
+      Error_Msg_Lang (1) := '(';
+      Error_Msg_Lang (2 .. To'Length + 1) := To;
+      Error_Msg_Lang (To'Length + 2) := ')';
+      Error_Msg_Lang (To'Length + 3) := ' ';
+      Error_Msg_Langlen := To'Length + 3;
    end Set_Error_Msg_Lang;
 
    -----------------------

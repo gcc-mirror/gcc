@@ -389,6 +389,30 @@ procedure Gnat1drv is
       else
          Back_End_Handles_Limited_Types := False;
       end if;
+
+      --  Set switches for formal verification modes
+
+      if Debug_Flag_Dot_DD then
+         SPARK_Mode := True;
+      end if;
+
+      if Debug_Flag_Dot_EE then
+         ALFA_Through_SPARK_Mode := True;
+      end if;
+
+      if Debug_Flag_Dot_FF then
+         ALFA_Through_Why_Mode := True;
+      end if;
+
+      ALFA_Mode := ALFA_Through_SPARK_Mode or ALFA_Through_Why_Mode;
+
+      if ALFA_Mode then
+         Set_Error_Msg_Lang ("alfa");
+         Formal_Verification_Mode := True;
+      elsif SPARK_Mode then
+         Set_Error_Msg_Lang ("spark");
+         Formal_Verification_Mode := True;
+      end if;
    end Adjust_Global_Switches;
 
    --------------------

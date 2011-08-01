@@ -1492,45 +1492,6 @@ LN_S = cp -p
 endif
 
 ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ))),)
-  ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
-    LIBGNAT_TARGET_PAIRS_AUX1 = \
-      g-enblsp.adb<g-enblsp-vms-ia64.adb \
-      g-trasym.adb<g-trasym-vms-ia64.adb \
-      s-asthan.adb<s-asthan-vms-ia64.adb \
-      s-auxdec.adb<s-auxdec-vms-ia64.adb \
-      s-osinte.adb<s-osinte-vms-ia64.adb \
-      s-osinte.ads<s-osinte-vms-ia64.ads \
-      s-vaflop.adb<s-vaflop-vms-ia64.adb \
-      system.ads<system-vms-ia64.ads
-
-    LIBGNAT_TARGET_PAIRS_AUX2 = \
-      s-parame.ads<s-parame-vms-ia64.ads \
-      $(ATOMICS_TARGET_PAIRS)
-  else
-    ifeq ($(strip $(filter-out alpha64 dec vms% openvms% alphavms%,$(targ))),)
-      LIBGNAT_TARGET_PAIRS_AUX1 = \
-        g-enblsp.adb<g-enblsp-vms-alpha.adb \
-        g-trasym.adb<g-trasym-vms-alpha.adb \
-        s-asthan.adb<s-asthan-vms-alpha.adb \
-        s-auxdec.adb<s-auxdec-vms-alpha.adb \
-        s-osinte.adb<s-osinte-vms.adb \
-        s-osinte.ads<s-osinte-vms.ads \
-        s-traent.adb<s-traent-vms.adb \
-        s-traent.ads<s-traent-vms.ads \
-        s-vaflop.adb<s-vaflop-vms-alpha.adb \
-        system.ads<system-vms_64.ads
-
-      ifeq ($(strip $(filter-out express EXPRESS,$(THREAD_KIND))),)
-        LIBGNAT_TARGET_PAIRS_AUX2 = \
-          s-parame.ads<s-parame-vms-restrict.ads
-      else
-        LIBGNAT_TARGET_PAIRS_AUX2 = \
-          s-parame.ads<s-parame-vms-alpha.ads \
-          $(ATOMICS_TARGET_PAIRS)
-      endif
-    endif
-  endif
-
   LIBGNAT_TARGET_PAIRS = \
     a-caldel.adb<a-caldel-vms.adb \
     a-calend.adb<a-calend-vms.adb \
@@ -1543,11 +1504,6 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
     g-socthi.ads<g-socthi-vms.ads \
     g-socthi.adb<g-socthi-vms.adb \
     g-stsifd.adb<g-stsifd-sockets.adb \
-    i-c.ads<i-c-vms_64.ads \
-    i-cstrin.ads<i-cstrin-vms_64.ads \
-    i-cstrin.adb<i-cstrin-vms_64.adb \
-    i-cpoint.ads<i-cpoint-vms_64.ads \
-    i-cpoint.adb<i-cpoint-vms_64.adb \
     i-cstrea.adb<i-cstrea-vms.adb \
     memtrack.adb<memtrack-vms_64.adb \
     s-auxdec.ads<s-auxdec-vms_64.ads \
@@ -1564,20 +1520,46 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
     s-taspri.ads<s-taspri-vms.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
     s-tpopde.adb<s-tpopde-vms.adb \
-    s-tpopde.ads<s-tpopde-vms.ads \
-    $(LIBGNAT_TARGET_PAIRS_AUX1) \
-    $(LIBGNAT_TARGET_PAIRS_AUX2)
+    s-tpopde.ads<s-tpopde-vms.ads
 
   ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
+    LIBGNAT_TARGET_PAIRS += \
+      g-enblsp.adb<g-enblsp-vms-ia64.adb \
+      g-trasym.adb<g-trasym-vms-ia64.adb \
+      s-asthan.adb<s-asthan-vms-ia64.adb \
+      s-auxdec.adb<s-auxdec-vms-ia64.adb \
+      s-osinte.adb<s-osinte-vms-ia64.adb \
+      s-osinte.ads<s-osinte-vms-ia64.ads \
+      s-vaflop.adb<s-vaflop-vms-ia64.adb \
+      system.ads<system-vms-ia64.ads \
+      s-parame.ads<s-parame-vms-ia64.ads \
+      $(ATOMICS_TARGET_PAIRS)
+
     TOOLS_TARGET_PAIRS= \
       mlib-tgt-specific.adb<mlib-tgt-specific-vms-ia64.adb \
       symbols.adb<symbols-vms.adb \
       symbols-processing.adb<symbols-processing-vms-ia64.adb
   else
+    ifeq ($(strip $(filter-out alpha64 dec vms% openvms% alphavms%,$(targ))),)
+      LIBGNAT_TARGET_PAIRS += \
+        g-enblsp.adb<g-enblsp-vms-alpha.adb \
+        g-trasym.adb<g-trasym-vms-alpha.adb \
+        s-asthan.adb<s-asthan-vms-alpha.adb \
+        s-auxdec.adb<s-auxdec-vms-alpha.adb \
+        s-osinte.adb<s-osinte-vms.adb \
+        s-osinte.ads<s-osinte-vms.ads \
+        s-traent.adb<s-traent-vms.adb \
+        s-traent.ads<s-traent-vms.ads \
+        s-vaflop.adb<s-vaflop-vms-alpha.adb \
+        system.ads<system-vms_64.ads \
+	s-parame.ads<s-parame-vms-alpha.ads \
+        $(ATOMICS_TARGET_PAIRS)
+
     TOOLS_TARGET_PAIRS= \
       mlib-tgt-specific.adb<mlib-tgt-specific-vms-alpha.adb \
       symbols.adb<symbols-vms.adb \
       symbols-processing.adb<symbols-processing-vms-alpha.adb
+    endif
   endif
 
 adamsg.o: adamsg.msg

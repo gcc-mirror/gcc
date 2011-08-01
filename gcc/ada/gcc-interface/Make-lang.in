@@ -2817,12 +2817,12 @@ ada/nmake.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/urealp.ads 
 
 ada/opt.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads ada/a-uncdea.ads \
-   ada/gnatvsn.ads ada/hostparm.ads ada/opt.ads ada/opt.adb ada/system.ads \
-   ada/s-exctab.ads ada/s-os_lib.ads ada/s-parame.ads ada/s-secsta.ads \
-   ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads \
-   ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads \
-   ada/s-wchcon.ads ada/tree_io.ads ada/types.ads ada/unchconv.ads \
-   ada/unchdeal.ads 
+   ada/debug.ads ada/gnatvsn.ads ada/hostparm.ads ada/opt.ads ada/opt.adb \
+   ada/system.ads ada/s-exctab.ads ada/s-os_lib.ads ada/s-parame.ads \
+   ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads \
+   ada/s-stoele.ads ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads \
+   ada/s-unstyp.ads ada/s-wchcon.ads ada/tree_io.ads ada/types.ads \
+   ada/unchconv.ads ada/unchdeal.ads 
 
 ada/osint-b.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/debug.ads ada/hostparm.ads \
