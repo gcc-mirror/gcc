@@ -1,3 +1,10 @@
+2011-08-01  Georg-Johann Lay  <avr@gjlay.de>
+	
+	* config/avr/avr-devices.c: Delete SVN property svn:executable.
+	* config/avr/predicates.md: Ditto.
+	* config/avr/driver-avr.c: Ditto.
+	* config/avr/genopt.sh: Set SVN property svn:executable to *.
+
 2011-08-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* calls.c (emit_library_call_value_1): Declare size only if
