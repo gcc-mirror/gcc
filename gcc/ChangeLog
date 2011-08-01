@@ -1,3 +1,8 @@
+2011-08-01  Richard Guenther  <rguenther@suse.de>
+
+	* stor-layout.c (initialize_sizetypes): Properly sign-extend
+	bitsiztype TYPE_MAX_VALUE.
+
 2011-08-01  Julian Brown  <julian@codesourcery.com>
 
 	* optabs.c (prepare_cmp_insn): Use correct biasing for fixed-point
