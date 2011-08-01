@@ -1,5 +1,9 @@
 2011-08-01  Julian Brown  <julian@codesourcery.com>
 
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Support FIXED_CST.
+
+2011-08-01  Julian Brown  <julian@codesourcery.com>
+
 	* final.c (output_addr_const): Print fixed-point constants as
 	decimal not hex.
 
