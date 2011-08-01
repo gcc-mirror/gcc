@@ -547,18 +547,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     isfinite(_Tp __x)
     { return true; }
 
-  // Workaround the isinf issue discussed in PR 49813.
   constexpr bool
   isinf(float __x)
-  { return fpclassify(__x) == FP_INFINITE; }
+  { return __builtin_isinf(__x); }
 
   constexpr bool
   isinf(double __x)
-  { return fpclassify(__x) == FP_INFINITE; }
+  { return __builtin_isinf(__x); }
 
   constexpr bool
   isinf(long double __x)
-  { return fpclassify(__x) == FP_INFINITE; }
+  { return __builtin_isinf(__x); }
 
   template<typename _Tp>
     constexpr typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
