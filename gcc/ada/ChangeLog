@@ -1,5 +1,14 @@
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* aspects.ads, aspects.adb: Add aspect Type_Invariant, Precondition,
+	Postcondition.
+	(Same_Aspect): New function.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add aspect
+	Type_Invariant, Precondition, Postcondition.
+	* snames.ads-tmpl: Add Name_Type_Invariant.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb (Freeze_Entity): Don't call Check_Aspect_At_Freeze_Point
 	here.
 	(Freeze_All_Ent): Fix error in handling inherited aspects.

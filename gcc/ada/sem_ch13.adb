@@ -753,7 +753,7 @@ package body Sem_Ch13 is
 
             Anod := First (L);
             while Anod /= Aspect loop
-               if Nam = Chars (Identifier (Anod))
+               if Same_Aspect (A_Id, Get_Aspect_Id (Chars (Identifier (Anod))))
                  and then Comes_From_Source (Aspect)
                then
                   Error_Msg_Name_1 := Nam;
@@ -932,11 +932,15 @@ package body Sem_Ch13 is
                --  required pragma placement. The processing for the pragmas
                --  takes care of the required delay.
 
-               when Aspect_Pre | Aspect_Post => declare
+               when Aspect_Pre           |
+                    Aspect_Precondition  |
+                    Aspect_Post          |
+                    Aspect_Postcondition =>
+               declare
                   Pname : Name_Id;
 
                begin
-                  if A_Id = Aspect_Pre then
+                  if A_Id = Aspect_Pre or else A_Id = Aspect_Precondition then
                      Pname := Name_Precondition;
                   else
                      Pname := Name_Postcondition;
@@ -1020,7 +1024,8 @@ package body Sem_Ch13 is
                --  get the required pragma placement. The pragma processing
                --  takes care of the required delay.
 
-               when Aspect_Invariant =>
+               when Aspect_Invariant      |
+                    Aspect_Type_Invariant =>
 
                   --  Construct the pragma
 
@@ -1113,7 +1118,11 @@ package body Sem_Ch13 is
                --  For Pre/Post cases, insert immediately after the entity
                --  declaration, since that is the required pragma placement.
 
-               if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
+               if A_Id = Aspect_Pre          or else
+                  A_Id = Aspect_Post         or else
+                  A_Id = Aspect_Precondition or else
+                  A_Id = Aspect_Postcondition
+               then
                   Insert_After (N, Aitem);
 
                --  For all other cases, insert in sequence
@@ -5131,9 +5140,12 @@ package body Sem_Ch13 is
          when Aspect_Dynamic_Predicate |
               Aspect_Invariant         |
               Aspect_Pre               |
+              Aspect_Precondition      |
               Aspect_Post              |
+              Aspect_Postcondition     |
               Aspect_Predicate         |
-              Aspect_Static_Predicate  =>
+              Aspect_Static_Predicate  |
+              Aspect_Type_Invariant    =>
             T := Standard_Boolean;
       end case;
 
