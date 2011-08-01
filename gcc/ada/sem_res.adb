@@ -9478,6 +9478,7 @@ package body Sem_Res is
          --  scheme).
 
          Set_Scalar_Range (Index_Subtype, New_Copy_Tree (Drange));
+         Set_Parent       (Scalar_Range (Index_Subtype), Index_Subtype);
          Set_Etype        (Index_Subtype, Index_Type);
          Set_Size_Info    (Index_Subtype, Index_Type);
          Set_RM_Size      (Index_Subtype, RM_Size (Index_Type));
