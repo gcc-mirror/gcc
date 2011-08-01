@@ -2247,7 +2247,11 @@ initialize_sizetypes (void)
     = size_int (GET_MODE_SIZE (TYPE_MODE (bitsizetype)));
   set_min_and_max_values_for_integral_type (bitsizetype, bprecision,
 					    /*is_unsigned=*/true);
-  /* ???  TYPE_MAX_VALUE is not properly sign-extended.  */
+  /* bitsizetype is unsigned but we need to fix TYPE_MAX_VALUE so that it is
+     sign-extended in a way consistent with force_fit_type.  */
+  TYPE_MAX_VALUE (bitsizetype)
+    = double_int_to_tree (bitsizetype,
+			  tree_to_double_int (TYPE_MAX_VALUE (bitsizetype)));
 
   /* Create the signed variants of *sizetype.  */
   ssizetype = make_signed_type (TYPE_PRECISION (sizetype));
