@@ -243,10 +243,22 @@ package body System.OS_Interface is
    --------------------------------
 
    function Interrupt_Number_To_Vector
-     (intNum : int) return Interrupt_Vector is
+     (intNum : int) return Interrupt_Vector
+   is
    begin
       return Interrupt_Vector
         (System.VxWorks.Ext.Interrupt_Number_To_Vector (intNum));
    end Interrupt_Number_To_Vector;
+
+   -----------------
+   -- Current_CPU --
+   -----------------
+
+   function Current_CPU return Multiprocessors.CPU is
+   begin
+      --  ??? Should use vxworks multiprocessor interface
+
+      return Multiprocessors.CPU'First;
+   end Current_CPU;
 
 end System.OS_Interface;
