@@ -587,7 +587,9 @@ package Sem_Util is
 
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
-   --  Initialize primitive, which makes the type not preelaborable.
+   --  Initialize primitive (and, in Ada 2012, whether that primitive is
+   --  non-null), which causes the type to not have preelaborable
+   --  initialization.
 
    function Has_Preelaborable_Initialization (E : Entity_Id) return Boolean;
    --  Return True iff type E has preelaborable initialization as defined in

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,7 +146,7 @@ package System.Soft_Links is
 
    function Check_Abort_Status_NT return Integer;
    --  Returns Boolean'Pos (True) iff abort signal should raise
-   --  Standard.Abort_Signal.
+   --  Standard'Abort_Signal.
 
    procedure Task_Lock_NT;
    --  Lock out other tasks (non-tasking case, does nothing)
@@ -180,7 +180,7 @@ package System.Soft_Links is
 
    Check_Abort_Status : Get_Integer_Call := Check_Abort_Status_NT'Access;
    --  Called when Abort_Signal is delivered to the process.  Checks to
-   --  see if signal should result in raising Standard.Abort_Signal.
+   --  see if signal should result in raising Standard'Abort_Signal.
 
    Lock_Task : No_Param_Proc := Task_Lock_NT'Access;
    --  Locks out other tasks. Preceding a section of code by Task_Lock and

@@ -1370,7 +1370,7 @@ __gnat_file_time_name_attr (char* name, struct file_attributes* attr)
       TCHAR wname[GNAT_MAX_PATH_LEN];
       S2WSC (wname, name, GNAT_MAX_PATH_LEN);
 
-      if (res = GetFileAttributesEx (wname, GetFileExInfoStandard, &fad))
+      if ((res = GetFileAttributesEx (wname, GetFileExInfoStandard, &fad)))
 	f2t (&fad.ftLastWriteTime, &ret);
       attr->timestamp = (OS_Time) ret;
 #else

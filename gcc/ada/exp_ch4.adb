@@ -7693,7 +7693,8 @@ package body Exp_Ch4 is
                   --  copy. We don't want to copy complex expressions, and
                   --  indeed to do so can cause trouble (before we put in
                   --  this guard, a discriminant expression containing an
-                  --  AND THEN was copied, cause coverage problems
+                  --  AND THEN was copied, causing problems to coverage
+                  --  analysis tools).
 
                   if Disc = Entity (Selector_Name (N))
                     and then (Is_Entity_Name (Dval)
@@ -7723,7 +7724,7 @@ package body Exp_Ch4 is
 
                      elsif Is_Entity_Name (Dval)
                        and then Nkind (Parent (Entity (Dval)))
-                         = N_Object_Declaration
+                                  = N_Object_Declaration
                        and then Present (Expression (Parent (Entity (Dval))))
                        and then
                          not Is_Static_Expression
@@ -7774,8 +7775,8 @@ package body Exp_Ch4 is
 
                --  Note: the above loop should always find a matching
                --  discriminant, but if it does not, we just missed an
-               --  optimization due to some glitch (perhaps a previous error),
-               --  so ignore.
+               --  optimization due to some glitch (perhaps a previous
+               --  error), so ignore.
 
             end if;
          end if;

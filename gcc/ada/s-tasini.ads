@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,7 +127,7 @@ package System.Tasking.Initialization is
 
    function Check_Abort_Status return Integer;
    --  Returns Boolean'Pos (True) iff abort signal should raise
-   --  Standard.Abort_Signal. Only used by IRIX currently.
+   --  Standard'Abort_Signal. Only used by IRIX currently.
 
    --------------------------
    -- Change Base Priority --

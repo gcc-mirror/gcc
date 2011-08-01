@@ -2065,8 +2065,7 @@ package body Sem_Attr is
 
       when Attribute_Abort_Signal =>
          Check_Standard_Prefix;
-         Rewrite (N,
-           New_Reference_To (Stand.Abort_Signal, Loc));
+         Rewrite (N, New_Reference_To (Stand.Abort_Signal, Loc));
          Analyze (N);
 
       ------------

@@ -1268,7 +1268,17 @@ package body Sem_Cat is
                   end if;
                end if;
 
-               if Has_Overriding_Initialize (ET) then
+               --  For controlled type or type with controlled component, check
+               --  preelaboration flag, as there may be a non-null Initialize
+               --  primitive. For language versions earlier than Ada 2005,
+               --  there is no notion of preelaborable initialization, and the
+               --  rules for controlled objects are enforced in
+               --  Validate_Controlled_Object.
+
+               if (Is_Controlled (ET) or else Has_Controlled_Component (ET))
+                    and then Ada_Version >= Ada_2005
+                    and then not Has_Preelaborable_Initialization (ET)
+               then
                   Error_Msg_NE
                     ("controlled type& does not have"
                       & " preelaborable initialization", N, ET);

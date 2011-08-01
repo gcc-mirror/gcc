@@ -4889,51 +4889,48 @@ package body Sem_Util is
 
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean is
       BT   : constant Entity_Id := Base_Type (T);
-      Comp : Entity_Id;
       P    : Elmt_Id;
 
    begin
       if Is_Controlled (BT) then
-
-         --  For derived types, check immediate ancestor, excluding
-         --  Controlled itself.
-
-         if Is_Derived_Type (BT)
-           and then not In_Predefined_Unit (Etype (BT))
-           and then Has_Overriding_Initialize (Etype (BT))
-         then
-            return True;
+         if Is_RTU (Scope (BT), Ada_Finalization) then
+            return False;
 
          elsif Present (Primitive_Operations (BT)) then
             P := First_Elmt (Primitive_Operations (BT));
             while Present (P) loop
-               if Chars (Node (P)) = Name_Initialize
-                 and then Comes_From_Source (Node (P))
-               then
-                  return True;
-               end if;
+               declare
+                  Init : constant Entity_Id := Node (P);
+                  Formal : constant Entity_Id := First_Formal (Init);
+               begin
+                  if Ekind (Init) = E_Procedure
+                       and then Chars (Init) = Name_Initialize
+                       and then Comes_From_Source (Init)
+                       and then Present (Formal)
+                       and then Etype (Formal) = BT
+                       and then No (Next_Formal (Formal))
+                       and then (Ada_Version < Ada_2012
+                                   or else not Null_Present (Parent (Init)))
+                  then
+                     return True;
+                  end if;
+               end;
 
                Next_Elmt (P);
             end loop;
          end if;
 
-         return False;
+         --  Here if type itself does not have a non-null Initialize operation:
+         --  check immediate ancestor.
 
-      elsif Has_Controlled_Component (BT) then
-         Comp := First_Component (BT);
-         while Present (Comp) loop
-            if Has_Overriding_Initialize (Etype (Comp)) then
-               return True;
-            end if;
-
-            Next_Component (Comp);
-         end loop;
-
-         return False;
-
-      else
-         return False;
+         if Is_Derived_Type (BT)
+           and then Has_Overriding_Initialize (Etype (BT))
+         then
+            return True;
+         end if;
       end if;
+
+      return False;
    end Has_Overriding_Initialize;
 
    --------------------------------------
