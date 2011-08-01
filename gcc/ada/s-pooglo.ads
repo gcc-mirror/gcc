@@ -53,7 +53,7 @@ package System.Pool_Global is
    type Unbounded_No_Reclaim_Pool is new
      System.Storage_Pools.Root_Storage_Pool with null record;
 
-   function Storage_Size
+   overriding function Storage_Size
      (Pool : Unbounded_No_Reclaim_Pool)
       return System.Storage_Elements.Storage_Count;
 

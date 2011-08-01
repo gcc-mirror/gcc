@@ -6680,8 +6680,9 @@ package body Exp_Aggr is
 
                elsif Nkind (Expression (Expr)) /= N_Integer_Literal then
                   return False;
+               end if;
 
-               elsif not Aggr_Size_OK (N, Typ) then
+               if not Aggr_Size_OK (N, Typ) then
                   return False;
                end if;
 

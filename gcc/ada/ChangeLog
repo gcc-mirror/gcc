@@ -1,3 +1,22 @@
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb, sem_ch4.adb: Minor reformatting.
+	* gcc-interface/Make-lang.in: Update dependencies.
+	* sem_util.adb, exp_ch5.adb: Minor reformatting.
+
+2011-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi: Fix definition of Long_Integer.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb: check limit size of static aggregate unconditionally,
+	to prevent storage exhaustion.
+	* exp_ch7.adb (Clean_Simple_Protected_Objects): if the scope being
+	finalized is a function body, insert the cleanup code before the final
+	return statement, to prevent spurious warnings.
+	* s-pooglo.ads: add overriding indicator.
+
 2011-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Operator_Check): improve error message when both a

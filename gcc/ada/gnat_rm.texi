@@ -4610,19 +4610,18 @@ pragma Static_Elaboration_Desired;
 @end smallexample
 
 @noindent
-This pragma is used to indicate the desire for objects declared in the library
-unit to which the pragma applies to be initialized statically. This means that
-if an object is initialized (either explicitly or by default initialization),
-then the object's value can be determined at compile time and it requires no
-code to initialize it. This generally allows the object to be allocated in
-read-only data space. A warning is issued if an object or aggregate declared
-at the top level of the package cannot be initialized statically. Additionally,
-use of this pragma will suppress the generation of loops to initialize named
-aggregates whose only choice is an others choice that specifies a component
-value known at compile time, so that it can be allocated as static data. This
-is limited to aggregates with a maximum of 100 components. (See also the
-restriction No_Implicit_Loops, which supports static allocation for larger
-aggregates.)
+This pragma is used to indicate that the compiler should attempt to initialize
+statically the objects declared in the library unit to which the pragma applies,
+when these objects are initialized (explicitly or implicitly) by an aggregate.
+In the absence of this pragma, aggregates in object declarations are expanded
+into assignments and loops, even when the aggregate components are static
+constants. When the aggregate is present the compiler builds a static expression
+that requires no run-time code, so that the initialized object can be placed in
+read-only data space. If the components are not static, or the aggregate has
+more that 100 components, the compiler emits a warning that the pragma cannot
+be obeyed. (See also the restriction No_Implicit_Loops, which supports static
+construction of larger aggregates with static components that include an others
+choice.)
 
 @node Pragma Stream_Convert
 @unnumberedsec Pragma Stream_Convert
@@ -8097,7 +8096,7 @@ further details.
 @item Integer
 32 bit signed
 @item Long_Integer
-64 bit signed (Alpha OpenVMS only)
+64 bit signed (on most 64 bit targets, depending on the C definition of long).
 32 bit signed (all other targets)
 @item Long_Long_Integer
 64 bit signed
