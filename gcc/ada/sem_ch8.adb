@@ -4574,10 +4574,21 @@ package body Sem_Ch8 is
             --
             --    The Is_Actual_Parameter routine takes care of one of these
             --    cases but there are others probably ???
+            --
+            --    If the entity is the LHS of an assignment, and is a variable
+            --    (rather than a package prefix),  we can mark it as a
+            --    modification right away, to avoid duplicate references.
 
             else
                if not Is_Actual_Parameter then
-                  Generate_Reference (E, N);
+                  if Is_LHS (N)
+                    and then Ekind (E) /= E_Package
+                    and then Ekind (E) /= E_Generic_Package
+                  then
+                     Generate_Reference (E, N, 'm');
+                  else
+                     Generate_Reference (E, N);
+                  end if;
                end if;
 
                Check_Nested_Access (E);
@@ -4980,7 +4991,12 @@ package body Sem_Ch8 is
          Set_Entity (N, Id);
       else
          Set_Entity_Or_Discriminal (N, Id);
-         Generate_Reference (Id, N);
+
+         if Is_LHS (N) then
+            Generate_Reference (Id, N, 'm');
+         else
+            Generate_Reference (Id, N);
+         end if;
       end if;
 
       if Is_Type (Id) then

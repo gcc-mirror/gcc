@@ -1,3 +1,43 @@
+2011-08-01  Geert Bosch  <bosch@adacore.com>
+
+	* par-ch3.adb (P_Discrete_Choice_List): Improve error message for extra
+	"," in choice list.
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Raise_Statement): Mark N_Raise_xxx_Error for
+	explicit raise of a predefined exception as Comes_From_Source if the
+	original N_Raise_Statement comes from source.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Add comment.
+	* sem_ch6.adb: Minor reformatting.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Refine check for bad component size
+	clause to avoid rejecting confirming clause when atomic/aliased present.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name, Analyze_Expanded_Name): use Is_LHS to
+	better determine whether an entity reference is a write.
+	* sem_util.adb (Is_LHS): refine predicate to handle assignment to a
+	subcomponent.
+	* lib-xref.adb (Output_References): Do no suppress a read reference at
+	the same location as an immediately preceeding modify-reference, to
+	handle properly in-out actuals.
+
+2011-08-01  Tristan Gingold  <gingold@adacore.com>
+
+	* env.c (__gnat_setenv) [VMS]: Refine previous change.
+
+2011-08-01  Quentin Ochem  <ochem@adacore.com>
+
+	* i-cstrin.adb (New_String): Changed implementation, now uses only the
+	heap to compute the result.
+
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* atree.ads: Minor reformatting.

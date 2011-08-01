@@ -1377,6 +1377,9 @@ package body Lib.Xref is
          Ctyp : Character;
          --  Entity type character
 
+         Prevt : Character;
+         --  reference kind of previous reference
+
          Tref : Entity_Id;
          --  Type reference
 
@@ -1519,6 +1522,7 @@ package body Lib.Xref is
          Curdef := No_Location;
          Curru  := No_Unit;
          Crloc  := No_Location;
+         Prevt  := 'm';
 
          --  Loop to output references
 
@@ -2193,12 +2197,17 @@ package body Lib.Xref is
                      Crloc := No_Location;
                   end if;
 
-                  --  Output the reference
+                  --  Output the reference if it is not as the same location
+                  --  as the previous one, or it is a read-reference that
+                  --  indicates that the entity is an in-out actual in a call.
 
                   if XE.Loc /= No_Location
-                     and then XE.Loc /= Crloc
+                    and then
+                      (XE.Loc /= Crloc
+                         or else (Prevt = 'm' and then  XE.Typ = 'r'))
                   then
                      Crloc := XE.Loc;
+                     Prevt := XE.Typ;
 
                      --  Start continuation if line full, else blank
 

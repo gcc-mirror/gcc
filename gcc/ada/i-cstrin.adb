@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,8 +139,24 @@ package body Interfaces.C.Strings is
    ----------------
 
    function New_String (Str : String) return chars_ptr is
+      --  It's important that this subprogram uses directly the heap to compute
+      --  the result, and doesn't copy the string on the stack, otherwise its
+      --  use is limited when used from tasks on large strings.
+
+      Result       : constant chars_ptr := Memory_Alloc (Str'Length + 1);
+      Result_Array : char_array  (1 .. Str'Length + 1);
+      for Result_Array'Address use To_Address (Result);
+      pragma Import (Ada, Result_Array);
+
+      Count : size_t;
    begin
-      return New_Char_Array (To_C (Str));
+      To_C
+        (Item       => Str,
+         Target     => Result_Array,
+         Count      => Count,
+         Append_Nul => True);
+
+      return Result;
    end New_String;
 
    ----------

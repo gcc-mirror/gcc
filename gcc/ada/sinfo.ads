@@ -7449,6 +7449,13 @@ package Sinfo is
 
       --  N_Has_Etype, N_Has_Chars
 
+      --  Note: of course N_Error does not really have Etype or Chars fields,
+      --  and any attempt to access these fields in N_Error will cause an
+      --  error, but historically this always has been positioned so that an
+      --  "in N_Has_Chars" or "in N_Has_Etype" test yields true for N_Error.
+      --  Most likely this makes coding easier somewhere but still seems
+      --  undesirable. To be investigated some time ???
+
       N_Error,
 
       --  N_Entity, N_Has_Etype, N_Has_Chars

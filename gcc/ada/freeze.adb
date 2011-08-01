@@ -3447,12 +3447,28 @@ package body Freeze is
                      --  Start of processing for Alias_Atomic_Check
 
                      begin
-                        --  Case where component size has no effect
+                        --  Case where component size has no effect. First
+                        --  check for object size of component type known
+                        --  and a multiple of the storage unit size.
 
                         if Known_Static_Esize (Ctyp)
-                          and then Known_Static_RM_Size (Ctyp)
-                          and then Esize (Ctyp) = RM_Size (Ctyp)
-                          and then Esize (Ctyp) mod 8 = 0
+                          and then Esize (Ctyp) mod System_Storage_Unit = 0
+
+                          --  OK in both packing case and component size case
+                          --  if RM size is known and static and the same as
+                          --  the object size.
+
+                          and then
+                            ((Known_Static_RM_Size (Ctyp)
+                               and then Esize (Ctyp) = RM_Size (Ctyp))
+
+                             --  Or if we have an explicit component size
+                             --  clause and the component size and object size
+                             --  are equal.
+
+                             or else
+                                 (Has_Component_Size_Clause (E)
+                                 and then Component_Size (E) = Esize (Ctyp)))
                         then
                            null;
 

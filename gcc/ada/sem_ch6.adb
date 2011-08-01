@@ -1072,12 +1072,13 @@ package body Sem_Ch6 is
    procedure Analyze_Parameterized_Expression (N : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
       LocX     : constant Source_Ptr := Sloc (Expression (N));
-      Def_Id   : constant Entity_Id := Defining_Entity (Specification (N));
-      Prev     : constant Entity_Id := Current_Entity_In_Scope (Def_Id);
+      Def_Id   : constant Entity_Id  := Defining_Entity (Specification (N));
+      New_Body : Node_Id;
+
+      Prev : constant Entity_Id := Current_Entity_In_Scope (Def_Id);
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed.
 
-      New_Body : Node_Id;
    begin
       --  This is one of the occasions on which we transform the tree during
       --  semantic analysis. Transform the parameterized expression into an
@@ -1096,7 +1097,6 @@ package body Sem_Ch6 is
       if Present (Prev)
         and then Ekind (Prev) = E_Generic_Function
       then
-
          --  If the expression completes a generic subprogram, we must create
          --  a separate node for the body, because at instantiation the
          --  original node of the generic copy must be a generic subprogram
