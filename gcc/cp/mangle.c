@@ -952,6 +952,7 @@ write_nested_name (const tree decl)
 /* <prefix> ::= <prefix> <unqualified-name>
 	    ::= <template-param>
 	    ::= <template-prefix> <template-args>
+	    ::= <decltype>
 	    ::= # empty
 	    ::= <substitution>  */
 
@@ -967,6 +968,12 @@ write_prefix (const tree node)
     return;
 
   MANGLE_TRACE_TREE ("prefix", node);
+
+  if (TREE_CODE (node) == DECLTYPE_TYPE)
+    {
+      write_type (node);
+      return;
+    }
 
   if (find_substitution (node))
     return;
