@@ -1,3 +1,103 @@
+2011-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-socket-dummy.adb, s-osinte-linux.ads, g-socket-dummy.ads,
+	g-debuti.adb, g-tasloc.adb, g-debuti.ads, g-tasloc.ads,
+	s-osinte-hpux.ads, g-sercom.adb, g-soliop-solaris.ads, g-sercom.ads,
+	g-sptain.ads, g-curexc.ads, s-tasloc.adb, s-tasloc.ads, s-tataat.adb,
+	g-ctrl_c.adb, a-reatim.adb, s-tataat.ads, g-dirope.adb, g-ctrl_c.ads,
+	g-dirope.ads, g-boubuf.adb, g-calend.adb, g-boubuf.ads, g-souinf.ads,
+	g-table.adb, g-bytswa-x86.adb, g-wispch.adb, g-io.adb, g-table.ads,
+	g-wispch.ads, g-io.ads, g-memdum.adb, g-memdum.ads, g-busorg.adb,
+	g-busorg.ads, g-regpat.adb, g-sothco-dummy.adb, g-encstr.adb,
+	g-regpat.ads, g-sothco-dummy.ads, s-osinte-aix.ads, g-encstr.ads,
+	g-sercom-mingw.adb, s-mastop-vms.adb, g-diopit.adb, g-diopit.ads,
+	s-vxwext.adb, g-dyntab.adb, g-dyntab.ads, g-crc32.adb,
+	g-sercom-linux.adb, g-crc32.ads, s-regpat.adb, g-flocon.ads,
+	s-regpat.ads, g-stheme.adb, g-sestin.ads, s-taspri-posix-noaltstack.ads,
+	g-soliop.ads, s-inmaop-posix.adb, g-locfil.ads, g-enblsp-vms-alpha.adb,
+	g-socthi-dummy.adb, g-socthi-dummy.ads, gnat.ads, g-moreex.adb,
+	g-moreex.ads, g-dynhta.adb, g-dynhta.ads, g-deutst.ads, g-htable.adb,
+	g-cgicoo.adb, g-htable.ads, g-cgicoo.ads, a-interr.adb,
+	g-socthi-vms.adb, g-socthi-vms.ads, g-hesora.adb, g-bubsor.adb,
+	g-hesora.ads, g-bubsor.ads, g-md5.adb, g-md5.ads, s-intman-irix.adb,
+	s-htable.adb, s-osinte-vms.adb, s-htable.ads, s-osinte-vms.ads,
+	s-taprob.adb, g-bytswa.adb, g-bytswa.ads, s-osinte-solaris-posix.ads,
+	a-suenco.adb, g-comver.adb, g-comver.ads, g-exctra.adb,
+	s-osinte-solaris.adb, g-exctra.ads, s-osinte-irix.ads,
+	s-osinte-solaris.ads, a-caldel-vms.adb, g-socthi-vxworks.adb,
+	g-expect.adb, g-socthi-vxworks.ads, g-expect.ads, g-comlin.ads,
+	g-heasor.adb, g-heasor.ads, g-traceb.adb, g-traceb.ads, g-decstr.adb,
+	g-spipat.adb, g-decstr.ads, g-spipat.ads, s-mastop-tru64.adb,
+	g-except.ads, g-thread.adb, g-hesorg.adb, g-thread.ads, g-hesorg.ads,
+	g-expect-vms.adb, a-stuten.ads, g-spchge.adb, g-spchge.ads,
+	g-u3spch.adb, g-u3spch.ads, g-spitbo.adb, g-spitbo.ads,
+	s-osinte-dummy.ads, s-osinte-posix.adb, g-pehage.adb, g-pehage.ads,
+	s-gloloc-mingw.adb, g-sha1.ads, s-traceb-hpux.adb,
+	g-trasym-unimplemented.adb, g-trasym-unimplemented.ads, g-io_aux.adb,
+	g-regexp.adb, g-io_aux.ads, g-socthi-mingw.adb, g-regexp.ads,
+	s-osinte-hpux-dce.adb, g-socthi-mingw.ads, g-cgi.adb,
+	s-osinte-hpux-dce.ads, g-cgi.ads, g-byorma.adb, g-boumai.ads,
+	g-byorma.ads, a-caldel.adb, s-regexp.adb, s-regexp.ads,
+	g-soliop-mingw.ads, g-sptavs.ads, s-osinte-tru64.ads, g-speche.adb,
+	g-speche.ads, g-socthi.adb, g-stsifd-sockets.adb, g-socthi.ads,
+	s-osinte-darwin.ads, i-vxwork-x86.ads, g-awk.adb, i-vxwork.ads,
+	g-awk.ads, g-zspche.adb, g-zspche.ads, g-socket.adb, g-sptabo.ads,
+	g-socket.ads, g-semaph.adb, g-semaph.ads, s-taspri-posix.ads,
+	g-enblsp-vms-ia64.adb, g-cgideb.adb, g-cgideb.ads, g-sothco.adb,
+	s-osinte-freebsd.ads, g-sothco.ads, g-catiio.adb, g-casuti.adb,
+	g-catiio.ads, g-casuti.ads, g-trasym.adb, g-trasym.ads, s-casuti.adb,
+	g-os_lib.adb, s-traceb-mastop.adb, g-busora.adb, s-interr-dummy.adb,
+	g-busora.ads, g-enutst.ads, s-os_lib.adb, a-tasatt.adb,
+	s-osinte-mingw.ads: Update to GPLv3 run-time license.
+	Use GNAT instead of GNARL.
+
+2011-08-01  Bob Duff  <duff@adacore.com>
+
+	* a-cdlili.ads, a-cihama.ads, a-coinve.ads, a-ciorse.ads, a-coorma.ads,
+	a-cidlli.ads, a-ciormu.ads, a-cihase.ads, a-cohama.ads, a-coorse.ads,
+	a-ciorma.ads, a-coormu.ads, a-convec.ads, a-cohase.ads: Minor
+	reformatting.
+
+2011-08-01  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb (d.D) reverve flag for the SPARK mode
+	(d.E) reverve flag for SPARK generation mode
+	(d.F) reverve flag for Why generation mode
+	* opt.ads, opt.adb (ALFA_Mode, ALFA_Through_SPARK_Mode, 
+	ALFA_Through_Why_Mode, Formal_Verification_Mode, SPARK_Mode):  New
+	functions which return True when the corresponding modes are set
+	(Formal_Language): return "spark" or "alfa" when in formal verification
+	mode.
+	* sem_util.ads, sem_util.adb (Formal_Error_Msg): new wrapper on
+	Error_Msg to prefix the error message with a tag giving the formal
+	language
+	(Formal_Error_Msg_N): new wrapper on Error_Msg_N to prefix the error
+	message with a tag giving the formal language
+	* sem_ch5.adb (Analyze_Block_Statement): issue error in formal mode on
+	block statement
+	(Analyze_Case_Statement): issue error in formal mode on case statement
+	with a single "others" case alternative
+	(Analyze_Exit_Statement): issue errors in formal mode on exit
+	statements which do not respect SPARK restrictions
+	(Analyze_Goto_Statement): issue error in formal mode on goto statement
+	(Check_Unreachable_Code): always issue an error (not a warning) in
+	formal mode on unreachable code (concerns both code after an infinite
+	loop and after an unconditional jump, both not allowed in SPARK)
+	* sem_ch6.adb (Analyze_Return_Statement): add call to
+	Set_Return_Present for a procedure containing a return statement
+	(already done for functions in Analyze_Function_Return)
+	(Analyze_Function_Return): issue error in formal mode on extended
+	return or if return is not last statement in function
+	(Check_Missing_Return): issue error in formal mode if function does
+	not end with return or if procedure contains a return
+	* sem_ch8.ads, sem_ch8.adb (Has_Loop_In_Inner_Open_Scopes): new
+	function to detect if there is an inner scope of its parameter S which
+	is a loop.
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch6.ads: Minor reformatting.
+
 2011-08-01  Javier Miranda  <miranda@adacore.com>
 
 	* sem_util.adb (Abstract_Interface_List): Complete condition when

@@ -6267,6 +6267,41 @@ package body Sem_Ch8 is
 
    end Has_Implicit_Operator;
 
+   -----------------------------------
+   -- Has_Loop_In_Inner_Open_Scopes --
+   -----------------------------------
+
+   function Has_Loop_In_Inner_Open_Scopes (S : Entity_Id) return Boolean is
+   begin
+      --  Several scope stacks are maintained by Scope_Stack. The base of the
+      --  currently active scope stack is denoted by the Is_Active_Stack_Base
+      --  flag in the scope stack entry. Note that the scope stacks used to
+      --  simply be delimited implicitly by the presence of Standard_Standard
+      --  at their base, but there now are cases where this is not sufficient
+      --  because Standard_Standard actually may appear in the middle of the
+      --  active set of scopes.
+
+      for J in reverse 0 .. Scope_Stack.Last loop
+         if Scope_Stack.Table (J).Entity = S then
+            --  S was reached without seing a loop scope first
+            return False;
+         elsif Ekind (Scope_Stack.Table (J).Entity) = E_Loop then
+            --  S was not yet reached, so it contains at least one inner loop
+            return True;
+         end if;
+
+         --  Check Is_Active_Stack_Base to tell us when to stop, as there are
+         --  cases where Standard_Standard appears in the middle of the active
+         --  set of scopes. This affects the declaration and overriding of
+         --  private inherited operations in instantiations of generic child
+         --  units.
+
+         pragma Assert (not Scope_Stack.Table (J).Is_Active_Stack_Base);
+      end loop;
+
+      pragma Assert (False);  --  unreachable
+   end Has_Loop_In_Inner_Open_Scopes;
+
    --------------------
    -- In_Open_Scopes --
    --------------------

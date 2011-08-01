@@ -806,6 +806,12 @@ package body Sem_Ch5 is
       HSS   : constant Node_Id := Handled_Statement_Sequence (N);
 
    begin
+      --  Block statement is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Formal_Error_Msg_N ("block statement is not allowed", N);
+      end if;
+
       --  If no handled statement sequence is present, things are really
       --  messed up, and we just return immediately (this is a defence
       --  against previous errors).
@@ -1093,6 +1099,17 @@ package body Sem_Ch5 is
 
       Analyze_Choices (N, Exp_Type, Dont_Care, Others_Present);
 
+      --  A case statement with a single "others" alternative is not allowed
+      --  in SPARK or ALFA
+
+      if Formal_Verification_Mode
+        and then Others_Present
+        and then List_Length (Alternatives (N)) = 1
+      then
+         Formal_Error_Msg_N
+           ("OTHERS as unique case alternative is not allowed", N);
+      end if;
+
       if Exp_Type = Universal_Integer and then not Others_Present then
          Error_Msg_N ("case on universal integer requires OTHERS choice", Exp);
       end if;
@@ -1138,6 +1155,13 @@ package body Sem_Ch5 is
    --  loop. Otherwise there must be an innermost open loop on the stack,
    --  to which the statement implicitly refers.
 
+   --  Additionally, in formal mode:
+   --  * the exit can only name the closest enclosing loop;
+   --  * an exit with a when clause must be directly contained in a loop;
+   --  * an exit without a when clause must be directly contained in an
+   --    if-statement with no elsif or else, which is itself directly contained
+   --    in a loop. The exit must be the last statement in the if-statement.
+
    procedure Analyze_Exit_Statement (N : Node_Id) is
       Target   : constant Node_Id := Name (N);
       Cond     : constant Node_Id := Condition (N);
@@ -1157,6 +1181,11 @@ package body Sem_Ch5 is
          if not In_Open_Scopes (U_Name) or else Ekind (U_Name) /= E_Loop then
             Error_Msg_N ("invalid loop name in exit statement", N);
             return;
+         elsif Formal_Verification_Mode
+           and then Has_Loop_In_Inner_Open_Scopes (U_Name)
+         then
+            Formal_Error_Msg_N
+              ("exit label must name the closest enclosing loop", N);
          else
             Set_Has_Exit (U_Name);
          end if;
@@ -1194,6 +1223,40 @@ package body Sem_Ch5 is
          Check_Unset_Reference (Cond);
       end if;
 
+      --  In formal mode, verify that the exit statement respects the SPARK
+      --  restrictions
+
+      if Formal_Verification_Mode then
+         if Present (Cond) then
+            if Nkind (Parent (N)) /= N_Loop_Statement then
+               Formal_Error_Msg_N
+                 ("exit with when clause must be directly in loop", N);
+            end if;
+         else
+            if Nkind (Parent (N)) /= N_If_Statement then
+               if Nkind (Parent (N)) = N_Elsif_Part then
+                  Formal_Error_Msg_N ("exit must be in IF without ELSIF", N);
+               else
+                  Formal_Error_Msg_N ("exit must be directly in IF", N);
+               end if;
+            elsif Nkind (Parent (Parent (N))) /= N_Loop_Statement then
+               Formal_Error_Msg_N ("exit must be in IF directly in loop", N);
+
+            --  First test the presence of ELSE, so that an exit in an ELSE
+            --  leads to an error mentioning the ELSE
+
+            elsif Present (Else_Statements (Parent (N))) then
+               Formal_Error_Msg_N ("exit must be in IF without ELSE", N);
+
+            --  An exit in an ELSIF does not reach here, as it would have been
+            --  detected in the case (Nkind (Parent (N)) /= N_If_Statement)
+
+            elsif Present (Elsif_Parts (Parent (N))) then
+               Formal_Error_Msg_N ("exit must be in IF without ELSIF", N);
+            end if;
+         end if;
+      end if;
+
       --  Chain exit statement to associated loop entity
 
       Set_Next_Exit_Statement  (N, First_Exit_Statement (Scope_Id));
@@ -1218,6 +1281,14 @@ package body Sem_Ch5 is
       Label_Ent   : Entity_Id;
 
    begin
+      --  Goto statement is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Formal_Error_Msg_N ("goto statement is not allowed", N);
+      end if;
+
+      --  Actual semantic checks
+
       Check_Unreachable_Code (N);
       Kill_Current_Values (Last_Assignment_Only => True);
 
@@ -2283,9 +2354,11 @@ package body Sem_Ch5 is
             Nxt := Original_Node (Next (N));
 
             --  If a label follows us, then we never have dead code, since
-            --  someone could branch to the label, so we just ignore it.
+            --  someone could branch to the label, so we just ignore it,
+            --  unless we are in formal mode where goto statements are not
+            --  allowed.
 
-            if Nkind (Nxt) = N_Label then
+            if Nkind (Nxt) = N_Label and then not Formal_Verification_Mode then
                return;
 
             --  Otherwise see if we have a real statement following us
@@ -2339,9 +2412,14 @@ package body Sem_Ch5 is
                      end loop;
                   end if;
 
-                  --  Now issue the warning
+                  --  Now issue the warning (or error in formal mode)
 
-                  Error_Msg ("?unreachable code!", Error_Loc);
+                  if Formal_Verification_Mode then
+                     Formal_Error_Msg
+                       ("unreachable code is not allowed", Error_Loc);
+                  else
+                     Error_Msg ("?unreachable code!", Error_Loc);
+                  end if;
                end if;
 
             --  If the unconditional transfer of control instruction is

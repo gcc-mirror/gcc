@@ -121,9 +121,9 @@ package body Debug is
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
-   --  d.D
-   --  d.E
-   --  d.F
+   --  d.D  Accept only the SPARK subset of Ada
+   --  d.E  SPARK generation mode
+   --  d.F  Why generation mode
    --  d.G
    --  d.H
    --  d.I  SCIL generation mode
@@ -570,6 +570,19 @@ package body Debug is
 
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
+
+   --  d.D  Issue compiler errors on Ada input outside the SPARK subset of
+   --       Ada. This only deals currently with the Ada code, not SPARK
+   --       annotations, so it may well be the case that code which passes
+   --       the compiler with this flag is rejected by the SPARK Examiner,
+   --       e.g. due to the different visibility rules of the Examiner based
+   --       on 'inherit' SPARK annotations.
+
+   --  d.E  SPARK generation mode. Generate intermediate code for the sake of
+   --       formal verification through SPARK and the SPARK toolset.
+
+   --  d.F  Why generation mode. Generate intermediate code for the sake of
+   --       formal verification through Why and the Why VC generator.
 
    --  d.I  Generate SCIL mode. Generate intermediate code for the sake of
    --       of static analysis tools, and ensure additional tree consistency

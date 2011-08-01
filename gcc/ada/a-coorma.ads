@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -202,11 +202,9 @@ private
       Tree : Tree_Types.Tree_Type;
    end record;
 
-   overriding
-   procedure Adjust (Container : in out Map);
+   overriding procedure Adjust (Container : in out Map);
 
-   overriding
-   procedure Finalize (Container : in out Map) renames Clear;
+   overriding procedure Finalize (Container : in out Map) renames Clear;
 
    use Red_Black_Trees;
    use Tree_Types;

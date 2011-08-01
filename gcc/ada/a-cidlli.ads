@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -220,11 +220,9 @@ private
         Lock   : Natural := 0;
      end record;
 
-   overriding
-   procedure Adjust (Container : in out List);
+   overriding procedure Adjust (Container : in out List);
 
-   overriding
-   procedure Finalize (Container : in out List) renames Clear;
+   overriding procedure Finalize (Container : in out List) renames Clear;
 
    use Ada.Streams;
 
