@@ -1,3 +1,9 @@
+2011-08-01  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR tree-optimization/49926
+	* tree-vect-loop.c (vect_is_slp_reduction): Check that a statement
+	in a chain doesn't have uses both inside and outside the loop.
+
 2011-08-01  Georg-Johann Lay  <avr@gjlay.de>
 	
 	* config/avr/avr.h (mcu_type_s): Add errata_skip field.
