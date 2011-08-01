@@ -11,6 +11,7 @@
 
 class Gogo;
 class Traverse;
+class Statement_inserter;
 class Block;
 class Function;
 class Unnamed_label;
@@ -290,9 +291,11 @@ class Statement
   // simplify statements for further processing.  It returns the same
   // Statement or a new one.  FUNCTION is the function containing this
   // statement.  BLOCK is the block containing this statement.
+  // INSERTER can be used to insert new statements before this one.
   Statement*
-  lower(Gogo* gogo, Named_object* function, Block* block)
-  { return this->do_lower(gogo, function, block); }
+  lower(Gogo* gogo, Named_object* function, Block* block,
+	Statement_inserter* inserter)
+  { return this->do_lower(gogo, function, block, inserter); }
 
   // Set type information for unnamed constants.
   void
@@ -385,7 +388,7 @@ class Statement
   // Implemented by the child class: lower this statement to a simpler
   // one.
   virtual Statement*
-  do_lower(Gogo*, Named_object*, Block*)
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*)
   { return this; }
 
   // Implemented by child class: set type information for unnamed
@@ -535,6 +538,9 @@ class Variable_declaration_statement : public Statement
   bool
   do_traverse_assignments(Traverse_assignments*);
 
+  Statement*
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
+
   Bstatement*
   do_get_backend(Translate_context*);
 
@@ -566,7 +572,7 @@ class Return_statement : public Statement
   do_traverse_assignments(Traverse_assignments*);
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   bool
   do_may_fall_through() const
@@ -806,7 +812,7 @@ class Select_statement : public Statement
   { return this->clauses_->traverse(traverse); }
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   void
   do_determine_types()
@@ -993,7 +999,7 @@ class For_statement : public Statement
   { go_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*)
@@ -1051,7 +1057,7 @@ class For_range_statement : public Statement
   { go_unreachable(); }
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*)
@@ -1280,7 +1286,7 @@ class Switch_statement : public Statement
   do_traverse(Traverse*);
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*)
@@ -1426,7 +1432,7 @@ class Type_switch_statement : public Statement
   do_traverse(Traverse*);
 
   Statement*
-  do_lower(Gogo*, Named_object*, Block*);
+  do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*)

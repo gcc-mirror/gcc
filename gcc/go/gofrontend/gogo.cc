@@ -1148,8 +1148,12 @@ class Lower_parse_tree : public Traverse
 	       | traverse_functions
 	       | traverse_statements
 	       | traverse_expressions),
-      gogo_(gogo), function_(function), iota_value_(-1)
+      gogo_(gogo), function_(function), iota_value_(-1), inserter_()
   { }
+
+  void
+  set_inserter(const Statement_inserter* inserter)
+  { this->inserter_ = *inserter; }
 
   int
   variable(Named_object*);
@@ -1173,18 +1177,44 @@ class Lower_parse_tree : public Traverse
   Named_object* function_;
   // Value to use for the predeclared constant iota.
   int iota_value_;
+  // Current statement inserter for use by expressions.
+  Statement_inserter inserter_;
 };
 
-// Lower variables.  We handle variables specially to break loops in
-// which a variable initialization expression refers to itself.  The
-// loop breaking is in lower_init_expression.
+// Lower variables.
 
 int
 Lower_parse_tree::variable(Named_object* no)
 {
-  if (no->is_variable())
-    no->var_value()->lower_init_expression(this->gogo_, this->function_);
-  return TRAVERSE_CONTINUE;
+  if (!no->is_variable())
+    return TRAVERSE_CONTINUE;
+
+  if (no->is_variable() && no->var_value()->is_global())
+    {
+      // Global variables can have loops in their initialization
+      // expressions.  This is handled in lower_init_expression.
+      no->var_value()->lower_init_expression(this->gogo_, this->function_,
+					     &this->inserter_);
+      return TRAVERSE_CONTINUE;
+    }
+
+  // This is a local variable.  We are going to return
+  // TRAVERSE_SKIP_COMPONENTS here because we want to traverse the
+  // initialization expression when we reach the variable declaration
+  // statement.  However, that means that we need to traverse the type
+  // ourselves.
+  if (no->var_value()->has_type())
+    {
+      Type* type = no->var_value()->type();
+      if (type != NULL)
+	{
+	  if (Type::traverse(type, this) == TRAVERSE_EXIT)
+	    return TRAVERSE_EXIT;
+	}
+    }
+  go_assert(!no->var_value()->has_pre_init());
+
+  return TRAVERSE_SKIP_COMPONENTS;
 }
 
 // Lower constants.  We handle constants specially so that we can set
@@ -1238,27 +1268,38 @@ Lower_parse_tree::function(Named_object* no)
 int
 Lower_parse_tree::statement(Block* block, size_t* pindex, Statement* sorig)
 {
+  Statement_inserter hold_inserter(this->inserter_);
+  this->inserter_ = Statement_inserter(block, pindex);
+
   // Lower the expressions first.
   int t = sorig->traverse_contents(this);
   if (t == TRAVERSE_EXIT)
-    return t;
+    {
+      this->inserter_ = hold_inserter;
+      return t;
+    }
 
   // Keep lowering until nothing changes.
   Statement* s = sorig;
   while (true)
     {
-      Statement* snew = s->lower(this->gogo_, this->function_, block);
+      Statement* snew = s->lower(this->gogo_, this->function_, block,
+				 &this->inserter_);
       if (snew == s)
 	break;
       s = snew;
       t = s->traverse_contents(this);
       if (t == TRAVERSE_EXIT)
-	return t;
+	{
+	  this->inserter_ = hold_inserter;
+	  return t;
+	}
     }
 
   if (s != sorig)
     block->replace_statement(*pindex, s);
 
+  this->inserter_ = hold_inserter;
   return TRAVERSE_SKIP_COMPONENTS;
 }
 
@@ -1277,7 +1318,7 @@ Lower_parse_tree::expression(Expression** pexpr)
     {
       Expression* e = *pexpr;
       Expression* enew = e->lower(this->gogo_, this->function_,
-				  this->iota_value_);
+				  &this->inserter_, this->iota_value_);
       if (enew == e)
 	break;
       *pexpr = enew;
@@ -1304,12 +1345,16 @@ Gogo::lower_block(Named_object* function, Block* block)
   block->traverse(&lower_parse_tree);
 }
 
-// Lower an expression.
+// Lower an expression.  INSERTER may be NULL, in which case the
+// expression had better not need to create any temporaries.
 
 void
-Gogo::lower_expression(Named_object* function, Expression** pexpr)
+Gogo::lower_expression(Named_object* function, Statement_inserter* inserter,
+		       Expression** pexpr)
 {
   Lower_parse_tree lower_parse_tree(this, function);
+  if (inserter != NULL)
+    lower_parse_tree.set_inserter(inserter);
   lower_parse_tree.expression(pexpr);
 }
 
@@ -1951,11 +1996,26 @@ Order_eval::statement(Block* block, size_t* pindex, Statement* s)
 	break;
 
       source_location loc = (*pexpr)->location();
-      Temporary_statement* ts = Statement::make_temporary(NULL, *pexpr, loc);
-      block->insert_statement_before(*pindex, ts);
-      ++*pindex;
+      Statement* s;
+      if ((*pexpr)->call_expression() == NULL
+	  || (*pexpr)->call_expression()->result_count() < 2)
+	{
+	  Temporary_statement* ts = Statement::make_temporary(NULL, *pexpr,
+							      loc);
+	  s = ts;
+	  *pexpr = Expression::make_temporary_reference(ts, loc);
+	}
+      else
+	{
+	  // A call expression which returns multiple results needs to
+	  // be handled specially.  We can't create a temporary
+	  // because there is no type to give it.  Any actual uses of
+	  // the values will be done via Call_result_expressions.
+	  s = Statement::make_statement(*pexpr);
+	}
 
-      *pexpr = Expression::make_temporary_reference(ts, loc);
+      block->insert_statement_before(*pindex, s);
+      ++*pindex;
     }
 
   if (init != orig_init)
@@ -1978,7 +2038,7 @@ Order_eval::variable(Named_object* no)
     return TRAVERSE_CONTINUE;
 
   Find_eval_ordering find_eval_ordering;
-  init->traverse_subexpressions(&find_eval_ordering);
+  Expression::traverse(&init, &find_eval_ordering);
 
   if (find_eval_ordering.size() <= 1)
     {
@@ -1993,9 +2053,22 @@ Order_eval::variable(Named_object* no)
     {
       Expression** pexpr = *p;
       source_location loc = (*pexpr)->location();
-      Temporary_statement* ts = Statement::make_temporary(NULL, *pexpr, loc);
-      var->add_preinit_statement(this->gogo_, ts);
-      *pexpr = Expression::make_temporary_reference(ts, loc);
+      Statement* s;
+      if ((*pexpr)->call_expression() == NULL
+	  || (*pexpr)->call_expression()->result_count() < 2)
+	{
+	  Temporary_statement* ts = Statement::make_temporary(NULL, *pexpr,
+							      loc);
+	  s = ts;
+	  *pexpr = Expression::make_temporary_reference(ts, loc);
+	}
+      else
+	{
+	  // A call expression which returns multiple results needs to
+	  // be handled specially.
+	  s = Statement::make_statement(*pexpr);
+	}
+      var->add_preinit_statement(this->gogo_, s);
     }
 
   return TRAVERSE_SKIP_COMPONENTS;
@@ -2181,6 +2254,8 @@ Build_recover_thunks::function(Named_object* orig_no)
     }
   args->push_back(this->can_recover_arg(location));
 
+  gogo->start_block(location);
+
   Call_expression* call = Expression::make_call(fn, args, false, location);
 
   Statement* s;
@@ -2201,6 +2276,13 @@ Build_recover_thunks::function(Named_object* orig_no)
     }
   s->determine_types();
   gogo->add_statement(s);
+
+  Block* b = gogo->finish_block(location);
+
+  gogo->add_block(b, location);
+
+  // Lower the call in case it returns multiple results.
+  gogo->lower_block(new_no, b);
 
   gogo->finish_function(location);
 
@@ -3152,78 +3234,64 @@ Block::traverse(Traverse* traverse)
 	  | Traverse::traverse_expressions
 	  | Traverse::traverse_types)) != 0)
     {
+      const unsigned int e_or_t = (Traverse::traverse_expressions
+				   | Traverse::traverse_types);
+      const unsigned int e_or_t_or_s = (e_or_t
+					| Traverse::traverse_statements);
       for (Bindings::const_definitions_iterator pb =
 	     this->bindings_->begin_definitions();
 	   pb != this->bindings_->end_definitions();
 	   ++pb)
 	{
+	  int t = TRAVERSE_CONTINUE;
 	  switch ((*pb)->classification())
 	    {
 	    case Named_object::NAMED_OBJECT_CONST:
 	      if ((traverse_mask & Traverse::traverse_constants) != 0)
+		t = traverse->constant(*pb, false);
+	      if (t == TRAVERSE_CONTINUE
+		  && (traverse_mask & e_or_t) != 0)
 		{
-		  if (traverse->constant(*pb, false) == TRAVERSE_EXIT)
+		  Type* tc = (*pb)->const_value()->type();
+		  if (tc != NULL
+		      && Type::traverse(tc, traverse) == TRAVERSE_EXIT)
 		    return TRAVERSE_EXIT;
-		}
-	      if ((traverse_mask & Traverse::traverse_types) != 0
-		  || (traverse_mask & Traverse::traverse_expressions) != 0)
-		{
-		  Type* t = (*pb)->const_value()->type();
-		  if (t != NULL
-		      && Type::traverse(t, traverse) == TRAVERSE_EXIT)
-		    return TRAVERSE_EXIT;
-		}
-	      if ((traverse_mask & Traverse::traverse_expressions) != 0
-		  || (traverse_mask & Traverse::traverse_types) != 0)
-		{
-		  if ((*pb)->const_value()->traverse_expression(traverse)
-		      == TRAVERSE_EXIT)
-		    return TRAVERSE_EXIT;
+		  t = (*pb)->const_value()->traverse_expression(traverse);
 		}
 	      break;
 
 	    case Named_object::NAMED_OBJECT_VAR:
 	    case Named_object::NAMED_OBJECT_RESULT_VAR:
 	      if ((traverse_mask & Traverse::traverse_variables) != 0)
+		t = traverse->variable(*pb);
+	      if (t == TRAVERSE_CONTINUE
+		  && (traverse_mask & e_or_t) != 0)
 		{
-		  if (traverse->variable(*pb) == TRAVERSE_EXIT)
-		    return TRAVERSE_EXIT;
+		  if ((*pb)->is_result_variable()
+		      || (*pb)->var_value()->has_type())
+		    {
+		      Type* tv = ((*pb)->is_variable()
+				  ? (*pb)->var_value()->type()
+				  : (*pb)->result_var_value()->type());
+		      if (tv != NULL
+			  && Type::traverse(tv, traverse) == TRAVERSE_EXIT)
+			return TRAVERSE_EXIT;
+		    }
 		}
-	      if (((traverse_mask & Traverse::traverse_types) != 0
-		   || (traverse_mask & Traverse::traverse_expressions) != 0)
-		  && ((*pb)->is_result_variable()
-		      || (*pb)->var_value()->has_type()))
-		{
-		  Type* t = ((*pb)->is_variable()
-			     ? (*pb)->var_value()->type()
-			     : (*pb)->result_var_value()->type());
-		  if (t != NULL
-		      && Type::traverse(t, traverse) == TRAVERSE_EXIT)
-		    return TRAVERSE_EXIT;
-		}
-	      if ((*pb)->is_variable()
-		  && ((traverse_mask & Traverse::traverse_expressions) != 0
-		      || (traverse_mask & Traverse::traverse_types) != 0))
-		{
-		  if ((*pb)->var_value()->traverse_expression(traverse)
-		      == TRAVERSE_EXIT)
-		    return TRAVERSE_EXIT;
-		}
+	      if (t == TRAVERSE_CONTINUE
+		  && (traverse_mask & e_or_t_or_s) != 0
+		  && (*pb)->is_variable())
+		t = (*pb)->var_value()->traverse_expression(traverse,
+							    traverse_mask);
 	      break;
 
 	    case Named_object::NAMED_OBJECT_FUNC:
 	    case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
-	      // FIXME: Where will nested functions be found?
 	      go_unreachable();
 
 	    case Named_object::NAMED_OBJECT_TYPE:
-	      if ((traverse_mask & Traverse::traverse_types) != 0
-		  || (traverse_mask & Traverse::traverse_expressions) != 0)
-		{
-		  if (Type::traverse((*pb)->type_value(), traverse)
-		      == TRAVERSE_EXIT)
-		    return TRAVERSE_EXIT;
-		}
+	      if ((traverse_mask & e_or_t) != 0)
+		t = Type::traverse((*pb)->type_value(), traverse);
 	      break;
 
 	    case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
@@ -3237,6 +3305,9 @@ Block::traverse(Traverse* traverse)
 	    default:
 	      go_unreachable();
 	    }
+
+	  if (t == TRAVERSE_EXIT)
+	    return TRAVERSE_EXIT;
 	}
     }
 
@@ -3351,14 +3422,17 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
 // Traverse the initializer expression.
 
 int
-Variable::traverse_expression(Traverse* traverse)
+Variable::traverse_expression(Traverse* traverse, unsigned int traverse_mask)
 {
   if (this->preinit_ != NULL)
     {
       if (this->preinit_->traverse(traverse) == TRAVERSE_EXIT)
 	return TRAVERSE_EXIT;
     }
-  if (this->init_ != NULL)
+  if (this->init_ != NULL
+      && ((traverse_mask
+	   & (Traverse::traverse_expressions | Traverse::traverse_types))
+	  != 0))
     {
       if (Expression::traverse(&this->init_, traverse) == TRAVERSE_EXIT)
 	return TRAVERSE_EXIT;
@@ -3369,7 +3443,8 @@ Variable::traverse_expression(Traverse* traverse)
 // Lower the initialization expression after parsing is complete.
 
 void
-Variable::lower_init_expression(Gogo* gogo, Named_object* function)
+Variable::lower_init_expression(Gogo* gogo, Named_object* function,
+				Statement_inserter* inserter)
 {
   if (this->init_ != NULL && !this->init_is_lowered_)
     {
@@ -3381,7 +3456,14 @@ Variable::lower_init_expression(Gogo* gogo, Named_object* function)
 	}
       this->seen_ = true;
 
-      gogo->lower_expression(function, &this->init_);
+      Statement_inserter global_inserter;
+      if (this->is_global_)
+	{
+	  global_inserter = Statement_inserter(gogo, this);
+	  inserter = &global_inserter;
+	}
+
+      gogo->lower_expression(function, inserter, &this->init_);
 
       this->seen_ = false;
 
@@ -4508,77 +4590,67 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 
   // We don't use an iterator because we permit the traversal to add
   // new global objects.
+  const unsigned int e_or_t = (Traverse::traverse_expressions
+			       | Traverse::traverse_types);
+  const unsigned int e_or_t_or_s = (e_or_t
+				    | Traverse::traverse_statements);
   for (size_t i = 0; i < this->named_objects_.size(); ++i)
     {
       Named_object* p = this->named_objects_[i];
+      int t = TRAVERSE_CONTINUE;
       switch (p->classification())
 	{
 	case Named_object::NAMED_OBJECT_CONST:
 	  if ((traverse_mask & Traverse::traverse_constants) != 0)
+	    t = traverse->constant(p, is_global);
+	  if (t == TRAVERSE_CONTINUE
+	      && (traverse_mask & e_or_t) != 0)
 	    {
-	      if (traverse->constant(p, is_global) == TRAVERSE_EXIT)
+	      Type* tc = p->const_value()->type();
+	      if (tc != NULL
+		  && Type::traverse(tc, traverse) == TRAVERSE_EXIT)
 		return TRAVERSE_EXIT;
-	    }
-	  if ((traverse_mask & Traverse::traverse_types) != 0
-	      || (traverse_mask & Traverse::traverse_expressions) != 0)
-	    {
-	      Type* t = p->const_value()->type();
-	      if (t != NULL
-		  && Type::traverse(t, traverse) == TRAVERSE_EXIT)
-		return TRAVERSE_EXIT;
-	      if (p->const_value()->traverse_expression(traverse)
-		  == TRAVERSE_EXIT)
-		return TRAVERSE_EXIT;
+	      t = p->const_value()->traverse_expression(traverse);
 	    }
 	  break;
 
 	case Named_object::NAMED_OBJECT_VAR:
 	case Named_object::NAMED_OBJECT_RESULT_VAR:
 	  if ((traverse_mask & Traverse::traverse_variables) != 0)
+	    t = traverse->variable(p);
+	  if (t == TRAVERSE_CONTINUE
+	      && (traverse_mask & e_or_t) != 0)
 	    {
-	      if (traverse->variable(p) == TRAVERSE_EXIT)
-		return TRAVERSE_EXIT;
+	      if (p->is_result_variable()
+		  || p->var_value()->has_type())
+		{
+		  Type* tv = (p->is_variable()
+			      ? p->var_value()->type()
+			      : p->result_var_value()->type());
+		  if (tv != NULL
+		      && Type::traverse(tv, traverse) == TRAVERSE_EXIT)
+		    return TRAVERSE_EXIT;
+		}
 	    }
-	  if (((traverse_mask & Traverse::traverse_types) != 0
-	       || (traverse_mask & Traverse::traverse_expressions) != 0)
-	      && (p->is_result_variable()
-		  || p->var_value()->has_type()))
-	    {
-	      Type* t = (p->is_variable()
-			 ? p->var_value()->type()
-			 : p->result_var_value()->type());
-	      if (t != NULL
-		  && Type::traverse(t, traverse) == TRAVERSE_EXIT)
-		return TRAVERSE_EXIT;
-	    }
-	  if (p->is_variable()
-	      && ((traverse_mask & Traverse::traverse_types) != 0
-		  || (traverse_mask & Traverse::traverse_expressions) != 0))
-	    {
-	      if (p->var_value()->traverse_expression(traverse)
-		  == TRAVERSE_EXIT)
-		return TRAVERSE_EXIT;
-	    }
+	  if (t == TRAVERSE_CONTINUE
+	      && (traverse_mask & e_or_t_or_s) != 0
+	      && p->is_variable())
+	    t = p->var_value()->traverse_expression(traverse, traverse_mask);
 	  break;
 
 	case Named_object::NAMED_OBJECT_FUNC:
 	  if ((traverse_mask & Traverse::traverse_functions) != 0)
-	    {
-	      int t = traverse->function(p);
-	      if (t == TRAVERSE_EXIT)
-		return TRAVERSE_EXIT;
-	      else if (t == TRAVERSE_SKIP_COMPONENTS)
-		break;
-	    }
+	    t = traverse->function(p);
 
-	  if ((traverse_mask
-	       & (Traverse::traverse_variables
-		  | Traverse::traverse_constants
-		  | Traverse::traverse_functions
-		  | Traverse::traverse_blocks
-		  | Traverse::traverse_statements
-		  | Traverse::traverse_expressions
-		  | Traverse::traverse_types)) != 0)
+	  if (t == TRAVERSE_CONTINUE
+	      && (traverse_mask
+		  & (Traverse::traverse_variables
+		     | Traverse::traverse_constants
+		     | Traverse::traverse_functions
+		     | Traverse::traverse_blocks
+		     | Traverse::traverse_statements
+		     | Traverse::traverse_expressions
+		     | Traverse::traverse_types)) != 0)
 	    {
 	      if (p->func_value()->traverse(traverse) == TRAVERSE_EXIT)
 		return TRAVERSE_EXIT;
@@ -4591,12 +4663,8 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 	  break;
 
 	case Named_object::NAMED_OBJECT_TYPE:
-	  if ((traverse_mask & Traverse::traverse_types) != 0
-	      || (traverse_mask & Traverse::traverse_expressions) != 0)
-	    {
-	      if (Type::traverse(p->type_value(), traverse) == TRAVERSE_EXIT)
-		return TRAVERSE_EXIT;
-	    }
+	  if ((traverse_mask & e_or_t) != 0)
+	    t = Type::traverse(p->type_value(), traverse);
 	  break;
 
 	case Named_object::NAMED_OBJECT_TYPE_DECLARATION:
@@ -4608,6 +4676,9 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 	default:
 	  go_unreachable();
 	}
+
+      if (t == TRAVERSE_EXIT)
+	return TRAVERSE_EXIT;
     }
 
   return TRAVERSE_CONTINUE;
@@ -4804,4 +4875,21 @@ int
 Traverse::type(Type*)
 {
   go_unreachable();
+}
+
+// Class Statement_inserter.
+
+void
+Statement_inserter::insert(Statement* s)
+{
+  if (this->block_ != NULL)
+    {
+      go_assert(this->pindex_ != NULL);
+      this->block_->insert_statement_before(*this->pindex_, s);
+      ++*this->pindex_;
+    }
+  else if (this->var_ != NULL)
+    this->var_->add_preinit_statement(this->gogo_, s);
+  else
+    go_unreachable();
 }
