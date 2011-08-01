@@ -2934,11 +2934,30 @@ package body Make is
 
          --  Make a deep copy of the arguments, because Normalize_Arguments
          --  may deallocate some arguments.
+         --  Also strip target specific -mxxx switches in CodePeer mode.
 
-         for J in Comp_Next .. Comp_Last loop
-            Comp_Args (J) := new String'(Args (Arg_Index).all);
-            Arg_Index := Arg_Index + 1;
-         end loop;
+         declare
+            Index : Natural := Comp_Next;
+            Last  : constant Natural := Comp_Last;
+         begin
+            for J in Comp_Next .. Last loop
+               declare
+                  Str : String renames Args (Arg_Index).all;
+               begin
+                  if Do_Codepeer_Globalize_Step
+                    and then Str'Length > 2
+                    and then Str (Str'First .. Str'First + 1) = "-m"
+                  then
+                     Comp_Last := Comp_Last - 1;
+                  else
+                     Comp_Args (Index) := new String'(Str);
+                     Index := Index + 1;
+                  end if;
+               end;
+
+               Arg_Index := Arg_Index + 1;
+            end loop;
+         end;
 
          --  Set -gnatpg for predefined files (for this purpose the renamings
          --  such as Text_IO do not count as predefined). Note that we strip

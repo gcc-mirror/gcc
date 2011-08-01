@@ -1501,7 +1501,7 @@ package Einfo is
 --    Has_Homonym (Flag56)
 --       Present in all entities. Set if an entity has a homonym in the same
 --       scope. Used by Gigi to generate unique names for such entities.
---
+
 --    Has_Initial_Value (Flag219)
 --       Present in entities for variables and out parameters. Set if there
 --       is an explicit initial value expression in the declaration of the
@@ -1510,7 +1510,7 @@ package Einfo is
 --       of access types or controlled types. Always set to False for out
 --       parameters. Also present in entities for in and in-out parameters,
 --       but always false in these cases.
---
+
 --    Has_Interrupt_Handler (synthesized)
 --       Applies to all protected type entities. Set if the protected type
 --       definition contains at least one procedure to which a pragma
@@ -1766,13 +1766,13 @@ package Einfo is
 --       attribute definition clause. When such a clause occurs, a TSS is set
 --       on the underlying full view; the flags are used to track visibility of
 --       the attribute definition clause for partial or incomplete views.
---
+
 --    Has_Static_Discriminants (Flag211)
 --       Present in record subtypes constrained by discriminant values. Set if
 --       all the discriminant values have static values, meaning that in the
 --       case of a variant record, the component list can be trimmed down to
 --       include only the components corresponding to these discriminants.
---
+
 --    Has_Storage_Size_Clause (Flag23) [implementation base type only]
 --       Present in task types and access types. It is set if a Storage_Size
 --       clause is present for the type. Used to prevent multiple clauses for
@@ -2315,7 +2315,7 @@ package Einfo is
 --         4) Internal entities in the list of primitives of tagged types that
 --         are used to handle secondary dispatch tables. These entities have
 --         also the attribute Interface_Alias.
---
+
 --    Is_Interrupt_Handler (Flag89)
 --       Present in procedures. Set if a pragma Interrupt_Handler applies
 --       to the procedure. The procedure must be parameterless, and on all
@@ -2898,7 +2898,7 @@ package Einfo is
 --       the generated indexes entity. See unit Exp_Imgv for full details of
 --       the nature and use of this entity for implementing the Image and
 --       Value attributes for the enumeration type in question.
---
+
 --    Lit_Strings (Node16)
 --       Present in enumeration types and subtypes. Non-empty only for the
 --       case of an enumeration root type, where it contains the entity for
@@ -2983,7 +2983,7 @@ package Einfo is
 --       entities when the return type is an array type, and a call can be
 --       interpreted as an indexing of the result of the call. It is also
 --       used to resolve various cases of entry calls.
---
+
 --    Never_Set_In_Source (Flag115)
 --       Present in all entities, but can be set only for variables and
 --       parameters. This flag is set if the object is never assigned a value

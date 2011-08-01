@@ -2766,7 +2766,10 @@ package body Exp_Ch5 is
       Isc        : constant Node_Id    := Iteration_Scheme (N);
       I_Spec     : constant Node_Id    := Iterator_Specification (Isc);
       Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
-      Container  : constant Entity_Id  :=  Entity (Name (I_Spec));
+
+      Container  : constant Node_Id    := Name (I_Spec);
+      --  An expression whose type is an array or a predefined container.
+
       Typ        : constant Entity_Id  := Etype (Container);
 
       Cursor   : Entity_Id;
@@ -2788,8 +2791,7 @@ package body Exp_Ch5 is
                             New_Occurrence_Of (Component_Type (Typ), Loc),
                           Name                =>
                             Make_Indexed_Component (Loc,
-                              Prefix      =>
-                                New_Occurrence_Of (Container, Loc),
+                              Prefix      => Relocate_Node (Container),
                               Expressions =>
                                 New_List (New_Occurrence_Of (Cursor, Loc))));
             begin
@@ -2805,8 +2807,7 @@ package body Exp_Ch5 is
                            Defining_Identifier         => Cursor,
                            Discrete_Subtype_Definition =>
                               Make_Attribute_Reference (Loc,
-                                Prefix         =>
-                                  New_Occurrence_Of (Container, Loc),
+                                Prefix         => Relocate_Node (Container),
                                 Attribute_Name => Name_Range),
                            Reverse_Present => Reverse_Present (I_Spec))),
                    Statements       => Stats,
@@ -2828,8 +2829,7 @@ package body Exp_Ch5 is
                         Defining_Identifier         => Cursor,
                         Discrete_Subtype_Definition =>
                            Make_Attribute_Reference (Loc,
-                             Prefix         =>
-                               New_Occurrence_Of (Container, Loc),
+                             Prefix         => Relocate_Node (Container),
                              Attribute_Name => Name_Range),
                         Reverse_Present => Reverse_Present (I_Spec))),
                 Statements       => Statements (N),
@@ -2895,7 +2895,7 @@ package body Exp_Ch5 is
                     Selector_Name => Make_Identifier (Loc, Name_Cursor)),
                 Expression =>
                   Make_Selected_Component (Loc,
-                    Prefix        => New_Occurrence_Of (Container, Loc),
+                    Prefix        => Relocate_Node (Container),
                     Selector_Name => Make_Identifier (Loc, Name_Init)));
 
             Insert_Action (N, Cursor_Decl);
@@ -2950,9 +2950,6 @@ package body Exp_Ch5 is
               End_Label        => Empty);
          end;
       end if;
-
-      --  Set_Analyzed (I_Spec);
-      --  Why is this commented out???
 
       Rewrite (N, New_Loop);
       Analyze (N);

@@ -4148,7 +4148,7 @@ Specify a preprocessing data file
 @cindex @option{-gnateP} (@command{gcc})
 Turn categorization dependency errors into warnings.
 Ada requires that units that WITH one another have compatible categories, for
-example a Pure unit cannto WITH a Preelaborate unit. If this switch is used,
+example a Pure unit cannot WITH a Preelaborate unit. If this switch is used,
 these errors become warnings (which can be ignored, or suppressed in the usual
 manner). This can be useful in some specialized circumstances such as the
 temporary use of special test software.
