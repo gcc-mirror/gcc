@@ -2837,7 +2837,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -c $(srcdir)/toplev.c $(OUTPUT_OPTION)
 
-hwint.o : hwint.c $(CONFIG_H) $(SYSTEM_H)
+hwint.o : hwint.c $(CONFIG_H) $(SYSTEM_H) $(DIAGNOSTIC_CORE_H)
 
 passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(FUNCTION_H) $(FLAGS_H) xcoffout.h $(INPUT_H) $(INSN_ATTR_H) output.h \
