@@ -35,7 +35,7 @@ package Prj.Env is
    --  Initialize global components relative to environment variables
 
    procedure Print_Sources (In_Tree : Project_Tree_Ref);
-   --  Output the list of sources, after Project files have been scanned
+   --  Output the list of sources after Project files have been scanned
 
    procedure Create_Mapping (In_Tree : Project_Tree_Ref);
    --  Create in memory mapping from the sources of all the projects (in body
@@ -47,7 +47,7 @@ package Prj.Env is
       Path_FD   : out File_Descriptor;
       Path_Name : out Path_Name_Type;
       File_Use  : String);
-   --  Create temporary file, and fail with an error if it could not be created
+   --  Create temporary file, fail with an error if it could not be created
 
    procedure Create_Mapping_File
      (Project  : Project_Id;
@@ -55,27 +55,26 @@ package Prj.Env is
       In_Tree  : Project_Tree_Ref;
       Name     : out Path_Name_Type);
    --  Create a temporary mapping file for project Project. For each source or
-   --  template of Language in the Project, put the mapping of its file
-   --  name and path name in this file.
+   --  template of Language in the Project, put the mapping of its file name
+   --  and path name in this file. See fmap for a description of the format
+   --  of the mapping file.
    --
    --  Implementation note: we pass a language name, not a language_index here,
    --  since the latter would have to match exactly the index of that language
    --  for the specified project, and that is not information available in
    --  buildgpr.adb.
-   --
-   --  See fmap for a description of the format of the mapping file
 
    procedure Create_Config_Pragmas_File
      (For_Project : Project_Id;
       In_Tree     : Project_Tree_Ref);
-   --  If there needs to have SFN pragmas, either for non standard naming
-   --  schemes or for individual units.
+   --  If we need SFN pragmas, either for non standard naming schemes or for
+   --  individual units.
 
    procedure Create_New_Path_File
      (In_Tree   : Project_Tree_Ref;
       Path_FD   : out File_Descriptor;
       Path_Name : out Path_Name_Type);
-   --  Create a new temporary path file. Get the file name in Path_Name
+   --  Create a new temporary path file, placing file name in Path_Name
 
    function Ada_Include_Path
      (Project   : Project_Id;
@@ -115,7 +114,6 @@ package Prj.Env is
    --  name of the spec is returned.
    --
    --  If Full_Path is False (the default), the simple file name is returned.
-   --
    --  If Full_Path is True, the absolute path name is returned.
    --
    --  If neither a body nor a spec can be found, an empty string is returned.
@@ -152,16 +150,16 @@ package Prj.Env is
    generic
       with procedure Action (Path : String);
    procedure For_All_Object_Dirs (Project : Project_Id);
-   --  Iterate through all the object directories of a project, including
-   --  those of imported or modified projects.
+   --  Iterate through all the object directories of a project, including those
+   --  of imported or modified projects.
 
    ------------------
    -- Project Path --
    ------------------
 
    type Project_Search_Path is private;
-   --  An abstraction of the project path. This object provides subprograms to
-   --  search for projects on the path (and caches the results for more
+   --  An abstraction of the project path. This object provides subprograms
+   --  to search for projects on the path (and caches the results to improve
    --  efficiency).
 
    procedure Free (Self : in out Project_Search_Path);
@@ -176,8 +174,7 @@ package Prj.Env is
    --  will remove the default project directory from the project path.
    --
    --  Calls to this subprogram must be performed before the first call to
-   --  Find_Project below, or PATH will be added at the end of the search
-   --  path.
+   --  Find_Project below, or PATH will be added at the end of the search path.
 
    procedure Get_Path
      (Self        : in out Project_Search_Path;
@@ -185,13 +182,13 @@ package Prj.Env is
       Target_Name : String := "");
    --  Return the current value of the project path, either the value set
    --  during elaboration of the package or, if procedure Set_Project_Path has
-   --  been called, the value set by the last call to Set_Project_Path.
-   --  The returned value must not be modified.
+   --  been called, the value set by the last call to Set_Project_Path. The
+   --  returned value must not be modified.
 
    procedure Set_Path
      (Self : in out Project_Search_Path; Path : String);
-   --  Override the value of the project path.
-   --  This also removes the implicit default search directories
+   --  Override the value of the project path. This also removes the implicit
+   --  default search directories
 
    procedure Find_Project
      (Self               : in out Project_Search_Path;
@@ -220,9 +217,9 @@ private
 
    type Project_Search_Path is record
       Path : GNAT.OS_Lib.String_Access;
-      --  As a special case, if the first character is '#:" or this variable is
-      --  unset, this means that the PATH has not been fully initialized yet
-      --  (although subprograms above will properly take care of that).
+      --  As a special case, if the first character is '#:" or this variable
+      --  is unset, this means that the PATH has not been fully initialized
+      --  yet (although subprograms above will properly take care of that).
 
       Cache : Projects_Paths.Instance;
    end record;

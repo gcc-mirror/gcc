@@ -335,9 +335,10 @@ package body Sem_Ch6 is
          Error_Msg_N ("illegal context for return statement", N);
       end if;
 
-      if Kind = E_Function or else Kind = E_Generic_Function then
+      if Ekind_In (Kind, E_Function, E_Generic_Function) then
          Analyze_Function_Return (N);
-      elsif Kind = E_Procedure or else Kind = E_Generic_Procedure then
+
+      elsif Ekind_In (Kind, E_Procedure, E_Generic_Procedure) then
          Set_Return_Present (Scope_Id);
       end if;
 
@@ -685,13 +686,13 @@ package body Sem_Ch6 is
          Check_Limited_Return (Expr);
 
          --  The only RETURN allowed in SPARK or ALFA is as the last statement
-         --  of the function
+         --  of the function.
 
          if Formal_Verification_Mode
            and then Nkind (Parent (N)) /= N_Handled_Sequence_Of_Statements
            and then
              (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
-              or else Present (Next (N)))
+               or else Present (Next (N)))
          then
             Formal_Error_Msg_N
               ("RETURN should be the last statement in function", N);
@@ -1633,9 +1634,9 @@ package body Sem_Ch6 is
 
       procedure Check_Missing_Return;
       --  Checks for a function with a no return statements, and also performs
-      --  the warning checks implemented by Check_Returns.
-      --  In formal mode, also verify that a function ends with a RETURN and
-      --  that a procedure does not contain any RETURN.
+      --  the warning checks implemented by Check_Returns. In formal mode, also
+      --  verify that a function ends with a RETURN and that a procedure does
+      --  not contain any RETURN.
 
       function Disambiguate_Spec return Entity_Id;
       --  When a primitive is declared between the private view and the full
@@ -1845,16 +1846,16 @@ package body Sem_Ch6 is
                Id := Body_Id;
             end if;
 
-            --  In formal mode, the last statement of a function should be
-            --  a return statement
+            --  In formal mode, the last statement of a function should be a
+            --  return statement.
 
             if Formal_Verification_Mode then
                declare
                   Last_Kind : constant Node_Kind :=
                                 Nkind (Last (Statements (HSS)));
                begin
-                  if Last_Kind /= N_Simple_Return_Statement
-                    and then Last_Kind /= N_Extended_Return_Statement
+                  if not Nkind_In (Last_Kind, N_Simple_Return_Statement,
+                                              N_Extended_Return_Statement)
                   then
                      Formal_Error_Msg_N
                        ("last statement in function should be RETURN", N);
@@ -1885,6 +1886,9 @@ package body Sem_Ch6 is
             else
                Id := Body_Id;
             end if;
+
+            --  Would be nice to point to return statement here, can we
+            --  borrow the Check_Returns procedure here ???
 
             if Return_Present (Id) then
                Formal_Error_Msg_N ("procedure should not have RETURN", N);
@@ -6100,7 +6104,7 @@ package body Sem_Ch6 is
 
             if Scope (E) /= Scope (S)
                   and then (not Is_Overloadable (E)
-                              or else Subtype_Conformant (E, S))
+                             or else Subtype_Conformant (E, S))
                   and then (Is_Immediately_Visible (E)
                               or else
                             Is_Potentially_Use_Visible (S))

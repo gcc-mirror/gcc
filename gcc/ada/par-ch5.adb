@@ -2138,8 +2138,9 @@ package body Ch5 is
 
                Inner : while Present (Decl) loop
                   if (Nkind (Decl) not in N_Later_Decl_Item
-                      or else (SPARK_Mode
-                               and then Nkind (Decl) = N_Package_Declaration))
+                       or else (SPARK_Mode
+                                 and then
+                                   Nkind (Decl) = N_Package_Declaration))
                     and then Nkind (Decl) /= N_Pragma
                   then
                      if Ada_Version = Ada_83 then

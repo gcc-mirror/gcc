@@ -1100,7 +1100,7 @@ package body Sem_Ch5 is
       Analyze_Choices (N, Exp_Type, Dont_Care, Others_Present);
 
       --  A case statement with a single "others" alternative is not allowed
-      --  in SPARK or ALFA
+      --  in SPARK or ALFA.
 
       if Formal_Verification_Mode
         and then Others_Present
@@ -1225,7 +1225,7 @@ package body Sem_Ch5 is
       end if;
 
       --  In formal mode, verify that the exit statement respects the SPARK
-      --  restrictions
+      --  restrictions.
 
       if Formal_Verification_Mode then
          if Present (Cond) then
@@ -1233,6 +1233,7 @@ package body Sem_Ch5 is
                Formal_Error_Msg_N
                  ("exit with when clause must be directly in loop", N);
             end if;
+
          else
             if Nkind (Parent (N)) /= N_If_Statement then
                if Nkind (Parent (N)) = N_Elsif_Part then
@@ -1240,17 +1241,18 @@ package body Sem_Ch5 is
                else
                   Formal_Error_Msg_N ("exit must be directly in IF", N);
                end if;
+
             elsif Nkind (Parent (Parent (N))) /= N_Loop_Statement then
                Formal_Error_Msg_N ("exit must be in IF directly in loop", N);
 
             --  First test the presence of ELSE, so that an exit in an ELSE
-            --  leads to an error mentioning the ELSE
+            --  leads to an error mentioning the ELSE.
 
             elsif Present (Else_Statements (Parent (N))) then
                Formal_Error_Msg_N ("exit must be in IF without ELSE", N);
 
             --  An exit in an ELSIF does not reach here, as it would have been
-            --  detected in the case (Nkind (Parent (N)) /= N_If_Statement)
+            --  detected in the case (Nkind (Parent (N)) /= N_If_Statement).
 
             elsif Present (Elsif_Parts (Parent (N))) then
                Formal_Error_Msg_N ("exit must be in IF without ELSIF", N);
@@ -1866,7 +1868,7 @@ package body Sem_Ch5 is
                end;
 
                --  Loop parameter specification must include subtype mark in
-               --  SPARK or ALFA
+               --  SPARK or ALFA.
 
                if Formal_Verification_Mode
                  and then Nkind (DS) = N_Range

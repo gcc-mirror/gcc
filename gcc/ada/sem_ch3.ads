@@ -171,10 +171,10 @@ package Sem_Ch3 is
    --  Constraint, return the value of that discriminant.
 
    function Is_Constant_Bound (Exp : Node_Id) return Boolean;
-   --  Determines whether the given bound is a compile-time known value, or a
-   --  constant entity, or an enumeration literal, or an expression composed
-   --  of constant-bound subexpressions which are evaluated by means of
-   --  standard operators.
+   --  Exp is the expression for an array bound. Determines whether the
+   --  bound is a compile-time known value, or a constant entity, or an
+   --  enumeration literal, or an expression composed of constant-bound
+   --  subexpressions which are evaluated by means of standard operators.
 
    function Is_Null_Extension (T : Entity_Id) return Boolean;
    --  Returns True if the tagged type T has an N_Full_Type_Declaration that

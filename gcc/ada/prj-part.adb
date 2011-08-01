@@ -1552,7 +1552,9 @@ package body Prj.Part is
             declare
                Original_Path_Name : constant String :=
                                       Get_Name_String (Token_Name);
+
                Extended_Project_Path_Name_Id : Path_Name_Type;
+
             begin
                Find_Project
                  (In_Tree.Project_Path,
@@ -1569,8 +1571,7 @@ package body Prj.Part is
 
                   Error_Msg (Flags, "unknown project file: %%", Token_Ptr);
 
-                  --  If we are not in the main project file, display the
-                  --  import path.
+                  --  If not in the main project file, display the import path
 
                   if Project_Stack.Last > 1 then
                      Error_Msg_Name_1 :=
@@ -1621,8 +1622,8 @@ package body Prj.Part is
                      end if;
 
                      --  An abstract project can only extend an abstract
-                     --  project, otherwise we may have an abstract project
-                     --  with sources, if it inherits sources from the project
+                     --  project. Otherwise we may have an abstract project
+                     --  with sources if it inherits sources from the project
                      --  it extends.
 
                      if Project_Qualifier_Of (Project, In_Tree) = Dry and then
