@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ with Ada.Unchecked_Conversion;
 
 package body Interfaces.C.Pointers is
 
-   type Addr is mod Memory_Size;
+   type Addr is mod 2 ** System.Parameters.ptr_bits;
 
    function To_Pointer is new Ada.Unchecked_Conversion (Addr,      Pointer);
    function To_Addr    is new Ada.Unchecked_Conversion (Pointer,   Addr);
@@ -195,6 +195,7 @@ package body Interfaces.C.Pointers is
             subtype A is Element_Array (L .. H);
 
             type PA is access A;
+            for PA'Size use System.Parameters.ptr_bits;
             function To_PA is new Ada.Unchecked_Conversion (Pointer, PA);
 
          begin
@@ -238,6 +239,7 @@ package body Interfaces.C.Pointers is
             subtype A is Element_Array (L .. H);
 
             type PA is access A;
+            for PA'Size use System.Parameters.ptr_bits;
             function To_PA is new Ada.Unchecked_Conversion (Pointer, PA);
 
          begin

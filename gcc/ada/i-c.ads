@@ -54,10 +54,10 @@ package Interfaces.C is
    --  a non-private system.address type.
 
    type ptrdiff_t is
-     range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-           +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+     range -(2 ** (System.Parameters.ptr_bits - Integer'(1))) ..
+           +(2 ** (System.Parameters.ptr_bits - Integer'(1)) - 1);
 
-   type size_t is mod 2 ** Standard'Address_Size;
+   type size_t is mod 2 ** System.Parameters.ptr_bits;
 
    --  Floating-Point
 

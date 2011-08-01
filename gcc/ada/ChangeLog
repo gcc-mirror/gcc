@@ -1,3 +1,25 @@
+2011-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Abstract_Interface_List): Complete condition when
+	processing private type declarations to avoid reading unavailable
+	attribute.
+	(Is_Synchronized_Tagged_Type): Complete condition when processing
+	private extension declaration nodes to avoid reading unavailable
+	attribute.
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* s-parame-ae653.ads, s-parame-vms-alpha.ads, s-parame-hpux.ads,
+	i-cpoint.adb, i-cstrin.adb, i-cpoint.ads, i-cstrin.ads,
+	s-parame-vms-ia64.ads, s-parame.ads, i-c.ads, s-parame-vxworks.ads,
+	s-parame-vms-restrict.ads: Remove duplicated Interfaces.C.* packages
+	for VMS, instead parametrize the common implementation with
+	System.Parameters declarations.
+
 2011-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat_rm.texi: Document limitation of Pragma No_Strict_Aliasing.
