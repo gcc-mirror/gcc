@@ -78,7 +78,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       end if;
 
       if Prev = X then
-         HT.Buckets (Indx) := Next (HT, Prev);
+         HT.Buckets (Indx) := Next (HT.Nodes (Prev));
          HT.Length := HT.Length - 1;
          return;
       end if;
@@ -89,7 +89,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       end if;
 
       loop
-         Curr := Next (HT, Prev);
+         Curr := Next (HT.Nodes (Prev));
 
          if Curr = 0 then
             raise Program_Error with
@@ -97,7 +97,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
          end if;
 
          if Curr = X then
-            Set_Next (HT.Nodes (Prev), Next => Next (HT, Curr));
+            Set_Next (HT.Nodes (Prev), Next => Next (HT.Nodes (Curr)));
             HT.Length := HT.Length - 1;
             return;
          end if;

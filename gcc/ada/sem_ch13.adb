@@ -740,7 +740,6 @@ package body Sem_Ch13 is
             Nam  : constant Name_Id    := Chars (Id);
             A_Id : constant Aspect_Id  := Get_Aspect_Id (Nam);
             Anod : Node_Id;
-            T    : Entity_Id;
 
             Eloc : Source_Ptr := Sloc (Expr);
             --  Source location of expression, modified when we split PPC's
@@ -811,31 +810,12 @@ package body Sem_Ch13 is
                   raise Program_Error;
 
                --  Aspects taking an optional boolean argument. For all of
-               --  these we just create a matching pragma and insert it,
-               --  setting flag Cancel_Aspect if the expression is False.
+               --  these we just create a matching pragma and insert it. When
+               --  the aspect is processed to insert the pragma, the expression
+               --  is analyzed, setting Cancel_Aspect if the value is False.
 
-               when Aspect_Ada_2005                     |
-                    Aspect_Ada_2012                     |
-                    Aspect_Atomic                       |
-                    Aspect_Atomic_Components            |
-                    Aspect_Discard_Names                |
-                    Aspect_Favor_Top_Level              |
-                    Aspect_Inline                       |
-                    Aspect_Inline_Always                |
-                    Aspect_No_Return                    |
-                    Aspect_Pack                         |
-                    Aspect_Persistent_BSS               |
-                    Aspect_Preelaborable_Initialization |
-                    Aspect_Pure_Function                |
-                    Aspect_Shared                       |
-                    Aspect_Suppress_Debug_Info          |
-                    Aspect_Unchecked_Union              |
-                    Aspect_Universal_Aliasing           |
-                    Aspect_Unmodified                   |
-                    Aspect_Unreferenced                 |
-                    Aspect_Unreferenced_Objects         |
-                    Aspect_Volatile                     |
-                    Aspect_Volatile_Components          =>
+               when Boolean_Aspects =>
+                  Set_Is_Boolean_Aspect (Aspect);
 
                   --  Build corresponding pragma node
 
@@ -845,32 +825,17 @@ package body Sem_Ch13 is
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Chars (Id)));
 
-                  --  Deal with missing expression case, delay never needed
+                  --  No delay required if no expression (nothing to delay!)
 
                   if No (Expr) then
                      Delay_Required := False;
 
-                  --  Expression is present
+                  --  Expression is present, delay is required. Note that
+                  --  even if the expression is "True", some idiot might
+                  --  define True as False before the freeze point!
 
                   else
-                     Preanalyze_Spec_Expression (Expr, Standard_Boolean);
-
-                     --  If preanalysis gives a static expression, we don't
-                     --  need to delay (this will happen often in practice).
-
-                     if Is_OK_Static_Expression (Expr) then
-                        Delay_Required := False;
-
-                        if Is_False (Expr_Value (Expr)) then
-                           Set_Aspect_Cancel (Aitem);
-                        end if;
-
-                     --  If we don't get a static expression, then delay, the
-                     --  expression may turn out static by freeze time.
-
-                     else
-                        Delay_Required := True;
-                     end if;
+                     Delay_Required := True;
                   end if;
 
                --  Aspects corresponding to attribute definition clauses
@@ -880,30 +845,17 @@ package body Sem_Ch13 is
                     Aspect_Bit_Order      |
                     Aspect_Component_Size |
                     Aspect_External_Tag   |
+                    Aspect_Input          |
                     Aspect_Machine_Radix  |
                     Aspect_Object_Size    |
+                    Aspect_Output         |
+                    Aspect_Read           |
                     Aspect_Size           |
                     Aspect_Storage_Pool   |
                     Aspect_Storage_Size   |
                     Aspect_Stream_Size    |
-                    Aspect_Value_Size     =>
-
-                  --  Preanalyze the expression with the appropriate type
-
-                  case A_Id is
-                     when Aspect_Address      =>
-                        T := RTE (RE_Address);
-                     when Aspect_Bit_Order    =>
-                        T := RTE (RE_Bit_Order);
-                     when Aspect_External_Tag =>
-                        T := Standard_String;
-                     when Aspect_Storage_Pool =>
-                        T := Class_Wide_Type (RTE (RE_Root_Storage_Pool));
-                     when others              =>
-                        T := Any_Integer;
-                  end case;
-
-                  Preanalyze_Spec_Expression (Expr, T);
+                    Aspect_Value_Size     |
+                    Aspect_Write          =>
 
                   --  Construct the attribute definition clause
 
@@ -913,16 +865,9 @@ package body Sem_Ch13 is
                       Chars      => Chars (Id),
                       Expression => Relocate_Node (Expr));
 
-                  --  We do not need a delay if we have a static expression
-
-                  if Is_OK_Static_Expression (Expression (Aitem)) then
-                     Delay_Required := False;
-
                   --  Here a delay is required
 
-                  else
-                     Delay_Required := True;
-                  end if;
+                  Delay_Required := True;
 
                --  Aspects corresponding to pragmas with two arguments, where
                --  the first argument is a local name referring to the entity,
@@ -946,27 +891,6 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
-               --  Aspects corresponding to stream routines
-
-               when Aspect_Input  |
-                    Aspect_Output |
-                    Aspect_Read   |
-                    Aspect_Write  =>
-
-                  --  Construct the attribute definition clause
-
-                  Aitem :=
-                    Make_Attribute_Definition_Clause (Loc,
-                      Name       => Ent,
-                      Chars      => Chars (Id),
-                      Expression => Relocate_Node (Expr));
-
-                  --  These are always delayed (typically the subprogram that
-                  --  is referenced cannot have been declared yet, since it has
-                  --  a reference to the type for which this aspect is defined.
-
-                  Delay_Required := True;
-
                --  Aspects corresponding to pragmas with two arguments, where
                --  the second argument is a local name referring to the entity,
                --  and the first argument is the aspect definition expression.
@@ -985,7 +909,7 @@ package body Sem_Ch13 is
                       Class_Present                => Class_Present (Aspect));
 
                   --  We don't have to play the delay game here, since the only
-                  --  values are check names which don't get analyzed anyway.
+                  --  values are ON/OFF which don't get analyzed anyway.
 
                   Delay_Required := False;
 
@@ -1015,7 +939,7 @@ package body Sem_Ch13 is
                   --  these conditions together in a complex OR expression
 
                   if Pname = Name_Postcondition
-                       or else not Class_Present (Aspect)
+                    or else not Class_Present (Aspect)
                   then
                      while Nkind (Expr) = N_And_Then loop
                         Insert_After (Aspect,

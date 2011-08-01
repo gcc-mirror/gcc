@@ -1,3 +1,21 @@
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads (Boolean_Aspects): New subtype.
+	* exp_ch13.adb (Expand_Freeze_Entity): Fix errors in handling aspects
+	for derived types in cases where the parent type and derived type have
+	aspects.
+	* freeze.adb (Freeze_Entity): Fix problems in handling derived type
+	with aspects when parent type also has aspects.
+	(Freeze_Entity): Deal with delay of boolean aspects (must evaluate
+	boolean expression at this point).
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Delay all aspects in
+	accordance with final decision on the Ada 2012 feature.
+	* sinfo.ads, sinfo.adb (Is_Boolean_Aspect): New flag.
+
+2011-08-01  Matthew Heaney  <heaney@adacore.com>
+
+	* a-chtgbo.adb (Delete_Node_Sans_Free): Replace iterator with selector.
+
 2011-08-01  Pascal Obry  <obry@adacore.com>
 
 	* a-stzunb-shared.adb, a-strunb-shared.adb, a-stwiun-shared.adb:
