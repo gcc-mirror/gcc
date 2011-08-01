@@ -1105,7 +1105,8 @@ package body CStand is
       Set_Ekind             (Any_Real, E_Floating_Point_Type);
       Set_Scope             (Any_Real, Standard_Standard);
       Set_Etype             (Any_Real, Standard_Long_Long_Float);
-      Init_Size             (Any_Real, Standard_Long_Long_Float_Size);
+      Init_Size             (Any_Real,
+        UI_To_Int (Esize (Standard_Long_Long_Float)));
       Set_Elem_Alignment    (Any_Real);
       Make_Name             (Any_Real, "a real type");
 

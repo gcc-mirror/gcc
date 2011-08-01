@@ -13,11 +13,10 @@
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
---                                                                          --
--- You should have received a copy of the GNU General Public License along  --
--- with this program; see file COPYING3.  If not see                        --
--- <http://www.gnu.org/licenses/>.                                          --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -4282,24 +4281,10 @@ package body Exp_Attr is
       -- Stream_Size --
       -----------------
 
-      when Attribute_Stream_Size => Stream_Size : declare
-         Size : Int;
-
-      begin
-         --  If we have a Stream_Size clause for this type use it, otherwise
-         --  the Stream_Size if the size of the type.
-
-         if Has_Stream_Size_Clause (Ptyp) then
-            Size :=
-              UI_To_Int
-                (Static_Integer (Expression (Stream_Size_Clause (Ptyp))));
-         else
-            Size := UI_To_Int (Esize (Ptyp));
-         end if;
-
-         Rewrite (N, Make_Integer_Literal (Loc, Intval => Size));
+      when Attribute_Stream_Size =>
+         Rewrite (N,
+           Make_Integer_Literal (Loc, Intval => Get_Stream_Size (Ptyp)));
          Analyze_And_Resolve (N, Typ);
-      end Stream_Size;
 
       ----------
       -- Succ --

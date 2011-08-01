@@ -1,5 +1,21 @@
 2011-08-01  Geert Bosch  <bosch@adacore.com>
 
+	* sem_prag.adb (Check_No_Link_Name): New procedure.
+	(Process_Import_Or_Interface): Use Check_No_Link_Name.
+	* cstand.adb (Create_Standard): Use Esize (Standard_Long_Long_Float)
+	instead of Standard_Long_Long_Float_Size global. Preparation for
+	eventual removal of per type constants.
+	* exp_util.ads (Get_Stream_Size): New function returning the stream
+	size value of subtype E.
+	* exp_util.adb (Get_Stream_Size): Implement new function.
+	* exp_strm.adb (Build_Elementary_Input_Call): Use Get_Stream_Size
+	function.
+	* exp_attr.adb (Attribute_Stream_Size): Use Get_Stream_Size
+	* einfo.adb:
+	(Machine_Mantissa_Value): Handle 128-bit quad precision IEEE floats
+
+2011-08-01  Geert Bosch  <bosch@adacore.com>
+
 	* cstand.adb: Fix comments.
 	* sem_prag.adb (Analyze_Pragma): Use List_Length instead of explicit
 	count of arguments.

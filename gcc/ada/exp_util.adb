@@ -55,7 +55,6 @@ with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
 with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
@@ -2164,6 +2163,24 @@ package body Exp_Util is
          Process_Current_Value_Condition (Condition (CV), Sens);
       end;
    end Get_Current_Value_Condition;
+
+   ---------------------
+   -- Get_Stream_Size --
+   ---------------------
+
+   function Get_Stream_Size (E : Entity_Id) return Uint is
+   begin
+      --  If we have a Stream_Size clause for this type use it
+
+      if Has_Stream_Size_Clause (E) then
+         return Static_Integer (Expression (Stream_Size_Clause (E)));
+
+      --  Otherwise the Stream_Size if the size of the type
+
+      else
+         return Esize (E);
+      end if;
+   end Get_Stream_Size;
 
    ---------------------------------
    -- Has_Controlled_Coextensions --

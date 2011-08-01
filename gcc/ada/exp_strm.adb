@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -452,21 +453,12 @@ package body Exp_Strm is
       FST     : constant Entity_Id  := First_Subtype (U_Type);
       Strm    : constant Node_Id    := First (Expressions (N));
       Targ    : constant Node_Id    := Next (Strm);
-      P_Size  : Uint;
+      P_Size  : constant Uint       := Get_Stream_Size (FST);
       Res     : Node_Id;
       Lib_RE  : RE_Id;
 
    begin
       Check_Restriction (No_Default_Stream_Attributes, N);
-
-      --  Compute the size of the stream element. This is either the size of
-      --  the first subtype or if given the size of the Stream_Size attribute.
-
-      if Has_Stream_Size_Clause (FST) then
-         P_Size := Static_Integer (Expression (Stream_Size_Clause (FST)));
-      else
-         P_Size := Esize (FST);
-      end if;
 
       --  Check first for Boolean and Character. These are enumeration types,
       --  but we treat them specially, since they may require special handling

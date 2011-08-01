@@ -436,6 +436,9 @@ package body Sem_Prag is
       --  If any argument has an identifier, then an error message is issued,
       --  and Pragma_Exit is raised.
 
+      procedure Check_No_Link_Name;
+      --  Checks that no link name is specified
+
       procedure Check_Optional_Identifier (Arg : Node_Id; Id : Name_Id);
       --  Checks if the given argument has an identifier, and if so, requires
       --  it to match the given identifier name. If there is a non-matching
@@ -1512,6 +1515,24 @@ package body Sem_Prag is
             end loop;
          end if;
       end Check_No_Identifiers;
+
+      ------------------------
+      -- Check_No_Link_Name --
+      ------------------------
+
+      procedure Check_No_Link_Name is
+      begin
+         if Present (Arg3)
+           and then Chars (Arg3) = Name_Link_Name
+         then
+            Arg4 := Arg3;
+         end if;
+
+         if Present (Arg4) then
+            Error_Pragma_Arg
+              ("Link_Name argument not allowed for Import Intrinsic", Arg4);
+         end if;
+      end Check_No_Link_Name;
 
       -------------------------------
       -- Check_Optional_Identifier --
@@ -3964,18 +3985,7 @@ package body Sem_Prag is
 
                      --  Link_Name argument not allowed for intrinsic
 
-                     if Present (Arg3)
-                       and then Chars (Arg3) = Name_Link_Name
-                     then
-                        Arg4 := Arg3;
-                     end if;
-
-                     if Present (Arg4) then
-                        Error_Pragma_Arg
-                          ("Link_Name argument not allowed for " &
-                           "Import Intrinsic",
-                           Arg4);
-                     end if;
+                     Check_No_Link_Name;
 
                      Set_Is_Intrinsic_Subprogram (Def_Id);
 
