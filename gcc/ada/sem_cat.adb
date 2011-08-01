@@ -1271,9 +1271,9 @@ package body Sem_Cat is
                --  For controlled type or type with controlled component, check
                --  preelaboration flag, as there may be a non-null Initialize
                --  primitive. For language versions earlier than Ada 2005,
-               --  there is no notion of preelaborable initialization, and the
-               --  rules for controlled objects are enforced in
-               --  Validate_Controlled_Object.
+               --  there is no notion of preelaborable initialization, and
+               --  Validate_Controlled_Object is used to enforce rules for
+               --  controlled objects.
 
                if (Is_Controlled (ET) or else Has_Controlled_Component (ET))
                     and then Ada_Version >= Ada_2005

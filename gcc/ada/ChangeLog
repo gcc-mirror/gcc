@@ -1,5 +1,13 @@
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch4.adb, sem_cat.adb: Minor reformatting.
+
+2011-08-01  Geert Bosch  <bosch@adacore.com>
+
+	* atree.ads: Fix comment.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads, aspects.adb (Aspect_Names): Moved from body to spec.
 	* par-ch13.adb (P_Aspect_Specifications): Check misspelled aspect name.
 	* par.adb: Add with for Namet.Sp.
