@@ -2069,39 +2069,6 @@ package body Sem_Ch7 is
            and then Is_Tagged_Type (Full)
            and then not Error_Posted (Full)
          then
-            if Priv_Is_Base_Type then
-
-               --  Ada 2005 (AI-345): The full view of a type implementing an
-               --  interface can be a task type.
-
-               --    type T is new I with private;
-               --  private
-               --    task type T is new I with ...
-
-               if Is_Interface (Etype (Priv))
-                 and then Is_Concurrent_Type (Base_Type (Full))
-               then
-                  --  Protect the frontend against previous errors
-
-                  if Present (Corresponding_Record_Type
-                               (Base_Type (Full)))
-                  then
-                     Set_Access_Disp_Table
-                       (Priv, Access_Disp_Table
-                               (Corresponding_Record_Type (Base_Type (Full))));
-
-                  --  Generic context, or previous errors
-
-                  else
-                     null;
-                  end if;
-
-               else
-                  Set_Access_Disp_Table
-                    (Priv, Access_Disp_Table (Base_Type (Full)));
-               end if;
-            end if;
-
             if Is_Tagged_Type (Priv) then
 
                --  If the type is tagged, the tag itself must be available on

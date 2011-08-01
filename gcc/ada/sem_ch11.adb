@@ -441,6 +441,14 @@ package body Sem_Ch11 is
       P              : Node_Id;
 
    begin
+      --  Raise statement is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Formal_Error_Msg_N ("raise statement is not allowed", N);
+      end if;
+
+      --  Proceed with analysis
+
       Check_Unreachable_Code (N);
 
       --  Check exception restrictions on the original source
@@ -607,6 +615,16 @@ package body Sem_Ch11 is
    --  Start of processing for Analyze_Raise_xxx_Error
 
    begin
+      --  Source-code raise statement is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode
+        and then Comes_From_Source (N)
+      then
+         Formal_Error_Msg_N ("raise statement is not allowed", N);
+      end if;
+
+      --  Proceed with analysis
+
       if No (Etype (N)) then
          Set_Etype (N, Standard_Void_Type);
       end if;

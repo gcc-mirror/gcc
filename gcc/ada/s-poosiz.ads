@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,21 +62,21 @@ package System.Pool_Size is
                                                        (1 .. Pool_Size);
       end record;
 
-   function Storage_Size
+   overriding function Storage_Size
      (Pool : Stack_Bounded_Pool) return System.Storage_Elements.Storage_Count;
 
-   procedure Allocate
+   overriding procedure Allocate
      (Pool         : in out Stack_Bounded_Pool;
       Address      : out System.Address;
       Storage_Size : System.Storage_Elements.Storage_Count;
       Alignment    : System.Storage_Elements.Storage_Count);
 
-   procedure Deallocate
+   overriding procedure Deallocate
      (Pool         : in out Stack_Bounded_Pool;
       Address      : System.Address;
       Storage_Size : System.Storage_Elements.Storage_Count;
       Alignment    : System.Storage_Elements.Storage_Count);
 
-   procedure Initialize (Pool : in out Stack_Bounded_Pool);
+   overriding procedure Initialize (Pool : in out Stack_Bounded_Pool);
 
 end System.Pool_Size;
