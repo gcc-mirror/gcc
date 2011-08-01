@@ -50,7 +50,6 @@ extern "C" {
 #include <time.h>
 #ifdef VMS
 #include <unixio.h>
-#include <vms/descrip.h>
 #endif
 
 #if defined (__MINGW32__)
@@ -72,6 +71,10 @@ extern char** ppGlobalEnviron;
 
 #if defined (__APPLE__)
 #include <crt_externs.h>
+#endif
+
+#ifdef VMS
+#include <vms/descrip.h>
 #endif
 
 #include "env.h"

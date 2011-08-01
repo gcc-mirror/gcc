@@ -3714,13 +3714,23 @@ package body Ch3 is
          end if;
 
          if Token = Tok_Comma then
-            Error_Msg_SC -- CODEFIX
-              (""","" should be ""'|""");
+            Scan; -- past comma
+
+            if Token = Tok_Vertical_Bar then
+               Error_Msg_SP -- CODEFIX
+                 ("|extra "","" ignored");
+               Scan; -- past |
+
+            else
+               Error_Msg_SP -- CODEFIX
+                 (""","" should be ""'|""");
+            end if;
+
          else
             exit when Token /= Tok_Vertical_Bar;
+            Scan; -- past |
          end if;
 
-         Scan; -- past | or comma
       end loop;
 
       return Choices;

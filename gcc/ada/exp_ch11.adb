@@ -1439,6 +1439,7 @@ package body Exp_Ch11 is
       E     : Entity_Id;
       Str   : String_Id;
       H     : Node_Id;
+      Src   : Boolean;
 
    begin
       --  Processing for locally handled exception (exclude reraise case)
@@ -1510,12 +1511,12 @@ package body Exp_Ch11 is
          return;
       end if;
 
-      --  Remaining processing is for the case where no string expression
-      --  is present.
+      --  Remaining processing is for the case where no string expression is
+      --  present.
 
-      --  Don't expand a raise statement that does not come from source
-      --  if we have already had configurable run-time violations, since
-      --  most likely it will be junk cascaded nonsense.
+      --  Don't expand a raise statement that does not come from source if we
+      --  have already had configurable run-time violations, since most likely
+      --  it will be junk cascaded nonsense.
 
       if Configurable_Run_Time_Violations > 0
         and then not Comes_From_Source (N)
@@ -1526,27 +1527,29 @@ package body Exp_Ch11 is
       --  Convert explicit raise of Program_Error, Constraint_Error, and
       --  Storage_Error into the corresponding raise (in High_Integrity_Mode
       --  all other raises will get normal expansion and be disallowed,
-      --  but this is also faster in all modes).
+      --  but this is also faster in all modes). Propagate Comes_From_Source
+      --  flag to the new node.
 
       if Present (Name (N)) and then Nkind (Name (N)) = N_Identifier then
+         Src := Comes_From_Source (N);
          if Entity (Name (N)) = Standard_Constraint_Error then
             Rewrite (N,
-              Make_Raise_Constraint_Error (Loc,
-                Reason => CE_Explicit_Raise));
+              Make_Raise_Constraint_Error (Loc, Reason => CE_Explicit_Raise));
+            Set_Comes_From_Source (N, Src);
             Analyze (N);
             return;
 
          elsif Entity (Name (N)) = Standard_Program_Error then
             Rewrite (N,
-              Make_Raise_Program_Error (Loc,
-                Reason => PE_Explicit_Raise));
+              Make_Raise_Program_Error (Loc, Reason => PE_Explicit_Raise));
+            Set_Comes_From_Source (N, Src);
             Analyze (N);
             return;
 
          elsif Entity (Name (N)) = Standard_Storage_Error then
             Rewrite (N,
-              Make_Raise_Storage_Error (Loc,
-                Reason => SE_Explicit_Raise));
+              Make_Raise_Storage_Error (Loc, Reason => SE_Explicit_Raise));
+            Set_Comes_From_Source (N, Src);
             Analyze (N);
             return;
          end if;
