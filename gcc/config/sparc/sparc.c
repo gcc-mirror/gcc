@@ -10019,6 +10019,10 @@ sparc_file_end (void)
 
   if (NEED_INDICATE_EXEC_STACK)
     file_end_indicate_exec_stack ();
+
+#ifdef TARGET_SOLARIS
+  solaris_file_end ();
+#endif
 }
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING

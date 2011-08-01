@@ -314,10 +314,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION sparc_solaris_elf_asm_named_section
 
-/* Emit COMDAT group signature symbols for Sun as.  */
-#undef TARGET_ASM_CODE_END
-#define TARGET_ASM_CODE_END solaris_code_end
-
 /* Sun as requires doublequoted section names on SPARC.  While GNU as
    supports that, too, we prefer the standard variant.  */
 #undef SECTION_NAME_FORMAT

@@ -1,3 +1,15 @@
+2011-08-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR debug/49887
+	* config/sol2.c (solaris_code_end): Rename to solaris_file_end.
+	* config/sol2-protos.h: Likewise.
+	* config/i386/i386.c (ix86_code_end) [TARGET_SOLARIS]: Don't call
+	solaris_code_end.
+	* config/i386/sol2.h [!USE_GAS] (TARGET_ASM_FILE_END): Redefine.
+	* config/sparc/sparc.c (sparc_file_end) [TARGET_SOLARIS]: Call
+	solaris_file_end.
+	* config/sparc/sol2.h (TARGET_ASM_CODE_END): Remove.
+
 2011-08-01  Julian Brown  <julian@codesourcery.com>
 
 	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Support FIXED_CST.
