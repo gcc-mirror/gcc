@@ -1495,19 +1495,23 @@ package body Sem_Ch4 is
          begin
             Set_Etype (N, Any_Type);
             Get_First_Interp (Then_Expr, I, It);
-            while Present (It.Nam) loop
+            if No (Else_Expr) then
+               --  if no else_expression the conditional must be boolean.
 
-               --  For each possible interpretation of the Then Expression,
-               --  add it only if the else expression has a compatible type.
+               Set_Etype (N, Standard_Boolean);
+            else
+               while Present (It.Nam) loop
 
-               --  Is this right if Else_Expr is empty?
+                  --  For each possible intepretation of the Then Expression,
+                  --  add it only if the else expression has a compatible type.
 
-               if Has_Compatible_Type (Else_Expr, It.Typ) then
-                  Add_One_Interp (N, It.Typ, It.Typ);
-               end if;
+                  if Has_Compatible_Type (Else_Expr, It.Typ) then
+                     Add_One_Interp (N, It.Typ, It.Typ);
+                  end if;
 
-               Get_Next_Interp (I, It);
-            end loop;
+                  Get_Next_Interp (I, It);
+               end loop;
+            end if;
          end;
       end if;
    end Analyze_Conditional_Expression;

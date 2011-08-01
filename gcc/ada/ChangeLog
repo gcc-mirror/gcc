@@ -1,3 +1,31 @@
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Fully_Conformant_Expressions): handle quantified
+	expressions.
+
+2011-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb: Minor code editing.
+	* s-vxwext.adb: Remove trailing space.
+	* freeze.adb, freeze.ads, errout.ads, erroutc.adb: Fix GPLv3 header for
+	consistency with other files.
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* s-auxdec.ads, s-auxdec-vms_64.ads: Minor reformatting.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch10.adb: reject parameterized expressions as compilation unit.
+	* sem_ch4.adb: handle properly conditional expression with overloaded
+	then_clause and no else_clause.
+
+2011-08-01  Tristan Gingold  <gingold@adacore.com>
+
+	* s-parame-vms-alpha.ads, s-parame-vms-ia64.ads: Redeclare C_Address
+	like done by System.Aux_DEC.
+	* env.c (__gnat_setenv) [VMS]: Put logicals into LNM$PROCESS table.
+
 2011-08-01  Yannick Moy  <moy@adacore.com>
 
 	* par-endh.adb (Check_End): issue a syntax error in SPARK mode for

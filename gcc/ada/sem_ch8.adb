@@ -6299,8 +6299,7 @@ package body Sem_Ch8 is
          pragma Assert (not Scope_Stack.Table (J).Is_Active_Stack_Base);
       end loop;
 
-      pragma Assert (False);  --  unreachable
-      raise Program_Error;
+      raise Program_Error;    --  unreachable
    end Has_Loop_In_Inner_Open_Scopes;
 
    --------------------

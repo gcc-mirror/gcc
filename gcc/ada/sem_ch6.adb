@@ -6685,6 +6685,50 @@ package body Sem_Ch6 is
                    and then
                  FCE (Expression (E1), Expression (E2));
 
+            when N_Quantified_Expression =>
+               if not FCE (Condition (E1), Condition (E2)) then
+                  return False;
+               end if;
+
+               if Present (Loop_Parameter_Specification (E1))
+                 and then Present (Loop_Parameter_Specification (E2))
+               then
+                  declare
+                     L1 : constant Node_Id :=
+                       Loop_Parameter_Specification (E1);
+                     L2 : constant Node_Id :=
+                       Loop_Parameter_Specification (E2);
+
+                  begin
+                     return
+                       Reverse_Present (L1) = Reverse_Present (L2)
+                         and then
+                           FCE (Defining_Identifier (L1),
+                                Defining_Identifier (L2))
+                         and then
+                           FCE (Discrete_Subtype_Definition (L1),
+                                Discrete_Subtype_Definition (L2));
+                  end;
+
+               else   --  quantified expression with an iterator
+                  declare
+                     I1 : constant Node_Id := Iterator_Specification (E1);
+                     I2 : constant Node_Id := Iterator_Specification (E2);
+
+                  begin
+                     return
+                       FCE (Defining_Identifier (I1),
+                            Defining_Identifier (I2))
+                       and then
+                         Of_Present (I1) = Of_Present (I2)
+                       and then
+                         Reverse_Present (I1) = Reverse_Present (I2)
+                       and then FCE (Name (I1), Name (I2))
+                       and then FCE (Subtype_Indication (I1),
+                                      Subtype_Indication (I2));
+                  end;
+               end if;
+
             when N_Range =>
                return
                  FCE (Low_Bound (E1), Low_Bound (E2))
