@@ -1855,6 +1855,34 @@ package Opt is
    --  Used to store the ASIS version number read from a tree file to check if
    --  it is the same as stored in the ASIS version number in Tree_IO.
 
+   -----------------------------------
+   -- Modes for Formal Verification --
+   -----------------------------------
+
+   --  These modes are currently defined through debug flags
+
+   function Formal_Language return String;
+   --  Returns "alfa" in ALFA_Mode and "spark" in SPARK_Mode
+
+   function Formal_Verification_Mode return Boolean;
+   --  Shorthand for ALFA_Mode or else SPARK_Mode
+
+   function ALFA_Mode return Boolean;
+   --  Shorthand for ALFA_Through_SPARK_Mode or else ALFA_Through_Why_Mode
+
+   function ALFA_Through_SPARK_Mode return Boolean;
+   --  Specific compiling mode targeting formal verification through
+   --  the generation of SPARK code for those parts of the input code that
+   --  belong to the ALFA subset of Ada. It is set by the flag -gnatd.E.
+
+   function ALFA_Through_Why_Mode return Boolean;
+   --  Specific compiling mode targeting formal verification through
+   --  the generation of Why code for those parts of the input code that
+   --  belong to the ALFA subset of Ada. It is set by the flag -gnatd.F.
+
+   function SPARK_Mode return Boolean;
+   --  Accept the SPARK subset of Ada only. It is set by the flag -gnatd.D.
+
 private
 
    --  The following type is used to save and restore settings of switches in

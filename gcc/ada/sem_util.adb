@@ -3644,6 +3644,26 @@ package body Sem_Util is
       end if;
    end First_Actual;
 
+   ----------------------
+   -- Formal_Error_Msg --
+   ----------------------
+
+   procedure Formal_Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
+   begin
+      pragma Assert (Formal_Verification_Mode);
+      Error_Msg ("(" & Formal_Language & ") " & Msg, Flag_Location);
+   end Formal_Error_Msg;
+
+   ------------------------
+   -- Formal_Error_Msg_N --
+   ------------------------
+
+   procedure Formal_Error_Msg_N (Msg : String; N : Node_Id) is
+   begin
+      pragma Assert (Formal_Verification_Mode);
+      Error_Msg_N ("(" & Formal_Language & ") " & Msg, N);
+   end Formal_Error_Msg_N;
+
    -----------------------
    -- Gather_Components --
    -----------------------

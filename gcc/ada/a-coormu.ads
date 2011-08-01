@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -441,11 +441,9 @@ private
       Tree : Tree_Types.Tree_Type;
    end record;
 
-   overriding
-   procedure Adjust (Container : in out Set);
+   overriding procedure Adjust (Container : in out Set);
 
-   overriding
-   procedure Finalize (Container : in out Set) renames Clear;
+   overriding procedure Finalize (Container : in out Set) renames Clear;
 
    use Red_Black_Trees;
    use Tree_Types;

@@ -337,6 +337,8 @@ package body Sem_Ch6 is
 
       if Kind = E_Function or else Kind = E_Generic_Function then
          Analyze_Function_Return (N);
+      elsif Kind = E_Procedure or else Kind = E_Generic_Procedure then
+         Set_Return_Present (Scope_Id);
       end if;
 
       if Nkind (N) = N_Extended_Return_Statement then
@@ -674,7 +676,26 @@ package body Sem_Ch6 is
          Analyze_And_Resolve (Expr, R_Type);
          Check_Limited_Return (Expr);
 
+         --  The only RETURN allowed in SPARK or ALFA is as the last statement
+         --  of the function
+
+         if Formal_Verification_Mode
+           and then Nkind (Parent (N)) /= N_Handled_Sequence_Of_Statements
+           and then
+             (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
+              or else Present (Next (N)))
+         then
+            Formal_Error_Msg_N
+              ("RETURN should be the last statement in function", N);
+         end if;
+
       else
+         --  Extended return is not allowed in SPARK or ALFA
+
+         if Formal_Verification_Mode then
+            Formal_Error_Msg_N ("extended RETURN is not allowed", N);
+         end if;
+
          --  Analyze parts specific to extended_return_statement:
 
          declare
@@ -1587,6 +1608,8 @@ package body Sem_Ch6 is
       procedure Check_Missing_Return;
       --  Checks for a function with a no return statements, and also performs
       --  the warning checks implemented by Check_Returns.
+      --  In formal mode, also verify that a function ends with a RETURN and
+      --  that a procedure does not contain any RETURN.
 
       function Disambiguate_Spec return Entity_Id;
       --  When a primitive is declared between the private view and the full
@@ -1796,7 +1819,23 @@ package body Sem_Ch6 is
                Id := Body_Id;
             end if;
 
-            if Return_Present (Id) then
+            --  In formal mode, the last statement of a function should be
+            --  a return statement
+
+            if Formal_Verification_Mode then
+               declare
+                  Last_Kind : constant Node_Kind :=
+                                Nkind (Last (Statements (HSS)));
+               begin
+                  if Last_Kind /= N_Simple_Return_Statement
+                    and then Last_Kind /= N_Extended_Return_Statement
+                  then
+                     Formal_Error_Msg_N
+                       ("last statement in function should be RETURN", N);
+                  end if;
+               end;
+
+            elsif Return_Present (Id) then
                Check_Returns (HSS, 'F', Missing_Ret);
 
                if Missing_Ret then
@@ -1808,6 +1847,21 @@ package body Sem_Ch6 is
               and then not Body_Deleted
             then
                Error_Msg_N ("missing RETURN statement in function body", N);
+            end if;
+
+         --  In formal mode, verify that a procedure has no return
+
+         elsif Formal_Verification_Mode
+           and then Nkind (Body_Spec) = N_Procedure_Specification
+         then
+            if Present (Spec_Id) then
+               Id := Spec_Id;
+            else
+               Id := Body_Id;
+            end if;
+
+            if Return_Present (Id) then
+               Formal_Error_Msg_N ("procedure should not have RETURN", N);
             end if;
 
          --  If procedure with No_Return, check returns

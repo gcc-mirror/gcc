@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Debug;
 with Gnatvsn; use Gnatvsn;
 with System;  use System;
 with Tree_IO; use Tree_IO;
@@ -37,6 +38,59 @@ package body Opt is
 
    SU : constant := Storage_Unit;
    --  Shorthand for System.Storage_Unit
+
+   ---------------
+   -- ALFA_Mode --
+   ---------------
+
+   function ALFA_Mode return Boolean is
+   begin
+      return ALFA_Through_SPARK_Mode or else ALFA_Through_Why_Mode;
+   end ALFA_Mode;
+
+   -----------------------------
+   -- ALFA_Through_SPARK_Mode --
+   -----------------------------
+
+   function ALFA_Through_SPARK_Mode return Boolean is
+   begin
+      return Debug.Debug_Flag_Dot_EE;
+   end ALFA_Through_SPARK_Mode;
+
+   ---------------------------
+   -- ALFA_Through_Why_Mode --
+   ---------------------------
+
+   function ALFA_Through_Why_Mode return Boolean is
+   begin
+      return Debug.Debug_Flag_Dot_FF;
+   end ALFA_Through_Why_Mode;
+
+   ---------------------
+   -- Formal_Language --
+   ---------------------
+
+   function Formal_Language return String is
+   begin
+      pragma Assert (Formal_Verification_Mode);
+      if ALFA_Mode then
+         return "alfa";
+      elsif SPARK_Mode then
+         return "spark";
+      else
+         pragma Assert (False);
+         return "";  --  unreachable
+      end if;
+   end Formal_Language;
+
+   ------------------------------
+   -- Formal_Verification_Mode --
+   ------------------------------
+
+   function Formal_Verification_Mode return Boolean is
+   begin
+      return ALFA_Mode or else SPARK_Mode;
+   end Formal_Verification_Mode;
 
    ----------------------------------
    -- Register_Opt_Config_Switches --
@@ -202,6 +256,15 @@ package body Opt is
       Polling_Required               := Polling_Required_Config;
       Short_Descriptors              := Short_Descriptors_Config;
    end Set_Opt_Config_Switches;
+
+   ----------------
+   -- SPARK_Mode --
+   ----------------
+
+   function SPARK_Mode return Boolean is
+   begin
+      return Debug.Debug_Flag_Dot_DD;
+   end SPARK_Mode;
 
    ---------------
    -- Tree_Read --

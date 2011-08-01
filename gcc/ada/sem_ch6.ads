@@ -239,7 +239,7 @@ package Sem_Ch6 is
       Old_Id                   : Entity_Id;
       Skip_Controlling_Formals : Boolean := False) return Boolean;
    --  Determine whether two callable entities (subprograms, entries, literals)
-   --  are subtype conformant (RM6.3.1(16)).  Skip_Controlling_Formals is True
+   --  are subtype conformant (RM6.3.1(16)). Skip_Controlling_Formals is True
    --  when checking the conformance of a subprogram that implements an
    --  interface operation. In that case, only the non-controlling formals
    --  can (and must) be examined.
