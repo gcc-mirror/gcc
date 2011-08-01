@@ -2929,6 +2929,14 @@ package body Sem_Ch6 is
          Write_Eol;
       end if;
 
+      if Is_Protected_Type (Current_Scope) then
+
+         --  Indicate that this is a protected operation, because it may be
+         --  used in subsequent declarations within the protected type.
+
+         Set_Convention (Designator, Convention_Protected);
+      end if;
+
       List_Inherited_Pre_Post_Aspects (Designator);
       Analyze_Aspect_Specifications (N, Designator, Aspect_Specifications (N));
    end Analyze_Subprogram_Declaration;
