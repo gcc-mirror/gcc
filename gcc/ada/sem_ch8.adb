@@ -455,7 +455,7 @@ package body Sem_Ch8 is
    --  private with on E.
 
    procedure Find_Expanded_Name (N : Node_Id);
-   --  The input is a selected component is known to be expanded name. Verify
+   --  The input is a selected component known to be an expanded name. Verify
    --  legality of selector given the scope denoted by prefix, and change node
    --  N into a expanded name with a properly set Entity field.
 
@@ -526,6 +526,14 @@ package body Sem_Ch8 is
       Nam : constant Node_Id := Name (N);
 
    begin
+      --  Exception renaming is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Error_Msg_F ("|~~exception renaming is not allowed", N);
+      end if;
+
+      --  Proceed with analysis
+
       Enter_Name (Id);
       Analyze (Nam);
 
@@ -617,6 +625,14 @@ package body Sem_Ch8 is
       Inst  : Boolean   := False; -- prevent junk warning
 
    begin
+      --  Generic renaming is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Error_Msg_F ("|~~generic renaming is not allowed", N);
+      end if;
+
+      --  Proceed with analysis
+
       if Name (N) = Error then
          return;
       end if;
@@ -707,6 +723,14 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Object_Renaming
 
    begin
+      --  Object renaming is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Error_Msg_F ("|~~object renaming is not allowed", N);
+      end if;
+
+      --  Proceed with analysis
+
       if Nam = Error then
          return;
       end if;
@@ -2540,6 +2564,15 @@ package body Sem_Ch8 is
    --  Start of processing for Analyze_Use_Package
 
    begin
+      --  Use package is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Error_Msg_F ("|~~use clause is not allowed", N);
+         return;
+      end if;
+
+      --  Proceed with analysis
+
       Set_Hidden_By_Use_Clause (N, No_Elist);
 
       --  Use clause is not allowed in a spec of a predefined package
@@ -5467,6 +5500,18 @@ package body Sem_Ch8 is
 
       elsif Is_Entity_Name (P) then
          P_Name := Entity (P);
+
+         --  Selector name is restricted in SPARK
+
+         if SPARK_Mode then
+            if Is_Subprogram (P_Name) then
+               Error_Msg_F
+                 ("|~~prefix of expanded name cannot be a subprogram", P);
+            elsif Ekind (P_Name) = E_Loop then
+               Error_Msg_F
+                 ("|~~prefix of expanded name cannot be a loop statement", P);
+            end if;
+         end if;
 
          --  The prefix may denote an enclosing type which is the completion
          --  of an incomplete type declaration.

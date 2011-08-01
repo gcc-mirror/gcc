@@ -1851,25 +1851,17 @@ package body Sem_Ch6 is
 
             if Formal_Verification_Mode then
                declare
-                  Stat : Node_Id := Last (Statements (HSS));
+                  Stat : constant Node_Id :=
+                           Last_Source_Node_In_Sequence (Statements (HSS));
                begin
-                  while Present (Stat) loop
-                     if Comes_From_Source (Stat) then
-                        if not Nkind_In (Nkind (Stat),
-                                         N_Simple_Return_Statement,
-                                         N_Extended_Return_Statement)
-                        then
-                           Error_Msg_F ("|~~last statement in function "
-                                        & "should be RETURN", N);
-                        end if;
-                        exit;
-                     end if;
-
-                     --  Reach before the generated statements at the end of
-                     --  the function.
-
-                     Stat := Prev (Stat);
-                  end loop;
+                  if Present (Stat)
+                    and then not Nkind_In (Nkind (Stat),
+                                           N_Simple_Return_Statement,
+                                           N_Extended_Return_Statement)
+                  then
+                     Error_Msg_F ("|~~last statement in function should "
+                                  & "be RETURN", Stat);
+                  end if;
                end;
 
             elsif Return_Present (Id) then

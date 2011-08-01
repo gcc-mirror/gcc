@@ -6939,7 +6939,7 @@ package Sinfo is
 
       --  This node is created by the analyzer/expander to handle some
       --  expansion cases, notably short circuit forms where there are
-      --  actions associated with the right hand operand.
+      --  actions associated with the right-hand side operand.
 
       --  The N_Expression_With_Actions node represents an expression with
       --  an associated set of actions (which are executable statements and
@@ -6953,8 +6953,8 @@ package Sinfo is
       --  executing all the actions.
 
       --  Note: if the actions contain declarations, then these declarations
-      --  maybe referenced with in the expression. It is thus appropriate for
-      --  the back end to create a scope that encompasses the construct (any
+      --  may be referenced within the expression. It is thus appropriate for
+      --  the back-end to create a scope that encompasses the construct (any
       --  declarations within the actions will definitely not be referenced
       --  once elaboration of the construct is completed).
 
