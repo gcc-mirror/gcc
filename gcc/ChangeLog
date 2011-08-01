@@ -1,3 +1,15 @@
+2011-08-01  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mmix/mmix.h (PREFERRED_RELOAD_CLASS,
+	PREFERRED_OUTPUT_RELOAD_CLASS): Remove macro.
+	* config/mmix/mmix-protos.h (mmix_preferred_reload_class,
+	mmix_preferred_output_reload_class): Remove.
+	* config/mmix/mmix.c (mmix_preferred_reload_class,
+	mmix_preferred_output_reload_class): Make static. Change rclass
+	argument and return type to reg_class_t.
+	(TARGET_PREFERRED_RELOAD_CLASS,
+	TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Define.
+
 2011-08-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* mode-switching.c (optimize_mode_switching): Fix bug in MODE_AFTER
