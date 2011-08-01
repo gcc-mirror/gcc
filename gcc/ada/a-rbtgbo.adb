@@ -330,7 +330,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
                   Set_Right (N (Parent (N (Z))), Y);
                end if;
 
-               Set_Left (N (Y), Z);
+               Set_Left (N (Y), Left (N (Z)));
                Set_Parent (N (Left (N (Y))), Y);
                Set_Right (N (Y), Z);
                Set_Parent (N (Z), Y);

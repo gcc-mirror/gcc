@@ -1298,7 +1298,7 @@ package body Ada.Strings.Unbounded is
       DR : Shared_String_Access;
 
    begin
-      --  Bounds check.
+      --  Bounds check
 
       if Index <= SR.Last then
 
