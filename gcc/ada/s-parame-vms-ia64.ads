@@ -114,11 +114,10 @@ package System.Parameters is
    subtype C_Address is System.Address
      range -2 ** (ptr_bits - 1) .. 2 ** (ptr_bits - 1) - 1;
    for C_Address'Object_Size use ptr_bits;
-   --  Number of bits in Interaces.C pointers, normally a standard address,
+   --  Number of bits in Interfaces.C pointers, normally a standard address,
    --  except on 64-bit VMS where they are 32-bit addresses, for compatibility
-   --  with legacy code.
-   --  System.Aux_DEC.Short_Address can't be used because of elaboration
-   --  circularity.
+   --  with legacy code. System.Aux_DEC.Short_Address can't be used because of
+   --  elaboration circularity.
 
    C_Malloc_Linkname : constant String := "__gnat_malloc32";
    --  Name of runtime function used to allocate such a pointer

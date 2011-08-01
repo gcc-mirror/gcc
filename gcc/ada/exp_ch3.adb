@@ -7580,36 +7580,7 @@ package body Exp_Ch3 is
    ----------------------------
 
    function Is_Variable_Size_Array (E : Entity_Id) return Boolean is
-
-      function Is_Constant_Bound (Exp : Node_Id) return Boolean;
-      --  To simplify handling of array components. Determines whether the
-      --  given bound is constant (a constant or enumeration literal, or an
-      --  integer literal) as opposed to per-object, through an expression
-      --  or a discriminant.
-
-      -----------------------
-      -- Is_Constant_Bound --
-      -----------------------
-
-      function Is_Constant_Bound (Exp : Node_Id) return Boolean is
-      begin
-         if Nkind (Exp) = N_Integer_Literal then
-            return True;
-         else
-            return
-              Is_Entity_Name (Exp)
-                and then Present (Entity (Exp))
-                and then
-                 (Ekind (Entity (Exp)) = E_Constant
-                   or else Ekind (Entity (Exp)) = E_Enumeration_Literal);
-         end if;
-      end Is_Constant_Bound;
-
-      --  Local variables
-
       Idx : Node_Id;
-
-   --  Start of processing for Is_Variable_Sized_Array
 
    begin
       pragma Assert (Is_Array_Type (E));

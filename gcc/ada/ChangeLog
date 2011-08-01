@@ -1,3 +1,30 @@
+2011-08-01  Vincent Celier  <celier@adacore.com>
+
+	* s-parame-vms-ia64.ads: Fix typo in comment
+	Minor reformatting
+	* s-parame-vms-restrict.ads: Removed, unused.
+
+2011-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb
+	(Is_Variable_Size_Array): Remove local subprogram Is_Constant_Bound.
+	* sem_ch3.adb
+	(Constrain_Index): Remove side effects in the evaluation of the bounds.
+	* sem_ch3.ads, sem_ch3.adb
+	(Is_Constant_Bound): New extended version of the subprogram that was
+	previously located inside function Exp_Ch3.Is_Variable_Size_Array.
+	Moved here since it is shared by routines of sem_ch3 and exp_ch3.
+	* sem_aux.ads (Constant_Value): Fix typo in comment.
+	* checks.adb (Generate_Index_Checks): New implementation which, for
+	array objects with constant bounds, generates the runtime check
+	referencing the bounds of the array type. For other cases this routine
+	provides its previous behavior obtaining such values from the array
+	object.
+	* sem_res.adb (Set_Slice_Subtype): Link a copied range subtree with its
+	parent type.
+	* atree.adb (New_Copy): Reset flag Is_Overloaded in the new copy since
+	we cannot have semantic interpretations of the new node.
+
 2011-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Fully_Conformant_Expressions): handle quantified

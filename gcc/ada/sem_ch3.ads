@@ -170,6 +170,12 @@ package Sem_Ch3 is
    --  Given a discriminant somewhere in the Typ_For_Constraint tree and a
    --  Constraint, return the value of that discriminant.
 
+   function Is_Constant_Bound (Exp : Node_Id) return Boolean;
+   --  Determines whether the given bound is a compile-time known value, or a
+   --  constant entity, or an enumeration literal, or an expression composed
+   --  of constant-bound subexpressions which are evaluated by means of
+   --  standard operators.
+
    function Is_Null_Extension (T : Entity_Id) return Boolean;
    --  Returns True if the tagged type T has an N_Full_Type_Declaration that
    --  is a null extension, meaning that it has an extension part without any
