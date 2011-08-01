@@ -1947,7 +1947,16 @@ package body Sem_Ch5 is
                Make_Index (DS, LP);
 
                Set_Ekind (Id, E_Loop_Parameter);
-               Set_Etype (Id, Etype (DS));
+
+               --  If the loop is part of a predicate or precondition, it may
+               --  be analyzed twice, once in the source and once on the copy
+               --  used to check conformance. Preserve the original itype
+               --  because the second one may be created in a different scope,
+               --  e.g. a precondition procedure, leading to a crash in GIGI.
+
+               if No (Etype (Id)) or else Etype (Id) = Any_Type then
+                  Set_Etype (Id, Etype (DS));
+               end if;
 
                --  Treat a range as an implicit reference to the type, to
                --  inhibit spurious warnings.

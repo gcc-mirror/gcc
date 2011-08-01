@@ -6048,7 +6048,13 @@ package body Sem_Ch6 is
             --  of the real danger that different operators may be applied in
             --  various parts of the program.
 
-            if (not Is_Overloadable (E) or else Subtype_Conformant (E, S))
+            --  Note that if E and S have the same scope, there is never any
+            --  hiding. Either the two conflict, and the program is illegal,
+            --  or S is overriding an implicit inherited subprogram.
+
+            if Scope (E) /= Scope (S)
+                  and then (not Is_Overloadable (E)
+                              or else Subtype_Conformant (E, S))
                   and then (Is_Immediately_Visible (E)
                               or else
                             Is_Potentially_Use_Visible (S))
@@ -6059,8 +6065,7 @@ package body Sem_Ch6 is
 
                elsif Nkind (S) = N_Defining_Operator_Symbol
                  and then
-                   Scope (
-                     Base_Type (Etype (First_Formal (S)))) /= Scope (S)
+                   Scope (Base_Type (Etype (First_Formal (S)))) /= Scope (S)
                then
                   Error_Msg_N
                     ("declaration of & hides predefined operator?", S);
