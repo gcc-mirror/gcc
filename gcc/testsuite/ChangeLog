@@ -1,5 +1,8 @@
 2011-08-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49924
+	* g++.dg/cpp0x/constexpr-array4.C: New.
+
 	PR c++/49813
 	* g++.dg/cpp0x/constexpr-builtin1.C: New.
 

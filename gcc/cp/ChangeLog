@@ -1,5 +1,8 @@
 2011-08-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49924
+	* semantics.c (cxx_eval_vec_init_1): Fix logic.
+
 	PR c++/49813
 	* semantics.c (potential_constant_expression_1): Allow any builtin.
 	(morally_constexpr_builtin_function_p): Remove.
