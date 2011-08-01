@@ -817,7 +817,7 @@ package body CStand is
       Set_Entity (E_Id, Standard_Positive);
       Set_Etype (E_Id, Standard_Positive);
 
-      --  Setup entity for Naturalend Create_Standard;
+      --  Setup entity for Natural
 
       Set_Ekind          (Standard_Natural, E_Signed_Integer_Subtype);
       Set_Etype          (Standard_Natural, Base_Type (Standard_Integer));
@@ -1833,14 +1833,15 @@ package body CStand is
       P ("   pragma Pack (Wide_Wide_String);");
       Write_Eol;
 
-      --  Here it's OK to use the Duration type of the host compiler since
-      --  the implementation of Duration in GNAT is target independent.
+      --  We only have one representation each for 32-bit and 64-bit sizes,
+      --  so select the right one based on Duration_32_Bits_On_Target.
 
       if Duration_32_Bits_On_Target then
          P ("   type Duration is delta 0.020");
          P ("     range -((2 ** 31 - 1) * 0.020) ..");
          P ("           +((2 ** 31 - 1) * 0.020);");
          P ("   for Duration'Small use 0.020;");
+
       else
          P ("   type Duration is delta 0.000000001");
          P ("     range -((2 ** 63 - 1) * 0.000000001) ..");
