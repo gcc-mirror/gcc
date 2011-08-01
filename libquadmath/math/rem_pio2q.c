@@ -282,14 +282,20 @@ recompute:
 		break;
 	    case 3:	/* painful */
 		for (i=jz;i>0;i--) {
-		    fw      = fq[i-1]+fq[i];
-		    fq[i]  += fq[i-1]-fw;
-		    fq[i-1] = fw;
+#if __FLT_EVAL_METHOD__ != 0
+		    volatile
+#endif
+		    double fv = (double)(fq[i-1]+fq[i]);
+		    fq[i]  += fq[i-1]-fv;
+		    fq[i-1] = fv;
 		}
 		for (i=jz;i>1;i--) {
-		    fw      = fq[i-1]+fq[i];
-		    fq[i]  += fq[i-1]-fw;
-		    fq[i-1] = fw;
+#if __FLT_EVAL_METHOD__ != 0
+		    volatile
+#endif
+		    double fv = (double)(fq[i-1]+fq[i]);
+		    fq[i]  += fq[i-1]-fv;
+		    fq[i-1] = fv;
 		}
 		for (fw=0.0,i=jz;i>=2;i--) fw += fq[i];
 		if(ih==0) {
