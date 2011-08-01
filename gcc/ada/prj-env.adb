@@ -1935,10 +1935,6 @@ package body Prj.Env is
                   if Target_Name /= "" then
                      Add_Str_To_Name_Buffer
                        (Path_Separator & Prefix.all &
-                        "lib" & Directory_Separator & "gpr" &
-                        Directory_Separator & Target_Name);
-                     Add_Str_To_Name_Buffer
-                       (Path_Separator & Prefix.all &
                         Target_Name & Directory_Separator &
                         "lib" & Directory_Separator & "gnat");
                   end if;
