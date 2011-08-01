@@ -80,25 +80,25 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       DR : Shared_Wide_Wide_String_Access;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
          Reference (Empty_Shared_Wide_Wide_String'Access);
          DR := Empty_Shared_Wide_Wide_String'Access;
 
-      --  Left string is empty, return Right string.
+      --  Left string is empty, return Rigth string
 
       elsif LR.Last = 0 then
          Reference (RR);
          DR := RR;
 
-      --  Right string is empty, return Left string.
+      --  Right string is empty, return Left string
 
       elsif RR.Last = 0 then
          Reference (LR);
          DR := LR;
 
-      --  Otherwise, allocate new shared string and fill data.
+      --  Overwise, allocate new shared string and fill data
 
       else
          DR := Allocate (LR.Last + RR.Last);
@@ -119,19 +119,19 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       DR : Shared_Wide_Wide_String_Access;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
          Reference (Empty_Shared_Wide_Wide_String'Access);
          DR := Empty_Shared_Wide_Wide_String'Access;
 
-      --  Right is an empty string, return Left string.
+      --  Right is an empty string, return Left string
 
       elsif Right'Length = 0 then
          Reference (LR);
          DR := LR;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (DL);
@@ -152,19 +152,19 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       DR : Shared_Wide_Wide_String_Access;
 
    begin
-      --  Result is an empty string, reuse shared one.
+      --  Result is an empty string, reuse shared one
 
       if DL = 0 then
          Reference (Empty_Shared_Wide_Wide_String'Access);
          DR := Empty_Shared_Wide_Wide_String'Access;
 
-      --  Left is empty string, return Right string.
+      --  Left is empty string, return Right string
 
       elsif Left'Length = 0 then
          Reference (RR);
          DR := RR;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (DL);
@@ -221,13 +221,13 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       DR : Shared_Wide_Wide_String_Access;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if Left = 0 then
          Reference (Empty_Shared_Wide_Wide_String'Access);
          DR := Empty_Shared_Wide_Wide_String'Access;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (Left);
@@ -251,13 +251,13 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       K  : Positive;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
          Reference (Empty_Shared_Wide_Wide_String'Access);
          DR := Empty_Shared_Wide_Wide_String'Access;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (DL);
@@ -284,19 +284,19 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       K  : Positive;
 
    begin
-      --  Result is an empty string, reuse shared empty string.
+      --  Result is an empty string, reuse shared empty string
 
       if DL = 0 then
          Reference (Empty_Shared_Wide_Wide_String'Access);
          DR := Empty_Shared_Wide_Wide_String'Access;
 
-      --  Coefficient is one, just return string itself.
+      --  Coefficient is one, just return string itself
 
       elsif Left = 1 then
          Reference (RR);
          DR := RR;
 
-      --  Otherwise, allocate new shared string and fill it.
+      --  Otherwise, allocate new shared string and fill it
 
       else
          DR := Allocate (DL);
@@ -393,7 +393,7 @@ package body Ada.Strings.Wide_Wide_Unbounded is
 
    begin
       return LR = RR or else LR.Data (1 .. LR.Last) = RR.Data (1 .. RR.Last);
-      --  LR = RR means two strings shares shared string, thus they are equal.
+      --  LR = RR means two strings shares shared string, thus they are equal
    end "=";
 
    function "="
@@ -1320,7 +1320,7 @@ package body Ada.Strings.Wide_Wide_Unbounded is
       DR : Shared_Wide_Wide_String_Access;
 
    begin
-      --  Bounds check.
+      --  Bounds check
 
       if Index <= SR.Last then
 

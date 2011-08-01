@@ -1,3 +1,13 @@
+2011-08-01  Matthew Heaney  <heaney@adacore.com>
+
+	* a-rbtgbo.adb (Delete_Node_Sans_Free): Fixed assignment to left child
+	of node.
+
+2011-08-01  Pascal Obry  <obry@adacore.com>
+
+	* a-stzunb-shared.adb, a-strunb-shared.adb, a-stwiun-shared.adb: Minor
+	reformatting.
+
 2011-08-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case 'Access): Handle properly named
