@@ -735,6 +735,25 @@ package Errout is
    --  where the expression is parenthesized, an attempt is made to include
    --  the parentheses (i.e. to return the location of the initial paren).
 
+   procedure Formal_Error_Msg (Msg : String; Flag_Location : Source_Ptr);
+   --  Wrapper on Error_Msg which adds a prefix to Msg giving the name of
+   --  the formal language analyzed (spark or alfa)
+
+   procedure Formal_Error_Msg_N (Msg : String; N : Node_Id);
+   --  Wrapper on Error_Msg_N which adds a prefix to Msg giving the name of
+   --  the formal language analyzed (spark or alfa)
+
+   procedure Formal_Error_Msg_NE
+     (Msg : String;
+      N   : Node_Or_Entity_Id;
+      E   : Node_Or_Entity_Id);
+   --  Wrapper on Error_Msg_NE which adds a prefix to Msg giving the name of
+   --  the formal language analyzed (spark or alfa)
+
+   procedure Formal_Error_Msg_SP (Msg : String);
+   --  Wrapper on Error_Msg_SP which adds a prefix to Msg giving the name of
+   --  the formal language analyzed (spark or alfa)
+
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr)
      renames Erroutc.Purge_Messages;
    --  All error messages whose location is in the range From .. To (not

@@ -2027,6 +2027,17 @@ package body Sem_Ch3 is
       D := First (L);
       while Present (D) loop
 
+         --  Package specification cannot contain a package declaration in
+         --  SPARK or ALFA
+
+         if Formal_Verification_Mode
+           and then Nkind (D) = N_Package_Declaration
+           and then Nkind (Parent (L)) = N_Package_Specification
+         then
+            Formal_Error_Msg_N ("package specification cannot contain "
+                                & "a package declaration", D);
+         end if;
+
          --  Complete analysis of declaration
 
          Analyze (D);
@@ -2345,6 +2356,21 @@ package body Sem_Ch3 is
 
       if Etype (T) = Any_Type then
          return;
+      end if;
+
+      if Formal_Verification_Mode then
+
+         --  Controlled type is not allowed in SPARK and ALFA
+
+         if Is_Visibly_Controlled (T) then
+            Formal_Error_Msg_N ("controlled type is not allowed", N);
+         end if;
+
+         --  Discriminant type is not allowed in SPARK and ALFA
+
+         if Present (Discriminant_Specifications (N)) then
+            Formal_Error_Msg_N ("discriminant type is not allowed", N);
+         end if;
       end if;
 
       --  Some common processing for all types

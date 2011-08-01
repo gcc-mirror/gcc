@@ -9,7 +9,7 @@
 --          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
--- terms of the  GNU General Public License as published  by the Free Soft- --
+-- terms of the  GNU Genconflieral Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
@@ -3643,26 +3643,6 @@ package body Sem_Util is
          return N;
       end if;
    end First_Actual;
-
-   ----------------------
-   -- Formal_Error_Msg --
-   ----------------------
-
-   procedure Formal_Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
-   begin
-      pragma Assert (Formal_Verification_Mode);
-      Error_Msg ("(" & Formal_Language & ") " & Msg, Flag_Location);
-   end Formal_Error_Msg;
-
-   ------------------------
-   -- Formal_Error_Msg_N --
-   ------------------------
-
-   procedure Formal_Error_Msg_N (Msg : String; N : Node_Id) is
-   begin
-      pragma Assert (Formal_Verification_Mode);
-      Error_Msg_N ("(" & Formal_Language & ") " & Msg, N);
-   end Formal_Error_Msg_N;
 
    -----------------------
    -- Gather_Components --

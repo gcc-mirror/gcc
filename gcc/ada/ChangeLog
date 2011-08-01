@@ -1,3 +1,32 @@
+2011-08-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.ads, sem_util.adb, par.adb, par_util.adb
+	(Formal_Error_Msg, Formal_Error_Msg_N, Formal_Error_Msg_SP): move
+	procedures out of these packages.
+	* errout.ads, errout.adb 
+	(Formal_Error_Msg, Formal_Error_Msg_N, Formal_Error_Msg_SP): move
+	procedures in of this package
+	(Formal_Error_Msg_NE): new procedure for wrapper on Error_Msg_NE
+	* par-ch5.adb (Parse_Decls_Begin_End): issue syntax error in SPARK mode
+	on misplaced later vs initial declarations, like in Ada 83
+	* sem_attr.adb (Processing for Analyze_Attribute): issue error in
+	formal mode on attribute of private type whose full type declaration
+	is not visible
+	* sem_ch3.adb (Analyze_Declarations): issue error in formal mode on a
+	package declaration inside a package specification
+	(Analyze_Full_Type_Declaration): issue error in formal mode on
+	controlled type or discriminant type
+	* sem_ch6.adb (Analyze_Subprogram_Specification): only issue error on
+	user-defined operator means that it should come from the source
+	(New_Overloaded_Entity): issue error in formal mode on overloaded
+	entity.
+	* sem_ch6.ads, sem_ch13.ads: typos in comments.
+
+2011-08-01  Thomas Quinot  <quinot@adacore.com>
+
+	* atree.adb: Minor reformatting.
+	* checks.adb: Minor reformatting.
+
 2011-08-01  Vincent Celier  <celier@adacore.com>
 
 	* s-parame-vms-ia64.ads: Fix typo in comment
