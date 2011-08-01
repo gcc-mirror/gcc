@@ -6651,6 +6651,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
   tree elttype = TREE_TYPE (atype);
   int max = tree_low_cst (array_type_nelts (atype), 0);
   VEC(constructor_elt,gc) *n = VEC_alloc (constructor_elt, gc, max + 1);
+  bool pre_init = false;
   int i;
 
   /* For the default constructor, build up a call to the default
@@ -6658,8 +6659,15 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
      here, as for a constructor to be constexpr, all members must be
      initialized, which for a defaulted default constructor means they must
      be of a class type with a constexpr default constructor.  */
-  if (value_init)
-    gcc_assert (!init);
+  if (TREE_CODE (elttype) == ARRAY_TYPE)
+    /* We only do this at the lowest level.  */;
+  else if (value_init)
+    {
+      init = build_value_init (elttype, tf_warning_or_error);
+      init = cxx_eval_constant_expression
+	    (call, init, allow_non_constant, addr, non_constant_p);
+      pre_init = true;
+    }
   else if (!init)
     {
       VEC(tree,gc) *argvec = make_tree_vector ();
@@ -6669,6 +6677,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
       release_tree_vector (argvec);
       init = cxx_eval_constant_expression (call, init, allow_non_constant,
 					   addr, non_constant_p);
+      pre_init = true;
     }
 
   if (*non_constant_p && !allow_non_constant)
@@ -6690,17 +6699,14 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
 					 allow_non_constant, addr,
 					 non_constant_p);
 	}
-      else if (value_init)
+      else if (pre_init)
 	{
-	  eltinit = build_value_init (elttype, tf_warning_or_error);
-	  eltinit = cxx_eval_constant_expression
-	    (call, eltinit, allow_non_constant, addr, non_constant_p);
-	}
-      else if (TREE_CODE (init) == CONSTRUCTOR)
-	{
-	  /* Initializing an element using the call to the default
-	     constructor we just built above.  */
-	  eltinit = unshare_expr (init);
+	  /* Initializing an element using value or default initialization
+	     we just pre-built above.  */
+	  if (i == 0)
+	    eltinit = init;
+	  else
+	    eltinit = unshare_expr (init);
 	}
       else
 	{
