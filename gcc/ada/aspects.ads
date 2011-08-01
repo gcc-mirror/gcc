@@ -55,7 +55,9 @@ package Aspects is
       Aspect_Object_Size,                   -- GNAT
       Aspect_Output,
       Aspect_Post,
+      Aspect_Postcondition,
       Aspect_Pre,
+      Aspect_Precondition,
       Aspect_Predicate,                     -- GNAT
       Aspect_Read,
       Aspect_Size,
@@ -64,6 +66,7 @@ package Aspects is
       Aspect_Storage_Size,
       Aspect_Stream_Size,
       Aspect_Suppress,
+      Aspect_Type_Invariant,
       Aspect_Unsuppress,
       Aspect_Value_Size,                    -- GNAT
       Aspect_Warnings,
@@ -125,33 +128,36 @@ package Aspects is
    --  The following array indicates what argument type is required
 
    Aspect_Argument : constant array (Aspect_Id) of Aspect_Expression :=
-                       (No_Aspect                           => Optional,
-                        Aspect_Address                      => Expression,
-                        Aspect_Alignment                    => Expression,
-                        Aspect_Bit_Order                    => Expression,
-                        Aspect_Component_Size               => Expression,
-                        Aspect_Dynamic_Predicate            => Expression,
-                        Aspect_External_Tag                 => Expression,
-                        Aspect_Input                        => Name,
-                        Aspect_Invariant                    => Expression,
-                        Aspect_Machine_Radix                => Expression,
-                        Aspect_Object_Size                  => Expression,
-                        Aspect_Output                       => Name,
-                        Aspect_Post                         => Expression,
-                        Aspect_Pre                          => Expression,
-                        Aspect_Predicate                    => Expression,
-                        Aspect_Read                         => Name,
-                        Aspect_Size                         => Expression,
-                        Aspect_Static_Predicate             => Expression,
-                        Aspect_Storage_Pool                 => Name,
-                        Aspect_Storage_Size                 => Expression,
-                        Aspect_Stream_Size                  => Expression,
-                        Aspect_Suppress                     => Name,
-                        Aspect_Unsuppress                   => Name,
-                        Aspect_Value_Size                   => Expression,
-                        Aspect_Warnings                     => Name,
-                        Aspect_Write                        => Name,
-                        Boolean_Aspects                     => Optional);
+                       (No_Aspect                => Optional,
+                        Aspect_Address           => Expression,
+                        Aspect_Alignment         => Expression,
+                        Aspect_Bit_Order         => Expression,
+                        Aspect_Component_Size    => Expression,
+                        Aspect_Dynamic_Predicate => Expression,
+                        Aspect_External_Tag      => Expression,
+                        Aspect_Input             => Name,
+                        Aspect_Invariant         => Expression,
+                        Aspect_Machine_Radix     => Expression,
+                        Aspect_Object_Size       => Expression,
+                        Aspect_Output            => Name,
+                        Aspect_Post              => Expression,
+                        Aspect_Postcondition     => Expression,
+                        Aspect_Pre               => Expression,
+                        Aspect_Precondition      => Expression,
+                        Aspect_Predicate         => Expression,
+                        Aspect_Read              => Name,
+                        Aspect_Size              => Expression,
+                        Aspect_Static_Predicate  => Expression,
+                        Aspect_Storage_Pool      => Name,
+                        Aspect_Storage_Size      => Expression,
+                        Aspect_Stream_Size       => Expression,
+                        Aspect_Suppress          => Name,
+                        Aspect_Type_Invariant    => Expression,
+                        Aspect_Unsuppress        => Name,
+                        Aspect_Value_Size        => Expression,
+                        Aspect_Warnings          => Name,
+                        Aspect_Write             => Name,
+                        Boolean_Aspects          => Optional);
 
    function Get_Aspect_Id (Name : Name_Id) return Aspect_Id;
    pragma Inline (Get_Aspect_Id);
@@ -206,6 +212,11 @@ package Aspects is
    --  False on entry. If Has_Aspects (From) is False, the call has no effect.
    --  Otherwise the aspects are moved and on return Has_Aspects (To) is True,
    --  and Has_Aspects (From) is False.
+
+   function Same_Aspect (A1 : Aspect_Id; A2 : Aspect_Id) return Boolean;
+   --  Returns True if A1 and A2 are (essentially) the same aspect. This is not
+   --  a simple equality test because e.g. Post and Postcondition are the same.
+   --  This is used for detecting duplicate aspects.
 
    procedure Tree_Write;
    --  Writes contents of Aspect_Specifications hash table to the tree file

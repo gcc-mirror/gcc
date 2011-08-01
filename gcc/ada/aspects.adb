@@ -72,8 +72,8 @@ package body Aspects is
       Asp : Aspect_Id;
    end record;
 
-   Aspect_Names : constant array (Integer range <>) of Aspect_Entry := (
-     (Name_Ada_2005,                     Aspect_Ada_2005),
+   Aspect_Names : constant array (Integer range <>) of Aspect_Entry :=
+    ((Name_Ada_2005,                     Aspect_Ada_2005),
      (Name_Ada_2012,                     Aspect_Ada_2012),
      (Name_Address,                      Aspect_Address),
      (Name_Alignment,                    Aspect_Alignment),
@@ -95,7 +95,9 @@ package body Aspects is
      (Name_Pack,                         Aspect_Pack),
      (Name_Persistent_BSS,               Aspect_Persistent_BSS),
      (Name_Post,                         Aspect_Post),
+     (Name_Postcondition,                Aspect_Postcondition),
      (Name_Pre,                          Aspect_Pre),
+     (Name_Precondition,                 Aspect_Precondition),
      (Name_Predicate,                    Aspect_Predicate),
      (Name_Preelaborable_Initialization, Aspect_Preelaborable_Initialization),
      (Name_Pure_Function,                Aspect_Pure_Function),
@@ -108,6 +110,7 @@ package body Aspects is
      (Name_Stream_Size,                  Aspect_Stream_Size),
      (Name_Suppress,                     Aspect_Suppress),
      (Name_Suppress_Debug_Info,          Aspect_Suppress_Debug_Info),
+     (Name_Type_Invariant,               Aspect_Type_Invariant),
      (Name_Unchecked_Union,              Aspect_Unchecked_Union),
      (Name_Universal_Aliasing,           Aspect_Universal_Aliasing),
      (Name_Unmodified,                   Aspect_Unmodified),
@@ -216,6 +219,70 @@ package body Aspects is
    begin
       return Has_Aspect_Specifications_Flag (Nkind (N));
    end Permits_Aspect_Specifications;
+
+   -----------------
+   -- Same_Aspect --
+   -----------------
+
+   --  Table used for Same_Aspect, maps aspect to canonical aspect
+
+   Canonical_Aspect : constant array (Aspect_Id) of Aspect_Id := (
+    No_Aspect                           => No_Aspect,
+    Aspect_Ada_2005                     => Aspect_Ada_2005,
+    Aspect_Ada_2012                     => Aspect_Ada_2005,
+    Aspect_Address                      => Aspect_Address,
+    Aspect_Alignment                    => Aspect_Alignment,
+    Aspect_Atomic                       => Aspect_Atomic,
+    Aspect_Atomic_Components            => Aspect_Atomic_Components,
+    Aspect_Bit_Order                    => Aspect_Bit_Order,
+    Aspect_Component_Size               => Aspect_Component_Size,
+    Aspect_Discard_Names                => Aspect_Discard_Names,
+    Aspect_Dynamic_Predicate            => Aspect_Predicate,
+    Aspect_External_Tag                 => Aspect_External_Tag,
+    Aspect_Favor_Top_Level              => Aspect_Favor_Top_Level,
+    Aspect_Inline                       => Aspect_Inline,
+    Aspect_Inline_Always                => Aspect_Inline,
+    Aspect_Input                        => Aspect_Input,
+    Aspect_Invariant                    => Aspect_Invariant,
+    Aspect_Machine_Radix                => Aspect_Machine_Radix,
+    Aspect_No_Return                    => Aspect_No_Return,
+    Aspect_Object_Size                  => Aspect_Object_Size,
+    Aspect_Output                       => Aspect_Output,
+    Aspect_Pack                         => Aspect_Pack,
+    Aspect_Persistent_BSS               => Aspect_Persistent_BSS,
+    Aspect_Post                         => Aspect_Post,
+    Aspect_Postcondition                => Aspect_Post,
+    Aspect_Pre                          => Aspect_Pre,
+    Aspect_Precondition                 => Aspect_Pre,
+    Aspect_Predicate                    => Aspect_Predicate,
+    Aspect_Preelaborable_Initialization => Aspect_Preelaborable_Initialization,
+    Aspect_Pure_Function                => Aspect_Pure_Function,
+    Aspect_Read                         => Aspect_Read,
+    Aspect_Shared                       => Aspect_Atomic,
+    Aspect_Size                         => Aspect_Size,
+    Aspect_Static_Predicate             => Aspect_Predicate,
+    Aspect_Storage_Pool                 => Aspect_Storage_Pool,
+    Aspect_Storage_Size                 => Aspect_Storage_Size,
+    Aspect_Stream_Size                  => Aspect_Stream_Size,
+    Aspect_Suppress                     => Aspect_Suppress,
+    Aspect_Suppress_Debug_Info          => Aspect_Suppress_Debug_Info,
+    Aspect_Type_Invariant               => Aspect_Invariant,
+    Aspect_Unchecked_Union              => Aspect_Unchecked_Union,
+    Aspect_Universal_Aliasing           => Aspect_Universal_Aliasing,
+    Aspect_Unmodified                   => Aspect_Unmodified,
+    Aspect_Unreferenced                 => Aspect_Unreferenced,
+    Aspect_Unreferenced_Objects         => Aspect_Unreferenced_Objects,
+    Aspect_Unsuppress                   => Aspect_Unsuppress,
+    Aspect_Value_Size                   => Aspect_Value_Size,
+    Aspect_Volatile                     => Aspect_Volatile,
+    Aspect_Volatile_Components          => Aspect_Volatile_Components,
+    Aspect_Warnings                     => Aspect_Warnings,
+    Aspect_Write                        => Aspect_Write);
+
+   function Same_Aspect (A1 : Aspect_Id; A2 : Aspect_Id) return Boolean is
+   begin
+      return Canonical_Aspect (A1) = Canonical_Aspect (A2);
+   end Same_Aspect;
 
    -------------------------------
    -- Set_Aspect_Specifications --
