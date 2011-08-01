@@ -1532,6 +1532,7 @@ package body Exp_Ch11 is
 
       if Present (Name (N)) and then Nkind (Name (N)) = N_Identifier then
          Src := Comes_From_Source (N);
+
          if Entity (Name (N)) = Standard_Constraint_Error then
             Rewrite (N,
               Make_Raise_Constraint_Error (Loc, Reason => CE_Explicit_Raise));

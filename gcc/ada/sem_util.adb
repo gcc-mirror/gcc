@@ -6662,6 +6662,7 @@ package body Sem_Util is
 
    function Is_LHS (N : Node_Id) return Boolean is
       P : constant Node_Id := Parent (N);
+
    begin
       if Nkind (P) = N_Assignment_Statement then
          return Name (P) = N;

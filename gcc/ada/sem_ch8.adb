@@ -4565,18 +4565,18 @@ package body Sem_Ch8 is
 
             --  Normal case, not a label: generate reference
 
-            --  ??? It is too early to generate a reference here even if
-            --    the entity is unambiguous, because the tree is not
-            --    sufficiently typed at this point for Generate_Reference to
-            --    determine whether this reference modifies the denoted object
-            --    (because implicit dereferences cannot be identified prior to
-            --    full type resolution).
-            --
+            --    ??? It is too early to generate a reference here even if the
+            --    entity is unambiguous, because the tree is not sufficiently
+            --    typed at this point for Generate_Reference to determine
+            --    whether this reference modifies the denoted object (because
+            --    implicit dereferences cannot be identified prior to full type
+            --    resolution).
+
             --    The Is_Actual_Parameter routine takes care of one of these
             --    cases but there are others probably ???
-            --
+
             --    If the entity is the LHS of an assignment, and is a variable
-            --    (rather than a package prefix),  we can mark it as a
+            --    (rather than a package prefix), we can mark it as a
             --    modification right away, to avoid duplicate references.
 
             else

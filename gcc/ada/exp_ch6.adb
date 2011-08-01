@@ -4250,7 +4250,6 @@ package body Exp_Ch6 is
                                Parent (Return_Object_Entity);
       Parent_Function      : constant Entity_Id :=
                                Return_Applies_To (Return_Statement_Entity (N));
-      Parent_Function_Typ  : constant Entity_Id := Etype (Parent_Function);
       Is_Build_In_Place    : constant Boolean :=
                                Is_Build_In_Place_Function (Parent_Function);
 
@@ -4259,10 +4258,6 @@ package body Exp_Ch6 is
       Handled_Stm_Seq : Node_Id;
       Result          : Node_Id;
       Exp             : Node_Id;
-
-      function Has_Controlled_Parts (Typ : Entity_Id) return Boolean;
-      --  Determine whether type Typ is controlled or contains a controlled
-      --  subcomponent.
 
       function Move_Activation_Chain return Node_Id;
       --  Construct a call to System.Tasking.Stages.Move_Activation_Chain
@@ -4277,17 +4272,6 @@ package body Exp_Ch6 is
       --
       --    From         finalization list of the return statement
       --    To           finalization list passed in by the caller
-
-      --------------------------
-      -- Has_Controlled_Parts --
-      --------------------------
-
-      function Has_Controlled_Parts (Typ : Entity_Id) return Boolean is
-      begin
-         return
-           Is_Controlled (Typ)
-             or else Has_Controlled_Component (Typ);
-      end Has_Controlled_Parts;
 
       ---------------------------
       -- Move_Activation_Chain --
@@ -4417,17 +4401,17 @@ package body Exp_Ch6 is
          --  finalization list. A special case arises when processing a simple
          --  return statement which has been rewritten as an extended return.
          --  In that case check the type of the returned object or the original
-         --  expression.
+         --  expression. Note that Needs_Finalization accounts for the case
+         --  of class-wide types, which which must be assumed to require
+         --  finalization.
 
          if Is_Build_In_Place
+           and then Needs_BIP_Final_List (Parent_Function)
            and then
-               (Has_Controlled_Parts (Parent_Function_Typ)
-                 or else (Is_Class_Wide_Type (Parent_Function_Typ)
-                           and then
-                        Has_Controlled_Parts (Root_Type (Parent_Function_Typ)))
-                 or else Has_Controlled_Parts (Etype (Return_Object_Entity))
-                 or else (Present (Exp)
-                           and then Has_Controlled_Parts (Etype (Exp))))
+             ((Present (Exp) and then Needs_Finalization (Etype (Exp)))
+                or else
+              (not Present (Exp)
+                and then Needs_Finalization (Etype (Return_Object_Entity))))
          then
             Append_To (Statements, Move_Final_List);
          end if;
