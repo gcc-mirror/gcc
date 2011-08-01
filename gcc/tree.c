@@ -9228,6 +9228,8 @@ build_common_tree_nodes (bool signed_char, bool short_double)
     size_type_node = long_unsigned_type_node;
   else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
     size_type_node = long_long_unsigned_type_node;
+  else if (strcmp (SIZE_TYPE, "short unsigned int") == 0)
+    size_type_node = short_unsigned_type_node;
   else
     gcc_unreachable ();
 

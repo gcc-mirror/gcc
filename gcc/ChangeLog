@@ -1,3 +1,8 @@
+2011-07-31  Richard Henderson  <rth@redhat.com>
+
+	* stor-layout.c (initialize_sizetypes): Handle unsigned short.
+	* tree.c (build_common_tree_nodes): Likewise.
+
 2011-07-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/49880
