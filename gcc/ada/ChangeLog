@@ -1,5 +1,9 @@
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
+	* a-ztexio.ads, a-textio.ads, a-witeio.ads: Fix comment.
+
+2011-08-01  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads (Boolean_Aspects): New subtype.
 	* exp_ch13.adb (Expand_Freeze_Entity): Fix errors in handling aspects
 	for derived types in cases where the parent type and derived type have
