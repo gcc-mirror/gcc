@@ -1,3 +1,12 @@
+2011-08-01  Richard Henderson  <rth@redhat.com>
+
+	PR target/49881
+	* config/avr/avr.h (PUSH_ROUNDING): New.
+	* config/avr/avr.md (pushqi1): Rename from *pushqi.
+	(*pushhi, *pushsi, *pushsf): Remove.
+	(MPUSH): New mode iterator.
+	(push<MPUSH>1): New expander.
+
 2011-08-01  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mmix/mmix.h (PREFERRED_RELOAD_CLASS,
