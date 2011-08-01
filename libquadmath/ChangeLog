@@ -1,3 +1,8 @@
+2011-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* math/rem_pio2q.c (__quadmath_kernel_rem_pio2): Fix up fq to y
+	conversion for prec 3 and __FLT_EVAL_METHOD__ != 0.
+
 2011-06-27  Release Manager
 
 	* GCC 4.6.1 released.
