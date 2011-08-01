@@ -346,6 +346,16 @@ package Errout is
    --      inserted to replace the ~ character. The string is inserted in the
    --      literal form it appears, without any action on special characters.
 
+   --    Insertion character ~~ (Two tildes: insert language string)
+   --      Indicates that Error_Msg_Lang (1 .. Error_Msg_Langlen) is to be
+   --      inserted to replace the ~~ character. Typically the language string
+   --      will be inserted in parentheses as a prefix of the error message, as
+   --      in "(spark) error msg". The string is inserted in the literal form
+   --      it appears, without any action on special characters. Error_Msg_Lang
+   --      and Error_Msg_Langlen are expected to be set only once before
+   --      parsing starts, so that the caller to an error procedure does not
+   --      need to set them repeatedly.
+
    ----------------------------------------
    -- Specialization of Messages for VMS --
    ----------------------------------------
@@ -458,6 +468,11 @@ package Errout is
    Error_Msg_Strlen : Natural renames Err_Vars.Error_Msg_Strlen;
    --  Used if current message contains a ~ insertion character to indicate
    --  insertion of the string Error_Msg_String (1 .. Error_Msg_Strlen).
+
+   Error_Msg_Lang : String  renames Err_Vars.Error_Msg_Lang;
+   Error_Msg_Langlen : Natural renames Err_Vars.Error_Msg_Langlen;
+   --  Used if current message contains a ~~ insertion character to indicate
+   --  insertion of the string Error_Msg_Lang (1 .. Error_Msg_Langlen).
 
    -----------------------------------------------------
    -- Format of Messages and Manual Quotation Control --
@@ -735,25 +750,6 @@ package Errout is
    --  where the expression is parenthesized, an attempt is made to include
    --  the parentheses (i.e. to return the location of the initial paren).
 
-   procedure Formal_Error_Msg (Msg : String; Flag_Location : Source_Ptr);
-   --  Wrapper on Error_Msg which adds a prefix to Msg giving the name of
-   --  the formal language analyzed (spark or alfa)
-
-   procedure Formal_Error_Msg_N (Msg : String; N : Node_Id);
-   --  Wrapper on Error_Msg_N which adds a prefix to Msg giving the name of
-   --  the formal language analyzed (spark or alfa)
-
-   procedure Formal_Error_Msg_NE
-     (Msg : String;
-      N   : Node_Or_Entity_Id;
-      E   : Node_Or_Entity_Id);
-   --  Wrapper on Error_Msg_NE which adds a prefix to Msg giving the name of
-   --  the formal language analyzed (spark or alfa)
-
-   procedure Formal_Error_Msg_SP (Msg : String);
-   --  Wrapper on Error_Msg_SP which adds a prefix to Msg giving the name of
-   --  the formal language analyzed (spark or alfa)
-
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr)
      renames Erroutc.Purge_Messages;
    --  All error messages whose location is in the range From .. To (not
@@ -769,6 +765,10 @@ package Errout is
    procedure Remove_Warning_Messages (L : List_Id);
    --  Remove warnings on all elements of a list (Calls Remove_Warning_Messages
    --  on each element of the list, see above).
+
+   procedure Set_Error_Msg_Lang (To : String);
+   --  Set Error_Msg_Lang and Error_Msg_Langlen used for insertion character ~~
+   --  so that Error_Msg_Lang (1 .. Error_Msg_Langlen) = To.
 
    procedure Set_Ignore_Errors (To : Boolean);
    --  Following a call to this procedure with To=True, all error calls are

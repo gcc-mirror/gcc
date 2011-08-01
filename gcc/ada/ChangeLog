@@ -1,3 +1,31 @@
+2011-08-01  Yannick Moy  <moy@adacore.com>
+
+	* err_vars.ads (Error_Msg_Lang, Error_Msg_Langlen): new variables for
+	insertion character ~~
+	* errout.ads, errout.adb (Formal_Error_Msg_...): remove procedures
+	(Set_Error_Msg_Lang): new procedure which fixes the language for use
+	with insertion character ~~
+	(Set_Msg_Text): treat insertion character ~~
+	* par-ch4.adb, par-ch5.adb, par-endh.adb, sem_attr.adb, sem_ch11.adb,
+	sem_ch3.adb, sem_ch5.adb, sem_ch9.adb, sem_util.adb: Replace calls to
+	Formal_Error_Msg_... procedures by equivalent Error_Msg_...
+	procedures. Favor calls to Error_Msg_F(E) over Error_Msg_N(E). Make
+	errors related to the formal language restriction not serious
+	(insertion character |).
+	* par.adb (Par): set formal language for error messages if needed
+	* sem_ch6.adb (Check_Missing_Return): take into account possible
+	generated statements at the end of the function
+	* snames.ads-tmpl (Name_SPARK_95, Pragma_SPARK_95): new variable and
+	enumeration value to define a new pragma SPARK_95
+	* opt.ads, opt.adb (SPARK_Version_Type, SPARK_Version_Default,
+	SPARK_Version): new type and variables to store the SPARK version
+	(none by default).
+	(SPARK_Mode): return True when SPARK_Version is set
+	* par-prag.adb: Correct indentation
+	(Prag): take Pragma_SPARK_95 into account
+	* sem_prag.adb (Set_Mechanism_Value, Sig_Flags): take Pragma_SPARK_95
+	into account.
+
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_ch3.ads, sem_ch5.adb, prj-part.adb, par-ch4.adb,

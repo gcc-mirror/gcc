@@ -2150,8 +2150,8 @@ package body Ch5 is
                      else
                         pragma Assert (SPARK_Mode);
                         Error_Msg_Sloc := Body_Sloc;
-                        Formal_Error_Msg_N
-                          ("decl cannot appear after body#", Decl);
+                        Error_Msg_F
+                          ("|~~decl cannot appear after body#", Decl);
                      end if;
                   end if;
 

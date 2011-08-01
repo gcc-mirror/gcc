@@ -1402,49 +1402,6 @@ package body Errout is
       return S;
    end First_Sloc;
 
-   ----------------------
-   -- Formal_Error_Msg --
-   ----------------------
-
-   procedure Formal_Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
-   begin
-      pragma Assert (Formal_Verification_Mode);
-      Error_Msg ("(" & Formal_Language & ") " & Msg, Flag_Location);
-   end Formal_Error_Msg;
-
-   ------------------------
-   -- Formal_Error_Msg_N --
-   ------------------------
-
-   procedure Formal_Error_Msg_N (Msg : String; N : Node_Id) is
-   begin
-      pragma Assert (Formal_Verification_Mode);
-      Error_Msg_N ("(" & Formal_Language & ") " & Msg, N);
-   end Formal_Error_Msg_N;
-
-   -------------------------
-   -- Formal_Error_Msg_NE --
-   -------------------------
-
-   procedure Formal_Error_Msg_NE
-     (Msg : String;
-      N   : Node_Or_Entity_Id;
-      E   : Node_Or_Entity_Id) is
-   begin
-      pragma Assert (Formal_Verification_Mode);
-      Error_Msg_NE ("(" & Formal_Language & ") " & Msg, N, E);
-   end Formal_Error_Msg_NE;
-
-   -------------------------
-   -- Formal_Error_Msg_SP --
-   -------------------------
-
-   procedure Formal_Error_Msg_SP (Msg : String) is
-   begin
-      pragma Assert (Formal_Verification_Mode);
-      Error_Msg_SP ("(" & Formal_Language & ") " & Msg);
-   end Formal_Error_Msg_SP;
-
    ----------------
    -- Initialize --
    ----------------
@@ -2214,6 +2171,16 @@ package body Errout is
       Set_Casing (Desired_Case);
    end Set_Identifier_Casing;
 
+   ------------------------
+   -- Set_Error_Msg_Lang --
+   ------------------------
+
+   procedure Set_Error_Msg_Lang (To : String) is
+   begin
+      Error_Msg_Langlen := To'Length;
+      Error_Msg_Lang (1 .. Error_Msg_Langlen) := To;
+   end Set_Error_Msg_Lang;
+
    -----------------------
    -- Set_Ignore_Errors --
    -----------------------
@@ -2675,7 +2642,6 @@ package body Errout is
                if P <= Text'Last and then Text (P) = '$' then
                   P := P + 1;
                   Set_Msg_Insertion_Unit_Name (Suffix => False);
-
                else
                   Set_Msg_Insertion_Unit_Name;
                end if;
@@ -2733,7 +2699,12 @@ package body Errout is
                P := P + 1;
 
             when '~' =>
-               Set_Msg_Str (Error_Msg_String (1 .. Error_Msg_Strlen));
+               if P <= Text'Last and then Text (P) = '~' then
+                  P := P + 1;
+                  Set_Msg_Str (Error_Msg_Lang (1 .. Error_Msg_Langlen));
+               else
+                  Set_Msg_Str (Error_Msg_String (1 .. Error_Msg_Strlen));
+               end if;
 
             --  Upper case letter
 

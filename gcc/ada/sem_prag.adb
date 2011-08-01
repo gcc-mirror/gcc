@@ -12320,6 +12320,22 @@ package body Sem_Prag is
          when Pragma_Source_Reference =>
             GNAT_Pragma;
 
+         --------------
+         -- SPARK_95 --
+         --------------
+
+         --  pragma SPARK_95;
+
+         --  Note: this pragma also has some specific processing in Par.Prag
+         --  because we want to set the SPARK 95 version mode during parsing.
+
+         when Pragma_SPARK_95 =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            SPARK_Version := SPARK_95;
+            Set_Error_Msg_Lang ("(" & Formal_Language & ") ");
+
          --------------------------------
          -- Static_Elaboration_Desired --
          --------------------------------
@@ -14071,6 +14087,7 @@ package body Sem_Prag is
       Pragma_Source_File_Name              => -1,
       Pragma_Source_File_Name_Project      => -1,
       Pragma_Source_Reference              => -1,
+      Pragma_SPARK_95                      => -1,
       Pragma_Storage_Size                  => -1,
       Pragma_Storage_Unit                  => -1,
       Pragma_Static_Elaboration_Desired    => -1,

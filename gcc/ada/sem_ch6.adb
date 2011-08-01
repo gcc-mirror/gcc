@@ -363,7 +363,7 @@ package body Sem_Ch6 is
       --  Abstract subprogram is not allowed in SPARK or ALFA
 
       if Formal_Verification_Mode then
-         Formal_Error_Msg_N ("abstract subprogram is not allowed", N);
+         Error_Msg_F ("|~~abstract subprogram is not allowed", N);
       end if;
 
       --  Proceed with analysis
@@ -694,15 +694,15 @@ package body Sem_Ch6 is
              (Nkind (Parent (Parent (N))) /= N_Subprogram_Body
                or else Present (Next (N)))
          then
-            Formal_Error_Msg_N
-              ("RETURN should be the last statement in function", N);
+            Error_Msg_F
+              ("|~~RETURN should be the last statement in function", N);
          end if;
 
       else
          --  Extended return is not allowed in SPARK or ALFA
 
          if Formal_Verification_Mode then
-            Formal_Error_Msg_N ("extended RETURN is not allowed", N);
+            Error_Msg_F ("|~~extended RETURN is not allowed", N);
          end if;
 
          --  Analyze parts specific to extended_return_statement:
@@ -1402,8 +1402,8 @@ package body Sem_Ch6 is
             --  Access result is not allowed in SPARK or ALFA
 
             if Formal_Verification_Mode then
-               Formal_Error_Msg_N
-                 ("access result is not allowed", Result_Definition (N));
+               Error_Msg_F
+                 ("|~~access result is not allowed", Result_Definition (N));
             end if;
 
             --  Ada 2005 (AI-254): Handle anonymous access to subprograms
@@ -1440,8 +1440,8 @@ package body Sem_Ch6 is
               and then Is_Array_Type (Typ)
               and then not Is_Constrained (Typ)
             then
-               Formal_Error_Msg_N
-                 ("returning an unconstrained array is not allowed",
+               Error_Msg_F
+                 ("|~~returning an unconstrained array is not allowed",
                  Result_Definition (N));
             end if;
 
@@ -1851,15 +1851,25 @@ package body Sem_Ch6 is
 
             if Formal_Verification_Mode then
                declare
-                  Last_Kind : constant Node_Kind :=
-                                Nkind (Last (Statements (HSS)));
+                  Stat : Node_Id := Last (Statements (HSS));
                begin
-                  if not Nkind_In (Last_Kind, N_Simple_Return_Statement,
-                                              N_Extended_Return_Statement)
-                  then
-                     Formal_Error_Msg_N
-                       ("last statement in function should be RETURN", N);
-                  end if;
+                  while Present (Stat) loop
+                     if Comes_From_Source (Stat) then
+                        if not Nkind_In (Nkind (Stat),
+                                         N_Simple_Return_Statement,
+                                         N_Extended_Return_Statement)
+                        then
+                           Error_Msg_F ("|~~last statement in function "
+                                        & "should be RETURN", N);
+                        end if;
+                        exit;
+                     end if;
+
+                     --  Reach before the generated statements at the end of
+                     --  the function.
+
+                     Stat := Prev (Stat);
+                  end loop;
                end;
 
             elsif Return_Present (Id) then
@@ -1891,7 +1901,7 @@ package body Sem_Ch6 is
             --  borrow the Check_Returns procedure here ???
 
             if Return_Present (Id) then
-               Formal_Error_Msg_N ("procedure should not have RETURN", N);
+               Error_Msg_F ("|~~procedure should not have RETURN", N);
             end if;
 
          --  If procedure with No_Return, check returns
@@ -2834,7 +2844,7 @@ package body Sem_Ch6 is
         and then Nkind (Specification (N)) = N_Procedure_Specification
         and then Null_Present (Specification (N))
       then
-         Formal_Error_Msg_N ("null procedure not allowed", N);
+         Error_Msg_F ("|~~null procedure not allowed", N);
       end if;
 
       --  For a null procedure, capture the profile before analysis, for
@@ -3079,7 +3089,7 @@ package body Sem_Ch6 is
         and then Comes_From_Source (N)
         and then Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol
       then
-         Formal_Error_Msg_N ("user-defined operator is not allowed", N);
+         Error_Msg_F ("|~~user-defined operator is not allowed", N);
       end if;
 
       --  Proceed with analysis
@@ -8504,7 +8514,7 @@ package body Sem_Ch6 is
            and then Comes_From_Source (S)
          then
             Error_Msg_Sloc := Sloc (Homonym (S));
-            Formal_Error_Msg_N ("overloading not allowed with entity#", S);
+            Error_Msg_F ("|~~overloading not allowed with entity#", S);
          end if;
 
          --  If S is a derived operation for an untagged type then by
@@ -8770,15 +8780,14 @@ package body Sem_Ch6 is
          if Formal_Verification_Mode
            and then Ekind (Formal_Type) = E_Anonymous_Access_Type
          then
-            Formal_Error_Msg_N ("access parameter is not allowed", Param_Spec);
+            Error_Msg_F ("|~~access parameter is not allowed", Param_Spec);
          end if;
 
          if Present (Default) then
             --  Default expression is not allowed in SPARK or ALFA
 
             if Formal_Verification_Mode then
-               Formal_Error_Msg_N
-                 ("default expression is not allowed", Default);
+               Error_Msg_F ("|~~default expression is not allowed", Default);
             end if;
 
             --  Proceed with analysis

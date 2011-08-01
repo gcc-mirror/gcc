@@ -2034,8 +2034,8 @@ package body Sem_Ch3 is
            and then Nkind (D) = N_Package_Declaration
            and then Nkind (Parent (L)) = N_Package_Specification
          then
-            Formal_Error_Msg_N ("package specification cannot contain "
-                                & "a package declaration", D);
+            Error_Msg_F ("|~~package specification cannot contain "
+                         & "a package declaration", D);
          end if;
 
          --  Complete analysis of declaration
@@ -2363,13 +2363,13 @@ package body Sem_Ch3 is
          --  Controlled type is not allowed in SPARK and ALFA
 
          if Is_Visibly_Controlled (T) then
-            Formal_Error_Msg_N ("controlled type is not allowed", N);
+            Error_Msg_F ("|~~controlled type is not allowed", N);
          end if;
 
          --  Discriminant type is not allowed in SPARK and ALFA
 
          if Present (Discriminant_Specifications (N)) then
-            Formal_Error_Msg_N ("discriminant type is not allowed", N);
+            Error_Msg_F ("|~~discriminant type is not allowed", N);
          end if;
       end if;
 

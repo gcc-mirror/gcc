@@ -378,8 +378,8 @@ package body Endh is
                     and then Explicit_Start_Label (Scope.Last)
                   then
                      Error_Msg_Node_1 := Scope.Table (Scope.Last).Labl;
-                     Formal_Error_Msg_SP -- CODEFIX
-                       ("`END &` required");
+                     Error_Msg_SP -- CODEFIX
+                       ("|~~`END &` required");
                   end if;
 
                   --  Do style check for missing label

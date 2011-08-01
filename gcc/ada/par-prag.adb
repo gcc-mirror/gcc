@@ -439,37 +439,37 @@ begin
          List_Pragmas.Increment_Last;
          List_Pragmas.Table (List_Pragmas.Last) := (Page, Semi);
 
-         ------------------
-         -- Restrictions --
-         ------------------
+      ------------------
+      -- Restrictions --
+      ------------------
 
-         --  pragma Restrictions (RESTRICTION {, RESTRICTION});
+      --  pragma Restrictions (RESTRICTION {, RESTRICTION});
 
-         --  RESTRICTION ::=
-         --    restriction_IDENTIFIER
-         --  | restriction_parameter_IDENTIFIER => EXPRESSION
+      --  RESTRICTION ::=
+      --    restriction_IDENTIFIER
+      --  | restriction_parameter_IDENTIFIER => EXPRESSION
 
-         --  We process the case of No_Obsolescent_Features, since this has
-         --  a syntactic effect that we need to detect at parse time (the use
-         --  of replacement characters such as colon for pound sign).
+      --  We process the case of No_Obsolescent_Features, since this has
+      --  a syntactic effect that we need to detect at parse time (the use
+      --  of replacement characters such as colon for pound sign).
 
-         when Pragma_Restrictions =>
-            Process_Restrictions_Or_Restriction_Warnings;
+      when Pragma_Restrictions =>
+         Process_Restrictions_Or_Restriction_Warnings;
 
-         --------------------------
-         -- Restriction_Warnings --
-         --------------------------
+      --------------------------
+      -- Restriction_Warnings --
+      --------------------------
 
-         --  pragma Restriction_Warnings (RESTRICTION {, RESTRICTION});
+      --  pragma Restriction_Warnings (RESTRICTION {, RESTRICTION});
 
-         --  RESTRICTION ::=
-         --    restriction_IDENTIFIER
-         --  | restriction_parameter_IDENTIFIER => EXPRESSION
+      --  RESTRICTION ::=
+      --    restriction_IDENTIFIER
+      --  | restriction_parameter_IDENTIFIER => EXPRESSION
 
-         --  See above comment for pragma Restrictions
+      --  See above comment for pragma Restrictions
 
-         when Pragma_Restriction_Warnings =>
-            Process_Restrictions_Or_Restriction_Warnings;
+      when Pragma_Restriction_Warnings =>
+         Process_Restrictions_Or_Restriction_Warnings;
 
       ----------------------------------------------------------
       -- Source_File_Name and Source_File_Name_Project (GNAT) --
@@ -888,6 +888,18 @@ begin
             end if;
          end if;
       end Source_Reference;
+
+      --------------
+      -- SPARK_95 --
+      --------------
+
+      --  This pragma must be processed at parse time, since we want to set
+      --  the SPARK version properly at parse time to recognize the appropriate
+      --  SPARK version syntax.
+
+      when Pragma_SPARK_95 =>
+         SPARK_Version := SPARK_95;
+         Set_Error_Msg_Lang ("(" & Formal_Language & ") ");
 
       -------------------------
       -- Style_Checks (GNAT) --
