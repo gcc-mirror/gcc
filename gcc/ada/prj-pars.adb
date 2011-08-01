@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,7 +73,8 @@ package body Prj.Pars is
          Packages_To_Check      => Packages_To_Check,
          Current_Directory      => Current_Dir,
          Flags                  => Flags,
-         Is_Config_File         => False);
+         Is_Config_File         => False,
+         Target_Name            => "");
 
       --  If there were no error, process the tree
 

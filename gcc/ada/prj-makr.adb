@@ -865,7 +865,8 @@ package body Prj.Makr is
                Is_Config_File         => False,
                Flags                  => Flags,
                Current_Directory      => Get_Current_Dir,
-               Packages_To_Check      => Packages_To_Check_By_Gnatname);
+               Packages_To_Check      => Packages_To_Check_By_Gnatname,
+               Target_Name            => "");
 
             --  Fail if parsing was not successful
 

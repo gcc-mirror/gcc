@@ -1937,6 +1937,10 @@ package body Prj.Env is
                        (Path_Separator & Prefix.all &
                         "lib" & Directory_Separator & "gpr" &
                         Directory_Separator & Target_Name);
+                     Add_Str_To_Name_Buffer
+                       (Path_Separator & Prefix.all &
+                        Target_Name & Directory_Separator &
+                        "lib" & Directory_Separator & "gnat");
                   end if;
 
                   Add_Str_To_Name_Buffer
@@ -1970,11 +1974,12 @@ package body Prj.Env is
    --------------
 
    procedure Get_Path
-     (Self : in out Project_Search_Path;
-      Path : out String_Access)
+     (Self        : in out Project_Search_Path;
+      Path        : out String_Access;
+      Target_Name : String := "")
    is
    begin
-      Initialize_Project_Path (Self, "");  --  ??? Target_Name unspecified
+      Initialize_Project_Path (Self, Target_Name);
       Path := Self.Path;
    end Get_Path;
 
@@ -1998,7 +2003,8 @@ package body Prj.Env is
      (Self               : in out Project_Search_Path;
       Project_File_Name  : String;
       Directory          : String;
-      Path               : out Namet.Path_Name_Type)
+      Path               : out Namet.Path_Name_Type;
+      Target_Name        : String)
    is
       File : constant String := Project_File_Name;
       --  Have to do a copy, in case the parameter is Name_Buffer, which we
@@ -2087,7 +2093,7 @@ package body Prj.Env is
    --  Start of processing for Find_Project
 
    begin
-      Initialize_Project_Path (Self, "");
+      Initialize_Project_Path (Self, Target_Name);
 
       if Current_Verbosity = High then
          Write_Str  ("Searching for project (""");

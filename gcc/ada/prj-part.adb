@@ -185,7 +185,8 @@ package body Prj.Part is
       Depth             : Natural;
       Current_Dir       : String;
       Is_Config_File    : Boolean;
-      Flags             : Processing_Flags);
+      Flags             : Processing_Flags;
+      Target_Name       : String);
    --  Parse a project file. This is a recursive procedure: it calls itself for
    --  imported and extended projects. When From_Extended is not None, if the
    --  project has already been parsed and is an extended project A, return the
@@ -220,7 +221,8 @@ package body Prj.Part is
       Depth             : Natural;
       Current_Dir       : String;
       Is_Config_File    : Boolean;
-      Flags             : Processing_Flags);
+      Flags             : Processing_Flags;
+      Target_Name       : String);
    --  Parse the imported projects that have been stored in table Withs, if
    --  any. From_Extended is used for the call to Parse_Single_Project below.
    --  When In_Limited is True, the importing path includes at least one
@@ -448,7 +450,8 @@ package body Prj.Part is
       Store_Comments         : Boolean := False;
       Current_Directory      : String := "";
       Is_Config_File         : Boolean;
-      Flags                  : Processing_Flags)
+      Flags                  : Processing_Flags;
+      Target_Name            : String)
    is
       Dummy : Boolean;
       pragma Warnings (Off, Dummy);
@@ -468,7 +471,8 @@ package body Prj.Part is
       Find_Project (In_Tree.Project_Path,
                     Project_File_Name => Real_Project_File_Name.all,
                     Directory         => Current_Directory,
-                    Path              => Path_Name_Id);
+                    Path              => Path_Name_Id,
+                    Target_Name       => Target_Name);
       Free (Real_Project_File_Name);
 
       Prj.Err.Initialize;
@@ -479,7 +483,11 @@ package body Prj.Part is
          declare
             P : String_Access;
          begin
-            Get_Path (In_Tree.Project_Path, Path => P);
+            Get_Path
+              (In_Tree.Project_Path,
+               Path        => P,
+               Target_Name => Target_Name);
+
             Prj.Com.Fail
               ("project file """
                & Project_File_Name
@@ -505,7 +513,8 @@ package body Prj.Part is
             Depth             => 0,
             Current_Dir       => Current_Directory,
             Is_Config_File    => Is_Config_File,
-            Flags             => Flags);
+            Flags             => Flags,
+            Target_Name       => Target_Name);
 
       exception
          when Types.Unrecoverable_Error =>
@@ -736,7 +745,8 @@ package body Prj.Part is
       Depth             : Natural;
       Current_Dir       : String;
       Is_Config_File    : Boolean;
-      Flags             : Processing_Flags)
+      Flags             : Processing_Flags;
+      Target_Name       : String)
    is
       Current_With_Clause : With_Id := Context_Clause;
 
@@ -772,7 +782,8 @@ package body Prj.Part is
               (In_Tree.Project_Path,
                Project_File_Name => Get_Name_String (Current_With.Path),
                Directory         => Project_Directory_Path,
-               Path              => Imported_Path_Name_Id);
+               Path              => Imported_Path_Name_Id,
+               Target_Name       => Target_Name);
 
             if Imported_Path_Name_Id = No_Path then
 
@@ -876,7 +887,8 @@ package body Prj.Part is
                         Depth             => Depth,
                         Current_Dir       => Current_Dir,
                         Is_Config_File    => Is_Config_File,
-                        Flags             => Flags);
+                        Flags             => Flags,
+                        Target_Name       => Target_Name);
 
                   else
                      Extends_All := Is_Extending_All (Withed_Project, In_Tree);
@@ -1119,7 +1131,8 @@ package body Prj.Part is
       Depth             : Natural;
       Current_Dir       : String;
       Is_Config_File    : Boolean;
-      Flags             : Processing_Flags)
+      Flags             : Processing_Flags;
+      Target_Name       : String)
    is
       Path_Name : constant String := Get_Name_String (Path_Name_Id);
 
@@ -1485,7 +1498,8 @@ package body Prj.Part is
                Depth             => Depth + 1,
                Current_Dir       => Current_Dir,
                Is_Config_File    => Is_Config_File,
-               Flags             => Flags);
+               Flags             => Flags,
+               Target_Name       => Target_Name);
             Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
          end;
 
@@ -1544,7 +1558,8 @@ package body Prj.Part is
                  (In_Tree.Project_Path,
                   Project_File_Name => Original_Path_Name,
                   Directory         => Get_Name_String (Project_Directory),
-                  Path              => Extended_Project_Path_Name_Id);
+                  Path              => Extended_Project_Path_Name_Id,
+                  Target_Name       => Target_Name);
 
                if Extended_Project_Path_Name_Id = No_Path then
 
@@ -1592,7 +1607,8 @@ package body Prj.Part is
                         Depth             => Depth + 1,
                         Current_Dir       => Current_Dir,
                         Is_Config_File    => Is_Config_File,
-                        Flags             => Flags);
+                        Flags             => Flags,
+                        Target_Name       => Target_Name);
                   end;
 
                   if Present (Extended_Project) then
@@ -1842,7 +1858,8 @@ package body Prj.Part is
             Depth             => Depth + 1,
             Current_Dir       => Current_Dir,
             Is_Config_File    => Is_Config_File,
-            Flags             => Flags);
+            Flags             => Flags,
+            Target_Name       => Target_Name);
          Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
       end;
 
