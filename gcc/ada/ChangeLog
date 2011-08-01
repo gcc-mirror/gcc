@@ -1,3 +1,27 @@
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Iterator_Loop): handle properly an iterator
+	over an arbitrary expression of an array or container type.
+	* lib-xref.adb: clarify comment.
+
+2011-08-01  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+	* debug.adb: Minor comment improvement.
+
+2011-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Try_Object_Operation): For class-wide subprograms do not
+	consider hidden subprograms as valid candidates.
+
+2011-08-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb (Compile): Strip -mxxx switches in CodePeer mode.
+
+2011-08-01  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
 2011-08-01  Robert Dewar  <dewar@adacore.com>
 
 	* i-cstrin.adb, sem_util.adb, exp_ch11.adb, sem_ch8.adb,

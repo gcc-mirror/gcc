@@ -1440,7 +1440,9 @@ package body Lib.Xref is
             --  Finally, for two locations at the same address, we prefer
             --  the one that does NOT have the type 'r' so that a modification
             --  or extension takes preference, when there are more than one
-            --  reference at the same location.
+            --  reference at the same location. As a result, in the case of
+            --  entities that are in-out actuals, the read reference follows
+            --  the modify reference.
 
             else
                return T2.Typ = 'r';

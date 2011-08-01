@@ -6774,13 +6774,15 @@ package body Sem_Ch4 is
 
             Hom := Current_Entity (Subprog);
 
-            --  Find operation whose first parameter is of the class-wide
-            --  type, a subtype thereof, or an anonymous access to same.
+            --  Find a non-hidden operation whose first parameter is of the
+            --  class-wide type, a subtype thereof, or an anonymous access
+            --  to same.
 
             while Present (Hom) loop
                if (Ekind (Hom) = E_Procedure
                      or else
                    Ekind (Hom) = E_Function)
+                 and then not Is_Hidden (Hom)
                  and then Scope (Hom) = Scope (Anc_Type)
                  and then Present (First_Formal (Hom))
                  and then

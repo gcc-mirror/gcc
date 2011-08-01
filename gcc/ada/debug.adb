@@ -193,7 +193,7 @@ package body Debug is
    --  de
    --  df  Only output file names, not path names, in log
    --  dg
-   --  dh
+   --  dh  Generate listing showing loading of name table hash chains
    --  di
    --  dj
    --  dk
@@ -697,6 +697,9 @@ package body Debug is
    --------------------------------------------
 
    --  df  Only output file names, not path names, in log
+
+   --  dh  Generate listing showing loading of name table hash chains,
+   --      same as for the compiler.
 
    --  dm  Issue a message indicating the maximum number of simultaneous
    --      compilations.
