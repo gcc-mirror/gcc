@@ -700,11 +700,10 @@ package body Sem_Ch13 is
       --  one of two things happens:
 
       --  If we are required to delay the evaluation of this aspect to the
-      --  freeze point, we preanalyze the relevant argument, and then attach
-      --  the corresponding pragma/attribute definition clause to the aspect
-      --  specification node, which is then placed in the Rep Item chain.
-      --  In this case we mark the entity with the Has_Delayed_Aspects flag,
-      --  and we evaluate the rep item at the freeze point.
+      --  freeze point, we attach the corresponding pragma/attribute definition
+      --  clause to the aspect specification node, which is then placed in the
+      --  Rep Item chain. In this case we mark the entity by setting the flag
+      --  Has_Delayed_Aspects and we evaluate the rep item at the freeze point.
 
       --  If no delay is required, we just insert the pragma or attribute
       --  after the declaration, and it will get processed by the normal
@@ -800,6 +799,11 @@ package body Sem_Ch13 is
                Next (Anod);
             end loop;
 
+            --  Copy expression for later processing by the procedures
+            --  Check_Aspect_At_[Freeze_Point | End_Of_Declarations]
+
+            Set_Entity (Id, New_Copy_Tree (Expr));
+
             --  Processing based on specific aspect
 
             case A_Id is
@@ -836,6 +840,7 @@ package body Sem_Ch13 is
 
                   else
                      Delay_Required := True;
+                     Set_Is_Delayed_Aspect (Aspect);
                   end if;
 
                --  Aspects corresponding to attribute definition clauses
@@ -868,6 +873,7 @@ package body Sem_Ch13 is
                   --  Here a delay is required
 
                   Delay_Required := True;
+                  Set_Is_Delayed_Aspect (Aspect);
 
                --  Aspects corresponding to pragmas with two arguments, where
                --  the first argument is a local name referring to the entity,
@@ -981,6 +987,7 @@ package body Sem_Ch13 is
                   end if;
 
                   Set_From_Aspect_Specification (Aitem, True);
+                  Set_Is_Delayed_Aspect (Aspect);
 
                   --  For Pre/Post cases, insert immediately after the entity
                   --  declaration, since that is the required pragma placement.
@@ -1032,6 +1039,7 @@ package body Sem_Ch13 is
                   end if;
 
                   Set_From_Aspect_Specification (Aitem, True);
+                  Set_Is_Delayed_Aspect (Aspect);
 
                   --  For Invariant case, insert immediately after the entity
                   --  declaration. We do not have to worry about delay issues
@@ -1065,6 +1073,7 @@ package body Sem_Ch13 is
                   --  have a place to build the predicate function).
 
                   Ensure_Freeze_Node (E);
+                  Set_Is_Delayed_Aspect (Aspect);
 
                   --  For Predicate case, insert immediately after the entity
                   --  declaration. We do not have to worry about delay issues
@@ -4849,6 +4858,161 @@ package body Sem_Ch13 is
       when Non_Static =>
          return;
    end Build_Static_Predicate;
+
+   -----------------------------------------
+   -- Check_Aspect_At_End_Of_Declarations --
+   -----------------------------------------
+
+   procedure Check_Aspect_At_End_Of_Declarations (ASN : Node_Id) is
+      Ent   : constant Entity_Id := Entity     (ASN);
+      Ident : constant Node_Id   := Identifier (ASN);
+
+      Freeze_Expr : constant Node_Id := Expression (ASN);
+      --  Preanalyzed expression from call to Check_Aspect_At_Freeze_Point
+
+      End_Decl_Expr : constant Node_Id := Entity (Ident);
+      --  Expression to be analyzed at end of declarations
+
+      T : constant Entity_Id := Etype (Freeze_Expr);
+      --  Type required for preanalyze call
+
+      A_Id : constant Aspect_Id := Get_Aspect_Id (Chars (Ident));
+
+      Err : Boolean;
+      --  Set False if error
+
+      --  On entry to this procedure, Entity (Ident) contains a copy of the
+      --  original expression from the aspect, saved for this purpose, and
+      --  but Expression (Ident) is a preanalyzed copy of the expression,
+      --  preanalyzed just after the freeze point.
+
+   begin
+      --  Case of stream attributes, just have to compare entities
+
+      if A_Id = Aspect_Input  or else
+         A_Id = Aspect_Output or else
+         A_Id = Aspect_Read   or else
+         A_Id = Aspect_Write
+      then
+         Analyze (End_Decl_Expr);
+         Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
+
+      --  All other cases
+
+      else
+         Preanalyze_Spec_Expression (End_Decl_Expr, T);
+         Err := not Fully_Conformant_Expressions (End_Decl_Expr, Freeze_Expr);
+      end if;
+
+      --  Output error message if error
+
+      if Err then
+         Error_Msg_NE
+           ("visibility of aspect for& changes after freeze point",
+            ASN, Ent);
+         Error_Msg_NE
+           ("?info: & is frozen here, aspects evaluated at this point",
+            Freeze_Node (Ent), Ent);
+      end if;
+   end Check_Aspect_At_End_Of_Declarations;
+
+   ----------------------------------
+   -- Check_Aspect_At_Freeze_Point --
+   ----------------------------------
+
+   procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id) is
+      Ident : constant Node_Id := Identifier (ASN);
+      --  Identifier (use Entity field to save expression)
+
+      T : Entity_Id;
+      --  Type required for preanalyze call
+
+      A_Id : constant Aspect_Id := Get_Aspect_Id (Chars (Ident));
+
+   begin
+      --  On entry to this procedure, Entity (Ident) contains a copy of the
+      --  original expression from the aspect, saved for this purpose.
+
+      --  On exit from this procedure Entity (Ident) is unchanged, still
+      --  containing that copy, but Expression (Ident) is a preanalyzed copy
+      --  of the expression, preanalyzed just after the freeze point.
+
+      --  Make a copy of the expression to be preanalyed
+
+      Set_Expression (ASN, New_Copy_Tree (Entity (Ident)));
+
+      --  Find type for preanalyze call
+
+      case A_Id is
+
+         --  No_Aspect should be impossible
+
+         when No_Aspect =>
+            raise Program_Error;
+
+         --  Aspects taking an optional boolean argument. Note that we will
+         --  never be called with an empty expression, because such aspects
+         --  never need to be delayed anyway.
+
+         when Boolean_Aspects =>
+            pragma Assert (Present (Expression (ASN)));
+            T := Standard_Boolean;
+
+         --  Aspects corresponding to attribute definition clauses
+
+         when Aspect_Address      =>
+            T := RTE (RE_Address);
+
+         when Aspect_Bit_Order    =>
+            T := RTE (RE_Bit_Order);
+
+         when Aspect_External_Tag =>
+            T := Standard_String;
+
+         when Aspect_Storage_Pool =>
+            T := Class_Wide_Type (RTE (RE_Root_Storage_Pool));
+
+         when
+              Aspect_Alignment      |
+              Aspect_Component_Size |
+              Aspect_Machine_Radix  |
+              Aspect_Object_Size    |
+              Aspect_Size           |
+              Aspect_Storage_Size   |
+              Aspect_Stream_Size    |
+              Aspect_Value_Size     =>
+            T := Any_Integer;
+
+         --  Stream attribute. Special case, the expression is just an entity
+         --  that does not need any resolution, so just analyze.
+
+         when Aspect_Input  |
+              Aspect_Output |
+              Aspect_Read   |
+              Aspect_Write  =>
+            Analyze (Expression (ASN));
+            return;
+
+         --  Suppress/Unsupress/Warnings should never be delayed
+
+         when Aspect_Suppress   |
+              Aspect_Unsuppress |
+              Aspect_Warnings   =>
+            raise Program_Error;
+
+         --  Pre/Post/Invariant/Predicate take boolean expressions
+
+         when Aspect_Pre       |
+              Aspect_Post      |
+              Aspect_Invariant |
+              Aspect_Predicate =>
+            T := Standard_Boolean;
+      end case;
+
+      --  Do the preanalyze call
+
+      Preanalyze_Spec_Expression (Expression (ASN), T);
+   end Check_Aspect_At_Freeze_Point;
 
    -----------------------------------
    -- Check_Constant_Address_Clause --

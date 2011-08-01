@@ -455,27 +455,24 @@ package body Ada.Strings.Wide_Fixed is
       if High >= Low then
          declare
             Front_Len : constant Integer :=
-              Integer'Max (0, Low - Source'First);
+                          Integer'Max (0, Low - Source'First);
             --  Length of prefix of Source copied to result
 
-            Back_Len  : constant Integer :=
-              Integer'Max (0, Source'Last - High);
+            Back_Len : constant Integer :=
+                         Integer'Max (0, Source'Last - High);
             --  Length of suffix of Source copied to result
 
             Result_Length : constant Integer :=
-              Front_Len + By'Length + Back_Len;
+                              Front_Len + By'Length + Back_Len;
             --  Length of result
 
-            Result    : Wide_String (1 .. Result_Length);
+            Result : Wide_String (1 .. Result_Length);
 
          begin
-            Result (1 .. Front_Len) :=
-              Source (Source'First .. Low - 1);
-            Result (Front_Len + 1 .. Front_Len + By'Length) :=
-              By;
+            Result (1 .. Front_Len) := Source (Source'First .. Low - 1);
+            Result (Front_Len + 1 .. Front_Len + By'Length) := By;
             Result (Front_Len + By'Length + 1 .. Result'Length) :=
               Source (High + 1 .. Source'Last);
-
             return Result;
          end;
 

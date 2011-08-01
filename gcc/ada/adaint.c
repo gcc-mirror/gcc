@@ -1697,6 +1697,7 @@ __gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
   int name_len;
   BOOL res;
+  DWORD error;
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
   name_len = _tcslen (wname);
@@ -1708,8 +1709,19 @@ __gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
 
   res = GetFileAttributesEx (wname, GetFileExInfoStandard, &fad);
 
-  if (res == FALSE)
-    switch (GetLastError()) {
+  if (res == FALSE) {
+    error = GetLastError();
+
+    /* Check file existence using GetFileAttributes() which does not fail on
+       special Windows files like con:, aux:, nul: etc...  */
+
+    if (GetFileAttributes(wname) != INVALID_FILE_ATTRIBUTES) {
+      /* Just pretend that it is a regular and readable file  */
+      statbuf->st_mode = S_IFREG | S_IREAD | S_IWRITE;
+      return 0;
+    }
+
+    switch (error) {
       case ERROR_ACCESS_DENIED:
       case ERROR_SHARING_VIOLATION:
       case ERROR_LOCK_VIOLATION:
@@ -1722,6 +1734,7 @@ __gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
       default:
 	return ENOENT;
     }
+  }
 
   f2t (&fad.ftCreationTime, &statbuf->st_ctime);
   f2t (&fad.ftLastWriteTime, &statbuf->st_mtime);

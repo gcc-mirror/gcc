@@ -1323,6 +1323,27 @@ package body Freeze is
             if not Is_Frozen (E) then
                Flist := Freeze_Entity (E, After);
                Process_Flist;
+
+            --  If already frozen, and there are delayed aspects, this is where
+            --  we do the visibility check for these aspects (see Sem_Ch13 spec
+            --  for a description of how we handle aspect visibility).
+
+            elsif Has_Delayed_Aspects (E) then
+               declare
+                  Ritem : Node_Id;
+
+               begin
+                  Ritem := First_Rep_Item (E);
+                  while Present (Ritem) loop
+                     if Nkind (Ritem) = N_Aspect_Specification
+                       and then Is_Delayed_Aspect (Ritem)
+                     then
+                        Check_Aspect_At_End_Of_Declarations (Ritem);
+                     end if;
+
+                     Ritem := Next_Rep_Item (Ritem);
+                  end loop;
+               end;
             end if;
 
             --  If an incomplete type is still not frozen, this may be a
@@ -2390,9 +2411,9 @@ package body Freeze is
             while Present (Ritem) loop
                if Nkind (Ritem) = N_Aspect_Specification
                  and then Entity (Ritem) = E
+                 and then Is_Delayed_Aspect (Ritem)
                then
                   Aitem := Aspect_Rep_Item (Ritem);
-                  pragma Assert (Is_Delayed_Aspect (Aitem));
                   Set_Parent (Aitem, Ritem);
 
                   --  Deal with Boolean case, if no expression, True, otherwise
@@ -2423,6 +2444,10 @@ package body Freeze is
                   --  Analyze the pragma after possibly setting Aspect_Cancel
 
                   Analyze (Aitem);
+
+                  --  Do visibility analysis for aspect at freeze point
+
+                  Check_Aspect_At_Freeze_Point (Ritem);
                end if;
 
                Next_Rep_Item (Ritem);

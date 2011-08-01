@@ -404,16 +404,16 @@ package Atree is
    --  with copying aspect specifications where this is required.
 
    function New_Copy (Source : Node_Id) return Node_Id;
-   --  This function allocates a completely new node, and then initializes
-   --  it by copying the contents of the source node into it. The contents
-   --  of the source node is not affected. The target node is always marked
-   --  as not being in a list (even if the source is a list member). The
-   --  new node will have an extension if the source has an extension.
-   --  New_Copy (Empty) returns Empty and New_Copy (Error) returns Error.
-   --  Note that, unlike New_Copy_Tree, New_Copy does not recursively copy any
-   --  descendents, so in general parent pointers are not set correctly for
-   --  the descendents of the copied node. Both normal and extended nodes
-   --  (entities) may be copied using New_Copy.
+   --  This function allocates a completely new node, and then initializes it
+   --  by copying the contents of the source node into it. The contents of the
+   --  source node is not affected. The target node is always marked as not
+   --  being in a list (even if the source is a list member). The new node will
+   --  have an extension if the source has an extension. New_Copy (Empty)
+   --  returns Empty and New_Copy (Error) returns Error. Note that, unlike
+   --  Copy_Separate_Tree, New_Copy does not recursively copy any descendents,
+   --  so in general parent pointers are not set correctly for the descendents
+   --  of the copied node. Both normal and extended nodes (entities) may be
+   --  copied using New_Copy.
 
    function Relocate_Node (Source : Node_Id) return Node_Id;
    --  Source is a non-entity node that is to be relocated. A new node is
