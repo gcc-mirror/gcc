@@ -354,20 +354,22 @@ frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATT
 	  /* We are in a plt call stub or r2 adjusting long branch stub,
 	     before r2 has been saved.  Keep REG_UNSAVED.  */
 	}
-      else if (pc[0] == 0x4E800421
-	       && pc[1] == 0xE8410028)
-	{
-	  /* We are at the bctrl instruction in a call via function
-	     pointer.  gcc always emits the load of the new r2 just
-	     before the bctrl.  */
-	  _Unwind_SetGRPtr (context, 2, context->cfa + 40);
-	}
       else
 	{
 	  unsigned int *insn
 	    = (unsigned int *) _Unwind_GetGR (context, R_LR);
 	  if (insn && *insn == 0xE8410028)
 	    _Unwind_SetGRPtr (context, 2, context->cfa + 40);
+	  else if (pc[0] == 0x4E800421
+		   && pc[1] == 0xE8410028)
+	    {
+	      /* We are at the bctrl instruction in a call via function
+		 pointer.  gcc always emits the load of the new R2 just
+		 before the bctrl so this is the first and only place
+		 we need to use the stored R2.  */
+	      _Unwind_Word sp = _Unwind_GetGR (context, 1);
+	      _Unwind_SetGRPtr (context, 2, sp + 40);
+	    }
 	}
     }
 #endif

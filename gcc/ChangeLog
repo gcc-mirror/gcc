@@ -1,5 +1,15 @@
+2011-08-02  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_save_toc_in_prologue_p): Delete.
+	* config/rs6000/rs6000.c (rs6000_save_toc_in_prologue_p): Make static.
+	(rs6000_emit_prologue): Don't prematurely return when
+	TARGET_SINGLE_PIC_BASE.  Don't emit eh_frame info in
+	save_toc_in_prologue case.
+	(rs6000_call_indirect_aix): Only disallow save_toc_in_prologue for
+	calls_alloca.
+
 2011-08-01  Georg-Johann Lay  <avr@gjlay.de>
-	
+
 	* config/avr/avr-devices.c: Delete SVN property svn:executable.
 	* config/avr/predicates.md: Ditto.
 	* config/avr/driver-avr.c: Ditto.
@@ -137,7 +147,7 @@
 	(loop_carried_phi): Likewise.
 	(propagate_rank): Likewise.
 	(get_rank): Add calls to phi_rank and propagate_rank.
-	
+
 2011-07-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/x86-64.h (SIZE_TYPE): Check TARGET_LP64 instead
