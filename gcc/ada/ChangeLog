@@ -1,5 +1,14 @@
 2011-08-01  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch4.adb (Operator_Check): improve error message when both a
+	with_clause and a use_clause are needed to make operator usage legal.
+	* sem_util.ads, sem_util.adb (Unit_Is_Visible): new predicate to
+	determine whether a compilation unit is visible within an other,
+	either through a with_clause in the current unit, or a with_clause in
+	its library unit or one one of its parents.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch5.adb (Expand_N_Iterator_Loop): handle properly an iterator
 	over an arbitrary expression of an array or container type.
 	* lib-xref.adb: clarify comment.

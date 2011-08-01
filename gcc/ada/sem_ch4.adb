@@ -3222,8 +3222,8 @@ package body Sem_Ch4 is
       if Present (Loop_Parameter_Specification (N)) then
          Iterator :=
            Make_Iteration_Scheme (Loc,
-              Loop_Parameter_Specification =>
-                Loop_Parameter_Specification (N));
+             Loop_Parameter_Specification =>
+               Loop_Parameter_Specification (N));
       else
          Iterator :=
            Make_Iteration_Scheme (Loc,
@@ -5687,8 +5687,22 @@ package body Sem_Ch4 is
                Error_Msg_NE -- CODEFIX
                  ("operator for} is not directly visible!",
                   N, First_Subtype (Candidate_Type));
-               Error_Msg_N -- CODEFIX
-                 ("use clause would make operation legal!",  N);
+
+               declare
+                  U : constant Node_Id :=
+                        Cunit (Get_Source_Unit (Candidate_Type));
+
+               begin
+                  if Unit_Is_Visible (U) then
+                     Error_Msg_N -- CODEFIX
+                       ("use clause would make operation legal!",  N);
+
+                  else
+                     Error_Msg_NE  --  CODEFIX
+                       ("add with_clause and use_clause for&!",
+                          N, Defining_Entity (Unit (U)));
+                  end if;
+               end;
                return;
 
             --  If either operand is a junk operand (e.g. package name), then
