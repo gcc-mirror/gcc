@@ -1,3 +1,15 @@
+2011-08-01  Julian Brown  <julian@codesourcery.com>
+
+	* Makefile.in (LIBGCC_VER_FIXEDPOINT_GNU_PREFIX): New.
+	(libgcc-std.ver.in): Use above.
+	* fixed-bit.h (LIBGCC2_FIXEDBIT_GNU_PREFIX): Define, if
+	LIBGCC2_GNU_PREFIX is defined.  Use instead of LIBGCC2_GNU_PREFIX
+	throughout file.
+	* config/t-fixedpoint-gnu-prefix: New file.
+	* config/t-gnu-prefix (LIBGCC_VER_FIXEDPOINT_GNU_PREFIX): Set.
+	* libgcc-std.ver.in (fixed-point routines): Use __FIXPTPFX__
+	instead of __PFX__.
+
 2011-07-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/morestack.S (X86_64_SAVE_NEW_STACK_BOUNDARY): New.
