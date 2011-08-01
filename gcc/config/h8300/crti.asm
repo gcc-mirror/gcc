@@ -55,9 +55,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
-	.section .init
+	.section .init, "ax", @progbits
         .global  __init
 __init:
-        .section .fini
+        .section .fini, "ax", @progbits
         .global  __fini
 __fini:
