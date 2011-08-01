@@ -874,19 +874,23 @@ package body Exp_Ch4 is
          end if;
 
          if Present (TagT) then
-            Tag_Assign :=
-              Make_Assignment_Statement (Loc,
-                Name =>
-                  Make_Selected_Component (Loc,
-                    Prefix => TagR,
-                    Selector_Name =>
-                      New_Reference_To (First_Tag_Component (TagT), Loc)),
+            declare
+               Full_T : constant Entity_Id := Underlying_Type (TagT);
 
-                Expression =>
-                  Unchecked_Convert_To (RTE (RE_Tag),
-                    New_Reference_To
-                      (Elists.Node (First_Elmt (Access_Disp_Table (TagT))),
-                       Loc)));
+            begin
+               Tag_Assign :=
+                 Make_Assignment_Statement (Loc,
+                   Name =>
+                     Make_Selected_Component (Loc,
+                       Prefix => TagR,
+                       Selector_Name =>
+                         New_Reference_To (First_Tag_Component (Full_T), Loc)),
+                   Expression =>
+                     Unchecked_Convert_To (RTE (RE_Tag),
+                       New_Reference_To
+                         (Elists.Node
+                           (First_Elmt (Access_Disp_Table (Full_T))), Loc)));
+            end;
 
             --  The previous assignment has to be done in any case
 
@@ -10397,6 +10401,7 @@ package body Exp_Ch4 is
       Right : constant Node_Id    := Right_Opnd (N);
       Loc   : constant Source_Ptr := Sloc (N);
 
+      Full_R_Typ : Entity_Id;
       Left_Type  : Entity_Id;
       New_Node   : Node_Id;
       Right_Type : Entity_Id;
@@ -10412,6 +10417,12 @@ package body Exp_Ch4 is
 
       if Is_Class_Wide_Type (Left_Type) then
          Left_Type := Root_Type (Left_Type);
+      end if;
+
+      if Is_Class_Wide_Type (Right_Type) then
+         Full_R_Typ := Underlying_Type (Root_Type (Right_Type));
+      else
+         Full_R_Typ := Underlying_Type (Right_Type);
       end if;
 
       Obj_Tag :=
@@ -10482,8 +10493,7 @@ package body Exp_Ch4 is
                      Prefix => Obj_Tag,
                      Attribute_Name => Name_Address),
                    New_Reference_To (
-                     Node (First_Elmt
-                            (Access_Disp_Table (Root_Type (Right_Type)))),
+                     Node (First_Elmt (Access_Disp_Table (Full_R_Typ))),
                      Loc)));
 
          --  Ada 95: Normal case
@@ -10493,9 +10503,7 @@ package body Exp_Ch4 is
               Obj_Tag_Node => Obj_Tag,
               Typ_Tag_Node =>
                  New_Reference_To (
-                   Node (First_Elmt
-                          (Access_Disp_Table (Root_Type (Right_Type)))),
-                   Loc),
+                   Node (First_Elmt (Access_Disp_Table (Full_R_Typ))),  Loc),
               Related_Nod => N,
               New_Node    => New_Node);
 
@@ -10526,7 +10534,7 @@ package body Exp_Ch4 is
                 Left_Opnd  => Obj_Tag,
                 Right_Opnd =>
                   New_Reference_To
-                    (Node (First_Elmt (Access_Disp_Table (Right_Type))), Loc));
+                    (Node (First_Elmt (Access_Disp_Table (Full_R_Typ))), Loc));
          end if;
       end if;
    end Tagged_Membership;

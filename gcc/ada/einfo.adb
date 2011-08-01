@@ -573,7 +573,8 @@ package body Einfo is
 
    function Access_Disp_Table (Id : E) return L is
    begin
-      pragma Assert (Is_Tagged_Type (Id));
+      pragma Assert (Ekind_In (Id, E_Record_Type,
+                                   E_Record_Subtype));
       return Elist16 (Implementation_Base_Type (Id));
    end Access_Disp_Table;
 
@@ -882,7 +883,8 @@ package body Einfo is
 
    function Dispatch_Table_Wrappers (Id : E) return L is
    begin
-      pragma Assert (Is_Tagged_Type (Id));
+      pragma Assert (Ekind_In (Id, E_Record_Type,
+                                   E_Record_Subtype));
       return Elist26 (Implementation_Base_Type (Id));
    end Dispatch_Table_Wrappers;
 
@@ -2996,7 +2998,9 @@ package body Einfo is
 
    procedure Set_Access_Disp_Table (Id : E; V : L) is
    begin
-      pragma Assert (Is_Tagged_Type (Id) and then Is_Base_Type (Id));
+      pragma Assert (Ekind (Id) = E_Record_Type
+        and then Id = Implementation_Base_Type (Id));
+      pragma Assert (V = No_Elist or else Is_Tagged_Type (Id));
       Set_Elist16 (Id, V);
    end Set_Access_Disp_Table;
 
@@ -3302,12 +3306,9 @@ package body Einfo is
 
    procedure Set_Dispatch_Table_Wrappers (Id : E; V : L) is
    begin
-      pragma Assert (Is_Tagged_Type (Id)
-        and then Is_Base_Type (Id)
-        and then Ekind_In (Id, E_Record_Type,
-                               E_Record_Subtype,
-                               E_Record_Type_With_Private,
-                               E_Record_Subtype_With_Private));
+      pragma Assert (Ekind (Id) = E_Record_Type
+        and then Id = Implementation_Base_Type (Id));
+      pragma Assert (V = No_Elist or else Is_Tagged_Type (Id));
       Set_Elist26 (Id, V);
    end Set_Dispatch_Table_Wrappers;
 
@@ -4312,13 +4313,7 @@ package body Einfo is
 
    procedure Set_Is_Interface (Id : E; V : B := True) is
    begin
-      pragma Assert
-        (Ekind_In (Id, E_Record_Type,
-                       E_Record_Subtype,
-                       E_Record_Type_With_Private,
-                       E_Record_Subtype_With_Private,
-                       E_Class_Wide_Type,
-                       E_Class_Wide_Subtype));
+      pragma Assert (Is_Record_Type (Id));
       Set_Flag186 (Id, V);
    end Set_Is_Interface;
 

@@ -359,6 +359,14 @@ package body Sem_Ch6 is
       Scop       : constant Entity_Id := Current_Scope;
 
    begin
+      --  Abstract subprogram is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode then
+         Formal_Error_Msg_N ("abstract subprogram is not allowed", N);
+      end if;
+
+      --  Proceed with analysis
+
       Generate_Definition (Designator);
       Set_Is_Abstract_Subprogram (Designator);
       New_Overloaded_Entity (Designator);
@@ -3034,6 +3042,16 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Specification
 
    begin
+      --  User-defined operator is not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode
+        and then Nkind (Defining_Unit_Name (N)) = N_Defining_Operator_Symbol
+      then
+         Formal_Error_Msg_N ("user-defined operator is not allowed", N);
+      end if;
+
+      --  Proceed with analysis
+
       Generate_Definition (Designator);
 
       if Nkind (N) = N_Function_Specification then
@@ -8662,7 +8680,24 @@ package body Sem_Ch6 is
          Set_Etype (Formal, Formal_Type);
          Default := Expression (Param_Spec);
 
+         --  Access parameter is not allowed in SPARK or ALFA
+
+         if Formal_Verification_Mode
+           and then Ekind (Formal_Type) = E_Anonymous_Access_Type
+         then
+            Formal_Error_Msg_N ("access parameter is not allowed", Param_Spec);
+         end if;
+
          if Present (Default) then
+            --  Default expression is not allowed in SPARK or ALFA
+
+            if Formal_Verification_Mode then
+               Formal_Error_Msg_N
+                 ("default expression is not allowed", Default);
+            end if;
+
+            --  Proceed with analysis
+
             if Out_Present (Param_Spec) then
                Error_Msg_N
                  ("default initialization only allowed for IN parameters",

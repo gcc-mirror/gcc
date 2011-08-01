@@ -1186,6 +1186,7 @@ package body Sem_Ch5 is
          then
             Formal_Error_Msg_N
               ("exit label must name the closest enclosing loop", N);
+            return;
          else
             Set_Has_Exit (U_Name);
          end if;
@@ -1863,6 +1864,16 @@ package body Sem_Ch5 is
                      Set_Hiding_Loop_Variable (H, Id);
                   end if;
                end;
+
+               --  Loop parameter specification must include subtype mark in
+               --  SPARK or ALFA
+
+               if Formal_Verification_Mode
+                 and then Nkind (DS) = N_Range
+               then
+                  Formal_Error_Msg_N ("loop parameter specification must "
+                                      & "include subtype mark", N);
+               end if;
 
                --  Now analyze the subtype definition. If it is a range, create
                --  temporaries for bounds.

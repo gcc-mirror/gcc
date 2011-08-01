@@ -919,7 +919,7 @@ package body Exp_Disp is
 
       else
          Build_Get_Prim_Op_Address (Loc,
-           Typ      => Find_Dispatching_Type (Subp),
+           Typ      => Underlying_Type (Find_Dispatching_Type (Subp)),
            Tag_Node => Controlling_Tag,
            Position => DT_Position (Subp),
            New_Node => New_Node);
@@ -1106,6 +1106,10 @@ package body Exp_Disp is
       if Is_Concurrent_Type (Iface_Typ) then
          Iface_Typ := Corresponding_Record_Type (Iface_Typ);
       end if;
+
+      --  Handle private types
+
+      Iface_Typ := Underlying_Type (Iface_Typ);
 
       --  Freeze the entity associated with the target interface to have
       --  available the attribute Access_Disp_Table.

@@ -1,3 +1,47 @@
+2011-08-01  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch7.adb (Uninstall_Declarations): Remove useless code.
+	* einfo.ads (Access_Disp_Table): Fix documentation.
+	(Dispatch_Table_Wrappers): Fix documentation.
+	* einfo.adb (Access_Disp_Table, Dispatch_Table_Wrappers,
+	Set_Access_Disp_Table, Set_Dispatch_Table_Wrappers): Fix the assertions
+	to enforce the documentation of this attribute.
+	(Set_Is_Interface): Cleanup the assertion.
+	* exp_ch4.adb (Expand_Allocator_Expression, Tagged_Membership): Locate
+	the Underlying_Type entity before reading attribute Access_Disp_Table.
+	* exp_disp.adb (Expand_Dispatching_Call, Expand_Interface_Conversion):
+	Locate the Underlying_Type before reading attribute Access_Disp_Table.
+	* exp_aggr.adb (Build_Array_Aggr_Code, Build_Record_Aggr_Code): Locate
+	the Underlying_Type entity before reading attribute Access_Disp_Table.
+	* exp_ch3.adb (Build_Record_Init_Proc, Expand_N_Object_Declaration):
+	Locate the Underlying_Type entity before reading attribute
+	Access_Disp_Table.
+
+2011-08-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* s-poosiz.ads: Additional overriding indicators.
+
+2011-08-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch5.adb (Analyze_Exit_Statement): add return after error in
+	formal mode.
+	(Analyze_Iteration_Scheme): issue error in formal mode when loop
+	parameter specification does not include a subtype mark.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration): issue error in
+	formal mode on abstract subprogram.
+	(Analyze_Subprogram_Specification): issue error in formal mode on
+	user-defined operator.
+	(Process_Formals): issue error in formal mode on access parameter and
+	default expression.
+	* sem_ch9.adb (Analyze_Abort_Statement,
+	Analyze_Accept_Statement, Analyze_Asynchronous_Select,
+	Analyze_Conditional_Entry_Call, Analyze_Delay_Relative,
+	Analyze_Delay_Until, Analyze_Entry_Call_Alternative,
+	Analyze_Requeue, Analyze_Selective_Accept,
+	Analyze_Timed_Entry_Call): issue error in formal mode on such constructs
+	* sem_ch11.adb (Analyze_Raise_Statement, Analyze_Raise_xxx_Error):
+	issue error in formal mode on user-defined raise statement.
+
 2011-08-01  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch6.adb (Enter_Overloaded_Entity): Do not warn about a

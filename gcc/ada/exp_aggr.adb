@@ -1211,22 +1211,27 @@ package body Exp_Aggr is
               and then Is_Tagged_Type (Comp_Type)
               and then Tagged_Type_Expansion
             then
-               A :=
-                 Make_OK_Assignment_Statement (Loc,
-                   Name =>
-                     Make_Selected_Component (Loc,
-                       Prefix =>  New_Copy_Tree (Indexed_Comp),
-                       Selector_Name =>
-                         New_Reference_To
-                           (First_Tag_Component (Comp_Type), Loc)),
+               declare
+                  Full_Typ : constant Entity_Id := Underlying_Type (Comp_Type);
 
-                   Expression =>
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To
-                         (Node (First_Elmt (Access_Disp_Table (Comp_Type))),
-                          Loc)));
+               begin
+                  A :=
+                    Make_OK_Assignment_Statement (Loc,
+                      Name =>
+                        Make_Selected_Component (Loc,
+                          Prefix =>  New_Copy_Tree (Indexed_Comp),
+                          Selector_Name =>
+                            New_Reference_To
+                              (First_Tag_Component (Full_Typ), Loc)),
 
-               Append_To (L, A);
+                      Expression =>
+                        Unchecked_Convert_To (RTE (RE_Tag),
+                          New_Reference_To
+                            (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
+                             Loc)));
+
+                  Append_To (L, A);
+               end;
             end if;
 
             --  Adjust and attach the component to the proper final list, which
@@ -2982,7 +2987,7 @@ package body Exp_Aggr is
                Gen_Ctrl_Actions_For_Aggr;
             end if;
 
-            Comp_Type := Etype (Selector);
+            Comp_Type := Underlying_Type (Etype (Selector));
             Comp_Expr :=
               Make_Selected_Component (Loc,
                 Prefix        => New_Copy_Tree (Target),
