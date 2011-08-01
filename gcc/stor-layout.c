@@ -2203,6 +2203,8 @@ initialize_sizetypes (void)
     precision = LONG_TYPE_SIZE;
   else if (strcmp (SIZE_TYPE, "long long unsigned int") == 0)
     precision = LONG_LONG_TYPE_SIZE;
+  else if (strcmp (SIZE_TYPE, "short unsigned int") == 0)
+    precision = SHORT_TYPE_SIZE;
   else
     gcc_unreachable ();
 
