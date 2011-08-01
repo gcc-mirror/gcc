@@ -5678,12 +5678,14 @@ package body Sem_Prag is
 
       --  Preset arguments
 
+      Arg_Count := 0;
       Arg1 := Empty;
       Arg2 := Empty;
       Arg3 := Empty;
       Arg4 := Empty;
 
       if Present (Pragma_Argument_Associations (N)) then
+         Arg_Count := List_Length (Pragma_Argument_Associations (N));
          Arg1 := First (Pragma_Argument_Associations (N));
 
          if Present (Arg1) then
@@ -5698,19 +5700,6 @@ package body Sem_Prag is
             end if;
          end if;
       end if;
-
-      --  Count number of arguments
-
-      declare
-         Arg_Node : Node_Id;
-      begin
-         Arg_Count := 0;
-         Arg_Node := Arg1;
-         while Present (Arg_Node) loop
-            Arg_Count := Arg_Count + 1;
-            Next (Arg_Node);
-         end loop;
-      end;
 
       --  An enumeration type defines the pragmas that are supported by the
       --  implementation. Get_Pragma_Id (in package Prag) transforms a name
