@@ -3901,6 +3901,10 @@ java resource java/util/iso4217.properties
 --format=gnu-v3
 _Z3addIidEDTplfp_fp0_ET_T0_
 decltype ({parm#1}+{parm#2}) add<int, double>(int, double)
+# decltype scope test
+--format=gnu-v3
+_Z1fI1SENDtfp_E4typeET_
+decltype ({parm#1})::type f<S>(S)
 # decltype/fn call test
 --format=gnu-v3
 _Z4add3IidEDTclL_Z1gEfp_fp0_EET_T0_

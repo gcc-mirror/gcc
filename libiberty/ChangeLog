@@ -1,3 +1,9 @@
+2011-08-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/49932
+	* cp-demangle.c (d_prefix): Handle decltype.
+	* testsuite/demangle-expected: Test it.
+
 2011-07-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* testsuite/demangle-expected: Remove an extra line.

@@ -1,5 +1,8 @@
 2011-08-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49932
+	* mangle.c (write_prefix): Handle decltype.
+
 	PR c++/49924
 	* semantics.c (cxx_eval_vec_init_1): Fix logic.
 
