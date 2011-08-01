@@ -1696,6 +1696,14 @@ package body Sinfo is
       return Flag7 (N);
    end Is_Asynchronous_Call_Block;
 
+   function Is_Boolean_Aspect
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      return Flag16 (N);
+   end Is_Boolean_Aspect;
+
    function Is_Component_Left_Opnd
       (N : Node_Id) return Boolean is
    begin
@@ -4715,6 +4723,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Block_Statement);
       Set_Flag7 (N, Val);
    end Set_Is_Asynchronous_Call_Block;
+
+   procedure Set_Is_Boolean_Aspect
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification);
+      Set_Flag16 (N, Val);
+   end Set_Is_Boolean_Aspect;
 
    procedure Set_Is_Component_Left_Opnd
       (N : Node_Id; Val : Boolean := True) is

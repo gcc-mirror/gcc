@@ -1252,6 +1252,10 @@ package Sinfo is
    --    expansion of an asynchronous entry call. Such a block needs cleanup
    --    handler to assure that the call is cancelled.
 
+   --  Is_Boolean_Aspect (Flag16-Sem)
+   --    Present in N_Aspect_Specification node. Set if the aspect is for a
+   --    boolean aspect (i.e. Aspect_Id is in Boolean_Aspect subtype).
+
    --  Is_Component_Left_Opnd  (Flag13-Sem)
    --  Is_Component_Right_Opnd (Flag14-Sem)
    --    Present in concatenation nodes, to indicate that the corresponding
@@ -6543,6 +6547,7 @@ package Sinfo is
       --  Class_Present (Flag6) Set if 'Class present
       --  Next_Rep_Item (Node5-Sem)
       --  Split_PPC (Flag17) Set if split pre/post attribute
+      --  Is_Boolean_Aspect (Flag16-Sem)
 
       --  Note: Aspect_Specification is an Ada 2012 feature
 
@@ -8487,6 +8492,9 @@ package Sinfo is
    function Is_Asynchronous_Call_Block
      (N : Node_Id) return Boolean;    -- Flag7
 
+   function Is_Boolean_Aspect
+     (N : Node_Id) return Boolean;    -- Flag16
+
    function Is_Component_Left_Opnd
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -9449,6 +9457,9 @@ package Sinfo is
 
    procedure Set_Is_Asynchronous_Call_Block
      (N : Node_Id; Val : Boolean := True);    -- Flag7
+
+   procedure Set_Is_Boolean_Aspect
+     (N : Node_Id; Val : Boolean := True);    -- Flag16
 
    procedure Set_Is_Component_Left_Opnd
      (N : Node_Id; Val : Boolean := True);    -- Flag13
@@ -11793,6 +11804,7 @@ package Sinfo is
    pragma Inline (Iterator_Specification);
    pragma Inline (Is_Accessibility_Actual);
    pragma Inline (Is_Asynchronous_Call_Block);
+   pragma Inline (Is_Boolean_Aspect);
    pragma Inline (Is_Component_Left_Opnd);
    pragma Inline (Is_Component_Right_Opnd);
    pragma Inline (Is_Controlling_Actual);
@@ -12110,6 +12122,7 @@ package Sinfo is
    pragma Inline (Set_Iterator_Specification);
    pragma Inline (Set_Is_Accessibility_Actual);
    pragma Inline (Set_Is_Asynchronous_Call_Block);
+   pragma Inline (Set_Is_Boolean_Aspect);
    pragma Inline (Set_Is_Component_Left_Opnd);
    pragma Inline (Set_Is_Component_Right_Opnd);
    pragma Inline (Set_Is_Controlling_Actual);

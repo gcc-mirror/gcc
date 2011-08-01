@@ -232,9 +232,13 @@ package body Exp_Ch13 is
             Ritem : Node_Id;
 
          begin
+            --  Look for aspect specs for this entity
+
             Ritem := First_Rep_Item (E);
             while Present (Ritem) loop
-               if Nkind (Ritem) = N_Aspect_Specification then
+               if Nkind (Ritem) = N_Aspect_Specification
+                 and then Entity (Ritem) = E
+               then
                   Aitem := Aspect_Rep_Item (Ritem);
                   pragma Assert (Is_Delayed_Aspect (Aitem));
                   Insert_Before (N, Aitem);
@@ -288,7 +292,7 @@ package body Exp_Ch13 is
 
       if Ekind (E_Scope) = E_Protected_Type
         or else (Ekind (E_Scope) = E_Task_Type
-                   and then not Has_Completion (E_Scope))
+                  and then not Has_Completion (E_Scope))
       then
          E_Scope := Scope (E_Scope);
 
