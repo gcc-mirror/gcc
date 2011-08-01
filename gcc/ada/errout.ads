@@ -679,8 +679,7 @@ package Errout is
    --  error messages from the analyzer). The message text may contain a
    --  single & insertion, which will reference the given node. The message is
    --  suppressed if the node N already has a message posted, or if it is a
-   --  warning and warnings and N is an entity node for which warnings are
-   --  suppressed.
+   --  warning and N is an entity node for which warnings are suppressed.
 
    procedure Error_Msg_F (Msg : String; N : Node_Id);
    --  Similar to Error_Msg_N except that the message is placed on the first

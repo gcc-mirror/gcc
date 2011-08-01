@@ -1673,6 +1673,12 @@ package body CStand is
       procedure P_Float_Range (Id : Entity_Id);
       --  Prints the bounds range for the given float type entity
 
+      procedure P_Float_Type (Id : Entity_Id);
+      --  Prints the type declaration of the given float type entity
+
+      procedure P_Mixed_Name (Id : Name_Id);
+      --  Prints Id in mixed case
+
       -------------------
       -- P_Float_Range --
       -------------------
@@ -1686,6 +1692,26 @@ package body CStand is
          Write_Str (";");
          Write_Eol;
       end P_Float_Range;
+
+      ------------------
+      -- P_Float_Type --
+      ------------------
+
+      procedure P_Float_Type (Id : Entity_Id) is
+      begin
+         Write_Str ("   type ");
+         P_Mixed_Name (Chars (Id));
+         Write_Str (" is digits ");
+         Write_Int (UI_To_Int (Digits_Value (Id)));
+         Write_Eol;
+         P_Float_Range (Id);
+         Write_Str ("   for ");
+         P_Mixed_Name (Chars (Id));
+         Write_Str ("'Size use ");
+         Write_Int (UI_To_Int (RM_Size (Id)));
+         Write_Line (";");
+         Write_Eol;
+      end P_Float_Type;
 
       -----------------
       -- P_Int_Range --
@@ -1701,6 +1727,23 @@ package body CStand is
          Write_Str (" - 1);");
          Write_Eol;
       end P_Int_Range;
+
+      ------------------
+      -- P_Mixed_Name --
+      ------------------
+
+      procedure P_Mixed_Name (Id : Name_Id) is
+      begin
+         Get_Name_String (Id);
+
+         for J in 1 .. Name_Len loop
+            if J = 1 or else Name_Buffer (J - 1) = '_' then
+               Name_Buffer (J) := Fold_Upper (Name_Buffer (J));
+            end if;
+         end loop;
+
+         Write_Str (Name_Buffer (1 .. Name_Len));
+      end P_Mixed_Name;
 
    --  Start of processing for Print_Standard
 
@@ -1764,41 +1807,10 @@ package body CStand is
 
       --  Floating point types
 
-      Write_Str ("   type Short_Float is digits ");
-      Write_Int (Standard_Short_Float_Digits);
-      Write_Eol;
-      P_Float_Range (Standard_Short_Float);
-      Write_Str ("   for Short_Float'Size use ");
-      Write_Int (Standard_Short_Float_Size);
-      P (";");
-      Write_Eol;
-
-      Write_Str ("   type Float is digits ");
-      Write_Int (Standard_Float_Digits);
-      Write_Eol;
-      P_Float_Range (Standard_Float);
-      Write_Str ("   for Float'Size use ");
-      Write_Int (Standard_Float_Size);
-      P (";");
-      Write_Eol;
-
-      Write_Str ("   type Long_Float is digits ");
-      Write_Int (Standard_Long_Float_Digits);
-      Write_Eol;
-      P_Float_Range (Standard_Long_Float);
-      Write_Str ("   for Long_Float'Size use ");
-      Write_Int (Standard_Long_Float_Size);
-      P (";");
-      Write_Eol;
-
-      Write_Str ("   type Long_Long_Float is digits ");
-      Write_Int (Standard_Long_Long_Float_Digits);
-      Write_Eol;
-      P_Float_Range (Standard_Long_Long_Float);
-      Write_Str ("   for Long_Long_Float'Size use ");
-      Write_Int (Standard_Long_Long_Float_Size);
-      P (";");
-      Write_Eol;
+      P_Float_Type (Standard_Short_Float);
+      P_Float_Type (Standard_Float);
+      P_Float_Type (Standard_Long_Float);
+      P_Float_Type (Standard_Long_Long_Float);
 
       P ("   type Character is (...)");
       Write_Str ("   for Character'Size use ");
