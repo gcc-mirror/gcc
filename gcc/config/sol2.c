@@ -228,7 +228,7 @@ solaris_elf_asm_comdat_section (const char *name, unsigned int flags, tree decl)
      for Sun as.  With a few exceptions, this is already the case.  To
      identify the missing ones without changing the affected frontents,
      remember the signature symbols and emit those not marked
-     TREE_SYMBOL_REFERENCED in solaris_code_end.  */
+     TREE_SYMBOL_REFERENCED in solaris_file_end.  */
   if (solaris_comdat_htab == NULL)
     solaris_comdat_htab = htab_create_alloc (37, comdat_hash, comdat_eq, NULL,
 					     xcalloc, free);
@@ -275,7 +275,7 @@ solaris_define_comdat_signature (void **slot, void *aux ATTRIBUTE_UNUSED)
 /* Emit unreferenced COMDAT group signature symbols for Sun as.  */
 
 void
-solaris_code_end (void)
+solaris_file_end (void)
 {
   if (solaris_comdat_htab == NULL)
     return;

@@ -160,6 +160,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION i386_solaris_elf_named_section
 
+#ifndef USE_GAS
+/* Emit COMDAT group signature symbols for Sun as.  */
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END solaris_file_end
+#endif
+
 /* Unlike GNU ld, Sun ld doesn't coalesce .ctors.N/.dtors.N sections, so
    inhibit their creation.  Also cf. sparc/sysv4.h.  */
 #ifndef USE_GLD

@@ -8318,10 +8318,6 @@ ix86_code_end (void)
   rtx xops[2];
   int regno;
 
-#ifdef TARGET_SOLARIS
-  solaris_code_end ();
-#endif
-
   for (regno = AX_REG; regno <= SP_REG; regno++)
     {
       char name[32];
