@@ -1336,6 +1336,7 @@ package body Freeze is
                   Ritem := First_Rep_Item (E);
                   while Present (Ritem) loop
                      if Nkind (Ritem) = N_Aspect_Specification
+                       and then Entity (Ritem) = E
                        and then Is_Delayed_Aspect (Ritem)
                      then
                         Check_Aspect_At_End_Of_Declarations (Ritem);
@@ -2444,10 +2445,6 @@ package body Freeze is
                   --  Analyze the pragma after possibly setting Aspect_Cancel
 
                   Analyze (Aitem);
-
-                  --  Do visibility analysis for aspect at freeze point
-
-                  Check_Aspect_At_Freeze_Point (Ritem);
                end if;
 
                Next_Rep_Item (Ritem);

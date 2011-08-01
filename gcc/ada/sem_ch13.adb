@@ -721,13 +721,6 @@ package body Sem_Ch13 is
          return;
       end if;
 
-      --  Return if already analyzed (avoids duplicate calls in some cases
-      --  where type declarations get rewritten and processed twice).
-
-      if Analyzed (N) then
-         return;
-      end if;
-
       --  Loop through aspects
 
       Aspect := First (L);
@@ -744,6 +737,13 @@ package body Sem_Ch13 is
             --  Source location of expression, modified when we split PPC's
 
          begin
+            --  Skip aspect if already analyzed (not clear if this is needed)
+
+            if Analyzed (Aspect) then
+               goto Continue;
+            end if;
+
+            Set_Analyzed (Aspect);
             Set_Entity (Aspect, E);
             Ent := New_Occurrence_Of (E, Sloc (Id));
 
@@ -870,10 +870,16 @@ package body Sem_Ch13 is
                       Chars      => Chars (Id),
                       Expression => Relocate_Node (Expr));
 
-                  --  Here a delay is required
+                  --  A delay is required except in the common case where
+                  --  the expression is a literal, in which case it is fine
+                  --  to take care of it right away.
 
-                  Delay_Required := True;
-                  Set_Is_Delayed_Aspect (Aspect);
+                  if Nkind_In (Expr, N_Integer_Literal, N_String_Literal) then
+                     Delay_Required := False;
+                  else
+                     Delay_Required := True;
+                     Set_Is_Delayed_Aspect (Aspect);
+                  end if;
 
                --  Aspects corresponding to pragmas with two arguments, where
                --  the first argument is a local name referring to the entity,
@@ -1050,9 +1056,7 @@ package body Sem_Ch13 is
 
                --  Predicate aspects generate a corresponding pragma with a
                --  first argument that is the entity, and the second argument
-               --  is the expression. This is inserted immediately after the
-               --  declaration, to get the required pragma placement. The
-               --  pragma processing takes care of the required delay.
+               --  is the expression.
 
                when Aspect_Dynamic_Predicate |
                     Aspect_Predicate         |
@@ -1083,15 +1087,10 @@ package body Sem_Ch13 is
                   --  missing in cases like subtype X is Y, and we would not
                   --  have a place to build the predicate function).
 
+                  Set_Has_Predicates (E);
                   Ensure_Freeze_Node (E);
                   Set_Is_Delayed_Aspect (Aspect);
-
-                  --  For Predicate case, insert immediately after the entity
-                  --  declaration. We do not have to worry about delay issues
-                  --  since the pragma processing takes care of this.
-
-                  Insert_After (N, Aitem);
-                  goto Continue;
+                  Delay_Required := True;
             end case;
 
             Set_From_Aspect_Specification (Aitem, True);
@@ -3045,6 +3044,33 @@ package body Sem_Ch13 is
       if Is_Type (E) and then Has_Predicates (E) then
          Build_Predicate_Function (E, N);
       end if;
+
+      --  If type has delayed aspects, this is where we do the preanalysis
+      --  at the freeze point, as part of the consistent visibility check.
+      --  Note that this must be done after calling Build_Predicate_Function,
+      --  since that call marks occurrences of the subtype name in the saved
+      --  expression so that they will not cause trouble in the preanalysis.
+
+      if Has_Delayed_Aspects (E) then
+         declare
+            Ritem : Node_Id;
+
+         begin
+            --  Look for aspect specification entries for this entity
+
+            Ritem := First_Rep_Item (E);
+            while Present (Ritem) loop
+               if Nkind (Ritem) = N_Aspect_Specification
+                 and then Entity (Ritem) = E
+                 and then Is_Delayed_Aspect (Ritem)
+               then
+                  Check_Aspect_At_Freeze_Point (Ritem);
+               end if;
+
+               Next_Rep_Item (Ritem);
+            end loop;
+         end;
+      end if;
    end Analyze_Freeze_Entity;
 
    ------------------------------------------
@@ -3619,6 +3645,35 @@ package body Sem_Ch13 is
 
                Replace_Type_References (Exp, Chars (T));
 
+               --  If this invariant comes from an aspect, find the aspect
+               --  specification, and replace the saved expression because
+               --  we need the subtype references replaced for the calls to
+               --  Preanalyze_Spec_Expressin in Check_Aspect_At_Freeze_Point
+               --  and Check_Aspect_At_End_Of_Declarations.
+
+               if From_Aspect_Specification (Ritem) then
+                  declare
+                     Aitem : Node_Id;
+
+                  begin
+                     --  Loop to find corresponding aspect, note that this
+                     --  must be present given the pragma is marked delayed.
+
+                     Aitem := Next_Rep_Item (Ritem);
+                     while Present (Aitem) loop
+                        if Nkind (Aitem) = N_Aspect_Specification
+                          and then Aspect_Rep_Item (Aitem) = Ritem
+                        then
+                           Set_Entity
+                             (Identifier (Aitem), New_Copy_Tree (Exp));
+                           exit;
+                        end if;
+
+                        Aitem := Next_Rep_Item (Aitem);
+                     end loop;
+                  end;
+               end if;
+
                --  Now we need to preanalyze the expression to properly capture
                --  the visibility in the visible part. The expression will not
                --  be analyzed for real until the body is analyzed, but that is
@@ -3829,6 +3884,10 @@ package body Sem_Ch13 is
       Object_Name : constant Name_Id := New_Internal_Name ('I');
       --  Name for argument of Predicate procedure
 
+      Object_Entity : constant Entity_Id :=
+                        Make_Defining_Identifier (Loc, Object_Name);
+      --  The entity for the spec entity for the argument
+
       Dynamic_Predicate_Present : Boolean := False;
       --  Set True if a dynamic predicate is present, results in the entire
       --  predicate being considered dynamic even if it looks static
@@ -3911,6 +3970,8 @@ package body Sem_Ch13 is
          procedure Replace_Type_Reference (N : Node_Id) is
          begin
             Rewrite (N, Make_Identifier (Loc, Object_Name));
+            Set_Entity (N, Object_Entity);
+            Set_Etype (N, Typ);
          end Replace_Type_Reference;
 
       --  Start of processing for Add_Predicates
@@ -3927,6 +3988,8 @@ package body Sem_Ch13 is
                   Static_Predicate_Present := Ritem;
                end if;
 
+               --  Acquire arguments
+
                Arg1 := First (Pragma_Argument_Associations (Ritem));
                Arg2 := Next (Arg1);
 
@@ -3939,12 +4002,41 @@ package body Sem_Ch13 is
 
                   --  We have a match, this entry is for our subtype
 
-                  --  First We need to replace any occurrences of the name of
-                  --  the type with references to the object.
+                  --  We need to replace any occurrences of the name of the
+                  --  type with references to the object.
 
                   Replace_Type_References (Arg2, Chars (Typ));
 
-                  --  OK, replacement complete, now we can add the expression
+                  --  If this predicate comes from an aspect, find the aspect
+                  --  specification, and replace the saved expression because
+                  --  we need the subtype references replaced for the calls to
+                  --  Preanalyze_Spec_Expressin in Check_Aspect_At_Freeze_Point
+                  --  and Check_Aspect_At_End_Of_Declarations.
+
+                  if From_Aspect_Specification (Ritem) then
+                     declare
+                        Aitem : Node_Id;
+
+                     begin
+                        --  Loop to find corresponding aspect, note that this
+                        --  must be present given the pragma is marked delayed.
+
+                        Aitem := Next_Rep_Item (Ritem);
+                        loop
+                           if Nkind (Aitem) = N_Aspect_Specification
+                             and then Aspect_Rep_Item (Aitem) = Ritem
+                           then
+                              Set_Entity
+                                (Identifier (Aitem), New_Copy_Tree (Arg2));
+                              exit;
+                           end if;
+
+                           Aitem := Next_Rep_Item (Aitem);
+                        end loop;
+                     end;
+                  end if;
+
+                  --  Now we can add the expression
 
                   if No (Expr) then
                      Expr := Relocate_Node (Arg2);
@@ -4011,8 +4103,7 @@ package body Sem_Ch13 is
              Defining_Unit_Name       => SId,
              Parameter_Specifications => New_List (
                Make_Parameter_Specification (Loc,
-                 Defining_Identifier =>
-                   Make_Defining_Identifier (Loc, Object_Name),
+                 Defining_Identifier => Object_Entity,
                  Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
              Result_Definition        =>
                New_Occurrence_Of (Standard_Boolean, Loc));
