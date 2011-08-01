@@ -1,3 +1,7 @@
+2011-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Generated.
+
 2011-08-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/49813
