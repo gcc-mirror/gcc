@@ -685,3 +685,7 @@ struct GTY(()) machine_function
   /* 'true' if a callee might be tail called */
   int sibcall_fails;
 };
+
+/* AVR does not round pushes, but the existance of this macro is
+   required in order for pushes to be generated.  */
+#define PUSH_ROUNDING(X)	(X)
