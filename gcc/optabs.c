@@ -3959,11 +3959,13 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	 result against 1 in the biased case, and zero in the unbiased
 	 case. For unsigned comparisons always compare against 1 after
 	 biasing the unbiased result by adding 1. This gives us a way to
-	 represent LTU. */
+	 represent LTU.
+	 The comparisons in the fixed-point helper library are always
+	 biased.  */
       x = result;
       y = const1_rtx;
 
-      if (!TARGET_LIB_INT_CMP_BIASED)
+      if (!TARGET_LIB_INT_CMP_BIASED && !ALL_FIXED_POINT_MODE_P (mode))
 	{
 	  if (unsignedp)
 	    x = plus_constant (result, 1);
