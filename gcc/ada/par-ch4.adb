@@ -669,6 +669,10 @@ package body Ch4 is
             --  Test for => (allow := as error substitute)
 
             if Token = Tok_Arrow or else Token = Tok_Colon_Equal then
+               if SPARK_Mode then
+                  Formal_Error_Msg_SP ("no mixing of positional and named "
+                                       & "parameter association");
+               end if;
                Restore_Scan_State (Scan_State); -- to Id
                goto LP_State_Call;
 

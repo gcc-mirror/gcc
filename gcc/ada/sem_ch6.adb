@@ -1398,6 +1398,13 @@ package body Sem_Ch6 is
       if Result_Definition (N) /= Error then
          if Nkind (Result_Definition (N)) = N_Access_Definition then
 
+            --  Access result is not allowed in SPARK or ALFA
+
+            if Formal_Verification_Mode then
+               Formal_Error_Msg_N
+                 ("access result is not allowed", Result_Definition (N));
+            end if;
+
             --  Ada 2005 (AI-254): Handle anonymous access to subprograms
 
             declare
@@ -1425,6 +1432,17 @@ package body Sem_Ch6 is
             Find_Type (Result_Definition (N));
             Typ := Entity (Result_Definition (N));
             Set_Etype (Designator, Typ);
+
+            --  Unconstrained array as result is not allowed in SPARK or ALFA
+
+            if Formal_Verification_Mode
+              and then Is_Array_Type (Typ)
+              and then not Is_Constrained (Typ)
+            then
+               Formal_Error_Msg_N
+                 ("returning an unconstrained array is not allowed",
+                 Result_Definition (N));
+            end if;
 
             --  Ada 2005 (AI-231): Ensure proper usage of null exclusion
 
@@ -2806,6 +2824,15 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Declaration
 
    begin
+      --  Null procedures are not allowed in SPARK or ALFA
+
+      if Formal_Verification_Mode
+        and then Nkind (Specification (N)) = N_Procedure_Specification
+        and then Null_Present (Specification (N))
+      then
+         Formal_Error_Msg_N ("null procedure not allowed", N);
+      end if;
+
       --  For a null procedure, capture the profile before analysis, for
       --  expansion at the freeze point and at each point of call. The body
       --  will only be used if the procedure has preconditions. In that case

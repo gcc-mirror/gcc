@@ -6300,6 +6300,7 @@ package body Sem_Ch8 is
       end loop;
 
       pragma Assert (False);  --  unreachable
+      raise Program_Error;
    end Has_Loop_In_Inner_Open_Scopes;
 
    --------------------

@@ -1,3 +1,18 @@
+2011-08-01  Yannick Moy  <moy@adacore.com>
+
+	* par-endh.adb (Check_End): issue a syntax error in SPARK mode for
+	missing label at end of declaration (subprogram or package)
+	* par-ch4.adb (P_Name): issue a syntax error in SPARK mode for mixing
+	of positional and named parameter association
+	* par.adb, par-util.adb (Formal_Error_Msg_SP): new wrapper on
+	Error_Msg_SP which adds a prefix to the error message giving the name
+	of the formal language analyzed
+	* sem_ch6.adb (Analyze_Return_Type): issue an error in formal mode for
+	access result type in subprogram, unconstrained array as result type,.
+	(Analyze_Subprogram_Declaration): issue an error in formal mode for null
+	procedure
+	* sem_ch8.adb: Code clean up.
+
 2011-08-01  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch7.adb (Uninstall_Declarations): Remove useless code.
