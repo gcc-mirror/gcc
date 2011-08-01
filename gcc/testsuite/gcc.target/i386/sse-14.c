@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mbmi -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
 
 #include <mm_malloc.h>
 

@@ -1,3 +1,37 @@
+2011-08-01  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/49547
+	* config.gcc (i[34567]86-*-*): Replace abmintrin.h with
+	lzcntintrin.h.
+	(x86_64-*-*): Likewise.
+	* config/i386/i386.opt (mlzcnt): New.
+	* config/i386/abmintrin.h: File removed.
+	(__lzcnt_u16, __lzcnt, __lzcnt_u64): Moved to ...
+	* config/i386/lzcntintrin.h: ... here. New file.
+	(__lzcnt): Rename to ...
+	(__lzcnt32): ... this.
+	* config/i386/bmiintrin.h (head): Update copyright year.
+	(__lzcnt_u16): Removed.
+	(__lzcnt_u32): Likewise.
+	(__lzcnt_u64): Likewise.
+	* config/i386/x86intrin.h: Include lzcntintrin.h when __LZCNT__
+	is defined, remove abmintrin.h.
+	* config/i386/cpuid.h (bit_LZCNT): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	LZCNT feature.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__LZCNT__ if needed.
+	* config/i386/i386.c (ix86_target_string): New option -mlzcnt.
+	(ix86_option_override_internal): Handle LZCNT option.
+	(ix86_valid_target_attribute_inner_p): Likewise.
+	(struct builtin_description bdesc_args) <IX86_BUILTIN_CLZS>: Update.
+	* config/i386/i386.h (TARGET_LZCNT): New.
+	(CLZ_DEFINED_VALUE_AT_ZERO): Update.
+	* config/i386/i386.md (clz<mode>2): Update insn constraint.
+	(clz<mode>2_lzcnt): Likewise.
+	* doc/invoke.texi: Mention -mlzcnt option.
+	* doc/extend.texi: Likewise.
+
 2011-08-01  Julian Brown  <julian@codesourcery.com>
 
 	* configure.ac (fixed-point): Add ARM support.

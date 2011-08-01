@@ -22,15 +22,15 @@
    <http://www.gnu.org/licenses/>.  */
 
 #ifndef _X86INTRIN_H_INCLUDED
-# error "Never use <abmintrin.h> directly; include <x86intrin.h> instead."
+# error "Never use <lzcntintrin.h> directly; include <x86intrin.h> instead."
 #endif
 
-#ifndef __ABM__
-# error "ABM instruction set not enabled"
-#endif /* __ABM__ */
+#ifndef __LZCNT__
+# error "LZCNT instruction is not enabled"
+#endif /* __LZCNT__ */
 
-#ifndef _ABMINTRIN_H_INCLUDED
-#define _ABMINTRIN_H_INCLUDED
+#ifndef _LZCNTINTRIN_H_INCLUDED
+#define _LZCNTINTRIN_H_INCLUDED
 
 extern __inline unsigned short __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __lzcnt16 (unsigned short __X)
@@ -39,7 +39,7 @@ __lzcnt16 (unsigned short __X)
 }
 
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lzcnt (unsigned int __X)
+__lzcnt32 (unsigned int __X)
 {
   return __builtin_clz (__X);
 }
@@ -52,4 +52,4 @@ __lzcnt64 (unsigned long __X)
 }
 #endif
 
-#endif /* _ABMINTRIN_H_INCLUDED */
+#endif /* _LZCNTINTRIN_H_INCLUDED */

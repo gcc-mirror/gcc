@@ -24,6 +24,7 @@
 /* %ecx */
 #define bit_SSE3	(1 << 0)
 #define bit_PCLMUL	(1 << 1)
+#define bit_LZCNT	(1 << 5)
 #define bit_SSSE3	(1 << 9)
 #define bit_FMA		(1 << 12)
 #define bit_CMPXCHG16B	(1 << 13)

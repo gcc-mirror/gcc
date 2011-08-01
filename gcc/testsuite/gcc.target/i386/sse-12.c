@@ -3,7 +3,7 @@
    popcntintrin.h and mm_malloc.h are usable
    with -O -std=c89 -pedantic-errors.  */
 /* { dg-do compile } */
-/* { dg-options "-O -std=c89 -pedantic-errors -march=k8 -msse4a -m3dnow -mavx -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mbmi -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
+/* { dg-options "-O -std=c89 -pedantic-errors -march=k8 -msse4a -m3dnow -mavx -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
 
 #include <x86intrin.h>
 

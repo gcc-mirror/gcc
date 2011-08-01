@@ -1,3 +1,23 @@
+2011-08-01  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/i386.exp (check_effective_target_lzcnt): New.
+	* gcc.target/i386/lzcnt-1.c: New test.
+	* gcc.target/i386/lzcnt-2.c: Likewise.
+	* gcc.target/i386/lzcnt-2a.c: Likewise.
+	* gcc.target/i386/lzcnt-3.c: Likewise.
+	* gcc.target/i386/lzcnt-4.c: Likewise.
+	* gcc.target/i386/lzcnt-4a.c: Likewise.
+	* gcc.target/i386/lzcnt-5.c: Likewise.
+	* gcc.target/i386/lzcnt-6.c: Likewise.
+	* gcc.target/i386/lzcnt-6a.c: Likewise.
+	* gcc.target/i386/lzcnt-check.h: Likewise.
+
+	* gcc.target/i386/sse-12.c (dg-compile): Add -mlzcnt.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* g++.dg/other/i386-2.C: Likewise.
+	* g++.dg/other/i386-3.C: Likewise.
+
 2011-08-01  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.target/arm/fixed-point-exec.c: New test.
