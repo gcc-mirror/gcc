@@ -6561,6 +6561,7 @@ package body Einfo is
                when  1 ..  6 => return Uint_24;
                when  7 .. 15 => return UI_From_Int (53);
                when 16 .. 18 => return Uint_64;
+               when 19 .. 33 => return UI_From_Int (113);
                when others => return No_Uint;
             end case;
 

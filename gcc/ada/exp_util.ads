@@ -30,6 +30,7 @@ with Namet;   use Namet;
 with Rtsfind; use Rtsfind;
 with Sinfo;   use Sinfo;
 with Types;   use Types;
+with Uintp;   use Uintp;
 
 package Exp_Util is
 
@@ -443,6 +444,9 @@ package Exp_Util is
    --  The caller can use this result to determine the value (for the case of
    --  N_Op_Eq), or to determine the result of some other test in other cases
    --  (e.g. no access check required if N_Op_Ne Null).
+
+   function Get_Stream_Size (E : Entity_Id) return Uint;
+   --  Return the stream size value of the subtype E
 
    function Has_Controlled_Coextensions (Typ : Entity_Id) return Boolean;
    --  Determine whether a record type has anonymous access discriminants with
